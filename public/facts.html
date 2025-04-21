@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>15 Powerful Facts About the ChessDB Engine Database</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 16px auto;
+      max-width: 760px;
+      line-height: 1.5;
+      color: #eee;
+      background: #2e2e2e;
+    }
+    h1 {
+      font-size: 1.2em;
+      margin-bottom: 4px;
+      color: #ffd966;
+    }
+    .subheading {
+      font-style: italic;
+      color: #ccc;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .subheading a { color: #eee; text-decoration: underline; }
+    ol { margin-left: 20px; }
+    li { margin-bottom: 8px; }
+    .explanations {
+      margin-top: 24px;
+      padding-top: 12px;
+      border-top: 1px solid #444;
+    }
+    .explanations h2 {
+      font-size: 1.1em;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+    .detail-block {
+      background: #3a3a3a;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+    .detail-block h3 {
+      font-size: 1em;
+      margin-top: 0;
+      margin-bottom: 6px;
+      color: #ffd966;
+    }
+    .detail-block p,
+    .detail-block ul { margin: 6px 0; color: #ddd; }
+    .detail-block ul { margin-left: 20px; }
+    .footer-note {
+      font-size: 0.95em;
+      margin-top: 24px;
+      padding-top: 12px;
+      border-top: 1px solid #444;
+      color: #aaa;
+    }
+    .footer-note a { color: #90caf9; text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>15 Powerful Facts About the ChessDB Engine Database</h1>
+  <div class="subheading">
+    Read detailed explanations for the most impactful features <a href="#explanations">below</a>.
+  </div>
+
+  <ol>
+    <li><strong>Outperforms champions and supercomputers:</strong> Tens of world champions combined can’t match ChessDB’s engine-verified, backward-propagated repertoire—nor can a lone supercomputer running Stockfish live.</li>
+    <li><strong>Over 100,000 CPU‑years of analysis</strong> have been precomputed, saving you astronomical compute time.</li>
+    <li><strong>Saves 30–60 minutes per move</strong> compared to running Stockfish locally to depth 50.</li>
+    <li><strong>48+ billion unique positions</strong> (≈4.8 TB) are stored and growing every day.</li>
+    <li><strong>Depth 50+ evaluations</strong> across millions of positions, often extending beyond move 40.</li>
+    <li><strong>5–10 candidate moves per position</strong> give you a rich choice of strong continuations.</li>
+    <li><strong>Deep coverage of rare openings</strong> like the Orangutan or Grob.</li>
+    <li><strong>Daily updates from user queries</strong> keep the database fresh and expanding.</li>
+    <li><strong>Free, browser-based, lightning-fast</strong> insight—supercomputer power in under a second.</li>
+    <li><strong>Distributed engine network</strong>: taps community and university resources worldwide.</li>
+    <li><strong>Syzygy DTZ50 tablebase integration</strong> provides perfect endgame scores converted to centipawns.</li>
+    <li><strong>API & UCI support</strong>: RESTful HTTP endpoints and UCI extensions for smooth integration.</li>
+    <li><strong>Live AI fallback</strong>: when data is missing, on-the-fly Stockfish suggestions fill the gap.</li>
+    <li><strong>Backward propagation</strong>: deep child analyses refine parent scores for more accurate evaluations.</li>
+    <li><strong>Engine-built opening book</strong>: exhaustive analysis replaces human biases and pruning errors.</li>
+  </ol>
+
+  <div id="explanations" class="explanations">
+    <h2>Detailed Explanations</h2>
+
+    <div class="detail-block">
+      <h3>Champions vs. ChessDB</h3>
+      <p>
+        In the past, learning from a grandmaster or world champion was the pinnacle of chess education.
+        Today, ChessDB’s billion-node, backward-propagated database delivers superior move quality
+        instantly—outclassing any human panel or a single Stockfish run on a supercomputer.
+      </p>
+    </div>
+
+    <div class="detail-block">
+      <h3>Precomputed CPU‑Years</h3>
+      <p>
+        Each position’s depth‑50 search takes ~200 s on a typical CPU (~20 M nodes at 100 k nodes/s).
+        Times ~48 billion positions → ~9.6×10¹² s ≈ 304 000 CPU‑years—and that work is already done.
+      </p>
+    </div>
+
+    <div class="detail-block">
+      <h3>Move Time Savings</h3>
+      <p>
+        A 4-core PC needs 30–60 minutes to reach depth 50. ChessDB returns the same analysis
+        in under a second, saving you up to an hour every move.
+      </p>
+    </div>
+
+    <div class="detail-block">
+      <h3>Backward Propagation</h3>
+      <p>
+        Deep searches of child positions propagate upward, enriching parent evaluations
+        beyond flat search depth.
+      </p>
+      <ul>
+        <li><strong>Greater depth:</strong> Children can reach 60+ plies, boosting parent accuracy.</li>
+        <li><strong>Stability:</strong> Multiple child lines reduce score variance.</li>
+        <li><strong>Accuracy:</strong> Ranks moves more precisely than a single-pass engine.</li>
+      </ul>
+    </div>
+
+    <div class="detail-block">
+      <h3>Live AI Fallback</h3>
+      <p>
+        When a position isn’t yet in the database, ChessDB seamlessly uses a live Stockfish
+        instance so you always have guidance.
+      </p>
+    </div>
+
+    <div class="detail-block">
+      <h3>API & UCI Extensions</h3>
+      <p>
+        Use HTTP endpoints (queryall, querybest, querypv, etc.) or UCI commands
+        (bookmove, hint, egtbmove) to integrate with your own GUI or engine.
+      </p>
+    </div>
+
+    <div class="detail-block">
+      <h3>Engine‑Built Opening Book</h3>
+      <p>
+        Exhaustive engine analysis, not human game pruning, generates a complete,
+        bias-free opening repertoire.
+      </p>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    The <strong>ChessDB</strong> engine database is maintained by <strong>Xueqi Lai</strong>,
+    running on a global network of CPUs. Visit <a href="https://www.chessdb.cn" target="_blank">
+    chessdb.cn</a> for live stats.
+  </div>
+</body>
+</html>

@@ -1,490 +1,201 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ChessBD.org - ChessDB GUI by B.D.</title>
-  <link rel="stylesheet" href="chessboard-1.0.0.min.css"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChessBest.org your ChessDB GUI</title>
+  <link rel="stylesheet" href="chessboard-1.0.0.min.css">
+  <link rel="stylesheet" href="styles.css">
   <style>
-    body, button, td, th, .overlay {
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      margin:0; padding:0;
+    /* Desktop vs. mobile subtitle */
+    .desktop-only { display: block; }
+    .mobile-only  { display: none; }
+    @media (max-width: 600px) {
+      .desktop-only { display: none; }
+      .mobile-only  { display: block; }
     }
-    body {
-      display:flex; height:100vh;
-      align-items:center; justify-content:center;
-      background:#2e2e2e; color:#eee;
-    }
-    :root {
-      --piece-scale:0.8;
-      --overlay-font:12px;
-      --moves-font:16px;
-    }
-    #leftPanel {
-      display:flex; flex-direction:column; align-items:center;
-    }
-    #pageTitle { font-size:1.5em; font-weight:bold; margin-bottom:4px; text-align:center; }
-    #pageSubtitle {
-      font-size:1em; color:#ccc; margin-bottom:16px; line-height:1.4; text-align:center;
-    }
-    #pageSubtitle a { color:#fff; text-decoration:underline; }
-    #board {
-      width:480px; height:480px; position:relative; touch-action:none;
-    }
-    #board img.piece {
-      transform:scale(var(--piece-scale)); transform-origin:center center;
-    }
-    .no-coords .coordinates { display:none!important; }
-    #board.no-badges .overlay { display:none!important; }
+    /* Center the subtitle */
+    #pageSubtitle { text-align: center; }
 
-    .overlay {
-      position:absolute; pointer-events:auto;
-      font-size:var(--overlay-font); font-weight:bold;
-      padding:2px 4px; border-radius:4px; color:#fff;
-      top:2px; right:2px;
-    }
-    .overlay.best     { background:rgba(0,123,255,0.8); }
-    .overlay.positive { background:rgba(40,167,69,0.8); }
-    .overlay.negative { background:rgba(200,20,20,0.8); }
-    .overlay.zero     { background:rgba(128,128,128,0.8); }
-
-    #controls {
-      display:flex; flex-direction:column; margin-left:20px; width:300px;
-    }
-    .btn {
-      margin:2px; padding:8px 12px; border:none; color:#fff;
-      font-size:16px; cursor:pointer; border-radius:4px;
-    }
-    .btn-group { display:flex; gap:4px; }
-    .btn-group .btn { flex:1; }
-    .btn-fen { background:#4caf50; }
-    .btn-pgn { background:#2196f3; }
-    .btn-nav { background:#555; }
-    #btnEval {
-      display:none; margin:4px 0; background:#6f42c1; width:100%;
+    /* Facts link theming */
+    :root { --facts-link-color: #fff; }
+    body.light-theme { --facts-link-color: #1565c0; }
+    #facts-link a {
+      color: var(--facts-link-color);
+      text-decoration: none;
     }
 
-    #moves {
-      overflow:auto; background:#333; color:#fff;
-      padding:10px; border-radius:4px;
-      font-size:var(--moves-font); height:300px;
-    }
-    #moves table { width:100%; border-collapse:collapse; }
-    #moves td { padding:4px; }
-    #moves tr.selected { background:#555; }
-    #moves td.move { cursor:pointer; }
-    #moves td.current { font-weight:bold; color:yellow; }
-
-    #fenPgnButtons { margin-top:10px; }
-    .bottom-controls { display:flex; gap:4px; margin-top:1em; }
-    .bottom-controls .btn { flex:1; }
-    #credits {
-      margin-top:8px; font-size:12px; text-align:center;
+    /* Email link theming */
+    :root { --email-link-color: #eee; }
+    body.light-theme { --email-link-color: #1565c0; }
+    #credits a {
+      color: var(--email-link-color);
+      text-decoration: none;
     }
 
-    #settingsPanel, #popularGamesPanel {
-      display:none; margin-top:4px;
-      background:#444; padding:10px; border-radius:4px; color:#fff;
-    }
-    #settingsPanel > div { margin-bottom:8px; }
-
-    @media(max-width:600px){
-      body { flex-direction:column; height:auto; padding:10px; }
-      #board { width:90vw!important; height:90vw!important; }
-      #controls { margin-left:0; width:100%; margin-top:20px; }
-      #pageTitle { font-size:1.2em; }
-    }
+    /* NEW — violet color for the “New” button */
+    .btn-new { background:#6f42c1; }
+    body.light-theme .btn-new { background:#7d4be0; }
   </style>
 </head>
 <body>
-  <div id="leftPanel">
-    <h1 id="pageTitle">Welcome to <span style="color:#90caf9">ChessBD.org</span></h1>
-    <p id="pageSubtitle">
-      Key moves are pre‑calculated at depth 50+ using<br>
-      Stockfish with back propagation. Data from
-      <a href="https://www.chessdb.cn/queryc_en/" target="_blank" rel="noopener noreferrer">ChessDB</a>
-    </p>
-    <div id="board"></div>
+  <div id="pageTitle">
+    ChessBest.org <span class="word-your">your </span>
+    <a href="https://www.chessdb.cn/queryc_en/" target="_blank">ChessDB</a> GUI
+  </div>
+  <div id="pageSubtitle">
+    <div class="desktop-only">
+      Instantly pick moves from 48+ billions of depth 50+ evaluations — outperforming engines and world champions.
+    </div>
+    <div class="mobile-only">
+      48+ billions of depth 50+ evaluations.<br>
+      Outperforms engines & world champs.
+    </div>
   </div>
 
-  <div id="controls">
-    <button class="btn btn-nav" id="btnEval">Run Evaluation (wait 6s)</button>
-    <div class="btn-group">
-      <button class="btn btn-nav" id="first">«</button>
-      <button class="btn btn-nav" id="prev"><</button>
-      <button class="btn btn-nav" id="next">></button>
-      <button class="btn btn-nav" id="last">»</button>
-      <button class="btn btn-nav" id="btnToggleBadges">Hide</button>
-    </div>
-    <div id="moves"></div>
-
-    <div id="fenPgnButtons">
-      <div class="btn-group">
-        <button class="btn btn-fen" id="btnInputFEN">Input FEN</button>
-        <button class="btn btn-fen" id="btnCopyFEN">Copy FEN</button>
-      </div>
-      <div class="btn-group">
-        <button class="btn btn-pgn" id="btnInputPGN">Input PGN</button>
-        <button class="btn btn-pgn" id="btnCopyPGN">Copy PGN</button>
+  <div id="main">
+    <!-- --------------- BOARD --------------- -->
+    <div id="board-container">
+      <div id="board"></div>
+      <div id="facts-link">
+        <a href="facts.html"
+           onclick="const w = window.open(this.href,'Facts'); w.moveTo(0,0); w.resizeTo(screen.availWidth, screen.availHeight); return false;">
+          15 Powerful Facts About the ChessDB Engine Database
+        </a>
       </div>
     </div>
 
-    <div class="bottom-controls">
-      <button class="btn btn-nav" id="btnSettings">Settings ⚙</button>
-      <button class="btn btn-nav" id="btnPopularGames">Popular Games</button>
-    </div>
+    <!-- --------------- CONTROLS --------------- -->
+    <div id="controls">
+      <!-- Navigation row -->
+      <div class="btn-group top-buttons">
+        <button class="btn btn-nav" id="first">«</button>
+        <button class="btn btn-nav" id="prev">‹</button>
+        <button class="btn btn-nav" id="btnHideEval">Hide Eval</button>
+        <button class="btn btn-nav" id="next">›</button>
+        <button class="btn btn-nav" id="last">»</button>
+      </div>
 
-    <div style="height:1em;"></div>
-    <div id="credits">Author: Boyan D. &amp; ChatGPT o4, v1.3</div>
+      <!-- Game title -->
+      <div class="game-title" id="gameTitle">
+        Analyse moves with ChessDB
+      </div>
 
-    <div id="settingsPanel">
-      <div>
-        <label for="settingTopN">Show top moves:</label><br/>
+      <!-- Move history -->
+      <div id="moves"></div>
+
+      <!-- ---------- ROW 1  Format | Input | Copy ---------- -->
+      <div class="btn-group">
+        <button class="btn btn-fen" id="btnFormat">FEN|pgn</button>
+        <button class="btn btn-fen" id="btnInput">Input</button>
+        <button class="btn btn-fen" id="btnCopy">Copy</button>
+      </div>
+
+      <!-- ---------- ROW 2  New | Save | Load ---------- -->
+      <div class="btn-group">
+        <button class="btn btn-new" id="btnNew">New</button>
+        <button class="btn btn-pgn" id="btnSave">Save</button>
+        <button class="btn btn-pgn" id="btnLoad">Load</button>
+        <!-- hidden file input for Load -->
+        <input type="file" id="filePGN" accept=".pgn" style="display:none">
+      </div>
+
+      <!-- ---------- ROW 3  Games | Theme | Settings ---------- -->
+      <div class="btn-group bottom-controls">
+        <button class="btn btn-nav" id="btnGames">Games!</button>
+        <button class="btn btn-nav" id="btnTheme">Theme L</button>
+        <button class="btn btn-nav" id="btnSettings">Settings</button>
+      </div>
+
+      <!-- Popular games panel -->
+      <div id="popularGamesPanel" class="panel">
+        <label for="popularGamesSelect">Load a game:</label>
+        <select id="popularGamesSelect">
+          <option value="">— select —</option>
+        </select>
+      </div>
+
+      <!-- Settings panel (content unchanged) -->
+      <div id="settingsPanel" class="panel">
+        <label for="settingTopN">Show top moves:</label>
         <select id="settingTopN">
-          <option value="1">1</option>
           <option value="3">3</option>
           <option value="5" selected>5</option>
           <option value="10">10</option>
           <option value="all">All</option>
         </select>
-      </div>
-      <div>
-        <label for="settingBg">Board background:</label><br/>
+
+        <label for="settingHistorySize">History height:</label>
+        <select id="settingHistorySize">
+          <option value="small" selected>Small</option>
+          <option value="medium">Medium</option>
+          <option value="big">Big</option>
+        </select>
+
+        <label for="settingBg">Board background:</label>
         <select id="settingBg">
-          <option value="#2e2e2e" selected>Dark Gray</option>
+          <option value="#2e2e2e">Dark Gray</option>
           <option value="#ffffff">White</option>
           <option value="#cccccc">Light Gray</option>
           <option value="#000000">Black</option>
+          <option value="#5d4037">Dark Brown</option>
+          <option value="#8d6e63">Light Brown</option>
+          <option value="#0d47a1">Dark Blue</option>
+          <option value="#90caf9">Light Blue</option>
         </select>
-      </div>
-      <div>
-        <label for="settingNotation">Badge notation:</label><br/>
-        <select id="settingNotation">
-          <option value="score" selected>Score</option>
-          <option value="dot">Dot</option>
-        </select>
-      </div>
-      <div>
-        <label><input type="checkbox" id="settingCoords" checked/> Show coordinates</label>
-      </div>
-      <div>
-        <label for="settingFont">Font size:</label><br/>
+
+        <label for="settingFont">Font size:</label>
         <select id="settingFont">
-          <option value="14px">Small</option>
-          <option value="16px" selected>Medium</option>
+          <option value="14px" selected>Small</option>
+          <option value="16px">Medium</option>
           <option value="18px">Large</option>
         </select>
-      </div>
-      <div>
-        <label for="settingPieceSize">Piece size:</label><br/>
+
+        <label for="settingNotation">Badge notation:</label>
+        <select id="settingNotation">
+          <option value="score">Score</option>
+          <option value="dot">Dot</option>
+        </select>
+
+        <label for="settingPieceSize">Piece size:</label>
         <select id="settingPieceSize">
           <option value="small">Small</option>
           <option value="medium" selected>Medium</option>
           <option value="big">Big</option>
         </select>
-      </div>
-      <div>
-        <label for="settingHistorySize">History height:</label><br/>
-        <select id="settingHistorySize">
-          <option value="small">Small</option>
-          <option value="medium" selected>Medium</option>
-          <option value="big">Big</option>
-        </select>
-      </div>
-      <div>
-        <label for="settingBoardSize">Board size (desktop):</label><br/>
+
+        <label for="settingBoardSize">Board size (desktop):</label>
         <select id="settingBoardSize">
           <option value="small">Small</option>
           <option value="medium" selected>Medium</option>
           <option value="large">Large</option>
         </select>
+
+        <label>
+          <input type="checkbox" id="settingCoords" checked>
+          Show coordinates
+        </label>
+
+        <label>
+          <input type="checkbox" id="settingNextDot" checked>
+          Show next‑move preview
+        </label>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div id="credits">
+        Author: Boyan D. (
+        <a href="mailto:bd@siol.net">bd@siol.net</a>
+        ) & ChatGPT o4, <strong>v1.3</strong>
       </div>
     </div>
-
-    <div id="popularGamesPanel">
-      <label for="popularGamesSelect">Load a game:</label><br/>
-      <select id="popularGamesSelect">
-        <option value="">— select —</option>
-        <option value="GukeshCarlsen">Gukesh vs Carlsen (Baku, 2023.08.17)</option>
-        <option value="CarlsenIvanchuk">Carlsen vs Ivanchuk (Wijk aan Zee, 2012.01.20)</option>
-        <option value="NakamuraAronian">Nakamura vs Aronian (London, 2011.12.03)</option>
-        <option value="CaruanaTopalov">Caruana vs Topalov (Saint Louis, 2014.08.28)</option>
-        <option value="NiemannMamedyarov">Niemann vs Mamedyarov (Riga, 2021.11.06)</option>
-        <option value="KasparovTopalov">Kasparov vs Topalov (Wijk aan Zee, 1999.01.20)</option>
-        <option value="FischerByrne">Fischer vs Byrne (New York, 1956.10.17)</option>
-        <option value="RubinsteinRotlewi">Rubinstein vs Rotlewi (Łódź, 1907.12.26)</option>
-        <option value="MorphyDukeCount">Morphy vs Duke & Count (Paris, 1858)</option>
-        <option value="AnderssenKieseritzky">Anderssen vs Kieseritzky (London, 1851.06.21)</option>
-        <option value="CarlsenAronian">Carlsen vs Aronian (Oslo NOR, 2024.12.18)</option>
-      </select>
-    </div>
-
   </div>
 
+  <!-- Scripts -->
   <script src="jquery-3.6.0.min.js"></script>
   <script src="chess.min.js"></script>
   <script src="chessboard-1.0.0.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      function copyText(txt) {
-        if (navigator.clipboard) return navigator.clipboard.writeText(txt);
-        const ta = document.createElement('textarea');
-        ta.value = txt; document.body.appendChild(ta);
-        ta.select(); document.execCommand('copy');
-        document.body.removeChild(ta);
-      }
-
-      const settings = {
-        topN:5, bg:'#2e2e2e', notation:'score', coords:true,
-        font:'16px', pieceSize:'medium',
-        historySize:'medium', boardSize:'medium'
-      };
-
-      const popularGames = {
-        GukeshCarlsen: `1. d4 Nf6 2. c4 e6 … 22. Qh7# 1-0`,
-        CarlsenIvanchuk: `1. e4 e5 2. Nf3 Nc6 … 39. Qh8# 1-0`,
-        NakamuraAronian: `1. e4 e5 2. Nf3 Nc6 … 39. Kh1 Qg2# 1-0`,
-        CaruanaTopalov: `1. e4 c5 2. Nf3 d6 … 28. Qe6# 1-0`,
-        NiemannMamedyarov: `1. d4 Nf6 2. c4 e6 … 67. Kh7 Qdh8# 1-0`,
-        KasparovTopalov: `1. e4 d6 2. d4 Nf6 … 26. Qc7# 1-0`,
-        FischerByrne: `1. Nf3 Nf6 2. c4 g6 … 22. dxe5 Rd1# 0-1`,
-        RubinsteinRotlewi: `1. d4 d5 2. Nf3 e6 … 52. Q3b5# 0-1`,
-        MorphyDukeCount: `1. e4 e5 2. Nf3 d6 … 26. Qe8# 1-0`,
-        AnderssenKieseritzky: `1. e4 e5 2. f4 exf4 … 23. Be7# 1-0`
-      };
-
-      const game = new Chess();
-      const board = Chessboard('board', {
-        draggable:true, position:'start', showCoordinates:true,
-        pieceTheme:'img/chesspieces/wikipedia/{piece}.png',
-        onDrop:(src,dst)=>{
-          const m = game.move({ from: src, to: dst, promotion: 'q' });
-          if (!m) return 'snapback';
-          updateBoard(true);
-        }
-      });
-
-      let fullHistory = [], badgesHidden = false;
-
-      function applySettings(){
-        document.body.style.background = settings.bg;
-        document.getElementById('board').parentElement
-          .classList.toggle('no-coords', !settings.coords);
-        document.documentElement.style.setProperty('--overlay-font', settings.font);
-        document.documentElement.style.setProperty('--moves-font', settings.font);
-        document.documentElement.style.setProperty(
-          '--piece-scale',
-          ({ small:0.6, medium:0.8, big:1 })[settings.pieceSize]
-        );
-        document.getElementById('moves').style.height =
-          ({ small:'150px', medium:'300px', big:'450px' })[settings.historySize];
-        if (window.innerWidth > 600) {
-          const s = ({ small:360, medium:480, large:600 })[settings.boardSize];
-          document.getElementById('board').style.width  = s + 'px';
-          document.getElementById('board').style.height = s + 'px';
-        }
-      }
-
-      document.getElementById('btnToggleBadges').onclick = () => {
-        badgesHidden = !badgesHidden;
-        document.getElementById('board')
-          .classList.toggle('no-badges', badgesHidden);
-        document.getElementById('btnToggleBadges').innerText =
-          badgesHidden ? 'Show' : 'Hide';
-      };
-
-      async function fetchAnnotations(learn){
-        const url =
-          `/.netlify/functions/queryall?fen=${encodeURIComponent(game.fen())}` +
-          `&learn=${learn?1:0}`;
-        console.log("⏳ fetching annotations from:", url);
-        const resp = await fetch(url);
-        const txt  = await resp.text();
-        console.log("✅ response text:", txt.slice(0,200), "...(", txt.length, "chars )");
-        let entries = txt.split('|').map(c=>{
-          const m = c.match(/move:(\w+),score:([-\d\?]+),rank:(\d+),/);
-          return m?{move:m[1],score:m[2],rank:+m[3]}:null;
-        }).filter(e=> e && e.score!=='??');
-        if (!entries.length) {
-          if (!learn) return fetchAnnotations(true);
-          document.getElementById('btnEval').style.display = 'block';
-          return;
-        }
-        entries.sort((a,b) =>
-          b.rank - a.rank || parseInt(b.score) - parseInt(a.score)
-        );
-        const top = isFinite(settings.topN)
-          ? entries.slice(0, settings.topN)
-          : entries;
-        top.forEach((it,i) => annotateMove(it.move, it.score, i===0));
-      }
-
-      function annotateMove(move, score, isBest=false){
-        const sq = move.slice(-2),
-              cell = document.querySelector(`.square-${sq}`);
-        if (!cell) return;
-        const ov = document.createElement('div'),
-              num = parseInt(score,10);
-        ov.innerText = settings.notation==='dot'
-          ? '•'
-          : (num>0?`+${num}`:num);
-        ov.className = isBest
-          ? 'overlay best'
-          : `overlay ${num>0?'positive':num<0?'negative':'zero'}`;
-        ['mousedown','touchstart'].forEach(ev=>
-          ov.addEventListener(ev, e=>e.stopPropagation())
-        );
-        ov.onclick = e => {
-          e.stopPropagation();
-          game.move({ from: move.slice(0,2), to: sq, promotion:'q' });
-          updateBoard(true);
-        };
-        cell.appendChild(ov);
-      }
-
-      function renderHistory(){
-        const div = document.getElementById('moves');
-        div.innerHTML = '';
-        const tbl = document.createElement('table'), pairs=[];
-        for(let i=0;i<fullHistory.length;i+=2){
-          pairs.push({ w:fullHistory[i]||null, b:fullHistory[i+1]||null,
-                       idxW:i, idxB:i+1 });
-        }
-        const rev = pairs.slice().reverse(), total=rev.length,
-              cur=game.history().length-1;
-        rev.forEach((p,i)=>{
-          const tr=document.createElement('tr');
-          if(p.idxW===cur||p.idxB===cur) tr.classList.add('selected');
-          const numTd=document.createElement('td');
-          numTd.textContent=(total-i)+'.';tr.appendChild(numTd);
-          ['w','b'].forEach(c=>{
-            const mv=p[c],td=document.createElement('td');
-            td.textContent=mv?mv.san:'';
-            td.className='move';
-            if(mv){
-              td.onclick=()=>jumpTo(p['idx'+c.toUpperCase()]);
-              if(p['idx'+c.toUpperCase()]===cur) td.classList.add('current');
-            }
-            tr.appendChild(td);
-          });
-          tbl.appendChild(tr);
-        });
-        div.appendChild(tbl);
-      }
-
-      function updateBoard(reset){
-        board.position(game.fen());
-        document.querySelectorAll('.overlay').forEach(el=>el.remove());
-        if(reset) fullHistory=game.history({verbose:true});
-        fetchAnnotations(reset);
-        renderHistory();
-      }
-
-      function jumpTo(idx){
-        game.reset();
-        fullHistory.forEach((m,i)=>{ if(i<=idx) game.move(m.san); });
-        updateBoard(false);
-      }
-
-      ['first','prev','next','last'].forEach(id=>{
-        document.getElementById(id).onclick=()=>{
-          if(id==='first') jumpTo(0);
-          else if(id==='prev'){ game.undo(); updateBoard(false); }
-          else if(id==='next'){
-            const m=fullHistory[game.history().length];
-            if(m){ game.move(m.san); updateBoard(false); }
-          } else jumpTo(fullHistory.length-1);
-        };
-      });
-
-      document.getElementById('btnInputFEN').onclick=()=>{
-        const inp=prompt('FEN & moves'); if(!inp)return;
-        const [fen,mvs]=inp.split(' moves ');
-        game.load(fen);
-        mvs?.split(' ').forEach(m=>game.move({from:m.slice(0,2),
-          to:m.slice(2,4)}));
-        updateBoard(true);
-      };
-      document.getElementById('btnCopyFEN').onclick=()=>copyText(game.fen());
-      document.getElementById('btnInputPGN').onclick=()=>{
-        const p=prompt('Paste PGN');
-        if(p){ game.load_pgn(p); updateBoard(true); }
-      };
-      document.getElementById('btnCopyPGN').onclick=()=>copyText(game.pgn());
-      document.getElementById('btnEval').onclick=()=>{
-        fetchAnnotations(true);
-        setTimeout(()=>updateBoard(true),6000);
-        document.getElementById('btnEval').style.display='none';
-      };
-
-      document.getElementById('btnSettings').onclick=()=>{
-        const p=document.getElementById('settingsPanel');
-        p.style.display=(p.style.display==='block'?'none':'block');
-      };
-      document.getElementById('btnPopularGames').onclick=()=>{
-        const p=document.getElementById('popularGamesPanel');
-        p.style.display=(p.style.display==='block'?'none':'block');
-      };
-
-      // Wire up settings (guarded)
-      ['settingTopN','settingBg','settingNotation','settingCoords',
-       'settingFont','settingPieceSize','settingHistorySize',
-       'settingBoardSize'].forEach(id=>{
-        const el=document.getElementById(id);
-        if(!el)return;
-        el.onchange=e=>{
-          const v=e.target.value;
-          switch(id){
-            case 'settingTopN':
-              settings.topN=v==='all'?Infinity:parseInt(v);
-              updateBoard(false); break;
-            case 'settingBg':
-              settings.bg=v; applySettings(); break;
-            case 'settingNotation':
-              settings.notation=v; updateBoard(false); break;
-            case 'settingCoords':
-              settings.coords=e.target.checked; applySettings(); break;
-            case 'settingFont':
-              settings.font=v; applySettings(); break;
-            case 'settingPieceSize':
-              settings.pieceSize=v; applySettings(); break;
-            case 'settingHistorySize':
-              settings.historySize=v; applySettings(); break;
-            case 'settingBoardSize':
-              settings.boardSize=v; applySettings(); break;
-          }
-        };
-      });
-
-      // Wire up popular games
-      const pg=document.getElementById('popularGamesSelect');
-      if(pg)pg.onchange=e=>{
-        const key=e.target.value; if(!key) return;
-        game.reset(); game.load_pgn(popularGames[key]);
-        updateBoard(true); pg.value=''; document.getElementById(
-          'popularGamesPanel').style.display='none';
-      };
-
-      document.addEventListener('keydown',e=>{
-        if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
-        switch(e.key){
-          case 'ArrowLeft':
-            game.undo(); updateBoard(false); e.preventDefault(); break;
-          case 'ArrowRight':
-            const m=fullHistory[game.history().length];
-            if(m){ game.move(m.san); updateBoard(false); }
-            e.preventDefault(); break;
-          case 'ArrowUp':
-            jumpTo(fullHistory.length-1); e.preventDefault(); break;
-          case 'ArrowDown':
-            jumpTo(0); e.preventDefault(); break;
-        }
-      });
-
-      applySettings();
-      updateBoard(true);
-      window.addEventListener('resize', applySettings);
-    });
-  </script>
+  <script src="utils.js"></script>
 </body>
 </html>
