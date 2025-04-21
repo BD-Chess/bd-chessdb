@@ -234,8 +234,8 @@ gameBuckets.forEach(bucket => {
 
     try {
       const [vTxt, cTxt] = await Promise.all([
-        fetch(`/api/queryall?fen=${fen}&learn=0&showall=1`).then(r=>r.text()),
-        fetch(`/api/queryall?fen=${fen}&learn=1&showall=1`).then(r=>r.text())
+        fetch(`/.netlify/functions/queryall?fen=${fen}&learn=0&showall=1`).then(r=>r.text()),
+        fetch(`/.netlify/functions/queryall?fen=${fen}&learn=1&showall=1`).then(r=>r.text())
       ]);
 
       const moveMap = new Map();
