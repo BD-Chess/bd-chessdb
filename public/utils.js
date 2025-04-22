@@ -6,6 +6,7 @@ function initAll() {
      1. DEFAULT SETTINGS
   ------------------------------------------------------------------*/
   const settings = {
+	evalMode: 'direct',
     theme: 'dark',
     topN: 5,
     bg: '#2e2e2e',
@@ -221,38 +222,61 @@ gameBuckets.forEach(bucket => {
   /* ------------------------------------------------------------------
      9. FETCH ANNOTATIONS (ChessDB.cn)
   ------------------------------------------------------------------*/
-  async function fetchAnnotations() {
-    const fen = encodeURIComponent(game.fen());
+	async function fetchAnnotations() {
+	  const fen = encodeURIComponent(game.fen());
 
-    function parseResponse(text) {
-      return text.split('|').map(line => {
-        const m = line.match(/move:(\w+),score:([-\d\?]+),rank:(\d+),/);
-        if (!m || m[2] === '??') return null;
-        const score = parseInt(m[2], 10), rank = parseInt(m[3], 10);
-        if (isNaN(score) || (score <= -100 && rank < 2)) return null;
-        return { move: m[1], score, rank };
-      }).filter(Boolean);
-    }
+	  function parseResponse(text) {
+		return text.split('|').map(line => {
+		  const m = line.match(/move:(\w+),score:([-\d\?]+),rank:(\d+),/);
+		  if (!m || m[2] === '??') return null;
+		  const score = parseInt(m[2], 10), rank = parseInt(m[3], 10);
+		  if (isNaN(score) || (score <= -100 && rank < 2)) return null;
+		  return { move: m[1], score, rank };
+		}).filter(Boolean);
+	  }
 
-    try {
-      const [vTxt, cTxt] = await Promise.all([
-        fetch(`/.netlify/functions/queryall?fen=${fen}&learn=0&showall=1`).then(r=>r.text()),
-        fetch(`/.netlify/functions/queryall?fen=${fen}&learn=1&showall=1`).then(r=>r.text())
-      ]);
+	  const useProxy = settings.evalMode === 'proxy';
+	  const baseURL = useProxy
+		? '/.netlify/functions/queryall?'
+		: 'https://www.chessdb.cn/cdb.php?action=queryall&';
 
-      const moveMap = new Map();
-      parseResponse(cTxt).forEach(m => moveMap.set(m.move, m)); // cloud first
-      parseResponse(vTxt).forEach(m => moveMap.set(m.move, m)); // verified overrides
+	  const vURL = `${baseURL}board=${fen}&learn=0&showall=1`;
+	  const cURL = `${baseURL}board=${fen}&learn=1&showall=1`;
 
-      const allMoves = Array.from(moveMap.values())
-        .sort((a,b)=>b.rank-a.rank||b.score-a.score);
+	  let vTxt = null, cTxt = null;
 
-      const list = isFinite(settings.topN) ? allMoves.slice(0,settings.topN)
-                                           : allMoves;
-      list.forEach((m,i)=>annotateMove(m.move,m.score,i===0));
-    }
-    catch (err) { console.error('Failed to fetch annotations:', err); }
-  }
+	  try {
+		[vTxt, cTxt] = await Promise.all([
+		  fetch(vURL).then(r => r.text()),
+		  fetch(cURL).then(r => r.text())
+		]);
+	  } catch (e) {
+		console.warn('Fetch error:', e);
+	  }
+
+	  // Retry once with fallback if direct mode failed
+	  if ((!vTxt || !cTxt) && !useProxy) {
+		console.warn('Switching to fallback eval mode (proxy)');
+		settings.evalMode = 'proxy';
+		localStorage.setItem('chessBestSettings', JSON.stringify(settings));
+		return fetchAnnotations(); // retry
+	  }
+
+	  try {
+		const moveMap = new Map();
+		parseResponse(cTxt).forEach(m => moveMap.set(m.move, m)); // cloud first
+		parseResponse(vTxt).forEach(m => moveMap.set(m.move, m)); // verified overrides
+
+		const allMoves = Array.from(moveMap.values())
+		  .sort((a, b) => b.rank - a.rank || b.score - a.score);
+
+		const list = isFinite(settings.topN) ? allMoves.slice(0, settings.topN) : allMoves;
+		list.forEach((m, i) => annotateMove(m.move, m.score, i === 0));
+	  } catch (err) {
+		console.error('Failed to fetch annotations:', err);
+	  }
+	}
+
 
   /* ------------------------------------------------------------------
      10. BOARD OVERLAYS / HISTORY RENDER (unchanged logic)
