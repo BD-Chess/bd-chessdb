@@ -321,17 +321,20 @@ gameBuckets.forEach(bucket => {
     div.appendChild(tbl);
 
     // Auto-scroll to show current move row
-
 	const selected = tbl.querySelector('tr.selected');
 	if (selected) {
-		if (window.innerWidth > 600) {
-		// Only scroll into view on desktop
+	if (window.innerWidth <= 600) {
+		document.getElementById('board').scrollIntoView({
+			behavior: 'smooth',
+			block: 'start'
+		});
+	} else {
 		selected.scrollIntoView({
-		block: 'center',
-		behavior: 'smooth'
+			block: 'center',
+			behavior: 'smooth'
 		});
 	}
-}
+  }
 
 
   }
