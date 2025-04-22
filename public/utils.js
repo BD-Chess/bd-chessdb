@@ -323,19 +323,17 @@ gameBuckets.forEach(bucket => {
     // Auto-scroll to show current move row
 	const selected = tbl.querySelector('tr.selected');
 	if (selected) {
-	if (window.innerWidth <= 600) {
-		document.getElementById('board').scrollIntoView({
-			behavior: 'smooth',
-			block: 'start'
-		});
-	} else {
-		selected.scrollIntoView({
-			block: 'center',
+		const container = document.getElementById('moves');
+		const offsetTop = selected.offsetTop;
+		const offsetHeight = selected.offsetHeight;
+		const containerHeight = container.clientHeight;
+
+		// Scroll the container so that selected is centered inside it
+		container.scrollTo({
+			top: offsetTop - (containerHeight / 2) + (offsetHeight / 2),
 			behavior: 'smooth'
 		});
 	}
-  }
-
 
   }
 
