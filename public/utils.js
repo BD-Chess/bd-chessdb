@@ -13,7 +13,8 @@ function initAll() {
     coords: true,
     font: '14px',
     pieceSize: 'medium',
-    historySize: 'small',
+    /* historySize: 'small', */
+    historySize: window.innerWidth <= 600 ? 'smallest' : 'medium',
     boardSize: 'medium',
     nextDot: true,     // show next‑move preview by default
     ioFormat: 'fen'    // NEW  (fen | pgn)  for Format / Input / Copy row
@@ -188,10 +189,7 @@ gameBuckets.forEach(bucket => {
 
     /* history height */
     document.getElementById('moves').style.height =
-      { small:'150px', medium:'300px', big:'450px' }[settings.historySize];
-
-    document.getElementById('moves').style.height =
-      { smallest: '80px', small:'150px', medium:'300px', big:'450px' }[settings.historySize];
+      { smallest: '45px', small:'150px', medium:'300px', big:'450px' }[settings.historySize];
 
 
     /* board size (desktop) */
