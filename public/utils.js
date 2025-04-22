@@ -317,6 +317,16 @@ gameBuckets.forEach(bucket => {
       tbl.appendChild(tr);
     });
     div.appendChild(tbl);
+
+    // Auto-scroll to show current move row
+    const selected = tbl.querySelector('tr.selected');
+    if (selected) {
+      selected.scrollIntoView({
+        block: 'center',
+        behavior: 'smooth'
+      });
+    }
+
   }
 
   /* ------------------------------------------------------------------
