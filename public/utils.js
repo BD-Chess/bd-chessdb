@@ -189,7 +189,7 @@ gameBuckets.forEach(bucket => {
 
     /* history height */
     document.getElementById('moves').style.height =
-      { smallest: '60px', small:'160px', medium:'300px', big:'450px' }[settings.historySize];
+      { smallest: '60px', small:'140px', medium:'300px', big:'450px' }[settings.historySize];
 
 
     /* board size (desktop) */
@@ -321,13 +321,18 @@ gameBuckets.forEach(bucket => {
     div.appendChild(tbl);
 
     // Auto-scroll to show current move row
-    const selected = tbl.querySelector('tr.selected');
-    if (selected) {
-      selected.scrollIntoView({
-        block: 'center',
-        behavior: 'smooth'
-      });
-    }
+
+	const selected = tbl.querySelector('tr.selected');
+	if (selected) {
+		if (window.innerWidth > 600) {
+		// Only scroll into view on desktop
+		selected.scrollIntoView({
+		block: 'center',
+		behavior: 'smooth'
+		});
+	}
+}
+
 
   }
 
