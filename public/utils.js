@@ -190,6 +190,10 @@ gameBuckets.forEach(bucket => {
     document.getElementById('moves').style.height =
       { small:'150px', medium:'300px', big:'450px' }[settings.historySize];
 
+    document.getElementById('moves').style.height =
+      { smallest: '80px', small:'150px', medium:'300px', big:'450px' }[settings.historySize];
+
+
     /* board size (desktop) */
     if (window.innerWidth > 600) {
       const s = { small:360, medium:480, large:600 }[settings.boardSize];
