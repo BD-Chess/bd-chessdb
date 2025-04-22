@@ -7,6 +7,7 @@ function initAll() {
   ------------------------------------------------------------------*/
   const settings = {
 	evalMode: 'direct',
+	flipBoard: false,
     theme: 'dark',
     topN: 5,
     bg: '#2e2e2e',
@@ -15,7 +16,7 @@ function initAll() {
     font: '14px',
     pieceSize: 'medium',
     /* historySize: 'small', */
-    historySize: window.innerWidth <= 600 ? 'smallest' : 'medium',
+    historySize: window.innerWidth <= 600 ? 'smallest' : 'small',
     boardSize: 'medium',
     nextDot: true,     // show next‑move preview by default
     ioFormat: 'fen'    // NEW  (fen | pgn)  for Format / Input / Copy row
@@ -178,6 +179,9 @@ gameBuckets.forEach(bucket => {
       settings.theme === 'light' ? 'Theme D' : 'Theme L';
     document.body.style.background =
       settings.theme === 'dark' ? settings.bg : '';
+	  
+	/* board orientation */
+	board.orientation(settings.flipBoard ? 'black' : 'white');
 
     /* board coords */
     document.getElementById('board')
@@ -518,7 +522,7 @@ gameBuckets.forEach(bucket => {
      18. SETTINGS PANEL HANDLERS  (unchanged)
   ------------------------------------------------------------------*/
   [
-    'settingTopN','settingHistorySize','settingBg','settingFont',
+    'settingFlipBoard','settingTopN','settingHistorySize','settingBg','settingFont',
     'settingNotation','settingPieceSize','settingBoardSize',
     'settingCoords','settingNextDot'
   ].forEach(id=>{
@@ -535,6 +539,7 @@ gameBuckets.forEach(bucket => {
         case 'settingBoardSize':   settings.boardSize=e.target.value; break;
         case 'settingCoords':      settings.coords=e.target.checked; break;
         case 'settingNextDot':     settings.nextDot=e.target.checked; break;
+		case 'settingFlipBoard':   settings.flipBoard = e.target.checked; break;
       }
       saveSettings();
       applySettings();
