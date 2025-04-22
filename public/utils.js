@@ -189,7 +189,7 @@ gameBuckets.forEach(bucket => {
 
     /* history height */
     document.getElementById('moves').style.height =
-      { smallest: '60px', small:'150px', medium:'300px', big:'450px' }[settings.historySize];
+      { smallest: '60px', small:'160px', medium:'300px', big:'450px' }[settings.historySize];
 
 
     /* board size (desktop) */
