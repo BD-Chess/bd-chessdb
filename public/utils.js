@@ -50,7 +50,7 @@ function initAll() {
   ------------------------------------------------------------------*/
   const gameBuckets = [
     { name: 'Magnus Carlsen',        file: 'CarlsenM_Selected.pgn' },
-    { name: 'Garry Kasparov',        file: 'KasparovG_Selectd.pgn' },
+    { name: 'Garry Kasparov',        file: 'KasparovG_Selected.pgn' },
     { name: 'Hikaru Nakamura',       file: 'NakamuraH_Selected.pgn' },
     { name: 'Fabiano Caruana',       file: 'CaruanaF_Selected.pgn' },
     { name: 'Dommaraju Gukesh',      file: 'GukeshD_Selected.pgn' },
