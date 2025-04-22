@@ -110,6 +110,7 @@ gameBuckets.forEach(bucket => {
     game.reset();
     game.load_pgn(e.target.value);
     updateBoard(true);
+	fetchAnnotations();
     document.getElementById('gameTitle').innerHTML =
       e.target.selectedOptions[0].text;
     panel.classList.remove('open');
@@ -474,6 +475,7 @@ gameBuckets.forEach(bucket => {
     reader.onload=evt=>{
       game.load_pgn(evt.target.result);
       updateBoard(true);
+	  fetchAnnotations();
       document.getElementById('gameTitle').innerText = file.name;
     };
     reader.readAsText(file);
