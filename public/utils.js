@@ -305,6 +305,10 @@ gameBuckets.forEach(bucket => {
       updateBoard(true);
     };
     cell.appendChild(ov);
+    // if badges arrive after “Try Later”, flip the button back
+    const btn = document.getElementById('btnHideEval');
+    if (btn.innerText === 'Try Later') { btn.innerText = 'Hide Eval'; btn.style.background = ''; }
+
   }
 
   function highlightLast() {
