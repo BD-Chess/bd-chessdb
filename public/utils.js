@@ -161,6 +161,9 @@ gameBuckets.forEach(bucket => {
   let fullHistory   = [];
   let prevHighlight = [];
   let showEval      = true;
+  let evalRetries = 0;
+  let evalRetryTimer = null;
+
 
   function persistGame() {
     if (game.history().length)
@@ -383,6 +386,20 @@ gameBuckets.forEach(bucket => {
     document.querySelectorAll('.overlay')
       .forEach(o=>o.style.display=showEval?'block':'none');
 
+	const overlays = document.querySelectorAll('.overlay');
+	const btn = document.getElementById('btnHideEval');
+	if (overlays.length === 0 && settings.topN > 0) {
+	  setTimeout(() => {
+		const delayedCheck = document.querySelectorAll('.overlay');
+		if (delayedCheck.length === 0) {
+		  evalRetries = 0;
+		  btn.innerText = 'Calc... 2x 6s';
+		  btn.style.background = '#9c27b0';
+		  startEvalRetry();
+		}
+	  }, 1500); // 1.5 seconds
+	}
+
     if (settings.nextDot) {
       const idx = game.history().length;
       if (idx < fullHistory.length) {
@@ -399,6 +416,28 @@ gameBuckets.forEach(bucket => {
       }
     }
   }
+  
+    /* ------------------------------------------------------------------
+     11.5 AUTO EVAL RETRY LOGIC (after badges fail to load)
+  ------------------------------------------------------------------*/
+  function startEvalRetry() {
+    evalRetryTimer = setInterval(() => {
+      evalRetries++;
+      fetchAnnotations();
+      const overlays = document.querySelectorAll('.overlay');
+      const btn = document.getElementById('btnHideEval');
+
+      if (overlays.length > 0) {
+        clearInterval(evalRetryTimer);
+        btn.innerText = 'Hide Eval';
+        btn.style.background = '';
+      } else if (evalRetries >= 2) { /* Two retries to get new eval scores if DB out of them */
+        clearInterval(evalRetryTimer);
+        btn.innerText = 'Try Later';
+      }
+    }, 6000);
+  }
+
 
   /* ------------------------------------------------------------------
      12. JUMP TO MOVE & NAV BUTTONS
@@ -411,15 +450,26 @@ gameBuckets.forEach(bucket => {
 
   ['first','prev','next','last'].forEach(id=>{
     document.getElementById(id).onclick=()=>{
+      const btn = document.getElementById('btnHideEval');
+      btn.innerText = 'Hide Eval';
+      btn.style.background = '';
+
       if(id==='first') jumpTo(0);
-      else if(id==='prev'){ game.undo(); updateBoard(false); }
+      else if(id==='prev'){
+        game.undo();
+        updateBoard(false);
+      }
       else if(id==='next'){
         const m=fullHistory[game.history().length];
-        if(m){ game.move(m.san); updateBoard(false); }
+        if(m){
+          game.move(m.san);
+          updateBoard(false);
+        }
       }
       else jumpTo(fullHistory.length-1);
     };
   });
+
 
   /* ------------------------------------------------------------------
      13. ROW 1  (Format | Input | Copy)
@@ -505,13 +555,15 @@ gameBuckets.forEach(bucket => {
   /* ------------------------------------------------------------------
      16. HIDE / SHOW EVAL
   ------------------------------------------------------------------*/
+
   document.getElementById('btnHideEval').onclick = () => {
-    showEval=!showEval;
-    document.getElementById('btnHideEval').innerText=
-      showEval?'Hide Eval':'Show Eval';
+    showEval = !showEval;
+    const label = showEval ? 'Hide<br>Eval' : 'Show<br>Eval';
+    document.getElementById('btnHideEval').innerHTML = label;
     document.querySelectorAll('.overlay')
-      .forEach(o=>o.style.display=showEval?'block':'none');
+      .forEach(o => o.style.display = showEval ? 'block' : 'none');
   };
+
 
   /* ------------------------------------------------------------------
      17. POPULAR GAME SELECT  (unchanged)
@@ -552,6 +604,9 @@ gameBuckets.forEach(bucket => {
   ------------------------------------------------------------------*/
   document.addEventListener('keydown',e=>{
     if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
+	const btn = document.getElementById('btnHideEval');
+	btn.innerText = 'Hide Eval';
+	btn.style.background = '';
     if(e.key==='ArrowLeft'){ game.undo(); updateBoard(false); }
     else if(e.key==='ArrowRight'){
       const m=fullHistory[game.history().length];
