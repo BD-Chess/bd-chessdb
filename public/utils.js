@@ -449,24 +449,31 @@ gameBuckets.forEach(bucket => {
     /* ------------------------------------------------------------------
      11.5 AUTO EVAL RETRY LOGIC (after badges fail to load)
   ------------------------------------------------------------------*/
-  function startEvalRetry() {
-    evalRetryTimer = setInterval(() => {
-      evalRetries++;
-      fetchAnnotations();
-      const overlays = document.querySelectorAll('.overlay');
-      const btn = document.getElementById('btnHideEval');
+function startEvalRetry() {
+  evalRetryTimer = setInterval(() => {
+    evalRetries++;
+    fetchAnnotations();
+    const overlays = document.querySelectorAll('.overlay');
+    const btn = document.getElementById('btnHideEval');
 
-      if (overlays.length > 0) {
-        clearInterval(evalRetryTimer);
+    if (overlays.length > 0) {
+      // Got annotations—stop retrying and reset button
+      clearInterval(evalRetryTimer);
+      btn.innerText = 'Hide Eval';
+      btn.style.background = '';
+    } else if (evalRetries >= 2) {  // Two retries exhausted
+      clearInterval(evalRetryTimer);
+      // Show “Try Later” for 3 seconds
+      btn.innerText = 'Try Later';
+      btn.style.background = '#9c27b0';
+      setTimeout(() => {
+        // Revert back to default
         btn.innerText = 'Hide Eval';
         btn.style.background = '';
-      } else if (evalRetries >= 2) { /* Two retries to get new eval scores if DB out of them */
-        clearInterval(evalRetryTimer);
-        btn.innerText = 'Try Later';
-      }
-    }, 6000);
-  }
-
+      }, 3000);
+    }
+  }, 6000);
+}
 
   /* ------------------------------------------------------------------
      12. JUMP TO MOVE & NAV BUTTONS
