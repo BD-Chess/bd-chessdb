@@ -177,11 +177,11 @@ gameBuckets.forEach(bucket => {
   ------------------------------------------------------------------*/
   function applySettings() {
     /* theme */
-    document.body.classList.toggle('light-theme', settings.theme === 'light');
-    document.getElementById('btnTheme').innerText =
-      settings.theme === 'light' ? 'Theme D' : 'Theme L';
-    document.body.style.background =
-      settings.theme === 'dark' ? settings.bg : '';
+	document.body.classList.toggle('light-theme', settings.theme === 'light');
+	// sync the Settings-panel checkbox
+	document.getElementById('settingTheme').checked = (settings.theme === 'light');
+	document.body.style.background =
+	  settings.theme === 'dark' ? settings.bg : '';
 	  
 	/* board orientation */
 	board.orientation(settings.flipBoard ? 'black' : 'white');
@@ -238,7 +238,7 @@ gameBuckets.forEach(bucket => {
 		  const m = line.match(/move:(\w+),score:([-\d\?]+),rank:(\d+),/);
 		  if (!m || m[2] === '??') return null;
 		  const score = parseInt(m[2], 10), rank = parseInt(m[3], 10);
-		  if (isNaN(score) || (score <= -500 && rank < 2)) return null;
+		  if (isNaN(score) || (score <= -999 && rank < 2)) return null;
 		  return { move: m[1], score, rank };
 		}).filter(Boolean);
 	  }
@@ -556,10 +556,13 @@ gameBuckets.forEach(bucket => {
     document.getElementById('popularGamesPanel')
       .classList.toggle('open');
 
-  document.getElementById('btnTheme').onclick = () => {
-    settings.theme=settings.theme==='light'?'dark':'light';
-    saveSettings(); applySettings();
-  };
+	document.getElementById('btnFlip').onclick = () => {
+	  settings.flipBoard = !settings.flipBoard;
+	  saveSettings();
+	  applySettings();
+	  updateBoard(false);
+	};
+
 
   document.getElementById('btnSettings').onclick = () =>
     document.getElementById('settingsPanel')
@@ -575,6 +578,12 @@ gameBuckets.forEach(bucket => {
     document.getElementById('btnHideEval').innerHTML = label;
     document.querySelectorAll('.overlay')
       .forEach(o => o.style.display = showEval ? 'block' : 'none');
+	// also hide/show next-move dots when previews are on
+    if (settings.nextDot) {
+      document.querySelectorAll('.next-dot')
+        .forEach(d => d.style.display = showEval ? 'block' : 'none');
+  }
+
   };
 
 
@@ -587,9 +596,9 @@ gameBuckets.forEach(bucket => {
      18. SETTINGS PANEL HANDLERS  (unchanged)
   ------------------------------------------------------------------*/
   [
-    'settingFlipBoard','settingTopN','settingHistorySize','settingBg','settingFont',
+	'settingTopN','settingHistorySize','settingBg','settingFont',
     'settingNotation','settingPieceSize','settingBoardSize',
-    'settingCoords','settingNextDot'
+    'settingCoords','settingNextDot','settingTheme'
   ].forEach(id=>{
     document.getElementById(id).onchange=e=>{
       switch(id){
@@ -604,7 +613,9 @@ gameBuckets.forEach(bucket => {
         case 'settingBoardSize':   settings.boardSize=e.target.value; break;
         case 'settingCoords':      settings.coords=e.target.checked; break;
         case 'settingNextDot':     settings.nextDot=e.target.checked; break;
-		case 'settingFlipBoard':   settings.flipBoard = e.target.checked; break;
+		case 'settingTheme':
+		  settings.theme = e.target.checked ? 'light' : 'dark';
+		  break;
       }
       saveSettings();
       applySettings();
