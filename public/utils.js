@@ -238,7 +238,7 @@ gameBuckets.forEach(bucket => {
 		  const m = line.match(/move:(\w+),score:([-\d\?]+),rank:(\d+),/);
 		  if (!m || m[2] === '??') return null;
 		  const score = parseInt(m[2], 10), rank = parseInt(m[3], 10);
-		  if (isNaN(score) || (score <= -100 && rank < 2)) return null;
+		  if (isNaN(score) || (score <= -500 && rank < 2)) return null;
 		  return { move: m[1], score, rank };
 		}).filter(Boolean);
 	  }
@@ -293,6 +293,15 @@ gameBuckets.forEach(bucket => {
     const sq   = move.slice(-2);
     const cell = document.querySelector(`.square-${sq}`);
     if (!cell) return;
+
+	// if there’s already an overlay here, keep only the higher score
+	const newScore = parseInt(score, 10);
+	const existingOv = cell.querySelector('.overlay');
+	if (existingOv) {
+	  const oldScore = parseInt(existingOv.innerText.replace('+',''), 10);
+	  if (oldScore >= newScore) return;  // skip this weaker/duplicate badge
+	  existingOv.remove();              // remove the old, keep going to draw new
+	}
 
     const ov  = document.createElement('div');
     const num = parseInt(score, 10);
