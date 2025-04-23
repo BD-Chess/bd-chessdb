@@ -415,7 +415,7 @@ gameBuckets.forEach(bucket => {
 			btn.style.background = '#9c27b0';
 			startEvalRetry();
 		  }
-		}, 2000);
+		}, 3000);
 	  }
 	} else {
 	  // keep badges hidden when eval is off
@@ -424,21 +424,26 @@ gameBuckets.forEach(bucket => {
 	}
 
 
-    if (settings.nextDot) {
-      const idx = game.history().length;
-      if (idx < fullHistory.length) {
-        const nm = fullHistory[idx];
-        ['to','from'].forEach(k=>{
-          const cell=document.querySelector(`.square-${nm[k]}`);
-          if(cell){
-            const d=document.createElement('div');
-            d.className='next-dot';
-            d.style.bottom='4px'; d.style.left='4px';
-            cell.appendChild(d);
-          }
-        });
-      }
-    }
+	// inside updateBoard(reset) in utils.js, replace the next-dot block with:
+
+	if (settings.nextDot && showEval) {
+	  const idx = game.history().length;
+	  if (idx < fullHistory.length) {
+		const nm = fullHistory[idx];
+		['to', 'from'].forEach(k => {
+		  const cell = document.querySelector(`.square-${nm[k]}`);
+		  if (cell) {
+			const d = document.createElement('div');
+			d.className = 'next-dot';
+			d.style.bottom = '4px';
+			d.style.left   = '4px';
+			cell.appendChild(d);
+		  }
+		});
+	  }
+	}
+
+	
   }
   
     /* ------------------------------------------------------------------
@@ -515,9 +520,30 @@ gameBuckets.forEach(bucket => {
     updateBoard(true);
   };
 
-  document.getElementById('btnCopy').onclick = () => {
-    copyText(settings.ioFormat==='fen' ? game.fen() : game.pgn());
-  };
+	// FEN + moves
+	document.getElementById('btnCopy').onclick = () => {
+	  if (settings.ioFormat === 'fen') {
+		// ChessDB style: initial position + full move list
+		const initialFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+		const moves = fullHistory.map(m => m.from + m.to).join(' ');
+		copyText(`${initialFen} moves ${moves}`);
+	  } else {
+		copyText(game.pgn());
+	  }
+	};
+
+  /*
+	// keep this in utils.js, same location
+	document.getElementById('btnCopy').onclick = () => {
+	  if (settings.ioFormat === 'fen') {
+		// serialize full move list as long-algebraic
+		const moves = fullHistory.map(m => m.from + m.to).join(' ');
+		copyText(`${game.fen()} moves ${moves}`);
+	  } else {
+		copyText(game.pgn());
+	  }
+	};
+*/
 
   /* ------------------------------------------------------------------
      14. ROW 2  (New | Save | Load)
@@ -557,29 +583,29 @@ gameBuckets.forEach(bucket => {
   };
 
   /* ------------------------------------------------------------------
-     15. ROW 3  (Games | Theme | Settings)
+     15. ROW 3  (Games | Theme | Settings)
   ------------------------------------------------------------------*/
   document.getElementById('btnGames').onclick = () =>
     document.getElementById('popularGamesPanel')
       .classList.toggle('open');
 
-	document.getElementById('btnFlip').onclick = () => {
-	  settings.flipBoard = !settings.flipBoard;
-	  saveSettings();
-	  applySettings();
-	  updateBoard(false);
-	};
-
+  document.getElementById('btnFlip').onclick = () => {
+    settings.flipBoard = !settings.flipBoard;
+    saveSettings();
+    applySettings();
+    updateBoard(false);
+  };
 
   document.getElementById('btnSettings').onclick = () =>
     document.getElementById('settingsPanel')
       .classList.toggle('open');
-	  
-	// Reset all settings back to defaults
-	document.getElementById('btnResetSettings').onclick = () => {
-	  localStorage.removeItem(STORAGE_KEY_SETTINGS);
-	  location.reload();
-	};
+
+  // Reset all settings back to defaults
+  document.getElementById('btnResetSettings').onclick = () => {
+    localStorage.removeItem(STORAGE_KEY_SETTINGS);
+    location.reload();
+  };
+
 	  
 
   /* ------------------------------------------------------------------
@@ -641,6 +667,14 @@ gameBuckets.forEach(bucket => {
         case 'settingNextDot':     settings.nextDot=e.target.checked; break;
 		case 'settingTheme':
 		  settings.theme = e.target.checked ? 'light' : 'dark';
+		  // auto-sync Main background to theme default
+		  if (settings.theme === 'light') {
+			settings.bg = '#ffffff';
+			document.getElementById('settingBg').value = '#ffffff';
+		  } else {
+			settings.bg = '#2e2e2e';
+			document.getElementById('settingBg').value = '#2e2e2e';
+		  }
 		  break;
       }
       saveSettings();
