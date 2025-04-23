@@ -67,6 +67,7 @@ body.light-theme #pageSubtitle {
   position: relative;
   touch-action: none;
 }
+
 #facts-link a {
   font-size: 0.9em;
   text-decoration: none;
@@ -113,6 +114,12 @@ body.light-theme #facts-link a {
 .square-55d63 {
   transition: transform 0.2s ease;
 }
+
+#board img {
+  width: calc(100% * var(--piece-scale)) !important;
+  height: auto                  !important;
+}
+
 
 /* Controls */
 #controls {
@@ -305,23 +312,29 @@ body {
     height: 90vw !important;
     margin: 0 auto;
   }
-#controls {
-  width: 100%;
-  max-width: 420px;
-  box-sizing: border-box;
-  margin: 0 auto;
-  padding: 0 10px;
-}
+
+  #controls {
+    width: 100%;
+    max-width: 420px;
+    box-sizing: border-box;
+    margin: 0 auto;
+    padding: 0 10px;
+  }
 
 }
+
 .mobile-only {
   display: none;
 }
 
-/* Fix overlay clipping on Safari: allow overflow on square cells */
+/* Fix overlay clipping on Safari + always center pieces */
 [class^="square-"] {
   overflow: visible !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
 }
+
 
 /* Next‑move dot: lighter gray with black border */
 .next-dot {
@@ -386,5 +399,40 @@ body {
   padding: 8px 12px;
   color: #222;
  }
+ 
+	 /* override the chessboard-1.0.0 default sizing & positioning */
+	#board .piece {
+	  position: absolute !important;
+	  top: 50%           !important;
+	  left: 50%          !important;
+	  transform: translate(-50%, -50%) scale(var(--piece-scale)) !important;
+	  transform-origin: center center !important;
+	}
+
+	/* ===== Center & scale pieces based on --piece-scale ===== */
+	#board .piece {
+	  position: absolute !important;
+	  top: 50%           !important;
+	  left: 50%          !important;
+	  transform: translate(-50%, -50%) scale(var(--piece-scale)) !important;
+	  transform-origin: center center !important;
+	  /* Ensure the image’s own sizing doesn’t override our scale: */
+	  width: auto       !important;
+	  height: auto      !important;
+	  max-width: none   !important;
+	}
+	
+	/* ensure piece images never distort and always fit their square */
+	.square-55d63 img,
+	#board img.piece {
+	  width: auto !important;
+	  height: auto !important;
+	  max-width: 100% !important;
+	  max-height: 100% !important;
+	  object-fit: contain;
+	  object-position: center;
+	}
+
+
  
 }

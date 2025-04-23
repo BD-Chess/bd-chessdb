@@ -12,12 +12,10 @@ function initAll() {
     topN: 5,
     bg: '#2e2e2e',
     notation: 'score',
-    coords: true,
     font: '14px',
     pieceSize: 'medium',
     /* historySize: 'small', */
     historySize: window.innerWidth <= 600 ? 'smallest' : 'small',
-    boardSize: 'medium',
     nextDot: true,     // show next‑move preview by default
     ioFormat: 'fen'    // NEW  (fen | pgn)  for Format / Input / Copy row
   };
@@ -61,9 +59,10 @@ function initAll() {
     { name: 'Bobby Fischer',         file: 'FischerB_Selected.pgn' },
     { name: 'José Raúl Capablanca',  file: 'CapablancaJ_Selected.pgn' },
     { name: 'Emanuel Lasker',        file: 'LaskerE_Selected.pgn' },
-    { name: 'Stockfish',             file: 'Stockfish_Selected.pgn' },
-    { name: 'TCEC Cup 14 (2024)',    file: 'TCEC_Cup14_WhiteWins_2024.pgn' },
-    { name: 'TCEC Season 27 (2022)', file: 'TCEC_Season27_BlackWins_2022.pgn' },
+    { name: 'Stockfish vs. other engines',   file: 'Stockfish_Selected.pgn' },
+    { name: 'TCEC Cup 14 SF vs Lc0 (2024)',  file: 'TCEC_Cup14_SF_vs_Lc0_2024.pgn' },
+    { name: 'TCEC S27 (2022) White Wins',    file: 'TCEC_Season27_WhiteWins_2022.pgn' },
+    { name: 'TCEC S27 (2022) Black Wins',    file: 'TCEC_Season27_BlackWins_2022.pgn' },
     { name: 'Various Games',         file: 'Various_Games.pgn' }
   ];
 
@@ -146,7 +145,6 @@ gameBuckets.forEach(bucket => {
   const board = Chessboard('board', {
     draggable: true,
     position : game.fen(),
-    showCoordinates: true,
     pieceTheme: 'img/chesspieces/wikipedia/{piece}.png',
     onDrop: (src, dst) => {
       const m = game.move({ from: src, to: dst, promotion: 'q' });
@@ -186,28 +184,32 @@ gameBuckets.forEach(bucket => {
 	/* board orientation */
 	board.orientation(settings.flipBoard ? 'black' : 'white');
 
-    /* board coords */
-    document.getElementById('board')
-      .parentElement.classList.toggle('no-coords', !settings.coords);
-
     /* CSS vars */
     document.documentElement.style.setProperty('--overlay-font', settings.font);
     document.documentElement.style.setProperty('--moves-font',  settings.font);
     document.documentElement.style.setProperty('--piece-scale',
       { small: .6, medium: .8, big: 1 }[settings.pieceSize]);
 
+
+	//— center all pieces based on the new scale
+	const boardEl = document.getElementById('board');
+	const squareW = boardEl.clientWidth / 8;
+	const scale   = { small: .6, medium: .8, big: 1 }[settings.pieceSize];
+	const offset  = (squareW * (1 - scale)) / 2;
+	document.querySelectorAll('#board img').forEach(img => {
+	  const m = img.style.transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
+	  if (!m) return;
+	  const tx = parseFloat(m[1]) + offset;
+	  const ty = parseFloat(m[2]) + offset;
+	  img.style.transform = `translate(${tx}px, ${ty}px)`;
+	});
+
+
     /* history height */
     document.getElementById('moves').style.height =
       { smallest: '60px', small:'140px', medium:'300px', big:'450px' }[settings.historySize];
 
 
-    /* board size (desktop) */
-    if (window.innerWidth > 600) {
-      const s = { small:360, medium:480, large:600 }[settings.boardSize];
-      const b = document.getElementById('board');
-      b.style.width  = s + 'px';
-      b.style.height = s + 'px';
-    }
 
     /* format toggle label:  "FEN | pgn"  or  "fen | PGN" 
     document.getElementById('btnFormat').innerText =
@@ -392,26 +394,35 @@ gameBuckets.forEach(bucket => {
     if (reset) fullHistory = game.history({ verbose:true });
     persistGame();
 
-    setTimeout(fetchAnnotations,0);
-    renderHistory();
-    highlightLast();
+	// always re-render history & highlight
+	renderHistory();
+	highlightLast();
 
-    document.querySelectorAll('.overlay')
-      .forEach(o=>o.style.display=showEval?'block':'none');
+	if (showEval) {
+	  // fetch only when eval is shown
+	  setTimeout(fetchAnnotations, 0);
+	  document.querySelectorAll('.overlay')
+		.forEach(o => o.style.display = 'block');
 
-	const overlays = document.querySelectorAll('.overlay');
-	const btn = document.getElementById('btnHideEval');
-	if (overlays.length === 0 && settings.topN > 0) {
-	  setTimeout(() => {
-		const delayedCheck = document.querySelectorAll('.overlay');
-		if (delayedCheck.length === 0) {
-		  evalRetries = 0;
-		  btn.innerText = 'Calc... 2x 6s';
-		  btn.style.background = '#9c27b0';
-		  startEvalRetry();
-		}
-	  }, 1500); // 1.5 seconds
+	  // retry logic when no badges
+	  const overlays = document.querySelectorAll('.overlay');
+	  const btn = document.getElementById('btnHideEval');
+	  if (overlays.length === 0 && settings.topN > 0) {
+		setTimeout(() => {
+		  if (document.querySelectorAll('.overlay').length === 0) {
+			evalRetries = 0;
+			btn.innerText = 'Calc... 2x 6s';
+			btn.style.background = '#9c27b0';
+			startEvalRetry();
+		  }
+		}, 2000);
+	  }
+	} else {
+	  // keep badges hidden when eval is off
+	  document.querySelectorAll('.overlay')
+		.forEach(o => o.style.display = 'none');
 	}
+
 
     if (settings.nextDot) {
       const idx = game.history().length;
@@ -463,10 +474,6 @@ gameBuckets.forEach(bucket => {
 
   ['first','prev','next','last'].forEach(id=>{
     document.getElementById(id).onclick=()=>{
-      const btn = document.getElementById('btnHideEval');
-      btn.innerText = 'Hide Eval';
-      btn.style.background = '';
-
       if(id==='first') jumpTo(0);
       else if(id==='prev'){
         game.undo();
@@ -567,24 +574,45 @@ gameBuckets.forEach(bucket => {
   document.getElementById('btnSettings').onclick = () =>
     document.getElementById('settingsPanel')
       .classList.toggle('open');
+	  
+	// Reset all settings back to defaults
+	document.getElementById('btnResetSettings').onclick = () => {
+	  localStorage.removeItem(STORAGE_KEY_SETTINGS);
+	  location.reload();
+	};
+	  
 
   /* ------------------------------------------------------------------
      16. HIDE / SHOW EVAL
   ------------------------------------------------------------------*/
 
-  document.getElementById('btnHideEval').onclick = () => {
-    showEval = !showEval;
-    const label = showEval ? 'Hide<br>Eval' : 'Show<br>Eval';
-    document.getElementById('btnHideEval').innerHTML = label;
-    document.querySelectorAll('.overlay')
-      .forEach(o => o.style.display = showEval ? 'block' : 'none');
-	// also hide/show next-move dots when previews are on
-    if (settings.nextDot) {
-      document.querySelectorAll('.next-dot')
-        .forEach(d => d.style.display = showEval ? 'block' : 'none');
-  }
+	document.getElementById('btnHideEval').onclick = () => {
+	  showEval = !showEval;
+	  // cancel any pending retries when hiding
+	  if (!showEval && evalRetryTimer) clearInterval(evalRetryTimer);
+	  const label = showEval ? 'Hide<br>Eval' : 'Show<br>Eval';
+	  document.getElementById('btnHideEval').innerHTML = label;
+	  // only fetch & show badges when visible
+	  if (showEval) {
+		setTimeout(fetchAnnotations, 0);
+		document.querySelectorAll('.overlay')
+		  .forEach(o => o.style.display = 'block');
+	  } else {
+		document.querySelectorAll('.overlay')
+		  .forEach(o => o.style.display = 'none');
+	  }
+	  // keep next-move dots in sync
+	  if (settings.nextDot) {
+		document.querySelectorAll('.next-dot')
+		  .forEach(d => d.style.display = showEval ? 'block' : 'none');
+	  }
+	};
+	
+	// initialize the Hide/Show label on page load
+	document.getElementById('btnHideEval').innerHTML =
+		showEval ? 'Hide<br>Eval' : 'Show<br>Eval';
 
-  };
+
 
 
   /* ------------------------------------------------------------------
@@ -597,8 +625,8 @@ gameBuckets.forEach(bucket => {
   ------------------------------------------------------------------*/
   [
 	'settingTopN','settingHistorySize','settingBg','settingFont',
-    'settingNotation','settingPieceSize','settingBoardSize',
-    'settingCoords','settingNextDot','settingTheme'
+    'settingNotation','settingPieceSize',
+    'settingNextDot','settingTheme'
   ].forEach(id=>{
     document.getElementById(id).onchange=e=>{
       switch(id){
@@ -610,8 +638,6 @@ gameBuckets.forEach(bucket => {
         case 'settingFont':        settings.font=e.target.value; break;
         case 'settingNotation':    settings.notation=e.target.value; break;
         case 'settingPieceSize':   settings.pieceSize=e.target.value; break;
-        case 'settingBoardSize':   settings.boardSize=e.target.value; break;
-        case 'settingCoords':      settings.coords=e.target.checked; break;
         case 'settingNextDot':     settings.nextDot=e.target.checked; break;
 		case 'settingTheme':
 		  settings.theme = e.target.checked ? 'light' : 'dark';
