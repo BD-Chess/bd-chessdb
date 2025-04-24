@@ -6,6 +6,10 @@ function initAll() {
      1. DEFAULT SETTINGS
   ------------------------------------------------------------------*/
   const settings = {
+	drawDelay: 5000,
+    badgeInitialDelay: 4000,
+    retryInterval: 6000,
+    tryLaterDuration: 3000,
 	evalMode: 'direct',
 	flipBoard: false,
     theme: 'dark',
@@ -201,12 +205,9 @@ gameBuckets.forEach(bucket => {
 	  img.style.transform = `translate(${tx}px, ${ty}px)`;
 	});
 
-
     /* history height */
     document.getElementById('moves').style.height =
       { smallest: '60px', small:'140px', medium:'300px', big:'450px' }[settings.historySize];
-
-
 
     /* format toggle label:  "FEN | pgn"  or  "fen | PGN" 
     document.getElementById('btnFormat').innerText =
@@ -223,6 +224,10 @@ gameBuckets.forEach(bucket => {
         ? '<strong>FEN</strong>|pgn'
         : '<strong>PGN</strong>|fen';
 
+    document.getElementById('settingDrawDelay').value         = settings.drawDelay;
+    document.getElementById('settingBadgeInitialDelay').value = settings.badgeInitialDelay;
+    document.getElementById('settingRetryInterval').value     = settings.retryInterval;
+    document.getElementById('settingTryLaterDuration').value  = settings.tryLaterDuration;
 
   }
 
@@ -456,7 +461,7 @@ gameBuckets.forEach(bucket => {
 			titleEl.innerHTML = window.prevGameTitle;
 			window.prevGameTitle = null;
 			window.drawBannerTimeoutId = null;
-		  }, 3333);
+		  }, settings.drawDelay);
 		}
 	  }
 	  // ──────────────────────────────────────────────────────────────────
@@ -475,7 +480,7 @@ gameBuckets.forEach(bucket => {
 			  btn.style.background = '#9c27b0';
 			  startEvalRetry();
 			}
-		  }, 4000);
+		  }, settings.badgeInitialDelay);
 		}
 	  } else {
 		document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none');
@@ -525,9 +530,9 @@ function startEvalRetry() {
         // Revert back to default
         btn.innerText = 'Hide Eval';
         btn.style.background = '';
-      }, 3000);
+      }, settings.tryLaterDuration);
     }
-  }, 6000);
+  }, settings.retryInterval);
 }
 
   /* ------------------------------------------------------------------
@@ -703,49 +708,79 @@ function startEvalRetry() {
 		showEval ? 'Hide<br>Eval' : 'Show<br>Eval';
 
 
-
-
-  /* ------------------------------------------------------------------
-     17. POPULAR GAME SELECT  (unchanged)
-  ------------------------------------------------------------------*/
-
-
-  /* ------------------------------------------------------------------
-     18. SETTINGS PANEL HANDLERS  (unchanged)
-  ------------------------------------------------------------------*/
-  [
-	'settingTopN','settingHistorySize','settingBg','settingFont',
-    'settingNotation','settingPieceSize',
-    'settingNextDot','settingTheme'
-  ].forEach(id=>{
-    document.getElementById(id).onchange=e=>{
-      switch(id){
-        case 'settingTopN':
-          settings.topN = e.target.value==='all'
-            ? Infinity : parseInt(e.target.value,10); break;
-        case 'settingHistorySize': settings.historySize=e.target.value; break;
-        case 'settingBg':          settings.bg=e.target.value; break;
-        case 'settingFont':        settings.font=e.target.value; break;
-        case 'settingNotation':    settings.notation=e.target.value; break;
-        case 'settingPieceSize':   settings.pieceSize=e.target.value; break;
-        case 'settingNextDot':     settings.nextDot=e.target.checked; break;
-		case 'settingTheme':
-		  settings.theme = e.target.checked ? 'light' : 'dark';
-		  // auto-sync Main background to theme default
-		  if (settings.theme === 'light') {
-			settings.bg = '#ffffff';
-			document.getElementById('settingBg').value = '#ffffff';
-		  } else {
-			settings.bg = '#2e2e2e';
-			document.getElementById('settingBg').value = '#2e2e2e';
-		  }
-		  break;
-      }
-      saveSettings();
-      applySettings();
-      updateBoard(false);
-    };
-  });
+ /* ------------------------------------------------------------------
+    18. SETTINGS PANEL HANDLERS  (updated to include delay settings)
+ ------------------------------------------------------------------*/
+	[
+	  'settingTopN',
+	  'settingHistorySize',
+	  'settingBg',
+	  'settingFont',
+	  'settingNotation',
+	  'settingPieceSize',
+	  'settingNextDot',
+	  'settingTheme',
+	  'settingDrawDelay',
+	  'settingBadgeInitialDelay',
+	  'settingRetryInterval',
+	  'settingTryLaterDuration'
+	].forEach(id => {
+	  document.getElementById(id).onchange = e => {
+		switch (id) {
+		  case 'settingTopN':
+			settings.topN = e.target.value === 'all'
+			  ? Infinity
+			  : parseInt(e.target.value, 10);
+			break;
+		  case 'settingHistorySize':
+			settings.historySize = e.target.value;
+			break;
+		  case 'settingBg':
+			settings.bg = e.target.value;
+			break;
+		  case 'settingFont':
+			settings.font = e.target.value;
+			break;
+		  case 'settingNotation':
+			settings.notation = e.target.value;
+			break;
+		  case 'settingPieceSize':
+			settings.pieceSize = e.target.value;
+			break;
+		  case 'settingNextDot':
+			settings.nextDot = e.target.checked;
+			break;
+		  case 'settingTheme':
+			settings.theme = e.target.checked ? 'light' : 'dark';
+			// auto-sync Main background to theme default
+			if (settings.theme === 'light') {
+			  settings.bg = '#ffffff';
+			  document.getElementById('settingBg').value = '#ffffff';
+			} else {
+			  settings.bg = '#2e2e2e';
+			  document.getElementById('settingBg').value = '#2e2e2e';
+			}
+			break;
+		  // ─── New delay settings ───
+		  case 'settingDrawDelay':
+			settings.drawDelay = parseInt(e.target.value, 10) || 0;
+			break;
+		  case 'settingBadgeInitialDelay':
+			settings.badgeInitialDelay = parseInt(e.target.value, 10) || 0;
+			break;
+		  case 'settingRetryInterval':
+			settings.retryInterval = parseInt(e.target.value, 10) || 0;
+			break;
+		  case 'settingTryLaterDuration':
+			settings.tryLaterDuration = parseInt(e.target.value, 10) || 0;
+			break;
+		  // ────────────────────────────
+		}
+		saveSettings();
+		applySettings();
+		updateBoard(false);
+	  };
+	});
 
   /* ------------------------------------------------------------------
      19. KEYBOARD NAVIGATION  (unchanged)
