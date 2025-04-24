@@ -24,6 +24,10 @@ function initAll() {
     ioFormat: 'fen'    // NEW  (fen | pgn)  for Format / Input / Copy row
   };
 
+  // ─── Track the most-recently loaded PGN and current move index ───
+  let lastLoadedPGN = null;
+  let lastMoveIndex  = -1;
+
   /* ------------------------------------------------------------------
      2. LOAD SAVED SETTINGS
   ------------------------------------------------------------------*/
@@ -112,12 +116,17 @@ gameBuckets.forEach(bucket => {
   // 3) Wire up load-on-change
 	sel.onchange = e => {
 	  if (!e.target.value) return;
+      // remember this PGN and reset
+      lastLoadedPGN = e.target.value;	  
+	  divergedIndex = -1;
 	  const title = e.target.selectedOptions[0].text;
 	  game.reset();
 	  game.load_pgn(e.target.value);
 	  // set title before update so draw banner isn’t overwritten
 	  document.getElementById('gameTitle').innerHTML = title;
 	  updateBoard(true);
+      // record where we are now
+      lastMoveIndex = game.history().length - 1;
 	  fetchAnnotations();
 	  panel.classList.remove('open');
 	  document.getElementById('main').scrollIntoView({
@@ -147,18 +156,39 @@ gameBuckets.forEach(bucket => {
     draggable: true,
     position : game.fen(),
     pieceTheme: 'img/chesspieces/wikipedia/{piece}.png',
-    onDrop: (src, dst) => {
-      const m = game.move({ from: src, to: dst, promotion: 'q' });
-      if (!m) return 'snapback';
-      updateBoard(true);
-    }
+	
+	onDrop: (src, dst) => {
+	  // Check before the move is made
+	  const curBefore = game.history().map(x => x.san);
+	  const refBefore = fullHistory.map(x => x.san).slice(0, curBefore.length + 1);
+
+	  // Make the move
+	  const m = game.move({ from: src, to: dst, promotion: 'q' });
+	  if (!m) return 'snapback';
+
+	  // Check if new move breaks the PGN history
+	  const curAfter = game.history().map(x => x.san);
+	  const refAfter = fullHistory.map(x => x.san).slice(0, curAfter.length);
+		if (JSON.stringify(curAfter) !== JSON.stringify(refAfter) && branchIndex < 0) {
+		  branchIndex = curBefore.length - 1;
+		}
+
+	lastAction = 'move';
+	window._skipDivergedReset = true;
+	updateBoard(false);
+
+	}
+
   });
 
   /* ------------------------------------------------------------------
      7. STATE
   ------------------------------------------------------------------*/
   let fullHistory   = [];
+  let branchIndex = -1;  // move number of first off-PGN branch
   let prevHighlight = [];
+  let divergedIndex = -1;  // NEW: index of divergence from PGN history
+  let lastAction = null;
   let showEval      = true;
   let evalRetries = 0;
   let evalRetryTimer = null;
@@ -324,11 +354,29 @@ gameBuckets.forEach(bucket => {
     ov.innerText = settings.notation==='dot' ? '•' : num>0?`+${num}`:num;
     ov.className = best ? 'overlay best'
                         : `overlay ${num>0?'positive':num<0?'negative':'zero'}`;
-    ov.onclick = e => {
-      e.stopPropagation();
-      game.move({ from: move.slice(0,2), to: sq, promotion:'q' });
-      updateBoard(true);
-    };
+	ov.onclick = e => {
+	  e.stopPropagation();
+	  // Capture the position before branching
+	  const curBefore = game.history().map(x => x.san);
+	  const refBefore = fullHistory.map(x => x.san).slice(0, curBefore.length + 1);
+
+	  // Execute the move
+	  const m = game.move({ from: move.slice(0,2), to: sq, promotion: 'q' });
+	  if (m) {
+		// Compare to the original PGN path
+		const curAfter = game.history().map(x => x.san);
+		const refAfter = fullHistory.map(x => x.san).slice(0, curAfter.length);
+		if (JSON.stringify(curAfter) !== JSON.stringify(refAfter) && branchIndex < 0) {
+		  branchIndex = curBefore.length - 1;
+		}
+
+	  }
+
+  	  lastAction = 'move';
+	  window._skipDivergedReset = true;
+	  updateBoard(false);
+	};
+
     cell.appendChild(ov);
     // if badges arrive after “Try Later”, flip the button back
     const btn = document.getElementById('btnHideEval');
@@ -373,7 +421,16 @@ gameBuckets.forEach(bucket => {
         td.className='move';
         if(mv){
           td.onclick=()=>jumpTo(p[`i${col}`]);
-          if(p[`i${col}`]===cur) td.classList.add('current');
+          if (p[`i${col}`] === cur) td.classList.add('current');
+		  if (
+		    divergedIndex >= 0 &&
+		    // only highlight once current history index ≥ divergence index
+		    (game.history().length - 1) >= divergedIndex &&
+		    p[`i${col}`] === divergedIndex
+		  ) {
+		    td.classList.add('diverged');
+		  }
+
         }
         tr.appendChild(td);
       });
@@ -414,13 +471,67 @@ gameBuckets.forEach(bucket => {
 
 	  board.position(game.fen());
 	  document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
+	  
+		if (reset) {
+		  // only reload original PGN on a true reset
+		  if (!window._skipDivergedReset) {
+			fullHistory = game.history({ verbose: true });
+			divergedIndex = -1;
+		  }
+		  // clear the skip-reset flag for next time
+		  window._skipDivergedReset = false;
+		}
 
-	  if (reset) fullHistory = game.history({ verbose: true });
 	  persistGame();
+	  
+	  // ─── HISTORY-CLICK REBRANCH ───────────────────────────────────────────
+	  if (!reset && lastAction === 'history' && divergedIndex >= 0) {
+	    const clickedIndex = game.history().length - 1;
+	    if (clickedIndex < divergedIndex) {
+	      divergedIndex = clickedIndex;
+	      fullHistory = game.history({ verbose: true });
+	    }
+	  }
+	  // ────────────────────────────────────────────────────────────────────────
 
-	  // always re-render history & highlight
-	  renderHistory();
-	  highlightLast();
+    // ─── HISTORY-NAV RE-BRANCHING ───────────────────────────────
+    if (!reset && lastAction === 'history' && divergedIndex >= 0) {
+      const clickedIndex = game.history().length - 1;
+      // if user jumped back before the old branch point → start a new branch there
+      if (clickedIndex < divergedIndex) {
+        divergedIndex = clickedIndex;
+        fullHistory = game.history({ verbose: true });
+      }
+    }
+    // ───────────────────────────────────────────────────────────────
+
+    // ─── Combined branching & history update ───
+    if (!reset && lastAction === 'move') {
+      const cur = game.history().map(x => x.san);
+      const ref = fullHistory.map(x => x.san).slice(0, cur.length);
+      // record the first branch point
+      if (JSON.stringify(cur) !== JSON.stringify(ref) && divergedIndex < 0) {
+        divergedIndex = cur.length - 1;
+      }
+      // always rebuild history to include the new move
+      fullHistory = game.history({ verbose: true });
+      if (!window._skipDivergedReset) {
+        branchIndex = -1;
+      }
+    }
+    // clear the action flag
+    lastAction = null;
+
+	// always re-render history & highlight
+	renderHistory();
+	highlightLast();
+	  
+	  // record current move index for the “return to last spot” link
+	  if (!reset) {
+	    lastMoveIndex = game.history().length - 1;
+	  }
+
+
 
 	// ─── Draw‐detection banner (use custom threefold check) ──────────────────────────────────
 	{
@@ -556,11 +667,12 @@ function startEvalRetry() {
   /* ------------------------------------------------------------------
      12. JUMP TO MOVE & NAV BUTTONS
   ------------------------------------------------------------------*/
-  function jumpTo(i){
-    game.reset();
-    fullHistory.forEach((m,idx)=>{ if(idx<=i) game.move(m.san); });
-    updateBoard(false);
-  }
+function jumpTo(i){
+  game.reset();
+  fullHistory.forEach((m,idx)=>{ if(idx<=i) game.move(m.san); });
+  lastAction = 'history';
+  updateBoard(false);
+}
 
   ['first','prev','next','last'].forEach(id=>{
     document.getElementById(id).onclick=()=>{
@@ -635,6 +747,7 @@ function startEvalRetry() {
   ------------------------------------------------------------------*/
 
   document.getElementById('btnNew').onclick = () => {
+	divergedIndex = -1;
     game.reset();
     updateBoard(true);
     // reset title to the original placeholder
@@ -658,11 +771,15 @@ function startEvalRetry() {
 	  if (!file) return;
 	  const reader = new FileReader();
 	  reader.onload = evt => {
-		game.load_pgn(evt.target.result);
-		// set the title before updating the board so draw banners aren’t overwritten
-		document.getElementById('gameTitle').innerText = file.name;
-		updateBoard(true);
-		fetchAnnotations();
+		  // remember this PGN blob
+		  lastLoadedPGN = evt.target.result;
+		  divergedIndex = -1;
+		  game.load_pgn(evt.target.result);
+		  document.getElementById('gameTitle').innerText = file.name;
+		  updateBoard(true);
+		  // record which move we landed on
+		  lastMoveIndex = game.history().length - 1;
+		  fetchAnnotations();
 	  };
 	  reader.readAsText(file);
 	  e.target.value = '';
@@ -821,6 +938,19 @@ function startEvalRetry() {
   ------------------------------------------------------------------*/
   applySettings();
   updateBoard(true);
+  
+  // ─── Clickable title: reload last PGN and jump back ───
+  const titleEl = document.getElementById('gameTitle');
+  titleEl.style.cursor = 'pointer';
+  titleEl.onclick = () => {
+    if (!lastLoadedPGN) return;
+    game.reset();
+    game.load_pgn(lastLoadedPGN);
+    divergedIndex = -1;  // clear highlight
+    updateBoard(true);
+    if (lastMoveIndex >= 0) jumpTo(lastMoveIndex);
+  };
+  
 }
 
 /* ------------------------------------------------------------------
