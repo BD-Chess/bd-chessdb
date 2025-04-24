@@ -422,49 +422,67 @@ gameBuckets.forEach(bucket => {
 	  renderHistory();
 	  highlightLast();
 
-	  // ─── Draw‐detection banner ────────────────────────────────────────
-	  {
-		const titleEl = document.getElementById('gameTitle');
-		const prevTitle = window.prevGameTitle || titleEl.innerHTML;
-		let drawMsg = null;
+	// ─── Draw‐detection banner (use custom threefold check) ──────────────────────────────────
+	{
+	  const titleEl   = document.getElementById('gameTitle');
+	  const prevTitle = window.prevGameTitle || titleEl.innerHTML;
+	  let   drawMsg   = null;
 
-		// 1) Stalemate
-		if (game.in_stalemate && game.in_stalemate()) {
-		  drawMsg = 'Draw — stalemate';
-		}
-		// 2) Insufficient material
-		else if (game.insufficient_material && game.insufficient_material()) {
-		  drawMsg = 'Draw — insufficient material';
-		}
-		// 3) Threefold repetition
-		else if (game.in_threefold_repetition && game.in_threefold_repetition()) {
+	  // 1) Insufficient material
+	  if (game.insufficient_material && game.insufficient_material()) {
+		drawMsg = 'Draw — insufficient material';
+	  }
+	  // 2) Stalemate
+	  else if (game.in_stalemate && game.in_stalemate()) {
+		drawMsg = 'Draw — stalemate';
+	  }
+	  // 3) Three-fold repetition (custom)
+	  else {
+		// build a list of FEN signatures (fields 0–3) from initial position through every move
+		const hist    = game.history();              // array of SAN strings
+		const clone   = new Chess();                  // fresh board
+		const sigs    = [ clone.fen().split(' ').slice(0,4).join(' ') ];
+		hist.forEach(move => {
+		  clone.move(move);
+		  sigs.push(clone.fen().split(' ').slice(0,4).join(' '));
+		});
+		const curSig  = sigs[sigs.length - 1];
+		const count   = sigs.filter(s => s === curSig).length;
+		if (count >= 3) {
 		  drawMsg = 'Draw — threefold repetition';
 		}
-		// 4) Fifty-move rule (halfmove clock ≥ 100)
+		// 4) Fifty-move rule
 		else {
-		  const halfmoveClock = parseInt(game.fen().split(' ')[4], 10);
-		  if (halfmoveClock >= 100) {
+		  const halfmoves =
+			typeof game._half_moves === 'number'
+			  ? game._half_moves
+			  : parseInt(game.fen().split(' ')[4], 10);
+		  if (halfmoves >= 100) {
 			drawMsg = 'Draw — fifty-move rule';
 		  }
 		}
-		// 5) (Optional) Draw by agreement
-		// if (drawByAgreementFlag) drawMsg = 'Draw — by agreement';
-
-		if (drawMsg) {
-		  if (window.drawBannerTimeoutId) {
-			clearTimeout(window.drawBannerTimeoutId);
-			window.drawBannerTimeoutId = null;
-		  }
-		  window.prevGameTitle = prevTitle;
-		  titleEl.innerHTML = drawMsg;
-		  window.drawBannerTimeoutId = setTimeout(() => {
-			titleEl.innerHTML = window.prevGameTitle;
-			window.prevGameTitle = null;
-			window.drawBannerTimeoutId = null;
-		  }, settings.drawDelay);
-		}
 	  }
-	  // ──────────────────────────────────────────────────────────────────
+
+	  if (drawMsg) {
+		// clear any pending banner
+		if (window.drawBannerTimeoutId) {
+		  clearTimeout(window.drawBannerTimeoutId);
+		  window.drawBannerTimeoutId = null;
+		}
+		// show the message, then restore the title
+		window.prevGameTitle      = prevTitle;
+		titleEl.innerHTML         = drawMsg;
+		window.drawBannerTimeoutId = setTimeout(() => {
+		  titleEl.innerHTML         = window.prevGameTitle;
+		  window.prevGameTitle      = null;
+		  window.drawBannerTimeoutId = null;
+		}, settings.drawDelay);
+	  }
+	}
+	// ───────────────────────────────────────────────────────────────────────────────────────────
+
+
+
 
 	  if (showEval) {
 		setTimeout(fetchAnnotations, 0);
