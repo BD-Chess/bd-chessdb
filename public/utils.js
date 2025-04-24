@@ -411,6 +411,49 @@ gameBuckets.forEach(bucket => {
 	renderHistory();
 	highlightLast();
 
+	// ─── Draw‐detection banner ────────────────────────────────────────
+	{
+	  const titleEl = document.getElementById('gameTitle');
+	  const prevTitle = titleEl.innerHTML;
+
+	  let drawMsg = null;
+
+	  // 1) Stalemate
+	  if (typeof game.in_stalemate === 'function' && game.in_stalemate()) {
+		drawMsg = 'Draw — stalemate';
+
+	  // 2) Insufficient material
+	  } else if (typeof game.insufficient_material === 'function'
+				 && game.insufficient_material()) {
+		drawMsg = 'Draw — insufficient material';
+
+	  // 3) Threefold repetition
+	  } else if (typeof game.in_threefold_repetition === 'function'
+				 && game.in_threefold_repetition()) {
+		drawMsg = 'Draw — threefold repetition';
+
+	  // 4) Fifty‐move rule (halfmove clock ≥ 100)
+	  } else {
+		// The halfmove clock is the 5th field of the FEN string
+		const halfmoveClock = parseInt(game.fen().split(' ')[4], 10);
+		if (halfmoveClock >= 100) {
+		  drawMsg = 'Draw — fifty-move rule';
+		}
+	  }
+
+	  // 5) (Optional) Draw by agreement
+	  // if (drawByAgreementFlag) drawMsg = 'Draw — by agreement';
+
+	  if (drawMsg) {
+		titleEl.innerHTML = drawMsg;
+		setTimeout(() => {
+		  titleEl.innerHTML = prevTitle;
+		}, 10000);
+	  }
+	}
+	// ──────────────────────────────────────────────────────────────────
+
+
 	if (showEval) {
 	  // fetch only when eval is shown
 	  setTimeout(fetchAnnotations, 0);
@@ -456,7 +499,6 @@ gameBuckets.forEach(bucket => {
 	  }
 	}
 
-	
   }
   
     /* ------------------------------------------------------------------
