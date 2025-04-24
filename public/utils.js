@@ -415,7 +415,7 @@ gameBuckets.forEach(bucket => {
 			btn.style.background = '#9c27b0';
 			startEvalRetry();
 		  }
-		}, 5000);
+		}, 4000);
 	  }
 	} else {
 	  // keep badges hidden when eval is off
