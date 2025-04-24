@@ -106,28 +106,24 @@ gameBuckets.forEach(bucket => {
     .catch(console.error);
 
   // 3) Wire up load-on-change
-  sel.onchange = e => {
-    if (!e.target.value) return;       // ignore the disabled placeholder
-    game.reset();
-    game.load_pgn(e.target.value);
-    updateBoard(true);
-	fetchAnnotations();
-    document.getElementById('gameTitle').innerHTML =
-      e.target.selectedOptions[0].text;
-    panel.classList.remove('open');
-
-    document.getElementById('main').scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-
-    // window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    sel.selectedIndex = 0;
-  };
+	sel.onchange = e => {
+	  if (!e.target.value) return;
+	  const title = e.target.selectedOptions[0].text;
+	  game.reset();
+	  game.load_pgn(e.target.value);
+	  // set title before update so draw banner isn’t overwritten
+	  document.getElementById('gameTitle').innerHTML = title;
+	  updateBoard(true);
+	  fetchAnnotations();
+	  panel.classList.remove('open');
+	  document.getElementById('main').scrollIntoView({
+		behavior: 'smooth',
+		block: 'start'
+	  });
+	  sel.selectedIndex = 0;
+	};
+  
 });
-
-
 
 
   /* ------------------------------------------------------------------
@@ -400,106 +396,110 @@ gameBuckets.forEach(bucket => {
   /* ------------------------------------------------------------------
      11. UPDATE BOARD
   ------------------------------------------------------------------*/
-  function updateBoard(reset) {
-    board.position(game.fen());
-    document.querySelectorAll('.overlay,.next-dot').forEach(el=>el.remove());
-
-    if (reset) fullHistory = game.history({ verbose:true });
-    persistGame();
-
-	// always re-render history & highlight
-	renderHistory();
-	highlightLast();
-
-	// ─── Draw‐detection banner ────────────────────────────────────────
-	{
-	  const titleEl = document.getElementById('gameTitle');
-	  const prevTitle = titleEl.innerHTML;
-
-	  let drawMsg = null;
-
-	  // 1) Stalemate
-	  if (typeof game.in_stalemate === 'function' && game.in_stalemate()) {
-		drawMsg = 'Draw — stalemate';
-
-	  // 2) Insufficient material
-	  } else if (typeof game.insufficient_material === 'function'
-				 && game.insufficient_material()) {
-		drawMsg = 'Draw — insufficient material';
-
-	  // 3) Threefold repetition
-	  } else if (typeof game.in_threefold_repetition === 'function'
-				 && game.in_threefold_repetition()) {
-		drawMsg = 'Draw — threefold repetition';
-
-	  // 4) Fifty‐move rule (halfmove clock ≥ 100)
-	  } else {
-		// The halfmove clock is the 5th field of the FEN string
-		const halfmoveClock = parseInt(game.fen().split(' ')[4], 10);
-		if (halfmoveClock >= 100) {
-		  drawMsg = 'Draw — fifty-move rule';
+	function updateBoard(reset) {
+	  // — Cancel any pending draw banner if we move again —
+	  if (window.drawBannerTimeoutId) {
+		clearTimeout(window.drawBannerTimeoutId);
+		window.drawBannerTimeoutId = null;
+		if (window.prevGameTitle) {
+		  document.getElementById('gameTitle').innerHTML = window.prevGameTitle;
+		  window.prevGameTitle = null;
 		}
 	  }
 
-	  // 5) (Optional) Draw by agreement
-	  // if (drawByAgreementFlag) drawMsg = 'Draw — by agreement';
+	  board.position(game.fen());
+	  document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
 
-	  if (drawMsg) {
-		titleEl.innerHTML = drawMsg;
-		setTimeout(() => {
-		  titleEl.innerHTML = prevTitle;
-		}, 10000);
-	  }
-	}
-	// ──────────────────────────────────────────────────────────────────
+	  if (reset) fullHistory = game.history({ verbose: true });
+	  persistGame();
 
+	  // always re-render history & highlight
+	  renderHistory();
+	  highlightLast();
 
-	if (showEval) {
-	  // fetch only when eval is shown
-	  setTimeout(fetchAnnotations, 0);
-	  document.querySelectorAll('.overlay')
-		.forEach(o => o.style.display = 'block');
+	  // ─── Draw‐detection banner ────────────────────────────────────────
+	  {
+		const titleEl = document.getElementById('gameTitle');
+		const prevTitle = window.prevGameTitle || titleEl.innerHTML;
+		let drawMsg = null;
 
-	  // retry logic when no badges
-	  const overlays = document.querySelectorAll('.overlay');
-	  const btn = document.getElementById('btnHideEval');
-	  if (overlays.length === 0 && settings.topN > 0) {
-		setTimeout(() => {
-		  if (document.querySelectorAll('.overlay').length === 0) {
-			evalRetries = 0;
-			btn.innerText = 'Calc... 2x 6s';
-			btn.style.background = '#9c27b0';
-			startEvalRetry();
+		// 1) Stalemate
+		if (game.in_stalemate && game.in_stalemate()) {
+		  drawMsg = 'Draw — stalemate';
+		}
+		// 2) Insufficient material
+		else if (game.insufficient_material && game.insufficient_material()) {
+		  drawMsg = 'Draw — insufficient material';
+		}
+		// 3) Threefold repetition
+		else if (game.in_threefold_repetition && game.in_threefold_repetition()) {
+		  drawMsg = 'Draw — threefold repetition';
+		}
+		// 4) Fifty-move rule (halfmove clock ≥ 100)
+		else {
+		  const halfmoveClock = parseInt(game.fen().split(' ')[4], 10);
+		  if (halfmoveClock >= 100) {
+			drawMsg = 'Draw — fifty-move rule';
 		  }
-		}, 4000);
-	  }
-	} else {
-	  // keep badges hidden when eval is off
-	  document.querySelectorAll('.overlay')
-		.forEach(o => o.style.display = 'none');
-	}
+		}
+		// 5) (Optional) Draw by agreement
+		// if (drawByAgreementFlag) drawMsg = 'Draw — by agreement';
 
-
-	// inside updateBoard(reset) in utils.js, replace the next-dot block with:
-
-	if (settings.nextDot && showEval) {
-	  const idx = game.history().length;
-	  if (idx < fullHistory.length) {
-		const nm = fullHistory[idx];
-		['to', 'from'].forEach(k => {
-		  const cell = document.querySelector(`.square-${nm[k]}`);
-		  if (cell) {
-			const d = document.createElement('div');
-			d.className = 'next-dot';
-			d.style.bottom = '4px';
-			d.style.left   = '4px';
-			cell.appendChild(d);
+		if (drawMsg) {
+		  if (window.drawBannerTimeoutId) {
+			clearTimeout(window.drawBannerTimeoutId);
+			window.drawBannerTimeoutId = null;
 		  }
-		});
+		  window.prevGameTitle = prevTitle;
+		  titleEl.innerHTML = drawMsg;
+		  window.drawBannerTimeoutId = setTimeout(() => {
+			titleEl.innerHTML = window.prevGameTitle;
+			window.prevGameTitle = null;
+			window.drawBannerTimeoutId = null;
+		  }, 3333);
+		}
+	  }
+	  // ──────────────────────────────────────────────────────────────────
+
+	  if (showEval) {
+		setTimeout(fetchAnnotations, 0);
+		document.querySelectorAll('.overlay').forEach(o => o.style.display = 'block');
+
+		const overlays = document.querySelectorAll('.overlay');
+		const btn = document.getElementById('btnHideEval');
+		if (overlays.length === 0 && settings.topN > 0) {
+		  setTimeout(() => {
+			if (document.querySelectorAll('.overlay').length === 0) {
+			  evalRetries = 0;
+			  btn.innerText = 'Calc... 2x 6s';
+			  btn.style.background = '#9c27b0';
+			  startEvalRetry();
+			}
+		  }, 4000);
+		}
+	  } else {
+		document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none');
+	  }
+
+	  if (settings.nextDot && showEval) {
+		const idx = game.history().length;
+		if (idx < fullHistory.length) {
+		  const nm = fullHistory[idx];
+		  ['to', 'from'].forEach(k => {
+			const cell = document.querySelector(`.square-${nm[k]}`);
+			if (cell) {
+			  const d = document.createElement('div');
+			  d.className = 'next-dot';
+			  d.style.bottom = '4px';
+			  d.style.left = '4px';
+			  cell.appendChild(d);
+			}
+		  });
+		}
 	  }
 	}
+// ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-  }
   
     /* ------------------------------------------------------------------
      11.5 AUTO EVAL RETRY LOGIC (after badges fail to load)
@@ -630,19 +630,21 @@ function startEvalRetry() {
   document.getElementById('btnLoad').onclick = () =>
     document.getElementById('filePGN').click();
 
-  document.getElementById('filePGN').onchange = e => {
-    const file=e.target.files[0];
-    if(!file) return;
-    const reader=new FileReader();
-    reader.onload=evt=>{
-      game.load_pgn(evt.target.result);
-      updateBoard(true);
-	  fetchAnnotations();
-      document.getElementById('gameTitle').innerText = file.name;
-    };
-    reader.readAsText(file);
-    e.target.value='';
-  };
+	document.getElementById('filePGN').onchange = e => {
+	  const file = e.target.files[0];
+	  if (!file) return;
+	  const reader = new FileReader();
+	  reader.onload = evt => {
+		game.load_pgn(evt.target.result);
+		// set the title before updating the board so draw banners aren’t overwritten
+		document.getElementById('gameTitle').innerText = file.name;
+		updateBoard(true);
+		fetchAnnotations();
+	  };
+	  reader.readAsText(file);
+	  e.target.value = '';
+	};
+
 
   /* ------------------------------------------------------------------
      15. ROW 3  (Games | Theme | Settings)
