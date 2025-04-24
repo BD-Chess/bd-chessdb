@@ -281,7 +281,19 @@ gameBuckets.forEach(bucket => {
 		  .sort((a, b) => b.rank - a.rank || b.score - a.score);
 
 		const list = isFinite(settings.topN) ? allMoves.slice(0, settings.topN) : allMoves;
-		list.forEach((m, i) => annotateMove(m.move, m.score, i === 0));
+		
+    if (list.length > 0) {
+      // Cancel any pending retry loop and reset the button immediately
+      if (evalRetryTimer) {
+        clearInterval(evalRetryTimer);
+        evalRetryTimer = null;
+      }
+      const btn = document.getElementById('btnHideEval');
+      btn.innerText = 'Hide Eval';
+      btn.style.background = '';
+    }
+    
+    list.forEach((m, i) => annotateMove(m.move, m.score, i === 0));
 	  } catch (err) {
 		console.error('Failed to fetch annotations:', err);
 	  }
