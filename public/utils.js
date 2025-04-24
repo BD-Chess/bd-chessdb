@@ -50,6 +50,7 @@ function initAll() {
      4. POPULAR GAMES  (PGN files per category)
   ------------------------------------------------------------------*/
   const gameBuckets = [
+    { name: 'Openings - Top Lines',  file: 'Chess_Openings_Top_Lines.pgn' },
     { name: 'Magnus Carlsen',        file: 'CarlsenM_Selected.pgn' },
     { name: 'Garry Kasparov',        file: 'KasparovG_Selected.pgn' },
     { name: 'Hikaru Nakamura',       file: 'NakamuraH_Selected.pgn' },
