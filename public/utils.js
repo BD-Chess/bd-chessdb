@@ -69,7 +69,7 @@ function initAll() {
     { name: 'José Raúl Capablanca',  file: 'CapablancaJ_Selected.pgn' },
     { name: 'Emanuel Lasker',        file: 'LaskerE_Selected.pgn' },
     { name: 'Stockfish vs. other engines',   file: 'Stockfish_Selected.pgn' },
-    { name: 'TCEC Cup 14 SF vs Lc0 (2024)',  file: 'TCEC_Cup14_SF_vs_Lc0_2024.pgn' },
+    { name: 'TCEC Cup 14 SF vs Lc0 (2024)',  file: 'TCEC_Cup14_SF_vs_Lc0_2024.pgn' },
     { name: 'TCEC S27 (2022) White Wins',    file: 'TCEC_Season27_WhiteWins_2022.pgn' },
     { name: 'TCEC S27 (2022) Black Wins',    file: 'TCEC_Season27_BlackWins_2022.pgn' },
     { name: 'Various Games',         file: 'Various_Games.pgn' }
@@ -89,7 +89,7 @@ gameBuckets.forEach(bucket => {
   sel.style.width  = '100%';
   sel.style.margin = '4px 0 12px';
 
-  const placeholder = new Option(`${bucket.name} — Select a game`, '');
+  const placeholder = new Option(`${bucket.name} — Select a game`, '');
   placeholder.disabled = true;
   placeholder.selected = true;
   sel.appendChild(placeholder);
