@@ -951,22 +951,27 @@ function jumpTo(i){
   //  updateBoard(true);
   //  if (lastMoveIndex >= 0) jumpTo(lastMoveIndex);
   //};
-  
+
+
 	// ─── Clickable title: reload last PGN and jump back ───
 	const titleEl = document.getElementById('gameTitle');
 	titleEl.style.cursor = 'pointer';
 	titleEl.onclick = () => {
 	  if (!lastLoadedPGN) return;
+	  // preserve the current orange‐move index before reset
+	  const branchPoint = divergedIndex;
 	  game.reset();
 	  game.load_pgn(lastLoadedPGN);
-	  // ensure the reset rebuilds the original PGN history
+	  // force a full rebuild of the original PGN history
 	  window._skipDivergedReset = false;
 	  updateBoard(true);
-	  // jump to branch point if one exists, otherwise to the last move
-	  const target = divergedIndex >= 0 ? divergedIndex : lastMoveIndex;
-	  if (target >= 0) jumpTo(target);
+	  // jump to the orange (branched) move if present, otherwise to the last move
+	  if (branchPoint >= 0) {
+		jumpTo(branchPoint - 1);
+	  } else if (lastMoveIndex >= 0) {
+		jumpTo(lastMoveIndex);
+	  }
 	};
-
 
 }
 
