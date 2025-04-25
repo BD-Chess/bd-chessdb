@@ -992,37 +992,30 @@ function jumpTo(i){
   applySettings();
   updateBoard(true);
   
-  // ─── Clickable title: reload last PGN and jump back ───
-  //const titleEl = document.getElementById('gameTitle');
-  //titleEl.style.cursor = 'pointer';
-  //titleEl.onclick = () => {
-  //  if (!lastLoadedPGN) return;
-  //  game.reset();
-  //  game.load_pgn(lastLoadedPGN);
-  //  divergedIndex = -1;  // clear highlight
-  //  window._skipDivergedReset = false;   // ← force the “true” reset to rebuild fullHistory
-  //  updateBoard(true);
-  //  if (lastMoveIndex >= 0) jumpTo(lastMoveIndex);
-  //};
-
-
-	// ─── Clickable title: reload last PGN and jump back ───
+	// ─── Clickable title: reload or jump back to orange move (and clear highlight) ───
 	const titleEl = document.getElementById('gameTitle');
 	titleEl.style.cursor = 'pointer';
 	titleEl.onclick = () => {
-	  if (!lastLoadedPGN) return;
-	  // preserve the current orange‐move index before reset
 	  const branchPoint = divergedIndex;
-	  game.reset();
-	  game.load_pgn(lastLoadedPGN);
-	  // force a full rebuild of the original PGN history
-	  window._skipDivergedReset = false;
-	  updateBoard(true);
-	  // jump to the orange (branched) move if present, otherwise to the last move
-	  if (branchPoint >= 0) {
-		jumpTo(branchPoint - 1);
-	  } else if (lastMoveIndex >= 0) {
-		jumpTo(lastMoveIndex);
+	  // nothing to do if no PGN loaded and no branch point
+	  if (branchPoint < 0 && !lastLoadedPGN) return;
+
+	  // clear the orange highlight
+	  divergedIndex = -1;
+
+	  if (lastLoadedPGN) {
+		game.reset();
+		game.load_pgn(lastLoadedPGN);
+		window._skipDivergedReset = false;
+		updateBoard(true);
+		if (branchPoint >= 0) {
+		  jumpTo(branchPoint - 1);
+		} else if (lastMoveIndex >= 0) {
+		  jumpTo(lastMoveIndex);
+		}
+	  } else {
+		// pure “scratch” game: just jump back to that move
+		jumpTo(branchPoint);
 	  }
 	};
 
