@@ -113,21 +113,30 @@ gameBuckets.forEach(bucket => {
     })
     .catch(console.error);
 
-  // 3) Wire up load-on-change
+	// 3) Wire up load-on-change
 	sel.onchange = e => {
 	  if (!e.target.value) return;
-      // remember this PGN and reset
-      lastLoadedPGN = e.target.value;	  
+
+	  // Remember this PGN string and reset
+	  lastLoadedPGN = e.target.value;
 	  divergedIndex = -1;
 	  const title = e.target.selectedOptions[0].text;
+
+	  // Reset board/game state
 	  game.reset();
-	  game.load_pgn(e.target.value);
-	  // set title before update so draw banner isn’t overwritten
+
+	  // Extract “in-book” flags, strip all comments, then load clean PGN
+	  bookFlags = extractBookFlags(e.target.value);
+	  const cleanPgn = e.target.value.replace(/\{[^}]*\}/g, '');
+	  game.load_pgn(cleanPgn);
+
+	  // Update UI
 	  document.getElementById('gameTitle').innerHTML = title;
 	  updateBoard(true);
-      // record where we are now
-      lastMoveIndex = game.history().length - 1;
+	  lastMoveIndex = game.history().length - 1;
 	  fetchAnnotations();
+
+	  // Close panel and scroll into view
 	  panel.classList.remove('open');
 	  document.getElementById('main').scrollIntoView({
 		behavior: 'smooth',
@@ -137,7 +146,6 @@ gameBuckets.forEach(bucket => {
 	};
   
 });
-
 
   /* ------------------------------------------------------------------
      5. CHESS OBJECT  +  RESTORE SAVED PGN
@@ -190,6 +198,8 @@ gameBuckets.forEach(bucket => {
   let divergedIndex = -1;  // NEW: index of divergence from PGN history
   let lastAction = null;
   let showEval      = true;
+  // per‐move “in book” flags parsed from PGN comments
+  let bookFlags = [];
   let evalRetries = 0;
   let evalRetryTimer = null;
 
@@ -200,6 +210,32 @@ gameBuckets.forEach(bucket => {
     else
       localStorage.removeItem(STORAGE_KEY_GAME);
   }
+
+
+	/**
+	 * Given raw PGN with {Book} comments,
+	 * return a Boolean[] aligned to each half-move.
+    */
+	function extractBookFlags(pgn) {
+	  // 1) Pull out every comment, note which are “Book”
+	  const rawFlags = [];
+	  pgn.replace(/\{([^}]*)\}/g, (_, comment) => {
+		rawFlags.push(comment.includes('Book'));
+		return '';
+	  });
+
+	  // 2) Strip comments & move-numbers, split into SAN tokens
+	  const moves = pgn
+		.replace(/\{[^}]*\}/g, '')          // remove comments
+		.replace(/\d+\.\s*/g, '')           // remove “1. ”, “2. ”, etc.
+		.trim()
+		.split(/\s+/)                       // split on whitespace
+		.filter(tok => tok && !/^\d+$/.test(tok)); // drop stray numbers
+
+	  // 3) Map each SAN to its flag (default false)
+	  return moves.map((_, i) => Boolean(rawFlags[i]));
+	}
+
 
   /* ------------------------------------------------------------------
      8. APPLY SETTINGS  (theme, fonts, sizes, format‑label)
@@ -476,6 +512,10 @@ gameBuckets.forEach(bucket => {
 		  // only reload original PGN on a true reset
 		  if (!window._skipDivergedReset) {
 			fullHistory = game.history({ verbose: true });
+			// apply our parsed “in-book” flags
+			fullHistory.forEach((mv,i) => {
+			  mv.book = Boolean(bookFlags[i]);
+			});			
 			divergedIndex = -1;
 		  }
 		  // clear the skip-reset flag for next time
@@ -615,22 +655,28 @@ gameBuckets.forEach(bucket => {
 		document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none');
 	  }
 
-	  if (settings.nextDot && showEval) {
-		const idx = game.history().length;
-		if (idx < fullHistory.length) {
-		  const nm = fullHistory[idx];
-		  ['to', 'from'].forEach(k => {
-			const cell = document.querySelector(`.square-${nm[k]}`);
-			if (cell) {
-			  const d = document.createElement('div');
-			  d.className = 'next-dot';
-			  d.style.bottom = '4px';
-			  d.style.left = '4px';
-			  cell.appendChild(d);
-			}
-		  });
+		// ─── Next-move dot ──────────────────────────────────────────────
+		if (settings.nextDot && showEval) {
+		  const idx = game.history().length;
+		  if (idx < fullHistory.length) {
+			const nm = fullHistory[idx];
+			['to','from'].forEach(k => {
+			  const cell = document.querySelector(`.square-${nm[k]}`);
+			  if (cell) {
+				const d = document.createElement('div');
+				// light-green for in-book moves
+				const isBook = nm.book === true;
+				d.className = isBook
+				  ? 'next-dot book-dot'
+				  : 'next-dot';
+				d.style.bottom = '4px';
+				d.style.left   = '4px';
+				cell.appendChild(d);
+			  }
+			});
+		  }
 		}
-	  }
+
 	}
 // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -774,7 +820,11 @@ function jumpTo(i){
 		  // remember this PGN blob
 		  lastLoadedPGN = evt.target.result;
 		  divergedIndex = -1;
-		  game.load_pgn(evt.target.result);
+		  //game.load_pgn(evt.target.result);
+		  // parse out “{Book}” flags, then strip comments before loading
+		  bookFlags = extractBookFlags(evt.target.result);
+		  const clean = evt.target.result.replace(/\{[^}]*\}/g,'');
+		  game.load_pgn(clean);
 		  document.getElementById('gameTitle').innerText = file.name;
 		  updateBoard(true);
 		  // record which move we landed on
