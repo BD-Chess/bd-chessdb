@@ -550,7 +550,10 @@ gameBuckets.forEach(bucket => {
       const cur = game.history().map(x => x.san);
       const ref = fullHistory.map(x => x.san).slice(0, cur.length);
       // record the first branch point
-      if (JSON.stringify(cur) !== JSON.stringify(ref) && divergedIndex < 0) {
+      // if (JSON.stringify(cur) !== JSON.stringify(ref) && divergedIndex < 0) {
+      if (fullHistory.length > cur.length
+          && JSON.stringify(cur) !== JSON.stringify(ref)
+          && divergedIndex < 0) {
         divergedIndex = cur.length - 1;
       }
       // always rebuild history to include the new move
