@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChessBest.org 4 ChessDB.cn</title>
+  <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* Desktop vs. mobile subtitle */
+    .desktop-only { display: block; }
+    .mobile-only  { display: none; }
+    @media (max-width: 600px) {
+      .desktop-only { display: none; }
+      .mobile-only  { display: block; }
+    }
+    /* Center the subtitle */
+    #pageSubtitle { text-align: center; }
+
+    /* Facts link theming */
+    :root { --facts-link-color: #fff; }
+    body.light-theme { --facts-link-color: #1565c0; }
+    #facts-link a {
+      color: var(--facts-link-color);
+      text-decoration: none;
+    }
+
+    /* Email link theming */
+    :root { --email-link-color: #eee; }
+    body.light-theme { --email-link-color: #1565c0; }
+    #credits a {
+      color: var(--email-link-color);
+      text-decoration: none;
+    }
+
+    /* NEW — violet color for the “New” button */
+    .btn-new { background:#6f42c1; }
+    body.light-theme .btn-new { background:#7d4be0; }
+  </style>
+</head>
+<body>
+  <div id="pageTitle">
+    <!-- ChessBest.org <span class="word-your">GUI </span>4 -->
+    ChessBest.org 4 
+    <a href="https://www.chessdb.cn/queryc_en/" target="_blank">ChessDB.cn</a>
+  </div>
+  <div id="pageSubtitle">
+    <div class="desktop-only">
+      Instantly pick moves from 48+ billions of depth 50+ evaluations — outperforming engines and world champions.
+    </div>
+    <div class="mobile-only">
+      48+ billions of depth 50+ evaluations.
+    </div>
+  </div>
+
+  <div id="main">
+    <!-- --------------- BOARD --------------- -->
+    <div id="board-container">
+      <div id="board"></div>
+      <!--
+      <div id="facts-link">
+        <a href="facts.html"
+           onclick="const w = window.open(this.href,'Facts'); w.moveTo(0,0); w.resizeTo(screen.availWidth, screen.availHeight); return false;">
+          15 Powerful Facts About the ChessDB Engine Database
+        </a>
+      </div>
+      -->
+    </div>
+
+    <!-- --------------- CONTROLS --------------- -->
+    <div id="controls">
+      <!-- Navigation row -->
+      <div class="btn-group top-buttons">
+        <button class="btn btn-nav" id="first">|<</button> <!-- ⏮️ << ⟸ -->
+        <button class="btn btn-nav" id="prev">←</button> <!-- ◀️ < ← -->
+        <button class="btn btn-nav" id="btnHideEval">Hide Eval</button>
+        <button class="btn btn-nav" id="next">→️</button> <!-- ▶️ > → -->
+        <button class="btn btn-nav" id="last">>|</button> <!-- ⏭️ >> ⟹ -->
+      </div>
+
+      <!-- Game title -->
+      <div class="game-title" id="gameTitle">
+        Analyse moves with<br>
+        ChessDB Engine Database
+      </div>
+
+      <!-- Move history -->
+      <div id="moves"></div>
+
+      <!-- ---------- ROW 1  Format | Input | Copy ---------- -->
+      <div class="btn-group">
+        <button class="btn btn-fen" id="btnFormat">FEN|pgn</button>
+        <button class="btn btn-fen" id="btnInput">Input</button>
+        <button class="btn btn-fen" id="btnCopy">Copy</button>
+      </div>
+
+      <!-- ---------- ROW 2  New | Save | Load ---------- -->
+      <div class="btn-group">
+        <button class="btn btn-new" id="btnNew">New</button>
+        <button class="btn btn-pgn" id="btnSave">Save</button>
+        <button class="btn btn-pgn" id="btnLoad">Load</button>
+        <!-- hidden file input for Load -->
+        <input type="file" id="filePGN" accept=".pgn,.txt" style="display:none">
+      </div>
+
+      <!-- ---------- ROW 3  Games | Theme | Settings ---------- -->
+      <div class="btn-group bottom-controls">
+        <button class="btn btn-nav" id="btnGames">Games!</button>
+        <button class="btn btn-nav" id="btnFlip">Flip CB</button>
+        <button class="btn btn-nav" id="btnSettings">Settings</button>
+      </div>
+
+      <!-- Popular games panel -->
+      <div id="popularGamesPanel" class="panel">
+        <label for="popularGamesSelect">Load a game:</label>
+        <select id="popularGamesSelect">
+          <option value="">— select —</option>
+        </select>
+      </div>
+
+      <!-- Settings panel (content unchanged) -->
+      <div id="settingsPanel" class="panel">
+        <label for="settingTopN">Show top moves:</label>
+        <select id="settingTopN">
+          <option value="3">3</option>
+          <option value="5" selected>5</option>
+          <option value="10">10</option>
+          <option value="all">All</option>
+        </select>
+		
+		
+        <label>
+          <input type="checkbox" id="settingNextDot" checked>
+          Show next‑move preview
+        </label>
+
+	<label for="settingEvalMode">Evaluation method:</label>
+	<select id="settingEvalMode">
+		<option value="direct">Direct</option>
+		<option value="proxy">Proxy</option>
+	</select>
+
+
+        <label for="settingHistorySize">History height:</label>
+        <select id="settingHistorySize">
+          <option value="smallest">Smallest</option>
+          <option value="small" selected>Small</option>
+          <option value="medium">Medium</option>
+          <option value="big">Big</option>
+        </select>
+
+        <label for="settingFont">Font size:</label>
+        <select id="settingFont">
+          <option value="14px" selected>Small</option>
+          <option value="16px">Medium</option>
+          <option value="18px">Large</option>
+        </select>
+
+        <label for="settingNotation">Badge notation:</label>
+        <select id="settingNotation">
+          <option value="score">Score</option>
+          <option value="dot">Dot</option>
+        </select>
+
+        <label for="settingPieceSize">Piece size:</label>
+        <select id="settingPieceSize">
+          <option value="small">Small</option>
+          <option value="medium" selected>Medium</option>
+          <option value="big">Big</option>
+        </select>
+		
+		<label for="settingBg">Main background:</label>
+        <select id="settingBg">
+          <option value="#2e2e2e">Dark Gray</option>
+          <option value="#ffffff">White</option>
+          <option value="#cccccc">Light Gray</option>
+          <option value="#000000">Black</option>
+          <option value="#5d4037">Dark Brown</option>
+          <option value="#8d6e63">Light Brown</option>
+          <option value="#0d47a1">Dark Blue</option>
+          <option value="#90caf9">Light Blue</option>
+        </select>
+		
+		<label>
+		  <input type="checkbox" id="settingTheme">
+		  Light theme
+		</label>
+		
+	 <!-- ─── Customizable Delays ───────────────────────────── -->
+	 <label for="settingDrawDelay">Draw banner duration (ms):</label>
+	 <input type="number" id="settingDrawDelay" value="5000">
+
+	 <label for="settingBadgeInitialDelay">Badge‐fetch initial delay (ms):</label>
+	 <input type="number" id="settingBadgeInitialDelay" value="4000">
+
+	 <label for="settingRetryInterval">Eval‐retry interval (ms):</label>
+	 <input type="number" id="settingRetryInterval" value="6000">
+
+	 <label for="settingTryLaterDuration">“Try Later” display (ms):</label>
+	 <input type="number" id="settingTryLaterDuration" value="3000">
+	 <!-- ─────────────────────────────────────────────────────── -->
+		
+		<!-- reset button -->
+		<div class="btn-group" style="margin-top:12px;">
+		  <button class="btn btn-nav" id="btnResetSettings">Reset Settings</button>
+		</div>
+		
+	
+      </div>
+
+      <div class="spacer"></div>
+
+	<div id="info-links" style="text-align: center; font-size: 15px; margin-bottom: 6px;">
+
+	  <a href="games-info.html"
+		 style="text-decoration: underline; color: #90caf9; margin: 0 6px;"
+		 onclick="const w = window.open(this.href,'GamesInfo'); w.moveTo(0,0); w.resizeTo(screen.availWidth, screen.availHeight); return false;">PGN Picks?</a> |
+		<a href="facts.html"
+		 style="text-decoration: underline; color: #90caf9; margin: 0 6px;"
+		 onclick="const w = window.open(this.href,'Facts'); w.moveTo(0,0); w.resizeTo(screen.availWidth, screen.availHeight); return false;">Why ChessDB</a> |
+	  <a href="about-gui.html"
+		 style="text-decoration: underline; color: #90caf9; margin: 0 6px;"
+		 onclick="const w = window.open(this.href,'InterfaceInfo'); w.moveTo(0,0); w.resizeTo(screen.availWidth, screen.availHeight); return false;">About GUI</a>
+	  
+	</div>
+
+      <div id="credits">
+        Author: Boyan D. (<a href="mailto:bd@siol.net" style="text-decoration: underline;">bd@siol.net</a>) & ChatGPT, <strong>v0.2.0</strong>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/jquery-3.6.0.min.js"></script>
+  <script src="js/chess.min.js"></script>
+  <script src="js/chessboard-1.0.0.min.js"></script>
+  
+  <script type="module" src="js/init.js"></script>
+  
+</body>
+</html>

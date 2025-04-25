@@ -1,7 +1,7 @@
 // File: js/boardManager.js
 // Handles Chessboard.js setup and user move interactions
 
-import { Chess } from './lib/chess.min.js'; // adjust path as needed
+import { Chess } from './chess.min.js'; // adjust path as needed
 import { settings, fullHistory, bookFlags, divergedIndex, branchIndex, lastMoveIndex, lastAction } from './state.js';
 import { updateBoard } from './evalOverlay.js';
 
