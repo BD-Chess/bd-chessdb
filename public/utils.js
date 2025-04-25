@@ -940,17 +940,34 @@ function jumpTo(i){
   updateBoard(true);
   
   // ─── Clickable title: reload last PGN and jump back ───
-  const titleEl = document.getElementById('gameTitle');
-  titleEl.style.cursor = 'pointer';
-  titleEl.onclick = () => {
-    if (!lastLoadedPGN) return;
-    game.reset();
-    game.load_pgn(lastLoadedPGN);
-    divergedIndex = -1;  // clear highlight
-    updateBoard(true);
-    if (lastMoveIndex >= 0) jumpTo(lastMoveIndex);
-  };
+  //const titleEl = document.getElementById('gameTitle');
+  //titleEl.style.cursor = 'pointer';
+  //titleEl.onclick = () => {
+  //  if (!lastLoadedPGN) return;
+  //  game.reset();
+  //  game.load_pgn(lastLoadedPGN);
+  //  divergedIndex = -1;  // clear highlight
+  //  window._skipDivergedReset = false;   // ← force the “true” reset to rebuild fullHistory
+  //  updateBoard(true);
+  //  if (lastMoveIndex >= 0) jumpTo(lastMoveIndex);
+  //};
   
+	// ─── Clickable title: reload last PGN and jump back ───
+	const titleEl = document.getElementById('gameTitle');
+	titleEl.style.cursor = 'pointer';
+	titleEl.onclick = () => {
+	  if (!lastLoadedPGN) return;
+	  game.reset();
+	  game.load_pgn(lastLoadedPGN);
+	  // ensure the reset rebuilds the original PGN history
+	  window._skipDivergedReset = false;
+	  updateBoard(true);
+	  // jump to branch point if one exists, otherwise to the last move
+	  const target = divergedIndex >= 0 ? divergedIndex : lastMoveIndex;
+	  if (target >= 0) jumpTo(target);
+	};
+
+
 }
 
 /* ------------------------------------------------------------------
