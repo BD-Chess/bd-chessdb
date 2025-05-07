@@ -388,8 +388,13 @@ gameBuckets.forEach(bucket => {
     const ov  = document.createElement('div');
     const num = parseInt(score, 10);
     ov.innerText = settings.notation==='dot' ? '•' : num>0?`+${num}`:num;
-    ov.className = best ? 'overlay best'
-                        : `overlay ${num>0?'positive':num<0?'negative':'zero'}`;
+	
+	const badgeClass = Math.abs(num) <= 20 ? 'zero'
+                    : num > 0 ? 'positive'
+                    : 'negative';
+
+	ov.className = best ? 'overlay best' : `overlay ${badgeClass}`;
+
 	ov.onclick = e => {
 	  e.stopPropagation();
 	  // Capture the position before branching
