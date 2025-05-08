@@ -417,6 +417,36 @@ gameBuckets.forEach(bucket => {
 	  window._skipDivergedReset = true;
 	  updateBoard(false);
 	};
+	
+	// ─── desktop-only hover preview ─────────────────────────────────────
+	ov.addEventListener('mouseenter', () => {
+	  if (!window.matchMedia('(pointer: fine)').matches) return;
+	  // 1) preview the move
+	  const preview = new Chess(game.fen());
+	  preview.move({ from: move.slice(0,2), to: sq, promotion: 'q' });
+	  board.position(preview.fen(), false);
+	  // 2) wait two frames so Chessboard.js is done redrawing the <img>
+	  requestAnimationFrame(() => {
+		requestAnimationFrame(() => {
+		  document
+			.querySelectorAll(`#board .square-${sq} img.piece`)
+			.forEach(img => img.classList.add('ghost-piece'));
+		});
+	  });
+	});
+	ov.addEventListener('mouseleave', () => {
+	  if (!window.matchMedia('(pointer: fine)').matches) return;
+	  // restore the true position (this also drops any .ghost-piece)
+	  board.position(game.fen(), false);
+	});
+	// ────────────────────────────────────────────────────────────────────
+
+	ov.addEventListener('mouseleave', () => {
+	  if (!window.matchMedia('(pointer: fine)').matches) return;
+	  // restore the real position
+	  board.position(game.fen(), false);
+	});
+	// ────────────────────────────────────────────────────────────────────
 
     cell.appendChild(ov);
     // if badges arrive after “Try Later”, flip the button back
