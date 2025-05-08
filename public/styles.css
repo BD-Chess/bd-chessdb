@@ -450,8 +450,25 @@ body {
 
 }
 
-/* Ghost piece styling for preview moves */
-.ghost-piece {
+/* Force ghost transparency by higher specificity */
+#board .ghost-square img.piece {
   opacity: 0.5 !important;
-  /* you can tweak 0.5 to taste (0 = invisible, 1 = solid) */
+  transition: opacity 0.1s ease-in-out;
+}
+
+
+/* ─── Preview move highlight (on hover) ───────────────────────────── */
+#board .preview-square {
+  /* yellow inset “border” */
+  box-shadow: inset 0 0 0 4px rgba(255, 255,   0, 0.8) !important;
+  transition: box-shadow 0.2s ease;
+}
+
+/* ─── Made‐move highlight (after click) ───────────────────────────── */
+.highlightSquare {
+  /* dark‐red inset “border” */
+  /* box-shadow: inset 0 0 0 4px rgba(139,   0,   0, 0.8) !important; */
+  /* dark-orange inset “border” */
+  box-shadow: inset 0 0 0 4px rgba(255, 140,   0, 0.8) !important;
+  transition: box-shadow 0.3s ease;
 }

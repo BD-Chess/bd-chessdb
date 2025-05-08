@@ -345,10 +345,18 @@ gameBuckets.forEach(bucket => {
 		parseResponse(cTxt).forEach(m => moveMap.set(m.move, m)); // cloud first
 		parseResponse(vTxt).forEach(m => moveMap.set(m.move, m)); // verified overrides
 
-		const allMoves = Array.from(moveMap.values())
-		  .sort((a, b) => b.rank - a.rank || b.score - a.score);
+		//const allMoves = Array.from(moveMap.values())
+		//  .sort((a, b) => b.rank - a.rank || b.score - a.score);
 
-		const list = isFinite(settings.topN) ? allMoves.slice(0, settings.topN) : allMoves;
+		//const list = isFinite(settings.topN) ? allMoves.slice(0, settings.topN) : allMoves;
+		
+		const allMoves = Array.from(moveMap.values())
+		  // 1) highest score first, 2) lowest rank next
+		  .sort((a, b) => b.score - a.score || a.rank - b.rank);
+
+		const list = isFinite(settings.topN)
+		  ? allMoves.slice(0, settings.topN)
+		  : allMoves;
 		
     if (list.length > 0) {
       // Cancel any pending retry loop and reset the button immediately
@@ -418,35 +426,36 @@ gameBuckets.forEach(bucket => {
 	  updateBoard(false);
 	};
 	
-	// ─── desktop-only hover preview ─────────────────────────────────────
+	// ─── desktop-only hover preview by highlighting squares ───────────────────
+	const fromSq  = move.slice(0,2);
+	const fromCell = document.querySelector(`.square-${fromSq}`);
+
 	ov.addEventListener('mouseenter', () => {
 	  if (!window.matchMedia('(pointer: fine)').matches) return;
-	  // 1) preview the move
+	  // preview the move
 	  const preview = new Chess(game.fen());
-	  preview.move({ from: move.slice(0,2), to: sq, promotion: 'q' });
+	  preview.move({ from: fromSq, to: sq, promotion: 'q' });
 	  board.position(preview.fen(), false);
-	  // 2) wait two frames so Chessboard.js is done redrawing the <img>
-	  requestAnimationFrame(() => {
-		requestAnimationFrame(() => {
-		  document
-			.querySelectorAll(`#board .square-${sq} img.piece`)
-			.forEach(img => img.classList.add('ghost-piece'));
-		});
-	  });
+	  // highlight source and target
+	  fromCell.classList.add('preview-square');
+	  cell.classList.add('preview-square');
 	});
-	ov.addEventListener('mouseleave', () => {
-	  if (!window.matchMedia('(pointer: fine)').matches) return;
-	  // restore the true position (this also drops any .ghost-piece)
-	  board.position(game.fen(), false);
-	});
-	// ────────────────────────────────────────────────────────────────────
 
 	ov.addEventListener('mouseleave', () => {
 	  if (!window.matchMedia('(pointer: fine)').matches) return;
-	  // restore the real position
+	  // remove highlights and restore position
+	  fromCell.classList.remove('preview-square');
+	  cell.classList.remove('preview-square');
 	  board.position(game.fen(), false);
 	});
-	// ────────────────────────────────────────────────────────────────────
+
+	// clear preview highlights on mousedown (before your existing click logic runs)
+	ov.addEventListener('mousedown', () => {
+	  fromCell.classList.remove('preview-square');
+	  cell.classList.remove('preview-square');
+	});
+	// ──────────────────────────────────────────────────────────────────────────
+
 
     cell.appendChild(ov);
     // if badges arrive after “Try Later”, flip the button back
