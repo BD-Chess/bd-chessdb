@@ -24,6 +24,20 @@ function initAll() {
     ioFormat: 'fen'    // NEW  (fen | pgn)  for Format / Input / Copy row
   };
 
+
+	// ─── display the PGN “Opening” tag under the moves ─────────────────
+	function showOpening() {
+	  const hdrs = game.header();            // get all headers as an object
+	  const name = hdrs && hdrs.Opening       // pull the Opening field
+				   ? hdrs.Opening
+				   : '';
+	  document.getElementById('openingName')
+			  .textContent = name;
+	}
+	// ────────────────────────────────────────────────────────────────────
+
+
+
   // ─── Track the most-recently loaded PGN and current move index ───
   let lastLoadedPGN = null;
   let lastMoveIndex  = -1;
@@ -133,6 +147,7 @@ gameBuckets.forEach(bucket => {
 	  // Update UI
 	  document.getElementById('gameTitle').innerHTML = title;
 	  updateBoard(true);
+	  showOpening();
 	  lastMoveIndex = game.history().length - 1;
 	  fetchAnnotations();
 
@@ -392,14 +407,16 @@ gameBuckets.forEach(bucket => {
 	  if (oldScore >= newScore) return;  // skip this weaker/duplicate badge
 	  existingOv.remove();              // remove the old, keep going to draw new
 	}
-
-    const ov  = document.createElement('div');
-    const num = parseInt(score, 10);
-    ov.innerText = settings.notation==='dot' ? '•' : num>0?`+${num}`:num;
 	
+	// create the badge and tag it with its raw move string
+	const ov  = document.createElement('div');
+	ov.dataset.move = move;
+	const num = parseInt(score, 10);
+	ov.innerText = settings.notation==='dot' ? '•' : num>0?`+${num}`:num;
+
 	const badgeClass = Math.abs(num) <= 20 ? 'zero'
-                    : num > 0 ? 'positive'
-                    : 'negative';
+					: num > 0 ? 'positive'
+					: 'negative';
 
 	ov.className = best ? 'overlay best' : `overlay ${badgeClass}`;
 
@@ -808,6 +825,7 @@ function jumpTo(i){
       if(p) game.load_pgn(p);
     }
     updateBoard(true);
+	showOpening();
   };
 
 	// FEN + moves
@@ -843,6 +861,7 @@ function jumpTo(i){
 	divergedIndex = -1;
     game.reset();
     updateBoard(true);
+    document.getElementById('openingName').textContent = '';
     // reset title to the original placeholder
     document.getElementById('gameTitle').innerHTML = 'Analyse moves with ChessDB';
   };
@@ -874,6 +893,7 @@ function jumpTo(i){
 		  game.load_pgn(clean);
 		  document.getElementById('gameTitle').innerText = file.name;
 		  updateBoard(true);
+		  showOpening();
 		  // record which move we landed on
 		  lastMoveIndex = game.history().length - 1;
 		  fetchAnnotations();
@@ -1035,33 +1055,51 @@ function jumpTo(i){
   ------------------------------------------------------------------*/
   applySettings();
   updateBoard(true);
+  showOpening();
+
   
-	// ─── Clickable title: reload or jump back to orange move (and clear highlight) ───
-	const titleEl = document.getElementById('gameTitle');
-	titleEl.style.cursor = 'pointer';
-	titleEl.onclick = () => {
-	  const branchPoint = divergedIndex;
-	  // nothing to do if no PGN loaded and no branch point
-	  if (branchPoint < 0 && !lastLoadedPGN) return;
+  // ─── Clickable title: reload or jump back to orange move (and clear highlight) ───
+  const titleEl = document.getElementById('gameTitle');
+  titleEl.style.cursor = 'pointer';
+  titleEl.onclick = () => {
+    const branchPoint = divergedIndex;
+    // nothing to do if no PGN loaded and no branch point
+    if (branchPoint < 0 && !lastLoadedPGN) return;
 
-	  // clear the orange highlight
-	  divergedIndex = -1;
+    // clear the orange highlight
+    divergedIndex = -1;
 
-	  if (lastLoadedPGN) {
-		game.reset();
-		game.load_pgn(lastLoadedPGN);
-		window._skipDivergedReset = false;
-		updateBoard(true);
-		if (branchPoint >= 0) {
-		  jumpTo(branchPoint - 1);
-		} else if (lastMoveIndex >= 0) {
-		  jumpTo(lastMoveIndex);
-		}
-	  } else {
-		// pure “scratch” game: just jump back to that move
-		jumpTo(branchPoint);
-	  }
-	};
+    if (lastLoadedPGN) {
+      game.reset();
+      game.load_pgn(lastLoadedPGN);
+      window._skipDivergedReset = false;
+      updateBoard(true);
+      if (branchPoint >= 0) {
+        jumpTo(branchPoint - 1);
+      } else if (lastMoveIndex >= 0) {
+        jumpTo(lastMoveIndex);
+      }
+    } else {
+      // pure “scratch” game: just jump back to that move
+      jumpTo(branchPoint);
+    }
+  };
+
+  // ─── “ChessBest.org” link replays the best (blue) move ────────────────
+  document.getElementById('bestMoveLink').addEventListener('click', e => {
+    e.preventDefault();
+    const bestOv = document.querySelector('.overlay.best');
+    if (!bestOv) return;
+    const mv   = bestOv.dataset.move;        // move string tagged in annotateMove
+    const from = mv.slice(0,2), to = mv.slice(2,4);
+    const m    = game.move({ from, to, promotion: 'q' });
+    if (!m) return;
+    lastAction = 'move';
+    window._skipDivergedReset = true;
+    updateBoard(false);
+  });
+  // ────────────────────────────────────────────────────────────────────────
+
 
 }
 
