@@ -172,6 +172,12 @@
           <option value="big">Big</option>
         </select>
 		
+        <!-- ─── New: Double board toggle ─── -->
+        <label>
+          <input type="checkbox" id="settingDoubleBoard">
+          Double Board & Piece Size
+        </label>
+		
 		<label for="settingBg">Main background:</label>
         <select id="settingBg">
           <option value="#2e2e2e">Dark Gray</option>
@@ -189,19 +195,26 @@
 		  Light theme
 		</label>
 		
-	 <!-- ─── Customizable Delays ───────────────────────────── -->
-	 <label for="settingDrawDelay">Draw banner duration (ms):</label>
-	 <input type="number" id="settingDrawDelay" value="5000">
+		<!-- ─── Customizable Delays ───────────────────────────── -->
+		<!-- ─── Toggle for advanced thresholds ───────────────────── -->
+		<button class="btn btn-nav" id="toggleThresholds" style="margin-top:8px;">
+		  Thresholds ▼
+		</button>
 
-	 <label for="settingBadgeInitialDelay">Badge‐fetch initial delay (ms):</label>
-	 <input type="number" id="settingBadgeInitialDelay" value="4000">
+		<div id="thresholdSettings" class="panel-subgroup hidden">
+		  <label for="settingDrawDelay">Draw banner duration (ms):</label>
+		  <input type="number" id="settingDrawDelay" value="5000">
 
-	 <label for="settingRetryInterval">Eval‐retry interval (ms):</label>
-	 <input type="number" id="settingRetryInterval" value="6000">
+		  <label for="settingBadgeInitialDelay">Badge‐fetch initial delay (ms):</label>
+		  <input type="number" id="settingBadgeInitialDelay" value="4000">
 
-	 <label for="settingTryLaterDuration">“Try Later” display (ms):</label>
-	 <input type="number" id="settingTryLaterDuration" value="3000">
-	 <!-- ─────────────────────────────────────────────────────── -->
+		  <label for="settingRetryInterval">Eval‐retry interval (ms):</label>
+		  <input type="number" id="settingRetryInterval" value="6000">
+
+		  <label for="settingTryLaterDuration">“Try Later” display (ms):</label>
+		  <input type="number" id="settingTryLaterDuration" value="3000">
+		</div>
+		<!-- ─────────────────────────────────────────────────────── -->
 		
 		<!-- reset button -->
 		<div class="btn-group" style="margin-top:12px;">
@@ -226,10 +239,10 @@
 		 onclick="const w = window.open(this.href,'InterfaceInfo'); w.moveTo(0,0); w.resizeTo(screen.availWidth, screen.availHeight); return false;">About GUI</a>
 	  
 	</div>
-
-      <div id="credits">
-        Author: Boyan D. (<a href="mailto:bd@siol.net" style="text-decoration: underline;">bd@siol.net</a>) & ChatGPT, <strong>v0.4.0</strong>
-      </div>
+	  
+	  <div id="credits">
+		<a href="#" id="authorLink">Author</a>: Boyan D. (<a href="mailto:bd@siol.net" style="text-decoration: underline;">bd@siol.net</a>) & ChatGPT, <strong>v0.4.0</strong>
+	  </div>
 
     </div>
   </div>

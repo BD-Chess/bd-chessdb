@@ -310,6 +310,13 @@ gameBuckets.forEach(bucket => {
     document.getElementById('settingRetryInterval').value     = settings.retryInterval;
     document.getElementById('settingTryLaterDuration').value  = settings.tryLaterDuration;
 
+    // ─── NEW: sync “Double Size” setting & apply it ────────────────
+    document.getElementById('settingDoubleBoard').checked = settings.doubleBoard;
+    // reuse the boardEl you declared above; no const here
+    if (settings.doubleBoard) boardEl.classList.add('scaled');
+    else boardEl.classList.remove('scaled');
+    // ─────────────────────────────────────────────────────────────────
+	
   }
 
   /* ------------------------------------------------------------------
@@ -959,6 +966,19 @@ function jumpTo(i){
 	document.getElementById('btnHideEval').innerHTML =
 		showEval ? 'Hide<br>Eval' : 'Show<br>Eval';
 
+	/* ------------------------------------------------------------------
+	   17. Thresholds collapse/expand in Settings panel
+	  ------------------------------------------------------------------*/
+	const btnThresh = document.getElementById('toggleThresholds');
+	const grpThresh = document.getElementById('thresholdSettings');
+	btnThresh.addEventListener('click', e => {
+	  e.preventDefault();
+	  grpThresh.classList.toggle('hidden');
+	  btnThresh.innerText = grpThresh.classList.contains('hidden')
+		? 'Thresholds ▼'
+		: 'Thresholds ▲';
+	});
+	/* ─────────────────────────────────────────────────────────────────── */
 
  /* ------------------------------------------------------------------
     18. SETTINGS PANEL HANDLERS  (updated to include delay settings)
@@ -971,6 +991,7 @@ function jumpTo(i){
 	  'settingNotation',
 	  'settingPieceSize',
 	  'settingNextDot',
+	  'settingDoubleBoard',
 	  'settingTheme',
 	  'settingDrawDelay',
 	  'settingBadgeInitialDelay',
@@ -1001,6 +1022,10 @@ function jumpTo(i){
 			break;
 		  case 'settingNextDot':
 			settings.nextDot = e.target.checked;
+			break;
+		  // ─── NEW case for Double Size ───
+		  case 'settingDoubleBoard':
+			settings.doubleBoard = e.target.checked;
 			break;
 		  case 'settingTheme':
 			settings.theme = e.target.checked ? 'light' : 'dark';
@@ -1100,6 +1125,36 @@ function jumpTo(i){
   });
   // ────────────────────────────────────────────────────────────────────────
 
+
+  // ─── “ChessBest.org” link replays the best (blue) move ────────────────
+  document.getElementById('bestMoveLink').addEventListener('click', e => {
+    /* …existing handler… */
+  });
+  // ────────────────────────────────────────────────────────────────────────
+
+  // Hidden “Author” link toggles board size—desktop only
+  (function() {
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    if (isMobile) return;  // no-op on mobile
+
+    const authorLink = document.getElementById("authorLink");
+    const boardEl    = document.getElementById("board");
+
+	authorLink.addEventListener("click", e => {
+	  e.preventDefault();
+	  // 1) toggle the CSS scale
+	  boardEl.classList.toggle("scaled");
+
+	  // 2) mirror it in settings & UI
+	  settings.doubleBoard = boardEl.classList.contains("scaled");
+	  document.getElementById('settingDoubleBoard').checked = settings.doubleBoard;
+
+	  // 3) persist the change
+	  saveSettings();
+	});
+
+  })();
+  // ────────────────────────────────────────────────────────────────────────
 
 }
 

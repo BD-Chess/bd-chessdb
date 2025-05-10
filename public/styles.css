@@ -483,3 +483,43 @@ body {
 body.light-theme #openingName {
   color: #666;
 }
+
+/* make “Author” clickable in the credits */
+#authorLink {
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--secondary-color);
+}
+
+/* smooth transition when scaling the board */
+#board {
+  transition: transform 0.2s ease-in-out;
+}
+
+/* doubled-size board
+#board.scaled {
+  transform: scale(2);
+  transform-origin: center right;
+} */
+
+/* scaled board using zoom; keeps click‐mapping correct */
+#board {
+  transition: zoom 0.2s ease-in-out;
+}
+
+#board.scaled {
+  /* double everything, including the internal coords */
+  zoom: 2;
+}
+
+/* hide/show helper */
+.hidden {
+  display: none;
+}
+
+/* optional extra padding inside the subgroup */
+#thresholdSettings {
+  padding-left: 8px;
+  margin-top: 8px;
+  border-left: 2px solid var(--secondary-color);
+}
