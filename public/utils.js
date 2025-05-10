@@ -1058,6 +1058,16 @@ function jumpTo(i){
 		updateBoard(false);
 	  };
 	});
+	
+	// ─── DISABLE “Double Size” ON MOBILE ────────────────────────────────
+	const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+	const dblCB    = document.getElementById('settingDoubleBoard');
+	if (isMobile && dblCB) {
+	  dblCB.disabled = true;                          // make the checkbox inert
+	  dblCB.parentNode.classList.add('disabled-setting'); // gray out its label
+	}
+	// ─────────────────────────────────────────────────────────────────────
+
 
   /* ------------------------------------------------------------------
      19. KEYBOARD NAVIGATION  (unchanged)
