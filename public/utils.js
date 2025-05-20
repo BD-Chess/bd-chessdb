@@ -1135,25 +1135,16 @@ document.getElementById('bestMoveLink').addEventListener('click', e => {
 });
 // ────────────────────────────────────────────────────────────────────────
 
-// ─── Background‐click (non-interactive) also replays best move ─────────
+// ─── Background-click (non-interactive) also replays best move ─────────
 const mainEl = document.getElementById('main');
 mainEl.addEventListener('click', e => {
-  // ignore clicks on interactive areas
   if (e.target.closest(
-    '#board, #controls, #pageTitle, #pageSubtitle, a, button, input, select, label'
+    '#board, #controls, #gameTitle, #pageSubtitle, a, button, input, select, label'
   )) return;
-
-  // delegate to the same handler
   document.getElementById('bestMoveLink').click();
 });
 // ────────────────────────────────────────────────────────────────────────
   
-  
-  // delegate to the same handler as the header link
-  document.getElementById('bestMoveLink').click();
-});
-// ────────────────────────────────────────────────────────────────────────
-
   // Hidden “Author” link toggles board size—desktop only
   (function() {
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
