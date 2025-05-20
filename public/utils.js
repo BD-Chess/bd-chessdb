@@ -1121,35 +1121,34 @@ function jumpTo(i){
   };
 
   // ─── “ChessBest.org” link replays the best (blue) move ────────────────
-  document.getElementById('bestMoveLink').addEventListener('click', e => {
-    e.preventDefault();
-    const bestOv = document.querySelector('.overlay.best');
-    if (!bestOv) return;
-    const mv   = bestOv.dataset.move;        // move string tagged in annotateMove
-    const from = mv.slice(0,2), to = mv.slice(2,4);
-    const m    = game.move({ from, to, promotion: 'q' });
-    if (!m) return;
-    lastAction = 'move';
-    window._skipDivergedReset = true;
-    updateBoard(false);
-  });
-  // ────────────────────────────────────────────────────────────────────────
-
-
-  // ─── “ChessBest.org” link replays the best (blue) move ────────────────
-  document.getElementById('bestMoveLink').addEventListener('click', e => {
-    /* …existing handler… */
-  });
-  // ────────────────────────────────────────────────────────────────────────
+document.getElementById('bestMoveLink').addEventListener('click', e => {
+  e.preventDefault();
+  const bestOv = document.querySelector('.overlay.best');
+  if (!bestOv) return;
+  const mv   = bestOv.dataset.move;
+  const from = mv.slice(0,2), to = mv.slice(2,4);
+  const m    = game.move({ from, to, promotion: 'q' });
+  if (!m) return;
+  lastAction = 'move';
+  window._skipDivergedReset = true;
+  updateBoard(false);
+});
+// ────────────────────────────────────────────────────────────────────────
 
 // ─── Background‐click (non-interactive) also replays best move ─────────
 const mainEl = document.getElementById('main');
 mainEl.addEventListener('click', e => {
-  // ignore clicks on the board, controls, header, links, buttons, or form fields
+  // ignore clicks on interactive areas
   if (e.target.closest(
     '#board, #controls, #pageTitle, #pageSubtitle, a, button, input, select, label'
   )) return;
 
+  // delegate to the same handler
+  document.getElementById('bestMoveLink').click();
+});
+// ────────────────────────────────────────────────────────────────────────
+  
+  
   // delegate to the same handler as the header link
   document.getElementById('bestMoveLink').click();
 });
