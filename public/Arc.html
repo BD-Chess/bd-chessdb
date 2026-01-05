@@ -598,7 +598,7 @@ h1{
     // pick module type and color
     const keys = Object.keys(SHAPES);
     const type = keys[Math.floor(Math.random()*keys.length)];
-    const p = newModule(/*type);
+    const p = newModule();
     p.colorIdx = Math.floor(Math.random()*COLORS.length);
     p.color = COLORS[p.colorIdx].hex;
     return p;
@@ -979,7 +979,7 @@ this.matrix = SHAPES[type].m.map(r=>r.slice());
   function ensureQueue(){
     while(state.queue.length < 4){
       const type = SHAPE_KEYS[Math.floor(Math.random() * SHAPE_KEYS.length)];
-      state.queue.push(newModule(/*type, null, null, null, null, null));
+      state.queue.push(newModule());
     }
   }
   
