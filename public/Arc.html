@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Arcshield v0.4</title>
+<title>Arcshield v0.3</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
 
@@ -471,7 +471,7 @@ h1{
   // ============ AUDIO ============
   let audioCtx = null;
   
-  // --- Spectral system (Arcshield v0.4) ---
+  // --- Spectral system (Arcshield v0.3) ---
   // 6-color wheel; neighbors are adjacent indices (wrap-around).
   const COLORS = [
     {hex:'#FF0055', name:'CRIMSON'}, // 0
@@ -1068,7 +1068,7 @@ this.matrix = SHAPES[type].m.map(r=>r.slice());
     }
   }
 
-  function updateRingIndicator(){(){(){
+  function updateRingIndicator(){(){
     if(!state.active) return;
     document.getElementById('ring-indicator').textContent = 'RING: ' + RING_NAMES[state.active.ringIdx] + '   •   ' + (state.active.type === 'PIN' ? 'PIN' : ('ARC-' + (parseInt(state.active.type.slice(3),10)||3)));
   }
