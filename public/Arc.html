@@ -93,16 +93,11 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 
 #next-panel{display:flex;flex-direction:column;gap:6px;margin-top:6px}
 .next-preview{
-  width: 72px; height: 72px;
-  border-radius: 10px;
-  background: rgba(0,0,0,0.20);
-  border: 1px solid rgba(255,255,255,0.12);
-}
-#next0{
-  width: 132px; height: 132px;
-  border-radius: 14px;
-  border-color: rgba(0,240,255,0.35);
-}
+  width:48px;height:48px;
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:4px;
+  background:rgba(255,255,255,0.03);
+;width:64px;height:64px;;width:88px;height:88px;}
 
 /* Ring indicator */
 #ring-indicator{
@@ -391,9 +386,9 @@ h1{
     <div class="panel">
       <div class="label">Modules</div>
       <div id="next-panel">
-        <canvas class="next-preview" id="next0" width="132" height="132"></canvas>
-        <canvas class="next-preview" id="next1" width="72" height="72"></canvas>
-        <canvas class="next-preview" id="next2" width="72" height="72"></canvas>
+        <canvas class="next-preview" id="next0" width="88" height="88"></canvas>
+        <canvas class="next-preview" id="next1" width="88" height="88"></canvas>
+        <canvas class="next-preview" id="next2" width="88" height="88"></canvas>
       </div>
     </div>
   </div>
@@ -600,15 +595,12 @@ h1{
 
   
   function newModule(){
-    // Create an upcoming module (the "next piece")
+    // pick module type and color
     const keys = Object.keys(SHAPES);
     const type = keys[Math.floor(Math.random()*keys.length)];
-    const colorIdx = Math.floor(Math.random()*COLORS.length);
-
-    // Start at OUTER ring and "top" so the player sees it immediately
-    const p = new Piece(type, 2, 270, colorIdx);
-    p.colorIdx = colorIdx;
-    p.color = COLORS[colorIdx].hex;
+    const p = newModule(/*type);
+    p.colorIdx = Math.floor(Math.random()*COLORS.length);
+    p.color = COLORS[p.colorIdx].hex;
     return p;
   }
 
@@ -987,7 +979,7 @@ this.matrix = SHAPES[type].m.map(r=>r.slice());
   function ensureQueue(){
     while(state.queue.length < 4){
       const type = SHAPE_KEYS[Math.floor(Math.random() * SHAPE_KEYS.length)];
-      state.queue.push(newModule());
+      state.queue.push(newModule(/*type, null, null, null, null, null));
     }
   }
   
@@ -1076,32 +1068,61 @@ this.matrix = SHAPES[type].m.map(r=>r.slice());
     }
   }
 
-  function updateRingIndicator(){
-    if(!state || !state.active) return;
-    const rName = state.active.ringIdx === 0 ? 'INNER' : (state.active.ringIdx === 1 ? 'MIDDLE' : 'OUTER');
-    const L = state.active.type === 'PIN' ? 1 : (parseInt(state.active.type.slice(3),10) || state.active.L || 3);
-    const label = state.active.type === 'PIN' ? 'PIN' : ('ARC-' + L);
-    const cname = COLORS[state.active.colorIdx]?.name || '';
-    document.getElementById('ring-indicator').textContent = `RING: ${rName}  •  ACTIVE: ${label}  •  ${cname}`;
+  function updateRingIndicator(){(){
+    if(!state.active) return;
+    document.getElementById('ring-indicator').textContent = 'RING: ' + RING_NAMES[state.active.ringIdx] + '   •   ' + (state.active.type === 'PIN' ? 'PIN' : ('ARC-' + (parseInt(state.active.type.slice(3),10)||3)));
   }
-
-// ============ DOCKING ============
+  
+  // ============ DOCKING ============
   
   function dock(){
+    if(!state?.running) return;
     if(!state.active) return;
-    const ring = state.rings[state.active.ringIdx];
-    const n = ring.cells.length;
 
-    // Determine occupied cells for this module
-    const L = state.active.type.startsWith('ARC') ? (parseInt(state.active.type.slice(3),10)||3) : 1;
-    const base = angleDegToCellIdx(state.active.theta, n);
-    const start = (base - Math.floor(L/2) + n) % n;
-
-    // Collision check
-    for(let t=0;t<L;t++){
-      const idx = (start+t)%n;
-      if(ring.cells[idx]){ toast('SECTOR OCCUPIED'); return; }
+    // Validate placement against bounds + overlaps
+    const v = state.active.checkValidity();
+    if(!v.valid){
+      toast(v.reason || 'Invalid placement');
+      beep(120, 0.06, 'square', 0.08);
+      return;
     }
+
+    const occ = state.active.getOccupied();
+    if(!occ || occ.length === 0) return;
+
+    // Apply placement to the pre-allocated cell objects (DO NOT replace them)
+    for(const o of occ){
+      const ring = state.rings[o.ringIdx];
+      const cell = ring.cells[o.cellIdx];
+      cell.filled = true;
+      cell.hp = ring.hpMax;
+      cell.color = state.active.color;
+      cell.colorIdx = state.active.colorIdx;
+    }
+
+    // Score + Signal
+    state.score += occ.length * 10;
+    state.signal += occ.length * 2;
+
+    // Sound feedback: dominant ring note
+    const ringCounts = [0,0,0];
+    occ.forEach(o=>ringCounts[o.ringIdx]++);
+    const dominantRing = ringCounts.indexOf(Math.max(...ringCounts));
+    beep(state.rings[dominantRing].note, 0.12, 'sine', 0.1);
+
+    // Particles
+    spawnDockParticles(occ);
+
+    // Advance queue
+    state.active = state.queue.shift();
+    state.queue.push(makePiece());
+    updateNextPreviews();
+    updateRingIndicator();
+    if(typeof updateSpectrumGuide === 'function') updateSpectrumGuide();
+
+    // Slow meter restore
+    state.slow.meter = Math.min(state.slow.max, state.slow.meter + 0.5);
+  }
 
     // Place cells
     const touched = [];
@@ -1140,7 +1161,43 @@ this.matrix = SHAPES[type].m.map(r=>r.slice());
     updateSpectrumGuide();
   }
     
-
+    const occ = state.active.getOccupied();
+    
+    // Fill cells
+    for(const o of occ){
+      const ring = state.rings[o.ringIdx];
+      const cell = ring.cells[o.cellIdx];
+      cell.filled = true;
+      cell.hp = ring.hpMax;
+      cell.color = state.active.color;
+    }
+    
+    // Score + Signal
+    state.score += occ.length * 10;
+    state.sessionSignal += occ.length;
+    totalSignal += occ.length;
+    
+    // Slow meter restore
+    state.slow.meter = Math.min(state.slow.max, state.slow.meter + 0.3);
+    
+    // Sound (based on dominant ring)
+    const ringCounts = [0,0,0];
+    occ.forEach(o=>ringCounts[o.ringIdx]++);
+    const dominantRing = ringCounts.indexOf(Math.max(...ringCounts));
+    beep(state.rings[dominantRing].note, 0.12, 'sine', 0.1);
+    
+    // Particles
+    spawnDockParticles(occ, state.active.color);
+    
+    // Check ring completion
+    checkRingCompletion();
+    
+    // Next piece
+    spawnPiece();
+    updateUI();
+    checkFragmentUnlocks();
+  }
+  
   function spawnDockParticles(occ, color){
     for(const o of occ){
       const ring = state.rings[o.ringIdx];
@@ -1757,24 +1814,30 @@ this.matrix = SHAPES[type].m.map(r=>r.slice());
     }
     
     if(Math.abs(dy) > 35){
-      // Swipe radial control: swipe *toward* the planet center => INNER ring,
-      // swipe *away* from center => OUTER ring. This feels natural above/below the core.
+      // Radial-feel ring changing on touch:
+      // dragging *toward* center => inner, dragging *away* from center => outer.
       const rect = canvas.getBoundingClientRect();
-      const centerY = rect.top + rect.height/2;
-      const anchorY = touchY; // previous anchor point
-      const above = anchorY < centerY;
+      const cy = rect.top + rect.height/2;
+      const topHalf = (touchY < cy);
 
-      // When above center, moving DOWN goes toward center. When below, moving UP goes toward center.
-      const towardCenter = above ? (dy > 0) : (dy < 0);
+      // dy < 0 = swipe up
+      // Top half: up = away => outer, down = toward => inner
+      // Bottom half: up = toward => inner, down = away => outer
+      let dir; // +1 => outer, -1 => inner
+      if(topHalf){
+        dir = (dy < 0) ? +1 : -1;
+      } else {
+        dir = (dy < 0) ? -1 : +1;
+      }
 
-      if(towardCenter) state.active.ringIdx = Math.max(0, state.active.ringIdx - 1);
-      else             state.active.ringIdx = Math.min(2, state.active.ringIdx + 1);
-
+      state.active.ringIdx = Math.max(0, Math.min(2, state.active.ringIdx + dir));
       touchY = e.touches[0].clientY;
       touchMoved = true;
       updateRingIndicator();
       updateSpectrumGuide();
-    }e.preventDefault();
+    }
+    
+    e.preventDefault();
   }, {passive:false});
   
   canvas.addEventListener('touchend', ()=>{
