@@ -236,7 +236,7 @@
   }
 
   function isVertical(dir) { return dir === 0 || dir === 2; }
-  function dirToAngleRad(dir) { return dir * (Math.PI / 2); }
+  function dirToAngleRad(dir) { return -dir * (Math.PI / 2); }
 
   function normAngleRad(a) {
     const TWO = Math.PI * 2;
@@ -861,7 +861,7 @@
 
     elTurnBig.textContent = turnTxt;
 
-    const deg = Math.round(normAngleRad(boardAngle) * 180 / Math.PI) % 360;
+    const deg = (gravityDir * 90) % 360;
     elGravityInfo.textContent = `Gravity: ${ARROWS[gravityDir]} ${DIRS[gravityDir]} • Angle: ${deg}°`;
 
     elRFlips.textContent = String(flipTokens[P_RED]);
