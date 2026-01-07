@@ -1193,9 +1193,14 @@
     return { x: ev.clientX, y: ev.clientY };
   }
 
+  let tapGuard = 0;
   function onDown(ev){
     if(overlay.style.display==="flex") return;
     if(animating) return;
+    const now = performance.now();
+    if(now - tapGuard < 30) return; // guard against double-delivery
+    tapGuard = now;
+    if(ev.pointerType && ev.isPrimary===false) return;
     if(ev.cancelable) ev.preventDefault();
 
     const {x,y} = getClientXY(ev);
@@ -1217,8 +1222,18 @@
     }
   }
 
-  canvas.addEventListener("pointerdown", onDown, { passive:false });
-  canvas.addEventListener("touchstart", onDown, { passive:false });
+  // Input events:
+  // IMPORTANT: On iOS Safari, binding both pointer* and touch* can cause a single tap to be handled twice.
+  const HAS_POINTER = typeof window.PointerEvent !== "undefined";
+  if (HAS_POINTER){
+    canvas.addEventListener("pointerdown", onDown, { passive:false });
+    canvas.addEventListener("pointermove", onMove, { passive:false });
+  } else {
+    canvas.addEventListener("touchstart", onDown, { passive:false });
+    canvas.addEventListener("touchmove", onMove, { passive:false });
+    canvas.addEventListener("mousedown", onDown, { passive:false });
+    canvas.addEventListener("mousemove", onMove, { passive:false });
+  }
   canvas.addEventListener("wheel", (e)=>{ if(e.cancelable) e.preventDefault(); }, { passive:false });
 
   // Buttons
