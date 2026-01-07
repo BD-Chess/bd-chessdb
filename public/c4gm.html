@@ -1207,8 +1207,15 @@
     }
   }
 
-  canvas.addEventListener("pointerdown", onDown, { passive:false });
-  canvas.addEventListener("touchstart", onDown, { passive:false });
+  // Input events:
+  // IMPORTANT: Do NOT bind both pointer* and touch* on iOS Safari, or a single tap can fire twice.
+  const HAS_POINTER = typeof window.PointerEvent !== "undefined";
+  if (HAS_POINTER){
+    canvas.addEventListener("pointerdown", onDown, { passive:false });
+  } else {
+    canvas.addEventListener("touchstart", onDown, { passive:false });
+    canvas.addEventListener("mousedown", onDown, { passive:false });
+  }
   canvas.addEventListener("wheel", (e)=>{ if(e.cancelable) e.preventDefault(); }, { passive:false });
 
   // Buttons
