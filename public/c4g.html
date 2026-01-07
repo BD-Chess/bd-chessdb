@@ -99,7 +99,10 @@
   }
   #ovTitle{font-size:22px;font-weight:1000;letter-spacing:0.2px;margin:0 0 6px 0;}
   #ovSub{margin:0 0 14px 0;color:var(--muted);font-size:13px;line-height:1.35;white-space:pre-line;text-align:left;}
-  #playAgain{width:100%;padding:12px 14px;font-size:14px;}
+  #overlayBtns{display:flex;gap:10px;}
+#overlayBtns button{flex:1;}
+#playAgain{padding:12px 14px;font-size:14px;}
+#ovUndo{padding:12px 14px;font-size:14px;}
 </style>
 </head>
 <body>
@@ -132,8 +135,8 @@
       <button class="tacBtn" id="tacCW"  title="Tactical Flip (consumes your flip token)">Tactical Flip ⟳</button>
       <button class="tacBtn" id="showWin" title="Find and demonstrate a winning line (depth-limited)">SHOW WIN</button>
 
-      <button class="envBtn btnSmall" id="envCCW" title="Environment Rotate (free)">Env Rotate ⟲ (free)</button>
-      <button class="envBtn btnSmall" id="envCW"  title="Environment Rotate (free)">Env Rotate ⟳ (free)</button>
+      <button class="envBtn btnSmall" id="envCCW" title="Environment Rotate (free)">Env Rotate ⟲</button>
+      <button class="envBtn btnSmall" id="envCW"  title="Environment Rotate (free)">Env Rotate ⟳</button>
 
       <button class="envBtn btnSmall" id="undoBtn" title="Undo last player move">Undo</button>
       <button class="dangerBtn" id="newGame">New Game</button>
@@ -148,7 +151,10 @@
     <div id="overlayCard">
       <h2 id="ovTitle">—</h2>
       <p id="ovSub">—</p>
-      <button id="playAgain" class="dangerBtn">Close</button>
+      <div id="overlayBtns">
+        <button id="ovUndo" class="envBtn">Undo</button>
+        <button id="playAgain" class="dangerBtn">Close</button>
+      </div>
     </div>
   </div>
 </div>
@@ -172,6 +178,7 @@
   const ovTitle = document.getElementById("ovTitle");
   const ovSub = document.getElementById("ovSub");
   const btnOverlay = document.getElementById("playAgain");
+  const btnOvUndo = document.getElementById("ovUndo");
 
   const elTurnBig = document.getElementById("turnBig");
   const elGravityInfo = document.getElementById("gravityInfo");
@@ -263,6 +270,12 @@
     if (overlayMode === "gameover") btnOverlay.textContent = "Play Again";
     else if (overlayMode === "resume") btnOverlay.textContent = "Resume";
     else btnOverlay.textContent = "Close";
+    // Overlay Undo is only for real game-over (not SHOW WIN preview)
+    if (btnOvUndo) {
+      const showUndo = (overlayMode === "gameover") && !previewMode;
+      btnOvUndo.style.display = showUndo ? "inline-block" : "none";
+      btnOvUndo.disabled = !showUndo || animating || history.length === 0;
+    }
   }
   function hideOverlay() { overlay.style.display = "none"; }
 
@@ -1012,6 +1025,11 @@
     btnEnvCCW.disabled = animating || gameOver || previewMode;
     btnEnvCW.disabled  = animating || gameOver || previewMode;
     btnUndo.disabled = animating || previewMode || history.length === 0;
+    if (btnOvUndo) {
+      const showUndo = (overlayMode === "gameover") && !previewMode;
+      btnOvUndo.style.display = showUndo ? "inline-block" : "none";
+      btnOvUndo.disabled = !showUndo || animating || history.length === 0;
+    }
 
     scheduleHintCompute();
   }
@@ -1069,6 +1087,7 @@
   btnEnvCW.addEventListener("click",  () => doEnvRotate(-1, false));
   btnShowWin.addEventListener("click", () => startShowWinDemo());
   btnUndo.addEventListener("click", () => undoLastMove());
+  btnOvUndo.addEventListener("click", () => undoLastMove());
   btnNewGame.addEventListener("click", () => newGame());
 
   // =========================
