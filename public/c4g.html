@@ -144,7 +144,8 @@
     </div>
 
     <div id="motionWrap">
-</div>
+      <button id="motionBtn">Enable Motion</button>
+    </div>
   </div>
 
   <div id="overlay">
@@ -160,10 +161,15 @@
 </div>
 
 <script>
+
+
+
+
+
 (() => {
   "use strict";
 
-  const COLS = 7, ROWS = 6;
+  const COLS = 7, ROWS = 7;
   const P_EMPTY = 0, P_RED = 1, P_YEL = 2;
 
   // Directions: 0=DOWN, 1=LEFT, 2=UP, 3=RIGHT
@@ -205,10 +211,12 @@
   let currentPlayer = P_RED;
   let flipTokens = { [P_RED]: 2, [P_YEL]: 2 };
   let magnetTokens = { [P_RED]: 2, [P_YEL]: 2 }; // per player
-  // Magnet slots: 4 sides × 7 indices (7x7 board).
-  // side: 0=TOP, 1=RIGHT, 2=BOTTOM, 3=LEFT. idx: 0..6.
-  // value: 0 none, 1 red, 2 yellow
-  let magnetOwner = new Array(4 * COLS).fill(0);
+  // Magnet segments: per side and per line index.
+  // Top/Bottom are per COLUMN (0..COLS-1). Left/Right are per ROW (0..ROWS-1).
+  let magTop = new Array(COLS).fill(0);
+  let magBottom = new Array(COLS).fill(0);
+  let magLeft = new Array(ROWS).fill(0);
+  let magRight = new Array(ROWS).fill(0);
 
   let anim = null;
   let animating = false;
@@ -257,9 +265,6 @@
   }
   function easeInOut(t) { return t * t * (3 - 2 * t); }
 
-  function clampInt(v, a, b){ return v < a ? a : (v > b ? b : v); }
-
-
   function gridIsFull(g) {
     for (let r = 0; r < ROWS; r++)
       for (let c = 0; c < COLS; c++)
@@ -297,7 +302,10 @@
       flipY: flipTokens[P_YEL],
       magR: magnetTokens[P_RED],
       magY: magnetTokens[P_YEL],
-      mags: magnetOwner.slice(),
+      magTop: magTop.slice(),
+      magBottom: magBottom.slice(),
+      magLeft: magLeft.slice(),
+      magRight: magRight.slice(),
       gameOver,
       winner,
       boardAngle,
@@ -313,7 +321,10 @@
     flipTokens[P_YEL] = s.flipY;
     magnetTokens[P_RED] = s.magR;
     magnetTokens[P_YEL] = s.magY;
-    magnetOwner = s.mags.slice();
+    magTop = s.magTop.slice();
+    magBottom = s.magBottom.slice();
+    magLeft = s.magLeft.slice();
+    magRight = s.magRight.slice();
     gameOver = s.gameOver;
     winner = s.winner;
     boardAngle = s.boardAngle;
@@ -461,58 +472,62 @@
     return out;
   }
 
-  function resolvePhysics(startG, dir, mags){
+  function resolvePhysics(startG, dir) {
     const settled = settleGrid(startG, dir).newG;
     let g = cloneGrid(settled);
 
     const pinned = new Array(ROWS);
     for (let r=0;r<ROWS;r++) pinned[r] = new Array(COLS).fill(false);
 
-    // Pull order is deterministic:
-    // TOP L->R, RIGHT T->B, BOTTOM L->R, LEFT T->B.
-    for (let c=0;c<COLS;c++){
-      if (!mags[0*COLS + c]) continue;
-      if (g[0][c] === P_EMPTY){
+    // Pull helpers: pull ONE nearest token to the edge cell for that line, then pin it.
+    function pullToTop(c){
+      if (magTop[c]===0) return;
+      if (g[0][c]===P_EMPTY){
         for (let r=1;r<ROWS;r++){
-          if (g[r][c] !== P_EMPTY){ g[0][c] = g[r][c]; g[r][c] = P_EMPTY; break; }
+          if (g[r][c]!==P_EMPTY){ g[0][c]=g[r][c]; g[r][c]=P_EMPTY; break; }
         }
       }
-      if (g[0][c] !== P_EMPTY) pinned[0][c] = true;
+      if (g[0][c]!==P_EMPTY) pinned[0][c]=true;
     }
-    for (let r=0;r<ROWS;r++){
-      if (!mags[1*COLS + r]) continue;
-      if (g[r][COLS-1] === P_EMPTY){
-        for (let c=COLS-2;c>=0;c--){
-          if (g[r][c] !== P_EMPTY){ g[r][COLS-1] = g[r][c]; g[r][c] = P_EMPTY; break; }
+    function pullToBottom(c){
+      if (magBottom[c]===0) return;
+      const rr = ROWS-1;
+      if (g[rr][c]===P_EMPTY){
+        for (let r=rr-1;r>=0;r--){
+          if (g[r][c]!==P_EMPTY){ g[rr][c]=g[r][c]; g[r][c]=P_EMPTY; break; }
         }
       }
-      if (g[r][COLS-1] !== P_EMPTY) pinned[r][COLS-1] = true;
+      if (g[rr][c]!==P_EMPTY) pinned[rr][c]=true;
     }
-    for (let c=0;c<COLS;c++){
-      if (!mags[2*COLS + c]) continue;
-      if (g[ROWS-1][c] === P_EMPTY){
-        for (let r=ROWS-2;r>=0;r--){
-          if (g[r][c] !== P_EMPTY){ g[ROWS-1][c] = g[r][c]; g[r][c] = P_EMPTY; break; }
-        }
-      }
-      if (g[ROWS-1][c] !== P_EMPTY) pinned[ROWS-1][c] = true;
-    }
-    for (let r=0;r<ROWS;r++){
-      if (!mags[3*COLS + r]) continue;
-      if (g[r][0] === P_EMPTY){
+    function pullToLeft(r){
+      if (magLeft[r]===0) return;
+      if (g[r][0]===P_EMPTY){
         for (let c=1;c<COLS;c++){
-          if (g[r][c] !== P_EMPTY){ g[r][0] = g[r][c]; g[r][c] = P_EMPTY; break; }
+          if (g[r][c]!==P_EMPTY){ g[r][0]=g[r][c]; g[r][c]=P_EMPTY; break; }
         }
       }
-      if (g[r][0] !== P_EMPTY) pinned[r][0] = true;
+      if (g[r][0]!==P_EMPTY) pinned[r][0]=true;
     }
+    function pullToRight(r){
+      if (magRight[r]===0) return;
+      const cc = COLS-1;
+      if (g[r][cc]===P_EMPTY){
+        for (let c=cc-1;c>=0;c--){
+          if (g[r][c]!==P_EMPTY){ g[r][cc]=g[r][c]; g[r][c]=P_EMPTY; break; }
+        }
+      }
+      if (g[r][cc]!==P_EMPTY) pinned[r][cc]=true;
+    }
+
+    for (let c=0;c<COLS;c++){ pullToTop(c); pullToBottom(c); }
+    for (let r=0;r<ROWS;r++){ pullToLeft(r); pullToRight(r); }
 
     return settleWithPinned(g, dir, pinned);
   }
 
   function applyPhysicsAnimated(onDone){
     const oldG = cloneGrid(grid);
-    const newG = resolvePhysics(oldG, gravityDir, magnetOwner);
+    const newG = resolvePhysics(oldG, gravityDir);
     if (gridsEqual(oldG, newG)) { onDone(); return; }
     grid = newG;
     const mapping = mapTokens(oldG, newG, gravityDir);
@@ -544,47 +559,42 @@
   // Hint + SHOW WIN (depth-limited forced win search)
   // =========================
   function stateKey(g, dir, flipT, magT, mags, player) {
-    let s = "" + dir + "|" + flipT[P_RED] + "," + flipT[P_YEL] + "|" + magT[P_RED] + "," + magT[P_YEL] + "|" + mags.join("") + "|" + player + "|";
-    for (let r = 0; r < ROWS; r++) s += g[r].join("");
+    // mags: {top,bottom,left,right} arrays
+    let s = "" + dir + "|" + flipT[P_RED] + "," + flipT[P_YEL] + "|" + magT[P_RED] + "," + magT[P_YEL] + "|" + player + "|";
+    s += mags.top.join("") + mags.bottom.join("") + mags.left.join("") + mags.right.join("");
+    s += "|";
+    for (let r=0;r<ROWS;r++) s += g[r].join("");
     return s;
   }
 
   function legalMovesFor(state) {
     const moves = [];
-    const dir = state.gravityDir;
-    const g = state.grid;
-
-    if (dir === 0 || dir === 2) {
-      for (let c = 0; c < COLS; c++) {
-        let ok = false;
-        for (let r = 0; r < ROWS; r++) if (g[r][c] === P_EMPTY) { ok = true; break; }
+    // DROP options depend on gravity: vertical => columns, horizontal => rows
+    if (state.gravityDir === 0 || state.gravityDir === 2) {
+      for (let c=0;c<COLS;c++){
+        // legal if any empty in column
+        let ok=false;
+        for (let r=0;r<ROWS;r++){ if (state.grid[r][c]===P_EMPTY){ ok=true; break; } }
         if (ok) moves.push({ type: "DROP", idx: c });
       }
     } else {
-      for (let r = 0; r < ROWS; r++) {
-        let ok = false;
-        for (let c = 0; c < COLS; c++) if (g[r][c] === P_EMPTY) { ok = true; break; }
+      for (let r=0;r<ROWS;r++){
+        let ok=false;
+        for (let c=0;c<COLS;c++){ if (state.grid[r][c]===P_EMPTY){ ok=true; break; } }
         if (ok) moves.push({ type: "DROP", idx: r });
       }
     }
+
     if (state.flipTokens[state.player] > 0) {
       moves.push({ type: "FLIP", dir: "CCW" });
       moves.push({ type: "FLIP", dir: "CW"  });
     }
+
     if (state.magnetTokens[state.player] > 0) {
-      for (let i=0;i<COLS;i++) moves.push({ type: "MAG", side: 0, idx: i });
-      for (let i=0;i<ROWS;i++) moves.push({ type: "MAG", side: 1, idx: i });
-      for (let i=0;i<COLS;i++) moves.push({ type: "MAG", side: 2, idx: i });
-      for (let i=0;i<ROWS;i++) moves.push({ type: "MAG", side: 3, idx: i });
+      for (let c=0;c<COLS;c++){ moves.push({ type:"MAG", side:0, idx:c }); moves.push({ type:"MAG", side:2, idx:c }); }
+      for (let r=0;r<ROWS;r++){ moves.push({ type:"MAG", side:3, idx:r }); moves.push({ type:"MAG", side:1, idx:r }); }
     }
-    moves.sort((a,b) => {
-      const ta = (a.type === "DROP") ? 0 : 1;
-      const tb = (b.type === "DROP") ? 0 : 1;
-      if (ta !== tb) return ta - tb;
-      if (a.type === "DROP") return a.idx - b.idx;
-      if (a.dir === b.dir) return 0;
-      return (a.dir === "CCW") ? -1 : 1;
-    });
+
     return moves;
   }
 
@@ -595,21 +605,26 @@
 
     const nextFlip = { [P_RED]: state.flipTokens[P_RED], [P_YEL]: state.flipTokens[P_YEL] };
     const nextMagT = { [P_RED]: state.magnetTokens[P_RED], [P_YEL]: state.magnetTokens[P_YEL] };
-    const nextMags = state.magnetOwner.slice();
+    const nextM = {
+      top: state.mags.top.slice(),
+      bottom: state.mags.bottom.slice(),
+      left: state.mags.left.slice(),
+      right: state.mags.right.slice(),
+    };
 
     if (move.type === "DROP") {
       if (dir === 0) {
         const c = move.idx;
-        for (let r = ROWS - 1; r >= 0; r--) if (g0[r][c] === P_EMPTY) { g0[r][c] = player; break; }
+        for (let r=ROWS-1;r>=0;r--) if (g0[r][c]===P_EMPTY){ g0[r][c]=player; break; }
       } else if (dir === 2) {
         const c = move.idx;
-        for (let r = 0; r < ROWS; r++) if (g0[r][c] === P_EMPTY) { g0[r][c] = player; break; }
+        for (let r=0;r<ROWS;r++) if (g0[r][c]===P_EMPTY){ g0[r][c]=player; break; }
       } else if (dir === 1) {
         const r = move.idx;
-        for (let c = 0; c < COLS; c++) if (g0[r][c] === P_EMPTY) { g0[r][c] = player; break; }
+        for (let c=0;c<COLS;c++) if (g0[r][c]===P_EMPTY){ g0[r][c]=player; break; }
       } else {
         const r = move.idx;
-        for (let c = COLS - 1; c >= 0; c--) if (g0[r][c] === P_EMPTY) { g0[r][c] = player; break; }
+        for (let c=COLS-1;c>=0;c--) if (g0[r][c]===P_EMPTY){ g0[r][c]=player; break; }
       }
     } else if (move.type === "FLIP") {
       if (nextFlip[player] <= 0) return null;
@@ -618,19 +633,32 @@
     } else if (move.type === "MAG") {
       if (nextMagT[player] <= 0) return null;
       nextMagT[player] -= 1;
-      const side = move.side;
-      const idx = move.idx;
-      const opp = (side + 2) % 4;
-      const oppOwner = nextMags[opp*COLS + idx];
-      if (oppOwner !== 0 && oppOwner !== player) {
-        nextMags[side*COLS + idx] = 0;
-        nextMags[opp*COLS + idx] = 0;
-      } else {
-        nextMags[side*COLS + idx] = player;
+      const side = move.side, idx = move.idx;
+
+      if (side === 0) { // top col
+        const opp = nextM.bottom[idx];
+        if (opp !== 0 && opp !== player) { nextM.top[idx]=0; nextM.bottom[idx]=0; }
+        else { nextM.top[idx]=player; if (opp===player) nextM.bottom[idx]=0; }
+      } else if (side === 2) { // bottom col
+        const opp = nextM.top[idx];
+        if (opp !== 0 && opp !== player) { nextM.top[idx]=0; nextM.bottom[idx]=0; }
+        else { nextM.bottom[idx]=player; if (opp===player) nextM.top[idx]=0; }
+      } else if (side === 3) { // left row
+        const opp = nextM.right[idx];
+        if (opp !== 0 && opp !== player) { nextM.left[idx]=0; nextM.right[idx]=0; }
+        else { nextM.left[idx]=player; if (opp===player) nextM.right[idx]=0; }
+      } else { // right row
+        const opp = nextM.left[idx];
+        if (opp !== 0 && opp !== player) { nextM.left[idx]=0; nextM.right[idx]=0; }
+        else { nextM.right[idx]=player; if (opp===player) nextM.left[idx]=0; }
       }
     } else return null;
 
-    const g1 = resolvePhysics(g0, dir, nextMags);
+    // physics using temporary magnet arrays
+    const savedTop = magTop, savedBottom = magBottom, savedLeft = magLeft, savedRight = magRight;
+    magTop = nextM.top; magBottom = nextM.bottom; magLeft = nextM.left; magRight = nextM.right;
+    const g1 = resolvePhysics(g0, dir);
+    magTop = savedTop; magBottom = savedBottom; magLeft = savedLeft; magRight = savedRight;
 
     const w = checkWins(g1);
     let winnerNow = 0;
@@ -641,7 +669,7 @@
     } else if (gridIsFull(g1)) winnerNow = 0;
 
     const nextPlayer = (player === P_RED) ? P_YEL : P_RED;
-    return { winnerNow, nextState: { grid: g1, gravityDir: dir, flipTokens: nextFlip, magnetTokens: nextMagT, magnetOwner: nextMags, player: nextPlayer } };
+    return { winnerNow, nextState: { grid: g1, gravityDir: dir, flipTokens: nextFlip, magnetTokens: nextMagT, mags: nextM, player: nextPlayer } };
   }
 
   function invertOutcome(out) {
@@ -652,7 +680,7 @@
   }
 
   function solveForcedWin(state, depth, memo) {
-    const key = stateKey(state.grid, state.gravityDir, state.flipTokens, state.magnetTokens, state.magnetOwner, state.player) + "|d" + depth;
+    const key = stateKey(state.grid, state.gravityDir, state.flipTokens, state.magnetTokens, state.mags, state.player) + "|d" + depth;
     const hit = memo.get(key);
     if (hit) return hit;
     if (depth <= 0) {
@@ -700,7 +728,7 @@
       gravityDir,
       flipTokens: { [P_RED]: flipTokens[P_RED], [P_YEL]: flipTokens[P_YEL] },
       magnetTokens: { [P_RED]: magnetTokens[P_RED], [P_YEL]: magnetTokens[P_YEL] },
-      magnetOwner: magnetOwner.slice(),
+      mags: { top: magTop.slice(), bottom: magBottom.slice(), left: magLeft.slice(), right: magRight.slice() },
       player: currentPlayer
     };
     const memo = new Map();
@@ -713,7 +741,7 @@
     if (hintTimer) clearTimeout(hintTimer);
     hintTimer = setTimeout(() => {
       if (animating || gameOver || previewMode) { elHintInfo.textContent = "Hint: —"; return; }
-      const key = stateKey(grid, gravityDir, flipTokens, magnetTokens, magnetOwner, currentPlayer);
+      const key = stateKey(grid, gravityDir, flipTokens, magnetTokens, { top: magTop, bottom: magBottom, left: magLeft, right: magRight }, currentPlayer);
       if (key === lastHintKey) return;
       lastHintKey = key;
 
@@ -751,8 +779,9 @@
       lines.push(`${i+1}. ${mover}: ${desc}   (gravity ${ARROWS[dir]} ${DIRS[dir]})`);
       p = (p === P_RED) ? P_YEL : P_RED;
     }
-    return lines.join("\n");
-  }
+    return lines.join("
+");
+}
 
   function startShowWinDemo() {
     if (animating || gameOver) return;
@@ -772,7 +801,11 @@
     const plyToWin = Math.max(1, Math.min(6, res.out.ply || 6));
     const pv = res.out.pv.slice(0, plyToWin);
 
-    showOverlay("SHOW WIN demo", "Planned line (depth-limited):\n\n" + formatPV(pv) + "\n\nDemo starts now…", "close");
+    showOverlay("SHOW WIN demo", "Planned line (depth-limited):
+
+" + formatPV(pv) + "
+
+Demo starts now…", "close");
     setTimeout(() => { if (previewMode && myRun === previewRunId) hideOverlay(); }, 900);
 
     let i = 0;
@@ -919,84 +952,58 @@
     pgrad.addColorStop(0, "rgba(255,255,255,0.14)");
     pgrad.addColorStop(1, "rgba(0,0,0,0.20)");
     ctx.fillStyle = pgrad;
-    ctx.fill();    // Magnet frame (clickable border)
+    ctx.fill();
+
+    // Magnet frame (clickable border, segmented)
     const mf = Math.max(10, board.cell * 0.55);
     ctx.save();
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
     ctx.lineWidth = Math.max(8, board.cell * 0.18);
-
-    // Neutral frame
     ctx.strokeStyle = "rgba(255,255,255,0.14)";
     drawRoundedRect(-mf, -mf, board.w + mf*2, board.h + mf*2, board.cell * 0.28);
     ctx.stroke();
 
-    function sideColor(owner){
-      if (owner === P_RED) return "rgba(229,57,53,0.90)";
-      if (owner === P_YEL) return "rgba(253,216,53,0.90)";
+    // Segment strokes for active magnets
+    function magColor(owner){
+      if (owner === P_RED) return "rgba(229,57,53,0.88)";
+      if (owner === P_YEL) return "rgba(253,216,53,0.88)";
       return null;
     }
 
-    // Per-slot magnet segments (one column/row)
-    const pad = mf * 0.35;
-    const x0 = -mf + pad;
-    const y0 = -mf + pad;
-    const x1 = board.w + mf - pad;
-    const y1 = board.h + mf - pad;
+    const inset = mf - ctx.lineWidth * 0.55;
+    const x0 = -mf + inset, x1 = board.w + mf - inset;
+    const y0 = -mf + inset, y1 = board.h + mf - inset;
 
-    const segLen = board.cell * 0.92;
-
-    // TOP slots
-    for (let i=0;i<COLS;i++){
-      const owner = magnetOwner[0*COLS + i];
-      const col = sideColor(owner);
-      if (!col) continue;
-      const cx = i*board.cell + board.cell*0.5;
-      const y = y0;
-      ctx.strokeStyle = col;
-      ctx.beginPath();
-      ctx.moveTo(cx - segLen*0.5, y);
-      ctx.lineTo(cx + segLen*0.5, y);
-      ctx.stroke();
+    // TOP/BOTTOM per column
+    for (let c=0;c<COLS;c++){
+      const colTop = magColor(magTop[c]);
+      const colBot = magColor(magBottom[c]);
+      const sx = c * board.cell;
+      const ex = sx + board.cell;
+      if (colTop){
+        ctx.strokeStyle = colTop;
+        ctx.beginPath(); ctx.moveTo(sx, y0); ctx.lineTo(ex, y0); ctx.stroke();
+      }
+      if (colBot){
+        ctx.strokeStyle = colBot;
+        ctx.beginPath(); ctx.moveTo(sx, y1); ctx.lineTo(ex, y1); ctx.stroke();
+      }
     }
-    // RIGHT slots
-    for (let i=0;i<ROWS;i++){
-      const owner = magnetOwner[1*COLS + i];
-      const col = sideColor(owner);
-      if (!col) continue;
-      const cy = i*board.cell + board.cell*0.5;
-      const x = x1;
-      ctx.strokeStyle = col;
-      ctx.beginPath();
-      ctx.moveTo(x, cy - segLen*0.5);
-      ctx.lineTo(x, cy + segLen*0.5);
-      ctx.stroke();
-    }
-    // BOTTOM slots
-    for (let i=0;i<COLS;i++){
-      const owner = magnetOwner[2*COLS + i];
-      const col = sideColor(owner);
-      if (!col) continue;
-      const cx = i*board.cell + board.cell*0.5;
-      const y = y1;
-      ctx.strokeStyle = col;
-      ctx.beginPath();
-      ctx.moveTo(cx - segLen*0.5, y);
-      ctx.lineTo(cx + segLen*0.5, y);
-      ctx.stroke();
-    }
-    // LEFT slots
-    for (let i=0;i<ROWS;i++){
-      const owner = magnetOwner[3*COLS + i];
-      const col = sideColor(owner);
-      if (!col) continue;
-      const cy = i*board.cell + board.cell*0.5;
-      const x = x0;
-      ctx.strokeStyle = col;
-      ctx.beginPath();
-      ctx.moveTo(x, cy - segLen*0.5);
-      ctx.lineTo(x, cy + segLen*0.5);
-      ctx.stroke();
+    // LEFT/RIGHT per row
+    for (let r=0;r<ROWS;r++){
+      const colL = magColor(magLeft[r]);
+      const colR = magColor(magRight[r]);
+      const sy = r * board.cell;
+      const ey = sy + board.cell;
+      if (colL){
+        ctx.strokeStyle = colL;
+        ctx.beginPath(); ctx.moveTo(x0, sy); ctx.lineTo(x0, ey); ctx.stroke();
+      }
+      if (colR){
+        ctx.strokeStyle = colR;
+        ctx.beginPath(); ctx.moveTo(x1, sy); ctx.lineTo(x1, ey); ctx.stroke();
+      }
     }
 
     ctx.restore();
@@ -1157,7 +1164,7 @@
   }
 
   function doMagnet(side, idx, internal=false) {
-    // side: 0=TOP,1=RIGHT,2=BOTTOM,3=LEFT. idx: 0..6 along that side.
+    // side: 0=TOP(col),1=RIGHT(row),2=BOTTOM(col),3=LEFT(row)
     if (animating || gameOver) return;
     if (previewMode && !internal) return;
     if (magnetTokens[currentPlayer] <= 0) return;
@@ -1166,15 +1173,23 @@
     magnetTokens[currentPlayer] -= 1;
 
     const me = currentPlayer;
-    const oppSide = (side + 2) % 4;
-    const oppOwner = magnetOwner[oppSide*COLS + idx];
 
-    if (oppOwner !== 0 && oppOwner !== me) {
-      // Neutralize opposite magnets on same line
-      magnetOwner[side*COLS + idx] = 0;
-      magnetOwner[oppSide*COLS + idx] = 0;
-    } else {
-      magnetOwner[side*COLS + idx] = me;
+    if (side === 0) { // TOP col
+      const opp = magBottom[idx];
+      if (opp !== 0 && opp !== me) { magTop[idx] = 0; magBottom[idx] = 0; }
+      else { magTop[idx] = me; if (opp === me) magBottom[idx] = 0; }
+    } else if (side === 2) { // BOTTOM col
+      const opp = magTop[idx];
+      if (opp !== 0 && opp !== me) { magTop[idx] = 0; magBottom[idx] = 0; }
+      else { magBottom[idx] = me; if (opp === me) magTop[idx] = 0; }
+    } else if (side === 3) { // LEFT row
+      const opp = magRight[idx];
+      if (opp !== 0 && opp !== me) { magLeft[idx] = 0; magRight[idx] = 0; }
+      else { magLeft[idx] = me; if (opp === me) magRight[idx] = 0; }
+    } else { // RIGHT row
+      const opp = magLeft[idx];
+      if (opp !== 0 && opp !== me) { magLeft[idx] = 0; magRight[idx] = 0; }
+      else { magRight[idx] = me; if (opp === me) magLeft[idx] = 0; }
     }
 
     resolveAfterPlayerMove();
@@ -1223,7 +1238,9 @@
       previewRunId++;       // stop pending demo steps
       anim = null;
       animating = false;
-      showOverlay("SHOW WIN demo", `${title}. ${sub}\n\nTap Resume to return to your original position.`, "resume");
+      showOverlay("SHOW WIN demo", `${title}. ${sub}
+
+Tap Resume to return to your original position.`, "resume");
       return;
     }
 
@@ -1250,7 +1267,10 @@
     flipTokens[P_YEL] = 2;
     magnetTokens[P_RED] = 2;
     magnetTokens[P_YEL] = 2;
-    magnetOwner = new Array(4 * COLS).fill(0);
+    magTop.fill(0);
+    magBottom.fill(0);
+    magLeft.fill(0);
+    magRight.fill(0);
 
     anim = null;
     animating = false;
@@ -1333,8 +1353,13 @@
       if (dB < best) { best = dB; side = 2; }
       if (dL < best) { best = dL; side = 3; }
 
-      const idx = (side === 0 || side === 2) ? clampInt(Math.floor(lx / board.cell), 0, COLS-1) : clampInt(Math.floor(ly / board.cell), 0, ROWS-1);
-      doMagnet(side, idx);
+      if (side === 0 || side === 2) {
+        const col = clamp(Math.floor(lx / board.cell), 0, COLS-1);
+        doMagnet(side, col);
+      } else {
+        const row = clamp(Math.floor(ly / board.cell), 0, ROWS-1);
+        doMagnet(side, row);
+      }
       return;
     }
 
@@ -1440,6 +1465,11 @@
   requestMotionPermissionIfNeeded();
   requestAnimationFrame(frame);
 })();
+
+
+
+
+
 </script>
 </body>
 </html>
