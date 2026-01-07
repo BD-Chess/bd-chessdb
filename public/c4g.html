@@ -151,7 +151,7 @@
 (() => {
   "use strict";
 
-  const COLS = 7, ROWS = 6;
+  const COLS = 7, ROWS = 7;
   const P_EMPTY = 0, P_RED = 1, P_YEL = 2;
 
   // Directions: 0=DOWN, 1=LEFT, 2=UP, 3=RIGHT
@@ -625,7 +625,7 @@
   // Layout & mapping
   // =========================
   let W = 1, H = 1;
-  let board = { cx:0, cy:0, w:0, h:0, cell:0, size:0, offX:0, offY:0, gridW:0, gridH:0 };
+  let board = { cx:0, cy:0, w:0, h:0, cell:0, offX:0, offY:0, gridW:0, gridH:0 };
 
   function resize() {
     const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
@@ -644,20 +644,17 @@
     const availH = Math.max(120, H - top - margin);
     const availW = Math.max(120, W - 2*margin);
 
-    // Square plate for symmetric rotation. The 7x6 grid is centered inside the square.
-    const maxDim = Math.max(COLS, ROWS);
-    const cell = Math.floor(Math.min(availW, availH) / maxDim);
+    // True square grid (7x7). Rotation is part of the game, so keep plate square.
+    const cell = Math.floor(Math.min(availW, availH) / 7);
 
     board.cell = Math.max(20, cell);
-    board.size = board.cell * maxDim;
+    board.w = board.cell * 7;
+    board.h = board.cell * 7;
 
-    board.w = board.size;
-    board.h = board.size;
-
-    board.gridW = board.cell * COLS;
-    board.gridH = board.cell * ROWS;
-    board.offX = (board.w - board.gridW) / 2;
-    board.offY = (board.h - board.gridH) / 2;
+    board.gridW = board.w;
+    board.gridH = board.h;
+    board.offX = 0;
+    board.offY = 0;
 
     board.cx = Math.floor(W / 2);
     board.cy = Math.floor(top + availH / 2);
@@ -674,11 +671,7 @@
     const ly = ry + board.h / 2;
     return { lx, ly, inside: (lx >= 0 && lx <= board.w && ly >= 0 && ly <= board.h) };
   }
-  function boardLocalToCell(lx, ly) {
-    const gx = lx - board.offX;
-    const gy = ly - board.offY;
-    return { c: Math.floor(gx / board.cell), r: Math.floor(gy / board.cell) };
-  }
+  function boardLocalToCell(lx, ly) { return { c: Math.floor(lx / board.cell), r: Math.floor(ly / board.cell) }; }
 
   // =========================
   // Rendering
@@ -704,8 +697,8 @@
   }
   function drawTokenAt(r, c, p) {
     const s = board.cell;
-    const cx = board.offX + (c + 0.5) * s;
-    const cy = board.offY + (r + 0.5) * s;
+    const cx = (c + 0.5) * s;
+    const cy = (r + 0.5) * s;
     const rad = s * 0.38;
 
     ctx.save();
@@ -766,15 +759,15 @@
       ctx.save();
       ctx.globalAlpha = 0.18;
       ctx.fillStyle = "#ffffff";
-      if (isVertical(gravityDir)) ctx.fillRect(board.offX + hoveredIndex*board.cell, board.offY, board.cell, board.gridH);
-      else ctx.fillRect(board.offX, board.offY + hoveredIndex*board.cell, board.gridW, board.cell);
+      if (isVertical(gravityDir)) ctx.fillRect(hoveredIndex*board.cell, 0, board.cell, board.h);
+      else ctx.fillRect(0, hoveredIndex*board.cell, board.w, board.cell);
       ctx.restore();
     }
 
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
-        const cx = board.offX + (c + 0.5) * board.cell;
-        const cy = board.offY + (r + 0.5) * board.cell;
+        const cx = (c + 0.5) * board.cell;
+        const cy = (r + 0.5) * board.cell;
         const rad = board.cell * 0.42;
         ctx.beginPath();
         ctx.arc(cx, cy, rad, 0, Math.PI*2);
@@ -800,7 +793,7 @@
     ctx.globalAlpha = 0.8;
     ctx.fillStyle = "rgba(233,238,252,0.70)";
     ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif";
-    const hint = isVertical(gravityDir) ? "Drop: tap/click board • or press 1–7" : "Drop: tap/click board • or press 1–6";
+    const hint = isVertical(gravityDir) ? "Drop: tap/click board • or press 1–7" : "Drop: tap/click board • or press 1–7";
     ctx.fillText(hint, 12, H - 14);
     ctx.restore();
   }
@@ -1042,13 +1035,6 @@
     if (animating || gameOver || previewMode) { hoveredIndex = -1; return; }
     const loc = screenToBoardLocal(px, py);
     if (!loc.inside) { hoveredIndex = -1; return; }
-
-    // Only allow input inside the real 7x6 grid area (centered within the square plate).
-    if (loc.lx < board.offX || loc.lx > board.offX + board.gridW || loc.ly < board.offY || loc.ly > board.offY + board.gridH) {
-      hoveredIndex = -1;
-      return;
-    }
-
     const cell = boardLocalToCell(loc.lx, loc.ly);
     if (isVertical(gravityDir)) hoveredIndex = (cell.c >= 0 && cell.c < COLS) ? cell.c : -1;
     else hoveredIndex = (cell.r >= 0 && cell.r < ROWS) ? cell.r : -1;
@@ -1084,7 +1070,7 @@
     if (k >= "1" && k <= "9") {
       const n = (k.charCodeAt(0) - 48);
       if (isVertical(gravityDir)) { if (n >= 1 && n <= 7) doDrop(n - 1); }
-      else { if (n >= 1 && n <= 6) doDrop(n - 1); }
+      else { if (n >= 1 && n <= 7) doDrop(n - 1); }
     }
   });
 
