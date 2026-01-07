@@ -73,6 +73,14 @@
     background:linear-gradient(180deg, rgba(255,107,107,0.20), rgba(255,107,107,0.10));
     border-color:rgba(255,107,107,0.35);
   }
+  #motionWrap{margin-top:10px;display:none;}
+  #motionBtn{
+    width:100%;
+    background:linear-gradient(180deg, rgba(39,209,127,0.18), rgba(39,209,127,0.08));
+    border-color:rgba(39,209,127,0.35);
+    padding:12px 14px;
+    font-size:14px;
+  }
   #overlay{
     position:absolute;inset:0;display:none;align-items:center;justify-content:center;
     background:rgba(0,0,0,0.55);
@@ -91,10 +99,7 @@
   }
   #ovTitle{font-size:22px;font-weight:1000;letter-spacing:0.2px;margin:0 0 6px 0;}
   #ovSub{margin:0 0 14px 0;color:var(--muted);font-size:13px;line-height:1.35;white-space:pre-line;text-align:left;}
-  #overlayBtns{display:flex;gap:10px;}
-#overlayBtns button{flex:1;}
-#playAgain{padding:12px 14px;font-size:14px;}
-#ovUndo{padding:12px 14px;font-size:14px;}
+  #playAgain{width:100%;padding:12px 14px;font-size:14px;}
 </style>
 </head>
 <body>
@@ -124,14 +129,17 @@
 
     <div id="btnRow">
       <button class="tacBtn" id="tacCCW" title="Tactical Flip (consumes your flip token)">Tactical Flip ⟲</button>
-      <button class="tacBtn" id="tacCW"  title="Tactical Flip (consumes your flip token)">Tactical Flip ⟳</button>      <button class="envBtn btnSmall" id="envCCW" title="Rotate Left (environment, free)">RL</button>
-      <button class="envBtn btnSmall" id="envCW"  title="Rotate Right (environment, free)">RR</button>
-
-      <button class="envBtn btnSmall" id="undoBtn" title="Undo last player move">Undo</button>
+      <button class="tacBtn" id="tacCW"  title="Tactical Flip (consumes your flip token)">Tactical Flip ⟳</button>
       <button class="tacBtn" id="showWin" title="Find and demonstrate a winning line (depth-limited)">SHOW WIN</button>
 
+      <button class="envBtn btnSmall" id="envCCW" title="Environment Rotate (free)">Env Rotate ⟲ (free)</button>
+      <button class="envBtn btnSmall" id="envCW"  title="Environment Rotate (free)">Env Rotate ⟳ (free)</button>
 
       <button class="dangerBtn" id="newGame">New Game</button>
+    </div>
+
+    <div id="motionWrap">
+      <button id="motionBtn">Enable Motion</button>
     </div>
   </div>
 
@@ -139,10 +147,7 @@
     <div id="overlayCard">
       <h2 id="ovTitle">—</h2>
       <p id="ovSub">—</p>
-      <div id="overlayBtns">
-        <button id="ovUndo" class="envBtn">Undo</button>
-        <button id="playAgain" class="dangerBtn">Close</button>
-      </div>
+      <button id="playAgain" class="dangerBtn">Close</button>
     </div>
   </div>
 </div>
@@ -151,10 +156,13 @@
 (() => {
   "use strict";
 
+  // =========================
+  // Constants / State
+  // =========================
   const COLS = 7, ROWS = 6;
   const P_EMPTY = 0, P_RED = 1, P_YEL = 2;
 
-  // Directions: 0=DOWN, 1=LEFT, 2=UP, 3=RIGHT
+  // Directions: 0=DOWN, 1=LEFT, 2=UP, 3=RIGHT (logical gravity)
   const DIRS = ["DOWN","LEFT","UP","RIGHT"];
   const ARROWS = ["↓","←","↑","→"];
 
@@ -166,7 +174,6 @@
   const ovTitle = document.getElementById("ovTitle");
   const ovSub = document.getElementById("ovSub");
   const btnOverlay = document.getElementById("playAgain");
-  const btnOvUndo = document.getElementById("ovUndo");
 
   const elTurnBig = document.getElementById("turnBig");
   const elGravityInfo = document.getElementById("gravityInfo");
@@ -179,34 +186,33 @@
   const btnShowWin = document.getElementById("showWin");
   const btnEnvCCW = document.getElementById("envCCW");
   const btnEnvCW = document.getElementById("envCW");
-  const btnUndo = document.getElementById("undoBtn");
   const btnNewGame = document.getElementById("newGame");
 
+  const motionWrap = document.getElementById("motionWrap");
+  const motionBtn = document.getElementById("motionBtn");
+
   let grid = makeEmptyGrid();
-  let gravityDir = 0;
-  let boardAngle = 0;
-  let targetAngle = 0;
-  let currentPlayer = P_RED;
+  let gravityDir = 0;                // starts DOWN
+  let boardAngle = 0;                // radians, visual
+  let targetAngle = 0;               // radians
+  let currentPlayer = P_RED;         // starts RED
   let flipTokens = { [P_RED]: 2, [P_YEL]: 2 };
 
-  let anim = null;
+  let anim = null;                   // {start, dur, tokens, a0, a1, onDone}
   let animating = false;
 
-  let hoveredIndex = -1;
+  let hoveredIndex = -1;             // column (vertical) or row (horizontal), in board coordinates
 
   let gameOver = false;
-  let winner = 0;
+  let winner = 0;                    // 0 draw, 1 red, 2 yellow
 
-  // Overlay mode: gameover | close | resume
+  // Overlays: gameover | close | resume
   let overlayMode = "close";
 
   // Preview/demo mode
   let previewMode = false;
   let previewSnapshot = null;
   let previewRunId = 0;
-
-  // Undo history (snapshots BEFORE each player move)
-  let history = [];
 
   // Hint cache + debounce
   let hintTimer = null;
@@ -221,11 +227,25 @@
     for (let r = 0; r < ROWS; r++) g[r] = new Array(COLS).fill(P_EMPTY);
     return g;
   }
-  function cloneGrid(g) { return g.map(row => row.slice()); }
+
+  function cloneGrid(g) {
+    const out = new Array(ROWS);
+    for (let r = 0; r < ROWS; r++) out[r] = g[r].slice();
+    return out;
+  }
+
   function isVertical(dir) { return dir === 0 || dir === 2; }
 
-  // Canvas rotation is clockwise-positive in screen coords (Y down), so use negative mapping.
+  // IMPORTANT: canvas rotation is clockwise-positive in screen coords (Y down),
+  // so we use NEGATIVE to align "LEFT" gravity with a +90° readout, etc.
   function dirToAngleRad(dir) { return -dir * (Math.PI / 2); }
+
+  function normAngleRad(a) {
+    const TWO = Math.PI * 2;
+    a = a % TWO;
+    if (a < 0) a += TWO;
+    return a;
+  }
 
   function shortestAngleDiff(a, b) {
     const TWO = Math.PI * 2;
@@ -234,6 +254,7 @@
     if (d <= -Math.PI) d += TWO;
     return d;
   }
+
   function easeInOut(t) { return t * t * (3 - 2 * t); }
 
   function gridIsFull(g) {
@@ -242,6 +263,7 @@
         if (g[r][c] === P_EMPTY) return false;
     return true;
   }
+
   function playerName(p) { return p === P_RED ? "Red" : "Yellow"; }
 
   // =========================
@@ -255,13 +277,8 @@
     if (overlayMode === "gameover") btnOverlay.textContent = "Play Again";
     else if (overlayMode === "resume") btnOverlay.textContent = "Resume";
     else btnOverlay.textContent = "Close";
-    // Overlay Undo is only for real game-over (not SHOW WIN preview)
-    if (btnOvUndo) {
-      const showUndo = (overlayMode === "gameover") && !previewMode;
-      btnOvUndo.style.display = showUndo ? "inline-block" : "none";
-      btnOvUndo.disabled = !showUndo || animating || history.length === 0;
-    }
   }
+
   function hideOverlay() { overlay.style.display = "none"; }
 
   function snapshotState() {
@@ -278,7 +295,13 @@
       hoveredIndex
     };
   }
-  function applySnapshotState(s) {
+
+  function restoreSnapshot() {
+    if (!previewSnapshot) { hideOverlay(); return; }
+    const s = previewSnapshot;
+    previewSnapshot = null;
+    previewMode = false;
+
     grid = cloneGrid(s.grid);
     gravityDir = s.gravityDir;
     currentPlayer = s.currentPlayer;
@@ -289,35 +312,10 @@
     boardAngle = s.boardAngle;
     targetAngle = s.targetAngle;
     hoveredIndex = s.hoveredIndex;
-  }
-
-  function restoreSnapshot() {
-    if (!previewSnapshot) { hideOverlay(); return; }
-    const s = previewSnapshot;
-    previewSnapshot = null;
-    previewMode = false;
 
     anim = null;
     animating = false;
 
-    applySnapshotState(s);
-    hideOverlay();
-    syncUI();
-  }
-
-  function pushHistorySnapshot() {
-    history.push(snapshotState());
-    if (history.length > 80) history.shift();
-  }
-  function undoLastMove() {
-    if (animating || previewMode) return;
-    if (history.length === 0) return;
-    const s = history.pop();
-    anim = null;
-    animating = false;
-    previewSnapshot = null;
-    previewMode = false;
-    applySnapshotState(s);
     hideOverlay();
     syncUI();
   }
@@ -333,7 +331,7 @@
   // =========================
   function settleGrid(oldG, dir) {
     const newG = makeEmptyGrid();
-    const tokens = [];
+    const tokens = []; // mapping: {p, fr, fc, tr, tc}
 
     if (dir === 0 || dir === 2) {
       for (let c = 0; c < COLS; c++) {
@@ -407,20 +405,22 @@
     if (dir === 0 || dir === 2) {
       for (let c = 0; c < COLS; c++) {
         let ok = false;
-        for (let r = 0; r < ROWS; r++) if (g[r][c] === P_EMPTY) { ok = true; break; }
+        for (let r = 0; r < ROWS; r++) { if (g[r][c] === P_EMPTY) { ok = true; break; } }
         if (ok) moves.push({ type: "DROP", idx: c });
       }
     } else {
       for (let r = 0; r < ROWS; r++) {
         let ok = false;
-        for (let c = 0; c < COLS; c++) if (g[r][c] === P_EMPTY) { ok = true; break; }
+        for (let c = 0; c < COLS; c++) { if (g[r][c] === P_EMPTY) { ok = true; break; } }
         if (ok) moves.push({ type: "DROP", idx: r });
       }
     }
+
     if (state.flipTokens[state.player] > 0) {
-      moves.push({ type: "FLIP", dir: "CCW" });
-      moves.push({ type: "FLIP", dir: "CW"  });
+      moves.push({ type: "FLIP", dir: "CCW" }); // +1
+      moves.push({ type: "FLIP", dir: "CW"  }); // -1
     }
+    // deterministic ordering: drop idx asc then flip CCW then CW
     moves.sort((a,b) => {
       const ta = (a.type === "DROP") ? 0 : 1;
       const tb = (b.type === "DROP") ? 0 : 1;
@@ -439,18 +439,18 @@
     const nextTokens = { [P_RED]: state.flipTokens[P_RED], [P_YEL]: state.flipTokens[P_YEL] };
 
     if (move.type === "DROP") {
-      if (dir === 0) {
+      if (dir === 0) { // DOWN
         const c = move.idx;
-        for (let r = ROWS - 1; r >= 0; r--) if (g[r][c] === P_EMPTY) { g[r][c] = player; break; }
-      } else if (dir === 2) {
+        for (let r = ROWS - 1; r >= 0; r--) if (g[r][c] === P_EMPTY) { g[r][c] = player; r = -999; break; }
+      } else if (dir === 2) { // UP
         const c = move.idx;
-        for (let r = 0; r < ROWS; r++) if (g[r][c] === P_EMPTY) { g[r][c] = player; break; }
-      } else if (dir === 1) {
+        for (let r = 0; r < ROWS; r++) if (g[r][c] === P_EMPTY) { g[r][c] = player; r = 999; break; }
+      } else if (dir === 1) { // LEFT
         const r = move.idx;
-        for (let c = 0; c < COLS; c++) if (g[r][c] === P_EMPTY) { g[r][c] = player; break; }
-      } else {
+        for (let c = 0; c < COLS; c++) if (g[r][c] === P_EMPTY) { g[r][c] = player; c = 999; break; }
+      } else { // RIGHT
         const r = move.idx;
-        for (let c = COLS - 1; c >= 0; c--) if (g[r][c] === P_EMPTY) { g[r][c] = player; break; }
+        for (let c = COLS - 1; c >= 0; c--) if (g[r][c] === P_EMPTY) { g[r][c] = player; c = -999; break; }
       }
     } else if (move.type === "FLIP") {
       if (nextTokens[player] <= 0) return null;
@@ -460,16 +460,20 @@
       for (let r = 0; r < ROWS; r++) g[r] = settled[r].slice();
     } else return null;
 
+    // winner check after move resolves
     const w = checkWins(g);
     let winnerNow = 0;
     if (w.red || w.yel) {
-      if (w.red && w.yel) winnerNow = player;
+      if (w.red && w.yel) winnerNow = player; // tie-break
       else if (w.red) winnerNow = P_RED;
-      else winnerNow = P_YEL;
+      else if (w.yel) winnerNow = P_YEL;
     } else if (gridIsFull(g)) winnerNow = 0;
 
     const nextPlayer = (player === P_RED) ? P_YEL : P_RED;
-    return { winnerNow, nextState: { grid: g, gravityDir: dir, flipTokens: nextTokens, player: nextPlayer } };
+    return {
+      winnerNow,
+      nextState: { grid: g, gravityDir: dir, flipTokens: nextTokens, player: nextPlayer }
+    };
   }
 
   function invertOutcome(out) {
@@ -483,6 +487,7 @@
     const key = stateKey(state.grid, state.gravityDir, state.flipTokens, state.player) + "|d" + depth;
     const hit = memo.get(key);
     if (hit) return hit;
+
     if (depth <= 0) {
       const out = { status: "U", ply: 0, pv: [] };
       memo.set(key, out);
@@ -491,7 +496,8 @@
 
     const moves = legalMovesFor(state);
 
-    let bestW=null, bestD=null, bestU=null, bestL=null;
+    let bestW = null, bestD = null, bestU = null, bestL = null;
+
     for (const mv of moves) {
       const applied = applyMoveToState(state, mv);
       if (!applied) continue;
@@ -512,17 +518,17 @@
         if (!bestD) bestD = inv;
       } else if (inv.status === "U") {
         if (!bestU) bestU = inv;
-      } else {
+      } else { // L
         if (!bestL || inv.ply > bestL.ply) bestL = inv;
       }
     }
 
-    const out = bestW || bestD || bestU || bestL || { status:"U", ply:0, pv:[] };
+    const out = bestW || bestD || bestU || bestL || { status: "U", ply: 0, pv: [] };
     memo.set(key, out);
     return out;
   }
 
-  function computeHint(maxPlies=6) {
+  function computeHint(maxPlies = 6) {
     const root = {
       grid: cloneGrid(grid),
       gravityDir,
@@ -560,9 +566,12 @@
   }
 
   function formatPV(pv) {
-    const s = snapshotState();
+    // Create a readable line, showing both players moves with context about current gravity for each ply.
+    const s = snapshotState(); // current live state snapshot (not preview)
     let dir = s.gravityDir;
     let p = s.currentPlayer;
+    let fr = s.flipR, fy = s.flipY;
+
     const lines = [];
     for (let i = 0; i < pv.length; i++) {
       const mv = pv[i];
@@ -572,9 +581,13 @@
         desc = (dir === 0 || dir === 2) ? `DROP column ${mv.idx + 1}` : `DROP row ${mv.idx + 1}`;
       } else {
         desc = `Tactical Flip ${mv.dir === "CCW" ? "⟲" : "⟳"}`;
+        // consume and rotate dir
+        if (p === P_RED) fr--; else fy--;
         dir = (dir + (mv.dir === "CCW" ? +1 : -1) + 4) % 4;
       }
       lines.push(`${i+1}. ${mover}: ${desc}   (gravity ${ARROWS[dir]} ${DIRS[dir]})`);
+
+      // swap player (drops don't change dir; flips already changed)
       p = (p === P_RED) ? P_YEL : P_RED;
     }
     return lines.join("\n");
@@ -589,6 +602,7 @@
       return;
     }
 
+    // demo run
     previewSnapshot = snapshotState();
     previewMode = true;
     previewRunId++;
@@ -597,16 +611,24 @@
     const plyToWin = Math.max(1, Math.min(6, res.out.ply || 6));
     const pv = res.out.pv.slice(0, plyToWin);
 
+    // Show planned line (text) briefly
     showOverlay("SHOW WIN demo", "Planned line (depth-limited):\n\n" + formatPV(pv) + "\n\nDemo starts now…", "close");
     setTimeout(() => { if (previewMode && myRun === previewRunId) hideOverlay(); }, 900);
 
     let i = 0;
+
     const runNext = () => {
       if (!previewMode || myRun !== previewRunId) return;
+
+      if (gameOver) {
+        // endGame will show resume overlay in preview mode
+        return;
+      }
       if (i >= pv.length) {
         showOverlay("SHOW WIN demo", "Line complete (depth-limited). Tap Resume to return to your original position.", "resume");
         return;
       }
+
       const mv = pv[i++];
       if (mv.type === "DROP") doDrop(mv.idx);
       else doTacticalFlip(mv.dir === "CCW" ? +1 : -1);
@@ -618,14 +640,15 @@
       };
       waitAnim();
     };
+
     setTimeout(runNext, 260);
   }
 
   // =========================
-  // Layout & mapping
+  // Layout & Pointer mapping
   // =========================
   let W = 1, H = 1;
-  let board = { cx:0, cy:0, w:0, h:0, cell:0 };
+  let board = { cx:0, cy:0, w:0, h:0, cell:0, size:0, offX:0, offY:0, gridW:0, gridH:0 };
 
   function resize() {
     const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
@@ -643,10 +666,22 @@
     const margin = 14;
     const availH = Math.max(120, H - top - margin);
     const availW = Math.max(120, W - 2*margin);
-    const cell = Math.floor(Math.min(availW / COLS, availH / ROWS));
+
+    // Square plate so rotation is symmetric. The 7x6 grid is centered inside.
+    const maxDim = Math.max(COLS, ROWS);
+    const cell = Math.floor(Math.min(availW, availH) / maxDim);
+
     board.cell = Math.max(20, cell);
-    board.w = board.cell * COLS;
-    board.h = board.cell * ROWS;
+    board.size = board.cell * maxDim;
+
+    board.w = board.size;
+    board.h = board.size;
+
+    board.gridW = board.cell * COLS;
+    board.gridH = board.cell * ROWS;
+    board.offX = (board.w - board.gridW) / 2;
+    board.offY = (board.h - board.gridH) / 2;
+
     board.cx = Math.floor(W / 2);
     board.cy = Math.floor(top + availH / 2);
   }
@@ -662,7 +697,12 @@
     const ly = ry + board.h / 2;
     return { lx, ly, inside: (lx >= 0 && lx <= board.w && ly >= 0 && ly <= board.h) };
   }
-  function boardLocalToCell(lx, ly) { return { c: Math.floor(lx / board.cell), r: Math.floor(ly / board.cell) }; }
+
+  function boardLocalToCell(lx, ly) {
+    const gx = lx - board.offX;
+    const gy = ly - board.offY;
+    return { c: Math.floor(gx / board.cell), r: Math.floor(gy / board.cell) };
+  }
 
   // =========================
   // Rendering
@@ -677,6 +717,7 @@
     ctx.arcTo(x, y, x + w, y, rr);
     ctx.closePath();
   }
+
   function discGradient(p) {
     const g = ctx.createRadialGradient(-6, -8, 2, 0, 0, 18);
     if (p === P_RED) {
@@ -686,10 +727,11 @@
     }
     return g;
   }
+
   function drawTokenAt(r, c, p) {
     const s = board.cell;
-    const cx = (c + 0.5) * s;
-    const cy = (r + 0.5) * s;
+    const cx = board.offX + (c + 0.5) * s;
+    const cy = board.offY + (r + 0.5) * s;
     const rad = s * 0.38;
 
     ctx.save();
@@ -717,6 +759,7 @@
     ctx.lineWidth = Math.max(1, s * 0.04);
     ctx.strokeStyle = "rgba(255,255,255,0.18)";
     ctx.stroke();
+
     ctx.restore();
   }
 
@@ -750,15 +793,15 @@
       ctx.save();
       ctx.globalAlpha = 0.18;
       ctx.fillStyle = "#ffffff";
-      if (isVertical(gravityDir)) ctx.fillRect(hoveredIndex*board.cell, 0, board.cell, board.h);
-      else ctx.fillRect(0, hoveredIndex*board.cell, board.w, board.cell);
+      if (isVertical(gravityDir)) ctx.fillRect(board.offX + hoveredIndex*board.cell, board.offY, board.cell, board.gridH);
+      else ctx.fillRect(board.offX, board.offY + hoveredIndex*board.cell, board.gridW, board.cell);
       ctx.restore();
     }
 
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
-        const cx = (c + 0.5) * board.cell;
-        const cy = (r + 0.5) * board.cell;
+        const cx = board.offX + (c + 0.5) * board.cell;
+        const cy = board.offY + (r + 0.5) * board.cell;
         const rad = board.cell * 0.42;
         ctx.beginPath();
         ctx.arc(cx, cy, rad, 0, Math.PI*2);
@@ -790,12 +833,13 @@
   }
 
   // =========================
-  // Animation
+  // Animation system
   // =========================
   function startAnim({ tokens, angleFrom, angleTo, duration=260, onDone }) {
     anim = { start: performance.now(), dur: duration, tokens: tokens || [], a0: angleFrom, a1: angleTo, onDone: onDone || null };
     animating = true;
   }
+
   function updateAnim(now) {
     if (!animating || !anim) return;
     const t = Math.min(1, Math.max(0, (now - anim.start) / anim.dur));
@@ -817,6 +861,7 @@
       if (done) done();
     }
   }
+
   function buildAnimTokens(mappingTokens, extraToken=null) {
     const out = [];
     for (const t of mappingTokens) out.push({ p:t.p, fr:t.fr, fc:t.fc, tr:t.tr, tc:t.tc, cr:t.fr, cc:t.fc });
@@ -825,7 +870,7 @@
   }
 
   // =========================
-  // Moves
+  // Game logic: Drops & Flips
   // =========================
   function findDropTarget(lineIdx) {
     if (isVertical(gravityDir)) {
@@ -849,12 +894,11 @@
   }
 
   function doDrop(lineIdx) {
-    if (animating || gameOver || previewMode) return;
+    if (animating || gameOver) return;
+    if (!previewMode && overlay.style.display === "flex") return;
 
     const t = findDropTarget(lineIdx);
     if (!t) return;
-
-    pushHistorySnapshot();
 
     const { r, c } = t;
     grid[r][c] = currentPlayer;
@@ -876,11 +920,28 @@
     });
   }
 
-  function doTacticalFlip(delta) {
-    if (animating || gameOver || previewMode) return;
-    if (flipTokens[currentPlayer] <= 0) return;
+  function resolveAfterPlayerMove() {
+    const w = checkWins(grid);
+    if (w.red || w.yel) {
+      if (w.red && w.yel) { endGame(currentPlayer, true); return; }
+      if (w.red) { endGame(P_RED, false); return; }
+      if (w.yel) { endGame(P_YEL, false); return; }
+    }
+    if (gridIsFull(grid)) { endGame(0, false); return; }
 
-    pushHistorySnapshot();
+    currentPlayer = (currentPlayer === P_RED) ? P_YEL : P_RED;
+    syncUI();
+  }
+
+  function resolveAfterEnvChange() {
+    // Environment rotation is NOT a player move => do not check wins here.
+    if (gridIsFull(grid)) { endGame(0, false); return; }
+    syncUI();
+  }
+
+  function doTacticalFlip(delta) {
+    if (animating || gameOver) return;
+    if (flipTokens[currentPlayer] <= 0) return;
 
     flipTokens[currentPlayer] -= 1;
 
@@ -898,6 +959,8 @@
       duration: 280,
       onDone: () => resolveAfterPlayerMove()
     });
+
+    syncUI();
   }
 
   function doEnvRotate(deltaOrAbs, absolute=false) {
@@ -921,29 +984,14 @@
       duration: 280,
       onDone: () => resolveAfterEnvChange()
     });
-  }
 
-  function resolveAfterPlayerMove() {
-    const w = checkWins(grid);
-    if (w.red || w.yel) {
-      if (w.red && w.yel) { endGame(currentPlayer, true); return; }
-      if (w.red) { endGame(P_RED, false); return; }
-      if (w.yel) { endGame(P_YEL, false); return; }
-    }
-    if (gridIsFull(grid)) { endGame(0, false); return; }
-
-    currentPlayer = (currentPlayer === P_RED) ? P_YEL : P_RED;
-    syncUI();
-  }
-
-  function resolveAfterEnvChange() {
-    // Env rotate is NOT a player move => do not check wins here.
-    if (gridIsFull(grid)) { endGame(0, false); return; }
     syncUI();
   }
 
   function endGame(who, wasTieBreak) {
-    // In SHOW WIN preview mode: do NOT end the real game. Just stop demo + offer Resume.
+    gameOver = true;
+    winner = who;
+
     let title, sub;
     if (who === 0) {
       title = "Draw";
@@ -956,15 +1004,10 @@
     }
 
     if (previewMode) {
-      previewRunId++;       // stop pending demo steps
-      anim = null;
-      animating = false;
       showOverlay("SHOW WIN demo", `${title}. ${sub}\n\nTap Resume to return to your original position.`, "resume");
       return;
     }
 
-    gameOver = true;
-    winner = who;
     showOverlay(title, sub, "gameover");
     syncUI();
   }
@@ -973,9 +1016,6 @@
     previewMode = false;
     previewSnapshot = null;
     previewRunId++;
-    history = [];
-    hintCache.clear();
-    lastHintKey = null;
 
     grid = makeEmptyGrid();
     gravityDir = 0;
@@ -988,9 +1028,9 @@
     anim = null;
     animating = false;
     hoveredIndex = -1;
+
     gameOver = false;
     winner = 0;
-
     hideOverlay();
     syncUI();
   }
@@ -999,33 +1039,36 @@
     elTurnBig.textContent = gameOver ? "Game Over" : `Turn: ${playerName(currentPlayer)}`;
     const deg = (gravityDir * 90) % 360;
     elGravityInfo.textContent = `Gravity: ${ARROWS[gravityDir]} ${DIRS[gravityDir]} • Angle: ${deg}°`;
-
     elRFlips.textContent = String(flipTokens[P_RED]);
     elYFlips.textContent = String(flipTokens[P_YEL]);
 
     btnTacCCW.disabled = animating || gameOver || previewMode || flipTokens[currentPlayer] <= 0;
     btnTacCW.disabled  = animating || gameOver || previewMode || flipTokens[currentPlayer] <= 0;
-
     btnShowWin.disabled = animating || gameOver || previewMode;
+
     btnEnvCCW.disabled = animating || gameOver || previewMode;
     btnEnvCW.disabled  = animating || gameOver || previewMode;
-    btnUndo.disabled = animating || previewMode || history.length === 0;
-    if (btnOvUndo) {
-      const showUndo = (overlayMode === "gameover") && !previewMode;
-      btnOvUndo.style.display = showUndo ? "inline-block" : "none";
-      btnOvUndo.disabled = !showUndo || animating || history.length === 0;
-    }
+
+    btnNewGame.disabled = false;
 
     scheduleHintCompute();
   }
 
   // =========================
-  // Input
+  // Input: pointer/touch + keyboard
   // =========================
   function updateHoverFromPoint(px, py) {
     if (animating || gameOver || previewMode) { hoveredIndex = -1; return; }
+
     const loc = screenToBoardLocal(px, py);
     if (!loc.inside) { hoveredIndex = -1; return; }
+
+    // Only allow input inside the real 7x6 grid area (centered within the square plate).
+    if (loc.lx < board.offX || loc.lx > board.offX + board.gridW || loc.ly < board.offY || loc.ly > board.offY + board.gridH) {
+      hoveredIndex = -1;
+      return;
+    }
+
     const cell = boardLocalToCell(loc.lx, loc.ly);
     if (isVertical(gravityDir)) hoveredIndex = (cell.c >= 0 && cell.c < COLS) ? cell.c : -1;
     else hoveredIndex = (cell.r >= 0 && cell.r < ROWS) ? cell.r : -1;
@@ -1049,13 +1092,12 @@
     updateHoverFromPoint(e.clientX - rect.left, e.clientY - rect.top);
   }
 
-  canvas.addEventListener("pointerdown", onPointerDown, { passive:false });
-  canvas.addEventListener("pointermove", onPointerMove, { passive:false });
-  canvas.addEventListener("pointerleave", (e)=>{ if (e.cancelable) e.preventDefault(); hoveredIndex = -1; }, { passive:false });
-  canvas.addEventListener("touchstart", (e)=>{ if (e.cancelable) e.preventDefault(); }, { passive:false });
-  canvas.addEventListener("touchmove", (e)=>{ if (e.cancelable) e.preventDefault(); }, { passive:false });
+  function onPointerLeave(e) {
+    if (e.cancelable) e.preventDefault();
+    hoveredIndex = -1;
+  }
 
-  window.addEventListener("keydown", (e) => {
+  function onKeyDown(e) {
     if (animating || gameOver || previewMode) return;
     const k = e.key;
     if (k >= "1" && k <= "9") {
@@ -1063,20 +1105,28 @@
       if (isVertical(gravityDir)) { if (n >= 1 && n <= 7) doDrop(n - 1); }
       else { if (n >= 1 && n <= 6) doDrop(n - 1); }
     }
-  });
+  }
+
+  canvas.addEventListener("pointerdown", onPointerDown, { passive:false });
+  canvas.addEventListener("pointermove", onPointerMove, { passive:false });
+  canvas.addEventListener("pointerleave", onPointerLeave, { passive:false });
+  canvas.addEventListener("pointerup", (e)=>{ if (e.cancelable) e.preventDefault(); }, { passive:false });
+  canvas.addEventListener("pointercancel", (e)=>{ if (e.cancelable) e.preventDefault(); }, { passive:false });
+  canvas.addEventListener("touchstart", (e)=>{ if (e.cancelable) e.preventDefault(); }, { passive:false });
+  canvas.addEventListener("touchmove", (e)=>{ if (e.cancelable) e.preventDefault(); }, { passive:false });
+
+  window.addEventListener("keydown", onKeyDown);
 
   // Buttons
-  btnTacCCW.addEventListener("click", () => doTacticalFlip(+1));
-  btnTacCW.addEventListener("click",  () => doTacticalFlip(-1));
+  btnTacCCW.addEventListener("click", () => doTacticalFlip(+1)); // DOWN->LEFT
+  btnTacCW.addEventListener("click",  () => doTacticalFlip(-1)); // DOWN->RIGHT
   btnEnvCCW.addEventListener("click", () => doEnvRotate(+1, false));
   btnEnvCW.addEventListener("click",  () => doEnvRotate(-1, false));
-  btnShowWin.addEventListener("click", () => startShowWinDemo());
-  btnUndo.addEventListener("click", () => undoLastMove());
-  btnOvUndo.addEventListener("click", () => undoLastMove());
   btnNewGame.addEventListener("click", () => newGame());
+  btnShowWin.addEventListener("click", () => startShowWinDemo());
 
   // =========================
-  // Device orientation
+  // Device orientation handling
   // =========================
   function getScreenAngleDeg() {
     const so = (screen && screen.orientation) ? screen.orientation : null;
@@ -1084,15 +1134,17 @@
     if (typeof window.orientation === "number") return window.orientation;
     return null;
   }
+
   function desiredDirFromAngle(angleDeg) {
     let a = angleDeg % 360; if (a < 0) a += 360;
     const snapped = (Math.round(a / 90) * 90) % 360;
-    if (snapped === 0) return 0;
-    if (snapped === 90) return 1;
-    if (snapped === 180) return 2;
-    if (snapped === 270) return 3;
+    if (snapped === 0) return 0;     // portrait upright => DOWN
+    if (snapped === 90) return 1;    // landscape left  => LEFT
+    if (snapped === 180) return 2;   // upside-down     => UP
+    if (snapped === 270) return 3;   // landscape right => RIGHT
     return gravityDir;
   }
+
   function applyDeviceOrientationIfChanged() {
     if (previewMode) return;
     const ang = getScreenAngleDeg();
@@ -1100,8 +1152,44 @@
     const want = desiredDirFromAngle(ang);
     if (!animating && !gameOver && want !== gravityDir) doEnvRotate(want, true);
   }
+
   window.addEventListener("orientationchange", () => { resize(); applyDeviceOrientationIfChanged(); });
   window.addEventListener("resize", () => { resize(); applyDeviceOrientationIfChanged(); });
+
+  async function requestMotionPermissionIfNeeded() {
+    const needsPermission =
+      (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") ||
+      (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function");
+    if (!needsPermission) return false;
+    motionWrap.style.display = "block";
+    return true;
+  }
+
+  async function enableMotion() {
+    try {
+      let granted = true;
+      if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") {
+        const res = await DeviceMotionEvent.requestPermission();
+        granted = granted && (res === "granted");
+      }
+      if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+        const res2 = await DeviceOrientationEvent.requestPermission();
+        granted = granted && (res2 === "granted");
+      }
+      motionWrap.style.display = "none";
+      if (granted) {
+        window.addEventListener("deviceorientation", () => applyDeviceOrientationIfChanged(), { passive:true });
+        window.addEventListener("devicemotion", () => applyDeviceOrientationIfChanged(), { passive:true });
+      } else {
+        motionWrap.style.display = "block";
+      }
+      applyDeviceOrientationIfChanged();
+    } catch {
+      motionWrap.style.display = "block";
+    }
+  }
+
+  motionBtn.addEventListener("click", enableMotion);
 
   // =========================
   // Main loop
@@ -1109,7 +1197,6 @@
   function frame(now) {
     updateAnim(now);
     drawBoard();
-    // syncUI() is cheap; keeping it here makes UI always correct.
     syncUI();
     requestAnimationFrame(frame);
   }
@@ -1118,6 +1205,7 @@
   resize();
   newGame();
   applyDeviceOrientationIfChanged();
+  requestMotionPermissionIfNeeded();
   requestAnimationFrame(frame);
 })();
 </script>
