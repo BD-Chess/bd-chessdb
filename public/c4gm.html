@@ -154,8 +154,8 @@
     <div id="btnRow">
       <button class="tacBtn" id="tacCCW" title="Tactical Flip ⟲ (consumes flip token)">Tactical Flip ⟲</button>
       <button class="tacBtn" id="tacCW"  title="Tactical Flip ⟳ (consumes flip token)">Tactical Flip ⟳</button>
-      <button class="devBtn" id="addBtn" title="DEV: add +2 flips and +2 magnets to BOTH players">ADD +2</button>
-      <button class="devBtn" id="undoBtn" title="Undo last move">Undo</button>
+      <button class="devBtn btnSmall" id="addBtn" title="DEV: add +2 flips and +2 magnets to BOTH players">ADD +2</button>
+      <button class="devBtn btnSmall" id="undoBtn" title="Undo last move">Undo</button>
       <button class="tacBtn" id="showWin" title="Depth-limited win preview (does not end the real game)">SHOW WIN</button>
       <button class="dangerBtn" id="newGame">New Game</button>
     </div>
@@ -188,7 +188,8 @@
   const SIDE_TOP=0, SIDE_RIGHT=1, SIDE_BOTTOM=2, SIDE_LEFT=3;
 
   const canvas = document.getElementById("c");
-  const ctx = canvas.getContext("2d", { alpha:false });
+  let ctx = canvas.getContext("2d", { alpha:false });
+  if(!ctx) ctx = canvas.getContext("2d");
 
   const hud = document.getElementById("hud");
   const overlay = document.getElementById("overlay");
@@ -272,10 +273,19 @@
 
   function computeBoardLayout(){
     const rect = hud.getBoundingClientRect();
-    const top = rect.height + 10;
     const margin = 14;
+    const top0 = rect.height + 10;
+
+    const availW0 = Math.max(120, W - 2*margin);
+    const availH0 = Math.max(120, H - top0 - margin);
+    const cell0 = Math.floor(Math.min(availW0, availH0) / 7);
+    const band0 = Math.max(12, Math.floor(Math.max(20, cell0) * 0.45));
+
+    // Reserve vertical space for magnet guides/pips above & below the board
+    const top = top0 + band0 + 8;
+
     const availH = Math.max(120, H - top - margin);
-    const availW = Math.max(120, W - 2*margin);
+    const availW = availW0;
 
     const cell = Math.floor(Math.min(availW, availH) / 7);
     board.cell = Math.max(20, cell);
@@ -320,33 +330,22 @@
   function localToMagHit(lx,ly){
     const band = board.band;
     const w = board.w, h = board.h;
-
-    // Accept clicks slightly OUTSIDE the board OR just INSIDE the edge border,
-    // aligned to segments.
-    const inX = (lx >= 0 && lx <= w);
-    const inY = (ly >= 0 && ly <= h);
-
-    // TOP: y in (-band..band)
-    if(inX && (ly > -band && ly < band)){
+    if (ly < 0 && ly > -band && lx >= 0 && lx <= w) {
       const idx = clampInt(Math.floor(lx/board.cell), 0, COLS-1);
       return { side:SIDE_TOP, idx };
     }
-    // BOTTOM: y in (h-band..h+band)
-    if(inX && (ly > h - band && ly < h + band)){
+    if (ly > h && ly < h+band && lx >= 0 && lx <= w) {
       const idx = clampInt(Math.floor(lx/board.cell), 0, COLS-1);
       return { side:SIDE_BOTTOM, idx };
     }
-    // LEFT: x in (-band..band)
-    if(inY && (lx > -band && lx < band)){
+    if (lx < 0 && lx > -band && ly >= 0 && ly <= h) {
       const idx = clampInt(Math.floor(ly/board.cell), 0, ROWS-1);
       return { side:SIDE_LEFT, idx };
     }
-    // RIGHT: x in (w-band..w+band)
-    if(inY && (lx > w - band && lx < w + band)){
+    if (lx > w && lx < w+band && ly >= 0 && ly <= h) {
       const idx = clampInt(Math.floor(ly/board.cell), 0, ROWS-1);
       return { side:SIDE_RIGHT, idx };
     }
-
     return null;
   }
 
@@ -844,211 +843,6 @@
     };
   }
 
-  // ---- SHOW WIN helpers (pure, no side effects) ----
-  function lineHasAnyTokenCol(g, c){
-    for(let r=0;r<ROWS;r++) if(g[r][c]!==P_EMPTY) return true;
-    return false;
-  }
-  function lineHasAnyTokenRow(g, r){
-    for(let c=0;c<COLS;c++) if(g[r][c]!==P_EMPTY) return true;
-    return false;
-  }
-
-  function resolvePhysicsWithMags(g, dir, mTop, mBottom, mLeft, mRight){
-    let s = settleGrid(g, dir);
-    let work = cloneGrid(s);
-
-    const pinned = new Array(ROWS);
-    for(let r=0;r<ROWS;r++) pinned[r] = new Array(COLS).fill(false);
-
-    function pullTop(c){
-      if(mTop[c]===0) return;
-      if(work[0][c]===P_EMPTY){
-        for(let r=1;r<ROWS;r++){
-          if(work[r][c]!==P_EMPTY){ work[0][c]=work[r][c]; work[r][c]=P_EMPTY; break; }
-        }
-      }
-      if(work[0][c]!==P_EMPTY) pinned[0][c] = true;
-    }
-    function pullBottom(c){
-      if(mBottom[c]===0) return;
-      const rr = ROWS-1;
-      if(work[rr][c]===P_EMPTY){
-        for(let r=rr-1;r>=0;r--){
-          if(work[r][c]!==P_EMPTY){ work[rr][c]=work[r][c]; work[r][c]=P_EMPTY; break; }
-        }
-      }
-      if(work[rr][c]!==P_EMPTY) pinned[rr][c] = true;
-    }
-    function pullLeft(r){
-      if(mLeft[r]===0) return;
-      if(work[r][0]===P_EMPTY){
-        for(let c=1;c<COLS;c++){
-          if(work[r][c]!==P_EMPTY){ work[r][0]=work[r][c]; work[r][c]=P_EMPTY; break; }
-        }
-      }
-      if(work[r][0]!==P_EMPTY) pinned[r][0] = true;
-    }
-    function pullRight(r){
-      if(mRight[r]===0) return;
-      const cc = COLS-1;
-      if(work[r][cc]===P_EMPTY){
-        for(let c=cc-1;c>=0;c--){
-          if(work[r][c]!==P_EMPTY){ work[r][cc]=work[r][c]; work[r][c]=P_EMPTY; break; }
-        }
-      }
-      if(work[r][cc]!==P_EMPTY) pinned[r][cc] = true;
-    }
-
-    for(let c=0;c<COLS;c++){ pullTop(c); pullBottom(c); }
-    for(let r=0;r<ROWS;r++){ pullLeft(r); pullRight(r); }
-
-    return settleWithPinned(work, dir, pinned);
-  }
-
-  function legalMovesFor(s){
-    const moves = [];
-
-    // DROP
-    if(s.gravityDir===0 || s.gravityDir===2){
-      for(let c=0;c<COLS;c++){
-        let ok=false;
-        for(let r=0;r<ROWS;r++) if(s.grid[r][c]===P_EMPTY){ ok=true; break; }
-        if(ok) moves.push({type:"DROP", idx:c});
-      }
-    }else{
-      for(let r=0;r<ROWS;r++){
-        let ok=false;
-        for(let c=0;c<COLS;c++) if(s.grid[r][c]===P_EMPTY){ ok=true; break; }
-        if(ok) moves.push({type:"DROP", idx:r});
-      }
-    }
-
-    // FLIP (CCW then CW)
-    if(s.flipTokens[s.player] > 0){
-      moves.push({type:"FLIP", step:+1});
-      moves.push({type:"FLIP", step:-1});
-    }
-
-    // MAGNET (pruned for speed)
-    if(s.magnetTokens[s.player] > 0){
-      const opp = (s.player===P_RED) ? P_YEL : P_RED;
-      for(let c=0;c<COLS;c++){
-        if(s.mags.top[c]!==s.player){
-          const neutral = (s.mags.bottom[c]===opp);
-          const canPull = (!neutral) && (s.grid[0][c]===P_EMPTY) && lineHasAnyTokenCol(s.grid, c);
-          if(neutral || canPull) moves.push({type:"MAG", side:SIDE_TOP, idx:c});
-        }
-        if(s.mags.bottom[c]!==s.player){
-          const neutral = (s.mags.top[c]===opp);
-          const canPull = (!neutral) && (s.grid[ROWS-1][c]===P_EMPTY) && lineHasAnyTokenCol(s.grid, c);
-          if(neutral || canPull) moves.push({type:"MAG", side:SIDE_BOTTOM, idx:c});
-        }
-      }
-      for(let r=0;r<ROWS;r++){
-        if(s.mags.left[r]!==s.player){
-          const neutral = (s.mags.right[r]===opp);
-          const canPull = (!neutral) && (s.grid[r][0]===P_EMPTY) && lineHasAnyTokenRow(s.grid, r);
-          if(neutral || canPull) moves.push({type:"MAG", side:SIDE_LEFT, idx:r});
-        }
-        if(s.mags.right[r]!==s.player){
-          const neutral = (s.mags.left[r]===opp);
-          const canPull = (!neutral) && (s.grid[r][COLS-1]===P_EMPTY) && lineHasAnyTokenRow(s.grid, r);
-          if(neutral || canPull) moves.push({type:"MAG", side:SIDE_RIGHT, idx:r});
-        }
-      }
-    }
-
-    // Deterministic ordering
-    moves.sort((a,b)=>{
-      const ta = (a.type==="DROP") ? 0 : (a.type==="FLIP") ? 1 : 2;
-      const tb = (b.type==="DROP") ? 0 : (b.type==="FLIP") ? 1 : 2;
-      if(ta!==tb) return ta-tb;
-      if(a.type==="DROP") return a.idx - b.idx;
-      if(a.type==="FLIP") return (a.step===b.step) ? 0 : (a.step> b.step ? -1 : 1); // +1 before -1
-      if(a.side!==b.side) return a.side - b.side;
-      return a.idx - b.idx;
-    });
-
-    return moves;
-  }
-
-  function applyMoveToState(s, mv){
-    const g = cloneGrid(s.grid);
-    let dir = s.gravityDir;
-    const player = s.player;
-
-    const nextFlip = { [P_RED]: s.flipTokens[P_RED], [P_YEL]: s.flipTokens[P_YEL] };
-    const nextMagT = { [P_RED]: s.magnetTokens[P_RED], [P_YEL]: s.magnetTokens[P_YEL] };
-    const nextM = {
-      top: s.mags.top.slice(),
-      bottom: s.mags.bottom.slice(),
-      left: s.mags.left.slice(),
-      right: s.mags.right.slice()
-    };
-
-    if(mv.type==="DROP"){
-      if(dir===0){
-        const c=mv.idx; for(let r=ROWS-1;r>=0;r--) if(g[r][c]===P_EMPTY){ g[r][c]=player; break; }
-      }else if(dir===2){
-        const c=mv.idx; for(let r=0;r<ROWS;r++) if(g[r][c]===P_EMPTY){ g[r][c]=player; break; }
-      }else if(dir===1){
-        const r=mv.idx; for(let c=0;c<COLS;c++) if(g[r][c]===P_EMPTY){ g[r][c]=player; break; }
-      }else{
-        const r=mv.idx; for(let c=COLS-1;c>=0;c--) if(g[r][c]===P_EMPTY){ g[r][c]=player; break; }
-      }
-    }else if(mv.type==="FLIP"){
-      if(nextFlip[player] <= 0) return null;
-      nextFlip[player] -= 1;
-      dir = (dir + mv.step + 4) % 4;
-    }else if(mv.type==="MAG"){
-      if(nextMagT[player] <= 0) return null;
-      nextMagT[player] -= 1;
-
-      const opp = (player===P_RED) ? P_YEL : P_RED;
-      if(mv.side===SIDE_TOP){
-        if(nextM.bottom[mv.idx]===opp){ nextM.top[mv.idx]=0; nextM.bottom[mv.idx]=0; }
-        else nextM.top[mv.idx]=player;
-      }else if(mv.side===SIDE_BOTTOM){
-        if(nextM.top[mv.idx]===opp){ nextM.top[mv.idx]=0; nextM.bottom[mv.idx]=0; }
-        else nextM.bottom[mv.idx]=player;
-      }else if(mv.side===SIDE_LEFT){
-        if(nextM.right[mv.idx]===opp){ nextM.left[mv.idx]=0; nextM.right[mv.idx]=0; }
-        else nextM.left[mv.idx]=player;
-      }else if(mv.side===SIDE_RIGHT){
-        if(nextM.left[mv.idx]===opp){ nextM.left[mv.idx]=0; nextM.right[mv.idx]=0; }
-        else nextM.right[mv.idx]=player;
-      }else return null;
-    }else{
-      return null;
-    }
-
-    const g2 = resolvePhysicsWithMags(g, dir, nextM.top, nextM.bottom, nextM.left, nextM.right);
-
-    const w = checkWins(g2);
-    let winnerNow = 0;
-    if(w.red || w.yel){
-      if(w.red && w.yel) winnerNow = player; // tie-break
-      else if(w.red) winnerNow = P_RED;
-      else winnerNow = P_YEL;
-    }else if(gridIsFull(g2)){
-      winnerNow = 0;
-    }
-
-    const nextPlayer = (player===P_RED) ? P_YEL : P_RED;
-    return {
-      winnerNow,
-      nextState: {
-        grid: g2,
-        gravityDir: dir,
-        player: nextPlayer,
-        flipTokens: nextFlip,
-        magnetTokens: nextMagT,
-        mags: nextM
-      }
-    };
-  }
-
   function invertOutcome(out){
     if(out.status==="W") return { status:"L", ply: out.ply + 1, pv: out.pv.slice() };
     if(out.status==="L") return { status:"W", ply: out.ply + 1, pv: out.pv.slice() };
@@ -1361,29 +1155,6 @@
       ctx.beginPath(); ctx.moveTo(i*board.cell, 0); ctx.lineTo(i*board.cell, board.h); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(0, i*board.cell); ctx.lineTo(board.w, i*board.cell); ctx.stroke();
     }
-    // Magnet segment guides (always visible so players know where to tap)
-    ctx.save();
-    ctx.globalAlpha = 0.18;
-    ctx.strokeStyle = "rgba(255,255,255,0.22)";
-    ctx.lineWidth = 1;
-    const tGuide = Math.max(3, Math.floor(board.cell*0.12));
-    const lenGuide = Math.max(10, Math.floor(board.cell*0.72));
-    for(let c=0;c<COLS;c++){
-      const x = c*board.cell + (board.cell-lenGuide)/2;
-      drawRoundedRect(x, -tGuide-2, lenGuide, tGuide, Math.max(2, tGuide*0.6));
-      ctx.stroke();
-      drawRoundedRect(x, board.h+2, lenGuide, tGuide, Math.max(2, tGuide*0.6));
-      ctx.stroke();
-    }
-    for(let r=0;r<ROWS;r++){
-      const y = r*board.cell + (board.cell-lenGuide)/2;
-      drawRoundedRect(-tGuide-2, y, tGuide, lenGuide, Math.max(2, tGuide*0.6));
-      ctx.stroke();
-      drawRoundedRect(board.w+2, y, tGuide, lenGuide, Math.max(2, tGuide*0.6));
-      ctx.stroke();
-    }
-    ctx.restore();
-
 
     for(let c=0;c<COLS;c++){
       drawMagnet(0, c, magTop[c]);
@@ -1446,15 +1217,8 @@
     }
   }
 
-  // Input events:
-  // IMPORTANT: Do NOT bind both pointer* and touch* on iOS Safari, or a single tap can fire twice.
-  const HAS_POINTER = typeof window.PointerEvent !== "undefined";
-  if (HAS_POINTER){
-    canvas.addEventListener("pointerdown", onDown, { passive:false });
-  } else {
-    canvas.addEventListener("touchstart", onDown, { passive:false });
-    canvas.addEventListener("mousedown", onDown, { passive:false });
-  }
+  canvas.addEventListener("pointerdown", onDown, { passive:false });
+  canvas.addEventListener("touchstart", onDown, { passive:false });
   canvas.addEventListener("wheel", (e)=>{ if(e.cancelable) e.preventDefault(); }, { passive:false });
 
   // Buttons
