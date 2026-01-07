@@ -73,14 +73,6 @@
     background:linear-gradient(180deg, rgba(255,107,107,0.20), rgba(255,107,107,0.10));
     border-color:rgba(255,107,107,0.35);
   }
-  #motionWrap{margin-top:10px;display:none;}
-  #motionBtn{
-    width:100%;
-    background:linear-gradient(180deg, rgba(39,209,127,0.18), rgba(39,209,127,0.08));
-    border-color:rgba(39,209,127,0.35);
-    padding:12px 14px;
-    font-size:14px;
-  }
   #overlay{
     position:absolute;inset:0;display:none;align-items:center;justify-content:center;
     background:rgba(0,0,0,0.55);
@@ -124,27 +116,22 @@
 
       <div class="pill" id="tokenPill">
         <div id="tokens">
-          <div class="pTag"><span class="dot red"></span>Red flips: <span class="count" id="rFlips">2</span> • mags: <span class="count" id="rMags">2</span></div>
-          <div class="pTag"><span class="dot yel"></span>Yellow flips: <span class="count" id="yFlips">2</span> • mags: <span class="count" id="yMags">2</span></div>
+          <div class="pTag"><span class="dot red"></span>Red flips: <span class="count" id="rFlips">2</span></div>
+          <div class="pTag"><span class="dot yel"></span>Yellow flips: <span class="count" id="yFlips">2</span></div>
         </div>
-      </div>
       </div>
     </div>
 
     <div id="btnRow">
       <button class="tacBtn" id="tacCCW" title="Tactical Flip (consumes your flip token)">Tactical Flip ⟲</button>
-      <button class="tacBtn" id="tacCW"  title="Tactical Flip (consumes your flip token)">Tactical Flip ⟳</button>
-      <button class="envBtn btnSmall" id="addBtn" title="DEV: add +2 flips and +2 magnets to BOTH players">ADD +2</button>
+      <button class="tacBtn" id="tacCW"  title="Tactical Flip (consumes your flip token)">Tactical Flip ⟳</button>      <button class="envBtn btnSmall" id="envCCW" title="Rotate Left (environment, free)">RL</button>
+      <button class="envBtn btnSmall" id="envCW"  title="Rotate Right (environment, free)">RR</button>
 
-<button class="envBtn btnSmall" id="undoBtn" title="Undo last player move">Undo</button>
+      <button class="envBtn btnSmall" id="undoBtn" title="Undo last player move">Undo</button>
       <button class="tacBtn" id="showWin" title="Find and demonstrate a winning line (depth-limited)">SHOW WIN</button>
 
 
       <button class="dangerBtn" id="newGame">New Game</button>
-    </div>
-
-    <div id="motionWrap">
-      <button id="motionBtn">Enable Motion</button>
     </div>
   </div>
 
@@ -161,11 +148,6 @@
 </div>
 
 <script>
-
-
-
-
-
 (() => {
   "use strict";
 
@@ -191,18 +173,14 @@
   const elHintInfo = document.getElementById("hintInfo");
   const elRFlips = document.getElementById("rFlips");
   const elYFlips = document.getElementById("yFlips");
-  const elRMags  = document.getElementById("rMags");
-  const elYMags  = document.getElementById("yMags");
 
   const btnTacCCW = document.getElementById("tacCCW");
   const btnTacCW = document.getElementById("tacCW");
   const btnShowWin = document.getElementById("showWin");
-  const btnAdd = document.getElementById("addBtn");
+  const btnEnvCCW = document.getElementById("envCCW");
+  const btnEnvCW = document.getElementById("envCW");
   const btnUndo = document.getElementById("undoBtn");
   const btnNewGame = document.getElementById("newGame");
-
-  const motionWrap = document.getElementById("motionWrap");
-  const motionBtn = document.getElementById("motionBtn");
 
   let grid = makeEmptyGrid();
   let gravityDir = 0;
@@ -210,13 +188,6 @@
   let targetAngle = 0;
   let currentPlayer = P_RED;
   let flipTokens = { [P_RED]: 2, [P_YEL]: 2 };
-  let magnetTokens = { [P_RED]: 2, [P_YEL]: 2 }; // per player
-  // Magnet segments: per side and per line index.
-  // Top/Bottom are per COLUMN (0..COLS-1). Left/Right are per ROW (0..ROWS-1).
-  let magTop = new Array(COLS).fill(0);
-  let magBottom = new Array(COLS).fill(0);
-  let magLeft = new Array(ROWS).fill(0);
-  let magRight = new Array(ROWS).fill(0);
 
   let anim = null;
   let animating = false;
@@ -300,12 +271,6 @@
       currentPlayer,
       flipR: flipTokens[P_RED],
       flipY: flipTokens[P_YEL],
-      magR: magnetTokens[P_RED],
-      magY: magnetTokens[P_YEL],
-      magTop: magTop.slice(),
-      magBottom: magBottom.slice(),
-      magLeft: magLeft.slice(),
-      magRight: magRight.slice(),
       gameOver,
       winner,
       boardAngle,
@@ -319,12 +284,6 @@
     currentPlayer = s.currentPlayer;
     flipTokens[P_RED] = s.flipR;
     flipTokens[P_YEL] = s.flipY;
-    magnetTokens[P_RED] = s.magR;
-    magnetTokens[P_YEL] = s.magY;
-    magTop = s.magTop.slice();
-    magBottom = s.magBottom.slice();
-    magLeft = s.magLeft.slice();
-    magRight = s.magRight.slice();
     gameOver = s.gameOver;
     winner = s.winner;
     boardAngle = s.boardAngle;
@@ -410,130 +369,6 @@
     return { newG, tokens };
   }
 
-
-  function gridsEqual(a,b){
-    for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++) if (a[r][c]!==b[r][c]) return false;
-    return true;
-  }
-
-  function mapTokens(oldG, newG, dir){
-    const moves = [];
-    if (dir === 0 || dir === 2){
-      for (let c=0;c<COLS;c++){
-        for (const p of [P_RED, P_YEL]){
-          const oldPos=[], newPos=[];
-          for (let r=0;r<ROWS;r++){ if (oldG[r][c]===p) oldPos.push({r,c}); if (newG[r][c]===p) newPos.push({r,c}); }
-          const L = Math.min(oldPos.length, newPos.length);
-          for (let i=0;i<L;i++) moves.push({p, fr: oldPos[i].r, fc: c, tr: newPos[i].r, tc: c});
-        }
-      }
-    } else {
-      for (let r=0;r<ROWS;r++){
-        for (const p of [P_RED, P_YEL]){
-          const oldPos=[], newPos=[];
-          for (let c=0;c<COLS;c++){ if (oldG[r][c]===p) oldPos.push({r,c}); if (newG[r][c]===p) newPos.push({r,c}); }
-          const L = Math.min(oldPos.length, newPos.length);
-          for (let i=0;i<L;i++) moves.push({p, fr: r, fc: oldPos[i].c, tr: r, tc: newPos[i].c});
-        }
-      }
-    }
-    return moves;
-  }
-
-  function settleWithPinned(g, dir, pinned){
-    const out = makeEmptyGrid();
-    for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++) if (pinned[r][c]) out[r][c] = g[r][c];
-
-    if (dir === 0 || dir === 2){
-      for (let c=0;c<COLS;c++){
-        const avail = [];
-        for (let r=0;r<ROWS;r++) if (!pinned[r][c]) avail.push(r);
-
-        const toks = [];
-        for (let r=0;r<ROWS;r++) if (!pinned[r][c] && g[r][c]!==P_EMPTY) toks.push(g[r][c]);
-
-        const L = toks.length;
-        const targets = (dir===0) ? avail.slice(Math.max(0, avail.length - L)) : avail.slice(0, L);
-        for (let i=0;i<L;i++) out[targets[i]][c] = toks[i];
-      }
-    } else {
-      for (let r=0;r<ROWS;r++){
-        const avail = [];
-        for (let c=0;c<COLS;c++) if (!pinned[r][c]) avail.push(c);
-
-        const toks = [];
-        for (let c=0;c<COLS;c++) if (!pinned[r][c] && g[r][c]!==P_EMPTY) toks.push(g[r][c]);
-
-        const L = toks.length;
-        const targets = (dir===1) ? avail.slice(0, L) : avail.slice(Math.max(0, avail.length - L));
-        for (let i=0;i<L;i++) out[r][targets[i]] = toks[i];
-      }
-    }
-    return out;
-  }
-
-  function resolvePhysics(startG, dir) {
-    const settled = settleGrid(startG, dir).newG;
-    let g = cloneGrid(settled);
-
-    const pinned = new Array(ROWS);
-    for (let r=0;r<ROWS;r++) pinned[r] = new Array(COLS).fill(false);
-
-    // Pull helpers: pull ONE nearest token to the edge cell for that line, then pin it.
-    function pullToTop(c){
-      if (magTop[c]===0) return;
-      if (g[0][c]===P_EMPTY){
-        for (let r=1;r<ROWS;r++){
-          if (g[r][c]!==P_EMPTY){ g[0][c]=g[r][c]; g[r][c]=P_EMPTY; break; }
-        }
-      }
-      if (g[0][c]!==P_EMPTY) pinned[0][c]=true;
-    }
-    function pullToBottom(c){
-      if (magBottom[c]===0) return;
-      const rr = ROWS-1;
-      if (g[rr][c]===P_EMPTY){
-        for (let r=rr-1;r>=0;r--){
-          if (g[r][c]!==P_EMPTY){ g[rr][c]=g[r][c]; g[r][c]=P_EMPTY; break; }
-        }
-      }
-      if (g[rr][c]!==P_EMPTY) pinned[rr][c]=true;
-    }
-    function pullToLeft(r){
-      if (magLeft[r]===0) return;
-      if (g[r][0]===P_EMPTY){
-        for (let c=1;c<COLS;c++){
-          if (g[r][c]!==P_EMPTY){ g[r][0]=g[r][c]; g[r][c]=P_EMPTY; break; }
-        }
-      }
-      if (g[r][0]!==P_EMPTY) pinned[r][0]=true;
-    }
-    function pullToRight(r){
-      if (magRight[r]===0) return;
-      const cc = COLS-1;
-      if (g[r][cc]===P_EMPTY){
-        for (let c=cc-1;c>=0;c--){
-          if (g[r][c]!==P_EMPTY){ g[r][cc]=g[r][c]; g[r][c]=P_EMPTY; break; }
-        }
-      }
-      if (g[r][cc]!==P_EMPTY) pinned[r][cc]=true;
-    }
-
-    for (let c=0;c<COLS;c++){ pullToTop(c); pullToBottom(c); }
-    for (let r=0;r<ROWS;r++){ pullToLeft(r); pullToRight(r); }
-
-    return settleWithPinned(g, dir, pinned);
-  }
-
-  function applyPhysicsAnimated(onDone){
-    const oldG = cloneGrid(grid);
-    const newG = resolvePhysics(oldG, gravityDir);
-    if (gridsEqual(oldG, newG)) { onDone(); return; }
-    grid = newG;
-    const mapping = mapTokens(oldG, newG, gravityDir);
-    startAnim({ tokens: buildAnimTokens(mapping), angleFrom: boardAngle, angleTo: targetAngle, duration: 260, onDone });
-  }
-
   // =========================
   // Win detection
   // =========================
@@ -558,118 +393,83 @@
   // =========================
   // Hint + SHOW WIN (depth-limited forced win search)
   // =========================
-  function stateKey(g, dir, flipT, magT, mags, player) {
-    // mags: {top,bottom,left,right} arrays
-    let s = "" + dir + "|" + flipT[P_RED] + "," + flipT[P_YEL] + "|" + magT[P_RED] + "," + magT[P_YEL] + "|" + player + "|";
-    s += mags.top.join("") + mags.bottom.join("") + mags.left.join("") + mags.right.join("");
-    s += "|";
-    for (let r=0;r<ROWS;r++) s += g[r].join("");
+  function stateKey(g, dir, tokens, player) {
+    let s = "" + dir + "|" + tokens[P_RED] + "," + tokens[P_YEL] + "|" + player + "|";
+    for (let r = 0; r < ROWS; r++) s += g[r].join("");
     return s;
   }
 
   function legalMovesFor(state) {
     const moves = [];
-    // DROP options depend on gravity: vertical => columns, horizontal => rows
-    if (state.gravityDir === 0 || state.gravityDir === 2) {
-      for (let c=0;c<COLS;c++){
-        // legal if any empty in column
-        let ok=false;
-        for (let r=0;r<ROWS;r++){ if (state.grid[r][c]===P_EMPTY){ ok=true; break; } }
+    const dir = state.gravityDir;
+    const g = state.grid;
+
+    if (dir === 0 || dir === 2) {
+      for (let c = 0; c < COLS; c++) {
+        let ok = false;
+        for (let r = 0; r < ROWS; r++) if (g[r][c] === P_EMPTY) { ok = true; break; }
         if (ok) moves.push({ type: "DROP", idx: c });
       }
     } else {
-      for (let r=0;r<ROWS;r++){
-        let ok=false;
-        for (let c=0;c<COLS;c++){ if (state.grid[r][c]===P_EMPTY){ ok=true; break; } }
+      for (let r = 0; r < ROWS; r++) {
+        let ok = false;
+        for (let c = 0; c < COLS; c++) if (g[r][c] === P_EMPTY) { ok = true; break; }
         if (ok) moves.push({ type: "DROP", idx: r });
       }
     }
-
     if (state.flipTokens[state.player] > 0) {
       moves.push({ type: "FLIP", dir: "CCW" });
       moves.push({ type: "FLIP", dir: "CW"  });
     }
-
-    if (state.magnetTokens[state.player] > 0) {
-      for (let c=0;c<COLS;c++){ moves.push({ type:"MAG", side:0, idx:c }); moves.push({ type:"MAG", side:2, idx:c }); }
-      for (let r=0;r<ROWS;r++){ moves.push({ type:"MAG", side:3, idx:r }); moves.push({ type:"MAG", side:1, idx:r }); }
-    }
-
+    moves.sort((a,b) => {
+      const ta = (a.type === "DROP") ? 0 : 1;
+      const tb = (b.type === "DROP") ? 0 : 1;
+      if (ta !== tb) return ta - tb;
+      if (a.type === "DROP") return a.idx - b.idx;
+      if (a.dir === b.dir) return 0;
+      return (a.dir === "CCW") ? -1 : 1;
+    });
     return moves;
   }
 
   function applyMoveToState(state, move) {
-    const g0 = cloneGrid(state.grid);
+    const g = cloneGrid(state.grid);
     let dir = state.gravityDir;
     const player = state.player;
-
-    const nextFlip = { [P_RED]: state.flipTokens[P_RED], [P_YEL]: state.flipTokens[P_YEL] };
-    const nextMagT = { [P_RED]: state.magnetTokens[P_RED], [P_YEL]: state.magnetTokens[P_YEL] };
-    const nextM = {
-      top: state.mags.top.slice(),
-      bottom: state.mags.bottom.slice(),
-      left: state.mags.left.slice(),
-      right: state.mags.right.slice(),
-    };
+    const nextTokens = { [P_RED]: state.flipTokens[P_RED], [P_YEL]: state.flipTokens[P_YEL] };
 
     if (move.type === "DROP") {
       if (dir === 0) {
         const c = move.idx;
-        for (let r=ROWS-1;r>=0;r--) if (g0[r][c]===P_EMPTY){ g0[r][c]=player; break; }
+        for (let r = ROWS - 1; r >= 0; r--) if (g[r][c] === P_EMPTY) { g[r][c] = player; break; }
       } else if (dir === 2) {
         const c = move.idx;
-        for (let r=0;r<ROWS;r++) if (g0[r][c]===P_EMPTY){ g0[r][c]=player; break; }
+        for (let r = 0; r < ROWS; r++) if (g[r][c] === P_EMPTY) { g[r][c] = player; break; }
       } else if (dir === 1) {
         const r = move.idx;
-        for (let c=0;c<COLS;c++) if (g0[r][c]===P_EMPTY){ g0[r][c]=player; break; }
+        for (let c = 0; c < COLS; c++) if (g[r][c] === P_EMPTY) { g[r][c] = player; break; }
       } else {
         const r = move.idx;
-        for (let c=COLS-1;c>=0;c--) if (g0[r][c]===P_EMPTY){ g0[r][c]=player; break; }
+        for (let c = COLS - 1; c >= 0; c--) if (g[r][c] === P_EMPTY) { g[r][c] = player; break; }
       }
     } else if (move.type === "FLIP") {
-      if (nextFlip[player] <= 0) return null;
-      nextFlip[player] -= 1;
+      if (nextTokens[player] <= 0) return null;
+      nextTokens[player] -= 1;
       dir = (dir + (move.dir === "CCW" ? +1 : -1) + 4) % 4;
-    } else if (move.type === "MAG") {
-      if (nextMagT[player] <= 0) return null;
-      nextMagT[player] -= 1;
-      const side = move.side, idx = move.idx;
-
-      if (side === 0) { // top col
-        const opp = nextM.bottom[idx];
-        if (opp !== 0 && opp !== player) { nextM.top[idx]=0; nextM.bottom[idx]=0; }
-        else { nextM.top[idx]=player; if (opp===player) nextM.bottom[idx]=0; }
-      } else if (side === 2) { // bottom col
-        const opp = nextM.top[idx];
-        if (opp !== 0 && opp !== player) { nextM.top[idx]=0; nextM.bottom[idx]=0; }
-        else { nextM.bottom[idx]=player; if (opp===player) nextM.top[idx]=0; }
-      } else if (side === 3) { // left row
-        const opp = nextM.right[idx];
-        if (opp !== 0 && opp !== player) { nextM.left[idx]=0; nextM.right[idx]=0; }
-        else { nextM.left[idx]=player; if (opp===player) nextM.right[idx]=0; }
-      } else { // right row
-        const opp = nextM.left[idx];
-        if (opp !== 0 && opp !== player) { nextM.left[idx]=0; nextM.right[idx]=0; }
-        else { nextM.right[idx]=player; if (opp===player) nextM.left[idx]=0; }
-      }
+      const settled = settleGrid(g, dir).newG;
+      for (let r = 0; r < ROWS; r++) g[r] = settled[r].slice();
     } else return null;
 
-    // physics using temporary magnet arrays
-    const savedTop = magTop, savedBottom = magBottom, savedLeft = magLeft, savedRight = magRight;
-    magTop = nextM.top; magBottom = nextM.bottom; magLeft = nextM.left; magRight = nextM.right;
-    const g1 = resolvePhysics(g0, dir);
-    magTop = savedTop; magBottom = savedBottom; magLeft = savedLeft; magRight = savedRight;
-
-    const w = checkWins(g1);
+    const w = checkWins(g);
     let winnerNow = 0;
     if (w.red || w.yel) {
       if (w.red && w.yel) winnerNow = player;
       else if (w.red) winnerNow = P_RED;
       else winnerNow = P_YEL;
-    } else if (gridIsFull(g1)) winnerNow = 0;
+    } else if (gridIsFull(g)) winnerNow = 0;
 
     const nextPlayer = (player === P_RED) ? P_YEL : P_RED;
-    return { winnerNow, nextState: { grid: g1, gravityDir: dir, flipTokens: nextFlip, magnetTokens: nextMagT, mags: nextM, player: nextPlayer } };
+    return { winnerNow, nextState: { grid: g, gravityDir: dir, flipTokens: nextTokens, player: nextPlayer } };
   }
 
   function invertOutcome(out) {
@@ -680,7 +480,7 @@
   }
 
   function solveForcedWin(state, depth, memo) {
-    const key = stateKey(state.grid, state.gravityDir, state.flipTokens, state.magnetTokens, state.mags, state.player) + "|d" + depth;
+    const key = stateKey(state.grid, state.gravityDir, state.flipTokens, state.player) + "|d" + depth;
     const hit = memo.get(key);
     if (hit) return hit;
     if (depth <= 0) {
@@ -727,8 +527,6 @@
       grid: cloneGrid(grid),
       gravityDir,
       flipTokens: { [P_RED]: flipTokens[P_RED], [P_YEL]: flipTokens[P_YEL] },
-      magnetTokens: { [P_RED]: magnetTokens[P_RED], [P_YEL]: magnetTokens[P_YEL] },
-      mags: { top: magTop.slice(), bottom: magBottom.slice(), left: magLeft.slice(), right: magRight.slice() },
       player: currentPlayer
     };
     const memo = new Map();
@@ -741,7 +539,7 @@
     if (hintTimer) clearTimeout(hintTimer);
     hintTimer = setTimeout(() => {
       if (animating || gameOver || previewMode) { elHintInfo.textContent = "Hint: —"; return; }
-      const key = stateKey(grid, gravityDir, flipTokens, magnetTokens, { top: magTop, bottom: magBottom, left: magLeft, right: magRight }, currentPlayer);
+      const key = stateKey(grid, gravityDir, flipTokens, currentPlayer);
       if (key === lastHintKey) return;
       lastHintKey = key;
 
@@ -780,11 +578,10 @@
       p = (p === P_RED) ? P_YEL : P_RED;
     }
     return lines.join("\n");
-}
+  }
 
   function startShowWinDemo() {
-    if (animating || gameOver) return;
-    if (previewMode && !internal) return;
+    if (animating || gameOver || previewMode) return;
 
     const res = computeHint(6);
     if (res.out.status !== "W" || !res.out.pv || res.out.pv.length === 0) {
@@ -811,8 +608,8 @@
         return;
       }
       const mv = pv[i++];
-      if (mv.type === "DROP") doDrop(mv.idx, true);
-      else doTacticalFlip(mv.dir === "CCW" ? +1 : -1, true);
+      if (mv.type === "DROP") doDrop(mv.idx);
+      else doTacticalFlip(mv.dir === "CCW" ? +1 : -1);
 
       const waitAnim = () => {
         if (!previewMode || myRun !== previewRunId) return;
@@ -828,7 +625,7 @@
   // Layout & mapping
   // =========================
   let W = 1, H = 1;
-  let board = { cx:0, cy:0, w:0, h:0, cell:0 };
+  let board = { cx:0, cy:0, w:0, h:0, cell:0, offX:0, offY:0, gridW:0, gridH:0 };
 
   function resize() {
     const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
@@ -846,10 +643,19 @@
     const margin = 14;
     const availH = Math.max(120, H - top - margin);
     const availW = Math.max(120, W - 2*margin);
-    const cell = Math.floor(Math.min(availW / COLS, availH / ROWS));
+
+    // True square grid (7x7). Rotation is part of the game, so keep plate square.
+    const cell = Math.floor(Math.min(availW, availH) / 7);
+
     board.cell = Math.max(20, cell);
-    board.w = board.cell * COLS;
-    board.h = board.cell * ROWS;
+    board.w = board.cell * 7;
+    board.h = board.cell * 7;
+
+    board.gridW = board.w;
+    board.gridH = board.h;
+    board.offX = 0;
+    board.offY = 0;
+
     board.cx = Math.floor(W / 2);
     board.cy = Math.floor(top + availH / 2);
   }
@@ -949,60 +755,6 @@
     ctx.fillStyle = pgrad;
     ctx.fill();
 
-    // Magnet frame (clickable border, segmented)
-    const mf = Math.max(10, board.cell * 0.55);
-    ctx.save();
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    ctx.lineWidth = Math.max(8, board.cell * 0.18);
-    ctx.strokeStyle = "rgba(255,255,255,0.14)";
-    drawRoundedRect(-mf, -mf, board.w + mf*2, board.h + mf*2, board.cell * 0.28);
-    ctx.stroke();
-
-    // Segment strokes for active magnets
-    function magColor(owner){
-      if (owner === P_RED) return "rgba(229,57,53,0.88)";
-      if (owner === P_YEL) return "rgba(253,216,53,0.88)";
-      return null;
-    }
-
-    const inset = mf - ctx.lineWidth * 0.55;
-    const x0 = -mf + inset, x1 = board.w + mf - inset;
-    const y0 = -mf + inset, y1 = board.h + mf - inset;
-
-    // TOP/BOTTOM per column
-    for (let c=0;c<COLS;c++){
-      const colTop = magColor(magTop[c]);
-      const colBot = magColor(magBottom[c]);
-      const sx = c * board.cell;
-      const ex = sx + board.cell;
-      if (colTop){
-        ctx.strokeStyle = colTop;
-        ctx.beginPath(); ctx.moveTo(sx, y0); ctx.lineTo(ex, y0); ctx.stroke();
-      }
-      if (colBot){
-        ctx.strokeStyle = colBot;
-        ctx.beginPath(); ctx.moveTo(sx, y1); ctx.lineTo(ex, y1); ctx.stroke();
-      }
-    }
-    // LEFT/RIGHT per row
-    for (let r=0;r<ROWS;r++){
-      const colL = magColor(magLeft[r]);
-      const colR = magColor(magRight[r]);
-      const sy = r * board.cell;
-      const ey = sy + board.cell;
-      if (colL){
-        ctx.strokeStyle = colL;
-        ctx.beginPath(); ctx.moveTo(x0, sy); ctx.lineTo(x0, ey); ctx.stroke();
-      }
-      if (colR){
-        ctx.strokeStyle = colR;
-        ctx.beginPath(); ctx.moveTo(x1, sy); ctx.lineTo(x1, ey); ctx.stroke();
-      }
-    }
-
-    ctx.restore();
-
     if (!gameOver && hoveredIndex >= 0 && !animating && !previewMode) {
       ctx.save();
       ctx.globalAlpha = 0.18;
@@ -1041,7 +793,7 @@
     ctx.globalAlpha = 0.8;
     ctx.fillStyle = "rgba(233,238,252,0.70)";
     ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif";
-    const hint = isVertical(gravityDir) ? "Drop: tap/click board • or press 1–7" : "Drop: tap/click board • or press 1–6";
+    const hint = isVertical(gravityDir) ? "Drop: tap/click board • or press 1–7" : "Drop: tap/click board • or press 1–7";
     ctx.fillText(hint, 12, H - 14);
     ctx.restore();
   }
@@ -1105,14 +857,13 @@
     return null;
   }
 
-  function doDrop(lineIdx, internal=false) {
-    if (animating || gameOver) return;
-    if (previewMode && !internal) return;
+  function doDrop(lineIdx) {
+    if (animating || gameOver || previewMode) return;
 
     const t = findDropTarget(lineIdx);
     if (!t) return;
 
-    if (!internal) pushHistorySnapshot();
+    pushHistorySnapshot();
 
     const { r, c } = t;
     grid[r][c] = currentPlayer;
@@ -1134,11 +885,11 @@
     });
   }
 
-  function doTacticalFlip(delta, internal=false) {
+  function doTacticalFlip(delta) {
     if (animating || gameOver || previewMode) return;
     if (flipTokens[currentPlayer] <= 0) return;
 
-    if (!internal) pushHistorySnapshot();
+    pushHistorySnapshot();
 
     flipTokens[currentPlayer] -= 1;
 
@@ -1158,59 +909,43 @@
     });
   }
 
-  function doMagnet(side, idx, internal=false) {
-    // side: 0=TOP(col),1=RIGHT(row),2=BOTTOM(col),3=LEFT(row)
-    if (animating || gameOver) return;
-    if (previewMode && !internal) return;
-    if (magnetTokens[currentPlayer] <= 0) return;
+  function doEnvRotate(deltaOrAbs, absolute=false) {
+    if (animating || gameOver || previewMode) return;
 
-    if (!internal) pushHistorySnapshot();
-    magnetTokens[currentPlayer] -= 1;
+    const oldDir = gravityDir;
+    const oldG = cloneGrid(grid);
 
-    const me = currentPlayer;
+    gravityDir = absolute ? deltaOrAbs : (gravityDir + deltaOrAbs + 4) % 4;
+    if (gravityDir === oldDir) return;
 
-    if (side === 0) { // TOP col
-      const opp = magBottom[idx];
-      if (opp !== 0 && opp !== me) { magTop[idx] = 0; magBottom[idx] = 0; }
-      else { magTop[idx] = me; if (opp === me) magBottom[idx] = 0; }
-    } else if (side === 2) { // BOTTOM col
-      const opp = magTop[idx];
-      if (opp !== 0 && opp !== me) { magTop[idx] = 0; magBottom[idx] = 0; }
-      else { magBottom[idx] = me; if (opp === me) magTop[idx] = 0; }
-    } else if (side === 3) { // LEFT row
-      const opp = magRight[idx];
-      if (opp !== 0 && opp !== me) { magLeft[idx] = 0; magRight[idx] = 0; }
-      else { magLeft[idx] = me; if (opp === me) magRight[idx] = 0; }
-    } else { // RIGHT row
-      const opp = magLeft[idx];
-      if (opp !== 0 && opp !== me) { magLeft[idx] = 0; magRight[idx] = 0; }
-      else { magRight[idx] = me; if (opp === me) magLeft[idx] = 0; }
-    }
+    targetAngle = dirToAngleRad(gravityDir);
 
-    resolveAfterPlayerMove();
-  }
+    const settled = settleGrid(oldG, gravityDir);
+    grid = settled.newG;
 
-
-
-  function doEnvRotate(){ /* removed */ }
-
-
-  function resolveAfterPlayerMove() {
-    applyPhysicsAnimated(() => {
-      const w = checkWins(grid);
-      if (w.red || w.yel) {
-        if (w.red && w.yel) { endGame(currentPlayer, true); return; }
-        if (w.red) { endGame(P_RED, false); return; }
-        if (w.yel) { endGame(P_YEL, false); return; }
-      }
-      if (gridIsFull(grid)) { endGame(0, false); return; }
-
-      currentPlayer = (currentPlayer === P_RED) ? P_YEL : P_RED;
-      syncUI();
+    startAnim({
+      tokens: buildAnimTokens(settled.tokens),
+      angleFrom: boardAngle,
+      angleTo: targetAngle,
+      duration: 280,
+      onDone: () => resolveAfterEnvChange()
     });
   }
 
-  function syncUI() {
+  function resolveAfterPlayerMove() {
+    const w = checkWins(grid);
+    if (w.red || w.yel) {
+      if (w.red && w.yel) { endGame(currentPlayer, true); return; }
+      if (w.red) { endGame(P_RED, false); return; }
+      if (w.yel) { endGame(P_YEL, false); return; }
+    }
+    if (gridIsFull(grid)) { endGame(0, false); return; }
+
+    currentPlayer = (currentPlayer === P_RED) ? P_YEL : P_RED;
+    syncUI();
+  }
+
+  function resolveAfterEnvChange() {
     // Env rotate is NOT a player move => do not check wins here.
     if (gridIsFull(grid)) { endGame(0, false); return; }
     syncUI();
@@ -1233,9 +968,7 @@
       previewRunId++;       // stop pending demo steps
       anim = null;
       animating = false;
-      showOverlay("SHOW WIN demo", `${title}. ${sub}
-
-Tap Resume to return to your original position.`, "resume");
+      showOverlay("SHOW WIN demo", `${title}. ${sub}\n\nTap Resume to return to your original position.`, "resume");
       return;
     }
 
@@ -1260,12 +993,6 @@ Tap Resume to return to your original position.`, "resume");
     currentPlayer = P_RED;
     flipTokens[P_RED] = 2;
     flipTokens[P_YEL] = 2;
-    magnetTokens[P_RED] = 2;
-    magnetTokens[P_YEL] = 2;
-    magTop.fill(0);
-    magBottom.fill(0);
-    magLeft.fill(0);
-    magRight.fill(0);
 
     anim = null;
     animating = false;
@@ -1284,14 +1011,13 @@ Tap Resume to return to your original position.`, "resume");
 
     elRFlips.textContent = String(flipTokens[P_RED]);
     elYFlips.textContent = String(flipTokens[P_YEL]);
-    elRMags.textContent = String(magnetTokens[P_RED]);
-    elYMags.textContent = String(magnetTokens[P_YEL]);
 
     btnTacCCW.disabled = animating || gameOver || previewMode || flipTokens[currentPlayer] <= 0;
     btnTacCW.disabled  = animating || gameOver || previewMode || flipTokens[currentPlayer] <= 0;
 
     btnShowWin.disabled = animating || gameOver || previewMode;
-    btnAdd.disabled = animating || gameOver || previewMode;
+    btnEnvCCW.disabled = animating || gameOver || previewMode;
+    btnEnvCW.disabled  = animating || gameOver || previewMode;
     btnUndo.disabled = animating || previewMode || history.length === 0;
     if (btnOvUndo) {
       const showUndo = (overlayMode === "gameover") && !previewMode;
@@ -1322,42 +1048,6 @@ Tap Resume to return to your original position.`, "resume");
     const px = e.clientX - rect.left;
     const py = e.clientY - rect.top;
 
-    // Board-local coords (unrotated)
-    const dx = px - board.cx;
-    const dy = py - board.cy;
-    const a = boardAngle;
-    const ca = Math.cos(-a), sa = Math.sin(-a);
-    const rx = dx * ca - dy * sa;
-    const ry = dx * sa + dy * ca;
-    const lx = rx + board.w / 2;
-    const ly = ry + board.h / 2;
-
-    const mf = Math.max(10, board.cell * 0.55);
-    const inFrame = (lx >= -mf && lx <= board.w + mf && ly >= -mf && ly <= board.h + mf);
-    const inBoard = (lx >= 0 && lx <= board.w && ly >= 0 && ly <= board.h);
-
-    if (inFrame && !inBoard) {
-      const dL = Math.abs(lx - 0);
-      const dR = Math.abs(lx - board.w);
-      const dT = Math.abs(ly - 0);
-      const dB = Math.abs(ly - board.h);
-
-      let side = 0; // TOP
-      let best = dT;
-      if (dR < best) { best = dR; side = 1; }
-      if (dB < best) { best = dB; side = 2; }
-      if (dL < best) { best = dL; side = 3; }
-
-      if (side === 0 || side === 2) {
-        const col = clamp(Math.floor(lx / board.cell), 0, COLS-1);
-        doMagnet(side, col);
-      } else {
-        const row = clamp(Math.floor(ly / board.cell), 0, ROWS-1);
-        doMagnet(side, row);
-      }
-      return;
-    }
-
     updateHoverFromPoint(px, py);
     if (hoveredIndex >= 0) doDrop(hoveredIndex);
   }
@@ -1380,20 +1070,16 @@ Tap Resume to return to your original position.`, "resume");
     if (k >= "1" && k <= "9") {
       const n = (k.charCodeAt(0) - 48);
       if (isVertical(gravityDir)) { if (n >= 1 && n <= 7) doDrop(n - 1); }
-      else { if (n >= 1 && n <= 6) doDrop(n - 1); }
+      else { if (n >= 1 && n <= 7) doDrop(n - 1); }
     }
   });
 
   // Buttons
   btnTacCCW.addEventListener("click", () => doTacticalFlip(+1));
   btnTacCW.addEventListener("click",  () => doTacticalFlip(-1));
+  btnEnvCCW.addEventListener("click", () => doEnvRotate(+1, false));
+  btnEnvCW.addEventListener("click",  () => doEnvRotate(-1, false));
   btnShowWin.addEventListener("click", () => startShowWinDemo());
-  btnAdd.addEventListener("click", () => {
-    if (animating || gameOver || previewMode) return;
-    flipTokens[P_RED] += 2; flipTokens[P_YEL] += 2;
-    magnetTokens[P_RED] += 2; magnetTokens[P_YEL] += 2;
-    syncUI();
-  });
   btnUndo.addEventListener("click", () => undoLastMove());
   btnOvUndo.addEventListener("click", () => undoLastMove());
   btnNewGame.addEventListener("click", () => newGame());
@@ -1401,47 +1087,30 @@ Tap Resume to return to your original position.`, "resume");
   // =========================
   // Device orientation
   // =========================
-  function getScreenAngleDeg(){ /* removed */ }
-
-  function desiredDirFromAngle(){ /* removed */ }
-
-  function applyDeviceOrientationIfChanged(){ /* removed */ }
-
-  window.addEventListener("orientationchange", () => { resize(); });
-  window.addEventListener("resize", () => { resize(); });
-
-  async function requestMotionPermissionIfNeeded() {
-    const needsPermission =
-      (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") ||
-      (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function");
-    if (!needsPermission) return false;
-    motionWrap.style.display = "block";
-    return true;
+  function getScreenAngleDeg() {
+    const so = (screen && screen.orientation) ? screen.orientation : null;
+    if (so && typeof so.angle === "number") return so.angle;
+    if (typeof window.orientation === "number") return window.orientation;
+    return null;
   }
-
-  async function enableMotion() {
-    try {
-      let granted = true;
-      if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") {
-        const res = await DeviceMotionEvent.requestPermission();
-        granted = granted && (res === "granted");
-      }
-      if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
-        const res2 = await DeviceOrientationEvent.requestPermission();
-        granted = granted && (res2 === "granted");
-      }
-      motionWrap.style.display = "none";
-      if (granted) {
-        window.addEventListener("deviceorientation", () => applyDeviceOrientationIfChanged(), { passive:true });
-        window.addEventListener("devicemotion", () => applyDeviceOrientationIfChanged(), { passive:true });
-      } else {
-        motionWrap.style.display = "block";
-      }
-        } catch {
-      motionWrap.style.display = "block";
-    }
+  function desiredDirFromAngle(angleDeg) {
+    let a = angleDeg % 360; if (a < 0) a += 360;
+    const snapped = (Math.round(a / 90) * 90) % 360;
+    if (snapped === 0) return 0;
+    if (snapped === 90) return 1;
+    if (snapped === 180) return 2;
+    if (snapped === 270) return 3;
+    return gravityDir;
   }
-  motionBtn.addEventListener("click", enableMotion);
+  function applyDeviceOrientationIfChanged() {
+    if (previewMode) return;
+    const ang = getScreenAngleDeg();
+    if (ang === null) return;
+    const want = desiredDirFromAngle(ang);
+    if (!animating && !gameOver && want !== gravityDir) doEnvRotate(want, true);
+  }
+  window.addEventListener("orientationchange", () => { resize(); applyDeviceOrientationIfChanged(); });
+  window.addEventListener("resize", () => { resize(); applyDeviceOrientationIfChanged(); });
 
   // =========================
   // Main loop
@@ -1457,14 +1126,9 @@ Tap Resume to return to your original position.`, "resume");
   // Init
   resize();
   newGame();
-  requestMotionPermissionIfNeeded();
+  applyDeviceOrientationIfChanged();
   requestAnimationFrame(frame);
 })();
-
-
-
-
-
 </script>
 </body>
 </html>
