@@ -1173,13 +1173,12 @@
     }
 
     ctx.restore();
-
-    requestAnimationFrame(frame);
   }
 
   function frame(now){
     updateAnim(now);
     render();
+    requestAnimationFrame(frame);
   }
 
   // --------------------------
@@ -1190,14 +1189,13 @@
     if(ev.touches && ev.touches.length){
       return { x: ev.touches[0].clientX, y: ev.touches[0].clientY };
     }
-
+    return { x: ev.clientX, y: ev.clientY };
+  }
 
   // Move/hover handler (optional). Keep it safe so Safari never crashes if hover logic is absent.
   function onMove(ev){
     if(ev && ev.cancelable) ev.preventDefault();
     // No-op by default (we don't require hover to play).
-  }
-    return { x: ev.clientX, y: ev.clientY };
   }
 
   let tapGuard = 0;
