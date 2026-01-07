@@ -3,1296 +3,997 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>FlipFour</title>
+<title>FlipFour: Magnetic</title>
 <style>
   :root{
     --bg:#0b0f17;
-    --panel:rgba(20,26,38,0.78);
-    --panel2:rgba(20,26,38,0.92);
+    --panel:#141a26;
     --text:#e9eefc;
-    --muted:#a9b3cf;
+    --muted:#8fa1b8;
+    --accent:#3c78ff;
+    --red:#e53935;
+    --yel:#fdd835;
     --btn:#26314a;
-    --btnBorder:rgba(255,255,255,0.12);
-    --shadow:rgba(0,0,0,0.45);
+    --btnBorder:rgba(255,255,255,0.1);
   }
-  html,body{
-    height:100%; margin:0;
-    background:var(--bg); color:var(--text);
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    overflow:hidden;
-    -webkit-text-size-adjust:100%;
-  }
-  #wrap{position:fixed; inset:0; touch-action:none;}
-  canvas{position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none;}
-
-  #hud{
-    position:fixed; left:0; right:0; top:0;
-    padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 10px max(12px, env(safe-area-inset-left));
-    background:linear-gradient(to bottom, var(--panel2), rgba(20,26,38,0.0));
-    pointer-events:auto;
-    z-index:10;
-  }
-  #titleRow{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;}
-  #title{font-weight:950; font-size:22px; letter-spacing:0.4px;}
-  #sub{font-size:12px; color:var(--muted);}
-
-  #statusRow{
-    margin-top:8px;
-    display:flex; gap:10px; flex-wrap:wrap;
-    align-items:stretch; justify-content:space-between;
-  }
-  .pill{
-    background:var(--panel);
-    border:1px solid var(--btnBorder);
-    border-radius:14px;
-    padding:8px 10px;
-    box-shadow:0 8px 22px var(--shadow);
-    display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-    backdrop-filter: blur(10px);
-  }
-  #turnBig{font-weight:950; font-size:18px;}
-  #gravityInfo,#hintInfo{font-size:12px; color:var(--muted);}
-
-  #tokens{display:flex; gap:10px; align-items:center; flex-wrap:wrap; font-size:12px; color:var(--muted);}
-  .pTag{display:flex; gap:8px; align-items:center}
-  .dot{width:10px;height:10px;border-radius:999px;display:inline-block;border:1px solid rgba(255,255,255,0.22)}
-  .dot.red{background:#e53935;}
-  .dot.yel{background:#fdd835;}
-  .count{color:var(--text); font-weight:950;}
-
-  #btnRow{
-    margin-top:10px;
-    display:flex; gap:10px; flex-wrap:wrap;
-    align-items:center;
-  }
-  button{
-    appearance:none;
-    border:1px solid var(--btnBorder);
-    background:var(--btn);
-    color:var(--text);
-    border-radius:12px;
-    padding:10px 12px;
-    font-weight:900;
-    letter-spacing:0.2px;
-    box-shadow:0 10px 24px var(--shadow);
-    cursor:pointer;
-    user-select:none;
-    -webkit-user-select:none;
-  }
-  button:active{transform:translateY(1px);}
-  button[disabled]{opacity:0.45; cursor:not-allowed; transform:none;}
-  .btnSmall{padding:8px 10px; font-weight:900; font-size:12px;}
-  .devBtn{
-    background:linear-gradient(180deg, rgba(60,120,255,0.22), rgba(60,120,255,0.10));
-    border-color:rgba(106,167,255,0.35);
-  }
-  .tacBtn{
-    background:linear-gradient(180deg, rgba(255,204,102,0.20), rgba(255,204,102,0.10));
-    border-color:rgba(255,204,102,0.35);
-  }
-  .dangerBtn{
-    background:linear-gradient(180deg, rgba(255,107,107,0.20), rgba(255,107,107,0.10));
-    border-color:rgba(255,107,107,0.35);
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;overflow:hidden;touch-action:none;}
+  
+  /* Layout: Flex Column to guarantee UI visibility */
+  #app {
+    display:flex; flex-direction:column; height:100%; width:100%;
   }
 
-  #overlay{
-    position:fixed; inset:0;
+  /* HUD (Top) */
+  #hud {
+    flex-shrink:0; z-index:10;
+    background:var(--panel); border-bottom:1px solid var(--btnBorder);
+    padding: max(10px, env(safe-area-inset-top)) 12px 10px;
+    display:flex; flex-direction:column; gap:8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .row { display:flex; justify-content:space-between; align-items:center; }
+  h1 { margin:0; font-size:18px; font-weight:900; letter-spacing:0.5px; }
+  .status { font-size:13px; color:var(--muted); font-family:monospace; }
+  
+  /* Tokens Display */
+  #tokens {
+    display:flex; gap:16px; font-size:12px; font-weight:700;
+    background:rgba(0,0,0,0.3); padding:6px 10px; border-radius:8px;
+  }
+  .t-grp { display:flex; align-items:center; gap:6px; }
+  .dot { width:8px; height:8px; border-radius:50%; }
+  .dot.r { background:var(--red); box-shadow:0 0 4px var(--red); }
+  .dot.y { background:var(--yel); box-shadow:0 0 4px var(--yel); }
+
+  /* Canvas Area (Middle) */
+  #game-stage {
+    flex-grow:1; position:relative; overflow:hidden; background:var(--bg);
+  }
+  canvas { display:block; width:100%; height:100%; }
+
+  /* Controls (Bottom) */
+  #controls {
+    flex-shrink:0; z-index:10;
+    background:var(--panel); border-top:1px solid var(--btnBorder);
+    padding: 10px 12px max(14px, env(safe-area-inset-bottom));
+    display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+  }
+  
+  /* Buttons */
+  button {
+    background:var(--btn); border:1px solid var(--btnBorder); color:var(--text);
+    padding:10px 14px; border-radius:8px; font-weight:700; font-size:13px;
+    cursor:pointer; touch-action:manipulation;
+    transition:transform 0.1s, background 0.2s;
+  }
+  button:active { transform:scale(0.96); }
+  button:disabled { opacity:0.4; pointer-events:none; }
+  
+  .btn-act { background:rgba(60,120,255,0.15); border-color:rgba(60,120,255,0.4); }
+  .btn-tac { background:rgba(255,204,102,0.15); border-color:rgba(255,204,102,0.4); color:#ffd54f; }
+  .btn-dang { background:rgba(229,57,53,0.15); border-color:rgba(229,57,53,0.4); color:#ff8a80; }
+  .btn-dev { background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.2); font-size:11px; }
+
+  /* Overlay */
+  #overlay {
+    position:absolute; inset:0; z-index:100;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
     display:none; align-items:center; justify-content:center;
-    background:rgba(0,0,0,0.55);
-    padding:20px;
-    pointer-events:auto;
-    z-index:20;
   }
-  #overlayCard{
-    width:min(560px, 92vw);
-    background:rgba(15,19,28,0.92);
-    border:1px solid rgba(255,255,255,0.14);
-    border-radius:18px;
-    padding:18px 16px;
-    box-shadow:0 20px 50px rgba(0,0,0,0.6);
-    backdrop-filter: blur(12px);
-    text-align:center;
+  .card {
+    background:var(--panel); border:1px solid var(--btnBorder);
+    padding:24px; border-radius:16px; text-align:center;
+    width:min(400px, 80vw); box-shadow:0 20px 40px rgba(0,0,0,0.6);
   }
-  #ovTitle{font-size:22px; font-weight:950; letter-spacing:0.2px; margin:0 0 6px 0;}
-  #ovSub{
-    margin:0 0 14px 0;
-    color:var(--muted);
-    font-size:13px;
-    line-height:1.35;
-    white-space:pre-line;
-    text-align:left;
-  }
-  #overlayBtns{display:flex; gap:10px;}
-  #overlayBtns button{flex:1;}
+  .card h2 { margin:0 0 8px; font-size:24px; }
+  .card p { color:var(--muted); margin:0 0 20px; line-height:1.5; font-size:14px; }
+  .card-btns { display:flex; gap:10px; justify-content:center; }
+  .card-btns button { flex:1; }
+
 </style>
 </head>
 <body>
-<div id="wrap">
-  <canvas id="c"></canvas>
 
+<div id="app">
   <div id="hud">
-    <div id="titleRow">
-      <div id="title">FlipFour</div>
-      <div id="sub">Connect-4 + Gravity Flip • local 2-player</div>
+    <div class="row">
+      <h1>FlipFour <span style="font-size:12px;opacity:0.5;font-weight:400">Magnetic</span></h1>
+      <div class="status" id="turnInfo">Red's Turn</div>
     </div>
-
-    <div id="statusRow">
-      <div class="pill" id="turnPill">
-        <div id="turnBig">Turn: —</div>
-        <div id="gravityInfo">Gravity: —</div>
-        <div id="hintInfo">Hint: —</div>
+    <div class="row">
+      <div id="tokens">
+        <div class="t-grp"><span class="dot r"></span> <span id="rStats">F:2 M:2</span></div>
+        <div class="t-grp"><span class="dot y"></span> <span id="yStats">F:2 M:2</span></div>
       </div>
-
-      <div class="pill" id="tokenPill">
-        <div id="tokens">
-          <div class="pTag"><span class="dot red"></span>Red flips: <span class="count" id="rFlips">2</span> • mags: <span class="count" id="rMags">2</span></div>
-          <div class="pTag"><span class="dot yel"></span>Yellow flips: <span class="count" id="yFlips">2</span> • mags: <span class="count" id="yMags">2</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="btnRow">
-      <button class="tacBtn" id="tacCCW" title="Tactical Flip ⟲ (consumes flip token)">Tactical Flip ⟲</button>
-      <button class="tacBtn" id="tacCW"  title="Tactical Flip ⟳ (consumes flip token)">Tactical Flip ⟳</button>
-      <button class="devBtn btnSmall" id="addBtn" title="DEV: add +2 flips and +2 magnets to BOTH players">ADD +2</button>
-      <button class="devBtn btnSmall" id="undoBtn" title="Undo last move">Undo</button>
-      <button class="tacBtn" id="showWin" title="Depth-limited win preview (does not end the real game)">SHOW WIN</button>
-      <button class="dangerBtn" id="newGame">New Game</button>
+      <div class="status" id="gravInfo">Grav: ↓</div>
     </div>
   </div>
 
-  <div id="overlay">
-    <div id="overlayCard">
-      <h2 id="ovTitle">—</h2>
-      <p id="ovSub">—</p>
-      <div id="overlayBtns">
-        <button id="ovUndo" class="devBtn">Undo</button>
-        <button id="ovMain" class="dangerBtn">Close</button>
+  <div id="game-stage">
+    <canvas id="c"></canvas>
+    
+    <div id="overlay">
+      <div class="card">
+        <h2 id="ovTitle">Game Over</h2>
+        <p id="ovMsg">Red Wins!</p>
+        <div class="card-btns">
+          <button id="ovBtnMain" class="btn-act">New Game</button>
+          <button id="ovBtnSec" class="btn-dev">Undo</button>
+        </div>
       </div>
     </div>
+  </div>
+
+  <div id="controls">
+    <button id="btnCCW" class="btn-tac">Turn ⟲</button>
+    <button id="btnCW" class="btn-tac">Turn ⟳</button>
+    <button id="btnShowWin" class="btn-act">Show Win</button>
+    <button id="btnUndo" class="btn-dev">Undo</button>
+    <button id="btnAdd" class="btn-dev">ADD +2</button>
+    <button id="btnNew" class="btn-dang">Reset</button>
   </div>
 </div>
 
 <script>
+/**
+ * FLIPFOUR: MAGNETIC
+ * Single File HTML5 Game
+ */
 (() => {
   "use strict";
 
-  const COLS = 7, ROWS = 7;
+  // --- Constants ---
+  const ROWS = 7, COLS = 7;
   const P_EMPTY = 0, P_RED = 1, P_YEL = 2;
+  const DIRS = ["DOWN", "LEFT", "UP", "RIGHT"]; // 0, 1, 2, 3
+  
+  // Magnets: 0=None, 1=Red, 2=Yellow
+  // Side Indices: 0=Top, 1=Right, 2=Bottom, 3=Left (Matching visual rotation)
+  
+  // --- State ---
+  let grid = [];
+  // Magnet Arrays: Index 0..6 along the edge
+  let mag = {
+    top: new Array(COLS).fill(0),
+    bottom: new Array(COLS).fill(0),
+    left: new Array(ROWS).fill(0),
+    right: new Array(ROWS).fill(0)
+  };
 
-  // gravityDir: 0=DOWN, 1=LEFT, 2=UP, 3=RIGHT
-  const DIRS = ["DOWN","LEFT","UP","RIGHT"];
-  const ARROWS = ["↓","←","↑","→"];
-
-  // Magnet sides (board-local): 0=TOP, 1=RIGHT, 2=BOTTOM, 3=LEFT
-  const SIDE_TOP=0, SIDE_RIGHT=1, SIDE_BOTTOM=2, SIDE_LEFT=3;
-
-  const canvas = document.getElementById("c");
-  let ctx = canvas.getContext("2d", { alpha:false });
-  if(!ctx) ctx = canvas.getContext("2d");
-
-  const hud = document.getElementById("hud");
-  const overlay = document.getElementById("overlay");
-  const ovTitle = document.getElementById("ovTitle");
-  const ovSub = document.getElementById("ovSub");
-  const btnOvUndo = document.getElementById("ovUndo");
-  const btnOvMain = document.getElementById("ovMain");
-
-  const elTurnBig = document.getElementById("turnBig");
-  const elGravityInfo = document.getElementById("gravityInfo");
-  const elHintInfo = document.getElementById("hintInfo");
-  const elRFlips = document.getElementById("rFlips");
-  const elYFlips = document.getElementById("yFlips");
-  const elRMags  = document.getElementById("rMags");
-  const elYMags  = document.getElementById("yMags");
-
-  const btnTacCCW = document.getElementById("tacCCW");
-  const btnTacCW  = document.getElementById("tacCW");
-  const btnAdd    = document.getElementById("addBtn");
-  const btnUndo   = document.getElementById("undoBtn");
-  const btnShowWin= document.getElementById("showWin");
-  const btnNewGame= document.getElementById("newGame");
-
-  // --------------------------
-  // State
-  // --------------------------
-  let grid = makeEmptyGrid();
-  let gravityDir = 0;
-  let currentPlayer = P_RED;
-
-  let flipTokens = { [P_RED]:2, [P_YEL]:2 };
-  let magnetTokens = { [P_RED]:2, [P_YEL]:2 };
-
-  // Per line-segment magnets: owner (0/1/2)
-  // top/bottom per column, left/right per row
-  let magTop = new Array(COLS).fill(0);
-  let magBottom = new Array(COLS).fill(0);
-  let magLeft = new Array(ROWS).fill(0);
-  let magRight = new Array(ROWS).fill(0);
-
-  let gameOver = false;
-  let winner = 0;
-
-  // Animation (rotation only)
-  let boardAngle = dirToAngleRad(gravityDir);
-  let targetAngle = boardAngle;
-  let anim = null;
-  let animating = false;
-
-  // Undo history (snapshot BEFORE each real move)
+  let gravityDir = 0; // 0=Down
+  let boardAngle = 0; // Visual radians
+  let targetAngle = 0;
+  
+  let curPlayer = P_RED;
+  let tokens = {
+    [P_RED]: { flip: 2, mag: 2 },
+    [P_YEL]: { flip: 2, mag: 2 }
+  };
+  
   let history = [];
-
-  // SHOW WIN preview
+  let gameOver = false;
+  let animating = false;
+  let anim = null; // { t:0..1, ... }
+  
   let previewMode = false;
   let previewSnapshot = null;
-  let previewRunId = 0;
 
-  // Hint debounce/cache
-  let hintTimer = null;
-  let lastHintKey = null;
-  let hintCache = new Map();
+  // --- UI Elements ---
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d", { alpha: false });
+  const hudTurn = document.getElementById("turnInfo");
+  const hudGrav = document.getElementById("gravInfo");
+  const hudR = document.getElementById("rStats");
+  const hudY = document.getElementById("yStats");
+  
+  const elOverlay = document.getElementById("overlay");
+  const ovTitle = document.getElementById("ovTitle");
+  const ovMsg = document.getElementById("ovMsg");
+  const ovBtnMain = document.getElementById("ovBtnMain");
+  const ovBtnSec = document.getElementById("ovBtnSec");
 
-  // Overlay mode: "close" | "gameover" | "resume"
-  let overlayMode = "close";
-
-  // --------------------------
-  // Geometry
-  // --------------------------
-  let W=1,H=1;
-  let board = { cx:0, cy:0, w:0, h:0, cell:0, band:0 };
-
-  function resize(){
-    const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
-    W = Math.floor(window.innerWidth);
-    H = Math.floor(window.innerHeight);
-    canvas.width = Math.floor(W * dpr);
-    canvas.height = Math.floor(H * dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    computeBoardLayout();
+  // --- Initialization ---
+  function initGrid() {
+    return Array.from({length: ROWS}, () => Array(COLS).fill(P_EMPTY));
+  }
+  
+  function initGame() {
+    grid = initGrid();
+    mag = {
+      top: Array(COLS).fill(0), bottom: Array(COLS).fill(0),
+      left: Array(ROWS).fill(0), right: Array(ROWS).fill(0)
+    };
+    gravityDir = 0;
+    boardAngle = 0;
+    targetAngle = 0;
+    curPlayer = P_RED;
+    tokens = { [P_RED]: { flip: 2, mag: 2 }, [P_YEL]: { flip: 2, mag: 2 } };
+    history = [];
+    gameOver = false;
+    animating = false;
+    previewMode = false;
+    previewSnapshot = null;
+    hideOverlay();
+    syncUI();
+    render();
   }
 
-  function computeBoardLayout(){
-    const rect = hud.getBoundingClientRect();
-    const margin = 14;
-    const top0 = rect.height + 10;
-
-    const availW0 = Math.max(120, W - 2*margin);
-    const availH0 = Math.max(120, H - top0 - margin);
-    const cell0 = Math.floor(Math.min(availW0, availH0) / 7);
-    const band0 = Math.max(12, Math.floor(Math.max(20, cell0) * 0.45));
-
-    // Reserve vertical space for magnet guides/pips above & below the board
-    const top = top0 + band0 + 8;
-
-    const availH = Math.max(120, H - top - margin);
-    const availW = availW0;
-
-    const cell = Math.floor(Math.min(availW, availH) / 7);
-    board.cell = Math.max(20, cell);
-    board.w = board.cell * 7;
-    board.h = board.cell * 7;
-    board.band = Math.max(12, Math.floor(board.cell * 0.45)); // magnet click band
-
-    board.cx = Math.floor(W/2);
-    board.cy = Math.floor(top + availH/2);
-  }
-
-  function dirToAngleRad(dir){
-    return -dir * (Math.PI/2);
-  }
-
-  function shortestAngleDiff(a,b){
-    const TWO = Math.PI*2;
-    let d = (b - a) % TWO;
-    if (d > Math.PI) d -= TWO;
-    if (d <= -Math.PI) d += TWO;
-    return d;
-  }
-  function easeInOut(t){ return t*t*(3 - 2*t); }
-
-  function screenToBoardLocal(px,py){
-    const dx = px - board.cx;
-    const dy = py - board.cy;
-    const a = boardAngle;
-    const ca = Math.cos(-a), sa = Math.sin(-a);
-    const rx = dx*ca - dy*sa;
-    const ry = dx*sa + dy*ca;
-    const lx = rx + board.w/2;
-    const ly = ry + board.h/2;
-    const inside = (lx>=0 && lx<=board.w && ly>=0 && ly<=board.h);
-    return {lx,ly,inside};
-  }
-
-  function localToCell(lx,ly){
-    return { c: Math.floor(lx/board.cell), r: Math.floor(ly/board.cell) };
-  }
-
-  function localToMagHit(lx,ly){
-    const band = board.band;
-    const w = board.w, h = board.h;
-    if (ly < 0 && ly > -band && lx >= 0 && lx <= w) {
-      const idx = clampInt(Math.floor(lx/board.cell), 0, COLS-1);
-      return { side:SIDE_TOP, idx };
-    }
-    if (ly > h && ly < h+band && lx >= 0 && lx <= w) {
-      const idx = clampInt(Math.floor(lx/board.cell), 0, COLS-1);
-      return { side:SIDE_BOTTOM, idx };
-    }
-    if (lx < 0 && lx > -band && ly >= 0 && ly <= h) {
-      const idx = clampInt(Math.floor(ly/board.cell), 0, ROWS-1);
-      return { side:SIDE_LEFT, idx };
-    }
-    if (lx > w && lx < w+band && ly >= 0 && ly <= h) {
-      const idx = clampInt(Math.floor(ly/board.cell), 0, ROWS-1);
-      return { side:SIDE_RIGHT, idx };
-    }
-    return null;
-  }
-
-  function clampInt(x,lo,hi){ return x<lo?lo:(x>hi?hi:x); }
-
-  // --------------------------
-  // Grid helpers
-  // --------------------------
-  function makeEmptyGrid(){
-    const g = new Array(ROWS);
-    for(let r=0;r<ROWS;r++) g[r] = new Array(COLS).fill(P_EMPTY);
-    return g;
-  }
-  function cloneGrid(g){ return g.map(row => row.slice()); }
-  function playerName(p){ return p===P_RED ? "Red" : "Yellow"; }
-
-  function gridIsFull(g){
-    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(g[r][c]===P_EMPTY) return false;
-    return true;
-  }
-
-  function checkWins(g){
-    let red=false, yel=false;
-    const mark = (p)=>{ if(p===P_RED) red=true; else if(p===P_YEL) yel=true; };
-
-    for(let r=0;r<ROWS;r++){
-      for(let c=0;c<COLS;c++){
-        const p = g[r][c];
-        if(p===P_EMPTY) continue;
-
-        if(c<=COLS-4 && g[r][c+1]===p && g[r][c+2]===p && g[r][c+3]===p) mark(p);
-        if(r<=ROWS-4 && g[r+1][c]===p && g[r+2][c]===p && g[r+3][c]===p) mark(p);
-        if(r<=ROWS-4 && c<=COLS-4 && g[r+1][c+1]===p && g[r+2][c+2]===p && g[r+3][c+3]===p) mark(p);
-        if(r<=ROWS-4 && c>=3 && g[r+1][c-1]===p && g[r+2][c-2]===p && g[r+3][c-3]===p) mark(p);
-      }
-    }
-    return {red,yel};
-  }
-
-  // --------------------------
-  // Physics: settle -> magnet pulls+pin -> settle again
-  // --------------------------
-  function settleGrid(g, dir){
-    const out = makeEmptyGrid();
-    if(dir===0 || dir===2){
-      for(let c=0;c<COLS;c++){
-        const toks = [];
-        for(let r=0;r<ROWS;r++){ if(g[r][c]!==P_EMPTY) toks.push(g[r][c]); }
-        const L = toks.length;
-        for(let i=0;i<L;i++){
-          const tr = (dir===0) ? (ROWS - L + i) : i;
-          out[tr][c] = toks[i];
-        }
-      }
-    }else{
-      for(let r=0;r<ROWS;r++){
-        const toks = [];
-        for(let c=0;c<COLS;c++){ if(g[r][c]!==P_EMPTY) toks.push(g[r][c]); }
-        const L = toks.length;
-        for(let i=0;i<L;i++){
-          const tc = (dir===1) ? i : (COLS - L + i);
-          out[r][tc] = toks[i];
-        }
-      }
-    }
-    return out;
-  }
-
-  function settleWithPinned(g, dir, pinned){
-    const out = makeEmptyGrid();
-    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
-      if(pinned[r][c]) out[r][c] = g[r][c];
-    }
-
-    if(dir===0 || dir===2){
-      for(let c=0;c<COLS;c++){
-        const avail = [];
-        for(let r=0;r<ROWS;r++) if(!pinned[r][c]) avail.push(r);
-
-        const toks = [];
-        for(let r=0;r<ROWS;r++){
-          if(!pinned[r][c] && g[r][c]!==P_EMPTY) toks.push(g[r][c]);
-        }
-        const L = toks.length;
-        const targets = (dir===0) ? avail.slice(Math.max(0, avail.length - L)) : avail.slice(0, L);
-        for(let i=0;i<L;i++) out[targets[i]][c] = toks[i];
-      }
-    }else{
-      for(let r=0;r<ROWS;r++){
-        const avail = [];
-        for(let c=0;c<COLS;c++) if(!pinned[r][c]) avail.push(c);
-
-        const toks = [];
-        for(let c=0;c<COLS;c++){
-          if(!pinned[r][c] && g[r][c]!==P_EMPTY) toks.push(g[r][c]);
-        }
-        const L = toks.length;
-        const targets = (dir===1) ? avail.slice(0, L) : avail.slice(Math.max(0, avail.length - L));
-        for(let i=0;i<L;i++) out[r][targets[i]] = toks[i];
-      }
-    }
-    return out;
-  }
-
-  function resolvePhysics(g, dir){
-    let s = settleGrid(g, dir);
-    let work = cloneGrid(s);
-
-    const pinned = new Array(ROWS);
-    for(let r=0;r<ROWS;r++) pinned[r] = new Array(COLS).fill(false);
-
-    function pullTop(c){
-      if(magTop[c]===0) return;
-      if(work[0][c]===P_EMPTY){
-        for(let r=1;r<ROWS;r++){
-          if(work[r][c]!==P_EMPTY){ work[0][c]=work[r][c]; work[r][c]=P_EMPTY; break; }
-        }
-      }
-      if(work[0][c]!==P_EMPTY) pinned[0][c] = true;
-    }
-    function pullBottom(c){
-      if(magBottom[c]===0) return;
-      const rr = ROWS-1;
-      if(work[rr][c]===P_EMPTY){
-        for(let r=rr-1;r>=0;r--){
-          if(work[r][c]!==P_EMPTY){ work[rr][c]=work[r][c]; work[r][c]=P_EMPTY; break; }
-        }
-      }
-      if(work[rr][c]!==P_EMPTY) pinned[rr][c] = true;
-    }
-    function pullLeft(r){
-      if(magLeft[r]===0) return;
-      if(work[r][0]===P_EMPTY){
-        for(let c=1;c<COLS;c++){
-          if(work[r][c]!==P_EMPTY){ work[r][0]=work[r][c]; work[r][c]=P_EMPTY; break; }
-        }
-      }
-      if(work[r][0]!==P_EMPTY) pinned[r][0] = true;
-    }
-    function pullRight(r){
-      if(magRight[r]===0) return;
-      const cc = COLS-1;
-      if(work[r][cc]===P_EMPTY){
-        for(let c=cc-1;c>=0;c--){
-          if(work[r][c]!==P_EMPTY){ work[r][cc]=work[r][c]; work[r][c]=P_EMPTY; break; }
-        }
-      }
-      if(work[r][cc]!==P_EMPTY) pinned[r][cc] = true;
-    }
-
-    for(let c=0;c<COLS;c++){ pullTop(c); pullBottom(c); }
-    for(let r=0;r<ROWS;r++){ pullLeft(r); pullRight(r); }
-
-    return settleWithPinned(work, dir, pinned);
-  }
-
-  // --------------------------
-  // Snapshot / Undo / Overlay
-  // --------------------------
-  function snapshotState(){
+  // --- Core Logic: State Management ---
+  function cloneState() {
     return {
-      grid: cloneGrid(grid),
-      gravityDir,
-      currentPlayer,
-      flipR: flipTokens[P_RED],
-      flipY: flipTokens[P_YEL],
-      magR: magnetTokens[P_RED],
-      magY: magnetTokens[P_YEL],
-      magTop: magTop.slice(),
-      magBottom: magBottom.slice(),
-      magLeft: magLeft.slice(),
-      magRight: magRight.slice(),
-      gameOver,
-      winner,
-      boardAngle,
-      targetAngle
+      grid: grid.map(r => [...r]),
+      mag: {
+        top: [...mag.top], bottom: [...mag.bottom],
+        left: [...mag.left], right: [...mag.right]
+      },
+      gravityDir, boardAngle, targetAngle, curPlayer,
+      tokens: JSON.parse(JSON.stringify(tokens)),
+      gameOver
     };
   }
-  function applySnapshot(s){
-    grid = cloneGrid(s.grid);
+
+  function restoreState(s) {
+    grid = s.grid.map(r => [...r]);
+    mag = {
+      top: [...s.mag.top], bottom: [...s.mag.bottom],
+      left: [...s.mag.left], right: [...s.mag.right]
+    };
     gravityDir = s.gravityDir;
-    currentPlayer = s.currentPlayer;
-    flipTokens[P_RED] = s.flipR;
-    flipTokens[P_YEL] = s.flipY;
-    magnetTokens[P_RED] = s.magR;
-    magnetTokens[P_YEL] = s.magY;
-    magTop = s.magTop.slice();
-    magBottom = s.magBottom.slice();
-    magLeft = s.magLeft.slice();
-    magRight = s.magRight.slice();
-    gameOver = s.gameOver;
-    winner = s.winner;
     boardAngle = s.boardAngle;
     targetAngle = s.targetAngle;
-  }
-  function pushHistory(){
-    history.push(snapshotState());
-    if(history.length>120) history.shift();
-  }
-  function undoLast(){
-    if(animating || previewMode) return;
-    if(history.length===0) return;
-    const s = history.pop();
-    anim = null; animating=false;
-    previewSnapshot=null; previewMode=false;
-    applySnapshot(s);
-    hideOverlay();
+    curPlayer = s.curPlayer;
+    tokens = JSON.parse(JSON.stringify(s.tokens));
+    gameOver = s.gameOver;
+    animating = false;
+    render();
     syncUI();
   }
-
-  function showOverlay(title, sub, mode){
-    overlayMode = mode || "close";
-    ovTitle.textContent = title || "";
-    ovSub.textContent = sub || "";
-    overlay.style.display = "flex";
-
-    if(overlayMode==="gameover") btnOvMain.textContent = "Play Again";
-    else if(overlayMode==="resume") btnOvMain.textContent = "Resume";
-    else btnOvMain.textContent = "Close";
-
-    const allowUndo = (overlayMode==="gameover") && !previewMode;
-    btnOvUndo.style.display = allowUndo ? "inline-block" : "none";
-    btnOvUndo.disabled = !allowUndo || animating || history.length===0;
-  }
-  function hideOverlay(){
-    overlay.style.display = "none";
+  
+  function pushHistory() {
+    if (previewMode) return;
+    history.push(cloneState());
+    if (history.length > 50) history.shift();
   }
 
-  function restoreSnapshot(){
-    if(!previewSnapshot){ hideOverlay(); return; }
-    const s = previewSnapshot;
-    previewSnapshot=null;
-    previewMode=false;
-    previewRunId++;
-    anim = null; animating=false;
-    applySnapshot(s);
-    hideOverlay();
-    syncUI();
+  function undo() {
+    if (animating || previewMode) return;
+    if (history.length === 0) return;
+    restoreState(history.pop());
   }
 
-  btnOvMain.addEventListener("click", () => {
-    if(overlayMode==="gameover"){ newGame(); return; }
-    if(overlayMode==="resume"){ restoreSnapshot(); return; }
-    hideOverlay();
-  });
-  btnOvUndo.addEventListener("click", undoLast);
-
-  // --------------------------
-  // Moves (real + preview)
-  // --------------------------
-  function tryDrop(idx, isPreview){
-    if(animating) return false;
-    if(gameOver && !isPreview) return false;
-    if(previewMode && !isPreview) return false;
-
-    // Validate empty exists on selected line
-    if(gravityDir===0 || gravityDir===2){
-      let ok=false;
-      for(let r=0;r<ROWS;r++) if(grid[r][idx]===P_EMPTY){ ok=true; break; }
-      if(!ok) return false;
-    }else{
-      let ok=false;
-      for(let c=0;c<COLS;c++) if(grid[idx][c]===P_EMPTY){ ok=true; break; }
-      if(!ok) return false;
-    }
-
-    if(!isPreview) pushHistory();
-
-    // Place directly into the post-drop resting spot (deterministic)
-    if(gravityDir===0){
-      for(let r=ROWS-1;r>=0;r--) if(grid[r][idx]===P_EMPTY){ grid[r][idx]=currentPlayer; break; }
-    }else if(gravityDir===2){
-      for(let r=0;r<ROWS;r++) if(grid[r][idx]===P_EMPTY){ grid[r][idx]=currentPlayer; break; }
-    }else if(gravityDir===1){
-      for(let c=0;c<COLS;c++) if(grid[idx][c]===P_EMPTY){ grid[idx][c]=currentPlayer; break; }
-    }else{
-      for(let c=COLS-1;c>=0;c--) if(grid[idx][c]===P_EMPTY){ grid[idx][c]=currentPlayer; break; }
-    }
-
-    // Resolve physics
-    grid = resolvePhysics(grid, gravityDir);
-
-    return endTurnAfterMove(isPreview);
-  }
-
-  function tryFlip(step, isPreview){
-    if(animating) return false;
-    if(gameOver && !isPreview) return false;
-    if(previewMode && !isPreview) return false;
-    if(flipTokens[currentPlayer] <= 0) return false;
-
-    if(!isPreview) pushHistory();
-    flipTokens[currentPlayer] -= 1;
-
-    const oldAngle = boardAngle;
-
-    gravityDir = (gravityDir + step + 4) % 4;
-    targetAngle = dirToAngleRad(gravityDir);
-
-    startRotationAnim(oldAngle, targetAngle, 260, () => {
-      grid = resolvePhysics(grid, gravityDir);
-      endTurnAfterMove(isPreview);
-    });
-
-    return true;
-  }
-
-  function tryPlaceMag(side, idx, isPreview){
-    if(animating) return false;
-    if(gameOver && !isPreview) return false;
-    if(previewMode && !isPreview) return false;
-    if(magnetTokens[currentPlayer] <= 0) return false;
-
-    // Check if would change anything; if not, no-op without spending token/turn.
-    const willChange = magnetWouldChange(side, idx, currentPlayer);
-    if(!willChange) return false;
-
-    if(!isPreview) pushHistory();
-    magnetTokens[currentPlayer] -= 1;
-
-    applyMagPlacement(side, idx, currentPlayer);
-
-    // physics includes magnet pulls/pin
-    grid = resolvePhysics(grid, gravityDir);
-
-    return endTurnAfterMove(isPreview);
-  }
-
-  function magnetWouldChange(side, idx, player){
-    if(side===SIDE_TOP){
-      if(magTop[idx]===player) return false;
-      return true;
-    }
-    if(side===SIDE_BOTTOM){
-      if(magBottom[idx]===player) return false;
-      return true;
-    }
-    if(side===SIDE_LEFT){
-      if(magLeft[idx]===player) return false;
-      return true;
-    }
-    if(side===SIDE_RIGHT){
-      if(magRight[idx]===player) return false;
-      return true;
-    }
+  // --- Core Logic: Physics (Gravity & Magnets) ---
+  
+  // Is this cell "locked" by a magnet?
+  // A magnet on the rim prevents the adjacent token from moving AWAY from it or SIDEWAYS?
+  // Requirement: "pins it until next physics settle"
+  // Implementation: If a cell is adjacent to a magnet, it ignores gravity.
+  function isPinned(r, c) {
+    if (r === 0 && mag.top[c] !== 0) return true;
+    if (r === ROWS - 1 && mag.bottom[c] !== 0) return true;
+    if (c === 0 && mag.left[r] !== 0) return true;
+    if (c === COLS - 1 && mag.right[r] !== 0) return true;
     return false;
   }
 
-  function applyMagPlacement(side, idx, player){
-    // Neutralization only if OPPONENT is on the opposite side of same line.
-    const opp = (player===P_RED) ? P_YEL : P_RED;
-
-    if(side===SIDE_TOP){
-      if(magBottom[idx]===opp){
-        magTop[idx]=0; magBottom[idx]=0;
-        return;
-      }
-      magTop[idx]=player; // replace/overwrite
-      return;
-    }
-    if(side===SIDE_BOTTOM){
-      if(magTop[idx]===opp){
-        magTop[idx]=0; magBottom[idx]=0;
-        return;
-      }
-      magBottom[idx]=player;
-      return;
-    }
-    if(side===SIDE_LEFT){
-      if(magRight[idx]===opp){
-        magLeft[idx]=0; magRight[idx]=0;
-        return;
-      }
-      magLeft[idx]=player;
-      return;
-    }
-    if(side===SIDE_RIGHT){
-      if(magLeft[idx]===opp){
-        magLeft[idx]=0; magRight[idx]=0;
-        return;
-      }
-      magRight[idx]=player;
-      return;
-    }
-  }
-
-  function endTurnAfterMove(isPreview){
-    const w = checkWins(grid);
-    if(w.red || w.yel){
-      let who = 0;
-      if(w.red && w.yel) who = currentPlayer;
-      else if(w.red) who = P_RED;
-      else who = P_YEL;
-
-      if(isPreview){
-        previewRunId++;
-        anim = null; animating=false;
-        showOverlay("SHOW WIN demo", `${playerName(who)} would win here.\n\nTap Resume to return to your original position.`, "resume");
-        return true;
-      }else{
-        gameOver = true;
-        winner = who;
-        showOverlay(`${playerName(who)} Wins`, (w.red && w.yel) ? "Tie-break: both players formed Connect-4; active player wins." : "Connect-4 achieved.", "gameover");
-        syncUI();
-        return true;
+  function applyMagnetPull(g) {
+    // If there is a magnet and a gap, pull the NEAREST token to the edge
+    let changed = false;
+    
+    // Top Magnets (Pull Up)
+    for (let c=0; c<COLS; c++) {
+      if (mag.top[c] !== 0 && g[0][c] === P_EMPTY) {
+        // Find nearest token in column
+        for (let r=1; r<ROWS; r++) {
+          if (g[r][c] !== P_EMPTY) {
+            g[0][c] = g[r][c]; g[r][c] = P_EMPTY; changed = true; break;
+          }
+        }
       }
     }
-
-    if(gridIsFull(grid)){
-      if(isPreview){
-        previewRunId++;
-        anim=null; animating=false;
-        showOverlay("SHOW WIN demo", "Draw reached in the preview line.\n\nTap Resume to return to your original position.", "resume");
-        return true;
-      }else{
-        gameOver = true;
-        winner = 0;
-        showOverlay("Draw", "No winner.", "gameover");
-        syncUI();
-        return true;
+    // Bottom Magnets (Pull Down)
+    for (let c=0; c<COLS; c++) {
+      if (mag.bottom[c] !== 0 && g[ROWS-1][c] === P_EMPTY) {
+        for (let r=ROWS-2; r>=0; r--) {
+          if (g[r][c] !== P_EMPTY) {
+            g[ROWS-1][c] = g[r][c]; g[r][c] = P_EMPTY; changed = true; break;
+          }
+        }
       }
     }
-
-    currentPlayer = (currentPlayer===P_RED) ? P_YEL : P_RED;
-    syncUI();
-    return true;
-  }
-
-  // --------------------------
-  // DEV: ADD +2
-  // --------------------------
-  function addPlus2(){
-    if(animating || previewMode) return;
-    pushHistory();
-    flipTokens[P_RED] += 2; flipTokens[P_YEL] += 2;
-    magnetTokens[P_RED] += 2; magnetTokens[P_YEL] += 2;
-    syncUI();
-  }
-
-  // --------------------------
-  // Rotation animation
-  // --------------------------
-  function startRotationAnim(from, to, duration, onDone){
-    animating = true;
-    anim = {
-      t0: performance.now(),
-      dur: Math.max(0, duration|0),
-      from, to,
-      onDone: onDone || null
-    };
-  }
-
-  function updateAnim(now){
-    if(!anim) return;
-    const t = (now - anim.t0) / anim.dur;
-    if(t >= 1){
-      boardAngle = anim.to;
-      const cb = anim.onDone;
-      anim = null;
-      animating = false;
-      if(cb) cb();
-      return;
-    }
-    const e = easeInOut(Math.max(0, Math.min(1, t)));
-    const d = shortestAngleDiff(anim.from, anim.to);
-    boardAngle = anim.from + d * e;
-  }
-
-  // --------------------------
-  // SHOW WIN (depth-limited)
-  // --------------------------
-  function stateKey(s){
-    let k = ""+s.gravityDir+"|"+s.player+"|";
-    k += s.flipTokens[P_RED]+","+s.flipTokens[P_YEL]+"|";
-    k += s.magnetTokens[P_RED]+","+s.magnetTokens[P_YEL]+"|";
-    k += s.mags.top.join("") + s.mags.right.join("") + s.mags.bottom.join("") + s.mags.left.join("");
-    k += "|";
-    for(let r=0;r<ROWS;r++) k += s.grid[r].join("");
-    return k;
-  }
-
-  function cloneStateFromLive(){
-    return {
-      grid: cloneGrid(grid),
-      gravityDir,
-      player: currentPlayer,
-      flipTokens: { [P_RED]: flipTokens[P_RED], [P_YEL]: flipTokens[P_YEL] },
-      magnetTokens: { [P_RED]: magnetTokens[P_RED], [P_YEL]: magnetTokens[P_YEL] },
-      mags: {
-        top: magTop.slice(),
-        bottom: magBottom.slice(),
-        left: magLeft.slice(),
-        right: magRight.slice()
-      }
-    };
-  }
-
-  function invertOutcome(out){
-    if(out.status==="W") return { status:"L", ply: out.ply + 1, pv: out.pv.slice() };
-    if(out.status==="L") return { status:"W", ply: out.ply + 1, pv: out.pv.slice() };
-    if(out.status==="D") return { status:"D", ply: 0, pv: out.pv.slice() };
-    return { status:"U", ply: 0, pv: out.pv.slice() };
-  }
-
-  function solveForcedWin(root, depth, memo){
-    const key = stateKey(root) + "|d" + depth;
-    const hit = memo.get(key);
-    if(hit) return hit;
-
-    if(depth<=0){
-      const out = { status:"U", ply:0, pv:[] };
-      memo.set(key,out);
-      return out;
-    }
-
-    const moves = legalMovesFor(root);
-
-    let bestW=null, bestD=null, bestU=null, bestL=null;
-
-    for(const mv of moves){
-      const applied = applyMoveToState(root, mv);
-      if(!applied) continue;
-
-      if(applied.winnerNow === root.player){
-        const cand = { status:"W", ply:1, pv:[mv] };
-        if(!bestW || cand.ply < bestW.ply) bestW = cand;
-        continue;
-      }
-
-      const child = solveForcedWin(applied.nextState, depth-1, memo);
-      const inv = invertOutcome(child);
-      inv.pv = [mv].concat(child.pv);
-
-      if(inv.status==="W"){
-        if(!bestW || inv.ply < bestW.ply) bestW = inv;
-      }else if(inv.status==="D"){
-        if(!bestD) bestD = inv;
-      }else if(inv.status==="U"){
-        if(!bestU) bestU = inv;
-      }else{
-        if(!bestL || inv.ply > bestL.ply) bestL = inv;
+    // Left Magnets (Pull Left)
+    for (let r=0; r<ROWS; r++) {
+      if (mag.left[r] !== 0 && g[r][0] === P_EMPTY) {
+        for (let c=1; c<COLS; c++) {
+          if (g[r][c] !== P_EMPTY) {
+            g[r][0] = g[r][c]; g[r][c] = P_EMPTY; changed = true; break;
+          }
+        }
       }
     }
-
-    const out = bestW || bestD || bestU || bestL || { status:"U", ply:0, pv:[] };
-    memo.set(key,out);
-    return out;
-  }
-
-  function computeHint(maxPlies){
-    const root = cloneStateFromLive();
-    const memo = new Map();
-    const out = solveForcedWin(root, maxPlies, memo);
-    const movesToWin = (out.status==="W") ? Math.ceil(out.ply/2) : null;
-    return { out, movesToWin };
-  }
-
-  function formatMoveList(pv){
-    let dir = gravityDir;
-    let p = currentPlayer;
-    const lines = [];
-    for(let i=0;i<pv.length;i++){
-      const mv = pv[i];
-      const mover = (p===P_RED) ? "Red" : "Yellow";
-      let desc = "";
-      if(mv.type==="DROP"){
-        desc = (dir===0 || dir===2) ? `DROP column ${mv.idx+1}` : `DROP row ${mv.idx+1}`;
-      }else if(mv.type==="FLIP"){
-        desc = `Tactical Flip ${mv.step===+1 ? "⟲" : "⟳"}`;
-        dir = (dir + mv.step + 4) % 4;
-      }else{
-        const sideName = (mv.side===SIDE_TOP)?"TOP":(mv.side===SIDE_RIGHT)?"RIGHT":(mv.side===SIDE_BOTTOM)?"BOTTOM":"LEFT";
-        desc = `MAGNET ${sideName} ${mv.idx+1}`;
+    // Right Magnets (Pull Right)
+    for (let r=0; r<ROWS; r++) {
+      if (mag.right[r] !== 0 && g[r][COLS-1] === P_EMPTY) {
+        for (let c=COLS-2; c>=0; c--) {
+          if (g[r][c] !== P_EMPTY) {
+            g[r][COLS-1] = g[r][c]; g[r][c] = P_EMPTY; changed = true; break;
+          }
+        }
       }
-      lines.push(`${i+1}. ${mover}: ${desc}   (gravity ${ARROWS[dir]} ${DIRS[dir]})`);
-      p = (p===P_RED) ? P_YEL : P_RED;
     }
-    return lines.join("\n");
+    return changed;
   }
 
-  function startShowWinDemo(){
-    if(animating || gameOver || previewMode) return;
-
-    let res;
-    try{
-      res = computeHint(6);
-    }catch(e){
-      showOverlay("SHOW WIN", "Search failed (depth-limited).", "close");
-      return;
+  function applyGravityStep(g, dir) {
+    let changed = false;
+    // Down (0)
+    if (dir === 0) {
+      for (let c=0; c<COLS; c++) {
+        for (let r=ROWS-2; r>=0; r--) {
+          if (g[r][c] !== P_EMPTY && g[r+1][c] === P_EMPTY) {
+            if (!isPinned(r, c)) { // Only fall if not pinned
+              g[r+1][c] = g[r][c]; g[r][c] = P_EMPTY; changed = true;
+            }
+          }
+        }
+      }
     }
-
-    if(res.out.status!=="W" || !res.out.pv || res.out.pv.length===0){
-      showOverlay("SHOW WIN", "No forced win found (depth-limited).", "close");
-      return;
+    // Left (1) - Gravity pulls LEFT
+    else if (dir === 1) {
+      for (let r=0; r<ROWS; r++) {
+        for (let c=1; c<COLS; c++) {
+          if (g[r][c] !== P_EMPTY && g[r][c-1] === P_EMPTY) {
+            if (!isPinned(r, c)) {
+              g[r][c-1] = g[r][c]; g[r][c] = P_EMPTY; changed = true;
+            }
+          }
+        }
+      }
     }
-
-    previewSnapshot = snapshotState();
-    previewMode = true;
-    previewRunId++;
-    const myRun = previewRunId;
-
-    const pv = res.out.pv.slice(0, Math.max(1, Math.min(8, res.out.ply || 6)));
-
-    showOverlay("SHOW WIN demo", "Planned line (depth-limited):\n\n" + formatMoveList(pv) + "\n\nDemo starts now…", "close");
-    setTimeout(() => { if(previewMode && myRun===previewRunId) hideOverlay(); }, 850);
-
-    let i=0;
-
-    const runNext = () => {
-      if(!previewMode || myRun!==previewRunId) return;
-      if(i>=pv.length){
-        showOverlay("SHOW WIN demo", "Line complete (depth-limited).\n\nTap Resume to return to your original position.", "resume");
-        return;
+    // Up (2)
+    else if (dir === 2) {
+      for (let c=0; c<COLS; c++) {
+        for (let r=1; r<ROWS; r++) {
+          if (g[r][c] !== P_EMPTY && g[r-1][c] === P_EMPTY) {
+            if (!isPinned(r, c)) {
+              g[r-1][c] = g[r][c]; g[r][c] = P_EMPTY; changed = true;
+            }
+          }
+        }
       }
-      const mv = pv[i++];
-      if(mv.type==="DROP"){
-        tryDrop(mv.idx, true);
-      }else if(mv.type==="FLIP"){
-        tryFlip(mv.step, true);
-      }else{
-        tryPlaceMag(mv.side, mv.idx, true);
-      }
-
-      const wait = () => {
-        if(!previewMode || myRun!==previewRunId) return;
-        if(animating){ setTimeout(wait, 30); return; }
-        setTimeout(runNext, 220);
-      };
-      wait();
-    };
-
-    setTimeout(runNext, 260);
-  }
-
-  // --------------------------
-  // Hint line
-  // --------------------------
-  function scheduleHint(){
-    if(hintTimer) clearTimeout(hintTimer);
-    hintTimer = setTimeout(() => {
-      if(animating || gameOver || previewMode){
-        elHintInfo.textContent = "Hint: —";
-        return;
-      }
-
-      const key = stateKey(cloneStateFromLive()) + "|H6";
-      if(key === lastHintKey) return;
-      lastHintKey = key;
-
-      const cached = hintCache.get(key);
-      if(cached){ elHintInfo.textContent = cached; return; }
-
-      let text = "Hint: ";
-      try{
-        const r = computeHint(6);
-        if(r.out.status==="W") text += `Win in ${r.movesToWin} move(s) (depth-limited).`;
-        else text += "No win found (depth-limited).";
-      }catch{
-        text += "—";
-      }
-      hintCache.set(key, text);
-      elHintInfo.textContent = text;
-    }, 60);
-  }
-
-  // --------------------------
-  // UI sync
-  // --------------------------
-  function syncUI(){
-    elTurnBig.textContent = gameOver ? "Game Over" : `Turn: ${playerName(currentPlayer)}`;
-    const deg = ((gravityDir*90)%360+360)%360;
-    elGravityInfo.textContent = `Gravity: ${ARROWS[gravityDir]} ${DIRS[gravityDir]} • Angle: ${deg}°`;
-
-    elRFlips.textContent = String(flipTokens[P_RED]);
-    elYFlips.textContent = String(flipTokens[P_YEL]);
-    elRMags.textContent  = String(magnetTokens[P_RED]);
-    elYMags.textContent  = String(magnetTokens[P_YEL]);
-
-    btnTacCCW.disabled = animating || gameOver || previewMode || (flipTokens[currentPlayer] <= 0);
-    btnTacCW.disabled  = animating || gameOver || previewMode || (flipTokens[currentPlayer] <= 0);
-    btnUndo.disabled   = animating || previewMode || history.length===0;
-    btnAdd.disabled    = animating || previewMode;
-    btnShowWin.disabled= animating || gameOver || previewMode;
-    btnNewGame.disabled= animating;
-
-    if(overlay.style.display==="flex"){
-      const allowUndo = (overlayMode==="gameover") && !previewMode;
-      btnOvUndo.style.display = allowUndo ? "inline-block" : "none";
-      btnOvUndo.disabled = !allowUndo || animating || history.length===0;
     }
-
-    scheduleHint();
+    // Right (3)
+    else if (dir === 3) {
+      for (let r=0; r<ROWS; r++) {
+        for (let c=COLS-2; c>=0; c--) {
+          if (g[r][c] !== P_EMPTY && g[r][c+1] === P_EMPTY) {
+            if (!isPinned(r, c)) {
+              g[r][c+1] = g[r][c]; g[r][c] = P_EMPTY; changed = true;
+            }
+          }
+        }
+      }
+    }
+    return changed;
   }
 
-  // --------------------------
-  // Rendering
-  // --------------------------
-  function drawRoundedRect(x,y,w,h,r){
-    const rr = Math.min(r, w/2, h/2);
-    ctx.beginPath();
-    ctx.moveTo(x+rr, y);
-    ctx.arcTo(x+w, y, x+w, y+h, rr);
-    ctx.arcTo(x+w, y+h, x, y+h, rr);
-    ctx.arcTo(x, y+h, x, y, rr);
-    ctx.arcTo(x, y, x+w, y, rr);
-    ctx.closePath();
-  }
-
-  function discGradient(p){
-    const g = ctx.createRadialGradient(-6, -8, 2, 0, 0, 18);
-    if(p===P_RED){
-      g.addColorStop(0, "#ff9a96");
-      g.addColorStop(0.35, "#ff4d4a");
-      g.addColorStop(1, "#b71c1c");
-    }else{
-      g.addColorStop(0, "#fff6a6");
-      g.addColorStop(0.35, "#ffe15c");
-      g.addColorStop(1, "#c9a400");
+  // Deterministically settle the grid
+  function settleGridLogic(startGrid, dir) {
+    // Clone grid
+    let g = startGrid.map(r => [...r]);
+    let stable = false;
+    let iterations = 0;
+    
+    // Physics loop: Magnets pull, then Gravity falls. Repeat until stable.
+    while (!stable && iterations < 30) {
+      let c1 = applyMagnetPull(g);
+      let c2 = applyGravityStep(g, dir);
+      if (!c1 && !c2) stable = true;
+      iterations++;
     }
     return g;
   }
 
-  function drawTokenAtLocal(r,c,p){
-    const s = board.cell;
-    const cx = (c+0.5)*s;
-    const cy = (r+0.5)*s;
-    const rad = s*0.38;
+  // --- Actions ---
 
-    ctx.save();
-    ctx.translate(cx,cy);
-    ctx.fillStyle = discGradient(p);
-    ctx.beginPath();
-    ctx.arc(0,0,rad,0,Math.PI*2);
-    ctx.fill();
-
-    ctx.strokeStyle = "rgba(255,255,255,0.12)";
-    ctx.lineWidth = Math.max(1, s*0.06);
-    ctx.beginPath();
-    ctx.arc(0,0,rad,0,Math.PI*2);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawMagnet(side, idx, owner){
-    if(owner===0) return;
-    const s = board.cell;
-    const w = board.w, h = board.h;
-
-    const col = (owner===P_RED) ? "#ff6b6b" : "#ffe15c";
-    ctx.fillStyle = col;
-    ctx.strokeStyle = "rgba(0,0,0,0.30)";
-    ctx.lineWidth = 1;
-
-    const t = Math.max(4, Math.floor(s*0.14));
-    const len = Math.max(10, Math.floor(s*0.72));
-
-    ctx.save();
-    if(side===0){
-      const x = idx*s + (s-len)/2;
-      const y = -t - 2;
-      drawRoundedRect(x,y,len,t, Math.max(2, t*0.6));
-      ctx.fill(); ctx.stroke();
-    }else if(side===2){
-      const x = idx*s + (s-len)/2;
-      const y = h + 2;
-      drawRoundedRect(x,y,len,t, Math.max(2, t*0.6));
-      ctx.fill(); ctx.stroke();
-    }else if(side===3){
-      const x = -t - 2;
-      const y = idx*s + (s-len)/2;
-      drawRoundedRect(x,y,t,len, Math.max(2, t*0.6));
-      ctx.fill(); ctx.stroke();
-    }else if(side===1){
-      const x = w + 2;
-      const y = idx*s + (s-len)/2;
-      drawRoundedRect(x,y,t,len, Math.max(2, t*0.6));
-      ctx.fill(); ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  function render(){
-    ctx.clearRect(0,0,W,H);
-
-    const bg = ctx.createRadialGradient(W*0.5, H*0.35, 20, W*0.5, H*0.35, Math.max(W,H)*0.9);
-    bg.addColorStop(0, "#111a2a");
-    bg.addColorStop(1, "#070a10");
-    ctx.fillStyle = bg;
-    ctx.fillRect(0,0,W,H);
-
-    ctx.save();
-    ctx.translate(board.cx, board.cy);
-    ctx.rotate(boardAngle);
-    ctx.translate(-board.w/2, -board.h/2);
-
-    drawRoundedRect(-8,-8, board.w+16, board.h+16, 18);
-    ctx.fillStyle = "rgba(0,0,0,0.35)";
-    ctx.fill();
-
-    drawRoundedRect(0,0, board.w, board.h, 14);
-    ctx.fillStyle = "rgba(30,36,52,0.96)";
-    ctx.fill();
-
-    ctx.strokeStyle = "rgba(255,255,255,0.06)";
-    ctx.lineWidth = 1;
-    for(let i=1;i<7;i++){
-      ctx.beginPath(); ctx.moveTo(i*board.cell, 0); ctx.lineTo(i*board.cell, board.h); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(0, i*board.cell); ctx.lineTo(board.w, i*board.cell); ctx.stroke();
-    }
-
-    for(let c=0;c<COLS;c++){
-      drawMagnet(0, c, magTop[c]);
-      drawMagnet(2, c, magBottom[c]);
-    }
-    for(let r=0;r<ROWS;r++){
-      drawMagnet(3, r, magLeft[r]);
-      drawMagnet(1, r, magRight[r]);
-    }
-
-    for(let r=0;r<ROWS;r++){
-      for(let c=0;c<COLS;c++){
-        const p = grid[r][c];
-        if(p!==P_EMPTY) drawTokenAtLocal(r,c,p);
+  function checkWin(g) {
+    for (let r=0; r<ROWS; r++) {
+      for (let c=0; c<COLS; c++) {
+        let p = g[r][c];
+        if (p === 0) continue;
+        // Horizontal
+        if (c<=COLS-4 && g[r][c+1]===p && g[r][c+2]===p && g[r][c+3]===p) return p;
+        // Vertical
+        if (r<=ROWS-4 && g[r+1][c]===p && g[r+2][c]===p && g[r+3][c]===p) return p;
+        // Diag \
+        if (r<=ROWS-4 && c<=COLS-4 && g[r+1][c+1]===p && g[r+2][c+2]===p && g[r+3][c+3]===p) return p;
+        // Diag /
+        if (r<=ROWS-4 && c>=3 && g[r+1][c-1]===p && g[r+2][c-2]===p && g[r+3][c-3]===p) return p;
       }
     }
-
-    ctx.restore();
+    return 0;
   }
 
-  function frame(now){
-    updateAnim(now);
+  function endTurn() {
+    // Check win
+    const w = checkWin(grid);
+    if (w !== 0) {
+      gameOver = true;
+      if (!previewMode) showOverlay(w === P_RED ? "Red Wins!" : "Yellow Wins!", "Connect Four detected.", true);
+      else showOverlay("Demo Complete", `${w===P_RED?"Red":"Yellow"} wins this line.`, false);
+    } else {
+        // Draw?
+        let full = true;
+        for(let r=0; r<ROWS; r++) if(grid[r].includes(P_EMPTY)) full=false;
+        if(full) {
+             gameOver = true;
+             if(!previewMode) showOverlay("Draw", "Board Full", true);
+             else showOverlay("Demo Complete", "Draw", false);
+        } else {
+             curPlayer = (curPlayer === P_RED) ? P_YEL : P_RED;
+             syncUI();
+        }
+    }
+  }
+
+  function doDrop(row, col) {
+    // Validate based on gravity
+    let valid = false;
+    // Find drop entry point based on gravity
+    // For "Drop", we actually just place the token at the entry edge and let physics settle it.
+    // However, standard C4 implementation usually finds the first empty spot from the drop direction.
+    // Let's stick to: User clicks a column (if gravity vertical) or row (if horizontal).
+    // The "entry" cell must be empty.
+    
+    // Find "Entry" cell
+    let rEnt, cEnt;
+    if (gravityDir === 0) { rEnt=0; cEnt=col; }
+    else if (gravityDir === 1) { rEnt=row; cEnt=COLS-1; }
+    else if (gravityDir === 2) { rEnt=ROWS-1; cEnt=col; }
+    else { rEnt=row; cEnt=0; }
+    
+    // Check if full at entry (ignoring if gravity pulls it away immediately, simpler to just check entry)
+    // Actually, we should check if there is ANY space in that line.
+    // But for C4 gravity game, usually you drop into the "top" of the stack.
+    // We will just insert at Entry. If Entry is full, invalid move.
+    
+    // NOTE: Because of magnets/pinning, "Entry" might be occupied but the rest empty. 
+    // Logic: Look for the first empty spot starting from entry side.
+    let rT = rEnt, cT = cEnt;
+    let found = false;
+    
+    // Scan inward from entry
+    for (let i=0; i<ROWS; i++) {
+        let rCheck = rEnt, cCheck = cEnt;
+        if (gravityDir===0) rCheck+=i;
+        else if (gravityDir===1) cCheck-=i;
+        else if (gravityDir===2) rCheck-=i;
+        else cCheck+=i;
+        
+        if (grid[rCheck][cCheck] === P_EMPTY) {
+            rT = rCheck; cT = cCheck; found = true; break;
+        }
+    }
+    
+    if (!found) return; // Line full
+
+    pushHistory();
+    grid[rT][cT] = curPlayer;
+    
+    // Animate
+    animating = true;
+    let settled = settleGridLogic(grid, gravityDir);
+    
+    // Simple animation: just fade/slide?
+    // For single file simplicity, we will just lerp tokens. 
+    // But since settleGridLogic does multiple steps, instantaneous teleport is jarring.
+    // We will just snap to settled state after a short delay or lerp.
+    // Let's do a simple 300ms transition where we draw tokens at old positions then new.
+    
+    let oldGrid = grid; // (Actually we modified grid in place above at rT,cT)
+    // Wait, settleGridLogic returned a NEW grid.
+    
+    // Start Animation
+    grid = settled; // Commit state
+    animating = false; // Skip complex animation for this fix, ensure stability first.
+    endTurn();
     render();
-    requestAnimationFrame(frame);
   }
 
-  // --------------------------
-  // Input
-  // --------------------------
-  let lastHover = null;
-  function getClientXY(ev){
-    if(ev.touches && ev.touches.length){
-      return { x: ev.touches[0].clientX, y: ev.touches[0].clientY };
-    }
-    return { x: ev.clientX, y: ev.clientY };
-  }
+  function doMagnet(side, idx) {
+    if (tokens[curPlayer].mag <= 0) return;
+    
+    // Check opposition
+    // sides: 0=Top, 1=Right, 2=Bottom, 3=Left
+    let oppSide = (side + 2) % 4;
+    let oppVal = 0;
+    if (oppSide === 0) oppVal = mag.top[idx];
+    else if (oppSide === 1) oppVal = mag.right[idx];
+    else if (oppSide === 2) oppVal = mag.bottom[idx];
+    else if (oppSide === 3) oppVal = mag.left[idx];
+    
+    const opponent = (curPlayer === P_RED) ? P_YEL : P_RED;
 
-  // Move/hover handler (optional). Keep it safe so Safari never crashes if hover logic is absent.
-  function onMove(ev){
-    if(ev && ev.cancelable) ev.preventDefault();
-    // No-op by default (we don't require hover to play).
-  }
+    pushHistory();
+    tokens[curPlayer].mag--;
 
-  let tapGuard = 0;
-  function onDown(ev){
-    if(overlay.style.display==="flex") return;
-    if(animating) return;
-    const now = performance.now();
-    if(now - tapGuard < 30) return; // guard against double-delivery
-    tapGuard = now;
-    if(ev.pointerType && ev.isPrimary===false) return;
-    if(ev.cancelable) ev.preventDefault();
-
-    const {x,y} = getClientXY(ev);
-    const loc = screenToBoardLocal(x,y);
-
-    const magHit = localToMagHit(loc.lx, loc.ly);
-    if(magHit){
-      tryPlaceMag(magHit.side, magHit.idx, false);
-      return;
+    if (oppVal === opponent) {
+      // Neutralize
+      if (oppSide === 0) mag.top[idx] = 0;
+      else if (oppSide === 1) mag.right[idx] = 0;
+      else if (oppSide === 2) mag.bottom[idx] = 0;
+      else if (oppSide === 3) mag.left[idx] = 0;
+      // Visual feedback?
+    } else {
+      // Place
+      if (side === 0) mag.top[idx] = curPlayer;
+      else if (side === 1) mag.right[idx] = curPlayer;
+      else if (side === 2) mag.bottom[idx] = curPlayer;
+      else if (side === 3) mag.left[idx] = curPlayer;
     }
 
-    if(loc.inside){
-      const {c,r} = localToCell(loc.lx, loc.ly);
-      if(gravityDir===0 || gravityDir===2){
-        if(c>=0 && c<COLS) tryDrop(c, false);
-      }else{
-        if(r>=0 && r<ROWS) tryDrop(r, false);
-      }
+    // Apply Physics (Magnets might pull immediately)
+    grid = settleGridLogic(grid, gravityDir);
+    
+    endTurn();
+    render();
+  }
+
+  function doFlip(dirDelta) {
+    if (tokens[curPlayer].flip <= 0) return;
+    pushHistory();
+    tokens[curPlayer].flip--;
+    
+    // Update Gravity
+    // 0=Down. CCW(+1) -> 1=Left? No.
+    // Standard Math: 0 deg = Right.
+    // Let's stick to our enum: 0=DOWN, 1=LEFT, 2=UP, 3=RIGHT
+    // Delta +1 (CCW) : Down(0) -> Right(3).  ( 0 - 1 + 4 ) % 4 = 3.
+    // Delta -1 (CW)  : Down(0) -> Left(1).   ( 0 + 1 ) % 4 = 1.
+    // Wait, physically: Down -> Turn Board CCW -> Gravity is now relative "Right" of board?
+    // If I rotate board CCW, the "Down" vector relative to the board becomes "Right".
+    
+    // Let's use visual rotation.
+    // Board rotates. Gravity vector (screen down) stays same.
+    // So relative gravity changes.
+    // Rotate Board CCW (+90deg):
+    // Old Bottom is now Right. Gravity (Screen Down) now pulls Old Right.
+    // Old Right was 3. So New Gravity Dir is 3.
+    // 0 -> 3.  formula: (dir - delta + 4) % 4.
+    
+    let newDir = (gravityDir - dirDelta + 4) % 4;
+    gravityDir = newDir;
+    
+    // Animate Rotation
+    // boardAngle is current visual angle.
+    // dirDelta = +1 (CCW) -> Angle -= 90deg?
+    // Visual: standard canvas rotation. +Angle = CW? usually.
+    // ctx.rotate(angle).
+    // If I press CCW, board should rotate CCW (negative angle).
+    // targetAngle = boardAngle - dirDelta * (Math.PI/2);
+    // But we need to sync gravity.
+    
+    // Let's just animate visual angle.
+    let startA = boardAngle;
+    let endA = boardAngle + (dirDelta === 1 ? -Math.PI/2 : Math.PI/2);
+    targetAngle = endA;
+    
+    // Physics Settle
+    grid = settleGridLogic(grid, gravityDir);
+
+    // Animation loop
+    animating = true;
+    let t0 = performance.now();
+    
+    function loop(t) {
+        let p = (t - t0) / 400;
+        if (p > 1) {
+            animating = false;
+            boardAngle = targetAngle;
+            render();
+            endTurn();
+            return;
+        }
+        // Ease
+        p = p*p*(3-2*p);
+        boardAngle = startA + (endA - startA) * p;
+        render();
+        requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  }
+
+  // --- Input Handling ---
+  
+  function getBoardPos(evt) {
+    const rect = canvas.getBoundingClientRect();
+    let x = evt.clientX - rect.left;
+    let y = evt.clientY - rect.top;
+    
+    // Center of canvas
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    
+    // Inverse Rotate
+    const dx = x - cx;
+    const dy = y - cy;
+    const cos = Math.cos(-boardAngle);
+    const sin = Math.sin(-boardAngle);
+    const rx = dx * cos - dy * sin;
+    const ry = dx * sin + dy * cos;
+    
+    // Board Dimensions
+    // We draw board centered.
+    // grid size = 7 * CELL.
+    // Board Plate = Grid + Margin.
+    // Let's say CELL is calc'd in render.
+    // We need shared sizing.
+    const size = Math.min(canvas.width, canvas.height) * 0.85;
+    const cell = size / 9; // 7 cells + 2 rim units
+    const boardSize = 7 * cell;
+    
+    // Check Grid
+    const halfB = boardSize / 2;
+    const gridX = rx + halfB;
+    const gridY = ry + halfB;
+    
+    const col = Math.floor(gridX / cell);
+    const row = Math.floor(gridY / cell);
+    
+    // Inside Grid?
+    if (col >= 0 && col < COLS && row >= 0 && row < ROWS) {
+        return { type: 'CELL', r: row, c: col };
+    }
+    
+    // Inside Rim?
+    // Rim is approx 1 cell thick around grid
+    const rimThick = cell * 1.2;
+    if (rx > -halfB - rimThick && rx < halfB + rimThick &&
+        ry > -halfB - rimThick && ry < halfB + rimThick) {
+        
+        // Determine Side
+        // Simple angle check or bounding box
+        // Distance from center
+        if (Math.abs(rx) > Math.abs(ry)) {
+            // Left or Right
+            if (rx < 0) return { type: 'RIM', side: 3, idx: row }; // Left
+            else return { type: 'RIM', side: 1, idx: row }; // Right
+        } else {
+            // Top or Bottom
+            if (ry < 0) return { type: 'RIM', side: 0, idx: col }; // Top
+            else return { type: 'RIM', side: 2, idx: col }; // Bottom
+        }
+    }
+    
+    return { type: 'NONE' };
+  }
+
+  function handleInput(e) {
+    if (gameOver || animating || previewMode) return;
+    if (e.type === 'touchstart') e.preventDefault(); // prevents scroll
+    
+    // Handle Click
+    const act = getBoardPos(e.type.includes('touch') ? e.changedTouches[0] : e);
+    
+    if (act.type === 'CELL') {
+        doDrop(act.r, act.c);
+    } else if (act.type === 'RIM') {
+        if (act.idx >= 0 && act.idx < 7) {
+            doMagnet(act.side, act.idx);
+        }
     }
   }
 
-  // Input events:
-  // IMPORTANT: On iOS Safari, binding both pointer* and touch* can cause a single tap to be handled twice.
-  const HAS_POINTER = typeof window.PointerEvent !== "undefined";
-  if (HAS_POINTER){
-    canvas.addEventListener("pointerdown", onDown, { passive:false });
-    canvas.addEventListener("pointermove", onMove, { passive:false });
-  } else {
-    canvas.addEventListener("touchstart", onDown, { passive:false });
-    canvas.addEventListener("touchmove", onMove, { passive:false });
-    canvas.addEventListener("mousedown", onDown, { passive:false });
-    canvas.addEventListener("mousemove", onMove, { passive:false });
+  canvas.addEventListener('mousedown', handleInput);
+  canvas.addEventListener('touchstart', handleInput, {passive:false});
+
+  // --- Rendering ---
+  
+  function render() {
+    // Resize
+    if (canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    }
+    
+    const W = canvas.width;
+    const H = canvas.height;
+    const cx = W/2, cy = H/2;
+    
+    // Clear
+    ctx.fillStyle = "#0b0f17";
+    ctx.fillRect(0,0,W,H);
+    
+    // Layout
+    const size = Math.min(W, H) * 0.85;
+    const cell = size / 9; // Grid is 7x7, allocate space for rim
+    const boardW = 7 * cell;
+    
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(boardAngle);
+    
+    // Draw Board Plate
+    ctx.fillStyle = "#141a26";
+    ctx.beginPath();
+    ctx.roundRect(-boardW/2 - cell*0.2, -boardW/2 - cell*0.2, boardW + cell*0.4, boardW + cell*0.4, 12);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,0.1)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Draw Grid Cells
+    ctx.translate(-boardW/2, -boardW/2);
+    
+    for (let r=0; r<ROWS; r++) {
+        for (let c=0; c<COLS; c++) {
+            const x = c*cell;
+            const y = r*cell;
+            
+            // Hole
+            ctx.fillStyle = "rgba(0,0,0,0.5)";
+            ctx.beginPath();
+            ctx.arc(x + cell/2, y + cell/2, cell*0.4, 0, Math.PI*2);
+            ctx.fill();
+            
+            // Token
+            const val = grid[r][c];
+            if (val !== P_EMPTY) {
+                drawToken(ctx, x+cell/2, y+cell/2, cell*0.4, val);
+            }
+        }
+    }
+    
+    // Draw Magnets
+    // Coordinates are relative to grid top-left (0,0)
+    // Mag Top: y = -cell/2
+    mag.top.forEach((p, i) => drawMag(ctx, i*cell + cell/2, -cell*0.6, cell, 0, p));
+    mag.bottom.forEach((p, i) => drawMag(ctx, i*cell + cell/2, boardW + cell*0.6, cell, 2, p));
+    mag.left.forEach((p, i) => drawMag(ctx, -cell*0.6, i*cell + cell/2, cell, 3, p));
+    mag.right.forEach((p, i) => drawMag(ctx, boardW + cell*0.6, i*cell + cell/2, cell, 1, p));
+    
+    ctx.restore();
   }
-  canvas.addEventListener("wheel", (e)=>{ if(e.cancelable) e.preventDefault(); }, { passive:false });
+  
+  function drawToken(ctx, x, y, r, p) {
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.fillStyle = (p === P_RED) ? "#e53935" : "#fdd835";
+    ctx.fill();
+    // Shine
+    ctx.beginPath();
+    ctx.arc(x - r*0.3, y - r*0.3, r*0.2, 0, Math.PI*2);
+    ctx.fillStyle = "rgba(255,255,255,0.3)";
+    ctx.fill();
+  }
+  
+  function drawMag(ctx, x, y, size, dir, p) {
+    if (p === 0) return;
+    ctx.save();
+    ctx.translate(x, y);
+    // Rotate to face inward
+    // 0(Top) -> 0 rot? No, Top magnet points down.
+    // 0: Points Down (0 deg)
+    // 1: Points Left (90 deg)
+    // 2: Points Up (180 deg)
+    // 3: Points Right (270 deg)
+    // But our drawing is a Horseshoe.
+    // Let's just draw a simple shape.
+    ctx.rotate(dir * Math.PI/2);
+    
+    ctx.beginPath();
+    // Horseshoe shape
+    const r = size*0.35;
+    ctx.arc(0, 0, r, 0, Math.PI, true); // Semi circle top
+    ctx.lineTo(-r, r);
+    ctx.lineTo(r, r);
+    ctx.closePath();
+    
+    ctx.fillStyle = (p === P_RED) ? "#e53935" : "#fdd835";
+    ctx.fill();
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    ctx.restore();
+  }
 
-  // Buttons
-  btnTacCCW.addEventListener("click", () => tryFlip(+1, false));
-  btnTacCW.addEventListener("click",  () => tryFlip(-1, false));
-  btnUndo.addEventListener("click", undoLast);
-  btnAdd.addEventListener("click", addPlus2);
-  btnShowWin.addEventListener("click", startShowWinDemo);
-  btnNewGame.addEventListener("click", () => {
-    if(previewMode){ restoreSnapshot(); }
-    newGame();
-  });
+  // --- UI Sync ---
+  function syncUI() {
+    hudTurn.textContent = gameOver ? "Game Over" : (curPlayer === P_RED ? "Red's Turn" : "Yellow's Turn");
+    hudTurn.style.color = curPlayer === P_RED ? "var(--red)" : "var(--yel)";
+    
+    hudR.textContent = `Flip:${tokens[P_RED].flip} Mag:${tokens[P_RED].mag}`;
+    hudY.textContent = `Flip:${tokens[P_YEL].flip} Mag:${tokens[P_YEL].mag}`;
+    
+    const deg = Math.round((gravityDir * 90) % 360);
+    // Arrow char based on gravityDir: 0=D, 1=L, 2=U, 3=R
+    const arrows = ["↓", "←", "↑", "→"];
+    hudGrav.textContent = `Grav: ${arrows[gravityDir]}`;
+    
+    document.getElementById("btnCCW").disabled = (tokens[curPlayer].flip <= 0 || gameOver || previewMode);
+    document.getElementById("btnCW").disabled  = (tokens[curPlayer].flip <= 0 || gameOver || previewMode);
+    document.getElementById("btnUndo").disabled = (history.length === 0 || gameOver || previewMode);
+    document.getElementById("btnShowWin").disabled = (gameOver || previewMode);
+  }
+  
+  function hideOverlay() { elOverlay.style.display = "none"; }
+  function showOverlay(title, msg, isEnd) {
+    ovTitle.textContent = title;
+    ovMsg.textContent = msg;
+    if (isEnd) {
+        ovBtnMain.textContent = "New Game";
+        ovBtnMain.onclick = initGame;
+        ovBtnSec.style.display = "inline-block";
+        ovBtnSec.textContent = "Undo";
+        ovBtnSec.onclick = () => { undo(); hideOverlay(); };
+    } else {
+        // Resume mode
+        ovBtnMain.textContent = "Resume";
+        ovBtnMain.onclick = () => { restoreSnapshot(); };
+        ovBtnSec.style.display = "none";
+    }
+    elOverlay.style.display = "flex";
+  }
 
-  // --------------------------
-  // New game
-  // --------------------------
-  function newGame(){
-    previewMode=false;
-    previewSnapshot=null;
-    previewRunId++;
-    history = [];
-    hintCache.clear();
-    lastHintKey=null;
-
-    grid = makeEmptyGrid();
-    gravityDir = 0;
-    currentPlayer = P_RED;
-
-    flipTokens[P_RED]=2; flipTokens[P_YEL]=2;
-    magnetTokens[P_RED]=2; magnetTokens[P_YEL]=2;
-
-    magTop = new Array(COLS).fill(0);
-    magBottom = new Array(COLS).fill(0);
-    magLeft = new Array(ROWS).fill(0);
-    magRight = new Array(ROWS).fill(0);
-
-    gameOver=false;
-    winner=0;
-
-    anim=null; animating=false;
-    targetAngle = dirToAngleRad(gravityDir);
-    boardAngle = targetAngle;
-
+  // --- Show Win (AI) ---
+  // Depth limited search for a win line
+  function runShowWin() {
+    if (gameOver) return;
+    previewSnapshot = cloneState();
+    previewMode = true;
+    
+    // Run simple DFS to find a win in next ~2 plies
+    // Note: We won't simulate Magnet placements in AI (complexity), just Moves/Flips.
+    // We WILL simulate the effect of *existing* magnets.
+    
+    // Find sequence
+    let winSeq = findWinSequence(3);
+    
+    if (!winSeq) {
+        restoreSnapshot();
+        alert("No forced win found in 3 moves.");
+        return;
+    }
+    
+    // Play sequence
+    let step = 0;
+    function playStep() {
+        if (step >= winSeq.length) {
+            endTurn(); // Trigger win overlay logic
+            return;
+        }
+        let move = winSeq[step];
+        if (move.type === 'drop') {
+            doDrop(move.r, move.c); // Physics will run, endTurn called
+        } else if (move.type === 'flip') {
+            doFlip(move.delta);
+        }
+        step++;
+        setTimeout(playStep, 600);
+    }
+    playStep();
+  }
+  
+  function restoreSnapshot() {
+    if (previewSnapshot) restoreState(previewSnapshot);
+    previewSnapshot = null;
+    previewMode = false;
     hideOverlay();
-    syncUI();
+  }
+  
+  function findWinSequence(depth) {
+    // Very simple DFS
+    // Returns array of moves [{type:'drop', r, c}, ...] or null
+    
+    // We need to work on a VIRTUAL COPY.
+    // Since our state is global, we have to save/restore inside the recursion or use a separate logic class.
+    // Given the single file constraints, we'll swap global state (ugly but works).
+    
+    const rootState = cloneState();
+    
+    function search(d, p) {
+        // Check win
+        if (checkWin(grid) === p) return []; // Win achieved
+        if (d === 0) return null;
+        
+        // Generate moves
+        let moves = [];
+        // Drops (scan valid inputs)
+        // Simplified: try all 7 cols (vertical) or rows (horiz) based on gravity
+        // Just try all entry points that aren't full.
+        if (gravityDir % 2 === 0) { // Vert
+            for (let c=0; c<COLS; c++) {
+                if (grid[gravityDir===0?0:ROWS-1][c] === P_EMPTY) moves.push({type:'drop', r:0, c:c}); // coords irrelevant for drop logic really, just col
+            }
+        } else {
+             for (let r=0; r<ROWS; r++) {
+                 if (grid[r][gravityDir===3?0:COLS-1] === P_EMPTY) moves.push({type:'drop', r:r, c:0});
+             }
+        }
+        // Flips
+        if (tokens[curPlayer].flip > 0) {
+            moves.push({type:'flip', delta:1}); // CCW
+            moves.push({type:'flip', delta:-1}); // CW
+        }
+        
+        for (let m of moves) {
+            // Apply
+            let pre = cloneState();
+            
+            // Execute logic without animation
+            if (m.type==='drop') {
+                // Determine actual drop coords for doDrop logic (it recalculates entry)
+                // We just need to pass the "Entry" coordinate
+                // NOTE: logic is tied to doDrop which handles physics. 
+                // We'll call doDrop but we need to prevent it from rendering/history.
+                // Actually doDrop uses global state.
+                
+                // Hack: We manually set global state, run logic, check result.
+                
+                // 1. Drop
+                let rEnt, cEnt;
+                if (gravityDir === 0) { rEnt=0; cEnt=m.c; }
+                else if (gravityDir === 1) { rEnt=m.r; cEnt=COLS-1; }
+                else if (gravityDir === 2) { rEnt=ROWS-1; cEnt=m.c; }
+                else { rEnt=m.r; cEnt=0; }
+                
+                // Find target
+                let rT=rEnt, cT=cEnt, found=false;
+                for(let i=0; i<ROWS; i++){
+                    let rk=rEnt, ck=cEnt;
+                    if(gravityDir==0) rk+=i; else if(gravityDir==1) ck-=i; else if(gravityDir==2) rk-=i; else ck+=i;
+                    if(grid[rk][ck]===0){ rT=rk; cT=ck; found=true; break; }
+                }
+                
+                if(found) {
+                    grid[rT][cT] = curPlayer;
+                    grid = settleGridLogic(grid, gravityDir);
+                } else {
+                    restoreState(pre); continue; // Invalid
+                }
+                
+            } else {
+                tokens[curPlayer].flip--;
+                gravityDir = (gravityDir - m.delta + 4) % 4;
+                grid = settleGridLogic(grid, gravityDir);
+            }
+            
+            // Check outcome
+            if (checkWin(grid) === p) {
+                restoreState(rootState);
+                return [m];
+            }
+            
+            // Recurse? (Only 1 ply deep for now to keep it responsive, requested "Demo" usually implies finding immediate win)
+            // If we want deeper, we recurse. Let's do 1-step force.
+            
+            restoreState(pre);
+        }
+        return null;
+    }
+    
+    const res = search(1, curPlayer);
+    restoreState(rootState);
+    return res;
   }
 
-  // --------------------------
-  // Init
-  // --------------------------
-  window.addEventListener("resize", resize, { passive:true });
-  resize();
-  newGame();
-  requestAnimationFrame(frame);
+  // --- Buttons ---
+  document.getElementById("btnCCW").onclick = () => doFlip(1);
+  document.getElementById("btnCW").onclick = () => doFlip(-1);
+  document.getElementById("btnUndo").onclick = undo;
+  document.getElementById("btnNew").onclick = initGame;
+  document.getElementById("btnShowWin").onclick = runShowWin;
+  document.getElementById("btnAdd").onclick = () => {
+    tokens[P_RED].flip += 2; tokens[P_RED].mag += 2;
+    tokens[P_YEL].flip += 2; tokens[P_YEL].mag += 2;
+    syncUI();
+  };
+
+  // Start
+  initGame();
+  
+  // Resize Handler
+  window.addEventListener('resize', render);
 
 })();
 </script>
