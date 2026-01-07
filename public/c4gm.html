@@ -1,0 +1,1270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<title>FlipFour</title>
+<style>
+  :root{
+    --bg:#0b0f17;
+    --panel:rgba(20,26,38,0.78);
+    --panel2:rgba(20,26,38,0.92);
+    --text:#e9eefc;
+    --muted:#a9b3cf;
+    --btn:#26314a;
+    --btnBorder:rgba(255,255,255,0.12);
+    --shadow:rgba(0,0,0,0.45);
+  }
+  html,body{
+    height:100%; margin:0;
+    background:var(--bg); color:var(--text);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    overflow:hidden;
+    -webkit-text-size-adjust:100%;
+  }
+  #wrap{position:fixed; inset:0; touch-action:none;}
+  canvas{position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none;}
+
+  #hud{
+    position:fixed; left:0; right:0; top:0;
+    padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 10px max(12px, env(safe-area-inset-left));
+    background:linear-gradient(to bottom, var(--panel2), rgba(20,26,38,0.0));
+    pointer-events:auto;
+    z-index:10;
+  }
+  #titleRow{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;}
+  #title{font-weight:950; font-size:22px; letter-spacing:0.4px;}
+  #sub{font-size:12px; color:var(--muted);}
+
+  #statusRow{
+    margin-top:8px;
+    display:flex; gap:10px; flex-wrap:wrap;
+    align-items:stretch; justify-content:space-between;
+  }
+  .pill{
+    background:var(--panel);
+    border:1px solid var(--btnBorder);
+    border-radius:14px;
+    padding:8px 10px;
+    box-shadow:0 8px 22px var(--shadow);
+    display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    backdrop-filter: blur(10px);
+  }
+  #turnBig{font-weight:950; font-size:18px;}
+  #gravityInfo,#hintInfo{font-size:12px; color:var(--muted);}
+
+  #tokens{display:flex; gap:10px; align-items:center; flex-wrap:wrap; font-size:12px; color:var(--muted);}
+  .pTag{display:flex; gap:8px; align-items:center}
+  .dot{width:10px;height:10px;border-radius:999px;display:inline-block;border:1px solid rgba(255,255,255,0.22)}
+  .dot.red{background:#e53935;}
+  .dot.yel{background:#fdd835;}
+  .count{color:var(--text); font-weight:950;}
+
+  #btnRow{
+    margin-top:10px;
+    display:flex; gap:10px; flex-wrap:wrap;
+    align-items:center;
+  }
+  button{
+    appearance:none;
+    border:1px solid var(--btnBorder);
+    background:var(--btn);
+    color:var(--text);
+    border-radius:12px;
+    padding:10px 12px;
+    font-weight:900;
+    letter-spacing:0.2px;
+    box-shadow:0 10px 24px var(--shadow);
+    cursor:pointer;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  button:active{transform:translateY(1px);}
+  button[disabled]{opacity:0.45; cursor:not-allowed; transform:none;}
+  .btnSmall{padding:8px 10px; font-weight:900; font-size:12px;}
+  .devBtn{
+    background:linear-gradient(180deg, rgba(60,120,255,0.22), rgba(60,120,255,0.10));
+    border-color:rgba(106,167,255,0.35);
+  }
+  .tacBtn{
+    background:linear-gradient(180deg, rgba(255,204,102,0.20), rgba(255,204,102,0.10));
+    border-color:rgba(255,204,102,0.35);
+  }
+  .dangerBtn{
+    background:linear-gradient(180deg, rgba(255,107,107,0.20), rgba(255,107,107,0.10));
+    border-color:rgba(255,107,107,0.35);
+  }
+
+  #overlay{
+    position:fixed; inset:0;
+    display:none; align-items:center; justify-content:center;
+    background:rgba(0,0,0,0.55);
+    padding:20px;
+    pointer-events:auto;
+    z-index:20;
+  }
+  #overlayCard{
+    width:min(560px, 92vw);
+    background:rgba(15,19,28,0.92);
+    border:1px solid rgba(255,255,255,0.14);
+    border-radius:18px;
+    padding:18px 16px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.6);
+    backdrop-filter: blur(12px);
+    text-align:center;
+  }
+  #ovTitle{font-size:22px; font-weight:950; letter-spacing:0.2px; margin:0 0 6px 0;}
+  #ovSub{
+    margin:0 0 14px 0;
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.35;
+    white-space:pre-line;
+    text-align:left;
+  }
+  #overlayBtns{display:flex; gap:10px;}
+  #overlayBtns button{flex:1;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c"></canvas>
+
+  <div id="hud">
+    <div id="titleRow">
+      <div id="title">FlipFour</div>
+      <div id="sub">Connect-4 + Gravity Flip • local 2-player</div>
+    </div>
+
+    <div id="statusRow">
+      <div class="pill" id="turnPill">
+        <div id="turnBig">Turn: —</div>
+        <div id="gravityInfo">Gravity: —</div>
+        <div id="hintInfo">Hint: —</div>
+      </div>
+
+      <div class="pill" id="tokenPill">
+        <div id="tokens">
+          <div class="pTag"><span class="dot red"></span>Red flips: <span class="count" id="rFlips">2</span> • mags: <span class="count" id="rMags">2</span></div>
+          <div class="pTag"><span class="dot yel"></span>Yellow flips: <span class="count" id="yFlips">2</span> • mags: <span class="count" id="yMags">2</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="btnRow">
+      <button class="tacBtn" id="tacCCW" title="Tactical Flip ⟲ (consumes flip token)">Tactical Flip ⟲</button>
+      <button class="tacBtn" id="tacCW"  title="Tactical Flip ⟳ (consumes flip token)">Tactical Flip ⟳</button>
+      <button class="devBtn btnSmall" id="addBtn" title="DEV: add +2 flips and +2 magnets to BOTH players">ADD +2</button>
+      <button class="devBtn btnSmall" id="undoBtn" title="Undo last move">Undo</button>
+      <button class="tacBtn" id="showWin" title="Depth-limited win preview (does not end the real game)">SHOW WIN</button>
+      <button class="dangerBtn" id="newGame">New Game</button>
+    </div>
+  </div>
+
+  <div id="overlay">
+    <div id="overlayCard">
+      <h2 id="ovTitle">—</h2>
+      <p id="ovSub">—</p>
+      <div id="overlayBtns">
+        <button id="ovUndo" class="devBtn">Undo</button>
+        <button id="ovMain" class="dangerBtn">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const COLS = 7, ROWS = 7;
+  const P_EMPTY = 0, P_RED = 1, P_YEL = 2;
+
+  // gravityDir: 0=DOWN, 1=LEFT, 2=UP, 3=RIGHT
+  const DIRS = ["DOWN","LEFT","UP","RIGHT"];
+  const ARROWS = ["↓","←","↑","→"];
+
+  // Magnet sides (board-local): 0=TOP, 1=RIGHT, 2=BOTTOM, 3=LEFT
+  const SIDE_TOP=0, SIDE_RIGHT=1, SIDE_BOTTOM=2, SIDE_LEFT=3;
+
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d", { alpha:false });
+
+  const hud = document.getElementById("hud");
+  const overlay = document.getElementById("overlay");
+  const ovTitle = document.getElementById("ovTitle");
+  const ovSub = document.getElementById("ovSub");
+  const btnOvUndo = document.getElementById("ovUndo");
+  const btnOvMain = document.getElementById("ovMain");
+
+  const elTurnBig = document.getElementById("turnBig");
+  const elGravityInfo = document.getElementById("gravityInfo");
+  const elHintInfo = document.getElementById("hintInfo");
+  const elRFlips = document.getElementById("rFlips");
+  const elYFlips = document.getElementById("yFlips");
+  const elRMags  = document.getElementById("rMags");
+  const elYMags  = document.getElementById("yMags");
+
+  const btnTacCCW = document.getElementById("tacCCW");
+  const btnTacCW  = document.getElementById("tacCW");
+  const btnAdd    = document.getElementById("addBtn");
+  const btnUndo   = document.getElementById("undoBtn");
+  const btnShowWin= document.getElementById("showWin");
+  const btnNewGame= document.getElementById("newGame");
+
+  // --------------------------
+  // State
+  // --------------------------
+  let grid = makeEmptyGrid();
+  let gravityDir = 0;
+  let currentPlayer = P_RED;
+
+  let flipTokens = { [P_RED]:2, [P_YEL]:2 };
+  let magnetTokens = { [P_RED]:2, [P_YEL]:2 };
+
+  // Per line-segment magnets: owner (0/1/2)
+  // top/bottom per column, left/right per row
+  let magTop = new Array(COLS).fill(0);
+  let magBottom = new Array(COLS).fill(0);
+  let magLeft = new Array(ROWS).fill(0);
+  let magRight = new Array(ROWS).fill(0);
+
+  let gameOver = false;
+  let winner = 0;
+
+  // Animation (rotation only)
+  let boardAngle = dirToAngleRad(gravityDir);
+  let targetAngle = boardAngle;
+  let anim = null;
+  let animating = false;
+
+  // Undo history (snapshot BEFORE each real move)
+  let history = [];
+
+  // SHOW WIN preview
+  let previewMode = false;
+  let previewSnapshot = null;
+  let previewRunId = 0;
+
+  // Hint debounce/cache
+  let hintTimer = null;
+  let lastHintKey = null;
+  let hintCache = new Map();
+
+  // Overlay mode: "close" | "gameover" | "resume"
+  let overlayMode = "close";
+
+  // --------------------------
+  // Geometry
+  // --------------------------
+  let W=1,H=1;
+  let board = { cx:0, cy:0, w:0, h:0, cell:0, band:0 };
+
+  function resize(){
+    const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+    W = Math.floor(window.innerWidth);
+    H = Math.floor(window.innerHeight);
+    canvas.width = Math.floor(W * dpr);
+    canvas.height = Math.floor(H * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    computeBoardLayout();
+  }
+
+  function computeBoardLayout(){
+    const rect = hud.getBoundingClientRect();
+    const top = rect.height + 10;
+    const margin = 14;
+    const availH = Math.max(120, H - top - margin);
+    const availW = Math.max(120, W - 2*margin);
+
+    const cell = Math.floor(Math.min(availW, availH) / 7);
+    board.cell = Math.max(20, cell);
+    board.w = board.cell * 7;
+    board.h = board.cell * 7;
+    board.band = Math.max(12, Math.floor(board.cell * 0.45)); // magnet click band
+
+    board.cx = Math.floor(W/2);
+    board.cy = Math.floor(top + availH/2);
+  }
+
+  function dirToAngleRad(dir){
+    return -dir * (Math.PI/2);
+  }
+
+  function shortestAngleDiff(a,b){
+    const TWO = Math.PI*2;
+    let d = (b - a) % TWO;
+    if (d > Math.PI) d -= TWO;
+    if (d <= -Math.PI) d += TWO;
+    return d;
+  }
+  function easeInOut(t){ return t*t*(3 - 2*t); }
+
+  function screenToBoardLocal(px,py){
+    const dx = px - board.cx;
+    const dy = py - board.cy;
+    const a = boardAngle;
+    const ca = Math.cos(-a), sa = Math.sin(-a);
+    const rx = dx*ca - dy*sa;
+    const ry = dx*sa + dy*ca;
+    const lx = rx + board.w/2;
+    const ly = ry + board.h/2;
+    const inside = (lx>=0 && lx<=board.w && ly>=0 && ly<=board.h);
+    return {lx,ly,inside};
+  }
+
+  function localToCell(lx,ly){
+    return { c: Math.floor(lx/board.cell), r: Math.floor(ly/board.cell) };
+  }
+
+  function localToMagHit(lx,ly){
+    const band = board.band;
+    const w = board.w, h = board.h;
+    if (ly < 0 && ly > -band && lx >= 0 && lx <= w) {
+      const idx = clampInt(Math.floor(lx/board.cell), 0, COLS-1);
+      return { side:SIDE_TOP, idx };
+    }
+    if (ly > h && ly < h+band && lx >= 0 && lx <= w) {
+      const idx = clampInt(Math.floor(lx/board.cell), 0, COLS-1);
+      return { side:SIDE_BOTTOM, idx };
+    }
+    if (lx < 0 && lx > -band && ly >= 0 && ly <= h) {
+      const idx = clampInt(Math.floor(ly/board.cell), 0, ROWS-1);
+      return { side:SIDE_LEFT, idx };
+    }
+    if (lx > w && lx < w+band && ly >= 0 && ly <= h) {
+      const idx = clampInt(Math.floor(ly/board.cell), 0, ROWS-1);
+      return { side:SIDE_RIGHT, idx };
+    }
+    return null;
+  }
+
+  function clampInt(x,lo,hi){ return x<lo?lo:(x>hi?hi:x); }
+
+  // --------------------------
+  // Grid helpers
+  // --------------------------
+  function makeEmptyGrid(){
+    const g = new Array(ROWS);
+    for(let r=0;r<ROWS;r++) g[r] = new Array(COLS).fill(P_EMPTY);
+    return g;
+  }
+  function cloneGrid(g){ return g.map(row => row.slice()); }
+  function playerName(p){ return p===P_RED ? "Red" : "Yellow"; }
+
+  function gridIsFull(g){
+    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(g[r][c]===P_EMPTY) return false;
+    return true;
+  }
+
+  function checkWins(g){
+    let red=false, yel=false;
+    const mark = (p)=>{ if(p===P_RED) red=true; else if(p===P_YEL) yel=true; };
+
+    for(let r=0;r<ROWS;r++){
+      for(let c=0;c<COLS;c++){
+        const p = g[r][c];
+        if(p===P_EMPTY) continue;
+
+        if(c<=COLS-4 && g[r][c+1]===p && g[r][c+2]===p && g[r][c+3]===p) mark(p);
+        if(r<=ROWS-4 && g[r+1][c]===p && g[r+2][c]===p && g[r+3][c]===p) mark(p);
+        if(r<=ROWS-4 && c<=COLS-4 && g[r+1][c+1]===p && g[r+2][c+2]===p && g[r+3][c+3]===p) mark(p);
+        if(r<=ROWS-4 && c>=3 && g[r+1][c-1]===p && g[r+2][c-2]===p && g[r+3][c-3]===p) mark(p);
+      }
+    }
+    return {red,yel};
+  }
+
+  // --------------------------
+  // Physics: settle -> magnet pulls+pin -> settle again
+  // --------------------------
+  function settleGrid(g, dir){
+    const out = makeEmptyGrid();
+    if(dir===0 || dir===2){
+      for(let c=0;c<COLS;c++){
+        const toks = [];
+        for(let r=0;r<ROWS;r++){ if(g[r][c]!==P_EMPTY) toks.push(g[r][c]); }
+        const L = toks.length;
+        for(let i=0;i<L;i++){
+          const tr = (dir===0) ? (ROWS - L + i) : i;
+          out[tr][c] = toks[i];
+        }
+      }
+    }else{
+      for(let r=0;r<ROWS;r++){
+        const toks = [];
+        for(let c=0;c<COLS;c++){ if(g[r][c]!==P_EMPTY) toks.push(g[r][c]); }
+        const L = toks.length;
+        for(let i=0;i<L;i++){
+          const tc = (dir===1) ? i : (COLS - L + i);
+          out[r][tc] = toks[i];
+        }
+      }
+    }
+    return out;
+  }
+
+  function settleWithPinned(g, dir, pinned){
+    const out = makeEmptyGrid();
+    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+      if(pinned[r][c]) out[r][c] = g[r][c];
+    }
+
+    if(dir===0 || dir===2){
+      for(let c=0;c<COLS;c++){
+        const avail = [];
+        for(let r=0;r<ROWS;r++) if(!pinned[r][c]) avail.push(r);
+
+        const toks = [];
+        for(let r=0;r<ROWS;r++){
+          if(!pinned[r][c] && g[r][c]!==P_EMPTY) toks.push(g[r][c]);
+        }
+        const L = toks.length;
+        const targets = (dir===0) ? avail.slice(Math.max(0, avail.length - L)) : avail.slice(0, L);
+        for(let i=0;i<L;i++) out[targets[i]][c] = toks[i];
+      }
+    }else{
+      for(let r=0;r<ROWS;r++){
+        const avail = [];
+        for(let c=0;c<COLS;c++) if(!pinned[r][c]) avail.push(c);
+
+        const toks = [];
+        for(let c=0;c<COLS;c++){
+          if(!pinned[r][c] && g[r][c]!==P_EMPTY) toks.push(g[r][c]);
+        }
+        const L = toks.length;
+        const targets = (dir===1) ? avail.slice(0, L) : avail.slice(Math.max(0, avail.length - L));
+        for(let i=0;i<L;i++) out[r][targets[i]] = toks[i];
+      }
+    }
+    return out;
+  }
+
+  function resolvePhysics(g, dir){
+    let s = settleGrid(g, dir);
+    let work = cloneGrid(s);
+
+    const pinned = new Array(ROWS);
+    for(let r=0;r<ROWS;r++) pinned[r] = new Array(COLS).fill(false);
+
+    function pullTop(c){
+      if(magTop[c]===0) return;
+      if(work[0][c]===P_EMPTY){
+        for(let r=1;r<ROWS;r++){
+          if(work[r][c]!==P_EMPTY){ work[0][c]=work[r][c]; work[r][c]=P_EMPTY; break; }
+        }
+      }
+      if(work[0][c]!==P_EMPTY) pinned[0][c] = true;
+    }
+    function pullBottom(c){
+      if(magBottom[c]===0) return;
+      const rr = ROWS-1;
+      if(work[rr][c]===P_EMPTY){
+        for(let r=rr-1;r>=0;r--){
+          if(work[r][c]!==P_EMPTY){ work[rr][c]=work[r][c]; work[r][c]=P_EMPTY; break; }
+        }
+      }
+      if(work[rr][c]!==P_EMPTY) pinned[rr][c] = true;
+    }
+    function pullLeft(r){
+      if(magLeft[r]===0) return;
+      if(work[r][0]===P_EMPTY){
+        for(let c=1;c<COLS;c++){
+          if(work[r][c]!==P_EMPTY){ work[r][0]=work[r][c]; work[r][c]=P_EMPTY; break; }
+        }
+      }
+      if(work[r][0]!==P_EMPTY) pinned[r][0] = true;
+    }
+    function pullRight(r){
+      if(magRight[r]===0) return;
+      const cc = COLS-1;
+      if(work[r][cc]===P_EMPTY){
+        for(let c=cc-1;c>=0;c--){
+          if(work[r][c]!==P_EMPTY){ work[r][cc]=work[r][c]; work[r][c]=P_EMPTY; break; }
+        }
+      }
+      if(work[r][cc]!==P_EMPTY) pinned[r][cc] = true;
+    }
+
+    for(let c=0;c<COLS;c++){ pullTop(c); pullBottom(c); }
+    for(let r=0;r<ROWS;r++){ pullLeft(r); pullRight(r); }
+
+    return settleWithPinned(work, dir, pinned);
+  }
+
+  // --------------------------
+  // Snapshot / Undo / Overlay
+  // --------------------------
+  function snapshotState(){
+    return {
+      grid: cloneGrid(grid),
+      gravityDir,
+      currentPlayer,
+      flipR: flipTokens[P_RED],
+      flipY: flipTokens[P_YEL],
+      magR: magnetTokens[P_RED],
+      magY: magnetTokens[P_YEL],
+      magTop: magTop.slice(),
+      magBottom: magBottom.slice(),
+      magLeft: magLeft.slice(),
+      magRight: magRight.slice(),
+      gameOver,
+      winner,
+      boardAngle,
+      targetAngle
+    };
+  }
+  function applySnapshot(s){
+    grid = cloneGrid(s.grid);
+    gravityDir = s.gravityDir;
+    currentPlayer = s.currentPlayer;
+    flipTokens[P_RED] = s.flipR;
+    flipTokens[P_YEL] = s.flipY;
+    magnetTokens[P_RED] = s.magR;
+    magnetTokens[P_YEL] = s.magY;
+    magTop = s.magTop.slice();
+    magBottom = s.magBottom.slice();
+    magLeft = s.magLeft.slice();
+    magRight = s.magRight.slice();
+    gameOver = s.gameOver;
+    winner = s.winner;
+    boardAngle = s.boardAngle;
+    targetAngle = s.targetAngle;
+  }
+  function pushHistory(){
+    history.push(snapshotState());
+    if(history.length>120) history.shift();
+  }
+  function undoLast(){
+    if(animating || previewMode) return;
+    if(history.length===0) return;
+    const s = history.pop();
+    anim = null; animating=false;
+    previewSnapshot=null; previewMode=false;
+    applySnapshot(s);
+    hideOverlay();
+    syncUI();
+  }
+
+  function showOverlay(title, sub, mode){
+    overlayMode = mode || "close";
+    ovTitle.textContent = title || "";
+    ovSub.textContent = sub || "";
+    overlay.style.display = "flex";
+
+    if(overlayMode==="gameover") btnOvMain.textContent = "Play Again";
+    else if(overlayMode==="resume") btnOvMain.textContent = "Resume";
+    else btnOvMain.textContent = "Close";
+
+    const allowUndo = (overlayMode==="gameover") && !previewMode;
+    btnOvUndo.style.display = allowUndo ? "inline-block" : "none";
+    btnOvUndo.disabled = !allowUndo || animating || history.length===0;
+  }
+  function hideOverlay(){
+    overlay.style.display = "none";
+  }
+
+  function restoreSnapshot(){
+    if(!previewSnapshot){ hideOverlay(); return; }
+    const s = previewSnapshot;
+    previewSnapshot=null;
+    previewMode=false;
+    previewRunId++;
+    anim = null; animating=false;
+    applySnapshot(s);
+    hideOverlay();
+    syncUI();
+  }
+
+  btnOvMain.addEventListener("click", () => {
+    if(overlayMode==="gameover"){ newGame(); return; }
+    if(overlayMode==="resume"){ restoreSnapshot(); return; }
+    hideOverlay();
+  });
+  btnOvUndo.addEventListener("click", undoLast);
+
+  // --------------------------
+  // Moves (real + preview)
+  // --------------------------
+  function tryDrop(idx, isPreview){
+    if(animating) return false;
+    if(gameOver && !isPreview) return false;
+    if(previewMode && !isPreview) return false;
+
+    // Validate empty exists on selected line
+    if(gravityDir===0 || gravityDir===2){
+      let ok=false;
+      for(let r=0;r<ROWS;r++) if(grid[r][idx]===P_EMPTY){ ok=true; break; }
+      if(!ok) return false;
+    }else{
+      let ok=false;
+      for(let c=0;c<COLS;c++) if(grid[idx][c]===P_EMPTY){ ok=true; break; }
+      if(!ok) return false;
+    }
+
+    if(!isPreview) pushHistory();
+
+    // Place directly into the post-drop resting spot (deterministic)
+    if(gravityDir===0){
+      for(let r=ROWS-1;r>=0;r--) if(grid[r][idx]===P_EMPTY){ grid[r][idx]=currentPlayer; break; }
+    }else if(gravityDir===2){
+      for(let r=0;r<ROWS;r++) if(grid[r][idx]===P_EMPTY){ grid[r][idx]=currentPlayer; break; }
+    }else if(gravityDir===1){
+      for(let c=0;c<COLS;c++) if(grid[idx][c]===P_EMPTY){ grid[idx][c]=currentPlayer; break; }
+    }else{
+      for(let c=COLS-1;c>=0;c--) if(grid[idx][c]===P_EMPTY){ grid[idx][c]=currentPlayer; break; }
+    }
+
+    // Resolve physics
+    grid = resolvePhysics(grid, gravityDir);
+
+    return endTurnAfterMove(isPreview);
+  }
+
+  function tryFlip(step, isPreview){
+    if(animating) return false;
+    if(gameOver && !isPreview) return false;
+    if(previewMode && !isPreview) return false;
+    if(flipTokens[currentPlayer] <= 0) return false;
+
+    if(!isPreview) pushHistory();
+    flipTokens[currentPlayer] -= 1;
+
+    const oldAngle = boardAngle;
+
+    gravityDir = (gravityDir + step + 4) % 4;
+    targetAngle = dirToAngleRad(gravityDir);
+
+    startRotationAnim(oldAngle, targetAngle, 260, () => {
+      grid = resolvePhysics(grid, gravityDir);
+      endTurnAfterMove(isPreview);
+    });
+
+    return true;
+  }
+
+  function tryPlaceMag(side, idx, isPreview){
+    if(animating) return false;
+    if(gameOver && !isPreview) return false;
+    if(previewMode && !isPreview) return false;
+    if(magnetTokens[currentPlayer] <= 0) return false;
+
+    // Check if would change anything; if not, no-op without spending token/turn.
+    const willChange = magnetWouldChange(side, idx, currentPlayer);
+    if(!willChange) return false;
+
+    if(!isPreview) pushHistory();
+    magnetTokens[currentPlayer] -= 1;
+
+    applyMagPlacement(side, idx, currentPlayer);
+
+    // physics includes magnet pulls/pin
+    grid = resolvePhysics(grid, gravityDir);
+
+    return endTurnAfterMove(isPreview);
+  }
+
+  function magnetWouldChange(side, idx, player){
+    if(side===SIDE_TOP){
+      if(magTop[idx]===player) return false;
+      return true;
+    }
+    if(side===SIDE_BOTTOM){
+      if(magBottom[idx]===player) return false;
+      return true;
+    }
+    if(side===SIDE_LEFT){
+      if(magLeft[idx]===player) return false;
+      return true;
+    }
+    if(side===SIDE_RIGHT){
+      if(magRight[idx]===player) return false;
+      return true;
+    }
+    return false;
+  }
+
+  function applyMagPlacement(side, idx, player){
+    // Neutralization only if OPPONENT is on the opposite side of same line.
+    const opp = (player===P_RED) ? P_YEL : P_RED;
+
+    if(side===SIDE_TOP){
+      if(magBottom[idx]===opp){
+        magTop[idx]=0; magBottom[idx]=0;
+        return;
+      }
+      magTop[idx]=player; // replace/overwrite
+      return;
+    }
+    if(side===SIDE_BOTTOM){
+      if(magTop[idx]===opp){
+        magTop[idx]=0; magBottom[idx]=0;
+        return;
+      }
+      magBottom[idx]=player;
+      return;
+    }
+    if(side===SIDE_LEFT){
+      if(magRight[idx]===opp){
+        magLeft[idx]=0; magRight[idx]=0;
+        return;
+      }
+      magLeft[idx]=player;
+      return;
+    }
+    if(side===SIDE_RIGHT){
+      if(magLeft[idx]===opp){
+        magLeft[idx]=0; magRight[idx]=0;
+        return;
+      }
+      magRight[idx]=player;
+      return;
+    }
+  }
+
+  function endTurnAfterMove(isPreview){
+    const w = checkWins(grid);
+    if(w.red || w.yel){
+      let who = 0;
+      if(w.red && w.yel) who = currentPlayer;
+      else if(w.red) who = P_RED;
+      else who = P_YEL;
+
+      if(isPreview){
+        previewRunId++;
+        anim = null; animating=false;
+        showOverlay("SHOW WIN demo", `${playerName(who)} would win here.\n\nTap Resume to return to your original position.`, "resume");
+        return true;
+      }else{
+        gameOver = true;
+        winner = who;
+        showOverlay(`${playerName(who)} Wins`, (w.red && w.yel) ? "Tie-break: both players formed Connect-4; active player wins." : "Connect-4 achieved.", "gameover");
+        syncUI();
+        return true;
+      }
+    }
+
+    if(gridIsFull(grid)){
+      if(isPreview){
+        previewRunId++;
+        anim=null; animating=false;
+        showOverlay("SHOW WIN demo", "Draw reached in the preview line.\n\nTap Resume to return to your original position.", "resume");
+        return true;
+      }else{
+        gameOver = true;
+        winner = 0;
+        showOverlay("Draw", "No winner.", "gameover");
+        syncUI();
+        return true;
+      }
+    }
+
+    currentPlayer = (currentPlayer===P_RED) ? P_YEL : P_RED;
+    syncUI();
+    return true;
+  }
+
+  // --------------------------
+  // DEV: ADD +2
+  // --------------------------
+  function addPlus2(){
+    if(animating || previewMode) return;
+    pushHistory();
+    flipTokens[P_RED] += 2; flipTokens[P_YEL] += 2;
+    magnetTokens[P_RED] += 2; magnetTokens[P_YEL] += 2;
+    syncUI();
+  }
+
+  // --------------------------
+  // Rotation animation
+  // --------------------------
+  function startRotationAnim(from, to, duration, onDone){
+    animating = true;
+    anim = {
+      t0: performance.now(),
+      dur: Math.max(0, duration|0),
+      from, to,
+      onDone: onDone || null
+    };
+  }
+
+  function updateAnim(now){
+    if(!anim) return;
+    const t = (now - anim.t0) / anim.dur;
+    if(t >= 1){
+      boardAngle = anim.to;
+      const cb = anim.onDone;
+      anim = null;
+      animating = false;
+      if(cb) cb();
+      return;
+    }
+    const e = easeInOut(Math.max(0, Math.min(1, t)));
+    const d = shortestAngleDiff(anim.from, anim.to);
+    boardAngle = anim.from + d * e;
+  }
+
+  // --------------------------
+  // SHOW WIN (depth-limited)
+  // --------------------------
+  function stateKey(s){
+    let k = ""+s.gravityDir+"|"+s.player+"|";
+    k += s.flipTokens[P_RED]+","+s.flipTokens[P_YEL]+"|";
+    k += s.magnetTokens[P_RED]+","+s.magnetTokens[P_YEL]+"|";
+    k += s.mags.top.join("") + s.mags.right.join("") + s.mags.bottom.join("") + s.mags.left.join("");
+    k += "|";
+    for(let r=0;r<ROWS;r++) k += s.grid[r].join("");
+    return k;
+  }
+
+  function cloneStateFromLive(){
+    return {
+      grid: cloneGrid(grid),
+      gravityDir,
+      player: currentPlayer,
+      flipTokens: { [P_RED]: flipTokens[P_RED], [P_YEL]: flipTokens[P_YEL] },
+      magnetTokens: { [P_RED]: magnetTokens[P_RED], [P_YEL]: magnetTokens[P_YEL] },
+      mags: {
+        top: magTop.slice(),
+        bottom: magBottom.slice(),
+        left: magLeft.slice(),
+        right: magRight.slice()
+      }
+    };
+  }
+
+  function invertOutcome(out){
+    if(out.status==="W") return { status:"L", ply: out.ply + 1, pv: out.pv.slice() };
+    if(out.status==="L") return { status:"W", ply: out.ply + 1, pv: out.pv.slice() };
+    if(out.status==="D") return { status:"D", ply: 0, pv: out.pv.slice() };
+    return { status:"U", ply: 0, pv: out.pv.slice() };
+  }
+
+  function solveForcedWin(root, depth, memo){
+    const key = stateKey(root) + "|d" + depth;
+    const hit = memo.get(key);
+    if(hit) return hit;
+
+    if(depth<=0){
+      const out = { status:"U", ply:0, pv:[] };
+      memo.set(key,out);
+      return out;
+    }
+
+    const moves = legalMovesFor(root);
+
+    let bestW=null, bestD=null, bestU=null, bestL=null;
+
+    for(const mv of moves){
+      const applied = applyMoveToState(root, mv);
+      if(!applied) continue;
+
+      if(applied.winnerNow === root.player){
+        const cand = { status:"W", ply:1, pv:[mv] };
+        if(!bestW || cand.ply < bestW.ply) bestW = cand;
+        continue;
+      }
+
+      const child = solveForcedWin(applied.nextState, depth-1, memo);
+      const inv = invertOutcome(child);
+      inv.pv = [mv].concat(child.pv);
+
+      if(inv.status==="W"){
+        if(!bestW || inv.ply < bestW.ply) bestW = inv;
+      }else if(inv.status==="D"){
+        if(!bestD) bestD = inv;
+      }else if(inv.status==="U"){
+        if(!bestU) bestU = inv;
+      }else{
+        if(!bestL || inv.ply > bestL.ply) bestL = inv;
+      }
+    }
+
+    const out = bestW || bestD || bestU || bestL || { status:"U", ply:0, pv:[] };
+    memo.set(key,out);
+    return out;
+  }
+
+  function computeHint(maxPlies){
+    const root = cloneStateFromLive();
+    const memo = new Map();
+    const out = solveForcedWin(root, maxPlies, memo);
+    const movesToWin = (out.status==="W") ? Math.ceil(out.ply/2) : null;
+    return { out, movesToWin };
+  }
+
+  function formatMoveList(pv){
+    let dir = gravityDir;
+    let p = currentPlayer;
+    const lines = [];
+    for(let i=0;i<pv.length;i++){
+      const mv = pv[i];
+      const mover = (p===P_RED) ? "Red" : "Yellow";
+      let desc = "";
+      if(mv.type==="DROP"){
+        desc = (dir===0 || dir===2) ? `DROP column ${mv.idx+1}` : `DROP row ${mv.idx+1}`;
+      }else if(mv.type==="FLIP"){
+        desc = `Tactical Flip ${mv.step===+1 ? "⟲" : "⟳"}`;
+        dir = (dir + mv.step + 4) % 4;
+      }else{
+        const sideName = (mv.side===SIDE_TOP)?"TOP":(mv.side===SIDE_RIGHT)?"RIGHT":(mv.side===SIDE_BOTTOM)?"BOTTOM":"LEFT";
+        desc = `MAGNET ${sideName} ${mv.idx+1}`;
+      }
+      lines.push(`${i+1}. ${mover}: ${desc}   (gravity ${ARROWS[dir]} ${DIRS[dir]})`);
+      p = (p===P_RED) ? P_YEL : P_RED;
+    }
+    return lines.join("\n");
+  }
+
+  function startShowWinDemo(){
+    if(animating || gameOver || previewMode) return;
+
+    let res;
+    try{
+      res = computeHint(6);
+    }catch(e){
+      showOverlay("SHOW WIN", "Search failed (depth-limited).", "close");
+      return;
+    }
+
+    if(res.out.status!=="W" || !res.out.pv || res.out.pv.length===0){
+      showOverlay("SHOW WIN", "No forced win found (depth-limited).", "close");
+      return;
+    }
+
+    previewSnapshot = snapshotState();
+    previewMode = true;
+    previewRunId++;
+    const myRun = previewRunId;
+
+    const pv = res.out.pv.slice(0, Math.max(1, Math.min(8, res.out.ply || 6)));
+
+    showOverlay("SHOW WIN demo", "Planned line (depth-limited):\n\n" + formatMoveList(pv) + "\n\nDemo starts now…", "close");
+    setTimeout(() => { if(previewMode && myRun===previewRunId) hideOverlay(); }, 850);
+
+    let i=0;
+
+    const runNext = () => {
+      if(!previewMode || myRun!==previewRunId) return;
+      if(i>=pv.length){
+        showOverlay("SHOW WIN demo", "Line complete (depth-limited).\n\nTap Resume to return to your original position.", "resume");
+        return;
+      }
+      const mv = pv[i++];
+      if(mv.type==="DROP"){
+        tryDrop(mv.idx, true);
+      }else if(mv.type==="FLIP"){
+        tryFlip(mv.step, true);
+      }else{
+        tryPlaceMag(mv.side, mv.idx, true);
+      }
+
+      const wait = () => {
+        if(!previewMode || myRun!==previewRunId) return;
+        if(animating){ setTimeout(wait, 30); return; }
+        setTimeout(runNext, 220);
+      };
+      wait();
+    };
+
+    setTimeout(runNext, 260);
+  }
+
+  // --------------------------
+  // Hint line
+  // --------------------------
+  function scheduleHint(){
+    if(hintTimer) clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => {
+      if(animating || gameOver || previewMode){
+        elHintInfo.textContent = "Hint: —";
+        return;
+      }
+
+      const key = stateKey(cloneStateFromLive()) + "|H6";
+      if(key === lastHintKey) return;
+      lastHintKey = key;
+
+      const cached = hintCache.get(key);
+      if(cached){ elHintInfo.textContent = cached; return; }
+
+      let text = "Hint: ";
+      try{
+        const r = computeHint(6);
+        if(r.out.status==="W") text += `Win in ${r.movesToWin} move(s) (depth-limited).`;
+        else text += "No win found (depth-limited).";
+      }catch{
+        text += "—";
+      }
+      hintCache.set(key, text);
+      elHintInfo.textContent = text;
+    }, 60);
+  }
+
+  // --------------------------
+  // UI sync
+  // --------------------------
+  function syncUI(){
+    elTurnBig.textContent = gameOver ? "Game Over" : `Turn: ${playerName(currentPlayer)}`;
+    const deg = ((gravityDir*90)%360+360)%360;
+    elGravityInfo.textContent = `Gravity: ${ARROWS[gravityDir]} ${DIRS[gravityDir]} • Angle: ${deg}°`;
+
+    elRFlips.textContent = String(flipTokens[P_RED]);
+    elYFlips.textContent = String(flipTokens[P_YEL]);
+    elRMags.textContent  = String(magnetTokens[P_RED]);
+    elYMags.textContent  = String(magnetTokens[P_YEL]);
+
+    btnTacCCW.disabled = animating || gameOver || previewMode || (flipTokens[currentPlayer] <= 0);
+    btnTacCW.disabled  = animating || gameOver || previewMode || (flipTokens[currentPlayer] <= 0);
+    btnUndo.disabled   = animating || previewMode || history.length===0;
+    btnAdd.disabled    = animating || previewMode;
+    btnShowWin.disabled= animating || gameOver || previewMode;
+    btnNewGame.disabled= animating;
+
+    if(overlay.style.display==="flex"){
+      const allowUndo = (overlayMode==="gameover") && !previewMode;
+      btnOvUndo.style.display = allowUndo ? "inline-block" : "none";
+      btnOvUndo.disabled = !allowUndo || animating || history.length===0;
+    }
+
+    scheduleHint();
+  }
+
+  // --------------------------
+  // Rendering
+  // --------------------------
+  function drawRoundedRect(x,y,w,h,r){
+    const rr = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+rr, y);
+    ctx.arcTo(x+w, y, x+w, y+h, rr);
+    ctx.arcTo(x+w, y+h, x, y+h, rr);
+    ctx.arcTo(x, y+h, x, y, rr);
+    ctx.arcTo(x, y, x+w, y, rr);
+    ctx.closePath();
+  }
+
+  function discGradient(p){
+    const g = ctx.createRadialGradient(-6, -8, 2, 0, 0, 18);
+    if(p===P_RED){
+      g.addColorStop(0, "#ff9a96");
+      g.addColorStop(0.35, "#ff4d4a");
+      g.addColorStop(1, "#b71c1c");
+    }else{
+      g.addColorStop(0, "#fff6a6");
+      g.addColorStop(0.35, "#ffe15c");
+      g.addColorStop(1, "#c9a400");
+    }
+    return g;
+  }
+
+  function drawTokenAtLocal(r,c,p){
+    const s = board.cell;
+    const cx = (c+0.5)*s;
+    const cy = (r+0.5)*s;
+    const rad = s*0.38;
+
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.fillStyle = discGradient(p);
+    ctx.beginPath();
+    ctx.arc(0,0,rad,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(255,255,255,0.12)";
+    ctx.lineWidth = Math.max(1, s*0.06);
+    ctx.beginPath();
+    ctx.arc(0,0,rad,0,Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawMagnet(side, idx, owner){
+    if(owner===0) return;
+    const s = board.cell;
+    const w = board.w, h = board.h;
+
+    const col = (owner===P_RED) ? "#ff6b6b" : "#ffe15c";
+    ctx.fillStyle = col;
+    ctx.strokeStyle = "rgba(0,0,0,0.30)";
+    ctx.lineWidth = 1;
+
+    const t = Math.max(4, Math.floor(s*0.14));
+    const len = Math.max(10, Math.floor(s*0.72));
+
+    ctx.save();
+    if(side===0){
+      const x = idx*s + (s-len)/2;
+      const y = -t - 2;
+      drawRoundedRect(x,y,len,t, Math.max(2, t*0.6));
+      ctx.fill(); ctx.stroke();
+    }else if(side===2){
+      const x = idx*s + (s-len)/2;
+      const y = h + 2;
+      drawRoundedRect(x,y,len,t, Math.max(2, t*0.6));
+      ctx.fill(); ctx.stroke();
+    }else if(side===3){
+      const x = -t - 2;
+      const y = idx*s + (s-len)/2;
+      drawRoundedRect(x,y,t,len, Math.max(2, t*0.6));
+      ctx.fill(); ctx.stroke();
+    }else if(side===1){
+      const x = w + 2;
+      const y = idx*s + (s-len)/2;
+      drawRoundedRect(x,y,t,len, Math.max(2, t*0.6));
+      ctx.fill(); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function render(){
+    ctx.clearRect(0,0,W,H);
+
+    const bg = ctx.createRadialGradient(W*0.5, H*0.35, 20, W*0.5, H*0.35, Math.max(W,H)*0.9);
+    bg.addColorStop(0, "#111a2a");
+    bg.addColorStop(1, "#070a10");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,W,H);
+
+    ctx.save();
+    ctx.translate(board.cx, board.cy);
+    ctx.rotate(boardAngle);
+    ctx.translate(-board.w/2, -board.h/2);
+
+    drawRoundedRect(-8,-8, board.w+16, board.h+16, 18);
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    ctx.fill();
+
+    drawRoundedRect(0,0, board.w, board.h, 14);
+    ctx.fillStyle = "rgba(30,36,52,0.96)";
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(255,255,255,0.06)";
+    ctx.lineWidth = 1;
+    for(let i=1;i<7;i++){
+      ctx.beginPath(); ctx.moveTo(i*board.cell, 0); ctx.lineTo(i*board.cell, board.h); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, i*board.cell); ctx.lineTo(board.w, i*board.cell); ctx.stroke();
+    }
+
+    for(let c=0;c<COLS;c++){
+      drawMagnet(0, c, magTop[c]);
+      drawMagnet(2, c, magBottom[c]);
+    }
+    for(let r=0;r<ROWS;r++){
+      drawMagnet(3, r, magLeft[r]);
+      drawMagnet(1, r, magRight[r]);
+    }
+
+    for(let r=0;r<ROWS;r++){
+      for(let c=0;c<COLS;c++){
+        const p = grid[r][c];
+        if(p!==P_EMPTY) drawTokenAtLocal(r,c,p);
+      }
+    }
+
+    ctx.restore();
+
+    requestAnimationFrame(frame);
+  }
+
+  function frame(now){
+    updateAnim(now);
+    render();
+  }
+
+  // --------------------------
+  // Input
+  // --------------------------
+  let lastHover = null;
+  function getClientXY(ev){
+    if(ev.touches && ev.touches.length){
+      return { x: ev.touches[0].clientX, y: ev.touches[0].clientY };
+    }
+    return { x: ev.clientX, y: ev.clientY };
+  }
+
+  function onDown(ev){
+    if(overlay.style.display==="flex") return;
+    if(animating) return;
+    if(ev.cancelable) ev.preventDefault();
+
+    const {x,y} = getClientXY(ev);
+    const loc = screenToBoardLocal(x,y);
+
+    const magHit = localToMagHit(loc.lx, loc.ly);
+    if(magHit){
+      tryPlaceMag(magHit.side, magHit.idx, false);
+      return;
+    }
+
+    if(loc.inside){
+      const {c,r} = localToCell(loc.lx, loc.ly);
+      if(gravityDir===0 || gravityDir===2){
+        if(c>=0 && c<COLS) tryDrop(c, false);
+      }else{
+        if(r>=0 && r<ROWS) tryDrop(r, false);
+      }
+    }
+  }
+
+  canvas.addEventListener("pointerdown", onDown, { passive:false });
+  canvas.addEventListener("touchstart", onDown, { passive:false });
+  canvas.addEventListener("wheel", (e)=>{ if(e.cancelable) e.preventDefault(); }, { passive:false });
+
+  // Buttons
+  btnTacCCW.addEventListener("click", () => tryFlip(+1, false));
+  btnTacCW.addEventListener("click",  () => tryFlip(-1, false));
+  btnUndo.addEventListener("click", undoLast);
+  btnAdd.addEventListener("click", addPlus2);
+  btnShowWin.addEventListener("click", startShowWinDemo);
+  btnNewGame.addEventListener("click", () => {
+    if(previewMode){ restoreSnapshot(); }
+    newGame();
+  });
+
+  // --------------------------
+  // New game
+  // --------------------------
+  function newGame(){
+    previewMode=false;
+    previewSnapshot=null;
+    previewRunId++;
+    history = [];
+    hintCache.clear();
+    lastHintKey=null;
+
+    grid = makeEmptyGrid();
+    gravityDir = 0;
+    currentPlayer = P_RED;
+
+    flipTokens[P_RED]=2; flipTokens[P_YEL]=2;
+    magnetTokens[P_RED]=2; magnetTokens[P_YEL]=2;
+
+    magTop = new Array(COLS).fill(0);
+    magBottom = new Array(COLS).fill(0);
+    magLeft = new Array(ROWS).fill(0);
+    magRight = new Array(ROWS).fill(0);
+
+    gameOver=false;
+    winner=0;
+
+    anim=null; animating=false;
+    targetAngle = dirToAngleRad(gravityDir);
+    boardAngle = targetAngle;
+
+    hideOverlay();
+    syncUI();
+  }
+
+  // --------------------------
+  // Init
+  // --------------------------
+  window.addEventListener("resize", resize, { passive:true });
+  resize();
+  newGame();
+  requestAnimationFrame(frame);
+
+})();
+</script>
+</body>
+</html>
