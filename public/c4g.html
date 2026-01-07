@@ -73,14 +73,6 @@
     background:linear-gradient(180deg, rgba(255,107,107,0.20), rgba(255,107,107,0.10));
     border-color:rgba(255,107,107,0.35);
   }
-  #motionWrap{margin-top:10px;display:none;}
-  #motionBtn{
-    width:100%;
-    background:linear-gradient(180deg, rgba(39,209,127,0.18), rgba(39,209,127,0.08));
-    border-color:rgba(39,209,127,0.35);
-    padding:12px 14px;
-    font-size:14px;
-  }
   #overlay{
     position:absolute;inset:0;display:none;align-items:center;justify-content:center;
     background:rgba(0,0,0,0.55);
@@ -141,10 +133,6 @@
 
       <button class="dangerBtn" id="newGame">New Game</button>
     </div>
-
-    <div id="motionWrap">
-      <button id="motionBtn">Enable Motion</button>
-    </div>
   </div>
 
   <div id="overlay">
@@ -193,9 +181,6 @@
   const btnEnvCW = document.getElementById("envCW");
   const btnUndo = document.getElementById("undoBtn");
   const btnNewGame = document.getElementById("newGame");
-
-  const motionWrap = document.getElementById("motionWrap");
-  const motionBtn = document.getElementById("motionBtn");
 
   let grid = makeEmptyGrid();
   let gravityDir = 0;
@@ -1118,40 +1103,6 @@
   window.addEventListener("orientationchange", () => { resize(); applyDeviceOrientationIfChanged(); });
   window.addEventListener("resize", () => { resize(); applyDeviceOrientationIfChanged(); });
 
-  async function requestMotionPermissionIfNeeded() {
-    const needsPermission =
-      (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") ||
-      (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function");
-    if (!needsPermission) return false;
-    motionWrap.style.display = "block";
-    return true;
-  }
-
-  async function enableMotion() {
-    try {
-      let granted = true;
-      if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") {
-        const res = await DeviceMotionEvent.requestPermission();
-        granted = granted && (res === "granted");
-      }
-      if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
-        const res2 = await DeviceOrientationEvent.requestPermission();
-        granted = granted && (res2 === "granted");
-      }
-      motionWrap.style.display = "none";
-      if (granted) {
-        window.addEventListener("deviceorientation", () => applyDeviceOrientationIfChanged(), { passive:true });
-        window.addEventListener("devicemotion", () => applyDeviceOrientationIfChanged(), { passive:true });
-      } else {
-        motionWrap.style.display = "block";
-      }
-      applyDeviceOrientationIfChanged();
-    } catch {
-      motionWrap.style.display = "block";
-    }
-  }
-  motionBtn.addEventListener("click", enableMotion);
-
   // =========================
   // Main loop
   // =========================
@@ -1167,7 +1118,6 @@
   resize();
   newGame();
   applyDeviceOrientationIfChanged();
-  requestMotionPermissionIfNeeded();
   requestAnimationFrame(frame);
 })();
 </script>
