@@ -779,8 +779,7 @@
       lines.push(`${i+1}. ${mover}: ${desc}   (gravity ${ARROWS[dir]} ${DIRS[dir]})`);
       p = (p === P_RED) ? P_YEL : P_RED;
     }
-    return lines.join("
-");
+    return lines.join("\n");
 }
 
   function startShowWinDemo() {
@@ -801,11 +800,7 @@
     const plyToWin = Math.max(1, Math.min(6, res.out.ply || 6));
     const pv = res.out.pv.slice(0, plyToWin);
 
-    showOverlay("SHOW WIN demo", "Planned line (depth-limited):
-
-" + formatPV(pv) + "
-
-Demo starts now…", "close");
+    showOverlay("SHOW WIN demo", "Planned line (depth-limited):\n\n" + formatPV(pv) + "\n\nDemo starts now…", "close");
     setTimeout(() => { if (previewMode && myRun === previewRunId) hideOverlay(); }, 900);
 
     let i = 0;
