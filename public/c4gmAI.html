@@ -171,7 +171,7 @@
   
   let grid = [];
   let mag = { top: [], bottom: [], left: [], right: [] }; 
-  let gravityDir = 0; // 0=Down, 1=Left, 2=Up, 3=Right
+  let gravityDir = 0; 
   let boardAngle = 0; 
   let targetAngle = 0;
   let curPlayer = P_RED;
@@ -179,9 +179,8 @@
   let history = [];
   let gameOver = false;
   
-  // Game Mode
-  let gameMode = 2; // 1=PvAI, 2=PvP
-  let aiLevel = 1; // 1=Easy, 2=Med, 3=Hard
+  let gameMode = 2; 
+  let aiLevel = 1; 
   
   let animating = false;
   let anims = []; 
@@ -199,7 +198,7 @@
   const menuCard = document.getElementById("menuCard");
   const msgCard = document.getElementById("msgCard");
 
-  // --- Globals for Game Loop ---
+  // --- Globals ---
   window.startGame = function(mode, level) {
     gameMode = mode;
     aiLevel = level;
@@ -240,7 +239,6 @@
   // --- AI ---
   function checkAI() {
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating) {
-        // Simple delay to feel natural
         document.body.style.cursor = "wait";
         setTimeout(() => {
             makeAIMove();
@@ -257,21 +255,17 @@
         if (valid.length > 0) {
             doDrop(0, valid[Math.floor(Math.random()*valid.length)]);
         } else {
-            // Try flip if stuck
             if(tokens[P_YEL].flip > 0) doFlip(1);
         }
         return;
     }
 
     // 2. Medium/Hard: Minimax
-    // We limit search to Drops and Flips (Magnets are too complex for fast JS AI)
     let depth = (aiLevel === 2) ? 1 : 3;
     let bestScore = -Infinity;
     let bestMove = null;
 
     let moves = getPossibleMoves(grid, gravityDir, tokens[P_YEL]);
-    
-    // Greedy sort: check captures first (optimization)
     
     for (let m of moves) {
         let score = minimax(m.grid, m.gDir, depth - 1, -Infinity, Infinity, false);
@@ -282,38 +276,29 @@
     }
 
     if (bestMove) {
-        if (bestMove.type === 'drop') doDrop(0, bestMove.col); // row ignored in doDrop logic
+        if (bestMove.type === 'drop') doDrop(0, bestMove.col);
         else if (bestMove.type === 'flip') doFlip(bestMove.delta);
     } else {
-        // Fallback
-        doFlip(1);
+        doFlip(1); // fallback
     }
   }
 
   function getPossibleMoves(g, gDir, toks) {
     let moves = [];
-    // Drops
-    let rEnt, cEnt;
-    // We iterate 0..6 as "columns" relative to screen, logic handles conversion
     for(let i=0; i<COLS; i++) {
-        // Simulate drop
-        // Clone
         let nextG = g.map(r=>[...r]);
-        // Apply physics to find target
         let t = getDropTarget(nextG, gDir, i);
         if (t) {
-            nextG[t.r][t.c] = P_YEL; // AI is P_YEL
+            nextG[t.r][t.c] = P_YEL; 
             nextG = settleGridComplete(nextG, gDir);
             moves.push({ type: 'drop', col: i, grid: nextG, gDir: gDir });
         }
     }
-    // Flips
     if (toks.flip > 0) {
-        // CCW
         let ccwDir = CCW_MAP[gDir];
         let gCCW = settleGridComplete(g, ccwDir);
         moves.push({ type: 'flip', delta: 1, grid: gCCW, gDir: ccwDir });
-        // CW
+        
         let cwDir = CW_MAP[gDir];
         let gCW = settleGridComplete(g, cwDir);
         moves.push({ type: 'flip', delta: -1, grid: gCW, gDir: cwDir });
@@ -327,10 +312,8 @@
     if (winner === P_RED) return -1000 - depth;
     if (depth === 0) return evaluate(g);
 
-    if (isMax) { // AI (Yel)
+    if (isMax) { 
         let maxEval = -Infinity;
-        // Simplified moves generation for inner loops (assume no token decrement for search simplicity)
-        // We only check drops for speed at depth
         for(let i=0; i<COLS; i++) {
             let t = getDropTarget(g, gDir, i);
             if (t) {
@@ -344,7 +327,7 @@
             }
         }
         return maxEval;
-    } else { // Human (Red)
+    } else { 
         let minEval = Infinity;
         for(let i=0; i<COLS; i++) {
             let t = getDropTarget(g, gDir, i);
@@ -363,14 +346,11 @@
   }
 
   function evaluate(g) {
-    // Heuristic: Count 3-in-a-rows and 2-in-a-rows
     let score = 0;
-    // Center column weight
     for(let r=0; r<ROWS; r++) {
         if (g[r][3] === P_YEL) score += 3;
         if (g[r][3] === P_RED) score -= 3;
     }
-    // Lines
     score += countLines(g, P_YEL) * 10;
     score -= countLines(g, P_RED) * 10;
     return score;
@@ -378,17 +358,14 @@
 
   function countLines(g, p) {
       let count = 0;
-      // Horiz
       for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) {
           let t=0; for(let k=0; k<4; k++) if(g[r][c+k]===p) t++;
           if(t===3) count++;
       }
-      // Vert
       for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS; c++) {
           let t=0; for(let k=0; k<4; k++) if(g[r+k][c]===p) t++;
           if(t===3) count++;
       }
-      // Diag
       for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) {
           let t=0; for(let k=0; k<4; k++) if(g[r+k][c+k]===p) t++;
           if(t===3) count++;
@@ -459,7 +436,7 @@
   function undo() {
     if (animating || history.length === 0) return;
     restoreState(history.pop());
-    // If PvAI, undo twice to go back to human turn
+    // If PvAI, undo twice
     if (gameMode === 1 && history.length > 0) {
         restoreState(history.pop());
     }
@@ -602,9 +579,10 @@
   }
 
   function doDrop(row, col) {
-    // If AI is playing, ignore human clicks
-    if (gameMode === 1 && curPlayer === P_YEL && !animating) return;
-
+    // FIX: Only block HUMAN clicks if AI is playing. Logic calls bypass this.
+    // This function is now only called by logic or input handler.
+    // The input handler does the check.
+    
     let rEnt, cEnt;
     if (gravityDir === 0) { rEnt=0; cEnt=col; }
     else if (gravityDir === 1) { rEnt=row; cEnt=COLS-1; }
@@ -625,7 +603,6 @@
   }
 
   function doMagnet(side, idx) {
-    if (gameMode === 1 && curPlayer === P_YEL && !animating) return;
     if (tokens[curPlayer].mag <= 0) return;
     let opp = (side + 2) % 4;
     let oppVal = (opp===0) ? getMag(mag.top, idx) : (opp===1) ? getMag(mag.right, idx) : (opp===2) ? getMag(mag.bottom, idx) : getMag(mag.left, idx);
@@ -648,7 +625,6 @@
   const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 }; 
 
   function doFlip(dirDelta) {
-    if (gameMode === 1 && curPlayer === P_YEL && !animating) return;
     if (tokens[curPlayer].flip <= 0) return;
     if(animating || gameOver) return;
     pushHistory();
@@ -691,7 +667,7 @@
         decay(mag.top); decay(mag.bottom); decay(mag.left); decay(mag.right);
         curPlayer = (curPlayer === P_RED) ? P_YEL : P_RED;
         syncUI();
-        checkAI();
+        checkAI(); // Trigger AI
       }
     }
   }
@@ -710,8 +686,8 @@
     return 0;
   }
 
+  // --- HINT ---
   function getBestMove() {
-      // Basic Hint Logic
       for(let i=0; i<COLS; i++) {
          let t = getDropTarget(grid, gravityDir, i);
          if(t) {
@@ -734,6 +710,7 @@
       return "Try placing near the center.";
   }
 
+  // --- Render Loop ---
   let lastTime = 0;
   function initLoop(now) { lastTime = now; requestAnimationFrame(loop); }
   function loop(now) {
@@ -827,7 +804,7 @@
       }
     }
     
-    // Anims
+    // Animated Tokens
     for (let a of anims) {
         if (a.type === 'rotate') continue;
         let p = a.t * a.t * (3 - 2 * a.t); 
@@ -843,7 +820,7 @@
         drawToken(ctx, curC*cell + cell/2, curR*cell + cell/2, cell*0.4, a.p);
     }
     
-    // Magnets
+    // Magnets with Fade
     mag.top.forEach((m, i) => drawMag(ctx, i*cell + cell/2, -cell*0.6, cell, 0, m));
     mag.bottom.forEach((m, i) => drawMag(ctx, i*cell + cell/2, boardW + cell*0.6, cell, 2, m));
     mag.left.forEach((m, i) => drawMag(ctx, -cell*0.6, i*cell + cell/2, cell, 3, m));
@@ -903,7 +880,9 @@
 
   function handleInput(e) {
     if (gameOver || animating) return;
-    if (gameMode === 1 && curPlayer === P_YEL) return; // Block input on AI turn
+    // AI GUARD MOVED HERE:
+    if (gameMode === 1 && curPlayer === P_YEL) return;
+    
     if (e.type === 'touchstart') e.preventDefault();
     const act = getBoardPos(e.type.includes('touch') ? e.changedTouches[0] : e);
     if (act.type === 'CELL') doDrop(act.r, act.c);
@@ -945,7 +924,6 @@
         b1.textContent = "New Game"; b1.onclick = () => { showMainMenu(); };
         b2.style.display = "inline-block"; b2.textContent = "Undo"; b2.onclick = () => { undo(); hideOverlay(); };
     } else {
-        // Hint popup
         msgCard.classList.remove('hidden');
         menuCard.classList.add('hidden');
         document.getElementById("ovTitle").textContent = title;
@@ -957,11 +935,13 @@
   }
 
   document.getElementById("btnHint").onclick = () => { 
+      // Input guard for buttons
+      if (gameMode === 1 && curPlayer === P_YEL) return;
       const h = getBestMove();
       showOverlay("Hint", h, false);
   };
-  document.getElementById("btnCCW").onclick = () => doFlip(1);
-  document.getElementById("btnCW").onclick = () => doFlip(-1);
+  document.getElementById("btnCCW").onclick = () => { if(!(gameMode === 1 && curPlayer === P_YEL)) doFlip(1); };
+  document.getElementById("btnCW").onclick = () => { if(!(gameMode === 1 && curPlayer === P_YEL)) doFlip(-1); };
   document.getElementById("btnUndo").onclick = undo;
   document.getElementById("btnNew").onclick = () => showMainMenu();
   document.getElementById("btnAdd").onclick = () => {
