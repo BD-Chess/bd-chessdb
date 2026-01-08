@@ -49,7 +49,7 @@
   }
   canvas { display:block; width:100%; height:100%; }
 
-  /* Controls - Grid Layout */
+  /* Controls - Grid Layout (3x2) */
   #controls {
     flex-shrink:0; z-index:10;
     background:var(--panel); border-top:1px solid var(--btnBorder);
@@ -148,8 +148,10 @@
 
   const ROWS = 7, COLS = 7;
   const P_EMPTY = 0, P_RED = 1, P_YEL = 2;
+  const MAGNET_LIFE = 3; // 3 Ticks: Blocks Opp 1 turn, Allows Owner 1 turn use.
   
   let grid = [];
+  // Mag now stores Objects: { p: PLAYER, life: 3 } or null
   let mag = { top: [], bottom: [], left: [], right: [] }; 
   let gravityDir = 0; 
   let boardAngle = 0; 
@@ -159,10 +161,9 @@
   let history = [];
   let gameOver = false;
   
-  // Animation State
   let animating = false;
   let anims = []; 
-  let hiddenCells = []; // Cells hidden during animation
+  let hiddenCells = []; 
 
   // UI
   const canvas = document.getElementById("c");
@@ -176,8 +177,8 @@
   function initGame() {
     grid = Array.from({length: ROWS}, () => Array(COLS).fill(P_EMPTY));
     mag = {
-      top: Array(COLS).fill(0), bottom: Array(COLS).fill(0),
-      left: Array(ROWS).fill(0), right: Array(ROWS).fill(0)
+      top: Array(COLS).fill(null), bottom: Array(COLS).fill(null),
+      left: Array(ROWS).fill(null), right: Array(ROWS).fill(null)
     };
     gravityDir = 0;
     boardAngle = 0;
@@ -195,11 +196,18 @@
     requestAnimationFrame(initLoop);
   }
 
-  // --- Core State ---
+  // --- Deep Clone ---
+  function cloneMag(mArr) {
+    return mArr.map(m => m ? { ...m } : null);
+  }
+
   function cloneState() {
     return {
       grid: grid.map(r => [...r]),
-      mag: { top: [...mag.top], bottom: [...mag.bottom], left: [...mag.left], right: [...mag.right] },
+      mag: { 
+        top: cloneMag(mag.top), bottom: cloneMag(mag.bottom), 
+        left: cloneMag(mag.left), right: cloneMag(mag.right) 
+      },
       gravityDir, boardAngle, targetAngle, curPlayer,
       tokens: JSON.parse(JSON.stringify(tokens)),
       gameOver
@@ -208,7 +216,10 @@
 
   function restoreState(s) {
     grid = s.grid.map(r => [...r]);
-    mag = { top: [...s.mag.top], bottom: [...s.mag.bottom], left: [...s.mag.left], right: [...s.mag.right] };
+    mag = { 
+        top: cloneMag(s.mag.top), bottom: cloneMag(s.mag.bottom), 
+        left: cloneMag(s.mag.left), right: cloneMag(s.mag.right) 
+    };
     gravityDir = s.gravityDir;
     boardAngle = s.boardAngle;
     targetAngle = s.targetAngle;
@@ -232,42 +243,43 @@
   }
 
   // --- Physics ---
+  function getMag(arr, idx) { return arr[idx] ? arr[idx].p : 0; }
+
   function isPinned(r, c) {
-    if (r === 0 && mag.top[c] !== 0) return true;
-    if (r === ROWS - 1 && mag.bottom[c] !== 0) return true;
-    if (c === 0 && mag.left[r] !== 0) return true;
-    if (c === COLS - 1 && mag.right[r] !== 0) return true;
+    if (r === 0 && getMag(mag.top, c)) return true;
+    if (r === ROWS - 1 && getMag(mag.bottom, c)) return true;
+    if (c === 0 && getMag(mag.left, r)) return true;
+    if (c === COLS - 1 && getMag(mag.right, r)) return true;
     return false;
   }
 
-  // Single step of simulation
   function physicsStep(g, dir) {
     let nextG = g.map(r => [...r]);
     let changed = false;
 
-    // Magnets
+    // Magnets Pull
     for (let c=0; c<COLS; c++) {
-      if (mag.top[c] && nextG[0][c] === P_EMPTY) {
+      if (getMag(mag.top, c) && nextG[0][c] === P_EMPTY) {
         for (let r=1; r<ROWS; r++) if (nextG[r][c]) { nextG[0][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; }
       }
     }
     for (let c=0; c<COLS; c++) {
-      if (mag.bottom[c] && nextG[ROWS-1][c] === P_EMPTY) {
+      if (getMag(mag.bottom, c) && nextG[ROWS-1][c] === P_EMPTY) {
         for (let r=ROWS-2; r>=0; r--) if (nextG[r][c]) { nextG[ROWS-1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; }
       }
     }
     for (let r=0; r<ROWS; r++) {
-      if (mag.left[r] && nextG[r][0] === P_EMPTY) {
+      if (getMag(mag.left, r) && nextG[r][0] === P_EMPTY) {
         for (let c=1; c<COLS; c++) if (nextG[r][c]) { nextG[r][0]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; }
       }
     }
     for (let r=0; r<ROWS; r++) {
-      if (mag.right[r] && nextG[r][COLS-1] === P_EMPTY) {
+      if (getMag(mag.right, r) && nextG[r][COLS-1] === P_EMPTY) {
         for (let c=COLS-2; c>=0; c--) if (nextG[r][c]) { nextG[r][COLS-1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; }
       }
     }
 
-    // Gravity
+    // Gravity Fall
     if (dir === 0) { // Down
       for (let c=0; c<COLS; c++) {
         for (let r=ROWS-2; r>=0; r--) {
@@ -296,7 +308,6 @@
     return { nextG, changed };
   }
 
-  // Calculate the FINAL state after all settling
   function settleGridComplete(startGrid, dir) {
     let g = startGrid.map(r => [...r]);
     let safety = 0;
@@ -308,16 +319,11 @@
     return g;
   }
 
-  // --- Animation Generators ---
-  
-  // Creates animations from Grid A to Grid B
-  // Instead of animating step-by-step, we animate directly from Source to Destination
+  // --- Animation Helpers ---
   function spawnTransitions(oldG, newG, type) {
     let isVert = (gravityDir === 0 || gravityDir === 2);
-    let speed = type === 'drop' ? 350 : 300; // Faster speeds
-    
-    // We try to match tokens.
-    // Logic: In each column (or row), map the tokens from start to end.
+    // Faster speeds for fluid feel
+    let speed = type === 'drop' ? 320 : 280; 
     
     if (isVert) {
       for (let c=0; c<COLS; c++) {
@@ -325,19 +331,12 @@
         for (let r=0; r<ROWS; r++) if(oldG[r][c]) oldToks.push({p:oldG[r][c], r, c});
         for (let r=0; r<ROWS; r++) if(newG[r][c]) newToks.push({p:newG[r][c], r, c});
         
-        // If gravity down, match from bottom up
         if (gravityDir === 0) { oldToks.reverse(); newToks.reverse(); }
         
-        // Calculate matches
-        // For drop, we might have 1 extra token in newToks (the new one)
-        // If it's a drop, the new token comes from "offscreen"
-        
-        // Find existing matches first
         let usedNew = new Array(newToks.length).fill(false);
         
+        // Match existing tokens to slide them
         oldToks.forEach(o => {
-            // Find first matching slot in newToks that isn't taken
-            // This assumes tokens maintain relative order (stack)
             let found = -1;
             for(let i=0; i<newToks.length; i++) {
                 if(!usedNew[i] && newToks[i].p === o.p) { found=i; break; }
@@ -357,15 +356,12 @@
             }
         });
         
-        // Any unused new tokens are "Drops" (spawns)
+        // New tokens are drops
         for(let i=0; i<newToks.length; i++) {
             if(!usedNew[i]) {
                 let n = newToks[i];
-                // Spawn source
                 let sr = n.r, sc = n.c;
-                if (gravityDir===0) sr = -2;
-                else sr = ROWS+1;
-                
+                if (gravityDir===0) sr = -2; else sr = ROWS+1;
                 anims.push({
                     type: 'drop', p: n.p,
                     r: sr, c: sc,
@@ -377,7 +373,6 @@
         }
       }
     } else {
-      // Horizontal Logic (same concept)
       for (let r=0; r<ROWS; r++) {
         let oldToks = [], newToks = [];
         for (let c=0; c<COLS; c++) if(oldG[r][c]) oldToks.push({p:oldG[r][c], r, c});
@@ -428,20 +423,13 @@
   function applyActionAndAnimate(actionFn) {
     if(animating || gameOver) return;
     
-    let oldG = grid.map(r=>[...r]); // Snapshot start
+    let oldG = grid.map(r=>[...r]);
     pushHistory();
     
-    // Perform Logic
     actionFn(); 
     
-    // grid is now updated to "Step 1" (inserted token or removed magnet)
-    // But we want the FINAL stable state to animate to.
     let finalG = settleGridComplete(grid, gravityDir);
-    
-    // Compare Old (Snapshot) -> Final (Stable)
     spawnTransitions(oldG, finalG, 'drop');
-    
-    // Update main grid to final state immediately
     grid = finalG;
     
     if(anims.length > 0) animating = true;
@@ -449,14 +437,12 @@
   }
 
   function doDrop(row, col) {
-    // Determine insertion point
     let rEnt, cEnt;
     if (gravityDir === 0) { rEnt=0; cEnt=col; }
     else if (gravityDir === 1) { rEnt=row; cEnt=COLS-1; }
     else if (gravityDir === 2) { rEnt=ROWS-1; cEnt=col; }
     else { rEnt=row; cEnt=0; }
     
-    // Check entry
     let rT = rEnt, cT = cEnt, found = false;
     for (let i=0; i<ROWS; i++) {
         let rCheck = rEnt, cCheck = cEnt;
@@ -468,7 +454,7 @@
         if (grid[rCheck][cCheck] === P_EMPTY) { rT = rCheck; cT = cCheck; found = true; break; }
     }
     
-    if (!found) return; // Full
+    if (!found) return; 
 
     applyActionAndAnimate(() => {
         grid[rT][cT] = curPlayer;
@@ -479,29 +465,26 @@
     if (tokens[curPlayer].mag <= 0) return;
     
     let opp = (side + 2) % 4;
-    let oppVal = (opp===0) ? mag.top[idx] : (opp===1) ? mag.right[idx] : (opp===2) ? mag.bottom[idx] : mag.left[idx];
+    let oppVal = (opp===0) ? getMag(mag.top, idx) : (opp===1) ? getMag(mag.right, idx) : (opp===2) ? getMag(mag.bottom, idx) : getMag(mag.left, idx);
     const opponent = (curPlayer === P_RED) ? P_YEL : P_RED;
 
     applyActionAndAnimate(() => {
         tokens[curPlayer].mag--;
         if (oppVal === opponent) {
-             // Remove opponent
-             if(opp===0) mag.top[idx]=0; else if(opp===1) mag.right[idx]=0;
-             else if(opp===2) mag.bottom[idx]=0; else mag.left[idx]=0;
+             // Neutralize
+             if(opp===0) mag.top[idx]=null; else if(opp===1) mag.right[idx]=null;
+             else if(opp===2) mag.bottom[idx]=null; else mag.left[idx]=null;
         } else {
-             // Place self
-             if(side===0) mag.top[idx]=curPlayer; else if(side===1) mag.right[idx]=curPlayer;
-             else if(side===2) mag.bottom[idx]=curPlayer; else mag.left[idx]=curPlayer;
+             // Place self with LIFE
+             let m = { p: curPlayer, life: MAGNET_LIFE };
+             if(side===0) mag.top[idx]=m; else if(side===1) mag.right[idx]=m;
+             else if(side===2) mag.bottom[idx]=m; else mag.left[idx]=m;
         }
     });
   }
 
   function doFlip(dirDelta) {
     if (tokens[curPlayer].flip <= 0) return;
-    
-    // For rotation, we have to handle animation slightly differently
-    // The visual rotation happens, AND tokens slide.
-    
     if(animating || gameOver) return;
     let oldG = grid.map(r=>[...r]);
     let oldA = boardAngle;
@@ -512,11 +495,7 @@
     gravityDir = (gravityDir - dirDelta + 4) % 4;
     
     let finalG = settleGridComplete(grid, gravityDir);
-    
-    // Spawn slides based on new gravity
     spawnTransitions(oldG, finalG, 'slide');
-    
-    // Add Rotation Anim
     anims.push({ type: 'rotate', startA: oldA, endA: targetAngle, t: 0, dur: 500 });
     
     grid = finalG;
@@ -534,6 +513,12 @@
         gameOver = true;
         showOverlay("Draw", "Board Full", true);
       } else {
+        // Tick magnets
+        const decay = (arr) => arr.forEach((m, i) => { 
+           if (m) { m.life--; if (m.life <= 0) arr[i] = null; } 
+        });
+        decay(mag.top); decay(mag.bottom); decay(mag.left); decay(mag.right);
+
         curPlayer = (curPlayer === P_RED) ? P_YEL : P_RED;
         syncUI();
       }
@@ -571,7 +556,6 @@
     if (!animating) return;
     let stillAnimating = false;
     
-    // Rotation
     let rot = anims.find(a=>a.type==='rotate');
     if(rot) {
         rot.t += dt/rot.dur;
@@ -583,7 +567,6 @@
         }
     }
     
-    // Tokens
     anims.forEach(a => {
         if(a.type==='rotate') return;
         a.t += dt/a.dur;
@@ -592,7 +575,6 @@
     });
     
     if(!stillAnimating) {
-        // Clear finished
         anims = anims.filter(a => a.t < 1);
         if(anims.length === 0) {
             animating = false;
@@ -647,9 +629,8 @@
     // Anims
     for (let a of anims) {
         if (a.type === 'rotate') continue;
-        let p = a.t * a.t * (3 - 2 * a.t); // Smooth ease
+        let p = a.t * a.t * (3 - 2 * a.t); 
         if (a.type === 'drop') {
-            // Elastic finish
             if (a.t < 0.7) p = (a.t/0.7)*(a.t/0.7);
             else {
                 let t2 = (a.t - 0.7) / 0.3;
@@ -661,11 +642,11 @@
         drawToken(ctx, curC*cell + cell/2, curR*cell + cell/2, cell*0.4, a.p);
     }
     
-    // Magnets
-    mag.top.forEach((p, i) => drawMag(ctx, i*cell + cell/2, -cell*0.6, cell, 0, p));
-    mag.bottom.forEach((p, i) => drawMag(ctx, i*cell + cell/2, boardW + cell*0.6, cell, 2, p));
-    mag.left.forEach((p, i) => drawMag(ctx, -cell*0.6, i*cell + cell/2, cell, 3, p));
-    mag.right.forEach((p, i) => drawMag(ctx, boardW + cell*0.6, i*cell + cell/2, cell, 1, p));
+    // Magnets with Fade
+    mag.top.forEach((m, i) => drawMag(ctx, i*cell + cell/2, -cell*0.6, cell, 0, m));
+    mag.bottom.forEach((m, i) => drawMag(ctx, i*cell + cell/2, boardW + cell*0.6, cell, 2, m));
+    mag.left.forEach((m, i) => drawMag(ctx, -cell*0.6, i*cell + cell/2, cell, 3, m));
+    mag.right.forEach((m, i) => drawMag(ctx, boardW + cell*0.6, i*cell + cell/2, cell, 1, m));
     
     ctx.restore();
   }
@@ -677,18 +658,29 @@
     ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.fill();
   }
   
-  function drawMag(ctx, x, y, size, dir, p) {
-    if (!p) return;
+  function drawMag(ctx, x, y, size, dir, m) {
+    if (!m) return;
     ctx.save(); ctx.translate(x, y); ctx.rotate(dir * Math.PI/2);
+    ctx.globalAlpha = 0.3 + (0.7 * (m.life / MAGNET_LIFE)); 
+    
     ctx.beginPath();
     const r = size*0.35;
     ctx.arc(0, 0, r, 0, Math.PI, true); ctx.lineTo(-r, r); ctx.lineTo(r, r); ctx.closePath();
-    ctx.fillStyle = (p === P_RED) ? "#e53935" : "#fdd835"; ctx.fill();
+    ctx.fillStyle = (m.p === P_RED) ? "#e53935" : "#fdd835"; ctx.fill();
     ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+    
+    // Dots
+    ctx.globalAlpha = 1;
+    for(let i=0; i<m.life; i++) {
+        ctx.fillStyle = "#fff";
+        ctx.beginPath(); 
+        ctx.arc(-r + 4 + i*5, r - 4, 1.5, 0, Math.PI*2); 
+        ctx.fill();
+    }
+    
     ctx.restore();
   }
 
-  // --- Input ---
   function getBoardPos(evt) {
     const rect = canvas.getBoundingClientRect();
     let x = evt.clientX - rect.left, y = evt.clientY - rect.top;
@@ -749,15 +741,8 @@
     elOverlay.style.display = "flex";
   }
 
-  // Greedy Show Win
   document.getElementById("btnShowWin").onclick = () => {
-    // A simplified visual hint. Real minimax removed for single-file constraints
-    for(let c=0; c<COLS; c++) {
-        let testG = settleGridComplete(grid, gravityDir); // assume drop in col
-        // This is a naive check. Proper check requires checking where doDrop puts it.
-        // Skipping complex logic, just alerting user.
-    }
-    alert("Win Finder not available in this animation-optimized build.");
+     alert("Preview unavailable in this version.");
   };
 
   document.getElementById("btnCCW").onclick = () => doFlip(1);
