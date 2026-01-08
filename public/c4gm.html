@@ -144,8 +144,8 @@
 
   <div id="controls">
     <button id="btnCCW" class="btn-tac">Turn <span class="big-icon">⟲</span></button>
-    <button id="btnCW" class="btn-tac">Turn <span class="big-icon">⟳</span></button>
     <button id="btnUndo" class="btn-dev">Undo</button>
+    <button id="btnCW" class="btn-tac">Turn <span class="big-icon">⟳</span></button>
     
     <button id="btnHint" class="btn-act">Hint</button>
     <button id="btnAdd" class="btn-dev">ADD +2</button>
@@ -445,7 +445,7 @@
     });
   }
 
-  // FIXED: Explicit Rotation Maps
+  // Explicit Rotation Maps
   const CW_MAP =  { 0: 3, 1: 0, 2: 1, 3: 2 }; 
   const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 }; 
 
@@ -511,23 +511,13 @@
   function getBestMove() {
       // 1. Check if I can win immediately
       for(let i=0; i<COLS; i++) {
-         let tempG = grid.map(r=>[...r]);
-         // Sim drop
-         let found=false, rT=0, cT=0;
-         // Note: Reuse physics step for sim
-         // Simplified: Assume gravityDir=0 for calculation, but really we need full physics.
-         // Since physics is complex, we'll try a simpler check:
-         // Clone state -> Apply Move -> settle -> checkWin
-         let simG = settleGridComplete(grid, gravityDir); // Base
-         // Find drop slot
-         // Re-implement simplified drop finding
          let rEnt, cEnt;
          if (gravityDir === 0) { rEnt=0; cEnt=i; }
          else if (gravityDir === 1) { rEnt=i; cEnt=COLS-1; }
          else if (gravityDir === 2) { rEnt=ROWS-1; cEnt=i; }
          else { rEnt=i; cEnt=0; }
          
-         let emptyFound = false;
+         let emptyFound = false, rT=0, cT=0;
          for(let k=0; k<ROWS; k++){
              let rCheck=rEnt, cCheck=cEnt;
              if (gravityDir===0) rCheck+=k; else if(gravityDir===1) cCheck-=k;
@@ -546,12 +536,13 @@
       // 2. Check if Opponent wins next (Block)
       const opp = (curPlayer===P_RED)?P_YEL:P_RED;
       for(let i=0; i<COLS; i++) {
-         let emptyFound = false, rT=0, cT=0;
          let rEnt, cEnt;
          if (gravityDir === 0) { rEnt=0; cEnt=i; }
          else if (gravityDir === 1) { rEnt=i; cEnt=COLS-1; }
          else if (gravityDir === 2) { rEnt=ROWS-1; cEnt=i; }
          else { rEnt=i; cEnt=0; }
+         
+         let emptyFound = false, rT=0, cT=0;
          for(let k=0; k<ROWS; k++){
              let rCheck=rEnt, cCheck=cEnt;
              if (gravityDir===0) rCheck+=k; else if(gravityDir===1) cCheck-=k;
@@ -640,8 +631,8 @@
     ctx.translate(cx, cy);
     ctx.rotate(boardAngle);
     
-    // Board Plate
-    ctx.fillStyle = "#141a26";
+    // Board Plate (Lighter)
+    ctx.fillStyle = "#1e2535";
     ctx.beginPath();
     ctx.roundRect(-boardW/2 - cell*0.2, -boardW/2 - cell*0.2, boardW + cell*0.4, boardW + cell*0.4, 12);
     ctx.fill();
