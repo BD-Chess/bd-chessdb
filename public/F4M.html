@@ -107,6 +107,13 @@
   .btn-tac { background:rgba(255,204,102,0.15); border-color:rgba(255,204,102,0.4); color:#ffd54f; }
   .btn-dang { background:rgba(229,57,53,0.15); border-color:rgba(229,57,53,0.4); color:#ff8a80; }
   .btn-dev { background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.2); font-size:12px; }
+  
+  .btn-pro { 
+      background:rgba(255, 215, 0, 0.1); 
+      border-color:rgba(255, 215, 0, 0.5); 
+      color: var(--gold);
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
+  }
 
   .big-icon { font-size: 1.6em; line-height: 1; margin-left: 6px; display: inline-block; margin-top: -2px; }
 
@@ -178,14 +185,12 @@
         <h2>FlipFour</h2>
         <p>Gravity-defying strategy.</p>
         
-        <div id="resumeContainer" class="hidden" style="margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px;">
-             <button class="btn-tac" onclick="toggleMenu()">▶ Resume Game</button>
-        </div>
-
         <div class="card-btns" style="flex-direction:column; gap:8px;">
           <button class="btn-act" onclick="startGame(1, 1)">Easy (Classic)</button>
           <button class="btn-act" onclick="startGame(1, 2)">Standard (Strong)</button>
-          <button class="btn-dang" onclick="startGame(1, 3)">Expert (Full)</button>
+          <button class="btn-dang" onclick="startGame(1, 3)">Expert (Fast)</button>
+          <button class="btn-pro" onclick="startGame(1, 4)">Pro (Titan)</button>
+          <div style="height:10px"></div>
           <button class="btn-tac" onclick="startGame(2, 0)">2 Players (Local)</button>
         </div>
         <div style="margin-top:20px; font-size:11px; opacity:0.6; line-height:1.4;">
@@ -249,17 +254,16 @@
   let tokens = {};
   let history = [];
   let gameOver = false;
-  let gameInProgress = false; // Tracks if a session is active for Resume
+  let gameInProgress = false; 
   
   let gameMode = 2; 
-  let aiLevel = 1; // 1=Easy, 2=Standard, 3=Expert
+  let aiLevel = 1; // 1=Easy, 2=Standard, 3=Expert, 4=Pro
   
   let animating = false;
   let anims = []; 
   let hiddenCells = []; 
   let pendingSettle = false; 
 
-  // Weighted board positions (Center Heavy)
   const POS_WEIGHTS = [
     [3, 4, 5, 7, 5, 4, 3],
     [4, 6, 8, 10, 8, 6, 4],
@@ -281,7 +285,6 @@
   const hintCard = document.getElementById("hintCard");
   const helpCard = document.getElementById("helpCard");
   const winnerCard = document.getElementById("winnerCard");
-  const resumeContainer = document.getElementById("resumeContainer");
 
   window.startGame = function(mode, level) {
     gameMode = mode;
@@ -296,7 +299,7 @@
   
   window.toggleMenu = function() {
       if (elOverlay.style.display === "flex") {
-          // If trying to hide menu but game is over, do nothing or just hide
+          // If trying to hide menu but game is over, keep hidden if card is active
           if (menuCard.classList.contains('hidden') && !helpCard.classList.contains('hidden')) {
              // Closing help
              elOverlay.style.display = "none";
@@ -319,13 +322,6 @@
     hintCard.classList.add('hidden');
     helpCard.classList.add('hidden');
     winnerCard.classList.remove('visible');
-    
-    // Show Resume button only if game is actually in progress and not over
-    if (gameInProgress && !gameOver) {
-        resumeContainer.classList.remove('hidden');
-    } else {
-        resumeContainer.classList.add('hidden');
-    }
   }
 
   function showHelp() {
@@ -362,6 +358,7 @@
   function checkAI() {
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating) {
         document.body.style.cursor = "wait";
+        // Delay to allow UI render
         setTimeout(() => {
             makeAIMove();
             document.body.style.cursor = "default";
@@ -370,17 +367,24 @@
   }
 
   function makeAIMove() {
-    // Determine AI parameters based on level
-    let useAdvancedMoves = (aiLevel === 3); // Expert only uses Magnets/Flips
-    let depth = (aiLevel === 1) ? 2 : (aiLevel === 2) ? 6 : 5; // Standard gets deep search, Expert gets broad search
+    // 1=Easy, 2=Std, 3=Expert, 4=Pro
+    let useAdvancedMoves = (aiLevel >= 3); 
     
-    // For Easy/Standard, we force simulated tokens to 0 so it doesn't consider flips/magnets
+    // Depth Settings
+    // Level 1 (Easy): Depth 2, No tools
+    // Level 2 (Std): Depth 6, No tools (Fast due to low branching)
+    // Level 3 (Exp): Depth 4, Tools (Moderate)
+    // Level 4 (Pro): Depth 5, Tools (Heavy - 30x slower than Exp)
+    let depth = 2;
+    if (aiLevel === 2) depth = 6;
+    else if (aiLevel === 3) depth = 4;
+    else if (aiLevel === 4) depth = 5;
+
     let aiTokens = useAdvancedMoves ? tokens[P_YEL] : { flip: 0, mag: 0 };
     
-    // Get moves
     let moves = getPossibleMoves(grid, gravityDir, aiTokens, P_YEL, mag);
 
-    // Heuristic Sort: Immediate Wins > Center Columns > Flips > Magnets
+    // Heuristic Sort
     moves.sort((a,b) => {
         let wA = checkWin(a.grid) === P_YEL ? 10000 : 0;
         let wB = checkWin(b.grid) === P_YEL ? 10000 : 0;
@@ -394,16 +398,12 @@
     let bestScore = -Infinity;
     let alpha = -Infinity, beta = Infinity;
 
-    // AI LOOP
     for (let m of moves) {
-        // Instant Win
         if (checkWin(m.grid) === P_YEL) { executeMove(m); return; }
         
-        // Easy Mode: If immediate loss is detected in next turn, block it.
-        // Even Easy AI shouldn't be totally blind.
         let score = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, false, useAdvancedMoves);
         
-        // Small penalty for expensive moves in Expert
+        // Slight penalty for using resources if score is similar
         if(m.type === 'flip') score -= 50; 
         if(m.type === 'magnet') score -= 40; 
 
@@ -417,7 +417,7 @@
 
     if (bestMove) executeMove(bestMove);
     else if (moves.length > 0) executeMove(moves[0]); 
-    else if (useAdvancedMoves && tokens[P_YEL].flip > 0) doFlip(1); // Desperation
+    else if (useAdvancedMoves && tokens[P_YEL].flip > 0) doFlip(1);
   }
 
   function executeMove(m) {
@@ -433,16 +433,19 @@
     if (depth === 0) return evaluateBoard(g);
 
     let player = isMax ? P_YEL : P_RED;
-    // Simulate tokens for recursion. 
-    // If not advanced, opponent also doesn't use tools (Standard mode logic).
-    // If Expert, we assume opponent MIGHT use tools, but to save perf, we limit recursion for tools to shallow depths.
-    let simTokens = advanced 
-        ? (depth > 3 ? { flip:1, mag:0 } : { flip:0, mag:0 }) 
-        : { flip:0, mag:0 };
+    
+    // Resource constraints for deeper layers to optimize performance
+    // If Pro (Level 4), we search deeper with tools.
+    // If Expert (Level 3), we limit tool search depth.
+    let simTokens = { flip:0, mag:0 };
+    if (advanced) {
+        // Pro mode: check tools deeper
+        let limit = (aiLevel === 4) ? 3 : 2; 
+        if (depth > limit) simTokens = { flip:1, mag:0 }; // Assume infinite but 1 per turn logic
+    }
 
     let moves = getPossibleMoves(g, gDir, simTokens, player, mState);
     
-    // Sort logic optimization
     moves.sort((a,b) => {
         let sa = (a.type==='drop') ? 10 - Math.abs(3-a.col) : 0;
         let sb = (b.type==='drop') ? 10 - Math.abs(3-b.col) : 0;
@@ -472,22 +475,17 @@
 
   function evaluateBoard(g) {
       let score = 0;
-      // Positional Score
       for(let r=0; r<ROWS; r++) {
           for(let c=0; c<COLS; c++) {
               if (g[r][c] === P_YEL) score += POS_WEIGHTS[r][c];
               else if (g[r][c] === P_RED) score -= POS_WEIGHTS[r][c];
           }
       }
-      // Line Threats
       let scoreLines = 0;
-      // Horizontal
       for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) 
           scoreLines += evalWindow(g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]);
-      // Vertical
       for(let c=0; c<COLS; c++) for(let r=0; r<ROWS-3; r++) 
           scoreLines += evalWindow(g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]);
-      // Diagonals
       for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) 
           scoreLines += evalWindow(g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]);
       for(let r=0; r<ROWS-3; r++) for(let c=3; c<COLS; c++) 
@@ -505,20 +503,15 @@
 
       if (y === 4) return 100000; 
       if (r === 4) return -100000; 
-      // High alert: 3 in a row with gap
       if (y === 3 && e === 1) return 5000; 
-      // CRITICAL BLOCKING: If opponent has 3, weight it massively to block
-      if (r === 3 && e === 1) return -20000; 
+      if (r === 3 && e === 1) return -20000; // Defensive Priority
       if (y === 2 && e === 2) return 100;
       if (r === 2 && e === 2) return -150;
       return 0;
   }
 
-  // Generate Moves
   function getPossibleMoves(g, gDir, toks, p, mState) {
       let moves = [];
-      
-      // 1. Drops
       for(let i=0; i<COLS; i++) {
           let t = getDropTarget(g, gDir, i);
           if (t) {
@@ -528,8 +521,6 @@
               moves.push({ type:'drop', col:i, grid:nextG, gDir:gDir, magState:mState });
           }
       }
-      
-      // 2. Flips (Only if enabled)
       if(toks.flip > 0) { 
           let ccwDir = CCW_MAP[gDir];
           let gCCW = settleGridComplete(g, ccwDir, mState); 
@@ -539,8 +530,6 @@
           let gCW = settleGridComplete(g, cwDir, mState);
           moves.push({ type:'flip', delta:-1, grid:gCW, gDir:cwDir, magState:mState });
       }
-
-      // 3. Magnets (Only if enabled)
       if(toks.mag > 0) {
           const sides = [0,1,2,3];
           for(let side of sides) {
@@ -627,13 +616,11 @@
   function physicsStep(g, dir, mState) {
     let nextG = g.map(r => [...r]);
     let changed = false;
-    // Magnets pull first
     for (let c=0; c<COLS; c++) { if (mState.top[c] && nextG[0][c] === P_EMPTY) for (let r=1; r<ROWS; r++) if (nextG[r][c]) { nextG[0][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
     for (let c=0; c<COLS; c++) { if (mState.bottom[c] && nextG[ROWS-1][c] === P_EMPTY) for (let r=ROWS-2; r>=0; r--) if (nextG[r][c]) { nextG[ROWS-1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
     for (let r=0; r<ROWS; r++) { if (mState.left[r] && nextG[r][0] === P_EMPTY) for (let c=1; c<COLS; c++) if (nextG[r][c]) { nextG[r][0]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
     for (let r=0; r<ROWS; r++) { if (mState.right[r] && nextG[r][COLS-1] === P_EMPTY) for (let c=COLS-2; c>=0; c--) if (nextG[r][c]) { nextG[r][COLS-1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
     
-    // Gravity falls
     if (dir === 0) { for (let c=0; c<COLS; c++) for (let r=ROWS-2; r>=0; r--) if (nextG[r][c] && !nextG[r+1][c] && !isPinned(r,c,mState)) { nextG[r+1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; } }
     else if (dir === 1) { for (let r=0; r<ROWS; r++) for (let c=1; c<COLS; c++) if (nextG[r][c] && !nextG[r][c-1] && !isPinned(r,c,mState)) { nextG[r][c-1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; } }
     else if (dir === 2) { for (let c=0; c<COLS; c++) for (let r=1; r<ROWS; r++) if (nextG[r][c] && !nextG[r-1][c] && !isPinned(r,c,mState)) { nextG[r-1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; } }
@@ -840,9 +827,7 @@
     return found ? {r:rT, c:cT} : null;
   }
 
-  // --- HINT SYSTEM ---
   function runHintSimulation() {
-      // Always assume full power for hint to show user possibilities
       let moves = getPossibleMoves(grid, gravityDir, tokens[curPlayer], curPlayer, mag);
       if(moves.length === 0) return "No moves available!";
 
