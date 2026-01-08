@@ -187,6 +187,17 @@
   let hiddenCells = []; 
   let pendingSettle = false; 
 
+  // Position Weights (Center preference)
+  const POS_WEIGHTS = [
+    [3, 4, 5, 7, 5, 4, 3],
+    [4, 6, 8, 10, 8, 6, 4],
+    [5, 8, 11, 13, 11, 8, 5],
+    [5, 8, 11, 13, 11, 8, 5], // Center row
+    [5, 8, 11, 13, 11, 8, 5],
+    [4, 6, 8, 10, 8, 6, 4],
+    [3, 4, 5, 7, 5, 4, 3]
+  ];
+
   // UI
   const canvas = document.getElementById("c");
   const ctx = canvas.getContext("2d", { alpha: false });
@@ -198,7 +209,6 @@
   const menuCard = document.getElementById("menuCard");
   const msgCard = document.getElementById("msgCard");
 
-  // --- Globals ---
   window.startGame = function(mode, level) {
     gameMode = mode;
     aiLevel = level;
@@ -236,58 +246,64 @@
     requestAnimationFrame(initLoop);
   }
 
-  // --- AI ENGINE (Alpha-Beta + Window Evaluation) ---
+  // --- IMPROVED AI ENGINE ---
   function checkAI() {
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating) {
         document.body.style.cursor = "wait";
-        // Small delay for natural feel
         setTimeout(() => {
             makeAIMove();
             document.body.style.cursor = "default";
-        }, 500);
+        }, 300);
     }
   }
 
   function makeAIMove() {
+    // 1. Easy: Random but avoids immediate suicide
     if (aiLevel === 1) {
-        // Easy: 70% random, 30% block immediate win
-        let valid = getPossibleMoves(grid, gravityDir, tokens[P_YEL]);
-        if(Math.random() > 0.7) {
-             for(let m of valid) if(checkWin(m.grid) === P_YEL) { executeMove(m); return; }
-        }
-        if (valid.length > 0) executeMove(valid[Math.floor(Math.random()*valid.length)]);
+        let moves = getPossibleMoves(grid, gravityDir, tokens[P_YEL], P_YEL);
+        // Try to win if possible
+        for(let m of moves) if(checkWin(m.grid) === P_YEL) { executeMove(m); return; }
+        // Pick random
+        if (moves.length > 0) executeMove(moves[Math.floor(Math.random()*moves.length)]);
         else doFlip(1); 
         return;
     }
 
-    // Expert: Depth 4, Medium: Depth 2
-    let depth = (aiLevel === 2) ? 2 : 4; 
+    // 2. Medium/Expert: Minimax with Alpha-Beta
+    // Expert Depth: 5 (with move sorting this is reachable)
+    let depth = (aiLevel === 2) ? 2 : 5; 
     
     let bestScore = -Infinity;
     let bestMove = null;
-    let moves = getPossibleMoves(grid, gravityDir, tokens[P_YEL]);
+    let moves = getPossibleMoves(grid, gravityDir, tokens[P_YEL], P_YEL);
     
-    // Sort moves to improve pruning (Central columns first)
+    // MOVE SORTING: Critical for Alpha-Beta performance
+    // Heuristic sort: Prefer moves that involve center columns
     moves.sort((a,b) => {
-        if(a.type === 'drop' && b.type === 'drop') return Math.abs(3-a.col) - Math.abs(3-b.col); 
-        return 0;
+        let sa = (a.type==='drop') ? Math.abs(3-a.col) : 10; // Penalize flips slightly in sorting to check drops first
+        let sb = (b.type==='drop') ? Math.abs(3-b.col) : 10;
+        return sa - sb; // Lower dist is better -> come first
     });
 
+    // Root Search
     for (let m of moves) {
-        // If immediate win, take it
-        if (checkWin(m.grid) === P_YEL) {
-            executeMove(m); return;
-        }
+        // Immediate Win Check
+        if (checkWin(m.grid) === P_YEL) { executeMove(m); return; }
         
         let score = minimax(m.grid, m.gDir, depth - 1, -Infinity, Infinity, false);
+        
+        // Randomize equals to avoid repetitive play
         if (score > bestScore) {
             bestScore = score;
+            bestMove = m;
+        } else if (score === bestScore && Math.random() > 0.5) {
             bestMove = m;
         }
     }
 
     if (bestMove) executeMove(bestMove);
     else if (moves.length > 0) executeMove(moves[0]); 
+    else doFlip(1); // Stuck?
   }
 
   function executeMove(m) {
@@ -297,13 +313,22 @@
 
   function minimax(g, gDir, depth, alpha, beta, isMax) {
     let winner = checkWin(g);
-    if (winner === P_YEL) return 100000 + depth; 
-    if (winner === P_RED) return -100000 - depth; 
+    // Score heavily weighted by depth to prefer faster wins / slower losses
+    if (winner === P_YEL) return 100000 + depth * 100; 
+    if (winner === P_RED) return -100000 - depth * 100; 
     if (depth === 0) return evaluateBoard(g);
 
-    let moves = getPossibleMoves(g, gDir, {flip:1}); // Assume capability for depth
+    let player = isMax ? P_YEL : P_RED;
+    let moves = getPossibleMoves(g, gDir, {flip:1}, player); // Assume flip avail for deep search
 
-    if (isMax) { // AI (Yel)
+    // Sort moves for pruning
+    moves.sort((a,b) => {
+        let sa = (a.type==='drop') ? Math.abs(3-a.col) : 10;
+        let sb = (b.type==='drop') ? Math.abs(3-b.col) : 10;
+        return sa - sb;
+    });
+
+    if (isMax) { 
         let maxEval = -Infinity;
         for (let m of moves) {
             let evalVal = minimax(m.grid, m.gDir, depth - 1, alpha, beta, false);
@@ -312,21 +337,67 @@
             if (beta <= alpha) break; 
         }
         return maxEval;
-    } else { // Human (Red)
+    } else { 
         let minEval = Infinity;
-        // Generate Red Moves
-        let redMoves = getMovesForPlayer(g, gDir, P_RED);
-        for(let rm of redMoves) {
-             let evalVal = minimax(rm.grid, rm.gDir, depth - 1, alpha, beta, true);
-             minEval = Math.min(minEval, evalVal);
-             beta = Math.min(beta, evalVal);
-             if (beta <= alpha) break;
+        for (let m of moves) {
+            let evalVal = minimax(m.grid, m.gDir, depth - 1, alpha, beta, true);
+            minEval = Math.min(minEval, evalVal);
+            beta = Math.min(beta, evalVal);
+            if (beta <= alpha) break;
         }
         return minEval;
     }
   }
 
-  function getMovesForPlayer(g, gDir, p) {
+  function evaluateBoard(g) {
+      let score = 0;
+      // 1. Positional Score (Control Center)
+      for(let r=0; r<ROWS; r++) {
+          for(let c=0; c<COLS; c++) {
+              if (g[r][c] === P_YEL) score += POS_WEIGHTS[r][c];
+              else if (g[r][c] === P_RED) score -= POS_WEIGHTS[r][c];
+          }
+      }
+      
+      // 2. Window Evaluation (Lines)
+      let scoreLines = 0;
+      
+      // Horizontal
+      for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) 
+          scoreLines += evalWindow(g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]);
+      // Vertical
+      for(let c=0; c<COLS; c++) for(let r=0; r<ROWS-3; r++) 
+          scoreLines += evalWindow(g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]);
+      // Diag 1
+      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) 
+          scoreLines += evalWindow(g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]);
+      // Diag 2
+      for(let r=0; r<ROWS-3; r++) for(let c=3; c<COLS; c++) 
+          scoreLines += evalWindow(g[r][c], g[r+1][c-1], g[r+2][c-2], g[r+3][c-3]);
+
+      return score + scoreLines;
+  }
+
+  function evalWindow(c1, c2, c3, c4) {
+      let r = 0, y = 0, e = 0;
+      if(c1===P_RED) r++; else if(c1===P_YEL) y++; else e++;
+      if(c2===P_RED) r++; else if(c2===P_YEL) y++; else e++;
+      if(c3===P_RED) r++; else if(c3===P_YEL) y++; else e++;
+      if(c4===P_RED) r++; else if(c4===P_YEL) y++; else e++;
+
+      if (y === 4) return 100000; 
+      if (r === 4) return -100000; 
+      
+      if (y === 3 && e === 1) return 1000; // Strong attack
+      if (r === 3 && e === 1) return -5000; // BLOCK IMMEDIATELY (Higher weight than attack)
+      
+      if (y === 2 && e === 2) return 10;
+      if (r === 2 && e === 2) return -15;
+
+      return 0;
+  }
+
+  function getPossibleMoves(g, gDir, toks, p) {
       let moves = [];
       // Drops
       for(let i=0; i<COLS; i++) {
@@ -339,86 +410,24 @@
           }
       }
       // Flips
-      let ccwDir = CCW_MAP[gDir];
-      let gCCW = settleGridComplete(g, ccwDir); 
-      moves.push({ type:'flip', delta:1, grid:gCCW, gDir:ccwDir });
-      
-      let cwDir = CW_MAP[gDir];
-      let gCW = settleGridComplete(g, cwDir);
-      moves.push({ type:'flip', delta:-1, grid:gCW, gDir:cwDir });
-      
-      return moves;
-  }
-  
-  function getPossibleMoves(g, gDir, toks) {
-      let moves = getMovesForPlayer(g, gDir, P_YEL); 
-      if(toks.flip <= 0) moves = moves.filter(m => m.type !== 'flip');
+      if(toks.flip > 0 || (aiLevel > 1)) { // Allow AI to consider flips in deep search
+          let ccwDir = CCW_MAP[gDir];
+          let gCCW = settleGridComplete(g, ccwDir); 
+          moves.push({ type:'flip', delta:1, grid:gCCW, gDir:ccwDir });
+          
+          let cwDir = CW_MAP[gDir];
+          let gCW = settleGridComplete(g, cwDir);
+          moves.push({ type:'flip', delta:-1, grid:gCW, gDir:cwDir });
+      }
       return moves;
   }
 
-  // --- SCORE EVALUATION ---
-  function evaluateBoard(g) {
-      let score = 0;
-      
-      // Horizontal
-      for(let r=0; r<ROWS; r++) {
-          for(let c=0; c<COLS-3; c++) {
-              score += evalWindow(g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]);
-          }
-      }
-      // Vertical
-      for(let c=0; c<COLS; c++) {
-          for(let r=0; r<ROWS-3; r++) {
-              score += evalWindow(g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]);
-          }
-      }
-      // Diag 1
-      for(let r=0; r<ROWS-3; r++) {
-          for(let c=0; c<COLS-3; c++) {
-              score += evalWindow(g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]);
-          }
-      }
-      // Diag 2
-      for(let r=0; r<ROWS-3; r++) {
-          for(let c=3; c<COLS; c++) {
-              score += evalWindow(g[r][c], g[r+1][c-1], g[r+2][c-2], g[r+3][c-3]);
-          }
-      }
-      
-      // Center Bias
-      let centerCount = 0;
-      for(let r=0; r<ROWS; r++) if(g[r][3] === P_YEL) centerCount++;
-      score += centerCount * 5;
-
-      return score;
-  }
-
-  function evalWindow(c1, c2, c3, c4) {
-      let r = 0, y = 0, e = 0;
-      if(c1===P_RED) r++; else if(c1===P_YEL) y++; else e++;
-      if(c2===P_RED) r++; else if(c2===P_YEL) y++; else e++;
-      if(c3===P_RED) r++; else if(c3===P_YEL) y++; else e++;
-      if(c4===P_RED) r++; else if(c4===P_YEL) y++; else e++;
-
-      if (y === 4) return 100000; 
-      if (y === 3 && e === 1) return 100; 
-      if (y === 2 && e === 2) return 10;
-      
-      if (r === 4) return -100000; 
-      if (r === 3 && e === 1) return -9000; // BLOCKING Priority
-
-      return 0;
-  }
-
-  // --- Cloning & Helpers ---
+  // --- CORE GAMEPLAY ---
   function cloneMag(mArr) { return mArr.map(m => m ? { ...m } : null); }
   function cloneState() {
     return {
       grid: grid.map(r => [...r]),
-      mag: { 
-        top: cloneMag(mag.top), bottom: cloneMag(mag.bottom), 
-        left: cloneMag(mag.left), right: cloneMag(mag.right) 
-      },
+      mag: { top: cloneMag(mag.top), bottom: cloneMag(mag.bottom), left: cloneMag(mag.left), right: cloneMag(mag.right) },
       gravityDir, boardAngle, targetAngle, curPlayer,
       tokens: JSON.parse(JSON.stringify(tokens)),
       gameOver
@@ -427,10 +436,7 @@
 
   function restoreState(s) {
     grid = s.grid.map(r => [...r]);
-    mag = { 
-        top: cloneMag(s.mag.top), bottom: cloneMag(s.mag.bottom), 
-        left: cloneMag(s.mag.left), right: cloneMag(s.mag.right) 
-    };
+    mag = { top: cloneMag(s.mag.top), bottom: cloneMag(s.mag.bottom), left: cloneMag(s.mag.left), right: cloneMag(s.mag.right) };
     gravityDir = s.gravityDir;
     boardAngle = s.boardAngle;
     targetAngle = s.targetAngle;
@@ -452,15 +458,10 @@
   function undo() {
     if (animating || history.length === 0) return;
     restoreState(history.pop());
-    // If PvAI, undo twice
-    if (gameMode === 1 && history.length > 0) {
-        restoreState(history.pop());
-    }
+    if (gameMode === 1 && history.length > 0) restoreState(history.pop());
   }
 
-  // --- Physics ---
   function getMag(arr, idx) { return arr[idx] ? arr[idx].p : 0; }
-  
   function isPinned(r, c) {
     if (r === 0 && getMag(mag.top, c)) return true;
     if (r === ROWS - 1 && getMag(mag.bottom, c)) return true;
@@ -473,26 +474,10 @@
     let nextG = g.map(r => [...r]);
     let changed = false;
     // Magnets
-    for (let c=0; c<COLS; c++) {
-      if (getMag(mag.top, c) && nextG[0][c] === P_EMPTY) {
-        for (let r=1; r<ROWS; r++) if (nextG[r][c]) { nextG[0][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; }
-      }
-    }
-    for (let c=0; c<COLS; c++) {
-      if (getMag(mag.bottom, c) && nextG[ROWS-1][c] === P_EMPTY) {
-        for (let r=ROWS-2; r>=0; r--) if (nextG[r][c]) { nextG[ROWS-1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; }
-      }
-    }
-    for (let r=0; r<ROWS; r++) {
-      if (getMag(mag.left, r) && nextG[r][0] === P_EMPTY) {
-        for (let c=1; c<COLS; c++) if (nextG[r][c]) { nextG[r][0]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; }
-      }
-    }
-    for (let r=0; r<ROWS; r++) {
-      if (getMag(mag.right, r) && nextG[r][COLS-1] === P_EMPTY) {
-        for (let c=COLS-2; c>=0; c--) if (nextG[r][c]) { nextG[r][COLS-1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; }
-      }
-    }
+    for (let c=0; c<COLS; c++) { if (getMag(mag.top, c) && nextG[0][c] === P_EMPTY) for (let r=1; r<ROWS; r++) if (nextG[r][c]) { nextG[0][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
+    for (let c=0; c<COLS; c++) { if (getMag(mag.bottom, c) && nextG[ROWS-1][c] === P_EMPTY) for (let r=ROWS-2; r>=0; r--) if (nextG[r][c]) { nextG[ROWS-1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
+    for (let r=0; r<ROWS; r++) { if (getMag(mag.left, r) && nextG[r][0] === P_EMPTY) for (let c=1; c<COLS; c++) if (nextG[r][c]) { nextG[r][0]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
+    for (let r=0; r<ROWS; r++) { if (getMag(mag.right, r) && nextG[r][COLS-1] === P_EMPTY) for (let c=COLS-2; c>=0; c--) if (nextG[r][c]) { nextG[r][COLS-1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
     // Gravity
     if (dir === 0) { for (let c=0; c<COLS; c++) for (let r=ROWS-2; r>=0; r--) if (nextG[r][c] && !nextG[r+1][c] && !isPinned(r,c)) { nextG[r+1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; } }
     else if (dir === 1) { for (let r=0; r<ROWS; r++) for (let c=1; c<COLS; c++) if (nextG[r][c] && !nextG[r][c-1] && !isPinned(r,c)) { nextG[r][c-1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; } }
@@ -512,7 +497,6 @@
     return g;
   }
 
-  // --- Animation ---
   function spawnTransitions(oldG, newG, type) {
     let isVert = (gravityDir === 0 || gravityDir === 2);
     let speed = type === 'drop' ? 320 : 280; 
@@ -524,64 +508,49 @@
     };
     if (isVert) {
       for (let c=0; c<COLS; c++) {
-        let oldToks = getToks(oldG, false, c);
-        let newToks = getToks(newG, false, c);
+        let oldToks = getToks(oldG, false, c), newToks = getToks(newG, false, c);
         if (gravityDir === 0) { oldToks.reverse(); newToks.reverse(); }
         let usedNew = new Array(newToks.length).fill(false);
         oldToks.forEach(o => {
             let found = -1;
-            for(let i=0; i<newToks.length; i++) {
-                if(!usedNew[i] && newToks[i].p === o.p) { found=i; break; }
-            }
+            for(let i=0; i<newToks.length; i++) if(!usedNew[i] && newToks[i].p === o.p) { found=i; break; }
             if(found !== -1) {
                 usedNew[found] = true;
                 let n = newToks[found];
-                if(o.r !== n.r || o.c !== n.c) {
-                    anims.push({ type: 'slide', p: o.p, r: o.r, c: o.c, destR: n.r, destC: n.c, t: 0, dur: speed });
-                    hiddenCells.push({r: n.r, c: n.c});
-                }
+                if(o.r !== n.r || o.c !== n.c) { anims.push({ type: 'slide', p: o.p, r: o.r, c: o.c, destR: n.r, destC: n.c, t: 0, dur: speed }); hiddenCells.push({r: n.r, c: n.c}); }
             }
         });
         for(let i=0; i<newToks.length; i++) if(!usedNew[i]) {
             let n = newToks[i];
-            let sr = n.r, sc = n.c;
-            if (gravityDir===0) sr = -2; else sr = ROWS+1;
-            anims.push({ type: 'drop', p: n.p, r: sr, c: sc, destR: n.r, destC: n.c, t: 0, dur: speed });
+            let sr = (gravityDir===0) ? -2 : ROWS+1;
+            anims.push({ type: 'drop', p: n.p, r: sr, c: n.c, destR: n.r, destC: n.c, t: 0, dur: speed });
             hiddenCells.push({r: n.r, c: n.c});
         }
       }
     } else {
       for (let r=0; r<ROWS; r++) {
-        let oldToks = getToks(oldG, true, r);
-        let newToks = getToks(newG, true, r);
+        let oldToks = getToks(oldG, true, r), newToks = getToks(newG, true, r);
         if (gravityDir === 3) { oldToks.reverse(); newToks.reverse(); }
         let usedNew = new Array(newToks.length).fill(false);
         oldToks.forEach(o => {
             let found = -1;
-            for(let i=0; i<newToks.length; i++) {
-                if(!usedNew[i] && newToks[i].p === o.p) { found=i; break; }
-            }
+            for(let i=0; i<newToks.length; i++) if(!usedNew[i] && newToks[i].p === o.p) { found=i; break; }
             if(found !== -1) {
                 usedNew[found] = true;
                 let n = newToks[found];
-                if(o.r !== n.r || o.c !== n.c) {
-                    anims.push({ type: 'slide', p: o.p, r: o.r, c: o.c, destR: n.r, destC: n.c, t: 0, dur: speed });
-                    hiddenCells.push({r: n.r, c: n.c});
-                }
+                if(o.r !== n.r || o.c !== n.c) { anims.push({ type: 'slide', p: o.p, r: o.r, c: o.c, destR: n.r, destC: n.c, t: 0, dur: speed }); hiddenCells.push({r: n.r, c: n.c}); }
             }
         });
         for(let i=0; i<newToks.length; i++) if(!usedNew[i]) {
             let n = newToks[i];
-            let sr = n.r, sc = n.c;
-            if (gravityDir===1) sc = COLS+1; else sc = -2;
-            anims.push({ type: 'drop', p: n.p, r: sr, c: sc, destR: n.r, destC: n.c, t: 0, dur: speed });
+            let sc = (gravityDir===1) ? COLS+1 : -2;
+            anims.push({ type: 'drop', p: n.p, r: n.r, c: sc, destR: n.r, destC: n.c, t: 0, dur: speed });
             hiddenCells.push({r: n.r, c: n.c});
         }
       }
     }
   }
 
-  // --- Logic ---
   function applyActionAndAnimate(actionFn) {
     if(animating || gameOver) return;
     let oldG = grid.map(r=>[...r]);
@@ -595,20 +564,16 @@
   }
 
   function doDrop(row, col) {
-    // FIX: NO GUARD HERE. Guard is in handleInput.
     let rEnt, cEnt;
     if (gravityDir === 0) { rEnt=0; cEnt=col; }
     else if (gravityDir === 1) { rEnt=row; cEnt=COLS-1; }
     else if (gravityDir === 2) { rEnt=ROWS-1; cEnt=col; }
     else { rEnt=row; cEnt=0; }
-    
     let rT = rEnt, cT = cEnt, found = false;
     for (let i=0; i<ROWS; i++) {
         let rCheck = rEnt, cCheck = cEnt;
-        if (gravityDir===0) rCheck+=i;
-        else if (gravityDir===1) cCheck-=i;
-        else if (gravityDir===2) rCheck-=i;
-        else cCheck+=i;
+        if (gravityDir===0) rCheck+=i; else if (gravityDir===1) cCheck-=i;
+        else if (gravityDir===2) rCheck-=i; else cCheck+=i;
         if (grid[rCheck][cCheck] === P_EMPTY) { rT = rCheck; cT = cCheck; found = true; break; }
     }
     if (!found) return; 
@@ -616,12 +581,10 @@
   }
 
   function doMagnet(side, idx) {
-    // FIX: NO GUARD HERE
     if (tokens[curPlayer].mag <= 0) return;
     let opp = (side + 2) % 4;
     let oppVal = (opp===0) ? getMag(mag.top, idx) : (opp===1) ? getMag(mag.right, idx) : (opp===2) ? getMag(mag.bottom, idx) : getMag(mag.left, idx);
     const opponent = (curPlayer === P_RED) ? P_YEL : P_RED;
-
     applyActionAndAnimate(() => {
         tokens[curPlayer].mag--;
         if (oppVal === opponent) {
@@ -639,18 +602,13 @@
   const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 }; 
 
   function doFlip(dirDelta) {
-    // FIX: NO GUARD HERE
     if (tokens[curPlayer].flip <= 0) return;
     if(animating || gameOver) return;
     pushHistory();
     tokens[curPlayer].flip--;
-    
     let oldA = boardAngle;
     targetAngle = oldA + (dirDelta === 1 ? -Math.PI/2 : Math.PI/2);
-    
-    if (dirDelta === -1) gravityDir = CW_MAP[gravityDir];
-    else gravityDir = CCW_MAP[gravityDir];
-    
+    if (dirDelta === -1) gravityDir = CW_MAP[gravityDir]; else gravityDir = CCW_MAP[gravityDir];
     anims.push({ type: 'rotate', startA: oldA, endA: targetAngle, t: 0, dur: 500 });
     pendingSettle = true;
     animating = true;
@@ -676,13 +634,11 @@
         gameOver = true;
         showOverlay("Draw", "Board Full", true);
       } else {
-        const decay = (arr) => arr.forEach((m, i) => { 
-           if (m) { m.life--; if (m.life <= 0) arr[i] = null; } 
-        });
+        const decay = (arr) => arr.forEach((m, i) => { if (m) { m.life--; if (m.life <= 0) arr[i] = null; } });
         decay(mag.top); decay(mag.bottom); decay(mag.left); decay(mag.right);
         curPlayer = (curPlayer === P_RED) ? P_YEL : P_RED;
         syncUI();
-        checkAI(); // Trigger AI
+        checkAI();
       }
     }
   }
@@ -703,36 +659,29 @@
 
   function getDropTarget(g, dir, idx) {
     let rEnt, cEnt;
-    if (dir === 0) { rEnt=0; cEnt=idx; }
-    else if (dir === 1) { rEnt=idx; cEnt=COLS-1; }
-    else if (dir === 2) { rEnt=ROWS-1; cEnt=idx; }
-    else { rEnt=idx; cEnt=0; }
-    
+    if (dir === 0) { rEnt=0; cEnt=idx; } else if (dir === 1) { rEnt=idx; cEnt=COLS-1; }
+    else if (dir === 2) { rEnt=ROWS-1; cEnt=idx; } else { rEnt=idx; cEnt=0; }
     let rT = rEnt, cT = cEnt, found = false;
     for (let i=0; i<ROWS; i++) {
         let rCheck = rEnt, cCheck = cEnt;
-        if (dir===0) rCheck+=i; else if (dir===1) cCheck-=i;
-        else if (dir===2) rCheck-=i; else cCheck+=i;
+        if (dir===0) rCheck+=i; else if (dir===1) cCheck-=i; else if (dir===2) rCheck-=i; else cCheck+=i;
         if (g[rCheck][cCheck] === P_EMPTY) { rT = rCheck; cT = cCheck; found = true; break; }
     }
     return found ? {r:rT, c:cT} : null;
   }
 
-  // --- HINT (Reuse AI Logic) ---
   function getBestMove() {
       let bestMove = null;
       let bestScore = -Infinity;
-      let moves = getMovesForPlayer(grid, gravityDir, P_RED);
+      let moves = getPossibleMoves(grid, gravityDir, {flip:1}, curPlayer);
       for(let m of moves) {
-          if (checkWin(m.grid) === P_RED) return "Immediate Win Available!";
-          let score = minimax(m.grid, m.gDir, 1, -Infinity, Infinity, false); 
+          if (checkWin(m.grid) === curPlayer) return "Immediate Win Available!";
+          let score = minimax(m.grid, m.gDir, 1, -Infinity, Infinity, false);
           if(score > bestScore) { bestScore = score; bestMove = m; }
       }
-      if(bestMove) return "Try a move that blocks or builds 3.";
-      return "Try controlling the center.";
+      return "Try controlling the center or building lines.";
   }
 
-  // --- Render Loop ---
   let lastTime = 0;
   function initLoop(now) { lastTime = now; requestAnimationFrame(loop); }
   function loop(now) {
@@ -747,40 +696,24 @@
   function updateAnims(dt) {
     if (!animating) return;
     let stillAnimating = false;
-    
     let rot = anims.find(a=>a.type==='rotate');
     if(rot) {
         rot.t += dt/rot.dur;
         if(rot.t>=1) { 
-            rot.t=1; 
-            boardAngle=rot.endA; 
-            anims=anims.filter(a=>a!==rot);
-            if(pendingSettle) {
-                pendingSettle = false;
-                triggerSettleAfterRotate();
-                stillAnimating = true; 
-            }
+            rot.t=1; boardAngle=rot.endA; anims=anims.filter(a=>a!==rot);
+            if(pendingSettle) { pendingSettle = false; triggerSettleAfterRotate(); stillAnimating = true; }
         } else { 
-            let p = rot.t<.5 ? 2*rot.t*rot.t : -1+(4-2*rot.t)*rot.t; 
-            boardAngle = rot.startA + (rot.endA-rot.startA)*p; 
-            stillAnimating = true; 
+            let p = rot.t<.5 ? 2*rot.t*rot.t : -1+(4-2*rot.t)*rot.t; boardAngle = rot.startA + (rot.endA-rot.startA)*p; stillAnimating = true; 
         }
     }
-    
     anims.forEach(a => {
         if(a.type==='rotate') return;
         a.t += dt/a.dur;
-        if(a.t < 1) stillAnimating = true;
-        else a.t = 1;
+        if(a.t < 1) stillAnimating = true; else a.t = 1;
     });
-    
     if(!stillAnimating && !rot) {
         anims = anims.filter(a => a.t < 1);
-        if(anims.length === 0) {
-            animating = false;
-            hiddenCells = [];
-            endTurn();
-        }
+        if(anims.length === 0) { animating = false; hiddenCells = []; endTurn(); }
     }
   }
 
@@ -797,57 +730,39 @@
 
     ctx.fillStyle = "#0b0f17";
     ctx.fillRect(0,0,W,H);
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(boardAngle);
     
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(boardAngle);
-    
-    // Board Plate (Lighter)
     ctx.fillStyle = "#1e2535";
-    ctx.beginPath();
-    ctx.roundRect(-boardW/2 - cell*0.2, -boardW/2 - cell*0.2, boardW + cell*0.4, boardW + cell*0.4, 12);
+    ctx.beginPath(); ctx.roundRect(-boardW/2 - cell*0.2, -boardW/2 - cell*0.2, boardW + cell*0.4, boardW + cell*0.4, 12);
     ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.1)";
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    ctx.strokeStyle = "rgba(255,255,255,0.1)"; ctx.lineWidth = 2; ctx.stroke();
     ctx.translate(-boardW/2, -boardW/2);
     
-    // Grid
     for (let r=0; r<ROWS; r++) {
       for (let c=0; c<COLS; c++) {
         const x = c*cell + cell/2;
         const y = r*cell + cell/2;
         ctx.fillStyle = "rgba(0,0,0,0.5)";
         ctx.beginPath(); ctx.arc(x, y, cell*0.4, 0, Math.PI*2); ctx.fill();
-        
         if (hiddenCells.some(h => h.r===r && h.c===c && animating)) continue;
         const val = grid[r][c];
         if (val) drawToken(ctx, x, y, cell*0.4, val);
       }
     }
-    
-    // Animated Tokens
     for (let a of anims) {
         if (a.type === 'rotate') continue;
         let p = a.t * a.t * (3 - 2 * a.t); 
         if (a.type === 'drop') {
-            if (a.t < 0.7) p = (a.t/0.7)*(a.t/0.7);
-            else {
-                let t2 = (a.t - 0.7) / 0.3;
-                p = 1 - Math.sin(t2 * Math.PI) * 0.05;
-            }
+            if (a.t < 0.7) p = (a.t/0.7)*(a.t/0.7); else { let t2 = (a.t - 0.7) / 0.3; p = 1 - Math.sin(t2 * Math.PI) * 0.05; }
         }
         let curR = a.r + (a.destR - a.r) * p;
         let curC = a.c + (a.destC - a.c) * p;
         drawToken(ctx, curC*cell + cell/2, curR*cell + cell/2, cell*0.4, a.p);
     }
-    
-    // Magnets with Fade
     mag.top.forEach((m, i) => drawMag(ctx, i*cell + cell/2, -cell*0.6, cell, 0, m));
     mag.bottom.forEach((m, i) => drawMag(ctx, i*cell + cell/2, boardW + cell*0.6, cell, 2, m));
     mag.left.forEach((m, i) => drawMag(ctx, -cell*0.6, i*cell + cell/2, cell, 3, m));
     mag.right.forEach((m, i) => drawMag(ctx, boardW + cell*0.6, i*cell + cell/2, cell, 1, m));
-    
     ctx.restore();
   }
   
@@ -902,9 +817,7 @@
 
   function handleInput(e) {
     if (gameOver || animating) return;
-    // Guard is HERE, not in core logic
-    if (gameMode === 1 && curPlayer === P_YEL) return;
-    
+    if (gameMode === 1 && curPlayer === P_YEL) return; 
     if (e.type === 'touchstart') e.preventDefault();
     const act = getBoardPos(e.type.includes('touch') ? e.changedTouches[0] : e);
     if (act.type === 'CELL') doDrop(act.r, act.c);
