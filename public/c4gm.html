@@ -148,12 +148,12 @@
 
   const ROWS = 7, COLS = 7;
   const P_EMPTY = 0, P_RED = 1, P_YEL = 2;
-  // 3 Rounds = 6 Turns (Player 1 + Player 2 = 1 Round)
+  // 3 Rounds = 6 Turns
   const MAGNET_LIFE = 6; 
   
   let grid = [];
   let mag = { top: [], bottom: [], left: [], right: [] }; 
-  let gravityDir = 0; 
+  let gravityDir = 0; // 0=Down, 1=Left, 2=Up, 3=Right (Matches visual)
   let boardAngle = 0; 
   let targetAngle = 0;
   let curPlayer = P_RED;
@@ -164,7 +164,7 @@
   let animating = false;
   let anims = []; 
   let hiddenCells = []; 
-  let pendingSettle = false; // Flag to trigger physics after rotation
+  let pendingSettle = false; 
 
   // UI
   const canvas = document.getElementById("c");
@@ -310,7 +310,7 @@
   // --- Animation Helpers ---
   function spawnTransitions(oldG, newG, type) {
     let isVert = (gravityDir === 0 || gravityDir === 2);
-    let speed = type === 'drop' ? 320 : 300; 
+    let speed = type === 'drop' ? 320 : 280; 
     
     // Helper to extract tokens
     const getToks = (g, isRow, idx) => {
@@ -441,7 +441,9 @@
     tokens[curPlayer].flip--;
     let oldA = boardAngle;
     targetAngle = oldA + (dirDelta === 1 ? -Math.PI/2 : Math.PI/2);
-    gravityDir = (gravityDir - dirDelta + 4) % 4;
+    
+    // PHYSICS CORRECTION: Align internal gravity with visual rotation
+    gravityDir = (gravityDir + dirDelta + 4) % 4;
     
     // Phase 1: Just rotate. Settle happens after.
     anims.push({ type: 'rotate', startA: oldA, endA: targetAngle, t: 0, dur: 500 });
@@ -518,11 +520,9 @@
             rot.t=1; 
             boardAngle=rot.endA; 
             anims=anims.filter(a=>a!==rot);
-            // If rotate finishes, check pending settle
             if(pendingSettle) {
                 pendingSettle = false;
                 triggerSettleAfterRotate();
-                // Ensure loop continues for the new anims
                 stillAnimating = true; 
             }
         } else { 
