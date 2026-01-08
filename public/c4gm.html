@@ -13,6 +13,7 @@
     --accent:#3c78ff;
     --red:#e53935;
     --yel:#fdd835;
+    --green:#4caf50;
     --btn:#26314a;
     --btnBorder:rgba(255,255,255,0.1);
   }
@@ -139,11 +140,10 @@
       </div>
 
       <div class="card hidden" id="msgCard">
-        <h2 id="ovTitle">Game Over</h2>
-        <p id="ovMsg">Red Wins!</p>
+        <h2 id="ovTitle">Hint</h2>
+        <p id="ovMsg">...</p>
         <div class="card-btns">
-          <button id="ovBtnMain" class="btn-act">New Game</button>
-          <button id="ovBtnSec" class="btn-dev">Undo</button>
+          <button id="ovBtnMain" class="btn-act">Resume</button>
         </div>
       </div>
 
@@ -178,6 +178,7 @@
   let tokens = {};
   let history = [];
   let gameOver = false;
+  let winMessage = ""; // Holds "Red Wins!", etc.
   
   let gameMode = 2; 
   let aiLevel = 1; 
@@ -187,18 +188,16 @@
   let hiddenCells = []; 
   let pendingSettle = false; 
 
-  // Position Weights (Center preference)
   const POS_WEIGHTS = [
     [3, 4, 5, 7, 5, 4, 3],
     [4, 6, 8, 10, 8, 6, 4],
     [5, 8, 11, 13, 11, 8, 5],
-    [5, 8, 11, 13, 11, 8, 5], // Center row
+    [5, 8, 11, 13, 11, 8, 5],
     [5, 8, 11, 13, 11, 8, 5],
     [4, 6, 8, 10, 8, 6, 4],
     [3, 4, 5, 7, 5, 4, 3]
   ];
 
-  // UI
   const canvas = document.getElementById("c");
   const ctx = canvas.getContext("2d", { alpha: false });
   const hudTurn = document.getElementById("turnInfo");
@@ -237,6 +236,7 @@
     tokens = { [P_RED]: { flip: 2, mag: 2 }, [P_YEL]: { flip: 2, mag: 2 } };
     history = [];
     gameOver = false;
+    winMessage = "";
     animating = false;
     anims = [];
     hiddenCells = [];
@@ -246,7 +246,7 @@
     requestAnimationFrame(initLoop);
   }
 
-  // --- IMPROVED AI ENGINE ---
+  // --- AI ENGINE ---
   function checkAI() {
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating) {
         document.body.style.cursor = "wait";
@@ -258,41 +258,28 @@
   }
 
   function makeAIMove() {
-    // 1. Easy: Random but avoids immediate suicide
     if (aiLevel === 1) {
         let moves = getPossibleMoves(grid, gravityDir, tokens[P_YEL], P_YEL);
-        // Try to win if possible
         for(let m of moves) if(checkWin(m.grid) === P_YEL) { executeMove(m); return; }
-        // Pick random
         if (moves.length > 0) executeMove(moves[Math.floor(Math.random()*moves.length)]);
         else doFlip(1); 
         return;
     }
 
-    // 2. Medium/Expert: Minimax with Alpha-Beta
-    // Expert Depth: 5 (with move sorting this is reachable)
     let depth = (aiLevel === 2) ? 2 : 5; 
-    
     let bestScore = -Infinity;
     let bestMove = null;
     let moves = getPossibleMoves(grid, gravityDir, tokens[P_YEL], P_YEL);
     
-    // MOVE SORTING: Critical for Alpha-Beta performance
-    // Heuristic sort: Prefer moves that involve center columns
     moves.sort((a,b) => {
-        let sa = (a.type==='drop') ? Math.abs(3-a.col) : 10; // Penalize flips slightly in sorting to check drops first
+        let sa = (a.type==='drop') ? Math.abs(3-a.col) : 10;
         let sb = (b.type==='drop') ? Math.abs(3-b.col) : 10;
-        return sa - sb; // Lower dist is better -> come first
+        return sa - sb; 
     });
 
-    // Root Search
     for (let m of moves) {
-        // Immediate Win Check
         if (checkWin(m.grid) === P_YEL) { executeMove(m); return; }
-        
         let score = minimax(m.grid, m.gDir, depth - 1, -Infinity, Infinity, false);
-        
-        // Randomize equals to avoid repetitive play
         if (score > bestScore) {
             bestScore = score;
             bestMove = m;
@@ -303,7 +290,7 @@
 
     if (bestMove) executeMove(bestMove);
     else if (moves.length > 0) executeMove(moves[0]); 
-    else doFlip(1); // Stuck?
+    else doFlip(1);
   }
 
   function executeMove(m) {
@@ -313,15 +300,13 @@
 
   function minimax(g, gDir, depth, alpha, beta, isMax) {
     let winner = checkWin(g);
-    // Score heavily weighted by depth to prefer faster wins / slower losses
     if (winner === P_YEL) return 100000 + depth * 100; 
     if (winner === P_RED) return -100000 - depth * 100; 
     if (depth === 0) return evaluateBoard(g);
 
     let player = isMax ? P_YEL : P_RED;
-    let moves = getPossibleMoves(g, gDir, {flip:1}, player); // Assume flip avail for deep search
+    let moves = getPossibleMoves(g, gDir, {flip:1}, player);
 
-    // Sort moves for pruning
     moves.sort((a,b) => {
         let sa = (a.type==='drop') ? Math.abs(3-a.col) : 10;
         let sb = (b.type==='drop') ? Math.abs(3-b.col) : 10;
@@ -351,27 +336,19 @@
 
   function evaluateBoard(g) {
       let score = 0;
-      // 1. Positional Score (Control Center)
       for(let r=0; r<ROWS; r++) {
           for(let c=0; c<COLS; c++) {
               if (g[r][c] === P_YEL) score += POS_WEIGHTS[r][c];
               else if (g[r][c] === P_RED) score -= POS_WEIGHTS[r][c];
           }
       }
-      
-      // 2. Window Evaluation (Lines)
       let scoreLines = 0;
-      
-      // Horizontal
       for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) 
           scoreLines += evalWindow(g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]);
-      // Vertical
       for(let c=0; c<COLS; c++) for(let r=0; r<ROWS-3; r++) 
           scoreLines += evalWindow(g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]);
-      // Diag 1
       for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) 
           scoreLines += evalWindow(g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]);
-      // Diag 2
       for(let r=0; r<ROWS-3; r++) for(let c=3; c<COLS; c++) 
           scoreLines += evalWindow(g[r][c], g[r+1][c-1], g[r+2][c-2], g[r+3][c-3]);
 
@@ -388,8 +365,8 @@
       if (y === 4) return 100000; 
       if (r === 4) return -100000; 
       
-      if (y === 3 && e === 1) return 1000; // Strong attack
-      if (r === 3 && e === 1) return -5000; // BLOCK IMMEDIATELY (Higher weight than attack)
+      if (y === 3 && e === 1) return 1000; 
+      if (r === 3 && e === 1) return -5000; 
       
       if (y === 2 && e === 2) return 10;
       if (r === 2 && e === 2) return -15;
@@ -399,7 +376,6 @@
 
   function getPossibleMoves(g, gDir, toks, p) {
       let moves = [];
-      // Drops
       for(let i=0; i<COLS; i++) {
           let t = getDropTarget(g, gDir, i);
           if (t) {
@@ -409,8 +385,7 @@
               moves.push({ type:'drop', col:i, grid:nextG, gDir:gDir });
           }
       }
-      // Flips
-      if(toks.flip > 0 || (aiLevel > 1)) { // Allow AI to consider flips in deep search
+      if(toks.flip > 0 || (aiLevel > 1)) { 
           let ccwDir = CCW_MAP[gDir];
           let gCCW = settleGridComplete(g, ccwDir); 
           moves.push({ type:'flip', delta:1, grid:gCCW, gDir:ccwDir });
@@ -430,7 +405,7 @@
       mag: { top: cloneMag(mag.top), bottom: cloneMag(mag.bottom), left: cloneMag(mag.left), right: cloneMag(mag.right) },
       gravityDir, boardAngle, targetAngle, curPlayer,
       tokens: JSON.parse(JSON.stringify(tokens)),
-      gameOver
+      gameOver, winMessage
     };
   }
 
@@ -443,6 +418,7 @@
     curPlayer = s.curPlayer;
     tokens = JSON.parse(JSON.stringify(s.tokens));
     gameOver = s.gameOver;
+    winMessage = s.winMessage;
     animating = false;
     anims = [];
     hiddenCells = [];
@@ -473,12 +449,11 @@
   function physicsStep(g, dir) {
     let nextG = g.map(r => [...r]);
     let changed = false;
-    // Magnets
     for (let c=0; c<COLS; c++) { if (getMag(mag.top, c) && nextG[0][c] === P_EMPTY) for (let r=1; r<ROWS; r++) if (nextG[r][c]) { nextG[0][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
     for (let c=0; c<COLS; c++) { if (getMag(mag.bottom, c) && nextG[ROWS-1][c] === P_EMPTY) for (let r=ROWS-2; r>=0; r--) if (nextG[r][c]) { nextG[ROWS-1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
     for (let r=0; r<ROWS; r++) { if (getMag(mag.left, r) && nextG[r][0] === P_EMPTY) for (let c=1; c<COLS; c++) if (nextG[r][c]) { nextG[r][0]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
     for (let r=0; r<ROWS; r++) { if (getMag(mag.right, r) && nextG[r][COLS-1] === P_EMPTY) for (let c=COLS-2; c>=0; c--) if (nextG[r][c]) { nextG[r][COLS-1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
-    // Gravity
+    
     if (dir === 0) { for (let c=0; c<COLS; c++) for (let r=ROWS-2; r>=0; r--) if (nextG[r][c] && !nextG[r+1][c] && !isPinned(r,c)) { nextG[r+1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; } }
     else if (dir === 1) { for (let r=0; r<ROWS; r++) for (let c=1; c<COLS; c++) if (nextG[r][c] && !nextG[r][c-1] && !isPinned(r,c)) { nextG[r][c-1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; } }
     else if (dir === 2) { for (let c=0; c<COLS; c++) for (let r=1; r<ROWS; r++) if (nextG[r][c] && !nextG[r-1][c] && !isPinned(r,c)) { nextG[r-1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; } }
@@ -564,6 +539,7 @@
   }
 
   function doDrop(row, col) {
+    if (gameMode === 1 && curPlayer === P_YEL) return;
     let rEnt, cEnt;
     if (gravityDir === 0) { rEnt=0; cEnt=col; }
     else if (gravityDir === 1) { rEnt=row; cEnt=COLS-1; }
@@ -581,6 +557,7 @@
   }
 
   function doMagnet(side, idx) {
+    if (gameMode === 1 && curPlayer === P_YEL) return;
     if (tokens[curPlayer].mag <= 0) return;
     let opp = (side + 2) % 4;
     let oppVal = (opp===0) ? getMag(mag.top, idx) : (opp===1) ? getMag(mag.right, idx) : (opp===2) ? getMag(mag.bottom, idx) : getMag(mag.left, idx);
@@ -602,6 +579,7 @@
   const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 }; 
 
   function doFlip(dirDelta) {
+    if (gameMode === 1 && curPlayer === P_YEL) return;
     if (tokens[curPlayer].flip <= 0) return;
     if(animating || gameOver) return;
     pushHistory();
@@ -628,11 +606,13 @@
       let msg = (w===P_RED?"Red Wins!":"Yellow Wins!");
       if (gameMode === 1 && w === P_RED) msg = "You Win!";
       if (gameMode === 1 && w === P_YEL) msg = "CPU Wins!";
-      showOverlay(msg, "Connect Four!", true);
+      winMessage = msg;
+      syncUI();
     } else {
       if (!grid.some(r => r.includes(P_EMPTY))) {
         gameOver = true;
-        showOverlay("Draw", "Board Full", true);
+        winMessage = "Draw!";
+        syncUI();
       } else {
         const decay = (arr) => arr.forEach((m, i) => { if (m) { m.life--; if (m.life <= 0) arr[i] = null; } });
         decay(mag.top); decay(mag.bottom); decay(mag.left); decay(mag.right);
@@ -817,7 +797,7 @@
 
   function handleInput(e) {
     if (gameOver || animating) return;
-    if (gameMode === 1 && curPlayer === P_YEL) return; 
+    if (gameMode === 1 && curPlayer === P_YEL) return;
     if (e.type === 'touchstart') e.preventDefault();
     const act = getBoardPos(e.type.includes('touch') ? e.changedTouches[0] : e);
     if (act.type === 'CELL') doDrop(act.r, act.c);
@@ -830,8 +810,15 @@
   function syncUI() {
     let pName = (curPlayer === P_RED ? "Red's Turn" : "Yellow's Turn");
     if(gameMode === 1 && curPlayer === P_YEL) pName = "CPU Thinking...";
-    hudTurn.textContent = gameOver ? "Game Over" : pName;
-    hudTurn.style.color = curPlayer === P_RED ? "var(--red)" : "var(--yel)";
+    
+    if (gameOver) {
+        hudTurn.textContent = winMessage;
+        hudTurn.style.color = (winMessage.includes("You") || winMessage.includes("Red")) ? "var(--green)" : (winMessage.includes("CPU") || winMessage.includes("Yellow")) ? "var(--yel)" : "var(--text)";
+    } else {
+        hudTurn.textContent = pName;
+        hudTurn.style.color = curPlayer === P_RED ? "var(--red)" : "var(--yel)";
+    }
+
     hudR.textContent = `F:${tokens[P_RED].flip} M:${tokens[P_RED].mag}`;
     hudY.textContent = `F:${tokens[P_YEL].flip} M:${tokens[P_YEL].mag}`;
     hudGrav.textContent = `Grav: ${["↓", "←", "↑", "→"][gravityDir]}`;
@@ -851,21 +838,14 @@
   function showOverlay(title, msg, isEnd) {
     elOverlay.style.display = "flex";
     if (isEnd) {
-        msgCard.classList.remove('hidden');
-        menuCard.classList.add('hidden');
-        document.getElementById("ovTitle").textContent = title;
-        document.getElementById("ovMsg").textContent = msg;
-        const b1 = document.getElementById("ovBtnMain"), b2 = document.getElementById("ovBtnSec");
-        b1.textContent = "New Game"; b1.onclick = () => { showMainMenu(); };
-        b2.style.display = "inline-block"; b2.textContent = "Undo"; b2.onclick = () => { undo(); hideOverlay(); };
+        // Only for hints now
     } else {
         msgCard.classList.remove('hidden');
         menuCard.classList.add('hidden');
         document.getElementById("ovTitle").textContent = title;
         document.getElementById("ovMsg").textContent = msg;
-        const b1 = document.getElementById("ovBtnMain"), b2 = document.getElementById("ovBtnSec");
+        const b1 = document.getElementById("ovBtnMain");
         b1.textContent = "Resume"; b1.onclick = hideOverlay;
-        b2.style.display = "none";
     }
   }
 
