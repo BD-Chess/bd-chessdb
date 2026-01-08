@@ -186,8 +186,7 @@
           <button class="btn-tac" onclick="startGame(2, 0)">2 Players (Local)</button>
         </div>
         <div style="margin-top:20px; font-size:11px; opacity:0.6; line-height:1.4;">
-            Author: Bojan Dobrečevič<br>
-            Jan. 2026
+            Author: Bojan Dobrečevič (Jan. 2026)
         </div>
       </div>
 
@@ -356,12 +355,10 @@
   }
 
   function makeAIMove() {
-    // Determine AI Personality
     let canUseTools = (aiLevel >= 3); 
     let depth = (aiLevel === 1) ? 2 : (aiLevel === 2) ? 6 : (aiLevel === 3) ? 4 : 5; 
     
-    // --- OPENING GUARD ---
-    // Prevent "Silly" moves: Do not use tools if board has few pieces
+    // GUARD 1: Opening Phase - don't use tools early
     let piecesOnBoard = 0;
     for(let r=0; r<ROWS; r++) for(let c=0; c<COLS; c++) if(grid[r][c]) piecesOnBoard++;
     if (piecesOnBoard < 6) canUseTools = false;
@@ -387,16 +384,18 @@
     for (let m of moves) {
         if (checkWin(m.grid) === P_YEL) { executeMove(m); return; }
         
-        // Dynamic Depth: Search "Drops" deeper than "Tools" to save performance in Pro mode
         let effectiveDepth = depth;
+        // Optimization: Pro mode scans tools shallower
         if (aiLevel === 4 && (m.type === 'flip' || m.type === 'magnet')) effectiveDepth = 3; 
 
         let score = minimax(m.grid, m.gDir, m.magState, effectiveDepth - 1, alpha, beta, false, canUseTools);
         
-        // --- WASTE PENALTY ---
-        // Massive penalty for using tools to ensure they are only used for critical plays
-        if(m.type === 'flip') score -= 150; 
-        if(m.type === 'magnet') score -= 150; 
+        // GUARD 2: Resource Hoarding
+        // Massive penalty (2000 pts) for using a tool.
+        // This ensures AI prefers a Drop (0 penalty) over a Magnet (-2000)
+        // if the resulting board states are similar (e.g. both block a win).
+        if(m.type === 'flip') score -= 2000; 
+        if(m.type === 'magnet') score -= 2000; 
 
         if (score > bestScore) {
             bestScore = score;
@@ -489,6 +488,7 @@
       if (y === 4) return 100000; 
       if (r === 4) return -100000; 
       if (y === 3 && e === 1) return 5000; 
+      // CRITICAL BLOCKING: If opponent has 3, huge penalty
       if (r === 3 && e === 1) return -20000; 
       if (y === 2 && e === 2) return 100;
       if (r === 2 && e === 2) return -150;
