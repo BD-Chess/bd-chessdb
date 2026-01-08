@@ -148,10 +148,10 @@
 
   const ROWS = 7, COLS = 7;
   const P_EMPTY = 0, P_RED = 1, P_YEL = 2;
-  const MAGNET_LIFE = 3; // 3 Ticks: Blocks Opp 1 turn, Allows Owner 1 turn use.
+  // 3 Rounds = 6 Turns (Player 1 + Player 2 = 1 Round)
+  const MAGNET_LIFE = 6; 
   
   let grid = [];
-  // Mag now stores Objects: { p: PLAYER, life: 3 } or null
   let mag = { top: [], bottom: [], left: [], right: [] }; 
   let gravityDir = 0; 
   let boardAngle = 0; 
@@ -164,6 +164,7 @@
   let animating = false;
   let anims = []; 
   let hiddenCells = []; 
+  let pendingSettle = false; // Flag to trigger physics after rotation
 
   // UI
   const canvas = document.getElementById("c");
@@ -190,17 +191,14 @@
     animating = false;
     anims = [];
     hiddenCells = [];
+    pendingSettle = false;
     hideOverlay();
     syncUI();
     lastTime = 0;
     requestAnimationFrame(initLoop);
   }
 
-  // --- Deep Clone ---
-  function cloneMag(mArr) {
-    return mArr.map(m => m ? { ...m } : null);
-  }
-
+  function cloneMag(mArr) { return mArr.map(m => m ? { ...m } : null); }
   function cloneState() {
     return {
       grid: grid.map(r => [...r]),
@@ -229,6 +227,7 @@
     animating = false;
     anims = [];
     hiddenCells = [];
+    pendingSettle = false;
     syncUI();
   }
 
@@ -244,7 +243,6 @@
 
   // --- Physics ---
   function getMag(arr, idx) { return arr[idx] ? arr[idx].p : 0; }
-
   function isPinned(r, c) {
     if (r === 0 && getMag(mag.top, c)) return true;
     if (r === ROWS - 1 && getMag(mag.bottom, c)) return true;
@@ -256,8 +254,7 @@
   function physicsStep(g, dir) {
     let nextG = g.map(r => [...r]);
     let changed = false;
-
-    // Magnets Pull
+    // Magnets
     for (let c=0; c<COLS; c++) {
       if (getMag(mag.top, c) && nextG[0][c] === P_EMPTY) {
         for (let r=1; r<ROWS; r++) if (nextG[r][c]) { nextG[0][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; }
@@ -278,31 +275,22 @@
         for (let c=COLS-2; c>=0; c--) if (nextG[r][c]) { nextG[r][COLS-1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; }
       }
     }
-
-    // Gravity Fall
+    // Gravity
     if (dir === 0) { // Down
-      for (let c=0; c<COLS; c++) {
-        for (let r=ROWS-2; r>=0; r--) {
-          if (nextG[r][c] && !nextG[r+1][c] && !isPinned(r,c)) { nextG[r+1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; }
-        }
+      for (let c=0; c<COLS; c++) for (let r=ROWS-2; r>=0; r--) {
+        if (nextG[r][c] && !nextG[r+1][c] && !isPinned(r,c)) { nextG[r+1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; }
       }
     } else if (dir === 1) { // Left
-      for (let r=0; r<ROWS; r++) {
-        for (let c=1; c<COLS; c++) {
-          if (nextG[r][c] && !nextG[r][c-1] && !isPinned(r,c)) { nextG[r][c-1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; }
-        }
+      for (let r=0; r<ROWS; r++) for (let c=1; c<COLS; c++) {
+        if (nextG[r][c] && !nextG[r][c-1] && !isPinned(r,c)) { nextG[r][c-1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; }
       }
     } else if (dir === 2) { // Up
-      for (let c=0; c<COLS; c++) {
-        for (let r=1; r<ROWS; r++) {
-          if (nextG[r][c] && !nextG[r-1][c] && !isPinned(r,c)) { nextG[r-1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; }
-        }
+      for (let c=0; c<COLS; c++) for (let r=1; r<ROWS; r++) {
+        if (nextG[r][c] && !nextG[r-1][c] && !isPinned(r,c)) { nextG[r-1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; }
       }
     } else { // Right
-      for (let r=0; r<ROWS; r++) {
-        for (let c=COLS-2; c>=0; c--) {
-          if (nextG[r][c] && !nextG[r][c+1] && !isPinned(r,c)) { nextG[r][c+1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; }
-        }
+      for (let r=0; r<ROWS; r++) for (let c=COLS-2; c>=0; c--) {
+        if (nextG[r][c] && !nextG[r][c+1] && !isPinned(r,c)) { nextG[r][c+1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; }
       }
     }
     return { nextG, changed };
@@ -322,20 +310,23 @@
   // --- Animation Helpers ---
   function spawnTransitions(oldG, newG, type) {
     let isVert = (gravityDir === 0 || gravityDir === 2);
-    // Faster speeds for fluid feel
-    let speed = type === 'drop' ? 320 : 280; 
+    let speed = type === 'drop' ? 320 : 300; 
     
+    // Helper to extract tokens
+    const getToks = (g, isRow, idx) => {
+        let arr = [];
+        if(isRow) { for(let c=0; c<COLS; c++) if(g[idx][c]) arr.push({p:g[idx][c], r:idx, c:c}); }
+        else { for(let r=0; r<ROWS; r++) if(g[r][idx]) arr.push({p:g[r][idx], r:r, c:idx}); }
+        return arr;
+    };
+
     if (isVert) {
       for (let c=0; c<COLS; c++) {
-        let oldToks = [], newToks = [];
-        for (let r=0; r<ROWS; r++) if(oldG[r][c]) oldToks.push({p:oldG[r][c], r, c});
-        for (let r=0; r<ROWS; r++) if(newG[r][c]) newToks.push({p:newG[r][c], r, c});
-        
+        let oldToks = getToks(oldG, false, c);
+        let newToks = getToks(newG, false, c);
         if (gravityDir === 0) { oldToks.reverse(); newToks.reverse(); }
         
         let usedNew = new Array(newToks.length).fill(false);
-        
-        // Match existing tokens to slide them
         oldToks.forEach(o => {
             let found = -1;
             for(let i=0; i<newToks.length; i++) {
@@ -345,39 +336,23 @@
                 usedNew[found] = true;
                 let n = newToks[found];
                 if(o.r !== n.r || o.c !== n.c) {
-                    anims.push({
-                        type: 'slide', p: o.p,
-                        r: o.r, c: o.c,
-                        destR: n.r, destC: n.c,
-                        t: 0, dur: speed
-                    });
+                    anims.push({ type: 'slide', p: o.p, r: o.r, c: o.c, destR: n.r, destC: n.c, t: 0, dur: speed });
                     hiddenCells.push({r: n.r, c: n.c});
                 }
             }
         });
-        
-        // New tokens are drops
-        for(let i=0; i<newToks.length; i++) {
-            if(!usedNew[i]) {
-                let n = newToks[i];
-                let sr = n.r, sc = n.c;
-                if (gravityDir===0) sr = -2; else sr = ROWS+1;
-                anims.push({
-                    type: 'drop', p: n.p,
-                    r: sr, c: sc,
-                    destR: n.r, destC: n.c,
-                    t: 0, dur: speed
-                });
-                hiddenCells.push({r: n.r, c: n.c});
-            }
+        for(let i=0; i<newToks.length; i++) if(!usedNew[i]) {
+            let n = newToks[i];
+            let sr = n.r, sc = n.c;
+            if (gravityDir===0) sr = -2; else sr = ROWS+1;
+            anims.push({ type: 'drop', p: n.p, r: sr, c: sc, destR: n.r, destC: n.c, t: 0, dur: speed });
+            hiddenCells.push({r: n.r, c: n.c});
         }
       }
     } else {
       for (let r=0; r<ROWS; r++) {
-        let oldToks = [], newToks = [];
-        for (let c=0; c<COLS; c++) if(oldG[r][c]) oldToks.push({p:oldG[r][c], r, c});
-        for (let c=0; c<COLS; c++) if(newG[r][c]) newToks.push({p:newG[r][c], r, c});
-        
+        let oldToks = getToks(oldG, true, r);
+        let newToks = getToks(newG, true, r);
         if (gravityDir === 3) { oldToks.reverse(); newToks.reverse(); }
         
         let usedNew = new Array(newToks.length).fill(false);
@@ -390,48 +365,31 @@
                 usedNew[found] = true;
                 let n = newToks[found];
                 if(o.r !== n.r || o.c !== n.c) {
-                    anims.push({
-                        type: 'slide', p: o.p,
-                        r: o.r, c: o.c,
-                        destR: n.r, destC: n.c,
-                        t: 0, dur: speed
-                    });
+                    anims.push({ type: 'slide', p: o.p, r: o.r, c: o.c, destR: n.r, destC: n.c, t: 0, dur: speed });
                     hiddenCells.push({r: n.r, c: n.c});
                 }
             }
         });
-        for(let i=0; i<newToks.length; i++) {
-            if(!usedNew[i]) {
-                let n = newToks[i];
-                let sr = n.r, sc = n.c;
-                if (gravityDir===1) sc = COLS+1; else sc = -2;
-                anims.push({
-                    type: 'drop', p: n.p,
-                    r: sr, c: sc,
-                    destR: n.r, destC: n.c,
-                    t: 0, dur: speed
-                });
-                hiddenCells.push({r: n.r, c: n.c});
-            }
+        for(let i=0; i<newToks.length; i++) if(!usedNew[i]) {
+            let n = newToks[i];
+            let sr = n.r, sc = n.c;
+            if (gravityDir===1) sc = COLS+1; else sc = -2;
+            anims.push({ type: 'drop', p: n.p, r: sr, c: sc, destR: n.r, destC: n.c, t: 0, dur: speed });
+            hiddenCells.push({r: n.r, c: n.c});
         }
       }
     }
   }
 
-  // --- Logic Execution ---
-
+  // --- Actions ---
   function applyActionAndAnimate(actionFn) {
     if(animating || gameOver) return;
-    
     let oldG = grid.map(r=>[...r]);
     pushHistory();
-    
     actionFn(); 
-    
     let finalG = settleGridComplete(grid, gravityDir);
     spawnTransitions(oldG, finalG, 'drop');
     grid = finalG;
-    
     if(anims.length > 0) animating = true;
     else endTurn();
   }
@@ -450,20 +408,14 @@
         else if (gravityDir===1) cCheck-=i;
         else if (gravityDir===2) rCheck-=i;
         else cCheck+=i;
-        
         if (grid[rCheck][cCheck] === P_EMPTY) { rT = rCheck; cT = cCheck; found = true; break; }
     }
-    
     if (!found) return; 
-
-    applyActionAndAnimate(() => {
-        grid[rT][cT] = curPlayer;
-    });
+    applyActionAndAnimate(() => { grid[rT][cT] = curPlayer; });
   }
 
   function doMagnet(side, idx) {
     if (tokens[curPlayer].mag <= 0) return;
-    
     let opp = (side + 2) % 4;
     let oppVal = (opp===0) ? getMag(mag.top, idx) : (opp===1) ? getMag(mag.right, idx) : (opp===2) ? getMag(mag.bottom, idx) : getMag(mag.left, idx);
     const opponent = (curPlayer === P_RED) ? P_YEL : P_RED;
@@ -471,11 +423,9 @@
     applyActionAndAnimate(() => {
         tokens[curPlayer].mag--;
         if (oppVal === opponent) {
-             // Neutralize
              if(opp===0) mag.top[idx]=null; else if(opp===1) mag.right[idx]=null;
              else if(opp===2) mag.bottom[idx]=null; else mag.left[idx]=null;
         } else {
-             // Place self with LIFE
              let m = { p: curPlayer, life: MAGNET_LIFE };
              if(side===0) mag.top[idx]=m; else if(side===1) mag.right[idx]=m;
              else if(side===2) mag.bottom[idx]=m; else mag.left[idx]=m;
@@ -486,20 +436,26 @@
   function doFlip(dirDelta) {
     if (tokens[curPlayer].flip <= 0) return;
     if(animating || gameOver) return;
-    let oldG = grid.map(r=>[...r]);
-    let oldA = boardAngle;
     pushHistory();
     
     tokens[curPlayer].flip--;
+    let oldA = boardAngle;
     targetAngle = oldA + (dirDelta === 1 ? -Math.PI/2 : Math.PI/2);
     gravityDir = (gravityDir - dirDelta + 4) % 4;
     
-    let finalG = settleGridComplete(grid, gravityDir);
-    spawnTransitions(oldG, finalG, 'slide');
+    // Phase 1: Just rotate. Settle happens after.
     anims.push({ type: 'rotate', startA: oldA, endA: targetAngle, t: 0, dur: 500 });
-    
-    grid = finalG;
+    pendingSettle = true;
     animating = true;
+  }
+
+  function triggerSettleAfterRotate() {
+    let oldG = grid.map(r=>[...r]);
+    // Now settled
+    let finalG = settleGridComplete(grid, gravityDir);
+    // Animate tokens falling
+    spawnTransitions(oldG, finalG, 'slide');
+    grid = finalG;
   }
 
   function endTurn() {
@@ -508,12 +464,11 @@
       gameOver = true;
       showOverlay(w===P_RED?"Red Wins!":"Yellow Wins!", "Connect Four!", true);
     } else {
-      let full = !grid.some(r => r.includes(P_EMPTY));
-      if (full) {
+      if (!grid.some(r => r.includes(P_EMPTY))) {
         gameOver = true;
         showOverlay("Draw", "Board Full", true);
       } else {
-        // Tick magnets
+        // Decay Magnets
         const decay = (arr) => arr.forEach((m, i) => { 
            if (m) { m.life--; if (m.life <= 0) arr[i] = null; } 
         });
@@ -539,14 +494,13 @@
     return 0;
   }
 
-  // --- Render & Loop ---
+  // --- Loop ---
   let lastTime = 0;
   function initLoop(now) { lastTime = now; requestAnimationFrame(loop); }
   function loop(now) {
     let dt = now - lastTime;
     lastTime = now;
     if (dt > 50) dt = 50; 
-    
     updateAnims(dt);
     render();
     requestAnimationFrame(loop);
@@ -556,11 +510,22 @@
     if (!animating) return;
     let stillAnimating = false;
     
+    // Handle Rotation separately
     let rot = anims.find(a=>a.type==='rotate');
     if(rot) {
         rot.t += dt/rot.dur;
-        if(rot.t>=1) { rot.t=1; boardAngle=rot.endA; anims=anims.filter(a=>a!==rot); }
-        else { 
+        if(rot.t>=1) { 
+            rot.t=1; 
+            boardAngle=rot.endA; 
+            anims=anims.filter(a=>a!==rot);
+            // If rotate finishes, check pending settle
+            if(pendingSettle) {
+                pendingSettle = false;
+                triggerSettleAfterRotate();
+                // Ensure loop continues for the new anims
+                stillAnimating = true; 
+            }
+        } else { 
             let p = rot.t<.5 ? 2*rot.t*rot.t : -1+(4-2*rot.t)*rot.t; 
             boardAngle = rot.startA + (rot.endA-rot.startA)*p; 
             stillAnimating = true; 
@@ -574,7 +539,7 @@
         else a.t = 1;
     });
     
-    if(!stillAnimating) {
+    if(!stillAnimating && !rot) {
         anims = anims.filter(a => a.t < 1);
         if(anims.length === 0) {
             animating = false;
@@ -662,22 +627,17 @@
     if (!m) return;
     ctx.save(); ctx.translate(x, y); ctx.rotate(dir * Math.PI/2);
     ctx.globalAlpha = 0.3 + (0.7 * (m.life / MAGNET_LIFE)); 
-    
     ctx.beginPath();
     const r = size*0.35;
     ctx.arc(0, 0, r, 0, Math.PI, true); ctx.lineTo(-r, r); ctx.lineTo(r, r); ctx.closePath();
     ctx.fillStyle = (m.p === P_RED) ? "#e53935" : "#fdd835"; ctx.fill();
     ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
-    
-    // Dots
     ctx.globalAlpha = 1;
-    for(let i=0; i<m.life; i++) {
+    // Life dots
+    for(let i=0; i<Math.ceil(m.life/2); i++) { // Reduce dot count for cleaner look
         ctx.fillStyle = "#fff";
-        ctx.beginPath(); 
-        ctx.arc(-r + 4 + i*5, r - 4, 1.5, 0, Math.PI*2); 
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(-r + 4 + i*6, r - 4, 1.5, 0, Math.PI*2); ctx.fill();
     }
-    
     ctx.restore();
   }
 
@@ -741,10 +701,7 @@
     elOverlay.style.display = "flex";
   }
 
-  document.getElementById("btnShowWin").onclick = () => {
-     alert("Preview unavailable in this version.");
-  };
-
+  document.getElementById("btnShowWin").onclick = () => { alert("Preview unavailable in this version."); };
   document.getElementById("btnCCW").onclick = () => doFlip(1);
   document.getElementById("btnCW").onclick = () => doFlip(-1);
   document.getElementById("btnUndo").onclick = undo;
