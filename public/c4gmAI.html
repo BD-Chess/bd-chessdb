@@ -253,19 +253,15 @@
         // Easy: 70% random, 30% block immediate win
         let valid = getPossibleMoves(grid, gravityDir, tokens[P_YEL]);
         if(Math.random() > 0.7) {
-             // Check if I can win immediately
              for(let m of valid) if(checkWin(m.grid) === P_YEL) { executeMove(m); return; }
         }
         if (valid.length > 0) executeMove(valid[Math.floor(Math.random()*valid.length)]);
-        else doFlip(1); // fallback
+        else doFlip(1); 
         return;
     }
 
     // Expert: Depth 4, Medium: Depth 2
     let depth = (aiLevel === 2) ? 2 : 4; 
-    
-    // Iterative Deepening for Expert to ensure best move if fast enough
-    // But since JS is single threaded here, we stick to fixed depth for stability.
     
     let bestScore = -Infinity;
     let bestMove = null;
@@ -273,7 +269,7 @@
     
     // Sort moves to improve pruning (Central columns first)
     moves.sort((a,b) => {
-        if(a.type === 'drop' && b.type === 'drop') return Math.abs(3-a.col) - Math.abs(3-b.col); // Prefer center
+        if(a.type === 'drop' && b.type === 'drop') return Math.abs(3-a.col) - Math.abs(3-b.col); 
         return 0;
     });
 
@@ -291,7 +287,7 @@
     }
 
     if (bestMove) executeMove(bestMove);
-    else if (moves.length > 0) executeMove(moves[0]); // fallback
+    else if (moves.length > 0) executeMove(moves[0]); 
   }
 
   function executeMove(m) {
@@ -301,13 +297,11 @@
 
   function minimax(g, gDir, depth, alpha, beta, isMax) {
     let winner = checkWin(g);
-    if (winner === P_YEL) return 100000 + depth; // Prefer faster wins
-    if (winner === P_RED) return -100000 - depth; // Prefer slower losses
+    if (winner === P_YEL) return 100000 + depth; 
+    if (winner === P_RED) return -100000 - depth; 
     if (depth === 0) return evaluateBoard(g);
 
-    // Generate pseudo-moves (no deep clone of tokens needed for search)
-    // We assume infinite flips for search depth to simplify state, or just check simple constraints
-    let moves = getPossibleMoves(g, gDir, {flip:1}); // Assume capability
+    let moves = getPossibleMoves(g, gDir, {flip:1}); // Assume capability for depth
 
     if (isMax) { // AI (Yel)
         let maxEval = -Infinity;
@@ -315,30 +309,12 @@
             let evalVal = minimax(m.grid, m.gDir, depth - 1, alpha, beta, false);
             maxEval = Math.max(maxEval, evalVal);
             alpha = Math.max(alpha, evalVal);
-            if (beta <= alpha) break; // Prune
+            if (beta <= alpha) break; 
         }
         return maxEval;
     } else { // Human (Red)
         let minEval = Infinity;
-        for (let m of moves) {
-            // Simulate Human playing optimally
-            // Note: getPossibleMoves generates P_YEL moves by default in logic above, 
-            // so we need a helper that generates P_RED moves
-            // Actually getPossibleMoves uses 'curPlayer' global logic usually?
-            // No, we need to explicitly pass player.
-            // Let's refactor getPossibleMoves to take player.
-            
-            // QUICK FIX for Move Generation inside Minimax:
-            // We manually generate next grids for RED here.
-            let nextG = m.grid; // Wait, m.grid is already set for YEL in previous Logic. 
-            // We need a distinct generator. 
-            
-            // Re-generate correct moves for RED
-            // This is computationally expensive to re-write fully here.
-            // Let's use a simpler generator inside minimax loops.
-        }
-        
-        // Correct implementation of generator for specific player:
+        // Generate Red Moves
         let redMoves = getMovesForPlayer(g, gDir, P_RED);
         for(let rm of redMoves) {
              let evalVal = minimax(rm.grid, rm.gDir, depth - 1, alpha, beta, true);
@@ -350,7 +326,6 @@
     }
   }
 
-  // Optimized Move Generator
   function getMovesForPlayer(g, gDir, p) {
       let moves = [];
       // Drops
@@ -359,15 +334,13 @@
           if (t) {
               let nextG = g.map(r=>[...r]);
               nextG[t.r][t.c] = p;
-              nextG = settleGridComplete(nextG, gDir); // Physics settle
+              nextG = settleGridComplete(nextG, gDir); 
               moves.push({ type:'drop', col:i, grid:nextG, gDir:gDir });
           }
       }
-      // Flips (Check tokens in real game, but for search we assume 1 available usually to see threats)
-      // For strict correctness, we should track token count in recursion, but standard C4 AI often assumes capability.
-      // Let's assume available to be safe (paranoia mode).
+      // Flips
       let ccwDir = CCW_MAP[gDir];
-      let gCCW = settleGridComplete(g, ccwDir); // Settle happens on rotate
+      let gCCW = settleGridComplete(g, ccwDir); 
       moves.push({ type:'flip', delta:1, grid:gCCW, gDir:ccwDir });
       
       let cwDir = CW_MAP[gDir];
@@ -377,20 +350,15 @@
       return moves;
   }
   
-  // Wrapper for top level
   function getPossibleMoves(g, gDir, toks) {
-      // Filter out flips if no tokens
-      let moves = getMovesForPlayer(g, gDir, P_YEL); // AI is YEL
+      let moves = getMovesForPlayer(g, gDir, P_YEL); 
       if(toks.flip <= 0) moves = moves.filter(m => m.type !== 'flip');
       return moves;
   }
 
-  // --- SCORE EVALUATION (The "Brain") ---
+  // --- SCORE EVALUATION ---
   function evaluateBoard(g) {
       let score = 0;
-      
-      // Window Evaluation
-      // We scan every 4-length window.
       
       // Horizontal
       for(let r=0; r<ROWS; r++) {
@@ -417,7 +385,7 @@
           }
       }
       
-      // Center Bias (Control the middle)
+      // Center Bias
       let centerCount = 0;
       for(let r=0; r<ROWS; r++) if(g[r][3] === P_YEL) centerCount++;
       score += centerCount * 5;
@@ -432,15 +400,12 @@
       if(c3===P_RED) r++; else if(c3===P_YEL) y++; else e++;
       if(c4===P_RED) r++; else if(c4===P_YEL) y++; else e++;
 
-      // AI (Yellow) Scoring
-      if (y === 4) return 100000; // Win
-      if (y === 3 && e === 1) return 100; // Strong threat
+      if (y === 4) return 100000; 
+      if (y === 3 && e === 1) return 100; 
       if (y === 2 && e === 2) return 10;
       
-      // Opponent (Red) Blocking
-      if (r === 4) return -100000; // Lose
-      if (r === 3 && e === 1) return -9000; // BLOCK IMMEDIATELY
-      // Note: -9000 is high enough to override generic good moves, but less than losing.
+      if (r === 4) return -100000; 
+      if (r === 3 && e === 1) return -9000; // BLOCKING Priority
 
       return 0;
   }
@@ -630,7 +595,7 @@
   }
 
   function doDrop(row, col) {
-    if (gameMode === 1 && curPlayer === P_YEL) return; // Block human input
+    // FIX: NO GUARD HERE. Guard is in handleInput.
     let rEnt, cEnt;
     if (gravityDir === 0) { rEnt=0; cEnt=col; }
     else if (gravityDir === 1) { rEnt=row; cEnt=COLS-1; }
@@ -651,7 +616,7 @@
   }
 
   function doMagnet(side, idx) {
-    if (gameMode === 1 && curPlayer === P_YEL) return;
+    // FIX: NO GUARD HERE
     if (tokens[curPlayer].mag <= 0) return;
     let opp = (side + 2) % 4;
     let oppVal = (opp===0) ? getMag(mag.top, idx) : (opp===1) ? getMag(mag.right, idx) : (opp===2) ? getMag(mag.bottom, idx) : getMag(mag.left, idx);
@@ -674,7 +639,7 @@
   const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 }; 
 
   function doFlip(dirDelta) {
-    if (gameMode === 1 && curPlayer === P_YEL) return; // Block human
+    // FIX: NO GUARD HERE
     if (tokens[curPlayer].flip <= 0) return;
     if(animating || gameOver) return;
     pushHistory();
@@ -717,7 +682,7 @@
         decay(mag.top); decay(mag.bottom); decay(mag.left); decay(mag.right);
         curPlayer = (curPlayer === P_RED) ? P_YEL : P_RED;
         syncUI();
-        checkAI();
+        checkAI(); // Trigger AI
       }
     }
   }
@@ -755,13 +720,12 @@
 
   // --- HINT (Reuse AI Logic) ---
   function getBestMove() {
-      // Simple hint uses depth 1 minimax search for user
       let bestMove = null;
       let bestScore = -Infinity;
       let moves = getMovesForPlayer(grid, gravityDir, P_RED);
       for(let m of moves) {
           if (checkWin(m.grid) === P_RED) return "Immediate Win Available!";
-          let score = minimax(m.grid, m.gDir, 1, -Infinity, Infinity, false); // Opponent minimizes
+          let score = minimax(m.grid, m.gDir, 1, -Infinity, Infinity, false); 
           if(score > bestScore) { bestScore = score; bestMove = m; }
       }
       if(bestMove) return "Try a move that blocks or builds 3.";
@@ -838,7 +802,7 @@
     ctx.translate(cx, cy);
     ctx.rotate(boardAngle);
     
-    // Board Plate
+    // Board Plate (Lighter)
     ctx.fillStyle = "#1e2535";
     ctx.beginPath();
     ctx.roundRect(-boardW/2 - cell*0.2, -boardW/2 - cell*0.2, boardW + cell*0.4, boardW + cell*0.4, 12);
@@ -862,7 +826,7 @@
       }
     }
     
-    // Anims
+    // Animated Tokens
     for (let a of anims) {
         if (a.type === 'rotate') continue;
         let p = a.t * a.t * (3 - 2 * a.t); 
@@ -878,7 +842,7 @@
         drawToken(ctx, curC*cell + cell/2, curR*cell + cell/2, cell*0.4, a.p);
     }
     
-    // Magnets
+    // Magnets with Fade
     mag.top.forEach((m, i) => drawMag(ctx, i*cell + cell/2, -cell*0.6, cell, 0, m));
     mag.bottom.forEach((m, i) => drawMag(ctx, i*cell + cell/2, boardW + cell*0.6, cell, 2, m));
     mag.left.forEach((m, i) => drawMag(ctx, -cell*0.6, i*cell + cell/2, cell, 3, m));
@@ -938,7 +902,9 @@
 
   function handleInput(e) {
     if (gameOver || animating) return;
+    // Guard is HERE, not in core logic
     if (gameMode === 1 && curPlayer === P_YEL) return;
+    
     if (e.type === 'touchstart') e.preventDefault();
     const act = getBoardPos(e.type.includes('touch') ? e.changedTouches[0] : e);
     if (act.type === 'CELL') doDrop(act.r, act.c);
