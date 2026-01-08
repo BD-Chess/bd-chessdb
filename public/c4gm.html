@@ -178,7 +178,7 @@
   let tokens = {};
   let history = [];
   let gameOver = false;
-  let winMessage = ""; // Holds "Red Wins!", etc.
+  let winMessage = ""; 
   
   let gameMode = 2; 
   let aiLevel = 1; 
@@ -253,7 +253,7 @@
         setTimeout(() => {
             makeAIMove();
             document.body.style.cursor = "default";
-        }, 300);
+        }, 400);
     }
   }
 
@@ -266,11 +266,13 @@
         return;
     }
 
-    let depth = (aiLevel === 2) ? 2 : 5; 
+    // Expert Depth adjusted for performance/stability
+    let depth = (aiLevel === 2) ? 2 : 4; 
     let bestScore = -Infinity;
     let bestMove = null;
     let moves = getPossibleMoves(grid, gravityDir, tokens[P_YEL], P_YEL);
     
+    // Sort moves: Center preferred
     moves.sort((a,b) => {
         let sa = (a.type==='drop') ? Math.abs(3-a.col) : 10;
         let sb = (b.type==='drop') ? Math.abs(3-b.col) : 10;
@@ -539,7 +541,7 @@
   }
 
   function doDrop(row, col) {
-    if (gameMode === 1 && curPlayer === P_YEL) return;
+    // REMOVED GUARD (Done in input handler)
     let rEnt, cEnt;
     if (gravityDir === 0) { rEnt=0; cEnt=col; }
     else if (gravityDir === 1) { rEnt=row; cEnt=COLS-1; }
@@ -557,7 +559,6 @@
   }
 
   function doMagnet(side, idx) {
-    if (gameMode === 1 && curPlayer === P_YEL) return;
     if (tokens[curPlayer].mag <= 0) return;
     let opp = (side + 2) % 4;
     let oppVal = (opp===0) ? getMag(mag.top, idx) : (opp===1) ? getMag(mag.right, idx) : (opp===2) ? getMag(mag.bottom, idx) : getMag(mag.left, idx);
@@ -579,7 +580,6 @@
   const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 }; 
 
   function doFlip(dirDelta) {
-    if (gameMode === 1 && curPlayer === P_YEL) return;
     if (tokens[curPlayer].flip <= 0) return;
     if(animating || gameOver) return;
     pushHistory();
@@ -838,14 +838,21 @@
   function showOverlay(title, msg, isEnd) {
     elOverlay.style.display = "flex";
     if (isEnd) {
-        // Only for hints now
+        msgCard.classList.remove('hidden');
+        menuCard.classList.add('hidden');
+        document.getElementById("ovTitle").textContent = title;
+        document.getElementById("ovMsg").textContent = msg;
+        const b1 = document.getElementById("ovBtnMain"), b2 = document.getElementById("ovBtnSec");
+        b1.textContent = "New Game"; b1.onclick = () => { showMainMenu(); };
+        b2.style.display = "inline-block"; b2.textContent = "Undo"; b2.onclick = () => { undo(); hideOverlay(); };
     } else {
         msgCard.classList.remove('hidden');
         menuCard.classList.add('hidden');
         document.getElementById("ovTitle").textContent = title;
         document.getElementById("ovMsg").textContent = msg;
-        const b1 = document.getElementById("ovBtnMain");
+        const b1 = document.getElementById("ovBtnMain"), b2 = document.getElementById("ovBtnSec");
         b1.textContent = "Resume"; b1.onclick = hideOverlay;
+        b2.style.display = "none";
     }
   }
 
