@@ -16,6 +16,7 @@
     --green:#4caf50;
     --btn:#26314a;
     --btnBorder:rgba(255,255,255,0.1);
+    --gold:#ffd700;
   }
   html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;overflow:hidden;touch-action:none;}
   
@@ -44,11 +45,38 @@
   .dot.r { background:var(--red); box-shadow:0 0 4px var(--red); }
   .dot.y { background:var(--yel); box-shadow:0 0 4px var(--yel); }
 
-  /* Canvas */
+  /* Canvas Stage */
   #game-stage {
     flex-grow:1; position:relative; overflow:hidden; background:var(--bg);
+    display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
   }
-  canvas { display:block; width:100%; height:100%; }
+  canvas { position:absolute; inset:0; display:block; width:100%; height:100%; z-index:1; }
+
+  /* WINNER BOX (Top of stage, above canvas) */
+  #winnerCard {
+    z-index: 50;
+    margin-top: 20px;
+    background: rgba(30, 37, 53, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--btnBorder);
+    border-radius: 16px;
+    padding: 20px 30px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    transform: translateY(-150%);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    pointer-events: none; /* Let clicks pass through if needed, but it has buttons */
+    pointer-events: auto;
+    max-width: 80%;
+  }
+  #winnerCard.visible { transform: translateY(0); }
+  
+  .trophy { font-size: 48px; filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5)); }
+  .win-title { font-size: 24px; font-weight: 900; color: var(--text); margin:0; }
+  .win-sub { font-size: 14px; color: var(--muted); margin:0; }
+  .win-btns { display:flex; gap:10px; margin-top:10px; width:100%; }
+  .win-btns button { flex:1; padding:10px; font-size:13px; }
 
   /* Controls */
   #controls {
@@ -81,12 +109,9 @@
   .btn-dang { background:rgba(229,57,53,0.15); border-color:rgba(229,57,53,0.4); color:#ff8a80; }
   .btn-dev { background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.2); font-size:12px; }
 
-  .big-icon {
-    font-size: 1.6em; line-height: 1; margin-left: 6px;
-    display: inline-block; vertical-align: middle; margin-top: -2px;
-  }
+  .big-icon { font-size: 1.6em; line-height: 1; margin-left: 6px; display: inline-block; margin-top: -2px; }
 
-  /* Overlay */
+  /* Overlay (Menu/Hint) */
   #overlay {
     position:absolute; inset:0; z-index:100;
     background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
@@ -101,7 +126,6 @@
   .card p { color:var(--muted); margin:0 0 20px; line-height:1.5; font-size:14px; }
   .card-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
   .card-btns button { flex:1; min-width:120px; }
-  
   .hidden { display: none !important; }
 
 </style>
@@ -124,10 +148,20 @@
   </div>
 
   <div id="game-stage">
+    
+    <div id="winnerCard">
+      <div class="trophy">🏆</div>
+      <div class="win-title" id="winTitle">Red Wins!</div>
+      <div class="win-sub" id="winSub">Connect Four</div>
+      <div class="win-btns">
+        <button id="winBtnMain" class="btn-act">New Game</button>
+        <button id="winBtnSec" class="btn-dev">Undo</button>
+      </div>
+    </div>
+
     <canvas id="c"></canvas>
     
     <div id="overlay">
-      
       <div class="card" id="menuCard">
         <h2>FlipFour</h2>
         <p>Gravity-defying strategy.</p>
@@ -138,15 +172,11 @@
           <button class="btn-tac" onclick="startGame(2, 0)">2 Players (Local)</button>
         </div>
       </div>
-
-      <div class="card hidden" id="msgCard">
-        <h2 id="ovTitle">Hint</h2>
-        <p id="ovMsg">...</p>
-        <div class="card-btns">
-          <button id="ovBtnMain" class="btn-act">Resume</button>
-        </div>
+      <div class="card hidden" id="hintCard">
+        <h2 id="hintTitle">Hint</h2>
+        <p id="hintMsg">...</p>
+        <div class="card-btns"><button id="hintBtn" class="btn-act">Resume</button></div>
       </div>
-
     </div>
   </div>
 
@@ -178,7 +208,6 @@
   let tokens = {};
   let history = [];
   let gameOver = false;
-  let winMessage = ""; 
   
   let gameMode = 2; 
   let aiLevel = 1; 
@@ -206,13 +235,14 @@
   const hudY = document.getElementById("yStats");
   const elOverlay = document.getElementById("overlay");
   const menuCard = document.getElementById("menuCard");
-  const msgCard = document.getElementById("msgCard");
+  const hintCard = document.getElementById("hintCard");
+  const winnerCard = document.getElementById("winnerCard");
 
   window.startGame = function(mode, level) {
     gameMode = mode;
     aiLevel = level;
     menuCard.classList.add('hidden');
-    msgCard.classList.add('hidden');
+    hintCard.classList.add('hidden');
     elOverlay.style.display = "none";
     initGame();
   }
@@ -220,7 +250,8 @@
   function showMainMenu() {
     elOverlay.style.display = "flex";
     menuCard.classList.remove('hidden');
-    msgCard.classList.add('hidden');
+    hintCard.classList.add('hidden');
+    winnerCard.classList.remove('visible');
   }
 
   function initGame() {
@@ -236,29 +267,29 @@
     tokens = { [P_RED]: { flip: 2, mag: 2 }, [P_YEL]: { flip: 2, mag: 2 } };
     history = [];
     gameOver = false;
-    winMessage = "";
     animating = false;
     anims = [];
     hiddenCells = [];
     pendingSettle = false;
+    winnerCard.classList.remove('visible');
     syncUI();
     lastTime = 0;
     requestAnimationFrame(initLoop);
   }
 
-  // --- AI ENGINE ---
+  // --- AI ENGINE (TITAN LEVEL) ---
   function checkAI() {
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating) {
         document.body.style.cursor = "wait";
         setTimeout(() => {
             makeAIMove();
             document.body.style.cursor = "default";
-        }, 400);
+        }, 300);
     }
   }
 
   function makeAIMove() {
-    if (aiLevel === 1) {
+    if (aiLevel === 1) { // Easy
         let moves = getPossibleMoves(grid, gravityDir, tokens[P_YEL], P_YEL);
         for(let m of moves) if(checkWin(m.grid) === P_YEL) { executeMove(m); return; }
         if (moves.length > 0) executeMove(moves[Math.floor(Math.random()*moves.length)]);
@@ -266,13 +297,13 @@
         return;
     }
 
-    // Expert Depth adjusted for performance/stability
-    let depth = (aiLevel === 2) ? 2 : 4; 
+    // Expert = Depth 6 (Very Strong)
+    let depth = (aiLevel === 2) ? 2 : 6; 
     let bestScore = -Infinity;
     let bestMove = null;
     let moves = getPossibleMoves(grid, gravityDir, tokens[P_YEL], P_YEL);
     
-    // Sort moves: Center preferred
+    // Sort moves: Center preferred to optimize alpha-beta
     moves.sort((a,b) => {
         let sa = (a.type==='drop') ? Math.abs(3-a.col) : 10;
         let sb = (b.type==='drop') ? Math.abs(3-b.col) : 10;
@@ -280,12 +311,11 @@
     });
 
     for (let m of moves) {
-        if (checkWin(m.grid) === P_YEL) { executeMove(m); return; }
+        if (checkWin(m.grid) === P_YEL) { executeMove(m); return; } // Take win
+        
         let score = minimax(m.grid, m.gDir, depth - 1, -Infinity, Infinity, false);
         if (score > bestScore) {
             bestScore = score;
-            bestMove = m;
-        } else if (score === bestScore && Math.random() > 0.5) {
             bestMove = m;
         }
     }
@@ -366,13 +396,10 @@
 
       if (y === 4) return 100000; 
       if (r === 4) return -100000; 
-      
       if (y === 3 && e === 1) return 1000; 
-      if (r === 3 && e === 1) return -5000; 
-      
+      if (r === 3 && e === 1) return -8000; // BLOCK!!!
       if (y === 2 && e === 2) return 10;
       if (r === 2 && e === 2) return -15;
-
       return 0;
   }
 
@@ -399,7 +426,7 @@
       return moves;
   }
 
-  // --- CORE GAMEPLAY ---
+  // --- CORE ---
   function cloneMag(mArr) { return mArr.map(m => m ? { ...m } : null); }
   function cloneState() {
     return {
@@ -407,7 +434,7 @@
       mag: { top: cloneMag(mag.top), bottom: cloneMag(mag.bottom), left: cloneMag(mag.left), right: cloneMag(mag.right) },
       gravityDir, boardAngle, targetAngle, curPlayer,
       tokens: JSON.parse(JSON.stringify(tokens)),
-      gameOver, winMessage
+      gameOver
     };
   }
 
@@ -420,11 +447,11 @@
     curPlayer = s.curPlayer;
     tokens = JSON.parse(JSON.stringify(s.tokens));
     gameOver = s.gameOver;
-    winMessage = s.winMessage;
     animating = false;
     anims = [];
     hiddenCells = [];
     pendingSettle = false;
+    winnerCard.classList.remove('visible');
     syncUI();
   }
 
@@ -541,7 +568,7 @@
   }
 
   function doDrop(row, col) {
-    // REMOVED GUARD (Done in input handler)
+    // REMOVED GUARD (Done in handleInput)
     let rEnt, cEnt;
     if (gravityDir === 0) { rEnt=0; cEnt=col; }
     else if (gravityDir === 1) { rEnt=row; cEnt=COLS-1; }
@@ -559,6 +586,7 @@
   }
 
   function doMagnet(side, idx) {
+    // REMOVED GUARD
     if (tokens[curPlayer].mag <= 0) return;
     let opp = (side + 2) % 4;
     let oppVal = (opp===0) ? getMag(mag.top, idx) : (opp===1) ? getMag(mag.right, idx) : (opp===2) ? getMag(mag.bottom, idx) : getMag(mag.left, idx);
@@ -580,6 +608,7 @@
   const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 }; 
 
   function doFlip(dirDelta) {
+    // REMOVED GUARD
     if (tokens[curPlayer].flip <= 0) return;
     if(animating || gameOver) return;
     pushHistory();
@@ -606,12 +635,25 @@
       let msg = (w===P_RED?"Red Wins!":"Yellow Wins!");
       if (gameMode === 1 && w === P_RED) msg = "You Win!";
       if (gameMode === 1 && w === P_YEL) msg = "CPU Wins!";
-      winMessage = msg;
+      
+      document.getElementById("winTitle").textContent = msg;
+      document.getElementById("winSub").textContent = "Connect Four!";
+      // Setup Winner Card Buttons
+      const b1 = document.getElementById("winBtnMain");
+      const b2 = document.getElementById("winBtnSec");
+      b1.onclick = () => { showMainMenu(); };
+      b2.onclick = () => { undo(); };
+      
+      winnerCard.classList.add('visible');
       syncUI();
     } else {
       if (!grid.some(r => r.includes(P_EMPTY))) {
         gameOver = true;
-        winMessage = "Draw!";
+        document.getElementById("winTitle").textContent = "Draw!";
+        document.getElementById("winSub").textContent = "Board Full";
+        document.getElementById("winBtnMain").onclick = () => { showMainMenu(); };
+        document.getElementById("winBtnSec").onclick = () => { undo(); };
+        winnerCard.classList.add('visible');
         syncUI();
       } else {
         const decay = (arr) => arr.forEach((m, i) => { if (m) { m.life--; if (m.life <= 0) arr[i] = null; } });
@@ -811,14 +853,8 @@
     let pName = (curPlayer === P_RED ? "Red's Turn" : "Yellow's Turn");
     if(gameMode === 1 && curPlayer === P_YEL) pName = "CPU Thinking...";
     
-    if (gameOver) {
-        hudTurn.textContent = winMessage;
-        hudTurn.style.color = (winMessage.includes("You") || winMessage.includes("Red")) ? "var(--green)" : (winMessage.includes("CPU") || winMessage.includes("Yellow")) ? "var(--yel)" : "var(--text)";
-    } else {
-        hudTurn.textContent = pName;
-        hudTurn.style.color = curPlayer === P_RED ? "var(--red)" : "var(--yel)";
-    }
-
+    hudTurn.textContent = gameOver ? "Game Over" : pName;
+    hudTurn.style.color = curPlayer === P_RED ? "var(--red)" : "var(--yel)";
     hudR.textContent = `F:${tokens[P_RED].flip} M:${tokens[P_RED].mag}`;
     hudY.textContent = `F:${tokens[P_YEL].flip} M:${tokens[P_YEL].mag}`;
     hudGrav.textContent = `Grav: ${["↓", "←", "↑", "→"][gravityDir]}`;
@@ -830,36 +866,18 @@
     document.getElementById("btnHint").disabled = gameOver || (gameMode===1 && curPlayer===P_YEL);
   }
   
-  function hideOverlay() { 
-      elOverlay.style.display = "none"; 
-      menuCard.classList.add('hidden');
-      msgCard.classList.add('hidden');
-  }
-  function showOverlay(title, msg, isEnd) {
-    elOverlay.style.display = "flex";
-    if (isEnd) {
-        msgCard.classList.remove('hidden');
-        menuCard.classList.add('hidden');
-        document.getElementById("ovTitle").textContent = title;
-        document.getElementById("ovMsg").textContent = msg;
-        const b1 = document.getElementById("ovBtnMain"), b2 = document.getElementById("ovBtnSec");
-        b1.textContent = "New Game"; b1.onclick = () => { showMainMenu(); };
-        b2.style.display = "inline-block"; b2.textContent = "Undo"; b2.onclick = () => { undo(); hideOverlay(); };
-    } else {
-        msgCard.classList.remove('hidden');
-        menuCard.classList.add('hidden');
-        document.getElementById("ovTitle").textContent = title;
-        document.getElementById("ovMsg").textContent = msg;
-        const b1 = document.getElementById("ovBtnMain"), b2 = document.getElementById("ovBtnSec");
-        b1.textContent = "Resume"; b1.onclick = hideOverlay;
-        b2.style.display = "none";
-    }
-  }
-
   document.getElementById("btnHint").onclick = () => { 
       if (gameMode === 1 && curPlayer === P_YEL) return;
       const h = getBestMove();
-      showOverlay("Hint", h, false);
+      // Show hint in Hint Card overlay
+      elOverlay.style.display = "flex";
+      menuCard.classList.add('hidden');
+      hintCard.classList.remove('hidden');
+      document.getElementById("hintMsg").textContent = h;
+      document.getElementById("hintBtn").onclick = () => { 
+          elOverlay.style.display = "none"; 
+          hintCard.classList.add('hidden');
+      };
   };
   document.getElementById("btnCCW").onclick = () => { if(!(gameMode === 1 && curPlayer === P_YEL)) doFlip(1); };
   document.getElementById("btnCW").onclick = () => { if(!(gameMode === 1 && curPlayer === P_YEL)) doFlip(-1); };
