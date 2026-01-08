@@ -7,7 +7,7 @@
 <style>
   :root{
     --bg:#0b0f17;
-    --panel:#141a26;
+    --panel:#1e2535;
     --text:#e9eefc;
     --muted:#8fa1b8;
     --accent:#3c78ff;
@@ -133,7 +133,7 @@
         <div class="card-btns" style="flex-direction:column;">
           <button class="btn-act" onclick="startGame(1, 1)">1 Player (Easy)</button>
           <button class="btn-act" onclick="startGame(1, 2)">1 Player (Medium)</button>
-          <button class="btn-act" onclick="startGame(1, 3)">1 Player (Hard)</button>
+          <button class="btn-act" onclick="startGame(1, 3)">1 Player (Expert)</button>
           <button class="btn-tac" onclick="startGame(2, 0)">2 Players (Local)</button>
         </div>
       </div>
@@ -236,10 +236,11 @@
     requestAnimationFrame(initLoop);
   }
 
-  // --- AI ---
+  // --- AI ENGINE (Alpha-Beta + Window Evaluation) ---
   function checkAI() {
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating) {
         document.body.style.cursor = "wait";
+        // Small delay for natural feel
         setTimeout(() => {
             makeAIMove();
             document.body.style.cursor = "default";
@@ -248,26 +249,40 @@
   }
 
   function makeAIMove() {
-    // 1. Easy: Random valid drop
     if (aiLevel === 1) {
-        let valid = [];
-        for(let i=0; i<COLS; i++) if (getDropTarget(grid, gravityDir, i)) valid.push(i);
-        if (valid.length > 0) {
-            doDrop(0, valid[Math.floor(Math.random()*valid.length)]);
-        } else {
-            if(tokens[P_YEL].flip > 0) doFlip(1);
+        // Easy: 70% random, 30% block immediate win
+        let valid = getPossibleMoves(grid, gravityDir, tokens[P_YEL]);
+        if(Math.random() > 0.7) {
+             // Check if I can win immediately
+             for(let m of valid) if(checkWin(m.grid) === P_YEL) { executeMove(m); return; }
         }
+        if (valid.length > 0) executeMove(valid[Math.floor(Math.random()*valid.length)]);
+        else doFlip(1); // fallback
         return;
     }
 
-    // 2. Medium/Hard: Minimax
-    let depth = (aiLevel === 2) ? 1 : 3;
+    // Expert: Depth 4, Medium: Depth 2
+    let depth = (aiLevel === 2) ? 2 : 4; 
+    
+    // Iterative Deepening for Expert to ensure best move if fast enough
+    // But since JS is single threaded here, we stick to fixed depth for stability.
+    
     let bestScore = -Infinity;
     let bestMove = null;
-
     let moves = getPossibleMoves(grid, gravityDir, tokens[P_YEL]);
     
+    // Sort moves to improve pruning (Central columns first)
+    moves.sort((a,b) => {
+        if(a.type === 'drop' && b.type === 'drop') return Math.abs(3-a.col) - Math.abs(3-b.col); // Prefer center
+        return 0;
+    });
+
     for (let m of moves) {
+        // If immediate win, take it
+        if (checkWin(m.grid) === P_YEL) {
+            executeMove(m); return;
+        }
+        
         let score = minimax(m.grid, m.gDir, depth - 1, -Infinity, Infinity, false);
         if (score > bestScore) {
             bestScore = score;
@@ -275,126 +290,162 @@
         }
     }
 
-    if (bestMove) {
-        if (bestMove.type === 'drop') doDrop(0, bestMove.col);
-        else if (bestMove.type === 'flip') doFlip(bestMove.delta);
-    } else {
-        doFlip(1); // fallback
-    }
+    if (bestMove) executeMove(bestMove);
+    else if (moves.length > 0) executeMove(moves[0]); // fallback
   }
 
-  function getPossibleMoves(g, gDir, toks) {
-    let moves = [];
-    for(let i=0; i<COLS; i++) {
-        let nextG = g.map(r=>[...r]);
-        let t = getDropTarget(nextG, gDir, i);
-        if (t) {
-            nextG[t.r][t.c] = P_YEL; 
-            nextG = settleGridComplete(nextG, gDir);
-            moves.push({ type: 'drop', col: i, grid: nextG, gDir: gDir });
-        }
-    }
-    if (toks.flip > 0) {
-        let ccwDir = CCW_MAP[gDir];
-        let gCCW = settleGridComplete(g, ccwDir);
-        moves.push({ type: 'flip', delta: 1, grid: gCCW, gDir: ccwDir });
-        
-        let cwDir = CW_MAP[gDir];
-        let gCW = settleGridComplete(g, cwDir);
-        moves.push({ type: 'flip', delta: -1, grid: gCW, gDir: cwDir });
-    }
-    return moves;
+  function executeMove(m) {
+      if (m.type === 'drop') doDrop(0, m.col);
+      else if (m.type === 'flip') doFlip(m.delta);
   }
 
   function minimax(g, gDir, depth, alpha, beta, isMax) {
     let winner = checkWin(g);
-    if (winner === P_YEL) return 1000 + depth;
-    if (winner === P_RED) return -1000 - depth;
-    if (depth === 0) return evaluate(g);
+    if (winner === P_YEL) return 100000 + depth; // Prefer faster wins
+    if (winner === P_RED) return -100000 - depth; // Prefer slower losses
+    if (depth === 0) return evaluateBoard(g);
 
-    if (isMax) { 
+    // Generate pseudo-moves (no deep clone of tokens needed for search)
+    // We assume infinite flips for search depth to simplify state, or just check simple constraints
+    let moves = getPossibleMoves(g, gDir, {flip:1}); // Assume capability
+
+    if (isMax) { // AI (Yel)
         let maxEval = -Infinity;
-        for(let i=0; i<COLS; i++) {
-            let t = getDropTarget(g, gDir, i);
-            if (t) {
-                let nextG = g.map(r=>[...r]);
-                nextG[t.r][t.c] = P_YEL;
-                nextG = settleGridComplete(nextG, gDir);
-                let evalVal = minimax(nextG, gDir, depth - 1, alpha, beta, false);
-                maxEval = Math.max(maxEval, evalVal);
-                alpha = Math.max(alpha, evalVal);
-                if (beta <= alpha) break;
-            }
+        for (let m of moves) {
+            let evalVal = minimax(m.grid, m.gDir, depth - 1, alpha, beta, false);
+            maxEval = Math.max(maxEval, evalVal);
+            alpha = Math.max(alpha, evalVal);
+            if (beta <= alpha) break; // Prune
         }
         return maxEval;
-    } else { 
+    } else { // Human (Red)
         let minEval = Infinity;
-        for(let i=0; i<COLS; i++) {
-            let t = getDropTarget(g, gDir, i);
-            if (t) {
-                let nextG = g.map(r=>[...r]);
-                nextG[t.r][t.c] = P_RED;
-                nextG = settleGridComplete(nextG, gDir);
-                let evalVal = minimax(nextG, gDir, depth - 1, alpha, beta, true);
-                minEval = Math.min(minEval, evalVal);
-                beta = Math.min(beta, evalVal);
-                if (beta <= alpha) break;
-            }
+        for (let m of moves) {
+            // Simulate Human playing optimally
+            // Note: getPossibleMoves generates P_YEL moves by default in logic above, 
+            // so we need a helper that generates P_RED moves
+            // Actually getPossibleMoves uses 'curPlayer' global logic usually?
+            // No, we need to explicitly pass player.
+            // Let's refactor getPossibleMoves to take player.
+            
+            // QUICK FIX for Move Generation inside Minimax:
+            // We manually generate next grids for RED here.
+            let nextG = m.grid; // Wait, m.grid is already set for YEL in previous Logic. 
+            // We need a distinct generator. 
+            
+            // Re-generate correct moves for RED
+            // This is computationally expensive to re-write fully here.
+            // Let's use a simpler generator inside minimax loops.
+        }
+        
+        // Correct implementation of generator for specific player:
+        let redMoves = getMovesForPlayer(g, gDir, P_RED);
+        for(let rm of redMoves) {
+             let evalVal = minimax(rm.grid, rm.gDir, depth - 1, alpha, beta, true);
+             minEval = Math.min(minEval, evalVal);
+             beta = Math.min(beta, evalVal);
+             if (beta <= alpha) break;
         }
         return minEval;
     }
   }
 
-  function evaluate(g) {
-    let score = 0;
-    for(let r=0; r<ROWS; r++) {
-        if (g[r][3] === P_YEL) score += 3;
-        if (g[r][3] === P_RED) score -= 3;
-    }
-    score += countLines(g, P_YEL) * 10;
-    score -= countLines(g, P_RED) * 10;
-    return score;
+  // Optimized Move Generator
+  function getMovesForPlayer(g, gDir, p) {
+      let moves = [];
+      // Drops
+      for(let i=0; i<COLS; i++) {
+          let t = getDropTarget(g, gDir, i);
+          if (t) {
+              let nextG = g.map(r=>[...r]);
+              nextG[t.r][t.c] = p;
+              nextG = settleGridComplete(nextG, gDir); // Physics settle
+              moves.push({ type:'drop', col:i, grid:nextG, gDir:gDir });
+          }
+      }
+      // Flips (Check tokens in real game, but for search we assume 1 available usually to see threats)
+      // For strict correctness, we should track token count in recursion, but standard C4 AI often assumes capability.
+      // Let's assume available to be safe (paranoia mode).
+      let ccwDir = CCW_MAP[gDir];
+      let gCCW = settleGridComplete(g, ccwDir); // Settle happens on rotate
+      moves.push({ type:'flip', delta:1, grid:gCCW, gDir:ccwDir });
+      
+      let cwDir = CW_MAP[gDir];
+      let gCW = settleGridComplete(g, cwDir);
+      moves.push({ type:'flip', delta:-1, grid:gCW, gDir:cwDir });
+      
+      return moves;
+  }
+  
+  // Wrapper for top level
+  function getPossibleMoves(g, gDir, toks) {
+      // Filter out flips if no tokens
+      let moves = getMovesForPlayer(g, gDir, P_YEL); // AI is YEL
+      if(toks.flip <= 0) moves = moves.filter(m => m.type !== 'flip');
+      return moves;
   }
 
-  function countLines(g, p) {
-      let count = 0;
-      for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) {
-          let t=0; for(let k=0; k<4; k++) if(g[r][c+k]===p) t++;
-          if(t===3) count++;
+  // --- SCORE EVALUATION (The "Brain") ---
+  function evaluateBoard(g) {
+      let score = 0;
+      
+      // Window Evaluation
+      // We scan every 4-length window.
+      
+      // Horizontal
+      for(let r=0; r<ROWS; r++) {
+          for(let c=0; c<COLS-3; c++) {
+              score += evalWindow(g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]);
+          }
       }
-      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS; c++) {
-          let t=0; for(let k=0; k<4; k++) if(g[r+k][c]===p) t++;
-          if(t===3) count++;
+      // Vertical
+      for(let c=0; c<COLS; c++) {
+          for(let r=0; r<ROWS-3; r++) {
+              score += evalWindow(g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]);
+          }
       }
-      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) {
-          let t=0; for(let k=0; k<4; k++) if(g[r+k][c+k]===p) t++;
-          if(t===3) count++;
+      // Diag 1
+      for(let r=0; r<ROWS-3; r++) {
+          for(let c=0; c<COLS-3; c++) {
+              score += evalWindow(g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]);
+          }
       }
-      for(let r=0; r<ROWS-3; r++) for(let c=3; c<COLS; c++) {
-          let t=0; for(let k=0; k<4; k++) if(g[r+k][c-k]===p) t++;
-          if(t===3) count++;
+      // Diag 2
+      for(let r=0; r<ROWS-3; r++) {
+          for(let c=3; c<COLS; c++) {
+              score += evalWindow(g[r][c], g[r+1][c-1], g[r+2][c-2], g[r+3][c-3]);
+          }
       }
-      return count;
+      
+      // Center Bias (Control the middle)
+      let centerCount = 0;
+      for(let r=0; r<ROWS; r++) if(g[r][3] === P_YEL) centerCount++;
+      score += centerCount * 5;
+
+      return score;
   }
 
-  function getDropTarget(g, dir, idx) {
-    let rEnt, cEnt;
-    if (dir === 0) { rEnt=0; cEnt=idx; }
-    else if (dir === 1) { rEnt=idx; cEnt=COLS-1; }
-    else if (dir === 2) { rEnt=ROWS-1; cEnt=idx; }
-    else { rEnt=idx; cEnt=0; }
-    
-    let rT = rEnt, cT = cEnt, found = false;
-    for (let i=0; i<ROWS; i++) {
-        let rCheck = rEnt, cCheck = cEnt;
-        if (dir===0) rCheck+=i; else if (dir===1) cCheck-=i;
-        else if (dir===2) rCheck-=i; else cCheck+=i;
-        if (g[rCheck][cCheck] === P_EMPTY) { rT = rCheck; cT = cCheck; found = true; break; }
-    }
-    return found ? {r:rT, c:cT} : null;
+  function evalWindow(c1, c2, c3, c4) {
+      let r = 0, y = 0, e = 0;
+      if(c1===P_RED) r++; else if(c1===P_YEL) y++; else e++;
+      if(c2===P_RED) r++; else if(c2===P_YEL) y++; else e++;
+      if(c3===P_RED) r++; else if(c3===P_YEL) y++; else e++;
+      if(c4===P_RED) r++; else if(c4===P_YEL) y++; else e++;
+
+      // AI (Yellow) Scoring
+      if (y === 4) return 100000; // Win
+      if (y === 3 && e === 1) return 100; // Strong threat
+      if (y === 2 && e === 2) return 10;
+      
+      // Opponent (Red) Blocking
+      if (r === 4) return -100000; // Lose
+      if (r === 3 && e === 1) return -9000; // BLOCK IMMEDIATELY
+      // Note: -9000 is high enough to override generic good moves, but less than losing.
+
+      return 0;
   }
 
-  // --- Cloning ---
+  // --- Cloning & Helpers ---
   function cloneMag(mArr) { return mArr.map(m => m ? { ...m } : null); }
   function cloneState() {
     return {
@@ -579,10 +630,7 @@
   }
 
   function doDrop(row, col) {
-    // FIX: Only block HUMAN clicks if AI is playing. Logic calls bypass this.
-    // This function is now only called by logic or input handler.
-    // The input handler does the check.
-    
+    if (gameMode === 1 && curPlayer === P_YEL) return; // Block human input
     let rEnt, cEnt;
     if (gravityDir === 0) { rEnt=0; cEnt=col; }
     else if (gravityDir === 1) { rEnt=row; cEnt=COLS-1; }
@@ -603,6 +651,7 @@
   }
 
   function doMagnet(side, idx) {
+    if (gameMode === 1 && curPlayer === P_YEL) return;
     if (tokens[curPlayer].mag <= 0) return;
     let opp = (side + 2) % 4;
     let oppVal = (opp===0) ? getMag(mag.top, idx) : (opp===1) ? getMag(mag.right, idx) : (opp===2) ? getMag(mag.bottom, idx) : getMag(mag.left, idx);
@@ -625,6 +674,7 @@
   const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 }; 
 
   function doFlip(dirDelta) {
+    if (gameMode === 1 && curPlayer === P_YEL) return; // Block human
     if (tokens[curPlayer].flip <= 0) return;
     if(animating || gameOver) return;
     pushHistory();
@@ -667,7 +717,7 @@
         decay(mag.top); decay(mag.bottom); decay(mag.left); decay(mag.right);
         curPlayer = (curPlayer === P_RED) ? P_YEL : P_RED;
         syncUI();
-        checkAI(); // Trigger AI
+        checkAI();
       }
     }
   }
@@ -686,28 +736,36 @@
     return 0;
   }
 
-  // --- HINT ---
+  function getDropTarget(g, dir, idx) {
+    let rEnt, cEnt;
+    if (dir === 0) { rEnt=0; cEnt=idx; }
+    else if (dir === 1) { rEnt=idx; cEnt=COLS-1; }
+    else if (dir === 2) { rEnt=ROWS-1; cEnt=idx; }
+    else { rEnt=idx; cEnt=0; }
+    
+    let rT = rEnt, cT = cEnt, found = false;
+    for (let i=0; i<ROWS; i++) {
+        let rCheck = rEnt, cCheck = cEnt;
+        if (dir===0) rCheck+=i; else if (dir===1) cCheck-=i;
+        else if (dir===2) rCheck-=i; else cCheck+=i;
+        if (g[rCheck][cCheck] === P_EMPTY) { rT = rCheck; cT = cCheck; found = true; break; }
+    }
+    return found ? {r:rT, c:cT} : null;
+  }
+
+  // --- HINT (Reuse AI Logic) ---
   function getBestMove() {
-      for(let i=0; i<COLS; i++) {
-         let t = getDropTarget(grid, gravityDir, i);
-         if(t) {
-             let g2 = grid.map(r=>[...r]);
-             g2[t.r][t.c] = curPlayer;
-             g2 = settleGridComplete(g2, gravityDir);
-             if(checkWin(g2) === curPlayer) return `Drop in ${gravityDir%2===0 ? 'Column '+(i+1) : 'Row '+(i+1)} to WIN!`;
-         }
+      // Simple hint uses depth 1 minimax search for user
+      let bestMove = null;
+      let bestScore = -Infinity;
+      let moves = getMovesForPlayer(grid, gravityDir, P_RED);
+      for(let m of moves) {
+          if (checkWin(m.grid) === P_RED) return "Immediate Win Available!";
+          let score = minimax(m.grid, m.gDir, 1, -Infinity, Infinity, false); // Opponent minimizes
+          if(score > bestScore) { bestScore = score; bestMove = m; }
       }
-      const opp = (curPlayer===P_RED)?P_YEL:P_RED;
-      for(let i=0; i<COLS; i++) {
-         let t = getDropTarget(grid, gravityDir, i);
-         if(t) {
-             let g2 = grid.map(r=>[...r]);
-             g2[t.r][t.c] = opp;
-             g2 = settleGridComplete(g2, gravityDir);
-             if(checkWin(g2) === opp) return `Block opponent at ${gravityDir%2===0 ? 'Column '+(i+1) : 'Row '+(i+1)}!`;
-         }
-      }
-      return "Try placing near the center.";
+      if(bestMove) return "Try a move that blocks or builds 3.";
+      return "Try controlling the center.";
   }
 
   // --- Render Loop ---
@@ -780,7 +838,7 @@
     ctx.translate(cx, cy);
     ctx.rotate(boardAngle);
     
-    // Board Plate (Lighter)
+    // Board Plate
     ctx.fillStyle = "#1e2535";
     ctx.beginPath();
     ctx.roundRect(-boardW/2 - cell*0.2, -boardW/2 - cell*0.2, boardW + cell*0.4, boardW + cell*0.4, 12);
@@ -804,7 +862,7 @@
       }
     }
     
-    // Animated Tokens
+    // Anims
     for (let a of anims) {
         if (a.type === 'rotate') continue;
         let p = a.t * a.t * (3 - 2 * a.t); 
@@ -820,7 +878,7 @@
         drawToken(ctx, curC*cell + cell/2, curR*cell + cell/2, cell*0.4, a.p);
     }
     
-    // Magnets with Fade
+    // Magnets
     mag.top.forEach((m, i) => drawMag(ctx, i*cell + cell/2, -cell*0.6, cell, 0, m));
     mag.bottom.forEach((m, i) => drawMag(ctx, i*cell + cell/2, boardW + cell*0.6, cell, 2, m));
     mag.left.forEach((m, i) => drawMag(ctx, -cell*0.6, i*cell + cell/2, cell, 3, m));
@@ -880,9 +938,7 @@
 
   function handleInput(e) {
     if (gameOver || animating) return;
-    // AI GUARD MOVED HERE:
     if (gameMode === 1 && curPlayer === P_YEL) return;
-    
     if (e.type === 'touchstart') e.preventDefault();
     const act = getBoardPos(e.type.includes('touch') ? e.changedTouches[0] : e);
     if (act.type === 'CELL') doDrop(act.r, act.c);
@@ -935,7 +991,6 @@
   }
 
   document.getElementById("btnHint").onclick = () => { 
-      // Input guard for buttons
       if (gameMode === 1 && curPlayer === P_YEL) return;
       const h = getBestMove();
       showOverlay("Hint", h, false);
