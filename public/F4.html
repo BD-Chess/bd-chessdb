@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>FlipFour 8x8 (Pro Fix)</title>
+<title>Flip4M (8x8) Pro</title>
 <style>
   :root{
     --bg:#0b0f17;
@@ -125,7 +125,7 @@
 <div id="app">
   <div id="hud">
     <div class="row">
-      <h1>FlipFour <span style="font-size:12px;opacity:0.5;font-weight:400">8x8 Pro</span></h1>
+      <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400">(8x8) Pro</span></h1>
       <div class="status" id="turnInfo">Red's Turn</div>
     </div>
     <div class="row">
@@ -156,13 +156,13 @@
     
     <div id="overlay">
       <div class="card" id="menuCard">
-        <h2>FlipFour 8x8</h2>
-        <p>Pro AI Fixed.</p>
+        <h2>Flip4M (8x8)</h2>
+        <p>Gravity-defying strategy.</p>
         <div class="card-btns" style="flex-direction:column; gap:8px;">
-          <button class="btn-act" onclick="startGame(1, 1)">Easy (Classic)</button>
-          <button class="btn-act" onclick="startGame(1, 2)">Standard (Strong)</button>
-          <button class="btn-act" onclick="startGame(1, 3)">Expert (Full)</button>
-          <button class="btn-dang" onclick="startGame(1, 4)">Pro (Patched)</button>
+          <button class="btn-act" onclick="startGame(1, 1)">Easy</button>
+          <button class="btn-act" onclick="startGame(1, 2)">Standard</button>
+          <button class="btn-act" onclick="startGame(1, 3)">Expert</button>
+          <button class="btn-dang" onclick="startGame(1, 4)">Pro (8Z-DCC)</button>
           <button class="btn-tac" onclick="startGame(2, 0)">2 Players</button>
         </div>
       </div>
@@ -294,7 +294,7 @@
     requestAnimationFrame(initLoop);
   }
 
-  // --- AI ENGINE (Patched) ---
+  // --- AI ENGINE (8Z-DCC) ---
 
   function checkAI() {
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating) {
@@ -311,7 +311,7 @@
 
     let aiTokens = canUseTools ? tokens[P_YEL] : { flip: 0, mag: 0 };
     
-    // 1. SANITY CHECK (The Fix is Here)
+    // 1. SANITY & PANIC CHECK
     let sanityMove = getSanityMove(grid, gravityDir, aiTokens, P_YEL, mag);
     if (sanityMove) {
         executeMove(sanityMove);
@@ -354,30 +354,26 @@
       let opponent = (p === P_RED) ? P_YEL : P_RED;
       let myMoves = getPossibleMoves(g, gDir, toks, p, mState);
 
-      // A. INSTANT WIN CHECK (Take the win!)
+      // A. INSTANT WIN CHECK 
       for (let m of myMoves) {
           if (checkWin(m.grid) === p) return m;
       }
 
-      // B. PANIC BLOCK (FIX: Always block immediate drop threats first)
-      // Look for opponent DROP wins (cheap and common).
+      // B. PANIC BLOCK (Blind block for immediate drop threats)
       let oppSimpleMoves = getPossibleMoves(g, gDir, {flip:0, mag:0}, opponent, mState);
       let simpleKiller = oppSimpleMoves.find(om => om.type === 'drop' && checkWin(om.grid) === opponent);
 
       if (simpleKiller) {
-          // Opponent threatens to drop at simpleKiller.col. Can we fill it?
           let blockMove = myMoves.find(m => m.type === 'drop' && m.col === simpleKiller.col);
-          if (blockMove) return blockMove; // Just block it. Don't think about next turn.
+          if (blockMove) return blockMove; 
       }
 
-      // C. DEEP THREAT CHECK (Existing Logic for Complex Threats)
-      // Only runs if no simple drop threat was found/blocked.
+      // C. DEEP THREAT CHECK
       let oppToks = tokens[opponent];
       let oppMoves = getPossibleMoves(g, gDir, oppToks, opponent, mState);
       let killerMove = oppMoves.find(om => checkWin(om.grid) === opponent);
 
       if (killerMove) {
-          // Try to find a move that leaves NO winning moves for opponent
           for (let m of myMoves) {
               let responseMoves = getPossibleMoves(m.grid, m.gDir, oppToks, opponent, m.magState);
               let stillDead = responseMoves.some(rm => checkWin(rm.grid) === opponent);
@@ -747,13 +743,20 @@
     return found ? {r:rT, c:cT} : null;
   }
 
+  // --- HINT SYSTEM (Upgraded to PRO level) ---
   function runHintSimulation() {
       let moves = getPossibleMoves(grid, gravityDir, tokens[curPlayer], curPlayer, mag);
       if(moves.length === 0) return "No moves available!";
       let bestMove = null, bestScore = -Infinity;
+      
+      // SANITY CHECK FOR HINTS (Suggest immediate win or block)
+      let sanity = getSanityMove(grid, gravityDir, tokens[curPlayer], curPlayer, mag);
+      if(sanity) return formatMoveString(sanity) + (checkWin(sanity.grid) ? " (Win)" : " (Block!)");
+
       for(let m of moves) {
           if (checkWin(m.grid) === curPlayer) return formatMoveString(m) + " (Wins)";
-          let score = minimax(m.grid, m.gDir, m.magState, 3, -Infinity, Infinity, false, true);
+          // Force high depth (5) and advanced tools (true) for best quality
+          let score = minimax(m.grid, m.gDir, m.magState, 5, -Infinity, Infinity, false, true);
           if(score > bestScore) { bestScore = score; bestMove = m; }
       }
       if(!bestMove) return "Try a random move.";
