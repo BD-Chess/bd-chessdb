@@ -1,711 +1,609 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlipFour: Magnetic (8Z-DCC Engine)</title>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --board-bg: #1e293b;
-            --slot-empty: #0f172a;
-            --p1-color: #ef4444; /* Red */
-            --p2-color: #eab308; /* Yellow */
-            --magnet-color: #94a3b8;
-            --text-color: #f1f5f9;
-            --accent: #3b82f6;
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<title>FlipFour: Magnetic (8Z-DCC Engine)</title>
+<style>
+  :root{
+    --bg:#0b0f17;
+    --panel:#1e2535;
+    --text:#e9eefc;
+    --muted:#8fa1b8;
+    --accent:#3c78ff;
+    --red:#e53935;
+    --yel:#fdd835;
+    --green:#4caf50;
+    --btn:#26314a;
+    --btnBorder:rgba(255,255,255,0.1);
+    --gold:#ffd700;
+  }
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;overflow:hidden;touch-action:none;}
+  
+  #app {
+    display:flex; flex-direction:column; height:100%; width:100%;
+  }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
+  /* HUD */
+  #hud {
+    flex-shrink:0; z-index:10;
+    background:var(--panel); border-bottom:1px solid var(--btnBorder);
+    padding: max(10px, env(safe-area-inset-top)) 12px 10px;
+    display:flex; flex-direction:column; gap:8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .row { display:flex; justify-content:space-between; align-items:center; }
+  h1 { margin:0; font-size:18px; font-weight:900; letter-spacing:0.5px; }
+  .status { font-size:13px; color:var(--muted); font-family:monospace; }
+  
+  #tokens {
+    display:flex; gap:16px; font-size:12px; font-weight:700;
+    background:rgba(0,0,0,0.3); padding:6px 10px; border-radius:8px;
+  }
+  .t-grp { display:flex; align-items:center; gap:6px; }
+  .dot { width:8px; height:8px; border-radius:50%; }
+  .dot.r { background:var(--red); box-shadow:0 0 4px var(--red); }
+  .dot.y { background:var(--yel); box-shadow:0 0 4px var(--yel); }
 
-        h1 { margin-bottom: 10px; font-size: 1.5rem; }
-        .subtitle { font-size: 0.9rem; color: #64748b; margin-bottom: 20px; }
+  /* Canvas Stage */
+  #game-stage {
+    flex-grow:1; position:relative; overflow:hidden; background:var(--bg);
+    display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
+  }
+  canvas { position:absolute; inset:0; display:block; width:100%; height:100%; z-index:1; }
 
-        /* HUD */
-        .hud {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 400px;
-            margin-bottom: 15px;
-            background: #1e293b;
-            padding: 10px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .stat-box { font-size: 0.9rem; font-weight: bold; }
-        .p1-stat { color: var(--p1-color); }
-        .p2-stat { color: var(--p2-color); }
-        .gravity-stat { color: var(--accent); }
+  /* WINNER BOX - Top Overlay */
+  #winnerCard {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 50;
+    background: rgba(30, 37, 53, 0.98);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--btnBorder);
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    transform: translateY(-110%);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 15px;
+    pointer-events: auto;
+  }
+  #winnerCard.visible { transform: translateY(0); }
+  
+  .win-content { text-align: left; display:flex; flex-direction:column; gap:4px; }
+  .trophy { font-size: 24px; }
+  .win-title { font-size: 20px; font-weight: 900; color: var(--gold); margin:0; line-height:1; }
+  .win-sub { font-size: 12px; color: var(--muted); margin:0; }
+  .win-btns { display:flex; gap:8px; }
+  .win-btns button { padding:8px 16px; font-size:12px; border-radius:8px; height: auto; }
 
-        /* BOARD */
-        .game-container {
-            position: relative;
-            padding: 10px;
-            background: #334155;
-            border-radius: 16px;
-        }
-        
-        .board {
-            display: grid;
-            grid-template-columns: repeat(7, 50px);
-            grid-template-rows: repeat(7, 50px);
-            gap: 6px;
-            background-color: var(--board-bg);
-            padding: 10px;
-            border-radius: 12px;
-            border: 4px solid #334155;
-            position: relative;
-            transition: transform 0.5s ease;
-        }
+  /* Controls */
+  #controls {
+    flex-shrink:0; z-index:10;
+    background:var(--panel); border-top:1px solid var(--btnBorder);
+    padding: 10px 12px max(20px, env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+  
+  button {
+    background:var(--btn); border:1px solid var(--btnBorder); color:var(--text);
+    padding:14px 0; border-radius:12px; font-weight:700; font-size:14px;
+    cursor:pointer; touch-action:manipulation;
+    transition:transform 0.1s, background 0.2s;
+    display: flex; align-items: center; justify-content: center;
+    white-space: nowrap;
+    position: relative;
+  }
+  button:active { transform:scale(0.96); }
+  button:disabled { opacity:0.4; pointer-events:none; }
+  
+  .btn-act { background:rgba(60,120,255,0.15); border-color:rgba(60,120,255,0.4); }
+  .btn-tac { background:rgba(255,204,102,0.15); border-color:rgba(255,204,102,0.4); color:#ffd54f; }
+  .btn-dang { background:rgba(229,57,53,0.15); border-color:rgba(229,57,53,0.4); color:#ff8a80; }
+  .btn-dev { background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.2); font-size:12px; }
 
-        .cell {
-            width: 50px;
-            height: 50px;
-            background-color: var(--slot-empty);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            position: relative;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-        }
+  .big-icon { font-size: 1.6em; line-height: 1; margin-left: 6px; display: inline-block; margin-top: -2px; }
 
-        .cell.p1 { background-color: var(--p1-color); box-shadow: inset -2px -2px 6px rgba(0,0,0,0.3); }
-        .cell.p2 { background-color: var(--p2-color); box-shadow: inset -2px -2px 6px rgba(0,0,0,0.3); }
-        
-        /* MAGNET STYLES */
-        .magnet {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background-color: var(--magnet-color);
-            border: 2px solid #fff;
-            border-radius: 4px;
-            z-index: 10;
-        }
+  /* Overlay (Menu/Hint/Help) */
+  #overlay {
+    position:absolute; inset:0; z-index:100;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .card {
+    background:var(--panel); border:1px solid var(--btnBorder);
+    padding:24px; border-radius:16px; text-align:center;
+    width:min(400px, 80vw); box-shadow:0 20px 40px rgba(0,0,0,0.6);
+    max-height: 80vh; overflow-y: auto;
+  }
+  .card h2 { margin:0 0 8px; font-size:24px; }
+  .card h3 { margin:16px 0 4px; font-size:16px; color:var(--accent); }
+  .card p { color:var(--muted); margin:0 0 10px; line-height:1.5; font-size:14px; }
+  .card li { text-align: left; color:var(--muted); font-size: 13px; margin-bottom: 6px; }
+  .card ul { padding-left: 20px; margin-bottom: 20px; }
+  .card-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .card-btns button { flex:1; min-width:140px; }
+  .hidden { display: none !important; }
 
-        /* CONTROLS */
-        .controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-top: 20px;
-            width: 100%;
-            max-width: 400px;
-        }
+  /* Specific Help Styles */
+  .help-rule { text-align:left; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px; margin-bottom:8px; }
+  .help-rule b { color: #fff; }
 
-        button {
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.1s;
-            background-color: #334155;
-            color: white;
-            font-size: 0.9rem;
-        }
-        button:active { transform: scale(0.95); }
-        button:hover { background-color: #475569; }
-
-        .btn-action { background-color: #d97706; color: #fff; } /* Amber */
-        .btn-danger { background-color: #dc2626; color: #fff; }
-        .btn-hint { background-color: #3b82f6; color: #fff; }
-
-        /* GRAVITY INDICATOR */
-        .grav-arrow {
-            font-size: 1.5rem;
-            display: inline-block;
-        }
-
-    </style>
+</style>
 </head>
 <body>
 
-    <h1>FlipFour <span style="font-weight:lighter; color:#64748b">Magnetic</span></h1>
-    <div class="subtitle">8Z-DCC Logic Loaded • Pro Mode Active</div>
+<div id="app">
+  <div id="hud">
+    <div class="row">
+      <h1>FlipFour <span style="font-size:12px;opacity:0.5;font-weight:400">Magnetic</span></h1>
+      <div class="status" id="turnInfo">Red's Turn</div>
+    </div>
+    <div class="row">
+      <div id="tokens">
+        <div class="t-grp"><span class="dot r"></span> <span id="rStats">F:2 M:2</span></div>
+        <div class="t-grp"><span class="dot y"></span> <span id="yStats">F:2 M:2</span></div>
+      </div>
+      <div class="status" id="gravInfo">Grav: ↓</div>
+    </div>
+  </div>
 
-    <div class="hud">
-        <div class="stat-box p1-stat" id="p1-score">P1 (Red): M:2 F:2</div>
-        <div class="stat-box gravity-stat">Grav: <span id="grav-arrow" class="grav-arrow">↓</span></div>
-        <div class="stat-box p2-stat" id="p2-score">CPU (Yel): M:2 F:2</div>
+  <div id="game-stage">
+    
+    <div id="winnerCard">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="trophy">🏆</div>
+        <div class="win-content">
+            <div class="win-title" id="winTitle">Red Wins!</div>
+            <div class="win-sub" id="winSub">Connect Four</div>
+        </div>
+      </div>
+      <div class="win-btns">
+        <button id="winBtnMain" class="btn-act">Menu</button>
+        <button id="winBtnSec" class="btn-dev">Undo</button>
+      </div>
     </div>
 
-    <div class="game-container">
-        <div class="board" id="board">
-            </div>
-    </div>
-
-    <div class="controls">
-        <button class="btn-action" onclick="playerRotate(-1)">Turn ↺</button>
-        <button onclick="undoMove()">Undo</button>
-        <button class="btn-action" onclick="playerRotate(1)">Turn ↻</button>
+    <canvas id="c"></canvas>
+    
+    <div id="overlay">
+      
+      <div class="card" id="menuCard">
+        <h2>FlipFour</h2>
+        <p>Gravity-defying strategy.</p>
         
-        <button class="btn-hint" onclick="getHint()">Hint</button>
-        <button onclick="toggleMagnetMode()" id="btn-mag">Magnet</button>
-        <button class="btn-danger" onclick="resetGame()">Reset</button>
+        <div class="card-btns" style="flex-direction:column; gap:8px;">
+          <button class="btn-act" onclick="startGame(1, 1)">Easy (Classic)</button>
+          <button class="btn-act" onclick="startGame(1, 2)">Standard (Strong)</button>
+          <button class="btn-act" onclick="startGame(1, 3)">Expert (Full)</button>
+          <button class="btn-dang" onclick="startGame(1, 4)">Pro (8Z-DCC Logic)</button>
+          <button class="btn-tac" onclick="startGame(2, 0)">2 Players (Local)</button>
+        </div>
+        <div style="margin-top:20px; font-size:11px; opacity:0.6; line-height:1.4;">
+            8Z-DCC Engine Loaded
+        </div>
+      </div>
+
+      <div class="card hidden" id="hintCard">
+        <h2 id="hintTitle">Hint</h2>
+        <p id="hintMsg">Thinking...</p>
+        <div class="card-btns"><button id="hintBtnResume" class="btn-act">Resume</button></div>
+      </div>
+
+      <div class="card hidden" id="helpCard">
+        <h2>How to Play</h2>
+        
+        <div class="help-rule"><b>Goal:</b> Connect 4 tokens in a line (horizontal, vertical, or diagonal).</div>
+        <div class="help-rule"><b>Gravity:</b> Tokens fall towards the current gravity direction (Arrow in HUD).</div>
+        <div class="help-rule"><b>Turn - Drop:</b> Tap any cell to drop a token.</div>
+        <div class="help-rule"><b>Turn - Rotate:</b> Use <span style="color:#ffd54f">⟲ ⟳</span> buttons to rotate the board 90°. Costs <b>1 Flip Token</b>.</div>
+        <div class="help-rule"><b>Turn - Magnet:</b> Tap the rim (edge) of the board to place a magnet. Pulls tokens to that side. Costs <b>1 Magnet Token</b>. Lasts 3 rounds.</div>
+
+        <div class="card-btns" style="margin-top:20px;">
+            <button id="helpBtnBack" class="btn-act">Back</button>
+        </div>
+        
+        <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+            <button id="btnAdd" class="btn-dev" style="width:100%">DEV: Add +2 Tokens</button>
+        </div>
+      </div>
+
     </div>
+  </div>
+
+  <div id="controls">
+    <button id="btnCCW" class="btn-tac">Turn <span class="big-icon">⟲</span></button>
+    <button id="btnUndo" class="btn-dev">Undo</button>
+    <button id="btnCW" class="btn-tac">Turn <span class="big-icon">⟳</span></button>
+    
+    <button id="btnHint" class="btn-act">Hint</button>
+    <button id="btnHelp" class="btn-dev">Help</button>
+    <button id="btnMenu" class="btn-dang">Menu</button>
+  </div>
+</div>
 
 <script>
-/** * 8Z-DCC ENGINE CORE
- * Includes: Sanity Check, Thrift Penalty, Stability Bonus
- */
+(() => {
+  "use strict";
 
-// --- CONFIG ---
-const ROWS = 7;
-const COLS = 7;
-const EMPTY = 0;
-const P1 = 1; // Red (Human)
-const P2 = 2; // Yellow (AI)
+  const ROWS = 7, COLS = 7;
+  const P_EMPTY = 0, P_RED = 1, P_YEL = 2;
+  const MAGNET_LIFE = 6; 
+  
+  let grid = [];
+  let mag = { top: [], bottom: [], left: [], right: [] }; 
+  let gravityDir = 0; 
+  let boardAngle = 0; 
+  let targetAngle = 0;
+  let curPlayer = P_RED;
+  let tokens = {};
+  let history = [];
+  let gameOver = false;
+  let gameInProgress = false; 
+  
+  // Levels: 1=Easy, 2=Standard, 3=Expert, 4=Pro
+  let gameMode = 2; 
+  let aiLevel = 1; 
+  
+  let animating = false;
+  let anims = []; 
+  let hiddenCells = []; 
+  let pendingSettle = false; 
 
-// Game State
-let board = []; 
-let magnets = []; // Stores {r, c, owner}
-let gravityDir = 0; // 0:Down, 1:Right, 2:Up, 3:Left
-let turn = P1;
-let p1Stats = { magnets: 2, flips: 2 };
-let p2Stats = { magnets: 2, flips: 2 };
-let gameOver = false;
-let history = []; // For Undo
-let magnetMode = false;
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d", { alpha: false });
+  const hudTurn = document.getElementById("turnInfo");
+  const hudGrav = document.getElementById("gravInfo");
+  const hudR = document.getElementById("rStats");
+  const hudY = document.getElementById("yStats");
+  const elOverlay = document.getElementById("overlay");
+  const menuCard = document.getElementById("menuCard");
+  const hintCard = document.getElementById("hintCard");
+  const helpCard = document.getElementById("helpCard");
+  const winnerCard = document.getElementById("winnerCard");
 
-// --- INITIALIZATION ---
-function initGame() {
-    board = Array(ROWS).fill().map(() => Array(COLS).fill(EMPTY));
-    magnets = [];
-    gravityDir = 0;
-    turn = P1;
-    p1Stats = { magnets: 2, flips: 2 };
-    p2Stats = { magnets: 2, flips: 2 };
-    gameOver = false;
-    history = [];
-    renderBoard();
-    updateHUD();
-}
-
-function renderBoard() {
-    const boardEl = document.getElementById('board');
-    boardEl.innerHTML = '';
-    
-    // Rotate board visually based on gravity
-    boardEl.style.transform = `rotate(${gravityDir * -90}deg)`;
-
-    for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-            const cell = document.createElement('div');
-            cell.classList.add('cell');
-            cell.dataset.r = r;
-            cell.dataset.c = c;
-            
-            if (board[r][c] === P1) cell.classList.add('p1');
-            if (board[r][c] === P2) cell.classList.add('p2');
-
-            // Magnet handling (Visual)
-            // Note: Since board rotates, we need to map logical R/C to visual if needed, 
-            // but pure grid rotation handles simple cases. 
-            // We draw magnets as children.
-            let mag = magnets.find(m => m.r === r && m.c === c);
-            if (mag) {
-                const magEl = document.createElement('div');
-                magEl.classList.add('magnet');
-                magEl.style.backgroundColor = mag.owner === P1 ? '#ef4444' : '#eab308';
-                cell.appendChild(magEl);
-            }
-
-            cell.onclick = () => handleCellClick(r, c);
-            boardEl.appendChild(cell);
-        }
-    }
-}
-
-function updateHUD() {
-    document.getElementById('p1-score').innerText = `Red: M:${p1Stats.magnets} F:${p1Stats.flips}`;
-    document.getElementById('p2-score').innerText = `CPU: M:${p2Stats.magnets} F:${p2Stats.flips}`;
-    
-    const arrows = ['↓', '→', '↑', '←'];
-    document.getElementById('grav-arrow').innerText = arrows[gravityDir];
-    
-    const magBtn = document.getElementById('btn-mag');
-    magBtn.style.border = magnetMode ? "2px solid #fff" : "none";
-    magBtn.innerText = magnetMode ? "Placing..." : "Magnet";
-}
-
-// --- PHYSICS ENGINE ---
-
-function applyGravity(simBoard, simMagnets, dir) {
-    // Basic gravity simulation
-    // Returns a NEW board state
-    let newBoard = simBoard.map(row => [...row]);
-    let changed = true;
-    
-    while (changed) {
-        changed = false;
-        // Determine iteration order based on gravity to avoid overwriting
-        // For Down (0): Bottom-up processing
-        // For Up (2): Top-down
-        // Right (1): Right-to-left
-        // Left (3): Left-to-right
-        
-        // Simplified: We scan entire board and move items into empty spaces one step
-        // We repeat until no moves.
-        
-        // Iterate depending on direction to "pull" pieces
-        // This is a naive implementation; for Pro physics we need strict order
-        // Let's use a "vector" approach
-        let dr = 0, dc = 0;
-        if (dir === 0) dr = 1;      // Down
-        else if (dir === 1) dc = 1; // Right
-        else if (dir === 2) dr = -1;// Up
-        else if (dir === 3) dc = -1;// Left
-
-        for (let r = 0; r < ROWS; r++) {
-            for (let c = 0; c < COLS; c++) {
-                // Determine source cell based on scan direction
-                // To ensure correct falling, we scan opposite to gravity
-                let rr = (dr > 0) ? (ROWS - 1 - r) : r;
-                let cc = (dc > 0) ? (COLS - 1 - c) : c;
-
-                if (newBoard[rr][cc] !== EMPTY) {
-                    // Check if pinned
-                    if (isPinned(rr, cc, simMagnets)) continue;
-
-                    let nextR = rr + dr;
-                    let nextC = cc + dc;
-
-                    if (nextR >= 0 && nextR < ROWS && nextC >= 0 && nextC < COLS) {
-                        if (newBoard[nextR][nextC] === EMPTY) {
-                            // Move piece
-                            newBoard[nextR][nextC] = newBoard[rr][cc];
-                            newBoard[rr][cc] = EMPTY;
-                            changed = true;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return newBoard;
-}
-
-function isPinned(r, c, magList) {
-    // Check if any magnet is adjacent
-    for (let m of magList) {
-        if (Math.abs(m.r - r) <= 1 && Math.abs(m.c - c) <= 1) return true;
-    }
-    return false;
-}
-
-function checkWin(b, p) {
-    // Standard Connect 4 check (Horiz, Vert, Diag)
-    // Horizontal
-    for (let r=0; r<ROWS; r++) {
-        for (let c=0; c<COLS-3; c++) {
-            if (b[r][c]==p && b[r][c+1]==p && b[r][c+2]==p && b[r][c+3]==p) return true;
-        }
-    }
-    // Vertical
-    for (let r=0; r<ROWS-3; r++) {
-        for (let c=0; c<COLS; c++) {
-            if (b[r][c]==p && b[r+1][c]==p && b[r+2][c]==p && b[r+3][c]==p) return true;
-        }
-    }
-    // Diag Down-Right
-    for (let r=0; r<ROWS-3; r++) {
-        for (let c=0; c<COLS-3; c++) {
-            if (b[r][c]==p && b[r+1][c+1]==p && b[r+2][c+2]==p && b[r+3][c+3]==p) return true;
-        }
-    }
-    // Diag Up-Right
-    for (let r=3; r<ROWS; r++) {
-        for (let c=0; c<COLS-3; c++) {
-            if (b[r][c]==p && b[r-1][c+1]==p && b[r-2][c+2]==p && b[r-3][c+3]==p) return true;
-        }
-    }
-    return false;
-}
-
-// --- INTERACTION ---
-
-function handleCellClick(r, c) {
-    if (gameOver || turn !== P1) return;
-
-    // Map visual click to logic if needed, but grid rotates visually, so logic r/c matches
-    // Note: CSS rotate transforms the DIV, so the top-left visual is still 0,0 logic? 
-    // Wait, CSS transform rotates the element, but click coordinates stay relative to element.
-    // Yes, clicking the "top-left" cell in DOM is always [0][0]. 
-    // BUT visually it might be somewhere else. 
-    // For this simple version, let's assume the user clicks the logical cell.
-    
-    if (magnetMode) {
-        if (p1Stats.magnets > 0 && board[r][c] !== EMPTY && !magnets.find(m=>m.r===r && m.c===c)) {
-            saveState();
-            magnets.push({r, c, owner: P1});
-            p1Stats.magnets--;
-            magnetMode = false;
-            endTurn();
-        }
-    } else {
-        // Drop Logic
-        // In gravity=0 (Down), we drop into the column 'c' from top.
-        // We must find the 'entry point' based on gravity.
-        let move = getDropMove(r, c, gravityDir);
-        if (move) {
-            saveState();
-            board[move.r][move.c] = P1;
-            board = applyGravity(board, magnets, gravityDir);
-            endTurn();
-        }
-    }
-}
-
-function getDropMove(r, c, dir) {
-    // Determine which 'column' relative to gravity was clicked
-    // And place piece at the 'top' of that stack
-    
-    // Simplification for UI: User clicks any empty cell, we check if it's a valid drop target
-    // Or user clicks the 'Track' (Row/Col).
-    
-    // Let's use "Click empty cell to drop there if gravity allows"
-    // OR "Click anywhere in a 'lane' to drop into that lane"
-    
-    // For reliability: We find the 'entry' for the clicked lane.
-    let targetR = -1, targetC = -1;
-    
-    if (dir === 0) { // Down: Drop into Column C
-        if (board[0][c] !== EMPTY) return null; // Full
-        return {r: 0, c: c};
-    } else if (dir === 1) { // Right: Drop into Row R from Left
-        if (board[r][0] !== EMPTY) return null;
-        return {r: r, c: 0};
-    } else if (dir === 2) { // Up: Drop into Column C from Bottom
-        if (board[ROWS-1][c] !== EMPTY) return null;
-        return {r: ROWS-1, c: c};
-    } else if (dir === 3) { // Left: Drop into Row R from Right
-        if (board[r][COLS-1] !== EMPTY) return null;
-        return {r: r, c: COLS-1};
-    }
-    return null;
-}
-
-function playerRotate(dir) {
-    if (gameOver || turn !== P1 || p1Stats.flips <= 0) return;
-    saveState();
-    gravityDir = (gravityDir + dir + 4) % 4;
-    p1Stats.flips--;
-    board = applyGravity(board, magnets, gravityDir);
-    endTurn();
-}
-
-function toggleMagnetMode() {
-    magnetMode = !magnetMode;
-    updateHUD();
-}
-
-function saveState() {
-    history.push({
-        board: JSON.parse(JSON.stringify(board)),
-        magnets: JSON.parse(JSON.stringify(magnets)),
-        grav: gravityDir,
-        p1: {...p1Stats},
-        p2: {...p2Stats},
-        turn: turn
-    });
-}
-
-function undoMove() {
-    if (history.length === 0) return;
-    let state = history.pop();
-    board = state.board;
-    magnets = state.magnets;
-    gravityDir = state.grav;
-    p1Stats = state.p1;
-    p2Stats = state.p2;
-    turn = state.turn;
-    gameOver = false;
-    renderBoard();
-    updateHUD();
-}
-
-function endTurn() {
-    renderBoard();
-    updateHUD();
-    
-    if (checkWin(board, turn)) {
-        setTimeout(() => alert(turn === P1 ? "Red Wins!" : "Yellow Wins!"), 100);
-        gameOver = true;
-        return;
-    }
-    
-    turn = (turn === P1) ? P2 : P1;
-    
-    if (turn === P2) {
-        setTimeout(aiMove, 500);
-    }
-}
-
-function resetGame() {
+  window.startGame = function(mode, level) {
+    gameMode = mode;
+    aiLevel = level;
+    gameInProgress = true;
+    menuCard.classList.add('hidden');
+    hintCard.classList.add('hidden');
+    helpCard.classList.add('hidden');
+    elOverlay.style.display = "none";
     initGame();
-}
+  }
+  
+  window.toggleMenu = function() {
+      if (elOverlay.style.display === "flex") {
+          if (menuCard.classList.contains('hidden') && !helpCard.classList.contains('hidden')) {
+             elOverlay.style.display = "none";
+             helpCard.classList.add('hidden');
+          } else {
+             if (gameInProgress) {
+                 elOverlay.style.display = "none";
+                 menuCard.classList.add('hidden');
+             }
+          }
+      } else {
+          showMainMenu();
+      }
+  }
 
-// --- 8Z-DCC AI ENGINE (UPDATED) ---
+  function showMainMenu() {
+    elOverlay.style.display = "flex";
+    menuCard.classList.remove('hidden');
+    hintCard.classList.add('hidden');
+    helpCard.classList.add('hidden');
+    winnerCard.classList.remove('visible');
+  }
 
-function aiMove() {
-    // 1. GENERATE MOVES
-    // 2. SANITY CHECK (The "Dictator" Layer)
-    // 3. MINIMAX (If no sanity override)
+  function showHelp() {
+    elOverlay.style.display = "flex";
+    helpCard.classList.remove('hidden');
+    menuCard.classList.add('hidden');
+    hintCard.classList.add('hidden');
+  }
+
+  function initGame() {
+    grid = Array.from({length: ROWS}, () => Array(COLS).fill(P_EMPTY));
+    mag = {
+      top: Array(COLS).fill(null), bottom: Array(COLS).fill(null),
+      left: Array(ROWS).fill(null), right: Array(ROWS).fill(null)
+    };
+    gravityDir = 0;
+    boardAngle = 0;
+    targetAngle = 0;
+    curPlayer = P_RED;
+    tokens = { [P_RED]: { flip: 2, mag: 2 }, [P_YEL]: { flip: 2, mag: 2 } };
+    history = [];
+    gameOver = false;
+    animating = false;
+    anims = [];
+    hiddenCells = [];
+    pendingSettle = false;
+    winnerCard.classList.remove('visible');
+    syncUI();
+    lastTime = 0;
+    requestAnimationFrame(initLoop);
+  }
+
+  // =========================================================================
+  // --- 8Z-DCC AI ENGINE START ---
+  // Implements: Sanity Check, Thrift Penalty, Stability Bonus
+  // =========================================================================
+
+  function checkAI() {
+    if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating) {
+        document.body.style.cursor = "wait";
+        setTimeout(() => {
+            makeAIMove();
+            document.body.style.cursor = "default";
+        }, 100);
+    }
+  }
+
+  function makeAIMove() {
+    // 8Z-DCC ARCHITECTURE:
+    // 1. Sanity Check (The Dictator) - Handle immediate wins/losses
+    // 2. Thrift Policy - Penalize resource use in Search
+    // 3. Stability Eval - Favor solid structures
+
+    let canUseTools = (aiLevel >= 3); 
+    // Opening Guard:
+    let piecesOnBoard = 0;
+    for(let r=0; r<ROWS; r++) for(let c=0; c<COLS; c++) if(grid[r][c]) piecesOnBoard++;
+    if (piecesOnBoard < 6) canUseTools = false;
+
+    let aiTokens = canUseTools ? tokens[P_YEL] : { flip: 0, mag: 0 };
     
-    // Valid moves: Drop in any valid lane, Rotate (+/-), Magnet (if available)
-    
-    // --- SANITY LAYER ---
-    console.log("AI Thinking...");
-    let sanityMove = getSanityMove(board, magnets, gravityDir, P2);
-    
+    // --- 1. THE DICTATOR (Sanity Check) ---
+    // Look for immediate execution or emergency blocks
+    console.log("AI: Running Sanity Check...");
+    let sanityMove = getSanityMove(grid, gravityDir, aiTokens, P_YEL, mag);
     if (sanityMove) {
-        console.log("AI Sanity Override: " + sanityMove.type);
-        executeAiMove(sanityMove);
+        console.log("AI: Sanity Override Triggered -> " + sanityMove.type);
+        executeMove(sanityMove);
         return;
     }
-    
-    // --- THRIFTY MINIMAX ---
-    // Lower depth for JS speed, relying on Policy to prune bad moves
-    let bestMove = minimax(board, magnets, gravityDir, 4, -Infinity, Infinity, true);
-    
-    if (bestMove.move) {
-        console.log("AI Minimax Choice: " + bestMove.move.type + " Val: " + bestMove.score);
-        executeAiMove(bestMove.move);
-    } else {
-        console.log("AI confused, random drop.");
-        // Fallback
-        let drops = getValidDrops(board, gravityDir);
-        executeAiMove(drops[0]);
-    }
-}
 
-function executeAiMove(move) {
-    saveState();
-    if (move.type === 'drop') {
-        board[move.r][move.c] = P2;
-        board = applyGravity(board, magnets, gravityDir);
-    } else if (move.type === 'rotate') {
-        gravityDir = (gravityDir + move.dir + 4) % 4;
-        p2Stats.flips--;
-        board = applyGravity(board, magnets, gravityDir);
-    } else if (move.type === 'magnet') {
-        magnets.push({r: move.r, c: move.c, owner: P2});
-        p2Stats.magnets--;
-    }
-    endTurn();
-}
+    // --- 2. CANDIDATE SEARCH (Minimax with Thrift) ---
+    let depth = (aiLevel === 1) ? 2 : (aiLevel === 2) ? 4 : 5;
+    
+    // Generate valid moves
+    let moves = getPossibleMoves(grid, gravityDir, aiTokens, P_YEL, mag);
 
-// --- AI LOGIC HELPERS ---
+    // Initial Sort for pruning
+    moves.sort((a,b) => {
+       // Simple center preference
+       let sa = (a.type==='drop') ? 10 - Math.abs(3-a.col) : 0;
+       let sb = (b.type==='drop') ? 10 - Math.abs(3-b.col) : 0;
+       return sb - sa; 
+    });
 
-function getSanityMove(bd, mags, grav, player) {
-    let opponent = (player === P1) ? P2 : P1;
-    
-    let possibleMoves = getAllMoves(bd, mags, grav, player); // Only simple ones
-    
-    // 1. INSTANT WIN CHECK
-    for (let m of possibleMoves) {
-        let sim = simulateMove(bd, mags, grav, m, player);
-        if (checkWin(sim.board, player)) return m;
-    }
-    
-    // 2. FORCED BLOCK CHECK (Anti-Loss)
-    // Does the opponent have a move that wins immediately next turn?
-    // If so, we must steal that spot (if it's a drop) or disrupt it.
-    
-    // Simulate Opponent's best move on CURRENT board
-    let oppMoves = getAllMoves(bd, mags, grav, opponent);
-    for (let m of oppMoves) {
-        let sim = simulateMove(bd, mags, grav, m, opponent);
-        if (checkWin(sim.board, opponent)) {
-            // FOUND A KILLER THREAT.
-            // Can we block it?
-            // If the threat is a drop at [r,c], we should drop at [r,c].
-            if (m.type === 'drop') {
-                // Check if we can drop there
-                let myBlock = possibleMoves.find(pm => pm.type === 'drop' && pm.r === m.r && pm.c === m.c);
-                if (myBlock) return myBlock;
-            }
+    let bestMove = null;
+    let bestScore = -Infinity;
+    let alpha = -Infinity, beta = Infinity;
+
+    for (let m of moves) {
+        // Optimization: Pro mode scans expensive moves shallower
+        let effectiveDepth = depth;
+        if (aiLevel >= 4 && (m.type === 'flip' || m.type === 'magnet')) effectiveDepth = Math.max(2, depth - 2); 
+
+        let score = minimax(m.grid, m.gDir, m.magState, effectiveDepth - 1, alpha, beta, false, canUseTools);
+        
+        // --- THRIFT PENALTY ---
+        // Deduct points for using resources to ensure they are only used for big gains.
+        // F4MG Logic: Magnet is expensive (-500), Flip is semi-expensive (-150).
+        // Scaled to F4M score magnitude (Wins ~ 100,000).
+        if(m.type === 'flip') score -= 1500; 
+        if(m.type === 'magnet') score -= 5000; 
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestMove = m;
         }
+        alpha = Math.max(alpha, bestScore);
+        if(alpha >= beta) break;
     }
-    return null;
-}
 
-function getAllMoves(bd, mags, grav, player) {
-    let moves = [];
-    
-    // Drops
-    let drops = getValidDrops(bd, grav);
-    moves.push(...drops);
-    
-    // Rotations (if ammo)
-    let stats = (player === P1) ? p1Stats : p2Stats;
-    if (stats.flips > 0) {
-        moves.push({type: 'rotate', dir: 1});
-        moves.push({type: 'rotate', dir: -1});
-    }
-    
-    // Magnets (Expensive! Only check few relevant spots to save CPU)
-    // Checking every cell is too slow for JS Minimax. 
-    // Optimization: Only try magnets near existing pieces.
-    if (stats.magnets > 0) {
-        // Reduced set for depth search
-        // For Sanity check we might check more, but for now keep list small
-    }
-    
-    return moves;
-}
+    if (bestMove) executeMove(bestMove);
+    else if (moves.length > 0) executeMove(moves[0]); 
+    else if (canUseTools && tokens[P_YEL].flip > 0) doFlip(1); // Desperation
+  }
 
-function getValidDrops(bd, grav) {
-    let drops = [];
-    // Scan 'lanes' based on gravity
-    if (grav === 0) { // Down (Cols 0-6)
-        for(let c=0; c<COLS; c++) if(bd[0][c] === EMPTY) drops.push({type:'drop', r:0, c:c});
-    }
-    else if (grav === 1) { // Right (Rows 0-6)
-        for(let r=0; r<ROWS; r++) if(bd[r][0] === EMPTY) drops.push({type:'drop', r:r, c:0});
-    }
-    else if (grav === 2) { // Up (Cols 0-6 bottom)
-        for(let c=0; c<COLS; c++) if(bd[ROWS-1][c] === EMPTY) drops.push({type:'drop', r:ROWS-1, c:c});
-    }
-    else if (grav === 3) { // Left (Rows 0-6 right)
-        for(let r=0; r<ROWS; r++) if(bd[r][COLS-1] === EMPTY) drops.push({type:'drop', r:r, c:COLS-1});
-    }
-    return drops;
-}
+  function getSanityMove(g, gDir, toks, p, mState) {
+      let opponent = (p === P_RED) ? P_YEL : P_RED;
+      let myMoves = getPossibleMoves(g, gDir, toks, p, mState);
 
-function simulateMove(bd, mags, grav, move, player) {
-    // Returns new {board, magnets, gravity}
-    let newBd = bd.map(row => [...row]);
-    let newMags = JSON.parse(JSON.stringify(mags));
-    let newGrav = grav;
-    
-    if (move.type === 'drop') {
-        newBd[move.r][move.c] = player;
-        newBd = applyGravity(newBd, newMags, newGrav);
-    } else if (move.type === 'rotate') {
-        newGrav = (newGrav + move.dir + 4) % 4;
-        newBd = applyGravity(newBd, newMags, newGrav);
-    } else if (move.type === 'magnet') {
-        newMags.push({r: move.r, c: move.c, owner: player});
-    }
-    
-    return { board: newBd, magnets: newMags, grav: newGrav };
-}
+      // A. INSTANT WIN CHECK
+      for (let m of myMoves) {
+          if (checkWin(m.grid) === p) return m;
+      }
 
-function minimax(bd, mags, grav, depth, alpha, beta, maximizing) {
-    let player = maximizing ? P2 : P1;
+      // B. FORCED BLOCK CHECK (Anti-Loss)
+      // 1. Simulate Opponent's best move on CURRENT board
+      let oppToks = tokens[opponent]; // Use actual opponent tokens
+      let oppMoves = getPossibleMoves(g, gDir, oppToks, opponent, mState);
+      
+      let killerMove = oppMoves.find(om => checkWin(om.grid) === opponent);
+
+      if (killerMove) {
+          console.log("AI: Detected Killer Threat! Attempting to block...");
+          // We are in danger. We must find a move 'm' such that 
+          // AFTER 'm', the opponent can NO LONGER win immediately.
+          
+          for (let m of myMoves) {
+              // Simulate my move
+              // Then generate opponent responses to this NEW state
+              let responseMoves = getPossibleMoves(m.grid, m.gDir, oppToks, opponent, m.magState);
+              let stillDead = responseMoves.some(rm => checkWin(rm.grid) === opponent);
+              
+              if (!stillDead) {
+                  return m; // Found a savior move
+              }
+          }
+      }
+      return null;
+  }
+
+  function minimax(g, gDir, mState, depth, alpha, beta, isMax, advanced) {
+    let winner = checkWin(g);
+    if (winner === P_YEL) return 100000 + depth * 1000; 
+    if (winner === P_RED) return -100000 - depth * 1000; 
+    if (depth <= 0) return evaluateBoard(g, gDir);
+
+    let player = isMax ? P_YEL : P_RED;
+    // Limit tool branching in deep recursion
+    let simTokens = advanced 
+        ? (depth > 2 ? { flip:1, mag:0 } : { flip:0, mag:0 }) 
+        : { flip:0, mag:0 };
+
+    let moves = getPossibleMoves(g, gDir, simTokens, player, mState);
     
-    if (checkWin(bd, P2)) return { score: 10000 + depth };
-    if (checkWin(bd, P1)) return { score: -10000 - depth };
-    if (depth === 0) return { score: evaluateBoard(bd, mags, grav) };
-    
-    let moves = getAllMoves(bd, mags, grav, player);
-    
-    if (maximizing) {
+    // Heuristic Sort
+    moves.sort((a,b) => {
+        let sa = (a.type==='drop') ? 10 - Math.abs(3-a.col) : 0;
+        let sb = (b.type==='drop') ? 10 - Math.abs(3-b.col) : 0;
+        return sb - sa;
+    });
+
+    if (isMax) { 
         let maxEval = -Infinity;
-        let bestMove = null;
         for (let m of moves) {
-            let sim = simulateMove(bd, mags, grav, m, player);
-            let eval = minimax(sim.board, sim.magnets, sim.grav, depth - 1, alpha, beta, false).score;
+            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, false, advanced);
+            // Apply Thrift Penalty inside recursion too if deep searching tools? 
+            // Usually applied at root, but small penalty here discourages 'useless' flips in deep search.
+            if(m.type === 'flip') evalVal -= 100;
             
-            // --- THRIFT PENALTY ---
-            if (m.type === 'magnet') eval -= 500; // Expensive!
-            if (m.type === 'rotate') eval -= 150; // Semi-expensive
-            
-            if (eval > maxEval) {
-                maxEval = eval;
-                bestMove = m;
-            }
-            alpha = Math.max(alpha, eval);
-            if (beta <= alpha) break;
+            maxEval = Math.max(maxEval, evalVal);
+            alpha = Math.max(alpha, evalVal);
+            if (beta <= alpha) break; 
         }
-        return { score: maxEval, move: bestMove };
-    } else {
+        return maxEval;
+    } else { 
         let minEval = Infinity;
         for (let m of moves) {
-            let sim = simulateMove(bd, mags, grav, m, player);
-            let eval = minimax(sim.board, sim.magnets, sim.grav, depth - 1, alpha, beta, true).score;
-            
-            // Opponent doesn't care about thrift, but we assume they play optimal
-            if (eval < minEval) {
-                minEval = eval;
-            }
-            beta = Math.min(beta, eval);
+            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, true, advanced);
+            minEval = Math.min(minEval, evalVal);
+            beta = Math.min(beta, evalVal);
             if (beta <= alpha) break;
         }
-        return { score: minEval };
+        return minEval;
     }
-}
+  }
 
-function evaluateBoard(bd, mags, grav) {
-    // Simple heuristic + Stability Bonus
-    let score = 0;
-    
-    // Analyze P2 (AI) lines
-    score += analyzeLines(bd, P2, grav) * 1.0;
-    // Analyze P1 (Human) lines
-    score -= analyzeLines(bd, P1, grav) * 1.2; // Defense bias
-    
-    return score;
-}
+  // --- 3. STABILITY EVALUATION ---
+  function evaluateBoard(g, grav) {
+      let score = 0;
+      // Use analyzeLines from 8Z-DCC Logic
+      // Analyze P2 (AI)
+      score += analyzeLines(g, P_YEL, grav) * 1.0;
+      // Analyze P1 (Human) with Defense Bias
+      score -= analyzeLines(g, P_RED, grav) * 1.2; 
+      return score;
+  }
 
-function analyzeLines(bd, p, grav) {
-    let score = 0;
-    
-    // Windows of 4
-    // Horiz
-    for(let r=0; r<ROWS; r++) {
-        for(let c=0; c<COLS-3; c++) {
-            let window = [bd[r][c], bd[r][c+1], bd[r][c+2], bd[r][c+3]];
-            score += scoreWindow(window, p, r, c, 'horiz', bd, grav);
-        }
-    }
-    // Vert
-    for(let r=0; r<ROWS-3; r++) {
-        for(let c=0; c<COLS; c++) {
-            let window = [bd[r][c], bd[r+1][c], bd[r+2][c], bd[r+3][c]];
-            score += scoreWindow(window, p, r, c, 'vert', bd, grav);
-        }
-    }
-    // Diagonals... (omitted for brevity, assume similar logic)
-    
-    return score;
-}
+  function analyzeLines(g, p, grav) {
+      let score = 0;
+      // Windows of 4
+      // Horizontal
+      for(let r=0; r<ROWS; r++) {
+          for(let c=0; c<COLS-3; c++) {
+              score += scoreWindow([g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]], p, r, c, 'horiz', g, grav);
+          }
+      }
+      // Vertical
+      for(let r=0; r<ROWS-3; r++) {
+          for(let c=0; c<COLS; c++) {
+              score += scoreWindow([g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]], p, r, c, 'vert', g, grav);
+          }
+      }
+      // Diag Down-Right
+      for(let r=0; r<ROWS-3; r++) {
+          for(let c=0; c<COLS-3; c++) {
+              score += scoreWindow([g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]], p, r, c, 'diag', g, grav);
+          }
+      }
+      // Diag Up-Right
+      for(let r=3; r<ROWS; r++) {
+          for(let c=0; c<COLS-3; c++) {
+              score += scoreWindow([g[r][c], g[r-1][c+1], g[r-2][c+2], g[r-3][c+3]], p, r, c, 'diag', g, grav);
+          }
+      }
+      return score;
+  }
 
-function scoreWindow(window, p, r, c, type, bd, grav) {
-    let count = window.filter(x => x === p).length;
-    let empty = window.filter(x => x === EMPTY).length;
-    
-    if (count === 4) return 1000;
-    if (count === 3 && empty === 1) {
-        let s = 100;
-        // STABILITY CHECK:
-        // Is the empty slot fillable?
-        // E.g. if Vert, empty slot must be 'bottom' of empty stack?
-        // This is complex for 4-dir gravity, but basically:
-        // If "Empty" spot has a piece "under" it (relative to gravity), huge bonus.
-        s += 50; 
-        return s;
-    }
-    if (count === 2 && empty === 2) return 10;
-    return 0;
-}
+  function scoreWindow(window, p, r, c, type, g, grav) {
+      let count = window.filter(x => x === p).length;
+      let empty = window.filter(x => x === P_EMPTY).length;
+      let opp = window.filter(x => x !== p && x !== P_EMPTY).length;
 
-initGame();
-</script>
-</body>
-</html>
+      if (opp > 0) return 0; // Blocked line
+
+      if (count === 4) return 10000;
+      if (count === 3 && empty === 1) {
+          let s = 100;
+          // STABILITY BONUS: Is the empty slot fillable?
+          // This depends on gravity. A simplistic check:
+          // If the empty slot is supported by a piece or edge relative to gravity, it's a real threat.
+          s += 50; 
+          return s;
+      }
+      if (count === 2 && empty === 2) return 10;
+      return 0;
+  }
+
+  // =========================================================================
+  // --- 8Z-DCC AI ENGINE END ---
+  // =========================================================================
+
+  function executeMove(m) {
+      if (m.type === 'drop') doDrop(0, m.col);
+      else if (m.type === 'flip') doFlip(m.delta);
+      else if (m.type === 'magnet') doMagnet(m.side, m.idx);
+  }
+
+  function getPossibleMoves(g, gDir, toks, p, mState) {
+      let moves = [];
+      for(let i=0; i<COLS; i++) {
+          let t = getDropTarget(g, gDir, i);
+          if (t) {
+              let nextG = g.map(r=>[...r]);
+              nextG[t.r][t.c] = p;
+              nextG = settleGridComplete(nextG, gDir, mState); 
+              moves.push({ type:'drop', col:i, grid:nextG, gDir:gDir, magState:mState });
+          }
+      }
+      if(toks.flip > 0) { 
+          let ccwDir = CCW_MAP[gDir];
+          let gCCW = settleGridComplete(g, ccwDir, mState); 
+          moves.push({ type:'flip', delta:1, grid:gCCW, gDir:ccwDir, magState:mState });
+          
+          let cwDir = CW_MAP[gDir];
+          let gCW = settleGridComplete(g, cwDir, mState);
+          moves.push({ type:'flip', delta:-1, grid:gCW, gDir:cwDir, magState:mState });
+      }
+      if(toks.mag > 0) {
+          const sides = [0,1,2,3];
+          for(let side of sides) {
+              for(let idx=0; idx<7; idx++) {
+                  let curM = getMag(mState, side, idx);
+                  if (curM && curM.p === p) continue; 
+                  
+                  let nextMState = cloneMagState(mState);
+                  let opp = (side + 2) % 4;
+                  let oppVal = getMag(nextMState, opp, idx); 
+                  let arrName = ['top','right','bottom','left'][side];
+                  let oppName = ['top','right','bottom','left'][opp];
+
+                  if (oppVal && oppVal.p !== p) nextMState[oppName][idx] = null;
+                  else nextMState[arrName][idx] = { p: p, life: MAGNET_LIFE };
+                  
+                  let nextG = settleGridComplete(g, gDir, nextMState);
+                  moves.push({ type:'magnet', side, idx, grid:nextG, gDir, magState:
