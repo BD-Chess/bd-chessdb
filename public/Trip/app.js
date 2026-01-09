@@ -6,112 +6,85 @@
   // UI Elements
   const inputEl = $('input');
   const statusEl = $('status');
-  
-  // Buttons
   const btnStandard = $('btnStandard');
   const btnDeep = $('btnDeep');
   
-  // NEW: Presets & File Actions (Check if they exist to prevent crashes)
+  // Collapse Panel
+  const btnCollapse = $('btnCollapse');
+  const btnExpand = $('btnExpand');
+  const leftPanel = $('leftPanel');
+
+  // Presets & Files
   const selPresets = $('selPresets');
   const btnSave = $('btnSave');
   const btnLoad = $('btnLoad');
   const fileLoader = $('fileLoader');
 
-  // Route & Stats
+  // Outputs
   const routeList = $('routeList');
   const distKmEl = $('distKm');
   const savedKmEl = $('savedKm');
   const linksEl = $('links');
   
-  // Checkboxes & Modes
+  // Options
   const chkRoundTrip = $('chkRoundTrip');
   const btnDriving = $('btnDriving');
   const btnWalking = $('btnWalking');
   const chkDirect = $('chkDirect'); 
   const chkGoogleStyle = $('chkGoogleStyle'); 
 
-  // Panels
   const mapPlaceholder = $('mapPlaceholder');
   const helpOverlay = $('helpOverlay');
   const btnHelp = $('btnHelp');
   const btnCloseHelp = $('btnCloseHelp');
 
-  // Worker
   const worker = new Worker('worker.js');
 
-  // Map State
+  // State
   let map;
   let geocoder;
   let directionsService;
   let directionsRenderer;
   let mapMarkers = [];
   let mapPolyline = null;
-  
   let lastSolvedPoints = null;
   let currentTravelMode = 'DRIVING'; 
 
-  // --- 1. TRIP PRESETS DATA ---
+  // --- PRESET DATA ---
   const PRESETS = {
-    'LJUBLJANA': `# 🇸🇮 Ljubljana Classic (Walking)
-# --- Start ---
-Prešernov trg, Ljubljana START
-# --- Stops ---
-Ljubljana Castle
-Dragon Bridge, Ljubljana
-Tivoli Park, Ljubljana
-Metelkova Art Center
-Central Market, Ljubljana
-Congress Square, Ljubljana`,
-
-    'PARIS': `# 🇫🇷 Paris Essential (Walking)
-# --- Start ---
-Eiffel Tower, Paris START
-# --- Stops ---
-Louvre Museum, Paris
-Notre Dame Cathedral, Paris
-Arc de Triomphe, Paris
-Sacré-Cœur, Paris
-Pantheon, Paris
-Jardin du Luxembourg, Paris
-Moulin Rouge, Paris`,
-
-    'ROME': `# 🇮🇹 Rome Ancient & Holy (Walking)
-# --- Start ---
-Colosseum, Rome START
-# --- Stops ---
-Pantheon, Rome
-Trevi Fountain, Rome
-Spanish Steps, Rome
-St. Peter's Basilica, Vatican City
-Roman Forum, Rome
-Piazza Navona, Rome`,
-
-    'NY': `# 🇺🇸 New York Manhattan (Walking/Metro)
-# --- Start ---
-Times Square, New York START
-# --- Stops ---
-Central Park, New York
-Empire State Building, New York
-Brooklyn Bridge, New York
-Statue of Liberty, New York
-Grand Central Terminal, New York
-9/11 Memorial, New York`,
-
-    'TOKYO': `# 🇯🇵 Tokyo Highlights (Metro)
-# --- Start ---
-Shinjuku Station, Tokyo START
-# --- Stops ---
-Shibuya Crossing, Tokyo
-Senso-ji, Tokyo
-Meiji Jingu, Tokyo
-Tokyo Tower
-Akihabara, Tokyo
-Tsukiji Outer Market, Tokyo`,
+    // === DRIVING TOURS ===
+    'EUROPE_ALL': `# 🇪🇺 Ultimate EU Capitals Tour (Driving)
+# 27 Capitals - The Grand Tour
+Vienna, Austria
+Brussels, Belgium
+Sofia, Bulgaria
+Zagreb, Croatia
+Nicosia, Cyprus
+Prague, Czechia
+Copenhagen, Denmark
+Tallinn, Estonia
+Helsinki, Finland
+Paris, France
+Berlin, Germany
+Athens, Greece
+Budapest, Hungary
+Dublin, Ireland
+Rome, Italy
+Riga, Latvia
+Vilnius, Lithuania
+Luxembourg City, Luxembourg
+Valletta, Malta
+Amsterdam, Netherlands
+Warsaw, Poland
+Lisbon, Portugal
+Bucharest, Romania
+Bratislava, Slovakia
+Ljubljana, Slovenia
+Madrid, Spain
+Stockholm, Sweden`,
 
     'SLOVENIA_DRIVE': `# 🇸🇮 Slovenia Full Loop (Driving)
-# --- Start ---
 Ljubljana START
-# --- Stops ---
 Lake Bled
 Postojna Cave
 Piran
@@ -121,9 +94,7 @@ Predjama Castle
 Velika Planina`,
 
     'CALIFORNIA': `# 🇺🇸 California Road Trip (Driving)
-# --- Start ---
 San Francisco, CA START
-# --- Stops ---
 Yosemite National Park, CA
 Monterey, CA
 Santa Barbara, CA
@@ -133,9 +104,7 @@ Death Valley National Park, CA
 Las Vegas, NV`,
 
     'GERMANY': `# 🇩🇪 Germany Autobahn (Driving)
-# --- Start ---
 Berlin, Germany START
-# --- Stops ---
 Hamburg, Germany
 Cologne, Germany
 Frankfurt, Germany
@@ -143,86 +112,245 @@ Heidelberg, Germany
 Munich, Germany
 Neuschwanstein Castle, Germany`,
 
-    'EUROPE': `# 🇪🇺 Europe Capitals (Driving)
-# --- Start ---
-Paris, France START
-# --- Stops ---
-Brussels, Belgium
-Amsterdam, Netherlands
-Berlin, Germany
-Prague, Czechia
-Vienna, Austria
-Budapest, Hungary`,
-
     'ICELAND': `# 🇮🇸 Iceland Ring Road (Driving)
-# --- Start ---
 Reykjavik, Iceland START
-# --- Stops ---
 Vik, Iceland
 Hofn, Iceland
 Egilsstadir, Iceland
 Akureyri, Iceland
 Snaefellsnes Peninsula, Iceland
-Golden Circle, Iceland`
+Golden Circle, Iceland`,
+
+    // === WALKING TOURS (ALL 27 EU CAPITALS) ===
+    'VIENNA': `# 🇦🇹 Vienna Walking
+St. Stephen's Cathedral, Vienna
+Hofburg Palace, Vienna
+Schönbrunn Palace, Vienna
+Belvedere Palace, Vienna
+Prater, Vienna
+Naschmarkt, Vienna`,
+
+    'BRUSSELS': `# 🇧🇪 Brussels Walking
+Grand Place, Brussels
+Manneken Pis, Brussels
+Atomium, Brussels
+Royal Palace of Brussels
+Parc du Cinquantenaire, Brussels`,
+
+    'SOFIA': `# 🇧🇬 Sofia Walking
+Alexander Nevsky Cathedral, Sofia
+Vitosha Boulevard, Sofia
+National Palace of Culture, Sofia
+Boyana Church, Sofia`,
+
+    'ZAGREB': `# 🇭🇷 Zagreb Walking
+Ban Jelačić Square, Zagreb
+Zagreb Cathedral
+St. Mark's Church, Zagreb
+Museum of Broken Relationships, Zagreb
+Tkalčićeva Street, Zagreb`,
+
+    'NICOSIA': `# 🇨🇾 Nicosia Walking
+Ledra Street, Nicosia
+Buyuk Han, Nicosia
+Selimiye Camii, Nicosia
+Cyprus Museum, Nicosia`,
+
+    'PRAGUE': `# 🇨🇿 Prague Walking
+Charles Bridge, Prague
+Prague Castle
+Old Town Square, Prague
+Wenceslas Square, Prague
+Dancing House, Prague`,
+
+    'COPENHAGEN': `# 🇩🇰 Copenhagen Walking
+Nyhavn, Copenhagen
+The Little Mermaid, Copenhagen
+Tivoli Gardens, Copenhagen
+Amalienborg, Copenhagen
+Strøget, Copenhagen`,
+
+    'TALLINN': `# 🇪🇪 Tallinn Walking
+Tallinn Old Town
+Toompea Castle, Tallinn
+Alexander Nevsky Cathedral, Tallinn
+Kadriorg Park, Tallinn`,
+
+    'HELSINKI': `# 🇫🇮 Helsinki Walking
+Helsinki Cathedral
+Suomenlinna, Helsinki
+Temppeliaukio Church, Helsinki
+Market Square, Helsinki`,
+
+    'PARIS': `# 🇫🇷 Paris Walking
+Eiffel Tower, Paris
+Louvre Museum, Paris
+Notre Dame Cathedral, Paris
+Arc de Triomphe, Paris
+Sacré-Cœur, Paris
+Jardin du Luxembourg, Paris`,
+
+    'BERLIN': `# 🇩🇪 Berlin Walking
+Brandenburg Gate, Berlin
+Reichstag Building, Berlin
+Berlin Wall Memorial
+Checkpoint Charlie, Berlin
+Alexanderplatz, Berlin`,
+
+    'ATHENS': `# 🇬🇷 Athens Walking
+Acropolis of Athens
+Parthenon, Athens
+Plaka, Athens
+Syntagma Square, Athens
+Panathenaic Stadium, Athens`,
+
+    'BUDAPEST': `# 🇭🇺 Budapest Walking
+Hungarian Parliament Building, Budapest
+Buda Castle, Budapest
+Fisherman's Bastion, Budapest
+Széchenyi Thermal Bath, Budapest
+Heroes' Square, Budapest`,
+
+    'DUBLIN': `# 🇮🇪 Dublin Walking
+Temple Bar, Dublin
+Trinity College Dublin
+Guinness Storehouse, Dublin
+St Stephen's Green, Dublin
+Dublin Castle`,
+
+    'ROME': `# 🇮🇹 Rome Walking
+Colosseum, Rome
+Pantheon, Rome
+Trevi Fountain, Rome
+Spanish Steps, Rome
+St. Peter's Basilica, Vatican City`,
+
+    'RIGA': `# 🇱🇻 Riga Walking
+House of the Blackheads, Riga
+Riga Central Market
+St. Peter's Church, Riga
+Freedom Monument, Riga`,
+
+    'VILNIUS': `# 🇱🇹 Vilnius Walking
+Gediminas' Tower, Vilnius
+Vilnius Cathedral
+Gate of Dawn, Vilnius
+Uzupis, Vilnius`,
+
+    'LUXEMBOURG': `# 🇱🇺 Luxembourg Walking
+Le Chemin de la Corniche, Luxembourg
+Casemates du Bock, Luxembourg
+Grand Ducal Palace, Luxembourg
+Notre-Dame Cathedral, Luxembourg`,
+
+    'VALLETTA': `# 🇲🇹 Valletta Walking
+St. John's Co-Cathedral, Valletta
+Upper Barrakka Gardens, Valletta
+Grandmaster's Palace, Valletta
+Fort St Elmo, Valletta`,
+
+    'AMSTERDAM': `# 🇳🇱 Amsterdam Walking
+Rijksmuseum, Amsterdam
+Anne Frank House, Amsterdam
+Vondelpark, Amsterdam
+Dam Square, Amsterdam
+Red Light District, Amsterdam`,
+
+    'WARSAW': `# 🇵🇱 Warsaw Walking
+Old Town Market Place, Warsaw
+Royal Castle, Warsaw
+Palace of Culture and Science, Warsaw
+Łazienki Park, Warsaw`,
+
+    'LISBON': `# 🇵🇹 Lisbon Walking
+Belém Tower, Lisbon
+Jerónimos Monastery, Lisbon
+Praça do Comércio, Lisbon
+Castelo de S. Jorge, Lisbon
+Rossio Square, Lisbon`,
+
+    'BUCHAREST': `# 🇷🇴 Bucharest Walking
+Palace of Parliament, Bucharest
+Romanian Athenaeum, Bucharest
+Old Town, Bucharest
+Herastrau Park, Bucharest`,
+
+    'BRATISLAVA': `# 🇸🇰 Bratislava Walking
+Bratislava Castle
+St. Martin's Cathedral, Bratislava
+Michael's Gate, Bratislava
+Blue Church, Bratislava`,
+
+    'LJUBLJANA': `# 🇸🇮 Ljubljana Walking
+Prešernov trg, Ljubljana
+Ljubljana Castle
+Dragon Bridge, Ljubljana
+Tivoli Park, Ljubljana
+Metelkova Art Center`,
+
+    'MADRID': `# 🇪🇸 Madrid Walking
+Royal Palace of Madrid
+Plaza Mayor, Madrid
+Retiro Park, Madrid
+Prado Museum, Madrid
+Puerta del Sol, Madrid`,
+
+    'STOCKHOLM': `# 🇸🇪 Stockholm Walking
+Gamla Stan, Stockholm
+Vasa Museum, Stockholm
+Skansen, Stockholm
+Stockholm Palace`,
+
+    // === COMPLEX (STRESS TEST) ===
+    'COMPLEX_EU': `# 🇪🇺💀 THE GAUNTLET (Capitals + Stops)
+# Warning: This is a massive route!
+Vienna, Austria
+Hofburg Palace, Vienna
+Brussels, Belgium
+Grand Place, Brussels
+Sofia, Bulgaria
+Alexander Nevsky Cathedral, Sofia
+Zagreb, Croatia
+Ban Jelačić Square, Zagreb
+Nicosia, Cyprus
+Prague, Czechia
+Charles Bridge, Prague
+Copenhagen, Denmark
+Nyhavn, Copenhagen
+Tallinn, Estonia
+Helsinki, Finland
+Paris, France
+Eiffel Tower, Paris
+Berlin, Germany
+Brandenburg Gate, Berlin
+Athens, Greece
+Acropolis of Athens
+Budapest, Hungary
+Hungarian Parliament, Budapest
+Dublin, Ireland
+Temple Bar, Dublin
+Rome, Italy
+Colosseum, Rome
+Riga, Latvia
+Vilnius, Lithuania
+Luxembourg City, Luxembourg
+Valletta, Malta
+Amsterdam, Netherlands
+Rijksmuseum, Amsterdam
+Warsaw, Poland
+Old Town, Warsaw
+Lisbon, Portugal
+Belém Tower, Lisbon
+Bucharest, Romania
+Bratislava, Slovakia
+Ljubljana, Slovenia
+Ljubljana Castle
+Madrid, Spain
+Royal Palace, Madrid
+Stockholm, Sweden
+Gamla Stan, Stockholm`
   };
 
-  // --- 2. PRESET & SAVE/LOAD LOGIC ---
-  if (selPresets) {
-    selPresets.addEventListener('change', () => {
-      const key = selPresets.value;
-      if (key && PRESETS[key]) {
-        inputEl.value = PRESETS[key];
-        setStatus(`Loaded: ${selPresets.options[selPresets.selectedIndex].text}`, 'ok');
-        
-        // Auto-set travel mode
-        if (['LJUBLJANA', 'PARIS', 'ROME', 'NY', 'TOKYO'].includes(key)) {
-           setTravelMode('WALKING');
-           chkRoundTrip.checked = true;
-        } else {
-           setTravelMode('DRIVING');
-           chkRoundTrip.checked = true;
-        }
-      }
-    });
-  }
-
-  if (btnSave) {
-    btnSave.addEventListener('click', () => {
-      const text = inputEl.value;
-      if (!text.trim()) {
-        setStatus('Nothing to save.', 'warn');
-        return;
-      }
-      const blob = new Blob([text], { type: 'text/plain' });
-      const anchor = document.createElement('a');
-      anchor.download = 'MyTrip.txt';
-      anchor.href = window.URL.createObjectURL(blob);
-      anchor.click();
-      window.URL.revokeObjectURL(anchor.href);
-      setStatus('Trip saved to your Downloads folder.', 'ok');
-    });
-  }
-
-  if (btnLoad && fileLoader) {
-    btnLoad.addEventListener('click', () => {
-      fileLoader.click();
-    });
-
-    fileLoader.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        inputEl.value = evt.target.result;
-        setStatus(`Loaded file: ${file.name}`, 'ok');
-        fileLoader.value = ''; 
-      };
-      reader.readAsText(file);
-    });
-  }
-
-  // --- 3. GOOGLE MAPS SETUP ---
   const CUSTOM_DARK_STYLE = [
     { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
     { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
@@ -259,9 +387,97 @@ Golden Circle, Iceland`
     });
   };
 
-  // --- 4. UI HELPERS ---
-  function showHelp() { helpOverlay.classList.add('active'); }
-  function hideHelp() { helpOverlay.classList.remove('active'); }
+  // --- HELPERS ---
+  function clearMap() {
+    if (!map) return;
+    mapMarkers.forEach(m => m.setMap(null));
+    mapMarkers = [];
+    if (mapPolyline) mapPolyline.setMap(null);
+    directionsRenderer.setDirections({ routes: [] });
+    mapPlaceholder.style.display = 'block'; // Show placeholder again
+    
+    // Clear text stats
+    distKmEl.textContent = '—';
+    savedKmEl.textContent = '—';
+    routeList.innerHTML = '';
+    linksEl.innerHTML = '';
+    lastSolvedPoints = null;
+  }
+
+  function setStatus(msg, cls) {
+    statusEl.textContent = msg;
+    statusEl.className = 'status' + (cls ? (' ' + cls) : '');
+  }
+
+  // --- UI LOGIC ---
+  if (selPresets) {
+    selPresets.addEventListener('change', () => {
+      const key = selPresets.value;
+      
+      // 1. Clear current route
+      clearMap();
+
+      if (key && PRESETS[key]) {
+        inputEl.value = PRESETS[key];
+        setStatus(`Loaded preset: ${key}`, 'ok');
+        
+        // Auto-set travel mode
+        // If it's a driving tour or complex, set driving. Else walking.
+        const isWalking = key !== 'EUROPE_ALL' && 
+                          key !== 'SLOVENIA_DRIVE' && 
+                          key !== 'CALIFORNIA' && 
+                          key !== 'GERMANY' && 
+                          key !== 'ICELAND' && 
+                          key !== 'COMPLEX_EU';
+        
+        setTravelMode(isWalking ? 'WALKING' : 'DRIVING');
+        chkRoundTrip.checked = true;
+      }
+    });
+  }
+
+  // Collapse / Expand
+  if (btnCollapse) {
+    btnCollapse.addEventListener('click', () => {
+      $('leftPanel').classList.add('collapsed');
+      btnExpand.style.display = 'flex';
+    });
+  }
+  if (btnExpand) {
+    btnExpand.addEventListener('click', () => {
+      $('leftPanel').classList.remove('collapsed');
+      btnExpand.style.display = 'none';
+    });
+  }
+
+  // Save/Load
+  if (btnSave) {
+    btnSave.addEventListener('click', () => {
+      const text = inputEl.value;
+      if (!text.trim()) { setStatus('Nothing to save.', 'warn'); return; }
+      const blob = new Blob([text], { type: 'text/plain' });
+      const anchor = document.createElement('a');
+      anchor.download = 'MyTrip.txt';
+      anchor.href = window.URL.createObjectURL(blob);
+      anchor.click();
+      window.URL.revokeObjectURL(anchor.href);
+    });
+  }
+  if (btnLoad && fileLoader) {
+    btnLoad.addEventListener('click', () => fileLoader.click());
+    fileLoader.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        clearMap(); // Clear before loading
+        inputEl.value = evt.target.result;
+        setStatus(`Loaded file: ${file.name}`, 'ok');
+        fileLoader.value = '';
+      };
+      reader.readAsText(file);
+    });
+  }
 
   function setTravelMode(mode) {
     currentTravelMode = mode;
@@ -276,6 +492,21 @@ Golden Circle, Iceland`
       const links = buildMapsLegLinks(lastSolvedPoints, chkRoundTrip.checked, currentTravelMode);
       renderLinks(links);
       updateMapVisualization(lastSolvedPoints);
+    }
+  }
+
+  function updateOptimizeButtons(activeType) {
+    // If activeType is 'standard', Standard is blue, Deep is gray.
+    if (activeType === 'standard') {
+      btnStandard.classList.remove('secondary');
+      btnDeep.classList.add('secondary');
+    } else if (activeType === 'deep') {
+      btnStandard.classList.add('secondary');
+      btnDeep.classList.remove('secondary');
+    } else {
+      // Reset (both secondary or default)
+      btnStandard.classList.remove('secondary');
+      btnDeep.classList.add('secondary');
     }
   }
 
@@ -395,15 +626,6 @@ Golden Circle, Iceland`
       await sleep(300);
     }
     return pts;
-  }
-
-  function setStatus(msg, cls) {
-    statusEl.textContent = msg;
-    statusEl.className = 'status' + (cls ? (' ' + cls) : '');
-  }
-
-  function defaultExample() {
-    return PRESETS['LJUBLJANA'] || ""; 
   }
 
   function parseStops(text) {
@@ -537,6 +759,9 @@ Golden Circle, Iceland`
   }
 
   async function run(profile) {
+    // VISUAL FEEDBACK: Update buttons to show which profile is running
+    updateOptimizeButtons(profile);
+
     disableWhileRunning(true);
     let { pts, startIdx } = parseStops(inputEl.value);
     
@@ -575,6 +800,10 @@ Golden Circle, Iceland`
     }
   };
 
+  function showHelp() { helpOverlay.classList.add('active'); }
+  function hideHelp() { helpOverlay.classList.remove('active'); }
+
+  // --- EVENT LISTENERS ---
   if (btnStandard) btnStandard.addEventListener('click', () => run('standard'));
   if (btnDeep) btnDeep.addEventListener('click', () => run('deep'));
   
@@ -594,5 +823,6 @@ Golden Circle, Iceland`
     }
   });
   
-  inputEl.value = defaultExample();
+  // Initialize with a default ONLY if preset is loaded, otherwise leave blank
+  // inputEl.value = defaultExample(); // Disabled to keep box clean or show placeholder
 })();

@@ -20,29 +20,62 @@
     </div>
     <div class="top-actions">
       <a id="btnHelp" href="#">Help / Guide</a>
+      <a href="https://www.google.com/maps" target="_blank" rel="noopener">Open Google Maps</a>
     </div>
   </header>
 
   <main class="split">
-    <section class="panel left">
+    <button id="btnCollapse" class="panel-toggle" title="Hide Toolbar">«</button>
+    
+    <button id="btnExpand" class="panel-toggle-open" style="display:none;" title="Show Toolbar">»</button>
+
+    <section id="leftPanel" class="panel left">
       <div class="card">
         <h2>Plan Your Trip</h2>
         
-        <select id="selPresets" style="width:100%; padding:8px; margin-bottom:10px; border-radius:8px; background:#0f1621; color:#6aa9ff; border:1px solid #1f2a3a; font-family:inherit; cursor:pointer;">
+        <select id="selPresets" class="preset-dropdown">
           <option value="">✨ Load a Recommended Trip...</option>
-          <optgroup label="Walking Tours (City)">
-            <option value="LJUBLJANA">🇸🇮 Ljubljana (Classic)</option>
-            <option value="PARIS">🇫🇷 Paris (Essential)</option>
-            <option value="ROME">🇮🇹 Rome (Ancient & Holy)</option>
-            <option value="NY">🇺🇸 New York (Manhattan)</option>
-            <option value="TOKYO">🇯🇵 Tokyo (Highlights)</option>
-          </optgroup>
-          <optgroup label="Driving Tours (Country/Region)">
+          
+          <optgroup label="Driving Tours (Full Country/Region)">
+            <option value="EUROPE_ALL">🇪🇺 All 27 EU Capitals (Ultimate Tour)</option>
             <option value="SLOVENIA_DRIVE">🇸🇮 Slovenia (Full Loop)</option>
             <option value="CALIFORNIA">🇺🇸 California (Road Trip)</option>
             <option value="GERMANY">🇩🇪 Germany (Autobahn)</option>
-            <option value="EUROPE">🇪🇺 Europe Capitals</option>
             <option value="ICELAND">🇮🇸 Iceland (Ring Road)</option>
+          </optgroup>
+
+          <optgroup label="Walking Tours (EU Capitals)">
+            <option value="VIENNA">🇦🇹 Vienna (Wien)</option>
+            <option value="BRUSSELS">🇧🇪 Brussels (Bruxelles)</option>
+            <option value="SOFIA">🇧🇬 Sofia</option>
+            <option value="ZAGREB">🇭🇷 Zagreb</option>
+            <option value="NICOSIA">🇨🇾 Nicosia</option>
+            <option value="PRAGUE">🇨🇿 Prague (Praha)</option>
+            <option value="COPENHAGEN">🇩🇰 Copenhagen (København)</option>
+            <option value="TALLINN">🇪🇪 Tallinn</option>
+            <option value="HELSINKI">🇫🇮 Helsinki</option>
+            <option value="PARIS">🇫🇷 Paris</option>
+            <option value="BERLIN">🇩🇪 Berlin</option>
+            <option value="ATHENS">🇬🇷 Athens</option>
+            <option value="BUDAPEST">🇭🇺 Budapest</option>
+            <option value="DUBLIN">🇮🇪 Dublin</option>
+            <option value="ROME">🇮🇹 Rome (Roma)</option>
+            <option value="RIGA">🇱🇻 Riga</option>
+            <option value="VILNIUS">🇱🇹 Vilnius</option>
+            <option value="LUXEMBOURG">🇱🇺 Luxembourg City</option>
+            <option value="VALLETTA">🇲🇹 Valletta</option>
+            <option value="AMSTERDAM">🇳🇱 Amsterdam</option>
+            <option value="WARSAW">🇵🇱 Warsaw (Warszawa)</option>
+            <option value="LISBON">🇵🇹 Lisbon (Lisboa)</option>
+            <option value="BUCHAREST">🇷🇴 Bucharest</option>
+            <option value="BRATISLAVA">🇸🇰 Bratislava</option>
+            <option value="LJUBLJANA">🇸🇮 Ljubljana</option>
+            <option value="MADRID">🇪🇸 Madrid</option>
+            <option value="STOCKHOLM">🇸🇪 Stockholm</option>
+          </optgroup>
+
+          <optgroup label="Driving + Walking Tours (Extreme)">
+            <option value="COMPLEX_EU">🇪🇺💀 THE GAUNTLET: All Capitals + Walking Stops</option>
           </optgroup>
         </select>
 
@@ -53,8 +86,8 @@
         <textarea id="input" spellcheck="false" placeholder="Enter stops here..."></textarea>
 
         <div class="row tight" style="margin-top:5px; margin-bottom:15px;">
-          <button id="btnSave" class="secondary" style="font-size:12px; padding:6px;">💾 Save to File</button>
-          <button id="btnLoad" class="secondary" style="font-size:12px; padding:6px;">📂 Load from File</button>
+          <button id="btnSave" class="secondary small-btn">💾 Save</button>
+          <button id="btnLoad" class="secondary small-btn">📂 Load</button>
           <input type="file" id="fileLoader" style="display:none" accept=".txt" />
         </div>
 
