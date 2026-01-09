@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Help - Trip Optimizer (8Z-RP)</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Specific styles for the help page layout */
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding-bottom: 40px;
+    }
+    .help-block {
+      margin-bottom: 20px;
+    }
+    li { margin-bottom: 8px; line-height: 1.5; color: var(--text); }
+    code {
+      background: rgba(0,0,0,0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      color: var(--accent);
+      font-size: 0.9em;
+    }
+    pre {
+      background: #0c121b;
+      padding: 15px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">8Z</div>
+      <div class="titles">
+        <div class="title">User Guide</div>
+        <div class="subtitle">Documentation & Examples</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <a href="index.html">← Back to Optimizer</a>
+    </div>
+  </header>
+
+  <div class="container">
+    
+    <div class="card help-block">
+      <h2>How to Use</h2>
+      <ul>
+        <li><strong>1. Enter Locations:</strong> Type your stops in the text box. One per line.</li>
+        <li><strong>2. Optimize:</strong> Click "Fast" for quick results or "Balanced" for a deeper search.</li>
+        <li><strong>3. View Route:</strong> The map will draw the path. The stops are reordered efficiently.</li>
+        <li><strong>4. Export:</strong> Click the "Open in Maps" buttons to send the route (or specific legs of it) to Google Maps on your phone.</li>
+      </ul>
+    </div>
+
+    <div class="card help-block">
+      <h2>Input Formats</h2>
+      <p class="muted">You can mix and match these formats in the input box.</p>
+      
+      <h3>1. GPS Coordinates (Recommended)</h3>
+      <p class="small muted">Most precise. No internet lookup required.</p>
+      <pre>46.0569, 14.5058</pre>
+
+      <h3>2. Addresses / Place Names</h3>
+      <p class="small muted">The tool will use Google to find these coordinates automatically.</p>
+      <pre>Tivoli Park, Ljubljana
+Prešernov trg, Ljubljana</pre>
+
+      <h3>3. Custom Name with GPS</h3>
+      <p class="small muted">Useful for "Home" or specific meeting points.</p>
+      <pre>Home | 46.0428, 14.4500
+Meeting Spot | 46.0510, 14.5051</pre>
+    </div>
+
+    <div class="card help-block">
+      <h2>Special Commands</h2>
+      
+      <h3>Locking the Start</h3>
+      <p>By default, the optimizer might change your starting point to find the shortest loop. To force a specific location to be the start, add the word <code>START</code> anywhere on that line.</p>
+      <pre>Grand Hotel Union | 46.0525, 14.5060 START</pre>
+
+      <h3>Comments</h3>
+      <p>Lines starting with <code>#</code> are ignored. Use them for notes.</p>
+      <pre># This is my trip to Ljubljana
+Tivoli Park, Ljubljana</pre>
+    </div>
+
+    <div class="card help-block">
+      <h2>Full Example Input</h2>
+      <pre># My Ljubljana Trip
+START: Grand Hotel Union | 46.0525, 14.5060
+Tivoli Park, Ljubljana
+Dragon Bridge, Ljubljana
+Metelkova Art Center
+46.0681, 14.4701 | Cinema</pre>
+    </div>
+
+    <div class="card help-block">
+      <h2>Troubleshooting</h2>
+      <ul>
+        <li><strong>"Geocode failed":</strong> The tool couldn't find the address. Check for typos or try adding the city name (e.g., "Main St, London").</li>
+        <li><strong>"ApiNotActivated":</strong> Your API Key is missing permissions. Go to Google Cloud Console and enable the <strong>"Geocoding API"</strong>.</li>
+        <li><strong>Map looks grey/dark:</strong> Ensure you have enabled <strong>"Maps JavaScript API"</strong> in your Google Cloud Console.</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <span class="muted small">8Z-RP Trip Optimizer • Documentation</span>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trip Optimizer (8Z-RP)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">8Z</div>
+      <div class="titles">
+        <div class="title">Trip Optimizer</div>
+        <div class="subtitle">Offline, deterministic (client-side). Export to Maps.</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <a href="help.html" target="_blank">Help / Guide</a>
+      <a href="https://www.google.com/maps" target="_blank" rel="noopener">Open Google Maps</a>
+    </div>
+  </header>
+
+  <main class="split">
+    <section class="panel left">
+      <div class="card">
+        <h2>Stops</h2>
+        <p class="muted">
+          One per line. <a href="help.html" target="_blank" style="color:var(--accent); text-decoration:none;">See examples</a>.
+          Prefix <span class="mono">START:</span> to lock start.
+        </p>
+
+        <textarea id="input" spellcheck="false"></textarea>
+
+        <div class="row">
+          <button id="btnFast">Optimize (Fast)</button>
+          <button id="btnBalanced" class="secondary">Optimize (Balanced)</button>
+        </div>
+
+        <div class="row tight">
+          <label class="check">
+            <input id="chkRoundTrip" type="checkbox" checked />
+            <span>Round trip</span>
+          </label>
+          <label class="check">
+            <input id="chkDriving" type="checkbox" checked />
+            <span>Driving</span>
+          </label>
+        </div>
+
+        <div id="status" class="status"></div>
+      </div>
+
+      <div class="card">
+        <h2>Route Stats</h2>
+        <div class="metrics">
+          <div class="metric">
+            <div class="k">Distance</div>
+            <div class="v" id="distKm">—</div>
+          </div>
+          <div class="metric">
+            <div class="k">Saved</div>
+            <div class="v" id="savedKm">—</div>
+          </div>
+        </div>
+
+        <ol id="routeList" class="route"></ol>
+        <div id="links" class="links"></div>
+      </div>
+    </section>
+
+    <section class="panel right">
+      <div id="mapPlaceholder" class="placeholder-msg">
+        <div class="big-icon">🗺️</div>
+        <h2>Ready to Route</h2>
+        <p class="muted box-width">
+          Your optimized route will appear here.
+        </p>
+      </div>
+
+      <div id="map"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span class="muted small">8Z-RP Trip Optimizer • Powered by Google Maps Platform</span>
+  </footer>
+
+  <script src="app.js"></script>
+
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&callback=initMap&v=weekly"
+    defer
+  ></script>
+</body>
+</html>
