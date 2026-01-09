@@ -13,30 +13,41 @@
   const savedKmEl = $('savedKm');
   const linksEl = $('links');
   const chkRoundTrip = $('chkRoundTrip');
-  const chkDriving = $('chkDriving');
-  const mapPlaceholder = $('mapPlaceholder');
+  
+  // Controls
+  const selMode = $('selMode');     
+  const chkDirect = $('chkDirect'); 
 
-  // Worker for calculation
+  // Panels & Overlays
+  const mapPlaceholder = $('mapPlaceholder');
+  const helpOverlay = $('helpOverlay');
+  const btnHelp = $('btnHelp');
+  const btnCloseHelp = $('btnCloseHelp');
+
+  // Worker
   const worker = new Worker('worker.js');
 
-  // Map & Service State
+  // Map State
   let map;
   let geocoder;
   let directionsService;
   let directionsRenderer;
   let mapMarkers = [];
   let mapPolyline = null;
+  
+  let lastSolvedPoints = null;
 
   // --------------------------------------------------------------------------
   // GOOGLE MAPS INIT
   // --------------------------------------------------------------------------
   window.initMap = function() {
-    // 1. Initialize Map
-    const defaultCenter = { lat: 46.0569, lng: 14.5058 }; // Default: Ljubljana
+    const defaultCenter = { lat: 46.0569, lng: 14.5058 }; 
     
     map = new google.maps.Map($('map'), {
       zoom: 12,
       center: defaultCenter,
+      mapTypeId: 'roadmap',
+      mapTypeControl: true,
       styles: [
         { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
         { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
@@ -48,15 +59,13 @@
       ],
     });
 
-    // 2. Initialize Services
     geocoder = new google.maps.Geocoder();
     directionsService = new google.maps.DirectionsService();
     
-    // Renderer handles the blue route line on the map
     directionsRenderer = new google.maps.DirectionsRenderer({
       map: map,
-      suppressMarkers: true, // We will use our own numbered markers
-      preserveViewport: false, // Let the route auto-zoom the map
+      suppressMarkers: true,
+      preserveViewport: false,
       polylineOptions: {
         strokeColor: "#6aa9ff",
         strokeWeight: 5,
@@ -65,7 +74,21 @@
     });
   };
 
-  // Helper: Draw simple straight lines (fallback if Directions API fails or >25 stops)
+  // --------------------------------------------------------------------------
+  // VIEW SWITCHING LOGIC (HELP vs MAP)
+  // --------------------------------------------------------------------------
+  function showHelp() {
+    helpOverlay.classList.add('active');
+  }
+
+  function hideHelp() {
+    helpOverlay.classList.remove('active');
+  }
+
+  // --------------------------------------------------------------------------
+  // VISUALIZATION LOGIC
+  // --------------------------------------------------------------------------
+
   function drawFallbackPolyline(pathCoords) {
     if (mapPolyline) mapPolyline.setMap(null);
     
@@ -78,7 +101,6 @@
     });
     mapPolyline.setMap(map);
     
-    // Zoom to fit
     const bounds = new google.maps.LatLngBounds();
     pathCoords.forEach(p => bounds.extend(p));
     map.fitBounds(bounds);
@@ -86,23 +108,25 @@
 
   function updateMapVisualization(points) {
     if (!map) return;
+    lastSolvedPoints = points;
 
-    // 1. Clear old data
+    // Ensure map is visible (hide help if open)
+    hideHelp();
+
+    // 1. Clear old
     mapMarkers.forEach(m => m.setMap(null));
     mapMarkers = [];
     if (mapPolyline) mapPolyline.setMap(null);
-    directionsRenderer.setDirections({ routes: [] }); // Clear directions
+    directionsRenderer.setDirections({ routes: [] });
     mapPlaceholder.style.display = 'none';
 
-    // 2. Setup Markers & Coordinates
+    // 2. Markers & Coords
     const pathCoords = [];
-    
     points.forEach((pt, index) => {
       if (typeof pt.lat === 'number' && typeof pt.lon === 'number') {
         const latLng = { lat: pt.lat, lng: pt.lon };
         pathCoords.push(latLng);
 
-        // Custom Numbered Marker
         const marker = new google.maps.Marker({
           position: latLng,
           map: map,
@@ -112,35 +136,28 @@
             fontWeight: "bold"
           },
           title: pt.name,
-          zIndex: 100 + index // Ensure order is respected in stacking
+          zIndex: 100 + index
         });
         mapMarkers.push(marker);
       }
     });
 
-    // Handle Round Trip logic for coordinates
     const routePath = [...pathCoords];
     if (chkRoundTrip.checked && routePath.length > 1) {
       routePath.push(routePath[0]);
     }
 
-    // 3. DECIDE: Real Road Directions vs. Straight Lines
-    // Directions API has a limit of 25 waypoints (plus origin/dest).
-    // If we have too many points, we must use straight lines.
-    if (points.length > 25) {
-      console.warn("Too many stops for Directions API (Max 25). Using straight lines.");
+    // 3. DECISION: Direct Lines OR Roads?
+    if (chkDirect.checked || points.length > 25) {
       drawFallbackPolyline(routePath);
       return;
     }
 
-    // 4. Request Road Directions
-    const travelMode = chkDriving.checked ? 'DRIVING' : 'WALKING';
-    
-    // Origin is first point
+    // 4. Road Directions
+    const mode = selMode.value; // "DRIVING" or "WALKING"
+
     const origin = routePath[0];
-    // Destination is last point
     const destination = routePath[routePath.length - 1];
-    // Waypoints are everything in between
     const waypoints = routePath.slice(1, -1).map(loc => ({
       location: loc,
       stopover: true
@@ -150,21 +167,19 @@
       origin: origin,
       destination: destination,
       waypoints: waypoints,
-      travelMode: google.maps.TravelMode[travelMode],
+      travelMode: google.maps.TravelMode[mode],
     }, (response, status) => {
       if (status === "OK") {
-        // Draw the pretty road lines
         directionsRenderer.setDirections(response);
       } else {
         console.warn("Directions request failed: " + status);
-        // Fallback to straight lines if road routing fails (e.g. no road exists)
         drawFallbackPolyline(routePath);
       }
     });
   }
 
   // --------------------------------------------------------------------------
-  // GEOCODING LOGIC
+  // GEOCODING & HELPERS
   // --------------------------------------------------------------------------
   
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -283,8 +298,9 @@
     return `${x.toFixed(2)} km`;
   }
 
-  function buildMapsLegLinks(routePts, roundTrip, driving) {
-    const travelmode = driving ? 'driving' : 'walking';
+  function buildMapsLegLinks(routePts, roundTrip, drivingMode) {
+    const travelmode = (drivingMode === 'DRIVING') ? 'driving' : 'walking';
+    
     const encodeLoc = (p) => {
       if (typeof p.lat === 'number' && typeof p.lon === 'number') {
         return `${p.lat.toFixed(5)},${p.lon.toFixed(5)}`;
@@ -377,6 +393,9 @@
     distKmEl.textContent = '—';
     savedKmEl.textContent = '—';
     
+    // Auto-switch back to map view if help was open
+    hideHelp();
+    
     worker.postMessage({ type: 'solve', profile, points: validPts, startIdx: (startIdx < validPts.length) ? startIdx : 0, roundTrip: chkRoundTrip.checked });
   }
 
@@ -386,9 +405,11 @@
       disableWhileRunning(false);
       const { totalKm, baseKm, pointsSorted } = msg;
       renderRoute(pointsSorted, totalKm, baseKm);
-      const links = buildMapsLegLinks(pointsSorted, chkRoundTrip.checked, chkDriving.checked);
+      
+      const links = buildMapsLegLinks(pointsSorted, chkRoundTrip.checked, selMode.value);
       renderLinks(links);
       updateMapVisualization(pointsSorted);
+      
       setStatus(`Done. Distance: ${fmtKm(totalKm)}`, 'ok');
     } else if (msg.type === 'error') {
       setStatus(msg.error || 'Error.', 'bad');
@@ -398,5 +419,22 @@
 
   btnFast.addEventListener('click', () => run('fast'));
   btnBalanced.addEventListener('click', () => run('balanced'));
+  
+  // Listeners
+  btnHelp.addEventListener('click', (e) => { e.preventDefault(); showHelp(); });
+  btnCloseHelp.addEventListener('click', (e) => { e.preventDefault(); hideHelp(); });
+
+  chkDirect.addEventListener('change', () => {
+    if (lastSolvedPoints) updateMapVisualization(lastSolvedPoints);
+  });
+  
+  selMode.addEventListener('change', () => {
+    if (lastSolvedPoints) {
+        const links = buildMapsLegLinks(lastSolvedPoints, chkRoundTrip.checked, selMode.value);
+        renderLinks(links);
+        updateMapVisualization(lastSolvedPoints);
+    }
+  });
+
   inputEl.value = defaultExample();
 })();
