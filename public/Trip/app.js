@@ -37,6 +37,7 @@
   const btnHelp = $('btnHelp');
   const btnCloseHelp = $('btnCloseHelp');
   const presetTree = $('presetTree');
+  const helpBody = $('helpBody'); // Target for help text
 
   const worker = new Worker('worker.js');
 
@@ -50,7 +51,6 @@
   let lastSolvedPoints = null;
   let currentTravelMode = 'DRIVING'; 
   
-  // Flattened lookup for presets (populated from trips.js)
   let presetLookup = {};
 
   const CUSTOM_DARK_STYLE = [
@@ -78,7 +78,7 @@
     directionsService = new google.maps.DirectionsService();
   };
 
-  // --- DYNAMIC TREE BUILDER ---
+  // --- INIT FUNCTIONS ---
   function initTripTree() {
     if (!window.TRIP_LIBRARY || !presetTree) return;
 
@@ -86,7 +86,6 @@
     presetLookup = {};
 
     window.TRIP_LIBRARY.forEach(region => {
-      // 1. Region Node (e.g. Europe)
       const regionNode = document.createElement('div');
       regionNode.className = 'tree-node';
       
@@ -97,7 +96,6 @@
       const regionGroup = document.createElement('div');
       regionGroup.className = 'tree-group';
 
-      // 2. Categories (Driving/Walking)
       region.categories.forEach(cat => {
         const catNode = document.createElement('div');
         catNode.className = 'tree-node';
@@ -109,35 +107,33 @@
         const catGroup = document.createElement('div');
         catGroup.className = 'tree-group';
 
-        // 3. Trips
         cat.items.forEach(trip => {
-          // Add to lookup
           presetLookup[trip.id] = trip.data;
-
           const tripItem = document.createElement('span');
           tripItem.className = 'tree-item';
           tripItem.textContent = trip.label;
           tripItem.dataset.key = trip.id;
-          
           tripItem.addEventListener('click', () => loadPreset(trip.id));
           catGroup.appendChild(tripItem);
         });
 
-        // Category Toggle
         catHeader.addEventListener('click', () => toggleTreeGroup(catHeader, catGroup));
-        
         catNode.appendChild(catHeader);
         catNode.appendChild(catGroup);
         regionGroup.appendChild(catNode);
       });
 
-      // Region Toggle
       regionHeader.addEventListener('click', () => toggleTreeGroup(regionHeader, regionGroup));
-
       regionNode.appendChild(regionHeader);
       regionNode.appendChild(regionGroup);
       presetTree.appendChild(regionNode);
     });
+  }
+
+  function initHelpContent() {
+    if (helpBody && window.HELP_CONTENT) {
+      helpBody.innerHTML = window.HELP_CONTENT;
+    }
   }
 
   function toggleTreeGroup(header, group) {
@@ -155,11 +151,23 @@
     clearMap();
     if (key && presetLookup[key]) {
       inputEl.value = presetLookup[key];
-      setStatus(`Loaded preset: ${key}`, 'ok');
       
-      // Heuristic to detect mode: Driving trips usually have _DRIVE suffix or known driving lists
-      const isDriving = key.includes('_DRIVE') || key.includes('COMPLEX');
-      setTravelMode(isDriving ? 'DRIVING' : 'WALKING');
+      if (key.includes('GLOBAL_')) {
+        chkDirect.checked = true;
+        setTravelMode('DRIVING');
+        setStatus(`Loaded Global Trip: ${key}\n(Switched to Direct Lines ✈️)`, 'ok');
+      } else {
+        chkDirect.checked = false;
+        const isDriving = key.includes('_DRIVE') || key.includes('COMPLEX') || key.startsWith('EUROPE_');
+        
+        if (isDriving) {
+          setTravelMode('DRIVING');
+          setStatus(`Loaded Driving Tour: ${key}\n(Switched to Car Mode 🚗)`, 'ok');
+        } else {
+          setTravelMode('WALKING');
+          setStatus(`Loaded Walking Tour: ${key}\n(Switched to Walk Mode 🚶)`, 'ok');
+        }
+      }
       chkRoundTrip.checked = true;
     }
   }
@@ -593,5 +601,6 @@
   
   // INIT
   initTripTree();
+  initHelpContent();
   
 })();
