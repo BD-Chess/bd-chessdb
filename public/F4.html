@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Flip4M (8x8) Pro</title>
+<title>FlipFour (8x8) Pro</title>
 <style>
   :root{
     --bg:#0b0f17;
@@ -80,8 +80,6 @@
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
     width: 100%; max-width: 500px; margin: 0 auto; box-sizing: border-box;
   }
-  
-  /* Hidden state for swapping control bars */
   .ctrl-hidden { display: none !important; }
   
   button {
@@ -122,8 +120,6 @@
   .hidden { display: none !important; }
   .help-rule { text-align:left; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px; margin-bottom:8px; }
   .help-rule b { color: #fff; }
-  
-  /* Feature Grid in Menu */
   .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
 </style>
 </head>
@@ -132,7 +128,7 @@
 <div id="app">
   <div id="hud">
     <div class="row">
-      <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400">Pro</span></h1>
+      <h1>FlipFour <span style="font-size:12px;opacity:0.5;font-weight:400">Pro</span></h1>
       <div class="status" id="turnInfo">Red's Turn</div>
     </div>
     <div class="row">
@@ -162,11 +158,9 @@
     <canvas id="c"></canvas>
     
     <div id="overlay">
-      
       <div class="card" id="menuCard">
         <h2>FlipFour</h2>
         <p>Gravity-defying strategy.</p>
-        
         <div class="card-btns" style="flex-direction:column; gap:8px;">
           <button class="btn-act" onclick="startGame(1, 1)">Easy</button>
           <button class="btn-act" onclick="startGame(1, 2)">Standard</button>
@@ -174,13 +168,13 @@
           <button class="btn-dang" onclick="startGame(1, 4)">Pro (8Z-DCC)</button>
           <button class="btn-tac" onclick="startGame(2, 0)">2 Players</button>
         </div>
-
+        
         <div class="feature-grid">
            <button class="btn-util" onclick="saveGame()">💾 Save</button>
            <button class="btn-util" onclick="loadGameTrigger()">📂 Load</button>
            <button class="btn-util" style="grid-column: span 2" onclick="startReview()">⏯️ Review Game</button>
         </div>
-
+        
         <div style="margin-top:20px; font-size:11px; opacity:0.6; line-height:1.4;">
             Author: Bojan Dobrečevič (Jan. 2026)
         </div>
@@ -194,12 +188,11 @@
 
       <div class="card hidden" id="helpCard">
         <h2>How to Play</h2>
-        <div class="help-rule"><b>Goal:</b> Connect 4 tokens in a line (horizontal, vertical, or diagonal).</div>
-        <div class="help-rule"><b>Gravity:</b> Tokens fall towards the current gravity direction (Arrow in HUD).</div>
-        <div class="help-rule"><b>Turn - Drop:</b> Tap any cell to drop a token.</div>
-        <div class="help-rule"><b>Turn - Rotate:</b> Use <span style="color:#ffd54f">⟲ ⟳</span> buttons to rotate the board 90°. Costs <b>1 Flip Token</b>.</div>
-        <div class="help-rule"><b>Turn - Magnet:</b> Tap the rim (edge) of the board to place a magnet. Pulls tokens to that side. Costs <b>1 Magnet Token</b>. Lasts 3 rounds.</div>
-        
+        <div class="help-rule"><b>Goal:</b> Connect 4 tokens in a line.</div>
+        <div class="help-rule"><b>Gravity:</b> Tokens fall towards the arrow.</div>
+        <div class="help-rule"><b>Drop:</b> Tap a cell.</div>
+        <div class="help-rule"><b>Rotate:</b> Use <span style="color:#ffd54f">⟲ ⟳</span> (Cost: 1 Flip).</div>
+        <div class="help-rule"><b>Magnet:</b> Tap the rim (Cost: 1 Mag).</div>
         <div class="card-btns" style="margin-top:20px;">
             <button id="helpBtnBack" class="btn-act">Back</button>
         </div>
@@ -215,7 +208,7 @@
     <button id="btnHelp" class="btn-dev">Help</button>
     <button id="btnMenu" class="btn-dang">Menu</button>
   </div>
-
+  
   <div id="review-controls" class="ctrl-hidden">
     <button onclick="reviewStep(-1)" class="btn-dev">⏪ Prev</button>
     <button onclick="endReview()" class="btn-dang">⏹ Stop Review</button>
@@ -229,7 +222,7 @@
 (() => {
   "use strict";
 
-  const ROWS = 7, COLS = 7;
+  const ROWS = 8, COLS = 8;
   const P_EMPTY = 0, P_RED = 1, P_YEL = 2;
   const MAGNET_LIFE = 6; 
   
@@ -249,8 +242,9 @@
   let anims = []; 
   let hiddenCells = []; 
   let pendingSettle = false; 
-
-  // Review Mode State
+  let aiTimer = null; // To fix undo issues
+  
+  // Review Mode
   let isReviewing = false;
   let reviewIndex = 0;
 
@@ -327,7 +321,6 @@
     anims = [];
     hiddenCells = [];
     pendingSettle = false;
-    isReviewing = false;
     winnerCard.classList.remove('visible');
     
     // Initial Save
@@ -338,84 +331,59 @@
     requestAnimationFrame(initLoop);
   }
 
-  // --- SAVE / LOAD / REVIEW LOGIC ---
-
+  // --- SAVE / LOAD / REVIEW ---
   window.saveGame = function() {
       if (history.length === 0) return alert("No game to save!");
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(history));
-      const downloadAnchorNode = document.createElement('a');
-      downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", "flipfour_save_" + new Date().getTime() + ".json");
-      document.body.appendChild(downloadAnchorNode);
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
+      const a = document.createElement('a');
+      a.setAttribute("href", dataStr);
+      a.setAttribute("download", "flipfour_save_" + new Date().getTime() + ".json");
+      document.body.appendChild(a); a.click(); a.remove();
   }
-
-  window.loadGameTrigger = function() {
-      document.getElementById('file-input').click();
-  }
-
+  window.loadGameTrigger = function() { document.getElementById('file-input').click(); }
   window.loadGameFile = function(input) {
       const file = input.files[0];
       const reader = new FileReader();
       reader.onload = function(e) {
           try {
-              const loadedHistory = JSON.parse(e.target.result);
-              if (Array.isArray(loadedHistory) && loadedHistory.length > 0) {
-                  history = loadedHistory;
+              const h = JSON.parse(e.target.result);
+              if (Array.isArray(h) && h.length > 0) {
+                  history = h;
                   restoreState(history[history.length-1]);
                   menuCard.classList.add('hidden');
                   elOverlay.style.display = 'none';
                   alert("Game Loaded!");
-              } else {
-                  alert("Invalid Save File");
-              }
-          } catch(err) {
-              alert("Error Loading File");
-          }
+              } else alert("Invalid Save");
+          } catch(err) { alert("Error"); }
       };
       reader.readAsText(file);
       input.value = '';
   }
-
   window.startReview = function() {
-      if (history.length === 0) return alert("No history to review!");
+      if (history.length === 0) return alert("No history!");
       isReviewing = true;
       reviewIndex = 0;
-      
-      // Hide Menu & Show Review Controls
-      menuCard.classList.add('hidden');
-      elOverlay.style.display = 'none';
-      
-      controlBar.classList.add('ctrl-hidden');
-      reviewBar.classList.remove('ctrl-hidden');
-      
+      menuCard.classList.add('hidden'); elOverlay.style.display = 'none';
+      controlBar.classList.add('ctrl-hidden'); reviewBar.classList.remove('ctrl-hidden');
       restoreState(history[0]);
   }
-
   window.endReview = function() {
       isReviewing = false;
-      // Restore latest state
       restoreState(history[history.length - 1]);
-      
-      controlBar.classList.remove('ctrl-hidden');
-      reviewBar.classList.add('ctrl-hidden');
+      controlBar.classList.remove('ctrl-hidden'); reviewBar.classList.add('ctrl-hidden');
       syncUI();
   }
-
   window.reviewStep = function(dir) {
-      let newIdx = reviewIndex + dir;
-      if (newIdx >= 0 && newIdx < history.length) {
-          reviewIndex = newIdx;
-          restoreState(history[reviewIndex]);
-      }
+      let n = reviewIndex + dir;
+      if (n >= 0 && n < history.length) { reviewIndex = n; restoreState(history[reviewIndex]); }
   }
 
-  // --- AI ENGINE (8Z-DCC) ---
+  // --- AI ENGINE ---
   function checkAI() {
+    if (aiTimer) clearTimeout(aiTimer);
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating && !isReviewing) {
         document.body.style.cursor = "wait";
-        setTimeout(() => { makeAIMove(); document.body.style.cursor = "default"; }, 100);
+        aiTimer = setTimeout(() => { makeAIMove(); document.body.style.cursor = "default"; }, 100);
     }
   }
 
@@ -427,63 +395,65 @@
 
     let aiTokens = canUseTools ? tokens[P_YEL] : { flip: 0, mag: 0 };
     
-    let moves = getPossibleMoves(grid, gravityDir, aiTokens, P_YEL, mag);
+    // 1. SANITY & PANIC CHECK
+    let sanityMove = getSanityMove(grid, gravityDir, aiTokens, P_YEL, mag);
+    if (sanityMove) { executeMove(sanityMove); return; }
 
-    // Heuristic Sort
+    // 2. SEARCH
+    let depth = (aiLevel === 1) ? 2 : (aiLevel === 2) ? 4 : 5;
+    let moves = getPossibleMoves(grid, gravityDir, aiTokens, P_YEL, mag);
+    let center = (COLS - 1) / 2;
     moves.sort((a,b) => {
-        let wA = checkWin(a.grid) === P_YEL ? 10000 : 0;
-        let wB = checkWin(b.grid) === P_YEL ? 10000 : 0;
-        if(wA !== wB) return wB - wA;
-        let sa = (a.type==='drop') ? 10 - Math.abs(3-a.col) : 0;
-        let sb = (b.type==='drop') ? 10 - Math.abs(3-b.col) : 0;
-        return sb - sa; 
+       let sa = (a.type==='drop') ? 10 - Math.abs(center-a.col) : 0;
+       let sb = (b.type==='drop') ? 10 - Math.abs(center-b.col) : 0;
+       return sb - sa; 
     });
 
     let bestMove = null;
     let bestScore = -Infinity;
     let alpha = -Infinity, beta = Infinity;
-    let depth = (aiLevel === 1) ? 2 : (aiLevel === 2) ? 6 : (aiLevel === 3) ? 4 : 5; 
 
     for (let m of moves) {
-        if (checkWin(m.grid) === P_YEL) { executeMove(m); return; }
-        
         let effectiveDepth = depth;
-        if (aiLevel === 4 && (m.type === 'flip' || m.type === 'magnet')) effectiveDepth = 3; 
-
+        if (aiLevel >= 4 && (m.type === 'flip' || m.type === 'magnet')) effectiveDepth = Math.max(2, depth - 2); 
         let score = minimax(m.grid, m.gDir, m.magState, effectiveDepth - 1, alpha, beta, false, canUseTools);
-        
-        if(m.type === 'flip') score -= 2000; 
-        if(m.type === 'magnet') score -= 2000; 
-
+        if(m.type === 'flip') score -= 1500; 
+        if(m.type === 'magnet') score -= 5000; 
         if (score > bestScore) { bestScore = score; bestMove = m; }
         alpha = Math.max(alpha, bestScore);
         if(alpha >= beta) break;
     }
-
     if (bestMove) executeMove(bestMove);
     else if (moves.length > 0) executeMove(moves[0]); 
-    else if (canUseTools && tokens[P_YEL].flip > 0) doFlip(1);
+    else if (canUseTools && tokens[P_YEL].flip > 0) doFlip(1); 
   }
 
-  function executeMove(m) {
-      if (m.type === 'drop') doDrop(0, m.col);
-      else if (m.type === 'flip') doFlip(m.delta);
-      else if (m.type === 'magnet') doMagnet(m.side, m.idx);
+  function getSanityMove(g, gDir, toks, p, mState) {
+      let opponent = (p === P_RED) ? P_YEL : P_RED;
+      let myMoves = getPossibleMoves(g, gDir, toks, p, mState);
+      for (let m of myMoves) if (checkWin(m.grid) === p) return m; // Win now
+      let oppSimpleMoves = getPossibleMoves(g, gDir, {flip:0, mag:0}, opponent, mState);
+      let simpleKiller = oppSimpleMoves.find(om => om.type === 'drop' && checkWin(om.grid) === opponent);
+      if (simpleKiller) {
+          let blockMove = myMoves.find(m => m.type === 'drop' && m.col === simpleKiller.col);
+          if (blockMove) return blockMove; 
+      }
+      return null;
   }
 
   function minimax(g, gDir, mState, depth, alpha, beta, isMax, advanced) {
     let winner = checkWin(g);
     if (winner === P_YEL) return 100000 + depth * 1000; 
     if (winner === P_RED) return -100000 - depth * 1000; 
-    if (depth <= 0) return evaluateBoard(g);
+    if (depth <= 0) return evaluateBoard(g, gDir);
 
     let player = isMax ? P_YEL : P_RED;
     let simTokens = advanced ? (depth > 2 ? { flip:1, mag:0 } : { flip:0, mag:0 }) : { flip:0, mag:0 };
     let moves = getPossibleMoves(g, gDir, simTokens, player, mState);
-    
+    let center = (COLS - 1) / 2;
     moves.sort((a,b) => {
-        let sa = (a.type==='drop') ? 10 - Math.abs(3-a.col) : 0;
-        let sb = (b.type==='drop') ? 10 - Math.abs(3-b.col) : 0;
+        let sa = (a.type==='drop') ? 10 - Math.abs(center-a.col) : 0;
+        let sb = (b.type==='drop') ? 10 - Math.abs(center-b.col) : 0;
         return sb - sa;
     });
 
@@ -491,6 +461,7 @@
         let maxEval = -Infinity;
         for (let m of moves) {
             let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, false, advanced);
+            if(m.type === 'flip') evalVal -= 100;
             maxEval = Math.max(maxEval, evalVal);
             alpha = Math.max(alpha, evalVal);
             if (beta <= alpha) break; 
@@ -508,47 +479,41 @@
     }
   }
 
-  function evaluateBoard(g) {
-      // Basic position weighting
+  function evaluateBoard(g, grav) {
       let score = 0;
-      const POS_WEIGHTS = [
-        [3, 4, 5, 7, 5, 4, 3], [4, 6, 8, 10, 8, 6, 4], [5, 8, 11, 13, 11, 8, 5],
-        [5, 8, 11, 13, 11, 8, 5], [5, 8, 11, 13, 11, 8, 5], [4, 6, 8, 10, 8, 6, 4], [3, 4, 5, 7, 5, 4, 3]
-      ];
-      for(let r=0; r<ROWS; r++) {
-          for(let c=0; c<COLS; c++) {
-              if (g[r][c] === P_YEL) score += POS_WEIGHTS[r][c];
-              else if (g[r][c] === P_RED) score -= POS_WEIGHTS[r][c];
-          }
-      }
-      
-      // Analyze Lines
-      let scoreLines = 0;
-      const checkW = (c1, c2, c3, c4) => {
-          let r = 0, y = 0, e = 0;
-          let w = [c1,c2,c3,c4];
-          w.forEach(x => { if(x===P_RED) r++; else if(x===P_YEL) y++; else e++; });
-          
-          if (y === 4) return 100000; 
-          if (r === 4) return -100000; 
-          if (y === 3 && e === 1) return 5000; 
-          if (r === 3 && e === 1) return -20000; // Defensive Block Priority
-          if (y === 2 && e === 2) return 100;
-          if (r === 2 && e === 2) return -150;
-          return 0;
-      };
-      
-      for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) scoreLines += checkW(g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]);
-      for(let c=0; c<COLS; c++) for(let r=0; r<ROWS-3; r++) scoreLines += checkW(g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]);
-      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) scoreLines += checkW(g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]);
-      for(let r=0; r<ROWS-3; r++) for(let c=3; c<COLS; c++) scoreLines += checkW(g[r][c], g[r+1][c-1], g[r+2][c-2], g[r+3][c-3]);
+      score += analyzeLines(g, P_YEL, grav) * 1.0;
+      score -= analyzeLines(g, P_RED, grav) * 1.2; 
+      return score;
+  }
 
-      return score + scoreLines;
+  function analyzeLines(g, p, grav) {
+      let score = 0;
+      for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]], p);
+      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS; c++) score += scoreWindow([g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]], p);
+      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]], p);
+      for(let r=3; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r-1][c+1], g[r-2][c+2], g[r-3][c+3]], p);
+      return score;
+  }
+
+  function scoreWindow(window, p) {
+      let count = window.filter(x => x === p).length;
+      let empty = window.filter(x => x === P_EMPTY).length;
+      let opp = window.filter(x => x !== p && x !== P_EMPTY).length;
+      if (opp > 0) return 0; 
+      if (count === 4) return 10000;
+      if (count === 3 && empty === 1) return 150;
+      if (count === 2 && empty === 2) return 10;
+      return 0;
+  }
+
+  function executeMove(m) {
+      if (m.type === 'drop') doDrop(0, m.col);
+      else if (m.type === 'flip') doFlip(m.delta);
+      else if (m.type === 'magnet') doMagnet(m.side, m.idx);
   }
 
   function getPossibleMoves(g, gDir, toks, p, mState) {
       let moves = [];
-      // Drops
       for(let i=0; i<COLS; i++) {
           let t = getDropTarget(g, gDir, i);
           if (t) {
@@ -558,7 +523,6 @@
               moves.push({ type:'drop', col:i, grid:nextG, gDir:gDir, magState:mState });
           }
       }
-      // Flips
       if(toks.flip > 0) { 
           let ccwDir = CCW_MAP[gDir];
           let gCCW = settleGridComplete(g, ccwDir, mState); 
@@ -567,11 +531,10 @@
           let gCW = settleGridComplete(g, cwDir, mState);
           moves.push({ type:'flip', delta:-1, grid:gCW, gDir:cwDir, magState:mState });
       }
-      // Magnets
       if(toks.mag > 0) {
           const sides = [0,1,2,3];
           for(let side of sides) {
-              for(let idx=0; idx<7; idx++) {
+              for(let idx=0; idx<COLS; idx++) {
                   let curM = getMag(mState, side, idx);
                   if (curM && curM.p === p) continue; 
                   let nextMState = cloneMagState(mState);
@@ -589,13 +552,13 @@
       return moves;
   }
 
-  // --- CORE UTILS ---
   function getMag(mState, side, idx) {
       if(side===0) return mState.top[idx];
       if(side===1) return mState.right[idx];
       if(side===2) return mState.bottom[idx];
       if(side===3) return mState.left[idx];
   }
+
   function cloneMag(mArr) { return mArr.map(m => m ? { ...m } : null); }
   function cloneMagState(ms) {
       return { top: cloneMag(ms.top), bottom: cloneMag(ms.bottom), left: cloneMag(ms.left), right: cloneMag(ms.right) };
@@ -614,22 +577,24 @@
     curPlayer = s.curPlayer; tokens = JSON.parse(JSON.stringify(s.tokens));
     gameOver = s.gameOver; gameInProgress = s.gameInProgress;
     animating = false; anims = []; hiddenCells = []; pendingSettle = false;
-    isReviewing = false; // Reset unless explicitly in review loop
-    winnerCard.classList.remove('visible');
-    syncUI();
+    isReviewing = false;
+    winnerCard.classList.remove('visible'); syncUI();
   }
-  function pushHistory() {
-    // Don't push duplicates if nothing changed
-    history.push(cloneState());
-    if (history.length > 100) history.shift();
-  }
+  function pushHistory() { history.push(cloneState()); if (history.length > 50) history.shift(); }
+  
+  // --- FIXED UNDO LOGIC ---
   function undo() {
     if (animating || history.length === 0 || isReviewing) return;
-    restoreState(history.pop());
-    if (gameMode === 1 && history.length > 0) restoreState(history.pop());
+    if (aiTimer) clearTimeout(aiTimer); // Stop pending AI thinking
+    
+    restoreState(history.pop()); // Pop current state (back to pre-move)
+    
+    // If we are playing CPU, we need to pop again to get back to user turn
+    if (gameMode === 1 && history.length > 0) {
+        restoreState(history.pop());
+    }
   }
 
-  // --- PHYSICS ---
   function isPinned(r, c, mState) {
     if (r === 0 && mState.top[c]) return true;
     if (r === ROWS - 1 && mState.bottom[c]) return true;
@@ -638,8 +603,7 @@
     return false;
   }
   function physicsStep(g, dir, mState) {
-    let nextG = g.map(r => [...r]);
-    let changed = false;
+    let nextG = g.map(r => [...r]), changed = false;
     for (let c=0; c<COLS; c++) { if (mState.top[c] && nextG[0][c] === P_EMPTY) for (let r=1; r<ROWS; r++) if (nextG[r][c]) { nextG[0][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
     for (let c=0; c<COLS; c++) { if (mState.bottom[c] && nextG[ROWS-1][c] === P_EMPTY) for (let r=ROWS-2; r>=0; r--) if (nextG[r][c]) { nextG[ROWS-1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
     for (let r=0; r<ROWS; r++) { if (mState.left[r] && nextG[r][0] === P_EMPTY) for (let c=1; c<COLS; c++) if (nextG[r][c]) { nextG[r][0]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
@@ -652,13 +616,8 @@
     return { nextG, changed };
   }
   function settleGridComplete(startGrid, dir, mState) {
-    let g = startGrid.map(r => [...r]);
-    let safety = 0;
-    while(safety++ < 60) {
-      let step = physicsStep(g, dir, mState);
-      if (!step.changed) break;
-      g = step.nextG;
-    }
+    let g = startGrid.map(r => [...r]), safety = 0;
+    while(safety++ < 60) { let step = physicsStep(g, dir, mState); if (!step.changed) break; g = step.nextG; }
     return g;
   }
   function spawnTransitions(oldG, newG, type) {
@@ -670,7 +629,6 @@
         else { for(let r=0; r<ROWS; r++) if(g[r][idx]) arr.push({p:g[r][idx], r:r, c:idx}); }
         return arr;
     };
-    // Simplified logic for brevity in this response, using standard transition spawning
     if (isVert) {
       for (let c=0; c<COLS; c++) {
         let oldToks = getToks(oldG, false, c), newToks = getToks(newG, false, c);
@@ -715,17 +673,19 @@
       }
     }
   }
+
   function applyActionAndAnimate(actionFn) {
     if(animating || gameOver || isReviewing) return;
     let oldG = grid.map(r=>[...r]);
+    pushHistory();
     actionFn(); 
     let finalG = settleGridComplete(grid, gravityDir, mag);
     spawnTransitions(oldG, finalG, 'drop');
     grid = finalG;
-    pushHistory(); // Save State
     if(anims.length > 0) animating = true;
     else endTurn();
   }
+
   function doDrop(row, col) {
     let rEnt, cEnt;
     if (gravityDir === 0) { rEnt=0; cEnt=col; }
@@ -742,6 +702,7 @@
     if (!found) return; 
     applyActionAndAnimate(() => { grid[rT][cT] = curPlayer; });
   }
+
   function doMagnet(side, idx) {
     if (tokens[curPlayer].mag <= 0) return;
     let opp = (side + 2) % 4;
@@ -759,11 +720,14 @@
         }
     });
   }
+
   const CW_MAP =  { 0: 3, 1: 0, 2: 1, 3: 2 }; 
   const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 }; 
+
   function doFlip(dirDelta) {
     if (tokens[curPlayer].flip <= 0) return;
     if(animating || gameOver || isReviewing) return;
+    pushHistory();
     tokens[curPlayer].flip--;
     let oldA = boardAngle;
     targetAngle = oldA + (dirDelta === 1 ? -Math.PI/2 : Math.PI/2);
@@ -771,15 +735,15 @@
     anims.push({ type: 'rotate', startA: oldA, endA: targetAngle, t: 0, dur: 500 });
     pendingSettle = true;
     animating = true;
-    // Don't pushHistory here, we wait for settle trigger
   }
+
   function triggerSettleAfterRotate() {
     let oldG = grid.map(r=>[...r]);
     let finalG = settleGridComplete(grid, gravityDir, mag);
     spawnTransitions(oldG, finalG, 'slide');
     grid = finalG;
-    pushHistory(); // Save State
   }
+
   function endTurn() {
     const w = checkWin(grid);
     if (w) {
@@ -816,6 +780,7 @@
       }
     }
   }
+
   function checkWin(g) {
     for (let r=0; r<ROWS; r++) {
       for (let c=0; c<COLS; c++) {
@@ -829,6 +794,7 @@
     }
     return 0;
   }
+
   function getDropTarget(g, dir, idx) {
     let rEnt, cEnt;
     if (dir === 0) { rEnt=0; cEnt=idx; } else if (dir === 1) { rEnt=idx; cEnt=COLS-1; }
@@ -841,30 +807,32 @@
     }
     return found ? {r:rT, c:cT} : null;
   }
+
   function runHintSimulation() {
       let moves = getPossibleMoves(grid, gravityDir, tokens[curPlayer], curPlayer, mag);
       if(moves.length === 0) return "No moves available!";
       let bestMove = null;
       let bestScore = -Infinity;
+      
+      let sanity = getSanityMove(grid, gravityDir, tokens[curPlayer], curPlayer, mag);
+      if(sanity) return formatMoveString(sanity) + (checkWin(sanity.grid) ? " (Win)" : " (Block!)");
+
       for(let m of moves) {
           if (checkWin(m.grid) === curPlayer) return formatMoveString(m) + " (Wins)";
-          let score = minimax(m.grid, m.gDir, m.magState, 3, -Infinity, Infinity, false, true);
+          let score = minimax(m.grid, m.gDir, m.magState, 5, -Infinity, Infinity, false, true);
           if(score > bestScore) { bestScore = score; bestMove = m; }
       }
       if(!bestMove) return "Try a random move.";
       return formatMoveString(bestMove);
   }
+
   function formatMoveString(m) {
-      if(m.type === 'drop') return `Drop at Column ${m.col + 1}`; 
+      if(m.type === 'drop') return `Drop at Column ${String.fromCharCode(65 + m.col)}`; 
       if(m.type === 'flip') return `Rotate ${m.delta === 1 ? 'CCW ⟲' : 'CW ⟳'}`;
-      if(m.type === 'magnet') {
-          let sides = ["Top", "Right", "Bottom", "Left"];
-          return `Magnet: ${sides[m.side]} (Pos ${m.idx+1})`;
-      }
+      if(m.type === 'magnet') return `Magnet: ${["Top", "Right", "Bottom", "Left"][m.side]}`;
       return "Unknown";
   }
-  
-  // --- RENDERING LOOP ---
+
   let lastTime = 0;
   function initLoop(now) { lastTime = now; requestAnimationFrame(loop); }
   function loop(now) {
@@ -875,6 +843,7 @@
     render();
     requestAnimationFrame(loop);
   }
+
   function updateAnims(dt) {
     if (!animating) return;
     let stillAnimating = false;
@@ -898,6 +867,7 @@
         if(anims.length === 0) { animating = false; hiddenCells = []; endTurn(); }
     }
   }
+
   function render() {
     if (canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
         canvas.width = canvas.offsetWidth;
@@ -906,8 +876,8 @@
     const W = canvas.width, H = canvas.height;
     const cx = W/2, cy = H/2;
     const size = Math.min(W, H) * 0.85;
-    const cell = size / 9; 
-    const boardW = 7 * cell;
+    const cell = size / (Math.max(ROWS, COLS) + 2);
+    const boardW = COLS * cell;
 
     ctx.fillStyle = "#0b0f17";
     ctx.fillRect(0,0,W,H);
@@ -920,7 +890,8 @@
     
     // COORDINATES
     ctx.fillStyle = "#8fa1b8";
-    ctx.font = "bold 10px monospace";
+    // INCREASED FONT SIZE HERE
+    ctx.font = "bold 15px monospace";
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     for(let c=0; c<COLS; c++) {
         let x = -boardW/2 + c*cell + cell/2;
@@ -964,12 +935,14 @@
     mag.right.forEach((m, i) => drawMag(ctx, boardW + cell*0.6, i*cell + cell/2, cell, 1, m));
     ctx.restore();
   }
+  
   function drawToken(ctx, x, y, r, p) {
     ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
     ctx.fillStyle = (p === P_RED) ? "#e53935" : "#fdd835"; ctx.fill();
     ctx.beginPath(); ctx.arc(x - r*0.3, y - r*0.3, r*0.2, 0, Math.PI*2);
     ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.fill();
   }
+  
   function drawMag(ctx, x, y, size, dir, m) {
     if (!m) return;
     ctx.save(); ctx.translate(x, y); ctx.rotate(dir * Math.PI/2);
@@ -986,6 +959,7 @@
     }
     ctx.restore();
   }
+
   function getBoardPos(evt) {
     const rect = canvas.getBoundingClientRect();
     let x = evt.clientX - rect.left, y = evt.clientY - rect.top;
@@ -993,13 +967,15 @@
     const dx = x - cx, dy = y - cy;
     const cos = Math.cos(-boardAngle), sin = Math.sin(-boardAngle);
     const rx = dx * cos - dy * sin, ry = dx * sin + dy * cos;
+    
     const size = Math.min(canvas.width, canvas.height) * 0.85;
-    const cell = size / 9;
-    const boardSize = 7 * cell;
+    const cell = size / (Math.max(ROWS, COLS) + 2);
+    const boardSize = COLS * cell;
     const halfB = boardSize / 2;
     const gridX = rx + halfB, gridY = ry + halfB;
     const col = Math.floor(gridX / cell);
     const row = Math.floor(gridY / cell);
+    
     if (col >= 0 && col < COLS && row >= 0 && row < ROWS) return { type: 'CELL', r: row, c: col };
     const rimThick = cell * 1.2;
     if (rx > -halfB - rimThick && rx < halfB + rimThick && ry > -halfB - rimThick && ry < halfB + rimThick) {
@@ -1008,16 +984,19 @@
     }
     return { type: 'NONE' };
   }
+
   function handleInput(e) {
     if (gameOver || animating || isReviewing) return;
     if (gameMode === 1 && curPlayer === P_YEL) return;
     if (e.type === 'touchstart') e.preventDefault();
     const act = getBoardPos(e.type.includes('touch') ? e.changedTouches[0] : e);
     if (act.type === 'CELL') doDrop(act.r, act.c);
-    else if (act.type === 'RIM' && act.idx >= 0 && act.idx < 7) doMagnet(act.side, act.idx);
+    else if (act.type === 'RIM' && act.idx >= 0 && act.idx < COLS) doMagnet(act.side, act.idx);
   }
+
   canvas.addEventListener('mousedown', handleInput);
   canvas.addEventListener('touchstart', handleInput, {passive:false});
+
   function syncUI() {
     let pName = (curPlayer === P_RED ? "Red's Turn" : "Yellow's Turn");
     if(gameMode === 1 && curPlayer === P_YEL) pName = "CPU Thinking...";
@@ -1034,8 +1013,9 @@
     document.getElementById("btnUndo").disabled = (history.length === 0 || gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing);
     document.getElementById("btnHint").disabled = gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing;
     document.getElementById("btnHelp").disabled = gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing;
-    document.getElementById("btnMenu").disabled = isReviewing; // Must exit review via Stop button
+    document.getElementById("btnMenu").disabled = isReviewing; 
   }
+  
   document.getElementById("btnHint").onclick = () => { 
       if (gameMode === 1 && curPlayer === P_YEL) return;
       elOverlay.style.display = "flex";
@@ -1043,18 +1023,33 @@
       helpCard.classList.add('hidden');
       hintCard.classList.remove('hidden');
       document.getElementById("hintMsg").textContent = "Analyzing board...";
-      setTimeout(() => { const h = runHintSimulation(); document.getElementById("hintMsg").textContent = h; }, 100);
-      document.getElementById("hintBtnResume").onclick = () => { elOverlay.style.display = "none"; hintCard.classList.add('hidden'); };
+      
+      setTimeout(() => {
+          const h = runHintSimulation();
+          document.getElementById("hintMsg").textContent = h;
+      }, 100);
+
+      document.getElementById("hintBtnResume").onclick = () => { 
+          elOverlay.style.display = "none"; 
+          hintCard.classList.add('hidden');
+      };
   };
+
   document.getElementById("btnHelp").onclick = showHelp;
-  document.getElementById("helpBtnBack").onclick = () => { elOverlay.style.display = "none"; helpCard.classList.add('hidden'); };
+  document.getElementById("helpBtnBack").onclick = () => {
+      elOverlay.style.display = "none";
+      helpCard.classList.add('hidden');
+  };
+  
   document.getElementById("btnMenu").onclick = () => toggleMenu();
+
   document.getElementById("btnCCW").onclick = () => { if(!(gameMode === 1 && curPlayer === P_YEL)) doFlip(1); };
   document.getElementById("btnCW").onclick = () => { if(!(gameMode === 1 && curPlayer === P_YEL)) doFlip(-1); };
   document.getElementById("btnUndo").onclick = undo;
   
   window.addEventListener('resize', render);
   showMainMenu();
+
 })();
 </script>
 </body>
