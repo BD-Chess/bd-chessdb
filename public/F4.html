@@ -34,7 +34,7 @@
   }
   .row { display:flex; justify-content:space-between; align-items:center; }
   
-  /* UPDATED TITLE STYLE */
+  /* TITLE STYLE */
   h1 { margin:0; font-size:18px; font-weight:900; letter-spacing:0.5px; }
   
   .meta { font-size: 11px; color: var(--muted); margin-top: -2px; margin-bottom: 5px; opacity: 0.8; }
@@ -198,6 +198,9 @@
         <div class="help-rule"><b>Magnet:</b> Tap the rim (Cost: 1 Mag).</div>
         <div class="card-btns" style="margin-top:20px;">
             <button id="helpBtnBack" class="btn-act">Back</button>
+        </div>
+        <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+            <button id="btnAdd" class="btn-dev" style="width:100%">DEV: Add +2 Tokens</button>
         </div>
       </div>
     </div>
@@ -1039,6 +1042,13 @@
   document.getElementById("btnCCW").onclick = () => { if(!(gameMode === 1 && curPlayer === P_YEL)) doFlip(1); };
   document.getElementById("btnCW").onclick = () => { if(!(gameMode === 1 && curPlayer === P_YEL)) doFlip(-1); };
   document.getElementById("btnUndo").onclick = undo;
+  
+  // RESTORED DEV BUTTON FUNCTION
+  document.getElementById("btnAdd").onclick = () => {
+    tokens[P_RED].flip+=2; tokens[P_RED].mag+=2; 
+    tokens[P_YEL].flip+=2; tokens[P_YEL].mag+=2; 
+    syncUI();
+  };
   
   window.addEventListener('resize', render);
   showMainMenu();
