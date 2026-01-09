@@ -12,7 +12,10 @@
       <div class="logo">8Z</div>
       <div class="titles">
         <div class="title">Trip Optimizer</div>
-        <div class="subtitle">Offline, deterministic (client-side). Export to Maps.</div>
+        <div class="subtitle">
+          <span class="desktop-text">Author: Bojan Dobrečevič | Jan 2026 | Deterministic route optimizer • Same input ⇒ same route</span>
+          <span class="mobile-text">Author: Bojan Dobrečevič | Deterministic optimizer!</span>
+        </div>
       </div>
     </div>
     <div class="top-actions">
@@ -49,7 +52,11 @@
           </label>
           <label class="check">
             <input id="chkDirect" type="checkbox" />
-            <span class="muted small">Direct lines (No roads)</span>
+            <span class="muted small">Direct lines</span>
+          </label>
+          <label class="check">
+            <input id="chkGoogleStyle" type="checkbox" />
+            <span class="muted small">Google Style</span>
           </label>
         </div>
 
@@ -89,6 +96,12 @@
         <div class="help-content">
           <button id="btnCloseHelp" class="close-help-btn">← Back to Map</button>
           
+          <div class="card help-block">
+            <h2>Why 8Z-RP?</h2>
+            <p><strong>Deterministic Results:</strong> Unlike many online solvers that produce random variations every time you click, 8Z-RP guarantees <em>Same Input ⇒ Same Route</em>. This ensures consistency for sharing and planning.</p>
+            <p><strong>100% Client-Side:</strong> Your location data is processed entirely in your browser. It never leaves your device until you choose to export it to Google Maps.</p>
+          </div>
+
           <div class="card help-block">
             <h2>How to Use</h2>
             <ul>
@@ -136,7 +149,7 @@
   <script src="app.js"></script>
 
   <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA&callback=initMap&loading=async&v=weekly"
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&callback=initMap&loading=async&v=weekly"
     defer
   ></script>
 </body>
