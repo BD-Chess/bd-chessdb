@@ -20,66 +20,72 @@
     </div>
     <div class="top-actions">
       <a id="btnHelp" href="#">Help / Guide</a>
+      <a href="https://www.google.com/maps" target="_blank" rel="noopener">Open Google Maps</a>
     </div>
   </header>
 
   <main class="split">
     <button id="btnCollapse" class="panel-toggle" title="Hide Toolbar">«</button>
-    
     <button id="btnExpand" class="panel-toggle-open" style="display:none;" title="Show Toolbar">»</button>
 
     <section id="leftPanel" class="panel left">
       <div class="card">
         <h2>Plan Your Trip</h2>
         
-        <select id="selPresets" class="preset-dropdown">
-          <option value="">✨ Load a Recommended Trip...</option>
+        <div id="presetTree" class="tree-view">
           
-          <optgroup label="Driving Tours (Full Country/Region)">
-            <option value="EUROPE_ALL">🇪🇺 All 27 EU Capitals (Ultimate Tour)</option>
-            <option value="SLOVENIA_DRIVE">🇸🇮 Slovenia (Full Loop)</option>
-            <option value="CALIFORNIA">🇺🇸 California (Road Trip)</option>
-            <option value="GERMANY">🇩🇪 Germany (Autobahn)</option>
-            <option value="ICELAND">🇮🇸 Iceland (Ring Road)</option>
-          </optgroup>
+          <div class="tree-node">
+            <div class="tree-header"><span class="tree-icon">[+]</span> 🇪🇺 Europe</div>
+            <div class="tree-group">
+              
+              <div class="tree-node">
+                <div class="tree-header"><span class="tree-icon">[+]</span> 🚗 Driving Tours</div>
+                <div class="tree-group">
+                  <span class="tree-item" data-key="EUROPE_NORTH">EU Capitals North (13)</span>
+                  <span class="tree-item" data-key="EUROPE_SOUTH">EU Capitals South (14)</span>
+                  <span class="tree-item" data-key="SLOVENIA_DRIVE">Slovenia (Full Loop)</span>
+                  <span class="tree-item" data-key="GERMANY">Germany (Autobahn)</span>
+                  <span class="tree-item" data-key="ICELAND">Iceland (Ring Road)</span>
+                  <span class="tree-item" data-key="COMPLEX_EU">💀 THE GAUNTLET (Extreme)</span>
+                </div>
+              </div>
 
-          <optgroup label="Walking Tours (EU Capitals)">
-            <option value="VIENNA">🇦🇹 Vienna (Wien)</option>
-            <option value="BRUSSELS">🇧🇪 Brussels (Bruxelles)</option>
-            <option value="SOFIA">🇧🇬 Sofia</option>
-            <option value="ZAGREB">🇭🇷 Zagreb</option>
-            <option value="NICOSIA">🇨🇾 Nicosia</option>
-            <option value="PRAGUE">🇨🇿 Prague (Praha)</option>
-            <option value="COPENHAGEN">🇩🇰 Copenhagen (København)</option>
-            <option value="TALLINN">🇪🇪 Tallinn</option>
-            <option value="HELSINKI">🇫🇮 Helsinki</option>
-            <option value="PARIS">🇫🇷 Paris</option>
-            <option value="BERLIN">🇩🇪 Berlin</option>
-            <option value="ATHENS">🇬🇷 Athens</option>
-            <option value="BUDAPEST">🇭🇺 Budapest</option>
-            <option value="DUBLIN">🇮🇪 Dublin</option>
-            <option value="ROME">🇮🇹 Rome (Roma)</option>
-            <option value="RIGA">🇱🇻 Riga</option>
-            <option value="VILNIUS">🇱🇹 Vilnius</option>
-            <option value="LUXEMBOURG">🇱🇺 Luxembourg City</option>
-            <option value="VALLETTA">🇲🇹 Valletta</option>
-            <option value="AMSTERDAM">🇳🇱 Amsterdam</option>
-            <option value="WARSAW">🇵🇱 Warsaw (Warszawa)</option>
-            <option value="LISBON">🇵🇹 Lisbon (Lisboa)</option>
-            <option value="BUCHAREST">🇷🇴 Bucharest</option>
-            <option value="BRATISLAVA">🇸🇰 Bratislava</option>
-            <option value="LJUBLJANA">🇸🇮 Ljubljana</option>
-            <option value="MADRID">🇪🇸 Madrid</option>
-            <option value="STOCKHOLM">🇸🇪 Stockholm</option>
-          </optgroup>
+              <div class="tree-node">
+                <div class="tree-header"><span class="tree-icon">[+]</span> 🚶 Walking Tours</div>
+                <div class="tree-group">
+                  <span class="tree-item" data-key="PARIS">Paris</span>
+                  <span class="tree-item" data-key="ROME">Rome</span>
+                  <span class="tree-item" data-key="LJUBLJANA">Ljubljana</span>
+                  <span class="tree-item" data-key="VIENNA">Vienna</span>
+                  <span class="tree-item" data-key="PRAGUE">Prague</span>
+                  <span class="tree-item" data-key="BERLIN">Berlin</span>
+                  <span class="tree-item" data-key="MADRID">Madrid</span>
+                  <span class="tree-item" data-key="AMSTERDAM">Amsterdam</span>
+                  </div>
+              </div>
 
-          <optgroup label="Driving + Walking Tours (Extreme)">
-            <option value="COMPLEX_EU">🇪🇺💀 THE GAUNTLET: All Capitals + Walking Stops</option>
-          </optgroup>
-        </select>
+            </div>
+          </div>
+
+          <div class="tree-node">
+            <div class="tree-header"><span class="tree-icon">[+]</span> 🇺🇸 North America</div>
+            <div class="tree-group">
+              <span class="tree-item" data-key="CALIFORNIA">California (Road Trip)</span>
+              <span class="tree-item" data-key="NY">New York (Walking)</span>
+            </div>
+          </div>
+
+          <div class="tree-node">
+            <div class="tree-header"><span class="tree-icon">[+]</span> 🇯🇵 Asia</div>
+            <div class="tree-group">
+              <span class="tree-item" data-key="TOKYO">Tokyo (Highlights)</span>
+            </div>
+          </div>
+
+        </div>
 
         <p class="muted small" style="margin-top:0;">
-          Edit below or <a href="#" onclick="document.getElementById('btnHelp').click(); return false;" style="color:var(--accent); text-decoration:none;">see help</a>.
+          Select a trip above or <a href="#" onclick="document.getElementById('btnHelp').click(); return false;" style="color:var(--accent); text-decoration:none;">see help</a>.
         </p>
 
         <textarea id="input" spellcheck="false" placeholder="Enter stops here..."></textarea>
@@ -141,7 +147,7 @@
         <div class="big-icon">🗺️</div>
         <h2>Ready to Route</h2>
         <p class="muted box-width">
-          Your optimized route will appear here.
+          Select a preset from the tree or enter stops.
         </p>
       </div>
 
@@ -150,39 +156,16 @@
       <div id="helpOverlay" class="help-overlay">
         <div class="help-content">
           <button id="btnCloseHelp" class="close-help-btn">← Back to Map</button>
-          
           <div class="card help-block">
             <h2>Why 8Z-RP?</h2>
             <p><strong>Deterministic Results:</strong> Unlike many online solvers that produce random variations every time you click, 8Z-RP guarantees <em>Same Input ⇒ Same Route</em>.</p>
-            <p><strong>Deep Search:</strong> The "Deep Search" mode runs the optimization algorithm 12 times in parallel to find the absolute shortest path.</p>
           </div>
-
           <div class="card help-block">
             <h2>How to Use</h2>
             <ul>
-              <li><strong>1. Presets:</strong> Use the dropdown to load a famous trip (e.g., Paris, California).</li>
-              <li><strong>2. Edit:</strong> Add or remove stops in the text box.</li>
-              <li><strong>3. Save/Load:</strong> Use the 💾 and 📂 buttons to keep your plans safe.</li>
-              <li><strong>4. Optimize:</strong> Click "Standard" or "Deep Search".</li>
+              <li><strong>1. Tree Menu:</strong> Click [+] to expand continents and categories. Click a trip name to load it.</li>
+              <li><strong>2. Optimize:</strong> Use "Standard" for speed or "Deep Search" for complex routes.</li>
             </ul>
-          </div>
-
-          <div class="card help-block">
-            <h2>Input Formats</h2>
-            <p class="muted">You can mix and match these formats.</p>
-            <h3>1. GPS Coordinates (Recommended)</h3>
-            <pre>46.0569, 14.5058</pre>
-            <h3>2. Addresses / Place Names</h3>
-            <pre>Tivoli Park, Ljubljana</pre>
-            <h3>3. Custom Name with GPS</h3>
-            <pre>Home | 46.0428, 14.4500</pre>
-          </div>
-
-          <div class="card help-block">
-            <h2>Special Commands</h2>
-            <h3>Locking the Start</h3>
-            <p>Add <code>START</code> anywhere on a line to lock it as the starting point.</p>
-            <pre>Grand Hotel Union | 46.0525, 14.5060 START</pre>
           </div>
         </div>
       </div>
@@ -196,7 +179,7 @@
   <script src="app.js"></script>
 
   <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA&callback=initMap&loading=async&v=weekly"
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&callback=initMap&loading=async&v=weekly"
     defer
   ></script>
 </body>

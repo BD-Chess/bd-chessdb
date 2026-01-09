@@ -14,8 +14,7 @@
   const btnExpand = $('btnExpand');
   const leftPanel = $('leftPanel');
 
-  // Presets & Files
-  const selPresets = $('selPresets');
+  // Files
   const btnSave = $('btnSave');
   const btnLoad = $('btnLoad');
   const fileLoader = $('fileLoader');
@@ -44,7 +43,7 @@
   let map;
   let geocoder;
   let directionsService;
-  let directionsRenderer;
+  let directionsRenderers = [];
   let mapMarkers = [];
   let mapPolyline = null;
   let lastSolvedPoints = null;
@@ -52,36 +51,37 @@
 
   // --- PRESET DATA ---
   const PRESETS = {
-    // === DRIVING TOURS ===
-    'EUROPE_ALL': `# 🇪🇺 Ultimate EU Capitals Tour (Driving)
-# 27 Capitals - The Grand Tour
-Vienna, Austria
-Brussels, Belgium
-Sofia, Bulgaria
-Zagreb, Croatia
-Nicosia, Cyprus
-Prague, Czechia
-Copenhagen, Denmark
-Tallinn, Estonia
+    // --- EU SPLIT ---
+    'EUROPE_NORTH': `# 🇪🇺 EU Capitals (North/West - 13 Stops)
+Dublin, Ireland START
 Helsinki, Finland
-Paris, France
-Berlin, Germany
-Athens, Greece
-Budapest, Hungary
-Dublin, Ireland
-Rome, Italy
+Stockholm, Sweden
+Tallinn, Estonia
 Riga, Latvia
 Vilnius, Lithuania
-Luxembourg City, Luxembourg
-Valletta, Malta
-Amsterdam, Netherlands
+Copenhagen, Denmark
+Berlin, Germany
 Warsaw, Poland
-Lisbon, Portugal
-Bucharest, Romania
-Bratislava, Slovakia
-Ljubljana, Slovenia
+Amsterdam, Netherlands
+Brussels, Belgium
+Luxembourg City, Luxembourg
+Paris, France`,
+
+    'EUROPE_SOUTH': `# 🇪🇺 EU Capitals (South/East - 14 Stops)
+Lisbon, Portugal START
 Madrid, Spain
-Stockholm, Sweden`,
+Rome, Italy
+Valletta, Malta
+Athens, Greece
+Nicosia, Cyprus
+Sofia, Bulgaria
+Bucharest, Romania
+Budapest, Hungary
+Vienna, Austria
+Bratislava, Slovakia
+Prague, Czechia
+Ljubljana, Slovenia
+Zagreb, Croatia`,
 
     'SLOVENIA_DRIVE': `# 🇸🇮 Slovenia Full Loop (Driving)
 Ljubljana START
@@ -121,7 +121,7 @@ Akureyri, Iceland
 Snaefellsnes Peninsula, Iceland
 Golden Circle, Iceland`,
 
-    // === WALKING TOURS (ALL 27 EU CAPITALS) ===
+    // === WALKING TOURS ===
     'VIENNA': `# 🇦🇹 Vienna Walking
 St. Stephen's Cathedral, Vienna
 Hofburg Palace, Vienna
@@ -129,58 +129,6 @@ Schönbrunn Palace, Vienna
 Belvedere Palace, Vienna
 Prater, Vienna
 Naschmarkt, Vienna`,
-
-    'BRUSSELS': `# 🇧🇪 Brussels Walking
-Grand Place, Brussels
-Manneken Pis, Brussels
-Atomium, Brussels
-Royal Palace of Brussels
-Parc du Cinquantenaire, Brussels`,
-
-    'SOFIA': `# 🇧🇬 Sofia Walking
-Alexander Nevsky Cathedral, Sofia
-Vitosha Boulevard, Sofia
-National Palace of Culture, Sofia
-Boyana Church, Sofia`,
-
-    'ZAGREB': `# 🇭🇷 Zagreb Walking
-Ban Jelačić Square, Zagreb
-Zagreb Cathedral
-St. Mark's Church, Zagreb
-Museum of Broken Relationships, Zagreb
-Tkalčićeva Street, Zagreb`,
-
-    'NICOSIA': `# 🇨🇾 Nicosia Walking
-Ledra Street, Nicosia
-Buyuk Han, Nicosia
-Selimiye Camii, Nicosia
-Cyprus Museum, Nicosia`,
-
-    'PRAGUE': `# 🇨🇿 Prague Walking
-Charles Bridge, Prague
-Prague Castle
-Old Town Square, Prague
-Wenceslas Square, Prague
-Dancing House, Prague`,
-
-    'COPENHAGEN': `# 🇩🇰 Copenhagen Walking
-Nyhavn, Copenhagen
-The Little Mermaid, Copenhagen
-Tivoli Gardens, Copenhagen
-Amalienborg, Copenhagen
-Strøget, Copenhagen`,
-
-    'TALLINN': `# 🇪🇪 Tallinn Walking
-Tallinn Old Town
-Toompea Castle, Tallinn
-Alexander Nevsky Cathedral, Tallinn
-Kadriorg Park, Tallinn`,
-
-    'HELSINKI': `# 🇫🇮 Helsinki Walking
-Helsinki Cathedral
-Suomenlinna, Helsinki
-Temppeliaukio Church, Helsinki
-Market Square, Helsinki`,
 
     'PARIS': `# 🇫🇷 Paris Walking
 Eiffel Tower, Paris
@@ -190,34 +138,6 @@ Arc de Triomphe, Paris
 Sacré-Cœur, Paris
 Jardin du Luxembourg, Paris`,
 
-    'BERLIN': `# 🇩🇪 Berlin Walking
-Brandenburg Gate, Berlin
-Reichstag Building, Berlin
-Berlin Wall Memorial
-Checkpoint Charlie, Berlin
-Alexanderplatz, Berlin`,
-
-    'ATHENS': `# 🇬🇷 Athens Walking
-Acropolis of Athens
-Parthenon, Athens
-Plaka, Athens
-Syntagma Square, Athens
-Panathenaic Stadium, Athens`,
-
-    'BUDAPEST': `# 🇭🇺 Budapest Walking
-Hungarian Parliament Building, Budapest
-Buda Castle, Budapest
-Fisherman's Bastion, Budapest
-Széchenyi Thermal Bath, Budapest
-Heroes' Square, Budapest`,
-
-    'DUBLIN': `# 🇮🇪 Dublin Walking
-Temple Bar, Dublin
-Trinity College Dublin
-Guinness Storehouse, Dublin
-St Stephen's Green, Dublin
-Dublin Castle`,
-
     'ROME': `# 🇮🇹 Rome Walking
 Colosseum, Rome
 Pantheon, Rome
@@ -225,61 +145,21 @@ Trevi Fountain, Rome
 Spanish Steps, Rome
 St. Peter's Basilica, Vatican City`,
 
-    'RIGA': `# 🇱🇻 Riga Walking
-House of the Blackheads, Riga
-Riga Central Market
-St. Peter's Church, Riga
-Freedom Monument, Riga`,
+    'NY': `# 🇺🇸 New York Manhattan (Walking/Metro)
+Times Square, New York START
+Central Park, New York
+Empire State Building, New York
+Brooklyn Bridge, New York
+Statue of Liberty, New York
+9/11 Memorial, New York`,
 
-    'VILNIUS': `# 🇱🇹 Vilnius Walking
-Gediminas' Tower, Vilnius
-Vilnius Cathedral
-Gate of Dawn, Vilnius
-Uzupis, Vilnius`,
-
-    'LUXEMBOURG': `# 🇱🇺 Luxembourg Walking
-Le Chemin de la Corniche, Luxembourg
-Casemates du Bock, Luxembourg
-Grand Ducal Palace, Luxembourg
-Notre-Dame Cathedral, Luxembourg`,
-
-    'VALLETTA': `# 🇲🇹 Valletta Walking
-St. John's Co-Cathedral, Valletta
-Upper Barrakka Gardens, Valletta
-Grandmaster's Palace, Valletta
-Fort St Elmo, Valletta`,
-
-    'AMSTERDAM': `# 🇳🇱 Amsterdam Walking
-Rijksmuseum, Amsterdam
-Anne Frank House, Amsterdam
-Vondelpark, Amsterdam
-Dam Square, Amsterdam
-Red Light District, Amsterdam`,
-
-    'WARSAW': `# 🇵🇱 Warsaw Walking
-Old Town Market Place, Warsaw
-Royal Castle, Warsaw
-Palace of Culture and Science, Warsaw
-Łazienki Park, Warsaw`,
-
-    'LISBON': `# 🇵🇹 Lisbon Walking
-Belém Tower, Lisbon
-Jerónimos Monastery, Lisbon
-Praça do Comércio, Lisbon
-Castelo de S. Jorge, Lisbon
-Rossio Square, Lisbon`,
-
-    'BUCHAREST': `# 🇷🇴 Bucharest Walking
-Palace of Parliament, Bucharest
-Romanian Athenaeum, Bucharest
-Old Town, Bucharest
-Herastrau Park, Bucharest`,
-
-    'BRATISLAVA': `# 🇸🇰 Bratislava Walking
-Bratislava Castle
-St. Martin's Cathedral, Bratislava
-Michael's Gate, Bratislava
-Blue Church, Bratislava`,
+    'TOKYO': `# 🇯🇵 Tokyo Highlights (Metro)
+Shinjuku Station, Tokyo START
+Shibuya Crossing, Tokyo
+Senso-ji, Tokyo
+Meiji Jingu, Tokyo
+Tokyo Tower
+Akihabara, Tokyo`,
 
     'LJUBLJANA': `# 🇸🇮 Ljubljana Walking
 Prešernov trg, Ljubljana
@@ -288,6 +168,20 @@ Dragon Bridge, Ljubljana
 Tivoli Park, Ljubljana
 Metelkova Art Center`,
 
+    'PRAGUE': `# 🇨🇿 Prague Walking
+Charles Bridge, Prague
+Prague Castle
+Old Town Square, Prague
+Wenceslas Square, Prague
+Dancing House, Prague`,
+
+    'BERLIN': `# 🇩🇪 Berlin Walking
+Brandenburg Gate, Berlin
+Reichstag Building, Berlin
+Berlin Wall Memorial
+Checkpoint Charlie, Berlin
+Alexanderplatz, Berlin`,
+
     'MADRID': `# 🇪🇸 Madrid Walking
 Royal Palace of Madrid
 Plaza Mayor, Madrid
@@ -295,13 +189,13 @@ Retiro Park, Madrid
 Prado Museum, Madrid
 Puerta del Sol, Madrid`,
 
-    'STOCKHOLM': `# 🇸🇪 Stockholm Walking
-Gamla Stan, Stockholm
-Vasa Museum, Stockholm
-Skansen, Stockholm
-Stockholm Palace`,
+    'AMSTERDAM': `# 🇳🇱 Amsterdam Walking
+Rijksmuseum, Amsterdam
+Anne Frank House, Amsterdam
+Vondelpark, Amsterdam
+Dam Square, Amsterdam
+Red Light District, Amsterdam`,
 
-    // === COMPLEX (STRESS TEST) ===
     'COMPLEX_EU': `# 🇪🇺💀 THE GAUNTLET (Capitals + Stops)
 # Warning: This is a massive route!
 Vienna, Austria
@@ -374,18 +268,52 @@ Gamla Stan, Stockholm`
 
     geocoder = new google.maps.Geocoder();
     directionsService = new google.maps.DirectionsService();
-    
-    directionsRenderer = new google.maps.DirectionsRenderer({
-      map: map,
-      suppressMarkers: true,
-      preserveViewport: false,
-      polylineOptions: {
-        strokeColor: "#6aa9ff",
-        strokeWeight: 5,
-        strokeOpacity: 0.7
+  };
+
+  // --- TREE VIEW LOGIC ---
+  const treeHeaders = document.querySelectorAll('.tree-header');
+  treeHeaders.forEach(header => {
+    header.addEventListener('click', () => {
+      const group = header.nextElementSibling;
+      const icon = header.querySelector('.tree-icon');
+      if (group) {
+        if (group.classList.contains('open')) {
+          group.classList.remove('open');
+          icon.textContent = '[+]';
+        } else {
+          group.classList.add('open');
+          icon.textContent = '[-]';
+        }
       }
     });
-  };
+  });
+
+  const treeItems = document.querySelectorAll('.tree-item');
+  treeItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const key = item.getAttribute('data-key');
+      loadPreset(key);
+    });
+  });
+
+  function loadPreset(key) {
+    clearMap();
+    if (key && PRESETS[key]) {
+      inputEl.value = PRESETS[key];
+      setStatus(`Loaded preset: ${key}`, 'ok');
+      
+      const isWalking = key !== 'EUROPE_NORTH' && 
+                        key !== 'EUROPE_SOUTH' &&
+                        key !== 'SLOVENIA_DRIVE' && 
+                        key !== 'CALIFORNIA' && 
+                        key !== 'GERMANY' && 
+                        key !== 'ICELAND' && 
+                        key !== 'COMPLEX_EU';
+      
+      setTravelMode(isWalking ? 'WALKING' : 'DRIVING');
+      chkRoundTrip.checked = true;
+    }
+  }
 
   // --- HELPERS ---
   function clearMap() {
@@ -393,10 +321,10 @@ Gamla Stan, Stockholm`
     mapMarkers.forEach(m => m.setMap(null));
     mapMarkers = [];
     if (mapPolyline) mapPolyline.setMap(null);
-    directionsRenderer.setDirections({ routes: [] });
-    mapPlaceholder.style.display = 'block'; // Show placeholder again
+    directionsRenderers.forEach(dr => dr.setMap(null));
+    directionsRenderers = [];
     
-    // Clear text stats
+    mapPlaceholder.style.display = 'block'; 
     distKmEl.textContent = '—';
     savedKmEl.textContent = '—';
     routeList.innerHTML = '';
@@ -409,34 +337,6 @@ Gamla Stan, Stockholm`
     statusEl.className = 'status' + (cls ? (' ' + cls) : '');
   }
 
-  // --- UI LOGIC ---
-  if (selPresets) {
-    selPresets.addEventListener('change', () => {
-      const key = selPresets.value;
-      
-      // 1. Clear current route
-      clearMap();
-
-      if (key && PRESETS[key]) {
-        inputEl.value = PRESETS[key];
-        setStatus(`Loaded preset: ${key}`, 'ok');
-        
-        // Auto-set travel mode
-        // If it's a driving tour or complex, set driving. Else walking.
-        const isWalking = key !== 'EUROPE_ALL' && 
-                          key !== 'SLOVENIA_DRIVE' && 
-                          key !== 'CALIFORNIA' && 
-                          key !== 'GERMANY' && 
-                          key !== 'ICELAND' && 
-                          key !== 'COMPLEX_EU';
-        
-        setTravelMode(isWalking ? 'WALKING' : 'DRIVING');
-        chkRoundTrip.checked = true;
-      }
-    });
-  }
-
-  // Collapse / Expand
   if (btnCollapse) {
     btnCollapse.addEventListener('click', () => {
       $('leftPanel').classList.add('collapsed');
@@ -450,7 +350,6 @@ Gamla Stan, Stockholm`
     });
   }
 
-  // Save/Load
   if (btnSave) {
     btnSave.addEventListener('click', () => {
       const text = inputEl.value;
@@ -470,7 +369,7 @@ Gamla Stan, Stockholm`
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (evt) => {
-        clearMap(); // Clear before loading
+        clearMap(); 
         inputEl.value = evt.target.result;
         setStatus(`Loaded file: ${file.name}`, 'ok');
         fileLoader.value = '';
@@ -496,17 +395,12 @@ Gamla Stan, Stockholm`
   }
 
   function updateOptimizeButtons(activeType) {
-    // If activeType is 'standard', Standard is blue, Deep is gray.
     if (activeType === 'standard') {
       btnStandard.classList.remove('secondary');
       btnDeep.classList.add('secondary');
     } else if (activeType === 'deep') {
       btnStandard.classList.add('secondary');
       btnDeep.classList.remove('secondary');
-    } else {
-      // Reset (both secondary or default)
-      btnStandard.classList.remove('secondary');
-      btnDeep.classList.add('secondary');
     }
   }
 
@@ -533,14 +427,20 @@ Gamla Stan, Stockholm`
     mapMarkers.forEach(m => m.setMap(null));
     mapMarkers = [];
     if (mapPolyline) mapPolyline.setMap(null);
-    directionsRenderer.setDirections({ routes: [] });
+    directionsRenderers.forEach(dr => dr.setMap(null));
+    directionsRenderers = [];
+    
     mapPlaceholder.style.display = 'none';
 
     const pathCoords = [];
+    const bounds = new google.maps.LatLngBounds();
+
     points.forEach((pt, index) => {
       if (typeof pt.lat === 'number' && typeof pt.lon === 'number') {
         const latLng = { lat: pt.lat, lng: pt.lon };
         pathCoords.push(latLng);
+        bounds.extend(latLng);
+
         const marker = new google.maps.Marker({
           position: latLng,
           map: map,
@@ -561,31 +461,51 @@ Gamla Stan, Stockholm`
       routePath.push(routePath[0]);
     }
 
-    if (chkDirect.checked || points.length > 25) {
+    if (chkDirect.checked) {
       drawFallbackPolyline(routePath);
       return;
     }
 
-    const origin = routePath[0];
-    const destination = routePath[routePath.length - 1];
-    const waypoints = routePath.slice(1, -1).map(loc => ({
-      location: loc,
-      stopover: true
-    }));
+    const CHUNK_SIZE = 24; 
+    
+    for (let i = 0; i < routePath.length - 1; i += CHUNK_SIZE) {
+      const chunk = routePath.slice(i, i + CHUNK_SIZE + 1);
+      if (chunk.length < 2) continue;
 
-    directionsService.route({
-      origin: origin,
-      destination: destination,
-      waypoints: waypoints,
-      travelMode: google.maps.TravelMode[currentTravelMode],
-    }, (response, status) => {
-      if (status === "OK") {
-        directionsRenderer.setDirections(response);
-      } else {
-        console.warn("Directions request failed: " + status);
-        drawFallbackPolyline(routePath);
-      }
-    });
+      const origin = chunk[0];
+      const destination = chunk[chunk.length - 1];
+      const waypoints = chunk.slice(1, -1).map(loc => ({
+        location: loc,
+        stopover: true
+      }));
+
+      const renderer = new google.maps.DirectionsRenderer({
+        map: map,
+        suppressMarkers: true, 
+        preserveViewport: true, 
+        polylineOptions: {
+          strokeColor: "#6aa9ff",
+          strokeWeight: 5,
+          strokeOpacity: 0.7
+        }
+      });
+      directionsRenderers.push(renderer);
+
+      directionsService.route({
+        origin: origin,
+        destination: destination,
+        waypoints: waypoints,
+        travelMode: google.maps.TravelMode[currentTravelMode],
+      }, (response, status) => {
+        if (status === "OK") {
+          renderer.setDirections(response);
+        } else {
+          console.warn("Directions chunk failed: " + status);
+        }
+      });
+    }
+    
+    map.fitBounds(bounds);
   }
 
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -759,7 +679,6 @@ Gamla Stan, Stockholm`
   }
 
   async function run(profile) {
-    // VISUAL FEEDBACK: Update buttons to show which profile is running
     updateOptimizeButtons(profile);
 
     disableWhileRunning(true);
@@ -823,6 +742,4 @@ Gamla Stan, Stockholm`
     }
   });
   
-  // Initialize with a default ONLY if preset is loaded, otherwise leave blank
-  // inputEl.value = defaultExample(); // Disabled to keep box clean or show placeholder
 })();
