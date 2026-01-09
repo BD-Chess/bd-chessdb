@@ -27,13 +27,37 @@
   <main class="split">
     <section class="panel left">
       <div class="card">
-        <h2>Stops</h2>
-        <p class="muted">
-          One per line. <a href="#" onclick="document.getElementById('btnHelp').click(); return false;" style="color:var(--accent); text-decoration:none;">See examples</a>.
-          Prefix <span class="mono">START:</span> to lock start.
+        <h2>Plan Your Trip</h2>
+        
+        <select id="selPresets" style="width:100%; padding:8px; margin-bottom:10px; border-radius:8px; background:#0f1621; color:#6aa9ff; border:1px solid #1f2a3a; font-family:inherit; cursor:pointer;">
+          <option value="">✨ Load a Recommended Trip...</option>
+          <optgroup label="Walking Tours (City)">
+            <option value="LJUBLJANA">🇸🇮 Ljubljana (Classic)</option>
+            <option value="PARIS">🇫🇷 Paris (Essential)</option>
+            <option value="ROME">🇮🇹 Rome (Ancient & Holy)</option>
+            <option value="NY">🇺🇸 New York (Manhattan)</option>
+            <option value="TOKYO">🇯🇵 Tokyo (Highlights)</option>
+          </optgroup>
+          <optgroup label="Driving Tours (Country/Region)">
+            <option value="SLOVENIA_DRIVE">🇸🇮 Slovenia (Full Loop)</option>
+            <option value="CALIFORNIA">🇺🇸 California (Road Trip)</option>
+            <option value="GERMANY">🇩🇪 Germany (Autobahn)</option>
+            <option value="EUROPE">🇪🇺 Europe Capitals</option>
+            <option value="ICELAND">🇮🇸 Iceland (Ring Road)</option>
+          </optgroup>
+        </select>
+
+        <p class="muted small" style="margin-top:0;">
+          Edit below or <a href="#" onclick="document.getElementById('btnHelp').click(); return false;" style="color:var(--accent); text-decoration:none;">see help</a>.
         </p>
 
-        <textarea id="input" spellcheck="false"></textarea>
+        <textarea id="input" spellcheck="false" placeholder="Enter stops here..."></textarea>
+
+        <div class="row tight" style="margin-top:5px; margin-bottom:15px;">
+          <button id="btnSave" class="secondary" style="font-size:12px; padding:6px;">💾 Save to File</button>
+          <button id="btnLoad" class="secondary" style="font-size:12px; padding:6px;">📂 Load from File</button>
+          <input type="file" id="fileLoader" style="display:none" accept=".txt" />
+        </div>
 
         <div class="row">
           <button id="btnStandard">Optimize (Standard)</button>
@@ -86,7 +110,7 @@
         <div class="big-icon">🗺️</div>
         <h2>Ready to Route</h2>
         <p class="muted box-width">
-          Your optimized route will appear here.
+          Select a recommended trip or enter your own stops.
         </p>
       </div>
 
@@ -99,16 +123,16 @@
           <div class="card help-block">
             <h2>Why 8Z-RP?</h2>
             <p><strong>Deterministic Results:</strong> Unlike many online solvers that produce random variations every time you click, 8Z-RP guarantees <em>Same Input ⇒ Same Route</em>.</p>
-            <p><strong>Deep Search:</strong> The "Deep Search" mode runs the optimization algorithm 12 times in parallel to find the absolute shortest path, ensuring complex routes are fully untangled.</p>
+            <p><strong>Deep Search:</strong> The "Deep Search" mode runs the optimization algorithm 12 times in parallel to find the absolute shortest path.</p>
           </div>
 
           <div class="card help-block">
             <h2>How to Use</h2>
             <ul>
-              <li><strong>1. Enter Locations:</strong> Type your stops in the text box. One per line.</li>
-              <li><strong>2. Optimize:</strong> Use "Standard" for speed or "Deep Search" for complex routes.</li>
-              <li><strong>3. View Route:</strong> The map will draw the path. Use the <strong>Driving / Walking</strong> buttons to switch modes.</li>
-              <li><strong>4. Export:</strong> Click the "Open in Maps" buttons to send the route to your phone.</li>
+              <li><strong>1. Presets:</strong> Use the dropdown to load a famous trip (e.g., Paris, California).</li>
+              <li><strong>2. Edit:</strong> Add or remove stops in the text box.</li>
+              <li><strong>3. Save/Load:</strong> Use the 💾 and 📂 buttons to keep your plans safe.</li>
+              <li><strong>4. Optimize:</strong> Click "Standard" or "Deep Search".</li>
             </ul>
           </div>
 
@@ -141,7 +165,7 @@
   <script src="app.js"></script>
 
   <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA&callback=initMap&loading=async&v=weekly"
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&callback=initMap&loading=async&v=weekly"
     defer
   ></script>
 </body>
