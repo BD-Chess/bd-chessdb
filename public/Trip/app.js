@@ -36,6 +36,7 @@
   const helpOverlay = $('helpOverlay');
   const btnHelp = $('btnHelp');
   const btnCloseHelp = $('btnCloseHelp');
+  const presetTree = $('presetTree');
 
   const worker = new Worker('worker.js');
 
@@ -48,202 +49,9 @@
   let mapPolyline = null;
   let lastSolvedPoints = null;
   let currentTravelMode = 'DRIVING'; 
-
-  // --- PRESET DATA ---
-  const PRESETS = {
-    // --- EU SPLIT ---
-    'EUROPE_NORTH': `# 🇪🇺 EU Capitals (North/West - 13 Stops)
-Dublin, Ireland START
-Helsinki, Finland
-Stockholm, Sweden
-Tallinn, Estonia
-Riga, Latvia
-Vilnius, Lithuania
-Copenhagen, Denmark
-Berlin, Germany
-Warsaw, Poland
-Amsterdam, Netherlands
-Brussels, Belgium
-Luxembourg City, Luxembourg
-Paris, France`,
-
-    'EUROPE_SOUTH': `# 🇪🇺 EU Capitals (South/East - 14 Stops)
-Lisbon, Portugal START
-Madrid, Spain
-Rome, Italy
-Valletta, Malta
-Athens, Greece
-Nicosia, Cyprus
-Sofia, Bulgaria
-Bucharest, Romania
-Budapest, Hungary
-Vienna, Austria
-Bratislava, Slovakia
-Prague, Czechia
-Ljubljana, Slovenia
-Zagreb, Croatia`,
-
-    'SLOVENIA_DRIVE': `# 🇸🇮 Slovenia Full Loop (Driving)
-Ljubljana START
-Lake Bled
-Postojna Cave
-Piran
-Maribor
-Triglav National Park
-Predjama Castle
-Velika Planina`,
-
-    'CALIFORNIA': `# 🇺🇸 California Road Trip (Driving)
-San Francisco, CA START
-Yosemite National Park, CA
-Monterey, CA
-Santa Barbara, CA
-Los Angeles, CA
-San Diego, CA
-Death Valley National Park, CA
-Las Vegas, NV`,
-
-    'GERMANY': `# 🇩🇪 Germany Autobahn (Driving)
-Berlin, Germany START
-Hamburg, Germany
-Cologne, Germany
-Frankfurt, Germany
-Heidelberg, Germany
-Munich, Germany
-Neuschwanstein Castle, Germany`,
-
-    'ICELAND': `# 🇮🇸 Iceland Ring Road (Driving)
-Reykjavik, Iceland START
-Vik, Iceland
-Hofn, Iceland
-Egilsstadir, Iceland
-Akureyri, Iceland
-Snaefellsnes Peninsula, Iceland
-Golden Circle, Iceland`,
-
-    // === WALKING TOURS ===
-    'VIENNA': `# 🇦🇹 Vienna Walking
-St. Stephen's Cathedral, Vienna
-Hofburg Palace, Vienna
-Schönbrunn Palace, Vienna
-Belvedere Palace, Vienna
-Prater, Vienna
-Naschmarkt, Vienna`,
-
-    'PARIS': `# 🇫🇷 Paris Walking
-Eiffel Tower, Paris
-Louvre Museum, Paris
-Notre Dame Cathedral, Paris
-Arc de Triomphe, Paris
-Sacré-Cœur, Paris
-Jardin du Luxembourg, Paris`,
-
-    'ROME': `# 🇮🇹 Rome Walking
-Colosseum, Rome
-Pantheon, Rome
-Trevi Fountain, Rome
-Spanish Steps, Rome
-St. Peter's Basilica, Vatican City`,
-
-    'NY': `# 🇺🇸 New York Manhattan (Walking/Metro)
-Times Square, New York START
-Central Park, New York
-Empire State Building, New York
-Brooklyn Bridge, New York
-Statue of Liberty, New York
-9/11 Memorial, New York`,
-
-    'TOKYO': `# 🇯🇵 Tokyo Highlights (Metro)
-Shinjuku Station, Tokyo START
-Shibuya Crossing, Tokyo
-Senso-ji, Tokyo
-Meiji Jingu, Tokyo
-Tokyo Tower
-Akihabara, Tokyo`,
-
-    'LJUBLJANA': `# 🇸🇮 Ljubljana Walking
-Prešernov trg, Ljubljana
-Ljubljana Castle
-Dragon Bridge, Ljubljana
-Tivoli Park, Ljubljana
-Metelkova Art Center`,
-
-    'PRAGUE': `# 🇨🇿 Prague Walking
-Charles Bridge, Prague
-Prague Castle
-Old Town Square, Prague
-Wenceslas Square, Prague
-Dancing House, Prague`,
-
-    'BERLIN': `# 🇩🇪 Berlin Walking
-Brandenburg Gate, Berlin
-Reichstag Building, Berlin
-Berlin Wall Memorial
-Checkpoint Charlie, Berlin
-Alexanderplatz, Berlin`,
-
-    'MADRID': `# 🇪🇸 Madrid Walking
-Royal Palace of Madrid
-Plaza Mayor, Madrid
-Retiro Park, Madrid
-Prado Museum, Madrid
-Puerta del Sol, Madrid`,
-
-    'AMSTERDAM': `# 🇳🇱 Amsterdam Walking
-Rijksmuseum, Amsterdam
-Anne Frank House, Amsterdam
-Vondelpark, Amsterdam
-Dam Square, Amsterdam
-Red Light District, Amsterdam`,
-
-    'COMPLEX_EU': `# 🇪🇺💀 THE GAUNTLET (Capitals + Stops)
-# Warning: This is a massive route!
-Vienna, Austria
-Hofburg Palace, Vienna
-Brussels, Belgium
-Grand Place, Brussels
-Sofia, Bulgaria
-Alexander Nevsky Cathedral, Sofia
-Zagreb, Croatia
-Ban Jelačić Square, Zagreb
-Nicosia, Cyprus
-Prague, Czechia
-Charles Bridge, Prague
-Copenhagen, Denmark
-Nyhavn, Copenhagen
-Tallinn, Estonia
-Helsinki, Finland
-Paris, France
-Eiffel Tower, Paris
-Berlin, Germany
-Brandenburg Gate, Berlin
-Athens, Greece
-Acropolis of Athens
-Budapest, Hungary
-Hungarian Parliament, Budapest
-Dublin, Ireland
-Temple Bar, Dublin
-Rome, Italy
-Colosseum, Rome
-Riga, Latvia
-Vilnius, Lithuania
-Luxembourg City, Luxembourg
-Valletta, Malta
-Amsterdam, Netherlands
-Rijksmuseum, Amsterdam
-Warsaw, Poland
-Old Town, Warsaw
-Lisbon, Portugal
-Belém Tower, Lisbon
-Bucharest, Romania
-Bratislava, Slovakia
-Ljubljana, Slovenia
-Ljubljana Castle
-Madrid, Spain
-Royal Palace, Madrid
-Stockholm, Sweden
-Gamla Stan, Stockholm`
-  };
+  
+  // Flattened lookup for presets (populated from trips.js)
+  let presetLookup = {};
 
   const CUSTOM_DARK_STYLE = [
     { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
@@ -270,47 +78,88 @@ Gamla Stan, Stockholm`
     directionsService = new google.maps.DirectionsService();
   };
 
-  // --- TREE VIEW LOGIC ---
-  const treeHeaders = document.querySelectorAll('.tree-header');
-  treeHeaders.forEach(header => {
-    header.addEventListener('click', () => {
-      const group = header.nextElementSibling;
-      const icon = header.querySelector('.tree-icon');
-      if (group) {
-        if (group.classList.contains('open')) {
-          group.classList.remove('open');
-          icon.textContent = '[+]';
-        } else {
-          group.classList.add('open');
-          icon.textContent = '[-]';
-        }
-      }
-    });
-  });
+  // --- DYNAMIC TREE BUILDER ---
+  function initTripTree() {
+    if (!window.TRIP_LIBRARY || !presetTree) return;
 
-  const treeItems = document.querySelectorAll('.tree-item');
-  treeItems.forEach(item => {
-    item.addEventListener('click', () => {
-      const key = item.getAttribute('data-key');
-      loadPreset(key);
+    presetTree.innerHTML = '';
+    presetLookup = {};
+
+    window.TRIP_LIBRARY.forEach(region => {
+      // 1. Region Node (e.g. Europe)
+      const regionNode = document.createElement('div');
+      regionNode.className = 'tree-node';
+      
+      const regionHeader = document.createElement('div');
+      regionHeader.className = 'tree-header';
+      regionHeader.innerHTML = `<span class="tree-icon">[+]</span> ${region.region}`;
+      
+      const regionGroup = document.createElement('div');
+      regionGroup.className = 'tree-group';
+
+      // 2. Categories (Driving/Walking)
+      region.categories.forEach(cat => {
+        const catNode = document.createElement('div');
+        catNode.className = 'tree-node';
+
+        const catHeader = document.createElement('div');
+        catHeader.className = 'tree-header';
+        catHeader.innerHTML = `<span class="tree-icon">[+]</span> ${cat.name}`;
+
+        const catGroup = document.createElement('div');
+        catGroup.className = 'tree-group';
+
+        // 3. Trips
+        cat.items.forEach(trip => {
+          // Add to lookup
+          presetLookup[trip.id] = trip.data;
+
+          const tripItem = document.createElement('span');
+          tripItem.className = 'tree-item';
+          tripItem.textContent = trip.label;
+          tripItem.dataset.key = trip.id;
+          
+          tripItem.addEventListener('click', () => loadPreset(trip.id));
+          catGroup.appendChild(tripItem);
+        });
+
+        // Category Toggle
+        catHeader.addEventListener('click', () => toggleTreeGroup(catHeader, catGroup));
+        
+        catNode.appendChild(catHeader);
+        catNode.appendChild(catGroup);
+        regionGroup.appendChild(catNode);
+      });
+
+      // Region Toggle
+      regionHeader.addEventListener('click', () => toggleTreeGroup(regionHeader, regionGroup));
+
+      regionNode.appendChild(regionHeader);
+      regionNode.appendChild(regionGroup);
+      presetTree.appendChild(regionNode);
     });
-  });
+  }
+
+  function toggleTreeGroup(header, group) {
+    const icon = header.querySelector('.tree-icon');
+    if (group.classList.contains('open')) {
+      group.classList.remove('open');
+      icon.textContent = '[+]';
+    } else {
+      group.classList.add('open');
+      icon.textContent = '[-]';
+    }
+  }
 
   function loadPreset(key) {
     clearMap();
-    if (key && PRESETS[key]) {
-      inputEl.value = PRESETS[key];
+    if (key && presetLookup[key]) {
+      inputEl.value = presetLookup[key];
       setStatus(`Loaded preset: ${key}`, 'ok');
       
-      const isWalking = key !== 'EUROPE_NORTH' && 
-                        key !== 'EUROPE_SOUTH' &&
-                        key !== 'SLOVENIA_DRIVE' && 
-                        key !== 'CALIFORNIA' && 
-                        key !== 'GERMANY' && 
-                        key !== 'ICELAND' && 
-                        key !== 'COMPLEX_EU';
-      
-      setTravelMode(isWalking ? 'WALKING' : 'DRIVING');
+      // Heuristic to detect mode: Driving trips usually have _DRIVE suffix or known driving lists
+      const isDriving = key.includes('_DRIVE') || key.includes('COMPLEX');
+      setTravelMode(isDriving ? 'DRIVING' : 'WALKING');
       chkRoundTrip.checked = true;
     }
   }
@@ -741,5 +590,8 @@ Gamla Stan, Stockholm`
       map.setOptions({ styles: e.target.checked ? null : CUSTOM_DARK_STYLE });
     }
   });
+  
+  // INIT
+  initTripTree();
   
 })();
