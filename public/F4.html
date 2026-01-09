@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>FlipFour (8x8) Pro</title>
+<title>Flip4M Pro</title>
 <style>
   :root{
     --bg:#0b0f17;
@@ -33,6 +33,8 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   }
   .row { display:flex; justify-content:space-between; align-items:center; }
+  
+  /* UPDATED TITLE STYLE */
   h1 { margin:0; font-size:18px; font-weight:900; letter-spacing:0.5px; }
   
   .meta { font-size: 11px; color: var(--muted); margin-top: -2px; margin-bottom: 5px; opacity: 0.8; }
@@ -133,7 +135,7 @@
   <div id="hud">
     <div class="row">
       <div>
-        <h1>FlipFour <span style="font-size:12px;opacity:0.5;font-weight:400">Pro</span></h1>
+        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400">Pro</span></h1>
         <div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
       </div>
       <div class="status" id="turnInfo">Red's Turn</div>
@@ -166,7 +168,7 @@
     
     <div id="overlay">
       <div class="card" id="menuCard">
-        <h2>FlipFour</h2>
+        <h2>Flip4M</h2>
         <p>Gravity-defying strategy.</p>
         <div class="card-btns" style="flex-direction:column; gap:8px;">
           <button class="btn-act" onclick="startGame(1, 2)">Standard</button>
@@ -334,7 +336,7 @@
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(history));
       const a = document.createElement('a');
       a.setAttribute("href", dataStr);
-      a.setAttribute("download", "flipfour_save_" + new Date().getTime() + ".json");
+      a.setAttribute("download", "flip4m_save_" + new Date().getTime() + ".json");
       document.body.appendChild(a); a.click(); a.remove();
   }
   window.loadGameTrigger = function() { document.getElementById('file-input').click(); }
