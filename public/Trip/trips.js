@@ -26,6 +26,141 @@ Great Wall of China (Mutianyu), Beijing
 Sydney Opera House, Australia
 Christ the Redeemer, Rio de Janeiro, Brazil
 Burj Khalifa, Dubai, UAE` 
+          },
+          {
+            id: "EIFFEL_FULL",
+            label: "🇫🇷 Eiffel Tower & Around (Paris)",
+            data: `# 🇫🇷 Paris: Eiffel Tower District
+# A classic Parisian day out
+Trocadéro Gardens, Paris START
+Eiffel Tower, Paris
+Champ de Mars, Paris
+Seine River Cruise Dock (Bateaux Parisiens), Paris
+Musée du Quai Branly, Paris
+Pont Alexandre III, Paris
+Invalides (Napoleon's Tomb), Paris
+Rue Cler (Market Street), Paris`
+          },
+          {
+            id: "COLOSSEUM_FULL",
+            label: "🇮🇹 Colosseum & Ancient Rome",
+            data: `# 🇮🇹 Rome: Ancient City
+# The heart of the Roman Empire
+Colosseum, Rome START
+Arch of Constantine, Rome
+Roman Forum, Rome
+Palatine Hill, Rome
+Capitoline Museums, Rome
+Piazza Venezia (Altar of the Fatherland), Rome
+Trajan's Market, Rome
+Pantheon, Rome`
+          },
+          {
+            id: "LIBERTY_FULL",
+            label: "🇺🇸 Statue of Liberty & Lower Manhattan",
+            data: `# 🇺🇸 NYC: Liberty & Financial District
+# Ferries and Skyscrapers
+Battery Park, New York START
+Statue of Liberty National Monument
+Ellis Island National Museum of Immigration
+Charging Bull (Wall Street), New York
+New York Stock Exchange, New York
+Federal Hall, New York
+9/11 Memorial & Museum, New York
+One World Observatory, New York`
+          },
+          {
+            id: "MACHU_FULL",
+            label: "🇵🇪 Machu Picchu & Sacred Valley",
+            data: `# 🇵🇪 Peru: The Inca Trail (Express)
+# From Cusco to the Citadel
+Cusco Main Square (Plaza de Armas) START
+Sacsayhuaman, Cusco
+Pisac Ruins, Sacred Valley
+Ollantaytambo Ruins, Sacred Valley
+Aguas Calientes (Machu Picchu Pueblo)
+Machu Picchu Citadel
+Huayna Picchu (Mountain Peak)
+Sun Gate (Inti Punku), Machu Picchu`
+          },
+          {
+            id: "TAJ_FULL",
+            label: "🇮🇳 Taj Mahal & Agra Fort",
+            data: `# 🇮🇳 Agra: Mughal Heritage
+# The symbol of love and power
+Taj Mahal, Agra START
+Agra Fort, Agra
+Mehtab Bagh (Moonlight Garden), Agra
+Itmad-ud-Daulah (Baby Taj), Agra
+Tomb of Akbar the Great, Sikandra
+Kinari Bazar (Old Market), Agra`
+          },
+          {
+            id: "GIZA_FULL",
+            label: "🇪🇬 Pyramids of Giza & Sphinx",
+            data: `# 🇪🇬 Cairo: Ancient Wonders
+# The Giza Plateau
+Great Pyramid of Giza (Khufu) START
+Pyramid of Khafre
+Pyramid of Menkaure
+Great Sphinx of Giza
+Valley Temple of Khafre
+Grand Egyptian Museum (Giza)
+Khan el-Khalili Market, Cairo`
+          },
+          {
+            id: "WALL_FULL",
+            label: "🇨🇳 Great Wall (Mutianyu) & Beijing",
+            data: `# 🇨🇳 Beijing: The Great Wall
+# A day trip to the wall + city highlights
+Mutianyu Great Wall, Beijing START
+Ming Tombs (Sacred Way), Beijing
+Summer Palace, Beijing
+Forbidden City, Beijing
+Tiananmen Square, Beijing
+Jingshan Park (View of Forbidden City), Beijing
+Temple of Heaven, Beijing`
+          },
+          {
+            id: "SYDNEY_FULL",
+            label: "🇦🇺 Sydney Opera House & Harbour",
+            data: `# 🇦🇺 Sydney: The Harbour Loop
+# Iconic Aussie Views
+Sydney Opera House START
+Royal Botanic Garden Sydney
+Mrs Macquarie's Chair, Sydney
+The Rocks, Sydney
+Sydney Harbour Bridge Pylon Lookout
+Darling Harbour, Sydney
+Queen Victoria Building, Sydney
+Sydney Tower Eye`
+          },
+          {
+            id: "RIO_FULL",
+            label: "🇧🇷 Christ the Redeemer & Rio",
+            data: `# 🇧🇷 Rio de Janeiro: Icons
+# From the mountain to the sea
+Christ the Redeemer (Corcovado), Rio de Janeiro START
+Sugarloaf Mountain (Pão de Açúcar), Rio de Janeiro
+Copacabana Beach, Rio de Janeiro
+Ipanema Beach, Rio de Janeiro
+Selarón Steps (Escadaria Selarón), Rio de Janeiro
+Metropolitan Cathedral of Saint Sebastian, Rio de Janeiro
+Maracanã Stadium, Rio de Janeiro`
+          },
+          {
+            id: "DUBAI_FULL",
+            label: "🇦🇪 Burj Khalifa & Downtown Dubai",
+            data: `# 🇦🇪 Dubai: Downtown Luxury
+# The tallest building and biggest mall
+Burj Khalifa, Dubai START
+The Dubai Mall
+Dubai Aquarium & Underwater Zoo
+The Dubai Fountain
+Souk Al Bahar, Dubai
+Dubai Opera
+Sky Views Observatory, Dubai
+Museum of the Future, Dubai`
           }
         ]
       }
@@ -97,16 +232,16 @@ Burj Khalifa, Dubai, UAE`
       {
         name: "🚗 Top 10 Driving/Safari",
         items: [
-          { id: "ZA_DRIVE", label: "South Africa Highlights", data: `# 🇿🇦 South Africa Highlights\nCape Town START\nTable Mountain\nCape of Good Hope\nStellenbosch\nGarden Route\nKnysna\nDurban\nKruger National Park\nJohannesburg` },
-          { id: "EG_DRIVE", label: "Egypt Ancients", data: `# 🇪🇬 Egypt Ancients\nCairo START\nGiza Pyramids\nAlexandria\nLuxor\nValley of the Kings\nAswan\nAbu Simbel\nHurghada\nSharm El Sheikh` },
-          { id: "MA_DRIVE", label: "Morocco Imperial", data: `# 🇲🇦 Morocco Imperial\nCasablanca START\nRabat\nChefchaouen\nFes\nMeknes\nMerzouga (Sahara)\nOuarzazate\nMarrakech\nEssaouira` },
-          { id: "KE_DRIVE", label: "Kenya Safari", data: `# 🇰🇪 Kenya Safari\nNairobi START\nMaasai Mara\nLake Nakuru\nMount Kenya\nAmboseli National Park\nTsavo East\nMombasa\nDiani Beach` },
-          { id: "TZ_DRIVE", label: "Tanzania Wild", data: `# 🇹🇿 Tanzania Wild\nArusha START\nTarangire\nNgorongoro Crater\nSerengeti National Park\nLake Manyara\nMount Kilimanjaro Base\nDar es Salaam\nZanzibar` },
-          { id: "NA_DRIVE", label: "Namibia Desert", data: `# 🇳🇦 Namibia Desert\nWindhoek START\nEtosha National Park\nDamaraland\nSwakopmund\nWalvis Bay\nSossusvlei (Dunes)\nFish River Canyon\nLuderitz` },
-          { id: "BW_DRIVE", label: "Botswana Delta", data: `# 🇧🇼 Botswana Delta\nGaborone START\nFrancistown\nMaun\nOkavango Delta\nMoremi Game Reserve\nChobe National Park\nKasane` },
-          { id: "TN_DRIVE", label: "Tunisia History", data: `# 🇹🇳 Tunisia History\nTunis START\nCarthage\nSidi Bou Said\nHammamet\nSousse\nEl Jem (Amphitheatre)\nKairouan\nTozeur` },
-          { id: "MU_DRIVE", label: "Mauritius Island", data: `# 🇲🇺 Mauritius Island\nPort Louis START\nPamplemousses Garden\nGrand Baie\nIle aux Cerfs\nBlue Bay\nChamarel (7 Colored Earth)\nLe Morne Brabant` },
-          { id: "SC_DRIVE", label: "Seychelles Paradise", data: `# 🇸🇨 Seychelles Paradise\nVictoria (Mahe) START\nBeau Vallon\nMorne Seychellois\nPraslin Island\nVallee de Mai\nLa Digue\nAnse Source d'Argent` }
+          { id: "ZA_DRIVE", label: "South Africa Highlights", data: `# 🇿🇦 South Africa Highlights\nCape Town, South Africa START\nTable Mountain, South Africa\nCape of Good Hope, South Africa\nStellenbosch, South Africa\nKnysna, South Africa\nDurban, South Africa\nKruger National Park, South Africa\nJohannesburg, South Africa` },
+          { id: "EG_DRIVE", label: "Egypt Ancients", data: `# 🇪🇬 Egypt Ancients\nCairo, Egypt START\nGiza Pyramids, Egypt\nAlexandria, Egypt\nLuxor, Egypt\nValley of the Kings, Egypt\nAswan, Egypt\nAbu Simbel, Egypt\nHurghada, Egypt\nSharm El Sheikh, Egypt` },
+          { id: "MA_DRIVE", label: "Morocco Imperial", data: `# 🇲🇦 Morocco Imperial\nCasablanca, Morocco START\nRabat, Morocco\nChefchaouen, Morocco\nFes, Morocco\nMeknes, Morocco\nMerzouga (Sahara), Morocco\nOuarzazate, Morocco\nMarrakech, Morocco\nEssaouira, Morocco` },
+          { id: "KE_DRIVE", label: "Kenya Safari", data: `# 🇰🇪 Kenya Safari\nNairobi, Kenya START\nMaasai Mara, Kenya\nLake Nakuru, Kenya\nMount Kenya, Kenya\nAmboseli National Park, Kenya\nTsavo East, Kenya\nMombasa, Kenya\nDiani Beach, Kenya` },
+          { id: "TZ_DRIVE", label: "Tanzania Wild", data: `# 🇹🇿 Tanzania Wild\nArusha, Tanzania START\nTarangire, Tanzania\nNgorongoro Crater, Tanzania\nSerengeti National Park, Tanzania\nLake Manyara, Tanzania\nMount Kilimanjaro Base, Tanzania\nDar es Salaam, Tanzania\nZanzibar, Tanzania` },
+          { id: "NA_DRIVE", label: "Namibia Desert", data: `# 🇳🇦 Namibia Desert\nWindhoek, Namibia START\nEtosha National Park, Namibia\nDamaraland, Namibia\nSwakopmund, Namibia\nWalvis Bay, Namibia\nSossusvlei, Namibia\nFish River Canyon, Namibia\nLuderitz, Namibia` },
+          { id: "BW_DRIVE", label: "Botswana Delta", data: `# 🇧🇼 Botswana Delta\nGaborone, Botswana START\nFrancistown, Botswana\nMaun, Botswana\nOkavango Delta, Botswana\nMoremi Game Reserve, Botswana\nChobe National Park, Botswana\nKasane, Botswana` },
+          { id: "TN_DRIVE", label: "Tunisia History", data: `# 🇹🇳 Tunisia History\nTunis, Tunisia START\nCarthage, Tunisia\nSidi Bou Said, Tunisia\nHammamet, Tunisia\nSousse, Tunisia\nEl Jem, Tunisia\nKairouan, Tunisia\nTozeur, Tunisia` },
+          { id: "MU_DRIVE", label: "Mauritius Island", data: `# 🇲🇺 Mauritius Island\nPort Louis, Mauritius START\nPamplemousses Garden, Mauritius\nGrand Baie, Mauritius\nIle aux Cerfs, Mauritius\nBlue Bay, Mauritius\nChamarel, Mauritius\nLe Morne Brabant, Mauritius` },
+          { id: "SC_DRIVE", label: "Seychelles Paradise", data: `# 🇸🇨 Seychelles Paradise\nVictoria, Mahe, Seychelles START\nBeau Vallon, Seychelles\nMorne Seychellois, Seychelles\nPraslin Island, Seychelles\nVallee de Mai, Seychelles\nLa Digue, Seychelles\nAnse Source d'Argent, Seychelles` }
         ]
       }
     ]
@@ -117,16 +252,16 @@ Burj Khalifa, Dubai, UAE`
       {
         name: "🚗 Top 10 Driving/Train",
         items: [
-          { id: "JP_DRIVE", label: "Japan Golden Route", data: `# 🇯🇵 Japan Golden Route\nTokyo START\nNikko\nHakone (Mt Fuji)\nTakayama\nKyoto\nNara\nOsaka\nHimeji\nHiroshima` },
-          { id: "TH_DRIVE", label: "Thailand Explore", data: `# 🇹🇭 Thailand Explore\nBangkok START\nAyutthaya\nKanchanaburi\nSukhothai\nChiang Mai\nPai\nChiang Rai\nPhuket\nKrabi` },
-          { id: "VN_DRIVE", label: "Vietnam Cross-Country", data: `# 🇻🇳 Vietnam Cross-Country\nHanoi START\nHa Long Bay\nSapa\nNinh Binh\nHue\nDa Nang\nHoi An\nNha Trang\nHo Chi Minh City` },
-          { id: "ID_DRIVE", label: "Indonesia (Bali Loop)", data: `# 🇮🇩 Indonesia (Bali Loop)\nDenpasar START\nUbud\nTegallalang Rice Terrace\nKintamani (Mt Batur)\nBesakih Temple\nCandi Dasa\nNusa Dua\nUluwatu Temple\nKuta` },
-          { id: "IN_DRIVE", label: "India Golden Triangle+", data: `# 🇮🇳 India Golden Triangle+\nNew Delhi START\nAgra (Taj Mahal)\nJaipur\nJodhpur\nUdaipur\nPushkar\nRanthambore National Park\nVaranasi` },
-          { id: "CN_DRIVE", label: "China Classics", data: `# 🇨🇳 China Classics\nBeijing START\nGreat Wall of China (Mutianyu)\nXi'an (Terracotta Warriors)\nChengdu (Pandas)\nZhangjiajie\nGuilin\nYangshuo\nShanghai` },
-          { id: "AE_DRIVE", label: "UAE Highlights", data: `# 🇦🇪 UAE Highlights\nDubai START\nBurj Khalifa\nPalm Jumeirah\nSharjah\nAjman\nRas Al Khaimah\nFujairah\nAl Ain\nAbu Dhabi (Grand Mosque)` },
-          { id: "TR_DRIVE", label: "Turkey Grand Tour", data: `# 🇹🇷 Turkey Grand Tour\nIstanbul START\nBursa\nEphesus\nPamukkale\nBodrum\nFethiye\nAntalya\nKonya\nCappadocia` },
-          { id: "KR_DRIVE", label: "South Korea Loop", data: `# 🇰🇷 South Korea Loop\nSeoul START\nSuwon\nSokcho (Seoraksan)\nAndong\nGyeongju\nBusan\nGeoje\nJeonju` },
-          { id: "SG_DRIVE", label: "Singapore City Run", data: `# 🇸🇬 Singapore City Run\nMarina Bay Sands START\nGardens by the Bay\nChinatown, Singapore\nLittle India, Singapore\nOrchard Road\nSingapore Botanic Gardens\nSentosa Island` },
+          { id: "JP_DRIVE", label: "Japan Golden Route", data: `# 🇯🇵 Japan Golden Route\nTokyo, Japan START\nNikko, Japan\nHakone (Mt Fuji), Japan\nTakayama, Japan\nKyoto, Japan\nNara, Japan\nOsaka, Japan\nHimeji, Japan\nHiroshima, Japan` },
+          { id: "TH_DRIVE", label: "Thailand Explore", data: `# 🇹🇭 Thailand Explore\nBangkok, Thailand START\nAyutthaya, Thailand\nKanchanaburi, Thailand\nSukhothai, Thailand\nChiang Mai, Thailand\nPai, Thailand\nChiang Rai, Thailand\nPhuket, Thailand\nKrabi, Thailand` },
+          { id: "VN_DRIVE", label: "Vietnam Cross-Country", data: `# 🇻🇳 Vietnam Cross-Country\nHanoi, Vietnam START\nHa Long Bay, Vietnam\nSapa, Vietnam\nNinh Binh, Vietnam\nHue, Vietnam\nDa Nang, Vietnam\nHoi An, Vietnam\nNha Trang, Vietnam\nHo Chi Minh City, Vietnam` },
+          { id: "ID_DRIVE", label: "Indonesia (Bali Loop)", data: `# 🇮🇩 Indonesia (Bali Loop)\nDenpasar, Bali START\nUbud, Bali\nTegallalang Rice Terrace, Bali\nKintamani, Bali\nBesakih Temple, Bali\nCandi Dasa, Bali\nNusa Dua, Bali\nUluwatu Temple, Bali\nKuta, Bali` },
+          { id: "IN_DRIVE", label: "India Golden Triangle+", data: `# 🇮🇳 India Golden Triangle+\nNew Delhi, India START\nAgra (Taj Mahal), India\nJaipur, India\nJodhpur, India\nUdaipur, India\nPushkar, India\nRanthambore National Park, India\nVaranasi, India` },
+          { id: "CN_DRIVE", label: "China Classics", data: `# 🇨🇳 China Classics\nBeijing, China START\nGreat Wall of China (Mutianyu), China\nXi'an, China\nChengdu, China\nZhangjiajie, China\nGuilin, China\nYangshuo, China\nShanghai, China` },
+          { id: "AE_DRIVE", label: "UAE Highlights", data: `# 🇦🇪 UAE Highlights\nDubai, UAE START\nBurj Khalifa, Dubai\nPalm Jumeirah, Dubai\nSharjah, UAE\nAjman, UAE\nRas Al Khaimah, UAE\nFujairah, UAE\nAl Ain, UAE\nAbu Dhabi, UAE` },
+          { id: "TR_DRIVE", label: "Turkey Grand Tour", data: `# 🇹🇷 Turkey Grand Tour\nIstanbul, Turkey START\nBursa, Turkey\nEphesus, Turkey\nPamukkale, Turkey\nBodrum, Turkey\nFethiye, Turkey\nAntalya, Turkey\nKonya, Turkey\nCappadocia, Turkey` },
+          { id: "KR_DRIVE", label: "South Korea Loop", data: `# 🇰🇷 South Korea Loop\nSeoul, South Korea START\nSuwon, South Korea\nSokcho, South Korea\nAndong, South Korea\nGyeongju, South Korea\nBusan, South Korea\nGeoje, South Korea\nJeonju, South Korea` },
+          { id: "SG_DRIVE", label: "Singapore City Run", data: `# 🇸🇬 Singapore City Run\nMarina Bay Sands, Singapore START\nGardens by the Bay, Singapore\nChinatown, Singapore\nLittle India, Singapore\nOrchard Road, Singapore\nSingapore Botanic Gardens\nSentosa Island, Singapore` },
           { id: "TOKYO", label: "Tokyo Highlights (Metro)", data: `# 🇯🇵 Tokyo Highlights (Metro)\nShinjuku Station, Tokyo START\nShibuya Crossing, Tokyo\nSenso-ji, Tokyo\nMeiji Jingu, Tokyo\nTokyo Tower\nAkihabara, Tokyo\nTsukiji Outer Market, Tokyo` }
         ]
       }
@@ -142,12 +277,12 @@ Burj Khalifa, Dubai, UAE`
           { id: "US_EAST_DRIVE", label: "USA East Coast", data: `# 🇺🇸 USA East Coast\nBoston, MA START\nNew York City, NY\nPhiladelphia, PA\nWashington DC\nShenandoah National Park, VA\nMyrtle Beach, SC\nCharleston, SC\nSavannah, GA\nOrlando, FL\nMiami, FL` },
           { id: "CA_WEST_DRIVE", label: "Canada Rockies", data: `# 🇨🇦 Canada Rockies\nVancouver, BC START\nWhistler, BC\nKamloops, BC\nJasper National Park, AB\nLake Louise, AB\nBanff, AB\nCalgary, AB` },
           { id: "CA_EAST_DRIVE", label: "Canada Cities", data: `# 🇨🇦 Canada Cities\nToronto, ON START\nNiagara Falls, ON\nOttawa, ON\nMontreal, QC\nQuebec City, QC\nMont Tremblant, QC\nKingston, ON` },
-          { id: "MX_DRIVE", label: "Mexico Heritage", data: `# 🇲🇽 Mexico Heritage\nMexico City START\nTeotihuacan\nPuebla\nOaxaca\nSan Cristobal de las Casas\nPalenque\nMerida\nChichen Itza\nCancun` },
-          { id: "CR_DRIVE", label: "Costa Rica Eco", data: `# 🇨🇷 Costa Rica Eco\nSan Jose, Costa Rica START\nTortuguero\nArenal Volcano\nMonteverde Cloud Forest\nTamarindo\nManuel Antonio National Park\nCorcovado National Park` },
-          { id: "PA_DRIVE", label: "Panama Crossings", data: `# 🇵🇦 Panama Crossings\nPanama City START\nPanama Canal\nEl Valle de Anton\nChitre\nBoquete\nBocas del Toro\nPortobelo` },
-          { id: "JM_DRIVE", label: "Jamaica Vibes", data: `# 🇯🇲 Jamaica Vibes\nMontego Bay START\nNegril\nTreasure Beach\nKingston\nBlue Mountains\nPort Antonio\nOcho Rios` },
-          { id: "CU_DRIVE", label: "Cuba Classic", data: `# 🇨🇺 Cuba Classic\nHavana START\nViñales\nCienfuegos\nTrinidad, Cuba\nSanta Clara\nVaradero\nMatanzas` },
-          { id: "GT_DRIVE", label: "Guatemala Mayan", data: `# 🇬🇹 Guatemala Mayan\nGuatemala City START\nAntigua Guatemala\nLake Atitlan\nChichicastenango\nCoban\nSemuc Champey\nFlores, Guatemala\nTikal National Park` },
+          { id: "MX_DRIVE", label: "Mexico Heritage", data: `# 🇲🇽 Mexico Heritage\nMexico City, Mexico START\nTeotihuacan, Mexico\nPuebla, Mexico\nOaxaca, Mexico\nSan Cristobal de las Casas, Mexico\nPalenque, Mexico\nMerida, Mexico\nChichen Itza, Mexico\nCancun, Mexico` },
+          { id: "CR_DRIVE", label: "Costa Rica Eco", data: `# 🇨🇷 Costa Rica Eco\nSan Jose, Costa Rica START\nTortuguero, Costa Rica\nArenal Volcano, Costa Rica\nMonteverde, Costa Rica\nTamarindo, Costa Rica\nManuel Antonio, Costa Rica\nCorcovado, Costa Rica` },
+          { id: "PA_DRIVE", label: "Panama Crossings", data: `# 🇵🇦 Panama Crossings\nPanama City, Panama START\nPanama Canal, Panama\nEl Valle de Anton, Panama\nChitre, Panama\nBoquete, Panama\nBocas del Toro, Panama\nPortobelo, Panama` },
+          { id: "JM_DRIVE", label: "Jamaica Vibes", data: `# 🇯🇲 Jamaica Vibes\nMontego Bay, Jamaica START\nNegril, Jamaica\nTreasure Beach, Jamaica\nKingston, Jamaica\nBlue Mountains, Jamaica\nPort Antonio, Jamaica\nOcho Rios, Jamaica` },
+          { id: "CU_DRIVE", label: "Cuba Classic", data: `# 🇨🇺 Cuba Classic\nHavana, Cuba START\nViñales, Cuba\nCienfuegos, Cuba\nTrinidad, Cuba\nSanta Clara, Cuba\nVaradero, Cuba\nMatanzas, Cuba` },
+          { id: "GT_DRIVE", label: "Guatemala Mayan", data: `# 🇬🇹 Guatemala Mayan\nGuatemala City, Guatemala START\nAntigua, Guatemala\nLake Atitlan, Guatemala\nChichicastenango, Guatemala\nCoban, Guatemala\nSemuc Champey, Guatemala\nFlores, Guatemala\nTikal, Guatemala` },
           { id: "NY", label: "NYC Manhattan (Walking)", data: `# 🇺🇸 New York Manhattan (Walking)\nTimes Square, New York START\nCentral Park, New York\nEmpire State Building, New York\nBrooklyn Bridge, New York\nStatue of Liberty, New York\n9/11 Memorial, New York` }
         ]
       }
@@ -159,16 +294,16 @@ Burj Khalifa, Dubai, UAE`
       {
         name: "🚗 Top 10 Tours",
         items: [
-          { id: "PE_DRIVE", label: "Peru Incas", data: `# 🇵🇪 Peru Incas\nLima, Peru START\nParacas, Peru\nHuacachina, Peru\nNazca Lines, Peru\nArequipa, Peru\nPuno (Lake Titicaca), Peru\nCusco, Peru\nSacred Valley, Peru\nMachu Picchu, Peru` },
-          { id: "BR_DRIVE", label: "Brazil Coast", data: `# 🇧🇷 Brazil Coast\nRio de Janeiro START\nParaty\nSao Paulo\nCuritiba\nFlorianopolis\nPorto Alegre\nIguazu Falls` },
-          { id: "AR_DRIVE", label: "Argentina North-South", data: `# 🇦🇷 Argentina North-South\nBuenos Aires START\nRosario\nCordoba, Argentina\nMendoza, Argentina\nBariloche\nEl Calafate\nUshuaia` },
-          { id: "CL_DRIVE", label: "Chile Long Road", data: `# 🇨🇱 Chile Long Road\nSantiago, Chile START\nValparaiso\nLa Serena\nSan Pedro de Atacama\nPucon\nPuerto Montt\nTorres del Paine` },
-          { id: "CO_DRIVE", label: "Colombia Colors", data: `# 🇨🇴 Colombia Colors\nBogota START\nVilla de Leyva\nSalento (Cocora Valley)\nMedellin\nGuatape\nCartagena\nTayrona National Park` },
-          { id: "EC_DRIVE", label: "Ecuador Andes", data: `# 🇪🇨 Ecuador Andes\nQuito START\nOtavalo\nCotopaxi\nQuilotoa Loop\nBaños\nRiobamba\nCuenca, Ecuador` },
-          { id: "BO_DRIVE", label: "Bolivia Highs", data: `# 🇧🇴 Bolivia Highs\nLa Paz, Bolivia START\nCopacabana, Bolivia\nCoroico\nOruro\nUyuni (Salt Flats)\nPotosi\nSucre` },
-          { id: "UY_DRIVE", label: "Uruguay Coast", data: `# 🇺🇾 Uruguay Coast\nMontevideo START\nPiriapolis\nPunta del Este\nJose Ignacio\nLa Paloma\nPunta del Diablo` },
-          { id: "PY_DRIVE", label: "Paraguay Missions", data: `# 🇵🇾 Paraguay Missions\nAsuncion START\nEncarnacion\nJesuit Missions of La Santisima Trinidad de Parana\nCiudad del Este\nYbycui` },
-          { id: "PATAGONIA_DRIVE", label: "Patagonia Wild", data: `# 🏔️ Patagonia Wild\nBariloche, Argentina START\nEl Bolson\nCarretera Austral, Chile\nEl Chalten\nEl Calafate (Perito Moreno)\nPuerto Natales\nTorres del Paine\nUshuaia` }
+          { id: "PE_DRIVE", label: "Peru Incas", data: `# 🇵🇪 Peru Incas\nLima, Peru START\nParacas, Peru\nHuacachina, Peru\nNazca Lines, Peru\nArequipa, Peru\nPuno, Peru\nCusco, Peru\nSacred Valley, Peru\nMachu Picchu, Peru` },
+          { id: "BR_DRIVE", label: "Brazil Coast", data: `# 🇧🇷 Brazil Coast\nRio de Janeiro, Brazil START\nParaty, Brazil\nSao Paulo, Brazil\nCuritiba, Brazil\nFlorianopolis, Brazil\nPorto Alegre, Brazil\nIguazu Falls, Brazil` },
+          { id: "AR_DRIVE", label: "Argentina North-South", data: `# 🇦🇷 Argentina North-South\nBuenos Aires, Argentina START\nRosario, Argentina\nCordoba, Argentina\nMendoza, Argentina\nBariloche, Argentina\nEl Calafate, Argentina\nUshuaia, Argentina` },
+          { id: "CL_DRIVE", label: "Chile Long Road", data: `# 🇨🇱 Chile Long Road\nSantiago, Chile START\nValparaiso, Chile\nLa Serena, Chile\nSan Pedro de Atacama, Chile\nPucon, Chile\nPuerto Montt, Chile\nTorres del Paine, Chile` },
+          { id: "CO_DRIVE", label: "Colombia Colors", data: `# 🇨🇴 Colombia Colors\nBogota, Colombia START\nVilla de Leyva, Colombia\nSalento, Colombia\nMedellin, Colombia\nGuatape, Colombia\nCartagena, Colombia\nTayrona National Park, Colombia` },
+          { id: "EC_DRIVE", label: "Ecuador Andes", data: `# 🇪🇨 Ecuador Andes\nQuito, Ecuador START\nOtavalo, Ecuador\nCotopaxi, Ecuador\nQuilotoa Loop, Ecuador\nBaños, Ecuador\nRiobamba, Ecuador\nCuenca, Ecuador` },
+          { id: "BO_DRIVE", label: "Bolivia Highs", data: `# 🇧🇴 Bolivia Highs\nLa Paz, Bolivia START\nCopacabana, Bolivia\nCoroico, Bolivia\nOruro, Bolivia\nUyuni (Salt Flats), Bolivia\nPotosi, Bolivia\nSucre, Bolivia` },
+          { id: "UY_DRIVE", label: "Uruguay Coast", data: `# 🇺🇾 Uruguay Coast\nMontevideo, Uruguay START\nPiriapolis, Uruguay\nPunta del Este, Uruguay\nJose Ignacio, Uruguay\nLa Paloma, Uruguay\nPunta del Diablo, Uruguay` },
+          { id: "PY_DRIVE", label: "Paraguay Missions", data: `# 🇵🇾 Paraguay Missions\nAsuncion, Paraguay START\nEncarnacion, Paraguay\nJesuit Missions (Trinidad), Paraguay\nCiudad del Este, Paraguay\nYbycui, Paraguay` },
+          { id: "PATAGONIA_DRIVE", label: "Patagonia Wild", data: `# 🏔️ Patagonia Wild\nBariloche, Argentina START\nEl Bolson, Argentina\nCarretera Austral, Chile\nEl Chalten, Argentina\nEl Calafate, Argentina\nPuerto Natales, Chile\nTorres del Paine, Chile\nUshuaia, Argentina` }
         ]
       }
     ]
@@ -179,11 +314,11 @@ Burj Khalifa, Dubai, UAE`
       {
         name: "🚗 Top 5 Tours",
         items: [
-          { id: "AU_EAST_DRIVE", label: "Australia East Coast", data: `# 🇦🇺 Australia East Coast\nSydney START\nBlue Mountains\nNewcastle, NSW\nPort Macquarie\nByron Bay\nGold Coast\nBrisbane\nNoosa\nFraser Island\nCairns` },
-          { id: "AU_SOUTH_DRIVE", label: "Australia Ocean Rd", data: `# 🇦🇺 Australia Ocean Rd\nMelbourne START\nGeelong\nTorquay\nApollo Bay\nTwelve Apostles\nWarrnambool\nMount Gambier\nAdelaide` },
-          { id: "NZ_NORTH_DRIVE", label: "NZ North Island", data: `# 🇳🇿 NZ North Island\nAuckland START\nCoromandel\nHobbiton Movie Set\nRotorua\nTaupo\nTongariro National Park\nNapier\nWellington` },
-          { id: "NZ_SOUTH_DRIVE", label: "NZ South Island", data: `# 🇳🇿 NZ South Island\nChristchurch START\nLake Tekapo\nMount Cook\nWanaka\nQueenstown\nTe Anau\nMilford Sound\nFranz Josef Glacier` },
-          { id: "FJ_DRIVE", label: "Fiji Viti Levu", data: `# 🇫🇯 Fiji Viti Levu\nNadi START\nSigatoka Sand Dunes\nCoral Coast, Fiji\nPacific Harbour\nSuva\nRakiraki\nLautoka` }
+          { id: "AU_EAST_DRIVE", label: "Australia East Coast", data: `# 🇦🇺 Australia East Coast\nSydney, Australia START\nBlue Mountains, Australia\nNewcastle, NSW, Australia\nPort Macquarie, Australia\nByron Bay, Australia\nGold Coast, Australia\nBrisbane, Australia\nNoosa, Australia\nFraser Island, Australia\nCairns, Australia` },
+          { id: "AU_SOUTH_DRIVE", label: "Australia Ocean Rd", data: `# 🇦🇺 Australia Ocean Rd\nMelbourne, Australia START\nGeelong, Australia\nTorquay, Australia\nApollo Bay, Australia\nTwelve Apostles, Australia\nWarrnambool, Australia\nMount Gambier, Australia\nAdelaide, Australia` },
+          { id: "NZ_NORTH_DRIVE", label: "NZ North Island", data: `# 🇳🇿 NZ North Island\nAuckland, New Zealand START\nCoromandel, New Zealand\nHobbiton, New Zealand\nRotorua, New Zealand\nTaupo, New Zealand\nTongariro National Park, New Zealand\nNapier, New Zealand\nWellington, New Zealand` },
+          { id: "NZ_SOUTH_DRIVE", label: "NZ South Island", data: `# 🇳🇿 NZ South Island\nChristchurch, New Zealand START\nLake Tekapo, New Zealand\nMount Cook, New Zealand\nWanaka, New Zealand\nQueenstown, New Zealand\nTe Anau, New Zealand\nMilford Sound, New Zealand\nFranz Josef Glacier, New Zealand` },
+          { id: "FJ_DRIVE", label: "Fiji Viti Levu", data: `# 🇫🇯 Fiji Viti Levu\nNadi, Fiji START\nSigatoka Sand Dunes, Fiji\nCoral Coast, Fiji\nPacific Harbour, Fiji\nSuva, Fiji\nRakiraki, Fiji\nLautoka, Fiji` }
         ]
       }
     ]
