@@ -16,7 +16,7 @@
       </div>
     </div>
     <div class="top-actions">
-      <a href="help.html" target="_blank">Help / Guide</a>
+      <a id="btnHelp" href="#">Help / Guide</a>
       <a href="https://www.google.com/maps" target="_blank" rel="noopener">Open Google Maps</a>
     </div>
   </header>
@@ -26,7 +26,7 @@
       <div class="card">
         <h2>Stops</h2>
         <p class="muted">
-          One per line. <a href="help.html" target="_blank" style="color:var(--accent); text-decoration:none;">See examples</a>.
+          One per line. <a href="#" onclick="document.getElementById('btnHelp').click(); return false;" style="color:var(--accent); text-decoration:none;">See examples</a>.
           Prefix <span class="mono">START:</span> to lock start.
         </p>
 
@@ -87,6 +87,48 @@
       </div>
 
       <div id="map"></div>
+
+      <div id="helpOverlay" class="help-overlay">
+        <div class="help-content">
+          <button id="btnCloseHelp" class="close-help-btn">← Back to Map</button>
+          
+          <div class="card help-block">
+            <h2>How to Use</h2>
+            <ul>
+              <li><strong>1. Enter Locations:</strong> Type your stops in the text box. One per line.</li>
+              <li><strong>2. Optimize:</strong> Click "Fast" for quick results or "Balanced" for a deeper search.</li>
+              <li><strong>3. View Route:</strong> The map will draw the path. Toggle between "Driving" and "Direct Lines".</li>
+              <li><strong>4. Export:</strong> Click the "Open in Maps" buttons to send the route to your phone.</li>
+            </ul>
+          </div>
+
+          <div class="card help-block">
+            <h2>Input Formats</h2>
+            <p class="muted">You can mix and match these formats.</p>
+            <h3>1. GPS Coordinates (Recommended)</h3>
+            <pre>46.0569, 14.5058</pre>
+            <h3>2. Addresses / Place Names</h3>
+            <pre>Tivoli Park, Ljubljana</pre>
+            <h3>3. Custom Name with GPS</h3>
+            <pre>Home | 46.0428, 14.4500</pre>
+          </div>
+
+          <div class="card help-block">
+            <h2>Special Commands</h2>
+            <h3>Locking the Start</h3>
+            <p>Add <code>START</code> anywhere on a line to lock it as the starting point.</p>
+            <pre>Grand Hotel Union | 46.0525, 14.5060 START</pre>
+          </div>
+
+          <div class="card help-block">
+            <h2>Troubleshooting</h2>
+            <ul>
+              <li><strong>"Geocode failed":</strong> Check spelling or add city name.</li>
+              <li><strong>Map Errors:</strong> Ensure your API Key has "Maps JavaScript API", "Geocoding API", and "Directions API" enabled.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
