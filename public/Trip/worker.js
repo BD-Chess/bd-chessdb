@@ -2,7 +2,6 @@
 'use strict';
 
 function fnv1a64(str) {
-  // 64-bit FNV-1a as BigInt (deterministic across browsers)
   let h = 0xcbf29ce484222325n;
   const prime = 0x100000001b3n;
   for (let i = 0; i < str.length; i++) {
@@ -35,7 +34,6 @@ class XorShift64Star {
 }
 
 function toXYMeters(points) {
-  // Equirectangular projection centered on mean latitude
   const R = 6371000.0;
   let latSum = 0;
   let cnt = 0;
@@ -115,7 +113,6 @@ function nearestNeighbor(start, D, allowed) {
 
 function shuffledAllowed(allowed, rng) {
   const arr = allowed.slice();
-  // Fisher-Yates deterministic
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(rng.nextFloat() * (i + 1));
     const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
@@ -124,7 +121,6 @@ function shuffledAllowed(allowed, rng) {
 }
 
 function nnWithJitter(start, D, allowed, rng, jitterScale) {
-  // NN but distance is perturbed slightly to diversify starts (deterministic via rng)
   const n = allowed.length;
   const used = new Uint8Array(D.length);
   const route = new Array(n);
@@ -157,23 +153,14 @@ function twoOpt(route, D, roundTrip, maxPasses, timeBudgetMs) {
   const t0 = performance.now();
   if (n < 4) return route;
 
-  // Keep start fixed at index 0
   for (let pass = 0; pass < maxPasses; pass++) {
     let improved = false;
-    // i and k are segment endpoints to reverse (i..k)
     for (let i = 1; i < n - 2; i++) {
       const a = route[i-1], b = route[i];
       for (let k = i + 1; k < n - 1; k++) {
         const c = route[k], d = route[k+1];
-
         const delta = (D[a][c] + D[b][d]) - (D[a][b] + D[c][d]);
         if (delta < -1e-12) {
-          // reverse [i..k]
-          for (let l = 0, r = k; l < r; l++, r--) {
-            if (l < i) continue;
-            if (r < i) break;
-          }
-          // Faster in-place reverse
           let L = i, R = k;
           while (L < R) {
             const tmp = route[L]; route[L] = route[R]; route[R] = tmp;
@@ -181,23 +168,15 @@ function twoOpt(route, D, roundTrip, maxPasses, timeBudgetMs) {
           }
           improved = true;
         }
-
         if ((performance.now() - t0) > timeBudgetMs) return route;
       }
     }
-
-    if (roundTrip) {
-      // Also consider edges involving last->first (start fixed)
-      // Optional: you can add wraparound 2-opt moves here later.
-    }
-
     if (!improved) break;
   }
   return route;
 }
 
 function solve(points, startIdx, profile, roundTrip) {
-  // Separate points with coords vs without coords.
   const withCoords = [];
   const without = [];
   for (let i = 0; i < points.length; i++) {
@@ -206,12 +185,10 @@ function solve(points, startIdx, profile, roundTrip) {
     else without.push(i);
   }
 
-  // If some lack coords, keep them appended in input order.
   const coordPoints = withCoords.map(i => points[i]);
   const xy = toXYMeters(coordPoints);
   const D = buildDistanceMatrix(xy);
 
-  // Start index in coordPoints space:
   const startGlobal = startIdx;
   let start = 0;
   if (startGlobal >= 0 && startGlobal < points.length) {
@@ -219,29 +196,31 @@ function solve(points, startIdx, profile, roundTrip) {
     start = (pos >= 0) ? pos : 0;
   }
 
-  // Deterministic seed based on input text
   const seedStr = points.map(p => `${p.name}|${p.lat}|${p.lon}`).join('\n') + `|start=${start}|profile=${profile}|rt=${roundTrip}`;
   const rng = new XorShift64Star(fnv1a64(seedStr));
 
-  // Profile params (tuned for browser responsiveness)
-  let starts = 1;
-  let maxPasses = 3;
-  let timeBudgetMs = 350;  // per start
+  // --- UPDATED PROFILE LOGIC ---
+  let starts = 2;
+  let maxPasses = 4;
+  let timeBudgetMs = 300;
   let jitterScale = 0.03;
 
-  if (profile === 'fast') {
+  // New profile names: 'standard' vs 'deep'
+  if (profile === 'standard') {
+    starts = 2; maxPasses = 4; timeBudgetMs = 300; jitterScale = 0.03;
+  } else if (profile === 'deep') {
+    starts = 12; maxPasses = 10; timeBudgetMs = 1500; jitterScale = 0.08;
+  } 
+  // Fallbacks for older calls
+  else if (profile === 'fast') {
     starts = 1; maxPasses = 3; timeBudgetMs = 250; jitterScale = 0.02;
   } else if (profile === 'balanced') {
     starts = 4; maxPasses = 6; timeBudgetMs = 650; jitterScale = 0.05;
-  } else {
-    starts = 2; maxPasses = 4; timeBudgetMs = 400; jitterScale = 0.03;
   }
 
   let bestRoute = null;
   let bestLen = Infinity;
-
-  // Base order length for "saved" metric (using coords-only subset)
-  const baseRoute = withCoords.map((_, i) => i); // input order among coords only
+  const baseRoute = withCoords.map((_, i) => i); 
   const baseLen = routeLength(baseRoute, D, roundTrip);
 
   for (let s = 0; s < starts; s++) {
@@ -257,7 +236,6 @@ function solve(points, startIdx, profile, roundTrip) {
     const L = routeLength(route, D, roundTrip);
     if (L < bestLen - 1e-9) { bestLen = L; bestRoute = route.slice(); }
     else if (Math.abs(L - bestLen) <= 1e-9 && bestRoute) {
-      // deterministic tie-break: lexicographic
       for (let i = 0; i < route.length; i++) {
         if (route[i] < bestRoute[i]) { bestRoute = route.slice(); break; }
         if (route[i] > bestRoute[i]) break;
@@ -267,16 +245,9 @@ function solve(points, startIdx, profile, roundTrip) {
     postMessage({ type: 'progress', text: `Start ${s+1}/${starts}: ${Math.round(L/10)/100} km` });
   }
 
-  // Map bestRoute indices back to original points ordering
   const orderCoordGlobal = bestRoute.map(i => withCoords[i]);
-
-  // Add "without coords" at end in input order (deterministic fallback)
   const orderGlobal = orderCoordGlobal.concat(without);
-
-  // Build pointsSorted in that order
   const pointsSorted = orderGlobal.map(i => points[i]);
-
-  // total length computed on coords subset; if missing coords exist, length is still meaningful for computed part.
   const totalKm = bestLen / 1000.0;
   const baseKm = baseLen / 1000.0;
 
@@ -286,7 +257,6 @@ function solve(points, startIdx, profile, roundTrip) {
 onmessage = (ev) => {
   const msg = ev.data || {};
   if (msg.type !== 'solve') return;
-
   try {
     const { points, startIdx, profile, roundTrip } = msg;
     const res = solve(points, startIdx, profile, !!roundTrip);
