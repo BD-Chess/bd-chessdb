@@ -22,6 +22,8 @@
   // Map & Service State
   let map;
   let geocoder;
+  let directionsService;
+  let directionsRenderer;
   let mapMarkers = [];
   let mapPolyline = null;
 
@@ -30,8 +32,7 @@
   // --------------------------------------------------------------------------
   window.initMap = function() {
     // 1. Initialize Map
-    // Defaulting to Ljubljana
-    const defaultCenter = { lat: 46.0569, lng: 14.5058 }; 
+    const defaultCenter = { lat: 46.0569, lng: 14.5058 }; // Default: Ljubljana
     
     map = new google.maps.Map($('map'), {
       zoom: 12,
@@ -47,47 +48,27 @@
       ],
     });
 
-    // 2. Initialize Geocoder service
+    // 2. Initialize Services
     geocoder = new google.maps.Geocoder();
-  };
-
-  function updateMapVisualization(points) {
-    if (!map) return;
-
-    // Clear old data
-    mapMarkers.forEach(m => m.setMap(null));
-    mapMarkers = [];
-    if (mapPolyline) mapPolyline.setMap(null);
-    mapPlaceholder.style.display = 'none';
-
-    const pathCoords = [];
-    const bounds = new google.maps.LatLngBounds();
-
-    points.forEach((pt, index) => {
-      if (typeof pt.lat === 'number' && typeof pt.lon === 'number') {
-        const latLng = { lat: pt.lat, lng: pt.lon };
-        pathCoords.push(latLng);
-        bounds.extend(latLng);
-
-        const marker = new google.maps.Marker({
-          position: latLng,
-          map: map,
-          label: {
-            text: (index + 1).toString(),
-            color: "white",
-            fontWeight: "bold"
-          },
-          title: pt.name
-        });
-        mapMarkers.push(marker);
+    directionsService = new google.maps.DirectionsService();
+    
+    // Renderer handles the blue route line on the map
+    directionsRenderer = new google.maps.DirectionsRenderer({
+      map: map,
+      suppressMarkers: true, // We will use our own numbered markers
+      preserveViewport: false, // Let the route auto-zoom the map
+      polylineOptions: {
+        strokeColor: "#6aa9ff",
+        strokeWeight: 5,
+        strokeOpacity: 0.7
       }
     });
+  };
 
-    // Draw Polyline
-    if (chkRoundTrip.checked && pathCoords.length > 1) {
-      pathCoords.push(pathCoords[0]);
-    }
-
+  // Helper: Draw simple straight lines (fallback if Directions API fails or >25 stops)
+  function drawFallbackPolyline(pathCoords) {
+    if (mapPolyline) mapPolyline.setMap(null);
+    
     mapPolyline = new google.maps.Polyline({
       path: pathCoords,
       geodesic: true,
@@ -96,17 +77,96 @@
       strokeWeight: 4,
     });
     mapPolyline.setMap(map);
+    
+    // Zoom to fit
+    const bounds = new google.maps.LatLngBounds();
+    pathCoords.forEach(p => bounds.extend(p));
+    map.fitBounds(bounds);
+  }
 
-    if (pathCoords.length > 0) {
-      map.fitBounds(bounds);
+  function updateMapVisualization(points) {
+    if (!map) return;
+
+    // 1. Clear old data
+    mapMarkers.forEach(m => m.setMap(null));
+    mapMarkers = [];
+    if (mapPolyline) mapPolyline.setMap(null);
+    directionsRenderer.setDirections({ routes: [] }); // Clear directions
+    mapPlaceholder.style.display = 'none';
+
+    // 2. Setup Markers & Coordinates
+    const pathCoords = [];
+    
+    points.forEach((pt, index) => {
+      if (typeof pt.lat === 'number' && typeof pt.lon === 'number') {
+        const latLng = { lat: pt.lat, lng: pt.lon };
+        pathCoords.push(latLng);
+
+        // Custom Numbered Marker
+        const marker = new google.maps.Marker({
+          position: latLng,
+          map: map,
+          label: {
+            text: (index + 1).toString(),
+            color: "white",
+            fontWeight: "bold"
+          },
+          title: pt.name,
+          zIndex: 100 + index // Ensure order is respected in stacking
+        });
+        mapMarkers.push(marker);
+      }
+    });
+
+    // Handle Round Trip logic for coordinates
+    const routePath = [...pathCoords];
+    if (chkRoundTrip.checked && routePath.length > 1) {
+      routePath.push(routePath[0]);
     }
+
+    // 3. DECIDE: Real Road Directions vs. Straight Lines
+    // Directions API has a limit of 25 waypoints (plus origin/dest).
+    // If we have too many points, we must use straight lines.
+    if (points.length > 25) {
+      console.warn("Too many stops for Directions API (Max 25). Using straight lines.");
+      drawFallbackPolyline(routePath);
+      return;
+    }
+
+    // 4. Request Road Directions
+    const travelMode = chkDriving.checked ? 'DRIVING' : 'WALKING';
+    
+    // Origin is first point
+    const origin = routePath[0];
+    // Destination is last point
+    const destination = routePath[routePath.length - 1];
+    // Waypoints are everything in between
+    const waypoints = routePath.slice(1, -1).map(loc => ({
+      location: loc,
+      stopover: true
+    }));
+
+    directionsService.route({
+      origin: origin,
+      destination: destination,
+      waypoints: waypoints,
+      travelMode: google.maps.TravelMode[travelMode],
+    }, (response, status) => {
+      if (status === "OK") {
+        // Draw the pretty road lines
+        directionsRenderer.setDirections(response);
+      } else {
+        console.warn("Directions request failed: " + status);
+        // Fallback to straight lines if road routing fails (e.g. no road exists)
+        drawFallbackPolyline(routePath);
+      }
+    });
   }
 
   // --------------------------------------------------------------------------
   // GEOCODING LOGIC
   // --------------------------------------------------------------------------
   
-  // Helper: Sleep function to avoid hitting API rate limits too hard
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
   async function resolveLocation(rawName) {
@@ -130,27 +190,20 @@
 
   async function geocodeMissingPoints(pts) {
     const missing = pts.filter(p => p.lat === null || p.lon === null);
-    
     if (missing.length === 0) return pts;
-
     setStatus(`Looking up ${missing.length} addresses...`, 'warn');
-    
     for (let i = 0; i < missing.length; i++) {
       const p = missing[i];
       setStatus(`Looking up (${i+1}/${missing.length}):\n${p.name}`, 'warn');
-      
       const result = await resolveLocation(p.name);
-      
       if (result) {
         p.lat = result.lat;
         p.lon = result.lon;
       } else {
         p.error = true; 
       }
-      
-      await sleep(300); // Throttling
+      await sleep(300);
     }
-    
     return pts;
   }
 
@@ -203,31 +256,20 @@
         const parts = raw.split('|');
         const p0 = parts[0].trim();
         const p1 = parts[1].trim();
-        
         const m0 = coordRe.exec(p0);
         const m1 = coordRe.exec(p1);
-
-        if (m1) {
-           name = p0 || "Point";
-           lat = parseFloat(m1[1]); lon = parseFloat(m1[2]);
-        } else if (m0) {
-           name = p1 || "Point";
-           lat = parseFloat(m0[1]); lon = parseFloat(m0[2]);
-        }
+        if (m1) { name = p0 || "Point"; lat = parseFloat(m1[1]); lon = parseFloat(m1[2]); } 
+        else if (m0) { name = p1 || "Point"; lat = parseFloat(m0[1]); lon = parseFloat(m0[2]); }
       } 
       else {
         const m = coordRe.exec(raw);
         if (m) {
-          lat = parseFloat(m[1]);
-          lon = parseFloat(m[2]);
+          lat = parseFloat(m[1]); lon = parseFloat(m[2]);
           const potentialName = raw.replace(m[0], '').trim();
           if (potentialName.length > 1) name = potentialName.replace(/^,/, '').trim();
           else name = `(${lat.toFixed(3)}, ${lon.toFixed(3)})`;
-        } else {
-          name = raw; 
-        }
+        } else { name = raw; }
       }
-
       const p = { name, lat, lon, raw: raw };
       if (isStart) startIdx = pts.length;
       pts.push(p);
@@ -243,7 +285,6 @@
 
   function buildMapsLegLinks(routePts, roundTrip, driving) {
     const travelmode = driving ? 'driving' : 'walking';
-    
     const encodeLoc = (p) => {
       if (typeof p.lat === 'number' && typeof p.lon === 'number') {
         return `${p.lat.toFixed(5)},${p.lon.toFixed(5)}`;
@@ -263,7 +304,6 @@
       if (j <= i + 1) j = i + 2;
 
       const segment = seq.slice(i, j + 1);
-      
       const originLoc = encodeLoc(segment[0]);
       const destLoc = encodeLoc(segment[segment.length - 1]);
       const mids = segment.slice(1, -1).map(encodeLoc);
@@ -275,7 +315,6 @@
       params.set('travelmode', travelmode);
       if (mids.length) params.set('waypoints', mids.join('|'));
 
-      // FIXED: Use standard Google Maps Universal URL format
       const url = `https://www.google.com/maps/dir/?${params.toString()}`;
       
       links.push({ url, label: `Leg ${links.length + 1} (${segment.length} stops)` });
@@ -302,17 +341,14 @@
     for (const L of links) {
       const row = document.createElement('div');
       row.className = 'linkrow';
-
       const badge = document.createElement('span');
       badge.className = 'badge';
       badge.textContent = L.label;
-
       const a = document.createElement('a');
       a.href = L.url;
       a.target = '_blank';
       a.rel = 'noopener';
       a.textContent = 'Open in Maps ↗';
-
       row.appendChild(badge);
       row.appendChild(a);
       linksEl.appendChild(row);
@@ -327,23 +363,13 @@
 
   async function run(profile) {
     disableWhileRunning(true);
-    
     let { pts, startIdx } = parseStops(inputEl.value);
     
-    try {
-      pts = await geocodeMissingPoints(pts);
-    } catch (err) {
-      setStatus('Geocoding Error: ' + err.message, 'bad');
-      disableWhileRunning(false);
-      return;
-    }
+    try { pts = await geocodeMissingPoints(pts); } 
+    catch (err) { setStatus('Geocoding Error: ' + err.message, 'bad'); disableWhileRunning(false); return; }
 
     const validPts = pts.filter(p => p.lat !== null && p.lon !== null);
-    if (validPts.length < 2) {
-      setStatus('Need at least 2 valid locations (coords found).', 'bad');
-      disableWhileRunning(false);
-      return;
-    }
+    if (validPts.length < 2) { setStatus('Need at least 2 valid locations.', 'bad'); disableWhileRunning(false); return; }
 
     setStatus(`Optimizing ${validPts.length} stops...`, 'warn');
     linksEl.innerHTML = '';
@@ -351,13 +377,7 @@
     distKmEl.textContent = '—';
     savedKmEl.textContent = '—';
     
-    worker.postMessage({
-      type: 'solve',
-      profile,
-      points: validPts,
-      startIdx: (startIdx < validPts.length) ? startIdx : 0,
-      roundTrip: chkRoundTrip.checked,
-    });
+    worker.postMessage({ type: 'solve', profile, points: validPts, startIdx: (startIdx < validPts.length) ? startIdx : 0, roundTrip: chkRoundTrip.checked });
   }
 
   worker.onmessage = (ev) => {
@@ -365,7 +385,6 @@
     if (msg.type === 'result') {
       disableWhileRunning(false);
       const { totalKm, baseKm, pointsSorted } = msg;
-
       renderRoute(pointsSorted, totalKm, baseKm);
       const links = buildMapsLegLinks(pointsSorted, chkRoundTrip.checked, chkDriving.checked);
       renderLinks(links);
@@ -379,6 +398,5 @@
 
   btnFast.addEventListener('click', () => run('fast'));
   btnBalanced.addEventListener('click', () => run('balanced'));
-
   inputEl.value = defaultExample();
 })();
