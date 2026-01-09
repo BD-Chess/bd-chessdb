@@ -14,8 +14,9 @@
   const linksEl = $('links');
   const chkRoundTrip = $('chkRoundTrip');
   
-  // Controls
-  const selMode = $('selMode');     
+  // NEW: Mode Buttons
+  const btnDriving = $('btnDriving');
+  const btnWalking = $('btnWalking');
   const chkDirect = $('chkDirect'); 
 
   // Panels & Overlays
@@ -36,6 +37,7 @@
   let mapPolyline = null;
   
   let lastSolvedPoints = null;
+  let currentTravelMode = 'DRIVING'; // Default mode
 
   // --------------------------------------------------------------------------
   // GOOGLE MAPS INIT
@@ -46,7 +48,8 @@
     map = new google.maps.Map($('map'), {
       zoom: 12,
       center: defaultCenter,
-      mapTypeId: 'roadmap',
+      // CHANGED: Set to 'hybrid' (Satellite + Labels)
+      mapTypeId: 'hybrid', 
       mapTypeControl: true,
       styles: [
         { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
@@ -75,14 +78,31 @@
   };
 
   // --------------------------------------------------------------------------
-  // VIEW SWITCHING LOGIC (HELP vs MAP)
+  // UI LOGIC (Help & Modes)
   // --------------------------------------------------------------------------
-  function showHelp() {
-    helpOverlay.classList.add('active');
-  }
+  function showHelp() { helpOverlay.classList.add('active'); }
+  function hideHelp() { helpOverlay.classList.remove('active'); }
 
-  function hideHelp() {
-    helpOverlay.classList.remove('active');
+  function setTravelMode(mode) {
+    currentTravelMode = mode;
+    
+    // Toggle visual state (Secondary class makes it gray, removing it makes it blue)
+    if (mode === 'DRIVING') {
+      btnDriving.classList.remove('secondary');
+      btnWalking.classList.add('secondary');
+    } else {
+      btnDriving.classList.add('secondary');
+      btnWalking.classList.remove('secondary');
+    }
+
+    // If we have a route, update it instantly
+    if (lastSolvedPoints) {
+      // Update Links
+      const links = buildMapsLegLinks(lastSolvedPoints, chkRoundTrip.checked, currentTravelMode);
+      renderLinks(links);
+      // Update Map Line
+      updateMapVisualization(lastSolvedPoints);
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -110,7 +130,6 @@
     if (!map) return;
     lastSolvedPoints = points;
 
-    // Ensure map is visible (hide help if open)
     hideHelp();
 
     // 1. Clear old
@@ -154,8 +173,7 @@
     }
 
     // 4. Road Directions
-    const mode = selMode.value; // "DRIVING" or "WALKING"
-
+    // Use the variable currentTravelMode ('DRIVING' or 'WALKING')
     const origin = routePath[0];
     const destination = routePath[routePath.length - 1];
     const waypoints = routePath.slice(1, -1).map(loc => ({
@@ -167,7 +185,7 @@
       origin: origin,
       destination: destination,
       waypoints: waypoints,
-      travelMode: google.maps.TravelMode[mode],
+      travelMode: google.maps.TravelMode[currentTravelMode],
     }, (response, status) => {
       if (status === "OK") {
         directionsRenderer.setDirections(response);
@@ -298,8 +316,8 @@
     return `${x.toFixed(2)} km`;
   }
 
-  function buildMapsLegLinks(routePts, roundTrip, drivingMode) {
-    const travelmode = (drivingMode === 'DRIVING') ? 'driving' : 'walking';
+  function buildMapsLegLinks(routePts, roundTrip, mode) {
+    const travelmode = (mode === 'DRIVING') ? 'driving' : 'walking';
     
     const encodeLoc = (p) => {
       if (typeof p.lat === 'number' && typeof p.lon === 'number') {
@@ -393,7 +411,6 @@
     distKmEl.textContent = '—';
     savedKmEl.textContent = '—';
     
-    // Auto-switch back to map view if help was open
     hideHelp();
     
     worker.postMessage({ type: 'solve', profile, points: validPts, startIdx: (startIdx < validPts.length) ? startIdx : 0, roundTrip: chkRoundTrip.checked });
@@ -406,7 +423,7 @@
       const { totalKm, baseKm, pointsSorted } = msg;
       renderRoute(pointsSorted, totalKm, baseKm);
       
-      const links = buildMapsLegLinks(pointsSorted, chkRoundTrip.checked, selMode.value);
+      const links = buildMapsLegLinks(pointsSorted, chkRoundTrip.checked, currentTravelMode);
       renderLinks(links);
       updateMapVisualization(pointsSorted);
       
@@ -424,17 +441,13 @@
   btnHelp.addEventListener('click', (e) => { e.preventDefault(); showHelp(); });
   btnCloseHelp.addEventListener('click', (e) => { e.preventDefault(); hideHelp(); });
 
+  // Mode Button Listeners
+  btnDriving.addEventListener('click', () => setTravelMode('DRIVING'));
+  btnWalking.addEventListener('click', () => setTravelMode('WALKING'));
+
   chkDirect.addEventListener('change', () => {
     if (lastSolvedPoints) updateMapVisualization(lastSolvedPoints);
   });
   
-  selMode.addEventListener('change', () => {
-    if (lastSolvedPoints) {
-        const links = buildMapsLegLinks(lastSolvedPoints, chkRoundTrip.checked, selMode.value);
-        renderLinks(links);
-        updateMapVisualization(lastSolvedPoints);
-    }
-  });
-
   inputEl.value = defaultExample();
 })();
