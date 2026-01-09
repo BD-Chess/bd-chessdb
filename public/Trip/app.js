@@ -6,20 +6,31 @@
   // UI Elements
   const inputEl = $('input');
   const statusEl = $('status');
-  const btnFast = $('btnFast');
-  const btnBalanced = $('btnBalanced');
+  
+  // Buttons
+  const btnStandard = $('btnStandard');
+  const btnDeep = $('btnDeep');
+  
+  // NEW: Presets & File Actions (Check if they exist to prevent crashes)
+  const selPresets = $('selPresets');
+  const btnSave = $('btnSave');
+  const btnLoad = $('btnLoad');
+  const fileLoader = $('fileLoader');
+
+  // Route & Stats
   const routeList = $('routeList');
   const distKmEl = $('distKm');
   const savedKmEl = $('savedKm');
   const linksEl = $('links');
-  const chkRoundTrip = $('chkRoundTrip');
   
-  // NEW: Mode Buttons
+  // Checkboxes & Modes
+  const chkRoundTrip = $('chkRoundTrip');
   const btnDriving = $('btnDriving');
   const btnWalking = $('btnWalking');
   const chkDirect = $('chkDirect'); 
+  const chkGoogleStyle = $('chkGoogleStyle'); 
 
-  // Panels & Overlays
+  // Panels
   const mapPlaceholder = $('mapPlaceholder');
   const helpOverlay = $('helpOverlay');
   const btnHelp = $('btnHelp');
@@ -37,29 +48,200 @@
   let mapPolyline = null;
   
   let lastSolvedPoints = null;
-  let currentTravelMode = 'DRIVING'; // Default mode
+  let currentTravelMode = 'DRIVING'; 
 
-  // --------------------------------------------------------------------------
-  // GOOGLE MAPS INIT
-  // --------------------------------------------------------------------------
+  // --- 1. TRIP PRESETS DATA ---
+  const PRESETS = {
+    'LJUBLJANA': `# 🇸🇮 Ljubljana Classic (Walking)
+# --- Start ---
+Prešernov trg, Ljubljana START
+# --- Stops ---
+Ljubljana Castle
+Dragon Bridge, Ljubljana
+Tivoli Park, Ljubljana
+Metelkova Art Center
+Central Market, Ljubljana
+Congress Square, Ljubljana`,
+
+    'PARIS': `# 🇫🇷 Paris Essential (Walking)
+# --- Start ---
+Eiffel Tower, Paris START
+# --- Stops ---
+Louvre Museum, Paris
+Notre Dame Cathedral, Paris
+Arc de Triomphe, Paris
+Sacré-Cœur, Paris
+Pantheon, Paris
+Jardin du Luxembourg, Paris
+Moulin Rouge, Paris`,
+
+    'ROME': `# 🇮🇹 Rome Ancient & Holy (Walking)
+# --- Start ---
+Colosseum, Rome START
+# --- Stops ---
+Pantheon, Rome
+Trevi Fountain, Rome
+Spanish Steps, Rome
+St. Peter's Basilica, Vatican City
+Roman Forum, Rome
+Piazza Navona, Rome`,
+
+    'NY': `# 🇺🇸 New York Manhattan (Walking/Metro)
+# --- Start ---
+Times Square, New York START
+# --- Stops ---
+Central Park, New York
+Empire State Building, New York
+Brooklyn Bridge, New York
+Statue of Liberty, New York
+Grand Central Terminal, New York
+9/11 Memorial, New York`,
+
+    'TOKYO': `# 🇯🇵 Tokyo Highlights (Metro)
+# --- Start ---
+Shinjuku Station, Tokyo START
+# --- Stops ---
+Shibuya Crossing, Tokyo
+Senso-ji, Tokyo
+Meiji Jingu, Tokyo
+Tokyo Tower
+Akihabara, Tokyo
+Tsukiji Outer Market, Tokyo`,
+
+    'SLOVENIA_DRIVE': `# 🇸🇮 Slovenia Full Loop (Driving)
+# --- Start ---
+Ljubljana START
+# --- Stops ---
+Lake Bled
+Postojna Cave
+Piran
+Maribor
+Triglav National Park
+Predjama Castle
+Velika Planina`,
+
+    'CALIFORNIA': `# 🇺🇸 California Road Trip (Driving)
+# --- Start ---
+San Francisco, CA START
+# --- Stops ---
+Yosemite National Park, CA
+Monterey, CA
+Santa Barbara, CA
+Los Angeles, CA
+San Diego, CA
+Death Valley National Park, CA
+Las Vegas, NV`,
+
+    'GERMANY': `# 🇩🇪 Germany Autobahn (Driving)
+# --- Start ---
+Berlin, Germany START
+# --- Stops ---
+Hamburg, Germany
+Cologne, Germany
+Frankfurt, Germany
+Heidelberg, Germany
+Munich, Germany
+Neuschwanstein Castle, Germany`,
+
+    'EUROPE': `# 🇪🇺 Europe Capitals (Driving)
+# --- Start ---
+Paris, France START
+# --- Stops ---
+Brussels, Belgium
+Amsterdam, Netherlands
+Berlin, Germany
+Prague, Czechia
+Vienna, Austria
+Budapest, Hungary`,
+
+    'ICELAND': `# 🇮🇸 Iceland Ring Road (Driving)
+# --- Start ---
+Reykjavik, Iceland START
+# --- Stops ---
+Vik, Iceland
+Hofn, Iceland
+Egilsstadir, Iceland
+Akureyri, Iceland
+Snaefellsnes Peninsula, Iceland
+Golden Circle, Iceland`
+  };
+
+  // --- 2. PRESET & SAVE/LOAD LOGIC ---
+  if (selPresets) {
+    selPresets.addEventListener('change', () => {
+      const key = selPresets.value;
+      if (key && PRESETS[key]) {
+        inputEl.value = PRESETS[key];
+        setStatus(`Loaded: ${selPresets.options[selPresets.selectedIndex].text}`, 'ok');
+        
+        // Auto-set travel mode
+        if (['LJUBLJANA', 'PARIS', 'ROME', 'NY', 'TOKYO'].includes(key)) {
+           setTravelMode('WALKING');
+           chkRoundTrip.checked = true;
+        } else {
+           setTravelMode('DRIVING');
+           chkRoundTrip.checked = true;
+        }
+      }
+    });
+  }
+
+  if (btnSave) {
+    btnSave.addEventListener('click', () => {
+      const text = inputEl.value;
+      if (!text.trim()) {
+        setStatus('Nothing to save.', 'warn');
+        return;
+      }
+      const blob = new Blob([text], { type: 'text/plain' });
+      const anchor = document.createElement('a');
+      anchor.download = 'MyTrip.txt';
+      anchor.href = window.URL.createObjectURL(blob);
+      anchor.click();
+      window.URL.revokeObjectURL(anchor.href);
+      setStatus('Trip saved to your Downloads folder.', 'ok');
+    });
+  }
+
+  if (btnLoad && fileLoader) {
+    btnLoad.addEventListener('click', () => {
+      fileLoader.click();
+    });
+
+    fileLoader.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        inputEl.value = evt.target.result;
+        setStatus(`Loaded file: ${file.name}`, 'ok');
+        fileLoader.value = ''; 
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  // --- 3. GOOGLE MAPS SETUP ---
+  const CUSTOM_DARK_STYLE = [
+    { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+    { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+    { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+    { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+    { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+    { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+    { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
+  ];
+
   window.initMap = function() {
     const defaultCenter = { lat: 46.0569, lng: 14.5058 }; 
     
     map = new google.maps.Map($('map'), {
       zoom: 12,
       center: defaultCenter,
-      // CHANGED: Set to 'hybrid' (Satellite + Labels)
-      mapTypeId: 'hybrid', 
+      mapTypeId: 'hybrid',
       mapTypeControl: true,
-      styles: [
-        { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
-        { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
-        { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-        { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
-        { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
-        { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
-        { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
-      ],
+      styles: CUSTOM_DARK_STYLE,
     });
 
     geocoder = new google.maps.Geocoder();
@@ -77,16 +259,12 @@
     });
   };
 
-  // --------------------------------------------------------------------------
-  // UI LOGIC (Help & Modes)
-  // --------------------------------------------------------------------------
+  // --- 4. UI HELPERS ---
   function showHelp() { helpOverlay.classList.add('active'); }
   function hideHelp() { helpOverlay.classList.remove('active'); }
 
   function setTravelMode(mode) {
     currentTravelMode = mode;
-    
-    // Toggle visual state (Secondary class makes it gray, removing it makes it blue)
     if (mode === 'DRIVING') {
       btnDriving.classList.remove('secondary');
       btnWalking.classList.add('secondary');
@@ -94,24 +272,15 @@
       btnDriving.classList.add('secondary');
       btnWalking.classList.remove('secondary');
     }
-
-    // If we have a route, update it instantly
     if (lastSolvedPoints) {
-      // Update Links
       const links = buildMapsLegLinks(lastSolvedPoints, chkRoundTrip.checked, currentTravelMode);
       renderLinks(links);
-      // Update Map Line
       updateMapVisualization(lastSolvedPoints);
     }
   }
 
-  // --------------------------------------------------------------------------
-  // VISUALIZATION LOGIC
-  // --------------------------------------------------------------------------
-
   function drawFallbackPolyline(pathCoords) {
     if (mapPolyline) mapPolyline.setMap(null);
-    
     mapPolyline = new google.maps.Polyline({
       path: pathCoords,
       geodesic: true,
@@ -120,7 +289,6 @@
       strokeWeight: 4,
     });
     mapPolyline.setMap(map);
-    
     const bounds = new google.maps.LatLngBounds();
     pathCoords.forEach(p => bounds.extend(p));
     map.fitBounds(bounds);
@@ -129,23 +297,19 @@
   function updateMapVisualization(points) {
     if (!map) return;
     lastSolvedPoints = points;
-
     hideHelp();
 
-    // 1. Clear old
     mapMarkers.forEach(m => m.setMap(null));
     mapMarkers = [];
     if (mapPolyline) mapPolyline.setMap(null);
     directionsRenderer.setDirections({ routes: [] });
     mapPlaceholder.style.display = 'none';
 
-    // 2. Markers & Coords
     const pathCoords = [];
     points.forEach((pt, index) => {
       if (typeof pt.lat === 'number' && typeof pt.lon === 'number') {
         const latLng = { lat: pt.lat, lng: pt.lon };
         pathCoords.push(latLng);
-
         const marker = new google.maps.Marker({
           position: latLng,
           map: map,
@@ -166,14 +330,11 @@
       routePath.push(routePath[0]);
     }
 
-    // 3. DECISION: Direct Lines OR Roads?
     if (chkDirect.checked || points.length > 25) {
       drawFallbackPolyline(routePath);
       return;
     }
 
-    // 4. Road Directions
-    // Use the variable currentTravelMode ('DRIVING' or 'WALKING')
     const origin = routePath[0];
     const destination = routePath[routePath.length - 1];
     const waypoints = routePath.slice(1, -1).map(loc => ({
@@ -196,10 +357,6 @@
     });
   }
 
-  // --------------------------------------------------------------------------
-  // GEOCODING & HELPERS
-  // --------------------------------------------------------------------------
-  
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
   async function resolveLocation(rawName) {
@@ -240,29 +397,13 @@
     return pts;
   }
 
-  // --------------------------------------------------------------------------
-  // APP LOGIC
-  // --------------------------------------------------------------------------
-
   function setStatus(msg, cls) {
     statusEl.textContent = msg;
     statusEl.className = 'status' + (cls ? (' ' + cls) : '');
   }
 
   function defaultExample() {
-    return [
-      '# My Ljubljana Trip',
-      '# --- Start ---',
-      '46.0428, 14.4500 | Home START',
-      '',
-      '# --- Stops (Addresses & GPS) ---',
-      'Prešernov trg, Ljubljana',
-      'Zmajski most, Ljubljana',
-      '46.0681, 14.4701 | Cinema',
-      'Tivoli Park, Ljubljana',
-      '46.0389, 14.5108',
-      'Ljubljanski grad, Ljubljana',
-    ].join('\n');
+    return PRESETS['LJUBLJANA'] || ""; 
   }
 
   function parseStops(text) {
@@ -390,8 +531,8 @@
   }
 
   function disableWhileRunning(disabled) {
-    btnFast.disabled = disabled;
-    btnBalanced.disabled = disabled;
+    if (btnStandard) btnStandard.disabled = disabled;
+    if (btnDeep) btnDeep.disabled = disabled;
     inputEl.disabled = disabled;
   }
 
@@ -434,19 +575,23 @@
     }
   };
 
-  btnFast.addEventListener('click', () => run('fast'));
-  btnBalanced.addEventListener('click', () => run('balanced'));
+  if (btnStandard) btnStandard.addEventListener('click', () => run('standard'));
+  if (btnDeep) btnDeep.addEventListener('click', () => run('deep'));
   
-  // Listeners
-  btnHelp.addEventListener('click', (e) => { e.preventDefault(); showHelp(); });
-  btnCloseHelp.addEventListener('click', (e) => { e.preventDefault(); hideHelp(); });
+  if (btnHelp) btnHelp.addEventListener('click', (e) => { e.preventDefault(); showHelp(); });
+  if (btnCloseHelp) btnCloseHelp.addEventListener('click', (e) => { e.preventDefault(); hideHelp(); });
 
-  // Mode Button Listeners
-  btnDriving.addEventListener('click', () => setTravelMode('DRIVING'));
-  btnWalking.addEventListener('click', () => setTravelMode('WALKING'));
+  if (btnDriving) btnDriving.addEventListener('click', () => setTravelMode('DRIVING'));
+  if (btnWalking) btnWalking.addEventListener('click', () => setTravelMode('WALKING'));
 
   chkDirect.addEventListener('change', () => {
     if (lastSolvedPoints) updateMapVisualization(lastSolvedPoints);
+  });
+  
+  chkGoogleStyle.addEventListener('change', (e) => {
+    if (map) {
+      map.setOptions({ styles: e.target.checked ? null : CUSTOM_DARK_STYLE });
+    }
   });
   
   inputEl.value = defaultExample();
