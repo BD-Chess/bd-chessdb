@@ -211,7 +211,7 @@ Museum of the Future, Dubai`
           { id: "LISBON", label: "🇵🇹 Lisbon", data: `# 🇵🇹 Lisbon Walking\nBelém Tower, Lisbon\nJerónimos Monastery, Lisbon\nPraça do Comércio, Lisbon\nCastelo de S. Jorge, Lisbon` },
           { id: "BUCHAREST", label: "🇷🇴 Bucharest", data: `# 🇷🇴 Bucharest Walking\nPalace of Parliament, Bucharest\nRomanian Athenaeum, Bucharest\nOld Town, Bucharest\nHerastrau Park, Bucharest` },
           { id: "BRATISLAVA", label: "🇸🇰 Bratislava", data: `# 🇸🇰 Bratislava Walking\nBratislava Castle\nSt. Martin's Cathedral, Bratislava\nMichael's Gate, Bratislava\nBlue Church, Bratislava` },
-          { id: "LJUBLJANA", label: "🇸🇮 Ljubljana", data: `# 🇸🇮 Ljubljana Walking\nPrešernov trg, Ljubljana\nLjubljana Castle\nDragon Bridge, Ljubljana\nTivoli Park, Ljubljana\nMetelkova Art Center, Ljubljana` },
+          { id: "LJUBLJANA", label: "🇸🇮 Ljubljana Top 10", data: `# 🇸🇮 Ljubljana Top 10 Walking\nPrešernov trg, Ljubljana START\nTriple Bridge, Ljubljana\nCentral Market, Ljubljana\nDragon Bridge, Ljubljana\nLjubljana Castle\nTown Hall, Ljubljana\nCobblers' Bridge, Ljubljana\nCongress Square, Ljubljana\nTivoli Park, Ljubljana\nMetelkova Art Center, Ljubljana` },
           { id: "MADRID", label: "🇪🇸 Madrid", data: `# 🇪🇸 Madrid Walking\nRoyal Palace of Madrid\nPlaza Mayor, Madrid\nRetiro Park, Madrid\nPrado Museum, Madrid` },
           { id: "STOCKHOLM", label: "🇸🇪 Stockholm", data: `# 🇸🇪 Stockholm Walking\nGamla Stan, Stockholm\nVasa Museum, Stockholm\nSkansen, Stockholm\nStockholm Palace` }
         ]
@@ -232,7 +232,7 @@ Museum of the Future, Dubai`
       {
         name: "🚗 Top 10 Driving/Safari",
         items: [
-          { id: "ZA_DRIVE", label: "South Africa Highlights", data: `# 🇿🇦 South Africa Highlights\nCape Town, South Africa START\nTable Mountain, South Africa\nCape of Good Hope, South Africa\nStellenbosch, South Africa\nKnysna, South Africa\nDurban, South Africa\nKruger National Park, South Africa\nJohannesburg, South Africa` },
+          { id: "ZA_DRIVE", label: "South Africa Highlights", data: `# 🇿🇦 South Africa Highlights\nCape Town, South Africa START\nTable Mountain, South Africa\nCape of Good Hope, South Africa\nStellenbosch, South Africa\nGarden Route, South Africa\nKnysna, South Africa\nDurban, South Africa\nKruger National Park, South Africa\nJohannesburg, South Africa` },
           { id: "EG_DRIVE", label: "Egypt Ancients", data: `# 🇪🇬 Egypt Ancients\nCairo, Egypt START\nGiza Pyramids, Egypt\nAlexandria, Egypt\nLuxor, Egypt\nValley of the Kings, Egypt\nAswan, Egypt\nAbu Simbel, Egypt\nHurghada, Egypt\nSharm El Sheikh, Egypt` },
           { id: "MA_DRIVE", label: "Morocco Imperial", data: `# 🇲🇦 Morocco Imperial\nCasablanca, Morocco START\nRabat, Morocco\nChefchaouen, Morocco\nFes, Morocco\nMeknes, Morocco\nMerzouga (Sahara), Morocco\nOuarzazate, Morocco\nMarrakech, Morocco\nEssaouira, Morocco` },
           { id: "KE_DRIVE", label: "Kenya Safari", data: `# 🇰🇪 Kenya Safari\nNairobi, Kenya START\nMaasai Mara, Kenya\nLake Nakuru, Kenya\nMount Kenya, Kenya\nAmboseli National Park, Kenya\nTsavo East, Kenya\nMombasa, Kenya\nDiani Beach, Kenya` },
