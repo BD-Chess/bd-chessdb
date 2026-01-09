@@ -29,11 +29,15 @@
     flex-shrink:0; z-index:10;
     background:var(--panel); border-bottom:1px solid var(--btnBorder);
     padding: max(10px, env(safe-area-inset-top)) 12px 10px;
-    display:flex; flex-direction:column; gap:8px;
+    display:flex; flex-direction:column; gap:5px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   }
   .row { display:flex; justify-content:space-between; align-items:center; }
   h1 { margin:0; font-size:18px; font-weight:900; letter-spacing:0.5px; }
+  
+  /* AUTHOR LINE RESTORED */
+  .meta { font-size: 11px; color: var(--muted); margin-top: -2px; margin-bottom: 5px; opacity: 0.8; }
+
   .status { font-size:13px; color:var(--muted); font-family:monospace; }
   
   #tokens {
@@ -110,7 +114,9 @@
   .card {
     background:var(--panel); border:1px solid var(--btnBorder);
     padding:24px; border-radius:16px; text-align:center;
-    width:min(400px, 80vw); box-shadow:0 20px 40px rgba(0,0,0,0.6);
+    /* MADE WIDER AS REQUESTED */
+    width: min(500px, 90vw); 
+    box-shadow:0 20px 40px rgba(0,0,0,0.6);
     max-height: 80vh; overflow-y: auto;
   }
   .card h2 { margin:0 0 8px; font-size:24px; }
@@ -128,7 +134,10 @@
 <div id="app">
   <div id="hud">
     <div class="row">
-      <h1>FlipFour <span style="font-size:12px;opacity:0.5;font-weight:400">Pro</span></h1>
+      <div>
+        <h1>FlipFour <span style="font-size:12px;opacity:0.5;font-weight:400">Pro</span></h1>
+        <div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
+      </div>
       <div class="status" id="turnInfo">Red's Turn</div>
     </div>
     <div class="row">
@@ -174,10 +183,6 @@
            <button class="btn-util" onclick="loadGameTrigger()">📂 Load</button>
            <button class="btn-util" style="grid-column: span 2" onclick="startReview()">⏯️ Review Game</button>
         </div>
-        
-        <div style="margin-top:20px; font-size:11px; opacity:0.6; line-height:1.4;">
-            Author: Bojan Dobrečevič (Jan. 2026)
-        </div>
       </div>
 
       <div class="card hidden" id="hintCard">
@@ -189,7 +194,7 @@
       <div class="card hidden" id="helpCard">
         <h2>How to Play</h2>
         <div class="help-rule"><b>Goal:</b> Connect 4 tokens in a line.</div>
-        <div class="help-rule"><b>Gravity:</b> Tokens fall towards the arrow.</div>
+        <div class="help-rule"><b>Gravity:</b> Tokens always fall <b>DOWN</b>. (The board rotates!)</div>
         <div class="help-rule"><b>Drop:</b> Tap a cell.</div>
         <div class="help-rule"><b>Rotate:</b> Use <span style="color:#ffd54f">⟲ ⟳</span> (Cost: 1 Flip).</div>
         <div class="help-rule"><b>Magnet:</b> Tap the rim (Cost: 1 Mag).</div>
@@ -242,9 +247,7 @@
   let anims = []; 
   let hiddenCells = []; 
   let pendingSettle = false; 
-  let aiTimer = null; // To fix undo issues
-  
-  // Review Mode
+  let aiTimer = null; 
   let isReviewing = false;
   let reviewIndex = 0;
 
@@ -323,9 +326,7 @@
     pendingSettle = false;
     winnerCard.classList.remove('visible');
     
-    // Initial Save
     pushHistory();
-    
     syncUI();
     lastTime = 0;
     requestAnimationFrame(initLoop);
@@ -395,11 +396,9 @@
 
     let aiTokens = canUseTools ? tokens[P_YEL] : { flip: 0, mag: 0 };
     
-    // 1. SANITY & PANIC CHECK
     let sanityMove = getSanityMove(grid, gravityDir, aiTokens, P_YEL, mag);
     if (sanityMove) { executeMove(sanityMove); return; }
 
-    // 2. SEARCH
     let depth = (aiLevel === 1) ? 2 : (aiLevel === 2) ? 4 : 5;
     let moves = getPossibleMoves(grid, gravityDir, aiTokens, P_YEL, mag);
     let center = (COLS - 1) / 2;
@@ -431,7 +430,7 @@
   function getSanityMove(g, gDir, toks, p, mState) {
       let opponent = (p === P_RED) ? P_YEL : P_RED;
       let myMoves = getPossibleMoves(g, gDir, toks, p, mState);
-      for (let m of myMoves) if (checkWin(m.grid) === p) return m; // Win now
+      for (let m of myMoves) if (checkWin(m.grid) === p) return m; 
       let oppSimpleMoves = getPossibleMoves(g, gDir, {flip:0, mag:0}, opponent, mState);
       let simpleKiller = oppSimpleMoves.find(om => om.type === 'drop' && checkWin(om.grid) === opponent);
       if (simpleKiller) {
@@ -582,17 +581,11 @@
   }
   function pushHistory() { history.push(cloneState()); if (history.length > 50) history.shift(); }
   
-  // --- FIXED UNDO LOGIC ---
   function undo() {
     if (animating || history.length === 0 || isReviewing) return;
-    if (aiTimer) clearTimeout(aiTimer); // Stop pending AI thinking
-    
-    restoreState(history.pop()); // Pop current state (back to pre-move)
-    
-    // If we are playing CPU, we need to pop again to get back to user turn
-    if (gameMode === 1 && history.length > 0) {
-        restoreState(history.pop());
-    }
+    if (aiTimer) clearTimeout(aiTimer);
+    restoreState(history.pop()); 
+    if (gameMode === 1 && history.length > 0) restoreState(history.pop());
   }
 
   function isPinned(r, c, mState) {
@@ -890,7 +883,7 @@
     
     // COORDINATES
     ctx.fillStyle = "#8fa1b8";
-    // INCREASED FONT SIZE HERE
+    // INCREASED FONT SIZE (15px)
     ctx.font = "bold 15px monospace";
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     for(let c=0; c<COLS; c++) {
