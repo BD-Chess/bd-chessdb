@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trip Optimizer (8Z-RP)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">8Z</div>
+      <div class="titles">
+        <div class="title">Trip Optimizer</div>
+        <div class="subtitle">Offline, deterministic (client-side). Export to Maps.</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <a class="ghost" href="https://www.google.com/maps/" target="_blank" rel="noopener">Open Google Maps</a>
+      <a class="ghost" href="https://chessbest.org" target="_blank" rel="noopener">ChessBest.org</a>
+    </div>
+  </header>
+
+  <main class="split">
+    <section class="panel left">
+      <div class="card">
+        <h2>Stops</h2>
+        <p class="muted">
+          One per line. Recommended format:
+          <span class="mono">Name | 46.0569, 14.5058</span>
+          or <span class="mono">46.0569, 14.5058</span>.
+          Put <span class="mono">START:</span> on the desired start line.
+        </p>
+
+        <textarea id="input" spellcheck="false"></textarea>
+
+        <div class="row">
+          <button id="btnFast">Optimize (Fast)</button>
+          <button id="btnBalanced" class="secondary">Optimize (Balanced)</button>
+        </div>
+
+        <div class="row tight">
+          <label class="check">
+            <input id="chkRoundTrip" type="checkbox" checked />
+            <span>Round trip (return to start)</span>
+          </label>
+          <label class="check">
+            <input id="chkDriving" type="checkbox" checked />
+            <span>Driving</span>
+          </label>
+        </div>
+
+        <div id="status" class="status"></div>
+      </div>
+
+      <div class="card">
+        <h2>Route</h2>
+        <div class="metrics">
+          <div class="metric">
+            <div class="k">Distance</div>
+            <div class="v" id="distKm">—</div>
+          </div>
+          <div class="metric">
+            <div class="k">Saved vs input</div>
+            <div class="v" id="savedKm">—</div>
+          </div>
+        </div>
+
+        <ol id="routeList" class="route"></ol>
+
+        <div class="row">
+          <button id="btnUpdateMap" class="secondary" disabled>Show in map pane</button>
+          <button id="btnCopyLinks" class="secondary" disabled>Copy links</button>
+        </div>
+
+        <div id="links" class="links"></div>
+      </div>
+
+      <div class="card">
+        <h2>Tips</h2>
+        <ul class="muted small">
+          <li>If you only paste addresses (no coordinates), optimization can’t compute distances reliably without a geocoding API. Use coords for best results.</li>
+          <li>Balanced runs multiple deterministic starts and deeper 2‑opt.</li>
+          <li>For many stops, Google Directions has waypoint limits; this tool auto-splits into legs.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="panel right centered-panel">
+      
+      <div id="mapPlaceholder">
+        <div class="big-icon">🗺️</div>
+        <h2>Ready to Route</h2>
+        <p class="muted box-width">
+          Optimize your stops on the left to generate a route. 
+          The map link will appear here.
+        </p>
+      </div>
+
+      <div id="mapResult" style="display: none;">
+        <h2>Route Optimized</h2>
+        <p class="muted box-width">
+          Google Maps does not allow direct embedding without an API key.
+        </p>
+        
+        <a id="bigMapBtn" href="#" target="_blank" rel="noopener" class="launch-btn">
+          OPEN ROUTE IN GOOGLE MAPS ↗
+        </a>
+
+        <div class="tip-box">
+          <strong>💡 Edge/Windows Tip:</strong> Right-click the button above and select <em>"Open link in split screen window"</em> (or drag the new tab) to view the map alongside this list.
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span class="muted small">8Z-RP Trip Optimizer • Client-side demo • No external JS libraries</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
