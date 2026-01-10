@@ -1,10 +1,9 @@
 <!doctype html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Flip4M Grandmaster III</title>
+<title>Flip4M Grandmaster IV</title>
 <style>
   :root{
     --bg:#0b0f17;
@@ -20,108 +19,128 @@
     --gold:#ffd700;
   }
   html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;overflow:hidden;touch-action:none;}
+  
+  #app { display:flex; flex-direction:column; height:100%; width:100%; }
 
-#app {
-display:flex; flex-direction:column; height:100%; width:100%;
-}
+  #hud {
+    flex-shrink:0; z-index:10;
+    background:var(--panel); border-bottom:1px solid var(--btnBorder);
+    padding: max(10px, env(safe-area-inset-top)) 12px 10px;
+    display:flex; flex-direction:column; gap:5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .row { display:flex; justify-content:space-between; align-items:center; }
+  
+  h1 { margin:0; font-size:18px; font-weight:900; letter-spacing:0.5px; }
+  .meta { font-size: 11px; color: var(--muted); margin-top: -2px; margin-bottom: 5px; opacity: 0.8; }
+  .status { font-size:13px; color:var(--muted); font-family:monospace; }
+  
+  #tokens {
+    display:flex; gap:16px; font-size:12px; font-weight:700;
+    background:rgba(0,0,0,0.3); padding:6px 10px; border-radius:8px;
+  }
+  .t-grp { display:flex; align-items:center; gap:6px; }
+  .dot { width:8px; height:8px; border-radius:50%; }
+  .dot.r { background:var(--red); box-shadow:0 0 4px var(--red); }
+  .dot.y { background:var(--yel); box-shadow:0 0 4px var(--yel); }
 
-#hud {
-flex-shrink:0; z-index:10;
-background:var(–panel); border-bottom:1px solid var(–btnBorder);
-padding: max(10px, env(safe-area-inset-top)) 12px 10px;
-display:flex; flex-direction:column; gap:5px;
-box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-.row { display:flex; justify-content:space-between; align-items:center; }
+  #game-stage {
+    flex-grow:1; position:relative; overflow:hidden; background:var(--bg);
+    display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
+  }
+  canvas { position:absolute; inset:0; display:block; width:100%; height:100%; z-index:1; }
 
-h1 { margin:0; font-size:18px; font-weight:900; letter-spacing:0.5px; }
-.meta { font-size: 11px; color: var(–muted); margin-top: -2px; margin-bottom: 5px; opacity: 0.8; }
-.status { font-size:13px; color:var(–muted); font-family:monospace; }
+  #winnerCard {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 50;
+    background: rgba(30, 37, 53, 0.98); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--btnBorder); padding: 15px 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    transform: translateY(-110%);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 15px;
+    pointer-events: auto;
+  }
+  #winnerCard.visible { transform: translateY(0); }
+  
+  .win-content { text-align: left; display:flex; flex-direction:column; gap:4px; }
+  .trophy { font-size: 24px; }
+  .win-title { font-size: 20px; font-weight: 900; color: var(--gold); margin:0; line-height:1; }
+  .win-sub { font-size: 12px; color: var(--muted); margin:0; }
+  .win-btns { display:flex; gap:8px; }
+  .win-btns button { padding:8px 16px; font-size:12px; border-radius:8px; height: auto; }
 
-#tokens {
-display:flex; gap:16px; font-size:12px; font-weight:700;
-background:rgba(0,0,0,0.3); padding:6px 10px; border-radius:8px;
-}
-.t-grp { display:flex; align-items:center; gap:6px; }
-.dot { width:8px; height:8px; border-radius:50%; }
-.dot.r { background:var(–red); box-shadow:0 0 4px var(–red); }
-.dot.y { background:var(–yel); box-shadow:0 0 4px var(–yel); }
+  #controls, #review-controls {
+    flex-shrink:0; z-index:10;
+    background:var(--panel); border-top:1px solid var(--btnBorder);
+    padding: 10px 12px max(20px, env(safe-area-inset-bottom));
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    width: 100%; max-width: 500px; margin: 0 auto; box-sizing: border-box;
+  }
+  .ctrl-hidden { display: none !important; }
+  
+  button {
+    background:var(--btn); border:1px solid var(--btnBorder); color:var(--text);
+    padding:14px 0; border-radius:12px; font-weight:700; font-size:14px;
+    cursor:pointer; touch-action:manipulation;
+    transition:transform 0.1s, background 0.2s;
+    display: flex; align-items: center; justify-content: center;
+    white-space: nowrap; position: relative;
+  }
+  button:active { transform:scale(0.96); }
+  button:disabled { opacity:0.4; pointer-events:none; }
+  
+  .btn-act { background:rgba(60,120,255,0.15); border-color:rgba(60,120,255,0.4); }
+  .btn-tac { background:rgba(255,204,102,0.15); border-color:rgba(255,204,102,0.4); color:#ffd54f; }
+  .btn-dang { background:rgba(229,57,53,0.15); border-color:rgba(229,57,53,0.4); color:#ff8a80; }
+  .btn-dev { background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.2); font-size:12px; }
+  .btn-util { background:rgba(76, 175, 80, 0.15); border-color:rgba(76, 175, 80, 0.4); color:#81c784; }
 
-#game-stage {
-flex-grow:1; position:relative; overflow:hidden; background:var(–bg);
-display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
-}
-canvas { position:absolute; inset:0; display:block; width:100%; height:100%; z-index:1; }
+  .big-icon { font-size: 1.6em; line-height: 1; margin-left: 6px; display: inline-block; margin-top: -2px; }
 
-#winnerCard {
-position: absolute; top: 0; left: 0; right: 0; z-index: 50;
-background: rgba(30, 37, 53, 0.98); backdrop-filter: blur(10px);
-border-bottom: 1px solid var(–btnBorder); padding: 15px 20px;
-box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-transform: translateY(-110%);
-transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 15px;
-pointer-events: auto;
-}
-#winnerCard.visible { transform: translateY(0); }
+  #overlay {
+    position:absolute; inset:0; z-index:100;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .card {
+    background:var(--panel); border:1px solid var(--btnBorder);
+    padding:24px; border-radius:16px; text-align:center;
+    width: min(500px, 90vw); 
+    box-shadow:0 20px 40px rgba(0,0,0,0.6);
+    max-height: 80vh; overflow-y: auto;
+  }
+  .card h2 { margin:0 0 8px; font-size:24px; }
+  .card p { color:var(--muted); margin:0 0 10px; line-height:1.5; font-size:14px; }
+  .card-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .card-btns button { flex:1; min-width:140px; }
+  .hidden { display: none !important; }
+  .help-rule { text-align:left; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px; margin-bottom:8px; }
+  .help-rule b { color: #fff; }
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
 
-.win-content { text-align: left; display:flex; flex-direction:column; gap:4px; }
-.trophy { font-size: 24px; }
-.win-title { font-size: 20px; font-weight: 900; color: var(–gold); margin:0; line-height:1; }
-.win-sub { font-size: 12px; color: var(–muted); margin:0; }
-.win-btns { display:flex; gap:8px; }
-.win-btns button { padding:8px 16px; font-size:12px; border-radius:8px; height: auto; }
-
-#controls, #review-controls {
-flex-shrink:0; z-index:10;
-background:var(–panel); border-top:1px solid var(–btnBorder);
-padding: 10px 12px max(20px, env(safe-area-inset-bottom));
-display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-width: 100%; max-width: 500px; margin: 0 auto; box-sizing: border-box;
-}
-.ctrl-hidden { display: none !important; }
-
-button {
-background:var(–btn); border:1px solid var(–btnBorder); color:var(–text);
-padding:14px 0; border-radius:12px; font-weight:700; font-size:14px;
-cursor:pointer; touch-action:manipulation;
-transition:transform 0.1s, background 0.2s;
-display: flex; align-items: center; justify-content: center;
-white-space: nowrap; position: relative;
-}
-button:active { transform:scale(0.96); }
-button:disabled { opacity:0.4; pointer-events:none; }
-
-.btn-act { background:rgba(60,120,255,0.15); border-color:rgba(60,120,255,0.4); }
-.btn-tac { background:rgba(255,204,102,0.15); border-color:rgba(255,204,102,0.4); color:#ffd54f; }
-.btn-dang { background:rgba(229,57,53,0.15); border-color:rgba(229,57,53,0.4); color:#ff8a80; }
-.btn-dev { background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.2); font-size:12px; }
-.btn-util { background:rgba(76, 175, 80, 0.15); border-color:rgba(76, 175, 80, 0.4); color:#81c784; }
-
-.big-icon { font-size: 1.6em; line-height: 1; margin-left: 6px; display: inline-block; margin-top: -2px; }
-
-#overlay {
-position:absolute; inset:0; z-index:100;
-background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
-display:flex; align-items:center; justify-content:center;
-}
-.card {
-background:var(–panel); border:1px solid var(–btnBorder);
-padding:24px; border-radius:16px; text-align:center;
-width: min(500px, 90vw);
-box-shadow:0 20px 40px rgba(0,0,0,0.6);
-max-height: 80vh; overflow-y: auto;
-}
-.card h2 { margin:0 0 8px; font-size:24px; }
-.card p { color:var(–muted); margin:0 0 10px; line-height:1.5; font-size:14px; }
-.card-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
-.card-btns button { flex:1; min-width:140px; }
-.hidden { display: none !important; }
-.help-rule { text-align:left; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px; margin-bottom:8px; }
-.help-rule b { color: #fff; }
-.feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
+  /* First Move Toggle Switch */
+  .first-move-toggle {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin: 15px 0 5px; padding: 10px; 
+    background: rgba(0,0,0,0.2); border-radius: 10px;
+  }
+  .first-move-toggle span { font-size: 13px; color: var(--muted); }
+  .first-move-toggle .active { color: var(--text); font-weight: 700; }
+  
+  .toggle-switch {
+    position: relative; width: 50px; height: 26px;
+    background: var(--red); border-radius: 13px;
+    cursor: pointer; transition: background 0.3s;
+  }
+  .toggle-switch.cpu-first { background: var(--yel); }
+  .toggle-switch::after {
+    content: ''; position: absolute;
+    top: 3px; left: 3px; width: 20px; height: 20px;
+    background: white; border-radius: 50%;
+    transition: transform 0.3s;
+  }
+  .toggle-switch.cpu-first::after { transform: translateX(24px); }
 </style>
-
 </head>
 <body>
 
@@ -129,7 +148,7 @@ max-height: 80vh; overflow-y: auto;
   <div id="hud">
     <div class="row">
       <div>
-        <h1>Flip4M <span style="font-size:12px;opacity:0.7;font-weight:400; color:#ffd700">GM III</span></h1>
+        <h1>Flip4M <span style="font-size:12px;opacity:0.7;font-weight:400; color:#ffd700">GM IV</span></h1>
         <div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
       </div>
       <div class="status" id="turnInfo">Red's Turn</div>
@@ -158,49 +177,54 @@ max-height: 80vh; overflow-y: auto;
       </div>
     </div>
 
-```
-<canvas id="c"></canvas>
-
-<div id="overlay">
-  <div class="card" id="menuCard">
-    <h2>Flip4M</h2>
-    <p>Gravity-defying strategy. <b>GM III</b> - Disciplined + Tactical AI.</p>
-    <div class="card-btns" style="flex-direction:column; gap:8px;">
-      <button class="btn-act" onclick="startGame(1, 2)">Standard (Classical)</button>
-      <button class="btn-act" onclick="startGame(1, 3)">Expert (2x Tools)</button>
-      <button class="btn-dang" onclick="startGame(1, 4)" style="border-color: #ffd700; color: #ffd700;">Pro (3x Tools)</button>
-    </div>
+    <canvas id="c"></canvas>
     
-    <div class="feature-grid">
-       <button class="btn-util" onclick="saveGame()">💾 Save</button>
-       <button class="btn-util" onclick="loadGameTrigger()">📂 Load</button>
-       <button class="btn-util" style="grid-column: span 2" onclick="startReview()">⏯️ Review Game</button>
-    </div>
-  </div>
+    <div id="overlay">
+      <div class="card" id="menuCard">
+        <h2>Flip4M</h2>
+        <p>Gravity-defying strategy. <b>GM IV</b> — Ultimate AI.</p>
+        
+        <!-- First Move Toggle -->
+        <div class="first-move-toggle">
+          <span id="labelHuman" class="active">You First</span>
+          <div class="toggle-switch" id="firstMoveToggle" onclick="toggleFirstMove()"></div>
+          <span id="labelCPU">CPU First</span>
+        </div>
+        
+        <div class="card-btns" style="flex-direction:column; gap:8px; margin-top:10px;">
+          <button class="btn-act" onclick="startGame(1, 2)">Standard (Classical)</button>
+          <button class="btn-act" onclick="startGame(1, 3)">Expert (2x Tools)</button>
+          <button class="btn-dang" onclick="startGame(1, 4)" style="border-color: #ffd700; color: #ffd700;">Pro (3x Tools)</button>
+        </div>
+        
+        <div class="feature-grid">
+           <button class="btn-util" onclick="saveGame()">💾 Save</button>
+           <button class="btn-util" onclick="loadGameTrigger()">📂 Load</button>
+           <button class="btn-util" style="grid-column: span 2" onclick="startReview()">⏯️ Review Game</button>
+        </div>
+      </div>
 
-  <div class="card hidden" id="hintCard">
-    <h2 id="hintTitle">Hint</h2>
-    <p id="hintMsg">Thinking...</p>
-    <div class="card-btns"><button id="hintBtnResume" class="btn-act">Resume</button></div>
-  </div>
+      <div class="card hidden" id="hintCard">
+        <h2 id="hintTitle">Hint</h2>
+        <p id="hintMsg">Thinking...</p>
+        <div class="card-btns"><button id="hintBtnResume" class="btn-act">Resume</button></div>
+      </div>
 
-  <div class="card hidden" id="helpCard">
-    <h2>How to Play</h2>
-    <div class="help-rule"><b>Goal:</b> Connect 4 tokens in a line.</div>
-    <div class="help-rule"><b>Gravity:</b> Tokens always fall <b>DOWN</b>. (The board rotates!)</div>
-    <div class="help-rule"><b>Drop:</b> Tap a cell.</div>
-    <div class="help-rule"><b>Rotate:</b> Use <span style="color:#ffd54f">⟲ ⟳</span> (Cost: 1 Flip).</div>
-    <div class="help-rule"><b>Magnet:</b> Tap the rim (Cost: 1 Mag).</div>
-    <div class="card-btns" style="margin-top:20px;">
-        <button id="helpBtnBack" class="btn-act">Back</button>
+      <div class="card hidden" id="helpCard">
+        <h2>How to Play</h2>
+        <div class="help-rule"><b>Goal:</b> Connect 4 tokens in a line.</div>
+        <div class="help-rule"><b>Gravity:</b> Tokens always fall <b>DOWN</b>. (The board rotates!)</div>
+        <div class="help-rule"><b>Drop:</b> Tap a cell.</div>
+        <div class="help-rule"><b>Rotate:</b> Use <span style="color:#ffd54f">⟲ ⟳</span> (Cost: 1 Flip).</div>
+        <div class="help-rule"><b>Magnet:</b> Tap the rim (Cost: 1 Mag).</div>
+        <div class="card-btns" style="margin-top:20px;">
+            <button id="helpBtnBack" class="btn-act">Back</button>
+        </div>
+        <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+            <button id="btnAdd" class="btn-dev" style="width:100%">DEV: Add +2 Tokens</button>
+        </div>
+      </div>
     </div>
-    <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
-        <button id="btnAdd" class="btn-dev" style="width:100%">DEV: Add +2 Tokens</button>
-    </div>
-  </div>
-</div>
-```
-
   </div>
 
   <div id="controls">
@@ -211,7 +235,7 @@ max-height: 80vh; overflow-y: auto;
     <button id="btnHelp" class="btn-dev">Help</button>
     <button id="btnMenu" class="btn-dang">Menu</button>
   </div>
-
+  
   <div id="review-controls" class="ctrl-hidden">
     <button onclick="reviewStep(-1)" class="btn-dev">⏪ Prev</button>
     <button onclick="endReview()" class="btn-dang">⏹ Stop Review</button>
@@ -225,29 +249,46 @@ max-height: 80vh; overflow-y: auto;
 (() => {
   "use strict";
 
+  // =========================================================================
+  // CONSTANTS & STATE
+  // =========================================================================
   const ROWS = 8, COLS = 8;
   const P_EMPTY = 0, P_RED = 1, P_YEL = 2;
-  const MAGNET_LIFE = 6; 
+  const MAGNET_LIFE = 6;
+  const CW_MAP = { 0: 3, 1: 0, 2: 1, 3: 2 };
+  const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 };
   
   let grid = [];
-  let mag = { top: [], bottom: [], left: [], right: [] }; 
-  let gravityDir = 0; 
-  let boardAngle = 0; 
+  let mag = { top: [], bottom: [], left: [], right: [] };
+  let gravityDir = 0;
+  let boardAngle = 0;
   let targetAngle = 0;
   let curPlayer = P_RED;
   let tokens = {};
   let history = [];
   let gameOver = false;
-  let gameInProgress = false; 
-  let gameMode = 2; 
-  let aiLevel = 2; 
+  let gameInProgress = false;
+  let gameMode = 2;
+  let aiLevel = 2;
   let animating = false;
-  let anims = []; 
-  let hiddenCells = []; 
-  let pendingSettle = false; 
-  let aiTimer = null; 
+  let anims = [];
+  let hiddenCells = [];
+  let pendingSettle = false;
+  let aiTimer = null;
   let isReviewing = false;
   let reviewIndex = 0;
+  
+  // NEW: Who plays as CPU (Yellow by default, Red if CPU goes first)
+  let humanPlayer = P_RED;
+  let cpuPlayer = P_YEL;
+  let cpuFirst = false;
+
+  // AI Time Management (from GPT)
+  const _nowMs = () => (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
+  let AI_DEADLINE = 0;
+  let AI_ABORT = false;
+  let AI_NODES = 0;
+  const AI_CHECK_EVERY = 256;
 
   const canvas = document.getElementById("c");
   const ctx = canvas.getContext("2d", { alpha: false });
@@ -263,34 +304,64 @@ max-height: 80vh; overflow-y: auto;
   const controlBar = document.getElementById("controls");
   const reviewBar = document.getElementById("review-controls");
 
-  const CW_MAP =  { 0: 3, 1: 0, 2: 1, 3: 2 }; 
-  const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 }; 
+  // =========================================================================
+  // FIRST MOVE TOGGLE
+  // =========================================================================
+  window.toggleFirstMove = function() {
+    cpuFirst = !cpuFirst;
+    const toggle = document.getElementById("firstMoveToggle");
+    const labelHuman = document.getElementById("labelHuman");
+    const labelCPU = document.getElementById("labelCPU");
+    
+    if (cpuFirst) {
+      toggle.classList.add("cpu-first");
+      labelHuman.classList.remove("active");
+      labelCPU.classList.add("active");
+    } else {
+      toggle.classList.remove("cpu-first");
+      labelHuman.classList.add("active");
+      labelCPU.classList.remove("active");
+    }
+  }
 
+  // =========================================================================
+  // GAME SETUP
+  // =========================================================================
   window.startGame = function(mode, level) {
     gameMode = mode;
     aiLevel = level;
     gameInProgress = true;
+    
+    // Set who is human vs CPU based on toggle
+    if (cpuFirst) {
+      humanPlayer = P_YEL;
+      cpuPlayer = P_RED;
+    } else {
+      humanPlayer = P_RED;
+      cpuPlayer = P_YEL;
+    }
+    
     menuCard.classList.add('hidden');
     hintCard.classList.add('hidden');
     helpCard.classList.add('hidden');
     elOverlay.style.display = "none";
     initGame();
   }
-  
+
   window.toggleMenu = function() {
-      if (elOverlay.style.display === "flex") {
-          if (menuCard.classList.contains('hidden') && !helpCard.classList.contains('hidden')) {
-             elOverlay.style.display = "none";
-             helpCard.classList.add('hidden');
-          } else {
-             if (gameInProgress) {
-                 elOverlay.style.display = "none";
-                 menuCard.classList.add('hidden');
-             }
-          }
+    if (elOverlay.style.display === "flex") {
+      if (menuCard.classList.contains('hidden') && !helpCard.classList.contains('hidden')) {
+        elOverlay.style.display = "none";
+        helpCard.classList.add('hidden');
       } else {
-          showMainMenu();
+        if (gameInProgress) {
+          elOverlay.style.display = "none";
+          menuCard.classList.add('hidden');
+        }
       }
+    } else {
+      showMainMenu();
+    }
   }
 
   function showMainMenu() {
@@ -309,7 +380,7 @@ max-height: 80vh; overflow-y: auto;
   }
 
   function initGame() {
-    grid = Array.from({length: ROWS}, () => Array(COLS).fill(P_EMPTY));
+    grid = Array.from({ length: ROWS }, () => Array(COLS).fill(P_EMPTY));
     mag = {
       top: Array(COLS).fill(null), bottom: Array(COLS).fill(null),
       left: Array(ROWS).fill(null), right: Array(ROWS).fill(null)
@@ -317,14 +388,14 @@ max-height: 80vh; overflow-y: auto;
     gravityDir = 0;
     boardAngle = 0;
     targetAngle = 0;
-    curPlayer = P_RED;
-    
+    curPlayer = P_RED; // Red always starts (but might be CPU now)
+
     if (aiLevel === 2) {
-        tokens = { [P_RED]: { flip: 0, mag: 0 }, [P_YEL]: { flip: 0, mag: 0 } };
+      tokens = { [P_RED]: { flip: 0, mag: 0 }, [P_YEL]: { flip: 0, mag: 0 } };
     } else if (aiLevel === 3) {
-        tokens = { [P_RED]: { flip: 2, mag: 2 }, [P_YEL]: { flip: 2, mag: 2 } };
+      tokens = { [P_RED]: { flip: 2, mag: 2 }, [P_YEL]: { flip: 2, mag: 2 } };
     } else {
-        tokens = { [P_RED]: { flip: 3, mag: 3 }, [P_YEL]: { flip: 3, mag: 3 } };
+      tokens = { [P_RED]: { flip: 3, mag: 3 }, [P_YEL]: { flip: 3, mag: 3 } };
     }
 
     history = [];
@@ -334,105 +405,103 @@ max-height: 80vh; overflow-y: auto;
     hiddenCells = [];
     pendingSettle = false;
     winnerCard.classList.remove('visible');
-    
+
     pushHistory();
     syncUI();
     lastTime = 0;
     requestAnimationFrame(initLoop);
+    
+    // If CPU goes first, trigger AI
+    checkAI();
   }
 
-  // --- SAVE / LOAD / REVIEW ---
+  // =========================================================================
+  // SAVE / LOAD / REVIEW
+  // =========================================================================
   window.saveGame = function() {
-      if (history.length === 0 && !gameOver) return alert("Game hasn't started!");
-      const fullLog = [...history, cloneState()];
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullLog, null, 2));
-      const a = document.createElement('a');
-      a.setAttribute("href", dataStr);
-      a.setAttribute("download", "flip4m_replay_" + new Date().getTime() + ".json");
-      document.body.appendChild(a); a.click(); a.remove();
+    if (history.length === 0 && !gameOver) return alert("Game hasn't started!");
+    const fullLog = [...history, cloneState()];
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullLog, null, 2));
+    const a = document.createElement('a');
+    a.setAttribute("href", dataStr);
+    a.setAttribute("download", "flip4m_replay_" + new Date().getTime() + ".json");
+    document.body.appendChild(a); a.click(); a.remove();
   }
 
   window.loadGameTrigger = function() { document.getElementById('file-input').click(); }
   window.loadGameFile = function(input) {
-      const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = function(e) {
-          try {
-              const h = JSON.parse(e.target.result);
-              if (Array.isArray(h) && h.length > 0) {
-                  const currentState = h.pop();
-                  history = h; 
-                  restoreState(currentState);
-                  menuCard.classList.add('hidden');
-                  elOverlay.style.display = 'none';
-                  alert("Game Loaded!");
-              } else alert("Invalid Save");
-          } catch(err) { alert("Error Loading File"); }
-      };
-      reader.readAsText(file);
-      input.value = '';
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const h = JSON.parse(e.target.result);
+        if (Array.isArray(h) && h.length > 0) {
+          const currentState = h.pop();
+          history = h;
+          restoreState(currentState);
+          menuCard.classList.add('hidden');
+          elOverlay.style.display = 'none';
+          alert("Game Loaded!");
+        } else alert("Invalid Save");
+      } catch (err) { alert("Error Loading File"); }
+    };
+    reader.readAsText(file);
+    input.value = '';
   }
 
   window.startReview = function() {
-      if (history.length === 0) return alert("No history!");
-      isReviewing = true;
-      reviewIndex = 0;
-      menuCard.classList.add('hidden'); elOverlay.style.display = 'none';
-      controlBar.classList.add('ctrl-hidden'); reviewBar.classList.remove('ctrl-hidden');
-      restoreState(history[0]);
+    if (history.length === 0) return alert("No history!");
+    isReviewing = true;
+    reviewIndex = 0;
+    menuCard.classList.add('hidden'); elOverlay.style.display = 'none';
+    controlBar.classList.add('ctrl-hidden'); reviewBar.classList.remove('ctrl-hidden');
+    restoreState(history[0]);
   }
 
   window.endReview = function() {
-      isReviewing = false;
-      if(history.length > 0) restoreState(history[history.length - 1]);
-      controlBar.classList.remove('ctrl-hidden'); reviewBar.classList.add('ctrl-hidden');
-      syncUI();
+    isReviewing = false;
+    if (history.length > 0) restoreState(history[history.length - 1]);
+    controlBar.classList.remove('ctrl-hidden'); reviewBar.classList.add('ctrl-hidden');
+    syncUI();
   }
 
   window.reviewStep = function(dir) {
-      let n = reviewIndex + dir;
-      if (n >= 0 && n < history.length) { 
-          reviewIndex = n; 
-          restoreState(history[reviewIndex]); 
-      }
-  }
-
-  // =========================================================================
-  // GRANDMASTER III - DISCIPLINED + TACTICAL AI
-  // =========================================================================
-  // Philosophy: "Drops first, tools only when necessary, always simulate time"
-
-  function checkAI() {
-    if (aiTimer) clearTimeout(aiTimer);
-    if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating && !isReviewing) {
-        document.body.style.cursor = "wait";
-        aiTimer = setTimeout(() => { makeAIMove(); document.body.style.cursor = "default"; }, 50);
+    let n = reviewIndex + dir;
+    if (n >= 0 && n < history.length) {
+      reviewIndex = n;
+      restoreState(history[reviewIndex]);
     }
   }
 
   // =========================================================================
-  // TEMPORAL SIMULATION - Decay magnets to avoid timer traps
+  // GRANDMASTER IV - ULTIMATE AI
+  // Combines: Gatekeeper (Claude) + Temporal Sim (Claude/GPT) + 
+  //           Iterative Deepening (GPT) + Time Budget (GPT) +
+  //           Extraction Detection (Claude) + Fragility (Gemini)
   // =========================================================================
+
+  function checkAI() {
+    if (aiTimer) clearTimeout(aiTimer);
+    if (gameMode === 1 && curPlayer === cpuPlayer && !gameOver && !animating && !isReviewing) {
+      document.body.style.cursor = "wait";
+      aiTimer = setTimeout(() => { makeAIMove(); document.body.style.cursor = "default"; }, 50);
+    }
+  }
+
+  // --- TEMPORAL SIMULATION (Claude + GPT) ---
   function decayMagnets(mState) {
     let newState = cloneMagState(mState);
-    const decay = (arr) => arr.forEach((m, i) => { 
-      if (m) { 
-        m.life--; 
-        if (m.life <= 0) arr[i] = null; 
-      } 
+    const decay = (arr) => arr.forEach((m, i) => {
+      if (m) { m.life--; if (m.life <= 0) arr[i] = null; }
     });
-    decay(newState.top); 
-    decay(newState.bottom); 
-    decay(newState.left); 
-    decay(newState.right);
+    decay(newState.top); decay(newState.bottom);
+    decay(newState.left); decay(newState.right);
     return newState;
   }
 
-  // Simulate what happens after N turns (magnet decay + potential collapse)
   function simulateFuture(g, gDir, mState, turns) {
     let futureGrid = g.map(r => [...r]);
     let futureMag = cloneMagState(mState);
-    
     for (let t = 0; t < turns; t++) {
       futureMag = decayMagnets(futureMag);
       futureGrid = settleGridComplete(futureGrid, gDir, futureMag);
@@ -440,86 +509,64 @@ max-height: 80vh; overflow-y: auto;
     return { grid: futureGrid, mag: futureMag };
   }
 
-  // Check if any of our pieces will fall due to dying magnets
   function checkMagnetCollapse(g, gDir, mState, player) {
     let current = settleGridComplete(g, gDir, mState);
-    let future = simulateFuture(g, gDir, mState, 2); // Look 2 turns ahead
-    
-    // Count player pieces that moved (collapsed)
+    let future = simulateFuture(g, gDir, mState, 2);
     let collapses = 0;
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
-        if (current[r][c] === player && future.grid[r][c] !== player) {
-          collapses++;
-        }
+        if (current[r][c] === player && future.grid[r][c] !== player) collapses++;
       }
     }
     return collapses;
   }
 
-  // =========================================================================
-  // GATEKEEPER LOGIC - Only use tools when absolutely necessary
-  // =========================================================================
+  // --- GATEKEEPER (Claude - Fixed) ---
   function shouldConsiderTools(g, gDir, mState, aiToks, oppToks, player) {
     const opponent = (player === P_RED) ? P_YEL : P_RED;
-    
-    // ALWAYS consider tools if:
-    // 1. We can win immediately with a tool
+
+    // 1. Can we win immediately with a tool?
     if (aiToks.flip > 0 || aiToks.mag > 0) {
       let toolMoves = getToolMoves(g, gDir, aiToks, player, mState);
       for (let m of toolMoves) {
-        if (checkWin(m.grid) === player) {
-          return { allowed: true, reason: "WINNING_TOOL" };
-        }
+        if (checkWin(m.grid) === player) return { allowed: true, reason: "WINNING_TOOL" };
       }
     }
-    
-    // 2. Opponent has an extraction win threat we must disrupt
+
+    // 2. Opponent has extraction win threat
     if (oppToks.flip > 0 && oppToks.mag > 0) {
       let oppExtraction = findExtractionWin(g, gDir, oppToks, opponent, mState);
-      if (oppExtraction) {
-        return { allowed: true, reason: "MUST_DISRUPT_EXTRACTION" };
-      }
+      if (oppExtraction) return { allowed: true, reason: "DISRUPT_EXTRACTION" };
     }
-    
-    // 3. Opponent wins next turn with any move (we're desperate)
+
+    // 3. Opponent wins next turn and we can't block with drop
     let oppDrops = getDropMoves(g, gDir, opponent, mState);
-    for (let m of oppDrops) {
-      if (checkWin(m.grid) === opponent) {
-        // Can we block with a drop?
-        let myDrops = getDropMoves(g, gDir, player, mState);
-        let canBlockWithDrop = myDrops.some(d => {
-          // After our drop, opponent can't win with that move
-          let afterOur = d.grid;
-          let oppAfter = getDropMoves(afterOur, gDir, opponent, mState);
-          return !oppAfter.some(om => checkWin(om.grid) === opponent);
-        });
-        
-        if (!canBlockWithDrop) {
-          return { allowed: true, reason: "DESPERATE_DEFENSE" };
-        }
-      }
+    let oppWinMove = oppDrops.find(m => checkWin(m.grid) === opponent);
+    if (oppWinMove) {
+      let myDrops = getDropMoves(g, gDir, player, mState);
+      let canBlock = myDrops.some(d => {
+        // Check if our drop prevents opponent's win
+        let afterOur = d.grid;
+        let oppAfterDrops = getDropMoves(afterOur, gDir, opponent, mState);
+        return !oppAfterDrops.some(om => checkWin(om.grid) === opponent);
+      });
+      if (!canBlock) return { allowed: true, reason: "DESPERATE_DEFENSE" };
     }
-    
-    // 4. Our magnets are about to expire and collapse our position
+
+    // 4. Magnet collapse risk
     let collapseRisk = checkMagnetCollapse(g, gDir, mState, player);
-    if (collapseRisk >= 2) {
-      return { allowed: true, reason: "COLLAPSE_PREVENTION" };
-    }
-    
-    // 5. We have a guaranteed 2-move extraction win
+    if (collapseRisk >= 2) return { allowed: true, reason: "COLLAPSE_PREVENTION" };
+
+    // 5. Guaranteed extraction win
     if (aiToks.flip > 0 && aiToks.mag > 0) {
       let ourExtraction = findExtractionWin(g, gDir, aiToks, player, mState);
-      if (ourExtraction) {
-        return { allowed: true, reason: "GUARANTEED_EXTRACTION_WIN" };
-      }
+      if (ourExtraction) return { allowed: true, reason: "EXTRACTION_WIN" };
     }
-    
-    // Otherwise: DROPS ONLY
-    return { allowed: false, reason: "DROPS_SUFFICIENT" };
+
+    return { allowed: false, reason: "DROPS_ONLY" };
   }
 
-  // Get only drop moves
+  // --- MOVE GENERATORS ---
   function getDropMoves(g, gDir, player, mState) {
     let moves = [];
     for (let i = 0; i < COLS; i++) {
@@ -527,82 +574,65 @@ max-height: 80vh; overflow-y: auto;
       if (t) {
         let nextG = g.map(r => [...r]);
         nextG[t.r][t.c] = player;
-        // Apply temporal simulation: decay magnets after move
-        let decayedMag = decayMagnets(mState);
-        nextG = settleGridComplete(nextG, gDir, decayedMag);
-        moves.push({ type: 'drop', col: i, grid: nextG, gDir: gDir, magState: decayedMag });
+        let decayed = decayMagnets(mState);
+        nextG = settleGridComplete(nextG, gDir, decayed);
+        moves.push({ type: 'drop', col: i, grid: nextG, gDir, magState: decayed });
       }
     }
     return moves;
   }
 
-  // Get only tool moves (flip + magnet)
   function getToolMoves(g, gDir, toks, player, mState) {
     let moves = [];
-    
     if (toks.flip > 0) {
       for (let delta of [1, -1]) {
         let newDir = (delta === 1) ? CCW_MAP[gDir] : CW_MAP[gDir];
-        let decayedMag = decayMagnets(mState);
-        let newGrid = settleGridComplete(g, newDir, decayedMag);
-        moves.push({ type: 'flip', delta, grid: newGrid, gDir: newDir, magState: decayedMag });
+        let decayed = decayMagnets(mState);
+        let newGrid = settleGridComplete(g, newDir, decayed);
+        moves.push({ type: 'flip', delta, grid: newGrid, gDir: newDir, magState: decayed });
       }
     }
-    
     if (toks.mag > 0) {
-      const sides = [0, 1, 2, 3];
-      for (let side of sides) {
+      for (let side = 0; side < 4; side++) {
         for (let idx = 0; idx < COLS; idx++) {
           let curM = getMag(mState, side, idx);
           if (curM && curM.p === player) continue;
-          
           let nextMState = cloneMagState(mState);
           let opp = (side + 2) % 4;
           let oppVal = getMag(nextMState, opp, idx);
           let arrName = ['top', 'right', 'bottom', 'left'][side];
           let oppName = ['top', 'right', 'bottom', 'left'][opp];
           const opponent = (player === P_RED) ? P_YEL : P_RED;
-          
-          if (oppVal && oppVal.p === opponent) {
-            nextMState[oppName][idx] = null;
-          } else {
-            nextMState[arrName][idx] = { p: player, life: MAGNET_LIFE };
-          }
-          
-          // Apply temporal simulation
-          let decayedMag = decayMagnets(nextMState);
-          let nextG = settleGridComplete(g, gDir, decayedMag);
-          moves.push({ type: 'magnet', side, idx, grid: nextG, gDir, magState: decayedMag });
+          if (oppVal && oppVal.p === opponent) nextMState[oppName][idx] = null;
+          else nextMState[arrName][idx] = { p: player, life: MAGNET_LIFE };
+          let decayed = decayMagnets(nextMState);
+          let nextG = settleGridComplete(g, gDir, decayed);
+          moves.push({ type: 'magnet', side, idx, grid: nextG, gDir, magState: decayed });
         }
       }
     }
     return moves;
   }
 
-  // =========================================================================
-  // EXTRACTION WIN DETECTION (kept from GM II, but only used when gated)
-  // =========================================================================
+  // --- EXTRACTION WIN DETECTION (Claude) ---
   function findExtractionWin(g, gDir, toks, player, mState) {
     if (toks.flip <= 0 || toks.mag <= 0) return null;
-    
     const opponent = (player === P_RED) ? P_YEL : P_RED;
-    
+
     for (let rotDelta of [1, -1]) {
       let newDir = (rotDelta === 1) ? CCW_MAP[gDir] : CW_MAP[gDir];
-      let decayedMag = decayMagnets(mState);
-      let rotatedGrid = settleGridComplete(g, newDir, decayedMag);
-      
-      let extractableWins = findExtractableLines(rotatedGrid, newDir, player, opponent, decayedMag);
-      
-      for (let ew of extractableWins) {
-        let magnetMove = canExtractPiece(rotatedGrid, newDir, ew.blockerR, ew.blockerC, player, decayedMag);
+      let decayed = decayMagnets(mState);
+      let rotatedGrid = settleGridComplete(g, newDir, decayed);
+      let extractables = findExtractableLines(rotatedGrid, player, opponent);
+
+      for (let ew of extractables) {
+        let magnetMove = canExtractPiece(rotatedGrid, newDir, ew.blockerR, ew.blockerC, player, decayed);
         if (magnetMove) {
-          let afterMagnet = applyMagnetExtraction(rotatedGrid, newDir, magnetMove, decayedMag, player);
+          let afterMagnet = applyMagnetExtraction(rotatedGrid, newDir, magnetMove, decayed, player);
           if (checkWin(afterMagnet.grid) === player) {
             return {
-              firstMove: { type: 'flip', delta: rotDelta, grid: rotatedGrid, gDir: newDir, magState: decayedMag },
-              secondMove: magnetMove,
-              desc: `Rotate ${rotDelta === 1 ? 'CCW' : 'CW'} then extract`
+              firstMove: { type: 'flip', delta: rotDelta, grid: rotatedGrid, gDir: newDir, magState: decayed },
+              secondMove: magnetMove
             };
           }
         }
@@ -611,60 +641,42 @@ max-height: 80vh; overflow-y: auto;
     return null;
   }
 
-  function findExtractableLines(g, gDir, player, opponent, mState) {
+  function findExtractableLines(g, player, opponent) {
     let results = [];
     const lines = getAllLines();
-    
     for (let line of lines) {
-      let playerCount = 0, oppCount = 0;
-      let blockerPos = null;
-      
+      let playerCount = 0, oppCount = 0, blockerPos = null;
       for (let pos of line) {
         let val = g[pos.r][pos.c];
         if (val === player) playerCount++;
         else if (val === opponent) { oppCount++; blockerPos = pos; }
       }
-      
       if (playerCount === 3 && oppCount === 1 && blockerPos) {
-        if (isOnExtractableEdge(blockerPos.r, blockerPos.c)) {
-          results.push({ line, blockerR: blockerPos.r, blockerC: blockerPos.c });
+        if (blockerPos.r === 0 || blockerPos.r === ROWS - 1 || blockerPos.c === 0 || blockerPos.c === COLS - 1) {
+          results.push({ blockerR: blockerPos.r, blockerC: blockerPos.c });
         }
       }
     }
     return results;
   }
 
-  function isOnExtractableEdge(r, c) {
-    return (r === 0 || r === ROWS - 1 || c === 0 || c === COLS - 1);
-  }
-
   function canExtractPiece(g, gDir, targetR, targetC, player, mState) {
-    let possibleMagnets = [];
-    
-    if (targetR === 0) possibleMagnets.push({ side: 0, idx: targetC });
-    if (targetR === ROWS - 1) possibleMagnets.push({ side: 2, idx: targetC });
-    if (targetC === 0) possibleMagnets.push({ side: 3, idx: targetR });
-    if (targetC === COLS - 1) possibleMagnets.push({ side: 1, idx: targetR });
-    
-    for (let mag of possibleMagnets) {
-      let result = simulateMagnetEffect(g, gDir, mag.side, mag.idx, player, mState, targetR, targetC);
-      if (result.extracted) {
+    let magnets = [];
+    if (targetR === 0) magnets.push({ side: 0, idx: targetC });
+    if (targetR === ROWS - 1) magnets.push({ side: 2, idx: targetC });
+    if (targetC === 0) magnets.push({ side: 3, idx: targetR });
+    if (targetC === COLS - 1) magnets.push({ side: 1, idx: targetR });
+
+    for (let mag of magnets) {
+      let nextMState = cloneMagState(mState);
+      let arrName = ['top', 'right', 'bottom', 'left'][mag.side];
+      nextMState[arrName][mag.idx] = { p: player, life: MAGNET_LIFE };
+      let newGrid = settleGridComplete(g, gDir, nextMState);
+      if (newGrid[targetR][targetC] !== g[targetR][targetC]) {
         return { type: 'magnet', side: mag.side, idx: mag.idx };
       }
     }
     return null;
-  }
-
-  function simulateMagnetEffect(g, gDir, side, idx, player, mState, targetR, targetC) {
-    let nextMState = cloneMagState(mState);
-    let arrName = ['top', 'right', 'bottom', 'left'][side];
-    nextMState[arrName][idx] = { p: player, life: MAGNET_LIFE };
-    
-    let newGrid = settleGridComplete(g, gDir, nextMState);
-    let originalPiece = g[targetR][targetC];
-    let stillThere = newGrid[targetR][targetC] === originalPiece;
-    
-    return { extracted: !stillThere, grid: newGrid, magState: nextMState };
   }
 
   function applyMagnetExtraction(g, gDir, magnetMove, mState, player) {
@@ -677,227 +689,182 @@ max-height: 80vh; overflow-y: auto;
 
   function getAllLines() {
     let lines = [];
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS - 3; c++) {
-        lines.push([{r,c}, {r,c:c+1}, {r,c:c+2}, {r,c:c+3}]);
-      }
-    }
-    for (let r = 0; r < ROWS - 3; r++) {
-      for (let c = 0; c < COLS; c++) {
-        lines.push([{r,c}, {r:r+1,c}, {r:r+2,c}, {r:r+3,c}]);
-      }
-    }
-    for (let r = 0; r < ROWS - 3; r++) {
-      for (let c = 0; c < COLS - 3; c++) {
-        lines.push([{r,c}, {r:r+1,c:c+1}, {r:r+2,c:c+2}, {r:r+3,c:c+3}]);
-      }
-    }
-    for (let r = 3; r < ROWS; r++) {
-      for (let c = 0; c < COLS - 3; c++) {
-        lines.push([{r,c}, {r:r-1,c:c+1}, {r:r-2,c:c+2}, {r:r-3,c:c+3}]);
-      }
-    }
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS - 3; c++)
+      lines.push([{ r, c }, { r, c: c + 1 }, { r, c: c + 2 }, { r, c: c + 3 }]);
+    for (let r = 0; r < ROWS - 3; r++) for (let c = 0; c < COLS; c++)
+      lines.push([{ r, c }, { r: r + 1, c }, { r: r + 2, c }, { r: r + 3, c }]);
+    for (let r = 0; r < ROWS - 3; r++) for (let c = 0; c < COLS - 3; c++)
+      lines.push([{ r, c }, { r: r + 1, c: c + 1 }, { r: r + 2, c: c + 2 }, { r: r + 3, c: c + 3 }]);
+    for (let r = 3; r < ROWS; r++) for (let c = 0; c < COLS - 3; c++)
+      lines.push([{ r, c }, { r: r - 1, c: c + 1 }, { r: r - 2, c: c + 2 }, { r: r - 3, c: c + 3 }]);
     return lines;
   }
 
-  // =========================================================================
-  // MAIN AI DECISION FUNCTION
-  // =========================================================================
+  // --- MAIN AI (Iterative Deepening + Time Budget from GPT) ---
   function makeAIMove() {
-    let aiToks = { flip: tokens[P_YEL].flip, mag: tokens[P_YEL].mag };
-    let oppToks = { flip: tokens[P_RED].flip, mag: tokens[P_RED].mag };
-    
-    // Step 1: Check for instant win (any move type)
-    let allMoves = [...getDropMoves(grid, gravityDir, P_YEL, mag)];
+    if (gameOver || animating || isReviewing) return;
+
+    const aiToks = { flip: tokens[cpuPlayer].flip, mag: tokens[cpuPlayer].mag };
+    const oppToks = { flip: tokens[humanPlayer].flip, mag: tokens[humanPlayer].mag };
+
+    // Time budget
+    const budgetMs = (aiLevel === 2) ? 2000 : (aiLevel === 3) ? 3000 : 4000;
+    AI_DEADLINE = _nowMs() + budgetMs;
+    AI_ABORT = false;
+    AI_NODES = 0;
+
+    // 1. Instant win check
+    let allMoves = getDropMoves(grid, gravityDir, cpuPlayer, mag);
     if (aiToks.flip > 0 || aiToks.mag > 0) {
-      allMoves.push(...getToolMoves(grid, gravityDir, aiToks, P_YEL, mag));
+      allMoves.push(...getToolMoves(grid, gravityDir, aiToks, cpuPlayer, mag));
     }
-    
     for (let m of allMoves) {
-      if (checkWin(m.grid) === P_YEL) {
-        console.log("GM III: Instant win with", m.type);
-        executeMove(m);
-        return;
+      if (checkWin(m.grid) === cpuPlayer) {
+        console.log("GM IV: Instant win");
+        executeMove(m); return;
       }
     }
-    
-    // Step 2: Check gatekeeper - should we consider tools?
-    let gatekeeper = shouldConsiderTools(grid, gravityDir, mag, aiToks, oppToks, P_YEL);
-    console.log("GM III Gatekeeper:", gatekeeper.reason);
-    
-    // Step 3: Get available moves based on gatekeeper decision
-    let moves = getDropMoves(grid, gravityDir, P_YEL, mag);
-    
+
+    // 2. Gatekeeper
+    let gatekeeper = shouldConsiderTools(grid, gravityDir, mag, aiToks, oppToks, cpuPlayer);
+    console.log("GM IV Gatekeeper:", gatekeeper.reason);
+
+    // 3. Extraction win (if gated)
+    if (gatekeeper.allowed && gatekeeper.reason === "EXTRACTION_WIN") {
+      let extraction = findExtractionWin(grid, gravityDir, aiToks, cpuPlayer, mag);
+      if (extraction) {
+        console.log("GM IV: Executing extraction combo");
+        executeMove(extraction.firstMove); return;
+      }
+    }
+
+    // 4. Block opponent's immediate win
+    let oppDrops = getDropMoves(grid, gravityDir, humanPlayer, mag);
+    let oppWin = oppDrops.find(m => checkWin(m.grid) === humanPlayer);
+    if (oppWin) {
+      let block = allMoves.find(m => m.type === 'drop' && m.col === oppWin.col);
+      if (block) { console.log("GM IV: Blocking"); executeMove(block); return; }
+    }
+
+    // 5. Build move list based on gatekeeper
+    let moves = getDropMoves(grid, gravityDir, cpuPlayer, mag);
     if (gatekeeper.allowed) {
-      // If gatekeeper allows tools, check for extraction win first
-      if (gatekeeper.reason === "GUARANTEED_EXTRACTION_WIN") {
-        let extraction = findExtractionWin(grid, gravityDir, aiToks, P_YEL, mag);
-        if (extraction) {
-          console.log("GM III: Executing extraction combo");
-          executeMove(extraction.firstMove);
-          return;
-        }
-      }
-      
-      // Add tool moves to consideration
-      moves.push(...getToolMoves(grid, gravityDir, aiToks, P_YEL, mag));
+      moves.push(...getToolMoves(grid, gravityDir, aiToks, cpuPlayer, mag));
     }
-    
-    // Step 4: Find blocking move if opponent has instant win
-    let oppDrops = getDropMoves(grid, gravityDir, P_RED, mag);
-    for (let om of oppDrops) {
-      if (checkWin(om.grid) === P_RED) {
-        // Must block this column
-        let blockMove = moves.find(m => m.type === 'drop' && m.col === om.col);
-        if (blockMove) {
-          console.log("GM III: Blocking at column", om.col);
-          executeMove(blockMove);
-          return;
-        }
-      }
-    }
-    
-    // Step 5: Standard minimax search
-    let depth = 6;
-    if (aiLevel === 2) depth = 8;
-    else if (aiLevel === 3) depth = 7;
-    else if (aiLevel === 4) depth = 6;
-    
-    // Sort moves: center drops first
+
+    // Sort: center drops first, then tools
     let center = (COLS - 1) / 2;
     moves.sort((a, b) => {
-      if (a.type === 'drop' && b.type === 'drop') {
-        return Math.abs(a.col - center) - Math.abs(b.col - center);
-      }
+      if (a.type === 'drop' && b.type === 'drop') return Math.abs(a.col - center) - Math.abs(b.col - center);
       if (a.type === 'drop') return -1;
       if (b.type === 'drop') return 1;
       return 0;
     });
-    
-    let bestMove = null, bestScore = -Infinity;
-    let alpha = -Infinity, beta = Infinity;
-    
-    for (let m of moves) {
-      let d = depth;
-      // Reduce depth for tool moves (they branch more)
-      if (m.type !== 'drop') d = Math.max(4, depth - 2);
-      
-      let score = minimax(m.grid, m.gDir, m.magState, d - 1, alpha, beta, false, gatekeeper.allowed);
-      
-      // Apply thrift penalty ONLY if gatekeeper didn't have a strong reason
-      if (m.type !== 'drop' && gatekeeper.reason === "DROPS_SUFFICIENT") {
-        // This shouldn't happen due to gatekeeper, but safety check
-        score -= 1000;
-      } else if (m.type === 'flip' && score < 2000) {
-        score -= 150; // Mild thrift for non-critical rotations
-      } else if (m.type === 'magnet' && score < 2000) {
-        score -= 250; // Mild thrift for non-critical magnets
+
+    // 6. Iterative deepening search
+    let maxDepth = (aiLevel === 2) ? 8 : (aiLevel === 3) ? 7 : 6;
+    let best = null, bestScore = -Infinity;
+
+    for (let depth = 1; depth <= maxDepth; depth++) {
+      if (_nowMs() > AI_DEADLINE) { AI_ABORT = true; break; }
+
+      let localBest = null, localBestScore = -Infinity;
+      let alpha = -Infinity, beta = Infinity;
+
+      for (let m of moves) {
+        if (AI_ABORT) break;
+        let d = (m.type === 'drop') ? depth - 1 : Math.max(1, depth - 2);
+        let score = -negamax(m.grid, m.gDir, m.magState, d, -beta, -alpha, humanPlayer);
+
+        // Thrift penalty
+        if (m.type !== 'drop' && score < 5000) {
+          score -= (m.type === 'flip') ? 150 : 250;
+        }
+
+        if (score > localBestScore) { localBestScore = score; localBest = m; }
+        alpha = Math.max(alpha, localBestScore);
+        if (alpha >= beta) break;
       }
-      
-      if (score > bestScore) { bestScore = score; bestMove = m; }
-      alpha = Math.max(alpha, bestScore);
-      if (alpha >= beta) break;
+
+      if (localBest) { best = localBest; bestScore = localBestScore; }
+      if (AI_ABORT) break;
     }
-    
-    if (bestMove) {
-      console.log("GM III: Best move", bestMove.type, "score", bestScore);
-      executeMove(bestMove);
+
+    if (best) {
+      console.log("GM IV: Best", best.type, "score", bestScore);
+      executeMove(best);
     } else if (moves.length > 0) {
       executeMove(moves[0]);
     }
   }
 
-  // =========================================================================
-  // MINIMAX WITH TEMPORAL SIMULATION
-  // =========================================================================
-  function minimax(g, gDir, mState, depth, alpha, beta, isMax, toolsAllowed) {
-    let winner = checkWin(g);
-    if (winner === P_YEL) return 100000 + depth * 1000;
-    if (winner === P_RED) return -100000 - depth * 1000;
-    if (depth <= 0) return evaluateBoard(g, gDir, mState);
+  // --- NEGAMAX (simplified from GPT) ---
+  function negamax(g, gDir, mState, depth, alpha, beta, player) {
+    AI_NODES++;
+    if ((AI_NODES & (AI_CHECK_EVERY - 1)) === 0 && _nowMs() > AI_DEADLINE) AI_ABORT = true;
+    if (AI_ABORT) return evaluate(g, gDir, mState);
 
-    let player = isMax ? P_YEL : P_RED;
-    
-    // In simulation, both players get limited tool access at shallow depths
-    let simToolsAllowed = toolsAllowed && depth > 3;
+    let winner = checkWin(g);
+    if (winner === cpuPlayer) return 100000 + depth * 100;
+    if (winner === humanPlayer) return -100000 - depth * 100;
+    if (depth <= 0) return evaluate(g, gDir, mState);
+
     let moves = getDropMoves(g, gDir, player, mState);
-    
-    if (simToolsAllowed) {
-      let simToks = { flip: 1, mag: 1 };
+    // Limited tool search at depth
+    if (depth > 2) {
+      let simToks = { flip: 1, mag: 0 };
       moves.push(...getToolMoves(g, gDir, simToks, player, mState));
     }
-    
-    // Move ordering: wins first, then center drops
-    moves.sort((a, b) => {
-      let aWin = checkWin(a.grid) === player ? 1000 : 0;
-      let bWin = checkWin(b.grid) === player ? 1000 : 0;
-      return bWin - aWin;
-    });
 
-    if (isMax) {
-      let maxEval = -Infinity;
-      for (let m of moves) {
-        let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, false, toolsAllowed);
-        maxEval = Math.max(maxEval, evalVal);
-        alpha = Math.max(alpha, evalVal);
-        if (beta <= alpha) break;
-      }
-      return maxEval;
-    } else {
-      let minEval = Infinity;
-      for (let m of moves) {
-        let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, true, toolsAllowed);
-        minEval = Math.min(minEval, evalVal);
-        beta = Math.min(beta, evalVal);
-        if (beta <= alpha) break;
-      }
-      return minEval;
+    if (moves.length === 0) return 0;
+
+    let bestVal = -Infinity;
+    const opponent = (player === P_RED) ? P_YEL : P_RED;
+
+    for (let m of moves) {
+      if (AI_ABORT) break;
+      let val = -negamax(m.grid, m.gDir, m.magState, depth - 1, -beta, -alpha, opponent);
+      bestVal = Math.max(bestVal, val);
+      alpha = Math.max(alpha, val);
+      if (alpha >= beta) break;
     }
+    return bestVal;
   }
 
-  // =========================================================================
-  // EVALUATION WITH FRAGILITY CHECK
-  // =========================================================================
-  function evaluateBoard(g, grav, mState) {
+  // --- EVALUATION (Combined) ---
+  function evaluate(g, gDir, mState) {
     let score = 0;
-    
+
     // Line analysis
-    score += analyzeLines(g, P_YEL) * 1.0;
-    score -= analyzeLines(g, P_RED) * 1.3;
-    
+    score += analyzeLines(g, cpuPlayer) * 1.0;
+    score -= analyzeLines(g, humanPlayer) * 1.2;
+
     // Center control
     for (let r = 2; r < 6; r++) {
       for (let c = 2; c < 6; c++) {
-        if (g[r][c] === P_YEL) score += 3;
-        else if (g[r][c] === P_RED) score -= 3;
+        if (g[r][c] === cpuPlayer) score += 3;
+        else if (g[r][c] === humanPlayer) score -= 3;
       }
     }
-    
-    // Fragility: check what happens after rotations
-    for (let newDir of [CW_MAP[grav], CCW_MAP[grav]]) {
+
+    // Fragility: rotation vulnerability (Gemini)
+    for (let newDir of [CW_MAP[gDir], CCW_MAP[gDir]]) {
       let rotated = settleGridComplete(g, newDir, mState);
-      let rotScore = analyzeLines(rotated, P_YEL) - analyzeLines(rotated, P_RED) * 1.2;
+      let rotScore = analyzeLines(rotated, cpuPlayer) - analyzeLines(rotated, humanPlayer) * 1.2;
       score += rotScore * 0.2;
     }
-    
-    // Temporal fragility: check magnet decay impact
-    let future = simulateFuture(g, grav, mState, 2);
-    let futureScore = analyzeLines(future.grid, P_YEL) - analyzeLines(future.grid, P_RED) * 1.2;
+
+    // Temporal fragility
+    let future = simulateFuture(g, gDir, mState, 2);
+    let futureScore = analyzeLines(future.grid, cpuPlayer) - analyzeLines(future.grid, humanPlayer) * 1.2;
     score += futureScore * 0.15;
-    
-    // Penalize positions where our pieces will collapse
-    let aiCollapse = checkMagnetCollapse(g, grav, mState, P_YEL);
-    let oppCollapse = checkMagnetCollapse(g, grav, mState, P_RED);
-    score -= aiCollapse * 50;
-    score += oppCollapse * 30;
-    
+
     return score;
   }
 
   function analyzeLines(g, p) {
     let score = 0;
     const lines = getAllLines();
-    
     for (let line of lines) {
       let count = 0, empty = 0, opp = 0;
       for (let pos of line) {
@@ -906,22 +873,10 @@ max-height: 80vh; overflow-y: auto;
         else if (val === P_EMPTY) empty++;
         else opp++;
       }
-      
       if (opp > 0) {
-        // Blocked line - but extractable?
-        if (count === 3 && opp === 1) {
-          // Check if blocker is on edge (extractable)
-          for (let pos of line) {
-            if (g[pos.r][pos.c] !== p && g[pos.r][pos.c] !== P_EMPTY) {
-              if (isOnExtractableEdge(pos.r, pos.c)) {
-                score += 60; // Potential extraction
-              }
-            }
-          }
-        }
+        if (count === 3 && opp === 1) score += 60; // Extraction potential
         continue;
       }
-      
       if (count === 4) score += 10000;
       else if (count === 3 && empty === 1) score += 200;
       else if (count === 2 && empty === 2) score += 15;
@@ -939,14 +894,6 @@ max-height: 80vh; overflow-y: auto;
   // =========================================================================
   // CORE GAME MECHANICS
   // =========================================================================
-  function getPossibleMoves(g, gDir, toks, p, mState) {
-    let moves = getDropMoves(g, gDir, p, mState);
-    if (toks.flip > 0 || toks.mag > 0) {
-      moves.push(...getToolMoves(g, gDir, toks, p, mState));
-    }
-    return moves;
-  }
-
   function getMag(mState, side, idx) {
     if (side === 0) return mState.top[idx];
     if (side === 1) return mState.right[idx];
@@ -963,7 +910,7 @@ max-height: 80vh; overflow-y: auto;
       grid: grid.map(r => [...r]), mag: cloneMagState(mag),
       gravityDir, boardAngle, targetAngle, curPlayer,
       tokens: JSON.parse(JSON.stringify(tokens)),
-      gameOver, gameInProgress
+      gameOver, gameInProgress, humanPlayer, cpuPlayer
     };
   }
   function restoreState(s) {
@@ -971,17 +918,21 @@ max-height: 80vh; overflow-y: auto;
     gravityDir = s.gravityDir; boardAngle = s.boardAngle; targetAngle = s.targetAngle;
     curPlayer = s.curPlayer; tokens = JSON.parse(JSON.stringify(s.tokens));
     gameOver = s.gameOver; gameInProgress = s.gameInProgress;
+    if (s.humanPlayer) humanPlayer = s.humanPlayer;
+    if (s.cpuPlayer) cpuPlayer = s.cpuPlayer;
     animating = false; anims = []; hiddenCells = []; pendingSettle = false;
     isReviewing = false;
     winnerCard.classList.remove('visible'); syncUI();
   }
   function pushHistory() { history.push(cloneState()); if (history.length > 50) history.shift(); }
+
   function undo() {
     if (animating || history.length === 0 || isReviewing) return;
     if (aiTimer) clearTimeout(aiTimer);
     restoreState(history.pop());
     if (gameMode === 1 && history.length > 0) restoreState(history.pop());
   }
+
   function isPinned(r, c, mState) {
     if (r === 0 && mState.top[c]) return true;
     if (r === ROWS - 1 && mState.bottom[c]) return true;
@@ -989,6 +940,7 @@ max-height: 80vh; overflow-y: auto;
     if (c === COLS - 1 && mState.right[r]) return true;
     return false;
   }
+
   function physicsStep(g, dir, mState) {
     let nextG = g.map(r => [...r]), changed = false;
     for (let c = 0; c < COLS; c++) { if (mState.top[c] && nextG[0][c] === P_EMPTY) for (let r = 1; r < ROWS; r++) if (nextG[r][c]) { nextG[0][c] = nextG[r][c]; nextG[r][c] = P_EMPTY; changed = true; break; } }
@@ -1002,11 +954,13 @@ max-height: 80vh; overflow-y: auto;
     else { for (let r = 0; r < ROWS; r++) for (let c = COLS - 2; c >= 0; c--) if (nextG[r][c] && !nextG[r][c + 1] && !isPinned(r, c, mState)) { nextG[r][c + 1] = nextG[r][c]; nextG[r][c] = P_EMPTY; changed = true; } }
     return { nextG, changed };
   }
+
   function settleGridComplete(startGrid, dir, mState) {
     let g = startGrid.map(r => [...r]), safety = 0;
     while (safety++ < 60) { let step = physicsStep(g, dir, mState); if (!step.changed) break; g = step.nextG; }
     return g;
   }
+
   function spawnTransitions(oldG, newG, type) {
     let isVert = (gravityDir === 0 || gravityDir === 2);
     let speed = type === 'drop' ? 320 : 280;
@@ -1093,7 +1047,7 @@ max-height: 80vh; overflow-y: auto;
   function doMagnet(side, idx) {
     if (tokens[curPlayer].mag <= 0) return;
     let opp = (side + 2) % 4;
-    let oppVal = (opp === 0) ? getMag(mag, 0, idx) : (opp === 1) ? getMag(mag, 1, idx) : (opp === 2) ? getMag(mag, 2, idx) : getMag(mag, 3, idx);
+    let oppVal = getMag(mag, opp, idx);
     const opponent = (curPlayer === P_RED) ? P_YEL : P_RED;
     applyActionAndAnimate(() => {
       tokens[curPlayer].mag--;
@@ -1133,17 +1087,13 @@ max-height: 80vh; overflow-y: auto;
     if (w) {
       gameOver = true;
       let msg = (w === P_RED ? "Red Wins!" : "Yellow Wins!");
-      if (gameMode === 1 && w === P_RED) msg = "You Win!";
-      if (gameMode === 1 && w === P_YEL) msg = "CPU Wins!";
-
+      if (gameMode === 1) {
+        msg = (w === humanPlayer) ? "You Win!" : "CPU Wins!";
+      }
       document.getElementById("winTitle").textContent = msg;
       document.getElementById("winSub").textContent = "Connect Four!";
-
-      const b1 = document.getElementById("winBtnMain");
-      const b2 = document.getElementById("winBtnSec");
-      b1.onclick = () => { showMainMenu(); };
-      b2.onclick = () => { undo(); };
-
+      document.getElementById("winBtnMain").onclick = () => { showMainMenu(); };
+      document.getElementById("winBtnSec").onclick = () => { undo(); };
       winnerCard.classList.add('visible');
       syncUI();
     } else {
@@ -1192,50 +1142,51 @@ max-height: 80vh; overflow-y: auto;
     return found ? { r: rT, c: cT } : null;
   }
 
+  // =========================================================================
+  // HINT SYSTEM
+  // =========================================================================
   function runHintSimulation() {
     let playerToks = tokens[curPlayer];
-    let moves = getPossibleMoves(grid, gravityDir, playerToks, curPlayer, mag);
+    let moves = getDropMoves(grid, gravityDir, curPlayer, mag);
+    if (playerToks.flip > 0 || playerToks.mag > 0) {
+      moves.push(...getToolMoves(grid, gravityDir, playerToks, curPlayer, mag));
+    }
     if (moves.length === 0) return "No moves available!";
 
-    // Check for instant win
-    for (let m of moves) {
-      if (checkWin(m.grid) === curPlayer) return formatMoveString(m) + " (Wins!)";
-    }
+    for (let m of moves) if (checkWin(m.grid) === curPlayer) return formatMove(m) + " (Wins!)";
 
-    // Check for extraction win
     if (playerToks.flip > 0 && playerToks.mag > 0) {
       let extraction = findExtractionWin(grid, gravityDir, playerToks, curPlayer, mag);
-      if (extraction) return extraction.desc + " (2-move win!)";
+      if (extraction) return "Rotate " + (extraction.firstMove.delta === 1 ? "CCW" : "CW") + " then magnet (2-move win!)";
     }
 
-    // Check for blocking needed
-    let opponent = curPlayer === P_RED ? P_YEL : P_RED;
+    let opponent = (curPlayer === P_RED) ? P_YEL : P_RED;
     let oppDrops = getDropMoves(grid, gravityDir, opponent, mag);
-    for (let om of oppDrops) {
-      if (checkWin(om.grid) === opponent) {
-        let block = moves.find(m => m.type === 'drop' && m.col === om.col);
-        if (block) return formatMoveString(block) + " (Block!)";
-      }
+    let oppWin = oppDrops.find(m => checkWin(m.grid) === opponent);
+    if (oppWin) {
+      let block = moves.find(m => m.type === 'drop' && m.col === oppWin.col);
+      if (block) return formatMove(block) + " (Block!)";
     }
 
-    // Regular search
-    let bestMove = null, bestScore = -Infinity;
+    let best = null, bestScore = -Infinity;
     for (let m of moves) {
-      let score = minimax(m.grid, m.gDir, m.magState, 5, -Infinity, Infinity, curPlayer === P_YEL, true);
-      if (curPlayer === P_RED) score = -score;
-      if (score > bestScore) { bestScore = score; bestMove = m; }
+      let score = evaluate(m.grid, m.gDir, m.magState);
+      if (curPlayer === humanPlayer) score = -score;
+      if (score > bestScore) { bestScore = score; best = m; }
     }
-    if (!bestMove) return "Try a random move.";
-    return formatMoveString(bestMove);
+    return best ? formatMove(best) : "Try center drops.";
   }
 
-  function formatMoveString(m) {
+  function formatMove(m) {
     if (m.type === 'drop') return `Drop at Column ${String.fromCharCode(65 + m.col)}`;
     if (m.type === 'flip') return `Rotate ${m.delta === 1 ? 'CCW ⟲' : 'CW ⟳'}`;
     if (m.type === 'magnet') return `Magnet: ${["Top", "Right", "Bottom", "Left"][m.side]}`;
     return "Unknown";
   }
 
+  // =========================================================================
+  // RENDERING
+  // =========================================================================
   let lastTime = 0;
   function initLoop(now) { lastTime = now; requestAnimationFrame(loop); }
   function loop(now) {
@@ -1257,7 +1208,9 @@ max-height: 80vh; overflow-y: auto;
         rot.t = 1; boardAngle = rot.endA; anims = anims.filter(a => a !== rot);
         if (pendingSettle) { pendingSettle = false; triggerSettleAfterRotate(); stillAnimating = true; }
       } else {
-        let p = rot.t < .5 ? 2 * rot.t * rot.t : -1 + (4 - 2 * rot.t) * rot.t; boardAngle = rot.startA + (rot.endA - rot.startA) * p; stillAnimating = true;
+        let p = rot.t < .5 ? 2 * rot.t * rot.t : -1 + (4 - 2 * rot.t) * rot.t;
+        boardAngle = rot.startA + (rot.endA - rot.startA) * p;
+        stillAnimating = true;
       }
     }
     anims.forEach(a => {
@@ -1324,7 +1277,8 @@ max-height: 80vh; overflow-y: auto;
       if (a.type === 'rotate') continue;
       let p = a.t * a.t * (3 - 2 * a.t);
       if (a.type === 'drop') {
-        if (a.t < 0.7) p = (a.t / 0.7) * (a.t / 0.7); else { let t2 = (a.t - 0.7) / 0.3; p = 1 - Math.sin(t2 * Math.PI) * 0.05; }
+        if (a.t < 0.7) p = (a.t / 0.7) * (a.t / 0.7);
+        else { let t2 = (a.t - 0.7) / 0.3; p = 1 - Math.sin(t2 * Math.PI) * 0.05; }
       }
       let curR = a.r + (a.destR - a.r) * p;
       let curC = a.c + (a.destC - a.c) * p;
@@ -1388,7 +1342,7 @@ max-height: 80vh; overflow-y: auto;
 
   function handleInput(e) {
     if (gameOver || animating || isReviewing) return;
-    if (gameMode === 1 && curPlayer === P_YEL) return;
+    if (gameMode === 1 && curPlayer === cpuPlayer) return;
     if (e.type === 'touchstart') e.preventDefault();
     const act = getBoardPos(e.type.includes('touch') ? e.changedTouches[0] : e);
     if (act.type === 'CELL') doDrop(act.r, act.c);
@@ -1400,7 +1354,7 @@ max-height: 80vh; overflow-y: auto;
 
   function syncUI() {
     let pName = (curPlayer === P_RED ? "Red's Turn" : "Yellow's Turn");
-    if (gameMode === 1 && curPlayer === P_YEL) pName = "CPU Thinking...";
+    if (gameMode === 1 && curPlayer === cpuPlayer) pName = "CPU Thinking...";
 
     hudTurn.textContent = gameOver ? "Game Over" : pName;
     hudTurn.style.color = curPlayer === P_RED ? "var(--red)" : "var(--yel)";
@@ -1408,28 +1362,26 @@ max-height: 80vh; overflow-y: auto;
     hudY.textContent = `F:${tokens[P_YEL].flip} M:${tokens[P_YEL].mag}`;
     hudGrav.textContent = `Grav: ${["↓", "←", "↑", "→"][gravityDir]}`;
 
-    let disabled = (tokens[curPlayer].flip <= 0 || gameOver || (gameMode === 1 && curPlayer === P_YEL) || isReviewing);
+    let disabled = (tokens[curPlayer].flip <= 0 || gameOver || (gameMode === 1 && curPlayer === cpuPlayer) || isReviewing);
     document.getElementById("btnCCW").disabled = disabled;
     document.getElementById("btnCW").disabled = disabled;
-    document.getElementById("btnUndo").disabled = (history.length === 0 || gameOver || (gameMode === 1 && curPlayer === P_YEL) || isReviewing);
-    document.getElementById("btnHint").disabled = gameOver || (gameMode === 1 && curPlayer === P_YEL) || isReviewing;
-    document.getElementById("btnHelp").disabled = gameOver || (gameMode === 1 && curPlayer === P_YEL) || isReviewing;
+    document.getElementById("btnUndo").disabled = (history.length === 0 || gameOver || (gameMode === 1 && curPlayer === cpuPlayer) || isReviewing);
+    document.getElementById("btnHint").disabled = gameOver || (gameMode === 1 && curPlayer === cpuPlayer) || isReviewing;
+    document.getElementById("btnHelp").disabled = gameOver || (gameMode === 1 && curPlayer === cpuPlayer) || isReviewing;
     document.getElementById("btnMenu").disabled = isReviewing;
   }
 
   document.getElementById("btnHint").onclick = () => {
-    if (gameMode === 1 && curPlayer === P_YEL) return;
+    if (gameMode === 1 && curPlayer === cpuPlayer) return;
     elOverlay.style.display = "flex";
     menuCard.classList.add('hidden');
     helpCard.classList.add('hidden');
     hintCard.classList.remove('hidden');
     document.getElementById("hintMsg").textContent = "Analyzing board...";
-
     setTimeout(() => {
       const h = runHintSimulation();
       document.getElementById("hintMsg").textContent = h;
     }, 100);
-
     document.getElementById("hintBtnResume").onclick = () => {
       elOverlay.style.display = "none";
       hintCard.classList.add('hidden');
@@ -1443,9 +1395,8 @@ max-height: 80vh; overflow-y: auto;
   };
 
   document.getElementById("btnMenu").onclick = () => toggleMenu();
-
-  document.getElementById("btnCCW").onclick = () => { if (!(gameMode === 1 && curPlayer === P_YEL)) doFlip(1); };
-  document.getElementById("btnCW").onclick = () => { if (!(gameMode === 1 && curPlayer === P_YEL)) doFlip(-1); };
+  document.getElementById("btnCCW").onclick = () => { if (!(gameMode === 1 && curPlayer === cpuPlayer)) doFlip(1); };
+  document.getElementById("btnCW").onclick = () => { if (!(gameMode === 1 && curPlayer === cpuPlayer)) doFlip(-1); };
   document.getElementById("btnUndo").onclick = undo;
 
   document.getElementById("btnAdd").onclick = () => {
@@ -1456,9 +1407,7 @@ max-height: 80vh; overflow-y: auto;
 
   window.addEventListener('resize', render);
   showMainMenu();
-
 })();
 </script>
-
 </body>
 </html>
