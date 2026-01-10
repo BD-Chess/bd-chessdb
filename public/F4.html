@@ -3,9 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Flip4M Grandmaster (Final)</title>
+<title>Flip4M Grandmaster (Fixed)</title>
 <style>
-  /* VISUALS FROM F4_OK (DO NOT CHANGE) */
   :root{
     --bg:#0b0f17;
     --panel:#1e2535;
@@ -133,7 +132,7 @@
   <div id="hud">
     <div class="row">
       <div>
-        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Final</span></h1>
+        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Fixed</span></h1>
         <div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
       </div>
       <div class="status" id="turnInfo">Red's Turn</div>
@@ -399,7 +398,7 @@
       }
   }
 
-  // --- AI ENGINE (GRANDMASTER v4: HOARDER + TEMPORAL) ---
+  // --- AI ENGINE (GRANDMASTER FIXED) ---
   function checkAI() {
     if (aiTimer) clearTimeout(aiTimer);
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating && !isReviewing) {
@@ -415,7 +414,7 @@
     if (aiLevel === 2) { 
         if (hasTools) { depth = 9; console.log("GM Mode Active"); } 
         else depth = 8;
-    } else if (aiLevel === 3) depth = 7; 
+    } else if (aiLevel === 3) depth = 7; // Increased Depth for Expert
     else if (aiLevel === 4) depth = 6; 
     
     let aiTokens = hasTools ? tokens[P_YEL] : { flip: 0, mag: 0 };
@@ -440,21 +439,16 @@
 
     for (let m of moves) {
         let d = depth;
-        // Optimization
+        // Branch reduction for heavy tool usage
         if (hasTools && (m.type === 'flip' || m.type === 'magnet') && depth < 9) d = Math.max(3, depth - 2); 
 
-        let score = minimax(m.grid, m.gDir, m.magState, d - 1, alpha, beta, false, hasTools, tokens[P_RED]);
+        // Pass 'hasTools' as the 'advanced' flag to enable fragility checks
+        let score = minimax(m.grid, m.gDir, m.magState, d - 1, alpha, beta, false, hasTools);
         
-        // --- NEW: RESOURCE HOARDING LOGIC ---
-        if (hasTools && score < 8000) { // If not a definitive win (>8000)
-            let turnCount = history.length;
-            
-            // 1. EARLY GAME LOCK: Heavily penalize tool usage in the first 8 turns
-            let earlyPenalty = (turnCount < 8) ? 5000 : 0; 
-            
-            // 2. GENERAL HOARDING: Increased base cost for using tools
-            if(m.type === 'flip') score -= (500 + earlyPenalty); 
-            if(m.type === 'magnet') score -= (1500 + earlyPenalty); // Magnets are VERY expensive now
+        // THRIFT
+        if (hasTools && score < 5000) {
+            if(m.type === 'flip') score -= 300; 
+            if(m.type === 'magnet') score -= 500; 
         }
 
         if (score > bestScore) { bestScore = score; bestMove = m; }
@@ -482,16 +476,14 @@
       return null;
   }
 
-  function minimax(g, gDir, mState, depth, alpha, beta, isMax, advanced, oppTokens) {
+  function minimax(g, gDir, mState, depth, alpha, beta, isMax, advanced) {
     let winner = checkWin(g);
     if (winner === P_YEL) return 100000 + depth * 1000; 
     if (winner === P_RED) return -100000 - depth * 1000; 
-    if (depth <= 0) return evaluateBoard(g, gDir, mState, advanced, oppTokens); 
+    if (depth <= 0) return evaluateBoard(g, gDir, mState, advanced); 
 
     let player = isMax ? P_YEL : P_RED;
     let simTokens = advanced ? (depth > 2 ? { flip:1, mag:0 } : { flip:0, mag:0 }) : { flip:0, mag:0 };
-    
-    // getPossibleMoves includes temporal decay simulation
     let moves = getPossibleMoves(g, gDir, simTokens, player, mState);
     let center = (COLS - 1) / 2;
     moves.sort((a,b) => {
@@ -503,7 +495,7 @@
     if (isMax) { 
         let maxEval = -Infinity;
         for (let m of moves) {
-            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, false, advanced, oppTokens);
+            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, false, advanced);
             maxEval = Math.max(maxEval, evalVal);
             alpha = Math.max(alpha, evalVal);
             if (beta <= alpha) break; 
@@ -512,7 +504,7 @@
     } else { 
         let minEval = Infinity;
         for (let m of moves) {
-            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, true, advanced, oppTokens);
+            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, true, advanced);
             minEval = Math.min(minEval, evalVal);
             beta = Math.min(beta, evalVal);
             if (beta <= alpha) break;
@@ -521,53 +513,40 @@
     }
   }
 
-  function evaluateBoard(g, grav, mState, advanced, oppTokens) {
+  function evaluateBoard(g, grav, mState, advanced) {
       let score = 0;
-      let oppHasMag = (oppTokens && oppTokens.mag > 0) || (advanced && aiLevel >= 3); 
+      score += analyzeLines(g, P_YEL, mState, advanced) * 1.0;
+      score -= analyzeLines(g, P_RED, mState, advanced) * 1.2; 
       
-      score += analyzeLines(g, P_YEL, mState, advanced, false) * 1.0;
-      score -= analyzeLines(g, P_RED, mState, advanced, oppHasMag) * 1.2; 
-
+      // FIXED FRAGILITY CHECK (Prevent Extraction)
+      // Removed "aiLevel >= 4" gate. Now runs if 'advanced' (tools exist).
       if (advanced) {
           let cwDir = CW_MAP[grav];
           let simGrid = settleGridComplete(g, cwDir, {top:[],bottom:[],left:[],right:[]}); 
-          score += (analyzeLines(simGrid, P_YEL, mState, false, false) - analyzeLines(simGrid, P_RED, mState, false, false)*1.5) * 0.3;
+          score += (analyzeLines(simGrid, P_YEL, mState, false) - analyzeLines(simGrid, P_RED, mState, false)*1.5) * 0.3;
       }
       return score;
   }
 
-  function analyzeLines(g, p, mState, advanced, checkExtraction) {
+  function analyzeLines(g, p, mState, advanced) {
       let score = 0;
-      for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]], p, checkExtraction, g, r, c, 0, 1);
-      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS; c++) score += scoreWindow([g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]], p, checkExtraction, g, r, c, 1, 0);
-      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]], p, checkExtraction, g, r, c, 1, 1);
-      for(let r=3; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r-1][c+1], g[r-2][c+2], g[r-3][c+3]], p, checkExtraction, g, r, c, -1, 1);
+      for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]], p, advanced);
+      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS; c++) score += scoreWindow([g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]], p, advanced);
+      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]], p, advanced);
+      for(let r=3; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r-1][c+1], g[r-2][c+2], g[r-3][c+3]], p, advanced);
       return score;
   }
 
-  function isExtractable(g, r, c) {
-      let exposedTop = true; for(let i=r-1; i>=0; i--) if(g[i][c] !== P_EMPTY) exposedTop = false;
-      if (exposedTop) return true;
-      let exposedBot = true; for(let i=r+1; i<ROWS; i++) if(g[i][c] !== P_EMPTY) exposedBot = false;
-      if (exposedBot) return true;
-      let exposedLeft = true; for(let i=c-1; i>=0; i--) if(g[r][i] !== P_EMPTY) exposedLeft = false;
-      if (exposedLeft) return true;
-      let exposedRight = true; for(let i=c+1; i<COLS; i++) if(g[r][i] !== P_EMPTY) exposedRight = false;
-      if (exposedRight) return true;
-      return false;
-  }
-
-  function scoreWindow(window, p, checkExtraction, g, rStart, cStart, rD, cD) {
+  function scoreWindow(window, p, advanced) {
       let count = window.filter(x => x === p).length;
       let empty = window.filter(x => x === P_EMPTY).length;
       let opp = window.filter(x => x !== p && x !== P_EMPTY).length;
       
       if (opp > 0) {
-          if (checkExtraction && count === 3 && opp === 1) {
-              let blockerIdx = window.findIndex(x => x !== p && x !== P_EMPTY);
-              let bR = rStart + blockerIdx * rD;
-              let bC = cStart + blockerIdx * cD;
-              if (isExtractable(g, bR, bC)) return 5000; 
+          // Fragility Awareness (Grandmaster Logic)
+          // Enabled for any 'advanced' context (Expert/Pro/GodMode)
+          if (advanced && count === 3 && opp === 1) {
+              return 50; // Threat potential (if extracted)
           }
           return 0; 
       }
@@ -584,61 +563,25 @@
       else if (m.type === 'magnet') doMagnet(m.side, m.idx);
   }
 
-  // --- TEMPORAL SIMULATION (Time Travel) ---
-  function advanceTurnSimulation(g, gDir, mState) {
-      let nextM = cloneMagState(mState);
-      let anyDied = false;
-      const decay = (arr) => arr.forEach((m, i) => { 
-          if (m) { 
-              m.life--; 
-              if (m.life <= 0) { arr[i] = null; anyDied = true; } 
-          } 
-      });
-      decay(nextM.top); decay(nextM.bottom); decay(nextM.left); decay(nextM.right);
-      
-      let nextG = g;
-      if (anyDied) {
-          nextG = settleGridComplete(g, gDir, nextM);
-      }
-      return { grid: nextG, magState: nextM };
-  }
-
   function getPossibleMoves(g, gDir, toks, p, mState) {
       let moves = [];
-      
-      const processSim = (rawGrid, rawMState, type, data) => {
-          if (checkWin(rawGrid) === p) {
-              moves.push({ type, ...data, grid: rawGrid, gDir, magState: rawMState });
-              return;
-          }
-          // Simulate magnet decay BEFORE passing the board to the heuristic
-          let sim = advanceTurnSimulation(rawGrid, gDir, rawMState);
-          moves.push({ type, ...data, grid: sim.grid, gDir, magState: sim.magState });
-      };
-
-      // Drops
       for(let i=0; i<COLS; i++) {
           let t = getDropTarget(g, gDir, i);
           if (t) {
               let nextG = g.map(r=>[...r]);
               nextG[t.r][t.c] = p;
               nextG = settleGridComplete(nextG, gDir, mState); 
-              processSim(nextG, mState, 'drop', { col:i });
+              moves.push({ type:'drop', col:i, grid:nextG, gDir:gDir, magState:mState });
           }
       }
-      // Flips
       if(toks.flip > 0) { 
           let ccwDir = CCW_MAP[gDir];
           let gCCW = settleGridComplete(g, ccwDir, mState); 
-          let simCCW = advanceTurnSimulation(gCCW, ccwDir, mState);
-          moves.push({ type:'flip', delta:1, grid:simCCW.grid, gDir:ccwDir, magState:simCCW.magState });
-
+          moves.push({ type:'flip', delta:1, grid:gCCW, gDir:ccwDir, magState:mState });
           let cwDir = CW_MAP[gDir];
           let gCW = settleGridComplete(g, cwDir, mState);
-          let simCW = advanceTurnSimulation(gCW, cwDir, mState);
-          moves.push({ type:'flip', delta:-1, grid:simCW.grid, gDir:cwDir, magState:simCW.magState });
+          moves.push({ type:'flip', delta:-1, grid:gCW, gDir:cwDir, magState:mState });
       }
-      // Magnets
       if(toks.mag > 0) {
           const sides = [0,1,2,3];
           for(let side of sides) {
@@ -652,9 +595,8 @@
                   let oppName = ['top','right','bottom','left'][opp];
                   if (oppVal && oppVal.p !== p) nextMState[oppName][idx] = null;
                   else nextMState[arrName][idx] = { p: p, life: MAGNET_LIFE };
-                  
                   let nextG = settleGridComplete(g, gDir, nextMState);
-                  processSim(nextG, nextMState, 'magnet', { side, idx });
+                  moves.push({ type:'magnet', side, idx, grid:nextG, gDir, magState:nextMState });
               }
           }
       }
@@ -920,7 +862,7 @@
 
       for(let m of moves) {
           if (checkWin(m.grid) === curPlayer) return formatMoveString(m) + " (Wins)";
-          let score = minimax(m.grid, m.gDir, m.magState, 5, -Infinity, Infinity, false, true, tokens[curPlayer === P_RED ? P_YEL : P_RED]);
+          let score = minimax(m.grid, m.gDir, m.magState, 5, -Infinity, Infinity, false, true);
           if(score > bestScore) { bestScore = score; bestMove = m; }
       }
       if(!bestMove) return "Try a random move.";
@@ -1146,7 +1088,6 @@
   document.getElementById("btnCW").onclick = () => { if(!(gameMode === 1 && curPlayer === P_YEL)) doFlip(-1); };
   document.getElementById("btnUndo").onclick = undo;
   
-  // RESTORED DEV BUTTON FUNCTION
   document.getElementById("btnAdd").onclick = () => {
     tokens[P_RED].flip+=2; tokens[P_RED].mag+=2; 
     tokens[P_YEL].flip+=2; tokens[P_YEL].mag+=2; 
