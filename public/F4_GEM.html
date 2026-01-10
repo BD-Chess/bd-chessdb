@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Flip4M Grandmaster (Ultimate)</title>
+<title>Flip4M Grandmaster (Fixed)</title>
 <style>
-  /* --- EXACT CSS FROM F4_OK (THE BASE) --- */
+  /* --- VISUALS FROM F4_OK (UNTOUCHED & VERIFIED) --- */
   :root{
     --bg:#0b0f17;
     --panel:#1e2535;
@@ -133,7 +133,7 @@
   <div id="hud">
     <div class="row">
       <div>
-        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Ultimate</span></h1>
+        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Fixed</span></h1>
         <div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
       </div>
       <div class="status" id="turnInfo">Red's Turn</div>
@@ -173,7 +173,6 @@
           <button class="btn-act" onclick="startGame(1, 3)">Expert (2x Tools)</button>
           <button class="btn-dang" onclick="startGame(1, 4)" style="border-color: #ffd700; color: #ffd700;">Pro (3x Tools)</button>
         </div>
-        
         <div class="feature-grid">
            <button class="btn-util" onclick="saveGame()">💾 Save</button>
            <button class="btn-util" onclick="loadGameTrigger()">📂 Load</button>
@@ -583,14 +582,6 @@
       let score = 0;
       score += analyzeLines(g, P_YEL) * 1.0;
       score -= analyzeLines(g, P_RED) * 1.2; 
-      
-      // FRAGILITY CHECK
-      // Check if Red has extraction threats on us? 
-      // Or if Red has pieces that are currently pinned but extractable?
-      // Since we simulate decay, we don't need complex fragility logic for dying magnets,
-      // but we do need it for "I am blocking a win with one piece, and that piece is exposed".
-      
-      // We implicitly handle this in analyzeLines via scoreWindow
       return score;
   }
 
@@ -603,37 +594,6 @@
       return score;
   }
 
-  function scoreWindow(window, p, g, rStart, cStart, rD, cD) {
-      let count = window.filter(x => x === p).length;
-      let empty = window.filter(x => x === P_EMPTY).length;
-      let opp = window.filter(x => x !== p && x !== P_EMPTY).length;
-      
-      if (opp > 0) {
-          // If we are blocking the opponent (opp > 0), and they have 3 pieces (count=3 is WRONG here)
-          // Wait, 'p' is the player we are scoring.
-          // If 'p' has 3 pieces, and 'opp' has 1 piece (blocking us).
-          if (count === 3 && opp === 1) {
-              // The blocker is the opponent piece.
-              let blockerIdx = window.findIndex(x => x !== p && x !== P_EMPTY);
-              let bR = rStart + blockerIdx * rD;
-              let bC = cStart + blockerIdx * cD;
-              
-              // If the BLOCKER is extractable, this is a huge threat (or opportunity if p=AI)
-              if (isExtractable(g, bR, bC)) {
-                  // If p is AI, this is a winning opportunity (+Score)
-                  // If p is Human, this is a losing threat (-Score calculated in eval)
-                  return 15000; 
-              }
-          }
-          return 0; 
-      }
-      
-      if (count === 4) return 10000;
-      if (count === 3 && empty === 1) return 200; 
-      if (count === 2 && empty === 2) return 10;
-      return 0;
-  }
-
   function isExtractable(g, r, c) {
       let exposedTop = true; for(let i=r-1; i>=0; i--) if(g[i][c] !== P_EMPTY) exposedTop = false;
       if (exposedTop) return true;
@@ -644,6 +604,26 @@
       let exposedRight = true; for(let i=c+1; i<COLS; i++) if(g[r][i] !== P_EMPTY) exposedRight = false;
       if (exposedRight) return true;
       return false;
+  }
+
+  function scoreWindow(window, p, g, rStart, cStart, rD, cD) {
+      let count = window.filter(x => x === p).length;
+      let empty = window.filter(x => x === P_EMPTY).length;
+      let opp = window.filter(x => x !== p && x !== P_EMPTY).length;
+      
+      if (opp > 0) {
+          if (count === 3 && opp === 1) {
+              let blockerIdx = window.findIndex(x => x !== p && x !== P_EMPTY);
+              let bR = rStart + blockerIdx * rD;
+              let bC = cStart + blockerIdx * cD;
+              if (isExtractable(g, bR, bC)) return 15000; 
+          }
+          return 0; 
+      }
+      if (count === 4) return 10000;
+      if (count === 3 && empty === 1) return 200; 
+      if (count === 2 && empty === 2) return 10;
+      return 0;
   }
 
   // --- MOVE HELPERS ---
