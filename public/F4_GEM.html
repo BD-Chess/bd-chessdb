@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Flip4M Grandmaster Final</title>
+<title>Flip4M Grandmaster Gemini</title>
 <style>
   /* --- VISUALS FROM F4_GPT (VERIFIED WORKING) --- */
   :root{
@@ -125,6 +125,29 @@
   .help-rule { text-align:left; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px; margin-bottom:8px; }
   .help-rule b { color: #fff; }
   .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
+  
+  /* FIRST MOVE TOGGLE */
+  .first-move-toggle {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin: 15px 0 5px; padding: 10px; 
+    background: rgba(0,0,0,0.2); border-radius: 10px;
+  }
+  .first-move-toggle span { font-size: 13px; color: var(--muted); }
+  .first-move-toggle .active { color: var(--text); font-weight: 700; }
+  
+  .toggle-switch {
+    position: relative; width: 50px; height: 26px;
+    background: var(--red); border-radius: 13px;
+    cursor: pointer; transition: background 0.3s;
+  }
+  .toggle-switch.cpu-first { background: var(--yel); }
+  .toggle-switch::after {
+    content: ''; position: absolute;
+    top: 3px; left: 3px; width: 20px; height: 20px;
+    background: white; border-radius: 50%;
+    transition: transform 0.3s;
+  }
+  .toggle-switch.cpu-first::after { transform: translateX(24px); }
 </style>
 </head>
 <body>
@@ -133,7 +156,7 @@
   <div id="hud">
     <div class="row">
       <div>
-        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Final</span></h1>
+        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Gemini</span></h1>
         <div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
       </div>
       <div class="status" id="turnInfo">Red's Turn</div>
@@ -168,7 +191,14 @@
       <div class="card" id="menuCard">
         <h2>Flip4M</h2>
         <p>Gravity-defying strategy.</p>
-        <div class="card-btns" style="flex-direction:column; gap:8px;">
+        
+        <div class="first-move-toggle">
+          <span id="labelHuman" class="active">You First</span>
+          <div class="toggle-switch" id="firstMoveToggle" onclick="toggleFirstMove()"></div>
+          <span id="labelCPU">CPU First</span>
+        </div>
+        
+        <div class="card-btns" style="flex-direction:column; gap:8px; margin-top:10px;">
           <button class="btn-act" onclick="startGame(1, 2)">Standard (Classical)</button>
           <button class="btn-act" onclick="startGame(1, 3)">Expert (2x Tools)</button>
           <button class="btn-dang" onclick="startGame(1, 4)" style="border-color: #ffd700; color: #ffd700;">Pro (3x Tools)</button>
@@ -229,6 +259,8 @@
   const ROWS = 8, COLS = 8;
   const P_EMPTY = 0, P_RED = 1, P_YEL = 2;
   const MAGNET_LIFE = 6; 
+  const CW_MAP = { 0: 3, 1: 0, 2: 1, 3: 2 }; 
+  const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 }; 
   
   let grid = [];
   let mag = { top: [], bottom: [], left: [], right: [] }; 
@@ -249,6 +281,11 @@
   let aiTimer = null; 
   let isReviewing = false;
   let reviewIndex = 0;
+  
+  // Who is CPU? (From F4_CLA)
+  let humanPlayer = P_RED;
+  let cpuPlayer = P_YEL;
+  let cpuFirst = false;
 
   const canvas = document.getElementById("c");
   const ctx = canvas.getContext("2d", { alpha: false });
@@ -264,10 +301,37 @@
   const controlBar = document.getElementById("controls");
   const reviewBar = document.getElementById("review-controls");
 
+  // --- TOGGLE FIRST MOVE ---
+  window.toggleFirstMove = function() {
+    cpuFirst = !cpuFirst;
+    const toggle = document.getElementById("firstMoveToggle");
+    const labelHuman = document.getElementById("labelHuman");
+    const labelCPU = document.getElementById("labelCPU");
+    
+    if (cpuFirst) {
+      toggle.classList.add("cpu-first");
+      labelHuman.classList.remove("active");
+      labelCPU.classList.add("active");
+    } else {
+      toggle.classList.remove("cpu-first");
+      labelHuman.classList.add("active");
+      labelCPU.classList.remove("active");
+    }
+  }
+
   window.startGame = function(mode, level) {
     gameMode = mode;
     aiLevel = level;
     gameInProgress = true;
+    
+    if (cpuFirst) {
+      humanPlayer = P_YEL;
+      cpuPlayer = P_RED;
+    } else {
+      humanPlayer = P_RED;
+      cpuPlayer = P_YEL;
+    }
+    
     menuCard.classList.add('hidden');
     hintCard.classList.add('hidden');
     helpCard.classList.add('hidden');
@@ -317,15 +381,12 @@
     targetAngle = 0;
     curPlayer = P_RED;
     
-    // --- DIFFICULTY TOOLS SETUP ---
+    // --- DIFFICULTY ---
     if (aiLevel === 2) {
-        // STANDARD (Classic): 0 Tools
         tokens = { [P_RED]: { flip: 0, mag: 0 }, [P_YEL]: { flip: 0, mag: 0 } };
     } else if (aiLevel === 3) {
-        // EXPERT: 2x Tools
         tokens = { [P_RED]: { flip: 2, mag: 2 }, [P_YEL]: { flip: 2, mag: 2 } };
     } else {
-        // PRO: 3x Tools
         tokens = { [P_RED]: { flip: 3, mag: 3 }, [P_YEL]: { flip: 3, mag: 3 } };
     }
 
@@ -341,6 +402,8 @@
     syncUI();
     lastTime = 0;
     requestAnimationFrame(initLoop);
+    
+    checkAI(); // In case CPU starts
   }
 
   // --- SAVE / LOAD / REVIEW ---
@@ -399,17 +462,16 @@
       }
   }
 
-  // --- AI ENGINE: GRANDMASTER ELITE (The Upgrade) ---
+  // --- AI ENGINE: "GATEKEEPER" (GEMINI REPLACEMENT FOR GPT BRAIN) ---
   function checkAI() {
     if (aiTimer) clearTimeout(aiTimer);
-    if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating && !isReviewing) {
+    if (gameMode === 1 && curPlayer === cpuPlayer && !gameOver && !animating && !isReviewing) {
         document.body.style.cursor = "wait";
         aiTimer = setTimeout(() => { makeAIMove(); document.body.style.cursor = "default"; }, 50);
     }
   }
 
   // 1. TEMPORAL SIMULATION (Time Travel)
-  // Simulates the end-of-turn magnet decay.
   function advanceTurnSimulation(g, gDir, mState) {
       let nextM = cloneMagState(mState);
       let anyDied = false;
@@ -429,59 +491,46 @@
   }
 
   // 2. THE STRICT GATEKEEPER
-  // DECIDES: "Am I allowed to use a tool?"
-  // Returns TRUE only if:
-  // A) A tool leads to an IMMEDIATE WIN.
-  // B) We are facing an IMMEDIATE LOSS that a Drop cannot solve.
   function shouldConsiderTools(g, gDir, mState, aiToks, player) {
     const opponent = (player === P_RED) ? P_YEL : P_RED;
     
-    // Check A: Can we win NOW with a tool?
+    // A) Immediate Win?
     if (aiToks.flip > 0 || aiToks.mag > 0) {
-      // We do a shallow check for wins
       let toolMoves = getToolMoves(g, gDir, aiToks, player, mState);
       for (let m of toolMoves) {
         if (checkWin(m.grid) === player) return { allowed: true, reason: "WIN" };
       }
     }
     
-    // Check B: Are we dead next turn?
-    // Simulate Opponent's best drop moves
+    // B) Immediate Loss?
     let oppDrops = getDropMoves(g, gDir, opponent, mState);
     for (let m of oppDrops) {
-      if (checkWin(m.grid) === opponent) {
-        // Opponent threatens win. Unlock tools to defend.
-        return { allowed: true, reason: "DEFENSE" };
-      }
+      if (checkWin(m.grid) === opponent) return { allowed: true, reason: "DEFENSE" };
     }
     
-    // Default: FORBID TOOLS. 
-    // This stops the AI from rotating on turn 1 or wasting magnets for "position".
     return { allowed: false, reason: "NO_NEED" };
   }
 
   function makeAIMove() {
     let depth = 8; 
-    let hasTools = (tokens[P_YEL].flip > 0 || tokens[P_YEL].mag > 0);
-    
-    if (aiLevel === 2) depth = 8; 
-    else if (aiLevel === 3) depth = 9; 
+    if (aiLevel === 3) depth = 9; 
     else if (aiLevel === 4) depth = 10; 
     
-    let aiTokens = hasTools ? tokens[P_YEL] : { flip: 0, mag: 0 };
-    
+    let aiTokens = tokens[cpuPlayer];
+    let hasTools = (aiTokens.flip > 0 || aiTokens.mag > 0);
+
     // 1. SANITY CHECK (Win/Block)
-    let sanityMove = getSanityMove(grid, gravityDir, aiTokens, P_YEL, mag);
+    let sanityMove = getSanityMove(grid, gravityDir, aiTokens, cpuPlayer, mag);
     if (sanityMove) { executeMove(sanityMove); return; }
 
     // 2. GATEKEEPER
-    let gate = shouldConsiderTools(grid, gravityDir, mag, aiTokens, P_YEL);
+    let gate = shouldConsiderTools(grid, gravityDir, mag, aiTokens, cpuPlayer);
     let toolsAllowed = gate.allowed;
     
     // 3. GATHER MOVES
-    let moves = getDropMoves(grid, gravityDir, P_YEL, mag);
+    let moves = getDropMoves(grid, gravityDir, cpuPlayer, mag);
     if (toolsAllowed || (moves.length === 0 && hasTools)) {
-        moves.push(...getToolMoves(grid, gravityDir, aiTokens, P_YEL, mag));
+        moves.push(...getToolMoves(grid, gravityDir, aiTokens, cpuPlayer, mag));
         toolsAllowed = true; 
     }
     
@@ -500,12 +549,10 @@
 
     for (let m of moves) {
         let d = depth;
-        // Optimization: Reduce depth for expensive tool branches if we have many
         if (m.type !== 'drop') d = Math.max(3, depth - 2); 
 
         let score = minimax(m.grid, m.gDir, m.magState, d - 1, alpha, beta, false, toolsAllowed);
         
-        // Thrift Penalty: Tools cost points
         if (m.type !== 'drop') score -= 500; 
 
         if (score > bestScore) { bestScore = score; bestMove = m; }
@@ -515,7 +562,7 @@
 
     if (bestMove) executeMove(bestMove);
     else if (moves.length > 0) executeMove(moves[0]); 
-    else if (hasTools && tokens[P_YEL].flip > 0) doFlip(1); 
+    else if (hasTools && tokens[cpuPlayer].flip > 0) doFlip(1); 
   }
 
   function getSanityMove(g, gDir, toks, p, mState) {
@@ -535,18 +582,13 @@
 
   function minimax(g, gDir, mState, depth, alpha, beta, isMax, toolsAllowed) {
     let winner = checkWin(g);
-    if (winner === P_YEL) return 100000 + depth * 1000; 
-    if (winner === P_RED) return -100000 - depth * 1000; 
+    if (winner === cpuPlayer) return 100000 + depth * 1000; 
+    if (winner === humanPlayer) return -100000 - depth * 1000; 
     if (depth <= 0) return evaluateBoard(g, gDir, mState); 
 
-    let player = isMax ? P_YEL : P_RED;
+    let player = isMax ? cpuPlayer : humanPlayer;
     let moves = getDropMoves(g, gDir, player, mState);
     
-    // In deep simulation, restrict tools to critical branches to save CPU
-    if (toolsAllowed && depth > 5) {
-        // Optional: Shallow check for tools
-    }
-
     if (isMax) { 
         let maxEval = -Infinity;
         for (let m of moves) {
@@ -568,11 +610,10 @@
     }
   }
 
-  function evaluateBoard(g, grav, mState, advanced) {
+  function evaluateBoard(g, grav, mState) {
       let score = 0;
-      score += analyzeLines(g, P_YEL) * 1.0;
-      score -= analyzeLines(g, P_RED) * 1.2; 
-      // Implicit Fragility check via analyzeLines
+      score += analyzeLines(g, cpuPlayer) * 1.0;
+      score -= analyzeLines(g, humanPlayer) * 1.2; 
       return score;
   }
 
@@ -607,12 +648,10 @@
               let blockerIdx = window.findIndex(x => x !== p && x !== P_EMPTY);
               let bR = rStart + blockerIdx * rD;
               let bC = cStart + blockerIdx * cD;
-              // If the BLOCKER is extractable, this is a huge threat/opportunity
               if (isExtractable(g, bR, bC)) return 15000; 
           }
           return 0; 
       }
-      
       if (count === 4) return 10000;
       if (count === 3 && empty === 1) return 200; 
       if (count === 2 && empty === 2) return 10;
@@ -694,7 +733,7 @@
       grid: grid.map(r => [...r]), mag: cloneMagState(mag),
       gravityDir, boardAngle, targetAngle, curPlayer,
       tokens: JSON.parse(JSON.stringify(tokens)),
-      gameOver, gameInProgress
+      gameOver, gameInProgress, humanPlayer, cpuPlayer
     };
   }
   function restoreState(s) {
@@ -702,6 +741,8 @@
     gravityDir = s.gravityDir; boardAngle = s.boardAngle; targetAngle = s.targetAngle;
     curPlayer = s.curPlayer; tokens = JSON.parse(JSON.stringify(s.tokens));
     gameOver = s.gameOver; gameInProgress = s.gameInProgress;
+    if(s.humanPlayer) humanPlayer = s.humanPlayer;
+    if(s.cpuPlayer) cpuPlayer = s.cpuPlayer;
     animating = false; anims = []; hiddenCells = []; pendingSettle = false;
     isReviewing = false;
     winnerCard.classList.remove('visible'); syncUI();
