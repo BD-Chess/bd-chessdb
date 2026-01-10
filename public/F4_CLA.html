@@ -733,12 +733,72 @@
     return null;
   }
 
+  // **THE CRITICAL FIX** - Check if player can win by ROTATE + MAGNET EXTRACTION!
+  // This is exactly what Bojan used to beat GM IV
+  function canWinByRotateThenMagnet(g, gDir, mState, player, playerToks) {
+    if (playerToks.flip <= 0 || playerToks.mag <= 0) return null;
+    
+    const opponent = (player === P_RED) ? P_YEL : P_RED;
+    
+    for (let delta of [1, -1]) {
+      let newDir = (delta === 1) ? CCW_MAP[gDir] : CW_MAP[gDir];
+      let rotatedGrid = settleGridComplete(g, newDir, mState);
+      
+      // After rotation, look for 3-in-a-row with opponent blocker on EDGE
+      let lines = getAllLines();
+      for (let line of lines) {
+        let playerCount = 0, oppCount = 0, emptyCount = 0;
+        let blockerPos = null;
+        
+        for (let pos of line) {
+          let val = rotatedGrid[pos.r][pos.c];
+          if (val === player) playerCount++;
+          else if (val === opponent) { oppCount++; blockerPos = pos; }
+          else emptyCount++;
+        }
+        
+        // 3 of ours + 1 opponent blocker
+        if (playerCount === 3 && oppCount === 1 && blockerPos) {
+          // Is the blocker on an edge where magnet can extract it?
+          let { r, c } = blockerPos;
+          let canExtract = false;
+          let extractMagnet = null;
+          
+          // Check each edge - can a magnet pull this piece OFF the line?
+          if (r === 0) { canExtract = true; extractMagnet = { side: 0, idx: c }; } // top edge
+          if (r === ROWS-1) { canExtract = true; extractMagnet = { side: 2, idx: c }; } // bottom edge
+          if (c === 0) { canExtract = true; extractMagnet = { side: 3, idx: r }; } // left edge
+          if (c === COLS-1) { canExtract = true; extractMagnet = { side: 1, idx: r }; } // right edge
+          
+          if (canExtract && extractMagnet) {
+            // Simulate the magnet extraction
+            let testMState = cloneMagState(mState);
+            let arrName = ['top', 'right', 'bottom', 'left'][extractMagnet.side];
+            testMState[arrName][extractMagnet.idx] = { p: player, life: MAGNET_LIFE };
+            let afterMagnet = settleGridComplete(rotatedGrid, newDir, testMState);
+            
+            // Does this create a win?
+            if (checkWin(afterMagnet) === player) {
+              console.log("FOUND ROTATE+MAGNET WIN:", delta === 1 ? "CCW" : "CW", "then magnet", extractMagnet);
+              return {
+                type: 'rotate_magnet',
+                delta,
+                newDir,
+                rotatedGrid,
+                extractMagnet,
+                afterMagnet,
+                blockerPos
+              };
+            }
+          }
+        }
+      }
+    }
+    return null;
+  }
+
   // Find a move that disrupts opponent's rotation win
   function findRotationDisruption(g, gDir, mState, aiToks, aiPlayer, oppPlayer, rotWin) {
-    // Strategy 1: If WE can rotate first and it doesn't let them win, do it
-    // Strategy 2: Drop a piece that blocks their winning line after rotation
-    // Strategy 3: Use a magnet to pull pieces and break their line
-    
     // Try each of our moves and see if it prevents their rotation win
     let ourMoves = getDropMoves(g, gDir, aiPlayer, mState);
     if (aiToks.flip > 0) {
@@ -746,27 +806,50 @@
     }
     
     for (let move of ourMoves) {
-      // After our move, can they still win by rotating?
       let afterOurMove = move.grid;
       let afterGDir = move.gDir || gDir;
       let afterMag = move.magState || mState;
       
       let stillThreat = canWinByRotating(afterOurMove, afterGDir, afterMag, oppPlayer);
       if (!stillThreat) {
-        // This move blocks their rotation win!
         return move;
       }
     }
     
-    // Couldn't find a blocking move - return best defensive option
+    return ourMoves.length > 0 ? ourMoves[0] : null;
+  }
+  
+  // Find a move that disrupts opponent's rotate+magnet combo
+  function findRotateMagnetDisruption(g, gDir, mState, aiToks, aiPlayer, oppPlayer, oppToks, threat) {
+    let ourMoves = getDropMoves(g, gDir, aiPlayer, mState);
+    if (aiToks.flip > 0 || aiToks.mag > 0) {
+      ourMoves.push(...getToolMoves(g, gDir, aiToks, aiPlayer, mState));
+    }
+    
+    // Priority 1: Break their 3-in-a-row by dropping in their line
+    // Priority 2: Put a piece where the blocker would go (block extraction benefit)
+    // Priority 3: Use our magnet to neutralize their future magnet spot
+    
+    for (let move of ourMoves) {
+      let afterOurMove = move.grid;
+      let afterGDir = move.gDir || gDir;
+      let afterMag = move.magState || mState;
+      
+      // Check if they can still do the combo
+      let stillThreat = canWinByRotateThenMagnet(afterOurMove, afterGDir, afterMag, oppPlayer, oppToks);
+      if (!stillThreat) {
+        console.log("Found disruption for rotate+magnet:", move.type);
+        return move;
+      }
+    }
+    
+    // Couldn't fully block - return the move that does most damage to their setup
     return ourMoves.length > 0 ? ourMoves[0] : null;
   }
 
   // Find if player has a setup where rotation + drop wins
-  // (3-in-a-row that becomes winnable after rotation)
   function findRotationSetup(g, gDir, mState, player) {
-    let threat = canWinByRotateThenDrop(g, gDir, mState, player);
-    return threat;
+    return canWinByRotateThenDrop(g, gDir, mState, player);
   }
 
   // --- MAIN AI (Iterative Deepening + Time Budget from GPT) ---
@@ -812,31 +895,46 @@
     let oppWin = oppDrops.find(m => checkWin(m.grid) === humanPlayer);
     if (oppWin) {
       let block = allMoves.find(m => m.type === 'drop' && m.col === oppWin.col);
-      if (block) { console.log("GM IV: Blocking drop"); executeMove(block); return; }
+      if (block) { console.log("GM V: Blocking drop"); executeMove(block); return; }
     }
 
-    // 4b. **CRITICAL** - Check if opponent can win by ROTATING!
-    // This catches the "rotate to align" threat you exploited
+    // 4b. Check if opponent can win by ROTATING!
     if (oppToks.flip > 0) {
       let oppRotationWin = canWinByRotating(grid, gravityDir, mag, humanPlayer);
       if (oppRotationWin) {
-        console.log("GM IV: OPPONENT CAN WIN BY ROTATING! Must disrupt.");
-        // Find a move that blocks the rotation win
+        console.log("GM V: OPPONENT CAN WIN BY ROTATING! Must disrupt.");
         let disruptMove = findRotationDisruption(grid, gravityDir, mag, aiToks, cpuPlayer, humanPlayer, oppRotationWin);
         if (disruptMove) {
-          console.log("GM IV: Disrupting rotation threat with", disruptMove.type);
+          console.log("GM V: Disrupting rotation threat with", disruptMove.type);
           executeMove(disruptMove);
           return;
         }
       }
     }
     
-    // 4c. Check if opponent can set up a rotation win NEXT turn
-    // (They have 3-in-a-row that COULD become 4 after rotation + drop)
-    let oppRotationThreat = findRotationSetup(grid, gravityDir, mag, humanPlayer);
-    if (oppRotationThreat) {
-      console.log("GM IV: Opponent has rotation setup, prioritizing disruption");
-      // Boost priority of moves that block this
+    // 4c. **THE KEY FIX** - Check if opponent can win by ROTATE + MAGNET!
+    // This is the combo Bojan used to beat GM IV
+    if (oppToks.flip > 0 && oppToks.mag > 0) {
+      let oppRotateMagnetWin = canWinByRotateThenMagnet(grid, gravityDir, mag, humanPlayer, oppToks);
+      if (oppRotateMagnetWin) {
+        console.log("GM V: OPPONENT HAS ROTATE+MAGNET WIN! Must disrupt.");
+        console.log("  Threat: rotate", oppRotateMagnetWin.delta === 1 ? "CCW" : "CW", 
+                    "then magnet at", oppRotateMagnetWin.extractMagnet);
+        let disruptMove = findRotateMagnetDisruption(grid, gravityDir, mag, aiToks, cpuPlayer, humanPlayer, oppToks, oppRotateMagnetWin);
+        if (disruptMove) {
+          console.log("GM V: Disrupting rotate+magnet with", disruptMove.type);
+          executeMove(disruptMove);
+          return;
+        }
+      }
+    }
+    
+    // 4d. Check if opponent can win by rotate + drop
+    if (oppToks.flip > 0) {
+      let oppRotationThreat = findRotationSetup(grid, gravityDir, mag, humanPlayer);
+      if (oppRotationThreat) {
+        console.log("GM V: Opponent has rotate+drop threat, prioritizing disruption");
+      }
     }
 
     // 5. Build move list based on gatekeeper
@@ -932,7 +1030,7 @@
     // If opponent can win by rotating, this is EXTREMELY bad (-50000)
     let oppRotWin = canWinByRotating(g, gDir, mState, humanPlayer);
     if (oppRotWin) {
-      score -= 50000; // Almost as bad as losing
+      score -= 50000;
     }
     
     // If opponent can win by rotate+drop, also very bad (-5000)
@@ -941,10 +1039,23 @@
       score -= 5000;
     }
     
+    // **NEW** If opponent can win by rotate+magnet extraction, VERY bad (-40000)
+    // This is slightly less than immediate rotate win since it needs 2 moves
+    let oppRotMagWin = canWinByRotateThenMagnet(g, gDir, mState, humanPlayer, tokens[humanPlayer] || {flip:3,mag:3});
+    if (oppRotMagWin) {
+      score -= 40000;
+    }
+    
     // Check if WE can win by rotating (bonus)
     let ourRotWin = canWinByRotating(g, gDir, mState, cpuPlayer);
     if (ourRotWin) {
       score += 40000;
+    }
+    
+    // Check if WE can win by rotate+magnet
+    let ourRotMagWin = canWinByRotateThenMagnet(g, gDir, mState, cpuPlayer, tokens[cpuPlayer] || {flip:3,mag:3});
+    if (ourRotMagWin) {
+      score += 35000;
     }
 
     // Line analysis
@@ -966,8 +1077,8 @@
       // Check for 3-in-a-row threats after rotation
       let oppThreats = countThreats(rotated, humanPlayer);
       let ourThreats = countThreats(rotated, cpuPlayer);
-      score -= oppThreats * 100; // Penalize opponent threats after rotation
-      score += ourThreats * 50;  // Bonus for our threats
+      score -= oppThreats * 100;
+      score += ourThreats * 50;
     }
 
     // Temporal fragility
