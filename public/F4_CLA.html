@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Flip4M Grandmaster IV</title>
+<title>Flip4M Grandmaster V</title>
 <style>
   :root{
     --bg:#0b0f17;
@@ -148,7 +148,7 @@
   <div id="hud">
     <div class="row">
       <div>
-        <h1>Flip4M <span style="font-size:12px;opacity:0.7;font-weight:400; color:#ffd700">Pro</span></h1>
+        <h1>Flip4M <span style="font-size:12px;opacity:0.7;font-weight:400; color:#ffd700">GM V</span></h1>
         <div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
       </div>
       <div class="status" id="turnInfo">Red's Turn</div>
@@ -182,7 +182,7 @@
     <div id="overlay">
       <div class="card" id="menuCard">
         <h2>Flip4M</h2>
-        <p>Gravity-defying strategy. <b>Pro</b> — Ultimate AI.</p>
+        <p>Gravity-defying strategy. <b>GM IV</b> — Ultimate AI.</p>
         
         <!-- First Move Toggle -->
         <div class="first-move-toggle">
@@ -700,6 +700,75 @@
     return lines;
   }
 
+  // =========================================================================
+  // ROTATION THREAT DETECTION - The key missing piece!
+  // =========================================================================
+  
+  // Check if player can win IMMEDIATELY by rotating (no drop needed after)
+  function canWinByRotating(g, gDir, mState, player) {
+    for (let delta of [1, -1]) {
+      let newDir = (delta === 1) ? CCW_MAP[gDir] : CW_MAP[gDir];
+      let rotatedGrid = settleGridComplete(g, newDir, mState);
+      if (checkWin(rotatedGrid) === player) {
+        return { delta, newDir, grid: rotatedGrid };
+      }
+    }
+    return null;
+  }
+
+  // Check if player can win by rotating THEN dropping (2-move combo)
+  function canWinByRotateThenDrop(g, gDir, mState, player) {
+    for (let delta of [1, -1]) {
+      let newDir = (delta === 1) ? CCW_MAP[gDir] : CW_MAP[gDir];
+      let rotatedGrid = settleGridComplete(g, newDir, mState);
+      
+      // Now check if any drop wins
+      let drops = getDropMoves(rotatedGrid, newDir, player, mState);
+      for (let drop of drops) {
+        if (checkWin(drop.grid) === player) {
+          return { delta, newDir, rotatedGrid, winningDrop: drop };
+        }
+      }
+    }
+    return null;
+  }
+
+  // Find a move that disrupts opponent's rotation win
+  function findRotationDisruption(g, gDir, mState, aiToks, aiPlayer, oppPlayer, rotWin) {
+    // Strategy 1: If WE can rotate first and it doesn't let them win, do it
+    // Strategy 2: Drop a piece that blocks their winning line after rotation
+    // Strategy 3: Use a magnet to pull pieces and break their line
+    
+    // Try each of our moves and see if it prevents their rotation win
+    let ourMoves = getDropMoves(g, gDir, aiPlayer, mState);
+    if (aiToks.flip > 0) {
+      ourMoves.push(...getToolMoves(g, gDir, aiToks, aiPlayer, mState));
+    }
+    
+    for (let move of ourMoves) {
+      // After our move, can they still win by rotating?
+      let afterOurMove = move.grid;
+      let afterGDir = move.gDir || gDir;
+      let afterMag = move.magState || mState;
+      
+      let stillThreat = canWinByRotating(afterOurMove, afterGDir, afterMag, oppPlayer);
+      if (!stillThreat) {
+        // This move blocks their rotation win!
+        return move;
+      }
+    }
+    
+    // Couldn't find a blocking move - return best defensive option
+    return ourMoves.length > 0 ? ourMoves[0] : null;
+  }
+
+  // Find if player has a setup where rotation + drop wins
+  // (3-in-a-row that becomes winnable after rotation)
+  function findRotationSetup(g, gDir, mState, player) {
+    let threat = canWinByRotateThenDrop(g, gDir, mState, player);
+    return threat;
+  }
+
   // --- MAIN AI (Iterative Deepening + Time Budget from GPT) ---
   function makeAIMove() {
     if (gameOver || animating || isReviewing) return;
@@ -720,30 +789,54 @@
     }
     for (let m of allMoves) {
       if (checkWin(m.grid) === cpuPlayer) {
-        console.log("Pro: Instant win");
+        console.log("GM IV: Instant win");
         executeMove(m); return;
       }
     }
 
     // 2. Gatekeeper
     let gatekeeper = shouldConsiderTools(grid, gravityDir, mag, aiToks, oppToks, cpuPlayer);
-    console.log("Pro Gatekeeper:", gatekeeper.reason);
+    console.log("GM IV Gatekeeper:", gatekeeper.reason);
 
     // 3. Extraction win (if gated)
     if (gatekeeper.allowed && gatekeeper.reason === "EXTRACTION_WIN") {
       let extraction = findExtractionWin(grid, gravityDir, aiToks, cpuPlayer, mag);
       if (extraction) {
-        console.log("Pro: Executing extraction combo");
+        console.log("GM IV: Executing extraction combo");
         executeMove(extraction.firstMove); return;
       }
     }
 
-    // 4. Block opponent's immediate win
+    // 4. Block opponent's immediate win (drops)
     let oppDrops = getDropMoves(grid, gravityDir, humanPlayer, mag);
     let oppWin = oppDrops.find(m => checkWin(m.grid) === humanPlayer);
     if (oppWin) {
       let block = allMoves.find(m => m.type === 'drop' && m.col === oppWin.col);
-      if (block) { console.log("Pro: Blocking"); executeMove(block); return; }
+      if (block) { console.log("GM IV: Blocking drop"); executeMove(block); return; }
+    }
+
+    // 4b. **CRITICAL** - Check if opponent can win by ROTATING!
+    // This catches the "rotate to align" threat you exploited
+    if (oppToks.flip > 0) {
+      let oppRotationWin = canWinByRotating(grid, gravityDir, mag, humanPlayer);
+      if (oppRotationWin) {
+        console.log("GM IV: OPPONENT CAN WIN BY ROTATING! Must disrupt.");
+        // Find a move that blocks the rotation win
+        let disruptMove = findRotationDisruption(grid, gravityDir, mag, aiToks, cpuPlayer, humanPlayer, oppRotationWin);
+        if (disruptMove) {
+          console.log("GM IV: Disrupting rotation threat with", disruptMove.type);
+          executeMove(disruptMove);
+          return;
+        }
+      }
+    }
+    
+    // 4c. Check if opponent can set up a rotation win NEXT turn
+    // (They have 3-in-a-row that COULD become 4 after rotation + drop)
+    let oppRotationThreat = findRotationSetup(grid, gravityDir, mag, humanPlayer);
+    if (oppRotationThreat) {
+      console.log("GM IV: Opponent has rotation setup, prioritizing disruption");
+      // Boost priority of moves that block this
     }
 
     // 5. Build move list based on gatekeeper
@@ -791,7 +884,7 @@
     }
 
     if (best) {
-      console.log("Pro: Best", best.type, "score", bestScore);
+      console.log("GM IV: Best", best.type, "score", bestScore);
       executeMove(best);
     } else if (moves.length > 0) {
       executeMove(moves[0]);
@@ -831,9 +924,28 @@
     return bestVal;
   }
 
-  // --- EVALUATION (Combined) ---
+  // --- EVALUATION (Combined + Rotation Threat Awareness) ---
   function evaluate(g, gDir, mState) {
     let score = 0;
+
+    // CRITICAL: Check for rotation wins/threats FIRST
+    // If opponent can win by rotating, this is EXTREMELY bad (-50000)
+    let oppRotWin = canWinByRotating(g, gDir, mState, humanPlayer);
+    if (oppRotWin) {
+      score -= 50000; // Almost as bad as losing
+    }
+    
+    // If opponent can win by rotate+drop, also very bad (-5000)
+    let oppRotDropWin = canWinByRotateThenDrop(g, gDir, mState, humanPlayer);
+    if (oppRotDropWin) {
+      score -= 5000;
+    }
+    
+    // Check if WE can win by rotating (bonus)
+    let ourRotWin = canWinByRotating(g, gDir, mState, cpuPlayer);
+    if (ourRotWin) {
+      score += 40000;
+    }
 
     // Line analysis
     score += analyzeLines(g, cpuPlayer) * 1.0;
@@ -847,11 +959,15 @@
       }
     }
 
-    // Fragility: rotation vulnerability (Gemini)
+    // Fragility: check what happens after rotations
     for (let newDir of [CW_MAP[gDir], CCW_MAP[gDir]]) {
       let rotated = settleGridComplete(g, newDir, mState);
-      let rotScore = analyzeLines(rotated, cpuPlayer) - analyzeLines(rotated, humanPlayer) * 1.2;
-      score += rotScore * 0.2;
+      
+      // Check for 3-in-a-row threats after rotation
+      let oppThreats = countThreats(rotated, humanPlayer);
+      let ourThreats = countThreats(rotated, cpuPlayer);
+      score -= oppThreats * 100; // Penalize opponent threats after rotation
+      score += ourThreats * 50;  // Bonus for our threats
     }
 
     // Temporal fragility
@@ -860,6 +976,22 @@
     score += futureScore * 0.15;
 
     return score;
+  }
+  
+  // Count 3-in-a-row threats (one more to win)
+  function countThreats(g, player) {
+    let threats = 0;
+    const lines = getAllLines();
+    for (let line of lines) {
+      let count = 0, empty = 0;
+      for (let pos of line) {
+        let val = g[pos.r][pos.c];
+        if (val === player) count++;
+        else if (val === P_EMPTY) empty++;
+      }
+      if (count === 3 && empty === 1) threats++;
+    }
+    return threats;
   }
 
   function analyzeLines(g, p) {
