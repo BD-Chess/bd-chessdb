@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Flip4M Grandmaster (Fixed)</title>
+<title>Flip4M Pro</title>
 <style>
   :root{
     --bg:#0b0f17;
@@ -17,14 +17,12 @@
     --btn:#26314a;
     --btnBorder:rgba(255,255,255,0.1);
     --gold:#ffd700;
+    --purple:#9c27b0;
   }
   html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;overflow:hidden;touch-action:none;}
   
-  #app {
-    display:flex; flex-direction:column; height:100%; width:100%;
-  }
+  #app { display:flex; flex-direction:column; height:100%; width:100%; }
 
-  /* HUD */
   #hud {
     flex-shrink:0; z-index:10;
     background:var(--panel); border-bottom:1px solid var(--btnBorder);
@@ -47,14 +45,12 @@
   .dot.r { background:var(--red); box-shadow:0 0 4px var(--red); }
   .dot.y { background:var(--yel); box-shadow:0 0 4px var(--yel); }
 
-  /* Canvas Stage */
   #game-stage {
     flex-grow:1; position:relative; overflow:hidden; background:var(--bg);
     display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
   }
   canvas { position:absolute; inset:0; display:block; width:100%; height:100%; z-index:1; }
 
-  /* WINNER BOX */
   #winnerCard {
     position: absolute; top: 0; left: 0; right: 0; z-index: 50;
     background: rgba(30, 37, 53, 0.98); backdrop-filter: blur(10px);
@@ -74,7 +70,6 @@
   .win-btns { display:flex; gap:8px; }
   .win-btns button { padding:8px 16px; font-size:12px; border-radius:8px; height: auto; }
 
-  /* Controls */
   #controls, #review-controls {
     flex-shrink:0; z-index:10;
     background:var(--panel); border-top:1px solid var(--btnBorder);
@@ -103,7 +98,6 @@
 
   .big-icon { font-size: 1.6em; line-height: 1; margin-left: 6px; display: inline-block; margin-top: -2px; }
 
-  /* Overlay */
   #overlay {
     position:absolute; inset:0; z-index:100;
     background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
@@ -124,6 +118,71 @@
   .help-rule { text-align:left; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px; margin-bottom:8px; }
   .help-rule b { color: #fff; }
   .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
+
+  /* First Move Toggle Switch */
+  .first-move-toggle {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin: 15px 0 5px; padding: 10px; 
+    background: rgba(0,0,0,0.2); border-radius: 10px;
+  }
+  .first-move-toggle span { font-size: 13px; color: var(--muted); }
+  .first-move-toggle .active { color: var(--text); font-weight: 700; }
+  
+  .toggle-switch {
+    position: relative; width: 50px; height: 26px;
+    background: var(--red); border-radius: 13px;
+    cursor: pointer; transition: background 0.3s;
+  }
+  .toggle-switch.cpu-first { background: var(--yel); }
+  .toggle-switch::after {
+    content: ''; position: absolute;
+    top: 3px; left: 3px; width: 20px; height: 20px;
+    background: white; border-radius: 50%;
+    transition: transform 0.3s;
+  }
+  .toggle-switch.cpu-first::after { transform: translateX(24px); }
+  
+  /* Difficulty Selector */
+  .difficulty-selector {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    margin: 15px 0 5px;
+  }
+  .difficulty-btn {
+    background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1);
+    padding: 10px 5px; border-radius: 8px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .difficulty-btn:hover { background: rgba(255,255,255,0.05); }
+  .difficulty-btn.active {
+    background: rgba(60,120,255,0.3); border-color: rgba(60,120,255,0.6);
+    box-shadow: 0 0 10px rgba(60,120,255,0.3);
+  }
+  .difficulty-label { font-size: 11px; font-weight: bold; margin-bottom: 3px; }
+  .difficulty-desc { font-size: 9px; color: var(--muted); }
+  
+  /* AI Thinking Indicator */
+  .ai-thinking {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: rgba(30,37,53,0.9); backdrop-filter: blur(10px);
+    padding: 8px 16px; border-radius: 20px; border: 1px solid var(--btnBorder);
+    display: none; align-items: center; gap: 10px; z-index: 20;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+  .ai-thinking.visible { display: flex; }
+  .thinking-dots {
+    display: flex; gap: 4px;
+  }
+  .thinking-dots span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); opacity: 0.3;
+    animation: pulse 1.5s infinite ease-in-out;
+  }
+  .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
 </style>
 </head>
 <body>
@@ -132,8 +191,8 @@
   <div id="hud">
     <div class="row">
       <div>
-        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Fixed</span></h1>
-        <div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
+        <h1>Flip4M <span style="font-size:12px;opacity:0.7;font-weight:400; color:#ffd700">Pro Gemini</span></h1>
+        <div class="meta">Grandmaster VII - Ultimate AI</div>
       </div>
       <div class="status" id="turnInfo">Red's Turn</div>
     </div>
@@ -163,14 +222,47 @@
 
     <canvas id="c"></canvas>
     
+    <div class="ai-thinking" id="aiThinking">
+      <div class="thinking-dots">
+        <span></span><span></span><span></span>
+      </div>
+      <span style="font-size:12px;">AI Thinking...</span>
+    </div>
+    
     <div id="overlay">
       <div class="card" id="menuCard">
-        <h2>Flip4M</h2>
-        <p>Gravity-defying strategy.</p>
-        <div class="card-btns" style="flex-direction:column; gap:8px;">
+        <h2>Flip4M Pro</h2>
+        <p>Gemini Edition. The smartest AI yet.</p>
+        
+        <div class="first-move-toggle">
+          <span id="labelHuman" class="active">You First</span>
+          <div class="toggle-switch" id="firstMoveToggle" onclick="toggleFirstMove()"></div>
+          <span id="labelCPU">CPU First</span>
+        </div>
+        
+        <div style="margin: 15px 0 5px; font-size: 12px; color: var(--muted); text-align: center;">
+          AI Difficulty & Strategy
+        </div>
+        <div class="difficulty-selector">
+          <div class="difficulty-btn active" id="diffBalanced" onclick="selectDifficulty('balanced')">
+            <div class="difficulty-label">Balanced</div>
+            <div class="difficulty-desc">Smart & Adaptive</div>
+          </div>
+          <div class="difficulty-btn" id="diffAggressive" onclick="selectDifficulty('aggressive')">
+            <div class="difficulty-label">Aggressive</div>
+            <div class="difficulty-desc">Seeks Wins</div>
+          </div>
+          <div class="difficulty-btn" id="defDefensive" onclick="selectDifficulty('defensive')">
+            <div class="difficulty-label">Defensive</div>
+            <div class="difficulty-desc">Blocks Threats</div>
+          </div>
+        </div>
+        
+        <div class="card-btns" style="flex-direction:column; gap:8px; margin-top:10px;">
           <button class="btn-act" onclick="startGame(1, 2)">Standard (Classical)</button>
           <button class="btn-act" onclick="startGame(1, 3)">Expert (2x Tools)</button>
           <button class="btn-dang" onclick="startGame(1, 4)" style="border-color: #ffd700; color: #ffd700;">Pro (3x Tools)</button>
+          <button class="btn-dang" onclick="startGame(1, 5)" style="border-color: #9c27b0; color: #ce93d8;">Master (Unlimited*)</button>
         </div>
         
         <div class="feature-grid">
@@ -178,26 +270,38 @@
            <button class="btn-util" onclick="loadGameTrigger()">📂 Load</button>
            <button class="btn-util" style="grid-column: span 2" onclick="startReview()">⏯️ Review Game</button>
         </div>
+        
+        <div style="margin-top:15px; padding-top:15px; border-top:1px solid rgba(255,255,255,0.1); font-size:11px; color:var(--muted);">
+          <div>Features: Pattern Recognition • Extraction Detection • Adaptive</div>
+        </div>
       </div>
 
       <div class="card hidden" id="hintCard">
-        <h2 id="hintTitle">Hint</h2>
-        <p id="hintMsg">Thinking...</p>
+        <h2 id="hintTitle">Strategic Hint</h2>
+        <p id="hintMsg">Analyzing board position...</p>
+        <div id="hintAnalysis" style="text-align:left; font-size:12px; color:var(--muted); margin:10px 0; padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; display:none;">
+          <div><b>Board Analysis:</b></div>
+          <div id="hintScore">Score: 0</div>
+          <div id="hintThreats">Threats: None</div>
+          <div id="hintRecommendation">Recommendation: Center</div>
+        </div>
         <div class="card-btns"><button id="hintBtnResume" class="btn-act">Resume</button></div>
       </div>
 
       <div class="card hidden" id="helpCard">
         <h2>How to Play</h2>
-        <div class="help-rule"><b>Goal:</b> Connect 4 tokens in a line.</div>
-        <div class="help-rule"><b>Gravity:</b> Tokens always fall <b>DOWN</b>. (The board rotates!)</div>
-        <div class="help-rule"><b>Drop:</b> Tap a cell.</div>
-        <div class="help-rule"><b>Rotate:</b> Use <span style="color:#ffd54f">⟲ ⟳</span> (Cost: 1 Flip).</div>
-        <div class="help-rule"><b>Magnet:</b> Tap the rim (Cost: 1 Mag).</div>
+        <div class="help-rule"><b>Goal:</b> Connect 4 tokens in a line (any direction).</div>
+        <div class="help-rule"><b>Gravity:</b> Tokens always fall <b>DOWN</b> relative to current orientation.</div>
+        <div class="help-rule"><b>Drop:</b> Tap a cell to drop your token in that column.</div>
+        <div class="help-rule"><b>Rotate:</b> Use <span style="color:#ffd54f">⟲ ⟳</span> buttons (Cost: 1 Flip token).</div>
+        <div class="help-rule"><b>Magnet:</b> Tap board edges to activate magnets (Cost: 1 Mag token).</div>
+        <div class="help-rule"><b>Advanced:</b> Combine rotate + magnet to extract opponent pieces!</div>
         <div class="card-btns" style="margin-top:20px;">
-            <button id="helpBtnBack" class="btn-act">Back</button>
+            <button id="helpBtnBack" class="btn-act">Back to Game</button>
         </div>
         <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
             <button id="btnAdd" class="btn-dev" style="width:100%">DEV: Add +2 Tokens</button>
+            <button id="btnAnalyze" class="btn-dev" style="width:100%; margin-top:8px;" onclick="analyzeBoard()">Analyze Current Board</button>
         </div>
       </div>
     </div>
@@ -225,30 +329,72 @@
 (() => {
   "use strict";
 
+  // =========================================================================
+  // CONSTANTS & STATE
+  // =========================================================================
   const ROWS = 8, COLS = 8;
   const P_EMPTY = 0, P_RED = 1, P_YEL = 2;
-  const MAGNET_LIFE = 6; 
+  const MAGNET_LIFE = 6;
+  const CW_MAP = { 0: 3, 1: 0, 2: 1, 3: 2 };
+  const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 };
+  
+  // New constants for enhanced AI
+  const PATTERN_DB = {
+    lines: [
+      [[0,0],[0,1],[0,2],[0,3]], [[0,0],[1,0],[2,0],[3,0]], 
+      [[0,0],[1,1],[2,2],[3,3]], [[3,0],[2,1],[1,2],[0,3]]
+    ],
+    strong3: [ [[0,0],[0,1],[0,2]], [[0,0],[1,0],[2,0]], [[0,0],[1,1],[2,2]] ],
+    forks: [
+      {pattern: [[0,1],[1,0],[1,1],[1,2],[2,1]], score: 150},
+      {pattern: [[0,0],[0,2],[1,1],[2,0],[2,2]], score: 120}
+    ]
+  };
   
   let grid = [];
-  let mag = { top: [], bottom: [], left: [], right: [] }; 
-  let gravityDir = 0; 
-  let boardAngle = 0; 
+  let mag = { top: [], bottom: [], left: [], right: [] };
+  let gravityDir = 0;
+  let boardAngle = 0;
   let targetAngle = 0;
   let curPlayer = P_RED;
   let tokens = {};
   let history = [];
   let gameOver = false;
-  let gameInProgress = false; 
-  let gameMode = 2; 
-  let aiLevel = 2; 
+  let gameInProgress = false;
+  let gameMode = 2;
+  let aiLevel = 2;
   let animating = false;
-  let anims = []; 
-  let hiddenCells = []; 
-  let pendingSettle = false; 
-  let aiTimer = null; 
+  let anims = [];
+  let hiddenCells = [];
+  let pendingSettle = false;
+  let aiTimer = null;
   let isReviewing = false;
   let reviewIndex = 0;
-
+  
+  // Enhanced AI Configuration
+  let humanPlayer = P_RED;
+  let cpuPlayer = P_YEL;
+  let cpuFirst = false;
+  let aiDifficulty = 'balanced'; 
+  let aiPersonality = {
+    balanced: { riskTolerance: 0.5, toolConservation: 0.7, depthBias: 1.0 },
+    aggressive: { riskTolerance: 0.8, toolConservation: 0.3, depthBias: 0.8 },
+    defensive: { riskTolerance: 0.2, toolConservation: 0.9, depthBias: 1.2 }
+  };
+  
+  // Advanced AI State
+  let AI_DEADLINE = 0;
+  let AI_ABORT = false;
+  let AI_NODES = 0;
+  const AI_CHECK_EVERY = 512;
+  let AI_TT = new Map();
+  const AI_TT_MAX = 200000;
+  const AI_NODE_CAP = 1000000;
+  
+  // Pattern Recognition Cache
+  let patternCache = new Map();
+  let threatCache = new Map();
+  
   const canvas = document.getElementById("c");
   const ctx = canvas.getContext("2d", { alpha: false });
   const hudTurn = document.getElementById("turnInfo");
@@ -262,364 +408,458 @@
   const winnerCard = document.getElementById("winnerCard");
   const controlBar = document.getElementById("controls");
   const reviewBar = document.getElementById("review-controls");
+  const aiThinking = document.getElementById("aiThinking");
 
+  // =========================================================================
+  // ENHANCED UI CONTROLS
+  // =========================================================================
+  window.toggleFirstMove = function() {
+    cpuFirst = !cpuFirst;
+    const toggle = document.getElementById("firstMoveToggle");
+    const labelHuman = document.getElementById("labelHuman");
+    const labelCPU = document.getElementById("labelCPU");
+    if (cpuFirst) {
+      toggle.classList.add("cpu-first");
+      labelHuman.classList.remove("active"); labelCPU.classList.add("active");
+    } else {
+      toggle.classList.remove("cpu-first");
+      labelHuman.classList.add("active"); labelCPU.classList.remove("active");
+    }
+  }
+  
+  window.selectDifficulty = function(diff) {
+    aiDifficulty = diff;
+    document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('diff' + diff.charAt(0).toUpperCase() + diff.slice(1)).classList.add('active');
+  }
+  
+  // =========================================================================
+  // GAME SETUP
+  // =========================================================================
   window.startGame = function(mode, level) {
     gameMode = mode;
     aiLevel = level;
     gameInProgress = true;
+    if (cpuFirst) { humanPlayer = P_YEL; cpuPlayer = P_RED; } else { humanPlayer = P_RED; cpuPlayer = P_YEL; }
     menuCard.classList.add('hidden');
     hintCard.classList.add('hidden');
     helpCard.classList.add('hidden');
     elOverlay.style.display = "none";
     initGame();
   }
-  
+
   window.toggleMenu = function() {
-      if (elOverlay.style.display === "flex") {
-          if (menuCard.classList.contains('hidden') && !helpCard.classList.contains('hidden')) {
-             elOverlay.style.display = "none";
-             helpCard.classList.add('hidden');
-          } else {
-             if (gameInProgress) {
-                 elOverlay.style.display = "none";
-                 menuCard.classList.add('hidden');
-             }
-          }
+    if (elOverlay.style.display === "flex") {
+      if (menuCard.classList.contains('hidden') && !helpCard.classList.contains('hidden')) {
+        elOverlay.style.display = "none"; helpCard.classList.add('hidden');
       } else {
-          showMainMenu();
+        if (gameInProgress) { elOverlay.style.display = "none"; menuCard.classList.add('hidden'); }
       }
+    } else showMainMenu();
   }
 
   function showMainMenu() {
     elOverlay.style.display = "flex";
     menuCard.classList.remove('hidden');
-    hintCard.classList.add('hidden');
-    helpCard.classList.add('hidden');
+    hintCard.classList.add('hidden'); helpCard.classList.add('hidden');
     winnerCard.classList.remove('visible');
   }
 
   function showHelp() {
     elOverlay.style.display = "flex";
     helpCard.classList.remove('hidden');
-    menuCard.classList.add('hidden');
-    hintCard.classList.add('hidden');
+    menuCard.classList.add('hidden'); hintCard.classList.add('hidden');
   }
 
   function initGame() {
-    grid = Array.from({length: ROWS}, () => Array(COLS).fill(P_EMPTY));
-    mag = {
-      top: Array(COLS).fill(null), bottom: Array(COLS).fill(null),
-      left: Array(ROWS).fill(null), right: Array(ROWS).fill(null)
-    };
-    gravityDir = 0;
-    boardAngle = 0;
-    targetAngle = 0;
-    curPlayer = P_RED;
-    
-    // --- MODE CONFIGURATION ---
-    if (aiLevel === 2) {
-        // STANDARD (Classic): 0 Tools
-        tokens = { [P_RED]: { flip: 0, mag: 0 }, [P_YEL]: { flip: 0, mag: 0 } };
-    } else if (aiLevel === 3) {
-        // EXPERT: 2x Tools
-        tokens = { [P_RED]: { flip: 2, mag: 2 }, [P_YEL]: { flip: 2, mag: 2 } };
-    } else {
-        // PRO: 3x Tools
-        tokens = { [P_RED]: { flip: 3, mag: 3 }, [P_YEL]: { flip: 3, mag: 3 } };
-    }
+    grid = Array.from({ length: ROWS }, () => Array(COLS).fill(P_EMPTY));
+    mag = { top: Array(COLS).fill(null), bottom: Array(COLS).fill(null), left: Array(ROWS).fill(null), right: Array(ROWS).fill(null) };
+    gravityDir = 0; boardAngle = 0; targetAngle = 0; curPlayer = P_RED;
 
-    history = [];
-    gameOver = false;
-    animating = false;
-    anims = [];
-    hiddenCells = [];
-    pendingSettle = false;
+    if (aiLevel === 2) tokens = { [P_RED]: { flip: 0, mag: 0 }, [P_YEL]: { flip: 0, mag: 0 } };
+    else if (aiLevel === 3) tokens = { [P_RED]: { flip: 2, mag: 2 }, [P_YEL]: { flip: 2, mag: 2 } };
+    else if (aiLevel === 4) tokens = { [P_RED]: { flip: 3, mag: 3 }, [P_YEL]: { flip: 3, mag: 3 } };
+    else tokens = { [P_RED]: { flip: 5, mag: 5, regen: true }, [P_YEL]: { flip: 5, mag: 5, regen: true } };
+
+    history = []; gameOver = false; animating = false; anims = []; hiddenCells = []; pendingSettle = false;
     winnerCard.classList.remove('visible');
     
-    pushHistory();
-    syncUI();
-    lastTime = 0;
+    AI_TT.clear(); patternCache.clear(); threatCache.clear();
+    pushHistory(); syncUI(); lastTime = 0;
     requestAnimationFrame(initLoop);
+    checkAI();
   }
 
-  // --- SAVE / LOAD / REVIEW ---
-  window.saveGame = function() {
-      if (history.length === 0 && !gameOver) return alert("Game hasn't started!");
-      const fullLog = [...history, cloneState()];
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullLog, null, 2));
-      const a = document.createElement('a');
-      a.setAttribute("href", dataStr);
-      a.setAttribute("download", "flip4m_replay_" + new Date().getTime() + ".json");
-      document.body.appendChild(a); a.click(); a.remove();
-  }
-
-  window.loadGameTrigger = function() { document.getElementById('file-input').click(); }
-  window.loadGameFile = function(input) {
-      const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = function(e) {
-          try {
-              const h = JSON.parse(e.target.result);
-              if (Array.isArray(h) && h.length > 0) {
-                  const currentState = h.pop();
-                  history = h; 
-                  restoreState(currentState);
-                  menuCard.classList.add('hidden');
-                  elOverlay.style.display = 'none';
-                  alert("Game Loaded!");
-              } else alert("Invalid Save");
-          } catch(err) { alert("Error Loading File"); }
-      };
-      reader.readAsText(file);
-      input.value = '';
-  }
-
-  window.startReview = function() {
-      if (history.length === 0) return alert("No history!");
-      isReviewing = true;
-      reviewIndex = 0;
-      menuCard.classList.add('hidden'); elOverlay.style.display = 'none';
-      controlBar.classList.add('ctrl-hidden'); reviewBar.classList.remove('ctrl-hidden');
-      restoreState(history[0]);
-  }
-
-  window.endReview = function() {
-      isReviewing = false;
-      if(history.length > 0) restoreState(history[history.length - 1]);
-      controlBar.classList.remove('ctrl-hidden'); reviewBar.classList.add('ctrl-hidden');
-      syncUI();
-  }
-
-  window.reviewStep = function(dir) {
-      let n = reviewIndex + dir;
-      if (n >= 0 && n < history.length) { 
-          reviewIndex = n; 
-          restoreState(history[reviewIndex]); 
+  // =========================================================================
+  // ENHANCED AI ENGINE - GRANDMASTER VII
+  // =========================================================================
+  
+  function scanPatterns(g, player) {
+    const cacheKey = g.map(r => r.join('')).join('') + player;
+    if (patternCache.has(cacheKey)) return patternCache.get(cacheKey);
+    let patterns = { immediateWins: 0, strongThreats: 0, weakThreats: 0, centerControl: 0 };
+    
+    // Center control
+    for (let r = 2; r < 6; r++) for (let c = 2; c < 6; c++) 
+        if (g[r][c] === player) patterns.centerControl += (r===3||r===4)&&(c===3||c===4) ? 3 : 1;
+    
+    // Line patterns
+    const directions = [[0,1],[1,0],[1,1],[-1,1]];
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        if (g[r][c] !== player) continue;
+        for(let d of directions) {
+            let count=0, empty=0;
+            for(let i=0; i<4; i++) {
+                let nr = r + d[0]*i, nc = c + d[1]*i;
+                if(nr>=0 && nr<ROWS && nc>=0 && nc<COLS) {
+                    if(g[nr][nc]===player) count++; else if(g[nr][nc]===P_EMPTY) empty++;
+                }
+            }
+            if(count===4) patterns.immediateWins++;
+            else if(count===3 && empty===1) patterns.strongThreats++;
+            else if(count===2 && empty===2) patterns.weakThreats++;
+        }
       }
+    }
+    patternCache.set(cacheKey, patterns);
+    return patterns;
   }
-
-  // --- AI ENGINE (GRANDMASTER FIXED) ---
+  
+  function detectThreats(g, gDir, mState, player, playerToks) {
+    const opponent = player === P_RED ? P_YEL : P_RED;
+    let threats = { immediateWin: false, rotationWin: false, rotateMagnetWin: false, ourThreats: 0, opponentThreats: 0 };
+    
+    if (checkWin(g) === player) { threats.immediateWin = true; return threats; }
+    
+    // Rotation win check
+    for (let delta of [1, -1]) {
+      let newDir = delta === 1 ? CCW_MAP[gDir] : CW_MAP[gDir];
+      let rotated = settleGridComplete(g, newDir, mState);
+      if (checkWin(rotated) === player) { threats.rotationWin = true; break; }
+    }
+    
+    // Rotate + Magnet Win (Extraction)
+    if (playerToks.flip > 0 && playerToks.mag > 0) {
+      for (let delta of [1, -1]) {
+        let newDir = delta === 1 ? CCW_MAP[gDir] : CW_MAP[gDir];
+        let rotated = settleGridComplete(g, newDir, mState);
+        let lines = getAllLines();
+        for (let line of lines) {
+          let pc = 0, oc = 0, blocker = null;
+          for (let pos of line) {
+            let v = rotated[pos.r][pos.c];
+            if (v === player) pc++; else if (v === opponent) { oc++; blocker = pos; }
+          }
+          if (pc === 3 && oc === 1 && blocker && (blocker.r===0 || blocker.r===ROWS-1 || blocker.c===0 || blocker.c===COLS-1)) {
+             threats.rotateMagnetWin = true; break;
+          }
+        }
+        if (threats.rotateMagnetWin) break;
+      }
+    }
+    
+    let p1 = scanPatterns(g, player);
+    let p2 = scanPatterns(g, opponent);
+    threats.ourThreats = p1.strongThreats;
+    threats.opponentThreats = p2.strongThreats;
+    return threats;
+  }
+  
+  function getAdaptiveSearchParams(positionComplexity, gamePhase) {
+    let personality = aiPersonality[aiDifficulty];
+    let baseDepth = 6;
+    if (gamePhase === 'early') baseDepth = 7; 
+    if (gamePhase === 'late') baseDepth = 6; 
+    baseDepth = Math.max(4, Math.floor(baseDepth * personality.depthBias));
+    let timeBudget = 1000 + (baseDepth * 350);
+    if (aiLevel >= 4) timeBudget *= 1.5;
+    return { depth: baseDepth, timeBudget, personality };
+  }
+  
+  function orderMoves(moves, g, gDir, mState, player) {
+    const center = (COLS - 1) / 2;
+    moves.forEach(m => {
+      m.orderScore = 0;
+      if (checkWin(m.grid) === player) m.orderScore += 1000000;
+      const opponent = player === P_RED ? P_YEL : P_RED;
+      if (checkWin(m.grid) === opponent) m.orderScore -= 500000;
+      
+      let threats = detectThreats(m.grid, m.gDir || gDir, m.magState || mState, player, tokens[player]);
+      m.orderScore += threats.ourThreats * 5000;
+      m.orderScore -= threats.opponentThreats * 6000;
+      
+      if (m.type === 'drop') m.orderScore += (10 - Math.abs(m.col - center)) * 100;
+      
+      if (m.type !== 'drop') {
+        let personality = aiPersonality[aiDifficulty];
+        m.orderScore -= (1000 * (1 - personality.toolConservation));
+        if (threats.rotationWin || threats.rotateMagnetWin) m.orderScore += 20000;
+      }
+    });
+    moves.sort((a, b) => b.orderScore - a.orderScore);
+    return moves;
+  }
+  
   function checkAI() {
     if (aiTimer) clearTimeout(aiTimer);
-    if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating && !isReviewing) {
-        document.body.style.cursor = "wait";
-        aiTimer = setTimeout(() => { makeAIMove(); document.body.style.cursor = "default"; }, 50);
+    if (gameMode === 1 && curPlayer === cpuPlayer && !gameOver && !animating && !isReviewing) {
+      aiThinking.classList.add('visible');
+      document.body.style.cursor = "wait";
+      aiTimer = setTimeout(() => { 
+        makeAIMove(); 
+        aiThinking.classList.remove('visible');
+        document.body.style.cursor = "default"; 
+      }, 100);
     }
   }
-
+  
   function makeAIMove() {
-    let depth = 6; 
-    let hasTools = (tokens[P_YEL].flip > 0 || tokens[P_YEL].mag > 0);
-
-    if (aiLevel === 2) { 
-        if (hasTools) { depth = 9; console.log("GM Mode Active"); } 
-        else depth = 8;
-    } else if (aiLevel === 3) depth = 7; // Increased Depth for Expert
-    else if (aiLevel === 4) depth = 6; 
+    if (gameOver || animating || isReviewing) return;
+    const aiToks = { flip: tokens[cpuPlayer].flip, mag: tokens[cpuPlayer].mag };
+    const oppToks = { flip: tokens[humanPlayer].flip, mag: tokens[humanPlayer].mag };
     
-    let aiTokens = hasTools ? tokens[P_YEL] : { flip: 0, mag: 0 };
+    let totalPieces = grid.flat().filter(c => c !== P_EMPTY).length;
+    let gamePhase = totalPieces < 16 ? 'early' : totalPieces < 32 ? 'mid' : 'late';
+    let positionComplexity = Math.min(1, (aiToks.flip + aiToks.mag + oppToks.flip + oppToks.mag) / 12);
+    let searchParams = getAdaptiveSearchParams(positionComplexity, gamePhase);
     
-    // 1. SANITY CHECK
-    let sanityMove = getSanityMove(grid, gravityDir, aiTokens, P_YEL, mag);
-    if (sanityMove) { executeMove(sanityMove); return; }
-
-    // 2. SEARCH
-    let moves = getPossibleMoves(grid, gravityDir, aiTokens, P_YEL, mag);
-    let center = (COLS - 1) / 2;
-    moves.sort((a,b) => {
-       let capA = (a.type === 'magnet') ? 50 : 0; 
-       let capB = (b.type === 'magnet') ? 50 : 0;
-       let sa = (a.type==='drop') ? 10 - Math.abs(center-a.col) : 0;
-       let sb = (b.type==='drop') ? 10 - Math.abs(center-b.col) : 0;
-       return (sb + capB) - (sa + capA); 
-    });
-
-    let bestMove = null, bestScore = -Infinity;
-    let alpha = -Infinity, beta = Infinity;
-
-    for (let m of moves) {
-        let d = depth;
-        // Branch reduction for heavy tool usage
-        if (hasTools && (m.type === 'flip' || m.type === 'magnet') && depth < 9) d = Math.max(3, depth - 2); 
-
-        // Pass 'hasTools' as the 'advanced' flag to enable fragility checks
-        let score = minimax(m.grid, m.gDir, m.magState, d - 1, alpha, beta, false, hasTools);
+    const _nowMs = () => performance.now ? performance.now() : Date.now();
+    AI_DEADLINE = _nowMs() + searchParams.timeBudget;
+    AI_ABORT = false; AI_NODES = 0;
+    if (AI_TT.size > AI_TT_MAX * 0.8) AI_TT.clear();
+    
+    let allMoves = getPossibleMoves(grid, gravityDir, aiToks, cpuPlayer, mag);
+    
+    // 1. Instant Win
+    for (let m of allMoves) { if (checkWin(m.grid) === cpuPlayer) { executeMove(m); return; } }
+    
+    // 2. Block Immediate Loss
+    let oppThreats = detectThreats(grid, gravityDir, mag, humanPlayer, oppToks);
+    if (oppThreats.immediateWin) {
+      let blockingMove = findBlockingMove(allMoves, grid, gravityDir, mag, humanPlayer);
+      if (blockingMove) { executeMove(blockingMove); return; }
+    }
+    
+    // 3. Search
+    allMoves = orderMoves(allMoves, grid, gravityDir, mag, cpuPlayer);
+    let bestMove = allMoves[0];
+    let bestScore = -Infinity;
+    
+    for (let depth = 1; depth <= searchParams.depth; depth++) {
+      if (_nowMs() > AI_DEADLINE) { AI_ABORT = true; break; }
+      let localBest = null, localBestScore = -Infinity;
+      let alpha = -Infinity, beta = Infinity;
+      
+      for (let m of allMoves) {
+        if (AI_ABORT) break;
+        let searchDepth = (m.type !== 'drop' && depth > 3) ? Math.max(2, depth - 1) : depth;
         
-        // THRIFT
-        if (hasTools && score < 5000) {
-            if(m.type === 'flip') score -= 300; 
-            if(m.type === 'magnet') score -= 500; 
-        }
-
-        if (score > bestScore) { bestScore = score; bestMove = m; }
-        alpha = Math.max(alpha, bestScore);
-        if(alpha >= beta) break;
-    }
-
-    if (bestMove) executeMove(bestMove);
-    else if (moves.length > 0) executeMove(moves[0]); 
-    else if (hasTools && tokens[P_YEL].flip > 0) doFlip(1); 
-  }
-
-  function getSanityMove(g, gDir, toks, p, mState) {
-      let opponent = (p === P_RED) ? P_YEL : P_RED;
-      let myMoves = getPossibleMoves(g, gDir, toks, p, mState);
-      
-      for (let m of myMoves) if (checkWin(m.grid) === p) return m; 
-      
-      let oppSimpleMoves = getPossibleMoves(g, gDir, {flip:0, mag:0}, opponent, mState);
-      let simpleKiller = oppSimpleMoves.find(om => om.type === 'drop' && checkWin(om.grid) === opponent);
-      if (simpleKiller) {
-          let blockMove = myMoves.find(m => m.type === 'drop' && m.col === simpleKiller.col);
-          if (blockMove) return blockMove; 
+        let score = enhancedNegamax(m.grid, m.gDir || gravityDir, m.magState || mag, 
+                                   searchDepth - 1, -beta, -alpha, humanPlayer, 
+                                   searchParams.personality);
+        
+        if (m.type !== 'drop') score += 500 * searchParams.personality.riskTolerance;
+        
+        if (score > localBestScore) { localBestScore = score; localBest = m; }
+        alpha = Math.max(alpha, localBestScore);
+        if (alpha >= beta) break;
       }
-      return null;
+      
+      if (localBest && localBestScore > bestScore) { bestMove = localBest; bestScore = localBestScore; }
+      if (AI_ABORT) break;
+    }
+    
+    if (!bestMove && allMoves.length > 0) bestMove = allMoves[0];
+    executeMove(bestMove);
   }
-
-  function minimax(g, gDir, mState, depth, alpha, beta, isMax, advanced) {
+  
+  function enhancedNegamax(g, gDir, mState, depth, alpha, beta, player, personality) {
+    AI_NODES++;
+    if ((AI_NODES & (AI_CHECK_EVERY - 1)) === 0) {
+      if (performance.now() > AI_DEADLINE || AI_NODES > AI_NODE_CAP) AI_ABORT = true;
+    }
+    if (AI_ABORT) return evaluatePosition(g, gDir, mState, player, personality);
+    
     let winner = checkWin(g);
-    if (winner === P_YEL) return 100000 + depth * 1000; 
-    if (winner === P_RED) return -100000 - depth * 1000; 
-    if (depth <= 0) return evaluateBoard(g, gDir, mState, advanced); 
-
-    let player = isMax ? P_YEL : P_RED;
-    let simTokens = advanced ? (depth > 2 ? { flip:1, mag:0 } : { flip:0, mag:0 }) : { flip:0, mag:0 };
-    let moves = getPossibleMoves(g, gDir, simTokens, player, mState);
-    let center = (COLS - 1) / 2;
-    moves.sort((a,b) => {
-        let sa = (a.type==='drop') ? 10 - Math.abs(center-a.col) : 0;
-        let sb = (b.type==='drop') ? 10 - Math.abs(center-b.col) : 0;
-        return sb - sa;
-    });
-
-    if (isMax) { 
-        let maxEval = -Infinity;
-        for (let m of moves) {
-            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, false, advanced);
-            maxEval = Math.max(maxEval, evalVal);
-            alpha = Math.max(alpha, evalVal);
-            if (beta <= alpha) break; 
-        }
-        return maxEval;
-    } else { 
-        let minEval = Infinity;
-        for (let m of moves) {
-            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, true, advanced);
-            minEval = Math.min(minEval, evalVal);
-            beta = Math.min(beta, evalVal);
-            if (beta <= alpha) break;
-        }
-        return minEval;
+    if (winner === cpuPlayer) return 100000 + depth * 100;
+    if (winner === humanPlayer) return -100000 - depth * 100;
+    if (depth <= 0) return evaluatePosition(g, gDir, mState, player, personality);
+    
+    const ttKey = g.map(r => r.join('')).join('') + gDir + player + depth;
+    if (AI_TT.has(ttKey)) {
+      let entry = AI_TT.get(ttKey);
+      if (entry.depth >= depth) {
+        if (entry.flag === 'exact') return entry.value;
+        if (entry.flag === 'lower') alpha = Math.max(alpha, entry.value);
+        else if (entry.flag === 'upper') beta = Math.min(beta, entry.value);
+        if (alpha >= beta) return entry.value;
+      }
     }
+    
+    let moves = getPossibleMoves(g, gDir, player === cpuPlayer ? tokens[cpuPlayer] : {flip:0, mag:0}, player, mState);
+    moves = orderMoves(moves, g, gDir, mState, player);
+    if (moves.length === 0) return 0;
+    
+    let bestValue = -Infinity, bestMove = moves[0];
+    const opponent = player === P_RED ? P_YEL : P_RED;
+    
+    for (let m of moves) {
+      if (AI_ABORT) break;
+      let value = -enhancedNegamax(m.grid, m.gDir || gDir, m.magState || mState, 
+                                   depth - 1, -beta, -alpha, opponent, personality);
+      if (value > bestValue) { bestValue = value; bestMove = m; }
+      alpha = Math.max(alpha, bestValue);
+      if (alpha >= beta) break;
+    }
+    
+    let flag = 'exact';
+    if (bestValue <= alpha) flag = 'upper'; else if (bestValue >= beta) flag = 'lower';
+    AI_TT.set(ttKey, { value: bestValue, depth, flag, bestMove: bestMove.type });
+    return bestValue;
   }
-
-  function evaluateBoard(g, grav, mState, advanced) {
-      let score = 0;
-      score += analyzeLines(g, P_YEL, mState, advanced) * 1.0;
-      score -= analyzeLines(g, P_RED, mState, advanced) * 1.2; 
-      
-      // FIXED FRAGILITY CHECK (Prevent Extraction)
-      // Removed "aiLevel >= 4" gate. Now runs if 'advanced' (tools exist).
-      if (advanced) {
-          let cwDir = CW_MAP[grav];
-          let simGrid = settleGridComplete(g, cwDir, {top:[],bottom:[],left:[],right:[]}); 
-          score += (analyzeLines(simGrid, P_YEL, mState, false) - analyzeLines(simGrid, P_RED, mState, false)*1.5) * 0.3;
+  
+  function evaluatePosition(g, gDir, mState, player, personality) {
+    const isAITurn = (player === cpuPlayer);
+    const aiPerspective = isAITurn ? 1 : -1;
+    let score = 0;
+    
+    let aiPatterns = scanPatterns(g, cpuPlayer);
+    let humanPatterns = scanPatterns(g, humanPlayer);
+    
+    score += aiPatterns.immediateWins * 100000 - humanPatterns.immediateWins * 100000;
+    score += aiPatterns.strongThreats * 5000 - humanPatterns.strongThreats * 6000;
+    score += aiPatterns.weakThreats * 200 - humanPatterns.weakThreats * 250;
+    score += aiPatterns.centerControl * 50 - humanPatterns.centerControl * 60;
+    
+    let aiTools = tokens[cpuPlayer].flip + tokens[cpuPlayer].mag;
+    let humanTools = tokens[humanPlayer].flip + tokens[humanPlayer].mag;
+    score += (aiTools - humanTools) * 300;
+    
+    // Fragility Check (Gemini)
+    for (let newDir of [CW_MAP[gDir], CCW_MAP[gDir]]) {
+      let rotated = settleGridComplete(g, newDir, mState);
+      score += evaluateStatic(rotated) * 0.3;
+    }
+    
+    if (personality) score = score * (0.9 + personality.riskTolerance * 0.2);
+    return score * aiPerspective;
+  }
+  
+  function evaluateStatic(g) {
+    let score = 0;
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+        if (g[r][c] === cpuPlayer) score += (14 - (Math.abs(r-3.5)+Math.abs(c-3.5))) * 10;
+        else if (g[r][c] === humanPlayer) score -= (14 - (Math.abs(r-3.5)+Math.abs(c-3.5))) * 12;
+    }
+    return score;
+  }
+  
+  function findBlockingMove(moves, g, gDir, mState, opponent) {
+    let oppMoves = getPossibleMoves(g, gDir, tokens[opponent] || {flip:0, mag:0}, opponent, mState);
+    let oppWinningMoves = oppMoves.filter(m => checkWin(m.grid) === opponent);
+    if (oppWinningMoves.length === 0) return null;
+    for (let oppWin of oppWinningMoves) {
+      if (oppWin.type === 'drop') {
+        let block = moves.find(m => m.type === 'drop' && m.col === oppWin.col);
+        if (block) return block;
       }
-      return score;
+    }
+    return moves[0];
   }
-
-  function analyzeLines(g, p, mState, advanced) {
-      let score = 0;
-      for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]], p, advanced);
-      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS; c++) score += scoreWindow([g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]], p, advanced);
-      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]], p, advanced);
-      for(let r=3; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r-1][c+1], g[r-2][c+2], g[r-3][c+3]], p, advanced);
-      return score;
+  
+  function getPrincipalVariation() { return []; }
+  
+  // =========================================================================
+  // ENHANCED HINT SYSTEM
+  // =========================================================================
+  window.analyzeBoard = function() {
+    let analysis = analyzePosition(grid, gravityDir, mag, curPlayer, tokens[curPlayer]);
+    alert(`Board Analysis:\nScore: ${analysis.score}\nThreats: ${analysis.threats}\nRecommendation: ${analysis.bestMove}`);
   }
-
-  function scoreWindow(window, p, advanced) {
-      let count = window.filter(x => x === p).length;
-      let empty = window.filter(x => x === P_EMPTY).length;
-      let opp = window.filter(x => x !== p && x !== P_EMPTY).length;
-      
-      if (opp > 0) {
-          // Fragility Awareness (Grandmaster Logic)
-          // Enabled for any 'advanced' context (Expert/Pro/GodMode)
-          if (advanced && count === 3 && opp === 1) {
-              return 50; // Threat potential (if extracted)
-          }
-          return 0; 
-      }
-      
-      if (count === 4) return 10000;
-      if (count === 3 && empty === 1) return 200; 
-      if (count === 2 && empty === 2) return 10;
-      return 0;
+  
+  function analyzePosition(g, gDir, mState, player, playerToks) {
+    let moves = getPossibleMoves(g, gDir, playerToks, player, mState);
+    if (moves.length === 0) return { score: 0, threats: "None", bestMove: "No moves" };
+    moves = orderMoves(moves, g, gDir, mState, player);
+    let bestMove = moves[0];
+    let score = evaluatePosition(g, gDir, mState, player, aiPersonality.balanced);
+    let threats = detectThreats(g, gDir, mState, player, playerToks);
+    let threatDesc = [];
+    if (threats.immediateWin) threatDesc.push("Immediate win");
+    if (threats.rotationWin) threatDesc.push("Rotation win");
+    if (threats.rotateMagnetWin) threatDesc.push("Rotate+Magnet combo");
+    if (threats.ourThreats > 0) threatDesc.push(`${threats.ourThreats} strong threats`);
+    return { score: Math.round(score), threats: threatDesc.length > 0 ? threatDesc.join(", ") : "None", bestMove: formatMove(bestMove), moveType: bestMove.type };
   }
-
-  function executeMove(m) {
-      if (m.type === 'drop') doDrop(0, m.col);
-      else if (m.type === 'flip') doFlip(m.delta);
-      else if (m.type === 'magnet') doMagnet(m.side, m.idx);
-  }
-
+  
+  document.getElementById("btnHint").onclick = () => {
+    if (gameMode === 1 && curPlayer === cpuPlayer) return;
+    elOverlay.style.display = "flex";
+    menuCard.classList.add('hidden'); helpCard.classList.add('hidden'); hintCard.classList.remove('hidden');
+    document.getElementById("hintMsg").textContent = "Analyzing position...";
+    document.getElementById("hintAnalysis").style.display = "none";
+    setTimeout(() => {
+      const analysis = analyzePosition(grid, gravityDir, mag, curPlayer, tokens[curPlayer]);
+      document.getElementById("hintMsg").textContent = analysis.bestMove;
+      document.getElementById("hintScore").textContent = `Score: ${analysis.score}`;
+      document.getElementById("hintThreats").textContent = `Threats: ${analysis.threats}`;
+      document.getElementById("hintRecommendation").textContent = `Recommendation: ${analysis.bestMove}`;
+      document.getElementById("hintAnalysis").style.display = "block";
+    }, 150);
+    document.getElementById("hintBtnResume").onclick = () => { elOverlay.style.display = "none"; hintCard.classList.add('hidden'); };
+  };
+  
+  // =========================================================================
+  // CORE GAME FUNCTIONS
+  // =========================================================================
   function getPossibleMoves(g, gDir, toks, p, mState) {
-      let moves = [];
-      for(let i=0; i<COLS; i++) {
-          let t = getDropTarget(g, gDir, i);
-          if (t) {
-              let nextG = g.map(r=>[...r]);
-              nextG[t.r][t.c] = p;
-              nextG = settleGridComplete(nextG, gDir, mState); 
-              moves.push({ type:'drop', col:i, grid:nextG, gDir:gDir, magState:mState });
-          }
-      }
-      if(toks.flip > 0) { 
-          let ccwDir = CCW_MAP[gDir];
-          let gCCW = settleGridComplete(g, ccwDir, mState); 
-          moves.push({ type:'flip', delta:1, grid:gCCW, gDir:ccwDir, magState:mState });
-          let cwDir = CW_MAP[gDir];
-          let gCW = settleGridComplete(g, cwDir, mState);
-          moves.push({ type:'flip', delta:-1, grid:gCW, gDir:cwDir, magState:mState });
-      }
-      if(toks.mag > 0) {
-          const sides = [0,1,2,3];
-          for(let side of sides) {
-              for(let idx=0; idx<COLS; idx++) {
-                  let curM = getMag(mState, side, idx);
-                  if (curM && curM.p === p) continue; 
-                  let nextMState = cloneMagState(mState);
-                  let opp = (side + 2) % 4;
-                  let oppVal = getMag(nextMState, opp, idx); 
-                  let arrName = ['top','right','bottom','left'][side];
-                  let oppName = ['top','right','bottom','left'][opp];
-                  if (oppVal && oppVal.p !== p) nextMState[oppName][idx] = null;
-                  else nextMState[arrName][idx] = { p: p, life: MAGNET_LIFE };
-                  let nextG = settleGridComplete(g, gDir, nextMState);
-                  moves.push({ type:'magnet', side, idx, grid:nextG, gDir, magState:nextMState });
-              }
-          }
-      }
-      return moves;
+    let moves = [];
+    for(let i=0; i<COLS; i++) {
+        let t = getDropTarget(g, gDir, i);
+        if (t) {
+            let nextG = g.map(r=>[...r]); nextG[t.r][t.c] = p;
+            nextG = settleGridComplete(nextG, gDir, mState); 
+            moves.push({ type:'drop', col:i, grid:nextG, gDir:gDir, magState:mState });
+        }
+    }
+    if(toks.flip > 0) { 
+        let ccwDir = CCW_MAP[gDir], gCCW = settleGridComplete(g, ccwDir, mState); 
+        moves.push({ type:'flip', delta:1, grid:gCCW, gDir:ccwDir, magState:mState });
+        let cwDir = CW_MAP[gDir], gCW = settleGridComplete(g, cwDir, mState);
+        moves.push({ type:'flip', delta:-1, grid:gCW, gDir:cwDir, magState:mState });
+    }
+    if(toks.mag > 0) {
+        const sides = [0,1,2,3];
+        for(let side of sides) {
+            for(let idx=0; idx<COLS; idx++) {
+                let curM = getMag(mState, side, idx);
+                if (curM && curM.p === p) continue; 
+                let nextMState = cloneMagState(mState);
+                let opp = (side + 2) % 4, oppVal = getMag(nextMState, opp, idx); 
+                let arrName = ['top','right','bottom','left'][side], oppName = ['top','right','bottom','left'][opp];
+                if (oppVal && oppVal.p !== p) nextMState[oppName][idx] = null;
+                else nextMState[arrName][idx] = { p: p, life: MAGNET_LIFE };
+                let nextG = settleGridComplete(g, gDir, nextMState);
+                moves.push({ type:'magnet', side, idx, grid:nextG, gDir, magState:nextMState });
+            }
+        }
+    }
+    return moves;
   }
-
+  
   function getMag(mState, side, idx) {
-      if(side===0) return mState.top[idx];
-      if(side===1) return mState.right[idx];
-      if(side===2) return mState.bottom[idx];
-      if(side===3) return mState.left[idx];
+      return [mState.top, mState.right, mState.bottom, mState.left][side][idx];
   }
-
   function cloneMag(mArr) { return mArr.map(m => m ? { ...m } : null); }
-  function cloneMagState(ms) {
-      return { top: cloneMag(ms.top), bottom: cloneMag(ms.bottom), left: cloneMag(ms.left), right: cloneMag(ms.right) };
-  }
+  function cloneMagState(ms) { return { top: cloneMag(ms.top), bottom: cloneMag(ms.bottom), left: cloneMag(ms.left), right: cloneMag(ms.right) }; }
+  
   function cloneState() {
     return {
       grid: grid.map(r => [...r]), mag: cloneMagState(mag),
       gravityDir, boardAngle, targetAngle, curPlayer,
       tokens: JSON.parse(JSON.stringify(tokens)),
-      gameOver, gameInProgress
+      gameOver, gameInProgress, humanPlayer, cpuPlayer
     };
   }
   function restoreState(s) {
@@ -627,17 +867,13 @@
     gravityDir = s.gravityDir; boardAngle = s.boardAngle; targetAngle = s.targetAngle;
     curPlayer = s.curPlayer; tokens = JSON.parse(JSON.stringify(s.tokens));
     gameOver = s.gameOver; gameInProgress = s.gameInProgress;
-    animating = false; anims = []; hiddenCells = []; pendingSettle = false;
-    isReviewing = false;
+    if (s.humanPlayer) humanPlayer = s.humanPlayer; if (s.cpuPlayer) cpuPlayer = s.cpuPlayer;
+    animating = false; anims = []; hiddenCells = []; pendingSettle = false; isReviewing = false;
     winnerCard.classList.remove('visible'); syncUI();
   }
   function pushHistory() { history.push(cloneState()); if (history.length > 50) history.shift(); }
-  function undo() {
-    if (animating || history.length === 0 || isReviewing) return;
-    if (aiTimer) clearTimeout(aiTimer);
-    restoreState(history.pop()); 
-    if (gameMode === 1 && history.length > 0) restoreState(history.pop());
-  }
+  function undo() { if (animating || history.length === 0 || isReviewing) return; if (aiTimer) clearTimeout(aiTimer); restoreState(history.pop()); if (gameMode === 1 && history.length > 0) restoreState(history.pop()); }
+  
   function isPinned(r, c, mState) {
     if (r === 0 && mState.top[c]) return true;
     if (r === ROWS - 1 && mState.bottom[c]) return true;
@@ -663,8 +899,25 @@
     while(safety++ < 60) { let step = physicsStep(g, dir, mState); if (!step.changed) break; g = step.nextG; }
     return g;
   }
+  function checkWin(g) {
+    for (let r=0; r<ROWS; r++) for (let c=0; c<COLS; c++) {
+        let p = g[r][c]; if (!p) continue;
+        if (c<=COLS-4 && g[r][c+1]===p && g[r][c+2]===p && g[r][c+3]===p) return p;
+        if (r<=ROWS-4 && g[r+1][c]===p && g[r+2][c]===p && g[r+3][c]===p) return p;
+        if (r<=ROWS-4 && c<=COLS-4 && g[r+1][c+1]===p && g[r+2][c+2]===p && g[r+3][c+3]===p) return p;
+        if (r<=ROWS-4 && c>=3 && g[r+1][c-1]===p && g[r+2][c-2]===p && g[r+3][c-3]===p) return p;
+    }
+    return 0;
+  }
+  function getAllLines() {
+      let lines = [];
+      for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) lines.push([{r,c},{r,c:c+1},{r,c:c+2},{r,c:c+3}]);
+      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS; c++) lines.push([{r,c},{r:r+1,c},{r:r+2,c},{r:r+3,c}]);
+      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) lines.push([{r,c},{r:r+1,c:c+1},{r:r+2,c:c+2},{r:r+3,c:c+3}]);
+      for(let r=3; r<ROWS; r++) for(let c=0; c<COLS-3; c++) lines.push([{r,c},{r:r-1,c:c+1},{r:r-2,c:c+2},{r:r-3,c:c+3}]);
+      return lines;
+  }
   function spawnTransitions(oldG, newG, type) {
-    let isVert = (gravityDir === 0 || gravityDir === 2);
     let speed = type === 'drop' ? 320 : 280; 
     const getToks = (g, isRow, idx) => {
         let arr = [];
@@ -672,6 +925,7 @@
         else { for(let r=0; r<ROWS; r++) if(g[r][idx]) arr.push({p:g[r][idx], r:r, c:idx}); }
         return arr;
     };
+    let isVert = (gravityDir === 0 || gravityDir === 2);
     if (isVert) {
       for (let c=0; c<COLS; c++) {
         let oldToks = getToks(oldG, false, c), newToks = getToks(newG, false, c);
@@ -681,14 +935,12 @@
             let found = -1;
             for(let i=0; i<newToks.length; i++) if(!usedNew[i] && newToks[i].p === o.p) { found=i; break; }
             if(found !== -1) {
-                usedNew[found] = true;
-                let n = newToks[found];
+                usedNew[found] = true; let n = newToks[found];
                 if(o.r !== n.r || o.c !== n.c) { anims.push({ type: 'slide', p: o.p, r: o.r, c: o.c, destR: n.r, destC: n.c, t: 0, dur: speed }); hiddenCells.push({r: n.r, c: n.c}); }
             }
         });
         for(let i=0; i<newToks.length; i++) if(!usedNew[i]) {
-            let n = newToks[i];
-            let sr = (gravityDir===0) ? -2 : ROWS+1;
+            let n = newToks[i]; let sr = (gravityDir===0) ? -2 : ROWS+1;
             anims.push({ type: 'drop', p: n.p, r: sr, c: n.c, destR: n.r, destC: n.c, t: 0, dur: speed });
             hiddenCells.push({r: n.r, c: n.c});
         }
@@ -702,39 +954,30 @@
             let found = -1;
             for(let i=0; i<newToks.length; i++) if(!usedNew[i] && newToks[i].p === o.p) { found=i; break; }
             if(found !== -1) {
-                usedNew[found] = true;
-                let n = newToks[found];
+                usedNew[found] = true; let n = newToks[found];
                 if(o.r !== n.r || o.c !== n.c) { anims.push({ type: 'slide', p: o.p, r: o.r, c: o.c, destR: n.r, destC: n.c, t: 0, dur: speed }); hiddenCells.push({r: n.r, c: n.c}); }
             }
         });
         for(let i=0; i<newToks.length; i++) if(!usedNew[i]) {
-            let n = newToks[i];
-            let sc = (gravityDir===1) ? COLS+1 : -2;
+            let n = newToks[i]; let sc = (gravityDir===1) ? COLS+1 : -2;
             anims.push({ type: 'drop', p: n.p, r: n.r, c: sc, destR: n.r, destC: n.c, t: 0, dur: speed });
             hiddenCells.push({r: n.r, c: n.c});
         }
       }
     }
   }
-
   function applyActionAndAnimate(actionFn) {
     if(animating || gameOver || isReviewing) return;
-    let oldG = grid.map(r=>[...r]);
-    pushHistory();
-    actionFn(); 
+    let oldG = grid.map(r=>[...r]); pushHistory(); actionFn(); 
     let finalG = settleGridComplete(grid, gravityDir, mag);
     spawnTransitions(oldG, finalG, 'drop');
     grid = finalG;
-    if(anims.length > 0) animating = true;
-    else endTurn();
+    if(anims.length > 0) animating = true; else endTurn();
   }
-
   function doDrop(row, col) {
     let rEnt, cEnt;
-    if (gravityDir === 0) { rEnt=0; cEnt=col; }
-    else if (gravityDir === 1) { rEnt=row; cEnt=COLS-1; }
-    else if (gravityDir === 2) { rEnt=ROWS-1; cEnt=col; }
-    else { rEnt=row; cEnt=0; }
+    if (gravityDir === 0) { rEnt=0; cEnt=col; } else if (gravityDir === 1) { rEnt=row; cEnt=COLS-1; }
+    else if (gravityDir === 2) { rEnt=ROWS-1; cEnt=col; } else { rEnt=row; cEnt=0; }
     let rT = rEnt, cT = cEnt, found = false;
     for (let i=0; i<ROWS; i++) {
         let rCheck = rEnt, cCheck = cEnt;
@@ -745,7 +988,6 @@
     if (!found) return; 
     applyActionAndAnimate(() => { grid[rT][cT] = curPlayer; });
   }
-
   function doMagnet(side, idx) {
     if (tokens[curPlayer].mag <= 0) return;
     let opp = (side + 2) % 4;
@@ -763,81 +1005,51 @@
         }
     });
   }
-
-  const CW_MAP =  { 0: 3, 1: 0, 2: 1, 3: 2 }; 
-  const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 }; 
-
   function doFlip(dirDelta) {
     if (tokens[curPlayer].flip <= 0) return;
     if(animating || gameOver || isReviewing) return;
-    pushHistory();
-    tokens[curPlayer].flip--;
-    let oldA = boardAngle;
-    targetAngle = oldA + (dirDelta === 1 ? -Math.PI/2 : Math.PI/2);
+    pushHistory(); tokens[curPlayer].flip--;
+    let oldA = boardAngle; targetAngle = oldA + (dirDelta === 1 ? -Math.PI/2 : Math.PI/2);
     if (dirDelta === -1) gravityDir = CW_MAP[gravityDir]; else gravityDir = CCW_MAP[gravityDir];
     anims.push({ type: 'rotate', startA: oldA, endA: targetAngle, t: 0, dur: 500 });
-    pendingSettle = true;
-    animating = true;
+    pendingSettle = true; animating = true;
   }
-
   function triggerSettleAfterRotate() {
     let oldG = grid.map(r=>[...r]);
     let finalG = settleGridComplete(grid, gravityDir, mag);
     spawnTransitions(oldG, finalG, 'slide');
     grid = finalG;
   }
-
+  function executeMove(m) {
+      if (m.type === 'drop') doDrop(0, m.col);
+      else if (m.type === 'flip') doFlip(m.delta);
+      else if (m.type === 'magnet') doMagnet(m.side, m.idx);
+  }
   function endTurn() {
     const w = checkWin(grid);
     if (w) {
       gameOver = true;
       let msg = (w===P_RED?"Red Wins!":"Yellow Wins!");
-      if (gameMode === 1 && w === P_RED) msg = "You Win!";
-      if (gameMode === 1 && w === P_YEL) msg = "CPU Wins!";
-      
+      if (gameMode === 1) msg = (w === humanPlayer) ? "You Win!" : "CPU Wins!";
       document.getElementById("winTitle").textContent = msg;
       document.getElementById("winSub").textContent = "Connect Four!";
-      
-      const b1 = document.getElementById("winBtnMain");
-      const b2 = document.getElementById("winBtnSec");
-      b1.onclick = () => { showMainMenu(); };
-      b2.onclick = () => { undo(); };
-      
-      winnerCard.classList.add('visible');
-      syncUI();
+      winnerCard.classList.add('visible'); syncUI();
     } else {
       if (!grid.some(r => r.includes(P_EMPTY))) {
-        gameOver = true;
-        document.getElementById("winTitle").textContent = "Draw!";
-        document.getElementById("winSub").textContent = "Board Full";
-        document.getElementById("winBtnMain").onclick = () => { showMainMenu(); };
-        document.getElementById("winBtnSec").onclick = () => { undo(); };
-        winnerCard.classList.add('visible');
-        syncUI();
+        gameOver = true; document.getElementById("winTitle").textContent = "Draw!";
+        winnerCard.classList.add('visible'); syncUI();
       } else {
         const decay = (arr) => arr.forEach((m, i) => { if (m) { m.life--; if (m.life <= 0) arr[i] = null; } });
         decay(mag.top); decay(mag.bottom); decay(mag.left); decay(mag.right);
+        if (aiLevel === 5) {
+          if (tokens[P_RED].regen && Math.random() < 0.1 && tokens[P_RED].flip < 5) tokens[P_RED].flip++;
+          if (tokens[P_YEL].regen && Math.random() < 0.1 && tokens[P_YEL].mag < 5) tokens[P_YEL].mag++;
+        }
         curPlayer = (curPlayer === P_RED) ? P_YEL : P_RED;
-        syncUI();
-        checkAI();
+        syncUI(); checkAI();
       }
     }
   }
-
-  function checkWin(g) {
-    for (let r=0; r<ROWS; r++) {
-      for (let c=0; c<COLS; c++) {
-        let p = g[r][c];
-        if (!p) continue;
-        if (c<=COLS-4 && g[r][c+1]===p && g[r][c+2]===p && g[r][c+3]===p) return p;
-        if (r<=ROWS-4 && g[r+1][c]===p && g[r+2][c]===p && g[r+3][c]===p) return p;
-        if (r<=ROWS-4 && c<=COLS-4 && g[r+1][c+1]===p && g[r+2][c+2]===p && g[r+3][c+3]===p) return p;
-        if (r<=ROWS-4 && c>=3 && g[r+1][c-1]===p && g[r+2][c-2]===p && g[r+3][c-3]===p) return p;
-      }
-    }
-    return 0;
-  }
-
   function getDropTarget(g, dir, idx) {
     let rEnt, cEnt;
     if (dir === 0) { rEnt=0; cEnt=idx; } else if (dir === 1) { rEnt=idx; cEnt=COLS-1; }
@@ -850,124 +1062,53 @@
     }
     return found ? {r:rT, c:cT} : null;
   }
-
-  function runHintSimulation() {
-      let moves = getPossibleMoves(grid, gravityDir, tokens[curPlayer], curPlayer, mag);
-      if(moves.length === 0) return "No moves available!";
-      let bestMove = null;
-      let bestScore = -Infinity;
-      
-      let sanity = getSanityMove(grid, gravityDir, tokens[curPlayer], curPlayer, mag);
-      if(sanity) return formatMoveString(sanity) + (checkWin(sanity.grid) ? " (Win)" : " (Block!)");
-
-      for(let m of moves) {
-          if (checkWin(m.grid) === curPlayer) return formatMoveString(m) + " (Wins)";
-          let score = minimax(m.grid, m.gDir, m.magState, 5, -Infinity, Infinity, false, true);
-          if(score > bestScore) { bestScore = score; bestMove = m; }
-      }
-      if(!bestMove) return "Try a random move.";
-      return formatMoveString(bestMove);
-  }
-
-  function formatMoveString(m) {
+  function formatMove(m) {
       if(m.type === 'drop') return `Drop at Column ${String.fromCharCode(65 + m.col)}`; 
       if(m.type === 'flip') return `Rotate ${m.delta === 1 ? 'CCW ⟲' : 'CW ⟳'}`;
       if(m.type === 'magnet') return `Magnet: ${["Top", "Right", "Bottom", "Left"][m.side]}`;
       return "Unknown";
   }
-
+  
   let lastTime = 0;
   function initLoop(now) { lastTime = now; requestAnimationFrame(loop); }
   function loop(now) {
-    let dt = now - lastTime;
-    lastTime = now;
-    if (dt > 50) dt = 50; 
-    updateAnims(dt);
-    render();
-    requestAnimationFrame(loop);
+    let dt = now - lastTime; lastTime = now; if (dt > 50) dt = 50; 
+    updateAnims(dt); render(); requestAnimationFrame(loop);
   }
-
   function updateAnims(dt) {
     if (!animating) return;
     let stillAnimating = false;
     let rot = anims.find(a=>a.type==='rotate');
     if(rot) {
         rot.t += dt/rot.dur;
-        if(rot.t>=1) { 
-            rot.t=1; boardAngle=rot.endA; anims=anims.filter(a=>a!==rot);
-            if(pendingSettle) { pendingSettle = false; triggerSettleAfterRotate(); stillAnimating = true; }
-        } else { 
-            let p = rot.t<.5 ? 2*rot.t*rot.t : -1+(4-2*rot.t)*rot.t; boardAngle = rot.startA + (rot.endA-rot.startA)*p; stillAnimating = true; 
-        }
+        if(rot.t>=1) { rot.t=1; boardAngle=rot.endA; anims=anims.filter(a=>a!==rot); if(pendingSettle) { pendingSettle = false; triggerSettleAfterRotate(); stillAnimating = true; } } 
+        else { let p = rot.t<.5 ? 2*rot.t*rot.t : -1+(4-2*rot.t)*rot.t; boardAngle = rot.startA + (rot.endA-rot.startA)*p; stillAnimating = true; }
     }
-    anims.forEach(a => {
-        if(a.type==='rotate') return;
-        a.t += dt/a.dur;
-        if(a.t < 1) stillAnimating = true; else a.t = 1;
-    });
-    if(!stillAnimating && !rot) {
-        anims = anims.filter(a => a.t < 1);
-        if(anims.length === 0) { animating = false; hiddenCells = []; endTurn(); }
-    }
+    anims.forEach(a => { if(a.type==='rotate') return; a.t += dt/a.dur; if(a.t < 1) stillAnimating = true; else a.t = 1; });
+    if(!stillAnimating && !rot) { anims = anims.filter(a => a.t < 1); if(anims.length === 0) { animating = false; hiddenCells = []; endTurn(); } }
   }
-
   function render() {
-    if (canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-    }
-    const W = canvas.width, H = canvas.height;
-    const cx = W/2, cy = H/2;
-    const size = Math.min(W, H) * 0.96;
-    const cell = size / (Math.max(ROWS, COLS) + 2);
-    const boardW = COLS * cell;
-
-    ctx.fillStyle = "#0b0f17";
-    ctx.fillRect(0,0,W,H);
+    if (canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
+    const W = canvas.width, H = canvas.height, cx = W/2, cy = H/2;
+    const size = Math.min(W, H) * 0.96, cell = size / (Math.max(ROWS, COLS) + 2), boardW = COLS * cell;
+    ctx.fillStyle = "#0b0f17"; ctx.fillRect(0,0,W,H);
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(boardAngle);
-    
-    ctx.fillStyle = "#1e2535";
-    ctx.beginPath(); ctx.roundRect(-boardW/2 - cell*0.2, -boardW/2 - cell*0.2, boardW + cell*0.4, boardW + cell*0.4, 12);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.1)"; ctx.lineWidth = 2; ctx.stroke();
-    
-    ctx.fillStyle = "#8fa1b8";
-    ctx.font = "bold 15px monospace";
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    for(let c=0; c<COLS; c++) {
-        let x = -boardW/2 + c*cell + cell/2;
-        let char = String.fromCharCode(65 + c);
-        ctx.fillText(char, x, -boardW/2 - cell * 0.4);
-        ctx.fillText(char, x, boardW/2 + cell * 0.4);
-    }
-    for(let r=0; r<ROWS; r++) {
-        let y = -boardW/2 + r*cell + cell/2;
-        let num = (r + 1).toString();
-        ctx.fillText(num, -boardW/2 - cell * 0.4, y);
-        ctx.fillText(num, boardW/2 + cell * 0.4, y);
-    }
-
+    ctx.fillStyle = "#1e2535"; ctx.beginPath(); ctx.roundRect(-boardW/2 - cell*0.2, -boardW/2 - cell*0.2, boardW + cell*0.4, boardW + cell*0.4, 12); ctx.fill(); ctx.strokeStyle = "rgba(255,255,255,0.1)"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = "#8fa1b8"; ctx.font = "bold 15px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    for(let c=0; c<COLS; c++) { let x = -boardW/2 + c*cell + cell/2; ctx.fillText(String.fromCharCode(65 + c), x, -boardW/2 - cell * 0.4); ctx.fillText(String.fromCharCode(65 + c), x, boardW/2 + cell * 0.4); }
+    for(let r=0; r<ROWS; r++) { let y = -boardW/2 + r*cell + cell/2; ctx.fillText((r + 1).toString(), -boardW/2 - cell * 0.4, y); ctx.fillText((r + 1).toString(), boardW/2 + cell * 0.4, y); }
     ctx.translate(-boardW/2, -boardW/2);
-    
-    for (let r=0; r<ROWS; r++) {
-      for (let c=0; c<COLS; c++) {
-        const x = c*cell + cell/2;
-        const y = r*cell + cell/2;
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
-        ctx.beginPath(); ctx.arc(x, y, cell*0.4, 0, Math.PI*2); ctx.fill();
+    for (let r=0; r<ROWS; r++) for (let c=0; c<COLS; c++) {
+        const x = c*cell + cell/2, y = r*cell + cell/2;
+        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.beginPath(); ctx.arc(x, y, cell*0.4, 0, Math.PI*2); ctx.fill();
         if (hiddenCells.some(h => h.r===r && h.c===c && animating)) continue;
-        const val = grid[r][c];
-        if (val) drawToken(ctx, x, y, cell*0.4, val);
-      }
+        const val = grid[r][c]; if (val) drawToken(ctx, x, y, cell*0.4, val);
     }
     for (let a of anims) {
         if (a.type === 'rotate') continue;
         let p = a.t * a.t * (3 - 2 * a.t); 
-        if (a.type === 'drop') {
-            if (a.t < 0.7) p = (a.t/0.7)*(a.t/0.7); else { let t2 = (a.t - 0.7) / 0.3; p = 1 - Math.sin(t2 * Math.PI) * 0.05; }
-        }
-        let curR = a.r + (a.destR - a.r) * p;
-        let curC = a.c + (a.destC - a.c) * p;
+        if (a.type === 'drop') { if (a.t < 0.7) p = (a.t/0.7)**2; else { let t2 = (a.t - 0.7) / 0.3; p = 1 - Math.sin(t2 * Math.PI) * 0.05; } }
+        let curR = a.r + (a.destR - a.r) * p, curC = a.c + (a.destC - a.c) * p;
         drawToken(ctx, curC*cell + cell/2, curR*cell + cell/2, cell*0.4, a.p);
     }
     mag.top.forEach((m, i) => drawMag(ctx, i*cell + cell/2, -cell*0.6, cell, 0, m));
@@ -976,127 +1117,77 @@
     mag.right.forEach((m, i) => drawMag(ctx, boardW + cell*0.6, i*cell + cell/2, cell, 1, m));
     ctx.restore();
   }
-  
   function drawToken(ctx, x, y, r, p) {
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
-    ctx.fillStyle = (p === P_RED) ? "#e53935" : "#fdd835"; ctx.fill();
-    ctx.beginPath(); ctx.arc(x - r*0.3, y - r*0.3, r*0.2, 0, Math.PI*2);
-    ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.fill();
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fillStyle = (p === P_RED) ? "#e53935" : "#fdd835"; ctx.fill();
+    ctx.beginPath(); ctx.arc(x - r*0.3, y - r*0.3, r*0.2, 0, Math.PI*2); ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.fill();
   }
-  
   function drawMag(ctx, x, y, size, dir, m) {
     if (!m) return;
     ctx.save(); ctx.translate(x, y); ctx.rotate(dir * Math.PI/2);
     ctx.globalAlpha = 0.3 + (0.7 * (m.life / MAGNET_LIFE)); 
-    ctx.beginPath();
-    const r = size*0.35;
-    ctx.arc(0, 0, r, 0, Math.PI, true); ctx.lineTo(-r, r); ctx.lineTo(r, r); ctx.closePath();
-    ctx.fillStyle = (m.p === P_RED) ? "#e53935" : "#fdd835"; ctx.fill();
-    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
-    ctx.globalAlpha = 1;
-    for(let i=0; i<Math.ceil(m.life/2); i++) {
-        ctx.fillStyle = "#fff";
-        ctx.beginPath(); ctx.arc(-r + 4 + i*6, r - 4, 1.5, 0, Math.PI*2); ctx.fill();
-    }
+    ctx.beginPath(); const r = size*0.35; ctx.arc(0, 0, r, 0, Math.PI, true); ctx.lineTo(-r, r); ctx.lineTo(r, r); ctx.closePath();
+    ctx.fillStyle = (m.p === P_RED) ? "#e53935" : "#fdd835"; ctx.fill(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.globalAlpha = 1; for(let i=0; i<Math.ceil(m.life/2); i++) { ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(-r + 4 + i*6, r - 4, 1.5, 0, Math.PI*2); ctx.fill(); }
     ctx.restore();
   }
-
   function getBoardPos(evt) {
-    const rect = canvas.getBoundingClientRect();
-    let x = evt.clientX - rect.left, y = evt.clientY - rect.top;
+    const rect = canvas.getBoundingClientRect(); let x = evt.clientX - rect.left, y = evt.clientY - rect.top;
     const cx = canvas.width/2, cy = canvas.height/2;
     const dx = x - cx, dy = y - cy;
     const cos = Math.cos(-boardAngle), sin = Math.sin(-boardAngle);
     const rx = dx * cos - dy * sin, ry = dx * sin + dy * cos;
-    
-    const size = Math.min(canvas.width, canvas.height) * 0.96;
-    const cell = size / (Math.max(ROWS, COLS) + 2);
-    const boardSize = COLS * cell;
-    const halfB = boardSize / 2;
+    const size = Math.min(canvas.width, canvas.height) * 0.96, cell = size / (Math.max(ROWS, COLS) + 2);
+    const boardSize = COLS * cell, halfB = boardSize / 2;
     const gridX = rx + halfB, gridY = ry + halfB;
-    const col = Math.floor(gridX / cell);
-    const row = Math.floor(gridY / cell);
-    
+    const col = Math.floor(gridX / cell), row = Math.floor(gridY / cell);
     if (col >= 0 && col < COLS && row >= 0 && row < ROWS) return { type: 'CELL', r: row, c: col };
     const rimThick = cell * 1.2;
     if (rx > -halfB - rimThick && rx < halfB + rimThick && ry > -halfB - rimThick && ry < halfB + rimThick) {
-      if (Math.abs(rx) > Math.abs(ry)) return { type: 'RIM', side: rx < 0 ? 3 : 1, idx: row };
-      else return { type: 'RIM', side: ry < 0 ? 0 : 2, idx: col };
+      if (Math.abs(rx) > Math.abs(ry)) return { type: 'RIM', side: rx < 0 ? 3 : 1, idx: row }; else return { type: 'RIM', side: ry < 0 ? 0 : 2, idx: col };
     }
     return { type: 'NONE' };
   }
-
   function handleInput(e) {
     if (gameOver || animating || isReviewing) return;
-    if (gameMode === 1 && curPlayer === P_YEL) return;
+    if (gameMode === 1 && curPlayer === cpuPlayer) return;
     if (e.type === 'touchstart') e.preventDefault();
     const act = getBoardPos(e.type.includes('touch') ? e.changedTouches[0] : e);
     if (act.type === 'CELL') doDrop(act.r, act.c);
     else if (act.type === 'RIM' && act.idx >= 0 && act.idx < COLS) doMagnet(act.side, act.idx);
   }
-
   canvas.addEventListener('mousedown', handleInput);
   canvas.addEventListener('touchstart', handleInput, {passive:false});
-
+  
   function syncUI() {
     let pName = (curPlayer === P_RED ? "Red's Turn" : "Yellow's Turn");
-    if(gameMode === 1 && curPlayer === P_YEL) pName = "CPU Thinking...";
-    
+    if(gameMode === 1 && curPlayer === cpuPlayer) pName = "CPU Thinking...";
     hudTurn.textContent = gameOver ? "Game Over" : pName;
     hudTurn.style.color = curPlayer === P_RED ? "var(--red)" : "var(--yel)";
     hudR.textContent = `F:${tokens[P_RED].flip} M:${tokens[P_RED].mag}`;
     hudY.textContent = `F:${tokens[P_YEL].flip} M:${tokens[P_YEL].mag}`;
     hudGrav.textContent = `Grav: ${["↓", "←", "↑", "→"][gravityDir]}`;
-    
-    let disabled = (tokens[curPlayer].flip <= 0 || gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing);
+    let disabled = (tokens[curPlayer].flip <= 0 || gameOver || (gameMode===1 && curPlayer===cpuPlayer) || isReviewing);
     document.getElementById("btnCCW").disabled = disabled;
     document.getElementById("btnCW").disabled  = disabled;
-    document.getElementById("btnUndo").disabled = (history.length === 0 || gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing);
-    document.getElementById("btnHint").disabled = gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing;
-    document.getElementById("btnHelp").disabled = gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing;
+    document.getElementById("btnUndo").disabled = (history.length === 0 || gameOver || (gameMode===1 && curPlayer===cpuPlayer) || isReviewing);
+    document.getElementById("btnHint").disabled = gameOver || (gameMode===1 && curPlayer===cpuPlayer) || isReviewing;
+    document.getElementById("btnHelp").disabled = gameOver || (gameMode===1 && curPlayer===cpuPlayer) || isReviewing;
     document.getElementById("btnMenu").disabled = isReviewing; 
   }
   
-  document.getElementById("btnHint").onclick = () => { 
-      if (gameMode === 1 && curPlayer === P_YEL) return;
-      elOverlay.style.display = "flex";
-      menuCard.classList.add('hidden');
-      helpCard.classList.add('hidden');
-      hintCard.classList.remove('hidden');
-      document.getElementById("hintMsg").textContent = "Analyzing board...";
-      
-      setTimeout(() => {
-          const h = runHintSimulation();
-          document.getElementById("hintMsg").textContent = h;
-      }, 100);
-
-      document.getElementById("hintBtnResume").onclick = () => { 
-          elOverlay.style.display = "none"; 
-          hintCard.classList.add('hidden');
-      };
-  };
-
   document.getElementById("btnHelp").onclick = showHelp;
-  document.getElementById("helpBtnBack").onclick = () => {
-      elOverlay.style.display = "none";
-      helpCard.classList.add('hidden');
-  };
-  
+  document.getElementById("helpBtnBack").onclick = () => { elOverlay.style.display = "none"; helpCard.classList.add('hidden'); };
   document.getElementById("btnMenu").onclick = () => toggleMenu();
-
-  document.getElementById("btnCCW").onclick = () => { if(!(gameMode === 1 && curPlayer === P_YEL)) doFlip(1); };
-  document.getElementById("btnCW").onclick = () => { if(!(gameMode === 1 && curPlayer === P_YEL)) doFlip(-1); };
+  document.getElementById("btnCCW").onclick = () => { if(!(gameMode === 1 && curPlayer === cpuPlayer)) doFlip(1); };
+  document.getElementById("btnCW").onclick = () => { if(!(gameMode === 1 && curPlayer === cpuPlayer)) doFlip(-1); };
   document.getElementById("btnUndo").onclick = undo;
-  
-  document.getElementById("btnAdd").onclick = () => {
-    tokens[P_RED].flip+=2; tokens[P_RED].mag+=2; 
-    tokens[P_YEL].flip+=2; tokens[P_YEL].mag+=2; 
-    syncUI();
-  };
-  
+  document.getElementById("btnAdd").onclick = () => { tokens[P_RED].flip+=2; tokens[P_RED].mag+=2; tokens[P_YEL].flip+=2; tokens[P_YEL].mag+=2; syncUI(); };
+  document.getElementById("winBtnMain").onclick = () => showMainMenu();
+  document.getElementById("winBtnSec").onclick = () => undo();
+
   window.addEventListener('resize', render);
   showMainMenu();
-
+  selectDifficulty('balanced');
 })();
 </script>
 </body>
