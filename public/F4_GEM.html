@@ -3,9 +3,22 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Flip4M Grandmaster (Robust)</title>
+<title>Flip4M Grandmaster (Fixed)</title>
 <style>
-  html,body{height:100%;margin:0;background:#0b0f17;color:#e9eefc;font-family:system-ui,sans-serif;overflow:hidden;touch-action:none;}
+  :root{
+    --bg:#0b0f17;
+    --panel:#1e2535;
+    --text:#e9eefc;
+    --muted:#8fa1b8;
+    --accent:#3c78ff;
+    --red:#e53935;
+    --yel:#fdd835;
+    --green:#4caf50;
+    --btn:#26314a;
+    --btnBorder:rgba(255,255,255,0.1);
+    --gold:#ffd700;
+  }
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;overflow:hidden;touch-action:none;}
   
   #app {
     display:flex; flex-direction:column; height:100%; width:100%;
@@ -14,7 +27,7 @@
   /* HUD */
   #hud {
     flex-shrink:0; z-index:10;
-    background:#1e2535; border-bottom:1px solid rgba(255,255,255,0.1);
+    background:var(--panel); border-bottom:1px solid var(--btnBorder);
     padding: max(10px, env(safe-area-inset-top)) 12px 10px;
     display:flex; flex-direction:column; gap:5px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -22,8 +35,8 @@
   .row { display:flex; justify-content:space-between; align-items:center; }
   
   h1 { margin:0; font-size:18px; font-weight:900; letter-spacing:0.5px; }
-  .meta { font-size: 11px; color: #8fa1b8; margin-top: -2px; margin-bottom: 5px; opacity: 0.8; }
-  .status { font-size:13px; color:#8fa1b8; font-family:monospace; }
+  .meta { font-size: 11px; color: var(--muted); margin-top: -2px; margin-bottom: 5px; opacity: 0.8; }
+  .status { font-size:13px; color:var(--muted); font-family:monospace; }
   
   #tokens {
     display:flex; gap:16px; font-size:12px; font-weight:700;
@@ -31,12 +44,12 @@
   }
   .t-grp { display:flex; align-items:center; gap:6px; }
   .dot { width:8px; height:8px; border-radius:50%; }
-  .dot.r { background:#e53935; box-shadow:0 0 4px #e53935; }
-  .dot.y { background:#fdd835; box-shadow:0 0 4px #fdd835; }
+  .dot.r { background:var(--red); box-shadow:0 0 4px var(--red); }
+  .dot.y { background:var(--yel); box-shadow:0 0 4px var(--yel); }
 
   /* Canvas Stage */
   #game-stage {
-    flex-grow:1; position:relative; overflow:hidden; background:#0b0f17;
+    flex-grow:1; position:relative; overflow:hidden; background:var(--bg);
     display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
   }
   canvas { position:absolute; inset:0; display:block; width:100%; height:100%; z-index:1; }
@@ -45,7 +58,7 @@
   #winnerCard {
     position: absolute; top: 0; left: 0; right: 0; z-index: 50;
     background: rgba(30, 37, 53, 0.98); backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255,255,255,0.1); padding: 15px 20px;
+    border-bottom: 1px solid var(--btnBorder); padding: 15px 20px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.8);
     transform: translateY(-110%);
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -56,15 +69,15 @@
   
   .win-content { text-align: left; display:flex; flex-direction:column; gap:4px; }
   .trophy { font-size: 24px; }
-  .win-title { font-size: 20px; font-weight: 900; color: #ffd700; margin:0; line-height:1; }
-  .win-sub { font-size: 12px; color: #8fa1b8; margin:0; }
+  .win-title { font-size: 20px; font-weight: 900; color: var(--gold); margin:0; line-height:1; }
+  .win-sub { font-size: 12px; color: var(--muted); margin:0; }
   .win-btns { display:flex; gap:8px; }
   .win-btns button { padding:8px 16px; font-size:12px; border-radius:8px; height: auto; }
 
   /* Controls */
   #controls, #review-controls {
     flex-shrink:0; z-index:10;
-    background:#1e2535; border-top:1px solid rgba(255,255,255,0.1);
+    background:var(--panel); border-top:1px solid var(--btnBorder);
     padding: 10px 12px max(20px, env(safe-area-inset-bottom));
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
     width: 100%; max-width: 500px; margin: 0 auto; box-sizing: border-box;
@@ -72,7 +85,7 @@
   .ctrl-hidden { display: none !important; }
   
   button {
-    background:#26314a; border:1px solid rgba(255,255,255,0.1); color:#e9eefc;
+    background:var(--btn); border:1px solid var(--btnBorder); color:var(--text);
     padding:14px 0; border-radius:12px; font-weight:700; font-size:14px;
     cursor:pointer; touch-action:manipulation;
     transition:transform 0.1s, background 0.2s;
@@ -97,14 +110,14 @@
     display:flex; align-items:center; justify-content:center;
   }
   .card {
-    background:#1e2535; border:1px solid rgba(255,255,255,0.1);
+    background:var(--panel); border:1px solid var(--btnBorder);
     padding:24px; border-radius:16px; text-align:center;
     width: min(500px, 90vw); 
     box-shadow:0 20px 40px rgba(0,0,0,0.6);
     max-height: 80vh; overflow-y: auto;
   }
   .card h2 { margin:0 0 8px; font-size:24px; }
-  .card p { color:#8fa1b8; margin:0 0 10px; line-height:1.5; font-size:14px; }
+  .card p { color:var(--muted); margin:0 0 10px; line-height:1.5; font-size:14px; }
   .card-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
   .card-btns button { flex:1; min-width:140px; }
   .hidden { display: none !important; }
@@ -119,7 +132,7 @@
   <div id="hud">
     <div class="row">
       <div>
-        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Robust</span></h1>
+        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Fixed</span></h1>
         <div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
       </div>
       <div class="status" id="turnInfo">Red's Turn</div>
@@ -159,6 +172,7 @@
           <button class="btn-act" onclick="startGame(1, 3)">Expert (2x Tools)</button>
           <button class="btn-dang" onclick="startGame(1, 4)" style="border-color: #ffd700; color: #ffd700;">Pro (3x Tools)</button>
         </div>
+        
         <div class="feature-grid">
            <button class="btn-util" onclick="saveGame()">💾 Save</button>
            <button class="btn-util" onclick="loadGameTrigger()">📂 Load</button>
@@ -302,12 +316,15 @@
     targetAngle = 0;
     curPlayer = P_RED;
     
-    // --- DIFFICULTY TOOLS ---
+    // --- MODE CONFIGURATION ---
     if (aiLevel === 2) {
+        // STANDARD (Classic): 0 Tools
         tokens = { [P_RED]: { flip: 0, mag: 0 }, [P_YEL]: { flip: 0, mag: 0 } };
     } else if (aiLevel === 3) {
+        // EXPERT: 2x Tools
         tokens = { [P_RED]: { flip: 2, mag: 2 }, [P_YEL]: { flip: 2, mag: 2 } };
     } else {
+        // PRO: 3x Tools
         tokens = { [P_RED]: { flip: 3, mag: 3 }, [P_YEL]: { flip: 3, mag: 3 } };
     }
 
@@ -381,102 +398,58 @@
       }
   }
 
-  // --- AI ENGINE: "GATEKEEPER" ---
+  // --- AI ENGINE (GRANDMASTER FIXED) ---
   function checkAI() {
     if (aiTimer) clearTimeout(aiTimer);
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating && !isReviewing) {
         document.body.style.cursor = "wait";
-        // INCREASED THINK TIME SIMULATION
         aiTimer = setTimeout(() => { makeAIMove(); document.body.style.cursor = "default"; }, 50);
     }
   }
 
-  // SIMULATE END OF TURN (DECAY)
-  function advanceTurnSimulation(g, gDir, mState) {
-      let nextM = cloneMagState(mState);
-      let anyDied = false;
-      const decay = (arr) => arr.forEach((m, i) => { 
-          if (m) { 
-              m.life--; 
-              if (m.life <= 0) { arr[i] = null; anyDied = true; } 
-          } 
-      });
-      decay(nextM.top); decay(nextM.bottom); decay(nextM.left); decay(nextM.right);
-      
-      let nextG = g;
-      if (anyDied) {
-          nextG = settleGridComplete(g, gDir, nextM);
-      }
-      return { grid: nextG, magState: nextM };
-  }
-
-  // THE GATEKEEPER: "Can I use tools?"
-  function shouldConsiderTools(g, gDir, mState, aiToks, player) {
-    const opponent = (player === P_RED) ? P_YEL : P_RED;
-    
-    // A) Immediate Win?
-    if (aiToks.flip > 0 || aiToks.mag > 0) {
-      let toolMoves = getToolMoves(g, gDir, aiToks, player, mState);
-      for (let m of toolMoves) {
-        if (checkWin(m.grid) === player) return { allowed: true };
-      }
-    }
-    
-    // B) Immediate Loss to Opponent Drop?
-    let oppDrops = getDropMoves(g, gDir, opponent, mState);
-    for (let m of oppDrops) {
-      if (checkWin(m.grid) === opponent) return { allowed: true };
-    }
-    
-    // C) Magnet Collapse? (If MY piece falls due to decay, I might need to fix it)
-    // Implicit in minimax, but here we strict gate: No silly moves.
-    return { allowed: false };
-  }
-
   function makeAIMove() {
-    let depth = 8; 
-    if (aiLevel === 3) depth = 9; 
-    else if (aiLevel === 4) depth = 10; 
-    
-    let aiTokens = (tokens[P_YEL].flip > 0 || tokens[P_YEL].mag > 0) ? tokens[P_YEL] : { flip: 0, mag: 0 };
-    let hasTools = (aiTokens.flip > 0 || aiTokens.mag > 0);
+    let depth = 6; 
+    let hasTools = (tokens[P_YEL].flip > 0 || tokens[P_YEL].mag > 0);
 
-    // 1. SANITY CHECK (Win/Block)
+    if (aiLevel === 2) { 
+        if (hasTools) { depth = 9; console.log("GM Mode Active"); } 
+        else depth = 8;
+    } else if (aiLevel === 3) depth = 7; // Increased Depth for Expert
+    else if (aiLevel === 4) depth = 6; 
+    
+    let aiTokens = hasTools ? tokens[P_YEL] : { flip: 0, mag: 0 };
+    
+    // 1. SANITY CHECK
     let sanityMove = getSanityMove(grid, gravityDir, aiTokens, P_YEL, mag);
     if (sanityMove) { executeMove(sanityMove); return; }
 
-    // 2. GATEKEEPER
-    let gate = shouldConsiderTools(grid, gravityDir, mag, aiTokens, P_YEL);
-    let toolsAllowed = gate.allowed;
-    
-    // 3. GATHER MOVES
-    let moves = getDropMoves(grid, gravityDir, P_YEL, mag);
-    if (toolsAllowed || (moves.length === 0 && hasTools)) {
-        moves.push(...getToolMoves(grid, gravityDir, aiTokens, P_YEL, mag));
-        toolsAllowed = true; 
-    }
-    
-    // 4. SORT
+    // 2. SEARCH
+    let moves = getPossibleMoves(grid, gravityDir, aiTokens, P_YEL, mag);
     let center = (COLS - 1) / 2;
     moves.sort((a,b) => {
-       if (a.type !== b.type) return (a.type === 'drop' ? -1 : 1); 
+       let capA = (a.type === 'magnet') ? 50 : 0; 
+       let capB = (b.type === 'magnet') ? 50 : 0;
        let sa = (a.type==='drop') ? 10 - Math.abs(center-a.col) : 0;
        let sb = (b.type==='drop') ? 10 - Math.abs(center-b.col) : 0;
-       return sb - sa;
+       return (sb + capB) - (sa + capA); 
     });
 
-    // 5. SEARCH
     let bestMove = null, bestScore = -Infinity;
     let alpha = -Infinity, beta = Infinity;
 
     for (let m of moves) {
         let d = depth;
-        if (m.type !== 'drop') d = Math.max(3, depth - 2); 
+        // Branch reduction for heavy tool usage
+        if (hasTools && (m.type === 'flip' || m.type === 'magnet') && depth < 9) d = Math.max(3, depth - 2); 
 
-        let score = minimax(m.grid, m.gDir, m.magState, d - 1, alpha, beta, false, toolsAllowed);
+        // Pass 'hasTools' as the 'advanced' flag to enable fragility checks
+        let score = minimax(m.grid, m.gDir, m.magState, d - 1, alpha, beta, false, hasTools);
         
-        // Thrift Penalty: Tools cost points
-        if (m.type !== 'drop') score -= 500; 
+        // THRIFT
+        if (hasTools && score < 5000) {
+            if(m.type === 'flip') score -= 300; 
+            if(m.type === 'magnet') score -= 500; 
+        }
 
         if (score > bestScore) { bestScore = score; bestMove = m; }
         alpha = Math.max(alpha, bestScore);
@@ -503,24 +476,26 @@
       return null;
   }
 
-  function minimax(g, gDir, mState, depth, alpha, beta, isMax, toolsAllowed) {
+  function minimax(g, gDir, mState, depth, alpha, beta, isMax, advanced) {
     let winner = checkWin(g);
     if (winner === P_YEL) return 100000 + depth * 1000; 
     if (winner === P_RED) return -100000 - depth * 1000; 
-    if (depth <= 0) return evaluateBoard(g, gDir, mState); 
+    if (depth <= 0) return evaluateBoard(g, gDir, mState, advanced); 
 
     let player = isMax ? P_YEL : P_RED;
-    let moves = getDropMoves(g, gDir, player, mState);
-    
-    // Deep search optimizations
-    if (toolsAllowed && depth > 5) {
-        // Optional: Shallow check for tools here
-    }
+    let simTokens = advanced ? (depth > 2 ? { flip:1, mag:0 } : { flip:0, mag:0 }) : { flip:0, mag:0 };
+    let moves = getPossibleMoves(g, gDir, simTokens, player, mState);
+    let center = (COLS - 1) / 2;
+    moves.sort((a,b) => {
+        let sa = (a.type==='drop') ? 10 - Math.abs(center-a.col) : 0;
+        let sb = (b.type==='drop') ? 10 - Math.abs(center-b.col) : 0;
+        return sb - sa;
+    });
 
     if (isMax) { 
         let maxEval = -Infinity;
         for (let m of moves) {
-            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, false, toolsAllowed);
+            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, false, advanced);
             maxEval = Math.max(maxEval, evalVal);
             alpha = Math.max(alpha, evalVal);
             if (beta <= alpha) break; 
@@ -529,7 +504,7 @@
     } else { 
         let minEval = Infinity;
         for (let m of moves) {
-            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, true, toolsAllowed);
+            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, true, advanced);
             minEval = Math.min(minEval, evalVal);
             beta = Math.min(beta, evalVal);
             if (beta <= alpha) break;
@@ -538,121 +513,103 @@
     }
   }
 
-  function evaluateBoard(g, grav, mState) {
+  function evaluateBoard(g, grav, mState, advanced) {
       let score = 0;
-      score += analyzeLines(g, P_YEL) * 1.0;
-      score -= analyzeLines(g, P_RED) * 1.2; 
-      // FRAGILITY CHECK: Only applied to score calculation implicitly via analyzeLines
+      score += analyzeLines(g, P_YEL, mState, advanced) * 1.0;
+      score -= analyzeLines(g, P_RED, mState, advanced) * 1.2; 
+      
+      // FIXED FRAGILITY CHECK (Prevent Extraction)
+      // Removed "aiLevel >= 4" gate. Now runs if 'advanced' (tools exist).
+      if (advanced) {
+          let cwDir = CW_MAP[grav];
+          let simGrid = settleGridComplete(g, cwDir, {top:[],bottom:[],left:[],right:[]}); 
+          score += (analyzeLines(simGrid, P_YEL, mState, false) - analyzeLines(simGrid, P_RED, mState, false)*1.5) * 0.3;
+      }
       return score;
   }
 
-  function analyzeLines(g, p) {
+  function analyzeLines(g, p, mState, advanced) {
       let score = 0;
-      for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]], p, g, r, c, 0, 1);
-      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS; c++) score += scoreWindow([g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]], p, g, r, c, 1, 0);
-      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]], p, g, r, c, 1, 1);
-      for(let r=3; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r-1][c+1], g[r-2][c+2], g[r-3][c+3]], p, g, r, c, -1, 1);
+      for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]], p, advanced);
+      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS; c++) score += scoreWindow([g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]], p, advanced);
+      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]], p, advanced);
+      for(let r=3; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r-1][c+1], g[r-2][c+2], g[r-3][c+3]], p, advanced);
       return score;
   }
 
-  function isExtractable(g, r, c) {
-      let exposedTop = true; for(let i=r-1; i>=0; i--) if(g[i][c] !== P_EMPTY) exposedTop = false;
-      if (exposedTop) return true;
-      let exposedBot = true; for(let i=r+1; i<ROWS; i++) if(g[i][c] !== P_EMPTY) exposedBot = false;
-      if (exposedBot) return true;
-      let exposedLeft = true; for(let i=c-1; i>=0; i--) if(g[r][i] !== P_EMPTY) exposedLeft = false;
-      if (exposedLeft) return true;
-      let exposedRight = true; for(let i=c+1; i<COLS; i++) if(g[r][i] !== P_EMPTY) exposedRight = false;
-      if (exposedRight) return true;
-      return false;
-  }
-
-  function scoreWindow(window, p, g, rStart, cStart, rD, cD) {
+  function scoreWindow(window, p, advanced) {
       let count = window.filter(x => x === p).length;
       let empty = window.filter(x => x === P_EMPTY).length;
       let opp = window.filter(x => x !== p && x !== P_EMPTY).length;
       
       if (opp > 0) {
-          if (count === 3 && opp === 1) {
-              let blockerIdx = window.findIndex(x => x !== p && x !== P_EMPTY);
-              let bR = rStart + blockerIdx * rD;
-              let bC = cStart + blockerIdx * cD;
-              if (isExtractable(g, bR, bC)) return 15000; 
+          // Fragility Awareness (Grandmaster Logic)
+          // Enabled for any 'advanced' context (Expert/Pro/GodMode)
+          if (advanced && count === 3 && opp === 1) {
+              return 50; // Threat potential (if extracted)
           }
           return 0; 
       }
+      
       if (count === 4) return 10000;
       if (count === 3 && empty === 1) return 200; 
       if (count === 2 && empty === 2) return 10;
       return 0;
   }
 
-  // --- MOVE HELPERS ---
-  function getDropMoves(g, gDir, player, mState) {
+  function executeMove(m) {
+      if (m.type === 'drop') doDrop(0, m.col);
+      else if (m.type === 'flip') doFlip(m.delta);
+      else if (m.type === 'magnet') doMagnet(m.side, m.idx);
+  }
+
+  function getPossibleMoves(g, gDir, toks, p, mState) {
       let moves = [];
       for(let i=0; i<COLS; i++) {
           let t = getDropTarget(g, gDir, i);
           if (t) {
               let nextG = g.map(r=>[...r]);
-              nextG[t.r][t.c] = player;
-              let sim = advanceTurnSimulation(nextG, gDir, mState);
-              moves.push({ type:'drop', col:i, grid:sim.grid, gDir:gDir, magState:sim.magState });
+              nextG[t.r][t.c] = p;
+              nextG = settleGridComplete(nextG, gDir, mState); 
+              moves.push({ type:'drop', col:i, grid:nextG, gDir:gDir, magState:mState });
           }
       }
-      return moves;
-  }
-
-  function getToolMoves(g, gDir, toks, player, mState) {
-      let moves = [];
       if(toks.flip > 0) { 
           let ccwDir = CCW_MAP[gDir];
           let gCCW = settleGridComplete(g, ccwDir, mState); 
-          let simCCW = advanceTurnSimulation(gCCW, ccwDir, mState);
-          moves.push({ type:'flip', delta:1, grid:simCCW.grid, gDir:ccwDir, magState:simCCW.magState });
-
+          moves.push({ type:'flip', delta:1, grid:gCCW, gDir:ccwDir, magState:mState });
           let cwDir = CW_MAP[gDir];
           let gCW = settleGridComplete(g, cwDir, mState);
-          let simCW = advanceTurnSimulation(gCW, cwDir, mState);
-          moves.push({ type:'flip', delta:-1, grid:simCW.grid, gDir:cwDir, magState:simCW.magState });
+          moves.push({ type:'flip', delta:-1, grid:gCW, gDir:cwDir, magState:mState });
       }
       if(toks.mag > 0) {
           const sides = [0,1,2,3];
           for(let side of sides) {
               for(let idx=0; idx<COLS; idx++) {
                   let curM = getMag(mState, side, idx);
-                  if (curM && curM.p === player) continue; 
+                  if (curM && curM.p === p) continue; 
                   let nextMState = cloneMagState(mState);
                   let opp = (side + 2) % 4;
                   let oppVal = getMag(nextMState, opp, idx); 
                   let arrName = ['top','right','bottom','left'][side];
                   let oppName = ['top','right','bottom','left'][opp];
-                  if (oppVal && oppVal.p !== player) nextMState[oppName][idx] = null;
-                  else nextMState[arrName][idx] = { p: player, life: MAGNET_LIFE };
-                  
+                  if (oppVal && oppVal.p !== p) nextMState[oppName][idx] = null;
+                  else nextMState[arrName][idx] = { p: p, life: MAGNET_LIFE };
                   let nextG = settleGridComplete(g, gDir, nextMState);
-                  let sim = advanceTurnSimulation(nextG, gDir, nextMState);
-                  moves.push({ type:'magnet', side, idx, grid:sim.grid, gDir, gDir, magState:sim.magState });
+                  moves.push({ type:'magnet', side, idx, grid:nextG, gDir, magState:nextMState });
               }
           }
       }
       return moves;
   }
 
-  function getPossibleMoves(g, gDir, toks, p, mState) {
-      let moves = getDropMoves(g, gDir, p, mState);
-      if (toks.flip > 0 || toks.mag > 0) {
-          moves.push(...getToolMoves(g, gDir, toks, p, mState));
-      }
-      return moves;
-  }
-
-  // --- RENDER & INPUT ---
   function getMag(mState, side, idx) {
       if(side===0) return mState.top[idx];
       if(side===1) return mState.right[idx];
       if(side===2) return mState.bottom[idx];
       if(side===3) return mState.left[idx];
   }
+
   function cloneMag(mArr) { return mArr.map(m => m ? { ...m } : null); }
   function cloneMagState(ms) {
       return { top: cloneMag(ms.top), bottom: cloneMag(ms.bottom), left: cloneMag(ms.left), right: cloneMag(ms.right) };
@@ -789,6 +746,136 @@
     applyActionAndAnimate(() => { grid[rT][cT] = curPlayer; });
   }
 
+  function doMagnet(side, idx) {
+    if (tokens[curPlayer].mag <= 0) return;
+    let opp = (side + 2) % 4;
+    let oppVal = (opp===0) ? getMag(mag, 0, idx) : (opp===1) ? getMag(mag, 1, idx) : (opp===2) ? getMag(mag, 2, idx) : getMag(mag, 3, idx);
+    const opponent = (curPlayer === P_RED) ? P_YEL : P_RED;
+    applyActionAndAnimate(() => {
+        tokens[curPlayer].mag--;
+        if (oppVal && oppVal.p === opponent) {
+             if(opp===0) mag.top[idx]=null; else if(opp===1) mag.right[idx]=null;
+             else if(opp===2) mag.bottom[idx]=null; else mag.left[idx]=null;
+        } else {
+             let m = { p: curPlayer, life: MAGNET_LIFE };
+             if(side===0) mag.top[idx]=m; else if(side===1) mag.right[idx]=m;
+             else if(side===2) mag.bottom[idx]=m; else mag.left[idx]=m;
+        }
+    });
+  }
+
+  const CW_MAP =  { 0: 3, 1: 0, 2: 1, 3: 2 }; 
+  const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 }; 
+
+  function doFlip(dirDelta) {
+    if (tokens[curPlayer].flip <= 0) return;
+    if(animating || gameOver || isReviewing) return;
+    pushHistory();
+    tokens[curPlayer].flip--;
+    let oldA = boardAngle;
+    targetAngle = oldA + (dirDelta === 1 ? -Math.PI/2 : Math.PI/2);
+    if (dirDelta === -1) gravityDir = CW_MAP[gravityDir]; else gravityDir = CCW_MAP[gravityDir];
+    anims.push({ type: 'rotate', startA: oldA, endA: targetAngle, t: 0, dur: 500 });
+    pendingSettle = true;
+    animating = true;
+  }
+
+  function triggerSettleAfterRotate() {
+    let oldG = grid.map(r=>[...r]);
+    let finalG = settleGridComplete(grid, gravityDir, mag);
+    spawnTransitions(oldG, finalG, 'slide');
+    grid = finalG;
+  }
+
+  function endTurn() {
+    const w = checkWin(grid);
+    if (w) {
+      gameOver = true;
+      let msg = (w===P_RED?"Red Wins!":"Yellow Wins!");
+      if (gameMode === 1 && w === P_RED) msg = "You Win!";
+      if (gameMode === 1 && w === P_YEL) msg = "CPU Wins!";
+      
+      document.getElementById("winTitle").textContent = msg;
+      document.getElementById("winSub").textContent = "Connect Four!";
+      
+      const b1 = document.getElementById("winBtnMain");
+      const b2 = document.getElementById("winBtnSec");
+      b1.onclick = () => { showMainMenu(); };
+      b2.onclick = () => { undo(); };
+      
+      winnerCard.classList.add('visible');
+      syncUI();
+    } else {
+      if (!grid.some(r => r.includes(P_EMPTY))) {
+        gameOver = true;
+        document.getElementById("winTitle").textContent = "Draw!";
+        document.getElementById("winSub").textContent = "Board Full";
+        document.getElementById("winBtnMain").onclick = () => { showMainMenu(); };
+        document.getElementById("winBtnSec").onclick = () => { undo(); };
+        winnerCard.classList.add('visible');
+        syncUI();
+      } else {
+        const decay = (arr) => arr.forEach((m, i) => { if (m) { m.life--; if (m.life <= 0) arr[i] = null; } });
+        decay(mag.top); decay(mag.bottom); decay(mag.left); decay(mag.right);
+        curPlayer = (curPlayer === P_RED) ? P_YEL : P_RED;
+        syncUI();
+        checkAI();
+      }
+    }
+  }
+
+  function checkWin(g) {
+    for (let r=0; r<ROWS; r++) {
+      for (let c=0; c<COLS; c++) {
+        let p = g[r][c];
+        if (!p) continue;
+        if (c<=COLS-4 && g[r][c+1]===p && g[r][c+2]===p && g[r][c+3]===p) return p;
+        if (r<=ROWS-4 && g[r+1][c]===p && g[r+2][c]===p && g[r+3][c]===p) return p;
+        if (r<=ROWS-4 && c<=COLS-4 && g[r+1][c+1]===p && g[r+2][c+2]===p && g[r+3][c+3]===p) return p;
+        if (r<=ROWS-4 && c>=3 && g[r+1][c-1]===p && g[r+2][c-2]===p && g[r+3][c-3]===p) return p;
+      }
+    }
+    return 0;
+  }
+
+  function getDropTarget(g, dir, idx) {
+    let rEnt, cEnt;
+    if (dir === 0) { rEnt=0; cEnt=idx; } else if (dir === 1) { rEnt=idx; cEnt=COLS-1; }
+    else if (dir === 2) { rEnt=ROWS-1; cEnt=idx; } else { rEnt=idx; cEnt=0; }
+    let rT = rEnt, cT = cEnt, found = false;
+    for (let i=0; i<ROWS; i++) {
+        let rCheck = rEnt, cCheck = cEnt;
+        if (dir===0) rCheck+=i; else if (dir===1) cCheck-=i; else if (dir===2) rCheck-=i; else cCheck+=i;
+        if (g[rCheck][cCheck] === P_EMPTY) { rT = rCheck; cT = cCheck; found = true; break; }
+    }
+    return found ? {r:rT, c:cT} : null;
+  }
+
+  function runHintSimulation() {
+      let moves = getPossibleMoves(grid, gravityDir, tokens[curPlayer], curPlayer, mag);
+      if(moves.length === 0) return "No moves available!";
+      let bestMove = null;
+      let bestScore = -Infinity;
+      
+      let sanity = getSanityMove(grid, gravityDir, tokens[curPlayer], curPlayer, mag);
+      if(sanity) return formatMoveString(sanity) + (checkWin(sanity.grid) ? " (Win)" : " (Block!)");
+
+      for(let m of moves) {
+          if (checkWin(m.grid) === curPlayer) return formatMoveString(m) + " (Wins)";
+          let score = minimax(m.grid, m.gDir, m.magState, 5, -Infinity, Infinity, false, true);
+          if(score > bestScore) { bestScore = score; bestMove = m; }
+      }
+      if(!bestMove) return "Try a random move.";
+      return formatMoveString(bestMove);
+  }
+
+  function formatMoveString(m) {
+      if(m.type === 'drop') return `Drop at Column ${String.fromCharCode(65 + m.col)}`; 
+      if(m.type === 'flip') return `Rotate ${m.delta === 1 ? 'CCW ⟲' : 'CW ⟳'}`;
+      if(m.type === 'magnet') return `Magnet: ${["Top", "Right", "Bottom", "Left"][m.side]}`;
+      return "Unknown";
+  }
+
   let lastTime = 0;
   function initLoop(now) { lastTime = now; requestAnimationFrame(loop); }
   function loop(now) {
@@ -914,6 +1001,62 @@
     ctx.restore();
   }
 
+  function getBoardPos(evt) {
+    const rect = canvas.getBoundingClientRect();
+    let x = evt.clientX - rect.left, y = evt.clientY - rect.top;
+    const cx = canvas.width/2, cy = canvas.height/2;
+    const dx = x - cx, dy = y - cy;
+    const cos = Math.cos(-boardAngle), sin = Math.sin(-boardAngle);
+    const rx = dx * cos - dy * sin, ry = dx * sin + dy * cos;
+    
+    const size = Math.min(canvas.width, canvas.height) * 0.96;
+    const cell = size / (Math.max(ROWS, COLS) + 2);
+    const boardSize = COLS * cell;
+    const halfB = boardSize / 2;
+    const gridX = rx + halfB, gridY = ry + halfB;
+    const col = Math.floor(gridX / cell);
+    const row = Math.floor(gridY / cell);
+    
+    if (col >= 0 && col < COLS && row >= 0 && row < ROWS) return { type: 'CELL', r: row, c: col };
+    const rimThick = cell * 1.2;
+    if (rx > -halfB - rimThick && rx < halfB + rimThick && ry > -halfB - rimThick && ry < halfB + rimThick) {
+      if (Math.abs(rx) > Math.abs(ry)) return { type: 'RIM', side: rx < 0 ? 3 : 1, idx: row };
+      else return { type: 'RIM', side: ry < 0 ? 0 : 2, idx: col };
+    }
+    return { type: 'NONE' };
+  }
+
+  function handleInput(e) {
+    if (gameOver || animating || isReviewing) return;
+    if (gameMode === 1 && curPlayer === P_YEL) return;
+    if (e.type === 'touchstart') e.preventDefault();
+    const act = getBoardPos(e.type.includes('touch') ? e.changedTouches[0] : e);
+    if (act.type === 'CELL') doDrop(act.r, act.c);
+    else if (act.type === 'RIM' && act.idx >= 0 && act.idx < COLS) doMagnet(act.side, act.idx);
+  }
+
+  canvas.addEventListener('mousedown', handleInput);
+  canvas.addEventListener('touchstart', handleInput, {passive:false});
+
+  function syncUI() {
+    let pName = (curPlayer === P_RED ? "Red's Turn" : "Yellow's Turn");
+    if(gameMode === 1 && curPlayer === P_YEL) pName = "CPU Thinking...";
+    
+    hudTurn.textContent = gameOver ? "Game Over" : pName;
+    hudTurn.style.color = curPlayer === P_RED ? "var(--red)" : "var(--yel)";
+    hudR.textContent = `F:${tokens[P_RED].flip} M:${tokens[P_RED].mag}`;
+    hudY.textContent = `F:${tokens[P_YEL].flip} M:${tokens[P_YEL].mag}`;
+    hudGrav.textContent = `Grav: ${["↓", "←", "↑", "→"][gravityDir]}`;
+    
+    let disabled = (tokens[curPlayer].flip <= 0 || gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing);
+    document.getElementById("btnCCW").disabled = disabled;
+    document.getElementById("btnCW").disabled  = disabled;
+    document.getElementById("btnUndo").disabled = (history.length === 0 || gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing);
+    document.getElementById("btnHint").disabled = gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing;
+    document.getElementById("btnHelp").disabled = gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing;
+    document.getElementById("btnMenu").disabled = isReviewing; 
+  }
+  
   document.getElementById("btnHint").onclick = () => { 
       if (gameMode === 1 && curPlayer === P_YEL) return;
       elOverlay.style.display = "flex";
