@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Flip4M Grandmaster (v2 Fixed)</title>
+<title>Flip4M GM v3 (Temporal)</title>
 <style>
   :root{
     --bg:#0b0f17;
@@ -132,7 +132,7 @@
   <div id="hud">
     <div class="row">
       <div>
-        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM v2</span></h1>
+        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM v3</span></h1>
         <div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
       </div>
       <div class="status" id="turnInfo">Red's Turn</div>
@@ -398,7 +398,7 @@
       }
   }
 
-  // --- AI ENGINE (GRANDMASTER FIXED V2: EXTRACTION AWARENESS) ---
+  // --- AI ENGINE (GRANDMASTER v3: TEMPORAL AWARENESS) ---
   function checkAI() {
     if (aiTimer) clearTimeout(aiTimer);
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating && !isReviewing) {
@@ -439,10 +439,11 @@
 
     for (let m of moves) {
         let d = depth;
-        // Optimization: Reduce depth for expensive tool branches
+        // Optimization
         if (hasTools && (m.type === 'flip' || m.type === 'magnet') && depth < 9) d = Math.max(3, depth - 2); 
 
-        // Pass 'hasTools' AND the magnet state to eval to detect extraction threats
+        // CRITICAL UPDATE: Pass 'hasTools' and opponent tokens for Extraction Checks
+        // The m.grid here has already been "decayed" inside getPossibleMoves -> advanceTurnSimulation
         let score = minimax(m.grid, m.gDir, m.magState, d - 1, alpha, beta, false, hasTools, tokens[P_RED]);
         
         // THRIFT
@@ -478,12 +479,15 @@
 
   function minimax(g, gDir, mState, depth, alpha, beta, isMax, advanced, oppTokens) {
     let winner = checkWin(g);
+    // If board is settled and there's a winner, return score
     if (winner === P_YEL) return 100000 + depth * 1000; 
     if (winner === P_RED) return -100000 - depth * 1000; 
     if (depth <= 0) return evaluateBoard(g, gDir, mState, advanced, oppTokens); 
 
     let player = isMax ? P_YEL : P_RED;
     let simTokens = advanced ? (depth > 2 ? { flip:1, mag:0 } : { flip:0, mag:0 }) : { flip:0, mag:0 };
+    
+    // getPossibleMoves now internally handles magnet decay for the NEXT turn
     let moves = getPossibleMoves(g, gDir, simTokens, player, mState);
     let center = (COLS - 1) / 2;
     moves.sort((a,b) => {
@@ -515,7 +519,6 @@
 
   function evaluateBoard(g, grav, mState, advanced, oppTokens) {
       let score = 0;
-      // We assume Opponent (Red) has magnets if advanced mode is on, or pass explicitly
       let oppHasMag = (oppTokens && oppTokens.mag > 0) || (advanced && aiLevel >= 3); 
       
       score += analyzeLines(g, P_YEL, mState, advanced, false) * 1.0;
@@ -531,8 +534,6 @@
 
   function analyzeLines(g, p, mState, advanced, checkExtraction) {
       let score = 0;
-      // Vertical / Horizontal / Diagonal checks
-      // We pass 'checkExtraction' to scoreWindow to look for slippery blockers
       for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]], p, checkExtraction, g, r, c, 0, 1);
       for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS; c++) score += scoreWindow([g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]], p, checkExtraction, g, r, c, 1, 0);
       for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]], p, checkExtraction, g, r, c, 1, 1);
@@ -540,18 +541,13 @@
       return score;
   }
 
-  // Helper to detect if a specific cell is "exposed" to a magnet pull
   function isExtractable(g, r, c) {
-      // Check Up (Top edge)
       let exposedTop = true; for(let i=r-1; i>=0; i--) if(g[i][c] !== P_EMPTY) exposedTop = false;
       if (exposedTop) return true;
-      // Check Down
       let exposedBot = true; for(let i=r+1; i<ROWS; i++) if(g[i][c] !== P_EMPTY) exposedBot = false;
       if (exposedBot) return true;
-      // Check Left
       let exposedLeft = true; for(let i=c-1; i>=0; i--) if(g[r][i] !== P_EMPTY) exposedLeft = false;
       if (exposedLeft) return true;
-      // Check Right
       let exposedRight = true; for(let i=c+1; i<COLS; i++) if(g[r][i] !== P_EMPTY) exposedRight = false;
       if (exposedRight) return true;
       return false;
@@ -563,20 +559,11 @@
       let opp = window.filter(x => x !== p && x !== P_EMPTY).length;
       
       if (opp > 0) {
-          // New: Extraction Awareness
-          // If the line is blocked by exactly 1 piece (opp === 1)
-          // AND we are checking for extraction (opponent has tools)
           if (checkExtraction && count === 3 && opp === 1) {
-              // Find the blocker's position
               let blockerIdx = window.findIndex(x => x !== p && x !== P_EMPTY);
               let bR = rStart + blockerIdx * rD;
               let bC = cStart + blockerIdx * cD;
-              
-              if (isExtractable(g, bR, bC)) {
-                  // This is a CRITICAL THREAT. The blocker can be removed.
-                  // Treat this almost like a connect 4.
-                  return 5000; 
-              }
+              if (isExtractable(g, bR, bC)) return 5000; 
           }
           return 0; 
       }
@@ -593,25 +580,66 @@
       else if (m.type === 'magnet') doMagnet(m.side, m.idx);
   }
 
+  // --- NEW: Time Simulation Helper ---
+  // Calculates the state of the board as it will be at the start of the OPPONENT'S turn
+  // (after magnets decay and potentially release pieces)
+  function advanceTurnSimulation(g, gDir, mState) {
+      let nextM = cloneMagState(mState);
+      let anyDied = false;
+      const decay = (arr) => arr.forEach((m, i) => { 
+          if (m) { 
+              m.life--; 
+              if (m.life <= 0) { arr[i] = null; anyDied = true; } 
+          } 
+      });
+      decay(nextM.top); decay(nextM.bottom); decay(nextM.left); decay(nextM.right);
+      
+      let nextG = g;
+      if (anyDied) {
+          nextG = settleGridComplete(g, gDir, nextM);
+      }
+      return { grid: nextG, magState: nextM };
+  }
+
   function getPossibleMoves(g, gDir, toks, p, mState) {
       let moves = [];
+      
+      const processSim = (rawGrid, rawMState, type, data) => {
+          // 1. Check if the move ITSELF wins immediately (before decay)
+          if (checkWin(rawGrid) === p) {
+              moves.push({ type, ...data, grid: rawGrid, gDir, magState: rawMState });
+              return;
+          }
+          // 2. If not, simulate the passage of time (Decay)
+          let sim = advanceTurnSimulation(rawGrid, gDir, rawMState);
+          // 3. Store the result of decay as the final state for this branch
+          moves.push({ type, ...data, grid: sim.grid, gDir, magState: sim.magState });
+      };
+
+      // Drops
       for(let i=0; i<COLS; i++) {
           let t = getDropTarget(g, gDir, i);
           if (t) {
               let nextG = g.map(r=>[...r]);
               nextG[t.r][t.c] = p;
               nextG = settleGridComplete(nextG, gDir, mState); 
-              moves.push({ type:'drop', col:i, grid:nextG, gDir:gDir, magState:mState });
+              processSim(nextG, mState, 'drop', { col:i });
           }
       }
+      // Flips
       if(toks.flip > 0) { 
           let ccwDir = CCW_MAP[gDir];
           let gCCW = settleGridComplete(g, ccwDir, mState); 
-          moves.push({ type:'flip', delta:1, grid:gCCW, gDir:ccwDir, magState:mState });
+          // Note: Flip changes gravityDir, so decay happens under NEW gravity
+          let simCCW = advanceTurnSimulation(gCCW, ccwDir, mState);
+          moves.push({ type:'flip', delta:1, grid:simCCW.grid, gDir:ccwDir, magState:simCCW.magState });
+
           let cwDir = CW_MAP[gDir];
           let gCW = settleGridComplete(g, cwDir, mState);
-          moves.push({ type:'flip', delta:-1, grid:gCW, gDir:cwDir, magState:mState });
+          let simCW = advanceTurnSimulation(gCW, cwDir, mState);
+          moves.push({ type:'flip', delta:-1, grid:simCW.grid, gDir:cwDir, magState:simCW.magState });
       }
+      // Magnets
       if(toks.mag > 0) {
           const sides = [0,1,2,3];
           for(let side of sides) {
@@ -625,8 +653,9 @@
                   let oppName = ['top','right','bottom','left'][opp];
                   if (oppVal && oppVal.p !== p) nextMState[oppName][idx] = null;
                   else nextMState[arrName][idx] = { p: p, life: MAGNET_LIFE };
+                  
                   let nextG = settleGridComplete(g, gDir, nextMState);
-                  moves.push({ type:'magnet', side, idx, grid:nextG, gDir, magState:nextMState });
+                  processSim(nextG, nextMState, 'magnet', { side, idx });
               }
           }
       }
