@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Flip4M Grandmaster (Corrected)</title>
+<title>Flip4M Grandmaster (Final)</title>
 <style>
   /* --- VISUALS FROM F4_OK (UNTOUCHED) --- */
   :root{
@@ -173,6 +173,7 @@
           <button class="btn-act" onclick="startGame(1, 3)">Expert (2x Tools)</button>
           <button class="btn-dang" onclick="startGame(1, 4)" style="border-color: #ffd700; color: #ffd700;">Pro (3x Tools)</button>
         </div>
+        
         <div class="feature-grid">
            <button class="btn-util" onclick="saveGame()">💾 Save</button>
            <button class="btn-util" onclick="loadGameTrigger()">📂 Load</button>
@@ -398,7 +399,7 @@
       }
   }
 
-  // --- AI ENGINE (GRANDMASTER STRICT) ---
+  // --- AI ENGINE (GRANDMASTER STRICT: GATEKEEPER) ---
   function checkAI() {
     if (aiTimer) clearTimeout(aiTimer);
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating && !isReviewing) {
@@ -450,12 +451,15 @@
     }
 
     // 4. ANALYZE TOOL MOVES WITH STRICT GATING
+    // The Gatekeeper Rule: Use tool ONLY if:
+    // A) Tool leads to a WIN (> 5000)
+    // B) Drop leads to a LOSS (< -5000) AND Tool SAVES it (> -5000)
+    
     let bestToolScore = -Infinity;
     let bestToolMove = null;
     
     let isDropLosing = (bestDropScore < -5000); 
-    // We stop looking for better moves if we already have a win via drop, UNLESS
-    // we want to see if tool wins faster? No, simplicity is better.
+    // If Drop is already winning, we generally take it to save tools.
     let isDropWinning = (bestDropScore > 8000); 
 
     // STRICT GATEKEEPER:
@@ -467,12 +471,11 @@
         for (let m of tools) {
              let score = minimax(m.grid, m.gDir, m.magState, dTool, alpha, beta, false, hasTools, tokens[P_RED]);
              
-             // THE RULE:
-             // 1. Tool MUST lead to a WIN ( > 5000 ).
-             // 2. OR Drop is LOSING (< -5000) and Tool SAVES (> -5000).
              let isWin = (score > 5000);
              let isSave = (isDropLosing && score > bestDropScore && score > -9000);
              
+             // If the tool move wins OR saves us from a loss, we consider it.
+             // Otherwise, we discard it (preserving the resource).
              if (isWin || isSave) {
                  if (score > bestToolScore) { bestToolScore = score; bestToolMove = m; }
              }
@@ -486,14 +489,19 @@
     let finalMove = bestDropMove; 
     
     if (bestToolMove) {
-        // If we found a tool move that passed the gate (Win or Save):
-        // If saving from loss, take it.
-        if (isDropLosing && bestToolScore > bestDropScore) finalMove = bestToolMove;
-        // If winning (and drop wasn't winning), take it.
-        else if (!isDropLosing && bestToolScore > 5000) finalMove = bestToolMove;
+        // If we found a qualifying tool move:
+        // Case 1: Drop is Losing, Tool is Saving -> Tool is better.
+        if (isDropLosing && bestToolScore > bestDropScore) {
+            finalMove = bestToolMove;
+        }
+        // Case 2: Drop is "Safe" but Tool is "Winning" -> Tool is better.
+        else if (!isDropLosing && bestToolScore > 5000) {
+            finalMove = bestToolMove;
+        }
+        // Implicit Case 3: Drop is Safe, Tool is Safe -> Stick with Drop.
     }
     
-    // Fallback: If no drops (board full), must use tools
+    // Fallback if forced (board full)
     if (!finalMove && drops.length === 0) {
         if (bestToolMove) finalMove = bestToolMove;
         else if (tools.length > 0) finalMove = tools[0];
