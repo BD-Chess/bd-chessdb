@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Flip4M Grandmaster (Fixed)</title>
+<title>Flip4M Grandmaster (Corrected)</title>
 <style>
+  /* --- VISUALS FROM F4_OK (UNTOUCHED) --- */
   :root{
     --bg:#0b0f17;
     --panel:#1e2535;
@@ -132,7 +133,7 @@
   <div id="hud">
     <div class="row">
       <div>
-        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Fixed</span></h1>
+        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Strict</span></h1>
         <div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
       </div>
       <div class="status" id="turnInfo">Red's Turn</div>
@@ -172,7 +173,6 @@
           <button class="btn-act" onclick="startGame(1, 3)">Expert (2x Tools)</button>
           <button class="btn-dang" onclick="startGame(1, 4)" style="border-color: #ffd700; color: #ffd700;">Pro (3x Tools)</button>
         </div>
-        
         <div class="feature-grid">
            <button class="btn-util" onclick="saveGame()">💾 Save</button>
            <button class="btn-util" onclick="loadGameTrigger()">📂 Load</button>
@@ -398,7 +398,7 @@
       }
   }
 
-  // --- AI ENGINE (GRANDMASTER FIXED) ---
+  // --- AI ENGINE (GRANDMASTER STRICT) ---
   function checkAI() {
     if (aiTimer) clearTimeout(aiTimer);
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating && !isReviewing) {
@@ -412,61 +412,106 @@
     let hasTools = (tokens[P_YEL].flip > 0 || tokens[P_YEL].mag > 0);
 
     if (aiLevel === 2) { 
-        if (hasTools) { depth = 9; console.log("GM Mode Active"); } 
+        if (hasTools) { depth = 9; } 
         else depth = 8;
-    } else if (aiLevel === 3) depth = 7; // Increased Depth for Expert
+    } else if (aiLevel === 3) depth = 7; 
     else if (aiLevel === 4) depth = 6; 
     
     let aiTokens = hasTools ? tokens[P_YEL] : { flip: 0, mag: 0 };
     
-    // 1. SANITY CHECK
+    // 1. SANITY CHECK (Instant Win/Block for Drop)
     let sanityMove = getSanityMove(grid, gravityDir, aiTokens, P_YEL, mag);
     if (sanityMove) { executeMove(sanityMove); return; }
 
-    // 2. SEARCH
-    let moves = getPossibleMoves(grid, gravityDir, aiTokens, P_YEL, mag);
+    // 2. SEPARATE MOVES
+    let allMoves = getPossibleMoves(grid, gravityDir, aiTokens, P_YEL, mag);
+    let drops = allMoves.filter(m => m.type === 'drop');
+    let tools = allMoves.filter(m => m.type !== 'drop');
+    
     let center = (COLS - 1) / 2;
-    moves.sort((a,b) => {
-       let capA = (a.type === 'magnet') ? 50 : 0; 
-       let capB = (b.type === 'magnet') ? 50 : 0;
+    const sortMoves = (a, b) => {
        let sa = (a.type==='drop') ? 10 - Math.abs(center-a.col) : 0;
        let sb = (b.type==='drop') ? 10 - Math.abs(center-b.col) : 0;
-       return (sb + capB) - (sa + capA); 
-    });
+       return sb - sa;
+    };
+    drops.sort(sortMoves);
+    tools.sort(sortMoves);
 
-    let bestMove = null, bestScore = -Infinity;
+    // 3. ANALYZE DROP MOVES (THE BASELINE)
+    let bestDropScore = -Infinity;
+    let bestDropMove = null;
     let alpha = -Infinity, beta = Infinity;
 
-    for (let m of moves) {
-        let d = depth;
-        // Branch reduction for heavy tool usage
-        if (hasTools && (m.type === 'flip' || m.type === 'magnet') && depth < 9) d = Math.max(3, depth - 2); 
-
-        // Pass 'hasTools' as the 'advanced' flag to enable fragility checks
-        let score = minimax(m.grid, m.gDir, m.magState, d - 1, alpha, beta, false, hasTools);
-        
-        // THRIFT
-        if (hasTools && score < 5000) {
-            if(m.type === 'flip') score -= 300; 
-            if(m.type === 'magnet') score -= 500; 
-        }
-
-        if (score > bestScore) { bestScore = score; bestMove = m; }
-        alpha = Math.max(alpha, bestScore);
-        if(alpha >= beta) break;
+    for (let m of drops) {
+        let score = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, false, hasTools, tokens[P_RED]);
+        if (score > bestDropScore) { bestDropScore = score; bestDropMove = m; }
+        alpha = Math.max(alpha, bestDropScore);
+        if (alpha >= beta) break;
     }
 
-    if (bestMove) executeMove(bestMove);
-    else if (moves.length > 0) executeMove(moves[0]); 
-    else if (hasTools && tokens[P_YEL].flip > 0) doFlip(1); 
+    // 4. ANALYZE TOOL MOVES WITH STRICT GATING
+    let bestToolScore = -Infinity;
+    let bestToolMove = null;
+    
+    let isDropLosing = (bestDropScore < -5000); 
+    // We stop looking for better moves if we already have a win via drop, UNLESS
+    // we want to see if tool wins faster? No, simplicity is better.
+    let isDropWinning = (bestDropScore > 8000); 
+
+    // STRICT GATEKEEPER:
+    // Only check tools if we have tools AND (we are losing OR (we aren't winning yet))
+    if (hasTools && (!isDropWinning || isDropLosing)) {
+        alpha = -Infinity; beta = Infinity;
+        let dTool = Math.max(3, depth - 2); 
+
+        for (let m of tools) {
+             let score = minimax(m.grid, m.gDir, m.magState, dTool, alpha, beta, false, hasTools, tokens[P_RED]);
+             
+             // THE RULE:
+             // 1. Tool MUST lead to a WIN ( > 5000 ).
+             // 2. OR Drop is LOSING (< -5000) and Tool SAVES (> -5000).
+             let isWin = (score > 5000);
+             let isSave = (isDropLosing && score > bestDropScore && score > -9000);
+             
+             if (isWin || isSave) {
+                 if (score > bestToolScore) { bestToolScore = score; bestToolMove = m; }
+             }
+             
+             alpha = Math.max(alpha, bestToolScore);
+             if (alpha >= beta) break;
+        }
+    }
+
+    // 5. FINAL SELECTION
+    let finalMove = bestDropMove; 
+    
+    if (bestToolMove) {
+        // If we found a tool move that passed the gate (Win or Save):
+        // If saving from loss, take it.
+        if (isDropLosing && bestToolScore > bestDropScore) finalMove = bestToolMove;
+        // If winning (and drop wasn't winning), take it.
+        else if (!isDropLosing && bestToolScore > 5000) finalMove = bestToolMove;
+    }
+    
+    // Fallback: If no drops (board full), must use tools
+    if (!finalMove && drops.length === 0) {
+        if (bestToolMove) finalMove = bestToolMove;
+        else if (tools.length > 0) finalMove = tools[0];
+        else if (hasTools && tokens[P_YEL].flip > 0) doFlip(1);
+    }
+
+    if (finalMove) executeMove(finalMove);
+    else if (allMoves.length > 0) executeMove(allMoves[0]); 
   }
 
   function getSanityMove(g, gDir, toks, p, mState) {
       let opponent = (p === P_RED) ? P_YEL : P_RED;
       let myMoves = getPossibleMoves(g, gDir, toks, p, mState);
       
+      // Always take immediate win
       for (let m of myMoves) if (checkWin(m.grid) === p) return m; 
       
+      // Block opponent immediate win (drop only)
       let oppSimpleMoves = getPossibleMoves(g, gDir, {flip:0, mag:0}, opponent, mState);
       let simpleKiller = oppSimpleMoves.find(om => om.type === 'drop' && checkWin(om.grid) === opponent);
       if (simpleKiller) {
@@ -476,14 +521,16 @@
       return null;
   }
 
-  function minimax(g, gDir, mState, depth, alpha, beta, isMax, advanced) {
+  function minimax(g, gDir, mState, depth, alpha, beta, isMax, advanced, oppTokens) {
     let winner = checkWin(g);
     if (winner === P_YEL) return 100000 + depth * 1000; 
     if (winner === P_RED) return -100000 - depth * 1000; 
-    if (depth <= 0) return evaluateBoard(g, gDir, mState, advanced); 
+    if (depth <= 0) return evaluateBoard(g, gDir, mState, advanced, oppTokens); 
 
     let player = isMax ? P_YEL : P_RED;
     let simTokens = advanced ? (depth > 2 ? { flip:1, mag:0 } : { flip:0, mag:0 }) : { flip:0, mag:0 };
+    
+    // Pass decay simulation
     let moves = getPossibleMoves(g, gDir, simTokens, player, mState);
     let center = (COLS - 1) / 2;
     moves.sort((a,b) => {
@@ -495,7 +542,7 @@
     if (isMax) { 
         let maxEval = -Infinity;
         for (let m of moves) {
-            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, false, advanced);
+            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, false, advanced, oppTokens);
             maxEval = Math.max(maxEval, evalVal);
             alpha = Math.max(alpha, evalVal);
             if (beta <= alpha) break; 
@@ -504,7 +551,7 @@
     } else { 
         let minEval = Infinity;
         for (let m of moves) {
-            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, true, advanced);
+            let evalVal = minimax(m.grid, m.gDir, m.magState, depth - 1, alpha, beta, true, advanced, oppTokens);
             minEval = Math.min(minEval, evalVal);
             beta = Math.min(beta, evalVal);
             if (beta <= alpha) break;
@@ -513,40 +560,54 @@
     }
   }
 
-  function evaluateBoard(g, grav, mState, advanced) {
+  function evaluateBoard(g, grav, mState, advanced, oppTokens) {
       let score = 0;
-      score += analyzeLines(g, P_YEL, mState, advanced) * 1.0;
-      score -= analyzeLines(g, P_RED, mState, advanced) * 1.2; 
+      let oppHasMag = (oppTokens && oppTokens.mag > 0) || (advanced && aiLevel >= 3); 
       
-      // FIXED FRAGILITY CHECK (Prevent Extraction)
-      // Removed "aiLevel >= 4" gate. Now runs if 'advanced' (tools exist).
+      score += analyzeLines(g, P_YEL, mState, advanced, false) * 1.0;
+      score -= analyzeLines(g, P_RED, mState, advanced, oppHasMag) * 1.2; 
+
+      // Fragility check (if advanced)
       if (advanced) {
           let cwDir = CW_MAP[grav];
           let simGrid = settleGridComplete(g, cwDir, {top:[],bottom:[],left:[],right:[]}); 
-          score += (analyzeLines(simGrid, P_YEL, mState, false) - analyzeLines(simGrid, P_RED, mState, false)*1.5) * 0.3;
+          score += (analyzeLines(simGrid, P_YEL, mState, false, false) - analyzeLines(simGrid, P_RED, mState, false, false)*1.5) * 0.3;
       }
       return score;
   }
 
-  function analyzeLines(g, p, mState, advanced) {
+  function analyzeLines(g, p, mState, advanced, checkExtraction) {
       let score = 0;
-      for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]], p, advanced);
-      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS; c++) score += scoreWindow([g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]], p, advanced);
-      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]], p, advanced);
-      for(let r=3; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r-1][c+1], g[r-2][c+2], g[r-3][c+3]], p, advanced);
+      for(let r=0; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]], p, checkExtraction, g, r, c, 0, 1);
+      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS; c++) score += scoreWindow([g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]], p, checkExtraction, g, r, c, 1, 0);
+      for(let r=0; r<ROWS-3; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]], p, checkExtraction, g, r, c, 1, 1);
+      for(let r=3; r<ROWS; r++) for(let c=0; c<COLS-3; c++) score += scoreWindow([g[r][c], g[r-1][c+1], g[r-2][c+2], g[r-3][c+3]], p, checkExtraction, g, r, c, -1, 1);
       return score;
   }
 
-  function scoreWindow(window, p, advanced) {
+  function isExtractable(g, r, c) {
+      let exposedTop = true; for(let i=r-1; i>=0; i--) if(g[i][c] !== P_EMPTY) exposedTop = false;
+      if (exposedTop) return true;
+      let exposedBot = true; for(let i=r+1; i<ROWS; i++) if(g[i][c] !== P_EMPTY) exposedBot = false;
+      if (exposedBot) return true;
+      let exposedLeft = true; for(let i=c-1; i>=0; i--) if(g[r][i] !== P_EMPTY) exposedLeft = false;
+      if (exposedLeft) return true;
+      let exposedRight = true; for(let i=c+1; i<COLS; i++) if(g[r][i] !== P_EMPTY) exposedRight = false;
+      if (exposedRight) return true;
+      return false;
+  }
+
+  function scoreWindow(window, p, checkExtraction, g, rStart, cStart, rD, cD) {
       let count = window.filter(x => x === p).length;
       let empty = window.filter(x => x === P_EMPTY).length;
       let opp = window.filter(x => x !== p && x !== P_EMPTY).length;
       
       if (opp > 0) {
-          // Fragility Awareness (Grandmaster Logic)
-          // Enabled for any 'advanced' context (Expert/Pro/GodMode)
-          if (advanced && count === 3 && opp === 1) {
-              return 50; // Threat potential (if extracted)
+          if (checkExtraction && count === 3 && opp === 1) {
+              let blockerIdx = window.findIndex(x => x !== p && x !== P_EMPTY);
+              let bR = rStart + blockerIdx * rD;
+              let bC = cStart + blockerIdx * cD;
+              if (isExtractable(g, bR, bC)) return 5000; 
           }
           return 0; 
       }
@@ -563,24 +624,56 @@
       else if (m.type === 'magnet') doMagnet(m.side, m.idx);
   }
 
+  // --- TEMPORAL SIMULATION (Decay Fix) ---
+  function advanceTurnSimulation(g, gDir, mState) {
+      let nextM = cloneMagState(mState);
+      let anyDied = false;
+      const decay = (arr) => arr.forEach((m, i) => { 
+          if (m) { 
+              m.life--; 
+              if (m.life <= 0) { arr[i] = null; anyDied = true; } 
+          } 
+      });
+      decay(nextM.top); decay(nextM.bottom); decay(nextM.left); decay(nextM.right);
+      
+      let nextG = g;
+      if (anyDied) {
+          nextG = settleGridComplete(g, gDir, nextM);
+      }
+      return { grid: nextG, magState: nextM };
+  }
+
   function getPossibleMoves(g, gDir, toks, p, mState) {
       let moves = [];
+      
+      const processSim = (rawGrid, rawMState, type, data) => {
+          if (checkWin(rawGrid) === p) {
+              moves.push({ type, ...data, grid: rawGrid, gDir, magState: rawMState });
+              return;
+          }
+          let sim = advanceTurnSimulation(rawGrid, gDir, rawMState);
+          moves.push({ type, ...data, grid: sim.grid, gDir, magState: sim.magState });
+      };
+
       for(let i=0; i<COLS; i++) {
           let t = getDropTarget(g, gDir, i);
           if (t) {
               let nextG = g.map(r=>[...r]);
               nextG[t.r][t.c] = p;
               nextG = settleGridComplete(nextG, gDir, mState); 
-              moves.push({ type:'drop', col:i, grid:nextG, gDir:gDir, magState:mState });
+              processSim(nextG, mState, 'drop', { col:i });
           }
       }
       if(toks.flip > 0) { 
           let ccwDir = CCW_MAP[gDir];
           let gCCW = settleGridComplete(g, ccwDir, mState); 
-          moves.push({ type:'flip', delta:1, grid:gCCW, gDir:ccwDir, magState:mState });
+          let simCCW = advanceTurnSimulation(gCCW, ccwDir, mState);
+          moves.push({ type:'flip', delta:1, grid:simCCW.grid, gDir:ccwDir, magState:simCCW.magState });
+
           let cwDir = CW_MAP[gDir];
           let gCW = settleGridComplete(g, cwDir, mState);
-          moves.push({ type:'flip', delta:-1, grid:gCW, gDir:cwDir, magState:mState });
+          let simCW = advanceTurnSimulation(gCW, cwDir, mState);
+          moves.push({ type:'flip', delta:-1, grid:simCW.grid, gDir:cwDir, magState:simCW.magState });
       }
       if(toks.mag > 0) {
           const sides = [0,1,2,3];
@@ -595,21 +688,22 @@
                   let oppName = ['top','right','bottom','left'][opp];
                   if (oppVal && oppVal.p !== p) nextMState[oppName][idx] = null;
                   else nextMState[arrName][idx] = { p: p, life: MAGNET_LIFE };
+                  
                   let nextG = settleGridComplete(g, gDir, nextMState);
-                  moves.push({ type:'magnet', side, idx, grid:nextG, gDir, magState:nextMState });
+                  processSim(nextG, nextMState, 'magnet', { side, idx });
               }
           }
       }
       return moves;
   }
 
+  // --- CORE ENGINE (FROM F4_OK) ---
   function getMag(mState, side, idx) {
       if(side===0) return mState.top[idx];
       if(side===1) return mState.right[idx];
       if(side===2) return mState.bottom[idx];
       if(side===3) return mState.left[idx];
   }
-
   function cloneMag(mArr) { return mArr.map(m => m ? { ...m } : null); }
   function cloneMagState(ms) {
       return { top: cloneMag(ms.top), bottom: cloneMag(ms.bottom), left: cloneMag(ms.left), right: cloneMag(ms.right) };
@@ -746,317 +840,6 @@
     applyActionAndAnimate(() => { grid[rT][cT] = curPlayer; });
   }
 
-  function doMagnet(side, idx) {
-    if (tokens[curPlayer].mag <= 0) return;
-    let opp = (side + 2) % 4;
-    let oppVal = (opp===0) ? getMag(mag, 0, idx) : (opp===1) ? getMag(mag, 1, idx) : (opp===2) ? getMag(mag, 2, idx) : getMag(mag, 3, idx);
-    const opponent = (curPlayer === P_RED) ? P_YEL : P_RED;
-    applyActionAndAnimate(() => {
-        tokens[curPlayer].mag--;
-        if (oppVal && oppVal.p === opponent) {
-             if(opp===0) mag.top[idx]=null; else if(opp===1) mag.right[idx]=null;
-             else if(opp===2) mag.bottom[idx]=null; else mag.left[idx]=null;
-        } else {
-             let m = { p: curPlayer, life: MAGNET_LIFE };
-             if(side===0) mag.top[idx]=m; else if(side===1) mag.right[idx]=m;
-             else if(side===2) mag.bottom[idx]=m; else mag.left[idx]=m;
-        }
-    });
-  }
-
-  const CW_MAP =  { 0: 3, 1: 0, 2: 1, 3: 2 }; 
-  const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 }; 
-
-  function doFlip(dirDelta) {
-    if (tokens[curPlayer].flip <= 0) return;
-    if(animating || gameOver || isReviewing) return;
-    pushHistory();
-    tokens[curPlayer].flip--;
-    let oldA = boardAngle;
-    targetAngle = oldA + (dirDelta === 1 ? -Math.PI/2 : Math.PI/2);
-    if (dirDelta === -1) gravityDir = CW_MAP[gravityDir]; else gravityDir = CCW_MAP[gravityDir];
-    anims.push({ type: 'rotate', startA: oldA, endA: targetAngle, t: 0, dur: 500 });
-    pendingSettle = true;
-    animating = true;
-  }
-
-  function triggerSettleAfterRotate() {
-    let oldG = grid.map(r=>[...r]);
-    let finalG = settleGridComplete(grid, gravityDir, mag);
-    spawnTransitions(oldG, finalG, 'slide');
-    grid = finalG;
-  }
-
-  function endTurn() {
-    const w = checkWin(grid);
-    if (w) {
-      gameOver = true;
-      let msg = (w===P_RED?"Red Wins!":"Yellow Wins!");
-      if (gameMode === 1 && w === P_RED) msg = "You Win!";
-      if (gameMode === 1 && w === P_YEL) msg = "CPU Wins!";
-      
-      document.getElementById("winTitle").textContent = msg;
-      document.getElementById("winSub").textContent = "Connect Four!";
-      
-      const b1 = document.getElementById("winBtnMain");
-      const b2 = document.getElementById("winBtnSec");
-      b1.onclick = () => { showMainMenu(); };
-      b2.onclick = () => { undo(); };
-      
-      winnerCard.classList.add('visible');
-      syncUI();
-    } else {
-      if (!grid.some(r => r.includes(P_EMPTY))) {
-        gameOver = true;
-        document.getElementById("winTitle").textContent = "Draw!";
-        document.getElementById("winSub").textContent = "Board Full";
-        document.getElementById("winBtnMain").onclick = () => { showMainMenu(); };
-        document.getElementById("winBtnSec").onclick = () => { undo(); };
-        winnerCard.classList.add('visible');
-        syncUI();
-      } else {
-        const decay = (arr) => arr.forEach((m, i) => { if (m) { m.life--; if (m.life <= 0) arr[i] = null; } });
-        decay(mag.top); decay(mag.bottom); decay(mag.left); decay(mag.right);
-        curPlayer = (curPlayer === P_RED) ? P_YEL : P_RED;
-        syncUI();
-        checkAI();
-      }
-    }
-  }
-
-  function checkWin(g) {
-    for (let r=0; r<ROWS; r++) {
-      for (let c=0; c<COLS; c++) {
-        let p = g[r][c];
-        if (!p) continue;
-        if (c<=COLS-4 && g[r][c+1]===p && g[r][c+2]===p && g[r][c+3]===p) return p;
-        if (r<=ROWS-4 && g[r+1][c]===p && g[r+2][c]===p && g[r+3][c]===p) return p;
-        if (r<=ROWS-4 && c<=COLS-4 && g[r+1][c+1]===p && g[r+2][c+2]===p && g[r+3][c+3]===p) return p;
-        if (r<=ROWS-4 && c>=3 && g[r+1][c-1]===p && g[r+2][c-2]===p && g[r+3][c-3]===p) return p;
-      }
-    }
-    return 0;
-  }
-
-  function getDropTarget(g, dir, idx) {
-    let rEnt, cEnt;
-    if (dir === 0) { rEnt=0; cEnt=idx; } else if (dir === 1) { rEnt=idx; cEnt=COLS-1; }
-    else if (dir === 2) { rEnt=ROWS-1; cEnt=idx; } else { rEnt=idx; cEnt=0; }
-    let rT = rEnt, cT = cEnt, found = false;
-    for (let i=0; i<ROWS; i++) {
-        let rCheck = rEnt, cCheck = cEnt;
-        if (dir===0) rCheck+=i; else if (dir===1) cCheck-=i; else if (dir===2) rCheck-=i; else cCheck+=i;
-        if (g[rCheck][cCheck] === P_EMPTY) { rT = rCheck; cT = cCheck; found = true; break; }
-    }
-    return found ? {r:rT, c:cT} : null;
-  }
-
-  function runHintSimulation() {
-      let moves = getPossibleMoves(grid, gravityDir, tokens[curPlayer], curPlayer, mag);
-      if(moves.length === 0) return "No moves available!";
-      let bestMove = null;
-      let bestScore = -Infinity;
-      
-      let sanity = getSanityMove(grid, gravityDir, tokens[curPlayer], curPlayer, mag);
-      if(sanity) return formatMoveString(sanity) + (checkWin(sanity.grid) ? " (Win)" : " (Block!)");
-
-      for(let m of moves) {
-          if (checkWin(m.grid) === curPlayer) return formatMoveString(m) + " (Wins)";
-          let score = minimax(m.grid, m.gDir, m.magState, 5, -Infinity, Infinity, false, true);
-          if(score > bestScore) { bestScore = score; bestMove = m; }
-      }
-      if(!bestMove) return "Try a random move.";
-      return formatMoveString(bestMove);
-  }
-
-  function formatMoveString(m) {
-      if(m.type === 'drop') return `Drop at Column ${String.fromCharCode(65 + m.col)}`; 
-      if(m.type === 'flip') return `Rotate ${m.delta === 1 ? 'CCW ⟲' : 'CW ⟳'}`;
-      if(m.type === 'magnet') return `Magnet: ${["Top", "Right", "Bottom", "Left"][m.side]}`;
-      return "Unknown";
-  }
-
-  let lastTime = 0;
-  function initLoop(now) { lastTime = now; requestAnimationFrame(loop); }
-  function loop(now) {
-    let dt = now - lastTime;
-    lastTime = now;
-    if (dt > 50) dt = 50; 
-    updateAnims(dt);
-    render();
-    requestAnimationFrame(loop);
-  }
-
-  function updateAnims(dt) {
-    if (!animating) return;
-    let stillAnimating = false;
-    let rot = anims.find(a=>a.type==='rotate');
-    if(rot) {
-        rot.t += dt/rot.dur;
-        if(rot.t>=1) { 
-            rot.t=1; boardAngle=rot.endA; anims=anims.filter(a=>a!==rot);
-            if(pendingSettle) { pendingSettle = false; triggerSettleAfterRotate(); stillAnimating = true; }
-        } else { 
-            let p = rot.t<.5 ? 2*rot.t*rot.t : -1+(4-2*rot.t)*rot.t; boardAngle = rot.startA + (rot.endA-rot.startA)*p; stillAnimating = true; 
-        }
-    }
-    anims.forEach(a => {
-        if(a.type==='rotate') return;
-        a.t += dt/a.dur;
-        if(a.t < 1) stillAnimating = true; else a.t = 1;
-    });
-    if(!stillAnimating && !rot) {
-        anims = anims.filter(a => a.t < 1);
-        if(anims.length === 0) { animating = false; hiddenCells = []; endTurn(); }
-    }
-  }
-
-  function render() {
-    if (canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-    }
-    const W = canvas.width, H = canvas.height;
-    const cx = W/2, cy = H/2;
-    const size = Math.min(W, H) * 0.96;
-    const cell = size / (Math.max(ROWS, COLS) + 2);
-    const boardW = COLS * cell;
-
-    ctx.fillStyle = "#0b0f17";
-    ctx.fillRect(0,0,W,H);
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(boardAngle);
-    
-    ctx.fillStyle = "#1e2535";
-    ctx.beginPath(); ctx.roundRect(-boardW/2 - cell*0.2, -boardW/2 - cell*0.2, boardW + cell*0.4, boardW + cell*0.4, 12);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.1)"; ctx.lineWidth = 2; ctx.stroke();
-    
-    ctx.fillStyle = "#8fa1b8";
-    ctx.font = "bold 15px monospace";
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    for(let c=0; c<COLS; c++) {
-        let x = -boardW/2 + c*cell + cell/2;
-        let char = String.fromCharCode(65 + c);
-        ctx.fillText(char, x, -boardW/2 - cell * 0.4);
-        ctx.fillText(char, x, boardW/2 + cell * 0.4);
-    }
-    for(let r=0; r<ROWS; r++) {
-        let y = -boardW/2 + r*cell + cell/2;
-        let num = (r + 1).toString();
-        ctx.fillText(num, -boardW/2 - cell * 0.4, y);
-        ctx.fillText(num, boardW/2 + cell * 0.4, y);
-    }
-
-    ctx.translate(-boardW/2, -boardW/2);
-    
-    for (let r=0; r<ROWS; r++) {
-      for (let c=0; c<COLS; c++) {
-        const x = c*cell + cell/2;
-        const y = r*cell + cell/2;
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
-        ctx.beginPath(); ctx.arc(x, y, cell*0.4, 0, Math.PI*2); ctx.fill();
-        if (hiddenCells.some(h => h.r===r && h.c===c && animating)) continue;
-        const val = grid[r][c];
-        if (val) drawToken(ctx, x, y, cell*0.4, val);
-      }
-    }
-    for (let a of anims) {
-        if (a.type === 'rotate') continue;
-        let p = a.t * a.t * (3 - 2 * a.t); 
-        if (a.type === 'drop') {
-            if (a.t < 0.7) p = (a.t/0.7)*(a.t/0.7); else { let t2 = (a.t - 0.7) / 0.3; p = 1 - Math.sin(t2 * Math.PI) * 0.05; }
-        }
-        let curR = a.r + (a.destR - a.r) * p;
-        let curC = a.c + (a.destC - a.c) * p;
-        drawToken(ctx, curC*cell + cell/2, curR*cell + cell/2, cell*0.4, a.p);
-    }
-    mag.top.forEach((m, i) => drawMag(ctx, i*cell + cell/2, -cell*0.6, cell, 0, m));
-    mag.bottom.forEach((m, i) => drawMag(ctx, i*cell + cell/2, boardW + cell*0.6, cell, 2, m));
-    mag.left.forEach((m, i) => drawMag(ctx, -cell*0.6, i*cell + cell/2, cell, 3, m));
-    mag.right.forEach((m, i) => drawMag(ctx, boardW + cell*0.6, i*cell + cell/2, cell, 1, m));
-    ctx.restore();
-  }
-  
-  function drawToken(ctx, x, y, r, p) {
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
-    ctx.fillStyle = (p === P_RED) ? "#e53935" : "#fdd835"; ctx.fill();
-    ctx.beginPath(); ctx.arc(x - r*0.3, y - r*0.3, r*0.2, 0, Math.PI*2);
-    ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.fill();
-  }
-  
-  function drawMag(ctx, x, y, size, dir, m) {
-    if (!m) return;
-    ctx.save(); ctx.translate(x, y); ctx.rotate(dir * Math.PI/2);
-    ctx.globalAlpha = 0.3 + (0.7 * (m.life / MAGNET_LIFE)); 
-    ctx.beginPath();
-    const r = size*0.35;
-    ctx.arc(0, 0, r, 0, Math.PI, true); ctx.lineTo(-r, r); ctx.lineTo(r, r); ctx.closePath();
-    ctx.fillStyle = (m.p === P_RED) ? "#e53935" : "#fdd835"; ctx.fill();
-    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
-    ctx.globalAlpha = 1;
-    for(let i=0; i<Math.ceil(m.life/2); i++) {
-        ctx.fillStyle = "#fff";
-        ctx.beginPath(); ctx.arc(-r + 4 + i*6, r - 4, 1.5, 0, Math.PI*2); ctx.fill();
-    }
-    ctx.restore();
-  }
-
-  function getBoardPos(evt) {
-    const rect = canvas.getBoundingClientRect();
-    let x = evt.clientX - rect.left, y = evt.clientY - rect.top;
-    const cx = canvas.width/2, cy = canvas.height/2;
-    const dx = x - cx, dy = y - cy;
-    const cos = Math.cos(-boardAngle), sin = Math.sin(-boardAngle);
-    const rx = dx * cos - dy * sin, ry = dx * sin + dy * cos;
-    
-    const size = Math.min(canvas.width, canvas.height) * 0.96;
-    const cell = size / (Math.max(ROWS, COLS) + 2);
-    const boardSize = COLS * cell;
-    const halfB = boardSize / 2;
-    const gridX = rx + halfB, gridY = ry + halfB;
-    const col = Math.floor(gridX / cell);
-    const row = Math.floor(gridY / cell);
-    
-    if (col >= 0 && col < COLS && row >= 0 && row < ROWS) return { type: 'CELL', r: row, c: col };
-    const rimThick = cell * 1.2;
-    if (rx > -halfB - rimThick && rx < halfB + rimThick && ry > -halfB - rimThick && ry < halfB + rimThick) {
-      if (Math.abs(rx) > Math.abs(ry)) return { type: 'RIM', side: rx < 0 ? 3 : 1, idx: row };
-      else return { type: 'RIM', side: ry < 0 ? 0 : 2, idx: col };
-    }
-    return { type: 'NONE' };
-  }
-
-  function handleInput(e) {
-    if (gameOver || animating || isReviewing) return;
-    if (gameMode === 1 && curPlayer === P_YEL) return;
-    if (e.type === 'touchstart') e.preventDefault();
-    const act = getBoardPos(e.type.includes('touch') ? e.changedTouches[0] : e);
-    if (act.type === 'CELL') doDrop(act.r, act.c);
-    else if (act.type === 'RIM' && act.idx >= 0 && act.idx < COLS) doMagnet(act.side, act.idx);
-  }
-
-  canvas.addEventListener('mousedown', handleInput);
-  canvas.addEventListener('touchstart', handleInput, {passive:false});
-
-  function syncUI() {
-    let pName = (curPlayer === P_RED ? "Red's Turn" : "Yellow's Turn");
-    if(gameMode === 1 && curPlayer === P_YEL) pName = "CPU Thinking...";
-    
-    hudTurn.textContent = gameOver ? "Game Over" : pName;
-    hudTurn.style.color = curPlayer === P_RED ? "var(--red)" : "var(--yel)";
-    hudR.textContent = `F:${tokens[P_RED].flip} M:${tokens[P_RED].mag}`;
-    hudY.textContent = `F:${tokens[P_YEL].flip} M:${tokens[P_YEL].mag}`;
-    hudGrav.textContent = `Grav: ${["↓", "←", "↑", "→"][gravityDir]}`;
-    
-    let disabled = (tokens[curPlayer].flip <= 0 || gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing);
-    document.getElementById("btnCCW").disabled = disabled;
-    document.getElementById("btnCW").disabled  = disabled;
-    document.getElementById("btnUndo").disabled = (history.length === 0 || gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing);
-    document.getElementById("btnHint").disabled = gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing;
-    document.getElementById("btnHelp").disabled = gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing;
-    document.getElementById("btnMenu").disabled = isReviewing; 
-  }
-  
   document.getElementById("btnHint").onclick = () => { 
       if (gameMode === 1 && curPlayer === P_YEL) return;
       elOverlay.style.display = "flex";
@@ -1088,6 +871,7 @@
   document.getElementById("btnCW").onclick = () => { if(!(gameMode === 1 && curPlayer === P_YEL)) doFlip(-1); };
   document.getElementById("btnUndo").onclick = undo;
   
+  // RESTORED DEV BUTTON FUNCTION
   document.getElementById("btnAdd").onclick = () => {
     tokens[P_RED].flip+=2; tokens[P_RED].mag+=2; 
     tokens[P_YEL].flip+=2; tokens[P_YEL].mag+=2; 
