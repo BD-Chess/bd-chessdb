@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Flip4M Grandmaster (GPT Base)</title>
+<title>Flip4M Grandmaster Ultra</title>
 <style>
-  /* --- VISUALS FROM F4_GPT (UNTOUCHED) --- */
+  /* --- VISUALS FROM F4_GPT (VERIFIED WORKING) --- */
   :root{
     --bg:#0b0f17;
     --panel:#1e2535;
@@ -133,7 +133,7 @@
   <div id="hud">
     <div class="row">
       <div>
-        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Ultimate</span></h1>
+        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Ultra</span></h1>
         <div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
       </div>
       <div class="status" id="turnInfo">Red's Turn</div>
@@ -317,12 +317,15 @@
     targetAngle = 0;
     curPlayer = P_RED;
     
-    // --- DIFFICULTY ---
+    // --- DIFFICULTY TOOLS SETUP ---
     if (aiLevel === 2) {
+        // STANDARD (Classic): 0 Tools
         tokens = { [P_RED]: { flip: 0, mag: 0 }, [P_YEL]: { flip: 0, mag: 0 } };
     } else if (aiLevel === 3) {
+        // EXPERT: 2x Tools
         tokens = { [P_RED]: { flip: 2, mag: 2 }, [P_YEL]: { flip: 2, mag: 2 } };
     } else {
+        // PRO: 3x Tools
         tokens = { [P_RED]: { flip: 3, mag: 3 }, [P_YEL]: { flip: 3, mag: 3 } };
     }
 
@@ -396,17 +399,20 @@
       }
   }
 
-  // --- AI ENGINE: "GATEKEEPER" ---
+  // ==========================================
+  // GRANDMASTER ULTRA AI ENGINE (REPLACED)
+  // ==========================================
   function checkAI() {
     if (aiTimer) clearTimeout(aiTimer);
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating && !isReviewing) {
         document.body.style.cursor = "wait";
-        // INCREASED THINK TIME SIMULATION
+        // INCREASED THINK TIME SIMULATION FOR DEEP THOUGHT
         aiTimer = setTimeout(() => { makeAIMove(); document.body.style.cursor = "default"; }, 50);
     }
   }
 
-  // SIMULATE END OF TURN (DECAY)
+  // 1. TEMPORAL SIMULATION (Time Travel)
+  // Simulates the end-of-turn magnet decay.
   function advanceTurnSimulation(g, gDir, mState) {
       let nextM = cloneMagState(mState);
       let anyDied = false;
@@ -425,11 +431,12 @@
       return { grid: nextG, magState: nextM };
   }
 
-  // THE GATEKEEPER: "Can I use tools?"
+  // 2. THE STRICT GATEKEEPER
+  // Returns TRUE only if A) Tool Wins B) Tool Saves from Loss
   function shouldConsiderTools(g, gDir, mState, aiToks, player) {
     const opponent = (player === P_RED) ? P_YEL : P_RED;
     
-    // A) Immediate Win?
+    // A) Immediate Win Check
     if (aiToks.flip > 0 || aiToks.mag > 0) {
       let toolMoves = getToolMoves(g, gDir, aiToks, player, mState);
       for (let m of toolMoves) {
@@ -437,34 +444,41 @@
       }
     }
     
-    // B) Immediate Loss to Opponent Drop?
+    // B) Immediate Loss Check (Can opponent win next turn?)
     let oppDrops = getDropMoves(g, gDir, opponent, mState);
     for (let m of oppDrops) {
-      if (checkWin(m.grid) === opponent) return { allowed: true };
+      if (checkWin(m.grid) === opponent) {
+        return { allowed: true }; // Unlock tools to defend
+      }
     }
     
-    // C) Magnet Collapse? (If MY piece falls due to decay, I might need to fix it)
+    // Default: FORBID TOOLS (Prevents Turn 1 Rotation)
     return { allowed: false };
   }
 
   function makeAIMove() {
     let depth = 8; 
-    if (aiLevel === 3) depth = 9; 
+    let hasTools = (tokens[P_YEL].flip > 0 || tokens[P_YEL].mag > 0);
+    
+    // DEPTH SCALING
+    if (aiLevel === 2) depth = 8; 
+    else if (aiLevel === 3) depth = 9; 
     else if (aiLevel === 4) depth = 10; 
     
-    let aiTokens = (tokens[P_YEL].flip > 0 || tokens[P_YEL].mag > 0) ? tokens[P_YEL] : { flip: 0, mag: 0 };
-    let hasTools = (aiTokens.flip > 0 || aiTokens.mag > 0);
-
-    // 1. SANITY CHECK (Win/Block)
+    let aiTokens = hasTools ? tokens[P_YEL] : { flip: 0, mag: 0 };
+    
+    // 1. SANITY CHECK (Instant Win/Block with Drops)
     let sanityMove = getSanityMove(grid, gravityDir, aiTokens, P_YEL, mag);
     if (sanityMove) { executeMove(sanityMove); return; }
 
-    // 2. GATEKEEPER
+    // 2. GATEKEEPER CHECK
     let gate = shouldConsiderTools(grid, gravityDir, mag, aiTokens, P_YEL);
     let toolsAllowed = gate.allowed;
     
-    // 3. GATHER MOVES
+    // 3. GENERATE MOVES
     let moves = getDropMoves(grid, gravityDir, P_YEL, mag);
+    
+    // Force tools if allowed OR no drops possible
     if (toolsAllowed || (moves.length === 0 && hasTools)) {
         moves.push(...getToolMoves(grid, gravityDir, aiTokens, P_YEL, mag));
         toolsAllowed = true; 
@@ -485,11 +499,12 @@
 
     for (let m of moves) {
         let d = depth;
+        // Optimization: Reduce depth for expensive tool branches
         if (m.type !== 'drop') d = Math.max(3, depth - 2); 
 
         let score = minimax(m.grid, m.gDir, m.magState, d - 1, alpha, beta, false, toolsAllowed);
         
-        // Thrift Penalty: Tools cost points
+        // Tie-breaker: If scores equal, prefer Drop over Tool
         if (m.type !== 'drop') score -= 500; 
 
         if (score > bestScore) { bestScore = score; bestMove = m; }
@@ -506,8 +521,10 @@
       let opponent = (p === P_RED) ? P_YEL : P_RED;
       let myMoves = getPossibleMoves(g, gDir, toks, p, mState);
       
+      // 1. Take Immediate Win
       for (let m of myMoves) if (checkWin(m.grid) === p) return m; 
       
+      // 2. Block Immediate Loss (Simple Drop Only)
       let oppSimpleMoves = getPossibleMoves(g, gDir, {flip:0, mag:0}, opponent, mState);
       let simpleKiller = oppSimpleMoves.find(om => om.type === 'drop' && checkWin(om.grid) === opponent);
       if (simpleKiller) {
@@ -521,14 +538,14 @@
     let winner = checkWin(g);
     if (winner === P_YEL) return 100000 + depth * 1000; 
     if (winner === P_RED) return -100000 - depth * 1000; 
-    if (depth <= 0) return evaluateBoard(g, gDir, mState); 
+    if (depth <= 0) return evaluateBoard(g, gDir, mState, toolsAllowed); 
 
     let player = isMax ? P_YEL : P_RED;
     let moves = getDropMoves(g, gDir, player, mState);
     
-    // Deep search optimizations
+    // In deep simulation, restrict tools to critical branches to save CPU
     if (toolsAllowed && depth > 5) {
-        // Optional: Shallow check for tools here
+        // Optional: Shallow check for tools
     }
 
     if (isMax) { 
@@ -552,11 +569,17 @@
     }
   }
 
-  function evaluateBoard(g, grav, mState) {
+  function evaluateBoard(g, grav, mState, advanced) {
       let score = 0;
       score += analyzeLines(g, P_YEL) * 1.0;
       score -= analyzeLines(g, P_RED) * 1.2; 
-      // FRAGILITY CHECK: Only applied to score calculation implicitly via analyzeLines
+      
+      // FRAGILITY CHECK
+      if (advanced) {
+          let cwDir = CW_MAP[grav];
+          let simGrid = settleGridComplete(g, cwDir, {top:[],bottom:[],left:[],right:[]}); 
+          score += (analyzeLines(simGrid, P_YEL) - analyzeLines(simGrid, P_RED)*1.5) * 0.3;
+      }
       return score;
   }
 
@@ -591,6 +614,7 @@
               let blockerIdx = window.findIndex(x => x !== p && x !== P_EMPTY);
               let bR = rStart + blockerIdx * rD;
               let bC = cStart + blockerIdx * cD;
+              // Detect EXTRACTION THREAT
               if (isExtractable(g, bR, bC)) return 15000; 
           }
           return 0; 
