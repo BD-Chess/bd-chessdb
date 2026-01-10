@@ -247,6 +247,14 @@
   let hiddenCells = []; 
   let pendingSettle = false; 
   let aiTimer = null; 
+
+  // AI time budget + abort (prevents "thinking forever")
+  const _nowMs = () => (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
+  let AI_DEADLINE = 0;
+  let AI_ABORT = false;
+  let AI_NODES = 0;
+  const AI_CHECK_EVERY = 1024; // time-check interval (nodes)
+
   let isReviewing = false;
   let reviewIndex = 0;
 
@@ -732,6 +740,12 @@
   }
 
   function aiNegamax(state, depth, alpha, beta, ply, tt){
+
+    // Time-bounded search
+    AI_NODES++;
+    if (!AI_ABORT && (AI_NODES & (AI_CHECK_EVERY-1)) === 0 && _nowMs() > AI_DEADLINE) AI_ABORT = true;
+    if (AI_ABORT) return aiEvaluateFromYellow(state);
+
     const term = aiTerminalScore(state, ply);
     if (term !== null) return term;
     // draw
@@ -771,12 +785,14 @@
 
     const toolPenalty = 40; // symmetric thrift
     for(const mv of moves){
+        if (AI_ABORT) break;
+      if (AI_ABORT) break;
       const child = aiApplyMove(state, mv);
       if (!child) continue;
 
       // Selective depth: tools are volatile and expensive to branch
       let d2 = depth - 1;
-      if (mv.type !== "drop") d2 = Math.max(1, depth - 2);
+      if (mv.type !== "drop") d2 = Math.max(0, depth - 2);
 
       let val = -aiNegamax(child, d2, -beta, -alpha, ply+1, tt);
 
@@ -798,6 +814,7 @@
     if (bestVal <= origAlpha) flag = 2; // upper
     else if (bestVal >= beta) flag = 1; // lower
 
+    if (tt.size > 60000) tt.clear();
     tt.set(key, { depth, val: bestVal, flag, bestMove });
 
     return bestVal;
@@ -816,6 +833,7 @@
       tY: { flip: 0, mag: 0 },
     };
     const tt = new Map();
+    const TT_MAX = 60000;
     // aiNegamax returns score from Yellow perspective; suitable for existing hint logic.
     return aiNegamax(st, depth, alpha, beta, 0, tt);
   }
@@ -823,6 +841,13 @@
 function makeAIMove() {
     // AI is Yellow in this build
     if (gameOver || animating || isReviewing) return;
+
+    // Hard time cap (similar to Claude/Gem builds)
+    const budgetMs = (aiLevel === 1) ? 1200 : (aiLevel === 2) ? 2500 : 5000;
+    AI_DEADLINE = _nowMs() + budgetMs;
+    AI_ABORT = false;
+    AI_NODES = 0;
+
 
     // Depth policy (deterministic)
     let maxDepth = 7;
@@ -844,17 +869,20 @@ function makeAIMove() {
     };
 
     const tt = new Map();
+    const TT_MAX = 60000;
     let best = null;
     let bestScore = -Infinity;
 
     // Iterative deepening (deterministic)
     for(let d=1; d<=maxDepth; d++){
+      if (_nowMs() > AI_DEADLINE) { AI_ABORT = true; break; }
       const moves = aiGenMoves(root);
       let alpha = -Infinity, beta = Infinity;
       let localBest = null;
       let localBestScore = -Infinity;
 
       // PV move from TT (if any) first
+      if (tt.size > TT_MAX) tt.clear();
       const hit = tt.get(aiKey(root));
       if (hit && hit.bestMove){
         // stable: move that matches type/params goes first
@@ -864,11 +892,12 @@ function makeAIMove() {
       }
 
       for(const mv of moves){
+      if (AI_ABORT) break;
         const child = aiApplyMove(root, mv);
         if (!child) continue;
 
         let d2 = d - 1;
-        if (mv.type !== "drop") d2 = Math.max(1, d - 2);
+        if (mv.type !== "drop") d2 = Math.max(0, d - 2);
 
         let val = -aiNegamax(child, d2, -beta, -alpha, 1, tt);
 
@@ -888,6 +917,7 @@ function makeAIMove() {
         best = localBest;
         bestScore = localBestScore;
       }
+      if (AI_ABORT) break;
     }
 
     if (best){
