@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Flip4M Grandmaster (Fixed)</title>
+<title>Flip4M Grandmaster Perfect</title>
 <style>
-  /* --- VISUALS FROM F4_OK (UNTOUCHED & VERIFIED) --- */
+  /* --- VISUALS FROM F4_OK (VERIFIED) --- */
   :root{
     --bg:#0b0f17;
     --panel:#1e2535;
@@ -133,7 +133,7 @@
   <div id="hud">
     <div class="row">
       <div>
-        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Fixed</span></h1>
+        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Perfect</span></h1>
         <div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
       </div>
       <div class="status" id="turnInfo">Red's Turn</div>
@@ -173,6 +173,7 @@
           <button class="btn-act" onclick="startGame(1, 3)">Expert (2x Tools)</button>
           <button class="btn-dang" onclick="startGame(1, 4)" style="border-color: #ffd700; color: #ffd700;">Pro (3x Tools)</button>
         </div>
+        
         <div class="feature-grid">
            <button class="btn-util" onclick="saveGame()">💾 Save</button>
            <button class="btn-util" onclick="loadGameTrigger()">📂 Load</button>
@@ -398,12 +399,12 @@
       }
   }
 
-  // --- AI ENGINE: GRANDMASTER ULTIMATE ---
+  // --- AI ENGINE: GRANDMASTER PERFECT ---
   function checkAI() {
     if (aiTimer) clearTimeout(aiTimer);
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating && !isReviewing) {
         document.body.style.cursor = "wait";
-        // Visually faster reaction, but calculation is deep
+        // Slightly delay to allow UI to render wait cursor
         aiTimer = setTimeout(() => { makeAIMove(); document.body.style.cursor = "default"; }, 50);
     }
   }
@@ -429,43 +430,35 @@
   }
 
   // 2. THE STRICT GATEKEEPER
-  // DECIDES: "Am I allowed to use a tool?"
-  // Returns TRUE only if:
-  // A) A tool leads to an IMMEDIATE WIN.
-  // B) We are facing an IMMEDIATE LOSS that a Drop cannot solve.
+  // Returns TRUE only if A) Tool Wins B) Tool Saves from Loss
   function shouldConsiderTools(g, gDir, mState, aiToks, player) {
     const opponent = (player === P_RED) ? P_YEL : P_RED;
     
-    // Check A: Can we win NOW with a tool?
+    // A) Immediate Win Check
     if (aiToks.flip > 0 || aiToks.mag > 0) {
-      // We do a shallow check for wins
       let toolMoves = getToolMoves(g, gDir, aiToks, player, mState);
       for (let m of toolMoves) {
-        if (checkWin(m.grid) === player) return { allowed: true, reason: "WIN" };
+        if (checkWin(m.grid) === player) return { allowed: true };
       }
     }
     
-    // Check B: Are we dead next turn?
-    // Simulate Opponent's best drop moves
+    // B) Immediate Loss Check (Can opponent win next turn?)
     let oppDrops = getDropMoves(g, gDir, opponent, mState);
     for (let m of oppDrops) {
       if (checkWin(m.grid) === opponent) {
-        // Opponent threatens win. Can we block with a simple drop?
-        // Note: For speed, we just assume "If opponent threatens win, unlock tools just in case".
-        return { allowed: true, reason: "DEFENSE" };
+        return { allowed: true }; // Unlock tools to defend
       }
     }
     
-    // Default: FORBID TOOLS. 
-    // This stops the AI from rotating on turn 1 or wasting magnets for "position".
-    return { allowed: false, reason: "NO_NEED" };
+    // Default: FORBID TOOLS
+    return { allowed: false };
   }
 
   function makeAIMove() {
     let depth = 8; 
     let hasTools = (tokens[P_YEL].flip > 0 || tokens[P_YEL].mag > 0);
     
-    // DEPTH SCALING: Pro thinks DEEPER (10), not shallower.
+    // DEEP THOUGHT CONFIG
     if (aiLevel === 2) depth = 8; 
     else if (aiLevel === 3) depth = 9; 
     else if (aiLevel === 4) depth = 10; 
@@ -483,34 +476,33 @@
     // 3. GENERATE MOVES
     let moves = getDropMoves(grid, gravityDir, P_YEL, mag);
     
-    // Only add tool moves if the Gatekeeper allowed it OR if we have no choice (board full)
+    // Force tools if allowed OR no drops possible
     if (toolsAllowed || (moves.length === 0 && hasTools)) {
         moves.push(...getToolMoves(grid, gravityDir, aiTokens, P_YEL, mag));
-        toolsAllowed = true; // Ensure logic downstream knows tools are in play
+        toolsAllowed = true; 
     }
     
-    // 4. SORT (Alpha-Beta Optimization)
+    // 4. SORT
     let center = (COLS - 1) / 2;
     moves.sort((a,b) => {
-       // Always prioritize Drops over Tools if score is unknown
        if (a.type !== b.type) return (a.type === 'drop' ? -1 : 1); 
        let sa = (a.type==='drop') ? 10 - Math.abs(center-a.col) : 0;
        let sb = (b.type==='drop') ? 10 - Math.abs(center-b.col) : 0;
        return sb - sa;
     });
 
-    // 5. MINIMAX SEARCH
+    // 5. SEARCH
     let bestMove = null, bestScore = -Infinity;
     let alpha = -Infinity, beta = Infinity;
 
     for (let m of moves) {
         let d = depth;
-        // Tools are computationally expensive, reduce depth slightly for them
+        // Optimization: Reduce depth for expensive tool branches if we have many
         if (m.type !== 'drop') d = Math.max(3, depth - 2); 
 
         let score = minimax(m.grid, m.gDir, m.magState, d - 1, alpha, beta, false, toolsAllowed);
         
-        // Tie-breaker: If scores are equal, prefer Drop over Tool (Save resources)
+        // Tie-breaker: If scores equal, prefer Drop over Tool
         if (m.type !== 'drop') score -= 500; 
 
         if (score > bestScore) { bestScore = score; bestMove = m; }
@@ -527,10 +519,10 @@
       let opponent = (p === P_RED) ? P_YEL : P_RED;
       let myMoves = getPossibleMoves(g, gDir, toks, p, mState);
       
-      // 1. Take Immediate Win
+      // Win?
       for (let m of myMoves) if (checkWin(m.grid) === p) return m; 
       
-      // 2. Block Immediate Loss (Simple Drop Only)
+      // Block Loss?
       let oppSimpleMoves = getPossibleMoves(g, gDir, {flip:0, mag:0}, opponent, mState);
       let simpleKiller = oppSimpleMoves.find(om => om.type === 'drop' && checkWin(om.grid) === opponent);
       if (simpleKiller) {
@@ -547,14 +539,11 @@
     if (depth <= 0) return evaluateBoard(g, gDir, mState); 
 
     let player = isMax ? P_YEL : P_RED;
+    // In deep recursion, mostly check drops for speed, unless critically threatened
     let moves = getDropMoves(g, gDir, player, mState);
     
-    // In deep simulation, we assume players ONLY use tools if we are in a critical state.
-    // To keep search fast (and reach depth 10), we mostly simulate Drops unless explicitly branching for tools.
-    // However, if we are in a "Tools Allowed" branch, we should consider the opponent might counter with tools.
     if (toolsAllowed && depth > 5) {
-        // We simulate tools shallowly
-        // moves.push(...getToolMoves(g, gDir, {flip:1, mag:1}, player, mState)); 
+       // Optional: Add shallow tool check here if needed for Pro+
     }
 
     if (isMax) { 
@@ -612,14 +601,17 @@
       let opp = window.filter(x => x !== p && x !== P_EMPTY).length;
       
       if (opp > 0) {
+          // If we have 3 pieces blocked by 1 opponent
           if (count === 3 && opp === 1) {
               let blockerIdx = window.findIndex(x => x !== p && x !== P_EMPTY);
               let bR = rStart + blockerIdx * rD;
               let bC = cStart + blockerIdx * cD;
+              // If the BLOCKER is extractable, this is a huge threat/opportunity
               if (isExtractable(g, bR, bC)) return 15000; 
           }
           return 0; 
       }
+      
       if (count === 4) return 10000;
       if (count === 3 && empty === 1) return 200; 
       if (count === 2 && empty === 2) return 10;
@@ -677,7 +669,6 @@
       return moves;
   }
 
-  // --- GENERAL HELPER WRAPPER FOR SANITY CHECK ---
   function getPossibleMoves(g, gDir, toks, p, mState) {
       let moves = getDropMoves(g, gDir, p, mState);
       if (toks.flip > 0 || toks.mag > 0) {
@@ -686,7 +677,7 @@
       return moves;
   }
 
-  // --- RENDER & INPUT (FROM F4_OK) ---
+  // --- RENDER & INPUT (UNCHANGED) ---
   let lastTime = 0;
   function initLoop(now) { lastTime = now; requestAnimationFrame(loop); }
   function loop(now) {
