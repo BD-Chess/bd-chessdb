@@ -253,7 +253,7 @@
   let AI_DEADLINE = 0;
   let AI_ABORT = false;
   let AI_NODES = 0;
-  const AI_CHECK_EVERY = 1024; // time-check interval (nodes)
+  const AI_CHECK_EVERY = 128; // time-check interval (nodes) — tighter cap to avoid overrun on iPad
 
   let isReviewing = false;
   let reviewIndex = 0;
@@ -489,23 +489,103 @@
   function aiCloneGrid(g){ return g.map(r=>r.slice()); }
   function aiCloneTokens(t){ return { flip: t.flip|0, mag: t.mag|0 }; }
 
+  function makeXor32(seed){
+    let x = seed|0;
+    return function(){
+      x |= 0;
+      x ^= (x << 13);
+      x ^= (x >>> 17);
+      x ^= (x << 5);
+      return (x >>> 0);
+    };
+  }
+
+  // Zobrist hashing (fast deterministic TT keys; avoids huge string concatenation)
+  const ZN_TOK = 32; // clamp for token counts (Add+2 can raise counts)
+  const _zr1 = makeXor32(0x9e3779b9), _zr2 = makeXor32(0x243f6a88);
+
+  const Z_DIR1 = new Uint32Array(4), Z_DIR2 = new Uint32Array(4);
+  const Z_PLY1 = new Uint32Array(2), Z_PLY2 = new Uint32Array(2);
+
+  const Z_TRF1 = new Uint32Array(ZN_TOK), Z_TRF2 = new Uint32Array(ZN_TOK);
+  const Z_TRM1 = new Uint32Array(ZN_TOK), Z_TRM2 = new Uint32Array(ZN_TOK);
+  const Z_TYF1 = new Uint32Array(ZN_TOK), Z_TYF2 = new Uint32Array(ZN_TOK);
+  const Z_TYM1 = new Uint32Array(ZN_TOK), Z_TYM2 = new Uint32Array(ZN_TOK);
+
+  const CELLS = ROWS * COLS;
+  const Z_R1 = new Uint32Array(CELLS), Z_R2 = new Uint32Array(CELLS);
+  const Z_Y1 = new Uint32Array(CELLS), Z_Y2 = new Uint32Array(CELLS);
+
+  const ML = (MAGNET_LIFE + 1); // life 0..MAGNET_LIFE (0 unused but keeps indexing simple)
+  const Z_TOP1 = new Uint32Array(COLS * 2 * ML),   Z_TOP2 = new Uint32Array(COLS * 2 * ML);
+  const Z_BOT1 = new Uint32Array(COLS * 2 * ML),   Z_BOT2 = new Uint32Array(COLS * 2 * ML);
+  const Z_LFT1 = new Uint32Array(ROWS * 2 * ML),   Z_LFT2 = new Uint32Array(ROWS * 2 * ML);
+  const Z_RGT1 = new Uint32Array(ROWS * 2 * ML),   Z_RGT2 = new Uint32Array(ROWS * 2 * ML);
+
+  (function initZ(){
+    for(let i=0;i<4;i++){ Z_DIR1[i]=_zr1(); Z_DIR2[i]=_zr2(); }
+    for(let i=0;i<2;i++){ Z_PLY1[i]=_zr1(); Z_PLY2[i]=_zr2(); }
+    for(let i=0;i<ZN_TOK;i++){
+      Z_TRF1[i]=_zr1(); Z_TRF2[i]=_zr2();
+      Z_TRM1[i]=_zr1(); Z_TRM2[i]=_zr2();
+      Z_TYF1[i]=_zr1(); Z_TYF2[i]=_zr2();
+      Z_TYM1[i]=_zr1(); Z_TYM2[i]=_zr2();
+    }
+    for(let i=0;i<CELLS;i++){
+      Z_R1[i]=_zr1(); Z_R2[i]=_zr2();
+      Z_Y1[i]=_zr1(); Z_Y2[i]=_zr2();
+    }
+    for(let i=0;i<Z_TOP1.length;i++){ Z_TOP1[i]=_zr1(); Z_TOP2[i]=_zr2(); }
+    for(let i=0;i<Z_BOT1.length;i++){ Z_BOT1[i]=_zr1(); Z_BOT2[i]=_zr2(); }
+    for(let i=0;i<Z_LFT1.length;i++){ Z_LFT1[i]=_zr1(); Z_LFT2[i]=_zr2(); }
+    for(let i=0;i<Z_RGT1.length;i++){ Z_RGT1[i]=_zr1(); Z_RGT2[i]=_zr2(); }
+  })();
+
   function aiKey(state){
-    // Compact but deterministic key
-    let s = "" + state.dir + "|" + state.player + "|" +
-            state.tR.flip + "," + state.tR.mag + "|" +
-            state.tY.flip + "," + state.tY.mag + "|";
-    // magnets: top,bottom length COLS; left,right length ROWS (ROWS==COLS in this build but keep semantics)
-    const encMag = (m)=> m ? (m.p===P_RED?"R":"Y") + String.fromCharCode(48 + (m.life|0)) : ".";
-    for(let i=0;i<COLS;i++) s += encMag(state.mag.top[i]);
-    s += "|";
-    for(let i=0;i<COLS;i++) s += encMag(state.mag.right[i]);
-    s += "|";
-    for(let i=0;i<COLS;i++) s += encMag(state.mag.bottom[i]);
-    s += "|";
-    for(let i=0;i<ROWS;i++) s += encMag(state.mag.left[i]);
-    s += "|";
-    for(let r=0;r<ROWS;r++) s += state.grid[r].join("");
-    return s;
+    let h1 = 0|0, h2 = 0|0;
+
+    // gravity dir + side to move
+    h1 ^= Z_DIR1[state.dir & 3];  h2 ^= Z_DIR2[state.dir & 3];
+    const pl = (state.player === P_RED) ? 0 : 1;
+    h1 ^= Z_PLY1[pl];             h2 ^= Z_PLY2[pl];
+
+    // token inventories (clamped)
+    const trf = Math.min(state.tR.flip|0, ZN_TOK-1);
+    const trm = Math.min(state.tR.mag|0,  ZN_TOK-1);
+    const tyf = Math.min(state.tY.flip|0, ZN_TOK-1);
+    const tym = Math.min(state.tY.mag|0,  ZN_TOK-1);
+    h1 ^= Z_TRF1[trf] ^ Z_TRM1[trm] ^ Z_TYF1[tyf] ^ Z_TYM1[tym];
+    h2 ^= Z_TRF2[trf] ^ Z_TRM2[trm] ^ Z_TYF2[tyf] ^ Z_TYM2[tym];
+
+    // magnets
+    const encM = (m)=> m ? ( (m.p===P_RED?0:1) * ML + Math.min((m.life|0), MAGNET_LIFE) ) : -1;
+    for(let i=0;i<COLS;i++){
+      const mt = encM(state.mag.top[i]); 
+      if (mt>=0){ const off = i*2*ML + mt; h1 ^= Z_TOP1[off]; h2 ^= Z_TOP2[off]; }
+      const mb = encM(state.mag.bottom[i]);
+      if (mb>=0){ const off = i*2*ML + mb; h1 ^= Z_BOT1[off]; h2 ^= Z_BOT2[off]; }
+    }
+    for(let i=0;i<ROWS;i++){
+      const ml = encM(state.mag.left[i]);
+      if (ml>=0){ const off = i*2*ML + ml; h1 ^= Z_LFT1[off]; h2 ^= Z_LFT2[off]; }
+      const mr = encM(state.mag.right[i]);
+      if (mr>=0){ const off = i*2*ML + mr; h1 ^= Z_RGT1[off]; h2 ^= Z_RGT2[off]; }
+    }
+
+    // grid occupancy
+    for(let r=0;r<ROWS;r++){
+      const row = state.grid[r];
+      let base = r*COLS;
+      for(let c=0;c<COLS;c++){
+        const v = row[c];
+        const k = base + c;
+        if (v === P_RED){ h1 ^= Z_R1[k]; h2 ^= Z_R2[k]; }
+        else if (v === P_YEL){ h1 ^= Z_Y1[k]; h2 ^= Z_Y2[k]; }
+      }
+    }
+
+    // short key for Map
+    return (h1>>>0).toString(16) + ":" + (h2>>>0).toString(16);
   }
 
   function aiEvaluateFromYellow(state){
@@ -833,7 +913,7 @@
       tY: { flip: 0, mag: 0 },
     };
     const tt = new Map();
-    const TT_MAX = 60000;
+    const TT_MAX = 20000; // keep memory/GC under control on iPad
     // aiNegamax returns score from Yellow perspective; suitable for existing hint logic.
     return aiNegamax(st, depth, alpha, beta, 0, tt);
   }
@@ -869,7 +949,7 @@ function makeAIMove() {
     };
 
     const tt = new Map();
-    const TT_MAX = 60000;
+    const TT_MAX = 20000; // keep memory/GC under control on iPad
     let best = null;
     let bestScore = -Infinity;
 
