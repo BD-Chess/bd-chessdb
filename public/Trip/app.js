@@ -37,7 +37,7 @@
   const btnHelp = $('btnHelp');
   const btnCloseHelp = $('btnCloseHelp');
   const presetTree = $('presetTree');
-  const helpBody = $('helpBody'); // Target for help text
+  const helpBody = $('helpBody'); 
 
   const worker = new Worker('worker.js');
 
@@ -52,6 +52,7 @@
   let currentTravelMode = 'DRIVING'; 
   
   let presetLookup = {};
+  const STORAGE_KEY = '8z_trip_backup_v1';
 
   const CUSTOM_DARK_STYLE = [
     { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
@@ -76,7 +77,68 @@
 
     geocoder = new google.maps.Geocoder();
     directionsService = new google.maps.DirectionsService();
+    
+    // Attempt to restore state only after map is ready (for style preference)
+    restoreState();
   };
+
+  // --- AUTO-SAVE SYSTEM ---
+  
+  // Debounce helper to prevent excessive writes
+  function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
+
+  const saveState = debounce(() => {
+    const state = {
+      text: inputEl.value,
+      mode: currentTravelMode,
+      roundTrip: chkRoundTrip.checked,
+      direct: chkDirect.checked,
+      googleStyle: chkGoogleStyle.checked,
+      timestamp: Date.now()
+    };
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      // Subtle indicator that save happened (optional, logging for now)
+      // console.log('Auto-saved trip state');
+    } catch (e) {
+      console.warn('LocalStorage save failed', e);
+    }
+  }, 1000); // Save 1 second after last change
+
+  function restoreState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const state = JSON.parse(raw);
+      
+      // Restore Text
+      if (state.text) inputEl.value = state.text;
+      
+      // Restore Mode
+      if (state.mode) {
+        setTravelMode(state.mode);
+      }
+      
+      // Restore Checkboxes
+      if (typeof state.roundTrip === 'boolean') chkRoundTrip.checked = state.roundTrip;
+      if (typeof state.direct === 'boolean') chkDirect.checked = state.direct;
+      if (typeof state.googleStyle === 'boolean') {
+        chkGoogleStyle.checked = state.googleStyle;
+        if (map && !state.googleStyle) map.setOptions({ styles: CUSTOM_DARK_STYLE });
+        if (map && state.googleStyle) map.setOptions({ styles: null });
+      }
+
+      setStatus('Restored your last session.', 'ok');
+    } catch (e) {
+      console.warn('Failed to restore state', e);
+    }
+  }
 
   // --- INIT FUNCTIONS ---
   function initTripTree() {
@@ -151,6 +213,7 @@
     clearMap();
     if (key && presetLookup[key]) {
       inputEl.value = presetLookup[key];
+      saveState(); // Save immediately on load
       
       if (key.includes('GLOBAL_')) {
         chkDirect.checked = true;
@@ -169,8 +232,32 @@
         }
       }
       chkRoundTrip.checked = true;
+      saveState();
     }
   }
+
+  // --- API FOR CHAT ASSISTANT (HOOK) ---
+  window.addStopToRoute = function(locationName) {
+    const current = inputEl.value;
+    const cleanName = locationName.trim();
+    if (!cleanName) return;
+
+    // Check if empty
+    if (!current.trim()) {
+      inputEl.value = cleanName;
+    } else {
+      // Append nicely
+      inputEl.value = current.trim() + '\n' + cleanName;
+    }
+    
+    // Visual feedback
+    inputEl.scrollTop = inputEl.scrollHeight;
+    inputEl.style.borderColor = '#7ee787'; // Green flash
+    setTimeout(() => { inputEl.style.borderColor = '#1f2a3a'; }, 300);
+    
+    saveState();
+    setStatus(`Added "${cleanName}" to list.`, 'ok');
+  };
 
   // --- HELPERS ---
   function clearMap() {
@@ -228,6 +315,7 @@
       reader.onload = (evt) => {
         clearMap(); 
         inputEl.value = evt.target.result;
+        saveState();
         setStatus(`Loaded file: ${file.name}`, 'ok');
         fileLoader.value = '';
       };
@@ -244,6 +332,7 @@
       btnDriving.classList.add('secondary');
       btnWalking.classList.remove('secondary');
     }
+    saveState();
     if (lastSolvedPoints) {
       const links = buildMapsLegLinks(lastSolvedPoints, chkRoundTrip.checked, currentTravelMode);
       renderLinks(links);
@@ -489,6 +578,7 @@
       params.set('travelmode', travelmode);
       if (mids.length) params.set('waypoints', mids.join('|'));
 
+      // FIXED: URL encoding issue in previous version
       const url = `https://www.google.com/maps/dir/?${params.toString()}`;
       
       links.push({ url, label: `Leg ${links.length + 1} (${segment.length} stops)` });
@@ -537,6 +627,8 @@
 
   async function run(profile) {
     updateOptimizeButtons(profile);
+    // Auto-save before running
+    saveState();
 
     disableWhileRunning(true);
     let { pts, startIdx } = parseStops(inputEl.value);
@@ -573,6 +665,8 @@
     } else if (msg.type === 'error') {
       setStatus(msg.error || 'Error.', 'bad');
       disableWhileRunning(false);
+    } else if (msg.type === 'progress') {
+      setStatus(msg.text, 'warn');
     }
   };
 
@@ -580,6 +674,10 @@
   function hideHelp() { helpOverlay.classList.remove('active'); }
 
   // --- EVENT LISTENERS ---
+  
+  // Input Auto-Save listener
+  inputEl.addEventListener('input', saveState);
+
   if (btnStandard) btnStandard.addEventListener('click', () => run('standard'));
   if (btnDeep) btnDeep.addEventListener('click', () => run('deep'));
   
@@ -589,11 +687,15 @@
   if (btnDriving) btnDriving.addEventListener('click', () => setTravelMode('DRIVING'));
   if (btnWalking) btnWalking.addEventListener('click', () => setTravelMode('WALKING'));
 
+  chkRoundTrip.addEventListener('change', saveState);
+
   chkDirect.addEventListener('change', () => {
+    saveState();
     if (lastSolvedPoints) updateMapVisualization(lastSolvedPoints);
   });
   
   chkGoogleStyle.addEventListener('change', (e) => {
+    saveState();
     if (map) {
       map.setOptions({ styles: e.target.checked ? null : CUSTOM_DARK_STYLE });
     }

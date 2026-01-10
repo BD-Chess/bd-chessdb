@@ -1,6 +1,7 @@
 /* Web Worker: deterministic route optimization (Euclidean on lat/lon via equirectangular projection) */
 'use strict';
 
+// --- SEEDED RNG (Unchanged) ---
 function fnv1a64(str) {
   let h = 0xcbf29ce484222325n;
   const prime = 0x100000001b3n;
@@ -33,6 +34,7 @@ class XorShift64Star {
   }
 }
 
+// --- GEOMETRY HELPERS (Unchanged) ---
 function toXYMeters(points) {
   const R = 6371000.0;
   let latSum = 0;
@@ -85,6 +87,8 @@ function routeLength(route, D, roundTrip) {
   if (roundTrip && route.length > 1) sum += D[route[route.length-1]][route[0]];
   return sum;
 }
+
+// --- SOLVER COMPONENTS ---
 
 function nearestNeighbor(start, D, allowed) {
   const n = allowed.length;
@@ -148,18 +152,27 @@ function nnWithJitter(start, D, allowed, rng, jitterScale) {
   return route;
 }
 
-function twoOpt(route, D, roundTrip, maxPasses, timeBudgetMs) {
+// FIX: Removed 'timeBudgetMs' and 'performance.now()'
+// Added 'moveBudget' to limit calculation count deterministically
+function twoOpt(route, D, roundTrip, maxPasses, moveBudget) {
   const n = route.length;
-  const t0 = performance.now();
   if (n < 4) return route;
+
+  let movesChecked = 0;
 
   for (let pass = 0; pass < maxPasses; pass++) {
     let improved = false;
     for (let i = 1; i < n - 2; i++) {
       const a = route[i-1], b = route[i];
       for (let k = i + 1; k < n - 1; k++) {
+        
+        // Budget Check
+        movesChecked++;
+        if (movesChecked > moveBudget) return route;
+
         const c = route[k], d = route[k+1];
         const delta = (D[a][c] + D[b][d]) - (D[a][b] + D[c][d]);
+        
         if (delta < -1e-12) {
           let L = i, R = k;
           while (L < R) {
@@ -168,7 +181,6 @@ function twoOpt(route, D, roundTrip, maxPasses, timeBudgetMs) {
           }
           improved = true;
         }
-        if ((performance.now() - t0) > timeBudgetMs) return route;
       }
     }
     if (!improved) break;
@@ -199,23 +211,23 @@ function solve(points, startIdx, profile, roundTrip) {
   const seedStr = points.map(p => `${p.name}|${p.lat}|${p.lon}`).join('\n') + `|start=${start}|profile=${profile}|rt=${roundTrip}`;
   const rng = new XorShift64Star(fnv1a64(seedStr));
 
-  // --- UPDATED PROFILE LOGIC ---
+  // --- DETERMINISTIC SETTINGS ---
+  // Replaced timeBudgetMs with moveBudget (operations count)
   let starts = 2;
   let maxPasses = 4;
-  let timeBudgetMs = 300;
+  let moveBudget = 200000; // Default budget
   let jitterScale = 0.03;
 
-  // New profile names: 'standard' vs 'deep'
   if (profile === 'standard') {
-    starts = 2; maxPasses = 4; timeBudgetMs = 300; jitterScale = 0.03;
+    starts = 2; maxPasses = 4; moveBudget = 500000; jitterScale = 0.03;
   } else if (profile === 'deep') {
-    starts = 12; maxPasses = 10; timeBudgetMs = 1500; jitterScale = 0.08;
+    starts = 12; maxPasses = 10; moveBudget = 5000000; jitterScale = 0.08; // 10x more effort
   } 
-  // Fallbacks for older calls
+  // Fallbacks
   else if (profile === 'fast') {
-    starts = 1; maxPasses = 3; timeBudgetMs = 250; jitterScale = 0.02;
+    starts = 1; maxPasses = 3; moveBudget = 100000; jitterScale = 0.02;
   } else if (profile === 'balanced') {
-    starts = 4; maxPasses = 6; timeBudgetMs = 650; jitterScale = 0.05;
+    starts = 4; maxPasses = 6; moveBudget = 1000000; jitterScale = 0.05;
   }
 
   let bestRoute = null;
@@ -231,11 +243,12 @@ function solve(points, startIdx, profile, roundTrip) {
     if (s === 0) route = nearestNeighbor(start, D, allowed);
     else route = nnWithJitter(start, D, allowed, rng, jitterScale);
 
-    route = twoOpt(route, D, roundTrip, maxPasses, timeBudgetMs);
+    route = twoOpt(route, D, roundTrip, maxPasses, moveBudget);
 
     const L = routeLength(route, D, roundTrip);
     if (L < bestLen - 1e-9) { bestLen = L; bestRoute = route.slice(); }
     else if (Math.abs(L - bestLen) <= 1e-9 && bestRoute) {
+      // Tie-breaker: lexicographical check for true stability
       for (let i = 0; i < route.length; i++) {
         if (route[i] < bestRoute[i]) { bestRoute = route.slice(); break; }
         if (route[i] > bestRoute[i]) break;
