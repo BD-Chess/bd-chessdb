@@ -3,9 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Flip4M Grandmaster Elite</title>
+<title>Flip4M Grandmaster IV</title>
 <style>
-  /* --- VISUALS FROM F4_OK (UNTOUCHED & ROBUST) --- */
   :root{
     --bg:#0b0f17;
     --panel:#1e2535;
@@ -21,11 +20,8 @@
   }
   html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;overflow:hidden;touch-action:none;}
   
-  #app {
-    display:flex; flex-direction:column; height:100%; width:100%;
-  }
+  #app { display:flex; flex-direction:column; height:100%; width:100%; }
 
-  /* HUD */
   #hud {
     flex-shrink:0; z-index:10;
     background:var(--panel); border-bottom:1px solid var(--btnBorder);
@@ -48,14 +44,12 @@
   .dot.r { background:var(--red); box-shadow:0 0 4px var(--red); }
   .dot.y { background:var(--yel); box-shadow:0 0 4px var(--yel); }
 
-  /* Canvas Stage */
   #game-stage {
     flex-grow:1; position:relative; overflow:hidden; background:var(--bg);
     display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
   }
   canvas { position:absolute; inset:0; display:block; width:100%; height:100%; z-index:1; }
 
-  /* WINNER BOX */
   #winnerCard {
     position: absolute; top: 0; left: 0; right: 0; z-index: 50;
     background: rgba(30, 37, 53, 0.98); backdrop-filter: blur(10px);
@@ -75,7 +69,6 @@
   .win-btns { display:flex; gap:8px; }
   .win-btns button { padding:8px 16px; font-size:12px; border-radius:8px; height: auto; }
 
-  /* Controls */
   #controls, #review-controls {
     flex-shrink:0; z-index:10;
     background:var(--panel); border-top:1px solid var(--btnBorder);
@@ -104,7 +97,6 @@
 
   .big-icon { font-size: 1.6em; line-height: 1; margin-left: 6px; display: inline-block; margin-top: -2px; }
 
-  /* Overlay */
   #overlay {
     position:absolute; inset:0; z-index:100;
     background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
@@ -125,6 +117,29 @@
   .help-rule { text-align:left; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px; margin-bottom:8px; }
   .help-rule b { color: #fff; }
   .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
+
+  /* First Move Toggle Switch */
+  .first-move-toggle {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin: 15px 0 5px; padding: 10px; 
+    background: rgba(0,0,0,0.2); border-radius: 10px;
+  }
+  .first-move-toggle span { font-size: 13px; color: var(--muted); }
+  .first-move-toggle .active { color: var(--text); font-weight: 700; }
+  
+  .toggle-switch {
+    position: relative; width: 50px; height: 26px;
+    background: var(--red); border-radius: 13px;
+    cursor: pointer; transition: background 0.3s;
+  }
+  .toggle-switch.cpu-first { background: var(--yel); }
+  .toggle-switch::after {
+    content: ''; position: absolute;
+    top: 3px; left: 3px; width: 20px; height: 20px;
+    background: white; border-radius: 50%;
+    transition: transform 0.3s;
+  }
+  .toggle-switch.cpu-first::after { transform: translateX(24px); }
 </style>
 </head>
 <body>
@@ -133,7 +148,7 @@
   <div id="hud">
     <div class="row">
       <div>
-        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Elite</span></h1>
+        <h1>Flip4M <span style="font-size:12px;opacity:0.7;font-weight:400; color:#ffd700">GM IV</span></h1>
         <div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
       </div>
       <div class="status" id="turnInfo">Red's Turn</div>
@@ -167,8 +182,16 @@
     <div id="overlay">
       <div class="card" id="menuCard">
         <h2>Flip4M</h2>
-        <p>Gravity-defying strategy.</p>
-        <div class="card-btns" style="flex-direction:column; gap:8px;">
+        <p>Gravity-defying strategy. <b>GM IV</b> — Ultimate AI.</p>
+        
+        <!-- First Move Toggle -->
+        <div class="first-move-toggle">
+          <span id="labelHuman" class="active">You First</span>
+          <div class="toggle-switch" id="firstMoveToggle" onclick="toggleFirstMove()"></div>
+          <span id="labelCPU">CPU First</span>
+        </div>
+        
+        <div class="card-btns" style="flex-direction:column; gap:8px; margin-top:10px;">
           <button class="btn-act" onclick="startGame(1, 2)">Standard (Classical)</button>
           <button class="btn-act" onclick="startGame(1, 3)">Expert (2x Tools)</button>
           <button class="btn-dang" onclick="startGame(1, 4)" style="border-color: #ffd700; color: #ffd700;">Pro (3x Tools)</button>
@@ -226,37 +249,83 @@
 (() => {
   "use strict";
 
+  // =========================================================================
+  // CONSTANTS & STATE
+  // =========================================================================
   const ROWS = 8, COLS = 8;
   const P_EMPTY = 0, P_RED = 1, P_YEL = 2;
-  const MAGNET_LIFE = 6; 
+  const MAGNET_LIFE = 6;
+  const CW_MAP = { 0: 3, 1: 0, 2: 1, 3: 2 };
+  const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 };
   
   let grid = [];
-  let mag = { top: [], bottom: [], left: [], right: [] }; 
-  let gravityDir = 0; 
-  let boardAngle = 0; 
+  let mag = { top: [], bottom: [], left: [], right: [] };
+  let gravityDir = 0;
+  let boardAngle = 0;
   let targetAngle = 0;
   let curPlayer = P_RED;
   let tokens = {};
   let history = [];
   let gameOver = false;
-  let gameInProgress = false; 
-  let gameMode = 2; 
-  let aiLevel = 2; 
+  let gameInProgress = false;
+  let gameMode = 2;
+  let aiLevel = 2;
   let animating = false;
-  let anims = []; 
-  let hiddenCells = []; 
-  let pendingSettle = false; 
-  let aiTimer = null; 
+  let anims = [];
+  let hiddenCells = [];
+  let pendingSettle = false;
+  let aiTimer = null;
+  let isReviewing = false;
+  let reviewIndex = 0;
+  
+  // NEW: Who plays as CPU (Yellow by default, Red if CPU goes first)
+  let humanPlayer = P_RED;
+  let cpuPlayer = P_YEL;
+  let cpuFirst = false;
 
-  // AI time budget + abort (prevents "thinking forever")
+  // AI Time Management (from GPT)
   const _nowMs = () => (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
   let AI_DEADLINE = 0;
   let AI_ABORT = false;
   let AI_NODES = 0;
-  const AI_CHECK_EVERY = 128; // time-check interval (nodes) — tighter cap to avoid overrun on iPad
+  const AI_CHECK_EVERY = 256;
 
-  let isReviewing = false;
-  let reviewIndex = 0;
+  // AI Transposition Table (deterministic)
+  let AI_TT = new Map();
+  const AI_TT_MAX = 180000; // cap entries to avoid iPad memory blow-ups
+  const AI_NODE_CAP = 900000; // hard safety cap per move
+
+  function aiMoveId(m) {
+    if (m.type === 'drop') return 'd' + m.col;
+    if (m.type === 'flip') return 'f' + (m.delta > 0 ? 'L' : 'R');
+    if (m.type === 'mag') return 'm' + m.side + '_' + m.idx;
+    return 'x';
+  }
+
+  function aiStateKey(g, gDir, mState, player) {
+    // Grid (0/1/2) + Dir + Player + Magnet owner/life
+    // Kept as a string for Safari reliability.
+    let s = '';
+    for (let r = 0; r < ROWS; r++) {
+      let row = g[r];
+      for (let c = 0; c < COLS; c++) s += row[c];
+    }
+    s += '|' + gDir + '|' + player + '|';
+
+    const enc = (m) => {
+      if (!m) return '..';
+      // p is 1/2, life small int
+      return (m.p === P_RED ? 'R' : 'Y') + String(m.life);
+    };
+    for (let i = 0; i < COLS; i++) s += enc(mState.top[i]);
+    s += '|';
+    for (let i = 0; i < ROWS; i++) s += enc(mState.right[i]);
+    s += '|';
+    for (let i = 0; i < COLS; i++) s += enc(mState.bottom[i]);
+    s += '|';
+    for (let i = 0; i < ROWS; i++) s += enc(mState.left[i]);
+    return s;
+  }
 
   const canvas = document.getElementById("c");
   const ctx = canvas.getContext("2d", { alpha: false });
@@ -272,31 +341,64 @@
   const controlBar = document.getElementById("controls");
   const reviewBar = document.getElementById("review-controls");
 
+  // =========================================================================
+  // FIRST MOVE TOGGLE
+  // =========================================================================
+  window.toggleFirstMove = function() {
+    cpuFirst = !cpuFirst;
+    const toggle = document.getElementById("firstMoveToggle");
+    const labelHuman = document.getElementById("labelHuman");
+    const labelCPU = document.getElementById("labelCPU");
+    
+    if (cpuFirst) {
+      toggle.classList.add("cpu-first");
+      labelHuman.classList.remove("active");
+      labelCPU.classList.add("active");
+    } else {
+      toggle.classList.remove("cpu-first");
+      labelHuman.classList.add("active");
+      labelCPU.classList.remove("active");
+    }
+  }
+
+  // =========================================================================
+  // GAME SETUP
+  // =========================================================================
   window.startGame = function(mode, level) {
     gameMode = mode;
     aiLevel = level;
     gameInProgress = true;
+    
+    // Set who is human vs CPU based on toggle
+    if (cpuFirst) {
+      humanPlayer = P_YEL;
+      cpuPlayer = P_RED;
+    } else {
+      humanPlayer = P_RED;
+      cpuPlayer = P_YEL;
+    }
+    
     menuCard.classList.add('hidden');
     hintCard.classList.add('hidden');
     helpCard.classList.add('hidden');
     elOverlay.style.display = "none";
     initGame();
   }
-  
+
   window.toggleMenu = function() {
-      if (elOverlay.style.display === "flex") {
-          if (menuCard.classList.contains('hidden') && !helpCard.classList.contains('hidden')) {
-             elOverlay.style.display = "none";
-             helpCard.classList.add('hidden');
-          } else {
-             if (gameInProgress) {
-                 elOverlay.style.display = "none";
-                 menuCard.classList.add('hidden');
-             }
-          }
+    if (elOverlay.style.display === "flex") {
+      if (menuCard.classList.contains('hidden') && !helpCard.classList.contains('hidden')) {
+        elOverlay.style.display = "none";
+        helpCard.classList.add('hidden');
       } else {
-          showMainMenu();
+        if (gameInProgress) {
+          elOverlay.style.display = "none";
+          menuCard.classList.add('hidden');
+        }
       }
+    } else {
+      showMainMenu();
+    }
   }
 
   function showMainMenu() {
@@ -315,7 +417,7 @@
   }
 
   function initGame() {
-    grid = Array.from({length: ROWS}, () => Array(COLS).fill(P_EMPTY));
+    grid = Array.from({ length: ROWS }, () => Array(COLS).fill(P_EMPTY));
     mag = {
       top: Array(COLS).fill(null), bottom: Array(COLS).fill(null),
       left: Array(ROWS).fill(null), right: Array(ROWS).fill(null)
@@ -323,18 +425,14 @@
     gravityDir = 0;
     boardAngle = 0;
     targetAngle = 0;
-    curPlayer = P_RED;
-    
-    // --- DIFFICULTY ---
+    curPlayer = P_RED; // Red always starts (but might be CPU now)
+
     if (aiLevel === 2) {
-        // STANDARD
-        tokens = { [P_RED]: { flip: 0, mag: 0 }, [P_YEL]: { flip: 0, mag: 0 } };
+      tokens = { [P_RED]: { flip: 0, mag: 0 }, [P_YEL]: { flip: 0, mag: 0 } };
     } else if (aiLevel === 3) {
-        // EXPERT
-        tokens = { [P_RED]: { flip: 2, mag: 2 }, [P_YEL]: { flip: 2, mag: 2 } };
+      tokens = { [P_RED]: { flip: 2, mag: 2 }, [P_YEL]: { flip: 2, mag: 2 } };
     } else {
-        // PRO
-        tokens = { [P_RED]: { flip: 3, mag: 3 }, [P_YEL]: { flip: 3, mag: 3 } };
+      tokens = { [P_RED]: { flip: 3, mag: 3 }, [P_YEL]: { flip: 3, mag: 3 } };
     }
 
     history = [];
@@ -344,754 +442,563 @@
     hiddenCells = [];
     pendingSettle = false;
     winnerCard.classList.remove('visible');
-    
+
     pushHistory();
     syncUI();
     lastTime = 0;
     requestAnimationFrame(initLoop);
+    
+    // If CPU goes first, trigger AI
+    checkAI();
   }
 
-  // --- SAVE / LOAD / REVIEW ---
+  // =========================================================================
+  // SAVE / LOAD / REVIEW
+  // =========================================================================
   window.saveGame = function() {
-      if (history.length === 0 && !gameOver) return alert("Game hasn't started!");
-      const fullLog = [...history, cloneState()];
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullLog, null, 2));
-      const a = document.createElement('a');
-      a.setAttribute("href", dataStr);
-      a.setAttribute("download", "flip4m_replay_" + new Date().getTime() + ".json");
-      document.body.appendChild(a); a.click(); a.remove();
+    if (history.length === 0 && !gameOver) return alert("Game hasn't started!");
+    const fullLog = [...history, cloneState()];
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullLog, null, 2));
+    const a = document.createElement('a');
+    a.setAttribute("href", dataStr);
+    a.setAttribute("download", "flip4m_replay_" + new Date().getTime() + ".json");
+    document.body.appendChild(a); a.click(); a.remove();
   }
 
   window.loadGameTrigger = function() { document.getElementById('file-input').click(); }
   window.loadGameFile = function(input) {
-      const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = function(e) {
-          try {
-              const h = JSON.parse(e.target.result);
-              if (Array.isArray(h) && h.length > 0) {
-                  const currentState = h.pop();
-                  history = h; 
-                  restoreState(currentState);
-                  menuCard.classList.add('hidden');
-                  elOverlay.style.display = 'none';
-                  alert("Game Loaded!");
-              } else alert("Invalid Save");
-          } catch(err) { alert("Error Loading File"); }
-      };
-      reader.readAsText(file);
-      input.value = '';
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const h = JSON.parse(e.target.result);
+        if (Array.isArray(h) && h.length > 0) {
+          const currentState = h.pop();
+          history = h;
+          restoreState(currentState);
+          menuCard.classList.add('hidden');
+          elOverlay.style.display = 'none';
+          alert("Game Loaded!");
+        } else alert("Invalid Save");
+      } catch (err) { alert("Error Loading File"); }
+    };
+    reader.readAsText(file);
+    input.value = '';
   }
 
   window.startReview = function() {
-      if (history.length === 0) return alert("No history!");
-      isReviewing = true;
-      reviewIndex = 0;
-      menuCard.classList.add('hidden'); elOverlay.style.display = 'none';
-      controlBar.classList.add('ctrl-hidden'); reviewBar.classList.remove('ctrl-hidden');
-      restoreState(history[0]);
+    if (history.length === 0) return alert("No history!");
+    isReviewing = true;
+    reviewIndex = 0;
+    menuCard.classList.add('hidden'); elOverlay.style.display = 'none';
+    controlBar.classList.add('ctrl-hidden'); reviewBar.classList.remove('ctrl-hidden');
+    restoreState(history[0]);
   }
 
   window.endReview = function() {
-      isReviewing = false;
-      if(history.length > 0) restoreState(history[history.length - 1]);
-      controlBar.classList.remove('ctrl-hidden'); reviewBar.classList.add('ctrl-hidden');
-      syncUI();
+    isReviewing = false;
+    if (history.length > 0) restoreState(history[history.length - 1]);
+    controlBar.classList.remove('ctrl-hidden'); reviewBar.classList.add('ctrl-hidden');
+    syncUI();
   }
 
   window.reviewStep = function(dir) {
-      let n = reviewIndex + dir;
-      if (n >= 0 && n < history.length) { 
-          reviewIndex = n; 
-          restoreState(history[reviewIndex]); 
-      }
-  }
-
-  // --- AI ENGINE (GRANDMASTER ELITE) ---
-  function checkAI() {
-    if (aiTimer) clearTimeout(aiTimer);
-    if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating && !isReviewing) {
-        document.body.style.cursor = "wait";
-        aiTimer = setTimeout(() => { makeAIMove(); document.body.style.cursor = "default"; }, 50);
+    let n = reviewIndex + dir;
+    if (n >= 0 && n < history.length) {
+      reviewIndex = n;
+      restoreState(history[reviewIndex]);
     }
   }
 
-  // TEMPORAL SIMULATION (Prevents Decay Traps)
-  function advanceTurnSimulation(g, gDir, mState) {
-      let nextM = cloneMagState(mState);
-      let anyDied = false;
-      const decay = (arr) => arr.forEach((m, i) => { 
-          if (m) { 
-              m.life--; 
-              if (m.life <= 0) { arr[i] = null; anyDied = true; } 
-          } 
-      });
-      decay(nextM.top); decay(nextM.bottom); decay(nextM.left); decay(nextM.right);
-      
-      let nextG = g;
-      if (anyDied) {
-          nextG = settleGridComplete(g, gDir, nextM);
-      }
-      return { grid: nextG, magState: nextM };
+  // =========================================================================
+  // GRANDMASTER IV - ULTIMATE AI
+  // Combines: Gatekeeper (Claude) + Temporal Sim (Claude/GPT) + 
+  //           Iterative Deepening (GPT) + Time Budget (GPT) +
+  //           Extraction Detection (Claude) + Fragility (Gemini)
+  // =========================================================================
+
+  function checkAI() {
+    if (aiTimer) clearTimeout(aiTimer);
+    if (gameMode === 1 && curPlayer === cpuPlayer && !gameOver && !animating && !isReviewing) {
+      document.body.style.cursor = "wait";
+      aiTimer = setTimeout(() => { makeAIMove(); document.body.style.cursor = "default"; }, 50);
+    }
   }
 
-  // THE GATEKEEPER (Prevents Silly Moves)
-  // Only allows tool usage if specific conditions are met
-  function shouldConsiderTools(g, gDir, mState, aiToks, player) {
+  // --- TEMPORAL SIMULATION (Claude + GPT) ---
+  function decayMagnets(mState) {
+    let newState = cloneMagState(mState);
+    const decay = (arr) => arr.forEach((m, i) => {
+      if (m) { m.life--; if (m.life <= 0) arr[i] = null; }
+    });
+    decay(newState.top); decay(newState.bottom);
+    decay(newState.left); decay(newState.right);
+    return newState;
+  }
+
+  function simulateFuture(g, gDir, mState, turns) {
+    let futureGrid = g.map(r => [...r]);
+    let futureMag = cloneMagState(mState);
+    for (let t = 0; t < turns; t++) {
+      futureMag = decayMagnets(futureMag);
+      futureGrid = settleGridComplete(futureGrid, gDir, futureMag);
+    }
+    return { grid: futureGrid, mag: futureMag };
+  }
+
+  function checkMagnetCollapse(g, gDir, mState, player) {
+    let current = settleGridComplete(g, gDir, mState);
+    let future = simulateFuture(g, gDir, mState, 2);
+    let collapses = 0;
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        if (current[r][c] === player && future.grid[r][c] !== player) collapses++;
+      }
+    }
+    return collapses;
+  }
+
+  // --- GATEKEEPER (Claude - Fixed) ---
+  function shouldConsiderTools(g, gDir, mState, aiToks, oppToks, player) {
     const opponent = (player === P_RED) ? P_YEL : P_RED;
-    
+
     // 1. Can we win immediately with a tool?
     if (aiToks.flip > 0 || aiToks.mag > 0) {
       let toolMoves = getToolMoves(g, gDir, aiToks, player, mState);
       for (let m of toolMoves) {
-        if (checkWin(m.grid) === player) return { allowed: true, reason: "WIN" };
+        if (checkWin(m.grid) === player) return { allowed: true, reason: "WINNING_TOOL" };
       }
     }
-    
-    // 2. Are we about to lose? (Desperation check)
-    // Check if opponent wins next turn with a drop
+
+    // 2. Opponent has extraction win threat
+    if (oppToks.flip > 0 && oppToks.mag > 0) {
+      let oppExtraction = findExtractionWin(g, gDir, oppToks, opponent, mState);
+      if (oppExtraction) return { allowed: true, reason: "DISRUPT_EXTRACTION" };
+    }
+
+    // 3. Opponent wins next turn and we can't block with drop
     let oppDrops = getDropMoves(g, gDir, opponent, mState);
-    for (let m of oppDrops) {
-      if (checkWin(m.grid) === opponent) {
-        // If we can't block with a drop, we MUST use a tool
-        let myDrops = getDropMoves(g, gDir, player, mState);
-        let canBlock = myDrops.some(d => {
-             // Simulate our drop, then see if opp still wins
-             let after = d.grid; 
-             // Note: simplistic check, deeper check is in minimax, but this is the gatekeeper
-             return true; 
-        });
-        // We allow tools in defense to be safe
-        return { allowed: true, reason: "DEFENSE" };
-      }
+    let oppWinMove = oppDrops.find(m => checkWin(m.grid) === opponent);
+    if (oppWinMove) {
+      let myDrops = getDropMoves(g, gDir, player, mState);
+      let canBlock = myDrops.some(d => {
+        // Check if our drop prevents opponent's win
+        let afterOur = d.grid;
+        let oppAfterDrops = getDropMoves(afterOur, gDir, opponent, mState);
+        return !oppAfterDrops.some(om => checkWin(om.grid) === opponent);
+      });
+      if (!canBlock) return { allowed: true, reason: "DESPERATE_DEFENSE" };
     }
-    
-    // 3. Extraction Check (The "Fragility" check)
-    // If we have extraction potential, we might allow it (Advanced aggression)
-    // But to be strict against "silly moves", we only allow if it GUARANTEES a win.
-    // So we skip this for now.
-    
-    // Default: FORBID TOOLS
-    return { allowed: false, reason: "NO_NEED" };
+
+    // 4. Magnet collapse risk
+    let collapseRisk = checkMagnetCollapse(g, gDir, mState, player);
+    if (collapseRisk >= 2) return { allowed: true, reason: "COLLAPSE_PREVENTION" };
+
+    // 5. Guaranteed extraction win
+    if (aiToks.flip > 0 && aiToks.mag > 0) {
+      let ourExtraction = findExtractionWin(g, gDir, aiToks, player, mState);
+      if (ourExtraction) return { allowed: true, reason: "EXTRACTION_WIN" };
+    }
+
+    return { allowed: false, reason: "DROPS_ONLY" };
   }
 
-  
-  // =========================
-  // AI v2 (Stronger, tool-aware)
-  // - Iterative deepening alpha-beta (negamax)
-  // - Transposition table (string key)
-  // - Deterministic move ordering
-  // - Symmetric "tool thrift" (drops preferred unless needed)
-  // =========================
-
-  const AI_MATE = 2000000;
-
-  function aiCloneGrid(g){ return g.map(r=>r.slice()); }
-  function aiCloneTokens(t){ return { flip: t.flip|0, mag: t.mag|0 }; }
-
-  function makeXor32(seed){
-    let x = seed|0;
-    return function(){
-      x |= 0;
-      x ^= (x << 13);
-      x ^= (x >>> 17);
-      x ^= (x << 5);
-      return (x >>> 0);
-    };
-  }
-
-  // Zobrist hashing (fast deterministic TT keys; avoids huge string concatenation)
-  const ZN_TOK = 32; // clamp for token counts (Add+2 can raise counts)
-  const _zr1 = makeXor32(0x9e3779b9), _zr2 = makeXor32(0x243f6a88);
-
-  const Z_DIR1 = new Uint32Array(4), Z_DIR2 = new Uint32Array(4);
-  const Z_PLY1 = new Uint32Array(2), Z_PLY2 = new Uint32Array(2);
-
-  const Z_TRF1 = new Uint32Array(ZN_TOK), Z_TRF2 = new Uint32Array(ZN_TOK);
-  const Z_TRM1 = new Uint32Array(ZN_TOK), Z_TRM2 = new Uint32Array(ZN_TOK);
-  const Z_TYF1 = new Uint32Array(ZN_TOK), Z_TYF2 = new Uint32Array(ZN_TOK);
-  const Z_TYM1 = new Uint32Array(ZN_TOK), Z_TYM2 = new Uint32Array(ZN_TOK);
-
-  const CELLS = ROWS * COLS;
-  const Z_R1 = new Uint32Array(CELLS), Z_R2 = new Uint32Array(CELLS);
-  const Z_Y1 = new Uint32Array(CELLS), Z_Y2 = new Uint32Array(CELLS);
-
-  const ML = (MAGNET_LIFE + 1); // life 0..MAGNET_LIFE (0 unused but keeps indexing simple)
-  const Z_TOP1 = new Uint32Array(COLS * 2 * ML),   Z_TOP2 = new Uint32Array(COLS * 2 * ML);
-  const Z_BOT1 = new Uint32Array(COLS * 2 * ML),   Z_BOT2 = new Uint32Array(COLS * 2 * ML);
-  const Z_LFT1 = new Uint32Array(ROWS * 2 * ML),   Z_LFT2 = new Uint32Array(ROWS * 2 * ML);
-  const Z_RGT1 = new Uint32Array(ROWS * 2 * ML),   Z_RGT2 = new Uint32Array(ROWS * 2 * ML);
-
-  (function initZ(){
-    for(let i=0;i<4;i++){ Z_DIR1[i]=_zr1(); Z_DIR2[i]=_zr2(); }
-    for(let i=0;i<2;i++){ Z_PLY1[i]=_zr1(); Z_PLY2[i]=_zr2(); }
-    for(let i=0;i<ZN_TOK;i++){
-      Z_TRF1[i]=_zr1(); Z_TRF2[i]=_zr2();
-      Z_TRM1[i]=_zr1(); Z_TRM2[i]=_zr2();
-      Z_TYF1[i]=_zr1(); Z_TYF2[i]=_zr2();
-      Z_TYM1[i]=_zr1(); Z_TYM2[i]=_zr2();
-    }
-    for(let i=0;i<CELLS;i++){
-      Z_R1[i]=_zr1(); Z_R2[i]=_zr2();
-      Z_Y1[i]=_zr1(); Z_Y2[i]=_zr2();
-    }
-    for(let i=0;i<Z_TOP1.length;i++){ Z_TOP1[i]=_zr1(); Z_TOP2[i]=_zr2(); }
-    for(let i=0;i<Z_BOT1.length;i++){ Z_BOT1[i]=_zr1(); Z_BOT2[i]=_zr2(); }
-    for(let i=0;i<Z_LFT1.length;i++){ Z_LFT1[i]=_zr1(); Z_LFT2[i]=_zr2(); }
-    for(let i=0;i<Z_RGT1.length;i++){ Z_RGT1[i]=_zr1(); Z_RGT2[i]=_zr2(); }
-  })();
-
-  function aiKey(state){
-    let h1 = 0|0, h2 = 0|0;
-
-    // gravity dir + side to move
-    h1 ^= Z_DIR1[state.dir & 3];  h2 ^= Z_DIR2[state.dir & 3];
-    const pl = (state.player === P_RED) ? 0 : 1;
-    h1 ^= Z_PLY1[pl];             h2 ^= Z_PLY2[pl];
-
-    // token inventories (clamped)
-    const trf = Math.min(state.tR.flip|0, ZN_TOK-1);
-    const trm = Math.min(state.tR.mag|0,  ZN_TOK-1);
-    const tyf = Math.min(state.tY.flip|0, ZN_TOK-1);
-    const tym = Math.min(state.tY.mag|0,  ZN_TOK-1);
-    h1 ^= Z_TRF1[trf] ^ Z_TRM1[trm] ^ Z_TYF1[tyf] ^ Z_TYM1[tym];
-    h2 ^= Z_TRF2[trf] ^ Z_TRM2[trm] ^ Z_TYF2[tyf] ^ Z_TYM2[tym];
-
-    // magnets
-    const encM = (m)=> m ? ( (m.p===P_RED?0:1) * ML + Math.min((m.life|0), MAGNET_LIFE) ) : -1;
-    for(let i=0;i<COLS;i++){
-      const mt = encM(state.mag.top[i]); 
-      if (mt>=0){ const off = i*2*ML + mt; h1 ^= Z_TOP1[off]; h2 ^= Z_TOP2[off]; }
-      const mb = encM(state.mag.bottom[i]);
-      if (mb>=0){ const off = i*2*ML + mb; h1 ^= Z_BOT1[off]; h2 ^= Z_BOT2[off]; }
-    }
-    for(let i=0;i<ROWS;i++){
-      const ml = encM(state.mag.left[i]);
-      if (ml>=0){ const off = i*2*ML + ml; h1 ^= Z_LFT1[off]; h2 ^= Z_LFT2[off]; }
-      const mr = encM(state.mag.right[i]);
-      if (mr>=0){ const off = i*2*ML + mr; h1 ^= Z_RGT1[off]; h2 ^= Z_RGT2[off]; }
-    }
-
-    // grid occupancy
-    for(let r=0;r<ROWS;r++){
-      const row = state.grid[r];
-      let base = r*COLS;
-      for(let c=0;c<COLS;c++){
-        const v = row[c];
-        const k = base + c;
-        if (v === P_RED){ h1 ^= Z_R1[k]; h2 ^= Z_R2[k]; }
-        else if (v === P_YEL){ h1 ^= Z_Y1[k]; h2 ^= Z_Y2[k]; }
+  // --- MOVE GENERATORS ---
+  function getDropMoves(g, gDir, player, mState) {
+    let moves = [];
+    for (let i = 0; i < COLS; i++) {
+      let t = getDropTarget(g, gDir, i);
+      if (t) {
+        let nextG = g.map(r => [...r]);
+        nextG[t.r][t.c] = player;
+        let decayed = decayMagnets(mState);
+        nextG = settleGridComplete(nextG, gDir, decayed);
+        moves.push({ type: 'drop', col: i, grid: nextG, gDir, magState: decayed });
       }
     }
-
-    // short key for Map
-    return (h1>>>0).toString(16) + ":" + (h2>>>0).toString(16);
-  }
-
-  function aiEvaluateFromYellow(state){
-    // Positive => good for Yellow, negative => good for Red
-    const g = state.grid;
-
-    // 1) Window scoring (4-in-a-row game)
-    let score = 0;
-    score += aiAnalyzeLines(g, P_YEL) * 1.00;
-    score -= aiAnalyzeLines(g, P_RED) * 1.15;
-
-    // 2) Centrality (very mild, helps in open positions)
-    const center = (COLS - 1) / 2;
-    for(let r=0;r<ROWS;r++){
-      for(let c=0;c<COLS;c++){
-        const p = g[r][c];
-        if(!p) continue;
-        const w = 3 - Math.abs(center - c); // [-? .. 3]
-        if (p===P_YEL) score += w;
-        else score -= w;
-      }
-    }
-
-    // 3) Mobility (drops available under current gravity)
-    const mobY = aiCountDrops(g, state.dir);
-    // Mobility matters less in magnet-heavy play; keep light
-    score += mobY * 0.25;
-
-    // 4) Tool inventory (tiny)
-    score += (state.tY.flip - state.tR.flip) * 6;
-    score += (state.tY.mag  - state.tR.mag)  * 5;
-
-    return score;
-  }
-
-  function aiAnalyzeLines(g, p){
-    let s = 0;
-    // horizontal
-    for(let r=0;r<ROWS;r++){
-      for(let c=0;c<COLS-3;c++){
-        s += aiScoreWindow([g[r][c], g[r][c+1], g[r][c+2], g[r][c+3]], p);
-      }
-    }
-    // vertical
-    for(let r=0;r<ROWS-3;r++){
-      for(let c=0;c<COLS;c++){
-        s += aiScoreWindow([g[r][c], g[r+1][c], g[r+2][c], g[r+3][c]], p);
-      }
-    }
-    // diag down-right
-    for(let r=0;r<ROWS-3;r++){
-      for(let c=0;c<COLS-3;c++){
-        s += aiScoreWindow([g[r][c], g[r+1][c+1], g[r+2][c+2], g[r+3][c+3]], p);
-      }
-    }
-    // diag up-right
-    for(let r=3;r<ROWS;r++){
-      for(let c=0;c<COLS-3;c++){
-        s += aiScoreWindow([g[r][c], g[r-1][c+1], g[r-2][c+2], g[r-3][c+3]], p);
-      }
-    }
-    return s;
-  }
-
-  function aiScoreWindow(w, p){
-    let cnt = 0, emp = 0, opp = 0;
-    const o = (p===P_YEL)?P_RED:P_YEL;
-    for(const x of w){
-      if (x===p) cnt++;
-      else if (!x) emp++;
-      else if (x===o) opp++;
-    }
-    if (opp>0) return 0;
-    if (cnt===4) return 50000;
-    if (cnt===3 && emp===1) return 650;
-    if (cnt===2 && emp===2) return 55;
-    if (cnt===1 && emp===3) return 6;
-    return 0;
-  }
-
-  function aiCountDrops(g, dir){
-    let cnt = 0;
-    const N = (dir===0 || dir===2) ? COLS : ROWS;
-    for(let i=0;i<N;i++){
-      if (getDropTarget(g, dir, i)) cnt++;
-    }
-    return cnt;
-  }
-
-  function aiHasImmediateWin(state, player){
-    const N = (state.dir===0 || state.dir===2) ? COLS : ROWS;
-    for(let i=0;i<N;i++){
-      const t = getDropTarget(state.grid, state.dir, i);
-      if (!t) continue;
-      const g2 = aiCloneGrid(state.grid);
-      g2[t.r][t.c] = player;
-      const gS = settleGridComplete(g2, state.dir, state.mag);
-      const w = checkWin(gS);
-      if (w === player) return true;
-    }
-    return false;
-  }
-
-  function aiGenMoves(state){
-    const moves = [];
-    const dir = state.dir;
-    const player = state.player;
-    const N = (dir===0 || dir===2) ? COLS : ROWS;
-
-    // Drops (primary)
-    const center = (N - 1) / 2;
-    for(let i=0;i<N;i++){
-      const t = getDropTarget(state.grid, dir, i);
-      if (!t) continue;
-      moves.push({type:"drop", idx:i, pri: 300 - Math.abs(center-i)*10});
-    }
-
-    // Tools
-    const toks = (player===P_YEL) ? state.tY : state.tR;
-
-    if (toks.flip > 0){
-      // Prefer flip only if it creates immediate win or prevents immediate loss; ordering handles
-      moves.push({type:"flip", delta:+1, pri: 80});
-      moves.push({type:"flip", delta:-1, pri: 80});
-    }
-
-    if (toks.mag > 0){
-      // Candidate magnets: neutralize opponent magnets first, then productive pulls
-      // Top/Bottom: idx=col; Left/Right: idx=row
-      const opp = (player===P_YEL)?P_RED:P_YEL;
-
-      // Neutralizations (same idx opposite side)
-      for(let i=0;i<COLS;i++){
-        // top vs bottom
-        const mt = state.mag.top[i], mb = state.mag.bottom[i];
-        if (mt && mt.p===opp) moves.push({type:"magnet", side:2, idx:i, pri: 220}); // place bottom to cancel top
-        if (mb && mb.p===opp) moves.push({type:"magnet", side:0, idx:i, pri: 220});
-        // right vs left (using i as row for left/right arrays; ROWS==COLS in this build)
-        const ml = state.mag.left[i], mr = state.mag.right[i];
-        if (ml && ml.p===opp) moves.push({type:"magnet", side:1, idx:i, pri: 220});
-        if (mr && mr.p===opp) moves.push({type:"magnet", side:3, idx:i, pri: 220});
-      }
-
-      // Productive pulls: only if edge cell empty and something exists behind it
-      for(let c=0;c<COLS;c++){
-        if (!state.mag.top[c] && state.grid[0][c]===P_EMPTY){
-          for(let r=1;r<ROWS;r++) if (state.grid[r][c]!==P_EMPTY){ moves.push({type:"magnet", side:0, idx:c, pri: 120}); break; }
-        }
-        if (!state.mag.bottom[c] && state.grid[ROWS-1][c]===P_EMPTY){
-          for(let r=ROWS-2;r>=0;r--) if (state.grid[r][c]!==P_EMPTY){ moves.push({type:"magnet", side:2, idx:c, pri: 120}); break; }
-        }
-      }
-      for(let r=0;r<ROWS;r++){
-        if (!state.mag.left[r] && state.grid[r][0]===P_EMPTY){
-          for(let c=1;c<COLS;c++) if (state.grid[r][c]!==P_EMPTY){ moves.push({type:"magnet", side:3, idx:r, pri: 120}); break; }
-        }
-        if (!state.mag.right[r] && state.grid[r][COLS-1]===P_EMPTY){
-          for(let c=COLS-2;c>=0;c--) if (state.grid[r][c]!==P_EMPTY){ moves.push({type:"magnet", side:1, idx:r, pri: 120}); break; }
-        }
-      }
-    }
-
-    // Deterministic ordering: pri desc, then type order, then idx
-    const typeOrd = {"drop":0,"flip":1,"magnet":2};
-    moves.sort((a,b)=>{
-      if (b.pri!==a.pri) return b.pri-a.pri;
-      if (typeOrd[a.type]!==typeOrd[b.type]) return typeOrd[a.type]-typeOrd[b.type];
-      if ((a.delta||0)!==(b.delta||0)) return (b.delta||0)-(a.delta||0);
-      return (a.idx||0)-(b.idx||0);
-    });
     return moves;
   }
 
-  function aiApplyMove(state, move){
-    const player = state.player;
-    const next = {
-      grid: aiCloneGrid(state.grid),
-      dir: state.dir,
-      mag: cloneMagState(state.mag),
-      player: player===P_RED?P_YEL:P_RED,
-      tR: aiCloneTokens(state.tR),
-      tY: aiCloneTokens(state.tY),
-    };
-
-    const myTok = (player===P_YEL) ? next.tY : next.tR;
-
-    if (move.type==="drop"){
-      const t = getDropTarget(next.grid, next.dir, move.idx);
-      if (!t) return null;
-      next.grid[t.r][t.c] = player;
-      // settle after placement
-      next.grid = settleGridComplete(next.grid, next.dir, next.mag);
-    } else if (move.type==="flip"){
-      if (myTok.flip<=0) return null;
-      myTok.flip--;
-      next.dir = (move.delta===+1) ? CCW_MAP[next.dir] : CW_MAP[next.dir];
-      next.grid = settleGridComplete(next.grid, next.dir, next.mag);
-    } else if (move.type==="magnet"){
-      if (myTok.mag<=0) return null;
-      myTok.mag--;
-      const side = move.side, idx = move.idx;
-      const oppSide = (side + 2) % 4;
-      const opponent = (player===P_RED)?P_YEL:P_RED;
-
-      const sideName = (side===0)?"top":(side===1)?"right":(side===2)?"bottom":"left";
-      const oppName  = (oppSide===0)?"top":(oppSide===1)?"right":(oppSide===2)?"bottom":"left";
-      const oppVal = next.mag[oppName][idx];
-      if (oppVal && oppVal.p===opponent){
-        // neutralize: remove opponent magnet only (matches doMagnet)
-        next.mag[oppName][idx] = null;
-      } else {
-        next.mag[sideName][idx] = { p: player, life: MAGNET_LIFE };
+  function getToolMoves(g, gDir, toks, player, mState) {
+    let moves = [];
+    if (toks.flip > 0) {
+      for (let delta of [1, -1]) {
+        let newDir = (delta === 1) ? CCW_MAP[gDir] : CW_MAP[gDir];
+        let decayed = decayMagnets(mState);
+        let newGrid = settleGridComplete(g, newDir, decayed);
+        moves.push({ type: 'flip', delta, grid: newGrid, gDir: newDir, magState: decayed });
       }
-      // settle after magnet placement (magnet affects next settle)
-      next.grid = settleGridComplete(next.grid, next.dir, next.mag);
-    } else return null;
-
-    // End-of-turn: check win, decay magnets, switch player already set
-    // (match runtime endTurn: decay without immediate settle)
-    const decay = (arr)=>arr.forEach((m,i)=>{ if(m){ m.life--; if(m.life<=0) arr[i]=null; }});
-    decay(next.mag.top); decay(next.mag.bottom); decay(next.mag.left); decay(next.mag.right);
-
-    return next;
+    }
+    if (toks.mag > 0) {
+      for (let side = 0; side < 4; side++) {
+        for (let idx = 0; idx < COLS; idx++) {
+          let curM = getMag(mState, side, idx);
+          if (curM && curM.p === player) continue;
+          let nextMState = cloneMagState(mState);
+          let opp = (side + 2) % 4;
+          let oppVal = getMag(nextMState, opp, idx);
+          let arrName = ['top', 'right', 'bottom', 'left'][side];
+          let oppName = ['top', 'right', 'bottom', 'left'][opp];
+          const opponent = (player === P_RED) ? P_YEL : P_RED;
+          if (oppVal && oppVal.p === opponent) nextMState[oppName][idx] = null;
+          else nextMState[arrName][idx] = { p: player, life: MAGNET_LIFE };
+          let decayed = decayMagnets(nextMState);
+          let nextG = settleGridComplete(g, gDir, decayed);
+          moves.push({ type: 'magnet', side, idx, grid: nextG, gDir, magState: decayed });
+        }
+      }
+    }
+    return moves;
   }
 
-  function aiTerminalScore(state, ply){
-    const w = checkWin(state.grid);
-    if (!w) return null;
-    if (w===P_YEL) return AI_MATE - ply;
-    if (w===P_RED) return -AI_MATE + ply;
-    return 0;
+  // --- EXTRACTION WIN DETECTION (Claude) ---
+  function findExtractionWin(g, gDir, toks, player, mState) {
+    if (toks.flip <= 0 || toks.mag <= 0) return null;
+    const opponent = (player === P_RED) ? P_YEL : P_RED;
+
+    for (let rotDelta of [1, -1]) {
+      let newDir = (rotDelta === 1) ? CCW_MAP[gDir] : CW_MAP[gDir];
+      let decayed = decayMagnets(mState);
+      let rotatedGrid = settleGridComplete(g, newDir, decayed);
+      let extractables = findExtractableLines(rotatedGrid, player, opponent);
+
+      for (let ew of extractables) {
+        let magnetMove = canExtractPiece(rotatedGrid, newDir, ew.blockerR, ew.blockerC, player, decayed);
+        if (magnetMove) {
+          let afterMagnet = applyMagnetExtraction(rotatedGrid, newDir, magnetMove, decayed, player);
+          if (checkWin(afterMagnet.grid) === player) {
+            return {
+              firstMove: { type: 'flip', delta: rotDelta, grid: rotatedGrid, gDir: newDir, magState: decayed },
+              secondMove: magnetMove
+            };
+          }
+        }
+      }
+    }
+    return null;
   }
 
-  function aiNegamax(state, depth, alpha, beta, ply, tt){
+  function findExtractableLines(g, player, opponent) {
+    let results = [];
+    const lines = getAllLines();
+    for (let line of lines) {
+      let playerCount = 0, oppCount = 0, blockerPos = null;
+      for (let pos of line) {
+        let val = g[pos.r][pos.c];
+        if (val === player) playerCount++;
+        else if (val === opponent) { oppCount++; blockerPos = pos; }
+      }
+      if (playerCount === 3 && oppCount === 1 && blockerPos) {
+        if (blockerPos.r === 0 || blockerPos.r === ROWS - 1 || blockerPos.c === 0 || blockerPos.c === COLS - 1) {
+          results.push({ blockerR: blockerPos.r, blockerC: blockerPos.c });
+        }
+      }
+    }
+    return results;
+  }
 
-    // Time-bounded search
+  function canExtractPiece(g, gDir, targetR, targetC, player, mState) {
+    let magnets = [];
+    if (targetR === 0) magnets.push({ side: 0, idx: targetC });
+    if (targetR === ROWS - 1) magnets.push({ side: 2, idx: targetC });
+    if (targetC === 0) magnets.push({ side: 3, idx: targetR });
+    if (targetC === COLS - 1) magnets.push({ side: 1, idx: targetR });
+
+    for (let mag of magnets) {
+      let nextMState = cloneMagState(mState);
+      let arrName = ['top', 'right', 'bottom', 'left'][mag.side];
+      nextMState[arrName][mag.idx] = { p: player, life: MAGNET_LIFE };
+      let newGrid = settleGridComplete(g, gDir, nextMState);
+      if (newGrid[targetR][targetC] !== g[targetR][targetC]) {
+        return { type: 'magnet', side: mag.side, idx: mag.idx };
+      }
+    }
+    return null;
+  }
+
+  function applyMagnetExtraction(g, gDir, magnetMove, mState, player) {
+    let nextMState = cloneMagState(mState);
+    let arrName = ['top', 'right', 'bottom', 'left'][magnetMove.side];
+    nextMState[arrName][magnetMove.idx] = { p: player, life: MAGNET_LIFE };
+    let newGrid = settleGridComplete(g, gDir, nextMState);
+    return { grid: newGrid, magState: nextMState };
+  }
+
+  function getAllLines() {
+    let lines = [];
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS - 3; c++)
+      lines.push([{ r, c }, { r, c: c + 1 }, { r, c: c + 2 }, { r, c: c + 3 }]);
+    for (let r = 0; r < ROWS - 3; r++) for (let c = 0; c < COLS; c++)
+      lines.push([{ r, c }, { r: r + 1, c }, { r: r + 2, c }, { r: r + 3, c }]);
+    for (let r = 0; r < ROWS - 3; r++) for (let c = 0; c < COLS - 3; c++)
+      lines.push([{ r, c }, { r: r + 1, c: c + 1 }, { r: r + 2, c: c + 2 }, { r: r + 3, c: c + 3 }]);
+    for (let r = 3; r < ROWS; r++) for (let c = 0; c < COLS - 3; c++)
+      lines.push([{ r, c }, { r: r - 1, c: c + 1 }, { r: r - 2, c: c + 2 }, { r: r - 3, c: c + 3 }]);
+    return lines;
+  }
+
+  // --- MAIN AI (Iterative Deepening + Time Budget from GPT) ---
+  function makeAIMove() {
+    if (gameOver || animating || isReviewing) return;
+
+    const aiToks = { flip: tokens[cpuPlayer].flip, mag: tokens[cpuPlayer].mag };
+    const oppToks = { flip: tokens[humanPlayer].flip, mag: tokens[humanPlayer].mag };
+
+    // Time budget
+        const budgetMs = (aiLevel <= 1) ? 900 : (aiLevel === 2) ? 1800 : (aiLevel === 3) ? 3200 : 4800;
+    AI_DEADLINE = _nowMs() + budgetMs;
+    AI_ABORT = false;
+    AI_NODES = 0;
+
+    AI_TT.clear();
+    // 1. Instant win check
+    let allMoves = getDropMoves(grid, gravityDir, cpuPlayer, mag);
+    if (aiToks.flip > 0 || aiToks.mag > 0) {
+      allMoves.push(...getToolMoves(grid, gravityDir, aiToks, cpuPlayer, mag));
+    }
+    for (let m of allMoves) {
+      if (checkWin(m.grid, cpuPlayer) === cpuPlayer) {
+        console.log("GM IV: Instant win");
+        executeMove(m); return;
+      }
+    }
+
+    // 2. Gatekeeper
+    let gatekeeper = shouldConsiderTools(grid, gravityDir, mag, aiToks, oppToks, cpuPlayer);
+    console.log("GM IV Gatekeeper:", gatekeeper.reason);
+
+    // 3. Extraction win (if gated)
+    if (gatekeeper.allowed && gatekeeper.reason === "EXTRACTION_WIN") {
+      let extraction = findExtractionWin(grid, gravityDir, aiToks, cpuPlayer, mag);
+      if (extraction) {
+        console.log("GM IV: Executing extraction combo");
+        executeMove(extraction.firstMove); return;
+      }
+    }
+
+    // 4. Block opponent's immediate win
+    let oppDrops = getDropMoves(grid, gravityDir, humanPlayer, mag);
+        let oppWin = oppDrops.find(m => checkWin(m.grid, humanPlayer) === humanPlayer);
+    if (oppWin) {
+      let block = allMoves.find(m => m.type === 'drop' && m.col === oppWin.col);
+      if (block) { console.log("GM IV: Blocking"); executeMove(block); return; }
+    }
+
+    // 5. Build move list based on gatekeeper
+    let moves = getDropMoves(grid, gravityDir, cpuPlayer, mag);
+    if (gatekeeper.allowed) {
+      moves.push(...getToolMoves(grid, gravityDir, aiToks, cpuPlayer, mag));
+    }
+
+    // Sort: center drops first, then tools
+    let center = (COLS - 1) / 2;
+    moves.sort((a, b) => {
+      if (a.type === 'drop' && b.type === 'drop') return Math.abs(a.col - center) - Math.abs(b.col - center);
+      if (a.type === 'drop') return -1;
+      if (b.type === 'drop') return 1;
+      return 0;
+    });
+
+    // 6. Iterative deepening search
+        let maxDepth = (aiLevel <= 1) ? 5 : (aiLevel === 2) ? 6 : (aiLevel === 3) ? 7 : 8;
+    let best = null, bestScore = -Infinity;
+
+    for (let depth = 1; depth <= maxDepth; depth++) {
+      if (_nowMs() > AI_DEADLINE) { AI_ABORT = true; break; }
+
+      let localBest = null, localBestScore = -Infinity;
+      let alpha = -Infinity, beta = Infinity;
+
+      for (let m of moves) {
+        if (AI_ABORT) break;
+        let d = (m.type === 'drop') ? depth - 1 : Math.max(1, depth - 2);
+        let score = -negamax(m.grid, m.gDir, m.magState, d, -beta, -alpha, humanPlayer);
+
+        // Thrift penalty
+        if (m.type !== 'drop' && score < 5000) {
+          score -= (m.type === 'flip') ? 150 : 250;
+        }
+
+        if (score > localBestScore) { localBestScore = score; localBest = m; }
+        alpha = Math.max(alpha, localBestScore);
+        if (alpha >= beta) break;
+      }
+
+      if (localBest) { best = localBest; bestScore = localBestScore; }
+      if (AI_ABORT) break;
+    }
+
+    if (best) {
+      console.log("GM IV: Best", best.type, "score", bestScore);
+      executeMove(best);
+    } else if (moves.length > 0) {
+      executeMove(moves[0]);
+    }
+  }
+
+  // --- NEGAMAX (simplified from GPT) ---
+
+  function negamax(g, gDir, mState, depth, alpha, beta, player) {
     AI_NODES++;
-    if (!AI_ABORT && (AI_NODES & (AI_CHECK_EVERY-1)) === 0 && _nowMs() > AI_DEADLINE) AI_ABORT = true;
-    if (AI_ABORT) return aiEvaluateFromYellow(state);
+    if ((AI_NODES & (AI_CHECK_EVERY - 1)) === 0) {
+      if (_nowMs() > AI_DEADLINE) AI_ABORT = true;
+      if (AI_NODES > AI_NODE_CAP) AI_ABORT = true;
+      if (AI_TT.size > AI_TT_MAX) AI_TT.clear();
+    }
+    if (AI_ABORT) return evaluate(g, gDir, mState);
 
-    const term = aiTerminalScore(state, ply);
-    if (term !== null) return term;
-    // draw
-    if (!state.grid.some(r=>r.includes(P_EMPTY))) return 0;
+    const opponent = (player === P_RED) ? P_YEL : P_RED;
+    const winner = checkWin(g, opponent); // tie-break: last mover (opponent) wins if both
+    if (winner === cpuPlayer) return 100000 + depth * 100;
+    if (winner === humanPlayer) return -100000 - depth * 100;
+    if (depth <= 0) return evaluate(g, gDir, mState);
 
-    if (depth <= 0){
-      // tiny tactical extension if side-to-move is in immediate win/loss zone (drops only)
-      const me = state.player;
-      const opp = (me===P_YEL)?P_RED:P_YEL;
-      if (aiHasImmediateWin(state, me)) {
-        return (me===P_YEL ? +90000 : -90000);
-      }
-      if (aiHasImmediateWin(state, opp)) {
-        return (me===P_YEL ? -90000 : +90000);
-      }
-      return aiEvaluateFromYellow(state);
+    const alphaOrig = alpha, betaOrig = beta;
+    const key = aiStateKey(g, gDir, mState, player);
+    const hit = AI_TT.get(key);
+    if (hit && hit.depth >= depth) {
+      if (hit.flag === 0) return hit.value;       // exact
+      if (hit.flag === 1) alpha = Math.max(alpha, hit.value); // lower
+      else if (hit.flag === 2) beta = Math.min(beta, hit.value); // upper
+      if (alpha >= beta) return hit.value;
     }
 
-    const key = aiKey(state);
-    const hit = tt.get(key);
-    if (hit && hit.depth >= depth){
-      // Bound flags: 0 exact, 1 lower, 2 upper
-      if (hit.flag === 0) return hit.val;
-      if (hit.flag === 1 && hit.val > alpha) alpha = hit.val;
-      else if (hit.flag === 2 && hit.val < beta) beta = hit.val;
-      if (alpha >= beta) return hit.val;
-    }
-
-    const origAlpha = alpha;
-    let bestVal = -Infinity;
-    let bestMove = null;
-
-    const moves = aiGenMoves(state);
-
-    // If we have no drops and no tools (shouldn't happen), drawish
+    let moves = getDropMoves(g, gDir, player, mState);
+    // Limited tool lookahead: flips only (branching control)
+    if (depth > 2) moves.push(...getToolMoves(g, gDir, { flip: 1, mag: 0 }, player, mState));
     if (moves.length === 0) return 0;
 
-    const toolPenalty = 40; // symmetric thrift
-    for(const mv of moves){
-        if (AI_ABORT) break;
+    // Move ordering: TT best first, then immediate wins, then center drops, then tools
+    const center = (COLS - 1) / 2;
+    if (hit && hit.bestId) {
+      const bi = moves.findIndex(m => aiMoveId(m) === hit.bestId);
+      if (bi > 0) {
+        const bm = moves[bi];
+        moves.splice(bi, 1);
+        moves.unshift(bm);
+      }
+    }
+
+    moves.sort((a, b) => {
+      const aw = checkWin(a.grid, player) === player ? 1 : 0;
+      const bw = checkWin(b.grid, player) === player ? 1 : 0;
+      if (aw !== bw) return bw - aw;
+
+      const at = (a.type === 'drop') ? 0 : 1;
+      const bt = (b.type === 'drop') ? 0 : 1;
+      if (at !== bt) return at - bt;
+
+      if (a.type === 'drop' && b.type === 'drop') {
+        const da = Math.abs(a.col - center);
+        const db = Math.abs(b.col - center);
+        if (da !== db) return da - db;
+      }
+      // deterministic final tie-break
+      return aiMoveId(a) < aiMoveId(b) ? -1 : 1;
+    });
+
+    let bestVal = -Infinity;
+    let bestId = aiMoveId(moves[0]);
+
+    for (let mv of moves) {
       if (AI_ABORT) break;
-      const child = aiApplyMove(state, mv);
-      if (!child) continue;
-
-      // Selective depth: tools are volatile and expensive to branch
-      let d2 = depth - 1;
-      if (mv.type !== "drop") d2 = Math.max(0, depth - 2);
-
-      let val = -aiNegamax(child, d2, -beta, -alpha, ply+1, tt);
-
-      // Symmetric tool thrift: penalize if Yellow used tool, reward if Red used tool
-      if (mv.type !== "drop"){
-        val += (state.player===P_YEL ? -toolPenalty : +toolPenalty);
-      }
-
-      if (val > bestVal){
-        bestVal = val;
-        bestMove = mv;
-      }
-      if (bestVal > alpha) alpha = bestVal;
+      let val = -negamax(mv.grid, mv.gDir, mv.magState, depth - 1, -beta, -alpha, opponent);
+      if (val > bestVal) { bestVal = val; bestId = aiMoveId(mv); }
+      alpha = Math.max(alpha, val);
       if (alpha >= beta) break;
     }
 
     // Store TT
     let flag = 0;
-    if (bestVal <= origAlpha) flag = 2; // upper
-    else if (bestVal >= beta) flag = 1; // lower
-
-    if (tt.size > 60000) tt.clear();
-    tt.set(key, { depth, val: bestVal, flag, bestMove });
+    if (bestVal <= alphaOrig) flag = 2;         // upper
+    else if (bestVal >= betaOrig) flag = 1;     // lower
+    AI_TT.set(key, { depth, value: bestVal, flag, bestId });
 
     return bestVal;
   }
 
-  
-  // Compatibility wrapper: older hint/demo code calls minimax(...)
-  // This delegates to the new negamax search (tokens ignored for hint scoring).
-  function minimax(g, gDir, mState, depth, alpha, beta, isMax, toolsAllowed) {
-    const st = {
-      grid: aiCloneGrid(g),
-      dir: gDir,
-      mag: cloneMagState(mState),
-      player: isMax ? P_YEL : P_RED,
-      tR: { flip: 0, mag: 0 },
-      tY: { flip: 0, mag: 0 },
-    };
-    const tt = new Map();
-    const TT_MAX = 20000; // keep memory/GC under control on iPad
-    // aiNegamax returns score from Yellow perspective; suitable for existing hint logic.
-    return aiNegamax(st, depth, alpha, beta, 0, tt);
-  }
-
-function makeAIMove() {
-    // AI is Yellow in this build
-    if (gameOver || animating || isReviewing) return;
-
-    // Hard time cap (similar to Claude/Gem builds)
-    const budgetMs = (aiLevel === 1) ? 1200 : (aiLevel === 2) ? 2500 : 5000;
-    AI_DEADLINE = _nowMs() + budgetMs;
-    AI_ABORT = false;
-    AI_NODES = 0;
 
 
-    // Depth policy (deterministic)
-    let maxDepth = 7;
-    if (aiLevel === 1) maxDepth = 6;
-    else if (aiLevel === 2) maxDepth = 7;
-    else if (aiLevel === 3) maxDepth = 8;
+  // --- EVALUATION (Combined) ---
+  function evaluate(g, gDir, mState) {
+    let score = 0;
 
-    // If tools are available for either side, keep depth slightly smaller to control branching
-    const toolsLive = (tokens[P_YEL].flip + tokens[P_YEL].mag + tokens[P_RED].flip + tokens[P_RED].mag) > 0;
-    if (toolsLive && maxDepth > 7) maxDepth = 7;
+    // Line analysis
+    score += analyzeLines(g, cpuPlayer) * 1.0;
+    score -= analyzeLines(g, humanPlayer) * 1.2;
 
-    const root = {
-      grid: aiCloneGrid(grid),
-      dir: gravityDir,
-      mag: cloneMagState(mag),
-      player: P_YEL,
-      tR: aiCloneTokens(tokens[P_RED]),
-      tY: aiCloneTokens(tokens[P_YEL]),
-    };
-
-    const tt = new Map();
-    const TT_MAX = 20000; // keep memory/GC under control on iPad
-    let best = null;
-    let bestScore = -Infinity;
-
-    // Iterative deepening (deterministic)
-    for(let d=1; d<=maxDepth; d++){
-      if (_nowMs() > AI_DEADLINE) { AI_ABORT = true; break; }
-      const moves = aiGenMoves(root);
-      let alpha = -Infinity, beta = Infinity;
-      let localBest = null;
-      let localBestScore = -Infinity;
-
-      // PV move from TT (if any) first
-      if (tt.size > TT_MAX) tt.clear();
-      const hit = tt.get(aiKey(root));
-      if (hit && hit.bestMove){
-        // stable: move that matches type/params goes first
-        const pv = hit.bestMove;
-        const idx = moves.findIndex(m => m.type===pv.type && (m.idx??-1)===(pv.idx??-1) && (m.side??-1)===(pv.side??-1) && (m.delta??0)===(pv.delta??0));
-        if (idx > 0){ const tmp = moves[0]; moves[0]=moves[idx]; moves[idx]=tmp; }
+    // Center control
+    for (let r = 2; r < 6; r++) {
+      for (let c = 2; c < 6; c++) {
+        if (g[r][c] === cpuPlayer) score += 3;
+        else if (g[r][c] === humanPlayer) score -= 3;
       }
-
-      for(const mv of moves){
-      if (AI_ABORT) break;
-        const child = aiApplyMove(root, mv);
-        if (!child) continue;
-
-        let d2 = d - 1;
-        if (mv.type !== "drop") d2 = Math.max(0, d - 2);
-
-        let val = -aiNegamax(child, d2, -beta, -alpha, 1, tt);
-
-        // symmetric thrift at root too
-        if (mv.type !== "drop") val -= 40;
-
-        if (val > localBestScore){
-          localBestScore = val;
-          localBest = mv;
-        }
-        if (localBestScore > alpha) alpha = localBestScore;
-        // mild root pruning
-        if (alpha >= beta) break;
-      }
-
-      if (localBest){
-        best = localBest;
-        bestScore = localBestScore;
-      }
-      if (AI_ABORT) break;
     }
 
-    if (best){
-      // Execute using existing engine functions
-      if (best.type === "drop") doDrop(0, best.idx);
-      else if (best.type === "flip") doFlip(best.delta);
-      else if (best.type === "magnet") doMagnet(best.side, best.idx);
-    } else {
-      // Fallback: first legal drop
-      const N = (gravityDir===0 || gravityDir===2) ? COLS : ROWS;
-      for(let i=0;i<N;i++){
-        if (getDropTarget(grid, gravityDir, i)) { doDrop(0, i); return; }
-      }
-      // If stuck, flip if possible
-      if (tokens[P_YEL].flip>0) doFlip(1);
+    // Fragility: rotation vulnerability (Gemini)
+    for (let newDir of [CW_MAP[gDir], CCW_MAP[gDir]]) {
+      let rotated = settleGridComplete(g, newDir, mState);
+      let rotScore = analyzeLines(rotated, cpuPlayer) - analyzeLines(rotated, humanPlayer) * 1.2;
+      score += rotScore * 0.2;
     }
+
+    // Temporal fragility
+    let future = simulateFuture(g, gDir, mState, 2);
+    let futureScore = analyzeLines(future.grid, cpuPlayer) - analyzeLines(future.grid, humanPlayer) * 1.2;
+    score += futureScore * 0.15;
+
+    return score;
   }
 
-
-  // --- MOVE GENERATORS (CLAUDE'S CLEANER STRUCTURE) ---
-  function getDropMoves(g, gDir, player, mState) {
-      let moves = [];
-      for(let i=0; i<COLS; i++) {
-          let t = getDropTarget(g, gDir, i);
-          if (t) {
-              let nextG = g.map(r=>[...r]);
-              nextG[t.r][t.c] = player;
-              // Apply temporal simulation here!
-              let sim = advanceTurnSimulation(nextG, gDir, mState);
-              moves.push({ type:'drop', col:i, grid:sim.grid, gDir:gDir, magState:sim.magState });
-          }
+  function analyzeLines(g, p) {
+    let score = 0;
+    const lines = getAllLines();
+    for (let line of lines) {
+      let count = 0, empty = 0, opp = 0;
+      for (let pos of line) {
+        let val = g[pos.r][pos.c];
+        if (val === p) count++;
+        else if (val === P_EMPTY) empty++;
+        else opp++;
       }
-      return moves;
+      if (opp > 0) {
+        if (count === 3 && opp === 1) score += 60; // Extraction potential
+        continue;
+      }
+      if (count === 4) score += 10000;
+      else if (count === 3 && empty === 1) score += 200;
+      else if (count === 2 && empty === 2) score += 15;
+      else if (count === 1 && empty === 3) score += 2;
+    }
+    return score;
   }
 
-  function getToolMoves(g, gDir, toks, player, mState) {
-      let moves = [];
-      if(toks.flip > 0) { 
-          let ccwDir = CCW_MAP[gDir];
-          let gCCW = settleGridComplete(g, ccwDir, mState); 
-          let simCCW = advanceTurnSimulation(gCCW, ccwDir, mState);
-          moves.push({ type:'flip', delta:1, grid:simCCW.grid, gDir:ccwDir, magState:simCCW.magState });
-
-          let cwDir = CW_MAP[gDir];
-          let gCW = settleGridComplete(g, cwDir, mState);
-          let simCW = advanceTurnSimulation(gCW, cwDir, mState);
-          moves.push({ type:'flip', delta:-1, grid:simCW.grid, gDir:cwDir, magState:simCW.magState });
-      }
-      if(toks.mag > 0) {
-          const sides = [0,1,2,3];
-          for(let side of sides) {
-              for(let idx=0; idx<COLS; idx++) {
-                  let curM = getMag(mState, side, idx);
-                  if (curM && curM.p === player) continue; 
-                  let nextMState = cloneMagState(mState);
-                  let opp = (side + 2) % 4;
-                  let oppVal = getMag(nextMState, opp, idx); 
-                  let arrName = ['top','right','bottom','left'][side];
-                  let oppName = ['top','right','bottom','left'][opp];
-                  if (oppVal && oppVal.p !== player) nextMState[oppName][idx] = null;
-                  else nextMState[arrName][idx] = { p: player, life: MAGNET_LIFE };
-                  
-                  let nextG = settleGridComplete(g, gDir, nextMState);
-                  let sim = advanceTurnSimulation(nextG, gDir, nextMState);
-                  moves.push({ type:'magnet', side, idx, grid:sim.grid, gDir, gDir, magState:sim.magState });
-              }
-          }
-      }
-      return moves;
-  }
-
-  // --- CORE GAME LOGIC (UNCHANGED VISUALS) ---
   function executeMove(m) {
-      if (m.type === 'drop') doDrop(0, m.col);
-      else if (m.type === 'flip') doFlip(m.delta);
-      else if (m.type === 'magnet') doMagnet(m.side, m.idx);
+    if (m.type === 'drop') doDrop(0, m.col);
+    else if (m.type === 'flip') doFlip(m.delta);
+    else if (m.type === 'magnet') doMagnet(m.side, m.idx);
   }
 
+  // =========================================================================
+  // CORE GAME MECHANICS
+  // =========================================================================
   function getMag(mState, side, idx) {
-      if(side===0) return mState.top[idx];
-      if(side===1) return mState.right[idx];
-      if(side===2) return mState.bottom[idx];
-      if(side===3) return mState.left[idx];
+    if (side === 0) return mState.top[idx];
+    if (side === 1) return mState.right[idx];
+    if (side === 2) return mState.bottom[idx];
+    if (side === 3) return mState.left[idx];
   }
+
   function cloneMag(mArr) { return mArr.map(m => m ? { ...m } : null); }
   function cloneMagState(ms) {
-      return { top: cloneMag(ms.top), bottom: cloneMag(ms.bottom), left: cloneMag(ms.left), right: cloneMag(ms.right) };
+    return { top: cloneMag(ms.top), bottom: cloneMag(ms.bottom), left: cloneMag(ms.left), right: cloneMag(ms.right) };
   }
   function cloneState() {
     return {
       grid: grid.map(r => [...r]), mag: cloneMagState(mag),
       gravityDir, boardAngle, targetAngle, curPlayer,
       tokens: JSON.parse(JSON.stringify(tokens)),
-      gameOver, gameInProgress
+      gameOver, gameInProgress, humanPlayer, cpuPlayer
     };
   }
   function restoreState(s) {
@@ -1099,17 +1006,21 @@ function makeAIMove() {
     gravityDir = s.gravityDir; boardAngle = s.boardAngle; targetAngle = s.targetAngle;
     curPlayer = s.curPlayer; tokens = JSON.parse(JSON.stringify(s.tokens));
     gameOver = s.gameOver; gameInProgress = s.gameInProgress;
+    if (s.humanPlayer) humanPlayer = s.humanPlayer;
+    if (s.cpuPlayer) cpuPlayer = s.cpuPlayer;
     animating = false; anims = []; hiddenCells = []; pendingSettle = false;
     isReviewing = false;
     winnerCard.classList.remove('visible'); syncUI();
   }
   function pushHistory() { history.push(cloneState()); if (history.length > 50) history.shift(); }
+
   function undo() {
     if (animating || history.length === 0 || isReviewing) return;
     if (aiTimer) clearTimeout(aiTimer);
-    restoreState(history.pop()); 
+    restoreState(history.pop());
     if (gameMode === 1 && history.length > 0) restoreState(history.pop());
   }
+
   function isPinned(r, c, mState) {
     if (r === 0 && mState.top[c]) return true;
     if (r === ROWS - 1 && mState.bottom[c]) return true;
@@ -1117,135 +1028,135 @@ function makeAIMove() {
     if (c === COLS - 1 && mState.right[r]) return true;
     return false;
   }
+
   function physicsStep(g, dir, mState) {
     let nextG = g.map(r => [...r]), changed = false;
-    for (let c=0; c<COLS; c++) { if (mState.top[c] && nextG[0][c] === P_EMPTY) for (let r=1; r<ROWS; r++) if (nextG[r][c]) { nextG[0][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
-    for (let c=0; c<COLS; c++) { if (mState.bottom[c] && nextG[ROWS-1][c] === P_EMPTY) for (let r=ROWS-2; r>=0; r--) if (nextG[r][c]) { nextG[ROWS-1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
-    for (let r=0; r<ROWS; r++) { if (mState.left[r] && nextG[r][0] === P_EMPTY) for (let c=1; c<COLS; c++) if (nextG[r][c]) { nextG[r][0]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
-    for (let r=0; r<ROWS; r++) { if (mState.right[r] && nextG[r][COLS-1] === P_EMPTY) for (let c=COLS-2; c>=0; c--) if (nextG[r][c]) { nextG[r][COLS-1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; break; } }
-    
-    if (dir === 0) { for (let c=0; c<COLS; c++) for (let r=ROWS-2; r>=0; r--) if (nextG[r][c] && !nextG[r+1][c] && !isPinned(r,c,mState)) { nextG[r+1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; } }
-    else if (dir === 1) { for (let r=0; r<ROWS; r++) for (let c=1; c<COLS; c++) if (nextG[r][c] && !nextG[r][c-1] && !isPinned(r,c,mState)) { nextG[r][c-1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; } }
-    else if (dir === 2) { for (let c=0; c<COLS; c++) for (let r=1; r<ROWS; r++) if (nextG[r][c] && !nextG[r-1][c] && !isPinned(r,c,mState)) { nextG[r-1][c]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; } }
-    else { for (let r=0; r<ROWS; r++) for (let c=COLS-2; c>=0; c--) if (nextG[r][c] && !nextG[r][c+1] && !isPinned(r,c,mState)) { nextG[r][c+1]=nextG[r][c]; nextG[r][c]=P_EMPTY; changed=true; } }
+    for (let c = 0; c < COLS; c++) { if (mState.top[c] && nextG[0][c] === P_EMPTY) for (let r = 1; r < ROWS; r++) if (nextG[r][c]) { nextG[0][c] = nextG[r][c]; nextG[r][c] = P_EMPTY; changed = true; break; } }
+    for (let c = 0; c < COLS; c++) { if (mState.bottom[c] && nextG[ROWS - 1][c] === P_EMPTY) for (let r = ROWS - 2; r >= 0; r--) if (nextG[r][c]) { nextG[ROWS - 1][c] = nextG[r][c]; nextG[r][c] = P_EMPTY; changed = true; break; } }
+    for (let r = 0; r < ROWS; r++) { if (mState.left[r] && nextG[r][0] === P_EMPTY) for (let c = 1; c < COLS; c++) if (nextG[r][c]) { nextG[r][0] = nextG[r][c]; nextG[r][c] = P_EMPTY; changed = true; break; } }
+    for (let r = 0; r < ROWS; r++) { if (mState.right[r] && nextG[r][COLS - 1] === P_EMPTY) for (let c = COLS - 2; c >= 0; c--) if (nextG[r][c]) { nextG[r][COLS - 1] = nextG[r][c]; nextG[r][c] = P_EMPTY; changed = true; break; } }
+
+    if (dir === 0) { for (let c = 0; c < COLS; c++) for (let r = ROWS - 2; r >= 0; r--) if (nextG[r][c] && !nextG[r + 1][c] && !isPinned(r, c, mState)) { nextG[r + 1][c] = nextG[r][c]; nextG[r][c] = P_EMPTY; changed = true; } }
+    else if (dir === 1) { for (let r = 0; r < ROWS; r++) for (let c = 1; c < COLS; c++) if (nextG[r][c] && !nextG[r][c - 1] && !isPinned(r, c, mState)) { nextG[r][c - 1] = nextG[r][c]; nextG[r][c] = P_EMPTY; changed = true; } }
+    else if (dir === 2) { for (let c = 0; c < COLS; c++) for (let r = 1; r < ROWS; r++) if (nextG[r][c] && !nextG[r - 1][c] && !isPinned(r, c, mState)) { nextG[r - 1][c] = nextG[r][c]; nextG[r][c] = P_EMPTY; changed = true; } }
+    else { for (let r = 0; r < ROWS; r++) for (let c = COLS - 2; c >= 0; c--) if (nextG[r][c] && !nextG[r][c + 1] && !isPinned(r, c, mState)) { nextG[r][c + 1] = nextG[r][c]; nextG[r][c] = P_EMPTY; changed = true; } }
     return { nextG, changed };
   }
+
   function settleGridComplete(startGrid, dir, mState) {
     let g = startGrid.map(r => [...r]), safety = 0;
-    while(safety++ < 60) { let step = physicsStep(g, dir, mState); if (!step.changed) break; g = step.nextG; }
+    while (safety++ < 60) { let step = physicsStep(g, dir, mState); if (!step.changed) break; g = step.nextG; }
     return g;
   }
+
   function spawnTransitions(oldG, newG, type) {
     let isVert = (gravityDir === 0 || gravityDir === 2);
-    let speed = type === 'drop' ? 320 : 280; 
+    let speed = type === 'drop' ? 320 : 280;
     const getToks = (g, isRow, idx) => {
-        let arr = [];
-        if(isRow) { for(let c=0; c<COLS; c++) if(g[idx][c]) arr.push({p:g[idx][c], r:idx, c:c}); }
-        else { for(let r=0; r<ROWS; r++) if(g[r][idx]) arr.push({p:g[r][idx], r:r, c:idx}); }
-        return arr;
+      let arr = [];
+      if (isRow) { for (let c = 0; c < COLS; c++) if (g[idx][c]) arr.push({ p: g[idx][c], r: idx, c: c }); }
+      else { for (let r = 0; r < ROWS; r++) if (g[r][idx]) arr.push({ p: g[r][idx], r: r, c: idx }); }
+      return arr;
     };
     if (isVert) {
-      for (let c=0; c<COLS; c++) {
+      for (let c = 0; c < COLS; c++) {
         let oldToks = getToks(oldG, false, c), newToks = getToks(newG, false, c);
         if (gravityDir === 0) { oldToks.reverse(); newToks.reverse(); }
         let usedNew = new Array(newToks.length).fill(false);
         oldToks.forEach(o => {
-            let found = -1;
-            for(let i=0; i<newToks.length; i++) if(!usedNew[i] && newToks[i].p === o.p) { found=i; break; }
-            if(found !== -1) {
-                usedNew[found] = true;
-                let n = newToks[found];
-                if(o.r !== n.r || o.c !== n.c) { anims.push({ type: 'slide', p: o.p, r: o.r, c: o.c, destR: n.r, destC: n.c, t: 0, dur: speed }); hiddenCells.push({r: n.r, c: n.c}); }
-            }
+          let found = -1;
+          for (let i = 0; i < newToks.length; i++) if (!usedNew[i] && newToks[i].p === o.p) { found = i; break; }
+          if (found !== -1) {
+            usedNew[found] = true;
+            let n = newToks[found];
+            if (o.r !== n.r || o.c !== n.c) { anims.push({ type: 'slide', p: o.p, r: o.r, c: o.c, destR: n.r, destC: n.c, t: 0, dur: speed }); hiddenCells.push({ r: n.r, c: n.c }); }
+          }
         });
-        for(let i=0; i<newToks.length; i++) if(!usedNew[i]) {
-            let n = newToks[i];
-            let sr = (gravityDir===0) ? -2 : ROWS+1;
-            anims.push({ type: 'drop', p: n.p, r: sr, c: n.c, destR: n.r, destC: n.c, t: 0, dur: speed });
-            hiddenCells.push({r: n.r, c: n.c});
+        for (let i = 0; i < newToks.length; i++) if (!usedNew[i]) {
+          let n = newToks[i];
+          let sr = (gravityDir === 0) ? -2 : ROWS + 1;
+          anims.push({ type: 'drop', p: n.p, r: sr, c: n.c, destR: n.r, destC: n.c, t: 0, dur: speed });
+          hiddenCells.push({ r: n.r, c: n.c });
         }
       }
     } else {
-      for (let r=0; r<ROWS; r++) {
+      for (let r = 0; r < ROWS; r++) {
         let oldToks = getToks(oldG, true, r), newToks = getToks(newG, true, r);
         if (gravityDir === 3) { oldToks.reverse(); newToks.reverse(); }
         let usedNew = new Array(newToks.length).fill(false);
         oldToks.forEach(o => {
-            let found = -1;
-            for(let i=0; i<newToks.length; i++) if(!usedNew[i] && newToks[i].p === o.p) { found=i; break; }
-            if(found !== -1) {
-                usedNew[found] = true;
-                let n = newToks[found];
-                if(o.r !== n.r || o.c !== n.c) { anims.push({ type: 'slide', p: o.p, r: o.r, c: o.c, destR: n.r, destC: n.c, t: 0, dur: speed }); hiddenCells.push({r: n.r, c: n.c}); }
-            }
+          let found = -1;
+          for (let i = 0; i < newToks.length; i++) if (!usedNew[i] && newToks[i].p === o.p) { found = i; break; }
+          if (found !== -1) {
+            usedNew[found] = true;
+            let n = newToks[found];
+            if (o.r !== n.r || o.c !== n.c) { anims.push({ type: 'slide', p: o.p, r: o.r, c: o.c, destR: n.r, destC: n.c, t: 0, dur: speed }); hiddenCells.push({ r: n.r, c: n.c }); }
+          }
         });
-        for(let i=0; i<newToks.length; i++) if(!usedNew[i]) {
-            let n = newToks[i];
-            let sc = (gravityDir===1) ? COLS+1 : -2;
-            anims.push({ type: 'drop', p: n.p, r: n.r, c: sc, destR: n.r, destC: n.c, t: 0, dur: speed });
-            hiddenCells.push({r: n.r, c: n.c});
+        for (let i = 0; i < newToks.length; i++) if (!usedNew[i]) {
+          let n = newToks[i];
+          let sc = (gravityDir === 1) ? COLS + 1 : -2;
+          anims.push({ type: 'drop', p: n.p, r: n.r, c: sc, destR: n.r, destC: n.c, t: 0, dur: speed });
+          hiddenCells.push({ r: n.r, c: n.c });
         }
       }
     }
   }
 
   function applyActionAndAnimate(actionFn) {
-    if(animating || gameOver || isReviewing) return;
-    let oldG = grid.map(r=>[...r]);
+    if (animating || gameOver || isReviewing) return;
+    let oldG = grid.map(r => [...r]);
     pushHistory();
-    actionFn(); 
+    actionFn();
     let finalG = settleGridComplete(grid, gravityDir, mag);
     spawnTransitions(oldG, finalG, 'drop');
     grid = finalG;
-    if(anims.length > 0) animating = true;
+    if (anims.length > 0) animating = true;
     else endTurn();
   }
 
   function doDrop(row, col) {
     let rEnt, cEnt;
-    if (gravityDir === 0) { rEnt=0; cEnt=col; }
-    else if (gravityDir === 1) { rEnt=row; cEnt=COLS-1; }
-    else if (gravityDir === 2) { rEnt=ROWS-1; cEnt=col; }
-    else { rEnt=row; cEnt=0; }
+    if (gravityDir === 0) { rEnt = 0; cEnt = col; }
+    else if (gravityDir === 1) { rEnt = row; cEnt = COLS - 1; }
+    else if (gravityDir === 2) { rEnt = ROWS - 1; cEnt = col; }
+    else { rEnt = row; cEnt = 0; }
     let rT = rEnt, cT = cEnt, found = false;
-    for (let i=0; i<ROWS; i++) {
-        let rCheck = rEnt, cCheck = cEnt;
-        if (gravityDir===0) rCheck+=i; else if (gravityDir===1) cCheck-=i;
-        else if (gravityDir===2) rCheck-=i; else cCheck+=i;
-        if (grid[rCheck][cCheck] === P_EMPTY) { rT = rCheck; cT = cCheck; found = true; break; }
+    for (let i = 0; i < ROWS; i++) {
+      let rCheck = rEnt, cCheck = cEnt;
+      if (gravityDir === 0) rCheck += i; else if (gravityDir === 1) cCheck -= i;
+      else if (gravityDir === 2) rCheck -= i; else cCheck += i;
+      if (grid[rCheck][cCheck] === P_EMPTY) { rT = rCheck; cT = cCheck; found = true; break; }
     }
-    if (!found) return; 
+    if (!found) return;
     applyActionAndAnimate(() => { grid[rT][cT] = curPlayer; });
   }
 
   function doMagnet(side, idx) {
     if (tokens[curPlayer].mag <= 0) return;
     let opp = (side + 2) % 4;
-    let oppVal = (opp===0) ? getMag(mag, 0, idx) : (opp===1) ? getMag(mag, 1, idx) : (opp===2) ? getMag(mag, 2, idx) : getMag(mag, 3, idx);
+    let oppVal = getMag(mag, opp, idx);
     const opponent = (curPlayer === P_RED) ? P_YEL : P_RED;
     applyActionAndAnimate(() => {
-        tokens[curPlayer].mag--;
-        if (oppVal && oppVal.p === opponent) {
-             if(opp===0) mag.top[idx]=null; else if(opp===1) mag.right[idx]=null;
-             else if(opp===2) mag.bottom[idx]=null; else mag.left[idx]=null;
-        } else {
-             let m = { p: curPlayer, life: MAGNET_LIFE };
-             if(side===0) mag.top[idx]=m; else if(side===1) mag.right[idx]=m;
-             else if(side===2) mag.bottom[idx]=m; else mag.left[idx]=m;
-        }
+      tokens[curPlayer].mag--;
+      if (oppVal && oppVal.p === opponent) {
+        if (opp === 0) mag.top[idx] = null; else if (opp === 1) mag.right[idx] = null;
+        else if (opp === 2) mag.bottom[idx] = null; else mag.left[idx] = null;
+      } else {
+        let m = { p: curPlayer, life: MAGNET_LIFE };
+        if (side === 0) mag.top[idx] = m; else if (side === 1) mag.right[idx] = m;
+        else if (side === 2) mag.bottom[idx] = m; else mag.left[idx] = m;
+      }
     });
   }
 
-  const CW_MAP =  { 0: 3, 1: 0, 2: 1, 3: 2 }; 
-  const CCW_MAP = { 0: 1, 1: 2, 2: 3, 3: 0 }; 
-
   function doFlip(dirDelta) {
     if (tokens[curPlayer].flip <= 0) return;
-    if(animating || gameOver || isReviewing) return;
+    if (animating || gameOver || isReviewing) return;
     pushHistory();
     tokens[curPlayer].flip--;
     let oldA = boardAngle;
-    targetAngle = oldA + (dirDelta === 1 ? -Math.PI/2 : Math.PI/2);
+    targetAngle = oldA + (dirDelta === 1 ? -Math.PI / 2 : Math.PI / 2);
     if (dirDelta === -1) gravityDir = CW_MAP[gravityDir]; else gravityDir = CCW_MAP[gravityDir];
     anims.push({ type: 'rotate', startA: oldA, endA: targetAngle, t: 0, dur: 500 });
     pendingSettle = true;
@@ -1253,28 +1164,24 @@ function makeAIMove() {
   }
 
   function triggerSettleAfterRotate() {
-    let oldG = grid.map(r=>[...r]);
+    let oldG = grid.map(r => [...r]);
     let finalG = settleGridComplete(grid, gravityDir, mag);
     spawnTransitions(oldG, finalG, 'slide');
     grid = finalG;
   }
 
   function endTurn() {
-    const w = checkWin(grid);
+        const w = checkWin(grid, curPlayer);
     if (w) {
       gameOver = true;
-      let msg = (w===P_RED?"Red Wins!":"Yellow Wins!");
-      if (gameMode === 1 && w === P_RED) msg = "You Win!";
-      if (gameMode === 1 && w === P_YEL) msg = "CPU Wins!";
-      
+      let msg = (w === P_RED ? "Red Wins!" : "Yellow Wins!");
+      if (gameMode === 1) {
+        msg = (w === humanPlayer) ? "You Win!" : "CPU Wins!";
+      }
       document.getElementById("winTitle").textContent = msg;
       document.getElementById("winSub").textContent = "Connect Four!";
-      
-      const b1 = document.getElementById("winBtnMain");
-      const b2 = document.getElementById("winBtnSec");
-      b1.onclick = () => { showMainMenu(); };
-      b2.onclick = () => { undo(); };
-      
+      document.getElementById("winBtnMain").onclick = () => { showMainMenu(); };
+      document.getElementById("winBtnSec").onclick = () => { undo(); };
       winnerCard.classList.add('visible');
       syncUI();
     } else {
@@ -1296,72 +1203,112 @@ function makeAIMove() {
     }
   }
 
-  function checkWin(g) {
-    for (let r=0; r<ROWS; r++) {
-      for (let c=0; c<COLS; c++) {
+  function checkWin(g, lastMover = null) {
+    let hasR = false, hasY = false;
+
+    const mark = (p) => { if (p === P_RED) hasR = true; else if (p === P_YEL) hasY = true; };
+
+    // Horizontal
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c <= COLS - 4; c++) {
         let p = g[r][c];
         if (!p) continue;
-        if (c<=COLS-4 && g[r][c+1]===p && g[r][c+2]===p && g[r][c+3]===p) return p;
-        if (r<=ROWS-4 && g[r+1][c]===p && g[r+2][c]===p && g[r+3][c]===p) return p;
-        if (r<=ROWS-4 && c<=COLS-4 && g[r+1][c+1]===p && g[r+2][c+2]===p && g[r+3][c+3]===p) return p;
-        if (r<=ROWS-4 && c>=3 && g[r+1][c-1]===p && g[r+2][c-2]===p && g[r+3][c-3]===p) return p;
+        if (g[r][c + 1] === p && g[r][c + 2] === p && g[r][c + 3] === p) mark(p);
       }
     }
-    return 0;
+    // Vertical
+    for (let c = 0; c < COLS; c++) {
+      for (let r = 0; r <= ROWS - 4; r++) {
+        let p = g[r][c];
+        if (!p) continue;
+        if (g[r + 1][c] === p && g[r + 2][c] === p && g[r + 3][c] === p) mark(p);
+      }
+    }
+    // Diagonals
+    for (let r = 0; r <= ROWS - 4; r++) {
+      for (let c = 0; c <= COLS - 4; c++) {
+        let p = g[r][c];
+        if (p && g[r + 1][c + 1] === p && g[r + 2][c + 2] === p && g[r + 3][c + 3] === p) mark(p);
+      }
+    }
+    for (let r = 3; r < ROWS; r++) {
+      for (let c = 0; c <= COLS - 4; c++) {
+        let p = g[r][c];
+        if (p && g[r - 1][c + 1] === p && g[r - 2][c + 2] === p && g[r - 3][c + 3] === p) mark(p);
+      }
+    }
+
+    if (!hasR && !hasY) return null;
+    if (hasR && hasY) return (lastMover != null) ? lastMover : P_RED; // fallback if unknown
+    return hasR ? P_RED : P_YEL;
   }
+
+
 
   function getDropTarget(g, dir, idx) {
     let rEnt, cEnt;
-    if (dir === 0) { rEnt=0; cEnt=idx; } else if (dir === 1) { rEnt=idx; cEnt=COLS-1; }
-    else if (dir === 2) { rEnt=ROWS-1; cEnt=idx; } else { rEnt=idx; cEnt=0; }
+    if (dir === 0) { rEnt = 0; cEnt = idx; } else if (dir === 1) { rEnt = idx; cEnt = COLS - 1; }
+    else if (dir === 2) { rEnt = ROWS - 1; cEnt = idx; } else { rEnt = idx; cEnt = 0; }
     let rT = rEnt, cT = cEnt, found = false;
-    for (let i=0; i<ROWS; i++) {
-        let rCheck = rEnt, cCheck = cEnt;
-        if (dir===0) rCheck+=i; else if (dir===1) cCheck-=i; else if (dir===2) rCheck-=i; else cCheck+=i;
-        if (g[rCheck][cCheck] === P_EMPTY) { rT = rCheck; cT = cCheck; found = true; break; }
+    for (let i = 0; i < ROWS; i++) {
+      let rCheck = rEnt, cCheck = cEnt;
+      if (dir === 0) rCheck += i; else if (dir === 1) cCheck -= i; else if (dir === 2) rCheck -= i; else cCheck += i;
+      if (g[rCheck][cCheck] === P_EMPTY) { rT = rCheck; cT = cCheck; found = true; break; }
     }
-    return found ? {r:rT, c:cT} : null;
+    return found ? { r: rT, c: cT } : null;
   }
 
-  // --- HINT SYSTEM (UPDATED TO USE GATEKEEPER) ---
+  // =========================================================================
+  // HINT SYSTEM
+  // =========================================================================
   function runHintSimulation() {
-      let aiToks = tokens[curPlayer];
-      let oppToks = tokens[curPlayer === P_RED ? P_YEL : P_RED];
-      
-      let gate = shouldConsiderTools(grid, gravityDir, mag, aiToks, curPlayer);
-      let moves = getDropMoves(grid, gravityDir, curPlayer, mag);
-      
-      if (gate.allowed) {
-          moves.push(...getToolMoves(grid, gravityDir, aiToks, curPlayer, mag));
-      }
-      
-      if(moves.length === 0) return "No moves available!";
-      
-      let bestMove = null;
-      let bestScore = -Infinity;
-      
-      for(let m of moves) {
-          if (checkWin(m.grid) === curPlayer) return formatMoveString(m) + " (Wins)";
-          let score = minimax(m.grid, m.gDir, m.magState, 5, -Infinity, Infinity, false, gate.allowed);
-          if(score > bestScore) { bestScore = score; bestMove = m; }
-      }
-      if(!bestMove) return "Try a random move.";
-      return formatMoveString(bestMove);
+    let playerToks = tokens[curPlayer];
+    let moves = getDropMoves(grid, gravityDir, curPlayer, mag);
+    if (playerToks.flip > 0 || playerToks.mag > 0) {
+      moves.push(...getToolMoves(grid, gravityDir, playerToks, curPlayer, mag));
+    }
+    if (moves.length === 0) return "No moves available!";
+
+    for (let m of moves) if (checkWin(m.grid) === curPlayer) return formatMove(m) + " (Wins!)";
+
+    if (playerToks.flip > 0 && playerToks.mag > 0) {
+      let extraction = findExtractionWin(grid, gravityDir, playerToks, curPlayer, mag);
+      if (extraction) return "Rotate " + (extraction.firstMove.delta === 1 ? "CCW" : "CW") + " then magnet (2-move win!)";
+    }
+
+    let opponent = (curPlayer === P_RED) ? P_YEL : P_RED;
+    let oppDrops = getDropMoves(grid, gravityDir, opponent, mag);
+    let oppWin = oppDrops.find(m => checkWin(m.grid) === opponent);
+    if (oppWin) {
+      let block = moves.find(m => m.type === 'drop' && m.col === oppWin.col);
+      if (block) return formatMove(block) + " (Block!)";
+    }
+
+    let best = null, bestScore = -Infinity;
+    for (let m of moves) {
+      let score = evaluate(m.grid, m.gDir, m.magState);
+      if (curPlayer === humanPlayer) score = -score;
+      if (score > bestScore) { bestScore = score; best = m; }
+    }
+    return best ? formatMove(best) : "Try center drops.";
   }
 
-  function formatMoveString(m) {
-      if(m.type === 'drop') return `Drop at Column ${String.fromCharCode(65 + m.col)}`; 
-      if(m.type === 'flip') return `Rotate ${m.delta === 1 ? 'CCW ⟲' : 'CW ⟳'}`;
-      if(m.type === 'magnet') return `Magnet: ${["Top", "Right", "Bottom", "Left"][m.side]}`;
-      return "Unknown";
+  function formatMove(m) {
+    if (m.type === 'drop') return `Drop at Column ${String.fromCharCode(65 + m.col)}`;
+    if (m.type === 'flip') return `Rotate ${m.delta === 1 ? 'CCW ⟲' : 'CW ⟳'}`;
+    if (m.type === 'magnet') return `Magnet: ${["Top", "Right", "Bottom", "Left"][m.side]}`;
+    return "Unknown";
   }
 
+  // =========================================================================
+  // RENDERING
+  // =========================================================================
   let lastTime = 0;
   function initLoop(now) { lastTime = now; requestAnimationFrame(loop); }
   function loop(now) {
     let dt = now - lastTime;
     lastTime = now;
-    if (dt > 50) dt = 50; 
+    if (dt > 50) dt = 50;
     updateAnims(dt);
     render();
     requestAnimationFrame(loop);
@@ -1370,113 +1317,116 @@ function makeAIMove() {
   function updateAnims(dt) {
     if (!animating) return;
     let stillAnimating = false;
-    let rot = anims.find(a=>a.type==='rotate');
-    if(rot) {
-        rot.t += dt/rot.dur;
-        if(rot.t>=1) { 
-            rot.t=1; boardAngle=rot.endA; anims=anims.filter(a=>a!==rot);
-            if(pendingSettle) { pendingSettle = false; triggerSettleAfterRotate(); stillAnimating = true; }
-        } else { 
-            let p = rot.t<.5 ? 2*rot.t*rot.t : -1+(4-2*rot.t)*rot.t; boardAngle = rot.startA + (rot.endA-rot.startA)*p; stillAnimating = true; 
-        }
+    let rot = anims.find(a => a.type === 'rotate');
+    if (rot) {
+      rot.t += dt / rot.dur;
+      if (rot.t >= 1) {
+        rot.t = 1; boardAngle = rot.endA; anims = anims.filter(a => a !== rot);
+        if (pendingSettle) { pendingSettle = false; triggerSettleAfterRotate(); stillAnimating = true; }
+      } else {
+        let p = rot.t < .5 ? 2 * rot.t * rot.t : -1 + (4 - 2 * rot.t) * rot.t;
+        boardAngle = rot.startA + (rot.endA - rot.startA) * p;
+        stillAnimating = true;
+      }
     }
     anims.forEach(a => {
-        if(a.type==='rotate') return;
-        a.t += dt/a.dur;
-        if(a.t < 1) stillAnimating = true; else a.t = 1;
+      if (a.type === 'rotate') return;
+      a.t += dt / a.dur;
+      if (a.t < 1) stillAnimating = true; else a.t = 1;
     });
-    if(!stillAnimating && !rot) {
-        anims = anims.filter(a => a.t < 1);
-        if(anims.length === 0) { animating = false; hiddenCells = []; endTurn(); }
+    if (!stillAnimating && !rot) {
+      anims = anims.filter(a => a.t < 1);
+      if (anims.length === 0) { animating = false; hiddenCells = []; endTurn(); }
     }
   }
 
   function render() {
     if (canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
     }
     const W = canvas.width, H = canvas.height;
-    const cx = W/2, cy = H/2;
+    const cx = W / 2, cy = H / 2;
     const size = Math.min(W, H) * 0.96;
     const cell = size / (Math.max(ROWS, COLS) + 2);
     const boardW = COLS * cell;
 
     ctx.fillStyle = "#0b0f17";
-    ctx.fillRect(0,0,W,H);
+    ctx.fillRect(0, 0, W, H);
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(boardAngle);
-    
+
     ctx.fillStyle = "#1e2535";
-    ctx.beginPath(); ctx.roundRect(-boardW/2 - cell*0.2, -boardW/2 - cell*0.2, boardW + cell*0.4, boardW + cell*0.4, 12);
+    ctx.beginPath(); ctx.roundRect(-boardW / 2 - cell * 0.2, -boardW / 2 - cell * 0.2, boardW + cell * 0.4, boardW + cell * 0.4, 12);
     ctx.fill();
     ctx.strokeStyle = "rgba(255,255,255,0.1)"; ctx.lineWidth = 2; ctx.stroke();
-    
+
     ctx.fillStyle = "#8fa1b8";
     ctx.font = "bold 15px monospace";
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    for(let c=0; c<COLS; c++) {
-        let x = -boardW/2 + c*cell + cell/2;
-        let char = String.fromCharCode(65 + c);
-        ctx.fillText(char, x, -boardW/2 - cell * 0.4);
-        ctx.fillText(char, x, boardW/2 + cell * 0.4);
+    for (let c = 0; c < COLS; c++) {
+      let x = -boardW / 2 + c * cell + cell / 2;
+      let char = String.fromCharCode(65 + c);
+      ctx.fillText(char, x, -boardW / 2 - cell * 0.4);
+      ctx.fillText(char, x, boardW / 2 + cell * 0.4);
     }
-    for(let r=0; r<ROWS; r++) {
-        let y = -boardW/2 + r*cell + cell/2;
-        let num = (r + 1).toString();
-        ctx.fillText(num, -boardW/2 - cell * 0.4, y);
-        ctx.fillText(num, boardW/2 + cell * 0.4, y);
+    for (let r = 0; r < ROWS; r++) {
+      let y = -boardW / 2 + r * cell + cell / 2;
+      let num = (r + 1).toString();
+      ctx.fillText(num, -boardW / 2 - cell * 0.4, y);
+      ctx.fillText(num, boardW / 2 + cell * 0.4, y);
     }
 
-    ctx.translate(-boardW/2, -boardW/2);
-    
-    for (let r=0; r<ROWS; r++) {
-      for (let c=0; c<COLS; c++) {
-        const x = c*cell + cell/2;
-        const y = r*cell + cell/2;
+    ctx.translate(-boardW / 2, -boardW / 2);
+
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const x = c * cell + cell / 2;
+        const y = r * cell + cell / 2;
         ctx.fillStyle = "rgba(0,0,0,0.5)";
-        ctx.beginPath(); ctx.arc(x, y, cell*0.4, 0, Math.PI*2); ctx.fill();
-        if (hiddenCells.some(h => h.r===r && h.c===c && animating)) continue;
+        ctx.beginPath(); ctx.arc(x, y, cell * 0.4, 0, Math.PI * 2); ctx.fill();
+        if (hiddenCells.some(h => h.r === r && h.c === c && animating)) continue;
         const val = grid[r][c];
-        if (val) drawToken(ctx, x, y, cell*0.4, val);
+        if (val) drawToken(ctx, x, y, cell * 0.4, val);
       }
     }
     for (let a of anims) {
-        if (a.type === 'rotate') continue;
-        let p = a.t * a.t * (3 - 2 * a.t); 
-        if (a.type === 'drop') {
-            if (a.t < 0.7) p = (a.t/0.7)*(a.t/0.7); else { let t2 = (a.t - 0.7) / 0.3; p = 1 - Math.sin(t2 * Math.PI) * 0.05; }
-        }
-        let curR = a.r + (a.destR - a.r) * p;
-        let curC = a.c + (a.destC - a.c) * p;
-        drawToken(ctx, curC*cell + cell/2, curR*cell + cell/2, cell*0.4, a.p);
+      if (a.type === 'rotate') continue;
+      let p = a.t * a.t * (3 - 2 * a.t);
+      if (a.type === 'drop') {
+        if (a.t < 0.7) p = (a.t / 0.7) * (a.t / 0.7);
+        else { let t2 = (a.t - 0.7) / 0.3; p = 1 - Math.sin(t2 * Math.PI) * 0.05; }
+      }
+      let curR = a.r + (a.destR - a.r) * p;
+      let curC = a.c + (a.destC - a.c) * p;
+      drawToken(ctx, curC * cell + cell / 2, curR * cell + cell / 2, cell * 0.4, a.p);
     }
-    mag.top.forEach((m, i) => drawMag(ctx, i*cell + cell/2, -cell*0.6, cell, 0, m));
-    mag.bottom.forEach((m, i) => drawMag(ctx, i*cell + cell/2, boardW + cell*0.6, cell, 2, m));
-    mag.left.forEach((m, i) => drawMag(ctx, -cell*0.6, i*cell + cell/2, cell, 3, m));
-    mag.right.forEach((m, i) => drawMag(ctx, boardW + cell*0.6, i*cell + cell/2, cell, 1, m));
+    mag.top.forEach((m, i) => drawMag(ctx, i * cell + cell / 2, -cell * 0.6, cell, 0, m));
+    mag.bottom.forEach((m, i) => drawMag(ctx, i * cell + cell / 2, boardW + cell * 0.6, cell, 2, m));
+    mag.left.forEach((m, i) => drawMag(ctx, -cell * 0.6, i * cell + cell / 2, cell, 3, m));
+    mag.right.forEach((m, i) => drawMag(ctx, boardW + cell * 0.6, i * cell + cell / 2, cell, 1, m));
     ctx.restore();
   }
-  
+
   function drawToken(ctx, x, y, r, p) {
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fillStyle = (p === P_RED) ? "#e53935" : "#fdd835"; ctx.fill();
-    ctx.beginPath(); ctx.arc(x - r*0.3, y - r*0.3, r*0.2, 0, Math.PI*2);
+    ctx.beginPath(); ctx.arc(x - r * 0.3, y - r * 0.3, r * 0.2, 0, Math.PI * 2);
     ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.fill();
   }
-  
+
   function drawMag(ctx, x, y, size, dir, m) {
     if (!m) return;
-    ctx.save(); ctx.translate(x, y); ctx.rotate(dir * Math.PI/2);
-    ctx.globalAlpha = 0.3 + (0.7 * (m.life / MAGNET_LIFE)); 
+    ctx.save(); ctx.translate(x, y); ctx.rotate(dir * Math.PI / 2);
+    ctx.globalAlpha = 0.3 + (0.7 * (m.life / MAGNET_LIFE));
     ctx.beginPath();
-    const r = size*0.35;
+    const r = size * 0.35;
     ctx.arc(0, 0, r, 0, Math.PI, true); ctx.lineTo(-r, r); ctx.lineTo(r, r); ctx.closePath();
     ctx.fillStyle = (m.p === P_RED) ? "#e53935" : "#fdd835"; ctx.fill();
     ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
     ctx.globalAlpha = 1;
-    for(let i=0; i<Math.ceil(m.life/2); i++) {
-        ctx.fillStyle = "#fff";
-        ctx.beginPath(); ctx.arc(-r + 4 + i*6, r - 4, 1.5, 0, Math.PI*2); ctx.fill();
+    for (let i = 0; i < Math.ceil(m.life / 2); i++) {
+      ctx.fillStyle = "#fff";
+      ctx.beginPath(); ctx.arc(-r + 4 + i * 6, r - 4, 1.5, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
   }
@@ -1484,11 +1434,11 @@ function makeAIMove() {
   function getBoardPos(evt) {
     const rect = canvas.getBoundingClientRect();
     let x = evt.clientX - rect.left, y = evt.clientY - rect.top;
-    const cx = canvas.width/2, cy = canvas.height/2;
+    const cx = canvas.width / 2, cy = canvas.height / 2;
     const dx = x - cx, dy = y - cy;
     const cos = Math.cos(-boardAngle), sin = Math.sin(-boardAngle);
     const rx = dx * cos - dy * sin, ry = dx * sin + dy * cos;
-    
+
     const size = Math.min(canvas.width, canvas.height) * 0.96;
     const cell = size / (Math.max(ROWS, COLS) + 2);
     const boardSize = COLS * cell;
@@ -1496,7 +1446,7 @@ function makeAIMove() {
     const gridX = rx + halfB, gridY = ry + halfB;
     const col = Math.floor(gridX / cell);
     const row = Math.floor(gridY / cell);
-    
+
     if (col >= 0 && col < COLS && row >= 0 && row < ROWS) return { type: 'CELL', r: row, c: col };
     const rimThick = cell * 1.2;
     if (rx > -halfB - rimThick && rx < halfB + rimThick && ry > -halfB - rimThick && ry < halfB + rimThick) {
@@ -1508,7 +1458,7 @@ function makeAIMove() {
 
   function handleInput(e) {
     if (gameOver || animating || isReviewing) return;
-    if (gameMode === 1 && curPlayer === P_YEL) return;
+    if (gameMode === 1 && curPlayer === cpuPlayer) return;
     if (e.type === 'touchstart') e.preventDefault();
     const act = getBoardPos(e.type.includes('touch') ? e.changedTouches[0] : e);
     if (act.type === 'CELL') doDrop(act.r, act.c);
@@ -1516,68 +1466,63 @@ function makeAIMove() {
   }
 
   canvas.addEventListener('mousedown', handleInput);
-  canvas.addEventListener('touchstart', handleInput, {passive:false});
+  canvas.addEventListener('touchstart', handleInput, { passive: false });
 
   function syncUI() {
     let pName = (curPlayer === P_RED ? "Red's Turn" : "Yellow's Turn");
-    if(gameMode === 1 && curPlayer === P_YEL) pName = "CPU Thinking...";
-    
+    if (gameMode === 1 && curPlayer === cpuPlayer) pName = "CPU Thinking...";
+
     hudTurn.textContent = gameOver ? "Game Over" : pName;
     hudTurn.style.color = curPlayer === P_RED ? "var(--red)" : "var(--yel)";
     hudR.textContent = `F:${tokens[P_RED].flip} M:${tokens[P_RED].mag}`;
     hudY.textContent = `F:${tokens[P_YEL].flip} M:${tokens[P_YEL].mag}`;
     hudGrav.textContent = `Grav: ${["↓", "←", "↑", "→"][gravityDir]}`;
-    
-    let disabled = (tokens[curPlayer].flip <= 0 || gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing);
-    document.getElementById("btnCCW").disabled = disabled;
-    document.getElementById("btnCW").disabled  = disabled;
-    document.getElementById("btnUndo").disabled = (history.length === 0 || gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing);
-    document.getElementById("btnHint").disabled = gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing;
-    document.getElementById("btnHelp").disabled = gameOver || (gameMode===1 && curPlayer===P_YEL) || isReviewing;
-    document.getElementById("btnMenu").disabled = isReviewing; 
-  }
-  
-  document.getElementById("btnHint").onclick = () => { 
-      if (gameMode === 1 && curPlayer === P_YEL) return;
-      elOverlay.style.display = "flex";
-      menuCard.classList.add('hidden');
-      helpCard.classList.add('hidden');
-      hintCard.classList.remove('hidden');
-      document.getElementById("hintMsg").textContent = "Analyzing board...";
-      
-      setTimeout(() => {
-          const h = runHintSimulation();
-          document.getElementById("hintMsg").textContent = h;
-      }, 100);
 
-      document.getElementById("hintBtnResume").onclick = () => { 
-          elOverlay.style.display = "none"; 
-          hintCard.classList.add('hidden');
-      };
+    let disabled = (tokens[curPlayer].flip <= 0 || gameOver || (gameMode === 1 && curPlayer === cpuPlayer) || isReviewing);
+    document.getElementById("btnCCW").disabled = disabled;
+    document.getElementById("btnCW").disabled = disabled;
+    document.getElementById("btnUndo").disabled = (history.length === 0 || gameOver || (gameMode === 1 && curPlayer === cpuPlayer) || isReviewing);
+    document.getElementById("btnHint").disabled = gameOver || (gameMode === 1 && curPlayer === cpuPlayer) || isReviewing;
+    document.getElementById("btnHelp").disabled = gameOver || (gameMode === 1 && curPlayer === cpuPlayer) || isReviewing;
+    document.getElementById("btnMenu").disabled = isReviewing;
+  }
+
+  document.getElementById("btnHint").onclick = () => {
+    if (gameMode === 1 && curPlayer === cpuPlayer) return;
+    elOverlay.style.display = "flex";
+    menuCard.classList.add('hidden');
+    helpCard.classList.add('hidden');
+    hintCard.classList.remove('hidden');
+    document.getElementById("hintMsg").textContent = "Analyzing board...";
+    setTimeout(() => {
+      const h = runHintSimulation();
+      document.getElementById("hintMsg").textContent = h;
+    }, 100);
+    document.getElementById("hintBtnResume").onclick = () => {
+      elOverlay.style.display = "none";
+      hintCard.classList.add('hidden');
+    };
   };
 
   document.getElementById("btnHelp").onclick = showHelp;
   document.getElementById("helpBtnBack").onclick = () => {
-      elOverlay.style.display = "none";
-      helpCard.classList.add('hidden');
+    elOverlay.style.display = "none";
+    helpCard.classList.add('hidden');
   };
-  
-  document.getElementById("btnMenu").onclick = () => toggleMenu();
 
-  document.getElementById("btnCCW").onclick = () => { if(!(gameMode === 1 && curPlayer === P_YEL)) doFlip(1); };
-  document.getElementById("btnCW").onclick = () => { if(!(gameMode === 1 && curPlayer === P_YEL)) doFlip(-1); };
+  document.getElementById("btnMenu").onclick = () => toggleMenu();
+  document.getElementById("btnCCW").onclick = () => { if (!(gameMode === 1 && curPlayer === cpuPlayer)) doFlip(1); };
+  document.getElementById("btnCW").onclick = () => { if (!(gameMode === 1 && curPlayer === cpuPlayer)) doFlip(-1); };
   document.getElementById("btnUndo").onclick = undo;
-  
-  // RESTORED DEV BUTTON FUNCTION
+
   document.getElementById("btnAdd").onclick = () => {
-    tokens[P_RED].flip+=2; tokens[P_RED].mag+=2; 
-    tokens[P_YEL].flip+=2; tokens[P_YEL].mag+=2; 
+    tokens[P_RED].flip += 2; tokens[P_RED].mag += 2;
+    tokens[P_YEL].flip += 2; tokens[P_YEL].mag += 2;
     syncUI();
   };
-  
+
   window.addEventListener('resize', render);
   showMainMenu();
-
 })();
 </script>
 </body>

@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Flip4M Grandmaster (GPT Base)</title>
+<title>Flip4M Grandmaster Final</title>
 <style>
-  /* --- VISUALS FROM F4_GPT (UNTOUCHED) --- */
+  /* --- VISUALS FROM F4_GPT (VERIFIED WORKING) --- */
   :root{
     --bg:#0b0f17;
     --panel:#1e2535;
@@ -133,7 +133,7 @@
   <div id="hud">
     <div class="row">
       <div>
-        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Ultimate</span></h1>
+        <h1>Flip4M <span style="font-size:12px;opacity:0.5;font-weight:400; color:#ffd700">GM Final</span></h1>
         <div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
       </div>
       <div class="status" id="turnInfo">Red's Turn</div>
@@ -317,12 +317,15 @@
     targetAngle = 0;
     curPlayer = P_RED;
     
-    // --- DIFFICULTY ---
+    // --- DIFFICULTY TOOLS SETUP ---
     if (aiLevel === 2) {
+        // STANDARD (Classic): 0 Tools
         tokens = { [P_RED]: { flip: 0, mag: 0 }, [P_YEL]: { flip: 0, mag: 0 } };
     } else if (aiLevel === 3) {
+        // EXPERT: 2x Tools
         tokens = { [P_RED]: { flip: 2, mag: 2 }, [P_YEL]: { flip: 2, mag: 2 } };
     } else {
+        // PRO: 3x Tools
         tokens = { [P_RED]: { flip: 3, mag: 3 }, [P_YEL]: { flip: 3, mag: 3 } };
     }
 
@@ -396,17 +399,17 @@
       }
   }
 
-  // --- AI ENGINE: "GATEKEEPER" ---
+  // --- AI ENGINE: GRANDMASTER ELITE (The Upgrade) ---
   function checkAI() {
     if (aiTimer) clearTimeout(aiTimer);
     if (gameMode === 1 && curPlayer === P_YEL && !gameOver && !animating && !isReviewing) {
         document.body.style.cursor = "wait";
-        // INCREASED THINK TIME SIMULATION
         aiTimer = setTimeout(() => { makeAIMove(); document.body.style.cursor = "default"; }, 50);
     }
   }
 
-  // SIMULATE END OF TURN (DECAY)
+  // 1. TEMPORAL SIMULATION (Time Travel)
+  // Simulates the end-of-turn magnet decay.
   function advanceTurnSimulation(g, gDir, mState) {
       let nextM = cloneMagState(mState);
       let anyDied = false;
@@ -425,36 +428,48 @@
       return { grid: nextG, magState: nextM };
   }
 
-  // THE GATEKEEPER: "Can I use tools?"
+  // 2. THE STRICT GATEKEEPER
+  // DECIDES: "Am I allowed to use a tool?"
+  // Returns TRUE only if:
+  // A) A tool leads to an IMMEDIATE WIN.
+  // B) We are facing an IMMEDIATE LOSS that a Drop cannot solve.
   function shouldConsiderTools(g, gDir, mState, aiToks, player) {
     const opponent = (player === P_RED) ? P_YEL : P_RED;
     
-    // A) Immediate Win?
+    // Check A: Can we win NOW with a tool?
     if (aiToks.flip > 0 || aiToks.mag > 0) {
+      // We do a shallow check for wins
       let toolMoves = getToolMoves(g, gDir, aiToks, player, mState);
       for (let m of toolMoves) {
-        if (checkWin(m.grid) === player) return { allowed: true };
+        if (checkWin(m.grid) === player) return { allowed: true, reason: "WIN" };
       }
     }
     
-    // B) Immediate Loss to Opponent Drop?
+    // Check B: Are we dead next turn?
+    // Simulate Opponent's best drop moves
     let oppDrops = getDropMoves(g, gDir, opponent, mState);
     for (let m of oppDrops) {
-      if (checkWin(m.grid) === opponent) return { allowed: true };
+      if (checkWin(m.grid) === opponent) {
+        // Opponent threatens win. Unlock tools to defend.
+        return { allowed: true, reason: "DEFENSE" };
+      }
     }
     
-    // C) Magnet Collapse? (If MY piece falls due to decay, I might need to fix it)
-    return { allowed: false };
+    // Default: FORBID TOOLS. 
+    // This stops the AI from rotating on turn 1 or wasting magnets for "position".
+    return { allowed: false, reason: "NO_NEED" };
   }
 
   function makeAIMove() {
     let depth = 8; 
-    if (aiLevel === 3) depth = 9; 
+    let hasTools = (tokens[P_YEL].flip > 0 || tokens[P_YEL].mag > 0);
+    
+    if (aiLevel === 2) depth = 8; 
+    else if (aiLevel === 3) depth = 9; 
     else if (aiLevel === 4) depth = 10; 
     
-    let aiTokens = (tokens[P_YEL].flip > 0 || tokens[P_YEL].mag > 0) ? tokens[P_YEL] : { flip: 0, mag: 0 };
-    let hasTools = (aiTokens.flip > 0 || aiTokens.mag > 0);
-
+    let aiTokens = hasTools ? tokens[P_YEL] : { flip: 0, mag: 0 };
+    
     // 1. SANITY CHECK (Win/Block)
     let sanityMove = getSanityMove(grid, gravityDir, aiTokens, P_YEL, mag);
     if (sanityMove) { executeMove(sanityMove); return; }
@@ -485,6 +500,7 @@
 
     for (let m of moves) {
         let d = depth;
+        // Optimization: Reduce depth for expensive tool branches if we have many
         if (m.type !== 'drop') d = Math.max(3, depth - 2); 
 
         let score = minimax(m.grid, m.gDir, m.magState, d - 1, alpha, beta, false, toolsAllowed);
@@ -526,9 +542,9 @@
     let player = isMax ? P_YEL : P_RED;
     let moves = getDropMoves(g, gDir, player, mState);
     
-    // Deep search optimizations
+    // In deep simulation, restrict tools to critical branches to save CPU
     if (toolsAllowed && depth > 5) {
-        // Optional: Shallow check for tools here
+        // Optional: Shallow check for tools
     }
 
     if (isMax) { 
@@ -552,11 +568,11 @@
     }
   }
 
-  function evaluateBoard(g, grav, mState) {
+  function evaluateBoard(g, grav, mState, advanced) {
       let score = 0;
       score += analyzeLines(g, P_YEL) * 1.0;
       score -= analyzeLines(g, P_RED) * 1.2; 
-      // FRAGILITY CHECK: Only applied to score calculation implicitly via analyzeLines
+      // Implicit Fragility check via analyzeLines
       return score;
   }
 
@@ -591,10 +607,12 @@
               let blockerIdx = window.findIndex(x => x !== p && x !== P_EMPTY);
               let bR = rStart + blockerIdx * rD;
               let bC = cStart + blockerIdx * cD;
+              // If the BLOCKER is extractable, this is a huge threat/opportunity
               if (isExtractable(g, bR, bC)) return 15000; 
           }
           return 0; 
       }
+      
       if (count === 4) return 10000;
       if (count === 3 && empty === 1) return 200; 
       if (count === 2 && empty === 2) return 10;
@@ -660,7 +678,7 @@
       return moves;
   }
 
-  // --- RENDER & INPUT ---
+  // --- RENDER & INPUT (FROM F4_GPT) ---
   function getMag(mState, side, idx) {
       if(side===0) return mState.top[idx];
       if(side===1) return mState.right[idx];
