@@ -182,7 +182,7 @@
     <div id="overlay">
       <div class="card" id="menuCard">
         <h2>Flip4M</h2>
-        <p>Gravity-defying strategy. <b>GM IV</b> — Ultimate AI.</p>
+        <p>Gravity-defying strategy. <b>Pro</b> — Ultimate AI.</p>
         
         <!-- First Move Toggle -->
         <div class="first-move-toggle">
@@ -720,20 +720,20 @@
     }
     for (let m of allMoves) {
       if (checkWin(m.grid) === cpuPlayer) {
-        console.log("GM IV: Instant win");
+        console.log("Pro: Instant win");
         executeMove(m); return;
       }
     }
 
     // 2. Gatekeeper
     let gatekeeper = shouldConsiderTools(grid, gravityDir, mag, aiToks, oppToks, cpuPlayer);
-    console.log("GM IV Gatekeeper:", gatekeeper.reason);
+    console.log("Pro Gatekeeper:", gatekeeper.reason);
 
     // 3. Extraction win (if gated)
     if (gatekeeper.allowed && gatekeeper.reason === "EXTRACTION_WIN") {
       let extraction = findExtractionWin(grid, gravityDir, aiToks, cpuPlayer, mag);
       if (extraction) {
-        console.log("GM IV: Executing extraction combo");
+        console.log("Pro: Executing extraction combo");
         executeMove(extraction.firstMove); return;
       }
     }
@@ -743,7 +743,7 @@
     let oppWin = oppDrops.find(m => checkWin(m.grid) === humanPlayer);
     if (oppWin) {
       let block = allMoves.find(m => m.type === 'drop' && m.col === oppWin.col);
-      if (block) { console.log("GM IV: Blocking"); executeMove(block); return; }
+      if (block) { console.log("Pro: Blocking"); executeMove(block); return; }
     }
 
     // 5. Build move list based on gatekeeper
@@ -791,7 +791,7 @@
     }
 
     if (best) {
-      console.log("GM IV: Best", best.type, "score", bestScore);
+      console.log("Pro: Best", best.type, "score", bestScore);
       executeMove(best);
     } else if (moves.length > 0) {
       executeMove(moves[0]);
