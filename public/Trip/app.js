@@ -204,8 +204,8 @@
   }
 
   async function callGeminiAPI(userPrompt) {
-    // UPDATED URL: Changed to 'gemini-pro' to fix the 404 Error
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+    // UPDATED URL: Using 'gemini-2.5-flash' based on your console output
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     chatHistoryBuffer.push({ role: "user", parts: [{ text: userPrompt }] });
     if (chatHistoryBuffer.length > 10) chatHistoryBuffer.shift();
