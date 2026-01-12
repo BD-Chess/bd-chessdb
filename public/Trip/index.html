@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trip Optimizer (8Z-RP)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">8Z</div>
+      <div class="titles">
+        <div class="title">Trip Optimizer</div>
+        <div class="subtitle">
+          <span class="desktop-text">Author: Bojan Dobrečevič | Jan 2026 | Deterministic route optimizer • Same input ⇒ same route</span>
+          <span class="mobile-text">Author: Bojan Dobrečevič | Deterministic optimizer!</span>
+        </div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <a id="btnAbout" href="#">About</a>
+      <a id="btnHelp" href="#">Help / Guide</a>
+    </div>
+  </header>
+
+  <main class="split">
+    <button id="btnCollapse" class="panel-toggle" title="Hide Toolbar">«</button>
+    <button id="btnExpand" class="panel-toggle-open" style="display:none;" title="Show Toolbar">»</button>
+
+    <section id="leftPanel" class="panel left">
+      <div class="card">
+        <h2>Plan Your Trip</h2>
+        
+        <div id="presetTree" class="tree-view"></div>
+
+        <p class="muted small" style="margin-top:0;">
+          Select a trip above or <a href="#" onclick="document.getElementById('btnHelp').click(); return false;" style="color:var(--accent); text-decoration:none;">see help</a>.
+        </p>
+
+        <textarea id="input" spellcheck="false" placeholder="Enter stops here..."></textarea>
+
+        <div class="row tight" style="margin-top:5px; margin-bottom:15px;">
+          <button id="btnSave" class="secondary small-btn">💾 Save</button>
+          <button id="btnLoad" class="secondary small-btn">📂 Load</button>
+          <input type="file" id="fileLoader" style="display:none" accept=".txt" />
+        </div>
+
+        <div class="row">
+          <button id="btnStandard">Optimize (Standard)</button>
+          <button id="btnDeep" class="secondary">Optimize (Precise)</button>
+        </div>
+
+        <div class="row">
+          <button id="btnDriving">🚗 Driving</button>
+          <button id="btnWalking" class="secondary">🚶 Walking</button>
+        </div>
+
+        <div class="row tight">
+          <label class="check">
+            <input id="chkRoundTrip" type="checkbox" checked />
+            <span>Round trip</span>
+          </label>
+          <label class="check">
+            <input id="chkDirect" type="checkbox" />
+            <span class="muted small">Direct lines</span>
+          </label>
+          <label class="check">
+            <input id="chkGoogleStyle" type="checkbox" />
+            <span class="muted small">Google Style</span>
+          </label>
+        </div>
+
+        <div id="status" class="status"></div>
+      </div>
+
+      <div class="card">
+        <h2>Route Stats</h2>
+        <div class="metrics">
+          <div class="metric">
+            <div class="k">Distance</div>
+            <div class="v" id="distKm">—</div>
+          </div>
+          <div class="metric">
+            <div class="k">Saved</div>
+            <div class="v" id="savedKm">—</div>
+          </div>
+        </div>
+
+        <ol id="routeList" class="route"></ol>
+        <div id="links" class="links"></div>
+      </div>
+    </section>
+
+    <section class="panel right">
+      <div id="mapPlaceholder" class="placeholder-msg">
+        <div class="big-icon">🗺️</div>
+        <h2>Ready to Route</h2>
+        <p class="muted box-width">
+          To save API costs, the map is paused.
+        </p>
+        <div style="margin-top: 20px;">
+          <button id="btnEnableMap" style="width: auto; padding: 10px 20px;">Enable Map & Start</button>
+        </div>
+      </div>
+
+      <div id="map"></div>
+
+      <div id="helpOverlay" class="help-overlay">
+        <div class="help-content">
+          <button id="btnCloseHelp" class="close-help-btn">← Back to Map</button>
+          <div id="helpBody"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span class="muted small">8Z-RP Trip Optimizer • Powered by Google Maps Platform</span>
+  </footer>
+
+  <script src="trips.js"></script>
+  <script src="help.js"></script>
+  <script src="about.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
