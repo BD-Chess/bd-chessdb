@@ -19,7 +19,7 @@
       </div>
     </div>
     <div class="top-actions">
-      <a id="btnChatToggle" href="#">✨ Plan with AI Chatbot</a>
+      <a id="btnChatToggle" href="#" style="color:#fff; text-shadow:0 0 10px rgba(106,169,255,0.5);">✨ Plan with AI Chatbot</a>
       <span style="color:var(--border)">|</span>
       <a id="btnAbout" href="#">About</a>
       <span style="color:var(--border)">|</span>
@@ -99,7 +99,7 @@
     </section>
 
     <section class="panel right">
-      <div id="mapContainer" style="width:100%; height:100%; position:relative;">
+      <div id="mapContainer" style="display:none; width:100%; height:100%; position:relative;">
         <div id="mapPlaceholder" class="placeholder-msg">
           <div class="big-icon">🗺️</div>
           <h2>Ready to Route</h2>
@@ -113,26 +113,32 @@
         <div id="map"></div>
       </div>
 
-      <div id="chatPanel" style="display:none; width:100%; height:100%; flex-direction:column; background:var(--bg);">
+      <div id="chatPanel" style="display:flex; width:100%; height:100%; flex-direction:column; background:var(--bg);">
         <div class="chat-header" style="padding:15px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:rgba(15,22,33,0.9);">
           <div>
             <h2 style="margin:0; font-size:16px; color:var(--text);">✨ AI Travel Assistant</h2>
-            <span class="muted small">Powered by Gemini • Ask for suggestions or hidden gems</span>
+            <span class="muted small">Powered by Gemini • Private & Client-Side</span>
           </div>
           <button id="btnCloseChat" class="secondary small-btn" style="width:auto; padding:6px 12px;">Close Chat ✕</button>
         </div>
         
         <div id="chatHistory" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:15px;">
           <div class="chat-msg ai">
-            <strong>Gemini:</strong> Hello! I can help you plan your trip. Try asking:<br>
-            <em>"What are the top 3 hidden gems in Ljubljana?"</em> or<br>
-            <em>"Add a coffee spot near Tivoli Park."</em>
+            <strong>👋 Welcome to 8Z-RP Trip Optimizer!</strong><br><br>
+            I am your intelligent travel assistant. This tool is different from others you might have used:<br>
+            <ul>
+              <li>🛡️ <strong>100% Private:</strong> Your trip data never leaves your browser.</li>
+              <li>🎯 <strong>Deterministic:</strong> We use advanced math to find the <em>exact</em> best route, every time.</li>
+            </ul>
+            <p><strong>How can I help you today?</strong></p>
+            <p>1. You can <strong>browse the Trip Library</strong> on the left.<br>
+            2. Or ask me: <em>"Find the 5 best coffee spots in Ljubljana and add them to my trip."</em></p>
           </div>
         </div>
 
         <div class="chat-input-area" style="padding:15px; border-top:1px solid var(--border); background:var(--card);">
           <div style="display:flex; gap:10px;">
-            <input type="text" id="chatInput" placeholder="Ask Gemini..." style="flex:1; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+            <input type="text" id="chatInput" placeholder="Ask Gemini to find places..." style="flex:1; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
             <button id="btnSendChat" style="width:auto; padding:0 20px;">Send ➢</button>
           </div>
         </div>

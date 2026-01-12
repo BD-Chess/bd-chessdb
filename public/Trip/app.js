@@ -5,7 +5,7 @@
   
   // --- CONFIGURATION ---
   const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA'; // Maps
-  const GEMINI_API_KEY = 'AIzaSyC_dP04dW4oJt5LE51pCIh9nkeDwusw_4s'; // Chatbot
+  const GEMINI_API_KEY = 'AIzaSyC_dP04dW4oJt5LE51pCIh9nkeDwusw_4s'; // Chatbot (Updated)
 
   // --- UI ELEMENTS ---
   const inputEl = $('input');
@@ -17,7 +17,6 @@
   const btnCollapse = $('btnCollapse');
   const btnExpand = $('btnExpand');
   const leftPanel = $('leftPanel');
-  const rightPanel = document.querySelector('.panel.right');
 
   // Files & Search
   const btnSave = $('btnSave');
@@ -39,7 +38,7 @@
   const chkGoogleStyle = $('chkGoogleStyle'); 
 
   // Map Elements
-  const mapContainer = $('mapContainer'); // The wrapper for map & placeholder
+  const mapContainer = $('mapContainer');
   const mapPlaceholder = $('mapPlaceholder');
   const btnEnableMap = $('btnEnableMap'); 
   const mapDiv = $('map');
@@ -73,7 +72,7 @@
   let lastSolvedPoints = null;
   let currentTravelMode = 'DRIVING'; 
   let pendingRunProfile = null; 
-  let chatHistoryBuffer = []; // Context for AI
+  let chatHistoryBuffer = []; 
   
   let presetLookup = {};
   const STORAGE_KEY = '8z_trip_backup_v1';
@@ -118,15 +117,14 @@
     geocoder = new google.maps.Geocoder();
     directionsService = new google.maps.DirectionsService();
     
-    restoreState(); // Restore settings after map is ready
+    restoreState(); 
 
     setStatus('Maps API Loaded. Ready.', 'ok');
     
-    if (btnEnableMap) btnEnableMap.parentElement.style.display = 'none'; // Hide button container
-    mapPlaceholder.style.display = 'none'; // Hide placeholder
-    mapDiv.style.display = 'block'; // Show real map
+    if (btnEnableMap) btnEnableMap.parentElement.style.display = 'none'; 
+    mapPlaceholder.style.display = 'none'; 
+    mapDiv.style.display = 'block'; 
 
-    // Auto-Resume optimization if pending
     if (pendingRunProfile) {
         run(pendingRunProfile);
         pendingRunProfile = null;
@@ -139,12 +137,12 @@
     if (showChat) {
       mapContainer.style.display = 'none';
       chatPanel.style.display = 'flex';
-      btnChatToggle.style.color = '#fff'; // Active state
+      btnChatToggle.style.color = '#fff';
       chatInput.focus();
     } else {
       chatPanel.style.display = 'none';
       mapContainer.style.display = 'block';
-      btnChatToggle.style.color = ''; // Reset color
+      btnChatToggle.style.color = ''; 
     }
   }
 
@@ -152,22 +150,36 @@
     const text = chatInput.value.trim();
     if (!text) return;
 
-    // 1. User Message
     appendChatMessage('user', text);
     chatInput.value = '';
     
-    // 2. Typing Indicator
-    const loadingId = appendChatMessage('ai', 'Gemini is typing...', true);
+    const loadingId = appendChatMessage('ai', 'Gemini is thinking...', true);
 
     try {
-      // 3. Call Gemini API
       const response = await callGeminiAPI(text);
       
-      // 4. Replace Loading with Response
       const loadingEl = document.getElementById(loadingId);
       if (loadingEl) loadingEl.remove();
       
-      appendChatMessage('ai', response);
+      // PARSING: Look for {ADD: Place} commands
+      let cleanResponse = response;
+      const addRegex = /\{ADD:\s*(.*?)\}/g;
+      let match;
+      let addedPlaces = [];
+
+      while ((match = addRegex.exec(response)) !== null) {
+        const place = match[1].trim();
+        addedPlaces.push(place);
+        window.addStopToRoute(place); // Auto-add to trip
+        // Remove the tag from the visible message
+        cleanResponse = cleanResponse.replace(match[0], '');
+      }
+
+      if (addedPlaces.length > 0) {
+        cleanResponse += `<br><br><em>(I added <strong>${addedPlaces.length} locations</strong> to your trip list automatically.)</em>`;
+      }
+      
+      appendChatMessage('ai', cleanResponse);
 
     } catch (err) {
       const loadingEl = document.getElementById(loadingId);
@@ -182,26 +194,38 @@
     if (isLoading) div.id = 'chat-loading-' + Date.now();
     
     const label = role === 'user' ? 'You' : 'Gemini';
-    // Simple markdown-like bolding for formatting
     let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     formattedText = formattedText.replace(/\n/g, '<br>');
 
     div.innerHTML = `<strong>${label}:</strong><br>${formattedText}`;
     chatHistory.appendChild(div);
-    chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll
+    chatHistory.scrollTop = chatHistory.scrollHeight;
     return div.id;
   }
 
   async function callGeminiAPI(userPrompt) {
+    // UPDATED URL: Using standard v1beta/models/gemini-1.5-flash
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
-    // Maintain a small history buffer for context (last 5 turns)
     chatHistoryBuffer.push({ role: "user", parts: [{ text: userPrompt }] });
     if (chatHistoryBuffer.length > 10) chatHistoryBuffer.shift();
 
+    // SYSTEM PROMPT: Teaches AI about the app and the {ADD: ...} tool
     const systemPrompt = {
       role: "user",
-      parts: [{ text: "You are the AI Assistant for '8Z-RP Trip Optimizer'. Your goal is to help users find travel locations, hidden gems, and itineraries. Keep answers concise. If suggesting a list of places, format them clearly so the user can copy them." }]
+      parts: [{ text: `You are the AI Assistant for '8Z-RP Trip Optimizer'. 
+      CONTEXT:
+      - This is a high-performance, privacy-focused, client-side Trip Optimizer using deterministic TSP math.
+      - Users can add stops to a list and optimize the route.
+      
+      YOUR GOAL:
+      - Help users find locations, hidden gems, or itinerary ideas.
+      - Be concise and helpful.
+      
+      TOOL USE:
+      - If the user asks to add a specific place to their trip (or if you suggest specific places they definitely want), you MUST append this special tag to the end of your response: {ADD: Place Name}
+      - Example: "The Tivoli Park is great. {ADD: Tivoli Park, Ljubljana}"
+      - You can add multiple tags if needed.` }]
     };
 
     const payload = {
@@ -327,7 +351,6 @@
     });
   }
 
-  // Live Search Logic
   function filterTripTree(query) {
     if (!presetTree) return;
     const lowerQ = query.toLowerCase().trim();
@@ -336,34 +359,28 @@
     const allNodes = presetTree.querySelectorAll('.tree-node');
     const allGroups = presetTree.querySelectorAll('.tree-group');
 
-    // Reset if empty
     if (!lowerQ) {
       allItems.forEach(el => el.style.display = 'block');
       allNodes.forEach(el => el.style.display = 'block');
       allGroups.forEach(el => {
-        el.style.display = 'none'; // Collapse all
+        el.style.display = 'none'; 
         el.classList.remove('open');
       });
-      // Restore [+] icons
       presetTree.querySelectorAll('.tree-icon').forEach(icon => icon.textContent = '[+]');
       return;
     }
 
-    // Hide everything first
     allItems.forEach(el => el.style.display = 'none');
     allNodes.forEach(el => el.style.display = 'none');
     
-    // Show matches and their parents
     allItems.forEach(item => {
       if (item.textContent.toLowerCase().includes(lowerQ)) {
         item.style.display = 'block';
-        
         let parent = item.parentElement;
         while (parent && parent !== presetTree) {
           if (parent.classList.contains('tree-group')) {
             parent.style.display = 'block';
             parent.classList.add('open');
-            // Fix icon
             if (parent.previousElementSibling) {
               const icon = parent.previousElementSibling.querySelector('.tree-icon');
               if (icon) icon.textContent = '[-]';
@@ -398,10 +415,8 @@
   }
 
   function loadPreset(key) {
-    // If chat is open, close it to show map
     toggleChatMode(false);
     
-    // Ensure map is loaded if user clicks a preset
     if (!window.google || !window.google.maps) {
         loadGoogleMaps();
     }
@@ -440,7 +455,10 @@
     if (!current.trim()) {
       inputEl.value = cleanName;
     } else {
-      inputEl.value = current.trim() + '\n' + cleanName;
+      // Check for duplicates roughly
+      if (!current.includes(cleanName)) {
+        inputEl.value = current.trim() + '\n' + cleanName;
+      }
     }
     
     inputEl.scrollTop = inputEl.scrollHeight;
@@ -460,8 +478,6 @@
     directionsRenderers.forEach(dr => dr.setMap(null));
     directionsRenderers = [];
     
-    // Don't show placeholder if map is already initialized
-    // mapPlaceholder.style.display = 'block'; 
     distKmEl.textContent = '—';
     savedKmEl.textContent = '—';
     routeList.innerHTML = '';
@@ -569,7 +585,7 @@
     directionsRenderers.forEach(dr => dr.setMap(null));
     directionsRenderers = [];
     
-    // Ensure map is visible (hide chat/placeholder)
+    // Auto-switch to map view
     toggleChatMode(false);
     mapPlaceholder.style.display = 'none';
     mapDiv.style.display = 'block';
