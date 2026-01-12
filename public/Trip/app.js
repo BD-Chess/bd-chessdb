@@ -5,7 +5,7 @@
   
   // --- CONFIGURATION ---
   const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA'; // Maps
-  const GEMINI_API_KEY = 'AIzaSyC_dP04dW4oJt5LE51pCIh9nkeDwusw_4s'; // Chatbot (Updated)
+  const GEMINI_API_KEY = 'AIzaSyC_dP04dW4oJt5LE51pCIh9nkeDwusw_4s'; // Chatbot
 
   // --- UI ELEMENTS ---
   const inputEl = $('input');
@@ -204,8 +204,8 @@
   }
 
   async function callGeminiAPI(userPrompt) {
-    // UPDATED URL: Using standard v1beta/models/gemini-1.5-flash
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    // UPDATED URL: Changed to 'gemini-pro' to fix the 404 Error
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
     
     chatHistoryBuffer.push({ role: "user", parts: [{ text: userPrompt }] });
     if (chatHistoryBuffer.length > 10) chatHistoryBuffer.shift();
@@ -791,7 +791,7 @@
       if (mids.length) params.set('waypoints', mids.join('|'));
 
       // FIXED: URL Construction
-      const url = `https://www.google.com/maps/dir/?api=1&origin=${originLoc}&destination=${destLoc}&travelmode=${travelmode}&waypoints=${mids.join('|')}`;
+      const url = `https://www.google.com/maps/dir/?${params.toString()}`;
       
       links.push({ url, label: `Leg ${links.length + 1} (${segment.length} stops)` });
       i = j;
