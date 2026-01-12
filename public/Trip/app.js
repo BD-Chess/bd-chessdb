@@ -3,7 +3,7 @@
 
   const $ = (id) => document.getElementById(id);
   
-  // CONFIG: API Key baked in for Lazy Loading
+  // CONFIG: API Key baked in
   const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA';
 
   // UI Elements
@@ -40,7 +40,7 @@
   const btnEnableMap = $('btnEnableMap'); 
   const helpOverlay = $('helpOverlay');
   const btnHelp = $('btnHelp');
-  const btnAbout = $('btnAbout'); // The new About Button
+  const btnAbout = $('btnAbout');
   const btnCloseHelp = $('btnCloseHelp');
   const presetTree = $('presetTree');
   const helpBody = $('helpBody'); 
@@ -56,6 +56,7 @@
   let mapPolyline = null;
   let lastSolvedPoints = null;
   let currentTravelMode = 'DRIVING'; 
+  let pendingRunProfile = null; // Stores intent if map needs loading
   
   let presetLookup = {};
   const STORAGE_KEY = '8z_trip_backup_v1';
@@ -74,8 +75,10 @@
   function loadGoogleMaps() {
     if (window.google && window.google.maps) return; // Already loaded
 
-    btnEnableMap.disabled = true;
-    btnEnableMap.textContent = "Loading Maps API...";
+    if (btnEnableMap) {
+        btnEnableMap.disabled = true;
+        btnEnableMap.textContent = "Loading Maps API...";
+    }
     
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&callback=initMap&loading=async&v=weekly`;
@@ -101,15 +104,19 @@
     // Attempt to restore state only after map is ready (for style preference)
     restoreState();
 
-    setStatus('Maps API Loaded. Ready to optimize.', 'ok');
+    setStatus('Maps API Loaded. Ready.', 'ok');
     
     // Hide the button container to prevent re-clicking
     if (btnEnableMap) btnEnableMap.style.display = 'none';
+
+    // Auto-Resume: If user clicked Optimize before map was ready, run it now.
+    if (pendingRunProfile) {
+        run(pendingRunProfile);
+        pendingRunProfile = null;
+    }
   };
 
   // --- AUTO-SAVE SYSTEM ---
-  
-  // Debounce helper to prevent excessive writes
   function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -132,7 +139,7 @@
     } catch (e) {
       console.warn('LocalStorage save failed', e);
     }
-  }, 1000); // Save 1 second after last change
+  }, 1000); 
 
   function restoreState() {
     try {
@@ -140,15 +147,12 @@
       if (!raw) return;
       const state = JSON.parse(raw);
       
-      // Restore Text
       if (state.text) inputEl.value = state.text;
       
-      // Restore Mode
       if (state.mode) {
         setTravelMode(state.mode);
       }
       
-      // Restore Checkboxes
       if (typeof state.roundTrip === 'boolean') chkRoundTrip.checked = state.roundTrip;
       if (typeof state.direct === 'boolean') chkDirect.checked = state.direct;
       if (typeof state.googleStyle === 'boolean') {
@@ -215,7 +219,6 @@
     });
   }
 
-  // LOGIC TO SWITCH CONTENT (The Brains)
   function openOverlay(content) {
     if (!helpBody) return;
     helpBody.innerHTML = content;
@@ -237,7 +240,7 @@
     clearMap();
     if (key && presetLookup[key]) {
       inputEl.value = presetLookup[key];
-      saveState(); // Save immediately on load
+      saveState(); 
       
       if (key.includes('GLOBAL_')) {
         chkDirect.checked = true;
@@ -266,17 +269,14 @@
     const cleanName = locationName.trim();
     if (!cleanName) return;
 
-    // Check if empty
     if (!current.trim()) {
       inputEl.value = cleanName;
     } else {
-      // Append nicely
       inputEl.value = current.trim() + '\n' + cleanName;
     }
     
-    // Visual feedback
     inputEl.scrollTop = inputEl.scrollHeight;
-    inputEl.style.borderColor = '#7ee787'; // Green flash
+    inputEl.style.borderColor = '#7ee787'; 
     setTimeout(() => { inputEl.style.borderColor = '#1f2a3a'; }, 300);
     
     saveState();
@@ -602,7 +602,7 @@
       params.set('travelmode', travelmode);
       if (mids.length) params.set('waypoints', mids.join('|'));
 
-      // FIXED: URL encoding issue in previous version
+      // FIXED: URL Construction
       const url = `https://www.google.com/maps/dir/?${params.toString()}`;
       
       links.push({ url, label: `Leg ${links.length + 1} (${segment.length} stops)` });
@@ -650,14 +650,15 @@
   }
 
   async function run(profile) {
-    // Safety check: Is map loaded?
+    // Check if Map is loaded. If not, load it and wait.
     if (!geocoder || !directionsService) {
-      setStatus('Please click "Enable Map" first.', 'bad');
+      setStatus('Awaking the map... please wait.', 'warn');
+      pendingRunProfile = profile; // Remember what user wanted
+      loadGoogleMaps();
       return;
     }
 
     updateOptimizeButtons(profile);
-    // Auto-save before running
     saveState();
 
     disableWhileRunning(true);
