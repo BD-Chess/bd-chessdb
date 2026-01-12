@@ -19,7 +19,10 @@
       </div>
     </div>
     <div class="top-actions">
+      <a id="btnChatToggle" href="#">✨ Plan with AI Chatbot</a>
+      <span style="color:var(--border)">|</span>
       <a id="btnAbout" href="#">About</a>
+      <span style="color:var(--border)">|</span>
       <a id="btnHelp" href="#">Help / Guide</a>
     </div>
   </header>
@@ -96,18 +99,44 @@
     </section>
 
     <section class="panel right">
-      <div id="mapPlaceholder" class="placeholder-msg">
-        <div class="big-icon">🗺️</div>
-        <h2>Ready to Route</h2>
-        <p class="muted box-width">
-          To save API costs, the map is paused.
-        </p>
-        <div style="margin-top: 20px;">
-          <button id="btnEnableMap" style="width: auto; padding: 10px 20px;">Enable Map & Start</button>
+      <div id="mapContainer" style="width:100%; height:100%; position:relative;">
+        <div id="mapPlaceholder" class="placeholder-msg">
+          <div class="big-icon">🗺️</div>
+          <h2>Ready to Route</h2>
+          <p class="muted box-width">
+            To save API costs, the map is paused.
+          </p>
+          <div style="margin-top: 20px;">
+            <button id="btnEnableMap" style="width: auto; padding: 10px 20px;">Enable Map & Start</button>
+          </div>
         </div>
+        <div id="map"></div>
       </div>
 
-      <div id="map"></div>
+      <div id="chatPanel" style="display:none; width:100%; height:100%; flex-direction:column; background:var(--bg);">
+        <div class="chat-header" style="padding:15px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:rgba(15,22,33,0.9);">
+          <div>
+            <h2 style="margin:0; font-size:16px; color:var(--text);">✨ AI Travel Assistant</h2>
+            <span class="muted small">Powered by Gemini • Ask for suggestions or hidden gems</span>
+          </div>
+          <button id="btnCloseChat" class="secondary small-btn" style="width:auto; padding:6px 12px;">Close Chat ✕</button>
+        </div>
+        
+        <div id="chatHistory" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:15px;">
+          <div class="chat-msg ai">
+            <strong>Gemini:</strong> Hello! I can help you plan your trip. Try asking:<br>
+            <em>"What are the top 3 hidden gems in Ljubljana?"</em> or<br>
+            <em>"Add a coffee spot near Tivoli Park."</em>
+          </div>
+        </div>
+
+        <div class="chat-input-area" style="padding:15px; border-top:1px solid var(--border); background:var(--card);">
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="chatInput" placeholder="Ask Gemini..." style="flex:1; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+            <button id="btnSendChat" style="width:auto; padding:0 20px;">Send ➢</button>
+          </div>
+        </div>
+      </div>
 
       <div id="helpOverlay" class="help-overlay">
         <div class="help-content">
@@ -119,7 +148,7 @@
   </main>
 
   <footer class="footer">
-    <span class="muted small">8Z-RP Trip Optimizer • Powered by Google Maps Platform</span>
+    <span class="muted small">8Z-RP Trip Optimizer • Powered by Google Maps Platform & Gemini AI</span>
   </footer>
 
   <script src="trips.js"></script>

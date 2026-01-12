@@ -3,21 +3,23 @@
 
   const $ = (id) => document.getElementById(id);
   
-  // CONFIG: API Key baked in
-  const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA';
+  // --- CONFIGURATION ---
+  const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA'; // Maps
+  const GEMINI_API_KEY = 'AIzaSyC_dP04dW4oJt5LE51pCIh9nkeDwusw_4s'; // Chatbot
 
-  // UI Elements
+  // --- UI ELEMENTS ---
   const inputEl = $('input');
   const statusEl = $('status');
   const btnStandard = $('btnStandard');
   const btnDeep = $('btnDeep');
   
-  // Collapse Panel
+  // Panels & Toggles
   const btnCollapse = $('btnCollapse');
   const btnExpand = $('btnExpand');
   const leftPanel = $('leftPanel');
+  const rightPanel = document.querySelector('.panel.right');
 
-  // Files
+  // Files & Search
   const btnSave = $('btnSave');
   const btnLoad = $('btnLoad');
   const fileLoader = $('fileLoader');
@@ -36,9 +38,13 @@
   const chkDirect = $('chkDirect'); 
   const chkGoogleStyle = $('chkGoogleStyle'); 
 
-  // Map & Help/About
+  // Map Elements
+  const mapContainer = $('mapContainer'); // The wrapper for map & placeholder
   const mapPlaceholder = $('mapPlaceholder');
   const btnEnableMap = $('btnEnableMap'); 
+  const mapDiv = $('map');
+
+  // Help & About Overlays
   const helpOverlay = $('helpOverlay');
   const btnHelp = $('btnHelp');
   const btnAbout = $('btnAbout');
@@ -46,9 +52,18 @@
   const presetTree = $('presetTree');
   const helpBody = $('helpBody'); 
 
+  // Chat Elements
+  const btnChatToggle = $('btnChatToggle');
+  const chatPanel = $('chatPanel');
+  const btnCloseChat = $('btnCloseChat');
+  const chatInput = $('chatInput');
+  const btnSendChat = $('btnSendChat');
+  const chatHistory = $('chatHistory');
+
+  // Core Worker
   const worker = new Worker('worker.js');
 
-  // State
+  // --- STATE ---
   let map;
   let geocoder;
   let directionsService;
@@ -57,7 +72,8 @@
   let mapPolyline = null;
   let lastSolvedPoints = null;
   let currentTravelMode = 'DRIVING'; 
-  let pendingRunProfile = null; // Stores intent if map needs loading
+  let pendingRunProfile = null; 
+  let chatHistoryBuffer = []; // Context for AI
   
   let presetLookup = {};
   const STORAGE_KEY = '8z_trip_backup_v1';
@@ -91,7 +107,7 @@
   window.initMap = function() {
     const defaultCenter = { lat: 46.0569, lng: 14.5058 }; 
     
-    map = new google.maps.Map($('map'), {
+    map = new google.maps.Map(mapDiv, {
       zoom: 12,
       center: defaultCenter,
       mapTypeId: 'hybrid',
@@ -102,20 +118,111 @@
     geocoder = new google.maps.Geocoder();
     directionsService = new google.maps.DirectionsService();
     
-    // Attempt to restore state only after map is ready (for style preference)
-    restoreState();
+    restoreState(); // Restore settings after map is ready
 
     setStatus('Maps API Loaded. Ready.', 'ok');
     
-    // Hide the button container to prevent re-clicking
-    if (btnEnableMap) btnEnableMap.style.display = 'none';
+    if (btnEnableMap) btnEnableMap.parentElement.style.display = 'none'; // Hide button container
+    mapPlaceholder.style.display = 'none'; // Hide placeholder
+    mapDiv.style.display = 'block'; // Show real map
 
-    // Auto-Resume: If user clicked Optimize before map was ready, run it now.
+    // Auto-Resume optimization if pending
     if (pendingRunProfile) {
         run(pendingRunProfile);
         pendingRunProfile = null;
     }
   };
+
+  // --- AI CHATBOT LOGIC ---
+  
+  function toggleChatMode(showChat) {
+    if (showChat) {
+      mapContainer.style.display = 'none';
+      chatPanel.style.display = 'flex';
+      btnChatToggle.style.color = '#fff'; // Active state
+      chatInput.focus();
+    } else {
+      chatPanel.style.display = 'none';
+      mapContainer.style.display = 'block';
+      btnChatToggle.style.color = ''; // Reset color
+    }
+  }
+
+  async function handleSendChat() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+
+    // 1. User Message
+    appendChatMessage('user', text);
+    chatInput.value = '';
+    
+    // 2. Typing Indicator
+    const loadingId = appendChatMessage('ai', 'Gemini is typing...', true);
+
+    try {
+      // 3. Call Gemini API
+      const response = await callGeminiAPI(text);
+      
+      // 4. Replace Loading with Response
+      const loadingEl = document.getElementById(loadingId);
+      if (loadingEl) loadingEl.remove();
+      
+      appendChatMessage('ai', response);
+
+    } catch (err) {
+      const loadingEl = document.getElementById(loadingId);
+      if (loadingEl) loadingEl.remove();
+      appendChatMessage('ai', "Error: Could not connect to Gemini. " + err.message);
+    }
+  }
+
+  function appendChatMessage(role, text, isLoading = false) {
+    const div = document.createElement('div');
+    div.className = `chat-msg ${role}`;
+    if (isLoading) div.id = 'chat-loading-' + Date.now();
+    
+    const label = role === 'user' ? 'You' : 'Gemini';
+    // Simple markdown-like bolding for formatting
+    let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    formattedText = formattedText.replace(/\n/g, '<br>');
+
+    div.innerHTML = `<strong>${label}:</strong><br>${formattedText}`;
+    chatHistory.appendChild(div);
+    chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll
+    return div.id;
+  }
+
+  async function callGeminiAPI(userPrompt) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    
+    // Maintain a small history buffer for context (last 5 turns)
+    chatHistoryBuffer.push({ role: "user", parts: [{ text: userPrompt }] });
+    if (chatHistoryBuffer.length > 10) chatHistoryBuffer.shift();
+
+    const systemPrompt = {
+      role: "user",
+      parts: [{ text: "You are the AI Assistant for '8Z-RP Trip Optimizer'. Your goal is to help users find travel locations, hidden gems, and itineraries. Keep answers concise. If suggesting a list of places, format them clearly so the user can copy them." }]
+    };
+
+    const payload = {
+      contents: [systemPrompt, ...chatHistoryBuffer]
+    };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) throw new Error(`API Status ${response.status}`);
+
+    const data = await response.json();
+    const aiText = data.candidates[0].content.parts[0].text;
+    
+    chatHistoryBuffer.push({ role: "model", parts: [{ text: aiText }] });
+    
+    return aiText;
+  }
 
   // --- AUTO-SAVE SYSTEM ---
   function debounce(func, wait) {
@@ -168,7 +275,7 @@
     }
   }
 
-  // --- INIT FUNCTIONS ---
+  // --- INIT FUNCTIONS & SEARCH ---
   function initTripTree() {
     if (!window.TRIP_LIBRARY || !presetTree) return;
 
@@ -291,7 +398,14 @@
   }
 
   function loadPreset(key) {
-    clearMap();
+    // If chat is open, close it to show map
+    toggleChatMode(false);
+    
+    // Ensure map is loaded if user clicks a preset
+    if (!window.google || !window.google.maps) {
+        loadGoogleMaps();
+    }
+
     if (key && presetLookup[key]) {
       inputEl.value = presetLookup[key];
       saveState(); 
@@ -346,7 +460,8 @@
     directionsRenderers.forEach(dr => dr.setMap(null));
     directionsRenderers = [];
     
-    mapPlaceholder.style.display = 'block'; 
+    // Don't show placeholder if map is already initialized
+    // mapPlaceholder.style.display = 'block'; 
     distKmEl.textContent = '—';
     savedKmEl.textContent = '—';
     routeList.innerHTML = '';
@@ -454,7 +569,10 @@
     directionsRenderers.forEach(dr => dr.setMap(null));
     directionsRenderers = [];
     
+    // Ensure map is visible (hide chat/placeholder)
+    toggleChatMode(false);
     mapPlaceholder.style.display = 'none';
+    mapDiv.style.display = 'block';
 
     const pathCoords = [];
     const bounds = new google.maps.LatLngBounds();
@@ -656,8 +774,8 @@
       params.set('travelmode', travelmode);
       if (mids.length) params.set('waypoints', mids.join('|'));
 
-      // FIXED: Corrected URL string interpolation with $
-      const url = `https://www.google.com/maps/dir/?${params.toString()}`;
+      // FIXED: URL Construction
+      const url = `https://www.google.com/maps/dir/?api=1&origin=${originLoc}&destination=${destLoc}&travelmode=${travelmode}&waypoints=${mids.join('|')}`;
       
       links.push({ url, label: `Leg ${links.length + 1} (${segment.length} stops)` });
       i = j;
@@ -773,6 +891,26 @@
     btnEnableMap.addEventListener('click', loadGoogleMaps);
   }
 
+  // Chat Triggers
+  if (btnChatToggle) {
+    btnChatToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      const isChatVisible = chatPanel.style.display === 'flex';
+      toggleChatMode(!isChatVisible);
+    });
+  }
+  if (btnCloseChat) {
+    btnCloseChat.addEventListener('click', () => toggleChatMode(false));
+  }
+  if (btnSendChat) {
+    btnSendChat.addEventListener('click', handleSendChat);
+  }
+  if (chatInput) {
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleSendChat();
+    });
+  }
+
   if (btnStandard) btnStandard.addEventListener('click', () => run('standard'));
   if (btnDeep) btnDeep.addEventListener('click', () => run('deep'));
   
@@ -809,6 +947,5 @@
   
   // INIT
   initTripTree();
-  // removed initHelpContent(); as it's now dynamic
   
 })();
