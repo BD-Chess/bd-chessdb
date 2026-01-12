@@ -21,6 +21,7 @@
   const btnSave = $('btnSave');
   const btnLoad = $('btnLoad');
   const fileLoader = $('fileLoader');
+  const tripSearch = $('tripSearch');
 
   // Outputs
   const routeList = $('routeList');
@@ -219,6 +220,57 @@
     });
   }
 
+  // Live Search Logic
+  function filterTripTree(query) {
+    if (!presetTree) return;
+    const lowerQ = query.toLowerCase().trim();
+    
+    const allItems = presetTree.querySelectorAll('.tree-item');
+    const allNodes = presetTree.querySelectorAll('.tree-node');
+    const allGroups = presetTree.querySelectorAll('.tree-group');
+
+    // Reset if empty
+    if (!lowerQ) {
+      allItems.forEach(el => el.style.display = 'block');
+      allNodes.forEach(el => el.style.display = 'block');
+      allGroups.forEach(el => {
+        el.style.display = 'none'; // Collapse all
+        el.classList.remove('open');
+      });
+      // Restore [+] icons
+      presetTree.querySelectorAll('.tree-icon').forEach(icon => icon.textContent = '[+]');
+      return;
+    }
+
+    // Hide everything first
+    allItems.forEach(el => el.style.display = 'none');
+    allNodes.forEach(el => el.style.display = 'none');
+    
+    // Show matches and their parents
+    allItems.forEach(item => {
+      if (item.textContent.toLowerCase().includes(lowerQ)) {
+        item.style.display = 'block';
+        
+        let parent = item.parentElement;
+        while (parent && parent !== presetTree) {
+          if (parent.classList.contains('tree-group')) {
+            parent.style.display = 'block';
+            parent.classList.add('open');
+            // Fix icon
+            if (parent.previousElementSibling) {
+              const icon = parent.previousElementSibling.querySelector('.tree-icon');
+              if (icon) icon.textContent = '[-]';
+            }
+          }
+          if (parent.classList.contains('tree-node')) {
+            parent.style.display = 'block';
+          }
+          parent = parent.parentElement;
+        }
+      }
+    });
+  }
+
   function openOverlay(content) {
     if (!helpBody) return;
     helpBody.innerHTML = content;
@@ -229,9 +281,11 @@
     const icon = header.querySelector('.tree-icon');
     if (group.classList.contains('open')) {
       group.classList.remove('open');
+      group.style.display = 'none';
       icon.textContent = '[+]';
     } else {
       group.classList.add('open');
+      group.style.display = 'block';
       icon.textContent = '[-]';
     }
   }
@@ -602,7 +656,7 @@
       params.set('travelmode', travelmode);
       if (mids.length) params.set('waypoints', mids.join('|'));
 
-      // FIXED: URL Construction
+      // FIXED: Corrected URL string interpolation with $
       const url = `https://www.google.com/maps/dir/?${params.toString()}`;
       
       links.push({ url, label: `Leg ${links.length + 1} (${segment.length} stops)` });
@@ -708,6 +762,11 @@
   
   // Input Auto-Save listener
   inputEl.addEventListener('input', saveState);
+  
+  // New Search Listener
+  if (tripSearch) {
+    tripSearch.addEventListener('input', (e) => filterTripTree(e.target.value));
+  }
 
   // Map Trigger
   if (btnEnableMap) {
