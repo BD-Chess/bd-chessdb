@@ -2,6 +2,7 @@
    -----------------------
    Structure: Region -> Categories -> Trips
    Format: { id: "UNIQUE_ID", label: "Display Name", data: "Text content..." }
+   Updated: Coordinates baked in for top destinations to save API costs.
 */
 
 window.TRIP_LIBRARY = [
@@ -16,151 +17,151 @@ window.TRIP_LIBRARY = [
             label: "The World's Most Visited (Mixed)", 
             data: `# 🏆 Top 10 Global Tourist Landmarks
 # Note: This is a hypothetical "World Tour"
-Eiffel Tower, Paris, France START
-Colosseum, Rome, Italy
-Statue of Liberty, New York, USA
-Machu Picchu, Peru
-Taj Mahal, Agra, India
-Pyramids of Giza, Egypt
-Great Wall of China (Mutianyu), Beijing
-Sydney Opera House, Australia
-Christ the Redeemer, Rio de Janeiro, Brazil
-Burj Khalifa, Dubai, UAE` 
+Eiffel Tower, Paris | 48.8584, 2.2945 START
+Colosseum, Rome | 41.8902, 12.4922
+Statue of Liberty, NYC | 40.6892, -74.0445
+Machu Picchu, Peru | -13.1631, -72.5450
+Taj Mahal, India | 27.1751, 78.0421
+Pyramids of Giza, Egypt | 29.9792, 31.1342
+Great Wall (Mutianyu), China | 40.4319, 116.5704
+Sydney Opera House, Australia | -33.8568, 151.2153
+Christ the Redeemer, Brazil | -22.9519, -43.2105
+Burj Khalifa, Dubai | 25.1972, 55.2744` 
           },
           {
             id: "EIFFEL_FULL",
             label: "🇫🇷 Eiffel Tower & Around (Paris)",
             data: `# 🇫🇷 Paris: Eiffel Tower District
 # A classic Parisian day out
-Trocadéro Gardens, Paris START
-Eiffel Tower, Paris
-Champ de Mars, Paris
-Seine River Cruise Dock (Bateaux Parisiens), Paris
-Musée du Quai Branly, Paris
-Pont Alexandre III, Paris
-Invalides (Napoleon's Tomb), Paris
-Rue Cler (Market Street), Paris`
+Trocadéro Gardens | 48.8616, 2.2893 START
+Eiffel Tower | 48.8584, 2.2945
+Champ de Mars | 48.8556, 2.2986
+Seine Cruise Dock | 48.8633, 2.2878
+Musée du Quai Branly | 48.8609, 2.2975
+Pont Alexandre III | 48.8639, 2.3136
+Invalides (Napoleon's Tomb) | 48.8561, 2.3127
+Rue Cler Market | 48.8576, 2.3060`
           },
           {
             id: "COLOSSEUM_FULL",
             label: "🇮🇹 Colosseum & Ancient Rome",
             data: `# 🇮🇹 Rome: Ancient City
 # The heart of the Roman Empire
-Colosseum, Rome START
-Arch of Constantine, Rome
-Roman Forum, Rome
-Palatine Hill, Rome
-Capitoline Museums, Rome
-Piazza Venezia (Altar of the Fatherland), Rome
-Trajan's Market, Rome
-Pantheon, Rome`
+Colosseum | 41.8902, 12.4922 START
+Arch of Constantine | 41.8898, 12.4906
+Roman Forum | 41.8925, 12.4853
+Palatine Hill | 41.8894, 12.4874
+Capitoline Museums | 41.8931, 12.4824
+Piazza Venezia | 41.8962, 12.4828
+Trajan's Market | 41.8956, 12.4862
+Pantheon | 41.8986, 12.4769`
           },
           {
             id: "LIBERTY_FULL",
             label: "🇺🇸 Statue of Liberty & Lower Manhattan",
             data: `# 🇺🇸 NYC: Liberty & Financial District
 # Ferries and Skyscrapers
-Battery Park, New York START
-Statue of Liberty National Monument
-Ellis Island National Museum of Immigration
-Charging Bull (Wall Street), New York
-New York Stock Exchange, New York
-Federal Hall, New York
-9/11 Memorial & Museum, New York
-One World Observatory, New York`
+Battery Park | 40.7033, -74.0170 START
+Statue of Liberty | 40.6892, -74.0445
+Ellis Island Museum | 40.6995, -74.0396
+Charging Bull | 40.7056, -74.0134
+NY Stock Exchange | 40.7069, -74.0113
+Federal Hall | 40.7074, -74.0102
+9/11 Memorial | 40.7115, -74.0132
+One World Observatory | 40.7127, -74.0134`
           },
           {
             id: "MACHU_FULL",
             label: "🇵🇪 Machu Picchu & Sacred Valley",
             data: `# 🇵🇪 Peru: The Inca Trail (Express)
 # From Cusco to the Citadel
-Cusco Main Square (Plaza de Armas) START
-Sacsayhuaman, Cusco
-Pisac Ruins, Sacred Valley
-Ollantaytambo Ruins, Sacred Valley
-Aguas Calientes (Machu Picchu Pueblo)
-Machu Picchu Citadel
-Huayna Picchu (Mountain Peak)
-Sun Gate (Inti Punku), Machu Picchu`
+Cusco Plaza de Armas | -13.5168, -71.9788 START
+Sacsayhuaman | -13.5099, -71.9817
+Pisac Ruins | -13.4032, -71.8436
+Ollantaytambo Ruins | -13.2562, -72.2636
+Aguas Calientes | -13.1547, -72.5255
+Machu Picchu Citadel | -13.1631, -72.5450
+Huayna Picchu | -13.1561, -72.5456
+Sun Gate (Inti Punku) | -13.1645, -72.5366`
           },
           {
             id: "TAJ_FULL",
             label: "🇮🇳 Taj Mahal & Agra Fort",
             data: `# 🇮🇳 Agra: Mughal Heritage
 # The symbol of love and power
-Taj Mahal, Agra START
-Agra Fort, Agra
-Mehtab Bagh (Moonlight Garden), Agra
-Itmad-ud-Daulah (Baby Taj), Agra
-Tomb of Akbar the Great, Sikandra
-Kinari Bazar (Old Market), Agra`
+Taj Mahal | 27.1751, 78.0421 START
+Agra Fort | 27.1795, 78.0211
+Mehtab Bagh | 27.1800, 78.0420
+Itmad-ud-Daulah | 27.1929, 78.0310
+Tomb of Akbar | 27.2205, 77.9505
+Kinari Bazar | 27.1843, 78.0163`
           },
           {
             id: "GIZA_FULL",
             label: "🇪🇬 Pyramids of Giza & Sphinx",
             data: `# 🇪🇬 Cairo: Ancient Wonders
 # The Giza Plateau
-Great Pyramid of Giza (Khufu) START
-Pyramid of Khafre
-Pyramid of Menkaure
-Great Sphinx of Giza
-Valley Temple of Khafre
-Grand Egyptian Museum (Giza)
-Khan el-Khalili Market, Cairo`
+Great Pyramid (Khufu) | 29.9792, 31.1342 START
+Pyramid of Khafre | 29.9760, 31.1308
+Pyramid of Menkaure | 29.9725, 31.1283
+Great Sphinx | 29.9753, 31.1376
+Valley Temple | 29.9749, 31.1384
+Grand Egyptian Museum | 29.9947, 31.1195
+Khan el-Khalili Market | 30.0477, 31.2623`
           },
           {
             id: "WALL_FULL",
             label: "🇨🇳 Great Wall (Mutianyu) & Beijing",
             data: `# 🇨🇳 Beijing: The Great Wall
 # A day trip to the wall + city highlights
-Mutianyu Great Wall, Beijing START
-Ming Tombs (Sacred Way), Beijing
-Summer Palace, Beijing
-Forbidden City, Beijing
-Tiananmen Square, Beijing
-Jingshan Park (View of Forbidden City), Beijing
-Temple of Heaven, Beijing`
+Mutianyu Great Wall | 40.4319, 116.5704 START
+Ming Tombs | 40.2526, 116.2235
+Summer Palace | 39.9999, 116.2755
+Forbidden City | 39.9163, 116.3972
+Tiananmen Square | 39.9055, 116.3976
+Jingshan Park | 39.9252, 116.3965
+Temple of Heaven | 39.8822, 116.4068`
           },
           {
             id: "SYDNEY_FULL",
             label: "🇦🇺 Sydney Opera House & Harbour",
             data: `# 🇦🇺 Sydney: The Harbour Loop
 # Iconic Aussie Views
-Sydney Opera House START
-Royal Botanic Garden Sydney
-Mrs Macquarie's Chair, Sydney
-The Rocks, Sydney
-Sydney Harbour Bridge Pylon Lookout
-Darling Harbour, Sydney
-Queen Victoria Building, Sydney
-Sydney Tower Eye`
+Sydney Opera House | -33.8568, 151.2153 START
+Royal Botanic Garden | -33.8642, 151.2166
+Mrs Macquarie's Chair | -33.8598, 151.2226
+The Rocks | -33.8599, 151.2091
+Harbour Bridge Pylon | -33.8549, 151.2105
+Darling Harbour | -33.8749, 151.2009
+Queen Victoria Building | -33.8718, 151.2067
+Sydney Tower Eye | -33.8705, 151.2088`
           },
           {
             id: "RIO_FULL",
             label: "🇧🇷 Christ the Redeemer & Rio",
             data: `# 🇧🇷 Rio de Janeiro: Icons
 # From the mountain to the sea
-Christ the Redeemer (Corcovado), Rio de Janeiro START
-Sugarloaf Mountain (Pão de Açúcar), Rio de Janeiro
-Copacabana Beach, Rio de Janeiro
-Ipanema Beach, Rio de Janeiro
-Selarón Steps (Escadaria Selarón), Rio de Janeiro
-Metropolitan Cathedral of Saint Sebastian, Rio de Janeiro
-Maracanã Stadium, Rio de Janeiro`
+Christ the Redeemer | -22.9519, -43.2105 START
+Sugarloaf Mountain | -22.9496, -43.1547
+Copacabana Beach | -22.9694, -43.1868
+Ipanema Beach | -22.9843, -43.2033
+Selarón Steps | -22.9154, -43.1793
+Metropolitan Cathedral | -22.9103, -43.1797
+Maracanã Stadium | -22.9121, -43.2302`
           },
           {
             id: "DUBAI_FULL",
             label: "🇦🇪 Burj Khalifa & Downtown Dubai",
             data: `# 🇦🇪 Dubai: Downtown Luxury
 # The tallest building and biggest mall
-Burj Khalifa, Dubai START
-The Dubai Mall
-Dubai Aquarium & Underwater Zoo
-The Dubai Fountain
-Souk Al Bahar, Dubai
-Dubai Opera
-Sky Views Observatory, Dubai
-Museum of the Future, Dubai`
+Burj Khalifa | 25.1972, 55.2744 START
+Dubai Mall | 25.1988, 55.2796
+Dubai Aquarium | 25.1974, 55.2785
+Dubai Fountain | 25.1963, 55.2754
+Souk Al Bahar | 25.1953, 55.2764
+Dubai Opera | 25.1950, 55.2721
+Sky Views Observatory | 25.1996, 55.2715
+Museum of the Future | 25.2191, 55.2818`
           }
         ]
       }
@@ -172,56 +173,56 @@ Museum of the Future, Dubai`
       {
         name: "🚗 Top 10 Driving Tours",
         items: [
-          { id: "FRANCE_DRIVE", label: "France (Grand Tour)", data: `# 🇫🇷 France Grand Tour\nParis, France START\nRouen, Normandy\nMont Saint-Michel, Normandy\nBordeaux, France\nToulouse, France\nCarcassonne, France\nMarseille, France\nNice, France\nLyon, France\nStrasbourg, France` },
-          { id: "ITALY_DRIVE", label: "Italy (Bella Italia)", data: `# 🇮🇹 Italy Bella Italia\nMilan, Italy START\nVenice, Italy\nBologna, Italy\nFlorence, Italy\nPisa, Italy\nRome, Italy\nNaples, Italy\nBari, Italy\nPalermo, Sicily\nGenoa, Italy` },
-          { id: "SPAIN_DRIVE", label: "Spain (Fiesta Route)", data: `# 🇪🇸 Spain Fiesta Route\nMadrid, Spain START\nToledo, Spain\nValencia, Spain\nBarcelona, Spain\nZaragoza, Spain\nBilbao, Spain\nSantiago de Compostela, Spain\nSeville, Spain\nGranada, Spain\nMalaga, Spain` },
-          { id: "GERMANY_DRIVE", label: "Germany (Autobahn)", data: `# 🇩🇪 Germany Autobahn\nBerlin, Germany START\nHamburg, Germany\nCologne Cathedral, Germany\nFrankfurt, Germany\nHeidelberg, Germany\nStuttgart, Germany\nMunich, Germany\nNeuschwanstein Castle, Germany\nNuremberg, Germany\nDresden, Germany` },
-          { id: "UK_DRIVE", label: "UK (Royal Route)", data: `# 🇬🇧 UK Royal Route\nLondon, UK START\nOxford, UK\nBath, UK\nStonehenge, UK\nCardiff, Wales\nLiverpool, UK\nManchester, UK\nYork, UK\nEdinburgh, Scotland\nInverness, Scotland` },
-          { id: "ICELAND_DRIVE", label: "Iceland (Ring Road)", data: `# 🇮🇸 Iceland Ring Road\nReykjavik, Iceland START\nVik, Iceland\nHofn, Iceland\nEgilsstadir, Iceland\nHusavik, Iceland\nAkureyri, Iceland\nSnaefellsnes Peninsula, Iceland\nGolden Circle, Iceland` },
-          { id: "NORWAY_DRIVE", label: "Norway (Fjords)", data: `# 🇳🇴 Norway Fjords\nOslo, Norway START\nKristiansand, Norway\nStavanger, Norway\nBergen, Norway\nFlam, Norway\nGeirangerfjord, Norway\nAlesund, Norway\nTrondheim, Norway\nLofoten Islands, Norway\nTromso, Norway` },
-          { id: "SWISS_DRIVE", label: "Switzerland (Alps)", data: `# 🇨🇭 Switzerland Alps\nZurich, Switzerland START\nLucerne, Switzerland\nInterlaken, Switzerland\nBern, Switzerland\nLausanne, Switzerland\nGeneva, Switzerland\nZermatt, Switzerland\nLugano, Switzerland\nSt. Moritz, Switzerland\nVaduz, Liechtenstein` },
-          { id: "GREECE_DRIVE", label: "Greece (Ancient)", data: `# 🇬🇷 Greece Ancient Route\nAthens, Greece START\nDelphi, Greece\nMeteora, Greece\nThessaloniki, Greece\nIoannina, Greece\nPatras, Greece\nOlympia, Greece\nSparta, Greece\nNafplio, Greece\nCorinth, Greece` },
-          { id: "SLOVENIA_DRIVE", label: "Slovenia (Full Loop)", data: `# 🇸🇮 Slovenia Full Loop\nLjubljana, Slovenia START\nLake Bled, Slovenia\nKranjska Gora, Slovenia\nBovec, Slovenia\nPostojna Cave, Slovenia\nPiran, Slovenia\nLipica Stud Farm, Slovenia\nMaribor, Slovenia\nPtuj, Slovenia\nVelika Planina, Slovenia` }
+          { id: "FRANCE_DRIVE", label: "France (Grand Tour)", data: `# 🇫🇷 France Grand Tour\nParis | 48.8566, 2.3522 START\nRouen | 49.4432, 1.0999\nMont Saint-Michel | 48.6360, -1.5115\nBordeaux | 44.8378, -0.5792\nToulouse | 43.6047, 1.4442\nCarcassonne | 43.2128, 2.3531\nMarseille | 43.2965, 5.3698\nNice | 43.7102, 7.2620\nLyon | 45.7640, 4.8357\nStrasbourg | 48.5734, 7.7521` },
+          { id: "ITALY_DRIVE", label: "Italy (Bella Italia)", data: `# 🇮🇹 Italy Bella Italia\nMilan | 45.4642, 9.1900 START\nVenice | 45.4408, 12.3155\nBologna | 44.4949, 11.3426\nFlorence | 43.7696, 11.2558\nPisa | 43.7228, 10.4017\nRome | 41.9028, 12.4964\nNaples | 40.8518, 14.2681\nBari | 41.1171, 16.8719\nPalermo | 38.1157, 13.3615\nGenoa | 44.4056, 8.9463` },
+          { id: "SPAIN_DRIVE", label: "Spain (Fiesta Route)", data: `# 🇪🇸 Spain Fiesta Route\nMadrid | 40.4168, -3.7038 START\nToledo | 39.8628, -4.0273\nValencia | 39.4699, -0.3763\nBarcelona | 41.3851, 2.1734\nZaragoza | 41.6488, -0.8891\nBilbao | 43.2630, -2.9350\nSantiago de Compostela | 42.8782, -8.5448\nSeville | 37.3891, -5.9845\nGranada | 37.1773, -3.5986\nMalaga | 36.7213, -4.4214` },
+          { id: "GERMANY_DRIVE", label: "Germany (Autobahn)", data: `# 🇩🇪 Germany Autobahn\nBerlin | 52.5200, 13.4050 START\nHamburg | 53.5511, 9.9937\nCologne Cathedral | 50.9413, 6.9583\nFrankfurt | 50.1109, 8.6821\nHeidelberg | 49.3988, 8.6724\nStuttgart | 48.7758, 9.1829\nMunich | 48.1351, 11.5820\nNeuschwanstein Castle | 47.5576, 10.7498\nNuremberg | 49.4521, 11.0767\nDresden | 51.0504, 13.7373` },
+          { id: "UK_DRIVE", label: "UK (Royal Route)", data: `# 🇬🇧 UK Royal Route\nLondon | 51.5074, -0.1278 START\nOxford | 51.7520, -1.2577\nBath | 51.3758, -2.3599\nStonehenge | 51.1789, -1.8262\nCardiff | 51.4816, -3.1791\nLiverpool | 53.4084, -2.9916\nManchester | 53.4808, -2.2426\nYork | 53.9591, -1.0815\nEdinburgh | 55.9533, -3.1883\nInverness | 57.4778, -4.2247` },
+          { id: "ICELAND_DRIVE", label: "Iceland (Ring Road)", data: `# 🇮🇸 Iceland Ring Road\nReykjavik | 64.1265, -21.8174 START\nVik | 63.4194, -19.0060\nHofn | 64.2497, -15.2020\nEgilsstadir | 65.2669, -14.3948\nHusavik | 66.0450, -17.3383\nAkureyri | 65.6835, -18.0878\nSnaefellsnes | 64.8656, -23.1979\nGolden Circle | 64.2559, -21.1295` },
+          { id: "NORWAY_DRIVE", label: "Norway (Fjords)", data: `# 🇳🇴 Norway Fjords\nOslo | 59.9139, 10.7522 START\nKristiansand | 58.1467, 7.9956\nStavanger | 58.9690, 5.7331\nBergen | 60.3913, 5.3221\nFlam | 60.8608, 7.1118\nGeirangerfjord | 62.1008, 7.2059\nAlesund | 62.4722, 6.1495\nTrondheim | 63.4305, 10.3951\nLofoten Islands | 68.2086, 13.5553\nTromso | 69.6492, 18.9553` },
+          { id: "SWISS_DRIVE", label: "Switzerland (Alps)", data: `# 🇨🇭 Switzerland Alps\nZurich | 47.3769, 8.5417 START\nLucerne | 47.0502, 8.3093\nInterlaken | 46.6863, 7.8632\nBern | 46.9480, 7.4474\nLausanne | 46.5197, 6.6323\nGeneva | 46.2044, 6.1432\nZermatt | 46.0207, 7.7491\nLugano | 46.0037, 8.9511\nSt. Moritz | 46.4908, 9.8355\nVaduz | 47.1410, 9.5209` },
+          { id: "GREECE_DRIVE", label: "Greece (Ancient)", data: `# 🇬🇷 Greece Ancient Route\nAthens | 37.9838, 23.7275 START\nDelphi | 38.4800, 22.5012\nMeteora | 39.7126, 21.6310\nThessaloniki | 40.6401, 22.9444\nIoannina | 39.6650, 20.8537\nPatras | 38.2466, 21.7346\nOlympia | 37.6384, 21.6297\nSparta | 37.0745, 22.4303\nNafplio | 37.5667, 22.7963\nCorinth | 37.9382, 22.9298` },
+          { id: "SLOVENIA_DRIVE", label: "Slovenia (Full Loop)", data: `# 🇸🇮 Slovenia Full Loop\nLjubljana | 46.0569, 14.5058 START\nLake Bled | 46.3683, 14.0938\nKranjska Gora | 46.4845, 13.7857\nBovec | 46.3376, 13.5517\nPostojna Cave | 45.7820, 14.2038\nPiran | 45.5283, 13.5682\nLipica Stud Farm | 45.6666, 13.8824\nMaribor | 46.5547, 15.6459\nPtuj | 46.4201, 15.8698\nVelika Planina | 46.2945, 14.6548` }
         ]
       },
       {
         name: "🚶 All 27 EU Capitals (Walking)",
         items: [
-          { id: "VIENNA", label: "🇦🇹 Vienna", data: `# 🇦🇹 Vienna Walking\nSt. Stephen's Cathedral, Vienna\nHofburg Palace, Vienna\nSchönbrunn Palace, Vienna\nBelvedere Palace, Vienna\nPrater, Vienna\nNaschmarkt, Vienna` },
-          { id: "BRUSSELS", label: "🇧🇪 Brussels", data: `# 🇧🇪 Brussels Walking\nGrand Place, Brussels\nManneken Pis, Brussels\nAtomium, Brussels\nRoyal Palace of Brussels\nParc du Cinquantenaire, Brussels` },
-          { id: "SOFIA", label: "🇧🇬 Sofia", data: `# 🇧🇬 Sofia Walking\nAlexander Nevsky Cathedral, Sofia\nVitosha Boulevard, Sofia\nNational Palace of Culture, Sofia\nBoyana Church, Sofia` },
-          { id: "ZAGREB", label: "🇭🇷 Zagreb", data: `# 🇭🇷 Zagreb Walking\nBan Jelačić Square, Zagreb\nZagreb Cathedral\nSt. Mark's Church, Zagreb\nMuseum of Broken Relationships, Zagreb` },
-          { id: "NICOSIA", label: "🇨🇾 Nicosia", data: `# 🇨🇾 Nicosia Walking\nLedra Street, Nicosia\nBuyuk Han, Nicosia\nSelimiye Camii, Nicosia\nCyprus Museum, Nicosia` },
-          { id: "PRAGUE", label: "🇨🇿 Prague", data: `# 🇨🇿 Prague Walking\nCharles Bridge, Prague\nPrague Castle\nOld Town Square, Prague\nDancing House, Prague` },
-          { id: "COPENHAGEN", label: "🇩🇰 Copenhagen", data: `# 🇩🇰 Copenhagen Walking\nNyhavn, Copenhagen\nThe Little Mermaid, Copenhagen\nTivoli Gardens, Copenhagen\nAmalienborg, Copenhagen` },
-          { id: "TALLINN", label: "🇪🇪 Tallinn", data: `# 🇪🇪 Tallinn Walking\nTallinn Old Town\nToompea Castle, Tallinn\nAlexander Nevsky Cathedral, Tallinn\nKadriorg Park, Tallinn` },
-          { id: "HELSINKI", label: "🇫🇮 Helsinki", data: `# 🇫🇮 Helsinki Walking\nHelsinki Cathedral\nSuomenlinna, Helsinki\nTemppeliaukio Church, Helsinki\nMarket Square, Helsinki` },
-          { id: "PARIS", label: "🇫🇷 Paris", data: `# 🇫🇷 Paris Walking\nEiffel Tower, Paris\nLouvre Museum, Paris\nNotre Dame Cathedral, Paris\nArc de Triomphe, Paris\nSacré-Cœur, Paris` },
-          { id: "BERLIN", label: "🇩🇪 Berlin", data: `# 🇩🇪 Berlin Walking\nBrandenburg Gate, Berlin\nReichstag Building, Berlin\nBerlin Wall Memorial\nCheckpoint Charlie, Berlin` },
-          { id: "ATHENS", label: "🇬🇷 Athens", data: `# 🇬🇷 Athens Walking\nAcropolis of Athens\nParthenon, Athens\nPlaka, Athens\nSyntagma Square, Athens` },
-          { id: "BUDAPEST", label: "🇭🇺 Budapest", data: `# 🇭🇺 Budapest Walking\nHungarian Parliament, Budapest\nBuda Castle, Budapest\nFisherman's Bastion, Budapest\nSzéchenyi Thermal Bath, Budapest` },
-          { id: "DUBLIN", label: "🇮🇪 Dublin", data: `# 🇮🇪 Dublin Walking\nTemple Bar, Dublin\nTrinity College Dublin\nGuinness Storehouse, Dublin\nDublin Castle` },
-          { id: "ROME", label: "🇮🇹 Rome", data: `# 🇮🇹 Rome Walking\nColosseum, Rome\nPantheon, Rome\nTrevi Fountain, Rome\nSpanish Steps, Rome\nSt. Peter's Basilica, Vatican City` },
-          { id: "RIGA", label: "🇱🇻 Riga", data: `# 🇱🇻 Riga Walking\nHouse of the Blackheads, Riga\nRiga Central Market\nSt. Peter's Church, Riga\nFreedom Monument, Riga` },
-          { id: "VILNIUS", label: "🇱🇹 Vilnius", data: `# 🇱🇹 Vilnius Walking\nGediminas' Tower, Vilnius\nVilnius Cathedral\nGate of Dawn, Vilnius\nUzupis, Vilnius` },
-          { id: "LUXEMBOURG", label: "🇱🇺 Luxembourg", data: `# 🇱🇺 Luxembourg Walking\nLe Chemin de la Corniche, Luxembourg\nCasemates du Bock, Luxembourg\nGrand Ducal Palace, Luxembourg\nNotre-Dame Cathedral, Luxembourg` },
-          { id: "VALLETTA", label: "🇲🇹 Valletta", data: `# 🇲🇹 Valletta Walking\nSt. John's Co-Cathedral, Valletta\nUpper Barrakka Gardens, Valletta\nGrandmaster's Palace, Valletta\nFort St Elmo, Valletta` },
-          { id: "AMSTERDAM", label: "🇳🇱 Amsterdam", data: `# 🇳🇱 Amsterdam Walking\nRijksmuseum, Amsterdam\nAnne Frank House, Amsterdam\nVondelpark, Amsterdam\nDam Square, Amsterdam` },
-          { id: "WARSAW", label: "🇵🇱 Warsaw", data: `# 🇵🇱 Warsaw Walking\nOld Town Market Place, Warsaw\nRoyal Castle, Warsaw\nPalace of Culture and Science, Warsaw\nŁazienki Park, Warsaw` },
-          { id: "LISBON", label: "🇵🇹 Lisbon", data: `# 🇵🇹 Lisbon Walking\nBelém Tower, Lisbon\nJerónimos Monastery, Lisbon\nPraça do Comércio, Lisbon\nCastelo de S. Jorge, Lisbon` },
-          { id: "BUCHAREST", label: "🇷🇴 Bucharest", data: `# 🇷🇴 Bucharest Walking\nPalace of Parliament, Bucharest\nRomanian Athenaeum, Bucharest\nOld Town, Bucharest\nHerastrau Park, Bucharest` },
-          { id: "BRATISLAVA", label: "🇸🇰 Bratislava", data: `# 🇸🇰 Bratislava Walking\nBratislava Castle\nSt. Martin's Cathedral, Bratislava\nMichael's Gate, Bratislava\nBlue Church, Bratislava` },
-          { id: "LJUBLJANA", label: "🇸🇮 Ljubljana Top 10", data: `# 🇸🇮 Ljubljana Top 10 Walking\nPrešernov trg, Ljubljana START\nTriple Bridge, Ljubljana\nCentral Market, Ljubljana\nDragon Bridge, Ljubljana\nLjubljana Castle\nTown Hall, Ljubljana\nCobblers' Bridge, Ljubljana\nCongress Square, Ljubljana\nTivoli Park, Ljubljana\nMetelkova Art Center, Ljubljana` },
-          { id: "MADRID", label: "🇪🇸 Madrid", data: `# 🇪🇸 Madrid Walking\nRoyal Palace of Madrid\nPlaza Mayor, Madrid\nRetiro Park, Madrid\nPrado Museum, Madrid` },
-          { id: "STOCKHOLM", label: "🇸🇪 Stockholm", data: `# 🇸🇪 Stockholm Walking\nGamla Stan, Stockholm\nVasa Museum, Stockholm\nSkansen, Stockholm\nStockholm Palace` }
+          { id: "VIENNA", label: "🇦🇹 Vienna", data: `# 🇦🇹 Vienna Walking\nSt. Stephen's Cathedral | 48.2085, 16.3738\nHofburg Palace | 48.2065, 16.3651\nSchönbrunn Palace | 48.1848, 16.3122\nBelvedere Palace | 48.1915, 16.3809\nPrater | 48.2173, 16.3976\nNaschmarkt | 48.1983, 16.3619` },
+          { id: "BRUSSELS", label: "🇧🇪 Brussels", data: `# 🇧🇪 Brussels Walking\nGrand Place | 50.8467, 4.3524\nManneken Pis | 50.8450, 4.3499\nAtomium | 50.8949, 4.3415\nRoyal Palace | 50.8422, 4.3629\nParc du Cinquantenaire | 50.8407, 4.3945` },
+          { id: "SOFIA", label: "🇧🇬 Sofia", data: `# 🇧🇬 Sofia Walking\nAlexander Nevsky Cathedral | 42.6958, 23.3328\nVitosha Boulevard | 42.6908, 23.3213\nNational Palace of Culture | 42.6853, 23.3190\nBoyana Church | 42.6449, 23.2662` },
+          { id: "ZAGREB", label: "🇭🇷 Zagreb", data: `# 🇭🇷 Zagreb Walking\nBan Jelačić Square | 45.8131, 15.9775\nZagreb Cathedral | 45.8144, 15.9796\nSt. Mark's Church | 45.8162, 15.9738\nMuseum of Broken Relationships | 45.8150, 15.9742` },
+          { id: "NICOSIA", label: "🇨🇾 Nicosia", data: `# 🇨🇾 Nicosia Walking\nLedra Street | 35.1724, 33.3608\nBuyuk Han | 35.1764, 33.3617\nSelimiye Camii | 35.1766, 33.3644\nCyprus Museum | 35.1718, 33.3559` },
+          { id: "PRAGUE", label: "🇨🇿 Prague", data: `# 🇨🇿 Prague Walking\nCharles Bridge | 50.0865, 14.4114\nPrague Castle | 50.0911, 14.4016\nOld Town Square | 50.0875, 14.4213\nDancing House | 50.0755, 14.4141` },
+          { id: "COPENHAGEN", label: "🇩🇰 Copenhagen", data: `# 🇩🇰 Copenhagen Walking\nNyhavn | 55.6795, 12.5910\nThe Little Mermaid | 55.6929, 12.5993\nTivoli Gardens | 55.6737, 12.5681\nAmalienborg | 55.6841, 12.5931` },
+          { id: "TALLINN", label: "🇪🇪 Tallinn", data: `# 🇪🇪 Tallinn Walking\nTallinn Old Town | 59.4370, 24.7450\nToompea Castle | 59.4357, 24.7371\nAlexander Nevsky Cathedral | 59.4359, 24.7390\nKadriorg Park | 59.4390, 24.7909` },
+          { id: "HELSINKI", label: "🇫🇮 Helsinki", data: `# 🇫🇮 Helsinki Walking\nHelsinki Cathedral | 60.1704, 24.9522\nSuomenlinna | 60.1468, 24.9902\nTemppeliaukio Church | 60.1730, 24.9252\nMarket Square | 60.1676, 24.9534` },
+          { id: "PARIS", label: "🇫🇷 Paris", data: `# 🇫🇷 Paris Walking\nEiffel Tower | 48.8584, 2.2945\nLouvre Museum | 48.8606, 2.3376\nNotre Dame Cathedral | 48.8529, 2.3500\nArc de Triomphe | 48.8738, 2.2950\nSacré-Cœur | 48.8867, 2.3431` },
+          { id: "BERLIN", label: "🇩🇪 Berlin", data: `# 🇩🇪 Berlin Walking\nBrandenburg Gate | 52.5163, 13.3777\nReichstag Building | 52.5186, 13.3761\nBerlin Wall Memorial | 52.5350, 13.3900\nCheckpoint Charlie | 52.5074, 13.3904` },
+          { id: "ATHENS", label: "🇬🇷 Athens", data: `# 🇬🇷 Athens Walking\nAcropolis | 37.9715, 23.7257\nParthenon | 37.9715, 23.7266\nPlaka | 37.9719, 23.7300\nSyntagma Square | 37.9755, 23.7348` },
+          { id: "BUDAPEST", label: "🇭🇺 Budapest", data: `# 🇭🇺 Budapest Walking\nHungarian Parliament | 47.5071, 19.0456\nBuda Castle | 47.4962, 19.0396\nFisherman's Bastion | 47.5020, 19.0349\nSzéchenyi Thermal Bath | 47.5189, 19.0823` },
+          { id: "DUBLIN", label: "🇮🇪 Dublin", data: `# 🇮🇪 Dublin Walking\nTemple Bar | 53.3454, -6.2641\nTrinity College | 53.3438, -6.2546\nGuinness Storehouse | 53.3419, -6.2867\nDublin Castle | 53.3429, -6.2674` },
+          { id: "ROME", label: "🇮🇹 Rome", data: `# 🇮🇹 Rome Walking\nColosseum | 41.8902, 12.4922\nPantheon | 41.8986, 12.4769\nTrevi Fountain | 41.9009, 12.4833\nSpanish Steps | 41.9057, 12.4823\nSt. Peter's Basilica | 41.9022, 12.4539` },
+          { id: "RIGA", label: "🇱🇻 Riga", data: `# 🇱🇻 Riga Walking\nHouse of the Blackheads | 56.9472, 24.1068\nRiga Central Market | 56.9442, 24.1166\nSt. Peter's Church | 56.9476, 24.1093\nFreedom Monument | 56.9515, 24.1132` },
+          { id: "VILNIUS", label: "🇱🇹 Vilnius", data: `# 🇱🇹 Vilnius Walking\nGediminas' Tower | 54.6871, 25.2908\nVilnius Cathedral | 54.6858, 25.2878\nGate of Dawn | 54.6744, 25.2895\nUzupis | 54.6806, 25.2968` },
+          { id: "LUXEMBOURG", label: "🇱🇺 Luxembourg", data: `# 🇱🇺 Luxembourg Walking\nLe Chemin de la Corniche | 49.6108, 6.1352\nCasemates du Bock | 49.6119, 6.1358\nGrand Ducal Palace | 49.6109, 6.1328\nNotre-Dame Cathedral | 49.6096, 6.1315` },
+          { id: "VALLETTA", label: "🇲🇹 Valletta", data: `# 🇲🇹 Valletta Walking\nSt. John's Co-Cathedral | 35.8976, 14.5126\nUpper Barrakka Gardens | 35.8950, 14.5126\nGrandmaster's Palace | 35.8986, 14.5147\nFort St Elmo | 35.9015, 14.5186` },
+          { id: "AMSTERDAM", label: "🇳🇱 Amsterdam", data: `# 🇳🇱 Amsterdam Walking\nRijksmuseum | 52.3600, 4.8852\nAnne Frank House | 52.3752, 4.8840\nVondelpark | 52.3580, 4.8686\nDam Square | 52.3731, 4.8922` },
+          { id: "WARSAW", label: "🇵🇱 Warsaw", data: `# 🇵🇱 Warsaw Walking\nOld Town Market Place | 52.2499, 21.0123\nRoyal Castle | 52.2480, 21.0152\nPalace of Culture and Science | 52.2318, 21.0060\nŁazienki Park | 52.2154, 21.0354` },
+          { id: "LISBON", label: "🇵🇹 Lisbon", data: `# 🇵🇹 Lisbon Walking\nBelém Tower | 38.6916, -9.2160\nJerónimos Monastery | 38.6978, -9.2067\nPraça do Comércio | 38.7075, -9.1364\nCastelo de S. Jorge | 38.7139, -9.1335` },
+          { id: "BUCHAREST", label: "🇷🇴 Bucharest", data: `# 🇷🇴 Bucharest Walking\nPalace of Parliament | 44.4275, 26.0874\nRomanian Athenaeum | 44.4413, 26.0972\nOld Town | 44.4326, 26.1030\nHerastrau Park | 44.4715, 26.0845` },
+          { id: "BRATISLAVA", label: "🇸🇰 Bratislava", data: `# 🇸🇰 Bratislava Walking\nBratislava Castle | 48.1422, 17.1002\nSt. Martin's Cathedral | 48.1406, 17.1051\nMichael's Gate | 48.1451, 17.1068\nBlue Church | 48.1435, 17.1169` },
+          { id: "LJUBLJANA", label: "🇸🇮 Ljubljana Top 10", data: `# 🇸🇮 Ljubljana Top 10 Walking\nPrešernov trg | 46.0514, 14.5061 START\nTriple Bridge | 46.0510, 14.5062\nCentral Market | 46.0511, 14.5085\nDragon Bridge | 46.0520, 14.5104\nLjubljana Castle | 46.0489, 14.5089\nTown Hall | 46.0498, 14.5069\nCobblers' Bridge | 46.0484, 14.5055\nCongress Square | 46.0501, 14.5034\nTivoli Park | 46.0562, 14.4965\nMetelkova Art Center | 46.0567, 14.5173` },
+          { id: "MADRID", label: "🇪🇸 Madrid", data: `# 🇪🇸 Madrid Walking\nRoyal Palace | 40.4180, -3.7143\nPlaza Mayor | 40.4154, -3.7074\nRetiro Park | 40.4153, -3.6845\nPrado Museum | 40.4138, -3.6921` },
+          { id: "STOCKHOLM", label: "🇸🇪 Stockholm", data: `# 🇸🇪 Stockholm Walking\nGamla Stan | 59.3251, 18.0708\nVasa Museum | 59.3280, 18.0914\nSkansen | 59.3248, 18.1011\nStockholm Palace | 59.3268, 18.0717` }
         ]
       },
       {
         name: "🇪🇺 Extreme / Full Region",
         items: [
-          { id: "EUROPE_NORTH", label: "EU Capitals (North/West - 13)", data: `# 🇪🇺 EU Capitals (North/West - 13 Stops)\nDublin, Ireland START\nHelsinki, Finland\nStockholm, Sweden\nTallinn, Estonia\nRiga, Latvia\nVilnius, Lithuania\nCopenhagen, Denmark\nBerlin, Germany\nWarsaw, Poland\nAmsterdam, Netherlands\nBrussels, Belgium\nLuxembourg City, Luxembourg\nParis, France` },
-          { id: "EUROPE_SOUTH", label: "EU Capitals (South/East - 14)", data: `# 🇪🇺 EU Capitals (South/East - 14 Stops)\nLisbon, Portugal START\nMadrid, Spain\nRome, Italy\nValletta, Malta\nAthens, Greece\nNicosia, Cyprus\nSofia, Bulgaria\nBucharest, Romania\nBudapest, Hungary\nVienna, Austria\nBratislava, Slovakia\nPrague, Czechia\nLjubljana, Slovenia\nZagreb, Croatia` },
-          { id: "COMPLEX_EU", label: "💀 THE GAUNTLET (All Caps + Stops)", data: `# 🇪🇺💀 THE GAUNTLET (Capitals + Stops)\n# Warning: This is a massive route!\nVienna, Austria\nHofburg Palace, Vienna\nBrussels, Belgium\nGrand Place, Brussels\nSofia, Bulgaria\nAlexander Nevsky Cathedral, Sofia\nZagreb, Croatia\nBan Jelačić Square, Zagreb\nNicosia, Cyprus\nPrague, Czechia\nCharles Bridge, Prague\nCopenhagen, Denmark\nNyhavn, Copenhagen\nTallinn, Estonia\nHelsinki, Finland\nParis, France\nEiffel Tower, Paris\nBerlin, Germany\nBrandenburg Gate, Berlin\nAthens, Greece\nAcropolis of Athens\nBudapest, Hungary\nHungarian Parliament, Budapest\nDublin, Ireland\nTemple Bar, Dublin\nRome, Italy\nColosseum, Rome\nRiga, Latvia\nVilnius, Lithuania\nLuxembourg City, Luxembourg\nValletta, Malta\nAmsterdam, Netherlands\nRijksmuseum, Amsterdam\nWarsaw, Poland\nOld Town, Warsaw\nLisbon, Portugal\nBelém Tower, Lisbon\nBucharest, Romania\nBratislava, Slovakia\nLjubljana, Slovenia\nLjubljana Castle\nMadrid, Spain\nRoyal Palace, Madrid\nStockholm, Sweden\nGamla Stan, Stockholm` }
+          { id: "EUROPE_NORTH", label: "EU Capitals (North/West - 13)", data: `# 🇪🇺 EU Capitals (North/West - 13 Stops)\nDublin | 53.3498, -6.2603 START\nHelsinki | 60.1695, 24.9354\nStockholm | 59.3293, 18.0686\nTallinn | 59.4370, 24.7535\nRiga | 56.9496, 24.1052\nVilnius | 54.6872, 25.2797\nCopenhagen | 55.6761, 12.5683\nBerlin | 52.5200, 13.4050\nWarsaw | 52.2297, 21.0122\nAmsterdam | 52.3676, 4.9041\nBrussels | 50.8503, 4.3517\nLuxembourg City | 49.6116, 6.1319\nParis | 48.8566, 2.3522` },
+          { id: "EUROPE_SOUTH", label: "EU Capitals (South/East - 14)", data: `# 🇪🇺 EU Capitals (South/East - 14 Stops)\nLisbon | 38.7223, -9.1393 START\nMadrid | 40.4168, -3.7038\nRome | 41.9028, 12.4964\nValletta | 35.8992, 14.5141\nAthens | 37.9838, 23.7275\nNicosia | 35.1856, 33.3823\nSofia | 42.6977, 23.3219\nBucharest | 44.4268, 26.1025\nBudapest | 47.4979, 19.0402\nVienna | 48.2082, 16.3738\nBratislava | 48.1486, 17.1077\nPrague | 50.0755, 14.4378\nLjubljana | 46.0569, 14.5058\nZagreb | 45.8150, 15.9819` },
+          { id: "COMPLEX_EU", label: "💀 THE GAUNTLET (All Caps + Stops)", data: `# 🇪🇺💀 THE GAUNTLET (Capitals + Stops)\n# Warning: This is a massive route!\nVienna | 48.2082, 16.3738\nHofburg Palace | 48.2065, 16.3651\nBrussels | 50.8503, 4.3517\nGrand Place | 50.8467, 4.3524\nSofia | 42.6977, 23.3219\nAlexander Nevsky Cathedral | 42.6958, 23.3328\nZagreb | 45.8150, 15.9819\nBan Jelačić Square | 45.8131, 15.9775\nNicosia | 35.1856, 33.3823\nPrague | 50.0755, 14.4378\nCharles Bridge | 50.0865, 14.4114\nCopenhagen | 55.6761, 12.5683\nNyhavn | 55.6795, 12.5910\nTallinn | 59.4370, 24.7535\nHelsinki | 60.1695, 24.9354\nParis | 48.8566, 2.3522\nEiffel Tower | 48.8584, 2.2945\nBerlin | 52.5200, 13.4050\nBrandenburg Gate | 52.5163, 13.3777\nAthens | 37.9838, 23.7275\nAcropolis | 37.9715, 23.7257\nBudapest | 47.4979, 19.0402\nHungarian Parliament | 47.5071, 19.0456\nDublin | 53.3498, -6.2603\nTemple Bar | 53.3454, -6.2641\nRome | 41.9028, 12.4964\nColosseum | 41.8902, 12.4922\nRiga | 56.9496, 24.1052\nVilnius | 54.6872, 25.2797\nLuxembourg City | 49.6116, 6.1319\nValletta | 35.8992, 14.5141\nAmsterdam | 52.3676, 4.9041\nRijksmuseum | 52.3600, 4.8852\nWarsaw | 52.2297, 21.0122\nOld Town | 52.2499, 21.0123\nLisbon | 38.7223, -9.1393\nBelém Tower | 38.6916, -9.2160\nBucharest | 44.4268, 26.1025\nBratislava | 48.1486, 17.1077\nLjubljana | 46.0569, 14.5058\nLjubljana Castle | 46.0489, 14.5089\nMadrid | 40.4168, -3.7038\nRoyal Palace | 40.4180, -3.7143\nStockholm | 59.3293, 18.0686\nGamla Stan | 59.3251, 18.0708` }
         ]
       }
     ]

@@ -1,13 +1,17 @@
-/* HELP CONTENT LIBRARY
+/* HELP / GUIDE CONTENT
    --------------------
-   Edit the text below to update the Help / Guide section.
+   Instructions on how to use the app.
 */
 
 window.HELP_CONTENT = `
   <div class="card help-block">
-    <h2>Why 8Z-RP?</h2>
-    <p><strong>Deterministic Results:</strong> Unlike many online solvers that produce random variations every time you click, 8Z-RP guarantees <em>Same Input ⇒ Same Route</em>.</p>
-    <p><strong>100% Client-Side:</strong> Your location data is processed entirely in your browser. It never leaves your device until you choose to export it to Google Maps.</p>
+    <h2>How to Use</h2>
+    <ul>
+      <li><strong>1. Trip Library:</strong> Click [+] to expand continents. Click a tour name to load it.</li>
+      <li><strong>2. Edit:</strong> Add or remove stops in the text box.</li>
+      <li><strong>3. Optimize:</strong> Use "Standard" for fast results or "Deep Search" for complex routes.</li>
+      <li><strong>4. Export:</strong> Click the "Open in Maps" links to send the route to your phone.</li>
+    </ul>
   </div>
 
   <div class="card help-block">
@@ -16,16 +20,6 @@ window.HELP_CONTENT = `
       <li><strong>Distance:</strong> The total length of the optimized route shown on the map.</li>
       <li><strong>Saved:</strong> The distance you avoided traveling by using this tool. <br>
       <em>Calculation: (Distance of your original order) - (Optimized Distance)</em>.</li>
-    </ul>
-  </div>
-
-  <div class="card help-block">
-    <h2>How to Use</h2>
-    <ul>
-      <li><strong>1. Trip Library:</strong> Click [+] to expand continents. Click a tour name to load it.</li>
-      <li><strong>2. Edit:</strong> Add or remove stops in the text box.</li>
-      <li><strong>3. Optimize:</strong> Use "Standard" for fast results or "Deep Search" for complex routes.</li>
-      <li><strong>4. Export:</strong> Click the "Open in Maps" links to send the route to your phone.</li>
     </ul>
   </div>
 

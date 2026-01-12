@@ -2,6 +2,9 @@
   'use strict';
 
   const $ = (id) => document.getElementById(id);
+  
+  // CONFIG: API Key baked in for Lazy Loading
+  const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA';
 
   // UI Elements
   const inputEl = $('input');
@@ -32,9 +35,12 @@
   const chkDirect = $('chkDirect'); 
   const chkGoogleStyle = $('chkGoogleStyle'); 
 
+  // Map & Help/About
   const mapPlaceholder = $('mapPlaceholder');
+  const btnEnableMap = $('btnEnableMap'); 
   const helpOverlay = $('helpOverlay');
   const btnHelp = $('btnHelp');
+  const btnAbout = $('btnAbout'); // The new About Button
   const btnCloseHelp = $('btnCloseHelp');
   const presetTree = $('presetTree');
   const helpBody = $('helpBody'); 
@@ -64,6 +70,20 @@
     { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
   ];
 
+  // --- GOOGLE MAPS LAZY LOADER ---
+  function loadGoogleMaps() {
+    if (window.google && window.google.maps) return; // Already loaded
+
+    btnEnableMap.disabled = true;
+    btnEnableMap.textContent = "Loading Maps API...";
+    
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&callback=initMap&loading=async&v=weekly`;
+    script.defer = true;
+    script.async = true;
+    document.body.appendChild(script);
+  }
+
   window.initMap = function() {
     const defaultCenter = { lat: 46.0569, lng: 14.5058 }; 
     
@@ -80,6 +100,11 @@
     
     // Attempt to restore state only after map is ready (for style preference)
     restoreState();
+
+    setStatus('Maps API Loaded. Ready to optimize.', 'ok');
+    
+    // Hide the button container to prevent re-clicking
+    if (btnEnableMap) btnEnableMap.style.display = 'none';
   };
 
   // --- AUTO-SAVE SYSTEM ---
@@ -104,8 +129,6 @@
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      // Subtle indicator that save happened (optional, logging for now)
-      // console.log('Auto-saved trip state');
     } catch (e) {
       console.warn('LocalStorage save failed', e);
     }
@@ -192,10 +215,11 @@
     });
   }
 
-  function initHelpContent() {
-    if (helpBody && window.HELP_CONTENT) {
-      helpBody.innerHTML = window.HELP_CONTENT;
-    }
+  // LOGIC TO SWITCH CONTENT (The Brains)
+  function openOverlay(content) {
+    if (!helpBody) return;
+    helpBody.innerHTML = content;
+    helpOverlay.classList.add('active');
   }
 
   function toggleTreeGroup(header, group) {
@@ -626,6 +650,12 @@
   }
 
   async function run(profile) {
+    // Safety check: Is map loaded?
+    if (!geocoder || !directionsService) {
+      setStatus('Please click "Enable Map" first.', 'bad');
+      return;
+    }
+
     updateOptimizeButtons(profile);
     // Auto-save before running
     saveState();
@@ -678,10 +708,26 @@
   // Input Auto-Save listener
   inputEl.addEventListener('input', saveState);
 
+  // Map Trigger
+  if (btnEnableMap) {
+    btnEnableMap.addEventListener('click', loadGoogleMaps);
+  }
+
   if (btnStandard) btnStandard.addEventListener('click', () => run('standard'));
   if (btnDeep) btnDeep.addEventListener('click', () => run('deep'));
   
-  if (btnHelp) btnHelp.addEventListener('click', (e) => { e.preventDefault(); showHelp(); });
+  if (btnHelp) {
+    btnHelp.addEventListener('click', (e) => { 
+      e.preventDefault(); 
+      if (window.HELP_CONTENT) openOverlay(window.HELP_CONTENT);
+    });
+  }
+  if (btnAbout) {
+    btnAbout.addEventListener('click', (e) => { 
+      e.preventDefault(); 
+      if (window.ABOUT_CONTENT) openOverlay(window.ABOUT_CONTENT);
+    });
+  }
   if (btnCloseHelp) btnCloseHelp.addEventListener('click', (e) => { e.preventDefault(); hideHelp(); });
 
   if (btnDriving) btnDriving.addEventListener('click', () => setTravelMode('DRIVING'));
@@ -703,6 +749,6 @@
   
   // INIT
   initTripTree();
-  initHelpContent();
+  // removed initHelpContent(); as it's now dynamic
   
 })();
