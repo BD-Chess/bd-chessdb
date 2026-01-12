@@ -58,6 +58,7 @@
   const chatInput = $('chatInput');
   const btnSendChat = $('btnSendChat');
   const chatHistory = $('chatHistory');
+  const modelSelector = $('modelSelector'); // New Dropdown
 
   // Core Worker
   const worker = new Worker('worker.js');
@@ -73,6 +74,7 @@
   let currentTravelMode = 'DRIVING'; 
   let pendingRunProfile = null; 
   let chatHistoryBuffer = []; 
+  let currentGeminiModel = 'models/gemini-1.5-flash'; // Fallback default
   
   let presetLookup = {};
   const STORAGE_KEY = '8z_trip_backup_v1';
@@ -133,6 +135,69 @@
 
   // --- AI CHATBOT LOGIC ---
   
+  // 1. Fetch available models and populate dropdown
+  async function initModelSelector() {
+    if (!modelSelector) return;
+    
+    try {
+      // Ask Google: "What models can I use?"
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+      const data = await response.json();
+      
+      if (!data.models) return;
+
+      // Filter: Keep only 'gemini', remove embeddings/vision-only
+      const validModels = data.models.filter(m => 
+        m.name.includes('models/gemini') && 
+        !m.name.includes('embedding') &&
+        !m.name.includes('imagen') &&
+        !m.name.includes('veo') &&
+        !m.name.includes('vision') // usually handled by multimodal, but safer to exclude pure vision ones if specific
+      );
+
+      // Sort: Newest version first (e.g. 2.0 > 1.5)
+      validModels.sort((a, b) => {
+        const getVer = (name) => {
+          const match = name.match(/gemini-(\d+(\.\d+)?)/);
+          return match ? parseFloat(match[1]) : 0;
+        };
+        const vA = getVer(a.name);
+        const vB = getVer(b.name);
+        
+        if (vA !== vB) return vB - vA; // Higher version first
+        // If versions match, prioritize 'Pro' over 'Flash'
+        const isPro = (n) => n.includes('pro');
+        return isPro(b.name) - isPro(a.name); 
+      });
+
+      // Populate Dropdown
+      modelSelector.innerHTML = '';
+      validModels.forEach(m => {
+        const option = document.createElement('option');
+        option.value = m.name; // "models/gemini-1.5-flash"
+        // Beautify Name: "models/gemini-1.5-flash" -> "Gemini 1.5 Flash"
+        option.textContent = m.displayName || m.name.replace('models/', '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        modelSelector.appendChild(option);
+      });
+
+      // Select the first one (Newest)
+      if (validModels.length > 0) {
+        currentGeminiModel = validModels[0].name;
+        modelSelector.value = currentGeminiModel;
+      }
+
+      // Listen for changes
+      modelSelector.addEventListener('change', () => {
+        currentGeminiModel = modelSelector.value;
+        // Optional: Notify user in chat (subtle)
+        // console.log("Switched to model:", currentGeminiModel);
+      });
+
+    } catch (e) {
+      console.warn("Model fetch failed, using default.", e);
+    }
+  }
+
   function toggleChatMode(showChat) {
     if (showChat) {
       mapContainer.style.display = 'none';
@@ -153,7 +218,7 @@
     appendChatMessage('user', text);
     chatInput.value = '';
     
-    const loadingId = appendChatMessage('ai', 'Gemini is thinking...', true);
+    const loadingId = appendChatMessage('ai', `Thinking (${currentGeminiModel.replace('models/', '')})...`, true);
 
     try {
       const response = await callGeminiAPI(text);
@@ -171,12 +236,11 @@
         const place = match[1].trim();
         addedPlaces.push(place);
         window.addStopToRoute(place); // Auto-add to trip
-        // Remove the tag from the visible message
         cleanResponse = cleanResponse.replace(match[0], '');
       }
 
       if (addedPlaces.length > 0) {
-        cleanResponse += `<br><br><em>(I added <strong>${addedPlaces.length} locations</strong> to your trip list automatically.)</em>`;
+        cleanResponse += `<br><br><em>(I added <strong>${addedPlaces.length} locations</strong> to your trip list.)</em>`;
       }
       
       appendChatMessage('ai', cleanResponse);
@@ -184,7 +248,7 @@
     } catch (err) {
       const loadingEl = document.getElementById(loadingId);
       if (loadingEl) loadingEl.remove();
-      appendChatMessage('ai', "Error: Could not connect to Gemini. " + err.message);
+      appendChatMessage('ai', "Error: " + err.message);
     }
   }
 
@@ -204,13 +268,12 @@
   }
 
   async function callGeminiAPI(userPrompt) {
-    // UPDATED URL: Using 'gemini-2.5-flash' based on your console output
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    // DYNAMIC URL: Uses the model selected in the dropdown
+    const url = `https://generativelanguage.googleapis.com/v1beta/${currentGeminiModel}:generateContent?key=${GEMINI_API_KEY}`;
     
     chatHistoryBuffer.push({ role: "user", parts: [{ text: userPrompt }] });
     if (chatHistoryBuffer.length > 10) chatHistoryBuffer.shift();
 
-    // SYSTEM PROMPT: Teaches AI about the app and the {ADD: ...} tool
     const systemPrompt = {
       role: "user",
       parts: [{ text: `You are the AI Assistant for '8Z-RP Trip Optimizer'. 
@@ -238,7 +301,7 @@
       body: JSON.stringify(payload)
     });
 
-    if (!response.ok) throw new Error(`API Status ${response.status}`);
+    if (!response.ok) throw new Error(`API Status ${response.status} (${currentGeminiModel})`);
 
     const data = await response.json();
     const aiText = data.candidates[0].content.parts[0].text;
@@ -963,5 +1026,6 @@
   
   // INIT
   initTripTree();
+  initModelSelector();
   
 })();
