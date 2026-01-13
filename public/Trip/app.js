@@ -4,11 +4,11 @@
   
   // --- CONFIGURATION ---
   const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA';
-  // Ported Secure Key Logic from app.js
+  // Ported Secure Key Logic
   const _s1 = 'QUl6YVN5Q3hIanBw', _s2 = 'S2l4YW85OU5IOURv', _s3 = 'YWYtUTBLTzRmQ1FhZUhz';
   const GEMINI_API_KEY = atob(_s1) + atob(_s2) + atob(_s3);
 
-  // --- UI ELEMENTS (Ported from both) ---
+  // --- UI ELEMENTS ---
   const inputEl = $('input'), statusEl = $('status'), btnStandard = $('btnStandard'), btnDeep = $('btnDeep');
   const btnDriving = $('btnDriving'), btnWalking = $('btnWalking');
   const routeList = $('routeList'), distKmEl = $('distKm'), savedKmEl = $('savedKm'), linksEl = $('links');
@@ -17,8 +17,11 @@
   const presetTree = $('presetTree'), chatPanel = $('chatPanel'), chatInput = $('chatInput');
   const btnSendChat = $('btnSendChat'), chatHistory = $('chatHistory'), modelSelector = $('modelSelector');
   
+  // Navigation Links
   const btnChatToggle = $('btnChatToggle'), btnCloseChat = $('btnCloseChat');
   const btnAbout = $('btnAbout'), btnHelp = $('btnHelp'), helpOverlay = $('helpOverlay'), helpBody = $('helpBody'), btnCloseHelp = $('btnCloseHelp');
+  
+  // Landing Page Buttons
   const btnEnableMapInitial = $('btnEnableMapInitial'), btnStartAIChat = $('btnStartAIChat');
 
   // --- CORE STATE ---
@@ -34,14 +37,18 @@
     { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
   ];
 
-  // --- NAVIGATION & OVERLAYS ---
+  // --- NAVIGATION LOGIC (Restored & Fixed) ---
   function showView(view) {
     mapContainer.style.display = 'none';
     chatPanel.style.display = 'none';
     helpOverlay.classList.remove('active');
-    if (view === 'map') mapContainer.style.display = 'block';
-    else if (view === 'chat') chatPanel.style.display = 'flex';
-    else if (view === 'help' || view === 'about') {
+
+    if (view === 'map') {
+      mapContainer.style.display = 'block';
+    } else if (view === 'chat') {
+      chatPanel.style.display = 'flex';
+      chatInput.focus();
+    } else if (view === 'help' || view === 'about') {
       helpOverlay.classList.add('active');
       helpBody.innerHTML = view === 'help' ? window.HELP_CONTENT : window.ABOUT_CONTENT;
     }
@@ -52,7 +59,7 @@
     statusEl.className = 'status' + (cls ? (' ' + cls) : '');
   }
 
-  // --- GOOGLE MAPS LOGIC (Restored from app_ok.js) ---
+  // --- GOOGLE MAPS CORE ---
   function loadGoogleMaps() {
     if (window.google && window.google.maps) return;
     const script = document.createElement('script');
@@ -114,19 +121,18 @@
     map.fitBounds(bounds);
   }
 
-  // --- DATA PROCESSING (Restored Geocoding) ---
+  // --- DATA & GEOCODING ---
   async function geocodeMissingPoints(pts) {
     const missing = pts.filter(p => p.lat === null);
     if (missing.length === 0) return pts;
-    
     for (let i = 0; i < missing.length; i++) {
       const p = missing[i];
-      setStatus(`Looking up address (${i+1}/${missing.length}): ${p.name}`, "warn");
+      setStatus(`Locating (${i+1}/${missing.length}): ${p.name}`, "warn");
       const res = await new Promise(r => {
         geocoder.geocode({ address: p.name }, (results, stat) => r(stat === "OK" ? results[0].geometry.location : null));
       });
       if (res) { p.lat = res.lat(); p.lon = res.lng(); }
-      await new Promise(r => setTimeout(r, 300)); // Rate limiting
+      await new Promise(r => setTimeout(r, 300));
     }
     return pts;
   }
@@ -135,7 +141,7 @@
     const lines = text.split('\n');
     const pts = [];
     let startIdx = 0;
-    lines.forEach((line, i) => {
+    lines.forEach((line) => {
       let raw = line.trim();
       if (!raw || raw.startsWith('#')) return;
       let isStart = /\bSTART\b/i.test(raw);
@@ -155,19 +161,14 @@
   // --- OPTIMIZER RUN ---
   async function run(profile) {
     showView('map');
-    if (!window.google) { loadGoogleMaps(); setStatus("Waking up the map...", "warn"); return; }
+    if (!window.google) { loadGoogleMaps(); setStatus("Loading Maps API...", "warn"); return; }
     saveState();
     let { pts, startIdx } = parseStops(inputEl.value);
     pts = await geocodeMissingPoints(pts);
     const valid = pts.filter(p => p.lat !== null);
-    if (valid.length < 2) { setStatus("Need at least 2 valid locations.", "bad"); return; }
-    
-    setStatus(`Optimizing ${valid.length} stops (${profile})...`, "warn");
-    worker.postMessage({ 
-      type: 'solve', profile, points: valid, 
-      startIdx: (startIdx < valid.length) ? startIdx : 0, 
-      roundTrip: chkRoundTrip.checked 
-    });
+    if (valid.length < 2) { setStatus("Add at least 2 locations.", "bad"); return; }
+    setStatus(`Optimizing ${valid.length} stops...`, "warn");
+    worker.postMessage({ type: 'solve', profile, points: valid, startIdx, roundTrip: chkRoundTrip.checked });
   }
 
   worker.onmessage = (ev) => {
@@ -181,7 +182,7 @@
     }
   };
 
-  // --- AI CHATBOT LOGIC (Enhanced from app_ok.js) ---
+  // --- AI LOGIC ---
   async function initModelSelector() {
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
@@ -190,7 +191,6 @@
       valid.sort((a, b) => b.name.localeCompare(a.name));
       modelSelector.innerHTML = valid.map(m => `<option value="${m.name}">${m.displayName || m.name.split('/').pop()}</option>`).join('');
       currentGeminiModel = valid[0]?.name;
-      modelSelector.addEventListener('change', () => currentGeminiModel = modelSelector.value);
     } catch (e) { console.warn("AI initialization failed."); }
   }
 
@@ -211,7 +211,7 @@
     return aiText;
   }
 
-  // --- TRIP TREE (Restored Library Logic) ---
+  // --- TRIP TREE ---
   function initTripTree() {
     if (!window.TRIP_LIBRARY || !presetTree) return;
     presetTree.innerHTML = '';
@@ -236,15 +236,24 @@
     });
   }
 
-  // --- INITIALIZATION & EVENTS ---
+  // --- STATE & INIT ---
   function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify({ text: inputEl.value, mode: currentTravelMode })); }
   function restoreState() { 
     const s = JSON.parse(localStorage.getItem(STORAGE_KEY)); 
     if (s) { inputEl.value = s.text; currentTravelMode = s.mode || 'DRIVING'; } 
   }
 
+  // --- EVENT LISTENERS (Restored Top Nav) ---
+  btnChatToggle.addEventListener('click', (e) => { e.preventDefault(); showView('chat'); });
+  btnAbout.addEventListener('click', (e) => { e.preventDefault(); showView('about'); });
+  btnHelp.addEventListener('click', (e) => { e.preventDefault(); showView('help'); });
+  
+  btnCloseChat.addEventListener('click', () => showView('map'));
+  btnCloseHelp.addEventListener('click', () => showView('map'));
+  
   btnEnableMapInitial.addEventListener('click', loadGoogleMaps);
   btnStartAIChat.addEventListener('click', () => showView('chat'));
+  
   btnStandard.addEventListener('click', () => run('standard'));
   btnDeep.addEventListener('click', () => run('deep'));
   btnDriving.addEventListener('click', () => { currentTravelMode = 'DRIVING'; if(lastSolvedPoints) updateMapVisualization(lastSolvedPoints); });
@@ -260,7 +269,6 @@
     chatHistory.scrollTop = chatHistory.scrollHeight;
   });
 
-  // Global helper for the AI/Library
   window.addStopToRoute = (loc) => { inputEl.value += `\n${loc}`; saveState(); };
 
   initTripTree(); initModelSelector(); showView('map');
