@@ -131,11 +131,14 @@
     saveState();
   };
 
-  // Extracts coordinates from text line: "Name | 45.12, 12.34"
+  // NEW: Robust coordinate parser to ensure math works
   function parsePoint(line) {
     const p = { name: line.trim(), lat: null, lon: null };
     const match = line.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
-    if (match) { p.lat = parseFloat(match[1]); p.lon = parseFloat(match[2]); }
+    if (match) { 
+      p.lat = parseFloat(match[1]); 
+      p.lon = parseFloat(match[2]); 
+    }
     return p;
   }
 
@@ -143,9 +146,18 @@
     showView('map');
     if (!window.google) loadGoogleMaps();
     saveState();
+    
+    // Process input lines into objects with lat/lon for the worker
     const pts = inputEl.value.split('\n').map(l => parsePoint(l)).filter(p => p.name);
-    if(pts.length === 0) { statusEl.textContent = "Error: Input is empty"; return; }
+    
+    if(pts.length === 0) { 
+      statusEl.textContent = "Error: Input is empty"; 
+      statusEl.className = "status bad";
+      return; 
+    }
+    
     statusEl.textContent = `Optimizing (${profile})...`;
+    statusEl.className = "status warn";
     worker.postMessage({ type: 'solve', profile, points: pts, roundTrip: chkRoundTrip.checked });
   }
 
@@ -154,6 +166,7 @@
     routeList.innerHTML = lastSolvedPoints.map(p => `<li>${p.name}</li>`).join('');
     distKmEl.textContent = ev.data.totalKm.toFixed(2) + ' km';
     statusEl.textContent = "Optimization complete!";
+    statusEl.className = "status ok";
     linksEl.innerHTML = `<div class="linkrow"><span class="badge">Full Trip</span> <a href="#" target="_blank">Open in Maps ↗</a></div>`;
   };
 
@@ -169,7 +182,7 @@
   btnHelp.addEventListener('click', (e) => { e.preventDefault(); showView('help'); });
   btnCloseHelp.addEventListener('click', () => showView('map'));
   
-  // Optimization Button Listeners
+  // RESTORED: All optimization button listeners
   btnStandard.addEventListener('click', () => run('standard'));
   btnDeep.addEventListener('click', () => run('deep'));
   btnDriving.addEventListener('click', () => run('standard'));
