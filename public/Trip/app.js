@@ -8,7 +8,7 @@
   const GEMINI_API_KEY = atob(_s1) + atob(_s2) + atob(_s3);
 
   // --- UI ELEMENTS ---
-  const inputEl = $('input'), statusEl = $('status'), btnStandard = $('btnStandard'), btnDeep = $('btnDeep');
+  const inputEl = $('input'), statusEl = $('status'), btnStandard = $('btnStandard');
   const tripSearch = $('tripSearch'), routeList = $('routeList'), distKmEl = $('distKm'), linksEl = $('links');
   const chkRoundTrip = $('chkRoundTrip'), btnEnableMap = $('btnEnableMap'), mapDiv = $('map');
   const presetTree = $('presetTree'), chatPanel = $('chatPanel'), mapContainer = $('mapContainer');
@@ -47,31 +47,35 @@
           item.addEventListener('click', () => { inputEl.value = trip.data; saveState(); });
           cGroup.appendChild(item);
         });
-        cHeader.addEventListener('click', () => { cGroup.classList.toggle('open'); });
+        cHeader.addEventListener('click', () => { 
+            cGroup.classList.toggle('open'); 
+            cHeader.querySelector('.tree-icon').textContent = cGroup.classList.contains('open') ? '[-]' : '[+]';
+        });
         group.appendChild(cHeader); group.appendChild(cGroup);
       });
-      header.addEventListener('click', () => { group.classList.toggle('open'); });
+      header.addEventListener('click', () => { 
+          group.classList.toggle('open'); 
+          header.querySelector('.tree-icon').textContent = group.classList.contains('open') ? '[-]' : '[+]';
+      });
       presetTree.appendChild(header); presetTree.appendChild(group);
     });
   }
 
-  // --- MODERN MODEL FILTERING (2026) ---
+  // --- MODERN MODEL FILTERING & AUTO-SELECT (2026) ---
   async function initModelSelector() {
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
       const data = await res.json();
       if (!data.models) return;
 
-      // Filter: Strictly Chat/Text models. Exclude Image (Nano Banana) and Audio-only.
       const valid = data.models.filter(m => 
         m.name.includes('gemini') && 
-        !m.name.includes('image') && 
-        !m.name.includes('vision') && 
-        !m.name.includes('banana') && 
-        !m.name.includes('tts')
+        !m.name.toLowerCase().includes('image') && 
+        !m.name.toLowerCase().includes('vision') && 
+        !m.name.toLowerCase().includes('banana') && 
+        !m.name.toLowerCase().includes('tts')
       );
 
-      // Sort: Highest version (3 > 2.5 > 2.0)
       valid.sort((a, b) => {
         const getV = (n) => {
           const match = n.match(/gemini-(\d+(\.\d+)?)/);
@@ -87,7 +91,6 @@
         modelSelector.appendChild(opt);
       });
       
-      // Auto-set default to the newest generation (Gemini 3 or 2.5)
       if (valid.length > 0) {
         currentGeminiModel = valid[0].name;
         modelSelector.value = currentGeminiModel;
@@ -102,30 +105,29 @@
     chatHistoryBuffer.push({ role: "user", parts: [{ text: prompt }] });
     
     const payload = { 
-      contents: [{ role: "user", parts: [{ text: "You are the AI Assistant. Use {ADD: Place Name} to add stops." }]}, ...chatHistoryBuffer],
-      safetySettings: [{ category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" }, { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" }]
+      contents: [{ role: "user", parts: [{ text: "You are the AI Travel Assistant. If asked for ideas, use {ADD: Place Name} to add stops." }]}, ...chatHistoryBuffer]
     };
 
     const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
     const data = await res.json();
     
     if (data.error) return "Error: " + data.error.message;
-    if (!data.candidates || data.candidates.length === 0) return "AI refused to answer. Try a different question.";
+    if (!data.candidates || data.candidates.length === 0) return "AI refused response. Try rephrasing.";
 
     const aiText = data.candidates[0].content.parts[0].text;
     chatHistoryBuffer.push({ role: "model", parts: [{ text: aiText }] });
     return aiText;
   }
 
-  // --- RESULTS & ASK AI BUTTON ---
+  // --- RESULTS & LINKS (WITH ASK AI BUTTON) ---
   function renderLinks(links) {
     linksEl.innerHTML = '';
-    if (lastSolvedPoints) {
+    if (lastSolvedPoints && lastSolvedPoints.length > 0) {
       const aiBtn = document.createElement('button');
       aiBtn.innerHTML = '✨ Ask AI: "Is this order logical?"';
       aiBtn.className = 'secondary'; aiBtn.style.width = '100%'; aiBtn.style.marginBottom = '10px';
       aiBtn.addEventListener('click', () => {
-        chatInput.value = "Review this itinerary for logic:\n" + lastSolvedPoints.map((pt, i) => `${i+1}. ${pt.name}`).join('\n');
+        chatInput.value = "I have optimized my trip. Is this order logical geographically?\n" + lastSolvedPoints.map((pt, i) => `${i+1}. ${pt.name}`).join('\n');
         chatPanel.style.display = 'flex'; mapContainer.style.display = 'none'; chatInput.focus();
       });
       linksEl.appendChild(aiBtn);
@@ -139,24 +141,32 @@
 
   async function run(profile) {
     if (!window.google) { loadGoogleMaps(); return; }
-    worker.postMessage({ type: 'solve', profile, points: inputEl.value.split('\n').map(l => ({ name: l.trim() })).filter(p => p.name), roundTrip: chkRoundTrip.checked });
+    saveState();
+    const pts = inputEl.value.split('\n').map(l => ({ name: l.trim() })).filter(p => p.name);
+    worker.postMessage({ type: 'solve', profile, points: pts, roundTrip: chkRoundTrip.checked });
   }
 
   worker.onmessage = (ev) => {
     lastSolvedPoints = ev.data.pointsSorted;
     routeList.innerHTML = lastSolvedPoints.map(p => `<li>${p.name}</li>`).join('');
+    distKmEl.textContent = ev.data.totalKm.toFixed(2) + ' km';
     renderLinks([{ label: 'Full Trip', url: '#' }]);
   };
 
   function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify({ text: inputEl.value })); }
   function restoreState() { const s = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (s) inputEl.value = s.text || ''; }
+  window.addStopToRoute = function(loc) { inputEl.value += (inputEl.value.trim() ? '\n' : '') + loc; saveState(); };
 
   initTripTree(); initModelSelector();
+  inputEl.addEventListener('input', saveState);
+  btnEnableMap.addEventListener('click', loadGoogleMaps);
   btnStandard.addEventListener('click', () => run('standard'));
   btnSendChat.addEventListener('click', async () => {
-    const txt = chatInput.value; chatInput.value = '';
+    const txt = chatInput.value; if(!txt) return;
+    chatInput.value = '';
     const resp = await callGeminiAPI(txt);
-    const div = document.createElement('div'); div.className = 'chat-msg ai'; div.innerHTML = `<strong>AI:</strong><br>${resp.replace(/\n/g, '<br>')}`;
+    const div = document.createElement('div'); div.className = 'chat-msg ai'; 
+    div.innerHTML = `<strong>AI:</strong><br>${resp.replace(/\n/g, '<br>')}`;
     chatHistory.appendChild(div); chatHistory.scrollTop = chatHistory.scrollHeight;
   });
 })();
