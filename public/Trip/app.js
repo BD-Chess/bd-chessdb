@@ -5,7 +5,8 @@
   
   // --- CONFIGURATION ---
   const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA'; // Maps
-  const GEMINI_API_KEY = 'AIzaSyC_dP04dW4oJt5LE51pCIh9nkeDwusw_4s'; // Chatbot
+  // FIXED: Updated with the new key from GoogleAPI.txt
+  const GEMINI_API_KEY = 'AIzaSyBXywyzEKms_kaly7EhiFtLgPgCspLUyvc'; // Chatbot
 
   // --- UI ELEMENTS ---
   const inputEl = $('input');
@@ -853,7 +854,7 @@
       params.set('travelmode', travelmode);
       if (mids.length) params.set('waypoints', mids.join('|'));
 
-      // FIXED: URL Construction
+      // FIXED: URL Construction with correct standard maps link
       const url = `https://www.google.com/maps/dir/?${params.toString()}`;
       
       links.push({ url, label: `Leg ${links.length + 1} (${segment.length} stops)` });
