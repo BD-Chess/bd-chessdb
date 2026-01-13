@@ -6,7 +6,7 @@
   // --- CONFIGURATION ---
   const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA'; 
   
-  // CHEAT CODE: Fragmented & Scrambled Gemini key to hide from GitHub bots
+  // CHEAT CODE: Scrambled key to stay hidden from GitHub scanners.
   const _s1 = 'QUl6YVN5Q3hIanBw';
   const _s2 = 'S2l4YW85OU5IOURv';
   const _s3 = 'YWYtUTBLTzRmQ1FhZUhz';
@@ -55,7 +55,7 @@
 
   // --- STATE ---
   let map, geocoder, directionsService, infoWindow;
-  let directionsRenderers = [], mapMarkers = [], mapPolyline = null;
+  let directionsRenderers = [], mapMarkers = [];
   let lastSolvedPoints = null;
   let currentTravelMode = 'DRIVING'; 
   let pendingRunProfile = null, chatHistoryBuffer = []; 
@@ -105,41 +105,24 @@
           presetLookup[trip.id] = trip.data;
           const tripItem = document.createElement('span'); tripItem.className = 'tree-item';
           tripItem.textContent = trip.label;
-          tripItem.addEventListener('click', () => loadPreset(trip.id));
+          tripItem.addEventListener('click', () => { inputEl.value = trip.data; saveState(); });
           catGroup.appendChild(tripItem);
         });
-        catHeader.addEventListener('click', () => toggleTreeGroup(catHeader, catGroup));
+        catHeader.addEventListener('click', () => {
+          const isOpen = catGroup.classList.contains('open');
+          catGroup.classList.toggle('open', !isOpen);
+          catHeader.querySelector('.tree-icon').textContent = !isOpen ? '[-]' : '[+]';
+        });
         catNode.appendChild(catHeader); catNode.appendChild(catGroup);
         regionGroup.appendChild(catNode);
       });
-      regionHeader.addEventListener('click', () => toggleTreeGroup(regionHeader, regionGroup));
+      regionHeader.addEventListener('click', () => {
+        const isOpen = regionGroup.classList.contains('open');
+        regionGroup.classList.toggle('open', !isOpen);
+        regionHeader.querySelector('.tree-icon').textContent = !isOpen ? '[-]' : '[+]';
+      });
       regionNode.appendChild(regionHeader); regionNode.appendChild(regionGroup);
       presetTree.appendChild(regionNode);
-    });
-  }
-
-  function toggleTreeGroup(header, group) {
-    const icon = header.querySelector('.tree-icon');
-    const isOpen = group.classList.contains('open');
-    group.classList.toggle('open', !isOpen);
-    icon.textContent = !isOpen ? '[-]' : '[+]';
-  }
-
-  function loadPreset(key) {
-    if (key && presetLookup[key]) {
-      inputEl.value = presetLookup[key];
-      saveState();
-      setStatus(`Loaded: ${key}`, 'ok');
-    }
-  }
-
-  function filterTripTree(query) {
-    if (!presetTree) return;
-    const lowerQ = query.toLowerCase().trim();
-    const allItems = presetTree.querySelectorAll('.tree-item');
-    allItems.forEach(item => {
-      const match = item.textContent.toLowerCase().includes(lowerQ);
-      item.style.display = match || !lowerQ ? 'block' : 'none';
     });
   }
 
@@ -157,7 +140,7 @@
         modelSelector.appendChild(opt);
       });
       modelSelector.value = currentGeminiModel;
-    } catch (e) { console.warn("Models failed"); }
+    } catch (e) { console.warn("Model fetch failed"); }
   }
 
   function toggleChatMode(showChat) {
@@ -177,10 +160,11 @@
       const addRegex = /\{ADD:\s*(.*?)\}/g;
       let match;
       while ((match = addRegex.exec(response)) !== null) {
-        window.addStopToRoute(match[1].trim());
+        inputEl.value += (inputEl.value.trim() ? '\n' : '') + match[1].trim();
         cleanRes = cleanRes.replace(match[0], '');
       }
       appendChatMessage('ai', cleanRes);
+      saveState();
     } catch (err) { $(loadingId).remove(); appendChatMessage('ai', "Error: " + err.message); }
   }
 
@@ -193,12 +177,11 @@
     return div.id;
   }
 
-  async function callGeminiAPI(userPrompt) {
+  async function callGeminiAPI(prompt) {
     const url = `https://generativelanguage.googleapis.com/v1beta/${currentGeminiModel}:generateContent?key=${GEMINI_API_KEY}`;
-    chatHistoryBuffer.push({ role: "user", parts: [{ text: userPrompt }] });
-    if (chatHistoryBuffer.length > 10) chatHistoryBuffer.shift();
+    chatHistoryBuffer.push({ role: "user", parts: [{ text: prompt }] });
     const payload = { contents: [{ role: "user", parts: [{ text: "You are the AI Assistant for '8Z-RP Trip Optimizer'. Use {ADD: Place Name} to add stops." }]}, ...chatHistoryBuffer] };
-    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
     const data = await res.json();
     const aiText = data.candidates[0].content.parts[0].text;
     chatHistoryBuffer.push({ role: "model", parts: [{ text: aiText }] });
@@ -213,7 +196,7 @@
       aiBtn.innerHTML = '✨ Ask AI: "Is this order logical?"';
       aiBtn.className = 'secondary'; aiBtn.style.width = '100%'; aiBtn.style.border = '1px dashed var(--accent)'; aiBtn.style.marginBottom = '10px';
       aiBtn.addEventListener('click', () => {
-        let p = "I optimized my trip. Here is the order:\n" + lastSolvedPoints.map((pt, i) => `${i+1}. ${pt.name}`).join('\n') + "\nIs this order logical logistically?";
+        let p = "I optimized my trip. Here is the recommended order:\n" + lastSolvedPoints.map((pt, i) => `${i+1}. ${pt.name}`).join('\n') + "\nIs this order logical geographically and logistically?";
         toggleChatMode(true); chatInput.value = p; chatInput.focus();
       });
       linksEl.appendChild(aiBtn);
@@ -270,7 +253,7 @@
     const params = new URLSearchParams({ api: '1', travelmode: currentTravelMode.toLowerCase(), origin: encodeLoc(pointsSorted[0]), destination: encodeLoc(chkRoundTrip.checked ? pointsSorted[0] : pointsSorted[pointsSorted.length-1]) });
     const waypoints = pointsSorted.slice(1, chkRoundTrip.checked ? undefined : -1).map(encodeLoc).join('|');
     if (waypoints) params.set('waypoints', waypoints);
-    renderLinks([{ label: 'Full Trip', url: `https://www.google.com/maps/dir/?$${params.toString()}` }]);
+    renderLinks([{ label: 'Full Trip', url: `https://www.google.com/maps/dir/?${params.toString()}` }]);
     updateMapVisualization(pointsSorted);
     setStatus('Done.', 'ok');
   };
@@ -308,12 +291,9 @@
 
   function setStatus(msg, cls) { statusEl.textContent = msg; statusEl.className = 'status ' + (cls || ''); }
 
-  window.addStopToRoute = function(loc) { inputEl.value += (inputEl.value.trim() ? '\n' : '') + loc; saveState(); };
-
   // --- INIT ---
   initTripTree(); initModelSelector();
   inputEl.addEventListener('input', saveState);
-  tripSearch.addEventListener('input', (e) => filterTripTree(e.target.value));
   btnEnableMap.addEventListener('click', loadGoogleMaps);
   btnStandard.addEventListener('click', () => run('standard'));
   btnDeep.addEventListener('click', () => run('deep'));
