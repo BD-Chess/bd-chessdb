@@ -8,13 +8,13 @@
   const GEMINI_API_KEY = atob(_s1) + atob(_s2) + atob(_s3);
 
   // --- UI ELEMENTS ---
-  const inputEl = $('input'), statusEl = $('status'), btnStandard = $('btnStandard');
+  const inputEl = $('input'), statusEl = $('status'), btnStandard = $('btnStandard'), btnDeep = $('btnDeep');
+  const btnDriving = $('btnDriving'), btnWalking = $('btnWalking');
   const routeList = $('routeList'), distKmEl = $('distKm'), linksEl = $('links');
   const chkRoundTrip = $('chkRoundTrip'), mapDiv = $('map'), mapPlaceholder = $('mapPlaceholder');
   const presetTree = $('presetTree'), chatPanel = $('chatPanel'), mapContainer = $('mapContainer');
   const chatInput = $('chatInput'), btnSendChat = $('btnSendChat'), chatHistory = $('chatHistory'), modelSelector = $('modelSelector');
   
-  // Navigation & Landing Buttons
   const btnChatToggle = $('btnChatToggle'), btnCloseChat = $('btnCloseChat');
   const btnAbout = $('btnAbout'), btnHelp = $('btnHelp'), helpOverlay = $('helpOverlay'), helpBody = $('helpBody'), btnCloseHelp = $('btnCloseHelp');
   const btnEnableMapInitial = $('btnEnableMapInitial'), btnStartAIChat = $('btnStartAIChat');
@@ -131,12 +131,21 @@
     saveState();
   };
 
+  // Extracts coordinates from text line: "Name | 45.12, 12.34"
+  function parsePoint(line) {
+    const p = { name: line.trim(), lat: null, lon: null };
+    const match = line.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+    if (match) { p.lat = parseFloat(match[1]); p.lon = parseFloat(match[2]); }
+    return p;
+  }
+
   async function run(profile) {
     showView('map');
     if (!window.google) loadGoogleMaps();
     saveState();
-    const pts = inputEl.value.split('\n').map(l => ({ name: l.trim() })).filter(p => p.name);
+    const pts = inputEl.value.split('\n').map(l => parsePoint(l)).filter(p => p.name);
     if(pts.length === 0) { statusEl.textContent = "Error: Input is empty"; return; }
+    statusEl.textContent = `Optimizing (${profile})...`;
     worker.postMessage({ type: 'solve', profile, points: pts, roundTrip: chkRoundTrip.checked });
   }
 
@@ -144,6 +153,7 @@
     lastSolvedPoints = ev.data.pointsSorted;
     routeList.innerHTML = lastSolvedPoints.map(p => `<li>${p.name}</li>`).join('');
     distKmEl.textContent = ev.data.totalKm.toFixed(2) + ' km';
+    statusEl.textContent = "Optimization complete!";
     linksEl.innerHTML = `<div class="linkrow"><span class="badge">Full Trip</span> <a href="#" target="_blank">Open in Maps ↗</a></div>`;
   };
 
@@ -158,7 +168,12 @@
   btnAbout.addEventListener('click', (e) => { e.preventDefault(); showView('about'); });
   btnHelp.addEventListener('click', (e) => { e.preventDefault(); showView('help'); });
   btnCloseHelp.addEventListener('click', () => showView('map'));
+  
+  // Optimization Button Listeners
   btnStandard.addEventListener('click', () => run('standard'));
+  btnDeep.addEventListener('click', () => run('deep'));
+  btnDriving.addEventListener('click', () => run('standard'));
+  btnWalking.addEventListener('click', () => run('standard'));
 
   btnSendChat.addEventListener('click', async () => {
     const txt = chatInput.value; if(!txt) return;
