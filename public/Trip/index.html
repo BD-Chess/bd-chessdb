@@ -14,7 +14,7 @@
         <div class="title">Trip Optimizer</div>
         <div class="subtitle">
           <span class="desktop-text">Author: Bojan Dobrečevič | Jan 2026 | Deterministic route optimizer • Same input ⇒ same route</span>
-          <span class="mobile-text">Author: Bojan Dobrečevič | Deterministic optimizer!</span>
+          <span class="mobile-text">Author: Bojan Dobrečevič | Deterministic!</span>
         </div>
       </div>
     </div>
@@ -41,7 +41,7 @@
         <div id="presetTree" class="tree-view"></div>
 
         <p class="muted small" style="margin-top:0;">
-          Select a trip above or <a href="#" onclick="document.getElementById('btnHelp').click(); return false;" style="color:var(--accent); text-decoration:none;">see help</a>.
+          Select a trip from the library above or <a href="#" id="linkHelp" style="color:var(--accent); text-decoration:none;">see help</a>.
         </p>
 
         <textarea id="input" spellcheck="false" placeholder="Enter stops here..."></textarea>
@@ -99,28 +99,41 @@
     </section>
 
     <section class="panel right">
-      <div id="mapContainer" style="display:none; width:100%; height:100%; position:relative;">
-        <div id="mapPlaceholder" class="placeholder-msg">
-          <div class="big-icon">🗺️</div>
-          <h2>Ready to Route</h2>
-          <p class="muted box-width">
-            To save API costs, the map is paused.
+      
+      <div id="mapContainer" style="display:block; width:100%; height:100%; position:relative;">
+        <div id="mapPlaceholder" class="placeholder-msg" style="pointer-events: auto;">
+          <div class="big-icon" style="font-size: 3rem; margin-bottom: 10px;">🗺️</div>
+          <h2 style="margin-bottom: 5px;">Ready to Plan Your Journey</h2>
+          <p class="muted" style="max-width: 400px; margin: 0 auto 25px auto; font-size: 14px;">
+            Start by enabling the map, using the AI Chatbot to find new gems, or picking a template from the library.
           </p>
-          <div style="margin-top: 20px;">
-            <button id="btnEnableMap" style="width: auto; padding: 10px 20px;">Enable Map & Start</button>
+          
+          <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+            <button id="btnEnableMapInitial" style="width: 280px; padding: 12px; background: var(--accent); color: #000;">
+              Enable Map & Start Routing
+            </button>
+            <button id="btnStartAIChat" class="secondary" style="width: 280px; padding: 12px; border: 1px solid var(--accent); color: var(--accent);">
+              ✨ Plan with AI Travel Assistant
+            </button>
+          </div>
+
+          <div style="margin-top: 40px; padding: 15px; border-top: 1px solid var(--border); max-width: 450px;">
+            <p class="small muted">
+              <strong style="color: var(--text);">Pro Tip:</strong> Look to the left! 👈 Use the <strong>Trip Library</strong> to load curated routes. Once loaded, you can customize them manually or ask the AI to optimize them for you.
+            </p>
           </div>
         </div>
-        <div id="map"></div>
+        <div id="map" style="display:none; width:100%; height:100%;"></div>
       </div>
 
-      <div id="chatPanel" style="display:flex; width:100%; height:100%; flex-direction:column; background:var(--bg);">
+      <div id="chatPanel" style="display:none; width:100%; height:100%; flex-direction:column; background:var(--bg);">
         <div class="chat-header" style="padding:15px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:rgba(15,22,33,0.9);">
           <div>
             <h2 style="margin:0; font-size:16px; color:var(--text);">✨ AI Travel Assistant</h2>
             <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
               <span class="muted small">Model:</span>
               <select id="modelSelector" style="background:#0b0f14; color:#fff; border:1px solid #1f2a3a; border-radius:4px; font-size:11px; padding:2px 6px;">
-                <option value="gemini-1.5-flash">Loading models...</option>
+                <option value="">Detecting models...</option>
               </select>
             </div>
           </div>
@@ -130,17 +143,11 @@
         <div id="chatHistory" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:15px;">
           <div class="chat-msg ai">
             <strong>👋 Welcome to 8Z-RP Trip Optimizer!</strong><br><br>
-            I am your intelligent travel assistant. This tool is different from others you might have used:<br>
+            I am your intelligent travel assistant. I can help you find locations and add them directly to your plan.<br>
             <ul>
-              <li>🛡️ <strong>100% Private:</strong> Your trip data never leaves your browser.</li>
-              <li>🎯 <strong>Deterministic:</strong> We use advanced math to find the <em>exact</em> best route, every time.</li>
+              <li>🛡️ <strong>Private:</strong> Your data stays in your browser.</li>
+              <li>📍 <strong>Smart:</strong> Ask me "Suggest 5 spots in Rome" and I'll add them to your list automatically.</li>
             </ul>
-            <p><strong>How can I help you today?</strong></p>
-            <p>
-              1. You can <strong>browse the Trip Library</strong> on the left.<br>
-              2. Or ask me: <em>"Find the 5 best restaurants in Ljubljana and add them to my trip."</em><br>
-              3. Finally, click <strong>Optimize</strong> on the left to see your route on the map!
-            </p>
           </div>
         </div>
 
