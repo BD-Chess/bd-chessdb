@@ -5,7 +5,7 @@
   
   // --- CONFIGURATION ---
   const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA'; // Maps
-  // FIXED: Updated with the new key from GoogleAPI.txt
+  // FIXED: Your working Gemini Key
   const GEMINI_API_KEY = 'AIzaSyBXywyzEKms_kaly7EhiFtLgPgCspLUyvc'; // Chatbot
 
   // --- UI ELEMENTS ---
@@ -59,7 +59,7 @@
   const chatInput = $('chatInput');
   const btnSendChat = $('btnSendChat');
   const chatHistory = $('chatHistory');
-  const modelSelector = $('modelSelector'); // New Dropdown
+  const modelSelector = $('modelSelector');
 
   // Core Worker
   const worker = new Worker('worker.js');
@@ -75,7 +75,8 @@
   let currentTravelMode = 'DRIVING'; 
   let pendingRunProfile = null; 
   let chatHistoryBuffer = []; 
-  let currentGeminiModel = 'models/gemini-1.5-flash'; // Fallback default
+  let currentGeminiModel = 'models/gemini-1.5-flash'; 
+  let infoWindow = null; // Global info window for map pins
   
   let presetLookup = {};
   const STORAGE_KEY = '8z_trip_backup_v1';
@@ -92,7 +93,7 @@
 
   // --- GOOGLE MAPS LAZY LOADER ---
   function loadGoogleMaps() {
-    if (window.google && window.google.maps) return; // Already loaded
+    if (window.google && window.google.maps) return; 
 
     if (btnEnableMap) {
         btnEnableMap.disabled = true;
@@ -119,6 +120,7 @@
 
     geocoder = new google.maps.Geocoder();
     directionsService = new google.maps.DirectionsService();
+    infoWindow = new google.maps.InfoWindow(); // Initialize InfoWindow
     
     restoreState(); 
 
@@ -135,63 +137,55 @@
   };
 
   // --- AI CHATBOT LOGIC ---
-  
-  // 1. Fetch available models and populate dropdown
   async function initModelSelector() {
     if (!modelSelector) return;
     
     try {
-      // Ask Google: "What models can I use?"
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
       const data = await response.json();
       
       if (!data.models) return;
 
-      // Filter: Keep only 'gemini', remove embeddings/vision-only
       const validModels = data.models.filter(m => 
         m.name.includes('models/gemini') && 
         !m.name.includes('embedding') &&
         !m.name.includes('imagen') &&
         !m.name.includes('veo') &&
-        !m.name.includes('vision') // usually handled by multimodal, but safer to exclude pure vision ones if specific
+        !m.name.includes('vision')
       );
 
-      // Sort: Newest version first (e.g. 2.0 > 1.5)
+      // Priority Sort: Prefer 1.5-flash for stability/speed
+      const preferred = 'models/gemini-1.5-flash';
       validModels.sort((a, b) => {
+        if (a.name === preferred) return -1;
+        if (b.name === preferred) return 1;
+        
+        // Version sort logic
         const getVer = (name) => {
           const match = name.match(/gemini-(\d+(\.\d+)?)/);
           return match ? parseFloat(match[1]) : 0;
         };
         const vA = getVer(a.name);
         const vB = getVer(b.name);
-        
-        if (vA !== vB) return vB - vA; // Higher version first
-        // If versions match, prioritize 'Pro' over 'Flash'
-        const isPro = (n) => n.includes('pro');
-        return isPro(b.name) - isPro(a.name); 
+        if (vA !== vB) return vB - vA;
+        return 0;
       });
 
-      // Populate Dropdown
       modelSelector.innerHTML = '';
       validModels.forEach(m => {
         const option = document.createElement('option');
-        option.value = m.name; // "models/gemini-1.5-flash"
-        // Beautify Name: "models/gemini-1.5-flash" -> "Gemini 1.5 Flash"
+        option.value = m.name;
         option.textContent = m.displayName || m.name.replace('models/', '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
         modelSelector.appendChild(option);
       });
 
-      // Select the first one (Newest)
       if (validModels.length > 0) {
         currentGeminiModel = validModels[0].name;
         modelSelector.value = currentGeminiModel;
       }
 
-      // Listen for changes
       modelSelector.addEventListener('change', () => {
         currentGeminiModel = modelSelector.value;
-        // Optional: Notify user in chat (subtle)
-        // console.log("Switched to model:", currentGeminiModel);
       });
 
     } catch (e) {
@@ -227,7 +221,6 @@
       const loadingEl = document.getElementById(loadingId);
       if (loadingEl) loadingEl.remove();
       
-      // PARSING: Look for {ADD: Place} commands
       let cleanResponse = response;
       const addRegex = /\{ADD:\s*(.*?)\}/g;
       let match;
@@ -236,7 +229,7 @@
       while ((match = addRegex.exec(response)) !== null) {
         const place = match[1].trim();
         addedPlaces.push(place);
-        window.addStopToRoute(place); // Auto-add to trip
+        window.addStopToRoute(place);
         cleanResponse = cleanResponse.replace(match[0], '');
       }
 
@@ -269,7 +262,6 @@
   }
 
   async function callGeminiAPI(userPrompt) {
-    // DYNAMIC URL: Uses the model selected in the dropdown
     const url = `https://generativelanguage.googleapis.com/v1beta/${currentGeminiModel}:generateContent?key=${GEMINI_API_KEY}`;
     
     chatHistoryBuffer.push({ role: "user", parts: [{ text: userPrompt }] });
@@ -279,17 +271,16 @@
       role: "user",
       parts: [{ text: `You are the AI Assistant for '8Z-RP Trip Optimizer'. 
       CONTEXT:
-      - This is a high-performance, privacy-focused, client-side Trip Optimizer using deterministic TSP math.
+      - This is a high-performance, privacy-focused, client-side Trip Optimizer.
       - Users can add stops to a list and optimize the route.
       
       YOUR GOAL:
       - Help users find locations, hidden gems, or itinerary ideas.
-      - Be concise and helpful.
+      - If user asks to review a route, analyze the geography and logistics.
       
       TOOL USE:
-      - If the user asks to add a specific place to their trip (or if you suggest specific places they definitely want), you MUST append this special tag to the end of your response: {ADD: Place Name}
-      - Example: "The Tivoli Park is great. {ADD: Tivoli Park, Ljubljana}"
-      - You can add multiple tags if needed.` }]
+      - If the user asks to add a specific place to their trip, append: {ADD: Place Name}
+      ` }]
     };
 
     const payload = {
@@ -312,7 +303,7 @@
     return aiText;
   }
 
-  // --- AUTO-SAVE SYSTEM ---
+  // --- AUTO-SAVE & STATE ---
   function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -330,11 +321,7 @@
       googleStyle: chkGoogleStyle.checked,
       timestamp: Date.now()
     };
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (e) {
-      console.warn('LocalStorage save failed', e);
-    }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
   }, 1000); 
 
   function restoreState() {
@@ -342,13 +329,8 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       const state = JSON.parse(raw);
-      
       if (state.text) inputEl.value = state.text;
-      
-      if (state.mode) {
-        setTravelMode(state.mode);
-      }
-      
+      if (state.mode) setTravelMode(state.mode);
       if (typeof state.roundTrip === 'boolean') chkRoundTrip.checked = state.roundTrip;
       if (typeof state.direct === 'boolean') chkDirect.checked = state.direct;
       if (typeof state.googleStyle === 'boolean') {
@@ -356,39 +338,31 @@
         if (map && !state.googleStyle) map.setOptions({ styles: CUSTOM_DARK_STYLE });
         if (map && state.googleStyle) map.setOptions({ styles: null });
       }
-
       setStatus('Restored your last session.', 'ok');
-    } catch (e) {
-      console.warn('Failed to restore state', e);
-    }
+    } catch (e) {}
   }
 
-  // --- INIT FUNCTIONS & SEARCH ---
+  // --- TRIP TREE ---
   function initTripTree() {
     if (!window.TRIP_LIBRARY || !presetTree) return;
-
     presetTree.innerHTML = '';
     presetLookup = {};
 
     window.TRIP_LIBRARY.forEach(region => {
       const regionNode = document.createElement('div');
       regionNode.className = 'tree-node';
-      
       const regionHeader = document.createElement('div');
       regionHeader.className = 'tree-header';
       regionHeader.innerHTML = `<span class="tree-icon">[+]</span> ${region.region}`;
-      
       const regionGroup = document.createElement('div');
       regionGroup.className = 'tree-group';
 
       region.categories.forEach(cat => {
         const catNode = document.createElement('div');
         catNode.className = 'tree-node';
-
         const catHeader = document.createElement('div');
         catHeader.className = 'tree-header';
         catHeader.innerHTML = `<span class="tree-icon">[+]</span> ${cat.name}`;
-
         const catGroup = document.createElement('div');
         catGroup.className = 'tree-group';
 
@@ -418,25 +392,15 @@
   function filterTripTree(query) {
     if (!presetTree) return;
     const lowerQ = query.toLowerCase().trim();
-    
     const allItems = presetTree.querySelectorAll('.tree-item');
-    const allNodes = presetTree.querySelectorAll('.tree-node');
     const allGroups = presetTree.querySelectorAll('.tree-group');
-
     if (!lowerQ) {
       allItems.forEach(el => el.style.display = 'block');
-      allNodes.forEach(el => el.style.display = 'block');
-      allGroups.forEach(el => {
-        el.style.display = 'none'; 
-        el.classList.remove('open');
-      });
+      allGroups.forEach(el => { el.style.display = 'none'; el.classList.remove('open'); });
       presetTree.querySelectorAll('.tree-icon').forEach(icon => icon.textContent = '[+]');
       return;
     }
-
     allItems.forEach(el => el.style.display = 'none');
-    allNodes.forEach(el => el.style.display = 'none');
-    
     allItems.forEach(item => {
       if (item.textContent.toLowerCase().includes(lowerQ)) {
         item.style.display = 'block';
@@ -445,24 +409,11 @@
           if (parent.classList.contains('tree-group')) {
             parent.style.display = 'block';
             parent.classList.add('open');
-            if (parent.previousElementSibling) {
-              const icon = parent.previousElementSibling.querySelector('.tree-icon');
-              if (icon) icon.textContent = '[-]';
-            }
-          }
-          if (parent.classList.contains('tree-node')) {
-            parent.style.display = 'block';
           }
           parent = parent.parentElement;
         }
       }
     });
-  }
-
-  function openOverlay(content) {
-    if (!helpBody) return;
-    helpBody.innerHTML = content;
-    helpOverlay.classList.add('active');
   }
 
   function toggleTreeGroup(header, group) {
@@ -480,15 +431,11 @@
 
   function loadPreset(key) {
     toggleChatMode(false);
-    
-    if (!window.google || !window.google.maps) {
-        loadGoogleMaps();
-    }
+    if (!window.google || !window.google.maps) loadGoogleMaps();
 
     if (key && presetLookup[key]) {
       inputEl.value = presetLookup[key];
       saveState(); 
-      
       if (key.includes('GLOBAL_')) {
         chkDirect.checked = true;
         setTravelMode('DRIVING');
@@ -496,44 +443,31 @@
       } else {
         chkDirect.checked = false;
         const isDriving = key.includes('_DRIVE') || key.includes('COMPLEX') || key.startsWith('EUROPE_');
-        
-        if (isDriving) {
-          setTravelMode('DRIVING');
-          setStatus(`Loaded Driving Tour: ${key}\n(Switched to Car Mode 🚗)`, 'ok');
-        } else {
-          setTravelMode('WALKING');
-          setStatus(`Loaded Walking Tour: ${key}\n(Switched to Walk Mode 🚶)`, 'ok');
-        }
+        setTravelMode(isDriving ? 'DRIVING' : 'WALKING');
+        setStatus(`Loaded Tour: ${key}`, 'ok');
       }
       chkRoundTrip.checked = true;
       saveState();
     }
   }
 
-  // --- API FOR CHAT ASSISTANT (HOOK) ---
   window.addStopToRoute = function(locationName) {
     const current = inputEl.value;
     const cleanName = locationName.trim();
     if (!cleanName) return;
-
     if (!current.trim()) {
       inputEl.value = cleanName;
-    } else {
-      // Check for duplicates roughly
-      if (!current.includes(cleanName)) {
-        inputEl.value = current.trim() + '\n' + cleanName;
-      }
+    } else if (!current.includes(cleanName)) {
+      inputEl.value = current.trim() + '\n' + cleanName;
     }
-    
     inputEl.scrollTop = inputEl.scrollHeight;
     inputEl.style.borderColor = '#7ee787'; 
     setTimeout(() => { inputEl.style.borderColor = '#1f2a3a'; }, 300);
-    
     saveState();
     setStatus(`Added "${cleanName}" to list.`, 'ok');
   };
 
-  // --- HELPERS ---
+  // --- CORE UI LOGIC ---
   function clearMap() {
     if (!map) return;
     mapMarkers.forEach(m => m.setMap(null));
@@ -541,7 +475,6 @@
     if (mapPolyline) mapPolyline.setMap(null);
     directionsRenderers.forEach(dr => dr.setMap(null));
     directionsRenderers = [];
-    
     distKmEl.textContent = '—';
     savedKmEl.textContent = '—';
     routeList.innerHTML = '';
@@ -555,16 +488,10 @@
   }
 
   if (btnCollapse) {
-    btnCollapse.addEventListener('click', () => {
-      $('leftPanel').classList.add('collapsed');
-      btnExpand.style.display = 'flex';
-    });
+    btnCollapse.addEventListener('click', () => { $('leftPanel').classList.add('collapsed'); btnExpand.style.display = 'flex'; });
   }
   if (btnExpand) {
-    btnExpand.addEventListener('click', () => {
-      $('leftPanel').classList.remove('collapsed');
-      btnExpand.style.display = 'none';
-    });
+    btnExpand.addEventListener('click', () => { $('leftPanel').classList.remove('collapsed'); btnExpand.style.display = 'none'; });
   }
 
   if (btnSave) {
@@ -608,7 +535,7 @@
     saveState();
     if (lastSolvedPoints) {
       const links = buildMapsLegLinks(lastSolvedPoints, chkRoundTrip.checked, currentTravelMode);
-      renderLinks(links);
+      renderLinks(links, lastSolvedPoints);
       updateMapVisualization(lastSolvedPoints);
     }
   }
@@ -641,7 +568,7 @@
   function updateMapVisualization(points) {
     if (!map) return;
     lastSolvedPoints = points;
-    hideHelp();
+    if (window.hideHelp) window.hideHelp();
 
     mapMarkers.forEach(m => m.setMap(null));
     mapMarkers = [];
@@ -649,7 +576,6 @@
     directionsRenderers.forEach(dr => dr.setMap(null));
     directionsRenderers = [];
     
-    // Auto-switch to map view
     toggleChatMode(false);
     mapPlaceholder.style.display = 'none';
     mapDiv.style.display = 'block';
@@ -674,6 +600,20 @@
           title: pt.name,
           zIndex: 100 + index
         });
+        
+        // --- NEW: INFO WINDOW CLICK LISTENER ---
+        marker.addListener("click", () => {
+          if (infoWindow) {
+            infoWindow.setContent(`
+              <div style="color:black; padding:5px; font-family:sans-serif;">
+                <strong style="font-size:14px;">#${index + 1}: ${pt.name}</strong><br>
+                <small style="color:#666;">${pt.lat.toFixed(5)}, ${pt.lon.toFixed(5)}</small>
+              </div>
+            `);
+            infoWindow.open(map, marker);
+          }
+        });
+
         mapMarkers.push(marker);
       }
     });
@@ -689,27 +629,18 @@
     }
 
     const CHUNK_SIZE = 24; 
-    
     for (let i = 0; i < routePath.length - 1; i += CHUNK_SIZE) {
       const chunk = routePath.slice(i, i + CHUNK_SIZE + 1);
       if (chunk.length < 2) continue;
-
       const origin = chunk[0];
       const destination = chunk[chunk.length - 1];
-      const waypoints = chunk.slice(1, -1).map(loc => ({
-        location: loc,
-        stopover: true
-      }));
+      const waypoints = chunk.slice(1, -1).map(loc => ({ location: loc, stopover: true }));
 
       const renderer = new google.maps.DirectionsRenderer({
         map: map,
         suppressMarkers: true, 
         preserveViewport: true, 
-        polylineOptions: {
-          strokeColor: "#6aa9ff",
-          strokeWeight: 5,
-          strokeOpacity: 0.7
-        }
+        polylineOptions: { strokeColor: "#6aa9ff", strokeWeight: 5, strokeOpacity: 0.7 }
       });
       directionsRenderers.push(renderer);
 
@@ -719,14 +650,9 @@
         waypoints: waypoints,
         travelMode: google.maps.TravelMode[currentTravelMode],
       }, (response, status) => {
-        if (status === "OK") {
-          renderer.setDirections(response);
-        } else {
-          console.warn("Directions chunk failed: " + status);
-        }
+        if (status === "OK") renderer.setDirections(response);
       });
     }
-    
     map.fitBounds(bounds);
   }
 
@@ -738,16 +664,13 @@
       const response = await geocoder.geocode({ address: rawName });
       if (response.results && response.results.length > 0) {
         const res = response.results[0];
-        const loc = res.geometry.location;
         return {
-          lat: loc.lat(),
-          lon: loc.lng(),
+          lat: res.geometry.location.lat(),
+          lon: res.geometry.location.lng(),
           formatted: res.formatted_address 
         };
       }
-    } catch (e) {
-      console.warn("Geocode error for:", rawName, e);
-    }
+    } catch (e) { console.warn(e); }
     return null;
   }
 
@@ -778,8 +701,7 @@
 
     for (let raw of lines) {
       raw = raw.trim();
-      if (!raw) continue;
-      if (raw.startsWith('#')) continue;
+      if (!raw || raw.startsWith('#')) continue;
 
       let isStart = false;
       if (/\bSTART\b/i.test(raw)) {
@@ -789,7 +711,6 @@
 
       let name = raw;
       let lat = null, lon = null;
-
       if (raw.includes('|')) {
         const parts = raw.split('|');
         const p0 = parts[0].trim();
@@ -798,8 +719,7 @@
         const m1 = coordRe.exec(p1);
         if (m1) { name = p0 || "Point"; lat = parseFloat(m1[1]); lon = parseFloat(m1[2]); } 
         else if (m0) { name = p1 || "Point"; lat = parseFloat(m0[1]); lon = parseFloat(m0[2]); }
-      } 
-      else {
+      } else {
         const m = coordRe.exec(raw);
         if (m) {
           lat = parseFloat(m[1]); lon = parseFloat(m[2]);
@@ -823,13 +743,7 @@
 
   function buildMapsLegLinks(routePts, roundTrip, mode) {
     const travelmode = (mode === 'DRIVING') ? 'driving' : 'walking';
-    
-    const encodeLoc = (p) => {
-      if (typeof p.lat === 'number' && typeof p.lon === 'number') {
-        return `${p.lat.toFixed(5)},${p.lon.toFixed(5)}`;
-      }
-      return encodeURIComponent(p.name);
-    };
+    const encodeLoc = (p) => (typeof p.lat==='number') ? `${p.lat.toFixed(5)},${p.lon.toFixed(5)}` : encodeURIComponent(p.name);
 
     const seq = routePts.slice();
     if (roundTrip && seq.length > 1) seq.push(seq[0]);
@@ -854,9 +768,7 @@
       params.set('travelmode', travelmode);
       if (mids.length) params.set('waypoints', mids.join('|'));
 
-      // FIXED: URL Construction with correct standard maps link
       const url = `https://www.google.com/maps/dir/?${params.toString()}`;
-      
       links.push({ url, label: `Leg ${links.length + 1} (${segment.length} stops)` });
       i = j;
     }
@@ -876,8 +788,39 @@
     savedKmEl.textContent = isFinite(saved) ? fmtKm(saved) : '—';
   }
 
-  function renderLinks(links) {
+  // --- NEW: Renders links AND the "Ask AI" button ---
+  function renderLinks(links, routePts) {
     linksEl.innerHTML = '';
+
+    // 1. Create the "Consult AI" Button (Added Feature)
+    if (routePts && routePts.length > 0) {
+      const aiBtnContainer = document.createElement('div');
+      aiBtnContainer.style.marginBottom = '10px';
+      
+      const aiBtn = document.createElement('button');
+      aiBtn.innerHTML = '✨ Ask AI: "Is this order logical?"';
+      aiBtn.className = 'secondary';
+      aiBtn.style.width = '100%';
+      aiBtn.style.border = '1px dashed var(--accent)';
+      
+      aiBtn.addEventListener('click', () => {
+        // Construct a prompt with the route
+        let prompt = "I have optimized my trip. Here is the recommended order:\n";
+        routePts.forEach((p, i) => {
+          prompt += `${i+1}. ${p.name}\n`;
+        });
+        prompt += "\nIs this a logical order geographically and logistically? Are there any backtracking issues?";
+        
+        toggleChatMode(true);
+        chatInput.value = prompt;
+        chatInput.focus();
+      });
+      
+      aiBtnContainer.appendChild(aiBtn);
+      linksEl.appendChild(aiBtnContainer);
+    }
+
+    // 2. Render standard Map links
     for (const L of links) {
       const row = document.createElement('div');
       row.className = 'linkrow';
@@ -902,17 +845,15 @@
   }
 
   async function run(profile) {
-    // Check if Map is loaded. If not, load it and wait.
     if (!geocoder || !directionsService) {
       setStatus('Awaking the map... please wait.', 'warn');
-      pendingRunProfile = profile; // Remember what user wanted
+      pendingRunProfile = profile; 
       loadGoogleMaps();
       return;
     }
 
     updateOptimizeButtons(profile);
     saveState();
-
     disableWhileRunning(true);
     let { pts, startIdx } = parseStops(inputEl.value);
     
@@ -927,8 +868,7 @@
     routeList.innerHTML = '';
     distKmEl.textContent = '—';
     savedKmEl.textContent = '—';
-    
-    hideHelp();
+    if (window.hideHelp) window.hideHelp();
     
     worker.postMessage({ type: 'solve', profile, points: validPts, startIdx: (startIdx < validPts.length) ? startIdx : 0, roundTrip: chkRoundTrip.checked });
   }
@@ -938,12 +878,14 @@
     if (msg.type === 'result') {
       disableWhileRunning(false);
       const { totalKm, baseKm, pointsSorted } = msg;
+      
       renderRoute(pointsSorted, totalKm, baseKm);
-      
       const links = buildMapsLegLinks(pointsSorted, chkRoundTrip.checked, currentTravelMode);
-      renderLinks(links);
-      updateMapVisualization(pointsSorted);
       
+      // Pass 'pointsSorted' here so the button knows the route
+      renderLinks(links, pointsSorted);
+      
+      updateMapVisualization(pointsSorted);
       setStatus(`Done. Distance: ${fmtKm(totalKm)}`, 'ok');
     } else if (msg.type === 'error') {
       setStatus(msg.error || 'Error.', 'bad');
@@ -953,25 +895,13 @@
     }
   };
 
-  function showHelp() { helpOverlay.classList.add('active'); }
-  function hideHelp() { helpOverlay.classList.remove('active'); }
-
-  // --- EVENT LISTENERS ---
-  
-  // Input Auto-Save listener
-  inputEl.addEventListener('input', saveState);
-  
-  // New Search Listener
-  if (tripSearch) {
-    tripSearch.addEventListener('input', (e) => filterTripTree(e.target.value));
+  function openOverlay(content) {
+    if (!helpBody) return;
+    helpBody.innerHTML = content;
+    helpOverlay.classList.add('active');
   }
+  window.hideHelp = function() { helpOverlay.classList.remove('active'); };
 
-  // Map Trigger
-  if (btnEnableMap) {
-    btnEnableMap.addEventListener('click', loadGoogleMaps);
-  }
-
-  // Chat Triggers
   if (btnChatToggle) {
     btnChatToggle.addEventListener('click', (e) => {
       e.preventDefault();
@@ -979,50 +909,25 @@
       toggleChatMode(!isChatVisible);
     });
   }
-  if (btnCloseChat) {
-    btnCloseChat.addEventListener('click', () => toggleChatMode(false));
-  }
-  if (btnSendChat) {
-    btnSendChat.addEventListener('click', handleSendChat);
-  }
-  if (chatInput) {
-    chatInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') handleSendChat();
-    });
-  }
+  if (btnCloseChat) btnCloseChat.addEventListener('click', () => toggleChatMode(false));
+  if (btnSendChat) btnSendChat.addEventListener('click', handleSendChat);
+  if (chatInput) chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSendChat(); });
 
   if (btnStandard) btnStandard.addEventListener('click', () => run('standard'));
   if (btnDeep) btnDeep.addEventListener('click', () => run('deep'));
   
-  if (btnHelp) {
-    btnHelp.addEventListener('click', (e) => { 
-      e.preventDefault(); 
-      if (window.HELP_CONTENT) openOverlay(window.HELP_CONTENT);
-    });
-  }
-  if (btnAbout) {
-    btnAbout.addEventListener('click', (e) => { 
-      e.preventDefault(); 
-      if (window.ABOUT_CONTENT) openOverlay(window.ABOUT_CONTENT);
-    });
-  }
-  if (btnCloseHelp) btnCloseHelp.addEventListener('click', (e) => { e.preventDefault(); hideHelp(); });
+  if (btnHelp) btnHelp.addEventListener('click', (e) => { e.preventDefault(); if (window.HELP_CONTENT) openOverlay(window.HELP_CONTENT); });
+  if (btnAbout) btnAbout.addEventListener('click', (e) => { e.preventDefault(); if (window.ABOUT_CONTENT) openOverlay(window.ABOUT_CONTENT); });
+  if (btnCloseHelp) btnCloseHelp.addEventListener('click', (e) => { e.preventDefault(); window.hideHelp(); });
 
   if (btnDriving) btnDriving.addEventListener('click', () => setTravelMode('DRIVING'));
   if (btnWalking) btnWalking.addEventListener('click', () => setTravelMode('WALKING'));
 
   chkRoundTrip.addEventListener('change', saveState);
-
-  chkDirect.addEventListener('change', () => {
-    saveState();
-    if (lastSolvedPoints) updateMapVisualization(lastSolvedPoints);
-  });
-  
+  chkDirect.addEventListener('change', () => { saveState(); if (lastSolvedPoints) updateMapVisualization(lastSolvedPoints); });
   chkGoogleStyle.addEventListener('change', (e) => {
     saveState();
-    if (map) {
-      map.setOptions({ styles: e.target.checked ? null : CUSTOM_DARK_STYLE });
-    }
+    if (map) map.setOptions({ styles: e.target.checked ? null : CUSTOM_DARK_STYLE });
   });
   
   // INIT

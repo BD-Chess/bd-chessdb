@@ -1,4 +1,4 @@
-/* Web Worker: deterministic route optimization (Euclidean on lat/lon via equirectangular projection) */
+/* Web Worker: deterministic route optimization (Haversine / Great Circle Distance) */
 'use strict';
 
 // --- SEEDED RNG (Unchanged) ---
@@ -34,48 +34,42 @@ class XorShift64Star {
   }
 }
 
-// --- GEOMETRY HELPERS (Unchanged) ---
-function toXYMeters(points) {
-  const R = 6371000.0;
-  let latSum = 0;
-  let cnt = 0;
-  for (const p of points) {
-    if (isFinite(p.lat) && isFinite(p.lon)) { latSum += p.lat; cnt++; }
-  }
-  const lat0 = (cnt ? (latSum / cnt) : 0) * Math.PI / 180.0;
-  const cos0 = Math.cos(lat0);
-
-  const xy = new Array(points.length);
-  for (let i = 0; i < points.length; i++) {
-    const p = points[i];
-    if (!isFinite(p.lat) || !isFinite(p.lon)) {
-      xy[i] = null;
-      continue;
-    }
-    const lat = p.lat * Math.PI / 180.0;
-    const lon = p.lon * Math.PI / 180.0;
-    const x = R * lon * cos0;
-    const y = R * lat;
-    xy[i] = { x, y };
-  }
-  return xy;
+// --- GEOMETRY HELPERS (NEW: Haversine Formula) ---
+function toRad(deg) { 
+  return deg * Math.PI / 180.0; 
 }
 
-function dist2(a, b) {
-  const dx = a.x - b.x, dy = a.y - b.y;
-  return dx*dx + dy*dy;
+// Calculates distance in meters between two lat/lon points on a sphere
+function getHaversineDist(p1, p2) {
+  const R = 6371000; // Earth radius in meters
+  const dLat = toRad(p2.lat - p1.lat);
+  const dLon = toRad(p2.lon - p1.lon);
+  const lat1 = toRad(p1.lat);
+  const lat2 = toRad(p2.lat);
+
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
 }
 
-function buildDistanceMatrix(xy) {
-  const n = xy.length;
+function buildDistanceMatrix(points) {
+  const n = points.length;
   const D = new Array(n);
   for (let i = 0; i < n; i++) D[i] = new Float64Array(n);
+  
   for (let i = 0; i < n; i++) {
     D[i][i] = 0;
     for (let j = i + 1; j < n; j++) {
-      const d = Math.sqrt(dist2(xy[i], xy[j]));
-      D[i][j] = d;
-      D[j][i] = d;
+      // Handle missing coordinates gracefully (infinity distance)
+      if (points[i].lat === null || points[j].lat === null) {
+        D[i][j] = Infinity; 
+        D[j][i] = Infinity;
+      } else {
+        const d = getHaversineDist(points[i], points[j]);
+        D[i][j] = d;
+        D[j][i] = d;
+      }
     }
   }
   return D;
@@ -152,8 +146,6 @@ function nnWithJitter(start, D, allowed, rng, jitterScale) {
   return route;
 }
 
-// FIX: Removed 'timeBudgetMs' and 'performance.now()'
-// Added 'moveBudget' to limit calculation count deterministically
 function twoOpt(route, D, roundTrip, maxPasses, moveBudget) {
   const n = route.length;
   if (n < 4) return route;
@@ -166,14 +158,13 @@ function twoOpt(route, D, roundTrip, maxPasses, moveBudget) {
       const a = route[i-1], b = route[i];
       for (let k = i + 1; k < n - 1; k++) {
         
-        // Budget Check
         movesChecked++;
         if (movesChecked > moveBudget) return route;
 
         const c = route[k], d = route[k+1];
         const delta = (D[a][c] + D[b][d]) - (D[a][b] + D[c][d]);
         
-        if (delta < -1e-12) {
+        if (delta < -1e-9) { // Using a slightly larger epsilon for float stability
           let L = i, R = k;
           while (L < R) {
             const tmp = route[L]; route[L] = route[R]; route[R] = tmp;
@@ -198,8 +189,9 @@ function solve(points, startIdx, profile, roundTrip) {
   }
 
   const coordPoints = withCoords.map(i => points[i]);
-  const xy = toXYMeters(coordPoints);
-  const D = buildDistanceMatrix(xy);
+  
+  // FIXED: No longer projecting to XY. Building matrix directly from Lat/Lon.
+  const D = buildDistanceMatrix(coordPoints);
 
   const startGlobal = startIdx;
   let start = 0;
@@ -212,18 +204,16 @@ function solve(points, startIdx, profile, roundTrip) {
   const rng = new XorShift64Star(fnv1a64(seedStr));
 
   // --- DETERMINISTIC SETTINGS ---
-  // Replaced timeBudgetMs with moveBudget (operations count)
   let starts = 2;
   let maxPasses = 4;
-  let moveBudget = 200000; // Default budget
+  let moveBudget = 200000;
   let jitterScale = 0.03;
 
   if (profile === 'standard') {
     starts = 2; maxPasses = 4; moveBudget = 500000; jitterScale = 0.03;
   } else if (profile === 'deep') {
-    starts = 12; maxPasses = 10; moveBudget = 5000000; jitterScale = 0.08; // 10x more effort
+    starts = 12; maxPasses = 10; moveBudget = 5000000; jitterScale = 0.08;
   } 
-  // Fallbacks
   else if (profile === 'fast') {
     starts = 1; maxPasses = 3; moveBudget = 100000; jitterScale = 0.02;
   } else if (profile === 'balanced') {
@@ -255,7 +245,7 @@ function solve(points, startIdx, profile, roundTrip) {
       }
     }
 
-    postMessage({ type: 'progress', text: `Start ${s+1}/${starts}: ${Math.round(L/10)/100} km` });
+    postMessage({ type: 'progress', text: `Start ${s+1}/${starts}: ${Math.round(L/1000)} km` });
   }
 
   const orderCoordGlobal = bestRoute.map(i => withCoords[i]);

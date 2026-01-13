@@ -2,7 +2,7 @@
    -----------------------
    Structure: Region -> Categories -> Trips
    Format: { id: "UNIQUE_ID", label: "Display Name", data: "Text content..." }
-   Updated: ALL EU Capitals now have Top 10 locations with baked-in GPS coordinates.
+   Updated: Organized Regions (North America, Central America, Caribbean separated).
 */
 
 window.TRIP_LIBRARY = [
@@ -269,22 +269,32 @@ Museum of the Future | 25.2191, 55.2818`
     ]
   },
   {
-    region: "🌎 North America",
+    region: "🌎 Americas (North & Central)",
     categories: [
       {
-        name: "🚗 Top 10 Regions",
+        name: "🚗 North America (Major)",
         items: [
           { id: "US_WEST_DRIVE", label: "USA West Coast", data: `# 🇺🇸 USA West Coast\nSeattle, WA START\nPortland, OR\nRedwood National Park, CA\nSan Francisco, CA\nYosemite National Park, CA\nMonterey, CA\nSanta Barbara, CA\nLos Angeles, CA\nSan Diego, CA\nLas Vegas, NV` },
           { id: "US_EAST_DRIVE", label: "USA East Coast", data: `# 🇺🇸 USA East Coast\nBoston, MA START\nNew York City, NY\nPhiladelphia, PA\nWashington DC\nShenandoah National Park, VA\nMyrtle Beach, SC\nCharleston, SC\nSavannah, GA\nOrlando, FL\nMiami, FL` },
           { id: "CA_WEST_DRIVE", label: "Canada Rockies", data: `# 🇨🇦 Canada Rockies\nVancouver, BC START\nWhistler, BC\nKamloops, BC\nJasper National Park, AB\nLake Louise, AB\nBanff, AB\nCalgary, AB` },
           { id: "CA_EAST_DRIVE", label: "Canada Cities", data: `# 🇨🇦 Canada Cities\nToronto, ON START\nNiagara Falls, ON\nOttawa, ON\nMontreal, QC\nQuebec City, QC\nMont Tremblant, QC\nKingston, ON` },
           { id: "MX_DRIVE", label: "Mexico Heritage", data: `# 🇲🇽 Mexico Heritage\nMexico City, Mexico START\nTeotihuacan, Mexico\nPuebla, Mexico\nOaxaca, Mexico\nSan Cristobal de las Casas, Mexico\nPalenque, Mexico\nMerida, Mexico\nChichen Itza, Mexico\nCancun, Mexico` },
+          { id: "NY", label: "NYC Manhattan (Walking)", data: `# 🇺🇸 New York Manhattan (Walking)\nTimes Square, New York START\nCentral Park, New York\nEmpire State Building, New York\nBrooklyn Bridge, New York\nStatue of Liberty, New York\n9/11 Memorial, New York` }
+        ]
+      },
+      {
+        name: "🌴 Central America",
+        items: [
           { id: "CR_DRIVE", label: "Costa Rica Eco", data: `# 🇨🇷 Costa Rica Eco\nSan Jose, Costa Rica START\nTortuguero, Costa Rica\nArenal Volcano, Costa Rica\nMonteverde, Costa Rica\nTamarindo, Costa Rica\nManuel Antonio, Costa Rica\nCorcovado, Costa Rica` },
           { id: "PA_DRIVE", label: "Panama Crossings", data: `# 🇵🇦 Panama Crossings\nPanama City, Panama START\nPanama Canal, Panama\nEl Valle de Anton, Panama\nChitre, Panama\nBoquete, Panama\nBocas del Toro, Panama\nPortobelo, Panama` },
+          { id: "GT_DRIVE", label: "Guatemala Mayan", data: `# 🇬🇹 Guatemala Mayan\nGuatemala City, Guatemala START\nAntigua, Guatemala\nLake Atitlan, Guatemala\nChichicastenango, Guatemala\nCoban, Guatemala\nSemuc Champey, Guatemala\nFlores, Guatemala\nTikal, Guatemala` }
+        ]
+      },
+      {
+        name: "🏖️ The Caribbean",
+        items: [
           { id: "JM_DRIVE", label: "Jamaica Vibes", data: `# 🇯🇲 Jamaica Vibes\nMontego Bay, Jamaica START\nNegril, Jamaica\nTreasure Beach, Jamaica\nKingston, Jamaica\nBlue Mountains, Jamaica\nPort Antonio, Jamaica\nOcho Rios, Jamaica` },
-          { id: "CU_DRIVE", label: "Cuba Classic", data: `# 🇨🇺 Cuba Classic\nHavana, Cuba START\nViñales, Cuba\nCienfuegos, Cuba\nTrinidad, Cuba\nSanta Clara, Cuba\nVaradero, Cuba\nMatanzas, Cuba` },
-          { id: "GT_DRIVE", label: "Guatemala Mayan", data: `# 🇬🇹 Guatemala Mayan\nGuatemala City, Guatemala START\nAntigua, Guatemala\nLake Atitlan, Guatemala\nChichicastenango, Guatemala\nCoban, Guatemala\nSemuc Champey, Guatemala\nFlores, Guatemala\nTikal, Guatemala` },
-          { id: "NY", label: "NYC Manhattan (Walking)", data: `# 🇺🇸 New York Manhattan (Walking)\nTimes Square, New York START\nCentral Park, New York\nEmpire State Building, New York\nBrooklyn Bridge, New York\nStatue of Liberty, New York\n9/11 Memorial, New York` }
+          { id: "CU_DRIVE", label: "Cuba Classic", data: `# 🇨🇺 Cuba Classic\nHavana, Cuba START\nViñales, Cuba\nCienfuegos, Cuba\nTrinidad, Cuba\nSanta Clara, Cuba\nVaradero, Cuba\nMatanzas, Cuba` }
         ]
       }
     ]
