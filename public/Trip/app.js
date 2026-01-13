@@ -3,7 +3,7 @@
   const $ = (id) => document.getElementById(id);
   
   // --- CONFIGURATION ---
-  const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA'; 
+  const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA';
   const _s1 = 'QUl6YVN5Q3hIanBw', _s2 = 'S2l4YW85OU5IOURv', _s3 = 'YWYtUTBLTzRmQ1FhZUhz';
   const GEMINI_API_KEY = atob(_s1) + atob(_s2) + atob(_s3);
 
@@ -13,10 +13,31 @@
   const chkRoundTrip = $('chkRoundTrip'), btnEnableMap = $('btnEnableMap'), mapDiv = $('map');
   const presetTree = $('presetTree'), chatPanel = $('chatPanel'), mapContainer = $('mapContainer');
   const chatInput = $('chatInput'), btnSendChat = $('btnSendChat'), chatHistory = $('chatHistory'), modelSelector = $('modelSelector');
+  
+  // Navigation & Overlay Elements
+  const btnChatToggle = $('btnChatToggle'), btnCloseChat = $('btnCloseChat');
+  const btnAbout = $('btnAbout'), btnHelp = $('btnHelp'), helpOverlay = $('helpOverlay'), helpBody = $('helpBody'), btnCloseHelp = $('btnCloseHelp');
 
   const worker = new Worker('worker.js');
   let map, geocoder, infoWindow, lastSolvedPoints = null, chatHistoryBuffer = [], currentGeminiModel = '';
   const STORAGE_KEY = '8z_trip_backup_v1';
+
+  // --- NAVIGATION LOGIC ---
+  // Fixes the issue where Chat or Map were overlapping or hidden incorrectly
+  function showView(view) {
+    mapContainer.style.display = 'none';
+    chatPanel.style.display = 'none';
+    helpOverlay.classList.remove('active');
+
+    if (view === 'map') {
+      mapContainer.style.display = 'block';
+    } else if (view === 'chat') {
+      chatPanel.style.display = 'flex';
+    } else if (view === 'help' || view === 'about') {
+      helpOverlay.classList.add('active');
+      helpBody.innerHTML = view === 'help' ? window.HELP_CONTENT : window.ABOUT_CONTENT;
+    }
+  }
 
   // --- MAP & LIBRARY ---
   function loadGoogleMaps() {
@@ -24,7 +45,9 @@
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&callback=initMap&loading=async&v=weekly`;
     document.body.appendChild(script);
+    document.getElementById('mapPlaceholder').style.display = 'none';
   }
+
   window.initMap = function() {
     map = new google.maps.Map(mapDiv, { zoom: 12, center: { lat: 46.0569, lng: 14.5058 }, mapTypeId: 'hybrid' });
     geocoder = new google.maps.Geocoder(); infoWindow = new google.maps.InfoWindow();
@@ -47,7 +70,8 @@
           item.addEventListener('click', () => { inputEl.value = trip.data; saveState(); });
           cGroup.appendChild(item);
         });
-        cHeader.addEventListener('click', () => { 
+        cHeader.addEventListener('click', (e) => { 
+            e.stopPropagation();
             cGroup.classList.toggle('open'); 
             cHeader.querySelector('.tree-icon').textContent = cGroup.classList.contains('open') ? '[-]' : '[+]';
         });
@@ -61,7 +85,7 @@
     });
   }
 
-  // --- MODERN MODEL FILTERING & AUTO-SELECT (2026) ---
+  // --- GEMINI MODEL SELECTION ---
   async function initModelSelector() {
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
@@ -105,21 +129,27 @@
     chatHistoryBuffer.push({ role: "user", parts: [{ text: prompt }] });
     
     const payload = { 
-      contents: [{ role: "user", parts: [{ text: "You are the AI Travel Assistant. If asked for ideas, use {ADD: Place Name} to add stops." }]}, ...chatHistoryBuffer]
+      contents: [{ role: "user", parts: [{ text: "You are the AI Travel Assistant. If asked for ideas, you MUST use the format {ADD: Place Name} to suggest a specific stop." }]}, ...chatHistoryBuffer]
     };
 
     const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
     const data = await res.json();
     
     if (data.error) return "Error: " + data.error.message;
-    if (!data.candidates || data.candidates.length === 0) return "AI refused response. Try rephrasing.";
+    if (!data.candidates || data.candidates.length === 0) return "AI refused response.";
 
     const aiText = data.candidates[0].content.parts[0].text;
     chatHistoryBuffer.push({ role: "model", parts: [{ text: aiText }] });
     return aiText;
   }
 
-  // --- RESULTS & LINKS (WITH ASK AI BUTTON) ---
+  // --- RESULTS & PROCESSING ---
+  window.addStopToRoute = function(loc) {
+    const currentVal = inputEl.value.trim();
+    inputEl.value = currentVal + (currentVal ? '\n' : '') + loc;
+    saveState();
+  };
+
   function renderLinks(links) {
     linksEl.innerHTML = '';
     if (lastSolvedPoints && lastSolvedPoints.length > 0) {
@@ -128,7 +158,8 @@
       aiBtn.className = 'secondary'; aiBtn.style.width = '100%'; aiBtn.style.marginBottom = '10px';
       aiBtn.addEventListener('click', () => {
         chatInput.value = "I have optimized my trip. Is this order logical geographically?\n" + lastSolvedPoints.map((pt, i) => `${i+1}. ${pt.name}`).join('\n');
-        chatPanel.style.display = 'flex'; mapContainer.style.display = 'none'; chatInput.focus();
+        showView('chat');
+        chatInput.focus();
       });
       linksEl.appendChild(aiBtn);
     }
@@ -140,7 +171,8 @@
   }
 
   async function run(profile) {
-    if (!window.google) { loadGoogleMaps(); return; }
+    showView('map');
+    if (!window.google) { loadGoogleMaps(); }
     saveState();
     const pts = inputEl.value.split('\n').map(l => ({ name: l.trim() })).filter(p => p.name);
     worker.postMessage({ type: 'solve', profile, points: pts, roundTrip: chkRoundTrip.checked });
@@ -155,18 +187,50 @@
 
   function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify({ text: inputEl.value })); }
   function restoreState() { const s = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (s) inputEl.value = s.text || ''; }
-  window.addStopToRoute = function(loc) { inputEl.value += (inputEl.value.trim() ? '\n' : '') + loc; saveState(); };
 
-  initTripTree(); initModelSelector();
-  inputEl.addEventListener('input', saveState);
+  // --- EVENT LISTENERS ---
+  btnChatToggle.addEventListener('click', (e) => { e.preventDefault(); showView('chat'); });
+  btnCloseChat.addEventListener('click', () => showView('map'));
+  btnAbout.addEventListener('click', (e) => { e.preventDefault(); showView('about'); });
+  btnHelp.addEventListener('click', (e) => { e.preventDefault(); showView('help'); });
+  btnCloseHelp.addEventListener('click', () => showView('map'));
+
   btnEnableMap.addEventListener('click', loadGoogleMaps);
   btnStandard.addEventListener('click', () => run('standard'));
+  
   btnSendChat.addEventListener('click', async () => {
     const txt = chatInput.value; if(!txt) return;
     chatInput.value = '';
+    
+    // Show user message
+    const userDiv = document.createElement('div'); userDiv.className = 'chat-msg user';
+    userDiv.innerHTML = `<strong>You:</strong><br>${txt}`;
+    chatHistory.appendChild(userDiv);
+
     const resp = await callGeminiAPI(txt);
-    const div = document.createElement('div'); div.className = 'chat-msg ai'; 
-    div.innerHTML = `<strong>AI:</strong><br>${resp.replace(/\n/g, '<br>')}`;
-    chatHistory.appendChild(div); chatHistory.scrollTop = chatHistory.scrollHeight;
+    
+    // --- AUTOMATIC ADDITION LOGIC ---
+    // Regex extracts place names from {ADD: Place Name} tags
+    const addRegex = /\{ADD:\s*(.*?)\}/gi;
+    let match;
+    while ((match = addRegex.exec(resp)) !== null) {
+      const place = match[1].trim();
+      if (place) window.addStopToRoute(place);
+    }
+
+    // Show AI message with highlighted adds
+    const aiDiv = document.createElement('div'); aiDiv.className = 'chat-msg ai';
+    let formattedText = resp.replace(/\n/g, '<br>');
+    formattedText = formattedText.replace(addRegex, (m, p1) => `<span style="color:var(--accent2); font-weight:bold;">✅ Added: ${p1}</span>`);
+    
+    aiDiv.innerHTML = `<strong>AI:</strong><br>${formattedText}`;
+    chatHistory.appendChild(aiDiv);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
   });
+
+  // Start initialization
+  initTripTree();
+  initModelSelector();
+  showView('map'); // Ensure map is the default view on load
+  inputEl.addEventListener('input', saveState);
 })();
