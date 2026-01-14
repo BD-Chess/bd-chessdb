@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>8Z-RP Trip Optimizer</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,135 +15,153 @@
 
   <div class="app-container">
     
-    <header>
+    <header class="app-header">
       <div class="logo-area">
         <div class="logo">8Z</div>
-        <div class="title">
-          <h2>Trip Optimizer</h2>
-          <small>Bojan Dobrečević</small>
+        <div class="title-group">
+          <h1>Trip Optimizer</h1>
+          <span class="version-badge">2026.1</span>
         </div>
       </div>
-      <nav>
-        <button id="btnPlanWithAI" class="nav-link active">✨ Plan with AI</button>
-        <button id="btnAbout" class="nav-link">About</button>
-        <button id="btnHelp" class="nav-link">Help</button>
+      <nav class="main-nav">
+        <button id="btnPlanWithAI" class="nav-btn active">✨ Plan with AI</button>
+        <button id="btnAbout" class="nav-btn">About</button>
+        <button id="btnHelp" class="nav-btn">Help</button>
       </nav>
     </header>
 
-    <main>
+    <main class="main-grid">
       
-      <aside id="leftPanel">
+      <aside id="leftPanel" class="sidebar">
         <div class="panel-header">
           <h3>Trip Library</h3>
-          <button id="btnCollapse" class="icon-btn" title="Collapse">←</button>
+          <button id="btnCollapse" class="icon-btn-ghost" aria-label="Collapse">←</button>
         </div>
         
-        <input type="text" id="tripSearch" placeholder="Search trips..." autocomplete="off">
+        <div class="search-wrapper">
+          <input type="text" id="tripSearch" placeholder="Search collections..." autocomplete="off">
+        </div>
         
-        <div id="presetTree" class="tree-container">
-          <div class="loading-text">Loading library...</div>
+        <div id="presetTree" class="tree-container custom-scrollbar">
+          <div class="empty-state">Loading library data...</div>
         </div>
       </aside>
       
-      <button id="btnExpand" class="expand-btn" style="display:none;">→</button>
+      <div id="btnExpand" class="expand-handle" style="display:none;">
+        <button>➜</button>
+      </div>
 
-      <section class="control-panel">
+      <section class="control-panel custom-scrollbar">
         <div class="panel-header">
-          <h3>Plan Your Trip</h3>
+          <h3>Planning & Logistics</h3>
         </div>
 
-        <p class="hint">Type locations (City or GPS) or pick from the library.</p>
+        <div class="input-group">
+          <label for="input">Stops (City or GPS)</label>
+          <textarea id="input" placeholder="e.g. Paris&#10;Lyon&#10;Marseille" spellcheck="false"></textarea>
+        </div>
         
-        <textarea id="input" placeholder="e.g. Paris&#10;London&#10;Berlin" spellcheck="false"></textarea>
-        
-        <div class="button-group">
-          <button id="btnSave" class="btn-outline">💾 Save</button>
-          <button id="btnLoad" class="btn-outline">📂 Load</button>
-          <input type="file" id="fileLoader" accept=".txt" style="display:none">
+        <div class="action-row">
+          <button id="btnSave" class="btn-small">💾 Save</button>
+          <button id="btnLoad" class="btn-small">📂 Load</button>
+          <input type="file" id="fileLoader" accept=".txt" hidden>
         </div>
 
-        <hr>
+        <div class="divider"></div>
 
-        <div class="button-group-vertical">
-          <button id="btnStandard" class="btn-primary">Optimize (Standard)</button>
-          <button id="btnDeep" class="btn-primary-outline">Optimize (Precise)</button>
+        <div class="optimization-group">
+          <button id="btnStandard" class="btn-primary full-width">⚡ Standard Optimization</button>
+          <button id="btnDeep" class="btn-secondary full-width">🧠 Precise Optimization (Deep)</button>
         </div>
 
-        <div class="button-group">
-          <button id="btnDriving" class="btn-mode active">🚗 Driving</button>
-          <button id="btnWalking" class="btn-mode secondary">🚶 Walking</button>
+        <div class="mode-toggles">
+          <button id="btnDriving" class="mode-btn active">🚗 Driving</button>
+          <button id="btnWalking" class="mode-btn">🚶 Walking</button>
         </div>
 
-        <div class="options-grid">
-          <label><input type="checkbox" id="chkRoundTrip" checked> Round trip</label>
-          <label><input type="checkbox" id="chkDirect"> Direct lines</label>
-          <label><input type="checkbox" id="chkGoogleStyle" disabled> Google Style</label>
+        <div class="options-row">
+          <label class="checkbox-label"><input type="checkbox" id="chkRoundTrip" checked> Round Trip</label>
+          <label class="checkbox-label"><input type="checkbox" id="chkDirect"> Direct Lines</label>
+          <label class="checkbox-label disabled"><input type="checkbox" id="chkGoogleStyle" disabled> Google Style</label>
         </div>
       </section>
 
       <section class="results-panel">
         
-        <div class="stats-container">
-          <div class="stat-card">
-            <span class="stat-label">Total Distance</span>
-            <span id="distKm" class="stat-value">—</span>
+        <div class="stats-bar">
+          <div class="stat-item">
+            <span class="label">Total Distance</span>
+            <span id="distKm" class="value">—</span>
           </div>
-          <div class="stat-card">
-            <span class="stat-label">Saved</span>
-            <span id="savedKm" class="stat-value">—</span>
+          <div class="stat-item">
+            <span class="label">Efficiency Gain</span>
+            <span id="savedKm" class="value highlight">—</span>
           </div>
         </div>
 
-        <div class="view-container">
+        <div class="viewport-container">
           
-          <div id="mapContainer" class="map-wrapper" style="display:none;">
-            <div id="mapPlaceholder">
-              <p>Map Area</p>
-              <button id="btnEnableMap" class="btn-small">Load Google Maps</button>
+          <div id="mapContainer" class="map-layer">
+            <div id="mapPlaceholder" class="map-placeholder">
+              <div class="placeholder-content">
+                <span class="icon">🗺️</span>
+                <p>Map inactive to save data.</p>
+                <button id="btnEnableMap" class="btn-primary">Load Google Maps</button>
+              </div>
             </div>
             <div id="map"></div>
           </div>
 
-          <div id="chatPanel" class="chat-panel" style="display:flex;">
+          <div id="chatPanel" class="chat-layer" style="display:flex;">
             <div class="chat-header">
-              <span>✨ AI Travel Assistant</span>
-              <div class="chat-controls">
-                <select id="modelSelector"></select>
-                <button id="btnCloseChat" class="icon-btn">Close</button>
+              <div class="chat-title">
+                <span class="ai-icon">✨</span>
+                <span>Gemini Travel Assistant</span>
+              </div>
+              <div class="chat-actions">
+                <select id="modelSelector" class="model-select"></select>
+                <button id="btnCloseChat" class="close-btn">Close</button>
               </div>
             </div>
-            <div id="chatHistory" class="chat-history">
-              <div class="chat-msg ai"><strong>Gemini:</strong><br>Hello! I am ready to help you plan your trip. Where do you want to go?</div>
+            
+            <div id="chatHistory" class="chat-messages custom-scrollbar">
+              <div class="chat-msg ai">
+                <strong>Gemini:</strong><br>
+                Hello! I'm ready to help you plan. Paste your locations or ask me for suggestions (e.g., "Add stops in Morocco").
+              </div>
             </div>
-            <div class="chat-input-area">
-              <input type="text" id="chatInput" placeholder="Ask Gemini (e.g., 'Add stops in Italy')...">
-              <button id="btnSendChat">Send ➤</button>
+            
+            <div class="chat-input-row">
+              <input type="text" id="chatInput" placeholder="Message Gemini..." autocomplete="off">
+              <button id="btnSendChat" class="send-btn">➤</button>
             </div>
           </div>
 
         </div>
 
-        <div class="results-list-wrapper">
-          <h3>Optimized Route</h3>
-          <ul id="routeList"></ul>
+        <div class="route-output custom-scrollbar">
+          <h4>Optimized Sequence</h4>
+          <ul id="routeList" class="step-list"></ul>
         </div>
 
-        <div id="links" class="links-container"></div>
+        <div id="links" class="links-area"></div>
+
       </section>
 
     </main>
 
-    <footer>
-      <div id="status">Ready</div>
-      <button id="btnChatToggle" class="chat-toggle-btn">💬 Chat / Map</button>
+    <footer class="app-footer">
+      <div id="status" class="status-indicator">System Ready</div>
+      <button id="btnChatToggle" class="floating-toggle">💬 Chat / Map</button>
     </footer>
 
   </div>
 
-  <div id="helpOverlay" class="modal-overlay" style="display:none;">
-    <div class="modal-content">
-      <button id="btnCloseHelp" class="modal-close">×</button>
-      <div id="helpBody"></div>
+  <div id="helpOverlay" class="modal-backdrop" style="display:none;">
+    <div class="modal-window">
+      <button id="btnCloseHelp" class="modal-close-icon">×</button>
+      <div id="helpBody" class="modal-body custom-scrollbar">
+        </div>
     </div>
   </div>
 
