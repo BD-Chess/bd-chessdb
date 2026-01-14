@@ -1,206 +1,170 @@
-/* --- RESET & BASICS --- */
+/* --- 1. CORE RESET --- */
 :root {
-  --bg-body: #0f172a;       /* Deep Navy */
-  --bg-card: #1e293b;       /* Slate Blue */
-  --bg-input: #020617;      /* Almost Black */
-  --text-main: #f8fafc;     /* White */
-  --text-muted: #94a3b8;    /* Grey */
-  --accent: #3b82f6;        /* Bright Blue */
-  --accent-hover: #2563eb;
-  --danger: #ef4444;        /* Red for Driving */
-  --success: #10b981;       /* Green for Stats */
-  --border: #334155;
+  --bg-app: #0b1120;       /* Deepest Navy */
+  --bg-card: #1e293b;      /* Panel Blue */
+  --bg-input: #0f172a;     /* Dark Input */
+  --primary: #3b82f6;      /* Professional Blue */
+  --primary-hover: #2563eb;
+  --text-main: #f1f5f9;    /* Bright White */
+  --text-dim: #94a3b8;     /* Muted Text */
+  --border: #334155;       /* Subtle Border */
+  --success: #10b981;      /* Green for Stats */
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--bg-body);
+  margin: 0; padding: 0;
+  background-color: var(--bg-app);
   color: var(--text-main);
-  font-family: 'Inter', sans-serif;
-  font-size: 16px; /* Prevents iOS auto-zoom on inputs */
-  padding-bottom: 120px; /* Space for bottom AI dock */
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 16px; /* Prevents iPhone Zoom */
+  padding-bottom: 140px; /* Space for AI Dock */
 }
 
-/* --- LAYOUT UTILITIES --- */
-.container {
-  max-width: 600px; /* Mobile width focused */
+/* --- 2. LAYOUT UTILITIES --- */
+.app-wrapper {
+  max-width: 600px; /* Forces mobile-width everywhere for that "App" feel */
   margin: 0 auto;
   padding: 12px;
 }
 
-.card {
+.panel {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
-h2, h3 { margin: 0; font-weight: 600; font-size: 0.95rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+h2, h3 { margin: 0 0 12px 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
 
-/* --- HEADER --- */
+/* --- 3. HEADER --- */
 header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  margin-bottom: 10px;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0; margin-bottom: 10px;
 }
-.brand { font-size: 1.25rem; font-weight: 700; color: var(--text-main); }
-.brand span { color: var(--accent); }
-.nav-links button {
-  background: none; border: none; color: var(--accent); font-size: 0.9rem; font-weight: 500; margin-left: 10px; cursor: pointer;
-}
+.brand { font-size: 1.4rem; font-weight: 800; color: var(--text-main); }
+.brand span { color: var(--primary); font-weight: 300; }
+.nav-btn { background: none; border: none; color: var(--primary); font-weight: 600; font-size: 0.95rem; cursor: pointer; padding: 8px; }
 
-/* --- INPUTS --- */
-input[type="text"], textarea {
+/* --- 4. INPUTS --- */
+input, textarea {
   width: 100%;
   background: var(--bg-input);
   border: 1px solid var(--border);
   color: var(--text-main);
-  padding: 12px;
   border-radius: 8px;
+  padding: 12px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 16px;
   outline: none;
+  transition: border-color 0.2s;
 }
-input:focus, textarea:focus { border-color: var(--accent); }
+input:focus, textarea:focus { border-color: var(--primary); }
+textarea { min-height: 120px; resize: vertical; margin-bottom: 12px; }
 
-textarea { min-height: 140px; resize: vertical; margin-bottom: 12px; }
-
-/* --- BUTTONS --- */
-.btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+/* --- 5. BUTTONS --- */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
 
 button {
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: opacity 0.2s;
+  padding: 14px; /* Bigger touch target */
+  border-radius: 8px; border: none;
+  font-weight: 600; font-size: 0.95rem;
+  cursor: pointer; transition: transform 0.1s, opacity 0.2s;
 }
-button:active { opacity: 0.8; }
+button:active { transform: scale(0.98); opacity: 0.9; }
 
-.btn-primary { background: var(--accent); color: white; width: 100%; }
-.btn-secondary { background: transparent; border: 1px solid var(--accent); color: var(--accent); width: 100%; }
-.btn-neutral { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-muted); }
+.btn-primary { background: var(--primary); color: white; width: 100%; }
+.btn-secondary { background: transparent; border: 1px solid var(--primary); color: var(--primary); width: 100%; }
+.btn-neutral { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-dim); width: 100%; }
 
-.btn-mode { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-muted); }
-.btn-mode.active { background: var(--danger); color: white; border-color: var(--danger); }
-
-/* --- TREE LIBRARY --- */
-.tree-box {
-  max-height: 180px;
-  overflow-y: auto;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px;
-  margin-bottom: 12px;
+/* Travel Mode Toggles */
+.btn-mode { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-dim); }
+.btn-mode.active { 
+  background: var(--primary); /* BLUE now, not Red */
+  color: white; border-color: var(--primary); 
 }
-.tree-node { margin-bottom: 4px; }
-.tree-header { cursor: pointer; padding: 4px; font-weight: 500; font-size: 0.9rem; color: var(--text-muted); }
-.tree-header:hover { color: var(--text-main); }
-.tree-group { padding-left: 16px; display: none; }
-.tree-group.open { display: block; }
-.tree-item { display: block; padding: 6px; cursor: pointer; color: var(--accent); font-size: 0.9rem; }
-.tree-item:hover { text-decoration: underline; }
 
-/* --- OPTIONS --- */
-.options-row {
-  display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; font-size: 0.9rem; color: var(--text-muted);
-}
+/* --- 6. CHECKBOXES --- */
+.options { display: flex; gap: 15px; margin-top: 10px; color: var(--text-dim); font-size: 0.9rem; }
 label { display: flex; align-items: center; gap: 6px; }
-input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary); }
 
-/* --- STATS & MAP --- */
-.stats-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-family: 'JetBrains Mono', monospace; }
-.stat-val { color: var(--text-main); font-weight: 700; }
-.stat-saved { color: var(--success); }
+/* --- 7. LIBRARY TREE --- */
+.library-box {
+  max-height: 160px; overflow-y: auto;
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px; margin-bottom: 12px;
+}
+.tree-header { padding: 6px; cursor: pointer; color: var(--text-dim); font-weight: 500; }
+.tree-group { padding-left: 12px; display: none; border-left: 1px solid var(--border); }
+.tree-group.open { display: block; }
+.tree-item { display: block; padding: 8px; color: var(--text-main); cursor: pointer; }
+.tree-item:active { color: var(--primary); }
+
+/* --- 8. RESULTS & MAP --- */
+.stats { display: flex; justify-content: space-between; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace; }
+.val { color: white; font-weight: 700; }
+.saved { color: var(--success); }
 
 #mapContainer {
-  height: 250px;
-  background: var(--bg-input);
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-  margin-bottom: 10px;
+  height: 250px; background: var(--bg-input); border-radius: 8px;
+  overflow: hidden; position: relative; margin-bottom: 12px;
 }
 #mapPlaceholder {
-  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted);
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; color: var(--text-dim);
 }
 #map { width: 100%; height: 100%; }
 
 #routeList {
-  list-style: none; padding: 0; margin: 0; font-size: 0.9rem; color: var(--text-muted);
-  max-height: 150px; overflow-y: auto;
+  list-style: none; padding: 0; margin: 0; color: var(--text-dim); font-size: 0.9rem;
+  max-height: 200px; overflow-y: auto;
 }
-#routeList li { padding: 4px 0; border-bottom: 1px solid #334155; }
+#routeList li { padding: 6px 0; border-bottom: 1px solid #1e293b; }
 
-/* --- AI BOTTOM DOCK (The "Chat") --- */
+/* --- 9. AI BOTTOM DOCK --- */
 #chatPanel {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  background: var(--bg-card);
-  border-top: 1px solid var(--accent);
-  z-index: 999;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: #111827; /* Darker than card */
+  border-top: 1px solid var(--primary);
+  z-index: 2000;
   display: flex; flex-direction: column;
-  height: 60px; /* Collapsed height */
-  transition: height 0.3s ease;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+  height: 65px; /* Collapsed */
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 -5px 20px rgba(0,0,0,0.6);
 }
-#chatPanel.open { height: 60vh; } /* Expanded height */
+#chatPanel.open { height: 65vh; }
 
-.chat-header {
-  padding: 10px 15px;
+.chat-head {
+  padding: 12px 16px;
   display: flex; justify-content: space-between; align-items: center;
-  cursor: pointer;
-  background: rgba(59, 130, 246, 0.1);
+  cursor: pointer; background: rgba(59, 130, 246, 0.15);
 }
-.chat-title { font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+.chat-title { font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
 
 #chatHistory {
-  flex: 1;
-  overflow-y: auto;
-  padding: 15px;
-  display: none; /* Hidden when collapsed */
-  background: var(--bg-body);
+  flex: 1; overflow-y: auto; padding: 15px; display: none; background: #0b1120;
 }
 #chatPanel.open #chatHistory { display: block; }
 
-.chat-msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; line-height: 1.4; }
-.chat-msg.user { background: var(--border); color: var(--text-main); align-self: flex-end; margin-left: 20px; }
-.chat-msg.ai { background: rgba(59, 130, 246, 0.2); color: #bfdbfe; margin-right: 20px; }
+.msg { margin-bottom: 10px; padding: 10px; border-radius: 8px; font-size: 0.95rem; line-height: 1.4; max-width: 85%; }
+.msg.user { background: var(--border); color: white; align-self: flex-end; margin-left: auto; }
+.msg.ai { background: rgba(59, 130, 246, 0.2); color: #bfdbfe; }
 
-.chat-input-area {
-  padding: 10px;
-  background: var(--bg-card);
-  display: flex; gap: 10px;
-}
-#chatInput { background: var(--bg-input); border: 1px solid var(--border); padding: 10px; border-radius: 20px; flex: 1; }
-#btnSendChat { width: 45px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.chat-input { padding: 10px; background: #1f2937; display: flex; gap: 10px; }
+#chatInput { background: #374151; border: none; padding: 12px; border-radius: 20px; }
+#btnSendChat { width: 45px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; background: var(--primary); color: white; }
 
-/* --- HELP MODAL --- */
+/* --- 10. MODALS --- */
 #helpOverlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
+  position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000;
   display: none; align-items: center; justify-content: center;
 }
-.modal-box {
-  background: var(--bg-card); width: 90%; max-width: 500px; max-height: 80vh;
+.modal-content {
+  background: var(--bg-card); width: 90%; max-width: 500px; max-height: 85vh;
   overflow-y: auto; padding: 20px; border-radius: 12px; border: 1px solid var(--border);
 }
-.close-modal { float: right; background: none; color: var(--text-muted); font-size: 1.5rem; padding: 0; }
-
-/* --- DESKTOP TWEAK --- */
-@media (min-width: 800px) {
-  .container { max-width: 1000px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .card { height: 100%; }
-  #chatPanel { position: relative; width: 100%; height: 400px; border-radius: 12px; border: 1px solid var(--border); }
-  #chatPanel.open { height: 400px; }
-  #chatHistory { display: block; }
-}
+.close-icon { float: right; background: none; font-size: 1.5rem; color: var(--text-dim); padding: 0; }
