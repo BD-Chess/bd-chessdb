@@ -190,28 +190,74 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary)
 #chatInput { background: #0b0f14; border: 1px solid var(--border); padding: 10px; border-radius: 20px; color: white; }
 #btnSendChat { width: 45px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; background: var(--primary); color: white; }
 
-/* --- 9. DESKTOP / IPAD LAYOUT --- */
+/* --- 9. DESKTOP / IPAD LAYOUT (The 2-Column Fix) --- */
 @media (min-width: 1024px) {
   body { padding-bottom: 0; overflow: hidden; }
   
   .app-wrapper {
-    max-width: 1600px; height: 100vh; padding: 15px;
+    max-width: 1800px; 
+    height: 100vh; 
+    padding: 15px;
     display: grid; 
-    grid-template-columns: 300px 1fr 300px; 
-    grid-template-rows: auto 1fr;
+    /* 2 COLUMNS: [Sidebar 360px] [Map 1fr] */
+    grid-template-columns: 360px 1fr; 
+    /* 3 ROWS: [Header] [Control Panel] [Chat] */
+    grid-template-rows: auto 1fr auto; 
     gap: 15px;
   }
-  header { grid-column: 1 / -1; margin-bottom: 5px; }
-  .panel { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
-  .library-box { max-height: none; flex: 1; }
-  #mapContainer { height: 100%; flex: 1; border-radius: 8px; }
-  #routeList { flex: 1; max-height: none; }
-  
-  #chatPanel {
-    position: relative; bottom: auto; left: auto; right: auto; height: 100%;
-    border: 1px solid var(--border); border-radius: 12px; z-index: 1; box-shadow: none;
+
+  /* 1. Header spans top */
+  header { 
+    grid-column: 1 / -1; 
+    grid-row: 1;
+    margin-bottom: 5px; 
   }
-  #chatPanel.open { height: 100%; }
+
+  /* 2. Control Panel (Left, Middle Row) */
+  .panel:nth-of-type(1) {
+    grid-column: 1;
+    grid-row: 2;
+    overflow-y: auto; /* Internal scrolling if list is long */
+  }
+
+  /* 3. Results Panel (Right, Spans Rows 2 & 3) -> HUGE MAP */
+  .panel:nth-of-type(2) {
+    grid-column: 2;
+    grid-row: 2 / span 2; /* Takes full height */
+    height: 100%;
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden; 
+  }
+  
+  /* 4. Chat Panel (Left, Bottom Row) */
+  #chatPanel {
+    position: relative; /* Inside grid */
+    bottom: auto; left: auto; right: auto; 
+    grid-column: 1;
+    grid-row: 3;
+    
+    border: 1px solid var(--border); 
+    border-radius: 12px; 
+    z-index: 1; 
+    box-shadow: none;
+    
+    /* Collapsed/Expanded logic for Grid Item */
+    height: 60px; /* Default closed height */
+    max-height: 50vh; /* Max height when open */
+    transition: height 0.3s ease;
+  }
+  
+  /* When Chat is OPEN, it grows upwards in the grid */
+  #chatPanel.open { 
+    height: 400px; /* Fixed height when open */
+  }
+
+  /* Inner elements adjustment */
+  .library-box { max-height: none; flex: 1; } /* Allow tree to grow */
+  #mapContainer { height: 100%; flex: 1; border-radius: 8px; }
+  #routeList { flex: 0 0 auto; max-height: 200px; overflow-y: auto; }
+  
   #chatHistory { display: block; }
   .chat-head { cursor: default; }
   .chat-head small { display: none; }
@@ -232,18 +278,18 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary)
 
 /* --- 11. GOOGLE MAPS DARK BALLOON OVERRIDES --- */
 .gm-style .gm-style-iw-c {
-    background-color: #1e293b !important; /* Dark Background */
+    background-color: #1e293b !important;
     border: 1px solid var(--border);
     padding: 12px !important;
 }
 .gm-style .gm-style-iw-tc::after {
-    background: #1e293b !important; /* Tail Color */
+    background: #1e293b !important;
 }
 .gm-style .gm-style-iw-d {
     overflow: hidden !important;
-    color: #e6edf3 !important; /* White Text */
+    color: #e6edf3 !important;
     font-family: 'Inter', sans-serif !important;
 }
 .gm-style .gm-ui-hover-effect {
-    filter: invert(1) grayscale(100%) brightness(200%) !important; /* White Close Button */
+    filter: invert(1) grayscale(100%) brightness(200%) !important;
 }
