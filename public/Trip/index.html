@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>8Z-RP Trip Optimizer 2026</title>
+  <title>8Z-RP Trip Optimizer</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,23 +12,6 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <div id="landingPage" class="landing-overlay">
-    <div class="landing-content">
-      <div class="landing-logo">8Z</div>
-      <h1>Trip Optimizer <span class="badge-2026">2026</span></h1>
-      <p>Solve the "Traveler's Salesman Problem" with Genetic Algorithms & AI.</p>
-      
-      <div class="landing-buttons">
-        <button id="btnStartLanding" class="btn-primary">Start Planning</button>
-        <button id="btnAiLanding" class="btn-secondary">✨ Plan with AI Chatbot</button>
-      </div>
-      
-      <div class="landing-footer">
-        Client-Side Privacy • Deterministic Logic • Gemini Integrated
-      </div>
-    </div>
-  </div>
 
   <div class="app-container">
     
@@ -41,7 +24,7 @@
         </div>
       </div>
       <nav>
-        <button id="btnPlanWithAI" class="nav-link">✨ Plan with AI</button>
+        <button id="btnPlanWithAI" class="nav-link active">✨ Plan with AI</button>
         <button id="btnAbout" class="nav-link">About</button>
         <button id="btnHelp" class="nav-link">Help</button>
       </nav>
@@ -52,7 +35,7 @@
       <aside id="leftPanel">
         <div class="panel-header">
           <h3>Trip Library</h3>
-          <button id="btnCollapse" class="icon-btn" title="Collapse Panel">←</button>
+          <button id="btnCollapse" class="icon-btn" title="Collapse">←</button>
         </div>
         
         <input type="text" id="tripSearch" placeholder="Search trips..." autocomplete="off">
@@ -69,9 +52,9 @@
           <h3>Plan Your Trip</h3>
         </div>
 
-        <p class="hint">Select a trip from the left or type stops below.</p>
+        <p class="hint">Type locations (City or GPS) or pick from the library.</p>
         
-        <textarea id="input" placeholder="Enter stops here (City or Coordinates)..." spellcheck="false"></textarea>
+        <textarea id="input" placeholder="e.g. Paris&#10;London&#10;Berlin" spellcheck="false"></textarea>
         
         <div class="button-group">
           <button id="btnSave" class="btn-outline">💾 Save</button>
@@ -111,27 +94,33 @@
           </div>
         </div>
 
-        <div id="mapContainer" class="map-wrapper">
-          <div id="mapPlaceholder">
-            <p>Map Area</p>
-            <button id="btnEnableMap" class="btn-small">Load Google Maps</button>
+        <div class="view-container">
+          
+          <div id="mapContainer" class="map-wrapper" style="display:none;">
+            <div id="mapPlaceholder">
+              <p>Map Area</p>
+              <button id="btnEnableMap" class="btn-small">Load Google Maps</button>
+            </div>
+            <div id="map"></div>
           </div>
-          <div id="map"></div>
-        </div>
 
-        <div id="chatPanel" class="chat-panel" style="display:none;">
-          <div class="chat-header">
-            <span>✨ AI Travel Assistant</span>
-            <div class="chat-controls">
-              <select id="modelSelector"></select>
-              <button id="btnCloseChat" class="icon-btn">×</button>
+          <div id="chatPanel" class="chat-panel" style="display:flex;">
+            <div class="chat-header">
+              <span>✨ AI Travel Assistant</span>
+              <div class="chat-controls">
+                <select id="modelSelector"></select>
+                <button id="btnCloseChat" class="icon-btn">Close</button>
+              </div>
+            </div>
+            <div id="chatHistory" class="chat-history">
+              <div class="chat-msg ai"><strong>Gemini:</strong><br>Hello! I am ready to help you plan your trip. Where do you want to go?</div>
+            </div>
+            <div class="chat-input-area">
+              <input type="text" id="chatInput" placeholder="Ask Gemini (e.g., 'Add stops in Italy')...">
+              <button id="btnSendChat">Send ➤</button>
             </div>
           </div>
-          <div id="chatHistory" class="chat-history"></div>
-          <div class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="Ask Gemini to find places...">
-            <button id="btnSendChat">Send ➤</button>
-          </div>
+
         </div>
 
         <div class="results-list-wrapper">
@@ -146,7 +135,7 @@
 
     <footer>
       <div id="status">Ready</div>
-      <button id="btnChatToggle" class="chat-toggle-btn">💬 Chat</button>
+      <button id="btnChatToggle" class="chat-toggle-btn">💬 Chat / Map</button>
     </footer>
 
   </div>
@@ -154,8 +143,7 @@
   <div id="helpOverlay" class="modal-overlay" style="display:none;">
     <div class="modal-content">
       <button id="btnCloseHelp" class="modal-close">×</button>
-      <div id="helpBody">
-        </div>
+      <div id="helpBody"></div>
     </div>
   </div>
 
