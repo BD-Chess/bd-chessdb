@@ -31,6 +31,11 @@
   //  3. UI ELEMENTS SELECTORS
   // ==========================================================================
   
+  // --- Landing Page Elements ---
+  const landingPage = $('landingPage'); // The container for the landing screen
+  const btnStartLanding = $('btnStartLanding'); // "Start Planning" on landing
+  const btnAiLanding = $('btnAiLanding'); // "Plan with AI" on landing
+
   // --- Main Input & Status ---
   const inputEl = $('input');
   const statusEl = $('status');
@@ -86,7 +91,7 @@
   const btnChatToggle = $('btnChatToggle');
   const btnCloseChat = $('btnCloseChat');
   
-  // NEW: The "Plan with AI" button in the header
+  // Header Button
   const btnPlanWithAI = $('btnPlanWithAI'); 
 
 
@@ -143,7 +148,7 @@
 
 
   // ==========================================================================
-  //  5. CONTENT TEMPLATES (Help & About)
+  //  5. CONTENT TEMPLATES (RESTORED MOROCCO STORY)
   // ==========================================================================
 
   const HELP_HTML = `
@@ -197,6 +202,20 @@
     <div class="about-container">
       <h2>ℹ️ About 8Z-RP Trip Optimizer</h2>
       <hr>
+      
+      <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <h3>🌴 My Story: The Morocco Inspiration</h3>
+        <p>
+          This project was born out of frustration during a backpacking trip through the Atlas Mountains in Morocco. 
+          I realized that existing maps were great for driving, but terrible for <em>logistics</em>. 
+          I needed a tool that could take 20 chaotic waypoints and organize them into a perfect, efficient line.
+        </p>
+        <p>
+          I built 8Z-RP to solve the "Traveler's Salesman Problem" directly in the browser, 
+          combining rigorous math with the freedom of open travel.
+        </p>
+      </div>
+
       <p><strong>Version:</strong> 2026.1 (Stable Build)</p>
       <p><strong>License:</strong> MIT License</p>
       <br>
@@ -208,12 +227,6 @@
         <li><strong>Intelligence:</strong> Google Gemini 3 / 2.5 Flash API</li>
       </ul>
       
-      <br>
-      <h3>Credits</h3>
-      <p>
-        Designed and built for extreme travel logistics. 
-        This application runs locally in your browser to ensure maximum privacy and speed.
-      </p>
       <p style="margin-top: 15px; font-size: 0.9em; color: #888;">
         (c) 2026 8Z-RP Trip Logistics. All Rights Reserved.
       </p>
@@ -236,12 +249,27 @@
     }
   }
 
+  // --- NEW: Landing Page Manager ---
+  function closeLandingPage(mode) {
+    if (landingPage) {
+        landingPage.style.opacity = '0';
+        setTimeout(() => {
+            landingPage.style.display = 'none';
+        }, 500); // Fade out transition
+    }
+    
+    // If user clicked "Plan with AI", switch to chat mode immediately
+    if (mode === 'ai') {
+        toggleChatMode(true);
+    }
+  }
+
   function setStatus(msg, cls) {
     statusEl.textContent = msg;
     statusEl.className = 'status ' + (cls || '');
   }
 
-  // --- NEW: Global Helper for AI "Add Stop" actions ---
+  // --- Global Helper for AI "Add Stop" actions ---
   window.addStopToRoute = function(loc) {
     const currentText = inputEl.value.trim();
     
@@ -813,6 +841,14 @@
   initTripTree();
   initModelSelector();
 
+  // Landing Page Events
+  if (btnStartLanding) {
+      btnStartLanding.onclick = () => closeLandingPage('standard');
+  }
+  if (btnAiLanding) {
+      btnAiLanding.onclick = () => closeLandingPage('ai');
+  }
+
   // Modal Events
   btnHelp.onclick = () => {
     helpOverlay.style.display = 'flex';
@@ -876,7 +912,7 @@
     btnExpand.style.display = 'none';
   };
 
-  // FIX #2: Header Button "Plan with AI" Listener
+  // HEADER BUTTON (PLAN WITH AI)
   if (btnPlanWithAI) {
       btnPlanWithAI.addEventListener('click', (e) => {
           e.preventDefault();
@@ -910,7 +946,7 @@
     // Get AI Response
     const resp = await callGeminiAPI(txt);
     
-    // FIX #1: Parse Response for {ADD: ...} tags
+    // FIX: Parse Response for {ADD: ...} tags
     const addRegex = /\{ADD:\s*(.*?)\}/g;
     let match;
     while ((match = addRegex.exec(resp)) !== null) {
