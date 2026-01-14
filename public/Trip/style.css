@@ -17,7 +17,7 @@
 
 body {
   margin: 0; padding: 0;
-  /* Radial Gradient from your ZIP */
+  /* Radial Gradient */
   background: 
     radial-gradient(1200px 800px at 20% 10%, rgba(106,169,255,.12), transparent 50%),
     radial-gradient(1000px 700px at 80% 40%, rgba(126,231,135,.08), transparent 55%),
@@ -25,7 +25,7 @@ body {
   color: var(--text-main);
   font-family: 'Inter', -apple-system, sans-serif;
   font-size: 16px; 
-  padding-bottom: 100px; /* Space for Mobile Dock */
+  padding-bottom: 80px; /* Space for Mobile Dock */
 }
 
 /* --- 2. LAYOUT CONTAINER --- */
@@ -63,6 +63,7 @@ header {
   padding: 10px 15px; background: rgba(15,22,33,0.8);
   border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 50;
+  border-radius: 8px; /* Rounded on Desktop looks better */
 }
 .brand { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
 .brand span { color: var(--primary); font-weight: 300; }
@@ -185,20 +186,50 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary)
 #chatInput { background: #0b0f14; border: 1px solid var(--border); padding: 10px; border-radius: 20px; color: white; }
 #btnSendChat { width: 45px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; background: var(--primary); color: white; }
 
-/* --- 9. DESKTOP UPGRADE --- */
+/* --- 9. DESKTOP / IPAD LAYOUT (The Fix) --- */
 @media (min-width: 1024px) {
   body { padding-bottom: 0; overflow: hidden; }
+  
   .app-wrapper {
-    max-width: 1600px; height: calc(100vh - 60px);
-    display: grid; grid-template-columns: 350px 1fr 400px; gap: 20px;
+    max-width: 1600px; 
+    height: 100vh;
+    padding: 15px;
+    display: grid; 
+    /* 3 Columns: Plan | Results | Chat */
+    /* Fits iPad Landscape (1024px) */
+    grid-template-columns: 300px 1fr 300px; 
+    grid-template-rows: auto 1fr;
+    gap: 15px;
   }
-  .panel { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Force Header to span full width */
+  header { 
+    grid-column: 1 / -1; 
+    margin-bottom: 5px;
+  }
+
+  /* Make panels fill height */
+  .panel { 
+    height: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden; 
+  }
+
+  /* Element Tweaks */
   .library-box { max-height: none; flex: 1; }
-  #mapContainer { height: 400px; flex: none; }
+  #mapContainer { height: 100%; flex: 1; border-radius: 8px; }
   #routeList { flex: 1; max-height: none; }
+  
+  /* Chat Panel becomes the 3rd Column */
   #chatPanel {
-    position: relative; bottom: auto; left: auto; right: auto; height: 100%;
-    border: 1px solid var(--border); border-radius: 12px; z-index: 1; box-shadow: none;
+    position: relative; /* In grid flow */
+    bottom: auto; left: auto; right: auto; 
+    height: 100%;
+    border: 1px solid var(--border); 
+    border-radius: 12px; 
+    z-index: 1; 
+    box-shadow: none;
   }
   #chatPanel.open { height: 100%; }
   #chatHistory { display: block; }
