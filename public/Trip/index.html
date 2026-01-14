@@ -10,159 +10,232 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* --- MOBILE-FIRST OVERRIDES (Built-in Safety) --- */
+    
+    /* 1. Reset & Base */
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; padding: 0; overflow-x: hidden; }
+
+    /* 2. Container Logic */
+    .app-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 10px;
+      padding-bottom: 80px; /* Space for bottom chat */
+    }
+
+    /* 3. The "Precious" Card Look (Mobile Default) */
+    .card {
+      background: #1e293b; /* Dark Blue-Grey */
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .card-header h3 { margin: 0 0 10px 0; font-size: 0.9rem; letter-spacing: 1px; color: #94a3b8; text-transform: uppercase; }
+
+    /* 4. Inputs & Textarea */
+    textarea {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #fff;
+      padding: 12px;
+      border-radius: 8px;
+      min-height: 120px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px; /* Prevents iOS Zoom */
+    }
+
+    /* 5. Buttons Grid (2x2 on Mobile) */
+    .actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .full-width { grid-column: span 2; }
+    
+    button {
+      padding: 12px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-primary { background: #3b82f6; color: white; }
+    .btn-outline { background: transparent; border: 1px solid #475569; color: #cbd5e1; }
+    .btn-mode { background: #334155; color: #94a3b8; }
+    .btn-mode.active { background: #dc2626; color: white; } /* Driving Red */
+
+    /* 6. Library Tree (Scrollable inside card) */
+    .tree-container {
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #334155;
+      background: #0f172a;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      padding: 5px;
+    }
+
+    /* 7. Bottom Chat Panel (Fixed to bottom on Mobile) */
+    .ai-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #0f172a;
+      border-top: 1px solid #334155;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+    }
+    .ai-header {
+      padding: 10px 15px;
+      background: #1e293b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .ai-history {
+      height: 250px; /* Default height */
+      overflow-y: auto;
+      padding: 10px;
+      display: none; /* Hidden by default until toggled */
+    }
+    .ai-panel.open .ai-history { display: block; }
+    
+    .ai-input-row {
+      padding: 10px;
+      display: flex;
+      gap: 10px;
+      background: #1e293b;
+    }
+    #chatInput { flex: 1; padding: 10px; border-radius: 20px; border: none; font-size: 16px; }
+
+    /* --- DESKTOP UPGRADE (Screens wider than 768px) --- */
+    @media (min-width: 769px) {
+      .app-container {
+        display: grid;
+        grid-template-columns: 300px 1fr 350px; /* 3-Column Layout */
+        gap: 20px;
+        height: 90vh;
+      }
+      .card { height: 100%; display: flex; flex-direction: column; }
+      .tree-container { flex: 1; max-height: none; }
+      .ai-panel { 
+        position: relative; 
+        height: 100%; 
+        border-radius: 12px; 
+        border: 1px solid #334155;
+      }
+      .ai-history { display: block; flex: 1; height: auto; }
+    }
+  </style>
 </head>
 <body>
 
+  <header style="padding: 15px; background: #0f172a; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center;">
+    <div style="font-weight: 700; color: white; font-size: 1.2rem;">8Z <span style="font-weight: 300; opacity: 0.7;">Optimizer</span></div>
+    <nav>
+      <button id="btnPlanWithAI" style="background:none; color: #3b82f6; padding: 5px;">✨ Plan with AI</button>
+      <button id="btnAbout" style="background:none; color: #94a3b8; padding: 5px;">About</button>
+    </nav>
+  </header>
+
   <div class="app-container">
-    
-    <header class="app-header">
-      <div class="logo-area">
-        <div class="logo">8Z</div>
-        <div class="title-group">
-          <h1>Trip Optimizer</h1>
-          <span class="version-badge">2026.1</span>
-        </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Trip Library</h3></div>
+      
+      <input type="text" id="tripSearch" placeholder="Search..." style="width:100%; margin-bottom:5px; padding:8px; background:#0f172a; border:1px solid #334155; color:white; border-radius:4px;">
+      
+      <div id="presetTree" class="tree-container">
+        <div style="padding:10px; color:#64748b;">Loading library...</div>
       </div>
       
-      <nav class="main-nav">
-        <a href="#" id="btnPlanWithAI" class="nav-link active">✨ Plan with AI</a>
-        <a href="#" id="btnAbout" class="nav-link">About</a>
-        <a href="#" id="btnHelp" class="nav-link">Help</a>
-      </nav>
-    </header>
+      <div class="card-header" style="margin-top:15px;"><h3>Your Stops</h3></div>
+      <textarea id="input" placeholder="e.g. Paris&#10;Lyon&#10;Nice"></textarea>
 
-    <main class="main-grid">
+      <div class="actions-grid">
+        <button id="btnSave" class="btn-outline">Save</button>
+        <button id="btnLoad" class="btn-outline">Load</button>
+        <input type="file" id="fileLoader" hidden>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Optimization</h3></div>
       
-      <aside id="leftPanel" class="sidebar">
-        <div class="panel-header">
-          <h3>Trip Library</h3>
-          <a href="#" id="btnCollapse" class="icon-link" title="Collapse">←</a>
-        </div>
-        
-        <div class="search-wrapper">
-          <input type="text" id="tripSearch" placeholder="Search collections..." autocomplete="off">
-        </div>
-        
-        <div id="presetTree" class="tree-container custom-scrollbar">
-          <div class="empty-state">Loading library data...</div>
-        </div>
-      </aside>
-      
-      <div id="btnExpand" class="expand-handle" style="display:none;">
-        <a href="#">➜</a>
+      <div class="actions-grid">
+        <button id="btnStandard" class="btn-primary">Standard (Fast)</button>
+        <button id="btnDeep" class="btn-outline" style="border-color:#3b82f6; color:#3b82f6;">Precise (Deep)</button>
+        <button id="btnDriving" class="btn-mode active">🚗 Drive</button>
+        <button id="btnWalking" class="btn-mode">🚶 Walk</button>
       </div>
 
-      <section class="control-panel custom-scrollbar">
-        <div class="panel-header">
-          <h3>Planning & Logistics</h3>
+      <div style="margin-top:15px; display:flex; gap:15px; color:#cbd5e1; font-size:0.9rem;">
+        <label><input type="checkbox" id="chkRoundTrip" checked> Round Trip</label>
+        <label><input type="checkbox" id="chkDirect"> Direct Line</label>
+      </div>
+
+      <input type="checkbox" id="chkGoogleStyle" style="display:none;">
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Results</h3></div>
+      
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px; background:#0f172a; padding:10px; border-radius:6px;">
+        <div><small style="color:#64748b;">Distance</small><br><strong id="distKm" style="color:white;">—</strong></div>
+        <div><small style="color:#64748b;">Saved</small><br><strong id="savedKm" style="color:#10b981;">—</strong></div>
+      </div>
+
+      <div id="mapContainer" style="height: 200px; background:#0f172a; border-radius:8px; overflow:hidden; position:relative;">
+        <div id="mapPlaceholder" style="position:absolute; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+          <p style="color:#64748b;">Map inactive</p>
+          <button id="btnEnableMap" class="btn-primary" style="padding:5px 10px; font-size:0.8rem;">Load Map</button>
         </div>
+        <div id="map" style="width:100%; height:100%;"></div>
+      </div>
 
-        <div class="input-group">
-          <label for="input">Stops (City or GPS)</label>
-          <textarea id="input" placeholder="e.g. Paris&#10;Lyon&#10;Marseille" spellcheck="false"></textarea>
-        </div>
-        
-        <div class="action-row">
-          <button id="btnSave" class="btn-small">💾 Save</button>
-          <button id="btnLoad" class="btn-small">📂 Load</button>
-          <input type="file" id="fileLoader" accept=".txt" hidden>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="optimization-group">
-          <button id="btnStandard" class="btn-primary full-width">⚡ Standard Optimization</button>
-          <button id="btnDeep" class="btn-secondary full-width">🧠 Precise Optimization (Deep)</button>
-        </div>
-
-        <div class="mode-toggles">
-          <button id="btnDriving" class="mode-btn active">🚗 Driving</button>
-          <button id="btnWalking" class="mode-btn">🚶 Walking</button>
-        </div>
-
-        <div class="options-row">
-          <label class="checkbox-label"><input type="checkbox" id="chkRoundTrip" checked> Round Trip</label>
-          <label class="checkbox-label"><input type="checkbox" id="chkDirect"> Direct Lines</label>
-          <label class="checkbox-label disabled"><input type="checkbox" id="chkGoogleStyle" disabled> Google Style</label>
-        </div>
-      </section>
-
-      <section class="results-panel">
-        
-        <div class="stats-bar">
-          <div class="stat-item">
-            <span class="label">Total Distance</span>
-            <span id="distKm" class="value">—</span>
-          </div>
-          <div class="stat-item">
-            <span class="label">Efficiency Gain</span>
-            <span id="savedKm" class="value highlight">—</span>
-          </div>
-        </div>
-
-        <div class="viewport-container">
-          
-          <div id="mapContainer" class="map-layer">
-            <div id="mapPlaceholder" class="map-placeholder">
-              <div class="placeholder-content">
-                <span class="icon">🗺️</span>
-                <p>Map inactive to save data.</p>
-                <button id="btnEnableMap" class="btn-primary">Load Google Maps</button>
-              </div>
-            </div>
-            <div id="map"></div>
-          </div>
-
-          <div id="chatPanel" class="chat-layer" style="display:flex;">
-            <div class="chat-header">
-              <div class="chat-title">
-                <span class="ai-icon">✨</span>
-                <span>Gemini Travel Assistant</span>
-              </div>
-              <div class="chat-actions">
-                <select id="modelSelector" class="model-select"></select>
-                <button id="btnCloseChat" class="close-btn">Close</button>
-              </div>
-            </div>
-            
-            <div id="chatHistory" class="chat-messages custom-scrollbar">
-              <div class="chat-msg ai">
-                <strong>Gemini:</strong><br>
-                Hello! I'm ready to help you plan. Paste your locations or ask me for suggestions (e.g., "Add stops in Morocco").
-              </div>
-            </div>
-            
-            <div class="chat-input-row">
-              <input type="text" id="chatInput" placeholder="Message Gemini..." autocomplete="off">
-              <button id="btnSendChat" class="send-btn">➤</button>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="route-output custom-scrollbar">
-          <h4>Optimized Sequence</h4>
-          <ul id="routeList" class="step-list"></ul>
-        </div>
-
-        <div id="links" class="links-area"></div>
-
-      </section>
-
-    </main>
-
-    <footer class="app-footer">
-      <div id="status" class="status-indicator">System Ready</div>
-      <button id="btnChatToggle" class="floating-toggle">💬 Chat / Map</button>
-    </footer>
+      <ul id="routeList" style="list-style:none; padding:0; margin-top:10px; color:#cbd5e1; font-size:0.9rem; max-height:150px; overflow-y:auto;"></ul>
+      <div id="links"></div>
+    </div>
 
   </div>
 
-  <div id="helpOverlay" class="modal-backdrop" style="display:none;">
-    <div class="modal-window">
-      <button id="btnCloseHelp" class="modal-close-icon">×</button>
-      <div id="helpBody" class="modal-body custom-scrollbar">
-        </div>
+  <div id="chatPanel" class="ai-panel">
+    <div class="ai-header" onclick="this.parentElement.classList.toggle('open')">
+      <span style="color:white; font-weight:600;">✨ AI Assistant</span>
+      <span style="color:#64748b; font-size:0.8rem;">Tap to expand</span>
+      <div style="display:none;"> <select id="modelSelector"></select>
+        <button id="btnCloseChat"></button>
+        <button id="btnChatToggle"></button> 
+      </div>
+    </div>
+    
+    <div id="chatHistory" class="ai-history">
+      <div class="chat-msg ai" style="background:#1e293b; color:#e2e8f0; padding:8px; border-radius:6px; margin-bottom:5px;">
+        <strong>Gemini:</strong> Hello! Ask me to "Add stops in Italy".
+      </div>
+    </div>
+    
+    <div class="ai-input-row">
+      <input type="text" id="chatInput" placeholder="Message Gemini...">
+      <button id="btnSendChat" style="background:#3b82f6; color:white; border-radius:50%; width:40px; height:40px; padding:0;">➤</button>
+    </div>
+  </div>
+
+  <div id="helpOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center;">
+    <div style="background:#1e293b; padding:20px; border-radius:12px; width:90%; max-width:500px; color:#e2e8f0; max-height:80vh; overflow-y:auto;">
+      <button id="btnCloseHelp" style="float:right; background:none; color:white; font-size:1.5rem;">×</button>
+      <div id="helpBody"></div>
     </div>
   </div>
 
