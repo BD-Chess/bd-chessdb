@@ -4,6 +4,7 @@
   
   // --- CONFIGURATION ---
   const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA';
+  // Secure key logic reconstructed from app.js
   const _s1 = 'QUl6YVN5Q3hIanBw', _s2 = 'S2l4YW85OU5IOURv', _s3 = 'YWYtUTBLTzRmQ1FhZUhz';
   const GEMINI_API_KEY = atob(_s1) + atob(_s2) + atob(_s3);
 
@@ -13,7 +14,7 @@
   const routeList = $('routeList'), distKmEl = $('distKm'), savedKmEl = $('savedKm'), linksEl = $('links');
   const chkRoundTrip = $('chkRoundTrip'), chkDirect = $('chkDirect'), chkGoogleStyle = $('chkGoogleStyle');
   const mapDiv = $('map'), mapPlaceholder = $('mapPlaceholder'), mapContainer = $('mapContainer');
-  const presetTree = $('presetTree'), chatPanel = $('chatPanel'), chatInput = $('chatInput');
+  const presetTree = $('presetTree'), tripSearch = $('tripSearch'), chatPanel = $('chatPanel'), chatInput = $('chatInput');
   const btnSendChat = $('btnSendChat'), chatHistory = $('chatHistory'), modelSelector = $('modelSelector');
   
   const btnChatToggle = $('btnChatToggle'), btnAbout = $('btnAbout'), btnHelp = $('btnHelp');
@@ -182,7 +183,8 @@
       const valid = data.models.filter(m => m.name.includes('gemini') && !/vision|banana|tts|image/i.test(m.name));
       modelSelector.innerHTML = valid.map(m => `<option value="${m.name}">${m.displayName || m.name.split('/').pop()}</option>`).join('');
       currentGeminiModel = valid[0]?.name;
-    } catch (e) { console.warn("AI initialization failed."); }
+      modelSelector.addEventListener('change', () => currentGeminiModel = modelSelector.value);
+    } catch (e) { console.warn("AI failed."); }
   }
 
   async function callGeminiAPI(prompt) {
@@ -195,7 +197,7 @@
     return aiText;
   }
 
-  // --- TRIP TREE ---
+  // --- TRIP LIBRARY & SEARCH ---
   function initTripTree() {
     if (!window.TRIP_LIBRARY || !presetTree) return;
     presetTree.innerHTML = '';
@@ -220,10 +222,33 @@
     });
   }
 
+  function filterLibrary(query) {
+    const q = query.toLowerCase().trim();
+    const allItems = presetTree.querySelectorAll('.tree-item');
+    const allGroups = presetTree.querySelectorAll('.tree-group');
+    if (!q) {
+      allItems.forEach(i => i.style.display = 'block');
+      allGroups.forEach(g => { g.style.display = 'none'; g.classList.remove('open'); });
+      presetTree.querySelectorAll('.tree-icon').forEach(icon => icon.textContent = '[+]');
+      return;
+    }
+    allItems.forEach(item => {
+      const match = item.textContent.toLowerCase().includes(q);
+      item.style.display = match ? 'block' : 'none';
+      if (match) {
+        let p = item.parentElement;
+        while (p && p !== presetTree) {
+          if (p.classList.contains('tree-group')) { p.style.display = 'block'; p.classList.add('open'); }
+          p = p.parentElement;
+        }
+      }
+    });
+  }
+
   function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify({ text: inputEl.value })); }
   function restoreState() { const s = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (s) inputEl.value = s.text; }
 
-  // --- LISTENERS ---
+  // --- EVENT LISTENERS ---
   const initListeners = () => {
     btnChatToggle.addEventListener('click', (e) => { e.preventDefault(); showView('chat'); });
     btnAbout.addEventListener('click', (e) => { e.preventDefault(); showView('about'); });
@@ -231,13 +256,16 @@
     btnCloseChat.addEventListener('click', () => showView('map'));
     btnCloseHelp.addEventListener('click', () => showView('map'));
     btnEnableMapInitial.addEventListener('click', loadGoogleMaps);
-    btnStartAIChat.addEventListener('click', () => showView('chat'));
+    btnStartAIChat.addEventListener('click', (e) => { e.preventDefault(); showView('chat'); });
     btnStandard.addEventListener('click', () => run('standard'));
     btnDeep.addEventListener('click', () => run('deep'));
     btnDriving.addEventListener('click', () => { currentTravelMode = 'DRIVING'; if(lastSolvedPoints) updateMapVisualization(lastSolvedPoints); });
     btnWalking.addEventListener('click', () => { currentTravelMode = 'WALKING'; if(lastSolvedPoints) updateMapVisualization(lastSolvedPoints); });
+    tripSearch.addEventListener('input', (e) => filterLibrary(e.target.value));
+    
     btnSendChat.addEventListener('click', async () => {
-      const txt = chatInput.value; chatInput.value = '';
+      const txt = chatInput.value; if(!txt) return;
+      chatInput.value = '';
       chatHistory.innerHTML += `<div class="chat-msg user"><strong>You:</strong><br>${txt}</div>`;
       const resp = await callGeminiAPI(txt);
       const addRegex = /\{ADD:\s*(.*?)\}/gi; let match;
