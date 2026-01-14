@@ -171,7 +171,6 @@
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
       const data = await res.json();
       
-      // Filter strictly for chat models. Explicitly blocks Nano Banana (Image generation).
       const valid = data.models.filter(m => 
         m.name.includes('gemini') && 
         !m.name.toLowerCase().includes('image') && 
@@ -179,7 +178,6 @@
         !m.name.toLowerCase().includes('vision')
       );
       
-      // Smart Sort: Highest version (3 > 2.5 > 2.0).
       valid.sort((a, b) => {
         const getV = (n) => { const match = n.match(/gemini-(\d+(\.\d+)?)/); return match ? parseFloat(match[1]) : 0; };
         return getV(b.name) - getV(a.name);
@@ -230,7 +228,7 @@
       aiBtn.style.border = '1px dashed var(--accent)';
       aiBtn.addEventListener('click', () => {
         const p = "Review this itinerary logic:\n" + lastSolvedPoints.map((pt, i) => `${i+1}. ${pt.name}`).join('\n');
-        toggleChatMode(true); // Switches View
+        toggleChatMode(true); 
         chatInput.value = p;
       });
       linksEl.appendChild(aiBtn);
@@ -249,7 +247,6 @@
     const lines = inputEl.value.split('\n').filter(l => l.trim() && !l.startsWith('#'));
     const pts = [];
     
-    // Sequential geocoding loop with throttle
     for (let line of lines) {
       const m = /(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/.exec(line);
       if (m) { 
@@ -301,13 +298,13 @@
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'trip.txt'; a.click();
   }
 
-  // --- INITIALIZATION & EVENT LISTENERS (FULL SET) ---
+  // --- INITIALIZATION & EVENT LISTENERS ---
   initTripTree(); 
   initModelSelector();
   
   btnHelp.onclick = () => { 
     helpOverlay.style.display = 'flex'; 
-    helpBody.innerHTML = '<h3>Help Guide</h3><p>Optimize your route by entering stops or picking from the library. <strong>Precise</strong> mode uses advanced math for better results.</p>'; 
+    helpBody.innerHTML = '<h3>Help Guide</h3><p>Optimize your route by entering stops or picking from the library. <strong>Precise</strong> mode uses advanced math for better routes.</p>'; 
   };
   btnAbout.onclick = () => { 
     helpOverlay.style.display = 'flex'; 
