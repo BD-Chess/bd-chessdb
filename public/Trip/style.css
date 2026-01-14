@@ -1,16 +1,16 @@
-/* --- 1. CORE RESET & THEME --- */
+/* --- 1. CORE VISUALS & RESET --- */
 :root {
-  --bg-app: #0b0f14;       /* Deep Navy */
-  --bg-panel: #151e29;     /* Panel Color */
-  --bg-input: #0d1219;     /* Dark Input */
+  --bg-app: #0b0f14;       /* Deepest Navy */
+  --bg-panel: rgba(15, 22, 33, 0.65); /* Glassy Panel */
+  --bg-input: #0c121b;     /* Dark Input */
   --primary: #3b82f6;      /* Bright Blue */
   --primary-hover: #2563eb;
-  --text-main: #f0f4f8;    /* White */
-  --text-dim: #94a3b8;     /* Muted Grey */
-  --border: #1e293b;       /* Borders */
+  --text-main: #e6edf3;    /* Bright White */
+  --text-dim: #9fb0c3;     /* Muted Blue-Grey */
+  --border: #1f2a3a;       /* Subtle Border */
   --success: #10b981;      /* Green */
   --danger: #ef4444;       /* Red */
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -19,16 +19,16 @@ body {
   margin: 0; padding: 0;
   /* Radial Gradient from your ZIP */
   background: 
-    radial-gradient(1200px 800px at 20% 10%, rgba(106,169,255,.08), transparent 50%),
-    radial-gradient(1000px 700px at 80% 40%, rgba(126,231,135,.05), transparent 55%),
+    radial-gradient(1200px 800px at 20% 10%, rgba(106,169,255,.12), transparent 50%),
+    radial-gradient(1000px 700px at 80% 40%, rgba(126,231,135,.08), transparent 55%),
     var(--bg-app);
   color: var(--text-main);
   font-family: 'Inter', -apple-system, sans-serif;
-  font-size: 16px; /* Prevents iPhone Zoom */
-  padding-bottom: 120px; /* Space for Bottom Chat Dock */
+  font-size: 16px; 
+  padding-bottom: 100px; /* Space for Mobile Dock */
 }
 
-/* --- 2. LAYOUT (MOBILE DEFAULT) --- */
+/* --- 2. LAYOUT CONTAINER --- */
 .app-wrapper {
   max-width: 100%;
   padding: 10px;
@@ -37,9 +37,11 @@ body {
   gap: 15px;
 }
 
+/* --- 3. PANELS & CARDS --- */
 .panel {
   background: var(--bg-panel);
   border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
   border-radius: 12px;
   padding: 15px;
   box-shadow: var(--shadow);
@@ -55,20 +57,19 @@ h2, h3 {
   padding-bottom: 8px;
 }
 
-/* --- 3. HEADER --- */
+/* --- 4. HEADER --- */
 header {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 12px 15px; background: rgba(21, 30, 41, 0.85);
-  backdrop-filter: blur(10px);
+  padding: 10px 15px; background: rgba(15,22,33,0.8);
   border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 50;
 }
 .brand { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
 .brand span { color: var(--primary); font-weight: 300; }
-.nav-btn { background: none; border: none; color: var(--text-dim); font-size: 0.9rem; cursor: pointer; padding: 5px; }
+.nav-btn { background: none; border: none; color: var(--text-dim); font-size: 0.9rem; cursor: pointer; }
 .nav-btn:hover { color: var(--text-main); }
 
-/* --- 4. INPUTS --- */
+/* --- 5. INPUTS & CONTROLS --- */
 input, textarea {
   width: 100%;
   background: var(--bg-input);
@@ -82,9 +83,8 @@ input, textarea {
   transition: border-color 0.2s;
 }
 input:focus, textarea:focus { border-color: var(--primary); }
-textarea { min-height: 140px; resize: vertical; margin-bottom: 12px; }
+textarea { min-height: 120px; resize: vertical; margin-bottom: 12px; }
 
-/* --- 5. BUTTONS --- */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
 
 button {
@@ -113,7 +113,7 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary)
   background: var(--bg-input); border: 1px solid var(--border);
   border-radius: 8px; padding: 5px; margin-bottom: 12px;
 }
-.tree-header { padding: 6px 8px; cursor: pointer; color: var(--text-dim); font-size: 0.9rem; font-weight: 600; }
+.tree-header { padding: 6px 8px; cursor: pointer; color: var(--text-dim); font-size: 0.9rem; }
 .tree-header:hover { color: var(--text-main); }
 .tree-group { padding-left: 12px; display: none; border-left: 1px solid var(--border); }
 .tree-group.open { display: block; }
@@ -126,12 +126,12 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary)
 .saved { color: var(--success); }
 
 #mapContainer {
-  height: 250px; background: #000; border-radius: 8px;
+  height: 250px; background: #121b28; border-radius: 8px;
   overflow: hidden; position: relative; margin-bottom: 12px; border: 1px solid var(--border);
 }
 #mapPlaceholder {
   position: absolute; inset: 0; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; color: var(--text-dim); z-index: 5;
+  align-items: center; justify-content: center; color: var(--text-dim);
 }
 #map { width: 100%; height: 100%; }
 
@@ -152,7 +152,7 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary)
 }
 .linkrow a { color: var(--primary); text-decoration: none; font-size: 0.9rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* --- 8. AI CHAT DOCK (MOBILE) --- */
+/* --- 8. AI CHAT --- */
 #chatPanel {
   position: fixed; bottom: 0; left: 0; right: 0;
   background: #0f1621; 
@@ -190,18 +190,15 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary)
   body { padding-bottom: 0; overflow: hidden; }
   .app-wrapper {
     max-width: 1600px; height: calc(100vh - 60px);
-    display: grid; grid-template-columns: 350px 1fr 400px;
-    gap: 20px;
+    display: grid; grid-template-columns: 350px 1fr 400px; gap: 20px;
   }
   .panel { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
   .library-box { max-height: none; flex: 1; }
   #mapContainer { height: 400px; flex: none; }
   #routeList { flex: 1; max-height: none; }
-  
   #chatPanel {
-    position: relative; bottom: auto; left: auto; right: auto;
-    height: 100%; border: 1px solid var(--border); border-radius: 12px;
-    z-index: 1; box-shadow: none;
+    position: relative; bottom: auto; left: auto; right: auto; height: 100%;
+    border: 1px solid var(--border); border-radius: 12px; z-index: 1; box-shadow: none;
   }
   #chatPanel.open { height: 100%; }
   #chatHistory { display: block; }
