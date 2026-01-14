@@ -397,7 +397,7 @@
     }
   };
 
-  // --- 11. AI ---
+  // --- 11. AI (UPDATED WITH CONTEXT) ---
   async function initAI() {
     try {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
@@ -408,11 +408,28 @@
       currentGeminiModel = v[0]?.name; s.onchange = () => currentGeminiModel = s.value;
     } catch(e){}
   }
-  async function callAI(txt) {
-    chatHistoryBuffer.push({ role: "user", parts: [{ text: txt }] });
+
+  async function callAI(userRequest) {
+    const currentList = $('input').value;
+    
+    // NEW: Inject current trip list into the prompt
+    const contextPrompt = `
+[SYSTEM CONTEXT]
+The User's Current Trip List is:
+---
+${currentList}
+---
+INSTRUCTIONS:
+1. To ADD a stop, output: {ADD: Place Name}
+2. To EDIT, REMOVE, or REORDER the list, output: {SET_TRIP: Full New List}
+3. Otherwise, chat normally.
+User Request: ${userRequest}`;
+
+    chatHistoryBuffer.push({ role: "user", parts: [{ text: contextPrompt }] });
+    
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${currentGeminiModel}:generateContent?key=${GEMINI_API_KEY}`, {
         method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ contents: [{role:"user", parts:[{text:"AI Assistant. Use {ADD: Place}."}]}, ...chatHistoryBuffer] })
+        body: JSON.stringify({ contents: [{role:"user", parts:[{text:"You are an AI Trip Assistant."}]}, ...chatHistoryBuffer] })
     });
     const d = await res.json();
     const t = d.candidates?.[0]?.content?.parts?.[0]?.text || "Error";
@@ -456,9 +473,30 @@
     $('btnSendChat').onclick = async () => {
         const i=$('chatInput'), t=i.value.trim(), h=$('chatHistory'); if(!t)return; i.value='';
         h.innerHTML+=`<div class="msg user">${t}</div>`; h.scrollTop=h.scrollHeight;
-        const r=await callAI(t);
-        const m=r.match(/\{ADD:\s*(.*?)\}/g); if(m) m.forEach(x=>{ const l=x.replace(/\{ADD:\s*|\}/g,'').trim(); if(!$('input').value.includes(l))$('input').value+=($('input').value?'\n':'')+l; });
-        h.innerHTML+=`<div class="msg ai"><strong>Gemini:</strong> ${r.replace(/\n/g,'<br>')}</div>`; h.scrollTop=h.scrollHeight;
+        
+        const r = await callAI(t);
+        
+        // NEW: Handle {SET_TRIP} and {ADD} tags
+        const setMatch = r.match(/\{SET_TRIP:\s*([\s\S]*?)\}/);
+        const addMatch = r.match(/\{ADD:\s*(.*?)\}/g);
+
+        if (setMatch) {
+            $('input').value = setMatch[1].trim();
+            setStatus('Trip list updated by AI.', 'ok');
+            saveState();
+        } else if (addMatch) {
+            addMatch.forEach(x => { 
+                const l=x.replace(/\{ADD:\s*|\}/g,'').trim(); 
+                if(!$('input').value.includes(l)) $('input').value += ($('input').value?'\n':'')+l; 
+            });
+            saveState();
+        }
+
+        // Clean response for display (remove tags)
+        const cleanReply = r.replace(/\{SET_TRIP:[\s\S]*?\}/g, '*(List Updated)*').replace(/\{ADD:.*?\}/g, '*(Added)*');
+        
+        h.innerHTML+=`<div class="msg ai"><strong>Gemini:</strong> ${cleanReply.replace(/\n/g,'<br>')}</div>`; 
+        h.scrollTop=h.scrollHeight;
     };
     
     const h=$('helpOverlay'); 
