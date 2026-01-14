@@ -16,7 +16,7 @@
   const tripSearch = $('tripSearch'), routeList = $('routeList'), distKmEl = $('distKm'), savedKmEl = $('savedKm'), linksEl = $('links');
   const chkRoundTrip = $('chkRoundTrip'), btnEnableMap = $('btnEnableMap'), mapDiv = $('map'), mapPlaceholder = $('mapPlaceholder'), mapContainer = $('mapContainer');
   const btnDriving = $('btnDriving'), btnWalking = $('btnWalking'), chkDirect = $('chkDirect'), chkGoogleStyle = $('chkGoogleStyle');
-  const helpOverlay = $('helpOverlay'), btnHelp = $('btnHelp'), btnAbout = $('btnAbout'), btnCloseHelp = $('btnCloseHelp'), presetTree = $('presetTree');
+  const helpOverlay = $('helpOverlay'), btnHelp = $('btnHelp'), btnAbout = $('btnAbout'), btnCloseHelp = $('btnCloseHelp'), presetTree = $('presetTree'), helpBody = $('helpBody');
   const chatPanel = $('chatPanel'), chatInput = $('chatInput'), btnSendChat = $('btnSendChat'), chatHistory = $('chatHistory'), modelSelector = $('modelSelector'), btnChatToggle = $('btnChatToggle'), btnCloseChat = $('btnCloseChat');
   const btnSave = $('btnSave'), btnLoad = $('btnLoad'), fileLoader = $('fileLoader'), leftPanel = $('leftPanel'), btnCollapse = $('btnCollapse'), btnExpand = $('btnExpand');
 
@@ -267,7 +267,11 @@
     routeList.innerHTML = pointsSorted.map(p => `<li>${p.name}</li>`).join('');
     updateMapVisualization(pointsSorted);
     
-    const params = new URLSearchParams({ api: '1', travelmode: currentTravelMode.toLowerCase(), origin: `${pointsSorted[0].lat},${pointsSorted[0].lon}`, destination: chkRoundTrip.checked ? `${pointsSorted[0].lat},${pointsSorted[0].lon}` : `${pointsSorted[pointsSorted.length-1].lat},${pointsSorted[pointsSorted.length-1].lon}` });
+    const params = new URLSearchParams({ 
+        api: '1', travelmode: currentTravelMode.toLowerCase(), 
+        origin: `${pointsSorted[0].lat},${pointsSorted[0].lon}`, 
+        destination: chkRoundTrip.checked ? `${pointsSorted[0].lat},${pointsSorted[0].lon}` : `${pointsSorted[pointsSorted.length-1].lat},${pointsSorted[pointsSorted.length-1].lon}` 
+    });
     const waypoints = pointsSorted.slice(1, chkRoundTrip.checked ? undefined : -1).map(p => `${p.lat},${p.lon}`).join('|');
     if (waypoints) params.set('waypoints', waypoints);
     
@@ -293,7 +297,14 @@
   initTripTree(); 
   initModelSelector();
   
-  btnHelp.onclick = () => helpOverlay.style.display = 'flex';
+  btnHelp.onclick = () => { 
+    helpOverlay.style.display = 'flex'; 
+    helpBody.innerHTML = '<h3>Help Guide</h3><p>Enter stops or select from library. Use Standard for fast results, Precise for better routes.</p>'; 
+  };
+  btnAbout.onclick = () => { 
+    helpOverlay.style.display = 'flex'; 
+    helpBody.innerHTML = '<h3>About</h3><p>8Z-RP Trip Optimizer v2026. Powered by Google Maps & Gemini AI.</p>'; 
+  };
   btnCloseHelp.onclick = () => helpOverlay.style.display = 'none';
   tripSearch.oninput = (e) => filterTripTree(e.target.value);
   btnSave.onclick = downloadFile;
