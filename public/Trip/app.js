@@ -484,6 +484,11 @@
     $('btnHelp').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=HELP_HTML;}; 
     $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; 
     $('btnCloseHelp').onclick=()=>h.style.display='none';
+    
+    // --- AUTO-OPEN CHAT ON 4K (NEW) ---
+    if (window.innerWidth >= 1800) {
+        $('chatPanel').classList.add('open');
+    }
   });
   
   function setTravelMode(mode) {
