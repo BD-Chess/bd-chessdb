@@ -6,35 +6,36 @@
 window.ABOUT_CONTENT = `
   <div class="card help-block">
     <h2>The Origin Story</h2>
-    <p><strong>The "Marrakech" Moment</strong><br>
-    The idea for 8Z-RP was born last year in the chaos of a trip to Morocco. I found myself standing in the middle of a busy Medina, juggling three different apps: an AI chatbot to find "hidden gems," Google Maps to figure out where they were, and a Notes app to keep track of the order. My battery was dying, and the logistics were a mess.</p>
-    <p>I realized something: <strong>AI is great at dreaming, but bad at logistics. Maps are great at navigation, but bad at planning.</strong></p>
-    <p>I built 8Z-RP to bridge that gap. I wanted a single, private, high-performance tool where I could dump a list of places and get a mathematically perfect route instantly.</p>
+    
+    <p><strong>From Sahara to Sea</strong><br>
+    The idea for 8Z-RP was born during an 8-day expedition across Morocco—from the dunes of the Sahara to the Atlantic coast. It was the trip of a lifetime, but the logistics were a nightmare. I found myself juggling WhatsApp tips, Google Maps, and messy notes, manually trying to connect 20 scattered locations into a logical path.</p>
+    
+    <p><strong>The "8Z" Insight</strong><br>
+    I realized that <strong>route optimization is actually a data compression problem.</strong></p>
+    
+    <p>I had already developed <em>8Z Compression</em> to reduce data to its mathematical minimum. I applied that same logic here: the shortest route is simply the most "compressed" version of a trip. Working with AI, I built this engine to solve that problem instantly.</p>
+  </div>
+
+  <div class="card help-block">
+    <h2>The Vision: A Traveler's Cockpit</h2>
+    <p>I wanted a single tool that does it all. No more switching apps. You dump your chaotic list of stops into 8Z-RP, and it hands you back a mathematically perfect plan.</p>
+    <p>This is the only tool I need for my next adventure, and I believe it's what every serious traveler needs.</p>
   </div>
 
   <div class="card help-block">
     <h2>Core Philosophy</h2>
     <ul>
-      <li><strong>🛡️ Privacy First:</strong> In an era of data tracking, 8Z-RP is a rebellion. It runs 100% Client-Side. Your trip data lives in your browser's local memory. It never touches a database. I don't see your trips, and I don't want to.</li>
-      
-      <li><strong>🎯 True Determinism:</strong> Most online route solvers are "randomized"—if you click optimize twice, you might get different results. That drove me crazy. 
-      <br>This tool uses a custom <em>Seeded XorShift64Star</em> algorithm. 
-      <br><strong>Same Input ⇒ Exact Same Route.</strong> Every time. It allows you to scientifically refine your trip without chaos.</li>
-      
-      <li><strong>⚡ Efficiency:</strong> We don't just connect the dots; we solve the <em>Traveling Salesperson Problem</em> (TSP) to physically minimize your travel distance, saving you fuel, time, and energy.</li>
+      <li><strong>🛡️ Privacy First:</strong> 8Z-RP runs 100% Client-Side. Your trip data lives in your browser. It never touches a database.</li>
+      <li><strong>🎯 True Determinism:</strong> Unlike random solvers, we use a seeded algorithm. <strong>Same Input ⇒ Exact Same Route.</strong> Every time.</li>
+      <li><strong>⚡ Efficiency:</strong> We save you time, fuel, and energy by calculating the absolute shortest path.</li>
     </ul>
-  </div>
-
-  <div class="card help-block">
-    <h2>The Vision</h2>
-    <p>We are building the ultimate "Traveler's Cockpit."</p>
-    <p><strong>Coming Soon:</strong> A universal AI Travel Assistant integrated directly into this workflow. Imagine asking, <em>"Add the best coffee spot near stop #3,"</em> and having it instantly appear on your optimized route.</p>
-    <p style="margin-top:15px; border-left: 3px solid var(--primary); padding-left: 10px; color: var(--text-dim);">
-      <em>"Gemini AI confirms: There are no complete, private, client-side tools like this one on the market."</em>
+    
+    <p style="margin-top:15px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--muted); font-style: italic;">
+      "Gemini AI confirms: There are no complete, private, client-side tools like this one on the market."
     </p>
   </div>
 
-  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 0.9rem; color: var(--text-dim); text-align: center; line-height: 1.6;">
+  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 0.9rem; color: var(--muted); text-align: center; line-height: 1.6;">
     <strong>Author & Concepts:</strong> Bojan Dobrečevič<br>
     <strong>Built with:</strong> Gemini, GPT, and Claude<br>
     Jan 2026
