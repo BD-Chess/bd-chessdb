@@ -6,30 +6,32 @@
 window.ABOUT_CONTENT = `
   <div class="card help-block">
     <h2>The Origin Story</h2>
-    
-    <p><strong>The Spark: P=NP & 8Z Compression</strong><br>
-    The idea didn't start with a map; it started with a math problem. Earlier this year, a friend mentioned he was trying to prove <strong>P=NP</strong> using the <em>Traveling Salesperson Problem (TSP)</em>. I realized TSP is fundamentally about finding the shortest route through chaos.</p>
-    
-    <p>That triggered a memory of my own work on <strong>8Z Mathematical Compression</strong>. My core thesis was: <em>"Data doesn't need to be compressed; it needs to be understood as the shortest mathematical truth that generates it."</em></p>
-    
-    <p>I thought: <strong>Wouldn't the shortest physical route also be the one that is most mathematically compressible?</strong></p>
-    
-    <p>Working with LLMs, we built a Python solver based on this "compression logic" and ported it to the web. It wasn't just a router anymore; it was a physics engine for efficiency.</p>
-  </div>
-
-  <div class="card help-block">
-    <h2>The "Why": The Morocco Experience</h2>
-    <p>While the <em>math</em> came this year, the <em>need</em> was born last year in <strong>Morocco</strong>. I traveled through the country doing everything manually—juggling WhatsApp chats for tips, Google Maps for locations, and notes for planning. It was a logistical nightmare.</p>
-    <p>I realized that while Google Maps is great for <em>navigation</em> (A to B), it is terrible at <em>logistics</em> (ordering 20 stops efficiently). I built 8Z-RP to be the "All-in-One" cockpit I wish I had in the Medina of Marrakech.</p>
+    <p><strong>The "Marrakech" Moment</strong><br>
+    The idea for 8Z-RP was born last year in the chaos of a trip to Morocco. I found myself standing in the middle of a busy Medina, juggling three different apps: an AI chatbot to find "hidden gems," Google Maps to figure out where they were, and a Notes app to keep track of the order. My battery was dying, and the logistics were a mess.</p>
+    <p>I realized something: <strong>AI is great at dreaming, but bad at logistics. Maps are great at navigation, but bad at planning.</strong></p>
+    <p>I built 8Z-RP to bridge that gap. I wanted a single, private, high-performance tool where I could dump a list of places and get a mathematically perfect route instantly.</p>
   </div>
 
   <div class="card help-block">
     <h2>Core Philosophy</h2>
     <ul>
-      <li><strong>🛡️ Privacy First:</strong> 8Z-RP runs 100% Client-Side. Your trip data lives in your browser. It never touches a database.</li>
-      <li><strong>🎯 True Determinism:</strong> Unlike random solvers, we use a seeded algorithm. <strong>Same Input ⇒ Exact Same Route.</strong> Every time.</li>
-      <li><strong>⚡ 8Z Efficiency:</strong> We apply mathematical compression principles to travel, minimizing distance so you save time and fuel.</li>
+      <li><strong>🛡️ Privacy First:</strong> In an era of data tracking, 8Z-RP is a rebellion. It runs 100% Client-Side. Your trip data lives in your browser's local memory. It never touches a database. I don't see your trips, and I don't want to.</li>
+      
+      <li><strong>🎯 True Determinism:</strong> Most online route solvers are "randomized"—if you click optimize twice, you might get different results. That drove me crazy. 
+      <br>This tool uses a custom <em>Seeded XorShift64Star</em> algorithm. 
+      <br><strong>Same Input ⇒ Exact Same Route.</strong> Every time. It allows you to scientifically refine your trip without chaos.</li>
+      
+      <li><strong>⚡ Efficiency:</strong> We don't just connect the dots; we solve the <em>Traveling Salesperson Problem</em> (TSP) to physically minimize your travel distance, saving you fuel, time, and energy.</li>
     </ul>
+  </div>
+
+  <div class="card help-block">
+    <h2>The Vision</h2>
+    <p>We are building the ultimate "Traveler's Cockpit."</p>
+    <p><strong>Coming Soon:</strong> A universal AI Travel Assistant integrated directly into this workflow. Imagine asking, <em>"Add the best coffee spot near stop #3,"</em> and having it instantly appear on your optimized route.</p>
+    <p style="margin-top:15px; border-left: 3px solid var(--primary); padding-left: 10px; color: var(--text-dim);">
+      <em>"Gemini AI confirms: There are no complete, private, client-side tools like this one on the market."</em>
+    </p>
   </div>
 
   <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 0.9rem; color: var(--text-dim); text-align: center; line-height: 1.6;">
