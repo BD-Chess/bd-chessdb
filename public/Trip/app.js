@@ -1,11 +1,14 @@
 (() => {
   'use strict';
 
-  // --- HELPER FUNCTIONS ---
+  // ==========================================================================
+  //  1. HELPER FUNCTIONS
+  // ==========================================================================
   const $ = (id) => document.getElementById(id);
 
+
   // ==========================================================================
-  //  CONFIGURATION & SECURITY (2026 UPDATE)
+  //  2. CONFIGURATION & SECURITY (2026 UPDATE)
   // ==========================================================================
   
   // Public Google Maps Key (Standard access)
@@ -19,60 +22,62 @@
   const _s1 = 'QUl6YVN5Q3hIanBw';
   const _s2 = 'S2l4YW85OU5IOURv';
   const _s3 = 'YWYtUTBLTzRmQ1FhZUhz';
+  
+  // Reassemble at runtime
   const GEMINI_API_KEY = atob(_s1) + atob(_s2) + atob(_s3);
 
 
   // ==========================================================================
-  //  UI ELEMENTS SELECTORS
+  //  3. UI ELEMENTS SELECTORS
   // ==========================================================================
   
-  // Input & Status
+  // --- Main Input & Status ---
   const inputEl = $('input');
   const statusEl = $('status');
   
-  // Optimization Buttons
+  // --- Optimization Buttons ---
   const btnStandard = $('btnStandard');
   const btnDeep = $('btnDeep');
 
-  // Results & Stats
+  // --- Results & Stats ---
   const routeList = $('routeList');
   const distKmEl = $('distKm');
   const savedKmEl = $('savedKm');
   const linksEl = $('links');
 
-  // Map Controls
+  // --- Map Controls ---
   const btnEnableMap = $('btnEnableMap');
   const mapDiv = $('map');
   const mapPlaceholder = $('mapPlaceholder');
   const mapContainer = $('mapContainer');
   const chkGoogleStyle = $('chkGoogleStyle');
 
-  // Trip Options
+  // --- Trip Options ---
   const chkRoundTrip = $('chkRoundTrip');
   const btnDriving = $('btnDriving');
   const btnWalking = $('btnWalking');
   const chkDirect = $('chkDirect');
 
-  // Trip Library (Search & Tree)
+  // --- Trip Library (Search & Tree) ---
   const tripSearch = $('tripSearch');
   const presetTree = $('presetTree');
   const leftPanel = $('leftPanel');
   const btnCollapse = $('btnCollapse');
   const btnExpand = $('btnExpand');
 
-  // File Operations
+  // --- File Operations ---
   const btnSave = $('btnSave');
   const btnLoad = $('btnLoad');
   const fileLoader = $('fileLoader');
 
-  // Help & About Modals
+  // --- Help & About Modals ---
   const helpOverlay = $('helpOverlay');
   const helpBody = $('helpBody');
   const btnHelp = $('btnHelp');
   const btnAbout = $('btnAbout');
   const btnCloseHelp = $('btnCloseHelp');
 
-  // AI Chat Interface
+  // --- AI Chat Interface ---
   const chatPanel = $('chatPanel');
   const chatInput = $('chatInput');
   const btnSendChat = $('btnSendChat');
@@ -80,10 +85,13 @@
   const modelSelector = $('modelSelector');
   const btnChatToggle = $('btnChatToggle');
   const btnCloseChat = $('btnCloseChat');
+  
+  // NEW: The "Plan with AI" button in the header
+  const btnPlanWithAI = $('btnPlanWithAI'); 
 
 
   // ==========================================================================
-  //  GLOBAL STATE
+  //  4. GLOBAL STATE
   // ==========================================================================
   
   const worker = new Worker('worker.js');
@@ -135,7 +143,7 @@
 
 
   // ==========================================================================
-  //  CONTENT TEMPLATES (Help & About)
+  //  5. CONTENT TEMPLATES (Help & About)
   // ==========================================================================
 
   const HELP_HTML = `
@@ -214,7 +222,7 @@
 
 
   // ==========================================================================
-  //  UI HELPER FUNCTIONS
+  //  6. UI HELPER FUNCTIONS
   // ==========================================================================
 
   function toggleChatMode(showChat) {
@@ -233,9 +241,28 @@
     statusEl.className = 'status ' + (cls || '');
   }
 
+  // --- NEW: Global Helper for AI "Add Stop" actions ---
+  window.addStopToRoute = function(loc) {
+    const currentText = inputEl.value.trim();
+    
+    // Prevent duplicate adds if AI repeats itself immediately
+    if (currentText.includes(loc)) {
+        return; 
+    }
+    
+    inputEl.value = currentText + (currentText ? '\n' : '') + loc;
+    saveState();
+    
+    // Visual feedback
+    setStatus(`Added: ${loc}`, 'ok');
+    setTimeout(() => {
+        setStatus('Ready', '');
+    }, 2000);
+  };
+
 
   // ==========================================================================
-  //  GOOGLE MAPS ENGINE
+  //  7. GOOGLE MAPS ENGINE
   // ==========================================================================
 
   function loadGoogleMaps() {
@@ -268,7 +295,10 @@
     // UI Update
     mapPlaceholder.style.display = 'none';
     mapDiv.style.display = 'block';
-    if (btnEnableMap) btnEnableMap.parentElement.style.display = 'none';
+    
+    if (btnEnableMap) {
+        btnEnableMap.parentElement.style.display = 'none';
+    }
   };
 
   function updateMapVisualization(points) {
@@ -374,7 +404,7 @@
 
 
   // ==========================================================================
-  //  TRIP LIBRARY SYSTEM
+  //  8. TRIP LIBRARY SYSTEM
   // ==========================================================================
 
   function initTripTree() {
@@ -416,7 +446,6 @@
           item.addEventListener('click', () => {
             inputEl.value = trip.data;
             saveState();
-            // Optional: Auto-run or just focus
             inputEl.focus();
           });
 
@@ -478,7 +507,7 @@
 
 
   // ==========================================================================
-  //  AI LOGIC (GEMINI 2026 INTEGRATION)
+  //  9. AI LOGIC (GEMINI 2026 INTEGRATION)
   // ==========================================================================
 
   async function initModelSelector() {
@@ -589,7 +618,7 @@
 
 
   // ==========================================================================
-  //  RESULTS & EXPORT
+  //  10. RESULTS & EXPORT
   // ==========================================================================
 
   function renderLinks(links) {
@@ -628,7 +657,7 @@
 
 
   // ==========================================================================
-  //  MAIN ENGINE (Geocoding -> Worker -> Map)
+  //  11. MAIN ENGINE (Geocoding -> Worker -> Map)
   // ==========================================================================
 
   async function run(profile) {
@@ -739,7 +768,7 @@
 
 
   // ==========================================================================
-  //  STATE MANAGEMENT & FILES
+  //  12. STATE MANAGEMENT & FILES
   // ==========================================================================
 
   function saveState() {
@@ -777,7 +806,7 @@
 
 
   // ==========================================================================
-  //  INITIALIZATION & EVENT LISTENERS
+  //  13. INITIALIZATION & EVENT LISTENERS
   // ==========================================================================
 
   // Boot
@@ -847,6 +876,14 @@
     btnExpand.style.display = 'none';
   };
 
+  // FIX #2: Header Button "Plan with AI" Listener
+  if (btnPlanWithAI) {
+      btnPlanWithAI.addEventListener('click', (e) => {
+          e.preventDefault();
+          toggleChatMode(true);
+      });
+  }
+
   // Chat Toggles
   btnChatToggle.onclick = (e) => {
     e.preventDefault();
@@ -872,6 +909,13 @@
 
     // Get AI Response
     const resp = await callGeminiAPI(txt);
+    
+    // FIX #1: Parse Response for {ADD: ...} tags
+    const addRegex = /\{ADD:\s*(.*?)\}/g;
+    let match;
+    while ((match = addRegex.exec(resp)) !== null) {
+        window.addStopToRoute(match[1].trim());
+    }
 
     // Render AI Message
     const aDiv = document.createElement('div');
@@ -879,13 +923,6 @@
     aDiv.innerHTML = `<strong>Gemini:</strong><br>${resp.replace(/\n/g, '<br>')}`;
     chatHistory.appendChild(aDiv);
     chatHistory.scrollTop = chatHistory.scrollHeight;
-  };
-
-  // Global Helper (for AI "Add Stop" actions)
-  window.addStopToRoute = function(loc) {
-    const currentText = inputEl.value.trim();
-    inputEl.value = currentText + (currentText ? '\n' : '') + loc;
-    saveState();
   };
 
 })();
