@@ -110,43 +110,6 @@ function nearestNeighbor(start, D, allowed) {
   return route;
 }
 
-function shuffledAllowed(allowed, rng) {
-  const arr = allowed.slice();
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(rng.nextFloat() * (i + 1));
-    const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
-  }
-  return arr;
-}
-
-function nnWithJitter(start, D, allowed, rng, jitterScale) {
-  const n = allowed.length;
-  const used = new Uint8Array(D.length);
-  const route = new Array(n);
-  route[0] = start;
-  used[start] = 1;
-
-  for (let t = 1; t < n; t++) {
-    const cur = route[t-1];
-    let best = -1;
-    let bestScore = Infinity;
-    for (let idx = 0; idx < n; idx++) {
-      const v = allowed[idx];
-      if (used[v]) continue;
-      const dv = D[cur][v];
-      const noise = (rng.nextFloat() - 0.5) * jitterScale * dv;
-      const score = dv + noise;
-      if (score < bestScore || (score === bestScore && v < best)) {
-        bestScore = score;
-        best = v;
-      }
-    }
-    route[t] = best;
-    used[best] = 1;
-  }
-  return route;
-}
-
 function twoOpt(route, D, roundTrip, maxPasses, timeBudgetMs) {
   const n = route.length;
   const t0 = performance.now();
@@ -198,27 +161,22 @@ function solve(points, startIdx, profile, roundTrip) {
   const seedStr = points.map(p => `${p.name}|${p.lat}|${p.lon}`).join('\n') + `|start=${start}|profile=${profile}|rt=${roundTrip}`;
   const rng = new XorShift64Star(fnv1a64(seedStr));
 
-  // --- FORCE POWER: DEEP PROFILE ---
-  // You requested more time. We give it more time.
-  
+  // --- CONFIGURATION ---
   let starts = 2;
   let maxPasses = 4;
   let timeBudgetMs = 300;
-  let jitterScale = 0.03;
 
   if (profile === 'standard') {
-    starts = 2; maxPasses = 4; timeBudgetMs = 300; jitterScale = 0.03;
+    starts = 2; maxPasses = 4; timeBudgetMs = 300;
   } else if (profile === 'deep') {
     // UNLEASHED MODE:
-    // Fixed high values regardless of trip size.
-    // This allows small trips (like Japan) to brute force 100 variations to find the absolute minimum.
-    starts = 100;        // Check 100 different random starting paths
-    maxPasses = 100;     // Optimize each path aggressively
-    timeBudgetMs = 12000; // 12 Seconds Guaranteed Budget
-    jitterScale = 0.15;  // High jitter to shake out of local traps
-  } 
-  else if (profile === 'fast') {
-    starts = 1; maxPasses = 3; timeBudgetMs = 250; jitterScale = 0.02;
+    // 1. High start count (100) to ensure we try many random starting points.
+    // 2. High time budget (12s) to allow 2-Opt to fully converge on each.
+    starts = 100;
+    maxPasses = 50; 
+    timeBudgetMs = 12000; 
+  } else if (profile === 'fast') {
+    starts = 1; maxPasses = 3; timeBudgetMs = 250;
   }
 
   let bestRoute = null;
@@ -227,14 +185,31 @@ function solve(points, startIdx, profile, roundTrip) {
   const baseLen = routeLength(baseRoute, D, roundTrip);
 
   for (let s = 0; s < starts; s++) {
-    const allowed = (s === 0) ? withCoords.map((_, i) => i)
-                              : shuffledAllowed(withCoords.map((_, i) => i), rng);
+    // REVERTED LOGIC: Use random shuffling like worker2.js
+    // This allows exploring the global search space much better than 'jitter'.
+    
+    let route;
+    if (s === 0) {
+        // First pass: Greedy Nearest Neighbor (Good Baseline)
+        route = nearestNeighbor(start, D, withCoords.map((_, i) => i));
+    } else {
+        // Subsequent passes: Random Shuffle (Global Exploration)
+        // 1. Create indices [0, 1, 2... N-1]
+        route = new Array(withCoords.length);
+        for(let k=0; k<withCoords.length; k++) route[k] = k;
+        
+        // 2. Force start point to position 0
+        const startPos = route.indexOf(start);
+        if (startPos !== 0) { [route[0], route[startPos]] = [route[startPos], route[0]]; }
 
-    let route = null;
-    if (s === 0) route = nearestNeighbor(start, D, allowed);
-    else route = nnWithJitter(start, D, allowed, rng, jitterScale);
+        // 3. Shuffle the rest (Fisher-Yates on 1..N-1)
+        for (let i = route.length - 1; i > 1; i--) {
+            const j = 1 + Math.floor(rng.nextFloat() * i);
+            [route[i], route[j]] = [route[j], route[i]];
+        }
+    }
 
-    // Calculate budget for this specific slice
+    // Distribute time budget across starts
     const sliceBudget = Math.max(50, timeBudgetMs / starts * 2);
     route = twoOpt(route, D, roundTrip, maxPasses, sliceBudget);
 
