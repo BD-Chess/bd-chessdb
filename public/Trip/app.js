@@ -26,7 +26,6 @@
   const worker = new Worker('worker.js');
   let map, geocoder, directionsService, directionsRenderers = [], mapMarkers = [], mapPolyline = null, infoWindow = null;
   let lastSolvedPoints = null, chatHistoryBuffer = [], currentGeminiModel = '', currentTravelMode = 'DRIVING';
-  let presetLookup = {};
   const STORAGE_KEY = '8z_trip_backup_v1';
 
   const CUSTOM_DARK_STYLE = [{ elementType: "geometry", stylers: [{ color: "#242f3e" }] }, { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] }, { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] }, { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }];
@@ -81,7 +80,7 @@
       mapPolyline = new google.maps.Polyline({ path: pathCoords, strokeColor: "#6aa9ff", strokeWeight: 4 });
       mapPolyline.setMap(map);
     } else {
-      const CHUNK_SIZE = 24;
+      const CHUNK_SIZE = 24; //
       for (let i = 0; i < pathCoords.length - 1; i += CHUNK_SIZE) {
         const chunk = pathCoords.slice(i, i + CHUNK_SIZE + 1);
         const renderer = new google.maps.DirectionsRenderer({ map, suppressMarkers: true, polylineOptions: { strokeColor: "#6aa9ff", strokeWeight: 5 } });
@@ -100,7 +99,7 @@
       setStatus(`Locating (${i+1}/${missing.length}): ${p.name}`, "warn");
       const res = await new Promise(r => { geocoder.geocode({ address: p.name }, (results, stat) => r(stat === "OK" ? results[0].geometry.location : null)); });
       if (res) { p.lat = res.lat(); p.lon = res.lng(); }
-      await sleep(300);
+      await sleep(300); //
     }
     return pts;
   }
@@ -142,9 +141,20 @@
       routeList.innerHTML = lastSolvedPoints.map(p => `<li>${p.name}</li>`).join('');
       distKmEl.textContent = ev.data.totalKm.toFixed(2) + ' km';
       savedKmEl.textContent = (ev.data.baseKm - ev.data.totalKm).toFixed(2) + ' km';
+      renderLinks(lastSolvedPoints);
       updateMapVisualization(lastSolvedPoints); setStatus("Route optimized!", "ok");
     }
   };
+
+  function renderLinks(pts) {
+    linksEl.innerHTML = ''; if (!pts) return;
+    const aiBtn = document.createElement('button');
+    aiBtn.innerHTML = '✨ Ask AI: "Is this order logical?"'; aiBtn.className = 'secondary'; aiBtn.style.width = '100%'; aiBtn.style.marginBottom = '10px'; aiBtn.style.border = '1px dashed var(--accent)';
+    aiBtn.addEventListener('click', () => { chatInput.value = "Review this route for logical flow: " + pts.map(p => p.name).join(' -> '); showView('chat'); });
+    linksEl.appendChild(aiBtn);
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${pts[0].lat},${pts[0].lon}&destination=${pts[pts.length-1].lat},${pts[pts.length-1].lon}&waypoints=${pts.slice(1,-1).map(p=>`${p.lat},${p.lon}`).join('|')}&travelmode=${currentTravelMode.toLowerCase()}`;
+    linksEl.innerHTML += `<div class="linkrow"><span class="badge">Maps</span><a href="${url}" target="_blank">Open in Maps ↗</a></div>`;
+  }
 
   // --- TRIP LIBRARY ---
   function initTripTree() {
@@ -160,7 +170,7 @@
         const cGroup = document.createElement('div'); cGroup.className = 'tree-group'; cGroup.style.display = 'none';
         cat.items.forEach(trip => {
           const item = document.createElement('span'); item.className = 'tree-item'; item.textContent = trip.label;
-          item.addEventListener('click', () => loadPreset(trip));
+          item.addEventListener('click', () => { inputEl.value = trip.data; if(trip.id.includes('GLOBAL')) chkDirect.checked = true; else chkDirect.checked = false; saveState(); setStatus(`Loaded: ${trip.label}`, "ok"); });
           cGroup.appendChild(item);
         });
         cHeader.addEventListener('click', (e) => { e.stopPropagation(); toggleGroup(cHeader, cGroup); });
@@ -175,12 +185,6 @@
     const isOpen = group.style.display === 'block';
     group.style.display = isOpen ? 'none' : 'block';
     header.querySelector('.tree-icon').textContent = isOpen ? '[+]' : '[-]';
-  }
-
-  function loadPreset(trip) {
-    inputEl.value = trip.data;
-    if (trip.id.includes('GLOBAL')) { chkDirect.checked = true; } else { chkDirect.checked = false; }
-    saveState(); setStatus(`Loaded: ${trip.label}`, "ok");
   }
 
   function filterLibrary(query) {
