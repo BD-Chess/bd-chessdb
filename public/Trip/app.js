@@ -396,7 +396,7 @@
     }
   };
 
-  // --- 11. AI ---
+  // --- 11. AI (NOW RESULT-AWARE) ---
   async function initAI() {
     try {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
@@ -411,22 +411,35 @@
   async function callAI(txt) {
     chatHistoryBuffer.push({ role: "user", parts: [{ text: txt }] });
     
-    // CONTEXT AWARENESS: Read the current trip data
-    const currentTripData = $('input').value.substring(0, 2000); // Limit to 2k chars context
+    // --- GATHER CONTEXT ---
+    const inputStops = $('input').value.substring(0, 1500);
+    const dist = $('distKm').textContent;
+    const saved = $('savedKm').textContent;
+    const mode = currentTravelMode;
+    let optimizedOrder = "Not calculated yet.";
     
-    // UPDATED SYSTEM PROMPT: Strict rules on city context and format
+    if (lastSolvedPoints && lastSolvedPoints.length > 0) {
+        optimizedOrder = lastSolvedPoints.map((p, i) => `${i+1}. ${p.name}`).join('\n');
+    }
+
+    // --- SYSTEM PROMPT ---
     const sysPrompt = `
-      You are an AI Trip Planner. 
-      CONTEXT: The user is planning a trip with these current stops: 
-      ---
-      ${currentTripData}
-      ---
+      You are an AI Trip Planner inside the 8Z-Optimizer app.
+      
+      CURRENT TRIP STATUS:
+      - Travel Mode: ${mode}
+      - Total Distance: ${dist} (Savings: ${saved})
+      
+      OPTIMIZED ROUTE ORDER:
+      ${optimizedOrder}
+      
+      USER RAW INPUT:
+      ${inputStops}
       
       INSTRUCTIONS:
-      1. If the user asks to add a place, you MUST include the City and Country to avoid ambiguity (e.g. "St. Nicholas Church, Ljubljana").
-      2. PREFERRED FORMAT: If you know the location well, use: {ADD: Place Name | Lat, Lon} (4 decimal precision).
-      3. FALLBACK FORMAT: {ADD: Place Name, City, Country}.
-      4. Do not remove existing stops, only suggest new ones via the {ADD} tag.
+      1. If the user asks about distance/time, use the "Total Distance" above.
+      2. If suggesting new places, use format: {ADD: Place Name | Lat, Lon}.
+      3. Be concise and helpful.
     `;
 
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${currentGeminiModel}:generateContent?key=${GEMINI_API_KEY}`, {
@@ -484,11 +497,6 @@
     $('btnHelp').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=HELP_HTML;}; 
     $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; 
     $('btnCloseHelp').onclick=()=>h.style.display='none';
-    
-    // --- AUTO-OPEN CHAT ON 4K (NEW) ---
-    if (window.innerWidth >= 1800) {
-        $('chatPanel').classList.add('open');
-    }
   });
   
   function setTravelMode(mode) {
