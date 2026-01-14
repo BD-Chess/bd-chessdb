@@ -3,9 +3,11 @@
   const $ = (id) => document.getElementById(id);
   
   // --- CONFIGURATION ---
+  // Public Google Maps Key (Standard)
   const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA'; 
   
-  // CHEAT CODE: Fragmented & Scrambled Gemini key
+  // NEW: Gemini API Key Scrambler ("Cheat Code")
+  // Split and Base64 encoded to stay hidden from bots.
   const _s1 = 'QUl6YVN5Q3hIanBw';
   const _s2 = 'S2l4YW85OU5IOURv';
   const _s3 = 'YWYtUTBLTzRmQ1FhZUhz';
@@ -25,22 +27,22 @@
   let lastSolvedPoints = null, chatHistoryBuffer = [], currentGeminiModel = '', currentTravelMode = 'DRIVING';
   const STORAGE_KEY = '8z_trip_backup_v1';
   
-  // Dark Mode Map Style
+  // Dark Map Style (Restored)
   const DARK_STYLE = [{elementType:"geometry",stylers:[{color:"#242f3e"}]},{elementType:"labels.text.stroke",stylers:[{color:"#242f3e"}]},{elementType:"labels.text.fill",stylers:[{color:"#746855"}]},{featureType:"administrative.locality",elementType:"labels.text.fill",stylers:[{color:"#d59563"}]},{featureType:"road",elementType:"geometry",stylers:[{color:"#38414e"}]},{featureType:"road",elementType:"geometry.stroke",stylers:[{color:"#212a37"}]},{featureType:"water",elementType:"geometry",stylers:[{color:"#17263c"}]}];
 
-  // --- CONTENT: HELP & ABOUT (RESTORED FORMATTING) ---
+  // --- CONTENT: RICH HELP & ABOUT (RESTORED) ---
   const HELP_HTML = `
     <h2>📖 User Guide</h2>
     <hr>
     <h3>1. Inputting Locations</h3>
-    <ul style="text-align:left; margin-bottom:15px;">
+    <ul style="text-align:left; margin-bottom:15px; padding-left: 20px;">
       <li><strong>Manual Entry:</strong> Type one location per line. You can use City names (e.g., <em>"Paris"</em>) or GPS coordinates (e.g., <em>"48.85, 2.35"</em>).</li>
       <li><strong>Trip Library:</strong> Use the folder tree on the right. Click <strong>[+]</strong> to expand regions and click a tour name to load it instantly.</li>
       <li><strong>File Load:</strong> You can upload a <code>.txt</code> file with your list of stops using the "Load" button.</li>
     </ul>
 
     <h3>2. Optimization Profiles</h3>
-    <ul style="text-align:left; margin-bottom:15px;">
+    <ul style="text-align:left; margin-bottom:15px; padding-left: 20px;">
       <li><strong>⚡ Standard:</strong> Uses a Nearest Neighbor algorithm. Fast results, good for visual planning.</li>
       <li><strong>🧠 Precise (Deep):</strong> Uses a Genetic Algorithm with Simulated Annealing. Slower, but finds significantly shorter routes for complex trips (10+ stops).</li>
     </ul>
@@ -62,7 +64,7 @@
     <br>
     <h3>Credits</h3>
     <p>Designed for extreme travel logistics. This application runs locally in your browser to ensure privacy and speed.</p>
-    <p style="font-size:0.9em; color:#aaa;">(c) 2026 8Z-RP Trip Logistics. All Rights Reserved.</p>
+    <p style="font-size:0.9em; color:#aaa; margin-top: 10px;">(c) 2026 8Z-RP Trip Logistics. All Rights Reserved.</p>
   `;
 
   // --- UI HELPERS ---
@@ -115,7 +117,7 @@
     map.fitBounds(bounds);
   }
 
-  // --- TRIP LIBRARY ---
+  // --- TRIP LIBRARY (RECURSIVE) ---
   function initTripTree() {
     if (!window.TRIP_LIBRARY || !presetTree) return;
     presetTree.innerHTML = '';
@@ -159,12 +161,14 @@
     });
   }
 
-  // --- AI LOGIC (2026 PROTECTIONS) ---
+  // --- AI LOGIC: 2026 PROTECTIONS ---
   async function initModelSelector() {
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
       const data = await res.json();
+      // FILTER: Only Chat models. No Image (Banana) or Vision.
       const valid = data.models.filter(m => m.name.includes('gemini') && !m.name.toLowerCase().includes('image') && !m.name.toLowerCase().includes('banana') && !m.name.toLowerCase().includes('vision'));
+      // SORT: Newest version first (3.0 > 2.5 > 1.5)
       valid.sort((a, b) => { const getV = (n) => { const match = n.match(/gemini-(\d+(\.\d+)?)/); return match ? parseFloat(match[1]) : 0; }; return getV(b.name) - getV(a.name); });
       modelSelector.innerHTML = '';
       valid.forEach(m => { const opt = document.createElement('option'); opt.value = m.name; opt.textContent = m.displayName || m.name.split('/').pop(); modelSelector.appendChild(opt); });
@@ -188,7 +192,7 @@
     return aiText;
   }
 
-  // --- RESULTS & EXPORT ---
+  // --- RESULTS & LINKS ---
   function renderLinks(links) {
     linksEl.innerHTML = '';
     if (lastSolvedPoints) {
@@ -206,6 +210,7 @@
     setStatus('Geocoding stops...', 'ok');
     const lines = inputEl.value.split('\n').filter(l => l.trim() && !l.startsWith('#'));
     const pts = [];
+    // Geocoding Loop with Throttle
     for (let line of lines) {
       const m = /(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/.exec(line);
       if (m) { pts.push({ name: line.replace(m[0], '').trim() || 'Point', lat: parseFloat(m[1]), lon: parseFloat(m[2]) }); }
@@ -238,7 +243,6 @@
 
   // --- INITIALIZATION ---
   initTripTree(); initModelSelector();
-  // RESTORED: Long, rich HTML for Help & About
   btnHelp.onclick = () => { helpOverlay.style.display = 'flex'; helpBody.innerHTML = HELP_HTML; };
   btnAbout.onclick = () => { helpOverlay.style.display = 'flex'; helpBody.innerHTML = ABOUT_HTML; };
   btnCloseHelp.onclick = () => helpOverlay.style.display = 'none';
