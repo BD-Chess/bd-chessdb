@@ -4,7 +4,7 @@
   
   // --- CONFIGURATION ---
   const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA';
-  // Secure key logic reconstructed from app.js
+  // Reconstructed Gemini Key logic
   const _s1 = 'QUl6YVN5Q3hIanBw', _s2 = 'S2l4YW85OU5IOURv', _s3 = 'YWYtUTBLTzRmQ1FhZUhz';
   const GEMINI_API_KEY = atob(_s1) + atob(_s2) + atob(_s3);
 
@@ -16,9 +16,13 @@
   const mapDiv = $('map'), mapPlaceholder = $('mapPlaceholder'), mapContainer = $('mapContainer');
   const presetTree = $('presetTree'), tripSearch = $('tripSearch'), chatPanel = $('chatPanel'), chatInput = $('chatInput');
   const btnSendChat = $('btnSendChat'), chatHistory = $('chatHistory'), modelSelector = $('modelSelector');
+  const btnCollapse = $('btnCollapse'), btnExpand = $('btnExpand'), leftPanel = $('leftPanel');
   
+  // Navigation Links
   const btnChatToggle = $('btnChatToggle'), btnAbout = $('btnAbout'), btnHelp = $('btnHelp');
   const btnCloseChat = $('btnCloseChat'), btnCloseHelp = $('btnCloseHelp'), helpOverlay = $('helpOverlay'), helpBody = $('helpBody');
+  
+  // Landing Page Buttons
   const btnEnableMapInitial = $('btnEnableMapInitial'), btnStartAIChat = $('btnStartAIChat');
 
   // --- CORE STATE ---
@@ -39,7 +43,6 @@
     mapContainer.style.display = 'none';
     chatPanel.style.display = 'none';
     helpOverlay.classList.remove('active');
-
     if (view === 'map') {
       mapContainer.style.display = 'block';
     } else if (view === 'chat') {
@@ -56,7 +59,9 @@
     statusEl.className = 'status' + (cls ? (' ' + cls) : '');
   }
 
-  // --- GOOGLE MAPS CORE ---
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  // --- GOOGLE MAPS ENGINE ---
   function loadGoogleMaps() {
     if (window.google && window.google.maps) return;
     const script = document.createElement('script');
@@ -103,6 +108,7 @@
       const poly = new google.maps.Polyline({ path: pathCoords, strokeColor: "#6aa9ff", strokeWeight: 4 });
       poly.setMap(map); mapPolyline = poly;
     } else {
+      // Restore Chunking for API limits
       const CHUNK_SIZE = 24; 
       for (let i = 0; i < pathCoords.length - 1; i += CHUNK_SIZE) {
         const chunk = pathCoords.slice(i, i + CHUNK_SIZE + 1);
@@ -118,7 +124,7 @@
     map.fitBounds(bounds);
   }
 
-  // --- DATA & GEOCODING ---
+  // --- DATA PROCESSING ---
   async function geocodeMissingPoints(pts) {
     const missing = pts.filter(p => p.lat === null);
     for (let i = 0; i < missing.length; i++) {
@@ -128,7 +134,7 @@
         geocoder.geocode({ address: p.name }, (results, stat) => r(stat === "OK" ? results[0].geometry.location : null));
       });
       if (res) { p.lat = res.lat(); p.lon = res.lng(); }
-      await new Promise(r => setTimeout(r, 300));
+      await sleep(300); // Prevent API block
     }
     return pts;
   }
@@ -144,14 +150,21 @@
       let isStart = /\bSTART\b/i.test(raw);
       raw = raw.replace(/\bSTART\b/i, '').trim();
       let name = raw, lat = null, lon = null;
-      const m = coordRe.exec(raw);
-      if (m) { lat = parseFloat(m[1]); lon = parseFloat(m[2]); name = raw.replace(m[0], '').replace(/^,/, '').trim() || "Stop"; }
+      if (raw.includes('|')) {
+        const parts = raw.split('|');
+        const m1 = coordRe.exec(parts[1]);
+        if (m1) { name = parts[0].trim(); lat = parseFloat(m1[1]); lon = parseFloat(m1[2]); }
+      } else {
+        const m = coordRe.exec(raw);
+        if (m) { lat = parseFloat(m[1]); lon = parseFloat(m[2]); name = raw.replace(m[0], '').replace(/^,/, '').trim() || "Stop"; }
+      }
       if (isStart) startIdx = pts.length;
       pts.push({ name, lat, lon });
     });
     return { pts, startIdx };
   }
 
+  // --- OPTIMIZER RUN ---
   async function run(profile) {
     showView('map');
     if (!window.google) { loadGoogleMaps(); setStatus("Waking up Maps...", "warn"); return; }
@@ -170,10 +183,28 @@
       routeList.innerHTML = lastSolvedPoints.map(p => `<li>${p.name}</li>`).join('');
       distKmEl.textContent = ev.data.totalKm.toFixed(2) + ' km';
       savedKmEl.textContent = (ev.data.baseKm - ev.data.totalKm).toFixed(2) + ' km';
+      renderLinks(lastSolvedPoints);
       updateMapVisualization(lastSolvedPoints);
       setStatus("Route optimized!", "ok");
     }
   };
+
+  function renderLinks(pts) {
+    linksEl.innerHTML = '';
+    if (!pts) return;
+    const aiBtn = document.createElement('button');
+    aiBtn.innerHTML = '✨ Ask AI: "Is this order logical?"';
+    aiBtn.className = 'secondary'; aiBtn.style.width = '100%'; aiBtn.style.marginBottom = '10px';
+    aiBtn.style.border = '1px dashed var(--accent)';
+    aiBtn.addEventListener('click', () => {
+      chatInput.value = "Review this route for logical flow: " + pts.map(p => p.name).join(' -> ');
+      showView('chat');
+    });
+    linksEl.appendChild(aiBtn);
+    // Link to Google Maps
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${pts[0].lat},${pts[0].lon}&destination=${pts[pts.length-1].lat},${pts[pts.length-1].lon}&waypoints=${pts.slice(1,-1).map(p=>`${p.lat},${p.lon}`).join('|')}&travelmode=${currentTravelMode.toLowerCase()}`;
+    linksEl.innerHTML += `<div class="linkrow"><span class="badge">Maps</span><a href="${url}" target="_blank">Open in Maps ↗</a></div>`;
+  }
 
   // --- AI LOGIC ---
   async function initModelSelector() {
@@ -183,8 +214,7 @@
       const valid = data.models.filter(m => m.name.includes('gemini') && !/vision|banana|tts|image/i.test(m.name));
       modelSelector.innerHTML = valid.map(m => `<option value="${m.name}">${m.displayName || m.name.split('/').pop()}</option>`).join('');
       currentGeminiModel = valid[0]?.name;
-      modelSelector.addEventListener('change', () => currentGeminiModel = modelSelector.value);
-    } catch (e) { console.warn("AI failed."); }
+    } catch (e) { console.warn("AI initialization failed."); }
   }
 
   async function callGeminiAPI(prompt) {
@@ -225,30 +255,20 @@
   function filterLibrary(query) {
     const q = query.toLowerCase().trim();
     const allItems = presetTree.querySelectorAll('.tree-item');
-    const allGroups = presetTree.querySelectorAll('.tree-group');
-    if (!q) {
-      allItems.forEach(i => i.style.display = 'block');
-      allGroups.forEach(g => { g.style.display = 'none'; g.classList.remove('open'); });
-      presetTree.querySelectorAll('.tree-icon').forEach(icon => icon.textContent = '[+]');
-      return;
-    }
     allItems.forEach(item => {
       const match = item.textContent.toLowerCase().includes(q);
       item.style.display = match ? 'block' : 'none';
-      if (match) {
+      if (match && q) {
         let p = item.parentElement;
-        while (p && p !== presetTree) {
-          if (p.classList.contains('tree-group')) { p.style.display = 'block'; p.classList.add('open'); }
-          p = p.parentElement;
-        }
+        while (p && p !== presetTree) { if (p.classList.contains('tree-group')) { p.style.display = 'block'; p.classList.add('open'); } p = p.parentElement; }
       }
     });
   }
 
-  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify({ text: inputEl.value })); }
-  function restoreState() { const s = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (s) inputEl.value = s.text; }
+  // --- STATE & LISTENERS ---
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify({ text: inputEl.value, mode: currentTravelMode })); }
+  function restoreState() { const s = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (s) { inputEl.value = s.text; currentTravelMode = s.mode || 'DRIVING'; } }
 
-  // --- EVENT LISTENERS ---
   const initListeners = () => {
     btnChatToggle.addEventListener('click', (e) => { e.preventDefault(); showView('chat'); });
     btnAbout.addEventListener('click', (e) => { e.preventDefault(); showView('about'); });
@@ -256,16 +276,16 @@
     btnCloseChat.addEventListener('click', () => showView('map'));
     btnCloseHelp.addEventListener('click', () => showView('map'));
     btnEnableMapInitial.addEventListener('click', loadGoogleMaps);
-    btnStartAIChat.addEventListener('click', (e) => { e.preventDefault(); showView('chat'); });
+    btnStartAIChat.addEventListener('click', () => showView('chat'));
     btnStandard.addEventListener('click', () => run('standard'));
     btnDeep.addEventListener('click', () => run('deep'));
-    btnDriving.addEventListener('click', () => { currentTravelMode = 'DRIVING'; if(lastSolvedPoints) updateMapVisualization(lastSolvedPoints); });
-    btnWalking.addEventListener('click', () => { currentTravelMode = 'WALKING'; if(lastSolvedPoints) updateMapVisualization(lastSolvedPoints); });
+    btnDriving.addEventListener('click', () => { currentTravelMode = 'DRIVING'; saveState(); if(lastSolvedPoints) updateMapVisualization(lastSolvedPoints); });
+    btnWalking.addEventListener('click', () => { currentTravelMode = 'WALKING'; saveState(); if(lastSolvedPoints) updateMapVisualization(lastSolvedPoints); });
+    btnCollapse.addEventListener('click', () => { leftPanel.classList.add('collapsed'); btnExpand.style.display = 'flex'; });
+    btnExpand.addEventListener('click', () => { leftPanel.classList.remove('collapsed'); btnExpand.style.display = 'none'; });
     tripSearch.addEventListener('input', (e) => filterLibrary(e.target.value));
-    
     btnSendChat.addEventListener('click', async () => {
-      const txt = chatInput.value; if(!txt) return;
-      chatInput.value = '';
+      const txt = chatInput.value; chatInput.value = '';
       chatHistory.innerHTML += `<div class="chat-msg user"><strong>You:</strong><br>${txt}</div>`;
       const resp = await callGeminiAPI(txt);
       const addRegex = /\{ADD:\s*(.*?)\}/gi; let match;
