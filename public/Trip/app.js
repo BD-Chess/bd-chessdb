@@ -22,15 +22,7 @@
   
   let presetLookup = {};
 
-  // --- 3. HTML CONTENT (Restored from ZIP) ---
-  const ABOUT_HTML = `
-    <div class="help-block">
-      <h2>Why 8Z-RP?</h2>
-      <p><strong>Deterministic Results:</strong> Unlike many online solvers that produce random variations every time you click, 8Z-RP guarantees <em>Same Input ⇒ Same Route</em>.</p>
-      <p><strong>100% Client-Side:</strong> Your location data is processed entirely in your browser. It never leaves your device until you choose to export it to Google Maps.</p>
-    </div>
-  `;
-
+  // --- 3. HTML CONTENT (Hardcoded Help only, About is external) ---
   const HELP_HTML = `
     <div class="help-block">
       <h2>How to Use</h2>
@@ -241,19 +233,19 @@
     map.fitBounds(bounds);
   }
 
-  // --- 8. LINKS (FIXED: Standard Google Maps URL) ---
+  // --- 8. LINKS ---
   function buildMapsLegLinks(routePts, roundTrip, mode) {
     const travelmode = (mode === 'DRIVING') ? 'driving' : 'walking';
     
     const encodeLoc = (p) => {
         if (typeof p.lat === 'number' && typeof p.lon === 'number') return `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
-        return p.name; // Fallback
+        return p.name;
     };
 
     const seq = routePts.slice();
     if (roundTrip && seq.length > 1) seq.push(seq[0]);
 
-    const MAX_MID = 9; // Safe limit for iOS
+    const MAX_MID = 9; 
     const links = [];
     let i = 0;
     while (i < seq.length - 1) {
@@ -266,7 +258,6 @@
       const destLoc = encodeLoc(segment[segment.length - 1]);
       const mids = segment.slice(1, -1).map(encodeLoc);
 
-      // USE URLSearchParams -> Correctly builds the URL
       const params = new URLSearchParams();
       params.set('api', '1');
       params.set('origin', originLoc);
@@ -447,7 +438,8 @@
     
     const h=$('helpOverlay'); 
     $('btnHelp').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=HELP_HTML;}; 
-    $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=ABOUT_HTML;}; 
+    // MODIFIED: Use window.ABOUT_CONTENT from about.js
+    $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; 
     $('btnCloseHelp').onclick=()=>h.style.display='none';
   });
   
