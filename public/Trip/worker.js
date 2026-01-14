@@ -199,39 +199,27 @@ function solve(points, startIdx, profile, roundTrip) {
   const seedStr = points.map(p => `${p.name}|${p.lat}|${p.lon}`).join('\n') + `|start=${start}|profile=${profile}|rt=${roundTrip}`;
   const rng = new XorShift64Star(fnv1a64(seedStr));
 
-  // --- UPDATED ADAPTIVE PROFILE LOGIC ---
-  const N = points.length;
+  // --- SETTINGS (TUNED FOR "THE GAUNTLET") ---
   let starts = 2;
   let maxPasses = 4;
   let timeBudgetMs = 300;
   let jitterScale = 0.03;
 
-  if (profile === 'standard') {
-    // Fast check: 300ms
+  if (profile === 'standard' || profile === 'fast') {
     starts = 2; maxPasses = 4; timeBudgetMs = 300; jitterScale = 0.03;
   } else if (profile === 'deep') {
-    // ADAPTIVE LOGIC: Scale effort based on number of stops (N)
-    if (N < 15) {
-      // Small Trip: 1.5s is plenty for perfection
-      starts = 12; maxPasses = 10; timeBudgetMs = 1500; jitterScale = 0.08;
-    } else if (N < 30) {
-      // Medium Trip: Bump to 3s
-      starts = 20; maxPasses = 20; timeBudgetMs = 3000; jitterScale = 0.10;
-    } else {
-      // Massive Trip (30+): Go full power (5s)
-      starts = 40; maxPasses = 50; timeBudgetMs = 5000; jitterScale = 0.15;
-    }
-  } 
-  // Fallbacks
-  else if (profile === 'fast') {
-    starts = 1; maxPasses = 3; timeBudgetMs = 250; jitterScale = 0.02;
+    // MASSIVELY INCREASED FOR COMPLEX ROUTES
+    starts = 40;        // Was 12. More random attempts to find the global minimum.
+    maxPasses = 40;     // Was 10. Let the 2-Opt uncoil complex knots.
+    timeBudgetMs = 5000; // Was 1500. Give it 5 seconds to think.
+    jitterScale = 0.05; // Slightly reduced chaos to converge better.
+  } else if (profile === 'balanced') {
+    starts = 8; maxPasses = 8; timeBudgetMs = 800; jitterScale = 0.05;
   }
 
   let bestRoute = null;
   let bestLen = Infinity;
-  const baseRoute = withCoords.map((_, i) => i); 
-  const baseLen = routeLength(baseRoute, D, roundTrip);
-
+  
   for (let s = 0; s < starts; s++) {
     const allowed = (s === 0) ? withCoords.map((_, i) => i)
                               : shuffledAllowed(withCoords.map((_, i) => i), rng);
@@ -240,8 +228,7 @@ function solve(points, startIdx, profile, roundTrip) {
     if (s === 0) route = nearestNeighbor(start, D, allowed);
     else route = nnWithJitter(start, D, allowed, rng, jitterScale);
 
-    // Dynamic budget per start
-    route = twoOpt(route, D, roundTrip, maxPasses, timeBudgetMs / starts * 2);
+    route = twoOpt(route, D, roundTrip, maxPasses, timeBudgetMs);
 
     const L = routeLength(route, D, roundTrip);
     if (L < bestLen - 1e-9) { bestLen = L; bestRoute = route.slice(); }
@@ -252,9 +239,9 @@ function solve(points, startIdx, profile, roundTrip) {
       }
     }
 
-    // Send progress updates to UI
+    // Send progress to UI every 5 attempts
     if (s % 5 === 0 || s === starts - 1) {
-        postMessage({ type: 'progress', text: `Optimizing... (${Math.round((s+1)/starts*100)}%)` });
+        postMessage({ type: 'progress', text: `Optimizing... ${Math.round((s/starts)*100)}%` });
     }
   }
 
@@ -262,7 +249,9 @@ function solve(points, startIdx, profile, roundTrip) {
   const orderGlobal = orderCoordGlobal.concat(without);
   const pointsSorted = orderGlobal.map(i => points[i]);
   const totalKm = bestLen / 1000.0;
-  const baseKm = baseLen / 1000.0;
+  // Calculate base distance (unoptimized) for comparison
+  const baseRoute = withCoords.map((_, i) => i);
+  const baseLen = routeLength(baseRoute, D, roundTrip) / 1000.0;
 
   return { orderGlobal, pointsSorted, totalKm, baseKm };
 }
