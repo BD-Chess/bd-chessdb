@@ -35,7 +35,7 @@ window.ABOUT_CONTENT = `
   </div>
 
   <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 0.9rem; color: var(--text-dim); text-align: center; line-height: 1.6;">
-    <strong>Author:</strong> Bojan Dobrečevič<br>
+    <strong>Author & Concepts:</strong> Bojan Dobrečevič<br>
     <strong>Built with:</strong> Gemini, GPT, and Claude<br>
     Jan 2026
   </div>
