@@ -1,66 +1,165 @@
 (() => {
   'use strict';
 
-  // --- CONFIGURATION ---
+  // --- 1. CONFIGURATION & KEYS ---
   const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA'; 
   const _s1 = 'QUl6YVN5Q3hIanBw', _s2 = 'S2l4YW85OU5IOURv', _s3 = 'YWYtUTBLTzRmQ1FhZUhz';
   const GEMINI_API_KEY = atob(_s1) + atob(_s2) + atob(_s3);
 
-  // --- HELPER ---
-  const $ = (id) => document.getElementById(id);
   const worker = new Worker('worker.js');
   const STORAGE_KEY = '8z_trip_backup_v1';
 
-  // --- STATE ---
+  // --- 2. GLOBAL STATE ---
+  const $ = (id) => document.getElementById(id);
   let map, geocoder, directionsService, infoWindow;
   let mapMarkers = [], directionsRenderers = [], mapPolyline = null;
   let lastSolvedPoints = null, chatHistoryBuffer = [], currentGeminiModel = '', currentTravelMode = 'DRIVING';
+  let mapScriptLoadingPromise = null;
   
-  let mapScriptLoadingPromise = null; 
+  // Library Lookup Map
+  let presetLookup = {};
 
-  // --- HTML CONTENT ---
-  const HELP_HTML = `<h2>📖 Guide</h2><hr><p><strong>1. Add Stops:</strong> Type cities or GPS.</p><p><strong>2. Optimize:</strong> Standard (Fast) or Precise (Deep).</p>`;
-  const ABOUT_HTML = `<h2>ℹ️ About</h2><hr><p><strong>v2026.1</strong> • Privacy First • Gemini AI</p>`;
+  // --- 3. HTML CONTENT (From your ZIP's Help.js) ---
+  const HELP_HTML = `
+    <h2>How to Use</h2>
+    <ul>
+      <li><strong>1. Trip Library:</strong> Click the folders above to expand. Click a trip name to load it.</li>
+      <li><strong>2. Edit:</strong> Add or remove stops in the text box.</li>
+      <li><strong>3. Optimize:</strong> Use "Standard" for fast results or "Precise (Deep)" for complex routes (10+ stops).</li>
+      <li><strong>4. Export:</strong> Click the "Open in Maps" links to send the route to your phone.</li>
+    </ul>
+    <h2>Input Formats</h2>
+    <p>You can mix and match these formats:</p>
+    <ul>
+      <li><code>46.0569, 14.5058</code> (GPS)</li>
+      <li><code>Tivoli Park, Ljubljana</code> (Address)</li>
+      <li><code>Home | 46.0428, 14.4500</code> (Name | GPS)</li>
+    </ul>
+    <h2>Special Commands</h2>
+    <p>Add <code>START</code> anywhere on a line to lock it as the starting point.</p>
+  `;
+
+  const ABOUT_HTML = `
+    <h2>ℹ️ About 8Z-RP</h2>
+    <p><strong>Deterministic Results:</strong> Unlike many online solvers that produce random variations every time you click, 8Z-RP guarantees <em>Same Input ⇒ Same Route</em>.</p>
+    <p><strong>100% Client-Side:</strong> Your location data is processed entirely in your browser using a Web Worker. It never leaves your device until you choose to export it to Google Maps.</p>
+    <div style="background:rgba(59,130,246,0.1); padding:10px; border-radius:6px; margin-top:10px; border-left:3px solid #3b82f6;">
+      <h3>The Morocco Story</h3>
+      <p>This project was born out of frustration during a backpacking trip through the Atlas Mountains. I realized standard maps are great for point-to-point driving but terrible for logistical planning of multiple stops. I built 8Z-RP to solve the "Traveler's Salesman Problem" efficiently.</p>
+    </div>
+  `;
+
   const DARK_STYLE = [{elementType:"geometry",stylers:[{color:"#242f3e"}]},{elementType:"labels.text.stroke",stylers:[{color:"#242f3e"}]},{elementType:"labels.text.fill",stylers:[{color:"#746855"}]},{featureType:"administrative.locality",elementType:"labels.text.fill",stylers:[{color:"#d59563"}]},{featureType:"road",elementType:"geometry",stylers:[{color:"#38414e"}]},{featureType:"road",elementType:"geometry.stroke",stylers:[{color:"#212a37"}]},{featureType:"water",elementType:"geometry",stylers:[{color:"#17263c"}]}];
 
-  // --- CORE FUNCTIONS ---
-  function setStatus(msg) {
-    const el = $('status'); if(el) el.textContent = msg;
+  // --- 4. CORE UTILS ---
+  function setStatus(msg, cls) {
+    const el = $('status'); 
+    if(el) {
+      el.textContent = msg; 
+      el.style.display = 'block';
+      el.style.color = cls === 'bad' ? '#ef4444' : '#10b981';
+      if (cls === 'ok') setTimeout(() => { el.style.display = 'none'; }, 4000);
+    }
   }
 
-  function saveState() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ t: $('input').value, m: currentTravelMode }));
-  }
-
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify({ t: $('input').value, m: currentTravelMode })); }
   function restoreState() {
     const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (s) {
-      $('input').value = s.t || '';
-      currentTravelMode = s.m || 'DRIVING';
-      updateModeButtons();
-    }
+    if (s) { $('input').value = s.t || ''; currentTravelMode = s.m || 'DRIVING'; updateModeButtons(); }
   }
 
   function updateModeButtons() {
     const dr = $('btnDriving'), wk = $('btnWalking');
-    if (currentTravelMode === 'DRIVING') {
-      dr.classList.add('active'); wk.classList.remove('active');
-    } else {
-      wk.classList.add('active'); dr.classList.remove('active');
-    }
-    
-    // FIX 1: Instantly refresh map/link if we have data
+    if (currentTravelMode === 'DRIVING') { dr.classList.add('active'); wk.classList.remove('active'); }
+    else { wk.classList.add('active'); dr.classList.remove('active'); }
     if (lastSolvedPoints) {
-        updateMap(lastSolvedPoints);
-        generateLink(lastSolvedPoints);
+      updateMapVisualization(lastSolvedPoints);
+      const links = buildMapsLegLinks(lastSolvedPoints, $('chkRoundTrip').checked, currentTravelMode);
+      renderLinks(links);
     }
   }
 
-  // --- MAP ---
+  // --- 5. PARSING LOGIC (From ZIP) ---
+  function parseStops(text) {
+    const lines = text.split(/\r?\n/);
+    const pts = [];
+    let startIdx = 0;
+    const coordRe = /(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)/;
+
+    for (let raw of lines) {
+      raw = raw.trim();
+      if (!raw || raw.startsWith('#')) continue;
+
+      let isStart = false;
+      if (/\bSTART\b/i.test(raw)) {
+        isStart = true;
+        raw = raw.replace(/\bSTART\b/i, '').trim();
+      }
+
+      let name = raw;
+      let lat = null, lon = null;
+
+      // Handle "Name | Lat, Lon" format
+      if (raw.includes('|')) {
+        const parts = raw.split('|');
+        const p0 = parts[0].trim();
+        const p1 = parts[1].trim();
+        const m0 = coordRe.exec(p0);
+        const m1 = coordRe.exec(p1);
+        if (m1) { name = p0 || "Point"; lat = parseFloat(m1[1]); lon = parseFloat(m1[2]); }
+        else if (m0) { name = p1 || "Point"; lat = parseFloat(m0[1]); lon = parseFloat(m0[2]); }
+      } else {
+        const m = coordRe.exec(raw);
+        if (m) {
+          lat = parseFloat(m[1]); lon = parseFloat(m[2]);
+          // Use text remaining as name, or coords if empty
+          const potentialName = raw.replace(m[0], '').trim();
+          name = (potentialName.length > 1) ? potentialName.replace(/^,/, '').trim() : `(${lat.toFixed(3)}, ${lon.toFixed(3)})`;
+        }
+      }
+      const p = { name, lat, lon, raw: raw };
+      if (isStart) startIdx = pts.length;
+      pts.push(p);
+    }
+    return { pts, startIdx };
+  }
+
+  // --- 6. GEOCODING LOGIC (From ZIP) ---
+  async function resolveLocation(rawName) {
+    if (!geocoder) return null;
+    try {
+      const response = await new Promise((resolve, reject) => {
+        geocoder.geocode({ address: rawName }, (results, status) => {
+          if (status === 'OK') resolve(results); else resolve(null);
+        });
+      });
+      if (response && response.length > 0) {
+        const loc = response[0].geometry.location;
+        return { lat: loc.lat(), lon: loc.lng() };
+      }
+    } catch (e) { console.warn("Geocode error:", e); }
+    return null;
+  }
+
+  async function geocodeMissingPoints(pts) {
+    const missing = pts.filter(p => p.lat === null || p.lon === null);
+    if (missing.length === 0) return pts;
+    
+    setStatus(`Looking up ${missing.length} addresses...`, 'warn');
+    for (let i = 0; i < missing.length; i++) {
+      const p = missing[i];
+      const result = await resolveLocation(p.name);
+      if (result) { p.lat = result.lat; p.lon = result.lon; }
+      else { p.error = true; } // Mark error but keep going
+      await new Promise(r => setTimeout(r, 250)); // Throttle
+    }
+    return pts;
+  }
+
+  // --- 7. MAPS VISUALIZATION ---
   function ensureMapsLoaded() {
     if (window.google && window.google.maps) return Promise.resolve();
     if (mapScriptLoadingPromise) return mapScriptLoadingPromise;
-
     mapScriptLoadingPromise = new Promise((resolve, reject) => {
       window.initMap = function() {
         map = new google.maps.Map($('map'), { zoom:12, center:{lat:46.0569,lng:14.5058}, mapTypeId:'hybrid', styles:DARK_STYLE });
@@ -72,14 +171,13 @@
       };
       const s = document.createElement('script');
       s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&callback=initMap&loading=async&v=weekly`;
-      s.onerror = reject;
       document.body.appendChild(s);
       const btn = $('btnEnableMap'); if(btn) btn.textContent = "Loading API...";
     });
     return mapScriptLoadingPromise;
   }
 
-  function updateMap(points) {
+  function updateMapVisualization(points) {
     if (!map) return;
     mapMarkers.forEach(m => m.setMap(null)); mapMarkers=[];
     directionsRenderers.forEach(d => d.setMap(null)); directionsRenderers=[];
@@ -94,16 +192,17 @@
       mapMarkers.push(m);
     });
 
+    // Draw Lines
     if ($('chkDirect').checked) {
-      mapPolyline = new google.maps.Polyline({ path: points.map(p => ({lat:p.lat, lng:p.lon})), geodesic: true, strokeColor: "#3b82f6", strokeWeight: 4 });
+      mapPolyline = new google.maps.Polyline({ path: points.map(p=>({lat:p.lat,lng:p.lon})), geodesic: true, strokeColor: "#3b82f6", strokeWeight: 4 });
       mapPolyline.setMap(map);
     } else {
-      const path = points.map(p => ({lat:p.lat, lng:p.lon}));
+      const path = points.map(p=>({lat:p.lat,lng:p.lon}));
       if ($('chkRoundTrip').checked) path.push(path[0]);
       
-      // Use DRIVING or WALKING based on state
       const gMode = currentTravelMode === 'DRIVING' ? google.maps.TravelMode.DRIVING : google.maps.TravelMode.WALKING;
-
+      
+      // Chunking for Directions API (25 waypoint limit)
       for(let i=0; i<path.length-1; i+=24) {
         const seg = path.slice(i, i+25);
         const r = new google.maps.DirectionsRenderer({ map:map, suppressMarkers:true, polylineOptions:{strokeColor:"#3b82f6", strokeWeight:5} });
@@ -118,79 +217,139 @@
     map.fitBounds(bounds);
   }
 
-  // FIX 2: Generate Valid Universal Link
-  function generateLink(points) {
-      if (!points || points.length < 2) return;
-      
-      const baseUrl = "https://www.google.com/maps/dir/?api=1";
-      const origin = `${points[0].lat},${points[0].lon}`;
-      
-      const destIdx = $('chkRoundTrip').checked ? 0 : points.length-1;
-      const dest = `${points[destIdx].lat},${points[destIdx].lon}`;
-      
-      // Waypoints must be separated by pipe character |
-      const midPoints = points.slice(1, destIdx===0 ? points.length : points.length-1);
-      const waypoints = midPoints.map(p => `${p.lat},${p.lon}`).join('|');
-      
-      const mode = currentTravelMode.toLowerCase(); // 'driving' or 'walking'
-      
-      // Construct final URL
-      let url = `${baseUrl}&origin=${origin}&destination=${dest}&travelmode=${mode}`;
-      if (waypoints.length > 0) {
-          url += `&waypoints=${waypoints}`;
-      }
-
-      $('links').innerHTML = `<a href="${url}" target="_blank" style="display:block; text-align:center; padding:12px; background:rgba(59,130,246,0.1); border-radius:8px; color:#3b82f6; text-decoration:none; font-weight:600;">Open in Google Maps ↗</a>`;
-  }
-
-  // --- ENGINE ---
-  async function run(profile) {
-    if (!window.google) { setStatus('Loading Map...','ok'); await ensureMapsLoaded(); }
+  // --- 8. LINK GENERATION (From ZIP) ---
+  function buildMapsLegLinks(routePts, roundTrip, mode) {
+    const travelmode = (mode === 'DRIVING') ? 'driving' : 'walking';
+    const encodeLoc = (p) => `${p.lat.toFixed(5)},${p.lon.toFixed(5)}`;
     
-    const lines = $('input').value.split('\n').filter(l => l.trim() && !l.startsWith('#'));
-    if (lines.length < 2) return alert("Need 2+ locations.");
+    const seq = routePts.slice();
+    if (roundTrip && seq.length > 1) seq.push(seq[0]);
 
-    setStatus('Geocoding...', 'ok');
-    const pts = [];
-    for (let line of lines) {
-      const m = line.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
-      if (m) pts.push({ name: line.replace(m[0],'').trim()||'Pt', lat: parseFloat(m[1]), lon: parseFloat(m[2]) });
-      else {
-        try {
-          const res = await new Promise(r => geocoder.geocode({ address: line }, (res, st) => r(st==='OK'?res[0]:null)));
-          if (res) pts.push({ name: line.trim(), lat: res.geometry.location.lat(), lon: res.geometry.location.lng() });
-          await new Promise(r => setTimeout(r, 200));
-        } catch(e) {}
-      }
+    // Google Maps supports ~20 waypoints in URL
+    const MAX_MID = 20;
+    const links = [];
+    let i = 0;
+    while (i < seq.length - 1) {
+      const origin = seq[i];
+      let j = Math.min(seq.length - 1, i + 1 + MAX_MID + 1);
+      if (j <= i + 1) j = i + 2;
+
+      const segment = seq.slice(i, j + 1);
+      const originLoc = encodeLoc(segment[0]);
+      const destLoc = encodeLoc(segment[segment.length - 1]);
+      const mids = segment.slice(1, -1).map(encodeLoc);
+
+      let url = `https://www.google.com/maps/dir/?api=1&origin=${originLoc}&destination=${destLoc}&travelmode=${travelmode}`;
+      if (mids.length) url += `&waypoints=${mids.join('|')}`;
+      
+      links.push({ url, label: `Leg ${links.length + 1} (${segment.length} stops)` });
+      i = j; // Advance
     }
-
-    setStatus(`Optimizing ${pts.length} stops...`, 'ok');
-    worker.postMessage({ type: 'solve', profile: profile, points: pts, roundTrip: $('chkRoundTrip').checked });
+    return links;
   }
 
-  worker.onmessage = (e) => {
-    const { pointsSorted, totalKm, baseKm } = e.data;
-    lastSolvedPoints = pointsSorted;
-    $('distKm').textContent = totalKm.toFixed(2) + ' km';
-    $('savedKm').textContent = (baseKm - totalKm).toFixed(2) + ' km';
-    
-    const list = $('routeList'); list.innerHTML = '';
-    pointsSorted.forEach(p => { const li = document.createElement('li'); li.textContent = p.name; list.appendChild(li); });
+  function renderLinks(links) {
+    const el = $('links'); el.innerHTML = '';
+    for (const L of links) {
+      const row = document.createElement('div'); row.className = 'linkrow';
+      row.innerHTML = `<span class="badge">${L.label}</span> <a href="${L.url}" target="_blank">Open in Maps ↗</a>`;
+      el.appendChild(row);
+    }
+  }
 
-    updateMap(pointsSorted);
-    generateLink(pointsSorted);
-    setStatus('Done!', 'ok');
+  // --- 9. LIBRARY TREE ---
+  function initTripTree() {
+    if (!window.TRIP_LIBRARY) return;
+    const tree = $('presetTree'); tree.innerHTML = '';
+    presetLookup = {};
+
+    window.TRIP_LIBRARY.forEach(region => {
+      const rNode = document.createElement('div');
+      rNode.innerHTML = `<div class="tree-header">› ${region.region}</div><div class="tree-group"></div>`;
+      const rGroup = rNode.querySelector('.tree-group');
+
+      region.categories.forEach(cat => {
+        const cNode = document.createElement('div');
+        cNode.innerHTML = `<div class="tree-header">› ${cat.name}</div><div class="tree-group"></div>`;
+        const cGroup = cNode.querySelector('.tree-group');
+
+        cat.items.forEach(trip => {
+          presetLookup[trip.id] = trip.data;
+          const item = document.createElement('span');
+          item.className = 'tree-item';
+          item.textContent = trip.label;
+          item.onclick = () => { 
+            $('input').value = trip.data; 
+            saveState(); 
+            // Check for specific modes based on ID (Feature from ZIP)
+            if (trip.id.includes('_DRIVE')) setTravelMode('DRIVING');
+            if (trip.id.includes('WALKING')) setTravelMode('WALKING');
+          };
+          cGroup.appendChild(item);
+        });
+        cNode.querySelector('.tree-header').onclick = function() { cGroup.classList.toggle('open'); this.textContent = (cGroup.classList.contains('open') ? '⌄ ' : '› ') + cat.name; };
+        rGroup.appendChild(cNode);
+      });
+      rNode.querySelector('.tree-header').onclick = function() { rGroup.classList.toggle('open'); this.textContent = (rGroup.classList.contains('open') ? '⌄ ' : '› ') + region.region; };
+      tree.appendChild(rNode);
+    });
+  }
+
+  // --- 10. RUN OPTIMIZER ---
+  async function run(profile) {
+    // Force Maps Load first
+    if (!window.google) { setStatus('Loading Map API...', 'ok'); await ensureMapsLoaded(); }
+
+    const raw = $('input').value;
+    let { pts, startIdx } = parseStops(raw);
+    
+    // Auto-Geocode missing
+    try { pts = await geocodeMissingPoints(pts); }
+    catch (e) { setStatus('Geocode Error', 'bad'); return; }
+
+    const valid = pts.filter(p => p.lat !== null && p.lon !== null);
+    if (valid.length < 2) { setStatus('Need 2+ valid stops.', 'bad'); return; }
+
+    setStatus(`Optimizing ${valid.length} stops...`, 'ok');
+    
+    worker.postMessage({
+      type: 'solve',
+      profile: profile,
+      points: valid,
+      startIdx: (startIdx < valid.length) ? startIdx : 0,
+      roundTrip: $('chkRoundTrip').checked
+    });
+  }
+
+  worker.onmessage = (ev) => {
+    const msg = ev.data || {};
+    if (msg.type === 'result') {
+      const { pointsSorted, totalKm, baseKm } = msg;
+      lastSolvedPoints = pointsSorted;
+      
+      $('distKm').textContent = totalKm.toFixed(2) + ' km';
+      const saved = baseKm - totalKm;
+      $('savedKm').textContent = saved > 0 ? saved.toFixed(2) + ' km' : '—';
+      
+      const list = $('routeList'); list.innerHTML = '';
+      pointsSorted.forEach(p => { const li = document.createElement('li'); li.textContent = p.name; list.appendChild(li); });
+
+      updateMapVisualization(pointsSorted);
+      const links = buildMapsLegLinks(pointsSorted, $('chkRoundTrip').checked, currentTravelMode);
+      renderLinks(links);
+      setStatus('Done!', 'ok');
+    }
   };
 
-  // --- AI & INIT ---
-  async function initAI() { /* (Same AI logic as before, abbreviated for space, trust it works) */
+  // --- 11. AI & INIT ---
+  async function initAI() {
     try {
-        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
-        const d = await r.json();
-        const v = d.models.filter(m => m.name.includes('gemini') && !m.name.match(/image|vision/));
-        const s = $('modelSelector'); s.innerHTML='';
-        v.forEach(m => { const o=document.createElement('option'); o.value=m.name; o.textContent=m.displayName; s.appendChild(o); });
-        currentGeminiModel = v[0]?.name; s.onchange = () => currentGeminiModel = s.value;
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+      const d = await r.json();
+      const v = d.models.filter(m => m.name.includes('gemini') && !m.name.match(/image|vision/));
+      const s = $('modelSelector'); s.innerHTML='';
+      v.forEach(m => { const o=document.createElement('option'); o.value=m.name; o.textContent=m.displayName; s.appendChild(o); });
+      currentGeminiModel = v[0]?.name; s.onchange = () => currentGeminiModel = s.value;
     } catch(e){}
   }
   async function callAI(txt) {
@@ -207,33 +366,23 @@
 
   // --- BOOT ---
   document.addEventListener('DOMContentLoaded', () => {
-    if(window.TRIP_LIBRARY) {
-        // (Simplified Tree Logic for brevity, full logic in your file is fine)
-        const t=$('presetTree'); t.innerHTML=''; window.TRIP_LIBRARY.forEach(r=>{
-            const d=document.createElement('div'); d.innerHTML=`<div class="tree-header">› ${r.region}</div><div class="tree-group"></div>`;
-            r.categories.forEach(c=>{
-                const cd=document.createElement('div'); cd.innerHTML=`<div class="tree-header">› ${c.name}</div><div class="tree-group"></div>`;
-                c.items.forEach(i=>{
-                    const sp=document.createElement('span'); sp.className='tree-item'; sp.textContent=i.label;
-                    sp.onclick=()=>{ $('input').value=i.data; saveState(); }; cd.lastChild.appendChild(sp);
-                });
-                cd.firstChild.onclick=function(){this.nextSibling.classList.toggle('open');}; d.lastChild.appendChild(cd);
-            });
-            d.firstChild.onclick=function(){this.nextSibling.classList.toggle('open');}; t.appendChild(d);
-        });
-    }
-    initAI(); restoreState();
+    initTripTree();
+    initAI();
+    restoreState();
 
+    // Buttons
     $('btnStandard').onclick = () => run('standard');
     $('btnDeep').onclick = () => run('deep');
-    $('btnDriving').onclick = () => { currentTravelMode='DRIVING'; updateModeButtons(); saveState(); };
-    $('btnWalking').onclick = () => { currentTravelMode='WALKING'; updateModeButtons(); saveState(); };
+    $('btnDriving').onclick = () => setTravelMode('DRIVING');
+    $('btnWalking').onclick = () => setTravelMode('WALKING');
     $('btnEnableMap').onclick = () => ensureMapsLoaded();
     
-    // File & Search
+    // File
     $('btnSave').onclick = () => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([$('input').value],{type:'text/plain'})); a.download='trip.txt'; a.click(); };
     $('btnLoad').onclick = () => $('fileLoader').click();
     $('fileLoader').onchange = (e) => { const f=e.target.files[0]; if(f){const r=new FileReader();r.onload=(v)=>{$('input').value=v.target.result;saveState();};r.readAsText(f);} };
+    
+    // Search
     $('tripSearch').oninput = (e) => { 
         const q=e.target.value.toLowerCase(); document.querySelectorAll('.tree-item').forEach(i=>{ 
         i.style.display=i.textContent.toLowerCase().includes(q)?'block':'none';
@@ -249,7 +398,10 @@
         h.innerHTML+=`<div class="msg ai"><strong>Gemini:</strong> ${r.replace(/\n/g,'<br>')}</div>`; h.scrollTop=h.scrollHeight;
     };
     
-    const h=$('helpOverlay'); $('btnHelp').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=HELP_HTML;}; 
-    $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=ABOUT_HTML;}; $('btnCloseHelp').onclick=()=>h.style.display='none';
+    // Help
+    const h=$('helpOverlay'); 
+    $('btnHelp').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=HELP_HTML;}; 
+    $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=ABOUT_HTML;}; 
+    $('btnCloseHelp').onclick=()=>h.style.display='none';
   });
 })();
