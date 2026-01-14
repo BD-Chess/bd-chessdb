@@ -396,7 +396,7 @@
     }
   };
 
-  // --- 11. AI (NOW RESULT-AWARE) ---
+  // --- 11. AI ---
   async function initAI() {
     try {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
@@ -411,35 +411,24 @@
   async function callAI(txt) {
     chatHistoryBuffer.push({ role: "user", parts: [{ text: txt }] });
     
-    // --- GATHER CONTEXT ---
-    const inputStops = $('input').value.substring(0, 1500);
-    const dist = $('distKm').textContent;
-    const saved = $('savedKm').textContent;
-    const mode = currentTravelMode;
-    let optimizedOrder = "Not calculated yet.";
+    const currentTripData = $('input').value.substring(0, 2000); 
     
-    if (lastSolvedPoints && lastSolvedPoints.length > 0) {
-        optimizedOrder = lastSolvedPoints.map((p, i) => `${i+1}. ${p.name}`).join('\n');
-    }
-
-    // --- SYSTEM PROMPT ---
+    // UPDATED SYSTEM PROMPT: Includes {REPLACE:...}
     const sysPrompt = `
-      You are an AI Trip Planner inside the 8Z-Optimizer app.
+      You are an AI Trip Planner. 
+      CONTEXT: The user is planning a trip with these current stops: 
+      ---
+      ${currentTripData}
+      ---
       
-      CURRENT TRIP STATUS:
-      - Travel Mode: ${mode}
-      - Total Distance: ${dist} (Savings: ${saved})
-      
-      OPTIMIZED ROUTE ORDER:
-      ${optimizedOrder}
-      
-      USER RAW INPUT:
-      ${inputStops}
+      TOOLS:
+      1. {ADD: Place Name | Lat, Lon} - Appends a new stop.
+      2. {REPLACE: Full Text...} - COMPLETELY WIPES and replaces the input box. Use this if the user asks to "clear", "rewrite", "reorder", or "start over".
       
       INSTRUCTIONS:
-      1. If the user asks about distance/time, use the "Total Distance" above.
-      2. If suggesting new places, use format: {ADD: Place Name | Lat, Lon}.
-      3. Be concise and helpful.
+      - Always include City/Country for new places.
+      - If user says "Clear trip", output: {REPLACE: }
+      - If user says "Reorder trip logically" (without optimization), rewrite the list inside {REPLACE: ...}.
     `;
 
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${currentGeminiModel}:generateContent?key=${GEMINI_API_KEY}`, {
@@ -489,8 +478,24 @@
         const i=$('chatInput'), t=i.value.trim(), h=$('chatHistory'); if(!t)return; i.value='';
         h.innerHTML+=`<div class="msg user">${t}</div>`; h.scrollTop=h.scrollHeight;
         const r=await callAI(t);
-        const m=r.match(/\{ADD:\s*(.*?)\}/g); if(m) m.forEach(x=>{ const l=x.replace(/\{ADD:\s*|\}/g,'').trim(); if(!$('input').value.includes(l))$('input').value+=($('input').value?'\n':'')+l; });
-        h.innerHTML+=`<div class="msg ai"><strong>Gemini:</strong> ${r.replace(/\n/g,'<br>')}</div>`; h.scrollTop=h.scrollHeight;
+        
+        // PARSE COMMANDS
+        // 1. Check for REPLACE (High Priority)
+        const repMatch = r.match(/\{REPLACE:\s*([\s\S]*?)\}/);
+        if (repMatch) {
+            $('input').value = repMatch[1].trim();
+            saveState(); // Auto-save on replace
+        } else {
+            // 2. Check for ADD
+            const m=r.match(/\{ADD:\s*(.*?)\}/g); 
+            if(m) m.forEach(x=>{ 
+                const l=x.replace(/\{ADD:\s*|\}/g,'').trim(); 
+                if(!$('input').value.includes(l)) $('input').value+=($('input').value?'\n':'')+l; 
+            });
+        }
+        
+        h.innerHTML+=`<div class="msg ai"><strong>Gemini:</strong> ${r.replace(/\{.*?\}/g, '').replace(/\n/g,'<br>')}</div>`; 
+        h.scrollTop=h.scrollHeight;
     };
     
     const h=$('helpOverlay'); 
