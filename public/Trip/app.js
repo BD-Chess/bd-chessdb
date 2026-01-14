@@ -329,6 +329,25 @@
   }
 
   // --- 10. RUN ---
+  
+  // POPUP LOGIC
+  function showBusy(msg) {
+    let overlay = $('busyOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'busyOverlay';
+        overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:sans-serif;";
+        document.body.appendChild(overlay);
+    }
+    overlay.innerHTML = `<div style="font-size:2rem;margin-bottom:20px;">🧬</div><div style="font-size:1.2rem;font-weight:bold;">${msg}</div><div style="margin-top:10px;color:#6aa9ff;">Please wait...</div>`;
+    overlay.style.display = 'flex';
+  }
+  
+  function hideBusy() {
+    const overlay = $('busyOverlay');
+    if (overlay) overlay.style.display = 'none';
+  }
+
   async function run(profile) {
     if (!window.google) { setStatus('Loading Map API...', 'ok'); await ensureMapsLoaded(); }
 
@@ -342,6 +361,7 @@
     if (valid.length < 2) { setStatus('Need 2+ valid stops.', 'bad'); return; }
 
     setStatus(`Optimizing ${valid.length} stops...`, 'warn');
+    if (profile === 'deep') showBusy("Deep Genetic Optimization...");
     
     worker.postMessage({
       type: 'solve',
@@ -354,7 +374,12 @@
 
   worker.onmessage = (ev) => {
     const msg = ev.data || {};
-    if (msg.type === 'result') {
+    
+    if (msg.type === 'progress') {
+        showBusy(msg.text); // Update popup text
+    }
+    else if (msg.type === 'result') {
+      hideBusy();
       const { pointsSorted, totalKm, baseKm } = msg;
       lastSolvedPoints = pointsSorted;
       
@@ -438,7 +463,6 @@
     
     const h=$('helpOverlay'); 
     $('btnHelp').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=HELP_HTML;}; 
-    // MODIFIED: Use window.ABOUT_CONTENT from about.js
     $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; 
     $('btnCloseHelp').onclick=()=>h.style.display='none';
   });
