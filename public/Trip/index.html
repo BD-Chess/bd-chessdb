@@ -4,17 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>8Z Trip Optimizer</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
   <div class="app-wrapper">
-    
     <header>
       <div class="brand">8Z <span>Optimizer</span></div>
       <nav>
@@ -58,6 +53,8 @@
         <button id="btnExpand" hidden></button>
         <button id="btnChatToggle" hidden></button>
       </div>
+      
+      <div id="status" class="status"></div>
     </div>
 
     <div class="panel">
@@ -77,14 +74,13 @@
       </div>
 
       <ul id="routeList"></ul>
-      <div id="links" style="margin-top:10px;"></div>
+      <div id="links" class="links-area"></div>
     </div>
-
   </div>
 
   <div id="chatPanel">
     <div class="chat-head" onclick="this.parentElement.classList.toggle('open')">
-      <div class="chat-title">✨ Gemini Assistant <small style="opacity:0.7; font-weight:400;">(Tap)</small></div>
+      <div class="chat-title">✨ AI Trip Chatbot <small style="opacity:0.7; font-weight:400; margin-left:8px;">(Tap to Open)</small></div>
       <div style="display:none;">
         <select id="modelSelector"></select>
         <button id="btnCloseChat"></button>
@@ -92,7 +88,7 @@
     </div>
     
     <div id="chatHistory">
-      <div class="msg ai"><strong>Gemini:</strong> Hello! Paste your stops above, or ask me for ideas.</div>
+      <div class="msg ai"><strong>Gemini:</strong> Hello! Need suggestions? Ask me (e.g. "Add stops in Vienna").</div>
     </div>
     
     <div class="chat-input">
@@ -108,7 +104,7 @@
     </div>
   </div>
 
-  <div id="status" style="display:none;"></div> <script src="trips.js"></script>
+  <script src="trips.js"></script>
   <script src="app.js"></script>
 
 </body>
