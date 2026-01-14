@@ -1,276 +1,307 @@
-/* Web Worker: deterministic route optimization (Haversine / Great Circle Distance) */
 'use strict';
 
-// --- SEEDED RNG (Unchanged) ---
-function fnv1a64(str) {
-  let h = 0xcbf29ce484222325n;
-  const prime = 0x100000001b3n;
-  for (let i = 0; i < str.length; i++) {
-    h ^= BigInt(str.charCodeAt(i));
-    h = (h * prime) & 0xffffffffffffffffn;
+// ==========================================================================
+//  CONFIGURATION & CONSTANTS
+// ==========================================================================
+const EARTH_RADIUS = 6371; // km
+
+// Genetic Algorithm Settings (The "Deep" Profile)
+const GA_POPULATION_SIZE = 300;
+const GA_GENERATIONS = 800;
+const GA_ELITISM_COUNT = 15;
+const GA_MUTATION_RATE = 0.03;
+
+
+// ==========================================================================
+//  MESSAGE HANDLER
+// ==========================================================================
+self.onmessage = function(e) {
+  const { type, profile, points, roundTrip } = e.data;
+
+  if (type === 'solve') {
+    if (!points || points.length < 2) return;
+
+    // 1. Pre-calculate Distance Matrix (Optimization for Speed)
+    // Instead of calculating Haversine millions of times, we do it once.
+    const matrix = buildDistanceMatrix(points);
+
+    // 2. Calculate "Base" Distance (As entered by user)
+    const baseIndices = points.map((_, i) => i);
+    const baseKm = calculateTotalDistance(baseIndices, matrix, roundTrip);
+
+    // 3. Select Algorithm
+    let bestIndices;
+    
+    if (profile === 'deep') {
+      // Run Genetic Algorithm + 2-Opt Polish
+      bestIndices = runGeneticAlgorithm(points, matrix, roundTrip);
+    } else {
+      // Run Nearest Neighbor (Standard)
+      bestIndices = runNearestNeighbor(points, matrix, roundTrip);
+    }
+
+    // 4. Final Polish (2-Opt)
+    // Even the GA can miss simple crossings. This smooths them out.
+    bestIndices = runTwoOpt(bestIndices, matrix, roundTrip);
+
+    // 5. Reconstruct & Return
+    const finalKm = calculateTotalDistance(bestIndices, matrix, roundTrip);
+    const pointsSorted = bestIndices.map(i => points[i]);
+
+    self.postMessage({
+      pointsSorted: pointsSorted,
+      totalKm: finalKm,
+      baseKm: baseKm
+    });
   }
-  return h;
+};
+
+
+// ==========================================================================
+//  GEOMETRY ENGINE (HAVERSINE)
+// ==========================================================================
+
+function toRad(value) {
+  return value * Math.PI / 180;
 }
 
-class XorShift64Star {
-  constructor(seedBig) {
-    let x = seedBig & 0xffffffffffffffffn;
-    if (x === 0n) x = 0x9e3779b97f4a7c15n;
-    this.x = x;
-  }
-  nextU64() {
-    let x = this.x;
-    x ^= (x >> 12n);
-    x ^= (x << 25n) & 0xffffffffffffffffn;
-    x ^= (x >> 27n);
-    this.x = x;
-    return (x * 2685821657736338717n) & 0xffffffffffffffffn;
-  }
-  nextFloat() {
-    // [0,1)
-    const u = this.nextU64();
-    const top = Number((u >> 11n) & ((1n << 53n) - 1n));
-    return top / 9007199254740992;
-  }
-}
-
-// --- GEOMETRY HELPERS (NEW: Haversine Formula) ---
-function toRad(deg) { 
-  return deg * Math.PI / 180.0; 
-}
-
-// Calculates distance in meters between two lat/lon points on a sphere
-function getHaversineDist(p1, p2) {
-  const R = 6371000; // Earth radius in meters
+function getHaversineDistance(p1, p2) {
   const dLat = toRad(p2.lat - p1.lat);
   const dLon = toRad(p2.lon - p1.lon);
   const lat1 = toRad(p1.lat);
   const lat2 = toRad(p2.lat);
 
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return EARTH_RADIUS * c;
 }
 
 function buildDistanceMatrix(points) {
-  const n = points.length;
-  const D = new Array(n);
-  for (let i = 0; i < n; i++) D[i] = new Float64Array(n);
-  
-  for (let i = 0; i < n; i++) {
-    D[i][i] = 0;
-    for (let j = i + 1; j < n; j++) {
-      // Handle missing coordinates gracefully (infinity distance)
-      if (points[i].lat === null || points[j].lat === null) {
-        D[i][j] = Infinity; 
-        D[j][i] = Infinity;
+  const size = points.length;
+  const matrix = new Float32Array(size * size);
+  for (let i = 0; i < size; i++) {
+    for (let j = 0; j < size; j++) {
+      if (i === j) {
+        matrix[i * size + j] = 0;
       } else {
-        const d = getHaversineDist(points[i], points[j]);
-        D[i][j] = d;
-        D[j][i] = d;
+        matrix[i * size + j] = getHaversineDistance(points[i], points[j]);
       }
     }
   }
-  return D;
+  return { data: matrix, size: size };
 }
 
-function routeLength(route, D, roundTrip) {
-  let sum = 0;
-  for (let i = 0; i < route.length - 1; i++) sum += D[route[i]][route[i+1]];
-  if (roundTrip && route.length > 1) sum += D[route[route.length-1]][route[0]];
-  return sum;
+function getDist(matrix, i, j) {
+  return matrix.data[i * matrix.size + j];
 }
 
-// --- SOLVER COMPONENTS ---
+function calculateTotalDistance(indices, matrix, roundTrip) {
+  let dist = 0;
+  for (let i = 0; i < indices.length - 1; i++) {
+    dist += getDist(matrix, indices[i], indices[i+1]);
+  }
+  if (roundTrip) {
+    dist += getDist(matrix, indices[indices.length - 1], indices[0]);
+  }
+  return dist;
+}
 
-function nearestNeighbor(start, D, allowed) {
-  const n = allowed.length;
-  const used = new Uint8Array(D.length);
-  const route = new Array(n);
-  route[0] = start;
-  used[start] = 1;
-  for (let t = 1; t < n; t++) {
-    const cur = route[t-1];
-    let best = -1;
-    let bestD = Infinity;
-    for (let idx = 0; idx < n; idx++) {
-      const v = allowed[idx];
-      if (used[v]) continue;
-      const dv = D[cur][v];
-      if (dv < bestD || (dv === bestD && v < best)) {
-        bestD = dv;
-        best = v;
+
+// ==========================================================================
+//  ALGORITHM 1: NEAREST NEIGHBOR (Standard/Fast)
+// ==========================================================================
+function runNearestNeighbor(points, matrix, roundTrip) {
+  const count = points.length;
+  const visited = new Set();
+  const path = [0]; // Always start at first point
+  visited.add(0);
+
+  let current = 0;
+  while (path.length < count) {
+    let nearest = -1;
+    let minDiv = Infinity;
+
+    for (let i = 0; i < count; i++) {
+      if (!visited.has(i)) {
+        const d = getDist(matrix, current, i);
+        if (d < minDiv) {
+          minDiv = d;
+          nearest = i;
+        }
       }
     }
-    route[t] = best;
-    used[best] = 1;
-  }
-  return route;
-}
-
-function shuffledAllowed(allowed, rng) {
-  const arr = allowed.slice();
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(rng.nextFloat() * (i + 1));
-    const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
-  }
-  return arr;
-}
-
-function nnWithJitter(start, D, allowed, rng, jitterScale) {
-  const n = allowed.length;
-  const used = new Uint8Array(D.length);
-  const route = new Array(n);
-  route[0] = start;
-  used[start] = 1;
-
-  for (let t = 1; t < n; t++) {
-    const cur = route[t-1];
-    let best = -1;
-    let bestScore = Infinity;
-    for (let idx = 0; idx < n; idx++) {
-      const v = allowed[idx];
-      if (used[v]) continue;
-      const dv = D[cur][v];
-      const noise = (rng.nextFloat() - 0.5) * jitterScale * dv;
-      const score = dv + noise;
-      if (score < bestScore || (score === bestScore && v < best)) {
-        bestScore = score;
-        best = v;
-      }
+    
+    if (nearest !== -1) {
+      visited.add(nearest);
+      path.push(nearest);
+      current = nearest;
+    } else {
+      break; 
     }
-    route[t] = best;
-    used[best] = 1;
   }
-  return route;
+  return path;
 }
 
-function twoOpt(route, D, roundTrip, maxPasses, moveBudget) {
-  const n = route.length;
-  if (n < 4) return route;
 
-  let movesChecked = 0;
+// ==========================================================================
+//  ALGORITHM 2: GENETIC ALGORITHM (Deep/Precise)
+// ==========================================================================
+function runGeneticAlgorithm(points, matrix, roundTrip) {
+  const size = points.length;
+  // If extremely small, just return standard
+  if (size < 4) return runNearestNeighbor(points, matrix, roundTrip);
 
-  for (let pass = 0; pass < maxPasses; pass++) {
-    let improved = false;
-    for (let i = 1; i < n - 2; i++) {
-      const a = route[i-1], b = route[i];
-      for (let k = i + 1; k < n - 1; k++) {
+  let population = [];
+
+  // 1. Initialization: Create random permutations
+  // We keep start point fixed at index 0 for consistency
+  const baseIndices = [];
+  for (let i = 1; i < size; i++) baseIndices.push(i);
+
+  for (let i = 0; i < GA_POPULATION_SIZE; i++) {
+    const shuffled = shuffleArray([...baseIndices]);
+    population.push([0, ...shuffled]); // Fixed start
+  }
+
+  // 2. Evolution Loop
+  for (let gen = 0; gen < GA_GENERATIONS; gen++) {
+    // Sort by fitness (distance)
+    population.sort((a, b) => {
+      return calculateTotalDistance(a, matrix, roundTrip) - calculateTotalDistance(b, matrix, roundTrip);
+    });
+
+    // Elitism: Keep best routes
+    const newPop = population.slice(0, GA_ELITISM_COUNT);
+
+    // Breeding
+    while (newPop.length < GA_POPULATION_SIZE) {
+      // Tournament Selection
+      const p1 = tournamentSelect(population, matrix, roundTrip);
+      const p2 = tournamentSelect(population, matrix, roundTrip);
+      
+      // Order Crossover
+      let child = orderCrossover(p1, p2);
+
+      // Mutation
+      if (Math.random() < GA_MUTATION_RATE) {
+        mutate(child);
+      }
+      newPop.push(child);
+    }
+    population = newPop;
+  }
+
+  // Return best individual
+  population.sort((a, b) => calculateTotalDistance(a, matrix, roundTrip) - calculateTotalDistance(b, matrix, roundTrip));
+  return population[0];
+}
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function tournamentSelect(pop, matrix, roundTrip) {
+  const k = 4; // Tournament size
+  let best = null;
+  let bestDist = Infinity;
+  for (let i = 0; i < k; i++) {
+    const ind = pop[Math.floor(Math.random() * pop.length)];
+    const d = calculateTotalDistance(ind, matrix, roundTrip);
+    if (d < bestDist) {
+      bestDist = d;
+      best = ind;
+    }
+  }
+  return best;
+}
+
+function orderCrossover(parent1, parent2) {
+  // Ordered Crossover (OX1) preserves relative order
+  // Start point (0) is fixed, we operate on the rest
+  const len = parent1.length;
+  const startPos = Math.floor(Math.random() * (len - 1)) + 1;
+  const endPos = Math.floor(Math.random() * (len - startPos)) + startPos;
+
+  const child = new Array(len).fill(-1);
+  child[0] = 0; // Fix start
+
+  const subset = new Set();
+  for (let i = startPos; i < endPos; i++) {
+    child[i] = parent1[i];
+    subset.add(parent1[i]);
+  }
+
+  let p2Index = 1;
+  for (let i = 1; i < len; i++) {
+    if (i >= startPos && i < endPos) continue;
+
+    while (subset.has(parent2[p2Index]) || parent2[p2Index] === 0) {
+      p2Index++;
+    }
+    child[i] = parent2[p2Index];
+    p2Index++;
+  }
+  return child;
+}
+
+function mutate(individual) {
+  // Swap Mutation (excluding start point)
+  const len = individual.length;
+  const i = Math.floor(Math.random() * (len - 1)) + 1;
+  const j = Math.floor(Math.random() * (len - 1)) + 1;
+  [individual[i], individual[j]] = [individual[j], individual[i]];
+}
+
+
+// ==========================================================================
+//  ALGORITHM 3: 2-OPT LOCAL SEARCH (Polishing)
+// ==========================================================================
+// This untangles simple knots that GA might miss.
+function runTwoOpt(route, matrix, roundTrip) {
+  let improved = true;
+  let bestRoute = [...route];
+  let bestDist = calculateTotalDistance(bestRoute, matrix, roundTrip);
+  
+  // Safety break to prevent infinite loops in weird edge cases
+  let cycles = 0; 
+  const maxCycles = 100;
+
+  while (improved && cycles < maxCycles) {
+    improved = false;
+    cycles++;
+    
+    // Iterate all edges (excluding fixed start if not needed, but usually we opt all segments)
+    // We keep index 0 fixed as start point
+    for (let i = 1; i < bestRoute.length - 1; i++) {
+      for (let j = i + 1; j < bestRoute.length; j++) {
         
-        movesChecked++;
-        if (movesChecked > moveBudget) return route;
+        // Skip non-adjacent in round trip context logic if needed, 
+        // but for general path 2-opt:
+        const newRoute = twoOptSwap(bestRoute, i, j);
+        const newDist = calculateTotalDistance(newRoute, matrix, roundTrip);
 
-        const c = route[k], d = route[k+1];
-        const delta = (D[a][c] + D[b][d]) - (D[a][b] + D[c][d]);
-        
-        if (delta < -1e-9) { // Using a slightly larger epsilon for float stability
-          let L = i, R = k;
-          while (L < R) {
-            const tmp = route[L]; route[L] = route[R]; route[R] = tmp;
-            L++; R--;
-          }
+        if (newDist < bestDist) {
+          bestRoute = newRoute;
+          bestDist = newDist;
           improved = true;
         }
       }
     }
-    if (!improved) break;
   }
-  return route;
+  return bestRoute;
 }
 
-function solve(points, startIdx, profile, roundTrip) {
-  const withCoords = [];
-  const without = [];
-  for (let i = 0; i < points.length; i++) {
-    const p = points[i];
-    if (isFinite(p.lat) && isFinite(p.lon)) withCoords.push(i);
-    else without.push(i);
-  }
-
-  const coordPoints = withCoords.map(i => points[i]);
-  
-  // FIXED: No longer projecting to XY. Building matrix directly from Lat/Lon.
-  const D = buildDistanceMatrix(coordPoints);
-
-  const startGlobal = startIdx;
-  let start = 0;
-  if (startGlobal >= 0 && startGlobal < points.length) {
-    const pos = withCoords.indexOf(startGlobal);
-    start = (pos >= 0) ? pos : 0;
-  }
-
-  const seedStr = points.map(p => `${p.name}|${p.lat}|${p.lon}`).join('\n') + `|start=${start}|profile=${profile}|rt=${roundTrip}`;
-  const rng = new XorShift64Star(fnv1a64(seedStr));
-
-  // --- DETERMINISTIC SETTINGS ---
-  let starts = 2;
-  let maxPasses = 4;
-  let moveBudget = 200000;
-  let jitterScale = 0.03;
-
-  if (profile === 'standard') {
-    starts = 2; maxPasses = 4; moveBudget = 500000; jitterScale = 0.03;
-  } else if (profile === 'deep') {
-    starts = 12; maxPasses = 10; moveBudget = 5000000; jitterScale = 0.08;
-  } 
-  else if (profile === 'fast') {
-    starts = 1; maxPasses = 3; moveBudget = 100000; jitterScale = 0.02;
-  } else if (profile === 'balanced') {
-    starts = 4; maxPasses = 6; moveBudget = 1000000; jitterScale = 0.05;
-  }
-
-  let bestRoute = null;
-  let bestLen = Infinity;
-  const baseRoute = withCoords.map((_, i) => i); 
-  const baseLen = routeLength(baseRoute, D, roundTrip);
-
-  for (let s = 0; s < starts; s++) {
-    const allowed = (s === 0) ? withCoords.map((_, i) => i)
-                              : shuffledAllowed(withCoords.map((_, i) => i), rng);
-
-    let route = null;
-    if (s === 0) route = nearestNeighbor(start, D, allowed);
-    else route = nnWithJitter(start, D, allowed, rng, jitterScale);
-
-    route = twoOpt(route, D, roundTrip, maxPasses, moveBudget);
-
-    const L = routeLength(route, D, roundTrip);
-    if (L < bestLen - 1e-9) { bestLen = L; bestRoute = route.slice(); }
-    else if (Math.abs(L - bestLen) <= 1e-9 && bestRoute) {
-      // Tie-breaker: lexicographical check for true stability
-      for (let i = 0; i < route.length; i++) {
-        if (route[i] < bestRoute[i]) { bestRoute = route.slice(); break; }
-        if (route[i] > bestRoute[i]) break;
-      }
-    }
-
-    postMessage({ type: 'progress', text: `Start ${s+1}/${starts}: ${Math.round(L/1000)} km` });
-  }
-
-  const orderCoordGlobal = bestRoute.map(i => withCoords[i]);
-  const orderGlobal = orderCoordGlobal.concat(without);
-  const pointsSorted = orderGlobal.map(i => points[i]);
-  const totalKm = bestLen / 1000.0;
-  const baseKm = baseLen / 1000.0;
-
-  return { orderGlobal, pointsSorted, totalKm, baseKm };
+function twoOptSwap(route, i, k) {
+  // Take route[0..i-1]
+  // Take route[i..k] reversed
+  // Take route[k+1..end]
+  const newRoute = route.slice(0, i);
+  const segment = route.slice(i, k + 1).reverse();
+  const end = route.slice(k + 1);
+  return newRoute.concat(segment).concat(end);
 }
-
-onmessage = (ev) => {
-  const msg = ev.data || {};
-  if (msg.type !== 'solve') return;
-  try {
-    const { points, startIdx, profile, roundTrip } = msg;
-    const res = solve(points, startIdx, profile, !!roundTrip);
-    postMessage({
-      type: 'result',
-      order: res.orderGlobal,
-      pointsSorted: res.pointsSorted,
-      totalKm: res.totalKm,
-      baseKm: res.baseKm,
-    });
-  } catch (e) {
-    postMessage({ type: 'error', error: String(e && e.stack ? e.stack : e) });
-  }
-};
