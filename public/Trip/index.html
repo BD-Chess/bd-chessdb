@@ -7,111 +7,108 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="container">
+  <div class="app-wrapper">
     
     <header>
       <div class="brand">8Z <span>Optimizer</span></div>
-      <div class="nav-links">
-        <button id="btnPlanWithAI">Plan w/ AI</button>
-        <button id="btnAbout">About</button>
-        <button id="btnHelp">Help</button>
-      </div>
+      <nav>
+        <button id="btnAbout" class="nav-btn">About</button>
+        <button id="btnHelp" class="nav-btn">Help</button>
+      </nav>
     </header>
 
-    <div class="left-column">
-      <div class="card">
-        <h3>Plan Your Trip</h3>
-        
-        <input type="text" id="tripSearch" placeholder="Search saved trips..." style="margin-bottom:8px;">
-        <div id="presetTree" class="tree-box">
-          <div style="padding:10px; color:#64748b;">Loading library...</div>
-        </div>
+    <div class="panel">
+      <h3>Plan Your Trip</h3>
+      
+      <input type="text" id="tripSearch" placeholder="Search library..." style="margin-bottom: 8px;">
+      <div id="presetTree" class="library-box">
+        <div style="padding:10px; color:#64748b;">Loading trips...</div>
+      </div>
 
-        <textarea id="input" placeholder="Enter stops here (e.g. Paris, London)..." spellcheck="false"></textarea>
-        
-        <div class="btn-grid">
-          <button id="btnSave" class="btn-neutral">💾 Save</button>
-          <button id="btnLoad" class="btn-neutral">📂 Load</button>
-          <input type="file" id="fileLoader" hidden>
-        </div>
+      <textarea id="input" placeholder="Enter stops (e.g. Paris, London)..." spellcheck="false"></textarea>
+      
+      <div class="grid-2">
+        <button id="btnSave" class="btn-neutral">💾 Save</button>
+        <button id="btnLoad" class="btn-neutral">📂 Load</button>
+        <input type="file" id="fileLoader" hidden>
+      </div>
 
-        <div class="btn-grid">
-          <button id="btnStandard" class="btn-primary">Optimize (Fast)</button>
-          <button id="btnDeep" class="btn-secondary">Optimize (Deep)</button>
-        </div>
+      <div class="grid-2">
+        <button id="btnStandard" class="btn-primary">Optimize (Fast)</button>
+        <button id="btnDeep" class="btn-secondary">Optimize (Deep)</button>
+      </div>
 
-        <div class="btn-grid">
-          <button id="btnDriving" class="btn-mode active">🚗 Driving</button>
-          <button id="btnWalking" class="btn-mode">🚶 Walking</button>
-        </div>
+      <div class="grid-2">
+        <button id="btnDriving" class="btn-mode active">🚗 Drive</button>
+        <button id="btnWalking" class="btn-mode">🚶 Walk</button>
+      </div>
 
-        <div class="options-row">
-          <label><input type="checkbox" id="chkRoundTrip" checked> Round Trip</label>
-          <label><input type="checkbox" id="chkDirect"> Direct Line</label>
-          <input type="checkbox" id="chkGoogleStyle" style="display:none;">
-          <button id="btnCollapse" style="display:none;"></button>
-          <button id="btnExpand" style="display:none;"></button>
-        </div>
+      <div class="options">
+        <label><input type="checkbox" id="chkRoundTrip" checked> Round Trip</label>
+        <label><input type="checkbox" id="chkDirect"> Direct Line</label>
+        <input type="checkbox" id="chkGoogleStyle" hidden>
+        <button id="btnPlanWithAI" hidden></button>
+        <button id="btnCollapse" hidden></button>
+        <button id="btnExpand" hidden></button>
+        <button id="btnChatToggle" hidden></button>
       </div>
     </div>
 
-    <div class="right-column">
-      <div class="card">
-        <h3>Results</h3>
-        <div class="stats-row">
-          <div>Dist: <span id="distKm" class="stat-val">—</span></div>
-          <div>Saved: <span id="savedKm" class="stat-saved">—</span></div>
-        </div>
-
-        <div id="mapContainer">
-          <div id="mapPlaceholder">
-            <p>Map Inactive</p>
-            <button id="btnEnableMap" class="btn-primary" style="width:auto;">Load Map</button>
-          </div>
-          <div id="map"></div>
-        </div>
-
-        <ul id="routeList"></ul>
-        <div id="links" style="margin-top:10px;"></div>
+    <div class="panel">
+      <h3>Results</h3>
+      
+      <div class="stats">
+        <div>Dist: <span id="distKm" class="val">—</span></div>
+        <div>Saved: <span id="savedKm" class="saved">—</span></div>
       </div>
+
+      <div id="mapContainer">
+        <div id="mapPlaceholder">
+          <p>Map Inactive</p>
+          <button id="btnEnableMap" class="btn-primary" style="width:auto;">Load Map</button>
+        </div>
+        <div id="map"></div>
+      </div>
+
+      <ul id="routeList"></ul>
+      <div id="links" style="margin-top:10px;"></div>
     </div>
 
   </div>
 
   <div id="chatPanel">
-    <div class="chat-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="chat-title">✨ Gemini Assistant <small style="margin-left:10px; font-weight:400; opacity:0.7;">(Tap to Open)</small></div>
+    <div class="chat-head" onclick="this.parentElement.classList.toggle('open')">
+      <div class="chat-title">✨ Gemini Assistant <small style="opacity:0.7; font-weight:400;">(Tap)</small></div>
       <div style="display:none;">
         <select id="modelSelector"></select>
         <button id="btnCloseChat"></button>
-        <button id="btnChatToggle"></button>
       </div>
     </div>
     
     <div id="chatHistory">
-      <div class="chat-msg ai"><strong>Gemini:</strong> Hello! Ask me to "Add stops in Morocco".</div>
+      <div class="msg ai"><strong>Gemini:</strong> Hello! Paste your stops above, or ask me for ideas.</div>
     </div>
     
-    <div class="chat-input-area">
+    <div class="chat-input">
       <input type="text" id="chatInput" placeholder="Message Gemini...">
       <button id="btnSendChat">➤</button>
     </div>
   </div>
 
   <div id="helpOverlay">
-    <div class="modal-box">
-      <button id="btnCloseHelp" class="close-modal">×</button>
+    <div class="modal-content">
+      <button id="btnCloseHelp" class="close-icon">×</button>
       <div id="helpBody"></div>
     </div>
   </div>
 
-  <script src="trips.js"></script>
+  <div id="status" style="display:none;"></div> <script src="trips.js"></script>
   <script src="app.js"></script>
 
 </body>
