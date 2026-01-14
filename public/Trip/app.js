@@ -3,9 +3,11 @@
   const $ = (id) => document.getElementById(id);
   
   // --- CONFIGURATION ---
+  // Public Google Maps Key
   const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA'; 
   
-  // CHEAT CODE: Fragmented & Scrambled Gemini key to hide from GitHub bots
+  // NEW FEATURE: Gemini API Key Scrambler (The "Cheat Code")
+  // Fragmented and Base64 encoded to stay hidden from automated scanners.
   const _s1 = 'QUl6YVN5Q3hIanBw';
   const _s2 = 'S2l4YW85OU5IOURv';
   const _s3 = 'YWYtUTBLTzRmQ1FhZUhz';
@@ -24,9 +26,11 @@
   let map, geocoder, directionsService, infoWindow, mapMarkers = [], directionsRenderers = [], mapPolyline = null;
   let lastSolvedPoints = null, chatHistoryBuffer = [], currentGeminiModel = '', currentTravelMode = 'DRIVING';
   const STORAGE_KEY = '8z_trip_backup_v1';
+  
+  // Professional Dark Map Style
   const DARK_STYLE = [{elementType:"geometry",stylers:[{color:"#242f3e"}]},{elementType:"labels.text.stroke",stylers:[{color:"#242f3e"}]},{elementType:"labels.text.fill",stylers:[{color:"#746855"}]},{featureType:"administrative.locality",elementType:"labels.text.fill",stylers:[{color:"#d59563"}]},{featureType:"road",elementType:"geometry",stylers:[{color:"#38414e"}]},{featureType:"road",elementType:"geometry.stroke",stylers:[{color:"#212a37"}]},{featureType:"water",elementType:"geometry",stylers:[{color:"#17263c"}]}];
 
-  // --- UI CONTROLS ---
+  // --- UI & LAYOUT CONTROLS ---
   function toggleChatMode(showChat) {
     chatPanel.style.display = showChat ? 'flex' : 'none';
     mapContainer.style.display = showChat ? 'none' : 'block';
@@ -102,7 +106,7 @@
     map.fitBounds(bounds);
   }
 
-  // --- TRIP LIBRARY & SEARCH ---
+  // --- TRIP LIBRARY & RECURSIVE SEARCH ---
   function initTripTree() {
     if (!window.TRIP_LIBRARY || !presetTree) return;
     presetTree.innerHTML = '';
@@ -161,11 +165,13 @@
     });
   }
 
-  // --- AI LOGIC (2026 PROTECTIONS) ---
+  // --- NEW FEATURE: 2026 AI LOGIC & PROTECTIONS ---
   async function initModelSelector() {
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
       const data = await res.json();
+      
+      // Filter strictly for chat models. Explicitly blocks Nano Banana (Image generation).
       const valid = data.models.filter(m => 
         m.name.includes('gemini') && 
         !m.name.toLowerCase().includes('image') && 
@@ -173,6 +179,7 @@
         !m.name.toLowerCase().includes('vision')
       );
       
+      // Smart Sort: Highest version (3 > 2.5 > 2.0).
       valid.sort((a, b) => {
         const getV = (n) => { const match = n.match(/gemini-(\d+(\.\d+)?)/); return match ? parseFloat(match[1]) : 0; };
         return getV(b.name) - getV(a.name);
@@ -223,7 +230,7 @@
       aiBtn.style.border = '1px dashed var(--accent)';
       aiBtn.addEventListener('click', () => {
         const p = "Review this itinerary logic:\n" + lastSolvedPoints.map((pt, i) => `${i+1}. ${pt.name}`).join('\n');
-        toggleChatMode(true); 
+        toggleChatMode(true); // Switches View
         chatInput.value = p;
       });
       linksEl.appendChild(aiBtn);
@@ -235,13 +242,14 @@
     });
   }
 
-  // --- ENGINE ---
+  // --- THE MASTER ENGINE (BASE: `app_ok.js`) ---
   async function run(profile) {
     if (!window.google) { loadGoogleMaps(); return; }
-    setStatus('Geocoding and Processing...', 'ok');
+    setStatus('Geocoding stops...', 'ok');
     const lines = inputEl.value.split('\n').filter(l => l.trim() && !l.startsWith('#'));
     const pts = [];
     
+    // Sequential geocoding loop with throttle
     for (let line of lines) {
       const m = /(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/.exec(line);
       if (m) { 
@@ -251,7 +259,7 @@
         if (res && res[0]) {
           pts.push({ name: line.trim(), lat: res[0].geometry.location.lat(), lon: res[0].geometry.location.lng() });
         }
-        await new Promise(r => setTimeout(r, 200)); // Geocoding throttle
+        await new Promise(r => setTimeout(r, 200)); 
       }
     }
     
@@ -293,17 +301,17 @@
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'trip.txt'; a.click();
   }
 
-  // --- INITIALIZATION & EVENTS ---
+  // --- INITIALIZATION & EVENT LISTENERS (FULL SET) ---
   initTripTree(); 
   initModelSelector();
   
   btnHelp.onclick = () => { 
     helpOverlay.style.display = 'flex'; 
-    helpBody.innerHTML = '<h3>Help Guide</h3><p>Enter stops or select from library. Use Standard for fast results, Precise for better routes.</p>'; 
+    helpBody.innerHTML = '<h3>Help Guide</h3><p>Optimize your route by entering stops or picking from the library. <strong>Precise</strong> mode uses advanced math for better results.</p>'; 
   };
   btnAbout.onclick = () => { 
     helpOverlay.style.display = 'flex'; 
-    helpBody.innerHTML = '<h3>About</h3><p>8Z-RP Trip Optimizer v2026. Powered by Google Maps & Gemini AI.</p>'; 
+    helpBody.innerHTML = '<h3>About 8Z-RP</h3><p>v2026.01. Optimized for modern Gemini 3 and 2.5 models.</p>'; 
   };
   btnCloseHelp.onclick = () => helpOverlay.style.display = 'none';
   tripSearch.oninput = (e) => filterTripTree(e.target.value);
