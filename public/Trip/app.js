@@ -22,7 +22,7 @@
   
   let presetLookup = {};
 
-  // --- 3. HTML CONTENT (Hardcoded Help only, About is external) ---
+  // --- 3. HTML CONTENT ---
   const HELP_HTML = `
     <div class="help-block">
       <h2>How to Use</h2>
@@ -330,7 +330,6 @@
 
   // --- 10. RUN ---
   
-  // POPUP LOGIC
   function showBusy(msg) {
     let overlay = $('busyOverlay');
     if (!overlay) {
@@ -376,7 +375,7 @@
     const msg = ev.data || {};
     
     if (msg.type === 'progress') {
-        showBusy(msg.text); // Update popup text
+        showBusy(msg.text); 
     }
     else if (msg.type === 'result') {
       hideBusy();
@@ -397,7 +396,7 @@
     }
   };
 
-  // --- 11. AI (UPDATED WITH CONTEXT) ---
+  // --- 11. AI ---
   async function initAI() {
     try {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
@@ -409,27 +408,30 @@
     } catch(e){}
   }
 
-  async function callAI(userRequest) {
-    const currentList = $('input').value;
+  async function callAI(txt) {
+    chatHistoryBuffer.push({ role: "user", parts: [{ text: txt }] });
     
-    // NEW: Inject current trip list into the prompt
-    const contextPrompt = `
-[SYSTEM CONTEXT]
-The User's Current Trip List is:
----
-${currentList}
----
-INSTRUCTIONS:
-1. To ADD a stop, output: {ADD: Place Name}
-2. To EDIT, REMOVE, or REORDER the list, output: {SET_TRIP: Full New List}
-3. Otherwise, chat normally.
-User Request: ${userRequest}`;
+    // CONTEXT AWARENESS: Read the current trip data
+    const currentTripData = $('input').value.substring(0, 2000); // Limit to 2k chars context
+    
+    // UPDATED SYSTEM PROMPT: Strict rules on city context and format
+    const sysPrompt = `
+      You are an AI Trip Planner. 
+      CONTEXT: The user is planning a trip with these current stops: 
+      ---
+      ${currentTripData}
+      ---
+      
+      INSTRUCTIONS:
+      1. If the user asks to add a place, you MUST include the City and Country to avoid ambiguity (e.g. "St. Nicholas Church, Ljubljana").
+      2. PREFERRED FORMAT: If you know the location well, use: {ADD: Place Name | Lat, Lon} (4 decimal precision).
+      3. FALLBACK FORMAT: {ADD: Place Name, City, Country}.
+      4. Do not remove existing stops, only suggest new ones via the {ADD} tag.
+    `;
 
-    chatHistoryBuffer.push({ role: "user", parts: [{ text: contextPrompt }] });
-    
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${currentGeminiModel}:generateContent?key=${GEMINI_API_KEY}`, {
         method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ contents: [{role:"user", parts:[{text:"You are an AI Trip Assistant."}]}, ...chatHistoryBuffer] })
+        body: JSON.stringify({ contents: [{role:"user", parts:[{text: sysPrompt}]}, ...chatHistoryBuffer] })
     });
     const d = await res.json();
     const t = d.candidates?.[0]?.content?.parts?.[0]?.text || "Error";
@@ -473,30 +475,9 @@ User Request: ${userRequest}`;
     $('btnSendChat').onclick = async () => {
         const i=$('chatInput'), t=i.value.trim(), h=$('chatHistory'); if(!t)return; i.value='';
         h.innerHTML+=`<div class="msg user">${t}</div>`; h.scrollTop=h.scrollHeight;
-        
-        const r = await callAI(t);
-        
-        // NEW: Handle {SET_TRIP} and {ADD} tags
-        const setMatch = r.match(/\{SET_TRIP:\s*([\s\S]*?)\}/);
-        const addMatch = r.match(/\{ADD:\s*(.*?)\}/g);
-
-        if (setMatch) {
-            $('input').value = setMatch[1].trim();
-            setStatus('Trip list updated by AI.', 'ok');
-            saveState();
-        } else if (addMatch) {
-            addMatch.forEach(x => { 
-                const l=x.replace(/\{ADD:\s*|\}/g,'').trim(); 
-                if(!$('input').value.includes(l)) $('input').value += ($('input').value?'\n':'')+l; 
-            });
-            saveState();
-        }
-
-        // Clean response for display (remove tags)
-        const cleanReply = r.replace(/\{SET_TRIP:[\s\S]*?\}/g, '*(List Updated)*').replace(/\{ADD:.*?\}/g, '*(Added)*');
-        
-        h.innerHTML+=`<div class="msg ai"><strong>Gemini:</strong> ${cleanReply.replace(/\n/g,'<br>')}</div>`; 
-        h.scrollTop=h.scrollHeight;
+        const r=await callAI(t);
+        const m=r.match(/\{ADD:\s*(.*?)\}/g); if(m) m.forEach(x=>{ const l=x.replace(/\{ADD:\s*|\}/g,'').trim(); if(!$('input').value.includes(l))$('input').value+=($('input').value?'\n':'')+l; });
+        h.innerHTML+=`<div class="msg ai"><strong>Gemini:</strong> ${r.replace(/\n/g,'<br>')}</div>`; h.scrollTop=h.scrollHeight;
     };
     
     const h=$('helpOverlay'); 
