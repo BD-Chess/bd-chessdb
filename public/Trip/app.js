@@ -411,24 +411,27 @@
   async function callAI(txt) {
     chatHistoryBuffer.push({ role: "user", parts: [{ text: txt }] });
     
+    // READ STATE FOR CONTEXT
     const currentTripData = $('input').value.substring(0, 2000); 
+    const currentDist = $('distKm').innerText;
+    const currentSaved = $('savedKm').innerText;
     
-    // UPDATED SYSTEM PROMPT: Includes {REPLACE:...}
+    // SYSTEM PROMPT: Now includes the calculated stats
     const sysPrompt = `
       You are an AI Trip Planner. 
-      CONTEXT: The user is planning a trip with these current stops: 
-      ---
-      ${currentTripData}
-      ---
       
-      TOOLS:
-      1. {ADD: Place Name | Lat, Lon} - Appends a new stop.
-      2. {REPLACE: Full Text...} - COMPLETELY WIPES and replaces the input box. Use this if the user asks to "clear", "rewrite", "reorder", or "start over".
+      CURRENT TRIP STATUS:
+      - Stops: 
+      ${currentTripData}
+      - Total Optimized Distance: ${currentDist}
+      - Distance Saved by Optimization: ${currentSaved}
       
       INSTRUCTIONS:
-      - Always include City/Country for new places.
-      - If user says "Clear trip", output: {REPLACE: }
-      - If user says "Reorder trip logically" (without optimization), rewrite the list inside {REPLACE: ...}.
+      1. If the user asks to add a place, you MUST include the City and Country (e.g. "St. Nicholas Church, Ljubljana").
+      2. PREFERRED FORMAT for adding: {ADD: Place Name | Lat, Lon} (4 decimal precision).
+      3. FALLBACK FORMAT: {ADD: Place Name, City, Country}.
+      4. If asked about distance, refer to the "Total Optimized Distance" provided above.
+      5. Do not remove existing stops, only suggest new ones via the {ADD} tag.
     `;
 
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${currentGeminiModel}:generateContent?key=${GEMINI_API_KEY}`, {
@@ -478,30 +481,19 @@
         const i=$('chatInput'), t=i.value.trim(), h=$('chatHistory'); if(!t)return; i.value='';
         h.innerHTML+=`<div class="msg user">${t}</div>`; h.scrollTop=h.scrollHeight;
         const r=await callAI(t);
-        
-        // PARSE COMMANDS
-        // 1. Check for REPLACE (High Priority)
-        const repMatch = r.match(/\{REPLACE:\s*([\s\S]*?)\}/);
-        if (repMatch) {
-            $('input').value = repMatch[1].trim();
-            saveState(); // Auto-save on replace
-        } else {
-            // 2. Check for ADD
-            const m=r.match(/\{ADD:\s*(.*?)\}/g); 
-            if(m) m.forEach(x=>{ 
-                const l=x.replace(/\{ADD:\s*|\}/g,'').trim(); 
-                if(!$('input').value.includes(l)) $('input').value+=($('input').value?'\n':'')+l; 
-            });
-        }
-        
-        h.innerHTML+=`<div class="msg ai"><strong>Gemini:</strong> ${r.replace(/\{.*?\}/g, '').replace(/\n/g,'<br>')}</div>`; 
-        h.scrollTop=h.scrollHeight;
+        const m=r.match(/\{ADD:\s*(.*?)\}/g); if(m) m.forEach(x=>{ const l=x.replace(/\{ADD:\s*|\}/g,'').trim(); if(!$('input').value.includes(l))$('input').value+=($('input').value?'\n':'')+l; });
+        h.innerHTML+=`<div class="msg ai"><strong>Gemini:</strong> ${r.replace(/\n/g,'<br>')}</div>`; h.scrollTop=h.scrollHeight;
     };
     
     const h=$('helpOverlay'); 
     $('btnHelp').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=HELP_HTML;}; 
     $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; 
     $('btnCloseHelp').onclick=()=>h.style.display='none';
+    
+    // AUTO-OPEN CHAT ON 4K
+    if (window.innerWidth >= 1800) {
+        $('chatPanel').classList.add('open');
+    }
   });
   
   function setTravelMode(mode) {
