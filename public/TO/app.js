@@ -354,6 +354,10 @@
     const list = $('routeList');
     const links = $('links');
     
+    // UI Toggles
+    const btnPlan = $('btnPlanMode');
+    const btnMap = $('btnMapMode');
+    
     // Create Big Chat if missing
     let bigChat = $('bigChatContainer');
     if (!bigChat) {
@@ -375,6 +379,10 @@
     }
 
     if (enabled) {
+        // --- PLAN MODE ---
+        btnPlan.classList.add('active');
+        btnMap.classList.remove('active');
+
         // HIDE Map Elements
         mapCont.style.display = 'none';
         stats.style.display = 'none';
@@ -392,7 +400,14 @@
         // SYNC History
         $('bigChatHistory').innerHTML = $('chatHistory').innerHTML;
         
+        // Focus
+        setTimeout(() => $('bigChatInput') && $('bigChatInput').focus(), 100);
+        
     } else {
+        // --- MAP MODE ---
+        btnMap.classList.add('active');
+        btnPlan.classList.remove('active');
+
         // SHOW Map Elements
         mapCont.style.display = 'block';
         stats.style.display = 'flex';
@@ -477,7 +492,6 @@
       );
       
       // 2. Sort: Newest First
-      // Strategy: Check for 'latest', then version numbers
       v.sort((a, b) => {
           // Prefer 'latest' aliases
           if (a.name.includes('latest') && !b.name.includes('latest')) return -1;
@@ -501,8 +515,6 @@
       }
       s.onchange = () => currentGeminiModel = s.value;
       
-      console.log("AI Models Loaded:", v.map(m=>m.displayName));
-
     } catch(e){ console.error("AI Init Error", e); }
   }
 
@@ -581,20 +593,25 @@
       3. Be concise.
     `;
 
-    // 3. Internet Access: Add 'tools'
+    // Tool Definition
     const body = {
         contents: [{role:"user", parts:[{text: sysPrompt}]}, ...chatHistoryBuffer],
-        tools: [{ googleSearchRetrieval: {} }] // Enable Grounding
+        tools: [{ google_search: {} }] 
     };
 
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${currentGeminiModel}:generateContent?key=${GEMINI_API_KEY}`, {
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify(body)
     });
-    const d = await res.json();
-    const t = d.candidates?.[0]?.content?.parts?.[0]?.text || "Error: " + (d.error?.message || "Unknown");
     
-    // If search grounding metadata exists, you could parse it here, but usually it's baked into text.
+    const d = await res.json();
+    
+    if (d.error) {
+        console.error("Gemini API Error:", d.error);
+        return "Error: " + d.error.message;
+    }
+
+    const t = d.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response.";
     
     chatHistoryBuffer.push({ role: "model", parts: [{ text: t }] });
     return t;
@@ -614,12 +631,9 @@
     $('btnLoad').onclick = () => $('fileLoader').click();
     $('fileLoader').onchange = (e) => { const f=e.target.files[0]; if(f){const r=new FileReader();r.onload=(v)=>{$('input').value=v.target.result;saveState();};r.readAsText(f);} };
     
-    // UPDATED: Plan with AI Button
-    $('btnPlanAI').onclick = () => {
-        setPlanningMode(true);
-        // Focus the BIG input
-        setTimeout(() => $('bigChatInput') && $('bigChatInput').focus(), 100);
-    };
+    // NEW: Mode Toggles
+    $('btnPlanMode').onclick = () => setPlanningMode(true);
+    $('btnMapMode').onclick = () => setPlanningMode(false);
 
     $('tripSearch').oninput = (e) => { 
         const q=e.target.value.toLowerCase(); 
@@ -649,9 +663,8 @@
     $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; 
     $('btnCloseHelp').onclick=()=>h.style.display='none';
     
-    if (window.innerWidth >= 1800) {
-        $('chatPanel').classList.add('open');
-    }
+    // DEFAULT TO MAP MODE
+    setPlanningMode(false);
   });
   
   function setTravelMode(mode) {
