@@ -347,7 +347,73 @@
     if (overlay) overlay.style.display = 'none';
   }
 
+  function setPlanningMode(enabled) {
+    const rightPanel = document.querySelector('.panel:nth-of-type(2)');
+    const mapCont = $('mapContainer');
+    const stats = document.querySelector('.stats');
+    const list = $('routeList');
+    const links = $('links');
+    
+    // Create Big Chat if missing
+    let bigChat = $('bigChatContainer');
+    if (!bigChat) {
+        bigChat = document.createElement('div');
+        bigChat.id = 'bigChatContainer';
+        bigChat.style.display = 'none';
+        bigChat.innerHTML = `
+          <div id="bigChatHistory" style="flex:1; overflow-y:auto; padding:20px; border-bottom:1px solid #1f2a3a;"></div>
+          <div class="chat-input" style="padding:15px; background:#0f1621;">
+            <input type="text" id="bigChatInput" placeholder="Message Gemini (Internet Enabled)...">
+            <button id="btnSendBigChat">➤</button>
+          </div>
+        `;
+        rightPanel.appendChild(bigChat);
+        
+        // Wire up Big Chat Input
+        $('btnSendBigChat').onclick = () => handleChatSend('bigChatInput', 'bigChatHistory');
+        $('bigChatInput').onkeypress = (e) => { if(e.key==='Enter') handleChatSend('bigChatInput', 'bigChatHistory'); };
+    }
+
+    if (enabled) {
+        // HIDE Map Elements
+        mapCont.style.display = 'none';
+        stats.style.display = 'none';
+        list.style.display = 'none';
+        links.style.display = 'none';
+        
+        // SHOW Big Chat
+        bigChat.style.display = 'flex';
+        bigChat.style.flexDirection = 'column';
+        bigChat.style.height = '100%';
+        
+        // HIDE Small Chat
+        $('chatPanel').style.display = 'none';
+        
+        // SYNC History
+        $('bigChatHistory').innerHTML = $('chatHistory').innerHTML;
+        
+    } else {
+        // SHOW Map Elements
+        mapCont.style.display = 'block';
+        stats.style.display = 'flex';
+        list.style.display = 'block';
+        links.style.display = 'flex';
+        
+        // HIDE Big Chat
+        bigChat.style.display = 'none';
+        
+        // SHOW Small Chat
+        $('chatPanel').style.display = 'flex';
+        
+        // SYNC History back
+        $('chatHistory').innerHTML = $('bigChatHistory').innerHTML;
+    }
+  }
+
   async function run(profile) {
+    // Exit planning mode when running
+    setPlanningMode(false);
+
     if (!window.google) { setStatus('Loading Map API...', 'ok'); await ensureMapsLoaded(); }
 
     const raw = $('input').value;
@@ -401,23 +467,105 @@
     try {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
       const d = await r.json();
-      const v = d.models.filter(m => m.name.includes('gemini') && !m.name.match(/image|vision/));
+      
+      // 1. Filter: Chat models only (Gemini), remove vision/embedding/nano
+      let v = d.models.filter(m => 
+          m.name.includes('gemini') && 
+          !m.name.includes('vision') && 
+          !m.name.includes('embedding') &&
+          !m.name.includes('nano')
+      );
+      
+      // 2. Sort: Newest First
+      // Strategy: Check for 'latest', then version numbers
+      v.sort((a, b) => {
+          // Prefer 'latest' aliases
+          if (a.name.includes('latest') && !b.name.includes('latest')) return -1;
+          if (!a.name.includes('latest') && b.name.includes('latest')) return 1;
+          
+          // Parse version numbers (1.5 > 1.0)
+          const va = parseFloat(a.version) || 0;
+          const vb = parseFloat(b.version) || 0;
+          if (va !== vb) return vb - va; // Descending
+          
+          return 0;
+      });
+
       const s = $('modelSelector'); s.innerHTML='';
       v.forEach(m => { const o=document.createElement('option'); o.value=m.name; o.textContent=m.displayName; s.appendChild(o); });
-      currentGeminiModel = v[0]?.name; s.onchange = () => currentGeminiModel = s.value;
-    } catch(e){}
+      
+      // Default to first (newest)
+      if (v.length > 0) {
+          currentGeminiModel = v[0].name;
+          s.value = currentGeminiModel;
+      }
+      s.onchange = () => currentGeminiModel = s.value;
+      
+      console.log("AI Models Loaded:", v.map(m=>m.displayName));
+
+    } catch(e){ console.error("AI Init Error", e); }
+  }
+
+  async function handleChatSend(inputId, historyId) {
+      const i = $(inputId), t = i.value.trim(), h = $(historyId);
+      if (!t) return;
+      
+      i.value = '';
+      h.innerHTML += `<div class="msg user">${t}</div>`;
+      h.scrollTop = h.scrollHeight;
+      
+      // Sync to other chat history buffer if it exists
+      const otherHistory = historyId === 'chatHistory' ? $('bigChatHistory') : $('chatHistory');
+      if (otherHistory) {
+          otherHistory.innerHTML = h.innerHTML;
+          otherHistory.scrollTop = otherHistory.scrollHeight;
+      }
+
+      // Show typing
+      const loadingId = 'loading-' + Date.now();
+      h.innerHTML += `<div id="${loadingId}" class="msg ai" style="opacity:0.6">...</div>`;
+      
+      const r = await callAI(t);
+      
+      const loader = document.getElementById(loadingId);
+      if(loader) loader.remove();
+      
+      // Process ADD
+      const m = r.match(/\{ADD:\s*(.*?)\}/g); 
+      if(m) {
+        let addedCount = 0;
+        m.forEach(x=>{ 
+            const l=x.replace(/\{ADD:\s*|\}/g,'').trim(); 
+            if(!$('input').value.includes(l)) {
+                $('input').value += ($('input').value.endsWith('\n') ? '' : '\n') + l;
+                addedCount++;
+            }
+        });
+        if(addedCount > 0) {
+            saveState();
+            setStatus(`AI added ${addedCount} stops. Click Optimize!`, 'ok');
+        }
+      }
+
+      const cleanResponse = `<div class="msg ai"><strong>Gemini:</strong> ${r.replace(/\n/g,'<br>').replace(/\{ADD:.*?\}/g, '')}</div>`;
+      h.innerHTML += cleanResponse;
+      h.scrollTop = h.scrollHeight;
+      
+      // Sync Response
+      if (otherHistory) {
+          otherHistory.innerHTML = h.innerHTML;
+          otherHistory.scrollTop = otherHistory.scrollHeight;
+      }
   }
 
   async function callAI(txt) {
     chatHistoryBuffer.push({ role: "user", parts: [{ text: txt }] });
     
-    // CONTEXT AWARENESS
     const currentTripData = $('input').value.substring(0, 3000); 
     const currentDist = $('distKm').innerText;
     const currentSaved = $('savedKm').innerText;
     const stopCount = currentTripData.split('\n').filter(x=>x.trim()).length;
     
-    // REVISED SYSTEM PROMPT
     const sysPrompt = `
       You are the 8Z Trip Co-Pilot. You help users plan complex routes.
       
@@ -429,19 +577,25 @@
       
       INSTRUCTIONS:
       1. If the user asks to add a place, you MUST use this format: {ADD: Place Name, City}.
-         Example: "{ADD: Bled Castle, Bled}"
-         DO NOT worry about coordinates. The app will find them.
-      2. If asked about distance, refer to the "Total Distance" above.
-      3. Be concise. Do not list all stops unless asked.
-      4. If the route seems inefficient, suggest a "Deep Optimization".
+      2. You have access to Google Search. Use it to find up-to-date user opinions, opening hours, or hidden gems if asked.
+      3. Be concise.
     `;
+
+    // 3. Internet Access: Add 'tools'
+    const body = {
+        contents: [{role:"user", parts:[{text: sysPrompt}]}, ...chatHistoryBuffer],
+        tools: [{ googleSearchRetrieval: {} }] // Enable Grounding
+    };
 
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${currentGeminiModel}:generateContent?key=${GEMINI_API_KEY}`, {
         method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ contents: [{role:"user", parts:[{text: sysPrompt}]}, ...chatHistoryBuffer] })
+        body: JSON.stringify(body)
     });
     const d = await res.json();
-    const t = d.candidates?.[0]?.content?.parts?.[0]?.text || "Error";
+    const t = d.candidates?.[0]?.content?.parts?.[0]?.text || "Error: " + (d.error?.message || "Unknown");
+    
+    // If search grounding metadata exists, you could parse it here, but usually it's baked into text.
+    
     chatHistoryBuffer.push({ role: "model", parts: [{ text: t }] });
     return t;
   }
@@ -450,7 +604,6 @@
   document.addEventListener('DOMContentLoaded', () => {
     initTripTree(); initAI(); restoreState();
 
-    // BUTTONS
     $('btnStandard').onclick = () => run('standard');
     $('btnDeep').onclick = () => run('deep');
     $('btnDriving').onclick = () => setTravelMode('DRIVING');
@@ -461,10 +614,11 @@
     $('btnLoad').onclick = () => $('fileLoader').click();
     $('fileLoader').onchange = (e) => { const f=e.target.files[0]; if(f){const r=new FileReader();r.onload=(v)=>{$('input').value=v.target.result;saveState();};r.readAsText(f);} };
     
-    // NEW: Plan with AI Button
+    // UPDATED: Plan with AI Button
     $('btnPlanAI').onclick = () => {
-        $('chatPanel').classList.add('open');
-        $('chatInput').focus();
+        setPlanningMode(true);
+        // Focus the BIG input
+        setTimeout(() => $('bigChatInput') && $('bigChatInput').focus(), 100);
     };
 
     $('tripSearch').oninput = (e) => { 
@@ -486,44 +640,15 @@
         }); 
     };
 
-    $('btnSendChat').onclick = async () => {
-        const i=$('chatInput'), t=i.value.trim(), h=$('chatHistory'); if(!t)return; i.value='';
-        h.innerHTML+=`<div class="msg user">${t}</div>`; h.scrollTop=h.scrollHeight;
-        
-        // Show typing indicator
-        const loadingId = 'loading-' + Date.now();
-        h.innerHTML+=`<div id="${loadingId}" class="msg ai" style="opacity:0.6">...</div>`; h.scrollTop=h.scrollHeight;
-
-        const r=await callAI(t);
-        document.getElementById(loadingId).remove();
-        
-        // Apply ADD commands
-        const m=r.match(/\{ADD:\s*(.*?)\}/g); 
-        if(m) {
-            let addedCount = 0;
-            m.forEach(x=>{ 
-                const l=x.replace(/\{ADD:\s*|\}/g,'').trim(); 
-                if(!$('input').value.includes(l)) {
-                    $('input').value += ($('input').value.endsWith('\n') ? '' : '\n') + l;
-                    addedCount++;
-                }
-            });
-            if(addedCount > 0) {
-                saveState();
-                setStatus(`AI added ${addedCount} stops. Click Optimize!`, 'ok');
-            }
-        }
-        
-        h.innerHTML+=`<div class="msg ai"><strong>Gemini:</strong> ${r.replace(/\n/g,'<br>').replace(/\{ADD:.*?\}/g, '')}</div>`; 
-        h.scrollTop=h.scrollHeight;
-    };
+    // Small Chat Send (Bottom Left)
+    $('btnSendChat').onclick = () => handleChatSend('chatInput', 'chatHistory');
+    $('chatInput').onkeypress = (e) => { if(e.key==='Enter') handleChatSend('chatInput', 'chatHistory'); };
     
     const h=$('helpOverlay'); 
     $('btnHelp').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=HELP_HTML;}; 
     $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; 
     $('btnCloseHelp').onclick=()=>h.style.display='none';
     
-    // AUTO-OPEN CHAT ON 4K
     if (window.innerWidth >= 1800) {
         $('chatPanel').classList.add('open');
     }
