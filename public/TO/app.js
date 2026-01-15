@@ -60,23 +60,14 @@
     }
   }
 
-  // --- NEW: MARKDOWN PARSER ---
+  // --- MARKDOWN & UI HELPERS ---
   function formatMarkdown(text) {
     if (!text) return '';
     let html = text;
-
-    // 1. Bold: **text** -> <strong>text</strong>
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    
-    // 2. Bold (alternative): __text__ -> <strong>text</strong>
     html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
-
-    // 3. Bullet points: * item -> • item (Visual cleanup)
     html = html.replace(/^\*\s/gm, '• ');
-
-    // 4. Newlines -> <br>
     html = html.replace(/\n/g, '<br>');
-
     return html;
   }
 
@@ -109,9 +100,9 @@
             const historyEl = $('chatHistory');
             historyEl.innerHTML = s.chatHTML;
             
+            // Cleanups
             const oldChips = historyEl.querySelectorAll('.suggestions-box');
             oldChips.forEach(el => el.remove());
-            
             const oldRecovery = historyEl.querySelectorAll('.recovery-msg');
             oldRecovery.forEach(el => el.remove());
 
@@ -654,7 +645,10 @@
                   if (historyId === 'chatHistory') renderSuggestions('chatHistory');
               }, 500);
           }
-          processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, '');
+          // --- FIX: VISUAL ACTION CARD INSTEAD OF EMPTY STRING ---
+          processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, 
+            '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Check the list above to edit.</small></div>'
+          );
       }
 
       const m = processedText.match(/\{ADD:\s*(.*?)\}/g); 
@@ -672,10 +666,11 @@
             setStatus(`AI added ${addedCount} stops.`, 'ok');
             renderSuggestions('bigChatHistory'); 
         }
-        processedText = processedText.replace(/\{ADD:.*?\}/g, '');
+        processedText = processedText.replace(/\{ADD:.*?\}/g, 
+            '<div class="action-badge">➕ <strong>Stops Added</strong><small>Check the list above.</small></div>'
+        );
       }
 
-      // --- APPLIED FIX: Using formatMarkdown() here ---
       const cleanResponse = `<div class="msg ai"><strong>Gemini:</strong> ${formatMarkdown(processedText)}</div>`;
       h.innerHTML += cleanResponse;
       h.scrollTop = h.scrollHeight;
@@ -692,8 +687,8 @@
     chatHistoryBuffer.push({ role: "user", parts: [{ text: txt }] });
     
     const currentTripData = $('input').value.substring(0, 3000); 
-    const currentDist = $('distKm').innerText;
-    const currentSaved = $('savedKm').innerText;
+    
+    // --- UPDATED SYSTEM PROMPT: Aware of "External UI" ---
     const hasData = currentTripData.length > 20; 
     
     let sysPrompt = "";
@@ -701,19 +696,21 @@
     if (!hasData) {
         sysPrompt = `
           You are the 8Z Trip Architect. The user has an EMPTY itinerary.
-          YOUR GOAL: Help them create a list of stops so they can use the optimizer.
+          YOUR GOAL: Help them create a list of stops.
           COMMANDS:
-          - Use {REPLACE: \nLandmark 1, City\nLandmark 2, City...} to fill their list immediately.
+          - Use {REPLACE: \nStop 1\nStop 2...} to fill their list.
+          - CRITICAL: Do NOT list the stops in the chat text. Just say "I have loaded these stops into your Trip Editor above ☝️."
         `;
     } else {
         sysPrompt = `
-          You are the 8Z Logistics Co-Pilot. The user has an active itinerary.
+          You are the 8Z Logistics Co-Pilot.
           CURRENT STOPS: ${currentTripData}
           CRITICAL RULES:
-          1. Prioritize "Value for Money" (4.5+ stars, fair price).
-          2. Calculate geometric center for hotel queries.
+          1. Value for Money (4.5+ stars).
+          2. Geometric Center for hotels.
+          3. UI AWARENESS: When using {REPLACE} or {ADD}, do NOT paste the list in chat. Say "I have updated your Trip Editor above."
           COMMANDS:
-          - {ADD: Place Name, City} to append.
+          - {ADD: ...} to append.
           - {REPLACE: ...} to overwrite.
         `;
     }
@@ -743,7 +740,6 @@
   document.addEventListener('DOMContentLoaded', () => {
     initTripTree(); initAI(); 
     
-    // ATTEMPT RESTORE
     const restored = restoreState();
     
     $('btnStandard').onclick = () => run('standard');
