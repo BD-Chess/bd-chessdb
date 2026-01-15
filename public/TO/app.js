@@ -34,17 +34,8 @@
       </ul>
     </div>
     <div class="help-block">
-      <h2>Input Formats</h2>
-      <p>You can mix and match these formats:</p>
-      <ul>
-        <li><code>46.0569, 14.5058</code> (GPS)</li>
-        <li><code>Tivoli Park, Ljubljana</code> (Address)</li>
-        <li><code>Home | 46.0428, 14.4500</code> (Name | GPS)</li>
-      </ul>
-    </div>
-    <div class="help-block">
-      <h2>Special Commands</h2>
-      <p>Add <code>START</code> anywhere on a line to lock it as the starting point.</p>
+      <h2>Philosophy</h2>
+      <p>We optimize for <strong>Logistics</strong> (ordering 20+ stops), not just navigation. Google Maps handles the traffic; we handle the strategy.</p>
     </div>
   `;
 
@@ -347,6 +338,39 @@
     if (overlay) overlay.style.display = 'none';
   }
 
+  // --- NEW: Suggestion Chips (The Command Board) ---
+  function renderSuggestions(containerId) {
+    const el = $(containerId);
+    if (!el || el.querySelector('.suggestions-box')) return; // Avoid duplicates
+
+    const box = document.createElement('div');
+    box.className = 'suggestions-box';
+    box.innerHTML = `
+      <div class="suggestion-group">
+        <div class="suggestion-label">🛏️ Sleeping Strategy (Center of Gravity)</div>
+        <div class="chip-grid">
+          <div class="chip sleep" onclick="window.sendChat('Where should I stay? (Center of Gravity)')">Find Best Base Camp</div>
+          <div class="chip sleep" onclick="window.sendChat('Find hotels with 4.5+ stars and good value nearby')">Best Value Hotels</div>
+        </div>
+      </div>
+      <div class="suggestion-group">
+        <div class="suggestion-label">🍴 Eating (Quality/Price)</div>
+        <div class="chip-grid">
+          <div class="chip eat" onclick="window.sendChat('Suggest lunch spots with high ratings but low price')">Best Cheap Eats (4.5★)</div>
+          <div class="chip eat" onclick="window.sendChat('Where is a good romantic dinner spot nearby?')">Romantic Dinner</div>
+        </div>
+      </div>
+      <div class="suggestion-group">
+        <div class="suggestion-label">🚕 Logistics</div>
+        <div class="chip-grid">
+          <div class="chip logistics" onclick="window.sendChat('How much time do I need for each stop?')">Time per Stop?</div>
+          <div class="chip logistics" onclick="window.sendChat('Is this route walkable or do I need a taxi?')">Walk vs Taxi</div>
+        </div>
+      </div>
+    `;
+    el.insertBefore(box, el.firstChild);
+  }
+
   function setPlanningMode(enabled) {
     const rightPanel = document.querySelector('.panel:nth-of-type(2)');
     const mapCont = $('mapContainer');
@@ -382,11 +406,19 @@
         stats.style.display = 'none';
         list.style.display = 'none';
         links.style.display = 'none';
+        
         bigChat.style.display = 'flex';
         bigChat.style.flexDirection = 'column';
         bigChat.style.height = '100%';
         $('chatPanel').style.display = 'none';
+        
+        // SYNC & INJECT SUGGESTIONS
         $('bigChatHistory').innerHTML = $('chatHistory').innerHTML;
+        // Inject command board if history is empty-ish
+        if ($('chatHistory').children.length < 2) {
+            renderSuggestions('bigChatHistory');
+        }
+
         setTimeout(() => $('bigChatInput') && $('bigChatInput').focus(), 100);
     } else {
         btnMap.classList.add('active');
@@ -397,6 +429,8 @@
         links.style.display = 'flex';
         bigChat.style.display = 'none';
         $('chatPanel').style.display = 'flex';
+        
+        // SYNC BACK
         $('chatHistory').innerHTML = $('bigChatHistory').innerHTML;
     }
   }
@@ -486,6 +520,17 @@
     } catch(e){ console.error("AI Init Error", e); }
   }
 
+  // Expose for chips to use
+  window.sendChat = function(text) {
+      if(document.getElementById('bigChatInput').offsetParent) {
+          document.getElementById('bigChatInput').value = text;
+          handleChatSend('bigChatInput', 'bigChatHistory');
+      } else {
+          document.getElementById('chatInput').value = text;
+          handleChatSend('chatInput', 'chatHistory');
+      }
+  };
+
   async function handleChatSend(inputId, historyId) {
       const i = $(inputId), t = i.value.trim(), h = $(historyId);
       if (!t) return;
@@ -508,7 +553,6 @@
       const loader = document.getElementById(loadingId);
       if(loader) loader.remove();
       
-      // --- NEW LOGIC: Check for REPLACE command first ---
       let processedText = r;
       const replaceMatch = r.match(/\{REPLACE:\s*([\s\S]*?)\}/);
       if (replaceMatch) {
@@ -521,7 +565,6 @@
           processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, '');
       }
 
-      // --- LOGIC: Check for ADD command ---
       const m = processedText.match(/\{ADD:\s*(.*?)\}/g); 
       if(m) {
         let addedCount = 0;
@@ -555,24 +598,27 @@
     const currentTripData = $('input').value.substring(0, 3000); 
     const currentDist = $('distKm').innerText;
     const currentSaved = $('savedKm').innerText;
-    const stopCount = currentTripData.split('\n').filter(x=>x.trim()).length;
     
-    // --- UPDATED PROMPT: Supports REPLACE command ---
+    // --- SYSTEM PROMPT: Enhanced for "Smart Hotel" and "Price/Quality" ---
     const sysPrompt = `
       You are the 8Z Trip Co-Pilot. You help users plan complex routes.
       
       CURRENT TRIP LIST:
       ${currentTripData}
       
-      INSTRUCTIONS:
-      1. To ADD stops, use format: {ADD: Place Name, City}.
-      2. To REPLACE/CLEAR the list, use format: {REPLACE: \nStop 1\nStop 2\n}. 
-         IMPORTANT: The app enables you to overwrite the user's list if they ask for it.
-      3. Use Google Search to find locations, hours, or travel tips.
-      4. Be concise.
+      CRITICAL RULES (PRICE/QUALITY):
+      1. When suggesting HOTELS, RESTAURANTS, or SERVICES, your #1 metric is "Value for Money".
+      2. DO NOT suggest "cheap" places if they have bad ratings (<4.0 stars). 
+      3. Always ask for budget and duration if not provided. Example: "For how many nights? And what is your budget?"
+      4. If asked "Where should I sleep?", calculate the logical center of the route (Center of Gravity) and suggest that area.
+      
+      COMMANDS:
+      - To ADD stops: {ADD: Place Name, City}.
+      - To REPLACE/CLEAR list: {REPLACE: \nStop 1\nStop 2\n}. 
+      
+      Use Google Search to find up-to-date ratings and prices.
     `;
 
-    // --- FIX: Correct Google Search Tool Syntax ---
     const body = {
         contents: [{role:"user", parts:[{text: sysPrompt}]}, ...chatHistoryBuffer],
         tools: [{ google_search: {} }] 
@@ -596,7 +642,6 @@
     return t;
   }
 
-  // --- BOOT ---
   document.addEventListener('DOMContentLoaded', () => {
     initTripTree(); initAI(); restoreState();
 
