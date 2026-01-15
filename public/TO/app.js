@@ -21,7 +21,7 @@
   let chatHistoryBuffer = [];
   
   let presetLookup = {};
-  let userRegion = null; // Store detected region
+  let userRegion = null; 
 
   // --- 3. HTML CONTENT ---
   const HELP_HTML = `
@@ -100,7 +100,6 @@
             const historyEl = $('chatHistory');
             historyEl.innerHTML = s.chatHTML;
             
-            // Cleanups
             const oldChips = historyEl.querySelectorAll('.suggestions-box');
             oldChips.forEach(el => el.remove());
             const oldRecovery = historyEl.querySelectorAll('.recovery-msg');
@@ -325,23 +324,17 @@
   }
 
   // --- 9. LIBRARY (GEO-AWARE) ---
-  
-  // New Helper: Detect Continent from Country Code
   async function detectUserLocation() {
     try {
-        // Use a free IP lookup (no key needed usually for low volume)
         const res = await fetch('https://ipapi.co/json/');
         const data = await res.json();
-        
-        // Map country codes to broad regions used in our Trip Library
-        const code = data.country_code; // e.g. "US", "DE", "CN"
+        const code = data.country_code; 
         
         if (['US', 'CA', 'MX'].includes(code)) return 'Americas';
         if (['CN', 'JP', 'KR', 'TH', 'VN', 'IN'].includes(code)) return 'Asia';
         if (['DE', 'FR', 'IT', 'ES', 'UK', 'GB', 'SI', 'AT', 'CH', 'NL', 'BE'].includes(code)) return 'Europe';
         if (['BR', 'AR', 'CL', 'PE', 'CO'].includes(code)) return 'South America';
-        
-        return 'Global'; // Fallback
+        return 'Global';
     } catch(e) {
         console.warn("Geo-IP failed, using default order.", e);
         return null;
@@ -351,30 +344,25 @@
   async function initTripTree() {
     if (!window.TRIP_LIBRARY) return;
     
-    // 1. Detect Region
     const region = await detectUserLocation();
-    userRegion = region; // Store global for AI context
+    userRegion = region; 
     
-    // 2. Sort Library: Put User's Region First
     let sortedLib = window.TRIP_LIBRARY.slice();
     if (region) {
         sortedLib.sort((a, b) => {
-            // Check if region name contains our keyword (e.g. "Europe" inside "Europe (Central)")
             const aMatch = a.region.includes(region);
             const bMatch = b.region.includes(region);
-            return bMatch - aMatch; // True (1) comes before False (0)
+            return bMatch - aMatch;
         });
         setStatus(`Welcome! Prioritizing trips in ${region}.`, 'ok');
     }
 
-    // 3. Render
     const tree = $('presetTree'); tree.innerHTML = '';
     presetLookup = {};
 
     sortedLib.forEach((regionData, idx) => {
       const rNode = document.createElement('div');
       
-      // Auto-expand the first region (User's region)
       const isUserRegion = idx === 0 && region; 
       const arrow = isUserRegion ? '⌄ ' : '› ';
       const openClass = isUserRegion ? ' open' : '';
@@ -452,7 +440,6 @@
     box.className = 'suggestions-box';
 
     if (isNew) {
-        // Custom chips based on region if available
         let regionChip = "";
         if (userRegion === 'Europe') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a classic Europe tour (Paris, Rome, Berlin)\')">🇪🇺 Classic Europe Tour</div>';
         if (userRegion === 'Americas') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a USA West Coast road trip\')">🇺🇸 USA West Coast</div>';
@@ -742,7 +729,6 @@
     const currentTripData = $('input').value.substring(0, 3000); 
     const hasData = currentTripData.length > 20; 
     
-    // Pass detected region to AI context
     const locationContext = userRegion ? `USER LOCATION: ${userRegion}` : "";
     
     let sysPrompt = "";
@@ -753,7 +739,8 @@
           YOUR GOAL: Help them create a list of stops.
           COMMANDS:
           - Use {REPLACE: \nStop 1\nStop 2...} to fill their list.
-          - CRITICAL: Do NOT list the stops in the chat text. Just say "I have loaded these stops into your Trip Editor above ☝️."
+          - CRITICAL: Do NOT list the stops in the chat text. Say "I have loaded these stops into your Trip Editor above ☝️."
+          - AMBIGUITY CHECK: Always specify Country for every location (e.g. "Rome, Italy" NOT just "Rome"). Use "Place | lat, lon" for specific spots.
         `;
     } else {
         sysPrompt = `
@@ -763,6 +750,7 @@
           1. Value for Money (4.5+ stars).
           2. Geometric Center for hotels.
           3. UI AWARENESS: When using {REPLACE} or {ADD}, do NOT paste the list in chat. Say "I have updated your Trip Editor above."
+          4. AMBIGUITY CHECK: Always specify Country for every location (e.g. "Rome, Italy"). Use "Place | lat, lon" if precise location needed.
           COMMANDS:
           - {ADD: ...} to append.
           - {REPLACE: ...} to overwrite.
