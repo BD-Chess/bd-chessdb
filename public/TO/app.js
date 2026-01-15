@@ -354,11 +354,9 @@
     const list = $('routeList');
     const links = $('links');
     
-    // UI Toggles
     const btnPlan = $('btnPlanMode');
     const btnMap = $('btnMapMode');
     
-    // Create Big Chat if missing
     let bigChat = $('bigChatContainer');
     if (!bigChat) {
         bigChat = document.createElement('div');
@@ -373,60 +371,37 @@
         `;
         rightPanel.appendChild(bigChat);
         
-        // Wire up Big Chat Input
         $('btnSendBigChat').onclick = () => handleChatSend('bigChatInput', 'bigChatHistory');
         $('bigChatInput').onkeypress = (e) => { if(e.key==='Enter') handleChatSend('bigChatInput', 'bigChatHistory'); };
     }
 
     if (enabled) {
-        // --- PLAN MODE ---
         btnPlan.classList.add('active');
         btnMap.classList.remove('active');
-
-        // HIDE Map Elements
         mapCont.style.display = 'none';
         stats.style.display = 'none';
         list.style.display = 'none';
         links.style.display = 'none';
-        
-        // SHOW Big Chat
         bigChat.style.display = 'flex';
         bigChat.style.flexDirection = 'column';
         bigChat.style.height = '100%';
-        
-        // HIDE Small Chat
         $('chatPanel').style.display = 'none';
-        
-        // SYNC History
         $('bigChatHistory').innerHTML = $('chatHistory').innerHTML;
-        
-        // Focus
         setTimeout(() => $('bigChatInput') && $('bigChatInput').focus(), 100);
-        
     } else {
-        // --- MAP MODE ---
         btnMap.classList.add('active');
         btnPlan.classList.remove('active');
-
-        // SHOW Map Elements
         mapCont.style.display = 'block';
         stats.style.display = 'flex';
         list.style.display = 'block';
         links.style.display = 'flex';
-        
-        // HIDE Big Chat
         bigChat.style.display = 'none';
-        
-        // SHOW Small Chat
         $('chatPanel').style.display = 'flex';
-        
-        // SYNC History back
         $('chatHistory').innerHTML = $('bigChatHistory').innerHTML;
     }
   }
 
   async function run(profile) {
-    // Exit planning mode when running
     setPlanningMode(false);
 
     if (!window.google) { setStatus('Loading Map API...', 'ok'); await ensureMapsLoaded(); }
@@ -483,7 +458,6 @@
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
       const d = await r.json();
       
-      // 1. Filter: Chat models only (Gemini), remove vision/embedding/nano
       let v = d.models.filter(m => 
           m.name.includes('gemini') && 
           !m.name.includes('vision') && 
@@ -491,24 +465,18 @@
           !m.name.includes('nano')
       );
       
-      // 2. Sort: Newest First
       v.sort((a, b) => {
-          // Prefer 'latest' aliases
           if (a.name.includes('latest') && !b.name.includes('latest')) return -1;
           if (!a.name.includes('latest') && b.name.includes('latest')) return 1;
-          
-          // Parse version numbers (1.5 > 1.0)
           const va = parseFloat(a.version) || 0;
           const vb = parseFloat(b.version) || 0;
-          if (va !== vb) return vb - va; // Descending
-          
+          if (va !== vb) return vb - va;
           return 0;
       });
 
       const s = $('modelSelector'); s.innerHTML='';
       v.forEach(m => { const o=document.createElement('option'); o.value=m.name; o.textContent=m.displayName; s.appendChild(o); });
       
-      // Default to first (newest)
       if (v.length > 0) {
           currentGeminiModel = v[0].name;
           s.value = currentGeminiModel;
@@ -526,14 +494,12 @@
       h.innerHTML += `<div class="msg user">${t}</div>`;
       h.scrollTop = h.scrollHeight;
       
-      // Sync to other chat history buffer if it exists
       const otherHistory = historyId === 'chatHistory' ? $('bigChatHistory') : $('chatHistory');
       if (otherHistory) {
           otherHistory.innerHTML = h.innerHTML;
           otherHistory.scrollTop = otherHistory.scrollHeight;
       }
 
-      // Show typing
       const loadingId = 'loading-' + Date.now();
       h.innerHTML += `<div id="${loadingId}" class="msg ai" style="opacity:0.6">...</div>`;
       
@@ -542,8 +508,21 @@
       const loader = document.getElementById(loadingId);
       if(loader) loader.remove();
       
-      // Process ADD
-      const m = r.match(/\{ADD:\s*(.*?)\}/g); 
+      // --- NEW LOGIC: Check for REPLACE command first ---
+      let processedText = r;
+      const replaceMatch = r.match(/\{REPLACE:\s*([\s\S]*?)\}/);
+      if (replaceMatch) {
+          const newContent = replaceMatch[1].trim();
+          if (newContent) {
+              $('input').value = newContent;
+              saveState();
+              setStatus('Trip list updated by AI.', 'ok');
+          }
+          processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, '');
+      }
+
+      // --- LOGIC: Check for ADD command ---
+      const m = processedText.match(/\{ADD:\s*(.*?)\}/g); 
       if(m) {
         let addedCount = 0;
         m.forEach(x=>{ 
@@ -555,15 +534,15 @@
         });
         if(addedCount > 0) {
             saveState();
-            setStatus(`AI added ${addedCount} stops. Click Optimize!`, 'ok');
+            setStatus(`AI added ${addedCount} stops.`, 'ok');
         }
+        processedText = processedText.replace(/\{ADD:.*?\}/g, '');
       }
 
-      const cleanResponse = `<div class="msg ai"><strong>Gemini:</strong> ${r.replace(/\n/g,'<br>').replace(/\{ADD:.*?\}/g, '')}</div>`;
+      const cleanResponse = `<div class="msg ai"><strong>Gemini:</strong> ${processedText.replace(/\n/g,'<br>')}</div>`;
       h.innerHTML += cleanResponse;
       h.scrollTop = h.scrollHeight;
       
-      // Sync Response
       if (otherHistory) {
           otherHistory.innerHTML = h.innerHTML;
           otherHistory.scrollTop = otherHistory.scrollHeight;
@@ -578,22 +557,22 @@
     const currentSaved = $('savedKm').innerText;
     const stopCount = currentTripData.split('\n').filter(x=>x.trim()).length;
     
+    // --- UPDATED PROMPT: Supports REPLACE command ---
     const sysPrompt = `
       You are the 8Z Trip Co-Pilot. You help users plan complex routes.
       
-      CURRENT TRIP STATUS:
-      - Stops (${stopCount}): 
+      CURRENT TRIP LIST:
       ${currentTripData}
-      - Total Distance: ${currentDist}
-      - Distance Saved: ${currentSaved}
       
       INSTRUCTIONS:
-      1. If the user asks to add a place, you MUST use this format: {ADD: Place Name, City}.
-      2. You have access to Google Search. Use it to find up-to-date user opinions, opening hours, or hidden gems if asked.
-      3. Be concise.
+      1. To ADD stops, use format: {ADD: Place Name, City}.
+      2. To REPLACE/CLEAR the list, use format: {REPLACE: \nStop 1\nStop 2\n}. 
+         IMPORTANT: The app enables you to overwrite the user's list if they ask for it.
+      3. Use Google Search to find locations, hours, or travel tips.
+      4. Be concise.
     `;
 
-    // Tool Definition
+    // --- FIX: Correct Google Search Tool Syntax ---
     const body = {
         contents: [{role:"user", parts:[{text: sysPrompt}]}, ...chatHistoryBuffer],
         tools: [{ google_search: {} }] 
@@ -631,7 +610,6 @@
     $('btnLoad').onclick = () => $('fileLoader').click();
     $('fileLoader').onchange = (e) => { const f=e.target.files[0]; if(f){const r=new FileReader();r.onload=(v)=>{$('input').value=v.target.result;saveState();};r.readAsText(f);} };
     
-    // NEW: Mode Toggles
     $('btnPlanMode').onclick = () => setPlanningMode(true);
     $('btnMapMode').onclick = () => setPlanningMode(false);
 
@@ -654,7 +632,6 @@
         }); 
     };
 
-    // Small Chat Send (Bottom Left)
     $('btnSendChat').onclick = () => handleChatSend('chatInput', 'chatHistory');
     $('chatInput').onkeypress = (e) => { if(e.key==='Enter') handleChatSend('chatInput', 'chatHistory'); };
     
@@ -663,7 +640,6 @@
     $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; 
     $('btnCloseHelp').onclick=()=>h.style.display='none';
     
-    // DEFAULT TO MAP MODE
     setPlanningMode(false);
   });
   
