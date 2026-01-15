@@ -21,6 +21,7 @@
   let chatHistoryBuffer = [];
   
   let presetLookup = {};
+  let userRegion = null; // Store detected region
 
   // --- 3. HTML CONTENT ---
   const HELP_HTML = `
@@ -60,7 +61,6 @@
     }
   }
 
-  // --- MARKDOWN & UI HELPERS ---
   function formatMarkdown(text) {
     if (!text) return '';
     let html = text;
@@ -324,18 +324,65 @@
     }
   }
 
-  // --- 9. LIBRARY ---
-  function initTripTree() {
+  // --- 9. LIBRARY (GEO-AWARE) ---
+  
+  // New Helper: Detect Continent from Country Code
+  async function detectUserLocation() {
+    try {
+        // Use a free IP lookup (no key needed usually for low volume)
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        
+        // Map country codes to broad regions used in our Trip Library
+        const code = data.country_code; // e.g. "US", "DE", "CN"
+        
+        if (['US', 'CA', 'MX'].includes(code)) return 'Americas';
+        if (['CN', 'JP', 'KR', 'TH', 'VN', 'IN'].includes(code)) return 'Asia';
+        if (['DE', 'FR', 'IT', 'ES', 'UK', 'GB', 'SI', 'AT', 'CH', 'NL', 'BE'].includes(code)) return 'Europe';
+        if (['BR', 'AR', 'CL', 'PE', 'CO'].includes(code)) return 'South America';
+        
+        return 'Global'; // Fallback
+    } catch(e) {
+        console.warn("Geo-IP failed, using default order.", e);
+        return null;
+    }
+  }
+
+  async function initTripTree() {
     if (!window.TRIP_LIBRARY) return;
+    
+    // 1. Detect Region
+    const region = await detectUserLocation();
+    userRegion = region; // Store global for AI context
+    
+    // 2. Sort Library: Put User's Region First
+    let sortedLib = window.TRIP_LIBRARY.slice();
+    if (region) {
+        sortedLib.sort((a, b) => {
+            // Check if region name contains our keyword (e.g. "Europe" inside "Europe (Central)")
+            const aMatch = a.region.includes(region);
+            const bMatch = b.region.includes(region);
+            return bMatch - aMatch; // True (1) comes before False (0)
+        });
+        setStatus(`Welcome! Prioritizing trips in ${region}.`, 'ok');
+    }
+
+    // 3. Render
     const tree = $('presetTree'); tree.innerHTML = '';
     presetLookup = {};
 
-    window.TRIP_LIBRARY.forEach(region => {
+    sortedLib.forEach((regionData, idx) => {
       const rNode = document.createElement('div');
-      rNode.innerHTML = `<div class="tree-header">› ${region.region}</div><div class="tree-group"></div>`;
+      
+      // Auto-expand the first region (User's region)
+      const isUserRegion = idx === 0 && region; 
+      const arrow = isUserRegion ? '⌄ ' : '› ';
+      const openClass = isUserRegion ? ' open' : '';
+      
+      rNode.innerHTML = `<div class="tree-header">${arrow} ${regionData.region}</div><div class="tree-group${openClass}"></div>`;
       const rGroup = rNode.querySelector('.tree-group');
 
-      region.categories.forEach(cat => {
+      regionData.categories.forEach(cat => {
         const cNode = document.createElement('div');
         cNode.innerHTML = `<div class="tree-header">› ${cat.name}</div><div class="tree-group"></div>`;
         const cGroup = cNode.querySelector('.tree-group');
@@ -366,7 +413,7 @@
         cNode.querySelector('.tree-header').onclick = function() { cGroup.classList.toggle('open'); this.textContent = (cGroup.classList.contains('open') ? '⌄ ' : '› ') + cat.name; };
         rGroup.appendChild(cNode);
       });
-      rNode.querySelector('.tree-header').onclick = function() { rGroup.classList.toggle('open'); this.textContent = (rGroup.classList.contains('open') ? '⌄ ' : '› ') + region.region; };
+      rNode.querySelector('.tree-header').onclick = function() { rGroup.classList.toggle('open'); this.textContent = (rGroup.classList.contains('open') ? '⌄ ' : '› ') + regionData.region; };
       tree.appendChild(rNode);
     });
   }
@@ -405,12 +452,18 @@
     box.className = 'suggestions-box';
 
     if (isNew) {
+        // Custom chips based on region if available
+        let regionChip = "";
+        if (userRegion === 'Europe') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a classic Europe tour (Paris, Rome, Berlin)\')">🇪🇺 Classic Europe Tour</div>';
+        if (userRegion === 'Americas') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a USA West Coast road trip\')">🇺🇸 USA West Coast</div>';
+        if (userRegion === 'Asia') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a tour of Japan and South Korea\')">🇯🇵 Japan & Korea</div>';
+        
         box.innerHTML = `
           <div class="suggestion-group">
             <div class="suggestion-label">✨ Start a New Adventure</div>
             <div class="chip-grid">
+              ${regionChip}
               <div class="chip logistics" onclick="window.sendChat('Create a 3-day itinerary for Rome, Italy')">Create 3-Day Rome Itinerary</div>
-              <div class="chip logistics" onclick="window.sendChat('Build a 7-day road trip in California')">Plan California Road Trip</div>
               <div class="chip logistics" onclick="window.sendChat('Suggest a romantic weekend in Paris')">Paris Weekend</div>
             </div>
           </div>
@@ -645,7 +698,7 @@
                   if (historyId === 'chatHistory') renderSuggestions('chatHistory');
               }, 500);
           }
-          // --- FIX: VISUAL ACTION CARD INSTEAD OF EMPTY STRING ---
+          // Visual Action Card
           processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, 
             '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Check the list above to edit.</small></div>'
           );
@@ -687,15 +740,16 @@
     chatHistoryBuffer.push({ role: "user", parts: [{ text: txt }] });
     
     const currentTripData = $('input').value.substring(0, 3000); 
-    
-    // --- UPDATED SYSTEM PROMPT: Aware of "External UI" ---
     const hasData = currentTripData.length > 20; 
+    
+    // Pass detected region to AI context
+    const locationContext = userRegion ? `USER LOCATION: ${userRegion}` : "";
     
     let sysPrompt = "";
     
     if (!hasData) {
         sysPrompt = `
-          You are the 8Z Trip Architect. The user has an EMPTY itinerary.
+          You are the 8Z Trip Architect. The user has an EMPTY itinerary. ${locationContext}
           YOUR GOAL: Help them create a list of stops.
           COMMANDS:
           - Use {REPLACE: \nStop 1\nStop 2...} to fill their list.
@@ -703,7 +757,7 @@
         `;
     } else {
         sysPrompt = `
-          You are the 8Z Logistics Co-Pilot.
+          You are the 8Z Logistics Co-Pilot. ${locationContext}
           CURRENT STOPS: ${currentTripData}
           CRITICAL RULES:
           1. Value for Money (4.5+ stars).
