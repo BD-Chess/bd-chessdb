@@ -7,7 +7,7 @@
   const GEMINI_API_KEY = atob(_s1) + atob(_s2) + atob(_s3);
 
   const worker = new Worker('worker.js');
-  const STORAGE_KEY = '8z_trip_backup_v2'; // Bumped version for new format
+  const STORAGE_KEY = '8z_trip_backup_v2'; 
 
   // --- 2. GLOBAL STATE ---
   const $ = (id) => document.getElementById(id);
@@ -60,9 +60,28 @@
     }
   }
 
+  // --- NEW: MARKDOWN PARSER ---
+  function formatMarkdown(text) {
+    if (!text) return '';
+    let html = text;
+
+    // 1. Bold: **text** -> <strong>text</strong>
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // 2. Bold (alternative): __text__ -> <strong>text</strong>
+    html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+
+    // 3. Bullet points: * item -> • item (Visual cleanup)
+    html = html.replace(/^\*\s/gm, '• ');
+
+    // 4. Newlines -> <br>
+    html = html.replace(/\n/g, '<br>');
+
+    return html;
+  }
+
   // --- PERSISTENCE ENGINE ---
   function saveState() { 
-    // We now save EVERYTHING: Input, Mode, Chat Context, and Visual HTML
     const state = {
         t: $('input').value,
         m: currentTravelMode,
@@ -81,46 +100,36 @@
 
     try {
         const s = JSON.parse(sStr);
-        // Restore Inputs
         $('input').value = s.t || ''; 
         currentTravelMode = s.m || 'DRIVING'; 
         updateModeButtons(); 
 
-        // Restore Chat Logic
         if (s.chatBuf && s.chatHTML) {
             chatHistoryBuffer = s.chatBuf;
             const historyEl = $('chatHistory');
             historyEl.innerHTML = s.chatHTML;
             
-            // Clean up old "suggestions" from the HTML to avoid duplicates
             const oldChips = historyEl.querySelectorAll('.suggestions-box');
             oldChips.forEach(el => el.remove());
             
-            // Clean up old "Recovery" messages if any exist
             const oldRecovery = historyEl.querySelectorAll('.recovery-msg');
             oldRecovery.forEach(el => el.remove());
 
-            return true; // Signal that we restored a session
+            return true; 
         }
     } catch(e) { console.error("Restore failed", e); }
     return false;
   }
 
-  // Exposed Global Functions for the "Recovery" Buttons
   window.resetSession = function() {
       localStorage.removeItem(STORAGE_KEY);
-      location.reload(); // Simple reload to clear state cleanly
+      location.reload(); 
   };
 
   window.continueSession = function(btn) {
-      // Remove the "System" message bubble visually
       if(btn) btn.closest('.msg').remove();
-      
-      // Re-initialize the suggestion board based on current data
       const historyId = $('bigChatContainer').style.display !== 'none' ? 'bigChatHistory' : 'chatHistory';
       renderSuggestions(historyId);
-      
-      // Small toast
       setStatus('Session Resumed', 'ok');
   };
 
@@ -621,7 +630,7 @@
           otherHistory.scrollTop = otherHistory.scrollHeight;
       }
       
-      saveState(); // SAVE ON SEND
+      saveState(); 
 
       const loadingId = 'loading-' + Date.now();
       h.innerHTML += `<div id="${loadingId}" class="msg ai" style="opacity:0.6">...</div>`;
@@ -666,7 +675,8 @@
         processedText = processedText.replace(/\{ADD:.*?\}/g, '');
       }
 
-      const cleanResponse = `<div class="msg ai"><strong>Gemini:</strong> ${processedText.replace(/\n/g,'<br>')}</div>`;
+      // --- APPLIED FIX: Using formatMarkdown() here ---
+      const cleanResponse = `<div class="msg ai"><strong>Gemini:</strong> ${formatMarkdown(processedText)}</div>`;
       h.innerHTML += cleanResponse;
       h.scrollTop = h.scrollHeight;
       
@@ -675,7 +685,7 @@
           otherHistory.scrollTop = otherHistory.scrollHeight;
       }
       
-      saveState(); // SAVE ON RECEIVE
+      saveState(); 
   }
 
   async function callAI(txt) {
@@ -776,7 +786,6 @@
     $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; 
     $('btnCloseHelp').onclick=()=>h.style.display='none';
     
-    // SHOW WELCOME BACK MESSAGE IF RESTORED
     if(restored) {
         const historyEl = $('chatHistory');
         const restoreMsg = document.createElement('div');
@@ -793,7 +802,6 @@
         
         setPlanningMode(true);
     } else {
-        // DEFAULT START
         setPlanningMode(true);
     }
   });
