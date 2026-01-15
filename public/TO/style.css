@@ -80,7 +80,7 @@ header {
 }
 .nav-btn:hover { color: var(--text-main); }
 
-/* NEW: Active State for Plan/Map toggles */
+/* Active State for Plan/Map toggles */
 .nav-btn.active {
   color: var(--primary);
   font-weight: 700;
@@ -248,7 +248,6 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary)
   .library-box { max-height: 120px; flex: none; } 
 
   /* 3. Results Panel (Right, Spans Rows 2 & 3) */
-  /* --- CHANGED: SCROLLABLE PANEL, FIXED MAP --- */
   .panel:nth-of-type(2) {
     grid-column: 2;
     grid-row: 2 / span 2; /* Takes full height */
@@ -324,3 +323,61 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary)
 .gm-style .gm-ui-hover-effect {
     filter: invert(1) grayscale(100%) brightness(200%) !important;
 }
+
+/* --- 12. SUGGESTION CHIPS (Command Board) --- */
+.suggestions-box {
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  margin-bottom: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.suggestion-group {
+  margin-bottom: 15px;
+}
+
+.suggestion-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #bfdbfe;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.chip:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Category Colors */
+.chip.sleep { border-color: rgba(167, 139, 250, 0.4); color: #ddd6fe; background: rgba(167, 139, 250, 0.1); }
+.chip.sleep:hover { background: #8b5cf6; border-color: #8b5cf6; }
+
+.chip.eat { border-color: rgba(251, 146, 60, 0.4); color: #fed7aa; background: rgba(251, 146, 60, 0.1); }
+.chip.eat:hover { background: #f97316; border-color: #f97316; }
+
+.chip.logistics { border-color: rgba(52, 211, 153, 0.4); color: #a7f3d0; background: rgba(52, 211, 153, 0.1); }
+.chip.logistics:hover { background: #10b981; border-color: #10b981; }
