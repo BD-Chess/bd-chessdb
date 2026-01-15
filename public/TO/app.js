@@ -7,7 +7,7 @@
   const GEMINI_API_KEY = atob(_s1) + atob(_s2) + atob(_s3);
 
   const worker = new Worker('worker.js');
-  const STORAGE_KEY = '8z_trip_backup_v1';
+  const STORAGE_KEY = '8z_trip_backup_v2'; // Bumped version for new format
 
   // --- 2. GLOBAL STATE ---
   const $ = (id) => document.getElementById(id);
@@ -60,18 +60,69 @@
     }
   }
 
+  // --- PERSISTENCE ENGINE ---
   function saveState() { 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ t: $('input').value, m: currentTravelMode })); 
+    // We now save EVERYTHING: Input, Mode, Chat Context, and Visual HTML
+    const state = {
+        t: $('input').value,
+        m: currentTravelMode,
+        chatBuf: chatHistoryBuffer,
+        chatHTML: $('chatHistory').innerHTML,
+        ts: Date.now()
+    };
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) { console.warn("Storage full", e); }
   }
   
   function restoreState() {
-    const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (s) { 
-      $('input').value = s.t || ''; 
-      currentTravelMode = s.m || 'DRIVING'; 
-      updateModeButtons(); 
-    }
+    const sStr = localStorage.getItem(STORAGE_KEY);
+    if (!sStr) return false;
+
+    try {
+        const s = JSON.parse(sStr);
+        // Restore Inputs
+        $('input').value = s.t || ''; 
+        currentTravelMode = s.m || 'DRIVING'; 
+        updateModeButtons(); 
+
+        // Restore Chat Logic
+        if (s.chatBuf && s.chatHTML) {
+            chatHistoryBuffer = s.chatBuf;
+            const historyEl = $('chatHistory');
+            historyEl.innerHTML = s.chatHTML;
+            
+            // Clean up old "suggestions" from the HTML to avoid duplicates
+            const oldChips = historyEl.querySelectorAll('.suggestions-box');
+            oldChips.forEach(el => el.remove());
+            
+            // Clean up old "Recovery" messages if any exist
+            const oldRecovery = historyEl.querySelectorAll('.recovery-msg');
+            oldRecovery.forEach(el => el.remove());
+
+            return true; // Signal that we restored a session
+        }
+    } catch(e) { console.error("Restore failed", e); }
+    return false;
   }
+
+  // Exposed Global Functions for the "Recovery" Buttons
+  window.resetSession = function() {
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload(); // Simple reload to clear state cleanly
+  };
+
+  window.continueSession = function(btn) {
+      // Remove the "System" message bubble visually
+      if(btn) btn.closest('.msg').remove();
+      
+      // Re-initialize the suggestion board based on current data
+      const historyId = $('bigChatContainer').style.display !== 'none' ? 'bigChatHistory' : 'chatHistory';
+      renderSuggestions(historyId);
+      
+      // Small toast
+      setStatus('Session Resumed', 'ok');
+  };
 
   function updateModeButtons() {
     const dr = $('btnDriving'), wk = $('btnWalking');
@@ -308,6 +359,7 @@
                 setTravelMode('DRIVING');
             }
             setStatus(`Loaded: ${trip.label}`, 'ok');
+            renderSuggestions('bigChatHistory');
           };
           cGroup.appendChild(item);
         });
@@ -338,36 +390,63 @@
     if (overlay) overlay.style.display = 'none';
   }
 
-  // --- NEW: Suggestion Chips (The Command Board) ---
+  // --- DYNAMIC SUGGESTION CHIPS ---
   function renderSuggestions(containerId) {
     const el = $(containerId);
-    if (!el || el.querySelector('.suggestions-box')) return; // Avoid duplicates
+    if (!el) return;
+    
+    const old = el.querySelector('.suggestions-box');
+    if (old) old.remove();
+
+    const inputVal = $('input').value.trim();
+    const isNew = inputVal.length < 10; 
 
     const box = document.createElement('div');
     box.className = 'suggestions-box';
-    box.innerHTML = `
-      <div class="suggestion-group">
-        <div class="suggestion-label">🛏️ Sleeping Strategy (Center of Gravity)</div>
-        <div class="chip-grid">
-          <div class="chip sleep" onclick="window.sendChat('Where should I stay? (Center of Gravity)')">Find Best Base Camp</div>
-          <div class="chip sleep" onclick="window.sendChat('Find hotels with 4.5+ stars and good value nearby')">Best Value Hotels</div>
-        </div>
-      </div>
-      <div class="suggestion-group">
-        <div class="suggestion-label">🍴 Eating (Quality/Price)</div>
-        <div class="chip-grid">
-          <div class="chip eat" onclick="window.sendChat('Suggest lunch spots with high ratings but low price')">Best Cheap Eats (4.5★)</div>
-          <div class="chip eat" onclick="window.sendChat('Where is a good romantic dinner spot nearby?')">Romantic Dinner</div>
-        </div>
-      </div>
-      <div class="suggestion-group">
-        <div class="suggestion-label">🚕 Logistics</div>
-        <div class="chip-grid">
-          <div class="chip logistics" onclick="window.sendChat('How much time do I need for each stop?')">Time per Stop?</div>
-          <div class="chip logistics" onclick="window.sendChat('Is this route walkable or do I need a taxi?')">Walk vs Taxi</div>
-        </div>
-      </div>
-    `;
+
+    if (isNew) {
+        box.innerHTML = `
+          <div class="suggestion-group">
+            <div class="suggestion-label">✨ Start a New Adventure</div>
+            <div class="chip-grid">
+              <div class="chip logistics" onclick="window.sendChat('Create a 3-day itinerary for Rome, Italy')">Create 3-Day Rome Itinerary</div>
+              <div class="chip logistics" onclick="window.sendChat('Build a 7-day road trip in California')">Plan California Road Trip</div>
+              <div class="chip logistics" onclick="window.sendChat('Suggest a romantic weekend in Paris')">Paris Weekend</div>
+            </div>
+          </div>
+          <div class="suggestion-group">
+            <div class="suggestion-label">ℹ️ Help</div>
+            <div class="chip-grid">
+              <div class="chip" onclick="window.sendChat('How do I use the Trip Library?')">How to use Library?</div>
+              <div class="chip" onclick="window.sendChat('What does Optimize do?')">Explain Optimization</div>
+            </div>
+          </div>
+        `;
+    } else {
+        box.innerHTML = `
+          <div class="suggestion-group">
+            <div class="suggestion-label">🛏️ Sleeping Strategy (Center of Gravity)</div>
+            <div class="chip-grid">
+              <div class="chip sleep" onclick="window.sendChat('Where should I stay? Calculate the best base camp.')">Find Best Base Camp</div>
+              <div class="chip sleep" onclick="window.sendChat('Find best value hotels (4+ stars) near the center of my route')">Best Value Hotels</div>
+            </div>
+          </div>
+          <div class="suggestion-group">
+            <div class="suggestion-label">🍴 Eating (Quality/Price)</div>
+            <div class="chip-grid">
+              <div class="chip eat" onclick="window.sendChat('Suggest lunch spots with high ratings but low price')">Best Cheap Eats</div>
+              <div class="chip eat" onclick="window.sendChat('Where is a good romantic dinner spot nearby?')">Romantic Dinner</div>
+            </div>
+          </div>
+          <div class="suggestion-group">
+            <div class="suggestion-label">🚕 Logistics</div>
+            <div class="chip-grid">
+              <div class="chip logistics" onclick="window.sendChat('How much time do I need for each stop?')">Time per Stop?</div>
+              <div class="chip logistics" onclick="window.sendChat('Is this route walkable or do I need a taxi?')">Walk vs Taxi</div>
+            </div>
+          </div>
+        `;
+    }
     el.insertBefore(box, el.firstChild);
   }
 
@@ -412,12 +491,9 @@
         bigChat.style.height = '100%';
         $('chatPanel').style.display = 'none';
         
-        // SYNC & INJECT SUGGESTIONS
+        // SYNC History
         $('bigChatHistory').innerHTML = $('chatHistory').innerHTML;
-        // Inject command board if history is empty-ish
-        if ($('chatHistory').children.length < 2) {
-            renderSuggestions('bigChatHistory');
-        }
+        renderSuggestions('bigChatHistory');
 
         setTimeout(() => $('bigChatInput') && $('bigChatInput').focus(), 100);
     } else {
@@ -544,6 +620,8 @@
           otherHistory.innerHTML = h.innerHTML;
           otherHistory.scrollTop = otherHistory.scrollHeight;
       }
+      
+      saveState(); // SAVE ON SEND
 
       const loadingId = 'loading-' + Date.now();
       h.innerHTML += `<div id="${loadingId}" class="msg ai" style="opacity:0.6">...</div>`;
@@ -561,6 +639,11 @@
               $('input').value = newContent;
               saveState();
               setStatus('Trip list updated by AI.', 'ok');
+              
+              setTimeout(() => {
+                  renderSuggestions('bigChatHistory');
+                  if (historyId === 'chatHistory') renderSuggestions('chatHistory');
+              }, 500);
           }
           processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, '');
       }
@@ -578,6 +661,7 @@
         if(addedCount > 0) {
             saveState();
             setStatus(`AI added ${addedCount} stops.`, 'ok');
+            renderSuggestions('bigChatHistory'); 
         }
         processedText = processedText.replace(/\{ADD:.*?\}/g, '');
       }
@@ -590,6 +674,8 @@
           otherHistory.innerHTML = h.innerHTML;
           otherHistory.scrollTop = otherHistory.scrollHeight;
       }
+      
+      saveState(); // SAVE ON RECEIVE
   }
 
   async function callAI(txt) {
@@ -598,26 +684,29 @@
     const currentTripData = $('input').value.substring(0, 3000); 
     const currentDist = $('distKm').innerText;
     const currentSaved = $('savedKm').innerText;
+    const hasData = currentTripData.length > 20; 
     
-    // --- SYSTEM PROMPT: Enhanced for "Smart Hotel" and "Price/Quality" ---
-    const sysPrompt = `
-      You are the 8Z Trip Co-Pilot. You help users plan complex routes.
-      
-      CURRENT TRIP LIST:
-      ${currentTripData}
-      
-      CRITICAL RULES (PRICE/QUALITY):
-      1. When suggesting HOTELS, RESTAURANTS, or SERVICES, your #1 metric is "Value for Money".
-      2. DO NOT suggest "cheap" places if they have bad ratings (<4.0 stars). 
-      3. Always ask for budget and duration if not provided. Example: "For how many nights? And what is your budget?"
-      4. If asked "Where should I sleep?", calculate the logical center of the route (Center of Gravity) and suggest that area.
-      
-      COMMANDS:
-      - To ADD stops: {ADD: Place Name, City}.
-      - To REPLACE/CLEAR list: {REPLACE: \nStop 1\nStop 2\n}. 
-      
-      Use Google Search to find up-to-date ratings and prices.
-    `;
+    let sysPrompt = "";
+    
+    if (!hasData) {
+        sysPrompt = `
+          You are the 8Z Trip Architect. The user has an EMPTY itinerary.
+          YOUR GOAL: Help them create a list of stops so they can use the optimizer.
+          COMMANDS:
+          - Use {REPLACE: \nLandmark 1, City\nLandmark 2, City...} to fill their list immediately.
+        `;
+    } else {
+        sysPrompt = `
+          You are the 8Z Logistics Co-Pilot. The user has an active itinerary.
+          CURRENT STOPS: ${currentTripData}
+          CRITICAL RULES:
+          1. Prioritize "Value for Money" (4.5+ stars, fair price).
+          2. Calculate geometric center for hotel queries.
+          COMMANDS:
+          - {ADD: Place Name, City} to append.
+          - {REPLACE: ...} to overwrite.
+        `;
+    }
 
     const body = {
         contents: [{role:"user", parts:[{text: sysPrompt}]}, ...chatHistoryBuffer],
@@ -637,14 +726,16 @@
     }
 
     const t = d.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response.";
-    
     chatHistoryBuffer.push({ role: "model", parts: [{ text: t }] });
     return t;
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    initTripTree(); initAI(); restoreState();
-
+    initTripTree(); initAI(); 
+    
+    // ATTEMPT RESTORE
+    const restored = restoreState();
+    
     $('btnStandard').onclick = () => run('standard');
     $('btnDeep').onclick = () => run('deep');
     $('btnDriving').onclick = () => setTravelMode('DRIVING');
@@ -685,7 +776,26 @@
     $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; 
     $('btnCloseHelp').onclick=()=>h.style.display='none';
     
-    setPlanningMode(false);
+    // SHOW WELCOME BACK MESSAGE IF RESTORED
+    if(restored) {
+        const historyEl = $('chatHistory');
+        const restoreMsg = document.createElement('div');
+        restoreMsg.className = 'msg ai recovery-msg';
+        restoreMsg.style.borderLeft = "3px solid var(--success)";
+        restoreMsg.innerHTML = `
+          <strong>System:</strong> I found an unsaved session from before.
+          <div style="margin-top:10px; display:flex; gap:10px;">
+            <button class="chip logistics" onclick="window.continueSession(this)">✅ Continue</button>
+            <button class="chip eat" style="border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,0.1)" onclick="window.resetSession()">🗑️ Start Fresh</button>
+          </div>
+        `;
+        historyEl.appendChild(restoreMsg);
+        
+        setPlanningMode(true);
+    } else {
+        // DEFAULT START
+        setPlanningMode(true);
+    }
   });
   
   function setTravelMode(mode) {
