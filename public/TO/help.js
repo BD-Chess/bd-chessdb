@@ -40,4 +40,21 @@ window.HELP_CONTENT = `
     <p>Add <code>START</code> anywhere on a line to lock it as the starting point.</p>
     <pre>Grand Hotel Union | 46.0525, 14.5060 START</pre>
   </div>
+
+  <div class="card help-block">
+    <h2>Philosophy & Limitations</h2>
+    
+    <h3>Why doesn't Google Maps do this?</h3>
+    <p>Google Maps optimizes for <em>Navigation</em> (getting from A to B) and data collection. We optimize for <em>Logistics</em> (ordering 20+ stops efficiently) and privacy. Running this level of mathematical optimization on a server for millions of users is computationally too expensive for free tools, which is why 8Z runs it directly on <strong>your</strong> device.</p>
+    
+    <h3>Geometric vs. Road Network</h3>
+    <p>8Z Optimizer sorts stops based on <strong>Geometric Distance</strong> (straight lines), not driving distance. This trade-off ensures:</p>
+    <ul>
+      <li><strong>Speed:</strong> Instant results without waiting for slow APIs.</li>
+      <li><strong>Privacy:</strong> Your full trip data never leaves your browser.</li>
+    </ul>
+    
+    <h3>Blocked Roads & Traffic</h3>
+    <p>The optimizer determines the <strong>Strategy</strong> (the order of stops). It does not know about live traffic or construction. When you click "Open in Maps", Google Maps handles the <strong>Tactics</strong> (steering you around blocked roads) to get to the next stop.</p>
+  </div>
 `;
