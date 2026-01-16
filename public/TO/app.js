@@ -170,76 +170,41 @@
     }
   }
 
-  // --- 7. INPUT & MAPS (Restored Robust Logic) ---
+  // --- 7. INPUT & MAPS ---
   function parseStops(text) {
     const lines = text.split(/\r?\n/);
     const pts = [];
     let startIdx = 0;
     const coordRe = /(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)/;
-
     for (let raw of lines) {
       raw = raw.trim();
       if (!raw || raw.startsWith('#')) continue;
-
       let isStart = false;
-      if (/\bSTART\b/i.test(raw)) {
-        isStart = true;
-        raw = raw.replace(/\bSTART\b/i, '').trim();
-      }
-
-      let name = raw;
-      let lat = null, lon = null;
-
+      if (/\bSTART\b/i.test(raw)) { isStart = true; raw = raw.replace(/\bSTART\b/i, '').trim(); }
+      let name = raw; let lat = null, lon = null;
       if (raw.includes('|')) {
         const parts = raw.split('|');
-        const p0 = parts[0].trim();
-        const p1 = parts[1].trim();
-        const m0 = coordRe.exec(p0);
-        const m1 = coordRe.exec(p1);
-        if (m1) { name = p0 || "Point"; lat = parseFloat(m1[1]); lon = parseFloat(m1[2]); }
-        else if (m0) { name = p1 || "Point"; lat = parseFloat(m0[1]); lon = parseFloat(m0[2]); }
+        const m = coordRe.exec(parts[1]);
+        if (m) { name = parts[0].trim(); lat = parseFloat(m[1]); lon = parseFloat(m[2]); }
       } else {
         const m = coordRe.exec(raw);
-        if (m) {
-          lat = parseFloat(m[1]); lon = parseFloat(m[2]);
-          const potentialName = raw.replace(m[0], '').trim();
-          name = (potentialName.length > 1) ? potentialName.replace(/^,/, '').trim() : `(${lat.toFixed(3)}, ${lon.toFixed(3)})`;
-        }
+        if (m) { lat = parseFloat(m[1]); lon = parseFloat(m[2]); name = raw.replace(m[0], '').trim(); }
       }
-      const p = { name, lat, lon, raw: raw };
-      if (isStart) startIdx = pts.length;
-      pts.push(p);
+      pts.push({ name, lat, lon, raw: raw });
+      if (isStart) startIdx = pts.length - 1;
     }
     return { pts, startIdx };
-  }
-
-  // --- 8. GEOCODING (Restored Robust Logic) ---
-  async function resolveLocation(rawName) {
-    if (!geocoder) return null;
-    try {
-      const response = await new Promise((resolve) => {
-        geocoder.geocode({ address: rawName }, (results, status) => {
-          if (status === 'OK') resolve(results); else resolve(null);
-        });
-      });
-      if (response && response.length > 0) {
-        const loc = response[0].geometry.location;
-        return { lat: loc.lat(), lon: loc.lng() };
-      }
-    } catch (e) { console.warn("Geocode error:", e); }
-    return null;
   }
 
   async function geocodeMissingPoints(pts) {
     const missing = pts.filter(p => p.lat === null || p.lon === null);
     if (missing.length === 0) return pts;
-    
     setStatus(`Looking up ${missing.length} addresses...`, 'warn');
     for (let i = 0; i < missing.length; i++) {
       const p = missing[i];
-      const result = await resolveLocation(p.name);
-      if (result) { p.lat = result.lat; p.lon = result.lon; }
-      else { p.error = true; }
+      if (!geocoder) geocoder = new google.maps.Geocoder();
+      const result = await new Promise(r => geocoder.geocode({ address: p.name }, (res, status) => r(status==='OK'?res[0]:null)));
+      if (result) { p.lat = result.geometry.location.lat(); p.lon = result.geometry.location.lng(); }
       await new Promise(r => setTimeout(r, 250)); 
     }
     return pts;
@@ -487,7 +452,7 @@
       const list = $('routeList'); list.innerHTML = '';
       const modeChar = currentTravelMode === 'DRIVING' ? 'd' : 'w';
       
-      // --- APPLE MAPS NAVIGATION LOGIC ---
+      // --- HERE IS THE APPLE MAPS LOGIC ---
       pointsSorted.forEach((p, i) => { 
           const li = document.createElement('li');
           const destCoords = `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
