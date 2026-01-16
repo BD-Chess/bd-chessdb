@@ -21,7 +21,7 @@
   let chatHistoryBuffer = [];
   
   let presetLookup = {};
-  let userRegion = null; 
+  let userRegion = null;
 
   // --- 3. HTML CONTENT ---
   const HELP_HTML = `
@@ -31,12 +31,8 @@
         <li><strong>1. Trip Library:</strong> Click [+] to expand continents. Click a tour name to load it.</li>
         <li><strong>2. Edit:</strong> Add or remove stops in the text box.</li>
         <li><strong>3. Optimize:</strong> Use "Standard" for fast results or "Deep Search" for complex routes.</li>
-        <li><strong>4. Export:</strong> Click the "Open in Maps" links to send the route to your phone.</li>
+        <li><strong>4. Share:</strong> Use the button at the bottom to send your trip to friends.</li>
       </ul>
-    </div>
-    <div class="help-block">
-      <h2>Philosophy</h2>
-      <p>We optimize for <strong>Logistics</strong> (ordering 20+ stops), not just navigation. Google Maps handles the traffic; we handle the strategy.</p>
     </div>
   `;
 
@@ -61,17 +57,52 @@
     }
   }
 
+  // --- UPDATED MARKDOWN PARSER (Now with Tables!) ---
   function formatMarkdown(text) {
     if (!text) return '';
-    let html = text;
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
-    html = html.replace(/^\*\s/gm, '• ');
-    html = html.replace(/\n/g, '<br>');
+    
+    // 1. Split into lines to detect tables
+    const lines = text.split('\n');
+    let inTable = false;
+    let html = '';
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        // Detect Table Row
+        if (line.startsWith('|')) {
+            if (!inTable) {
+                inTable = true;
+                html += '<div class="chat-table-wrapper"><table>';
+                // Process Header
+                const cells = line.split('|').filter(c => c.trim() !== '').map(c => `<th>${c.trim()}</th>`).join('');
+                html += `<thead><tr>${cells}</tr></thead><tbody>`;
+            } else if (line.includes('---')) {
+                // Skip separator line |---|---|
+                continue;
+            } else {
+                // Process Body Row
+                const cells = line.split('|').filter(c => c.trim() !== '').map(c => `<td>${c.trim()}</td>`).join('');
+                html += `<tr>${cells}</tr>`;
+            }
+        } else {
+            if (inTable) {
+                inTable = false;
+                html += '</tbody></table></div>';
+            }
+            // Standard formatting for non-table lines
+            let formatted = line;
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/^\*\s/, '• ');
+            html += formatted + '<br>';
+        }
+    }
+    if (inTable) html += '</tbody></table></div>';
+    
     return html;
   }
 
-  // --- 5. PERSISTENCE ENGINE ---
+  // --- 5. PERSISTENCE & SHARE ENGINE ---
   function saveState() { 
     const state = {
         t: $('input').value,
@@ -80,12 +111,25 @@
         chatHTML: $('chatHistory').innerHTML,
         ts: Date.now()
     };
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (e) { console.warn("Storage full", e); }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } 
+    catch (e) { console.warn("Storage full", e); }
   }
   
   function restoreState() {
+    // 1. Check URL for Shared Trip FIRST
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('trip')) {
+        try {
+            const sharedTrip = decodeURIComponent(params.get('trip'));
+            $('input').value = sharedTrip;
+            window.history.replaceState({}, document.title, window.location.pathname); // Clean URL
+            setStatus('Shared trip loaded!', 'ok');
+            setPlanningMode(true); // Go to plan mode to see it
+            return true;
+        } catch(e) { console.error("Share load failed", e); }
+    }
+
+    // 2. Otherwise load local storage
     const sStr = localStorage.getItem(STORAGE_KEY);
     if (!sStr) return false;
 
@@ -99,17 +143,31 @@
             chatHistoryBuffer = s.chatBuf;
             const historyEl = $('chatHistory');
             historyEl.innerHTML = s.chatHTML;
-            
-            const oldChips = historyEl.querySelectorAll('.suggestions-box');
-            oldChips.forEach(el => el.remove());
-            const oldRecovery = historyEl.querySelectorAll('.recovery-msg');
-            oldRecovery.forEach(el => el.remove());
-
+            historyEl.querySelectorAll('.suggestions-box').forEach(el => el.remove());
+            historyEl.querySelectorAll('.recovery-msg').forEach(el => el.remove());
             return true; 
         }
     } catch(e) { console.error("Restore failed", e); }
     return false;
   }
+
+  // Share Function
+  window.shareTrip = function() {
+      const tripData = $('input').value.trim();
+      if (!tripData) { setStatus('List is empty!', 'bad'); return; }
+      
+      const url = window.location.origin + window.location.pathname + '?trip=' + encodeURIComponent(tripData);
+      
+      navigator.clipboard.writeText(url).then(() => {
+          setStatus('Link copied to clipboard!', 'ok');
+          const btn = $('btnShareTrip');
+          const originalText = btn.innerHTML;
+          btn.innerHTML = '✅ Copied!';
+          setTimeout(() => btn.innerHTML = originalText, 2000);
+      }).catch(() => {
+          prompt("Copy this link:", url);
+      });
+  };
 
   window.resetSession = function() {
       localStorage.removeItem(STORAGE_KEY);
@@ -145,12 +203,8 @@
     for (let raw of lines) {
       raw = raw.trim();
       if (!raw || raw.startsWith('#')) continue;
-
       let isStart = false;
-      if (/\bSTART\b/i.test(raw)) {
-        isStart = true;
-        raw = raw.replace(/\bSTART\b/i, '').trim();
-      }
+      if (/\bSTART\b/i.test(raw)) { isStart = true; raw = raw.replace(/\bSTART\b/i, '').trim(); }
 
       let name = raw;
       let lat = null, lon = null;
@@ -171,14 +225,13 @@
           name = (potentialName.length > 1) ? potentialName.replace(/^,/, '').trim() : `(${lat.toFixed(3)}, ${lon.toFixed(3)})`;
         }
       }
-      const p = { name, lat, lon, raw: raw };
-      if (isStart) startIdx = pts.length;
-      pts.push(p);
+      pts.push({ name, lat, lon, raw: raw });
+      if (isStart) startIdx = pts.length - 1;
     }
     return { pts, startIdx };
   }
 
-  // --- 7. GOOGLE MAPS & GEOCODING ---
+  // --- 7. GOOGLE MAPS ---
   async function resolveLocation(rawName) {
     if (!geocoder) return null;
     try {
@@ -198,13 +251,11 @@
   async function geocodeMissingPoints(pts) {
     const missing = pts.filter(p => p.lat === null || p.lon === null);
     if (missing.length === 0) return pts;
-    
     setStatus(`Looking up ${missing.length} addresses...`, 'warn');
     for (let i = 0; i < missing.length; i++) {
       const p = missing[i];
       const result = await resolveLocation(p.name);
       if (result) { p.lat = result.lat; p.lon = result.lon; }
-      else { p.error = true; }
       await new Promise(r => setTimeout(r, 250)); 
     }
     return pts;
@@ -213,7 +264,6 @@
   function ensureMapsLoaded() {
     if (window.google && window.google.maps) return Promise.resolve();
     if (mapScriptLoadingPromise) return mapScriptLoadingPromise;
-    
     mapScriptLoadingPromise = new Promise((resolve, reject) => {
       window.initMap = function() {
         map = new google.maps.Map($('map'), { zoom:12, center:{lat:46.0569,lng:14.5058}, mapTypeId:'hybrid', styles:DARK_STYLE });
@@ -234,42 +284,31 @@
   function updateMapVisualization(points) {
     if (!map) return;
     const ph = $('mapPlaceholder'); if(ph) ph.style.display = 'none';
-
     mapMarkers.forEach(m => m.setMap(null)); mapMarkers=[];
     directionsRenderers.forEach(d => d.setMap(null)); directionsRenderers=[];
     if(mapPolyline) { mapPolyline.setMap(null); mapPolyline=null; }
-
     const bounds = new google.maps.LatLngBounds();
     points.forEach((pt, i) => {
       const loc = { lat: pt.lat, lng: pt.lon };
       bounds.extend(loc);
-      // Map pins are 1-based (i+1)
       const m = new google.maps.Marker({ position: loc, map: map, label: (i+1).toString(), title: pt.name });
       m.addListener("click", () => { infoWindow.setContent(`<strong>#${i+1} ${pt.name}</strong>`); infoWindow.open(map, m); });
       mapMarkers.push(m);
     });
-
     if ($('chkDirect').checked) {
       mapPolyline = new google.maps.Polyline({ path: points.map(p=>({lat:p.lat,lng:p.lon})), geodesic: true, strokeColor: "#3b82f6", strokeWeight: 4 });
       mapPolyline.setMap(map);
     } else {
       const path = points.map(p=>({lat:p.lat,lng:p.lon}));
       if ($('chkRoundTrip').checked) path.push(path[0]);
-      
       const gMode = currentTravelMode === 'DRIVING' ? google.maps.TravelMode.DRIVING : google.maps.TravelMode.WALKING;
-      
       for(let i=0; i<path.length-1; i+=24) {
         const seg = path.slice(i, i+25);
         const r = new google.maps.DirectionsRenderer({ map:map, suppressMarkers:true, polylineOptions:{strokeColor:"#3b82f6", strokeWeight:5} });
         directionsRenderers.push(r);
-        directionsService.route({
-          origin: seg[0], destination: seg[seg.length-1],
-          waypoints: seg.slice(1,-1).map(l => ({location:l, stopover:true})),
-          travelMode: gMode
-        }, (res, st) => { if(st === "OK") r.setDirections(res); });
+        directionsService.route({ origin: seg[0], destination: seg[seg.length-1], waypoints: seg.slice(1,-1).map(l => ({location:l, stopover:true})), travelMode: gMode }, (res, st) => { if(st === "OK") r.setDirections(res); });
       }
     }
-    
     google.maps.event.trigger(map, 'resize');
     map.fitBounds(bounds);
   }
@@ -277,46 +316,26 @@
   // --- 8. SMART LINKS ---
   function buildMapsLegLinks(routePts, roundTrip, mode) {
     const travelmode = (mode === 'DRIVING') ? 'driving' : 'walking';
-    
     const encodeCoords = (p) => `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
-    const encodeName = (p) => {
-        if (p.name.match(/^-?\d+\./)) return encodeCoords(p);
-        return encodeURIComponent(p.name);
-    };
-
+    const encodeName = (p) => { if (p.name.match(/^-?\d+\./)) return encodeCoords(p); return encodeURIComponent(p.name); };
     const seq = routePts.slice();
     if (roundTrip && seq.length > 1) seq.push(seq[0]);
-
-    const MAX_MID = 9; 
-    const links = [];
-    let i = 0;
-    
+    const MAX_MID = 9; const links = []; let i = 0;
     while (i < seq.length - 1) {
       const origin = seq[i];
       let j = Math.min(seq.length - 1, i + 1 + MAX_MID + 1);
       if (j <= i + 1) j = i + 2;
-
       const segment = seq.slice(i, j + 1);
       
-      // Pins URL
-      const originPin = encodeCoords(segment[0]);
-      const destPin = encodeCoords(segment[segment.length - 1]);
-      const midsPin = segment.slice(1, -1).map(encodeCoords);
+      const originPin = encodeCoords(segment[0]); const destPin = encodeCoords(segment[segment.length - 1]); const midsPin = segment.slice(1, -1).map(encodeCoords);
       let urlPins = `https://www.google.com/maps/dir/?api=1&origin=${originPin}&destination=${destPin}&travelmode=${travelmode}`;
       if (midsPin.length) urlPins += `&waypoints=${midsPin.join('%7C')}`;
 
-      // Names URL
-      const originName = encodeName(segment[0]);
-      const destName = encodeName(segment[segment.length - 1]);
-      const midsName = segment.slice(1, -1).map(encodeName);
+      const originName = encodeName(segment[0]); const destName = encodeName(segment[segment.length - 1]); const midsName = segment.slice(1, -1).map(encodeName);
       let urlNames = `https://www.google.com/maps/dir/?api=1&origin=${originName}&destination=${destName}&travelmode=${travelmode}`;
       if (midsName.length) urlNames += `&waypoints=${midsName.join('%7C')}`;
 
-      links.push({ 
-        label: `Leg ${links.length + 1} (${segment.length} stops)`, 
-        urlPins: urlPins,
-        urlNames: urlNames
-      });
+      links.push({ label: `Leg ${links.length + 1} (${segment.length} stops)`, urlPins, urlNames });
       i = j;
     }
     return links;
@@ -336,9 +355,15 @@
       `;
       el.appendChild(row);
     }
+    
+    // --- NEW: SHARE BUTTON AT BOTTOM OF RESULTS ---
+    const shareArea = document.createElement('div');
+    shareArea.className = 'share-area';
+    shareArea.innerHTML = `<button id="btnShareTrip" class="btn-share" onclick="window.shareTrip()">🔗 Share This Trip</button>`;
+    el.appendChild(shareArea);
   }
 
-  // --- 9. LIBRARY (GEO-AWARE) ---
+  // --- 9. LIBRARY ---
   async function detectUserLocation() {
     try {
         const res = await fetch('https://ipapi.co/json/');
@@ -349,54 +374,36 @@
         if (['DE', 'FR', 'IT', 'ES', 'UK', 'GB', 'SI', 'AT', 'CH', 'NL', 'BE', 'SK', 'CZ', 'PL', 'HU'].includes(code)) return 'Europe';
         if (['BR', 'AR', 'CL', 'PE', 'CO'].includes(code)) return 'South America';
         return 'Global';
-    } catch(e) { console.warn("Geo-IP failed, using default order.", e); return null; }
+    } catch(e) { return null; }
   }
 
   async function initTripTree() {
     if (!window.TRIP_LIBRARY) return;
     const region = await detectUserLocation();
     userRegion = region; 
-    
     let sortedLib = window.TRIP_LIBRARY.slice();
-    if (region) {
-        sortedLib.sort((a, b) => {
-            const aMatch = a.region.includes(region);
-            const bMatch = b.region.includes(region);
-            return bMatch - aMatch;
-        });
-        if(region !== 'Global') setStatus(`Prioritizing trips for ${region}...`, 'ok');
-    }
+    if (region) sortedLib.sort((a, b) => (b.region.includes(region) - a.region.includes(region)));
 
     const tree = $('presetTree'); tree.innerHTML = '';
     presetLookup = {};
-
     sortedLib.forEach((regionData, idx) => {
       const rNode = document.createElement('div');
       const isUserRegion = idx === 0 && region; 
-      const arrow = isUserRegion ? '⌄ ' : '› ';
-      const openClass = isUserRegion ? ' open' : '';
-      
-      rNode.innerHTML = `<div class="tree-header">${arrow} ${regionData.region}</div><div class="tree-group${openClass}"></div>`;
+      rNode.innerHTML = `<div class="tree-header">${isUserRegion?'⌄':'›'} ${regionData.region}</div><div class="tree-group${isUserRegion?' open':''}"></div>`;
       const rGroup = rNode.querySelector('.tree-group');
-
       regionData.categories.forEach(cat => {
         const cNode = document.createElement('div');
         cNode.innerHTML = `<div class="tree-header">› ${cat.name}</div><div class="tree-group"></div>`;
         const cGroup = cNode.querySelector('.tree-group');
-
         cat.items.forEach(trip => {
           presetLookup[trip.id] = trip.data;
-          const item = document.createElement('span');
-          item.className = 'tree-item';
-          item.textContent = trip.label;
+          const item = document.createElement('span'); item.className = 'tree-item'; item.textContent = trip.label;
           item.onclick = () => { 
-            $('input').value = trip.data; 
-            saveState(); 
+            $('input').value = trip.data; saveState(); 
             if (trip.id.includes('GLOBAL')) { $('chkDirect').checked = true; setTravelMode('DRIVING'); }
             else if (trip.id.includes('WALKING')) { $('chkDirect').checked = false; setTravelMode('WALKING'); }
             else { $('chkDirect').checked = false; setTravelMode('DRIVING'); }
-            setStatus(`Loaded: ${trip.label}`, 'ok');
-            renderSuggestions('bigChatHistory');
+            setStatus(`Loaded: ${trip.label}`, 'ok'); renderSuggestions('bigChatHistory');
           };
           cGroup.appendChild(item);
         });
@@ -408,73 +415,44 @@
     });
   }
 
-  // --- 10. OPTIMIZER LOGIC ---
+  // --- 10. OPTIMIZER ---
   function showBusy(msg) {
     let overlay = $('busyOverlay');
     if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'busyOverlay';
+        overlay = document.createElement('div'); overlay.id = 'busyOverlay';
         overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:sans-serif;";
         document.body.appendChild(overlay);
     }
     overlay.innerHTML = `<div style="font-size:2rem;margin-bottom:20px;">🧬</div><div style="font-size:1.2rem;font-weight:bold;">${msg}</div><div style="margin-top:10px;color:#6aa9ff;">Please wait...</div>`;
     overlay.style.display = 'flex';
   }
-  
-  function hideBusy() {
-    const overlay = $('busyOverlay');
-    if (overlay) overlay.style.display = 'none';
-  }
+  function hideBusy() { const o = $('busyOverlay'); if (o) o.style.display = 'none'; }
 
   async function run(profile) {
-    setPlanningMode(false); 
-
+    setPlanningMode(false);
     if (!window.google) { setStatus('Loading Map API...', 'ok'); await ensureMapsLoaded(); }
-
     const raw = $('input').value;
     let { pts, startIdx } = parseStops(raw);
-    
-    try { pts = await geocodeMissingPoints(pts); }
-    catch (e) { setStatus('Geocode Error', 'bad'); return; }
-
+    try { pts = await geocodeMissingPoints(pts); } catch (e) { setStatus('Geocode Error', 'bad'); return; }
     const valid = pts.filter(p => p.lat !== null && p.lon !== null);
     if (valid.length < 2) { setStatus('Need 2+ valid stops.', 'bad'); return; }
-
     setStatus(`Optimizing ${valid.length} stops...`, 'warn');
     if (profile === 'deep') showBusy("Deep Genetic Optimization...");
-    
-    worker.postMessage({
-      type: 'solve',
-      profile: profile,
-      points: valid,
-      startIdx: (startIdx < valid.length) ? startIdx : 0,
-      roundTrip: $('chkRoundTrip').checked
-    });
+    worker.postMessage({ type: 'solve', profile: profile, points: valid, startIdx: (startIdx < valid.length) ? startIdx : 0, roundTrip: $('chkRoundTrip').checked });
   }
 
   worker.onmessage = (ev) => {
     const msg = ev.data || {};
-    
-    if (msg.type === 'progress') {
-        showBusy(msg.text); 
-    }
+    if (msg.type === 'progress') showBusy(msg.text); 
     else if (msg.type === 'result') {
       hideBusy();
       const { pointsSorted, totalKm, baseKm } = msg;
       lastSolvedPoints = pointsSorted;
-      
       $('distKm').textContent = totalKm.toFixed(2) + ' km';
       const saved = baseKm - totalKm;
       $('savedKm').textContent = saved > 0 ? saved.toFixed(2) + ' km' : '—';
-      
-      // --- FIX: ADD NUMBERS TO LIST MATCHING MAP PINS ---
       const list = $('routeList'); list.innerHTML = '';
-      pointsSorted.forEach((p, i) => { 
-          const li = document.createElement('li'); 
-          li.textContent = `${i + 1}. ${p.name}`; // e.g., "1. Paris"
-          list.appendChild(li); 
-      });
-
+      pointsSorted.forEach((p, i) => { const li = document.createElement('li'); li.textContent = `${i + 1}. ${p.name}`; list.appendChild(li); });
       updateMapVisualization(pointsSorted);
       const links = buildMapsLegLinks(pointsSorted, $('chkRoundTrip').checked, currentTravelMode);
       renderLinks(links);
@@ -482,275 +460,115 @@
     }
   };
 
-  // --- 11. UI CONTROL ---
+  // --- 11. UI & CHAT ---
   function renderSuggestions(containerId) {
-    const el = $(containerId);
-    if (!el) return;
-    
-    const old = el.querySelector('.suggestions-box');
-    if (old) old.remove();
-
+    const el = $(containerId); if (!el) return;
+    const old = el.querySelector('.suggestions-box'); if (old) old.remove();
     const inputVal = $('input').value.trim();
     const isNew = inputVal.length < 10; 
-
-    const box = document.createElement('div');
-    box.className = 'suggestions-box';
-
+    const box = document.createElement('div'); box.className = 'suggestions-box';
     if (isNew) {
         let regionChip = "";
         if (userRegion === 'Europe') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a classic Europe tour (Paris, Rome, Berlin)\')">🇪🇺 Classic Europe Tour</div>';
         if (userRegion === 'Americas') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a USA West Coast road trip\')">🇺🇸 USA West Coast</div>';
         if (userRegion === 'Asia') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a tour of Japan and South Korea\')">🇯🇵 Japan & Korea</div>';
-        
-        box.innerHTML = `
-          <div class="suggestion-group">
-            <div class="suggestion-label">✨ Start a New Adventure</div>
-            <div class="chip-grid">
-              ${regionChip}
-              <div class="chip logistics" onclick="window.sendChat('Create a 3-day itinerary for Rome, Italy')">Create 3-Day Rome Itinerary</div>
-              <div class="chip logistics" onclick="window.sendChat('Suggest a romantic weekend in Paris')">Paris Weekend</div>
-            </div>
-          </div>
-          <div class="suggestion-group">
-            <div class="suggestion-label">ℹ️ Help</div>
-            <div class="chip-grid">
-              <div class="chip" onclick="window.sendChat('How do I use the Trip Library?')">How to use Library?</div>
-              <div class="chip" onclick="window.sendChat('What does Optimize do?')">Explain Optimization</div>
-            </div>
-          </div>
-        `;
+        box.innerHTML = `<div class="suggestion-group"><div class="suggestion-label">✨ Start a New Adventure</div><div class="chip-grid">${regionChip}<div class="chip logistics" onclick="window.sendChat('Create a 3-day itinerary for Rome, Italy')">Create 3-Day Rome Itinerary</div><div class="chip logistics" onclick="window.sendChat('Suggest a romantic weekend in Paris')">Paris Weekend</div></div></div><div class="suggestion-group"><div class="suggestion-label">ℹ️ Help</div><div class="chip-grid"><div class="chip" onclick="window.sendChat('How do I use the Trip Library?')">How to use Library?</div><div class="chip" onclick="window.sendChat('What does Optimize do?')">Explain Optimization</div></div></div>`;
     } else {
-        box.innerHTML = `
-          <div class="suggestion-group">
-            <div class="suggestion-label">🛏️ Sleeping Strategy (Center of Gravity)</div>
-            <div class="chip-grid">
-              <div class="chip sleep" onclick="window.sendChat('Where should I stay? Calculate the best base camp.')">Find Best Base Camp</div>
-              <div class="chip sleep" onclick="window.sendChat('Find best value hotels (4+ stars) near the center of my route')">Best Value Hotels</div>
-            </div>
-          </div>
-          <div class="suggestion-group">
-            <div class="suggestion-label">🍴 Eating (Quality/Price)</div>
-            <div class="chip-grid">
-              <div class="chip eat" onclick="window.sendChat('Suggest lunch spots with high ratings but low price')">Best Cheap Eats</div>
-              <div class="chip eat" onclick="window.sendChat('Where is a good romantic dinner spot nearby?')">Romantic Dinner</div>
-            </div>
-          </div>
-          <div class="suggestion-group">
-            <div class="suggestion-label">🚕 Logistics</div>
-            <div class="chip-grid">
-              <div class="chip logistics" onclick="window.sendChat('How much time do I need for each stop?')">Time per Stop?</div>
-              <div class="chip logistics" onclick="window.sendChat('Is this route walkable or do I need a taxi?')">Walk vs Taxi</div>
-            </div>
-          </div>
-        `;
+        box.innerHTML = `<div class="suggestion-group"><div class="suggestion-label">🛏️ Sleeping Strategy</div><div class="chip-grid"><div class="chip sleep" onclick="window.sendChat('Where should I stay? Calculate the best base camp.')">Find Best Base Camp</div></div></div><div class="suggestion-group"><div class="suggestion-label">🍴 Eating</div><div class="chip-grid"><div class="chip eat" onclick="window.sendChat('Suggest lunch spots with high ratings but low price')">Best Cheap Eats</div><div class="chip eat" onclick="window.sendChat('Where is a good romantic dinner spot nearby?')">Romantic Dinner</div></div></div><div class="suggestion-group"><div class="suggestion-label">🚕 Logistics</div><div class="chip-grid"><div class="chip logistics" onclick="window.sendChat('How much time do I need for each stop?')">Time per Stop?</div><div class="chip logistics" onclick="window.sendChat('Is this route walkable or do I need a taxi?')">Walk vs Taxi</div></div></div>`;
     }
     el.insertBefore(box, el.firstChild);
   }
 
   function setPlanningMode(enabled) {
-    const rightPanel = document.querySelector('.panel:nth-of-type(2)');
-    const mapCont = $('mapContainer');
-    const stats = document.querySelector('.stats');
-    const list = $('routeList');
-    const links = $('links');
-    const btnPlan = $('btnPlanMode');
-    const btnMap = $('btnMapMode');
-    
+    const mapCont = $('mapContainer'), stats = document.querySelector('.stats'), list = $('routeList'), links = $('links');
+    const btnPlan = $('btnPlanMode'), btnMap = $('btnMapMode');
     let bigChat = $('bigChatContainer');
     if (!bigChat) {
-        bigChat = document.createElement('div');
-        bigChat.id = 'bigChatContainer';
-        bigChat.style.display = 'none';
-        bigChat.innerHTML = `
-          <div id="bigChatHistory" style="flex:1; overflow-y:auto; padding:20px; border-bottom:1px solid #1f2a3a;"></div>
-          <div class="chat-input" style="padding:15px; background:#0f1621;">
-            <input type="text" id="bigChatInput" placeholder="Message Gemini (Internet Enabled)...">
-            <button id="btnSendBigChat">➤</button>
-          </div>
-        `;
-        rightPanel.appendChild(bigChat);
+        bigChat = document.createElement('div'); bigChat.id = 'bigChatContainer'; bigChat.style.display = 'none';
+        bigChat.innerHTML = `<div id="bigChatHistory" style="flex:1; overflow-y:auto; padding:20px; border-bottom:1px solid #1f2a3a;"></div><div class="chat-input" style="padding:15px; background:#0f1621;"><input type="text" id="bigChatInput" placeholder="Message Gemini (Internet Enabled)..."><button id="btnSendBigChat">➤</button></div>`;
+        document.querySelector('.panel:nth-of-type(2)').appendChild(bigChat);
         $('btnSendBigChat').onclick = () => handleChatSend('bigChatInput', 'bigChatHistory');
         $('bigChatInput').onkeypress = (e) => { if(e.key==='Enter') handleChatSend('bigChatInput', 'bigChatHistory'); };
     }
-
     if (enabled) {
-        btnPlan.classList.add('active');
-        btnMap.classList.remove('active');
-        mapCont.style.display = 'none';
-        stats.style.display = 'none';
-        list.style.display = 'none';
-        links.style.display = 'none';
-        bigChat.style.display = 'flex';
-        bigChat.style.flexDirection = 'column';
-        bigChat.style.height = '100%';
-        $('chatPanel').style.display = 'none';
-        
-        $('bigChatHistory').innerHTML = $('chatHistory').innerHTML;
-        renderSuggestions('bigChatHistory');
+        btnPlan.classList.add('active'); btnMap.classList.remove('active');
+        mapCont.style.display = 'none'; stats.style.display = 'none'; list.style.display = 'none'; links.style.display = 'none';
+        bigChat.style.display = 'flex'; bigChat.style.flexDirection = 'column'; bigChat.style.height = '100%'; $('chatPanel').style.display = 'none';
+        $('bigChatHistory').innerHTML = $('chatHistory').innerHTML; renderSuggestions('bigChatHistory');
         setTimeout(() => $('bigChatInput') && $('bigChatInput').focus(), 100);
     } else {
-        btnMap.classList.add('active');
-        btnPlan.classList.remove('active');
-        mapCont.style.display = 'block';
-        stats.style.display = 'flex';
-        list.style.display = 'block';
-        links.style.display = 'flex';
-        bigChat.style.display = 'none';
-        $('chatPanel').style.display = 'flex';
-        
+        btnMap.classList.add('active'); btnPlan.classList.remove('active');
+        mapCont.style.display = 'block'; stats.style.display = 'flex'; list.style.display = 'block'; links.style.display = 'flex';
+        bigChat.style.display = 'none'; $('chatPanel').style.display = 'flex';
         $('chatHistory').innerHTML = $('bigChatHistory').innerHTML;
     }
   }
 
-  // --- 12. AI HANDLER ---
+  // --- 12. AI & MARKDOWN ---
   async function initAI() {
     try {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
       const d = await r.json();
-      let v = d.models.filter(m => m.name.includes('gemini') && !m.name.includes('vision') && !m.name.includes('embedding') && !m.name.includes('nano'));
-      v.sort((a, b) => {
-          if (a.name.includes('latest') && !b.name.includes('latest')) return -1;
-          if (!a.name.includes('latest') && b.name.includes('latest')) return 1;
-          const va = parseFloat(a.version) || 0;
-          const vb = parseFloat(b.version) || 0;
-          if (va !== vb) return vb - va;
-          return 0;
-      });
-      const s = $('modelSelector'); s.innerHTML='';
-      v.forEach(m => { const o=document.createElement('option'); o.value=m.name; o.textContent=m.displayName; s.appendChild(o); });
+      let v = d.models.filter(m => m.name.includes('gemini') && !m.name.includes('vision'));
+      v.sort((a,b) => (a.name.includes('latest') ? -1 : 1));
+      const s = $('modelSelector'); s.innerHTML=''; v.forEach(m=>{const o=document.createElement('option');o.value=m.name;o.textContent=m.displayName;s.appendChild(o)});
       if (v.length > 0) { currentGeminiModel = v[0].name; s.value = currentGeminiModel; }
       s.onchange = () => currentGeminiModel = s.value;
-    } catch(e){ console.error("AI Init Error", e); }
+    } catch(e) {}
   }
 
   window.sendChat = function(text) {
-      if(document.getElementById('bigChatInput').offsetParent) {
-          document.getElementById('bigChatInput').value = text;
-          handleChatSend('bigChatInput', 'bigChatHistory');
-      } else {
-          document.getElementById('chatInput').value = text;
-          handleChatSend('chatInput', 'chatHistory');
-      }
+      if(document.getElementById('bigChatInput').offsetParent) { $('bigChatInput').value = text; handleChatSend('bigChatInput', 'bigChatHistory'); } 
+      else { $('chatInput').value = text; handleChatSend('chatInput', 'chatHistory'); }
   };
 
   async function handleChatSend(inputId, historyId) {
-      const i = $(inputId), t = i.value.trim(), h = $(historyId);
-      if (!t) return;
-      i.value = '';
-      h.innerHTML += `<div class="msg user">${t}</div>`;
-      h.scrollTop = h.scrollHeight;
-      
+      const i = $(inputId), t = i.value.trim(), h = $(historyId); if (!t) return;
+      i.value = ''; h.innerHTML += `<div class="msg user">${t}</div>`; h.scrollTop = h.scrollHeight;
       const otherHistory = historyId === 'chatHistory' ? $('bigChatHistory') : $('chatHistory');
-      if (otherHistory) {
-          otherHistory.innerHTML = h.innerHTML;
-          otherHistory.scrollTop = otherHistory.scrollHeight;
-      }
-      
-      saveState(); 
-      const loadingId = 'loading-' + Date.now();
-      h.innerHTML += `<div id="${loadingId}" class="msg ai" style="opacity:0.6">...</div>`;
-      
+      if (otherHistory) { otherHistory.innerHTML = h.innerHTML; otherHistory.scrollTop = otherHistory.scrollHeight; }
+      saveState();
+      const loadingId = 'loading-' + Date.now(); h.innerHTML += `<div id="${loadingId}" class="msg ai" style="opacity:0.6">...</div>`;
       const r = await callAI(t);
-      
-      const loader = document.getElementById(loadingId);
-      if(loader) loader.remove();
-      
+      const loader = document.getElementById(loadingId); if(loader) loader.remove();
       let processedText = r;
-      const replaceMatch = r.match(/\{REPLACE:\s*([\s\S]*?)\}/);
-      if (replaceMatch) {
-          const newContent = replaceMatch[1].trim();
-          if (newContent) {
-              $('input').value = newContent;
-              saveState();
-              setStatus('Trip list updated by AI.', 'ok');
-              setTimeout(() => {
-                  renderSuggestions('bigChatHistory');
-                  if (historyId === 'chatHistory') renderSuggestions('chatHistory');
-              }, 500);
-          }
-          processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, 
-            '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Check the list above to edit.</small></div>'
-          );
+      if (r.match(/\{REPLACE:\s*[\s\S]*?\}/)) {
+          const match = r.match(/\{REPLACE:\s*([\s\S]*?)\}/);
+          if (match && match[1].trim()) { $('input').value = match[1].trim(); saveState(); setStatus('Trip list updated.', 'ok'); setTimeout(() => renderSuggestions('bigChatHistory'), 500); }
+          processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Check the list above.</small></div>');
       }
-      const m = processedText.match(/\{ADD:\s*(.*?)\}/g); 
-      if(m) {
-        let addedCount = 0;
-        m.forEach(x=>{ 
-            const l=x.replace(/\{ADD:\s*|\}/g,'').trim(); 
-            if(!$('input').value.includes(l)) {
-                $('input').value += ($('input').value.endsWith('\n') ? '' : '\n') + l;
-                addedCount++;
-            }
-        });
-        if(addedCount > 0) {
-            saveState();
-            setStatus(`AI added ${addedCount} stops.`, 'ok');
-            renderSuggestions('bigChatHistory'); 
-        }
-        processedText = processedText.replace(/\{ADD:.*?\}/g, 
-            '<div class="action-badge">➕ <strong>Stops Added</strong><small>Check the list above.</small></div>'
-        );
+      if (r.match(/\{ADD:\s*.*?\}/)) {
+          const m = r.match(/\{ADD:\s*(.*?)\}/g); m.forEach(x => { const l = x.replace(/\{ADD:\s*|\}/g, '').trim(); if (!$('input').value.includes(l)) $('input').value += '\n' + l; });
+          saveState(); setStatus('Stops added.', 'ok');
+          processedText = processedText.replace(/\{ADD:.*?\}/g, '<div class="action-badge">➕ <strong>Stops Added</strong></div>');
       }
-
-      const cleanResponse = `<div class="msg ai"><strong>Gemini:</strong> ${formatMarkdown(processedText)}</div>`;
-      h.innerHTML += cleanResponse;
+      h.innerHTML += `<div class="msg ai"><strong>Gemini:</strong> ${formatMarkdown(processedText)}</div>`;
       h.scrollTop = h.scrollHeight;
-      if (otherHistory) {
-          otherHistory.innerHTML = h.innerHTML;
-          otherHistory.scrollTop = otherHistory.scrollHeight;
-      }
-      saveState(); 
+      if (otherHistory) { otherHistory.innerHTML = h.innerHTML; otherHistory.scrollTop = otherHistory.scrollHeight; }
+      saveState();
   }
 
   async function callAI(txt) {
     chatHistoryBuffer.push({ role: "user", parts: [{ text: txt }] });
-    const currentTripData = $('input').value.substring(0, 3000); 
-    const hasData = currentTripData.length > 20; 
+    const currentTripData = $('input').value.substring(0, 3000);
     const locationContext = userRegion ? `USER LOCATION: ${userRegion}` : "";
-    let sysPrompt = "";
+    let sysPrompt = currentTripData.length > 20 
+        ? `You are the 8Z Logistics Co-Pilot. ${locationContext} CURRENT STOPS: ${currentTripData}. RULES: 1. Value for Money. 2. UI AWARENESS: Say "I updated the list above" if using commands. 3. Use Markdown tables for times/prices.`
+        : `You are the 8Z Trip Architect. The user has an EMPTY itinerary. ${locationContext} Help them create a list.`;
     
-    if (!hasData) {
-        sysPrompt = `
-          You are the 8Z Trip Architect. The user has an EMPTY itinerary. ${locationContext}
-          YOUR GOAL: Help them create a list of stops.
-          COMMANDS:
-          - Use {REPLACE: \nStop 1\nStop 2...} to fill their list.
-          - CRITICAL: Do NOT list the stops in the chat text. Say "I have loaded these stops into your Trip Editor above ☝️."
-          - AMBIGUITY CHECK: Always specify Country (e.g. "Rome, Italy" NOT just "Rome"). Use "Place | lat, lon" for specific spots.
-        `;
-    } else {
-        sysPrompt = `
-          You are the 8Z Logistics Co-Pilot. ${locationContext}
-          CURRENT STOPS: ${currentTripData}
-          CRITICAL RULES:
-          1. Value for Money (4.5+ stars).
-          2. Geometric Center for hotels.
-          3. UI AWARENESS: When using {REPLACE} or {ADD}, do NOT paste the list in chat. Say "I have updated your Trip Editor above."
-          4. AMBIGUITY CHECK: Always specify Country (e.g. "Rome, Italy").
-          COMMANDS:
-          - {ADD: ...} to append.
-          - {REPLACE: ...} to overwrite.
-        `;
-    }
-
-    const body = {
-        contents: [{role:"user", parts:[{text: sysPrompt}]}, ...chatHistoryBuffer],
-        tools: [{ google_search: {} }] 
-    };
-
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${currentGeminiModel}:generateContent?key=${GEMINI_API_KEY}`, {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(body)
-    });
-    
-    const d = await res.json();
-    if (d.error) { console.error("Gemini API Error:", d.error); return "Error: " + d.error.message; }
-    const t = d.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response.";
-    chatHistoryBuffer.push({ role: "model", parts: [{ text: t }] });
-    return t;
+    try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${currentGeminiModel}:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ contents: [{role:"user", parts:[{text: sysPrompt}]}, ...chatHistoryBuffer], tools: [{ google_search: {} }] })
+        });
+        const d = await res.json();
+        const t = d.candidates?.[0]?.content?.parts?.[0]?.text || "Error.";
+        chatHistoryBuffer.push({ role: "model", parts: [{ text: t }] });
+        return t;
+    } catch(e) { return "AI Connection Error"; }
   }
 
-  // --- 13. INIT ---
+  // --- INIT ---
   document.addEventListener('DOMContentLoaded', () => {
     initTripTree(); initAI(); 
     const restored = restoreState();
@@ -764,41 +582,18 @@
     $('fileLoader').onchange = (e) => { const f=e.target.files[0]; if(f){const r=new FileReader();r.onload=(v)=>{$('input').value=v.target.result;saveState();};r.readAsText(f);} };
     $('btnPlanMode').onclick = () => setPlanningMode(true);
     $('btnMapMode').onclick = () => setPlanningMode(false);
-    $('tripSearch').oninput = (e) => { 
-        const q=e.target.value.toLowerCase(); 
-        document.querySelectorAll('.tree-item').forEach(i => { 
-          const match = i.textContent.toLowerCase().includes(q);
-          i.style.display = match ? 'block' : 'none';
-          if(q && match){
-            let p=i.parentElement;
-            while(p.id!=='presetTree'){
-              if(p.classList.contains('tree-group')) { p.classList.add('open'); const h = p.previousElementSibling; if(h) h.textContent = h.textContent.replace('›', '⌄'); }
-              p=p.parentElement;
-            }
-          }
-        }); 
-    };
+    $('tripSearch').oninput = (e) => { const q=e.target.value.toLowerCase(); document.querySelectorAll('.tree-item').forEach(i=>{i.style.display=i.textContent.toLowerCase().includes(q)?'block':'none';if(q&&i.style.display=='block')i.parentElement.classList.add('open')})};
     $('btnSendChat').onclick = () => handleChatSend('chatInput', 'chatHistory');
     $('chatInput').onkeypress = (e) => { if(e.key==='Enter') handleChatSend('chatInput', 'chatHistory'); };
-    const h=$('helpOverlay'); 
-    $('btnHelp').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=HELP_HTML;}; 
-    $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; 
-    $('btnCloseHelp').onclick=()=>h.style.display='none';
+    const h=$('helpOverlay'); $('btnHelp').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=HELP_HTML;}; $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT||"About missing.";}; $('btnCloseHelp').onclick=()=>h.style.display='none';
     if(restored) {
         const historyEl = $('chatHistory');
-        const restoreMsg = document.createElement('div');
-        restoreMsg.className = 'msg ai recovery-msg';
-        restoreMsg.style.borderLeft = "3px solid var(--success)";
-        restoreMsg.innerHTML = `<strong>System:</strong> I found an unsaved session from before.<div style="margin-top:10px; display:flex; gap:10px;"><button class="chip logistics" onclick="window.continueSession(this)">✅ Continue</button><button class="chip eat" style="border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,0.1)" onclick="window.resetSession()">🗑️ Start Fresh</button></div>`;
-        historyEl.appendChild(restoreMsg);
+        if(!historyEl.querySelector('.recovery-msg')) {
+             historyEl.innerHTML += `<div class="msg ai recovery-msg" style="border-left:3px solid var(--success)"><strong>System:</strong> Session restored.<div style="margin-top:10px; display:flex; gap:10px;"><button class="chip logistics" onclick="window.continueSession(this)">✅ Continue</button><button class="chip eat" style="border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,0.1)" onclick="window.resetSession()">🗑️ Fresh Start</button></div></div>`;
+        }
         setPlanningMode(true);
-    } else {
-        setPlanningMode(true);
-    }
+    } else { setPlanningMode(true); }
   });
   
-  function setTravelMode(mode) {
-    currentTravelMode = mode;
-    updateModeButtons();
-  }
+  function setTravelMode(mode) { currentTravelMode = mode; updateModeButtons(); }
 })();
