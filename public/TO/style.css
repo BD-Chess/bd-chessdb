@@ -1,15 +1,15 @@
 /* --- 1. CORE VISUALS & RESET --- */
 :root {
-  --bg-app: #0b0f14;       /* Deepest Navy */
-  --bg-panel: rgba(15, 22, 33, 0.65); /* Glassy Panel */
-  --bg-input: #0c121b;     /* Dark Input */
-  --primary: #3b82f6;      /* Bright Blue */
+  --bg-app: #0b0f14;       
+  --bg-panel: rgba(15, 22, 33, 0.65); 
+  --bg-input: #0c121b;     
+  --primary: #3b82f6;      
   --primary-hover: #2563eb;
-  --text-main: #e6edf3;    /* Bright White */
-  --text-dim: #9fb0c3;     /* Muted Blue-Grey */
-  --border: #1f2a3a;       /* Subtle Border */
-  --success: #10b981;      /* Green */
-  --danger: #ef4444;       /* Red */
+  --text-main: #e6edf3;    
+  --text-dim: #9fb0c3;     
+  --border: #1f2a3a;       
+  --success: #10b981;      
+  --danger: #ef4444;       
   --shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
@@ -127,6 +127,7 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary)
 #routeList {
   list-style: none; padding: 0; margin: 0; color: var(--text-dim); font-size: 0.9rem;
   max-height: 150px; overflow-y: auto;
+  border-top: 1px solid var(--border);
 }
 /* Updated List Items for Clickability */
 #routeList li { border-bottom: 1px solid var(--border); }
@@ -149,7 +150,19 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary)
   margin-top: 2px;
 }
 
-/* --- 8. LINK ROWS --- */
+/* --- 8. LINK ROWS & NAV TOGGLE --- */
+.nav-controls {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+  padding: 0 4px;
+  font-size: 0.8rem; color: var(--text-dim);
+}
+.nav-toggle label {
+  cursor: pointer; margin-left: 10px;
+  color: var(--text-main); font-weight: 600;
+}
+.nav-toggle input { width: auto; margin-right: 4px; accent-color: var(--primary); }
+
 .links-area { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
 .linkrow {
   display: flex; align-items: center; gap: 10px;
@@ -254,12 +267,12 @@ tr:last-child td { border-bottom: none; }
 /* --- 16. SHARE BUTTON (Gold & Blue) --- */
 .share-area { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border); text-align: center; }
 .btn-share {
-  background: #bfdbfe; /* Light Blue */
-  color: #92400e;      /* Deep Gold/Bronze for readability */
+  background: #bfdbfe; 
+  color: #92400e;      
   border: 1px solid #93c5fd;
   width: 100%; font-size: 1rem; padding: 14px;
   box-shadow: 0 4px 15px rgba(191, 219, 254, 0.2);
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  font-weight: 800; /* Bold */
+  font-weight: 800; 
 }
 .btn-share:hover { transform: translateY(-2px); background: #dbeafe; color: #b45309; }
