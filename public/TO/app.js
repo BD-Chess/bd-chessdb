@@ -71,6 +71,48 @@
     return html;
   }
 
+  // --- NEW: SMART SAVE (Fixes iPhone Filename Issue) ---
+  async function handleSmartSave() {
+    const content = $('input').value;
+    if (!content.trim()) {
+        setStatus('Nothing to save!', 'warn');
+        return;
+    }
+
+    // 1. Ask user for filename
+    let name = prompt("Name your trip file:", "my-trip");
+    if (!name) return; // User cancelled
+    if (!name.endsWith('.txt')) name += '.txt';
+
+    // 2. Try Native Share (iOS/Android)
+    if (navigator.share && navigator.canShare) {
+        try {
+            const file = new File([content], name, { type: 'text/plain' });
+            if (navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: 'Save Trip',
+                    text: 'Here is my optimized 8Z trip.'
+                });
+                setStatus('Shared successfully!', 'ok');
+                return;
+            }
+        } catch (e) {
+            console.log("Share failed or cancelled, falling back to download.", e);
+        }
+    }
+
+    // 3. Fallback: Classic Download (Desktop)
+    const blob = new Blob([content], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setStatus('Saved to Downloads', 'ok');
+  }
+
   // --- PERSISTENCE ENGINE ---
   function saveState() { 
     const state = {
@@ -790,7 +832,9 @@
     $('btnWalking').onclick = () => setTravelMode('WALKING');
     $('btnEnableMap').onclick = () => ensureMapsLoaded();
     
-    $('btnSave').onclick = () => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([$('input').value],{type:'text/plain'})); a.download='trip.txt'; a.click(); };
+    // --- UPDATED SAVE HANDLER ---
+    $('btnSave').onclick = handleSmartSave; // Replaced anonymous function with named one
+
     $('btnLoad').onclick = () => $('fileLoader').click();
     $('fileLoader').onchange = (e) => { const f=e.target.files[0]; if(f){const r=new FileReader();r.onload=(v)=>{$('input').value=v.target.result;saveState();};r.readAsText(f);} };
     
