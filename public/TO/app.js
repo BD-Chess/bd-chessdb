@@ -17,11 +17,12 @@
   let lastSolvedPoints = null;
   let currentGeminiModel = '';
   let currentTravelMode = 'DRIVING';
+  let currentNavApp = 'apple'; // Default to Apple for the list
   let mapScriptLoadingPromise = null;
   let chatHistoryBuffer = [];
   
   let presetLookup = {};
-  let userRegion = null; 
+  let userRegion = null;
 
   // --- 3. HTML CONTENT ---
   const HELP_HTML = `
@@ -31,8 +32,8 @@
         <li><strong>1. Trip Library:</strong> Click [+] to expand continents. Click a tour name to load it.</li>
         <li><strong>2. Edit:</strong> Add or remove stops in the text box.</li>
         <li><strong>3. Optimize:</strong> Use "Standard" for fast results or "Deep Search" for complex routes.</li>
-        <li><strong>4. Share:</strong> Use the button at the bottom to send your trip to friends.</li>
-        <li><strong>5. Navigate:</strong> Click any stop in the list to open point-to-point Apple Maps navigation.</li>
+        <li><strong>4. Navigation:</strong> Use the toggle above the list to switch between Google/Apple Maps for turn-by-turn guidance.</li>
+        <li><strong>5. Share:</strong> Click the button at the bottom to create a shareable link.</li>
       </ul>
     </div>
   `;
@@ -58,7 +59,7 @@
     }
   }
 
-  // --- 5. MARKDOWN PARSER (With Table Logic) ---
+  // --- 5. MARKDOWN PARSER (With Tables Restored) ---
   function formatMarkdown(text) {
     if (!text) return '';
     const lines = text.split('\n');
@@ -109,13 +110,13 @@
   }
   
   function restoreState() {
-    // 1. Check for Shared Trip in URL
+    // 1. Check for Shared Trip
     const params = new URLSearchParams(window.location.search);
     if (params.has('trip')) {
         try {
             const sharedTrip = decodeURIComponent(params.get('trip'));
             $('input').value = sharedTrip;
-            window.history.replaceState({}, document.title, window.location.pathname); // Clean URL
+            window.history.replaceState({}, document.title, window.location.pathname);
             setStatus('Shared trip loaded!', 'ok');
             setPlanningMode(true); 
             return true;
@@ -136,7 +137,6 @@
             chatHistoryBuffer = s.chatBuf;
             const historyEl = $('chatHistory');
             historyEl.innerHTML = s.chatHTML;
-            // Clean UI artifacts
             historyEl.querySelectorAll('.suggestions-box').forEach(el => el.remove());
             historyEl.querySelectorAll('.recovery-msg').forEach(el => el.remove());
             return true; 
@@ -145,7 +145,6 @@
     return false;
   }
 
-  // New Share Function
   window.shareTrip = function() {
       const tripData = $('input').value.trim();
       if (!tripData) { setStatus('List is empty!', 'bad'); return; }
@@ -185,7 +184,7 @@
     }
   }
 
-  // --- 7. INPUT & MAPS (Kept Original Robust Logic) ---
+  // --- 7. INPUT & MAPS (ORIGINAL ROBUST PARSER) ---
   function parseStops(text) {
     const lines = text.split(/\r?\n/);
     const pts = [];
@@ -313,7 +312,7 @@
     map.fitBounds(bounds);
   }
 
-  // --- 8. SMART LINKS (Updated for 3 Buttons) ---
+  // --- 8. SMART LINKS & TOGGLE LOGIC ---
   function buildMapsLegLinks(routePts, roundTrip, mode) {
     const travelmode = (mode === 'DRIVING') ? 'driving' : 'walking';
     
@@ -326,32 +325,37 @@
     const seq = routePts.slice();
     if (roundTrip && seq.length > 1) seq.push(seq[0]);
 
+    const MAX_MID = 9; 
     const links = [];
     let i = 0;
     while (i < seq.length - 1) {
       const origin = seq[i];
-      let j = Math.min(seq.length - 1, i + 1 + 9 + 1);
+      let j = Math.min(seq.length - 1, i + 1 + MAX_MID + 1);
       if (j <= i + 1) j = i + 2;
 
       const segment = seq.slice(i, j + 1);
       
-      // Google
+      // Pins URL
       const originPin = encodeCoords(segment[0]);
       const destPin = encodeCoords(segment[segment.length - 1]);
       const midsPin = segment.slice(1, -1).map(encodeCoords);
       let urlPins = `https://www.google.com/maps/dir/?api=1&origin=${originPin}&destination=${destPin}&travelmode=${travelmode}`;
       if (midsPin.length) urlPins += `&waypoints=${midsPin.join('%7C')}`;
 
+      // Names URL
       const originName = encodeName(segment[0]);
       const destName = encodeName(segment[segment.length - 1]);
       const midsName = segment.slice(1, -1).map(encodeName);
       let urlNames = `https://www.google.com/maps/dir/?api=1&origin=${originName}&destination=${destName}&travelmode=${travelmode}`;
       if (midsName.length) urlNames += `&waypoints=${midsName.join('%7C')}`;
 
-      // Apple Maps (Start -> End)
-      const appleUrl = `http://maps.apple.com/?saddr=${originPin}&daddr=${destPin}&dirflg=${mode === 'DRIVING' ? 'd' : 'w'}`;
+      // Removed Apple Maps button from here as requested
 
-      links.push({ label: `Leg ${links.length + 1}`, urlPins, urlNames, appleUrl });
+      links.push({ 
+        label: `Leg ${links.length + 1} (${segment.length} stops)`, 
+        urlPins: urlPins,
+        urlNames: urlNames
+      });
       i = j;
     }
     return links;
@@ -359,20 +363,25 @@
 
   function renderLinks(links) {
     const el = $('links'); el.innerHTML = '';
+    
     for (const L of links) {
       const row = document.createElement('div'); row.className = 'linkrow';
-      row.style.display = 'flex'; row.style.flexWrap = 'wrap'; row.style.alignItems = 'center'; row.style.gap = '8px';
+      row.style.display = 'flex'; row.style.flexWrap = 'wrap'; row.style.alignItems = 'center'; row.style.gap = '10px';
       
       row.innerHTML = `
-        <span class="badge" style="min-width:50px;">${L.label}</span>
-        <div style="display:flex; gap:6px; flex:1; flex-wrap:wrap;">
-            <a href="${L.urlPins}" target="_blank" style="flex:1; min-width:80px; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.8rem; text-decoration:none; color:#bfdbfe;">📍 G-Pins</a>
-            <a href="${L.urlNames}" target="_blank" style="flex:1; min-width:80px; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.8rem; text-decoration:none;">🏷️ G-Names</a>
-            <a href="${L.appleUrl}" target="_blank" style="flex:1; min-width:80px; text-align:center; padding:6px; background:rgba(255,255,255,0.1); color:#e2e8f0; border-radius:4px; font-size:0.8rem; text-decoration:none;">🍎 Apple</a>
+        <span class="badge" style="min-width:60px;">${L.label}</span>
+        <div style="display:flex; gap:8px; flex:1;">
+            <a href="${L.urlPins}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.85rem; text-decoration:none; color:#bfdbfe;">
+               📍 Exact Pins
+            </a>
+            <a href="${L.urlNames}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.85rem; text-decoration:none;">
+               🏷️ Names
+            </a>
         </div>
       `;
       el.appendChild(row);
     }
+    
     // Share Button appended at end
     const shareArea = document.createElement('div');
     shareArea.className = 'share-area';
@@ -380,7 +389,69 @@
     el.appendChild(shareArea);
   }
 
-  // --- 9. LIBRARY (With Geo-Location) ---
+  // --- NEW: Toggle Functionality for the List ---
+  window.setNavApp = function(app) {
+      currentNavApp = app;
+      // Re-render the list if we have data
+      if (lastSolvedPoints) {
+          renderRouteList(lastSolvedPoints);
+      }
+  };
+
+  function renderRouteList(points) {
+      const list = $('routeList'); 
+      list.innerHTML = '';
+      
+      // Inject Toggle Switch at top of list
+      const toggleRow = document.createElement('div');
+      toggleRow.style.cssText = "display:flex; justify-content:center; gap:10px; padding:10px; border-bottom:1px solid var(--border); margin-bottom:5px;";
+      
+      const isGoogle = currentNavApp === 'google';
+      const activeStyle = "background:var(--primary); color:white; border-color:var(--primary);";
+      const inactiveStyle = "background:transparent; color:var(--text-dim); border:1px solid var(--border);";
+      
+      toggleRow.innerHTML = `
+        <button onclick="window.setNavApp('google')" style="padding:6px 12px; font-size:0.8rem; border-radius:20px; cursor:pointer; ${isGoogle ? activeStyle : inactiveStyle}">Google Maps</button>
+        <button onclick="window.setNavApp('apple')" style="padding:6px 12px; font-size:0.8rem; border-radius:20px; cursor:pointer; ${!isGoogle ? activeStyle : inactiveStyle}">Apple Maps</button>
+      `;
+      list.appendChild(toggleRow);
+
+      const modeChar = currentTravelMode === 'DRIVING' ? 'd' : 'w';
+      const googleMode = currentTravelMode === 'DRIVING' ? 'driving' : 'walking';
+
+      points.forEach((p, i) => { 
+          const li = document.createElement('li');
+          const destCoords = `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
+          
+          let navUrl = "";
+          let label = "Tap to navigate here ↗";
+          
+          if (currentNavApp === 'apple') {
+              if (i === 0) {
+                  navUrl = `http://maps.apple.com/?daddr=${destCoords}&dirflg=${modeChar}`;
+              } else {
+                  const prevCoords = `${points[i-1].lat.toFixed(6)},${points[i-1].lon.toFixed(6)}`;
+                  navUrl = `http://maps.apple.com/?saddr=${prevCoords}&daddr=${destCoords}&dirflg=${modeChar}`;
+              }
+          } else {
+              // Google Maps Logic
+              if (i === 0) {
+                  navUrl = `https://www.google.com/maps/dir/?api=1&destination=${destCoords}&travelmode=${googleMode}`;
+              } else {
+                  const prevCoords = `${points[i-1].lat.toFixed(6)},${points[i-1].lon.toFixed(6)}`;
+                  navUrl = `https://www.google.com/maps/dir/?api=1&origin=${prevCoords}&destination=${destCoords}&travelmode=${googleMode}`;
+              }
+          }
+          
+          li.innerHTML = `<a href="${navUrl}" target="_blank">
+                            ${i + 1}. ${p.name}
+                            <small>${label}</small>
+                          </a>`;
+          list.appendChild(li); 
+      });
+  }
+
+  // --- 9. LIBRARY (GEO-AWARE) ---
   async function detectUserLocation() {
     try {
         const res = await fetch('https://ipapi.co/json/');
@@ -395,18 +466,10 @@
 
   async function initTripTree() {
     if (!window.TRIP_LIBRARY) return;
-    
     const region = await detectUserLocation();
     userRegion = region; 
-    
     let sortedLib = window.TRIP_LIBRARY.slice();
-    if (region) {
-        sortedLib.sort((a, b) => {
-            const aMatch = a.region.includes(region);
-            const bMatch = b.region.includes(region);
-            return bMatch - aMatch;
-        });
-    }
+    if (region) sortedLib.sort((a, b) => (b.region.includes(region) - a.region.includes(region)));
 
     const tree = $('presetTree'); tree.innerHTML = '';
     presetLookup = {};
@@ -414,10 +477,7 @@
     sortedLib.forEach((regionData, idx) => {
       const rNode = document.createElement('div');
       const isUserRegion = idx === 0 && region; 
-      const arrow = isUserRegion ? '⌄ ' : '› ';
-      const openClass = isUserRegion ? ' open' : '';
-      
-      rNode.innerHTML = `<div class="tree-header">${arrow} ${regionData.region}</div><div class="tree-group${openClass}"></div>`;
+      rNode.innerHTML = `<div class="tree-header">${isUserRegion?'⌄':'›'} ${regionData.region}</div><div class="tree-group${isUserRegion?' open':''}"></div>`;
       const rGroup = rNode.querySelector('.tree-group');
 
       regionData.categories.forEach(cat => {
@@ -433,6 +493,9 @@
           item.onclick = () => { 
             $('input').value = trip.data; 
             saveState(); 
+            if (trip.id.includes('GLOBAL')) { $('chkDirect').checked = true; setTravelMode('DRIVING'); }
+            else if (trip.id.includes('WALKING')) { $('chkDirect').checked = false; setTravelMode('WALKING'); }
+            else { $('chkDirect').checked = false; setTravelMode('DRIVING'); }
             setStatus(`Loaded: ${trip.label}`, 'ok');
             renderSuggestions('bigChatHistory');
           };
@@ -446,7 +509,7 @@
     });
   }
 
-  // --- 10. AI (With Action Badges) ---
+  // --- 10. AI HANDLER ---
   async function initAI() {
     try {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
@@ -513,7 +576,7 @@
               }, 500);
           }
           processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, 
-            '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Check the list above.</small></div>'
+            '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Check the list above to edit.</small></div>'
           );
       }
       // Handle ADD
@@ -596,7 +659,7 @@
     return t;
   }
 
-  // --- 11. RUN LOGIC (Apple Maps Integrated Here) ---
+  // --- 11. OPTIMIZER ---
   function showBusy(msg) {
     let overlay = $('busyOverlay');
     if (!overlay) {
@@ -620,7 +683,6 @@
     const stats = document.querySelector('.stats');
     const list = $('routeList');
     const links = $('links');
-    
     const btnPlan = $('btnPlanMode');
     const btnMap = $('btnMapMode');
     
@@ -649,7 +711,6 @@
         stats.style.display = 'none';
         list.style.display = 'none';
         links.style.display = 'none';
-        
         bigChat.style.display = 'flex';
         bigChat.style.flexDirection = 'column';
         bigChat.style.height = '100%';
@@ -657,7 +718,6 @@
         
         $('bigChatHistory').innerHTML = $('chatHistory').innerHTML;
         renderSuggestions('bigChatHistory');
-
         setTimeout(() => $('bigChatInput') && $('bigChatInput').focus(), 100);
     } else {
         btnMap.classList.add('active');
@@ -679,7 +739,6 @@
     if (!window.google) { setStatus('Loading Map API...', 'ok'); await ensureMapsLoaded(); }
 
     const raw = $('input').value;
-    // --- USING ORIGINAL ROBUST PARSER ---
     let { pts, startIdx } = parseStops(raw);
     
     try { pts = await geocodeMissingPoints(pts); }
@@ -715,30 +774,8 @@
       const saved = baseKm - totalKm;
       $('savedKm').textContent = saved > 0 ? saved.toFixed(2) + ' km' : '—';
       
-      const list = $('routeList'); list.innerHTML = '';
-      const modeChar = currentTravelMode === 'DRIVING' ? 'd' : 'w';
-
-      // --- APPLE MAPS LOGIC ---
-      pointsSorted.forEach((p, i) => { 
-          const li = document.createElement('li');
-          const destCoords = `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
-          
-          let navUrl = "";
-          if (i === 0) {
-              // Start: Navigate from Current Location
-              navUrl = `http://maps.apple.com/?daddr=${destCoords}&dirflg=${modeChar}`;
-          } else {
-              // Leg: Navigate from Prev Point -> Curr Point
-              const prevCoords = `${pointsSorted[i-1].lat.toFixed(6)},${pointsSorted[i-1].lon.toFixed(6)}`;
-              navUrl = `http://maps.apple.com/?saddr=${prevCoords}&daddr=${destCoords}&dirflg=${modeChar}`;
-          }
-          
-          li.innerHTML = `<a href="${navUrl}" target="_blank">
-                            ${i + 1}. ${p.name}
-                            <small>Tap to navigate here ↗</small>
-                          </a>`;
-          list.appendChild(li); 
-      });
+      // RENDER LIST WITH TOGGLE
+      renderRouteList(pointsSorted);
 
       updateMapVisualization(pointsSorted);
       const links = buildMapsLegLinks(pointsSorted, $('chkRoundTrip').checked, currentTravelMode);
