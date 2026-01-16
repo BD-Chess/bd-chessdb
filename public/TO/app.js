@@ -2,7 +2,6 @@
   'use strict';
 
   // --- 1. CONFIGURATION ---
-  // API Keys (Obfuscated slightly to prevent simple scraping)
   const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA'; 
   const _s1 = 'QUl6YVN5Q3hIanBw', _s2 = 'S2l4YW85OU5IOURv', _s3 = 'YWYtUTBLTzRmQ1FhZUhz';
   const GEMINI_API_KEY = atob(_s1) + atob(_s2) + atob(_s3);
@@ -22,9 +21,9 @@
   let chatHistoryBuffer = [];
   
   let presetLookup = {};
-  let userRegion = null; // Stores 'Europe', 'Americas', etc.
+  let userRegion = null; 
 
-  // --- 3. HTML CONTENT (Help & Visuals) ---
+  // --- 3. HTML CONTENT ---
   const HELP_HTML = `
     <div class="help-block">
       <h2>How to Use</h2>
@@ -32,7 +31,7 @@
         <li><strong>1. Trip Library:</strong> Click [+] to expand continents. Click a tour name to load it.</li>
         <li><strong>2. Edit:</strong> Add or remove stops in the text box.</li>
         <li><strong>3. Optimize:</strong> Use "Standard" for fast results or "Deep Search" for complex routes.</li>
-        <li><strong>4. Export:</strong> Click the links below the map to open in Google Maps.</li>
+        <li><strong>4. Export:</strong> Click the "Open in Maps" links to send the route to your phone.</li>
       </ul>
     </div>
     <div class="help-block">
@@ -65,17 +64,14 @@
   function formatMarkdown(text) {
     if (!text) return '';
     let html = text;
-    // Bold
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
-    // Bullets
     html = html.replace(/^\*\s/gm, '• ');
-    // Newlines
     html = html.replace(/\n/g, '<br>');
     return html;
   }
 
-  // --- 5. PERSISTENCE ENGINE (Save/Restore) ---
+  // --- 5. PERSISTENCE ENGINE ---
   function saveState() { 
     const state = {
         t: $('input').value,
@@ -104,7 +100,6 @@
             const historyEl = $('chatHistory');
             historyEl.innerHTML = s.chatHTML;
             
-            // Clean up UI artifacts to avoid duplicates
             const oldChips = historyEl.querySelectorAll('.suggestions-box');
             oldChips.forEach(el => el.remove());
             const oldRecovery = historyEl.querySelectorAll('.recovery-msg');
@@ -116,7 +111,6 @@
     return false;
   }
 
-  // Exposed globals for button clicks
   window.resetSession = function() {
       localStorage.removeItem(STORAGE_KEY);
       location.reload(); 
@@ -249,6 +243,7 @@
     points.forEach((pt, i) => {
       const loc = { lat: pt.lat, lng: pt.lon };
       bounds.extend(loc);
+      // Map pins are 1-based (i+1)
       const m = new google.maps.Marker({ position: loc, map: map, label: (i+1).toString(), title: pt.name });
       m.addListener("click", () => { infoWindow.setContent(`<strong>#${i+1} ${pt.name}</strong>`); infoWindow.open(map, m); });
       mapMarkers.push(m);
@@ -279,16 +274,12 @@
     map.fitBounds(bounds);
   }
 
-  // --- 8. SMART LINKS (Dual Mode: Pins & Names) ---
+  // --- 8. SMART LINKS ---
   function buildMapsLegLinks(routePts, roundTrip, mode) {
     const travelmode = (mode === 'DRIVING') ? 'driving' : 'walking';
     
-    // Helper 1: Force Coordinates (The "Pins" version)
     const encodeCoords = (p) => `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
-    
-    // Helper 2: Force Names (The "Readable" version)
     const encodeName = (p) => {
-        // If name is just coords (starts with digit or minus), fallback to coords
         if (p.name.match(/^-?\d+\./)) return encodeCoords(p);
         return encodeURIComponent(p.name);
     };
@@ -307,19 +298,17 @@
 
       const segment = seq.slice(i, j + 1);
       
-      // --- BUILD URL 1: PINS (Exact GPS) ---
+      // Pins URL
       const originPin = encodeCoords(segment[0]);
       const destPin = encodeCoords(segment[segment.length - 1]);
       const midsPin = segment.slice(1, -1).map(encodeCoords);
-      
       let urlPins = `https://www.google.com/maps/dir/?api=1&origin=${originPin}&destination=${destPin}&travelmode=${travelmode}`;
       if (midsPin.length) urlPins += `&waypoints=${midsPin.join('%7C')}`;
 
-      // --- BUILD URL 2: NAMES (Readable) ---
+      // Names URL
       const originName = encodeName(segment[0]);
       const destName = encodeName(segment[segment.length - 1]);
       const midsName = segment.slice(1, -1).map(encodeName);
-      
       let urlNames = `https://www.google.com/maps/dir/?api=1&origin=${originName}&destination=${destName}&travelmode=${travelmode}`;
       if (midsName.length) urlNames += `&waypoints=${midsName.join('%7C')}`;
 
@@ -328,34 +317,21 @@
         urlPins: urlPins,
         urlNames: urlNames
       });
-      
       i = j;
     }
     return links;
   }
 
   function renderLinks(links) {
-    const el = $('links'); 
-    el.innerHTML = '';
-    
+    const el = $('links'); el.innerHTML = '';
     for (const L of links) {
-      const row = document.createElement('div'); 
-      row.className = 'linkrow';
-      // Flex container for the dual buttons
-      row.style.display = 'flex';
-      row.style.flexWrap = 'wrap';
-      row.style.alignItems = 'center';
-      row.style.gap = '10px';
-      
+      const row = document.createElement('div'); row.className = 'linkrow';
+      row.style.display = 'flex'; row.style.flexWrap = 'wrap'; row.style.alignItems = 'center'; row.style.gap = '10px';
       row.innerHTML = `
         <span class="badge" style="min-width:60px;">${L.label}</span>
         <div style="display:flex; gap:8px; flex:1;">
-            <a href="${L.urlPins}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.85rem; text-decoration:none; color:#bfdbfe;">
-               📍 Exact Pins
-            </a>
-            <a href="${L.urlNames}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.85rem; text-decoration:none;">
-               🏷️ Names
-            </a>
+            <a href="${L.urlPins}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.85rem; text-decoration:none; color:#bfdbfe;">📍 Exact Pins</a>
+            <a href="${L.urlNames}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.85rem; text-decoration:none;">🏷️ Names</a>
         </div>
       `;
       el.appendChild(row);
@@ -368,26 +344,19 @@
         const res = await fetch('https://ipapi.co/json/');
         const data = await res.json();
         const code = data.country_code; 
-        
         if (['US', 'CA', 'MX'].includes(code)) return 'Americas';
         if (['CN', 'JP', 'KR', 'TH', 'VN', 'IN'].includes(code)) return 'Asia';
         if (['DE', 'FR', 'IT', 'ES', 'UK', 'GB', 'SI', 'AT', 'CH', 'NL', 'BE', 'SK', 'CZ', 'PL', 'HU'].includes(code)) return 'Europe';
         if (['BR', 'AR', 'CL', 'PE', 'CO'].includes(code)) return 'South America';
         return 'Global';
-    } catch(e) {
-        console.warn("Geo-IP failed, using default order.", e);
-        return null;
-    }
+    } catch(e) { console.warn("Geo-IP failed, using default order.", e); return null; }
   }
 
   async function initTripTree() {
     if (!window.TRIP_LIBRARY) return;
-    
-    // 1. Detect & Store Region
     const region = await detectUserLocation();
     userRegion = region; 
     
-    // 2. Sort Library
     let sortedLib = window.TRIP_LIBRARY.slice();
     if (region) {
         sortedLib.sort((a, b) => {
@@ -403,7 +372,6 @@
 
     sortedLib.forEach((regionData, idx) => {
       const rNode = document.createElement('div');
-      
       const isUserRegion = idx === 0 && region; 
       const arrow = isUserRegion ? '⌄ ' : '› ';
       const openClass = isUserRegion ? ' open' : '';
@@ -424,16 +392,9 @@
           item.onclick = () => { 
             $('input').value = trip.data; 
             saveState(); 
-            if (trip.id.includes('GLOBAL')) {
-                $('chkDirect').checked = true;
-                setTravelMode('DRIVING');
-            } else if (trip.id.includes('WALKING')) {
-                $('chkDirect').checked = false;
-                setTravelMode('WALKING');
-            } else {
-                $('chkDirect').checked = false;
-                setTravelMode('DRIVING');
-            }
+            if (trip.id.includes('GLOBAL')) { $('chkDirect').checked = true; setTravelMode('DRIVING'); }
+            else if (trip.id.includes('WALKING')) { $('chkDirect').checked = false; setTravelMode('WALKING'); }
+            else { $('chkDirect').checked = false; setTravelMode('DRIVING'); }
             setStatus(`Loaded: ${trip.label}`, 'ok');
             renderSuggestions('bigChatHistory');
           };
@@ -466,7 +427,7 @@
   }
 
   async function run(profile) {
-    setPlanningMode(false); // Switch to map view to see results
+    setPlanningMode(false); 
 
     if (!window.google) { setStatus('Loading Map API...', 'ok'); await ensureMapsLoaded(); }
 
@@ -506,8 +467,13 @@
       const saved = baseKm - totalKm;
       $('savedKm').textContent = saved > 0 ? saved.toFixed(2) + ' km' : '—';
       
+      // --- FIX: ADD NUMBERS TO LIST MATCHING MAP PINS ---
       const list = $('routeList'); list.innerHTML = '';
-      pointsSorted.forEach(p => { const li = document.createElement('li'); li.textContent = p.name; list.appendChild(li); });
+      pointsSorted.forEach((p, i) => { 
+          const li = document.createElement('li'); 
+          li.textContent = `${i + 1}. ${p.name}`; // e.g., "1. Paris"
+          list.appendChild(li); 
+      });
 
       updateMapVisualization(pointsSorted);
       const links = buildMapsLegLinks(pointsSorted, $('chkRoundTrip').checked, currentTravelMode);
@@ -516,7 +482,7 @@
     }
   };
 
-  // --- 11. UI CONTROL (Plan vs Map) & CHIPS ---
+  // --- 11. UI CONTROL ---
   function renderSuggestions(containerId) {
     const el = $(containerId);
     if (!el) return;
@@ -587,7 +553,6 @@
     const stats = document.querySelector('.stats');
     const list = $('routeList');
     const links = $('links');
-    
     const btnPlan = $('btnPlanMode');
     const btnMap = $('btnMapMode');
     
@@ -604,32 +569,26 @@
           </div>
         `;
         rightPanel.appendChild(bigChat);
-        
         $('btnSendBigChat').onclick = () => handleChatSend('bigChatInput', 'bigChatHistory');
         $('bigChatInput').onkeypress = (e) => { if(e.key==='Enter') handleChatSend('bigChatInput', 'bigChatHistory'); };
     }
 
     if (enabled) {
-        // --- PLAN MODE ---
         btnPlan.classList.add('active');
         btnMap.classList.remove('active');
         mapCont.style.display = 'none';
         stats.style.display = 'none';
         list.style.display = 'none';
         links.style.display = 'none';
-        
         bigChat.style.display = 'flex';
         bigChat.style.flexDirection = 'column';
         bigChat.style.height = '100%';
-        $('chatPanel').style.display = 'none'; // Hide small chat
+        $('chatPanel').style.display = 'none';
         
-        // Sync & Render
         $('bigChatHistory').innerHTML = $('chatHistory').innerHTML;
         renderSuggestions('bigChatHistory');
-
         setTimeout(() => $('bigChatInput') && $('bigChatInput').focus(), 100);
     } else {
-        // --- MAP MODE ---
         btnMap.classList.add('active');
         btnPlan.classList.remove('active');
         mapCont.style.display = 'block';
@@ -637,26 +596,18 @@
         list.style.display = 'block';
         links.style.display = 'flex';
         bigChat.style.display = 'none';
-        $('chatPanel').style.display = 'flex'; // Show small chat
+        $('chatPanel').style.display = 'flex';
         
-        // Sync Back
         $('chatHistory').innerHTML = $('bigChatHistory').innerHTML;
     }
   }
 
-  // --- 12. AI CHAT LOGIC ---
+  // --- 12. AI HANDLER ---
   async function initAI() {
     try {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
       const d = await r.json();
-      
-      let v = d.models.filter(m => 
-          m.name.includes('gemini') && 
-          !m.name.includes('vision') && 
-          !m.name.includes('embedding') &&
-          !m.name.includes('nano')
-      );
-      
+      let v = d.models.filter(m => m.name.includes('gemini') && !m.name.includes('vision') && !m.name.includes('embedding') && !m.name.includes('nano'));
       v.sort((a, b) => {
           if (a.name.includes('latest') && !b.name.includes('latest')) return -1;
           if (!a.name.includes('latest') && b.name.includes('latest')) return 1;
@@ -665,20 +616,13 @@
           if (va !== vb) return vb - va;
           return 0;
       });
-
       const s = $('modelSelector'); s.innerHTML='';
       v.forEach(m => { const o=document.createElement('option'); o.value=m.name; o.textContent=m.displayName; s.appendChild(o); });
-      
-      if (v.length > 0) {
-          currentGeminiModel = v[0].name;
-          s.value = currentGeminiModel;
-      }
+      if (v.length > 0) { currentGeminiModel = v[0].name; s.value = currentGeminiModel; }
       s.onchange = () => currentGeminiModel = s.value;
-      
     } catch(e){ console.error("AI Init Error", e); }
   }
 
-  // Expose chat sender for chips
   window.sendChat = function(text) {
       if(document.getElementById('bigChatInput').offsetParent) {
           document.getElementById('bigChatInput').value = text;
@@ -692,7 +636,6 @@
   async function handleChatSend(inputId, historyId) {
       const i = $(inputId), t = i.value.trim(), h = $(historyId);
       if (!t) return;
-      
       i.value = '';
       h.innerHTML += `<div class="msg user">${t}</div>`;
       h.scrollTop = h.scrollHeight;
@@ -704,7 +647,6 @@
       }
       
       saveState(); 
-
       const loadingId = 'loading-' + Date.now();
       h.innerHTML += `<div id="${loadingId}" class="msg ai" style="opacity:0.6">...</div>`;
       
@@ -714,7 +656,6 @@
       if(loader) loader.remove();
       
       let processedText = r;
-      // Handle REPLACE command
       const replaceMatch = r.match(/\{REPLACE:\s*([\s\S]*?)\}/);
       if (replaceMatch) {
           const newContent = replaceMatch[1].trim();
@@ -722,19 +663,15 @@
               $('input').value = newContent;
               saveState();
               setStatus('Trip list updated by AI.', 'ok');
-              
               setTimeout(() => {
                   renderSuggestions('bigChatHistory');
                   if (historyId === 'chatHistory') renderSuggestions('chatHistory');
               }, 500);
           }
-          // SHOW VISUAL ACTION CARD (Ghost Action Fix)
           processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, 
             '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Check the list above to edit.</small></div>'
           );
       }
-
-      // Handle ADD command
       const m = processedText.match(/\{ADD:\s*(.*?)\}/g); 
       if(m) {
         let addedCount = 0;
@@ -755,31 +692,24 @@
         );
       }
 
-      // Render Markdown & Final Output
       const cleanResponse = `<div class="msg ai"><strong>Gemini:</strong> ${formatMarkdown(processedText)}</div>`;
       h.innerHTML += cleanResponse;
       h.scrollTop = h.scrollHeight;
-      
       if (otherHistory) {
           otherHistory.innerHTML = h.innerHTML;
           otherHistory.scrollTop = otherHistory.scrollHeight;
       }
-      
       saveState(); 
   }
 
   async function callAI(txt) {
     chatHistoryBuffer.push({ role: "user", parts: [{ text: txt }] });
-    
     const currentTripData = $('input').value.substring(0, 3000); 
     const hasData = currentTripData.length > 20; 
-    
     const locationContext = userRegion ? `USER LOCATION: ${userRegion}` : "";
-    
     let sysPrompt = "";
     
     if (!hasData) {
-        // --- GUIDE MODE (Empty) ---
         sysPrompt = `
           You are the 8Z Trip Architect. The user has an EMPTY itinerary. ${locationContext}
           YOUR GOAL: Help them create a list of stops.
@@ -789,7 +719,6 @@
           - AMBIGUITY CHECK: Always specify Country (e.g. "Rome, Italy" NOT just "Rome"). Use "Place | lat, lon" for specific spots.
         `;
     } else {
-        // --- ANALYST MODE (Active) ---
         sysPrompt = `
           You are the 8Z Logistics Co-Pilot. ${locationContext}
           CURRENT STOPS: ${currentTripData}
@@ -815,12 +744,7 @@
     });
     
     const d = await res.json();
-    
-    if (d.error) {
-        console.error("Gemini API Error:", d.error);
-        return "Error: " + d.error.message;
-    }
-
+    if (d.error) { console.error("Gemini API Error:", d.error); return "Error: " + d.error.message; }
     const t = d.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response.";
     chatHistoryBuffer.push({ role: "model", parts: [{ text: t }] });
     return t;
@@ -829,24 +753,17 @@
   // --- 13. INIT ---
   document.addEventListener('DOMContentLoaded', () => {
     initTripTree(); initAI(); 
-    
-    // Attempt Restore
     const restored = restoreState();
-    
-    // Bind Controls
     $('btnStandard').onclick = () => run('standard');
     $('btnDeep').onclick = () => run('deep');
     $('btnDriving').onclick = () => setTravelMode('DRIVING');
     $('btnWalking').onclick = () => setTravelMode('WALKING');
     $('btnEnableMap').onclick = () => ensureMapsLoaded();
-    
     $('btnSave').onclick = () => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([$('input').value],{type:'text/plain'})); a.download='trip.txt'; a.click(); };
     $('btnLoad').onclick = () => $('fileLoader').click();
     $('fileLoader').onchange = (e) => { const f=e.target.files[0]; if(f){const r=new FileReader();r.onload=(v)=>{$('input').value=v.target.result;saveState();};r.readAsText(f);} };
-    
     $('btnPlanMode').onclick = () => setPlanningMode(true);
     $('btnMapMode').onclick = () => setPlanningMode(false);
-
     $('tripSearch').oninput = (e) => { 
         const q=e.target.value.toLowerCase(); 
         document.querySelectorAll('.tree-item').forEach(i => { 
@@ -855,43 +772,28 @@
           if(q && match){
             let p=i.parentElement;
             while(p.id!=='presetTree'){
-              if(p.classList.contains('tree-group')) {
-                p.classList.add('open');
-                const h = p.previousElementSibling; 
-                if(h) h.textContent = h.textContent.replace('›', '⌄');
-              }
+              if(p.classList.contains('tree-group')) { p.classList.add('open'); const h = p.previousElementSibling; if(h) h.textContent = h.textContent.replace('›', '⌄'); }
               p=p.parentElement;
             }
           }
         }); 
     };
-
     $('btnSendChat').onclick = () => handleChatSend('chatInput', 'chatHistory');
     $('chatInput').onkeypress = (e) => { if(e.key==='Enter') handleChatSend('chatInput', 'chatHistory'); };
-    
     const h=$('helpOverlay'); 
     $('btnHelp').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=HELP_HTML;}; 
     $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; 
     $('btnCloseHelp').onclick=()=>h.style.display='none';
-    
-    // Recovery Logic
     if(restored) {
         const historyEl = $('chatHistory');
         const restoreMsg = document.createElement('div');
         restoreMsg.className = 'msg ai recovery-msg';
         restoreMsg.style.borderLeft = "3px solid var(--success)";
-        restoreMsg.innerHTML = `
-          <strong>System:</strong> I found an unsaved session from before.
-          <div style="margin-top:10px; display:flex; gap:10px;">
-            <button class="chip logistics" onclick="window.continueSession(this)">✅ Continue</button>
-            <button class="chip eat" style="border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,0.1)" onclick="window.resetSession()">🗑️ Start Fresh</button>
-          </div>
-        `;
+        restoreMsg.innerHTML = `<strong>System:</strong> I found an unsaved session from before.<div style="margin-top:10px; display:flex; gap:10px;"><button class="chip logistics" onclick="window.continueSession(this)">✅ Continue</button><button class="chip eat" style="border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,0.1)" onclick="window.resetSession()">🗑️ Start Fresh</button></div>`;
         historyEl.appendChild(restoreMsg);
-        
-        setPlanningMode(true); // Always return to Plan Mode on restore
+        setPlanningMode(true);
     } else {
-        setPlanningMode(true); // Default to Plan Mode
+        setPlanningMode(true);
     }
   });
   
