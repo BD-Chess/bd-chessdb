@@ -59,7 +59,7 @@
     }
   }
 
-  // --- 5. MARKDOWN PARSER (With Tables Restored) ---
+  // --- 5. MARKDOWN PARSER ---
   function formatMarkdown(text) {
     if (!text) return '';
     const lines = text.split('\n');
@@ -68,24 +68,20 @@
     
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
-        // Detect Table Row
         if (line.startsWith('|')) {
             if (!inTable) {
                 inTable = true;
                 html += '<div class="chat-table-wrapper"><table>';
-                // Header
                 const cells = line.split('|').filter(c => c.trim() !== '').map(c => `<th>${c.trim()}</th>`).join('');
                 html += `<thead><tr>${cells}</tr></thead><tbody>`;
             } else if (line.includes('---')) {
-                continue; // Skip separator
+                continue;
             } else {
-                // Body
                 const cells = line.split('|').filter(c => c.trim() !== '').map(c => `<td>${c.trim()}</td>`).join('');
                 html += `<tr>${cells}</tr>`;
             }
         } else {
             if (inTable) { inTable = false; html += '</tbody></table></div>'; }
-            // Standard formatting
             let formatted = line;
             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             formatted = formatted.replace(/^\*\s/, '• ');
@@ -96,7 +92,7 @@
     return html;
   }
 
-  // --- 6. PERSISTENCE & SHARING ---
+  // --- 6. PERSISTENCE ---
   function saveState() { 
     const state = {
         t: $('input').value,
@@ -110,7 +106,6 @@
   }
   
   function restoreState() {
-    // 1. Check for Shared Trip
     const params = new URLSearchParams(window.location.search);
     if (params.has('trip')) {
         try {
@@ -123,7 +118,6 @@
         } catch(e) { console.error("Share load failed", e); }
     }
 
-    // 2. Local Storage
     const sStr = localStorage.getItem(STORAGE_KEY);
     if (!sStr) return false;
 
@@ -148,9 +142,7 @@
   window.shareTrip = function() {
       const tripData = $('input').value.trim();
       if (!tripData) { setStatus('List is empty!', 'bad'); return; }
-      
       const url = window.location.origin + window.location.pathname + '?trip=' + encodeURIComponent(tripData);
-      
       navigator.clipboard.writeText(url).then(() => {
           setStatus('Link copied!', 'ok');
           const btn = $('btnShareTrip');
@@ -160,11 +152,7 @@
       }).catch(() => prompt("Copy this link:", url));
   };
 
-  window.resetSession = function() {
-      localStorage.removeItem(STORAGE_KEY);
-      location.reload(); 
-  };
-
+  window.resetSession = function() { localStorage.removeItem(STORAGE_KEY); location.reload(); };
   window.continueSession = function(btn) {
       if(btn) btn.closest('.msg').remove();
       const historyId = $('bigChatContainer').style.display !== 'none' ? 'bigChatHistory' : 'chatHistory';
@@ -176,7 +164,6 @@
     const dr = $('btnDriving'), wk = $('btnWalking');
     if (currentTravelMode === 'DRIVING') { dr.classList.add('active'); wk.classList.remove('active'); }
     else { wk.classList.add('active'); dr.classList.remove('active'); }
-    
     if (lastSolvedPoints) {
       updateMapVisualization(lastSolvedPoints);
       const links = buildMapsLegLinks(lastSolvedPoints, $('chkRoundTrip').checked, currentTravelMode);
@@ -184,7 +171,7 @@
     }
   }
 
-  // --- 7. INPUT & MAPS (ORIGINAL ROBUST PARSER) ---
+  // --- 7. INPUT & MAPS ---
   function parseStops(text) {
     const lines = text.split(/\r?\n/);
     const pts = [];
@@ -194,22 +181,13 @@
     for (let raw of lines) {
       raw = raw.trim();
       if (!raw || raw.startsWith('#')) continue;
-
       let isStart = false;
-      if (/\bSTART\b/i.test(raw)) {
-        isStart = true;
-        raw = raw.replace(/\bSTART\b/i, '').trim();
-      }
-
-      let name = raw;
-      let lat = null, lon = null;
-
+      if (/\bSTART\b/i.test(raw)) { isStart = true; raw = raw.replace(/\bSTART\b/i, '').trim(); }
+      let name = raw; let lat = null, lon = null;
       if (raw.includes('|')) {
         const parts = raw.split('|');
-        const p0 = parts[0].trim();
-        const p1 = parts[1].trim();
-        const m0 = coordRe.exec(p0);
-        const m1 = coordRe.exec(p1);
+        const p0 = parts[0].trim(); const p1 = parts[1].trim();
+        const m0 = coordRe.exec(p0); const m1 = coordRe.exec(p1);
         if (m1) { name = p0 || "Point"; lat = parseFloat(m1[1]); lon = parseFloat(m1[2]); }
         else if (m0) { name = p1 || "Point"; lat = parseFloat(m0[1]); lon = parseFloat(m0[2]); }
       } else {
@@ -220,9 +198,8 @@
           name = (potentialName.length > 1) ? potentialName.replace(/^,/, '').trim() : `(${lat.toFixed(3)}, ${lon.toFixed(3)})`;
         }
       }
-      const p = { name, lat, lon, raw: raw };
+      pts.push({ name, lat, lon, raw: raw });
       if (isStart) startIdx = pts.length;
-      pts.push(p);
     }
     return { pts, startIdx };
   }
@@ -230,7 +207,6 @@
   async function geocodeMissingPoints(pts) {
     const missing = pts.filter(p => p.lat === null || p.lon === null);
     if (missing.length === 0) return pts;
-    
     setStatus(`Looking up ${missing.length} addresses...`, 'warn');
     for (let i = 0; i < missing.length; i++) {
       const p = missing[i];
@@ -240,10 +216,7 @@
           if (status === 'OK') resolve(results[0]); else resolve(null);
         });
       });
-      if (result) { 
-          p.lat = result.geometry.location.lat(); 
-          p.lon = result.geometry.location.lng(); 
-      }
+      if (result) { p.lat = result.geometry.location.lat(); p.lon = result.geometry.location.lng(); }
       await new Promise(r => setTimeout(r, 250)); 
     }
     return pts;
@@ -252,8 +225,7 @@
   function ensureMapsLoaded() {
     if (window.google && window.google.maps) return Promise.resolve();
     if (mapScriptLoadingPromise) return mapScriptLoadingPromise;
-    
-    mapScriptLoadingPromise = new Promise((resolve, reject) => {
+    mapScriptLoadingPromise = new Promise((resolve) => {
       window.initMap = function() {
         map = new google.maps.Map($('map'), { zoom:12, center:{lat:46.0569,lng:14.5058}, mapTypeId:'hybrid', styles:DARK_STYLE });
         geocoder = new google.maps.Geocoder();
@@ -273,11 +245,9 @@
   function updateMapVisualization(points) {
     if (!map) return;
     const ph = $('mapPlaceholder'); if(ph) ph.style.display = 'none';
-
     mapMarkers.forEach(m => m.setMap(null)); mapMarkers=[];
     directionsRenderers.forEach(d => d.setMap(null)); directionsRenderers=[];
     if(mapPolyline) { mapPolyline.setMap(null); mapPolyline=null; }
-
     const bounds = new google.maps.LatLngBounds();
     points.forEach((pt, i) => {
       const loc = { lat: pt.lat, lng: pt.lon };
@@ -286,76 +256,44 @@
       m.addListener("click", () => { infoWindow.setContent(`<strong>#${i+1} ${pt.name}</strong>`); infoWindow.open(map, m); });
       mapMarkers.push(m);
     });
-
     if ($('chkDirect').checked) {
       mapPolyline = new google.maps.Polyline({ path: points.map(p=>({lat:p.lat,lng:p.lon})), geodesic: true, strokeColor: "#3b82f6", strokeWeight: 4 });
       mapPolyline.setMap(map);
     } else {
       const path = points.map(p=>({lat:p.lat,lng:p.lon}));
       if ($('chkRoundTrip').checked) path.push(path[0]);
-      
       const gMode = currentTravelMode === 'DRIVING' ? google.maps.TravelMode.DRIVING : google.maps.TravelMode.WALKING;
-      
       for(let i=0; i<path.length-1; i+=24) {
         const seg = path.slice(i, i+25);
         const r = new google.maps.DirectionsRenderer({ map:map, suppressMarkers:true, polylineOptions:{strokeColor:"#3b82f6", strokeWeight:5} });
         directionsRenderers.push(r);
-        directionsService.route({
-          origin: seg[0], destination: seg[seg.length-1],
-          waypoints: seg.slice(1,-1).map(l => ({location:l, stopover:true})),
-          travelMode: gMode
-        }, (res, st) => { if(st === "OK") r.setDirections(res); });
+        directionsService.route({ origin: seg[0], destination: seg[seg.length-1], waypoints: seg.slice(1,-1).map(l => ({location:l, stopover:true})), travelMode: gMode }, (res, st) => { if(st === "OK") r.setDirections(res); });
       }
     }
-    
     google.maps.event.trigger(map, 'resize');
     map.fitBounds(bounds);
   }
 
-  // --- 8. SMART LINKS & TOGGLE LOGIC ---
+  // --- 8. SMART LINKS & TOGGLE ---
   function buildMapsLegLinks(routePts, roundTrip, mode) {
     const travelmode = (mode === 'DRIVING') ? 'driving' : 'walking';
-    
     const encodeCoords = (p) => `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
-    const encodeName = (p) => {
-        if (p.name.match(/^-?\d+\./)) return encodeCoords(p);
-        return encodeURIComponent(p.name);
-    };
-
+    const encodeName = (p) => { if (p.name.match(/^-?\d+\./)) return encodeCoords(p); return encodeURIComponent(p.name); };
     const seq = routePts.slice();
     if (roundTrip && seq.length > 1) seq.push(seq[0]);
-
-    const MAX_MID = 9; 
-    const links = [];
-    let i = 0;
+    const links = []; let i = 0;
     while (i < seq.length - 1) {
       const origin = seq[i];
-      let j = Math.min(seq.length - 1, i + 1 + MAX_MID + 1);
+      let j = Math.min(seq.length - 1, i + 1 + 9 + 1);
       if (j <= i + 1) j = i + 2;
-
       const segment = seq.slice(i, j + 1);
-      
-      // Pins URL
-      const originPin = encodeCoords(segment[0]);
-      const destPin = encodeCoords(segment[segment.length - 1]);
-      const midsPin = segment.slice(1, -1).map(encodeCoords);
+      const originPin = encodeCoords(segment[0]); const destPin = encodeCoords(segment[segment.length - 1]); const midsPin = segment.slice(1, -1).map(encodeCoords);
       let urlPins = `https://www.google.com/maps/dir/?api=1&origin=${originPin}&destination=${destPin}&travelmode=${travelmode}`;
       if (midsPin.length) urlPins += `&waypoints=${midsPin.join('%7C')}`;
-
-      // Names URL
-      const originName = encodeName(segment[0]);
-      const destName = encodeName(segment[segment.length - 1]);
-      const midsName = segment.slice(1, -1).map(encodeName);
+      const originName = encodeName(segment[0]); const destName = encodeName(segment[segment.length - 1]); const midsName = segment.slice(1, -1).map(encodeName);
       let urlNames = `https://www.google.com/maps/dir/?api=1&origin=${originName}&destination=${destName}&travelmode=${travelmode}`;
       if (midsName.length) urlNames += `&waypoints=${midsName.join('%7C')}`;
-
-      // Removed Apple Maps button from here as requested
-
-      links.push({ 
-        label: `Leg ${links.length + 1} (${segment.length} stops)`, 
-        urlPins: urlPins,
-        urlNames: urlNames
-      });
+      links.push({ label: `Leg ${links.length + 1} (${segment.length} stops)`, urlPins, urlNames });
       i = j;
     }
     return links;
@@ -363,90 +301,46 @@
 
   function renderLinks(links) {
     const el = $('links'); el.innerHTML = '';
-    
     for (const L of links) {
       const row = document.createElement('div'); row.className = 'linkrow';
       row.style.display = 'flex'; row.style.flexWrap = 'wrap'; row.style.alignItems = 'center'; row.style.gap = '10px';
-      
-      row.innerHTML = `
-        <span class="badge" style="min-width:60px;">${L.label}</span>
-        <div style="display:flex; gap:8px; flex:1;">
-            <a href="${L.urlPins}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.85rem; text-decoration:none; color:#bfdbfe;">
-               📍 Exact Pins
-            </a>
-            <a href="${L.urlNames}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.85rem; text-decoration:none;">
-               🏷️ Names
-            </a>
-        </div>
-      `;
+      row.innerHTML = `<span class="badge" style="min-width:60px;">${L.label}</span><div style="display:flex; gap:8px; flex:1;"><a href="${L.urlPins}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.85rem; text-decoration:none; color:#bfdbfe;">📍 Exact Pins</a><a href="${L.urlNames}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.85rem; text-decoration:none;">🏷️ Names</a></div>`;
       el.appendChild(row);
     }
-    
-    // Share Button appended at end
     const shareArea = document.createElement('div');
     shareArea.className = 'share-area';
     shareArea.innerHTML = `<button id="btnShareTrip" class="btn-share" onclick="window.shareTrip()">🔗 Share This Trip</button>`;
     el.appendChild(shareArea);
   }
 
-  // --- NEW: Toggle Functionality for the List ---
   window.setNavApp = function(app) {
       currentNavApp = app;
-      // Re-render the list if we have data
-      if (lastSolvedPoints) {
-          renderRouteList(lastSolvedPoints);
-      }
+      if (lastSolvedPoints) renderRouteList(lastSolvedPoints);
   };
 
   function renderRouteList(points) {
-      const list = $('routeList'); 
-      list.innerHTML = '';
-      
-      // Inject Toggle Switch at top of list
+      const list = $('routeList'); list.innerHTML = '';
       const toggleRow = document.createElement('div');
       toggleRow.style.cssText = "display:flex; justify-content:center; gap:10px; padding:10px; border-bottom:1px solid var(--border); margin-bottom:5px;";
-      
       const isGoogle = currentNavApp === 'google';
       const activeStyle = "background:var(--primary); color:white; border-color:var(--primary);";
       const inactiveStyle = "background:transparent; color:var(--text-dim); border:1px solid var(--border);";
-      
-      toggleRow.innerHTML = `
-        <button onclick="window.setNavApp('google')" style="padding:6px 12px; font-size:0.8rem; border-radius:20px; cursor:pointer; ${isGoogle ? activeStyle : inactiveStyle}">Google Maps</button>
-        <button onclick="window.setNavApp('apple')" style="padding:6px 12px; font-size:0.8rem; border-radius:20px; cursor:pointer; ${!isGoogle ? activeStyle : inactiveStyle}">Apple Maps</button>
-      `;
+      toggleRow.innerHTML = `<button onclick="window.setNavApp('google')" style="padding:6px 12px; font-size:0.8rem; border-radius:20px; cursor:pointer; ${isGoogle ? activeStyle : inactiveStyle}">Google Maps</button><button onclick="window.setNavApp('apple')" style="padding:6px 12px; font-size:0.8rem; border-radius:20px; cursor:pointer; ${!isGoogle ? activeStyle : inactiveStyle}">Apple Maps</button>`;
       list.appendChild(toggleRow);
-
       const modeChar = currentTravelMode === 'DRIVING' ? 'd' : 'w';
       const googleMode = currentTravelMode === 'DRIVING' ? 'driving' : 'walking';
-
       points.forEach((p, i) => { 
           const li = document.createElement('li');
           const destCoords = `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
-          
           let navUrl = "";
-          let label = "Tap to navigate here ↗";
-          
           if (currentNavApp === 'apple') {
-              if (i === 0) {
-                  navUrl = `http://maps.apple.com/?daddr=${destCoords}&dirflg=${modeChar}`;
-              } else {
-                  const prevCoords = `${points[i-1].lat.toFixed(6)},${points[i-1].lon.toFixed(6)}`;
-                  navUrl = `http://maps.apple.com/?saddr=${prevCoords}&daddr=${destCoords}&dirflg=${modeChar}`;
-              }
+              if (i === 0) navUrl = `http://maps.apple.com/?daddr=${destCoords}&dirflg=${modeChar}`;
+              else { const prevCoords = `${points[i-1].lat.toFixed(6)},${points[i-1].lon.toFixed(6)}`; navUrl = `http://maps.apple.com/?saddr=${prevCoords}&daddr=${destCoords}&dirflg=${modeChar}`; }
           } else {
-              // Google Maps Logic
-              if (i === 0) {
-                  navUrl = `https://www.google.com/maps/dir/?api=1&destination=${destCoords}&travelmode=${googleMode}`;
-              } else {
-                  const prevCoords = `${points[i-1].lat.toFixed(6)},${points[i-1].lon.toFixed(6)}`;
-                  navUrl = `https://www.google.com/maps/dir/?api=1&origin=${prevCoords}&destination=${destCoords}&travelmode=${googleMode}`;
-              }
+              if (i === 0) navUrl = `https://www.google.com/maps/dir/?api=1&destination=${destCoords}&travelmode=${googleMode}`;
+              else { const prevCoords = `${points[i-1].lat.toFixed(6)},${points[i-1].lon.toFixed(6)}`; navUrl = `https://www.google.com/maps/dir/?api=1&origin=${prevCoords}&destination=${destCoords}&travelmode=${googleMode}`; }
           }
-          
-          li.innerHTML = `<a href="${navUrl}" target="_blank">
-                            ${i + 1}. ${p.name}
-                            <small>${label}</small>
-                          </a>`;
+          li.innerHTML = `<a href="${navUrl}" target="_blank">${i + 1}. ${p.name}<small>Tap to navigate here ↗</small></a>`;
           list.appendChild(li); 
       });
   }
@@ -470,34 +364,26 @@
     userRegion = region; 
     let sortedLib = window.TRIP_LIBRARY.slice();
     if (region) sortedLib.sort((a, b) => (b.region.includes(region) - a.region.includes(region)));
-
     const tree = $('presetTree'); tree.innerHTML = '';
     presetLookup = {};
-
     sortedLib.forEach((regionData, idx) => {
       const rNode = document.createElement('div');
       const isUserRegion = idx === 0 && region; 
       rNode.innerHTML = `<div class="tree-header">${isUserRegion?'⌄':'›'} ${regionData.region}</div><div class="tree-group${isUserRegion?' open':''}"></div>`;
       const rGroup = rNode.querySelector('.tree-group');
-
       regionData.categories.forEach(cat => {
         const cNode = document.createElement('div');
         cNode.innerHTML = `<div class="tree-header">› ${cat.name}</div><div class="tree-group"></div>`;
         const cGroup = cNode.querySelector('.tree-group');
-
         cat.items.forEach(trip => {
           presetLookup[trip.id] = trip.data;
-          const item = document.createElement('span');
-          item.className = 'tree-item';
-          item.textContent = trip.label;
+          const item = document.createElement('span'); item.className = 'tree-item'; item.textContent = trip.label;
           item.onclick = () => { 
-            $('input').value = trip.data; 
-            saveState(); 
+            $('input').value = trip.data; saveState(); 
             if (trip.id.includes('GLOBAL')) { $('chkDirect').checked = true; setTravelMode('DRIVING'); }
             else if (trip.id.includes('WALKING')) { $('chkDirect').checked = false; setTravelMode('WALKING'); }
             else { $('chkDirect').checked = false; setTravelMode('DRIVING'); }
-            setStatus(`Loaded: ${trip.label}`, 'ok');
-            renderSuggestions('bigChatHistory');
+            setStatus(`Loaded: ${trip.label}`, 'ok'); renderSuggestions('bigChatHistory');
           };
           cGroup.appendChild(item);
         });
@@ -509,7 +395,33 @@
     });
   }
 
-  // --- 10. AI HANDLER ---
+  // --- 10. AI & SUGGESTIONS (FIXED) ---
+  function renderSuggestions(containerId) {
+    const el = $(containerId); if (!el) return;
+    const old = el.querySelector('.suggestions-box'); if (old) old.remove();
+    
+    const inputVal = $('input').value.trim();
+    const isNew = inputVal.length < 10; 
+    
+    const box = document.createElement('div'); 
+    box.className = 'suggestions-box';
+    
+    // HELP HTML (Shared)
+    const helpHtml = `<div class="suggestion-group"><div class="suggestion-label">ℹ️ Help</div><div class="chip-grid"><div class="chip" onclick="window.sendChat('How do I use the Trip Library?')">How to use Library?</div><div class="chip" onclick="window.sendChat('What does Optimize do?')">Explain Optimization</div></div></div>`;
+
+    if (isNew) {
+        let regionChip = "";
+        if (userRegion === 'Europe') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a classic Europe tour (Paris, Rome, Berlin)\')">🇪🇺 Classic Europe Tour</div>';
+        if (userRegion === 'Americas') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a USA West Coast road trip\')">🇺🇸 USA West Coast</div>';
+        
+        box.innerHTML = `<div class="suggestion-group"><div class="suggestion-label">✨ Start a New Adventure</div><div class="chip-grid">${regionChip}<div class="chip logistics" onclick="window.sendChat('Create a 3-day itinerary for Rome, Italy')">Create 3-Day Rome Itinerary</div><div class="chip logistics" onclick="window.sendChat('Suggest a romantic weekend in Paris')">Paris Weekend</div></div></div>${helpHtml}`;
+    } else {
+        // ADDED HELP HTML HERE TOO so it doesn't vanish!
+        box.innerHTML = `<div class="suggestion-group"><div class="suggestion-label">🛏️ Sleeping Strategy</div><div class="chip-grid"><div class="chip sleep" onclick="window.sendChat('Where should I stay? Calculate the best base camp.')">Find Best Base Camp</div></div></div><div class="suggestion-group"><div class="suggestion-label">🍴 Eating</div><div class="chip-grid"><div class="chip eat" onclick="window.sendChat('Suggest lunch spots with high ratings but low price')">Best Cheap Eats</div><div class="chip eat" onclick="window.sendChat('Where is a good romantic dinner spot nearby?')">Romantic Dinner</div></div></div><div class="suggestion-group"><div class="suggestion-label">🚕 Logistics</div><div class="chip-grid"><div class="chip logistics" onclick="window.sendChat('How much time do I need for each stop?')">Time per Stop?</div><div class="chip logistics" onclick="window.sendChat('Is this route walkable or do I need a taxi?')">Walk vs Taxi</div></div></div>${helpHtml}`;
+    }
+    el.insertBefore(box, el.firstChild);
+  }
+
   async function initAI() {
     try {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
@@ -538,122 +450,52 @@
   };
 
   async function handleChatSend(inputId, historyId) {
-      const i = $(inputId), t = i.value.trim(), h = $(historyId);
-      if (!t) return;
-      
-      i.value = '';
-      h.innerHTML += `<div class="msg user">${t}</div>`;
-      h.scrollTop = h.scrollHeight;
-      
+      const i = $(inputId), t = i.value.trim(), h = $(historyId); if (!t) return;
+      i.value = ''; h.innerHTML += `<div class="msg user">${t}</div>`; h.scrollTop = h.scrollHeight;
       const otherHistory = historyId === 'chatHistory' ? $('bigChatHistory') : $('chatHistory');
-      if (otherHistory) {
-          otherHistory.innerHTML = h.innerHTML;
-          otherHistory.scrollTop = otherHistory.scrollHeight;
-      }
-      
+      if (otherHistory) { otherHistory.innerHTML = h.innerHTML; otherHistory.scrollTop = otherHistory.scrollHeight; }
       saveState(); 
 
       const loadingId = 'loading-' + Date.now();
       h.innerHTML += `<div id="${loadingId}" class="msg ai" style="opacity:0.6">...</div>`;
       
       const r = await callAI(t);
-      
-      const loader = document.getElementById(loadingId);
-      if(loader) loader.remove();
+      const loader = document.getElementById(loadingId); if(loader) loader.remove();
       
       let processedText = r;
-      // Handle REPLACE
       const replaceMatch = r.match(/\{REPLACE:\s*([\s\S]*?)\}/);
-      if (replaceMatch) {
-          const newContent = replaceMatch[1].trim();
-          if (newContent) {
-              $('input').value = newContent;
-              saveState();
-              setStatus('Trip updated.', 'ok');
-              setTimeout(() => {
-                  renderSuggestions('bigChatHistory');
-                  if (historyId === 'chatHistory') renderSuggestions('chatHistory');
-              }, 500);
-          }
-          processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, 
-            '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Check the list above to edit.</small></div>'
-          );
+      if (replaceMatch && replaceMatch[1].trim()) {
+          $('input').value = replaceMatch[1].trim(); saveState(); setStatus('Trip updated.', 'ok');
+          setTimeout(() => { renderSuggestions('bigChatHistory'); if (historyId === 'chatHistory') renderSuggestions('chatHistory'); }, 500);
+          processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Check list above.</small></div>');
       }
-      // Handle ADD
       const m = processedText.match(/\{ADD:\s*(.*?)\}/g); 
       if(m) {
         let addedCount = 0;
-        m.forEach(x=>{ 
-            const l=x.replace(/\{ADD:\s*|\}/g,'').trim(); 
-            if(!$('input').value.includes(l)) {
-                $('input').value += ($('input').value.endsWith('\n') ? '' : '\n') + l;
-                addedCount++;
-            }
-        });
-        if(addedCount > 0) {
-            saveState();
-            setStatus(`AI added ${addedCount} stops.`, 'ok');
-            renderSuggestions('bigChatHistory'); 
-        }
-        processedText = processedText.replace(/\{ADD:.*?\}/g, 
-            '<div class="action-badge">➕ <strong>Stops Added</strong><small>Check the list above.</small></div>'
-        );
+        m.forEach(x=>{ const l=x.replace(/\{ADD:\s*|\}/g,'').trim(); if(!$('input').value.includes(l)) { $('input').value += ($('input').value.endsWith('\n') ? '' : '\n') + l; addedCount++; } });
+        if(addedCount > 0) { saveState(); setStatus(`AI added ${addedCount} stops.`, 'ok'); renderSuggestions('bigChatHistory'); }
+        processedText = processedText.replace(/\{ADD:.*?\}/g, '<div class="action-badge">➕ <strong>Stops Added</strong><small>Check list above.</small></div>');
       }
 
-      const cleanResponse = `<div class="msg ai"><strong>Gemini:</strong> ${formatMarkdown(processedText)}</div>`;
-      h.innerHTML += cleanResponse;
+      h.innerHTML += `<div class="msg ai"><strong>Gemini:</strong> ${formatMarkdown(processedText)}</div>`;
       h.scrollTop = h.scrollHeight;
-      
-      if (otherHistory) {
-          otherHistory.innerHTML = h.innerHTML;
-          otherHistory.scrollTop = otherHistory.scrollHeight;
-      }
-      
+      if (otherHistory) { otherHistory.innerHTML = h.innerHTML; otherHistory.scrollTop = otherHistory.scrollHeight; }
       saveState(); 
   }
 
   async function callAI(txt) {
     chatHistoryBuffer.push({ role: "user", parts: [{ text: txt }] });
-    
     const currentTripData = $('input').value.substring(0, 3000); 
     const locationContext = userRegion ? `USER LOCATION: ${userRegion}` : "";
     let sysPrompt = "";
-    
     if (currentTripData.length < 20) {
-        sysPrompt = `
-          You are the 8Z Trip Architect. The user has an EMPTY itinerary. ${locationContext}
-          YOUR GOAL: Help them create a list of stops.
-          COMMANDS:
-          - Use {REPLACE: \nStop 1\nStop 2...} to fill their list.
-          - AMBIGUITY CHECK: Always specify Country (e.g. "Rome, Italy").
-        `;
+        sysPrompt = `You are the 8Z Trip Architect. User has EMPTY itinerary. ${locationContext} Help create a list. Use {REPLACE: \nStop 1\nStop 2...} to fill list.`;
     } else {
-        sysPrompt = `
-          You are the 8Z Logistics Co-Pilot. ${locationContext}
-          CURRENT STOPS: ${currentTripData}
-          CRITICAL RULES:
-          1. Value for Money.
-          2. UI AWARENESS: When using {REPLACE} or {ADD}, do NOT paste the list in chat. Say "I have updated your Trip Editor above."
-          3. Use Markdown tables for times/prices.
-          COMMANDS:
-          - {ADD: ...} to append.
-          - {REPLACE: ...} to overwrite.
-        `;
+        sysPrompt = `You are the 8Z Logistics Co-Pilot. ${locationContext} CURRENT STOPS: ${currentTripData} RULES: 1. Value for Money. 2. UI AWARENESS: Say "I have updated your Trip Editor above." 3. Use Markdown tables for times/prices. COMMANDS: {ADD: ...} to append. {REPLACE: ...} to overwrite.`;
     }
-
-    const body = {
-        contents: [{role:"user", parts:[{text: sysPrompt}]}, ...chatHistoryBuffer],
-        tools: [{ google_search: {} }] 
-    };
-
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${currentGeminiModel}:generateContent?key=${GEMINI_API_KEY}`, {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(body)
-    });
-    
+    const body = { contents: [{role:"user", parts:[{text: sysPrompt}]}, ...chatHistoryBuffer], tools: [{ google_search: {} }] };
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${currentGeminiModel}:generateContent?key=${GEMINI_API_KEY}`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
     const d = await res.json();
-    if (d.error) { console.error("Gemini API Error:", d.error); return "Error: " + d.error.message; }
-
     const t = d.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response.";
     chatHistoryBuffer.push({ role: "model", parts: [{ text: t }] });
     return t;
@@ -663,120 +505,65 @@
   function showBusy(msg) {
     let overlay = $('busyOverlay');
     if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'busyOverlay';
+        overlay = document.createElement('div'); overlay.id = 'busyOverlay';
         overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:sans-serif;";
         document.body.appendChild(overlay);
     }
     overlay.innerHTML = `<div style="font-size:2rem;margin-bottom:20px;">🧬</div><div style="font-size:1.2rem;font-weight:bold;">${msg}</div><div style="margin-top:10px;color:#6aa9ff;">Please wait...</div>`;
     overlay.style.display = 'flex';
   }
-  
-  function hideBusy() {
-    const overlay = $('busyOverlay');
-    if (overlay) overlay.style.display = 'none';
-  }
+  function hideBusy() { const o = $('busyOverlay'); if (o) o.style.display = 'none'; }
 
   function setPlanningMode(enabled) {
     const rightPanel = document.querySelector('.panel:nth-of-type(2)');
-    const mapCont = $('mapContainer');
-    const stats = document.querySelector('.stats');
-    const list = $('routeList');
-    const links = $('links');
-    const btnPlan = $('btnPlanMode');
-    const btnMap = $('btnMapMode');
-    
+    const mapCont = $('mapContainer'), stats = document.querySelector('.stats'), list = $('routeList'), links = $('links');
+    const btnPlan = $('btnPlanMode'), btnMap = $('btnMapMode');
     let bigChat = $('bigChatContainer');
     if (!bigChat) {
-        bigChat = document.createElement('div');
-        bigChat.id = 'bigChatContainer';
-        bigChat.style.display = 'none';
-        bigChat.innerHTML = `
-          <div id="bigChatHistory" style="flex:1; overflow-y:auto; padding:20px; border-bottom:1px solid #1f2a3a;"></div>
-          <div class="chat-input" style="padding:15px; background:#0f1621;">
-            <input type="text" id="bigChatInput" placeholder="Message Gemini (Internet Enabled)...">
-            <button id="btnSendBigChat">➤</button>
-          </div>
-        `;
+        bigChat = document.createElement('div'); bigChat.id = 'bigChatContainer'; bigChat.style.display = 'none';
+        bigChat.innerHTML = `<div id="bigChatHistory" style="flex:1; overflow-y:auto; padding:20px; border-bottom:1px solid #1f2a3a;"></div><div class="chat-input" style="padding:15px; background:#0f1621;"><input type="text" id="bigChatInput" placeholder="Message Gemini (Internet Enabled)..."><button id="btnSendBigChat">➤</button></div>`;
         rightPanel.appendChild(bigChat);
-        
         $('btnSendBigChat').onclick = () => handleChatSend('bigChatInput', 'bigChatHistory');
         $('bigChatInput').onkeypress = (e) => { if(e.key==='Enter') handleChatSend('bigChatInput', 'bigChatHistory'); };
     }
-
     if (enabled) {
-        btnPlan.classList.add('active');
-        btnMap.classList.remove('active');
-        mapCont.style.display = 'none';
-        stats.style.display = 'none';
-        list.style.display = 'none';
-        links.style.display = 'none';
-        bigChat.style.display = 'flex';
-        bigChat.style.flexDirection = 'column';
-        bigChat.style.height = '100%';
-        $('chatPanel').style.display = 'none';
-        
-        $('bigChatHistory').innerHTML = $('chatHistory').innerHTML;
-        renderSuggestions('bigChatHistory');
+        btnPlan.classList.add('active'); btnMap.classList.remove('active');
+        mapCont.style.display = 'none'; stats.style.display = 'none'; list.style.display = 'none'; links.style.display = 'none';
+        bigChat.style.display = 'flex'; bigChat.style.flexDirection = 'column'; bigChat.style.height = '100%'; $('chatPanel').style.display = 'none';
+        $('bigChatHistory').innerHTML = $('chatHistory').innerHTML; renderSuggestions('bigChatHistory');
         setTimeout(() => $('bigChatInput') && $('bigChatInput').focus(), 100);
     } else {
-        btnMap.classList.add('active');
-        btnPlan.classList.remove('active');
-        mapCont.style.display = 'block';
-        stats.style.display = 'flex';
-        list.style.display = 'block';
-        links.style.display = 'flex';
-        bigChat.style.display = 'none';
-        $('chatPanel').style.display = 'flex';
-        
+        btnMap.classList.add('active'); btnPlan.classList.remove('active');
+        mapCont.style.display = 'block'; stats.style.display = 'flex'; list.style.display = 'block'; links.style.display = 'flex';
+        bigChat.style.display = 'none'; $('chatPanel').style.display = 'flex';
         $('chatHistory').innerHTML = $('bigChatHistory').innerHTML;
     }
   }
 
   async function run(profile) {
     setPlanningMode(false);
-
     if (!window.google) { setStatus('Loading Map API...', 'ok'); await ensureMapsLoaded(); }
-
     const raw = $('input').value;
     let { pts, startIdx } = parseStops(raw);
-    
-    try { pts = await geocodeMissingPoints(pts); }
-    catch (e) { setStatus('Geocode Error', 'bad'); return; }
-
+    try { pts = await geocodeMissingPoints(pts); } catch (e) { setStatus('Geocode Error', 'bad'); return; }
     const valid = pts.filter(p => p.lat !== null && p.lon !== null);
     if (valid.length < 2) { setStatus('Need 2+ valid stops.', 'bad'); return; }
-
     setStatus(`Optimizing ${valid.length} stops...`, 'warn');
     if (profile === 'deep') showBusy("Deep Genetic Optimization...");
-    
-    worker.postMessage({
-      type: 'solve',
-      profile: profile,
-      points: valid,
-      startIdx: (startIdx < valid.length) ? startIdx : 0,
-      roundTrip: $('chkRoundTrip').checked
-    });
+    worker.postMessage({ type: 'solve', profile: profile, points: valid, startIdx: (startIdx < valid.length) ? startIdx : 0, roundTrip: $('chkRoundTrip').checked });
   }
 
   worker.onmessage = (ev) => {
     const msg = ev.data || {};
-    
-    if (msg.type === 'progress') {
-        showBusy(msg.text); 
-    }
+    if (msg.type === 'progress') showBusy(msg.text); 
     else if (msg.type === 'result') {
       hideBusy();
       const { pointsSorted, totalKm, baseKm } = msg;
       lastSolvedPoints = pointsSorted;
-      
       $('distKm').textContent = totalKm.toFixed(2) + ' km';
       const saved = baseKm - totalKm;
       $('savedKm').textContent = saved > 0 ? saved.toFixed(2) + ' km' : '—';
-      
-      // RENDER LIST WITH TOGGLE
       renderRouteList(pointsSorted);
-
       updateMapVisualization(pointsSorted);
       const links = buildMapsLegLinks(pointsSorted, $('chkRoundTrip').checked, currentTravelMode);
       renderLinks(links);
@@ -787,62 +574,35 @@
   // --- 12. INIT ---
   document.addEventListener('DOMContentLoaded', () => {
     initTripTree(); initAI(); 
-    
     const restored = restoreState();
-    
     $('btnStandard').onclick = () => run('standard');
     $('btnDeep').onclick = () => run('deep');
     $('btnDriving').onclick = () => setTravelMode('DRIVING');
     $('btnWalking').onclick = () => setTravelMode('WALKING');
     $('btnEnableMap').onclick = () => ensureMapsLoaded();
-    
     $('btnSave').onclick = () => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([$('input').value],{type:'text/plain'})); a.download='trip.txt'; a.click(); };
     $('btnLoad').onclick = () => $('fileLoader').click();
     $('fileLoader').onchange = (e) => { const f=e.target.files[0]; if(f){const r=new FileReader();r.onload=(v)=>{$('input').value=v.target.result;saveState();};r.readAsText(f);} };
-    
     $('btnPlanMode').onclick = () => setPlanningMode(true);
     $('btnMapMode').onclick = () => setPlanningMode(false);
-
     $('tripSearch').oninput = (e) => { 
         const q=e.target.value.toLowerCase(); 
         document.querySelectorAll('.tree-item').forEach(i => { 
-          const match = i.textContent.toLowerCase().includes(q);
-          i.style.display = match ? 'block' : 'none';
-          if(q && match){
-            let p=i.parentElement;
-            while(p.id!=='presetTree'){
-              if(p.classList.contains('tree-group')) {
-                p.classList.add('open');
-                const h = p.previousElementSibling; 
-                if(h) h.textContent = h.textContent.replace('›', '⌄');
-              }
-              p=p.parentElement;
-            }
-          }
+          const match = i.textContent.toLowerCase().includes(q); i.style.display = match ? 'block' : 'none';
+          if(q && match){ let p=i.parentElement; while(p.id!=='presetTree'){ if(p.classList.contains('tree-group')) { p.classList.add('open'); const h = p.previousElementSibling; if(h) h.textContent = h.textContent.replace('›', '⌄'); } p=p.parentElement; } }
         }); 
     };
-
     $('btnSendChat').onclick = () => handleChatSend('chatInput', 'chatHistory');
     $('chatInput').onkeypress = (e) => { if(e.key==='Enter') handleChatSend('chatInput', 'chatHistory'); };
-    
-    const h=$('helpOverlay'); 
-    $('btnHelp').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=HELP_HTML;}; 
-    $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; 
-    $('btnCloseHelp').onclick=()=>h.style.display='none';
-    
+    const h=$('helpOverlay'); $('btnHelp').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=HELP_HTML;}; $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; $('btnCloseHelp').onclick=()=>h.style.display='none';
     if(restored) {
         const historyEl = $('chatHistory');
         if(!historyEl.querySelector('.recovery-msg')) {
              historyEl.innerHTML += `<div class="msg ai recovery-msg" style="border-left:3px solid var(--success)"><strong>System:</strong> Session restored.<div style="margin-top:10px; display:flex; gap:10px;"><button class="chip logistics" onclick="window.continueSession(this)">✅ Continue</button><button class="chip eat" style="border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,0.1)" onclick="window.resetSession()">🗑️ Fresh Start</button></div></div>`;
         }
         setPlanningMode(true);
-    } else {
-        setPlanningMode(true);
-    }
+    } else { setPlanningMode(true); }
   });
   
-  function setTravelMode(mode) {
-    currentTravelMode = mode;
-    updateModeButtons();
-  }
+  function setTravelMode(mode) { currentTravelMode = mode; updateModeButtons(); }
 })();
