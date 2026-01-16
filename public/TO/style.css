@@ -17,7 +17,6 @@
 
 body {
   margin: 0; padding: 0;
-  /* Radial Gradient */
   background: 
     radial-gradient(1200px 800px at 20% 10%, rgba(106,169,255,.12), transparent 50%),
     radial-gradient(1000px 700px at 80% 40%, rgba(126,231,135,.08), transparent 55%),
@@ -25,35 +24,27 @@ body {
   color: var(--text-main);
   font-family: 'Inter', -apple-system, sans-serif;
   font-size: 16px; 
-  padding-bottom: 80px; /* Space for Mobile Dock */
+  padding-bottom: 80px; 
 }
 
-/* --- 2. LAYOUT CONTAINER --- */
+/* --- 2. LAYOUT --- */
 .app-wrapper {
-  max-width: 100%;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+  max-width: 100%; padding: 10px;
+  display: flex; flex-direction: column; gap: 15px;
 }
 
-/* --- 3. PANELS & CARDS --- */
+/* --- 3. PANELS --- */
 .panel {
   background: var(--bg-panel);
   border: 1px solid var(--border);
   backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 15px;
+  border-radius: 12px; padding: 15px;
   box-shadow: var(--shadow);
 }
 
 h2, h3 { 
-  margin: 0 0 12px 0; 
-  font-size: 0.85rem; 
-  text-transform: uppercase; 
-  letter-spacing: 1px; 
-  color: var(--text-dim); 
-  border-bottom: 1px solid var(--border);
+  margin: 0 0 12px 0; font-size: 0.85rem; text-transform: uppercase; 
+  letter-spacing: 1px; color: var(--text-dim); border-bottom: 1px solid var(--border);
   padding-bottom: 8px;
 }
 
@@ -62,42 +53,23 @@ header {
   display: flex; justify-content: space-between; align-items: center;
   padding: 10px 15px; background: rgba(15,22,33,0.8);
   border-bottom: 1px solid var(--border);
-  position: sticky; top: 0; z-index: 50;
-  border-radius: 8px;
+  position: sticky; top: 0; z-index: 50; border-radius: 8px;
 }
 .brand { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
 .brand span { color: var(--primary); font-weight: 300; }
 
-/* NAV BUTTONS */
 .nav-btn { 
-  background: none; 
-  border: none; 
-  color: var(--text-dim); 
-  font-size: 0.9rem; 
-  cursor: pointer; 
-  padding: 5px 8px;
-  transition: color 0.2s;
+  background: none; border: none; color: var(--text-dim); 
+  font-size: 0.9rem; cursor: pointer; padding: 5px 8px; transition: color 0.2s;
 }
 .nav-btn:hover { color: var(--text-main); }
+.nav-btn.active { color: var(--primary); font-weight: 700; border-bottom: 2px solid var(--primary); }
 
-/* Active State for Plan/Map toggles */
-.nav-btn.active {
-  color: var(--primary);
-  font-weight: 700;
-  border-bottom: 2px solid var(--primary);
-}
-
-/* --- 5. INPUTS & CONTROLS --- */
+/* --- 5. INPUTS --- */
 input, textarea {
-  width: 100%;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  color: var(--text-main);
-  border-radius: 8px;
-  padding: 12px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-  outline: none;
+  width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+  color: var(--text-main); border-radius: 8px; padding: 12px;
+  font-family: 'JetBrains Mono', monospace; font-size: 14px; outline: none;
   transition: border-color 0.2s;
 }
 input:focus, textarea:focus { border-color: var(--primary); }
@@ -106,10 +78,9 @@ textarea { min-height: 120px; resize: vertical; margin-bottom: 12px; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
 
 button {
-  padding: 12px;
-  border-radius: 8px; border: none;
-  font-weight: 600; font-size: 0.9rem;
-  cursor: pointer; transition: transform 0.1s, opacity 0.2s;
+  padding: 12px; border-radius: 8px; border: none;
+  font-weight: 600; font-size: 0.9rem; cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s;
 }
 button:active { transform: scale(0.98); opacity: 0.9; }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -157,8 +128,28 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary)
   list-style: none; padding: 0; margin: 0; color: var(--text-dim); font-size: 0.9rem;
   max-height: 150px; overflow-y: auto;
 }
-#routeList li { padding: 6px 0; border-bottom: 1px solid var(--border); }
+/* Updated List Items for Clickability */
+#routeList li { border-bottom: 1px solid var(--border); }
+#routeList a {
+  display: block;
+  padding: 8px 4px;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+#routeList a:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--primary);
+  padding-left: 8px; /* Slide effect */
+}
+#routeList a small {
+  display: block;
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-top: 2px;
+}
 
+/* --- 8. LINK ROWS --- */
 .links-area { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
 .linkrow {
   display: flex; align-items: center; gap: 10px;
@@ -168,46 +159,26 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary)
   font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; 
   background: rgba(59, 130, 246, 0.2); color: var(--primary); white-space: nowrap;
 }
-.linkrow a { color: var(--primary); text-decoration: none; font-size: 0.9rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 
-/* --- 8. AI CHAT --- */
-/* Big Chat (Right Panel) Styles */
-#bigChatContainer {
-  background: transparent;
-}
-#bigChatHistory {
-  background: rgba(11, 15, 20, 0.5);
-  border-radius: 8px;
-  margin-bottom: 10px;
-}
+/* --- 9. CHAT PANELS --- */
+#bigChatContainer { background: transparent; }
+#bigChatHistory { background: rgba(11, 15, 20, 0.5); border-radius: 8px; margin-bottom: 10px; }
 
-/* Small Chat (Bottom Panel) */
 #chatPanel {
   position: fixed; bottom: 0; left: 0; right: 0;
-  background: #0f1621; 
-  border-top: 1px solid var(--primary);
-  z-index: 2000;
-  display: flex; flex-direction: column;
-  height: 60px; /* Collapsed */
+  background: #0f1621; border-top: 1px solid var(--primary); z-index: 2000;
+  display: flex; flex-direction: column; height: 60px;
   transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
 }
 #chatPanel.open { height: 70vh; }
 
-.chat-head {
-  padding: 12px 16px;
-  display: flex; justify-content: space-between; align-items: center;
-  cursor: pointer; background: rgba(59, 130, 246, 0.1);
-}
+.chat-head { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: rgba(59, 130, 246, 0.1); }
 .chat-title { font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-
-/* AUTO TEXT TOGGLE */
 .chat-state-text::after { content: "(Tap to Open)"; }
 #chatPanel.open .chat-state-text::after { content: "(Tap to Close)"; }
 
-#chatHistory {
-  flex: 1; overflow-y: auto; padding: 15px; display: none; background: #0b0f14;
-}
+#chatHistory { flex: 1; overflow-y: auto; padding: 15px; display: none; background: #0b0f14; }
 #chatPanel.open #chatHistory { display: block; }
 
 .msg { margin-bottom: 10px; padding: 10px; border-radius: 8px; font-size: 0.95rem; line-height: 1.4; max-width: 85%; }
@@ -218,187 +189,77 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary)
 #chatInput, #bigChatInput { background: #0b0f14; border: 1px solid var(--border); padding: 10px; border-radius: 20px; color: white; width:100%; }
 #btnSendChat, #btnSendBigChat { width: 45px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; background: var(--primary); color: white; }
 
-/* --- 9. COMMAND CENTER LAYOUT (iPad & 4K) --- */
+/* --- 10. MEDIA QUERIES --- */
 @media (min-width: 1024px) {
   body { padding-bottom: 0; overflow: hidden; }
-  
   .app-wrapper {
-    max-width: 100%; 
-    height: 100vh; 
-    padding: 15px;
-    display: grid; 
-    /* 2 COLUMNS: [Sidebar 360px] [Map & Results 1fr] */
-    grid-template-columns: 360px 1fr; 
-    /* 3 ROWS: [Header] [Control Panel] [Chat] */
-    grid-template-rows: auto 1fr auto; 
-    gap: 15px;
+    max-width: 100%; height: 100vh; padding: 15px;
+    display: grid; grid-template-columns: 360px 1fr; grid-template-rows: auto 1fr auto; gap: 15px;
   }
-
-  /* 1. Header spans top */
   header { grid-column: 1 / -1; grid-row: 1; margin-bottom: 5px; }
-
-  /* 2. Control Panel (Left, Middle Row) */
-  .panel:nth-of-type(1) {
-    grid-column: 1;
-    grid-row: 2;
-    overflow-y: auto;
-  }
-  
-  /* iPad Fix: Library smaller */
+  .panel:nth-of-type(1) { grid-column: 1; grid-row: 2; overflow-y: auto; }
   .library-box { max-height: 120px; flex: none; } 
-
-  /* 3. Results Panel (Right, Spans Rows 2 & 3) */
-  .panel:nth-of-type(2) {
-    grid-column: 2;
-    grid-row: 2 / span 2; /* Takes full height */
-    height: 100%;
-    display: block; /* Normal block flow, NOT flex */
-    overflow-y: auto; /* The PANEL scrolls if content fits */
-  }
-
-  /* Map is KING: Fixed Giant Height */
-  #mapContainer { 
-    width: 100%;
-    height: 65vh; /* Massive fixed height */
-    min-height: 500px;
-    margin-bottom: 20px;
-    border-radius: 8px; 
-  }
-  
-  /* List just sits under it, natural height */
-  #routeList { 
-    max-height: none; 
-    overflow: visible;
-    border-top: 1px solid var(--border);
-    margin-top: 10px;
-  }
-  
-  /* 4. Chat Panel (Left, Bottom Row) */
+  .panel:nth-of-type(2) { grid-column: 2; grid-row: 2 / span 2; height: 100%; display: block; overflow-y: auto; }
+  #mapContainer { width: 100%; height: 65vh; min-height: 500px; margin-bottom: 20px; border-radius: 8px; }
+  #routeList { max-height: none; overflow: visible; border-top: 1px solid var(--border); margin-top: 10px; }
   #chatPanel {
-    position: relative; 
-    bottom: auto; left: auto; right: auto; 
-    grid-column: 1;
-    grid-row: 3;
-    border: 1px solid var(--border); 
-    border-radius: 12px; 
-    z-index: 1; 
-    box-shadow: none;
+    position: relative; bottom: auto; left: auto; right: auto; 
+    grid-column: 1; grid-row: 3; border: 1px solid var(--border); 
+    border-radius: 12px; z-index: 1; box-shadow: none;
     height: 60px; max-height: 50vh; transition: height 0.3s ease;
   }
-  
   #chatPanel.open { height: 450px; border-color: var(--primary); }
-
   #chatHistory { display: block; }
   .chat-head { cursor: default; }
   .chat-head small { display: none; }
 }
 
-/* --- 10. MODALS & OVERRIDES --- */
-#helpOverlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000;
-  display: none; align-items: center; justify-content: center;
-}
-.modal-content {
-  background: #1e293b; width: 90%; max-width: 600px; max-height: 85vh;
-  overflow-y: auto; padding: 30px; border-radius: 12px; border: 1px solid var(--border);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-}
+/* --- 11. OVERLAYS --- */
+#helpOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; }
+.modal-content { background: #1e293b; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; padding: 30px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
 .close-icon { float: right; background: none; font-size: 1.5rem; color: var(--text-dim); padding: 0; }
 .status { margin-top: 10px; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.3); font-family: monospace; font-size: 0.85rem; display: none; }
 
-/* --- 11. GOOGLE MAPS DARK BALLOON OVERRIDES --- */
-.gm-style .gm-style-iw-c {
-    background-color: #1e293b !important;
-    border: 1px solid var(--border);
-    padding: 12px !important;
-}
-.gm-style .gm-style-iw-tc::after {
-    background: #1e293b !important;
-}
-.gm-style .gm-style-iw-d {
-    overflow: hidden !important;
-    color: #e6edf3 !important;
-    font-family: 'Inter', sans-serif !important;
-}
-.gm-style .gm-ui-hover-effect {
-    filter: invert(1) grayscale(100%) brightness(200%) !important;
-}
+/* --- 12. MAP OVERRIDES --- */
+.gm-style .gm-style-iw-c { background-color: #1e293b !important; border: 1px solid var(--border); padding: 12px !important; }
+.gm-style .gm-style-iw-tc::after { background: #1e293b !important; }
+.gm-style .gm-style-iw-d { overflow: hidden !important; color: #e6edf3 !important; font-family: 'Inter', sans-serif !important; }
+.gm-style .gm-ui-hover-effect { filter: invert(1) grayscale(100%) brightness(200%) !important; }
 
-/* --- 12. SUGGESTION CHIPS (Command Board) --- */
-.suggestions-box {
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.2);
-  margin-bottom: 20px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-}
-
-.suggestion-group {
-  margin-bottom: 15px;
-}
-
-.suggestion-label {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  margin-bottom: 8px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-.chip-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.chip {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  color: #bfdbfe;
-  padding: 8px 14px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  user-select: none;
-}
-
-.chip:hover {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-/* Category Colors */
+/* --- 13. SUGGESTIONS --- */
+.suggestions-box { padding: 20px; background: rgba(0, 0, 0, 0.2); margin-bottom: 20px; border-radius: 8px; border: 1px solid var(--border); }
+.suggestion-group { margin-bottom: 15px; }
+.suggestion-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; font-weight: 700; letter-spacing: 1px; }
+.chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #bfdbfe; padding: 8px 14px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; user-select: none; }
+.chip:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
 .chip.sleep { border-color: rgba(167, 139, 250, 0.4); color: #ddd6fe; background: rgba(167, 139, 250, 0.1); }
 .chip.sleep:hover { background: #8b5cf6; border-color: #8b5cf6; }
-
 .chip.eat { border-color: rgba(251, 146, 60, 0.4); color: #fed7aa; background: rgba(251, 146, 60, 0.1); }
 .chip.eat:hover { background: #f97316; border-color: #f97316; }
-
 .chip.logistics { border-color: rgba(52, 211, 153, 0.4); color: #a7f3d0; background: rgba(52, 211, 153, 0.1); }
 .chip.logistics:hover { background: #10b981; border-color: #10b981; }
 
-/* --- 13. CHAT ACTION BADGES --- */
-.action-badge {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: rgba(16, 185, 129, 0.15); /* Green tint */
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  border-radius: 6px;
-  color: #6ee7b7;
-  font-size: 0.85rem;
-  font-weight: 600;
-  width: 100%;
-  text-align: center;
+/* --- 14. CHAT BADGES --- */
+.action-badge { display: inline-block; margin-top: 8px; padding: 8px 12px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; color: #6ee7b7; font-size: 0.85rem; font-weight: 600; width: 100%; text-align: center; }
+.action-badge small { display: block; font-weight: 400; opacity: 0.8; margin-top: 2px; }
+
+/* --- 15. CHAT TABLES --- */
+.chat-table-wrapper { overflow-x: auto; margin: 10px 0; border-radius: 8px; border: 1px solid var(--border); background: rgba(0, 0, 0, 0.2); }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; color: var(--text-main); }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th { background: rgba(255, 255, 255, 0.05); font-weight: 700; color: var(--primary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+tr:last-child td { border-bottom: none; }
+
+/* --- 16. SHARE BUTTON (Gold & Blue) --- */
+.share-area { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border); text-align: center; }
+.btn-share {
+  background: #bfdbfe; /* Light Blue */
+  color: #92400e;      /* Deep Gold/Bronze for readability */
+  border: 1px solid #93c5fd;
+  width: 100%; font-size: 1rem; padding: 14px;
+  box-shadow: 0 4px 15px rgba(191, 219, 254, 0.2);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-weight: 800; /* Bold */
 }
-.action-badge small {
-  display: block;
-  font-weight: 400;
-  opacity: 0.8;
-  margin-top: 2px;
-}
+.btn-share:hover { transform: translateY(-2px); background: #dbeafe; color: #b45309; }
