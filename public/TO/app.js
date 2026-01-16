@@ -17,7 +17,6 @@
   let lastSolvedPoints = null;
   let currentGeminiModel = '';
   let currentTravelMode = 'DRIVING';
-  let navProvider = 'apple'; // Default to Apple for point-to-point
   let mapScriptLoadingPromise = null;
   let chatHistoryBuffer = [];
   
@@ -33,7 +32,7 @@
         <li><strong>2. Edit:</strong> Add or remove stops in the text box.</li>
         <li><strong>3. Optimize:</strong> Use "Standard" for fast results or "Deep Search" for complex routes.</li>
         <li><strong>4. Share:</strong> Use the button at the bottom to send your trip to friends.</li>
-        <li><strong>5. Navigate:</strong> Click any list item to open navigation from the previous stop.</li>
+        <li><strong>5. Navigate:</strong> Click any stop in the list to open point-to-point Apple Maps navigation.</li>
       </ul>
     </div>
   `;
@@ -59,11 +58,13 @@
     }
   }
 
+  // --- 5. MARKDOWN PARSER (Tables Included) ---
   function formatMarkdown(text) {
     if (!text) return '';
     const lines = text.split('\n');
     let inTable = false;
     let html = '';
+    
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
         if (line.startsWith('|')) {
@@ -72,14 +73,17 @@
                 html += '<div class="chat-table-wrapper"><table>';
                 const cells = line.split('|').filter(c => c.trim() !== '').map(c => `<th>${c.trim()}</th>`).join('');
                 html += `<thead><tr>${cells}</tr></thead><tbody>`;
-            } else if (line.includes('---')) { continue; } 
-            else {
+            } else if (line.includes('---')) {
+                continue;
+            } else {
                 const cells = line.split('|').filter(c => c.trim() !== '').map(c => `<td>${c.trim()}</td>`).join('');
                 html += `<tr>${cells}</tr>`;
             }
         } else {
             if (inTable) { inTable = false; html += '</tbody></table></div>'; }
-            let formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/^\*\s/, '• ');
+            let formatted = line;
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/^\*\s/, '• ');
             html += formatted + '<br>';
         }
     }
@@ -87,10 +91,17 @@
     return html;
   }
 
-  // --- 5. PERSISTENCE ---
+  // --- 6. PERSISTENCE ---
   function saveState() { 
-    const state = { t: $('input').value, m: currentTravelMode, chatBuf: chatHistoryBuffer, chatHTML: $('chatHistory').innerHTML, ts: Date.now() };
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { console.warn("Storage full", e); }
+    const state = {
+        t: $('input').value,
+        m: currentTravelMode,
+        chatBuf: chatHistoryBuffer,
+        chatHTML: $('chatHistory').innerHTML,
+        ts: Date.now()
+    };
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } 
+    catch (e) { console.warn("Storage full", e); }
   }
   
   function restoreState() {
@@ -100,20 +111,30 @@
             const sharedTrip = decodeURIComponent(params.get('trip'));
             $('input').value = sharedTrip;
             window.history.replaceState({}, document.title, window.location.pathname); 
-            setStatus('Shared trip loaded!', 'ok'); setPlanningMode(true); return true;
-        } catch(e) {}
+            setStatus('Shared trip loaded!', 'ok');
+            setPlanningMode(true); 
+            return true;
+        } catch(e) { console.error("Share load failed", e); }
     }
+
     const sStr = localStorage.getItem(STORAGE_KEY);
     if (!sStr) return false;
+
     try {
         const s = JSON.parse(sStr);
-        $('input').value = s.t || ''; currentTravelMode = s.m || 'DRIVING'; updateModeButtons(); 
+        $('input').value = s.t || ''; 
+        currentTravelMode = s.m || 'DRIVING'; 
+        updateModeButtons(); 
+
         if (s.chatBuf && s.chatHTML) {
-            chatHistoryBuffer = s.chatBuf; $('chatHistory').innerHTML = s.chatHTML;
-            document.querySelectorAll('.suggestions-box, .recovery-msg').forEach(el => el.remove());
+            chatHistoryBuffer = s.chatBuf;
+            const historyEl = $('chatHistory');
+            historyEl.innerHTML = s.chatHTML;
+            historyEl.querySelectorAll('.suggestions-box').forEach(el => el.remove());
+            historyEl.querySelectorAll('.recovery-msg').forEach(el => el.remove());
             return true; 
         }
-    } catch(e) {}
+    } catch(e) { console.error("Restore failed", e); }
     return false;
   }
 
@@ -123,8 +144,10 @@
       const url = window.location.origin + window.location.pathname + '?trip=' + encodeURIComponent(tripData);
       navigator.clipboard.writeText(url).then(() => {
           setStatus('Link copied!', 'ok');
-          const btn = $('btnShareTrip'); const originalText = btn.innerHTML;
-          btn.innerHTML = '✅ Copied!'; setTimeout(() => btn.innerHTML = originalText, 2000);
+          const btn = $('btnShareTrip');
+          const originalText = btn.innerHTML;
+          btn.innerHTML = '✅ Copied!';
+          setTimeout(() => btn.innerHTML = originalText, 2000);
       }).catch(() => prompt("Copy this link:", url));
   };
 
@@ -132,7 +155,8 @@
   window.continueSession = function(btn) {
       if(btn) btn.closest('.msg').remove();
       const historyId = $('bigChatContainer').style.display !== 'none' ? 'bigChatHistory' : 'chatHistory';
-      renderSuggestions(historyId); setStatus('Session Resumed', 'ok');
+      renderSuggestions(historyId);
+      setStatus('Session Resumed', 'ok');
   };
 
   function updateModeButtons() {
@@ -143,40 +167,79 @@
       updateMapVisualization(lastSolvedPoints);
       const links = buildMapsLegLinks(lastSolvedPoints, $('chkRoundTrip').checked, currentTravelMode);
       renderLinks(links);
-      renderRouteList(); // Redraw list with correct nav mode
     }
   }
 
-  // --- 6. MAPS & INPUT ---
+  // --- 7. INPUT & MAPS (Restored Robust Logic) ---
   function parseStops(text) {
-    const lines = text.split(/\r?\n/); const pts = []; let startIdx = 0;
+    const lines = text.split(/\r?\n/);
+    const pts = [];
+    let startIdx = 0;
     const coordRe = /(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)/;
+
     for (let raw of lines) {
-      raw = raw.trim(); if (!raw || raw.startsWith('#')) continue;
-      let isStart = false; if (/\bSTART\b/i.test(raw)) { isStart = true; raw = raw.replace(/\bSTART\b/i, '').trim(); }
-      let name = raw; let lat = null, lon = null;
+      raw = raw.trim();
+      if (!raw || raw.startsWith('#')) continue;
+
+      let isStart = false;
+      if (/\bSTART\b/i.test(raw)) {
+        isStart = true;
+        raw = raw.replace(/\bSTART\b/i, '').trim();
+      }
+
+      let name = raw;
+      let lat = null, lon = null;
+
       if (raw.includes('|')) {
-        const parts = raw.split('|'); const m = coordRe.exec(parts[1]);
-        if (m) { name = parts[0].trim(); lat = parseFloat(m[1]); lon = parseFloat(m[2]); }
+        const parts = raw.split('|');
+        const p0 = parts[0].trim();
+        const p1 = parts[1].trim();
+        const m0 = coordRe.exec(p0);
+        const m1 = coordRe.exec(p1);
+        if (m1) { name = p0 || "Point"; lat = parseFloat(m1[1]); lon = parseFloat(m1[2]); }
+        else if (m0) { name = p1 || "Point"; lat = parseFloat(m0[1]); lon = parseFloat(m0[2]); }
       } else {
         const m = coordRe.exec(raw);
-        if (m) { lat = parseFloat(m[1]); lon = parseFloat(m[2]); name = raw.replace(m[0], '').trim(); }
+        if (m) {
+          lat = parseFloat(m[1]); lon = parseFloat(m[2]);
+          const potentialName = raw.replace(m[0], '').trim();
+          name = (potentialName.length > 1) ? potentialName.replace(/^,/, '').trim() : `(${lat.toFixed(3)}, ${lon.toFixed(3)})`;
+        }
       }
-      pts.push({ name, lat, lon, raw: raw });
-      if (isStart) startIdx = pts.length - 1;
+      const p = { name, lat, lon, raw: raw };
+      if (isStart) startIdx = pts.length;
+      pts.push(p);
     }
     return { pts, startIdx };
+  }
+
+  // --- 8. GEOCODING (Restored Robust Logic) ---
+  async function resolveLocation(rawName) {
+    if (!geocoder) return null;
+    try {
+      const response = await new Promise((resolve) => {
+        geocoder.geocode({ address: rawName }, (results, status) => {
+          if (status === 'OK') resolve(results); else resolve(null);
+        });
+      });
+      if (response && response.length > 0) {
+        const loc = response[0].geometry.location;
+        return { lat: loc.lat(), lon: loc.lng() };
+      }
+    } catch (e) { console.warn("Geocode error:", e); }
+    return null;
   }
 
   async function geocodeMissingPoints(pts) {
     const missing = pts.filter(p => p.lat === null || p.lon === null);
     if (missing.length === 0) return pts;
+    
     setStatus(`Looking up ${missing.length} addresses...`, 'warn');
     for (let i = 0; i < missing.length; i++) {
       const p = missing[i];
-      if (!geocoder) geocoder = new google.maps.Geocoder();
-      const result = await new Promise(r => geocoder.geocode({ address: p.name }, (res, status) => r(status==='OK'?res[0]:null)));
-      if (result) { p.lat = result.geometry.location.lat(); p.lon = result.geometry.location.lng(); }
+      const result = await resolveLocation(p.name);
+      if (result) { p.lat = result.lat; p.lon = result.lon; }
+      else { p.error = true; }
       await new Promise(r => setTimeout(r, 250)); 
     }
     return pts;
@@ -188,8 +251,11 @@
     mapScriptLoadingPromise = new Promise((resolve) => {
       window.initMap = function() {
         map = new google.maps.Map($('map'), { zoom:12, center:{lat:46.0569,lng:14.5058}, mapTypeId:'hybrid', styles:DARK_STYLE });
-        geocoder = new google.maps.Geocoder(); directionsService = new google.maps.DirectionsService(); infoWindow = new google.maps.InfoWindow();
-        const ph = $('mapPlaceholder'); if(ph) ph.style.display = 'none'; resolve();
+        geocoder = new google.maps.Geocoder();
+        directionsService = new google.maps.DirectionsService();
+        infoWindow = new google.maps.InfoWindow();
+        const ph = $('mapPlaceholder'); if(ph) ph.style.display = 'none';
+        resolve();
       };
       const s = document.createElement('script');
       s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&callback=initMap&loading=async&v=weekly`;
@@ -207,7 +273,8 @@
     if(mapPolyline) { mapPolyline.setMap(null); mapPolyline=null; }
     const bounds = new google.maps.LatLngBounds();
     points.forEach((pt, i) => {
-      const loc = { lat: pt.lat, lng: pt.lon }; bounds.extend(loc);
+      const loc = { lat: pt.lat, lng: pt.lon };
+      bounds.extend(loc);
       const m = new google.maps.Marker({ position: loc, map: map, label: (i+1).toString(), title: pt.name });
       m.addListener("click", () => { infoWindow.setContent(`<strong>#${i+1} ${pt.name}</strong>`); infoWindow.open(map, m); });
       mapMarkers.push(m);
@@ -226,10 +293,11 @@
         directionsService.route({ origin: seg[0], destination: seg[seg.length-1], waypoints: seg.slice(1,-1).map(l => ({location:l, stopover:true})), travelMode: gMode }, (res, st) => { if(st === "OK") r.setDirections(res); });
       }
     }
-    google.maps.event.trigger(map, 'resize'); map.fitBounds(bounds);
+    google.maps.event.trigger(map, 'resize');
+    map.fitBounds(bounds);
   }
 
-  // --- 7. LINKS & NAV LOGIC ---
+  // --- 8. SMART LINKS ---
   function buildMapsLegLinks(routePts, roundTrip, mode) {
     const travelmode = (mode === 'DRIVING') ? 'driving' : 'walking';
     const encodeCoords = (p) => `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
@@ -242,17 +310,14 @@
       let j = Math.min(seq.length - 1, i + 1 + 9 + 1);
       if (j <= i + 1) j = i + 2;
       const segment = seq.slice(i, j + 1);
-      
       const originPin = encodeCoords(segment[0]); const destPin = encodeCoords(segment[segment.length - 1]); const midsPin = segment.slice(1, -1).map(encodeCoords);
       let urlPins = `https://www.google.com/maps/dir/?api=1&origin=${originPin}&destination=${destPin}&travelmode=${travelmode}`;
       if (midsPin.length) urlPins += `&waypoints=${midsPin.join('%7C')}`;
-
       const originName = encodeName(segment[0]); const destName = encodeName(segment[segment.length - 1]); const midsName = segment.slice(1, -1).map(encodeName);
       let urlNames = `https://www.google.com/maps/dir/?api=1&origin=${originName}&destination=${destName}&travelmode=${travelmode}`;
       if (midsName.length) urlNames += `&waypoints=${midsName.join('%7C')}`;
-
-      // Apple Map link removed from here, as requested
-      links.push({ label: `Leg ${links.length + 1}`, urlPins, urlNames });
+      const appleUrl = `http://maps.apple.com/?saddr=${originPin}&daddr=${destPin}&dirflg=${mode === 'DRIVING' ? 'd' : 'w'}`;
+      links.push({ label: `Leg ${links.length + 1}`, urlPins, urlNames, appleUrl });
       i = j;
     }
     return links;
@@ -263,12 +328,12 @@
     for (const L of links) {
       const row = document.createElement('div'); row.className = 'linkrow';
       row.style.display = 'flex'; row.style.flexWrap = 'wrap'; row.style.alignItems = 'center'; row.style.gap = '8px';
-      // Just Google options here
       row.innerHTML = `
         <span class="badge" style="min-width:50px;">${L.label}</span>
         <div style="display:flex; gap:6px; flex:1; flex-wrap:wrap;">
             <a href="${L.urlPins}" target="_blank" style="flex:1; min-width:80px; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.8rem; text-decoration:none; color:#bfdbfe;">📍 G-Pins</a>
             <a href="${L.urlNames}" target="_blank" style="flex:1; min-width:80px; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.8rem; text-decoration:none;">🏷️ G-Names</a>
+            <a href="${L.appleUrl}" target="_blank" style="flex:1; min-width:80px; text-align:center; padding:6px; background:rgba(255,255,255,0.1); color:#e2e8f0; border-radius:4px; font-size:0.8rem; text-decoration:none;">🍎 Apple</a>
         </div>
       `;
       el.appendChild(row);
@@ -277,67 +342,6 @@
     shareArea.className = 'share-area';
     shareArea.innerHTML = `<button id="btnShareTrip" class="btn-share" onclick="window.shareTrip()">🔗 Share This Trip</button>`;
     el.appendChild(shareArea);
-  }
-
-  // --- NEW: DYNAMIC LIST NAVIGATION ---
-  function renderRouteList() {
-      const points = lastSolvedPoints;
-      const list = $('routeList');
-      if(!points || !list) return;
-      
-      list.innerHTML = '';
-      
-      // Inject Control
-      const controls = document.createElement('div');
-      controls.className = 'nav-controls';
-      controls.innerHTML = `
-        <span>Navigation Mode:</span>
-        <div class="nav-toggle">
-            <label><input type="radio" name="navApp" value="google" ${navProvider==='google'?'checked':''}> Google</label>
-            <label><input type="radio" name="navApp" value="apple" ${navProvider==='apple'?'checked':''}> Apple</label>
-        </div>
-      `;
-      list.parentElement.insertBefore(controls, list);
-      
-      // Re-bind listeners for the new radios
-      const radios = document.querySelectorAll('input[name="navApp"]');
-      radios.forEach(r => r.addEventListener('change', (e) => {
-          navProvider = e.target.value;
-          renderRouteList(); // Redraw links
-      }));
-
-      // Draw Items
-      const modeChar = currentTravelMode === 'DRIVING' ? 'd' : 'w';
-      const googleMode = currentTravelMode === 'DRIVING' ? 'driving' : 'walking';
-
-      points.forEach((p, i) => { 
-          const li = document.createElement('li');
-          const destCoords = `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
-          let navUrl = "#";
-          
-          if (i === 0) {
-              // Start: Navigate from Current Location
-              if(navProvider === 'apple') navUrl = `http://maps.apple.com/?daddr=${destCoords}&dirflg=${modeChar}`;
-              else navUrl = `https://www.google.com/maps/dir/?api=1&destination=${destCoords}&travelmode=${googleMode}`;
-          } else {
-              // Leg: Navigate from Prev Point -> Curr Point
-              const prevCoords = `${points[i-1].lat.toFixed(6)},${points[i-1].lon.toFixed(6)}`;
-              if(navProvider === 'apple') navUrl = `http://maps.apple.com/?saddr=${prevCoords}&daddr=${destCoords}&dirflg=${modeChar}`;
-              else navUrl = `https://www.google.com/maps/dir/?api=1&origin=${prevCoords}&destination=${destCoords}&travelmode=${googleMode}`;
-          }
-          
-          li.innerHTML = `<a href="${navUrl}" target="_blank">
-                            <span style="font-weight:600; color:#e6edf3;">${i + 1}. ${p.name}</span>
-                            <small>Tap to navigate here (${navProvider === 'apple' ? ' Apple' : 'G Google'}) ↗</small>
-                          </a>`;
-          list.appendChild(li); 
-      });
-      
-      // Cleanup extra controls if we re-ran
-      const allControls = document.querySelectorAll('.nav-controls');
-      if(allControls.length > 1) {
-          for(let k=0; k<allControls.length-1; k++) allControls[k].remove();
-      }
   }
 
   // --- 9. LIBRARY & AI ---
@@ -355,7 +359,8 @@
 
   async function initTripTree() {
     if (!window.TRIP_LIBRARY) return;
-    const region = await detectUserLocation(); userRegion = region; 
+    const region = await detectUserLocation();
+    userRegion = region; 
     let sortedLib = window.TRIP_LIBRARY.slice();
     if (region) sortedLib.sort((a, b) => (b.region.includes(region) - a.region.includes(region)));
     const tree = $('presetTree'); tree.innerHTML = '';
@@ -371,7 +376,8 @@
         cat.items.forEach(trip => {
           const item = document.createElement('span'); item.className = 'tree-item'; item.textContent = trip.label;
           item.onclick = () => { 
-            $('input').value = trip.data; saveState(); setStatus(`Loaded: ${trip.label}`, 'ok'); renderSuggestions('bigChatHistory');
+            $('input').value = trip.data; saveState(); 
+            setStatus(`Loaded: ${trip.label}`, 'ok'); renderSuggestions('bigChatHistory');
           };
           cGroup.appendChild(item);
         });
@@ -441,7 +447,7 @@
     } catch(e) { return "AI Connection Error"; }
   }
 
-  // --- 10. OPTIMIZER ---
+  // --- 10. OPTIMIZER & APPLE MAPS LOGIC ---
   function showBusy(msg) {
     let overlay = $('busyOverlay');
     if (!overlay) {
@@ -478,15 +484,81 @@
       const saved = baseKm - totalKm;
       $('savedKm').textContent = saved > 0 ? saved.toFixed(2) + ' km' : '—';
       
+      const list = $('routeList'); list.innerHTML = '';
+      const modeChar = currentTravelMode === 'DRIVING' ? 'd' : 'w';
+      
+      // --- APPLE MAPS NAVIGATION LOGIC ---
+      pointsSorted.forEach((p, i) => { 
+          const li = document.createElement('li');
+          const destCoords = `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
+          
+          let navUrl = "";
+          if (i === 0) {
+              // Start: Navigate from Current Location
+              navUrl = `http://maps.apple.com/?daddr=${destCoords}&dirflg=${modeChar}`;
+          } else {
+              // Leg: Navigate from Prev Point -> Curr Point
+              const prevCoords = `${pointsSorted[i-1].lat.toFixed(6)},${pointsSorted[i-1].lon.toFixed(6)}`;
+              navUrl = `http://maps.apple.com/?saddr=${prevCoords}&daddr=${destCoords}&dirflg=${modeChar}`;
+          }
+          
+          li.innerHTML = `<a href="${navUrl}" target="_blank">
+                            ${i + 1}. ${p.name}
+                            <small>Tap to navigate here ↗</small>
+                          </a>`;
+          list.appendChild(li); 
+      });
+
       updateMapVisualization(pointsSorted);
       const links = buildMapsLegLinks(pointsSorted, $('chkRoundTrip').checked, currentTravelMode);
       renderLinks(links);
-      renderRouteList(); // Initial render of list with default nav mode
       setStatus('Done!', 'ok');
     }
   };
 
-  // --- INIT ---
+  // --- 11. UI & CHAT ---
+  function renderSuggestions(containerId) {
+    const el = $(containerId); if (!el) return;
+    const old = el.querySelector('.suggestions-box'); if (old) old.remove();
+    const inputVal = $('input').value.trim();
+    const isNew = inputVal.length < 10; 
+    const box = document.createElement('div'); box.className = 'suggestions-box';
+    if (isNew) {
+        let regionChip = "";
+        if (userRegion === 'Europe') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a classic Europe tour (Paris, Rome, Berlin)\')">🇪🇺 Classic Europe Tour</div>';
+        if (userRegion === 'Americas') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a USA West Coast road trip\')">🇺🇸 USA West Coast</div>';
+        box.innerHTML = `<div class="suggestion-group"><div class="suggestion-label">✨ Start a New Adventure</div><div class="chip-grid">${regionChip}<div class="chip logistics" onclick="window.sendChat('Create a 3-day itinerary for Rome, Italy')">Create 3-Day Rome Itinerary</div><div class="chip logistics" onclick="window.sendChat('Suggest a romantic weekend in Paris')">Paris Weekend</div></div></div><div class="suggestion-group"><div class="suggestion-label">ℹ️ Help</div><div class="chip-grid"><div class="chip" onclick="window.sendChat('How do I use the Trip Library?')">How to use Library?</div><div class="chip" onclick="window.sendChat('What does Optimize do?')">Explain Optimization</div></div></div>`;
+    } else {
+        box.innerHTML = `<div class="suggestion-group"><div class="suggestion-label">🛏️ Sleeping Strategy</div><div class="chip-grid"><div class="chip sleep" onclick="window.sendChat('Where should I stay? Calculate the best base camp.')">Find Best Base Camp</div></div></div><div class="suggestion-group"><div class="suggestion-label">🍴 Eating</div><div class="chip-grid"><div class="chip eat" onclick="window.sendChat('Suggest lunch spots with high ratings but low price')">Best Cheap Eats</div><div class="chip eat" onclick="window.sendChat('Where is a good romantic dinner spot nearby?')">Romantic Dinner</div></div></div><div class="suggestion-group"><div class="suggestion-label">🚕 Logistics</div><div class="chip-grid"><div class="chip logistics" onclick="window.sendChat('How much time do I need for each stop?')">Time per Stop?</div><div class="chip logistics" onclick="window.sendChat('Is this route walkable or do I need a taxi?')">Walk vs Taxi</div></div></div>`;
+    }
+    el.insertBefore(box, el.firstChild);
+  }
+
+  function setPlanningMode(enabled) {
+    const mapCont = $('mapContainer'), stats = document.querySelector('.stats'), list = $('routeList'), links = $('links');
+    const btnPlan = $('btnPlanMode'), btnMap = $('btnMapMode');
+    let bigChat = $('bigChatContainer');
+    if (!bigChat) {
+        bigChat = document.createElement('div'); bigChat.id = 'bigChatContainer'; bigChat.style.display = 'none';
+        bigChat.innerHTML = `<div id="bigChatHistory" style="flex:1; overflow-y:auto; padding:20px; border-bottom:1px solid #1f2a3a;"></div><div class="chat-input" style="padding:15px; background:#0f1621;"><input type="text" id="bigChatInput" placeholder="Message Gemini (Internet Enabled)..."><button id="btnSendBigChat">➤</button></div>`;
+        document.querySelector('.panel:nth-of-type(2)').appendChild(bigChat);
+        $('btnSendBigChat').onclick = () => handleChatSend('bigChatInput', 'bigChatHistory');
+        $('bigChatInput').onkeypress = (e) => { if(e.key==='Enter') handleChatSend('bigChatInput', 'bigChatHistory'); };
+    }
+    if (enabled) {
+        btnPlan.classList.add('active'); btnMap.classList.remove('active');
+        mapCont.style.display = 'none'; stats.style.display = 'none'; list.style.display = 'none'; links.style.display = 'none';
+        bigChat.style.display = 'flex'; bigChat.style.flexDirection = 'column'; bigChat.style.height = '100%'; $('chatPanel').style.display = 'none';
+        $('bigChatHistory').innerHTML = $('chatHistory').innerHTML; renderSuggestions('bigChatHistory');
+        setTimeout(() => $('bigChatInput') && $('bigChatInput').focus(), 100);
+    } else {
+        btnMap.classList.add('active'); btnPlan.classList.remove('active');
+        mapCont.style.display = 'block'; stats.style.display = 'flex'; list.style.display = 'block'; links.style.display = 'flex';
+        bigChat.style.display = 'none'; $('chatPanel').style.display = 'flex';
+        $('chatHistory').innerHTML = $('bigChatHistory').innerHTML;
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     initTripTree(); initAI(); 
     const restored = restoreState();
