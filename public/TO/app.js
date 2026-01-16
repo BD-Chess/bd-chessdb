@@ -2,6 +2,7 @@
   'use strict';
 
   // --- 1. CONFIGURATION ---
+  // API Keys (Obfuscated slightly to prevent simple scraping)
   const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA'; 
   const _s1 = 'QUl6YVN5Q3hIanBw', _s2 = 'S2l4YW85OU5IOURv', _s3 = 'YWYtUTBLTzRmQ1FhZUhz';
   const GEMINI_API_KEY = atob(_s1) + atob(_s2) + atob(_s3);
@@ -21,9 +22,9 @@
   let chatHistoryBuffer = [];
   
   let presetLookup = {};
-  let userRegion = null; 
+  let userRegion = null; // Stores 'Europe', 'Americas', etc.
 
-  // --- 3. HTML CONTENT ---
+  // --- 3. HTML CONTENT (Help & Visuals) ---
   const HELP_HTML = `
     <div class="help-block">
       <h2>How to Use</h2>
@@ -31,7 +32,7 @@
         <li><strong>1. Trip Library:</strong> Click [+] to expand continents. Click a tour name to load it.</li>
         <li><strong>2. Edit:</strong> Add or remove stops in the text box.</li>
         <li><strong>3. Optimize:</strong> Use "Standard" for fast results or "Deep Search" for complex routes.</li>
-        <li><strong>4. Export:</strong> Click the "Open in Maps" links to send the route to your phone.</li>
+        <li><strong>4. Export:</strong> Click the links below the map to open in Google Maps.</li>
       </ul>
     </div>
     <div class="help-block">
@@ -64,56 +65,17 @@
   function formatMarkdown(text) {
     if (!text) return '';
     let html = text;
+    // Bold
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+    // Bullets
     html = html.replace(/^\*\s/gm, '• ');
+    // Newlines
     html = html.replace(/\n/g, '<br>');
     return html;
   }
 
-  // --- NEW: SMART SAVE (Fixes iPhone Filename Issue) ---
-  async function handleSmartSave() {
-    const content = $('input').value;
-    if (!content.trim()) {
-        setStatus('Nothing to save!', 'warn');
-        return;
-    }
-
-    // 1. Ask user for filename
-    let name = prompt("Name your trip file:", "my-trip");
-    if (!name) return; // User cancelled
-    if (!name.endsWith('.txt')) name += '.txt';
-
-    // 2. Try Native Share (iOS/Android)
-    if (navigator.share && navigator.canShare) {
-        try {
-            const file = new File([content], name, { type: 'text/plain' });
-            if (navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: 'Save Trip',
-                    text: 'Here is my optimized 8Z trip.'
-                });
-                setStatus('Shared successfully!', 'ok');
-                return;
-            }
-        } catch (e) {
-            console.log("Share failed or cancelled, falling back to download.", e);
-        }
-    }
-
-    // 3. Fallback: Classic Download (Desktop)
-    const blob = new Blob([content], {type: 'text/plain'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setStatus('Saved to Downloads', 'ok');
-  }
-
-  // --- PERSISTENCE ENGINE ---
+  // --- 5. PERSISTENCE ENGINE (Save/Restore) ---
   function saveState() { 
     const state = {
         t: $('input').value,
@@ -142,6 +104,7 @@
             const historyEl = $('chatHistory');
             historyEl.innerHTML = s.chatHTML;
             
+            // Clean up UI artifacts to avoid duplicates
             const oldChips = historyEl.querySelectorAll('.suggestions-box');
             oldChips.forEach(el => el.remove());
             const oldRecovery = historyEl.querySelectorAll('.recovery-msg');
@@ -153,6 +116,7 @@
     return false;
   }
 
+  // Exposed globals for button clicks
   window.resetSession = function() {
       localStorage.removeItem(STORAGE_KEY);
       location.reload(); 
@@ -177,7 +141,7 @@
     }
   }
 
-  // --- 5. PARSING ---
+  // --- 6. INPUT PARSING ---
   function parseStops(text) {
     const lines = text.split(/\r?\n/);
     const pts = [];
@@ -220,7 +184,7 @@
     return { pts, startIdx };
   }
 
-  // --- 6. GEOCODING ---
+  // --- 7. GOOGLE MAPS & GEOCODING ---
   async function resolveLocation(rawName) {
     if (!geocoder) return null;
     try {
@@ -252,7 +216,6 @@
     return pts;
   }
 
-  // --- 7. MAP VISUALIZATION ---
   function ensureMapsLoaded() {
     if (window.google && window.google.maps) return Promise.resolve();
     if (mapScriptLoadingPromise) return mapScriptLoadingPromise;
@@ -316,13 +279,18 @@
     map.fitBounds(bounds);
   }
 
-  // --- 8. LINKS ---
+  // --- 8. SMART LINKS (Dual Mode: Pins & Names) ---
   function buildMapsLegLinks(routePts, roundTrip, mode) {
     const travelmode = (mode === 'DRIVING') ? 'driving' : 'walking';
     
-    const encodeLoc = (p) => {
-        if (typeof p.lat === 'number' && typeof p.lon === 'number') return `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
-        return p.name;
+    // Helper 1: Force Coordinates (The "Pins" version)
+    const encodeCoords = (p) => `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
+    
+    // Helper 2: Force Names (The "Readable" version)
+    const encodeName = (p) => {
+        // If name is just coords (starts with digit or minus), fallback to coords
+        if (p.name.match(/^-?\d+\./)) return encodeCoords(p);
+        return encodeURIComponent(p.name);
     };
 
     const seq = routePts.slice();
@@ -331,36 +299,65 @@
     const MAX_MID = 9; 
     const links = [];
     let i = 0;
+    
     while (i < seq.length - 1) {
       const origin = seq[i];
       let j = Math.min(seq.length - 1, i + 1 + MAX_MID + 1);
       if (j <= i + 1) j = i + 2;
 
       const segment = seq.slice(i, j + 1);
-      const originLoc = encodeLoc(segment[0]);
-      const destLoc = encodeLoc(segment[segment.length - 1]);
-      const mids = segment.slice(1, -1).map(encodeLoc);
-
-      const params = new URLSearchParams();
-      params.set('api', '1');
-      params.set('origin', originLoc);
-      params.set('destination', destLoc);
-      params.set('travelmode', travelmode);
-      if (mids.length) params.set('waypoints', mids.join('|'));
-
-      const url = `https://www.google.com/maps/dir/?${params.toString()}`;
       
-      links.push({ url, label: `Leg ${links.length + 1} (${segment.length} stops)` });
+      // --- BUILD URL 1: PINS (Exact GPS) ---
+      const originPin = encodeCoords(segment[0]);
+      const destPin = encodeCoords(segment[segment.length - 1]);
+      const midsPin = segment.slice(1, -1).map(encodeCoords);
+      
+      let urlPins = `https://www.google.com/maps/dir/?api=1&origin=${originPin}&destination=${destPin}&travelmode=${travelmode}`;
+      if (midsPin.length) urlPins += `&waypoints=${midsPin.join('%7C')}`;
+
+      // --- BUILD URL 2: NAMES (Readable) ---
+      const originName = encodeName(segment[0]);
+      const destName = encodeName(segment[segment.length - 1]);
+      const midsName = segment.slice(1, -1).map(encodeName);
+      
+      let urlNames = `https://www.google.com/maps/dir/?api=1&origin=${originName}&destination=${destName}&travelmode=${travelmode}`;
+      if (midsName.length) urlNames += `&waypoints=${midsName.join('%7C')}`;
+
+      links.push({ 
+        label: `Leg ${links.length + 1} (${segment.length} stops)`, 
+        urlPins: urlPins,
+        urlNames: urlNames
+      });
+      
       i = j;
     }
     return links;
   }
 
   function renderLinks(links) {
-    const el = $('links'); el.innerHTML = '';
+    const el = $('links'); 
+    el.innerHTML = '';
+    
     for (const L of links) {
-      const row = document.createElement('div'); row.className = 'linkrow';
-      row.innerHTML = `<span class="badge">${L.label}</span> <a href="${L.url}" target="_blank">Open in Maps ↗</a>`;
+      const row = document.createElement('div'); 
+      row.className = 'linkrow';
+      // Flex container for the dual buttons
+      row.style.display = 'flex';
+      row.style.flexWrap = 'wrap';
+      row.style.alignItems = 'center';
+      row.style.gap = '10px';
+      
+      row.innerHTML = `
+        <span class="badge" style="min-width:60px;">${L.label}</span>
+        <div style="display:flex; gap:8px; flex:1;">
+            <a href="${L.urlPins}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.85rem; text-decoration:none; color:#bfdbfe;">
+               📍 Exact Pins
+            </a>
+            <a href="${L.urlNames}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.85rem; text-decoration:none;">
+               🏷️ Names
+            </a>
+        </div>
+      `;
       el.appendChild(row);
     }
   }
@@ -374,7 +371,7 @@
         
         if (['US', 'CA', 'MX'].includes(code)) return 'Americas';
         if (['CN', 'JP', 'KR', 'TH', 'VN', 'IN'].includes(code)) return 'Asia';
-        if (['DE', 'FR', 'IT', 'ES', 'UK', 'GB', 'SI', 'AT', 'CH', 'NL', 'BE'].includes(code)) return 'Europe';
+        if (['DE', 'FR', 'IT', 'ES', 'UK', 'GB', 'SI', 'AT', 'CH', 'NL', 'BE', 'SK', 'CZ', 'PL', 'HU'].includes(code)) return 'Europe';
         if (['BR', 'AR', 'CL', 'PE', 'CO'].includes(code)) return 'South America';
         return 'Global';
     } catch(e) {
@@ -386,9 +383,11 @@
   async function initTripTree() {
     if (!window.TRIP_LIBRARY) return;
     
+    // 1. Detect & Store Region
     const region = await detectUserLocation();
     userRegion = region; 
     
+    // 2. Sort Library
     let sortedLib = window.TRIP_LIBRARY.slice();
     if (region) {
         sortedLib.sort((a, b) => {
@@ -396,7 +395,7 @@
             const bMatch = b.region.includes(region);
             return bMatch - aMatch;
         });
-        setStatus(`Welcome! Prioritizing trips in ${region}.`, 'ok');
+        if(region !== 'Global') setStatus(`Prioritizing trips for ${region}...`, 'ok');
     }
 
     const tree = $('presetTree'); tree.innerHTML = '';
@@ -448,8 +447,7 @@
     });
   }
 
-  // --- 10. RUN ---
-  
+  // --- 10. OPTIMIZER LOGIC ---
   function showBusy(msg) {
     let overlay = $('busyOverlay');
     if (!overlay) {
@@ -467,7 +465,58 @@
     if (overlay) overlay.style.display = 'none';
   }
 
-  // --- DYNAMIC SUGGESTION CHIPS ---
+  async function run(profile) {
+    setPlanningMode(false); // Switch to map view to see results
+
+    if (!window.google) { setStatus('Loading Map API...', 'ok'); await ensureMapsLoaded(); }
+
+    const raw = $('input').value;
+    let { pts, startIdx } = parseStops(raw);
+    
+    try { pts = await geocodeMissingPoints(pts); }
+    catch (e) { setStatus('Geocode Error', 'bad'); return; }
+
+    const valid = pts.filter(p => p.lat !== null && p.lon !== null);
+    if (valid.length < 2) { setStatus('Need 2+ valid stops.', 'bad'); return; }
+
+    setStatus(`Optimizing ${valid.length} stops...`, 'warn');
+    if (profile === 'deep') showBusy("Deep Genetic Optimization...");
+    
+    worker.postMessage({
+      type: 'solve',
+      profile: profile,
+      points: valid,
+      startIdx: (startIdx < valid.length) ? startIdx : 0,
+      roundTrip: $('chkRoundTrip').checked
+    });
+  }
+
+  worker.onmessage = (ev) => {
+    const msg = ev.data || {};
+    
+    if (msg.type === 'progress') {
+        showBusy(msg.text); 
+    }
+    else if (msg.type === 'result') {
+      hideBusy();
+      const { pointsSorted, totalKm, baseKm } = msg;
+      lastSolvedPoints = pointsSorted;
+      
+      $('distKm').textContent = totalKm.toFixed(2) + ' km';
+      const saved = baseKm - totalKm;
+      $('savedKm').textContent = saved > 0 ? saved.toFixed(2) + ' km' : '—';
+      
+      const list = $('routeList'); list.innerHTML = '';
+      pointsSorted.forEach(p => { const li = document.createElement('li'); li.textContent = p.name; list.appendChild(li); });
+
+      updateMapVisualization(pointsSorted);
+      const links = buildMapsLegLinks(pointsSorted, $('chkRoundTrip').checked, currentTravelMode);
+      renderLinks(links);
+      setStatus('Done!', 'ok');
+    }
+  };
+
+  // --- 11. UI CONTROL (Plan vs Map) & CHIPS ---
   function renderSuggestions(containerId) {
     const el = $(containerId);
     if (!el) return;
@@ -561,6 +610,7 @@
     }
 
     if (enabled) {
+        // --- PLAN MODE ---
         btnPlan.classList.add('active');
         btnMap.classList.remove('active');
         mapCont.style.display = 'none';
@@ -571,14 +621,15 @@
         bigChat.style.display = 'flex';
         bigChat.style.flexDirection = 'column';
         bigChat.style.height = '100%';
-        $('chatPanel').style.display = 'none';
+        $('chatPanel').style.display = 'none'; // Hide small chat
         
-        // SYNC History
+        // Sync & Render
         $('bigChatHistory').innerHTML = $('chatHistory').innerHTML;
         renderSuggestions('bigChatHistory');
 
         setTimeout(() => $('bigChatInput') && $('bigChatInput').focus(), 100);
     } else {
+        // --- MAP MODE ---
         btnMap.classList.add('active');
         btnPlan.classList.remove('active');
         mapCont.style.display = 'block';
@@ -586,65 +637,14 @@
         list.style.display = 'block';
         links.style.display = 'flex';
         bigChat.style.display = 'none';
-        $('chatPanel').style.display = 'flex';
+        $('chatPanel').style.display = 'flex'; // Show small chat
         
-        // SYNC BACK
+        // Sync Back
         $('chatHistory').innerHTML = $('bigChatHistory').innerHTML;
     }
   }
 
-  async function run(profile) {
-    setPlanningMode(false);
-
-    if (!window.google) { setStatus('Loading Map API...', 'ok'); await ensureMapsLoaded(); }
-
-    const raw = $('input').value;
-    let { pts, startIdx } = parseStops(raw);
-    
-    try { pts = await geocodeMissingPoints(pts); }
-    catch (e) { setStatus('Geocode Error', 'bad'); return; }
-
-    const valid = pts.filter(p => p.lat !== null && p.lon !== null);
-    if (valid.length < 2) { setStatus('Need 2+ valid stops.', 'bad'); return; }
-
-    setStatus(`Optimizing ${valid.length} stops...`, 'warn');
-    if (profile === 'deep') showBusy("Deep Genetic Optimization...");
-    
-    worker.postMessage({
-      type: 'solve',
-      profile: profile,
-      points: valid,
-      startIdx: (startIdx < valid.length) ? startIdx : 0,
-      roundTrip: $('chkRoundTrip').checked
-    });
-  }
-
-  worker.onmessage = (ev) => {
-    const msg = ev.data || {};
-    
-    if (msg.type === 'progress') {
-        showBusy(msg.text); 
-    }
-    else if (msg.type === 'result') {
-      hideBusy();
-      const { pointsSorted, totalKm, baseKm } = msg;
-      lastSolvedPoints = pointsSorted;
-      
-      $('distKm').textContent = totalKm.toFixed(2) + ' km';
-      const saved = baseKm - totalKm;
-      $('savedKm').textContent = saved > 0 ? saved.toFixed(2) + ' km' : '—';
-      
-      const list = $('routeList'); list.innerHTML = '';
-      pointsSorted.forEach(p => { const li = document.createElement('li'); li.textContent = p.name; list.appendChild(li); });
-
-      updateMapVisualization(pointsSorted);
-      const links = buildMapsLegLinks(pointsSorted, $('chkRoundTrip').checked, currentTravelMode);
-      renderLinks(links);
-      setStatus('Done!', 'ok');
-    }
-  };
-
-  // --- 11. AI ---
+  // --- 12. AI CHAT LOGIC ---
   async function initAI() {
     try {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
@@ -678,7 +678,7 @@
     } catch(e){ console.error("AI Init Error", e); }
   }
 
-  // Expose for chips to use
+  // Expose chat sender for chips
   window.sendChat = function(text) {
       if(document.getElementById('bigChatInput').offsetParent) {
           document.getElementById('bigChatInput').value = text;
@@ -714,6 +714,7 @@
       if(loader) loader.remove();
       
       let processedText = r;
+      // Handle REPLACE command
       const replaceMatch = r.match(/\{REPLACE:\s*([\s\S]*?)\}/);
       if (replaceMatch) {
           const newContent = replaceMatch[1].trim();
@@ -727,12 +728,13 @@
                   if (historyId === 'chatHistory') renderSuggestions('chatHistory');
               }, 500);
           }
-          // Visual Action Card
+          // SHOW VISUAL ACTION CARD (Ghost Action Fix)
           processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, 
             '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Check the list above to edit.</small></div>'
           );
       }
 
+      // Handle ADD command
       const m = processedText.match(/\{ADD:\s*(.*?)\}/g); 
       if(m) {
         let addedCount = 0;
@@ -753,6 +755,7 @@
         );
       }
 
+      // Render Markdown & Final Output
       const cleanResponse = `<div class="msg ai"><strong>Gemini:</strong> ${formatMarkdown(processedText)}</div>`;
       h.innerHTML += cleanResponse;
       h.scrollTop = h.scrollHeight;
@@ -776,15 +779,17 @@
     let sysPrompt = "";
     
     if (!hasData) {
+        // --- GUIDE MODE (Empty) ---
         sysPrompt = `
           You are the 8Z Trip Architect. The user has an EMPTY itinerary. ${locationContext}
           YOUR GOAL: Help them create a list of stops.
           COMMANDS:
           - Use {REPLACE: \nStop 1\nStop 2...} to fill their list.
           - CRITICAL: Do NOT list the stops in the chat text. Say "I have loaded these stops into your Trip Editor above ☝️."
-          - AMBIGUITY CHECK: Always specify Country for every location (e.g. "Rome, Italy" NOT just "Rome"). Use "Place | lat, lon" for specific spots.
+          - AMBIGUITY CHECK: Always specify Country (e.g. "Rome, Italy" NOT just "Rome"). Use "Place | lat, lon" for specific spots.
         `;
     } else {
+        // --- ANALYST MODE (Active) ---
         sysPrompt = `
           You are the 8Z Logistics Co-Pilot. ${locationContext}
           CURRENT STOPS: ${currentTripData}
@@ -792,7 +797,7 @@
           1. Value for Money (4.5+ stars).
           2. Geometric Center for hotels.
           3. UI AWARENESS: When using {REPLACE} or {ADD}, do NOT paste the list in chat. Say "I have updated your Trip Editor above."
-          4. AMBIGUITY CHECK: Always specify Country for every location (e.g. "Rome, Italy"). Use "Place | lat, lon" if precise location needed.
+          4. AMBIGUITY CHECK: Always specify Country (e.g. "Rome, Italy").
           COMMANDS:
           - {ADD: ...} to append.
           - {REPLACE: ...} to overwrite.
@@ -821,20 +826,21 @@
     return t;
   }
 
+  // --- 13. INIT ---
   document.addEventListener('DOMContentLoaded', () => {
     initTripTree(); initAI(); 
     
+    // Attempt Restore
     const restored = restoreState();
     
+    // Bind Controls
     $('btnStandard').onclick = () => run('standard');
     $('btnDeep').onclick = () => run('deep');
     $('btnDriving').onclick = () => setTravelMode('DRIVING');
     $('btnWalking').onclick = () => setTravelMode('WALKING');
     $('btnEnableMap').onclick = () => ensureMapsLoaded();
     
-    // --- UPDATED SAVE HANDLER ---
-    $('btnSave').onclick = handleSmartSave; // Replaced anonymous function with named one
-
+    $('btnSave').onclick = () => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([$('input').value],{type:'text/plain'})); a.download='trip.txt'; a.click(); };
     $('btnLoad').onclick = () => $('fileLoader').click();
     $('fileLoader').onchange = (e) => { const f=e.target.files[0]; if(f){const r=new FileReader();r.onload=(v)=>{$('input').value=v.target.result;saveState();};r.readAsText(f);} };
     
@@ -868,6 +874,7 @@
     $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; 
     $('btnCloseHelp').onclick=()=>h.style.display='none';
     
+    // Recovery Logic
     if(restored) {
         const historyEl = $('chatHistory');
         const restoreMsg = document.createElement('div');
@@ -882,9 +889,9 @@
         `;
         historyEl.appendChild(restoreMsg);
         
-        setPlanningMode(true);
+        setPlanningMode(true); // Always return to Plan Mode on restore
     } else {
-        setPlanningMode(true);
+        setPlanningMode(true); // Default to Plan Mode
     }
   });
   
