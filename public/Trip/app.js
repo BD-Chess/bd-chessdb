@@ -351,22 +351,28 @@
   }
 
   function renderLinks(links) {
-    const el = $('links'); el.innerHTML = '';
+    const el = $('links'); 
+    
+    // UPDATED: Added Header "Open in Google Maps"
+    el.innerHTML = '<h4>Open in Google Maps</h4>';
+    
     for (const L of links) {
       const row = document.createElement('div'); row.className = 'linkrow';
       row.style.display = 'flex'; row.style.flexWrap = 'wrap'; row.style.alignItems = 'center'; row.style.gap = '10px';
       
-      // UPDATED: Changed 'Exact Pins' to 'Open in Google Map'
-      row.innerHTML = `<span class="badge" style="min-width:60px;">${L.label}</span><div style="display:flex; gap:8px; flex:1;"><a href="${L.urlPins}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.85rem; text-decoration:none; color:#bfdbfe;">📍 Open in Google Map</a><a href="${L.urlNames}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.85rem; text-decoration:none;">🏷️ Names</a></div>`;
+      // UPDATED: Changed label from 'Open in Google Map' to 'Pins'
+      row.innerHTML = `<span class="badge" style="min-width:60px;">${L.label}</span><div style="display:flex; gap:8px; flex:1;"><a href="${L.urlPins}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.85rem; text-decoration:none; color:#bfdbfe;">📍 Pins</a><a href="${L.urlNames}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.85rem; text-decoration:none;">🏷️ Names</a></div>`;
       el.appendChild(row);
     }
     const shareArea = document.createElement('div');
     shareArea.className = 'share-area';
-    // GPX BUTTON AND SHARE BUTTON
+    
+    // UPDATED: Renamed 'Share Link' to 'Share trip'
+    // UPDATED: Darkened GPX button background to #14532d (Dark Green)
     shareArea.innerHTML = `
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        <button id="btnShareTrip" class="btn-share" onclick="window.shareTrip()">🔗 Share Link</button>
-        <button id="btnGPX" class="btn-share" style="background:#dcfce7; color:#166534; border-color:#86efac;" onclick="window.downloadGPX()">⛰️ Save GPX</button>
+        <button id="btnShareTrip" class="btn-share" onclick="window.shareTrip()">🔗 Share trip</button>
+        <button id="btnGPX" class="btn-share" style="background:#14532d; color:white; border-color:#14532d;" onclick="window.downloadGPX()">⛰️ Save GPX</button>
       </div>
     `;
     el.appendChild(shareArea);
@@ -479,7 +485,6 @@
         
         box.innerHTML = `<div class="suggestion-group"><div class="suggestion-label">✨ Start a New Adventure</div><div class="chip-grid">${regionChip}<div class="chip logistics" onclick="window.sendChat('Create a 3-day itinerary for Rome, Italy')">Create 3-Day Rome Itinerary</div><div class="chip logistics" onclick="window.sendChat('Suggest a romantic weekend in Paris')">Paris Weekend</div></div></div>${helpHtml}`;
     } else {
-        // ADDED HELP HTML HERE TOO so it doesn't vanish!
         box.innerHTML = `<div class="suggestion-group"><div class="suggestion-label">🛏️ Sleeping Strategy</div><div class="chip-grid"><div class="chip sleep" onclick="window.sendChat('Where should I stay? Calculate the best base camp.')">Find Best Base Camp</div></div></div><div class="suggestion-group"><div class="suggestion-label">🍴 Eating</div><div class="chip-grid"><div class="chip eat" onclick="window.sendChat('Suggest lunch spots with high ratings but low price')">Best Cheap Eats</div><div class="chip eat" onclick="window.sendChat('Where is a good romantic dinner spot nearby?')">Romantic Dinner</div></div></div><div class="suggestion-group"><div class="suggestion-label">🚕 Logistics</div><div class="chip-grid"><div class="chip logistics" onclick="window.sendChat('How much time do I need for each stop?')">Time per Stop?</div><div class="chip logistics" onclick="window.sendChat('Is this route walkable or do I need a taxi?')">Walk vs Taxi</div></div></div>${helpHtml}`;
     }
     el.insertBefore(box, el.firstChild);
