@@ -365,6 +365,7 @@ fullContent: `(() => {
     }
     const shareArea = document.createElement('div');
     shareArea.className = 'share-area';
+    // GPX BUTTON AND SHARE BUTTON
     shareArea.innerHTML = \`
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
         <button id="btnShareTrip" class="btn-share" onclick="window.shareTrip()">🔗 Share Link</button>
