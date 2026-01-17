@@ -26,6 +26,7 @@ fullContent: `(() => {
   
   let presetLookup = {};
   let userRegion = null;
+  let useMiles = false; // New flag for Unit Conversion
 
   // --- 3. HTML CONTENT ---
   const HELP_HTML = \`
@@ -166,8 +167,7 @@ fullContent: `(() => {
     
     let wpts = '';
     points.forEach(p => {
-      // Escape special chars
-      const name = p.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const name = p.name.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
       wpts += \`\\n  <wpt lat="\${p.lat}" lon="\${p.lon}">\\n    <name>\${name}</name>\\n  </wpt>\`;
     });
 
@@ -175,7 +175,6 @@ fullContent: `(() => {
     points.forEach(p => {
       trk += \`\\n      <trkpt lat="\${p.lat}" lon="\${p.lon}"></trkpt>\`;
     });
-    // Close loop if round trip
     if($('chkRoundTrip').checked && points.length > 0) {
        trk += \`\\n      <trkpt lat="\${points[0].lat}" lon="\${points[0].lon}"></trkpt>\`;
     }
@@ -359,12 +358,13 @@ fullContent: `(() => {
     for (const L of links) {
       const row = document.createElement('div'); row.className = 'linkrow';
       row.style.display = 'flex'; row.style.flexWrap = 'wrap'; row.style.alignItems = 'center'; row.style.gap = '10px';
-      row.innerHTML = \`<span class="badge" style="min-width:60px;">\${L.label}</span><div style="display:flex; gap:8px; flex:1;"><a href="\${L.urlPins}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.85rem; text-decoration:none; color:#bfdbfe;">📍 Exact Pins</a><a href="\${L.urlNames}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.85rem; text-decoration:none;">🏷️ Names</a></div>\`;
+      
+      // UPDATED: Changed 'Exact Pins' to 'Open in Google Map'
+      row.innerHTML = \`<span class="badge" style="min-width:60px;">\${L.label}</span><div style="display:flex; gap:8px; flex:1;"><a href="\${L.urlPins}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.85rem; text-decoration:none; color:#bfdbfe;">📍 Open in Google Map</a><a href="\${L.urlNames}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.85rem; text-decoration:none;">🏷️ Names</a></div>\`;
       el.appendChild(row);
     }
     const shareArea = document.createElement('div');
     shareArea.className = 'share-area';
-    // UPDATED: Added GPX Button next to Share Button
     shareArea.innerHTML = \`
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
         <button id="btnShareTrip" class="btn-share" onclick="window.shareTrip()">🔗 Share Link</button>
@@ -412,6 +412,10 @@ fullContent: `(() => {
         const res = await fetch('https://ipapi.co/json/');
         const data = await res.json();
         const code = data.country_code; 
+        
+        // UPDATED: Check for US/UK to set imperial units
+        if (['US', 'GB'].includes(code)) useMiles = true;
+
         if (['US', 'CA', 'MX'].includes(code)) return 'Americas';
         if (['CN', 'JP', 'KR', 'TH', 'VN', 'IN'].includes(code)) return 'Asia';
         if (['DE', 'FR', 'IT', 'ES', 'UK', 'GB', 'SI'].includes(code)) return 'Europe';
@@ -477,7 +481,6 @@ fullContent: `(() => {
         
         box.innerHTML = \`<div class="suggestion-group"><div class="suggestion-label">✨ Start a New Adventure</div><div class="chip-grid">\${regionChip}<div class="chip logistics" onclick="window.sendChat('Create a 3-day itinerary for Rome, Italy')">Create 3-Day Rome Itinerary</div><div class="chip logistics" onclick="window.sendChat('Suggest a romantic weekend in Paris')">Paris Weekend</div></div></div>\${helpHtml}\`;
     } else {
-        // ADDED HELP HTML HERE TOO so it doesn't vanish!
         box.innerHTML = \`<div class="suggestion-group"><div class="suggestion-label">🛏️ Sleeping Strategy</div><div class="chip-grid"><div class="chip sleep" onclick="window.sendChat('Where should I stay? Calculate the best base camp.')">Find Best Base Camp</div></div></div><div class="suggestion-group"><div class="suggestion-label">🍴 Eating</div><div class="chip-grid"><div class="chip eat" onclick="window.sendChat('Suggest lunch spots with high ratings but low price')">Best Cheap Eats</div><div class="chip eat" onclick="window.sendChat('Where is a good romantic dinner spot nearby?')">Romantic Dinner</div></div></div><div class="suggestion-group"><div class="suggestion-label">🚕 Logistics</div><div class="chip-grid"><div class="chip logistics" onclick="window.sendChat('How much time do I need for each stop?')">Time per Stop?</div><div class="chip logistics" onclick="window.sendChat('Is this route walkable or do I need a taxi?')">Walk vs Taxi</div></div></div>\${helpHtml}\`;
     }
     el.insertBefore(box, el.firstChild);
@@ -621,9 +624,25 @@ fullContent: `(() => {
       hideBusy();
       const { pointsSorted, totalKm, baseKm } = msg;
       lastSolvedPoints = pointsSorted;
-      $('distKm').textContent = totalKm.toFixed(2) + ' km';
-      const saved = baseKm - totalKm;
-      $('savedKm').textContent = saved > 0 ? saved.toFixed(2) + ' km' : '—';
+      
+      // UPDATED: Convert to Miles if useMiles is true
+      let distDisplay = totalKm.toFixed(2) + ' km';
+      let savedDisplay = '';
+      
+      if (useMiles) {
+        const totalMi = totalKm * 0.621371;
+        const baseMi = baseKm * 0.621371;
+        const savedMi = baseMi - totalMi;
+        distDisplay = totalMi.toFixed(2) + ' mi';
+        savedDisplay = savedMi > 0 ? savedMi.toFixed(2) + ' mi' : '—';
+      } else {
+        const savedKm = baseKm - totalKm;
+        savedDisplay = savedKm > 0 ? savedKm.toFixed(2) + ' km' : '—';
+      }
+
+      $('distKm').textContent = distDisplay;
+      $('savedKm').textContent = savedDisplay;
+
       renderRouteList(pointsSorted);
       updateMapVisualization(pointsSorted);
       const links = buildMapsLegLinks(pointsSorted, $('chkRoundTrip').checked, currentTravelMode);
