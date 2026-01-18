@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>ORBITAL 4</title>
+<style>
+:root{
+  --bg: #0b0f17;
+  --panel: #1e2535;
+  --text: #e9eefc;
+  --muted: #8fa1b8;
+  --accent: #00e5ff; /* Cyan Neon */
+  --red: #e53935;
+  --yel: #fdd835;
+  --green: #4caf50;
+  --btn: #26314a;
+  --btnBorder: rgba(255,255,255,0.1);
+  --gold: #ffd700;
+}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;touch-action:none;user-select:none}
+#app{display:flex;flex-direction:column;height:100%;width:100%;max-width:800px;margin:0 auto;position:relative}
+
+/* HUD */
+#hud{
+  flex-shrink:0;z-index:10;background:var(--panel);
+  border-bottom:1px solid var(--btnBorder);
+  padding:max(10px,env(safe-area-inset-top)) 15px 10px;
+  display:flex;justify-content:space-between;align-items:center;
+  box-shadow:0 4px 15px rgba(0,0,0,0.5);
+}
+.hud-col{display:flex;flex-direction:column;gap:4px}
+h1{margin:0;font-size:20px;font-weight:900;letter-spacing:1px;color:var(--accent);text-transform:uppercase}
+.status{font-size:14px;color:var(--muted);font-family:monospace}
+.p-badge{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:6px;margin-bottom:4px}
+.dot{width:10px;height:10px;border-radius:50%;box-shadow:0 0 5px currentColor}
+
+/* STAGE */
+#stage{flex-grow:1;position:relative;background:radial-gradient(circle at center,#1a202e 0%,#0b0f17 100%);overflow:hidden;display:flex;align-items:center;justify-content:center}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* NOTIFICATIONS & OVERLAYS */
+#aiThinking{
+  position:absolute;top:20px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,0.85);color:var(--accent);padding:8px 16px;
+  border-radius:20px;font-size:12px;opacity:0;transition:opacity 0.2s;pointer-events:none;
+  border:1px solid var(--accent);box-shadow:0 0 10px var(--accent);
+}
+#aiThinking.visible{opacity:1}
+
+#winnerCard{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.9);
+  background:rgba(30,37,53,0.95);backdrop-filter:blur(8px);
+  border:1px solid var(--accent);padding:30px;border-radius:16px;
+  text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.9);
+  display:flex;flex-direction:column;gap:15px;
+  opacity:0;pointer-events:none;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  z-index:100;min-width:280px;
+}
+#winnerCard.visible{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto}
+.win-title{font-size:28px;font-weight:900;color:var(--gold);margin:0;line-height:1;text-shadow:0 0 20px rgba(255,215,0,0.3)}
+
+/* CONTROLS */
+#controls{
+  flex-shrink:0;z-index:10;background:var(--panel);
+  border-top:1px solid var(--btnBorder);
+  padding:15px;padding-bottom:max(15px,env(safe-area-inset-bottom));
+  display:flex;gap:15px;justify-content:center;
+}
+
+button{
+  background:var(--btn);border:1px solid var(--btnBorder);color:var(--text);
+  padding:12px 20px;border-radius:8px;font-weight:700;font-size:14px;
+  cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;
+  text-transform:uppercase;letter-spacing:0.5px;
+}
+button:active{transform:scale(0.96)}
+button.primary{background:rgba(0,229,255,0.15);border-color:var(--accent);color:var(--accent)}
+button.brake-btn{width:100%;max-width:300px;position:relative;overflow:hidden}
+button.brake-active{background:rgba(229,57,53,0.2);border-color:var(--red);color:var(--red);box-shadow:inset 0 0 15px rgba(229,57,53,0.2)}
+
+/* MAIN MENU */
+#menuOverlay{
+  position:absolute;inset:0;z-index:200;background:rgba(11,15,23,0.95);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  backdrop-filter:blur(5px);
+}
+.menu-card{
+  background:var(--panel);border:1px solid var(--btnBorder);
+  padding:40px;border-radius:20px;text-align:center;width:min(400px,90vw);
+  box-shadow:0 20px 60px rgba(0,0,0,0.8);
+}
+.menu-card h1{font-size:42px;margin-bottom:10px;color:var(--accent);text-shadow:0 0 15px rgba(0,229,255,0.4)}
+.menu-card p{color:var(--muted);margin:0 0 30px;line-height:1.5}
+.diff-select{display:flex;gap:10px;margin-bottom:20px}
+.diff-btn{flex:1;font-size:12px;padding:10px}
+.diff-btn.active{background:var(--accent);color:#000;border-color:var(--accent)}
+
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="hud">
+    <div class="hud-col">
+      <h1>Orbital 4</h1>
+      <div class="status" id="turnInfo">Player 1</div>
+    </div>
+    <div class="hud-col" style="align-items:flex-end">
+      <div class="p-badge" style="color:var(--red)"><span class="dot" style="background:var(--red)"></span> P1 Brakes: <span id="p1Brake">3</span></div>
+      <div class="p-badge" style="color:var(--yel)"><span class="dot" style="background:var(--yel)"></span> P2 Brakes: <span id="p2Brake">3</span></div>
+    </div>
+  </div>
+
+  <div id="stage">
+    <div id="aiThinking">SYSTEM PROCESSING...</div>
+    <canvas id="c"></canvas>
+    
+    <div id="winnerCard">
+      <div class="win-title" id="wTitle">RED WINS</div>
+      <div class="status" id="wSub">Orbital Alignment Complete</div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:10px">
+        <button onclick="showMenu()">Main Menu</button>
+        <button class="primary" onclick="restartGame()">Replay</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="controls">
+    <button id="btnBrake" class="brake-btn" onclick="toggleBrake()">
+      <span>🛑 Engage Brake</span>
+    </button>
+    <button onclick="showMenu()" style="width:60px">☰</button>
+  </div>
+</div>
+
+<div id="menuOverlay">
+  <div class="menu-card">
+    <h1>ORBITAL 4</h1>
+    <p>Connect 4 in a shifting gravity well.<br>Radial, Orbital, or Spiral.<br>Rings rotate after every move.</p>
+    
+    <div style="text-align:left;font-size:12px;color:var(--muted);margin-bottom:5px">DIFFICULTY</div>
+    <div class="diff-select">
+      <button class="diff-btn" onclick="setDiff(1)" id="d1">Easy</button>
+      <button class="diff-btn active" onclick="setDiff(2)" id="d2">Normal</button>
+      <button class="diff-btn" onclick="setDiff(3)" id="d3">Hard</button>
+    </div>
+
+    <button class="primary" style="width:100%;font-size:18px;padding:16px" onclick="startGame()">INITIATE SYSTEM</button>
+  </div>
+</div>
+
+<script>
+// =============================================================================
+// ENGINE CONFIG & CONSTANTS
+// =============================================================================
+const RINGS = 4;
+const SECTORS = 12; // Like a clock
+const P_EMPTY = 0;
+const P1 = 1; // Human/Red
+const P2 = 2; // AI/Yellow
+
+// Rotation Rules (Sectors per turn)
+// [Ring 0 (Inner), Ring 1, Ring 2, Ring 3 (Outer)]
+const ROTATION_RULES = [1, -1, 2, 0]; 
+
+// Colors
+const COL_P1 = "#e53935";
+const COL_P2 = "#fdd835";
+const COL_GRID = "rgba(0, 229, 255, 0.15)";
+const COL_GRID_ACCENT = "rgba(0, 229, 255, 0.4)";
+
+// State
+let board = []; // 4x12 array
+let brakes = { [P1]: 3, [P2]: 3 };
+let curPlayer = P1;
+let brakeActive = false;
+let animating = false;
+let gameOver = false;
+let difficulty = 2;
+
+// Animation State
+let ringAngles = [0, 0, 0, 0]; // Visual rotation offset in radians
+let targetAngles = [0, 0, 0, 0]; // Where we are animating to
+let lastTime = 0;
+
+// References
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d', {alpha: false});
+const elBrake = document.getElementById('btnBrake');
+const elWinner = document.getElementById('winnerCard');
+const elMenu = document.getElementById('menuOverlay');
+const elAi = document.getElementById('aiThinking');
+
+// =============================================================================
+// CORE LOGIC
+// =============================================================================
+
+function initBoard() {
+    board = Array.from({length: RINGS}, () => Array(SECTORS).fill(P_EMPTY));
+    brakes = { [P1]: 3, [P2]: 3 };
+    curPlayer = P1;
+    brakeActive = false;
+    gameOver = false;
+    animating = false;
+    ringAngles = [0,0,0,0];
+    targetAngles = [0,0,0,0];
+    updateUI();
+    elWinner.classList.remove('visible');
+    elMenu.classList.add('hidden');
+    requestAnimationFrame(loop);
+}
+
+function setDiff(d) {
+    difficulty = d;
+    document.querySelectorAll('.diff-btn').forEach((b, i) => {
+        b.classList.toggle('active', i + 1 === d);
+    });
+}
+
+function showMenu() { elMenu.classList.remove('hidden'); }
+function startGame() { initBoard(); }
+function restartGame() { initBoard(); }
+
+function toggleBrake() {
+    if(gameOver || animating || curPlayer === P2) return;
+    if(brakes[curPlayer] > 0) {
+        brakeActive = !brakeActive;
+        updateUI();
+    }
+}
+
+// Coordinate Helpers
+function getSector(angle) {
+    // Normalize angle to 0-2PI
+    let a = angle % (Math.PI*2);
+    if(a < 0) a += Math.PI*2;
+    // Each sector is PI/6
+    return Math.floor(a / (Math.PI / 6));
+}
+
+// Game Rules
+function isValidMove(r, s) {
+    return board[r][s] === P_EMPTY;
+}
+
+function applyMove(r, s, player, isSimulation = false, useBrake = false) {
+    board[r][s] = player;
+    
+    // Logic for rotation
+    if (!useBrake) {
+        // Shift array data
+        if(!isSimulation) {
+            // For real game, we trigger animation, THEN update array later
+            startRotationAnimation();
+        } else {
+            // For AI simulation, update array immediately
+            rotateBoardData();
+        }
+    } else {
+        if(!isSimulation) brakes[player]--;
+    }
+
+    if(!isSimulation) {
+        brakeActive = false;
+        // Check win is handled after animation finishes
+        if(useBrake) endTurn(); 
+    }
+}
+
+function rotateBoardData() {
+    const newBoard = [];
+    for(let r=0; r<RINGS; r++) {
+        const shift = ROTATION_RULES[r];
+        const row = Array(SECTORS).fill(0);
+        for(let s=0; s<SECTORS; s++) {
+            // Calculate new index
+            // If shift is +1, data at index 0 moves to index 1.
+            // So New[1] = Old[0]. New[s] = Old[s - shift]
+            let oldIdx = (s - shift) % SECTORS;
+            if(oldIdx < 0) oldIdx += SECTORS;
+            row[s] = board[r][oldIdx];
+        }
+        newBoard.push(row);
+    }
+    board = newBoard;
+}
+
+function checkWin(b) {
+    // b is board state
+    // Check all cells
+    for(let r=0; r<RINGS; r++) {
+        for(let s=0; s<SECTORS; s++) {
+            let p = b[r][s];
+            if(p === P_EMPTY) continue;
+
+            // 1. Orbital (Horizontal in ring)
+            if( b[r][(s+1)%SECTORS] === p && 
+                b[r][(s+2)%SECTORS] === p && 
+                b[r][(s+3)%SECTORS] === p ) return p;
+
+            // 2. Radial (Vertical)
+            if( r <= RINGS-4 ) {
+                if( b[r+1][s] === p && b[r+2][s] === p && b[r+3][s] === p ) return p;
+            }
+
+            // 3. Spiral A (Outward + Clockwise)
+            if( r <= RINGS-4 ) {
+                if( b[r+1][(s+1)%SECTORS] === p &&
+                    b[r+2][(s+2)%SECTORS] === p &&
+                    b[r+3][(s+3)%SECTORS] === p ) return p;
+            }
+
+            // 4. Spiral B (Outward + Counter-Clockwise)
+            if( r <= RINGS-4 ) {
+                let s1 = (s-1+SECTORS)%SECTORS;
+                let s2 = (s-2+SECTORS)%SECTORS;
+                let s3 = (s-3+SECTORS)%SECTORS;
+                if( b[r+1][s1] === p && b[r+2][s2] === p && b[r+3][s3] === p ) return p;
+            }
+        }
+    }
+    return 0;
+}
+
+// =============================================================================
+// ANIMATION SYSTEM
+// =============================================================================
+
+function startRotationAnimation() {
+    animating = true;
+    for(let i=0; i<RINGS; i++) {
+        // Visual angle matches the sector shift. 1 Sector = PI/6
+        // shift > 0 is clockwise (visually +angle)
+        const shiftAngle = ROTATION_RULES[i] * (Math.PI / 6);
+        targetAngles[i] = ringAngles[i] + shiftAngle;
+    }
+}
+
+function updateAnimation(dt) {
+    if(!animating) return;
+    
+    let done = true;
+    const speed = 0.005 * dt; // rad per ms
+
+    for(let i=0; i<RINGS; i++) {
+        let diff = targetAngles[i] - ringAngles[i];
+        if(Math.abs(diff) > 0.01) {
+            ringAngles[i] += diff * 0.1; // Ease out
+            done = false;
+        } else {
+            ringAngles[i] = targetAngles[i];
+        }
+    }
+
+    if(done) {
+        animating = false;
+        rotateBoardData(); // Actually shift the data now
+        // Reset visual angles to keep numbers small, though logically irrelevant for drawing
+        // Actually, to prevent "snap back", we keep the angles increasing?
+        // Better: Reset angles to 0 but they are already at N*Sector.
+        // We just rotated the data. So if we render data[0] at angle 0, it matches data[old-1] at angle 1.
+        // So we MUST reset visual offsets to 0 simultaneously with data shift.
+        ringAngles = [0,0,0,0];
+        targetAngles = [0,0,0,0];
+        
+        endTurn();
+    }
+}
+
+function endTurn() {
+    const winner = checkWin(board);
+    if(winner) {
+        gameOver = true;
+        document.getElementById('wTitle').textContent = winner === P1 ? "RED WINS" : "YELLOW WINS";
+        document.getElementById('wTitle').style.color = winner === P1 ? "var(--red)" : "var(--yel)";
+        elWinner.classList.add('visible');
+        return;
+    }
+    
+    // Check Draw
+    let full = true;
+    for(let r=0; r<RINGS; r++) for(let s=0; s<SECTORS; s++) if(board[r][s]===0) full=false;
+    if(full) {
+        gameOver = true;
+        document.getElementById('wTitle').textContent = "SYSTEM STASIS";
+        document.getElementById('wTitle').style.color = "#fff";
+        elWinner.classList.add('visible');
+        return;
+    }
+
+    curPlayer = curPlayer === P1 ? P2 : P1;
+    updateUI();
+
+    if(curPlayer === P2) {
+        setTimeout(aiMove, 500);
+    }
+}
+
+// =============================================================================
+// AI ENGINE (THE NIGHTMARE)
+// =============================================================================
+
+function evaluate(b, player) {
+    const opp = player === P1 ? P2 : P1;
+    let score = 0;
+
+    // Helper to score a line
+    function scoreLine(cells) {
+        let pCount = 0;
+        let oCount = 0;
+        let empty = 0;
+        for(let val of cells) {
+            if(val === player) pCount++;
+            else if(val === opp) oCount++;
+            else empty++;
+        }
+
+        if(oCount === 0) {
+            if(pCount === 4) return 100000;
+            if(pCount === 3) return 1000;
+            if(pCount === 2) return 50;
+            if(pCount === 1) return 5;
+        } else if(pCount === 0) {
+            if(oCount === 4) return -100000;
+            if(oCount === 3) return -1200; // Defensive priority
+            if(oCount === 2) return -60;
+        }
+        return 0;
+    }
+
+    // Iterate all possible lines (Radial, Orbital, Spiral)
+    // There are limited lines, can iterate cells and check directions
+    for(let r=0; r<RINGS; r++) {
+        for(let s=0; s<SECTORS; s++) {
+            // Orbital
+            score += scoreLine([ b[r][s], b[r][(s+1)%SECTORS], b[r][(s+2)%SECTORS], b[r][(s+3)%SECTORS] ]);
+            
+            // Radial & Spiral need space
+            if(r <= RINGS-4) {
+                // Radial
+                score += scoreLine([ b[r][s], b[r+1][s], b[r+2][s], b[r+3][s] ]);
+                // Spiral A
+                score += scoreLine([ b[r][s], b[r+1][(s+1)%SECTORS], b[r+2][(s+2)%SECTORS], b[r+3][(s+3)%SECTORS] ]);
+                // Spiral B
+                score += scoreLine([ b[r][s], b[r+1][(s-1+SECTORS)%SECTORS], b[r+2][(s-2+SECTORS)%SECTORS], b[r+3][(s-3+SECTORS)%SECTORS] ]);
+            }
+        }
+    }
+    return score;
+}
+
+// Deep Clone
+function cloneBoard(b) {
+    return b.map(row => [...row]);
+}
+
+function aiMove() {
+    elAi.classList.add('visible');
+    
+    // Use setTimeout to allow UI to render "Thinking"
+    setTimeout(() => {
+        // Minimax Settings
+        const depth = difficulty === 1 ? 2 : (difficulty === 2 ? 3 : 4);
+        const useBrakeLogic = difficulty === 3 && brakes[P2] > 0;
+        
+        let bestScore = -Infinity;
+        let bestMove = null;
+
+        // Generate Moves
+        let moves = [];
+        for(let r=0; r<RINGS; r++) {
+            for(let s=0; s<SECTORS; s++) {
+                if(board[r][s] === P_EMPTY) {
+                    moves.push({r, s, brake: false});
+                    if(useBrakeLogic) moves.push({r, s, brake: true});
+                }
+            }
+        }
+
+        // Optimization: Center sectors/rings aren't inherently better due to rotation
+        // But we can shuffle to avoid bias
+        moves.sort(() => Math.random() - 0.5);
+
+        // Alpha-Beta Search
+        for(let move of moves) {
+            let nextBoard = cloneBoard(board);
+            
+            // Apply logic manually
+            nextBoard[move.r][move.s] = P2;
+            if(!move.brake) {
+                // Simulate Rotation
+                const rotated = [];
+                for(let rr=0; rr<RINGS; rr++) {
+                    const shift = ROTATION_RULES[rr];
+                    const row = Array(SECTORS).fill(0);
+                    for(let ss=0; ss<SECTORS; ss++) {
+                        let oldIdx = (ss - shift) % SECTORS;
+                        if(oldIdx < 0) oldIdx += SECTORS;
+                        row[ss] = nextBoard[rr][oldIdx];
+                    }
+                    rotated.push(row);
+                }
+                nextBoard = rotated;
+            }
+
+            // Check Instant Win
+            if(checkWin(nextBoard) === P2) {
+                bestMove = move;
+                break;
+            }
+
+            let score = minimax(nextBoard, depth - 1, -Infinity, Infinity, false);
+            if(move.brake) score -= 50; // Penalty for using resource
+
+            if(score > bestScore) {
+                bestScore = score;
+                bestMove = move;
+            }
+        }
+
+        elAi.classList.remove('visible');
+        if(bestMove) {
+            applyMove(bestMove.r, bestMove.s, P2, false, bestMove.brake);
+        }
+    }, 50);
+}
+
+function minimax(b, depth, alpha, beta, isMax) {
+    let winner = checkWin(b);
+    if(winner === P2) return 100000 + depth;
+    if(winner === P1) return -100000 - depth;
+    if(depth === 0) return evaluate(b, P2);
+
+    let moves = [];
+    // Only checking Standard moves in recursion to save performance
+    // AI brake simulation deep in tree is too expensive for JS
+    for(let r=0; r<RINGS; r++) {
+        for(let s=0; s<SECTORS; s++) {
+            if(b[r][s] === P_EMPTY) moves.push({r, s});
+        }
+    }
+
+    if(moves.length === 0) return 0; // Draw
+
+    if(isMax) {
+        let maxEval = -Infinity;
+        for(let move of moves) {
+            let nextBoard = cloneBoard(b);
+            nextBoard[move.r][move.s] = P2;
+            // Always rotate in simulation
+            nextBoard = simRotate(nextBoard);
+            let eval = minimax(nextBoard, depth-1, alpha, beta, false);
+            maxEval = Math.max(maxEval, eval);
+            alpha = Math.max(alpha, eval);
+            if(beta <= alpha) break;
+        }
+        return maxEval;
+    } else {
+        let minEval = Infinity;
+        for(let move of moves) {
+            let nextBoard = cloneBoard(b);
+            nextBoard[move.r][move.s] = P1;
+            nextBoard = simRotate(nextBoard);
+            let eval = minimax(nextBoard, depth-1, alpha, beta, true);
+            minEval = Math.min(minEval, eval);
+            beta = Math.min(beta, eval);
+            if(beta <= alpha) break;
+        }
+        return minEval;
+    }
+}
+
+function simRotate(b) {
+    const rb = [];
+    for(let r=0; r<RINGS; r++) {
+        const shift = ROTATION_RULES[r];
+        const row = Array(SECTORS).fill(0);
+        for(let s=0; s<SECTORS; s++) {
+            let oldIdx = (s - shift) % SECTORS;
+            if(oldIdx < 0) oldIdx += SECTORS;
+            row[s] = b[r][oldIdx];
+        }
+        rb.push(row);
+    }
+    return rb;
+}
+
+
+// =============================================================================
+// RENDERING & INPUT
+// =============================================================================
+
+function render() {
+    // Resize
+    if(canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    }
+    const W = canvas.width, H = canvas.height;
+    const CX = W/2, CY = H/2;
+    const SIZE = Math.min(W,H) * 0.45;
+    
+    // Clear
+    ctx.fillStyle = "#0b0f17"; // Ensure background matches for anti-aliasing
+    ctx.fillRect(0,0,W,H);
+
+    // Draw Background Grid (Static)
+    // Just a faint web
+    ctx.strokeStyle = "rgba(255,255,255,0.03)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for(let i=1; i<=4; i++) {
+        ctx.arc(CX, CY, SIZE*(i/4), 0, Math.PI*2);
+    }
+    ctx.stroke();
+
+    // Draw Rings & Sectors
+    for(let r=0; r<RINGS; r++) {
+        const rInner = (r === 0) ? SIZE * 0.2 : SIZE * ((r+0.8)/4.8) + 20; // Cosmetic spacing
+        // Let's do uniform spacing for gameplay clarity
+        // Radius for ring r:
+        const radOut = SIZE * ((r+1)/4);
+        const radIn = SIZE * (r/4);
+        const midRad = (radIn + radOut) / 2;
+        const cellH = (radOut - radIn);
+
+        ctx.save();
+        ctx.translate(CX, CY);
+        // Apply visual rotation
+        ctx.rotate(ringAngles[r]);
+        
+        // Draw Ring Borders
+        ctx.strokeStyle = COL_GRID;
+        ctx.lineWidth = 1;
+        
+        // Draw Sectors
+        for(let s=0; s<SECTORS; s++) {
+            const angStart = s * (Math.PI*2/SECTORS);
+            const angEnd = (s+1) * (Math.PI*2/SECTORS);
+            
+            // Path for sector
+            ctx.beginPath();
+            ctx.arc(0, 0, radOut, angStart, angEnd);
+            ctx.arc(0, 0, radIn, angEnd, angStart, true);
+            ctx.closePath();
+            ctx.stroke();
+
+            // Hover / Content
+            // Mouse detection needs inverse transform
+            // We'll just draw contents based on board[r][s]
+            const val = board[r][s];
+            if(val !== P_EMPTY) {
+                const angMid = (angStart + angEnd) / 2;
+                const tx = Math.cos(angMid) * midRad;
+                const ty = Math.sin(angMid) * midRad;
+                
+                // Token
+                ctx.beginPath();
+                ctx.arc(tx, ty, cellH * 0.35, 0, Math.PI*2);
+                ctx.fillStyle = val === P1 ? COL_P1 : COL_P2;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = ctx.fillStyle;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Highlight
+                ctx.fillStyle = "rgba(255,255,255,0.3)";
+                ctx.beginPath();
+                ctx.arc(tx - cellH*0.1, ty - cellH*0.1, cellH*0.1, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+        
+        // Draw Rotation Indicator (Small notch to show movement)
+        if (ROTATION_RULES[r] !== 0) {
+            ctx.strokeStyle = COL_GRID_ACCENT;
+            ctx.beginPath();
+            ctx.arc(0,0, radOut - 2, 0, Math.PI/SECTORS); // Half sector mark
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    }
+}
+
+function handleInput(e) {
+    if(gameOver || animating || curPlayer === P2) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX || e.changedTouches[0].clientX) - rect.left;
+    const y = (e.clientY || e.changedTouches[0].clientY) - rect.top;
+    
+    const CX = canvas.width/2;
+    const CY = canvas.height/2;
+    const dx = x - CX;
+    const dy = y - CY;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const SIZE = Math.min(canvas.width, canvas.height) * 0.45;
+
+    // Determine Ring
+    // r * (SIZE/4) < dist < (r+1)*(SIZE/4)
+    const ringFloat = dist / (SIZE/4);
+    if(ringFloat > 4 || ringFloat < 0) return; // Clicked outside
+    const r = Math.floor(ringFloat);
+
+    // Determine Sector
+    // Need to account for current visual rotation of the ring!
+    let angle = Math.atan2(dy, dx); // -PI to PI
+    if(angle < 0) angle += Math.PI*2; // 0 to 2PI
+
+    // Subtract visual rotation to find "Logical" sector
+    // Logical Angle = Visual Angle - RingOffset
+    let logicAngle = angle - ringAngles[r];
+    // Normalize
+    logicAngle = logicAngle % (Math.PI*2);
+    if(logicAngle < 0) logicAngle += Math.PI*2;
+
+    const s = Math.floor(logicAngle / (Math.PI*2/SECTORS));
+
+    if(isValidMove(r, s)) {
+        if(brakeActive && brakes[curPlayer] > 0) {
+            applyMove(r, s, curPlayer, false, true);
+        } else {
+            if(brakeActive) {
+                // Tried to brake but no brakes left, standard move
+                brakeActive = false;
+                updateUI();
+                applyMove(r, s, curPlayer, false, false);
+            } else {
+                applyMove(r, s, curPlayer, false, false);
+            }
+        }
+    }
+}
+
+function updateUI() {
+    document.getElementById('turnInfo').textContent = curPlayer === P1 ? "PLAYER 1 (RED)" : "AI (YELLOW)";
+    document.getElementById('turnInfo').style.color = curPlayer === P1 ? "var(--red)" : "var(--yel)";
+    document.getElementById('p1Brake').textContent = brakes[P1];
+    document.getElementById('p2Brake').textContent = brakes[P2];
+    
+    elBrake.classList.toggle('brake-active', brakeActive);
+    elBrake.disabled = brakes[curPlayer] === 0 || curPlayer === P2;
+    if(brakes[curPlayer] === 0) elBrake.innerHTML = "<span>⚠️ Brakes Depleted</span>";
+    else elBrake.innerHTML = brakeActive ? "<span>🛑 BRAKE ENGAGED</span>" : "<span>🛑 ENGAGE BRAKE</span>";
+}
+
+// Loop
+function loop(now) {
+    let dt = now - lastTime;
+    lastTime = now;
+    if(dt > 50) dt = 50;
+
+    updateAnimation(dt);
+    render();
+    requestAnimationFrame(loop);
+}
+
+// Events
+canvas.addEventListener('mousedown', handleInput);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); handleInput(e); }, {passive:false});
+
+// Init
+showMenu();
+
+</script>
+</body>
+</html>
