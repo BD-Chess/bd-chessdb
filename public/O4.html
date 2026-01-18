@@ -45,6 +45,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   background:rgba(0,0,0,0.85);color:var(--accent);padding:8px 16px;
   border-radius:20px;font-size:12px;opacity:0;transition:opacity 0.2s;pointer-events:none;
   border:1px solid var(--accent);box-shadow:0 0 10px var(--accent);
+  z-index: 50;
 }
 #aiThinking.visible{opacity:1}
 
@@ -82,10 +83,14 @@ button.icon-btn{padding:12px;width:50px;flex-shrink:0}
 
 /* OVERLAYS */
 .overlay{
-  position:absolute;inset:0;z-index:200;background:rgba(11,15,23,0.95);
+  position:absolute;inset:0;background:rgba(11,15,23,0.95);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   backdrop-filter:blur(5px);
 }
+/* FIXED: Menu is 200, Help is 210 to sit on top */
+#menuOverlay { z-index: 200; }
+#helpOverlay { z-index: 210; }
+
 .menu-card{
   background:var(--panel);border:1px solid var(--btnBorder);
   padding:30px;border-radius:20px;text-align:center;width:min(450px,90vw);
@@ -254,6 +259,8 @@ function initBoard() {
     updateUI();
     elWinner.classList.remove('visible');
     elMenu.classList.add('hidden');
+    // Ensure help is also hidden on start
+    elHelp.classList.add('hidden');
     requestAnimationFrame(loop);
 }
 
@@ -265,7 +272,7 @@ function setDiff(d) {
 }
 
 function showMenu() { elMenu.classList.remove('hidden'); elHelp.classList.add('hidden'); }
-function showHelp() { elHelp.classList.remove('hidden'); } // Does not close menu if open, just layers over
+function showHelp() { elHelp.classList.remove('hidden'); }
 function hideHelp() { elHelp.classList.add('hidden'); }
 function startGame() { initBoard(); }
 function restartGame() { initBoard(); }
