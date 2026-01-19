@@ -13,9 +13,11 @@
   --accent:#3c78ff;
   --red:#e53935;
   --yel:#fdd835;
+  --green:#4caf50;
   --btn:#26314a;
   --btnBorder:rgba(255,255,255,0.1);
   --gold:#ffd700;
+  --purple:#9c27b0;
   --fire:#ff5722;
   --water:#00bcd4;
 }
@@ -59,8 +61,8 @@ button:disabled{opacity:0.4;pointer-events:none}
 .big-icon{font-size:1.6em;line-height:1;margin-left:6px;display:inline-block;margin-top:-2px}
 #overlay{position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center}
 .card{background:var(--panel);border:1px solid var(--btnBorder);padding:24px;border-radius:16px;text-align:center;width:min(500px,90vw);box-shadow:0 20px 40px rgba(0,0,0,0.6);max-height:80vh;overflow-y:auto}
-.card h2{margin:0 0 8px;font-size:24px}
-.card p{color:var(--muted);margin:0 0 10px;line-height:1.5;font-size:14px}
+.card h2{margin:0 0 8px;font-size:28px;color:var(--gold)}
+.card p{color:var(--text);margin:0 0 20px;line-height:1.5;font-size:18px;font-weight:600}
 .card-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .card-btns button{flex:1;min-width:140px}
 .hidden{display:none!important}
@@ -79,8 +81,6 @@ button:disabled{opacity:0.4;pointer-events:none}
 .difficulty-btn.active{background:rgba(60,120,255,0.3);border-color:var(--accent);color:var(--text)}
 .difficulty-btn:hover{border-color:var(--accent)}
 #pro-tools{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--btnBorder)}
-.bubble-anim{position:absolute;pointer-events:none;border:1px solid rgba(255,255,255,0.4);border-radius:50%;animation:rise 3s linear infinite}
-@keyframes rise{0%{transform:translateY(0);opacity:0}20%{opacity:0.6}100%{transform:translateY(-100px);opacity:0}}
 </style>
 </head>
 <body>
@@ -88,8 +88,8 @@ button:disabled{opacity:0.4;pointer-events:none}
 <div id="hud">
 <div class="row">
 <div>
-<h1>Flip4M <span style="font-size:12px;opacity:0.7;font-weight:400;color:#ffd700">Pro</span></h1>
-<div class="meta">Author: Bojan Dobrečevič | Pro Mode</div>
+<h1>Flip4M <span style="font-size:12px;opacity:0.7;font-weight:400;color:#ffd700">GM</span></h1>
+<div class="meta">Author: Bojan Dobrečevič | Hydro-Thermal</div>
 </div>
 <div class="status" id="turnInfo">Red's Turn</div>
 </div>
@@ -120,7 +120,7 @@ button:disabled{opacity:0.4;pointer-events:none}
 <div id="overlay">
 <div class="card" id="menuCard">
 <h2>Flip4M</h2>
-<p>Gravity-defying strategy. <b>Pro</b>.</p>
+<p>Welcome Commander.<br>Gravity-defying strategy awaits.</p>
 <div class="first-move-toggle">
 <span id="labelHuman" class="active">You First</span>
 <div class="toggle-switch" id="firstMoveToggle" onclick="toggleFirstMove()"></div>
@@ -132,14 +132,15 @@ button:disabled{opacity:0.4;pointer-events:none}
 <button class="difficulty-btn" id="diffAggressive" onclick="selectDifficulty('aggressive')">⚔️ Aggressive</button>
 </div>
 <div class="card-btns" style="flex-direction:column;gap:8px;margin-top:10px">
-<button class="btn-act" onclick="startGame(1,2)">Standard (Classical)</button>
+<button class="btn-tac" onclick="startGame(0,4)">Two Players (PvP)</button>
+<button class="btn-act" onclick="startGame(1,2)">Standard (Vs CPU)</button>
 <button class="btn-act" onclick="startGame(1,3)">Expert (2× Tools)</button>
 <button class="btn-dang" onclick="startGame(1,4)" style="border-color:#ffd700;color:#ffd700">Pro (Fire & Water)</button>
 </div>
 <div class="feature-grid">
 <button class="btn-util" onclick="saveGame()">💾 Save</button>
-<button class="btn-util" onclick="loadGameTrigger()">📂 Load</button>
 <button class="btn-util" onclick="startReview()">⏯️ Review</button>
+<button class="btn-util" onclick="loadGameTrigger()">📂 Load</button>
 </div>
 </div>
 <div class="card hidden" id="hintCard">
@@ -152,7 +153,7 @@ button:disabled{opacity:0.4;pointer-events:none}
 <div class="help-rule"><b>Goal:</b> Connect 4 tokens in a line.</div>
 <div class="help-rule"><b>Gravity:</b> Tokens always fall <b>DOWN</b>. (The board rotates!)</div>
 <div class="help-rule"><b>Pro Mode:</b></div>
-<div class="help-rule"><b style="color:var(--water)">Flood (💧):</b> Fills board with water for 4 turns. Gravity REVERSES (tokens float up).</div>
+<div class="help-rule"><b style="color:var(--water)">Flood (💧):</b> Fills board with water. Gravity REVERSES (tokens float up) for 4 turns.</div>
 <div class="help-rule"><b style="color:var(--fire)">Firebrand (🔥):</b> Destroys the first token it touches.</div>
 <div class="help-rule"><i>Note: If Flooded, Fire sizzles and becomes a stone.</i></div>
 <div class="card-btns" style="margin-top:20px">
@@ -184,13 +185,15 @@ button:disabled{opacity:0.4;pointer-events:none}
 (()=>{
 "use strict";
 
+// =============================================================================
+// CONSTANTS & STATE
+// =============================================================================
 const ROWS=8,COLS=8;
-const P_EMPTY=0,P_RED=1,P_YEL=2,P_STONE=3; // P_STONE for burnt/sizzled tokens
+const P_EMPTY=0,P_RED=1,P_YEL=2,P_STONE=3; // STONE for burnt tokens
 const MAGNET_LIFE=6;
 const CW_MAP={0:3,1:0,2:1,3:2};
 const CCW_MAP={0:1,1:2,2:3,3:0};
-// Inverse Map for Buoyancy (Floating Up)
-const INV_MAP={0:2,1:3,2:0,3:1};
+const INV_MAP={0:2,1:3,2:0,3:1}; // For Flood Physics
 
 let grid=[];
 let mag={top:[],bottom:[],left:[],right:[]};
@@ -211,14 +214,15 @@ let pendingSettle=false;
 let aiTimer=null;
 let isReviewing=false;
 let reviewIndex=0;
-// Hydro-Thermal State
-let floodTimer=0; // Rounds remaining
-let activeTool=null; // 'fire' or null
+let floodTimer=0;
+let activeTool=null;
 
+// Player assignment
 let humanPlayer=P_RED;
 let cpuPlayer=P_YEL;
 let cpuFirst=false;
 
+// AI Personality
 let aiDifficulty='balanced';
 const aiPersonality={
   balanced:{riskTolerance:0.5,toolConservation:0.7,depthBias:1.0},
@@ -226,6 +230,7 @@ const aiPersonality={
   defensive:{riskTolerance:0.2,toolConservation:0.9,depthBias:1.1}
 };
 
+// AI Engine State
 const _nowMs=()=>performance.now?performance.now():Date.now();
 let AI_DEADLINE=0;
 let AI_ABORT=false;
@@ -235,6 +240,9 @@ let AI_TT=new Map();
 const AI_TT_MAX=100000;
 const AI_NODE_CAP=800000;
 
+let patternCache=new Map();
+
+// DOM refs
 const canvas=document.getElementById("c");
 const ctx=canvas.getContext("2d",{alpha:false});
 const hudTurn=document.getElementById("turnInfo");
@@ -252,6 +260,9 @@ const aiThinking=document.getElementById("aiThinking");
 const proTools=document.getElementById("pro-tools");
 const gameStage=document.getElementById("game-stage");
 
+// =============================================================================
+// UI CONTROLS
+// =============================================================================
 window.toggleFirstMove=function(){
   cpuFirst=!cpuFirst;
   const toggle=document.getElementById("firstMoveToggle");
@@ -271,54 +282,65 @@ window.startGame=function(mode,level){
   gameMode=mode;aiLevel=level;gameInProgress=true;
   if(cpuFirst){humanPlayer=P_YEL;cpuPlayer=P_RED}else{humanPlayer=P_RED;cpuPlayer=P_YEL}
   menuCard.classList.add('hidden');hintCard.classList.add('hidden');helpCard.classList.add('hidden');
-  elOverlay.style.display="none";initGame();
+  elOverlay.style.display="none";
+  controlBar.classList.remove('ctrl-hidden');
+  initGame();
 };
 
 window.toggleMenu=function(){
   if(elOverlay.style.display==="flex"){
-    if(menuCard.classList.contains('hidden')&&!helpCard.classList.contains('hidden')){elOverlay.style.display="none";helpCard.classList.add('hidden')}
-    else{if(gameInProgress){elOverlay.style.display="none";menuCard.classList.add('hidden')}}
+    if(menuCard.classList.contains('hidden')&&!helpCard.classList.contains('hidden')){elOverlay.style.display="none";helpCard.classList.add('hidden');controlBar.classList.remove('ctrl-hidden')}
+    else{
+        if(gameInProgress){elOverlay.style.display="none";menuCard.classList.add('hidden');controlBar.classList.remove('ctrl-hidden')}
+    }
   }else showMainMenu();
 };
 
 window.activateTool=function(tool){
   if(animating||gameOver||curPlayer!==humanPlayer)return;
+  if(gameMode===1&&curPlayer===cpuPlayer)return;
   if(tokens[humanPlayer][tool]<=0)return;
   if(activeTool===tool){activeTool=null;syncUI();return;}
   activeTool=tool;
-  if(tool==='water'){
-    // Water is global immediate effect
-    doFlood();
-    activeTool=null;
-  }
+  if(tool==='water'){doFlood();activeTool=null;}
   syncUI();
 };
 
-function showMainMenu(){elOverlay.style.display="flex";menuCard.classList.remove('hidden');hintCard.classList.add('hidden');helpCard.classList.add('hidden');winnerCard.classList.remove('visible')}
+function showMainMenu(){
+    elOverlay.style.display="flex";
+    menuCard.classList.remove('hidden');
+    hintCard.classList.add('hidden');
+    helpCard.classList.add('hidden');
+    winnerCard.classList.remove('visible');
+    controlBar.classList.add('ctrl-hidden');
+}
 function showHelp(){elOverlay.style.display="flex";helpCard.classList.remove('hidden');menuCard.classList.add('hidden');hintCard.classList.add('hidden')}
 
 function initGame(){
   grid=Array.from({length:ROWS},()=>Array(COLS).fill(P_EMPTY));
   mag={top:Array(COLS).fill(null),bottom:Array(COLS).fill(null),left:Array(ROWS).fill(null),right:Array(ROWS).fill(null)};
-  gravityDir=0;boardAngle=0;targetAngle=0;curPlayer=P_RED;floodTimer=0;
-  
-  // Loadouts
+  gravityDir=0;boardAngle=0;targetAngle=0;curPlayer=P_RED;floodTimer=0;activeTool=null;
   if(aiLevel===2)tokens={[P_RED]:{flip:0,mag:0,water:0,fire:0},[P_YEL]:{flip:0,mag:0,water:0,fire:0}};
   else if(aiLevel===3)tokens={[P_RED]:{flip:2,mag:2,water:0,fire:0},[P_YEL]:{flip:2,mag:2,water:0,fire:0}};
-  else tokens={[P_RED]:{flip:2,mag:2,water:1,fire:1},[P_YEL]:{flip:2,mag:2,water:1,fire:1}}; // PRO MODE
+  else tokens={[P_RED]:{flip:2,mag:2,water:1,fire:1},[P_YEL]:{flip:2,mag:2,water:1,fire:1}}; // Level 4 = Pro
   
-  history=[];gameOver=false;animating=false;anims=[];hiddenCells=[];pendingSettle=false;activeTool=null;
+  if(gameMode===0) tokens={[P_RED]:{flip:2,mag:2,water:1,fire:1},[P_YEL]:{flip:2,mag:2,water:1,fire:1}};
+
+  history=[];gameOver=false;animating=false;anims=[];hiddenCells=[];pendingSettle=false;
   winnerCard.classList.remove('visible');
-  AI_TT.clear();
+  AI_TT.clear();patternCache.clear();
   pushHistory();syncUI();lastTime=0;requestAnimationFrame(initLoop);checkAI();
 }
 
+// =============================================================================
+// SAVE / LOAD / REVIEW
+// =============================================================================
 window.saveGame=function(){
   if(history.length===0&&!gameOver)return alert("Game hasn't started!");
   const fullLog=[...history,cloneState()];
   const dataStr="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(fullLog,null,2));
   const a=document.createElement('a');a.setAttribute("href",dataStr);
-  a.setAttribute("download","flip4m_pro_"+Date.now()+".json");
+  a.setAttribute("download","flip4m_replay_"+Date.now()+".json");
   document.body.appendChild(a);a.click();a.remove();
 };
 window.loadGameTrigger=function(){document.getElementById('file-input').click()};
@@ -326,7 +348,7 @@ window.loadGameFile=function(input){
   const file=input.files[0];const reader=new FileReader();
   reader.onload=function(e){
     try{const h=JSON.parse(e.target.result);
-      if(Array.isArray(h)&&h.length>0){const cur=h.pop();history=h;restoreState(cur);menuCard.classList.add('hidden');elOverlay.style.display='none';alert("Game Loaded!")}
+      if(Array.isArray(h)&&h.length>0){const cur=h.pop();history=h;restoreState(cur);menuCard.classList.add('hidden');elOverlay.style.display='none';alert("Game Loaded!");controlBar.classList.remove('ctrl-hidden');}
       else alert("Invalid Save");
     }catch(err){alert("Error Loading File")}
   };reader.readAsText(file);input.value='';
@@ -338,10 +360,13 @@ window.startReview=function(){
 };
 window.endReview=function(){
   isReviewing=false;if(history.length>0)restoreState(history[history.length-1]);
-  controlBar.classList.remove('ctrl-hidden');if(aiLevel===4)proTools.classList.remove('hidden');reviewBar.classList.add('ctrl-hidden');syncUI();
+  controlBar.classList.remove('ctrl-hidden');if(aiLevel===4||gameMode===0)proTools.classList.remove('hidden');reviewBar.classList.add('ctrl-hidden');syncUI();
 };
 window.reviewStep=function(dir){let n=reviewIndex+dir;if(n>=0&&n<history.length){reviewIndex=n;restoreState(history[reviewIndex])}};
 
+// =============================================================================
+// CORE UTILITIES
+// =============================================================================
 function getMag(mState,side,idx){
   if(side===0)return mState.top[idx];if(side===1)return mState.right[idx];
   if(side===2)return mState.bottom[idx];return mState.left[idx];
@@ -363,26 +388,400 @@ function decayMagnets(mState){
   decay(n.top);decay(n.bottom);decay(n.left);decay(n.right);return n;
 }
 
-// PHYSICS & BUOYANCY
-// Returns the EFFECTIVE gravity direction (Reversed if flooded)
+function simulateFuture(g,gDir,mState,turns){
+  let fg=g.map(r=>[...r]),fm=cloneMagState(mState);
+  for(let t=0;t<turns;t++){fm=decayMagnets(fm);fg=settleGridComplete(fg,gDir,fm,false)}
+  return{grid:fg,mag:fm};
+}
+
+function getAllLines(){
+  let lines=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS-3;c++)lines.push([{r,c},{r,c:c+1},{r,c:c+2},{r,c:c+3}]);
+  for(let r=0;r<ROWS-3;r++)for(let c=0;c<COLS;c++)lines.push([{r,c},{r:r+1,c},{r:r+2,c},{r:r+3,c}]);
+  for(let r=0;r<ROWS-3;r++)for(let c=0;c<COLS-3;c++)lines.push([{r,c},{r:r+1,c:c+1},{r:r+2,c:c+2},{r:r+3,c:c+3}]);
+  for(let r=3;r<ROWS;r++)for(let c=0;c<COLS-3;c++)lines.push([{r,c},{r:r-1,c:c+1},{r:r-2,c:c+2},{r:r-3,c:c+3}]);
+  return lines;
+}
+
+function countThreats(g,player){
+  let threats=0;const lines=getAllLines();
+  for(let line of lines){let cnt=0,emp=0;
+    for(let pos of line){let v=g[pos.r][pos.c];if(v===player)cnt++;else if(v===P_EMPTY)emp++}
+    if(cnt===3&&emp===1)threats++;
+  }return threats;
+}
+
+function analyzeLines(g,p){
+  let score=0;const lines=getAllLines();
+  for(let line of lines){let cnt=0,emp=0,opp=0;
+    for(let pos of line){let v=g[pos.r][pos.c];if(v===p)cnt++;else if(v===P_EMPTY)emp++;else opp++}
+    if(opp>0){if(cnt===3&&opp===1)score+=60;continue}
+    if(cnt===4)score+=10000;else if(cnt===3&&emp===1)score+=200;else if(cnt===2&&emp===2)score+=15;else if(cnt===1&&emp===3)score+=2;
+  }return score;
+}
+
+// =============================================================================
+// THREAT DETECTION 
+// =============================================================================
+function canWinByRotating(g,gDir,mState,player){
+  for(let delta of[1,-1]){
+    let newDir=delta===1?CCW_MAP[gDir]:CW_MAP[gDir];
+    let rotated=settleGridComplete(g,newDir,mState,false); // AI assumes dry physics for standard checks
+    if(checkWin(rotated)===player)return{delta,newDir,grid:rotated};
+  }return null;
+}
+
+function canWinByRotateThenDrop(g,gDir,mState,player){
+  for(let delta of[1,-1]){
+    let newDir=delta===1?CCW_MAP[gDir]:CW_MAP[gDir];
+    let rotated=settleGridComplete(g,newDir,mState,false);
+    let drops=getDropMoves(rotated,newDir,player,mState);
+    for(let drop of drops)if(checkWin(drop.grid)===player)return{delta,newDir,rotated,winningDrop:drop};
+  }return null;
+}
+
+function canWinByRotateThenMagnet(g,gDir,mState,player,playerToks){
+  if(playerToks.flip<=0||playerToks.mag<=0)return null;
+  const opponent=player===P_RED?P_YEL:P_RED;
+  for(let delta of[1,-1]){
+    let newDir=delta===1?CCW_MAP[gDir]:CW_MAP[gDir];
+    let rotated=settleGridComplete(g,newDir,mState,false);
+    let lines=getAllLines();
+    for(let line of lines){
+      let pCnt=0,oCnt=0,blocker=null;
+      for(let pos of line){let v=rotated[pos.r][pos.c];if(v===player)pCnt++;else if(v===opponent){oCnt++;blocker=pos}}
+      if(pCnt===3&&oCnt===1&&blocker){
+        let{r,c}=blocker,extractMag=null;
+        if(r===0)extractMag={side:0,idx:c};else if(r===ROWS-1)extractMag={side:2,idx:c};
+        else if(c===0)extractMag={side:3,idx:r};else if(c===COLS-1)extractMag={side:1,idx:r};
+        if(extractMag){
+          let testM=cloneMagState(mState);
+          let arr=['top','right','bottom','left'][extractMag.side];
+          testM[arr][extractMag.idx]={p:player,life:MAGNET_LIFE};
+          let afterMag=settleGridComplete(rotated,newDir,testM,false);
+          if(checkWin(afterMag)===player)return{type:'rotate_magnet',delta,newDir,rotated,extractMag,afterMag};
+        }
+      }
+    }
+  }return null;
+}
+
+function findExtractionWin(g,gDir,toks,player,mState){
+  if(toks.flip<=0||toks.mag<=0)return null;
+  const opponent=player===P_RED?P_YEL:P_RED;
+  for(let rotDelta of[1,-1]){
+    let newDir=rotDelta===1?CCW_MAP[gDir]:CW_MAP[gDir];
+    let decayed=decayMagnets(mState);
+    let rotated=settleGridComplete(g,newDir,decayed,false);
+    let lines=getAllLines();
+    for(let line of lines){
+      let pc=0,oc=0,blocker=null;
+      for(let pos of line){let v=rotated[pos.r][pos.c];if(v===player)pc++;else if(v===opponent){oc++;blocker=pos}}
+      if(pc===3&&oc===1&&blocker&&(blocker.r===0||blocker.r===ROWS-1||blocker.c===0||blocker.c===COLS-1)){
+        let{r,c}=blocker,mags=[];
+        if(r===0)mags.push({s:0,i:c});if(r===ROWS-1)mags.push({s:2,i:c});
+        if(c===0)mags.push({s:3,i:r});if(c===COLS-1)mags.push({s:1,i:r});
+        for(let mg of mags){
+          let magState=cloneMagState(decayed);
+          let arr=['top','right','bottom','left'][mg.s];
+          magState[arr][mg.i]={p:player,life:MAGNET_LIFE};
+          let finalG=settleGridComplete(rotated,newDir,magState,false);
+          if(finalG[r][c]!==opponent&&checkWin(finalG)===player)
+            return{firstMove:{type:'flip',delta:rotDelta,grid:rotated,gDir:newDir,magState:decayed}};
+        }
+      }
+    }
+  }return null;
+}
+
+function findRotationDisruption(g,gDir,mState,aiToks,aiPlayer,oppPlayer){
+  let moves=getDropMoves(g,gDir,aiPlayer,mState);
+  if(aiToks.flip>0)moves.push(...getToolMoves(g,gDir,aiToks,aiPlayer,mState));
+  for(let m of moves)if(!canWinByRotating(m.grid,m.gDir||gDir,m.magState||mState,oppPlayer))return m;
+  return moves.length>0?moves[0]:null;
+}
+
+function findRotateMagnetDisruption(g,gDir,mState,aiToks,aiPlayer,oppPlayer,oppToks){
+  let moves=getDropMoves(g,gDir,aiPlayer,mState);
+  if(aiToks.flip>0||aiToks.mag>0)moves.push(...getToolMoves(g,gDir,aiToks,aiPlayer,mState));
+  for(let m of moves)if(!canWinByRotateThenMagnet(m.grid,m.gDir||gDir,m.magState||mState,oppPlayer,oppToks))return m;
+  return moves.length>0?moves[0]:null;
+}
+
+// =============================================================================
+// MOVE GENERATORS
+// =============================================================================
+function getDropMoves(g,gDir,player,mState){
+  let moves=[];
+  // AI assumes STANDARD gravity for search simplicity to avoid breaking core
+  // If flooded, actual drop will use flood physics, but AI search might be blind to it (simulating "Confusion")
+  // Or we can be smart:
+  let isFlooded = floodTimer > 0;
+  
+  for(let i=0;i<COLS;i++){
+    let t=getDropTarget(g,gDir,i,isFlooded);
+    if(t){
+        let nextG=g.map(r=>[...r]);
+        nextG[t.r][t.c]=player;
+        let dec=decayMagnets(mState);
+        nextG=settleGridComplete(nextG,gDir,dec,isFlooded);
+        moves.push({type:'drop',col:i,grid:nextG,gDir,magState:dec});
+    }
+  }return moves;
+}
+
+function getToolMoves(g,gDir,toks,player,mState){
+  let moves=[];const opponent=player===P_RED?P_YEL:P_RED;
+  let isFlooded = floodTimer > 0;
+
+  if(toks.flip>0){
+    for(let delta of[1,-1]){
+      let newDir=delta===1?CCW_MAP[gDir]:CW_MAP[gDir];
+      let dec=decayMagnets(mState);
+      let newGrid=settleGridComplete(g,newDir,dec,isFlooded);
+      moves.push({type:'flip',delta,grid:newGrid,gDir:newDir,magState:dec});
+    }
+  }
+  if(toks.mag>0){
+    for(let side=0;side<4;side++){
+      for(let idx=0;idx<COLS;idx++){
+        let curM=getMag(mState,side,idx);if(curM&&curM.p===player)continue;
+        let nextM=cloneMagState(mState);
+        let opp=(side+2)%4;let oppVal=getMag(nextM,opp,idx);
+        let arrName=['top','right','bottom','left'][side];
+        let oppName=['top','right','bottom','left'][opp];
+        if(oppVal&&oppVal.p===opponent)nextM[oppName][idx]=null;
+        else nextM[arrName][idx]={p:player,life:MAGNET_LIFE};
+        let dec=decayMagnets(nextM);
+        let nextG=settleGridComplete(g,gDir,dec,isFlooded);
+        moves.push({type:'magnet',side,idx,grid:nextG,gDir,magState:dec});
+      }
+    }
+  }return moves;
+}
+
+// =============================================================================
+// GATEKEEPER
+// =============================================================================
+function shouldConsiderTools(g,gDir,mState,aiToks,oppToks,player){
+  const opponent=player===P_RED?P_YEL:P_RED;
+  if(aiToks.flip>0||aiToks.mag>0){
+    let tm=getToolMoves(g,gDir,aiToks,player,mState);
+    for(let m of tm)if(checkWin(m.grid)===player)return{allowed:true,reason:"WIN"};
+  }
+  if(oppToks.flip>0&&oppToks.mag>0)
+    if(canWinByRotateThenMagnet(g,gDir,mState,opponent,oppToks))return{allowed:true,reason:"BLOCK_ROTMAG"};
+  if(oppToks.flip>0)if(canWinByRotating(g,gDir,mState,opponent))return{allowed:true,reason:"BLOCK_ROT"};
+  let oppDrops=getDropMoves(g,gDir,opponent,mState);
+  let oppWin=oppDrops.find(m=>checkWin(m.grid)===opponent);
+  if(oppWin){
+    let myDrops=getDropMoves(g,gDir,player,mState);
+    let canBlock=myDrops.some(d=>!getDropMoves(d.grid,gDir,opponent,mState).some(om=>checkWin(om.grid)===opponent));
+    if(!canBlock)return{allowed:true,reason:"DESPERATE"};
+  }
+  if(aiToks.flip>0&&aiToks.mag>0)if(findExtractionWin(g,gDir,aiToks,player,mState))return{allowed:true,reason:"EXTRACT_WIN"};
+  return{allowed:false,reason:"PRUNE"};
+}
+
+// =============================================================================
+// EVALUATION
+// =============================================================================
+function evaluate(g,gDir,mState){
+  let score=0;
+  if(canWinByRotating(g,gDir,mState,humanPlayer))score-=50000;
+  if(canWinByRotateThenDrop(g,gDir,mState,humanPlayer))score-=8000;
+  if(canWinByRotateThenMagnet(g,gDir,mState,humanPlayer,tokens[humanPlayer]||{flip:3,mag:3}))score-=40000;
+  if(canWinByRotating(g,gDir,mState,cpuPlayer))score+=45000;
+  if(canWinByRotateThenMagnet(g,gDir,mState,cpuPlayer,tokens[cpuPlayer]||{flip:3,mag:3}))score+=38000;
+  score+=analyzeLines(g,cpuPlayer);
+  score-=analyzeLines(g,humanPlayer)*1.2;
+  for(let r=2;r<6;r++)for(let c=2;c<6;c++){
+    let w=(r===3||r===4)&&(c===3||c===4)?4:2;
+    if(g[r][c]===cpuPlayer)score+=w;else if(g[r][c]===humanPlayer)score-=w;
+  }
+  for(let newDir of[CW_MAP[gDir],CCW_MAP[gDir]]){
+    let rotated=settleGridComplete(g,newDir,mState,false);
+    score-=countThreats(rotated,humanPlayer)*120;
+    score+=countThreats(rotated,cpuPlayer)*60;
+  }
+  let future=simulateFuture(g,gDir,mState,2);
+  score+=(analyzeLines(future.grid,cpuPlayer)-analyzeLines(future.grid,humanPlayer)*1.2)*0.15;
+  return score;
+}
+
+// =============================================================================
+// SEARCH ENGINE
+// =============================================================================
+function aiStateKey(g,gDir,mState,player){
+  let s='';for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)s+=g[r][c];
+  s+='|'+gDir+'|'+player;return s;
+}
+function aiMoveId(m){
+  if(m.type==='drop')return'd'+m.col;
+  if(m.type==='flip')return'f'+(m.delta>0?'L':'R');
+  if(m.type==='magnet')return'm'+m.side+'_'+m.idx;return'x';
+}
+
+function negamax(g,gDir,mState,depth,alpha,beta,player){
+  AI_NODES++;
+  if((AI_NODES&(AI_CHECK_EVERY-1))===0){
+    if(_nowMs()>AI_DEADLINE)AI_ABORT=true;
+    if(AI_NODES>AI_NODE_CAP)AI_ABORT=true;
+    if(AI_TT.size>AI_TT_MAX)AI_TT.clear();
+  }
+  if(AI_ABORT)return evaluate(g,gDir,mState);
+  let winner=checkWin(g);
+  if(winner===cpuPlayer)return 100000+depth*100;
+  if(winner===humanPlayer)return-100000-depth*100;
+  if(depth<=0)return evaluate(g,gDir,mState);
+  const opponent=player===P_RED?P_YEL:P_RED;
+  const alphaOrig=alpha;
+  const key=aiStateKey(g,gDir,mState,player);
+  const hit=AI_TT.get(key);
+  if(hit&&hit.depth>=depth){
+    if(hit.flag===0)return hit.value;
+    if(hit.flag===1)alpha=Math.max(alpha,hit.value);
+    else if(hit.flag===2)beta=Math.min(beta,hit.value);
+    if(alpha>=beta)return hit.value;
+  }
+  let moves=getDropMoves(g,gDir,player,mState);
+  if(depth>2)moves.push(...getToolMoves(g,gDir,{flip:1,mag:0},player,mState));
+  if(moves.length===0)return 0;
+  if(hit&&hit.bestId){let bi=moves.findIndex(m=>aiMoveId(m)===hit.bestId);if(bi>0){let bm=moves[bi];moves.splice(bi,1);moves.unshift(bm)}}
+  const center=(COLS-1)/2;
+  moves.sort((a,b)=>{
+    const aw=checkWin(a.grid)===player?1:0,bw=checkWin(b.grid)===player?1:0;
+    if(aw!==bw)return bw-aw;
+    const at=a.type==='drop'?0:1,bt=b.type==='drop'?0:1;
+    if(at!==bt)return at-bt;
+    if(a.type==='drop'&&b.type==='drop')return Math.abs(a.col-center)-Math.abs(b.col-center);
+    return 0;
+  });
+  let bestVal=-Infinity,bestId=aiMoveId(moves[0]);
+  for(let mv of moves){
+    if(AI_ABORT)break;
+    let val=-negamax(mv.grid,mv.gDir,mv.magState,depth-1,-beta,-alpha,opponent);
+    if(val>bestVal){bestVal=val;bestId=aiMoveId(mv)}
+    alpha=Math.max(alpha,val);
+    if(alpha>=beta)break;
+  }
+  let flag=0;if(bestVal<=alphaOrig)flag=2;else if(bestVal>=beta)flag=1;
+  AI_TT.set(key,{depth,value:bestVal,flag,bestId});
+  return bestVal;
+}
+
+// =============================================================================
+// MAIN AI LOGIC
+// =============================================================================
+function checkAI(){
+  if(aiTimer)clearTimeout(aiTimer);
+  if(gameMode===1&&curPlayer===cpuPlayer&&!gameOver&&!animating&&!isReviewing){
+    aiThinking.classList.add('visible');document.body.style.cursor="wait";
+    aiTimer=setTimeout(()=>{makeAIMove();aiThinking.classList.remove('visible');document.body.style.cursor="default"},80);
+  }
+}
+
+function makeAIMove(){
+  if(gameOver||animating||isReviewing)return;
+  
+  // Basic Random Fallback if something explodes (Safety net)
+  try {
+      const aiToks={flip:tokens[cpuPlayer].flip,mag:tokens[cpuPlayer].mag};
+      const oppToks={flip:tokens[humanPlayer].flip,mag:tokens[humanPlayer].mag};
+      const personality=aiPersonality[aiDifficulty];
+      let budgetMs=(aiLevel===2)?1800:(aiLevel===3)?2800:4000;
+      budgetMs*=personality.depthBias;
+      AI_DEADLINE=_nowMs()+budgetMs;
+      AI_ABORT=false;AI_NODES=0;AI_TT.clear();
+      console.log(`Pro (${aiDifficulty}): Starting search...`);
+      let allMoves=getDropMoves(grid,gravityDir,cpuPlayer,mag);
+      if(aiToks.flip>0||aiToks.mag>0)allMoves.push(...getToolMoves(grid,gravityDir,aiToks,cpuPlayer,mag));
+      for(let m of allMoves)if(checkWin(m.grid)===cpuPlayer){console.log("Pro: Instant win");executeMove(m);return}
+      let oppDrops=getDropMoves(grid,gravityDir,humanPlayer,mag);
+      let oppWin=oppDrops.find(m=>checkWin(m.grid)===humanPlayer);
+      if(oppWin){let block=allMoves.find(m=>m.type==='drop'&&m.col===oppWin.col);if(block){console.log("Pro: Blocking drop");executeMove(block);return}}
+      if(oppToks.flip>0){
+        let rotWin=canWinByRotating(grid,gravityDir,mag,humanPlayer);
+        if(rotWin){let d=findRotationDisruption(grid,gravityDir,mag,aiToks,cpuPlayer,humanPlayer);if(d){console.log("Pro: Blocking rotation");executeMove(d);return}}
+      }
+      if(oppToks.flip>0&&oppToks.mag>0){
+        let rotMag=canWinByRotateThenMagnet(grid,gravityDir,mag,humanPlayer,oppToks);
+        if(rotMag){let d=findRotateMagnetDisruption(grid,gravityDir,mag,aiToks,cpuPlayer,humanPlayer,oppToks);if(d){console.log("Pro: Blocking rotate+magnet combo!");executeMove(d);return}}
+      }
+      let gate=shouldConsiderTools(grid,gravityDir,mag,aiToks,oppToks,cpuPlayer);
+      if(gate.allowed&&gate.reason==="EXTRACT_WIN"){
+        let ext=findExtractionWin(grid,gravityDir,aiToks,cpuPlayer,mag);
+        if(ext){console.log("Pro: Executing extraction combo");executeMove(ext.firstMove);return}
+      }
+      let moves=getDropMoves(grid,gravityDir,cpuPlayer,mag);
+      if(gate.allowed)moves.push(...getToolMoves(grid,gravityDir,aiToks,cpuPlayer,mag));
+      let center=(COLS-1)/2;
+      moves.sort((a,b)=>{if(a.type==='drop'&&b.type==='drop')return Math.abs(a.col-center)-Math.abs(b.col-center);if(a.type==='drop')return-1;if(b.type==='drop')return 1;return 0});
+      let maxDepth=Math.floor(((aiLevel===2)?8:(aiLevel===3)?7:6)*personality.depthBias);
+      let best=null,bestScore=-Infinity;
+      for(let depth=1;depth<=maxDepth;depth++){
+        if(_nowMs()>AI_DEADLINE){AI_ABORT=true;break}
+        let localBest=null,localBestScore=-Infinity;
+        let alpha=-Infinity,beta=Infinity;
+        for(let m of moves){
+          if(AI_ABORT)break;
+          let d=(m.type==='drop')?depth-1:Math.max(1,depth-2);
+          let score=-negamax(m.grid,m.gDir,m.magState,d,-beta,-alpha,humanPlayer);
+          if(m.type!=='drop'&&score<5000){
+            let penalty=(m.type==='flip')?150:250;
+            penalty*=personality.toolConservation;
+            score-=penalty;
+          }
+          if(personality.riskTolerance>0.5&&countThreats(m.grid,cpuPlayer)>countThreats(grid,cpuPlayer)){
+            score+=100*(personality.riskTolerance-0.5)*2;
+          }
+          if(score>localBestScore){localBestScore=score;localBest=m}
+          alpha=Math.max(alpha,localBestScore);
+          if(alpha>=beta)break;
+        }
+        if(localBest){best=localBest;bestScore=localBestScore}
+        if(AI_ABORT)break;
+      }
+      console.log(`Pro: Selected ${best?.type||'none'} (score: ${Math.round(bestScore)}, nodes: ${AI_NODES})`);
+      if(best)executeMove(best);else if(moves.length>0)executeMove(moves[0]);
+  } catch(e) {
+      console.error("AI Error:", e);
+      // Fallback
+      let moves=getDropMoves(grid,gravityDir,cpuPlayer,mag);
+      if(moves.length>0) executeMove(moves[Math.floor(Math.random()*moves.length)]);
+  }
+}
+
+function executeMove(m){
+  if(m.type==='drop')doDrop(0,m.col);
+  else if(m.type==='flip')doFlip(m.delta);
+  else if(m.type==='magnet')doMagnet(m.side,m.idx);
+}
+
+// =============================================================================
+// PHYSICS ENGINE (With Flood Support)
+// =============================================================================
 function getPhysicsDir(baseDir, flooded){
   return flooded ? INV_MAP[baseDir] : baseDir;
 }
 
-function physicsStep(g,baseDir,mState,flooded){
+function isPinned(r,c,mState){
+  if(r===0&&mState.top[c])return true;if(r===ROWS-1&&mState.bottom[c])return true;
+  if(c===0&&mState.left[r])return true;if(c===COLS-1&&mState.right[r])return true;return false;
+}
+
+function physicsStep(g,dir,mState,flooded){
   let nextG=g.map(r=>[...r]),changed=false;
-  let dir = getPhysicsDir(baseDir, flooded);
+  let pDir = getPhysicsDir(dir, flooded);
   
-  // Magnets stick regardless of water
   for(let c=0;c<COLS;c++){if(mState.top[c]&&nextG[0][c]===P_EMPTY)for(let r=1;r<ROWS;r++)if(nextG[r][c]){nextG[0][c]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true;break}}
   for(let c=0;c<COLS;c++){if(mState.bottom[c]&&nextG[ROWS-1][c]===P_EMPTY)for(let r=ROWS-2;r>=0;r--)if(nextG[r][c]){nextG[ROWS-1][c]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true;break}}
   for(let r=0;r<ROWS;r++){if(mState.left[r]&&nextG[r][0]===P_EMPTY)for(let c=1;c<COLS;c++)if(nextG[r][c]){nextG[r][0]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true;break}}
   for(let r=0;r<ROWS;r++){if(mState.right[r]&&nextG[r][COLS-1]===P_EMPTY)for(let c=COLS-2;c>=0;c--)if(nextG[r][c]){nextG[r][COLS-1]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true;break}}
   
-  // Directional Fall/Float
-  if(dir===0){for(let c=0;c<COLS;c++)for(let r=ROWS-2;r>=0;r--)if(nextG[r][c]&&!nextG[r+1][c]&&!isPinned(r,c,mState)){nextG[r+1][c]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true}}
-  else if(dir===1){for(let r=0;r<ROWS;r++)for(let c=1;c<COLS;c++)if(nextG[r][c]&&!nextG[r][c-1]&&!isPinned(r,c,mState)){nextG[r][c-1]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true}}
-  else if(dir===2){for(let c=0;c<COLS;c++)for(let r=1;r<ROWS;r++)if(nextG[r][c]&&!nextG[r-1][c]&&!isPinned(r,c,mState)){nextG[r-1][c]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true}}
+  if(pDir===0){for(let c=0;c<COLS;c++)for(let r=ROWS-2;r>=0;r--)if(nextG[r][c]&&!nextG[r+1][c]&&!isPinned(r,c,mState)){nextG[r+1][c]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true}}
+  else if(pDir===1){for(let r=0;r<ROWS;r++)for(let c=1;c<COLS;c++)if(nextG[r][c]&&!nextG[r][c-1]&&!isPinned(r,c,mState)){nextG[r][c-1]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true}}
+  else if(pDir===2){for(let c=0;c<COLS;c++)for(let r=1;r<ROWS;r++)if(nextG[r][c]&&!nextG[r-1][c]&&!isPinned(r,c,mState)){nextG[r-1][c]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true}}
   else{for(let r=0;r<ROWS;r++)for(let c=COLS-2;c>=0;c--)if(nextG[r][c]&&!nextG[r][c+1]&&!isPinned(r,c,mState)){nextG[r][c+1]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true}}
   return{nextG,changed};
 }
@@ -393,12 +792,6 @@ function settleGridComplete(startGrid,dir,mState,flooded){
   return g;
 }
 
-function isPinned(r,c,mState){
-  if(r===0&&mState.top[c])return true;if(r===ROWS-1&&mState.bottom[c])return true;
-  if(c===0&&mState.left[r])return true;if(c===COLS-1&&mState.right[r])return true;return false;
-}
-
-// Drops logic accounting for Flood
 function getDropTarget(g,baseDir,idx,flooded){
   let dir = getPhysicsDir(baseDir, flooded);
   let rEnt,cEnt;
@@ -408,47 +801,17 @@ function getDropTarget(g,baseDir,idx,flooded){
   
   if(g[rEnt][cEnt]!==P_EMPTY) return null; // Blocked entry
   
-  let rT=rEnt,cT=cEnt;
-  // Trace path
-  for(let i=1;i<ROWS;i++){
-    let rCheck=rEnt,cCheck=cEnt;
-    if(dir===0)rCheck+=i;else if(dir===1)cCheck-=i;else if(dir===2)rCheck-=i;else cCheck+=i;
-    if(g[rCheck][cCheck]===P_EMPTY){rT=rCheck;cT=cCheck;}
-    else break;
-  }
-  return {r:rT,c:cT};
-}
-
-// Fire Logic: Raycast for first hit
-function getFireTarget(g,baseDir,idx,flooded){
-  if(flooded) return getDropTarget(g,baseDir,idx,flooded); // If flooded, Fire acts like drop (stone)
-  
-  // Normal Fire: Starts from top (relative to board view, NOT gravity)
-  // But wait, user taps 'Col 3'. That means relative to CURRENT VIEW UP.
-  // Standard drop logic finds the "floor". Fire needs the "ceiling" of the stack.
-  
-  // We use standard drop Entry points.
-  let rEnt,cEnt;
-  // entry depends on gravity for standard "drop from top" UI
-  if(baseDir===0){rEnt=0;cEnt=idx}else if(baseDir===1){rEnt=idx;cEnt=COLS-1}
-  else if(baseDir===2){rEnt=ROWS-1;cEnt=idx}else{rEnt=idx;cEnt=0}
-  
-  // Raycast inwards until we hit something
+  let rT=rEnt,cT=cEnt,found=false;
   for(let i=0;i<ROWS;i++){
     let rCheck=rEnt,cCheck=cEnt;
-    if(baseDir===0)rCheck+=i;else if(baseDir===1)cCheck-=i;else if(baseDir===2)rCheck-=i;else cCheck+=i;
-    
-    if(g[rCheck][cCheck]!==P_EMPTY){
-      return {r:rCheck, c:cCheck, hit:true}; // Hit something!
-    }
-  }
-  // Hit nothing (passed through board)
-  return null;
+    if(dir===0)rCheck+=i;else if(dir===1)cCheck-=i;else if(dir===2)rCheck-=i;else cCheck+=i;
+    if(g[rCheck][cCheck]===P_EMPTY){rT=rCheck;cT=cCheck;found=true;break}
+  }return found?{r:rT,c:cT}:null;
 }
 
 function checkWin(g){
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
-    let p=g[r][c];if(p===P_EMPTY||p===P_STONE)continue;
+    let p=g[r][c];if(!p||p===P_STONE)continue;
     if(c<=COLS-4&&g[r][c+1]===p&&g[r][c+2]===p&&g[r][c+3]===p)return p;
     if(r<=ROWS-4&&g[r+1][c]===p&&g[r+2][c]===p&&g[r+3][c]===p)return p;
     if(r<=ROWS-4&&c<=COLS-4&&g[r+1][c+1]===p&&g[r+2][c+2]===p&&g[r+3][c+3]===p)return p;
@@ -456,23 +819,23 @@ function checkWin(g){
   }return 0;
 }
 
-// ACTIONS
+// =============================================================================
+// GAME ACTIONS (With Pro Tools)
+// =============================================================================
 function spawnTransitions(oldG,newG,type,isFlooded){
   let speed=type==='drop'?320:280;
-  // Simple diff animation
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
-     // Simple approach: if cell changed from Empty to X, it arrived there.
-     // If cell changed from X to Empty, it moved away.
-     // This is a simplified visualizer for the complex physics
      if(newG[r][c]!==P_EMPTY && oldG[r][c]===P_EMPTY){
-       // It arrived here. Where from? 
-       // We'll just animate "appearing" or simple slide for robustness in flood mode
        hiddenCells.push({r,c});
        let sr=r,sc=c;
-       // Heuristic start pos based on gravity/buoyancy
        let physDir = getPhysicsDir(gravityDir, isFlooded);
        if(physDir===0)sr-=2; else if(physDir===2)sr+=2; else if(physDir===1)sc+=2; else sc-=2;
        anims.push({type:'drop',p:newG[r][c],r:sr,c:sc,destR:r,destC:c,t:0,dur:speed});
+     } else if(newG[r][c]!==oldG[r][c] && newG[r][c]!==P_EMPTY){
+       // Slide existing
+       let p=newG[r][c];
+       // Find where it was. This is a hacky heuristics visualizer for Pro mode complexity
+       // Ideally we track IDs but that breaks simplicity. 
      }
   }
 }
@@ -487,30 +850,42 @@ function applyActionAndAnimate(actionFn){
 
 function doDrop(row,col){
   if(activeTool==='fire'){doFire(row,col);return;}
-  let t = getDropTarget(grid,gravityDir,col,floodTimer>0);
-  if(!t) return;
+  let t=getDropTarget(grid,gravityDir,col,floodTimer>0);
+  if(!t)return;
   applyActionAndAnimate(()=>{grid[t.r][t.c]=curPlayer});
+}
+
+function getFireTarget(g,baseDir,idx,flooded){
+  if(flooded) return getDropTarget(g,baseDir,idx,flooded);
+  let dir = baseDir; // Fire comes from "Top" of UI, relative to view, but acts on physics
+  // Actually, UI tap is "Column X". Visual "Top" depends on gravity for drop, but Fire is "Laser from UI Top"?
+  // No, let's keep it consistent. Drop logic.
+  let rEnt,cEnt;
+  if(dir===0){rEnt=0;cEnt=idx}else if(dir===1){rEnt=idx;cEnt=COLS-1}
+  else if(dir===2){rEnt=ROWS-1;cEnt=idx}else{rEnt=idx;cEnt=0}
+  
+  for(let i=0;i<ROWS;i++){
+    let rCheck=rEnt,cCheck=cEnt;
+    if(dir===0)rCheck+=i;else if(dir===1)cCheck-=i;else if(dir===2)rCheck-=i;else cCheck+=i;
+    if(g[rCheck][cCheck]!==P_EMPTY) return {r:rCheck, c:cCheck, hit:true};
+  }
+  return null;
 }
 
 function doFire(row,col){
   if(tokens[curPlayer].fire<=0) return;
-  activeTool=null; // consume selection
-  
+  activeTool=null;
   if(floodTimer>0){
-    // Wet Fire -> Stone Drop
     let t = getDropTarget(grid,gravityDir,col,true);
     if(t) applyActionAndAnimate(()=>{
       tokens[curPlayer].fire--;
-      grid[t.r][t.c]=P_STONE; // Sizzles into stone
+      grid[t.r][t.c]=P_STONE;
     });
   } else {
-    // Dry Fire -> Destroy
     let t = getFireTarget(grid,gravityDir,col,false);
     applyActionAndAnimate(()=>{
       tokens[curPlayer].fire--;
-      if(t && t.hit){
-        grid[t.r][t.c]=P_EMPTY; // BURN!
-      }
+      if(t && t.hit) grid[t.r][t.c]=P_EMPTY;
     });
   }
   syncUI();
@@ -520,16 +895,10 @@ function doFlood(){
   if(tokens[curPlayer].water<=0)return;
   pushHistory();
   tokens[curPlayer].water--;
-  floodTimer=5; // 4 turns + current endTurn decrement = 4 active rounds? Let's say 4 half-turns.
-  // Actually, let's say 4 full rounds = 8 turns.
-  // User asked for "two rounds" -> 4 turns.
-  floodTimer = 4;
-  
-  // Immediate effect: Physics settle UP
+  floodTimer=4; // 4 turns
   let oldG=grid.map(r=>[...r]);
-  let finalG=settleGridComplete(grid,gravityDir,mag,true); // Force flooded physics
+  let finalG=settleGridComplete(grid,gravityDir,mag,true); // Immediate float
   spawnTransitions(oldG,finalG,'slide',true);grid=finalG;
-  
   if(anims.length>0)animating=true;else endTurn();
 }
 
@@ -553,9 +922,8 @@ function doFlip(dirDelta){
 }
 
 function triggerSettleAfterRotate(){
-  let oldG=grid.map(r=>[...r]);
-  let finalG=settleGridComplete(grid,gravityDir,mag,floodTimer>0);
-  spawnTransitions(oldG,finalG,'slide',floodTimer>0);grid=finalG;
+  let oldG=grid.map(r=>[...r]);let finalG=settleGridComplete(grid,gravityDir,mag,floodTimer>0);
+  spawnTransitions(oldG,finalG,'drop',floodTimer>0);grid=finalG;
 }
 
 function endTurn(){
@@ -572,23 +940,16 @@ function endTurn(){
     if(!grid.some(r=>r.includes(P_EMPTY))){
       gameOver=true;document.getElementById("winTitle").textContent="Draw!";
       document.getElementById("winSub").textContent="Board Full";
+      document.getElementById("winBtnMain").onclick=()=>showMainMenu();
+      document.getElementById("winBtnSec").onclick=()=>undo();
       winnerCard.classList.add('visible');syncUI();
     }else{
-      // Decay Magnets
       const decay=arr=>arr.forEach((m,i)=>{if(m){m.life--;if(m.life<=0)arr[i]=null}});
       decay(mag.top);decay(mag.bottom);decay(mag.left);decay(mag.right);
       
-      // Decay Flood
       if(floodTimer>0){
         floodTimer--;
-        if(floodTimer===0){
-           // DRAIN EVENT!
-           // Physics settle DOWN immediately
-           // We can't animate this easily inside endTurn without recursion complexity
-           // So we just settle instantly for logic, maybe animate next frame?
-           // For simplicity, we just settle.
-           grid = settleGridComplete(grid,gravityDir,mag,false); 
-        }
+        if(floodTimer===0) grid = settleGridComplete(grid,gravityDir,mag,false); 
       }
       
       curPlayer=curPlayer===P_RED?P_YEL:P_RED;syncUI();checkAI();
@@ -602,25 +963,33 @@ function undo(){
   if(gameMode===1&&history.length>0)restoreState(history.pop());
 }
 
-// AI (Simplified for Code Length - Pro Mode knows basics)
-function makeAIMove(){
-  if(gameOver||animating||isReviewing)return;
-  // Basic AI logic for Water/Fire
-  // 1. If losing, use Fire on threat
-  // 2. If losing heavily, use Water to shuffle
-  let move = null;
-  // Fallback to random legal move for demo purposes if basic AI fails
-  let moves = [];
-  for(let c=0;c<COLS;c++) if(getDropTarget(grid,gravityDir,c,floodTimer>0)) moves.push({c});
-  
-  if(moves.length>0) doDrop(0, moves[Math.floor(Math.random()*moves.length)].c);
+// =============================================================================
+// HINT SYSTEM
+// =============================================================================
+function runHintSimulation(){
+  let pToks=tokens[curPlayer];
+  let moves=getDropMoves(grid,gravityDir,curPlayer,mag);
+  if(pToks.flip>0||pToks.mag>0)moves.push(...getToolMoves(grid,gravityDir,pToks,curPlayer,mag));
+  if(moves.length===0)return"No moves available!";
+  for(let m of moves)if(checkWin(m.grid)===curPlayer)return formatMove(m)+" (Wins!)";
+  if(pToks.flip>0&&pToks.mag>0){let ext=findExtractionWin(grid,gravityDir,pToks,curPlayer,mag);if(ext)return"Rotate "+(ext.firstMove.delta===1?"CCW":"CW")+" then magnet (2-move win!)";}
+  let opponent=curPlayer===P_RED?P_YEL:P_RED;
+  let oppDrops=getDropMoves(grid,gravityDir,opponent,mag);
+  let oppWin=oppDrops.find(m=>checkWin(m.grid)===opponent);
+  if(oppWin){let block=moves.find(m=>m.type==='drop'&&m.col===oppWin.col);if(block)return formatMove(block)+" (Block!)";}
+  let best=null,bestScore=-Infinity;
+  for(let m of moves){let score=evaluate(m.grid,m.gDir,m.magState);if(curPlayer===humanPlayer)score=-score;if(score>bestScore){bestScore=score;best=m}}
+  return best?formatMove(best):"Try center drops.";
 }
-// Note: Full AI implementation would be huge. 
-// Reusing basic random/greedy for Pro Tools for now to keep code safe.
-// The main "Gatekeeper" AI from previous code is omitted here for brevity
-// but standard logic applies.
+function formatMove(m){
+  if(m.type==='drop')return`Drop at Column ${String.fromCharCode(65+m.col)}`;
+  if(m.type==='flip')return`Rotate ${m.delta===1?'CCW ⟲':'CW ⟳'}`;
+  if(m.type==='magnet')return`Magnet: ${["Top","Right","Bottom","Left"][m.side]}`;return"Unknown";
+}
 
+// =============================================================================
 // RENDERING
+// =============================================================================
 let lastTime=0;
 function initLoop(now){lastTime=now;requestAnimationFrame(loop)}
 function loop(now){let dt=now-lastTime;lastTime=now;if(dt>50)dt=50;updateAnims(dt);render();requestAnimationFrame(loop)}
@@ -638,7 +1007,7 @@ function render(){
   const W=canvas.width,H=canvas.height;const cx=W/2,cy=H/2;
   const size=Math.min(W,H)*0.96;const cell=size/(Math.max(ROWS,COLS)+2);const boardW=COLS*cell;
   
-  ctx.fillStyle=floodTimer>0?"#001e28":"#0b0f17"; // Flood bg
+  ctx.fillStyle=floodTimer>0?"#001e28":"#0b0f17"; 
   ctx.fillRect(0,0,W,H);
   
   ctx.save();ctx.translate(cx,cy);ctx.rotate(boardAngle);
@@ -647,44 +1016,30 @@ function render(){
   
   // Flood Overlay
   if(floodTimer>0){
-    ctx.fillStyle="rgba(0, 188, 212, 0.2)";
-    ctx.fill(); // Tint board
+    ctx.fillStyle="rgba(0, 188, 212, 0.15)";
+    ctx.fill();
   }
 
-  // Draw Tokens
+  ctx.fillStyle="#8fa1b8";ctx.font="bold 15px monospace";ctx.textAlign="center";ctx.textBaseline="middle";
+  for(let c=0;c<COLS;c++){let x=-boardW/2+c*cell+cell/2;let ch=String.fromCharCode(65+c);ctx.fillText(ch,x,-boardW/2-cell*0.4);ctx.fillText(ch,x,boardW/2+cell*0.4)}
+  for(let r=0;r<ROWS;r++){let y=-boardW/2+r*cell+cell/2;let num=(r+1).toString();ctx.fillText(num,-boardW/2-cell*0.4,y);ctx.fillText(num,boardW/2+cell*0.4,y)}
   ctx.translate(-boardW/2,-boardW/2);
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
-     const x=c*cell+cell/2;const y=r*cell+cell/2;
-     ctx.fillStyle="rgba(0,0,0,0.5)";ctx.beginPath();ctx.arc(x,y,cell*0.4,0,Math.PI*2);ctx.fill();
-     if(hiddenCells.some(h=>h.r===r&&h.c===c&&animating))continue;
-     const val=grid[r][c];if(val)drawToken(ctx,x,y,cell*0.4,val);
-  }
-  
-  // Anims
-  for(let a of anims){
-    if(a.type==='rotate')continue;
-    let p=a.t*a.t*(3-2*a.t);
-    let curR=a.r+(a.destR-a.r)*p;let curC=a.c+(a.destC-a.c)*p;
-    drawToken(ctx,curC*cell+cell/2,curR*cell+cell/2,cell*0.4,a.p);
-  }
-  
-  // Magnets
-  ctx.translate(boardW/2,boardW/2); // Re-center for magnets
-  mag.top.forEach((m,i)=>drawMag(ctx,i*cell+cell/2-boardW/2,-cell*0.6-boardW/2,cell,0,m));
-  mag.bottom.forEach((m,i)=>drawMag(ctx,i*cell+cell/2-boardW/2,boardW/2+cell*0.6,cell,2,m));
-  mag.left.forEach((m,i)=>drawMag(ctx,-cell*0.6-boardW/2,i*cell+cell/2-boardW/2,cell,3,m));
-  mag.right.forEach((m,i)=>drawMag(ctx,boardW/2+cell*0.6,i*cell+cell/2-boardW/2,cell,1,m));
-  
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const x=c*cell+cell/2;const y=r*cell+cell/2;ctx.fillStyle="rgba(0,0,0,0.5)";ctx.beginPath();ctx.arc(x,y,cell*0.4,0,Math.PI*2);ctx.fill();if(hiddenCells.some(h=>h.r===r&&h.c===c&&animating))continue;const val=grid[r][c];if(val)drawToken(ctx,x,y,cell*0.4,val)}
+  for(let a of anims){if(a.type==='rotate')continue;let p=a.t*a.t*(3-2*a.t);if(a.type==='drop'){if(a.t<0.7)p=(a.t/0.7)*(a.t/0.7);else{let t2=(a.t-0.7)/0.3;p=1-Math.sin(t2*Math.PI)*0.05}}let curR=a.r+(a.destR-a.r)*p;let curC=a.c+(a.destC-a.c)*p;drawToken(ctx,curC*cell+cell/2,curR*cell+cell/2,cell*0.4,a.p)}
+  mag.top.forEach((m,i)=>drawMag(ctx,i*cell+cell/2,-cell*0.6,cell,0,m));
+  mag.bottom.forEach((m,i)=>drawMag(ctx,i*cell+cell/2,boardW+cell*0.6,cell,2,m));
+  mag.left.forEach((m,i)=>drawMag(ctx,-cell*0.6,i*cell+cell/2,cell,3,m));
+  mag.right.forEach((m,i)=>drawMag(ctx,boardW+cell*0.6,i*cell+cell/2,cell,1,m));
   ctx.restore();
 }
 
 function drawToken(ctx,x,y,r,p){
-  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
-  if(p===P_RED)ctx.fillStyle="#e53935";
-  else if(p===P_YEL)ctx.fillStyle="#fdd835";
-  else ctx.fillStyle="#78909c"; // STONE
-  ctx.fill();
-  ctx.beginPath();ctx.arc(x-r*0.3,y-r*0.3,r*0.2,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.3)";ctx.fill();
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+    if(p===P_RED)ctx.fillStyle="#e53935";
+    else if(p===P_YEL)ctx.fillStyle="#fdd835";
+    else ctx.fillStyle="#78909c"; // STONE
+    ctx.fill();
+    ctx.beginPath();ctx.arc(x-r*0.3,y-r*0.3,r*0.2,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.3)";ctx.fill();
 }
 
 function drawMag(ctx,x,y,size,dir,m){
@@ -728,7 +1083,7 @@ function syncUI(){
   hudTurn.textContent=gameOver?"Game Over":pName;
   hudTurn.style.color=curPlayer===P_RED?"var(--red)":"var(--yel)";
   
-  if(aiLevel===4){
+  if(aiLevel===4 || gameMode===0){
     hudR.textContent=`F:${tokens[P_RED].flip} M:${tokens[P_RED].mag} 💧:${tokens[P_RED].water} 🔥:${tokens[P_RED].fire}`;
     hudY.textContent=`F:${tokens[P_YEL].flip} M:${tokens[P_YEL].mag} 💧:${tokens[P_YEL].water} 🔥:${tokens[P_YEL].fire}`;
   } else {
@@ -736,9 +1091,8 @@ function syncUI(){
     hudY.textContent=`F:${tokens[P_YEL].flip} M:${tokens[P_YEL].mag}`;
   }
   
-  // Grav arrow depends on Flood
   let gSym = ["↓","←","↑","→"][gravityDir];
-  if(floodTimer>0) gSym = ["↑","→","↓","←"][gravityDir]; // Inverted visual
+  if(floodTimer>0) gSym = ["↑","→","↓","←"][gravityDir];
   hudGrav.textContent=`Grav: ${gSym} ${floodTimer>0?`(💧${floodTimer})`:''}`;
   
   let dis=tokens[curPlayer].flip<=0||gameOver||(gameMode===1&&curPlayer===cpuPlayer)||isReviewing;
@@ -748,7 +1102,7 @@ function syncUI(){
   document.getElementById("btnHelp").disabled=gameOver||(gameMode===1&&curPlayer===cpuPlayer)||isReviewing;
   document.getElementById("btnMenu").disabled=isReviewing;
   
-  if(aiLevel===4){
+  if(aiLevel===4 || gameMode===0){
     proTools.classList.remove('hidden');
     let t=tokens[curPlayer];
     document.getElementById("btnWater").disabled=t.water<=0||gameOver||(gameMode===1&&curPlayer===cpuPlayer);
@@ -762,7 +1116,11 @@ function syncUI(){
 
 document.getElementById("btnHint").onclick=()=>{
   if(gameMode===1&&curPlayer===cpuPlayer)return;
-  alert("Hint not available in Pro Mode (Sim too complex!)");
+  if(aiLevel===4) return alert("Hint not available in Pro Mode (Sim too complex!)");
+  elOverlay.style.display="flex";menuCard.classList.add('hidden');helpCard.classList.add('hidden');hintCard.classList.remove('hidden');
+  document.getElementById("hintMsg").textContent="Analyzing board...";
+  setTimeout(()=>{document.getElementById("hintMsg").textContent=runHintSimulation()},100);
+  document.getElementById("hintBtnResume").onclick=()=>{elOverlay.style.display="none";hintCard.classList.add('hidden')};
 };
 document.getElementById("btnHelp").onclick=showHelp;
 document.getElementById("helpBtnBack").onclick=()=>{elOverlay.style.display="none";helpCard.classList.add('hidden')};
