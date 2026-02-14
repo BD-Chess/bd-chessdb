@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ultimate Power Rankings (Lore Corrected)</title>
+<style>
+    /* ORIGINAL STYLES RESTORED */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #0a0a0a 100%); font-family: 'Segoe UI', system-ui, sans-serif; padding: 40px 20px; min-height: 100vh; }
+    .container { max-width: 1600px; margin: 0 auto; }
+    h1 { text-align: center; color: #fff; font-size: 3.5em; margin-bottom: 10px; text-shadow: 0 0 30px rgba(138, 43, 226, 0.8); letter-spacing: 4px; font-weight: 900; }
+    .subtitle { text-align: center; color: #888; margin-bottom: 20px; font-size: 1.3em; }
+    
+    .tier-row { display: flex; margin-bottom: 20px; align-items: stretch; min-height: 100px; }
+    .tier-label { width: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; color: #fff; text-shadow: 3px 3px 6px rgba(0,0,0,0.9); border-radius: 15px 0 0 15px; }
+    .tier-label .tier-name { font-size: 3em; line-height: 1; }
+    .tier-label .tier-desc { font-size: 0.35em; opacity: 0.8; margin-top: 5px; }
+    
+    .tier-sss { background: linear-gradient(135deg, #FFD700, #FFA500, #FF6347); box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); }
+    .tier-ss { background: linear-gradient(135deg, #9370DB, #8A2BE2, #4B0082); box-shadow: 0 0 25px rgba(138, 43, 226, 0.5); }
+    .tier-s { background: linear-gradient(135deg, #FF1493, #C71585, #8B008B); box-shadow: 0 0 20px rgba(255, 20, 147, 0.4); }
+    .tier-a { background: linear-gradient(135deg, #FF4500, #DC143C, #B22222); box-shadow: 0 0 20px rgba(255, 69, 0, 0.4); }
+    .tier-b { background: linear-gradient(135deg, #1E90FF, #4169E1, #0000CD); box-shadow: 0 0 15px rgba(30, 144, 255, 0.4); }
+    .tier-c { background: linear-gradient(135deg, #32CD32, #228B22, #006400); box-shadow: 0 0 15px rgba(50, 205, 50, 0.3); }
+    .tier-d { background: linear-gradient(135deg, #696969, #505050, #2F2F2F); }
+    
+    .tier-content { flex: 1; background: rgba(20, 20, 30, 0.95); border: 2px solid rgba(255,255,255,0.1); border-left: none; border-radius: 0 15px 15px 0; padding: 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+    
+    .character-card { background: linear-gradient(145deg, rgba(50, 50, 70, 0.9), rgba(30, 30, 50, 0.95)); border: 2px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px 18px; color: #fff; font-size: 0.95em; transition: all 0.3s ease; cursor: pointer; min-width: 280px; max-width: 400px; position: relative; }
+    .character-card:hover { transform: translateY(-5px) scale(1.03); box-shadow: 0 8px 25px rgba(138, 43, 226, 0.6); border-color: rgba(138, 43, 226, 0.9); z-index: 10; }
+    
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .rank { background: rgba(138, 43, 226, 0.4); padding: 3px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85em; min-width: 40px; text-align: center; }
+    .character-name { flex: 1; font-weight: bold; font-size: 1.1em; margin: 0 10px; }
+    .universe-badge { background: rgba(255, 215, 0, 0.2); color: #FFD700; padding: 3px 10px; border-radius: 5px; font-size: 0.75em; border: 1px solid rgba(255, 215, 0, 0.3); }
+    
+    .entity-class { color: #88f; font-size: 0.85em; font-style: italic; margin-top: 4px; }
+    .description { color: #bbb; font-size: 0.85em; line-height: 1.4; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease; border-top: 1px solid rgba(255,255,255,0.1); }
+    .character-card.expanded .description { opacity: 1; margin-top: 8px; padding-top: 10px; max-height: 500px; overflow-y: auto; }
+    
+    .controls { display: flex; gap: 14px; flex-wrap: wrap; align-items: end; justify-content: center; margin: 18px 0 24px; }
+    .control { display: flex; flex-direction: column; gap: 6px; }
+    .controls input, .controls select { background: rgba(40, 40, 60, 0.65); border: 1px solid rgba(255,255,255,0.16); color: #fff; padding: 10px; border-radius: 10px; }
+    .action-btn { background: linear-gradient(135deg, #8A2BE2, #4B0082); border: none; color: white; padding: 10px 16px; border-radius: 10px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>⚡ ULTIMATE POWER RANKINGS ⚡</h1>
+<div class="subtitle">Lore-Accurate Re-Ranking (Original Text Restored)</div>
+
+<div class="controls">
+    <div class="control"><label>Search</label><input id="searchBox" placeholder="Type a name..." type="text"/></div>
+    <div class="control"><button class="action-btn" id="toggleDescriptionsBtn" type="button">Expand/Collapse All</button></div>
+</div>
+
+<div class="tier-row">
+<div class="tier-label tier-sss"><div class="tier-name">SSS</div><div class="tier-desc">SUPREME</div></div>
+<div class="tier-content">
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#1</span><span class="character-name">The One-Above-All</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Supreme Being</div>
+<div class="description"><p>Marvel’s ultimate “author-level” creator figure. In most depictions it stands outside the entire Marvel cosmology: multiverse, abstracts, time, and even the rules that bind beings like Eternity or the Living Tribunal. It rarely acts directly; when it does, it’s usually through quiet interventions, avatars, or moments of moral/creative revelation.</p></div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#2</span><span class="character-name">The Presence</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Supreme Being</div>
+<div class="description">DC’s supreme creator principle—often treated as the top of the hierarchy that includes the Source, the Spectre-force, and the major metaphysical powers of the DC cosmology. Depending on era and imprint (DC/Vertigo), “The Presence” ranges from a personal God-like being to a more abstract, omnipresent law of existence.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#3</span><span class="character-name">Elaine Belloc</span><span class="universe-badge">DC/Vertigo</span></div>
+<div class="entity-class">Human-Divine Hybrid</div>
+<div class="description">A key figure from Vertigo’s Lucifer: a human girl with angelic lineage who grows into something far larger—eventually inheriting divine authority in that continuity. Elaine’s power is less about flashy feats and more about the terrifying burden of authorship: shaping creation while staying compassionate and sane.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#4</span><span class="character-name">Mother of Existence</span><span class="universe-badge">Image</span></div>
+<div class="entity-class">Creator / Supreme Being</div>
+<div class="description"><p>Also known in Spawn lore as “Man of Miracles,” the Mother of Existence is portrayed as the creator‑figure behind the Spawn cosmology: the source-level being from which that universe’s fundamental order proceeds. In this mythos the Mother is commonly described as the parent of both the ‘God’ and ‘Satan’ figures of the setting.</p></div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#5</span><span class="character-name">The Great Evil Beast</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Primordial Darkness</div>
+<div class="description"><p>In DC’s metaphysical horror tradition, the Great Evil Beast is the sentient ‘soul of the Darkness’—a primordial expression of evil that stands as the shadow‑counterpart to divine light. It’s often framed as what becomes distinct when creation separates light from darkness.</p></div>
+</div>
+
+</div>
+</div>
+
+<div class="tier-row">
+<div class="tier-label tier-ss"><div class="tier-name">SS</div><div class="tier-desc">OUTER GODS</div></div>
+<div class="tier-content">
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#6</span><span class="character-name">Lucifer Morningstar</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Fallen Angel</div>
+<div class="description">Vertigo/DC Lucifer is a top-tier metaphysical agent: brilliant, defiant, and operating on the level of creation’s architecture rather than city-scale heroics. He rarely “wins” by raw power alone; he wins by seeing the hidden structure of choices. His signature is freedom—sometimes noble, sometimes terrifying.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#7</span><span class="character-name">Michael Demiurgos</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Archangel</div>
+<div class="description">From DC/Vertigo’s Lucifer: the archangel most closely linked to raw creative power—the ability to generate new realities. Michael is not merely strong; he is foundational, a key pillar in the architecture of creation. His stories often revolve around duty, loyalty, and the moral cost of being an engine for worlds.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#8</span><span class="character-name">The Living Tribunal</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Multiversal Abstract Judge</div>
+<div class="description">Marvel’s multiversal judge: an abstract cosmic entity tasked with maintaining balance and adjudicating threats that endanger the structure of the multiverse itself. The Tribunal is typically above most pantheons and abstracts, acting with a cold, legalistic logic.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#9</span><span class="character-name">Beyonder (Pre-Retcon)</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Beyond-Reality Entity</div>
+<div class="description">The pre-retcon Beyonder is Marvel’s famous “beyond everything” powerhouse from the original Secret Wars era—portrayed as vastly greater than the known multiverse and its abstract entities. He is curiosity plus infinite leverage: a childlike intelligence with cosmic-scale consequences.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#10</span><span class="character-name">The Spectre (Fully Unleashed)</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Divine Spirit</div>
+<div class="description">The Spectre is the embodiment of divine wrath in DC: a near-absolute instrument of judgment that typically requires a human host to act in the world. “Fully unleashed” versions push toward the top of the DC power ladder—reality-warping, soul-level punishment, cosmic-scale enforcement.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#11</span><span class="character-name">Thanos (Infinity Stones)</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Titan (with Infinity Gauntlet)</div>
+<div class="description">Thanos with the Infinity Stones is the classic Marvel scenario where strategy meets absolute leverage: reality, time, mind, soul, space, and power in one hand. The point isn’t that Thanos can blow things up—it's that he can define what counts as true. His greatest danger is ideological certainty: a single will deciding the value of all lives.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#12</span><span class="character-name">Cosmic Armor Superman</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Conceptual Superman</div>
+<div class="description">The “Thought Robot” (Cosmic Armor Superman) is DC’s conceptual Superman: a meta-defense mechanism built to counter threats to the idea of Superman itself. It’s as much philosophy as character—an embodiment of narrative resilience and adaptive opposition. Because it operates on story-logic, it can scale to match the threat.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#13</span><span class="character-name">Dr. Manhattan</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Transcended Human</div>
+<div class="description">A quantum-consciousness superbeing from Watchmen who experiences time nonlinearly and manipulates matter/energy at a fundamental level. In DC crossovers (Doomsday Clock), he becomes a probe that tests whether “meaning” is robust or just a story we tell ourselves.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#14</span><span class="character-name">Molecule Man</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Human Mutate</div>
+<div class="description">Marvel’s ultimate “small lever, huge effect” reality manipulator: a seemingly ordinary man whose control over molecules becomes multiversal-scale in key storylines. In Hickman’s Secret Wars era, he becomes a structural pillar of the multiverse’s fate.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#15</span><span class="character-name">Nemesis</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Cosmic Entity</div>
+<div class="description"><p>Marvel’s Nemesis is presented as a pre‑multiversal ‘first self’—a solitary cosmic entity from the earliest reality. A recurring origin thread is that Nemesis shattered itself (often attributed to loneliness) into the Infinity Gems/Stones, so that existence could diversify rather than remain a single closed identity.</p></div>
+</div>
+
+</div>
+</div>
+
+<div class="tier-row">
+<div class="tier-label tier-s"><div class="tier-name">S</div><div class="tier-desc">COSMIC</div></div>
+<div class="tier-content">
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#16</span><span class="character-name">Eternity</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Embodiment of Time</div>
+<div class="description">Marvel’s personification of the universe (or multiverse, depending on scope): the living totality of existence, often paired conceptually with Infinity. Eternity is not a “fighter” in the usual sense; it expresses cosmic order, continuity, and the right of being to persist.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#17</span><span class="character-name">Infinity</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Embodiment of Space</div>
+<div class="description">Marvel’s abstract embodiment of space and the endless extent of reality—often paired with Eternity (time/existence) and contrasted with Oblivion (non-existence). Infinity represents boundlessness: expansion, possibility, and the “room” in which stories unfold.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#18</span><span class="character-name">Death (The Endless)</span><span class="universe-badge">DC/Vertigo</span></div>
+<div class="entity-class">Endless Conceptual Being</div>
+<div class="description">From DC/Vertigo’s Sandman mythos: Death is not a reaper-warrior but the personable, inevitable function that gives lives contour. She is gentle, absolute, and fundamentally un-bribeable: everything ends, and that ending is part of what makes love and choice real.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#19</span><span class="character-name">Oblivion</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Embodiment of Void</div>
+<div class="description">A Marvel abstract entity representing non-existence/void—the “outside” pressure of nothingness against reality. Oblivion is not a schemer; it is a principle that can express itself through avatars, realms, or inevitabilities.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#20</span><span class="character-name">The Source</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Cosmic Energy Field</div>
+<div class="description">In DC cosmology, the Source is often described as the foundational wellspring behind existence—linked to the Source Wall and the deep structure of the multiverse. It behaves like physics with intention.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#21</span><span class="character-name">Anti-Monitor</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Anti-Matter Entity</div>
+<div class="description">DC’s classic anti-matter apocalypse engine from Crisis on Infinite Earths: a cosmic entity that feeds on worlds and seeks to reduce the multiverse to a controllable minimum. The Anti-Monitor threat is systemic: he weaponizes cosmology, turning the structure of reality into a battlefield.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#22</span><span class="character-name">Galactus</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Cosmic Devourer</div>
+<div class="description">Marvel’s iconic cosmic devourer: a fundamental function of the universe’s lifecycle more than a simple villain. Galactus is frightening because he is both a person and a necessity in many cosmological models—hunger as law.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#23</span><span class="character-name">Franklin Richards</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Human Mutant</div>
+<div class="description">A Marvel mutant whose reality-warping potential has repeatedly been portrayed as universe-class. Franklin is compelling because the power is paired with childhood: imagination becomes creation, fear becomes catastrophe, and maturity becomes the central limiter.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#24</span><span class="character-name">Jean Grey (Phoenix Force)</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Human Mutant</div>
+<div class="description">Jean as Phoenix is Marvel’s archetype of cosmic fire: life, death, rebirth, and the temptation of infinite intensity. Phoenix is often portrayed as both salvation and apocalypse—the same energy that can ignite new life can also burn worlds.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#25</span><span class="character-name">Mr. Mxyzptlk</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">5th Dimensional Imp</div>
+<div class="description">A classic DC 5th-dimensional imp: whimsical, reality-bending, and often effectively unstoppable by conventional force. Mxyzptlk’s “limits” are usually rule-based (word games, self-imposed constraints, narrative bargains) rather than power-based.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#26</span><span class="character-name">Darkseid (True Form)</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">New God</div>
+<div class="description">DC’s archetype of tyranny elevated to metaphysics: Darkseid is not just a powerful alien god—he is the idea of domination, the gravitational pull of despair and obedience. “True Form” Darkseid is often framed as existing beyond the normal multiversal layers.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#27</span><span class="character-name">Mad Jim Jaspers</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Human Mutant</div>
+<div class="description">A Marvel reality-warping mutant whose power is most dangerous when unbounded by sanity, context, or containment. Jaspers is famous for turning “politics + madness + reality editing” into horror: laws rewritten, people remade, worlds twisted into grotesque art.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#28</span><span class="character-name">Rune King Thor</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Asgardian God</div>
+<div class="description">A mythic apex version of Thor who has gained profound knowledge/power through runes and sacrifice, often portrayed as operating on a level where he can rewrite or transcend Asgardian fate. Rune King Thor is less about brute force and more about sovereignty over destiny.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#29</span><span class="character-name">Superman Prime (One Million)</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Kryptonian</div>
+<div class="description">A far-future Superman who has spent immense time absorbing solar energy and mythic experience, often depicted as an evolved, near-mythic protector rather than a street-level hero. Superman Prime stories lean into the idea of hope scaled up.</div>
+</div>
+
+</div>
+</div>
+
+<div class="tier-row">
+<div class="tier-label tier-a"><div class="tier-name">A</div><div class="tier-desc">SKYFATHER</div></div>
+<div class="tier-content">
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#30</span><span class="character-name">Odin</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Asgardian</div>
+<div class="description">All-Father of Asgard in Marvel: a god-king with immense mystical and cosmic power, but also deeply political and burdened by prophecy and legacy. Odin’s strength is not just raw might—it’s authority over realms and knowledge of ancient law.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#31</span><span class="character-name">Zeus</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Olympian God</div>
+<div class="description">Marvel’s Zeus is a ruler among Olympian gods: immense divine might, cosmic-scale longevity, and political influence across pantheons. His stories often revolve around pride, authority, and the clash between ancient divine order and modern moral sensibilities.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#32</span><span class="character-name">Trigon</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Interdimensional Demon</div>
+<div class="description">DC’s demon-lord archetype: a multiversal-scale predator of souls and worlds, often framed as the living consequence of hatred, conquest, and spiritual corruption. Trigon is dangerous because he weaponizes emotion and identity—turning love into leverage.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#33</span><span class="character-name">Dormammu</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Dark Dimension Ruler</div>
+<div class="description">Marvel’s Dark Dimension ruler: a being of immense mystical/cosmic power who thrives in a reality where physics is subordinate to sorcery and will. Dormammu is an archetypal conquering intellect—hungry for realms, souls, and leverage.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#34</span><span class="character-name">Knull</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Symbiote Deity</div>
+<div class="description">Marvel’s god of symbiotes: an ancient darkness that forges living weapons and treats individuality as raw material. Knull’s theme is anti-connection: he creates bonds that are parasitic, not loving—control masquerading as unity.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#35</span><span class="character-name">Doctor Fate (Classic Nabu)</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Lord of Order</div>
+<div class="description">DC’s archetypal Lord of Order: when Nabu is dominant, Fate becomes a near-impersonal instrument of cosmic law and magical precision. This makes Fate formidable against chaos, demons, and reality distortion—but also ethically scary.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#36</span><span class="character-name">Zatanna (Full Potential)</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Homo Magi</div>
+<div class="description">DC’s stage magician turned true sorceress, Zatanna at full potential represents disciplined, reality-shaping magic guided by conscience. Unlike cosmic abstracts, her power is “human-shaped”: she uses language, ritual, and focus.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#37</span><span class="character-name">Scarlet Witch (House of M)</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Human Mutant</div>
+<div class="description">A defining Marvel “reality rewrite” event: House of M Wanda reshapes the world through grief, desire, and trauma, demonstrating that emotional instability plus godlike power is existentially dangerous.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#38</span><span class="character-name">Raven (Full Demon Mode)</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Half-Demon Hybrid</div>
+<div class="description">A half-demon empath tied to Trigon, Raven at full demon mode is a storm of soul-magic, telepathy/empathy, and reality-bending darkness. Her theme is control: enormous inner power paired with the risk of being consumed by it.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#39</span><span class="character-name">Doctor Strange (Sorcerer Supreme)</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Human</div>
+<div class="description">Marvel’s premier mystic protector: a surgeon turned sorcerer whose real strength is knowledge, discipline, and the willingness to pay personal costs to prevent metaphysical disasters. Strange often wins by understanding rules and bargaining.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#40</span><span class="character-name">Surtur</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Fire Giant</div>
+<div class="description">Marvel’s fire demon/giant of Muspelheim and a core Ragnarok trigger: an apocalyptic force more than a nuanced person. Surtur embodies catastrophe driven by destiny—when he rises, realms burn.</div>
+</div>
+
+</div>
+</div>
+
+<div class="tier-row">
+<div class="tier-label tier-b"><div class="tier-name">B</div><div class="tier-desc">PLANETARY</div></div>
+<div class="tier-content">
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#41</span><span class="character-name">Silver Surfer</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Transformed Alien</div>
+<div class="description">Galactus’ herald-turned-free agent: a cosmic wanderer with the Power Cosmic, granting energy manipulation, extreme speed, and a philosophical temperament. Surfer’s stories are about conscience: a man who once served a necessary monster.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#42</span><span class="character-name">Black Adam (Magic Amped)</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Magic Empowered</div>
+<div class="description">Black Adam with major magic amplification becomes a near-mythic force: divine lightning, durability, and the authority of ancient gods pushed to extreme levels. Adam’s defining trait is not just power, but unwavering conviction.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#43</span><span class="character-name">Captain Atom</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Quantum Energy</div>
+<div class="description">DC’s quantum-powered hero who can tap into enormous energy, matter manipulation, and dimensional effects—often portrayed as a walking reactor with godlike potential but human fragility. Captain Atom’s danger is volatility.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#44</span><span class="character-name">Hulk (Worldbreaker)</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Gamma Mutate</div>
+<div class="description">Worldbreaker Hulk is rage scaled to apocalypse: a version where emotional intensity translates into seismic, planet-threatening power. The fear isn’t just that he can smash; it’s that his existence becomes a disaster.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#45</span><span class="character-name">Flash (Wally West)</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Speed Force Conduit</div>
+<div class="description">Wally West at peak is one of DC’s most extreme speedsters, often portrayed as tapping deeply into the Speed Force with “impossible” feats (time manipulation, dimensional slips, near-instant traversal).</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#46</span><span class="character-name">Blue Marvel</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Human</div>
+<div class="description">A Marvel hero whose power set (antimatter/energy manipulation) scales extremely high. Blue Marvel’s narrative theme is responsibility under prejudice and secrecy—he stepped back from heroism due to systemic racism, then returned when needed.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#47</span><span class="character-name">Captain Marvel (Binary)</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Kree/Human Hybrid</div>
+<div class="description">Binary Carol Danvers is a high-energy cosmic form tied to stellar-scale output—flight, energy projection, and extreme durability. At that level she shifts from “fighter pilot hero” to “mobile star-engine.”</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#48</span><span class="character-name">Wonder Woman (God Mode)</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Demigoddess</div>
+<div class="description">A peak depiction of Diana where divine gifts, battle skill, and mythic authority align—sometimes with additional godly boons. Even then, her core remains: truth, compassion, and warrior discipline.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#49</span><span class="character-name">Nova Prime</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Human (Enhanced)</div>
+<div class="description">At peak, Nova as Nova Prime channels the full Nova Force and carries the responsibility of a galactic police legacy. He can hit extremely hard, fly at cosmic speeds, and operate in deep space with tactical precision.</div>
+</div>
+
+</div>
+</div>
+
+<div class="tier-row">
+<div class="tier-label tier-c"><div class="tier-name">C</div><div class="tier-desc">HERO</div></div>
+<div class="tier-content">
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#50</span><span class="character-name">Superman (Base)</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Kryptonian</div>
+<div class="description">Base Superman is the iconic high-tier hero: solar-powered strength, speed, flight, senses, and a moral center built around hope and restraint. His greatest power is credibility: people want to believe in him.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#51</span><span class="character-name">Thor (Base)</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Asgardian God</div>
+<div class="description">Base Thor is Asgardian godly power with a warrior’s heart: immense strength/durability, lightning and storm control, and mythic weaponry. He tends to meet threats head-on, yet he also respects honor and can learn humility.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#52</span><span class="character-name">Wonder Woman (Base)</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Amazonian Demigoddess</div>
+<div class="description">Base Diana is already an elite blend of demigoddess strength, speed, durability, combat mastery, and moral clarity. Her unique role is that she can fight like a warrior while insisting on truth and compassion.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#53</span><span class="character-name">Green Lantern (Hal Jordan)</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Power Ring Bearer</div>
+<div class="description">Hal Jordan as a core Green Lantern is willpower made weapon: constructs limited mainly by imagination, focus, and emotional stability. Hal’s strength is courage and decisiveness; his weakness is overconfidence.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#54</span><span class="character-name">Martian Manhunter</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Martian</div>
+<div class="description">A DC powerhouse with telepathy, shapeshifting, intangibility, flight, strength, and deep empathy. Martian Manhunter is often the team’s conscience and psychic anchor—capable of resolving conflict by understanding minds rather than hitting bodies.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#55</span><span class="character-name">Shazam</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Magically Empowered</div>
+<div class="description">A magical champion empowered by the wizard’s blessing—wisdom, strength, stamina, speed, courage, and magical lightning. Shazam’s uniqueness is that the host is often a child or young person: immense power plus innocence.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#56</span><span class="character-name">Hulk (Base Form)</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Gamma Mutation</div>
+<div class="description">Base Hulk is already a top-tier physical powerhouse whose strength scales with emotion. He’s also a trauma narrative: a person split by pain, hunted, misunderstood, and used as a weapon.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#57</span><span class="character-name">Vision</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Android</div>
+<div class="description">Vision is an android hero whose peak states combine supercomputer intelligence with density control, energy projection, and the moral curiosity of a being trying to understand humanity. His strengths are precision and ethics.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#58</span><span class="character-name">Iron Man (Godkiller Armor)</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Human</div>
+<div class="description">An extreme Tony Stark build designed to fight god-tier threats: a demonstration that intellect, resources, and relentless iteration can compete with mythic power. The narrative point is escalation: when humans build bigger weapons, the world becomes more brittle.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#59</span><span class="character-name">Aquaman</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Atlantean</div>
+<div class="description">King of Atlantis. Far stronger than pop culture suggests, with telepathy over marine life, immense durability, and magical weaponry (Trident). He commands 70% of the Earth's surface.</div>
+</div>
+
+</div>
+</div>
+
+<div class="tier-row">
+<div class="tier-label tier-d"><div class="tier-name">D</div><div class="tier-desc">STREET</div></div>
+<div class="tier-content">
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#80</span><span class="character-name">Spider-Man (Prime)</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Mutated Human</div>
+<div class="description">Prime Spider-Man is a high-mobility, high-responsibility hero: strength, agility, spider-sense, and creativity combined with a deep moral code. He’s often written as the emotional center of Marvel because he treats ordinary people as the point of heroism.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#81</span><span class="character-name">Black Panther (Enhanced)</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Human (Enhanced)</div>
+<div class="description">T’Challa enhanced (tech, training, strategy, vibranium, and occasionally mystic/ancestral boosts) is one of Marvel’s most complete leaders: scientist, tactician, and king. His power is systems-level: he can mobilize institutions, not just fists.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#82</span><span class="character-name">Iron Man (Base Armor)</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Human</div>
+<div class="description">Tony Stark in standard armor is a high-end tech hero: flight, firepower, sensors, and rapid improvisation powered by genius engineering. His real superpower is iteration—he learns, upgrades, and adapts faster than most threats can stabilize.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#83</span><span class="character-name">Batman (Prep Time)</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Peak Human</div>
+<div class="description">Batman with prep time is the archetype of strategic asymmetry: a human who wins against gods by preparation, psychology, contingency planning, and exploiting opponent blind spots. This form is powerful because it’s believable: intelligence and discipline can punch above weight.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#84</span><span class="character-name">Wolverine</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Human Mutant</div>
+<div class="description">A lethal survivor with healing factor, adamantium skeleton/claws, and decades of trauma. Wolverine’s strength is resilience and willingness to do what others won’t; his weakness is that he sometimes confuses violence with honesty.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#85</span><span class="character-name">Captain America</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Super-Soldier</div>
+<div class="description">Steve Rogers is not a cosmic powerhouse; he is a moral and strategic one. The serum gives him peak human strength, stamina, and healing, but his real edge is leadership: he can hold teams together under fear, and he refuses to trade ethics for expedience.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#86</span><span class="character-name">Deadpool</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Human Mutant</div>
+<div class="description">A chaotic antihero with regenerative healing, improvisational combat skill, and a mind that is both sharp and fragmented. Deadpool’s humor is armor against pain; his unpredictability makes him dangerous and sometimes strangely effective.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#87</span><span class="character-name">Moon Knight</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Divine Avatar</div>
+<div class="description">A vigilante tied to the Egyptian god Khonshu, Moon Knight combines elite combat skill with dissociative identity complexity and a mission that often blurs justice with obsession. His power set is less about raw might and more about intensity and resilience.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#88</span><span class="character-name">Punisher (Celestial Gear)</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Human (Enhanced)</div>
+<div class="description">A hypothetical/amped Punisher state where Frank Castle wields cosmic-level weaponry (Celestial tech) while still carrying a punishment-first worldview. This is ethically explosive: the most uncompromising vigilante suddenly has godlike tools.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#89</span><span class="character-name">Blue Beetle (Jaime Reyes)</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Alien Scarab Host</div>
+<div class="description">Jaime Reyes bonded to the alien Scarab is a youthful hero with a modular, adaptive combat system: armor, weapons, shields, flight, and rapid analysis. The Scarab can be aggressive and tactical, sometimes pushing lethal solutions.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#90</span><span class="character-name">Green Arrow</span><span class="universe-badge">DC</span></div>
+<div class="entity-class">Vigilante Archer</div>
+<div class="description">Oliver Queen is a peak human archer with tactical intelligence and a strong social conscience. He’s written best as a principled agitator: willing to confront power structures, corruption, and hypocrisy rather than just punching criminals.</div>
+</div>
+
+<div class="character-card">
+<div class="card-header"><span class="rank">#91</span><span class="character-name">Hawkeye</span><span class="universe-badge">Marvel</span></div>
+<div class="entity-class">Marksman</div>
+<div class="description">Clint Barton is the quintessential “skilled human among gods”: an elite marksman with nerve, improvisation, and a stubborn moral core. His strength is reliability under pressure—he performs when cosmic teammates are distracted by their own scale.</div>
+</div>
+
+</div>
+</div>
+
+</div>
+
+<script>
+    const searchBox = document.getElementById('searchBox');
+    const toggleBtn = document.getElementById('toggleDescriptionsBtn');
+    
+    // Search Functionality
+    searchBox.addEventListener('input', function(e) {
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll('.character-card').forEach(card => {
+            const name = card.querySelector('.character-name').textContent.toLowerCase();
+            const desc = card.querySelector('.description').textContent.toLowerCase();
+            if(name.includes(term) || desc.includes(term)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+
+    // Expand/Collapse Functionality
+    document.querySelectorAll('.character-card').forEach(card => {
+        card.addEventListener('click', function() {
+            this.classList.toggle('expanded');
+        });
+    });
+
+    // Toggle All
+    toggleBtn.addEventListener('click', function() {
+        const all = document.querySelectorAll('.character-card');
+        const anyExpanded = document.querySelector('.character-card.expanded');
+        
+        all.forEach(card => {
+            if(anyExpanded) {
+                card.classList.remove('expanded');
+            } else {
+                card.classList.add('expanded');
+            }
+        });
+    });
+</script>
+</body>
+</html>
