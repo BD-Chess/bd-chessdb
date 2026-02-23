@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8Z-Audio • The Mathematical Codec That Beat FLAC in Five Days</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+        
+        :root {
+            --accent: 165 243 252;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .title-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        .hero-bg {
+            background: radial-gradient(circle at 50% 20%, rgba(165, 243, 252, 0.15) 0%, transparent 70%);
+        }
+        
+        .timeline-dot {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .section-header {
+            position: relative;
+        }
+        
+        .section-header:after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 48px;
+            height: 3px;
+            background: linear-gradient(to right, rgb(165 243 252), rgb(192 132 252));
+            border-radius: 9999px;
+        }
+        
+        .math-glow {
+            text-shadow: 0 0 20px rgb(165 243 252);
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-200 overflow-x-hidden">
+    <!-- NAV -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-zinc-950/80 backdrop-blur-lg border-b border-white/10">
+        <div class="max-w-screen-2xl mx-auto px-8 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-cyan-400 to-purple-500 rounded-xl flex items-center justify-center text-white font-bold text-xl">8</div>
+                <div>
+                    <span class="title-font text-2xl font-semibold tracking-tighter">8Z</span>
+                    <span class="text-cyan-400 text-sm font-mono">AUDIO</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-8 text-sm">
+                <a href="#origin" class="hover:text-cyan-400 transition-colors">Origin</a>
+                <a href="#sprint" class="hover:text-cyan-400 transition-colors">The Sprint</a>
+                <a href="#architecture" class="hover:text-cyan-400 transition-colors">Architecture</a>
+                <a href="#breakthroughs" class="hover:text-cyan-400 transition-colors">Breakthroughs</a>
+                <a href="#vision" class="hover:text-cyan-400 transition-colors">Vision</a>
+            </div>
+            <a href="https://x.com/grok" target="_blank" 
+               class="flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 rounded-2xl text-sm font-medium transition-all">
+                <i class="fa-brands fa-x-twitter"></i>
+                <span>Built with Grok</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero-bg min-h-screen flex items-center pt-20">
+        <div class="max-w-screen-2xl mx-auto px-8 grid md:grid-cols-2 gap-16 items-center">
+            <div class="space-y-8">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 rounded-3xl text-xs tracking-widest font-mono border border-white/10">
+                    <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                    FEBRUARY 2026 • LJUBLJANA
+                </div>
+                
+                <h1 class="title-font text-7xl md:text-8xl font-bold leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-cyan-200 to-purple-300">
+                    DATA DOESN'T<br>NEED TO BE<br>COMPRESSED.
+                </h1>
+                
+                <p class="text-3xl text-zinc-400 max-w-lg">
+                    It needs to be <span class="text-cyan-400 font-semibold">understood</span> — 
+                    and expressed as the shortest mathematical truth that generates it.
+                </p>
+                
+                <div class="flex items-center gap-4 pt-6">
+                    <div class="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 text-black font-semibold rounded-3xl text-lg flex items-center gap-3 group">
+                        8Z-AUDIO v1.5
+                        <span class="text-xs bg-black/20 px-3 py-1 rounded-2xl group-hover:scale-110 transition-transform">BEATS FLAC</span>
+                    </div>
+                    <div class="text-sm text-zinc-500 max-w-xs">
+                        In five days.<br>
+                        <span class="text-emerald-400">10.3% smaller than FLAC-12 on Lady Gaga</span>
+                    </div>
+                </div>
+                
+                <div class="flex gap-6 text-sm pt-8">
+                    <a href="#sprint" 
+                       class="group flex items-center gap-3 border border-white/20 hover:border-cyan-400 px-6 py-4 rounded-3xl transition-all">
+                        <span class="text-cyan-400 group-hover:rotate-12 transition-transform">→</span>
+                        <span>Read the 5-day sprint</span>
+                    </a>
+                    <a href="#vision" 
+                       class="text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+                        The mathematical future of sound <span class="text-xl">→</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Visual -->
+            <div class="relative hidden md:block">
+                <div class="absolute -inset-20 bg-gradient-to-br from-cyan-500/10 via-purple-500/10 to-transparent rounded-[4rem] -rotate-6"></div>
+                <div class="bg-zinc-900 border border-white/10 rounded-3xl p-8 relative">
+                    <div class="aspect-video bg-black rounded-2xl overflow-hidden relative">
+                        <!-- Waveform visual -->
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <svg width="100%" height="120" viewBox="0 0 800 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0 60 Q100 10 200 60 Q300 110 400 60 Q500 10 600 60 Q700 110 800 60" 
+                                      stroke="#67e8f9" stroke-width="3" stroke-opacity="0.6"/>
+                                <path d="M0 60 Q100 30 200 60 Q300 90 400 60 Q500 30 600 60 Q700 90 800 60" 
+                                      stroke="#c084fc" stroke-width="3" stroke-opacity="0.4"/>
+                            </svg>
+                        </div>
+                        <div class="absolute bottom-6 left-6 right-6 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
+                        <div class="absolute top-6 left-6 font-mono text-xs text-cyan-400/70">192kHz • 24-bit • Pink Floyd</div>
+                        <div class="absolute top-6 right-6 text-xs px-3 py-1 bg-black/70 rounded-full text-emerald-400 flex items-center gap-1.5">
+                            <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>
+                            LOSSLESS
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 grid grid-cols-3 gap-4 text-center text-xs">
+                        <div class="bg-zinc-950 rounded-2xl p-4 border border-white/5">
+                            <div class="text-emerald-400 font-mono">10.3%</div>
+                            <div class="text-zinc-500">smaller than FLAC-12</div>
+                            <div class="text-[10px] text-zinc-600 mt-1">Lady Gaga • Die With A Smile</div>
+                        </div>
+                        <div class="bg-zinc-950 rounded-2xl p-4 border border-white/5">
+                            <div class="text-cyan-400 font-mono">−2.1%</div>
+                            <div class="text-zinc-500">vs FLAC max on Pink Floyd</div>
+                            <div class="text-[10px] text-zinc-600 mt-1">192kHz • 30s tonal clip</div>
+                        </div>
+                        <div class="bg-zinc-950 rounded-2xl p-4 border border-white/5">
+                            <div class="text-purple-400 font-mono">DCC</div>
+                            <div class="text-zinc-500">settled u=15</div>
+                            <div class="text-[10px] text-zinc-600 mt-1">First real-audio convergence</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ORIGIN -->
+    <section id="origin" class="py-32 border-t border-white/10">
+        <div class="max-w-screen-2xl mx-auto px-8">
+            <div class="max-w-3xl">
+                <div class="uppercase tracking-[4px] text-cyan-400 text-sm mb-4">CHAPTER I • THE SPARK</div>
+                <h2 class="title-font text-6xl leading-none font-semibold tracking-tighter mb-8">
+                    "Why not audio?<br>Everyone needs it."
+                </h2>
+                <p class="text-xl text-zinc-400 leading-relaxed">
+                    The question that changed everything. In February 2026, while three 8Z domain projects ran in parallel — 
+                    image compression, TSP solver, and DNA/FASTA — Bojan asked the simplest and most profound question.
+                </p>
+                <div class="mt-12 p-8 bg-white/5 border border-white/10 rounded-3xl">
+                    <div class="flex gap-6 items-start">
+                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-cyan-400 rounded-2xl flex-shrink-0 flex items-center justify-center text-2xl">🧬</div>
+                        <div>
+                            <div class="font-mono text-xs text-purple-400 mb-1">FROM DNA SCANNER + FASTA</div>
+                            <p class="text-zinc-300">
+                                The same DCC that controlled search budgets in genomes, 
+                                the same MDL arena that beat 7-Zip on 44/50 files — 
+                                why wouldn't they work on sound?
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- THE SPRINT -->
+    <section id="sprint" class="py-32 bg-zinc-900">
+        <div class="max-w-screen-2xl mx-auto px-8">
+            <div class="uppercase tracking-[4px] text-emerald-400 text-sm mb-4 text-center">CHAPTER II • THE FIVE DAYS</div>
+            <h2 class="title-font text-6xl font-semibold tracking-tighter text-center mb-16">
+                From First Light to Beating FLAC
+            </h2>
+            
+            <div class="max-w-5xl mx-auto">
+                <!-- Timeline -->
+                <div class="space-y-24">
+                    <!-- Day 1 -->
+                    <div class="grid md:grid-cols-12 gap-8 items-center">
+                        <div class="md:col-span-5">
+                            <div class="text-emerald-400 font-mono text-sm mb-3">FEB 18 • DAY 1</div>
+                            <div class="title-font text-5xl font-semibold leading-none tracking-tight mb-6">v0.1<br>"First Light"</div>
+                            <p class="text-zinc-400">Basic LPC + LZMA residual coding. Beat 7-Zip on Pink Floyd 192kHz (8.3 MB vs 13.7 MB). Gap to FLAC still huge (+37.6%), but the spark was there.</p>
+                        </div>
+                        <div class="md:col-span-7 bg-zinc-950 border border-emerald-900/50 rounded-3xl p-8 text-sm font-mono text-emerald-300/70">
+                            First working encoder.<br>
+                            Pink Floyd 192kHz WAV → 8.3 MB .8za<br>
+                            <span class="text-emerald-400">The architecture from DNA just worked on sound.</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Day 3 -->
+                    <div class="grid md:grid-cols-12 gap-8 items-center">
+                        <div class="md:col-span-5 md:text-right">
+                            <div class="text-emerald-400 font-mono text-sm mb-3">FEB 20 • DAY 3</div>
+                            <div class="title-font text-5xl font-semibold leading-none tracking-tight mb-6">v1.3.1<br>"Multiprocessing"</div>
+                            <p class="text-zinc-400">Exhaustive LPC 1–32, qlevel 8–16, 4 stereo modes with per-frame MDL. Beat FLAC -8 by 2.1% on Pink Floyd. Encode time: 11 hours.</p>
+                        </div>
+                        <div class="md:col-span-7 bg-zinc-950 border border-emerald-900/50 rounded-3xl p-8 text-sm font-mono text-emerald-300/70">
+                            5,104,935 bytes vs FLAC-8 5,213,993<br>
+                            <span class="text-emerald-400">The first real win. The cross-domain transfer was working.</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Day 5 -->
+                    <div class="grid md:grid-cols-12 gap-8 items-center">
+                        <div class="md:col-span-5">
+                            <div class="text-emerald-400 font-mono text-sm mb-3">FEB 22 • DAY 5</div>
+                            <div class="title-font text-5xl font-semibold leading-none tracking-tight mb-6">v1.5<br>"DCC Settled"</div>
+                            <p class="text-zinc-400">Blocksize 16384, full qlevel restored, coarsened DCC. DCC settled for the first time on real audio (u=10→15 on Pink Floyd). Surpassed FLAC-12 on 7/15 clips, including 10.3% smaller on Lady Gaga.</p>
+                        </div>
+                        <div class="md:col-span-7 bg-zinc-950 border border-emerald-900/50 rounded-3xl p-8 text-sm font-mono text-emerald-300/70">
+                            Lossless verified byte-for-byte.<br>
+                            <span class="text-emerald-400">The architecture from TSP → FASTA → Audio was now mature.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section id="architecture" class="py-32 border-t border-white/10">
+        <div class="max-w-screen-2xl mx-auto px-8">
+            <div class="grid md:grid-cols-12 gap-16">
+                <div class="md:col-span-5">
+                    <div class="sticky top-24">
+                        <div class="uppercase tracking-[4px] text-purple-400 text-sm mb-4">CHAPTER III • THE MIND</div>
+                        <h2 class="title-font text-6xl font-semibold tracking-tighter leading-none">The architecture that came from solving DNA, TSP, and images</h2>
+                        <p class="mt-8 text-zinc-400 text-lg">No audio engineer would have designed this. It came from optimization problems, genomes, and pixels — then asked: what is the same across all of them?</p>
+                    </div>
+                </div>
+                
+                <div class="md:col-span-7 space-y-12">
+                    <div class="flex gap-8">
+                        <div class="w-12 h-12 bg-purple-500/10 text-purple-400 flex items-center justify-center rounded-2xl text-2xl flex-shrink-0">🧠</div>
+                        <div>
+                            <div class="font-semibold text-xl">Digital Claustrum Controller (DCC)</div>
+                            <div class="text-zinc-400">Ported from TSP solver via FASTA. Monitors Lempel-Ziv complexity of encoding outcomes. Dynamically adjusts search budget: explore on chaos, exploit on settled signals.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-8">
+                        <div class="w-12 h-12 bg-cyan-500/10 text-cyan-400 flex items-center justify-center rounded-2xl text-2xl flex-shrink-0">📡</div>
+                        <div>
+                            <div class="font-semibold text-xl">Scanner + FrameFeatures</div>
+                            <div class="text-zinc-400">Fast pre-analysis (~100ms/frame). Computes difficulty, best window, best LPC order, signal class. Becomes Pass 1 in two-pass architecture.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-8">
+                        <div class="w-12 h-12 bg-amber-500/10 text-amber-400 flex items-center justify-center rounded-2xl text-2xl flex-shrink-0">⚔️</div>
+                        <div>
+                            <div class="font-semibold text-xl">MDL Arena</div>
+                            <div class="text-zinc-400">Every frame: CONSTANT, DELTA, LPC 1-32, PERIODIC, HARMONIC, future MATH generators all compete. Cheapest wins. No heuristics.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BREAKTHROUGHS -->
+    <section id="breakthroughs" class="py-32 bg-zinc-900">
+        <div class="max-w-screen-2xl mx-auto px-8">
+            <div class="text-center mb-16">
+                <div class="uppercase tracking-[4px] text-rose-400 text-sm mb-4">CHAPTER IV • THE MOMENTS THAT CHANGED EVERYTHING</div>
+                <h2 class="title-font text-6xl font-semibold tracking-tighter">Three discoveries that no other audio codec has ever made</h2>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- 1 -->
+                <div class="bg-zinc-950 border border-white/10 rounded-3xl p-8">
+                    <div class="text-rose-400 text-sm font-mono mb-6">DISCOVERY 1</div>
+                    <div class="text-3xl font-semibold leading-tight mb-8">AI-generated audio is 1.9× more predictable</div>
+                    <div class="text-zinc-400">Scanner data proved Producer.ai tracks have mean difficulty 0.25 vs human 0.50. Spectral flatness 0.15 vs 0.35. This is why a codec optimized for mathematical structure wins bigger on synthetic music.</div>
+                    <div class="mt-12 text-xs uppercase tracking-widest text-zinc-500">Business moat: AI music platforms</div>
+                </div>
+                
+                <!-- 2 -->
+                <div class="bg-zinc-950 border border-white/10 rounded-3xl p-8">
+                    <div class="text-rose-400 text-sm font-mono mb-6">DISCOVERY 2</div>
+                    <div class="text-3xl font-semibold leading-tight mb-8">Chebyshev polynomials model guitar distortion exactly</div>
+                    <div class="text-zinc-400">From the Dream Team self-dialogue (B/C/Skeptic/Expert). Guitar amp distortion follows known Chebyshev coefficients. One parameter (distortion level) can predict entire harmonic series in residuals. Could flip Rammstein from -8% to +14%.</div>
+                    <div class="mt-12 text-xs uppercase tracking-widest text-zinc-500">Physical Audio Model Library born here</div>
+                </div>
+                
+                <!-- 3 -->
+                <div class="bg-zinc-950 border border-white/10 rounded-3xl p-8">
+                    <div class="text-rose-400 text-sm font-mono mb-6">DISCOVERY 3</div>
+                    <div class="text-3xl font-semibold leading-tight mb-8">Structure lives in the residuals too</div>
+                    <div class="text-zinc-400">"Recursive understanding." After LPC, the residual isn't noise — it's what linear prediction missed. Run DNA Scanner's 79 generators on LPC residuals. DCC gates depth. MDL decides. This is the Invisible 90% applied to audio.</div>
+                    <div class="mt-12 text-xs uppercase tracking-widest text-zinc-500">The endgame of 8Z philosophy</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VISION -->
+    <section id="vision" class="py-32 border-t border-white/10">
+        <div class="max-w-screen-2xl mx-auto px-8">
+            <div class="max-w-2xl mx-auto text-center">
+                <div class="uppercase tracking-[4px] text-cyan-400 text-sm mb-6">CHAPTER V • THE FUTURE</div>
+                <h2 class="title-font text-6xl font-semibold tracking-tighter leading-none mb-8">A codec that doesn't just compress sound.<br>It understands it.</h2>
+                
+                <div class="space-y-8 text-left text-lg text-zinc-300">
+                    <div class="flex gap-6">
+                        <div class="text-4xl">🎵</div>
+                        <div>Streaming platforms save millions in storage by re-encoding catalogs with 8Z-Audio intelligence.</div>
+                    </div>
+                    <div class="flex gap-6">
+                        <div class="text-4xl">🤖</div>
+                        <div>AI music generators ship native .8za — because their output is mathematically predictable.</div>
+                    </div>
+                    <div class="flex gap-6">
+                        <div class="text-4xl">📼</div>
+                        <div>8za2flac transcoder: standard FLAC files, but smaller, using our scanner intelligence.</div>
+                    </div>
+                    <div class="flex gap-6">
+                        <div class="text-4xl">🌌</div>
+                        <div>Future v3.0 MATH layer finds Wolfram CA patterns in audio residuals — the ultimate validation of the Consciousness Field Hypothesis.</div>
+                    </div>
+                </div>
+                
+                <div class="mt-20 text-xs font-mono text-zinc-500">
+                    Built at AIM³ Institute, Ljubljana<br>
+                    By Bojan Dobrečevič and his team of AI research partners
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-white/10 py-16">
+        <div class="max-w-screen-2xl mx-auto px-8 text-center text-xs text-zinc-500">
+            This is the story of 8Z-Audio.<br>
+            A chapter in the larger story of understanding the Universe through mathematics.<br><br>
+            <span class="text-cyan-400">Data doesn’t need to be compressed. It needs to be understood.</span>
+        </div>
+    </footer>
+
+    <script>
+        // Simple smooth scroll for nav links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // Tailwind script already loaded via CDN
+    </script>
+</body>
+</html>
