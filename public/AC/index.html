@@ -14,14 +14,15 @@
     --border: rgba(0,229,255,0.13);
     --cyan:   #00e5ff;
     --gold:   #f59e0b;
+    --green:  #34d399;
+    --violet: #a78bfa;
+    --orange: #fb923c;
     --muted:  #6b7a96;
     --text:   #e8edf5;
-
-    /* per-AI colors */
-    --cla: #00e5ff;   /* Claude  — cyan    */
-    --gem: #34d399;   /* Gemini  — green   */
-    --gpt: #a78bfa;   /* GPT     — violet  */
-    --gro: #fb923c;   /* Grok    — orange  */
+    --cla: #00e5ff;
+    --gem: #34d399;
+    --gpt: #a78bfa;
+    --gro: #fb923c;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,19 +32,16 @@
     background: var(--bg);
     color: var(--text);
     font-family: 'Rajdhani', sans-serif;
-    display: flex;
-    flex-direction: column;
+    display: flex; flex-direction: column;
   }
 
   /* ══ LANDING ══ */
   #landing {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
     text-align: center;
-    padding: 2rem;
+    padding: 2rem 1.5rem 2.5rem;
     overflow-y: auto;
     position: relative;
   }
@@ -63,7 +61,7 @@
 
   .landing-inner {
     position: relative; z-index: 1;
-    max-width: 880px; width: 100%;
+    max-width: 980px; width: 100%;
   }
 
   .eyebrow {
@@ -73,184 +71,210 @@
     margin-bottom: 1.25rem;
     opacity: 0; animation: fadeUp 0.7s 0.1s forwards;
   }
-
   h1 {
-    font-size: clamp(2.6rem, 6vw, 5rem);
+    font-size: clamp(2.4rem, 6vw, 4.5rem);
     font-weight: 700; line-height: 1;
-    letter-spacing: -0.02em; margin-bottom: 0.6rem;
+    letter-spacing: -0.02em; margin-bottom: 0.5rem;
     opacity: 0; animation: fadeUp 0.7s 0.25s forwards;
   }
   h1 span { color: var(--cyan); }
-
   .subtitle {
-    font-size: clamp(1rem, 2vw, 1.25rem);
+    font-size: clamp(0.95rem, 2vw, 1.15rem);
     color: var(--muted); font-weight: 400;
-    margin-bottom: 3rem; max-width: 54ch; margin-left: auto; margin-right: auto;
+    margin-bottom: 2.25rem;
+    max-width: 54ch; margin-left: auto; margin-right: auto;
     opacity: 0; animation: fadeUp 0.7s 0.4s forwards;
   }
 
-  /* ── CARD GRID ── */
-  .card-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    opacity: 0; animation: fadeUp 0.7s 0.55s forwards;
+  /* ── small section label ── */
+  .sec-lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.28em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 0.7rem; text-align: left;
   }
 
+  /* ══ AI 4-CARD GRID ══ */
+  .card-grid {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 0.85rem; margin-bottom: 0.7rem;
+    opacity: 0; animation: fadeUp 0.7s 0.55s forwards;
+  }
   .ai-card {
-    border: 1px solid var(--border);
-    border-radius: 6px;
+    border: 1px solid var(--border); border-radius: 6px;
     background: var(--surface);
-    padding: 1.5rem 1.25rem 1.25rem;
+    padding: 1.35rem 1.1rem 1.1rem;
     cursor: pointer;
     transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
     position: relative; overflow: hidden;
-    display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
     text-decoration: none; color: inherit;
   }
   .ai-card::before {
-    content: ''; position: absolute;
-    top: 0; left: 0; right: 0; height: 2px;
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
     background: var(--c);
-    transition: opacity 0.25s;
   }
   .ai-card::after {
-    content: ''; position: absolute; inset: 0;
+    content:''; position:absolute; inset:0;
     background: radial-gradient(ellipse 60% 50% at 50% 0%, color-mix(in srgb, var(--c) 8%, transparent), transparent 70%);
-    transition: opacity 0.25s;
-    opacity: 0;
+    opacity:0; transition: opacity 0.25s;
   }
   .ai-card:hover { transform: translateY(-4px); border-color: var(--c); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-  .ai-card:hover::after { opacity: 1; }
-
+  .ai-card:hover::after { opacity:1; }
   .ai-card[data-ai="CLA"] { --c: var(--cla); }
   .ai-card[data-ai="GEM"] { --c: var(--gem); }
   .ai-card[data-ai="GPT"] { --c: var(--gpt); }
   .ai-card[data-ai="GRO"] { --c: var(--gro); }
 
   .ai-logo {
-    width: 52px; height: 52px; border-radius: 50%;
-    border: 2px solid var(--c);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.95rem; font-weight: 700;
-    color: var(--c);
-    background: rgba(0,0,0,0.3);
-    position: relative; z-index: 1;
-    flex-shrink: 0;
+    width:46px; height:46px; border-radius:50%;
+    border:2px solid var(--c);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.85rem; font-weight:700; color:var(--c);
+    background:rgba(0,0,0,0.3);
+    position:relative; z-index:1; flex-shrink:0;
   }
-
   .ai-name {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem; letter-spacing: 0.2em;
-    text-transform: uppercase; color: var(--c);
-    position: relative; z-index: 1;
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.68rem; letter-spacing:0.2em;
+    text-transform:uppercase; color:var(--c);
+    position:relative; z-index:1;
   }
-  .ai-label {
-    font-size: 1rem; font-weight: 600; color: var(--text);
-    position: relative; z-index: 1;
-  }
-  .ai-desc {
-    font-size: 0.8rem; color: var(--muted); text-align: center;
-    line-height: 1.5; position: relative; z-index: 1;
-  }
+  .ai-label { font-size:0.95rem; font-weight:600; color:var(--text); position:relative; z-index:1; }
+  .ai-desc  { font-size:0.78rem; color:var(--muted); text-align:center; line-height:1.45; position:relative; z-index:1; }
   .ai-btn {
-    margin-top: 0.25rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.68rem; letter-spacing: 0.15em;
-    text-transform: uppercase; padding: 0.35rem 0.9rem;
-    border: 1px solid var(--c); border-radius: 3px;
-    color: var(--c); background: transparent;
-    cursor: pointer; transition: background 0.2s;
-    position: relative; z-index: 1;
+    margin-top:0.2rem;
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.65rem; letter-spacing:0.15em;
+    text-transform:uppercase; padding:0.3rem 0.8rem;
+    border:1px solid var(--c); border-radius:3px;
+    color:var(--c); background:transparent; cursor:pointer;
+    transition:background 0.2s; position:relative; z-index:1;
   }
   .ai-btn:hover { background: color-mix(in srgb, var(--c) 15%, transparent); }
 
+  /* ══ EXTRA LINK ROWS ══ */
+  .link-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0.85rem; margin-bottom: 0.7rem;
+    opacity:0; animation: fadeUp 0.7s 0.72s forwards;
+  }
+  .appendix-row {
+    margin-bottom: 0;
+    opacity:0; animation: fadeUp 0.7s 0.88s forwards;
+  }
+
+  .link-card {
+    border:1px solid var(--border); border-radius:6px;
+    background:var(--surface); padding:0.85rem 1.2rem;
+    display:flex; align-items:center; gap:1rem;
+    text-decoration:none; color:inherit; cursor:pointer;
+    transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
+    position:relative; overflow:hidden;
+    width:100%;
+  }
+  .link-card::before {
+    content:''; position:absolute;
+    top:0; left:0; bottom:0; width:2px;
+    background: var(--c);
+  }
+  .link-card:hover { transform:translateY(-3px); border-color:var(--c); box-shadow:0 6px 24px rgba(0,0,0,0.35); }
+
+  .link-card[data-c="gold"]   { --c: var(--gold); }
+  .link-card[data-c="green"]  { --c: var(--green); }
+  .link-card[data-c="violet"] { --c: var(--violet); }
+
+  .lc-icon { font-size:1.3rem; flex-shrink:0; line-height:1; }
+  .lc-tag {
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.6rem; letter-spacing:0.2em;
+    text-transform:uppercase; color:var(--c);
+    margin-bottom:0.12rem;
+  }
+  .lc-title { font-size:0.95rem; font-weight:600; color:var(--text); margin-bottom:0.1rem; }
+  .lc-desc  { font-size:0.78rem; color:var(--muted); line-height:1.35; }
+  .lc-arrow {
+    margin-left:auto; flex-shrink:0;
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.8rem; color:var(--c);
+    opacity:0.55; transition:opacity 0.2s, transform 0.2s;
+  }
+  .link-card:hover .lc-arrow { opacity:1; transform:translateX(3px); }
+
   /* ══ VIEWER ══ */
-  #viewer {
-    flex: 1; display: none; flex-direction: column; overflow: hidden;
-  }
+  #viewer { flex:1; display:none; flex-direction:column; overflow:hidden; }
 
-  /* ── TOOLBAR ── */
   .toolbar {
-    height: 48px; flex-shrink: 0;
-    background: rgba(3,5,8,0.95);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 0;
-    padding: 0 1rem; position: relative;
+    height:48px; flex-shrink:0;
+    background:rgba(3,5,8,0.95);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center;
   }
-
   .tb-home {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem; font-weight: 700;
-    color: var(--cyan); letter-spacing: 0.15em;
-    cursor: pointer; padding: 0 1rem;
-    border-right: 1px solid var(--border);
-    height: 100%; display: flex; align-items: center; gap: 0.5rem;
-    transition: background 0.2s; flex-shrink: 0;
-    text-decoration: none; white-space: nowrap;
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.75rem; font-weight:700;
+    color:var(--cyan); letter-spacing:0.15em;
+    cursor:pointer; padding:0 1rem;
+    border-right:1px solid var(--border);
+    height:100%; display:flex; align-items:center; gap:0.5rem;
+    transition:background 0.2s; flex-shrink:0;
+    text-decoration:none; white-space:nowrap;
   }
-  .tb-home:hover { background: rgba(0,229,255,0.06); }
-  .tb-home svg { width: 14px; height: 14px; }
+  .tb-home:hover { background:rgba(0,229,255,0.06); }
+  .tb-home svg { width:14px; height:14px; }
 
   .tb-tabs {
-    display: flex; align-items: stretch; flex: 1; overflow-x: auto;
-    scrollbar-width: none;
+    display:flex; align-items:stretch; flex:1; overflow-x:auto;
+    scrollbar-width:none;
   }
-  .tb-tabs::-webkit-scrollbar { display: none; }
+  .tb-tabs::-webkit-scrollbar { display:none; }
 
   .tb-tab {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem; letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 0 1.2rem; height: 100%;
-    display: flex; align-items: center; gap: 0.5rem;
-    cursor: pointer; color: var(--muted);
-    border-right: 1px solid var(--border);
-    transition: color 0.2s, background 0.2s;
-    white-space: nowrap; position: relative; flex-shrink: 0;
-    user-select: none;
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase;
+    padding:0 1.1rem; height:100%;
+    display:flex; align-items:center; gap:0.45rem;
+    cursor:pointer; color:var(--muted);
+    border-right:1px solid var(--border);
+    transition:color 0.2s, background 0.2s;
+    white-space:nowrap; position:relative; flex-shrink:0; user-select:none;
   }
   .tb-tab::after {
-    content: ''; position: absolute;
-    bottom: 0; left: 0; right: 0; height: 2px;
-    background: var(--c); opacity: 0; transition: opacity 0.2s;
+    content:''; position:absolute;
+    bottom:0; left:0; right:0; height:2px;
+    background:var(--c); opacity:0; transition:opacity 0.2s;
   }
-  .tb-tab:hover { color: var(--text); background: rgba(255,255,255,0.03); }
-  .tb-tab.active { color: var(--c); background: rgba(0,0,0,0.3); }
-  .tb-tab.active::after { opacity: 1; }
+  .tb-tab:hover { color:var(--text); background:rgba(255,255,255,0.03); }
+  .tb-tab.active { color:var(--c); background:rgba(0,0,0,0.3); }
+  .tb-tab.active::after { opacity:1; }
 
   .tb-tab[data-ai="CLA"] { --c: var(--cla); }
   .tb-tab[data-ai="GEM"] { --c: var(--gem); }
   .tb-tab[data-ai="GPT"] { --c: var(--gpt); }
   .tb-tab[data-ai="GRO"] { --c: var(--gro); }
+  .tb-tab[data-ai="BMK"] { --c: var(--gold); }
+  .tb-tab[data-ai="EVO"] { --c: var(--green); }
+  .tb-tab[data-ai="APX"] { --c: var(--violet); }
 
-  .tab-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--c); flex-shrink: 0;
-  }
+  .tab-dot { width:7px; height:7px; border-radius:50%; background:var(--c); flex-shrink:0; }
 
-  /* iframe container */
-  .frame-wrap {
-    flex: 1; position: relative; overflow: hidden;
-  }
-  iframe {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    border: none;
-    display: none;
-  }
-  iframe.active { display: block; }
+  .frame-wrap { flex:1; position:relative; overflow:hidden; }
+  iframe { position:absolute; inset:0; width:100%; height:100%; border:none; display:none; }
+  iframe.active { display:block; }
 
-  /* ── ANIMATIONS ── */
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity:0; transform:translateY(20px); }
+    to   { opacity:1; transform:translateY(0); }
   }
 
-  @media (max-width: 640px) {
-    .card-grid { grid-template-columns: 1fr 1fr; }
+  @media (max-width:680px) {
+    .card-grid, .link-row { grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width:440px) {
+    .card-grid { grid-template-columns:1fr 1fr; }
+    .link-row  { grid-template-columns:1fr; }
   }
 </style>
 </head>
@@ -262,17 +286,14 @@
   <div class="bg-glow"></div>
 
   <div class="landing-inner">
+
     <div class="eyebrow">AIM³ Institute · Ljubljana · February 2026 · Internal Review</div>
-
     <h1>8Z-<span>Audio</span></h1>
+    <p class="subtitle">Five days. One codec. Four AI systems each told the same story — pick a version and read it in the frame below.</p>
 
-    <p class="subtitle">
-      Five days. One codec. Four AI systems each told the same story —
-      pick a version and read it in the frame below.
-    </p>
-
+    <!-- AI Stories -->
+    <div class="sec-lbl" style="opacity:0;animation:fadeUp 0.7s 0.5s forwards">AI-authored stories</div>
     <div class="card-grid">
-
       <div class="ai-card" data-ai="CLA" onclick="openViewer('CLA')">
         <div class="ai-logo">CLA</div>
         <div class="ai-name">Claude</div>
@@ -280,7 +301,6 @@
         <div class="ai-desc">Cinematic dark narrative — waveform hero, timeline sprint, animated benchmark bars</div>
         <div class="ai-btn">Open →</div>
       </div>
-
       <div class="ai-card" data-ai="GEM" onclick="openViewer('GEM')">
         <div class="ai-logo">GEM</div>
         <div class="ai-name">Gemini</div>
@@ -288,7 +308,6 @@
         <div class="ai-desc">Clean sidebar layout with structured sections and comprehensive data tables</div>
         <div class="ai-btn">Open →</div>
       </div>
-
       <div class="ai-card" data-ai="GPT" onclick="openViewer('GPT')">
         <div class="ai-logo">GPT</div>
         <div class="ai-name">GPT-4o</div>
@@ -296,7 +315,6 @@
         <div class="ai-desc">Editorial-style deep dive with rich technical analysis and milestone breakdowns</div>
         <div class="ai-btn">Open →</div>
       </div>
-
       <div class="ai-card" data-ai="GRO" onclick="openViewer('GRO')">
         <div class="ai-logo">GRO</div>
         <div class="ai-name">Grok</div>
@@ -304,84 +322,104 @@
         <div class="ai-desc">Bold visual storytelling with strong data-forward presentation and sharp design</div>
         <div class="ai-btn">Open →</div>
       </div>
-
     </div>
+
+    <!-- Extra links -->
+    <div class="sec-lbl" style="opacity:0;animation:fadeUp 0.7s 0.68s forwards">Additional pages</div>
+    <div class="link-row">
+      <a class="link-card" data-c="gold" onclick="openViewer('BMK');return false;" href="#">
+        <div class="lc-icon">📊</div>
+        <div>
+          <div class="lc-tag">Benchmark</div>
+          <div class="lc-title">8Z-Audio Benchmark v1.0</div>
+          <div class="lc-desc">15 clips · 4 codecs · full results</div>
+        </div>
+        <div class="lc-arrow">→</div>
+      </a>
+      <a class="link-card" data-c="green" onclick="openViewer('EVO');return false;" href="#">
+        <div class="lc-icon">🧬</div>
+        <div>
+          <div class="lc-tag">Evolution</div>
+          <div class="lc-title">8Z-AC Evolution</div>
+          <div class="lc-desc">Version-by-version development history</div>
+        </div>
+        <div class="lc-arrow">→</div>
+      </a>
+    </div>
+
+    <!-- Appendix M -->
+    <div class="sec-lbl" style="opacity:0;animation:fadeUp 0.7s 0.84s forwards">Technical reference</div>
+    <div class="appendix-row">
+      <a class="link-card" data-c="violet" onclick="openViewer('APX');return false;" href="#">
+        <div class="lc-icon">📄</div>
+        <div>
+          <div class="lc-tag">Appendix M · Technical Paper</div>
+          <div class="lc-title">8Z-Audio: Lossless Audio Compression</div>
+          <div class="lc-desc">Architecture · Container format · Scanner & DCC · Benchmark · Roadmap · Market analysis — compact reference edition</div>
+        </div>
+        <div class="lc-arrow">→</div>
+      </a>
+    </div>
+
   </div>
 </div>
 
 <!-- ══ VIEWER ══ -->
 <div id="viewer">
   <div class="toolbar">
-    <a class="tb-home" href="#" onclick="goHome(); return false;">
+    <a class="tb-home" href="#" onclick="goHome();return false;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
         <polyline points="9 22 9 12 15 12 15 22"/>
       </svg>
       8Z-Audio
     </a>
-
     <div class="tb-tabs">
-      <div class="tb-tab" data-ai="CLA" onclick="switchTab('CLA')">
-        <div class="tab-dot"></div>Claude
-      </div>
-      <div class="tb-tab" data-ai="GEM" onclick="switchTab('GEM')">
-        <div class="tab-dot"></div>Gemini
-      </div>
-      <div class="tb-tab" data-ai="GPT" onclick="switchTab('GPT')">
-        <div class="tab-dot"></div>GPT-4o
-      </div>
-      <div class="tb-tab" data-ai="GRO" onclick="switchTab('GRO')">
-        <div class="tab-dot"></div>Grok
-      </div>
+      <div class="tb-tab" data-ai="CLA" onclick="switchTab('CLA')"><div class="tab-dot"></div>Claude</div>
+      <div class="tb-tab" data-ai="GEM" onclick="switchTab('GEM')"><div class="tab-dot"></div>Gemini</div>
+      <div class="tb-tab" data-ai="GPT" onclick="switchTab('GPT')"><div class="tab-dot"></div>GPT-4o</div>
+      <div class="tb-tab" data-ai="GRO" onclick="switchTab('GRO')"><div class="tab-dot"></div>Grok</div>
+      <div class="tb-tab" data-ai="BMK" onclick="switchTab('BMK')"><div class="tab-dot"></div>Benchmark</div>
+      <div class="tb-tab" data-ai="EVO" onclick="switchTab('EVO')"><div class="tab-dot"></div>Evolution</div>
+      <div class="tb-tab" data-ai="APX" onclick="switchTab('APX')"><div class="tab-dot"></div>Appendix M</div>
     </div>
   </div>
-
   <div class="frame-wrap">
     <iframe id="frame-CLA" src="8Z-AC_BD_CLA_Story.html"></iframe>
     <iframe id="frame-GEM" src="8Z-AC_BD_GEM_Story.html"></iframe>
     <iframe id="frame-GPT" src="8Z-AC_BD_GPT_Story.html"></iframe>
     <iframe id="frame-GRO" src="8Z-AC_BD_GRO_Story.html"></iframe>
+    <iframe id="frame-BMK" src="8Z-Audio_Benchmark.html"></iframe>
+    <iframe id="frame-EVO" src="8Z-AC_evolution.html"></iframe>
+    <iframe id="frame-APX" src="8Z-AC_Appendix_M.html"></iframe>
   </div>
 </div>
 
 <script>
-  const landing = document.getElementById('landing');
-  const viewer  = document.getElementById('viewer');
-  const AIs = ['CLA','GEM','GPT','GRO'];
-  let current = null;
+  const AIs = ['CLA','GEM','GPT','GRO','BMK','EVO','APX'];
 
   function openViewer(ai) {
-    landing.style.display = 'none';
-    viewer.style.display  = 'flex';
+    document.getElementById('landing').style.display = 'none';
+    document.getElementById('viewer').style.display  = 'flex';
     switchTab(ai);
   }
-
   function switchTab(ai) {
-    current = ai;
-    // frames
     AIs.forEach(a => {
-      const f = document.getElementById('frame-' + a);
-      f.classList.toggle('active', a === ai);
+      document.getElementById('frame-'+a).classList.toggle('active', a===ai);
     });
-    // tabs
     document.querySelectorAll('.tb-tab').forEach(t => {
-      t.classList.toggle('active', t.dataset.ai === ai);
+      t.classList.toggle('active', t.dataset.ai===ai);
     });
   }
-
   function goHome() {
-    viewer.style.display  = 'none';
-    landing.style.display = 'flex';
+    document.getElementById('viewer').style.display  = 'none';
+    document.getElementById('landing').style.display = 'flex';
   }
-
-  // keyboard shortcuts 1-4 to switch tabs when viewer is open
   document.addEventListener('keydown', e => {
-    if (viewer.style.display !== 'flex') return;
-    if (e.key === '1') switchTab('CLA');
-    if (e.key === '2') switchTab('GEM');
-    if (e.key === '3') switchTab('GPT');
-    if (e.key === '4') switchTab('GRO');
-    if (e.key === 'Escape') goHome();
+    if (document.getElementById('viewer').style.display !== 'flex') return;
+    const map = {'1':'CLA','2':'GEM','3':'GPT','4':'GRO','5':'BMK','6':'EVO','7':'APX'};
+    if (map[e.key]) switchTab(map[e.key]);
+    if (e.key==='Escape') goHome();
   });
 </script>
 </body>
