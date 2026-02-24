@@ -17,7 +17,6 @@
     --green:  #34d399;
     --violet: #a78bfa;
     --orange: #fb923c;
-    --rose:   #ff6b8a;
     --muted:  #6b7a96;
     --text:   #e8edf5;
     --cla: #00e5ff;
@@ -87,13 +86,12 @@
     opacity: 0; animation: fadeUp 0.7s 0.4s forwards;
   }
 
-  /* ── section label ── */
+  /* ── small section label ── */
   .sec-lbl {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.6rem; letter-spacing: 0.28em;
     text-transform: uppercase; color: var(--muted);
     margin-bottom: 0.7rem; text-align: left;
-    opacity: 0;
   }
 
   /* ══ AI 4-CARD GRID ══ */
@@ -156,11 +154,15 @@
   }
   .ai-btn:hover { background: color-mix(in srgb, var(--c) 15%, transparent); }
 
-  /* ══ LINK CARDS ══ */
+  /* ══ EXTRA LINK ROWS ══ */
   .link-row {
     display: grid; grid-template-columns: 1fr 1fr;
     gap: 0.85rem; margin-bottom: 0.7rem;
-    opacity: 0;
+    opacity:0; animation: fadeUp 0.7s 0.72s forwards;
+  }
+  .appendix-row {
+    margin-bottom: 0;
+    opacity:0; animation: fadeUp 0.7s 0.88s forwards;
   }
 
   .link-card {
@@ -169,7 +171,8 @@
     display:flex; align-items:center; gap:1rem;
     text-decoration:none; color:inherit; cursor:pointer;
     transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
-    position:relative; overflow:hidden; width:100%;
+    position:relative; overflow:hidden;
+    width:100%;
   }
   .link-card::before {
     content:''; position:absolute;
@@ -181,13 +184,13 @@
   .link-card[data-c="gold"]   { --c: var(--gold); }
   .link-card[data-c="green"]  { --c: var(--green); }
   .link-card[data-c="violet"] { --c: var(--violet); }
-  .link-card[data-c="rose"]   { --c: var(--rose); }
 
   .lc-icon { font-size:1.3rem; flex-shrink:0; line-height:1; }
   .lc-tag {
     font-family:'JetBrains Mono',monospace;
     font-size:0.6rem; letter-spacing:0.2em;
-    text-transform:uppercase; color:var(--c); margin-bottom:0.12rem;
+    text-transform:uppercase; color:var(--c);
+    margin-bottom:0.12rem;
   }
   .lc-title { font-size:0.95rem; font-weight:600; color:var(--text); margin-bottom:0.1rem; }
   .lc-desc  { font-size:0.78rem; color:var(--muted); line-height:1.35; }
@@ -198,12 +201,6 @@
     opacity:0.55; transition:opacity 0.2s, transform 0.2s;
   }
   .link-card:hover .lc-arrow { opacity:1; transform:translateX(3px); }
-
-  /* full-width single card row */
-  .link-row-single {
-    margin-bottom: 0.7rem;
-    opacity: 0;
-  }
 
   /* ══ VIEWER ══ */
   #viewer { flex:1; display:none; flex-direction:column; overflow:hidden; }
@@ -260,7 +257,6 @@
   .tb-tab[data-ai="BMK"] { --c: var(--gold); }
   .tb-tab[data-ai="EVO"] { --c: var(--green); }
   .tb-tab[data-ai="APX"] { --c: var(--violet); }
-  .tb-tab[data-ai="MPN"] { --c: var(--rose); }
 
   .tab-dot { width:7px; height:7px; border-radius:50%; background:var(--c); flex-shrink:0; }
 
@@ -295,8 +291,8 @@
     <h1>8Z-<span>Audio</span></h1>
     <p class="subtitle">Five days. One codec. Four AI systems each told the same story — pick a version and read it in the frame below.</p>
 
-    <!-- ── AI Stories ── -->
-    <div class="sec-lbl" style="animation: fadeUp 0.7s 0.5s forwards;">AI-authored stories</div>
+    <!-- AI Stories -->
+    <div class="sec-lbl" style="opacity:0;animation:fadeUp 0.7s 0.5s forwards">AI-authored stories</div>
     <div class="card-grid">
       <div class="ai-card" data-ai="CLA" onclick="openViewer('CLA')">
         <div class="ai-logo">CLA</div>
@@ -328,10 +324,9 @@
       </div>
     </div>
 
-    <!-- ── Additional pages ── -->
-    <div style="height: 3rem;"></div>
-    <div class="sec-lbl" style="animation: fadeUp 0.7s 0.68s forwards;">Additional pages</div>
-    <div class="link-row" style="animation: fadeUp 0.7s 0.72s forwards;">
+    <!-- Extra links -->
+    <div class="sec-lbl" style="opacity:0;animation:fadeUp 0.7s 0.68s forwards">Additional pages</div>
+    <div class="link-row">
       <a class="link-card" data-c="gold" onclick="openViewer('BMK');return false;" href="#">
         <div class="lc-icon">📊</div>
         <div>
@@ -352,24 +347,15 @@
       </a>
     </div>
 
-    <!-- ── Technical reference ── -->
-    <div class="sec-lbl" style="animation: fadeUp 0.7s 0.84s forwards;">Technical reference</div>
-    <div class="link-row" style="animation: fadeUp 0.7s 0.88s forwards;">
+    <!-- Appendix M -->
+    <div class="sec-lbl" style="opacity:0;animation:fadeUp 0.7s 0.84s forwards">Technical reference</div>
+    <div class="appendix-row">
       <a class="link-card" data-c="violet" onclick="openViewer('APX');return false;" href="#">
         <div class="lc-icon">📄</div>
         <div>
           <div class="lc-tag">Appendix M · Technical Paper</div>
           <div class="lc-title">8Z-Audio: Lossless Audio Compression</div>
-          <div class="lc-desc">Architecture · Container · Scanner & DCC · Benchmark · Roadmap · Market analysis</div>
-        </div>
-        <div class="lc-arrow">→</div>
-      </a>
-      <a class="link-card" data-c="rose" onclick="openViewer('MPN');return false;" href="#">
-        <div class="lc-icon">🗺️</div>
-        <div>
-          <div class="lc-tag">Master Plan · v1.8</div>
-          <div class="lc-title">8Z-Audio v1.8 Master Plan</div>
-          <div class="lc-desc">Beyond the hybrid — roadmap, architecture targets & next milestones</div>
+          <div class="lc-desc">Architecture · Container format · Scanner & DCC · Benchmark · Roadmap · Market analysis — compact reference edition</div>
         </div>
         <div class="lc-arrow">→</div>
       </a>
@@ -396,7 +382,6 @@
       <div class="tb-tab" data-ai="BMK" onclick="switchTab('BMK')"><div class="tab-dot"></div>Benchmark</div>
       <div class="tb-tab" data-ai="EVO" onclick="switchTab('EVO')"><div class="tab-dot"></div>Evolution</div>
       <div class="tb-tab" data-ai="APX" onclick="switchTab('APX')"><div class="tab-dot"></div>Appendix M</div>
-      <div class="tb-tab" data-ai="MPN" onclick="switchTab('MPN')"><div class="tab-dot"></div>Master Plan</div>
     </div>
   </div>
   <div class="frame-wrap">
@@ -407,12 +392,11 @@
     <iframe id="frame-BMK" src="8Z-Audio_Benchmark.html"></iframe>
     <iframe id="frame-EVO" src="8Z-AC_evolution.html"></iframe>
     <iframe id="frame-APX" src="8Z-AC_Appendix_M.html"></iframe>
-    <iframe id="frame-MPN" src="8Z_Audio_v1_8_Master_Plan.html"></iframe>
   </div>
 </div>
 
 <script>
-  const AIs = ['CLA','GEM','GPT','GRO','BMK','EVO','APX','MPN'];
+  const AIs = ['CLA','GEM','GPT','GRO','BMK','EVO','APX'];
 
   function openViewer(ai) {
     document.getElementById('landing').style.display = 'none';
@@ -433,7 +417,7 @@
   }
   document.addEventListener('keydown', e => {
     if (document.getElementById('viewer').style.display !== 'flex') return;
-    const map = {'1':'CLA','2':'GEM','3':'GPT','4':'GRO','5':'BMK','6':'EVO','7':'APX','8':'MPN'};
+    const map = {'1':'CLA','2':'GEM','3':'GPT','4':'GRO','5':'BMK','6':'EVO','7':'APX'};
     if (map[e.key]) switchTab(map[e.key]);
     if (e.key==='Escape') goHome();
   });
