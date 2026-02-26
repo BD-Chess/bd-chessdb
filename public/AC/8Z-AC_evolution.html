@@ -269,136 +269,67 @@
                     <th width="15%">Ver. & Era</th>
                     <th width="15%">Exec.</th>
                     <th width="35%">Arch. Leap</th>
-                    <th width="35%">Features</th>
+                    <th width="25%">Features</th>
+                    <th>Size</th>
+                    <th>Time Spent</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>
-                        <span class="version">v1.0</span>
-                        <span class="era">"First Light"</span>
-                    </td>
+                    <td><span class="version">v1.0</span><br><span class="era">"First Light"</span></td>
                     <td><span class="badge mt">Per-Frame</span></td>
-                    <td>
-                        <span class="leap-title">General-Purpose Backends</span>
-                        Relied on external algorithms (LZMA, zlib, zstd) to do the heavy lifting for residuals.
-                    </td>
-                    <td>
-                        <ul>
-                            <li>Basic LPC (1, 4, 8, 12, 16, 24, 32)</li>
-                            <li>RAW & DELTA (1-3) predictors</li>
-                            <li>Channel Decorrelation modes</li>
-                        </ul>
-                    </td>
+                    <td><span class="leap-title">General-Purpose Backends</span>Relied on external algorithms (LZMA, zlib, zstd) to do the heavy lifting for residuals.</td>
+                    <td><ul><li>Basic LPC (1, 4, 8, 12, 16, 24, 32)</li><li>RAW & DELTA (1-3) predictors</li><li>Channel Decorrelation modes</li></ul></td>
+                    <td class="size">10,523,097</td>
+                    <td class="time">~2h 53m</td>
                 </tr>
                 <tr>
-                    <td>
-                        <span class="version">v1.1</span>
-                        <span class="era">"Rice Engine"</span>
-                    </td>
+                    <td><span class="version">v1.1</span><br><span class="era">"Rice Engine"</span></td>
                     <td><span class="badge mt">Threaded</span></td>
-                    <td>
-                        <span class="leap-title">Native Entropy Coding</span>
-                        Dropped generic coders. Implemented partitioned Rice coding natively for audio residuals.
-                    </td>
-                    <td>
-                        <ul>
-                            <li>Partitioned Rice + 5-bit escape</li>
-                            <li>Exhaustive LPC search (0-32)</li>
-                            <li>Wasted bits & constant detection</li>
-                        </ul>
-                    </td>
+                    <td><span class="leap-title">Native Entropy Coding</span>Dropped generic coders. Implemented partitioned Rice coding natively for audio residuals.</td>
+                    <td><ul><li>Partitioned Rice + 5-bit escape</li><li>Exhaustive LPC search (0-32)</li><li>Wasted bits & constant detection</li></ul></td>
+                    <td class="size">8,266,279</td>
+                    <td class="time">5h 18m</td>
                 </tr>
                 <tr>
-                    <td>
-                        <span class="version">v1.2</span>
-                        <span class="era">"Partition Fix"</span>
-                    </td>
+                    <td><span class="version">v1.2</span><br><span class="era">"Partition Fix"</span></td>
                     <td><span class="badge mt">Threaded</span></td>
-                    <td>
-                        <span class="leap-title">FLAC-Style Partitions</span>
-                        Fixed partition sizing to properly accommodate LPC warmup samples.
-                    </td>
-                    <td>
-                        <ul>
-                            <li>Native bit-depth warmup storage</li>
-                            <li>Nibble-packed Rice parameters</li>
-                            <li>Varint subframe length fields</li>
-                        </ul>
-                    </td>
+                    <td><span class="leap-title">FLAC-Style Partitions</span>Fixed partition sizing to properly accommodate LPC warmup samples.</td>
+                    <td><ul><li>Native bit-depth warmup storage</li><li>Nibble-packed Rice parameters</li><li>Varint subframe length fields</li></ul></td>
+                    <td class="size"><i style="color:#64748b;">~8,200,000</i></td>
+                    <td class="time"><i style="color:#64748b;">~13h (est.)</i></td>
                 </tr>
                 <tr>
-                    <td>
-                        <span class="version">v1.3.1</span>
-                        <span class="era">"Unleashed"</span>
-                    </td>
+                    <td><span class="version">v1.3.1</span><br><span class="era">"Unleashed"</span></td>
                     <td><span class="badge mt">Threaded</span></td>
-                    <td>
-                        <span class="leap-title">State Saving (Fault Tolerance)</span>
-                        Introduced real-time checkpointing to survive crashes during massive batch encodes.
-                    </td>
-                    <td>
-                        <ul>
-                            <li>Multi-windowing (Tukey/Hann/Blackman)</li>
-                            <li>Partition-aware LPC screening</li>
-                            <li>Exhaustive Rice K-search</li>
-                        </ul>
-                    </td>
+                    <td><span class="leap-title">State Saving (Fault Tolerance)</span>Introduced real-time checkpointing to survive crashes during massive batch encodes.</td>
+                    <td><ul><li>Multi-windowing (Tukey/Hann/Blackman)</li><li>Partition-aware LPC screening</li><li>Exhaustive Rice K-search</li></ul></td>
+                    <td class="size">7,982,522</td>
+                    <td class="time">~10h+ (2w)</td>
                 </tr>
                 <tr>
-                    <td>
-                        <span class="version">v1.4 & v1.5</span>
-                        <span class="era">"The DCC Era"</span>
-                    </td>
+                    <td><span class="version">v1.4 & v1.5</span><br><span class="era">"The DCC Era"</span></td>
                     <td><span class="badge seq">Sequential</span></td>
-                    <td>
-                        <span class="leap-title">Dynamic Codec Control</span>
-                        Tried to speed up encoding by learning patterns, but forced the engine into a slow sequential bottleneck.
-                    </td>
-                    <td>
-                        <ul>
-                            <li>DCCSMeter (Adaptive budgets)</li>
-                            <li>CodecLearner (Pruning)</li>
-                            <li>Frame blocksize expanded to 16384</li>
-                        </ul>
-                    </td>
+                    <td><span class="leap-title">Dynamic Codec Control</span>Tried to speed up encoding by learning patterns, but forced the engine into a slow sequential bottleneck.</td>
+                    <td><ul><li>DCCSMeter (Adaptive budgets)</li><li>CodecLearner (Pruning)</li><li>Frame blocksize expanded to 16384</li></ul></td>
+                    <td class="size">8,031,058</td>
+                    <td class="time">~3h</td>
                 </tr>
                 <tr>
-                    <td>
-                        <span class="version">v1.6.1</span>
-                        <span class="era">"Two-Pass"</span>
-                    </td>
+                    <td><span class="version">v1.6.1</span><br><span class="era">"Two-Pass"</span></td>
                     <td><span class="badge dec">Decoupled</span></td>
-                    <td>
-                        <span class="leap-title">Scanner-Guided Architecture</span>
-                        Split the engine: fast preemptive scanner allocates budgets, allowing the packer to run in massive parallel.
-                    </td>
-                    <td>
-                        <ul>
-                            <li>Adaptive blocksize by sample rate</li>
-                            <li>0xFFFE Extensible WAV support</li>
-                            <li>Checkpoint v4</li>
-                        </ul>
-                    </td>
+                    <td><span class="leap-title">Scanner-Guided Architecture</span>Split the engine: fast preemptive scanner allocates budgets, allowing the packer to run in massive parallel.</td>
+                    <td><ul><li>Adaptive blocksize by sample rate</li><li>0xFFFE Extensible WAV support</li><li>Checkpoint v4</li></ul></td>
+                    <td class="size">8,071,580</td>
+                    <td class="time">37.5 min</td>
                 </tr>
                 <tr>
-                    <td>
-                        <span class="version">v1.7 / 1.7H</span>
-                        <span class="era">"The Hybrids"</span>
-                    </td>
+                    <td><span class="version">v1.7 / 1.7H</span><br><span class="era">"The Hybrids"</span></td>
                     <td><span class="badge dec">Decoupled</span></td>
-                    <td>
-                        <span class="leap-title">Forensic Heuristics</span>
-                        The ultimate synthesis. Eliminates wasted CPU cycles and hardens the memory pipeline.
-                    </td>
-                    <td>
-                        <ul>
-                            <li>PERIODIC predictor & Cascaded LPC²</li>
-                            <li>Fair MDL Arena (LZMA on Top 4 only)</li>
-                            <li>L/R/M Stereo Scanning</li>
-                            <li>Adaptive LZMA CPU presets</li>
-                        </ul>
-                    </td>
+                    <td><span class="leap-title">Forensic Heuristics</span>The ultimate synthesis. Eliminates wasted CPU cycles and hardens the memory pipeline.</td>
+                    <td><ul><li>PERIODIC predictor & Cascaded LPC²</li><li>Fair MDL Arena (LZMA on Top 4 only)</li><li>L/R/M Stereo Scanning</li><li>Adaptive LZMA CPU presets</li></ul></td>
+                    <td class="size">8,067,034</td>
+                    <td class="time">77 min 52s</td>
                 </tr>
             </tbody>
         </table>
@@ -411,6 +342,8 @@
             <div class="legend-item"><strong>Exec.</strong> - Execution Paradigm (How the script handles system CPU threads).</div>
             <div class="legend-item"><strong>Arch. Leap</strong> - The fundamental change in software engineering for that version.</div>
             <div class="legend-item"><strong>Features</strong> - The mathematical or compression tools added to the engine.</div>
+            <div class="legend-item"><strong>Size</strong> - Final .8za file size in bytes.</div>
+            <div class="legend-item"><strong>Time Spent</strong> - Total wall-clock encoding time.</div>
         </div>
         
         <div class="legend-section">
@@ -426,6 +359,10 @@
             <div class="legend-item"><strong>DCC</strong> - Dynamic Codec Control. A machine-learning approach to prune bad predictors.</div>
             <div class="legend-item"><strong>L/R/M</strong> - Left, Right, and Mid. Scanning all 3 prevents missing hard-panned transients.</div>
             <div class="legend-item"><strong>LPC</strong> - Linear Predictive Coding.</div>
+        </div>
+
+        <div class="legend-item" style="margin-top:1rem; font-style:italic; color:#64748b;">
+            <strong>Note:</strong> Size and time for v1.2 are estimates. Final values will be updated when encoding completes.
         </div>
     </div>
 </div>

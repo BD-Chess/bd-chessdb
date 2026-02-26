@@ -1,442 +1,1870 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>8Z-Audio — AI Story Comparison</title>
+<title>8Z-Audio — Five Days Against FLAC</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:     #030508;
-    --bg2:    #080c14;
-    --surface:#0d1525;
-    --border: rgba(0,229,255,0.13);
-    --cyan:   #00e5ff;
-    --gold:   #f59e0b;
-    --green:  #34d399;
-    --violet: #a78bfa;
-    --orange: #fb923c;
-    --rose:   #ff6b8a;
-    --muted:  #6b7a96;
-    --text:   #e8edf5;
-    --cla: #00e5ff;
-    --gem: #34d399;
-    --gpt: #a78bfa;
-    --gro: #fb923c;
+    --bg:       #030508;
+    --bg2:      #080c14;
+    --bg3:      #0d1525;
+    --surface:  #111827;
+    --border:   rgba(0,229,255,0.12);
+    --cyan:     #00e5ff;
+    --cyan-dim: rgba(0,229,255,0.18);
+    --gold:     #f59e0b;
+    --gold-dim: rgba(245,158,11,0.18);
+    --rose:     #ff6b8a;
+    --rose-dim: rgba(255,107,138,0.15);
+    --green:    #34d399;
+    --green-dim:rgba(52,211,153,0.15);
+    --text:     #e8edf5;
+    --muted:    #6b7a96;
+    --subtle:   #1e2a40;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; overflow: hidden; }
+
+  html { scroll-behavior: smooth; }
 
   body {
     background: var(--bg);
     color: var(--text);
     font-family: 'Rajdhani', sans-serif;
-    display: flex; flex-direction: column;
+    font-size: 17px;
+    line-height: 1.7;
+    overflow-x: hidden;
+    padding-top: 52px;
   }
 
-  /* ══ LANDING ══ */
-  #landing {
-    flex: 1;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    text-align: center;
-    padding: 2rem 1.5rem 2.5rem;
-    overflow-y: auto;
-    position: relative;
+  /* ── LIGHT THEME ── */
+  [data-theme="light"] {
+    --bg:       #f2f0ec;
+    --bg2:      #e8e5df;
+    --bg3:      #dedad4;
+    --surface:  #ffffff;
+    --border:   rgba(0,80,160,0.13);
+    --cyan:     #0070a8;
+    --cyan-dim: rgba(0,112,168,0.1);
+    --gold:     #9a5f00;
+    --gold-dim: rgba(154,95,0,0.1);
+    --rose:     #bb2244;
+    --rose-dim: rgba(187,34,68,0.1);
+    --green:    #1a8e5f;
+    --green-dim:rgba(26,142,95,0.1);
+    --text:     #191c2a;
+    --muted:    #606278;
+    --subtle:   #ccc9c0;
   }
-
-  .bg-grid {
-    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  [data-theme="light"] body  { background: var(--bg); }
+  [data-theme="light"] .hero { background: var(--bg); }
+  [data-theme="light"] .hero-bg {
+    background: radial-gradient(ellipse 80% 60% at 60% 40%, rgba(0,112,168,0.06) 0%, transparent 65%),
+                radial-gradient(ellipse 50% 70% at 20% 80%, rgba(154,95,0,0.04) 0%, transparent 60%);
+  }
+  [data-theme="light"] .hero-grid {
     background-image:
-      linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
-    background-size: 60px 60px;
+      linear-gradient(rgba(0,80,160,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,80,160,0.05) 1px, transparent 1px);
+  }
+  [data-theme="light"] section         { background: transparent; }
+  [data-theme="light"] .origin-card    { background: rgba(255,255,255,0.85); }
+  [data-theme="light"] .arch-card      { background: rgba(255,255,255,0.75); }
+  [data-theme="light"] .tl-item        { border-color: rgba(0,80,160,0.15); }
+  [data-theme="light"] .tl-result      { background: rgba(0,112,168,0.06); }
+  [data-theme="light"] .bench-table-wrap { background: rgba(255,255,255,0.8); }
+  [data-theme="light"] .bench-row:hover { background: rgba(0,80,160,0.04); }
+  [data-theme="light"] .disc-card      { background: rgba(255,255,255,0.8); }
+  [data-theme="light"] .road-item      { background: rgba(255,255,255,0.7); }
+  [data-theme="light"] .target-box     { background: rgba(26,142,95,0.05); }
+  [data-theme="light"] pre             { background: rgba(0,0,0,0.04); border-color: rgba(0,80,160,0.12); }
+  [data-theme="light"] footer          { background: var(--bg2); }
+  [data-theme="light"] .song-card      { background: var(--bg3); }
+  [data-theme="light"] .human-card     { background: var(--bg3); }
+  [data-theme="light"] .songs-player-wrap { background: var(--surface); }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    height: 52px;
+    background: rgba(3,5,8,0.94);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: stretch;
+  }
+  [data-theme="light"] .toolbar {
+    background: rgba(242,240,236,0.97);
+    border-color: rgba(0,80,160,0.14);
+  }
+  .tb-brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem; font-weight: 700;
+    color: var(--cyan); letter-spacing: 0.15em;
+    text-decoration: none; cursor: pointer;
+    padding: 0 1.25rem;
+    display: flex; align-items: center;
+    border-right: 1px solid var(--border);
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .tb-brand:hover { background: rgba(0,229,255,0.06); }
+  /* internal page anchors */
+  .tb-inner {
+    display: flex; align-items: stretch;
+    border-right: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  /* external pages scroll */
+  .tb-outer {
+    display: flex; align-items: stretch;
+    flex: 1; overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tb-outer::-webkit-scrollbar { display: none; }
+  .tb-sep {
+    width: 1px; background: var(--border);
+    margin: 10px 0; flex-shrink: 0;
+  }
+  .tb-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.67rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0 0.9rem;
+    display: flex; align-items: center;
+    color: var(--muted); text-decoration: none; cursor: pointer;
+    border-right: 1px solid var(--border);
+    transition: color 0.2s, background 0.2s;
+    white-space: nowrap; flex-shrink: 0;
+    position: relative; user-select: none;
+  }
+  .tb-link:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+  .tb-link.ext-active { color: var(--c, var(--cyan)); }
+  .tb-link.ext-active::after {
+    content: ''; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 2px;
+    background: var(--c, var(--cyan));
+  }
+  .tb-link[data-c="gold"]   { --c: #f59e0b; }
+  .tb-link[data-c="green"]  { --c: #34d399; }
+  .tb-link[data-c="violet"] { --c: #a78bfa; }
+  .tb-link[data-c="rose"]   { --c: #ff6b8a; }
+  .tb-link[data-c="gem"]    { --c: #34d399; }
+  .tb-link[data-c="gpt"]    { --c: #a78bfa; }
+  .tb-link[data-c="gro"]    { --c: #fb923c; }
+  .tb-peer { opacity: 0.5; }
+  .tb-peer:hover { opacity: 1; }
+  .tb-theme {
+    width: 46px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+    border-left: 1px solid var(--border);
+    font-size: 1rem;
+    transition: background 0.2s;
+  }
+  .tb-theme:hover { background: rgba(255,255,255,0.04); }
+
+  /* ── OVERLAY ── */
+  #page-overlay {
+    position: fixed; top: 52px; left: 0; right: 0; bottom: 0;
+    z-index: 190; display: none;
+    background: var(--bg);
+  }
+  #page-overlay.active { display: block; }
+  #page-overlay iframe { width: 100%; height: 100%; border: none; }
+
+  /* ── SONGS SECTION ── */
+  .songs-player-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden;
+    margin: 2rem 0 2.5rem;
+  }
+  .player-empty {
+    padding: 1.75rem 1.5rem; text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem; color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+  .player-header { padding: 1.1rem 1.4rem 0; }
+  .player-title {
+    font-size: 1.15rem; font-weight: 700; color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+  .player-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; color: var(--muted);
+    display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  .player-controls {
+    padding: 0.75rem 1.4rem 1rem;
+    display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;
+  }
+  .player-controls audio {
+    flex: 1; min-width: 180px; height: 36px;
+    accent-color: var(--cyan);
+  }
+  .mode-btns { display: flex; gap: 0.35rem; }
+  .mode-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.63rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.28rem 0.7rem; border-radius: 3px; cursor: pointer;
+    border: 1px solid var(--border); color: var(--muted);
+    background: transparent; transition: all 0.18s;
+  }
+  .mode-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+  .mode-btn.on { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
+
+  /* song grid */
+  .songs-grid {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 1rem; margin-top: 1.5rem;
+  }
+  .song-card {
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg3); padding: 0.95rem 1.05rem;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .song-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: var(--green); opacity: 0; transition: opacity 0.2s;
+  }
+  .song-card:hover { border-color: rgba(52,211,153,0.35); transform: translateY(-2px); box-shadow: 0 4px 18px rgba(0,0,0,0.3); }
+  .song-card:hover::before { opacity: 1; }
+  .song-card.playing { border-color: var(--cyan); }
+  .song-card.playing::before { background: var(--cyan); opacity: 1; }
+  .song-card-title {
+    font-size: 0.93rem; font-weight: 600; color: var(--text);
+    margin-bottom: 0.35rem;
+    display: flex; align-items: center; gap: 0.35rem;
+  }
+  .sc-icon { font-size: 0.75rem; opacity: 0.5; }
+  .song-card .badges { margin-bottom: 0.35rem; }
+  .song-result {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; margin-bottom: 0.5rem;
+  }
+  .song-btns { display: flex; gap: 0.35rem; }
+  .song-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.22rem 0.55rem; border-radius: 2px; cursor: pointer;
+    border: 1px solid var(--border); color: var(--muted); background: transparent;
+    transition: all 0.17s; flex: 1; text-align: center;
+  }
+  .song-btn:hover      { border-color: var(--cyan); color: var(--cyan); }
+  .song-btn.clip-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* human recordings */
+  .human-grid {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 1rem; margin-top: 1.5rem;
+  }
+  .human-card {
+    border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg3); padding: 0.95rem 1.05rem;
+    position: relative; overflow: hidden;
+  }
+  .human-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: var(--muted);
+  }
+  .human-artist {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 0.2rem;
+  }
+  .human-title { font-size: 0.88rem; font-weight: 600; color: var(--text); margin-bottom: 0.45rem; }
+  .human-result { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; margin-top: 0.3rem; }
+  .human-note  { font-size: 0.74rem; color: var(--muted); font-style: italic; margin-top: 0.3rem; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 700px) {
+    body { font-size: 16px; }
+    .tb-inner { display: none; }
+    .hero { padding: 75px 5vw 50px; min-height: auto; }
+    .hero-title { font-size: clamp(2.5rem, 11vw, 4rem); }
+    .hero-subtitle { font-size: 1rem; max-width: 100%; }
+    .hero-stats { gap: 1.5rem; flex-wrap: wrap; }
+    .hero-stat .num { font-size: 1.9rem; }
+    .waveform-wrap { display: none; }
+    section { padding: 56px 5vw; }
+    section.full { padding: 56px 5vw; }
+    h2 { font-size: 1.8rem; }
+    .origin-grid { grid-template-columns: 1fr; }
+    .arch-grid { grid-template-columns: 1fr 1fr; }
+    .arch-flow { gap: 0.25rem; }
+    .arch-node { padding: 0.45rem 0.65rem; font-size: 0.7rem; min-width: 70px; }
+    .bench-header, .bench-row { grid-template-columns: 2fr 1fr 1.2fr; }
+    .bench-header .col-flac5, .bench-row .col-flac5,
+    .bench-header .col-ofr,   .bench-row .col-ofr   { display: none; }
+    .disc-grid { grid-template-columns: 1fr; }
+    .road-grid { grid-template-columns: 1fr 1fr; }
+    .target-grid { grid-template-columns: 1fr 1fr; }
+    .credits-grid { grid-template-columns: 1fr; }
+    .songs-grid { grid-template-columns: 1fr 1fr; }
+    .human-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 480px) {
+    .hero-title { font-size: clamp(2rem, 12vw, 3rem); }
+    .songs-grid { grid-template-columns: 1fr; }
+    .human-grid { grid-template-columns: 1fr 1fr; }
+    .road-grid  { grid-template-columns: 1fr; }
+    .arch-grid  { grid-template-columns: 1fr; }
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 90px 8vw 80px;
+    position: relative; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 60% 40%, rgba(0,229,255,0.04) 0%, transparent 65%),
+                radial-gradient(ellipse 50% 70% at 20% 80%, rgba(245,158,11,0.03) 0%, transparent 60%);
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 80px 80px;
     mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black, transparent);
   }
-  .bg-glow {
-    position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(0,229,255,0.04), transparent 70%);
-  }
-
-  .landing-inner {
-    position: relative; z-index: 1;
-    max-width: 980px; width: 100%;
-  }
-
-  .eyebrow {
+  .hero-eyebrow {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.68rem; letter-spacing: 0.35em;
-    text-transform: uppercase; color: var(--cyan);
-    margin-bottom: 1.25rem;
-    opacity: 0; animation: fadeUp 0.7s 0.1s forwards;
+    font-size: 0.72rem; font-weight: 400;
+    color: var(--cyan); letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 0.8s 0.2s forwards;
   }
-  h1 {
-    font-size: clamp(2.4rem, 6vw, 4.5rem);
-    font-weight: 700; line-height: 1;
-    letter-spacing: -0.02em; margin-bottom: 0.5rem;
-    opacity: 0; animation: fadeUp 0.7s 0.25s forwards;
+  .hero-title {
+    font-size: clamp(3.2rem, 8vw, 7.5rem);
+    font-weight: 700; line-height: 0.9;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 0.8s 0.4s forwards;
   }
-  h1 span { color: var(--cyan); }
-  .subtitle {
-    font-size: clamp(0.95rem, 2vw, 1.15rem);
-    color: var(--muted); font-weight: 400;
-    margin-bottom: 2.25rem;
-    max-width: 54ch; margin-left: auto; margin-right: auto;
-    opacity: 0; animation: fadeUp 0.7s 0.4s forwards;
+  .hero-title span { color: var(--cyan); }
+  .hero-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.1rem, 2.5vw, 1.55rem);
+    font-style: italic; font-weight: 300;
+    color: var(--muted); max-width: 640px;
+    margin-bottom: 3rem;
+    opacity: 0; animation: fadeUp 0.8s 0.6s forwards;
   }
-
-  /* ── section label ── */
-  .sec-lbl {
+  .hero-stats {
+    display: flex; gap: 3rem; flex-wrap: wrap;
+    opacity: 0; animation: fadeUp 0.8s 0.8s forwards;
+  }
+  .hero-stat { }
+  .hero-stat .num {
+    font-size: 2.6rem; font-weight: 700;
+    color: var(--cyan); line-height: 1;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem; letter-spacing: 0.28em;
+  }
+  .hero-stat .num.gold { color: var(--gold); }
+  .hero-stat .num.green { color: var(--green); }
+  .hero-stat .label {
+    font-size: 0.78rem; letter-spacing: 0.15em;
     text-transform: uppercase; color: var(--muted);
-    margin-bottom: 0.7rem; text-align: left;
-    opacity: 0;
   }
 
-  /* ══ AI 4-CARD GRID ══ */
-  .card-grid {
-    display: grid; grid-template-columns: repeat(4,1fr);
-    gap: 0.85rem; margin-bottom: 0.7rem;
-    opacity: 0; animation: fadeUp 0.7s 0.55s forwards;
+  /* animated waveform */
+  .waveform-wrap {
+    position: absolute; right: -2vw; bottom: 0; top: 0;
+    width: 55vw; display: flex; align-items: center;
+    pointer-events: none;
+    opacity: 0; animation: fadeIn 1.4s 1s forwards;
   }
-  .ai-card {
-    border: 1px solid var(--border); border-radius: 6px;
-    background: var(--surface);
-    padding: 1.35rem 1.1rem 1.1rem;
-    cursor: pointer;
-    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  .waveform-svg { width: 100%; height: 60vh; }
+
+  /* ── SECTIONS ── */
+  section {
+    max-width: 1100px; margin: 0 auto;
+    padding: 100px 5vw;
+  }
+  section.full { max-width: none; padding-left: 5vw; padding-right: 5vw; }
+
+  .sec-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--cyan);
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+  .sec-tag.gold { color: var(--gold); }
+  .sec-tag.green { color: var(--green); }
+
+  h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700; line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-bottom: 1.5rem;
+  }
+  h3 {
+    font-size: 1.35rem; font-weight: 600;
+    letter-spacing: 0.01em; color: var(--text);
+  }
+  p { color: rgba(232,237,245,0.8); max-width: 68ch; }
+  p + p { margin-top: 1rem; }
+  strong { color: var(--text); font-weight: 600; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px; width: 100%; max-width: 1100px;
+    margin: 0 auto;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+
+  /* ── ORIGIN SPLIT ── */
+  .origin-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+    align-items: start; margin-top: 3rem;
+  }
+  .origin-card {
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 2rem;
+    background: rgba(17,24,39,0.5);
     position: relative; overflow: hidden;
-    display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
-    text-decoration: none; color: inherit;
   }
-  .ai-card::before {
-    content:''; position:absolute; top:0; left:0; right:0; height:2px;
-    background: var(--c);
+  .origin-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--cyan), transparent);
   }
-  .ai-card::after {
-    content:''; position:absolute; inset:0;
-    background: radial-gradient(ellipse 60% 50% at 50% 0%, color-mix(in srgb, var(--c) 8%, transparent), transparent 70%);
-    opacity:0; transition: opacity 0.25s;
+  .origin-card.gold::before { background: linear-gradient(90deg, var(--gold), transparent); }
+  .origin-card h3 { margin-bottom: 1rem; }
+  .dna-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; padding: 0.2rem 0.6rem;
+    border: 1px solid var(--cyan-dim);
+    color: var(--cyan); border-radius: 2px;
+    margin-bottom: 1rem; background: var(--cyan-dim);
   }
-  .ai-card:hover { transform: translateY(-4px); border-color: var(--c); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-  .ai-card:hover::after { opacity:1; }
-  .ai-card[data-ai="CLA"] { --c: var(--cla); }
-  .ai-card[data-ai="GEM"] { --c: var(--gem); }
-  .ai-card[data-ai="GPT"] { --c: var(--gpt); }
-  .ai-card[data-ai="GRO"] { --c: var(--gro); }
+  .dna-badge.gold { border-color: var(--gold-dim); color: var(--gold); background: var(--gold-dim); }
 
-  .ai-logo {
-    width:46px; height:46px; border-radius:50%;
-    border:2px solid var(--c);
-    display:flex; align-items:center; justify-content:center;
-    font-family:'JetBrains Mono',monospace;
-    font-size:0.85rem; font-weight:700; color:var(--c);
-    background:rgba(0,0,0,0.3);
-    position:relative; z-index:1; flex-shrink:0;
+  /* ── TIMELINE ── */
+  .timeline {
+    position: relative; margin-top: 3rem;
+    padding-left: 2rem;
   }
-  .ai-name {
-    font-family:'JetBrains Mono',monospace;
-    font-size:0.68rem; letter-spacing:0.2em;
-    text-transform:uppercase; color:var(--c);
-    position:relative; z-index:1;
+  .timeline::before {
+    content: ''; position: absolute;
+    left: 0; top: 0; bottom: 0; width: 1px;
+    background: linear-gradient(to bottom, var(--cyan), rgba(0,229,255,0.1) 90%, transparent);
   }
-  .ai-label { font-size:0.95rem; font-weight:600; color:var(--text); position:relative; z-index:1; }
-  .ai-desc  { font-size:0.78rem; color:var(--muted); text-align:center; line-height:1.45; position:relative; z-index:1; }
-  .ai-btn {
-    margin-top:0.2rem;
-    font-family:'JetBrains Mono',monospace;
-    font-size:0.65rem; letter-spacing:0.15em;
-    text-transform:uppercase; padding:0.3rem 0.8rem;
-    border:1px solid var(--c); border-radius:3px;
-    color:var(--c); background:transparent; cursor:pointer;
-    transition:background 0.2s; position:relative; z-index:1;
+  .tl-entry {
+    position: relative; margin-bottom: 3.5rem;
+    padding-left: 2rem;
   }
-  .ai-btn:hover { background: color-mix(in srgb, var(--c) 15%, transparent); }
+  .tl-entry:last-child { margin-bottom: 0; }
+  .tl-dot {
+    position: absolute; left: -2.35rem; top: 0.35rem;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--bg3); border: 2px solid var(--cyan);
+    transition: all 0.3s;
+  }
+  .tl-dot.gold { border-color: var(--gold); }
+  .tl-dot.green { border-color: var(--green); }
+  .tl-day {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; color: var(--cyan);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .tl-day.gold { color: var(--gold); }
+  .tl-day.green { color: var(--green); }
+  .tl-entry h3 { margin-bottom: 0.75rem; }
+  .tl-badge-row {
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+    margin: 0.75rem 0;
+  }
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+  }
+  .badge.cyan { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(0,229,255,0.3); }
+  .badge.gold { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(245,158,11,0.3); }
+  .badge.green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+  .badge.rose { background: var(--rose-dim); color: var(--rose); border: 1px solid rgba(255,107,138,0.3); }
+  .pos { color: var(--green); }
+  .neg { color: var(--rose); }
+  .tl-result {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem; margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(0,229,255,0.04);
+    border-left: 2px solid var(--cyan);
+    color: var(--cyan);
+    border-radius: 0 2px 2px 0;
+  }
+  .tl-result.gold { border-color: var(--gold); color: var(--gold); background: rgba(245,158,11,0.04); }
+  .tl-result.green { border-color: var(--green); color: var(--green); background: rgba(52,211,153,0.04); }
 
-  /* ══ LINK CARDS ══ */
-  .link-row {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 0.85rem; margin-bottom: 0.7rem;
-    opacity: 0;
+  /* ── ARCHITECTURE ── */
+  .arch-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem; margin-top: 3rem;
+  }
+  .arch-card {
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 1.5rem;
+    background: rgba(13,21,37,0.8);
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .arch-card:hover {
+    border-color: rgba(0,229,255,0.35);
+    transform: translateY(-3px);
+  }
+  .arch-icon {
+    font-size: 1.6rem; margin-bottom: 0.75rem;
+    filter: grayscale(0.4);
+  }
+  .arch-card h3 { font-size: 1rem; margin-bottom: 0.5rem; color: var(--cyan); }
+  .arch-card p { font-size: 0.9rem; color: var(--muted); max-width: none; }
+
+  /* ── BENCHMARK ── */
+  .bench-intro {
+    max-width: 68ch; margin-bottom: 3rem;
+  }
+  .bench-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border); border-radius: 4px;
+    background: rgba(8,12,20,0.7);
+  }
+  .bench-header {
+    display: grid;
+    grid-template-columns: 2fr 1.4fr 1fr 1fr 1fr 1.6fr;
+    gap: 1rem; padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.12em;
+    color: var(--muted); text-transform: uppercase;
+  }
+  .bench-row {
+    display: grid;
+    grid-template-columns: 2fr 1.4fr 1fr 1fr 1fr 1.6fr;
+    gap: 1rem; padding: 0.65rem 1.5rem;
+    border-bottom: 1px solid rgba(0,229,255,0.05);
+    align-items: center; transition: background 0.2s;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+  }
+  .bench-row:hover { background: rgba(0,229,255,0.03); }
+  .bench-row:last-child { border-bottom: none; }
+  .bench-row .clip { color: var(--text); }
+  .bench-row .cat { color: var(--muted); font-size: 0.72rem; }
+  .bench-row .val { text-align: right; color: rgba(232,237,245,0.7); }
+  .bench-row .val.winner { color: var(--green); font-weight: 700; }
+  .bench-row .diff {
+    text-align: right; font-weight: 600;
+    display: flex; justify-content: flex-end; align-items: center; gap: 0.3rem;
+  }
+  .diff-win { color: var(--green); }
+  .diff-lose { color: var(--rose); }
+  .win-bar {
+    height: 4px; border-radius: 2px;
+    display: block; min-width: 4px; max-width: 100px;
   }
 
-  .link-card {
-    border:1px solid var(--border); border-radius:6px;
-    background:var(--surface); padding:0.85rem 1.2rem;
-    display:flex; align-items:center; gap:1rem;
-    text-decoration:none; color:inherit; cursor:pointer;
-    transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
-    position:relative; overflow:hidden; width:100%;
+  /* ── BAR CHART ── */
+  .chart-section { margin-top: 3rem; }
+  .chart-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; color: var(--muted);
+    letter-spacing: 0.15em; text-transform: uppercase;
+    margin-bottom: 1.5rem;
   }
-  .link-card::before {
-    content:''; position:absolute;
-    top:0; left:0; bottom:0; width:2px;
-    background: var(--c);
+  .bar-chart { display: flex; flex-direction: column; gap: 0.75rem; }
+  .bar-row { display: flex; align-items: center; gap: 1rem; }
+  .bar-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; color: var(--muted);
+    width: 130px; flex-shrink: 0; text-align: right;
   }
-  .link-card:hover { transform:translateY(-3px); border-color:var(--c); box-shadow:0 6px 24px rgba(0,0,0,0.35); }
-
-  .link-card[data-c="gold"]   { --c: var(--gold); }
-  .link-card[data-c="green"]  { --c: var(--green); }
-  .link-card[data-c="violet"] { --c: var(--violet); }
-  .link-card[data-c="rose"]   { --c: var(--rose); }
-
-  .lc-icon { font-size:1.3rem; flex-shrink:0; line-height:1; }
-  .lc-tag {
-    font-family:'JetBrains Mono',monospace;
-    font-size:0.6rem; letter-spacing:0.2em;
-    text-transform:uppercase; color:var(--c); margin-bottom:0.12rem;
+  .bar-track {
+    flex: 1; height: 22px; background: rgba(255,255,255,0.04);
+    border-radius: 2px; overflow: hidden; position: relative;
   }
-  .lc-title { font-size:0.95rem; font-weight:600; color:var(--text); margin-bottom:0.1rem; }
-  .lc-desc  { font-size:0.78rem; color:var(--muted); line-height:1.35; }
-  .lc-arrow {
-    margin-left:auto; flex-shrink:0;
-    font-family:'JetBrains Mono',monospace;
-    font-size:0.8rem; color:var(--c);
-    opacity:0.55; transition:opacity 0.2s, transform 0.2s;
+  .bar-fill {
+    height: 100%; border-radius: 2px;
+    display: flex; align-items: center; padding-left: 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+    font-weight: 600; color: rgba(0,0,0,0.7);
+    transition: width 1.5s cubic-bezier(0.22,1,0.36,1);
+    width: 0;
   }
-  .link-card:hover .lc-arrow { opacity:1; transform:translateX(3px); }
+  .bar-fill.cyan { background: linear-gradient(90deg, var(--cyan), #00a8cc); }
+  .bar-fill.gold { background: linear-gradient(90deg, var(--gold), #d97706); }
+  .bar-fill.rose { background: linear-gradient(90deg, var(--rose), #e53e3e); }
+  .bar-fill.green { background: linear-gradient(90deg, var(--green), #059669); }
+  .bar-fill.muted { background: linear-gradient(90deg, #4b5563, #374151); color: rgba(255,255,255,0.5); }
 
-  /* full-width single card row */
-  .link-row-single {
-    margin-bottom: 0.7rem;
-    opacity: 0;
+  /* ── DISCOVERIES ── */
+  .disc-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem; margin-top: 3rem;
+  }
+  .disc-card {
+    padding: 1.75rem;
+    border: 1px solid var(--border); border-radius: 4px;
+    background: linear-gradient(135deg, rgba(13,21,37,0.9), rgba(8,12,20,0.9));
+    position: relative; overflow: hidden;
+  }
+  .disc-card::after {
+    content: attr(data-num);
+    position: absolute; right: 1rem; bottom: 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 4rem; font-weight: 700;
+    color: rgba(0,229,255,0.05); line-height: 1;
+    pointer-events: none;
+  }
+  .disc-card.gold::after { color: rgba(245,158,11,0.06); }
+  .disc-card.green::after { color: rgba(52,211,153,0.06); }
+  .disc-card h3 { font-size: 1.05rem; margin-bottom: 0.6rem; }
+  .disc-card p { font-size: 0.9rem; max-width: none; }
+  .disc-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.6rem; font-weight: 700;
+    color: var(--cyan); margin-bottom: 0.5rem;
+  }
+  .disc-num.gold { color: var(--gold); }
+  .disc-num.green { color: var(--green); }
+  .disc-num.rose { color: var(--rose); }
+
+  /* ── ARCHITECTURE DIAGRAM ── */
+  .arch-diagram {
+    margin-top: 3rem;
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 2.5rem;
+    background: rgba(8,12,20,0.8);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+  }
+  .arch-flow {
+    display: flex; align-items: center; gap: 0.15rem; flex-wrap: wrap;
+    justify-content: center;
+  }
+  .arch-node {
+    padding: 0.75rem 1.25rem;
+    border: 1px solid rgba(0,229,255,0.4);
+    border-radius: 3px;
+    background: rgba(0,229,255,0.06);
+    color: var(--cyan); text-align: center;
+    min-width: 110px;
+  }
+  .arch-node.gold { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.06); color: var(--gold); }
+  .arch-node.green { border-color: rgba(52,211,153,0.4); background: rgba(52,211,153,0.06); color: var(--green); }
+  .arch-node small { display: block; font-size: 0.65rem; color: var(--muted); margin-top: 0.25rem; }
+  .arch-node { transition: transform 0.2s, box-shadow 0.2s; }
+  .arch-node:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,229,255,0.12); }
+  .arch-arrow {
+    color: var(--muted); padding: 0 0.5rem; font-size: 1rem;
   }
 
-  /* ══ VIEWER ══ */
-  #viewer { flex:1; display:none; flex-direction:column; overflow:hidden; }
-
-  .toolbar {
-    height:48px; flex-shrink:0;
-    background:rgba(3,5,8,0.95);
-    backdrop-filter:blur(12px);
-    border-bottom:1px solid var(--border);
-    display:flex; align-items:center;
+  /* ── ROADMAP ── */
+  .road-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem; margin-top: 3rem;
   }
-  .tb-home {
-    font-family:'JetBrains Mono',monospace;
-    font-size:0.75rem; font-weight:700;
-    color:var(--cyan); letter-spacing:0.15em;
-    cursor:pointer; padding:0 1rem;
-    border-right:1px solid var(--border);
-    height:100%; display:flex; align-items:center; gap:0.5rem;
-    transition:background 0.2s; flex-shrink:0;
-    text-decoration:none; white-space:nowrap;
+  .road-item {
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--border); border-radius: 4px;
+    background: rgba(13,21,37,0.5);
   }
-  .tb-home:hover { background:rgba(0,229,255,0.06); }
-  .tb-home svg { width:14px; height:14px; }
-
-  .tb-tabs {
-    display:flex; align-items:stretch; flex:1; overflow-x:auto;
-    scrollbar-width:none;
+  .road-item .priority {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.2em;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 0.5rem;
   }
-  .tb-tabs::-webkit-scrollbar { display:none; }
-
-  .tb-tab {
-    font-family:'JetBrains Mono',monospace;
-    font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase;
-    padding:0 1.1rem; height:100%;
-    display:flex; align-items:center; gap:0.45rem;
-    cursor:pointer; color:var(--muted);
-    border-right:1px solid var(--border);
-    transition:color 0.2s, background 0.2s;
-    white-space:nowrap; position:relative; flex-shrink:0; user-select:none;
+  .road-item h3 { font-size: 0.95rem; margin-bottom: 0.4rem; }
+  .road-item p { font-size: 0.85rem; color: var(--muted); max-width: none; }
+  .road-gain {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem; color: var(--green);
+    margin-top: 0.5rem;
   }
-  .tb-tab::after {
-    content:''; position:absolute;
-    bottom:0; left:0; right:0; height:2px;
-    background:var(--c); opacity:0; transition:opacity 0.2s;
+
+  /* ── TARGET BOX ── */
+  .target-box {
+    margin-top: 3rem; padding: 2.5rem;
+    border: 1px solid rgba(52,211,153,0.3);
+    border-radius: 4px;
+    background: linear-gradient(135deg, rgba(52,211,153,0.05), rgba(0,229,255,0.03));
   }
-  .tb-tab:hover { color:var(--text); background:rgba(255,255,255,0.03); }
-  .tb-tab.active { color:var(--c); background:rgba(0,0,0,0.3); }
-  .tb-tab.active::after { opacity:1; }
+  .target-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem; margin-top: 1.5rem;
+  }
+  .target-item .old {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem; color: var(--muted);
+    text-decoration: line-through;
+  }
+  .target-item .new {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.4rem; font-weight: 700; color: var(--green);
+  }
+  .target-item .desc {
+    font-size: 0.8rem; color: var(--muted);
+    margin-top: 0.25rem;
+  }
 
-  .tb-tab[data-ai="CLA"] { --c: var(--cla); }
-  .tb-tab[data-ai="GEM"] { --c: var(--gem); }
-  .tb-tab[data-ai="GPT"] { --c: var(--gpt); }
-  .tb-tab[data-ai="GRO"] { --c: var(--gro); }
-  .tb-tab[data-ai="BMK"] { --c: var(--gold); }
-  .tb-tab[data-ai="EVO"] { --c: var(--green); }
-  .tb-tab[data-ai="APX"] { --c: var(--violet); }
-  .tb-tab[data-ai="MPN"] { --c: var(--rose); }
+  /* ── FOOTER / CREDITS ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 8vw 4rem;
+    max-width: none;
+  }
+  .credits-grid {
+    display: grid; grid-template-columns: 2fr 1fr 1fr;
+    gap: 3rem; margin-bottom: 2.5rem;
+  }
+  .credit-col h4 {
+    font-size: 0.72rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .credit-col p { font-size: 0.9rem; color: rgba(232,237,245,0.55); max-width: none; }
+  .ai-list {
+    list-style: none;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+  }
+  .ai-list li {
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: rgba(232,237,245,0.5);
+  }
+  .ai-list .primary { color: var(--cyan); }
+  .copyright {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; color: rgba(107,122,150,0.5);
+    letter-spacing: 0.1em;
+  }
 
-  .tab-dot { width:7px; height:7px; border-radius:50%; background:var(--c); flex-shrink:0; }
-
-  .frame-wrap { flex:1; position:relative; overflow:hidden; }
-  iframe { position:absolute; inset:0; width:100%; height:100%; border:none; display:none; }
-  iframe.active { display:block; }
-
+  /* ── ANIMATIONS ── */
   @keyframes fadeUp {
-    from { opacity:0; transform:translateY(20px); }
-    to   { opacity:1; transform:translateY(0); }
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes wave {
+    0%, 100% { d: path("M0,50 Q25,20 50,50 Q75,80 100,50 Q125,20 150,50 Q175,80 200,50 Q225,20 250,50 Q275,80 300,50 Q325,20 350,50 Q375,80 400,50 Q425,20 450,50 Q475,80 500,50"); }
+    50%       { d: path("M0,50 Q25,80 50,50 Q75,20 100,50 Q125,80 150,50 Q175,20 200,50 Q225,80 250,50 Q275,20 300,50 Q325,80 350,50 Q375,20 400,50 Q425,80 450,50 Q475,20 500,50"); }
+  }
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,229,255,0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(0,229,255,0); }
   }
 
-  @media (max-width:680px) {
-    .card-grid, .link-row { grid-template-columns:1fr 1fr; }
+  /* scroll reveal */
+  .reveal {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
   }
-  @media (max-width:440px) {
-    .card-grid { grid-template-columns:1fr 1fr; }
-    .link-row  { grid-template-columns:1fr; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.15s; }
+  .reveal-delay-2 { transition-delay: 0.3s; }
+  .reveal-delay-3 { transition-delay: 0.45s; }
+
+  /* scroll progress indicator */
+  .scroll-progress {
+    position: fixed; top: 52px; left: 0; right: 0; z-index: 201;
+    height: 2px; background: transparent;
   }
+  .scroll-progress-bar {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--cyan), var(--gold), var(--green));
+    transition: width 0.1s linear;
+  }
+
+  /* subtle film grain for depth */
+  body::after {
+    content: ''; position: fixed; inset: 0;
+    pointer-events: none; z-index: 300;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+  [data-theme="light"] body::after { opacity: 0.015; }
+
+  /* timeline dot pulse on entry */
+  .reveal.visible .tl-dot { animation: pulse-dot 2s ease-out 0.5s; }
+
+  /* waveform bars */
+  .wv-bar {
+    fill: none;
+    stroke: rgba(0,229,255,0.15);
+    stroke-width: 1.5;
+  }
+  .wv-bar.bright { stroke: rgba(0,229,255,0.6); stroke-width: 2; }
+  .wv-bar.dim { stroke: rgba(0,229,255,0.07); }
+
+
 </style>
 </head>
 <body>
 
-<!-- ══ LANDING ══ -->
-<div id="landing">
-  <div class="bg-grid"></div>
-  <div class="bg-glow"></div>
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <a class="tb-brand" href="#hero" onclick="closeOverlay()">8Z-AUDIO</a>
+  <div class="tb-inner">
+    <a class="tb-link" href="#origin" onclick="closeOverlay()">Origin</a>
+    <a class="tb-link" href="#sprint" onclick="closeOverlay()">Sprint</a>
+    <a class="tb-link" href="#bench"  onclick="closeOverlay()">Benchmark</a>
+    <a class="tb-link" href="#songs"  onclick="closeOverlay()">Songs</a>
+    <a class="tb-link" href="#roadmap" onclick="closeOverlay()">Roadmap</a>
+  </div>
+  <div class="tb-outer">
+    <a class="tb-link" data-c="gold"   onclick="openOverlay('8Z-Audio_Benchmark.html',this)">Benchmark</a>
+    <a class="tb-link" data-c="green"  onclick="openOverlay('8Z-AC_evolution.html',this)">Evolution</a>
+    <a class="tb-link" data-c="violet" onclick="openOverlay('8Z-AC_Appendix_M.html',this)">Appendix M</a>
+    <a class="tb-link" data-c="rose"   onclick="openOverlay('8Z-Audio_v1.8_Master_Plan.html',this)">Master Plan</a>
+    <div class="tb-sep"></div>
+    <a class="tb-link tb-peer" data-c="gem" onclick="openOverlay('8Z-AC_BD_GEM_Story.html',this)">Gemini</a>
+    <a class="tb-link tb-peer" data-c="gpt" onclick="openOverlay('8Z-AC_BD_GPT_Story.html',this)">GPT</a>
+    <a class="tb-link tb-peer" data-c="gro" onclick="openOverlay('8Z-AC_BD_GRO_Story.html',this)">Grok</a>
+  </div>
+  <div class="tb-theme" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark">🌙</div>
+</div>
 
-  <div class="landing-inner">
+<!-- PAGE OVERLAY for external pages -->
+<div class="scroll-progress"><div class="scroll-progress-bar" id="scroll-bar"></div></div>
+<div id="page-overlay"><iframe id="overlay-frame" src="about:blank"></iframe></div>
 
-    <div class="eyebrow">AIM³ Institute · Ljubljana · February 2026 · Internal Review</div>
-    <h1>8Z-<span>Audio</span></h1>
-    <p class="subtitle">Five days. One codec. Four AI systems each told the same story — pick a version and read it in the frame below.</p>
+<!-- HERO -->
+<div class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
 
-    <!-- ── AI Stories ── -->
-    <div class="sec-lbl" style="animation: fadeUp 0.7s 0.5s forwards;">AI-authored stories</div>
-    <div class="card-grid">
-      <div class="ai-card" data-ai="CLA" onclick="openViewer('CLA')">
-        <div class="ai-logo">CLA</div>
-        <div class="ai-name">Claude</div>
-        <div class="ai-label">Anthropic</div>
-        <div class="ai-desc">Cinematic dark narrative — waveform hero, timeline sprint, animated benchmark bars</div>
-        <div class="ai-btn">Open →</div>
+  <!-- Animated waveform (SVG, right side) -->
+  <div class="waveform-wrap" aria-hidden="true">
+    <svg class="waveform-svg" viewBox="0 0 600 500" preserveAspectRatio="xMidYMid meet">
+      <!-- Multiple layered waveforms at different frequencies -->
+      <g id="wv-group"></g>
+    </svg>
+  </div>
+
+  <div style="position:relative; z-index:2;">
+    <div class="hero-eyebrow">AIM³ Institute · Ljubljana · February 2026</div>
+    <h1 class="hero-title">Five Days<br>Against <span>FLAC</span></h1>
+    <p class="hero-subtitle">
+      How a lossless audio codec was built from scratch in a single sprint —
+      and why it beats the 25-year-old gold standard on nearly half of all test clips.
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num">5</div>
+        <div class="label">Days of Development</div>
       </div>
-      <div class="ai-card" data-ai="GEM" onclick="openViewer('GEM')">
-        <div class="ai-logo">GEM</div>
-        <div class="ai-name">Gemini</div>
-        <div class="ai-label">Google DeepMind</div>
-        <div class="ai-desc">Clean sidebar layout with structured sections and comprehensive data tables</div>
-        <div class="ai-btn">Open →</div>
+      <div class="hero-stat">
+        <div class="num gold">7/15</div>
+        <div class="label">Clips Beating FLAC‑12</div>
       </div>
-      <div class="ai-card" data-ai="GPT" onclick="openViewer('GPT')">
-        <div class="ai-logo">GPT</div>
-        <div class="ai-name">GPT-4o</div>
-        <div class="ai-label">OpenAI</div>
-        <div class="ai-desc">Editorial-style deep dive with rich technical analysis and milestone breakdowns</div>
-        <div class="ai-btn">Open →</div>
+      <div class="hero-stat">
+        <div class="num green">10.3%</div>
+        <div class="label">Best Single‑Clip Win</div>
       </div>
-      <div class="ai-card" data-ai="GRO" onclick="openViewer('GRO')">
-        <div class="ai-logo">GRO</div>
-        <div class="ai-name">Grok</div>
-        <div class="ai-label">xAI</div>
-        <div class="ai-desc">Bold visual storytelling with strong data-forward presentation and sharp design</div>
-        <div class="ai-btn">Open →</div>
+      <div class="hero-stat">
+        <div class="num" style="font-size:1.8rem; color:var(--muted);">v0.1 → v1.5</div>
+        <div class="label">Versions Shipped</div>
       </div>
     </div>
-
-    <!-- ── Additional pages ── -->
-    <div style="height: 3rem;"></div>
-    <div class="sec-lbl" style="animation: fadeUp 0.7s 0.68s forwards;">Additional pages</div>
-    <div class="link-row" style="animation: fadeUp 0.7s 0.72s forwards;">
-      <a class="link-card" data-c="gold" onclick="openViewer('BMK');return false;" href="#">
-        <div class="lc-icon">📊</div>
-        <div>
-          <div class="lc-tag">Benchmark</div>
-          <div class="lc-title">8Z-Audio Benchmark v1.0</div>
-          <div class="lc-desc">15 clips · 4 codecs · full results</div>
-        </div>
-        <div class="lc-arrow">→</div>
-      </a>
-      <a class="link-card" data-c="green" onclick="openViewer('EVO');return false;" href="#">
-        <div class="lc-icon">🧬</div>
-        <div>
-          <div class="lc-tag">Evolution</div>
-          <div class="lc-title">8Z-AC Evolution</div>
-          <div class="lc-desc">Version-by-version development history</div>
-        </div>
-        <div class="lc-arrow">→</div>
-      </a>
-    </div>
-
-    <!-- ── Technical reference ── -->
-    <div class="sec-lbl" style="animation: fadeUp 0.7s 0.84s forwards;">Technical reference</div>
-    <div class="link-row" style="animation: fadeUp 0.7s 0.88s forwards;">
-      <a class="link-card" data-c="violet" onclick="openViewer('APX');return false;" href="#">
-        <div class="lc-icon">📄</div>
-        <div>
-          <div class="lc-tag">Appendix M · Technical Paper</div>
-          <div class="lc-title">8Z-Audio: Lossless Audio Compression</div>
-          <div class="lc-desc">Architecture · Container · Scanner & DCC · Benchmark · Roadmap · Market analysis</div>
-        </div>
-        <div class="lc-arrow">→</div>
-      </a>
-      <a class="link-card" data-c="rose" onclick="openViewer('MPN');return false;" href="#">
-        <div class="lc-icon">🗺️</div>
-        <div>
-          <div class="lc-tag">Master Plan · v1.8</div>
-          <div class="lc-title">8Z-Audio v1.8 Master Plan</div>
-          <div class="lc-desc">Beyond the hybrid — roadmap, architecture targets & next milestones</div>
-        </div>
-        <div class="lc-arrow">→</div>
-      </a>
-    </div>
-
   </div>
 </div>
 
-<!-- ══ VIEWER ══ -->
-<div id="viewer">
-  <div class="toolbar">
-    <a class="tb-home" href="#" onclick="goHome();return false;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-        <polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
-      8Z-Audio
-    </a>
-    <div class="tb-tabs">
-      <div class="tb-tab" data-ai="CLA" onclick="switchTab('CLA')"><div class="tab-dot"></div>Claude</div>
-      <div class="tb-tab" data-ai="GEM" onclick="switchTab('GEM')"><div class="tab-dot"></div>Gemini</div>
-      <div class="tb-tab" data-ai="GPT" onclick="switchTab('GPT')"><div class="tab-dot"></div>GPT-4o</div>
-      <div class="tb-tab" data-ai="GRO" onclick="switchTab('GRO')"><div class="tab-dot"></div>Grok</div>
-      <div class="tb-tab" data-ai="BMK" onclick="switchTab('BMK')"><div class="tab-dot"></div>Benchmark</div>
-      <div class="tb-tab" data-ai="EVO" onclick="switchTab('EVO')"><div class="tab-dot"></div>Evolution</div>
-      <div class="tb-tab" data-ai="APX" onclick="switchTab('APX')"><div class="tab-dot"></div>Appendix M</div>
-      <div class="tb-tab" data-ai="MPN" onclick="switchTab('MPN')"><div class="tab-dot"></div>Master Plan</div>
+<div class="divider"></div>
+
+<!-- ORIGIN -->
+<section id="origin">
+  <span class="sec-tag reveal">Chapter I · Cross-Domain Transfer</span>
+  <h2 class="reveal">Not Built in Isolation</h2>
+  <p class="reveal">
+    8Z-Audio is the third domain-specific compressor in the <strong>8Z-LO (Lossless Optimized)</strong> framework,
+    following 8Z-FASTA (genomic DNA sequences) and 8Z-TIF (satellite imagery). The project didn't start
+    from an audio textbook — it started from a radical question: <em>what if the same mathematical architecture
+    that decodes DNA compresses music?</em>
+  </p>
+
+  <div class="origin-grid">
+    <div class="origin-card reveal reveal-delay-1">
+      <div class="dna-badge">8Z-FASTA · DNA</div>
+      <h3>The DNA Compressor</h3>
+      <p>
+        Before any audio code was written, the team ran a sanity check: convert Pink Floyd's
+        "Shine On You Crazy Diamond" into DNA bases (A, C, G, T) and compress it with gemZ,
+        the FASTA compressor built for genomic sequences.
+      </p>
+      <p style="margin-top:0.75rem;">
+        gemZ's DNA models found <strong>zero hits</strong> — 100% RAW blocks.
+        The biological pattern-matchers understood nothing about waveforms. But the architectural
+        skeleton — MDL model battles, per-block predictor selection, residual coding — was exactly
+        what audio needed.
+      </p>
+    </div>
+    <div class="origin-card gold reveal reveal-delay-2">
+      <div class="dna-badge gold">8Z-DCC · Adaptation</div>
+      <h3>The Digital Claustrum Controller</h3>
+      <p>
+        The DCC was born in the TSP solver, migrated into the FASTA encoder, and landed in
+        audio. It's an adaptive search governor: a learned probability model that narrows the
+        encoder's candidate search space in real time, spending compute budget where the signal
+        is hardest and coasting where it's easy.
+      </p>
+      <p style="margin-top:0.75rem;">
+        In v1.5, DCC settled for the <strong>first confirmed time on a real audio file</strong>
+        (Pink Floyd 192kHz, u=10→15), proving the concept transfers across domains.
+      </p>
     </div>
   </div>
-  <div class="frame-wrap">
-    <iframe id="frame-CLA" src="8Z-AC_BD_CLA_Story.html"></iframe>
-    <iframe id="frame-GEM" src="8Z-AC_BD_GEM_Story.html"></iframe>
-    <iframe id="frame-GPT" src="8Z-AC_BD_GPT_Story.html"></iframe>
-    <iframe id="frame-GRO" src="8Z-AC_BD_GRO_Story.html"></iframe>
-    <iframe id="frame-BMK" src="8Z-Audio_Benchmark.html"></iframe>
-    <iframe id="frame-EVO" src="8Z-AC_evolution.html"></iframe>
-    <iframe id="frame-APX" src="8Z-AC_Appendix_M.html"></iframe>
-    <iframe id="frame-MPN" src="8Z-Audio_v1.8_Master_Plan.html"></iframe>
+
+  <div style="margin-top:3rem;" class="reveal">
+    <p>
+      The 8Z framework rests on one principle: <strong>Minimum Description Length (MDL) model selection.</strong>
+      Every bit saved must correspond to genuine reconstruction capability — not statistical correlation,
+      not heuristic intuition. Each frame of audio is a competition. Multiple predictors battle; MDL picks the winner.
+      FLAC runs one predictor (LPC) on every frame, always. That's the gap.
+    </p>
   </div>
-</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- THE SPRINT -->
+<section id="sprint">
+  <span class="sec-tag reveal">Chapter II · The Five-Day Sprint</span>
+  <h2 class="reveal">v0.1 → v1.5</h2>
+  <p class="reveal">
+    From an empty file to a compressor that beats FLAC at maximum compression.
+    Every version had a lesson. Every regression had a diagnosis.
+  </p>
+
+  <div class="timeline">
+    <div class="tl-entry reveal">
+      <div class="tl-dot"></div>
+      <div class="tl-day">Day 1 · February 18</div>
+      <h3>The FASTA Experiment & v0.1 — First Proof of Life</h3>
+      <div class="tl-badge-row">
+        <span class="badge cyan">LPC Orders 1–32</span>
+        <span class="badge cyan">DELTA Predictor</span>
+        <span class="badge cyan">Mid-Side Stereo</span>
+        <span class="badge cyan">SHA3-256 Verified</span>
+        <span class="badge rose">No Rice Coding</span>
+      </div>
+      <p>
+        The first working encoder was built in a single chat session. LPC via Levinson-Durbin autocorrelation,
+        DELTA prediction ported from gemZ, MDL battle per frame, residual compression via int32 → LZMA,
+        all four stereo decorrelation modes, bit-perfect verification.
+      </p>
+      <div class="tl-result">
+        9,417,674 bytes vs. FLAC 6,055,738 — architecture proven, Rice coding gap identified immediately
+      </div>
+    </div>
+
+    <div class="tl-entry reveal">
+      <div class="tl-dot gold"></div>
+      <div class="tl-day gold">Day 2 · February 19</div>
+      <h3>v1.0–v1.2 — Rice Coding & FLAC Territory</h3>
+      <div class="tl-badge-row">
+        <span class="badge gold">Golomb-Rice Entropy</span>
+        <span class="badge gold">Partition Search</span>
+        <span class="badge gold">QLP Precision Search 8–16</span>
+        <span class="badge cyan">3 Window Functions</span>
+      </div>
+      <p>
+        Implemented proper Golomb-Rice coding with partition search, QLP quantization precision
+        search, and three apodization windows (Hann, Tukey, none). The encoder crossed into
+        FLAC-5 territory for the first time.
+      </p>
+      <div class="tl-result gold">
+        Approached FLAC -5 compression on Pink Floyd 192kHz. The real FLAC gap isolated.
+      </div>
+    </div>
+
+    <div class="tl-entry reveal">
+      <div class="tl-dot green"></div>
+      <div class="tl-day green">Day 3 · February 20</div>
+      <h3>v1.3.1 — Multiprocessing & Best-Ever Compression</h3>
+      <div class="tl-badge-row">
+        <span class="badge green">Python Multiprocessing</span>
+        <span class="badge green">Exhaustive Search</span>
+        <span class="badge green">~600 Candidates/Frame</span>
+        <span class="badge rose">11-Hour Encode</span>
+      </div>
+      <p>
+        Exhaustive combinatorial search across all candidate configurations — LPC orders, windows,
+        QLP precision — evaluated per frame with MDL arbitration. Expensive. Brutally thorough.
+        This became the permanent compression quality ceiling to beat.
+      </p>
+      <div class="tl-result green">
+        <strong>5,104,935 bytes — beats FLAC -8 by 2.1%.</strong> First time a handwritten encoder
+        surpassed FLAC's maximum default setting.
+      </div>
+    </div>
+
+    <div class="tl-entry reveal">
+      <div class="tl-dot"></div>
+      <div class="tl-day">Day 4 · February 21</div>
+      <h3>v1.4 — DCC Port from HYB4</h3>
+      <div class="tl-badge-row">
+        <span class="badge cyan">Digital Claustrum Controller</span>
+        <span class="badge cyan">CodecLearner</span>
+        <span class="badge cyan">7-bit DCC Events</span>
+        <span class="badge rose">1.53% Regression vs v1.3.1</span>
+      </div>
+      <p>
+        The DCC search governor was ported from the HYB4 FASTA encoder. 7-bit event encoding
+        was too fine-grained — the DCC never found a stable pattern to exploit. Encode time
+        dropped to 102 minutes (from 11 hours), but compression regressed slightly.
+        Lesson: DCC event granularity matters enormously.
+      </p>
+      <div class="tl-result">
+        Encode: 11 hr → 102 min. DCC concept proven but not yet settled. 7-bit events too noisy.
+      </div>
+    </div>
+
+    <div class="tl-entry reveal">
+      <div class="tl-dot green"></div>
+      <div class="tl-day green">Day 5 · February 22 — The Benchmark</div>
+      <h3>v1.5 — DCC Settles. Benchmark at Scale.</h3>
+      <div class="tl-badge-row">
+        <span class="badge green">Blocksize 16384</span>
+        <span class="badge green">4-bit DCC Events</span>
+        <span class="badge green">DCC Settled First Time</span>
+        <span class="badge gold">15-Clip Parallel Corpus</span>
+        <span class="badge gold">8 Workers · 75 min</span>
+      </div>
+      <p>
+        Switching DCC from 7-bit to 4-bit events was the breakthrough: the controller finally
+        settled on Pink Floyd 192kHz (u=10→15). Block size optimized to 16384. Scanner v1.2,
+        clipper v1.2, and parallel pipeline v1.2 built in the same session. 15 clips across
+        10 songs encoded simultaneously.
+      </p>
+      <div class="tl-result green">
+        <strong>v1.5 beats FLAC-12 on 7 of 15 clips.</strong> Best win: Lady Gaga "Die With A Smile" — 10.3% smaller than FLAC's best.
+        All files lossless-verified via SHA3-256.
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <span class="sec-tag reveal">Chapter III · Architecture</span>
+  <h2 class="reveal">What Makes It Different</h2>
+  <p class="reveal">
+    FLAC uses one prediction model for every frame of audio. 8Z-Audio uses up to 600 candidates,
+    evaluated by MDL, with an adaptive search governor that learns which candidates work
+    for this particular signal.
+  </p>
+
+  <div class="arch-diagram reveal">
+    <div style="text-align:center; color:var(--muted); font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:1.5rem;">
+      8Z-Audio v1.5 Frame Pipeline
+    </div>
+    <div class="arch-flow">
+      <div class="arch-node">
+        WAV Frame
+        <small>16384 samples</small>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node gold">
+        DCC Governor
+        <small>Budget allocation</small>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        Candidates
+        <small>~600 configs</small>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        MDL Battle
+        <small>True total cost</small>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node green">
+        Best Predictor
+        <small>Rice-coded residuals</small>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node green">
+        .8za Frame
+        <small>SHA3 verified</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="arch-grid">
+    <div class="arch-card reveal reveal-delay-1">
+      <div class="arch-icon">📐</div>
+      <h3>LPC Orders 1–32</h3>
+      <p>Vs. FLAC's 0–12. Higher orders capture longer-range correlations in complex harmonic content.</p>
+    </div>
+    <div class="arch-card reveal reveal-delay-1">
+      <div class="arch-icon">🪟</div>
+      <h3>Three Window Functions</h3>
+      <p>Hann, Tukey, and no apodization — evaluated per frame. FLAC uses no apodization at its default settings.</p>
+    </div>
+    <div class="arch-card reveal reveal-delay-2">
+      <div class="arch-icon">🎯</div>
+      <h3>QLP Precision Search</h3>
+      <p>Exhaustive search over 8–16 bits of quantization precision per frame. FLAC uses a fixed precision per level.</p>
+    </div>
+    <div class="arch-card reveal reveal-delay-2">
+      <div class="arch-icon">🧠</div>
+      <h3>DCC + CodecLearner</h3>
+      <p>The Digital Claustrum Controller learns per-signal statistics, adapting search depth to where the signal is hardest.</p>
+    </div>
+    <div class="arch-card reveal reveal-delay-3">
+      <div class="arch-icon">⚖️</div>
+      <h3>MDL Model Selection</h3>
+      <p>Every bit counts. MDL sees the true total cost including predictor overhead — no bit is "free."</p>
+    </div>
+    <div class="arch-card reveal reveal-delay-3">
+      <div class="arch-icon">🔁</div>
+      <h3>All Stereo Modes</h3>
+      <p>Mid-Side, Left-Side, Right-Side, and Independent — selected per frame by MDL, not globally per file.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- BENCHMARK -->
+<section id="bench" class="full">
+  <div style="max-width:1100px; margin:0 auto;">
+    <span class="sec-tag green reveal">Chapter IV · Results</span>
+    <h2 class="reveal">The Benchmark</h2>
+    <div class="bench-intro reveal">
+      <p>
+        15 clips across 10 songs — selected by the 8Z Audio Scanner v1.2 to cover all difficulty
+        categories. Encoded in parallel with 8 workers. All results verified lossless (SHA3-256).
+        Compression ratio: lower is better (fraction of original size).
+      </p>
+    </div>
+
+    <!-- bar chart of wins/losses -->
+    <div class="chart-section reveal">
+      <div class="chart-title">8Z-Audio v1.5 vs FLAC-12 · Compression Advantage per Clip</div>
+      <div class="bar-chart" id="bar-chart"></div>
+    </div>
+
+    <div style="height:2.5rem;"></div>
+
+    <!-- full table -->
+    <div class="bench-table-wrap reveal">
+      <div class="bench-header">
+        <div>Clip</div>
+        <div>Category</div>
+        <div style="text-align:right">8ZA v1.5</div>
+        <div style="text-align:right" class="col-flac5">FLAC-5</div>
+        <div style="text-align:right" class="col-ofr">OFR</div>
+        <div style="text-align:right">vs FLAC-12</div>
+      </div>
+
+      <div class="bench-row">
+        <div class="clip">Lady Gaga — Die With A Smile</div>
+        <div class="cat badge cyan">diverse</div>
+        <div class="val winner">0.2090</div>
+        <div class="val col-flac5">0.2375</div>
+        <div class="val col-ofr">0.1911</div>
+        <div class="diff"><span class="diff-win">▲ 10.3%</span></div>
+      </div>
+      <div class="bench-row">
+        <div class="clip">Pink Floyd — SOYCD (10s tonal)</div>
+        <div class="cat badge cyan">tonal</div>
+        <div class="val winner">0.2515</div>
+        <div class="val col-flac5">0.2744</div>
+        <div class="val col-ofr">0.2353</div>
+        <div class="diff"><span class="diff-win">▲ 5.2%</span></div>
+      </div>
+      <div class="bench-row">
+        <div class="clip">BD — Fractured Harmony (tonal)</div>
+        <div class="cat badge cyan">tonal</div>
+        <div class="val winner">0.2535</div>
+        <div class="val col-flac5">0.2775</div>
+        <div class="val col-ofr">0.2319</div>
+        <div class="diff"><span class="diff-win">▲ 5.1%</span></div>
+      </div>
+      <div class="bench-row">
+        <div class="clip">Pink Floyd — SOYCD (30s dynamic)</div>
+        <div class="cat badge cyan">dynamic</div>
+        <div class="val winner">0.2004</div>
+        <div class="val col-flac5">0.2208</div>
+        <div class="val col-ofr">0.1802</div>
+        <div class="diff"><span class="diff-win">▲ 3.0%</span></div>
+      </div>
+      <div class="bench-row">
+        <div class="clip">BD — Fractured Harmony (easiest)</div>
+        <div class="cat badge gold">easiest</div>
+        <div class="val winner">0.3405</div>
+        <div class="val col-flac5">0.3670</div>
+        <div class="val col-ofr">0.3044</div>
+        <div class="diff"><span class="diff-win">▲ 2.9%</span></div>
+      </div>
+      <div class="bench-row">
+        <div class="clip">BD — Awakening AI (tonal)</div>
+        <div class="cat badge cyan">tonal</div>
+        <div class="val winner">0.3722</div>
+        <div class="val col-flac5">0.4207</div>
+        <div class="val col-ofr">0.3338</div>
+        <div class="diff"><span class="diff-win">▲ 1.5%</span></div>
+      </div>
+      <div class="bench-row">
+        <div class="clip">Metallica — Lux Æterna (buildup)</div>
+        <div class="cat badge gold">buildup</div>
+        <div class="val winner">0.7935</div>
+        <div class="val col-flac5">0.7943</div>
+        <div class="val col-ofr">0.7734</div>
+        <div class="diff"><span class="diff-win">▲ 0.03%</span></div>
+      </div>
+      <div class="bench-row">
+        <div class="clip">BD — Lacrimosa Requiem</div>
+        <div class="cat badge gold">diverse</div>
+        <div class="val">0.5592</div>
+        <div class="val col-flac5">0.6347</div>
+        <div class="val col-ofr">0.5189</div>
+        <div class="diff"><span class="diff-lose">▼ 0.2%</span></div>
+      </div>
+      <div class="bench-row">
+        <div class="clip">Metallica — Lux Æterna (transient)</div>
+        <div class="cat badge rose">transient</div>
+        <div class="val">0.6449</div>
+        <div class="val col-flac5">0.6448</div>
+        <div class="val col-ofr">0.6158</div>
+        <div class="diff"><span class="diff-lose">▼ 0.2%</span></div>
+      </div>
+      <div class="bench-row">
+        <div class="clip">BD — Between the Strings</div>
+        <div class="cat badge gold">dcc_stress</div>
+        <div class="val">0.4770</div>
+        <div class="val col-flac5">0.4879</div>
+        <div class="val col-ofr">0.4378</div>
+        <div class="diff"><span class="diff-lose">▼ 1.3%</span></div>
+      </div>
+      <div class="bench-row">
+        <div class="clip">BD — Echoes of the Shore</div>
+        <div class="cat badge gold">dcc_stress</div>
+        <div class="val">0.5378</div>
+        <div class="val col-flac5">0.5961</div>
+        <div class="val col-ofr">0.4901</div>
+        <div class="diff"><span class="diff-lose">▼ 1.8%</span></div>
+      </div>
+      <div class="bench-row">
+        <div class="clip">BD — Where Do I Go</div>
+        <div class="cat badge gold">dcc_stress</div>
+        <div class="val">0.5263</div>
+        <div class="val col-flac5">0.5236</div>
+        <div class="val col-ofr">0.4793</div>
+        <div class="diff"><span class="diff-lose">▼ 2.0%</span></div>
+      </div>
+      <div class="bench-row">
+        <div class="clip">Rammstein — Du Hast (diverse)</div>
+        <div class="cat badge rose">diverse</div>
+        <div class="val">0.4125</div>
+        <div class="val col-flac5">0.4122</div>
+        <div class="val col-ofr" style="color:var(--rose)">0.5162</div>
+        <div class="diff"><span class="diff-lose">▼ 2.7%</span></div>
+      </div>
+      <div class="bench-row">
+        <div class="clip">Rammstein — Du Hast (hardest)</div>
+        <div class="cat badge rose">hardest</div>
+        <div class="val">0.5504</div>
+        <div class="val col-flac5">0.5246</div>
+        <div class="val col-ofr" style="color:var(--rose)">0.7255</div>
+        <div class="diff"><span class="diff-lose">▼ 5.7%</span></div>
+      </div>
+      <div class="bench-row">
+        <div class="clip">Rammstein — Du Hast (60s DCC)</div>
+        <div class="cat badge rose">dcc_best</div>
+        <div class="val">0.5145</div>
+        <div class="val col-flac5">0.4818</div>
+        <div class="val col-ofr" style="color:var(--rose)">0.6008</div>
+        <div class="diff"><span class="diff-lose">▼ 8.0%</span></div>
+      </div>
+    </div>
+
+    <p style="margin-top:1rem; font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--muted);">
+      Total bytes — 8ZA: 30,730,661 · FLAC-12: 30,416,285 · FLAC-5: 31,660,589 · OFR: 30,531,285
+    </p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- DISCOVERIES -->
+<section id="discoveries">
+  <span class="sec-tag gold reveal">Chapter V · Key Discoveries</span>
+  <h2 class="reveal">What the Data Revealed</h2>
+
+  <div class="disc-grid">
+    <div class="disc-card reveal reveal-delay-1" data-num="01">
+      <div class="disc-num green">1.9×</div>
+      <h3>AI Audio Is More Predictable</h3>
+      <p>
+        Scanner data across 10 songs proves AI-generated audio (Producer.ai) has mean difficulty
+        <strong>0.25</strong> vs. human recordings at <strong>0.50</strong> at matched sample rates.
+        AI music is structurally simpler — more sustained tones, less transient chaos.
+        Business implication: a specialized codec for AI audio platforms could achieve significantly
+        better ratios than general-purpose lossless codecs.
+      </p>
+    </div>
+    <div class="disc-card gold reveal reveal-delay-2" data-num="02">
+      <div class="disc-num gold">u=10→15</div>
+      <h3>DCC Settled — First Time</h3>
+      <p>
+        The Digital Claustrum Controller reached a stable learned state on Pink Floyd 192kHz
+        (30s, 563 frames). The critical parameter: <strong>4-bit events instead of 7-bit</strong>.
+        The finer granularity of 7-bit encoding produced too much noise for the controller to
+        find a pattern. Coarser events → cleaner signal → stable adaptation.
+        Two-pass architecture will eliminate the sequential bottleneck entirely.
+      </p>
+    </div>
+    <div class="disc-card reveal reveal-delay-3" data-num="03">
+      <div class="disc-num rose">+39%</div>
+      <h3>OptimFROG's Genre Weakness</h3>
+      <p>
+        Industrial music (Rammstein) consistently catastrophically fails in OptimFROG —
+        39.3% worse than FLAC on the hardest 10-second clip, 26–28% worse on the others.
+        8Z-Audio also loses on Rammstein, but far less badly (+3–8%). This is a specific
+        architectural opportunity: if 8Z can handle industrial music better, it becomes a
+        competitive differentiator in an otherwise mature field.
+      </p>
+    </div>
+    <div class="disc-card green reveal reveal-delay-1" data-num="04">
+      <div class="disc-num">∀ domains</div>
+      <h3>Cross-Domain Transfer Works</h3>
+      <p>
+        DCC: TSP solver → FASTA encoder → audio encoder.
+        Scanner concept: DNA pipeline → audio difficulty pre-screener.
+        MDL framework: 8Z image encoder → audio frame selection.
+        The same architectural patterns — MDL arbitration, per-block model competition,
+        adaptive search governors — produce gains across every domain they've been applied to.
+      </p>
+    </div>
+    <div class="disc-card gold reveal reveal-delay-2" data-num="05">
+      <div class="disc-num gold">100%</div>
+      <h3>Perfect Category Win Rates</h3>
+      <p>
+        On tonal content: <strong>3 for 3</strong>. On dynamic content: <strong>1 for 1</strong>.
+        On the "easiest" category: <strong>1 for 1</strong>. On buildups: <strong>1 for 1</strong>.
+        8Z-Audio's multi-model approach was purpose-built for structured content — and the
+        benchmark confirmed it. The remaining losses are concentrated in industrial/transient
+        content where LPC's weaknesses are known and targeted for v1.6.
+      </p>
+    </div>
+    <div class="disc-card reveal reveal-delay-3" data-num="06">
+      <div class="disc-num">≡ Frozen</div>
+      <h3>The Field Is 18 Years Stale</h3>
+      <p>
+        Every major lossless audio codec — FLAC (2001), WavPack (2002), TAK (2007),
+        OptimFROG, Monkey's Audio — uses LPC as its primary or sole prediction model.
+        No production codec performs per-frame multi-model MDL selection, harmonic modeling,
+        or periodic template matching. The field has been architecturally frozen since ~2007.
+        8Z-Audio is the first systematic attempt to break out of that constraint.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <span class="sec-tag green reveal">Chapter VI · What's Next</span>
+  <h2 class="reveal">v1.6 — Two-Pass Architecture</h2>
+  <p class="reveal">
+    The core innovation of v1.6 is separation of concerns: signal analysis (fast, sequential)
+    is decoupled from encoding (slow, parallelizable). Scanner v1.2 becomes Pass 1.
+    The encoder reads its output and processes all frames independently.
+  </p>
+
+  <div class="road-grid">
+    <div class="road-item reveal reveal-delay-1">
+      <div class="priority">Priority 1 · Speed</div>
+      <h3>Two-Pass Parallel</h3>
+      <p>Pass 1 (Scanner): ~10s. Pass 2 (Encoder): independent frames, N workers.</p>
+      <div class="road-gain">40 min → 5 min target</div>
+    </div>
+    <div class="road-item reveal reveal-delay-1">
+      <div class="priority">Priority 2 · Adaptive</div>
+      <h3>Adaptive Blocksize</h3>
+      <p>Rate-matched block sizes: 16384 at 44.1kHz, 8192 at 96kHz, 4096 at 192kHz.</p>
+      <div class="road-gain">+1.6% on 192kHz content</div>
+    </div>
+    <div class="road-item reveal reveal-delay-2">
+      <div class="priority">Priority 3 · Hard Content</div>
+      <h3>Rice Partition Opt.</h3>
+      <p>Improved partition parameter search to close the gap on high-entropy frames.</p>
+      <div class="road-gain">+0.5–1% on transient/industrial</div>
+    </div>
+    <div class="road-item reveal reveal-delay-2">
+      <div class="priority">Priority 4 · Entropy</div>
+      <h3>rANS Coding</h3>
+      <p>Replace Rice on high-entropy residuals with range asymmetric numeral systems.</p>
+      <div class="road-gain">+0.5–1% on hard content</div>
+    </div>
+    <div class="road-item reveal reveal-delay-3">
+      <div class="priority">Priority 5 · Tonal</div>
+      <h3>Periodic Predictor</h3>
+      <p>Exploit sample repetition directly in sustained notes and synthesizer content.</p>
+      <div class="road-gain">+1–3% on tonal clips</div>
+    </div>
+    <div class="road-item reveal reveal-delay-3">
+      <div class="priority">Priority 6 · Novel</div>
+      <h3>Harmonic Predictor</h3>
+      <p>Sinusoidal modeling for harmonic content. No lossless audio codec currently does this.</p>
+      <div class="road-gain">+2–5% on tonal (projected)</div>
+    </div>
+  </div>
+
+  <div class="target-box reveal">
+    <h3 style="font-size:1.2rem; margin-bottom:0.5rem;">v1.6 Targets</h3>
+    <p style="color:var(--muted); font-size:0.9rem;">
+      From the benchmark session post-mortem — everything needed to push beyond 50% win rate.
+    </p>
+    <div class="target-grid">
+      <div class="target-item">
+        <div class="old">7 / 15 (47%)</div>
+        <div class="new">10 / 15</div>
+        <div class="desc">Clips beating FLAC-12</div>
+      </div>
+      <div class="target-item">
+        <div class="old">10.3%</div>
+        <div class="new">15%+</div>
+        <div class="desc">Best single-clip win</div>
+      </div>
+      <div class="target-item">
+        <div class="old">40 min (PF 192kHz)</div>
+        <div class="new">5–10 min</div>
+        <div class="desc">Encode time target</div>
+      </div>
+      <div class="target-item">
+        <div class="old">75 min (14 clips, 8×)</div>
+        <div class="new">15 min</div>
+        <div class="desc">Parallel pipeline</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SONGS -->
+<section id="songs">
+  <span class="sec-tag green reveal">The Music</span>
+  <h2 class="reveal">10 Songs, 6 Playable</h2>
+  <p class="reveal" style="max-width:68ch">
+    Six original compositions by <strong>Bojan Dobrečevič</strong>, created via Producer.ai — used as the AI half of the 8Z-Audio benchmark corpus.
+    Scanner data shows AI-generated audio is <strong>1.9× more compressible</strong> than human recordings, making them ideal test subjects.
+    Play the 10–30 second benchmark clip (WAV) or the full song (MP3).
+  </p>
+
+  <!-- PLAYER -->
+  <div class="songs-player-wrap reveal">
+    <div id="player-body">
+      <div class="player-empty">▶ &nbsp; Select a song below to start listening</div>
+    </div>
+  </div>
+
+  <!-- AI SONGS GRID -->
+  <div class="songs-grid reveal">
+
+    <div class="song-card" onclick="loadSong(0,'full')">
+      <div class="song-card-title"><span class="sc-icon">▶</span> Fractured Harmony</div>
+      <div class="badges">
+        <span class="badge green">easiest</span>
+        <span class="badge cyan">tonal</span>
+      </div>
+      <div class="song-result">8ZA vs FLAC-12: <span class="pos">+5.1% win</span> · <span class="pos">+2.9% win</span></div>
+      <div class="song-btns">
+        <button class="song-btn clip-btn" onclick="loadSong(0,'clip');event.stopPropagation()">▶ Clip</button>
+        <button class="song-btn full-btn" onclick="loadSong(0,'full');event.stopPropagation()">♫ Full</button>
+      </div>
+    </div>
+
+    <div class="song-card" onclick="loadSong(1,'full')">
+      <div class="song-card-title"><span class="sc-icon">▶</span> Where Do I Go</div>
+      <div class="badges">
+        <span class="badge gold">dcc_stress</span>
+      </div>
+      <div class="song-result">8ZA vs FLAC-12: <span class="neg">−2.0%</span></div>
+      <div class="song-btns">
+        <button class="song-btn clip-btn" onclick="loadSong(1,'clip');event.stopPropagation()">▶ Clip</button>
+        <button class="song-btn full-btn" onclick="loadSong(1,'full');event.stopPropagation()">♫ Full</button>
+      </div>
+    </div>
+
+    <div class="song-card" onclick="loadSong(2,'full')">
+      <div class="song-card-title"><span class="sc-icon">▶</span> Awakening AI</div>
+      <div class="badges">
+        <span class="badge cyan">tonal</span>
+      </div>
+      <div class="song-result">8ZA vs FLAC-12: <span class="pos">+1.5% win</span></div>
+      <div class="song-btns">
+        <button class="song-btn clip-btn" onclick="loadSong(2,'clip');event.stopPropagation()">▶ Clip</button>
+        <button class="song-btn full-btn" onclick="loadSong(2,'full');event.stopPropagation()">♫ Full</button>
+      </div>
+    </div>
+
+    <div class="song-card" onclick="loadSong(3,'full')">
+      <div class="song-card-title"><span class="sc-icon">▶</span> Echoes of the Shore</div>
+      <div class="badges">
+        <span class="badge gold">dcc_stress</span>
+      </div>
+      <div class="song-result">8ZA vs FLAC-12: <span class="neg">−1.8%</span></div>
+      <div class="song-btns">
+        <button class="song-btn clip-btn" onclick="loadSong(3,'clip');event.stopPropagation()">▶ Clip</button>
+        <button class="song-btn full-btn" onclick="loadSong(3,'full');event.stopPropagation()">♫ Full</button>
+      </div>
+    </div>
+
+    <div class="song-card" onclick="loadSong(4,'full')">
+      <div class="song-card-title"><span class="sc-icon">▶</span> Lacrimosa Requiem</div>
+      <div class="badges">
+        <span class="badge rose">diverse</span>
+      </div>
+      <div class="song-result">8ZA vs FLAC-12: <span class="neg">−0.2%</span></div>
+      <div class="song-btns">
+        <button class="song-btn clip-btn" onclick="loadSong(4,'clip');event.stopPropagation()">▶ Clip</button>
+        <button class="song-btn full-btn" onclick="loadSong(4,'full');event.stopPropagation()">♫ Full</button>
+      </div>
+    </div>
+
+    <div class="song-card" onclick="loadSong(5,'full')">
+      <div class="song-card-title"><span class="sc-icon">▶</span> Between the Strings</div>
+      <div class="badges">
+        <span class="badge gold">dcc_stress</span>
+      </div>
+      <div class="song-result">8ZA vs FLAC-12: <span class="neg">−1.3%</span></div>
+      <div class="song-btns">
+        <button class="song-btn clip-btn" onclick="loadSong(5,'clip');event.stopPropagation()">▶ Clip</button>
+        <button class="song-btn full-btn" onclick="loadSong(5,'full');event.stopPropagation()">♫ Full</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HUMAN RECORDINGS -->
+  <div style="margin-top:2.5rem" class="reveal">
+    <span class="sec-tag" style="margin-bottom:0.85rem; display:inline-block;">Reference Recordings — Copyright protected, no player</span>
+  </div>
+  <div class="human-grid reveal">
+
+    <div class="human-card">
+      <div class="human-artist">Pink Floyd</div>
+      <div class="human-title">Shine On You Crazy Diamond</div>
+      <div class="badges">
+        <span class="badge cyan">192 kHz · 24-bit</span>
+        <span class="badge cyan">progressive</span>
+      </div>
+      <div class="human-result">8ZA: <span class="pos">+3.0%</span> (dynamic) · <span class="pos">+5.2%</span> (tonal)</div>
+    </div>
+
+    <div class="human-card">
+      <div class="human-artist">Metallica</div>
+      <div class="human-title">Lux Æterna</div>
+      <div class="badges">
+        <span class="badge rose">thrash metal</span>
+        <span class="badge">44.1 kHz</span>
+      </div>
+      <div class="human-result">8ZA: <span class="pos">+0.03%</span> (buildup) · <span class="neg">−0.2%</span> (transient)</div>
+    </div>
+
+    <div class="human-card" style="border-color:rgba(52,211,153,0.25)">
+      <div class="human-artist">Lady Gaga</div>
+      <div class="human-title">Die With A Smile</div>
+      <div class="badges">
+        <span class="badge green">pop</span>
+        <span class="badge">44.1 kHz</span>
+      </div>
+      <div class="human-result">8ZA: <span class="pos" style="font-weight:700">+10.3% ← best win overall</span></div>
+    </div>
+
+    <div class="human-card">
+      <div class="human-artist">Rammstein</div>
+      <div class="human-title">Du Hast</div>
+      <div class="badges">
+        <span class="badge rose">industrial</span>
+        <span class="badge">48 kHz</span>
+      </div>
+      <div class="human-result">8ZA: <span class="neg">−2.7% to −8.0%</span></div>
+      <div class="human-note">OFR catastrophic: −26 to −39% on industrial</div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer>
+  <div class="credits-grid">
+    <div class="credit-col">
+      <h4>About This Work</h4>
+      <p>
+        8Z-Audio is part of the 8Z-LO (Lossless Optimized) framework developed at the
+        AIM³ Institute in Ljubljana, Slovenia. The project applies cross-domain mathematical
+        insight — originally developed for genomic DNA compression — to audio signals.
+        All versions are lossless and bit-perfectly verified via SHA3-256 on every encode.
+      </p>
+      <p style="margin-top:0.75rem;">
+        <strong style="color:rgba(232,237,245,0.65);">Author:</strong>
+        <span style="color:rgba(232,237,245,0.45);">Bojan Dobrečevič, AIM³ Institute, Ljubljana, Slovenia</span>
+      </p>
+    </div>
+    <div class="credit-col">
+      <h4>AI Collaborators</h4>
+      <ul class="ai-list">
+        <li class="primary">Claude Opus 4.6 — Primary Partner</li>
+        <li>Grok 4.2 — Peer Review</li>
+        <li>Gemini 3 — Peer Review</li>
+        <li>GPT o3 — Peer Review</li>
+        <li>GLM / DeepSeek — Peer Review</li>
+        <li>Kimi K2.5 — Peer Review</li>
+        <li>Qwen 3.5 — Peer Review</li>
+      </ul>
+    </div>
+    <div class="credit-col">
+      <h4>Benchmark Corpus</h4>
+      <ul class="ai-list">
+        <li>Pink Floyd — 192kHz/24bit</li>
+        <li>Metallica — 44.1kHz</li>
+        <li>Lady Gaga — 44.1kHz</li>
+        <li>Rammstein — 48kHz</li>
+        <li>BD / Producer.ai — 6 AI tracks</li>
+      </ul>
+      <p style="margin-top:0.75rem; font-size:0.8rem;">
+        15 clips · 10 songs · 77.5 MB corpus
+      </p>
+    </div>
+  </div>
+  <div class="copyright">
+    © 2026 AIM³ Institute · Bojan Dobrečevič ·
+    8Z-LO Framework · Five Days Against FLAC
+  </div>
+</footer>
 
 <script>
-  const AIs = ['CLA','GEM','GPT','GRO','BMK','EVO','APX','MPN'];
+  // ── Waveform SVG generator ──
+  (function() {
+    const svg = document.getElementById('wv-group');
+    const W = 600, H = 500;
+    const layers = [
+      { amp: 180, freq: 0.012, phase: 0, opacity: 0.08, stroke: '#00e5ff', width: 1 },
+      { amp: 120, freq: 0.02,  phase: 1.2, opacity: 0.12, stroke: '#00e5ff', width: 1.5 },
+      { amp:  80, freq: 0.035, phase: 0.5, opacity: 0.2,  stroke: '#00e5ff', width: 2 },
+      { amp:  50, freq: 0.055, phase: 2.1, opacity: 0.35, stroke: '#00e5ff', width: 2.5 },
+      { amp:  30, freq: 0.09,  phase: 0.8, opacity: 0.5,  stroke: '#00e5ff', width: 2 },
+      { amp:  18, freq: 0.14,  phase: 3.0, opacity: 0.3,  stroke: '#f59e0b', width: 1.5 },
+      { amp:  10, freq: 0.22,  phase: 1.5, opacity: 0.2,  stroke: '#f59e0b', width: 1 },
+    ];
 
-  function openViewer(ai) {
-    document.getElementById('landing').style.display = 'none';
-    document.getElementById('viewer').style.display  = 'flex';
-    switchTab(ai);
-  }
-  function switchTab(ai) {
-    AIs.forEach(a => {
-      document.getElementById('frame-'+a).classList.toggle('active', a===ai);
+    const paths = layers.map(l => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      el.setAttribute('fill', 'none');
+      el.setAttribute('stroke', l.stroke);
+      el.setAttribute('stroke-width', l.width);
+      el.setAttribute('opacity', l.opacity);
+      svg.appendChild(el);
+      return { el, ...l };
     });
-    document.querySelectorAll('.tb-tab').forEach(t => {
-      t.classList.toggle('active', t.dataset.ai===ai);
+
+    let t = 0;
+    function buildPath(layer) {
+      const pts = [];
+      for (let x = 0; x <= W; x += 4) {
+        const noise = Math.sin(x * 0.007 + t * 0.8) * 0.35;
+        const y = H/2
+          + Math.sin(x * layer.freq + layer.phase + t) * layer.amp
+          + Math.sin(x * layer.freq * 2.3 + t * 1.3 + layer.phase) * layer.amp * 0.3
+          + noise * layer.amp * 0.15;
+        pts.push(x === 0 ? `M${x},${y}` : `L${x},${y}`);
+      }
+      return pts.join(' ');
+    }
+
+    function animate() {
+      t += 0.012;
+      paths.forEach(p => p.el.setAttribute('d', buildPath(p)));
+      requestAnimationFrame(animate);
+    }
+    animate();
+  })();
+
+  // ── Scroll reveal ──
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
     });
-  }
-  function goHome() {
-    document.getElementById('viewer').style.display  = 'none';
-    document.getElementById('landing').style.display = 'flex';
-  }
-  document.addEventListener('keydown', e => {
-    if (document.getElementById('viewer').style.display !== 'flex') return;
-    const map = {'1':'CLA','2':'GEM','3':'GPT','4':'GRO','5':'BMK','6':'EVO','7':'APX','8':'MPN'};
-    if (map[e.key]) switchTab(map[e.key]);
-    if (e.key==='Escape') goHome();
+  }, { threshold: 0, rootMargin: '0px 0px -40px 0px' });
+  reveals.forEach(r => io.observe(r));
+  // Fallback: force-reveal anything still hidden after 2.5s
+  setTimeout(() => {
+    reveals.forEach(r => { if (!r.classList.contains('visible')) r.classList.add('visible'); });
+  }, 2500);
+
+  // ── Bar chart ──
+  const clips = [
+    { label: 'LG — Die With A Smile',      diff: 10.3,  win: true },
+    { label: 'PF — SOYCD (10s tonal)',      diff: 5.2,   win: true },
+    { label: 'BD — Fractured (tonal)',       diff: 5.1,   win: true },
+    { label: 'PF — SOYCD (30s dynamic)',    diff: 3.0,   win: true },
+    { label: 'BD — Fractured (easiest)',     diff: 2.9,   win: true },
+    { label: 'BD — Awakening AI',           diff: 1.5,   win: true },
+    { label: 'Metallica — Lux Æt. build',  diff: 0.03,  win: true },
+    { label: 'BD — Lacrimosa',              diff: -0.2,  win: false },
+    { label: 'Metallica — Lux Æt. trans.',  diff: -0.2,  win: false },
+    { label: 'BD — Between the Strings',    diff: -1.3,  win: false },
+    { label: 'BD — Echoes of the Shore',    diff: -1.8,  win: false },
+    { label: 'BD — Where Do I Go',          diff: -2.0,  win: false },
+    { label: 'Rammstein — Du Hast (div)',   diff: -2.7,  win: false },
+    { label: 'Rammstein — Du Hast (hard)', diff: -5.7,  win: false },
+    { label: 'Rammstein — Du Hast (60s)',  diff: -8.0,  win: false },
+  ];
+  const MAX = 10.3;
+  const chart = document.getElementById('bar-chart');
+  clips.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    const pct = (Math.abs(c.diff) / MAX * 100).toFixed(1);
+    const cls = c.win ? 'green' : 'rose';
+    row.innerHTML = `
+      <div class="bar-label">${c.label}</div>
+      <div class="bar-track">
+        <div class="bar-fill ${cls}" data-w="${pct}" style="width:0">${c.diff > 0 ? '+' : ''}${c.diff}%</div>
+      </div>`;
+    chart.appendChild(row);
   });
+
+  // Animate bars when visible
+  const barIo = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      document.querySelectorAll('.bar-fill').forEach((b, i) => {
+        setTimeout(() => { b.style.width = b.dataset.w + '%'; }, i * 60);
+      });
+      barIo.disconnect();
+    }
+  }, { threshold: 0.1 });
+  barIo.observe(chart);
+  // ── Theme toggle ──
+  (function() {
+    const saved = localStorage.getItem('8z-theme') || 'dark';
+    document.documentElement.dataset.theme = saved;
+    document.getElementById('theme-btn').textContent = saved === 'light' ? '☀️' : '🌙';
+  })();
+  function toggleTheme() {
+    const isLight = document.documentElement.dataset.theme === 'light';
+    document.documentElement.dataset.theme = isLight ? 'dark' : 'light';
+    document.getElementById('theme-btn').textContent = isLight ? '🌙' : '☀️';
+    localStorage.setItem('8z-theme', document.documentElement.dataset.theme);
+  }
+
+  // ── Overlay (external pages) ──
+  let _overlayActive = false;
+  const _overlay = document.getElementById('page-overlay');
+  const _frame   = document.getElementById('overlay-frame');
+  let   _lastSrc = '';
+  function openOverlay(src, el) {
+    if (_lastSrc !== src) { _frame.src = src; _lastSrc = src; }
+    _overlay.classList.add('active');
+    _overlayActive = true;
+    document.querySelectorAll('.tb-link').forEach(l => l.classList.remove('ext-active'));
+    if (el) el.classList.add('ext-active');
+  }
+  function closeOverlay() {
+    _overlay.classList.remove('active');
+    _overlayActive = false;
+    document.querySelectorAll('.tb-link').forEach(l => l.classList.remove('ext-active'));
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOverlay(); });
+
+  // ── Audio player ──
+  const SONGS = [
+    { title:'Fractured Harmony',   cls:'tonal / easiest', clip:'Clips/BD_FracturedHarmony_clip.wav',  full:'Songs/BD_FracturedHarmony.mp3',  result:'+5.1% / +2.9% win', win:true  },
+    { title:'Where Do I Go',       cls:'dcc_stress',      clip:'Clips/BD_WhereDoIGo_clip.wav',        full:'Songs/BD_WhereDoIGo.mp3',        result:'−2.0%',              win:false },
+    { title:'Awakening AI',        cls:'tonal',           clip:'Clips/BD_AwakeningAI_clip.wav',       full:'Songs/BD_AwakeningAI.mp3',       result:'+1.5% win',          win:true  },
+    { title:'Echoes of the Shore', cls:'dcc_stress',      clip:'Clips/BD_EchoesOfTheShore_clip.wav',  full:'Songs/BD_EchoesOfTheShore.mp3',  result:'−1.8%',              win:false },
+    { title:'Lacrimosa Requiem',   cls:'diverse',         clip:'Clips/BD_LacrimosaRequiem_clip.wav',  full:'Songs/BD_LacrimosaRequiem.mp3',  result:'−0.2%',              win:false },
+    { title:'Between the Strings', cls:'dcc_stress',      clip:'Clips/BD_BetweenTheStrings_clip.wav', full:'Songs/BD_BetweenTheStrings.mp3', result:'−1.3%',              win:false },
+  ];
+  let _curIdx = -1;
+
+  function loadSong(idx, mode) {
+    _curIdx = idx;
+    const s = SONGS[idx];
+    const src = mode === 'clip' ? s.clip : s.full;
+    const modeLabel = mode === 'clip' ? 'Test Clip · WAV · 10–30s' : 'Full Song · MP3';
+    const rc = s.win ? 'var(--green)' : 'var(--rose)';
+    const rd = s.win ? 'var(--green-dim)' : 'var(--rose-dim)';
+    document.getElementById('player-body').innerHTML =
+      '<div class="player-header">' +
+        '<div class="player-title">' + s.title + '</div>' +
+        '<div class="player-meta">' +
+          '<span>Bojan Dobrečevič / Producer.ai</span><span>·</span>' +
+          '<span>' + modeLabel + '</span><span>·</span>' +
+          '<span class="badge" style="background:' + rd + ';color:' + rc + ';border:1px solid ' + rc + '40">' +
+            '8ZA ' + s.result + ' vs FLAC-12</span>' +
+          '<span class="badge">' + s.cls + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="player-controls">' +
+        '<audio id="active-audio" controls autoplay src="' + src + '"></audio>' +
+        '<div class="mode-btns">' +
+          '<button class="mode-btn ' + (mode==='clip'?'on':'') + '" onclick="loadSong(' + idx + ',&quot;clip&quot;)">▶ Clip</button>' +
+          '<button class="mode-btn ' + (mode==='full'?'on':'') + '" onclick="loadSong(' + idx + ',&quot;full&quot;)">♫ Full</button>' +
+        '</div>' +
+      '</div>';
+    document.querySelectorAll('.song-card').forEach((c,i) =>
+      c.classList.toggle('playing', i === idx));
+  }
+
+  // ── Scroll progress bar ──
+  const _scrollBar = document.getElementById('scroll-bar');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    _scrollBar.style.width = h > 0 ? ((window.scrollY / h) * 100) + '%' : '0%';
+  }, { passive: true });
+
+  // ── Active section highlight in toolbar ──
+  const _sections = ['origin','sprint','bench','songs','roadmap'];
+  const _innerLinks = document.querySelectorAll('.tb-inner .tb-link');
+  const _sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        _innerLinks.forEach((l, i) => {
+          l.style.color = _sections[i] === e.target.id ? 'var(--cyan)' : '';
+        });
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '-52px 0px -50% 0px' });
+  _sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) _sectionObserver.observe(el);
+  });
+
+
 </script>
 </body>
 </html>
