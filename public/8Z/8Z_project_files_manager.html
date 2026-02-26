@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8Z Project — File Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#08090d;--surface:#0f1117;--card:#13151d;--card-hover:#181b25;
+  --border:#1e2130;--border-hi:#2a2e42;--text:#b8bcc8;--text-dim:#5e6275;
+  --text-bright:#e4e6ee;--white:#f4f5f8;
+  --audio:#f472b6;--flac:#f97316;--dna:#818cf8;--fasta:#34d399;
+  --data:#fbbf24;--shared:#60a5fa;--dupe:#ef4444;--old-c:#6b7280;
+  --green:#34d399;--dupe-bg:rgba(239,68,68,.06);--dupe-bd:rgba(239,68,68,.20);
+  --r:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;line-height:1.55}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(circle at 15% 15%,rgba(244,114,182,.012) 0%,transparent 50%),radial-gradient(circle at 85% 85%,rgba(96,165,250,.012) 0%,transparent 50%)}
+.page{max-width:1100px;margin:0 auto;padding:2rem 1.5rem 5rem;position:relative;z-index:1}
+header{text-align:center;padding:2.5rem 0 1.5rem}
+header h1{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--white);letter-spacing:-.5px;margin-bottom:6px}
+header h1 .a{color:var(--audio)} header h1 .b{color:var(--flac)}
+header .sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:1.2rem}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;text-align:center}
+.stat .num{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700}
+.stat .label{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;margin-top:2px}
+.alert-box{background:var(--dupe-bg);border:1px solid var(--dupe-bd);border-radius:var(--r);padding:14px 18px;margin-bottom:1.2rem}
+.alert-box h3{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dupe);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.dupe-group{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;align-items:center}
+.dupe-name{font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 8px;background:rgba(239,68,68,.08);border-radius:4px;color:var(--text)}
+.dupe-eq{color:var(--dupe);font-size:11px;font-weight:600}
+.alert-note{font-size:11.5px;color:var(--text-dim);margin-top:8px;line-height:1.5}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:1.2rem;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--r)}
+.toolbar .search{flex:1;min-width:180px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:6px 14px;color:var(--text-bright);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none}
+.toolbar .search:focus{border-color:var(--audio)} .toolbar .search::placeholder{color:var(--text-dim)}
+.toggle-wrap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-dim);cursor:pointer;user-select:none;font-family:'JetBrains Mono',monospace}
+.toggle-wrap input{display:none}
+.toggle-track{width:32px;height:17px;background:var(--border);border-radius:9px;position:relative;transition:background .2s;flex-shrink:0}
+.toggle-track::after{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;background:var(--text-dim);border-radius:50%;transition:all .2s}
+.toggle-wrap input:checked+.toggle-track{background:var(--audio)}
+.toggle-wrap input:checked+.toggle-track::after{left:17px;background:var(--white)}
+.tbtn{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:5px 11px;border-radius:20px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;transition:all .15s;user-select:none}
+.tbtn:hover{border-color:var(--border-hi);background:var(--card-hover)}
+.font-ctrl{display:flex;align-items:center;gap:0;margin-left:auto;border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.fbtn{background:var(--bg);border:none;color:var(--text-bright);width:30px;height:28px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;transition:all .12s;display:flex;align-items:center;justify-content:center}
+.fbtn:hover{background:var(--card-hover);color:var(--white)}
+.fbtn:active{background:var(--audio);color:var(--white)}
+.flbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);min-width:32px;text-align:center;user-select:none}
+.category{margin-bottom:10px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .2s}
+.category:hover{border-color:var(--border-hi)}
+.cat-header{display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--card);cursor:pointer;user-select:none;transition:background .15s}
+.cat-header:hover{background:var(--card-hover)}
+.cat-header .arrow{font-size:10px;color:var(--text-dim);transition:transform .2s;width:14px;text-align:center}
+.category.open .cat-header .arrow{transform:rotate(90deg)}
+.cat-header .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cat-header .cat-name{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:600;color:var(--text-bright);flex:1}
+.cat-header .cat-count{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,.04);color:var(--text-dim)}
+.cat-header .cat-size{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);min-width:55px;text-align:right}
+.cat-body{display:none;background:var(--surface)} .category.open .cat-body{display:block}
+.file-row{display:grid;grid-template-columns:6px 1fr auto;gap:10px;align-items:center;padding:6px 16px;border-top:1px solid rgba(255,255,255,.02);transition:background .1s}
+.file-row:hover{background:var(--card-hover)}
+.file-pip{width:4px;height:16px;border-radius:2px}
+.file-info{min-width:0}
+.file-name{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text-bright);word-break:break-all}
+.file-desc{font-size:11px;color:var(--text-dim);margin-top:1px;display:none;line-height:1.4}
+.show-desc .file-desc{display:block}
+.file-meta{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.file-size{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-align:right;min-width:55px}
+.file-type{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.3px;padding:1px 5px;border-radius:3px;background:rgba(255,255,255,.04);color:var(--text-dim)}
+.file-row.dim{opacity:.4} .file-row.old-dim{opacity:.6}
+.badge{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;padding:1px 7px;border-radius:10px;letter-spacing:.3px;white-space:nowrap}
+.badge-dupe{background:var(--dupe-bg);border:1px solid var(--dupe-bd);color:var(--dupe)}
+.badge-old{background:rgba(107,114,128,.08);border:1px solid rgba(107,114,128,.20);color:var(--old-c)}
+.badge-active{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.20);color:var(--green)}
+.badge-start{background:rgba(244,114,182,.10);border:1px solid rgba(244,114,182,.25);color:var(--audio)}
+.badge-empty{background:var(--dupe-bg);border:1px solid var(--dupe-bd);color:var(--dupe)}
+.footer{text-align:center;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border);font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
+@media(max-width:700px){.stats{grid-template-columns:repeat(3,1fr)}.toolbar{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="page">
+<header><h1><span class="a">8Z</span> Project <span class="b">Files</span></h1><div class="sub" id="headerSub">Loading...</div></header>
+<div class="stats" id="statsRow"></div>
+<div class="alert-box" id="dupeAlert" style="display:none"></div>
+<div class="toolbar">
+  <input type="text" class="search" id="searchBox" placeholder="🔍  Search files..." oninput="render()">
+  <label class="toggle-wrap"><input type="checkbox" id="descToggle" onchange="toggleDesc()"><span class="toggle-track"></span>Descriptions</label>
+  <label class="toggle-wrap"><input type="checkbox" id="dupeToggle" onchange="render()"><span class="toggle-track"></span>Issues only</label>
+  <button class="tbtn" onclick="expandAll()">▼ Expand</button>
+  <button class="tbtn" onclick="collapseAll()">▲ Collapse</button>
+  <span class="font-ctrl"><button class="fbtn" onclick="adjFont(-1)">−</button><span class="flbl" id="fontLbl">100%</span><button class="fbtn" onclick="adjFont(1)">+</button></span>
+</div>
+<div id="categories"></div>
+<div class="footer">8Z Project File Manager · Bojan Dobrečevič · AIM³ Institute · February 25, 2026<br>Replaces: 8Z_project_files_triage.html</div>
+</div>
+<script>
+const F=[
+// 8Z AUDIO CODEC
+{f:"8Z_audio_v1_7H_GEM.py",sz:76760,c:"audio",t:"py",d:"v1.7H Gemini variant (75KB, 1793 lines). Latest production codec co-developed with Google Gemini. Implements LPC prediction, Rice coding, MDL arena, DCC adaptation, and multi-window analysis.",s:"active"},
+{f:"8Z_audio_v1_7H_GPT.py",sz:77183,c:"audio",t:"py",d:"v1.7H GPT variant (77KB, 1947 lines). Latest production codec co-developed with OpenAI GPT. Same core architecture as GEM variant with different optimization choices in MDL scoring and stereo handling.",s:"active"},
+{f:"8Z_audio_v1_6_1.py",sz:68051,c:"audio",t:"py",d:"v1.6.1 codec (68KB). Previous generation, superseded by v1.7H. Kept for regression testing and architecture comparison.",s:"old"},
+{f:"8Z_audio_v1_5.py",sz:89371,c:"audio",t:"py",d:"v1.5 codec (89KB). Older generation. Historically significant as first version to beat FLAC on some clips. Larger than newer versions due to dead code.",s:"old"},
+{f:"8Z_audio_scanner.py",sz:69627,c:"audio",t:"py",d:"Signal analysis engine (69KB, 1588 lines). The brain of 8Z audio. Fast Levinson-Durbin LPC, pitch detection, periodic correlation, difficulty scoring, signal classification per frame. Outputs forensic CSV and JSON for codec and 8za2flac.",s:"active"},
+{f:"8Z_audio_scanner.bat",sz:6173,c:"audio",t:"bat",d:"Scanner launcher (226 lines). Configures scan parameters, input/output paths, and batch processing of multiple WAV files."},
+{f:"8Z_audio_analyzer.py",sz:13324,c:"audio",t:"py",d:"Universal Analyzer v2.5 (345 lines). Reads WAV files, computes signal statistics (RMS, peak, crest factor, spectral centroid), auto-saves analysis reports."},
+{f:"8Z_audio_curator.py",sz:57174,c:"audio",t:"py",d:"Library Curator v1.0 (1370 lines). Interactive wizard that crawls a lossless FLAC library, scans every song via Levinson-Durbin, selects representative clips for benchmarking based on signal diversity."},
+{f:"8Z-FE_HYB4.py",sz:110402,c:"audio",t:"py",d:"HYB4 front-end (110KB, 2834 lines). Latest and most advanced hybrid encoder. Multiple prediction modes with MDL-optimal selection. Largest Python file in the project.",s:"active"},
+{f:"8Z-FE_HYB3B.py",sz:81278,c:"audio",t:"py",d:"HYB3B front-end (81KB). Superseded by HYB4. B-variant focused on block-adaptive prediction. Historical only.",s:"old"},
+{f:"8Z-FE_HYB3W.py",sz:85143,c:"audio",t:"py",d:"HYB3W front-end (85KB). Superseded by HYB4. W-variant focused on window-adaptive prediction. Historical only.",s:"old"},
+{f:"8Z_FE_Benchmark_HYB4.py",sz:39367,c:"audio",t:"py",d:"Benchmark harness for HYB4 (39KB). Runs HYB4 against FLAC/WavPack/OFR on the test corpus, computes per-clip and aggregate statistics."},
+{f:"8Z_FE_Benchmark_HYB3B.py",sz:36816,c:"audio",t:"py",d:"Benchmark for HYB3B (37KB). Superseded - HYB3B no longer active. Kept for historical result reproduction.",s:"old"},
+{f:"8Z_FE_Benchmark_HYB3W.py",sz:39271,c:"audio",t:"py",d:"Benchmark for HYB3W (39KB). Superseded - HYB3W no longer active. Kept for historical result reproduction.",s:"old"},
+{f:"8Z-Audio_CONTINUE_v1_8.md",sz:17463,c:"audio",t:"md",d:"PASTE THIS to resume v1.8 codec work. Session handoff (17KB, 507 lines): current state, architecture decisions, known issues, what to build next. The definitive starting point.",s:"start"},
+{f:"8Z-Audio-CONTINUE_v1_8.md",sz:17463,c:"audio",t:"md",d:"EXACT DUPLICATE of 8Z-Audio_CONTINUE_v1_8.md (identical 17,463 bytes). Safe to delete.",s:"dupe",g:"8Z-Audio_CONTINUE_v1_8.md"},
+{f:"CONTINUE_Audio_v1_8.md",sz:17463,c:"audio",t:"md",d:"EXACT DUPLICATE of 8Z-Audio_CONTINUE_v1_8.md (identical 17,463 bytes). Safe to delete.",s:"dupe",g:"8Z-Audio_CONTINUE_v1_8.md"},
+{f:"CONTINUE_Audio_v1_6.md",sz:36843,c:"audio",t:"md",d:"v1.6 era handoff (37KB). Historical but has unimplemented ideas: FLAC-minimal candidate, early 8za2flac vision, DCC calibration diagnostics.",s:"old"},
+{f:"CONTINUE_Audio_v1_4.md",sz:26335,c:"audio",t:"md",d:"v1.4 era handoff (26KB). Documents v1.3 to v1.4 transition: first MDL arena and early signal classification.",s:"old"},
+{f:"8Z-AC_v1_8_Plan.html",sz:31701,c:"audio",t:"html",d:"Master plan for v1.8 (31KB). Interactive HTML: compression levels, two-pass architecture, PERIODIC predictor, 8za2flac parallel track, Two Products One Brain diagram. Main strategic document."},
+{f:"8Z-Audio_v1_8_Master_Plan.html",sz:28745,c:"audio",t:"html",d:"Earlier v1.8 plan (29KB). Some overlap with AC_v1_8_Plan but different emphasis and extra data sections. Consider merging into one."},
+{f:"8Z-Audio_Quick_Reference.md",sz:9920,c:"audio",t:"md",d:"Quick reference card (10KB). Compression level specs, per-clip rankings, encoder settings, signal class definitions. Designed for fast lookup during coding."},
+{f:"8Z-Audio_Codec_Evolution.md",sz:12448,c:"audio",t:"md",d:"Version history (12KB). Every codec version v1.0 through v1.7H: changes, improvements, benchmark deltas, lessons. The definitive evolution narrative."},
+{f:"8Z-Audio_Benchmarks.md",sz:15014,c:"audio",t:"md",d:"Consolidated benchmark data (15KB). All empirical results: per-clip sizes for every version, comparison tables vs FLAC/WavPack/OFR, statistical analysis. The authoritative numbers."},
+{f:"8Z-Audio_Benchmark.html",sz:29910,c:"audio",t:"html",d:"Interactive benchmark dashboard (30KB). Sortable tables, color-coded comparisons, per-clip drill-down. Built from Benchmarks.md data."},
+{f:"8Z-AC_evolution.html",sz:16530,c:"audio",t:"html",d:"Codec evolution timeline (16KB). Visual HTML showing version progression with key metrics at each milestone."},
+{f:"8Z-AC_BD_CLA_Story.html",sz:51981,c:"audio",t:"html",d:"Claude benchmark story (52KB). Narrative of the Claude Opus session that produced the CLA v1.7H variant. Largest of the four AI stories.",s:"old"},
+{f:"8Z-AC_BD_GPT_Story.html",sz:43716,c:"audio",t:"html",d:"GPT benchmark story (44KB). Narrative of the ChatGPT session producing the GPT variant, with unique architectural decisions.",s:"old"},
+{f:"8Z-AC_BD_GRO_Story.html",sz:23400,c:"audio",t:"html",d:"Grok benchmark story (23KB). Shortest story. Contains unique insights on stereo mode selection that influenced later versions.",s:"old"},
+{f:"8Z-AC_BD_GEM_Story.html",sz:18923,c:"audio",t:"html",d:"Gemini benchmark story (19KB). Documents Gemini's distinctive approach to window selection optimization in the GEM variant.",s:"old"},
+{f:"8Z-AC_Appendix_M.html",sz:34853,c:"audio",t:"html",d:"Old lossless appendix HTML (35KB). Superseded by MD version and consolidated docs. Historical reference.",s:"old"},
+{f:"8Z-AC_CMD_consoles.md",sz:147512,c:"audio",t:"md",d:"Raw CMD console logs (144KB, 2749 lines). Complete terminal output from all benchmark runs. Data already extracted into Benchmarks.md. Safe to archive.",s:"old"},
+{f:"8Z_Appendix_M_Audio_v1_0.md",sz:28295,c:"audio",t:"md",d:"Lossless audio appendix MD (28KB). Theory and methodology of lossless compression in 8Z. Key content absorbed into newer papers.",s:"old"},
+{f:"8Z_Appendix_P_Audio_Lossy_v1_0.md",sz:43725,c:"audio",t:"md",d:"Lossy audio research (44KB). Explores MDL/DCC for lossy: CA-extension ideas, perceptual weighting, error-budget MDL. Seeds for future lossy codec.",s:"old"},
+{f:"8Z-AC_lossy.md",sz:707,c:"audio",t:"md",d:"Lossy idea seed (707B, 5 lines). Bojan's key insight: allowing small errors lets math generators cover much larger song sections. Seed for Appendix P."},
+{f:"8Z_Math_in_Audio_Compression.md",sz:39254,c:"audio",t:"md",d:"Math foundations (39KB). Connects MDL, DCC, cellular automata, L-systems, and information theory to audio compression.",s:"old"},
+{f:"8Z_Audio_Math_Todo_v1_0.md",sz:39067,c:"audio",t:"md",d:"Math generators roadmap v1.0 (39KB). Detailed todo for 79 generators on audio LPC residuals. Largely completed or absorbed into HYB4.",s:"old"},
+{f:"8Z_Audio_v1_5_Benchmark_Report.md",sz:13246,c:"audio",t:"md",d:"v1.5 benchmark report (13KB). Historical results. Superseded by consolidated Benchmarks.md.",s:"old"},
+{f:"8Z_Audio_v1_3_2_Report.md",sz:29495,c:"audio",t:"md",d:"v1.3.2 report (29KB). Early codec results. Superseded by consolidated docs.",s:"old"},
+{f:"8Z-Audio_v1_7H_Deep_Analysis.md",sz:12302,c:"audio",t:"md",d:"v1.7H deep analysis (12KB). Per-clip performance breakdown. Content absorbed into Benchmarks and Quick Reference.",s:"old"},
+{f:"8Z-Audio_v1_7H_Hybrid_Comparison.md",sz:13100,c:"audio",t:"md",d:"v1.7H hybrid comparison (13KB). Side-by-side GEM vs GPT vs CLA vs GRO: which AI made the best codec and why.",s:"old"},
+{f:"8Z-Audio_v1_7H_Summary.txt",sz:8012,c:"audio",t:"txt",d:"v1.7H summary (8KB). Brief overview. Superseded by Quick_Reference.md.",s:"old"},
+{f:"8Z-Audio_v1_8_Roadmap_Summary.txt",sz:10614,c:"audio",t:"txt",d:"v1.8 roadmap (11KB). Early planning. Superseded by CONTINUE_v1.8 and AC_v1_8_Plan.",s:"old"},
+{f:"8Z-Audio_Complete_Evolution.txt",sz:18161,c:"audio",t:"txt",d:"Full evolution text (18KB). Superseded by Codec_Evolution.md which is better organized.",s:"old"},
+{f:"HYB4_Master_Ideas_Ranked.md",sz:13648,c:"audio",t:"md",d:"HYB4 ideas ranked (14KB). Synthesizes 8-LLM peer review (Claude, GPT, Kimi, Gemini, GLM-5, DeepSeek, Qwen, MiniMax) + GeCo3 study + TIF cross-pollination. Ranked by impact."},
+{f:"HYB4_Feedbacks_To_Use.md",sz:6692,c:"audio",t:"md",d:"HYB4 feedback collection (7KB). LLM scoreboard ranking all 8 reviewers with per-reviewer quality rationale. Source for Master Ideas."},
+{f:"_Compress_Audio.bat",sz:5994,c:"audio",t:"bat",d:"Hybrid compression launcher (6KB). Encodes WAV to FLAC, ALAC, Opus, MP3 via ffmpeg in parallel."},
+{f:"_Compress_Audio.py",sz:5701,c:"audio",t:"py",d:"Python hybrid encoder (6KB). Handles FLAC/ALAC/Opus/MP3 via ffmpeg. WSL handles WavPack and AAC."},
+{f:"_Compress_Audio.sh",sz:4481,c:"audio",t:"sh",d:"Linux version (4KB). Redundant - you use Windows CMD. Safe to archive.",s:"old"},
+{f:"_Auto_Audio_Clip.bat",sz:14420,c:"audio",t:"bat",d:"Auto Clipper v1.2 (14KB). Interactive clip selection from Scanner JSON. Shows menu, extracts WAV clips for benchmarking."},
+{f:"_Make_FLAC_OFR.bat",sz:11077,c:"audio",t:"bat",d:"Reference codec creator (11KB). Creates FLAC/ and OFR/ folders with reference encodings at multiple levels for baseline comparison."},
+{f:"_Collect_Audio_Logs.bat",sz:4208,c:"audio",t:"bat",d:"Audio log collector (4KB). Gathers encoder logs, benchmark reports, scanner outputs into one folder."},
+{f:"_Analyze_Scan_Encode.bat",sz:12447,c:"audio",t:"bat",d:"Full benchmark pipeline v1.2 (12KB). Three stages: Analyze WAV, Scan with 8Z, Encode all codecs parallel, Compare. The main benchmark orchestrator."},
+// 8za2flac
+{f:"8za2flac_arena.py",sz:37783,c:"flac",t:"py",d:"Arena v2.1 (38KB, 978 lines). Per-segment FLAC experiment engine. Splits WAV via recipe JSON, runs 39 candidates (flac, flac --lax, ffmpeg, flake), extracts raw payloads, finds optimal picks. 16/24-bit, overnight timeouts, 14 workers.",s:"active"},
+{f:"8za2flac_v2.html",sz:39309,c:"flac",t:"html",d:"Research paper v2.1 (39KB). Full dark-theme HTML: arena architecture, 2-track results, cross-track comparison, stitcher projection, Five Levels, combinatorial architecture, DreamTeam 5D analysis, FLAC format reference, known codec sizes.",s:"active"},
+{f:"8za2flac_v1.html",sz:25254,c:"flac",t:"html",d:"Original design doc v1.0 (25KB). First 8za2flac concept. Initial architecture sketches and FLAC spec notes. Superseded by v2."},
+{f:"8za2flac_PROMPT_short.md",sz:1598,c:"flac",t:"md",d:"PASTE THIS for variable FLAC writer session. Short prompt (1.6KB) pointing AI to detailed prompt and project files. Day 1 task: variable blocksize compatibility test.",s:"start"},
+{f:"8za2flac_PROMPT_detailed.md",sz:9229,c:"flac",t:"md",d:"Full context prompt (9KB). FLAC frame bit-level spec, arena results, known codec sizes to beat, dev rules, 8-step priority list, 5D optimization insight. AI reads from project.",s:"active"},
+{f:"8za2flac_v1_prompt.txt",sz:4079,c:"flac",t:"txt",d:"Original v1 prompt (4KB). Initial prompt that started 8za2flac. Early architecture thinking and Day 1 experiment design."},
+{f:"8za2flac_start.txt",sz:2334,c:"flac",t:"txt",d:"Brainstorm notes (2KB). First message kicking off 8za2flac. References past chat for context."},
+{f:"Ethereal_Arc_arena_results.txt",sz:2668,c:"flac",t:"txt",d:"Ethereal Arc results (2.7KB). 16-bit, 194s orchestral. Raw-optimal beats baseline by -17,412B (0.22%). Shows 7 baselines and per-segment winners.",s:"active"},
+{f:"Ethereal_Arc_arena_CMD.md",sz:76490,c:"flac",t:"md",d:"Full CMD output from Ethereal Arc run (76KB). Every terminal line: per-segment candidates, timing, diagnostics. Raw experiment evidence."},
+{f:"Ethereal_Arc_arena_log.json",sz:14980,c:"flac",t:"json",d:"Structured JSON from Ethereal Arc (15KB). Machine-readable: per-segment winners, raw sizes, candidate rankings, timing."},
+{f:"8za2flac_arena_results.txt",sz:2668,c:"flac",t:"txt",d:"EXACT DUPLICATE of Ethereal_Arc_arena_results.txt (2,668B). Old naming. Safe to delete.",s:"dupe",g:"Ethereal_Arc_arena_results.txt"},
+{f:"8za2flac_arena_CMD.md",sz:76490,c:"flac",t:"md",d:"EXACT DUPLICATE of Ethereal_Arc_arena_CMD.md (76,490B). Old naming. Safe to delete.",s:"dupe",g:"Ethereal_Arc_arena_CMD.md"},
+{f:"8za2flac_arena_log.json",sz:14980,c:"flac",t:"json",d:"EXACT DUPLICATE of Ethereal_Arc_arena_log.json (14,980B). Old naming. Safe to delete.",s:"dupe",g:"Ethereal_Arc_arena_log.json"},
+{f:"LG-DWAS_24_arena_results.txt",sz:2552,c:"flac",t:"txt",d:"Lady Gaga 24-bit results (2.6KB). Die With A Smile, 252s pop/ballad. Raw-optimal beats baseline by -12,356B (0.025%). Smaller win than 16-bit.",s:"active"},
+{f:"LG-DWAS_24_arena_CMD.txt",sz:11924,c:"flac",t:"txt",d:"Full CMD from LG overnight run (12KB). 2h 13m wall clock. 15 segments x 39 candidates = 585 encodings."},
+{f:"LG-DWAS_24_arena_log.json",sz:87203,c:"flac",t:"json",d:"Structured JSON from LG run (87KB). Largest arena log. Detailed per-candidate results for all 585 encodings."},
+{f:"LG-DWAS_24.json",sz:3340,c:"flac",t:"json",d:"15-segment recipe for Lady Gaga 24-bit (3KB). From v1.7H forensics. Segments follow musical structure: intro, verses, choruses, bridge, outro. 678 frames, 98.5% tonal."},
+{f:"Ethereal_Arc.json",sz:9368,c:"flac",t:"json",d:"15-segment recipe for Ethereal Arc (9KB). AI orchestral piece segmented by signal characteristics with start/end samples and difficulty estimates."},
+// DNA / RNA
+{f:"DNA_Math_v3_0__Main_Paper.md",sz:26774,c:"dna",t:"md",d:"Main paper v3.0 (27KB). Mathematical Structure in Genomic DNA via MDL Compression. Z-scores 28-74 across genomes proving deterministic math patterns exceed composition expectations.",s:"active"},
+{f:"DNA_Math_v3_0___README.txt",sz:1594,c:"dna",t:"txt",d:"Paper suite index (1.6KB). Lists appendices A-F with descriptions and reading order. Table of contents for DNA Math collection."},
+{f:"DNA_Math_v3_0_A_Merge_Experiment.md",sz:15594,c:"dna",t:"md",d:"Appendix A (16KB). Cross-Genome Merge: tests if math structure is genome-specific or universal by merging sequences from different organisms."},
+{f:"DNA_Math_v3_0_B_Generator_Validation.md",sz:10538,c:"dna",t:"md",d:"Appendix B (11KB). Empirical threshold tuning. Dramatic results: Wolfram_CA 20x signal, LSystem 21x, LogisticMap pure signal. Removed 5 bad generators, kept 7."},
+{f:"DNA_Math_v3_0_C_Discovery_Journey.md",sz:20278,c:"dna",t:"md",d:"Appendix C (20KB). 30-year arc from 1995 Soul Voyage through consciousness theory to DNA scanner, across TSP, audio, FASTA, and image domains."},
+{f:"DNA_Math_v3_0_D_REngineering.md",sz:65199,c:"dna",t:"md",d:"Appendix D (65KB). Largest paper. Detailed reverse-engineering methodology for reproducing mathematical generator detection in DNA sequences.",s:"active"},
+{f:"DNA_Math_v3_0_E_Attack_Vectors.md",sz:17115,c:"dna",t:"md",d:"Appendix E (17KB). Anticipates criticisms: artifact risks, null hypotheses tested, robustness across genomes and parameters."},
+{f:"DNA_Math_v3_0_F_Speculative.md",sz:12093,c:"dna",t:"md",d:"Appendix F (12KB). Most speculative: proposes math structure predates biological evolution, suggesting pre-biotic organizational principle tied to consciousness field."},
+{f:"CONTINUE_Pipeline_Research.md",sz:23348,c:"dna",t:"md",d:"Continue for DNA Scanner pipeline (23KB). M6.3 state, threshold tuner results, Monte Carlo validation, M8 expansion plans (7 to 79 generators).",s:"start"},
+{f:"8Z_Pipeline.py",sz:123664,c:"dna",t:"py",d:"Pipeline GUI (124KB, 1990 lines). Tkinter orchestrator: Profiler, Detector, Scanner, Validator. Job queuing, progress tracking, result visualization. Largest Python file.",s:"active"},
+{f:"8Z_Detector.py",sz:122170,c:"dna",t:"py",d:"ROI Discovery (122KB, 2569 lines). 6-channel detection with ImageLab and WaveCA. Finds genomic regions with concentrated mathematical structure.",s:"active"},
+{f:"8Z_Scanner.py",sz:65033,c:"dna",t:"py",d:"Generator Matching (65KB, 1637 lines). Tests 7 validated generators (Wolfram CA, L-systems, Logistic Map...) against genomic subsequences via MDL scoring.",s:"active"},
+{f:"8Z_Validator.py",sz:91894,c:"dna",t:"py",d:"Statistical Gatekeeper (92KB, 2562 lines). Monte Carlo with Fisher/Block/Markov null models. Computes Z-scores and p-values to verify detected structure exceeds chance.",s:"active"},
+{f:"8Z_Profiler.py",sz:18595,c:"dna",t:"py",d:"Fast Triage (19KB). Quick-scan estimating which regions merit deep analysis. Runs before Detector to save computation."},
+{f:"8Z_Detective.py",sz:45681,c:"dna",t:"py",d:"Grid Scan (46KB). Exhaustive parameter-space search across generator configurations to find optimal detection settings per genome type."},
+{f:"8Z_Synthesizer_Prompt.md",sz:18177,c:"dna",t:"md",d:"Synthesizer spec v4 (18KB). Handoff for building DNA Synthesizer (step 6). Reviewed by GPT and Gemini. Defines synthetic DNA generation matching detected math patterns."},
+{f:"_Collect_Logs.bat",sz:2642,c:"dna",t:"bat",d:"DNA log collector (3KB). Gathers logs and reports from FASTA pipeline into collection folder."},
+// FASTA
+{f:"8Z-FE_gemZ.py",sz:24457,c:"fasta",t:"py",d:"Active FASTA hybrid encoder (24KB, 644 lines). Compresses genomic FASTA using 8Z-LO framework with MDL-optimal mode selection. Production FASTA compressor.",s:"active"},
+{f:"8Z-FASTA_gemZ.py",sz:24457,c:"fasta",t:"py",d:"EXACT DUPLICATE of 8Z-FE_gemZ.py (24,457B). Older name. Safe to delete.",s:"dupe",g:"8Z-FE_gemZ.py"},
+{f:"8Z_FASTA_Benchmark_v3.html",sz:42365,c:"fasta",t:"html",d:"FASTA benchmark dashboard v3 (42KB). Interactive HTML comparing 8Z-FE vs GeCo3, MFCompress, and others across multiple genomes."},
+{f:"CONTINUE_Compression_Encoder.md",sz:20043,c:"fasta",t:"md",d:"Continue for FASTA encoder (20KB). Current state, GeCo3 architecture analysis, improvement roadmap for 8Z-LO FASTA compression.",s:"start"},
+{f:"_Clean_Fasta.py",sz:6758,c:"fasta",t:"py",d:"FASTA cleaner (7KB). Removes headers, normalizes endings, strips non-ACGT chars, produces clean single-line sequences for compression."},
+{f:"_Clean_Fasta.bat",sz:416,c:"fasta",t:"bat",d:"FASTA cleaning launcher (416B). Simple wrapper calling _Clean_Fasta.py."},
+{f:"_GeCo3_compress.bat",sz:74,c:"fasta",t:"bat",d:"GeCo3 launcher (74B). Runs GeCo3 reference compressor for benchmarking vs 8Z-FE."},
+{f:"_GeCo3_compress.sh",sz:309,c:"fasta",t:"sh",d:"GeCo3 Linux (309B). Redundant - you use Windows. Safe to archive.",s:"old"},
+// DATA
+{f:"F06_VIR_HIV1_AF033819_3.fasta",sz:9384,c:"data",t:"fasta",d:"HIV-1 genome (9KB). GenBank AF033819.3. Small viral test target. Monte Carlo Z-scores 3.4-74.1 depending on generator."},
+{f:"F07_VIR_Rabies_NC_001542_1.fasta",sz:1740,c:"data",t:"fasta",d:"Rabies virus (1.7KB). NC_001542.1. Smallest genome - good for smoke tests. Negative-sense ssRNA."},
+{f:"F10_ORG_Hs_mito_NC_012920_1.fasta",sz:16912,c:"data",t:"fasta",d:"Human mitochondria (17KB). NC_012920.1. Circular genome, well-studied structure. Moderate complexity test case."},
+{f:"F12_VIR_SARS2_NC_045512_2.fasta",sz:30512,c:"data",t:"fasta",d:"SARS-CoV-2 (30KB). NC_045512.2. COVID-19 reference genome. Positive-sense ssRNA, ~30kb. Important validation target."},
+{f:"F13_ORG_At_chloro_NC_000932_1.fasta",sz:157152,c:"data",t:"fasta",d:"A. thaliana chloroplast (153KB). NC_000932.1. Plant organelle with complex repeats. Larger stress test."},
+{f:"F14_EUK_Hs_AC010145.fasta",sz:204719,c:"data",t:"fasta",d:"Human MYCN cancer region (200KB). AC010145. Eukaryotic DNA with MYCN oncogene. Tests performance on repetitive human DNA."},
+{f:"F15_EUK_Sc_chrI_NC_001133_9.fasta",sz:234109,c:"data",t:"fasta",d:"S. cerevisiae chr I (229KB). NC_001133.9. Complete yeast chromosome with introns, telomeres, centromere. Largest test genome."},
+{f:"Ethereal_Arc_v1_7H_GEM.csv",sz:36545,c:"data",t:"csv",d:"Per-frame forensics from Gemini codec (36KB, 263 frames). Columns: difficulty, signal_class, periodic_lag/corr, pred_gain_db, ch_mode, predictor, window, lpc_order, qlevel, bytes, runner_up."},
+{f:"Ethereal_Arc_v1_7H_GPT.csv",sz:40310,c:"data",t:"csv",d:"Per-frame forensics from GPT codec (40KB, 263 frames). Same structure as GEM. Enables cross-model comparison of per-frame decisions."},
+{f:"Ethereal_Arc_v1_7H_CLA.csv",sz:40104,c:"data",t:"csv",d:"Per-frame forensics from Claude codec (40KB, 263 frames). Together with GEM and GPT CSVs, enables analysis of which AI made better compression decisions per frame."},
+{f:"Ethereal_Arc_wav.txt",sz:0,c:"data",t:"txt",d:"Empty placeholder (0 bytes). Possibly failed upload or metadata stub. Safe to delete.",s:"empty"},
+{f:"Ethereal_Arc_2_wav.txt",sz:0,c:"data",t:"txt",d:"Empty placeholder (0 bytes). Possibly failed upload or metadata stub. Safe to delete.",s:"empty"},
+{f:"Ethereal_Arc_m4a.txt",sz:0,c:"data",t:"txt",d:"Empty placeholder (0 bytes). Possibly failed upload or metadata stub. Safe to delete.",s:"empty"},
+// SHARED
+{f:"8Z_encoder_v2_1.py",sz:39509,c:"shared",t:"py",d:"8Z TIF image encoder v2.1 (40KB, 916 lines). Cross-domain encoder for TIF images using 8Z-LO. Shares MDL and prediction architecture with audio/FASTA encoders. Proves framework generality."},
+{f:"8Z_decoder_v2_1.py",sz:25810,c:"shared",t:"py",d:"8Z TIF image decoder v2.1 (26KB, 753 lines). Reverses all encoding stages. Lossless verified via checksum."},
+{f:"8Z_Reasoning_Principles.md",sz:37403,c:"shared",t:"md",d:"Core methodology (37KB, 619 lines). How to Think with Bojan: existence argument, decomposition, Soul Voyage as data, MDL as truth detector, self-dialogue technique. READ THIS before any session.",s:"active"},
+{f:"8Z_Reasoning_DreamTeam_Example.md",sz:20433,c:"shared",t:"md",d:"Self-dialogue example (20KB, 298 lines). Four voices (Bojan, Claude, Skeptic, Expert) argue 5 ideas. Shows how Skeptic forcing specifics produces breakthroughs no single voice finds."},
+{f:"8Z__Main_Paper_v2_2.txt",sz:36912,c:"shared",t:"txt",d:"8Z main paper v2.2 (37KB). Original cross-domain framework paper. Superseded by DNA_Math_v3_0 collection.",s:"old"},
+{f:"8Z_App_L_Todo_v2_5_2.txt",sz:57377,c:"shared",t:"txt",d:"Dec 2025 master todo (57KB). V2.5 era planning. Most items completed or superseded. Largest .txt file.",s:"old"},
+{f:"FILE_CONSOLIDATION_SUMMARY.txt",sz:9953,c:"shared",t:"txt",d:"Consolidation report (10KB). Documents the Feb 24, 2026 cleanup. Job done - describes its own obsolescence.",s:"old"},
+{f:"8Z_project_files_triage.html",sz:28160,c:"shared",t:"html",d:"Old triage tool v5 (28KB). Previous file manager with keep/archive/delete checkboxes. Replaced by this manager.",s:"old"},
+{f:"index.html",sz:17102,c:"shared",t:"html",d:"Project homepage (17KB). 8Z-Audio AI Story Comparison landing page. Links to benchmark stories and codec docs. The project front door."},
+{f:"zip2txt.py",sz:13608,c:"shared",t:"py",d:"ZIP to Bundle converter (14KB). Converts ZIP archives to single text files preserving structure. For sharing project snapshots with AI sessions."},
+{f:"_Structure.bat",sz:55,c:"shared",t:"bat",d:"Dir structure helper (55B, 2 lines). Runs tree /F and dir /S to capture folder layout."},
+];
+
+const CATS=[
+  {id:"audio",name:"8Z Audio Codec (.8za)",color:"var(--audio)",icon:"🎵"},
+  {id:"flac",name:"8za2flac — FLAC Optimization",color:"var(--flac)",icon:"🔥"},
+  {id:"dna",name:"DNA / RNA Research",color:"var(--dna)",icon:"🧬"},
+  {id:"fasta",name:"FASTA Compression",color:"var(--fasta)",icon:"📦"},
+  {id:"data",name:"Data Files",color:"var(--data)",icon:"📊"},
+  {id:"shared",name:"Shared / Infrastructure",color:"var(--shared)",icon:"⚙️"},
+];
+
+const os={};CATS.forEach(c=>os[c.id]=true);
+
+function fS(b){if(!b)return'0 B';if(b<1024)return b+' B';const k=b/1024;return k<1024?k.toFixed(1)+' KB':(k/1024).toFixed(1)+' MB'}
+function bg(s){const m={dupe:'<span class="badge badge-dupe">⚠ DUPE</span>',old:'<span class="badge badge-old">archived</span>',active:'<span class="badge badge-active">active</span>',start:'<span class="badge badge-start">★ START</span>',empty:'<span class="badge badge-empty">EMPTY</span>'};return m[s]||''}
+
+function render(){
+  const q=document.getElementById('searchBox').value.toLowerCase();
+  const io=document.getElementById('dupeToggle').checked;
+  let html='';
+  for(const cat of CATS){
+    let ff=F.filter(f=>f.c===cat.id);
+    if(q)ff=ff.filter(f=>f.f.toLowerCase().includes(q)||(f.d||'').toLowerCase().includes(q));
+    if(io)ff=ff.filter(f=>f.s==='dupe'||f.s==='empty'||f.s==='old');
+    if(!ff.length&&q)continue;
+    const sz=ff.reduce((a,f)=>a+f.sz,0);
+    const ord={start:0,active:1,undefined:2,old:3,dupe:4,empty:5};
+    ff.sort((a,b)=>(ord[a.s]??2)-(ord[b.s]??2)||a.f.localeCompare(b.f));
+    const dp=ff.filter(f=>f.s==='dupe').length;
+    html+=`<div class="category ${os[cat.id]?'open':''}" data-cat="${cat.id}"><div class="cat-header" onclick="tC('${cat.id}')"><span class="arrow">▶</span><span class="dot" style="background:${cat.color}"></span><span class="cat-name">${cat.icon} ${cat.name}</span>${dp?'<span class="badge badge-dupe">'+dp+'</span>':''}<span class="cat-count">${ff.length}</span><span class="cat-size">${fS(sz)}</span></div><div class="cat-body">`;
+    for(const f of ff){
+      const dm=f.s==='dupe'||f.s==='empty'?' dim':f.s==='old'?' old-dim':'';
+      html+=`<div class="file-row${dm}"><span class="file-pip" style="background:${cat.color}"></span><div class="file-info"><div class="file-name">${f.f}</div><div class="file-desc">${f.d||''}</div></div><div class="file-meta">${bg(f.s)}<span class="file-type">${f.t}</span><span class="file-size">${fS(f.sz)}</span></div></div>`;
+    }
+    html+=`</div></div>`;
+  }
+  document.getElementById('categories').innerHTML=html;
+
+  const aD=F.filter(f=>f.s==='dupe').length,aE=F.filter(f=>f.s==='empty').length;
+  const aO=F.filter(f=>f.s==='old').length,aA=F.filter(f=>f.s==='active'||f.s==='start').length;
+  const tot=F.reduce((a,f)=>a+f.sz,0),dSz=F.filter(f=>f.s==='dupe').reduce((a,f)=>a+f.sz,0);
+
+  document.getElementById('headerSub').textContent=F.length+' files · '+fS(tot)+' · February 25, 2026';
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat"><div class="num" style="color:var(--white)">${F.length}</div><div class="label">Total</div></div>
+    <div class="stat"><div class="num" style="color:var(--green)">${aA}</div><div class="label">Active</div></div>
+    <div class="stat"><div class="num" style="color:var(--old-c)">${aO}</div><div class="label">Old</div></div>
+    <div class="stat"><div class="num" style="color:var(--dupe)">${aD}</div><div class="label">Dupes</div></div>
+    <div class="stat"><div class="num" style="color:var(--dupe)">${aE}</div><div class="label">Empty</div></div>
+    <div class="stat"><div class="num" style="color:var(--text-dim)">${fS(dSz)}</div><div class="label">Wasted</div></div>`;
+
+  const al=document.getElementById('dupeAlert');
+  if(aD||aE){
+    const gr={};F.filter(f=>f.s==='dupe').forEach(f=>{if(!gr[f.g])gr[f.g]=[f.g];gr[f.g].push(f.f)});
+    let ah='<h3>⚠ Cleanup Recommended</h3>';
+    for(const[o,ns]of Object.entries(gr)){ah+='<div class="dupe-group">'+ns.map((n,i)=>`<span class="dupe-name">${n}</span>${i<ns.length-1?'<span class="dupe-eq">=</span>':''}`).join('')+'</div>'}
+    if(aE)ah+=`<div class="alert-note"><strong>Empty (0B):</strong> ${F.filter(f=>f.s==='empty').map(f=>f.f).join(', ')}</div>`;
+    ah+=`<div class="alert-note"><strong>${aD} duplicates</strong> wasting ${fS(dSz)} + <strong>${aE} empty</strong> files. Toggle "Issues only" to filter.</div>`;
+    al.innerHTML=ah;al.style.display='block';
+  }
+}
+function tC(id){os[id]=!os[id];render()}
+function toggleDesc(){document.body.classList.toggle('show-desc',document.getElementById('descToggle').checked)}
+function expandAll(){CATS.forEach(c=>os[c.id]=true);render()}
+function collapseAll(){CATS.forEach(c=>os[c.id]=false);render()}
+let zm=100;
+function adjFont(d){zm=Math.max(60,Math.min(150,zm+d*10));document.querySelector('.page').style.transform='scale('+zm/100+')';document.querySelector('.page').style.transformOrigin='top center';document.getElementById('fontLbl').textContent=zm+'%'}
+render();
+</script>
+</body>
+</html>
