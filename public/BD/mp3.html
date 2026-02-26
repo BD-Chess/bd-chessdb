@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8Z · MP3 Resurrection Project — Full Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Rajdhani:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #030508;
+    --bg2:     #080c14;
+    --surface: #0d1525;
+    --surf2:   #111827;
+    --border:  rgba(0,229,255,0.10);
+    --border2: rgba(255,255,255,0.06);
+    --cyan:    #00e5ff;
+    --gold:    #f59e0b;
+    --green:   #34d399;
+    --violet:  #a78bfa;
+    --orange:  #fb923c;
+    --pink:    #f472b6;
+    --red:     #f87171;
+    --blue:    #60a5fa;
+    --muted:   #4b5a74;
+    --text:    #dde4f0;
+    --text2:   #94a3b8;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', system-ui, sans-serif;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── BACKGROUND GRID ── */
+  .bg-grid {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.018) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 90% 90% at 50% 30%, black 40%, transparent 100%);
+  }
+  .bg-glow {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 55% 40% at 50% 0%, rgba(0,229,255,0.05), transparent 70%),
+      radial-gradient(ellipse 30% 30% at 80% 80%, rgba(167,139,250,0.04), transparent 60%);
+  }
+
+  /* ── LAYOUT ── */
+  .container {
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 0 auto;
+    padding: 0 28px 80px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 72px 0 56px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 60px;
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.38em;
+    text-transform: uppercase; color: var(--cyan);
+    margin-bottom: 1.4rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.6rem, 6vw, 5rem);
+    font-weight: 900; line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.6rem;
+    background: linear-gradient(135deg, #00e5ff 0%, #a78bfa 45%, #f472b6 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: 1.15rem; color: var(--text2);
+    max-width: 680px; margin: 0.9rem auto 0;
+    font-weight: 400;
+  }
+  .hero-meta {
+    margin-top: 2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+  .hero-meta span { color: var(--cyan); }
+
+  /* ── SECTION HEADERS ── */
+  .section {
+    margin-bottom: 56px;
+  }
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .section h2 {
+    font-size: 1.85rem; font-weight: 800;
+    letter-spacing: -0.02em; color: var(--text);
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 .accent { color: var(--cyan); }
+  .section h3 {
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--text); margin: 1.8rem 0 0.7rem;
+  }
+  .section h3 .tag-h {
+    display: inline-block; margin-left: 0.5rem;
+    font-size: 0.58rem; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; vertical-align: middle;
+    padding: 2px 8px; border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .done  { background: #0f3529; color: #34d399; border: 1px solid #166534; }
+  .wip   { background: #3b2008; color: #fb923c; border: 1px solid #92400e; }
+  .plan  { background: #1e1b4b; color: #a78bfa; border: 1px solid #4338ca; }
+  .idea  { background: #1f2937; color: #9ca3af; border: 1px solid #374151; }
+
+  p { color: var(--text2); margin-bottom: 0.9rem; }
+  p strong { color: var(--text); font-weight: 600; }
+  p code, li code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78em; background: #1a2236;
+    color: var(--cyan); padding: 1px 6px; border-radius: 4px;
+    border: 1px solid rgba(0,229,255,0.15);
+  }
+  ul, ol {
+    padding-left: 1.5rem;
+    color: var(--text2);
+    margin-bottom: 0.9rem;
+  }
+  li { margin-bottom: 0.35rem; }
+  li strong { color: var(--text); }
+
+  /* ── CARDS GRID ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin: 1.4rem 0;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 20px 22px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover {
+    border-color: rgba(0,229,255,0.22);
+    transform: translateY(-2px);
+  }
+  .card-icon {
+    font-size: 1.6rem; margin-bottom: 0.6rem; display: block;
+  }
+  .card h4 {
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    margin-bottom: 0.4rem;
+  }
+  .card p {
+    font-size: 0.83rem; line-height: 1.55; margin: 0;
+    color: var(--text2);
+  }
+  .card .badge {
+    display: inline-block; margin-top: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 600; letter-spacing: 0.06em;
+    padding: 2px 8px; border-radius: 4px;
+    text-transform: uppercase;
+  }
+  .b-cyan   { background: #0a2730; color: #00e5ff; border: 1px solid rgba(0,229,255,0.25); }
+  .b-green  { background: #0a2a1e; color: #34d399; border: 1px solid rgba(52,211,153,0.25); }
+  .b-violet { background: #1a1030; color: #a78bfa; border: 1px solid rgba(167,139,250,0.25); }
+  .b-gold   { background: #2a1f08; color: #f59e0b; border: 1px solid rgba(245,158,11,0.25); }
+  .b-orange { background: #2a1208; color: #fb923c; border: 1px solid rgba(251,146,60,0.25); }
+  .b-pink   { background: #2a0f1f; color: #f472b6; border: 1px solid rgba(244,114,182,0.25); }
+  .b-red    { background: #2a0f0f; color: #f87171; border: 1px solid rgba(248,113,113,0.25); }
+  .b-blue   { background: #0f1e3a; color: #60a5fa; border: 1px solid rgba(96,165,250,0.25); }
+
+  /* ── PIPELINE DIAGRAM ── */
+  .pipeline {
+    display: flex; align-items: stretch;
+    gap: 0; margin: 1.8rem 0;
+    overflow-x: auto; padding-bottom: 4px;
+  }
+  .pipe-step {
+    flex: 1; min-width: 120px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 0;
+    padding: 16px 14px 14px;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .pipe-step:first-child { border-radius: 10px 0 0 10px; }
+  .pipe-step:last-child  { border-radius: 0 10px 10px 0; }
+  .pipe-step + .pipe-step { border-left: none; }
+  .pipe-step:hover { background: #121d35; }
+  .pipe-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem; letter-spacing: 0.15em;
+    color: var(--muted); margin-bottom: 0.4rem; display: block;
+  }
+  .pipe-title {
+    font-size: 0.82rem; font-weight: 700; color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+  .pipe-desc {
+    font-size: 0.72rem; color: var(--text2); line-height: 1.45;
+  }
+  .pipe-arrow {
+    width: 24px; min-width: 24px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 0.9rem;
+    background: linear-gradient(to right, var(--surface), transparent);
+    z-index: 1;
+    margin-left: -1px;
+  }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: #060b14;
+    border: 1px solid rgba(0,229,255,0.12);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin: 1.2rem 0;
+    overflow-x: auto;
+  }
+  .code-block pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.79rem; line-height: 1.65;
+    color: #cbd5e1;
+  }
+  .cb-cm  { color: #4b5a74; }  /* comment   */
+  .cb-kw  { color: #a78bfa; }  /* keyword   */
+  .cb-fn  { color: #60a5fa; }  /* function  */
+  .cb-st  { color: #34d399; }  /* string    */
+  .cb-nu  { color: #f59e0b; }  /* number    */
+  .cb-cy  { color: #00e5ff; }  /* cyan/type */
+  .cb-ok  { color: #34d399; }  /* success   */
+  .cb-wn  { color: #fb923c; }  /* warning   */
+
+  /* ── TABLE ── */
+  .tw {
+    background: var(--surf2);
+    border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--border2);
+    margin: 1.2rem 0; overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; min-width: 600px; }
+  thead th {
+    background: #0d1525; padding: 11px 16px;
+    font-size: 0.62rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text2); border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #0f1827; }
+  td { padding: 10px 16px; font-size: 0.82rem; color: var(--text2); }
+  td.label { font-weight: 600; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; }
+  td.center { text-align: center; }
+
+  /* ── CALLOUT BOXES ── */
+  .callout {
+    border-left: 3px solid var(--cyan);
+    background: rgba(0,229,255,0.04);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 1.2rem 0;
+  }
+  .callout.gold   { border-color: var(--gold);   background: rgba(245,158,11,0.04); }
+  .callout.violet { border-color: var(--violet);  background: rgba(167,139,250,0.05); }
+  .callout.green  { border-color: var(--green);   background: rgba(52,211,153,0.04); }
+  .callout.orange { border-color: var(--orange);  background: rgba(251,146,60,0.04); }
+  .callout p { margin: 0; font-size: 0.88rem; }
+  .callout strong { color: var(--cyan); }
+  .callout.gold   strong { color: var(--gold); }
+  .callout.violet strong { color: var(--violet); }
+  .callout.green  strong { color: var(--green); }
+  .callout.orange strong { color: var(--orange); }
+
+  /* ── STATUS ROW ── */
+  .status-row {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin: 1.4rem 0;
+  }
+  .status-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 20px; padding: 6px 14px;
+    font-size: 0.78rem; color: var(--text2);
+  }
+  .status-pill .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .dot-green  { background: #34d399; box-shadow: 0 0 6px #34d399; }
+  .dot-orange { background: #fb923c; box-shadow: 0 0 6px #fb923c; }
+  .dot-violet { background: #a78bfa; box-shadow: 0 0 6px #a78bfa; }
+  .dot-grey   { background: #4b5a74; }
+
+  /* ── SEPARATOR ── */
+  .sep {
+    border: none; border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: #1e3050; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #2a4070; }
+
+  /* ── MENU MOCKUP ── */
+  .menu-mock {
+    background: #020408;
+    border: 1px solid rgba(0,229,255,0.18);
+    border-radius: 10px;
+    padding: 24px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.8;
+    margin: 1.2rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .menu-mock::before {
+    content: '● ● ●';
+    position: absolute; top: 10px; left: 14px;
+    font-size: 0.55rem; color: #2a3a50; letter-spacing: 4px;
+  }
+  .menu-mock pre { padding-top: 6px; }
+  .m-title  { color: #00e5ff; font-weight: 700; }
+  .m-dim    { color: #2a3a54; }
+  .m-green  { color: #34d399; }
+  .m-yellow { color: #f59e0b; }
+  .m-violet { color: #a78bfa; }
+  .m-orange { color: #fb923c; }
+  .m-pink   { color: #f472b6; }
+  .m-white  { color: #dde4f0; }
+  .m-muted  { color: #4b5a74; }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 48px;
+  }
+  .toc h3 {
+    font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 0.9rem; font-family: 'JetBrains Mono', monospace;
+  }
+  .toc ol { padding-left: 1.4rem; }
+  .toc li { margin-bottom: 0.25rem; }
+  .toc a { color: var(--text2); text-decoration: none; font-size: 0.88rem; transition: color 0.15s; }
+  .toc a:hover { color: var(--cyan); }
+  .toc .toc-num { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; margin-right: 6px; }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<div class="container">
+
+  <!-- ══ HERO ══ -->
+  <div class="hero">
+    <div class="eyebrow">8Z Research · Bojan Dobrečevič · AIM³ Institute Ljubljana</div>
+    <h1>MP3 Resurrection<br>Project</h1>
+    <p class="hero-sub">
+      Recovering a lifetime of music from lossy MP3 archives — using AI super-resolution,
+      stem separation, and intelligent batch processing to rebuild what compression discarded.
+    </p>
+    <div class="hero-meta">
+      Status: <span>Active Development</span> &nbsp;·&nbsp;
+      Phase: <span>1 of 3 (AudioSR Pipeline running)</span> &nbsp;·&nbsp;
+      Hardware: <span>RTX 3080 Mobile · 8 GB VRAM · 16 CPU workers</span>
+    </div>
+  </div>
+
+  <!-- ══ TOC ══ -->
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#problem"><span class="toc-num">01</span> The Problem — What MP3 Destroyed</a></li>
+      <li><a href="#have"><span class="toc-num">02</span> What We Have Now — Current Tools</a></li>
+      <li><a href="#understand"><span class="toc-num">03</span> Understanding the Gaps — All Dimensions of Degradation</a></li>
+      <li><a href="#toolkit"><span class="toc-num">04</span> The Full AI Toolkit — What Each Tool Does</a></li>
+      <li><a href="#pipeline"><span class="toc-num">05</span> The Master Pipeline — Complete Processing Chain</a></li>
+      <li><a href="#tool"><span class="toc-num">06</span> The Unified Tool — Architecture &amp; Menu Design</a></li>
+      <li><a href="#roadmap"><span class="toc-num">07</span> Roadmap — Build Order &amp; Priorities</a></li>
+      <li><a href="#limits"><span class="toc-num">08</span> Honest Limits — What AI Cannot Recover</a></li>
+    </ol>
+  </div>
+
+  <!-- ══ SECTION 1 ══ -->
+  <div class="section" id="problem">
+    <div class="section-label">Section 01</div>
+    <h2>The Problem — <span class="accent">What MP3 Destroyed</span></h2>
+
+    <p>
+      The original recordings were captured at <strong>44.1 kHz, 16-bit</strong> — CD quality.
+      They were then encoded to MP3, likely at 128–256 kbps. That encoding process made a series
+      of permanent, one-way decisions about what information was "expendable."
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <span class="card-icon">🎵</span>
+        <h4>High Frequencies Discarded</h4>
+        <p>MP3 aggressively cuts content above 16–18 kHz. Cymbals, string harmonics, the "air" of a recording, the sibilance of vocals — all truncated or smeared by codec artifacts.</p>
+        <span class="badge b-red">Partial recovery possible via AI</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">🥁</span>
+        <h4>Transient Smearing</h4>
+        <p>Sharp attack sounds — snare hits, plucked strings, consonants — are blurred by MP3's block-based transform (MDCT). The "snap" of a drum becomes a slightly softer thud.</p>
+        <span class="badge b-orange">Limited recovery</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎸</span>
+        <h4>Pre-echo Artifacts</h4>
+        <p>A characteristic MP3 defect where a faint "ghost" of a transient appears slightly before the hit. Particularly audible in guitar attacks and percussion in quiet passages.</p>
+        <span class="badge b-gold">Detectable, partially fixable</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎹</span>
+        <h4>Bitrate Noise Floor</h4>
+        <p>Low-bitrate MP3s introduce a faint but audible noise floor — a mushy, granular texture underneath the music. Especially noticeable in quiet passages and reverb tails.</p>
+        <span class="badge b-green">Good recovery via DeepFilter</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎤</span>
+        <h4>Stereo Image Collapse</h4>
+        <p>MP3 uses "joint stereo" which can collapse the stereo field at lower bitrates, making everything sound narrower and more mono-like than the original mix.</p>
+        <span class="badge b-violet">AI mastering can help</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">📉</span>
+        <h4>Dynamic Range Compression</h4>
+        <p>The encode/decode cycle introduces subtle changes to the amplitude envelope. Combined with the noise floor, the dynamics feel slightly flattened compared to the original.</p>
+        <span class="badge b-blue">Addressable at mastering stage</span>
+      </div>
+    </div>
+
+    <div class="callout gold">
+      <p><strong>Critical reality check:</strong> MP3 encoding is a lossy, one-way compression.
+      The original information is permanently gone. AI tools do not "recover" the original —
+      they <em>reconstruct plausible approximations</em> of what was likely there, using models
+      trained on uncompressed audio. The result is a high-quality reconstruction, not a restoration of truth.</p>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ══ SECTION 2 ══ -->
+  <div class="section" id="have">
+    <div class="section-label">Section 02</div>
+    <h2>What We Have Now — <span class="accent">Current Tools</span></h2>
+
+    <div class="status-row">
+      <div class="status-pill"><div class="dot dot-green"></div> mp3wav_cla.py — Running</div>
+      <div class="status-pill"><div class="dot dot-green"></div> mp3wav_gem.py — Available</div>
+      <div class="status-pill"><div class="dot dot-orange"></div> Batch of 10 songs — In progress</div>
+      <div class="status-pill"><div class="dot dot-grey"></div> Phase 2 tools — Not built yet</div>
+    </div>
+
+    <h3>mp3wav_cla.py <span class="tag-h done">Claude · v1.3.9 · Primary</span></h3>
+    <p>
+      A full-featured AI restoration pipeline written by Claude for Bojan. Takes MP3 files and
+      produces <strong>multiple comparison variants</strong> side-by-side, so you can A/B test
+      which processing chain sounds best for each piece of material.
+    </p>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>Variant Folder</th><th>What It Does</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="label">01_baseline/</td><td>Straight MP3 → 24-bit WAV/FLAC decode. Reference track — no AI.</td><td>✅ Working</td></tr>
+          <tr><td class="label">02_denoised/</td><td>DeepFilterNet noise suppression. Risky on music — can strip harmonics. Requires Rust toolchain.</td><td>⚠️ Disabled (Rust)</td></tr>
+          <tr><td class="label">03_upscaled/</td><td>AudioSR super-resolution directly on the decoded MP3. Reconstructs high-frequency content.</td><td>✅ Running</td></tr>
+          <tr><td class="label">04_upscaled_lp/</td><td>Applies a 16 kHz lowpass filter first, then AudioSR. Gives AI a cleaner base to work from.</td><td>✅ Running</td></tr>
+          <tr><td class="label">05_full_chain/</td><td>DeepFilterNet → AudioSR combo. Best expected quality. Requires DeepFilterNet to be enabled.</td><td>⚠️ Skipped (no DF)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      Key engineering decisions in this tool: <strong>resumable runs</strong> with <code>.done</code> JSON markers,
+      <strong>atomic FLAC writes</strong> (encode to <code>.tmp</code>, rename only on success),
+      <strong>VRAM-adaptive chunking</strong> (auto-detects GPU and picks safe chunk sizes),
+      <strong>crossfade stitching</strong> (2s overlap to eliminate boundary clicks), and
+      <strong>GPU → CPU fallback</strong> if CUDA OOMs.
+    </p>
+
+    <h3>mp3wav_gem.py <span class="tag-h idea">Gemini · Simpler · HiFi-GAN</span></h3>
+    <p>
+      Gemini's alternative implementation. Uses <strong>HiFi-GAN BWE</strong> (Bandwidth Extender)
+      instead of AudioSR — a different neural architecture for high-frequency reconstruction.
+      Key differences: processes audio in-process (no subprocess spawning, no model reload per chunk),
+      uses 12-second chunks with crossfade, simpler single-output structure.
+    </p>
+
+    <div class="callout">
+      <p><strong>Important difference:</strong> HiFi-GAN BWE runs the model <em>in-process</em>,
+      loading it once and passing all chunks through it in memory. AudioSR spawns a new subprocess
+      per chunk, reloading the 258M-parameter model each time. HiFi-GAN is therefore much faster
+      per song but may produce lower quality reconstruction than AudioSR's diffusion-based approach.</p>
+    </div>
+
+    <h3>AudioSR Performance Reality <span class="tag-h wip">RTX 3080 Mobile · 8 GB VRAM</span></h3>
+    <p>
+      The RTX 3080 Mobile in the Razer Blade Advanced 2021 runs at 105W TDP —
+      roughly equivalent to a desktop RTX 3060/3070 in real compute throughput.
+      AudioSR's 50-step DDIM diffusion sampling takes <strong>~14–20 minutes per 60-second chunk</strong>
+      on this hardware. A 9-minute song processed twice (direct + lowpass variant) takes
+      approximately <strong>6–8 hours</strong> of GPU time.
+    </p>
+
+    <div class="callout orange">
+      <p><strong>Known bug — input path:</strong> The batch file passes an ANSI escape code
+      (<code>\x1b[90m</code>) as the input argument. The script catches this and falls back
+      to the script directory, but it should be fixed in the batch file by stripping color
+      codes before passing the path argument.</p>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ══ SECTION 3 ══ -->
+  <div class="section" id="understand">
+    <div class="section-label">Section 03</div>
+    <h2>Understanding the Gaps — <span class="accent">All Dimensions of Degradation</span></h2>
+
+    <p>
+      AudioSR and HiFi-GAN BWE address only <strong>one dimension</strong> of what MP3 encoding damaged:
+      the high-frequency spectrum. A complete restoration needs to address every layer of the signal.
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <span class="card-icon">🔊</span>
+        <h4>Frequency Spectrum</h4>
+        <p><strong>High frequencies (8–24 kHz):</strong> Reconstructed by AudioSR / HiFi-GAN. Cymbals, air, shimmer.<br><br>
+        <strong>Bass (20–200 Hz):</strong> MP3 is actually fairly good here, but the codec noise floor affects the low end too. Needs dedicated bass enhancement or stem processing.</p>
+        <span class="badge b-cyan">AudioSR handles highs only</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">⏱️</span>
+        <h4>Temporal Accuracy</h4>
+        <p>Individual musicians can play slightly off the grid. MP3 encoding doesn't fix or worsen this — it's a recording characteristic. But once stems are separated, timing correction on individual instruments <em>is possible</em>.</p>
+        <span class="badge b-violet">Requires stem separation first</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎚️</span>
+        <h4>Dynamics &amp; Loudness</h4>
+        <p>The overall loudness balance, compression, and dynamic range of the mixed track. AI mastering tools can intelligently adjust these to modern standards without squashing the life out of the music.</p>
+        <span class="badge b-gold">AI mastering stage</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">🌐</span>
+        <h4>Stereo Field</h4>
+        <p>Width, depth, and placement of instruments in the stereo image. MP3 joint stereo can narrow this. AI tools and mid-side processing can intelligently widen and restore spatial character.</p>
+        <span class="badge b-green">Mastering + stem processing</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎭</span>
+        <h4>Codec Artifacts</h4>
+        <p>The distinctive "MP3 sound" — pre-echo, ringing, granular noise in reverb tails. These are not simply noise; they are structured artifacts that require specialized removal tools.</p>
+        <span class="badge b-orange">DeepFilterNet / iZotope RX</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎵</span>
+        <h4>Pitch Accuracy</h4>
+        <p>MP3 does not affect pitch — this is a recording characteristic. However, auto-tune or pitch correction on vocals or lead instruments is possible once stems are separated.</p>
+        <span class="badge b-pink">Optional, post-separation</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ══ SECTION 4 ══ -->
+  <div class="section" id="toolkit">
+    <div class="section-label">Section 04</div>
+    <h2>The Full AI Toolkit — <span class="accent">What Each Tool Does</span></h2>
+
+    <h3>Tier 1 — Spectrum Restoration <span class="tag-h done">Currently Active</span></h3>
+
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>Tool</th><th>Model Type</th><th>Speed</th><th>Quality</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label">AudioSR</td>
+            <td>Diffusion (50-step DDIM)</td>
+            <td>~15 min / 60s chunk</td>
+            <td>⭐⭐⭐⭐⭐</td>
+            <td>Best quality, slowest. 258M params. Subprocess per chunk = model reload overhead.</td>
+          </tr>
+          <tr>
+            <td class="label">HiFi-GAN BWE</td>
+            <td>GAN (single pass)</td>
+            <td>~30s / 12s chunk</td>
+            <td>⭐⭐⭐⭐</td>
+            <td>Much faster, good quality. In-process, no reload. Gemini's choice. 48kHz output.</td>
+          </tr>
+          <tr>
+            <td class="label">DeepFilterNet 3</td>
+            <td>RNN + spectral</td>
+            <td>Real-time</td>
+            <td>⭐⭐⭐</td>
+            <td>Noise suppression, not upscaling. Speech-trained — can damage music harmonics. Use carefully.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Tier 2 — Stem Separation <span class="tag-h plan">Phase 2 · Critical Enabler</span></h3>
+    <p>
+      Stem separation is the <strong>key unlocking step</strong> for the entire advanced pipeline.
+      Once a song is split into individual stems, every other processing step becomes dramatically
+      more effective and controllable — you process each instrument optimally, then remix.
+    </p>
+
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>Tool</th><th>Stems</th><th>Quality</th><th>Speed</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label">Demucs htdemucs_ft</td>
+            <td>Vocals, Drums, Bass, Other</td>
+            <td>⭐⭐⭐⭐⭐</td>
+            <td>~2–5 min/song GPU</td>
+            <td>Meta AI. State of the art. Free, open source. pip install demucs. Best overall.</td>
+          </tr>
+          <tr>
+            <td class="label">Demucs htdemucs_6s</td>
+            <td>+ Guitar, Piano (6 stems)</td>
+            <td>⭐⭐⭐⭐</td>
+            <td>~3–6 min/song GPU</td>
+            <td>6-stem variant. More useful for complex arrangements. Slightly lower per-stem quality.</td>
+          </tr>
+          <tr>
+            <td class="label">Spleeter (Deezer)</td>
+            <td>2, 4, or 5 stems</td>
+            <td>⭐⭐⭐</td>
+            <td>Very fast</td>
+            <td>Older, lower quality than Demucs. Not recommended for quality-focused work.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout violet">
+      <p><strong>On your question about bass:</strong> Once Demucs separates the bass stem,
+      you can process it independently — apply HiFi-GAN or AudioSR to the isolated bass track
+      (much better results than on a full mix), optionally apply a bass enhancer,
+      then mix back. The bass in an MP3 is actually less damaged than the highs,
+      but isolation + enhancement still yields audible improvement.</p>
+    </div>
+
+    <h3>Tier 3 — Per-Stem Processing <span class="tag-h plan">Phase 2 · Post-Separation</span></h3>
+
+    <div class="cards">
+      <div class="card">
+        <span class="card-icon">🥁</span>
+        <h4>Drum Timing Correction</h4>
+        <p>Once the drum stem is isolated, transient detection + quantization can tighten a slightly loose drummer. Tools: <code>madmom</code> for beat detection, <code>librosa</code> for time-stretching with phase vocoder.</p>
+        <span class="badge b-orange">Phase 2</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎸</span>
+        <h4>Bass Stem Enhancement</h4>
+        <p>Apply AudioSR or HiFi-GAN BWE to the isolated bass stem. Dramatically more effective than full-mix processing because the AI isn't confused by other instruments.</p>
+        <span class="badge b-violet">Phase 2</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎤</span>
+        <h4>Vocal Enhancement</h4>
+        <p>Apply DeepFilterNet or RNNoise to the isolated vocal stem (where speech-trained models actually shine). Then AudioSR for high-frequency detail. Optional: subtle pitch correction.</p>
+        <span class="badge b-green">Phase 2</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎹</span>
+        <h4>Harmonic Stem (Other)</h4>
+        <p>Guitars, keyboards, synths — process with AudioSR for high-frequency extension. This stem benefits most from diffusion-based reconstruction of harmonic overtones.</p>
+        <span class="badge b-cyan">Phase 2</span>
+      </div>
+    </div>
+
+    <h3>Tier 4 — Mix &amp; Mastering <span class="tag-h plan">Phase 3</span></h3>
+
+    <div class="cards">
+      <div class="card">
+        <span class="card-icon">🎛️</span>
+        <h4>Stem Remixing</h4>
+        <p>After processing each stem independently, recombine them using Python's <code>soundfile</code> + <code>numpy</code>. Apply individual volume balancing. The remixed result is often noticeably better than the original mix.</p>
+        <span class="badge b-gold">Phase 3</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">📻</span>
+        <h4>AI Mastering</h4>
+        <p>Final-stage loudness normalization, EQ, stereo width enhancement. Python tools: <code>pyloudnorm</code> for LUFS normalization. Or integrate with LANDR API or iZotope Ozone (if available).</p>
+        <span class="badge b-pink">Phase 3</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">📐</span>
+        <h4>LUFS Normalization</h4>
+        <p>Normalize final output to streaming standard (−14 LUFS integrated). Ensures consistent playback volume across all restored tracks. Free, simple, measurable.</p>
+        <span class="badge b-green">Phase 3</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ══ SECTION 5 ══ -->
+  <div class="section" id="pipeline">
+    <div class="section-label">Section 05</div>
+    <h2>The Master Pipeline — <span class="accent">Complete Processing Chain</span></h2>
+
+    <p>
+      The complete vision — all phases combined — processes each MP3 through a multi-stage chain.
+      Not all stages are required for every song; the tool will offer granular control over which
+      stages to enable.
+    </p>
+
+    <div class="pipeline">
+      <div class="pipe-step">
+        <span class="pipe-num">STEP 01</span>
+        <div class="pipe-title" style="color:#34d399">Decode</div>
+        <div class="pipe-desc">MP3 → 24-bit 48 kHz WAV baseline. No AI, just clean decode via FFmpeg.</div>
+      </div>
+      <div class="pipe-step">
+        <span class="pipe-num">STEP 02</span>
+        <div class="pipe-title" style="color:#00e5ff">AudioSR</div>
+        <div class="pipe-desc">Full-mix high-frequency super-resolution via diffusion model. Best quality HF reconstruction.</div>
+      </div>
+      <div class="pipe-step">
+        <span class="pipe-num">STEP 03</span>
+        <div class="pipe-title" style="color:#a78bfa">Demucs</div>
+        <div class="pipe-desc">Separate into 4 stems: Vocals · Drums · Bass · Other. Applied to AudioSR output.</div>
+      </div>
+      <div class="pipe-step">
+        <span class="pipe-num">STEP 04</span>
+        <div class="pipe-title" style="color:#fb923c">Per-Stem AI</div>
+        <div class="pipe-desc">Each stem processed independently: HiFi-GAN BWE + optional DeepFilter on vocals + timing on drums.</div>
+      </div>
+      <div class="pipe-step">
+        <span class="pipe-num">STEP 05</span>
+        <div class="pipe-title" style="color:#f59e0b">Remix</div>
+        <div class="pipe-desc">Recombine processed stems into stereo mix. Balance levels. Apply stereo width enhancement.</div>
+      </div>
+      <div class="pipe-step">
+        <span class="pipe-num">STEP 06</span>
+        <div class="pipe-title" style="color:#f472b6">Master</div>
+        <div class="pipe-desc">LUFS normalization → −14 LUFS. Dynamic range preservation. Final FLAC-12 output at 48 kHz / 24-bit.</div>
+      </div>
+    </div>
+
+    <div class="callout green">
+      <p><strong>The variants model:</strong> Rather than picking one "best" chain, the tool produces
+      multiple variants at key decision points so you can compare and choose the best result for
+      each individual song. Music is subjective — what sounds best for a jazz recording differs from
+      what sounds best for heavy metal.</p>
+    </div>
+
+    <h3>Output File Structure</h3>
+    <div class="code-block">
+      <pre>
+<span class="cb-cm"># Song: "Aircraft Carrier.mp3"</span>
+
+AI_Restored_Variants/
+  <span class="cb-ok">01_baseline/</span>            <span class="cb-cm">← Clean decode, no AI (reference)</span>
+    Aircraft-Carrier.flac
+
+  <span class="cb-cy">02_audiosr_direct/</span>      <span class="cb-cm">← AudioSR on full mix (Phase 1 ✓)</span>
+    Aircraft-Carrier.up.flac
+
+  <span class="cb-cy">03_audiosr_lp/</span>          <span class="cb-cm">← Lowpass → AudioSR (Phase 1 ✓)</span>
+    Aircraft-Carrier.lp_up.flac
+
+  <span class="cb-violet">04_stems/</span>               <span class="cb-cm">← Demucs 4-stem separation (Phase 2)</span>
+    vocals.flac
+    drums.flac
+    bass.flac
+    other.flac
+
+  <span class="cb-violet">05_stems_enhanced/</span>      <span class="cb-cm">← Per-stem AI processing (Phase 2)</span>
+    vocals.enhanced.flac
+    drums.enhanced.flac
+    bass.enhanced.flac
+    other.enhanced.flac
+
+  <span class="cb-kw">06_remixed/</span>             <span class="cb-cm">← Stems recombined (Phase 2)</span>
+    Aircraft-Carrier.remix.flac
+
+  <span class="cb-st">07_mastered/</span>            <span class="cb-cm">← LUFS normalized, final (Phase 3)</span>
+    Aircraft-Carrier.master.flac
+
+  _done/                  <span class="cb-cm">← Resume markers (JSON fingerprints)</span>
+  _logs/                  <span class="cb-cm">← Per-file processing logs</span></pre>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ══ SECTION 6 ══ -->
+  <div class="section" id="tool">
+    <div class="section-label">Section 06</div>
+    <h2>The Unified Tool — <span class="accent">Architecture &amp; Menu Design</span></h2>
+
+    <p>
+      The goal is a single Python script — <code>mp3restore.py</code> — with a colorful interactive
+      batch menu. No Windows GUI. All control via keyboard. Works from CMD or PowerShell.
+      The menu drives everything, with full CLI pass-through for automation.
+    </p>
+
+    <h3>Proposed Main Menu</h3>
+    <div class="menu-mock">
+      <pre>
+<span class="m-dim">══════════════════════════════════════════════════════════════════</span>
+   <span class="m-title">8Z · MP3 Resurrection Pipeline</span>   <span class="m-muted">v2.0  ·  Bojan Dobrečevič</span>
+<span class="m-dim">══════════════════════════════════════════════════════════════════</span>
+
+  <span class="m-muted">Hardware:</span>  <span class="m-green">CUDA  ·  RTX 3080 Mobile  ·  8.0 GB VRAM</span>
+  <span class="m-muted">Workers:</span>   <span class="m-yellow">16 CPU threads</span>
+  <span class="m-muted">Folder:</span>    <span class="m-white">D:\8Z\8za2flac\Someone  ·  10 MP3 files</span>
+
+<span class="m-dim">──────────────────────────────────────────────────────────────────</span>
+  <span class="m-green">[1]</span>  <span class="m-white">Phase 1 — AudioSR Super-Resolution</span>     <span class="m-muted">(high freq, ~8h/song)</span>
+  <span class="m-violet">[2]</span>  <span class="m-white">Phase 2 — Stem Separation + Per-Stem AI</span> <span class="m-muted">(requires Phase 1)</span>
+  <span class="m-yellow">[3]</span>  <span class="m-white">Phase 3 — Remix + LUFS Mastering</span>       <span class="m-muted">(requires Phase 2)</span>
+  <span class="m-cyan">[4]</span>  <span class="m-white">Full Pipeline  (1 → 2 → 3, overnight)</span>
+<span class="m-dim">──────────────────────────────────────────────────────────────────</span>
+  <span class="m-orange">[5]</span>  <span class="m-white">HiFi-GAN Quick Pass</span>                    <span class="m-muted">(fast, ~30s/song)</span>
+  <span class="m-pink">[6]</span>  <span class="m-white">DeepFilterNet Noise Reduction</span>          <span class="m-muted">(music: use with care)</span>
+  <span class="m-green">[7]</span>  <span class="m-white">Compare Variants</span>                       <span class="m-muted">(show side-by-side stats)</span>
+<span class="m-dim">──────────────────────────────────────────────────────────────────</span>
+  <span class="m-muted">[8]  Settings    [9]  File Selector    [0]  Exit</span>
+<span class="m-dim">══════════════════════════════════════════════════════════════════</span>
+  <span class="m-muted">▸</span> <span class="m-yellow">Choice:</span> <span class="m-white">_</span></pre>
+    </div>
+
+    <h3>Module Architecture</h3>
+    <div class="cards">
+      <div class="card">
+        <span class="card-icon">🧱</span>
+        <h4>mp3restore.py — Main entry</h4>
+        <p>Menu, CLI argument parsing, hardware detection, file scanning, progress tracking, resume logic. All color output. Imports the modules below.</p>
+        <span class="badge b-cyan">Core</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">🔊</span>
+        <h4>modules/audiosr_runner.py</h4>
+        <p>Wraps AudioSR CLI with chunking, crossfade stitching, GPU→CPU fallback. Carries forward all logic from current <code>mp3wav_cla.py</code>.</p>
+        <span class="badge b-green">Phase 1 done</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">⚡</span>
+        <h4>modules/hifigan_runner.py</h4>
+        <p>In-process HiFi-GAN BWE. Fast alternative to AudioSR. Model loaded once, all chunks processed without subprocess overhead.</p>
+        <span class="badge b-green">Phase 1 done (gem)</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎭</span>
+        <h4>modules/demucs_runner.py</h4>
+        <p>Wraps Demucs htdemucs_ft. Splits each song to 4 stems, saves as individual 24-bit FLACs. The critical enabler for all Phase 2 work.</p>
+        <span class="badge b-violet">Phase 2 — to build</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎛️</span>
+        <h4>modules/stem_processor.py</h4>
+        <p>Per-stem AI enhancement. Routes each stem to the optimal model: vocals → DeepFilter+AudioSR, bass/other → HiFi-GAN, drums → transient sharpening.</p>
+        <span class="badge b-violet">Phase 2 — to build</span>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎚️</span>
+        <h4>modules/mixer_master.py</h4>
+        <p>Recombines stems, applies LUFS normalization (<code>pyloudnorm</code>), stereo width enhancement, final FLAC-12 encode. Target: −14 LUFS for streaming.</p>
+        <span class="badge b-gold">Phase 3 — to build</span>
+      </div>
+    </div>
+
+    <h3>Key Engineering Principles</h3>
+    <ul>
+      <li><strong>Resumable always:</strong> Every song gets a <code>.done.json</code> fingerprint. Crash → restart → continues where it left off automatically.</li>
+      <li><strong>Atomic writes:</strong> Every output file written as <code>.tmp</code> first. Renamed to final only on verified success. No half-written files.</li>
+      <li><strong>Variants, not overwrites:</strong> Every processing step produces a named variant alongside the input. You always have the baseline. You always have the previous step's output.</li>
+      <li><strong>One model load per session:</strong> For in-process models (HiFi-GAN, Demucs), load once at the start of a batch and keep in VRAM for all songs. Kill the subprocess-per-chunk pattern.</li>
+      <li><strong>16 workers:</strong> Use all CPU cores for FFmpeg operations, chunking, FLAC encoding. AI inference on GPU. Parallelism where possible.</li>
+      <li><strong>Verbose by default:</strong> All steps timestamped. Progress spinners with elapsed time. No silent hangs. Flush stdout on every line.</li>
+    </ul>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ══ SECTION 7 ══ -->
+  <div class="section" id="roadmap">
+    <div class="section-label">Section 07</div>
+    <h2>Roadmap — <span class="accent">Build Order &amp; Priorities</span></h2>
+
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Task</th><th>Phase</th><th>Effort</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label center">01</td>
+            <td>Fix batch file ANSI escape code input bug</td>
+            <td>1</td>
+            <td>Trivial (5 min)</td>
+            <td style="color:#34d399">Quick fix</td>
+          </tr>
+          <tr>
+            <td class="label center">02</td>
+            <td>Fix AudioSR model-reload-per-chunk (in-process wrapper)</td>
+            <td>1</td>
+            <td>Medium (1–2h)</td>
+            <td style="color:#fb923c">High value</td>
+          </tr>
+          <tr>
+            <td class="label center">03</td>
+            <td>Finish current 10-song AudioSR batch</td>
+            <td>1</td>
+            <td>~3–4 days GPU</td>
+            <td style="color:#f59e0b">Running</td>
+          </tr>
+          <tr>
+            <td class="label center">04</td>
+            <td>Install &amp; test Demucs htdemucs_ft</td>
+            <td>2</td>
+            <td>1–2h setup</td>
+            <td style="color:#a78bfa">Next up</td>
+          </tr>
+          <tr>
+            <td class="label center">05</td>
+            <td>Build demucs_runner.py module</td>
+            <td>2</td>
+            <td>Half day</td>
+            <td style="color:#a78bfa">Planned</td>
+          </tr>
+          <tr>
+            <td class="label center">06</td>
+            <td>Build stem_processor.py — per-stem routing logic</td>
+            <td>2</td>
+            <td>1 day</td>
+            <td style="color:#a78bfa">Planned</td>
+          </tr>
+          <tr>
+            <td class="label center">07</td>
+            <td>Build mixer_master.py — recombine + LUFS normalize</td>
+            <td>3</td>
+            <td>Half day</td>
+            <td style="color:#4b5a74">Future</td>
+          </tr>
+          <tr>
+            <td class="label center">08</td>
+            <td>Unified mp3restore.py with full interactive menu</td>
+            <td>All</td>
+            <td>1–2 days</td>
+            <td style="color:#4b5a74">Future</td>
+          </tr>
+          <tr>
+            <td class="label center">09</td>
+            <td>Drum timing correction module (madmom + librosa)</td>
+            <td>2+</td>
+            <td>1 day R&amp;D</td>
+            <td style="color:#4b5a74">Research</td>
+          </tr>
+          <tr>
+            <td class="label center">10</td>
+            <td>Batch compare/report — side-by-side variant quality metrics</td>
+            <td>3</td>
+            <td>Half day</td>
+            <td style="color:#4b5a74">Future</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Immediate Next Step</h3>
+    <div class="callout green">
+      <p><strong>Fix the model-reload bug first.</strong> The single biggest quality-of-life
+      improvement available right now — before Phase 2 even starts — is rewriting AudioSR to
+      run in-process like HiFi-GAN does in <code>mp3wav_gem.py</code>. This would cut the
+      per-song time roughly in half by eliminating ~10–15 seconds of Python startup + model
+      loading per chunk. On a 10-chunk song that's 100–150 seconds of pure overhead. 
+      For the full 10-song batch it could save 20–30 minutes of total runtime at no quality cost.</p>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ══ SECTION 8 ══ -->
+  <div class="section" id="limits">
+    <div class="section-label">Section 08</div>
+    <h2>Honest Limits — <span class="accent">What AI Cannot Recover</span></h2>
+
+    <p>
+      This is important context for managing expectations. AI audio tools are impressive,
+      but they operate under fundamental constraints.
+    </p>
+
+    <div class="callout orange">
+      <p><strong>Reconstruction is not recovery.</strong> When AudioSR "restores" high frequencies,
+      it is generating statistically plausible audio based on patterns learned from training data.
+      The output is not the original recording — it is a new signal that sounds like what the
+      original probably sounded like. On average this is excellent. For specific moments
+      (a particular cymbal hit, a guitar harmonic) it may be wrong in ways that are subtly
+      audible to trained ears.</p>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <span class="card-icon">❌</span>
+        <h4>Cannot: Recover specific lost information</h4>
+        <p>If a specific note's overtones were discarded by MP3, no AI can know what those specific overtones were. It will reconstruct <em>something plausible</em>, not the <em>original truth</em>.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">❌</span>
+        <h4>Cannot: Fix poor original recordings</h4>
+        <p>If the recording itself was poorly made — bad mic placement, room acoustics issues, a musician who was genuinely out of sync — AI restoration cannot fix the underlying recording problem.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">⚠️</span>
+        <h4>Risk: Hallucination artifacts</h4>
+        <p>Diffusion models can occasionally generate high-frequency content that wasn't in the original at all — musical artifacts that are plausible but wrong. A/B comparison with the baseline is always necessary.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">⚠️</span>
+        <h4>Risk: Stem bleed</h4>
+        <p>Demucs is remarkable but not perfect. Some bass frequencies appear in the "other" stem, some drum reverb bleeds into vocals. Per-stem processing must account for this bleed.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">⚠️</span>
+        <h4>Risk: DeepFilterNet on music</h4>
+        <p>This model was trained on speech. It may identify musical harmonics and overtones as "noise" and reduce them. Only safe to use on isolated vocal stems, not full mixes. Test carefully.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">✅</span>
+        <h4>The honest bottom line</h4>
+        <p>The output will sound <strong>significantly better</strong> than the original MP3 to most listeners on most material. It will not be identical to the lost original. It is the best reconstruction currently possible.</p>
+      </div>
+    </div>
+
+    <h3>Conclusion</h3>
+    <p>
+      The MP3 Resurrection Project is a serious, well-motivated application of current AI audio technology.
+      The foundation — <code>mp3wav_cla.py</code> with AudioSR — is already producing high-quality results.
+      Phase 2 (Demucs stem separation + per-stem enhancement) will unlock a qualitatively different
+      level of restoration by allowing targeted AI processing of each instrument independently.
+      Phase 3 (remix + mastering) will bring the final output to modern streaming quality.
+    </p>
+    <p>
+      The most important discipline throughout is <strong>critical listening with A/B comparison</strong>.
+      Every variant produced is a hypothesis. The human ear is the final judge.
+    </p>
+
+    <div class="callout">
+      <p><strong>To continue in a new session:</strong> Open this HTML file, share it with Claude,
+      and say: <em>"We made this so far — look at the paper and let's continue."</em>
+      All context, decisions, tool choices, and the build plan are documented here.</p>
+    </div>
+  </div>
+
+  <!-- ══ FOOTER ══ -->
+  <div style="text-align:center; padding: 40px 0 20px; border-top: 1px solid var(--border); margin-top: 20px;">
+    <div style="font-family:'JetBrains Mono',monospace; font-size:0.62rem; letter-spacing:0.2em; color:var(--muted); text-transform:uppercase;">
+      8Z Research · AIM³ Institute · Ljubljana, Slovenia · 2026
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace; font-size:0.58rem; color:var(--border); margin-top:6px; letter-spacing:0.1em;">
+      Authored collaboratively: Bojan Dobrečevič + Claude (Anthropic) · February 26, 2026
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
