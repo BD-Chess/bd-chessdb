@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOMEONE — The Time Says Many Things (1994)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #020409;
+  --bg2:      #060a14;
+  --bg3:      #0b1120;
+  --surface:  #0f1729;
+  --surface2: #131d33;
+  --border:   rgba(210,175,90,0.12);
+  --border2:  rgba(255,255,255,0.06);
+  --gold:     #d2af5a;
+  --gold-bright: #f5d67b;
+  --gold-dim: rgba(210,175,90,0.12);
+  --rose:     #c94060;
+  --rose-dim: rgba(201,64,96,0.12);
+  --green:    #3aaa7a;
+  --green-dim:rgba(58,170,122,0.10);
+  --cyan:     #4a9eb8;
+  --cyan-dim: rgba(74,158,184,0.10);
+  --text:     #e2e0dc;
+  --text2:    #a09c94;
+  --muted:    #5e584e;
+  --heartbeat:#2dcc50;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Rajdhani',sans-serif;font-size:17px;line-height:1.7;
+  overflow-x:hidden;min-height:100vh;
+}
+
+/* ── ATMOSPHERIC BG ── */
+.atmo{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+}
+.atmo-glow{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 0%,rgba(210,175,90,0.04) 0%,transparent 65%),
+    radial-gradient(ellipse 40% 50% at 10% 60%,rgba(201,64,96,0.03) 0%,transparent 55%),
+    radial-gradient(ellipse 35% 35% at 90% 80%,rgba(58,170,122,0.025) 0%,transparent 50%);
+}
+.atmo-noise{
+  position:absolute;inset:0;opacity:0.018;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── SCROLL PROGRESS ── */
+.scroll-bar{
+  position:fixed;top:0;left:0;height:2px;z-index:999;
+  background:linear-gradient(90deg,var(--gold),var(--rose));
+  width:0%;transition:width 0.1s;
+}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1080px;margin:0 auto;padding:0 5vw;position:relative;z-index:1}
+
+/* ── HERO ── */
+.hero{
+  padding:60px 0 50px;text-align:center;
+  border-bottom:1px solid var(--border);
+  margin-bottom:0;
+}
+.hero-logo{
+  max-width:480px;width:80%;margin:0 auto 1.2rem;
+  filter:drop-shadow(0 0 30px rgba(210,175,90,0.2));
+}
+.hero-logo img{width:100%;height:auto;display:block}
+.hero-album{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.4rem,3.5vw,2.2rem);
+  font-style:italic;font-weight:300;
+  color:var(--gold);letter-spacing:0.03em;
+  margin-bottom:0.6rem;
+}
+.hero-meta{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.65rem;letter-spacing:0.25em;
+  text-transform:uppercase;color:var(--muted);
+}
+.hero-meta span{color:var(--gold)}
+
+/* ── COVER ART SECTION ── */
+.cover-section{
+  padding:50px 0;
+  border-bottom:1px solid var(--border);
+}
+.cover-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  max-width:720px;
+  margin:0 auto;
+}
+.cover-item{
+  border-radius:6px;overflow:hidden;
+  border:1px solid var(--border);
+  transition:transform 0.3s,box-shadow 0.3s;
+  cursor:pointer;position:relative;
+}
+.cover-item:hover{
+  transform:scale(1.02);
+  box-shadow:0 12px 40px rgba(0,0,0,0.6);
+  z-index:2;
+}
+.cover-item img{width:100%;height:auto;display:block}
+.cover-item.featured{
+  grid-column:1 / -1;
+  max-width:480px;
+  margin:0 auto;
+  width:100%;
+}
+.cover-label{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:6px 12px;
+  background:linear-gradient(transparent,rgba(0,0,0,0.8));
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.58rem;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--text2);
+  text-align:right;
+}
+
+/* ── PLAYER SECTION ── */
+.player-section{
+  padding:50px 0;
+  border-bottom:1px solid var(--border);
+}
+.sec-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.62rem;letter-spacing:0.35em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:0.5rem;display:block;
+  text-align:center;
+}
+.sec-title{
+  font-size:clamp(1.5rem,3vw,2rem);font-weight:700;
+  text-align:center;margin-bottom:2rem;
+  letter-spacing:-0.01em;
+}
+
+/* ── NOW PLAYING ── */
+.now-playing{
+  max-width:640px;margin:0 auto 2rem;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:24px 28px;
+  position:relative;overflow:hidden;
+}
+.now-playing::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--rose),var(--gold));
+  background-size:200% 100%;
+  animation:shimmer 3s ease-in-out infinite;
+}
+@keyframes shimmer{
+  0%,100%{background-position:200% 0}
+  50%{background-position:0% 0}
+}
+.np-top{
+  display:flex;align-items:center;gap:16px;
+  margin-bottom:16px;
+}
+.np-cover{
+  width:80px;height:80px;border-radius:6px;
+  overflow:hidden;flex-shrink:0;
+  border:1px solid var(--border);
+}
+.np-cover img{width:100%;height:100%;object-fit:cover}
+.np-info{flex:1;min-width:0}
+.np-track{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.58rem;color:var(--gold);
+  letter-spacing:0.2em;text-transform:uppercase;
+}
+.np-title{
+  font-size:1.15rem;font-weight:700;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.np-artist{
+  font-size:0.82rem;color:var(--text2);
+}
+
+/* ── WAVEFORM / PROGRESS ── */
+.progress-wrap{
+  position:relative;height:36px;
+  margin-bottom:10px;cursor:pointer;
+  border-radius:4px;overflow:hidden;
+  background:var(--bg3);
+}
+.progress-wave{
+  position:absolute;inset:0;
+  display:flex;align-items:flex-end;gap:1px;
+  padding:4px 0;
+}
+.wave-bar{
+  flex:1;min-width:1px;
+  background:var(--muted);border-radius:1px 1px 0 0;
+  transition:background 0.15s;
+}
+.wave-bar.played{background:var(--gold)}
+.wave-bar.current{background:var(--gold-bright)}
+.progress-fill{
+  position:absolute;top:0;left:0;bottom:0;
+  background:rgba(210,175,90,0.08);
+  border-right:2px solid var(--gold);
+  pointer-events:none;transition:width 0.1s linear;
+}
+.progress-time{
+  display:flex;justify-content:space-between;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.68rem;color:var(--muted);
+  margin-bottom:14px;
+}
+
+/* ── CONTROLS ── */
+.controls{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+}
+.ctrl-btn{
+  background:none;border:none;color:var(--text2);
+  cursor:pointer;padding:8px;border-radius:50%;
+  transition:color 0.2s,background 0.2s;
+  display:flex;align-items:center;justify-content:center;
+}
+.ctrl-btn:hover{color:var(--text);background:rgba(255,255,255,0.06)}
+.ctrl-btn svg{width:22px;height:22px}
+.ctrl-btn.play-btn{
+  width:52px;height:52px;
+  background:var(--gold);color:var(--bg);
+  border-radius:50%;
+}
+.ctrl-btn.play-btn:hover{
+  background:var(--gold-bright);
+  box-shadow:0 0 20px rgba(210,175,90,0.4);
+}
+.ctrl-btn.play-btn svg{width:24px;height:24px}
+.ctrl-btn.active{color:var(--gold)}
+
+/* ── VOLUME ── */
+.volume-wrap{
+  display:flex;align-items:center;gap:8px;
+  margin-left:auto;
+}
+.volume-slider{
+  -webkit-appearance:none;appearance:none;
+  width:80px;height:4px;border-radius:2px;
+  background:var(--muted);outline:none;cursor:pointer;
+}
+.volume-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;
+  border-radius:50%;background:var(--gold);cursor:pointer;
+  border:2px solid var(--bg);
+}
+
+/* ── TRACKLIST ── */
+.tracklist{
+  max-width:640px;margin:0 auto;
+}
+.track{
+  display:flex;align-items:center;gap:14px;
+  padding:10px 14px;border-radius:6px;
+  cursor:pointer;transition:background 0.2s;
+  border:1px solid transparent;
+}
+.track:hover{
+  background:rgba(210,175,90,0.04);
+  border-color:rgba(210,175,90,0.08);
+}
+.track.active{
+  background:rgba(210,175,90,0.07);
+  border-color:rgba(210,175,90,0.15);
+}
+.track-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.72rem;color:var(--muted);
+  width:22px;text-align:right;flex-shrink:0;
+}
+.track.active .track-num{color:var(--gold)}
+.track-eq{
+  display:none;width:22px;height:16px;
+  align-items:flex-end;gap:2px;flex-shrink:0;
+}
+.track.playing .track-num{display:none}
+.track.playing .track-eq{display:flex}
+.eq-bar{
+  width:3px;background:var(--gold);border-radius:1px;
+  animation:eqBounce 0.5s ease-in-out infinite alternate;
+}
+.eq-bar:nth-child(1){height:6px;animation-delay:0s}
+.eq-bar:nth-child(2){height:12px;animation-delay:0.15s}
+.eq-bar:nth-child(3){height:8px;animation-delay:0.3s}
+.eq-bar:nth-child(4){height:14px;animation-delay:0.1s}
+@keyframes eqBounce{
+  0%{transform:scaleY(0.3)}100%{transform:scaleY(1)}
+}
+.track-title{flex:1;font-weight:600;font-size:0.95rem}
+.track.active .track-title{color:var(--gold)}
+.track-dur{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.72rem;color:var(--muted);flex-shrink:0;
+}
+
+/* ── BOOKLET GALLERY ── */
+.gallery-section{
+  padding:50px 0;
+  border-bottom:1px solid var(--border);
+}
+.gallery-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:16px;
+  max-width:800px;
+  margin:0 auto;
+}
+.gallery-item{
+  border-radius:6px;overflow:hidden;
+  border:1px solid var(--border);
+  transition:transform 0.3s,box-shadow 0.3s;
+  cursor:pointer;
+}
+.gallery-item:hover{
+  transform:scale(1.01);
+  box-shadow:0 12px 40px rgba(0,0,0,0.5);
+}
+.gallery-item img{width:100%;height:auto;display:block}
+
+/* ── BAND SECTION ── */
+.band-section{
+  padding:50px 0;
+  border-bottom:1px solid var(--border);
+}
+.band-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:16px;
+  max-width:640px;
+  margin:1.5rem auto 0;
+}
+.band-member{
+  text-align:center;
+  padding:16px 10px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--surface);
+  transition:border-color 0.3s,transform 0.3s;
+}
+.band-member:hover{
+  border-color:rgba(210,175,90,0.25);
+  transform:translateY(-2px);
+}
+.bm-icon{
+  font-size:1.6rem;margin-bottom:0.4rem;
+  filter:grayscale(0.4);
+}
+.bm-name{
+  font-weight:700;font-size:0.88rem;
+  color:var(--text);margin-bottom:0.15rem;
+}
+.bm-role{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.58rem;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--gold);
+}
+
+/* ── CREDITS ── */
+.credits-section{
+  padding:50px 0;
+  border-bottom:1px solid var(--border);
+}
+.credits-card{
+  max-width:640px;margin:0 auto;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:28px 32px;
+}
+.credit-line{
+  display:flex;gap:10px;
+  margin-bottom:0.4rem;
+  font-size:0.88rem;
+}
+.credit-role{
+  color:var(--text2);min-width:160px;
+  flex-shrink:0;text-align:right;
+}
+.credit-name{color:var(--text);font-weight:600}
+.credit-sep{
+  height:1px;background:var(--border);
+  margin:12px 0;
+}
+
+/* ── LIGHTBOX ── */
+.lightbox{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(2,4,9,0.95);
+  backdrop-filter:blur(20px);
+  display:none;align-items:center;justify-content:center;
+  cursor:zoom-out;
+}
+.lightbox.open{display:flex}
+.lightbox img{
+  max-width:92vw;max-height:90vh;
+  object-fit:contain;
+  border-radius:4px;
+  box-shadow:0 0 60px rgba(0,0,0,0.8);
+}
+.lb-close{
+  position:absolute;top:20px;right:24px;
+  background:none;border:none;
+  color:var(--text2);font-size:1.8rem;
+  cursor:pointer;transition:color 0.2s;
+  z-index:1001;
+}
+.lb-close:hover{color:var(--text)}
+
+/* ── FOOTER ── */
+footer{
+  padding:40px 0 30px;text-align:center;
+}
+.foot-line{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.6rem;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--muted);
+}
+.foot-line+.foot-line{margin-top:6px}
+.foot-line a{color:var(--gold);text-decoration:none}
+.foot-quote{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-size:0.95rem;
+  color:rgba(210,175,90,0.35);margin-top:12px;
+}
+
+/* ── HEARTBEAT LINE (decorative) ── */
+.heartbeat-line{
+  width:100%;height:40px;
+  margin:0 auto;
+  overflow:hidden;
+  opacity:0.25;
+}
+.heartbeat-line svg{width:100%;height:100%}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .cover-grid{grid-template-columns:1fr}
+  .cover-item.featured{max-width:100%}
+  .np-top{flex-direction:column;text-align:center}
+  .np-cover{width:120px;height:120px}
+  .controls{flex-wrap:wrap}
+  .volume-wrap{margin:0 auto}
+  .credit-line{flex-direction:column;gap:2px}
+  .credit-role{text-align:left;min-width:0}
+  .band-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div class="atmo">
+  <div class="atmo-glow"></div>
+  <div class="atmo-noise"></div>
+</div>
+<div class="scroll-bar" id="scrollBar"></div>
+
+<div class="wrap">
+
+  <!-- ═══════ HERO ═══════ -->
+  <div class="hero">
+    <div class="hero-logo">
+      <img src="Someone-logo.jpg" alt="SOMEONE">
+    </div>
+    <div class="hero-album">The time says many things</div>
+    <div class="hero-meta">
+      <span>Pan Records</span> · Nova Gorica, Slovenia · <span>1994</span>
+    </div>
+    <div class="heartbeat-line" style="margin-top:24px">
+      <svg viewBox="0 0 800 40" preserveAspectRatio="none">
+        <polyline fill="none" stroke="#2dcc50" stroke-width="1.5" opacity="0.6"
+          points="0,20 120,20 140,20 155,4 165,36 175,12 185,28 195,20 260,20
+                  380,20 400,20 415,4 425,36 435,12 445,28 455,20 520,20
+                  640,20 660,20 675,4 685,36 695,12 705,28 715,20 800,20"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ═══════ COVER ART ═══════ -->
+  <div class="cover-section">
+    <span class="sec-tag">Album Artwork</span>
+    <div class="cover-grid">
+      <div class="cover-item featured" onclick="openLightbox(this)">
+        <img src="CD-front.jpg" alt="CD Front Cover" loading="lazy">
+        <div class="cover-label">Front Cover</div>
+      </div>
+      <div class="cover-item" onclick="openLightbox(this)">
+        <img src="CD-cover.jpg" alt="CD Jewel Case" loading="lazy">
+        <div class="cover-label">Jewel Case</div>
+      </div>
+      <div class="cover-item" onclick="openLightbox(this)">
+        <img src="CD-inside.jpg" alt="CD Disc" loading="lazy">
+        <div class="cover-label">Disc</div>
+      </div>
+      <div class="cover-item" onclick="openLightbox(this)">
+        <img src="CD-back.jpg" alt="CD Back" loading="lazy">
+        <div class="cover-label">Back Cover</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ PLAYER ═══════ -->
+  <div class="player-section">
+    <span class="sec-tag">Play Album</span>
+    <div class="sec-title">10 Tracks · Recorded 1993–1994</div>
+
+    <!-- Now Playing -->
+    <div class="now-playing" id="nowPlaying">
+      <div class="np-top">
+        <div class="np-cover">
+          <img src="CD-front.jpg" alt="Cover">
+        </div>
+        <div class="np-info">
+          <div class="np-track" id="npTrackNum">Track 01</div>
+          <div class="np-title" id="npTitle">Hands Of Justice</div>
+          <div class="np-artist">Someone</div>
+        </div>
+      </div>
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-wave" id="waveform"></div>
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+      <div class="progress-time">
+        <span id="timeElapsed">0:00</span>
+        <span id="timeDuration">0:00</span>
+      </div>
+      <div class="controls">
+        <button class="ctrl-btn" id="btnShuffle" title="Shuffle" onclick="toggleShuffle()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+        </button>
+        <button class="ctrl-btn" title="Previous" onclick="prevTrack()">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+        </button>
+        <button class="ctrl-btn play-btn" id="btnPlay" title="Play" onclick="togglePlay()">
+          <svg viewBox="0 0 24 24" fill="currentColor" id="iconPlay"><polygon points="6,3 20,12 6,21"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor" id="iconPause" style="display:none"><rect x="5" y="3" width="4" height="18"/><rect x="15" y="3" width="4" height="18"/></svg>
+        </button>
+        <button class="ctrl-btn" title="Next" onclick="nextTrack()">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btnRepeat" title="Repeat" onclick="toggleRepeat()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        </button>
+        <div class="volume-wrap">
+          <button class="ctrl-btn" title="Volume" onclick="toggleMute()">
+            <svg viewBox="0 0 24 24" fill="currentColor" id="iconVol"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8.5v7A4.47 4.47 0 0 0 16.5 12zM14 3.23v2.06a6.51 6.51 0 0 1 0 13.42v2.06A8.5 8.5 0 0 0 14 3.23z"/></svg>
+          </button>
+          <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="0.8">
+        </div>
+      </div>
+    </div>
+
+    <!-- Track List -->
+    <div class="tracklist" id="tracklist"></div>
+  </div>
+
+  <!-- ═══════ BOOKLET GALLERY ═══════ -->
+  <div class="gallery-section">
+    <span class="sec-tag">CD Booklet</span>
+    <div class="sec-title">Lyrics &amp; Liner Notes</div>
+    <div class="gallery-grid">
+      <div class="gallery-item" onclick="openLightbox(this)">
+        <img src="Booklet1-8.jpg" alt="Booklet pages 1 & 8 — Cover and back" loading="lazy">
+      </div>
+      <div class="gallery-item" onclick="openLightbox(this)">
+        <img src="Booklet2-3.jpg" alt="Booklet pages 2 & 3 — Track listing and band photos" loading="lazy">
+      </div>
+      <div class="gallery-item" onclick="openLightbox(this)">
+        <img src="Booklet4-5.jpg" alt="Booklet pages 4 & 5 — Lyrics" loading="lazy">
+      </div>
+      <div class="gallery-item" onclick="openLightbox(this)">
+        <img src="Booklet6-7.jpg" alt="Booklet pages 6 & 7 — Lyrics" loading="lazy">
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ BAND ═══════ -->
+  <div class="band-section">
+    <span class="sec-tag">The Band</span>
+    <div class="sec-title">Someone</div>
+    <div class="band-grid">
+      <div class="band-member">
+        <div class="bm-icon">🎤</div>
+        <div class="bm-name">Iztok Veliščček</div>
+        <div class="bm-role">Vocal</div>
+      </div>
+      <div class="band-member">
+        <div class="bm-icon">🎸</div>
+        <div class="bm-name">Erik Šinigoj</div>
+        <div class="bm-role">Guitar</div>
+      </div>
+      <div class="band-member">
+        <div class="bm-icon">🎸</div>
+        <div class="bm-name">Jan Žorž</div>
+        <div class="bm-role">Guitar</div>
+      </div>
+      <div class="band-member">
+        <div class="bm-icon">🎹</div>
+        <div class="bm-name">Gregor Klančič</div>
+        <div class="bm-role">Keyboards</div>
+      </div>
+      <div class="band-member">
+        <div class="bm-icon">🎸</div>
+        <div class="bm-name">Bojan Dobrečevič</div>
+        <div class="bm-role">Bass</div>
+      </div>
+      <div class="band-member">
+        <div class="bm-icon">🥁</div>
+        <div class="bm-name">Dejan Dobrečevič</div>
+        <div class="bm-role">Drums</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ CREDITS ═══════ -->
+  <div class="credits-section">
+    <span class="sec-tag">Credits</span>
+    <div class="sec-title">Production &amp; Recording</div>
+    <div class="credits-card">
+      <div class="credit-line">
+        <span class="credit-role">Story composed by</span>
+        <span class="credit-name">Iztok Veliščček &amp; Erik Šinigoj</span>
+      </div>
+      <div class="credit-line">
+        <span class="credit-role">Lyrics</span>
+        <span class="credit-name">Erik Šinigoj &amp; Iztok Veliščček</span>
+      </div>
+      <div class="credit-line">
+        <span class="credit-role">Vocals, voices</span>
+        <span class="credit-name">Iztok Veliščček</span>
+      </div>
+      <div class="credit-line">
+        <span class="credit-role">Electric, acoustic, MIX guitars &amp; back vocals</span>
+        <span class="credit-name">Erik Šinigoj</span>
+      </div>
+      <div class="credit-line">
+        <span class="credit-role">Keyboards</span>
+        <span class="credit-name">Gregor Klančič</span>
+      </div>
+      <div class="credit-sep"></div>
+      <div class="credit-line">
+        <span class="credit-role">Recorded at</span>
+        <span class="credit-name">Studio Femix, Bovec, Slovenija</span>
+      </div>
+      <div class="credit-line">
+        <span class="credit-role">Recorded by</span>
+        <span class="credit-name">Fabjan Rebek &amp; Ervin Mlekuž</span>
+      </div>
+      <div class="credit-line">
+        <span class="credit-role">Engineered by</span>
+        <span class="credit-name">Fabjan Rebek, Erik Šinigoj &amp; Ervin Mlekuž</span>
+      </div>
+      <div class="credit-line">
+        <span class="credit-role">Produced by</span>
+        <span class="credit-name">Erik Šinigoj &amp; Iztok Veliščček</span>
+      </div>
+      <div class="credit-line">
+        <span class="credit-role">Mixed by</span>
+        <span class="credit-name">Erik Šinigoj</span>
+      </div>
+      <div class="credit-sep"></div>
+      <div class="credit-line">
+        <span class="credit-role">Management</span>
+        <span class="credit-name">Iztok Veliščček</span>
+      </div>
+      <div class="credit-line">
+        <span class="credit-role">Computer programming</span>
+        <span class="credit-name">Ervin Mlekuž</span>
+      </div>
+      <div class="credit-line">
+        <span class="credit-role">Graphic &amp; cover design</span>
+        <span class="credit-name">Bojan Dobrečevič</span>
+      </div>
+      <div class="credit-line">
+        <span class="credit-role">Logo design</span>
+        <span class="credit-name">Metka Belingar</span>
+      </div>
+      <div class="credit-sep"></div>
+      <div class="credit-line">
+        <span class="credit-role">Recorded</span>
+        <span class="credit-name">October 1993 – May 1994</span>
+      </div>
+      <div class="credit-line">
+        <span class="credit-role">Label</span>
+        <span class="credit-name">Pan Records, Nova Gorica</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ FOOTER ═══════ -->
+  <footer>
+    <div class="foot-line">
+      Someone · The Time Says Many Things · <span style="color:var(--gold)">Pan Records 1994</span>
+    </div>
+    <div class="foot-line" style="color:rgba(94,88,78,0.5)">
+      The characters, places and incidents described in "The time says many things"
+      are product of SOMEONE's imagination.
+    </div>
+    <div class="foot-quote">Finite in form, infinite in essence.</div>
+  </footer>
+
+</div><!-- .wrap -->
+
+<!-- ═══════ LIGHTBOX ═══════ -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lb-close" onclick="closeLightbox()">&times;</button>
+  <img id="lbImg" src="" alt="">
+</div>
+
+<audio id="audio" preload="metadata"></audio>
+
+<script>
+// ── Track Data ──
+const tracks = [
+  { num: 1,  title: 'Hands Of Justice',              file: '(01) Hands Of Justice.mp3' },
+  { num: 2,  title: 'Aircraft-Carrier',              file: '(02) Aircraft-Carrier.mp3' },
+  { num: 3,  title: 'Clouds Always Win',             file: '(03) Clouds Always Win.mp3' },
+  { num: 4,  title: 'The Time Says Many Things',     file: '(04) The Time Says Many Things.mp3' },
+  { num: 5,  title: 'Remembrance On A Great Party',  file: '(05) Remembrance On A Great Party.mp3' },
+  { num: 6,  title: 'The Morning Came, But Different',file: '(06) The Morning Came, But Different.mp3' },
+  { num: 7,  title: 'Execution Of A Sentence Of Death',file: '(07) Execution Of A Sentence Of Death.mp3' },
+  { num: 8,  title: "He's Gone Forever",             file: "(08) He's Gone Forever.mp3" },
+  { num: 9,  title: 'What Is War And What Is Love',  file: '(09) What Is War And What Is Love.mp3' },
+  { num: 10, title: 'Living With Illusion',          file: '(10) Living With Illusion.mp3' },
+];
+
+const audio = document.getElementById('audio');
+let currentIdx = 0;
+let isPlaying = false;
+let shuffleOn = false;
+let repeatMode = 0; // 0=off, 1=all, 2=one
+let waveBars = [];
+
+// ── Generate waveform bars ──
+function generateWaveform() {
+  const container = document.getElementById('waveform');
+  container.innerHTML = '';
+  const count = 80;
+  waveBars = [];
+  for (let i = 0; i < count; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'wave-bar';
+    // Pseudo-random heights based on golden ratio for organic feel
+    const h = 20 + Math.sin(i * 0.618 + currentIdx * 2.3) * 15 + Math.random() * 10;
+    bar.style.height = h + '%';
+    container.appendChild(bar);
+    waveBars.push(bar);
+  }
+}
+
+// ── Build tracklist ──
+function buildTracklist() {
+  const container = document.getElementById('tracklist');
+  container.innerHTML = '';
+  tracks.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'track' + (i === currentIdx ? ' active' : '');
+    div.innerHTML = `
+      <span class="track-num">${String(t.num).padStart(2,'0')}</span>
+      <div class="track-eq">
+        <div class="eq-bar"></div><div class="eq-bar"></div>
+        <div class="eq-bar"></div><div class="eq-bar"></div>
+      </div>
+      <span class="track-title">${t.title}</span>
+      <span class="track-dur" id="dur_${i}">--:--</span>
+    `;
+    div.onclick = () => loadTrack(i, true);
+    container.appendChild(div);
+  });
+}
+
+// ── Load track ──
+function loadTrack(idx, autoplay = false) {
+  currentIdx = idx;
+  const t = tracks[idx];
+  audio.src = t.file;
+  document.getElementById('npTrackNum').textContent = 'Track ' + String(t.num).padStart(2, '0');
+  document.getElementById('npTitle').textContent = t.title;
+  generateWaveform();
+  updateTracklistUI();
+  if (autoplay) {
+    audio.play().then(() => {
+      isPlaying = true;
+      updatePlayBtn();
+      updateTracklistUI();
+    }).catch(() => {});
+  }
+}
+
+function updateTracklistUI() {
+  document.querySelectorAll('.track').forEach((el, i) => {
+    el.className = 'track' +
+      (i === currentIdx ? ' active' : '') +
+      (i === currentIdx && isPlaying ? ' playing' : '');
+  });
+}
+
+// ── Play / Pause ──
+function togglePlay() {
+  if (!audio.src || audio.src === window.location.href) {
+    loadTrack(0, true);
+    return;
+  }
+  if (isPlaying) {
+    audio.pause();
+    isPlaying = false;
+  } else {
+    audio.play().then(() => { isPlaying = true; }).catch(() => {});
+  }
+  updatePlayBtn();
+  updateTracklistUI();
+}
+
+function updatePlayBtn() {
+  document.getElementById('iconPlay').style.display = isPlaying ? 'none' : 'block';
+  document.getElementById('iconPause').style.display = isPlaying ? 'block' : 'none';
+}
+
+// ── Prev / Next ──
+function nextTrack() {
+  let next;
+  if (shuffleOn) {
+    next = Math.floor(Math.random() * tracks.length);
+  } else {
+    next = (currentIdx + 1) % tracks.length;
+  }
+  loadTrack(next, true);
+}
+
+function prevTrack() {
+  if (audio.currentTime > 3) {
+    audio.currentTime = 0;
+    return;
+  }
+  let prev = (currentIdx - 1 + tracks.length) % tracks.length;
+  loadTrack(prev, true);
+}
+
+// ── Shuffle / Repeat ──
+function toggleShuffle() {
+  shuffleOn = !shuffleOn;
+  document.getElementById('btnShuffle').classList.toggle('active', shuffleOn);
+}
+
+function toggleRepeat() {
+  repeatMode = (repeatMode + 1) % 3;
+  const btn = document.getElementById('btnRepeat');
+  btn.classList.toggle('active', repeatMode > 0);
+  btn.title = ['Repeat Off', 'Repeat All', 'Repeat One'][repeatMode];
+}
+
+// ── Volume ──
+const volSlider = document.getElementById('volumeSlider');
+volSlider.oninput = () => { audio.volume = volSlider.value; };
+
+function toggleMute() {
+  audio.muted = !audio.muted;
+}
+
+// ── Progress ──
+audio.ontimeupdate = () => {
+  if (!audio.duration) return;
+  const pct = (audio.currentTime / audio.duration) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('timeElapsed').textContent = fmt(audio.currentTime);
+  // Update waveform bar colors
+  const barIdx = Math.floor((pct / 100) * waveBars.length);
+  waveBars.forEach((b, i) => {
+    b.className = 'wave-bar' + (i < barIdx ? ' played' : '') + (i === barIdx ? ' current' : '');
+  });
+};
+
+audio.onloadedmetadata = () => {
+  document.getElementById('timeDuration').textContent = fmt(audio.duration);
+  // Update duration in tracklist
+  const durEl = document.getElementById('dur_' + currentIdx);
+  if (durEl) durEl.textContent = fmt(audio.duration);
+};
+
+// Pre-load durations for all tracks
+function preloadDurations() {
+  tracks.forEach((t, i) => {
+    const a = new Audio();
+    a.preload = 'metadata';
+    a.src = t.file;
+    a.onloadedmetadata = () => {
+      const el = document.getElementById('dur_' + i);
+      if (el && el.textContent === '--:--') el.textContent = fmt(a.duration);
+    };
+  });
+}
+
+audio.onended = () => {
+  if (repeatMode === 2) {
+    audio.currentTime = 0;
+    audio.play();
+  } else if (repeatMode === 1 || currentIdx < tracks.length - 1) {
+    nextTrack();
+  } else {
+    isPlaying = false;
+    updatePlayBtn();
+    updateTracklistUI();
+  }
+};
+
+audio.onpause = () => {
+  isPlaying = false;
+  updatePlayBtn();
+  updateTracklistUI();
+};
+
+audio.onplay = () => {
+  isPlaying = true;
+  updatePlayBtn();
+  updateTracklistUI();
+};
+
+// ── Click on progress bar ──
+document.getElementById('progressWrap').onclick = (e) => {
+  if (!audio.duration) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  audio.currentTime = pct * audio.duration;
+};
+
+function fmt(s) {
+  if (!s || isNaN(s)) return '0:00';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return m + ':' + String(sec).padStart(2, '0');
+}
+
+// ── Lightbox ──
+function openLightbox(el) {
+  const img = el.querySelector('img');
+  document.getElementById('lbImg').src = img.src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === ' ' && !e.target.matches('input,textarea')) {
+    e.preventDefault();
+    togglePlay();
+  }
+});
+
+// ── Scroll progress ──
+window.addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('scrollBar').style.width = h > 0 ? ((window.scrollY / h) * 100) + '%' : '0%';
+}, { passive: true });
+
+// ── Init ──
+buildTracklist();
+generateWaveform();
+preloadDurations();
+</script>
+</body>
+</html>
