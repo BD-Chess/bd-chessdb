@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" data-lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,6 +27,11 @@
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── LANGUAGE TOGGLE ── */
+  [data-lang="en"] .sl { display: none !important; }
+  [data-lang="sl"] .en { display: none !important; }
+
 
   html { scroll-behavior: smooth; }
 
@@ -155,14 +160,24 @@
   .tb-link[data-c="gro"]    { --c: #fb923c; }
   .tb-peer { opacity: 0.5; }
   .tb-peer:hover { opacity: 1; }
-  .tb-theme {
-    width: 46px; display: flex; align-items: center; justify-content: center;
+  .tb-theme, .tb-lang-btn {
+    display: flex; align-items: center; justify-content: center;
     cursor: pointer; flex-shrink: 0;
     border-left: 1px solid var(--border);
     font-size: 1rem;
     transition: background 0.2s;
   }
-  .tb-theme:hover { background: rgba(255,255,255,0.04); }
+  .tb-theme { width: 46px; }
+  .tb-theme:hover, .tb-lang-btn:hover { background: rgba(255,255,255,0.04); }
+  .tb-lang-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0 0.6rem;
+    color: var(--muted);
+    transition: color 0.2s, background 0.2s;
+  }
+  .tb-lang-btn.active { color: var(--cyan); }
 
   /* ── OVERLAY ── */
   #page-overlay {
@@ -309,6 +324,7 @@
     .credits-grid { grid-template-columns: 1fr; }
     .songs-grid { grid-template-columns: 1fr 1fr; }
     .human-grid { grid-template-columns: 1fr 1fr; }
+    .abyssal-compare { grid-template-columns: 1fr !important; }
   }
   @media (max-width: 480px) {
     .hero-title { font-size: clamp(2rem, 12vw, 3rem); }
@@ -612,6 +628,26 @@
   .bar-fill.green { background: linear-gradient(90deg, var(--green), #059669); }
   .bar-fill.muted { background: linear-gradient(90deg, #4b5563, #374151); color: rgba(255,255,255,0.5); }
 
+
+  /* ── ABYSSAL COMPARE ── */
+  .abyssal-compare {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1rem; margin-top: 2rem;
+  }
+  .abyssal-card {
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 1.5rem; background: rgba(8,12,20,0.7);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+  }
+  .abyssal-card h4 {
+    font-size: 0.95rem; margin-bottom: 0.8rem; color: var(--text);
+  }
+  .abyssal-card .row { display: flex; justify-content: space-between; padding: 0.3rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .abyssal-card .row:last-child { border-bottom: none; }
+  .abyssal-card .lbl { color: var(--muted); }
+  .abyssal-card .val { color: var(--text); }
+  [data-theme="light"] .abyssal-card { background: rgba(255,255,255,0.8); }
+
   /* ── DISCOVERIES ── */
   .disc-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -824,15 +860,15 @@
 <div class="toolbar">
   <a class="tb-brand" href="#hero" onclick="closeOverlay()">8Z-AUDIO</a>
   <div class="tb-inner">
-    <a class="tb-link" href="#origin" onclick="closeOverlay()">Origin</a>
+    <a class="tb-link" href="#origin" onclick="closeOverlay()"><span class="en">Origin</span><span class="sl">Izvor</span></a>
     <a class="tb-link" href="#sprint" onclick="closeOverlay()">Sprint</a>
     <a class="tb-link" href="#bench"  onclick="closeOverlay()">Benchmark</a>
-    <a class="tb-link" href="#songs"  onclick="closeOverlay()">Songs</a>
-    <a class="tb-link" href="#roadmap" onclick="closeOverlay()">Roadmap</a>
+    <a class="tb-link" href="#songs"  onclick="closeOverlay()"><span class="en">Songs</span><span class="sl">Glasba</span></a>
+    <a class="tb-link" href="#roadmap" onclick="closeOverlay()"><span class="en">Roadmap</span><span class="sl">Načrt</span></a>
   </div>
   <div class="tb-outer">
     <a class="tb-link" data-c="gold"   onclick="openOverlay('8Z-Audio_Benchmark.html',this)">Benchmark</a>
-    <a class="tb-link" data-c="green"  onclick="openOverlay('8Z-AC_evolution.html',this)">Evolution</a>
+    <a class="tb-link" data-c="green"  onclick="openOverlay('8Z-AC_evolution.html',this)"><span class="en">Evolution</span><span class="sl">Evolucija</span></a>
     <a class="tb-link" data-c="violet" onclick="openOverlay('8Z-AC_Appendix_M.html',this)">Appendix M</a>
     <a class="tb-link" data-c="rose"   onclick="openOverlay('8Z-Audio_v1.8_Master_Plan.html',this)">Master Plan</a>
     <div class="tb-sep"></div>
@@ -840,6 +876,8 @@
     <a class="tb-link tb-peer" data-c="gpt" onclick="openOverlay('8Z-AC_BD_GPT_Story.html',this)">GPT</a>
     <a class="tb-link tb-peer" data-c="gro" onclick="openOverlay('8Z-AC_BD_GRO_Story.html',this)">Grok</a>
   </div>
+  <div class="tb-lang-btn active" id="lang-en" onclick="setLang('en')">ENG</div>
+  <div class="tb-lang-btn" id="lang-sl" onclick="setLang('sl')">SLO</div>
   <div class="tb-theme" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark">🌙</div>
 </div>
 
@@ -861,28 +899,27 @@
   </div>
 
   <div style="position:relative; z-index:2;">
-    <div class="hero-eyebrow">AIM³ Institute · Ljubljana · February 2026</div>
-    <h1 class="hero-title">Five Days<br>Against <span>FLAC</span></h1>
+    <div class="hero-eyebrow">AIM³ Institute · Ljubljana · <span class="en">February 2026</span><span class="sl">Februar 2026</span></div>
+    <h1 class="hero-title"><span class="en">Five Days<br>Against <span>FLAC</span></span><span class="sl">Pet dni<br>proti <span>FLAC</span>-u</span></h1>
     <p class="hero-subtitle">
-      How a lossless audio codec was built from scratch in a single sprint —
-      and why it beats the 25-year-old gold standard on nearly half of all test clips.
+      <span class="en">How a lossless audio codec was built from scratch in a single sprint — and why it beats the 25-year-old gold standard on nearly half of all test clips.</span><span class="sl">Kako je brezizgubni avdio kodek nastal iz nič v enem samem sprintu — in zakaj prekaša 25 let star zlati standard pri skoraj polovici testnih posnetkov.</span>
     </p>
     <div class="hero-stats">
       <div class="hero-stat">
         <div class="num">5</div>
-        <div class="label">Days of Development</div>
+        <div class="label"><span class="en">Days of Development</span><span class="sl">Dni razvoja</span></div>
       </div>
       <div class="hero-stat">
         <div class="num gold">7/15</div>
-        <div class="label">Clips Beating FLAC‑12</div>
+        <div class="label"><span class="en">Clips Beating FLAC‑12</span><span class="sl">Posnetkov boljših od FLAC‑12</span></div>
       </div>
       <div class="hero-stat">
         <div class="num green">10.3%</div>
-        <div class="label">Best Single‑Clip Win</div>
+        <div class="label"><span class="en">Best Single‑Clip Win</span><span class="sl">Najboljša zmaga na enem posnetku</span></div>
       </div>
       <div class="hero-stat">
         <div class="num" style="font-size:1.8rem; color:var(--muted);">v0.1 → v1.5</div>
-        <div class="label">Versions Shipped</div>
+        <div class="label"><span class="en">Versions Shipped</span><span class="sl">Izdane verzije</span></div>
       </div>
     </div>
   </div>
@@ -892,8 +929,8 @@
 
 <!-- ORIGIN -->
 <section id="origin">
-  <span class="sec-tag reveal">Chapter I · Cross-Domain Transfer</span>
-  <h2 class="reveal">Not Built in Isolation</h2>
+  <span class="sec-tag reveal"><span class="en">Chapter I · Cross-Domain Transfer</span><span class="sl">Poglavje I · Meddoménski prenos</span></span>
+  <h2 class="reveal"><span class="en">Not Built in Isolation</span><span class="sl">Ni nastalo v izolaciji</span></h2>
   <p class="reveal">
     8Z-Audio is the third domain-specific compressor in the <strong>8Z-LO (Lossless Optimized)</strong> framework,
     following 8Z-FASTA (genomic DNA sequences) and 8Z-TIF (satellite imagery). The project didn't start
@@ -947,7 +984,7 @@
 
 <!-- THE SPRINT -->
 <section id="sprint">
-  <span class="sec-tag reveal">Chapter II · The Five-Day Sprint</span>
+  <span class="sec-tag reveal"><span class="en">Chapter II · The Five-Day Sprint</span><span class="sl">Poglavje II · Petdnevni sprint</span></span>
   <h2 class="reveal">v0.1 → v1.5</h2>
   <p class="reveal">
     From an empty file to a compressor that beats FLAC at maximum compression.
@@ -1067,8 +1104,8 @@
 
 <!-- ARCHITECTURE -->
 <section id="architecture">
-  <span class="sec-tag reveal">Chapter III · Architecture</span>
-  <h2 class="reveal">What Makes It Different</h2>
+  <span class="sec-tag reveal"><span class="en">Chapter III · Architecture</span><span class="sl">Poglavje III · Arhitektura</span></span>
+  <h2 class="reveal"><span class="en">What Makes It Different</span><span class="sl">Kaj ga naredi drugačnega</span></h2>
   <p class="reveal">
     FLAC uses one prediction model for every frame of audio. 8Z-Audio uses up to 600 candidates,
     evaluated by MDL, with an adaptive search governor that learns which candidates work
@@ -1151,8 +1188,8 @@
 <!-- BENCHMARK -->
 <section id="bench" class="full">
   <div style="max-width:1100px; margin:0 auto;">
-    <span class="sec-tag green reveal">Chapter IV · Results</span>
-    <h2 class="reveal">The Benchmark</h2>
+    <span class="sec-tag green reveal"><span class="en">Chapter IV · Results</span><span class="sl">Poglavje IV · Rezultati</span></span>
+    <h2 class="reveal">Benchmark</h2>
     <div class="bench-intro reveal">
       <p>
         15 clips across 10 songs — selected by the 8Z Audio Scanner v1.2 to cover all difficulty
@@ -1305,6 +1342,32 @@
     <p style="margin-top:1rem; font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--muted);">
       Total bytes — 8ZA: 30,730,661 · FLAC-12: 30,416,285 · FLAC-5: 31,660,589 · OFR: 30,531,285
     </p>
+
+    <!-- ABYSSAL ARENA COMPARISON -->
+    <div style="margin-top:3rem;" class="reveal">
+      <div class="chart-title"><span class="en">Per-Segment Arena · Abyssal Arena v2.1 vs Whole-File Encoding</span><span class="sl">Per-segmentna arena · Abyssal Arena v2.1 proti celodatotečnemu kodiranju</span></div>
+      <p style="margin-bottom:1.5rem;">
+        <span class="en">The <strong>8za2vflac</strong> per-segment approach splits a track into acoustically distinct sections and encodes each independently. On dynamically varied music, this decisively beats the best whole-file encoder.</span><span class="sl">Pristop <strong>8za2vflac</strong> po segmentih razdeli skladbo na akustično razločne odseke in vsakega kodira neodvisno. Pri dinamično raznoliki glasbi to odločilno premaga najboljši celodatotečni kodirnik.</span>
+      </p>
+      <div class="abyssal-compare">
+        <div class="abyssal-card" style="border-color:rgba(52,211,153,0.3);">
+          <h4 style="color:var(--green);">Abyssal Arena <span class="badge green">−6.23%</span></h4>
+          <div class="row"><span class="lbl"><span class="en">Best whole-file</span><span class="sl">Najboljši celodatotečni</span></span><span class="val">lax_t6 (17,311,596B)</span></div>
+          <div class="row"><span class="lbl"><span class="en">Per-segment raw</span><span class="sl">Per-segment surovi</span></span><span class="val" style="color:var(--green)">16,232,825B</span></div>
+          <div class="row"><span class="lbl"><span class="en">Segment winner</span><span class="sl">Zmagovalec segmentov</span></span><span class="val">lax+tukey (10/12)</span></div>
+          <div class="row"><span class="lbl"><span class="en">Dominant blocksize</span><span class="sl">Prevladujoča vel. bloka</span></span><span class="val">8192 (8/10 wins)</span></div>
+          <div class="row"><span class="lbl"><span class="en">Signal type</span><span class="sl">Tip signala</span></span><span class="val"><span class="en">Dynamic, varied (d=0.004–0.392)</span><span class="sl">Dinamičen, raznolik (d=0,004–0,392)</span></span></div>
+        </div>
+        <div class="abyssal-card">
+          <h4>Ethereal Arc <span class="badge rose">+0.05%</span></h4>
+          <div class="row"><span class="lbl"><span class="en">Best whole-file</span><span class="sl">Najboljši celodatotečni</span></span><span class="val">ffmpeg_cholesky</span></div>
+          <div class="row"><span class="lbl"><span class="en">Per-segment raw</span><span class="sl">Per-segment surovi</span></span><span class="val" style="color:var(--rose)"><span class="en">+0.05% (loses)</span><span class="sl">+0,05 % (poraz)</span></span></div>
+          <div class="row"><span class="lbl"><span class="en">Segment winner</span><span class="sl">Zmagovalec segmentov</span></span><span class="val">Flake (13/15)</span></div>
+          <div class="row"><span class="lbl"><span class="en">Dominant blocksize</span><span class="sl">Prevladujoča vel. bloka</span></span><span class="val"><span class="en">mixed</span><span class="sl">mešano</span></span></div>
+          <div class="row"><span class="lbl"><span class="en">Signal type</span><span class="sl">Tip signala</span></span><span class="val"><span class="en">Tonal, uniform</span><span class="sl">Tonalen, enakomeren</span></span></div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1312,8 +1375,8 @@
 
 <!-- DISCOVERIES -->
 <section id="discoveries">
-  <span class="sec-tag gold reveal">Chapter V · Key Discoveries</span>
-  <h2 class="reveal">What the Data Revealed</h2>
+  <span class="sec-tag gold reveal"><span class="en">Chapter V · Key Discoveries</span><span class="sl">Poglavje V · Ključne ugotovitve</span></span>
+  <h2 class="reveal"><span class="en">What the Data Revealed</span><span class="sl">Kaj so razkrili podatki</span></h2>
 
   <div class="disc-grid">
     <div class="disc-card reveal reveal-delay-1" data-num="01">
@@ -1382,6 +1445,13 @@
         8Z-Audio is the first systematic attempt to break out of that constraint.
       </p>
     </div>
+    <!-- NEW: Abyssal Arena discovery -->
+    <div class="disc-card green reveal reveal-delay-1" data-num="07">
+      <div class="disc-num green">−6.23%</div>
+      <h3><span class="en">Per-Segment Beats Whole-File</span><span class="sl">Per-segment premaga celodatotečno</span></h3>
+      <p><span class="en">Abyssal Arena v2.1 proved that per-segment encoding decisively wins on dynamically varied music. The track ranges from near-silence (d=0.004) to full climax (d=0.392) — acoustic variance that a whole-file encoder cannot exploit. <strong>lax+tukey won 10 of 12 segments</strong> with blocksize 8192 and LPC-32. The raw payload beats the best whole-file encoder by 1,078,771 bytes. Uniform tonal music (Ethereal Arc) shows no gain — the approach pays off precisely where real production music has diversity.</span><span class="sl">Abyssal Arena v2.1 je dokazala, da per-segmentno kodiranje odločilno zmaguje pri dinamično raznoliki glasbi. Skladba se razteza od skorajšnje tišine (d=0,004) do polnega vrhunca (d=0,392) — akustična varianca, ki je celodatotečni kodirnik ne more izkoristiti. <strong>lax+tukey je zmagal na 10 od 12 segmentov</strong> z velikostjo bloka 8192 in LPC-32. Surovi zapis premaga najboljši celodatotečni kodirnik za 1.078.771 bajtov. Enakomerna tonalna glasba (Ethereal Arc) ne kaže dobička — pristop se obrestuje natanko tam, kjer ima prava produkcijska glasba raznolikost.</span>
+      </p>
+    </div>
   </div>
 </section>
 
@@ -1389,8 +1459,8 @@
 
 <!-- ROADMAP -->
 <section id="roadmap">
-  <span class="sec-tag green reveal">Chapter VI · What's Next</span>
-  <h2 class="reveal">v1.6 — Two-Pass Architecture</h2>
+  <span class="sec-tag green reveal"><span class="en">Chapter VI · What's Next</span><span class="sl">Poglavje VI · Kaj sledi</span></span>
+  <h2 class="reveal"><span class="en">v1.6 — Two-Pass Architecture</span><span class="sl">v1.6 — Dvoprehodni arhitektura</span></h2>
   <p class="reveal">
     The core innovation of v1.6 is separation of concerns: signal analysis (fast, sequential)
     is decoupled from encoding (slow, parallelizable). Scanner v1.2 becomes Pass 1.
@@ -1470,8 +1540,8 @@
 
 <!-- SONGS -->
 <section id="songs">
-  <span class="sec-tag green reveal">The Music</span>
-  <h2 class="reveal">10 Songs, 6 Playable</h2>
+  <span class="sec-tag green reveal"><span class="en">The Music</span><span class="sl">Glasba</span></span>
+  <h2 class="reveal"><span class="en">10 Songs, 6 Playable</span><span class="sl">10 pesmi, 6 predvajalnih</span></h2>
   <p class="reveal" style="max-width:68ch">
     Six original compositions by <strong>Bojan Dobrečevič</strong>, created via Producer.ai — used as the AI half of the 8Z-Audio benchmark corpus.
     Scanner data shows AI-generated audio is <strong>1.9× more compressible</strong> than human recordings, making them ideal test subjects.
@@ -1481,7 +1551,7 @@
   <!-- PLAYER -->
   <div class="songs-player-wrap reveal">
     <div id="player-body">
-      <div class="player-empty">▶ &nbsp; Select a song below to start listening</div>
+      <div class="player-empty"><span class="en">▶ &nbsp; Select a song below to start listening</span><span class="sl">▶ &nbsp; Izberite pesem spodaj za začetek poslušanja</span></div>
     </div>
   </div>
 
@@ -1565,7 +1635,7 @@
 
   <!-- HUMAN RECORDINGS -->
   <div style="margin-top:2.5rem" class="reveal">
-    <span class="sec-tag" style="margin-bottom:0.85rem; display:inline-block;">Reference Recordings — Copyright protected, no player</span>
+    <span class="sec-tag" style="margin-bottom:0.85rem; display:inline-block;"><span class="en">Reference Recordings — Copyright protected, no player</span><span class="sl">Referenčni posnetki — Avtorsko zaščiteni, brez predvajalnika</span></span>
   </div>
   <div class="human-grid reveal">
 
@@ -1596,7 +1666,7 @@
         <span class="badge green">pop</span>
         <span class="badge">44.1 kHz</span>
       </div>
-      <div class="human-result">8ZA: <span class="pos" style="font-weight:700">+10.3% ← best win overall</span></div>
+      <div class="human-result">8ZA: <span class="pos" style="font-weight:700"><span class="en">+10.3% ← best win overall</span><span class="sl">+10,3 % ← najboljša zmaga</span></span></div>
     </div>
 
     <div class="human-card">
@@ -1607,7 +1677,7 @@
         <span class="badge">48 kHz</span>
       </div>
       <div class="human-result">8ZA: <span class="neg">−2.7% to −8.0%</span></div>
-      <div class="human-note">OFR catastrophic: −26 to −39% on industrial</div>
+      <div class="human-note"><span class="en">OFR catastrophic: −26 to −39% on industrial</span><span class="sl">OFR katastrofalen: −26 do −39 % pri industrijskem</span></div>
     </div>
 
   </div>
@@ -1618,7 +1688,7 @@
 <footer>
   <div class="credits-grid">
     <div class="credit-col">
-      <h4>About This Work</h4>
+      <h4><span class="en">About This Work</span><span class="sl">O tem delu</span></h4>
       <p>
         8Z-Audio is part of the 8Z-LO (Lossless Optimized) framework developed at the
         AIM³ Institute in Ljubljana, Slovenia. The project applies cross-domain mathematical
@@ -1631,9 +1701,9 @@
       </p>
     </div>
     <div class="credit-col">
-      <h4>AI Collaborators</h4>
+      <h4><span class="en">AI Collaborators</span><span class="sl">AI sodelavci</span></h4>
       <ul class="ai-list">
-        <li class="primary">Claude Opus 4.6 — Primary Partner</li>
+        <li class="primary">Claude Opus 4.6 — <span class="en">Primary Partner</span><span class="sl">Primarni partner</span></li>
         <li>Grok 4.2 — Peer Review</li>
         <li>Gemini 3 — Peer Review</li>
         <li>GPT o3 — Peer Review</li>
@@ -1864,6 +1934,20 @@
     if (el) _sectionObserver.observe(el);
   });
 
+
+  // ── Language toggle ──
+  (function() {
+    const saved = localStorage.getItem('8z-lang') || 'en';
+    document.documentElement.dataset.lang = saved;
+    document.getElementById('lang-en').classList.toggle('active', saved === 'en');
+    document.getElementById('lang-sl').classList.toggle('active', saved === 'sl');
+  })();
+  function setLang(lang) {
+    document.documentElement.dataset.lang = lang;
+    document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+    document.getElementById('lang-sl').classList.toggle('active', lang === 'sl');
+    localStorage.setItem('8z-lang', lang);
+  }
 
 </script>
 </body>
