@@ -328,6 +328,100 @@ footer{
   color:rgba(94,113,146,.4);letter-spacing:.1em;
 }
 
+/* ── LIVE WEB SHOWCASE ── */
+.live-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+  gap:1.25rem;margin-top:2rem;
+}
+.live-card{
+  border:1px solid var(--border);border-radius:6px;
+  padding:1.6rem 1.5rem 1.3rem;position:relative;overflow:hidden;
+  background:linear-gradient(160deg,rgba(11,17,32,.75),rgba(6,10,20,.95));
+  transition:border-color .35s,transform .35s,box-shadow .35s;
+  display:flex;flex-direction:column;
+}
+.live-card:hover{
+  border-color:rgba(0,229,255,.35);transform:translateY(-4px);
+  box-shadow:0 12px 40px rgba(0,0,0,.5),0 0 30px rgba(0,229,255,.04);
+}
+.live-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+}
+.live-card[data-accent="cyan"]::before{background:linear-gradient(90deg,var(--cyan),transparent 80%)}
+.live-card[data-accent="gold"]::before{background:linear-gradient(90deg,var(--gold),transparent 80%)}
+.live-card[data-accent="green"]::before{background:linear-gradient(90deg,var(--green),transparent 80%)}
+.live-card[data-accent="rose"]::before{background:linear-gradient(90deg,var(--rose),transparent 80%)}
+.live-card[data-accent="violet"]::before{background:linear-gradient(90deg,var(--violet),transparent 80%)}
+.live-card[data-accent="orange"]::before{background:linear-gradient(90deg,var(--orange),transparent 80%)}
+.lc-head{display:flex;align-items:center;gap:.75rem;margin-bottom:.65rem}
+.lc-icon{
+  font-size:1.8rem;filter:grayscale(.15);
+  width:42px;height:42px;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.03);border-radius:6px;flex-shrink:0;
+}
+.lc-meta{display:flex;flex-direction:column}
+.lc-domain{
+  font-family:'JetBrains Mono',monospace;font-size:.58rem;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--muted);
+}
+.lc-title{font-size:1.1rem;font-weight:700;color:var(--text);line-height:1.25}
+.lc-desc{
+  font-size:.86rem;color:rgba(226,232,244,.55);line-height:1.65;
+  flex:1;margin-bottom:.8rem;
+}
+.lc-badges{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem}
+.lc-foot{
+  display:flex;align-items:center;justify-content:space-between;
+  border-top:1px solid rgba(255,255,255,.04);padding-top:.7rem;margin-top:auto;
+}
+.lc-url{
+  font-family:'JetBrains Mono',monospace;font-size:.65rem;
+  color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  max-width:60%;
+}
+.lc-visit{
+  display:inline-flex;align-items:center;gap:.35rem;
+  font-family:'JetBrains Mono',monospace;font-size:.7rem;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;text-decoration:none;
+  padding:.4rem .9rem;border-radius:3px;
+  transition:all .25s ease;
+}
+.lc-visit[data-v="cyan"]{color:var(--cyan);background:var(--cyan-dim);border:1px solid rgba(0,229,255,.3)}
+.lc-visit[data-v="cyan"]:hover{background:rgba(0,229,255,.22);box-shadow:0 0 15px rgba(0,229,255,.15)}
+.lc-visit[data-v="gold"]{color:var(--gold);background:var(--gold-dim);border:1px solid rgba(245,158,11,.3)}
+.lc-visit[data-v="gold"]:hover{background:rgba(245,158,11,.22);box-shadow:0 0 15px rgba(245,158,11,.15)}
+.lc-visit[data-v="green"]{color:var(--green);background:var(--green-dim);border:1px solid rgba(52,211,153,.3)}
+.lc-visit[data-v="green"]:hover{background:rgba(52,211,153,.22);box-shadow:0 0 15px rgba(52,211,153,.15)}
+.lc-visit[data-v="rose"]{color:var(--rose);background:var(--rose-dim);border:1px solid rgba(255,107,138,.3)}
+.lc-visit[data-v="rose"]:hover{background:rgba(255,107,138,.22);box-shadow:0 0 15px rgba(255,107,138,.15)}
+.lc-visit[data-v="violet"]{color:var(--violet);background:var(--violet-dim);border:1px solid rgba(167,139,250,.3)}
+.lc-visit[data-v="violet"]:hover{background:rgba(167,139,250,.22);box-shadow:0 0 15px rgba(167,139,250,.15)}
+.lc-visit[data-v="orange"]{color:var(--orange);background:var(--orange-dim);border:1px solid rgba(251,146,60,.3)}
+.lc-visit[data-v="orange"]:hover{background:rgba(251,146,60,.22);box-shadow:0 0 15px rgba(251,146,60,.15)}
+.live-pulse{
+  display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:var(--green);margin-right:.4rem;vertical-align:middle;
+  animation:pulse-glow 2s ease-in-out infinite;
+}
+@keyframes pulse-glow{
+  0%,100%{opacity:.6;box-shadow:0 0 0 rgba(52,211,153,0)}
+  50%{opacity:1;box-shadow:0 0 8px rgba(52,211,153,.45)}
+}
+.live-count-banner{
+  display:flex;align-items:center;justify-content:center;gap:2.5rem;
+  flex-wrap:wrap;margin:2.5rem 0 .5rem;
+  padding:1.4rem 2rem;border:1px solid var(--border);border-radius:4px;
+  background:rgba(6,10,20,.7);
+}
+.lcb-item{text-align:center}
+.lcb-num{
+  font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;line-height:1;
+}
+.lcb-label{
+  font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--muted);margin-top:.2rem;
+}
+
 /* ── SCROLL REVEAL ── */
 .rv{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
 .rv.vis{opacity:1;transform:translateY(0)}
@@ -350,7 +444,7 @@ footer{
   .hero-metrics{gap:1.5rem}
   .hm-num{font-size:1.7rem}
   section{padding:60px 0}
-  .proj-grid,.opp-grid{grid-template-columns:1fr}
+  .proj-grid,.opp-grid,.live-grid{grid-template-columns:1fr}
   .stat-banner{grid-template-columns:repeat(3,1fr)}
   .foot-grid{grid-template-columns:1fr}
   .tm-flow{gap:.3rem}
@@ -386,12 +480,268 @@ footer{
     </p>
     <div class="hero-metrics">
       <div class="hm"><div class="hm-num" style="color:var(--cyan)">17</div><div class="hm-label">Active Projects</div></div>
-      <div class="hm"><div class="hm-num" style="color:var(--gold)">7+</div><div class="hm-label">AI Partners</div></div>
-      <div class="hm"><div class="hm-num" style="color:var(--green)">5</div><div class="hm-label">Domains Conquered</div></div>
+      <div class="hm"><div class="hm-num" style="color:var(--gold)">11</div><div class="hm-label">Live Web Pages</div></div>
+      <div class="hm"><div class="hm-num" style="color:var(--green)">7+</div><div class="hm-label">AI Partners</div></div>
       <div class="hm"><div class="hm-num" style="color:var(--violet)">Z=74</div><div class="hm-label">Peak Statistical Signal</div></div>
     </div>
   </div>
 </div>
+
+<div class="divider"></div>
+
+<!-- ═══════════ LIVE ON THE WEB ═══════════ -->
+<section>
+  <div class="wrap">
+    <span class="sec-tag rv"><span class="live-pulse"></span>Live on the Web</span>
+    <h2 class="rv">Try It Yourself</h2>
+    <p class="rv">
+      Eleven live web pages — playable, explorable, and free. Each one built through
+      human × AI collaboration and hosted at <strong>chessbest.org</strong>.
+    </p>
+
+    <div class="live-count-banner rv">
+      <div class="lcb-item"><div class="lcb-num" style="color:var(--cyan)">11</div><div class="lcb-label">Live Web Pages</div></div>
+      <div class="lcb-item"><div class="lcb-num" style="color:var(--gold)">6</div><div class="lcb-label">Domains</div></div>
+      <div class="lcb-item"><div class="lcb-num" style="color:var(--green)">48B+</div><div class="lcb-label">Chess Positions</div></div>
+      <div class="lcb-item"><div class="lcb-num" style="color:var(--violet)">100%</div><div class="lcb-label">AI Co-Built</div></div>
+    </div>
+
+    <div class="live-grid">
+
+      <!-- 1. ChessBest -->
+      <div class="live-card rv rv-d1" data-accent="cyan">
+        <div class="lc-head">
+          <div class="lc-icon">♟️</div>
+          <div class="lc-meta">
+            <span class="lc-domain">Chess · Analysis</span>
+            <span class="lc-title">ChessBest.org — Cloud Chess GUI</span>
+          </div>
+        </div>
+        <div class="lc-desc">Instantly query 48+ billion positions at depth 50+ from ChessDB.cn — outperforming engines and world champions. Full interactive board with eval badges, PGN import/export, customizable themes, and next-move preview.</div>
+        <div class="lc-badges">
+          <span class="badge cyan">Live Product</span>
+          <span class="badge green">48B+ Positions</span>
+          <span class="badge muted">v0.4.5</span>
+        </div>
+        <div class="lc-foot">
+          <span class="lc-url">chessbest.org</span>
+          <a href="https://chessbest.org/" target="_blank" rel="noopener" class="lc-visit" data-v="cyan">Visit →</a>
+        </div>
+      </div>
+
+      <!-- 2. Trip Optimizer -->
+      <div class="live-card rv rv-d1" data-accent="gold">
+        <div class="lc-head">
+          <div class="lc-icon">🗺️</div>
+          <div class="lc-meta">
+            <span class="lc-domain">Travel · Optimization</span>
+            <span class="lc-title">8Z Trip Optimizer</span>
+          </div>
+        </div>
+        <div class="lc-desc">Plan multi-stop trips with route optimization (fast & deep modes), interactive maps, and a built-in AI chatbot powered by Gemini. Finds optimal driving/walking routes, base camp hotels, and dining spots along the way.</div>
+        <div class="lc-badges">
+          <span class="badge gold">AI Chatbot</span>
+          <span class="badge cyan">Route Optimizer</span>
+          <span class="badge muted">Maps</span>
+        </div>
+        <div class="lc-foot">
+          <span class="lc-url">chessbest.org/trip</span>
+          <a href="https://chessbest.org/trip/" target="_blank" rel="noopener" class="lc-visit" data-v="gold">Visit →</a>
+        </div>
+      </div>
+
+      <!-- 3. 8Z Audio Codec -->
+      <div class="live-card rv rv-d2" data-accent="cyan">
+        <div class="lc-head">
+          <div class="lc-icon">🎵</div>
+          <div class="lc-meta">
+            <span class="lc-domain">Audio · Compression</span>
+            <span class="lc-title">8Z-Audio — Five Days Against FLAC</span>
+          </div>
+        </div>
+        <div class="lc-desc">The full story of building a lossless audio codec from scratch in 5 days — and beating the 25-year-old gold standard on 7/15 clips. Interactive benchmarks, architecture diagrams, the development sprint timeline, and per-song results.</div>
+        <div class="lc-badges">
+          <span class="badge cyan">Beat FLAC-12</span>
+          <span class="badge green">10.3% Best Win</span>
+          <span class="badge muted">v1.5</span>
+        </div>
+        <div class="lc-foot">
+          <span class="lc-url">chessbest.org/ac</span>
+          <a href="https://chessbest.org/ac/" target="_blank" rel="noopener" class="lc-visit" data-v="cyan">Visit →</a>
+        </div>
+      </div>
+
+      <!-- 3b. 8Z Math Compression -->
+      <div class="live-card rv rv-d2" data-accent="rose">
+        <div class="lc-head">
+          <div class="lc-icon">🖼️</div>
+          <div class="lc-meta">
+            <span class="lc-domain">Compression · Research</span>
+            <span class="lc-title">8Z Mathematical Compression</span>
+          </div>
+        </div>
+        <div class="lc-desc">The first lossless framework that stores math instead of bytes. Beats PNG, 7-Zip, and ZIP on image test sets (46.8% ratio). MDL-governed generators with SHA3-256 verification. Cross-domain results across image, audio, DNA, and TSP.</div>
+        <div class="lc-badges">
+          <span class="badge rose">Beat PNG</span>
+          <span class="badge green">46.8% Ratio</span>
+          <span class="badge muted">5 Domains</span>
+        </div>
+        <div class="lc-foot">
+          <span class="lc-url">chessbest.org/8z/8Z_compression</span>
+          <a href="https://chessbest.org/8z/8Z_compression.html" target="_blank" rel="noopener" class="lc-visit" data-v="rose">Visit →</a>
+        </div>
+      </div>
+
+      <!-- 4. 8Z FASTA Encoder -->
+      <div class="live-card rv rv-d2" data-accent="green">
+        <div class="lc-head">
+          <div class="lc-icon">🧬</div>
+          <div class="lc-meta">
+            <span class="lc-domain">Genomics · Benchmark</span>
+            <span class="lc-title">8Z FASTA Encoder — Multi-LLM Benchmark</span>
+          </div>
+        </div>
+        <div class="lc-desc">Round 2 benchmark report: 9 encoder variants built by 8 different LLMs, tested on 50 FASTA files spanning 1.58 GB. Convergence analysis showing 7 of 9 encoders within 1 KB of each other — the architecture is near its ceiling.</div>
+        <div class="lc-badges">
+          <span class="badge green">50 Genomes</span>
+          <span class="badge gold">9 LLM Variants</span>
+          <span class="badge muted">19.35% Best</span>
+        </div>
+        <div class="lc-foot">
+          <span class="lc-url">chessbest.org/lo/8Z-FE_report</span>
+          <a href="https://chessbest.org/lo/8Z-FE_report.html" target="_blank" rel="noopener" class="lc-visit" data-v="green">Visit →</a>
+        </div>
+      </div>
+
+      <!-- 5. BD Portfolio (meta) -->
+      <div class="live-card rv rv-d1" data-accent="violet">
+        <div class="lc-head">
+          <div class="lc-icon">📋</div>
+          <div class="lc-meta">
+            <span class="lc-domain">Portfolio · Overview</span>
+            <span class="lc-title">BD × AI — Full Research Portfolio</span>
+          </div>
+        </div>
+        <div class="lc-desc">The master portfolio page: all 17+ projects across 5 domains, competition targets, domain transfer roadmap, and the three-track strategy. The live version of the document you're reading now.</div>
+        <div class="lc-badges">
+          <span class="badge violet">17+ Projects</span>
+          <span class="badge muted">5 Domains</span>
+          <span class="badge muted">Live</span>
+        </div>
+        <div class="lc-foot">
+          <span class="lc-url">chessbest.org/bd</span>
+          <a href="https://chessbest.org/bd/" target="_blank" rel="noopener" class="lc-visit" data-v="violet">Visit →</a>
+        </div>
+      </div>
+
+      <!-- 6. SOMEONE Album -->
+      <div class="live-card rv rv-d1" data-accent="rose">
+        <div class="lc-head">
+          <div class="lc-icon">🎸</div>
+          <div class="lc-meta">
+            <span class="lc-domain">Music · 1994 Album</span>
+            <span class="lc-title">SOMEONE — The Time Says Many Things</span>
+          </div>
+        </div>
+        <div class="lc-desc">A rock opera recorded in the mountains of Bovec, Slovenia (1993–94). Ten songs telling the story of Richard, Antonio, and Angelo — violence, loss, and the search for meaning. Full lyrics, band gallery, and the story behind each track.</div>
+        <div class="lc-badges">
+          <span class="badge rose">Concept Album</span>
+          <span class="badge muted">10 Tracks</span>
+          <span class="badge muted">Pan Records</span>
+        </div>
+        <div class="lc-foot">
+          <span class="lc-url">chessbest.org/someone</span>
+          <a href="https://chessbest.org/someone/" target="_blank" rel="noopener" class="lc-visit" data-v="rose">Visit →</a>
+        </div>
+      </div>
+
+      <!-- 7. MP3 Resurrection -->
+      <div class="live-card rv rv-d2" data-accent="orange">
+        <div class="lc-head">
+          <div class="lc-icon">🔊</div>
+          <div class="lc-meta">
+            <span class="lc-domain">Audio · AI Restoration</span>
+            <span class="lc-title">MP3 Resurrection Pipeline</span>
+          </div>
+        </div>
+        <div class="lc-desc">Recovering a lifetime of music from lossy MP3 archives using AI super-resolution, stem separation, and intelligent batch processing. Detailed plan covering AudioSR, DeepFilterNet, HiFi-GAN BWE, and the full 3-phase restoration roadmap.</div>
+        <div class="lc-badges">
+          <span class="badge orange">Active Dev</span>
+          <span class="badge muted">AudioSR</span>
+          <span class="badge muted">RTX 3080</span>
+        </div>
+        <div class="lc-foot">
+          <span class="lc-url">chessbest.org/bd/MP3_Resurrection</span>
+          <a href="https://chessbest.org/bd/MP3_Resurrection.html" target="_blank" rel="noopener" class="lc-visit" data-v="orange">Visit →</a>
+        </div>
+      </div>
+
+      <!-- 8. Flip4M -->
+      <div class="live-card rv rv-d2" data-accent="green">
+        <div class="lc-head">
+          <div class="lc-icon">🧲</div>
+          <div class="lc-meta">
+            <span class="lc-domain">Game · Strategy</span>
+            <span class="lc-title">Flip4M GM — Magnetic Connect Four</span>
+          </div>
+        </div>
+        <div class="lc-desc">A gravity-defying twist on Connect Four. Rotate the board, use magnet pulls from the rim, and play against a CPU with three difficulty levels. Includes undo, hints, game review, and PvP mode.</div>
+        <div class="lc-badges">
+          <span class="badge green">Playable Now</span>
+          <span class="badge muted">vs CPU</span>
+          <span class="badge muted">PvP Mode</span>
+        </div>
+        <div class="lc-foot">
+          <span class="lc-url">chessbest.org/f4m</span>
+          <a href="https://chessbest.org/f4m/" target="_blank" rel="noopener" class="lc-visit" data-v="green">Visit →</a>
+        </div>
+      </div>
+
+      <!-- 9. Comic Book Rankings -->
+      <div class="live-card rv rv-d3" data-accent="violet">
+        <div class="lc-head">
+          <div class="lc-icon">⚡</div>
+          <div class="lc-meta">
+            <span class="lc-domain">Entertainment · Reference</span>
+            <span class="lc-title">Ultimate Comic Book Power Rankings</span>
+          </div>
+        </div>
+        <div class="lc-desc">Lore-accurate ranking of the most powerful characters across Marvel, DC, Image, and Vertigo — from The One-Above-All to street-level heroes. Expandable cards with detailed lore descriptions for each entry. Searchable and mobile-friendly.</div>
+        <div class="lc-badges">
+          <span class="badge violet">100+ Heroes</span>
+          <span class="badge muted">Marvel · DC</span>
+          <span class="badge muted">Searchable</span>
+        </div>
+        <div class="lc-foot">
+          <span class="lc-url">chessbest.org/mix/Heroes</span>
+          <a href="https://chessbest.org/mix/Heroes.html" target="_blank" rel="noopener" class="lc-visit" data-v="violet">Visit →</a>
+        </div>
+      </div>
+
+      <!-- 10. Winter Olympics -->
+      <div class="live-card rv rv-d3" data-accent="cyan">
+        <div class="lc-head">
+          <div class="lc-icon">🏅</div>
+          <div class="lc-meta">
+            <span class="lc-domain">Sports · Data Analysis</span>
+            <span class="lc-title">Winter Olympics 2026 — Medal Efficiency</span>
+          </div>
+        </div>
+        <div class="lc-desc">Milan-Cortina 2026 medal table ranked by population efficiency — medals per 1,000 people. Weighted scoring (Gold=3, Silver=2, Bronze=1) reveals which small nations truly punch above their weight. Slovenia at #2.</div>
+        <div class="lc-badges">
+          <span class="badge cyan">2026 Data</span>
+          <span class="badge green">Slovenia #2</span>
+          <span class="badge muted">25 Countries</span>
+        </div>
+        <div class="lc-foot">
+          <span class="lc-url">chessbest.org/mix/Olympics2026</span>
+          <a href="https://chessbest.org/mix/Olympics2026.html" target="_blank" rel="noopener" class="lc-visit" data-v="cyan">Visit →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
 
 <div class="divider"></div>
 
@@ -888,11 +1238,11 @@ footer{
         <h4>Key Numbers</h4>
         <ul class="ai-list">
           <li>17 projects across 5+ domains</li>
+          <li>11 live web pages on chessbest.org</li>
           <li>30 years from Soul Voyage to now</li>
           <li>Z-scores 28–74 in DNA research</li>
           <li>Beats FLAC-12 on 7/15 clips</li>
           <li>44/50 genomes beat 7-Zip</li>
-          <li>1 live web product (ChessBest.org)</li>
           <li>6 original songs benchmarked</li>
           <li>5 RC designs for DGTE engine</li>
         </ul>
