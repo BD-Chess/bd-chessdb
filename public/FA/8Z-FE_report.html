@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>8Z FASTA Encoder — Round 2 Benchmark Report</title>
+<style>
+  :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #c9d1d9; --bright: #e6edf3;
+          --green: #3fb950; --red: #f85149; --blue: #58a6ff; --orange: #d29922; --purple: #bc8cff; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font: 14px/1.6 'JetBrains Mono', 'Fira Code', monospace; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { color: var(--bright); font-size: 22px; margin-bottom: 4px; }
+  h2 { color: var(--blue); font-size: 16px; margin: 28px 0 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  h3 { color: var(--purple); font-size: 14px; margin: 18px 0 8px; }
+  .subtitle { color: var(--text); font-size: 13px; margin-bottom: 20px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 16px; margin: 12px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th { background: #21262d; color: var(--bright); text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--border); }
+  td { padding: 6px 10px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: #1c2128; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .win { color: var(--green); font-weight: bold; }
+  .lose { color: var(--red); }
+  .bar { display: inline-block; height: 14px; border-radius: 2px; vertical-align: middle; }
+  .bar-green { background: var(--green); }
+  .bar-blue { background: var(--blue); }
+  .bar-orange { background: var(--orange); }
+  .bar-red { background: var(--red); }
+  .bar-purple { background: var(--purple); }
+  .kpi { display: inline-block; background: #21262d; border: 1px solid var(--border); border-radius: 6px; padding: 12px 20px; margin: 6px 8px 6px 0; text-align: center; min-width: 140px; }
+  .kpi-val { font-size: 22px; font-weight: bold; color: var(--bright); display: block; }
+  .kpi-label { font-size: 11px; color: var(--text); }
+  .note { background: #1c2128; border-left: 3px solid var(--orange); padding: 10px 14px; margin: 12px 0; font-size: 13px; }
+  .good { color: var(--green); }
+  .bad { color: var(--red); }
+  .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 800px) { .cols2 { grid-template-columns: 1fr; } }
+  .insight { background: linear-gradient(135deg, #161b22, #1a1f29); border: 1px solid var(--purple); border-radius: 6px; padding: 14px; margin: 12px 0; }
+  .insight-title { color: var(--purple); font-weight: bold; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<h1>8Z FASTA Encoder — Round 2 Multi-LLM Benchmark</h1>
+<p class="subtitle">50 FASTA files • 1.579 GB total • 9 encoder variants from 8 LLMs • February 21, 2026</p>
+
+<div style="display:flex;flex-wrap:wrap;">
+  <div class="kpi"><span class="kpi-val">1.579 GB</span><span class="kpi-label">Total FASTA</span></div>
+  <div class="kpi"><span class="kpi-val">50</span><span class="kpi-label">Test Files</span></div>
+  <div class="kpi"><span class="kpi-val">9</span><span class="kpi-label">Encoder Variants</span></div>
+  <div class="kpi"><span class="kpi-val good">19.35%</span><span class="kpi-label">Best Ratio (DSEz)</span></div>
+  <div class="kpi"><span class="kpi-val">305.4 MB</span><span class="kpi-label">Best Total</span></div>
+  <div class="kpi"><span class="kpi-val bad">23.07%</span><span class="kpi-label">Worst Ratio (GPTz)</span></div>
+</div>
+
+<h2>1. Executive Summary</h2>
+<div class="card">
+<p>Round 2 tested 9 encoder variants built by different LLMs, all starting from the same gemZ v9.3 baseline architecture. The encoders were benchmarked on a corpus of 50 FASTA files spanning tiny transcripts (1.5 KB) through full human chromosomes (140 MB).</p>
+
+<p style="margin-top:10px;"><strong>Key finding:</strong> Seven of nine encoders converged to near-identical compression totals (~305.4 MB), differing by less than 1 KB on most files. This indicates the gemZ v9.3 architecture is already near its ceiling for this codec family — the LLMs made <em>marginal</em> tweaks rather than architectural breakthroughs. The two outliers (GLMz at 311.5 MB, GPTz at 364.1 MB) regressed from the baseline.</p>
+
+<p style="margin-top:10px;"><strong>The GeCo3 reference compressor achieves ~266.4 MB (16.88%)</strong>, placing it roughly <strong>39 MB ahead</strong> of all 8Z variants. This is the real competitive gap to close.</p>
+</div>
+
+<h2>2. Overall Encoder Rankings</h2>
+<div class="card">
+<table>
+<tr><th>#</th><th>Encoder</th><th>LLM</th><th>Lines</th><th class="num">Total Compressed</th><th class="num">Ratio</th><th class="num">vs 7z</th><th class="num">Wall Time</th><th>OK</th></tr>
+<tr style="background:#0d2818;"><td>—</td><td><em>GeCo3 (.co)</em></td><td><em>Reference</em></td><td>—</td><td class="num"><em>~266,386,513</em></td><td class="num"><em>16.88%</em></td><td class="num"><em>−22.2%</em></td><td class="num">—</td><td>50</td></tr>
+<tr><td class="win">1</td><td class="win">DSEz</td><td>DeepSeek-V3 R1</td><td>727</td><td class="num win">305,423,381</td><td class="num win">19.35%</td><td class="num good">−10.8%</td><td class="num">6h 47m</td><td>50</td></tr>
+<tr><td>1</td><td>GEMz_orig</td><td>Original v9.3</td><td>644</td><td class="num">305,423,381</td><td class="num">19.35%</td><td class="num good">−10.8%</td><td class="num">5h 06m</td><td>50</td></tr>
+<tr><td>3</td><td>GEMz</td><td>Gemini 3 Pro</td><td>715</td><td class="num">305,423,431</td><td class="num">19.35%</td><td class="num good">−10.8%</td><td class="num">6h 48m</td><td>50</td></tr>
+<tr><td>3</td><td>MMAz</td><td>MiniMax M2.5 Think</td><td>711</td><td class="num">305,423,431</td><td class="num">19.35%</td><td class="num good">−10.8%</td><td class="num">6h 45m</td><td>50</td></tr>
+<tr><td>5</td><td>KIMz</td><td>Kimi K2.5 Think</td><td>743</td><td class="num">305,423,488</td><td class="num">19.35%</td><td class="num good">−10.8%</td><td class="num">6h 60m</td><td>50</td></tr>
+<tr><td>6</td><td>QWEz</td><td>Qwen 3.5 Plus</td><td>718</td><td class="num">305,424,181</td><td class="num">19.35%</td><td class="num good">−10.8%</td><td class="num">6h 34m</td><td>50</td></tr>
+<tr><td>7</td><td>GROz</td><td>Grok 4.2 (beta)</td><td>649</td><td class="num">305,911,469</td><td class="num">19.38%</td><td class="num good">−10.7%</td><td class="num">6h 19m</td><td>50</td></tr>
+<tr><td>8</td><td>GLMz</td><td>GLM 5 DeepThink</td><td>789</td><td class="num">311,527,258</td><td class="num">19.74%</td><td class="num good">−9.0%</td><td class="num">5h 30m</td><td>50</td></tr>
+<tr class="lose"><td>9</td><td>GPTz</td><td>ChatGPT 5.2 Think</td><td>787</td><td class="num lose">364,133,180</td><td class="num lose">23.07%</td><td class="num lose">+6.3%</td><td class="num">8h 08m</td><td>50</td></tr>
+</table>
+</div>
+
+<div class="note">
+<strong>⚠ DSEz = GEMz_orig byte-for-byte.</strong> DeepSeek-V3 R1 produced output identical to the Original v9.3 baseline — 0 files differ. It essentially reproduced the reference encoder perfectly. The "win" is cosmetic.
+</div>
+
+<h2>3. Reference Compressor Comparison</h2>
+<div class="card">
+<table>
+<tr><th>Compressor</th><th class="num">Total</th><th class="num">Ratio</th><th>Visual</th></tr>
+<tr><td class="win">GeCo3 (.co)</td><td class="num win">~266,386,513</td><td class="num win">16.88%</td><td><span class="bar bar-green" style="width:169px;"></span></td></tr>
+<tr><td>8Z best (DSEz)</td><td class="num">305,423,381</td><td class="num">19.35%</td><td><span class="bar bar-blue" style="width:193px;"></span></td></tr>
+<tr><td>8Z prev (CLA Round 1)</td><td class="num">302,149,410</td><td class="num">19.14%</td><td><span class="bar bar-purple" style="width:191px;"></span></td></tr>
+<tr><td>8Z prev (GPT Round 1)</td><td class="num">302,134,518</td><td class="num">19.14%</td><td><span class="bar bar-purple" style="width:191px;"></span></td></tr>
+<tr><td>7z (LZMA2)</td><td class="num">342,442,953</td><td class="num">21.69%</td><td><span class="bar bar-orange" style="width:217px;"></span></td></tr>
+<tr><td>zip (deflate)</td><td class="num">380,918,790</td><td class="num">24.13%</td><td><span class="bar bar-red" style="width:241px;"></span></td></tr>
+</table>
+
+<p style="margin-top:12px;">Bars represent compression ratio (shorter = better). Note: Round 1's CLA and GPT encoders (302.1 MB) actually <strong>beat</strong> all Round 2 encoders (305.4 MB) — a <strong>3.3 MB regression</strong> from the gemZ v9.3 architecture used in Round 2.</p>
+</div>
+
+<h2>4. Convergence Analysis — The Clustered Pack</h2>
+<div class="card">
+<p>The spread across the top 7 encoders is remarkably tight:</p>
+<table>
+<tr><th>Encoder</th><th class="num">Total</th><th class="num">Delta from DSEz</th><th class="num">Pct Delta</th></tr>
+<tr><td>DSEz / GEMz_orig</td><td class="num">305,423,381</td><td class="num">0</td><td class="num">0.000%</td></tr>
+<tr><td>GEMz / MMAz</td><td class="num">305,423,431</td><td class="num">+50</td><td class="num">+0.000016%</td></tr>
+<tr><td>KIMz</td><td class="num">305,423,488</td><td class="num">+107</td><td class="num">+0.000035%</td></tr>
+<tr><td>QWEz</td><td class="num">305,424,181</td><td class="num">+800</td><td class="num">+0.000262%</td></tr>
+<tr><td>GROz</td><td class="num">305,911,469</td><td class="num">+488,088</td><td class="num">+0.160%</td></tr>
+</table>
+<p style="margin-top:10px;">Six of the nine encoders differ by <strong>less than 1 KB total</strong> across 1.58 GB of input. This extreme convergence means the LLMs made near-zero meaningful changes to the gemZ v9.3 codebase — the architecture is essentially saturated for their optimization horizon.</p>
+</div>
+
+<h2>5. The Two Outliers</h2>
+<div class="cols2">
+  <div class="card">
+    <h3>GLMz (GLM 5 DeepThink) — 6.1 MB worse</h3>
+    <p>311.5 MB total, 2% regression from baseline. The log shows GLMz sometimes selects <strong>BYTE mode using brotli</strong> where the baseline picks NIB — this byte-mode variant is suboptimal on mid-to-large genomes. GLM's changes hurt more than they helped.</p>
+  </div>
+  <div class="card">
+    <h3>GPTz (ChatGPT 5.2 Thinking) — 58.7 MB worse</h3>
+    <p>364.1 MB total, a catastrophic <strong>19.2% regression</strong> from baseline (worse than plain 7z!). The log reveals GPTz uses only <strong>RAW mode</strong> with BZ2/LZMA codecs — no NIB transform, no periodic detection. ChatGPT's rewrite discarded the core genomic-aware features. Ironically, GPTz wins on 7 tiny files (&lt;10KB) due to lower container overhead, but loses massively on everything else.</p>
+  </div>
+</div>
+
+<h2>6. Per-File Winners by Size Class</h2>
+<div class="card">
+<table>
+<tr><th>Size Class</th><th>Files</th><th>Winner</th><th>Wins</th><th>Pattern</th></tr>
+<tr><td><strong>Small</strong> (&lt;100 KB)</td><td>11</td><td class="win">GPTz</td><td>7</td><td>Lower container overhead on tiny files (saves 300-400 bytes per file)</td></tr>
+<tr><td></td><td></td><td>DSEz</td><td>2</td><td>Wins on slightly larger small files (14-17 KB) where NIB kicks in</td></tr>
+<tr><td></td><td></td><td>GROz, GLMz</td><td>1 each</td><td>Edge cases</td></tr>
+<tr><td><strong>Medium</strong> (100KB–10MB)</td><td>18</td><td class="win">DSEz</td><td>14</td><td>NIB+brotli dominates on yeast/bacterial chromosomes</td></tr>
+<tr><td></td><td></td><td>GROz</td><td>4</td><td>Wins on specific organisms with solid+nib or byte variant</td></tr>
+<tr><td><strong>Large</strong> (&gt;10MB)</td><td>21</td><td class="win">DSEz</td><td>18</td><td>split|brotli+nib with RAW/PER modes dominates human chromosomes</td></tr>
+<tr><td></td><td></td><td>GROz</td><td>2</td><td>chr19 (gene-dense) benefits from split|brotli+byte; chrV from solid|brotli+nib</td></tr>
+<tr><td></td><td></td><td>KIMz</td><td>1</td><td>Single edge case</td></tr>
+</table>
+</div>
+
+<h2>7. Oracle Analysis — Maximum Headroom</h2>
+<div class="card">
+<table>
+<tr><th>Scenario</th><th class="num">Total</th><th class="num">vs DSEz</th></tr>
+<tr><td>DSEz (actual best single encoder)</td><td class="num">305,423,381</td><td class="num">—</td></tr>
+<tr><td class="win">Oracle (best-of-all per file)</td><td class="num win">305,301,168</td><td class="num good">−122,213 (−0.04%)</td></tr>
+<tr><td>GeCo3 target</td><td class="num">~266,386,513</td><td class="num">−39,036,868 (−12.8%)</td></tr>
+</table>
+<p style="margin-top:10px;"><strong>Insight:</strong> Even a perfect per-file selector across all 9 encoders only saves 122 KB — a negligible 0.04%. The entire field is within noise of the baseline. The real gap is the <strong>39 MB (12.8%)</strong> separating 8Z from GeCo3's context-mixing arithmetic coder.</p>
+</div>
+
+<h2>8. Encoding Modes & Codecs in Use</h2>
+<div class="card">
+<p>From the top encoders' logs, the dominant strategy for chr09 (140.7 MB human chromosome):</p>
+<table>
+<tr><th>Encoder</th><th>Winner Strategy</th><th>Block Modes</th><th>Compressed</th><th class="num">bpb</th></tr>
+<tr><td>DSEz/GEMz_orig</td><td>split | brotli + nib</td><td>RAW: 119 (90%), PER: 13 (10%)</td><td>26,090,691</td><td class="num">1.508</td></tr>
+<tr><td>GROz</td><td>split | brotli + nib</td><td>RAW: 119 (90%), PER: 13 (10%)</td><td>26,090,691</td><td class="num">1.508</td></tr>
+<tr><td>GLMz</td><td>mixed nib/byte/raw</td><td>RAW majority</td><td>26,798,977</td><td class="num">1.549</td></tr>
+<tr><td>GPTz</td><td>RAW only + BZ2/LZMA</td><td>RAW: 135 (100%)</td><td>31,536,092</td><td class="num">1.823</td></tr>
+<tr style="background:#0d2818;"><td><em>GeCo3</em></td><td><em>Context-mixing AC</em></td><td><em>N/A</em></td><td><em>22,930,965</em></td><td class="num"><em>~1.325</em></td></tr>
+</table>
+<p style="margin-top:10px;">The winning formula for genomic data: <strong>NIB transform + brotli outer codec + split assembly</strong>, with PERIODIC mode capturing tandem repeat regions (~10% of human chromosome blocks).</p>
+</div>
+
+<h2>9. GROz — The Interesting Divergent</h2>
+<div class="card">
+<p>While GROz (Grok 4.2 beta) is only 488 KB worse overall, it has a structurally different strategy on certain files:</p>
+<table>
+<tr><th>File</th><th>GROz Strategy</th><th class="num">GROz</th><th class="num">DSEz</th><th class="num">Savings</th></tr>
+<tr><td>chr19 (gene-dense)</td><td>split | brotli + <strong>byte</strong></td><td class="num win">11,313,438</td><td class="num">11,386,032</td><td class="num good">−72,594</td></tr>
+<tr><td>Ce chrV (C. elegans)</td><td>solid | brotli + nib</td><td class="num win">4,777,626</td><td class="num">4,820,116</td><td class="num good">−42,490</td></tr>
+<tr><td>Zm mito (maize)</td><td>variant</td><td class="num win">134,065</td><td class="num">138,053</td><td class="num good">−3,988</td></tr>
+</table>
+<p style="margin-top:10px;">GROz's <strong>byte-mode brotli</strong> wins on chr19, a gene-dense chromosome where the base frequency distribution is less uniform. This suggests an adaptive mode selector could capture marginal gains by switching transform per-chromosome-type.</p>
+</div>
+
+<h2>10. Key Findings & Recommendations</h2>
+
+<div class="insight">
+<div class="insight-title">Finding 1: The gemZ v9.3 architecture has plateaued</div>
+<p>Seven LLMs independently optimized the same codebase and converged within 1 KB of each other. The architecture is at its local optimum. Incremental LLM-driven tuning yields diminishing returns approaching zero.</p>
+</div>
+
+<div class="insight">
+<div class="insight-title">Finding 2: Round 2 regressed ~3.3 MB vs Round 1</div>
+<p>Round 1's CLA/GPT encoders achieved 302.1 MB on the same corpus. Round 2's gemZ-based encoders hit 305.4 MB. The HM4 hybrid architecture from Round 1 (with CTX3, per-stream-best codecs, solid-vs-split battle, and multiple block sizes) was slightly superior. A merge of Round 1 and Round 2 techniques is warranted.</p>
+</div>
+
+<div class="insight">
+<div class="insight-title">Finding 3: GPTz (ChatGPT 5.2 Thinking) catastrophically failed</div>
+<p>ChatGPT's encoder lost the NIB transform and PERIODIC detection — the two features that account for the entire compression advantage over generic compressors. At 364.1 MB it's worse than 7z (342.4 MB). This is a cautionary tale: LLM rewrites can destroy domain-specific features without understanding their purpose.</p>
+</div>
+
+<div class="insight">
+<div class="insight-title">Finding 4: The real competition is GeCo3 (266.4 MB)</div>
+<p>GeCo3 achieves ~16.9% ratio vs 8Z's ~19.4% — a 39 MB / 12.8% gap. GeCo3 uses finite-context models with arithmetic coding, fundamentally different from 8Z's transform-then-compress architecture. To close this gap, 8Z needs to move beyond LZ-family outer codecs toward statistical/context-mixing approaches (ANS/rANS, PPM, or CM).</p>
+</div>
+
+<div class="insight">
+<div class="insight-title">Finding 5: Small-file container overhead matters</div>
+<p>GPTz wins 7/11 small files (&lt;100KB) despite terrible compression — its container format has lower overhead. The gemZ format adds ~300-400 bytes of metadata that dominates the compressed output for tiny files. An adaptive container format (minimal header for small inputs) would reclaim these wins.</p>
+</div>
+
+<div class="insight">
+<div class="insight-title">Finding 6: Per-organism adaptive mode selection has untapped potential</div>
+<p>GROz's byte-mode wins on chr19 (gene-dense) while nib-mode wins on most other chromosomes. An MDL-driven transform selector that tests byte/nib/raw per-block (as the Round 1 HYB encoder does) can capture the best of both.</p>
+</div>
+
+<h2>11. Roadmap to Beat GeCo3</h2>
+<div class="card">
+<table>
+<tr><th>Phase</th><th>Technique</th><th>Expected Gain</th><th>Complexity</th></tr>
+<tr><td>1</td><td>Merge Round 1 HYB (CTX3 + multi-block-size + solid-vs-split battle)</td><td>~3.3 MB (reclaim regression)</td><td>Medium</td></tr>
+<tr><td>2</td><td>Adaptive container (minimal header for small files)</td><td>~2-3 KB total</td><td>Low</td></tr>
+<tr><td>3</td><td>Higher-order context models (order-5 to order-8)</td><td>5-10%</td><td>High</td></tr>
+<tr><td>4</td><td>ANS/rANS arithmetic backend replacing LZMA/brotli</td><td>10-15%</td><td>Very High</td></tr>
+<tr><td>5</td><td>Context mixing (PPM* or CM-style) for base prediction</td><td>15-20% (GeCo3 territory)</td><td>Very High</td></tr>
+</table>
+</div>
+
+<p style="margin-top:24px;color:#484f58;font-size:12px;">Report generated 2026-02-21 by Claude Opus 4.6 • Data from 8Z_FE_Results2_combined.json + 9 encoder logs</p>
+
+</body>
+</html>
