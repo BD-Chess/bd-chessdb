@@ -8,970 +8,614 @@
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:       #020409;
-  --bg2:      #060a14;
-  --bg3:      #0b1120;
-  --surface:  #0f1729;
-  --surface2: #131d33;
-  --border:   rgba(210,175,90,0.12);
-  --border2:  rgba(255,255,255,0.06);
-  --gold:     #d2af5a;
-  --gold-bright: #f5d67b;
-  --gold-dim: rgba(210,175,90,0.12);
-  --rose:     #c94060;
-  --rose-dim: rgba(201,64,96,0.12);
-  --green:    #3aaa7a;
-  --green-dim:rgba(58,170,122,0.10);
-  --cyan:     #4a9eb8;
-  --cyan-dim: rgba(74,158,184,0.10);
-  --text:     #e2e0dc;
-  --text2:    #a09c94;
-  --muted:    #5e584e;
-  --heartbeat:#2dcc50;
+  --bg:#030508;--bg2:#080c14;--bg3:#0d1525;--surface:#111827;
+  --border:rgba(210,175,90,0.12);--gold:#d2af5a;--gold-bright:#f5d67b;
+  --gold-dim:rgba(210,175,90,0.15);--rose:#c94060;--rose-dim:rgba(201,64,96,0.15);
+  --green:#2dcc50;--green-dim:rgba(45,204,80,0.10);--cyan:#4a9eb8;
+  --text:#e8edf5;--muted:#6b7a96;--subtle:#1e2a40;
 }
-
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{
-  background:var(--bg);color:var(--text);
-  font-family:'Rajdhani',sans-serif;font-size:17px;line-height:1.7;
-  overflow-x:hidden;min-height:100vh;
-}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:17px;line-height:1.7;overflow-x:hidden;padding-top:52px}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:300;opacity:0.022;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
-/* ── ATMOSPHERIC BG ── */
-.atmo{
-  position:fixed;inset:0;pointer-events:none;z-index:0;
-}
-.atmo-glow{
-  position:absolute;inset:0;
-  background:
-    radial-gradient(ellipse 60% 45% at 50% 0%,rgba(210,175,90,0.04) 0%,transparent 65%),
-    radial-gradient(ellipse 40% 50% at 10% 60%,rgba(201,64,96,0.03) 0%,transparent 55%),
-    radial-gradient(ellipse 35% 35% at 90% 80%,rgba(58,170,122,0.025) 0%,transparent 50%);
-}
-.atmo-noise{
-  position:absolute;inset:0;opacity:0.018;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
+.toolbar{position:fixed;top:0;left:0;right:0;z-index:200;height:52px;background:rgba(3,5,8,0.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:stretch}
+.tb-brand{font-family:'JetBrains Mono',monospace;font-size:0.82rem;font-weight:700;color:var(--gold);letter-spacing:0.15em;text-decoration:none;cursor:pointer;padding:0 1.25rem;display:flex;align-items:center;border-right:1px solid var(--border);flex-shrink:0;transition:background 0.2s}
+.tb-brand:hover{background:rgba(210,175,90,0.06)}
+.tb-nav{display:flex;align-items:stretch;flex:1;overflow-x:auto;scrollbar-width:none}
+.tb-nav::-webkit-scrollbar{display:none}
+.tb-link{font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;padding:0 0.75rem;display:flex;align-items:center;color:var(--muted);text-decoration:none;cursor:pointer;border-right:1px solid var(--border);transition:color 0.2s,background 0.2s;white-space:nowrap;flex-shrink:0;position:relative}
+.tb-link:hover{color:var(--text);background:rgba(255,255,255,0.03)}
 
-/* ── SCROLL PROGRESS ── */
-.scroll-bar{
-  position:fixed;top:0;left:0;height:2px;z-index:999;
-  background:linear-gradient(90deg,var(--gold),var(--rose));
-  width:0%;transition:width 0.1s;
-}
+.scroll-progress{position:fixed;top:52px;left:0;right:0;z-index:201;height:2px}
+.scroll-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--rose),var(--green));transition:width 0.1s linear}
 
-/* ── LAYOUT ── */
-.wrap{max-width:1080px;margin:0 auto;padding:0 5vw;position:relative;z-index:1}
-
-/* ── HERO ── */
-.hero{
-  padding:60px 0 50px;text-align:center;
-  border-bottom:1px solid var(--border);
-  margin-bottom:0;
-}
-.hero-logo{
-  max-width:480px;width:80%;margin:0 auto 1.2rem;
-  filter:drop-shadow(0 0 30px rgba(210,175,90,0.2));
-}
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:90px 8vw 80px;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 60% 35%,rgba(210,175,90,0.045) 0%,transparent 65%),radial-gradient(ellipse 50% 70% at 15% 75%,rgba(201,64,96,0.035) 0%,transparent 55%)}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(210,175,90,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(210,175,90,0.025) 1px,transparent 1px);background-size:80px 80px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black,transparent)}
+.hero-cover{position:absolute;right:6vw;top:50%;transform:translateY(-50%);width:min(320px,28vw);border-radius:10px;overflow:hidden;border:2px solid rgba(210,175,90,0.2);box-shadow:0 30px 80px rgba(0,0,0,0.7),0 0 60px rgba(210,175,90,0.08);opacity:0;animation:fadeIn 1.2s 0.8s forwards;z-index:2}
+.hero-cover img{width:100%;height:auto;display:block}
+.hero-cover::after{content:'';position:absolute;inset:-4px;border-radius:12px;background:conic-gradient(from 0deg,transparent,rgba(210,175,90,0.25),transparent,rgba(201,64,96,0.15),transparent);animation:spin 10s linear infinite;z-index:-1}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.waveform-wrap{position:absolute;left:0;bottom:0;right:0;height:220px;pointer-events:none;opacity:0;animation:fadeIn 1.4s 1s forwards}
+.waveform-svg{width:100%;height:100%}
+.hero-content{position:relative;z-index:3;max-width:55%}
+.hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--gold);letter-spacing:0.3em;text-transform:uppercase;margin-bottom:1.5rem;opacity:0;animation:fadeUp 0.8s 0.2s forwards}
+.hero-logo{max-width:400px;width:100%;margin-bottom:0.8rem;filter:drop-shadow(0 0 25px rgba(210,175,90,0.25));opacity:0;animation:fadeUp 0.8s 0.35s forwards}
 .hero-logo img{width:100%;height:auto;display:block}
-.hero-album{
-  font-family:'Cormorant Garamond',serif;
-  font-size:clamp(1.4rem,3.5vw,2.2rem);
-  font-style:italic;font-weight:300;
-  color:var(--gold);letter-spacing:0.03em;
-  margin-bottom:0.6rem;
-}
-.hero-meta{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.65rem;letter-spacing:0.25em;
-  text-transform:uppercase;color:var(--muted);
-}
-.hero-meta span{color:var(--gold)}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,4.5vw,3.4rem);font-weight:300;font-style:italic;line-height:1.05;margin-bottom:1.5rem;opacity:0;animation:fadeUp 0.8s 0.5s forwards}
+.hero-title span{color:var(--gold)}
+.hero-subtitle{font-size:1rem;color:var(--muted);max-width:500px;margin-bottom:2.5rem;opacity:0;animation:fadeUp 0.8s 0.6s forwards}
+.hero-stats{display:flex;gap:3rem;flex-wrap:wrap;opacity:0;animation:fadeUp 0.8s 0.75s forwards}
+.hero-stat .num{font-size:2.4rem;font-weight:700;color:var(--gold);line-height:1;font-family:'JetBrains Mono',monospace}
+.hero-stat .num.rose{color:var(--rose)}.hero-stat .num.green{color:var(--green)}
+.hero-stat .label{font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted)}
 
-/* ── COVER ART SECTION ── */
-.cover-section{
-  padding:50px 0;
-  border-bottom:1px solid var(--border);
-}
-.cover-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:20px;
-  max-width:720px;
-  margin:0 auto;
-}
-.cover-item{
-  border-radius:6px;overflow:hidden;
-  border:1px solid var(--border);
-  transition:transform 0.3s,box-shadow 0.3s;
-  cursor:pointer;position:relative;
-}
-.cover-item:hover{
-  transform:scale(1.02);
-  box-shadow:0 12px 40px rgba(0,0,0,0.6);
-  z-index:2;
-}
-.cover-item img{width:100%;height:auto;display:block}
-.cover-item.featured{
-  grid-column:1 / -1;
-  max-width:480px;
-  margin:0 auto;
-  width:100%;
-}
-.cover-label{
-  position:absolute;bottom:0;left:0;right:0;
-  padding:6px 12px;
-  background:linear-gradient(transparent,rgba(0,0,0,0.8));
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.58rem;letter-spacing:0.15em;
-  text-transform:uppercase;color:var(--text2);
-  text-align:right;
-}
+section{max-width:1100px;margin:0 auto;padding:80px 5vw}
+.divider{height:1px;max-width:1100px;margin:0 auto;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+.sec-tag{font-family:'JetBrains Mono',monospace;font-size:0.68rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:0.75rem;display:block}
+.sec-tag.rose{color:var(--rose)}.sec-tag.green{color:var(--green)}
+h2{font-size:clamp(2rem,4vw,3rem);font-weight:700;line-height:1.1;margin-bottom:1.5rem}
+p{color:rgba(232,237,245,0.7);max-width:66ch}
+strong{color:var(--text);font-weight:600}
 
-/* ── PLAYER SECTION ── */
-.player-section{
-  padding:50px 0;
-  border-bottom:1px solid var(--border);
-}
-.sec-tag{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.62rem;letter-spacing:0.35em;text-transform:uppercase;
-  color:var(--gold);margin-bottom:0.5rem;display:block;
-  text-align:center;
-}
-.sec-title{
-  font-size:clamp(1.5rem,3vw,2rem);font-weight:700;
-  text-align:center;margin-bottom:2rem;
-  letter-spacing:-0.01em;
-}
+/* SONG SECTIONS */
+.song-section{max-width:1100px;margin:0 auto;padding:60px 5vw}
+.song-header{display:flex;align-items:flex-start;gap:24px;margin-bottom:2rem;cursor:pointer;position:relative}
+.song-num{font-family:'JetBrains Mono',monospace;font-size:4.5rem;font-weight:700;line-height:1;color:rgba(210,175,90,0.08);flex-shrink:0;transition:color 0.4s;min-width:80px;text-align:right}
+.song-header:hover .song-num{color:rgba(210,175,90,0.2)}
+.song-header.playing .song-num{color:var(--gold)}
+.song-title-wrap{flex:1;padding-top:0.4rem}
+.song-title{font-size:clamp(1.4rem,3vw,2.2rem);font-weight:700;line-height:1.1;margin-bottom:0.4rem;transition:color 0.3s}
+.song-header:hover .song-title{color:var(--gold)}
+.song-header.playing .song-title{color:var(--gold)}
+.song-meta{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase}
+.song-play-btn{align-self:center;width:56px;height:56px;border-radius:50%;border:2px solid rgba(210,175,90,0.3);background:transparent;color:var(--gold);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.3s}
+.song-play-btn:hover{background:var(--gold);color:var(--bg);border-color:var(--gold);box-shadow:0 0 25px rgba(210,175,90,0.4);transform:scale(1.08)}
+.song-play-btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold);animation:pulseGlow 2s ease-in-out infinite}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 10px rgba(210,175,90,0.3)}50%{box-shadow:0 0 25px rgba(210,175,90,0.6)}}
+.song-play-btn svg{width:22px;height:22px}
+.song-eq{display:none;gap:2px;align-items:flex-end;height:22px}
+.song-header.playing .song-eq{display:flex}
+.eq-bar{width:3px;background:var(--gold);border-radius:1px;animation:eqB 0.5s ease-in-out infinite alternate}
+.eq-bar:nth-child(1){height:6px;animation-delay:0s}.eq-bar:nth-child(2){height:14px;animation-delay:0.12s}
+.eq-bar:nth-child(3){height:10px;animation-delay:0.24s}.eq-bar:nth-child(4){height:18px;animation-delay:0.08s}
+@keyframes eqB{0%{transform:scaleY(0.3)}100%{transform:scaleY(1)}}
 
-/* ── NOW PLAYING ── */
-.now-playing{
-  max-width:640px;margin:0 auto 2rem;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:24px 28px;
-  position:relative;overflow:hidden;
-}
-.now-playing::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,var(--gold),var(--rose),var(--gold));
-  background-size:200% 100%;
-  animation:shimmer 3s ease-in-out infinite;
-}
-@keyframes shimmer{
-  0%,100%{background-position:200% 0}
-  50%{background-position:0% 0}
-}
-.np-top{
-  display:flex;align-items:center;gap:16px;
-  margin-bottom:16px;
-}
-.np-cover{
-  width:80px;height:80px;border-radius:6px;
-  overflow:hidden;flex-shrink:0;
-  border:1px solid var(--border);
-}
-.np-cover img{width:100%;height:100%;object-fit:cover}
-.np-info{flex:1;min-width:0}
-.np-track{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.58rem;color:var(--gold);
-  letter-spacing:0.2em;text-transform:uppercase;
-}
-.np-title{
-  font-size:1.15rem;font-weight:700;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.np-artist{
-  font-size:0.82rem;color:var(--text2);
-}
+/* LYRICS */
+.lyrics-body{padding-left:104px;position:relative}
+.narrative{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1rem;color:rgba(210,175,90,0.45);margin-bottom:1.2rem;max-width:60ch;line-height:1.65}
+.dialogue{margin-bottom:1.5rem}
+.d-line{display:flex;gap:12px;margin-bottom:0.25rem;line-height:1.55}
+.d-char{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--gold);min-width:100px;flex-shrink:0;text-align:right;padding-top:3px;font-weight:500;letter-spacing:0.05em}
+.d-char.rose{color:var(--rose)}.d-char.green{color:var(--green)}.d-char.cyan{color:var(--cyan)}.d-char.muted{color:var(--muted)}
+.d-text{color:rgba(232,237,245,0.72);max-width:55ch}
+.stage-dir{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.9rem;color:rgba(210,175,90,0.3);margin:1rem 0;padding-left:112px}
+.lyrics-verse{color:rgba(232,237,245,0.72);margin:1rem 0;padding-left:112px;max-width:55ch;line-height:1.65}
 
-/* ── WAVEFORM / PROGRESS ── */
-.progress-wrap{
-  position:relative;height:36px;
-  margin-bottom:10px;cursor:pointer;
-  border-radius:4px;overflow:hidden;
-  background:var(--bg3);
-}
-.progress-wave{
-  position:absolute;inset:0;
-  display:flex;align-items:flex-end;gap:1px;
-  padding:4px 0;
-}
-.wave-bar{
-  flex:1;min-width:1px;
-  background:var(--muted);border-radius:1px 1px 0 0;
-  transition:background 0.15s;
-}
-.wave-bar.played{background:var(--gold)}
-.wave-bar.current{background:var(--gold-bright)}
-.progress-fill{
-  position:absolute;top:0;left:0;bottom:0;
-  background:rgba(210,175,90,0.08);
-  border-right:2px solid var(--gold);
-  pointer-events:none;transition:width 0.1s linear;
-}
-.progress-time{
-  display:flex;justify-content:space-between;
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.68rem;color:var(--muted);
-  margin-bottom:14px;
-}
+/* BAND */
+.band-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2rem}
+.band-card{border:1px solid var(--border);border-radius:6px;background:linear-gradient(135deg,rgba(13,21,37,0.7),rgba(8,12,20,0.7));padding:1.25rem;text-align:center;position:relative;overflow:hidden;transition:border-color 0.3s,transform 0.3s}
+.band-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold);opacity:0;transition:opacity 0.3s}
+.band-card:hover{border-color:rgba(210,175,90,0.3);transform:translateY(-2px)}
+.band-card:hover::before{opacity:1}
+.bc-icon{font-size:1.6rem;margin-bottom:0.5rem}
+.bc-name{font-weight:700;font-size:1rem;margin-bottom:0.2rem}
+.bc-role{font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold)}
 
-/* ── CONTROLS ── */
-.controls{
-  display:flex;align-items:center;justify-content:center;gap:12px;
-}
-.ctrl-btn{
-  background:none;border:none;color:var(--text2);
-  cursor:pointer;padding:8px;border-radius:50%;
-  transition:color 0.2s,background 0.2s;
-  display:flex;align-items:center;justify-content:center;
-}
-.ctrl-btn:hover{color:var(--text);background:rgba(255,255,255,0.06)}
-.ctrl-btn svg{width:22px;height:22px}
-.ctrl-btn.play-btn{
-  width:52px;height:52px;
-  background:var(--gold);color:var(--bg);
-  border-radius:50%;
-}
-.ctrl-btn.play-btn:hover{
-  background:var(--gold-bright);
-  box-shadow:0 0 20px rgba(210,175,90,0.4);
-}
-.ctrl-btn.play-btn svg{width:24px;height:24px}
-.ctrl-btn.active{color:var(--gold)}
+/* CREDITS */
+.credits-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:2rem}
+.credit-block{border:1px solid var(--border);border-radius:6px;background:linear-gradient(135deg,rgba(13,21,37,0.5),rgba(8,12,20,0.5));padding:1.5rem}
+.cb-title{font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
+.cb-line{display:flex;gap:8px;margin-bottom:0.3rem;font-size:0.88rem}
+.cb-label{color:var(--muted);min-width:140px;text-align:right;flex-shrink:0}
+.cb-val{color:var(--text);font-weight:600}
 
-/* ── VOLUME ── */
-.volume-wrap{
-  display:flex;align-items:center;gap:8px;
-  margin-left:auto;
-}
-.volume-slider{
-  -webkit-appearance:none;appearance:none;
-  width:80px;height:4px;border-radius:2px;
-  background:var(--muted);outline:none;cursor:pointer;
-}
-.volume-slider::-webkit-slider-thumb{
-  -webkit-appearance:none;width:14px;height:14px;
-  border-radius:50%;background:var(--gold);cursor:pointer;
-  border:2px solid var(--bg);
-}
-
-/* ── TRACKLIST ── */
-.tracklist{
-  max-width:640px;margin:0 auto;
-}
-.track{
-  display:flex;align-items:center;gap:14px;
-  padding:10px 14px;border-radius:6px;
-  cursor:pointer;transition:background 0.2s;
-  border:1px solid transparent;
-}
-.track:hover{
-  background:rgba(210,175,90,0.04);
-  border-color:rgba(210,175,90,0.08);
-}
-.track.active{
-  background:rgba(210,175,90,0.07);
-  border-color:rgba(210,175,90,0.15);
-}
-.track-num{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.72rem;color:var(--muted);
-  width:22px;text-align:right;flex-shrink:0;
-}
-.track.active .track-num{color:var(--gold)}
-.track-eq{
-  display:none;width:22px;height:16px;
-  align-items:flex-end;gap:2px;flex-shrink:0;
-}
-.track.playing .track-num{display:none}
-.track.playing .track-eq{display:flex}
-.eq-bar{
-  width:3px;background:var(--gold);border-radius:1px;
-  animation:eqBounce 0.5s ease-in-out infinite alternate;
-}
-.eq-bar:nth-child(1){height:6px;animation-delay:0s}
-.eq-bar:nth-child(2){height:12px;animation-delay:0.15s}
-.eq-bar:nth-child(3){height:8px;animation-delay:0.3s}
-.eq-bar:nth-child(4){height:14px;animation-delay:0.1s}
-@keyframes eqBounce{
-  0%{transform:scaleY(0.3)}100%{transform:scaleY(1)}
-}
-.track-title{flex:1;font-weight:600;font-size:0.95rem}
-.track.active .track-title{color:var(--gold)}
-.track-dur{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.72rem;color:var(--muted);flex-shrink:0;
-}
-
-/* ── BOOKLET GALLERY ── */
-.gallery-section{
-  padding:50px 0;
-  border-bottom:1px solid var(--border);
-}
-.gallery-grid{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:16px;
-  max-width:800px;
-  margin:0 auto;
-}
-.gallery-item{
-  border-radius:6px;overflow:hidden;
-  border:1px solid var(--border);
-  transition:transform 0.3s,box-shadow 0.3s;
-  cursor:pointer;
-}
-.gallery-item:hover{
-  transform:scale(1.01);
-  box-shadow:0 12px 40px rgba(0,0,0,0.5);
-}
+/* GALLERY */
+.gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:2rem}
+.gallery-item{border-radius:6px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:transform 0.3s,box-shadow 0.3s}
+.gallery-item:hover{transform:scale(1.03);box-shadow:0 12px 40px rgba(0,0,0,0.5)}
 .gallery-item img{width:100%;height:auto;display:block}
+.gallery-item.wide{grid-column:span 2}
 
-/* ── BAND SECTION ── */
-.band-section{
-  padding:50px 0;
-  border-bottom:1px solid var(--border);
-}
-.band-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
-  gap:16px;
-  max-width:640px;
-  margin:1.5rem auto 0;
-}
-.band-member{
-  text-align:center;
-  padding:16px 10px;
-  border:1px solid var(--border);
-  border-radius:8px;
-  background:var(--surface);
-  transition:border-color 0.3s,transform 0.3s;
-}
-.band-member:hover{
-  border-color:rgba(210,175,90,0.25);
-  transform:translateY(-2px);
-}
-.bm-icon{
-  font-size:1.6rem;margin-bottom:0.4rem;
-  filter:grayscale(0.4);
-}
-.bm-name{
-  font-weight:700;font-size:0.88rem;
-  color:var(--text);margin-bottom:0.15rem;
-}
-.bm-role{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.58rem;letter-spacing:0.15em;
-  text-transform:uppercase;color:var(--gold);
-}
-
-/* ── CREDITS ── */
-.credits-section{
-  padding:50px 0;
-  border-bottom:1px solid var(--border);
-}
-.credits-card{
-  max-width:640px;margin:0 auto;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:28px 32px;
-}
-.credit-line{
-  display:flex;gap:10px;
-  margin-bottom:0.4rem;
-  font-size:0.88rem;
-}
-.credit-role{
-  color:var(--text2);min-width:160px;
-  flex-shrink:0;text-align:right;
-}
-.credit-name{color:var(--text);font-weight:600}
-.credit-sep{
-  height:1px;background:var(--border);
-  margin:12px 0;
-}
-
-/* ── LIGHTBOX ── */
-.lightbox{
-  position:fixed;inset:0;z-index:1000;
-  background:rgba(2,4,9,0.95);
-  backdrop-filter:blur(20px);
-  display:none;align-items:center;justify-content:center;
-  cursor:zoom-out;
-}
+.lightbox{position:fixed;inset:0;z-index:1000;background:rgba(2,4,9,0.95);backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;cursor:zoom-out}
 .lightbox.open{display:flex}
-.lightbox img{
-  max-width:92vw;max-height:90vh;
-  object-fit:contain;
-  border-radius:4px;
-  box-shadow:0 0 60px rgba(0,0,0,0.8);
-}
-.lb-close{
-  position:absolute;top:20px;right:24px;
-  background:none;border:none;
-  color:var(--text2);font-size:1.8rem;
-  cursor:pointer;transition:color 0.2s;
-  z-index:1001;
-}
-.lb-close:hover{color:var(--text)}
+.lightbox img{max-width:92vw;max-height:90vh;object-fit:contain;border-radius:4px;box-shadow:0 0 60px rgba(0,0,0,0.8)}
+.lb-close{position:absolute;top:20px;right:24px;background:none;border:none;color:var(--muted);font-size:2rem;cursor:pointer;z-index:1001}
 
-/* ── FOOTER ── */
-footer{
-  padding:40px 0 30px;text-align:center;
-}
-.foot-line{
-  font-family:'JetBrains Mono',monospace;
-  font-size:0.6rem;letter-spacing:0.2em;
-  text-transform:uppercase;color:var(--muted);
-}
-.foot-line+.foot-line{margin-top:6px}
-.foot-line a{color:var(--gold);text-decoration:none}
-.foot-quote{
-  font-family:'Cormorant Garamond',serif;
-  font-style:italic;font-size:0.95rem;
-  color:rgba(210,175,90,0.35);margin-top:12px;
-}
+/* MINI PLAYER */
+.mini-player{position:fixed;bottom:0;left:0;right:0;z-index:190;background:rgba(3,5,8,0.96);backdrop-filter:blur(20px);border-top:1px solid var(--border);transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.22,1,0.36,1)}
+.mini-player.visible{transform:translateY(0)}
+.mp-progress{height:3px;background:rgba(210,175,90,0.1);cursor:pointer}
+.mp-fill{height:100%;background:var(--gold);width:0%}
+.mp-inner{max-width:1100px;margin:0 auto;padding:10px 5vw;display:flex;align-items:center;gap:14px}
+.mp-play{width:40px;height:40px;border-radius:50%;border:none;background:var(--gold);color:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.2s}
+.mp-play:hover{background:var(--gold-bright)}
+.mp-play svg{width:18px;height:18px}
+.mp-info{flex:1;min-width:0}
+.mp-title{font-weight:700;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-sub{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--muted)}
+.mp-time{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);flex-shrink:0}
+.mp-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:6px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:color 0.2s}
+.mp-btn:hover{color:var(--text)}
+.mp-btn svg{width:18px;height:18px}
+.mp-vol{-webkit-appearance:none;appearance:none;width:70px;height:3px;border-radius:2px;background:var(--muted);outline:none;cursor:pointer}
+.mp-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--gold);cursor:pointer;border:2px solid var(--bg)}
 
-/* ── HEARTBEAT LINE (decorative) ── */
-.heartbeat-line{
-  width:100%;height:40px;
-  margin:0 auto;
-  overflow:hidden;
-  opacity:0.25;
-}
-.heartbeat-line svg{width:100%;height:100%}
+footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;max-width:none}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem;margin-bottom:2rem;max-width:1100px;margin-left:auto;margin-right:auto}
+.foot-col h4{font-family:'JetBrains Mono',monospace;font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
+.foot-col p{font-size:0.88rem;color:rgba(232,237,245,0.45);max-width:none}
+.foot-list{list-style:none;font-family:'JetBrains Mono',monospace;font-size:0.78rem}
+.foot-list li{padding:0.25rem 0;border-bottom:1px solid rgba(255,255,255,0.04);color:rgba(232,237,245,0.4)}
+.copyright{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:rgba(107,122,150,0.4);letter-spacing:0.1em;text-align:center}
 
-/* ── RESPONSIVE ── */
-@media(max-width:600px){
-  .cover-grid{grid-template-columns:1fr}
-  .cover-item.featured{max-width:100%}
-  .np-top{flex-direction:column;text-align:center}
-  .np-cover{width:120px;height:120px}
-  .controls{flex-wrap:wrap}
-  .volume-wrap{margin:0 auto}
-  .credit-line{flex-direction:column;gap:2px}
-  .credit-role{text-align:left;min-width:0}
-  .band-grid{grid-template-columns:repeat(2,1fr)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity 0.7s ease,transform 0.7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-d1{transition-delay:0.15s}.reveal-d2{transition-delay:0.3s}
+
+@media(max-width:768px){
+  .hero-content{max-width:100%}.hero-cover{display:none}
+  .lyrics-body{padding-left:0}.d-char{min-width:70px;font-size:0.65rem}
+  .stage-dir,.lyrics-verse{padding-left:0}.song-num{font-size:2.5rem;min-width:50px}
+  .band-grid{grid-template-columns:repeat(2,1fr)}.credits-grid{grid-template-columns:1fr}
+  .gallery-grid{grid-template-columns:1fr 1fr}.gallery-item.wide{grid-column:span 1}
+  .foot-grid{grid-template-columns:1fr}.song-header{gap:14px}
 }
+@media(max-width:480px){.band-grid{grid-template-columns:1fr 1fr}.gallery-grid{grid-template-columns:1fr}.tb-nav{display:none}}
 </style>
 </head>
 <body>
 
-<div class="atmo">
-  <div class="atmo-glow"></div>
-  <div class="atmo-noise"></div>
+<div class="toolbar">
+  <a class="tb-brand" href="#hero">SOMEONE</a>
+  <div class="tb-nav">
+    <a class="tb-link" href="#story">Story</a>
+    <a class="tb-link" href="#s01">01</a><a class="tb-link" href="#s02">02</a><a class="tb-link" href="#s03">03</a>
+    <a class="tb-link" href="#s04">04</a><a class="tb-link" href="#s05">05</a><a class="tb-link" href="#s06">06</a>
+    <a class="tb-link" href="#s07">07</a><a class="tb-link" href="#s08">08</a><a class="tb-link" href="#s09">09</a>
+    <a class="tb-link" href="#s10">10</a>
+    <a class="tb-link" href="#band">Band</a><a class="tb-link" href="#gallery">Gallery</a>
+  </div>
 </div>
-<div class="scroll-bar" id="scrollBar"></div>
+<div class="scroll-progress"><div class="scroll-bar" id="scrollBar"></div></div>
 
-<div class="wrap">
-
-  <!-- ═══════ HERO ═══════ -->
-  <div class="hero">
-    <div class="hero-logo">
-      <img src="Someone-logo.jpg" alt="SOMEONE">
-    </div>
-    <div class="hero-album">The time says many things</div>
-    <div class="hero-meta">
-      <span>Pan Records</span> · Nova Gorica, Slovenia · <span>1994</span>
-    </div>
-    <div class="heartbeat-line" style="margin-top:24px">
-      <svg viewBox="0 0 800 40" preserveAspectRatio="none">
-        <polyline fill="none" stroke="#2dcc50" stroke-width="1.5" opacity="0.6"
-          points="0,20 120,20 140,20 155,4 165,36 175,12 185,28 195,20 260,20
-                  380,20 400,20 415,4 425,36 435,12 445,28 455,20 520,20
-                  640,20 660,20 675,4 685,36 695,12 705,28 715,20 800,20"/>
-      </svg>
+<!-- HERO -->
+<div class="hero" id="hero">
+  <div class="hero-bg"></div><div class="hero-grid"></div>
+  <div class="hero-cover"><img src="CD-front.jpg" alt="Album Cover"></div>
+  <div class="waveform-wrap"><svg class="waveform-svg" viewBox="0 0 800 220" preserveAspectRatio="none"><g id="wv-group"></g></svg></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Pan Records · Bovec · Nova Gorica · 1994</div>
+    <div class="hero-logo"><img src="Someone-logo.jpg" alt="SOMEONE"></div>
+    <h1 class="hero-title"><span>The time</span> says many things</h1>
+    <p class="hero-subtitle">A concept album — ten songs telling the story of Richard, Antonio, and Angelo. Violence, loss, and the desperate search for meaning. Recorded at mountain Studio Femix, Bovec, Slovenia. October 1993 – May 1994.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num">10</div><div class="label">Songs</div></div>
+      <div class="hero-stat"><div class="num rose">1994</div><div class="label">Pan Records</div></div>
+      <div class="hero-stat"><div class="num green">6</div><div class="label">Band Members</div></div>
     </div>
   </div>
-
-  <!-- ═══════ COVER ART ═══════ -->
-  <div class="cover-section">
-    <span class="sec-tag">Album Artwork</span>
-    <div class="cover-grid">
-      <div class="cover-item featured" onclick="openLightbox(this)">
-        <img src="CD-front.jpg" alt="CD Front Cover" loading="lazy">
-        <div class="cover-label">Front Cover</div>
-      </div>
-      <div class="cover-item" onclick="openLightbox(this)">
-        <img src="CD-cover.jpg" alt="CD Jewel Case" loading="lazy">
-        <div class="cover-label">Jewel Case</div>
-      </div>
-      <div class="cover-item" onclick="openLightbox(this)">
-        <img src="CD-inside.jpg" alt="CD Disc" loading="lazy">
-        <div class="cover-label">Disc</div>
-      </div>
-      <div class="cover-item" onclick="openLightbox(this)">
-        <img src="CD-back.jpg" alt="CD Back" loading="lazy">
-        <div class="cover-label">Back Cover</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════ PLAYER ═══════ -->
-  <div class="player-section">
-    <span class="sec-tag">Play Album</span>
-    <div class="sec-title">10 Tracks · Recorded 1993–1994</div>
-
-    <!-- Now Playing -->
-    <div class="now-playing" id="nowPlaying">
-      <div class="np-top">
-        <div class="np-cover">
-          <img src="CD-front.jpg" alt="Cover">
-        </div>
-        <div class="np-info">
-          <div class="np-track" id="npTrackNum">Track 01</div>
-          <div class="np-title" id="npTitle">Hands Of Justice</div>
-          <div class="np-artist">Someone</div>
-        </div>
-      </div>
-      <div class="progress-wrap" id="progressWrap">
-        <div class="progress-wave" id="waveform"></div>
-        <div class="progress-fill" id="progressFill" style="width:0%"></div>
-      </div>
-      <div class="progress-time">
-        <span id="timeElapsed">0:00</span>
-        <span id="timeDuration">0:00</span>
-      </div>
-      <div class="controls">
-        <button class="ctrl-btn" id="btnShuffle" title="Shuffle" onclick="toggleShuffle()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
-        </button>
-        <button class="ctrl-btn" title="Previous" onclick="prevTrack()">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-        </button>
-        <button class="ctrl-btn play-btn" id="btnPlay" title="Play" onclick="togglePlay()">
-          <svg viewBox="0 0 24 24" fill="currentColor" id="iconPlay"><polygon points="6,3 20,12 6,21"/></svg>
-          <svg viewBox="0 0 24 24" fill="currentColor" id="iconPause" style="display:none"><rect x="5" y="3" width="4" height="18"/><rect x="15" y="3" width="4" height="18"/></svg>
-        </button>
-        <button class="ctrl-btn" title="Next" onclick="nextTrack()">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-        </button>
-        <button class="ctrl-btn" id="btnRepeat" title="Repeat" onclick="toggleRepeat()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-        </button>
-        <div class="volume-wrap">
-          <button class="ctrl-btn" title="Volume" onclick="toggleMute()">
-            <svg viewBox="0 0 24 24" fill="currentColor" id="iconVol"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8.5v7A4.47 4.47 0 0 0 16.5 12zM14 3.23v2.06a6.51 6.51 0 0 1 0 13.42v2.06A8.5 8.5 0 0 0 14 3.23z"/></svg>
-          </button>
-          <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="0.8">
-        </div>
-      </div>
-    </div>
-
-    <!-- Track List -->
-    <div class="tracklist" id="tracklist"></div>
-  </div>
-
-  <!-- ═══════ BOOKLET GALLERY ═══════ -->
-  <div class="gallery-section">
-    <span class="sec-tag">CD Booklet</span>
-    <div class="sec-title">Lyrics &amp; Liner Notes</div>
-    <div class="gallery-grid">
-      <div class="gallery-item" onclick="openLightbox(this)">
-        <img src="Booklet1-8.jpg" alt="Booklet pages 1 & 8 — Cover and back" loading="lazy">
-      </div>
-      <div class="gallery-item" onclick="openLightbox(this)">
-        <img src="Booklet2-3.jpg" alt="Booklet pages 2 & 3 — Track listing and band photos" loading="lazy">
-      </div>
-      <div class="gallery-item" onclick="openLightbox(this)">
-        <img src="Booklet4-5.jpg" alt="Booklet pages 4 & 5 — Lyrics" loading="lazy">
-      </div>
-      <div class="gallery-item" onclick="openLightbox(this)">
-        <img src="Booklet6-7.jpg" alt="Booklet pages 6 & 7 — Lyrics" loading="lazy">
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════ BAND ═══════ -->
-  <div class="band-section">
-    <span class="sec-tag">The Band</span>
-    <div class="sec-title">Someone</div>
-    <div class="band-grid">
-      <div class="band-member">
-        <div class="bm-icon">🎤</div>
-        <div class="bm-name">Iztok Veliščček</div>
-        <div class="bm-role">Vocal</div>
-      </div>
-      <div class="band-member">
-        <div class="bm-icon">🎸</div>
-        <div class="bm-name">Erik Šinigoj</div>
-        <div class="bm-role">Guitar</div>
-      </div>
-      <div class="band-member">
-        <div class="bm-icon">🎸</div>
-        <div class="bm-name">Jan Žorž</div>
-        <div class="bm-role">Guitar</div>
-      </div>
-      <div class="band-member">
-        <div class="bm-icon">🎹</div>
-        <div class="bm-name">Gregor Klančič</div>
-        <div class="bm-role">Keyboards</div>
-      </div>
-      <div class="band-member">
-        <div class="bm-icon">🎸</div>
-        <div class="bm-name">Bojan Dobrečevič</div>
-        <div class="bm-role">Bass</div>
-      </div>
-      <div class="band-member">
-        <div class="bm-icon">🥁</div>
-        <div class="bm-name">Dejan Dobrečevič</div>
-        <div class="bm-role">Drums</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════ CREDITS ═══════ -->
-  <div class="credits-section">
-    <span class="sec-tag">Credits</span>
-    <div class="sec-title">Production &amp; Recording</div>
-    <div class="credits-card">
-      <div class="credit-line">
-        <span class="credit-role">Story composed by</span>
-        <span class="credit-name">Iztok Veliščček &amp; Erik Šinigoj</span>
-      </div>
-      <div class="credit-line">
-        <span class="credit-role">Lyrics</span>
-        <span class="credit-name">Erik Šinigoj &amp; Iztok Veliščček</span>
-      </div>
-      <div class="credit-line">
-        <span class="credit-role">Vocals, voices</span>
-        <span class="credit-name">Iztok Veliščček</span>
-      </div>
-      <div class="credit-line">
-        <span class="credit-role">Electric, acoustic, MIX guitars &amp; back vocals</span>
-        <span class="credit-name">Erik Šinigoj</span>
-      </div>
-      <div class="credit-line">
-        <span class="credit-role">Keyboards</span>
-        <span class="credit-name">Gregor Klančič</span>
-      </div>
-      <div class="credit-sep"></div>
-      <div class="credit-line">
-        <span class="credit-role">Recorded at</span>
-        <span class="credit-name">Studio Femix, Bovec, Slovenija</span>
-      </div>
-      <div class="credit-line">
-        <span class="credit-role">Recorded by</span>
-        <span class="credit-name">Fabjan Rebek &amp; Ervin Mlekuž</span>
-      </div>
-      <div class="credit-line">
-        <span class="credit-role">Engineered by</span>
-        <span class="credit-name">Fabjan Rebek, Erik Šinigoj &amp; Ervin Mlekuž</span>
-      </div>
-      <div class="credit-line">
-        <span class="credit-role">Produced by</span>
-        <span class="credit-name">Erik Šinigoj &amp; Iztok Veliščček</span>
-      </div>
-      <div class="credit-line">
-        <span class="credit-role">Mixed by</span>
-        <span class="credit-name">Erik Šinigoj</span>
-      </div>
-      <div class="credit-sep"></div>
-      <div class="credit-line">
-        <span class="credit-role">Management</span>
-        <span class="credit-name">Iztok Veliščček</span>
-      </div>
-      <div class="credit-line">
-        <span class="credit-role">Computer programming</span>
-        <span class="credit-name">Ervin Mlekuž</span>
-      </div>
-      <div class="credit-line">
-        <span class="credit-role">Graphic &amp; cover design</span>
-        <span class="credit-name">Bojan Dobrečevič</span>
-      </div>
-      <div class="credit-line">
-        <span class="credit-role">Logo design</span>
-        <span class="credit-name">Metka Belingar</span>
-      </div>
-      <div class="credit-sep"></div>
-      <div class="credit-line">
-        <span class="credit-role">Recorded</span>
-        <span class="credit-name">October 1993 – May 1994</span>
-      </div>
-      <div class="credit-line">
-        <span class="credit-role">Label</span>
-        <span class="credit-name">Pan Records, Nova Gorica</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════ FOOTER ═══════ -->
-  <footer>
-    <div class="foot-line">
-      Someone · The Time Says Many Things · <span style="color:var(--gold)">Pan Records 1994</span>
-    </div>
-    <div class="foot-line" style="color:rgba(94,88,78,0.5)">
-      The characters, places and incidents described in "The time says many things"
-      are product of SOMEONE's imagination.
-    </div>
-    <div class="foot-quote">Finite in form, infinite in essence.</div>
-  </footer>
-
-</div><!-- .wrap -->
-
-<!-- ═══════ LIGHTBOX ═══════ -->
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <button class="lb-close" onclick="closeLightbox()">&times;</button>
-  <img id="lbImg" src="" alt="">
 </div>
+<div class="divider"></div>
 
+<!-- STORY -->
+<section id="story">
+  <span class="sec-tag reveal">The Story</span>
+  <h2 class="reveal">A Rock Opera From the Edge of Europe</h2>
+  <p class="reveal">"The time says many things" is a concept album — every song is a chapter in a single story. <strong>Richard</strong> kills his girlfriend Sharon and her lover. His father <strong>Antonio</strong> and brother <strong>Angelo</strong> confront the aftermath: prison, execution, grief, war, and the crushing weight of choices made in greed. The narrative moves between English dialogue and Slovenian stage directions, creating something between a rock opera and a theatrical performance.</p>
+  <p class="reveal" style="margin-top:1rem;font-family:'Cormorant Garamond',serif;font-style:italic;color:rgba(210,175,90,0.5)">"The characters, places and incidents described in 'The time says many things' are product of SOMEONE's imagination."</p>
+</section>
+<div class="divider"></div>
+
+<!-- SONG 01 -->
+<div class="song-section" id="s01">
+  <div class="song-header reveal" onclick="playSong(0)">
+    <div class="song-num">01</div>
+    <div class="song-title-wrap"><div class="song-title">Hands Of Justice</div><div class="song-meta">Track 01</div></div>
+    <div class="song-eq"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+    <button class="song-play-btn" onclick="playSong(0);event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg></button>
+  </div>
+  <div class="lyrics-body reveal">
+    <div class="narrative">Richard je pod vplivom mamil z revolverjem ubil svojo punco Sharon in njenega ljubimca. Odpravil se je proti izhodu stanovanjske hiše, kjer ga je obveščena policija aretirala. Stekla je obravnava zločina.</div>
+    <div class="dialogue">
+      <div class="d-line"><span class="d-char rose">Richard:</span><span class="d-text">Hi. Die bastard!</span></div>
+      <div class="d-line"><span class="d-char">Sharon:</span><span class="d-text">Aaaaaaaaa...</span></div>
+      <div class="d-line"><span class="d-char rose">Richard:</span><span class="d-text">Now, you honey...</span></div>
+      <div class="d-line"><span class="d-char cyan">Policeman:</span><span class="d-text">Police! Put the gun away! Right now!</span></div>
+      <div class="d-line"><span class="d-char rose">Richard:</span><span class="d-text">OK. OK. Easy guy.</span></div>
+    </div>
+  </div>
+</div><div class="divider"></div>
+
+<!-- SONG 02 -->
+<div class="song-section" id="s02">
+  <div class="song-header reveal" onclick="playSong(1)">
+    <div class="song-num">02</div>
+    <div class="song-title-wrap"><div class="song-title">Aircraft-Carrier</div><div class="song-meta">Track 02 · Longest Track</div></div>
+    <div class="song-eq"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+    <button class="song-play-btn" onclick="playSong(1);event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg></button>
+  </div>
+  <div class="lyrics-body reveal">
+    <div class="narrative">Njegov oče Antonio je preko pisma sporočil svojemu sinu Angelu žalostno resnico, ki je doletela njegovo družino. Še pred tem je na dušek izpil iz steklenice nekaj žganega.</div>
+    <div class="stage-dir"><em>(Del očetovega pisma)</em></div>
+    <div class="dialogue">
+      <div class="d-line"><span class="d-char">Antonio:</span><span class="d-text">Here I'm standing and I hear. Voices of the past calling me. Too much sins in my life, oh Jesus wash my sins of my crimes. I'm the real one, sorry son what I've done. I'm standing in the dark. All faces in the sky, they are crying. Why, why?? Angelo now I'm so far. Now, from my eye dropped one tear. Young boy dead on the ground, policeman close to him. One solution in my mind. I can not stand for what I fight. This job is not for me. All I want is to be free. Can't you see? I see the candles in the sky. I hear a victims cry. What's the price of my life?</span></div>
+      <div class="d-line"><span class="d-char green">Angelo:</span><span class="d-text">I remember the day the flames were in my eyes explosions everywhere in this sphere but now I can see what's going on with me god set me free I left my love behind and violence came with its to give to the world the pain and the death My life is in the sky I never wonder why That's the time.</span></div>
+    </div>
+    <div class="lyrics-verse">I was a man with an iron heart, but now something's rolling in my mind.<br>I was a man with hope in life, but now I'm crying in the night.</div>
+  </div>
+</div><div class="divider"></div>
+
+<!-- SONG 03 -->
+<div class="song-section" id="s03">
+  <div class="song-header reveal" onclick="playSong(2)">
+    <div class="song-num">03</div>
+    <div class="song-title-wrap"><div class="song-title">Clouds Always Win</div><div class="song-meta">Track 03</div></div>
+    <div class="song-eq"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+    <button class="song-play-btn" onclick="playSong(2);event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg></button>
+  </div>
+  <div class="lyrics-body reveal">
+    <div class="narrative">Angelo se je iz letalonosilke vrnil domov, kjer se je ob srečanju z očetom soočil z neizmerno žalostjo. Antonio pa se je zavedal, da je za vse to bil delno tudi sam kriv.</div>
+    <div class="stage-dir"><em>(Izpoved očeta)</em></div>
+    <div class="dialogue">
+      <div class="d-line"><span class="d-char">Antonio:</span><span class="d-text">Wind, my son is dying. Memories, why am I crying. Together we lived in a deeply sin. Clouds always win. Chains of the past. Life was burning fast. Yes, every day and every night. For business I sold my heart.</span></div>
+      <div class="d-line"><span class="d-char">Antonio:</span><span class="d-text">Despite wealth now I am crying. Cause my son is declining. Why I never thought about. Our beat of life. Eyes were blind, filled with greed. I never understood your need. Why I never thought about. That you'll leave me.</span></div>
+    </div>
+    <div class="narrative">Močan grom je prekinil očetovo izpoved na tistem mu je pred oči stopil nagroben kamen pod katerem leži Richardova mati Jeniffer Geager.</div>
+    <div class="lyrics-verse">So there we stayed. Stone on your grave. Yes, every day and every night. For business I sold my heart.</div>
+  </div>
+</div><div class="divider"></div>
+
+<!-- SONG 04 -->
+<div class="song-section" id="s04">
+  <div class="song-header reveal" onclick="playSong(3)">
+    <div class="song-num">04</div>
+    <div class="song-title-wrap"><div class="song-title">The Time Says Many Things</div><div class="song-meta">Track 04 · Title Track</div></div>
+    <div class="song-eq"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+    <button class="song-play-btn" onclick="playSong(3);event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg></button>
+  </div>
+  <div class="lyrics-body reveal">
+    <div class="narrative">Antonio se je bal izpovedal. V sobi je za trenutek zavladala tišina. Dobra kapljica, katera se jima je ponujala, je v njuh vzbudila spomine na Richardovo rojstvo in na nepričakovano smrt njegove matere Jeniffer.</div>
+    <div class="dialogue">
+      <div class="d-line"><span class="d-char green">Angelo:</span><span class="d-text">Now is the time, a lot of things are changing. Now is the time, a lot of states are creating. Whispering things in life, no nobody hears. Is this true and real that the progress will never win? Now, this is the time. Now, this is the time.</span></div>
+      <div class="d-line"><span class="d-char green">Angelo:</span><span class="d-text">Now is the time, a lot of things are staying. Now is the time, can you hear it, it's calling. Blackman trapped again, violence slaughter come. War and nuclearity all what we learned was on the wrong side. Now, this is the time.</span></div>
+      <div class="d-line"><span class="d-char muted">People sing:</span><span class="d-text">No more humanity. Living through the sins. We are standing in disease. The forests are dying, can't you see? Information blow in the vanity. We still are in disease.</span></div>
+    </div>
+    <div class="lyrics-verse">Here I'm standing and someone is crying in the night. Maybe is a child or maybe is an old man I can't see. Where is green, where is love and honesty? When the people will change this question, question of this century? But, where is the answer?</div>
+    <div class="stage-dir"><em>(Različni prizori iz življenja)</em></div>
+    <div class="dialogue">
+      <div class="d-line"><span class="d-char muted">Various People:</span><span class="d-text">Have you got it? Hashis? Fine.<br>God open eyes to all sinners, because they don't know what they are doing. Pray to god.<br>I can't take it any more I wanna do a suicide.<br>Father, tell me why people commita a suicide?</span></div>
+      <div class="d-line"><span class="d-char">Antonio:</span><span class="d-text">Listen Angelo, you are too young to understand this. Everything you see on the streets and TV set you can meet in life, because the time changes the man and you see everything what is happening in our world depends only on time. Now, I wish that you'd grown up into a honest and active man.</span></div>
+      <div class="d-line"><span class="d-char green">Angelo:</span><span class="d-text">Yes father, I promise you.</span></div>
+    </div>
+    <div class="lyrics-verse">Now is the time, everything I must change. Now is the time, a lot of states are creating. Whispering things in life, no, nobody hears. Is this true and real that the progress will never win? Now, this is the time. Now, this is the time.</div>
+    <div class="narrative" style="margin-top:1.5rem">Dogajanje se je odvijalo v bolnišnici, kjer sta z očetom čakala na porod Jeniffer Geager.</div>
+    <div class="dialogue">
+      <div class="d-line"><span class="d-char muted">Nurse Linda:</span><span class="d-text">Doctor Stevens.</span></div>
+      <div class="d-line"><span class="d-char cyan">Dr.Stevens:</span><span class="d-text">Yes, Linda.</span></div>
+      <div class="d-line"><span class="d-char muted">Linda:</span><span class="d-text">Mister Pignatti is waiting.</span></div>
+      <div class="d-line"><span class="d-char cyan">Dr.Stevens:</span><span class="d-text">Let him enter.</span></div>
+      <div class="d-line"><span class="d-char">Antonio:</span><span class="d-text">Good afternoon, Dr.Stevens.</span></div>
+      <div class="d-line"><span class="d-char cyan">Dr.Stevens:</span><span class="d-text">Good afternoon.</span></div>
+      <div class="d-line"><span class="d-char">Antonio:</span><span class="d-text">How is missis Jeniffer Geager?</span></div>
+      <div class="d-line"><span class="d-char cyan">Dr.Stevens:</span><span class="d-text">I'm sorry for you. I wander that she has held out so long.</span></div>
+      <div class="d-line"><span class="d-char">Antonio:</span><span class="d-text">And child?</span></div>
+      <div class="d-line"><span class="d-char cyan">Dr.Stevens:</span><span class="d-text">He's out of danger.</span></div>
+      <div class="d-line"><span class="d-char">Antonio:</span><span class="d-text">I will provide for your child, Jeniffer. Yes, his name will be Richard, yes(s), Richard Geager.</span></div>
+    </div>
+  </div>
+</div><div class="divider"></div>
+
+<!-- SONG 05 -->
+<div class="song-section" id="s05">
+  <div class="song-header reveal" onclick="playSong(4)">
+    <div class="song-num">05</div>
+    <div class="song-title-wrap"><div class="song-title">Remembrance On A Great Party</div><div class="song-meta">Track 05</div></div>
+    <div class="song-eq"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+    <button class="song-play-btn" onclick="playSong(4);event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg></button>
+  </div>
+  <div class="lyrics-body reveal">
+    <div class="narrative">V isti noči pa je Richard sedel v celici in tudi on obujal spomine, kako je na silvestrski večer spoznal Sharon Stevens v diskoteki znanega Mr. Wilda.</div>
+    <div class="dialogue">
+      <div class="d-line"><span class="d-char muted">Thomas:</span><span class="d-text">Hey, Richard.</span></div>
+      <div class="d-line"><span class="d-char rose">Richard:</span><span class="d-text">Shut up, Thomas. Yeah, it was a great party last year.</span></div>
+      <div class="d-line"><span class="d-char muted">Thomas:</span><span class="d-text">A great party? Wine, women... Ha, ha, ha...a</span></div>
+      <div class="d-line"><span class="d-char">Mr.Wild:</span><span class="d-text">Hello guys. I'm Mr.Wild, let's go crazy. He, he and wild and wild ha ha... Baby, you are sexy. I wanna talk to you. I still love you. I wanna kiss you. Oh, baby, so, hold me now. Hold me now, baby hold me, now, hold me now. Just wait. Hold me now.</span></div>
+      <div class="d-line"><span class="d-char">Mr.Wild:</span><span class="d-text">Heeeey. Everybody happy new year, I love you all, ha ha ha ha ha. Yeah. Fast and fast and fast, fast and go on! I'm a Mr.Wild. Ha, ha, ha, ha, ha. Oh, my god. Hold me now. Wait, wait... a moment. Please hold me now. Take, take it easy. Ahhh, ahhh... Ahhhhhhhhh... Ohhh, jesus, hurt. I need a vacation.</span></div>
+    </div>
+  </div>
+</div><div class="divider"></div>
+
+<!-- SONG 06 -->
+<div class="song-section" id="s06">
+  <div class="song-header reveal" onclick="playSong(5)">
+    <div class="song-num">06</div>
+    <div class="song-title-wrap"><div class="song-title">The Morning Came, But Different</div><div class="song-meta">Track 06</div></div>
+    <div class="song-eq"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+    <button class="song-play-btn" onclick="playSong(5);event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg></button>
+  </div>
+  <div class="lyrics-body reveal">
+    <div class="narrative">Bilo je jutro. Dolgočasni slučajnik Charlie je prebudil neprespano gospoda Antonia, ki jes nevoljeni zagozmojal, zatem pa znova pričel utapljat svojo žalost v alkoholu.</div>
+    <div class="dialogue">
+      <div class="d-line"><span class="d-char">Antonio:</span><span class="d-text">Che notte orrenda.<br>Antonio tu bevi troppo...</span></div>
+    </div>
+  </div>
+</div><div class="divider"></div>
+
+<!-- SONG 07 -->
+<div class="song-section" id="s07">
+  <div class="song-header reveal" onclick="playSong(6)">
+    <div class="song-num">07</div>
+    <div class="song-title-wrap"><div class="song-title">Execution Of A Sentence Of Death</div><div class="song-meta">Track 07</div></div>
+    <div class="song-eq"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+    <button class="song-play-btn" onclick="playSong(6);event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg></button>
+  </div>
+  <div class="lyrics-body reveal">
+    <div class="narrative">Richarda so iz jeniške celice premestili v samico, kjer je čakal na usmrtitev. V zadnjih minutah življenja je fant spovedal svoja zgodšiena.</div>
+    <div class="dialogue">
+      <div class="d-line"><span class="d-char cyan">Guard:</span><span class="d-text">Richard Geager?</span></div>
+      <div class="d-line"><span class="d-char rose">Richard:</span><span class="d-text">Yes.</span></div>
+      <div class="d-line"><span class="d-char cyan">Guard:</span><span class="d-text">It's time. Come on.</span></div>
+    </div>
+  </div>
+</div><div class="divider"></div>
+
+<!-- SONG 08 -->
+<div class="song-section" id="s08">
+  <div class="song-header reveal" onclick="playSong(7)">
+    <div class="song-num">08</div>
+    <div class="song-title-wrap"><div class="song-title">He's Gone Forever</div><div class="song-meta">Track 08 · Shortest Track</div></div>
+    <div class="song-eq"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+    <button class="song-play-btn" onclick="playSong(7);event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg></button>
+  </div>
+  <div class="lyrics-body reveal">
+    <div class="narrative">Oče in sin sta z strtim srcem zapustila stavbo, v kateri je Richard izgubil življenje.</div>
+    <div class="dialogue">
+      <div class="d-line"><span class="d-char">Antonio:</span><span class="d-text">Charlie?</span></div>
+      <div class="d-line"><span class="d-char muted">Charlie:</span><span class="d-text">Yes, sir?</span></div>
+      <div class="d-line"><span class="d-char">Antonio:</span><span class="d-text">Take me home.</span></div>
+    </div>
+  </div>
+</div><div class="divider"></div>
+
+<!-- SONG 09 -->
+<div class="song-section" id="s09">
+  <div class="song-header reveal" onclick="playSong(8)">
+    <div class="song-num">09</div>
+    <div class="song-title-wrap"><div class="song-title">What Is War And What Is Love</div><div class="song-meta">Track 09</div></div>
+    <div class="song-eq"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+    <button class="song-play-btn" onclick="playSong(8);event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg></button>
+  </div>
+  <div class="lyrics-body reveal">
+    <div class="narrative">Doma je Angelo opazil, da je oče zopet v zunajnem stanju, zato je sklenil, da ga ne bo postulal, čeprav je bilo v otročeskih sdelih veliko resnice.</div>
+    <div class="dialogue">
+      <div class="d-line"><span class="d-char">Antonio:</span><span class="d-text">Soon we'll stop over the door-step, and we'll enter in the twenty-one century, but people still die for the sake of a different religion, economical crises, greedy of material goods, etc. But it doesn't help to talk. All is concluded in one single dance, which ends in desolation, hunger, illnesses, death, because conductor of this inhuman orchestra the lady in a blackblooded cloak, who is called the War.</span></div>
+    </div>
+    <div class="narrative" style="margin-top:1.5rem">Tako je odšel na teraso in v raje razmišljal o svoji ljubezni.</div>
+    <div class="dialogue">
+      <div class="d-line"><span class="d-char green">Angelo:</span><span class="d-text">Rain on the flower. On the blosom of my life. 'Cause I see broken heart through your eyes. Tonight, I'm in doubt whether to go or to remain. Now I know that it's all decided with pain.</span></div>
+      <div class="d-line"><span class="d-char green">Angelo:</span><span class="d-text">All my dreams passed by when you're gone. I can't believe that I loved you. All my dreams passed by when you're gone, 'cause I love you, I'm waiting. I'm waiting for love right from your heart.</span></div>
+      <div class="d-line"><span class="d-char green">Angelo:</span><span class="d-text">Now my home is an aircraft-carrier. My heart is filled with cloud. But it was so simple. I wanted to talk to you, but I was too young and wherever I go I always miss you.</span></div>
+    </div>
+    <div class="narrative" style="margin-top:1rem">Čez čas se je fant v pristidnih zgodbah dolgočasnega nakladanja, saj je bil Antonio potreben novega pritisla.</div>
+    <div class="dialogue">
+      <div class="d-line"><span class="d-char">Antonio:</span><span class="d-text">People, it's better to construct peace, love — for better tomorrow. Therefore rather not to knock on that door, because the price for that dance is too high.</span></div>
+    </div>
+  </div>
+</div><div class="divider"></div>
+
+<!-- SONG 10 -->
+<div class="song-section" id="s10">
+  <div class="song-header reveal" onclick="playSong(9)">
+    <div class="song-num">10</div>
+    <div class="song-title-wrap"><div class="song-title">Living With Illusion</div><div class="song-meta">Track 10 · Finale</div></div>
+    <div class="song-eq"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+    <button class="song-play-btn" onclick="playSong(9);event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg></button>
+  </div>
+  <div class="lyrics-body reveal">
+    <div class="narrative">Kmalu za tem, ko se je Angelo vrnil na telefonolalice je dobil telegram, da ga je tudi oče za vedno zapustil. S kom bo sedaj delil večere, saj se bližali božični prazniki.</div>
+    <div class="dialogue">
+      <div class="d-line"><span class="d-char green">Angelo:</span><span class="d-text">Streets in the night. Place of my pain and my dark. Wherever I go I'm so alone. It's been all the same to me. I have been here too long.</span></div>
+      <div class="d-line"><span class="d-char green">Angelo:</span><span class="d-text">'Cause I live, I live with illusion. Yes, I live without any cell in my vein. 'Cause I live, I live in the world of confusion. Yes, I live, I live in this world with pain.</span></div>
+      <div class="d-line"><span class="d-char green">Angelo:</span><span class="d-text">Hey man, any news? Do you have any change for me? No one said a word. Such is life. Happy new year. Paper is usually white. What a day. Such a pity.</span></div>
+    </div>
+    <div class="stage-dir" style="text-align:right;padding-right:20px;color:rgba(210,175,90,0.25)"><em>23.06.1994 — Angelo</em></div>
+  </div>
+</div><div class="divider"></div>
+
+<!-- BAND -->
+<section id="band">
+  <span class="sec-tag reveal">The Band</span>
+  <h2 class="reveal">Someone</h2>
+  <p class="reveal">Story composed by <strong>Iztok Veliščček &amp; Erik Šinigoj</strong>. Lyrics by <strong>Erik Šinigoj &amp; Iztok Veliščček</strong>. Vocals, voices by <strong>Iztok Veliščček</strong>. Electric, acoustic, MIX guitars &amp; back vocals by <strong>Erik Šinigoj</strong>. Keyboards by <strong>Gregor Klančič</strong>.</p>
+  <div class="band-grid reveal">
+    <div class="band-card"><div class="bc-icon">🎤</div><div class="bc-name">Iztok Veliščček</div><div class="bc-role">Vocal</div></div>
+    <div class="band-card"><div class="bc-icon">🎸</div><div class="bc-name">Erik Šinigoj</div><div class="bc-role">Guitar</div></div>
+    <div class="band-card"><div class="bc-icon">🎸</div><div class="bc-name">Jan Žorž</div><div class="bc-role">Guitar</div></div>
+    <div class="band-card"><div class="bc-icon">🎹</div><div class="bc-name">Gregor Klančič</div><div class="bc-role">Keyboards</div></div>
+    <div class="band-card"><div class="bc-icon">🎸</div><div class="bc-name">Bojan Dobrečevič</div><div class="bc-role">Bass</div></div>
+    <div class="band-card"><div class="bc-icon">🥁</div><div class="bc-name">Dejan Dobrečevič</div><div class="bc-role">Drums</div></div>
+  </div>
+</section><div class="divider"></div>
+
+<!-- CREDITS -->
+<section id="credits">
+  <span class="sec-tag rose reveal">Credits</span>
+  <h2 class="reveal">Production &amp; Recording</h2>
+  <div class="credits-grid reveal">
+    <div class="credit-block">
+      <div class="cb-title">Recording</div>
+      <div class="cb-line"><span class="cb-label">Recorded at</span><span class="cb-val">Mountain Studio Femix, Bovec</span></div>
+      <div class="cb-line"><span class="cb-label">Recorded by</span><span class="cb-val">Fabjan Rebek &amp; Ervin Mlekuž</span></div>
+      <div class="cb-line"><span class="cb-label">Engineered by</span><span class="cb-val">Fabjan Rebek, Erik Šinigoj &amp; Ervin Mlekuž</span></div>
+      <div class="cb-line"><span class="cb-label">Produced by</span><span class="cb-val">Erik Šinigoj &amp; Iztok Veliščček</span></div>
+      <div class="cb-line"><span class="cb-label">Mixed by</span><span class="cb-val">Erik Šinigoj</span></div>
+      <div class="cb-line"><span class="cb-label">Period</span><span class="cb-val">October 1993 – May 1994</span></div>
+    </div>
+    <div class="credit-block">
+      <div class="cb-title">Design &amp; Management</div>
+      <div class="cb-line"><span class="cb-label">Management</span><span class="cb-val">Iztok Veliščček</span></div>
+      <div class="cb-line"><span class="cb-label">Programming</span><span class="cb-val">Ervin Mlekuž</span></div>
+      <div class="cb-line"><span class="cb-label">Graphic &amp; cover</span><span class="cb-val">Bojan Dobrečevič</span></div>
+      <div class="cb-line"><span class="cb-label">Logo design</span><span class="cb-val">Metka Belingar</span></div>
+      <div class="cb-line"><span class="cb-label">Label</span><span class="cb-val">Pan Records, Nova Gorica</span></div>
+    </div>
+  </div>
+</section><div class="divider"></div>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <span class="sec-tag green reveal">Gallery</span>
+  <h2 class="reveal">CD Artwork &amp; Booklet</h2>
+  <div class="gallery-grid reveal">
+    <div class="gallery-item" onclick="openLB(this)"><img src="CD-front.jpg" alt="Front Cover" loading="lazy"></div>
+    <div class="gallery-item" onclick="openLB(this)"><img src="CD-cover.jpg" alt="Jewel Case" loading="lazy"></div>
+    <div class="gallery-item" onclick="openLB(this)"><img src="CD-inside.jpg" alt="CD Disc" loading="lazy"></div>
+    <div class="gallery-item" onclick="openLB(this)"><img src="CD-back.jpg" alt="Back Cover" loading="lazy"></div>
+    <div class="gallery-item wide" onclick="openLB(this)"><img src="Booklet1-8.jpg" alt="Booklet Cover &amp; Back" loading="lazy"></div>
+    <div class="gallery-item wide" onclick="openLB(this)"><img src="Booklet2-3.jpg" alt="Booklet Credits &amp; Band" loading="lazy"></div>
+    <div class="gallery-item wide" onclick="openLB(this)"><img src="Booklet4-5.jpg" alt="Booklet Lyrics 1" loading="lazy"></div>
+    <div class="gallery-item wide" onclick="openLB(this)"><img src="Booklet6-7.jpg" alt="Booklet Lyrics 2" loading="lazy"></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-grid">
+    <div class="foot-col">
+      <h4>About This Album</h4>
+      <p>"The time says many things" is a concept album by Slovenian band SOMEONE, released in 1994 on Pan Records. Recorded at mountain Studio Femix in Bovec, Slovenia, between October 1993 and May 1994.</p>
+      <p style="margin-top:0.75rem;font-family:'Cormorant Garamond',serif;font-style:italic;color:rgba(210,175,90,0.3)">"The characters, places and incidents described in 'The time says many things' are product of SOMEONE's imagination."</p>
+    </div>
+    <div class="foot-col">
+      <h4>Band Members</h4>
+      <ul class="foot-list">
+        <li>Iztok Veliščček — Vocal</li><li>Erik Šinigoj — Guitar</li><li>Jan Žorž — Guitar</li>
+        <li>Gregor Klančič — Keyboards</li><li>Bojan Dobrečevič — Bass</li><li>Dejan Dobrečevič — Drums</li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h4>Track Listing</h4>
+      <ul class="foot-list">
+        <li>01 · Hands Of Justice</li><li>02 · Aircraft-Carrier</li><li>03 · Clouds Always Win</li>
+        <li>04 · The Time Says Many Things</li><li>05 · Remembrance On A Great Party</li>
+        <li>06 · The Morning Came, But Different</li><li>07 · Execution Of A Sentence Of Death</li>
+        <li>08 · He's Gone Forever</li><li>09 · What Is War And What Is Love</li><li>10 · Living With Illusion</li>
+      </ul>
+    </div>
+  </div>
+  <div class="copyright">© 1994 Someone · Pan Records · Nova Gorica, Slovenia · Graphic &amp; cover design: Bojan Dobrečevič</div>
+</footer>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLB()"><button class="lb-close" onclick="closeLB()">&times;</button><img id="lbImg" src="" alt=""></div>
+
+<!-- MINI PLAYER -->
+<div class="mini-player" id="miniPlayer">
+  <div class="mp-progress" id="mpProgress" onclick="seekMini(event)"><div class="mp-fill" id="mpFill"></div></div>
+  <div class="mp-inner">
+    <button class="mp-play" id="mpPlay" onclick="togglePlay()">
+      <svg id="mpIconPlay" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg>
+      <svg id="mpIconPause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="5" y="3" width="4" height="18"/><rect x="15" y="3" width="4" height="18"/></svg>
+    </button>
+    <div class="mp-info"><div class="mp-title" id="mpTitle">—</div><div class="mp-sub">Someone · The Time Says Many Things</div></div>
+    <div class="mp-time" id="mpTime">0:00 / 0:00</div>
+    <button class="mp-btn" onclick="prevTrack()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+    <button class="mp-btn" onclick="nextTrack()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+    <input type="range" class="mp-vol" min="0" max="1" step="0.01" value="0.8" oninput="audio.volume=this.value">
+  </div>
+</div>
 <audio id="audio" preload="metadata"></audio>
 
 <script>
-// ── Track Data ──
-const tracks = [
-  { num: 1,  title: 'Hands Of Justice',              file: '(01) Hands Of Justice.mp3' },
-  { num: 2,  title: 'Aircraft-Carrier',              file: '(02) Aircraft-Carrier.mp3' },
-  { num: 3,  title: 'Clouds Always Win',             file: '(03) Clouds Always Win.mp3' },
-  { num: 4,  title: 'The Time Says Many Things',     file: '(04) The Time Says Many Things.mp3' },
-  { num: 5,  title: 'Remembrance On A Great Party',  file: '(05) Remembrance On A Great Party.mp3' },
-  { num: 6,  title: 'The Morning Came, But Different',file: '(06) The Morning Came, But Different.mp3' },
-  { num: 7,  title: 'Execution Of A Sentence Of Death',file: '(07) Execution Of A Sentence Of Death.mp3' },
-  { num: 8,  title: "He's Gone Forever",             file: "(08) He's Gone Forever.mp3" },
-  { num: 9,  title: 'What Is War And What Is Love',  file: '(09) What Is War And What Is Love.mp3' },
-  { num: 10, title: 'Living With Illusion',          file: '(10) Living With Illusion.mp3' },
+const TRACKS=[
+  {title:'Hands Of Justice',file:'(01) Hands Of Justice.mp3'},
+  {title:'Aircraft-Carrier',file:'(02) Aircraft-Carrier.mp3'},
+  {title:'Clouds Always Win',file:'(03) Clouds Always Win.mp3'},
+  {title:'The Time Says Many Things',file:'(04) The Time Says Many Things.mp3'},
+  {title:'Remembrance On A Great Party',file:'(05) Remembrance On A Great Party.mp3'},
+  {title:'The Morning Came, But Different',file:'(06) The Morning Came, But Different.mp3'},
+  {title:'Execution Of A Sentence Of Death',file:'(07) Execution Of A Sentence Of Death.mp3'},
+  {title:"He's Gone Forever",file:"(08) He's Gone Forever.mp3"},
+  {title:'What Is War And What Is Love',file:'(09) What Is War And What Is Love.mp3'},
+  {title:'Living With Illusion',file:'(10) Living With Illusion.mp3'},
 ];
+const audio=document.getElementById('audio');
+let curIdx=-1,isPlaying=false;
 
-const audio = document.getElementById('audio');
-let currentIdx = 0;
-let isPlaying = false;
-let shuffleOn = false;
-let repeatMode = 0; // 0=off, 1=all, 2=one
-let waveBars = [];
-
-// ── Generate waveform bars ──
-function generateWaveform() {
-  const container = document.getElementById('waveform');
-  container.innerHTML = '';
-  const count = 80;
-  waveBars = [];
-  for (let i = 0; i < count; i++) {
-    const bar = document.createElement('div');
-    bar.className = 'wave-bar';
-    // Pseudo-random heights based on golden ratio for organic feel
-    const h = 20 + Math.sin(i * 0.618 + currentIdx * 2.3) * 15 + Math.random() * 10;
-    bar.style.height = h + '%';
-    container.appendChild(bar);
-    waveBars.push(bar);
-  }
+function playSong(idx){
+  if(curIdx===idx&&isPlaying){audio.pause();return}
+  if(curIdx===idx&&!isPlaying){audio.play();return}
+  curIdx=idx;audio.src=TRACKS[idx].file;
+  audio.play().then(()=>{}).catch(()=>{});
+  document.getElementById('mpTitle').textContent=TRACKS[idx].title;
+  document.getElementById('miniPlayer').classList.add('visible');
+  updateUI();
 }
+function togglePlay(){if(curIdx<0){playSong(0);return}isPlaying?audio.pause():audio.play()}
+function prevTrack(){playSong(curIdx>0?curIdx-1:TRACKS.length-1)}
+function nextTrack(){playSong(curIdx<TRACKS.length-1?curIdx+1:0)}
 
-// ── Build tracklist ──
-function buildTracklist() {
-  const container = document.getElementById('tracklist');
-  container.innerHTML = '';
-  tracks.forEach((t, i) => {
-    const div = document.createElement('div');
-    div.className = 'track' + (i === currentIdx ? ' active' : '');
-    div.innerHTML = `
-      <span class="track-num">${String(t.num).padStart(2,'0')}</span>
-      <div class="track-eq">
-        <div class="eq-bar"></div><div class="eq-bar"></div>
-        <div class="eq-bar"></div><div class="eq-bar"></div>
-      </div>
-      <span class="track-title">${t.title}</span>
-      <span class="track-dur" id="dur_${i}">--:--</span>
-    `;
-    div.onclick = () => loadTrack(i, true);
-    container.appendChild(div);
+function updateUI(){
+  document.querySelectorAll('.song-header').forEach((h,i)=>h.classList.toggle('playing',i===curIdx&&isPlaying));
+  document.querySelectorAll('.song-play-btn').forEach((b,i)=>{
+    b.classList.toggle('active',i===curIdx&&isPlaying);
+    b.innerHTML=(i===curIdx&&isPlaying)?'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="3" width="4" height="18"/><rect x="15" y="3" width="4" height="18"/></svg>':'<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg>';
   });
+  document.getElementById('mpIconPlay').style.display=isPlaying?'none':'block';
+  document.getElementById('mpIconPause').style.display=isPlaying?'block':'none';
 }
-
-// ── Load track ──
-function loadTrack(idx, autoplay = false) {
-  currentIdx = idx;
-  const t = tracks[idx];
-  audio.src = t.file;
-  document.getElementById('npTrackNum').textContent = 'Track ' + String(t.num).padStart(2, '0');
-  document.getElementById('npTitle').textContent = t.title;
-  generateWaveform();
-  updateTracklistUI();
-  if (autoplay) {
-    audio.play().then(() => {
-      isPlaying = true;
-      updatePlayBtn();
-      updateTracklistUI();
-    }).catch(() => {});
-  }
-}
-
-function updateTracklistUI() {
-  document.querySelectorAll('.track').forEach((el, i) => {
-    el.className = 'track' +
-      (i === currentIdx ? ' active' : '') +
-      (i === currentIdx && isPlaying ? ' playing' : '');
-  });
-}
-
-// ── Play / Pause ──
-function togglePlay() {
-  if (!audio.src || audio.src === window.location.href) {
-    loadTrack(0, true);
-    return;
-  }
-  if (isPlaying) {
-    audio.pause();
-    isPlaying = false;
-  } else {
-    audio.play().then(() => { isPlaying = true; }).catch(() => {});
-  }
-  updatePlayBtn();
-  updateTracklistUI();
-}
-
-function updatePlayBtn() {
-  document.getElementById('iconPlay').style.display = isPlaying ? 'none' : 'block';
-  document.getElementById('iconPause').style.display = isPlaying ? 'block' : 'none';
-}
-
-// ── Prev / Next ──
-function nextTrack() {
-  let next;
-  if (shuffleOn) {
-    next = Math.floor(Math.random() * tracks.length);
-  } else {
-    next = (currentIdx + 1) % tracks.length;
-  }
-  loadTrack(next, true);
-}
-
-function prevTrack() {
-  if (audio.currentTime > 3) {
-    audio.currentTime = 0;
-    return;
-  }
-  let prev = (currentIdx - 1 + tracks.length) % tracks.length;
-  loadTrack(prev, true);
-}
-
-// ── Shuffle / Repeat ──
-function toggleShuffle() {
-  shuffleOn = !shuffleOn;
-  document.getElementById('btnShuffle').classList.toggle('active', shuffleOn);
-}
-
-function toggleRepeat() {
-  repeatMode = (repeatMode + 1) % 3;
-  const btn = document.getElementById('btnRepeat');
-  btn.classList.toggle('active', repeatMode > 0);
-  btn.title = ['Repeat Off', 'Repeat All', 'Repeat One'][repeatMode];
-}
-
-// ── Volume ──
-const volSlider = document.getElementById('volumeSlider');
-volSlider.oninput = () => { audio.volume = volSlider.value; };
-
-function toggleMute() {
-  audio.muted = !audio.muted;
-}
-
-// ── Progress ──
-audio.ontimeupdate = () => {
-  if (!audio.duration) return;
-  const pct = (audio.currentTime / audio.duration) * 100;
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('timeElapsed').textContent = fmt(audio.currentTime);
-  // Update waveform bar colors
-  const barIdx = Math.floor((pct / 100) * waveBars.length);
-  waveBars.forEach((b, i) => {
-    b.className = 'wave-bar' + (i < barIdx ? ' played' : '') + (i === barIdx ? ' current' : '');
-  });
+audio.onplay=()=>{isPlaying=true;updateUI()};
+audio.onpause=()=>{isPlaying=false;updateUI()};
+audio.onended=()=>nextTrack();
+audio.ontimeupdate=()=>{
+  if(!audio.duration)return;
+  document.getElementById('mpFill').style.width=(audio.currentTime/audio.duration*100)+'%';
+  document.getElementById('mpTime').textContent=fmt(audio.currentTime)+' / '+fmt(audio.duration);
 };
+function seekMini(e){if(!audio.duration)return;const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration}
+function fmt(s){if(!s||isNaN(s))return'0:00';return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0')}
 
-audio.onloadedmetadata = () => {
-  document.getElementById('timeDuration').textContent = fmt(audio.duration);
-  // Update duration in tracklist
-  const durEl = document.getElementById('dur_' + currentIdx);
-  if (durEl) durEl.textContent = fmt(audio.duration);
-};
+function openLB(el){document.getElementById('lbImg').src=el.querySelector('img').src;document.getElementById('lightbox').classList.add('open')}
+function closeLB(){document.getElementById('lightbox').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLB();if(e.key===' '&&!e.target.matches('input,textarea')){e.preventDefault();togglePlay()}});
 
-// Pre-load durations for all tracks
-function preloadDurations() {
-  tracks.forEach((t, i) => {
-    const a = new Audio();
-    a.preload = 'metadata';
-    a.src = t.file;
-    a.onloadedmetadata = () => {
-      const el = document.getElementById('dur_' + i);
-      if (el && el.textContent === '--:--') el.textContent = fmt(a.duration);
-    };
-  });
-}
+// Waveform
+(function(){
+  const svg=document.getElementById('wv-group'),W=800,H=220;
+  const layers=[
+    {amp:60,freq:0.015,phase:0,opacity:0.06,stroke:'#d2af5a',width:1},
+    {amp:40,freq:0.025,phase:1.2,opacity:0.1,stroke:'#d2af5a',width:1.5},
+    {amp:25,freq:0.04,phase:0.5,opacity:0.18,stroke:'#d2af5a',width:2},
+    {amp:15,freq:0.065,phase:2.1,opacity:0.25,stroke:'#d2af5a',width:2},
+    {amp:10,freq:0.1,phase:0.8,opacity:0.15,stroke:'#c94060',width:1.5},
+    {amp:6,freq:0.16,phase:3.0,opacity:0.1,stroke:'#c94060',width:1},
+  ];
+  const paths=layers.map(l=>{const el=document.createElementNS('http://www.w3.org/2000/svg','path');el.setAttribute('fill','none');el.setAttribute('stroke',l.stroke);el.setAttribute('stroke-width',l.width);el.setAttribute('opacity',l.opacity);svg.appendChild(el);return{el,...l}});
+  let t=0;
+  function bp(l){const pts=[];for(let x=0;x<=W;x+=4){const n=Math.sin(x*0.007+t*0.8)*0.35;const y=H/2+Math.sin(x*l.freq+l.phase+t)*l.amp+Math.sin(x*l.freq*2.3+t*1.3+l.phase)*l.amp*0.3+n*l.amp*0.15;pts.push(x===0?`M${x},${y}`:`L${x},${y}`)}return pts.join(' ')}
+  function anim(){t+=0.012;paths.forEach(p=>p.el.setAttribute('d',bp(p)));requestAnimationFrame(anim)}
+  anim();
+})();
 
-audio.onended = () => {
-  if (repeatMode === 2) {
-    audio.currentTime = 0;
-    audio.play();
-  } else if (repeatMode === 1 || currentIdx < tracks.length - 1) {
-    nextTrack();
-  } else {
-    isPlaying = false;
-    updatePlayBtn();
-    updateTracklistUI();
-  }
-};
+// Scroll reveal
+const reveals=document.querySelectorAll('.reveal');
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)}})},{threshold:0,rootMargin:'0px 0px -40px 0px'});
+reveals.forEach(r=>io.observe(r));
+setTimeout(()=>{reveals.forEach(r=>{if(!r.classList.contains('visible'))r.classList.add('visible')})},3000);
 
-audio.onpause = () => {
-  isPlaying = false;
-  updatePlayBtn();
-  updateTracklistUI();
-};
+// Scroll progress
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('scrollBar').style.width=h>0?((window.scrollY/h)*100)+'%':'0%'},{passive:true});
 
-audio.onplay = () => {
-  isPlaying = true;
-  updatePlayBtn();
-  updateTracklistUI();
-};
-
-// ── Click on progress bar ──
-document.getElementById('progressWrap').onclick = (e) => {
-  if (!audio.duration) return;
-  const rect = e.currentTarget.getBoundingClientRect();
-  const pct = (e.clientX - rect.left) / rect.width;
-  audio.currentTime = pct * audio.duration;
-};
-
-function fmt(s) {
-  if (!s || isNaN(s)) return '0:00';
-  const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60);
-  return m + ':' + String(sec).padStart(2, '0');
-}
-
-// ── Lightbox ──
-function openLightbox(el) {
-  const img = el.querySelector('img');
-  document.getElementById('lbImg').src = img.src;
-  document.getElementById('lightbox').classList.add('open');
-}
-function closeLightbox() {
-  document.getElementById('lightbox').classList.remove('open');
-}
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeLightbox();
-  if (e.key === ' ' && !e.target.matches('input,textarea')) {
-    e.preventDefault();
-    togglePlay();
-  }
-});
-
-// ── Scroll progress ──
-window.addEventListener('scroll', () => {
-  const h = document.documentElement.scrollHeight - window.innerHeight;
-  document.getElementById('scrollBar').style.width = h > 0 ? ((window.scrollY / h) * 100) + '%' : '0%';
-}, { passive: true });
-
-// ── Init ──
-buildTracklist();
-generateWaveform();
-preloadDurations();
+// Active toolbar section
+const sids=['story','s01','s02','s03','s04','s05','s06','s07','s08','s09','s10','band','gallery'];
+const tbls=document.querySelectorAll('.tb-link');
+const so=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){tbls.forEach(l=>{l.style.color=l.getAttribute('href')==='#'+e.target.id?'var(--gold)':''})}})},{threshold:0.15,rootMargin:'-52px 0px -50% 0px'});
+sids.forEach(id=>{const el=document.getElementById(id);if(el)so.observe(el)});
 </script>
 </body>
 </html>
