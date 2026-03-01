@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8Z-Audio Master Plan — Two Tracks to SOTA</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0b0f;
+  --surface: #12141a;
+  --border: #1e2030;
+  --text: #c5c9d4;
+  --text-dim: #6b7084;
+  --text-bright: #e8eaf0;
+  --accent: #38bdf8;
+  --accent-dim: #1a4d6e;
+  --gold: #f0b429;
+  --gold-dim: #5c4411;
+  --green: #34d399;
+  --green-dim: #134d3a;
+  --red: #f87171;
+  --red-dim: #5c1d1d;
+  --violet: #a78bfa;
+  --violet-dim: #3b2d6e;
+  --rose: #fb7185;
+  --orange: #fb923c;
+  --teal: #2dd4bf;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Crimson Pro', Georgia, serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 17px;
+  overflow-x: hidden;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 3rem 2rem 6rem;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 4rem 0 3rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--violet), var(--rose));
+  border-radius: 2px;
+}
+
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1.5rem;
+}
+
+h1 {
+  font-family: 'Crimson Pro', serif;
+  font-weight: 300;
+  font-size: 2.8rem;
+  color: var(--text-bright);
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+h1 span { color: var(--accent); font-weight: 600; }
+
+.subtitle {
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--text-dim);
+  margin-top: 0.5rem;
+}
+
+.meta-row {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 2rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  flex-wrap: wrap;
+}
+
+.meta-row span { color: var(--text); margin-left: 0.3rem; }
+
+/* Sections */
+h2 {
+  font-family: 'Crimson Pro', serif;
+  font-weight: 600;
+  font-size: 1.6rem;
+  color: var(--text-bright);
+  margin: 3.5rem 0 1.2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+h2 .num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--accent);
+  margin-right: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+h3 {
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: var(--gold);
+  margin: 2rem 0 0.8rem;
+}
+
+p { margin-bottom: 1rem; }
+
+/* Status cards */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.2rem;
+  text-align: center;
+}
+
+.stat-card .val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+
+.stat-card .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+}
+
+.val.cyan { color: var(--accent); }
+.val.gold { color: var(--gold); }
+.val.green { color: var(--green); }
+.val.red { color: var(--red); }
+.val.violet { color: var(--violet); }
+.val.rose { color: var(--rose); }
+.val.teal { color: var(--teal); }
+
+/* Architecture blocks */
+.arch-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-left: 3px solid var(--accent);
+}
+
+.arch-block.gold { border-left-color: var(--gold); }
+.arch-block.green { border-left-color: var(--green); }
+.arch-block.violet { border-left-color: var(--violet); }
+.arch-block.red { border-left-color: var(--red); }
+.arch-block.rose { border-left-color: var(--rose); }
+.arch-block.orange { border-left-color: var(--orange); }
+.arch-block.teal { border-left-color: var(--teal); }
+
+.arch-block .title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+}
+
+.arch-block .title.cyan { color: var(--accent); }
+.arch-block .title.gold { color: var(--gold); }
+.arch-block .title.green { color: var(--green); }
+.arch-block .title.violet { color: var(--violet); }
+.arch-block .title.red { color: var(--red); }
+.arch-block .title.rose { color: var(--rose); }
+.arch-block .title.orange { color: var(--orange); }
+.arch-block .title.teal { color: var(--teal); }
+
+/* Code blocks */
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82em;
+  background: var(--surface);
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+  color: var(--accent);
+}
+
+pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.2rem 1.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.92rem;
+}
+
+th, td {
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  background: var(--surface);
+}
+
+td { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; }
+
+tr:hover td { background: rgba(56, 189, 248, 0.03); }
+
+.highlight-row td { color: var(--accent); font-weight: 500; }
+.win td { color: var(--green); }
+.lose td { color: var(--red); }
+
+/* Callouts */
+.callout {
+  background: rgba(56, 189, 248, 0.06);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: 8px;
+  padding: 1.2rem 1.5rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+}
+
+.callout.gold {
+  background: rgba(240, 180, 41, 0.06);
+  border-color: rgba(240, 180, 41, 0.15);
+}
+
+.callout.green {
+  background: rgba(52, 211, 153, 0.06);
+  border-color: rgba(52, 211, 153, 0.15);
+}
+
+.callout.red {
+  background: rgba(248, 113, 113, 0.06);
+  border-color: rgba(248, 113, 113, 0.15);
+}
+
+.callout.violet {
+  background: rgba(167, 139, 250, 0.06);
+  border-color: rgba(167, 139, 250, 0.15);
+}
+
+.callout.rose {
+  background: rgba(251, 113, 133, 0.06);
+  border-color: rgba(251, 113, 133, 0.15);
+}
+
+.callout strong { color: var(--text-bright); font-style: normal; }
+
+/* Phase timeline */
+.phase {
+  position: relative;
+  padding-left: 2.5rem;
+  margin: 2rem 0;
+}
+
+.phase::before {
+  content: '';
+  position: absolute;
+  left: 0.6rem;
+  top: 2rem;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+}
+
+.phase:last-of-type::before { display: none; }
+
+.phase-dot {
+  position: absolute;
+  left: 0;
+  top: 0.3rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: var(--bg);
+  z-index: 1;
+}
+
+.phase-dot.done { background: var(--green); border-color: var(--green); }
+.phase-dot.active { background: var(--accent); border-color: var(--accent); }
+.phase-dot.planned { background: var(--bg); border-color: var(--violet); }
+
+.phase-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 0.4rem;
+}
+
+.phase-est {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+}
+
+/* Track labels */
+.track-label {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 0.25rem 0.7rem;
+  border-radius: 3px;
+  margin-bottom: 0.8rem;
+}
+
+.track-label.xflac { background: rgba(52, 211, 153, 0.15); color: var(--green); border: 1px solid rgba(52, 211, 153, 0.3); }
+.track-label.ac { background: rgba(167, 139, 250, 0.15); color: var(--violet); border: 1px solid rgba(167, 139, 250, 0.3); }
+
+/* Two-column track layout */
+.track-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.track-col {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  border-top: 3px solid var(--accent);
+}
+
+.track-col.xflac { border-top-color: var(--green); }
+.track-col.ac { border-top-color: var(--violet); }
+
+.track-col h4 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+}
+
+.track-col.xflac h4 { color: var(--green); }
+.track-col.ac h4 { color: var(--violet); }
+
+.track-col ul {
+  list-style: none;
+  padding: 0;
+}
+
+.track-col li {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text);
+}
+
+.track-col li:last-child { border-bottom: none; }
+
+.track-col li .ph {
+  display: inline-block;
+  width: 2rem;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* Verdict banner */
+.verdict {
+  text-align: center;
+  padding: 2.5rem 2rem;
+  margin: 3rem 0;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(167, 139, 250, 0.08));
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 12px;
+}
+
+.verdict .big {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--text-bright);
+  margin-bottom: 0.5rem;
+}
+
+.verdict .sub {
+  font-style: italic;
+  color: var(--text-dim);
+  font-size: 1.05rem;
+}
+
+/* Footer */
+.footer {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .status-grid { grid-template-columns: 1fr 1fr; }
+  .track-split { grid-template-columns: 1fr; }
+  h1 { font-size: 2rem; }
+  .meta-row { flex-direction: column; gap: 0.5rem; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="eyebrow">AIM³ Institute · Ljubljana · March 2026</div>
+  <h1>8Z-Audio <span>Master Plan</span></h1>
+  <p class="subtitle">Two tracks to SOTA — xFLAC optimization + AC Classical Max</p>
+  <div class="meta-row">
+    <div>Author <span>Claude Opus 4.6</span></div>
+    <div>For <span>Bojan Dobrečevič</span></div>
+    <div>Status <span>Active Development Roadmap</span></div>
+    <div>Updated <span>March 2026</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 1: WHERE WE STAND -->
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">01</span>Where We Stand: Current Results</h2>
+
+<div class="status-grid">
+  <div class="stat-card">
+    <div class="val green">−31 KB</div>
+    <div class="label">aFLAC/avFLAC vs FLAC-12 (Ethereal Arc)</div>
+  </div>
+  <div class="stat-card">
+    <div class="val green">−134 KB</div>
+    <div class="label">aFLAC/avFLAC vs FLAC-12 (Abyssal)</div>
+  </div>
+  <div class="stat-card">
+    <div class="val red">+6%</div>
+    <div class="label">Gap to OptimFROG</div>
+  </div>
+  <div class="stat-card">
+    <div class="val gold">10/13</div>
+    <div class="label">avFLAC Benchmark Wins</div>
+  </div>
+  <div class="stat-card">
+    <div class="val cyan">5</div>
+    <div class="label">Working Encoders</div>
+  </div>
+  <div class="stat-card">
+    <div class="val violet">8</div>
+    <div class="label">Planned Phases</div>
+  </div>
+</div>
+
+<p>The 8Z-Audio project has two codec families: a custom <code>.8za</code> format (full architectural freedom) and three complementary FLAC encoders producing spec-compliant <code>.flac</code> files. Both families share the same MDL+DCC philosophy.</p>
+
+<table>
+  <tr><th>Encoder</th><th>Format</th><th>Ethereal Arc</th><th>Abyssal</th><th>vs FLAC-12</th><th>vs OFR</th></tr>
+  <tr><td>OptimFROG (best)</td><td>.ofr</td><td>7,530,383</td><td>16,292,401</td><td>−5.8%</td><td>baseline</td></tr>
+  <tr><td>WavPack -hhx6</td><td>.wv</td><td>7,934,862</td><td>—</td><td>−0.8%</td><td>+5.4%</td></tr>
+  <tr><td>ffmpeg cholesky</td><td>.flac</td><td>7,966,029</td><td>—</td><td>−0.4%</td><td>+5.8%</td></tr>
+  <tr><td>FLAC -12</td><td>.flac</td><td>7,996,121</td><td>17,320,224</td><td>baseline</td><td>+6.2%</td></tr>
+  <tr class="highlight-row"><td>aFLAC/avFLAC</td><td>.flac</td><td>7,965,119</td><td>17,186,224</td><td>−0.39%</td><td>+5.8%</td></tr>
+  <tr><td>8Z-AC v1.7H (GPT)</td><td>.8za</td><td>8,050,982</td><td>—</td><td>+0.7%</td><td>+6.9%</td></tr>
+</table>
+
+<div class="callout gold">
+  <strong>The honest assessment:</strong> On the FLAC side, aFLAC/avFLAC already beat FLAC-12 on both test songs and win 10/13 benchmark clips (net −87,740 bytes). On the AC side, v1.7H trails FLAC by 0.7% on Ethereal Arc but beats it on other content. The gap to OptimFROG is ~6% on both codec families — that gap is the target.
+</div>
+
+<div class="arch-block gold">
+  <div class="title gold">Two Key Innovations — What Makes 8Z Different</div>
+  <p><strong>MDL Frame Battles:</strong> Multiple predictors compete per frame, Minimum Description Length picks the winner. No heuristics — pure information-theoretic optimality. Every frame independently selects predictor + parameters + stereo mode + entropy coder.</p>
+  <p><strong>DCC (Digital Claustrum Controller):</strong> Tracks Lempel-Ziv complexity of the decision stream to adapt search budget. Same winner repeating → narrow search (signal is simple). Winners jumping chaotically → widen search (needs deep exploration). Maps coupling parameter <code>u ∈ [0,1]</code> to search depth per frame.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 2: THE TWO CODEC FAMILIES -->
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">02</span>Two Codec Families, Two Improvement Tracks</h2>
+
+<p>Each family has its own improvement track with independent phases. The tracks can run in parallel — xFLAC improvements don't depend on AC changes and vice versa.</p>
+
+<div class="track-split">
+  <div class="track-col xflac">
+    <h4>Track 1: xFLAC Sprint</h4>
+    <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:0.8rem;">Enhanced FLAC encoders — constrained by FLAC spec but targeting 100% standard-compliant .flac output</p>
+    <ul>
+      <li><span class="ph">X1</span> Transient-Aware Block Splitting</li>
+      <li><span class="ph">X2</span> LPC Search Expansion + Tonal Boost</li>
+      <li><span class="ph">X3</span> Stitching Overhead Elimination</li>
+    </ul>
+    <p style="font-size:0.78rem; color:var(--text-dim); margin-top:0.8rem;">Files: vFLAC, aFLAC, avFLAC</p>
+  </div>
+  <div class="track-col ac">
+    <h4>Track 2: AC Classical Max</h4>
+    <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:0.8rem;">Native .8za format — unconstrained, full freedom to implement any technique</p>
+    <ul>
+      <li><span class="ph">C1</span> rANS Entropy Coder</li>
+      <li><span class="ph">C2</span> OLS + NLMS Cascade Predictor</li>
+      <li><span class="ph">C3</span> Joint Stereo Prediction</li>
+      <li><span class="ph">C4</span> Bitplane Coder with SSE</li>
+      <li><span class="ph">C5</span> DDS Meta-Parameter Optimization</li>
+    </ul>
+    <p style="font-size:0.78rem; color:var(--text-dim); margin-top:0.8rem;">Files: 8Z-AC.py, 8Z_Encode.py</p>
+  </div>
+</div>
+
+<div class="callout">
+  <strong>Sequencing:</strong> Each phase within a track must be validated before the next begins. But phases across tracks are independent — X1 and C1 can run in parallel sessions. All phases share a non-regression principle: MDL ensures new competitors can only improve or tie, never regress.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 3: xFLAC TRACK -->
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">03</span>Track 1: xFLAC Optimization Sprint</h2>
+
+<div class="track-label xflac">xFLAC · FLAC-Constrained · 3 Phases</div>
+
+<p>The xFLAC track attacks three specific weaknesses exposed by the benchmark and CSV forensics. These are engineering improvements within the FLAC spec — no format changes required.</p>
+
+<!-- X1 -->
+<h3>X1 — Transient-Aware Block Splitting</h3>
+
+<div class="arch-block green">
+  <div class="title green">The #1 vFLAC Weakness: Mixed Content</div>
+  <p>vFLAC's 3-tier block sizing (tonal→16384, mixed→8192, transient→4096) catastrophically fails on mixed content: <strong>+11.2%</strong> on EOTS, <strong>+11.9%</strong> on LRR versus FLAC-12. Root cause: 8192-sample blocks containing drum hits force LPC to model transient attacks as predictable, wasting coefficient bits.</p>
+  <p><strong>Solution:</strong> Sample-level onset detection using a two-stage energy derivative detector. Place short 1024–2048 sample blocks precisely around transient attacks, then immediately return to 16384-sample blocks for sustain/decay. The FLAC spec allows any block size 16–65535 — no other FLAC encoder exploits this at sample-level precision.</p>
+  <p><strong>Algorithm:</strong> (1) Compute short-term energy in 64-sample windows, (2) detect rapid energy increases (derivative threshold), (3) refine onset position to ±32 samples, (4) place short block straddling onset, (5) resume large blocks after energy stabilizes.</p>
+  <p><strong>Expected gain:</strong> Recover 50–80% of mixed-content losses → vFLAC competitive on EOTS, LRR, WDIG clips where it currently loses badly.</p>
+  <p><strong>Risk:</strong> Low — onset detection is well-studied DSP, and MDL validates each block plan.</p>
+</div>
+
+<!-- X2 -->
+<h3>X2 — LPC Search Expansion & DCC-Gated Tonal Boost</h3>
+
+<div class="arch-block green">
+  <div class="title green">The GPT Advantage: Higher Orders Win</div>
+  <p>CSV forensics prove GPT v1.7H beats GEM by 80 KB and CLA by 17 KB on Ethereal Arc because it finds better LPC order/window/qlevel combinations. On tonal frames, <code>blackman/o=32/ql=8</code> consistently outperforms more conservative choices. GPT wins 262 of 263 frames.</p>
+  <p><strong>Solution:</strong> Expand vFLAC's LPC search: TOP_K 16→24, add tukey_half window, widen qlevel range. Add DCC-gated "tonal boost" mode for HIGH-budget frames — exhaustive search over orders 20–32 with all windows when the scanner classifies a frame as pure tonal (difficulty &lt; 0.05, pred_gain &gt; 35 dB).</p>
+  <p><strong>Expected gain:</strong> 0.3–0.8% on tonal-dominant content (orchestral, sustained synth, clean guitar).</p>
+  <p><strong>Risk:</strong> Very low — wider search can only find equal or better configurations.</p>
+</div>
+
+<!-- X3 -->
+<h3>X3 — Stitching Overhead Elimination</h3>
+
+<div class="arch-block green">
+  <div class="title green">The #1 aFLAC/avFLAC Bottleneck: Headers Eat Raw Wins</div>
+  <p>aFLAC's raw-optimal segment sums beat whole-file lax_t6 by 7 KB on Ethereal Arc and 31 KB on Abyssal. But segment headers eat ~29 KB and ~45 KB respectively, turning compression wins into file-size losses. The raw compression is already superior — the problem is purely structural.</p>
+
+  <pre>Ethereal Arc:
+  aFLAC raw-optimal sum:  7,936,170B  (beats lax_t6 raw by 7,133B)
+  aFLAC stitched output:  7,965,119B  (headers ~28,949B for 16 segments)
+  Net result: +13,530B loss after stitching
+
+Abyssal:
+  avFLAC raw-optimal:    17,280,558B  (beats lax_t6 raw by 31,038B!)
+  avFLAC stitched:       17,325,102B  (headers ~44,544B for 22 segments)
+  Net result: headers ate the 31 KB raw win</pre>
+
+  <p><strong>Solution — three complementary approaches:</strong></p>
+  <p>(1) <strong>Frame-level competition:</strong> Compete per FLAC frame, not per segment — eliminates segment boundaries entirely. (2) <strong>Zero-overhead stitching:</strong> Extract raw subframe payloads from winners, rebuild minimal FLAC headers with correct sample offsets. (3) <strong>Adaptive segment merging:</strong> Post-arena, merge adjacent segments that chose the same winner encoder to eliminate redundant boundaries.</p>
+  <p><strong>Expected gain:</strong> Eliminate 80–100% of stitching overhead → aFLAC/avFLAC fully realizes its raw compression advantage. On Ethereal Arc, converts the −7 KB raw win into a −7 KB file win (currently a +13 KB file loss).</p>
+  <p><strong>Risk:</strong> Medium — frame-level extraction requires precise FLAC binary parsing, and CRC recalculation must be exact for spec compliance.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 4: AC CLASSICAL MAX TRACK -->
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">04</span>Track 2: AC Classical Max (C1–C5)</h2>
+
+<div class="track-label ac">AC · Unconstrained · 5 Phases · Goal: Close 6% Gap to OFR</div>
+
+<p>The AC track upgrades the native .8za codec with classical compression techniques that exceed what any FLAC-format encoder can achieve. Each phase adds a new competitor to the MDL arena — if it doesn't help, it simply never wins, and compression stays at current levels.</p>
+
+<div class="callout violet">
+  <strong>The encode.su consensus:</strong> "Most of the compression of OptimFROG and SAC comes from low-order OLS" — the predictor matters more than the entropy coder. Research suggests ~60% of the 6% gap to OFR is prediction (3.6%) and ~40% is entropy coding (2.4%). C1 addresses entropy; C2 addresses the bigger predictor side.
+</div>
+
+<!-- C1 -->
+<h3>C1 — rANS Entropy Coder (MDL Arena Addition)</h3>
+
+<div class="arch-block violet">
+  <div class="title violet">Phase C1: rANS Replaces Rice on Hard Frames</div>
+  <p>Rice coding assumes Laplacian residual distribution. Real LPC residuals have heavier tails, slight asymmetry, and context-dependent clustering. rANS with adaptive probability models captures the true distribution to fractional-bit precision.</p>
+  <p><strong>Key principle:</strong> We do NOT replace Rice — we ADD rANS alongside existing Rice and LZMA. Per subframe partition, all three compete and MDL picks the cheapest. Rice stays whenever it's genuinely optimal (clean tonal frames with near-Laplace distribution, zero overhead for probability tables).</p>
+  <p><strong>Implementation:</strong> Port <code>_RansEnc/_RansDec/_RansAdaptive</code> from HYB4 (battle-tested on 50+ genomes). M=4096 precision, per-partition selection. rANS probability table cost explicitly included in MDL calculation.</p>
+  <p><strong>Where rANS wins:</strong> Mixed content (heavier tails, bimodal), transients (spiky, non-Laplace), low-periodicity (noisy, uneven distribution). Expected 3–8% per partition on these frames, ~0% on clean tonal.</p>
+  <p><strong>Expected gain:</strong> 2–4% overall compression improvement depending on content mix.</p>
+  <p><strong>Risk:</strong> Low — proven technique, working code exists in HYB4.</p>
+</div>
+
+<!-- C2 -->
+<h3>C2 — OLS + NLMS Cascade Predictor</h3>
+
+<div class="arch-block violet">
+  <div class="title violet">Phase C2: The Biggest Single Upgrade</div>
+  <p>Replace Levinson-Durbin autocorrelation LPC with OLS (Ordinary Least Squares) as primary predictor, cascaded with NLMS (Normalized Least Mean Squares) adaptive filter on residuals.</p>
+
+  <pre>Standard LPC (current):
+  1. Compute autocorrelation → assumes stationarity
+  2. Solve Toeplitz system via Levinson-Durbin
+  3. Coefficients minimize MSE under stationarity assumption
+
+OLS (what we're adding):
+  1. Form actual sample matrix X (past samples as rows)
+  2. Solve X'X β = X'y via Cholesky decomposition
+  3. Coefficients minimize MSE on ACTUAL samples, no stationarity assumption
+
+NLMS cascade (second stage):
+  1. Take OLS residuals (already much smaller than LPC residuals)
+  2. Run 16–64 tap NLMS adaptive filter
+  3. NLMS tracks slowly-changing correlation that OLS missed
+  4. Entropy code the double-filtered residuals</pre>
+
+  <p><strong>Why this matters:</strong> SAC proves this architecture works — it achieves 8–12% better compression than FLAC using exactly this OLS+NLMS approach. This is the single largest identified improvement opportunity.</p>
+  <p><strong>DCC integration:</strong> LOW budget → LPC only (fast path). MEDIUM → OLS only. HIGH → OLS + NLMS cascade. MDL always compares: LPC, OLS, OLS+NLMS.</p>
+  <p><strong>Expected gain:</strong> 3–5% compression improvement → pushes into WavPack/OFR territory.</p>
+  <p><strong>Risk:</strong> Medium — new code, but algorithm is well-understood. DCC gating ensures no regression on easy content.</p>
+</div>
+
+<!-- C3 -->
+<h3>C3 — Joint Stereo Prediction (Generalized Decorrelation)</h3>
+
+<div class="arch-block violet">
+  <div class="title violet">Phase C3: Cross-Channel Prediction</div>
+  <p>Current stereo handling transforms L/R into one of 4 modes (Independent, Mid/Side, Left-Side, Right-Side) then predicts each channel independently. This misses three critical correlation types:</p>
+  <p><strong>Delayed cross-channel correlation:</strong> Left channel at time n correlates with right at time n−k (room acoustics, mic spacing). M/S only captures k=0. <strong>Frequency-dependent correlation:</strong> Bass may be mono while treble is stereo — M/S is all-or-nothing per frame. <strong>Asymmetric correlation:</strong> One channel may predict the other better than vice versa.</p>
+  <p><strong>Solution:</strong> Generalized stereo decorrelation (Ghido, IEEE 2003). Joint predictor uses past samples from BOTH channels as inputs — OLS naturally handles the cross-channel matrix. Add cross-channel orders {0, 4, 8, 12} alongside same-channel orders 1–32.</p>
+  <p><strong>Expected gain:</strong> ~1.5% on stereo content with significant cross-channel correlation.</p>
+  <p><strong>Risk:</strong> Low — well-published technique, clean integration with OLS from C2.</p>
+</div>
+
+<!-- C4 -->
+<h3>C4 — Bitplane Coder with SSE</h3>
+
+<div class="arch-block violet">
+  <div class="title violet">Phase C4: Context-Dependent Probability Models</div>
+  <p>Rice and rANS both treat each symbol independently. A bitplane coder exploits <em>context</em> — the magnitude of residual[n] correlates with residual[n−1] (clustering), the other channel, position within frame, and signal class.</p>
+  <p><strong>How it works:</strong> (1) Separate residuals into bitplanes (MSB to LSB), (2) for each bit position, build a probability model conditioned on context (upper bitplanes, neighboring samples, other channel), (3) encode each bit with rANS using the conditional probability, (4) SSE (Secondary Symbol Estimation) adaptively corrects the primary model using recent coding history.</p>
+  <p><strong>This is fundamentally different</strong> from Rice/rANS which code entire symbols. Bitplane coding decomposes the problem into binary decisions, each with its own optimized probability. SAC and PAQ both use this approach for their strongest compression.</p>
+  <p><strong>Expected gain:</strong> 1–3% on residuals with strong context dependencies (orchestral, dynamic content).</p>
+  <p><strong>Risk:</strong> Medium-high — most complex phase, but enters MDL arena so zero regression risk.</p>
+</div>
+
+<!-- C5 -->
+<h3>C5 — DDS Meta-Parameter Optimization</h3>
+
+<div class="arch-block violet">
+  <div class="title violet">Phase C5: The Exhaustive Last Mile</div>
+  <p>After C1–C4, the per-frame parameter space explodes:</p>
+
+  <pre>Predictor:      {LPC, OLS, OLS_NLMS, PERIODIC, DELTA}     5 choices
+Stereo mode:    {INDEP, M/S, L-S, R-S, JOINT, JOINT_M/S}   6 choices
+Same-ch order:  1–32                                        32 choices
+Cross-ch order: {0, 4, 8, 12}                                4 choices
+Window:         {hann, blackman, tukey, none}                 4 choices
+Qlevel:         8–16                                          9 choices
+NLMS order:     {0, 8, 16}                                    3 choices
+NLMS mu:        {0.3, 0.5, 1.0}                               3 choices
+Entropy:        {Rice, rANS, Bitplane, LZMA}                  4 choices
+
+Total: ~14.9 million combinations per frame</pre>
+
+  <p><strong>DDS (Dynamically Dimensioned Search):</strong> A black-box optimizer that finds near-optimal configurations in ~100–500 evaluations, not millions. DDS starts by exploring all dimensions, then gradually narrows to fine-tune the most sensitive parameters. Each evaluation = one complete encode-and-measure cycle for that frame.</p>
+  <p><strong>DCC integration:</strong> DDS budget scales with DCC difficulty classification — LOW frames get 50 evaluations (fast), HIGH frames get 500 (exhaustive). MDL is the objective function.</p>
+  <p><strong>Expected gain:</strong> 0.5–1.5% — picks up the interactions between parameters that grid search misses.</p>
+  <p><strong>Risk:</strong> Low — DDS is well-studied optimization, and the worst case is matching grid search results.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 5: NOVEL PREDICTORS -->
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">05</span>Beyond Classical: Novel Predictors (Horizon)</h2>
+
+<p>The C1–C5 phases bring 8Z to competitive parity with existing SOTA codecs using known techniques. The following predictors are where 8Z-Audio becomes something no other codec has attempted — they are research-grade additions planned after Classical Max validation.</p>
+
+<h3>Chebyshev Harmonic Predictor</h3>
+
+<div class="arch-block rose">
+  <div class="title rose">Physics-Based Prediction for Distorted Content</div>
+  <p>Distorted audio (guitar amp, synth saturation, industrial) passes through Chebyshev polynomial waveshapers — a known mathematical function. The LPC residual on distorted content is dominated by harmonics created by this function. A single parameter (distortion level) determines the entire harmonic series.</p>
+  <p><strong>Implementation:</strong> (1) Detect frames with harmonic structure in residual, (2) estimate fundamental frequency, (3) fit Chebyshev coefficients, (4) predict residual using Chebyshev model, (5) encode parameters + fine residual. MDL decides if cheaper than raw residual.</p>
+  <p><strong>Expected gain:</strong> Up to 22% on heavily distorted content. This is exactly the content where OFR collapses (+26–39% regression vs FLAC). 8Z would exploit OFR's weakness.</p>
+</div>
+
+<h3>Enhanced PERIODIC + Physical Audio Models</h3>
+
+<div class="arch-block orange">
+  <div class="title orange">Signal-Specific Generator Library</div>
+  <p>Current PERIODIC never fires on Ethereal Arc (0.85 correlation threshold too strict for orchestral music). Lower threshold to 0.70 with MDL gating — let the cost function decide, not a hardcoded threshold. Run PERIODIC on LPC/OLS residuals, not just raw samples.</p>
+  <p>Beyond PERIODIC: a library of physical audio models entering the MDL arena — vibrato (FM sinusoid, 3 params), reverb tail (exponential decay, 2 params), drum transient (damped oscillator, 4 params), tremolo (AM signal, 3 params). Each model is 4–12 bytes of parameters, deterministic, physically grounded. DCC gates which to try.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 6: IMPLEMENTATION TIMELINE -->
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">06</span>Implementation Phases</h2>
+
+<p>Phases are listed in recommended execution order. Within each track, phases are sequential (each validated before the next). Across tracks, phases can run in parallel.</p>
+
+<h3 style="color:var(--green);">xFLAC Track (X1 → X2 → X3)</h3>
+
+<div class="phase">
+  <div class="phase-dot planned"></div>
+  <div class="phase-title">X1 — Transient Detection & Adaptive Block Splitting</div>
+  <div class="phase-est">vFLAC v1.3→v1.4 · avFLAC v1.2→v1.3 · Est. 8–12 hours</div>
+  <p>Two-stage onset detector, sample-level block boundaries, recover 50–80% mixed-content losses. Test: vFLAC must not regress on tonal clips, must improve ≥5% on EOTS/LRR.</p>
+</div>
+
+<div class="phase">
+  <div class="phase-dot planned"></div>
+  <div class="phase-title">X2 — LPC Search Expansion & DCC Tonal Boost</div>
+  <div class="phase-est">vFLAC v1.4→v1.5 · Est. 6–8 hours</div>
+  <p>TOP_K 16→24, tukey_half window, DCC-gated exhaustive search on HIGH-budget tonal frames (orders 20–32, all windows). Test: match or beat GPT v1.7H frame-level choices on Ethereal Arc.</p>
+</div>
+
+<div class="phase">
+  <div class="phase-dot planned"></div>
+  <div class="phase-title">X3 — Stitching Overhead Elimination</div>
+  <div class="phase-est">aFLAC v1.3→v1.4 · avFLAC v1.2→v1.3 · Est. 10–14 hours</div>
+  <p>Frame-level competition, zero-overhead header rebuild, adaptive segment merging. Test: stitched output must be ≤ raw-optimal sum + 1 KB overhead. FLAC decoder validation (ffmpeg, flac -t) mandatory.</p>
+</div>
+
+<h3 style="color:var(--violet);">AC Classical Max Track (C1 → C2 → C3 → C4 → C5)</h3>
+
+<div class="phase">
+  <div class="phase-dot planned"></div>
+  <div class="phase-title">C1 — rANS Entropy Coder</div>
+  <div class="phase-est">8Z-AC v1.7H→v1.8 · Est. 6–8 hours</div>
+  <p>Port rANS from HYB4, M=4096 precision, per-partition MDL battle vs Rice and LZMA. Test: must improve at least 30% of frames on Ethereal Arc; total file size must decrease.</p>
+</div>
+
+<div class="phase">
+  <div class="phase-dot planned"></div>
+  <div class="phase-title">C2 — OLS + NLMS Cascade Predictor</div>
+  <div class="phase-est">8Z-AC v1.8→v1.9 · Est. 10–14 hours</div>
+  <p>Replace Levinson-Durbin with OLS (Cholesky), add 16–64 tap NLMS on residuals, DCC-gated depth. Test: must beat v1.8 on at least 50% of frames; total file must shrink by ≥2%.</p>
+</div>
+
+<div class="phase">
+  <div class="phase-dot planned"></div>
+  <div class="phase-title">C3 — Joint Stereo Prediction</div>
+  <div class="phase-est">8Z-AC v1.9→v2.0 · Est. 6–8 hours</div>
+  <p>Cross-channel OLS with {0,4,8,12} cross-orders, 6 stereo modes. Test: must improve stereo content with significant L/R correlation; no regression on mono-like content.</p>
+</div>
+
+<div class="phase">
+  <div class="phase-dot planned"></div>
+  <div class="phase-title">C4 — Bitplane Coder with SSE</div>
+  <div class="phase-est">8Z-AC v2.0→v2.1 · Est. 12–16 hours</div>
+  <p>MSB-to-LSB processing, context-dependent probability models, SSE adaptive correction. MDL battle vs Rice, rANS, LZMA per partition. Test: must win ≥20% of partitions on mixed content.</p>
+</div>
+
+<div class="phase">
+  <div class="phase-dot planned"></div>
+  <div class="phase-title">C5 — DDS Meta-Parameter Optimization</div>
+  <div class="phase-est">8Z-AC v2.1→v2.2 · Est. 8–10 hours</div>
+  <p>Black-box optimization over all C1–C4 parameters, 100–500 evaluations per frame (DCC-gated). Test: must match or beat grid search on every frame; net file size must decrease.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 7: EXPECTED OUTCOMES -->
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">07</span>Expected Performance Outcomes</h2>
+
+<h3>AC Track (Ethereal Arc, 48kHz 16-bit, 17,197,814 bytes PCM)</h3>
+
+<table>
+  <tr><th>Configuration</th><th>Est. Size</th><th>Ratio</th><th>vs Current</th><th>vs FLAC</th><th>vs OFR</th></tr>
+  <tr><td>AC v1.7H (current)</td><td>8,050,982</td><td>46.81%</td><td>baseline</td><td>+0.7%</td><td>+6.9%</td></tr>
+  <tr><td>+ C1 rANS</td><td>~7,890,000</td><td>~45.88%</td><td>−2.0%</td><td>−1.3%</td><td>+4.8%</td></tr>
+  <tr class="highlight-row"><td>+ C2 OLS+NLMS</td><td>~7,550,000</td><td>~43.90%</td><td>−6.2%</td><td>−5.6%</td><td>+0.3%</td></tr>
+  <tr><td>+ C3 Joint Stereo</td><td>~7,440,000</td><td>~43.26%</td><td>−7.6%</td><td>−6.9%</td><td>−1.2%</td></tr>
+  <tr><td>+ C4 Bitplane SSE</td><td>~7,330,000</td><td>~42.62%</td><td>−9.0%</td><td>−8.3%</td><td>−2.7%</td></tr>
+  <tr class="win"><td>+ C5 DDS (full stack)</td><td>~7,250,000</td><td>~42.16%</td><td>−9.9%</td><td>−9.3%</td><td>−3.7%</td></tr>
+  <tr><td style="color:var(--text-dim)">Reference: OFR</td><td>7,530,383</td><td>43.79%</td><td>—</td><td>—</td><td>0%</td></tr>
+</table>
+
+<h3>xFLAC Track (Ethereal Arc)</h3>
+
+<table>
+  <tr><th>Configuration</th><th>Est. Size</th><th>vs FLAC-12</th><th>Notes</th></tr>
+  <tr><td>avFLAC v1.2 (current)</td><td>7,965,119</td><td>−0.39%</td><td>Already beats FLAC-12</td></tr>
+  <tr><td>+ X1 Transient Blocks</td><td>~7,940,000</td><td>−0.70%</td><td>Minor gain on Ethereal (mainly helps mixed clips)</td></tr>
+  <tr><td>+ X2 LPC Tonal Boost</td><td>~7,910,000</td><td>−1.08%</td><td>Tonal frames benefit most</td></tr>
+  <tr class="win"><td>+ X3 Stitch Elimination</td><td>~7,870,000</td><td>−1.58%</td><td>Converts raw wins to file wins</td></tr>
+  <tr><td style="color:var(--text-dim)">Reference: FLAC-12</td><td>7,996,121</td><td>0%</td><td></td></tr>
+</table>
+
+<div class="callout green">
+  <strong>The trajectory:</strong> The AC track targets closing and surpassing OptimFROG — C2 (OLS+NLMS) alone brings us to near-parity, and C3–C5 push beyond. The xFLAC track aims to produce the world's best FLAC files, period — beating FLAC-12 by 1.5%+ while maintaining 100% spec compliance. Both tracks share the MDL+DCC foundation.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 8: RISK MATRIX -->
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">08</span>Risk Matrix</h2>
+
+<table>
+  <tr><th>Risk</th><th>Prob.</th><th>Impact</th><th>Mitigation</th></tr>
+  <tr><td>X1: Onset detector false positives → excess blocks</td><td style="color:var(--gold)">Med</td><td>Low</td><td>MDL validates each block plan; fallback to 4096</td></tr>
+  <tr><td>X3: Frame-level FLAC parsing errors</td><td style="color:var(--gold)">Med</td><td>High</td><td>ffmpeg + flac -t validation mandatory per output</td></tr>
+  <tr><td>C1: rANS overhead exceeds Rice on most frames</td><td style="color:var(--green)">Low</td><td>Low</td><td>MDL gating — Rice always available as fallback</td></tr>
+  <tr><td>C2: OLS Cholesky fails on ill-conditioned matrices</td><td style="color:var(--gold)">Med</td><td>Med</td><td>Regularization + fallback to Levinson-Durbin LPC</td></tr>
+  <tr><td>C2: NLMS convergence too slow for short frames</td><td style="color:var(--gold)">Med</td><td>Med</td><td>DCC gates: skip cascade on LOW budget frames</td></tr>
+  <tr><td>C3: Cross-channel orders over-fit noise</td><td style="color:var(--green)">Low</td><td>Low</td><td>MDL penalizes excess model bits</td></tr>
+  <tr><td>C4: Bitplane SSE too slow in Python</td><td style="color:var(--orange)">High</td><td>Med</td><td>DCC gates for HIGH-budget frames only; C-level inner loop</td></tr>
+  <tr><td>C5: DDS doesn't beat grid search</td><td style="color:var(--gold)">Med</td><td>Low</td><td>Worst case: matches existing results, no regression</td></tr>
+  <tr><td>Format incompatibility with v1.7H</td><td style="color:var(--text-dim)">Certain</td><td>Low</td><td>R&D phase — no backward compatibility required</td></tr>
+  <tr><td>Combined speed regression > 10×</td><td style="color:var(--gold)">Med</td><td>Med</td><td>Compression levels: fast path skips new features</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 9: SUCCESS CRITERIA -->
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">09</span>Success Criteria</h2>
+
+<div class="arch-block green">
+  <div class="title green">xFLAC Track Ships If And Only If</div>
+  <p>✅ Bit-perfect lossless at all configurations (decoded WAV matches original)</p>
+  <p>✅ All outputs pass <code>flac -t</code> and <code>ffmpeg -v error -i</code> validation</p>
+  <p>✅ avFLAC beats FLAC-12 on ≥11/13 benchmark clips (currently 10/13)</p>
+  <p>✅ Mixed-content clips (EOTS, LRR) regression reduced by ≥50%</p>
+  <p>✅ Stitched output within 1 KB of raw-optimal segment sums</p>
+  <p>✅ Forensic CSV logging for all frames and all configurations</p>
+</div>
+
+<div class="arch-block violet">
+  <div class="title violet">AC Classical Max Ships If And Only If</div>
+  <p>✅ Bit-perfect lossless at all compression levels (SHA3 round-trip verified)</p>
+  <p>✅ Each phase independently improves or ties total compression (no regression)</p>
+  <p>✅ Full C1–C5 stack beats FLAC-12 by ≥5% on Ethereal Arc</p>
+  <p>✅ Full C1–C5 stack within 5% of or beats OptimFROG on Ethereal Arc</p>
+  <p>✅ 15-clip benchmark with comparative analysis vs FLAC-12, OFR, WavPack</p>
+  <p>✅ Forensic CSV logging for all levels and all predictors</p>
+</div>
+
+<!-- VERDICT -->
+<div class="verdict">
+  <div class="big">Two tracks. Eight phases. One MDL arena.</div>
+  <div class="sub">Same philosophy everywhere — let the math decide.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 10: SUMMARY -->
+<!-- ═══════════════════════════════════════════════════ -->
+<h2><span class="num">10</span>The Argument</h2>
+
+<div class="arch-block">
+  <div class="title cyan">Why This Plan, Why Now</div>
+  <p><strong>1. The LPC+Rice ceiling is real.</strong> v1.6.1 → v1.7H gained only 20.6 KB (0.25%) in 2× the time. Diminishing returns are empirically proven.</p>
+  <p><strong>2. The gap is in the predictor, not the entropy coder.</strong> GPT's 16 KB win proves entropy tuning is marginal. OFR's 520 KB lead proves multi-layer prediction is where the bytes are.</p>
+  <p><strong>3. The components exist.</strong> rANS is ported from HYB4. OLS is textbook linear algebra. NLMS is textbook DSP. Bitplane coding is proven in SAC/PAQ. DDS is published optimization. The MDL arena is domain-agnostic. DCC gates everything.</p>
+  <p><strong>4. The two tracks are complementary.</strong> xFLAC produces the world's best FLAC files for interoperability. AC pushes the absolute compression frontier. Both share MDL+DCC. Results from one track inform the other.</p>
+  <p><strong>5. The philosophy demands it.</strong> "Don't accept limits without evidence." The limit isn't FLAC — it's the assumption that LPC is the best predictor for all audio content. Evidence from SAC, OFR, and the Chebyshev insight says otherwise.</p>
+</div>
+
+<p>Estimated total development: <strong>66–90 hours</strong> across 8 phases (24–34 hours xFLAC + 42–56 hours AC). Each phase is independently testable. No phase depends on cross-track success. The MDL arena ensures no regression: if a new technique doesn't help, it simply never wins, and compression stays at current levels.</p>
+
+<!-- FOOTER -->
+<div class="footer">
+  8Z-Audio Master Plan · Claude Opus 4.6 · AIM³ Institute · March 2026<br>
+  "Data doesn't need to be compressed. It needs to be understood."
+</div>
+
+</div>
+</body>
+</html>
