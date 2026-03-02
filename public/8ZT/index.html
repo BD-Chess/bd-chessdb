@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sync Momentum — The Complete Trading System by Bojan Dobrečevič</title>
+<title>Sync Momentum v3.0+ — The Complete Trading System by Bojan Dobrečevič</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -300,6 +300,11 @@ pre .cm { color: var(--text-muted); font-style: italic; }
   <a class="sub" href="#ch7-params">Parameter Quick-Ref</a>
   <a class="ch" href="#ch8">8 — Roadmap & Future</a>
   <a class="ch" href="#ch9">9 — The 8Z Connection</a>
+  <a class="ch" href="#ch10">10 — The Monitor</a>
+  <a class="sub" href="#ch10-arch">Architecture</a>
+  <a class="sub" href="#ch10-columns">Column Reference</a>
+  <a class="sub" href="#ch10-workflow">Workflow</a>
+  <a class="sub" href="#ch10-assets">Asset Selection</a>
 </nav>
 
 <!-- ══════════════════════════════════════════ MAIN ══════════════════════════════════════════ -->
@@ -313,7 +318,7 @@ pre .cm { color: var(--text-muted); font-style: italic; }
     A 14-month journey from correlation-first intuition to a battle-tested, multi-preset,
     zero-fee scalping engine — by Bojan Dobrečevič, with AI research partners.
   </div>
-  <div class="meta">v2.2 → v3.0 &nbsp;·&nbsp; March 2026 &nbsp;·&nbsp; BD × Claude × GPT</div>
+  <div class="meta">v2.2 → v3.0+ &nbsp;·&nbsp; March 2026 &nbsp;·&nbsp; BD × Claude × GPT × Gemini × Grok</div>
   <div class="stats-row">
     <div class="stat"><div class="val green">+701K</div><div class="lbl">Backtest PnL (28d)</div></div>
     <div class="stat"><div class="val gold">70,136%</div><div class="lbl">Return on $1K</div></div>
@@ -857,6 +862,35 @@ The TF1 (1-minute) or TF2 (5-minute) presets would be more appropriate for compe
 <p>
 10. Full bot implementation splitting Pine signals (signal generation only) from bot execution (hygiene gates, pacing, MARK stops, heartbeat). This is the Phase B → Phase C automation path from your original HF_Scalping paper.
 </p>
+
+<h4>The Vision — Multi-Asset MDL Command Center <span class="tag green">BUILT</span></h4>
+<p>
+11. <strong>Pine Indicator: MDL/DCC Monitor Table v1.0.</strong> <span class="tag green">COMPLETED</span> — A dedicated Pine v6 indicator (not strategy) that occupies one-third of a TradingView split-screen layout. Uses <code>request.security()</code> to pull data from 24 configurable assets simultaneously across 6 asset classes: crypto (BTC, ETH, SOL, SUI, DOGE + 3 configurable), stocks (SPY, QQQ + 4 configurable), bonds (FESB1!, FBON1!, TLT), volatility (FVS1!, VIX), commodities (XAUUSD, CL1!, SI1!), and forex (EURUSD, DXY, GBPUSD). For each asset, it computes and displays in real-time:
+</p>
+<p>
+&bull; <strong>MDL Regime</strong> — which of the 4+ generators wins (TREND/REVERT/MOMENTUM/RANGE) and direction<br>
+&bull; <strong>DCC State</strong> — EXPLOIT/BALANCED/EXPLORE with coupling parameter u<br>
+&bull; <strong>Arena Mode</strong> — which Smart Invert mode is winning (NORMAL/SYNC_INV/IMP_INV/FULL_INV/ASYM) and the virtual PnL scores<br>
+&bull; <strong>Signal Status</strong> — green/red/gray for whether the strategy would currently enter long, short, or stay flat<br>
+&bull; <strong>Rolling PnL</strong> — virtual performance of the strategy on that asset over the last N bars<br>
+&bull; <strong>Heat Column</strong> — color-coded from deep green (strong profitable fit) through gray (neutral) to deep red (strong inverse fit = profitable if inverted)
+</p>
+<p>
+The table effectively makes the MDL arena visible across the entire market at once. You watch it, spot which assets are "hot" (strong regime, EXPLOIT mode, high virtual PnL), manually switch to that asset's chart in another split window, and trade it. The monitor is passive intelligence — it tells you <em>where</em> and <em>when</em> the structure is strongest, you decide <em>whether</em> to act.
+</p>
+<p>
+Pine v6 allows up to 40 <code>request.security()</code> calls per script. With 30 assets, that's 30 calls for close prices, leaving 10 for additional data (volume, VWAP). Each asset gets one row in the table. The indicator is lightweight — no strategy entries or exits, just computation and display.
+</p>
+
+<p>
+12. <strong>Python Combinatorial Optimizer (API-side).</strong> A Python script that interfaces with TradingView via webhooks, alerts, or the Pine strategy tester API. It runs the full MDL arena at scale: every combination of <code>preset × asset × timeframe × arena_mode</code>. With 16 presets, 30 assets, 6 timeframes, and 5 arena modes, that's 14,400 combinations. DCC governs the search budget — it doesn't test all 14,400 blindly, but starts with the most promising (high-volume liquid pairs on medium timeframes) and expands or contracts based on early results, exactly like 8Z-rp's TSP solver.
+</p>
+<p>
+The Python optimizer outputs a ranked leaderboard: "FESB1! on 1m with S5-Fast-Scalper in NORMAL mode = +6,738% PnL" at the top, "FBON1! on 1m with S3-Aggressive in NORMAL mode = -37,073% → FULL_INV mode = +28,000% projected" below. This leaderboard is the meta-MDL: across all combinations, which (asset, timeframe, preset, mode) tuple produces the shortest description of profitable trading?
+</p>
+<p>
+13. <strong>The Ultimate Goal:</strong> A system where the Pine monitor table shows real-time MDL/DCC state across 30 assets, the Python optimizer runs nightly to update the leaderboard, and you — the human trader — use both to select which asset to trade, on which timeframe, with which preset. The AI Dream Team (Claude, GPT, Gemini, Grok) continuously refines the MDL generators, DCC calibration, and arena modes based on live performance data. The system gets smarter as it runs.
+</p>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
@@ -896,6 +930,229 @@ The "Invisible 90%" principle from your DNA work maps directly: most of the time
 The same framework that detects Wolfram cellular automata in HIV-1 genomic sequences also — through a different implementation path — detects coordinated momentum events in BTC/ETH price series. Two domains, one meta-principle: <strong>find the generator, compress beyond entropy, extract the signal</strong>. The fact that independent research paths converge on the same meta-principle is itself Bayesian evidence that the principle is fundamental.
 </p>
 </div>
+
+<h3>The Smart Invert Discovery (March 2026)</h3>
+<p>
+A critical breakthrough emerged during cross-asset testing. When running the v2.2 strategy across different asset classes, the results revealed a profound pattern:
+</p>
+<p>
+&bull; BTCUSDT.P on 1m: <strong>+85% PnL</strong> (4,004 trades) — momentum-following works<br>
+&bull; FESB1! (EURO STOXX Banks) on 1m: <strong>+6,738% PnL</strong> (2,732 trades) — momentum-following works even better<br>
+&bull; FVS1! (VSTOXX Futures) on 1m: <strong>-278,433% PnL</strong> (3,355 trades) — momentum-following catastrophically fails<br>
+&bull; FBON1! (Euro-BONO Fixed Income) on 1m: <strong>-37,073% PnL</strong> (197 trades) — momentum-following fails
+</p>
+<p>
+The insight: <strong>a reliable loser IS a reliable signal — just inverted</strong>. If the strategy consistently loses on VSTOXX, the signals are correctly identifying market structure but interpreting it backwards. VSTOXX is mean-reverting by nature — momentum signals on a mean-reverting asset systematically point the wrong direction.
+</p>
+<p>
+This maps directly to 8Z-Audio's stereo encoding modes. Sometimes mid/side representation compresses better than left/right. Sometimes inverting the channel polarity produces a shorter description. The encoder doesn't know in advance — it tests both and picks the winner via MDL. Same principle: sometimes inverting the signal polarity produces better trading results, and MDL should pick the winner.
+</p>
+<p>
+But the inversion isn't binary. Not all components should invert together. In the Smart Invert system, five modes compete:
+</p>
+<p>
+<strong>Mode 0 (NORMAL)</strong> — momentum-following, as designed. Works on trending assets (crypto, equity indices).<br>
+<strong>Mode 1 (SYNC_INV)</strong> — fade the correlation signal, follow the impulse. Catches divergence plays.<br>
+<strong>Mode 2 (IMPULSE_INV)</strong> — follow the correlation, fade the velocity. Catches mean-reversion within a trend.<br>
+<strong>Mode 3 (FULL_INV)</strong> — full contrarian. Works on strongly mean-reverting assets (VIX, bonds).<br>
+<strong>Mode 4 (ASYMMETRIC)</strong> — normal entry direction, but swap the SL/TP ratio. For assets where the trend direction is correct but the exit architecture needs to be reversed (wide stops, tight targets for mean-reversion profit capture).
+</p>
+<p>
+This is the <strong>parameter arena</strong> — each mode is a "generator" competing in the MDL arena for which one produces the most profitable description of the market. And crucially, the arena includes DCC governance: if the winning mode flips chaotically, DCC reduces position size (the arena's search budget is too noisy to trust).
+</p>
+
+<h3>The Full MDL Trading Architecture</h3>
+<p>
+With the Smart Invert discovery, the complete 8Z → Trading transfer becomes clear:
+</p>
+<p>
+<strong>Level 1 — Per-Bar MDL:</strong> 4 generators (TREND, REVERSION, MOMENTUM, RANGE) compete each bar to determine the market regime. Winner = current structure. DCC monitors regime-change complexity.<br>
+<strong>Level 2 — Per-Mode Arena:</strong> 5 signal modes (NORMAL through ASYM) compete over a rolling window to determine the optimal signal polarity. Winner = how to trade this asset. DCC monitors mode-change complexity.<br>
+<strong>Level 3 — Per-Asset Meta-Arena (future):</strong> All (asset × timeframe × preset × mode) combinations compete to determine where to trade. A Python-side optimizer ranks the full leaderboard. DCC governs search budget across combinations.<br>
+</p>
+<p>
+This is nested MDL with nested DCC — the same architecture as the 8Z-OS, where frame-level MDL (which predictor?) is governed by frame-level DCC, which is governed by segment-level DCC, which is governed by file-level decisions. The trading system has the same fractal structure: bar-level → mode-level → asset-level, each with its own MDL arena and DCC budget controller.
+</p>
+
+<h3>The Multi-Asset Monitor Vision</h3>
+<p>
+The practical implementation: a TradingView split-screen where one-third of the screen is a Pine indicator showing a 30-row monitoring table. Each row is an asset — crypto majors, high-risk altcoins, stock indices, bonds, volatility, commodities, forex. Each row shows: MDL regime, DCC state, arena mode, virtual PnL, signal status, and a heat-map color indicating how well the strategy fits that asset right now.
+</p>
+<p>
+Behind the scenes, a Python optimizer runs nightly across 14,400+ combinations (16 presets × 30 assets × 6 timeframes × 5 modes), outputting a ranked leaderboard. DCC governs the search: it starts with promising combinations and expands or contracts based on results — exactly like 8Z-rp's TSP solver that uses DCC to decide how many candidate solutions to test per iteration.
+</p>
+<p>
+The human trader — you — sits at the center, watching the monitor table, informed by the leaderboard, making the final decision. The system finds the structure. The human decides whether to act. This is the AIM³ vision: human judgment amplified by mathematical structure detection.
+</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 10 — THE MONITOR -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch10">
+<div class="chapter-num">Chapter 10</div>
+<h2>The Monitor — Multi-Asset Command Center</h2>
+
+<p>
+The MDL/DCC Monitor v1.0 is a <strong>passive intelligence indicator</strong> — it does not trade. It computes the full MDL regime detection, DCC coupling, signal direction, and heat scoring for up to 24 assets simultaneously, displaying results in a real-time color-coded table. This is Tier 2 of the three-tier system architecture.
+</p>
+
+<div class="callout success">
+<div class="callout-title">Operational Concept</div>
+<p>
+Your TradingView screen: three panes. <strong>Left pane</strong>: the Monitor table showing 24 assets. <strong>Center pane</strong>: the active chart with Sync Momentum v3.0 strategy loaded. <strong>Right pane</strong>: an alternate asset or timeframe. You scan the Monitor, spot which assets are "hot" (green heat, EXPLOIT mode, strong regime), switch the center pane to that asset, and trade it.
+</p>
+</div>
+
+<h3 id="ch10-arch">Architecture</h3>
+<p>
+The Monitor uses one <code>request.security()</code> call per asset, returning a 7-element tuple computed in the target symbol's context. This means the MDL generators, DCC coupling, and signal computations all run natively on each asset's price data — no approximations, no cross-contamination.
+</p>
+
+<pre>
+<span class="cm">// Master computation function — runs in target symbol context</span>
+<span class="fn">f_heat</span>(src, window, penalty, histLen, seizureT, noiseT, impLen, impFact, heatWin) =>
+    [regime, dir, minCost] = <span class="fn">f_mdl</span>(src, window, penalty)     <span class="cm">// 4 generators compete</span>
+    [dccU, chRate]         = <span class="fn">f_dcc</span>(regime, histLen, ...)     <span class="cm">// regime-change complexity</span>
+    [sigDir, strength]     = <span class="fn">f_signal</span>(src, impLen, impFact) <span class="cm">// impulse direction</span>
+    heat = momReturn × |strength| × dccU / <span class="num">10</span>              <span class="cm">// composite score</span>
+    [<span class="kw">float</span>(regime), dir, dccU, sigDir, strength, heat, momReturn]
+
+<span class="cm">// One call per asset — 24 assets = 24 of 40 allowed calls</span>
+[c1_reg, c1_dir, c1_u, c1_sig, c1_str, c1_heat, c1_mom] = <span class="fn">request.security</span>(<span class="str">"BINANCE:BTCUSDT.P"</span>, ...)
+[c2_reg, c2_dir, c2_u, c2_sig, c2_str, c2_heat, c2_mom] = <span class="fn">request.security</span>(<span class="str">"BINANCE:ETHUSDT.P"</span>, ...)
+<span class="cm">// ... 22 more assets</span>
+</pre>
+
+<p>
+<strong>Resource budget:</strong> Pine v6 allows 40 <code>request.security()</code> calls. The Monitor uses 24 (one per asset), leaving 16 for potential future expansion — secondary timeframe checks, volume data, or VWAP computations.
+</p>
+
+<h3 id="ch10-columns">Column Reference</h3>
+
+<div class="param-table">
+<table style="width:100%; border-collapse:collapse; font-size:13.5px;">
+<tr style="border-bottom: 1px solid var(--border);">
+<th style="text-align:left; padding:8px; color:var(--text-muted);">Column</th>
+<th style="text-align:left; padding:8px; color:var(--text-muted);">Content</th>
+<th style="text-align:left; padding:8px; color:var(--text-muted);">Colors</th>
+</tr>
+<tr style="border-bottom: 1px solid var(--border);">
+<td style="padding:8px; color:var(--text-primary);"><strong>ASSET</strong></td>
+<td style="padding:8px; color:var(--text-secondary);">Ticker name, auto-extracted from symbol. Grouped by category (Crypto, Stocks, Bonds, Volatility, Commodities, Forex).</td>
+<td style="padding:8px; color:var(--text-secondary);">White text on dark background</td>
+</tr>
+<tr style="border-bottom: 1px solid var(--border);">
+<td style="padding:8px; color:var(--text-primary);"><strong>MDL</strong></td>
+<td style="padding:8px; color:var(--text-secondary);">Winning regime + direction arrow. TREND ▲/▼, REVERT ▲/▼, MOMTM ▲/▼, RANGE ◆</td>
+<td style="padding:8px; color:var(--text-secondary);"><span style="color:#22d67a;">TREND</span> · <span style="color:#ff9800;">REVERT</span> · <span style="color:#00bcd4;">MOMTM</span> · <span style="color:#ffd740;">RANGE</span></td>
+</tr>
+<tr style="border-bottom: 1px solid var(--border);">
+<td style="padding:8px; color:var(--text-primary);"><strong>DCC</strong></td>
+<td style="padding:8px; color:var(--text-secondary);">DCC state name: EXPLOIT / BALANCED / EXPLORE</td>
+<td style="padding:8px; color:var(--text-secondary);"><span style="color:#22d67a;">EXPLOIT</span> · <span style="color:#ffd740;">BALANCED</span> · <span style="color:#ff4757;">EXPLORE</span></td>
+</tr>
+<tr style="border-bottom: 1px solid var(--border);">
+<td style="padding:8px; color:var(--text-primary);"><strong>u</strong></td>
+<td style="padding:8px; color:var(--text-secondary);">DCC coupling parameter, 0.00 (noise) to 1.00 (seizure). Higher = more exploitable structure.</td>
+<td style="padding:8px; color:var(--text-secondary);">Same as DCC column</td>
+</tr>
+<tr style="border-bottom: 1px solid var(--border);">
+<td style="padding:8px; color:var(--text-primary);"><strong>SIGNAL</strong></td>
+<td style="padding:8px; color:var(--text-secondary);">Impulse-based direction: LONG ▲ / SHORT ▼ / FLAT —. Based on current bar's move vs average.</td>
+<td style="padding:8px; color:var(--text-secondary);"><span style="color:#22d67a;">LONG</span> · <span style="color:#ff4757;">SHORT</span> · <span style="color:#4a5672;">FLAT</span></td>
+</tr>
+<tr style="border-bottom: 1px solid var(--border);">
+<td style="padding:8px; color:var(--text-primary);"><strong>MOM%</strong></td>
+<td style="padding:8px; color:var(--text-secondary);">Momentum return over the heat lookback window (default 50 bars). Shows direction and magnitude.</td>
+<td style="padding:8px; color:var(--text-secondary);">Green positive, red negative</td>
+</tr>
+<tr style="border-bottom: 1px solid var(--border);">
+<td style="padding:8px; color:var(--text-primary);"><strong>HEAT</strong></td>
+<td style="padding:8px; color:var(--text-secondary);">ASCII heat bar: +█████ (strong bullish), -█████ (strong bearish), ░░░░░ (no edge). Composite of regime clarity × strength × DCC favor.</td>
+<td style="padding:8px; color:var(--text-secondary);">Green → gray → red gradient</td>
+</tr>
+<tr>
+<td style="padding:8px; color:var(--text-primary);"><strong>SCORE</strong></td>
+<td style="padding:8px; color:var(--text-secondary);">Numeric heat score, -1.00 to +1.00. The single number that summarizes "how tradeable is this asset right now?"</td>
+<td style="padding:8px; color:var(--text-secondary);">Same as HEAT column</td>
+</tr>
+</table>
+</div>
+
+<h3 id="ch10-workflow">Trading Workflow</h3>
+<p>
+The Monitor transforms multi-asset trading from a guessing game into a structured scanning process:
+</p>
+
+<p>
+<strong>Step 1 — Scan.</strong> Open TradingView with three panes. Load the Monitor on the left pane (any chart — it fetches all assets via <code>request.security()</code>). The table populates with real-time data across all 24 assets.
+</p>
+<p>
+<strong>Step 2 — Identify.</strong> Look for the convergence pattern: asset shows <span style="color:#22d67a;">EXPLOIT</span> DCC state + high coupling (u > 0.7) + directional MDL regime (TREND or MOMENTUM, not RANGE) + active signal (LONG or SHORT) + strong heat score (|score| > 0.3). This means MDL has found stable structure, DCC confirms it's exploitable, and momentum is aligned.
+</p>
+<p>
+<strong>Step 3 — Switch.</strong> Navigate the center pane to that asset. Load Sync Momentum v3.0 strategy. Verify the strategy's own dashboard confirms the regime and DCC state. Check the chart visually for obvious structure (trend lines, support/resistance, clean price action).
+</p>
+<p>
+<strong>Step 4 — Execute.</strong> Let the strategy handle entries and exits. Or, if in manual/competition mode, use the Monitor's intelligence to time your manual entries — enter when the Monitor shows convergence, avoid when it shows EXPLORE/RANGE.
+</p>
+<p>
+<strong>Step 5 — Rotate.</strong> When the Monitor shows the current asset's heat fading (EXPLOIT → BALANCED → EXPLORE), scan for the next hot asset. The market rotates; the Monitor tracks the rotation in real-time.
+</p>
+
+<div class="callout warn">
+<div class="callout-title">Key Principle</div>
+<p>
+The Monitor tells you <em>where</em> the structure is. The strategy tells you <em>how</em> to trade it. You decide <em>whether</em> to act. This three-layer separation — detection, execution, judgment — is the core design principle. No single layer overrides the others.
+</p>
+</div>
+
+<h3 id="ch10-assets">Default Asset Selection</h3>
+<p>
+The Monitor ships with 24 configurable slots across 6 asset classes, with a curated default set chosen for:
+</p>
+<p>
+<strong>Crypto (8 slots):</strong> BTC, ETH, SOL, SUI, DOGE enabled by default. PEPE, WIF, BONK available for meme coin monitoring. All use Binance perpetual futures feeds for consistency with the main strategy.
+</p>
+<p>
+<strong>Stocks (6 slots):</strong> SPY and QQQ enabled — these are the sync leaders for the stock preset family. IWM, DIA, NVDA, AAPL available for individual stock tracking.
+</p>
+<p>
+<strong>Bonds (3 slots):</strong> FESB1! (EURO STOXX Banks Futures) and FBON1! (Euro-BONO Fixed Income) enabled — these showed the strongest cross-asset results in v2.2 testing (+6,738% and -37,073% respectively, the latter being a prime Smart Invert candidate). TLT available for US Treasury bond exposure.
+</p>
+<p>
+<strong>Volatility (2 slots):</strong> FVS1! (VSTOXX Futures) enabled — the original "reliable loser" that inspired the Smart Invert discovery (-278,000% normal → huge profit inverted). VIX available as alternative.
+</p>
+<p>
+<strong>Commodities (3 slots):</strong> XAUUSD (Gold) enabled as a key risk/safe-haven indicator. Oil (CL1!) and Silver (SI1!) available.
+</p>
+<p>
+<strong>Forex (3 slots):</strong> EURUSD and DXY enabled — DXY is the universal forex sync leader, EURUSD its inverse. GBPUSD available for additional coverage.
+</p>
+<p>
+Every slot's symbol is configurable via <code>input.symbol()</code>, so you can swap in any TradingView-supported asset. The toggle next to each asset controls whether it appears in the table without wasting a <code>request.security()</code> call on disabled assets.
+</p>
+
+<h3>Compact vs Full Mode</h3>
+<p>
+<strong>Full mode</strong> (default): 8 columns — ASSET, MDL, DCC, u, SIGNAL, MOM%, HEAT bar, SCORE. Best for wider screens where the Monitor gets a full third of the display.
+</p>
+<p>
+<strong>Compact mode</strong>: 5 columns — ASSET, MDL, DCC, SIGNAL, HEAT. Drops the numeric columns for narrower screens. All essential information preserved; you just lose the precise numbers.
+</p>
+
+<h3>Summary Row</h3>
+<p>
+The bottom of the table shows a summary: how many assets are active, how many are in EXPLOIT mode, and the average heat score across all monitored assets. When EXPLOIT count is high and average heat is positive, the market as a whole has exploitable structure — it's a "risk-on" environment for the system. When EXPLOIT count is low and average heat is near zero, the system says "wait."
+</p>
+
+<div class="callout">
+<div class="callout-title">Future: Smart Invert Arena in Monitor</div>
+<p>
+The current v1.0 Monitor computes MDL/DCC and impulse signals per asset. Future v2.0 will add the Smart Invert arena computation — showing which of the 5 modes (NORMAL, SYNC_INV, IMPULSE_INV, FULL_INV, ASYM) is winning for each asset. This requires additional <code>request.security()</code> budget but is feasible within the 40-call limit by batching arena state into the main tuple. The v2.0 Monitor will effectively tell you not just "where to trade" but "how to trade it" (which inversion mode).
+</p>
+</div>
 </section>
 
 <!-- ──── FOOTER ──── -->
@@ -904,7 +1161,7 @@ The same framework that detects Wolfram cellular automata in HIV-1 genomic seque
   <p style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-blue); margin-bottom: 12px;">
     Sync Momentum — The Complete Trading System
   </p>
-  <p>By Bojan Dobrečevič &nbsp;·&nbsp; AI Research Partners: Claude (Anthropic), GPT (OpenAI)</p>
+  <p>By Bojan Dobrečevič &nbsp;·&nbsp; AI Research Partners: Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI)</p>
   <p style="margin-top: 8px;">March 2026 &nbsp;·&nbsp; AIM³ Institute, Ljubljana</p>
   <p style="margin-top: 20px; font-size: 11px; color: var(--text-muted); max-width: 500px; margin-left: auto; margin-right: auto;">
     This document is a technical reference for research and educational purposes.
