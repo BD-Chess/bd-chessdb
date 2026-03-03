@@ -285,11 +285,15 @@ pre .cm { color: var(--text-muted); font-style: italic; }
   <a class="sub" href="#ch4-cooldown">Cooldown & Regime</a>
   <a class="sub" href="#ch4-volume">Volume Confirmation</a>
   <a class="sub" href="#ch4-code">Code Patches</a>
-  <a class="ch" href="#ch5">5 — The Leap Competition</a>
-  <a class="sub" href="#ch5-rules">Competition Format</a>
-  <a class="sub" href="#ch5-manual">Your Manual Edge</a>
-  <a class="sub" href="#ch5-auto">Automation Path</a>
-  <a class="sub" href="#ch5-hybrid">Hybrid Approach</a>
+  <a class="ch" href="#ch5">5 — The BD Manual Method</a>
+  <a class="sub" href="#ch5-leap">The Leap — Live Results</a>
+  <a class="sub" href="#ch5-portfolio">Single Pair vs Competition</a>
+  <a class="sub" href="#ch5-cycle">The Add-Escape-Ride Cycle</a>
+  <a class="sub" href="#ch5-decision">The Decision Point</a>
+  <a class="sub" href="#ch5-micro">Microstructure Guarantee</a>
+  <a class="sub" href="#ch5-reads">Chart Reading — What I See</a>
+  <a class="sub" href="#ch5-setup">Chart Setup (3-Panel)</a>
+  <a class="sub" href="#ch5-automate">Automation Roadmap</a>
   <a class="ch" href="#ch6">6 — Risk Bible</a>
   <a class="sub" href="#ch6-sizing">Position Sizing</a>
   <a class="sub" href="#ch6-scenarios">Failure Scenarios</a>
@@ -316,14 +320,16 @@ pre .cm { color: var(--text-muted); font-style: italic; }
   <h1>Sync <em>Momentum</em></h1>
   <div class="subtitle">
     A 14-month journey from correlation-first intuition to a battle-tested, multi-preset,
-    zero-fee scalping engine — by Bojan Dobrečevič, with AI research partners.
+    zero-fee scalping engine — plus the manual anti-fragile method that reached top 2% in
+    TradingView's The Leap competition. By Bojan Dobrečevič, with AI research partners.
   </div>
-  <div class="meta">v2.2 → v3.0+ &nbsp;·&nbsp; March 2026 &nbsp;·&nbsp; BD × Claude × GPT × Gemini × Grok</div>
+  <div class="meta">v2.2 → v4.0 &nbsp;·&nbsp; March 2026 &nbsp;·&nbsp; BD × Claude × GPT × Gemini × Grok</div>
   <div class="stats-row">
     <div class="stat"><div class="val green">+701K</div><div class="lbl">Backtest PnL (28d)</div></div>
     <div class="stat"><div class="val gold">70,136%</div><div class="lbl">Return on $1K</div></div>
     <div class="stat"><div class="val blue">4,479</div><div class="lbl">Trades</div></div>
-    <div class="stat"><div class="val green">Top 3%</div><div class="lbl">The Leap Rank</div></div>
+    <div class="stat"><div class="val green">Top 2%</div><div class="lbl">The Leap Rank</div></div>
+    <div class="stat"><div class="val green">+$15.5K</div><div class="lbl">Leap Profit (4hrs)</div></div>
   </div>
 </section>
 
@@ -671,62 +677,257 @@ binVolSpike = binVol > binVolAvg + <span class="num">2.0</span> * binVolStd
 <!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
 <section class="chapter" id="ch5">
 <div class="chapter-num">Chapter 5</div>
-<h2>The Leap Competition — Tactical Guide</h2>
-
-<h3 id="ch5-rules">Competition Format</h3>
-<p>
-The Leap is TradingView's paper trading competition. You're ranked #1,242 out of ~40,000+ participants (top 3%), with +7.00% realized profit ($7K). You're spending 30 minutes per day doing manual VWAP-reversal trades with step-in entries.
-</p>
-
-<h3 id="ch5-manual">Your Manual Edge Is Real</h3>
-<p>
-Top 3% is not luck over multiple days. Your manual approach — buying step-ins when price extends far below VWAP and selling when extended above — is a proven mean-reversion technique. The key strengths:
-</p>
-<p>
-<strong>Discretionary reading</strong> of when a move is "exhausted" vs. "still trending" — something no fixed-parameter system can replicate perfectly. Your brain is doing regime detection, volume reading, and structure identification simultaneously.
-</p>
-<p>
-<strong>Step-in sizing</strong> — you're averaging into positions at better prices rather than going all-in at the first signal. This lowers your effective entry price and increases your win rate at the cost of occasional holding through drawdowns.
-</p>
-
-<h3 id="ch5-auto">Automation Path — Can the Pine Run The Leap?</h3>
-
-<div class="callout warn">
-<div class="callout-title">Important Consideration</div>
-<p>TradingView strategies can execute on Paper Trading. You would apply the strategy to a chart, enable "Paper Trading" in the strategy properties, and it would auto-execute signals on TradingView's paper trading engine. However, check The Leap's current rules — some competitions restrict automated execution or require all trades to be manually placed. If automation is allowed, the 1s Sync Momentum v2.2 could run 24/7 on paper trading, potentially generating far more trades than your 30-min manual sessions.</p>
-</div>
+<h2>The BD Manual Method — Anti-Fragile Mean Reversion</h2>
 
 <p>
-The TF1 (1-minute) or TF2 (5-minute) presets would be more appropriate for competition paper trading than the 1s presets, because:
-</p>
-<p>
-<strong>Paper trading latency</strong> — TradingView's paper engine has more execution delay than a real exchange. The 1s strategy's tight 0.033% SL might get triggered by paper execution lag that wouldn't exist on MEXC. A wider 1m or 5m preset gives more room.
-</p>
-<p>
-<strong>Competition scoring</strong> — The Leap scores realized profit percentage. A high-frequency 1s strategy with 62% loss rate creates many small realized losses that drag the P&L line. A lower-frequency strategy with higher conviction produces cleaner P&L.
-</p>
-
-<h3 id="ch5-hybrid">The Hybrid Approach (Recommended)</h3>
-
-<p>Combine your strengths. Use the Pine as a <strong>signal overlay</strong> while you trade manually:</p>
-
-<p>
-<strong>Step 1:</strong> Run the 1s Sync Momentum v2.2 (or v3.0) as an <em>indicator</em> (not strategy) on your chart. Enable trade labels and signal shapes. This gives you real-time sync + impulse signals without auto-executing.
-</p>
-<p>
-<strong>Step 2:</strong> Layer your BD-Multi_indicators (EMA/SAR/BB/SuperTrend/VWAP) on the same chart. This gives you the structural context — where is VWAP, where are the EMA levels, what's the SuperTrend saying.
-</p>
-<p>
-<strong>Step 3:</strong> Your decision rule: only enter a manual VWAP-reversal trade when EITHER (a) the Sync Momentum signal agrees with your direction, OR (b) the VWAP extension is extreme (|z| > 2) AND the SuperTrend/EMA stack confirms your direction. This adds the momentum confirmation to your structural reads.
-</p>
-<p>
-<strong>Step 4:</strong> Use the BTC Volume Sync indicator to verify that volume supports the move. If sync count is ≥5 exchanges, you have high-confidence. If only 2–3, reduce size.
+This chapter documents the manual trading methodology that reached <strong>top 2% in TradingView's The Leap competition</strong> (February 2026, 46,000+ traders), trading 30 minutes per day. The method is the opposite of the Sync Momentum engine — and that contrast is the point. Where Sync Momentum cuts losers fast and catches momentum, the BD Manual Method does what every textbook says not to do: it adds to losing positions, never cuts small losses, and turns drawdowns into the biggest winners. It works because of structural constraints that make it anti-fragile rather than reckless.
 </p>
 
 <div class="callout success">
-<div class="callout-title">Competition Sizing Strategy</div>
-<p>For The Leap, your step-in approach is correct. Enter with 25% of intended position at first signal. Add another 25% if price moves further against you (better entry). Add final 50% only if price shows reversal signs (momentum shift, wick rejection, volume spike in your direction). This gives you a better average entry than any all-in automated approach.</p>
+<div class="callout-title">The Core Principle</div>
+<p>Losing trades become the best trades. The bigger a position goes against you, the bigger you size into it, and the bigger the payoff when price reverts. And in crypto on the 1-minute scale, price <em>always</em> reverts — even on the craziest trend days, pullbacks appear every few candles. The question is never "if" but "when."</p>
 </div>
+
+<!-- ──── LEAP RESULTS ──── -->
+<h3 id="ch5-leap">The Leap — Live Competition Results</h3>
+
+<p>
+The Leap is TradingView's crypto paper trading competition. February 2026 Crypto Edition: 46,616 registered traders, $100,000 starting virtual capital, six assets available (BTC, ETH, SOL, LTC, XRP, DOGE vs USDC perpetuals on Coinbase). Top 500 win TradingView subscription prizes.
+</p>
+
+<table class="param-table">
+<tr><th>Date</th><th>Place</th><th>Profit %</th><th>Profit $</th><th>Top %</th><th>Session Time</th></tr>
+<tr><td>Mar 1</td><td>1,263</td><td>+9.94%</td><td>+$9,935</td><td>3%</td><td>~30 min</td></tr>
+<tr><td>Mar 2</td><td>1,171</td><td>+10.69%</td><td>+$10,688</td><td>2.5%</td><td>~30 min</td></tr>
+<tr><td><strong>Mar 3</strong></td><td><strong>864</strong></td><td><strong>+15.52%</strong></td><td><strong>+$15,524</strong></td><td><strong>2%</strong></td><td>~2 hours</td></tr>
+</table>
+
+<p>
++399 places gained in a single day. +$5K added. The two-hour session on March 3rd was traded <em>between</em> building Pine strategy code in Claude — entering and managing positions during compile-time waits. Proof that the method requires minimal screen time.
+</p>
+
+<div class="callout">
+<div class="callout-title">Hourly Rate Perspective</div>
+<p>$15,500 profit from roughly 4 total hours of trading across 3 days = <strong>$3,875/hour</strong>. No job on the planet pays this well for watching charts. And the method doesn't require continuous attention — positions manage themselves while you do other work.</p>
+</div>
+
+<!-- ──── PORTFOLIO STRUCTURE ──── -->
+<h3 id="ch5-portfolio">Portfolio Structure — Single Pair vs Competition Mode</h3>
+
+<div class="callout">
+<div class="callout-title">Key Distinction: Two Modes</div>
+<p>The method has two operating modes depending on the platform. The <strong>core method</strong> is single-pair — long and short simultaneously on the same asset. The competition variant uses multiple assets only because TradingView doesn't allow hedged positions on the same pair.</p>
+</div>
+
+<h4>Core Method — Single Pair (Real Exchanges)</h4>
+
+<p>
+On MEXC and other exchanges that offer zero-fee trading, the method runs on <strong>a single trading pair</strong> — whichever zero-fee perpetual has good liquidity. Typically <strong>SOL or SUI</strong> from the larger caps, plus various smaller coins that MEXC offers at 0% fees. The zero-fee constraint is non-negotiable: the add-and-escape cycle generates many trades, and even small fees would eat the edge.
+</p>
+
+<p>
+On exchanges that allow simultaneous long and short on the same contract, you hold both directions at once. When price moves either way, one side profits and the other triggers the add-and-escape cycle.
+</p>
+
+<p>
+<strong>BTC and ETH are your sync dashboard, not your trading pairs.</strong> You watch BTC and ETH price action and volume to read market direction and confirm moves on your trading pair. When BTC and ETH volume spikes and direction aligns with your SOL trade, the move is real. When only your pair moves but BTC/ETH don't confirm, the move is more likely to revert. For manual visual trading, these two sync references are enough — you don't need to watch a dozen coins.
+</p>
+
+<p>
+Whether this BTC+ETH sync approach stays sufficient when automated via scripts is an open question — the automated strategy may benefit from additional sync feeds (BNB, XRP) as the Pine v2.2 already supports. That's something to discover during the automation build.
+</p>
+
+<h4>Competition Variant — Multi-Asset (TradingView The Leap)</h4>
+
+<p>
+TradingView's paper trading does not allow simultaneous long and short on the same pair. This forces an adaptation: instead of hedging BTC-long vs BTC-short, you spread across <strong>3 assets long and 3 assets short</strong> (from the available pool: BTC, ETH, SOL, LTC, XRP, DOGE vs USDC perpetuals on Coinbase).
+</p>
+
+<p>
+This is a <strong>workaround</strong>, not the ideal setup. It introduces correlation risk — your long SOL and short DOGE don't perfectly offset each other the way long BTC and short BTC would. But it's good enough: crypto assets are highly correlated on short timeframes, so the natural hedge still holds approximately. And the add-and-escape cycle works the same way on each individual position regardless of how many assets are in play.
+</p>
+
+<!-- ──── THE CYCLE ──── -->
+<h3 id="ch5-cycle">The Add-Escape-Ride Cycle</h3>
+
+<p>
+This is the mechanical heart of the method. When a position goes against you:
+</p>
+
+<p>
+<strong>Step 1 — Initial Entry:</strong> Open a position with standard size (call it 1x). This is your base trade.
+</p>
+
+<p>
+<strong>Step 2 — Price Moves Against You:</strong> Don't close. Don't panic. Wait.
+</p>
+
+<p>
+<strong>Step 3 — Add Aggressively:</strong> When the move has extended enough (you read this from volume, structure, and liquidation levels), add <strong>significantly more size</strong> to the same position — could be 3x, 5x, 10x, even 20x the original, depending on conviction and how far price has moved. Your average entry price shifts close to the current price. The original position becomes a small fraction of total size. The multiplier is not fixed — it depends on how stretched the move is, how confident the reversal setup looks, and how much margin you have available.
+</p>
+
+<p>
+<strong>Step 4 — The Micro-Pullback:</strong> Price never moves in a straight line. Even in a powerful trend, 1-minute candles produce constant small reversions — market makers filling orders, profit-taking, liquidation cascade exhaustion. When price pulls back toward your new average entry...
+</p>
+
+<p>
+<strong>Step 5 — Partial Close:</strong> Take a large portion of the position off at breakeven or a tiny profit — could be 30%, 50%, 80%, whatever the situation demands. If the retrace looks weak and you want maximum safety, close most of it. If it looks like a real reversal building, keep more. The percentage is a judgment call every time, not a fixed rule. You've escaped the bulk of the risk. The remainder is now a low-cost position with a good entry.
+</p>
+
+<p>
+<strong>Step 6 — The Runner:</strong> If price continues against you again, you repeat the cycle: add aggressively to the remaining portion, partial close on the next pullback. If price reverses in your favor, that runner catches the full move — and because you sized up on the add, even the runner portion can be substantial.
+</p>
+
+<div class="callout warn">
+<div class="callout-title">Why This Is NOT Martingale</div>
+<p>Classic martingale doubles down and holds everything, hoping for a full reversion. It blows up when the reversion doesn't come. The BD method <strong>ratchets out</strong> on every micro-pullback: add big, escape a chunk, keep a runner. Each cycle reduces total exposure. You're not holding an ever-growing position hoping for salvation — you're using the aggressive add as a <em>tool to fix your entry price</em>, then taking a discretionary amount off the table based on how the market reads at that moment.</p>
+</div>
+
+<!-- ──── DECISION POINT ──── -->
+<h3 id="ch5-decision">The Decision Point — Escape vs Ride</h3>
+
+<p>
+After the aggressive add, when price pulls back to your average entry, you face the critical decision:
+</p>
+
+<p>
+<strong>Scenario A — Weak retrace:</strong> Price barely taps your entry and looks like it wants to continue against you. Wicks are thin, volume is building in the opposite direction. <strong>Close most of the added size immediately.</strong> Escape. Minimal damage.
+</p>
+
+<p>
+<strong>Scenario B — Real reversal:</strong> Price pushes through your entry with conviction — fat candles, volume in your direction, liquidation levels getting swept on the other side. <strong>Hold the full added size.</strong> This is your home run. A "losing" trade just became your biggest winner because you're sitting on a massive position at a near-perfect entry right at the turning point.
+</p>
+
+<p>
+<strong>Scenario C — Price goes further against you:</strong> Repeat the cycle. Add aggressively to the remaining runner, partial close on the next micro-pullback. The cost of each cycle is minimal because you're only cycling on the runner portion.
+</p>
+
+<div class="metric-grid">
+  <div class="metric-card"><div class="mv green">Scenario A</div><div class="ml">Escape at breakeven — small or no loss</div></div>
+  <div class="metric-card"><div class="mv green">Scenario B</div><div class="ml">Ride the reversal — massive win on oversized position</div></div>
+  <div class="metric-card"><div class="mv gold">Scenario C</div><div class="ml">Repeat cycle — cost is minimal each time</div></div>
+</div>
+
+<p>
+Two of three outcomes are breakeven or better. One is a home run. The losing trades literally set up the biggest wins — the market pays you <em>more</em> for being wrong first, because being wrong forced you into a huge position at the best possible price.
+</p>
+
+<!-- ──── MICROSTRUCTURE ──── -->
+<h3 id="ch5-micro">The Microstructure Guarantee</h3>
+
+<p>
+The entire method rests on one empirical fact: <strong>price never moves in a straight line on the 1-minute scale.</strong> Pull up any 1-minute chart, any asset, any day in history — even the craziest pump days — and you will find pullbacks every few candles.
+</p>
+
+<p>
+This is not a hope. It's how market microstructure works:
+</p>
+
+<p>
+<strong>Market makers</strong> need to fill orders on both sides of the book. After a directional push, they widen the spread and fill counter-direction orders, creating brief reversals.
+</p>
+<p>
+<strong>Liquidation cascades</strong> exhaust themselves. When leveraged longs get liquidated, the forced selling creates a vacuum — no more sellers left — and price bounces.
+</p>
+<p>
+<strong>Profit-taking</strong> from traders who caught the move creates selling into a pump and buying into a dump. This is constant.
+</p>
+<p>
+<strong>Algorithmic rebalancing</strong> by bots maintaining delta-neutral positions creates counter-flow on every large move.
+</p>
+
+<p>
+The only question is <strong>how many bars</strong> until the next pullback — and at 1-minute resolution, the answer is almost always "fewer than 10." This provides the exit window the method needs.
+</p>
+
+<!-- ──── CHART READING ──── -->
+<h3 id="ch5-reads">Chart Reading — What I See</h3>
+
+<p>
+Three primary signals inform the add-and-escape decisions:
+</p>
+
+<h4>1. Volume/Candle Ratio (Custom Indicator)</h4>
+<p>
+A custom overlay that measures the ratio between candle body size and volume bar size. When the <strong>candle is small but volume is big</strong>, it signals absorption: buyers and sellers are fighting hard but price isn't moving. This is institutional activity — someone is absorbing the flow. Absorption almost always precedes reversal. In 8Z terms: low information output (small candle) despite high input energy (volume) = compression that's about to decompress.
+</p>
+
+<h4>2. Liquidation Levels</h4>
+<p>
+Horizontal zones on the chart where leveraged positions will get force-closed, creating cascading order flow. Visible most precisely on the 1-minute timeframe. Market makers know where these clusters sit and will push price into them to harvest liquidity. Reading these tells you:
+</p>
+<p>
+— <em>Where is price being pulled toward?</em> Liquidation clusters are magnets. Price tends to hunt them.
+</p>
+<p>
+— <em>When has the hunt completed?</em> Once liquidations are swept, the fuel is gone and price reverses. This is your signal that the add-and-escape cycle is about to pay off.
+</p>
+
+<h4>3. VWAP Extension</h4>
+<p>
+When price extends far from the Volume Weighted Average Price, mean reversion probability increases. This is the structural layer that tells you whether the current move is "stretched" or "reasonable." Extreme VWAP extension + volume absorption = high-confidence reversal setup.
+</p>
+
+<!-- ──── CHART SETUP ──── -->
+<h3 id="ch5-setup">Chart Setup — The 3-Panel Workstation</h3>
+
+<p>
+Three panels running simultaneously on TradingView:
+</p>
+
+<p>
+<strong>Left Panel — 1-second (BTCUSDT):</strong> Primary sync and volume reading. The BD Volume/Candle ratio indicator overlaid on price. Multi-platform volume visualization on the bottom. This is the microscope — seeing the real-time absorption patterns and sync signals.
+</p>
+
+<p>
+<strong>Center Panel — 1-minute (BTCUSDC.P):</strong> Liquidation levels mapped most accurately at this timeframe. Horizontal zones show where leveraged positions cluster. The BD-Multi_indicators overlay (EMA/SAR/BB/SuperTrend/VWAP) provides structural context. This is the map — showing where price is being drawn to and where the inflection points are.
+</p>
+
+<p>
+<strong>Right Panel — 5-minute (XRPUSDC.P or active trade):</strong> The actual trading chart for the current competition asset. Entry/exit management, SL/TP visualization, position tracking. Sync Momentum running as an indicator overlay for signal confirmation.
+</p>
+
+<div class="callout">
+<div class="callout-title">The Three Timeframes Work Together</div>
+<p>The 1-second panel tells you <em>what's happening now</em> (volume absorption, sync signals). The 1-minute panel tells you <em>where price is going</em> (liquidation magnets, structural levels). The 5-minute panel is <em>where you trade</em> (manage positions, size entries). Decision flow: 1m identifies the zone → 1s confirms the absorption → 5m executes the trade.</p>
+</div>
+
+<!-- ──── AUTOMATION ──── -->
+<h3 id="ch5-automate">Automation Roadmap — The Goal</h3>
+
+<p>
+The ultimate objective is to automate this method fully, so it runs without looking at charts. This frees time for research, travel, and life — while the system earns. The path to automation requires encoding three elements that are currently discretionary:
+</p>
+
+<p>
+<strong>1. Portfolio Manager:</strong> On real exchanges, maintain simultaneous long and short on the same pair. On competition platforms that restrict hedging, distribute across multiple assets — auto-select which to long and short based on relative strength, VWAP position, and trend structure. Rebalance when signals flip.
+</p>
+
+<p>
+<strong>2. The Add-Escape Engine:</strong> Monitor each position. When a position exceeds a drawdown threshold, execute the aggressive add. Monitor for the micro-pullback. Partial close at breakeven — how much to close is a dynamic parameter based on reversal confidence. Keep the runner. Repeat if needed. The key parameters to calibrate: drawdown threshold for adding, add size multiplier (adaptive, not fixed), pullback size that triggers the partial close, close percentage (adaptive), and maximum number of add cycles per position.
+</p>
+
+<p>
+<strong>3. The Decision Oracle:</strong> The hardest part to automate. At the pullback, decide: is this a weak retrace (escape) or a real reversal (ride)? This requires encoding the volume absorption signal, liquidation level awareness, and VWAP extension reading into quantifiable rules. Candidates:
+</p>
+<p>
+— Volume/candle ratio exceeding a threshold = absorption detected<br>
+— Liquidation cluster within N% of current price swept on previous move = fuel exhausted<br>
+— VWAP z-score exceeding ±2.0 = extreme extension, favor reversal<br>
+— Multiple timeframe confluence: 1s sync agrees with 1m structure = high confidence
+</p>
+
+<div class="callout warn">
+<div class="callout-title">Current Status: Manual → Semi-Auto → Full Auto</div>
+<p><strong>Phase 1 (current):</strong> Fully manual. 30 minutes/day. Top 2% in competition.<br>
+<strong>Phase 2 (next):</strong> Semi-automated: alerts fire when add/escape conditions are met, human confirms. Pine indicator overlay showing add zones, escape zones, and reversal confidence score.<br>
+<strong>Phase 3 (goal):</strong> Fully automated. Pine strategy or Python bot handles the entire cycle. Human monitors daily, intervenes only on extreme conditions.</p>
+</div>
+
+<p>
+The four-tool ecosystem (v2.2+ strategy, v4 strategy, parameter sweep indicator, Python optimizer) provides the infrastructure. The Sync Momentum signals provide entry intelligence. The BD Manual Method provides the position management framework. Combining them creates a system that enters with momentum conviction and manages positions with anti-fragile mean reversion — the best of both worlds.
+</p>
+
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
