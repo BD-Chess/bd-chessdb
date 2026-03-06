@@ -88,12 +88,12 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 .pos-bar { height:5px; background:var(--bg-tertiary); border-radius:3px; margin-top:10px; overflow:hidden; }
 .pos-bar-fill { height:100%; border-radius:3px; transition:width 0.3s; }
 
-.chart-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; margin-bottom:16px; overflow:hidden; }
-.chart-canvas { width:100%; height:200px; display:block; }
+.chart-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; margin-bottom:16px; overflow:hidden; resize:vertical; min-height:250px; }
+.chart-canvas { width:100%; height:300px; display:block; }
 
 .bottom-grid { display:grid; grid-template-columns:1.3fr 1fr; gap:12px; }
-.log-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; overflow:hidden; }
-.log-body { max-height:320px; overflow-y:auto; }
+.log-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; overflow:hidden; resize:vertical; min-height:150px; }
+.log-body { max-height:500px; overflow-y:auto; }
 .log-body table { width:100%; border-collapse:collapse; font-size:11px; }
 .log-body th { padding:6px 8px; text-align:left; font-family:var(--font-mono); font-size:9px; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-muted); background:var(--bg-tertiary); border-bottom:1px solid var(--border); position:sticky; top:0; }
 .log-body td { padding:4px 8px; border-bottom:1px solid #12151c; font-family:var(--font-mono); }
@@ -119,14 +119,42 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
   </div>
   <div class="sidebar-content">
 
+    <!-- CONFIG PASTE -->
+    <div class="sidebar-section">
+      <div class="section-title"><span class="conn-dot off" id="connDot"></span> ⚡ Config & Presets</div>
+      <div class="section-body">
+        <div class="field">
+          <textarea id="cfgPaste" rows="2" placeholder="BDZv2|P:ZZp0.3L7_R|ET:0.5|TP:0.3|SZ:dbl_t|SA:1|SC:1.5" spellcheck="false" style="font-size:10px"></textarea>
+        </div>
+        <div class="controls-row">
+          <button class="btn btn-sm btn-go" onclick="importConfig()">⚡ Import</button>
+          <button class="btn btn-sm btn-reset" onclick="exportConfig()">⤴ Export</button>
+        </div>
+        <div id="cfgMsg" style="font-size:10px; color:var(--accent-teal); margin-top:4px;"></div>
+        <div class="field" style="margin-top:6px">
+          <label>Preset</label>
+          <select id="p_preset" onchange="applyPreset(this.value)">
+            <option value="auto">Auto (by TF)</option>
+            <option value="3m_zzpiv">3m ZZpiv</option>
+            <option value="5m_zzpiv">5m ZZpiv</option>
+            <option value="15m_zz">15m ZZ</option>
+            <option value="30m_zz">30m+ ZZ</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <!-- CONTROLS -->
     <div class="sidebar-section">
-      <div class="section-title"><span class="conn-dot off" id="connDot"></span> ⚡ Controls</div>
+      <div class="section-title" onclick="toggleSection(this)"><span class="arrow">▾</span> Controls</div>
       <div class="section-body">
         <div class="controls-row">
           <button class="btn btn-go" id="btnStart" onclick="handleStart()">▶ Start</button>
           <button class="btn btn-stop" id="btnStop" onclick="handleStop()" style="display:none">■ Stop</button>
           <button class="btn btn-reset" onclick="handleReset()">↺ Reset</button>
+          <button class="btn btn-sm" style="background:#1a1040;color:var(--accent-purple);border-color:#3a206033" onclick="exportReport()">📋 Report</button>
+          <button class="btn btn-sm" style="background:#103030;color:var(--accent-teal);border-color:#20605033" onclick="exportScreenshot()">📸 PNG</button>
         </div>
         <div style="font-size:10px; color:var(--text-muted); margin-top:4px" id="connStatus">Disconnected</div>
       </div>
@@ -141,21 +169,52 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
           <div class="field"><label>Base Size ($)</label><input type="number" id="p_baseSz" value="1" min="0.1" step="0.1"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Symbol</label>
-            <select id="p_symbol"><option value="BTCUSDT">BTCUSDT</option><option value="ETHUSDT">ETHUSDT</option></select>
+          <div class="field"><label>Exchange (Live)</label>
+            <select id="p_exchange">
+              <option value="mexc" selected>MEXC</option>
+              <option value="binance">Binance</option>
+              <option value="okx">OKX</option>
+              <option value="bybit">Bybit</option>
+              <option value="bitget">Bitget</option>
+            </select>
           </div>
+          <div class="field"><label>Symbol</label>
+            <select id="p_symbol"><option value="BTCUSDT">BTCUSDT</option><option value="ETHUSDT">ETHUSDT</option><option value="SOLUSDT">SOLUSDT</option></select>
+          </div>
+        </div>
+        <div class="field-row">
           <div class="field"><label>Direction</label>
             <select id="p_direction"><option value="both">Both</option><option value="long">Long Only</option><option value="short">Short Only</option></select>
+          </div>
+          <div class="field"><label>Max Pos % Cap</label><input type="number" id="p_maxPosPct" value="50" min="5" max="100" step="5"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>⚡ Fees</label>
+            <select id="p_feeMode" onchange="updateFeeDisplay()">
+              <option value="off" selected>OFF (zero fees)</option>
+              <option value="auto">Auto (by exchange)</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div class="field"><label>Fee % <span id="feeLabel" style="color:var(--accent-teal);font-size:9px"></span></label>
+            <input type="number" id="p_fee" value="0" min="0" max="1" step="0.001" readonly>
           </div>
         </div>
         <div class="field-row">
           <div class="field"><label>Timeframe</label>
-            <select id="p_timeframe">
+            <select id="p_timeframe" onchange="if(this.value==='1')$('p_exchange').value='binance';hotSwapTimeframe()">
+              <option value="1">1s (Binance)</option>
               <option value="60">1m</option><option value="180" selected>3m</option>
               <option value="300">5m</option><option value="900">15m</option>
-              <option value="1800">30m</option></select>
+              <option value="1800">30m</option><option value="3600">1h</option>
+            </select>
           </div>
-          <div class="field"><label>Max Pos % Cap</label><input type="number" id="p_maxPosPct" value="50" min="5" max="100" step="5"></div>
+          <div class="field"><label>Historical Bars</label>
+            <select id="p_histBars">
+              <option value="500">500</option><option value="1000">1,000</option>
+              <option value="2000">2,000</option><option value="5000" selected>5,000</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
@@ -167,6 +226,10 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
         <div class="field-row">
           <div class="field"><label>Deviation %</label><input type="number" id="p_dev" value="0.3" min="0.05" max="2" step="0.05"></div>
           <div class="field"><label>Legs for Average</label><input type="number" id="p_legsBack" value="8" min="3" max="30" step="1"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Smart Avg (SA)</label><select id="p_smartAvg"><option value="1" selected>ON</option><option value="0">OFF</option></select></div>
+          <div class="field"><label>Outlier Cap (SC)</label><input type="number" id="p_smartCap" value="1.5" min="1.1" max="3.0" step="0.1"></div>
         </div>
       </div>
     </div>
@@ -219,7 +282,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
     </div>
 
   </div>
-  <div class="sidebar-footer">MEXC WebSocket • No real trades<br>Bojan Dobrečevič © 2026</div>
+  <div class="sidebar-footer">Multi-Exchange WebSocket • No real trades<br>Bojan Dobrečevič © 2026</div>
 </nav>
 
 <!-- ═══════════════════════════════ MAIN ═══════════════════════════════ -->
@@ -227,7 +290,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
   <div class="header-bar">
     <div class="title-group">
       <h2>ZigZag Reversion — Live Paper</h2>
-      <div class="tagline" id="headerTagline">Connect to start • <span id="tickCount">0</span> ticks | <span id="barCount">0</span> bars</div>
+      <div class="tagline" id="headerTagline">Connect to start • <span id="tickCount">0</span> ticks | <span id="barCount">0</span> bars | <span id="timeSpan">00:00:00</span></div>
     </div>
     <div class="prices">
       <div class="price-tag"><div class="sym">BTC</div><div class="val" id="priceBTC">—</div></div>
@@ -281,12 +344,51 @@ const ts = () => new Date().toLocaleTimeString('en-GB', {hour12:false});
 const fmt = (n,d=2) => n!=null ? Number(n).toFixed(d) : '—';
 const fmtUsd = n => n!=null ? '$'+Number(n).toFixed(2) : '—';
 function getP(id) { const el=$(id); if(!el)return 0; if(el.tagName==='SELECT')return el.value; return parseFloat(el.value)||0; }
+
+// ── Exchange Fees (futures maker+taker avg, per side) ──
+// Source: official exchange pages, March 2026
+// These are FUTURES fees (what this strategy actually trades)
+const EXCHANGE_FEES = {
+  mexc:    {maker:0.000, taker:0.020, label:'MEXC Futures: 0%/0.02%'},
+  binance: {maker:0.020, taker:0.050, label:'Binance Futures: 0.02%/0.05%'},
+  okx:     {maker:0.020, taker:0.050, label:'OKX Futures: 0.02%/0.05%'},
+  bybit:   {maker:0.020, taker:0.055, label:'Bybit Futures: 0.02%/0.055%'},
+  bitget:  {maker:0.020, taker:0.060, label:'Bitget Futures: 0.02%/0.06%'},
+};
+
+function updateFeeDisplay() {
+  const mode = getP('p_feeMode');
+  const feeEl = $('p_fee');
+  const labelEl = $('feeLabel');
+  
+  if(mode === 'off') {
+    feeEl.value = 0;
+    feeEl.readOnly = true;
+    labelEl.textContent = '';
+  } else if(mode === 'auto') {
+    const exch = getP('p_exchange');
+    const fees = EXCHANGE_FEES[exch] || EXCHANGE_FEES.mexc;
+    // Use taker fee (market orders = taker) — entry + exit = 2× taker
+    feeEl.value = fees.taker;
+    feeEl.readOnly = true;
+    labelEl.textContent = fees.label;
+  } else {
+    feeEl.readOnly = false;
+    labelEl.textContent = 'custom';
+  }
+}
+
+// Auto-update fees when exchange changes
+const exchEl = $('p_exchange');
+if(exchEl) exchEl.addEventListener('change', () => { if(getP('p_feeMode')==='auto') updateFeeDisplay(); });
 function toggleSection(el) {
   const a=el.querySelector('.arrow'), b=el.nextElementSibling;
   if(!b)return; const h=b.style.display==='none'; b.style.display=h?'':'none';
   if(a) a.classList.toggle('collapsed',!h);
 }
 function addLog(type, msg) {
+  // During bootstrap, only show system messages — skip swing/trade spam
+  if(historicalMode && type !== 'system') return;
   const body=$('signalLogBody');
   const emp=body.querySelector('.empty-msg'); if(emp)emp.remove();
   const d=document.createElement('div'); d.className='signal-entry '+type;
@@ -319,110 +421,184 @@ let stats={wins:0,losses:0,totalPnl:0,maxDD:0,peakEquity:10000};
 let equityCurve=[], trades=[];
 
 // ══════════════════════════════════════════════════════════════════════════
-// WEBSOCKET
+// MULTI-EXCHANGE WEBSOCKET
 // ══════════════════════════════════════════════════════════════════════════
+const EXCHANGES = {
+  mexc: {
+    ws: 'wss://wbs.mexc.com/ws',
+    sub: (sym) => ({method:"SUBSCRIPTION",params:[`spot@public.miniTickers.v3.api@${sym}@UTC+0`]}),
+    parse: (data) => {
+      if(!data.d) return null;
+      const price=parseFloat(data.d.c||data.d.p); if(!price||isNaN(price)) return null;
+      const ch=data.c||'';
+      for(const s of ['BTCUSDT','ETHUSDT','SOLUSDT']) { if(ch.includes(s)) return {sym:s,price}; }
+      return null;
+    }, name:'MEXC'
+  },
+  binance: {
+    ws: 'wss://stream.binance.com:9443/ws',
+    sub: (sym) => ({method:"SUBSCRIBE",params:[`${sym.toLowerCase()}@miniTicker`],id:1}),
+    parse: (data) => {
+      if(!data.s||!data.c) return null;
+      return {sym:data.s, price:parseFloat(data.c)};
+    }, name:'Binance'
+  },
+  okx: {
+    ws: 'wss://ws.okx.com:8443/ws/v5/public',
+    sub: (sym) => ({op:"subscribe",args:[{channel:"tickers",instId:sym.replace('USDT','-USDT')}]}),
+    parse: (data) => {
+      if(!data.data||!data.data[0]) return null;
+      const d=data.data[0]; const p=parseFloat(d.last); if(!p) return null;
+      return {sym:(d.instId||'').replace('-',''), price:p};
+    }, name:'OKX'
+  },
+  bybit: {
+    ws: 'wss://stream.bybit.com/v5/public/spot',
+    sub: (sym) => ({op:"subscribe",args:[`tickers.${sym}`]}),
+    parse: (data) => {
+      if(!data.data||!data.data.lastPrice) return null;
+      return {sym:(data.topic||'').replace('tickers.',''), price:parseFloat(data.data.lastPrice)};
+    }, name:'Bybit'
+  },
+  bitget: {
+    ws: 'wss://ws.bitget.com/v2/ws/public',
+    sub: (sym) => ({op:"subscribe",args:[{instType:"SPOT",channel:"ticker",instId:sym}]}),
+    parse: (data) => {
+      if(!data.data||!data.data[0]) return null;
+      const d=data.data[0];
+      return {sym:d.instId||'', price:parseFloat(d.lastPr||d.last||0)};
+    }, name:'Bitget'
+  }
+};
+
 function connectWS() {
   if(ws) ws.close();
-  ws = new WebSocket('wss://wbs.mexc.com/ws');
+  const exId = getP('p_exchange');
+  const cfg = EXCHANGES[exId];
+  if(!cfg) { addLog('system','Unknown exchange: '+exId); return; }
+  const syms = new Set(['BTCUSDT','ETHUSDT']);
+  syms.add(getP('p_symbol'));
+
+  ws = new WebSocket(cfg.ws);
   ws.onopen = () => {
-    connected=true; updateConnUI();
-    ws.send(JSON.stringify({method:"SUBSCRIPTION",params:[
-      "spot@public.miniTickers.v3.api@BTCUSDT@UTC+0",
-      "spot@public.miniTickers.v3.api@ETHUSDT@UTC+0"
-    ]}));
-    addLog('system','Connected to MEXC WebSocket');
+    connected=true; updateConnUI(); startPing();
+    for(const sym of syms) ws.send(JSON.stringify(cfg.sub(sym)));
+    addLog('system',`Connected to ${cfg.name} WebSocket`);
   };
   ws.onmessage = (ev) => {
     try {
-      const data=JSON.parse(ev.data); if(!data.d)return;
-      const price=parseFloat(data.d.c||data.d.p); if(!price||isNaN(price))return;
-      const ch=data.c||'';
-      if(ch.includes('BTCUSDT')) {
-        priceBuf.BTCUSDT.push(price);
-        if(priceBuf.BTCUSDT.length>BUF_MAX) priceBuf.BTCUSDT.shift();
-        $('priceBTC').textContent=price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-      }
-      if(ch.includes('ETHUSDT')) {
-        priceBuf.ETHUSDT.push(price);
-        if(priceBuf.ETHUSDT.length>BUF_MAX) priceBuf.ETHUSDT.shift();
-        $('priceETH').textContent=price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-      }
+      const parsed = cfg.parse(JSON.parse(ev.data));
+      if(!parsed) return;
+      const {sym, price} = parsed;
+      priceBuf[sym] = priceBuf[sym]||[];
+      priceBuf[sym].push(price);
+      if(priceBuf[sym].length>BUF_MAX) priceBuf[sym].shift();
+      if(sym.startsWith('BTC')) $('priceBTC').textContent=price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      if(sym.startsWith('ETH')) $('priceETH').textContent=price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
       ticks++; $('tickCount').textContent=ticks;
-      if(running) onTick(ch, price);
+      if(running) onTick(sym, price);
     } catch(e){}
   };
-  ws.onclose = () => { connected=false; updateConnUI(); addLog('system','Disconnected'); if(running) setTimeout(connectWS,3000); };
+  ws.onclose = () => { connected=false; if(pingInterval)clearInterval(pingInterval); updateConnUI(); if(running) setTimeout(connectWS,3000); };
   ws.onerror = () => ws.close();
 }
 function updateConnUI() {
+  const exName = EXCHANGES[getP('p_exchange')]?.name||'?';
   $('connDot').className='conn-dot '+(connected?(running?'live':'idle'):'off');
-  $('connStatus').textContent=connected?(running?`LIVE — ${getP('p_symbol')}`:'Connected'):'Disconnected';
+  $('connStatus').textContent=connected?(running?`LIVE on ${exName} — ${getP('p_symbol')}`:`Connected to ${exName}`):'Disconnected';
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-// HISTORICAL BOOTSTRAP — fetch candles from MEXC REST API
+// HISTORICAL BOOTSTRAP — always Binance REST (CORS works, supports 1s)
 // ══════════════════════════════════════════════════════════════════════════
-const TF_MAP = {'60':'1m','180':'3m','300':'5m','900':'15m','1800':'30m','3600':'1h'};
+const TF_MAP = {'1':'1s','60':'1m','180':'3m','300':'5m','900':'15m','1800':'30m','3600':'1h'};
 let bootstrapped = false;
-let historicalMode = false; // true during bootstrap (skip trade execution)
+let historicalMode = false;
 
 async function fetchHistoricalCandles() {
   const sym = getP('p_symbol');
   const tfSecs = getP('p_timeframe');
   const interval = TF_MAP[tfSecs] || '3m';
-  
-  // Binance API supports CORS from browser (MEXC does not)
-  // Same BTC/ETH candle data — just for building ZigZag detector state
-  const url = `https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${interval}&limit=500`;
-  
-  addLog('system', `Fetching 500 × ${interval} candles for ${sym} (Binance)...`);
-  
+  const totalBars = parseInt(getP('p_histBars')) || 5000;
+  const exName = EXCHANGES[getP('p_exchange')]?.name||'?';
+
+  addLog('system', `Fetching ${totalBars} × ${interval} candles for ${sym}...`);
+  if(getP('p_exchange') !== 'binance') addLog('system', `(Historical from Binance — live feed from ${exName})`);
+
   try {
-    const resp = await fetch(url);
-    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json();
+    // Binance max 1000 per call — paginate backwards using endTime
+    let allKlines = [];
+    let endTime = null;
+    let remaining = totalBars;
+    let page = 0;
     
-    // MEXC kline format: [openTime, open, high, low, close, volume, closeTime, ...]
+    while(remaining > 0) {
+      const limit = Math.min(remaining, 1000);
+      let url = `https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${interval}&limit=${limit}`;
+      if(endTime) url += `&endTime=${endTime - 1}`; // -1 to avoid overlap
+      
+      const resp = await fetch(url);
+      if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      if(data.length === 0) break;
+      
+      allKlines = data.concat(allKlines); // prepend older data
+      endTime = parseInt(data[0][0]); // oldest bar's openTime becomes next endTime
+      remaining -= data.length;
+      page++;
+      
+      if(page > 1) addLog('system', `  ...page ${page}: ${allKlines.length}/${totalBars} bars`);
+      if(data.length < limit) break; // no more data available
+    }
+    
+    if(allKlines.length === 0) throw new Error('No data returned');
+
     historicalMode = true;
     candles = [];
     zzDir=0; zzH=0; zzL=Infinity; swings=[]; avgLeg=0; extRatio=0; extDir=0; lastSwPrice=0;
-    
-    for(const k of data) {
-      const bar = {
-        o: parseFloat(k[1]),
-        h: parseFloat(k[2]),
-        l: parseFloat(k[3]),
-        c: parseFloat(k[4]),
-        ts: parseInt(k[0])
-      };
-      candles.push(bar);
-      onBarClose(); // builds ZigZag + swings, but historicalMode=true skips trades
+    // Reset trade state for clean backtest
+    tDir=0; tAE=0; tSz=0; tAdds=0;
+    initialEquity=getP('p_equity'); equity=initialEquity;
+    stats={wins:0,losses:0,totalPnl:0,maxDD:0,peakEquity:initialEquity};
+    equityCurve=[]; trades=[];
+
+    for(const k of allKlines) {
+      candles.push({ o:parseFloat(k[1]), h:parseFloat(k[2]), l:parseFloat(k[3]), c:parseFloat(k[4]), ts:parseInt(k[0]) });
+      onBarClose();
     }
-    
+
     historicalMode = false;
     bootstrapped = true;
-    
-    // Set up current candle from last bar for seamless live transition
-    const lastBar = candles[candles.length - 1];
-    const tfMs = parseInt(tfSecs) * 1000;
-    candleStartTs = lastBar.ts;
-    currentCandle = null; // will be created on next tick
-    
+    candleStartTs = candles[candles.length-1]?.ts||0;
+    currentCandle = null;
+
+    const total = stats.wins + stats.losses;
+    const wr = total > 0 ? (stats.wins/total*100).toFixed(1) : '—';
+    const ret = ((equity-initialEquity)/initialEquity*100);
     $('barCount').textContent = candles.length;
-    addLog('system', `Bootstrap done: ${candles.length} bars, ${swings.length} swings, avgLeg: ${fmt(avgLeg,3)}%`);
-    addLog('system', `ZZ state: dir=${zzDir===1?'UP':zzDir===-1?'DOWN':'INIT'} | ExtR: ${fmt(extRatio)}x | ExtDir: ${extDir>0?'+':extDir<0?'-':'0'}`);
+
+    // Time range
+    const t0 = new Date(candles[0].ts);
+    const t1 = new Date(candles[candles.length-1].ts);
+    const spanHrs = ((t1-t0)/3600000).toFixed(1);
     
+    addLog('system', `Bootstrap: ${candles.length} bars (${spanHrs}h span), ${swings.length} swings, avgLeg: ${fmt(avgLeg,3)}%`);
+    addLog('system', `Backtest: ${total} trades | ${stats.wins}W/${stats.losses}L | WR: ${wr}% | PnL: ${fmtUsd(stats.totalPnl)} (${fmt(ret)}%)`);
+    if(stats.losses === 0 && total > 0) addLog('system', `✅ 100% WIN RATE on ${total} historical trades!`);
+    else if(stats.losses > 0) addLog('system', `⚠ ${stats.losses} LOSSES detected in backtest`);
+    addLog('system', `ZZ: dir=${zzDir===1?'UP':zzDir===-1?'DOWN':'INIT'} | ExtR: ${fmt(extRatio)}x | Now going LIVE on ${exName}...`);
+
+    updateUI();
     return true;
   } catch(e) {
     addLog('system', `⚠ Bootstrap failed: ${e.message}. Starting from zero.`);
     return false;
   }
 }
-function onTick(ch, price) {
-  const sym = getP('p_symbol');
-  if(!ch.includes(sym)) {
-    // Still update position display if we have one
-    if(tDir!==0) updatePositionDisplay(priceBuf[sym]?.[priceBuf[sym].length-1]);
+function onTick(tickSym, price) {
+  const tradeSym = getP('p_symbol');
+  if(tickSym !== tradeSym) {
+    if(tDir!==0) updatePositionDisplay(priceBuf[tradeSym]?.[priceBuf[tradeSym].length-1]);
     return;
   }
   
@@ -509,12 +685,31 @@ function calcExtension() {
   if(swings.length < 2) { avgLeg=0; extRatio=0; extDir=0; return; }
   
   const start = Math.max(0, swings.length - legsBack - 1);
-  let total=0, count=0;
+  const legAmps = [];
   for(let j=start+1; j<swings.length; j++) {
     const amp = Math.abs(swings[j].price - swings[j-1].price) / swings[j-1].price * 100;
-    total += amp; count++;
+    legAmps.push(amp);
   }
-  avgLeg = count > 0 ? total/count : 0;
+  
+  const count = legAmps.length;
+  if(count === 0) { avgLeg=0; return; }
+  
+  const useSmartAvg = getP('p_smartAvg') === '1';
+  const smartCap = getP('p_smartCap');
+  
+  if(useSmartAvg && count >= 3) {
+    // Smart Leg Average: cap outliers at smartCap × median
+    const sorted = [...legAmps].sort((a,b) => a-b);
+    const med = sorted.length%2===0 ? (sorted[sorted.length/2-1]+sorted[sorted.length/2])/2 : sorted[Math.floor(sorted.length/2)];
+    const capVal = med * smartCap;
+    let discTotal = 0;
+    for(const amp of legAmps) discTotal += Math.min(amp, capVal);
+    avgLeg = discTotal / count;
+  } else {
+    let total = 0;
+    for(const amp of legAmps) total += amp;
+    avgLeg = total / count;
+  }
   
   if(lastSwPrice > 0 && avgLeg > 0) {
     const bar = candles.length > 0 ? candles[candles.length-1] : null;
@@ -532,9 +727,6 @@ function calcExtension() {
 // TRADE LOGIC — REAL ADDS, REAL AVERAGING, EXITS AT EXACT PRICE
 // ══════════════════════════════════════════════════════════════════════════
 function processTradeLogic(currentPrice, newSwing) {
-  // During bootstrap, only build detector state — no trades
-  if(historicalMode) return;
-  
   if(avgLeg <= 0 || swings.length < 4) return;
   
   const entryT = getP('p_entryT');
@@ -583,7 +775,11 @@ function processTradeLogic(currentPrice, newSwing) {
   
   if(doClose) {
     // EXIT AT EXACT CURRENT PRICE — no gap!
-    const pnlUsd = tPnl / 100 * tSz; // approximate dollar PnL
+    const grossPnl = tPnl / 100 * tSz;
+    // Fee: applied on entry + exit (2× taker fee on position size)
+    const feePct = parseFloat($('p_fee').value) || 0;
+    const feeUsd = feePct > 0 ? (tSz * feePct / 100 * 2) : 0;
+    const pnlUsd = grossPnl - feeUsd;
     equity += pnlUsd;
     const isWin = pnlUsd >= 0;
     stats.wins += isWin?1:0; stats.losses += isWin?0:1;
@@ -594,15 +790,15 @@ function processTradeLogic(currentPrice, newSwing) {
     
     trades.unshift({
       side: tDir===1?'long':'short', entry:tAE, exit:currentPrice,
-      pnl:pnlUsd, pnlPct:tPnl, adds:tAdds, exitReason:closeComment
+      pnl:pnlUsd, pnlPct:tPnl, adds:tAdds, exitReason:closeComment, fee:feeUsd
     });
     equityCurve.push({t:Date.now(), eq:Math.round(equity*100)/100});
     
     addLog(isWin?'win':'loss',
-      `${closeComment} ${tDir===1?'LONG':'SHORT'} @ ${fmt(currentPrice)} | AE: ${fmt(tAE)} | PnL: ${fmtUsd(pnlUsd)} (${fmt(tPnl)}%) | Adds: ${tAdds}`);
+      `${closeComment} ${tDir===1?'LONG':'SHORT'} @ ${fmt(currentPrice)} | AE: ${fmt(tAE)} | PnL: ${fmtUsd(pnlUsd)} (${fmt(tPnl)}%)${feeUsd>0?' fee:'+fmtUsd(feeUsd):''} | Adds: ${tAdds}`);
     
     tDir=0; tAE=0; tSz=0; tAdds=0;
-    updateUI();
+    if(!historicalMode) updateUI();
     return; // don't enter same bar
   }
   
@@ -639,7 +835,7 @@ function processTradeLogic(currentPrice, newSwing) {
     }
   }
   
-  updateUI();
+  if(!historicalMode) updateUI();
 }
 
 // ── Sizing helpers ──
@@ -694,6 +890,15 @@ function updateUI() {
   $('statMaxDD').textContent=fmt(stats.maxDD)+'%';
   $('tradeCount').textContent=total;
   
+  // Time span DD:HH:MM:SS
+  if(candles.length>=2) {
+    const ms = candles[candles.length-1].ts - candles[0].ts;
+    const s=Math.floor(ms/1000), d=Math.floor(s/86400), h=Math.floor((s%86400)/3600), m=Math.floor((s%3600)/60), sec=s%60;
+    const pad=n=>String(n).padStart(2,'0');
+    $('timeSpan').textContent = (d>0?d+'d ':'') + pad(h)+':'+pad(m)+':'+pad(sec);
+    $('barCount').textContent = candles.length;
+  }
+  
   if(tDir===0) $('positionBody').innerHTML=`<div class="position-empty">${running?'Scanning...':'No position'}</div>`;
   renderTradeLog();
   drawEquityChart();
@@ -745,22 +950,152 @@ function drawEquityChart() {
 // ══════════════════════════════════════════════════════════════════════════
 // CONTROLS
 // ══════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════
+// CONFIG STRING IMPORT/EXPORT (BDZv2| format — optimizer compatible)
+// ══════════════════════════════════════════════════════════════════════════
+const CFG_KEYS = {
+  ET:'p_entryT', TP:'p_tpFrac', DV:'p_dev', LB:'p_legsBack',
+  SA:'p_smartAvg', SC:'p_smartCap', ES:'p_extStep', ED:'p_extDecel',
+  MA:'p_maxAdds', MP:'p_maxPosPct', BS:'p_baseSz',
+  SS:'p_useSess', MB:'p_useBias', CS:'p_closeOnSw',
+};
+const SZ_CODES = {flat:'0',dbl_l:'1',match:'2',dbl_t:'3',tri_t:'4',fib:'5'};
+const SZ_NAMES = {'0':'flat','1':'dbl_l','2':'match','3':'dbl_t','4':'tri_t','5':'fib'};
+
+function importConfig() {
+  const raw = $('cfgPaste').value.trim();
+  if(!raw.startsWith('BDZv2|')) { showCfgMsg('⚠ Must start with BDZv2|','var(--accent-red)'); return; }
+  const parts = raw.split('|').slice(1);
+  let applied = 0;
+  parts.forEach(p => {
+    const i = p.indexOf(':');
+    if(i<0) return;
+    const key=p.substring(0,i), val=p.substring(i+1);
+    if(key==='SZ') {
+      const code = Object.entries(SZ_CODES).find(([k,v])=>k===val);
+      if(code) { $('p_sizingMode').value=code[1]; applied++; }
+      return;
+    }
+    const fieldId = CFG_KEYS[key];
+    if(fieldId) { const el=$(fieldId); if(el){el.value=val;applied++;} }
+  });
+  $('p_preset').value='custom';
+  showCfgMsg(`✓ Applied ${applied} params`,'var(--accent-teal)');
+}
+
+function exportConfig() {
+  const sz = SZ_NAMES[$('p_sizingMode').value]||'dbl_t';
+  let s = `BDZv2|DV:${getP('p_dev')}|LB:${Math.round(getP('p_legsBack'))}|ET:${getP('p_entryT')}|TP:${getP('p_tpFrac')}|SZ:${sz}`;
+  s += `|MA:${Math.round(getP('p_maxAdds'))}|ES:${getP('p_extStep')}|ED:${getP('p_extDecel')}`;
+  s += `|SA:${getP('p_smartAvg')}|SC:${getP('p_smartCap')}`;
+  s += `|BS:${getP('p_baseSz')}|MP:${getP('p_maxPosPct')}`;
+  s += `|SS:${getP('p_useSess')}|MB:${getP('p_useBias')}|CS:${getP('p_closeOnSw')}`;
+  $('cfgPaste').value = s;
+  navigator.clipboard.writeText(s).then(()=>showCfgMsg('✓ Copied','var(--accent-green)')).catch(()=>showCfgMsg('✓ Exported','var(--accent-gold)'));
+}
+
+function showCfgMsg(msg, color) {
+  $('cfgMsg').textContent=msg; $('cfgMsg').style.color=color;
+  setTimeout(()=>{$('cfgMsg').textContent='';},4000);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// PRESETS (matches Pine v2.4 Auto presets)
+// ══════════════════════════════════════════════════════════════════════════
+const PRESETS = {
+  '3m_zzpiv':  {p_dev:0.3, p_legsBack:8, p_entryT:0.5, p_tpFrac:0.3, p_sizingMode:'3', p_maxAdds:10, p_extStep:0.15, p_extDecel:0.6, p_smartAvg:'1', p_smartCap:1.5},
+  '5m_zzpiv':  {p_dev:0.3, p_legsBack:8, p_entryT:0.5, p_tpFrac:0.3, p_sizingMode:'3', p_maxAdds:10, p_extStep:0.15, p_extDecel:0.6, p_smartAvg:'1', p_smartCap:1.5},
+  '15m_zz':    {p_dev:0.5, p_legsBack:8, p_entryT:0.5, p_tpFrac:0.3, p_sizingMode:'4', p_maxAdds:10, p_extStep:0.15, p_extDecel:0.6, p_smartAvg:'1', p_smartCap:1.5},
+  '30m_zz':    {p_dev:0.7, p_legsBack:8, p_entryT:0.5, p_tpFrac:0.3, p_sizingMode:'4', p_maxAdds:10, p_extStep:0.15, p_extDecel:0.6, p_smartAvg:'1', p_smartCap:2.0},
+};
+
+function applyPreset(name) {
+  if(name === 'auto') {
+    const tf = parseInt(getP('p_timeframe'));
+    if(tf <= 180) name = '3m_zzpiv';
+    else if(tf <= 300) name = '5m_zzpiv';
+    else if(tf <= 900) name = '15m_zz';
+    else name = '30m_zz';
+  }
+  const p = PRESETS[name];
+  if(!p) return;
+  Object.entries(p).forEach(([id,v]) => { const el=$(id); if(el) el.value=v; });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// EXPORT: PNG SCREENSHOT + MD REPORT
+// ══════════════════════════════════════════════════════════════════════════
+function exportScreenshot() {
+  // Canvas-based screenshot of the equity chart + stats overlay
+  const canvas = $('eqChart');
+  const link = document.createElement('a');
+  link.download = `ZZ_${getP('p_symbol')}_${$('p_timeframe').selectedOptions[0].text}_${new Date().toISOString().slice(0,16).replace(':','')}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  addLog('system', `📸 Screenshot saved: ${link.download}`);
+}
+
+function exportReport() {
+  const total = stats.wins + stats.losses;
+  const ret = ((equity-initialEquity)/initialEquity*100);
+  const wr = total>0 ? (stats.wins/total*100).toFixed(1) : '0';
+  const sym = getP('p_symbol');
+  const tf = $('p_timeframe').selectedOptions[0].text;
+  const exch = $('p_exchange').selectedOptions[0].text;
+  const span = $('timeSpan').textContent;
+  const now = new Date().toISOString().slice(0,19).replace('T',' ');
+  
+  let md = `# ZigZag Reversion — Paper Trade Report\n\n`;
+  md += `**Date:** ${now}\n`;
+  md += `**Symbol:** ${sym} | **TF:** ${tf} | **Exchange:** ${exch}\n`;
+  md += `**Period:** ${candles.length} bars (${span})\n\n`;
+  md += `## Performance\n\n`;
+  md += `| Metric | Value |\n|---|---|\n`;
+  md += `| Equity | ${fmtUsd(equity)} |\n`;
+  md += `| Return | ${fmt(ret)}% |\n`;
+  md += `| Trades | ${total} |\n`;
+  md += `| Win Rate | ${wr}% (${stats.wins}W / ${stats.losses}L) |\n`;
+  md += `| Max DD | ${fmt(stats.maxDD)}% |\n`;
+  md += `| Avg Leg | ${fmt(avgLeg,3)}% |\n`;
+  md += `| Smart Avg | ${getP('p_smartAvg')==='1'?'ON (cap '+getP('p_smartCap')+')':'OFF'} |\n`;
+  md += `| Fees | ${getP('p_feeMode')==='off'?'OFF':getP('p_fee')+'% per side ('+($('feeLabel')?.textContent||'custom')+')'} |\n\n`;
+  md += `## Config\n\n\`\`\`\n`;
+  exportConfig();
+  md += $('cfgPaste').value + '\n```\n\n';
+  md += `## Trade Log\n\n`;
+  md += `| # | Side | Entry | Exit | PnL | % | Adds | Reason |\n|---|---|---|---|---|---|---|---|\n`;
+  trades.forEach((t,i) => {
+    md += `| ${i+1} | ${t.side==='long'?'L':'S'} | ${fmt(t.entry)} | ${fmt(t.exit)} | ${fmtUsd(t.pnl)} | ${fmt(t.pnlPct)}% | ${t.adds} | ${t.exitReason} |\n`;
+  });
+  
+  const blob = new Blob([md], {type:'text/markdown'});
+  const link = document.createElement('a');
+  link.download = `ZZ_Report_${sym}_${tf}_${new Date().toISOString().slice(0,10)}.md`;
+  link.href = URL.createObjectURL(blob);
+  link.click();
+  addLog('system', `📋 Report saved: ${link.download}`);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// CONTROLS
+// ══════════════════════════════════════════════════════════════════════════
 async function handleStart() {
   initialEquity=getP('p_equity');
   if(Math.abs(equity-10000)<1 && initialEquity!==10000) { equity=initialEquity; stats.peakEquity=initialEquity; }
+  
+  // Apply auto preset if selected
+  if($('p_preset').value === 'auto') applyPreset('auto');
   
   $('btnStart').style.display='none'; $('btnStop').style.display='';
   addLog('system', 'Bootstrapping historical data...');
   updateUI();
   
-  // Fetch historical candles first
   await fetchHistoricalCandles();
   
-  // Then go live
   running=true;
   if(!connected) connectWS();
   updateConnUI(); updateUI();
-  addLog('system',`Engine LIVE — ${getP('p_symbol')} on ${$('p_timeframe').selectedOptions[0].text} | Ready to trade`);
+  addLog('system',`Engine LIVE — ${getP('p_symbol')} on ${$('p_timeframe').selectedOptions[0].text} via ${EXCHANGES[getP('p_exchange')]?.name||'?'}`);
 }
 function handleStop() {
   running=false; $('btnStart').style.display=''; $('btnStop').style.display='none';
@@ -781,7 +1116,68 @@ function handleReset() {
   addLog('system','Full reset');
 }
 
+// ── HOT-SWAP TIMEFRAME (keeps equity + trades, re-bootstraps detector) ──
+async function hotSwapTimeframe() {
+  if(!running) return;
+  
+  // Auto-apply preset for new timeframe
+  if($('p_preset').value === 'auto') applyPreset('auto');
+  
+  const newTF = $('p_timeframe').selectedOptions[0].text;
+  addLog('system', `⚡ Hot-swapping to ${newTF}...`);
+  
+  // Close any open position at current price (clean slate for new TF)
+  if(tDir !== 0) {
+    const sym = getP('p_symbol');
+    const curPrice = priceBuf[sym]?.[priceBuf[sym].length-1];
+    if(curPrice) {
+      let tPnl = tDir===1 ? (curPrice-tAE)/tAE*100 : (tAE-curPrice)/tAE*100;
+      const grossPnl = tPnl/100*tSz;
+      const feePct = parseFloat($('p_fee').value)||0;
+      const feeUsd = feePct>0 ? (tSz*feePct/100*2) : 0;
+      const pnlUsd = grossPnl - feeUsd;
+      equity += pnlUsd;
+      stats[pnlUsd>=0?'wins':'losses']++;
+      stats.totalPnl += pnlUsd;
+      if(equity>stats.peakEquity) stats.peakEquity=equity;
+      trades.unshift({side:tDir===1?'long':'short', entry:tAE, exit:curPrice, pnl:pnlUsd, pnlPct:tPnl, adds:tAdds, exitReason:'TF-Swap', fee:feeUsd});
+      equityCurve.push({t:Date.now(), eq:Math.round(equity*100)/100});
+      addLog('system', `Closed ${tDir===1?'LONG':'SHORT'} for TF swap | PnL: ${fmtUsd(pnlUsd)}${feeUsd>0?' fee:'+fmtUsd(feeUsd):''}`);
+    }
+    tDir=0; tAE=0; tSz=0; tAdds=0;
+  }
+  
+  // Reset detector state, keep equity/trades/stats
+  candles=[]; currentCandle=null; candleStartTs=0;
+  zzDir=0; zzH=0; zzL=Infinity; swings=[]; avgLeg=0; extRatio=0; extDir=0; lastSwPrice=0;
+  bootstrapped=false;
+  
+  // Re-bootstrap with new timeframe
+  await fetchHistoricalCandles();
+  addLog('system', `✅ Now trading on ${newTF}`);
+  updateUI();
+}
+
+// ── WS keepalive (prevents MEXC disconnect) ──
+let pingInterval = null;
+function startPing() {
+  if(pingInterval) clearInterval(pingInterval);
+  pingInterval = setInterval(() => {
+    if(ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({method:"PING"}));
+    }
+  }, 20000); // ping every 20s
+}
+
+// ── ResizeObserver for chart canvas ──
 window.addEventListener('resize', drawEquityChart);
+const chartPanel = document.querySelector('.chart-panel');
+if(chartPanel) {
+  new ResizeObserver(() => {
+    const canvas = $('eqChart');
+    if(canvas) { canvas.style.height = (chartPanel.clientHeight - 36) + 'px'; drawEquityChart(); }
+  }).observe(chartPanel);
+}
 drawEquityChart();
 </script>
 </body>
