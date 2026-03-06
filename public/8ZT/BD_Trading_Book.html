@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sync Momentum v3.0+ — The Complete Trading System by Bojan Dobrečevič</title>
+<title>BD Trading System v4 — The Complete Trading Manual by Bojan Dobrečevič</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -309,14 +309,13 @@ pre .cm { color: var(--text-muted); font-style: italic; }
   <a class="sub" href="#ch10-columns">Column Reference</a>
   <a class="sub" href="#ch10-workflow">Workflow</a>
   <a class="sub" href="#ch10-assets">Asset Selection</a>
-  <a class="ch" href="#ch11">11 — Structural Context Stack</a>
-  <a class="sub" href="#ch11-zigzag">ZigZag — The Structural Skeleton</a>
-  <a class="sub" href="#ch11-regimes">Regime Detection via ZigZag</a>
-  <a class="sub" href="#ch11-vwap-zz">VWAP × ZigZag Relationship</a>
-  <a class="sub" href="#ch11-liq">Liquidation Levels as Fuel</a>
-  <a class="sub" href="#ch11-sync-zz">Sync + ZigZag Integration</a>
-  <a class="sub" href="#ch11-three-layer">The Three-Layer Detection Stack</a>
-  <a class="sub" href="#ch11-auto">Automation Implications</a>
+  <a class="ch" href="#ch11">11 — ZigZag Reversion</a>
+  <a class="sub" href="#ch11-detectors">Multi-Detector Arena</a>
+  <a class="sub" href="#ch11-adding">Adding Methods</a>
+  <a class="ch" href="#ch12">12 — Position Management</a>
+  <a class="sub" href="#ch12-escape">Escape Survival Cliff</a>
+  <a class="sub" href="#ch12-compound">Compounding</a>
+  <a class="ch" href="#ch13">13 — Bugs & Battle Scars</a>
 </nav>
 
 <!-- ══════════════════════════════════════════ MAIN ══════════════════════════════════════════ -->
@@ -852,7 +851,7 @@ The only question is <strong>how many bars</strong> until the next pullback — 
 <h3 id="ch5-reads">Chart Reading — What I See</h3>
 
 <p>
-Three primary signals inform the add-and-escape decisions, plus one macro context layer:
+Three primary signals inform the add-and-escape decisions:
 </p>
 
 <h4>1. Volume/Candle Ratio (Custom Indicator)</h4>
@@ -874,11 +873,6 @@ Horizontal zones on the chart where leveraged positions will get force-closed, c
 <h4>3. VWAP Extension</h4>
 <p>
 When price extends far from the Volume Weighted Average Price, mean reversion probability increases. This is the structural layer that tells you whether the current move is "stretched" or "reasonable." Extreme VWAP extension + volume absorption = high-confidence reversal setup.
-</p>
-
-<h4>4. ZigZag — Structural Skeleton</h4>
-<p>
-The ZigZag indicator strips noise from price action and reveals the underlying swing structure — a sequence of significant highs and lows connected by straight lines. Each leg carries a percentage label showing its amplitude. This is the macro context layer that answers: <strong>where am I in the current leg, what regime are we in, and what's the probable geometry of the next swing?</strong> Most traders dismiss ZigZag because its last leg repaints. That criticism misses the point — the <em>completed</em> legs don't repaint, and their pattern (descending highs = bearish, ascending lows = bullish, converging amplitude = compression) is the structural grammar of the market. The repainting of the current leg is useful information showing how the structure develops in real-time. See Chapter 11 for the full treatment.
 </p>
 
 <!-- ──── CHART SETUP ──── -->
@@ -927,9 +921,7 @@ The ultimate objective is to automate this method fully, so it runs without look
 — Volume/candle ratio exceeding a threshold = absorption detected<br>
 — Liquidation cluster within N% of current price swept on previous move = fuel exhausted<br>
 — VWAP z-score exceeding ±2.0 = extreme extension, favor reversal<br>
-— ZigZag leg maturity: current leg amplitude ≥ 80% of recent average leg = leg exhaustion zone<br>
-— ZigZag regime: converging amplitude across timeframes = mean-reversion regime (BD method thrives)<br>
-— Multiple timeframe confluence: 1s sync agrees with 1m structure agrees with 15m ZigZag geometry = high confidence
+— Multiple timeframe confluence: 1s sync agrees with 1m structure = high confidence
 </p>
 
 <div class="callout warn">
@@ -1016,13 +1008,9 @@ The four-tool ecosystem (v2.2+ strategy, v4 strategy, parameter sweep indicator,
 
 <p><strong>Layer 1 — Price Action:</strong> BD-Multi_indicators with EMA 5/13/50/200/800, dual SAR, SuperTrend, VWAP, Bollinger Bands, ATR stops. This is your structural context.</p>
 
-<p><strong>Layer 2 — Structural Geometry:</strong> ZigZag indicator overlaid on all timeframes. Reveals swing structure, leg amplitude, regime state (trending, converging, expanding), and leg maturity. The fractal self-similarity across timeframes (1s → 1m → 15m → 30m → 1h) is the macro context for every trade decision. See Chapter 11.</p>
+<p><strong>Layer 2 — Volume Intelligence:</strong> BTC Volume Sync showing Council of 8 scoring. Look for SD ≥ 5x and MT ≥ 5x as high-conviction signals.</p>
 
-<p><strong>Layer 3 — Volume Intelligence:</strong> BTC Volume Sync showing Council of 8 scoring. Look for SD ≥ 5x and MT ≥ 5x as high-conviction signals. Cross-platform sync count (S5x, S6x, S7x) combined with candle displacement ratio detects absorption vs momentum events.</p>
-
-<p><strong>Layer 4 — Liquidation Targets:</strong> Liquidation Level v2 indicator configured for $100K+ positions at 100x, 50x, and 25x leverage. These horizontal lines show where market makers will push price to harvest forced liquidations. Each ZigZag leg exists <em>because</em> price is hunting these clusters — eat the shorts, reverse, eat the longs, repeat.</p>
-
-<p><strong>Layer 5 — Strategy Signals:</strong> 1s Sync Momentum v2.2 (or v4) with signal shapes and dynamic SL/TP lines visible. Use as overlay confirmation for manual trading or as direct auto-execution.</p>
+<p><strong>Layer 3 — Strategy Signals:</strong> 1s Sync Momentum v2.2 (or v3.0) with signal shapes and dynamic SL/TP lines visible. Use as overlay confirmation for manual trading or as direct auto-execution.</p>
 
 <h3 id="ch7-params">S3 Parameter Quick Reference</h3>
 
@@ -1204,10 +1192,14 @@ Behind the scenes, a Python optimizer runs nightly across 14,400+ combinations (
 <p>
 The human trader — you — sits at the center, watching the monitor table, informed by the leaderboard, making the final decision. The system finds the structure. The human decides whether to act. This is the AIM³ vision: human judgment amplified by mathematical structure detection.
 </p>
-</section>
+<div class="callout success">
+<div class="callout-title">Deep Dive — MDL/DCC Trading Engine</div>
+<p>
+For a focused visual explainer of how 8Z compression principles transfer to trading — including the 4 generators, DCC adaptive control, the complete signal pipeline, and the AI Dream Team collaboration plan — see the standalone technical reference: <a href="MDL_DCC_Trading.html" style="color:var(--accent-teal);text-decoration:underline;">MDL/DCC Trading Engine →</a>
+</p>
+</div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
-<!-- CHAPTER 10 — THE MONITOR -->
+</section>
 <!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
 <section class="chapter" id="ch10">
 <div class="chapter-num">Chapter 10</div>
@@ -1375,286 +1367,281 @@ The current v1.0 Monitor computes MDL/DCC and impulse signals per asset. Future 
 </div>
 </section>
 
+
 <!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
-<!-- CHAPTER 11 — THE STRUCTURAL CONTEXT STACK -->
+<!-- CHAPTER 11 — BD ZIGZAG REVERSION STRATEGY -->
 <!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
 <section class="chapter" id="ch11">
 <div class="chapter-num">Chapter 11</div>
-<h2>The Structural Context Stack — ZigZag, VWAP & Liquidation Mechanics</h2>
+<h2>BD ZigZag Reversion — The Mean Reversion Engine</h2>
 
 <p>
-This chapter documents the macro context framework that connects the automated Sync Momentum strategy to the discretionary BD Manual Method. The framework rests on three independently observable layers — structural geometry (ZigZag), mean anchor (VWAP), and causal fuel (liquidation levels) — plus the cross-platform sync detection that timestamps critical transitions. Together, they answer the three questions every trade requires: <strong>where</strong> in the structure are we, <strong>why</strong> is price moving, and <strong>when</strong> is the current leg ending.
+While Sync Momentum catches directional impulses, the ZigZag Reversion strategy exploits the opposite phenomenon: price always reverts within a swing structure. Built on top of the BD Manual Method (Chapter 5), this strategy automates the add-and-escape cycle using structural detectors to identify swing extremes and mean reversion targets.
 </p>
 
-<div class="callout success">
-<div class="callout-title">Key Insight — March 5, 2026</div>
-<p>
-In a single trading day, the structural context stack projected a converging correction on the 30m, detected the regime shift when an up leg broke the descending staircase, projected the new ascending structure, and the market filled in the geometry almost exactly as drawn — all while the BD method harvested $61,000+ in PnL across 644 trades. The stack provides the <em>why</em> behind the profits.
-</p>
-</div>
-
-<!-- ──── ZIGZAG ──── -->
-<h3 id="ch11-zigzag">ZigZag — The Structural Skeleton</h3>
+<h3 id="ch11-core">Core Concept — Extension Ratio Trading</h3>
 
 <p>
-The ZigZag indicator compresses raw price action into its minimum structural representation: a sequence of swing highs and swing lows connected by straight lines. Each line segment (leg) carries a percentage label showing its amplitude. Thousands of 1-second candles compress into 5–10 line segments — an enormous compression ratio where almost all the actionable information survives. In 8Z/MDL terms, ZigZag computes the <em>minimum description length</em> of price action.
+Every detector produces swings with measurable amplitude. The <strong>average leg amplitude</strong> (pAA) across the last N legs gives us a ruler. The <strong>extension ratio</strong> (ER) measures how far price has extended beyond the last swing point, normalized by this ruler. When ER exceeds the entry threshold (ET), the current leg has overextended and is likely to revert.
 </p>
 
 <p>
-<strong>Why most traders dismiss it — and why they're wrong.</strong> ZigZag's last leg repaints in real-time: as price continues moving, the current leg extends, and if price reverses enough, a new swing point is created. This "repainting" makes ZigZag useless as a buy/sell signal generator — which is what most traders want. But as a <em>structural context tool</em>, this property is actually an advantage. The completed legs never repaint. Their pattern — the sequence of amplitudes, the direction of successive highs and lows — is the market's structural grammar. The repainting of the current leg is real-time information about how the structure is developing.
-</p>
-
-<h4>What ZigZag Reveals</h4>
-
-<p>
-<strong>Leg amplitude sequence:</strong> The percentage labels on each leg form a time series. When down legs shrink from -1.6% → -1.35% → -0.9% → -0.58%, amplitude is contracting — energy is compressing. When they expand from -0.58% → -1.25% → -1.48%, energy is decompressing. This rhythm is the market's breathing pattern.
-</p>
-
-<p>
-<strong>Successive high/low direction:</strong> Are the swing highs rising, falling, or flat? Are the swing lows rising, falling, or flat? The combination defines the regime: descending highs + descending lows = downtrend. Ascending highs + ascending lows = uptrend. Descending highs + ascending lows = converging triangle (compression). Ascending highs + descending lows = expanding (volatility breakout).
-</p>
-
-<p>
-<strong>Fractal self-similarity:</strong> The same ZigZag pattern appears at every timeframe. A converging triangle on the 1-hour looks structurally identical to a converging triangle on the 15-minute, which looks identical to one on the 5-minute. Each timeframe's ZigZag operates within a leg of the next higher timeframe. This fractal property means the BD method works at any zoom level — the ZigZag legs are the oscillations the method captures, regardless of scale.
-</p>
-
-<p>
-<strong>Leg maturity:</strong> By comparing the current leg's amplitude to the average of recent legs, you can estimate how "mature" the current swing is. A leg at 30% of average amplitude is young — likely more to go. A leg at 80%+ of average amplitude is mature — approaching a probable reversal zone. This is not prediction; it's probability-weighted structural context.
-</p>
-
-<!-- ──── REGIMES ──── -->
-<h3 id="ch11-regimes">Regime Detection via ZigZag</h3>
-
-<p>
-ZigZag legs encode the market's regime state directly, without any indicator math or parameter tuning:
-</p>
-
-<table class="param-table">
-<tr><th>Regime</th><th>ZigZag Signature</th><th>BD Method Behavior</th></tr>
-<tr><td style="color: var(--accent-green);">Uptrend</td><td>Higher highs + higher lows, up legs > down legs</td><td>Long adds are more aggressive; short side is defensive</td></tr>
-<tr><td style="color: var(--accent-red);">Downtrend</td><td>Lower highs + lower lows, down legs > up legs</td><td>Short adds are more aggressive; long side is defensive</td></tr>
-<tr><td style="color: var(--accent-gold);">Converging</td><td>Lower highs + higher lows, amplitude shrinking</td><td>Prime BD territory — oscillations are predictable, both sides harvest</td></tr>
-<tr><td style="color: var(--accent-purple);">Expanding</td><td>Higher highs + lower lows, amplitude growing</td><td>Caution — legs are unpredictable, reduce size or widen stops</td></tr>
-<tr><td style="color: var(--accent-teal);">Transition</td><td>A leg breaks the previous pattern (e.g., new high in a descending structure)</td><td>Re-evaluate — old regime is dead, new one emerging</td></tr>
-</table>
-
-<h4>The Regime Transition Signal</h4>
-
-<p>
-The single most valuable ZigZag read is the <strong>regime transition</strong>. When a structure has been making lower highs and lower lows (descending staircase), and an up leg suddenly exceeds the previous swing high — the descending regime is broken. This is a discrete, unambiguous event: either the high was exceeded or it wasn't. No gray areas.
-</p>
-
-<p>
-On March 5, 2026, this exact transition was observed on the 15-minute chart. The converging correction (lower highs from +1.62% → +1.41% → +1.06%) broke when a +1.27% up leg exceeded the previous high. The projected ascending structure was drawn immediately on the 30-minute chart — and the +2.38% up leg confirmed the new regime within hours.
-</p>
-
-<p>
-<strong>This is encodable.</strong> The regime transition rule is simple conditional logic: <code>if current_swing_high > previous_swing_high AND previous_regime == "descending" THEN regime = "transition_bullish"</code>. The reverse applies for bearish transitions. This can be computed in Pine Script, Python, or any language — it requires only the ZigZag swing point history.
-</p>
-
-<!-- ──── VWAP × ZIGZAG ──── -->
-<h3 id="ch11-vwap-zz">VWAP × ZigZag — The Mean Anchor Relationship</h3>
-
-<div class="callout">
-<div class="callout-title">Discovery — Requires Deeper Research</div>
-<p>
-The VWAP-ZigZag relationship described below was observed on March 5, 2026 across multiple timeframes. The pattern is consistent and mechanically logical, but has not yet been backtested quantitatively. It is a high-priority research target for the Python simulator.
-</p>
-</div>
-
-<p>
-VWAP (Volume Weighted Average Price) is the true "fair value" of an asset over a given period — it accounts not just for price but for how much volume transacted at each price. When overlaid on ZigZag, a striking relationship emerges:
-</p>
-
-<p>
-<strong>In balanced/converging regimes, VWAP bisects the ZigZag legs.</strong> The VWAP line runs through the approximate midpoint of each oscillation. Legs swing above VWAP, then below, then above — with VWAP acting as the axis of symmetry. This makes mechanical sense: in a balanced regime where neither bulls nor bears dominate, price oscillates around the volume-weighted mean. The ZigZag legs are that oscillation made visible as geometry.
-</p>
-
-<p>
-<strong>In trending/breakout regimes, VWAP shifts to the edge of the legs.</strong> When the converging structure broke upward on March 5, VWAP was no longer at the midpoint — it sat at the <em>bottom</em> of the ZigZag legs, acting as support. In a downtrend, VWAP sits at the top of the legs, acting as resistance. The transition from "VWAP at midpoint" to "VWAP at edge" is itself a regime change indicator.
-</p>
-
-<h4>The VWAP-ZigZag Regime Indicator</h4>
-
-<p>
-<strong>VWAP Position Ratio:</strong> Compute where VWAP sits within the current ZigZag leg range. If the leg swings from low L to high H, and VWAP = V, then the position ratio is <code>(V - L) / (H - L)</code>. A ratio near 0.5 = VWAP centered = balanced/mean-reverting regime. A ratio near 0.0 = VWAP at the bottom = bullish trend (price consistently above mean). A ratio near 1.0 = VWAP at the top = bearish trend (price consistently below mean).
-</p>
-
-<p>
-This ratio is computable on every ZigZag leg. Tracking it over time creates a meta-indicator: when the ratio drifts from 0.5 toward 0.0 or 1.0, a regime shift is occurring. When it returns to 0.5, balance is restored. This directly informs the BD method — a ratio near 0.5 means peak BD territory (oscillations are symmetric around the mean, both sides profit equally). A ratio near the extremes means directional bias is warranted.
-</p>
-
-<p>
-<strong>VWAP as gravitational pull:</strong> In the converging regime, VWAP pulls price back after each ZigZag extension. The further price extends from VWAP, the stronger the pull-back probability — this is mean reversion quantified. The BD method exploits exactly this: when a position goes against you (price extends from VWAP), the add-on-adversity mechanics load size, and when VWAP pulls price back, the partial close captures the reversion. VWAP is the physical reason the BD method works.
-</p>
-
-<!-- ──── LIQUIDATION ──── -->
-<h3 id="ch11-liq">Liquidation Levels — The Causal Fuel Behind ZigZag</h3>
-
-<p>
-ZigZag shows the <em>what</em> — the geometric pattern of price. Liquidation levels explain the <em>why</em> — the causal mechanism that creates the pattern.
-</p>
-
-<p>
-The Liquidation Level v2 indicator maps horizontal zones where leveraged positions face force-closure. Configured for $100K+ positions at 100x, 50x, and 25x leverage, each line represents a significant cluster of capital that market makers can harvest by pushing price to that level. At 100x leverage, a position's liquidation price is extremely close to entry — even a 0.5% adverse move triggers forced closure.
-</p>
-
-<p>
-<strong>The ZigZag IS the liquidation hunt.</strong> Each up leg pushes into short liquidation clusters. Shorts get force-closed, creating buying pressure that extends the leg. Once the shorts are consumed, the buying pressure vanishes — there's no more fuel — and price reverses. The down leg then pushes into long liquidation clusters. The cycle repeats. The ZigZag isn't an artifact of random price movement; it's the geometric trace of systematic liquidity harvesting.
-</p>
-
-<p>
-<strong>What the liquidation lines tell you in real-time:</strong>
-</p>
-
-<p>
-When price is approaching a dense cluster of liquidation lines on one side, the current leg has a probable <em>target</em>. When price sweeps through those lines (visible as the lines disappearing from the chart — the positions have been force-closed), the fuel is <em>consumed</em>. The leg is exhausting. This maps directly to the ZigZag: a leg approaching its reversal zone coincides with liquidation clusters being swept.
-</p>
-
-<p>
-<strong>For the BD method, this resolves a critical question:</strong> when you're adding aggressively to a losing position (Step 3 of the add-escape cycle), the liquidation levels tell you <em>where the move is likely to stop</em>. If you can see that most of the liquidation lines in the current direction have been swept, the cascade is near completion. Your add is catching the tail end of the forced flow, and the reversal — which pays off your entire position — is imminent. Without this visibility, adding into adversity is nerve-wracking. With it, you can see that the mechanism driving the adverse move is running out of fuel.
-</p>
-
-<!-- ──── SYNC + ZIGZAG ──── -->
-<h3 id="ch11-sync-zz">Sync + ZigZag — The Absorption Signature</h3>
-
-<p>
-The Sync Momentum strategy detects cross-platform volume correlation — when multiple exchanges (Binance, OKX, Coinbase, ByBit, BitGet) and multiple assets (BTC, ETH, SOL) fire volume simultaneously. The sync count (S5x, S6x, S7x) quantifies how many platforms agree.
-</p>
-
-<p>
-<strong>The critical insight is what the sync event means in ZigZag context.</strong> A sync spike at the <em>beginning</em> of a leg, with large price displacement (big candle), is a <em>momentum</em> event — the leg is being born. A sync spike near the <em>end</em> of a leg (at 80%+ of average amplitude), with <em>small</em> price displacement despite massive volume, is an <em>absorption</em> event — the leg is dying.
-</p>
-
-<h4>The Absorption Signature (observed March 5, 2026)</h4>
-
-<p>
-S7x — all seven platforms firing volume in sync simultaneously. Maximum possible cross-platform agreement. But the candle was <strong>disproportionately small</strong> relative to the volume. This mismatch is the tell: the volume didn't move price because it was being absorbed. The market maker used the liquidity event to fill against the leveraged positions (visible as liquidation lines being consumed on the chart). Once absorption was complete, the ZigZag leg reversed.
-</p>
-
-<p>
-<strong>The Volume-to-Displacement Ratio:</strong> <code>sync_volume / candle_range</code>. When this ratio is high (big volume, small candle), absorption is occurring. When low (proportional volume and displacement), it's genuine momentum. Combined with ZigZag position:
-</p>
-
-<table class="param-table">
-<tr><th>ZigZag Position</th><th>Volume/Displacement</th><th>Interpretation</th><th>Action</th></tr>
-<tr><td>Early in leg (< 40%)</td><td>Low (proportional)</td><td>Momentum — leg is young</td><td>Trade with the leg direction</td></tr>
-<tr><td>Early in leg (< 40%)</td><td>High (absorption)</td><td>Failed breakout — leg may abort</td><td>Reduce exposure, wait for clarity</td></tr>
-<tr><td>Mature leg (> 70%)</td><td>Low (proportional)</td><td>Extension — leg still has fuel</td><td>Trail stops, don't fight it</td></tr>
-<tr><td style="color: var(--accent-gold);">Mature leg (> 70%)</td><td style="color: var(--accent-gold);">High (absorption)</td><td style="color: var(--accent-gold);">Exhaustion — reversal imminent</td><td style="color: var(--accent-gold);">BD add zone — load size for reversal</td></tr>
-</table>
-
-<p>
-The highlighted row is the prime setup. ZigZag says the leg is mature, sync says all platforms are participating, but the candle says price isn't going anywhere. The engine is running but the car has stopped. Next stop: reversal.
-</p>
-
-<!-- ──── THREE-LAYER STACK ──── -->
-<h3 id="ch11-three-layer">The Three-Layer Detection Stack</h3>
-
-<p>
-The complete decision framework layers three independent information sources, each answering a different question:
-</p>
-
-<table class="param-table">
-<tr><th>Layer</th><th>Tool</th><th>Question Answered</th><th>Data Type</th></tr>
-<tr><td style="color: var(--accent-blue);">Structure</td><td>ZigZag (all timeframes)</td><td><strong>WHERE</strong> — regime state, leg maturity, projected geometry</td><td>Price swing points</td></tr>
-<tr><td style="color: var(--accent-red);">Engine</td><td>Liquidation Levels + VWAP</td><td><strong>WHY</strong> — causal mechanism, fuel available, mean anchor position</td><td>Position data, volume-weighted price</td></tr>
-<tr><td style="color: var(--accent-green);">Timing</td><td>Sync Momentum (cross-platform)</td><td><strong>WHEN</strong> — event timestamp, absorption vs momentum classification</td><td>Multi-exchange volume correlation</td></tr>
-</table>
-
-<p>
-<strong>Triple confirmation.</strong> When all three layers agree, confidence is highest. On March 5, 2026, the triple confirmation was demonstrated repeatedly: the 15m/30m ZigZag showed a leg approaching a projected reversal zone (structure layer). The liquidation lines showed clusters being consumed at that level (engine layer). The 1s sync fired S6x/S7x with small displacement (timing layer). Each confirmation independently pointed to the same conclusion — the current leg was ending. The BD method then captured the reversal.
-</p>
-
-<p>
-<strong>Multi-timeframe zoom.</strong> When the higher timeframes (15m, 30m) signal that a leg is maturing and approaching a probable reversal zone, zoom to 1m and 1s for micro-confirmation. If the 1m starts forming its own ZigZag reversal pattern at the same time the 1s shows an absorption sync event — that's the fractal agreeing across scales. This is stronger than any single-timeframe signal.
+The entry direction is always <strong>against</strong> the current extension: if price has extended upward (ER positive), we enter short. If downward, we enter long. The take profit is a fraction of the average leg — we don't try to catch the full reversal, just a reliable slice.
 </p>
 
 <div class="callout">
-<div class="callout-title">The BD Method as Execution Layer</div>
-<p>
-The three-layer stack provides context, not signals. The BD method is the <em>execution</em> layer that operates within whatever context the stack provides. Crucially, the BD method doesn't require the context to be right every time. Because it runs both sides simultaneously and uses anti-fragile add-on-adversity mechanics, it profits even when individual reads are wrong. The stack just improves the odds — it doesn't need to be perfect because the execution method is inherently resilient. A 55–60% accuracy on regime classification meaningfully boosts PnL because it modulates sizing at the right moments.
-</p>
+<div class="callout-title">Why 100% Win Rate Is Possible</div>
+<p>The strategy never closes at a loss by design. It only exits when profitable (TP hit or swing close with profit). When a trade goes against us, we add to the position (shifting average entry closer to current price) and wait for the inevitable micro-pullback. On 1-minute to 30-minute timeframes, pullbacks occur every few bars — this is the "microstructure guarantee" from Chapter 5. The cost is drawdown duration and position size growth.</p>
 </div>
 
-<!-- ──── AUTOMATION ──── -->
-<h3 id="ch11-auto">Automation Implications</h3>
+<h3 id="ch11-detectors">The Multi-Detector Arena (18 Detectors)</h3>
 
 <p>
-Every component of the structural context stack is quantifiable and programmable:
+Five detector families, each tested on Regular and Heikin Ashi candles, with multiple deviation settings:
+</p>
+
+<table class="param-table">
+<tr><th>Family</th><th>Variants</th><th>How It Works</th></tr>
+<tr><td>ZigZag</td><td>ZZ 0.3%, ZZ 0.5%</td><td>Classic deviation-based swing detection. Reverses when price moves deviation% from last extreme.</td></tr>
+<tr><td>ZigZag Pivot</td><td>ZZpiv 0.3% L5, L7</td><td>Requires L consecutive higher/lower pivots before confirming swing. Smoother, fewer false swings.</td></tr>
+<tr><td>Renko</td><td>Ren 0.3%, Ren 0.5%</td><td>Fixed-box swing detection. New swing when price moves one box against the trend.</td></tr>
+<tr><td>Point &amp; Figure</td><td>P&amp;F 0.3% r2, r3</td><td>Requires R reversal boxes before confirming. Most noise-resistant.</td></tr>
+<tr><td>Range Bars</td><td>Rng 0.3%</td><td>Equal-range bar construction, swing on direction change.</td></tr>
+</table>
+
+<p>
+Each of the 18 detectors can be used as Primary (entry signal) or Confirmation (requires agreement before entry). The optimizer tests all 36 pair combinations plus solo mode.
+</p>
+
+<h3 id="ch11-hl">Critical Fix: High/Low vs Close-Only Detection (v2.3)</h3>
+
+<p>
+<strong>Discovery:</strong> All detectors were using <code>close</code> prices for swing extremes, missing wick tips entirely. ZigZag lines cut through candle bodies instead of connecting to highs and lows.
 </p>
 
 <p>
-<strong>ZigZag computation:</strong> Peak/trough detection with a deviation threshold. Outputs a series of swing points with timestamps, prices, and derived metrics (leg amplitude, leg duration, direction). Trivial to implement in both Pine Script and Python. TradingView's built-in ZigZag indicator already does this.
+<strong>Five fixes applied:</strong> Initial state uses <code>high</code>/<code>low</code>, confirmation state uses <code>high</code>/<code>low</code>, extension calculation uses the correct extreme for the direction (high when measuring up-extension from a low, low when measuring down), confirmation extension follows the same logic, and the developing leg line points to the tracked extreme.
+</p>
+
+<div class="metric-grid">
+  <div class="metric-card"><div class="mv red">+16.1%</div><div class="ml">Before (close-only, 191% DD)</div></div>
+  <div class="metric-card"><div class="mv green">+152.9%</div><div class="ml">After (HL, 25.5% DD)</div></div>
+  <div class="metric-card"><div class="mv gold">10x</div><div class="ml">Improvement from one fix</div></div>
+</div>
+
+<h3 id="ch11-dcc">DCC Regime Detection from ZigZag Data</h3>
+
+<p>
+Leg amplitude consistency reveals regime stability. We compute the coefficient of variation (CV) of the last 8 leg amplitudes: <code>cv = std(legs) / mean(legs)</code>, then <code>u = 1 - cv</code>. When u is near 1, legs are consistent (STABLE regime — exploit). When u is near 0, legs are erratic (CHAOTIC — be cautious).
 </p>
 
 <p>
-<strong>Regime classification:</strong> From the swing point series, compute whether successive highs are rising/falling, whether successive lows are rising/falling, and whether amplitude is expanding/contracting. The combination maps directly to the regime table above. This is simple conditional logic — no ML required.
+Three DCC modes tested in the optimizer: <strong>dccE</strong> (entry adjustment: stable = tighter threshold, chaos = wider), <strong>dccS</strong> (sizing: stable = full, chaos = half), <strong>dccES</strong> (both). The optimizer consistently shows dccES outperforming noDCC on average across all timeframes and symbols.
 </p>
 
-<p>
-<strong>Regime transition detection:</strong> When an up leg exceeds the previous swing high in a descending structure (or vice versa), flag a transition. This is a discrete boolean event — unambiguous and trivially encodable.
-</p>
+<h3 id="ch11-adding">Adding Methods — The Position Growth Problem</h3>
 
 <p>
-<strong>VWAP position ratio:</strong> <code>(VWAP - leg_low) / (leg_high - leg_low)</code> on each completed leg. Track drift from 0.5 as a regime change signal.
+When price moves against entry, we add to shift the average entry price. The adding method determines how fast the position grows. This is the critical variable for survival.
 </p>
 
-<p>
-<strong>Leg maturity estimate:</strong> <code>current_leg_amplitude / average(last_N_leg_amplitudes)</code>. When this ratio exceeds 0.7–0.8, the leg is in its mature zone.
-</p>
-
-<p>
-<strong>Volume-to-displacement ratio:</strong> <code>sync_volume / candle_range</code> at each sync event. High ratio + mature leg = absorption signal.
-</p>
+<table class="param-table">
+<tr><th>Method</th><th>Growth Pattern</th><th>After 5 Adds</th><th>Survival Rate</th></tr>
+<tr><td>Flat</td><td>$1 each time</td><td>$6 total</td><td>~100% (too slow to profit)</td></tr>
+<tr><td>Fibonacci</td><td>$1, $1, $2, $3, $5, $8</td><td>$20 total</td><td><strong>99.9%</strong></td></tr>
+<tr><td>Match Total</td><td>Double position each add</td><td>$32 total</td><td>~65%</td></tr>
+<tr><td>Double Total</td><td>Triple position each add</td><td>$64 total</td><td>~40%</td></tr>
+<tr><td>Triple Total</td><td>Quadruple each add</td><td>$243 total</td><td><strong>0%</strong></td></tr>
+</table>
 
 <div class="callout warn">
-<div class="callout-title">What Cannot Be Automated (Yet)</div>
-<p>
-The <strong>projection of future ZigZag geometry</strong> — drawing the dotted lines that forecast the next leg's probable shape — is currently a discretionary skill. It combines pattern recognition (the rhythm of previous legs), structural logic (converging amplitude implies compression), and market intuition (breakout direction after compression). This is the hardest piece to encode and may be the discretionary edge that makes the system valuable — precisely because it's difficult to replicate.
-</p>
-<p>
-However, even without projecting the exact geometry, the quantifiable components (regime state, leg maturity, VWAP position, absorption detection) provide enough context to significantly improve automated execution. The projection is the cherry on top, not the foundation.
-</p>
+<div class="callout-title">Key Finding: Fibonacci Is the Safest High-Performer</div>
+<p>Across all optimizer runs (BTC, ETH, SOL x 4 timeframes), Fibonacci adding maintained near-100% survival rate (3452/3456 combos safe on BTC 3m) while still generating meaningful profit. Triple Total had 0% survival without escape logic. Double Total died at $3+ base size on a $1K wallet. Fibonacci survived up to $10 base on $1K. This makes Fibonacci the default recommendation for the ZigZag strategy.</p>
 </div>
 
-<h4>Proposed Module Architecture</h4>
+<h3 id="ch11-versions">Version History</h3>
+
+<table class="param-table">
+<tr><th>Version</th><th>Changes</th></tr>
+<tr><td>v2.3</td><td>HL fix (5 corrections), separate entry IDs (BDL/BDS), position sync, font size input, total PnL row</td></tr>
+<tr><td>v2.4</td><td>Fibonacci sizing, escape/partial close, progressive escape, sqrt compounding, DCC regime display, Quick Period dropdown, reorganized table (trading data on top), entry/TP price targets, dollar leg value, bars since swing</td></tr>
+</table>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 12 — DREAM TEAM: POSITION MANAGEMENT SCIENCE -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch12">
+<div class="chapter-num">Chapter 12</div>
+<h2>Dream Team — Position Management Science</h2>
 
 <p>
-For the Python simulator (Prompt C), the ZigZag context stack could be implemented as a new module that runs alongside the sync engine and BD engine:
+The AI Dream Team (Claude, GPT, Gemini, Grok) conducted systematic experiments on 21 months of BTC data to answer: what keeps a $1,000 wallet alive while maximizing profit? Every combination of initial sizing, adding method, escape logic, and compounding was tested against real market data spanning bull runs, crashes, and choppy sideways periods.
 </p>
 
-<pre>
-<span class="cm"># ZigZag Context Module — feeds into both sync and BD engines</span>
-
-<span class="kw">class</span> <span class="fn">ZigZagContext</span>:
-    <span class="cm"># Core: swing point detection</span>
-    detect_swings(prices, deviation_pct) → List[SwingPoint]
-
-    <span class="cm"># Regime: classify from swing history</span>
-    classify_regime(swings) → Regime  <span class="cm"># TREND_UP | TREND_DOWN | CONVERGING | EXPANDING | TRANSITION</span>
-
-    <span class="cm"># Maturity: where are we in the current leg?</span>
-    leg_maturity(current_price, swings) → <span class="num">float</span>  <span class="cm"># 0.0 (just started) → 1.0+ (overextended)</span>
-
-    <span class="cm"># VWAP relationship</span>
-    vwap_position_ratio(vwap, leg_high, leg_low) → <span class="num">float</span>  <span class="cm"># 0.0 (bullish) → 0.5 (balanced) → 1.0 (bearish)</span>
-
-    <span class="cm"># Absorption detection (combines with sync data)</span>
-    classify_sync_event(sync_count, candle_range, volume, leg_maturity) → <span class="str">"momentum"</span> | <span class="str">"absorption"</span>
-</pre>
+<h3 id="ch12-escape">The Escape Survival Cliff</h3>
 
 <p>
-This module provides context flags that the BD engine and sync engine can consume. The BD engine uses regime state and leg maturity to modulate add aggression. The sync engine uses absorption classification to filter entries. Neither module is overridden — they just receive better context, which incrementally improves decision quality.
+The BD Manual Method's core insight: when position is oversized and price gives any micro-profit, close the bulk and keep a small runner. But how much to close? Testing every percentage from 50% to 95% revealed a hard survival cliff:
+</p>
+
+<table class="param-table">
+<tr><th>Close %</th><th>Survival Rate</th><th>Avg PnL</th><th>Avg DD</th><th>Verdict</th></tr>
+<tr><td>50%</td><td style="color:var(--accent-red)">36%</td><td>-46%</td><td>98%</td><td style="color:var(--accent-red)">DEATH ZONE</td></tr>
+<tr><td>60%</td><td>75%</td><td>+10%</td><td>67%</td><td>Risky</td></tr>
+<tr><td>70%</td><td>86%</td><td>+23%</td><td>51%</td><td>Marginal</td></tr>
+<tr><td>80%</td><td>86%</td><td>+29%</td><td>35%</td><td>Borderline</td></tr>
+<tr><td style="color:var(--accent-green)">90%</td><td style="color:var(--accent-green)">100%</td><td style="color:var(--accent-green)">+55%</td><td>18%</td><td style="color:var(--accent-green)">SWEET SPOT</td></tr>
+<tr><td>95%</td><td style="color:var(--accent-green)">100%</td><td>+42%</td><td>14%</td><td>Safest</td></tr>
+</table>
+
+<p>
+The transition from 80% to 90% is not gradual — it is a cliff. Below 80%, the runner is large enough that subsequent adverse moves can still liquidate. At 90%+, the runner is small enough that even extreme moves cannot kill the account before the next escape opportunity.
+</p>
+
+<h3 id="ch12-progressive">Progressive Escape — MDL-Optimal Compression</h3>
+
+<p>
+Rather than a fixed escape percentage, progressive escape scales the close fraction with position complexity: start at 70%, add 10% per additional add cycle. So 1 add = 70%, 2 adds = 80%, 3 adds = 90%, 4+ adds = 98%. This naturally compresses harder as the position bloats — the MDL principle applied to position management.
+</p>
+
+<p>
+On BTC 5m, progressive escape (prog70+10) achieved the best PnL/DD ratio of 8.49, outperforming fixed 90% (ratio 2.40) by 3.5x. The key insight: early escapes (1-2 adds) can afford to keep more runner because the position is still manageable. Late escapes (3+ adds) must be aggressive because the position is dangerously large.
+</p>
+
+<h3 id="ch12-sizing">Initial Sizing for Small Wallets</h3>
+
+<p>
+For a $1,000 wallet at 100x leverage, the base size determines survival:
+</p>
+
+<table class="param-table">
+<tr><th>Base Size</th><th>% of Wallet</th><th>25% MaxPos</th><th>50% MaxPos</th><th>Verdict</th></tr>
+<tr><td>$0.50</td><td>0.05%</td><td>ALIVE +32%</td><td>ALIVE +44%</td><td>Safe but slow</td></tr>
+<tr><td style="color:var(--accent-green)">$1.00</td><td>0.1%</td><td style="color:var(--accent-green)">ALIVE +45%</td><td style="color:var(--accent-green)">ALIVE +65%</td><td style="color:var(--accent-green)">Sweet spot</td></tr>
+<tr><td>$2.00</td><td>0.2%</td><td>ALIVE +58%</td><td>ALIVE +90%</td><td>Risky at 50%</td></tr>
+<tr><td>$3.00</td><td>0.3%</td><td style="color:var(--accent-red)">DEAD</td><td>ALIVE +116%</td><td style="color:var(--accent-red)">Dies at 25% cap!</td></tr>
+<tr><td>$5.00+</td><td>0.5%+</td><td style="color:var(--accent-red)">DEAD</td><td style="color:var(--accent-red)">DEAD</td><td style="color:var(--accent-red)">Guaranteed death</td></tr>
+</table>
+
+<p>
+The critical insight: max position cap of 50% ($500) at 100x leverage means $50,000 notional. A 2% BTC move = $1,000 = entire wallet gone. For $1K wallets, use 25% max position cap.
+</p>
+
+<h3 id="ch12-compound">Compounding — Scaling Position with Wallet Growth</h3>
+
+<p>
+As the wallet grows from $1K to $2K, the base size should grow too. But how fast? Five compounding methods tested:
+</p>
+
+<table class="param-table">
+<tr><th>Method</th><th>How It Scales</th><th>$1K to $2K</th><th>$1K to $10K</th><th>Best Ratio</th></tr>
+<tr><td>None (flat)</td><td>$1 forever</td><td>$1</td><td>$1</td><td>6.49</td></tr>
+<tr><td>Stepped $500</td><td>+$1 per $500 growth</td><td>$2</td><td>$19</td><td style="color:var(--accent-green)">7.36</td></tr>
+<tr><td style="color:var(--accent-green)">Sqrt</td><td>base x sqrt(equity/initial)</td><td>$1.41</td><td>$3.16</td><td>6.18</td></tr>
+<tr><td>Linear 50%</td><td>base x (0.5 + 0.5 x ratio)</td><td>$1.50</td><td>$5.00</td><td>6.17</td></tr>
+<tr><td>Linear 100%</td><td>base x ratio</td><td>$2.00</td><td>$10.00</td><td>5.96</td></tr>
+</table>
+
+<p>
+<strong>Sqrt compounding</strong> is the recommended default. It is naturally anti-fragile: growth decelerates as risk increases. At $10K equity, base is only $3.16 (not $10), keeping position growth conservative even as the account scales.
+</p>
+
+<h3 id="ch12-recommended">Recommended Profiles</h3>
+
+<div class="metric-grid">
+  <div class="metric-card"><div class="mv green">SAFE</div><div class="ml">$1 base, Fib add, 25% cap, sqrt, prog escape</div></div>
+  <div class="metric-card"><div class="mv blue">BALANCED</div><div class="ml">$1 base, Fib add, 25% cap, linear 50%, prog escape</div></div>
+  <div class="metric-card"><div class="mv gold">AGGRESSIVE</div><div class="ml">$2 base, DblTot add, 25% cap, linear, prog escape</div></div>
+  <div class="metric-card"><div class="mv red">MAX PnL</div><div class="ml">$2 base, DblTot add, 50% cap, linear, fix90 escape</div></div>
+</div>
+
+<p>
+Start with SAFE. Graduate to BALANCED after proving the strategy on your specific symbol/timeframe. Graduate to AGGRESSIVE only after $5K+ equity proven. Never use MAX PnL unless you can afford to lose the entire wallet.
 </p>
 
 </section>
 
+<!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 13 — KNOWN BUGS & BATTLE SCARS -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch13">
+<div class="chapter-num">Chapter 13</div>
+<h2>Known Bugs &amp; Battle Scars — What We Learned the Hard Way</h2>
+
+<p>
+Every bug below was discovered in production and cost real time to diagnose. Document them so we never repeat them.
+</p>
+
+<h3 id="ch13-escape-loop">Bug #1: The Escape-Add Infinite Loop</h3>
+
+<p>
+<strong>Symptom:</strong> ETH 3m showing +156,846% ($15.6 million from $10K). 5,209 trades on 30K bars = 1 escape cycle every 6 bars. Clearly impossible.
+</p>
+
+<p>
+<strong>Cause:</strong> After escape closes 90% of position, the 10% runner immediately meets the add threshold on the next bar (extension ratio still high). Add fires, rebuilding position to full size. Next bar, escape fires again on the rebuilt position. Each cycle books micro-profit. This creates a perpetual profit machine that does not exist in reality.
+</p>
+
+<p>
+<strong>Fix:</strong> Cooldown timers — escape cannot fire for 10 bars after last escape, adds cannot fire for 5 bars after last escape. Both Pine and optimizer must enforce identical cooldowns.
+</p>
+
+<p>
+<strong>Status (v2.4):</strong> Cooldown implemented but results still inflated. The fundamental issue is that even with cooldowns, the escape-add cycle generates more trade events than a real trader would execute. The PnL/DD ratio ranking partially compensates (inflated PnL comes with inflated DD), but absolute numbers should not be trusted for escape-enabled combos with more than ~500 trades per 30K bars.
+</p>
+
+<h3 id="ch13-openprofit">Bug #2: strategy.openprofit Desync</h3>
+
+<p>
+<strong>Symptom:</strong> v2.4 showing 23 losses with 71% win rate. Strategy designed for 100% WR.
+</p>
+
+<p>
+<strong>Cause:</strong> Exit logic was changed from <code>tPnl > 0</code> (our tracked profit) to <code>strategy.openprofit > 0</code> (Pine's internal profit). These diverge because Pine tracks fills at different prices than our computed average entry (especially after adds). When Pine says "not profitable" but our math says "profitable," the exit does not fire, the position is held too long, and eventually closes at a real loss.
+</p>
+
+<p>
+<strong>Fix:</strong> Always use our tracked <code>tPnl</code> for exit decisions, never <code>strategy.openprofit</code>. Additionally, the exit conditions must use separate <code>if</code> blocks (not <code>else if</code> chains) to match v2.3 behavior where both TP and swing close can evaluate independently.
+</p>
+
+<h3 id="ch13-escape-default">Bug #3: Escape ON by Default</h3>
+
+<p>
+<strong>Symptom:</strong> v2.4 showing -29% where v2.3 showed +34.8% on the same chart.
+</p>
+
+<p>
+<strong>Cause:</strong> Escape was enabled by default. With 1,920 escapes on a chart that should have had ~158 trades, the strategy was chopping every position into tiny pieces, each incurring fill slippage, generating 866 losing trades.
+</p>
+
+<p>
+<strong>Fix:</strong> All new features (escape, progressive escape, compounding) must default to OFF. Users must explicitly enable them after testing. The golden rule: v2.4 with all new features OFF must produce identical results to v2.3.
+</p>
+
+<h3 id="ch13-tf">Lesson: Timeframe Is a First-Class Parameter</h3>
+
+<p>
+Same strategy, same day, same settings:
+</p>
+
+<div class="metric-grid">
+  <div class="metric-card"><div class="mv green">+448%</div><div class="ml">15 min</div></div>
+  <div class="metric-card"><div class="mv blue">+100%</div><div class="ml">1 second</div></div>
+  <div class="metric-card"><div class="mv red">-53.7%</div><div class="ml">30 min</div></div>
+</div>
+
+<p>
+This is not a bug. Different timeframes create different swing structures. The ZigZag on 1m sees micro-swings that the 15m chart smooths over. The optimizer MUST test across timeframes systematically, and the best config for one timeframe may be terrible for another. Never assume a config transfers across TFs without testing.
+</p>
+
+</section>
 <!-- ──── FOOTER ──── -->
 <hr class="divider">
 <div style="text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 13px;">
   <p style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-blue); margin-bottom: 12px;">
-    Sync Momentum — The Complete Trading System
+    BD Trading System v4 — Complete Manual
   </p>
   <p>By Bojan Dobrečevič &nbsp;·&nbsp; AI Research Partners: Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI)</p>
   <p style="margin-top: 8px;">March 2026 &nbsp;·&nbsp; AIM³ Institute, Ljubljana</p>
