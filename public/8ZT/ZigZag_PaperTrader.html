@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BD ZigZag Reversion — Paper Trader v1.0</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -68,7 +69,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 .price-tag .sym { font-family:var(--font-mono); font-size:10px; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; font-weight:600; }
 .price-tag .val { font-family:var(--font-mono); font-size:18px; font-weight:700; font-variant-numeric:tabular-nums; }
 
-.stats-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-bottom:16px; }
+.stats-grid { display:grid; grid-template-columns:repeat(8,1fr); gap:10px; margin-bottom:16px; }
 .stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:12px 14px; }
 .stat-card .sl { font-family:var(--font-mono); font-size:9px; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; }
 .stat-card .sv { font-family:var(--font-mono); font-size:18px; font-weight:700; margin-top:2px; font-variant-numeric:tabular-nums; }
@@ -306,6 +307,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
     <div class="stat-card"><div class="sl">Avg Leg</div><div class="sv teal" id="statAvgLeg">—</div></div>
     <div class="stat-card"><div class="sl">Swings</div><div class="sv blue" id="statSwings">0</div></div>
     <div class="stat-card"><div class="sl">Max DD</div><div class="sv red" id="statMaxDD">0.00%</div></div>
+    <div class="stat-card"><div class="sl">Fees Paid</div><div class="sv" style="color:var(--accent-purple)" id="statFees">$0.00</div></div>
   </div>
 
   <div class="position-panel">
@@ -417,7 +419,7 @@ let avgLeg=0, extRatio=0, extDir=0, lastSwPrice=0;
 // Trade state
 let tDir=0, tAE=0, tSz=0, tAdds=0;
 let equity=10000, initialEquity=10000;
-let stats={wins:0,losses:0,totalPnl:0,maxDD:0,peakEquity:10000};
+let stats={wins:0,losses:0,totalPnl:0,maxDD:0,peakEquity:10000,totalFees:0};
 let equityCurve=[], trades=[];
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -559,7 +561,7 @@ async function fetchHistoricalCandles() {
     // Reset trade state for clean backtest
     tDir=0; tAE=0; tSz=0; tAdds=0;
     initialEquity=getP('p_equity'); equity=initialEquity;
-    stats={wins:0,losses:0,totalPnl:0,maxDD:0,peakEquity:initialEquity};
+    stats={wins:0,losses:0,totalPnl:0,maxDD:0,peakEquity:initialEquity,totalFees:0};
     equityCurve=[]; trades=[];
 
     for(const k of allKlines) {
@@ -781,6 +783,7 @@ function processTradeLogic(currentPrice, newSwing) {
     const feeUsd = feePct > 0 ? (tSz * feePct / 100 * 2) : 0;
     const pnlUsd = grossPnl - feeUsd;
     equity += pnlUsd;
+    stats.totalFees += feeUsd;
     const isWin = pnlUsd >= 0;
     stats.wins += isWin?1:0; stats.losses += isWin?0:1;
     stats.totalPnl += pnlUsd;
@@ -888,6 +891,7 @@ function updateUI() {
   $('statTrades').textContent=total;
   $('statWinRate').textContent=total>0?fmt(stats.wins/total*100,1)+'%':'—';
   $('statMaxDD').textContent=fmt(stats.maxDD)+'%';
+  $('statFees').textContent=fmtUsd(stats.totalFees);
   $('tradeCount').textContent=total;
   
   // Time span DD:HH:MM:SS
@@ -1026,13 +1030,22 @@ function applyPreset(name) {
 // EXPORT: PNG SCREENSHOT + MD REPORT
 // ══════════════════════════════════════════════════════════════════════════
 function exportScreenshot() {
-  // Canvas-based screenshot of the equity chart + stats overlay
-  const canvas = $('eqChart');
-  const link = document.createElement('a');
-  link.download = `ZZ_${getP('p_symbol')}_${$('p_timeframe').selectedOptions[0].text}_${new Date().toISOString().slice(0,16).replace(':','')}.png`;
-  link.href = canvas.toDataURL('image/png');
-  link.click();
-  addLog('system', `📸 Screenshot saved: ${link.download}`);
+  const mainEl = document.querySelector('.main');
+  addLog('system', '📸 Capturing full page...');
+  html2canvas(mainEl, {
+    backgroundColor: '#0a0c10',
+    scale: 2, // 2x for 4K clarity
+    useCORS: true,
+    logging: false,
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = `ZZ_${getP('p_symbol')}_${$('p_timeframe').selectedOptions[0].text}_${new Date().toISOString().slice(0,16).replace(':','')}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    addLog('system', `📸 Screenshot saved: ${link.download}`);
+  }).catch(e => {
+    addLog('system', `⚠ Screenshot failed: ${e.message}`);
+  });
 }
 
 function exportReport() {
@@ -1104,7 +1117,7 @@ function handleStop() {
 function handleReset() {
   running=false; tDir=0; tAE=0; tSz=0; tAdds=0;
   initialEquity=getP('p_equity'); equity=initialEquity;
-  stats={wins:0,losses:0,totalPnl:0,maxDD:0,peakEquity:initialEquity};
+  stats={wins:0,losses:0,totalPnl:0,maxDD:0,peakEquity:initialEquity,totalFees:0};
   equityCurve=[]; trades=[]; candles=[]; currentCandle=null; candleStartTs=0;
   zzDir=0; zzH=0; zzL=Infinity; swings=[]; avgLeg=0; extRatio=0; extDir=0; lastSwPrice=0;
   bootstrapped=false; historicalMode=false;
@@ -1137,6 +1150,7 @@ async function hotSwapTimeframe() {
       const feeUsd = feePct>0 ? (tSz*feePct/100*2) : 0;
       const pnlUsd = grossPnl - feeUsd;
       equity += pnlUsd;
+      stats.totalFees += feeUsd;
       stats[pnlUsd>=0?'wins':'losses']++;
       stats.totalPnl += pnlUsd;
       if(equity>stats.peakEquity) stats.peakEquity=equity;
