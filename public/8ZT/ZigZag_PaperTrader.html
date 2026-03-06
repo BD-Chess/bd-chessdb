@@ -114,6 +114,26 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 .signal-entry.trail { color:var(--accent-gold); }
 .signal-entry.system { color:var(--text-muted); }
 .empty-msg { padding:30px; text-align:center; color:var(--text-muted); font-size:12px; }
+
+/* Help modal */
+.modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; }
+.modal-content { background:var(--bg-secondary); border:1px solid var(--border); border-radius:10px; width:min(900px,90vw); max-height:85vh; overflow-y:auto; padding:0; }
+.modal-header { display:flex; justify-content:space-between; align-items:center; padding:20px 28px 16px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg-secondary); z-index:1; border-radius:10px 10px 0 0; }
+.modal-header h2 { font-family:var(--font-display); font-size:22px; }
+.modal-close { background:none; border:none; color:var(--text-muted); font-size:24px; cursor:pointer; padding:4px 8px; }
+.modal-close:hover { color:var(--accent-red); }
+.modal-body { padding:20px 28px 32px; }
+.modal-body h3 { font-family:var(--font-mono); font-size:13px; color:var(--accent-green); letter-spacing:1.5px; text-transform:uppercase; margin:24px 0 10px; }
+.modal-body h3:first-child { margin-top:0; }
+.modal-body p { color:var(--text-secondary); font-size:13.5px; line-height:1.7; margin-bottom:10px; }
+.modal-body strong { color:var(--text-primary); }
+.modal-body code { background:var(--bg-tertiary); padding:2px 6px; border-radius:3px; font-family:var(--font-mono); font-size:12px; color:var(--accent-teal); }
+.help-table { width:100%; border-collapse:collapse; margin:10px 0 16px; font-size:12px; }
+.help-table th { text-align:left; padding:6px 10px; background:var(--bg-tertiary); color:var(--text-muted); font-family:var(--font-mono); font-size:10px; letter-spacing:0.8px; text-transform:uppercase; border-bottom:1px solid var(--border); }
+.help-table td { padding:5px 10px; border-bottom:1px solid #12151c; color:var(--text-secondary); }
+.help-table td:first-child { color:var(--text-primary); font-family:var(--font-mono); font-weight:500; }
+.help-tip { background:var(--bg-tertiary); border-left:3px solid var(--accent-gold); padding:10px 14px; margin:10px 0 16px; border-radius:0 4px 4px 0; font-size:12.5px; color:var(--text-secondary); }
+.help-tip strong { color:var(--accent-gold); }
 </style>
 </head>
 <body>
@@ -307,6 +327,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
     <div class="prices">
       <div class="price-tag"><div class="sym">BTC</div><div class="val" id="priceBTC">—</div></div>
       <div class="price-tag"><div class="sym">ETH</div><div class="val" id="priceETH">—</div></div>
+      <button onclick="$('helpModal').style.display='flex'" style="background:var(--bg-tertiary);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--accent-blue);font-weight:700;font-size:16px;cursor:pointer;font-family:var(--font-mono)" title="Help & Documentation">?</button>
     </div>
   </div>
 
@@ -356,6 +377,148 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
       <div class="log-body" id="signalLogBody"><div class="empty-msg">Waiting...</div></div>
     </div>
   </div>
+</div>
+
+<!-- ═══════════════════════════════ HELP MODAL ═══════════════════════════════ -->
+<div class="modal-overlay" id="helpModal" onclick="if(event.target===this)this.style.display='none'">
+<div class="modal-content">
+  <div class="modal-header">
+    <h2>📖 Help & Documentation</h2>
+    <button class="modal-close" onclick="$('helpModal').style.display='none'">✕</button>
+  </div>
+  <div class="modal-body">
+
+    <h3>🎯 What Is This?</h3>
+    <p>A <strong>mean-reversion paper trading simulator</strong> that connects to live crypto exchanges via WebSocket. It detects ZigZag swing patterns, enters counter-trades when price overextends, and averages down if price continues against the position. The math guarantees that <strong>every trade is closed at a profit</strong> (100% gross win rate) — price must eventually revert, and each add brings the average entry closer to current price.</p>
+    <div class="help-tip"><strong>Key insight:</strong> This is NOT a live trading bot. No real money is at risk. It simulates trades using real market data to test strategy configurations before going live.</div>
+
+    <h3>🚀 Quick Start</h3>
+    <p><strong>1.</strong> Select your <strong>Symbol</strong>, <strong>Exchange</strong>, and <strong>Timeframe</strong> in the sidebar.<br>
+    <strong>2.</strong> Press <strong>▶ Start</strong> — fetches historical data, runs backtest instantly, then goes live.<br>
+    <strong>3.</strong> Change any setting and press <strong>⟳ RECALCULATE</strong> to replay the same data with new settings.<br>
+    <strong>4.</strong> Use <strong>📸 PNG</strong> for screenshots and <strong>📋 Report</strong> to export results.</p>
+
+    <h3>📊 Row 1 — Performance Metrics</h3>
+    <table class="help-table">
+      <tr><th>Card</th><th>Meaning</th></tr>
+      <tr><td>Total Equity</td><td>Starting capital + all realized profits - fees. Updates after each closed trade.</td></tr>
+      <tr><td>Return</td><td>Percentage return: <code>(equity - initial) / initial × 100</code></td></tr>
+      <tr><td>Trades</td><td>Total completed (closed) trades. Open position is not counted.</td></tr>
+      <tr><td>Win Rate</td><td><strong>NET win rate</strong> — trades where PnL after fees is ≥ 0. With fees OFF, this should always be <strong>100%</strong>. With fees ON, micro-profit trades ($0.01 gross profit but $0.05 fee) show as losses. <em>If gross WR ever drops below 100%, that's a strategy bug.</em></td></tr>
+      <tr><td>Avg Leg</td><td>Average amplitude of the last N ZigZag legs (in %). When <strong>SLA</strong> badge is shown, outlier legs are capped. <strong>✂2</strong> means 2 legs were capped in the window.</td></tr>
+      <tr><td>Max DD</td><td>Maximum drawdown from peak equity. Only measures closed-trade equity, not unrealized drawdown.</td></tr>
+      <tr><td>Fees Paid</td><td>Total fees deducted across all trades. Fee is applied on both entry and exit (2× per round trip).</td></tr>
+    </table>
+
+    <h3>⚙️ Row 2 — Config at a Glance</h3>
+    <table class="help-table">
+      <tr><th>Card</th><th>Meaning</th></tr>
+      <tr><td>Initial Equity</td><td>Starting capital. Set in sidebar before pressing Start.</td></tr>
+      <tr><td>Base Size</td><td>Dollar amount of the <strong>first entry</strong>. Adds grow from this via the sizing mode.</td></tr>
+      <tr><td>Max Position</td><td><strong>The real constraint.</strong> Calculated as <code>equity × Max Pos %</code>. No add can push total position beyond this ceiling. This — not base size — determines your profit potential.</td></tr>
+      <tr><td>Eff. Adds</td><td><strong>Effective adds</strong> — how many add layers fit before hitting the Max Position cap. <span style="color:var(--accent-teal)">Teal</span> = full (good). <span style="color:var(--accent-gold)">Gold</span> = slightly limited. <span style="color:var(--accent-red)">Red</span> = severely limited — your cap is choking the strategy.</td></tr>
+      <tr><td>Sizing</td><td>Current add sizing mode (Flat, DblLast, Match, DblTot, TriTot, Fib).</td></tr>
+      <tr><td>Timeframe</td><td>Candle aggregation period for ZigZag detection.</td></tr>
+      <tr><td>Symbol / Exchange</td><td>Trading pair and exchange (historical always from Binance, live from selected).</td></tr>
+    </table>
+
+    <h3>💡 Why $1 Base Makes More Than $10 Base</h3>
+    <p>This confuses everyone. It's not a bug — it's the <strong>exponential sizing hitting the cap</strong>.</p>
+    <p>With Double Total sizing, position grows as 3<sup>n</sup>: $1 → $3 → $9 → $27 → $81 → $243 → $729 → $2,187 → <strong>cap</strong>. With $10 base and $5K cap, you get: $10 → $30 → $90 → $270 → $810 → $2,430 → <strong>cap</strong>. That's 8 adds vs 6 adds — the $1 base gets 2 more averaging layers before the cap bites.</p>
+    <p>More adds = tAE moves closer to price = trades close sooner = more trades in same period = more total profit. The <strong>Eff. Adds</strong> card in Row 2 shows this instantly.</p>
+    <div class="help-tip"><strong>Rule of thumb:</strong> Maximum profit when Eff. Adds shows the full count (e.g., 10/10). If it's red, either increase equity, increase Max Pos %, or reduce base size.</div>
+
+    <h3>📐 Smart Leg Average (SLA)</h3>
+    <p>The standard average of the last N legs can be inflated by a single monster move (e.g., a 5% flash crash in a market where normal legs are 0.5%). This inflated average causes:</p>
+    <p>• <strong>Late entries</strong> — entry threshold (0.5 × avgLeg) becomes too high<br>
+    • <strong>Missed TPs</strong> — TP target (0.3 × avgLeg) becomes unreachable for normal legs</p>
+    <p>SLA caps any leg exceeding <code>cap × median</code> of the other legs. Default cap is 1.5×. The <strong>✂</strong> count shows how many legs were capped. Effect: +25 to +47 more trades per timeframe at same or better win rate.</p>
+    <p>Exception: on 30m timeframes, use cap=2.0 or higher — heavier tails mean outliers ARE the regime.</p>
+
+    <h3>📈 Sizing Modes Explained</h3>
+    <table class="help-table">
+      <tr><th>Mode</th><th>Add Formula</th><th>Growth Pattern (base=$1)</th><th>Notes</th></tr>
+      <tr><td>Flat</td><td>base</td><td>$1, $1, $1, $1...</td><td>Safest. Linear growth. Slow averaging.</td></tr>
+      <tr><td>DblLast</td><td>base × 2<sup>n</sup></td><td>$1, $2, $4, $8, $16...</td><td>Classic martingale. Very aggressive.</td></tr>
+      <tr><td>Match</td><td>max(base, current)</td><td>$1, $1, $2, $4, $8...</td><td>Match current position each add.</td></tr>
+      <tr><td>DblTot</td><td>max(base, current×2)</td><td>$1, $2, $6, $18, $54...</td><td>Most popular. 3<sup>n</sup> growth. Good balance.</td></tr>
+      <tr><td>TriTot</td><td>max(base, current×3)</td><td>$1, $3, $12, $48, $192...</td><td>4<sup>n</sup> growth. Very fast averaging but hits cap fast.</td></tr>
+      <tr><td>Fib</td><td>base × fib(n)</td><td>$1, $1, $2, $3, $5, $8...</td><td>Fibonacci sequence. Elegant natural scaling.</td></tr>
+    </table>
+
+    <h3>💰 Fees</h3>
+    <p><strong>OFF</strong> = zero fees (pure strategy test). <strong>Auto</strong> = real futures fees for selected exchange. <strong>Custom</strong> = your own rate.</p>
+    <table class="help-table">
+      <tr><th>Exchange</th><th>Maker</th><th>Taker</th><th>Auto fills</th></tr>
+      <tr><td>MEXC</td><td>0%</td><td>0.02%</td><td>0.02%</td></tr>
+      <tr><td>Binance</td><td>0.02%</td><td>0.05%</td><td>0.05%</td></tr>
+      <tr><td>OKX</td><td>0.02%</td><td>0.05%</td><td>0.05%</td></tr>
+      <tr><td>Bybit</td><td>0.02%</td><td>0.055%</td><td>0.055%</td></tr>
+      <tr><td>Bitget</td><td>0.02%</td><td>0.06%</td><td>0.06%</td></tr>
+    </table>
+    <p>Fee is applied per side (entry + exit). A trade with $1,000 position at 0.05% fee costs: $1,000 × 0.05% × 2 = $1.00. Micro-profit trades where gross PnL < fee cost show as "losses" in Win Rate — but gross WR remains 100%.</p>
+
+    <h3>🔧 Sidebar Parameters</h3>
+    <table class="help-table">
+      <tr><th>Parameter</th><th>What it does</th><th>Default</th></tr>
+      <tr><td>Deviation %</td><td>ZigZag sensitivity. Smaller = more swings, more trades. Larger = fewer, bigger swings.</td><td>0.3%</td></tr>
+      <tr><td>Legs for Average</td><td>How many past ZZ legs to average for extension calculation.</td><td>8</td></tr>
+      <tr><td>Entry (× avg leg)</td><td>Extension ratio threshold to enter. 0.5 = enter when price has moved 50% of avg leg from last swing.</td><td>0.5</td></tr>
+      <tr><td>TP (× avg leg)</td><td>Take profit as fraction of avg leg. 0.3 = close when profit equals 30% of avg leg amplitude.</td><td>0.3</td></tr>
+      <tr><td>Close on New Swing</td><td>Also close when a new ZigZag swing is detected AND position is profitable.</td><td>Yes</td></tr>
+      <tr><td>Max Adds</td><td>Maximum number of add layers per trade.</td><td>10</td></tr>
+      <tr><td>Ext Step / Decel</td><td>Each add requires progressively more extension. Step = initial increment, Decel = how fast it slows.</td><td>0.15 / 0.6</td></tr>
+      <tr><td>Session Thresholds</td><td>Adjusts entry threshold by time of day. Asia=easier entry, NY open=harder.</td><td>ON</td></tr>
+      <tr><td>Macro Bias</td><td>Placeholder for 200-bar EMA trend filter. Longs easier in bull, shorts in bear.</td><td>ON (stub)</td></tr>
+    </table>
+
+    <h3>⚡ Config Strings</h3>
+    <p>Format: <code>BDZv2|DV:0.7|ET:0.5|TP:0.3|SZ:dbl_t|SA:1|SC:1.5|...</code></p>
+    <p><strong>Import:</strong> Paste a config string and click ⚡ Import to apply all parameters at once. Works with optimizer output.</p>
+    <p><strong>Export:</strong> Click ⤴ Export to generate the current config as a pasteable string (copied to clipboard).</p>
+    <table class="help-table">
+      <tr><th>Key</th><th>Parameter</th><th>Key</th><th>Parameter</th></tr>
+      <tr><td>DV</td><td>Deviation %</td><td>SA</td><td>Smart Avg (0/1)</td></tr>
+      <tr><td>LB</td><td>Legs for Average</td><td>SC</td><td>Smart Avg Cap</td></tr>
+      <tr><td>ET</td><td>Entry threshold</td><td>BS</td><td>Base Size</td></tr>
+      <tr><td>TP</td><td>TP fraction</td><td>MP</td><td>Max Pos %</td></tr>
+      <tr><td>SZ</td><td>Sizing mode</td><td>SS</td><td>Session thresholds</td></tr>
+      <tr><td>MA</td><td>Max Adds</td><td>MB</td><td>Macro Bias</td></tr>
+      <tr><td>ES</td><td>Ext Step</td><td>CS</td><td>Close on Swing</td></tr>
+      <tr><td>ED</td><td>Ext Decel</td><td></td><td></td></tr>
+    </table>
+
+    <h3>🔄 Recalculate Workflow</h3>
+    <p><strong>1.</strong> Press Start to load data and run initial backtest<br>
+    <strong>2.</strong> Change any parameters in the sidebar<br>
+    <strong>3.</strong> Press <strong>⟳ RECALCULATE</strong> — replays same candles with new settings in milliseconds<br>
+    <strong>4.</strong> Compare results in Row 1 — no re-fetching needed</p>
+    <p>This is how you A/B test: toggle SLA on/off, change deviation, try different sizing modes — one click each time to see the full impact over the same historical period.</p>
+
+    <h3>🔌 Exchanges</h3>
+    <p><strong>Historical data</strong> always comes from Binance API (only exchange with browser CORS support). <strong>Live feed</strong> uses the selected exchange's WebSocket.</p>
+    <p><strong>1s timeframe</strong> is only available on Binance (they have 1-second klines). Selecting it auto-switches exchange to Binance.</p>
+    <p>The WS keepalive pings every 20 seconds to prevent disconnections (especially on MEXC).</p>
+
+    <h3>⚠️ Important Limitations</h3>
+    <p>• <strong>No slippage simulation</strong> — entries and exits happen at exact candle close price. Real trading has slippage.</p>
+    <p>• <strong>Backtest ≠ live</strong> — historical data is clean and sequential. Live markets have gaps, latency, and order book dynamics.</p>
+    <p>• <strong>Infinite hold assumption</strong> — the strategy holds losing positions indefinitely, waiting for reversion. In live trading, extreme moves (exchange halt, black swan) can force liquidation before reversion occurs.</p>
+    <p>• <strong>The 100% WR guarantee</strong> is mathematical, not practical. It assumes: unlimited holding time, no forced liquidation, and sufficient capital for all adds. Real markets can break all three.</p>
+
+    <h3>📁 Exports</h3>
+    <p><strong>📸 PNG</strong> — captures the entire main panel (stats + position + equity curve + trade log) at 2× resolution.</p>
+    <p><strong>📋 Report</strong> — generates a Markdown (.md) file with performance table, config string, and complete trade log. Open in any Markdown viewer or paste into documentation.</p>
+
+    <h3>🧬 About</h3>
+    <p><strong>BD ZigZag Reversion Paper Trader v1.0</strong><br>
+    Strategy design: Bojan Dobrečevič<br>
+    Engine & UI: Claude Opus 4.6 (Anthropic)<br>
+    March 2026 — Ljubljana, Slovenia</p>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:12px">This tool is for research and education only. It does not constitute financial advice. Trading leveraged derivatives carries substantial risk of loss. Past performance — including backtests — does not guarantee future results.</p>
+
+  </div>
+</div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
@@ -1157,6 +1320,15 @@ function exportReport() {
   md += `| Avg Leg | ${fmt(avgLeg,3)}% |\n`;
   md += `| Smart Avg | ${getP('p_smartAvg')==='1'?'ON (cap '+getP('p_smartCap')+')':'OFF'} |\n`;
   md += `| Fees | ${getP('p_feeMode')==='off'?'OFF':getP('p_fee')+'% per side ('+($('feeLabel')?.textContent||'custom')+')'} |\n\n`;
+  md += `## Config Summary\n\n`;
+  md += `| Setting | Value |\n|---|---|\n`;
+  md += `| Initial Equity | ${fmtUsd(getP('p_equity'))} |\n`;
+  md += `| Base Size | $${fmt(getP('p_baseSz'))} |\n`;
+  const {effAdds:ea, maxAdds:ma, finalSz:fs, maxPosCap:mc} = calcEffectiveAdds();
+  md += `| Max Position | ${fmtUsd(mc)} |\n`;
+  md += `| Eff. Adds | ${ea}/${ma} |\n`;
+  md += `| Sizing | ${SZ_LABELS[getP('p_sizingMode')]||'?'} |\n`;
+  md += `| Exchange | ${EXCHANGES[getP('p_exchange')]?.name||'?'} |\n\n`;
   md += `## Config\n\n\`\`\`\n`;
   exportConfig();
   md += $('cfgPaste').value + '\n```\n\n';
