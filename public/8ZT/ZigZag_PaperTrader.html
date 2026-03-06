@@ -69,7 +69,13 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 .price-tag .sym { font-family:var(--font-mono); font-size:10px; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; font-weight:600; }
 .price-tag .val { font-family:var(--font-mono); font-size:18px; font-weight:700; font-variant-numeric:tabular-nums; }
 
-.stats-grid { display:grid; grid-template-columns:repeat(8,1fr); gap:10px; margin-bottom:16px; }
+.stats-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-bottom:10px; }
+.stats-grid2 { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-bottom:16px; }
+.stats-grid2 .stat-card { background:var(--bg-tertiary); border-color:#222838; }
+.stats-grid2 .stat-card .sl { font-size:8px; }
+.stats-grid2 .stat-card .sv { font-size:14px; color:var(--text-secondary); }
+.stats-grid2 .sv.warn { color:var(--accent-gold); }
+.stats-grid2 .sv.danger { color:var(--accent-red); }
 .stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:12px 14px; }
 .stat-card .sl { font-family:var(--font-mono); font-size:9px; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; }
 .stat-card .sv { font-family:var(--font-mono); font-size:18px; font-weight:700; margin-top:2px; font-variant-numeric:tabular-nums; }
@@ -154,6 +160,11 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
           <button class="btn btn-go" id="btnStart" onclick="handleStart()">▶ Start</button>
           <button class="btn btn-stop" id="btnStop" onclick="handleStop()" style="display:none">■ Stop</button>
           <button class="btn btn-reset" onclick="handleReset()">↺ Reset</button>
+        </div>
+        <div class="controls-row" style="margin-top:4px">
+          <button class="btn" id="btnRecalc" onclick="recalculate()" style="background:#1a1030;color:var(--accent-gold);border-color:var(--accent-gold);flex:1;font-size:12px" disabled>⟳ RECALCULATE</button>
+        </div>
+        <div class="controls-row" style="margin-top:4px">
           <button class="btn btn-sm" style="background:#1a1040;color:var(--accent-purple);border-color:#3a206033" onclick="exportReport()">📋 Report</button>
           <button class="btn btn-sm" style="background:#103030;color:var(--accent-teal);border-color:#20605033" onclick="exportScreenshot()">📸 PNG</button>
         </div>
@@ -299,15 +310,26 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
     </div>
   </div>
 
+  <!-- ROW 1: PERFORMANCE (live) -->
   <div class="stats-grid">
-    <div class="stat-card"><div class="sl">Equity</div><div class="sv green" id="statEquity">$10,000</div></div>
+    <div class="stat-card"><div class="sl">Total Equity</div><div class="sv green" id="statEquity">$10,000</div></div>
     <div class="stat-card"><div class="sl">Return</div><div class="sv green" id="statReturn">0.00%</div></div>
     <div class="stat-card"><div class="sl">Trades</div><div class="sv blue" id="statTrades">0</div></div>
     <div class="stat-card"><div class="sl">Win Rate</div><div class="sv gold" id="statWinRate">—</div></div>
     <div class="stat-card"><div class="sl">Avg Leg</div><div class="sv teal" id="statAvgLeg">—</div></div>
-    <div class="stat-card"><div class="sl">Swings</div><div class="sv blue" id="statSwings">0</div></div>
     <div class="stat-card"><div class="sl">Max DD</div><div class="sv red" id="statMaxDD">0.00%</div></div>
     <div class="stat-card"><div class="sl">Fees Paid</div><div class="sv" style="color:var(--accent-purple)" id="statFees">$0.00</div></div>
+  </div>
+  
+  <!-- ROW 2: CONFIG AT A GLANCE (static until recalculate) -->
+  <div class="stats-grid2">
+    <div class="stat-card"><div class="sl">Initial Equity</div><div class="sv" id="statInitEq">$10,000</div></div>
+    <div class="stat-card"><div class="sl">Base Size</div><div class="sv" id="statBaseSz">$1.00</div></div>
+    <div class="stat-card"><div class="sl">Max Position</div><div class="sv" style="color:var(--accent-gold)" id="statMaxPos">$5,000</div></div>
+    <div class="stat-card"><div class="sl">Eff. Adds</div><div class="sv" id="statEffAdds">—</div></div>
+    <div class="stat-card"><div class="sl">Sizing</div><div class="sv" id="statSizing">DblTot</div></div>
+    <div class="stat-card"><div class="sl">Timeframe</div><div class="sv" style="color:var(--accent-blue)" id="statTF">—</div></div>
+    <div class="stat-card"><div class="sl">Symbol / Exchange</div><div class="sv" id="statSymExch">—</div></div>
   </div>
 
   <div class="position-panel">
@@ -421,6 +443,7 @@ let tDir=0, tAE=0, tSz=0, tAdds=0;
 let equity=10000, initialEquity=10000;
 let stats={wins:0,losses:0,totalPnl:0,maxDD:0,peakEquity:10000,totalFees:0};
 let equityCurve=[], trades=[];
+let rawKlines = []; // stored raw kline data for recalculate
 
 // ══════════════════════════════════════════════════════════════════════════
 // MULTI-EXCHANGE WEBSOCKET
@@ -554,6 +577,9 @@ async function fetchHistoricalCandles() {
     }
     
     if(allKlines.length === 0) throw new Error('No data returned');
+    
+    // Store raw data for recalculate (no need to re-fetch)
+    rawKlines = allKlines;
 
     historicalMode = true;
     candles = [];
@@ -591,6 +617,7 @@ async function fetchHistoricalCandles() {
     addLog('system', `ZZ: dir=${zzDir===1?'UP':zzDir===-1?'DOWN':'INIT'} | ExtR: ${fmt(extRatio)}x | Now going LIVE on ${exName}...`);
 
     updateUI();
+    $('btnRecalc').disabled = false;
     return true;
   } catch(e) {
     addLog('system', `⚠ Bootstrap failed: ${e.message}. Starting from zero.`);
@@ -668,7 +695,6 @@ function onBarClose() {
   }
   
   if(newSwing) {
-    $('statSwings').textContent = swings.length;
     addLog('system', `Swing #${swings.length}: ${swings[swings.length-1].type===1?'HIGH':'LOW'} @ ${fmt(swings[swings.length-1].price)}`);
   }
   
@@ -696,6 +722,11 @@ function calcExtension() {
   const count = legAmps.length;
   if(count === 0) { avgLeg=0; return; }
   
+  // Raw average (always computed for comparison)
+  let rawAvg = 0;
+  for(const amp of legAmps) rawAvg += amp;
+  rawAvg = rawAvg / count;
+  
   const useSmartAvg = getP('p_smartAvg') === '1';
   const smartCap = getP('p_smartCap');
   
@@ -705,12 +736,16 @@ function calcExtension() {
     const med = sorted.length%2===0 ? (sorted[sorted.length/2-1]+sorted[sorted.length/2])/2 : sorted[Math.floor(sorted.length/2)];
     const capVal = med * smartCap;
     let discTotal = 0;
-    for(const amp of legAmps) discTotal += Math.min(amp, capVal);
+    let capped = 0;
+    for(const amp of legAmps) { 
+      if(amp > capVal) capped++;
+      discTotal += Math.min(amp, capVal); 
+    }
     avgLeg = discTotal / count;
+    $('statAvgLeg').innerHTML = `${fmt(avgLeg,3)}% <span style="font-size:9px;color:var(--accent-purple)">SLA${capped>0?' ✂'+capped:''}</span>`;
   } else {
-    let total = 0;
-    for(const amp of legAmps) total += amp;
-    avgLeg = total / count;
+    avgLeg = rawAvg;
+    $('statAvgLeg').textContent = fmt(avgLeg,3) + '%';
   }
   
   if(lastSwPrice > 0 && avgLeg > 0) {
@@ -721,8 +756,6 @@ function calcExtension() {
     extRatio = Math.abs(extPct) / avgLeg;
     extDir = extPct > 0 ? 1 : (extPct < 0 ? -1 : 0);
   }
-  
-  $('statAvgLeg').textContent = fmt(avgLeg,3) + '%';
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -886,6 +919,7 @@ function updatePositionDisplay(price) {
 function updateUI() {
   const total=stats.wins+stats.losses;
   const ret=(equity-initialEquity)/initialEquity*100;
+  // Row 1: Performance
   $('statEquity').textContent=fmtUsd(equity); $('statEquity').className='sv '+(equity>=initialEquity?'green':'red');
   $('statReturn').textContent=fmt(ret)+'%'; $('statReturn').className='sv '+(ret>=0?'green':'red');
   $('statTrades').textContent=total;
@@ -893,6 +927,9 @@ function updateUI() {
   $('statMaxDD').textContent=fmt(stats.maxDD)+'%';
   $('statFees').textContent=fmtUsd(stats.totalFees);
   $('tradeCount').textContent=total;
+  
+  // Row 2: Config at a glance
+  updateRow2();
   
   // Time span DD:HH:MM:SS
   if(candles.length>=2) {
@@ -906,6 +943,54 @@ function updateUI() {
   if(tDir===0) $('positionBody').innerHTML=`<div class="position-empty">${running?'Scanning...':'No position'}</div>`;
   renderTradeLog();
   drawEquityChart();
+}
+
+// ── Row 2 config display with effective adds calculation ──
+const SZ_LABELS = {'0':'Flat','1':'DblLast','2':'Match','3':'DblTot','4':'TriTot','5':'Fib'};
+
+function calcEffectiveAdds() {
+  const baseSz = getP('p_baseSz');
+  const maxAdds = Math.round(getP('p_maxAdds'));
+  const maxPosPct = getP('p_maxPosPct');
+  const eq = getP('p_equity');
+  const maxPosCap = eq * maxPosPct / 100;
+  const szMode = parseInt(getP('p_sizingMode'));
+  
+  let tSz = baseSz;
+  let effAdds = 0;
+  for(let n = 1; n <= maxAdds; n++) {
+    const addAmt = calcAddSz(tSz, n, baseSz, szMode, maxPosCap);
+    if(addAmt <= 0.01) break;
+    tSz += addAmt;
+    effAdds = n;
+  }
+  return {effAdds, maxAdds, finalSz: tSz, maxPosCap};
+}
+
+function updateRow2() {
+  const eq = getP('p_equity');
+  const baseSz = getP('p_baseSz');
+  const maxPosPct = getP('p_maxPosPct');
+  const maxPosCap = eq * maxPosPct / 100;
+  const szMode = getP('p_sizingMode');
+  const tfText = $('p_timeframe')?.selectedOptions?.[0]?.text || '—';
+  const sym = getP('p_symbol');
+  const exch = EXCHANGES[getP('p_exchange')]?.name || '—';
+  
+  $('statInitEq').textContent = fmtUsd(eq);
+  $('statBaseSz').textContent = '$' + fmt(baseSz);
+  $('statMaxPos').textContent = fmtUsd(maxPosCap);
+  $('statSizing').textContent = SZ_LABELS[szMode] || '?';
+  $('statTF').textContent = tfText;
+  $('statSymExch').textContent = sym + ' @ ' + exch;
+  
+  // Effective adds with color warning
+  const {effAdds, maxAdds, finalSz} = calcEffectiveAdds();
+  const addsEl = $('statEffAdds');
+  addsEl.textContent = effAdds + '/' + maxAdds;
+  if(effAdds >= maxAdds) { addsEl.className = 'sv'; addsEl.style.color = 'var(--accent-teal)'; }
+  else if(effAdds >= maxAdds * 0.7) { addsEl.className = 'sv warn'; addsEl.style.color = 'var(--accent-gold)'; }
+  else { addsEl.className = 'sv danger'; addsEl.style.color = 'var(--accent-red)'; }
 }
 
 function renderTradeLog() {
@@ -1007,10 +1092,10 @@ function showCfgMsg(msg, color) {
 // PRESETS (matches Pine v2.4 Auto presets)
 // ══════════════════════════════════════════════════════════════════════════
 const PRESETS = {
-  '3m_zzpiv':  {p_dev:0.3, p_legsBack:8, p_entryT:0.5, p_tpFrac:0.3, p_sizingMode:'3', p_maxAdds:10, p_extStep:0.15, p_extDecel:0.6, p_smartAvg:'1', p_smartCap:1.5},
-  '5m_zzpiv':  {p_dev:0.3, p_legsBack:8, p_entryT:0.5, p_tpFrac:0.3, p_sizingMode:'3', p_maxAdds:10, p_extStep:0.15, p_extDecel:0.6, p_smartAvg:'1', p_smartCap:1.5},
-  '15m_zz':    {p_dev:0.5, p_legsBack:8, p_entryT:0.5, p_tpFrac:0.3, p_sizingMode:'4', p_maxAdds:10, p_extStep:0.15, p_extDecel:0.6, p_smartAvg:'1', p_smartCap:1.5},
-  '30m_zz':    {p_dev:0.7, p_legsBack:8, p_entryT:0.5, p_tpFrac:0.3, p_sizingMode:'4', p_maxAdds:10, p_extStep:0.15, p_extDecel:0.6, p_smartAvg:'1', p_smartCap:2.0},
+  '3m_zzpiv':  {p_dev:0.3, p_legsBack:8, p_entryT:0.5, p_tpFrac:0.3, p_smartAvg:'1', p_smartCap:1.5},
+  '5m_zzpiv':  {p_dev:0.3, p_legsBack:8, p_entryT:0.5, p_tpFrac:0.3, p_smartAvg:'1', p_smartCap:1.5},
+  '15m_zz':    {p_dev:0.5, p_legsBack:8, p_entryT:0.5, p_tpFrac:0.3, p_smartAvg:'1', p_smartCap:1.5},
+  '30m_zz':    {p_dev:0.7, p_legsBack:8, p_entryT:0.5, p_tpFrac:0.3, p_smartAvg:'1', p_smartCap:2.0},
 };
 
 function applyPreset(name) {
@@ -1090,6 +1175,53 @@ function exportReport() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
+// RECALCULATE — replay stored klines with current settings (no re-fetch)
+// ══════════════════════════════════════════════════════════════════════════
+function recalculate() {
+  if(rawKlines.length === 0) { addLog('system','⚠ No data loaded — press Start first'); return; }
+  
+  const t0 = performance.now();
+  
+  // Reset ALL state
+  historicalMode = true;
+  candles = [];
+  zzDir=0; zzH=0; zzL=Infinity; swings=[]; avgLeg=0; extRatio=0; extDir=0; lastSwPrice=0;
+  tDir=0; tAE=0; tSz=0; tAdds=0;
+  initialEquity = getP('p_equity');
+  equity = initialEquity;
+  stats = {wins:0, losses:0, totalPnl:0, maxDD:0, peakEquity:initialEquity, totalFees:0};
+  equityCurve = []; trades = [];
+  
+  // Replay all stored klines through the engine
+  for(const k of rawKlines) {
+    candles.push({ o:parseFloat(k[1]), h:parseFloat(k[2]), l:parseFloat(k[3]), c:parseFloat(k[4]), ts:parseInt(k[0]) });
+    onBarClose();
+  }
+  
+  historicalMode = false;
+  candleStartTs = candles[candles.length-1]?.ts || 0;
+  currentCandle = null;
+  
+  const elapsed = (performance.now() - t0).toFixed(0);
+  const total = stats.wins + stats.losses;
+  const wr = total > 0 ? (stats.wins/total*100).toFixed(1) : '—';
+  const ret = ((equity-initialEquity)/initialEquity*100);
+  const t0d = new Date(candles[0]?.ts);
+  const t1d = new Date(candles[candles.length-1]?.ts);
+  const spanHrs = ((t1d-t0d)/3600000).toFixed(1);
+  
+  $('barCount').textContent = candles.length;
+  
+  addLog('system', `⟳ Recalculated ${candles.length} bars (${spanHrs}h) in ${elapsed}ms`);
+  addLog('system', `Result: ${total} trades | ${stats.wins}W/${stats.losses}L | WR: ${wr}% | PnL: ${fmtUsd(stats.totalPnl)} (${fmt(ret)}%)`);
+  if(stats.totalFees > 0) addLog('system', `Fees paid: ${fmtUsd(stats.totalFees)}`);
+  if(stats.losses === 0 && total > 0) addLog('system', `✅ 100% WIN RATE on ${total} trades!`);
+  else if(stats.losses > 0) addLog('system', `⚠ ${stats.losses} LOSSES detected`);
+  
+  updateUI();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
 // CONTROLS
 // ══════════════════════════════════════════════════════════════════════════
 async function handleStart() {
@@ -1121,6 +1253,8 @@ function handleReset() {
   equityCurve=[]; trades=[]; candles=[]; currentCandle=null; candleStartTs=0;
   zzDir=0; zzH=0; zzL=Infinity; swings=[]; avgLeg=0; extRatio=0; extDir=0; lastSwPrice=0;
   bootstrapped=false; historicalMode=false;
+  rawKlines=[];
+  $('btnRecalc').disabled=true;
   ticks=0; $('tickCount').textContent='0'; $('barCount').textContent='0';
   $('btnStart').style.display=''; $('btnStop').style.display='none';
   updateConnUI(); updateUI();
