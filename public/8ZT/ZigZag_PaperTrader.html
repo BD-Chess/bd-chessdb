@@ -370,9 +370,12 @@ async function fetchHistoricalCandles() {
   const sym = getP('p_symbol');
   const tfSecs = getP('p_timeframe');
   const interval = TF_MAP[tfSecs] || '3m';
-  const url = `https://api.mexc.com/api/v3/klines?symbol=${sym}&interval=${interval}&limit=500`;
   
-  addLog('system', `Fetching 500 historical ${interval} candles for ${sym}...`);
+  // Binance API supports CORS from browser (MEXC does not)
+  // Same BTC/ETH candle data — just for building ZigZag detector state
+  const url = `https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${interval}&limit=500`;
+  
+  addLog('system', `Fetching 500 × ${interval} candles for ${sym} (Binance)...`);
   
   try {
     const resp = await fetch(url);
