@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BD ZigZag Reversion — Paper Trader v1.0</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0c10; --bg-secondary: #12151c; --bg-tertiary: #1a1e28;
+  --bg-card: #161a24; --border: #2a2f3c; --border-accent: #3a4055;
+  --text-primary: #e8eaf0; --text-secondary: #8b93a6; --text-muted: #5a6275;
+  --accent-green: #00e676; --accent-red: #ff4757; --accent-blue: #448aff;
+  --accent-gold: #ffd740; --accent-purple: #b388ff; --accent-teal: #64ffda;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --sidebar-w: 320px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { font-size:15px; }
+body { background:var(--bg-primary); color:var(--text-primary); font-family:var(--font-body); line-height:1.5; -webkit-font-smoothing:antialiased; }
+::selection { background:var(--accent-blue); color:white; }
+::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+.sidebar { position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh; background:var(--bg-secondary); border-right:1px solid var(--border); overflow-y:auto; z-index:100; display:flex; flex-direction:column; }
+.sidebar-brand { padding:20px 18px 16px; border-bottom:1px solid var(--border); }
+.sidebar-brand h1 { font-family:var(--font-mono); font-size:12px; font-weight:500; color:var(--accent-green); letter-spacing:2.5px; text-transform:uppercase; }
+.sidebar-brand .sub { font-size:11px; color:var(--text-muted); margin-top:3px; font-family:var(--font-mono); }
+.sidebar-content { flex:1; overflow-y:auto; padding:12px 0; }
+.sidebar-section { border-bottom:1px solid var(--border); padding:10px 16px 14px; }
+.section-title { font-family:var(--font-mono); font-size:9.5px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none; }
+.section-title .arrow { transition:transform 0.2s; font-size:8px; }
+.section-title .arrow.collapsed { transform:rotate(-90deg); }
+.field { margin-bottom:8px; }
+.field label { display:block; font-size:10.5px; color:var(--text-secondary); margin-bottom:3px; font-family:var(--font-mono); letter-spacing:0.3px; }
+.field input, .field select, .field textarea { width:100%; background:var(--bg-tertiary); border:1px solid var(--border); border-radius:4px; padding:5px 8px; color:var(--text-primary); font-family:var(--font-mono); font-size:12px; outline:none; }
+.field input:focus, .field select:focus { border-color:var(--accent-blue); }
+.field textarea { resize:vertical; min-height:48px; font-size:11px; }
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px; }
+.field-row .field { margin-bottom:0; }
+.field-row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:8px; }
+.field-row3 .field { margin-bottom:0; }
+
+.btn { display:inline-flex; align-items:center; gap:5px; padding:6px 14px; border-radius:4px; font-family:var(--font-mono); font-size:11px; font-weight:600; letter-spacing:0.5px; cursor:pointer; border:1px solid; transition:all 0.15s; text-transform:uppercase; }
+.btn-go { background:#003322; color:var(--accent-green); border-color:#00664433; }
+.btn-go:hover { background:#004433; }
+.btn-stop { background:#331100; color:#ff8800; border-color:#66330033; }
+.btn-stop:hover { background:#442200; }
+.btn-reset { background:var(--bg-tertiary); color:var(--text-secondary); border-color:var(--border); }
+.btn-reset:hover { background:var(--bg-card); }
+.btn-sm { padding:4px 10px; font-size:10px; }
+.controls-row { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+
+.conn-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; }
+.conn-dot.live { background:var(--accent-green); box-shadow:0 0 6px var(--accent-green); }
+.conn-dot.idle { background:var(--accent-gold); box-shadow:0 0 6px var(--accent-gold); }
+.conn-dot.off  { background:var(--accent-red); box-shadow:0 0 6px var(--accent-red); }
+
+.sidebar-footer { padding:10px 16px; border-top:1px solid var(--border); font-size:10px; color:var(--text-muted); font-family:var(--font-mono); text-align:center; }
+
+.main { margin-left:var(--sidebar-w); padding:20px 24px 40px; min-height:100vh; }
+.header-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+.header-bar .title-group h2 { font-family:var(--font-display); font-size:24px; font-weight:700; }
+.header-bar .title-group .tagline { font-size:12px; color:var(--text-muted); margin-top:2px; }
+.prices { display:flex; gap:24px; align-items:baseline; }
+.price-tag .sym { font-family:var(--font-mono); font-size:10px; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; font-weight:600; }
+.price-tag .val { font-family:var(--font-mono); font-size:18px; font-weight:700; font-variant-numeric:tabular-nums; }
+
+.stats-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-bottom:16px; }
+.stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:12px 14px; }
+.stat-card .sl { font-family:var(--font-mono); font-size:9px; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; }
+.stat-card .sv { font-family:var(--font-mono); font-size:18px; font-weight:700; margin-top:2px; font-variant-numeric:tabular-nums; }
+.sv.green { color:var(--accent-green); } .sv.red { color:var(--accent-red); }
+.sv.blue { color:var(--accent-blue); } .sv.gold { color:var(--accent-gold); }
+.sv.teal { color:var(--accent-teal); }
+
+.position-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; margin-bottom:16px; overflow:hidden; }
+.panel-header { padding:8px 14px; background:var(--bg-tertiary); border-bottom:1px solid var(--border); font-family:var(--font-mono); font-size:10px; letter-spacing:1.5px; color:var(--text-muted); font-weight:600; text-transform:uppercase; }
+.position-body { padding:14px; }
+.position-empty { padding:24px; text-align:center; color:var(--text-muted); font-size:13px; }
+.pos-top { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+.pos-side { font-weight:700; font-size:16px; }
+.pos-side.long { color:var(--accent-green); } .pos-side.short { color:var(--accent-red); }
+.pos-pnl { font-family:var(--font-mono); font-weight:700; font-size:18px; }
+.pos-details { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; font-size:11.5px; color:var(--text-secondary); font-family:var(--font-mono); }
+.pos-bar { height:5px; background:var(--bg-tertiary); border-radius:3px; margin-top:10px; overflow:hidden; }
+.pos-bar-fill { height:100%; border-radius:3px; transition:width 0.3s; }
+
+.chart-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; margin-bottom:16px; overflow:hidden; }
+.chart-canvas { width:100%; height:200px; display:block; }
+
+.bottom-grid { display:grid; grid-template-columns:1.3fr 1fr; gap:12px; }
+.log-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+.log-body { max-height:320px; overflow-y:auto; }
+.log-body table { width:100%; border-collapse:collapse; font-size:11px; }
+.log-body th { padding:6px 8px; text-align:left; font-family:var(--font-mono); font-size:9px; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-muted); background:var(--bg-tertiary); border-bottom:1px solid var(--border); position:sticky; top:0; }
+.log-body td { padding:4px 8px; border-bottom:1px solid #12151c; font-family:var(--font-mono); }
+.log-body tr:hover td { background:var(--bg-tertiary); }
+.signal-entry { padding:3px 10px; font-size:11px; border-bottom:1px solid #0a0c10; font-family:var(--font-mono); }
+.signal-entry .st { color:var(--text-muted); margin-right:6px; font-size:10px; }
+.signal-entry.entry { color:var(--accent-blue); }
+.signal-entry.add { color:var(--accent-purple); }
+.signal-entry.win { color:var(--accent-green); }
+.signal-entry.loss { color:var(--accent-red); }
+.signal-entry.trail { color:var(--accent-gold); }
+.signal-entry.system { color:var(--text-muted); }
+.empty-msg { padding:30px; text-align:center; color:var(--text-muted); font-size:12px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ SIDEBAR ═══════════════════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <h1>ZigZag Reversion</h1>
+    <div class="sub">Paper Trader v1.0 — by BD</div>
+  </div>
+  <div class="sidebar-content">
+
+    <!-- CONTROLS -->
+    <div class="sidebar-section">
+      <div class="section-title"><span class="conn-dot off" id="connDot"></span> ⚡ Controls</div>
+      <div class="section-body">
+        <div class="controls-row">
+          <button class="btn btn-go" id="btnStart" onclick="handleStart()">▶ Start</button>
+          <button class="btn btn-stop" id="btnStop" onclick="handleStop()" style="display:none">■ Stop</button>
+          <button class="btn btn-reset" onclick="handleReset()">↺ Reset</button>
+        </div>
+        <div style="font-size:10px; color:var(--text-muted); margin-top:4px" id="connStatus">Disconnected</div>
+      </div>
+    </div>
+
+    <!-- ACCOUNT -->
+    <div class="sidebar-section">
+      <div class="section-title" onclick="toggleSection(this)"><span class="arrow">▾</span> Account & Symbol</div>
+      <div class="section-body">
+        <div class="field-row">
+          <div class="field"><label>Equity ($)</label><input type="number" id="p_equity" value="10000" min="100" step="100"></div>
+          <div class="field"><label>Base Size ($)</label><input type="number" id="p_baseSz" value="1" min="0.1" step="0.1"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Symbol</label>
+            <select id="p_symbol"><option value="BTCUSDT">BTCUSDT</option><option value="ETHUSDT">ETHUSDT</option></select>
+          </div>
+          <div class="field"><label>Direction</label>
+            <select id="p_direction"><option value="both">Both</option><option value="long">Long Only</option><option value="short">Short Only</option></select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Timeframe</label>
+            <select id="p_timeframe">
+              <option value="60">1m</option><option value="180" selected>3m</option>
+              <option value="300">5m</option><option value="900">15m</option>
+              <option value="1800">30m</option></select>
+          </div>
+          <div class="field"><label>Max Pos % Cap</label><input type="number" id="p_maxPosPct" value="50" min="5" max="100" step="5"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETECTOR -->
+    <div class="sidebar-section">
+      <div class="section-title" onclick="toggleSection(this)"><span class="arrow">▾</span> ZigZag Detector</div>
+      <div class="section-body">
+        <div class="field-row">
+          <div class="field"><label>Deviation %</label><input type="number" id="p_dev" value="0.3" min="0.05" max="2" step="0.05"></div>
+          <div class="field"><label>Legs for Average</label><input type="number" id="p_legsBack" value="8" min="3" max="30" step="1"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENTRY / EXIT -->
+    <div class="sidebar-section">
+      <div class="section-title" onclick="toggleSection(this)"><span class="arrow">▾</span> Entry & Exit</div>
+      <div class="section-body">
+        <div class="field-row">
+          <div class="field"><label>Entry (× avg leg)</label><input type="number" id="p_entryT" value="0.5" min="0.1" max="2" step="0.1"></div>
+          <div class="field"><label>TP (× avg leg)</label><input type="number" id="p_tpFrac" value="0.3" min="0.01" max="1" step="0.01"></div>
+        </div>
+        <div class="field">
+          <label>Close on New Swing?</label>
+          <select id="p_closeOnSw"><option value="1" selected>Yes</option><option value="0">No</option></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIZING / ADDS -->
+    <div class="sidebar-section">
+      <div class="section-title" onclick="toggleSection(this)"><span class="arrow">▾</span> Sizing & Adds</div>
+      <div class="section-body">
+        <div class="field-row">
+          <div class="field"><label>Sizing Mode</label>
+            <select id="p_sizingMode">
+              <option value="0">Flat</option><option value="1">Double Last</option>
+              <option value="2">Match Total</option><option value="3" selected>Double Total</option>
+              <option value="4">Triple Total</option><option value="5">Fibonacci</option>
+            </select>
+          </div>
+          <div class="field"><label>Max Adds</label><input type="number" id="p_maxAdds" value="10" min="0" max="30" step="1"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Ext Step</label><input type="number" id="p_extStep" value="0.15" min="0.03" max="0.5" step="0.01"></div>
+          <div class="field"><label>Ext Decel</label><input type="number" id="p_extDecel" value="0.6" min="0.3" max="1" step="0.05"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DREAM TEAM -->
+    <div class="sidebar-section">
+      <div class="section-title" onclick="toggleSection(this)"><span class="arrow collapsed">▾</span> Dream Team</div>
+      <div class="section-body" style="display:none">
+        <div class="field-row">
+          <div class="field"><label>Session Thresholds</label><select id="p_useSess"><option value="1" selected>ON</option><option value="0">OFF</option></select></div>
+          <div class="field"><label>Macro Bias</label><select id="p_useBias"><option value="1" selected>ON</option><option value="0">OFF</option></select></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="sidebar-footer">MEXC WebSocket • No real trades<br>Bojan Dobrečevič © 2026</div>
+</nav>
+
+<!-- ═══════════════════════════════ MAIN ═══════════════════════════════ -->
+<div class="main">
+  <div class="header-bar">
+    <div class="title-group">
+      <h2>ZigZag Reversion — Live Paper</h2>
+      <div class="tagline" id="headerTagline">Connect to start • <span id="tickCount">0</span> ticks | <span id="barCount">0</span> bars</div>
+    </div>
+    <div class="prices">
+      <div class="price-tag"><div class="sym">BTC</div><div class="val" id="priceBTC">—</div></div>
+      <div class="price-tag"><div class="sym">ETH</div><div class="val" id="priceETH">—</div></div>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="sl">Equity</div><div class="sv green" id="statEquity">$10,000</div></div>
+    <div class="stat-card"><div class="sl">Return</div><div class="sv green" id="statReturn">0.00%</div></div>
+    <div class="stat-card"><div class="sl">Trades</div><div class="sv blue" id="statTrades">0</div></div>
+    <div class="stat-card"><div class="sl">Win Rate</div><div class="sv gold" id="statWinRate">—</div></div>
+    <div class="stat-card"><div class="sl">Avg Leg</div><div class="sv teal" id="statAvgLeg">—</div></div>
+    <div class="stat-card"><div class="sl">Swings</div><div class="sv blue" id="statSwings">0</div></div>
+    <div class="stat-card"><div class="sl">Max DD</div><div class="sv red" id="statMaxDD">0.00%</div></div>
+  </div>
+
+  <div class="position-panel">
+    <div class="panel-header">Open Position</div>
+    <div id="positionBody"><div class="position-empty">No open position — engine stopped</div></div>
+  </div>
+
+  <div class="chart-panel">
+    <div class="panel-header">Equity Curve</div>
+    <canvas class="chart-canvas" id="eqChart"></canvas>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="log-panel">
+      <div class="panel-header">Trade Log (<span id="tradeCount">0</span>)</div>
+      <div class="log-body">
+        <table><thead><tr><th>Side</th><th>Entry</th><th>Exit</th><th>P&L$</th><th>%</th><th>Adds</th><th>Reason</th></tr></thead>
+        <tbody id="tradeLog"></tbody></table>
+        <div class="empty-msg" id="tradeEmpty">No trades yet</div>
+      </div>
+    </div>
+    <div class="log-panel">
+      <div class="panel-header">Signal Log</div>
+      <div class="log-body" id="signalLogBody"><div class="empty-msg">Waiting...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ENGINE -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<script>
+// ── Helpers ──
+const $ = id => document.getElementById(id);
+const ts = () => new Date().toLocaleTimeString('en-GB', {hour12:false});
+const fmt = (n,d=2) => n!=null ? Number(n).toFixed(d) : '—';
+const fmtUsd = n => n!=null ? '$'+Number(n).toFixed(2) : '—';
+function getP(id) { const el=$(id); if(!el)return 0; if(el.tagName==='SELECT')return el.value; return parseFloat(el.value)||0; }
+function toggleSection(el) {
+  const a=el.querySelector('.arrow'), b=el.nextElementSibling;
+  if(!b)return; const h=b.style.display==='none'; b.style.display=h?'':'none';
+  if(a) a.classList.toggle('collapsed',!h);
+}
+function addLog(type, msg) {
+  const body=$('signalLogBody');
+  const emp=body.querySelector('.empty-msg'); if(emp)emp.remove();
+  const d=document.createElement('div'); d.className='signal-entry '+type;
+  d.innerHTML=`<span class="st">${ts()}</span>${msg}`;
+  body.insertBefore(d, body.firstChild);
+  while(body.children.length>300) body.removeChild(body.lastChild);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════
+let ws=null, running=false, connected=false, ticks=0;
+const priceBuf = {BTCUSDT:[], ETHUSDT:[]};
+const BUF_MAX = 2000;
+
+// Candle aggregation
+let candles = []; // [{o,h,l,c,v,ts}]
+let currentCandle = null;
+let candleStartTs = 0;
+
+// ZigZag state
+let zzDir=0, zzH=0, zzL=Infinity, zzHB=0, zzLB=0;
+let swings=[]; // [{price, type:1/-1, bar}]
+let avgLeg=0, extRatio=0, extDir=0, lastSwPrice=0;
+
+// Trade state
+let tDir=0, tAE=0, tSz=0, tAdds=0;
+let equity=10000, initialEquity=10000;
+let stats={wins:0,losses:0,totalPnl:0,maxDD:0,peakEquity:10000};
+let equityCurve=[], trades=[];
+
+// ══════════════════════════════════════════════════════════════════════════
+// WEBSOCKET
+// ══════════════════════════════════════════════════════════════════════════
+function connectWS() {
+  if(ws) ws.close();
+  ws = new WebSocket('wss://wbs.mexc.com/ws');
+  ws.onopen = () => {
+    connected=true; updateConnUI();
+    ws.send(JSON.stringify({method:"SUBSCRIPTION",params:[
+      "spot@public.miniTickers.v3.api@BTCUSDT@UTC+0",
+      "spot@public.miniTickers.v3.api@ETHUSDT@UTC+0"
+    ]}));
+    addLog('system','Connected to MEXC WebSocket');
+  };
+  ws.onmessage = (ev) => {
+    try {
+      const data=JSON.parse(ev.data); if(!data.d)return;
+      const price=parseFloat(data.d.c||data.d.p); if(!price||isNaN(price))return;
+      const ch=data.c||'';
+      if(ch.includes('BTCUSDT')) {
+        priceBuf.BTCUSDT.push(price);
+        if(priceBuf.BTCUSDT.length>BUF_MAX) priceBuf.BTCUSDT.shift();
+        $('priceBTC').textContent=price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      }
+      if(ch.includes('ETHUSDT')) {
+        priceBuf.ETHUSDT.push(price);
+        if(priceBuf.ETHUSDT.length>BUF_MAX) priceBuf.ETHUSDT.shift();
+        $('priceETH').textContent=price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      }
+      ticks++; $('tickCount').textContent=ticks;
+      if(running) onTick(ch, price);
+    } catch(e){}
+  };
+  ws.onclose = () => { connected=false; updateConnUI(); addLog('system','Disconnected'); if(running) setTimeout(connectWS,3000); };
+  ws.onerror = () => ws.close();
+}
+function updateConnUI() {
+  $('connDot').className='conn-dot '+(connected?(running?'live':'idle'):'off');
+  $('connStatus').textContent=connected?(running?`LIVE — ${getP('p_symbol')}`:'Connected'):'Disconnected';
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// HISTORICAL BOOTSTRAP — fetch candles from MEXC REST API
+// ══════════════════════════════════════════════════════════════════════════
+const TF_MAP = {'60':'1m','180':'3m','300':'5m','900':'15m','1800':'30m','3600':'1h'};
+let bootstrapped = false;
+let historicalMode = false; // true during bootstrap (skip trade execution)
+
+async function fetchHistoricalCandles() {
+  const sym = getP('p_symbol');
+  const tfSecs = getP('p_timeframe');
+  const interval = TF_MAP[tfSecs] || '3m';
+  const url = `https://api.mexc.com/api/v3/klines?symbol=${sym}&interval=${interval}&limit=500`;
+  
+  addLog('system', `Fetching 500 historical ${interval} candles for ${sym}...`);
+  
+  try {
+    const resp = await fetch(url);
+    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    
+    // MEXC kline format: [openTime, open, high, low, close, volume, closeTime, ...]
+    historicalMode = true;
+    candles = [];
+    zzDir=0; zzH=0; zzL=Infinity; swings=[]; avgLeg=0; extRatio=0; extDir=0; lastSwPrice=0;
+    
+    for(const k of data) {
+      const bar = {
+        o: parseFloat(k[1]),
+        h: parseFloat(k[2]),
+        l: parseFloat(k[3]),
+        c: parseFloat(k[4]),
+        ts: parseInt(k[0])
+      };
+      candles.push(bar);
+      onBarClose(); // builds ZigZag + swings, but historicalMode=true skips trades
+    }
+    
+    historicalMode = false;
+    bootstrapped = true;
+    
+    // Set up current candle from last bar for seamless live transition
+    const lastBar = candles[candles.length - 1];
+    const tfMs = parseInt(tfSecs) * 1000;
+    candleStartTs = lastBar.ts;
+    currentCandle = null; // will be created on next tick
+    
+    $('barCount').textContent = candles.length;
+    addLog('system', `Bootstrap done: ${candles.length} bars, ${swings.length} swings, avgLeg: ${fmt(avgLeg,3)}%`);
+    addLog('system', `ZZ state: dir=${zzDir===1?'UP':zzDir===-1?'DOWN':'INIT'} | ExtR: ${fmt(extRatio)}x | ExtDir: ${extDir>0?'+':extDir<0?'-':'0'}`);
+    
+    return true;
+  } catch(e) {
+    addLog('system', `⚠ Bootstrap failed: ${e.message}. Starting from zero.`);
+    return false;
+  }
+}
+function onTick(ch, price) {
+  const sym = getP('p_symbol');
+  if(!ch.includes(sym)) {
+    // Still update position display if we have one
+    if(tDir!==0) updatePositionDisplay(priceBuf[sym]?.[priceBuf[sym].length-1]);
+    return;
+  }
+  
+  const tfSecs = parseInt(getP('p_timeframe'));
+  const now = Date.now();
+  const barStart = Math.floor(now / (tfSecs*1000)) * (tfSecs*1000);
+  
+  if(!currentCandle || barStart > candleStartTs) {
+    // New candle — close previous one and process
+    if(currentCandle) {
+      candles.push({...currentCandle});
+      if(candles.length > 500) candles.shift();
+      $('barCount').textContent = candles.length;
+      onBarClose();
+    }
+    currentCandle = {o:price, h:price, l:price, c:price, ts:barStart};
+    candleStartTs = barStart;
+  } else {
+    currentCandle.h = Math.max(currentCandle.h, price);
+    currentCandle.l = Math.min(currentCandle.l, price);
+    currentCandle.c = price;
+  }
+  
+  // Live position update on every tick
+  if(tDir !== 0) updatePositionDisplay(price);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ZIGZAG DETECTOR (runs on completed candle)
+// ══════════════════════════════════════════════════════════════════════════
+function onBarClose() {
+  if(candles.length < 2) return;
+  const bar = candles[candles.length - 1];
+  const dev = getP('p_dev') / 100;
+  let newSwing = false;
+  
+  // Standard ZigZag on High/Low
+  const pH = bar.h, pL = bar.l;
+  
+  if(zzDir === 0) {
+    // Initialize
+    if(candles.length < 3) { zzH=pH; zzL=pL; return; }
+    if(pH > zzL * (1+dev)) {
+      swings.push({price:zzL, type:-1, bar:candles.length-1});
+      lastSwPrice=zzL; zzDir=1; zzH=pH; newSwing=true;
+    } else if(pL < zzH * (1-dev)) {
+      swings.push({price:zzH, type:1, bar:candles.length-1});
+      lastSwPrice=zzH; zzDir=-1; zzL=pL; newSwing=true;
+    } else {
+      if(pH>zzH) zzH=pH;
+      if(pL<zzL) zzL=pL;
+    }
+  } else if(zzDir === 1) {
+    if(pH > zzH) zzH = pH;
+    else if(pL < zzH * (1-dev)) {
+      swings.push({price:zzH, type:1, bar:candles.length-1});
+      lastSwPrice=zzH; zzDir=-1; zzL=pL; newSwing=true;
+    }
+  } else if(zzDir === -1) {
+    if(pL < zzL) zzL = pL;
+    else if(pH > zzL * (1+dev)) {
+      swings.push({price:zzL, type:-1, bar:candles.length-1});
+      lastSwPrice=zzL; zzDir=1; zzH=pH; newSwing=true;
+    }
+  }
+  
+  if(newSwing) {
+    $('statSwings').textContent = swings.length;
+    addLog('system', `Swing #${swings.length}: ${swings[swings.length-1].type===1?'HIGH':'LOW'} @ ${fmt(swings[swings.length-1].price)}`);
+  }
+  
+  // Calculate average leg and extension
+  calcExtension();
+  
+  // Run trade logic
+  processTradeLogic(bar.c, newSwing);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// EXTENSION CALCULATIONS
+// ══════════════════════════════════════════════════════════════════════════
+function calcExtension() {
+  const legsBack = Math.round(getP('p_legsBack'));
+  if(swings.length < 2) { avgLeg=0; extRatio=0; extDir=0; return; }
+  
+  const start = Math.max(0, swings.length - legsBack - 1);
+  let total=0, count=0;
+  for(let j=start+1; j<swings.length; j++) {
+    const amp = Math.abs(swings[j].price - swings[j-1].price) / swings[j-1].price * 100;
+    total += amp; count++;
+  }
+  avgLeg = count > 0 ? total/count : 0;
+  
+  if(lastSwPrice > 0 && avgLeg > 0) {
+    const bar = candles.length > 0 ? candles[candles.length-1] : null;
+    if(!bar) return;
+    const extPrice = zzDir===1 ? bar.h : (zzDir===-1 ? bar.l : bar.c);
+    const extPct = (extPrice - lastSwPrice) / lastSwPrice * 100;
+    extRatio = Math.abs(extPct) / avgLeg;
+    extDir = extPct > 0 ? 1 : (extPct < 0 ? -1 : 0);
+  }
+  
+  $('statAvgLeg').textContent = fmt(avgLeg,3) + '%';
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// TRADE LOGIC — REAL ADDS, REAL AVERAGING, EXITS AT EXACT PRICE
+// ══════════════════════════════════════════════════════════════════════════
+function processTradeLogic(currentPrice, newSwing) {
+  // During bootstrap, only build detector state — no trades
+  if(historicalMode) return;
+  
+  if(avgLeg <= 0 || swings.length < 4) return;
+  
+  const entryT = getP('p_entryT');
+  const tpFrac = getP('p_tpFrac');
+  const closeOnSw = getP('p_closeOnSw') === '1';
+  const dirMode = getP('p_direction');
+  const baseSz = getP('p_baseSz');
+  const maxAdds = Math.round(getP('p_maxAdds'));
+  const maxPosPct = getP('p_maxPosPct');
+  const maxPosCap = equity * maxPosPct / 100;
+  const szMode = parseInt(getP('p_sizingMode'));
+  
+  // Session-aware threshold (Dream Team K1)
+  let adjET = entryT;
+  if(getP('p_useSess') === '1') {
+    const h = new Date().getUTCHours();
+    if(h>=0 && h<8) adjET = entryT * 0.85;
+    else if(h>=13 && h<16) adjET = entryT * 1.3;
+    else if(h>=16) adjET = entryT * 0.95;
+  }
+  
+  // Macro bias
+  let biasET = adjET;
+  // (simplified — would need 200-bar EMA, skip for now)
+  
+  let adjER = extRatio; // would add volume weighting here
+
+  // ── PnL (REAL — no phantom, actual averaged entry) ──
+  let tPnl = 0;
+  if(tDir === 1) tPnl = (currentPrice - tAE) / tAE * 100;
+  else if(tDir === -1) tPnl = (tAE - currentPrice) / tAE * 100;
+  
+  // ── EXIT ──
+  let doClose = false, closeComment = '';
+  
+  if(tDir !== 0) {
+    // TP: profitable enough
+    if(tPnl >= tpFrac * avgLeg) {
+      doClose = true; closeComment = 'TP';
+    }
+    // Swing: new swing AND profitable
+    if(closeOnSw && newSwing && tPnl > 0) {
+      doClose = true; closeComment = 'Swing';
+    }
+  }
+  
+  if(doClose) {
+    // EXIT AT EXACT CURRENT PRICE — no gap!
+    const pnlUsd = tPnl / 100 * tSz; // approximate dollar PnL
+    equity += pnlUsd;
+    const isWin = pnlUsd >= 0;
+    stats.wins += isWin?1:0; stats.losses += isWin?0:1;
+    stats.totalPnl += pnlUsd;
+    if(equity > stats.peakEquity) stats.peakEquity = equity;
+    const dd = (stats.peakEquity-equity)/stats.peakEquity*100;
+    if(dd > stats.maxDD) stats.maxDD = dd;
+    
+    trades.unshift({
+      side: tDir===1?'long':'short', entry:tAE, exit:currentPrice,
+      pnl:pnlUsd, pnlPct:tPnl, adds:tAdds, exitReason:closeComment
+    });
+    equityCurve.push({t:Date.now(), eq:Math.round(equity*100)/100});
+    
+    addLog(isWin?'win':'loss',
+      `${closeComment} ${tDir===1?'LONG':'SHORT'} @ ${fmt(currentPrice)} | AE: ${fmt(tAE)} | PnL: ${fmtUsd(pnlUsd)} (${fmt(tPnl)}%) | Adds: ${tAdds}`);
+    
+    tDir=0; tAE=0; tSz=0; tAdds=0;
+    updateUI();
+    return; // don't enter same bar
+  }
+  
+  // ── ADD ──
+  if(tDir !== 0 && tAdds < maxAdds) {
+    const cDir = extDir > 0 ? -1 : 1;
+    if(cDir === tDir) {
+      const reqE = calcExtReq(tAdds+1, adjET);
+      if(adjER >= reqE) {
+        const addAmt = calcAddSz(tSz, tAdds+1, baseSz, szMode, maxPosCap);
+        if(addAmt > 0.01) {
+          const newSz = tSz + addAmt;
+          // REAL averaging — entry AT CURRENT PRICE
+          tAE = (tAE * tSz + currentPrice * addAmt) / newSz;
+          tSz = newSz;
+          tAdds++;
+          addLog('add', `ADD #${tAdds} @ ${fmt(currentPrice)} | New AE: ${fmt(tAE)} | Size: $${fmt(tSz)} | tPnl: ${fmt(tPnl)}%`);
+        }
+      }
+    }
+  }
+  
+  // ── ENTRY ──
+  if(tDir === 0 && adjER >= biasET && extDir !== 0) {
+    const cDir = extDir > 0 ? -1 : 1; // counter-trade
+    const dOK = dirMode==='both' || (dirMode==='long'&&cDir===1) || (dirMode==='short'&&cDir===-1);
+    
+    if(dOK) {
+      tDir = cDir;
+      tAE = currentPrice;  // EXACT entry price — no gap!
+      tSz = baseSz;
+      tAdds = 0;
+      addLog('entry', `${cDir===1?'LONG':'SHORT'} @ ${fmt(currentPrice)} | ExtR: ${fmt(adjER)}x | AvgLeg: ${fmt(avgLeg)}%`);
+    }
+  }
+  
+  updateUI();
+}
+
+// ── Sizing helpers ──
+function calcExtReq(n, baseET) {
+  let r=baseET, s=getP('p_extStep');
+  const decel=getP('p_extDecel');
+  for(let k=0;k<n;k++) { r+=s; s=Math.max(0.03, s*decel); }
+  return r;
+}
+function fib(n) { let a=1,b=1; for(let i=0;i<n;i++){let t=a+b;a=b;b=t;} return a; }
+function calcAddSz(cur, n, base, mode, maxCap) {
+  let sz=base;
+  if(mode===1) sz=base*Math.pow(2,n);
+  else if(mode===2) sz=Math.max(base,cur);
+  else if(mode===3) sz=Math.max(base,cur*2);
+  else if(mode===4) sz=Math.max(base,cur*3);
+  else if(mode===5) sz=base*fib(n);
+  return Math.min(sz, Math.max(0, maxCap-cur));
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// UI
+// ══════════════════════════════════════════════════════════════════════════
+function updatePositionDisplay(price) {
+  if(!price || tDir===0) return;
+  const pnlPct = tDir===1 ? (price-tAE)/tAE*100 : (tAE-price)/tAE*100;
+  const pnlUsd = pnlPct/100*tSz;
+  const col = pnlPct>=0?'var(--accent-green)':'var(--accent-red)';
+  $('positionBody').innerHTML=`
+    <div class="position-body">
+      <div class="pos-top">
+        <span class="pos-side ${tDir===1?'long':'short'}">${tDir===1?'LONG':'SHORT'} ${getP('p_symbol')}</span>
+        <span class="pos-pnl" style="color:${col}">${pnlPct>0?'+':''}${fmt(pnlPct)}% (${fmtUsd(pnlUsd)})</span>
+      </div>
+      <div class="pos-details">
+        <span>AE: $${fmt(tAE)}</span>
+        <span>Now: $${fmt(price)}</span>
+        <span>Size: $${fmt(tSz)}</span>
+        <span>Adds: ${tAdds}/${Math.round(getP('p_maxAdds'))}</span>
+      </div>
+      <div class="pos-bar"><div class="pos-bar-fill" style="width:${Math.min(Math.abs(pnlPct)*20,100)}%; background:${pnlPct>=0?'linear-gradient(90deg,#003322,#00e676)':'linear-gradient(90deg,#331100,#ff4757)'}"></div></div>
+    </div>`;
+}
+
+function updateUI() {
+  const total=stats.wins+stats.losses;
+  const ret=(equity-initialEquity)/initialEquity*100;
+  $('statEquity').textContent=fmtUsd(equity); $('statEquity').className='sv '+(equity>=initialEquity?'green':'red');
+  $('statReturn').textContent=fmt(ret)+'%'; $('statReturn').className='sv '+(ret>=0?'green':'red');
+  $('statTrades').textContent=total;
+  $('statWinRate').textContent=total>0?fmt(stats.wins/total*100,1)+'%':'—';
+  $('statMaxDD').textContent=fmt(stats.maxDD)+'%';
+  $('tradeCount').textContent=total;
+  
+  if(tDir===0) $('positionBody').innerHTML=`<div class="position-empty">${running?'Scanning...':'No position'}</div>`;
+  renderTradeLog();
+  drawEquityChart();
+}
+
+function renderTradeLog() {
+  const tbody=$('tradeLog'); const emp=$('tradeEmpty');
+  if(trades.length>0 && emp) emp.style.display='none';
+  tbody.innerHTML=trades.slice(0,100).map(t=>{
+    const sc=t.side==='long'?'var(--accent-green)':'var(--accent-red)';
+    const pc=t.pnl>=0?'var(--accent-green)':'var(--accent-red)';
+    const rc=t.exitReason==='TP'?'var(--accent-green)':'var(--accent-gold)';
+    return `<tr>
+      <td style="color:${sc};font-weight:600">${t.side==='long'?'L':'S'}</td>
+      <td>${fmt(t.entry)}</td><td>${fmt(t.exit)}</td>
+      <td style="color:${pc};font-weight:600">${t.pnl>0?'+':''}${fmt(t.pnl)}</td>
+      <td style="color:${pc}">${fmt(t.pnlPct)}%</td>
+      <td style="color:var(--accent-purple)">${t.adds}</td>
+      <td style="color:${rc}">${t.exitReason}</td></tr>`;
+  }).join('');
+}
+
+function drawEquityChart() {
+  const canvas=$('eqChart'), ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1, rect=canvas.getBoundingClientRect();
+  canvas.width=rect.width*dpr; canvas.height=rect.height*dpr; ctx.scale(dpr,dpr);
+  const W=rect.width, H=rect.height; ctx.clearRect(0,0,W,H);
+  if(equityCurve.length<2) { ctx.fillStyle='#2a2f3c'; ctx.font='12px "DM Sans"'; ctx.textAlign='center'; ctx.fillText('Waiting for trades...',W/2,H/2); return; }
+  const data=equityCurve;
+  const minEq=Math.min(...data.map(d=>d.eq))*0.998, maxEq=Math.max(...data.map(d=>d.eq))*1.002;
+  const range=maxEq-minEq||1;
+  const pad={l:50,r:12,t:12,b:20}, cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+  ctx.strokeStyle='#1a1e28'; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++) { const y=pad.t+(cH/4)*i; ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke(); const v=maxEq-(range/4)*i; ctx.fillStyle='#5a6275';ctx.font='10px "JetBrains Mono"';ctx.textAlign='right';ctx.fillText('$'+v.toFixed(0),pad.l-6,y+3); }
+  const refY=pad.t+cH*(1-(initialEquity-minEq)/range);
+  ctx.strokeStyle='#2a2f3c';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(pad.l,refY);ctx.lineTo(W-pad.r,refY);ctx.stroke();ctx.setLineDash([]);
+  const lastEq=data[data.length-1].eq;
+  const grad=ctx.createLinearGradient(0,pad.t,0,H-pad.b);
+  grad.addColorStop(0,lastEq>=initialEquity?'rgba(0,230,118,0.25)':'rgba(255,71,87,0.25)');
+  grad.addColorStop(1,lastEq>=initialEquity?'rgba(0,230,118,0)':'rgba(255,71,87,0)');
+  ctx.beginPath();
+  data.forEach((d,i)=>{const x=pad.l+(i/(data.length-1))*cW,y=pad.t+cH*(1-(d.eq-minEq)/range);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.lineTo(pad.l+cW,pad.t+cH);ctx.lineTo(pad.l,pad.t+cH);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+  ctx.beginPath();
+  data.forEach((d,i)=>{const x=pad.l+(i/(data.length-1))*cW,y=pad.t+cH*(1-(d.eq-minEq)/range);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.strokeStyle=lastEq>=initialEquity?'#00e676':'#ff4757';ctx.lineWidth=1.5;ctx.stroke();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// CONTROLS
+// ══════════════════════════════════════════════════════════════════════════
+async function handleStart() {
+  initialEquity=getP('p_equity');
+  if(Math.abs(equity-10000)<1 && initialEquity!==10000) { equity=initialEquity; stats.peakEquity=initialEquity; }
+  
+  $('btnStart').style.display='none'; $('btnStop').style.display='';
+  addLog('system', 'Bootstrapping historical data...');
+  updateUI();
+  
+  // Fetch historical candles first
+  await fetchHistoricalCandles();
+  
+  // Then go live
+  running=true;
+  if(!connected) connectWS();
+  updateConnUI(); updateUI();
+  addLog('system',`Engine LIVE — ${getP('p_symbol')} on ${$('p_timeframe').selectedOptions[0].text} | Ready to trade`);
+}
+function handleStop() {
+  running=false; $('btnStart').style.display=''; $('btnStop').style.display='none';
+  updateConnUI(); addLog('system','Engine STOPPED');
+}
+function handleReset() {
+  running=false; tDir=0; tAE=0; tSz=0; tAdds=0;
+  initialEquity=getP('p_equity'); equity=initialEquity;
+  stats={wins:0,losses:0,totalPnl:0,maxDD:0,peakEquity:initialEquity};
+  equityCurve=[]; trades=[]; candles=[]; currentCandle=null; candleStartTs=0;
+  zzDir=0; zzH=0; zzL=Infinity; swings=[]; avgLeg=0; extRatio=0; extDir=0; lastSwPrice=0;
+  bootstrapped=false; historicalMode=false;
+  ticks=0; $('tickCount').textContent='0'; $('barCount').textContent='0';
+  $('btnStart').style.display=''; $('btnStop').style.display='none';
+  updateConnUI(); updateUI();
+  $('signalLogBody').innerHTML='<div class="empty-msg">Waiting...</div>';
+  $('tradeLog').innerHTML=''; if($('tradeEmpty')) $('tradeEmpty').style.display='';
+  addLog('system','Full reset');
+}
+
+window.addEventListener('resize', drawEquityChart);
+drawEquityChart();
+</script>
+</body>
+</html>
