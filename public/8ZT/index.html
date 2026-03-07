@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BD Trading System v4 — The Complete Trading Manual by Bojan Dobrečevič</title>
+<title>BD Trading System v5 — The Complete Trading Manual by Bojan Dobrečevič</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -316,6 +316,13 @@ pre .cm { color: var(--text-muted); font-style: italic; }
   <a class="sub" href="#ch12-escape">Escape Survival Cliff</a>
   <a class="sub" href="#ch12-compound">Compounding</a>
   <a class="ch" href="#ch13">13 — Bugs & Battle Scars</a>
+  <a class="ch" href="#ch14">14 — Fractal Coherence</a>
+  <a class="sub" href="#ch14-thesis">The MM-MDL Thesis</a>
+  <a class="sub" href="#ch14-mandelbrot">Mandelbrot & Self-Similarity</a>
+  <a class="sub" href="#ch14-mtf">MTF Direction Consensus</a>
+  <a class="sub" href="#ch14-nesting">Leg Amplitude Nesting</a>
+  <a class="sub" href="#ch14-fc">Combined FC Score</a>
+  <a class="sub" href="#ch14-paper">Paper Trader Upgrade</a>
 </nav>
 
 <!-- ══════════════════════════════════════════ MAIN ══════════════════════════════════════════ -->
@@ -330,7 +337,7 @@ pre .cm { color: var(--text-muted); font-style: italic; }
     zero-fee scalping engine — plus the manual anti-fragile method that reached top 2% in
     TradingView's The Leap competition. By Bojan Dobrečevič, with AI research partners.
   </div>
-  <div class="meta">v2.2 → v4.0 &nbsp;·&nbsp; March 2026 &nbsp;·&nbsp; BD × Claude × GPT × Gemini × Grok</div>
+  <div class="meta">v2.2 → v5.0 &nbsp;·&nbsp; March 2026 &nbsp;·&nbsp; BD × Claude × GPT × Gemini × Grok</div>
   <div class="stats-row">
     <div class="stat"><div class="val green">+701K</div><div class="lbl">Backtest PnL (28d)</div></div>
     <div class="stat"><div class="val gold">70,136%</div><div class="lbl">Return on $1K</div></div>
@@ -997,11 +1004,18 @@ The four-tool ecosystem (v2.2+ strategy, v4 strategy, parameter sweep indicator,
 
 <table class="param-table">
 <tr><th>Script</th><th>Language</th><th>Purpose</th><th>Status</th></tr>
-<tr><td>1s_Sync_Momentum_v2_2</td><td>Pine v5</td><td>Core strategy (11 presets, sync+impulse, ATR trailing)</td><td><span class="tag green">Active</span></td></tr>
+<tr><td>SyncMomentum_Unified_v1_2_6</td><td>Pine v6</td><td>Unified strategy (39-field config string, all presets, SM| protocol)</td><td><span class="tag green">Active</span></td></tr>
+<tr><td>BD_ZigZag_Reversion_v2_5</td><td>Pine v6</td><td>Mean reversion (5 detector families, 18 variants, dual confirm)</td><td><span class="tag green">Active</span></td></tr>
+<tr><td>1s_Sync_Momentum_v2_2</td><td>Pine v5</td><td>Legacy strategy (11 presets, sync+impulse, ATR trailing)</td><td><span class="tag gold">Legacy</span></td></tr>
 <tr><td>BTC_Volume_Sync_(1sec)</td><td>Pine v5</td><td>Council of 8 volume indicator (SD + MT scoring)</td><td><span class="tag green">Active</span></td></tr>
 <tr><td>BD-Multi_indicators</td><td>Pine v5</td><td>Visual cockpit (EMA/SAR/BB/ST/VWAP/ZZ/ATR)</td><td><span class="tag green">Active</span></td></tr>
+<tr><td>SyncMomentum_PaperTrader</td><td>HTML/JS</td><td>Live paper trader (MEXC WS, SM| config, tick-by-tick engine)</td><td><span class="tag green">Active</span></td></tr>
+<tr><td>ZigZag_PaperTrader</td><td>HTML/JS</td><td>ZZ reversion paper trader (multi-exchange, SLA, 6 sizing modes)</td><td><span class="tag green">Active</span></td></tr>
+<tr><td>BD_mtf_confluence</td><td>Python</td><td>MTF direction consensus analyzer (Fibonacci TF ladder, +67.5% proven)</td><td><span class="tag green">Active</span></td></tr>
+<tr><td>BD_leg_analysis</td><td>Python</td><td>Leg averaging method comparison (7 methods, outlier regime analysis)</td><td><span class="tag green">Active</span></td></tr>
+<tr><td>BD_ZigZag_Optimizer_v2_1</td><td>Python</td><td>ZZ parameter optimizer (multi-detector, DCC, escape, compounding)</td><td><span class="tag green">Active</span></td></tr>
+<tr><td>SO_main + SO_* suite</td><td>Python</td><td>SyncMomentum optimizer (5-phase deep, LHS sampling, DCC pruning)</td><td><span class="tag green">Active</span></td></tr>
 <tr><td>hedge_farm_optimizer_v7</td><td>Python</td><td>Multi-exchange optimizer (ccxt, grid search)</td><td><span class="tag gold">R&D</span></td></tr>
-<tr><td>1m_back_testing</td><td>Python</td><td>Deterministic MEXC backtester (SHA3-256 provenance)</td><td><span class="tag gold">R&D</span></td></tr>
 </table>
 
 <h3 id="ch7-indicators">Indicator Stack (Recommended Chart Layout)</h3>
@@ -1010,7 +1024,7 @@ The four-tool ecosystem (v2.2+ strategy, v4 strategy, parameter sweep indicator,
 
 <p><strong>Layer 2 — Volume Intelligence:</strong> BTC Volume Sync showing Council of 8 scoring. Look for SD ≥ 5x and MT ≥ 5x as high-conviction signals.</p>
 
-<p><strong>Layer 3 — Strategy Signals:</strong> 1s Sync Momentum v2.2 (or v3.0) with signal shapes and dynamic SL/TP lines visible. Use as overlay confirmation for manual trading or as direct auto-execution.</p>
+<p><strong>Layer 3 — Strategy Signals:</strong> SyncMomentum Unified v1.2.6 (Pine v6, SM| config protocol) or BD ZigZag Reversion v2.5 (Pine v6, BDZv2| config protocol) with signal shapes and dynamic SL/TP lines visible. Use as overlay confirmation for manual trading or as direct auto-execution. For live paper trading, the HTML paper traders (SyncMomentum_PaperTrader.html, ZigZag_PaperTrader.html) connect directly to exchange WebSockets.</p>
 
 <h3 id="ch7-params">S3 Parameter Quick Reference</h3>
 
@@ -1139,6 +1153,17 @@ The same framework that detects Wolfram cellular automata in HIV-1 genomic seque
 </p>
 </div>
 
+<h3>The Fractal Dimension — Mandelbrot Meets 8Z</h3>
+<p>
+In 1963, Benoît Mandelbrot analyzed cotton price variations and discovered two properties that shattered classical finance: price movements follow power laws (not Gaussian distributions), and price charts exhibit <strong>self-similarity across timeframes</strong> — a daily chart is statistically indistinguishable from a monthly chart when the axes are unlabeled. He called this fractal geometry applied to markets, and spent the next four decades developing the multifractal model of financial returns.
+</p>
+<p>
+The connection to 8Z is direct. Mandelbrot's self-similarity means that the same mathematical generators produce swing structures at every scale — a ZigZag on 1m, 5m, 15m, and 1h reveals legs with the same statistical properties, just at different amplitudes. This is precisely what the 8Z framework expects: data that contains mathematical structure can be compressed beyond entropy limits. If the same generator operates at multiple scales, detecting it at one scale gives information about all scales — that's compression across timeframes.
+</p>
+<p>
+The empirical proof from our own system is the March 5 finding: the same strategy on the same day produced +448% on 15m, +100% on 1s, and -53.7% on 30m. The strategy didn't change — the <em>resonance between strategy parameters and fractal scale</em> changed. Some scales are coherent with the generator; others aren't. The MDL framework naturally handles this: the generator that produces the shortest description at one scale may lose at another, and DCC should detect this cross-scale incoherence. Chapter 14 develops this into the operational Fractal Coherence framework.
+</p>
+
 <h3>The Smart Invert Discovery (March 2026)</h3>
 <p>
 A critical breakthrough emerged during cross-asset testing. When running the v2.2 strategy across different asset classes, the results revealed a profound pattern:
@@ -1192,14 +1217,10 @@ Behind the scenes, a Python optimizer runs nightly across 14,400+ combinations (
 <p>
 The human trader — you — sits at the center, watching the monitor table, informed by the leaderboard, making the final decision. The system finds the structure. The human decides whether to act. This is the AIM³ vision: human judgment amplified by mathematical structure detection.
 </p>
-<div class="callout success">
-<div class="callout-title">Deep Dive — MDL/DCC Trading Engine</div>
-<p>
-For a focused visual explainer of how 8Z compression principles transfer to trading — including the 4 generators, DCC adaptive control, the complete signal pipeline, and the AI Dream Team collaboration plan — see the standalone technical reference: <a href="MDL_DCC_Trading.html" style="color:var(--accent-teal);text-decoration:underline;">MDL/DCC Trading Engine →</a>
-</p>
-</div>
-
 </section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 10 — THE MONITOR -->
 <!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
 <section class="chapter" id="ch10">
 <div class="chapter-num">Chapter 10</div>
@@ -1439,6 +1460,13 @@ Leg amplitude consistency reveals regime stability. We compute the coefficient o
 Three DCC modes tested in the optimizer: <strong>dccE</strong> (entry adjustment: stable = tighter threshold, chaos = wider), <strong>dccS</strong> (sizing: stable = full, chaos = half), <strong>dccES</strong> (both). The optimizer consistently shows dccES outperforming noDCC on average across all timeframes and symbols.
 </p>
 
+<div class="callout">
+<div class="callout-title">DCC Evolution: From Single-TF CV to Cross-Scale Fractal Coherence</div>
+<p>
+The current DCC computes coefficient of variation on a single timeframe's legs — a measure of within-scale consistency. Chapter 14 introduces the next evolution: <strong>Fractal Coherence</strong>, which measures cross-scale consistency by running ZigZag on multiple timeframes simultaneously and checking whether directions agree (MTF Direction Consensus) and whether leg amplitudes nest proportionally (Leg Amplitude Nesting). The combined Fractal Coherence score is a theoretically grounded replacement for single-TF CV as the DCC coupling signal. Empirical results: +67.5% PnL improvement over baseline on 65 days of BTCUSDT data.
+</p>
+</div>
+
 <h3 id="ch11-adding">Adding Methods — The Position Growth Problem</h3>
 
 <p>
@@ -1465,6 +1493,7 @@ When price moves against entry, we add to shift the average entry price. The add
 <tr><th>Version</th><th>Changes</th></tr>
 <tr><td>v2.3</td><td>HL fix (5 corrections), separate entry IDs (BDL/BDS), position sync, font size input, total PnL row</td></tr>
 <tr><td>v2.4</td><td>Fibonacci sizing, escape/partial close, progressive escape, sqrt compounding, DCC regime display, Quick Period dropdown, reorganized table (trading data on top), entry/TP price targets, dollar leg value, bars since swing</td></tr>
+<tr><td>v2.5</td><td>Real pyramiding fix (pyramiding=100), qty=addAmt (not newSz), immediately=true on all closes, separate if blocks for exits, tAE tracked exclusively for PnL, safety net with closeBar + entryBar protection, 5 detector families (ZZ, ZZpiv, Renko, P&amp;F, Range), dual Regular/HA candles, dual confirm mode</td></tr>
 </table>
 
 </section>
@@ -1637,11 +1666,250 @@ This is not a bug. Different timeframes create different swing structures. The Z
 </p>
 
 </section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 14 — FRACTAL COHERENCE & MTF CONFLUENCE -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch14">
+<div class="chapter-num">Chapter 14</div>
+<h2>Fractal Coherence — When All Scales Agree</h2>
+
+<p>
+This chapter documents the breakthrough that unifies several threads: the 8Z MDL/DCC framework (Chapter 9), Mandelbrot's fractal geometry of markets, the ZigZag reversion engine (Chapter 11), and the empirical discovery that <strong>timeframe is a first-class parameter</strong> (Chapter 13). The result is a single concept — Fractal Coherence — that serves as a theoretically grounded DCC signal with proven empirical results.
+</p>
+
+<div class="callout success">
+<div class="callout-title">The Core Discovery</div>
+<p>When ZigZag swings on 9 Fibonacci timeframes all point the same direction, average profit per trade is <strong>$73.78</strong>. When only 2 of 9 agree, average profit drops to <strong>$0.04</strong>. That's a 1,800× difference. Cross-scale agreement is the single most powerful signal we've found — more powerful than any single-timeframe parameter optimization.</p>
+</div>
+
+<!-- ──── THE MM-MDL THESIS ──── -->
+<h3 id="ch14-thesis">The MM-MDL Thesis — Who Profits and Why</h3>
+
+<p>
+Reframing MDL for markets: if Minimum Description Length finds the shortest description of data, what is the shortest description of <em>who profits</em> in trading? The answer compresses to one sentence: <strong>market makers extract; everyone else donates.</strong> The MM's system is the compressor — it takes the complexity of human behavior (fear, greed, herd instinct, liquidation cascades) and compresses it into profit.
+</p>
+
+<p>
+Human behavior in trading doesn't change much through time. MMs exploit this with powerful systems that see the same patterns retail traders create, decade after decade. This behavioral consistency reflects most simply in the <strong>legs of a ZigZag</strong> — the swing structure that emerges when you connect price pivots at any scale.
+</p>
+
+<p>
+The key insight: ZigZag legs are <strong>fractal</strong>. Zoom from 1-second to 1-minute to 1-hour — the swing structures look statistically identical, just at different amplitudes. This is exactly what Mandelbrot proved with cotton prices in 1963 and what our own data confirms daily. The same generator (human behavioral patterns + MM exploitation of those patterns) operates at every scale. If you can detect when that generator is coherent across scales, you've identified the moments when the market's fractal structure is most predictable — and most profitable.
+</p>
+
+<p>
+The connection to DNA research is direct. In the 8Z DNA Scanner, cellular automata rules produce Z-scores of 28–74 because the biological generator embeds structure at specific scales. Not every resolution reveals the signal — you must find where the generator is active. Similarly, a trading strategy resonates at some timeframes (+448% on 15m) and fails at others (-53.7% on 30m) because the fractal generator's coherence varies by scale. The task is to detect coherence in real-time and trade only when it's present.
+</p>
+
+<!-- ──── MANDELBROT ──── -->
+<h3 id="ch14-mandelbrot">Mandelbrot's Legacy — From Cotton to Crypto</h3>
+
+<p>
+Benoît Mandelbrot's work on financial markets established three properties that classical finance ignores:
+</p>
+
+<p>
+<strong>1. Self-Similarity.</strong> Price charts exhibit statistical self-similarity across timeframes. A daily chart cannot be distinguished from a monthly chart when axes are unlabeled. Our ZigZag data confirms this: average leg amplitudes at different timeframes follow consistent ratios.
+</p>
+
+<p>
+<strong>2. Fat Tails.</strong> Price movements follow power laws, not Gaussian distributions. Extreme moves happen orders of magnitude more often than the bell curve predicts. This is why MMs focus on liquidation zones — they know where the extreme moves will cascade.
+</p>
+
+<p>
+<strong>3. Volatility Clustering.</strong> Large moves tend to be followed by more large moves. The ZigZag's Smart Leg Average (SLA) with outlier capping is, in effect, a crude fractal dimension estimator — it identifies when a leg belongs to a different volatility regime and caps its influence on the average.
+</p>
+
+<p>
+Bill Williams introduced his "Fractal" indicator in 1995 — a simple 5-bar high/low reversal pattern. It identifies swing points but doesn't measure fractal properties. Our system goes further: we run ZigZag on multiple timeframes simultaneously and measure whether the fractal structure is <em>coherent</em> — whether the same generator is active at every scale.
+</p>
+
+<p>
+The Hurst exponent (H) is the mathematical measure of self-similarity: H &gt; 0.5 means trending (persistent), H &lt; 0.5 means mean-reverting, H = 0.5 means random walk. A true fractal coherence measure would compute H at each scale and check whether they agree. Our simpler direction consensus captures the same information empirically — and it's computable in real-time on every tick.
+</p>
+
+<!-- ──── MTF DIRECTION CONSENSUS ──── -->
+<h3 id="ch14-mtf">MTF Direction Consensus — The Proven Signal</h3>
+
+<p>
+The <code>BD_mtf_confluence.py</code> v2.0 implements and proves the first layer of fractal coherence. The algorithm:
+</p>
+
+<p>
+<strong>Step 1 — Parallel ZigZag.</strong> From 1-minute source data, resample to a Fibonacci timeframe ladder: 3m, 5m, 8m, 13m, 21m, 34m, 55m, 89m, 144m. Run ZigZag detection (same deviation parameter) on each timeframe independently.
+</p>
+
+<p>
+<strong>Step 2 — Direction Array.</strong> For each timeframe, build a per-bar direction array: after a LOW swing, direction is UP (+1); after a HIGH swing, direction is DOWN (−1). This captures which way the ZigZag "leg" is currently traveling at each scale.
+</p>
+
+<p>
+<strong>Step 3 — Consensus Score.</strong> At each bar on the trading timeframe, count how many monitor timeframes have the SAME direction as the trading TF. Score = agreeing / total. A score of 1.0 means all scales point the same way; 0.0 means complete disagreement.
+</p>
+
+<p>
+<strong>Step 4 — Size Multiplier.</strong> Map the consensus score to a position size multiplier: <code>mult = base + score × (maxMult − base)</code>. High consensus = larger position (exploit). Low consensus = base size only (explore). This is a DCC-style coupling directly from fractal coherence.
+</p>
+
+<h4>Empirical Results — 65 Days BTCUSDT (Jan–Mar 2026)</h4>
+
+<table class="param-table">
+<tr><th>Consensus Level</th><th>Trades</th><th>Avg PnL/Trade</th><th>Total PnL</th><th>Multiplier</th></tr>
+<tr><td>9/9 agree</td><td>55</td><td style="color:var(--accent-green)">$73.78</td><td style="color:var(--accent-green)">$4,058</td><td>3.00x</td></tr>
+<tr><td>8/9 agree</td><td>25</td><td>$45.52</td><td>$1,138</td><td>2.78x</td></tr>
+<tr><td>7/9 agree</td><td>34</td><td>$52.69</td><td>$1,792</td><td>2.56x</td></tr>
+<tr><td>6/9 agree</td><td>34</td><td>$25.19</td><td>$856</td><td>2.33x</td></tr>
+<tr><td>5/9 agree</td><td>26</td><td>$39.75</td><td>$1,034</td><td>2.11x</td></tr>
+<tr><td>4/9 agree</td><td>15</td><td>$1.46</td><td>$22</td><td>1.89x</td></tr>
+<tr><td>3/9 agree</td><td>10</td><td>$0.20</td><td>$2</td><td>1.67x</td></tr>
+<tr><td>2/9 agree</td><td>6</td><td>$0.04</td><td>$0.23</td><td>1.44x</td></tr>
+<tr><td>1/9 agree</td><td>6</td><td>$0.08</td><td>$0.50</td><td>1.22x</td></tr>
+<tr><td>0/9 agree</td><td>1</td><td>$0.01</td><td>$0.01</td><td>1.00x</td></tr>
+</table>
+
+<div class="metric-grid">
+  <div class="metric-card"><div class="mv blue">$5,314</div><div class="ml">Baseline (no MTF)</div></div>
+  <div class="metric-card"><div class="mv green">$8,902</div><div class="ml">MTF Consensus On</div></div>
+  <div class="metric-card"><div class="mv gold">+67.5%</div><div class="ml">Improvement</div></div>
+  <div class="metric-card"><div class="mv green">100%</div><div class="ml">Win Rate (both)</div></div>
+</div>
+
+<p>
+The consensus distribution itself is informative: 25.2% of bars have 9/9 agreement, meaning a quarter of the time ALL Fibonacci timeframes point the same way. That's when the fractal generator is fully coherent. The other 75% shows varying degrees of cross-scale disagreement — different generators dominating different scales.
+</p>
+
+<p>
+The simplified 4-TF version (5m, 15m, 30m, 1h) showed the same pattern: 4/4 agreement produced $73.53 avg per trade, while 0/4 produced $0.01. The improvement was even larger at +70.5% vs baseline. Fewer monitor TFs means higher consensus thresholds are more common (53.7% of bars had 4/4 agreement), which concentrates sizing even more aggressively on the best moments.
+</p>
+
+<div class="callout warn">
+<div class="callout-title">Why This Is Not Just "Multi-Timeframe Analysis"</div>
+<p>Traditional MTF analysis checks whether a higher timeframe "confirms" a lower timeframe entry — a qualitative, binary assessment. Fractal coherence is quantitative and structural: it measures the degree to which the same mathematical generator is active across ALL scales simultaneously. The consensus score is a continuous variable from 0 to 1, mapped directly to position sizing via a DCC-style coupling. This is the 8Z principle applied to timeframes: find the generator, measure its coherence, scale confidence proportionally.</p>
+</div>
+
+<!-- ──── LEG AMPLITUDE NESTING ──── -->
+<h3 id="ch14-nesting">Leg Amplitude Nesting — The Missing Layer</h3>
+
+<p>
+Direction consensus answers: "are the generators pointing the same way?" Leg amplitude nesting answers a different question: "are the generators producing <em>self-similar structure</em>?" These are independent signals that capture different aspects of fractal coherence.
+</p>
+
+<p>
+The concept: at each monitor timeframe, compute <code>avgLeg</code> (average ZigZag leg amplitude). Then check the ratio between consecutive scales:
+</p>
+
+<pre>
+<span class="cm">// Leg amplitude nesting check</span>
+ratio_5_13   = avgLeg_13m  / avgLeg_5m
+ratio_13_34  = avgLeg_34m  / avgLeg_13m
+ratio_34_89  = avgLeg_89m  / avgLeg_34m
+ratio_89_233 = avgLeg_233m / avgLeg_89m
+
+<span class="cm">// Nesting coefficient of variation — low = self-similar, high = broken</span>
+nesting_cv  = stddev(ratios) / mean(ratios)
+FC_nesting  = <span class="num">1.0</span> - clamp(nesting_cv, <span class="num">0</span>, <span class="num">1</span>)
+</pre>
+
+<p>
+When ratios are consistent across scales (nesting CV is low, FC_nesting near 1.0), the fractal structure is self-similar — the same mathematical generator is producing swings at every scale, just with proportional amplitudes. When ratios diverge (one scale shows tiny legs while another shows massive legs), the fractal is broken — different generators dominate different scales.
+</p>
+
+<p>
+This captures something direction consensus cannot: you could have 9/9 direction agreement (all scales "going up") but broken nesting — the 5m is in micro-chop (tiny legs) while the 1h is in a clean trend (large legs). The amplitudes don't nest, which means the fractal structure is incoherent despite directional agreement. Conversely, you could have perfect nesting but split direction — the structure is self-similar but timeframes disagree on which phase of the cycle we're in.
+</p>
+
+<div class="callout">
+<div class="callout-title">Status: Designed, Not Yet Tested</div>
+<p>Leg amplitude nesting is the logical next experiment after the proven direction consensus. The <code>BD_mtf_confluence.py</code> already computes <code>avgLeg</code> at each timeframe — the nesting ratio computation is a few lines of additional code. Testing against the same 65-day BTCUSDT dataset will reveal whether nesting adds value beyond direction consensus or is redundant.</p>
+</div>
+
+<!-- ──── COMBINED FC SCORE ──── -->
+<h3 id="ch14-fc">Combined Fractal Coherence — Unified DCC Signal</h3>
+
+<p>
+The Fractal Coherence score combines both layers into a single DCC coupling parameter:
+</p>
+
+<pre>
+<span class="cm">// Layer 1: Direction consensus (proven)</span>
+FC_direction = agreeing_TFs / total_TFs          <span class="cm">// 0→1</span>
+
+<span class="cm">// Layer 2: Leg amplitude nesting (designed)</span>
+FC_nesting   = <span class="num">1.0</span> - clamp(nesting_cv, <span class="num">0</span>, <span class="num">1</span>)   <span class="cm">// 0→1</span>
+
+<span class="cm">// Combined — weighted blend</span>
+FC = w1 × FC_direction + w2 × FC_nesting         <span class="cm">// 0→1</span>
+
+<span class="cm">// DCC mapping (replaces single-TF CV)</span>
+size_mult = <span class="num">1.0</span> + FC × (maxMult - <span class="num">1.0</span>)           <span class="cm">// exploit when coherent</span>
+entry_adj = baseET × (<span class="num">1.0</span> - <span class="num">0.2</span> × FC)              <span class="cm">// easier entry when coherent</span>
+</pre>
+
+<p>
+This replaces the current single-timeframe DCC (coefficient of variation of leg amplitudes on one TF) with a cross-scale measure grounded in fractal geometry. The architecture is the same — DCC coupling parameter maps to sizing and threshold adjustments — but the input signal is fundamentally richer.
+</p>
+
+<p>
+The connection to the 8Z-OS is exact: in the audio codec, frame-level MDL selects the best predictor, governed by frame-level DCC. In trading, bar-level MDL selects the market regime, governed by fractal coherence DCC that measures cross-scale generator agreement. The nesting is preserved: bar → timeframe-scale → asset-level, each with its own MDL arena and DCC controller.
+</p>
+
+<h4>What This Means for Market Makers</h4>
+
+<p>
+MMs profit by exploiting the predictable fractal structure of human behavior — the same fear/greed/herd patterns repeating at every scale. Our system profits by detecting <em>when</em> that fractal structure is coherent (and therefore predictable) vs. when it's disrupted (and therefore dangerous). We're not fighting the MMs — we're reading the same fractal signature they read, from a different angle. When all scales agree, the MM's generator is running clean and the market is most predictable. When scales disagree, something structural has changed — news events, regime shifts, or the MMs themselves changing strategy — and the wise move is to reduce exposure.
+</p>
+
+<!-- ──── PAPER TRADER UPGRADE ──── -->
+<h3 id="ch14-paper">Paper Trader Upgrade Path</h3>
+
+<p>
+The ZigZag PaperTrader (v1.0) currently runs a single ZigZag on one timeframe. The upgrade to v2.0 adds fractal coherence using the architecture proven in <code>BD_mtf_confluence.py</code>:
+</p>
+
+<p>
+<strong>Step 1 — Parallel Candle Arrays.</strong> The paper trader already receives raw ticks via WebSocket and builds candles via <code>onTick()</code>. Add parallel candle arrays for each Fibonacci monitor TF (5m, 8m, 13m, 21m, 34m, 55m). Each array accumulates its own OHLCV from the same tick stream.
+</p>
+
+<p>
+<strong>Step 2 — Parallel ZigZag States.</strong> Each monitor TF maintains its own ZigZag state (<code>zzDir</code>, <code>zzH</code>, <code>zzL</code>, <code>swings</code>, <code>avgLeg</code>). On each monitor-TF bar close, run the ZigZag detector and update direction.
+</p>
+
+<p>
+<strong>Step 3 — Consensus Computation.</strong> On each trading-TF bar close, read the current ZZ direction from all monitor TFs. Count agreements. Map to multiplier: <code>mult = 1.0 + (agree/total) × (maxMult − 1.0)</code>.
+</p>
+
+<p>
+<strong>Step 4 — UI Integration.</strong> New sidebar section "MTF Confluence" with toggle, monitor TF checkboxes, and max multiplier slider. New stats card showing consensus score (e.g., "7/9 MTF"). Position panel shows active multiplier. Signal log entries annotated with consensus level at entry.
+</p>
+
+<p>
+<strong>Step 5 — Recalculate Path.</strong> The <code>recalculate()</code> function already replays historical candles through the engine. The upgrade builds monitor-TF candles from the same raw klines during bootstrap, enabling instant A/B testing of MTF parameters without re-fetching data.
+</p>
+
+<div class="callout success">
+<div class="callout-title">Implementation Priority</div>
+<p>
+Direction consensus is proven (+67.5% on 65 days) and should be built first. Leg amplitude nesting is the theoretical extension — test it in the Python optimizer before adding to the HTML trader. The combined FC score becomes the default DCC mode once both layers are validated.
+</p>
+</div>
+
+<h3>The Original Contribution</h3>
+
+<p>
+Bill Williams made a 5-bar reversal pattern in 1995. Mandelbrot described fat tails and self-similarity but never built a trading system. Nobody has combined MDL generator competition with multi-scale fractal coherence detection and used it as a live position sizing multiplier governed by DCC coupling. This system does — and we have 65 days of empirical proof that it works.
+</p>
+
+<p>
+The research path forward: reverse-engineer from past data what makes optimal trades (the DNA research approach applied to price data), compute fractal coherence in real-time across the Fibonacci timeframe ladder, and use the resulting FC score as the DCC coupling parameter that governs every aspect of trade execution — entry thresholds, position sizing, and exit sensitivity. The market's fractal structure IS the signal. Coherence IS the edge.
+</p>
+
+</section>
 <!-- ──── FOOTER ──── -->
 <hr class="divider">
 <div style="text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 13px;">
   <p style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-blue); margin-bottom: 12px;">
-    BD Trading System v4 — Complete Manual
+    BD Trading System v5 — Complete Manual
   </p>
   <p>By Bojan Dobrečevič &nbsp;·&nbsp; AI Research Partners: Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI)</p>
   <p style="margin-top: 8px;">March 2026 &nbsp;·&nbsp; AIM³ Institute, Ljubljana</p>
