@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BD ZigZag Reversion — Paper Trader v2.6</title>
+<title>BD ZigZag Reversion — Paper Trader v2.7</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -213,7 +213,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 <div id="loginGate">
   <div class="login-box">
     <h2>🔒 BD ZigZag Reversion</h2>
-    <div class="sub">Paper Trader v2.6</div>
+    <div class="sub">Paper Trader v2.7</div>
     <input type="password" id="pwInput" placeholder="Enter password" autocomplete="off" autofocus>
     <div class="err" id="loginErr"></div>
   </div>
@@ -225,7 +225,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 <nav class="sidebar app-hidden" id="appSidebar">
   <div class="sidebar-brand">
     <h1>ZigZag Reversion</h1>
-    <div class="sub">Paper Trader v2.6 — by BD</div>
+    <div class="sub">Paper Trader v2.7 — by BD</div>
   </div>
   <div class="sidebar-content">
 
@@ -477,26 +477,27 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
     </div>
   </div>
 
-  <!-- ROW 1: PERFORMANCE -->
-  <div class="stats-grid">
+  <!-- ROW 1: PERFORMANCE + LEVERAGE (8 cards) -->
+  <div class="stats-grid" style="grid-template-columns:repeat(8,1fr)">
     <div class="stat-card"><div class="sl">Total Equity</div><div class="sv green" id="statEquity">$10,000</div></div>
     <div class="stat-card"><div class="sl">Return</div><div class="sv green" id="statReturn">0.00%</div></div>
+    <div class="stat-card"><div class="sl">Leverage</div><div class="sv" style="color:var(--accent-blue)" id="statLevR1">1×</div></div>
     <div class="stat-card"><div class="sl">Trades</div><div class="sv blue" id="statTrades">0</div></div>
     <div class="stat-card"><div class="sl">Win Rate</div><div class="sv gold" id="statWinRate">—</div></div>
-    <div class="stat-card"><div class="sl">Avg Leg</div><div class="sv teal" id="statAvgLeg">—</div></div>
     <div class="stat-card"><div class="sl">Max DD</div><div class="sv red" id="statMaxDD">0.00%</div></div>
+    <div class="stat-card"><div class="sl">Avg Leg</div><div class="sv teal" id="statAvgLeg">—</div></div>
     <div class="stat-card"><div class="sl">Fees Paid</div><div class="sv" style="color:var(--accent-purple)" id="statFees">$0.00</div></div>
   </div>
   
-  <!-- ROW 2: CONFIG AT A GLANCE — PnL drivers first -->
+  <!-- ROW 2: Position Config (left) | Signal Enhancement (right) -->
   <div class="stats-grid2">
     <div class="stat-card"><div class="sl">Timeframe</div><div class="sv" style="color:var(--accent-blue)" id="statTF">—</div></div>
+    <div class="stat-card"><div class="sl">Sizing</div><div class="sv" id="statSizing">DblTot</div></div>
+    <div class="stat-card"><div class="sl">Eff. Adds</div><div class="sv" id="statEffAdds">—</div></div>
+    <div class="stat-card"><div class="sl">Max Position</div><div class="sv" style="color:var(--accent-gold)" id="statMaxPos">$5,000</div></div>
     <div class="stat-card"><div class="sl">Legs Sync</div><div class="sv" id="statLegsSync" style="color:var(--text-muted)">OFF</div></div>
     <div class="stat-card"><div class="sl">Add Boost</div><div class="sv" id="statAddBoost" style="color:var(--text-muted)">OFF</div></div>
     <div class="stat-card"><div class="sl">Nesting</div><div class="sv" id="statNesting" style="color:var(--text-muted)">—</div></div>
-    <div class="stat-card"><div class="sl">Eff. Adds</div><div class="sv" id="statEffAdds">—</div></div>
-    <div class="stat-card"><div class="sl">Max Position</div><div class="sv" style="color:var(--accent-gold)" id="statMaxPos">$5,000</div></div>
-    <div class="stat-card"><div class="sl">Sizing</div><div class="sv" id="statSizing">DblTot</div></div>
     <div class="stat-card"><div class="sl">DCC</div><div class="sv" id="statDCC" style="color:var(--text-muted)">—</div></div>
   </div>
 
@@ -1791,16 +1792,10 @@ function updateRow2() {
     $('statNesting').style.color = 'var(--text-muted)';
   }
   
-  // DCC status
-  const dccOn = getP('p_useDCC')==='1';
-  if(dccOn && dccValues.length > 0) {
-    const lastDcc = dccValues[dccValues.length-1] || 0;
-    $('statDCC').textContent = fmt(lastDcc, 2);
-    $('statDCC').style.color = lastDcc >= 0.7 ? 'var(--accent-green)' : lastDcc >= 0.4 ? 'var(--accent-gold)' : 'var(--accent-red)';
-  } else {
-    $('statDCC').textContent = dccOn ? '—' : 'OFF';
-    $('statDCC').style.color = 'var(--text-muted)';
-  }
+  // Leverage display
+  const levVal = Math.round(getP('p_leverage') || 1);
+  $('statLevR1').textContent = levVal + '×';
+  $('statLevR1').style.color = levVal >= 50 ? 'var(--accent-red)' : levVal >= 10 ? 'var(--accent-gold)' : 'var(--accent-blue)';
   
   const{effAdds,maxAdds}=calcEffectiveAdds();
   const addsEl=$('statEffAdds'); addsEl.textContent=effAdds+'/'+maxAdds;
