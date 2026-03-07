@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BD ZigZag Reversion — Paper Trader v2.5</title>
+<title>BD ZigZag Reversion — Paper Trader v2.6</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -213,7 +213,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 <div id="loginGate">
   <div class="login-box">
     <h2>🔒 BD ZigZag Reversion</h2>
-    <div class="sub">Paper Trader v2.5</div>
+    <div class="sub">Paper Trader v2.6</div>
     <input type="password" id="pwInput" placeholder="Enter password" autocomplete="off" autofocus>
     <div class="err" id="loginErr"></div>
   </div>
@@ -225,7 +225,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 <nav class="sidebar app-hidden" id="appSidebar">
   <div class="sidebar-brand">
     <h1>ZigZag Reversion</h1>
-    <div class="sub">Paper Trader v2.5 — by BD</div>
+    <div class="sub">Paper Trader v2.6 — by BD</div>
   </div>
   <div class="sidebar-content">
 
@@ -303,7 +303,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
           </div>
         <div class="field-row">
           <div class="field"><label>Max Pos % Cap</label><input type="number" id="p_maxPosPct" value="50" min="5" max="100" step="5"></div>
-          <div class="field"><label>Leverage ×</label><input type="number" id="p_leverage" value="100" min="1" max="200" step="1"></div>
+          <div class="field"><label>Leverage ×</label><input type="number" id="p_leverage" value="1" min="1" max="200" step="1"></div>
         </div>
         <div class="field-row">
           <div class="field"><label>⚡ Fees</label>
@@ -1501,24 +1501,27 @@ function processTradeLogic(currentPrice, newSwing, barIdx) {
   
   // ── LIQUIDATION GUARD ──
   if(tDir !== 0) {
-    const lev = getP('p_leverage');
+    const lev = getP('p_leverage') || 1;
     const unrealized = tPnl/100 * tSz * lev;
     if(equity + unrealized < initialEquity * 0.1) {
       // Force close — account nearly wiped
-      equity += unrealized;
+      equity = Math.max(0, equity + unrealized); // floor at 0, prevent NaN cascade
       stats.losses++;
-      stats.totalPnl += unrealized;
+      stats.totalPnl = equity - initialEquity;
       if(equity > stats.peakEquity) stats.peakEquity = equity;
-      const dd = (stats.peakEquity - equity) / stats.peakEquity * 100;
+      const dd = stats.peakEquity > 0 ? (stats.peakEquity - equity) / stats.peakEquity * 100 : 100;
       if(dd > stats.maxDD) stats.maxDD = dd;
       trades.unshift({side:tDir===1?'long':'short',entry:tAE,exit:currentPrice,pnl:unrealized,pnlPct:tPnl,adds:tAdds,exitReason:'LIQUIDATION',fee:0,mtfMult:1});
       equityCurve.push({t:Date.now(),eq:Math.round(equity*100)/100});
-      addLog('loss',`⚠ LIQUIDATION ${tDir===1?'LONG':'SHORT'} @ ${fmt(currentPrice)} | PnL: ${fmtUsd(unrealized)} | Equity: ${fmtUsd(equity)}`);
+      addLog('loss',`⚠ LIQUIDATION ${tDir===1?'LONG':'SHORT'} @ ${fmt(currentPrice)} | Equity: ${fmtUsd(equity)}`);
       tDir=0; tAE=0; tSz=0; tAdds=0; isRunner=false;
       if(!historicalMode) updateUI();
       return;
     }
   }
+  
+  // Stop trading if account is blown (< 1% of initial)
+  if(equity < initialEquity * 0.01 && tDir === 0) return;
   
   // ── ESCAPE CHECK ──
   const useEsc = getP('p_escape')==='1';
@@ -1540,12 +1543,12 @@ function processTradeLogic(currentPrice, newSwing, barIdx) {
   }
   
   if(doClose) {
-    const lev = getP('p_leverage');
+    const lev = getP('p_leverage') || 1;
     const grossPnl=tPnl/100*tSz*lev;
     const feePct=parseFloat($('p_fee').value)||0;
     const feeUsd=feePct>0?(tSz*feePct/100*2):0;
     const pnlUsd=grossPnl-feeUsd;
-    equity+=pnlUsd; stats.totalFees+=feeUsd;
+    if(!isNaN(pnlUsd)) { equity+=pnlUsd; stats.totalFees+=feeUsd; } // NaN guard
     const isWin=pnlUsd>=0; stats.wins+=isWin?1:0; stats.losses+=isWin?0:1;
     stats.totalPnl+=pnlUsd;
     if(equity>stats.peakEquity) stats.peakEquity=equity;
@@ -1570,12 +1573,12 @@ function processTradeLogic(currentPrice, newSwing, barIdx) {
     }
     const closeSz = tSz * escFrac;
     const keepSz = tSz - closeSz;
-    const lev2 = getP('p_leverage');
+    const lev2 = getP('p_leverage') || 1;
     const grossPnl = tPnl/100*closeSz*lev2;
     const feePct=parseFloat($('p_fee').value)||0;
     const feeUsd=feePct>0?(closeSz*feePct/100*2):0;
     const pnlUsd=grossPnl-feeUsd;
-    equity+=pnlUsd; stats.totalFees+=feeUsd;
+    if(!isNaN(pnlUsd)) { equity+=pnlUsd; stats.totalFees+=feeUsd; } // NaN guard
     stats.wins++; stats.totalPnl+=pnlUsd; stats.escapes++;
     if(equity>stats.peakEquity) stats.peakEquity=equity;
     
@@ -1703,7 +1706,7 @@ function calcAddSz(cur,n,base,mode,maxCap) {
 function updatePositionDisplay(price) {
   if(!price||tDir===0) return;
   const pnlPct=tDir===1?(price-tAE)/tAE*100:(tAE-price)/tAE*100;
-  const lev = getP('p_leverage');
+  const lev = getP('p_leverage') || 1;
   const pnlUsd=pnlPct/100*tSz*lev;
   const col=pnlPct>=0?'var(--accent-green)':'var(--accent-red)';
   $('positionBody').innerHTML=`
@@ -2091,9 +2094,9 @@ async function hotSwapTimeframe(){
     const sym=getP('p_symbol'),curPrice=priceBuf[sym]?.[priceBuf[sym].length-1];
     if(curPrice){
       let tPnl=tDir===1?(curPrice-tAE)/tAE*100:(tAE-curPrice)/tAE*100;
-      const grossPnl=tPnl/100*tSz*getP('p_leverage'),feePct=parseFloat($('p_fee').value)||0;
+      const grossPnl=tPnl/100*tSz*(getP('p_leverage')||1),feePct=parseFloat($('p_fee').value)||0;
       const feeUsd=feePct>0?(tSz*feePct/100*2):0,pnlUsd=grossPnl-feeUsd;
-      equity+=pnlUsd;stats.totalFees+=feeUsd;stats[pnlUsd>=0?'wins':'losses']++;stats.totalPnl+=pnlUsd;
+      if(!isNaN(pnlUsd)){equity+=pnlUsd;stats.totalFees+=feeUsd;stats[pnlUsd>=0?'wins':'losses']++;stats.totalPnl+=pnlUsd;}
       if(equity>stats.peakEquity)stats.peakEquity=equity;
       trades.unshift({side:tDir===1?'long':'short',entry:tAE,exit:curPrice,pnl:pnlUsd,pnlPct:tPnl,adds:tAdds,exitReason:'TF-Swap',fee:feeUsd,mtfMult:1});
       equityCurve.push({t:Date.now(),eq:Math.round(equity*100)/100});
