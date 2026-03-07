@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BD ZigZag Reversion — Paper Trader v2.2</title>
+<title>BD ZigZag Reversion — Paper Trader v2.1</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -153,7 +153,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 <div id="loginGate">
   <div class="login-box">
     <h2>🔒 BD ZigZag Reversion</h2>
-    <div class="sub">Paper Trader v2.2</div>
+    <div class="sub">Paper Trader v2.1</div>
     <input type="password" id="pwInput" placeholder="Enter password" autocomplete="off" autofocus>
     <div class="err" id="loginErr"></div>
   </div>
@@ -163,7 +163,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 <nav class="sidebar app-hidden" id="appSidebar">
   <div class="sidebar-brand">
     <h1>ZigZag Reversion</h1>
-    <div class="sub">Paper Trader v2.2 — by BD</div>
+    <div class="sub">Paper Trader v2.1 — by BD</div>
   </div>
   <div class="sidebar-content">
 
@@ -342,17 +342,9 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
         </div>
         <div class="field-row">
           <div class="field"><label>Min Agree</label><input type="number" id="p_lsMinAgree" value="0" min="0" max="9" step="1"></div>
-          <div class="field"><label>Max Mult (entry)</label><input type="number" id="p_lsMaxMult" value="3.0" min="1.5" max="5.0" step="0.5"></div>
+          <div class="field"><label>Max Mult</label><input type="number" id="p_lsMaxMult" value="3.0" min="1.5" max="5.0" step="0.5"></div>
         </div>
-        <div class="field-row">
-          <div class="field"><label>Sync Add Boost</label><select id="p_lsAddBoost"><option value="0">OFF</option><option value="1">ON</option></select></div>
-          <div class="field"><label>Add Max Mult</label><input type="number" id="p_lsAddMaxMult" value="2.0" min="1.0" max="5.0" step="0.5"></div>
-        </div>
-        <div class="field-row">
-          <div class="field"><label>Nesting Weight %</label><input type="number" id="p_lsNestWt" value="20" min="0" max="100" step="5"></div>
-          <div class="field" style="display:flex;align-items:flex-end;padding-bottom:4px"><span style="font-size:9px;color:var(--text-muted);font-family:var(--font-mono)">Direction: <span id="dirWtLabel">80%</span> / Nesting: <span id="nestWtLabel">20%</span></span></div>
-        </div>
-        <div style="font-size:9px;color:var(--text-muted);margin-top:2px;font-family:var(--font-mono)">Entry mult from consensus. Add Boost re-evaluates consensus at each add — high sync = bigger adds. Nesting = fractal self-similarity across scales.</div>
+        <div style="font-size:9px;color:var(--text-muted);margin-top:2px;font-family:var(--font-mono)">Fetches 1m data → resamples to each TF → counts ZZ direction agreement → sizes up when TFs agree</div>
       </div>
     </div>
 
@@ -619,13 +611,6 @@ function updateLsTfList() {
 // Update on TF change
 $('p_timeframe')?.addEventListener('change', updateLsTfList);
 updateLsTfList();
-
-// Nesting weight label updater
-$('p_lsNestWt')?.addEventListener('input', () => {
-  const nw = parseInt($('p_lsNestWt').value) || 20;
-  $('nestWtLabel').textContent = nw + '%';
-  $('dirWtLabel').textContent = (100-nw) + '%';
-});
 
 // ══════════════════════════════════════════════════════════════════════════
 // STATE
@@ -1460,7 +1445,7 @@ function processTradeLogic(currentPrice, newSwing, barIdx) {
     if(dd>stats.maxDD) stats.maxDD=dd;
     
     // Get MTF mult for this trade (works for both bootstrap and live)
-    const mtfMult = getP('p_legsSync')==='1' ? getMtfMult(barIdx, false) : 1;
+    const mtfMult = getP('p_legsSync')==='1' ? getMtfMult(barIdx) : 1;
     
     trades.unshift({side:tDir===1?'long':'short',entry:tAE,exit:currentPrice,pnl:pnlUsd,pnlPct:tPnl,adds:tAdds,exitReason:closeComment,fee:feeUsd,mtfMult:mtfMult});
     equityCurve.push({t:Date.now(),eq:Math.round(equity*100)/100});
@@ -1498,22 +1483,12 @@ function processTradeLogic(currentPrice, newSwing, barIdx) {
     if(cDir===tDir) {
       const reqE = calcExtReq(tAdds+1, adjET);
       if(adjER >= reqE) {
-        let addAmt = calcAddSz(tSz, tAdds+1, baseSz, szMode, maxPosCap);
-        
-        // Sync Add Boost: multiply add size by CURRENT consensus (re-evaluated now, not at entry)
-        let addMult = 1.0;
-        if(getP('p_legsSync')==='1' && getP('p_lsAddBoost')==='1') {
-          addMult = getMtfMult(barIdx, true); // true = forAdd, uses Add Max Mult
-          addAmt = addAmt * addMult;
-          // Re-cap after boost
-          addAmt = Math.min(addAmt, Math.max(0, maxPosCap - tSz));
-        }
-        
+        const addAmt = calcAddSz(tSz, tAdds+1, baseSz, szMode, maxPosCap);
         if(addAmt > 0.01) {
           const newSz=tSz+addAmt;
           tAE=(tAE*tSz+currentPrice*addAmt)/newSz;
           tSz=newSz; tAdds++;
-          addLog('add',`ADD #${tAdds} @ ${fmt(currentPrice)} | New AE: ${fmt(tAE)} | Size: $${fmt(tSz)} | tPnl: ${fmt(tPnl)}%${addMult>1?' Sync:'+fmt(addMult,1)+'x':''}`);
+          addLog('add',`ADD #${tAdds} @ ${fmt(currentPrice)} | New AE: ${fmt(tAE)} | Size: $${fmt(tSz)} | tPnl: ${fmt(tPnl)}%`);
         }
       }
     }
@@ -1538,7 +1513,7 @@ function processTradeLogic(currentPrice, newSwing, barIdx) {
       // Legs Sync size multiplier (works in both bootstrap and live mode)
       let mtfMult = 1.0;
       if(getP('p_legsSync')==='1') {
-        mtfMult = getMtfMult(barIdx, false);
+        mtfMult = getMtfMult(barIdx);
       }
       
       tSz = baseSz * mtfMult;
@@ -1562,18 +1537,20 @@ function processTradeLogic(currentPrice, newSwing, barIdx) {
   if(!historicalMode) updateUI();
 }
 
-function getMtfMult(barIdx, forAdd) {
+function getMtfMult(barIdx) {
   const minAgree = Math.round(getP('p_lsMinAgree'));
-  const maxMult = forAdd ? getP('p_lsAddMaxMult') : getP('p_lsMaxMult');
-  const nestWt = (parseInt(getP('p_lsNestWt')) || 20) / 100; // 0-1
-  const dirWt = 1 - nestWt;
+  const maxMult = getP('p_lsMaxMult');
   
   if(historicalMode && lsConsensus.length > barIdx) {
     // Bootstrap path: use pre-built consensus arrays
     const score = lsConsensus[barIdx];
     const cnt = lsCounts[barIdx];
     if(cnt >= minAgree) {
-      const blended = dirWt * score + nestWt * lsNesting;
+      // Blend direction consensus with nesting score (80/20 weight)
+      // Direction is proven, nesting is new — conservative blend
+      const dirScore = score;
+      const nestScore = lsNesting; // global bootstrap nesting
+      const blended = 0.8 * dirScore + 0.2 * nestScore;
       return 1.0 + blended * (maxMult - 1.0);
     }
     return 1.0;
@@ -1583,7 +1560,9 @@ function getMtfMult(barIdx, forAdd) {
   const live = getLiveConsensus();
   if(live.nMon === 0) return 1.0;
   if(live.count >= minAgree) {
-    const blended = dirWt * live.score + nestWt * live.nesting;
+    const dirScore = live.score;
+    const nestScore = live.nesting;
+    const blended = 0.8 * dirScore + 0.2 * nestScore;
     return 1.0 + blended * (maxMult - 1.0);
   }
   return 1.0;
@@ -1746,7 +1725,6 @@ const CFG_KEYS = {
   SS:'p_useSess',CS:'p_closeOnSw',
   // v2.0 new keys
   LS:'p_legsSync',LT:'p_lsTfMode',LA:'p_lsMinAgree',LM:'p_lsMaxMult',
-  SAB:'p_lsAddBoost',SAM:'p_lsAddMaxMult',NW:'p_lsNestWt',
   ESC:'p_escape',EMA:'p_escMinAdds',ETR:'p_escTrigger',ECP:'p_escClosePct',EP:'p_escProgressive',
   VW:'p_useVol',MB:'p_useBias',BL:'p_biasLen',DC:'p_useDCC',CMP:'p_useCompound',
 };
@@ -1784,8 +1762,6 @@ function exportConfig() {
     const tfMode=getP('p_lsTfMode');
     s+=`|LT:${tfMode==='fib'?'fib':$('p_lsTfs').value}`;
     s+=`|LA:${Math.round(getP('p_lsMinAgree'))}|LM:${getP('p_lsMaxMult')}`;
-    s+=`|NW:${Math.round(getP('p_lsNestWt'))}`;
-    if(getP('p_lsAddBoost')==='1') s+=`|SAB:1|SAM:${getP('p_lsAddMaxMult')}`;
   }
   if(getP('p_escape')==='1') s+=`|ESC:1|EMA:${Math.round(getP('p_escMinAdds'))}|ETR:${getP('p_escTrigger')}|ECP:${getP('p_escClosePct')}|EP:${getP('p_escProgressive')}`;
   if(getP('p_useVol')==='1') s+=`|VW:1`;
