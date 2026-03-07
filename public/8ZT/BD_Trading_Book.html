@@ -113,6 +113,29 @@ body {
 .cover .stat .val.blue { color: var(--accent-blue); }
 .cover .stat .lbl { font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
 
+/* ---- PROOF-OF-CONCEPT HERO STATS ---- */
+.chapter .stats-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px; margin: 28px 0;
+}
+.chapter .stat {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 10px; padding: 18px 14px; text-align: center;
+  transition: border-color .2s;
+}
+.chapter .stat:hover { border-color: var(--accent-green); }
+.chapter .stat .val {
+  font-family: var(--font-mono); font-size: 26px; font-weight: 700;
+}
+.chapter .stat .val.green { color: var(--accent-green); }
+.chapter .stat .val.gold  { color: var(--accent-gold); }
+.chapter .stat .val.blue  { color: var(--accent-blue); }
+.chapter .stat .val.red   { color: var(--accent-red); }
+.chapter .stat .lbl {
+  font-size: 10px; color: var(--text-muted); margin-top: 6px;
+  text-transform: uppercase; letter-spacing: 1.2px;
+}
+
 /* ---- CHAPTERS ---- */
 .chapter {
   margin-bottom: 64px; padding-top: 32px;
@@ -269,7 +292,7 @@ pre .cm { color: var(--text-muted); font-style: italic; }
   </div>
   <a class="ch" href="#cover">Overview</a>
   <a class="ch" href="#preface">Preface — Two Timelines</a>
-  <a class="ch" href="#1k-challenge">The $1,000 Challenge</a>
+  <a class="ch" href="#2k-challenge">The $2,000 Challenge</a>
   <a class="ch" href="#ch1">1 — Genesis</a>
   <a class="sub" href="#ch1-origin">The Origin Arc</a>
   <a class="sub" href="#ch1-phases">Four Phases</a>
@@ -340,7 +363,7 @@ pre .cm { color: var(--text-muted); font-style: italic; }
     Two complementary engines — momentum scalping and anti-fragile mean reversion —
     unified by MTF consensus, Fibonacci spacing, and adaptive position management.
     Sync Momentum: 14 months of iteration. ZigZag Reversion: <strong>concept to working prototype in 2 days</strong> — human + AI synergy at its peak.
-    By Bojan Dobrečevič (<a href="mailto:bd@siol.net" style="color:inherit;text-decoration:none">bd@siol.net</a>), with AI research partners.
+    By Bojan Dobrečevič (<a href="/cdn-cgi/l/email-protection#ec8e88ac9f858380c2828998" style="color:inherit;text-decoration:none"><span class="__cf_email__" data-cfemail="492b2d093a20262567272c3d">[email&#160;protected]</span></a>), with AI research partners.
   </div>
   <div class="meta">SM v2.2 → v4.0 &nbsp;·&nbsp; ZZ v3.1 &nbsp;·&nbsp; Book v6.0 &nbsp;·&nbsp; March 2026 &nbsp;·&nbsp; <a href="https://chessbest.org/8zt/zigzag_papertrader.html" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;cursor:default">BD</a> × Claude × GPT × Gemini × Grok</div>
   <div class="stats-row">
@@ -376,58 +399,85 @@ pre .cm { color: var(--text-muted); font-style: italic; }
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
-<!-- THE $1,000 CHALLENGE -->
+<!-- THE $2,000 CHALLENGE -->
 <!-- ═══════════════════════════════════════════════════════════════════════════════════════════ -->
-<section class="chapter" id="1k-challenge">
+<section class="chapter" id="2k-challenge">
 <div class="chapter-num">Proof of Concept</div>
-<h2>The $1,000 Challenge — From Pocket Money to Proof</h2>
+<h2>The $2,000 Challenge — Two Grand to Ten in a Month</h2>
 
 <p>
-Not many people have $10,000 to risk on an experimental trading strategy. But $1,000? That's a month's groceries, a weekend trip, a bet most people can afford to lose. So we asked: <strong>what happens if you start with just $1,000?</strong>
+Not many people have $10,000 to risk on an experimental trading strategy. But $2,000? That's a tax refund, a bonus cheque, money sitting idle in a savings account earning nothing. So we asked: <strong>what happens if you start with just $2,000?</strong>
 </p>
 
 <p>
-The answer, on 34 days of BTCUSDT 30-minute data with real Binance futures fees (0.05% taker), Fibonacci add spacing, 50× leverage, and $0.1 base size:
+The answer, on 34 days of BTCUSDT 30-minute data with real Binance futures fees (0.05% taker), DblTot sizing, 50× leverage, and $0.20 base size:
 </p>
 
-<div class="stats-row" style="margin:24px 0">
-  <div class="stat"><div class="val green">$5,053</div><div class="lbl">Final Equity</div></div>
-  <div class="stat"><div class="val gold">+405%</div><div class="lbl">Return</div></div>
-  <div class="stat"><div class="val blue">248</div><div class="lbl">Trades · 100% WR</div></div>
-  <div class="stat"><div class="val green">0.00%</div><div class="lbl">Max Drawdown</div></div>
-  <div class="stat"><div class="val green">$24.61</div><div class="lbl">Total Fees Paid</div></div>
+<div class="stats-row">
+  <div class="stat">
+    <div class="lbl">Starting Capital</div>
+    <div class="val" style="color:var(--text-muted);font-size:20px">$2,000</div>
+  </div>
+  <div class="stat">
+    <div class="lbl">Final Equity</div>
+    <div class="val green">$10,110</div>
+  </div>
+  <div class="stat">
+    <div class="lbl">Return</div>
+    <div class="val gold">+405.5%</div>
+  </div>
+  <div class="stat">
+    <div class="lbl">Trades</div>
+    <div class="val blue">249</div>
+  </div>
+  <div class="stat">
+    <div class="lbl">Win Rate</div>
+    <div class="val green">100%</div>
+  </div>
+  <div class="stat">
+    <div class="lbl">Max Drawdown</div>
+    <div class="val green">0.00%</div>
+  </div>
+  <div class="stat">
+    <div class="lbl">Fees Paid</div>
+    <div class="val" style="color:var(--text-muted)">$49.32</div>
+  </div>
+  <div class="stat">
+    <div class="lbl">Fee % of Profit</div>
+    <div class="val" style="color:var(--text-muted)">0.6%</div>
+  </div>
 </div>
 
-<img src="ZZ_BTCUSDT_30m_2026-03-07T1410__1k_wallet.png" alt="ZigZag Reversion — $1,000 wallet, 50× leverage, Fibonacci spacing, 34 days, 100% win rate" style="width:100%;border-radius:8px;border:1px solid var(--border);margin:16px 0">
+<img src="ZZ_BTCUSDT_2026-03-07_2k_10k_1M.png" alt="ZigZag Reversion — $2,000 wallet, 50× leverage, DblTot sizing, 34 days, 249 trades, 100% win rate, $2K → $10K" style="width:100%;border-radius:8px;border:1px solid var(--border);margin:16px 0">
 
 <p>
-Every trade is green. Zero drawdown. 248 trades, 58 escapes, $24.61 in fees on $4,053 profit — fees consumed just 0.6% of total gains. The equity curve speaks for itself: a staircase that only goes up.
+Every trade is green. Zero drawdown. 249 trades, 58 escapes, $49.32 in fees on $8,110 profit — fees consumed just 0.6% of total gains. The equity curve speaks for itself: a staircase that only goes up. <strong>$2,000 becomes $10,000 in 34 days.</strong>
 </p>
 
 <div class="callout">
-<div class="callout-title">Why $0.1 Base Size Matters</div>
+<div class="callout-title">Why $0.20 Base Size Matters</div>
 <p>
-With a $1 base and DblTot (double total) sizing, the position hits the $5,000 cap by add 7 — wasting the last 3 adds doing nothing. With $0.1 base, the geometric growth is: $0.1 → $0.3 → $0.9 → $2.7 → $8.1 → $24.3 → $72.9 → $218.7 → $656 → $1,968. <strong>All 10 adds are useful</strong>, each one building position size across the full Fibonacci distance range. Base size is effectively a second leverage dial — smaller base = more working adds = survives bigger adverse moves.
+With a $1 base and DblTot (double total) sizing, the position hits the $1,000 max cap by add 7 — wasting the last 3 adds doing nothing. With $0.20 base, the geometric growth is: $0.20 → $0.60 → $1.80 → $5.40 → $16.20 → $48.60 → $145.80 → $437.40. <strong>All 8 effective adds are useful</strong>, each one building position size across the full Fibonacci distance range. Base size is effectively a second leverage dial — smaller base = more working adds = survives bigger adverse moves.
 </p>
 </div>
 
-<p>The key configuration parameters that make the $1K wallet work:</p>
+<p>The key configuration parameters that make the $2K wallet work:</p>
 
 <table class="help-table" style="margin:12px 0">
 <tr><th>Parameter</th><th>Value</th><th>Why</th></tr>
-<tr><td>Starting Capital</td><td>$1,000</td><td>Accessible to anyone</td></tr>
-<tr><td>Base Size</td><td>$0.1</td><td>All 10 adds useful before cap</td></tr>
+<tr><td>Starting Capital</td><td>$2,000</td><td>Accessible — a tax refund, not a life's savings</td></tr>
+<tr><td>Base Size</td><td>$0.20</td><td>All effective adds useful before cap</td></tr>
 <tr><td>Leverage</td><td>50×</td><td>Amplifies the small moves without hitting liquidation</td></tr>
-<tr><td>Max Position</td><td>$500 (50%)</td><td>Half of capital at risk maximum</td></tr>
-<tr><td>Add Spacing</td><td>Fibonacci</td><td>Covers 22× more price distance than fixed</td></tr>
-<tr><td>Legs Sync</td><td>ON, Fib, SAB 5×</td><td>MTF consensus boosts winning positions</td></tr>
-<tr><td>Escape</td><td>ON, Progressive 70+10</td><td>Bulk-close oversized positions at any profit</td></tr>
-<tr><td>Compounding</td><td>Sqrt</td><td>Conservative growth: $1K→$2K = base grows 41%</td></tr>
-<tr><td>Fees</td><td>Auto (Binance 0.05%)</td><td>Real costs included — $24.61 total</td></tr>
+<tr><td>Max Position</td><td>$1,000 (50%)</td><td>Half of capital at risk maximum</td></tr>
+<tr><td>Sizing</td><td>DblTot</td><td>Double-total geometric scaling across adds</td></tr>
+<tr><td>Legs Sync</td><td>5 TF, 3.0×</td><td>MTF consensus boosts winning positions</td></tr>
+<tr><td>Add Boost</td><td>5.0×</td><td>Aggressive add scaling when sync confirms</td></tr>
+<tr><td>Nesting</td><td>0.93</td><td>Tight nesting multiplier for position layering</td></tr>
+<tr><td>Fees</td><td>Auto (Binance 0.05%)</td><td>Real costs included — $49.32 total</td></tr>
 </table>
 
 <p>
-To be clear: these are paper trading results on historical data, not live trading. The backtest period (34 days) is relatively short. Past performance does not guarantee future results, and leveraged trading carries substantial risk of loss. But as a proof of concept — that a $1,000 starting capital with conservative settings can generate meaningful returns while maintaining 100% win rate — the data is compelling.
+To be clear: these are paper trading results on historical data, not live trading. The backtest period (34 days) is relatively short. Past performance does not guarantee future results, and leveraged trading carries substantial risk of loss. But as a proof of concept — that a $2,000 starting capital with conservative settings can 5× in a month while maintaining 100% win rate and zero drawdown — the data speaks loudly.
 </p>
 
 <p>
@@ -436,7 +486,7 @@ Compare the fee efficiency across wallet sizes. Smaller wallets paradoxically ha
 
 <table class="help-table" style="margin:12px 0">
 <tr><th>Wallet</th><th>Leverage</th><th>Base</th><th>Return</th><th>Profit</th><th>Fees</th><th>Fee % of Profit</th></tr>
-<tr><td>$1,000</td><td>50×</td><td>$0.1</td><td style="color:var(--accent-green)">+405%</td><td>+$4,053</td><td>$24.61</td><td>0.6%</td></tr>
+<tr><td>$2,000</td><td>50×</td><td>$0.20</td><td style="color:var(--accent-green)">+405%</td><td>+$8,110</td><td>$49.32</td><td>0.6%</td></tr>
 <tr><td>$10,000</td><td>25×</td><td>$1.0</td><td style="color:var(--accent-green)">+160%</td><td>+$15,958</td><td>$211</td><td>1.3%</td></tr>
 <tr><td>$10,000</td><td>67×</td><td>$1.0</td><td style="color:var(--accent-green)">+645%</td><td>+$64,543</td><td>$304</td><td>0.5%</td></tr>
 <tr><td>$10,000</td><td>100×</td><td>$0.1</td><td style="color:var(--accent-green)">+368%</td><td>+$36,805</td><td>$101</td><td>0.3%</td></tr>
@@ -2096,12 +2146,4 @@ The research path forward: reverse-engineer from past data what makes optimal tr
   <p style="margin-top: 20px; font-size: 11px; color: var(--text-muted); max-width: 500px; margin-left: auto; margin-right: auto;">
     This document is a technical reference for research and educational purposes.
     It does not constitute financial advice. Trading leveraged derivatives carries
-    substantial risk of loss. Past performance — including backtests — does not
-    guarantee future results.
-  </p>
-</div>
-
-</div><!-- /main -->
-
-</body>
-</html>
+    substantial risk of loss. Past performance �
