@@ -1096,10 +1096,10 @@ function checkExits(price){
     const atr=calcATR(tradeBars,atrLen);
     if(atr>0){
       const wigglePct=Math.min(Math.max(atr/price*100*wiggleK,minW),maxW);
-      // Floor: lock fraction of peak move
+      // Pine: floorStop = avg + lockFrac*(peak-avg) → floorPnl = lockFrac * peakMove
       const lockFloor=lockFrac*position.peakPnlPct;
-      // Trail: peak minus wiggle
-      const trailLevel=position.peakPnlPct-wigglePct;
+      // Pine: trailLevel = close*(1-wiggle/100) → trailPnl = currentPnl - wiggle
+      const trailLevel=pnlPct-wigglePct;
       const dynFloor=Math.max(lockFloor,trailLevel);
       if(pnlPct<dynFloor&&position.peakPnlPct>beTrigger){
         exitReason=pnlPct<lockFloor?'LOCK':'TRAIL';
@@ -1271,6 +1271,19 @@ function fastCB(barIdx){
   if(cbPausing){cbPauseRemaining--;if(cbPauseRemaining<=0){cbPausing=false;consecLosses=0;}return 0.3;}
   return 1.0;
 }
+
+// Quick MDL regime classification (for DCC pre-compute when MDL is ON)
+function quickMDLRegime(bars,idx){
+  if(idx<20)return 0;
+  const n=20, start=idx-n+1;
+  let sumX=0,sumY=0,sumXY=0,sumX2=0;
+  for(let j=0;j<n;j++){const c=bars[start+j]?.c||0;sumX+=j;sumY+=c;sumXY+=j*c;sumX2+=j*j;}
+  const slope=(n*sumXY-sumX*sumY)/(n*sumX2-sumX*sumX||1);
+  // Simplified: trend=1, revert=2, momentum=3, rw=4
+  const mean=sumY/n;let tErr=0,rErr=0;const intercept=(sumY-slope*sumX)/n;
+  for(let j=0;j<n;j++){const c=bars[start+j]?.c||0;tErr+=(c-(intercept+slope*j))**2;rErr+=(c-mean)**2;}
+  return tErr<rErr?1:4; // simplified: trend vs random walk
+}
 function fastCooldown(barIdx){
   if(!_p.useCooldown)return 1.0;
   return(barIdx-lastExitBar<_p.cdBars)?0.5:1.0;
@@ -1335,12 +1348,16 @@ async function runHistorical(btcBars, ethBars, tradeBars){
   const ethTs=new Map(); ethBars.forEach((b,i)=>ethTs.set(b.ts,i));
   const tradeTs=new Map(); tradeBars.forEach((b,i)=>tradeTs.set(b.ts,i));
 
-  // Pre-compute regime cache for DCC (fast: single pass)
-  _regimeCache=new Array(btcBars.length);
-  for(let i=0;i<btcBars.length;i++){
-    if(i<5)_regimeCache[i]=0;
-    else{const c=btcBars[i].c,p=btcBars[Math.max(0,i-5)].c;_regimeCache[i]=c>p*1.001?1:c<p*0.999?-1:0;}
+  // Pre-compute regime cache for DCC — tracks MDL regime changes (NOT price direction)
+  // Pine: "When only DCC is ON (without MDL), mdlRegime stays 0 → no changes → EXPLOIT (1.2x)"
+  _regimeCache=new Array(btcBars.length).fill(0); // default: all zero (no changes)
+  if(_p.useMDL){
+    // When MDL is ON, compute regime per bar so DCC can track changes
+    for(let i=30;i<btcBars.length;i++){
+      _regimeCache[i]=quickMDLRegime(tradeBars,i);
+    }
   }
+  // When MDL is OFF, _regimeCache stays all zeros → no changes → DCC = EXPLOIT
 
   const CHUNK=500; // bars per chunk before yielding to browser
   const totalBars=btcBars.length;
@@ -1395,8 +1412,11 @@ async function runHistorical(btcBars, ethBars, tradeBars){
           if(position.beLocked&&_atrReady){
             const closePnl=dirSign*(bar.c-position.entryPrice)/position.entryPrice*100;
             const wigglePct=Math.min(Math.max(_atrValue/bar.c*100*_p.wiggleK,_p.minWiggle),_p.maxWiggle);
+            // Pine: floorStop = avgPrice + lockFrac*(peak-avg) → floorPnl = lockFrac * peakMove
             const lockFloor=_p.lockFrac*position.peakPnlPct;
-            const trailLevel=position.peakPnlPct-wigglePct;
+            // Pine: trailLevel = close*(1-wiggle/100) → trailPnl = closePnl - wiggle*(close/avg)
+            const trailLevel=closePnl-wigglePct;
+            // Pine: candidateStop = max(floor, trail)
             const dynFloor=Math.max(lockFloor,trailLevel);
             if(closePnl<dynFloor&&position.peakPnlPct>_p.beTrigger){
               const reason=closePnl<lockFloor?'LOCK':'TRAIL';
@@ -1407,8 +1427,8 @@ async function runHistorical(btcBars, ethBars, tradeBars){
         }
       }
 
-      // ── ENTRY CHECK ──
-      if(!position){
+      // ── ENTRY CHECK — must be on bar AFTER any exit (Pine sequencing) ──
+      if(!position && i > lastExitBar){
         const nBtc=btcCandles.length, nEth=ethCandles.length;
         if(nBtc>_p.syncLen&&nEth>_p.syncLen&&nBtc>_p.impulseLen){
           const btcNow=btcCandles[nBtc-1].c, btcPrev=btcCandles[nBtc-1-_p.syncLen].c;
