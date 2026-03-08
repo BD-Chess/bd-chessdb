@@ -35,7 +35,10 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 #loginGate .err { color:var(--accent-red); font-size:11px; margin-top:8px; min-height:16px; font-family:var(--font-mono); }
 .app-hidden { display:none !important; }
 
-.sidebar { position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh; background:var(--bg-secondary); border-right:1px solid var(--border); overflow-y:auto; z-index:100; display:flex; flex-direction:column; transition:transform 0.3s; }
+.sidebar { position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh; background:var(--bg-secondary); border-right:1px solid var(--border); overflow-y:auto; z-index:100; display:flex; flex-direction:column; transition:transform 0.25s ease; }
+.sidebar.collapsed { transform:translateX(calc(-1 * var(--sidebar-w))); }
+.sidebar-toggle { position:fixed; top:12px; left:12px; z-index:200; background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; cursor:pointer; font-size:16px; color:var(--text-secondary); transition:left 0.25s ease, opacity 0.2s; opacity:0; pointer-events:none; }
+.sidebar-toggle.visible { opacity:1; pointer-events:auto; }
 .sidebar-brand { padding:20px 18px 16px; border-bottom:1px solid var(--border); }
 .sidebar-brand h1 { font-family:var(--font-mono); font-size:12px; font-weight:500; color:var(--accent-green); letter-spacing:2.5px; text-transform:uppercase; }
 .sidebar-brand .sub { font-size:11px; color:var(--text-muted); margin-top:3px; font-family:var(--font-mono); }
@@ -71,7 +74,8 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 
 .sidebar-footer { padding:10px 16px; border-top:1px solid var(--border); font-size:10px; color:var(--text-muted); font-family:var(--font-mono); text-align:center; }
 
-.main { margin-left:var(--sidebar-w); padding:20px 24px 40px; min-height:100vh; }
+.main { margin-left:var(--sidebar-w); padding:20px 24px 40px; min-height:100vh; transition:margin-left 0.25s ease; }
+.main.expanded { margin-left:0; }
 .header-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border); }
 .header-bar .title-group h2 { font-family:var(--font-display); font-size:24px; font-weight:700; }
 .header-bar .title-group .tagline { font-size:12px; color:var(--text-muted); margin-top:2px; }
@@ -135,12 +139,12 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 .help-tip { background:#00e67610; border-left:3px solid var(--accent-green); padding:8px 12px; margin:8px 0; border-radius:0 4px 4px 0; font-size:12px; color:var(--text-secondary); }
 
 /* Hamburger mobile */
-.hamburger { display:none; position:fixed; top:12px; left:12px; z-index:200; background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:8px 10px; cursor:pointer; font-size:18px; }
+.hamburger { display:none; }
 @media (max-width:900px) {
-  .hamburger { display:block; }
-  .sidebar { transform:translateX(-100%); z-index:300; }
-  .sidebar.open { transform:translateX(0); }
-  .main { margin-left:0; padding:16px 12px 40px; padding-top:52px; }
+  .sidebar-toggle.visible { display:block; }
+  .sidebar.collapsed { transform:translateX(calc(-1 * var(--sidebar-w))); }
+  .main { margin-left:0 !important; padding:16px 12px 40px; padding-top:52px; }
+  .main.expanded { margin-left:0; }
   .stats-grid, .stats-grid2 { grid-template-columns:repeat(2,1fr) !important; gap:6px; }
   .logs-grid { grid-template-columns:1fr; }
   .header-bar { flex-direction:column; gap:10px; align-items:flex-start; }
@@ -160,13 +164,16 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
   </div>
 </div>
 
-<div class="hamburger" onclick="toggleMobileSidebar()">☰</div>
+<div class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</div>
 
 <!-- ═══ SIDEBAR ═══ -->
 <div class="sidebar app-hidden" id="sidebarEl">
-  <div class="sidebar-brand">
-    <h1>Sync Momentum</h1>
-    <div class="sub">Paper Trader v2.0 — by BD</div>
+  <div class="sidebar-brand" style="display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <h1>Sync Momentum</h1>
+      <div class="sub">Paper Trader v2.0 — by BD</div>
+    </div>
+    <div onclick="collapseSidebar()" style="cursor:pointer;padding:4px 8px;color:var(--text-muted);font-size:16px;border-radius:4px;border:1px solid var(--border)" title="Collapse sidebar">◀</div>
   </div>
   <div class="sidebar-content">
 
@@ -199,8 +206,8 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
           <label>Style</label>
           <select id="p_style" onchange="onPresetChange()">
             <option value="safe">Safe</option>
-            <option value="normal">Normal</option>
-            <option value="aggressive" selected>Aggressive</option>
+            <option value="normal" selected>Normal</option>
+            <option value="aggressive">Aggressive</option>
             <option value="max">Max</option>
           </select>
         </div>
@@ -233,8 +240,8 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
       <div class="section-title" onclick="toggleSection(this)"><span class="arrow">▾</span> Account &amp; Symbol</div>
       <div class="section-body">
         <div class="field-row">
-          <div class="field"><label>Equity ($)</label><input id="p_equity" type="number" value="10000" step="100"></div>
-          <div class="field"><label>Trade Size ($)</label><input id="p_tradeSize" type="number" value="10000" step="100"></div>
+          <div class="field"><label>Equity ($)</label><input id="p_equity" type="number" value="100000" step="1000"></div>
+          <div class="field"><label>Trade Size ($)</label><input id="p_tradeSize" type="number" value="100000" step="1000"></div>
         </div>
         <div class="field-row">
           <div class="field"><label>Leverage</label><input id="p_leverage" type="number" value="100" min="1" max="500"></div>
@@ -296,11 +303,11 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
       <div class="section-body">
         <div class="field-row">
           <div class="field"><label>Sync Length (bars)</label><input id="p_syncLen" type="number" value="2" min="1" max="10"></div>
-          <div class="field"><label>Min Delta %</label><input id="p_minDelta" type="number" value="0.032" step="0.001"></div>
+          <div class="field"><label>Min Delta %</label><input id="p_minDelta" type="number" value="0.048" step="0.001"></div>
         </div>
         <div class="field-row">
           <div class="field"><label>Impulse Length</label><input id="p_impulseLen" type="number" value="10" min="3" max="50"></div>
-          <div class="field"><label>Impulse Factor</label><input id="p_impulseFactor" type="number" value="0.75" step="0.05"></div>
+          <div class="field"><label>Impulse Factor</label><input id="p_impulseFactor" type="number" value="0.95" step="0.05"></div>
         </div>
       </div>
     </div>
@@ -310,11 +317,11 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
       <div class="section-title" onclick="toggleSection(this)"><span class="arrow">▾</span> Exit System</div>
       <div class="section-body">
         <div class="field-row">
-          <div class="field"><label>Stop Loss %</label><input id="p_slPct" type="number" value="0.033" step="0.001"></div>
-          <div class="field"><label>Take Profit %</label><input id="p_tpPct" type="number" value="0.94" step="0.01"></div>
+          <div class="field"><label>Stop Loss %</label><input id="p_slPct" type="number" value="0.037" step="0.001"></div>
+          <div class="field"><label>Take Profit %</label><input id="p_tpPct" type="number" value="1.26" step="0.01"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>BE Trigger %</label><input id="p_beTrigger" type="number" value="0.101" step="0.001"></div>
+          <div class="field"><label>BE Trigger %</label><input id="p_beTrigger" type="number" value="0.129" step="0.001"></div>
           <div class="field"><label>Lock Fraction</label><input id="p_lockFrac" type="number" value="0.90" step="0.01" min="0" max="1"></div>
         </div>
         <div class="field-row">
@@ -341,7 +348,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
           <div class="field"><label>CB Loss Streak</label><input id="p_cbStreak" type="number" value="3" min="2" max="10"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>CB Pause Bars</label><input id="p_cbPause" type="number" value="10" min="1" max="100"></div>
+          <div class="field"><label>CB Pause Bars</label><input id="p_cbPause" type="number" value="120" min="1" max="500"></div>
           <div class="field"><label>Cooldown</label><select id="p_useCooldown"><option value="0" selected>OFF</option><option value="1">ON</option></select></div>
         </div>
         <div class="field-row">
@@ -391,7 +398,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 
   <!-- Row 1: Performance -->
   <div class="stats-grid">
-    <div class="stat-card"><div class="sl">Equity</div><div class="sv green" id="statEquity">$10,000</div></div>
+    <div class="stat-card"><div class="sl">Equity</div><div class="sv green" id="statEquity">$100,000</div></div>
     <div class="stat-card"><div class="sl">Return</div><div class="sv green" id="statReturn">0.00%</div></div>
     <div class="stat-card"><div class="sl">Trades</div><div class="sv blue" id="statTrades">0</div></div>
     <div class="stat-card"><div class="sl">Win Rate</div><div class="sv teal" id="statWinRate">—</div></div>
@@ -492,7 +499,35 @@ async function hashPw(pw){const e=new TextEncoder().encode(pw);const b=await cry
 function unlockApp(){$('loginGate').style.display='none';document.querySelectorAll('.app-hidden').forEach(el=>el.classList.remove('app-hidden'));sessionStorage.setItem('bd_auth','1');}
 $('loginPw').addEventListener('keydown',async e=>{if(e.key==='Enter'){const h=await hashPw(e.target.value);if(h===_ah)unlockApp();else $('loginErr').textContent='Invalid password';}});
 if(sessionStorage.getItem('bd_auth')==='1')unlockApp();
-function toggleMobileSidebar(){$('sidebarEl').classList.toggle('open');}
+function toggleMobileSidebar(){toggleSidebar();}
+function toggleSidebar(){
+  const sb=$('sidebarEl'), mn=$('mainEl'), btn=$('sidebarToggle');
+  const isCollapsed=sb.classList.contains('collapsed');
+  if(isCollapsed){ expandSidebar(); } else { collapseSidebar(); }
+}
+function collapseSidebar(){
+  const sb=$('sidebarEl'), mn=$('mainEl'), btn=$('sidebarToggle');
+  sb.classList.add('collapsed');
+  mn.classList.add('expanded');
+  btn.classList.add('visible');
+  setTimeout(drawEquityChart, 280); // redraw chart after transition
+}
+function expandSidebar(){
+  const sb=$('sidebarEl'), mn=$('mainEl'), btn=$('sidebarToggle');
+  sb.classList.remove('collapsed');
+  mn.classList.remove('expanded');
+  btn.classList.remove('visible');
+  setTimeout(drawEquityChart, 280);
+}
+// Click main area to collapse sidebar (if open)
+document.addEventListener('click', function(e){
+  const sb=$('sidebarEl'), btn=$('sidebarToggle');
+  if(!sb || sb.classList.contains('collapsed')) return;
+  // If click is outside sidebar and outside toggle button
+  if(!sb.contains(e.target) && e.target!==btn && !btn.contains(e.target)){
+    collapseSidebar();
+  }
+});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -635,8 +670,8 @@ let btcCandleTs=0, ethCandleTs=0, tradeCandleTs=0;
 
 // Position state
 let position=null;
-let equity=10000, initialEquity=10000;
-let stats={wins:0,losses:0,grossWins:0,grossLosses:0,totalPnl:0,maxDD:0,peakEquity:10000,totalFees:0};
+let equity=100000, initialEquity=100000;
+let stats={wins:0,losses:0,grossWins:0,grossLosses:0,totalPnl:0,maxDD:0,peakEquity:100000,totalFees:0};
 let equityCurve=[], trades=[];
 let rawKlines={btc:[], eth:[], trade:[]}; // for recalculate
 let historicalMode=false;
@@ -1079,40 +1114,51 @@ function checkExits(price){
   const peakMove=Math.abs(position.peakPrice-position.entryPrice)/position.entryPrice*100;
   if(pnlPct>position.peakPnlPct)position.peakPnlPct=pnlPct;
 
-  let exitReason=null;
-
-  // 1. Stop loss
-  if(pnlPct<=-slPct)exitReason='SL';
-  // 2. Take profit
-  else if(pnlPct>=tpPct)exitReason='TP';
-  // 3. Breakeven lock
-  else if(!position.beLocked && pnlPct>=beTrigger){
+  // BE lock
+  if(!position.beLocked && pnlPct>=beTrigger){
     position.beLocked=true;
     addLog('trail',`BE locked @ ${fmt(price)} (peak ${fmt(peakMove)}%)`);
   }
-  // 4. ATR trailing + profit lock
-  if(!exitReason && position.beLocked){
+
+  // Compute dynStop PRICE (Pine-accurate)
+  const baseStop=position.entryPrice*(1-dirSign*slPct/100);
+  let dynStop=baseStop;
+  if(position.beLocked){
+    const floorStop=position.side==='long'
+      ? position.entryPrice+lockFrac*(position.peakPrice-position.entryPrice)
+      : position.entryPrice-lockFrac*(position.entryPrice-position.peakPrice);
+    let trailStop=baseStop;
     const tradeBars=tradeCandles.length>0?tradeCandles:btcCandles;
     const atr=calcATR(tradeBars,atrLen);
     if(atr>0){
       const wigglePct=Math.min(Math.max(atr/price*100*wiggleK,minW),maxW);
-      // Pine: floorStop = avg + lockFrac*(peak-avg) → floorPnl = lockFrac * peakMove
-      const lockFloor=lockFrac*position.peakPnlPct;
-      // Pine: trailLevel = close*(1-wiggle/100) → trailPnl = currentPnl - wiggle
-      const trailLevel=pnlPct-wigglePct;
-      const dynFloor=Math.max(lockFloor,trailLevel);
-      if(pnlPct<dynFloor&&position.peakPnlPct>beTrigger){
-        exitReason=pnlPct<lockFloor?'LOCK':'TRAIL';
-      }
+      trailStop=position.side==='long'?price*(1-wigglePct/100):price*(1+wigglePct/100);
     }
+    dynStop=position.side==='long'?Math.max(floorStop,trailStop):Math.min(floorStop,trailStop);
+  }
+
+  let exitReason=null;
+  // dynStop hit?
+  if(position.side==='long'&&price<=dynStop){
+    exitReason=position.beLocked?(dynStop>position.entryPrice?'LOCK':'TRAIL'):'SL';
+  } else if(position.side==='short'&&price>=dynStop){
+    exitReason=position.beLocked?(dynStop<position.entryPrice?'LOCK':'TRAIL'):'SL';
+  }
+  // TP hit?
+  const hardLimit=position.entryPrice*(1+dirSign*tpPct/100);
+  if(!exitReason){
+    if(position.side==='long'&&price>=hardLimit)exitReason='TP';
+    else if(position.side==='short'&&price<=hardLimit)exitReason='TP';
   }
 
   if(exitReason){
-    closePosition(price,pnlPct,pnlUsd,exitReason);
+    const exitPrice=(exitReason==='TP')?hardLimit:dynStop;
+    const finalPnlPct=dirSign*(exitPrice-position.entryPrice)/position.entryPrice*100;
+    const finalPnlUsd=dirSign*(exitPrice-position.entryPrice)*position.qty;
+    closePosition(exitPrice,finalPnlPct,finalPnlUsd,exitReason);
     return;
   }
 
-  // Update live position display
   updatePositionDisplay(price,pnlPct,pnlUsd);
 }
 
@@ -1388,42 +1434,70 @@ async function runHistorical(btcBars, ethBars, tradeBars){
       const tLen=tradeCandles.length;
       if(tLen>=2)updateATR(tradeCandles[tLen-1],tradeCandles[tLen-2].c);
 
-      // ── EXIT CHECK (intra-bar: high/low for SL/TP, close for trail) ──
+      // ── EXIT CHECK — Pine-accurate dynStop system ──
       if(position){
         const bar=tradeCandles[tLen-1];
         const dirSign=position.side==='long'?1:-1;
         const worstPrice=position.side==='long'?bar.l:bar.h;
         const bestPrice=position.side==='long'?bar.h:bar.l;
-        const worstPnl=dirSign*(worstPrice-position.entryPrice)/position.entryPrice*100;
-        const bestPnl=dirSign*(bestPrice-position.entryPrice)/position.entryPrice*100;
 
+        // Update peak with intra-bar extremes
         if(position.side==='long'&&bar.h>position.peakPrice)position.peakPrice=bar.h;
         if(position.side==='short'&&bar.l<position.peakPrice)position.peakPrice=bar.l;
-        if(bestPnl>position.peakPnlPct)position.peakPnlPct=bestPnl;
+        const peakMovePct=dirSign*(position.peakPrice-position.entryPrice)/position.entryPrice*100;
+        if(peakMovePct>position.peakPnlPct)position.peakPnlPct=peakMovePct;
 
-        if(worstPnl<=-_p.slPct){
-          const slPrice=position.entryPrice*(1-dirSign*_p.slPct/100);
-          histClosePosition(slPrice,-_p.slPct,dirSign*(slPrice-position.entryPrice)*position.qty,'SL',i);
-        } else if(bestPnl>=_p.tpPct){
-          const tpPrice=position.entryPrice*(1+dirSign*_p.tpPct/100);
-          histClosePosition(tpPrice,_p.tpPct,dirSign*(tpPrice-position.entryPrice)*position.qty,'TP',i);
-        } else {
-          if(!position.beLocked&&bestPnl>=_p.beTrigger)position.beLocked=true;
-          if(position.beLocked&&_atrReady){
-            const closePnl=dirSign*(bar.c-position.entryPrice)/position.entryPrice*100;
-            const wigglePct=Math.min(Math.max(_atrValue/bar.c*100*_p.wiggleK,_p.minWiggle),_p.maxWiggle);
-            // Pine: floorStop = avgPrice + lockFrac*(peak-avg) → floorPnl = lockFrac * peakMove
-            const lockFloor=_p.lockFrac*position.peakPnlPct;
-            // Pine: trailLevel = close*(1-wiggle/100) → trailPnl = closePnl - wiggle*(close/avg)
-            const trailLevel=closePnl-wigglePct;
-            // Pine: candidateStop = max(floor, trail)
-            const dynFloor=Math.max(lockFloor,trailLevel);
-            if(closePnl<dynFloor&&position.peakPnlPct>_p.beTrigger){
-              const reason=closePnl<lockFloor?'LOCK':'TRAIL';
-              const pnlUsd=dirSign*(bar.c-position.entryPrice)*position.qty;
-              histClosePosition(bar.c,closePnl,pnlUsd,reason,i);
-            }
+        // BE lock check (intra-bar: use best price)
+        const bestPnl=dirSign*(bestPrice-position.entryPrice)/position.entryPrice*100;
+        if(!position.beLocked&&bestPnl>=_p.beTrigger)position.beLocked=true;
+
+        // ── Compute dynStop PRICE (Pine: strategy.exit sets this every bar) ──
+        const baseStop=position.entryPrice*(1-dirSign*_p.slPct/100); // initial SL
+        const hardLimit=position.entryPrice*(1+dirSign*_p.tpPct/100); // TP
+
+        let dynStop=baseStop; // default: initial SL
+        if(position.beLocked){
+          // Floor: lock fraction of peak move (in price)
+          const floorStop=position.side==='long'
+            ? position.entryPrice+_p.lockFrac*(position.peakPrice-position.entryPrice)
+            : position.entryPrice-_p.lockFrac*(position.entryPrice-position.peakPrice);
+          // Trail: from previous close (Pine computes at bar close, fills next bar)
+          // Use bar open as proxy for "previous close" in intra-bar check
+          let trailStop=baseStop;
+          if(_atrReady){
+            const wigglePct=Math.min(Math.max(_atrValue/bar.o*100*_p.wiggleK,_p.minWiggle),_p.maxWiggle);
+            trailStop=position.side==='long'
+              ? bar.o*(1-wigglePct/100)
+              : bar.o*(1+wigglePct/100);
           }
+          // Pine: candidateStop = max(floor, trail) for longs, min for shorts
+          dynStop=position.side==='long'
+            ? Math.max(floorStop,trailStop)
+            : Math.min(floorStop,trailStop);
+        }
+
+        let exitReason=null, exitPrice=0, exitPnl=0;
+
+        // Check dynStop (SL or trail) against intra-bar worst price
+        if(position.side==='long'&&bar.l<=dynStop){
+          exitPrice=dynStop; exitPnl=dirSign*(dynStop-position.entryPrice)/position.entryPrice*100;
+          exitReason=position.beLocked?(exitPrice>position.entryPrice?'LOCK':'TRAIL'):'SL';
+        } else if(position.side==='short'&&bar.h>=dynStop){
+          exitPrice=dynStop; exitPnl=dirSign*(dynStop-position.entryPrice)/position.entryPrice*100;
+          exitReason=position.beLocked?(exitPrice<position.entryPrice?'LOCK':'TRAIL'):'SL';
+        }
+        // Check TP
+        if(!exitReason){
+          if(position.side==='long'&&bar.h>=hardLimit){
+            exitPrice=hardLimit; exitPnl=_p.tpPct; exitReason='TP';
+          } else if(position.side==='short'&&bar.l<=hardLimit){
+            exitPrice=hardLimit; exitPnl=_p.tpPct; exitReason='TP';
+          }
+        }
+
+        if(exitReason){
+          const pnlUsd=dirSign*(exitPrice-position.entryPrice)*position.qty;
+          histClosePosition(exitPrice,exitPnl,pnlUsd,exitReason,i);
         }
       }
 
@@ -1784,6 +1858,7 @@ async function recalculate(){
 
 async function handleStart(){
   try{
+  collapseSidebar();
   initialEquity=getPN('p_equity')||10000;
   equity=initialEquity;
   stats.peakEquity=initialEquity;
@@ -1852,6 +1927,7 @@ function handleReset(){
 window.addEventListener('resize',drawEquityChart);
 drawEquityChart();
 updateFeeDisplay();
+onPresetChange(); // Apply default preset (Crypto Scalp / Normal)
 </script>
 
 </body>
