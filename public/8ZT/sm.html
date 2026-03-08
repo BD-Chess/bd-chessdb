@@ -100,9 +100,11 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 .pos-modules { margin-top:8px; font-family:var(--font-mono); font-size:10px; color:var(--text-muted); display:flex; gap:12px; flex-wrap:wrap; }
 .pos-modules .mod-active { color:var(--accent-teal); }
 
-.chart-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:14px 16px; margin-bottom:16px; }
+.chart-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:14px 16px; margin-bottom:16px; position:relative; }
 .chart-panel .panel-title { font-family:var(--font-mono); font-size:10px; color:var(--text-muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px; display:flex; justify-content:space-between; }
-.chart-canvas { width:100%; height:220px; }
+.chart-canvas { width:100%; height:220px; min-height:100px; }
+.chart-resize-handle { position:absolute; bottom:0; left:0; right:0; height:8px; cursor:ns-resize; border-radius:0 0 6px 6px; }
+.chart-resize-handle:hover, .chart-resize-handle.active { background:var(--accent-blue); opacity:0.25; }
 
 .logs-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 .log-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:14px 16px; max-height:400px; overflow-y:auto; }
@@ -214,11 +216,13 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
           <button class="btn btn-stop" id="btnStop" onclick="handleStop()" style="display:none">■ Stop</button>
           <button class="btn btn-reset" onclick="handleReset()">↺ Reset</button>
         </div>
-        <div class="controls-row">
-          <button class="btn btn-sm" id="btnRecalc" onclick="recalculate()" style="background:#1a1030;color:var(--accent-gold);border-color:var(--accent-gold)" disabled>⟳ Recalc</button>
+        <div class="controls-row" style="margin-top:4px">
+          <button class="btn" id="btnRecalc" onclick="recalculate()" style="background:#1a1030;color:var(--accent-gold);border-color:var(--accent-gold);font-size:11px" disabled>⟳ Recalc</button>
+          <button class="btn" style="background:#102030;color:var(--accent-blue);border-color:#204060;font-size:11px" onclick="openHelp()">? Help</button>
+        </div>
+        <div class="controls-row" style="margin-top:4px">
           <button class="btn btn-sm" style="background:#1a1040;color:var(--accent-purple);border-color:#3a206033" onclick="exportReport()">📋 Report</button>
           <button class="btn btn-sm" style="background:#103030;color:var(--accent-teal);border-color:#20605033" onclick="exportScreenshot()">📸 PNG</button>
-          <button class="btn btn-sm" style="background:#102030;color:var(--accent-blue);border-color:#204060" onclick="openHelp()">? Help</button>
         </div>
         <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-top:6px" id="connStatus">Disconnected</div>
       </div>
@@ -376,7 +380,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
   <div class="header-bar">
     <div class="title-group">
       <h2>Sync Momentum</h2>
-      <div class="tagline" id="headerTagline">Connect to start scanning • <span id="tickCount">0</span> ticks • <span id="barCount">0</span> bars</div>
+      <div class="tagline" id="headerTagline">Connect to start scanning • <span id="tickCount">0</span> ticks • <span id="barCount">0</span> bars<span id="replayProgress"></span></div>
     </div>
     <div class="prices">
       <div class="price-tag"><div class="sym">BTC</div><div class="val" id="priceBTC">—</div></div>
@@ -413,9 +417,10 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
   </div>
 
   <!-- Equity Chart -->
-  <div class="chart-panel">
+  <div class="chart-panel" id="chartPanel">
     <div class="panel-title"><span>Equity Curve</span><span id="timeSpan"></span></div>
     <canvas id="eqChart" class="chart-canvas"></canvas>
+    <div class="chart-resize-handle" id="chartResizeHandle"></div>
   </div>
 
   <!-- Logs -->
@@ -1467,7 +1472,7 @@ async function runHistorical(btcBars, ethBars, tradeBars){
 
     barsDone=end;
     // Yield to browser + update progress
-    $('headerTagline').textContent=`Replaying... ${barsDone}/${totalBars} bars (${(barsDone/totalBars*100).toFixed(0)}%)`;
+    $('replayProgress').textContent=` Replaying... ${barsDone}/${totalBars} (${(barsDone/totalBars*100).toFixed(0)}%)`;
     await new Promise(r=>setTimeout(r,0));
   }
 
@@ -1489,6 +1494,7 @@ async function runHistorical(btcBars, ethBars, tradeBars){
   if(stats.totalFees>0)addLog('system',`Fees: ${fmtUsd(stats.totalFees)}`);
   $('btnRecalc').disabled=false;
   $('barCount').textContent=btcCandles.length;
+  $('replayProgress').textContent='';
   _p=null; // release cache
   updateUI();
 }
@@ -1542,9 +1548,10 @@ function updateUI(){
   // Row 2
   const sz=getPN('p_tradeSize');
   const lev=getPN('p_leverage');
-  $('statSize').textContent='$'+fmt(sz/1000,0)+'K';
+  const notional=sz*lev;
+  $('statSize').textContent=sz>=1000?'$'+fmt(sz/1000,0)+'K':'$'+fmt(sz,0);
   $('statLev').textContent=lev+'x';
-  $('statNotional').textContent='$'+fmt(sz*lev/1000,0)+'K';
+  $('statNotional').textContent=notional>=1000?'$'+fmt(notional/1000,0)+'K':'$'+fmt(notional,0);
   const ac=getP('p_assetClass'), st=getP('p_style');
   $('statPreset').textContent=ac.replace('crypto_','C').replace('commodities','Com').replace('forex','FX').toUpperCase().slice(0,4)+'/'+st.slice(0,3).toUpperCase();
   $('statSLTP').textContent=getPN('p_slPct')+'/'+getPN('p_tpPct');
@@ -1799,6 +1806,27 @@ function handleReset(){
   $('tradeLog').innerHTML='<tr id="tradeEmpty"><td colspan="8" class="empty-msg">No trades yet</td></tr>';
   addLog('system','Full reset');
 }
+
+// ── Chart resize drag ──
+(function(){
+  const handle=$('chartResizeHandle'), canvas=$('eqChart');
+  let dragging=false, startY=0, startH=0;
+  handle.addEventListener('mousedown',e=>{
+    dragging=true; startY=e.clientY; startH=canvas.getBoundingClientRect().height;
+    handle.classList.add('active'); document.body.style.cursor='ns-resize'; document.body.style.userSelect='none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!dragging)return;
+    const newH=Math.max(100,startH+(e.clientY-startY));
+    canvas.style.height=newH+'px';
+    drawEquityChart();
+  });
+  document.addEventListener('mouseup',()=>{
+    if(!dragging)return;
+    dragging=false; handle.classList.remove('active'); document.body.style.cursor=''; document.body.style.userSelect='';
+  });
+})();
 
 // ── Init ──
 window.addEventListener('resize',drawEquityChart);
