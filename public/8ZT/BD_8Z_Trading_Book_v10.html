@@ -362,6 +362,18 @@ pre .cm { color: var(--text-muted); font-style: italic; }
   body { background: white; color: #111; }
   .chapter { break-before: page; }
 }
+/* ---- LIGHTBOX ---- */
+.result-image { cursor: zoom-in; }
+.lightbox-overlay {
+  display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.92); z-index: 9999; cursor: zoom-out;
+  justify-content: center; align-items: center;
+}
+.lightbox-overlay.active { display: flex; }
+.lightbox-overlay img {
+  max-width: 95vw; max-height: 95vh; border-radius: 8px;
+  box-shadow: 0 0 60px rgba(0,0,0,0.5);
+}
 </style>
 </head>
 <body>
@@ -451,7 +463,7 @@ pre .cm { color: var(--text-muted); font-style: italic; }
     Two complementary engines &#8212; momentum scalping and anti-fragile mean reversion &#8212;
     unified by MTF consensus, Fibonacci spacing, and adaptive position management.
     <br><br>
-    All original concepts, architecture, and creative direction by Bojan Dobre&#269;evi&#269; (<a href="mailto:bd@siol.net" style="color:var(--accent-teal);text-decoration:none">bd@siol.net</a>).
+    All original concepts, architecture, and creative direction by Bojan Dobre&#269;evi&#269; (<a href="/cdn-cgi/l/email-protection#88eaecc8fbe1e7e4a6e6edfc" style="color:var(--accent-teal);text-decoration:none"><span class="__cf_email__" data-cfemail="187a7c586b71777436767d6c">[email&#160;protected]</span></a>).
     All code, all 32+ HTML trader versions, the optimizer, and this book: built by Claude (Anthropic) as primary engineering partner.
     GPT, Gemini, and Grok contributed research feedback, validation, and independent reviews.
     <br><br>
@@ -2543,6 +2555,21 @@ This is the 8Z principle of MDL competition applied to software: multiple implem
 </div>
 
 </div><!-- /main -->
+
+<div class="lightbox-overlay" id="lb" onclick="this.classList.remove('active')">
+  <img id="lb-img" src="" alt="">
+</div>
+<script>
+document.querySelectorAll('.result-image').forEach(function(img){
+  img.addEventListener('click', function(){
+    document.getElementById('lb-img').src = this.src;
+    document.getElementById('lb').classList.add('active');
+  });
+});
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape') document.getElementById('lb').classList.remove('active');
+});
+</script>
 
 </body>
 </html>
