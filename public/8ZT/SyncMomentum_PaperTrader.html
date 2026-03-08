@@ -35,10 +35,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 #loginGate .err { color:var(--accent-red); font-size:11px; margin-top:8px; min-height:16px; font-family:var(--font-mono); }
 .app-hidden { display:none !important; }
 
-.sidebar { position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh; background:var(--bg-secondary); border-right:1px solid var(--border); overflow-y:auto; z-index:100; display:flex; flex-direction:column; transition:transform 0.25s ease; }
-.sidebar.collapsed { transform:translateX(calc(-1 * var(--sidebar-w))); }
-.sidebar-toggle { position:fixed; top:12px; left:12px; z-index:200; background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:6px 10px; cursor:pointer; font-size:16px; color:var(--text-secondary); transition:left 0.25s ease, opacity 0.2s; opacity:0; pointer-events:none; }
-.sidebar-toggle.visible { opacity:1; pointer-events:auto; }
+.sidebar { position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh; background:var(--bg-secondary); border-right:1px solid var(--border); overflow-y:auto; z-index:100; display:flex; flex-direction:column; }
 .sidebar-brand { padding:20px 18px 16px; border-bottom:1px solid var(--border); }
 .sidebar-brand h1 { font-family:var(--font-mono); font-size:12px; font-weight:500; color:var(--accent-green); letter-spacing:2.5px; text-transform:uppercase; }
 .sidebar-brand .sub { font-size:11px; color:var(--text-muted); margin-top:3px; font-family:var(--font-mono); }
@@ -74,8 +71,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 
 .sidebar-footer { padding:10px 16px; border-top:1px solid var(--border); font-size:10px; color:var(--text-muted); font-family:var(--font-mono); text-align:center; }
 
-.main { margin-left:var(--sidebar-w); padding:20px 24px 40px; min-height:100vh; transition:margin-left 0.25s ease; }
-.main.expanded { margin-left:0; }
+.main { margin-left:var(--sidebar-w); padding:20px 24px 40px; min-height:100vh; }
 .header-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border); }
 .header-bar .title-group h2 { font-family:var(--font-display); font-size:24px; font-weight:700; }
 .header-bar .title-group .tagline { font-size:12px; color:var(--text-muted); margin-top:2px; }
@@ -136,13 +132,13 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 .modal-box code { background:var(--bg-tertiary); padding:2px 6px; border-radius:3px; font-family:var(--font-mono); font-size:11px; }
 .help-tip { background:#00e67610; border-left:3px solid var(--accent-green); padding:8px 12px; margin:8px 0; border-radius:0 4px 4px 0; font-size:12px; color:var(--text-secondary); }
 
-/* Hamburger mobile */
-.hamburger { display:none; }
+/* Mobile */
+.hamburger { display:none; position:fixed; top:12px; left:12px; z-index:200; background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:8px 10px; cursor:pointer; font-size:18px; color:var(--text-secondary); }
 @media (max-width:900px) {
-  .sidebar-toggle.visible { display:block; }
-  .sidebar.collapsed { transform:translateX(calc(-1 * var(--sidebar-w))); }
-  .main { margin-left:0 !important; padding:16px 12px 40px; padding-top:52px; }
-  .main.expanded { margin-left:0; }
+  .hamburger { display:block; }
+  .sidebar { transform:translateX(-100%); transition:transform 0.25s ease; z-index:300; }
+  .sidebar.open { transform:translateX(0); }
+  .main { margin-left:0; padding:16px 12px 40px; padding-top:52px; }
   .stats-grid, .stats-grid2 { grid-template-columns:repeat(2,1fr) !important; gap:6px; }
   .logs-grid { grid-template-columns:1fr; }
   .header-bar { flex-direction:column; gap:10px; align-items:flex-start; }
@@ -162,16 +158,13 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
   </div>
 </div>
 
-<div class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</div>
+<div class="hamburger" onclick="toggleMobileSidebar()">☰</div>
 
 <!-- ═══ SIDEBAR ═══ -->
 <div class="sidebar app-hidden" id="sidebarEl">
-  <div class="sidebar-brand" style="display:flex;justify-content:space-between;align-items:center">
-    <div>
-      <h1>Sync Momentum</h1>
-      <div class="sub">Paper Trader v2.0 — by BD</div>
-    </div>
-    <div onclick="collapseSidebar()" style="cursor:pointer;padding:4px 8px;color:var(--text-muted);font-size:16px;border-radius:4px;border:1px solid var(--border)" title="Collapse sidebar">◀</div>
+  <div class="sidebar-brand">
+    <h1>Sync Momentum</h1>
+    <div class="sub">Paper Trader v2.0 — by BD</div>
   </div>
   <div class="sidebar-content">
 
@@ -499,35 +492,12 @@ async function hashPw(pw){const e=new TextEncoder().encode(pw);const b=await cry
 function unlockApp(){$('loginGate').style.display='none';document.querySelectorAll('.app-hidden').forEach(el=>el.classList.remove('app-hidden'));sessionStorage.setItem('bd_auth','1');}
 $('loginPw').addEventListener('keydown',async e=>{if(e.key==='Enter'){const h=await hashPw(e.target.value);if(h===_ah)unlockApp();else $('loginErr').textContent='Invalid password';}});
 if(sessionStorage.getItem('bd_auth')==='1')unlockApp();
-function toggleMobileSidebar(){toggleSidebar();}
-function toggleSidebar(){
-  const sb=$('sidebarEl'), mn=$('mainEl'), btn=$('sidebarToggle');
-  const isCollapsed=sb.classList.contains('collapsed');
-  if(isCollapsed){ expandSidebar(); } else { collapseSidebar(); }
+function toggleMobileSidebar(){
+  $('sidebarEl').classList.toggle('open');
 }
-function collapseSidebar(){
-  const sb=$('sidebarEl'), mn=$('mainEl'), btn=$('sidebarToggle');
-  sb.classList.add('collapsed');
-  mn.classList.add('expanded');
-  btn.classList.add('visible');
-  setTimeout(drawEquityChart, 280); // redraw chart after transition
-}
-function expandSidebar(){
-  const sb=$('sidebarEl'), mn=$('mainEl'), btn=$('sidebarToggle');
-  sb.classList.remove('collapsed');
-  mn.classList.remove('expanded');
-  btn.classList.remove('visible');
-  setTimeout(drawEquityChart, 280);
-}
-// Click main area to collapse sidebar (if open)
-document.addEventListener('click', function(e){
-  const sb=$('sidebarEl'), btn=$('sidebarToggle');
-  if(!sb || sb.classList.contains('collapsed')) return;
-  // If click is outside sidebar and outside toggle button
-  if(!sb.contains(e.target) && e.target!==btn && !btn.contains(e.target)){
-    collapseSidebar();
-  }
-});
+function toggleSidebar(){ toggleMobileSidebar(); }
+function collapseSidebar(){ /* no-op on desktop, mobile handled by CSS */ }
+function expandSidebar(){ /* no-op on desktop */ }
 
 // ══════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -1852,7 +1822,6 @@ async function recalculate(){
 
 async function handleStart(){
   try{
-  collapseSidebar();
   initialEquity=getPN('p_equity')||10000;
   equity=initialEquity;
   stats.peakEquity=initialEquity;
