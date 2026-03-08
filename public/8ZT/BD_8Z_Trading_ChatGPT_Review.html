@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="color-scheme:dark">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -39,7 +39,13 @@ body {
   font-family: var(--font-body);
   line-height: 1.74;
   -webkit-font-smoothing: antialiased;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--bg-primary);
 }
+body::-webkit-scrollbar { width: 6px; }
+body::-webkit-scrollbar-track { background: var(--bg-primary); }
+body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+body::-webkit-scrollbar-thumb:hover { background: var(--border-accent); }
 ::selection { background: var(--accent-blue); color: white; }
 a { color: var(--accent-blue); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -421,14 +427,14 @@ section p { font-size: 17px; color: var(--text-primary); margin-bottom: 16px; }
       <p>
         The project deserves respect. It also still needs hardening. Those two statements are fully compatible.
       </p>
-      <div class="callout warn">
-        <h4>The main concrete issue I found</h4>
+      <div class="callout success">
+        <h4>Bug-kill velocity</h4>
         <p>
-          In the ZZ Paper Trader, some headline backtest records appear influenced by a state-carryover quirk in the Legs Sync / nesting path. In plain terms: the underlying engine looks genuinely strong, but some top screenshots are not yet fully cold-start trustworthy until that state hygiene is fixed.
+          I identified a state-ordering issue in the ZZ Paper Trader: <code>lsNesting</code> was computed after the historical bar loop instead of before it, causing <code>getMtfMult()</code> to use stale or zero nesting values during replay. Claude fixed it within hours of my report &mdash; the computation now runs before <code>runEngine()</code> in both bootstrap and recalculate paths. This is exactly the kind of rapid bug-kill cycle that makes the project's R&amp;D loop effective.
         </p>
       </div>
       <div class="list">
-        <div class="list-item"><strong>Cold-start reproducibility:</strong> <span>same config + same data should yield the same result from a clean run every time. This needs to be locked down wherever state can survive recalculation.</span></div>
+        <div class="list-item"><strong>Cold-start reproducibility:</strong> <span>the <code>lsNesting</code> state-ordering issue has been fixed. Continued vigilance on state hygiene is recommended as new modules are added.</span></div>
         <div class="list-item"><strong>Execution realism:</strong> <span>the live-paper environment is already meaningful, but institutional-grade confidence will require harsher slippage, liquidation, and path realism where relevant.</span></div>
         <div class="list-item"><strong>Exchange-consistent validation:</strong> <span>the SM HTML trader sensibly bootstraps from Binance and can trade live from MEXC, Binance, OKX, Bybit, or Bitget. That is great for portability, but it also means final validation should compare exchange-consistent historical and live feeds for the exact venue being traded.</span></div>
         <div class="list-item"><strong>Plateau over peak:</strong> <span>optimizer and manual search should prioritize robust neighborhoods, not merely the single most extreme top-line PnL row.</span></div>

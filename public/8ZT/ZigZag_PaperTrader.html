@@ -1199,6 +1199,15 @@ async function fetchHistoricalCandles() {
       // Build Legs Sync consensus
       buildLegsSyncState(bars1m, tradeBars, tfMin);
       
+      // Compute nesting BEFORE engine runs (GPT-found bug: was computed AFTER bar loop)
+      if(lsNMon > 0) {
+        const mode = getP('p_lsTfMode');
+        let monTfMins;
+        if(mode === 'fib') monTfMins = FIB_TFS.filter(t => t > tfMin);
+        else monTfMins = lsMonLabels.map(l => l.endsWith('h') ? parseInt(l)*60 : parseInt(l));
+        lsNesting = computeNestingFromBootstrap(bars1m, tradeBars, monTfMins, tfMin);
+      }
+      
       // Now run the engine on the resampled trading bars
       rawKlines = null; // not using raw klines format
       runEngine(tradeBars);
@@ -1321,19 +1330,7 @@ function runEngine(bars) {
   
   addLog('system', `Bootstrap: ${candles.length} bars (${spanHrs}h), ${swings.length} swings, avgLeg: ${fmt(avgLeg,3)}%`);
   if(lsNMon > 0) {
-    // Compute nesting score from bootstrap data
-    const tradeTfMin = parseInt(getP('p_timeframe')) / 60;
-    const mode = getP('p_lsTfMode');
-    let monTfMins;
-    if(mode === 'fib') monTfMins = FIB_TFS.filter(t => t > tradeTfMin);
-    else monTfMins = lsMonLabels.map(l => l.endsWith('h') ? parseInt(l)*60 : parseInt(l));
-    if(raw1mKlines.length > 0) {
-      const bars1m = raw1mKlines.map(k => ({
-        o:parseFloat(k[1]),h:parseFloat(k[2]),l:parseFloat(k[3]),
-        c:parseFloat(k[4]),v:parseFloat(k[5])||0,ts:parseInt(k[0])
-      }));
-      lsNesting = computeNestingFromBootstrap(bars1m, candles, monTfMins, tradeTfMin);
-    }
+    // lsNesting already computed before runEngine — just log
     addLog('system', `Legs Sync: ${lsNMon} TFs | Avg consensus: ${fmt(lsConsensus.length>0 ? Array.from(lsConsensus).reduce((a,b)=>a+b,0)/lsConsensus.length : 0, 3)} | Nesting: ${fmt(lsNesting,2)}`);
   }
   addLog('system', `Backtest: ${total} trades | ${stats.wins}W/${stats.losses}L | WR: ${wr}% | PnL: ${fmtUsd(stats.totalPnl)} (${fmt(ret)}%)`);
@@ -2236,6 +2233,14 @@ async function recalculate() {
     }));
     const tradeBars = resample1mBars(bars1m, tfMin);
     buildLegsSyncState(bars1m, tradeBars, tfMin);
+    // Compute nesting BEFORE engine runs (same fix as bootstrap path)
+    if(lsNMon > 0) {
+      const mode = getP('p_lsTfMode');
+      let monTfMins;
+      if(mode === 'fib') monTfMins = FIB_TFS.filter(t => t > tfMin);
+      else monTfMins = lsMonLabels.map(l => l.endsWith('h') ? parseInt(l)*60 : parseInt(l));
+      lsNesting = computeNestingFromBootstrap(bars1m, tradeBars, monTfMins, tfMin);
+    }
     runEngine(tradeBars);
   } else if(raw1mKlines.length > 0 && tfSecs > 60) {
     // LS OFF but we have 1m data — resample for consistency, just skip LS

@@ -374,6 +374,25 @@ pre .cm { color: var(--text-muted); font-style: italic; }
   max-width: 95vw; max-height: 95vh; border-radius: 8px;
   box-shadow: 0 0 60px rgba(0,0,0,0.5);
 }
+
+/* ---- REVIEW IFRAME ---- */
+#review-frame-wrap {
+  display: none; position: relative;
+}
+#review-frame-wrap.active { display: block; }
+#review-frame {
+  width: 100%; height: calc(100vh - 80px); border: none;
+  border-radius: 8px; background: var(--bg-secondary);
+  color-scheme: dark;
+}
+#review-back {
+  display: inline-block; margin-bottom: 16px; padding: 8px 18px;
+  font-family: var(--font-mono); font-size: 13px; letter-spacing: 1px;
+  color: var(--accent-teal); background: var(--bg-tertiary);
+  border: 1px solid var(--border); border-radius: 6px;
+  cursor: pointer; text-decoration: none;
+}
+#review-back:hover { border-color: var(--accent-teal); }
 </style>
 </head>
 <body>
@@ -449,12 +468,22 @@ pre .cm { color: var(--text-muted); font-style: italic; }
   <a class="sub" href="#ch15-math">Why Higher = Safer</a>
   <a class="ch" href="#ch16">16 &mdash; SM Paper Trader</a>
   <a class="sub" href="#ch16-sweep">Multi-TF Sweep</a>
-  <a class="ch" href="BD_8Z_Trading_ChatGPT_Review.html">&#9733; AI Reviews</a>
+  <a class="ch" href="#" onclick="showReview('BD_8Z_Trading_ChatGPT_Review.html');return false">&#9733; AI Reviews</a>
+  <a class="sub" href="#" onclick="showReview('BD_8Z_Trading_ChatGPT_Review.html');return false">ChatGPT 5.4</a>
+  <a class="sub" href="#" onclick="showReview('BD_8Z_Trading_Gemini_Review.html');return false">Gemini 3.1 Pro</a>
+  <a class="sub" href="#" onclick="showReview('BD_8Z_Trading_Grok_Review.html');return false">Grok 4.2</a>
 </nav>
 
 <!-- &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; MAIN &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; -->
 <div class="main">
 
+<!-- Review iframe (hidden by default) -->
+<div id="review-frame-wrap">
+  <a id="review-back" href="#" onclick="hideReview();return false">&#8592; Back to Book</a>
+  <iframe id="review-frame" src=""></iframe>
+</div>
+
+<div id="book-content">
 <!-- &#9472;&#9472;&#9472;&#9472; COVER &#9472;&#9472;&#9472;&#9472; -->
 <section class="cover" id="cover">
   <div class="cover-tag">8Z Trading System Reference</div>
@@ -463,7 +492,7 @@ pre .cm { color: var(--text-muted); font-style: italic; }
     Two complementary engines &#8212; momentum scalping and anti-fragile mean reversion &#8212;
     unified by MTF consensus, Fibonacci spacing, and adaptive position management.
     <br><br>
-    All original concepts, architecture, and creative direction by Bojan Dobre&#269;evi&#269; (<a href="/cdn-cgi/l/email-protection#88eaecc8fbe1e7e4a6e6edfc" style="color:var(--accent-teal);text-decoration:none"><span class="__cf_email__" data-cfemail="187a7c586b71777436767d6c">[email&#160;protected]</span></a>).
+    All original concepts, architecture, and creative direction by Bojan Dobre&#269;evi&#269; (<a href="mailto:bd&#64;siol.net" style="color:var(--accent-teal);text-decoration:none">bd&#64;siol.net</a>).
     All code, all 32+ HTML trader versions, the optimizer, and this book: built by Claude (Anthropic) as primary engineering partner.
     GPT, Gemini, and Grok contributed research feedback, validation, and independent reviews.
     <br><br>
@@ -478,9 +507,9 @@ pre .cm { color: var(--text-muted); font-style: italic; }
 
   <div style="margin-top:20px;font-family:var(--font-mono);font-size:12px;letter-spacing:1px">
     &#9733; Independent Reviews:&nbsp;
-    <a href="BD_8Z_Trading_ChatGPT_Review.html" style="color:var(--accent-teal);text-decoration:none">ChatGPT 5.4</a> &nbsp;&#183;&nbsp;
-    <a href="BD_8Z_Trading_Gemini_Review.html" style="color:var(--accent-teal);text-decoration:none">Gemini 3.1 Pro</a> &nbsp;&#183;&nbsp;
-    <a href="BD_8Z_Trading_Grok_Review.html" style="color:var(--accent-teal);text-decoration:none">Grok 4.2</a>
+    <a href="#" onclick="showReview('BD_8Z_Trading_ChatGPT_Review.html');return false" style="color:var(--accent-teal);text-decoration:none">ChatGPT 5.4</a> &nbsp;&#183;&nbsp;
+    <a href="#" onclick="showReview('BD_8Z_Trading_Gemini_Review.html');return false" style="color:var(--accent-teal);text-decoration:none">Gemini 3.1 Pro</a> &nbsp;&#183;&nbsp;
+    <a href="#" onclick="showReview('BD_8Z_Trading_Grok_Review.html');return false" style="color:var(--accent-teal);text-decoration:none">Grok 4.2</a>
   </div>
 
   <!-- &#9733; HERO PNL RECORDS &#9733; -->
@@ -680,7 +709,7 @@ Both use only 20&#215; leverage &#8212; not the extreme 500&#215; of the BTC rec
 <div class="callout warn">
 <div class="callout-title">Current Technical Caveats</div>
 <p>&#8226; All results are live-paper or historical-paper, not audited live-money returns.</p>
-<p>&#8226; The ZZ engine has a known cold-start reproducibility task &#8212; some top records require state-hygiene hardening to be fully reproducible from a clean reset.</p>
+<p>&#8226; A cold-start state-ordering issue in <code>lsNesting</code> was identified by ChatGPT and fixed by Claude &#8212; nesting is now computed before the historical replay loop in all code paths.</p>
 <p>&#8226; Drawdown accounting in the HTML trader should be interpreted cautiously until mark-to-market DD is fully standardized across all display paths.</p>
 <p>&#8226; Optimizer coverage, hybrid SM&#215;ZZ validation, and multi-year out-of-sample testing are ongoing.</p>
 </div>
@@ -2554,12 +2583,14 @@ This is the 8Z principle of MDL competition applied to software: multiple implem
   </p>
 </div>
 
+</div><!-- /book-content -->
 </div><!-- /main -->
 
 <div class="lightbox-overlay" id="lb" onclick="this.classList.remove('active')">
   <img id="lb-img" src="" alt="">
 </div>
 <script>
+// Lightbox
 document.querySelectorAll('.result-image').forEach(function(img){
   img.addEventListener('click', function(){
     document.getElementById('lb-img').src = this.src;
@@ -2567,8 +2598,25 @@ document.querySelectorAll('.result-image').forEach(function(img){
   });
 });
 document.addEventListener('keydown', function(e){
-  if(e.key==='Escape') document.getElementById('lb').classList.remove('active');
+  if(e.key==='Escape'){
+    document.getElementById('lb').classList.remove('active');
+    hideReview();
+  }
 });
+
+// Review iframe viewer
+function showReview(url) {
+  document.getElementById('book-content').style.display = 'none';
+  var wrap = document.getElementById('review-frame-wrap');
+  wrap.classList.add('active');
+  document.getElementById('review-frame').src = url;
+  window.scrollTo(0, 0);
+}
+function hideReview() {
+  document.getElementById('review-frame-wrap').classList.remove('active');
+  document.getElementById('review-frame').src = '';
+  document.getElementById('book-content').style.display = '';
+}
 </script>
 
 </body>

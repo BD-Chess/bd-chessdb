@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="color-scheme:dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +17,11 @@
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 html { font-size:16px; scroll-behavior:smooth; }
-body { background:var(--bg-primary); color:var(--text-primary); font-family:var(--font-body); line-height:1.74; -webkit-font-smoothing:antialiased; }
+body { background:var(--bg-primary); color:var(--text-primary); font-family:var(--font-body); line-height:1.74; -webkit-font-smoothing:antialiased; scrollbar-width:thin; scrollbar-color:var(--border) var(--bg-primary); }
+body::-webkit-scrollbar { width:6px; }
+body::-webkit-scrollbar-track { background:var(--bg-primary); }
+body::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+body::-webkit-scrollbar-thumb:hover { background:var(--border-accent); }
 .toc-nav { position:fixed; top:0; left:0; width:274px; height:100vh; background:var(--bg-secondary); border-right:1px solid var(--border); overflow-y:auto; z-index:100; padding:28px 0; }
 .toc-brand { padding:0 24px 20px; border-bottom:1px solid var(--border); margin-bottom:16px; }
 .toc-brand h2 { font-family:var(--font-mono); font-size:13px; font-weight:500; color:var(--accent-green); letter-spacing:2px; text-transform:uppercase; }
@@ -33,6 +37,8 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 .meta-box { margin:34px auto 0; max-width:760px; background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01)); border:1px solid var(--border); border-radius:16px; padding:18px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; text-align:left; }
 .stat-card, .card, .summary-card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:18px; }
 .section-kicker { font-family:var(--font-mono); font-size:12px; letter-spacing:2px; color:var(--accent-green); text-transform:uppercase; margin-bottom:10px; }
+section h2 { font-family:var(--font-display); font-size:28px; font-weight:700; line-height:1.25; margin-bottom:20px; color:var(--text-primary); }
+section h3 { font-size:20px; font-weight:600; margin:28px 0 14px; color:var(--text-primary); }
 .list { display:grid; gap:12px; margin:18px 0; }
 .list-item { padding:14px 16px; background:rgba(255,255,255,0.015); }
 .callout { margin:24px 0; padding:18px 20px; border-radius:14px; border:1px solid var(--border); }
