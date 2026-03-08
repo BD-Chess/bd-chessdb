@@ -104,12 +104,14 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 .pos-modules { margin-top:8px; font-family:var(--font-mono); font-size:10px; color:var(--text-muted); display:flex; gap:12px; flex-wrap:wrap; }
 .pos-modules .mod-active { color:var(--accent-teal); }
 
-.chart-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:14px 16px; margin-bottom:16px; position:relative; overflow:hidden; resize:vertical; min-height:200px; }
+.chart-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:14px 16px; margin-bottom:16px; position:relative; }
 .chart-panel .panel-title { font-family:var(--font-mono); font-size:10px; color:var(--text-muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px; display:flex; justify-content:space-between; }
 .chart-canvas { width:100%; height:220px; min-height:100px; }
+.chart-resize-handle { position:absolute; bottom:0; left:0; right:0; height:8px; cursor:ns-resize; border-radius:0 0 6px 6px; }
+.chart-resize-handle:hover, .chart-resize-handle.active { background:var(--accent-blue); opacity:0.25; }
 
 .logs-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-.log-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:14px 16px; overflow:auto; resize:vertical; min-height:120px; height:350px; }
+.log-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:14px 16px; max-height:400px; overflow-y:auto; }
 .log-panel .panel-title { font-family:var(--font-mono); font-size:10px; color:var(--text-muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px; }
 .log-panel table { width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:11px; }
 .log-panel th { text-align:left; font-size:9px; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; padding:4px 6px; border-bottom:1px solid var(--border); }
@@ -220,10 +222,12 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
           <button class="btn btn-go" id="btnStart" onclick="handleStart()">▶ Start</button>
           <button class="btn btn-stop" id="btnStop" onclick="handleStop()" style="display:none">■ Stop</button>
           <button class="btn btn-reset" onclick="handleReset()">↺ Reset</button>
-          <button class="btn" style="background:#1a1a30;color:var(--text-muted);border-color:#333;font-size:11px" onclick="applyDefaults()">⚙ Defaults</button>
         </div>
         <div class="controls-row" style="margin-top:4px">
           <button class="btn" id="btnRecalc" onclick="recalculate()" style="background:#1a1030;color:var(--accent-gold);border-color:var(--accent-gold);font-size:11px" disabled>⟳ Recalc</button>
+          <button class="btn" style="background:#102030;color:var(--accent-blue);border-color:#204060;font-size:11px" onclick="openHelp()">? Help</button>
+        </div>
+        <div class="controls-row" style="margin-top:4px">
           <button class="btn btn-sm" style="background:#1a1040;color:var(--accent-purple);border-color:#3a206033" onclick="exportReport()">📋 Report</button>
           <button class="btn btn-sm" style="background:#103030;color:var(--accent-teal);border-color:#20605033" onclick="exportScreenshot()">📸 PNG</button>
         </div>
@@ -231,16 +235,16 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
       </div>
     </div>
 
-    <!-- ACCOUNT & TRADING (user-level params — always visible) -->
+    <!-- ACCOUNT & SYMBOL -->
     <div class="sidebar-section">
-      <div class="section-title" onclick="toggleSection(this)"><span class="arrow">▾</span> Account &amp; Trading</div>
+      <div class="section-title" onclick="toggleSection(this)"><span class="arrow">▾</span> Account &amp; Symbol</div>
       <div class="section-body">
-        <div class="field-row3">
+        <div class="field-row">
           <div class="field"><label>Equity ($)</label><input id="p_equity" type="number" value="100000" step="1000"></div>
           <div class="field"><label>Trade Size ($)</label><input id="p_tradeSize" type="number" value="100000" step="1000"></div>
-          <div class="field"><label>Leverage</label><input id="p_leverage" type="number" value="100" min="1" max="500"></div>
         </div>
-        <div class="field-row3">
+        <div class="field-row">
+          <div class="field"><label>Leverage</label><input id="p_leverage" type="number" value="100" min="1" max="500"></div>
           <div class="field">
             <label>Direction</label>
             <select id="p_direction">
@@ -249,6 +253,8 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
               <option value="short">Short Only</option>
             </select>
           </div>
+        </div>
+        <div class="field-row">
           <div class="field">
             <label>Exchange</label>
             <select id="p_exchange" onchange="updateFeeDisplay()">
@@ -261,7 +267,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
           </div>
           <div class="field"><label>Symbol</label><input id="p_symbol" value="BTCUSDT"></div>
         </div>
-        <div class="field-row3">
+        <div class="field-row">
           <div class="field">
             <label>Timeframe</label>
             <select id="p_timeframe" onchange="onTfChange()">
@@ -273,34 +279,28 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
               <option value="1800">30m</option>
               <option value="3600">1h</option>
               <option value="14400">4h</option>
-              <option value="28800">8h</option>
-              <option value="43200">12h</option>
-              <option value="86400">1D</option>
             </select>
           </div>
           <div class="field"><label>Hist. Bars</label><input id="p_histBars" type="number" value="5000" min="100" max="50000"></div>
+        </div>
+        <div class="field-row">
           <div class="field">
             <label>Fee Mode</label>
             <select id="p_feeMode" onchange="updateFeeDisplay()">
-              <option value="auto" selected>Auto</option>
+              <option value="auto" selected>Auto (exchange)</option>
               <option value="custom">Custom</option>
               <option value="off">Off</option>
             </select>
           </div>
-        </div>
-        <div class="field-row">
           <div class="field"><label>Fee % (per side)</label><input id="p_fee" type="number" value="0.040" step="0.001" readonly></div>
-          <div class="field" style="display:flex;align-items:flex-end;padding-bottom:2px">
-            <a href="ZZ.html" target="_blank" style="font-family:var(--font-mono);font-size:10px;color:var(--accent-teal);text-decoration:none;border:1px solid var(--border);border-radius:4px;padding:5px 10px;display:block;text-align:center;width:100%">↗ ZZ Trader</a>
-          </div>
         </div>
       </div>
     </div>
 
-    <!-- SYNC ENGINE (technical — collapsed) -->
+    <!-- SYNC ENGINE -->
     <div class="sidebar-section">
-      <div class="section-title" onclick="toggleSection(this)"><span class="arrow collapsed">▾</span> Sync Engine</div>
-      <div class="section-body" style="display:none">
+      <div class="section-title" onclick="toggleSection(this)"><span class="arrow">▾</span> Sync Engine</div>
+      <div class="section-body">
         <div class="field-row">
           <div class="field"><label>Sync Length (bars)</label><input id="p_syncLen" type="number" value="2" min="1" max="10"></div>
           <div class="field"><label>Min Delta %</label><input id="p_minDelta" type="number" value="0.048" step="0.001"></div>
@@ -312,10 +312,10 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
       </div>
     </div>
 
-    <!-- EXIT SYSTEM (technical — collapsed) -->
+    <!-- EXIT SYSTEM -->
     <div class="sidebar-section">
-      <div class="section-title" onclick="toggleSection(this)"><span class="arrow collapsed">▾</span> Exit System</div>
-      <div class="section-body" style="display:none">
+      <div class="section-title" onclick="toggleSection(this)"><span class="arrow">▾</span> Exit System</div>
+      <div class="section-body">
         <div class="field-row">
           <div class="field"><label>Stop Loss %</label><input id="p_slPct" type="number" value="0.037" step="0.001"></div>
           <div class="field"><label>Take Profit %</label><input id="p_tpPct" type="number" value="1.26" step="0.01"></div>
@@ -335,7 +335,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
       </div>
     </div>
 
-    <!-- MODULES (technical — collapsed) -->
+    <!-- MODULES (collapsed by default) -->
     <div class="sidebar-section">
       <div class="section-title" onclick="toggleSection(this)"><span class="arrow collapsed">▾</span> Modules</div>
       <div class="section-body" style="display:none">
@@ -379,7 +379,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
     </div>
 
   </div>
-  <div class="sidebar-footer"><a href="ZZ.html" target="_blank" style="color:var(--accent-teal);text-decoration:none">↗ ZZ Trader</a> · SM v2.0 · v2.2 Engine · 8Z-Trading<br>Bojan Dobrečevič © 2026</div>
+  <div class="sidebar-footer">SM v2.0 · v2.2 Engine · 8Z-Trading · AIM³ Institute</div>
 </div>
 
 <!-- ═══ MAIN AREA ═══ -->
@@ -392,8 +392,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
     <div class="prices">
       <div class="price-tag"><div class="sym">BTC</div><div class="val" id="priceBTC">—</div></div>
       <div class="price-tag"><div class="sym">ETH</div><div class="val" id="priceETH">—</div></div>
-      <div class="price-tag"><div class="sym">SOL</div><div class="val" id="priceSOL">—</div></div>
-      <button onclick="openHelp()" style="background:var(--bg-tertiary);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--accent-blue);font-weight:700;font-size:16px;cursor:pointer;font-family:var(--font-mono);flex-shrink:0" title="Help &amp; Documentation">?</button>
+      <div class="price-tag"><div class="sym" id="priceSymLabel">TRADE</div><div class="val" id="priceTrade">—</div></div>
     </div>
   </div>
 
@@ -428,6 +427,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
   <div class="chart-panel" id="chartPanel">
     <div class="panel-title"><span>Equity Curve</span><span id="timeSpan"></span></div>
     <canvas id="eqChart" class="chart-canvas"></canvas>
+    <div class="chart-resize-handle" id="chartResizeHandle"></div>
   </div>
 
   <!-- Logs -->
@@ -700,8 +700,8 @@ function connectWS(){
   if(ws)ws.close();
   const exId=getP('p_exchange'), cfg=EXCHANGES[exId];
   if(!cfg){addLog('system','Unknown exchange: '+exId);return;}
-  // Subscribe to BTC, ETH, SOL, and trading symbol
-  const syms=new Set(['BTCUSDT','ETHUSDT','SOLUSDT']);
+  // Subscribe to BTC, ETH, and trading symbol
+  const syms=new Set(['BTCUSDT','ETHUSDT']);
   syms.add(getP('p_symbol'));
   ws=new WebSocket(cfg.ws);
   ws.onopen=()=>{
@@ -718,7 +718,10 @@ function connectWS(){
       // Update price displays
       if(sym.startsWith('BTC'))$('priceBTC').textContent=price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
       if(sym.startsWith('ETH'))$('priceETH').textContent=price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-      if(sym.startsWith('SOL'))$('priceSOL').textContent=price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      const tradeSym=getP('p_symbol');
+      if(sym===tradeSym||sym.startsWith(tradeSym.replace('USDT',''))){
+        $('priceTrade').textContent=price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      }
       $('tickCount').textContent=ticks;
       if(running)onTick(sym,price);
     }catch(e){}
@@ -783,7 +786,7 @@ function checkBarClose(){
 // ══════════════════════════════════════════════════════════════════════════════
 // HISTORICAL BOOTSTRAP — Binance REST, multi-asset
 // ══════════════════════════════════════════════════════════════════════════════
-const TF_MAP={'1':'1s','60':'1m','180':'3m','300':'5m','900':'15m','1800':'30m','3600':'1h','14400':'4h','28800':'8h','43200':'12h','86400':'1d'};
+const TF_MAP={'1':'1s','60':'1m','180':'3m','300':'5m','900':'15m','1800':'30m','3600':'1h','14400':'4h'};
 
 async function fetchBinanceKlines(sym, interval, totalBars){
   let allKlines=[], endTime=null, remaining=totalBars, page=0;
@@ -1650,6 +1653,9 @@ function updateUI(){
   $('statSymbol').textContent=getP('p_symbol').replace('USDT','')+' @ '+getP('p_exchange').slice(0,3).toUpperCase();
   $('tradeCount').textContent=total;
 
+  // Symbol label
+  $('priceSymLabel').textContent=getP('p_symbol').replace('USDT','');
+
   if(!position){
     $('positionBody').innerHTML=`<div class="position-empty">${running?'Scanning for signals...':'No open position'}</div>`;
   }
@@ -1875,25 +1881,6 @@ function handleStop(){
   addLog('system','Engine STOPPED');
 }
 
-function applyDefaults(){
-  // Account
-  $('p_equity').value=100000; $('p_tradeSize').value=100000; $('p_leverage').value=100;
-  $('p_direction').value='both'; $('p_exchange').value='binance'; $('p_symbol').value='BTCUSDT';
-  $('p_timeframe').value='60'; $('p_histBars').value=5000;
-  $('p_feeMode').value='auto'; updateFeeDisplay();
-  // Preset
-  $('p_assetClass').value='crypto_scalp'; $('p_style').value='normal'; onPresetChange();
-  // Modules
-  $('p_useMDL').value='0'; $('p_useDCC').value='1'; $('p_useCB').value='1';
-  $('p_cbStreak').value=3; $('p_cbPause').value=120;
-  $('p_useCooldown').value='0'; $('p_cdBars').value=5;
-  $('p_useEP').value='0'; $('p_epDD').value=10; $('p_epRecov').value=3;
-  $('p_useSQS').value='0'; $('p_sqsMin').value=0.5; $('p_sqsMax').value=2.0;
-  $('p_useSI').value='0'; $('p_siMinBars').value=10; $('p_siSizeMult').value=0.8;
-  $('p_useVWAP').value='0'; $('p_vwapLen').value=20;
-  addLog('system','All settings reset to defaults (Crypto Scalp / Normal)');
-}
-
 function handleReset(){
   running=false; position=null;
   initialEquity=getPN('p_equity')||10000; equity=initialEquity;
@@ -1915,9 +1902,26 @@ function handleReset(){
   addLog('system','Full reset');
 }
 
-// ── Chart auto-redraw on panel resize ──
-const chartPanel=$('chartPanel');
-if(chartPanel){new ResizeObserver(()=>{const canvas=$('eqChart');if(canvas){canvas.style.height=(chartPanel.clientHeight-44)+'px';drawEquityChart();}}).observe(chartPanel);}
+// ── Chart resize drag ──
+(function(){
+  const handle=$('chartResizeHandle'), canvas=$('eqChart');
+  let dragging=false, startY=0, startH=0;
+  handle.addEventListener('mousedown',e=>{
+    dragging=true; startY=e.clientY; startH=canvas.getBoundingClientRect().height;
+    handle.classList.add('active'); document.body.style.cursor='ns-resize'; document.body.style.userSelect='none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!dragging)return;
+    const newH=Math.max(100,startH+(e.clientY-startY));
+    canvas.style.height=newH+'px';
+    drawEquityChart();
+  });
+  document.addEventListener('mouseup',()=>{
+    if(!dragging)return;
+    dragging=false; handle.classList.remove('active'); document.body.style.cursor=''; document.body.style.userSelect='';
+  });
+})();
 
 // ── Init ──
 window.addEventListener('resize',drawEquityChart);
