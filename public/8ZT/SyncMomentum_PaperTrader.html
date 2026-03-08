@@ -162,9 +162,12 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 
 <!-- ═══ SIDEBAR ═══ -->
 <div class="sidebar app-hidden" id="sidebarEl">
-  <div class="sidebar-brand">
-    <h1>Sync Momentum</h1>
-    <div class="sub">Paper Trader v2.0 — by BD</div>
+  <div class="sidebar-brand" style="display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <h1>Sync Momentum</h1>
+      <div class="sub">Paper Trader v2.0 — by BD</div>
+    </div>
+    <a href="ZZ.html" target="_blank" style="font-family:var(--font-mono);font-size:10px;color:var(--accent-teal);text-decoration:none;border:1px solid var(--border);border-radius:4px;padding:4px 8px;white-space:nowrap" title="Open ZZ Trader">↗ ZZ</a>
   </div>
   <div class="sidebar-content">
 
@@ -230,7 +233,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
       <div class="section-body">
         <div class="field-row3">
           <div class="field"><label>Equity ($)</label><input id="p_equity" type="number" value="100000" step="1000"></div>
-          <div class="field"><label>Trade Size ($)</label><input id="p_tradeSize" type="number" value="100000" step="1000"></div>
+          <div class="field"><label>Trade ($)</label><input id="p_tradeSize" type="number" value="100000" step="1000"></div>
           <div class="field"><label>Leverage</label><input id="p_leverage" type="number" value="100" min="1" max="500"></div>
         </div>
         <div class="field-row3">
@@ -281,11 +284,8 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
             </select>
           </div>
         </div>
-        <div class="field-row">
-          <div class="field"><label>Fee % (per side)</label><input id="p_fee" type="number" value="0.040" step="0.001" readonly></div>
-          <div class="field" style="display:flex;align-items:flex-end;padding-bottom:2px">
-            <a href="ZZ.html" target="_blank" style="font-family:var(--font-mono);font-size:10px;color:var(--accent-teal);text-decoration:none;border:1px solid var(--border);border-radius:4px;padding:5px 10px;display:block;text-align:center;width:100%">↗ ZZ Trader</a>
-          </div>
+        <div class="field">
+          <label>Fee % (per side)</label><input id="p_fee" type="number" value="0.040" step="0.001" readonly>
         </div>
       </div>
     </div>
@@ -403,7 +403,7 @@ body { background:var(--bg-primary); color:var(--text-primary); font-family:var(
 
   <!-- Row 2: Config at a glance -->
   <div class="stats-grid2">
-    <div class="stat-card"><div class="sl">Trade Size</div><div class="sv" id="statSize">$10K</div></div>
+    <div class="stat-card"><div class="sl">Trade</div><div class="sv" id="statSize">$100K</div></div>
     <div class="stat-card"><div class="sl">Leverage</div><div class="sv" id="statLev">100x</div></div>
     <div class="stat-card"><div class="sl">Eff. Notional</div><div class="sv" id="statNotional">$1M</div></div>
     <div class="stat-card"><div class="sl">Preset</div><div class="sv" id="statPreset">CS/Agg</div></div>
@@ -1040,7 +1040,8 @@ function processSignals(){
   if(finalMult<=0){addLog('module',`Signal blocked: mult=${fmt(finalMult,3)}`);return;}
 
   // ── ENTRY ──
-  const tradeSize=getPN('p_tradeSize')||10000;
+  let tradeSize=getPN('p_tradeSize')||10000;
+  if(tradeSize>equity){addLog('system',`⚠ Trade $${fmt(tradeSize,0)} > equity $${fmtUsd(equity)} — capped`);tradeSize=equity;}
   const lev=getPN('p_leverage')||100;
   const currentPrice=tradeBars[tradeBars.length-1]?.c||btcCandles[btcCandles.length-1].c;
   const notional=tradeSize*lev*finalMult;
@@ -1066,6 +1067,20 @@ function checkExits(price){
   const dirSign=position.side==='long'?1:-1;
   const pnlPct=dirSign*(price-position.entryPrice)/position.entryPrice*100;
   const pnlUsd=dirSign*(price-position.entryPrice)*position.qty;
+
+  // ── LIQUIDATION GUARD (matches ZZ trader) ──
+  if(equity+pnlUsd < initialEquity*0.10){
+    equity=Math.max(0, equity+pnlUsd);
+    stats.losses++;stats.totalPnl=equity-initialEquity;
+    if(equity>stats.peakEquity)stats.peakEquity=equity;
+    const dd=stats.peakEquity>0?(stats.peakEquity-equity)/stats.peakEquity*100:100;
+    if(dd>stats.maxDD)stats.maxDD=dd;
+    trades.unshift({side:position.side,entry:position.entryPrice,exit:price,pnl:pnlUsd,pnlPct,exitReason:'LIQ',duration:'—',fee:0,mult:position.finalMult});
+    equityCurve.push({t:Date.now(),eq:Math.round(equity*100)/100});
+    addLog('loss',`⚠ LIQUIDATION ${position.side.toUpperCase()} @ ${fmt(price)} | Equity: ${fmtUsd(equity)}`);
+    position=null; updateUI(); return;
+  }
+
   const slPct=getPN('p_slPct')||0.033;
   const tpPct=getPN('p_tpPct')||0.94;
   const beTrigger=getPN('p_beTrigger')||0.101;
@@ -1408,6 +1423,22 @@ async function runHistorical(btcBars, ethBars, tradeBars){
         const worstPrice=position.side==='long'?bar.l:bar.h;
         const bestPrice=position.side==='long'?bar.h:bar.l;
 
+        // ── LIQUIDATION GUARD (10% equity floor, matches ZZ trader) ──
+        const worstUnrealized=dirSign*(worstPrice-position.entryPrice)*position.qty;
+        if(equity+worstUnrealized < initialEquity*0.10){
+          equity=Math.max(0, equity+worstUnrealized);
+          stats.losses++;stats.totalPnl=equity-initialEquity;
+          if(equity>stats.peakEquity)stats.peakEquity=equity;
+          const dd=stats.peakEquity>0?(stats.peakEquity-equity)/stats.peakEquity*100:100;
+          if(dd>stats.maxDD)stats.maxDD=dd;
+          trades.unshift({side:position.side,entry:position.entryPrice,exit:worstPrice,pnl:worstUnrealized,pnlPct:dirSign*(worstPrice-position.entryPrice)/position.entryPrice*100,exitReason:'LIQ',duration:'—',fee:0,mult:position.finalMult});
+          equityCurve.push({t:i,eq:Math.round(equity*100)/100});
+          histLog('loss',`⚠ LIQUIDATION ${position.side.toUpperCase()} @ ${fmt(worstPrice)} | Equity: $${fmt(equity,2)}`);
+          position=null; continue;
+        }
+        // Stop trading if account blown (< 1% of initial)
+        if(equity < initialEquity*0.01 && !position){ continue; }
+
         // Update peak with intra-bar extremes
         if(position.side==='long'&&bar.h>position.peakPrice)position.peakPrice=bar.h;
         if(position.side==='short'&&bar.l<position.peakPrice)position.peakPrice=bar.l;
@@ -1469,7 +1500,7 @@ async function runHistorical(btcBars, ethBars, tradeBars){
       }
 
       // ── ENTRY CHECK — must be on bar AFTER any exit (Pine sequencing) ──
-      if(!position && i > lastExitBar){
+      if(!position && i > lastExitBar && equity >= initialEquity*0.01){
         const nBtc=btcCandles.length, nEth=ethCandles.length;
         if(nBtc>_p.syncLen&&nEth>_p.syncLen&&nBtc>_p.impulseLen){
           const btcNow=btcCandles[nBtc-1].c, btcPrev=btcCandles[nBtc-1-_p.syncLen].c;
@@ -1512,8 +1543,11 @@ async function runHistorical(btcBars, ethBars, tradeBars){
                 }
                 const finalMult=mdlM*dccM*cbM*cdM*epM*sqsM*siM;
                 if(finalMult>0){
+                  // Cap trade size to equity
+                  const effTradeSize=Math.min(_p.tradeSize,equity);
+                  if(effTradeSize<=0)continue; // blown account
                   const price=tradeCandles[tLen-1].c;
-                  const notional=_p.tradeSize*_p.leverage*finalMult;
+                  const notional=effTradeSize*_p.leverage*finalMult;
                   const qty=notional/price;
                   const entryFee=_p.feePct>0?(notional*_p.feePct/100):0;
                   position={side,entryPrice:price,qty,notional,entryTs:0,entryBar:i,
