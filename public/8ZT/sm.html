@@ -811,7 +811,7 @@ async function fetchHistoricalCandles(){
     addLog('system',`Fetched: BTC=${btcBars.length}, ETH=${ethBars.length}, ${sym}=${tradeBars.length}`);
 
     // Run engine on historical data
-    runHistorical(btcBars, ethBars, tradeBars);
+    await runHistorical(btcBars, ethBars, tradeBars);
     return true;
   }catch(e){
     addLog('system',`⚠ Bootstrap failed: ${e.message}`);
@@ -1169,11 +1169,153 @@ function calcATR(bars, period){
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// HISTORICAL REPLAY ENGINE
+// PARAMETER CACHE — read DOM once, use everywhere during replay
 // ══════════════════════════════════════════════════════════════════════════════
-function runHistorical(btcBars, ethBars, tradeBars){
+let _p = null; // cached params during historical mode
+function cacheParams(){
+  _p = {
+    dir: getP('p_direction'),
+    syncLen: Math.round(getPN('p_syncLen'))||2,
+    minDelta: getPN('p_minDelta')||0.04,
+    impulseLen: Math.round(getPN('p_impulseLen'))||10,
+    impulseFactor: getPN('p_impulseFactor')||0.75,
+    slPct: getPN('p_slPct')||0.033,
+    tpPct: getPN('p_tpPct')||0.94,
+    beTrigger: getPN('p_beTrigger')||0.101,
+    lockFrac: getPN('p_lockFrac')||0.90,
+    atrLen: Math.round(getPN('p_atrLen'))||10,
+    wiggleK: getPN('p_wiggleK')||1.2,
+    minWiggle: getPN('p_minWiggle')||0.10,
+    maxWiggle: getPN('p_maxWiggle')||0.50,
+    tradeSize: getPN('p_tradeSize')||10000,
+    leverage: getPN('p_leverage')||100,
+    feePct: parseFloat($('p_fee').value)||0,
+    useMDL: getP('p_useMDL')==='1',
+    useDCC: getP('p_useDCC')==='1',
+    useCB: getP('p_useCB')==='1',
+    cbStreak: getPN('p_cbStreak')||3,
+    cbPause: getPN('p_cbPause')||10,
+    useCooldown: getP('p_useCooldown')==='1',
+    cdBars: getPN('p_cdBars')||5,
+    useEP: getP('p_useEP')==='1',
+    epDD: getPN('p_epDD')||10,
+    epRecov: getPN('p_epRecov')||3,
+    useSQS: getP('p_useSQS')==='1',
+    sqsMin: getPN('p_sqsMin')||0.5,
+    sqsMax: getPN('p_sqsMax')||2.0,
+    useSI: getP('p_useSI')==='1',
+    siMinBars: getPN('p_siMinBars')||10,
+    siSizeMult: getPN('p_siSizeMult')||0.8,
+  };
+  _p.useLongs = _p.dir==='both'||_p.dir==='long';
+  _p.useShorts = _p.dir==='both'||_p.dir==='short';
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FAST MODULES (use _p cache, no DOM access)
+// ══════════════════════════════════════════════════════════════════════════════
+let _regimeCache = []; // pre-computed per-bar regime for DCC
+
+function fastMDL(bars, idx){
+  if(!_p.useMDL||idx<30)return 1.0;
+  const start=Math.max(0,idx-20), end=idx+1;
+  const n=end-start;
+  if(n<10)return 1.0;
+  let sumX=0,sumY=0,sumXY=0,sumX2=0,mean=0;
+  for(let j=0;j<n;j++){const c=bars[start+j].c;mean+=c;sumX+=j;sumY+=c;sumXY+=j*c;sumX2+=j*j;}
+  mean/=n;
+  const slope=(n*sumXY-sumX*sumY)/(n*sumX2-sumX*sumX||1);
+  const intercept=(sumY-slope*sumX)/n;
+  let trendErr=0,revErr=0,momErr=0,rwErr=0;
+  for(let j=0;j<n;j++){
+    const c=bars[start+j].c;
+    const dt=c-(intercept+slope*j); trendErr+=dt*dt;
+    const dr=c-mean; revErr+=dr*dr;
+    if(j>0){const prev=bars[start+j-1].c;const dm=c-prev;rwErr+=dm*dm;
+      const pred=prev+(j>1?prev-bars[start+j-2].c:0);const dmo=c-pred;momErr+=dmo*dmo;}
+  }
+  trendErr/=n; revErr/=n; momErr/=Math.max(n-1,1); rwErr/=Math.max(n-1,1);
+  const l2=Math.log2, ln=l2(n);
+  const costs=[2*ln+l2(Math.max(trendErr,1e-20)), ln+l2(Math.max(revErr,1e-20)),
+               ln+l2(Math.max(momErr,1e-20)), l2(Math.max(rwErr,1e-20))];
+  const names=['TREND','REVERT','MOM','RND_WLK'];
+  let best=0; for(let j=1;j<4;j++)if(costs[j]<costs[best])best=j;
+  mdlRegime=names[best]; mdlDirection=slope>0?1:(slope<0?-1:0);
+  return best===0?1.1:best===3?0.8:1.0;
+}
+
+function fastDCC(idx){
+  if(!_p.useDCC||idx<64)return 1.0;
+  let changes=0;
+  const start=Math.max(0,idx-64);
+  for(let i=start+1;i<=idx;i++){
+    if(_regimeCache[i]!==_regimeCache[i-1])changes++;
+  }
+  const changeRate=changes/(idx-start);
+  let u;
+  if(changeRate<0.15)u=1.0;
+  else if(changeRate>0.45)u=0.0;
+  else u=1.0-(changeRate-0.15)/0.30;
+  u=Math.max(0,Math.min(1,u));
+  dccU=u; dccMode=u>0.7?'EXPLOIT':u<0.3?'EXPLORE':'MIXED';
+  return 0.5+0.7*u;
+}
+
+function fastCB(barIdx){
+  if(!_p.useCB)return 1.0;
+  if(cbPausing){cbPauseRemaining--;if(cbPauseRemaining<=0){cbPausing=false;consecLosses=0;}return 0.3;}
+  return 1.0;
+}
+function fastCooldown(barIdx){
+  if(!_p.useCooldown)return 1.0;
+  return(barIdx-lastExitBar<_p.cdBars)?0.5:1.0;
+}
+function fastEP(){
+  if(!_p.useEP)return 1.0;
+  const dd=(stats.peakEquity-equity)/stats.peakEquity*100;
+  if(!epHalted&&dd>=_p.epDD){epHalted=true;epLow=equity;}
+  if(epHalted){if((equity-epLow)/epLow*100>=_p.epRecov){epHalted=false;return 1.0;}return 0.0;}
+  return 1.0;
+}
+function fastSQS(btcDelta,ethDelta){
+  if(!_p.useSQS)return 1.0;
+  const avgD=(Math.abs(btcDelta)+Math.abs(ethDelta))/2;
+  const mag=Math.min(avgD/Math.max(_p.minDelta,0.001),5)/5;
+  return Math.max(_p.sqsMin,Math.min(_p.sqsMax,_p.sqsMin+mag*(_p.sqsMax-_p.sqsMin)));
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INCREMENTAL ATR — maintains running value instead of recomputing all bars
+// ══════════════════════════════════════════════════════════════════════════════
+let _atrValue = 0;
+let _atrReady = false;
+let _atrSeedCount = 0;
+let _atrSeedSum = 0;
+
+function resetATR(){ _atrValue=0; _atrReady=false; _atrSeedCount=0; _atrSeedSum=0; }
+function updateATR(bar, prevClose){
+  if(!prevClose)return;
+  const tr=Math.max(bar.h-bar.l, Math.abs(bar.h-prevClose), Math.abs(bar.l-prevClose));
+  if(!_atrReady){
+    _atrSeedSum+=tr; _atrSeedCount++;
+    if(_atrSeedCount>=_p.atrLen){_atrValue=_atrSeedSum/_p.atrLen;_atrReady=true;}
+  } else {
+    _atrValue=(_atrValue*(_p.atrLen-1)+tr)/_p.atrLen;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// HISTORICAL REPLAY ENGINE — async chunked, no DOM in hot loop
+// ══════════════════════════════════════════════════════════════════════════════
+let _histLogs = []; // buffer logs during replay, flush at end
+
+function histLog(type, msg){ _histLogs.push({type, msg}); }
+
+async function runHistorical(btcBars, ethBars, tradeBars){
   historicalMode=true;
   const t0=performance.now();
+  cacheParams();
+  _histLogs=[];
 
   // Reset state
   btcCandles=[]; ethCandles=[]; tradeCandles=[];
@@ -1182,85 +1324,161 @@ function runHistorical(btcBars, ethBars, tradeBars){
   lastExitBar=-999; epHalted=false; epLow=Infinity;
   siInverted=false; siLastFlipBar=-999;
   mdlRegime='—'; mdlDirection=0; dccU=1.0; dccMode='—';
+  resetATR();
 
-  // Align by timestamp — use BTC timestamps as reference
-  const btcTs=new Map(); btcBars.forEach((b,i)=>btcTs.set(b.ts,i));
+  // Align by timestamp
   const ethTs=new Map(); ethBars.forEach((b,i)=>ethTs.set(b.ts,i));
   const tradeTs=new Map(); tradeBars.forEach((b,i)=>tradeTs.set(b.ts,i));
 
-  // Iterate through BTC bars
+  // Pre-compute regime cache for DCC (fast: single pass)
+  _regimeCache=new Array(btcBars.length);
   for(let i=0;i<btcBars.length;i++){
-    const t=btcBars[i].ts;
-    btcCandles.push(btcBars[i]);
+    if(i<5)_regimeCache[i]=0;
+    else{const c=btcBars[i].c,p=btcBars[Math.max(0,i-5)].c;_regimeCache[i]=c>p*1.001?1:c<p*0.999?-1:0;}
+  }
 
-    // Find matching ETH and trade bars
-    const ethIdx=ethTs.get(t);
-    if(ethIdx!==undefined)ethCandles.push(ethBars[ethIdx]);
-    else if(ethCandles.length>0)ethCandles.push({...ethCandles[ethCandles.length-1],ts:t}); // forward fill
-    else continue;
+  const CHUNK=500; // bars per chunk before yielding to browser
+  const totalBars=btcBars.length;
+  let barsDone=0;
 
-    const tradeIdx=tradeTs.get(t);
-    if(tradeIdx!==undefined)tradeCandles.push(tradeBars[tradeIdx]);
-    else if(tradeCandles.length>0)tradeCandles.push({...tradeCandles[tradeCandles.length-1],ts:t});
-    else continue;
+  addLog('system',`Replaying ${totalBars} bars...`);
 
-    // Check exits with current close
-    if(position){
-      const price=tradeCandles[tradeCandles.length-1].c;
-      // Check against high and low for SL/TP triggers
-      const bar=tradeCandles[tradeCandles.length-1];
-      const dirSign=position.side==='long'?1:-1;
-      // Check worst case first (SL), then best case (TP), then close
-      const worstPrice=position.side==='long'?bar.l:bar.h;
-      const bestPrice=position.side==='long'?bar.h:bar.l;
-      const worstPnl=dirSign*(worstPrice-position.entryPrice)/position.entryPrice*100;
-      const bestPnl=dirSign*(bestPrice-position.entryPrice)/position.entryPrice*100;
-      const closePnl=dirSign*(bar.c-position.entryPrice)/position.entryPrice*100;
+  for(let chunk=0;chunk<totalBars;chunk+=CHUNK){
+    const end=Math.min(chunk+CHUNK,totalBars);
 
-      // Track peak with intra-bar high
-      if(position.side==='long'&&bar.h>position.peakPrice)position.peakPrice=bar.h;
-      if(position.side==='short'&&bar.l<position.peakPrice)position.peakPrice=bar.l;
-      if(bestPnl>position.peakPnlPct)position.peakPnlPct=bestPnl;
+    for(let i=chunk;i<end;i++){
+      const t=btcBars[i].ts;
+      btcCandles.push(btcBars[i]);
 
-      const slPct=getPN('p_slPct');
-      const tpPct=getPN('p_tpPct');
+      // Match ETH
+      const ethIdx=ethTs.get(t);
+      if(ethIdx!==undefined)ethCandles.push(ethBars[ethIdx]);
+      else if(ethCandles.length>0)ethCandles.push({...ethCandles[ethCandles.length-1],ts:t});
+      else continue;
 
-      // SL hit?
-      if(worstPnl<=-slPct){
-        const slPrice=position.entryPrice*(1-dirSign*slPct/100);
-        const pnlUsd=dirSign*(slPrice-position.entryPrice)*position.qty;
-        closePosition(slPrice,-slPct,pnlUsd,'SL');
-      }
-      // TP hit?
-      else if(bestPnl>=tpPct){
-        const tpPrice=position.entryPrice*(1+dirSign*tpPct/100);
-        const pnlUsd=dirSign*(tpPrice-position.entryPrice)*position.qty;
-        closePosition(tpPrice,tpPct,pnlUsd,'TP');
-      }
-      else{
-        // BE lock check
-        if(!position.beLocked&&bestPnl>=getPN('p_beTrigger')){position.beLocked=true;}
-        // Trail/Lock on close
-        if(position.beLocked){
-          checkExits(bar.c);
+      // Match trade
+      const tradeIdx=tradeTs.get(t);
+      if(tradeIdx!==undefined)tradeCandles.push(tradeBars[tradeIdx]);
+      else if(tradeCandles.length>0)tradeCandles.push({...tradeCandles[tradeCandles.length-1],ts:t});
+      else continue;
+
+      // Incremental ATR
+      const tLen=tradeCandles.length;
+      if(tLen>=2)updateATR(tradeCandles[tLen-1],tradeCandles[tLen-2].c);
+
+      // ── EXIT CHECK (intra-bar: high/low for SL/TP, close for trail) ──
+      if(position){
+        const bar=tradeCandles[tLen-1];
+        const dirSign=position.side==='long'?1:-1;
+        const worstPrice=position.side==='long'?bar.l:bar.h;
+        const bestPrice=position.side==='long'?bar.h:bar.l;
+        const worstPnl=dirSign*(worstPrice-position.entryPrice)/position.entryPrice*100;
+        const bestPnl=dirSign*(bestPrice-position.entryPrice)/position.entryPrice*100;
+
+        if(position.side==='long'&&bar.h>position.peakPrice)position.peakPrice=bar.h;
+        if(position.side==='short'&&bar.l<position.peakPrice)position.peakPrice=bar.l;
+        if(bestPnl>position.peakPnlPct)position.peakPnlPct=bestPnl;
+
+        if(worstPnl<=-_p.slPct){
+          const slPrice=position.entryPrice*(1-dirSign*_p.slPct/100);
+          histClosePosition(slPrice,-_p.slPct,dirSign*(slPrice-position.entryPrice)*position.qty,'SL',i);
+        } else if(bestPnl>=_p.tpPct){
+          const tpPrice=position.entryPrice*(1+dirSign*_p.tpPct/100);
+          histClosePosition(tpPrice,_p.tpPct,dirSign*(tpPrice-position.entryPrice)*position.qty,'TP',i);
+        } else {
+          if(!position.beLocked&&bestPnl>=_p.beTrigger)position.beLocked=true;
+          if(position.beLocked&&_atrReady){
+            const closePnl=dirSign*(bar.c-position.entryPrice)/position.entryPrice*100;
+            const wigglePct=Math.min(Math.max(_atrValue/bar.c*100*_p.wiggleK,_p.minWiggle),_p.maxWiggle);
+            const lockFloor=_p.lockFrac*position.peakPnlPct;
+            const trailLevel=position.peakPnlPct-wigglePct;
+            const dynFloor=Math.max(lockFloor,trailLevel);
+            if(closePnl<dynFloor&&position.peakPnlPct>_p.beTrigger){
+              const reason=closePnl<lockFloor?'LOCK':'TRAIL';
+              const pnlUsd=dirSign*(bar.c-position.entryPrice)*position.qty;
+              histClosePosition(bar.c,closePnl,pnlUsd,reason,i);
+            }
+          }
         }
       }
+
+      // ── ENTRY CHECK ──
+      if(!position){
+        const nBtc=btcCandles.length, nEth=ethCandles.length;
+        if(nBtc>_p.syncLen&&nEth>_p.syncLen&&nBtc>_p.impulseLen){
+          const btcNow=btcCandles[nBtc-1].c, btcPrev=btcCandles[nBtc-1-_p.syncLen].c;
+          const ethNow=ethCandles[nEth-1].c, ethPrev=ethCandles[nEth-1-_p.syncLen].c;
+          if(btcPrev&&ethPrev){
+            const btcDelta=(btcNow-btcPrev)/btcPrev*100;
+            const ethDelta=(ethNow-ethPrev)/ethPrev*100;
+            const upSync=btcDelta>_p.minDelta&&ethDelta>_p.minDelta;
+            const downSync=btcDelta<-_p.minDelta&&ethDelta<-_p.minDelta;
+
+            if(upSync||downSync){
+              // Impulse check
+              const btcD1=(btcCandles[nBtc-1].c-btcCandles[nBtc-2].c)/btcCandles[nBtc-2].c*100;
+              let sumAbs=0;
+              for(let j=nBtc-_p.impulseLen;j<nBtc;j++){
+                if(j>0)sumAbs+=Math.abs((btcCandles[j].c-btcCandles[j-1].c)/btcCandles[j-1].c*100);
+              }
+              const avgAbs=sumAbs/_p.impulseLen;
+              const thresh=avgAbs*_p.impulseFactor;
+              const impulseUp=btcD1>0&&btcD1>thresh;
+              const impulseDown=btcD1<0&&Math.abs(btcD1)>thresh;
+
+              const longSig=_p.useLongs&&upSync&&impulseUp;
+              const shortSig=_p.useShorts&&downSync&&impulseDown;
+
+              if(longSig||shortSig){
+                let side=longSig?'long':'short';
+                // Fast modules
+                const mdlM=fastMDL(tradeCandles,tLen-1);
+                const dccM=fastDCC(i);
+                const cbM=fastCB(i);
+                const cdM=fastCooldown(i);
+                const epM=fastEP();
+                const sqsM=fastSQS(btcDelta,ethDelta);
+                // SI (simplified for speed)
+                let siM=1.0;
+                if(_p.useSI&&mdlRegime==='TREND'){
+                  const shouldFlip=(side==='long'&&mdlDirection<0)||(side==='short'&&mdlDirection>0);
+                  if(shouldFlip&&i-siLastFlipBar>=_p.siMinBars){siInverted=true;siLastFlipBar=i;side=side==='long'?'short':'long';siM=_p.siSizeMult;}
+                }
+                const finalMult=mdlM*dccM*cbM*cdM*epM*sqsM*siM;
+                if(finalMult>0){
+                  const price=tradeCandles[tLen-1].c;
+                  const notional=_p.tradeSize*_p.leverage*finalMult;
+                  const qty=notional/price;
+                  const entryFee=_p.feePct>0?(notional*_p.feePct/100):0;
+                  position={side,entryPrice:price,qty,notional,entryTs:0,entryBar:i,
+                    beLocked:false,peakPrice:price,peakPnlPct:0,
+                    finalMult,entryFee,sqsMult:sqsM};
+                  histLog('entry',`${side.toUpperCase()} @ ${fmt(price)} | Mult: ${fmt(finalMult,2)}x`);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // CB countdown
+      if(cbPausing){cbPauseRemaining--;if(cbPauseRemaining<=0){cbPausing=false;consecLosses=0;}}
     }
 
-    // Check signals on this bar (entry)
-    if(!position&&btcCandles.length>=5&&ethCandles.length>=5){
-      processSignals();
-    }
-
-    // CB pause countdown
-    if(cbPausing)cbPauseRemaining--;
-    if(cbPausing&&cbPauseRemaining<=0){cbPausing=false;consecLosses=0;}
+    barsDone=end;
+    // Yield to browser + update progress
+    $('headerTagline').textContent=`Replaying... ${barsDone}/${totalBars} bars (${(barsDone/totalBars*100).toFixed(0)}%)`;
+    await new Promise(r=>setTimeout(r,0));
   }
 
   historicalMode=false;
   btcCandleTs=btcCandles[btcCandles.length-1]?.ts||0;
   ethCandleTs=ethCandles[ethCandles.length-1]?.ts||0;
   tradeCandleTs=tradeCandles[tradeCandles.length-1]?.ts||0;
+
+  // Flush buffered logs (last 50 only to avoid DOM flood)
+  const logSlice=_histLogs.slice(-50);
+  for(const l of logSlice)addLog(l.type,l.msg);
 
   const elapsed=(performance.now()-t0).toFixed(0);
   const total=stats.wins+stats.losses;
@@ -1271,7 +1489,36 @@ function runHistorical(btcBars, ethBars, tradeBars){
   if(stats.totalFees>0)addLog('system',`Fees: ${fmtUsd(stats.totalFees)}`);
   $('btnRecalc').disabled=false;
   $('barCount').textContent=btcCandles.length;
+  _p=null; // release cache
   updateUI();
+}
+
+function histClosePosition(price, pnlPct, pnlUsd, exitReason, barIdx){
+  const exitFee=_p.feePct>0?(position.notional*_p.feePct/100):0;
+  const totalFee=position.entryFee+exitFee;
+  const finalPnl=pnlUsd-totalFee;
+
+  equity+=finalPnl;
+  const isWin=finalPnl>0;
+  stats.wins+=isWin?1:0;
+  stats.losses+=isWin?0:1;
+  stats.grossWins+=isWin?finalPnl:0;
+  stats.grossLosses+=isWin?0:Math.abs(finalPnl);
+  stats.totalPnl+=finalPnl;
+  stats.totalFees+=totalFee;
+  if(equity>stats.peakEquity)stats.peakEquity=equity;
+  const dd=(stats.peakEquity-equity)/stats.peakEquity*100;
+  if(dd>stats.maxDD)stats.maxDD=dd;
+
+  if(!isWin){consecLosses++;if(consecLosses>=_p.cbStreak&&_p.useCB){cbPausing=true;cbPauseRemaining=_p.cbPause;}}
+  else{consecLosses=0;}
+
+  lastExitBar=barIdx;
+  trades.unshift({side:position.side,entry:position.entryPrice,exit:price,pnl:finalPnl,pnlPct,exitReason,duration:'—',fee:totalFee,mult:position.finalMult});
+  equityCurve.push({t:barIdx,eq:Math.round(equity*100)/100});
+
+  histLog(isWin?'win':'loss',`${exitReason} ${position.side.toUpperCase()} @ ${fmt(price)} | PnL: ${fmtUsd(finalPnl)} (${fmt(pnlPct)}%)`);
+  position=null;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1504,7 +1751,7 @@ async function recalculate(){
   const btcBars=parseKlines(rawKlines.btc);
   const ethBars=parseKlines(rawKlines.eth);
   const tradeBars=rawKlines.trade?parseKlines(rawKlines.trade):btcBars;
-  runHistorical(btcBars,ethBars,tradeBars);
+  await runHistorical(btcBars,ethBars,tradeBars);
   }catch(e){addLog('system',`⚠ Recalculate failed: ${e.message}`);console.error('recalculate error:',e);}
 }
 
