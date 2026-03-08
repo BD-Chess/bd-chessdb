@@ -480,7 +480,7 @@ pre .cm { color: var(--text-muted); font-style: italic; }
   <div class="stats-row">
     <div class="stat"><div class="val blue">34 days</div><div class="lbl">BTC 15m Data</div></div>
     <div class="stat"><div class="val green">$5,155</div><div class="lbl">MEXC Fees Paid (ON)</div></div>
-    <div class="stat"><div class="val green">Top 3%</div><div class="lbl">The Leap (50K traders)</div></div>
+    <div class="stat"><div class="val green">Top 3%</div><div class="lbl">The Leap (49K traders)</div></div>
   </div>
 </section>
 
@@ -544,7 +544,7 @@ Two parameter configurations, both starting from $2,000, both on 34 days of BTCU
 <tr><td>Fees</td><td>OFF</td><td>Theoretical ceiling &#8212; raw engine output</td></tr>
 </table>
 
-<p>Every single trade profitable. Zero drawdown. 65 trades across 34 days &#8212; the engine is selective, not hyperactive. This is the theoretical ceiling &#8212; what the engine can produce when friction is removed.</p>
+<p>All 65 trades closed profitable on this 34-day window. Reported 0.00% max drawdown. The engine is selective, not hyperactive. This is the theoretical ceiling &#8212; what the engine can produce when friction is removed.</p>
 </article>
 
 <!-- RECORD 2: WITH FEES (MEXC) -->
@@ -653,6 +653,14 @@ Both use only 20&#215; leverage &#8212; not the extreme 500&#215; of the BTC rec
 <tr><td><strong>PnL Winner &#9733;</strong></td><td>500&#215;</td><td>$0.01</td><td>ON (MEXC)</td><td>$2K &#8594; $221K (+10,980%)</td><td>98.0%</td><td>0%</td></tr>
 </table>
 <p>All three on BTC 15m, 34 days, $2,000 starting capital. The PnL Winner preset is available in the Paper Trader dropdown. Exchange choice matters: MEXC's lower fees produced $221K vs $185K on Binance with identical parameters.</p>
+</div>
+
+<div class="callout warn">
+<div class="callout-title">Current Technical Caveats</div>
+<p>&#8226; All results are live-paper or historical-paper, not audited live-money returns.</p>
+<p>&#8226; The ZZ engine has a known cold-start reproducibility task &#8212; some top records require state-hygiene hardening to be fully reproducible from a clean reset.</p>
+<p>&#8226; Drawdown accounting in the HTML trader should be interpreted cautiously until mark-to-market DD is fully standardized across all display paths.</p>
+<p>&#8226; Optimizer coverage, hybrid SM&#215;ZZ validation, and multi-year out-of-sample testing are ongoing.</p>
 </div>
 
 <div class="callout danger">
@@ -1010,7 +1018,7 @@ binVolSpike = binVol > binVolAvg + <span class="num">2.0</span> * binVolStd
 <h2>The BD Manual Method &#8212; Anti-Fragile Mean Reversion</h2>
 
 <p>
-This chapter documents the manual trading methodology that reached <strong>top 3% in TradingView's The Leap competition</strong> (March 2026, 50,000+ traders), trading less than one hour per day. The method is the opposite of the Sync Momentum engine &#8212; and that contrast is the point. Where Sync Momentum cuts losers fast and catches momentum, the BD Manual Method does what every textbook says not to do: it adds to losing positions, never cuts small losses, and turns drawdowns into the biggest winners. It works because of structural constraints that make it anti-fragile rather than reckless.
+This chapter documents the manual trading methodology that reached <strong>top 3% in TradingView's The Leap competition</strong> (March 2026, 49,271 traders), trading less than one hour per day. The method is the opposite of the Sync Momentum engine &#8212; and that contrast is the point. Where Sync Momentum cuts losers fast and catches momentum, the BD Manual Method does what every textbook says not to do: it adds to losing positions, never cuts small losses, and turns drawdowns into the biggest winners. It works because of structural constraints that make it anti-fragile rather than reckless.
 </p>
 
 <div class="callout success">
@@ -1022,7 +1030,7 @@ This chapter documents the manual trading methodology that reached <strong>top 3
 <h3 id="ch5-leap">The Leap &#8212; Live Competition Results</h3>
 
 <p>
-The Leap is TradingView's crypto paper trading competition. March 2026 Crypto Edition: 50,000+ registered traders, $100,000 starting virtual capital, six assets available (BTC, ETH, SOL, LTC, XRP, DOGE vs USDC perpetuals on Coinbase). Top 500 win TradingView subscription prizes.
+The Leap is TradingView's crypto paper trading competition. March 2026 Crypto Edition: 49,271 registered traders, $100,000 starting virtual capital, six assets available (BTC, ETH, SOL, LTC, XRP, DOGE vs USDC perpetuals on Coinbase). Top 500 win TradingView subscription prizes.
 </p>
 
 <table class="param-table">
@@ -1030,7 +1038,7 @@ The Leap is TradingView's crypto paper trading competition. March 2026 Crypto Ed
 <tr><td>Mar 1</td><td>1,263</td><td>+9.94%</td><td>+$9,935</td><td>3%</td><td>~30 min</td></tr>
 <tr><td>Mar 2</td><td>1,171</td><td>+10.69%</td><td>+$10,688</td><td>2.5%</td><td>~30 min</td></tr>
 <tr><td>Mar 3</td><td>864</td><td>+15.52%</td><td>+$15,524</td><td>2%</td><td>~2 hours</td></tr>
-<tr><td><strong>Mar 8</strong></td><td><strong>~1,500</strong></td><td><strong>+19.5%</strong></td><td><strong>+$19,500</strong></td><td><strong>3%</strong></td><td><strong>&lt;10 min</strong></td></tr>
+<tr><td><strong>Mar 8</strong></td><td><strong>1,445</strong></td><td><strong>+19.82%</strong></td><td><strong>+$19,800</strong></td><td><strong>3%</strong></td><td><strong>&lt;10 min</strong></td></tr>
 </table>
 
 <p>
@@ -1729,7 +1737,7 @@ The entry direction is always <strong>against</strong> the current extension: if
 
 <div class="callout">
 <div class="callout-title">Why 100% Win Rate Is Possible</div>
-<p>The strategy never closes at a loss by design. It only exits when profitable (TP hit or swing close with profit). When a trade goes against us, we add to the position (shifting average entry closer to current price) and wait for the inevitable micro-pullback. On 1-minute to 30-minute timeframes, pullbacks occur every few bars &#8212; this is the "microstructure guarantee" from Chapter 5. The cost is drawdown duration and position size growth.</p>
+<p>The strategy is designed to avoid closing at a loss under normal market flow. It only exits when profitable (TP hit or swing close with profit). When a trade goes against us, we add to the position (shifting average entry closer to current price) and wait for the frequent micro-pullbacks that occur on 1-minute to 30-minute timeframes. The cost is drawdown duration and position size growth.</p>
 </div>
 
 <h3 id="ch11-detectors">The Multi-Detector Arena (18 Detectors)</h3>
