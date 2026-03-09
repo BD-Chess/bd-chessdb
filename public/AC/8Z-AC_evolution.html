@@ -249,6 +249,7 @@
                 <div>Conception: <span>Feb 19, 2026</span></div>
                 <div>v1.0 Build: <span>Feb 20, 2026</span> (Claude)</div>
                 <div>v1.7H Final: <span>Feb 23, 2026</span></div>
+                <div>avFLAC v1.2: <span>Mar 9, 2026</span> (beats lax_t6)</div>
             </div>
         </div>
 
@@ -330,6 +331,22 @@
                     <td><ul><li>PERIODIC predictor & Cascaded LPC²</li><li>Fair MDL Arena (LZMA on Top 4 only)</li><li>L/R/M Stereo Scanning</li><li>Adaptive LZMA CPU presets</li></ul></td>
                     <td class="size">8,067,034</td>
                     <td class="time">77 min 52s</td>
+                </tr>
+                <tr style="background:#0a1a0a;">
+                    <td><span class="version">v1.9</span><br><span class="era">"MDL Probes"</span></td>
+                    <td><span class="badge dec">Decoupled</span></td>
+                    <td><span class="leap-title">MDL Frame Size Probe</span>Compression cost decides frame size. Pass 0 probes 4 candidates (2048-16384). Matches FLAC-12 on Ethereal Arc.</td>
+                    <td><ul><li>Pass 0 MDL frame-size probe</li><li>Compression levels 0-10</li><li>28-column audit CSV</li><li>Checkpoint/resume</li></ul></td>
+                    <td class="size">~7,993,366</td>
+                    <td class="time">~550 min</td>
+                </tr>
+                <tr style="border:2px solid #34d399; background:#041a08;">
+                    <td><span class="version" style="color:#34d399;">avFLAC v1.2</span><br><span class="era" style="color:#34d399;">"Arena Combiner"</span></td>
+                    <td><span class="badge dec">Decoupled</span></td>
+                    <td><span class="leap-title" style="color:#34d399;">Multi-Encoder Arena + MDL Combiner</span>4 encoders compete per segment. MDL picks best of arena stitch / AF_whole / VF_whole. <strong>Beats lax_t6 on Abyssal. Beats OFR on Radiohead.</strong></td>
+                    <td><ul><li>vFLAC v1.5 MDL block probe</li><li>aFLAC v1.3 segment arena (43 candidates)</li><li>avFLAC MDL final comparison</li><li>8Z_Encode v1.7 orchestrator</li></ul></td>
+                    <td class="size" style="color:#34d399; font-weight:700;">7,958,631</td>
+                    <td class="time">~1600 min</td>
                 </tr>
             </tbody>
         </table>

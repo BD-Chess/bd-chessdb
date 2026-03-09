@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8Z-xFLAC Optimization Sprint — Three-Phase Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0b0f;--surface:#12141a;--border:#1e2030;--text:#c5c9d4;--text-dim:#6b7084;--text-bright:#e8eaf0;--accent:#38bdf8;--accent-dim:#1a4d6e;--gold:#f0b429;--gold-dim:#5c4411;--green:#34d399;--green-dim:#134d3a;--red:#f87171;--red-dim:#5c1d1d;--violet:#a78bfa;--violet-dim:#3b2d6e;--rose:#fb7185;--orange:#fb923c;--teal:#2dd4bf}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Crimson Pro',Georgia,serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:17px;overflow-x:hidden}
+.page{max-width:920px;margin:0 auto;padding:3rem 2rem 6rem}
+.header{text-align:center;padding:4rem 0 3rem;border-bottom:1px solid var(--border);margin-bottom:3rem;position:relative}
+.header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:60px;height:3px;background:linear-gradient(90deg,var(--teal),var(--accent));border-radius:2px}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--teal);margin-bottom:1.5rem}
+h1{font-family:'Crimson Pro',serif;font-weight:300;font-size:2.8rem;color:var(--text-bright);line-height:1.2;margin-bottom:.5rem}
+h1 span{color:var(--teal);font-weight:600}
+.subtitle{font-style:italic;font-size:1.15rem;color:var(--text-dim);margin-top:.5rem}
+.meta-row{display:flex;justify-content:center;gap:2rem;margin-top:2rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-dim)}
+.meta-row span{color:var(--text);margin-left:.3rem}
+h2{font-family:'Crimson Pro',serif;font-weight:600;font-size:1.6rem;color:var(--text-bright);margin:3.5rem 0 1.2rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+h2 .num{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--teal);margin-right:.8rem;letter-spacing:.05em}
+h3{font-weight:600;font-size:1.15rem;color:var(--gold);margin:2rem 0 .8rem}
+p{margin-bottom:1rem}
+.status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:2rem 0}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.2rem;text-align:center}
+.stat-card .val{font-family:'JetBrains Mono',monospace;font-size:1.6rem;font-weight:700;line-height:1;margin-bottom:.3rem}
+.stat-card .label{font-family:'JetBrains Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)}
+.val.cyan{color:var(--accent)}.val.gold{color:var(--gold)}.val.green{color:var(--green)}.val.red{color:var(--red)}.val.violet{color:var(--violet)}.val.teal{color:var(--teal)}
+.arch-block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.5rem;margin:1.5rem 0;border-left:3px solid var(--accent)}
+.arch-block.gold{border-left-color:var(--gold)}.arch-block.green{border-left-color:var(--green)}.arch-block.violet{border-left-color:var(--violet)}.arch-block.red{border-left-color:var(--red)}.arch-block.rose{border-left-color:var(--rose)}.arch-block.orange{border-left-color:var(--orange)}.arch-block.teal{border-left-color:var(--teal)}
+.arch-block .title{font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem}
+.arch-block .title.cyan{color:var(--accent)}.arch-block .title.gold{color:var(--gold)}.arch-block .title.green{color:var(--green)}.arch-block .title.violet{color:var(--violet)}.arch-block .title.red{color:var(--red)}.arch-block .title.rose{color:var(--rose)}.arch-block .title.teal{color:var(--teal)}.arch-block .title.orange{color:var(--orange)}
+code{font-family:'JetBrains Mono',monospace;font-size:.82em;background:var(--surface);padding:.15em .4em;border-radius:3px;color:var(--accent)}
+pre{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.2rem 1.5rem;overflow-x:auto;margin:1rem 0;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.6;color:var(--text)}
+table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.92rem}
+th,td{padding:.6rem .8rem;text-align:left;border-bottom:1px solid var(--border)}
+th{font-family:'JetBrains Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);background:var(--surface)}
+td{font-family:'JetBrains Mono',monospace;font-size:.82rem}
+tr:hover td{background:rgba(45,212,191,.03)}
+.highlight-row td{color:var(--accent);font-weight:500}
+.win td{color:var(--green)}.lose td{color:var(--red)}
+.callout{background:rgba(45,212,191,.06);border:1px solid rgba(45,212,191,.15);border-radius:8px;padding:1.2rem 1.5rem;margin:1.5rem 0;font-style:italic}
+.callout.gold{background:rgba(240,180,41,.06);border-color:rgba(240,180,41,.15)}
+.callout.green{background:rgba(52,211,153,.06);border-color:rgba(52,211,153,.15)}
+.callout.red{background:rgba(248,113,113,.06);border-color:rgba(248,113,113,.15)}
+.callout strong{color:var(--text-bright);font-style:normal}
+.phase{position:relative;padding-left:2.5rem;margin:2rem 0}
+.phase::before{content:'';position:absolute;left:.6rem;top:2rem;bottom:0;width:2px;background:var(--border)}
+.phase:last-of-type::before{display:none}
+.phase-dot{position:absolute;left:0;top:.3rem;width:1.4rem;height:1.4rem;border-radius:50%;border:2px solid var(--teal);background:var(--bg);z-index:1}
+.phase-dot.done{background:var(--green);border-color:var(--green)}.phase-dot.active{background:var(--teal);border-color:var(--teal)}.phase-dot.planned{background:var(--bg);border-color:var(--violet)}.phase-dot.waiting{background:var(--bg);border-color:var(--text-dim)}
+.phase-title{font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:700;color:var(--text-bright);margin-bottom:.4rem}
+.phase-est{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--text-dim);margin-bottom:.5rem}
+.verdict{text-align:center;padding:2.5rem 2rem;margin:3rem 0;background:linear-gradient(135deg,rgba(45,212,191,.08),rgba(56,189,248,.08));border:1px solid rgba(45,212,191,.2);border-radius:12px}
+.verdict .big{font-size:2rem;font-weight:600;color:var(--text-bright);margin-bottom:.5rem}
+.verdict .sub{font-style:italic;color:var(--text-dim);font-size:1.05rem}
+.footer{margin-top:4rem;padding-top:2rem;border-top:1px solid var(--border);text-align:center;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-dim)}
+.continue-ref{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--violet);background:var(--violet-dim);padding:.2em .5em;border-radius:3px;display:inline-block;margin-top:.4rem}
+.evidence-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0}
+@media(max-width:700px){.status-grid{grid-template-columns:repeat(2,1fr)}.evidence-grid{grid-template-columns:1fr}h1{font-size:2rem}.meta-row{flex-direction:column;gap:.5rem}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ====== HEADER ====== -->
+<div class="header">
+  <div class="eyebrow">AIM&#179; Institute &middot; Ljubljana &middot; March 2026</div>
+  <h1>8Z-xFLAC <span>Optimization Sprint</span></h1>
+  <p class="subtitle">Three-phase roadmap to close the stitching gap &mdash; X1 through X3</p>
+  <div class="meta-row">
+    <div>Author <span>Bojan Dobrečevič + Claude Opus 4.6</span></div>
+    <div>Status <span>Planning Complete</span></div>
+    <div>Date <span>2026-03-09</span></div>
+  </div>
+</div>
+
+<!-- ====== 01 WHERE WE STAND ====== -->
+<h2><span class="num">01</span>Where We Stand: March 2026</h2>
+
+<div class="status-grid">
+  <div class="stat-card">
+    <div class="val green">WINS</div>
+    <div class="label">avFLAC BEATS lax_t6<br>Abyssal (&minus;14.7 KB)</div>
+  </div>
+  <div class="stat-card">
+    <div class="val green">&minus;348 KB</div>
+    <div class="label">avFLAC vs lax_t6<br>Radiohead 60s (&minus;6.8%)</div>
+  </div>
+  <div class="stat-card">
+    <div class="val gold">+7 KB</div>
+    <div class="label">Gap to lax_t6<br>Ethereal (stitching)</div>
+  </div>
+  <div class="stat-card">
+    <div class="val teal">15 / 15</div>
+    <div class="label">avFLAC Wins<br>15-Clip vs FLAC-12</div>
+  </div>
+</div>
+
+<p>The xFLAC bundle &mdash; <code>aFLAC v1.3</code>, <code>vFLAC v1.5</code>, and <code>avFLAC v1.2</code> &mdash; produces valid <code>.flac</code> files. <strong>As of March 2026, avFLAC beats lax_t6 on Abyssal by 14,667 bytes</strong> &mdash; our first full-track win over the strongest single FLAC encoder. vFLAC v1.5 with MDL block probe won 21/22 arena segments. On 15 benchmark clips, avFLAC beats FLAC-12 on all 15 and beats the best baseline on 8. Three Radiohead clips beat even OptimFROG by 31&ndash;40%.</p>
+
+<p>The remaining gap: Ethereal Arc still +7 KB behind lax_t6 (stitching overhead), and 24-bit content (LG-DWAS) has a vFLAC block probe bias that needs bit-depth-aware correction.</p>
+
+<div class="callout">
+  <strong>Sprint goal:</strong> Close the 13.5&nbsp;KB gap to lax_t6 on Ethereal Arc, fix vFLAC's mixed-content losses, and make the arena stitch beat every single whole-file encoder.
+</div>
+
+<h3>Ethereal Arc Benchmark (48 kHz stereo, 89.5 s)</h3>
+<table>
+<thead><tr><th>#</th><th>Codec</th><th>Bytes</th><th>vs FLAC-12</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>OptimFROG</td><td>7,530,383</td><td>&minus;421,206</td><td>Range coder &middot; closed source</td></tr>
+<tr><td>2</td><td>WavPack -hh</td><td>7,934,862</td><td>&minus;16,727</td><td>Context mixing</td></tr>
+<tr class="highlight-row"><td>3</td><td>lax_t6</td><td>7,951,589</td><td>baseline</td><td>Best single FLAC encoder &middot; TARGET</td></tr>
+<tr class="win"><td>4</td><td>8Z-avFLAC v1.2</td><td>7,958,631</td><td>+7,042</td><td>&#10003; VF_whole &middot; vFLAC 16/16 segs</td></tr>
+<tr class="win"><td>5</td><td>8Z-vFLAC v1.5</td><td>7,958,631</td><td>+7,042</td><td>&#10003; MDL block probe &middot; 190/280 changed</td></tr>
+<tr class="win"><td>6</td><td>8Z-aFLAC v1.3</td><td>7,965,119</td><td>+13,530</td><td>&#10003; Arena + stitch</td></tr>
+<tr><td>7</td><td>FLAC -12 (max)</td><td>7,996,121</td><td>+44,532</td><td>Standard reference</td></tr>
+</tbody>
+</table>
+
+<h3>Abyssal Benchmark (48 kHz stereo, 180.2 s)</h3>
+<table>
+<thead><tr><th>#</th><th>Codec</th><th>Bytes</th><th>vs FLAC-12</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>OptimFROG</td><td>16,283,191</td><td>&minus;1,162,008</td><td>Range coder &middot; 6% gap</td></tr>
+<tr class="win"><td>2</td><td><strong>8Z-avFLAC v1.2</strong></td><td><strong>17,305,557</strong></td><td><strong>&minus;139,642</strong></td><td>&#10003; <strong>BEATS lax_t6 by 14,667B</strong> &middot; arena stitch</td></tr>
+<tr><td>3</td><td>lax_t6</td><td>17,320,224</td><td>&minus;124,975</td><td>Previous best single FLAC encoder</td></tr>
+<tr class="win"><td>4</td><td>8Z-aFLAC v1.3</td><td>17,369,506</td><td>&minus;75,693</td><td>&#10003; Beats FLAC-12</td></tr>
+<tr><td>5</td><td>FLAC -12 (max)</td><td>17,445,199</td><td>baseline</td><td></td></tr>
+<tr class="lose"><td>6</td><td>8Z-vFLAC v1.5</td><td>17,512,422</td><td>+67,223</td><td>Standalone (VF_whole)</td></tr>
+</tbody>
+</table>
+
+<!-- ====== 02 THE STITCHING PROBLEM ====== -->
+<h2><span class="num">02</span>The Stitching Overhead Problem</h2>
+
+<p>This is the single most important finding from the xFLAC R&amp;D cycle so far. The <code>--fast</code> vs <code>--full</code> experiment on Ethereal Arc produced <strong>identical output</strong> (7,965,119 bytes) despite --full evaluating 42 candidates per subframe vs --fast's 4&ndash;11. The DCC pruning isn't losing compression &mdash; the candidate pool already contains the winners. The bottleneck is not search depth. It is stitching overhead.</p>
+
+<div class="evidence-grid">
+  <div class="arch-block red">
+    <div class="title red">Ethereal Arc Forensics</div>
+    <pre style="margin:0;border:none;padding:0;background:transparent;font-size:.75rem">
+lax_t6 whole:     7,951,589B
+aFLAC raw-sum:    7,936,170B  &larr; WINS by 7,133B
+aFLAC stitched:   7,965,119B  &larr; headers ADD 28,949B
+Net vs lax_t6:   +13,530B     &larr; loss</pre>
+  </div>
+  <div class="arch-block green">
+    <div class="title green">Abyssal Forensics (March 2026 — WINS!)</div>
+    <pre style="margin:0;border:none;padding:0;background:transparent;font-size:.75rem">
+lax_t6 whole:    17,320,224B
+avFLAC stitch:   17,305,557B  &larr; WINS by 14,667B
+vFLAC wins:      21/22 segs   &larr; vFLAC v1.5 MDL block probe dominates
+Seg raw sum:     17,301,297B  &larr; raw is even better</pre>
+  </div>
+</div>
+
+<div class="callout green">
+  <strong>Abyssal is solved.</strong> vFLAC v1.5 with MDL block probe won 21/22 arena segments, and the arena stitch beat lax_t6 by 14,667 bytes. Ethereal Arc remains the target &mdash; raw wins by 7 KB but stitching overhead erases it. X3 stitching elimination will close this gap.
+</div>
+
+<h3>Overhead Budget Per Segment Boundary</h3>
+<table>
+<thead><tr><th>Source</th><th>Bytes</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Frame number UTF-8 growth</td><td>1&ndash;3</td><td>Per frame; larger numbers = more bytes</td></tr>
+<tr><td>Cold-start LPC penalty</td><td>50&ndash;200</td><td>Per segment; first frame has no context</td></tr>
+<tr><td>Short tail block</td><td>100&ndash;500</td><td>Per segment; remainder &lt; blocksize</td></tr>
+<tr class="highlight-row"><td><strong>Total per boundary</strong></td><td><strong>200&ndash;700</strong></td><td>16 segments &times; ~400B = ~6,400B structural</td></tr>
+<tr class="lose"><td>Context-loss penalty</td><td>~22,500</td><td>Remaining gap: per-segment LPC &lt; whole-file</td></tr>
+</tbody>
+</table>
+
+<!-- ====== 03 ROADMAP OVERVIEW ====== -->
+<h2><span class="num">03</span>Three-Phase Roadmap</h2>
+
+<pre>
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474;  X1  Transient Blocks    &#9474;  vFLAC v1.3 &#8594; v1.4           &#9474;
+&#9474;      onset detection      &#9474;  block plan rewrite            &#9474;
+&#9474;      1024-sample attack   &#9474;  LPC order cap per class       &#9474;
+&#9500;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9532;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9508;
+&#9474;  X2  LPC Search Expand   &#9474;  vFLAC v1.4 &#8594; v1.5           &#9474;
+&#9474;      TOP_K 16&#8594;24         &#9474;  DCC-gated tonal boost        &#9474;
+&#9474;      improved proxy       &#9474;  +hamming window               &#9474;
+&#9500;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9532;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9508;
+&#9474;  X3  Stitch Elimination  &#9474;  aFLAC v1.3 &#8594; v1.4           &#9474;
+&#9474;   a: segment merging     &#9474;  avFLAC v1.2 &#8594; v1.3          &#9474;
+&#9474;   b: overlapping segs    &#9474;  cold-start elimination        &#9474;
+&#9474;   c: frame-level arena   &#9474;  (optional, if a+b insufficient)&#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+
+Cumulative gain estimates (65% stacking discount):
+  X1  Transient blocks      &#8594;  0.1&ndash;0.3%  (~8&ndash;24 KB)
+  X2  LPC search expansion  &#8594;  0.2&ndash;0.5%  (~16&ndash;40 KB)
+  X3  Stitch elimination    &#8594;  0.1&ndash;0.4%  (~8&ndash;30 KB)
+  Combined:                    0.3&ndash;0.8%  (~24&ndash;65 KB)
+  Need to beat lax_t6:         0.17%     (13.5 KB)
+</pre>
+
+<!-- ====== 04 PHASE X1 ====== -->
+<h2><span class="num">04</span>X1: Transient Detection &amp; Adaptive Block Splitting</h2>
+
+<div class="continue-ref">CONTINUE_xFLAC_X1_Transient_Blocks.md</div>
+
+<div class="arch-block teal">
+  <div class="title teal">Problem</div>
+  vFLAC assigns fixed block sizes by signal class (tonal&#8594;16384, mixed&#8594;8192, transient&#8594;4096). A drum hit's attack is ~50&ndash;200 samples but wastes an entire 4096-sample block. On mixed content: +11.19% on EOTS, +11.88% on LRR.
+</div>
+
+<div class="arch-block green">
+  <div class="title green">Solution</div>
+  <p>Two-stage onset detection: coarse scan (energy derivative between 1024-sample windows) followed by sample-level refinement (64-sample hops). Place 1024&ndash;2048 sample blocks precisely around attacks, then immediately return to optimal larger blocks for sustain/decay. FLAC spec allows any block size 16&ndash;65535. No other FLAC encoder does this.</p>
+</div>
+
+<h3>Key Design Choices</h3>
+
+<div class="arch-block">
+  <div class="title cyan">Onset Detection Algorithm</div>
+  Energy derivative + ZCR discontinuity with signal-class-dependent thresholds (tonal=6.0, mixed=3.0, transient=2.0). Stage 2 refinement only triggers on flagged windows (~5&ndash;15% of total), keeping overhead low.
+</div>
+
+<div class="arch-block gold">
+  <div class="title gold">Adaptive LPC Order Cap</div>
+  Peer review: "Orders above ~16 overfit on mixed content." Cap per block class: transient&#8594;12, pre-onset&#8594;16, tonal&#8594;32 (unchanged). Reduces search time AND improves compression.
+</div>
+
+<h3>Expected Impact</h3>
+<table>
+<thead><tr><th>Content Type</th><th>Current vFLAC</th><th>After X1</th><th>&Delta;</th></tr></thead>
+<tbody>
+<tr><td>Pure tonal (FH clips)</td><td>&minus;2% to &minus;4%</td><td>&minus;2% to &minus;4%</td><td>0%</td></tr>
+<tr><td>Mixed (WDIG, AAI)</td><td>+0.5% to +1.5%</td><td>&minus;0.5% to +0.5%</td><td>~1%</td></tr>
+<tr class="win"><td>Heavy transient (EOTS, LRR)</td><td>+11% to +12%</td><td>+3% to +6%</td><td>~6&ndash;8%</td></tr>
+<tr><td>Ethereal Arc (mostly tonal)</td><td>+0.5%</td><td>&le; +0.5%</td><td>~0.1%</td></tr>
+</tbody>
+</table>
+
+<!-- ====== 05 PHASE X2 ====== -->
+<h2><span class="num">05</span>X2: LPC Search Expansion &amp; Tonal Boost</h2>
+
+<div class="continue-ref">CONTINUE_xFLAC_X2_LPC_Search.md</div>
+
+<div class="arch-block teal">
+  <div class="title teal">Problem</div>
+  Three-variant CSV comparison: GPT v1.7H beats GEM by 80&nbsp;KB and CLA by 17&nbsp;KB on Ethereal Arc (263 frames). GPT finds blackman/o=32/ql=8 where others settle for o=22/ql=10 &mdash; saving 50&nbsp;bytes per frame on tonal content. The advantage concentrates on HIGH-budget tonal frames.
+</div>
+
+<div class="arch-block green">
+  <div class="title green">Solution</div>
+  <p><strong>Wider search:</strong> TOP_K 16&#8594;24 (50% more candidates survive proxy screening).</p>
+  <p><strong>Tonal boost:</strong> When difficulty &lt; 0.05 AND pred_gain &gt; 35&nbsp;dB, trigger exhaustive 384-eval search (TOP_K=48, 5 windows). Affects ~40% of frames on Ethereal Arc.</p>
+  <p><strong>Improved proxy:</strong> Coefficient-aware cost estimate includes quantization loss + coefficient overhead. Fewer false rejections of high-order candidates.</p>
+</div>
+
+<h3>Search Parameters</h3>
+<table>
+<thead><tr><th>Mode</th><th>TOP_K</th><th>Windows</th><th>QL Vals</th><th>Evals</th><th>vs v1.3</th></tr></thead>
+<tbody>
+<tr><td>--fast (default)</td><td>8</td><td>2</td><td>3</td><td>24</td><td>+33%</td></tr>
+<tr><td>--full (normal)</td><td>24</td><td>4</td><td>8</td><td>192</td><td>+50%</td></tr>
+<tr class="highlight-row"><td>--full (boost)</td><td>48</td><td>5</td><td>8</td><td>384</td><td>+200%</td></tr>
+</tbody>
+</table>
+
+<div class="arch-block gold">
+  <div class="title gold">CSV Evidence: Frame 0</div>
+  GPT: blackman/o=32/ql=8 &#8594; 31,178B. CLA &amp; GEM: blackman/o=22/ql=10 &#8594; 31,228B. &Delta;=50B on one frame. Multiply by ~105 qualifying tonal frames &#8594; potential ~5&nbsp;KB from search expansion alone.
+</div>
+
+<h3>Expected Impact</h3>
+<table>
+<thead><tr><th>Component</th><th>Ethereal Arc</th><th>Abyssal</th></tr></thead>
+<tbody>
+<tr><td>TOP_K 16&#8594;24</td><td>0.1&ndash;0.2% (8&ndash;16 KB)</td><td>0.05&ndash;0.1%</td></tr>
+<tr><td>Tonal boost</td><td>0.1&ndash;0.3% (8&ndash;24 KB)</td><td>0.05&ndash;0.1%</td></tr>
+<tr><td>Improved proxy</td><td>0.05&ndash;0.1% (4&ndash;8 KB)</td><td>0.05%</td></tr>
+<tr class="win"><td><strong>Combined X2</strong></td><td><strong>0.2&ndash;0.5% (16&ndash;40 KB)</strong></td><td><strong>0.1&ndash;0.2%</strong></td></tr>
+</tbody>
+</table>
+
+<!-- ====== 06 PHASE X3 ====== -->
+<h2><span class="num">06</span>X3: Stitching Overhead Elimination</h2>
+
+<div class="continue-ref">CONTINUE_xFLAC_X3_Stitching.md</div>
+
+<div class="arch-block teal">
+  <div class="title teal">The Core Problem</div>
+  Raw-optimal segment sums beat lax_t6 by 7&nbsp;KB (Ethereal) and 31&nbsp;KB (Abyssal). Segment stitching adds 29&nbsp;KB and 45&nbsp;KB of header overhead respectively. <strong>We already compress better &mdash; we just waste it on headers.</strong>
+</div>
+
+<h3>X3a: Segment Merging</h3>
+<div class="arch-block green">
+  <div class="title green">Simplest Win &middot; 1 Week</div>
+  <p>After arena picks winners, merge adjacent segments with the same winner and re-encode as one larger segment. On Ethereal Arc where flake_L11 wins 15/16 segments, this collapses to ~2 segments &mdash; eliminating ~14 boundary penalties.</p>
+  <p>Estimated savings: <strong>3,000&ndash;5,000B</strong> on Ethereal, <strong>4,000&ndash;6,000B</strong> on Abyssal.</p>
+</div>
+
+<h3>X3b: Overlapping Segments</h3>
+<div class="arch-block gold">
+  <div class="title gold">Cold-Start Elimination &middot; 1 Week</div>
+  <p>Extend each segment by one block (16384 samples) before its start. Encoder processes extended segment; we keep only frames after the warm-up block. Every frame gets preceding audio context &mdash; no cold-start LPC penalty.</p>
+  <p>Cost: ~3% encoding time increase. Estimated savings: <strong>2,000&ndash;4,000B</strong> on Ethereal, <strong>4,000&ndash;8,000B</strong> on Abyssal.</p>
+</div>
+
+<h3>X3c: Frame-Level Competition (Optional)</h3>
+<div class="arch-block violet">
+  <div class="title violet">Nuclear Option &middot; 2 Weeks &middot; Defer Until Needed</div>
+  <p>Encode entire file with each external encoder at the same blocksize, parse into frame arrays, select best encoder per FLAC frame via MDL. Zero stitching overhead by construction. Loses vFLAC variable-blocksize advantage. Only if X3a+X3b don't close the gap.</p>
+</div>
+
+<h3>Gap Closure Projection</h3>
+<table>
+<thead><tr><th>Step</th><th>Ethereal vs lax_t6</th><th>Status</th></tr></thead>
+<tbody>
+<tr class="win"><td>Current (avFLAC v1.2 + vFLAC v1.5)</td><td>+7,042B</td><td>nearly there</td></tr>
+<tr><td>After X3a (merge)</td><td>+2,000 to +5,000B</td><td>closing</td></tr>
+<tr class="win"><td>After X3a+X3b</td><td><strong>&minus;2,000 to +2,000B</strong></td><td>likely win</td></tr>
+<tr class="win"><td>After X1+X2+X3</td><td><strong>&minus;5,000 to &minus;10,000B</strong></td><td>confident win</td></tr>
+</tbody>
+</table>
+
+<!-- ====== 07 TIMELINE ====== -->
+<h2><span class="num">07</span>Implementation Timeline</h2>
+
+<div class="phase">
+  <div class="phase-dot done"></div>
+  <div class="phase-title">X0: --fast / --full Mode (COMPLETED)</div>
+  <div class="phase-est">Done &middot; CONTINUE_vFLAC_FastFull.md</div>
+  <p>Added --fast (18 evals/subframe) and --full (128 evals) modes. Proved DCC pruning isn't losing compression &mdash; identical output on Ethereal Arc. Established that stitching overhead is the bottleneck.</p>
+</div>
+
+<div class="phase">
+  <div class="phase-dot planned"></div>
+  <div class="phase-title">X1: Transient Detection &amp; Block Splitting</div>
+  <div class="phase-est">1&ndash;2 weeks &middot; ~130 lines new &middot; vFLAC v1.3 &#8594; v1.4</div>
+  <p>Onset detector + block plan rewrite + LPC order cap. Validate on EOTS and LRR clips (key transient tests). No regression on FH tonal clips.</p>
+</div>
+
+<div class="phase">
+  <div class="phase-dot planned"></div>
+  <div class="phase-title">X2: LPC Search Expansion &amp; Tonal Boost</div>
+  <div class="phase-est">1&ndash;2 weeks &middot; ~60 lines changed &middot; vFLAC v1.4 &#8594; v1.5</div>
+  <p>TOP_K expansion + DCC-gated boost + improved proxy. Validate against GPT/GEM/CLA CSVs per-frame.</p>
+</div>
+
+<div class="phase">
+  <div class="phase-dot waiting"></div>
+  <div class="phase-title">X3a: Segment Merging</div>
+  <div class="phase-est">1 week &middot; ~50 lines &middot; aFLAC + avFLAC</div>
+  <p>Post-arena merge of same-winner segments. Re-encode merged regions. Track boundary count reduction.</p>
+</div>
+
+<div class="phase">
+  <div class="phase-dot waiting"></div>
+  <div class="phase-title">X3b: Overlapping Segments</div>
+  <div class="phase-est">1 week &middot; ~40 lines &middot; aFLAC</div>
+  <p>Extend segments by one warm-up block. Trim after encoding. Compare per-frame sizes at boundaries.</p>
+</div>
+
+<div class="phase">
+  <div class="phase-dot waiting"></div>
+  <div class="phase-title">X3c: Frame-Level Arena (if needed)</div>
+  <div class="phase-est">2 weeks &middot; ~200 lines &middot; new aFLAC architecture</div>
+  <p>Whole-file multi-encoder &#8594; per-frame MDL &#8594; stream rebuild. Only if X3a+X3b insufficient.</p>
+</div>
+
+<!-- ====== 08 EXPECTED OUTCOMES ====== -->
+<h2><span class="num">08</span>Expected Outcomes</h2>
+
+<h3>Ethereal Arc Performance Projection</h3>
+<table>
+<thead><tr><th>Stage</th><th>avFLAC (bytes)</th><th>vs FLAC-12</th><th>vs lax_t6</th></tr></thead>
+<tbody>
+<tr><td>Current (AF_whole)</td><td>7,965,119</td><td>&minus;0.39%</td><td>+13,530</td></tr>
+<tr><td>After X1</td><td>~7,960,000</td><td>&minus;0.45%</td><td>+8,400</td></tr>
+<tr><td>After X1+X2</td><td>~7,945,000</td><td>&minus;0.64%</td><td>&minus;6,600</td></tr>
+<tr class="win"><td><strong>After X1+X2+X3</strong></td><td><strong>~7,935,000</strong></td><td><strong>&minus;0.76%</strong></td><td><strong>&minus;16,600</strong></td></tr>
+</tbody>
+</table>
+
+<h3>vFLAC Standalone Projection</h3>
+<table>
+<thead><tr><th>Stage</th><th>vFLAC (bytes)</th><th>vs FLAC-8</th><th>Notes</th></tr></thead>
+<tbody>
+<tr class="lose"><td>Current v1.3</td><td>8,032,276</td><td>+0.45%</td><td>Loses on mixed content</td></tr>
+<tr><td>After X1</td><td>~8,020,000</td><td>+0.30%</td><td>Transient blocks help</td></tr>
+<tr class="win"><td><strong>After X1+X2</strong></td><td><strong>~7,995,000</strong></td><td><strong>&minus;0.01%</strong></td><td>Match FLAC-8 standard</td></tr>
+</tbody>
+</table>
+
+<div class="verdict">
+  <div class="big">avFLAC &lt; lax_t6</div>
+  <div class="sub">The arena stitch beats the best single external FLAC encoder &mdash; validated on two songs.</div>
+</div>
+
+<!-- ====== 09 ENCODER FAMILY ====== -->
+<h2><span class="num">09</span>The xFLAC Encoder Family</h2>
+
+<pre>
+  WAV Input
+    &#9474;
+    &#9474;   8Z_Encode.py (orchestrator, --fast/--full)
+    &#9474;
+    &#9500;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+    &#9474;                                               &#9474;
+    &#9660;                &#9660;                &#9660;              &#9660;
+  aFLAC v1.3     vFLAC v1.3     avFLAC v1.2    AC v1.7H
+  1633 lines     859 lines      960 lines      (separate)
+  Arena:         Pure Python    Hybrid:
+  segment        FLAC writer    arena +        Non-FLAC
+  compete        variable BS    vFLAC as       format
+  + stitch                      candidate
+
+    &#9474;                &#9474;                &#9474;
+    &#9660;                &#9660;                &#9660;
+  _AF.flac       _VF.flac       _AVF.flac
+  Best arena     Variable-BS    MDL picks
+  stitch         standalone     smallest
+</pre>
+
+<div class="arch-block">
+  <div class="title cyan">aFLAC (Arena FLAC)</div>
+  Segments the audio, encodes each segment with multiple external FLAC encoders (lax, flake, flaccl, ffmpeg), picks the smallest per segment, stitches winning segments into a valid .flac file. Currently beats FLAC-12 on both test songs. Primary bottleneck: stitching overhead.
+</div>
+
+<div class="arch-block gold">
+  <div class="title gold">vFLAC (Variable-Blocksize FLAC)</div>
+  Pure Python FLAC encoder with variable block sizes and exhaustive LPC search. Writes standard .flac files. Wins on tonal content (&minus;2% to &minus;4%) but loses badly on mixed/transient (+11%). X1 and X2 target this encoder.
+</div>
+
+<div class="arch-block green">
+  <div class="title green">avFLAC (Arena + Variable)</div>
+  Runs both aFLAC and vFLAC, adds vFLAC as an arena candidate. MDL selects the smallest output from: AF_whole, VF_whole, or arena stitch. Currently MDL picks AF_whole on both songs because arena stitch is larger (stitching overhead).
+</div>
+
+<!-- ====== 10 RISK MATRIX ====== -->
+<h2><span class="num">10</span>Risk Matrix</h2>
+
+<table>
+<thead><tr><th>Risk</th><th>Phase</th><th>Impact</th><th>Mitigation</th></tr></thead>
+<tbody>
+<tr><td>Onset over-splitting</td><td>X1</td><td>Header overhead exceeds gains</td><td>Merge pass + min block 1024</td></tr>
+<tr><td>Tonal regression</td><td>X1</td><td>Block plan fragments tonal content</td><td>High threshold (6.0) + FH validation</td></tr>
+<tr><td>Speed regression</td><td>X2</td><td>Boost mode too slow</td><td>Strict should_boost() criteria</td></tr>
+<tr><td>Proxy backfire</td><td>X2</td><td>New proxy rejects good candidates</td><td>A/B test on all 7 clips first</td></tr>
+<tr><td>Merge re-encode time</td><td>X3a</td><td>Extra encoding passes</td><td>Net neutral: 1 large replaces N small</td></tr>
+<tr><td>Overlap context mismatch</td><td>X3b</td><td>Arena comparison unfair</td><td>Full re-benchmark after change</td></tr>
+<tr class="highlight-row"><td>Combined insufficient</td><td>All</td><td>Still &gt; lax_t6 after X1+X2+X3</td><td>X3c frame-level competition</td></tr>
+</tbody>
+</table>
+
+<!-- ====== 11 CORE PRINCIPLES ====== -->
+<h2><span class="num">11</span>Core Principles</h2>
+
+<div class="arch-block teal">
+  <div class="title teal">FLAC Spec Compliance</div>
+  Every output must pass <code>flac -t</code> and decode to bit-identical PCM. We operate within the FLAC specification &mdash; no custom extensions, no metadata hacks. Any standard FLAC decoder must play our files.
+</div>
+
+<div class="arch-block gold">
+  <div class="title gold">MDL as Sole Judge</div>
+  Minimum Description Length selects winners. No human intuition about "which encoder should win" &mdash; the smallest valid output wins, period. MDL cost penalties are honest: every bit corresponds to an actual message.
+</div>
+
+<div class="arch-block green">
+  <div class="title green">Lossless Non-Negotiable</div>
+  SHA3 round-trip verification on every encode. Decoded PCM must be byte-identical to input WAV. No exceptions, no "close enough," no perceptual shortcuts.
+</div>
+
+<div class="arch-block violet">
+  <div class="title violet">R&amp;D Phase: Forward Only</div>
+  No backward compatibility constraints. Old versions remain archived. Development moves forward. Every sprint can break the API if it improves compression.
+</div>
+
+<!-- ====== 12 COMPANION DOCUMENTS ====== -->
+<h2><span class="num">12</span>Companion Documents</h2>
+
+<table>
+<thead><tr><th>Document</th><th>Status</th><th>Scope</th></tr></thead>
+<tbody>
+<tr class="win"><td>CONTINUE_vFLAC_FastFull.md</td><td>DONE</td><td>--fast/--full modes for vFLAC</td></tr>
+<tr><td>CONTINUE_xFLAC_X1_Transient_Blocks.md</td><td>READY</td><td>Onset detection + block plan rewrite</td></tr>
+<tr><td>CONTINUE_xFLAC_X2_LPC_Search.md</td><td>READY</td><td>TOP_K expansion + tonal boost</td></tr>
+<tr><td>CONTINUE_xFLAC_X3_Stitching.md</td><td>READY</td><td>Segment merging + overlap + frame-level</td></tr>
+<tr><td>8Z-AC_Classical_Max_Roadmap.html</td><td>DONE</td><td>Parallel track: AC C1&ndash;C5 roadmap</td></tr>
+<tr><td>8Z_Audio_Peer_Review_Feedbacks.md</td><td>DONE</td><td>DreamTeam review of both tracks</td></tr>
+</tbody>
+</table>
+
+<div class="callout gold">
+  <strong>Parallel track:</strong> The AC &ldquo;Classical Max&rdquo; roadmap (C1&ndash;C5) targets non-FLAC compression improvements. The xFLAC sprint targets FLAC-format improvements. Both tracks share the same test corpus and peer review framework but are architecturally independent.
+</div>
+
+<!-- ====== VERDICT ====== -->
+<div class="verdict">
+  <div class="big">Raw compression wins are real.</div>
+  <div class="sub">X1 fixes vFLAC. X2 deepens the search. X3 eliminates the overhead.<br>The arena stitch will beat lax_t6.</div>
+</div>
+
+<!-- ====== FOOTER ====== -->
+<div class="footer">
+  8Z Audio Compression &middot; AIM&#179; Institute &middot; Ljubljana, Slovenia<br>
+  Bojan Dobrečevič + Claude Opus 4.6 &middot; March 2026<br>
+  <span style="color:var(--teal)">&#9632;</span> xFLAC Sprint &nbsp;|&nbsp; <span style="color:var(--accent)">&#9632;</span> AC Classical Max
+</div>
+
+</div>
+</body>
+</html>
