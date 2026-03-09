@@ -82,6 +82,8 @@ pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22
   <a class="ch" href="#factory">Software PUF Factory</a>
   <a class="sub" href="#scaling">From Personal to Universal</a>
   <a class="ch" href="#landscape">Prior Art &amp; Novelty</a>
+  <a class="ch" href="#pnp">P=NP Resilience</a>
+  <a class="sub" href="#pnp">Why This Survives</a>
   <a class="ch" href="#roadmap">Roadmap</a>
 </nav>
 
@@ -91,14 +93,14 @@ pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22
 <div class="cover">
   <div class="cover-tag">8Z Research Framework &bull; New Domain</div>
   <h1>8Z-Auth:<br><em>Software Unclonable Functions</em></h1>
-  <p class="subtitle">A novel authentication protocol where the algorithm itself is the identity &mdash; with DCC-governed adaptive challenge-response and competing proof generators</p>
+  <p class="subtitle">A novel authentication protocol where the algorithm itself is the identity &mdash; with DCC-governed adaptive challenge-response, competing proof generators, and structural P=NP resilience through pure symmetric design</p>
   <div class="meta">Bojan Dobre&#269;evi&#269; &amp; Claude Opus 4.6 &bull; AIM&sup3; Institute &bull; March 2026</div>
 
   <div class="stats-row" style="max-width:700px;margin:32px auto 0">
     <div class="stat"><div class="val gold">Novel</div><div class="lbl">No Prior Art</div></div>
     <div class="stat"><div class="val teal">3</div><div class="lbl">Auth Layers</div></div>
     <div class="stat"><div class="val purple">0</div><div class="lbl">Servers Required</div></div>
-    <div class="stat"><div class="val green">AES-256</div><div class="lbl">Encryption</div></div>
+    <div class="stat"><div class="val green">P=NP Safe</div><div class="lbl">Pure Symmetric</div></div>
   </div>
 </div>
 
@@ -352,9 +354,56 @@ DECRYPT:    AES-256-GCM(blob, PBKDF2(key_material, salt, iterations))</pre>
   </div>
 </div>
 
+<!-- P=NP RESILIENCE -->
+<div class="chapter" id="pnp">
+  <div class="chapter-num">Chapter 8</div>
+  <h2>P=NP Resilience</h2>
+  <p>A constructive proof of P=NP would be the largest earthquake in computer science history. Every public-key cryptosystem &mdash; RSA, elliptic curves, Diffie-Hellman &mdash; depends on problems (factoring, discrete logarithm) being <strong>hard</strong>. If P=NP, they have polynomial-time solutions. TLS/SSL collapses. Bitcoin signatures break. OAuth, FIDO2, digital certificates &mdash; all gone.</p>
+
+  <div class="callout warn">
+    <div class="callout-title">What Dies</div>
+    <p><strong>All public-key cryptography.</strong> Any system that relies on asymmetric key exchange, digital signatures, or public-key certificates is vulnerable. This includes most of the internet: HTTPS, VPNs, banking, cryptocurrency, email encryption.</p>
+    <p><strong>Most authentication systems.</strong> OAuth needs a server over TLS. FIDO2 uses public-key pairs. TOTP apps depend on shared secrets established over TLS. Even if individual links are symmetric, the <strong>chain</strong> includes asymmetric crypto somewhere.</p>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-title">What Survives</div>
+    <p><strong>Symmetric cryptography.</strong> AES-256 requires brute-forcing 2<sup>256</sup> keys. That's exhaustive search, not an NP problem. P=NP doesn't give you a shortcut to try fewer keys.</p>
+    <p><strong>PBKDF2 with high iterations.</strong> 10 million sequential hash computations per guess. P=NP doesn't make sequential computation faster.</p>
+    <p><strong>8Z-Auth.</strong> The entire pipeline is symmetric: SHA-256 &rarr; XorShift64Star &rarr; SHA-256 &rarr; PBKDF2 &rarr; AES-256-GCM. No RSA, no elliptic curves, no key exchange, no digital signatures. <strong>Nothing for P=NP to attack.</strong></p>
+  </div>
+
+  <h3>Why This Isn't Obvious</h3>
+  <p>Most authentication systems are <strong>not</strong> purely symmetric. They depend on chains that include public-key crypto for key exchange, session establishment, or identity verification. Even if AES itself survives, the protocol surrounding it breaks. A system that uses AES-256 but establishes the key over TLS is still vulnerable &mdash; the key exchange collapses.</p>
+  <p>8Z-Auth has <strong>no chain</strong>. No key exchange. No server handshake. No TLS dependency. No public-key component. Passphrase &rarr; local symmetric derivation &rarr; local symmetric decryption. End to end. The key never travels over a network. It's derived locally from a passphrase that never leaves your keyboard.</p>
+
+  <h3>Accidental Resilience Through Simplicity</h3>
+  <p>This wasn't a design goal. The requirement was <em>"no server, runs locally, keep it simple."</em> That constraint forced a purely symmetric architecture, which happens to be the one branch of cryptography that survives P=NP, quantum computing, and every other theoretical threat currently known.</p>
+
+  <div class="callout teal">
+    <div class="callout-title">The Structural Insight</div>
+    <p><strong>Serverless single-user architecture implies P=NP resilience as a structural property.</strong> Multi-user systems need key exchange, which requires asymmetric crypto, which P=NP breaks. Single-user systems can be purely symmetric &mdash; and therefore immune. Most people don't get this for free because they need multi-user support. The 8Z-Auth use case (one person, local decryption) is precisely the case where pure symmetry is both sufficient and maximally resilient.</p>
+  </div>
+
+  <table class="compare-table">
+    <thead><tr><th>System</th><th>Uses Asymmetric Crypto?</th><th>Survives P=NP?</th></tr></thead>
+    <tbody>
+      <tr><td>HTTPS / TLS</td><td style="color:var(--accent-red);">Yes (key exchange)</td><td style="color:var(--accent-red);">No</td></tr>
+      <tr><td>OAuth 2.0</td><td style="color:var(--accent-red);">Yes (via TLS)</td><td style="color:var(--accent-red);">No</td></tr>
+      <tr><td>FIDO2 / WebAuthn</td><td style="color:var(--accent-red);">Yes (public-key pairs)</td><td style="color:var(--accent-red);">No</td></tr>
+      <tr><td>Bitcoin / Ethereum</td><td style="color:var(--accent-red);">Yes (ECDSA signatures)</td><td style="color:var(--accent-red);">No</td></tr>
+      <tr><td>TOTP (Google Auth)</td><td style="color:var(--accent-gold);">Indirect (setup via TLS)</td><td style="color:var(--accent-gold);">Partially</td></tr>
+      <tr><td>Password-protected ZIP</td><td style="color:var(--accent-green);">No</td><td style="color:var(--accent-green);">Yes</td></tr>
+      <tr><td style="color:var(--accent-gold);">8Z-Auth</td><td style="color:var(--accent-green);">No &mdash; purely symmetric</td><td style="color:var(--accent-green);font-weight:700;">Yes</td></tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:14px;color:var(--text-muted);margin-top:8px;">Note: NIST standardized post-quantum replacements (CRYSTALS-Kyber, Dilithium, SPHINCS+) in 2024 for systems that need asymmetric crypto. 8Z-Auth doesn't need them because it never uses asymmetric crypto in the first place.</p>
+</div>
+
 <!-- ROADMAP -->
 <div class="chapter" id="roadmap">
-  <div class="chapter-num">Chapter 8</div>
+  <div class="chapter-num">Chapter 9</div>
   <h2>Roadmap</h2>
 
   <div class="layer-card" style="border-left:3px solid var(--accent-green);">
@@ -374,10 +423,10 @@ DECRYPT:    AES-256-GCM(blob, PBKDF2(key_material, salt, iterations))</pre>
 
   <div class="layer-card" style="border-left:3px solid var(--accent-teal);">
     <div class="layer-title">Phase 4 &mdash; Software PUF Factory <span class="tag teal">product</span></div>
-    <p>Open-source factory program. Anyone generates their own unique encoder/decoder pair. Publishable paper: "8Z-Auth: Software Unclonable Functions with DCC-Governed Adaptive Challenge-Response."</p>
+    <p>Open-source factory program. Anyone generates their own unique encoder/decoder pair. Publishable paper: "8Z-Auth: Software Unclonable Functions with DCC-Governed Adaptive Challenge-Response and Structural P=NP Resilience."</p>
   </div>
 
-  <div class="quote-block"><p>Every domain is the same problem. Authentication is just compression wearing a different hat.</p></div>
+  <div class="quote-block"><p>Every domain is the same problem. Authentication is just compression wearing a different hat. And simplicity, pursued honestly, produces resilience that complexity never reaches.</p></div>
 </div>
 
 <div style="text-align:center;padding:40px 0;color:var(--text-muted);font-family:var(--font-mono);font-size:11px;">
