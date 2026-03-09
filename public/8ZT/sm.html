@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BD</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--bg2:#12151c;--border:#2a2f3c;--text:#e8eaf0;--muted:#5a6275;--gold:#ffd740;--mono:'JetBrains Mono',monospace;--body:'DM Sans',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--body);display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased}
+body.unlocked{display:block}
+.v{width:340px;text-align:center;animation:fi .6s ease}
+@keyframes fi{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sh{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.sh{animation:sh .4s ease}
+.logo{font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:32px;opacity:.7}
+input{width:100%;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:14px;outline:none;transition:border-color .2s;margin-bottom:12px}
+input:focus{border-color:var(--gold)}input::placeholder{color:var(--muted)}
+button{width:100%;padding:14px;background:transparent;border:1px solid var(--gold);border-radius:8px;color:var(--gold);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+button:hover{background:rgba(255,215,64,.08)}button:disabled{opacity:.3;cursor:wait}
+.st{font-family:var(--mono);font-size:12px;margin-top:16px;min-height:18px}.st.w{color:var(--gold)}
+.f{display:none;width:100%;height:100vh;border:none}
+body.unlocked .v{display:none}body.unlocked .f{display:block}
+</style>
+</head>
+<body>
+<div class="v" id="V">
+<div class="logo">8Z&middot;Vault</div>
+<input id="P" type="password" placeholder="Passphrase" autocomplete="off">
+<button id="B" onclick="go()">Unlock</button>
+<div class="st" id="S"></div>
+</div>
+<iframe class="f" id="F" sandbox="allow-scripts allow-same-origin"></iframe>
+<script>
+'use strict';
+const VAULT_URL='https://remarkable-sopapillas-d3e79a.netlify.app/sm.8zv';
+const M=new Uint8Array([0x38,0x5A,0x56,0x31]),M64=(1n<<64n)-1n;
+class X{constructor(s){let v=s&M64;this.state=v===0n?0x9E3779B97F4A7C15n:v}
+n(){let x=this.state;x=(x^((x>>12n)&M64))&M64;x=(x^((x<<25n)&M64))&M64;x=(x^((x>>27n)&M64))&M64;this.state=x;return(x*2685821657736338717n)&M64}}
+function u2b(v){const b=new Uint8Array(8);for(let i=7;i>=0;i--){b[i]=Number(v&0xFFn);v>>=8n}return b}
+function b2u(b){let v=0n;for(let i=0;i<8;i++)v=(v<<8n)|BigInt(b[i]);return v}
+async function h(d){const b=(d instanceof Uint8Array)?d:new TextEncoder().encode(d);return new Uint8Array(await crypto.subtle.digest('SHA-256',b))}
+function cat(...a){let l=0;for(const x of a)l+=x.length;const o=new Uint8Array(l);let p=0;for(const x of a){o.set(x,p);p+=x.length}return o}
+async function dk(pp,salt){
+const ph=await h(pp),sm=await h(cat(ph,salt,new TextEncoder().encode("8Z_AUTH_V1")));
+const r=new X(b2u(sm.slice(0,8)));for(let i=0;i<1024;i++)r.n();
+const sh=await h(u2b(r.state)),c=cat(ph,sh);
+const km=await crypto.subtle.importKey('raw',c,'PBKDF2',false,['deriveBits']);
+return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:salt,iterations:10000000,hash:'SHA-256'},km,256))}
+async function dec(blob,pp){
+const buf=new Uint8Array(blob);if(buf.length<52)throw new Error('x');
+for(let i=0;i<4;i++)if(buf[i]!==M[i])throw new Error('x');
+const salt=buf.slice(8,40),iv=buf.slice(40,52),ct=buf.slice(52);
+const k=await crypto.subtle.importKey('raw',await dk(pp,salt),'AES-GCM',false,['decrypt']);
+const comp=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,tagLength:128},k,ct));
+const ds=new DecompressionStream('gzip'),w=ds.writable.getWriter(),rd=ds.readable.getReader();
+w.write(comp);w.close();const ch=[];
+while(true){const{done,value}=await rd.read();if(done)break;ch.push(value)}
+let t=0;for(const c of ch)t+=c.length;const res=new Uint8Array(t);let o=0;
+for(const c of ch){res.set(c,o);o+=c.length}return res}
+document.getElementById('P').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+async function go(){
+const pp=document.getElementById('P').value;if(!pp)return;
+const btn=document.getElementById('B'),st=document.getElementById('S');
+btn.disabled=true;st.textContent='...';st.className='st w';
+try{
+const resp=await fetch(VAULT_URL);if(!resp.ok)throw new Error('x');
+const blob=await resp.arrayBuffer();
+await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+const plain=await dec(blob,pp);
+document.getElementById('F').srcdoc=new TextDecoder().decode(plain);
+document.body.classList.add('unlocked');
+}catch(e){
+const v=document.getElementById('V');v.classList.add('sh');st.textContent='';
+setTimeout(()=>v.classList.remove('sh'),500);
+document.getElementById('P').value='';document.getElementById('P').focus()}
+btn.disabled=false}
+</script>
+</body>
+</html>
