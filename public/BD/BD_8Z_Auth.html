@@ -84,6 +84,11 @@ pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22
   <a class="ch" href="#landscape">Prior Art &amp; Novelty</a>
   <a class="ch" href="#pnp">P=NP Resilience</a>
   <a class="sub" href="#pnp">Why This Survives</a>
+  <a class="ch" href="#usecases">Use Cases</a>
+  <a class="sub" href="#cold-storage">Crypto Cold Storage</a>
+  <a class="sub" href="#inheritance">Digital Inheritance</a>
+  <a class="sub" href="#journalist">Source Protection</a>
+  <a class="sub" href="#medical">Medical Portability</a>
   <a class="ch" href="#roadmap">Roadmap</a>
 </nav>
 
@@ -98,7 +103,7 @@ pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22
 
   <div class="stats-row" style="max-width:700px;margin:32px auto 0">
     <div class="stat"><div class="val gold">Novel</div><div class="lbl">No Prior Art</div></div>
-    <div class="stat"><div class="val teal">3</div><div class="lbl">Auth Layers</div></div>
+    <div class="stat"><div class="val teal">4</div><div class="lbl">Use Cases</div></div>
     <div class="stat"><div class="val purple">0</div><div class="lbl">Servers Required</div></div>
     <div class="stat"><div class="val green">P=NP Safe</div><div class="lbl">Pure Symmetric</div></div>
   </div>
@@ -401,9 +406,61 @@ DECRYPT:    AES-256-GCM(blob, PBKDF2(key_material, salt, iterations))</pre>
   <p style="font-size:14px;color:var(--text-muted);margin-top:8px;">Note: NIST standardized post-quantum replacements (CRYSTALS-Kyber, Dilithium, SPHINCS+) in 2024 for systems that need asymmetric crypto. 8Z-Auth doesn't need them because it never uses asymmetric crypto in the first place.</p>
 </div>
 
+<!-- USE CASES -->
+<div class="chapter" id="usecases">
+  <div class="chapter-num">Chapter 9</div>
+  <h2>Use Cases: Encryption That Survives Time</h2>
+  <p>The core property connecting every use case: <strong>long-term storage where the decryption environment is unknown.</strong> You don't know what device, what OS, what software will be available when the file needs to be opened. Could be tomorrow, could be 2075.</p>
+  <p>Hardware wallets won't work &mdash; firmware, drivers, the company might not exist. Apps won't compile. Cloud services will have changed APIs. But a web browser running JavaScript? HTML is 33 years old and every browser still renders HTML 1.0 pages. AES and SHA-256 are mathematical operations that will never change. A <code>.8zv</code> decoder from 2026 will work in 2076 without modification.</p>
+
+  <div class="callout teal">
+    <div class="callout-title">The Real Market Position</div>
+    <p>8Z-Auth's competitive advantage isn't "better encryption." It's <strong>encryption that survives time</strong>. Every other solution has a dependency that can die &mdash; a company, a hardware standard, a protocol, an app store. 8Z-Auth depends on math and a web browser. Those are the two things that won't change.</p>
+  </div>
+
+  <h3 id="cold-storage">Crypto Cold Storage</h3>
+  <p>Current solutions all have a fatal dependency. Hardware wallets (Ledger, Trezor) have firmware, supply chain risks, and the company might not exist in 20 years. Steel seed plates (Cryptosteel) store seed phrases in <strong>plaintext</strong> &mdash; anyone who finds the plate has your crypto. Paper wallets degrade. Brain wallets get forgotten.</p>
+
+  <p>8Z-Auth cold storage: encrypt your seed phrase or private key into a <code>.8zv</code> file. Store the file anywhere &mdash; USB, cloud, email to yourself, print as QR code. The encrypted blob is worthless without your passphrase + the decoder. The decoder is 5KB of self-contained HTML/JS that runs forever in any browser.</p>
+
+  <div class="callout success">
+    <div class="callout-title">The Redundancy Breakthrough</div>
+    <p>The unsolved problem in cold storage: <strong>redundancy without exposure.</strong> Store your seed in one place &mdash; lose the place, lose your crypto. Store it in five places &mdash; five chances for someone to find it. With 8Z-Auth, you can store the encrypted <code>.8zv</code> in unlimited locations simultaneously (USB, cloud, email, QR tattoo) because the file is AES-256 encrypted. Redundancy is free. The passphrase is the only secret, and it lives in your head.</p>
+  </div>
+
+  <table class="compare-table">
+    <thead><tr><th>Solution</th><th>Survives 20 Years?</th><th>Encrypted?</th><th>Free Redundancy?</th><th>Needs Hardware?</th></tr></thead>
+    <tbody>
+      <tr><td>Ledger / Trezor</td><td style="color:var(--accent-red);">Firmware risk</td><td style="color:var(--accent-green);">Yes</td><td style="color:var(--accent-red);">No (one device)</td><td style="color:var(--accent-red);">Yes</td></tr>
+      <tr><td>Steel Seed Plate</td><td style="color:var(--accent-green);">Yes</td><td style="color:var(--accent-red);">Plaintext</td><td style="color:var(--accent-red);">No (exposed)</td><td style="color:var(--accent-green);">No</td></tr>
+      <tr><td>Paper Wallet</td><td style="color:var(--accent-red);">Degrades</td><td style="color:var(--accent-red);">Plaintext</td><td style="color:var(--accent-red);">No (exposed)</td><td style="color:var(--accent-green);">No</td></tr>
+      <tr><td>BIP-38 Encrypted Key</td><td style="color:var(--accent-gold);">Needs BIP-38 tool</td><td style="color:var(--accent-green);">Yes</td><td style="color:var(--accent-green);">Yes</td><td style="color:var(--accent-green);">No</td></tr>
+      <tr><td>Password ZIP</td><td style="color:var(--accent-gold);">Needs ZIP software</td><td style="color:var(--accent-green);">Yes</td><td style="color:var(--accent-green);">Yes</td><td style="color:var(--accent-green);">No</td></tr>
+      <tr><td style="color:var(--accent-gold);">8Z Vault (.8zv)</td><td style="color:var(--accent-green);font-weight:700;">Any browser, forever</td><td style="color:var(--accent-green);font-weight:700;">AES-256-GCM</td><td style="color:var(--accent-green);font-weight:700;">Unlimited copies</td><td style="color:var(--accent-green);font-weight:700;">No</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="inheritance">Digital Inheritance</h3>
+  <p>You die. Your crypto, passwords, important documents &mdash; locked forever. Current solutions: give your lawyer a sealed envelope (trust-based), use a service like Vault12 or Casa (company must exist), or leave written instructions (security nightmare).</p>
+  <p>8Z-Auth inheritance: encrypt everything into one <code>.8zv</code> file. Store the file with your lawyer, your family, your bank &mdash; anywhere, it's encrypted. Store the passphrase <strong>separately</strong> &mdash; half with your spouse, half in your safe deposit box. Or use Shamir's Secret Sharing to split the passphrase across N people where any K can reconstruct it. The file is public-safe. The passphrase is the only secret. Clean separation of storage and access.</p>
+
+  <h3 id="journalist">Journalist &amp; Activist Source Protection</h3>
+  <p>Current tools: SecureDrop (requires servers), PGP (requires key exchange &mdash; broken by P=NP), Signal (requires phones, metadata leaks). All require infrastructure and leave traces.</p>
+  <p>8Z-Auth: source encrypts documents into <code>.8zv</code>, drops the file anywhere &mdash; public paste site, email, physical USB. Passphrase communicated via in-person meeting. No server, no key exchange, no metadata, no app to install. The file on a public paste site looks like random bytes. No protocol fingerprint. No "ENCRYPTED FILE" header that draws attention.</p>
+
+  <h3 id="medical">Medical Records Portability</h3>
+  <p>You travel internationally. You have a medical condition. Current: carry paper records (losable), use a health app (company-dependent), hospital portal (internet required, country-specific).</p>
+  <p>8Z-Auth: encrypt your medical records into <code>.8zv</code>. Store on your phone, USB keychain, cloud. Any ER doctor anywhere in the world with a browser can decrypt it if you (or your medical bracelet) provides the passphrase. No app. No account. No internet required if the file is local. Works in any country on any device.</p>
+
+  <div class="callout warn">
+    <div class="callout-title">Market Opportunity</div>
+    <p><strong>Crypto cold storage</strong> is the fastest path &mdash; the product is 90% built. A polished GUI + QR code output + marketing to the crypto community is weeks of work. The "encryption that survives time" positioning and P=NP resilience are genuine differentiators no hardware wallet can claim. The $2B+ cold storage market has no browser-only, zero-dependency, P=NP-safe competitor.</p>
+  </div>
+</div>
+
 <!-- ROADMAP -->
 <div class="chapter" id="roadmap">
-  <div class="chapter-num">Chapter 9</div>
+  <div class="chapter-num">Chapter 10</div>
   <h2>Roadmap</h2>
 
   <div class="layer-card" style="border-left:3px solid var(--accent-green);">

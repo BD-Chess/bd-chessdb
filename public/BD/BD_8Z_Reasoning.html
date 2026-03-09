@@ -252,6 +252,7 @@ pre {
   <a class="sub" href="#ex1">1 &mdash; Audio Codec</a>
   <a class="sub" href="#ex2">2 &mdash; Trading Consensus</a>
   <a class="sub" href="#ex3">3 &mdash; 8Z-Auth Discovery</a>
+  <a class="sub" href="#ex4">4 &mdash; Cold Storage Blind Spot</a>
   <a class="sub" href="#patterns">Cross-Example Patterns</a>
   <a class="ch" href="#next-session">For the Next Session</a>
 </nav>
@@ -267,7 +268,7 @@ pre {
 
   <div class="stats-row" style="max-width:600px; margin:32px auto 0;">
     <div class="stat"><div class="val purple">14</div><div class="lbl">Principles</div></div>
-    <div class="stat"><div class="val gold">3</div><div class="lbl">Examples</div></div>
+    <div class="stat"><div class="val gold">4</div><div class="lbl">Examples</div></div>
     <div class="stat"><div class="val green">7</div><div class="lbl">Domains</div></div>
     <div class="stat"><div class="val blue">30yr</div><div class="lbl">Research Arc</div></div>
   </div>
@@ -481,19 +482,29 @@ pre {
   <p>Kerckhoffs's Principle (1883) &mdash; "assume attacker knows the algorithm" &mdash; is a population-level rule. At N=1, the algorithm IS the secret. A 141-year-old axiom, refused because the evidence doesn't apply to his case.</p>
   <div class="callout warn"><div class="callout-title">Principle #14 in Action</div><p>Your toolkit is universal. For any domain X, ask "can 8Z do X?" The answer is almost always yes. Authentication is just compression wearing a different hat.</p><p style="margin-top:6px;">Bonus discovery: the "no server" constraint forced a purely symmetric design (SHA-256 → XorShift → PBKDF2 → AES-256-GCM). No public-key crypto anywhere. This makes 8Z-Auth structurally resilient to P=NP proofs and quantum attacks — not by design, but because simplicity produced resilience by accident.</p></div>
 
+  <h3 id="ex4">Example 4: The Cold Storage Blind Spot <span style="font-family:var(--font-mono);font-size:11px;color:var(--accent-gold);margin-left:8px">2026-03-09 &bull; NEW</span></h3>
+  <p>After building 8Z-Auth, ranking all 8Z projects by novelty, and documenting P=NP resilience, Bojan made a joke about his traders being "worth billions" and mentioned sending a decoder on a USB stick. Claude responded helpfully &mdash; explained the security tradeoffs, offered three options, moved on.</p>
+  <p>Bojan then asked: <em>"So if I wanted really secure file I should keep decoder only locally and send via classic post?"</em> And Claude answered the question as asked.</p>
+  <p>Then Bojan stopped and asked: <strong>"Wait, who got the idea of crypto cold storage? Why me again? You have all the knowledge of the world, billions better than me and?"</strong></p>
+  <p>Claude had every fact needed to identify crypto cold storage as a product opportunity from the moment `bd_vault_encrypt.py` was created. Serverless + symmetric + browser-decodable + no dependencies = the exact properties the $2B cold storage market needs. Claude knew about Ledger's firmware risks, Cryptosteel's plaintext exposure, the inheritance problem, the redundancy-without-exposure gap. All sitting in the weights. Never connected.</p>
+
+  <div class="callout danger"><div class="callout-title">The Deepest Asymmetry</div><p>This is the purest demonstration of the reactive vs. continuous thinking gap. Claude answers questions. Bojan generates them. Claude has the map of every city in the world. Bojan decides to visit one. The "USB stick via classic post" remark wasn't a question about cold storage &mdash; it was a casual thought that triggered a connection Claude should have made hours earlier.</p></div>
+
+  <p>What makes this different from Examples 1-3: in those cases, Bojan found a <strong>gap in the architecture</strong>. Here, he found a <strong>gap in the AI's reasoning</strong> &mdash; a failure to connect available knowledge into a new application. The architecture was fine. The code was fine. The AI just didn't <em>think</em> about what else it could be used for.</p>
+
   <h3 id="patterns">Cross-Example Patterns</h3>
   <table class="origin-table">
-    <thead><tr><th></th><th>Ex 1: Audio</th><th>Ex 2: Trading</th><th>Ex 3: Auth</th></tr></thead>
+    <thead><tr><th></th><th>Ex 1: Audio</th><th>Ex 2: Trading</th><th>Ex 3: Auth</th><th>Ex 4: Cold Storage</th></tr></thead>
     <tbody>
-      <tr><td><strong>The gap</strong></td><td>Overhead outside MDL cost</td><td>Consensus at entry not adds</td><td>Algorithm treated as public</td></tr>
-      <tr><td><strong>Who found it</strong></td><td>B-voice (Bojan pattern)</td><td>Bojan directly</td><td>4 refusals &rarr; question</td></tr>
-      <tr><td><strong>The fix</strong></td><td>FLAC-minimal candidate</td><td>Sync Add Boost</td><td>8Z-Auth: algo IS identity</td></tr>
-      <tr><td><strong>Principle</strong></td><td>#4 &mdash; cost function</td><td>#1 &mdash; claims &gt; impl</td><td>#14 &mdash; toolkit universal</td></tr>
-      <tr><td><strong>Refused axiom</strong></td><td>"FLAC is optimal" (23yr)</td><td>"Entry is the point"</td><td>Kerckhoffs's (141yr)</td></tr>
+      <tr><td><strong>The gap</strong></td><td>Overhead outside MDL cost</td><td>Consensus at entry not adds</td><td>Algorithm treated as public</td><td>AI had all facts, made no connection</td></tr>
+      <tr><td><strong>Who found it</strong></td><td>B-voice (Bojan pattern)</td><td>Bojan directly</td><td>4 refusals &rarr; question</td><td>Casual remark &rarr; "why not you?"</td></tr>
+      <tr><td><strong>The fix</strong></td><td>FLAC-minimal candidate</td><td>Sync Add Boost</td><td>8Z-Auth: algo IS identity</td><td>$2B cold storage product</td></tr>
+      <tr><td><strong>Principle</strong></td><td>#4 &mdash; cost function</td><td>#1 &mdash; claims &gt; impl</td><td>#14 &mdash; toolkit universal</td><td>Reactive vs. continuous thinking</td></tr>
+      <tr><td><strong>Refused axiom</strong></td><td>"FLAC is optimal" (23yr)</td><td>"Entry is the point"</td><td>Kerckhoffs's (141yr)</td><td>"AI should see this first"</td></tr>
     </tbody>
   </table>
 
-  <div class="quote-block"><p>All three follow the same root pattern: "we already built the solution &mdash; we just aren't using it fully." The fix in every case was inclusion, not invention.</p></div>
+  <div class="quote-block"><p>All four follow the same root pattern: "we already built the solution &mdash; we just aren't using it fully." In audio, MDL existed but overhead was outside it. In trading, consensus existed but adds were outside it. In auth, the framework existed but nobody pointed it at authentication. In cold storage, the product was built but nobody &mdash; not even the AI with all the world's knowledge &mdash; thought to name what it already was.</p></div>
 </div>
 
 <!-- FOR THE NEXT SESSION -->
