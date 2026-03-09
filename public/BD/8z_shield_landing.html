@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8Z Publish — Sell Anything. No Server. No Platform. Just Encryption.</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0c10; --bg2: #12151c; --bg3: #1a1e28; --card: #161a24;
+  --border: #2a2f3c; --border-hi: #3a4055;
+  --text: #e8eaf0; --text2: #8b93a6; --muted: #5a6275;
+  --orange: #ff9100; --orange-dim: rgba(255,145,0,0.12); --orange-glow: rgba(255,145,0,0.25);
+  --gold: #ffd740; --gold-dim: rgba(255,215,64,0.12);
+  --green: #00e676; --green-dim: rgba(0,230,118,0.12);
+  --red: #ff4757; --red-dim: rgba(255,71,87,0.12);
+  --teal: #64ffda; --teal-dim: rgba(100,255,218,0.12);
+  --blue: #448aff; --blue-dim: rgba(68,138,255,0.12);
+  --purple: #b388ff; --purple-dim: rgba(179,136,255,0.12);
+  --display: 'Playfair Display', Georgia, serif;
+  --body: 'DM Sans', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  background: var(--bg); color: var(--text); font-family: var(--body);
+  line-height: 1.72; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+::selection { background: var(--orange); color: #000; }
+
+/* ── Grid texture (global) ── */
+body::after {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.012;
+  background-image:
+    linear-gradient(rgba(255,145,0,0.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,145,0,0.4) 1px, transparent 1px);
+  background-size: 90px 90px;
+  mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, black, transparent);
+}
+
+/* ── Animation classes ── */
+.vis { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.vis.show { opacity: 1; transform: none; }
+
+/* ── Section container ── */
+.container { max-width: 1000px; margin: 0 auto; padding: 0 40px; }
+@media (max-width: 768px) { .container { padding: 0 20px; } }
+
+/* ════════════════════════════════════════════════════════
+   HERO
+   ════════════════════════════════════════════════════════ */
+.hero {
+  min-height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; position: relative; overflow: hidden;
+  padding: 120px 0 80px;
+}
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 65% 55% at 55% 35%, rgba(255,145,0,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 15% 75%, rgba(100,255,218,0.025) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 85% 80%, rgba(179,136,255,0.02) 0%, transparent 50%);
+}
+
+.hero-content { position: relative; z-index: 1; }
+.hero-eyebrow {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 4px;
+  color: var(--orange); text-transform: uppercase; margin-bottom: 20px;
+  opacity: 0; animation: fadeUp 0.8s 0.2s forwards;
+}
+.hero-title {
+  font-family: var(--display); font-size: clamp(36px, 6vw, 64px);
+  font-weight: 900; line-height: 1.08; margin-bottom: 24px;
+  opacity: 0; animation: fadeUp 0.8s 0.4s forwards;
+}
+.hero-title em { font-style: italic; color: var(--orange); }
+.hero-sub {
+  font-size: 18px; color: var(--text2); max-width: 580px;
+  line-height: 1.65; margin-bottom: 36px;
+  opacity: 0; animation: fadeUp 0.8s 0.6s forwards;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px; max-width: 580px; margin-bottom: 40px;
+  opacity: 0; animation: fadeUp 0.8s 0.8s forwards;
+}
+.hero-stat {
+  background: rgba(255,255,255,0.025); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 12px; text-align: center;
+  transition: border-color 0.3s;
+}
+.hero-stat:hover { border-color: var(--orange); }
+.hero-stat .val { font-family: var(--mono); font-size: 22px; font-weight: 700; }
+.hero-stat .val.orange { color: var(--orange); }
+.hero-stat .val.green { color: var(--green); }
+.hero-stat .val.gold { color: var(--gold); }
+.hero-stat .val.teal { color: var(--teal); }
+.hero-stat .val.purple { color: var(--purple); }
+.hero-stat .lbl {
+  font-size: 9px; color: var(--muted); margin-top: 5px;
+  text-transform: uppercase; letter-spacing: 1.2px;
+}
+
+.hero-actions {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  opacity: 0; animation: fadeUp 0.8s 1s forwards;
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 32px; background: var(--orange); border: none;
+  border-radius: 10px; color: #000; font-family: var(--mono);
+  font-size: 13px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; cursor: pointer; text-decoration: none;
+  transition: all 0.25s; box-shadow: 0 0 30px rgba(255,145,0,0.2);
+}
+.btn-primary:hover { background: #ffab00; box-shadow: 0 0 50px rgba(255,145,0,0.35); transform: translateY(-2px); }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; background: transparent; border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text2); font-family: var(--mono);
+  font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+  cursor: pointer; text-decoration: none; transition: all 0.25s;
+}
+.btn-secondary:hover { border-color: var(--orange); color: var(--text); }
+
+/* ════════════════════════════════════════════════════════
+   SECTION HEADERS
+   ════════════════════════════════════════════════════════ */
+.section { padding: 80px 0; }
+.section-tag {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 3px;
+  color: var(--orange); text-transform: uppercase; margin-bottom: 10px;
+}
+.section-title {
+  font-family: var(--display); font-size: 36px; font-weight: 700;
+  line-height: 1.2; margin-bottom: 20px;
+}
+.section-sub {
+  font-size: 16px; color: var(--text2); max-width: 600px;
+  line-height: 1.6; margin-bottom: 48px;
+}
+
+/* ════════════════════════════════════════════════════════
+   THE PROBLEM
+   ════════════════════════════════════════════════════════ */
+.problem-section { border-top: 1px solid var(--border); }
+.problem-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+}
+@media (max-width: 768px) { .problem-grid { grid-template-columns: 1fr; } }
+
+.problem-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 24px; transition: border-color 0.3s;
+}
+.problem-card:hover { border-color: var(--red); }
+.problem-card .icon { font-size: 24px; margin-bottom: 12px; }
+.problem-card h3 {
+  font-family: var(--mono); font-size: 13px; font-weight: 600;
+  color: var(--red); letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.problem-card p { font-size: 14px; color: var(--text2); margin: 0; line-height: 1.6; }
+
+.insight-callout {
+  margin-top: 32px; background: var(--card); border: 1px solid var(--border);
+  border-left: 3px solid var(--orange); border-radius: 8px; padding: 24px;
+}
+.insight-callout .tag {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--orange); margin-bottom: 8px;
+}
+.insight-callout p { font-size: 15px; color: var(--text2); margin: 0; line-height: 1.6; }
+.insight-callout strong { color: var(--text); }
+
+/* ════════════════════════════════════════════════════════
+   HOW IT WORKS — FLOW
+   ════════════════════════════════════════════════════════ */
+.flow-section { border-top: 1px solid var(--border); }
+.flow-diagram {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 36px;
+}
+.flow-step { display: flex; align-items: flex-start; gap: 18px; margin-bottom: 24px; }
+.flow-step:last-child { margin-bottom: 0; }
+.flow-num {
+  flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 16px; font-weight: 700;
+  border: 2px solid; transition: all 0.3s;
+}
+.flow-num.orange { border-color: var(--orange); color: var(--orange); }
+.flow-num.gold { border-color: var(--gold); color: var(--gold); }
+.flow-num.green { border-color: var(--green); color: var(--green); }
+.flow-num.teal { border-color: var(--teal); color: var(--teal); }
+.flow-num.purple { border-color: var(--purple); color: var(--purple); }
+.flow-body h4 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.flow-body p { font-size: 14px; color: var(--text2); margin: 0; }
+.flow-connector {
+  width: 2px; height: 18px; background: var(--border);
+  margin: 0 0 0 20px;
+}
+
+/* Crypto pipeline display */
+.crypto-pipeline {
+  margin-top: 36px; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 24px; font-family: var(--mono);
+  font-size: 12px; line-height: 2; color: var(--teal);
+  text-align: center;
+}
+.crypto-pipeline .stage { color: var(--text2); }
+.crypto-pipeline .arrow { color: var(--muted); margin: 0 4px; }
+.crypto-pipeline .highlight { color: var(--orange); font-weight: 600; }
+
+/* ════════════════════════════════════════════════════════
+   PRICING COMPARISON
+   ════════════════════════════════════════════════════════ */
+.pricing-section { border-top: 1px solid var(--border); }
+.pricing-table {
+  width: 100%; border-collapse: collapse; font-size: 14px;
+}
+.pricing-table th {
+  text-align: left; padding: 12px 16px; background: var(--bg3);
+  border: 1px solid var(--border); font-family: var(--mono);
+  font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); font-weight: 500;
+}
+.pricing-table td {
+  padding: 12px 16px; border: 1px solid var(--border); color: var(--text2);
+}
+.pricing-table td:first-child {
+  font-family: var(--mono); font-size: 13px; color: var(--teal);
+}
+.pricing-table tr:hover td { background: var(--card); }
+.pricing-table tr.winner td {
+  background: rgba(255,145,0,0.04); border-color: rgba(255,145,0,0.2);
+}
+.pricing-table tr.winner td:first-child {
+  color: var(--orange); font-weight: 700;
+}
+.val-bad { color: var(--red); }
+.val-good { color: var(--green); font-weight: 600; }
+.val-warn { color: var(--gold); }
+
+/* ════════════════════════════════════════════════════════
+   THE CATEGORY — CAPSULE SECURITY
+   ════════════════════════════════════════════════════════ */
+.category-section { border-top: 1px solid var(--border); }
+.category-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  margin-bottom: 40px;
+}
+@media (max-width: 768px) { .category-grid { grid-template-columns: 1fr; } }
+.cat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px; text-align: center;
+  transition: border-color 0.3s;
+}
+.cat-card:hover { border-color: var(--teal); }
+.cat-card .icon { font-size: 28px; margin-bottom: 10px; }
+.cat-card h3 {
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  color: var(--teal); letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.cat-card p { font-size: 13px; color: var(--text2); line-height: 1.55; margin: 0; }
+
+.gap-visual {
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: center;
+  margin-bottom: 40px;
+}
+.gap-box {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px 24px; text-align: center;
+}
+.gap-box h4 { font-family: var(--mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.gap-box p { font-size: 13px; color: var(--text2); margin: 0; line-height: 1.5; }
+.gap-box.weak { border-color: rgba(255,71,87,0.3); }
+.gap-box.weak h4 { color: var(--red); }
+.gap-box.strong { border-color: rgba(0,230,118,0.3); }
+.gap-box.strong h4 { color: var(--green); }
+.gap-middle {
+  padding: 16px 20px; text-align: center;
+}
+.gap-middle .arrow-down { font-size: 24px; color: var(--muted); }
+.gap-middle .label {
+  font-family: var(--mono); font-size: 10px; color: var(--orange);
+  letter-spacing: 2px; text-transform: uppercase; margin-top: 4px;
+}
+
+/* Roadmap table */
+.roadmap-table {
+  width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 32px;
+}
+.roadmap-table th {
+  text-align: left; padding: 10px 14px; background: var(--bg3);
+  border: 1px solid var(--border); font-family: var(--mono);
+  font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); font-weight: 500;
+}
+.roadmap-table td {
+  padding: 10px 14px; border: 1px solid var(--border); color: var(--text2); font-size: 13px;
+}
+.roadmap-table td:first-child {
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+}
+.roadmap-table tr:hover td { background: var(--card); }
+.stage-current td:first-child { color: var(--orange); }
+.stage-next td:first-child { color: var(--gold); }
+.stage-future td:first-child { color: var(--teal); }
+
+/* ════════════════════════════════════════════════════════
+   USE CASES — EXPANDED
+   ════════════════════════════════════════════════════════ */
+.cases-section { border-top: 1px solid var(--border); }
+.cases-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.case-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 24px; transition: all 0.3s;
+  border-left: 3px solid;
+}
+.case-card:hover { transform: translateY(-3px); }
+.case-card.c-orange { border-left-color: var(--orange); }
+.case-card.c-orange:hover { border-color: var(--orange); }
+.case-card.c-gold { border-left-color: var(--gold); }
+.case-card.c-gold:hover { border-color: var(--gold); }
+.case-card.c-teal { border-left-color: var(--teal); }
+.case-card.c-teal:hover { border-color: var(--teal); }
+.case-card.c-green { border-left-color: var(--green); }
+.case-card.c-green:hover { border-color: var(--green); }
+.case-card.c-purple { border-left-color: var(--purple); }
+.case-card.c-purple:hover { border-color: var(--purple); }
+.case-card.c-blue { border-left-color: var(--blue); }
+.case-card.c-blue:hover { border-color: var(--blue); }
+.case-card.c-red { border-left-color: var(--red); }
+.case-card.c-red:hover { border-color: var(--red); }
+
+.case-card h3 {
+  font-family: var(--mono); font-size: 13px; font-weight: 600;
+  letter-spacing: 0.5px; margin-bottom: 8px;
+}
+.case-card p { font-size: 13px; color: var(--text2); margin: 0; line-height: 1.55; }
+.case-card code {
+  font-family: var(--mono); font-size: 11px; background: var(--bg3);
+  padding: 1px 5px; border-radius: 3px; color: var(--teal);
+}
+
+/* ════════════════════════════════════════════════════════
+   SECURITY BOUNDARIES
+   ════════════════════════════════════════════════════════ */
+.security-section { border-top: 1px solid var(--border); }
+.security-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+}
+@media (max-width: 768px) { .security-grid { grid-template-columns: 1fr; } }
+.sec-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 24px;
+}
+.sec-card h3 {
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.sec-card.can h3 { color: var(--green); }
+.sec-card.cant h3 { color: var(--text2); }
+.sec-card ul { list-style: none; padding: 0; margin: 0; }
+.sec-card li {
+  font-size: 13px; color: var(--text2); line-height: 1.55;
+  padding: 5px 0; padding-left: 20px; position: relative;
+}
+.sec-card.can li::before { content: '✓'; position: absolute; left: 0; color: var(--green); font-weight: 700; }
+.sec-card.cant li::before { content: '—'; position: absolute; left: 0; color: var(--muted); }
+
+/* ════════════════════════════════════════════════════════
+   ARCHITECTURE
+   ════════════════════════════════════════════════════════ */
+.arch-section { border-top: 1px solid var(--border); }
+.arch-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+}
+@media (max-width: 768px) { .arch-grid { grid-template-columns: 1fr; } }
+.arch-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 24px; text-align: center;
+  transition: border-color 0.3s;
+}
+.arch-card:hover { border-color: var(--green); }
+.arch-card .icon { font-size: 28px; margin-bottom: 12px; }
+.arch-card h3 {
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  color: var(--green); letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.arch-card p { font-size: 13px; color: var(--text2); line-height: 1.55; }
+
+/* ════════════════════════════════════════════════════════
+   FUTURE HORIZONS
+   ════════════════════════════════════════════════════════ */
+.future-section { border-top: 1px solid var(--border); }
+.future-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.future-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px; transition: border-color 0.3s;
+  border-top: 2px solid;
+}
+.future-card:hover { border-color: var(--purple); }
+.future-card.f-purple { border-top-color: var(--purple); }
+.future-card.f-blue { border-top-color: var(--blue); }
+.future-card.f-teal { border-top-color: var(--teal); }
+.future-card.f-gold { border-top-color: var(--gold); }
+.future-card h3 {
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  color: var(--text); letter-spacing: 0.5px; margin-bottom: 6px;
+}
+.future-card p { font-size: 12px; color: var(--text2); margin: 0; line-height: 1.5; }
+
+/* ════════════════════════════════════════════════════════
+   COMPANION PAPERS
+   ════════════════════════════════════════════════════════ */
+.companion-section { border-top: 1px solid var(--border); }
+.companion-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+}
+@media (max-width: 768px) { .companion-grid { grid-template-columns: 1fr; } }
+.companion-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px; text-decoration: none;
+  transition: all 0.3s; display: block;
+}
+.companion-card:hover { border-color: var(--orange); transform: translateY(-2px); }
+.companion-card .model {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.companion-card .model.gpt { color: var(--blue); }
+.companion-card .model.gem { color: var(--purple); }
+.companion-card .model.gro { color: var(--red); }
+.companion-card h3 { font-size: 15px; color: var(--text); margin-bottom: 6px; font-weight: 600; }
+.companion-card p { font-size: 12px; color: var(--text2); margin: 0; line-height: 1.5; }
+
+/* ════════════════════════════════════════════════════════
+   CTA + QUOTE + FOOTER
+   ════════════════════════════════════════════════════════ */
+.cta-section {
+  border-top: 1px solid var(--border); text-align: center;
+  padding: 100px 0;
+}
+.cta-section .section-title { margin: 0 auto 16px; max-width: 500px; }
+.cta-section .section-sub { margin: 0 auto 36px; text-align: center; }
+
+.quote-block {
+  border-left: 3px solid var(--gold); padding: 20px 28px;
+  margin: 48px 0; background: rgba(255,215,64,0.03); border-radius: 0 8px 8px 0;
+}
+.quote-block p {
+  font-family: var(--display); font-size: 18px; line-height: 1.6;
+  color: var(--text); font-style: italic; margin: 0;
+}
+
+.site-footer {
+  border-top: 1px solid var(--border); padding: 40px 0;
+  text-align: center; font-family: var(--mono); font-size: 11px;
+  color: var(--muted); line-height: 1.8;
+}
+.site-footer a { color: var(--gold); text-decoration: none; }
+.site-footer a:hover { text-decoration: underline; }
+
+/* ── Tag chips ── */
+.tag {
+  display: inline-block; font-family: var(--mono); font-size: 10px;
+  padding: 2px 8px; border-radius: 3px; letter-spacing: 1px;
+  text-transform: uppercase; margin-left: 6px;
+}
+.tag.green { background: var(--green-dim); color: var(--green); }
+.tag.orange { background: var(--orange-dim); color: var(--orange); }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .hero { padding: 80px 0 60px; }
+  .hero-title { font-size: 32px; }
+  .section { padding: 60px 0; }
+  .section-title { font-size: 28px; }
+  .flow-diagram { padding: 24px; }
+  .pricing-table { font-size: 12px; }
+  .pricing-table th, .pricing-table td { padding: 8px 10px; }
+  .gap-visual { grid-template-columns: 1fr; }
+  .gap-middle .arrow-down { transform: rotate(0); }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="container hero-content">
+    <div class="hero-eyebrow">8Z Framework &bull; A New Software Category</div>
+    <h1 class="hero-title">Sell anything.<br>No server.<br>No platform.<br>Just <em>encryption.</em></h1>
+    <p class="hero-sub">8Z Publish lets you encrypt any HTML content — courses, tools, music, newsletters, AI agents — into a <code style="font-family:var(--mono);font-size:13px;background:var(--bg3);padding:2px 6px;border-radius:3px;color:var(--teal)">.8zv</code> capsule. Host it anywhere for free. Customers decrypt with a passphrase. You keep 97% of revenue. No backend. No login system. No platform tax.</p>
+
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="val orange">$0</div><div class="lbl">Hosting Cost</div></div>
+      <div class="hero-stat"><div class="val green">AES-256</div><div class="lbl">Encryption</div></div>
+      <div class="hero-stat"><div class="val gold">2.9%</div><div class="lbl">Only Stripe</div></div>
+      <div class="hero-stat"><div class="val teal">5 KB</div><div class="lbl">Decoder Size</div></div>
+    </div>
+
+    <div class="hero-actions">
+      <a class="btn-primary" href="8z_shield_smart.html">&#9889; Open 8Z Shield</a>
+      <a class="btn-secondary" href="BD_8Z_Publish.html">Read the Technical Paper →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ THE PROBLEM ═══════════════════ -->
+<section class="section problem-section" id="problem">
+  <div class="container">
+    <div class="vis">
+      <div class="section-tag">The Problem</div>
+      <h2 class="section-title">The platform tax is a design flaw.</h2>
+      <p class="section-sub">To sell digital content, you're told you need servers, databases, login systems, and a platform that takes 10–12% of everything you earn. That assumption is wrong.</p>
+    </div>
+
+    <div class="problem-grid vis">
+      <div class="problem-card">
+        <div class="icon">&#128176;</div>
+        <h3>Revenue Cut</h3>
+        <p>Substack, Gumroad, Patreon take 8–12% of your revenue. On top of payment processing. That's $800–$1,200 per $10K in sales — for hosting files.</p>
+      </div>
+      <div class="problem-card">
+        <div class="icon">&#128274;</div>
+        <h3>Platform Lock-In</h3>
+        <p>They own the customer relationship. They own the distribution. They change terms whenever they want. Your business runs on their infrastructure and their rules.</p>
+      </div>
+      <div class="problem-card">
+        <div class="icon">&#9881;</div>
+        <h3>Infrastructure Burden</h3>
+        <p>Self-hosting means servers, databases, session management, security patches, SSL certs, and $20+/month minimum. All to gate access to files.</p>
+      </div>
+      <div class="problem-card">
+        <div class="icon">&#128293;</div>
+        <h3>Attack Surface</h3>
+        <p>Every server is a target. Every database is a breach waiting to happen. Every login system is a password leak risk. Complexity creates vulnerability.</p>
+      </div>
+    </div>
+
+    <div class="insight-callout vis">
+      <div class="tag">The 8Z Insight</div>
+      <p>If the content is encrypted and the passphrase is the only key, you don't need a server to protect it. You need <strong>good encryption</strong> and a <strong>browser that can decrypt</strong>. Both exist. The server was never necessary — it was a habit.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ HOW IT WORKS ═══════════════════ -->
+<section class="section flow-section" id="how">
+  <div class="container">
+    <div class="vis">
+      <div class="section-tag">How It Works</div>
+      <h2 class="section-title">Five steps. Zero servers.</h2>
+      <p class="section-sub">The entire workflow runs on static files and browser crypto. No backend. No database. No login system.</p>
+    </div>
+
+    <div class="flow-diagram vis">
+      <div class="flow-step">
+        <div class="flow-num orange">1</div>
+        <div class="flow-body">
+          <h4>Create</h4>
+          <p>Build your content as HTML — a course, trading tool, music player, newsletter, portfolio. Any web content works.</p>
+        </div>
+      </div>
+      <div class="flow-connector"></div>
+      <div class="flow-step">
+        <div class="flow-num gold">2</div>
+        <div class="flow-body">
+          <h4>Encrypt</h4>
+          <p>Drop the file into <a href="8z_shield_smart.html" style="color:var(--orange)">8Z Shield</a>. Enter a passphrase. Download the <code>.8zv</code> file. Five seconds. No install required.</p>
+        </div>
+      </div>
+      <div class="flow-connector"></div>
+      <div class="flow-step">
+        <div class="flow-num green">3</div>
+        <div class="flow-body">
+          <h4>Upload</h4>
+          <p>Host the <code>.8zv</code> on any free static host — Netlify, GitHub Pages, Cloudflare Pages, Vercel, S3. Cost: $0/month.</p>
+        </div>
+      </div>
+      <div class="flow-connector"></div>
+      <div class="flow-step">
+        <div class="flow-num teal">4</div>
+        <div class="flow-body">
+          <h4>Sell</h4>
+          <p>Create a Stripe Payment Link. Use Zapier to auto-deliver the passphrase on purchase. Customer opens the decoder page, enters passphrase, sees the content.</p>
+        </div>
+      </div>
+      <div class="flow-connector"></div>
+      <div class="flow-step">
+        <div class="flow-num purple">5</div>
+        <div class="flow-body">
+          <h4>Revoke</h4>
+          <p>Delete the <code>.8zv</code> from your host. The passphrase becomes useless. Instant, atomic revocation. No account suspension workflow needed.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="crypto-pipeline vis">
+      <div class="stage">Passphrase</div>
+      <span class="arrow">→</span>
+      <span>SHA-256</span>
+      <span class="arrow">→</span>
+      <span>XorShift64Star ×1024</span>
+      <span class="arrow">→</span>
+      <span>SHA-256</span>
+      <span class="arrow">→</span>
+      <span class="highlight">PBKDF2 (10M)</span>
+      <span class="arrow">→</span>
+      <span>AES-256-GCM</span>
+      <span class="arrow">→</span>
+      <span style="color:var(--green)">.8zv</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ PRICING ═══════════════════ -->
+<section class="section pricing-section" id="pricing">
+  <div class="container">
+    <div class="vis">
+      <div class="section-tag">Pricing</div>
+      <h2 class="section-title">Keep 97% of what you earn.</h2>
+      <p class="section-sub">Every other platform charges you for the privilege of hosting files behind a login page. 8Z Publish doesn't have a login page.</p>
+    </div>
+
+    <table class="pricing-table vis">
+      <thead>
+        <tr>
+          <th>Platform</th>
+          <th>Revenue Cut</th>
+          <th>Server Cost</th>
+          <th>Owns Customer?</th>
+          <th>Quantum Safe</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Substack</td>
+          <td class="val-bad">10%</td>
+          <td>Their server</td>
+          <td class="val-bad">Yes</td>
+          <td class="val-bad">N/A</td>
+        </tr>
+        <tr>
+          <td>Gumroad</td>
+          <td class="val-bad">10%</td>
+          <td>Their server</td>
+          <td class="val-bad">Yes</td>
+          <td class="val-bad">N/A</td>
+        </tr>
+        <tr>
+          <td>Patreon</td>
+          <td class="val-bad">8–12%</td>
+          <td>Their server</td>
+          <td class="val-bad">Yes</td>
+          <td class="val-bad">N/A</td>
+        </tr>
+        <tr>
+          <td>WordPress + Plugin</td>
+          <td class="val-warn">Stripe only</td>
+          <td class="val-bad">$20+/mo</td>
+          <td class="val-good">No</td>
+          <td class="val-bad">No</td>
+        </tr>
+        <tr class="winner">
+          <td>8Z Publish</td>
+          <td class="val-good">2.9% (Stripe only)</td>
+          <td class="val-good">$0 (free hosting)</td>
+          <td class="val-good">No — you own it</td>
+          <td class="val-good">Yes (P=NP safe)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="quote-block vis">
+      <p>The entire product is static HTML files. The "server" is any free host. The "database" is the filesystem. The "auth system" is AES-256 + a passphrase. Simplicity, pursued honestly, produces resilience that complexity never reaches.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ THE CATEGORY ═══════════════════ -->
+<section class="section category-section" id="category">
+  <div class="container">
+    <div class="vis">
+      <div class="section-tag">The Bigger Picture</div>
+      <h2 class="section-title">A new class of software object.</h2>
+      <p class="section-sub">The industry offers an unsatisfying choice: distribute a weakly controlled file, or build a full SaaS application. That choice is too narrow. There's a middle layer that's been missing.</p>
+    </div>
+
+    <div class="gap-visual vis">
+      <div class="gap-box weak">
+        <h4>Plain Files</h4>
+        <p>Cheap and simple. But once delivered: easy to copy, impossible to revoke, no personalization, no attribution.</p>
+      </div>
+      <div class="gap-middle">
+        <div class="arrow-down">⇄</div>
+        <div class="label">The Gap</div>
+      </div>
+      <div class="gap-box strong">
+        <h4>Full SaaS</h4>
+        <p>Powerful and trackable. But requires backends, accounts, billing, permissions, support, and ongoing ops.</p>
+      </div>
+    </div>
+
+    <div class="insight-callout vis">
+      <div class="tag">The Thesis</div>
+      <p>An <code style="font-family:var(--mono);font-size:12px;background:var(--bg3);padding:1px 5px;border-radius:3px;color:var(--teal)">.8zv</code> file is not just an encrypted file. It's a <strong>protected digital capsule</strong> — encrypted, personalizable, traceable, revocable, and offline-capable. It gives creators the control of SaaS without the operational burden. Many products are too valuable to give away as files and too small to justify full SaaS. Capsules fill that gap.</p>
+    </div>
+
+    <div class="category-grid vis">
+      <div class="cat-card">
+        <div class="icon">&#128272;</div>
+        <h3>Encrypted</h3>
+        <p>Content is ciphertext until an authorized passphrase unlocks it. At rest, in transit, everywhere.</p>
+      </div>
+      <div class="cat-card">
+        <div class="icon">&#128100;</div>
+        <h3>Personalizable</h3>
+        <p>Each customer receives a distinct build with unique forensic fingerprints baked in.</p>
+      </div>
+      <div class="cat-card">
+        <div class="icon">&#128269;</div>
+        <h3>Traceable</h3>
+        <p>Multi-channel watermarking lets you attribute leaks to the exact source copy.</p>
+      </div>
+      <div class="cat-card">
+        <div class="icon">&#128260;</div>
+        <h3>Revocable</h3>
+        <p>Delete the file, passphrase dies. No account suspension workflow, no support tickets.</p>
+      </div>
+      <div class="cat-card">
+        <div class="icon">&#9986;</div>
+        <h3>Partial</h3>
+        <p>Section-level encryption. Only the viewed content decrypts — the rest stays sealed.</p>
+      </div>
+      <div class="cat-card">
+        <div class="icon">&#9889;</div>
+        <h3>Offline-First</h3>
+        <p>Works without network. No server ping. No session. Just a browser and a passphrase.</p>
+      </div>
+    </div>
+
+    <div class="vis">
+      <h3 style="font-family:var(--mono);font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--orange);margin-bottom:16px">The Roadmap: From Publish to Capsule OS</h3>
+      <p style="font-size:14px;color:var(--text2);margin-bottom:20px">The category builds as a ladder, not a leap. Each stage adds a capability layer.</p>
+
+      <table class="roadmap-table">
+        <thead>
+          <tr><th>Stage</th><th>Function</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr class="stage-current">
+            <td>Publish</td>
+            <td>Whole-artifact encryption and static delivery</td>
+            <td style="color:var(--green)">&#10003; Live</td>
+          </tr>
+          <tr class="stage-current">
+            <td>Shield</td>
+            <td>Section-level encryption, AI-assisted scanning, reduced plaintext surface</td>
+            <td style="color:var(--green)">&#10003; Live</td>
+          </tr>
+          <tr class="stage-next">
+            <td>Trace</td>
+            <td>Per-recipient forensic fingerprinting, multi-channel watermarks, leak attribution</td>
+            <td style="color:var(--gold)">Building</td>
+          </tr>
+          <tr class="stage-future">
+            <td>Capsule</td>
+            <td>Multi-file apps, asset bundles, policy manifests, expiry controls</td>
+            <td style="color:var(--muted)">Designed</td>
+          </tr>
+          <tr class="stage-future">
+            <td>Vault</td>
+            <td>Long-lived recovery bundles, cold storage, inheritance workflows</td>
+            <td style="color:var(--muted)">Planned</td>
+          </tr>
+          <tr class="stage-future">
+            <td>Studio</td>
+            <td>Templates, issuance, analytics, distribution, marketplace</td>
+            <td style="color:var(--muted)">Vision</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ USE CASES ═══════════════════ -->
+<section class="section cases-section" id="cases">
+  <div class="container">
+    <div class="vis">
+      <div class="section-tag">Use Cases</div>
+      <h2 class="section-title">Encrypt anything. Sell anywhere.</h2>
+      <p class="section-sub">Any content that can be an HTML file can be a product. The architecture is domain-agnostic — the bytes don't care what they represent.</p>
+    </div>
+
+    <div class="cases-grid vis">
+      <div class="case-card c-orange">
+        <h3>Online Courses</h3>
+        <p>Encrypt each module as a <code>.8zv</code>. Sell via Stripe. Deliver passphrase on payment. Students decrypt in browser. No LMS, no hosting costs, no piracy via URL sharing.</p>
+      </div>
+      <div class="case-card c-gold">
+        <h3>Trading Tools &amp; Dashboards</h3>
+        <p>Encrypt live trading scanners, calculators, paper traders. Already in production — the author uses this daily for SM and ZZ traders on chessbest.org.</p>
+      </div>
+      <div class="case-card c-teal">
+        <h3>Music &amp; Audio</h3>
+        <p>Encrypt HTML audio players with embedded tracks. Fans buy a passphrase, decrypt, listen. No streaming service, no 30% Apple cut, no takedown risk.</p>
+      </div>
+      <div class="case-card c-green">
+        <h3>Premium Newsletters</h3>
+        <p>Free tier on your blog, premium tier as <code>.8zv</code>. Replace Substack's 10% with Stripe's 2.9%. Own the customer relationship entirely.</p>
+      </div>
+      <div class="case-card c-purple">
+        <h3>AI Agents &amp; Custom Personas</h3>
+        <p>Package custom AI workflows, trading bots, therapy agents, or game NPCs as protected capsules. The entire agent bundle — UI, logic, prompts, knowledge — encrypted and monetizable.</p>
+      </div>
+      <div class="case-card c-blue">
+        <h3>B2B Partner Delivery</h3>
+        <p>Pricing tools, distributor bundles, onboarding kits, sales enablement packages. Capsules replace heavyweight portals with recipient-specific protected packages.</p>
+      </div>
+      <div class="case-card c-red">
+        <h3>Legal &amp; Executive Handoff</h3>
+        <p>Board materials, M&amp;A review packs, audit documents. Time-bound, recipient-specific, and traceable — without spinning up a data room.</p>
+      </div>
+      <div class="case-card c-orange">
+        <h3>Private Family Content</h3>
+        <p>Photo albums, family histories, personal journals, video memories. Encrypted and shared with a passphrase. No cloud service, no privacy policy, no account needed.</p>
+      </div>
+      <div class="case-card c-gold">
+        <h3>Cold Storage &amp; Inheritance</h3>
+        <p>Recovery kits, estate instructions, "open only if needed" bundles. Offline-survivable, long shelf life, no dependency on any service existing in 20 years.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECURITY BOUNDARIES ═══════════════════ -->
+<section class="section security-section" id="security">
+  <div class="container">
+    <div class="vis">
+      <div class="section-tag">Honest Security</div>
+      <h2 class="section-title">What 8Z does — and what it doesn't claim.</h2>
+      <p class="section-sub">The strongest version of this system doesn't need to overclaim. Clear boundaries build more trust than vague promises of invincibility.</p>
+    </div>
+
+    <div class="security-grid vis">
+      <div class="sec-card can">
+        <h3>What 8Z delivers</h3>
+        <ul>
+          <li>AES-256-GCM encryption at rest and in transit — before unlock, content is indistinguishable from random noise</li>
+          <li>Section-level decryption: only the viewed section enters the DOM, the rest stays sealed</li>
+          <li>Per-customer forensic fingerprinting across multiple channels (ZWS steganography, synonym swaps, honey-links)</li>
+          <li>Leak attribution with confidence scoring — identify the source copy when content surfaces</li>
+          <li>Lightweight revocation: delete the file, revoke the access. No admin panel required</li>
+          <li>Offline operation: no server ping, no session, no heartbeat. Just a browser and a passphrase</li>
+          <li>10M-iteration PBKDF2 + XorShift64Star Software PUF: brute-force costs measured in centuries, not hours</li>
+        </ul>
+      </div>
+      <div class="sec-card cant">
+        <h3>What no client-side system can do</h3>
+        <ul>
+          <li>Guarantee perpetual secrecy after a legitimate user has viewed the content</li>
+          <li>Prevent screenshots, screen recording, or manual retyping</li>
+          <li>Replace all forms of server-side trust for every use case</li>
+          <li>Provide perfect DRM in adversarial-client environments</li>
+          <li>Beat hardened public API auth as a universal standard for mass consumer apps</li>
+          <li>Prevent key sharing between users who trust each other</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="insight-callout vis">
+      <div class="tag">The Right Security Objective</div>
+      <p>The goal is not "make plaintext impossible forever." The goal is: <strong>minimize exposure surface, personalize every copy, attribute leaks forensically, and make revocation atomic and free.</strong> That's a real and achievable security posture — and it's stronger than what 95% of digital products have today.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ ARCHITECTURE ═══════════════════ -->
+<section class="section arch-section" id="arch">
+  <div class="container">
+    <div class="vis">
+      <div class="section-tag">Architecture</div>
+      <h2 class="section-title">Three components. Zero dependencies.</h2>
+      <p class="section-sub">The entire system is three things: an encryptor, a decoder, and encrypted files. All static. All portable. All permanent.</p>
+    </div>
+
+    <div class="arch-grid vis">
+      <div class="arch-card">
+        <div class="icon">&#128272;</div>
+        <h3>Encryptor</h3>
+        <p>Browser-based or Python CLI. Gzip + AES-256-GCM with the 8Z key derivation pipeline. Produces <code style="font-family:var(--mono);font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px;color:var(--teal)">.8zv</code> files.</p>
+      </div>
+      <div class="arch-card">
+        <div class="icon">&#128275;</div>
+        <h3>Decoder</h3>
+        <p>5 KB self-contained HTML. Zero dependencies. Uses Web Crypto API. Wrong passphrase = blank page, no error oracle for attackers.</p>
+      </div>
+      <div class="arch-card">
+        <div class="icon">&#128230;</div>
+        <h3>.8zv Capsules</h3>
+        <p>Encrypted content capsules. Host on any static server. Portable, permanent, platform-independent. One capsule per product or per customer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FUTURE HORIZONS ═══════════════════ -->
+<section class="section future-section" id="future">
+  <div class="container">
+    <div class="vis">
+      <div class="section-tag">Future Horizons</div>
+      <h2 class="section-title">Where the architecture leads.</h2>
+      <p class="section-sub">The same encryption pipeline that protects an HTML page can protect anything that's bytes. The system generalizes further than the current tools show.</p>
+    </div>
+
+    <div class="future-grid vis">
+      <div class="future-card f-purple">
+        <h3>GPU-Level Protection</h3>
+        <p>Lazy decryption extended to GPU compute shaders — model weights encrypted in VRAM, decrypted only during inference, zeroed after each layer pass.</p>
+      </div>
+      <div class="future-card f-blue">
+        <h3>Capsule Format Standard</h3>
+        <p>A recognized container format for controlled digital objects — as natural as .zip or .app, but with built-in encryption, policy manifests, and lifecycle hooks.</p>
+      </div>
+      <div class="future-card f-teal">
+        <h3>Peer-to-Peer Distribution</h3>
+        <p>WebRTC swarms where encrypted capsules propagate without servers. The encryption makes the transport layer irrelevant — the content is self-protecting.</p>
+      </div>
+      <div class="future-card f-gold">
+        <h3>Domain Explosion</h3>
+        <p>Medical records with consent-gated decryption. Military briefings on USB sticks. Family archives that survive 50 years without any service dependency. The same architecture, applied recursively.</p>
+      </div>
+    </div>
+
+    <div class="quote-block vis">
+      <p>Most existing solutions solve only one layer. File encryption solves protection. SaaS solves lifecycle. Static hosting solves delivery. Capsules combine enough of these layers to create a new operational model — software objects rich enough to sell as products, light enough to ship without becoming an operations company.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ COMPANION PAPERS ═══════════════════ -->
+<section class="section companion-section" id="companions">
+  <div class="container">
+    <div class="vis">
+      <div class="section-tag">Companion Research</div>
+      <h2 class="section-title">Four LLMs. One framework.</h2>
+      <p class="section-sub">This paper synthesizes insights from four independent AI analyses of the 8Z framework. Each brought a distinct lens — read the originals for the full perspectives.</p>
+    </div>
+
+    <div class="companion-grid vis">
+      <a class="companion-card" href="8z_shield_GPT.html">
+        <div class="model gpt">ChatGPT</div>
+        <h3>From Protected Pages to Capsule Security</h3>
+        <p>Category theory. The "capsule" naming, six-stage roadmap, honest security boundaries, and the thesis that this is a new software distribution layer.</p>
+      </a>
+      <a class="companion-card" href="8z_shield_GEM.html">
+        <div class="model gem">Gemini</div>
+        <h3>The 8Z Singularity</h3>
+        <p>Maximum extension. GPU VRAM protection, WebRTC sovereign swarms, 8Z-OS bootloaders, and DeFi without blockchains. Speculative but energizing.</p>
+      </a>
+      <a class="companion-card" href="8z_shield_GRO.html">
+        <div class="model gro">Grok</div>
+        <h3>The Infinite Ownership Layer</h3>
+        <p>100 use cases across seven domains. Dream Team brainstorming, economic analysis, and a vision of digital ownership that stretches to 2100.</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ CTA ═══════════════════ -->
+<section class="section cta-section" id="cta">
+  <div class="container vis">
+    <div class="section-tag">Get Started</div>
+    <h2 class="section-title">Encrypt your first file in 30 seconds.</h2>
+    <p class="section-sub">No install. No sign-up. No server. Open the browser encryptor, drop a file, enter a passphrase, download your <code style="font-family:var(--mono);font-size:13px;background:var(--bg3);padding:2px 6px;border-radius:3px;color:var(--teal)">.8zv</code>.</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+      <a class="btn-primary" href="8z_shield_smart.html">&#9889; Open 8Z Shield</a>
+      <a class="btn-secondary" href="BD_8Z_Publish.html">Read the Technical Paper →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer class="site-footer">
+  <div class="container">
+    8Z Publish &bull; AIM&sup3; Institute &bull; Bojan Dobrečević &bull; March 2026<br>
+    <span style="color:var(--text2)">Synthesized by Claude Opus 4.6 &bull; Research contributions: ChatGPT, Gemini, Grok</span><br>
+    <a href="8z_shield_smart.html">Open 8Z Shield</a> &bull;
+    <a href="BD_8Z_Publish.html">Technical Paper</a> &bull;
+    <a href="BD_8Z_Auth.html">8Z-Auth</a>
+  </div>
+</footer>
+
+<script>
+// ── Intersection Observer for reveal animations ──
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('show'); obs.unobserve(e.target); }
+  });
+}, { threshold: 0, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.vis').forEach(el => obs.observe(el));
+// Fallback: show everything after 3s
+setTimeout(() => document.querySelectorAll('.vis').forEach(el => el.classList.add('show')), 3000);
+</script>
+</body>
+</html>
