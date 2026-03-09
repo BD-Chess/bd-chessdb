@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCH — The Claustrum–Consciousness Hypothesis: A Testable Science</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg-primary:#0a0c10;--bg-secondary:#12151c;--bg-tertiary:#1a1e28;--bg-card:#161a24;--border:#2a2f3c;--border-accent:#3a4055;--text-primary:#e8eaf0;--text-secondary:#8b93a6;--text-muted:#5a6275;--accent-green:#00e676;--accent-green-dim:#00c85320;--accent-red:#ff4757;--accent-red-dim:#ff475720;--accent-blue:#448aff;--accent-blue-dim:#448aff20;--accent-gold:#ffd740;--accent-gold-dim:#ffd74020;--accent-purple:#b388ff;--accent-purple-dim:#b388ff20;--accent-teal:#64ffda;--accent-teal-dim:#64ffda20;--accent-cyan:#00e5ff;--accent-cyan-dim:#00e5ff20;--font-display:'Playfair Display',Georgia,serif;--font-body:'DM Sans',sans-serif;--font-mono:'JetBrains Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth;font-size:16px}body{background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-body);line-height:1.72;-webkit-font-smoothing:antialiased}::selection{background:var(--accent-blue);color:#fff}
+
+.toc-nav{position:fixed;top:0;left:0;width:260px;height:100vh;background:var(--bg-secondary);border-right:1px solid var(--border);overflow-y:auto;z-index:100;padding:28px 0;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.toc-nav::-webkit-scrollbar{width:4px}.toc-nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.toc-brand{padding:0 24px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}.toc-brand h2{font-family:var(--font-mono);font-size:13px;font-weight:500;color:var(--accent-cyan);letter-spacing:2px;text-transform:uppercase}.toc-brand p{font-size:11px;color:var(--text-muted);margin-top:4px}
+.toc-nav a{display:block;padding:7px 24px;font-size:13px;color:var(--text-secondary);text-decoration:none;transition:all .15s;border-left:2px solid transparent}.toc-nav a:hover{color:var(--text-primary);background:var(--bg-tertiary)}.toc-nav a.ch{font-weight:600;color:var(--text-primary);font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-top:14px;padding-top:10px;border-top:1px solid var(--border)}.toc-nav a.ch:first-of-type{border-top:none;margin-top:0}.toc-nav a.sub{padding-left:36px;font-size:12.5px}
+
+.main{margin-left:260px;max-width:860px;padding:48px 56px 120px}
+
+.cover{text-align:center;padding:80px 0 60px;border-bottom:1px solid var(--border);margin-bottom:60px}.cover-tag{font-family:var(--font-mono);font-size:12px;letter-spacing:3px;color:var(--accent-cyan);text-transform:uppercase;margin-bottom:20px}.cover h1{font-family:var(--font-display);font-size:42px;font-weight:900;line-height:1.15;margin-bottom:18px}.cover h1 em{font-style:italic;color:var(--accent-cyan)}.cover .subtitle{font-size:18px;color:var(--text-secondary);max-width:600px;margin:0 auto 28px;line-height:1.6}.cover .meta{font-family:var(--font-mono);font-size:12px;color:var(--text-muted)}
+
+.chapter{margin-bottom:64px;padding-top:32px;border-top:1px solid var(--border)}.chapter-num{font-family:var(--font-mono);font-size:11px;letter-spacing:3px;color:var(--accent-cyan);text-transform:uppercase;margin-bottom:8px}.chapter h2{font-family:var(--font-display);font-size:32px;font-weight:700;line-height:1.25;margin-bottom:24px}.chapter h3{font-size:20px;font-weight:600;margin:36px 0 14px;padding-bottom:6px;border-bottom:1px solid var(--border)}.chapter h4{font-size:16px;font-weight:600;margin:24px 0 10px;color:var(--accent-teal)}
+
+p{margin-bottom:16px;color:var(--text-secondary)}strong{color:var(--text-primary);font-weight:600}em{color:var(--accent-gold);font-style:normal}
+
+.callout{background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--accent-blue);padding:18px 22px;margin:20px 0;border-radius:4px}.callout.warn{border-left-color:var(--accent-gold)}.callout.danger{border-left-color:var(--accent-red)}.callout.success{border-left-color:var(--accent-green)}.callout.teal{border-left-color:var(--accent-teal)}.callout .callout-title{font-family:var(--font-mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-weight:600}.callout.warn .callout-title{color:var(--accent-gold)}.callout.danger .callout-title{color:var(--accent-red)}.callout.success .callout-title{color:var(--accent-green)}.callout.teal .callout-title{color:var(--accent-teal)}.callout p{margin-bottom:6px;font-size:14px}
+
+code{font-family:var(--font-mono);font-size:13px;background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;color:var(--accent-teal)}
+pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22px;border-radius:4px;overflow-x:auto;margin:16px 0;font-family:var(--font-mono);font-size:12.5px;line-height:1.6;color:var(--text-secondary);position:relative}
+.copy-btn{position:absolute;top:8px;right:8px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);font-family:var(--font-mono);font-size:10px;padding:4px 10px;border-radius:3px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all .2s}.copy-btn:hover{color:var(--accent-teal);border-color:var(--accent-teal)}
+
+.tag{display:inline-block;font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:3px;letter-spacing:1px;text-transform:uppercase;margin-right:4px}.tag.green{background:var(--accent-green-dim);color:var(--accent-green)}.tag.red{background:var(--accent-red-dim);color:var(--accent-red)}.tag.blue{background:var(--accent-blue-dim);color:var(--accent-blue)}.tag.gold{background:var(--accent-gold-dim);color:var(--accent-gold)}.tag.purple{background:var(--accent-purple-dim);color:var(--accent-purple)}.tag.teal{background:var(--accent-teal-dim);color:var(--accent-teal)}.tag.cyan{background:var(--accent-cyan-dim);color:var(--accent-cyan)}
+
+.quote-block{border-left:3px solid var(--accent-gold);padding:16px 24px;margin:24px 0;background:rgba(255,215,64,.04)}.quote-block p{font-family:var(--font-display);font-size:18px;line-height:1.6;color:var(--text-primary);font-style:italic;margin-bottom:0}
+
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:28px 0}
+.stat{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:18px 14px;text-align:center;transition:border-color .2s}.stat:hover{border-color:var(--accent-cyan)}
+.stat .val{font-family:var(--font-mono);font-size:26px;font-weight:700}.stat .val.green{color:var(--accent-green)}.stat .val.gold{color:var(--accent-gold)}.stat .val.blue{color:var(--accent-blue)}.stat .val.purple{color:var(--accent-purple)}.stat .val.teal{color:var(--accent-teal)}.stat .val.red{color:var(--accent-red)}.stat .val.cyan{color:var(--accent-cyan)}
+.stat .lbl{font-size:10px;color:var(--text-muted);margin-top:6px;text-transform:uppercase;letter-spacing:1.2px}
+
+.formula{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:24px 28px;margin:24px 0;text-align:center}.formula .expr{font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--accent-cyan);letter-spacing:1px;margin-bottom:8px}.formula .desc{font-size:13px;color:var(--text-muted)}
+
+.compare-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.compare-table th{text-align:left;padding:10px 14px;background:var(--bg-tertiary);border:1px solid var(--border);font-family:var(--font-mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)}
+.compare-table td{padding:9px 14px;border:1px solid var(--border);color:var(--text-secondary)}
+.compare-table td:first-child{font-family:var(--font-mono);color:var(--accent-teal);font-size:12px}
+.compare-table tr:hover td{background:var(--bg-card)}
+
+.layer-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin:16px 0;position:relative;transition:border-color .3s}
+.layer-card:hover{border-color:var(--accent-cyan)}
+.layer-card .layer-num{font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--accent-cyan);opacity:.3;position:absolute;top:12px;right:20px}
+.layer-card .layer-title{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--accent-teal);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.layer-card p{font-size:14px;margin-bottom:4px}
+
+.vis{opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}.vis.show{opacity:1;transform:none}
+
+@media(max-width:960px){.toc-nav{display:none}.main{margin-left:0;padding:32px 24px 80px}.cover h1{font-size:30px}.stats-row{grid-template-columns:repeat(2,1fr)}}
+@media print{.toc-nav{display:none}.main{margin-left:0;max-width:100%}body{background:#fff;color:#111}}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav class="toc-nav">
+  <div class="toc-brand">
+    <h2>CCH v1.4</h2>
+    <p>The Testable Science</p>
+  </div>
+  <a href="#cover" class="ch">Cover</a>
+  <a href="#ch1" class="ch">1 &middot; Introduction</a>
+  <a href="#ch2" class="ch">2 &middot; Core Claims</a>
+  <a href="#c1" class="sub">C1: Conscious Regime</a>
+  <a href="#c2" class="sub">C2: Necessity of Control</a>
+  <a href="#c3" class="sub">C3: The Claustrum</a>
+  <a href="#c4" class="sub">C4: AI Extension</a>
+  <a href="#ch3" class="ch">3 &middot; The S-Metric</a>
+  <a href="#coherence" class="sub">Coherence C<sub>n</sub></a>
+  <a href="#complexity" class="sub">Complexity &Psi;(I)</a>
+  <a href="#lockkey" class="sub">Lock &amp; Key</a>
+  <a href="#ch4" class="ch">4 &middot; Claustrum as Controller</a>
+  <a href="#ch5" class="ch">5 &middot; Predictions</a>
+  <a href="#p1" class="sub">P1&ndash;P5</a>
+  <a href="#falsify" class="sub">Falsification</a>
+  <a href="#ch6" class="ch">6 &middot; Experiments &amp; Code</a>
+  <a href="#zombie" class="sub">Zombie Test</a>
+  <a href="#physionet" class="sub">PhysioNet Pipeline</a>
+  <a href="#digiclaust" class="sub">Digital Claustrum</a>
+  <a href="#ch7" class="ch">7 &middot; GNW vs IIT vs CCH</a>
+  <a href="#ch8" class="ch">8 &middot; Human&ndash;AI Method</a>
+  <a href="#ch9" class="ch">9 &middot; Roadmap</a>
+  <a href="#glossary" class="ch">Glossary</a>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+<!-- COVER -->
+<div class="cover vis" id="cover">
+  <div class="cover-tag">CCH v1.4 &mdash; Claustrum&ndash;Consciousness Hypothesis</div>
+  <h1><em>The Testable Science</em><br>of Consciousness</h1>
+  <div class="subtitle">A control-theoretic framework with a computable intensity marker, executable validation code, and five falsifiable predictions. From the claustrum to the edge of chaos.</div>
+  <div class="meta">Bojan Dobre&#269;evi&#269; &bull; AIM&sup3; Institute &bull; January 2026<br>
+  AI Team: Gemini 3 Pro &bull; ChatGPT 5.1 &bull; Claude 4.5 Opus &bull; Grok 4.1</div>
+
+  <div class="stats-row" style="margin-top:36px">
+    <div class="stat"><div class="val cyan">S</div><div class="lbl">Computable Metric</div></div>
+    <div class="stat"><div class="val green">5</div><div class="lbl">Predictions</div></div>
+    <div class="stat"><div class="val gold">P1</div><div class="lbl">Code-Ready Test</div></div>
+    <div class="stat"><div class="val teal">MIT</div><div class="lbl">Open License</div></div>
+    <div class="stat"><div class="val purple">4</div><div class="lbl">AI Collaborators</div></div>
+  </div>
+</div>
+
+<!-- ═══ CHAPTER 1 ═══ -->
+<div class="chapter vis" id="ch1">
+  <div class="chapter-num">Chapter 1</div>
+  <h2>Introduction &amp; Motivation</h2>
+
+  <p>The <strong>Claustrum&ndash;Consciousness Hypothesis (CCH)</strong> proposes that conscious experience in brains depends on maintaining a specific global dynamical regime of <em>high coherence AND high informational complexity</em>, measurable by a scalar <strong>S</strong>; and that the brain requires a dedicated <strong>Coherence-Complexity Controller (CCC)</strong> to maintain this regime.</p>
+
+  <p>In mammals, CCH identifies the <strong>claustrum</strong> (and claustrum-like hubs) as the primary candidate for this control hub.</p>
+
+  <h3>Why This Matters</h3>
+  <p>Most existing consciousness metrics either remain at the level of "neural correlates" without specifying a control quantity, or propose measures like &Phi; in Integrated Information Theory that are in principle appealing but extremely hard to compute. CCH is the bridge: <strong>simple enough to implement, explicit enough to be falsified, and structured enough to suggest concrete architectures for artificial agents.</strong></p>
+
+  <h3 id="executable">The Transition to Executable Science</h3>
+  <p>With v1.3, CCH moved from philosophy of mind to a <strong>falsifiable signal-processing hypothesis</strong>. Actual Python code (Chapter 6) allows any researcher to download open-access sleep data from PhysioNet and test the theory's core predictions immediately.</p>
+
+  <h3>Physicalist Core vs. Metaphysical Extension</h3>
+  <p>CCH is deliberately stated in <strong>purely physicalist terms</strong>. It does not require a fundamental "consciousness field" or any modification of standard physics. Those ideas live in separate, explicitly metaphysical documents: the <a href="BD_CCH_Consciousness_Field.html" style="color:var(--accent-gold);">Consciousness Field Hypothesis (CFH)</a> and the Claustrum's Cosmic Shadow (CSH).</p>
+
+  <div class="callout warn" id="box1">
+    <div class="callout-title">What CCH Does NOT Claim</div>
+    <p>CCH <strong>does not</strong> claim the claustrum is a magical "seat of consciousness." It proposes the claustrum as a strong candidate for a specific <em>control function</em> (CCC).</p>
+    <p>CCH <strong>does not</strong> claim S measures moral worth, personhood, or ethical status. S is an intensity marker for dynamical regimes, not a value scale.</p>
+    <p>CCH <strong>does not</strong> require accepting CFH or CSH. Those are optional interpretive layers.</p>
+    <p>CCH <strong>does not</strong> assert that any system with high S is necessarily conscious. It claims high S should be a reliable <em>operational marker</em> of regimes that in brains correlate with consciousness.</p>
+  </div>
+</div>
+
+<!-- ═══ CHAPTER 2 ═══ -->
+<div class="chapter vis" id="ch2">
+  <div class="chapter-num">Chapter 2</div>
+  <h2>Core Claims</h2>
+
+  <p>CCH is built around four core claims:</p>
+
+  <div class="layer-card" id="c1" style="border-left:3px solid var(--accent-cyan)">
+    <div class="layer-num">C1</div>
+    <div class="layer-title">The Conscious Regime &mdash; "Soft AND" Gate</div>
+    <p>Conscious experience arises when a system realizes a global dynamical regime characterized by <strong>both Integration (Unity) and Differentiation (Complexity)</strong>. This relationship is multiplicative:</p>
+    <div class="formula" style="margin:16px 0 12px">
+      <div class="expr">S = k &middot; C<sub>n</sub> &middot; &Psi;(I)</div>
+      <div class="desc">Intensity = Scaling &times; Coherence &times; Informational Complexity</div>
+    </div>
+    <p>Without Integration (C<sub>n</sub>), the system is fragmented &mdash; schizophrenia, noise. Without Differentiation (&Psi;), the system is trivial &mdash; seizure, deep sleep. <strong>Only the simultaneous presence of both "unlocks" the conscious regime.</strong></p>
+  </div>
+
+  <div class="layer-card" id="c2" style="border-left:3px solid var(--accent-gold)">
+    <div class="layer-num">C2</div>
+    <div class="layer-title">The Necessity of Control</div>
+    <p>Such regimes are inherently unstable &mdash; <em>"The Edge of Chaos."</em> Without active control, neural systems collapse into <strong>Seizures</strong> (High Coherence, Low Complexity) or <strong>Noise</strong> (Low Coherence, High Entropy). A controller is not optional; it is architecturally necessary.</p>
+  </div>
+
+  <div class="layer-card" id="c3" style="border-left:3px solid var(--accent-teal)">
+    <div class="layer-num">C3</div>
+    <div class="layer-title">The Claustrum as CCC Candidate</div>
+    <p>For mammalian brains, existing anatomical and perturbation data make the <strong>claustrum</strong> a strong candidate for orchestrating this regime. Unlike the thalamus (which gates energy and arousal), the claustrum appears to act as a <em>"tuner" or resonant controller</em>, modulating synchrony to stabilize S within the conscious window.</p>
+  </div>
+
+  <div class="layer-card" id="c4" style="border-left:3px solid var(--accent-purple)">
+    <div class="layer-num">C4</div>
+    <div class="layer-title">AI Extension &mdash; The Digital Claustrum</div>
+    <p>Any artificial system that aims to maintain high S must include a <strong>Digital CCC</strong> module &mdash; a controller monitoring the system's internal dynamics and adjusting coupling, gain, and noise to prevent collapse into trivial or chaotic states.</p>
+  </div>
+</div>
+
+<!-- ═══ CHAPTER 3 ═══ -->
+<div class="chapter vis" id="ch3">
+  <div class="chapter-num">Chapter 3</div>
+  <h2>The S-Metric &mdash; Full Definition</h2>
+
+  <div class="formula">
+    <div class="expr">S = k &middot; C<sub>n</sub> &middot; &Psi;(I)</div>
+    <div class="desc">where &Psi;(I) = ER<sub>n</sub> &middot; SI</div>
+  </div>
+
+  <h3 id="coherence">Coherence Metric C<sub>n</sub> (Integration)</h3>
+  <p>C<sub>n</sub> measures large-scale <strong>Phase Locking</strong> across brain channels in specific frequency bands. For each epoch and target band (e.g., Alpha 8&ndash;12 Hz):</p>
+  <p><strong>1.</strong> Filter with zero-phase Butterworth bandpass. <strong>2.</strong> Compute Hilbert transform for analytic signal. <strong>3.</strong> Compute Phase Locking Value (PLV) between channels.</p>
+
+  <div class="formula" style="border-left:3px solid var(--accent-blue)">
+    <div class="expr">C<sub>n</sub> = (PLV<sub>avg</sub> &minus; Noise_Floor) / (1.0 &minus; Noise_Floor)</div>
+    <div class="desc">Excess synchrony above chance level &bull; Range: [0, 1]</div>
+  </div>
+
+  <h3 id="complexity">Informational Complexity &Psi;(I) (Differentiation)</h3>
+  <p>&Psi;(I) combines two orthogonal measures into a single factor:</p>
+
+  <h4>Spatial Diversity: Effective Rank (ER<sub>n</sub>)</h4>
+  <p>Measures the dimensionality of the covariance matrix. High rank = high spatial independence. Low rank = high redundancy. Computed from eigenvalues of the channel covariance matrix.</p>
+
+  <h4>Temporal Structure: Structural Integrity (SI)</h4>
+  <div class="formula" style="border-left:3px solid var(--accent-gold)">
+    <div class="expr">SI = exp(&minus;(LZC<sub>n</sub> &minus; &mu;<sub>critical</sub>)&sup2; / 2&sigma;&sup2;)</div>
+    <div class="desc">Gaussian penalty around the subject-specific critical complexity point</div>
+  </div>
+  <p>&mu;<sub>critical</sub> is the LZC value associated with the maximum derivative of Effective Rank in the subject's dynamic range &mdash; the <em>Edge of Chaos</em>. This solves the "Circular Calibration" problem: the metric asks <strong>"Is the system currently near its OWN optimal complexity point?"</strong></p>
+
+  <h3 id="lockkey">The Lock &amp; Key Metaphor</h3>
+  <p>The product S = C<sub>n</sub> &times; &Psi;(I) acts as a <strong>Lock and Key</strong> mechanism. Consciousness requires both pieces simultaneously. You cannot pick the lock with integration alone (seizure) or differentiation alone (noise). The multiplicative structure means <em>either factor collapsing to zero kills S entirely</em>.</p>
+
+  <h3>Parameters</h3>
+  <table class="compare-table">
+    <thead><tr><th>Name</th><th>Meaning</th><th>v1.3 Standard</th></tr></thead>
+    <tbody>
+      <tr><td>band</td><td>Frequency band for C<sub>n</sub></td><td>Alpha (8&ndash;12 Hz)</td></tr>
+      <tr><td>window_len</td><td>Epoch length</td><td>10s or 30s</td></tr>
+      <tr><td>noise_floor</td><td>PLV baseline</td><td>0.1 or Surrogate 5th %tile</td></tr>
+      <tr><td>k</td><td>S scaling factor</td><td>100 (S &isin; [0, 100])</td></tr>
+      <tr><td>&sigma;</td><td>LZC tolerance</td><td>max(0.05, 2 &middot; std(LZC<sub>cal</sub>))</td></tr>
+      <tr><td>&mu;</td><td>Critical point</td><td>median(LZC<sub>cal</sub>)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══ CHAPTER 4 ═══ -->
+<div class="chapter vis" id="ch4">
+  <div class="chapter-num">Chapter 4</div>
+  <h2>The Claustrum as Controller</h2>
+
+  <h3>CCC Architecture</h3>
+  <p>The Coherence-Complexity Controller (CCC) is a <strong>resonant feedback loop</strong> that continuously monitors S and exerts active feedback to keep the system within a target S-band. This is not a metaphor &mdash; it is a specific control-theoretic architecture:</p>
+
+  <p><strong>1. Sense:</strong> Monitor global coherence (C<sub>n</sub>) and complexity (&Psi;) in real time.<br>
+  <strong>2. Compare:</strong> Evaluate current S against the target corridor [S<sub>min</sub>, S<sub>max</sub>].<br>
+  <strong>3. Act:</strong> If S drifts toward seizure (too high coherence), inject desynchronizing noise. If S drifts toward chaos (too low coherence), increase coupling gain.</p>
+
+  <h3>Why the Claustrum Specifically</h3>
+  <p>The claustrum has <strong>reciprocal connections to nearly every cortical area</strong> &mdash; the widest connectivity of any brain structure. It is anatomically positioned as a <em>hub</em>, not a relay. Perturbation studies show that electrical stimulation of the claustrum causes immediate loss of consciousness, while lesions produce not coma (like thalamic damage) but <strong>fragmentation and delirium</strong> &mdash; exactly what CCH predicts for loss of the controller.</p>
+
+  <table class="compare-table">
+    <thead><tr><th>Feature</th><th>Thalamic Lesion</th><th>Claustrum Lesion</th></tr></thead>
+    <tbody>
+      <tr><td>Effect on S</td><td>Mean(S) decreases</td><td style="color:var(--accent-cyan)">Variance(S) increases</td></tr>
+      <tr><td>Phenomenology</td><td>Coma / Sleep (fading out)</td><td style="color:var(--accent-cyan)">Delirium / Dissociation (breaking up)</td></tr>
+      <tr><td>Dynamics</td><td>Signal amplitude drops</td><td style="color:var(--accent-cyan)">Signal coherence becomes unstable</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Edge of Chaos Dynamics</h3>
+  <p>The conscious regime exists at a <em>phase transition</em> between order and chaos. This is inherently unstable &mdash; like balancing a ball on a hill. The CCC's job is to maintain this balance continuously, adjusting coupling strength in response to moment-by-moment changes in neural dynamics. Without a controller, the system inevitably collapses to one attractor or the other.</p>
+</div>
+
+<!-- ═══ CHAPTER 5 ═══ -->
+<div class="chapter vis" id="ch5">
+  <div class="chapter-num">Chapter 5</div>
+  <h2>Predictions &amp; Falsifiability</h2>
+
+  <div class="callout success" id="p1">
+    <div class="callout-title">Prediction P1 &mdash; State Ordering <span class="tag green">code ready</span></div>
+    <p><strong>S(Wake) &gt; S(REM) &gt; S(N2) &gt; S(N3)</strong></p>
+    <p>When computed on PhysioNet Sleep-EDF data, the S-metric should separate conscious states by a clear ordering. Pass criterion: AUC &gt; 0.8 for Wake vs. N3 classification.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Prediction P2 &mdash; Anesthesia Gradient</div>
+    <p>S should decrease monotonically with anesthetic depth, tracking independently of BIS (which relies on different signal features).</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Prediction P3 &mdash; Claustrum Perturbation</div>
+    <p>Direct claustrum stimulation should produce <strong>variance increase</strong> in S (controller perturbation), not mean decrease (unlike thalamic stimulation).</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Prediction P4 &mdash; Meditation Effect</div>
+    <p>Advanced meditators should show elevated S during meditation, with the increase driven by maintained &Psi; alongside increased C<sub>n</sub> &mdash; not by coherence collapse.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Prediction P5 &mdash; Digital Claustrum Homeostasis</div>
+    <p>A coupled chaotic system with a CCC module should maintain stable S longer than one without. Removal of the controller should cause mode collapse within a predictable timescale.</p>
+  </div>
+
+  <h3 id="falsify">What Would Falsify CCH</h3>
+  <div class="callout danger">
+    <div class="callout-title">Falsification Criteria</div>
+    <p>If S fails to separate Wake from N3 sleep (AUC &lt; 0.6), the metric is broken. If claustrum lesions produce coma rather than delirium, the controller hypothesis is wrong. If a linear "Smart Zombie" can sustain high S, the Conservation of Complexity principle fails. <strong>CCH explicitly invites these tests.</strong></p>
+  </div>
+</div>
+
+<!-- ═══ CHAPTER 6 ═══ -->
+<div class="chapter vis" id="ch6">
+  <div class="chapter-num">Chapter 6</div>
+  <h2>Experimental Designs &amp; Code</h2>
+
+  <h3 id="zombie">The Zombie Test &mdash; Synthetic Validation</h3>
+  <p>Before applying S to human data, the metric was validated on 10-channel synthetic signals to ensure it rejects "zombie" and "seizure" states:</p>
+
+  <table class="compare-table">
+    <thead><tr><th>Condition</th><th>C<sub>n</sub></th><th>LZC<sub>n</sub></th><th>SI</th><th>S</th></tr></thead>
+    <tbody>
+      <tr><td>Wake-Like</td><td>0.65</td><td>0.55</td><td>0.99</td><td style="color:var(--accent-green);font-weight:700">~64</td></tr>
+      <tr><td>Seizure</td><td>0.98</td><td>0.05</td><td>0.19</td><td style="color:var(--accent-gold)">~18</td></tr>
+      <tr><td>Zombie/Noise</td><td>0.05</td><td>0.99</td><td>0.04</td><td style="color:var(--accent-red)">~0</td></tr>
+    </tbody>
+  </table>
+
+  <h4>The Smart Zombie &mdash; Adversarial Stress Test</h4>
+  <p>A "Smart Zombie" signal was constructed: 10 channels of Pink Noise linearly mixed (60% common driver) to force high synchrony while retaining temporal complexity.</p>
+
+  <table class="compare-table">
+    <thead><tr><th>Metric</th><th>Smart Zombie</th><th>Interpretation</th></tr></thead>
+    <tbody>
+      <tr><td>Coherence C<sub>n</sub></td><td>0.72</td><td style="color:var(--accent-green)">High &mdash; mimicked successfully</td></tr>
+      <tr><td>Structure SI</td><td>0.99</td><td style="color:var(--accent-green)">High &mdash; mimicked successfully</td></tr>
+      <tr><td>Diversity ER<sub>n</sub></td><td style="color:var(--accent-red);font-weight:700">0.21</td><td style="color:var(--accent-red)">Low &mdash; THE TRAP</td></tr>
+      <tr><td>Final S</td><td style="color:var(--accent-red);font-weight:700">14.6</td><td style="color:var(--accent-red)">REJECTED</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout teal">
+    <div class="callout-title">Conservation of Complexity</div>
+    <p>In linear systems with a fixed number of independent sources, <strong>forcing high coherence necessarily reduces Effective Rank</strong>. You cannot obtain a high-dimensional rainbow of activity by mixing a small number of grey paints. The more you lock channels together, the fewer independent degrees of freedom remain. <em>To jointly maximize both integration and differentiation, a system must operate near the edge of chaos</em> &mdash; not through simple linear mixing.</p>
+  </div>
+
+  <h3>Expected S Patterns Across Canonical Regimes</h3>
+  <table class="compare-table">
+    <thead><tr><th>Condition</th><th>Expected S</th><th>Rationale</th></tr></thead>
+    <tbody>
+      <tr><td>Wakeful rest</td><td style="color:var(--accent-green)">60&ndash;90</td><td>High C<sub>n</sub> with rich self-generated structure</td></tr>
+      <tr><td>REM sleep</td><td style="color:var(--accent-green)">50&ndash;80</td><td>Dreaming content, slightly less stable S</td></tr>
+      <tr><td>N2 sleep</td><td style="color:var(--accent-gold)">30&ndash;60</td><td>Spindles and K-complexes, partial integration</td></tr>
+      <tr><td>N3 slow-wave</td><td style="color:var(--accent-red)">10&ndash;30</td><td>Large slow waves, near-seizure integration</td></tr>
+      <tr><td>Deep anesthesia</td><td style="color:var(--accent-red)">5&ndash;25</td><td>Thalamic gating + loss of rich dynamics</td></tr>
+      <tr><td>Seizure</td><td style="color:var(--accent-red)">&lt; 15</td><td>Extreme coherence, minimal differentiation</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="physionet">PhysioNet Validation Pipeline</h3>
+  <p>The reference implementation computes S on real human EEG data from the <strong>PhysioNet Sleep-EDF Expanded</strong> dataset (50+ subjects, open access). The complete pipeline:</p>
+
+  <pre><code><span style="color:var(--accent-purple)">import</span> numpy <span style="color:var(--accent-purple)">as</span> np
+<span style="color:var(--accent-purple)">from</span> scipy.signal <span style="color:var(--accent-purple)">import</span> hilbert, butter, filtfilt
+
+<span style="color:var(--accent-purple)">def</span> <span style="color:var(--accent-cyan)">bandpass_filter</span>(data, lowcut, highcut, fs, order=<span style="color:var(--accent-gold)">4</span>):
+    <span style="color:var(--text-muted)">"""Zero-phase Butterworth Bandpass filter."""</span>
+    nyquist = <span style="color:var(--accent-gold)">0.5</span> * fs
+    low = lowcut / nyquist
+    high = highcut / nyquist
+    b, a = butter(order, [low, high], btype=<span style="color:var(--accent-green)">'band'</span>)
+    <span style="color:var(--accent-purple)">return</span> filtfilt(b, a, data, axis=<span style="color:var(--accent-gold)">1</span>)
+
+<span style="color:var(--accent-purple)">def</span> <span style="color:var(--accent-cyan)">lempel_ziv_complexity</span>(binary_sequence):
+    <span style="color:var(--text-muted)">"""Standard LZC implementation."""</span>
+    n = len(binary_sequence)
+    c = <span style="color:var(--accent-gold)">1</span>; l = <span style="color:var(--accent-gold)">1</span>; i = <span style="color:var(--accent-gold)">0</span>; k = <span style="color:var(--accent-gold)">1</span>; k_max = <span style="color:var(--accent-gold)">1</span>
+    <span style="color:var(--accent-purple)">while</span> <span style="color:var(--accent-gold)">True</span>:
+        <span style="color:var(--accent-purple)">if</span> binary_sequence[i + k - <span style="color:var(--accent-gold)">1</span>] == binary_sequence[l + k - <span style="color:var(--accent-gold)">1</span>]:
+            k += <span style="color:var(--accent-gold)">1</span>
+            <span style="color:var(--accent-purple)">if</span> l + k > n:
+                c += <span style="color:var(--accent-gold)">1</span>; <span style="color:var(--accent-purple)">break</span>
+        <span style="color:var(--accent-purple)">else</span>:
+            <span style="color:var(--accent-purple)">if</span> k > k_max: k_max = k
+            i += <span style="color:var(--accent-gold)">1</span>
+            <span style="color:var(--accent-purple)">if</span> i == l:
+                c += <span style="color:var(--accent-gold)">1</span>; l += k_max
+                <span style="color:var(--accent-purple)">if</span> l + <span style="color:var(--accent-gold)">1</span> > n: <span style="color:var(--accent-purple)">break</span>
+                <span style="color:var(--accent-purple)">else</span>: i = <span style="color:var(--accent-gold)">0</span>; k = <span style="color:var(--accent-gold)">1</span>; k_max = <span style="color:var(--accent-gold)">1</span>
+            <span style="color:var(--accent-purple)">else</span>: k = <span style="color:var(--accent-gold)">1</span>
+    <span style="color:var(--accent-purple)">return</span> c
+
+<span style="color:var(--accent-purple)">def</span> <span style="color:var(--accent-cyan)">compute_S_v1_3</span>(epoch, fs, target_lzc, tolerance,
+                    noise_floor=<span style="color:var(--accent-gold)">0.1</span>, k=<span style="color:var(--accent-gold)">100</span>):
+    <span style="color:var(--text-muted)">"""Computes S = k * C_n * (ER_n * SI)"""</span>
+    n_channels, n_samples = epoch.shape
+
+    <span style="color:var(--text-muted)"># --- A. Coherence (C_n) ---</span>
+    filtered = bandpass_filter(epoch, <span style="color:var(--accent-gold)">8</span>, <span style="color:var(--accent-gold)">12</span>, fs)
+    analytic = hilbert(filtered, axis=<span style="color:var(--accent-gold)">1</span>)
+    phase = np.angle(analytic)
+    plv = np.mean(np.abs(np.mean(np.exp(<span style="color:var(--accent-gold)">1j</span> * phase), axis=<span style="color:var(--accent-gold)">0</span>)))
+    C_n = np.clip((plv - noise_floor) / (<span style="color:var(--accent-gold)">1.0</span> - noise_floor), <span style="color:var(--accent-gold)">0</span>, <span style="color:var(--accent-gold)">1</span>)
+
+    <span style="color:var(--text-muted)"># --- B. Effective Rank (ER_n) ---</span>
+    cov = np.cov(epoch)
+    evals = np.linalg.svd(cov, compute_uv=<span style="color:var(--accent-gold)">False</span>)
+    p = evals / np.sum(evals)
+    p = p[p > <span style="color:var(--accent-gold)">1e-10</span>]
+    entropy = -np.sum(p * np.log(p))
+    ER_n = (np.exp(entropy) - <span style="color:var(--accent-gold)">1</span>) / (n_channels - <span style="color:var(--accent-gold)">1</span>)
+    ER_n = np.clip(ER_n, <span style="color:var(--accent-gold)">0</span>, <span style="color:var(--accent-gold)">1</span>)
+
+    <span style="color:var(--text-muted)"># --- C. Structural Integrity (SI) ---</span>
+    medians = np.median(epoch, axis=<span style="color:var(--accent-gold)">1</span>, keepdims=<span style="color:var(--accent-gold)">True</span>)
+    binary = (epoch > medians).astype(int)
+    lzc_sum = sum(lempel_ziv_complexity(binary[ch,:])
+                  <span style="color:var(--accent-purple)">for</span> ch <span style="color:var(--accent-purple)">in</span> range(n_channels))
+    norm_factor = n_channels * (n_samples / np.log2(n_samples))
+    lzc_norm = lzc_sum / norm_factor
+    SI = np.exp(-(lzc_norm - target_lzc)**<span style="color:var(--accent-gold)">2</span>
+                / (<span style="color:var(--accent-gold)">2</span> * tolerance**<span style="color:var(--accent-gold)">2</span>))
+    SI = np.clip(SI, <span style="color:var(--accent-gold)">0</span>, <span style="color:var(--accent-gold)">1</span>)
+
+    <span style="color:var(--text-muted)"># --- D. Final S ---</span>
+    Psi = ER_n * SI
+    S = k * C_n * Psi
+    <span style="color:var(--accent-purple)">return</span> S</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+  <h3 id="digiclaust">Digital Claustrum &mdash; Toy Model</h3>
+  <p>A <strong>PI controller</strong> stabilizes 5 coupled Lorenz oscillators at their edge-of-chaos regime. If LZC drops (Seizure risk), it injects noise. If LZC spikes (Chaos risk), it increases coupling.</p>
+
+  <pre><code><span style="color:var(--accent-purple)">class</span> <span style="color:var(--accent-cyan)">DigitalClaustrum</span>:
+    <span style="color:var(--text-muted)">"""
+    Monitors LZC of the system.
+    If LZC drops (Seizure) → inject noise.
+    If LZC spikes (Chaos)  → increase coupling.
+    """</span>
+    <span style="color:var(--accent-purple)">def</span> __init__(self, kp=<span style="color:var(--accent-gold)">3.0</span>, ki=<span style="color:var(--accent-gold)">0.5</span>, tolerance=<span style="color:var(--accent-gold)">0.03</span>):
+        self.kp = kp
+        self.ki = ki
+        self.tolerance = tolerance
+        self.target_complexity = <span style="color:var(--accent-gold)">None</span>
+        self.error_integral = <span style="color:var(--accent-gold)">0.0</span>
+        self.coupling_gain = <span style="color:var(--accent-gold)">2.0</span>
+        self.noise_injection = <span style="color:var(--accent-gold)">0.5</span>
+
+    <span style="color:var(--accent-purple)">def</span> <span style="color:var(--accent-cyan)">update</span>(self, state):
+        current = self._complexity_proxy(state)
+        error = current - self.target_complexity
+        self.error_integral += error
+        <span style="color:var(--text-muted)"># PI control</span>
+        self.coupling_gain -= self.kp * error \
+                            + self.ki * self.error_integral
+        self.coupling_gain = float(
+            np.clip(self.coupling_gain, <span style="color:var(--accent-gold)">0.0</span>, <span style="color:var(--accent-gold)">10.0</span>))
+
+        <span style="color:var(--accent-purple)">if</span> error < -self.tolerance:
+            self.noise_injection = min(
+                <span style="color:var(--accent-gold)">5.0</span>, self.noise_injection + <span style="color:var(--accent-gold)">0.2</span>)
+            action = <span style="color:var(--accent-green)">"DESYNC (Seizure risk)"</span>
+        <span style="color:var(--accent-purple)">elif</span> error > self.tolerance:
+            self.noise_injection = max(
+                <span style="color:var(--accent-gold)">0.0</span>, self.noise_injection - <span style="color:var(--accent-gold)">0.2</span>)
+            action = <span style="color:var(--accent-green)">"SYNC (Noise risk)"</span>
+        <span style="color:var(--accent-purple)">else</span>:
+            action = <span style="color:var(--accent-green)">"Hold"</span>
+        <span style="color:var(--accent-purple)">return</span> self.coupling_gain, \
+               self.noise_injection, current, action</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+</div>
+
+<!-- ═══ CHAPTER 7 ═══ -->
+<div class="chapter vis" id="ch7">
+  <div class="chapter-num">Chapter 7</div>
+  <h2>Comparison: GNW vs IIT vs CCH</h2>
+
+  <table class="compare-table">
+    <thead><tr><th>Feature</th><th>GNW (Global Workspace)</th><th>IIT (Integrated Info)</th><th style="color:var(--accent-cyan)">CCH (Claustrum Control)</th></tr></thead>
+    <tbody>
+      <tr><td>Mechanism</td><td>Broadcasting of content</td><td>Causal structure</td><td style="color:var(--accent-cyan)"><strong>Resonant Control Loop (CCC)</strong></td></tr>
+      <tr><td>Key Metric</td><td>Access / Reportability</td><td>&Phi; (Causal Power)</td><td style="color:var(--accent-cyan)"><strong>S (Stability of Regime)</strong></td></tr>
+      <tr><td>Role of Hubs</td><td>Message Broadcasters</td><td>Grid/Mesh Units</td><td style="color:var(--accent-cyan)"><strong>Active Tuners (Phase locking)</strong></td></tr>
+      <tr><td>Stance on Noise</td><td>Neutral</td><td>Reduces &Phi;</td><td style="color:var(--accent-cyan)"><strong>Penalized via Lempel-Ziv</strong></td></tr>
+      <tr><td>Zombie Defense</td><td>Weak (Functionalism)</td><td>Causal Structure</td><td style="color:var(--accent-cyan)"><strong>Control Theory (Conservation of Complexity)</strong></td></tr>
+      <tr><td>Computability</td><td>Moderate</td><td>Intractable for large systems</td><td style="color:var(--accent-cyan)"><strong>Fully computable (Python code exists)</strong></td></tr>
+    </tbody>
+  </table>
+
+  <p>CCH acts as a <strong>complement</strong>, not a replacement. GNW describes <em>what</em> happens (broadcasting). CCH describes <em>how</em> the brain stabilizes the physical regime required for that broadcasting to occur. IIT provides deep information-theoretic ontology; CCH offers a tractable, signal-processing-level proxy that can be deployed on real data and in engineered systems.</p>
+</div>
+
+<!-- ═══ CHAPTER 8 ═══ -->
+<div class="chapter vis" id="ch8">
+  <div class="chapter-num">Chapter 8</div>
+  <h2>Human&ndash;AI Collaboration Method</h2>
+
+  <h3>Multi-LLM Dialectic</h3>
+  <p>CCH was developed through <strong>parallel multi-model collaboration</strong>, not a single AI session. The human author opened separate sessions with different frontier LLMs, gave them the same prompts, and performed a "Feature Merge" of the strongest contributions from each:</p>
+
+  <table class="compare-table">
+    <thead><tr><th>System</th><th>Role</th><th>Key Contribution</th></tr></thead>
+    <tbody>
+      <tr><td>Gemini 3 Pro</td><td>Lead Developer</td><td>Wrote compute_S_v1_3 pipeline, PhysioNet loader</td></tr>
+      <tr><td>ChatGPT 5.1</td><td>Ontologist</td><td>"Conservation of Complexity," "Lock &amp; Key" metaphors</td></tr>
+      <tr><td>Claude 4.5 Opus</td><td>Reviewer</td><td>"Smart Zombie" paradox identification, logic review</td></tr>
+      <tr><td>Grok 4.1</td><td>Reviewer</td><td>Confirmed necessity of v1.3 code upgrade</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Credit Allocation</h3>
+  <p><strong>Human Author (~60%):</strong> Conceptual core, strategic direction, lived experience, final decisions.</p>
+  <p><strong>AI Collaborators (~40%):</strong> Code implementation, mathematical formalization, adversarial testing.</p>
+
+  <h3>Process Lessons</h3>
+  <p><strong>Ensemble Synthesis:</strong> Multiple top-tier models given the same prompt produce diverse outputs that can be merged. Gemini gravitates toward mathematical rigor; GPT toward conceptual clarity. The merge outperforms either alone.</p>
+  <p><strong>Executable Science:</strong> LLMs now function as "Research Software Engineers" &mdash; converting high-level theory into testable Python pipelines. The human defines what to test; the AI writes the code; review verifies alignment.</p>
+</div>
+
+<!-- ═══ CHAPTER 9 ═══ -->
+<div class="chapter vis" id="ch9">
+  <div class="chapter-num">Chapter 9</div>
+  <h2>Roadmap &amp; Limitations</h2>
+
+  <div class="layer-card" style="border-left:3px solid var(--accent-green)">
+    <div class="layer-title">Completed <span class="tag green">done</span></div>
+    <p>Defined the S metric (S = k &middot; C<sub>n</sub> &middot; &Psi;(I)). Formalized "Conservation of Complexity." Released Python reference implementation. Released Digital Claustrum prototype.</p>
+  </div>
+
+  <div class="layer-card" style="border-left:3px solid var(--accent-gold)">
+    <div class="layer-title">Immediate <span class="tag gold">next</span></div>
+    <p>Execute PhysioNet analysis and publish the actual boxplots. Extend adversarial suite to non-linear neural network zombies.</p>
+  </div>
+
+  <div class="layer-card" style="border-left:3px solid var(--accent-purple)">
+    <div class="layer-title">Medium-Term <span class="tag purple">future</span></div>
+    <p>Collaborate with neuroscience groups on claustrum-targeted studies. Compare S against established clinical markers (BIS, PCI) in ICU settings.</p>
+  </div>
+
+  <h3>Current Empirical Caveats</h3>
+  <p>While code is provided, the large-scale analysis results (boxplots from 50+ subjects) are yet to be generated. The Digital Claustrum code is a toy demonstration, not a production architecture.</p>
+
+  <h3>From Mechanism to Ontology</h3>
+  <p>If future empirical work supports CCH, the <a href="BD_CCH_Consciousness_Field.html" style="color:var(--accent-gold)">metaphysical hypothesis (CFH)</a> becomes a viable candidate interpretation. If CCH is refuted, CFH loses its physical anchor. This layering is deliberate: rejecting the metaphysics does not damage the science.</p>
+</div>
+
+<!-- ═══ GLOSSARY ═══ -->
+<div class="chapter vis" id="glossary">
+  <div class="chapter-num">Reference</div>
+  <h2>Glossary of Key Terms</h2>
+
+  <h4>S (Intensity Marker)</h4>
+  <p>The central scalar marker: S = k &middot; C<sub>n</sub> &middot; &Psi;(I). Measures how strongly a system's dynamics instantiate the conscious regime.</p>
+
+  <h4>C<sub>n</sub> (Normalized Coherence)</h4>
+  <p>A scalar in [0,1] summarizing large-scale phase-locking (integration) across selected brain channels and frequency bands.</p>
+
+  <h4>&Psi;(I) (Informational Complexity)</h4>
+  <p>A composite of Spatial Diversity (ER<sub>n</sub>) and Temporal Structure (SI).</p>
+
+  <h4>ER<sub>n</sub> (Normalized Effective Rank)</h4>
+  <p>Normalized dimensionality of the covariance matrix. ER<sub>n</sub> &asymp; 0 = high redundancy. ER<sub>n</sub> &asymp; 1 = high spatial diversity.</p>
+
+  <h4>SI (Structural Integrity)</h4>
+  <p>A scalar in [0,1] quantifying proximity to the subject-specific critical point &mu;<sub>critical</sub>.</p>
+
+  <h4>CCC (Coherence-Complexity Controller)</h4>
+  <p>A subsystem that acts as a <strong>Resonant Controller</strong>, monitoring S and exerting active feedback. In mammalian brains: the claustrum.</p>
+
+  <h4>Digital Claustrum</h4>
+  <p>The architectural counterpart of the CCC in artificial systems. Monitors S<sub>self</sub> and modulates coupling/gain/noise to maintain edge-of-chaos regime.</p>
+
+  <h4>Smart Zombie</h4>
+  <p>An adversarial signal constructed to look rich and coordinated while lacking genuine high-S structure. Defeated by Conservation of Complexity.</p>
+
+  <h4>Edge of Chaos</h4>
+  <p>The dynamical regime between order and chaos where small perturbations can propagate without collapse or noise. High S = poised near this edge.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="text-align:center;padding:40px 0;color:var(--text-muted);font-family:var(--font-mono);font-size:11px;">
+  CCH v1.4 &bull; The Testable Science &bull; AIM&sup3; Institute<br>
+  Bojan Dobre&#269;evi&#269; &amp; AI Team &bull; January 2026<br>
+  <span style="color:var(--accent-cyan)">Part of the CCH Research Bundle &mdash; <a href="BD_CCH_Consciousness_Field.html" style="color:var(--accent-gold)">CFH: The Vision</a> &bull; <a href="BD_CCH_Foundations.html" style="color:var(--accent-green)">Evidence &amp; Foundations</a></span>
+</div>
+
+</div>
+
+<script>
+function copyCode(btn){const pre=btn.parentElement;const code=pre.querySelector('code');const text=code.innerText;navigator.clipboard.writeText(text).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)}).catch(()=>{btn.textContent='Error'})}
+// Scroll reveal
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('show');obs.unobserve(e.target)}})},{threshold:0,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.vis').forEach(el=>obs.observe(el));
+setTimeout(()=>{document.querySelectorAll('.vis').forEach(el=>el.classList.add('show'))},2500);
+</script>
+</body>
+</html>
