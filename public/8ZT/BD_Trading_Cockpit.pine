@@ -1,0 +1,655 @@
+//@version=6
+indicator("BD Trading Cockpit", shorttitle="BD-COCK", overlay=false, precision=2)
+
+//══════════════════════════════════════════════════════════════════════════════
+// INPUTS
+//══════════════════════════════════════════════════════════════════════════════
+
+// ── ZigZag ──
+grpZZ = "ZigZag"
+zzDev    = input.float(0.7, "Deviation %", minval=0.05, maxval=5.0, step=0.05, group=grpZZ)
+zzSource = input.string("High/Low", "Source", options=["High/Low", "Close"], group=grpZZ)
+zzLegsBack = input.int(8, "Legs for Average", minval=3, maxval=30, group=grpZZ)
+
+// ── MTF ──
+grpTF = "MTF Consensus"
+useTF1 = input.bool(true,  "TF1", inline="t1", group=grpTF)
+tf1    = input.timeframe("3",    "", inline="t1", group=grpTF)
+useTF2 = input.bool(true,  "TF2", inline="t2", group=grpTF)
+tf2    = input.timeframe("5",    "", inline="t2", group=grpTF)
+useTF3 = input.bool(true,  "TF3", inline="t3", group=grpTF)
+tf3    = input.timeframe("15",   "", inline="t3", group=grpTF)
+useTF4 = input.bool(true,  "TF4", inline="t4", group=grpTF)
+tf4    = input.timeframe("30",   "", inline="t4", group=grpTF)
+useTF5 = input.bool(true,  "TF5", inline="t5", group=grpTF)
+tf5    = input.timeframe("60",   "", inline="t5", group=grpTF)
+useTF6 = input.bool(true,  "TF6", inline="t6", group=grpTF)
+tf6    = input.timeframe("240",  "", inline="t6", group=grpTF)
+useTF7 = input.bool(true,  "TF7", inline="t7", group=grpTF)
+tf7    = input.timeframe("D",    "", inline="t7", group=grpTF)
+useTF8 = input.bool(false, "TF8", inline="t8", group=grpTF)
+tf8    = input.timeframe("W",    "", inline="t8", group=grpTF)
+
+// ── Sync Momentum ──
+grpSM = "Sync (BTC↔ETH)"
+syncLen     = input.int(2,     "Sync Lookback", minval=1, maxval=10, group=grpSM)
+minDeltaPct = input.float(0.04,"Min Delta %", minval=0.005, maxval=1.0, step=0.005, group=grpSM)
+impulseLen  = input.int(10,    "Impulse Len", minval=3, maxval=50, group=grpSM)
+impulseFact = input.float(0.75,"Impulse Factor", minval=0.1, maxval=3.0, step=0.05, group=grpSM)
+syncSym1    = input.symbol("BINANCE:BTCUSDT", "Sync Asset 1", group=grpSM)
+syncSym2    = input.symbol("BINANCE:ETHUSDT", "Sync Asset 2", group=grpSM)
+
+// ── MDL / DCC ──
+grpMDL = "MDL Regime & DCC"
+mdlLen    = input.int(20, "MDL Window", minval=5, maxval=100, group=grpMDL)
+dccWindow = input.int(64, "DCC Window", minval=10, maxval=200, group=grpMDL)
+
+// ── Visual ──
+grpVis = "Visual"
+tablePos  = input.string("Top Right", "Table Position", options=["Top Left","Top Center","Top Right","Middle Left","Middle Center","Middle Right","Bottom Left","Bottom Center","Bottom Right"], group=grpVis)
+tableSize = input.string("small", "Text Size", options=["tiny","small","normal"], group=grpVis)
+upCol     = input.color(#00e676, "Bullish", group=grpVis)
+dnCol     = input.color(#ff4757, "Bearish", group=grpVis)
+neutCol   = input.color(#5a6275, "Neutral", group=grpVis)
+warnCol   = input.color(#ffd740, "Warning", group=grpVis)
+
+//══════════════════════════════════════════════════════════════════════════════
+// SECTION 1 — ZIGZAG ENGINE (chart TF)
+//══════════════════════════════════════════════════════════════════════════════
+
+dv = zzDev / 100.0
+bool useHL = zzSource == "High/Low"
+float zH = useHL ? high : close
+float zL = useHL ? low  : close
+
+var int    zzDir = 0
+var float  zzHi  = high
+var float  zzLo  = low
+
+// Swing storage
+var array<float> swPrices = array.new_float(0)
+var array<int>   swTypes  = array.new_int(0)    // +1=high, -1=low
+var array<int>   swBars   = array.new_int(0)
+var float lastSwP = na
+var bool  newSw   = false
+
+newSw := false
+if zzDir == 0
+    if zH > zzLo * (1.0 + dv)
+        array.push(swPrices, zzLo), array.push(swTypes, -1), array.push(swBars, bar_index)
+        lastSwP := zzLo, zzDir := 1, zzHi := zH, newSw := true
+    else if zL < zzHi * (1.0 - dv)
+        array.push(swPrices, zzHi), array.push(swTypes, 1), array.push(swBars, bar_index)
+        lastSwP := zzHi, zzDir := -1, zzLo := zL, newSw := true
+    else
+        if zH > zzHi
+            zzHi := zH
+        if zL < zzLo
+            zzLo := zL
+else if zzDir == 1
+    if zH > zzHi
+        zzHi := zH
+    else if zL < zzHi * (1.0 - dv)
+        array.push(swPrices, zzHi), array.push(swTypes, 1), array.push(swBars, bar_index)
+        lastSwP := zzHi, zzDir := -1, zzLo := zL, newSw := true
+else if zzDir == -1
+    if zL < zzLo
+        zzLo := zL
+    else if zH > zzLo * (1.0 + dv)
+        array.push(swPrices, zzLo), array.push(swTypes, -1), array.push(swBars, bar_index)
+        lastSwP := zzLo, zzDir := 1, zzHi := zH, newSw := true
+
+// ── Avg Leg (SLA — Smart Leg Average with outlier capping) ──
+int nSw = array.size(swPrices)
+float avgLeg = 0.0
+float legMaturity = 0.0
+
+if nSw >= 3
+    int start = math.max(0, nSw - zzLegsBack - 1)
+    array<float> legAmps = array.new_float(0)
+    for j = start + 1 to nSw - 1
+        float amp = math.abs(array.get(swPrices, j) - array.get(swPrices, j - 1)) / array.get(swPrices, j - 1) * 100
+        array.push(legAmps, amp)
+    
+    if array.size(legAmps) >= 3
+        // SLA: median-based outlier capping at 2× median
+        array<float> sorted = array.copy(legAmps)
+        array.sort(sorted, order.ascending)
+        int mid = math.floor(array.size(sorted) / 2)
+        float med = array.get(sorted, mid)
+        float capVal = med * 2.0
+        float discSum = 0.0
+        for k = 0 to array.size(legAmps) - 1
+            discSum += math.min(array.get(legAmps, k), capVal)
+        avgLeg := discSum / array.size(legAmps)
+    else if array.size(legAmps) > 0
+        float s = 0.0
+        for k = 0 to array.size(legAmps) - 1
+            s += array.get(legAmps, k)
+        avgLeg := s / array.size(legAmps)
+
+// ── Leg Maturity ──
+if not na(lastSwP) and avgLeg > 0
+    float curAmp = math.abs(close - lastSwP) / lastSwP * 100
+    legMaturity := curAmp / avgLeg
+
+// ── Extension Ratio + Direction ──
+float extRatio = 0.0
+int   extDir   = 0
+if not na(lastSwP) and avgLeg > 0
+    float extPrice = zzDir == 1 ? zH : (zzDir == -1 ? zL : close)
+    float extPct = (extPrice - lastSwP) / lastSwP * 100
+    extRatio := math.abs(extPct) / avgLeg
+    extDir := extPct > 0 ? 1 : (extPct < 0 ? -1 : 0)
+
+//══════════════════════════════════════════════════════════════════════════════
+// SECTION 2 — REGIME CLASSIFICATION (from swing structure)
+//══════════════════════════════════════════════════════════════════════════════
+
+// Regime: 0=NEUTRAL, 1=TREND_UP, 2=TREND_DOWN, 3=CONVERGING, 4=EXPANDING, 5=TRANSITION
+int regime = 0
+string regimeStr = "—"
+color regimeCol = neutCol
+
+if nSw >= 6
+    // Get last 3 swing highs and 3 swing lows
+    array<float> recentH = array.new_float(0)
+    array<float> recentL = array.new_float(0)
+    for j = nSw - 1 to math.max(0, nSw - 8) by 1
+        if array.get(swTypes, j) == 1 and array.size(recentH) < 3
+            array.push(recentH, array.get(swPrices, j))
+        if array.get(swTypes, j) == -1 and array.size(recentL) < 3
+            array.push(recentL, array.get(swPrices, j))
+    
+    // recentH/L are newest-first, reverse for chronological
+    if array.size(recentH) >= 2 and array.size(recentL) >= 2
+        // Chronological: last element = oldest
+        int nh = array.size(recentH)
+        int nl = array.size(recentL)
+        bool highsRising  = array.get(recentH, 0) > array.get(recentH, nh - 1)
+        bool highsFalling = array.get(recentH, 0) < array.get(recentH, nh - 1)
+        bool lowsRising   = array.get(recentL, 0) > array.get(recentL, nl - 1)
+        bool lowsFalling  = array.get(recentL, 0) < array.get(recentL, nl - 1)
+        
+        if highsRising and lowsRising
+            regime := 1  // TREND UP
+        else if highsFalling and lowsFalling
+            regime := 2  // TREND DOWN
+        else if highsFalling and lowsRising
+            regime := 3  // CONVERGING
+        else if highsRising and lowsFalling
+            regime := 4  // EXPANDING
+        else
+            regime := 5  // TRANSITION
+
+regimeStr := regime == 1 ? "TREND ▲" : regime == 2 ? "TREND ▼" : regime == 3 ? "CONV" : regime == 4 ? "EXPD" : regime == 5 ? "TRANS" : "—"
+regimeCol := regime == 1 ? upCol : regime == 2 ? dnCol : regime == 3 ? color.new(#64ffda, 0) : regime == 4 ? warnCol : regime == 5 ? color.new(#b388ff, 0) : neutCol
+
+//══════════════════════════════════════════════════════════════════════════════
+// SECTION 3 — VWAP POSITION RATIO
+//══════════════════════════════════════════════════════════════════════════════
+
+float vwapVal = ta.vwap(close)
+float vwapRatio = 0.5
+
+if nSw >= 4
+    float recentHigh = 0.0
+    float recentLow  = 1e18
+    int lookSw = math.min(nSw, 6)
+    for j = nSw - lookSw to nSw - 1
+        float sp = array.get(swPrices, j)
+        if sp > recentHigh
+            recentHigh := sp
+        if sp < recentLow
+            recentLow := sp
+    float swRange = recentHigh - recentLow
+    if swRange > 0
+        vwapRatio := (vwapVal - recentLow) / swRange
+        vwapRatio := math.max(0.0, math.min(1.0, vwapRatio))
+
+//══════════════════════════════════════════════════════════════════════════════
+// SECTION 4 — ABSORPTION SCORE
+//══════════════════════════════════════════════════════════════════════════════
+
+float volMA50 = ta.sma(volume, 50)
+float candleRangePct = (high - low) / close * 100
+float volRatio = volMA50 > 0 ? volume / volMA50 : 0.0
+float absorption = candleRangePct > 0.0001 ? volRatio / (candleRangePct * 100) : 0.0
+
+//══════════════════════════════════════════════════════════════════════════════
+// SECTION 5 — MDL REGIME DETECTION (4 generators)
+//══════════════════════════════════════════════════════════════════════════════
+
+// Simplified MDL: each generator predicts close, cost = log2(prediction error variance)
+// TREND: linear regression, REVERSION: mean, MOMENTUM: last delta, RANGE: midpoint
+float mdlClose = close
+
+// Pre-compute with literal lengths for Pine v6 compliance
+float linregVal = ta.linreg(close, 20, 0)
+float smaVal    = ta.sma(close, 20)
+float momVal    = close[1] + (close[1] - close[2])
+float rangeHi   = ta.highest(high, 20)
+float rangeLo   = ta.lowest(low, 20)
+float rangeMid  = (rangeHi + rangeLo) / 2
+
+// Prediction errors
+float errTrend  = math.abs(close - linregVal)
+float errRevert = math.abs(close - smaVal)
+float errMom    = math.abs(close - momVal)
+float errRange  = math.abs(close - rangeMid)
+
+// Running error sums (exponential smoothing)
+var float sumTrend  = 0.0
+var float sumRevert = 0.0
+var float sumMom    = 0.0
+var float sumRange  = 0.0
+float ek = 2.0 / (mdlLen + 1.0)
+sumTrend  := sumTrend  * (1.0 - ek) + errTrend  * ek
+sumRevert := sumRevert * (1.0 - ek) + errRevert * ek
+sumMom    := sumMom    * (1.0 - ek) + errMom    * ek
+sumRange  := sumRange  * (1.0 - ek) + errRange  * ek
+
+// Winner = lowest accumulated error (best compression)
+// Add complexity penalty: TREND=3, REVERSION=1, MOMENTUM=2, RANGE=2
+float penalty = 0.01
+float costT = sumTrend  + 3 * penalty
+float costR = sumRevert + 1 * penalty
+float costM = sumMom    + 2 * penalty
+float costN = sumRange  + 2 * penalty
+
+float minCost = math.min(costT, math.min(costR, math.min(costM, costN)))
+int mdlWinner = minCost == costT ? 1 : minCost == costR ? 2 : minCost == costM ? 3 : 4
+// 1=TREND, 2=REVERT, 3=MOMENTUM, 4=RANGE
+
+string mdlStr = mdlWinner == 1 ? "TREND" : mdlWinner == 2 ? "REVERT" : mdlWinner == 3 ? "MOMTM" : "RANGE"
+color mdlCol = mdlWinner == 1 ? upCol : mdlWinner == 2 ? color.new(#ff9800, 0) : mdlWinner == 3 ? color.new(#00bcd4, 0) : warnCol
+
+// MDL direction: which way does the winning generator point?
+int mdlDirection = mdlWinner == 1 ? (linregVal > linregVal[1] ? 1 : -1) : mdlWinner == 2 ? (close < smaVal ? 1 : -1) : mdlWinner == 3 ? (momVal > close[1] ? 1 : -1) : 0
+
+//══════════════════════════════════════════════════════════════════════════════
+// SECTION 6 — DCC COUPLING (regime change rate)
+//══════════════════════════════════════════════════════════════════════════════
+
+var int prevMdl = 0
+int mdlChange = mdlWinner != prevMdl ? 1 : 0
+prevMdl := mdlWinner
+
+float changeRate = ta.sma(mdlChange, dccWindow)
+// u: 0 (noise, lots of changes) → 1 (seizure, stable regime)
+float dccU = 1.0 - math.min(1.0, changeRate * 10.0)  // scale: 0.1 change rate → u=0
+dccU := math.max(0.0, math.min(1.0, dccU))
+
+string dccStr = dccU >= 0.7 ? "EXPLOIT" : dccU >= 0.35 ? "BALANCED" : "EXPLORE"
+color dccCol = dccU >= 0.7 ? upCol : dccU >= 0.35 ? warnCol : dnCol
+
+//══════════════════════════════════════════════════════════════════════════════
+// SECTION 7 — MTF ZIGZAG CONSENSUS (8 TFs via request.security)
+//══════════════════════════════════════════════════════════════════════════════
+
+int zzDirOut = zzDir
+
+d1 = useTF1 ? request.security(syminfo.tickerid, tf1, zzDirOut, ignore_invalid_symbol=true, lookahead=barmerge.lookahead_off) : na
+d2 = useTF2 ? request.security(syminfo.tickerid, tf2, zzDirOut, ignore_invalid_symbol=true, lookahead=barmerge.lookahead_off) : na
+d3 = useTF3 ? request.security(syminfo.tickerid, tf3, zzDirOut, ignore_invalid_symbol=true, lookahead=barmerge.lookahead_off) : na
+d4 = useTF4 ? request.security(syminfo.tickerid, tf4, zzDirOut, ignore_invalid_symbol=true, lookahead=barmerge.lookahead_off) : na
+d5 = useTF5 ? request.security(syminfo.tickerid, tf5, zzDirOut, ignore_invalid_symbol=true, lookahead=barmerge.lookahead_off) : na
+d6 = useTF6 ? request.security(syminfo.tickerid, tf6, zzDirOut, ignore_invalid_symbol=true, lookahead=barmerge.lookahead_off) : na
+d7 = useTF7 ? request.security(syminfo.tickerid, tf7, zzDirOut, ignore_invalid_symbol=true, lookahead=barmerge.lookahead_off) : na
+d8 = useTF8 ? request.security(syminfo.tickerid, tf8, zzDirOut, ignore_invalid_symbol=true, lookahead=barmerge.lookahead_off) : na
+
+int mtfUp = 0
+int mtfDn = 0
+int mtfN  = 0
+if not na(d1)
+    mtfN += 1, mtfUp += d1 > 0 ? 1 : 0, mtfDn += d1 < 0 ? 1 : 0
+if not na(d2)
+    mtfN += 1, mtfUp += d2 > 0 ? 1 : 0, mtfDn += d2 < 0 ? 1 : 0
+if not na(d3)
+    mtfN += 1, mtfUp += d3 > 0 ? 1 : 0, mtfDn += d3 < 0 ? 1 : 0
+if not na(d4)
+    mtfN += 1, mtfUp += d4 > 0 ? 1 : 0, mtfDn += d4 < 0 ? 1 : 0
+if not na(d5)
+    mtfN += 1, mtfUp += d5 > 0 ? 1 : 0, mtfDn += d5 < 0 ? 1 : 0
+if not na(d6)
+    mtfN += 1, mtfUp += d6 > 0 ? 1 : 0, mtfDn += d6 < 0 ? 1 : 0
+if not na(d7)
+    mtfN += 1, mtfUp += d7 > 0 ? 1 : 0, mtfDn += d7 < 0 ? 1 : 0
+if not na(d8)
+    mtfN += 1, mtfUp += d8 > 0 ? 1 : 0, mtfDn += d8 < 0 ? 1 : 0
+
+float mtfScore = mtfN > 0 ? (mtfUp - mtfDn) / mtfN : 0.0
+bool mtfAllUp = mtfUp == mtfN and mtfN >= 3
+bool mtfAllDn = mtfDn == mtfN and mtfN >= 3
+
+//══════════════════════════════════════════════════════════════════════════════
+// SECTION 8 — BTC/ETH SYNC + IMPULSE (2 request.security calls)
+//══════════════════════════════════════════════════════════════════════════════
+
+float sync1Close = request.security(syncSym1, timeframe.period, close, ignore_invalid_symbol=true, lookahead=barmerge.lookahead_off)
+float sync2Close = request.security(syncSym2, timeframe.period, close, ignore_invalid_symbol=true, lookahead=barmerge.lookahead_off)
+
+// Sync detection
+float delta1 = not na(sync1Close) and not na(sync1Close[syncLen]) and sync1Close[syncLen] != 0 ? (sync1Close - sync1Close[syncLen]) / sync1Close[syncLen] * 100 : 0.0
+float delta2 = not na(sync2Close) and not na(sync2Close[syncLen]) and sync2Close[syncLen] != 0 ? (sync2Close - sync2Close[syncLen]) / sync2Close[syncLen] * 100 : 0.0
+
+bool syncUp = delta1 > minDeltaPct and delta2 > minDeltaPct
+bool syncDn = delta1 < -minDeltaPct and delta2 < -minDeltaPct
+bool syncActive = syncUp or syncDn
+int syncDir = syncUp ? 1 : syncDn ? -1 : 0
+
+// Impulse detection (on sync asset 1 = BTC by default)
+float d1bar = not na(sync1Close) and not na(sync1Close[1]) and sync1Close[1] != 0 ? (sync1Close - sync1Close[1]) / sync1Close[1] * 100 : 0.0
+float avgAbsD = ta.sma(math.abs(d1bar), impulseLen)
+float impThresh = nz(avgAbsD) * impulseFact
+
+bool impulseUp = d1bar > 0 and d1bar > impThresh
+bool impulseDn = d1bar < 0 and math.abs(d1bar) > impThresh
+bool impulseActive = impulseUp or impulseDn
+int impulseDir = impulseUp ? 1 : impulseDn ? -1 : 0
+
+// Combined SM signal
+bool smLong  = syncUp and impulseUp
+bool smShort = syncDn and impulseDn
+
+//══════════════════════════════════════════════════════════════════════════════
+// SECTION 9 — NESTING SCORE (fractal coherence from MTF avgLegs)
+// Approximation: use how many TFs agree vs disagree as proxy for coherence
+//══════════════════════════════════════════════════════════════════════════════
+
+float nestingScore = mtfN >= 3 ? math.max(mtfUp, mtfDn) / mtfN : 0.0
+
+//══════════════════════════════════════════════════════════════════════════════
+// SECTION 10 — OVERALL CONVICTION SCORE
+//══════════════════════════════════════════════════════════════════════════════
+
+// Direction consensus: what does the weight of evidence say?
+// Each signal votes: MTF consensus, sync direction, MDL direction, ZZ extension direction
+float dirVoteSum = 0.0
+float dirVoteWt  = 0.0
+
+// MTF consensus (strongest weight)
+if mtfN >= 2
+    dirVoteSum += mtfScore * 3.0
+    dirVoteWt  += 3.0
+
+// Sync direction
+if syncActive
+    dirVoteSum += syncDir * 2.0
+    dirVoteWt  += 2.0
+
+// MDL direction
+dirVoteSum += mdlDirection * 1.0
+dirVoteWt  += 1.0
+
+// ZZ extension (counter-trend for reversion, with-trend for momentum)
+// For the cockpit: show raw direction, user interprets based on their strategy
+if extDir != 0
+    dirVoteSum += extDir * 0.5
+    dirVoteWt  += 0.5
+
+float dirScore = dirVoteWt > 0 ? dirVoteSum / dirVoteWt : 0.0  // -1 to +1
+
+// Conviction magnitude: how confident regardless of direction
+// Components: DCC stability, nesting coherence, regime clarity, absorption at maturity
+float convMag = 0.0
+float convWt  = 0.0
+
+// DCC: high u = high conviction
+convMag += dccU * 2.0
+convWt  += 2.0
+
+// Nesting: high = coherent across scales
+convMag += nestingScore * 1.5
+convWt  += 1.5
+
+// Regime clarity: TREND/CONV = clear, EXPD/TRANS = uncertain
+float regClarity = regime == 1 or regime == 2 ? 1.0 : regime == 3 ? 0.9 : regime == 4 ? 0.4 : regime == 5 ? 0.3 : 0.5
+convMag += regClarity * 1.0
+convWt  += 1.0
+
+// Absorption at maturity: high absorption when leg is extended = reversal setup
+if legMaturity > 0.8 and absorption > 3.0
+    convMag += 1.0 * 1.0
+    convWt  += 1.0
+
+float conviction = convWt > 0 ? convMag / convWt : 0.0  // 0 to 1
+
+// Final combined: direction × conviction
+float finalScore = dirScore * conviction  // -1 to +1, magnitude = conviction
+
+//══════════════════════════════════════════════════════════════════════════════
+// SECTION 11 — VISUAL PLOTS (minimal — the table is the main output)
+//══════════════════════════════════════════════════════════════════════════════
+
+// Conviction bar as histogram (gives the pane something visual besides the table)
+color barCol = finalScore > 0.15 ? color.new(upCol, 30) : finalScore < -0.15 ? color.new(dnCol, 30) : color.new(neutCol, 50)
+plot(finalScore * 100, "Conviction", barCol, style=plot.style_histogram, linewidth=4)
+hline(0, "Zero", color.new(neutCol, 60))
+
+// Full alignment background
+bgcolor(mtfAllUp and syncUp ? color.new(upCol, 90) : mtfAllDn and syncDn ? color.new(dnCol, 90) : na, title="Full Align")
+
+// Alert shapes
+plotshape(smLong  and mtfAllUp, "★ ALL LONG",  shape.triangleup,   location.bottom, upCol, size=size.small, text="ALL↑")
+plotshape(smShort and mtfAllDn, "★ ALL SHORT", shape.triangledown, location.bottom, dnCol, size=size.small, text="ALL↓")
+
+//══════════════════════════════════════════════════════════════════════════════
+// SECTION 12 — THE TABLE
+//══════════════════════════════════════════════════════════════════════════════
+
+f_pos() =>
+    tablePos == "Top Left" ? position.top_left : tablePos == "Top Center" ? position.top_center : tablePos == "Top Right" ? position.top_right : tablePos == "Middle Left" ? position.middle_left : tablePos == "Middle Center" ? position.middle_center : tablePos == "Middle Right" ? position.middle_right : tablePos == "Bottom Left" ? position.bottom_left : tablePos == "Bottom Center" ? position.bottom_center : position.bottom_right
+
+f_sz() =>
+    tableSize == "tiny" ? size.tiny : tableSize == "small" ? size.small : size.normal
+
+bgDark  = color.new(#0a0c10, 5)
+bgRow   = color.new(#12151c, 5)
+bgRow2  = color.new(#161a24, 5)
+txtMut  = color.new(#8b93a6, 0)
+txtPri  = color.new(#e8eaf0, 0)
+szTxt   = f_sz()
+
+if barstate.islast
+    var table t = table.new(f_pos(), 4, 22, bgcolor=bgDark, border_width=1, border_color=color.new(#2a2f3c, 0))
+    
+    int r = 0
+    
+    // ═══ HEADER ═══
+    table.cell(t, 0, r, "BD COCKPIT",  text_color=upCol,  text_size=szTxt, text_halign=text.align_left, bgcolor=bgDark)
+    table.cell(t, 1, r, syminfo.ticker, text_color=txtPri, text_size=szTxt, text_halign=text.align_center, bgcolor=bgDark)
+    table.cell(t, 2, r, timeframe.period, text_color=warnCol, text_size=szTxt, text_halign=text.align_center, bgcolor=bgDark)
+    string scoreStr = (finalScore > 0 ? "+" : "") + str.tostring(math.round(finalScore * 100)) + "%"
+    color  scoreCol = finalScore > 0.15 ? upCol : finalScore < -0.15 ? dnCol : neutCol
+    table.cell(t, 3, r, scoreStr, text_color=scoreCol, text_size=szTxt, text_halign=text.align_right, bgcolor=bgDark)
+    r += 1
+    
+    // ═══ SECTION: STRUCTURE (ZigZag) ═══
+    table.cell(t, 0, r, "STRUCTURE", text_color=color.new(#64ffda, 0), text_size=size.tiny, text_halign=text.align_left, bgcolor=bgRow2)
+    table.cell(t, 1, r, "", bgcolor=bgRow2)
+    table.cell(t, 2, r, "", bgcolor=bgRow2)
+    table.cell(t, 3, r, "", bgcolor=bgRow2)
+    r += 1
+    
+    // Regime
+    table.cell(t, 0, r, "Regime",   text_color=txtMut, text_size=szTxt, text_halign=text.align_left, bgcolor=bgRow)
+    table.cell(t, 1, r, regimeStr,  text_color=regimeCol, text_size=szTxt, text_halign=text.align_center, bgcolor=bgRow)
+    // Leg Maturity
+    string matStr = str.tostring(math.round(legMaturity * 100)) + "%"
+    color matCol = legMaturity > 1.0 ? dnCol : legMaturity > 0.7 ? warnCol : upCol
+    table.cell(t, 2, r, "Maturity", text_color=txtMut, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow)
+    table.cell(t, 3, r, matStr,     text_color=matCol, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow)
+    r += 1
+    
+    // AvgLeg + ExtRatio
+    table.cell(t, 0, r, "AvgLeg",   text_color=txtMut, text_size=szTxt, text_halign=text.align_left, bgcolor=bgRow2)
+    table.cell(t, 1, r, str.tostring(avgLeg, "#.###") + "%", text_color=color.new(#64ffda, 0), text_size=szTxt, text_halign=text.align_center, bgcolor=bgRow2)
+    string erStr = str.tostring(extRatio, "#.##") + "×"
+    string erDir = extDir > 0 ? " ▲" : extDir < 0 ? " ▼" : ""
+    color erCol = extDir > 0 ? upCol : extDir < 0 ? dnCol : neutCol
+    table.cell(t, 2, r, "ExtR", text_color=txtMut, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow2)
+    table.cell(t, 3, r, erStr + erDir, text_color=erCol, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow2)
+    r += 1
+    
+    // VWAP ratio + Absorption
+    string vwStr = str.tostring(vwapRatio, "#.##")
+    color vwCol = vwapRatio >= 0.4 and vwapRatio <= 0.6 ? upCol : vwapRatio < 0.2 or vwapRatio > 0.8 ? dnCol : warnCol
+    table.cell(t, 0, r, "VWAP pos", text_color=txtMut, text_size=szTxt, text_halign=text.align_left, bgcolor=bgRow)
+    table.cell(t, 1, r, vwStr,      text_color=vwCol, text_size=szTxt, text_halign=text.align_center, bgcolor=bgRow)
+    string absStr = str.tostring(absorption, "#.#")
+    color absCol = absorption > 3.0 ? color.new(#b388ff, 0) : neutCol
+    table.cell(t, 2, r, "Absorb", text_color=txtMut, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow)
+    table.cell(t, 3, r, absStr,   text_color=absCol, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow)
+    r += 1
+    
+    // ═══ SECTION: ENGINE (MDL/DCC) ═══
+    table.cell(t, 0, r, "ENGINE", text_color=color.new(#448aff, 0), text_size=size.tiny, text_halign=text.align_left, bgcolor=bgRow2)
+    table.cell(t, 1, r, "", bgcolor=bgRow2)
+    table.cell(t, 2, r, "", bgcolor=bgRow2)
+    table.cell(t, 3, r, "", bgcolor=bgRow2)
+    r += 1
+    
+    // MDL + direction
+    string mdlDirStr = mdlDirection > 0 ? " ▲" : mdlDirection < 0 ? " ▼" : ""
+    table.cell(t, 0, r, "MDL",    text_color=txtMut, text_size=szTxt, text_halign=text.align_left, bgcolor=bgRow)
+    table.cell(t, 1, r, mdlStr + mdlDirStr, text_color=mdlCol, text_size=szTxt, text_halign=text.align_center, bgcolor=bgRow)
+    // DCC
+    table.cell(t, 2, r, "DCC",    text_color=txtMut, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow)
+    table.cell(t, 3, r, dccStr + " " + str.tostring(dccU, "#.##"), text_color=dccCol, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow)
+    r += 1
+    
+    // Sync + Impulse
+    string syncStr = syncUp ? "SYNC ▲" : syncDn ? "SYNC ▼" : "NO SYNC"
+    color syncCol = syncUp ? upCol : syncDn ? dnCol : neutCol
+    table.cell(t, 0, r, "Sync",    text_color=txtMut, text_size=szTxt, text_halign=text.align_left, bgcolor=bgRow2)
+    table.cell(t, 1, r, syncStr,   text_color=syncCol, text_size=szTxt, text_halign=text.align_center, bgcolor=bgRow2)
+    string impStr = impulseUp ? "IMPULSE ▲" : impulseDn ? "IMPULSE ▼" : "NO IMP"
+    color impCol = impulseUp ? upCol : impulseDn ? dnCol : neutCol
+    table.cell(t, 2, r, "Imp",     text_color=txtMut, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow2)
+    table.cell(t, 3, r, impStr,    text_color=impCol, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow2)
+    r += 1
+    
+    // SM combined signal
+    string smStr = smLong ? "★ LONG" : smShort ? "★ SHORT" : "FLAT"
+    color smCol = smLong ? upCol : smShort ? dnCol : neutCol
+    table.cell(t, 0, r, "SM Signal", text_color=txtMut, text_size=szTxt, text_halign=text.align_left, bgcolor=bgRow)
+    table.cell(t, 1, r, smStr,       text_color=smCol, text_size=szTxt, text_halign=text.align_center, bgcolor=bgRow)
+    // Deltas
+    string dStr = str.tostring(delta1, "#.###") + " / " + str.tostring(delta2, "#.###")
+    table.cell(t, 2, r, "Δ",   text_color=txtMut, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow)
+    table.cell(t, 3, r, dStr,  text_color=txtPri, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow)
+    r += 1
+    
+    // ═══ SECTION: TIMING (MTF Consensus) ═══
+    table.cell(t, 0, r, "TIMING", text_color=warnCol, text_size=size.tiny, text_halign=text.align_left, bgcolor=bgRow2)
+    table.cell(t, 1, r, "", bgcolor=bgRow2)
+    table.cell(t, 2, r, "", bgcolor=bgRow2)
+    table.cell(t, 3, r, "", bgcolor=bgRow2)
+    r += 1
+    
+    // MTF summary
+    string mtfStr = str.tostring(mtfUp) + "↑ " + str.tostring(mtfDn) + "↓ / " + str.tostring(mtfN)
+    color mtfCol = mtfAllUp ? upCol : mtfAllDn ? dnCol : mtfUp > mtfDn ? color.new(upCol, 40) : mtfDn > mtfUp ? color.new(dnCol, 40) : neutCol
+    table.cell(t, 0, r, "MTF",      text_color=txtMut, text_size=szTxt, text_halign=text.align_left, bgcolor=bgRow)
+    table.cell(t, 1, r, mtfStr,     text_color=mtfCol, text_size=szTxt, text_halign=text.align_center, bgcolor=bgRow)
+    // Nesting
+    string nestStr = str.tostring(math.round(nestingScore * 100)) + "%"
+    color nestCol = nestingScore >= 0.8 ? upCol : nestingScore >= 0.5 ? warnCol : dnCol
+    table.cell(t, 2, r, "Nest",     text_color=txtMut, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow)
+    table.cell(t, 3, r, nestStr,    text_color=nestCol, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow)
+    r += 1
+    
+    // Per-TF direction row
+    allTFs  = array.from(tf1, tf2, tf3, tf4, tf5, tf6, tf7, tf8)
+    allDirs = array.from(d1, d2, d3, d4, d5, d6, d7, d8)
+    allOn   = array.from(useTF1?1:0, useTF2?1:0, useTF3?1:0, useTF4?1:0, useTF5?1:0, useTF6?1:0, useTF7?1:0, useTF8?1:0)
+    
+    // Build compact TF string: "3▲ 5▲ 15▼ 30▲ 1h▲ 4h▲ D▲"
+    string tfLine1 = ""
+    string tfLine2 = ""
+    int cnt = 0
+    for i = 0 to 7
+        if array.get(allOn, i) == 1
+            int dd = array.get(allDirs, i)
+            if not na(dd)
+                string lab = array.get(allTFs, i)
+                string arrow = dd > 0 ? "▲" : dd < 0 ? "▼" : "—"
+                string entry = lab + arrow + " "
+                if cnt < 4
+                    tfLine1 += entry
+                else
+                    tfLine2 += entry
+                cnt += 1
+    
+    table.cell(t, 0, r, tfLine1, text_color=txtPri, text_size=size.tiny, text_halign=text.align_left, bgcolor=bgRow2)
+    table.cell(t, 1, r, "", bgcolor=bgRow2)
+    table.cell(t, 2, r, tfLine2, text_color=txtPri, text_size=size.tiny, text_halign=text.align_right, bgcolor=bgRow2)
+    table.cell(t, 3, r, "", bgcolor=bgRow2)
+    r += 1
+    
+    // ═══ SECTION: VERDICT ═══
+    table.cell(t, 0, r, "VERDICT", text_color=color.new(#b388ff, 0), text_size=size.tiny, text_halign=text.align_left, bgcolor=bgDark)
+    table.cell(t, 1, r, "", bgcolor=bgDark)
+    table.cell(t, 2, r, "", bgcolor=bgDark)
+    table.cell(t, 3, r, "", bgcolor=bgDark)
+    r += 1
+    
+    // Direction
+    string verdictDir = dirScore > 0.3 ? "BULLISH" : dirScore < -0.3 ? "BEARISH" : dirScore > 0.1 ? "LEAN LONG" : dirScore < -0.1 ? "LEAN SHORT" : "NEUTRAL"
+    color verdictDirCol = dirScore > 0.3 ? upCol : dirScore < -0.3 ? dnCol : math.abs(dirScore) > 0.1 ? warnCol : neutCol
+    table.cell(t, 0, r, "Direction", text_color=txtMut, text_size=szTxt, text_halign=text.align_left, bgcolor=bgRow)
+    table.cell(t, 1, r, verdictDir,  text_color=verdictDirCol, text_size=szTxt, text_halign=text.align_center, bgcolor=bgRow)
+    // Conviction
+    string convStr = str.tostring(math.round(conviction * 100)) + "%"
+    color convCol = conviction >= 0.7 ? upCol : conviction >= 0.4 ? warnCol : dnCol
+    table.cell(t, 2, r, "Convict", text_color=txtMut, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow)
+    table.cell(t, 3, r, convStr,   text_color=convCol, text_size=szTxt, text_halign=text.align_right, bgcolor=bgRow)
+    r += 1
+    
+    // Action line
+    string actionStr = "—"
+    color actionCol = neutCol
+    if smLong and mtfAllUp and conviction >= 0.6
+        actionStr := "★★★ STRONG LONG"
+        actionCol := upCol
+    else if smShort and mtfAllDn and conviction >= 0.6
+        actionStr := "★★★ STRONG SHORT"
+        actionCol := dnCol
+    else if smLong and mtfUp > mtfDn and conviction >= 0.4
+        actionStr := "★★ LONG SETUP"
+        actionCol := color.new(upCol, 30)
+    else if smShort and mtfDn > mtfUp and conviction >= 0.4
+        actionStr := "★★ SHORT SETUP"
+        actionCol := color.new(dnCol, 30)
+    else if mtfAllUp and conviction >= 0.5
+        actionStr := "★ MTF ALIGNED UP"
+        actionCol := color.new(upCol, 50)
+    else if mtfAllDn and conviction >= 0.5
+        actionStr := "★ MTF ALIGNED DN"
+        actionCol := color.new(dnCol, 50)
+    else if dccU < 0.3
+        actionStr := "⚠ NOISE — SIT OUT"
+        actionCol := dnCol
+    else if legMaturity > 1.2 and absorption > 3.0
+        actionStr := "⚡ ABSORB @ MATURE"
+        actionCol := color.new(#b388ff, 0)
+    else
+        actionStr := "SCANNING..."
+        actionCol := neutCol
+    
+    table.cell(t, 0, r, actionStr, text_color=actionCol, text_size=szTxt, text_halign=text.align_left, bgcolor=bgDark)
+    table.cell(t, 1, r, "", bgcolor=bgDark)
+    table.cell(t, 2, r, "", bgcolor=bgDark)
+    table.cell(t, 3, r, "", bgcolor=bgDark)
+
+//══════════════════════════════════════════════════════════════════════════════
+// ALERTS
+//══════════════════════════════════════════════════════════════════════════════
+
+alertcondition(smLong  and mtfAllUp, "★★★ STRONG LONG",  "SM + MTF all aligned UP")
+alertcondition(smShort and mtfAllDn, "★★★ STRONG SHORT", "SM + MTF all aligned DOWN")
+alertcondition(smLong,  "SM Long Signal",  "Sync + Impulse UP")
+alertcondition(smShort, "SM Short Signal", "Sync + Impulse DOWN")
+alertcondition(dccU < 0.25, "DCC Noise Warning", "Market structure chaotic — reduce exposure")
+alertcondition(legMaturity > 1.2 and absorption > 3.0, "Absorption at Maturity", "High volume + small candle at extended leg")
