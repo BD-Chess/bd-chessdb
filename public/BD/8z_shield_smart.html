@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8Z Shield — AI-Powered Website Protection</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0c10;--bg2:#12151c;--bg3:#1a1e28;--card:#161a24;
+  --border:#2a2f3c;--text:#e8eaf0;--text2:#8b93a6;--muted:#5a6275;
+  --orange:#ff9100;--orange-dim:rgba(255,145,0,.12);
+  --gold:#ffd740;--gold-dim:rgba(255,215,64,.12);
+  --green:#00e676;--green-dim:rgba(0,230,118,.12);
+  --red:#ff4757;--red-dim:rgba(255,71,87,.15);
+  --teal:#64ffda;--teal-dim:rgba(100,255,218,.12);
+  --blue:#448aff;--purple:#b388ff;
+  --mono:'JetBrains Mono',monospace;--body:'DM Sans',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--body);-webkit-font-smoothing:antialiased}
+::selection{background:var(--orange);color:#000}
+
+.app{max-width:720px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ── */
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.hdr-logo{font-family:var(--mono);font-size:16px;font-weight:700}.hdr-logo span{color:var(--orange)}
+.hdr-tag{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+
+/* ── Drop Zone ── */
+.drop-zone{border:2px dashed var(--border);border-radius:14px;padding:40px 20px;text-align:center;cursor:pointer;transition:all .3s;margin-bottom:20px;position:relative}
+.drop-zone:hover{border-color:var(--orange);background:rgba(255,145,0,.03)}
+.drop-zone:active{transform:scale(.995)}
+.drop-zone.over{border-color:var(--orange);background:rgba(255,145,0,.06);transform:scale(1.005)}
+.drop-zone.loaded{border-color:var(--green);border-style:solid;background:rgba(0,230,118,.03)}
+.drop-zone.vault{border-color:var(--gold);border-style:solid;background:rgba(255,215,64,.03)}
+.drop-icon{font-size:32px;margin-bottom:10px;opacity:.5;transition:opacity .2s}
+.drop-zone:hover .drop-icon,.drop-zone.loaded .drop-icon,.drop-zone.vault .drop-icon{opacity:1}
+.drop-label{font-family:var(--mono);font-size:12px;color:var(--text2);line-height:1.6}
+.drop-zone.loaded .drop-label{color:var(--green)}
+.drop-zone.vault .drop-label{color:var(--gold)}
+.drop-meta{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px}
+.file-input{display:none}
+
+/* ── Mode badge ── */
+.mode-badge{display:inline-block;font-family:var(--mono);font-size:9px;padding:3px 10px;border-radius:4px;letter-spacing:1px;text-transform:uppercase;font-weight:700;margin-bottom:14px}
+.mode-badge.encrypt{background:var(--orange-dim);color:var(--orange)}
+.mode-badge.decrypt{background:var(--gold-dim);color:var(--gold)}
+
+/* ── File chips ── */
+.file-list{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px}
+.file-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;font-family:var(--mono);font-size:10px;color:var(--teal)}
+.file-chip .sz{color:var(--muted)}
+.file-chip .rm{cursor:pointer;color:var(--muted);margin-left:2px}.file-chip .rm:hover{color:var(--red)}
+
+/* ── Scan summary + findings ── */
+.scan-summary{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.sc{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:3px;letter-spacing:.5px}
+.sc.crit{background:var(--red-dim);color:var(--red)}.sc.high{background:var(--orange-dim);color:var(--orange)}
+.sc.med{background:var(--gold-dim);color:var(--gold)}.sc.low{background:var(--teal-dim);color:var(--teal)}
+.sc.info{background:rgba(68,138,255,.1);color:var(--blue)}
+
+.findings-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.findings-title{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2)}
+.accept-btn{padding:3px 9px;background:rgba(255,145,0,.08);border:1px solid var(--orange);border-radius:4px;font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--orange);cursor:pointer}
+.accept-btn:hover{background:rgba(255,145,0,.2)}
+
+.finding-list{max-height:300px;overflow-y:auto;margin-bottom:14px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.finding{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:9px 11px;margin-bottom:6px;border-left:3px solid var(--border);cursor:pointer;transition:all .2s}
+.finding.selected{border-left-color:var(--orange);background:rgba(255,145,0,.04)}
+.finding.risk-critical{border-left-color:var(--red)}.finding.risk-high{border-left-color:var(--orange)}
+.finding.risk-medium{border-left-color:var(--gold)}.finding.risk-low{border-left-color:var(--teal)}
+.finding-top{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.rbadge{font-family:var(--mono);font-size:8px;padding:2px 6px;border-radius:3px;letter-spacing:1px;text-transform:uppercase;font-weight:700}
+.rbadge.critical{background:var(--red-dim);color:var(--red)}.rbadge.high{background:var(--orange-dim);color:var(--orange)}
+.rbadge.medium{background:var(--gold-dim);color:var(--gold)}.rbadge.low{background:var(--teal-dim);color:var(--teal)}
+.finding-type{font-family:var(--mono);font-size:10px;color:var(--text2)}
+.finding-desc{font-size:11px;color:var(--text2);line-height:1.5}
+.finding-snip{margin-top:5px;padding:5px 8px;background:var(--bg3);border-radius:4px;font-family:var(--mono);font-size:10px;color:var(--red);overflow-x:auto;white-space:nowrap}
+.finding-file{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:3px}
+.finding-chk{float:right;width:16px;height:16px;border-radius:3px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px}
+.finding.selected .finding-chk{border-color:var(--orange);color:var(--orange);background:rgba(255,145,0,.1)}
+
+/* ── AI Advisor ── */
+.ai-box{margin-bottom:14px;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.ai-head{padding:10px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--purple);letter-spacing:.5px}
+.ai-head:hover{background:rgba(179,136,255,.03)}
+.ai-arrow{transition:transform .2s}
+.ai-body{display:none;padding:0 14px 14px}
+.ai-body.show{display:block}
+.ai-chat{background:var(--bg);border:1px solid var(--border);border-radius:6px;max-height:180px;overflow-y:auto;padding:8px;margin-bottom:8px;font-size:12px;line-height:1.6;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.ai-msg{margin-bottom:6px;padding:6px 8px;border-radius:5px}
+.ai-msg.sys{background:rgba(179,136,255,.05);border-left:2px solid var(--purple)}
+.ai-msg.usr{background:rgba(68,138,255,.05);border-left:2px solid var(--blue)}
+.ai-role{font-family:var(--mono);font-size:8px;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+.ai-msg.sys .ai-role{color:var(--purple)}.ai-msg.usr .ai-role{color:var(--blue)}
+.ai-msg p{color:var(--text2);margin:0;font-size:12px;line-height:1.5}
+.ai-row{display:flex;gap:6px}
+.ai-inp{flex:1;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none}
+.ai-inp:focus{border-color:var(--purple)}.ai-inp::placeholder{color:var(--muted)}
+.ai-go{padding:8px 12px;background:rgba(179,136,255,.08);border:1px solid var(--purple);border-radius:6px;color:var(--purple);font-family:var(--mono);font-size:11px;cursor:pointer}
+.ai-go:hover{background:rgba(179,136,255,.2)}
+
+/* ── Passphrase + action ── */
+.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+.field-group{margin-bottom:10px}
+.field-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;display:block}
+.field{width:100%;padding:11px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color .2s}
+.field:focus{border-color:var(--orange)}.field::placeholder{color:var(--muted)}
+
+.action-btn{width:100%;padding:14px;background:transparent;border:2px solid var(--orange);border-radius:10px;color:var(--orange);font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.action-btn:hover:not(:disabled){background:rgba(255,145,0,.1);box-shadow:0 0 30px rgba(255,145,0,.15)}
+.action-btn:disabled{opacity:.35;cursor:not-allowed}
+.action-btn.working{border-color:var(--gold);color:var(--gold)}
+.action-btn.done{border-color:var(--green);color:var(--green);background:rgba(0,230,118,.08)}
+.action-btn.decrypt-mode{border-color:var(--gold);color:var(--gold)}
+.action-btn.decrypt-mode:hover:not(:disabled){background:rgba(255,215,64,.1);box-shadow:0 0 30px rgba(255,215,64,.15)}
+.btn-prog{position:absolute;left:0;bottom:0;height:3px;background:var(--gold);border-radius:0 0 8px 8px;width:0%;transition:width .3s}
+
+.status{font-family:var(--mono);font-size:10px;text-align:center;margin-top:8px;min-height:14px;color:var(--text2)}
+.status.working{color:var(--gold)}.status.success{color:var(--green)}.status.error{color:var(--red)}
+
+/* ── Output ── */
+.output-card{display:none;margin-top:16px;background:var(--card);border:1px solid var(--green);border-radius:10px;padding:16px}
+.output-card.show{display:block;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.output-title{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:12px}
+.out-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.out-stat{text-align:center;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:6px;padding:10px 4px}
+.out-stat .v{font-family:var(--mono);font-size:15px;font-weight:700}
+.out-stat .v.green{color:var(--green)}.out-stat .v.orange{color:var(--orange)}.out-stat .v.teal{color:var(--teal)}
+.out-stat .l{font-size:8px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:1px}
+.dl-btn{width:100%;padding:12px;background:rgba(0,230,118,.08);border:1px solid var(--green);border-radius:8px;color:var(--green);font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-bottom:6px}
+.dl-btn:hover{background:rgba(0,230,118,.15)}
+.dl-btn.gold{border-color:var(--gold);color:var(--gold);background:rgba(255,215,64,.08)}
+.dl-btn.gold:hover{background:rgba(255,215,64,.15)}
+
+/* ── Decrypt file list ── */
+.dec-file-list{margin-top:10px}
+.dec-file{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:4px;font-family:var(--mono);font-size:11px}
+.dec-file .name{color:var(--teal)}.dec-file .size{color:var(--muted);font-size:10px}
+.dec-file .save-btn{padding:3px 10px;background:rgba(0,230,118,.08);border:1px solid var(--green);border-radius:4px;color:var(--green);font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
+.dec-file .save-btn:hover{background:rgba(0,230,118,.2)}
+
+.footer{text-align:center;margin-top:32px;font-family:var(--mono);font-size:10px;color:var(--muted);opacity:.5;line-height:1.6}
+.footer a{color:var(--gold);text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="hdr">
+    <div class="hdr-logo">8Z <span>Shield</span></div>
+    <div class="hdr-tag">AI-Powered Protection</div>
+  </div>
+
+  <!-- Drop Zone -->
+  <div class="drop-zone" id="dropZone">
+    <div class="drop-icon" id="dropIcon">&#128737;</div>
+    <div class="drop-label" id="dropLabel">Drop files here — or click to browse<br><span style="font-size:10px;color:var(--muted)">.html .js .css .zip .8zv</span></div>
+    <div class="drop-meta" id="dropMeta"></div>
+    <input type="file" class="file-input" id="fileInput" accept=".html,.htm,.js,.css,.json,.zip,.8zv" multiple>
+  </div>
+
+  <!-- Dynamic content area -->
+  <div id="workspace"></div>
+
+  <div class="footer">
+    8Z Shield &bull; AIM&sup3; Institute &bull; <a href="BD_8Z_Auth.html">8Z-Auth</a><br>
+    Bojan Dobrečević &amp; Claude Opus 4.6 &bull; 2026
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════════════════
+// GEMINI
+// ══════════════════════════════════════════════════════════════
+const _g1='QUl6YVN5Q3hIanBw',_g2='S2l4YW85OU5IOURv',_g3='YWYtUTBLTzRmQ1FhZUhz';
+const GKEY=atob(_g1)+atob(_g2)+atob(_g3);
+const GMODEL='models/gemini-2.0-flash';
+
+// ══════════════════════════════════════════════════════════════
+// 8Z CRYPTO
+// ══════════════════════════════════════════════════════════════
+const MAGIC=new Uint8Array([0x38,0x5A,0x56,0x31]);
+const VERSION=3, PBKDF2_ITERS=10000000, XOR_ROUNDS=1024;
+const M64=(1n<<64n)-1n;
+class XS{constructor(s){let v=s&M64;this.state=v===0n?0x9E3779B97F4A7C15n:v}
+n(){let x=this.state;x=(x^((x>>12n)&M64))&M64;x=(x^((x<<25n)&M64))&M64;x=(x^((x>>27n)&M64))&M64;this.state=x;return(x*2685821657736338717n)&M64}}
+function u2b(v){const b=new Uint8Array(8);for(let i=7;i>=0;i--){b[i]=Number(v&0xFFn);v>>=8n}return b}
+function b2u(b){let v=0n;for(let i=0;i<8;i++)v=(v<<8n)|BigInt(b[i]);return v}
+async function sha(d){const b=(d instanceof Uint8Array)?d:new TextEncoder().encode(d);return new Uint8Array(await crypto.subtle.digest('SHA-256',b))}
+function cat(...a){let l=0;for(const x of a)l+=x.length;const o=new Uint8Array(l);let p=0;for(const x of a){o.set(x,p);p+=x.length}return o}
+async function deriveKey(pp,salt){
+  const ph=await sha(pp),sm=await sha(cat(ph,salt,new TextEncoder().encode("8Z_AUTH_V1")));
+  const rng=new XS(b2u(sm.slice(0,8)));for(let i=0;i<XOR_ROUNDS;i++)rng.n();
+  const sh=await sha(u2b(rng.state)),c=cat(ph,sh);
+  const km=await crypto.subtle.importKey('raw',c,'PBKDF2',false,['deriveBits']);
+  return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:PBKDF2_ITERS,hash:'SHA-256'},km,256));
+}
+async function gzipC(data){const cs=new CompressionStream('gzip');const w=cs.writable.getWriter(),r=cs.readable.getReader();w.write(data);w.close();const ch=[];while(true){const{done,value}=await r.read();if(done)break;ch.push(value)}let t=0;for(const c of ch)t+=c.length;const o=new Uint8Array(t);let p=0;for(const c of ch){o.set(c,p);p+=c.length}return o}
+async function gzipD(data){const ds=new DecompressionStream('gzip');const w=ds.writable.getWriter(),r=ds.readable.getReader();w.write(data);w.close();const ch=[];while(true){const{done,value}=await r.read();if(done)break;ch.push(value)}let t=0;for(const c of ch)t+=c.length;const o=new Uint8Array(t);let p=0;for(const c of ch){o.set(c,p);p+=c.length}return o}
+
+async function encrypt8zv(plainBytes){
+  // Returns .8zv blob (no passphrase yet — just gzip+structure. Caller wraps with passphrase)
+  return plainBytes; // placeholder
+}
+
+async function encryptBundle(filesObj, passphrase){
+  // filesObj: {name: content_string, ...}
+  const json=JSON.stringify(filesObj);
+  const plain=new TextEncoder().encode(json);
+  const compressed=await gzipC(plain);
+  const salt=crypto.getRandomValues(new Uint8Array(32));
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const kb=await deriveKey(passphrase,salt);
+  const key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['encrypt']);
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv,tagLength:128},key,compressed));
+  const vb=new Uint8Array(4);new DataView(vb.buffer).setUint32(0,VERSION,true);
+  return cat(MAGIC,vb,salt,iv,ct);
+}
+
+async function decryptBundle(blob, passphrase){
+  const buf=new Uint8Array(blob);
+  if(buf.length<52)throw new Error('Too small');
+  for(let i=0;i<4;i++)if(buf[i]!==MAGIC[i])throw new Error('Not a .8zv file');
+  const salt=buf.slice(8,40),iv=buf.slice(40,52),ct=buf.slice(52);
+  const kb=await deriveKey(passphrase,salt);
+  const key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['decrypt']);
+  const compressed=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv,tagLength:128},key,ct));
+  const plain=await gzipD(compressed);
+  const json=new TextDecoder().decode(plain);
+  return JSON.parse(json); // {name: content, ...}
+}
+
+// ── Section-level encrypt (for inline protection of sensitive code) ──
+async function encryptSection(html, passphrase){
+  const plain=new TextEncoder().encode(html);
+  const compressed=await gzipC(plain);
+  const salt=crypto.getRandomValues(new Uint8Array(32)),iv=crypto.getRandomValues(new Uint8Array(12));
+  const kb=await deriveKey(passphrase,salt);
+  const key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['encrypt']);
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv,tagLength:128},key,compressed));
+  const blob=cat(salt,iv,ct);
+  let bin='';for(let i=0;i<blob.length;i++)bin+=String.fromCharCode(blob[i]);
+  return btoa(bin);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ZIP READER (pure JS, unprotected zips only)
+// ══════════════════════════════════════════════════════════════
+async function readZip(arrayBuffer){
+  const buf=new Uint8Array(arrayBuffer);
+  const files={};
+  let pos=0;
+  while(pos<buf.length-4){
+    const sig=(buf[pos])|(buf[pos+1]<<8)|(buf[pos+2]<<16)|(buf[pos+3]<<24);
+    if(sig!==0x04034b50)break; // not a local file header
+    const method=(buf[pos+8])|(buf[pos+9]<<8);
+    const cSize=(buf[pos+18])|(buf[pos+19]<<8)|(buf[pos+20]<<16)|(buf[pos+21]<<24);
+    const uSize=(buf[pos+22])|(buf[pos+23]<<8)|(buf[pos+24]<<16)|(buf[pos+25]<<24);
+    const nameLen=(buf[pos+26])|(buf[pos+27]<<8);
+    const extraLen=(buf[pos+28])|(buf[pos+29]<<8);
+    const name=new TextDecoder().decode(buf.slice(pos+30,pos+30+nameLen));
+    const dataStart=pos+30+nameLen+extraLen;
+    const dataEnd=dataStart+(cSize||uSize);
+    if(!name.endsWith('/')){ // skip directories
+      let content;
+      if(method===0){ // stored
+        content=buf.slice(dataStart,dataEnd);
+      } else if(method===8){ // deflate
+        const raw=buf.slice(dataStart,dataStart+cSize);
+        try{
+          const ds=new DecompressionStream('deflate-raw');
+          const w=ds.writable.getWriter(),r=ds.readable.getReader();
+          w.write(raw);w.close();
+          const ch=[];while(true){const{done,value}=await r.read();if(done)break;ch.push(value)}
+          let t=0;for(const c of ch)t+=c.length;content=new Uint8Array(t);let o=0;
+          for(const c of ch){content.set(c,o);o+=c.length}
+        }catch(e){content=raw;} // fallback
+      } else {
+        content=buf.slice(dataStart,dataEnd); // unknown method, store raw
+      }
+      // Strip leading folder paths, keep just filename for flat display
+      const shortName=name.includes('/')?name.split('/').pop():name;
+      if(shortName)files[shortName]=new TextDecoder().decode(content);
+    }
+    pos=dataEnd;
+  }
+  return files;
+}
+
+// ══════════════════════════════════════════════════════════════
+// STATIC ANALYSIS
+// ══════════════════════════════════════════════════════════════
+const PATTERNS=[
+  {re:/['"`]AIza[A-Za-z0-9_-]{30,}['"`]/g,type:'Google API Key',risk:'critical',desc:'Google API key in plaintext. Anyone viewing source can steal it and bill your account.'},
+  {re:/['"`]sk-[A-Za-z0-9]{20,}['"`]/g,type:'OpenAI API Key',risk:'critical',desc:'OpenAI API key exposed.'},
+  {re:/['"`]sk_live_[A-Za-z0-9]{20,}['"`]/g,type:'Stripe Secret Key',risk:'critical',desc:'Stripe secret key found!'},
+  {re:/atob\s*\(\s*['"`][A-Za-z0-9+/=]{16,}['"`]\s*\)/g,type:'Obfuscated Secret (base64)',risk:'critical',desc:'Base64 value decoded at runtime — likely a hidden API key. Any developer decodes this in seconds.'},
+  {re:/fetch\s*\(\s*[`'"]https:\/\/generativelanguage\.googleapis\.com/g,type:'Gemini API Call',risk:'high',desc:'Direct call to Google Gemini API with visible endpoint and key.'},
+  {re:/googleapis\.com\/maps\/api\/js\?key=/g,type:'Maps Script + Key',risk:'high',desc:'Google Maps loaded with embedded API key.'},
+  {re:/class\s+XorShift|xorshift/gi,type:'PRNG Algorithm',risk:'high',desc:'Custom pseudo-random number generator — proprietary IP.'},
+  {re:/function\s+\w*(solve|optimize|twoOpt|nearestNeighbor)\w*/gi,type:'Optimization Algorithm',risk:'high',desc:'Proprietary optimization algorithm.'},
+  {re:/function\s+\w*(buildDistanceMatrix|routeLength|toXYMeters)\w*/gi,type:'Proprietary Math',risk:'high',desc:'Mathematical computation engine — core IP.'},
+  {re:/new\s+Worker\s*\(\s*['"`][^'"`]+['"`]\s*\)/g,type:'Web Worker',risk:'medium',desc:'External worker file — likely contains computation logic to protect.'},
+  {re:/You are (?:the |a )?[A-Z][a-z]+ [A-Z]/g,type:'AI Persona',risk:'medium',desc:'AI prompt engineering — valuable IP.'},
+  {re:/function\s+\w*(?:price|billing|payment|checkout)\w*/gi,type:'Payment Logic',risk:'high',desc:'Payment/pricing logic — business-critical code.'},
+];
+
+function staticScan(files){
+  const findings=[];let id=0;
+  for(const[fn,content]of Object.entries(files)){
+    const lines=content.split('\n');
+    for(const pat of PATTERNS){
+      const re=new RegExp(pat.re.source,pat.re.flags);let m;
+      while((m=re.exec(content))!==null){
+        let pos=0,ln=1;for(const line of lines){if(pos+line.length>=m.index)break;pos+=line.length+1;ln++;}
+        const snip=m[0].substring(0,80);
+        if(findings.some(f=>f.snip===snip&&f.file===fn))continue;
+        findings.push({id:id++,risk:pat.risk,type:pat.type,desc:pat.desc,snip,file:fn,line:ln,
+          selected:pat.risk==='critical'||pat.risk==='high'});
+      }
+    }
+  }
+  const ro={critical:0,high:1,medium:2,low:3};
+  findings.sort((a,b)=>ro[a.risk]-ro[b.risk]);
+  return findings;
+}
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+let loadedFiles={};
+let mode=null; // 'encrypt' | 'decrypt'
+let vault8zv=null; // ArrayBuffer for decrypt mode
+let findings=[];
+let aiHistory=[];
+
+// ══════════════════════════════════════════════════════════════
+// DROP ZONE
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation()});
+document.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation()});
+
+const dz=document.getElementById('dropZone');
+const fi=document.getElementById('fileInput');
+
+dz.addEventListener('click',e=>{e.stopPropagation();fi.value='';fi.click()});
+dz.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation();dz.classList.add('over')});
+dz.addEventListener('dragenter',e=>{e.preventDefault();e.stopPropagation();dz.classList.add('over')});
+dz.addEventListener('dragleave',e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('over')});
+dz.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('over');ingestFiles(e.dataTransfer.files)});
+fi.addEventListener('change',()=>{if(fi.files&&fi.files.length>0)ingestFiles(fi.files)});
+
+async function ingestFiles(filesList){
+  const arr=Array.from(filesList);
+  // Detect mode from first file
+  const first=arr[0];
+  if(!first)return;
+
+  if(first.name.endsWith('.8zv')){
+    // DECRYPT mode
+    mode='decrypt';
+    vault8zv=await first.arrayBuffer();
+    dz.classList.remove('loaded');dz.classList.add('vault');
+    document.getElementById('dropIcon').textContent='🔐';
+    document.getElementById('dropLabel').textContent=first.name;
+    document.getElementById('dropMeta').textContent=fmtB(vault8zv.byteLength)+' — .8zv bundle detected';
+    renderDecryptUI();
+    return;
+  }
+
+  if(first.name.endsWith('.zip')){
+    // ZIP mode — extract then switch to encrypt
+    mode='encrypt';
+    const ab=await first.arrayBuffer();
+    setDrop('working','⏳','Extracting '+first.name+'...');
+    try{
+      loadedFiles=await readZip(ab);
+      const count=Object.keys(loadedFiles).length;
+      if(count===0)throw new Error('Empty zip or password-protected');
+      setDrop('loaded','✓',count+' files extracted from '+first.name);
+      renderEncryptUI();
+    }catch(e){
+      setDrop('','📄','Extraction failed: '+e.message+'. Password-protected zips coming soon.');
+    }
+    return;
+  }
+
+  // RAW FILES mode
+  mode='encrypt';
+  for(const file of arr){
+    const text=await file.text();
+    loadedFiles[file.name]=text;
+  }
+  setDrop('loaded','✓',Object.keys(loadedFiles).length+' files loaded');
+  renderEncryptUI();
+}
+
+function setDrop(cls,icon,label){
+  dz.className='drop-zone'+(cls?' '+cls:'');
+  document.getElementById('dropIcon').textContent=icon;
+  document.getElementById('dropLabel').textContent=label;
+}
+
+function fmtB(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(2)+' MB'}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// ══════════════════════════════════════════════════════════════
+// ENCRYPT UI
+// ══════════════════════════════════════════════════════════════
+function renderEncryptUI(){
+  const ws=document.getElementById('workspace');
+  findings=staticScan(loadedFiles);
+  const fileNames=Object.keys(loadedFiles);
+
+  // Counts
+  const cnt={critical:0,high:0,medium:0,low:0};
+  findings.forEach(f=>cnt[f.risk]++);
+
+  let summaryHTML='';
+  if(cnt.critical)summaryHTML+=`<span class="sc crit">${cnt.critical} Critical</span>`;
+  if(cnt.high)summaryHTML+=`<span class="sc high">${cnt.high} High</span>`;
+  if(cnt.medium)summaryHTML+=`<span class="sc med">${cnt.medium} Medium</span>`;
+  if(cnt.low)summaryHTML+=`<span class="sc low">${cnt.low} Low</span>`;
+  if(!findings.length)summaryHTML=`<span class="sc info">No vulnerabilities found</span>`;
+
+  let filesHTML='';
+  fileNames.forEach(n=>{filesHTML+=`<span class="file-chip">${esc(n)} <span class="sz">(${fmtB(loadedFiles[n].length)})</span></span>`});
+
+  ws.innerHTML=`
+    <span class="mode-badge encrypt">&#128737; Encrypt Mode</span>
+    <div class="file-list">${filesHTML}</div>
+    <div class="scan-summary">${summaryHTML}</div>
+    <div class="findings-hdr">
+      <div class="findings-title">${findings.length} Findings</div>
+      <button class="accept-btn" onclick="acceptAll()">Accept All</button>
+    </div>
+    <div class="finding-list" id="fList"></div>
+    <div class="ai-box">
+      <div class="ai-head" onclick="toggleAI()"><span>&#10024; AI Security Advisor</span><span class="ai-arrow" id="aiArrow">&#9660;</span></div>
+      <div class="ai-body" id="aiBody">
+        <div class="ai-chat" id="aiChat"><div class="ai-msg sys"><div class="ai-role">8Z Advisor</div><p>I've scanned your files. Ask me anything about what to protect and why.</p></div></div>
+        <div class="ai-row"><input class="ai-inp" id="aiInp" placeholder="Ask about your code..." onkeydown="if(event.key==='Enter')sendAI()"><button class="ai-go" onclick="sendAI()">Ask</button></div>
+      </div>
+    </div>
+    <hr class="divider">
+    <div class="field-group"><label class="field-label">Passphrase</label><input class="field" id="passF" type="password" placeholder="Passphrase for both layers" autocomplete="new-password" oninput="updBtn()"></div>
+    <div class="field-group"><label class="field-label">Confirm</label><input class="field" id="confF" type="password" placeholder="Confirm" autocomplete="new-password" oninput="updBtn()"></div>
+    <button class="action-btn" id="actBtn" onclick="doShield()" disabled>Shield &amp; Bundle .8zv<div class="btn-prog" id="prog"></div></button>
+    <div class="status" id="status"></div>
+    <div class="output-card" id="outCard">
+      <div class="output-title">&#10003; Bundle Ready</div>
+      <div class="out-stats">
+        <div class="out-stat"><div class="v orange" id="oFiles">—</div><div class="l">Files</div></div>
+        <div class="out-stat"><div class="v teal" id="oShielded">—</div><div class="l">Shielded</div></div>
+        <div class="out-stat"><div class="v green" id="oSize">—</div><div class="l">Bundle</div></div>
+      </div>
+      <button class="dl-btn" id="dlBtn">Download .8zv</button>
+    </div>`;
+  renderFindings();
+  if(findings.length)genAISummary();
+}
+
+function renderFindings(){
+  const el=document.getElementById('fList');if(!el)return;
+  el.innerHTML='';
+  findings.forEach((f,i)=>{
+    const d=document.createElement('div');
+    d.className=`finding risk-${f.risk}`+(f.selected?' selected':'');
+    d.onclick=()=>{f.selected=!f.selected;renderFindings();updBtn()};
+    d.innerHTML=`<div class="finding-top"><span class="rbadge ${f.risk}">${f.risk}</span><span class="finding-type">${esc(f.type)}</span><div class="finding-chk">${f.selected?'✓':''}</div></div><div class="finding-desc">${esc(f.desc)}</div><div class="finding-snip">${esc(f.snip)}</div><div class="finding-file">${esc(f.file)}:${f.line}</div>`;
+    el.appendChild(d);
+  });
+  updBtn();
+}
+
+function acceptAll(){findings.forEach(f=>f.selected=true);renderFindings()}
+
+function updBtn(){
+  const btn=document.getElementById('actBtn');if(!btn)return;
+  const p=document.getElementById('passF'),c=document.getElementById('confF');
+  const ok=p&&c&&p.value.length>0&&p.value===c.value;
+  btn.disabled=!ok;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SHIELD + BUNDLE
+// ══════════════════════════════════════════════════════════════
+async function doShield(){
+  const passphrase=document.getElementById('passF').value;
+  if(!passphrase)return;
+  const btn=document.getElementById('actBtn'),prog=document.getElementById('prog');
+  btn.disabled=true;btn.classList.add('working');btn.childNodes[0].textContent='Shielding... ';
+  prog.style.width='0%';
+  document.getElementById('outCard').classList.remove('show');
+  const stat=document.getElementById('status');
+
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+  // Work on a copy
+  const outputFiles={};
+  const allNames=Object.keys(loadedFiles);
+  const htmlFiles=allNames.filter(n=>n.endsWith('.html')||n.endsWith('.htm'));
+  const jsFiles=allNames.filter(n=>n.endsWith('.js'));
+  const otherFiles=allNames.filter(n=>!n.endsWith('.html')&&!n.endsWith('.htm')&&!n.endsWith('.js'));
+  let shieldCount=0;
+
+  // Copy non-HTML, non-JS files as-is (css, json, images, etc)
+  otherFiles.forEach(n=>{outputFiles[n]=loadedFiles[n]});
+
+  // For EACH HTML file: inline ALL JS files, then encrypt the whole thing
+  for(let hi=0;hi<htmlFiles.length;hi++){
+    const htmlFile=htmlFiles[hi];
+    let html=loadedFiles[htmlFile];
+
+    stat.textContent='Inlining scripts into '+htmlFile+'...';
+    stat.className='status working';
+    prog.style.width=(hi/htmlFiles.length*30)+'%';
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+    // Inline every JS file referenced by <script src="...">
+    for(const jsFile of jsFiles){
+      if(loadedFiles[jsFile]){
+        const closeTag='<'+'/script>';
+        const escaped=jsFile.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+        const pat=new RegExp('<script[^>]*src=["\'](?:[./]*)?'+escaped+'["\'][^>]*>\\s*'+closeTag,'gi');
+        if(pat.test(html)){
+          // Reset regex and replace
+          html=html.replace(new RegExp(pat.source,'gi'),
+            '<script>\n'+loadedFiles[jsFile]+'\n'+closeTag);
+        }
+      }
+    }
+
+    stat.textContent='Encrypting '+htmlFile+' (10M PBKDF2)...';
+    prog.style.width=(30+hi/htmlFiles.length*50)+'%';
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+    // Encrypt the ENTIRE assembled HTML
+    try{
+      const encBlob=await encryptSection(html,passphrase);
+      outputFiles[htmlFile]=buildDecoderShell(encBlob,htmlFile);
+      shieldCount++;
+    }catch(e){
+      stat.textContent='Encryption error: '+e.message;stat.className='status error';
+      btn.disabled=false;btn.classList.remove('working');btn.childNodes[0].textContent='Shield & Bundle .8zv ';
+      return;
+    }
+  }
+
+  // JS files that were inlined are NOT added to the bundle (they're inside HTML now)
+  // JS files that were NOT referenced by any HTML are kept as-is
+  for(const jsFile of jsFiles){
+    let wasInlined=false;
+    for(const htmlFile of htmlFiles){
+      const closeTag='<'+'/script>';
+      const escaped=jsFile.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      const pat=new RegExp('<script[^>]*src=["\'](?:[./]*)?'+escaped+'["\']','i');
+      if(pat.test(loadedFiles[htmlFile])){wasInlined=true;break}
+    }
+    if(!wasInlined)outputFiles[jsFile]=loadedFiles[jsFile];
+  }
+
+  stat.textContent='Bundling into .8zv...';
+  prog.style.width='85%';
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+  // Layer 2: Bundle ALL processed files into one .8zv
+  try{
+    const bundle=await encryptBundle(outputFiles,passphrase);
+    prog.style.width='100%';
+
+    stat.textContent='Done! '+shieldCount+' page(s) shielded.';stat.className='status success';
+    document.getElementById('oFiles').textContent=Object.keys(outputFiles).length;
+    document.getElementById('oShielded').textContent=shieldCount;
+    document.getElementById('oSize').textContent=fmtB(bundle.byteLength);
+    document.getElementById('outCard').classList.add('show');
+
+    document.getElementById('dlBtn').onclick=()=>{
+      const blob=new Blob([bundle],{type:'application/octet-stream'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;
+      const first=htmlFiles[0]||'bundle';
+      a.download=first.replace(/\.html?$/i,'')+'.8zv';
+      document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+    };
+  }catch(e){
+    stat.textContent='Bundle error: '+e.message;stat.className='status error';
+  }
+
+  btn.classList.remove('working');btn.classList.add('done');
+  btn.childNodes[0].textContent='✓ Done ';
+  setTimeout(()=>{btn.classList.remove('done');btn.childNodes[0].textContent='Shield & Bundle .8zv ';btn.disabled=false},3000);
+}
+
+// ── Build a self-contained decoder shell for a protected HTML page ──
+function buildDecoderShell(encBase64, title){
+  // The 8Z decrypt runtime (minified) — must NOT contain literal close-script
+  const rt=`'use strict';
+const M64=(1n<<64n)-1n;
+class X{constructor(s){let v=s&M64;this.state=v===0n?0x9E3779B97F4A7C15n:v}
+n(){let x=this.state;x=(x^((x>>12n)&M64))&M64;x=(x^((x<<25n)&M64))&M64;x=(x^((x>>27n)&M64))&M64;this.state=x;return(x*2685821657736338717n)&M64}}
+function u2b(v){const b=new Uint8Array(8);for(let i=7;i>=0;i--){b[i]=Number(v&0xFFn);v>>=8n}return b}
+function b2u(b){let v=0n;for(let i=0;i<8;i++)v=(v<<8n)|BigInt(b[i]);return v}
+async function h(d){const b=(d instanceof Uint8Array)?d:new TextEncoder().encode(d);return new Uint8Array(await crypto.subtle.digest('SHA-256',b))}
+function cat(...a){let l=0;for(const x of a)l+=x.length;const o=new Uint8Array(l);let p=0;for(const x of a){o.set(x,p);p+=x.length}return o}
+async function dk(pp,salt){
+const ph=await h(pp),sm=await h(cat(ph,salt,new TextEncoder().encode("8Z_AUTH_V1")));
+const r=new X(b2u(sm.slice(0,8)));for(let i=0;i<1024;i++)r.n();
+const sh=await h(u2b(r.state)),c=cat(ph,sh);
+const km=await crypto.subtle.importKey('raw',c,'PBKDF2',false,['deriveBits']);
+return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:salt,iterations:10000000,hash:'SHA-256'},km,256))}
+async function dec(b64,pp){
+const bin=atob(b64);const buf=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)buf[i]=bin.charCodeAt(i);
+const salt=buf.slice(0,32),iv=buf.slice(32,44),ct=buf.slice(44);
+const kb=await dk(pp,salt);
+const k=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['decrypt']);
+const comp=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,tagLength:128},k,ct));
+const ds=new DecompressionStream('gzip'),w=ds.writable.getWriter(),rd=ds.readable.getReader();
+w.write(comp);w.close();const ch=[];
+while(true){const{done,value}=await rd.read();if(done)break;ch.push(value)}
+let t=0;for(const c of ch)t+=c.length;const res=new Uint8Array(t);let o=0;
+for(const c of ch){res.set(c,o);o+=c.length}return new TextDecoder().decode(res)}
+document.getElementById('_8zForm').addEventListener('submit',async function(e){
+e.preventDefault();
+const pp=document.getElementById('_8zP').value;if(!pp)return;
+const btn=document.getElementById('_8zB'),st=document.getElementById('_8zS');
+btn.disabled=true;st.textContent='Deriving key...';st.style.color='#ffd740';
+await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+try{
+const html=await dec(document.getElementById('_8zD').textContent,pp);
+document.open();document.write(html);document.close();
+}catch(ex){
+st.textContent='';btn.disabled=false;
+const v=document.getElementById('_8zV');v.style.animation='none';v.offsetHeight;v.style.animation='sh .4s ease';
+document.getElementById('_8zP').value='';document.getElementById('_8zP').focus();
+}});
+document.getElementById('_8zP').focus();`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${esc(title.replace(/\.html?$/i,''))}</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--bg2:#12151c;--border:#2a2f3c;--text:#e8eaf0;--muted:#5a6275;--orange:#ff9100;--mono:'JetBrains Mono',monospace;--body:'DM Sans',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--body);display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased}
+#_8zV{width:380px;text-align:center;animation:fi .6s ease}
+@keyframes fi{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sh{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+._logo{font-family:var(--mono);font-size:12px;letter-spacing:4px;color:var(--orange);text-transform:uppercase;margin-bottom:8px;opacity:.8}
+._sub{font-size:12px;color:var(--muted);margin-bottom:28px}
+form{width:100%}
+input{width:100%;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:14px;outline:none;transition:border-color .2s;margin-bottom:12px}
+input:focus{border-color:var(--orange)}input::placeholder{color:var(--muted)}
+button{width:100%;padding:14px;background:transparent;border:1px solid var(--orange);border-radius:8px;color:var(--orange);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+button:hover{background:rgba(255,145,0,.08)}button:disabled{opacity:.3;cursor:wait}
+#_8zS{font-family:var(--mono);font-size:12px;margin-top:16px;min-height:18px}
+._ft{position:fixed;bottom:16px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted);opacity:.4}
+</style>
+</head>
+<body>
+<div id="_8zV">
+<div class="_logo">8Z&middot;Shield</div>
+<div class="_sub">Protected Content</div>
+<form id="_8zForm" action="#" method="post" autocomplete="on">
+<input id="_8zU" type="text" name="username" placeholder="Username" autocomplete="username" value="8z">
+<input id="_8zP" type="password" name="password" placeholder="Passphrase" autocomplete="current-password">
+<button type="submit" id="_8zB">Unlock</button>
+</form>
+<div id="_8zS"></div>
+</div>
+<div id="_8zD" style="display:none">${encBase64}</div>
+<div class="_ft">8Z&middot;Shield &bull; AIM&sup3; Institute</div>
+<script>${rt}<`+`/script>
+</body>
+</html>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// DECRYPT UI
+// ══════════════════════════════════════════════════════════════
+function renderDecryptUI(){
+  const ws=document.getElementById('workspace');
+  ws.innerHTML=`
+    <span class="mode-badge decrypt">&#128275; Decrypt Mode</span>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Enter the passphrase to extract all files from this .8zv bundle.</p>
+    <div class="field-group"><label class="field-label">Passphrase</label><input class="field" id="decPass" type="password" placeholder="Enter passphrase" autocomplete="off" onkeydown="if(event.key==='Enter')doDecrypt()"></div>
+    <button class="action-btn decrypt-mode" id="decBtn" onclick="doDecrypt()">Unlock &amp; Extract</button>
+    <div class="status" id="status"></div>
+    <div class="output-card" id="outCard">
+      <div class="output-title">&#10003; Bundle Decrypted</div>
+      <div class="dec-file-list" id="decFiles"></div>
+      <button class="dl-btn gold" id="dlAllBtn" style="margin-top:10px">Download All as .zip</button>
+    </div>`;
+}
+
+let decryptedFiles=null;
+async function doDecrypt(){
+  const pp=document.getElementById('decPass').value;if(!pp)return;
+  const btn=document.getElementById('decBtn'),stat=document.getElementById('status');
+  btn.disabled=true;btn.classList.add('working');btn.textContent='Decrypting...';
+  stat.textContent='Deriving key...';stat.className='status working';
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  try{
+    decryptedFiles=await decryptBundle(vault8zv,pp);
+    const names=Object.keys(decryptedFiles);
+    stat.textContent=names.length+' files extracted';stat.className='status success';
+    document.getElementById('outCard').classList.add('show');
+    const list=document.getElementById('decFiles');
+    list.innerHTML='';
+    names.forEach(n=>{
+      const d=document.createElement('div');d.className='dec-file';
+      d.innerHTML=`<span class="name">${esc(n)}</span><span class="size">${fmtB(decryptedFiles[n].length)}</span><button class="save-btn" onclick="saveFile('${esc(n)}')">Save</button>`;
+      list.appendChild(d);
+    });
+    document.getElementById('dlAllBtn').onclick=()=>downloadAllZip(decryptedFiles);
+    btn.classList.remove('working');btn.textContent='Unlock & Extract';btn.disabled=false;
+  }catch(e){
+    stat.textContent='Wrong passphrase or corrupt file';stat.className='status error';
+    btn.classList.remove('working');btn.textContent='Unlock & Extract';btn.disabled=false;
+    document.getElementById('decPass').value='';document.getElementById('decPass').focus();
+  }
+}
+
+function saveFile(name){
+  if(!decryptedFiles||!decryptedFiles[name])return;
+  const blob=new Blob([decryptedFiles[name]],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=name;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+// ── Minimal ZIP writer for "Download All" ──
+function downloadAllZip(files){
+  const entries=Object.entries(files).map(([name,content])=>{
+    return{name,data:new TextEncoder().encode(content)};
+  });
+  const parts=[],cd=[];let offset=0;
+  for(const f of entries){
+    const nb=new TextEncoder().encode(f.name);
+    const lh=new Uint8Array(30+nb.length);
+    const lv=new DataView(lh.buffer);
+    lv.setUint32(0,0x04034b50,true);lv.setUint16(4,20,true);
+    const crc=crc32(f.data);
+    lv.setUint32(14,crc,true);lv.setUint32(18,f.data.length,true);lv.setUint32(22,f.data.length,true);
+    lv.setUint16(26,nb.length,true);
+    lh.set(nb,30);
+    parts.push(lh,f.data);
+    const ce=new Uint8Array(46+nb.length);
+    const cv=new DataView(ce.buffer);
+    cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);
+    cv.setUint32(16,crc,true);cv.setUint32(20,f.data.length,true);cv.setUint32(24,f.data.length,true);
+    cv.setUint16(28,nb.length,true);cv.setUint32(42,offset,true);
+    ce.set(nb,46);cd.push(ce);
+    offset+=lh.length+f.data.length;
+  }
+  const cdStart=offset;let cdSize=0;for(const c of cd)cdSize+=c.length;
+  const end=new Uint8Array(22);const ev=new DataView(end.buffer);
+  ev.setUint32(0,0x06054b50,true);ev.setUint16(8,entries.length,true);ev.setUint16(10,entries.length,true);
+  ev.setUint32(12,cdSize,true);ev.setUint32(16,cdStart,true);
+  const zip=cat(...parts,...cd,end);
+  const blob=new Blob([zip],{type:'application/zip'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='8z_extracted.zip';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+function crc32(data){let c=0xFFFFFFFF;for(let i=0;i<data.length;i++){c^=data[i];for(let j=0;j<8;j++)c=(c>>>1)^(c&1?0xEDB88320:0)}return(c^0xFFFFFFFF)>>>0}
+
+// ══════════════════════════════════════════════════════════════
+// AI ADVISOR
+// ══════════════════════════════════════════════════════════════
+function toggleAI(){
+  const b=document.getElementById('aiBody');if(!b)return;
+  b.classList.toggle('show');
+  const a=document.getElementById('aiArrow');if(a)a.style.transform=b.classList.contains('show')?'rotate(180deg)':'';
+}
+
+async function genAISummary(){
+  const summary=findings.map(f=>`[${f.risk.toUpperCase()}] ${f.type} in ${f.file}:${f.line}`).join('\n');
+  const fileList=Object.keys(loadedFiles).map(n=>`${n} (${fmtB(loadedFiles[n].length)})`).join(', ');
+  const prompt=`You are 8Z Shield Security Advisor. Analyze these scan findings from a web application. Give a brief actionable security summary in 3-4 sentences. Be direct. Mention the most critical issues first. Files: ${fileList}\n\nFindings:\n${summary}`;
+  try{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/${GMODEL}:generateContent?key=${GKEY}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}]})
+    });
+    const d=await res.json();
+    const t=d.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    if(t){
+      const chat=document.getElementById('aiChat');if(!chat)return;
+      chat.innerHTML=`<div class="ai-msg sys"><div class="ai-role">8Z Advisor</div><p>${esc(t)}</p></div>`;
+      aiHistory=[{role:'user',parts:[{text:prompt}]},{role:'model',parts:[{text:t}]}];
+    }
+  }catch(e){}
+}
+
+async function sendAI(){
+  const inp=document.getElementById('aiInp');if(!inp)return;
+  const text=inp.value.trim();if(!text)return;inp.value='';
+  const chat=document.getElementById('aiChat');if(!chat)return;
+  chat.innerHTML+=`<div class="ai-msg usr"><div class="ai-role">You</div><p>${esc(text)}</p></div>`;
+  chat.scrollTop=chat.scrollHeight;
+  const fileCtx=Object.entries(loadedFiles).map(([n,c])=>`=== ${n} ===\n${c.substring(0,2000)}${c.length>2000?'\n[...truncated...]':''}`).join('\n\n');
+  const findCtx=findings.map(f=>`[${f.risk}] ${f.type}: ${f.snip} (${f.file}:${f.line})`).join('\n');
+  const sys=`You are 8Z Shield Security Advisor. Help creators understand what to protect. Be specific with file names and line numbers.\n\nFILES:\n${fileCtx}\n\nFINDINGS:\n${findCtx}`;
+  aiHistory.push({role:'user',parts:[{text}]});
+  chat.innerHTML+=`<div class="ai-msg sys" id="aiLoad"><div class="ai-role">8Z Advisor</div><p style="opacity:.5">Thinking...</p></div>`;
+  try{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/${GMODEL}:generateContent?key=${GKEY}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{role:'user',parts:[{text:sys}]},...aiHistory]})
+    });
+    const d=await res.json();
+    const reply=d.candidates?.[0]?.content?.parts?.[0]?.text||'No response.';
+    aiHistory.push({role:'model',parts:[{text:reply}]});
+    const ld=document.getElementById('aiLoad');if(ld)ld.remove();
+    chat.innerHTML+=`<div class="ai-msg sys"><div class="ai-role">8Z Advisor</div><p>${esc(reply)}</p></div>`;
+    chat.scrollTop=chat.scrollHeight;
+  }catch(e){
+    const ld=document.getElementById('aiLoad');if(ld)ld.remove();
+    chat.innerHTML+=`<div class="ai-msg sys"><div class="ai-role">Error</div><p>${esc(e.message)}</p></div>`;
+  }
+}
+</script>
+</body>
+</html>

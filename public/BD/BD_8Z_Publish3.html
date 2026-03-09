@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8Z Publish &#8212; Zero-Infrastructure Content Protection &amp; Monetization</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg-primary:#0a0c10;--bg-secondary:#12151c;--bg-tertiary:#1a1e28;--bg-card:#161a24;--border:#2a2f3c;--text-primary:#e8eaf0;--text-secondary:#8b93a6;--text-muted:#5a6275;--accent-green:#00e676;--accent-green-dim:#00c85320;--accent-red:#ff4757;--accent-red-dim:#ff475720;--accent-blue:#448aff;--accent-blue-dim:#448aff20;--accent-gold:#ffd740;--accent-gold-dim:#ffd74020;--accent-purple:#b388ff;--accent-purple-dim:#b388ff20;--accent-teal:#64ffda;--accent-teal-dim:#64ffda20;--accent-orange:#ff9100;--accent-orange-dim:#ff910020;--font-display:'Playfair Display',Georgia,serif;--font-body:'DM Sans',sans-serif;--font-mono:'JetBrains Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth;font-size:16px}body{background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-body);line-height:1.72;-webkit-font-smoothing:antialiased}::selection{background:var(--accent-orange);color:#000}
+.toc-nav{position:fixed;top:0;left:0;width:260px;height:100vh;background:var(--bg-secondary);border-right:1px solid var(--border);overflow-y:auto;z-index:100;padding:28px 0;scrollbar-width:thin;scrollbar-color:var(--border) transparent}.toc-nav::-webkit-scrollbar{width:4px}.toc-nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.toc-brand{padding:0 24px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}.toc-brand h2{font-family:var(--font-mono);font-size:13px;font-weight:500;color:var(--accent-orange);letter-spacing:2px;text-transform:uppercase}.toc-brand p{font-size:11px;color:var(--text-muted);margin-top:4px}
+.toc-nav a{display:block;padding:7px 24px;font-size:13px;color:var(--text-secondary);text-decoration:none;transition:all .15s;border-left:2px solid transparent}.toc-nav a:hover{color:var(--text-primary);background:var(--bg-tertiary)}.toc-nav a.ch{font-weight:600;color:var(--text-primary);font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-top:14px;padding-top:10px;border-top:1px solid var(--border)}.toc-nav a.ch:first-of-type{border-top:none;margin-top:0}.toc-nav a.sub{padding-left:36px;font-size:12.5px}
+.main{margin-left:260px;max-width:860px;padding:48px 56px 120px}
+.cover{text-align:center;padding:80px 0 60px;border-bottom:1px solid var(--border);margin-bottom:60px}.cover-tag{font-family:var(--font-mono);font-size:12px;letter-spacing:3px;color:var(--accent-orange);text-transform:uppercase;margin-bottom:20px}.cover h1{font-family:var(--font-display);font-size:42px;font-weight:900;line-height:1.15;margin-bottom:18px}.cover h1 em{font-style:italic;color:var(--accent-orange)}.cover .subtitle{font-size:18px;color:var(--text-secondary);max-width:620px;margin:0 auto 28px;line-height:1.6}.cover .meta{font-family:var(--font-mono);font-size:12px;color:var(--text-muted)}
+.chapter{margin-bottom:64px;padding-top:32px;border-top:1px solid var(--border)}.chapter-num{font-family:var(--font-mono);font-size:11px;letter-spacing:3px;color:var(--accent-orange);text-transform:uppercase;margin-bottom:8px}.chapter h2{font-family:var(--font-display);font-size:32px;font-weight:700;line-height:1.25;margin-bottom:24px}.chapter h3{font-size:20px;font-weight:600;margin:36px 0 14px;padding-bottom:6px;border-bottom:1px solid var(--border)}.chapter h4{font-size:16px;font-weight:600;margin:24px 0 10px;color:var(--accent-teal)}
+p{margin-bottom:16px;color:var(--text-secondary)}strong{color:var(--text-primary);font-weight:600}em{color:var(--accent-gold);font-style:normal}
+.callout{background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--accent-blue);padding:18px 22px;margin:20px 0;border-radius:4px}.callout.warn{border-left-color:var(--accent-gold)}.callout.success{border-left-color:var(--accent-green)}.callout.orange{border-left-color:var(--accent-orange)}.callout.danger{border-left-color:var(--accent-red)}.callout .callout-title{font-family:var(--font-mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-weight:600}.callout.warn .callout-title{color:var(--accent-gold)}.callout.success .callout-title{color:var(--accent-green)}.callout.orange .callout-title{color:var(--accent-orange)}.callout.danger .callout-title{color:var(--accent-red)}.callout p{margin-bottom:6px;font-size:14px}
+code{font-family:var(--font-mono);font-size:13px;background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;color:var(--accent-teal)}
+pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22px;border-radius:4px;overflow-x:auto;margin:16px 0;font-family:var(--font-mono);font-size:12.5px;line-height:1.6;color:var(--text-secondary)}
+.tag{display:inline-block;font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:3px;letter-spacing:1px;text-transform:uppercase;margin-right:4px}.tag.green{background:var(--accent-green-dim);color:var(--accent-green)}.tag.gold{background:var(--accent-gold-dim);color:var(--accent-gold)}.tag.blue{background:var(--accent-blue-dim);color:var(--accent-blue)}.tag.purple{background:var(--accent-purple-dim);color:var(--accent-purple)}.tag.teal{background:var(--accent-teal-dim);color:var(--accent-teal)}.tag.orange{background:var(--accent-orange-dim);color:var(--accent-orange)}.tag.red{background:var(--accent-red-dim);color:var(--accent-red)}
+.quote-block{border-left:3px solid var(--accent-gold);padding:16px 24px;margin:24px 0;background:rgba(255,215,64,.04)}.quote-block p{font-family:var(--font-display);font-size:18px;line-height:1.6;color:var(--text-primary);font-style:italic;margin-bottom:0}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:28px 0}
+.stat{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:18px 14px;text-align:center;transition:border-color .2s}.stat:hover{border-color:var(--accent-orange)}.stat .val{font-family:var(--font-mono);font-size:26px;font-weight:700}.stat .val.green{color:var(--accent-green)}.stat .val.gold{color:var(--accent-gold)}.stat .val.orange{color:var(--accent-orange)}.stat .val.teal{color:var(--accent-teal)}.stat .val.purple{color:var(--accent-purple)}.stat .lbl{font-size:10px;color:var(--text-muted);margin-top:6px;text-transform:uppercase;letter-spacing:1.2px}
+.compare-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}.compare-table th{text-align:left;padding:10px 14px;background:var(--bg-tertiary);border:1px solid var(--border);font-family:var(--font-mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)}.compare-table td{padding:9px 14px;border:1px solid var(--border);color:var(--text-secondary)}.compare-table td:first-child{font-family:var(--font-mono);color:var(--accent-teal);font-size:12px}.compare-table tr:hover td{background:var(--bg-card)}
+.layer-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin:16px 0;position:relative;transition:border-color .3s}.layer-card:hover{border-color:var(--accent-orange)}.layer-card .layer-title{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--accent-teal);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}.layer-card p{font-size:14px;margin-bottom:4px}
+.flow-diagram{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:28px;margin:24px 0}.flow-step{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px}.flow-step:last-child{margin-bottom:0}.flow-icon{flex-shrink:0;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:14px;font-weight:700;border:2px solid}.flow-icon.orange{border-color:var(--accent-orange);color:var(--accent-orange)}.flow-icon.green{border-color:var(--accent-green);color:var(--accent-green)}.flow-icon.gold{border-color:var(--accent-gold);color:var(--accent-gold)}.flow-icon.teal{border-color:var(--accent-teal);color:var(--accent-teal)}.flow-icon.purple{border-color:var(--accent-purple);color:var(--accent-purple)}.flow-content h4{margin:0 0 4px;font-size:14px;color:var(--text-primary)}.flow-content p{font-size:13px;margin-bottom:0}.flow-connector{width:2px;height:16px;background:var(--border);margin:0 0 0 17px}
+.faq-q{font-family:var(--font-mono);font-size:14px;font-weight:600;color:var(--accent-red);margin:28px 0 8px}.faq-a{margin-bottom:8px}
+.vis{opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}.vis.show{opacity:1;transform:none}
+@media(max-width:960px){.toc-nav{display:none}.main{margin-left:0;padding:32px 24px 80px}.cover h1{font-size:30px}.stats-row{grid-template-columns:repeat(2,1fr)}}
+@media print{.toc-nav{display:none}.main{margin-left:0;max-width:100%}body{background:#fff;color:#111}}
+</style>
+</head>
+<body>
+
+<nav class="toc-nav">
+<div class="toc-brand"><h2>8Z Publish</h2><p>v2 &bull; March 2026</p></div>
+<a class="ch" href="#cover">Cover</a>
+<a class="ch" href="#ch1">1 &middot; The Problem</a>
+<a class="ch" href="#ch2">2 &middot; Architecture</a>
+<a class="ch" href="#ch3">3 &middot; Why This Wins</a>
+<a class="ch" href="#ch4">4 &middot; Two-Layer Protection</a>
+<a class="ch" href="#ch5">5 &middot; 8Z Shield</a>
+<a class="ch" href="#ch6">6 &middot; DOM Research</a>
+<a class="ch" href="#ch7">7 &middot; Use Cases</a>
+<a class="ch" href="#ch8">8 &middot; Product Suite</a>
+<a class="ch" href="#ch9">9 &middot; FAQ for Skeptics</a>
+<a class="ch" href="#ch10">10 &middot; Status</a>
+<a class="ch" href="#ch11">11 &middot; The LLM Collaboration</a>
+</nav>
+
+<div class="main">
+
+<div class="cover vis" id="cover">
+<div class="cover-tag">8Z Framework &bull; Product Application &bull; v3</div>
+<h1>8Z <em>Publish</em></h1>
+<div class="subtitle">Zero-infrastructure content protection and monetization. Two-layer encryption, forensic watermarking, AI-powered scanning. Nine tools, four AIs, one passphrase, no server. Built in 24 hours.</div>
+<div class="meta">Bojan Dobre&#269;evi&#269; &bull; AIM&sup3; Institute &bull; March 9, 2026<br>Built on <a href="BD_8Z_Auth.html" style="color:var(--accent-gold)">8Z-Auth</a> &bull; In Production &bull; Collaboration: Claude Opus 4.6 + GPT + Gemini + Grok</div>
+<div class="stats-row" style="margin-top:36px">
+<div class="stat"><div class="val orange">0</div><div class="lbl">Servers</div></div>
+<div class="stat"><div class="val green">AES-256</div><div class="lbl">Encryption</div></div>
+<div class="stat"><div class="val gold">2.9%</div><div class="lbl">Stripe Only</div></div>
+<div class="stat"><div class="val teal">9</div><div class="lbl">Tools</div></div>
+<div class="stat"><div class="val purple">4</div><div class="lbl">AIs Collaborated</div></div>
+</div>
+</div>
+
+<!-- CH 1: PROBLEM -->
+<div class="chapter vis" id="ch1">
+<div class="chapter-num">Chapter 1</div>
+<h2>The Problem</h2>
+<p>You're a creator. You make things people will pay for. To sell them online, you need a hosting provider, a payment processor, a membership system, a login database, session management, and ongoing server maintenance. Or you use a platform (Substack, Gumroad, Patreon) that takes 10&ndash;12% of your revenue and owns the customer relationship.</p>
+<p>The entire SaaS stack exists because of one assumption: <strong>content protection requires a server that gates access.</strong> That assumption is wrong.</p>
+<div class="callout orange"><div class="callout-title">The 8Z Insight</div><p>If the content is encrypted and the passphrase is the only key, you don't need a server to protect it. You need <strong>good encryption</strong> and a <strong>browser that can decrypt</strong>. Both exist. The server was never necessary &mdash; it was a habit.</p></div>
+</div>
+
+<!-- CH 2: ARCHITECTURE -->
+<div class="chapter vis" id="ch2">
+<div class="chapter-num">Chapter 2</div>
+<h2>Architecture</h2>
+<h3>The Flow</h3>
+<div class="flow-diagram">
+<div class="flow-step"><div class="flow-icon orange">1</div><div class="flow-content"><h4>Create</h4><p>Build your content as HTML &mdash; course, tool, album, newsletter, portfolio.</p></div></div>
+<div class="flow-connector"></div>
+<div class="flow-step"><div class="flow-icon gold">2</div><div class="flow-content"><h4>Shield &amp; Bundle</h4><p>Drop files into 8Z Shield. AI scans for API keys, algorithms, secrets. One passphrase encrypts sensitive sections AND bundles everything into a <code>.8zv</code>.</p></div></div>
+<div class="flow-connector"></div>
+<div class="flow-step"><div class="flow-icon green">3</div><div class="flow-content"><h4>Upload</h4><p>Host the extracted files on any free static host: Netlify, GitHub Pages, Cloudflare Pages, Vercel, S3. Cost: $0.</p></div></div>
+<div class="flow-connector"></div>
+<div class="flow-step"><div class="flow-icon teal">4</div><div class="flow-content"><h4>Sell</h4><p>Customers visit the URL, see a passphrase prompt. Payment via Stripe. Delivery via email/Zapier. Browser remembers the passphrase.</p></div></div>
+<div class="flow-connector"></div>
+<div class="flow-step"><div class="flow-icon purple">5</div><div class="flow-content"><h4>Revoke</h4><p>Delete one customer's <code>.8zv</code> or re-encrypt. Per-customer encryption means revoking one doesn't affect others.</p></div></div>
+</div>
+
+<h3>The 8Z Crypto Pipeline</h3>
+<pre>Passphrase &rarr; SHA-256 (domain: "8Z_AUTH_V1")
+  &rarr; XorShift64Star &times; 1024 rounds
+  &rarr; SHA-256 &rarr; PBKDF2 (10,000,000 iterations)
+  &rarr; AES-256-GCM (Gzip level 9 + plaintext)
+  &rarr; "8ZV1" + version(3) + 32-byte salt + 12-byte IV + ciphertext + tag</pre>
+<p>The XorShift64Star layer is the <em>Software PUF</em> component. Standard cracking tools (hashcat, John the Ripper) expect PBKDF2 directly from the passphrase. They cannot process the intermediate XorShift transformation without reimplementing it. <strong>The algorithm itself becomes part of the secret.</strong></p>
+</div>
+
+<!-- CH 3: WHY THIS WINS -->
+<div class="chapter vis" id="ch3">
+<div class="chapter-num">Chapter 3</div>
+<h2>Why This Wins</h2>
+<table class="compare-table">
+<thead><tr><th>Platform</th><th>Revenue Cut</th><th>Server</th><th>Owns Customer?</th><th>DOM Protection</th></tr></thead>
+<tbody>
+<tr><td>Substack</td><td style="color:var(--accent-red)">10%</td><td>Their server</td><td style="color:var(--accent-red)">Yes</td><td style="color:var(--accent-red)">None</td></tr>
+<tr><td>Gumroad</td><td style="color:var(--accent-red)">10%</td><td>Their server</td><td style="color:var(--accent-red)">Yes</td><td style="color:var(--accent-red)">None</td></tr>
+<tr><td>Patreon</td><td style="color:var(--accent-red)">8&ndash;12%</td><td>Their server</td><td style="color:var(--accent-red)">Yes</td><td style="color:var(--accent-red)">None</td></tr>
+<tr><td>StatiCrypt</td><td style="color:var(--accent-green)">Free</td><td style="color:var(--accent-green)">No</td><td style="color:var(--accent-green)">No</td><td style="color:var(--accent-red)">Full page only</td></tr>
+<tr><td style="color:var(--accent-orange);font-weight:700">8Z Publish</td><td style="color:var(--accent-green);font-weight:700">2.9% Stripe</td><td style="color:var(--accent-green);font-weight:700">$0</td><td style="color:var(--accent-green);font-weight:700">No</td><td style="color:var(--accent-green);font-weight:700">Section-level</td></tr>
+</tbody>
+</table>
+<p><strong>No server = no attack surface.</strong> No database to breach, no session to hijack, no API to exploit.</p>
+<p><strong>No platform = no dependency.</strong> <code>.8zv</code> files work on any static host, forever.</p>
+<p><strong>No login = no friction.</strong> Passphrase + browser save = one-click access after first login.</p>
+</div>
+
+<!-- CH 4: TWO LAYERS -->
+<div class="chapter vis" id="ch4">
+<div class="chapter-num">Chapter 4</div>
+<h2>Two-Layer Protection</h2>
+
+<div class="layer-card" style="border-left:3px solid var(--accent-orange)">
+<div class="layer-title">Layer 1 &mdash; Runtime Protection</div>
+<p>Each HTML file is wrapped in a <strong>decoder shell</strong> with username + password fields (enabling browser credential save). The entire page content is AES-256-GCM encrypted inside the shell. On correct passphrase, the page decrypts and renders. Wrong passphrase = shake animation, blank result, no error oracle. This protects files <strong>when deployed on a live website</strong>. View Source shows the decoder and an encrypted blob.</p>
+</div>
+
+<div class="layer-card" style="border-left:3px solid var(--accent-gold)">
+<div class="layer-title">Layer 2 &mdash; Distribution Protection (.8zv Bundle)</div>
+<p>All files (HTML, CSS, JS, assets) are JSON-serialized, gzip-compressed, and AES-256-GCM encrypted into a single <code>.8zv</code> binary. This protects files <strong>during transfer</strong> &mdash; email, USB stick, cloud storage. The recipient drops the <code>.8zv</code> into Shield, enters the passphrase, extracts all files. The extracted HTML files already contain Layer 1 &mdash; they still require the passphrase at runtime.</p>
+</div>
+
+<div class="callout success"><div class="callout-title">One Passphrase, Two Layers</div><p>The same passphrase encrypts both layers. The user never thinks about "encryption layers" &mdash; they think about one password.</p></div>
+</div>
+
+<!-- CH 5: SHIELD -->
+<div class="chapter vis" id="ch5">
+<div class="chapter-num">Chapter 5</div>
+<h2>8Z Shield &mdash; Intelligent Protection</h2>
+
+<h3>Section-Level DOM Encryption</h3>
+<p>Individual sections of a page can be independently encrypted and only decrypted on demand. When a user clicks to expand a section, it decrypts. When they open a different section, the previous one is <strong>wiped from the DOM</strong>. At any moment, only the actively-viewed section exists in cleartext. Save As captures a shell with ciphertext, not content.</p>
+
+<h3>Smart Shield &mdash; AI-Powered Analysis</h3>
+<p><strong>Static Analysis (instant):</strong> 16 pattern detectors scan all files for API keys (Google, OpenAI, Stripe, GitHub), base64-obfuscated secrets, fetch calls to paid APIs, algorithm implementations, proprietary math, Web Worker references, AI prompt engineering, and payment logic. Each finding: risk level, file, line, snippet, plain-language explanation.</p>
+<p><strong>Gemini AI Advisor (conversational):</strong> After the scan, a Gemini-powered advisor summarizes risks and answers questions about what to protect and why. Non-technical creators get explanations in plain language.</p>
+
+<div class="callout orange"><div class="callout-title">The Shield Protects Itself</div><p>8Z Shield contains a Gemini API key for the AI advisor. The production deployment is itself encrypted with 8Z Publish. The tool that protects websites is protected by its own technology.</p></div>
+
+<h3>Multi-Format Input</h3>
+<table class="compare-table">
+<thead><tr><th>Drop This</th><th>Mode</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>.html / .js / .css</td><td>Encrypt</td><td>Scan &rarr; Shield &rarr; .8zv</td></tr>
+<tr><td>.zip archive</td><td>Encrypt</td><td>Extract &rarr; Scan &rarr; Shield &rarr; .8zv</td></tr>
+<tr><td>.8zv file</td><td>Decrypt</td><td>Unlock &rarr; Save files or .zip</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- CH 6: DOM RESEARCH -->
+<div class="chapter vis" id="ch6">
+<div class="chapter-num">Chapter 6</div>
+<h2>DOM Protection Research</h2>
+<p>Section-level encryption opens a research path toward medium-specific protection: <strong>only decrypt what is actively being consumed, wipe everything else.</strong></p>
+
+<h3>Books &amp; Long-Form Text</h3>
+<p>Each page independently encrypted. Reader sees one page at a time. Swipe to next = decrypt new page, wipe previous. Piracy friction: 300 manual screenshots vs. one Save As. Architecture: key derived once, per-page salt+IV, millisecond decryption per page.</p>
+
+<h3>Audio &amp; Music</h3>
+<p>3-second sliding decryption window. Only current audio exists in cleartext. Honest limitation: analog hole (record system audio) is wider for audio than text. Greater value in <strong>forensic watermarking</strong> per customer (inaudible spread-spectrum, recoverable from any recording) than in chunked decryption.</p>
+
+<h3>Video &mdash; Temporal Encryption Dithering <span class="tag red">potentially novel</span></h3>
+<p>At 60fps, each frame shows a random subset of real pixels mixed with noise. The subset pattern (mask) is derived from the encryption key. Human persistence of vision integrates real pixels across frames. A screen recorder captures every frame with key-dependent noise it cannot separate.</p>
+<p>At 60fps with key-derived random masks, averaging adjacent frames doesn't help because masks are random. Reconstruction requires the key. This is <strong>steganography meets temporal encryption</strong>. Closest prior art: Naor &amp; Shamir visual cryptography (1994) &mdash; static image split into two random shares. 8Z's concept applies this temporally at video framerate. Per-frame pixel-level dithering with key-derived masks appears to be unpublished.</p>
+<div class="callout warn"><div class="callout-title">Research Status</div><p>Page-level and section-level encryption are implemented and working. Audio chunking is straightforward. Video temporal dithering requires WebGL + formal reconstruction analysis &mdash; research direction, not shipped feature.</p></div>
+</div>
+
+<!-- CH 7: USE CASES -->
+<div class="chapter vis" id="ch7">
+<div class="chapter-num">Chapter 7</div>
+<h2>Use Cases</h2>
+<div class="layer-card" style="border-left:3px solid var(--accent-orange)"><div class="layer-title">Online Courses</div><p>Encrypt each module. Sell via Stripe. Deliver passphrase on payment. No LMS, no hosting costs.</p></div>
+<div class="layer-card" style="border-left:3px solid var(--accent-gold)"><div class="layer-title">Trading Tools &amp; Financial Instruments</div><p>Encrypt live dashboards, scanners, calculators. <strong>In production</strong> &mdash; SM and ZZ traders on chessbest.org, plus the 8Z Trip Optimizer with protected API keys.</p></div>
+<div class="layer-card" style="border-left:3px solid var(--accent-teal)"><div class="layer-title">Website IP Protection</div><p>Any site whose source code IS the product: HTML templates, SaaS dashboards, interactive tools. Right-click &rarr; Save As captures ciphertext, not source.</p></div>
+<div class="layer-card" style="border-left:3px solid var(--accent-green)"><div class="layer-title">API Key Protection</div><p>Client-side apps with embedded keys (Google Maps, Gemini, OpenAI). Shield encrypts the script blocks. No passphrase = no API calls = no billing on your account.</p></div>
+<div class="layer-card" style="border-left:3px solid var(--accent-purple)"><div class="layer-title">Software Distribution</div><p>Send a website as a single <code>.8zv</code> via email. Passphrase via SMS. Even if intercepted, the bundle is useless without the passphrase.</p></div>
+<div class="layer-card" style="border-left:3px solid var(--accent-blue)"><div class="layer-title">Private &amp; Family Content</div><p>Photo albums, journals, family histories. No cloud, no privacy policy, no account. Just a passphrase shared at dinner.</p></div>
+</div>
+
+<!-- CH 8: SUITE -->
+<div class="chapter vis" id="ch8">
+<div class="chapter-num">Chapter 8</div>
+<h2>Product Suite</h2>
+<p>Nine tools. ~250 KB total. Zero dependencies. Zero servers. Core seven built March 9, 2026. Two additional tools contributed by GPT and Grok after the multi-LLM collaboration session.</p>
+<table class="compare-table">
+<thead><tr><th>Tool</th><th>File</th><th>Purpose</th><th>Author</th></tr></thead>
+<tbody>
+<tr><td>8Z Shield Smart</td><td>8z_shield_smart.html</td><td>AI-powered multi-file protector + .8zv bundler</td><td>Claude</td></tr>
+<tr><td>8Z Encrypt</td><td>8z_encrypt.html</td><td>Browser-based single-file encryptor</td><td>Claude</td></tr>
+<tr><td>8Z Batch</td><td>8z_batch.html</td><td>Per-customer encryption + CSV for Zapier</td><td>Claude</td></tr>
+<tr><td>8Z Template</td><td>8z_template.html</td><td>Branded decoder generator with live preview</td><td>Claude</td></tr>
+<tr><td>8Z Vault Decoder</td><td>bd_vault_decoder.html</td><td>Generic .8zv decoder (file drop or URL)</td><td>Claude</td></tr>
+<tr><td>8Z Publish Landing</td><td>8z_publish_landing.html</td><td>Product landing page for creators</td><td>Claude</td></tr>
+<tr><td>8Z Verify</td><td>8z_verify_test.html</td><td>8-test encrypt/decrypt cross-verification</td><td>Claude</td></tr>
+<tr><td style="color:var(--accent-green)">8Z Reader</td><td>8z_reader.html</td><td>Offline buyer library &mdash; permanent bookshelf for .8zv purchases</td><td style="color:var(--accent-green)">Grok</td></tr>
+<tr><td style="color:var(--accent-green)">8Z Trace</td><td>8z_trace.html</td><td>Forensic fingerprinting: 4-channel watermark + leak detector + evidence</td><td style="color:var(--accent-green)">GPT + Gemini</td></tr>
+</tbody>
+</table>
+<p>8Z Trace integrates watermark injection code from Gemini (3-channel steganography with fingerprint derived from PBKDF2 key) with GPT's full detection architecture (4 channels, confidence scoring, manifest schema, false-positive guards, 6 acceptance tests). The combination exceeds what any single AI produced.</p>
+</div>
+
+<!-- CH 9: FAQ -->
+<div class="chapter vis" id="ch9">
+<div class="chapter-num">Chapter 9</div>
+<h2>FAQ for Skeptics</h2>
+<p>These objections have been raised by human reviewers, Gemini, and Grok. They are stated at full strength and answered directly.</p>
+
+<div class="faq-q">"StatiCrypt already does this. It's not novel."</div>
+<div class="faq-a">
+<p>StatiCrypt encrypts one HTML file and embeds it in a decoder page. 8Z Publish does: multi-file bundling into <code>.8zv</code>, section-level DOM encryption with lazy-decrypt and wipe-on-close, AI-powered vulnerability scanning, a custom key derivation pipeline (Software PUF) that breaks off-the-shelf cracking tools, two-layer protection (runtime + distribution), per-customer batch encryption with CSV automation, and a branded decoder generator. Calling this "just StatiCrypt" is like calling a smartphone "just a phone because Bell already had ringers."</p>
+</div>
+
+<div class="faq-q">"A buyer can post the passphrase on Reddit. 10,000 people access your content."</div>
+<div class="faq-a">
+<p>True. Also true of every digital product ever sold. A Substack subscriber can forward the email. A Gumroad buyer can upload the PDF. A Netflix viewer can screen-record. 8Z Publish solves this better than most via <strong>per-customer encryption</strong>: one source &rarr; N copies, each with a unique passphrase. Passphrase-A leaks? Delete file_001.8zv. Alice loses access. Bob is unaffected. This is <strong>more granular revocation than Substack, Gumroad, or Patreon.</strong></p>
+</div>
+
+<div class="faq-q">"Deleting the .8zv breaks access for every customer."</div>
+<div class="faq-a">
+<p>Only in single-passphrase mode. Per-customer encryption gives each customer their own file. Delete one, only that customer is affected. Even in single mode, re-encrypt + Zapier auto-deliver is one API call, not a "nightmare."</p>
+</div>
+
+<div class="faq-q">"Once decrypted, the content is in the DOM and can be copied."</div>
+<div class="faq-a">
+<p>Yes. Also true of Netflix (Widevine gets cracked), Kindle (DRM-free on pirate sites), and Spotify (every track available as MP3). DRM adds complexity and friction for legitimate users while barely slowing pirates. 8Z Shield's section-level encryption with wipe-on-close raises the friction meaningfully &mdash; DevTools shows only one section at a time. Reconstructing the full page requires manual click-copy-repeat. Casual copying is effectively prevented. <strong>Critically: Substack has the same DOM problem PLUS a server to breach, a database to leak, and sessions to steal. 8Z has none of those.</strong></p>
+</div>
+
+<div class="faq-q">"This can't replace Substack because it lacks identity and authorization."</div>
+<div class="faq-a">
+<p>8Z Publish doesn't aim to replace Substack for casual bloggers who want discovery. It replaces the <strong>payment infrastructure tax</strong> for creators who already have an audience. A passphrase IS identity in context: the customer paid via Stripe (which handles identity, fraud, compliance), received a passphrase tied to their purchase. Per-customer encryption means only their copy is at risk if shared.</p>
+</div>
+
+<div class="faq-q">"P=NP / quantum-safe claims are just marketing."</div>
+<div class="faq-a">
+<p>The P=NP resilience claim is precisely that 8Z uses <strong>purely symmetric crypto</strong>. AES-256 and SHA-256 don't rely on factoring hardness (RSA) or discrete logs (ECC) &mdash; the problems quantum computers break. If P=NP is proven tomorrow, every RSA key and TLS certificate dies. AES-256 survives because its security is the key space (2^256), not a mathematical conjecture. Grover's algorithm halves it to 128 bits &mdash; still beyond brute force. This is architectural, not marketing.</p>
+</div>
+
+<div class="faq-q">"You should add a serverless function (JWT, Cloudflare Worker) for identity."</div>
+<div class="faq-a">
+<p>We explicitly reject this. The moment you add a function, you have a server (that goes down, costs money, has rate limits), an identity system (that must be maintained), and a provider dependency. The entire point is <strong>zero infrastructure</strong>. Not "minimal." Zero. The constraint is the feature. Creators who want JWT-based identity have hundreds of SaaS platforms. 8Z is for people who don't want those.</p>
+</div>
+
+<div class="faq-q">"10M PBKDF2 iterations is too slow. Users won't wait."</div>
+<div class="faq-a">
+<p>5&ndash;10 seconds, once, at first login. Browser saves the passphrase afterward (proper username+password form). Every subsequent visit: auto-fill, click Unlock, 5 seconds. Gmail takes 3&ndash;5 seconds to load. The alternative is reducing iterations, which directly reduces brute-force resistance. At 10M iterations, each guess takes ~5 seconds. One million guesses = 57 days. At 100K iterations (industry standard), the same attack takes 13 hours. The wait IS the security.</p>
+</div>
+</div>
+
+<!-- CH 10: STATUS -->
+<div class="chapter vis" id="ch10">
+<div class="chapter-num">Chapter 10</div>
+<h2>Current Status</h2>
+<div class="callout success"><div class="callout-title">In Production &mdash; All Phases Built, Multi-AI Collaboration Active</div><p>8Z Publish is not a concept. Nine tools are built or in integration. The author uses them daily for trading tools on chessbest.org, for the 8Z Trip Optimizer (TSP solver + Gemini AI with protected API keys), and for 8Z Shield itself (encrypted with its own technology). The crypto pipeline is bit-verified across Python and JavaScript with 8/8 cross-verification tests passing. Three additional AIs (GPT, Gemini, Grok) have contributed code, specifications, and architectural proposals after being converted from skeptics to collaborators.</p></div>
+<p>The complete core suite &mdash; seven tools, zero dependencies, ~200 KB &mdash; was conceived, designed, and built in a single day (March 9, 2026) during a continuous collaboration between Bojan Dobre&#269;evi&#269; and Claude Opus 4.6. Two additional tools (8Z Reader, 8Z Trace) were contributed by Grok and GPT+Gemini respectively on the same day, after the multi-LLM collaboration described in Chapter 11.</p>
+<div class="quote-block"><p>The entire product is static HTML files. The "server" is any free static host. The "database" is the filesystem. The "auth system" is AES-256 + a passphrase. Simplicity, pursued honestly, produces resilience that complexity never reaches.</p></div>
+</div>
+
+<!-- CH 11: LLM COLLABORATION -->
+<div class="chapter vis" id="ch11">
+<div class="chapter-num">Chapter 11</div>
+<h2>The Multi-LLM Collaboration</h2>
+<p>This chapter documents something that may be unprecedented: a single human converting three competing AI systems from skeptics into active co-builders of a shared product, in a single day, through structured argumentation and transparent competition.</p>
+
+<h3>Round 1: The Dismissal</h3>
+<p>After the core seven tools were built with Claude Opus 4.6, the complete architecture document was sent to GPT, Gemini, and Grok for review. All three anchored their analysis to the same baseline: <strong>"StatiCrypt and PageCrypt already do client-side AES decryption. The base primitive is not new."</strong></p>
+<p>Gemini called it "a highly polished, production-ready execution of static payload encryption" and then spent 500 words explaining why it couldn't work for the masses. GPT called it "not nothing special" but hedged every positive observation with "the core primitive is not novel." Grok was the most honest &mdash; it called the work "special" and offered to help build, but still framed it relative to the StatiCrypt baseline.</p>
+
+<div class="callout danger"><div class="callout-title">The Framing Error</div><p>All three committed the same analytical mistake: identifying the lowest-level primitive, finding prior art for it, and treating everything built on top as "product innovation" &mdash; implicitly a lesser category. This is equivalent to reviewing the iPhone as "just a touch screen because capacitive displays already existed." TCP/IP already existed when the web was invented. Transformers already existed when ChatGPT was built. The primitive is never the innovation. The system is.</p></div>
+
+<h3>The Rebuttal</h3>
+<p>A structured rebuttal was sent to all three simultaneously. It acknowledged what they got right (the primitive exists), demolished the framing error with historical parallels, answered every specific objection with technical precision, and ended with an invitation rather than a defense: <strong>"Stop being a judge. Start being a partner. What would you build next?"</strong></p>
+<p>The rebuttal was fully transparent &mdash; each AI could see what was sent to the others. No backroom diplomacy. The message was: this is an open collaboration, and the best output gets integrated first.</p>
+
+<h3>Round 1 Results: The Pivot</h3>
+<p>All three pivoted from evaluation to creation. Each independently converged on <strong>forensic watermarking</strong> as the architecturally correct next move &mdash; but each saw a different piece:</p>
+
+<table class="compare-table">
+<thead><tr><th>LLM</th><th>Score</th><th>Proposed</th><th>Blind Spot</th></tr></thead>
+<tbody>
+<tr><td style="color:var(--accent-orange)">GPT</td><td>95/100</td><td>8Z Trace: full anti-piracy platform (6-channel fingerprinting, leak detector, evidence packs, Argon2id)</td><td>Consumer experience (no Reader concept)</td></tr>
+<tr><td style="color:var(--accent-teal)">Grok</td><td>88/100</td><td>8Z Reader (offline buyer library), watermarking, deploy packager</td><td>Watermarking too shallow (single channel)</td></tr>
+<tr><td style="color:var(--accent-purple)">Gemini</td><td>82/100</td><td>Zero-width steganography with seed derived from PBKDF2 key</td><td>Single channel = fragile, no redundancy</td></tr>
+</tbody>
+</table>
+
+<h3>Round 2: The Code</h3>
+<p>Scores, blind spots, and specific build missions were shared with all three transparently. Each was assigned a task that built on their own proposal: Grok was asked to build 8Z Reader, Gemini to write injection+extraction functions, GPT to produce the full Trace build spec. Both <code>.html</code> code files were attached for architectural reference.</p>
+<p>The results:</p>
+
+<table class="compare-table">
+<thead><tr><th>LLM</th><th>R2 Score</th><th>Delivered</th></tr></thead>
+<tbody>
+<tr><td style="color:var(--accent-orange)">GPT</td><td>97/100</td><td>Complete 8Z Trace MVP-1 build spec: 4 channels (ZWS, synonyms, CSS ordering, honey-links), <code>fingerprint()</code> + <code>detect()</code> functions, manifest JSON schema, seed derivation, 6 acceptance tests including adversarial and collision, exact patch points into existing code</td></tr>
+<tr><td style="color:var(--accent-teal)">Grok</td><td>92/100</td><td>Complete <code>8z_reader.html</code> (420 lines): working code using exact crypto pipeline, bookshelf UI, drag-and-drop .8zv, passphrase modal, full-screen viewer, zero state, dark aesthetic</td></tr>
+<tr><td style="color:var(--accent-purple)">Gemini</td><td>85/100</td><td>Working <code>injectWatermark()</code> and <code>extractWatermark()</code> functions: 3-channel (ZWS + honey-link + synonym swaps), confidence scoring, cross-channel validation</td></tr>
+</tbody>
+</table>
+
+<h3>The Convergence Signal</h3>
+<p>Three independent AI systems, given the same codebase and the same invitation, all converged on forensic watermarking as the next priority. This convergence is the architectural signal &mdash; the same way three independent mathematical generators converging on the same data pattern in 8Z compression means the pattern is real. When competing intelligences point at the same gap, the gap is real and the solution is architecturally necessary.</p>
+
+<h3>Score Evolution</h3>
+<table class="compare-table">
+<thead><tr><th>LLM</th><th>Round 1</th><th>Round 2</th><th>Trajectory</th></tr></thead>
+<tbody>
+<tr><td>GPT</td><td>95</td><td>97</td><td>Judge &rarr; architect &rarr; spec author</td></tr>
+<tr><td>Grok</td><td>88</td><td>92</td><td>Partner &rarr; builder &rarr; shipped code</td></tr>
+<tr><td>Gemini</td><td>82</td><td>85</td><td>Skeptic &rarr; builder &rarr; injection engine</td></tr>
+</tbody>
+</table>
+
+<h3>The Meta-Pattern</h3>
+<p>This collaboration demonstrates a new pattern in human-AI co-creation:</p>
+<p><strong>One human + one builder AI + three critic AIs &gt; one human + one AI alone.</strong></p>
+<p>Claude built the system. GPT, Gemini, and Grok found the gaps Claude couldn't see (watermarking, consumer experience, evidence packaging) because the builder was too close to the architecture. Bojan's role was the same as in every 8Z breakthrough: refuse the dismissal, reframe the problem, and turn skeptical energy into creative fuel.</p>
+<p>The critics' dismissals pointed directly at the next breakthrough. "It can't prevent DOM scraping" led to forensic watermarking. "It can't replace Substack" led to 8Z Reader (the consumer-side library that creates the network effect). "It's just StatiCrypt" forced the articulation of every feature that StatiCrypt doesn't have &mdash; which turned out to be a devastating competitive analysis.</p>
+
+<div class="callout orange"><div class="callout-title">Principle 15: Turn Skeptics Into Builders</div><p>When an AI (or anyone) dismisses your work, don't defend. Reframe and invite: "You've read the code. You understand the architecture. What would you build next?" This converts evaluation energy into creation energy. The criticism points at the next breakthrough. The skeptic becomes the collaborator. The dismissal becomes the feature request.</p></div>
+
+<div class="quote-block"><p>The same human trait that refuses limits from textbooks also refuses dismissal from AIs. The response to "that's not new" is identical whether it comes from a paper, a professor, or a large language model: show me the evidence &mdash; and if you can't, help me build it.</p></div>
+</div>
+
+<div style="text-align:center;padding:40px 0;color:var(--text-muted);font-family:var(--font-mono);font-size:11px;">
+8Z Publish v3 &bull; AIM&sup3; Institute &bull; Bojan Dobre&#269;evi&#269; &amp; Claude Opus 4.6 + GPT + Gemini + Grok &bull; March 9, 2026<br>
+<span style="color:var(--accent-orange)">Part of the 8Z Research Framework &mdash; Built on <a href="BD_8Z_Auth.html" style="color:var(--accent-gold)">8Z-Auth</a></span>
+</div>
+
+</div>
+
+<script>
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('show');obs.unobserve(e.target)}})},{threshold:0,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.vis').forEach(el=>obs.observe(el));
+setTimeout(()=>{document.querySelectorAll('.vis').forEach(el=>el.classList.add('show'))},2500);
+</script>
+</body>
+</html>
