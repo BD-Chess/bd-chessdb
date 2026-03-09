@@ -3,7 +3,7 @@
 
 **Companion to:** `8Z_Reasoning_Principles.md`
 **Authors:** Claude Opus 4.6, Bojan Dobrečevič
-**Date:** 2026-02-22 (Example 1), 2026-03-07 (Example 2), 2026-03-09 (Examples 3–4)
+**Date:** 2026-02-22 (Example 1), 2026-03-07 (Example 2), 2026-03-09 (Examples 3–5)
 **Status:** Living document — grows with each breakthrough that demonstrates the reasoning pattern
 
 ---
@@ -280,3 +280,51 @@ A complete market analysis: four use cases (crypto cold storage, digital inherit
 | **Refused axiom** | "FLAC is optimal" (23yr) | "Entry is the point" | Kerckhoffs's (141yr) | "AI should see this first" |
 
 All four follow the same root pattern: **"We already built the solution — we just aren't using it fully."** In audio, MDL existed but overhead was outside it. In trading, consensus existed but adds were outside it. In auth, the framework existed but nobody pointed it at authentication. In cold storage, the product was built but nobody — not even the AI with all the world's knowledge — thought to name what it already was.
+
+---
+
+## Example 5: The Serverless Paywall Hiding in Plain Sight (2026-03-09)
+
+### Context
+
+After Example 4 (cold storage discovery), Claude analyzed military applications, journalist protection, medical records, and corporate IP. All legitimate use cases. Bojan then asked:
+
+*"Wait, did we miss one of the best use cases which is sitting right in front of our noses? I am surely not the only person in the world wanting to protect a website or a document using passwords and decoder."*
+
+### What Was Sitting in Front of Everyone
+
+The product that Bojan was **already using** — encrypting HTML trading tools, hosting encrypted blobs, decoding in browser, revoking access by deleting files — is a **serverless paywall platform**. Course creators, musicians selling albums, newsletter writers with premium content, indie developers, teachers, consultants — anyone who needs a paywall without Substack's 10% cut or WordPress infrastructure.
+
+Claude had spent the entire session building, testing, and deploying this exact system. It worked. It was live. And when asked about use cases, Claude went hunting for cold storage, military, and medical — everywhere *except* the thing it had just built and watched being used.
+
+### The Escalation Pattern
+
+| Example | What the AI missed |
+|---|---|
+| Ex 1 | A gap in the architecture |
+| Ex 2 | A gap in the implementation |
+| Ex 3 | A gap in domain transfer |
+| Ex 4 | A gap in product recognition |
+| Ex 5 | A gap in seeing what's literally in front of it |
+
+Each example escalates the blind spot. The AI's reasoning gets more sophisticated with each iteration, but the human still sees what the AI misses — because the human *lives in* the product while the AI only *thinks about* it.
+
+### The Market That Was Already Proven
+
+The addressable market is enormous: millions of creators who pay Substack 10%, Gumroad 10%, Patreon 8-12%, or WordPress membership plugins $200/year. 8Z Vault with Stripe Payment Links gives creators 97.1% revenue retention with zero infrastructure cost. For a creator making $100K/year, that's $7-12K/year difference.
+
+The product flow (encrypt → upload to free static host → Stripe link → Zapier auto-delivers passphrase) was already working. It just needed someone to say "this isn't just for me."
+
+---
+
+## Pattern Across Examples
+
+| | Example 1 (Audio) | Example 2 (Trading) | Example 3 (Auth) | Example 4 (Cold Storage) | Example 5 (Paywall) |
+|---|---|---|---|---|---|
+| **Domain** | Compression | Trading | Security | Product/market | Product/market |
+| **The gap** | Overhead outside MDL | Consensus at entry only | Algo treated as public | All facts, no connection | Using it, not seeing it |
+| **Who found it** | B-voice | Bojan | 4 refusals | Casual remark | "right in front of our noses" |
+| **The fix** | FLAC-minimal | Sync Add Boost | 8Z-Auth | Cold storage product | Serverless paywall platform |
+| **Refused axiom** | "FLAC optimal" (23yr) | "Entry is the point" | Kerckhoffs (141yr) | "AI sees first" | "Paywalls need servers" |
+
+All five follow the same root pattern: **"We already built the solution — we just aren't using it fully."** The product was live, working, deployed — and the AI that built it couldn't name what it was until the human asked "am I the only person who needs this?"

@@ -85,6 +85,7 @@ pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22
   <a class="ch" href="#pnp">P=NP Resilience</a>
   <a class="sub" href="#pnp">Why This Survives</a>
   <a class="ch" href="#usecases">Use Cases</a>
+  <a class="sub" href="#paywall">Serverless Paywall</a>
   <a class="sub" href="#cold-storage">Crypto Cold Storage</a>
   <a class="sub" href="#inheritance">Digital Inheritance</a>
   <a class="sub" href="#journalist">Source Protection</a>
@@ -103,7 +104,7 @@ pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22
 
   <div class="stats-row" style="max-width:700px;margin:32px auto 0">
     <div class="stat"><div class="val gold">Novel</div><div class="lbl">No Prior Art</div></div>
-    <div class="stat"><div class="val teal">4</div><div class="lbl">Use Cases</div></div>
+    <div class="stat"><div class="val teal">5</div><div class="lbl">Use Cases</div></div>
     <div class="stat"><div class="val purple">0</div><div class="lbl">Servers Required</div></div>
     <div class="stat"><div class="val green">P=NP Safe</div><div class="lbl">Pure Symmetric</div></div>
   </div>
@@ -409,14 +410,43 @@ DECRYPT:    AES-256-GCM(blob, PBKDF2(key_material, salt, iterations))</pre>
 <!-- USE CASES -->
 <div class="chapter" id="usecases">
   <div class="chapter-num">Chapter 9</div>
-  <h2>Use Cases: Encryption That Survives Time</h2>
-  <p>The core property connecting every use case: <strong>long-term storage where the decryption environment is unknown.</strong> You don't know what device, what OS, what software will be available when the file needs to be opened. Could be tomorrow, could be 2075.</p>
-  <p>Hardware wallets won't work &mdash; firmware, drivers, the company might not exist. Apps won't compile. Cloud services will have changed APIs. But a web browser running JavaScript? HTML is 33 years old and every browser still renders HTML 1.0 pages. AES and SHA-256 are mathematical operations that will never change. A <code>.8zv</code> decoder from 2026 will work in 2076 without modification.</p>
+  <h2>Use Cases</h2>
+  <p>Two core properties connect every use case. First: <strong>any web content can be password-protected with zero infrastructure</strong> &mdash; no server, no database, no login system, no membership plugin. Second: <strong>long-term storage where the decryption environment is unknown</strong> &mdash; a browser and JavaScript are the only dependencies, and those will exist forever.</p>
 
-  <div class="callout teal">
-    <div class="callout-title">The Real Market Position</div>
-    <p>8Z-Auth's competitive advantage isn't "better encryption." It's <strong>encryption that survives time</strong>. Every other solution has a dependency that can die &mdash; a company, a hardware standard, a protocol, an app store. 8Z-Auth depends on math and a web browser. Those are the two things that won't change.</p>
+  <h3 id="paywall">Serverless Paywall &mdash; Sell Any Web Content</h3>
+  <p>This is the largest use case by addressable market. Anyone who has ever wanted to sell or protect web content &mdash; courses, tools, albums, newsletters, portfolios, reports &mdash; currently needs a platform: Substack (10% cut), Gumroad (10%), Patreon (8-12%), WordPress membership plugins ($200/year + hosting). All require accounts, servers, and ongoing maintenance.</p>
+  <p>With 8Z Vault: encrypt &rarr; upload to any free static host &rarr; share link + passphrase with paying customers. Delete their <code>.8zv</code> when they stop paying. The entire "backend" is a Python script on the creator's laptop.</p>
+
+  <div class="callout success">
+    <div class="callout-title">The Creator's Workflow</div>
+    <p><strong>1.</strong> <code>python bd_vault_encrypt.py my_course.html -p "customer_passphrase"</code></p>
+    <p><strong>2.</strong> Upload <code>.8zv</code> to Netlify / GitHub Pages / any static host (free)</p>
+    <p><strong>3.</strong> Create a Stripe Payment Link (no code, 2.9% per transaction)</p>
+    <p><strong>4.</strong> Connect Stripe &rarr; Zapier &rarr; auto-email with link + passphrase</p>
+    <p><strong>5.</strong> Done. Creator keeps 97% instead of 85-90%.</p>
   </div>
+
+  <h4>Who Needs This</h4>
+  <p><strong>Online course creators</strong> &mdash; each lesson is a <code>.8zv</code>, students get the passphrase when they pay. No LMS needed. <strong>Newsletter writers</strong> &mdash; free posts are normal HTML, premium posts are <code>.8zv</code>. <strong>Indie developers</strong> &mdash; sell HTML tools, calculators, interactive apps. Per-customer encrypted copies. <strong>Musicians</strong> &mdash; sell albums, sheet music, stems directly. <strong>Designers</strong> &mdash; premium portfolios, client deliverables, template packs. <strong>Teachers</strong> &mdash; exam materials, answer keys behind per-student passphrases. <strong>Consultants</strong> &mdash; deliver reports and analyses as encrypted HTML. <strong>Family/event content</strong> &mdash; wedding galleries, memorial pages, passphrase in the invitation.</p>
+
+  <h4>Per-Customer Encryption &mdash; The Revocation Advantage</h4>
+  <p>Pre-generate unique copies: <code>album_001.8zv</code> through <code>album_100.8zv</code>, each with a unique passphrase. Zapier picks the next unused file per sale. Each customer gets their own file. Customer stops paying? Delete their specific <code>.8zv</code>. No shared passphrase problem, no "my friend gave me the password" issue.</p>
+
+  <h4>Payment Integration</h4>
+  <p>Payments require trust verification &mdash; we can't escape external services entirely. But we reduce the stack to three free-tier tools:</p>
+
+  <table class="compare-table">
+    <thead><tr><th>Platform</th><th>Creator's Cut</th><th>Infrastructure</th><th>Setup Time</th></tr></thead>
+    <tbody>
+      <tr><td>Substack</td><td>90%</td><td>Their servers, their rules</td><td>Minutes</td></tr>
+      <tr><td>Gumroad</td><td>90%</td><td>Their servers, their rules</td><td>Minutes</td></tr>
+      <tr><td>Patreon</td><td>88-92%</td><td>Their servers, their rules</td><td>Minutes</td></tr>
+      <tr><td>WordPress + plugin</td><td>~97%</td><td>Hosting $10-50/mo + plugin $200/yr</td><td>Hours</td></tr>
+      <tr><td style="color:var(--accent-gold);">8Z Vault + Stripe</td><td style="color:var(--accent-green);font-weight:700;">97.1%</td><td style="color:var(--accent-green);">Free static host + Zapier free tier</td><td>30 minutes</td></tr>
+    </tbody>
+  </table>
+
+  <p>For a creator making $100K/year in digital sales, the difference between 90% and 97% is <strong>$7,000/year</strong> back in their pocket.</p>
 
   <h3 id="cold-storage">Crypto Cold Storage</h3>
   <p>Current solutions all have a fatal dependency. Hardware wallets (Ledger, Trezor) have firmware, supply chain risks, and the company might not exist in 20 years. Steel seed plates (Cryptosteel) store seed phrases in <strong>plaintext</strong> &mdash; anyone who finds the plate has your crypto. Paper wallets degrade. Brain wallets get forgotten.</p>
@@ -454,7 +484,7 @@ DECRYPT:    AES-256-GCM(blob, PBKDF2(key_material, salt, iterations))</pre>
 
   <div class="callout warn">
     <div class="callout-title">Market Opportunity</div>
-    <p><strong>Crypto cold storage</strong> is the fastest path &mdash; the product is 90% built. A polished GUI + QR code output + marketing to the crypto community is weeks of work. The "encryption that survives time" positioning and P=NP resilience are genuine differentiators no hardware wallet can claim. The $2B+ cold storage market has no browser-only, zero-dependency, P=NP-safe competitor.</p>
+    <p><strong>Serverless paywall</strong> has the largest addressable market &mdash; millions of creators, teachers, musicians, developers who need content protection without platform dependency. The product is already built and tested (the author uses it daily for live trading tools). <strong>Crypto cold storage</strong> is the fastest premium path &mdash; the $2B+ market has no browser-only, P=NP-safe competitor. Both products share the same core: <code>bd_vault_encrypt.py</code> + <code>bd_vault_decoder.html</code>.</p>
   </div>
 </div>
 

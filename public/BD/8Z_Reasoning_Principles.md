@@ -559,6 +559,7 @@ This is "Don't accept limits without evidence" applied to residuals. The entire 
 | 2026 | Trading consensus gap | MTF consensus applied to entry but not adds | Sync Add Boost + Principle 13: capture the learning |
 | 2026 | "Can 8Z do auth?" | Algorithm itself is the secret — Software PUF | 8Z-Auth: MDL identity + DCC adaptive challenge-response |
 | 2026 | "Worth billions" + "USB via post" | Cold storage is 90% built already | Crypto cold storage product — AI blind spot Example 4 |
+| 2026 | "Am I the only person?" | The product I'm using IS a paywall platform | Serverless paywall — AI built it but couldn't name it — Example 5 |
 
 Each row started with someone saying "that won't work" and Bojan refusing the constraint.
 
