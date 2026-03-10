@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8Z Publish v2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg-primary:#0a0c10;--bg-secondary:#12151c;--bg-tertiary:#1a1e28;--bg-card:#161a24;--border:#2a2f3c;--text-primary:#e8eaf0;--text-secondary:#8b93a6;--text-muted:#5a6275;--accent-green:#00e676;--accent-red:#ff4757;--accent-blue:#448aff;--accent-gold:#ffd740;--accent-purple:#b388ff;--accent-teal:#64ffda;--accent-orange:#ff9100;--font-display:'Playfair Display',Georgia,serif;--font-body:'DM Sans',sans-serif;--font-mono:'JetBrains Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth;font-size:16px}body{background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-body);line-height:1.72;-webkit-font-smoothing:antialiased}::selection{background:var(--accent-orange);color:#000}
+.toc-nav{position:fixed;top:0;left:0;width:260px;height:100vh;background:var(--bg-secondary);border-right:1px solid var(--border);overflow-y:auto;z-index:100;padding:28px 0}.toc-brand{padding:0 24px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}.toc-brand h2{font-family:var(--font-mono);font-size:13px;font-weight:500;color:var(--accent-orange);letter-spacing:2px;text-transform:uppercase}.toc-brand p{font-size:11px;color:var(--text-muted);margin-top:4px}
+.toc-nav a{display:block;padding:7px 24px;font-size:13px;color:var(--text-secondary);text-decoration:none;border-left:2px solid transparent}.toc-nav a:hover{color:var(--text-primary);background:var(--bg-tertiary)}.toc-nav a.ch{font-weight:600;color:var(--text-primary);font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-top:14px;padding-top:10px;border-top:1px solid var(--border)}.toc-nav a.sub{padding-left:36px;font-size:12.5px}
+.main{margin-left:260px;max-width:900px;padding:48px 56px 120px}.cover{text-align:center;padding:80px 0 60px;border-bottom:1px solid var(--border);margin-bottom:60px}.cover-tag{font-family:var(--font-mono);font-size:12px;letter-spacing:3px;color:var(--accent-orange);text-transform:uppercase;margin-bottom:20px}.cover h1{font-family:var(--font-display);font-size:42px;font-weight:900;line-height:1.15;margin-bottom:18px}.cover h1 em{font-style:italic;color:var(--accent-orange)}.cover .subtitle{font-size:18px;color:var(--text-secondary);max-width:700px;margin:0 auto 28px;line-height:1.6}.cover .meta{font-family:var(--font-mono);font-size:12px;color:var(--text-muted)}
+.chapter{margin-bottom:64px;padding-top:32px;border-top:1px solid var(--border)}.chapter-num{font-family:var(--font-mono);font-size:11px;letter-spacing:3px;color:var(--accent-orange);text-transform:uppercase;margin-bottom:8px}.chapter h2{font-family:var(--font-display);font-size:32px;font-weight:700;line-height:1.25;margin-bottom:24px}.chapter h3{font-size:20px;font-weight:600;margin:36px 0 14px;padding-bottom:6px;border-bottom:1px solid var(--border)}.chapter h4{font-size:16px;font-weight:600;margin:24px 0 10px;color:var(--accent-teal)}
+p{margin-bottom:16px;color:var(--text-secondary)}strong{color:var(--text-primary);font-weight:600}em{color:var(--accent-gold);font-style:normal}ul{margin:0 0 18px 18px;color:var(--text-secondary)}li{margin-bottom:8px}
+.callout{background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--accent-blue);padding:18px 22px;margin:20px 0;border-radius:4px}.callout.warn{border-left-color:var(--accent-gold)}.callout.success{border-left-color:var(--accent-green)}.callout.orange{border-left-color:var(--accent-orange)}.callout.danger{border-left-color:var(--accent-red)}.callout .callout-title{font-family:var(--font-mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-weight:600}.callout.warn .callout-title{color:var(--accent-gold)}.callout.success .callout-title{color:var(--accent-green)}.callout.orange .callout-title{color:var(--accent-orange)}.callout.danger .callout-title{color:var(--accent-red)}.callout p{margin-bottom:6px;font-size:14px}
+code{font-family:var(--font-mono);font-size:13px;background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;color:var(--accent-teal)}pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22px;border-radius:4px;overflow-x:auto;margin:16px 0;font-family:var(--font-mono);font-size:12.5px;line-height:1.6;color:var(--text-secondary);white-space:pre-wrap}
+.tag{display:inline-block;font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:3px;letter-spacing:1px;text-transform:uppercase;margin-right:4px}.tag.green{background:rgba(0,230,118,.12);color:var(--accent-green)}.tag.gold{background:rgba(255,215,64,.12);color:var(--accent-gold)}.tag.blue{background:rgba(68,138,255,.12);color:var(--accent-blue)}.tag.orange{background:rgba(255,145,0,.12);color:var(--accent-orange)}.tag.red{background:rgba(255,71,87,.12);color:var(--accent-red)}
+.compare-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}.compare-table th{text-align:left;padding:10px 14px;background:var(--bg-tertiary);border:1px solid var(--border);font-family:var(--font-mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)}.compare-table td{padding:9px 14px;border:1px solid var(--border);color:var(--text-secondary)}.compare-table td:first-child{font-family:var(--font-mono);color:var(--accent-teal);font-size:12px}
+.layer-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin:16px 0}.layer-card .layer-title{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--accent-teal);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.flow-diagram{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:28px;margin:24px 0}.flow-step{display:flex;align-items:flex-start;gap:16px;margin-bottom:18px}.flow-icon{flex-shrink:0;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:14px;font-weight:700;border:2px solid var(--accent-orange);color:var(--accent-orange)}
+.footer-note{margin-top:60px;padding-top:24px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:11px;color:var(--text-muted)}
+@media (max-width:980px){.toc-nav{display:none}.main{margin-left:0;padding:32px 24px 80px}.cover h1{font-size:34px}}
+</style>
+</head>
+<body>
+<div class="toc-nav">
+<div class="toc-brand"><h2>8Z Publish</h2><p>Public technical paper · v2.0</p></div>
+<a class="ch" href="#cover">Overview</a>
+<a class="sub" href="#what">What it is</a>
+<a class="sub" href="#modes">Deployment modes</a>
+<a class="ch" href="#buyers">For buyers</a>
+<a class="sub" href="#needtoknow">What users need to know</a>
+<a class="sub" href="#limits">Security limits</a>
+<a class="ch" href="#operators">For operators</a>
+<a class="sub" href="#outputs">Build outputs</a>
+<a class="sub" href="#positioning">Positioning</a>
+</div>
+<div class="main">
+<section class="cover" id="cover">
+  <div class="cover-tag">Public Technical Paper</div>
+  <h1>8Z Publish <em>v2.0</em></h1>
+  <div class="subtitle">A serverless controlled-deployment system for protected HTML, interactive tools, and premium digital artifacts.</div>
+  <div class="meta">Bojan Dobrečević · 2026 · Public Edition</div>
+</section>
+
+<section class="chapter" id="what">
+  <div class="chapter-num">Chapter 01</div>
+  <h2>What 8Z Publish is</h2>
+  <p>8Z Publish turns ordinary HTML into a protected, deployable artifact. The core promise is simple: creators can ship interactive content without building a full SaaS stack, while still getting encryption, optional traceability, and optional deployment controls.</p>
+  <div class="callout success"><div class="callout-title">Core Claim</div><p>8Z Publish is not presented as a new cryptographic primitive. It is a layered product architecture for controlled delivery of browser-native digital artifacts.</p></div>
+  <div class="layer-card"><div class="layer-title">Core Layer</div><p>Encrypts final HTML into a standalone browser-unlock page. No server is required.</p></div>
+  <div class="layer-card"><div class="layer-title">Bundle Layer</div><p>Can also package protected files into a single <code>.8zv</code> bundle for archive, transport, or later extraction.</p></div>
+  <div class="layer-card"><div class="layer-title">Trace Layer</div><p>Optional fingerprinting marks each build to support later leak attribution.</p></div>
+</section>
+
+<section class="chapter" id="modes">
+  <div class="chapter-num">Chapter 02</div>
+  <h2>Deployment modes</h2>
+  <table class="compare-table">
+    <tr><th>Mode</th><th>Purpose</th><th>What the user sees</th></tr>
+    <tr><td>Core</td><td>Pure static protection</td><td>Open page, enter passphrase, unlock content</td></tr>
+    <tr><td>Split-host</td><td>Separate public entry pages from payload hosting</td><td>Single public URL, seamless routing to protected payload</td></tr>
+    <tr><td>Origin Lock</td><td>Optional anti-rehost control</td><td>Normal passphrase works on the approved origin; owner override remains available</td></tr>
+    <tr><td>Managed Recovery</td><td>Optional convenience mode</td><td>Recovery availability may be shown, but reset handling depends on the operator’s recovery gateway</td></tr>
+  </table>
+  <div class="callout warn"><div class="callout-title">Public Scope</div><p>This paper describes the operator-visible features and user-visible behavior. Internal deployment mechanics, private operator controls, and non-public build parameters belong in the private appendix.</p></div>
+</section>
+
+<section class="chapter" id="buyers">
+  <div class="chapter-num">Chapter 03</div>
+  <h2>What users need to know</h2>
+  <h3 id="needtoknow">User-facing expectations</h3>
+  <ul>
+    <li>Protected builds open in a normal browser and ask for a passphrase.</li>
+    <li>Some builds may be tied to the official deployment origin.</li>
+    <li>Some builds may advertise managed recovery availability.</li>
+    <li>Some builds may be fingerprinted for leak attribution.</li>
+  </ul>
+  <div class="flow-diagram">
+    <div class="flow-step"><div class="flow-icon">1</div><div><strong>Receive link or file.</strong><p>The user receives either a standalone protected page or a deployment link.</p></div></div>
+    <div class="flow-step"><div class="flow-icon">2</div><div><strong>Enter passphrase.</strong><p>The passphrase unlocks the encrypted payload locally in the browser.</p></div></div>
+    <div class="flow-step"><div class="flow-icon">3</div><div><strong>Use the content.</strong><p>No permanent account system is required in core mode.</p></div></div>
+  </div>
+  <h3 id="limits">Security limits</h3>
+  <div class="callout danger"><div class="callout-title">Honest Limit</div><p>8Z Publish reduces exposure and raises abuse cost. It does not claim to make plaintext impossible after legitimate unlock.</p></div>
+  <p>The system is strongest against casual copying, rehosting, repository scraping, and operational misuse. It is not marketed as perfect DRM.</p>
+</section>
+
+<section class="chapter" id="operators">
+  <div class="chapter-num">Chapter 04</div>
+  <h2>What operators get</h2>
+  <h3 id="outputs">Build outputs</h3>
+  <ul>
+    <li><code>.8zv</code> bundle for archive or extraction</li>
+    <li>Standalone protected HTML pages for direct hosting or delivery</li>
+    <li>Optional split-host deployment outputs for separated public entry and payload hosting</li>
+    <li>Optional trace manifest</li>
+    <li>Optional recovery descriptor when managed recovery is enabled</li>
+  </ul>
+  <h3 id="positioning">Positioning</h3>
+  <p>8Z Publish sits in the gap between a plain downloadable file and a full SaaS application. That middle space is the product category: rich digital artifacts with controlled deployment but low infrastructure burden.</p>
+  <div class="callout orange"><div class="callout-title">Commercial Thesis</div><p>The product value is in the stack: packaging, protection, split deployment, origin control, traceability, and operator workflow. That combined shape is what makes the system differentiated.</p></div>
+  <div class="footer-note">Public paper ends here. Implementation-sensitive deployment details belong in <code>BD_8Z_Private.html</code>.</div>
+</section>
+</div>
+</body>
+</html>
