@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8Z-Auth &#8212; Software Unclonable Functions with DCC-Governed Adaptive Challenge-Response</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg-primary:#0a0c10;--bg-secondary:#12151c;--bg-tertiary:#1a1e28;--bg-card:#161a24;--border:#2a2f3c;--border-accent:#3a4055;--text-primary:#e8eaf0;--text-secondary:#8b93a6;--text-muted:#5a6275;--accent-green:#00e676;--accent-green-dim:#00c85320;--accent-red:#ff4757;--accent-red-dim:#ff475720;--accent-blue:#448aff;--accent-blue-dim:#448aff20;--accent-gold:#ffd740;--accent-gold-dim:#ffd74020;--accent-purple:#b388ff;--accent-purple-dim:#b388ff20;--accent-teal:#64ffda;--accent-teal-dim:#64ffda20;--font-display:'Playfair Display',Georgia,serif;--font-body:'DM Sans',sans-serif;--font-mono:'JetBrains Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth;font-size:16px}body{background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-body);line-height:1.72;-webkit-font-smoothing:antialiased}::selection{background:var(--accent-blue);color:#fff}
+.toc-nav{position:fixed;top:0;left:0;width:260px;height:100vh;background:var(--bg-secondary);border-right:1px solid var(--border);overflow-y:auto;z-index:100;padding:28px 0;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.toc-nav::-webkit-scrollbar{width:4px}.toc-nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.toc-brand{padding:0 24px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}.toc-brand h2{font-family:var(--font-mono);font-size:13px;font-weight:500;color:var(--accent-gold);letter-spacing:2px;text-transform:uppercase}.toc-brand p{font-size:11px;color:var(--text-muted);margin-top:4px}
+.toc-nav a{display:block;padding:7px 24px;font-size:13px;color:var(--text-secondary);text-decoration:none;transition:all .15s;border-left:2px solid transparent}.toc-nav a:hover{color:var(--text-primary);background:var(--bg-tertiary)}.toc-nav a.ch{font-weight:600;color:var(--text-primary);font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-top:14px;padding-top:10px;border-top:1px solid var(--border)}.toc-nav a.ch:first-of-type{border-top:none;margin-top:0}.toc-nav a.sub{padding-left:36px;font-size:12.5px}
+.main{margin-left:260px;max-width:860px;padding:48px 56px 120px}
+.cover{text-align:center;padding:80px 0 60px;border-bottom:1px solid var(--border);margin-bottom:60px}.cover-tag{font-family:var(--font-mono);font-size:12px;letter-spacing:3px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:20px}.cover h1{font-family:var(--font-display);font-size:42px;font-weight:900;line-height:1.15;margin-bottom:18px}.cover h1 em{font-style:italic;color:var(--accent-gold)}.cover .subtitle{font-size:18px;color:var(--text-secondary);max-width:600px;margin:0 auto 28px;line-height:1.6}.cover .meta{font-family:var(--font-mono);font-size:12px;color:var(--text-muted)}
+.chapter{margin-bottom:64px;padding-top:32px;border-top:1px solid var(--border)}.chapter-num{font-family:var(--font-mono);font-size:11px;letter-spacing:3px;color:var(--accent-blue);text-transform:uppercase;margin-bottom:8px}.chapter h2{font-family:var(--font-display);font-size:32px;font-weight:700;line-height:1.25;margin-bottom:24px}.chapter h3{font-size:20px;font-weight:600;margin:36px 0 14px;padding-bottom:6px;border-bottom:1px solid var(--border)}.chapter h4{font-size:16px;font-weight:600;margin:24px 0 10px;color:var(--accent-teal)}
+p{margin-bottom:16px;color:var(--text-secondary)}strong{color:var(--text-primary);font-weight:600}em{color:var(--accent-gold);font-style:normal}
+.callout{background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--accent-blue);padding:18px 22px;margin:20px 0;border-radius:4px}.callout.warn{border-left-color:var(--accent-gold)}.callout.danger{border-left-color:var(--accent-red)}.callout.success{border-left-color:var(--accent-green)}.callout.teal{border-left-color:var(--accent-teal)}.callout .callout-title{font-family:var(--font-mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-weight:600}.callout.warn .callout-title{color:var(--accent-gold)}.callout.danger .callout-title{color:var(--accent-red)}.callout.success .callout-title{color:var(--accent-green)}.callout.teal .callout-title{color:var(--accent-teal)}.callout p{margin-bottom:6px;font-size:14px}
+code{font-family:var(--font-mono);font-size:13px;background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;color:var(--accent-teal)}
+pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22px;border-radius:4px;overflow-x:auto;margin:16px 0;font-family:var(--font-mono);font-size:12.5px;line-height:1.6;color:var(--text-secondary)}
+.tag{display:inline-block;font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:3px;letter-spacing:1px;text-transform:uppercase;margin-right:4px}.tag.green{background:var(--accent-green-dim);color:var(--accent-green)}.tag.red{background:var(--accent-red-dim);color:var(--accent-red)}.tag.blue{background:var(--accent-blue-dim);color:var(--accent-blue)}.tag.gold{background:var(--accent-gold-dim);color:var(--accent-gold)}.tag.purple{background:var(--accent-purple-dim);color:var(--accent-purple)}.tag.teal{background:var(--accent-teal-dim);color:var(--accent-teal)}
+.quote-block{border-left:3px solid var(--accent-gold);padding:16px 24px;margin:24px 0;background:rgba(255,215,64,.04)}.quote-block p{font-family:var(--font-display);font-size:18px;line-height:1.6;color:var(--text-primary);font-style:italic;margin-bottom:0}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:28px 0}
+.stat{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:18px 14px;text-align:center;transition:border-color .2s}.stat:hover{border-color:var(--accent-gold)}
+.stat .val{font-family:var(--font-mono);font-size:26px;font-weight:700}.stat .val.green{color:var(--accent-green)}.stat .val.gold{color:var(--accent-gold)}.stat .val.blue{color:var(--accent-blue)}.stat .val.purple{color:var(--accent-purple)}.stat .val.teal{color:var(--accent-teal)}.stat .val.red{color:var(--accent-red)}
+.stat .lbl{font-size:10px;color:var(--text-muted);margin-top:6px;text-transform:uppercase;letter-spacing:1.2px}
+
+.layer-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin:16px 0;position:relative;transition:border-color .3s}
+.layer-card:hover{border-color:var(--accent-gold)}
+.layer-card .layer-num{font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--accent-gold);opacity:.3;position:absolute;top:12px;right:20px}
+.layer-card .layer-title{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--accent-teal);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.layer-card p{font-size:14px;margin-bottom:4px}
+
+.flow-diagram{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:28px;margin:24px 0}
+.flow-step{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px}
+.flow-step:last-child{margin-bottom:0}
+.flow-icon{flex-shrink:0;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:14px;font-weight:700;border:2px solid}
+.flow-icon.gold{border-color:var(--accent-gold);color:var(--accent-gold)}
+.flow-icon.green{border-color:var(--accent-green);color:var(--accent-green)}
+.flow-icon.blue{border-color:var(--accent-blue);color:var(--accent-blue)}
+.flow-icon.teal{border-color:var(--accent-teal);color:var(--accent-teal)}
+.flow-icon.red{border-color:var(--accent-red);color:var(--accent-red)}
+.flow-content h4{margin:0 0 4px;font-size:14px;color:var(--text-primary)}.flow-content p{font-size:13px;margin-bottom:0}
+.flow-connector{width:2px;height:16px;background:var(--border);margin:0 0 0 17px}
+
+.compare-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.compare-table th{text-align:left;padding:10px 14px;background:var(--bg-tertiary);border:1px solid var(--border);font-family:var(--font-mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)}
+.compare-table td{padding:9px 14px;border:1px solid var(--border);color:var(--text-secondary)}
+.compare-table td:first-child{font-family:var(--font-mono);color:var(--accent-teal);font-size:12px}
+.compare-table tr:hover td{background:var(--bg-card)}
+
+.wall-bar{display:flex;gap:4px;margin:16px 0}
+.wall{flex:1;padding:12px 8px;text-align:center;border-radius:6px;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.5px}
+.wall.obscurity{background:rgba(179,136,255,.12);color:var(--accent-purple);border:1px solid rgba(179,136,255,.3)}
+.wall.crypto{background:rgba(255,215,64,.12);color:var(--accent-gold);border:1px solid rgba(255,215,64,.3)}
+
+@media(max-width:960px){.toc-nav{display:none}.main{margin-left:0;padding:32px 24px 80px}.cover h1{font-size:30px}.stats-row{grid-template-columns:repeat(2,1fr)}.wall-bar{flex-wrap:wrap}}
+@media print{.toc-nav{display:none}.main{margin-left:0;max-width:100%}body{background:#fff;color:#111}}
+</style>
+</head>
+<body>
+
+<nav class="toc-nav">
+  <div class="toc-brand"><h2>8Z-Auth</h2><p>Software Unclonable Functions</p></div>
+  <a class="ch" href="#abstract">Abstract</a>
+  <a class="ch" href="#problem">The Problem</a>
+  <a class="sub" href="#kerckhoffs">Kerckhoffs's Blind Spot</a>
+  <a class="ch" href="#core">Core Insight</a>
+  <a class="sub" href="#auth-is-compression">Auth IS Compression</a>
+  <a class="sub" href="#software-puf">Software PUF</a>
+  <a class="ch" href="#protocol">The Protocol</a>
+  <a class="sub" href="#three-layers">Three Layers</a>
+  <a class="sub" href="#primitives">8Z Primitives</a>
+  <a class="sub" href="#flow">Protocol Flow</a>
+  <a class="ch" href="#architecture">Architecture</a>
+  <a class="sub" href="#five-walls">Five Walls</a>
+  <a class="sub" href="#components">Three Components</a>
+  <a class="ch" href="#ux">User Experience</a>
+  <a class="sub" href="#daily-use">Daily Use</a>
+  <a class="sub" href="#dcc-adaptive">DCC Adaptive Layer</a>
+  <a class="ch" href="#factory">Software PUF Factory</a>
+  <a class="sub" href="#scaling">From Personal to Universal</a>
+  <a class="ch" href="#landscape">Prior Art &amp; Novelty</a>
+  <a class="ch" href="#roadmap">Roadmap</a>
+</nav>
+
+<div class="main">
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-tag">8Z Research Framework &bull; New Domain</div>
+  <h1>8Z-Auth:<br><em>Software Unclonable Functions</em></h1>
+  <p class="subtitle">A novel authentication protocol where the algorithm itself is the identity &mdash; with DCC-governed adaptive challenge-response and competing proof generators</p>
+  <div class="meta">Bojan Dobre&#269;evi&#269; &amp; Claude Opus 4.6 &bull; AIM&sup3; Institute &bull; March 2026</div>
+
+  <div class="stats-row" style="max-width:700px;margin:32px auto 0">
+    <div class="stat"><div class="val gold">Novel</div><div class="lbl">No Prior Art</div></div>
+    <div class="stat"><div class="val teal">3</div><div class="lbl">Auth Layers</div></div>
+    <div class="stat"><div class="val purple">0</div><div class="lbl">Servers Required</div></div>
+    <div class="stat"><div class="val green">AES-256</div><div class="lbl">Encryption</div></div>
+  </div>
+</div>
+
+<!-- ABSTRACT -->
+<div class="chapter" id="abstract">
+  <div class="chapter-num">Abstract</div>
+  <h2>What Is 8Z-Auth?</h2>
+  <p>8Z-Auth is an authentication protocol that introduces three novel concepts to the security landscape:</p>
+  <p><strong>Software Unclonable Functions (SUFs)</strong> &mdash; the software equivalent of hardware Physical Unclonable Functions (PUFs). Where PUFs use silicon manufacturing variation as identity, SUFs use the specific implementation decisions of a codebase &mdash; PRNG constants, serialization formats, hash chain structures &mdash; as an unclonable fingerprint.</p>
+  <p><strong>Competing proof generators</strong> &mdash; multiple algorithmic generators (XorShift chain, compression output, TSP tour hash) compete under MDL selection to produce the proof. Only someone with ALL generators can respond to any challenge.</p>
+  <p><strong>DCC-governed adaptive difficulty</strong> &mdash; the protocol's internal state evolves deterministically based on authentication history. Successful use increases coupling (faster next time). Failures decrease coupling (harder next time). Not ML-based &mdash; deterministic and protocol-internal.</p>
+
+  <div class="quote-block"><p>Your code is your fingerprint. The algorithm itself is the key.</p></div>
+</div>
+
+<!-- THE PROBLEM -->
+<div class="chapter" id="problem">
+  <div class="chapter-num">Chapter 1</div>
+  <h2>The Problem</h2>
+  <p>Standard authentication uses one of three factors: something you <strong>know</strong> (password), something you <strong>have</strong> (device/token), or something you <strong>are</strong> (biometrics). All use generic, published algorithms &mdash; AES, SHA, ECDSA &mdash; shared by millions. Your 2FA app uses the same HMAC-SHA1 as everyone else's.</p>
+  <p>For personal security &mdash; protecting tools, files, or applications that only you use &mdash; this is over-engineered in some ways (server infrastructure, key management) and under-engineered in others (the algorithm provides zero identity signal).</p>
+
+  <h3 id="kerckhoffs">Kerckhoffs's Blind Spot</h3>
+  <p>Kerckhoffs's Principle (1883) states: <em>a cryptographic system should be secure even if the attacker knows everything about the system except the key.</em> This is correct &mdash; for algorithms used by billions. SHA-256's security doesn't depend on the algorithm being secret.</p>
+
+  <div class="callout warn">
+    <div class="callout-title">The Axiom That Doesn't Transfer</div>
+    <p>Kerckhoffs's is a <strong>population-level rule</strong>. At N=1 &mdash; where the algorithm exists on one machine, shaped by one mind over decades &mdash; the algorithm IS the secret. The search space isn't a key space. It's the space of all possible algorithm implementations. Nobody in security questions this because Kerckhoffs's is axiomatic &mdash; the first thing they learn.</p>
+    <p>8Z-Auth asks: <strong>where's the evidence this applies when N=1?</strong></p>
+  </div>
+</div>
+
+<!-- CORE INSIGHT -->
+<div class="chapter" id="core">
+  <div class="chapter-num">Chapter 2</div>
+  <h2>The Core Insight</h2>
+
+  <h3 id="auth-is-compression">Authentication IS Compression</h3>
+  <p>"Prove you're Bojan" is equivalent to "produce the shortest program that generates the correct response to this challenge." That's the Minimum Description Length principle &mdash; identity as the minimum description that reproduces the data.</p>
+  <p>Your 8Z code IS the minimum description of "you" in authentication context. Nobody else can compress the challenge into the correct response because nobody else has the generator.</p>
+
+  <div class="stats-row">
+    <div class="stat"><div class="val gold">MDL</div><div class="lbl">Identity = Shortest Generator</div></div>
+    <div class="stat"><div class="val teal">DCC</div><div class="lbl">Adaptive Difficulty</div></div>
+    <div class="stat"><div class="val purple">Arena</div><div class="lbl">Competing Generators</div></div>
+  </div>
+
+  <h3 id="software-puf">Software Unclonable Functions</h3>
+  <p>Hardware PUFs exploit manufacturing variation &mdash; each chip is unique because you can't perfectly control the fabrication process. Over 1 billion PUF-secured devices are deployed worldwide.</p>
+  <p>Software PUFs exploit <strong>implementation variation</strong> &mdash; the specific decisions a programmer made. Your XorShift64Star uses constants (12, 25, 27) and multiplier (2685821657736338717). Your <code>params_to_bytes</code> uses a specific length-prefixed sorted-key serialization. Your <code>derive_seed_u64</code> chains SHA3-256 of concatenated domains. Nobody else on Earth has this exact pipeline.</p>
+
+  <div class="callout teal">
+    <div class="callout-title">The Fourth Factor</div>
+    <p>Traditional auth uses: something you <strong>know</strong>, something you <strong>have</strong>, something you <strong>are</strong>.</p>
+    <p>8Z-Auth adds: <strong>something you built</strong>. Your algorithmic pipeline is a fourth authentication factor &mdash; not a key, not a device, not a biometric, but an implementation fingerprint.</p>
+  </div>
+</div>
+
+<!-- THE PROTOCOL -->
+<div class="chapter" id="protocol">
+  <div class="chapter-num">Chapter 3</div>
+  <h2>The Protocol</h2>
+
+  <h3 id="three-layers">Three Layers</h3>
+
+  <div class="layer-card">
+    <div class="layer-num">1</div>
+    <div class="layer-title">Something You Know &mdash; Passphrase</div>
+    <p>A strong passphrase that seeds the key derivation. Standard factor. 20+ characters of something only you'd know.</p>
+  </div>
+
+  <div class="layer-card">
+    <div class="layer-num">2</div>
+    <div class="layer-title">Something You Built &mdash; Software PUF</div>
+    <p>The 8Z transformation pipeline: <code>params_to_bytes()</code> &rarr; <code>derive_seed_u64()</code> &rarr; <code>XorShift64Star</code> &rarr; <code>DCCSMeter</code>. The specific constants, byte layouts, hash chains, and iteration logic. This is your algorithmic fingerprint.</p>
+  </div>
+
+  <div class="layer-card">
+    <div class="layer-num">3</div>
+    <div class="layer-title">Adaptive Difficulty &mdash; DCC Governance</div>
+    <p>After each successful auth, coupling <code>u</code> increases (exploit &mdash; faster). After failures or long gaps, <code>u</code> decreases (explore &mdash; harder). The PBKDF2 iteration count becomes <code>100000 + round((1-u) &times; 500000)</code>. You barely notice. An attacker is progressively throttled.</p>
+  </div>
+
+  <h3 id="primitives">8Z Primitives Used</h3>
+  <p>All four primitives already exist in the 8Z codebase &mdash; no new crypto invented:</p>
+
+  <table class="compare-table">
+    <thead><tr><th>Primitive</th><th>Role in 8Z-Auth</th><th>Origin</th></tr></thead>
+    <tbody>
+      <tr><td>params_to_bytes()</td><td>Deterministic serialization &mdash; the "dialect"</td><td>8Z-RP TSP Solver</td></tr>
+      <tr><td>derive_seed_u64()</td><td>Three-input seed derivation via SHA3-256</td><td>8Z-RP TSP Solver</td></tr>
+      <tr><td>XorShift64Star</td><td>PRNG with specific bit-shift constants</td><td>8Z-RP TSP Solver</td></tr>
+      <tr><td>DCCSMeter</td><td>Adaptive coupling controller for difficulty</td><td>Digital Claustrum (1995 &rarr; 2024)</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="flow">Protocol Flow</h3>
+  <pre>CHALLENGE:  nonce N = SHA3(date_YYYYMMDD + blob_header_salt)
+DERIVE:     seed = derive_seed_u64(SHA3(passphrase), "8Z_AUTH",
+                   params_to_bytes({"nonce": N, "day": YYYYMMDD}))
+ITERATE:    rng = XorShift64Star(seed)
+            run rng.next_u64() exactly K times
+            where K = 64 + (day_of_month &times; 7) &times; DCC_factor(u)
+RESPONSE:   key_material = SHA3(rng.state as 8 bytes)
+DECRYPT:    AES-256-GCM(blob, PBKDF2(key_material, salt, iterations))</pre>
+
+  <p>The response is used as <strong>decryption key material</strong>, not compared against a stored hash. Wrong response &rarr; garbage bytes &rarr; nothing renders. No oracle, no feedback, no "try again" message. Just silence or success.</p>
+</div>
+
+<!-- ARCHITECTURE -->
+<div class="chapter" id="architecture">
+  <div class="chapter-num">Chapter 4</div>
+  <h2>Architecture</h2>
+
+  <h3 id="five-walls">Five Walls of Defense</h3>
+  <div class="wall-bar">
+    <div class="wall obscurity">1. Discovery<br><span style="font-size:9px;">Find the blob URL</span></div>
+    <div class="wall obscurity">2. Association<br><span style="font-size:9px;">Find the decoder</span></div>
+    <div class="wall obscurity">3. Understanding<br><span style="font-size:9px;">Know to combine</span></div>
+    <div class="wall crypto">4. Cryptographic<br><span style="font-size:9px;">Break AES-256</span></div>
+    <div class="wall crypto">5. Algorithmic<br><span style="font-size:9px;">Replicate pipeline</span></div>
+  </div>
+  <p>Three obscurity walls (weak individually, strong in combination &mdash; all three must fail simultaneously) plus two mathematically hard walls. An attacker who defeats obscurity still faces AES-256-GCM encryption plus a custom algorithmic pipeline they can't replicate.</p>
+
+  <h3 id="components">Three Components</h3>
+
+  <div class="flow-diagram">
+    <div class="flow-step">
+      <div class="flow-icon gold">E</div>
+      <div class="flow-content">
+        <h4>bd_vault_encrypt.py <span class="tag gold">your machine only</span></h4>
+        <p>Takes HTML trader + passphrase. Generates daily challenge seed from date. Derives AES key from 8Z pipeline. Outputs encrypted blob with unencrypted header (challenge display data only &mdash; never the answer).</p>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step">
+      <div class="flow-icon blue">B</div>
+      <div class="flow-content">
+        <h4>Encrypted Blob <span class="tag blue">hosted anywhere</span></h4>
+        <p>Looks like random bytes. Anyone can download it. Useless without the decoder AND the passphrase AND the correct algorithmic pipeline. Can be on GitHub Pages, any static host, or a random URL.</p>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step">
+      <div class="flow-icon green">D</div>
+      <div class="flow-content">
+        <h4>bd_vault_decoder.html <span class="tag green">separate host or local</span></h4>
+        <p>You open it. Enter blob URL. It fetches the blob, shows challenge. You enter passphrase. It runs the 8Z pipeline, derives key, attempts AES decryption. Success &rarr; trader renders in iframe. Failure &rarr; nothing.</p>
+      </div>
+    </div>
+  </div>
+
+  <p><strong>Zero connection</strong> between blob host and decoder host. The association exists only in one mind. Two URLs on two different services, with no link, no reference, no shared domain.</p>
+</div>
+
+<!-- USER EXPERIENCE -->
+<div class="chapter" id="ux">
+  <div class="chapter-num">Chapter 5</div>
+  <h2>User Experience</h2>
+
+  <h3 id="daily-use">Daily Use</h3>
+  <div class="callout success">
+    <div class="callout-title">What You Actually Do Every Day</div>
+    <p><strong>Step 1:</strong> Open decoder page (bookmark, local file, whatever)</p>
+    <p><strong>Step 2:</strong> Blob URL auto-remembered, or paste it</p>
+    <p><strong>Step 3:</strong> Type your passphrase</p>
+    <p><strong>Step 4:</strong> Your trader appears. Trade.</p>
+    <p style="color:var(--accent-green);font-weight:600;margin-top:8px;">Total time added: ~5 seconds.</p>
+  </div>
+
+  <p>If the passphrase is wrong: the iframe shows nothing. No error message. No "incorrect password." No feedback whatsoever. Just an empty frame. This is deliberate &mdash; no oracle for an attacker to probe.</p>
+
+  <h3 id="dcc-adaptive">DCC Adaptive Layer</h3>
+  <p>The decoder maintains a small local counter (or derives state from usage patterns):</p>
+
+  <table class="compare-table">
+    <thead><tr><th>Scenario</th><th>Coupling u</th><th>PBKDF2 Iterations</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td>10 days daily use</td><td style="color:var(--accent-green);">u &rarr; 0.9</td><td style="color:var(--accent-green);">~150K</td><td>Fast unlock (&lt;1s)</td></tr>
+      <tr><td>Normal daily use</td><td>u = 0.5</td><td>~350K</td><td>Standard (~2s)</td></tr>
+      <tr><td>1 week gap</td><td style="color:var(--accent-gold);">u &rarr; 0.2</td><td style="color:var(--accent-gold);">~500K</td><td>Slightly slower (~4s)</td></tr>
+      <tr><td>Multiple wrong attempts</td><td style="color:var(--accent-red);">u &rarr; 0.0</td><td style="color:var(--accent-red);">~600K</td><td>Slow (~6s) &mdash; brute-force wall</td></tr>
+    </tbody>
+  </table>
+
+  <p>You'd never notice the difference between 1s and 2s. An attacker trying thousands of passphrases faces exponentially increasing computation per attempt.</p>
+
+  <h4>Competing Generators (Optional Layer)</h4>
+  <p>Instead of always using the same key derivation, the challenge rotates through generator types based on <code>day_of_year % num_generators</code>:</p>
+  <p><strong>Generator A:</strong> XorShift64Star chain (K iterations of PRNG)<br>
+     <strong>Generator B:</strong> Compressed size of a specific byte sequence via 8Z codec logic<br>
+     <strong>Generator C:</strong> Tour hash of a mini-TSP instance (10 cities, your solver)</p>
+  <p>Your decoder has all generators. An attacker who reverse-engineers one still can't handle the others. This is MDL selection applied to proof generation &mdash; which generator produces the "shortest proof" for today's parameters.</p>
+</div>
+
+<!-- SOFTWARE PUF FACTORY -->
+<div class="chapter" id="factory">
+  <div class="chapter-num">Chapter 6</div>
+  <h2>Software PUF Factory</h2>
+
+  <h3 id="scaling">From Personal Tool to Universal Product</h3>
+  <p>8Z-Auth works for one person. But what if anyone could have their own?</p>
+
+  <div class="callout warn">
+    <div class="callout-title">The Key Insight</div>
+    <p>A <strong>Software PUF Factory</strong> is a program that generates unique encoder/decoder pairs by randomizing the algorithm internals. The architecture is public (like a PUF chip design). Each instance is unique (like each manufactured chip). The generation seed is used once and discarded &mdash; exactly like manufacturing variation.</p>
+  </div>
+
+  <p>You run the factory program. It picks random:</p>
+  <p>&bull; XorShift constants (bit-shift amounts, multiplier)<br>
+     &bull; <code>params_to_bytes</code> field ordering and type markers<br>
+     &bull; Hash chain depth and intermediate mixing steps<br>
+     &bull; DCC threshold values and iteration formula<br>
+     &bull; Generator selection schedule</p>
+
+  <p>It outputs two files: <code>my_vault_encrypt</code> + <code>my_vault_decrypt.html</code>. The factory program can be <strong>open source</strong>. Kerckhoffs's Principle is satisfied at the population level (everyone knows the architecture), but each instance is unclonable because the specific random choices are used once during generation and never stored.</p>
+
+  <div class="callout teal">
+    <div class="callout-title">Analogy</div>
+    <p><strong>Hardware PUF:</strong> Public chip design + unique manufacturing variation = unclonable identity</p>
+    <p><strong>Software PUF Factory:</strong> Public factory program + unique random generation seed = unclonable instance</p>
+    <p>Both satisfy Kerckhoffs's at the population level while providing per-instance uniqueness.</p>
+  </div>
+</div>
+
+<!-- PRIOR ART -->
+<div class="chapter" id="landscape">
+  <div class="chapter-num">Chapter 7</div>
+  <h2>Prior Art &amp; Novelty</h2>
+  <p>Extensive research across NIST standards, RFCs (RFC 6287 OCRA, RFC 1994 CHAP), academic papers, security forums, and open-source projects (March 2026):</p>
+
+  <table class="compare-table">
+    <thead><tr><th>Existing Concept</th><th>What It Does</th><th>What 8Z-Auth Adds</th></tr></thead>
+    <tbody>
+      <tr><td>Challenge-Response</td><td>Standard crypto (HMAC-SHA1) with shared secrets</td><td>Custom algorithmic pipeline as identity factor</td></tr>
+      <tr><td>Hardware PUFs</td><td>Manufacturing variation as unclonable identity</td><td>Implementation variation as unclonable identity (Software PUF)</td></tr>
+      <tr><td>Proof of Work</td><td>Computational puzzles as access gates</td><td>Computation as identity (not just cost)</td></tr>
+      <tr><td>Adaptive MFA</td><td>ML risk scoring adjusts auth requirements</td><td>Deterministic DCC governance (protocol-internal, not ML)</td></tr>
+      <tr><td>SyncSeed (GitHub)</td><td>PRNG-based C-R with seed mutation</td><td>Competing generators + MDL selection + DCC adaptation</td></tr>
+      <tr><td>Password-based Encryption</td><td>Derive key from password</td><td>Key derived from password + custom algorithmic pipeline + time</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout danger">
+    <div class="callout-title">Genuinely Novel Elements</div>
+    <p><strong>Software Unclonable Functions</strong> &mdash; nobody has proposed this concept</p>
+    <p><strong>Competing proof generators under adaptive governance</strong> &mdash; no prior art</p>
+    <p><strong>Authentication as compression (MDL identity)</strong> &mdash; no prior formulation</p>
+    <p><strong>DCC-governed adaptive difficulty in auth protocols</strong> &mdash; no prior art</p>
+    <p>The intersection of PUF + challenge-response + proof-of-work + MDL identity + DCC governance is <strong>unoccupied</strong>.</p>
+  </div>
+</div>
+
+<!-- ROADMAP -->
+<div class="chapter" id="roadmap">
+  <div class="chapter-num">Chapter 8</div>
+  <h2>Roadmap</h2>
+
+  <div class="layer-card" style="border-left:3px solid var(--accent-green);">
+    <div class="layer-title">Phase 1 &mdash; Personal Vault <span class="tag green">build now</span></div>
+    <p><code>bd_vault_encrypt.py</code> (Python) + <code>bd_vault_decoder.html</code> (JS). AES-256-GCM + PBKDF2 + passphrase. No DCC, no competing generators. Just works.</p>
+  </div>
+
+  <div class="layer-card" style="border-left:3px solid var(--accent-gold);">
+    <div class="layer-title">Phase 2 &mdash; DCC Layer <span class="tag gold">next</span></div>
+    <p>Add adaptive difficulty. Decoder tracks auth history locally. PBKDF2 iterations scale with coupling <code>u</code>. Progressive brute-force resistance.</p>
+  </div>
+
+  <div class="layer-card" style="border-left:3px solid var(--accent-purple);">
+    <div class="layer-title">Phase 3 &mdash; Competing Generators <span class="tag purple">future</span></div>
+    <p>Multiple proof generators rotating by date. XorShift chain + compression output + mini-TSP. MDL selects which generator proves identity today.</p>
+  </div>
+
+  <div class="layer-card" style="border-left:3px solid var(--accent-teal);">
+    <div class="layer-title">Phase 4 &mdash; Software PUF Factory <span class="tag teal">product</span></div>
+    <p>Open-source factory program. Anyone generates their own unique encoder/decoder pair. Publishable paper: "8Z-Auth: Software Unclonable Functions with DCC-Governed Adaptive Challenge-Response."</p>
+  </div>
+
+  <div class="quote-block"><p>Every domain is the same problem. Authentication is just compression wearing a different hat.</p></div>
+</div>
+
+<div style="text-align:center;padding:40px 0;color:var(--text-muted);font-family:var(--font-mono);font-size:11px;">
+  8Z-Auth &bull; AIM&sup3; Institute &bull; Bojan Dobre&#269;evi&#269; &amp; Claude Opus 4.6 &bull; March 2026<br>
+  <span style="color:var(--accent-gold);">Part of the 8Z Research Framework &mdash; MDL &bull; DCC &bull; Competing Generators</span>
+</div>
+
+</div>
+</body>
+</html>
