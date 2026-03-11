@@ -237,21 +237,21 @@ DECRYPT:    AES-256-GCM(blob, PBKDF2(key_material, salt, iterations))</pre>
     <div class="flow-step">
       <div class="flow-icon blue">B</div>
       <div class="flow-content">
-        <h4>Encrypted Blob <span class="tag blue">hosted anywhere</span></h4>
-        <p>Looks like random bytes. Anyone can download it. Useless without the decoder AND the passphrase AND the correct algorithmic pipeline. Can be on GitHub Pages, any static host, or a random URL.</p>
+        <h4>Encrypted Blob <span class="tag blue">protected payload</span></h4>
+        <p>Looks like random bytes. Anyone can download it. Useless without the decoder AND the passphrase AND the correct algorithmic pipeline.</p>
       </div>
     </div>
     <div class="flow-connector"></div>
     <div class="flow-step">
       <div class="flow-icon green">D</div>
       <div class="flow-content">
-        <h4>bd_vault_decoder.html <span class="tag green">separate host or local</span></h4>
-        <p>You open it. Enter blob URL. It fetches the blob, shows challenge. You enter passphrase. It runs the 8Z pipeline, derives key, attempts AES decryption. Success &rarr; trader renders in iframe. Failure &rarr; nothing.</p>
+        <h4>bd_vault_decoder.html <span class="tag green">operator access point</span></h4>
+        <p>You open it. Enter the required input. It fetches the protected payload, shows challenge material, derives the key through the 8Z pipeline, and attempts AES decryption. Success &rarr; trader renders in iframe. Failure &rarr; nothing.</p>
       </div>
     </div>
   </div>
 
-  <p><strong>Zero connection</strong> between blob host and decoder host. The association exists only in one mind. Two URLs on two different services, with no link, no reference, no shared domain.</p>
+  <p><strong>Operational separation</strong> is left to the operator. Public-facing material should describe the access experience, not expose implementation-sensitive routing or hosting details.</p>
 </div>
 
 <!-- USER EXPERIENCE -->
