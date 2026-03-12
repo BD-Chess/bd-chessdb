@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NCI Mirror Statistics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            font-family: sans-serif;
+        }
+        .chart-box {
+            width: 45%;
+            min-width: 300px;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h3 {
+            text-align: center;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chart-container">
+        <div class="chart-box">
+            <h3>Distribution by File Count</h3>
+            <canvas id="countChart"></canvas>
+        </div>
+        
+        <div class="chart-box">
+            <h3>Storage Footprint (MB)</h3>
+            <canvas id="sizeChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Data extracted from the analysis report
+        const labels = ['Documents', 'Images', 'HTML Pages', 'Audio/Video', 'Other', 'Web Assets'];
+        const counts = [534, 1252, 1022, 6, 17, 155];
+        // Converted Web Assets (992.52 KB) to roughly 0.97 MB for uniform scaling
+        const sizesMB = [974.83, 26.29, 19.29, 17.31, 6.35, 0.97]; 
+        const bgColors = [
+            '#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+        ];
+
+        // 1. Render the Count Pie Chart
+        const ctxCount = document.getElementById('countChart').getContext('2d');
+        new Chart(ctxCount, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: counts,
+                    backgroundColor: bgColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // 2. Render the Size Bar Chart
+        const ctxSize = document.getElementById('sizeChart').getContext('2d');
+        new Chart(ctxSize, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Size in Megabytes (MB)',
+                    data: sizesMB,
+                    backgroundColor: '#36A2EB',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        type: 'logarithmic', // Logarithmic scale used because Documents dwarf everything else
+                        title: {
+                            display: true,
+                            text: 'Megabytes (Log Scale)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

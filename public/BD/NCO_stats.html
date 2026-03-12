@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NCI Mirror Statistics - Dark Theme</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Dark Theme Color Palette */
+        :root {
+            --bg-body: #121212;      /* Deep background */
+            --bg-card: #1e1e1e;      /* Slightly lighter card background */
+            --text-main: #e0e0e0;    /* Bright text for headings */
+            --text-muted: #aaaaaa;   /* Muted text for labels */
+            --card-shadow: rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .chart-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .chart-box {
+            width: 45%;
+            min-width: 300px;
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px var(--card-shadow);
+        }
+
+        h3 {
+            text-align: center;
+            color: var(--text-main);
+            margin-top: 0;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chart-container">
+        <div class="chart-box">
+            <h3>Distribution by File Count</h3>
+            <canvas id="countChart"></canvas>
+        </div>
+        
+        <div class="chart-box">
+            <h3>Storage Footprint (MB)</h3>
+            <canvas id="sizeChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // 1. Set global Chart.js defaults for Dark Theme
+        Chart.defaults.color = '#aaaaaa'; // Default text color
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)'; // Faint grid lines
+
+        // 2. Data extracted from the analysis report
+        const labels = ['Documents', 'Images', 'HTML Pages', 'Audio/Video', 'Other', 'Web Assets'];
+        const counts = [534, 1252, 1022, 6, 17, 155];
+        const sizesMB = [974.83, 26.29, 19.29, 17.31, 6.35, 0.97]; 
+        
+        // Bright, saturated colors pop well on dark backgrounds
+        const bgColors = [
+            '#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+        ];
+
+        // 3. Render the Count Pie Chart
+        const ctxCount = document.getElementById('countChart').getContext('2d');
+        new Chart(ctxCount, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: counts,
+                    backgroundColor: bgColors,
+                    borderColor: '#1e1e1e', // Matches the card background for seamless borders
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { 
+                        position: 'bottom',
+                        labels: { color: '#e0e0e0' }
+                    }
+                }
+            }
+        });
+
+        // 4. Render the Size Bar Chart
+        const ctxSize = document.getElementById('sizeChart').getContext('2d');
+        new Chart(ctxSize, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Size in Megabytes (MB)',
+                    data: sizesMB,
+                    backgroundColor: '#36A2EB',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        type: 'logarithmic',
+                        title: {
+                            display: true,
+                            text: 'Megabytes (Log Scale)',
+                            color: '#e0e0e0'
+                        },
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' } // Very subtle grid lines
+                    },
+                    x: {
+                        grid: { display: false } // Hides vertical grid lines for a cleaner look
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
