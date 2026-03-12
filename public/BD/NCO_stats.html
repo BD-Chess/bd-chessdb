@@ -2,15 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>NCI Mirror Statistics - Dark Theme</title>
+    <title>NCI Mirror Statistics - Dark Theme with Numbers</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    
     <style>
         /* Dark Theme Color Palette */
         :root {
-            --bg-body: #121212;      /* Deep background */
-            --bg-card: #1e1e1e;      /* Slightly lighter card background */
-            --text-main: #e0e0e0;    /* Bright text for headings */
-            --text-muted: #aaaaaa;   /* Muted text for labels */
+            --bg-body: #121212;      
+            --bg-card: #1e1e1e;      
+            --text-main: #e0e0e0;    
             --card-shadow: rgba(0, 0, 0, 0.5);
         }
 
@@ -57,27 +58,29 @@
         </div>
         
         <div class="chart-box">
-            <h3>Storage Footprint (MB)</h3>
+            <h3>Storage Footprint</h3>
             <canvas id="sizeChart"></canvas>
         </div>
     </div>
 
     <script>
-        // 1. Set global Chart.js defaults for Dark Theme
-        Chart.defaults.color = '#aaaaaa'; // Default text color
-        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)'; // Faint grid lines
+        // 1. Register the DataLabels plugin globally
+        Chart.register(ChartDataLabels);
 
-        // 2. Data extracted from the analysis report
+        // 2. Set global Chart.js defaults for Dark Theme
+        Chart.defaults.color = '#aaaaaa'; 
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)'; 
+
+        // 3. Data extracted from the analysis report
         const labels = ['Documents', 'Images', 'HTML Pages', 'Audio/Video', 'Other', 'Web Assets'];
         const counts = [534, 1252, 1022, 6, 17, 155];
         const sizesMB = [974.83, 26.29, 19.29, 17.31, 6.35, 0.97]; 
         
-        // Bright, saturated colors pop well on dark backgrounds
         const bgColors = [
             '#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
         ];
 
-        // 3. Render the Count Pie Chart
+        // 4. Render the Count Doughnut Chart
         const ctxCount = document.getElementById('countChart').getContext('2d');
         new Chart(ctxCount, {
             type: 'doughnut',
@@ -86,7 +89,7 @@
                 datasets: [{
                     data: counts,
                     backgroundColor: bgColors,
-                    borderColor: '#1e1e1e', // Matches the card background for seamless borders
+                    borderColor: '#1e1e1e', 
                     borderWidth: 2
                 }]
             },
@@ -96,19 +99,28 @@
                     legend: { 
                         position: 'bottom',
                         labels: { color: '#e0e0e0' }
+                    },
+                    // Configure numbers on the pie chart
+                    datalabels: {
+                        color: '#ffffff',
+                        font: { weight: 'bold', size: 12 },
+                        formatter: (value) => {
+                            // Hide labels for tiny slices so they don't overlap
+                            return value > 20 ? value : '';
+                        }
                     }
                 }
             }
         });
 
-        // 4. Render the Size Bar Chart
+        // 5. Render the Size Bar Chart
         const ctxSize = document.getElementById('sizeChart').getContext('2d');
         new Chart(ctxSize, {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Size in Megabytes (MB)',
+                    label: 'Size (MB)',
                     data: sizesMB,
                     backgroundColor: '#36A2EB',
                     borderRadius: 4
@@ -116,6 +128,9 @@
             },
             options: {
                 responsive: true,
+                layout: {
+                    padding: { top: 20 } // Add padding so top labels don't get cut off
+                },
                 scales: {
                     y: {
                         beginAtZero: true,
@@ -125,14 +140,22 @@
                             text: 'Megabytes (Log Scale)',
                             color: '#e0e0e0'
                         },
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' } // Very subtle grid lines
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' }
                     },
                     x: {
-                        grid: { display: false } // Hides vertical grid lines for a cleaner look
+                        grid: { display: false } 
                     }
                 },
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
+                    // Configure numbers on the bar chart
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'top',
+                        color: '#e0e0e0',
+                        font: { weight: 'bold', size: 11 },
+                        formatter: (value) => value + ' MB'
+                    }
                 }
             }
         });
