@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BD × AI Lab — AIM³ OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#020409;
+      --bg2:#060a14;
+      --bg3:#0b1120;
+      --surface:#0f1729;
+      --border:rgba(0,229,255,0.10);
+      --cyan:#00e5ff;
+      --cyan-dim:rgba(0,229,255,0.12);
+      --gold:#f59e0b;
+      --gold-dim:rgba(245,158,11,0.12);
+      --rose:#ff6b8a;
+      --rose-dim:rgba(255,107,138,0.10);
+      --green:#34d399;
+      --green-dim:rgba(52,211,153,0.10);
+      --violet:#a78bfa;
+      --violet-dim:rgba(167,139,250,0.10);
+      --orange:#fb923c;
+      --orange-dim:rgba(251,146,60,0.10);
+      --text:#e2e8f4;
+      --muted:#5e7192;
+      --subtle:#1a2540;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+      background:var(--bg);
+      color:var(--text);
+      font-family:'Rajdhani',sans-serif;
+      font-size:17px;
+      line-height:1.7;
+      overflow-x:hidden;
+    }
+    body::after{
+      content:'';
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:9999;
+      opacity:0.02;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    a{color:inherit}
+    .scroll-prog{position:fixed;top:0;left:0;right:0;z-index:200;height:2px}
+    .scroll-prog-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--gold),var(--green));transition:width .08s linear}
+
+    .hero{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      padding:100px 8vw 80px;
+      position:relative;
+      overflow:hidden;
+    }
+    .hero-bg{
+      position:absolute;inset:0;
+      background:
+        radial-gradient(ellipse 70% 55% at 68% 28%,rgba(0,229,255,0.05) 0%,transparent 60%),
+        radial-gradient(ellipse 55% 60% at 12% 82%,rgba(167,139,250,0.04) 0%,transparent 56%),
+        radial-gradient(ellipse 45% 38% at 82% 78%,rgba(245,158,11,0.03) 0%,transparent 52%);
+    }
+    .hero-grid{
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);
+      background-size:90px 90px;
+      mask-image:radial-gradient(ellipse 75% 75% at 50% 50%,black,transparent);
+    }
+    #constellation-canvas{position:absolute;inset:0;pointer-events:none}
+    .hero-shell{position:relative;z-index:2;max-width:760px}
+    .hero-eyebrow{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.72rem;
+      letter-spacing:.34em;
+      text-transform:uppercase;
+      color:var(--cyan);
+      margin-bottom:1.4rem;
+      opacity:0;
+      animation:fadeUp .8s .15s forwards;
+    }
+    .hero-title{
+      font-size:clamp(3rem,8vw,7rem);
+      line-height:.9;
+      font-weight:700;
+      letter-spacing:-0.03em;
+      margin-bottom:1.1rem;
+      opacity:0;
+      animation:fadeUp .8s .32s forwards;
+    }
+    .hero-title .accent{color:var(--cyan)}
+    .hero-title .violet{color:var(--violet)}
+    .hero-subtitle{
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(1.1rem,2.6vw,1.6rem);
+      font-style:italic;
+      color:var(--muted);
+      max-width:680px;
+      margin-bottom:1.1rem;
+      opacity:0;
+      animation:fadeUp .8s .48s forwards;
+    }
+    .hero-copy{
+      max-width:720px;
+      color:rgba(226,232,244,.76);
+      font-size:1.02rem;
+      margin-bottom:1.8rem;
+      opacity:0;
+      animation:fadeUp .8s .62s forwards;
+    }
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.8rem;
+      margin-bottom:2rem;
+      opacity:0;
+      animation:fadeUp .8s .76s forwards;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      font-family:'JetBrains Mono',monospace;
+      font-size:.72rem;
+      font-weight:600;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      text-decoration:none;
+      padding:.78rem 1rem;
+      border-radius:3px;
+      transition:all .25s ease;
+    }
+    .btn-primary{
+      color:var(--cyan);
+      background:var(--cyan-dim);
+      border:1px solid rgba(0,229,255,.28);
+    }
+    .btn-primary:hover{
+      background:rgba(0,229,255,.18);
+      box-shadow:0 0 18px rgba(0,229,255,.12);
+    }
+    .btn-secondary{
+      color:rgba(226,232,244,.72);
+      background:rgba(255,255,255,.02);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .btn-secondary:hover{border-color:rgba(255,255,255,.16)}
+    .hero-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.65rem;
+      opacity:0;
+      animation:fadeUp .8s .9s forwards;
+    }
+    .tag{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.68rem;
+      padding:.22rem .62rem;
+      border-radius:2px;
+      border:1px solid rgba(255,255,255,.08);
+      color:rgba(226,232,244,.7);
+      background:rgba(255,255,255,.03);
+    }
+    .tag.cyan{color:var(--cyan);background:var(--cyan-dim);border-color:rgba(0,229,255,.25)}
+    .tag.violet{color:var(--violet);background:var(--violet-dim);border-color:rgba(167,139,250,.25)}
+    .tag.gold{color:var(--gold);background:var(--gold-dim);border-color:rgba(245,158,11,.25)}
+    .tag.green{color:var(--green);background:var(--green-dim);border-color:rgba(52,211,153,.25)}
+
+    .topnav{
+      max-width:1120px;
+      margin:0 auto;
+      padding:28px 5vw 22px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px 14px;
+      align-items:center;
+      justify-content:center;
+    }
+    .topnav span{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.58rem;
+      letter-spacing:.3em;
+      text-transform:uppercase;
+      color:rgba(226,232,244,.25);
+      margin-right:8px;
+    }
+    .topnav a{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.72rem;
+      text-decoration:none;
+      padding:3px 10px;
+      border-radius:3px;
+      letter-spacing:.05em;
+      transition:all .2s;
+      border:1px solid rgba(255,255,255,.1);
+      color:rgba(226,232,244,.72);
+    }
+    .topnav a:hover{background:rgba(255,255,255,.05)}
+    .topnav a.cyan{color:var(--cyan);border-color:rgba(0,229,255,.2)}
+    .topnav a.cyan:hover{background:rgba(0,229,255,.12)}
+    .topnav a.violet{color:var(--violet);border-color:rgba(167,139,250,.2)}
+    .topnav a.violet:hover{background:rgba(167,139,250,.12)}
+    .topnav a.gold{color:var(--gold);border-color:rgba(245,158,11,.2)}
+    .topnav a.gold:hover{background:rgba(245,158,11,.12)}
+    .topnav a.green{color:var(--green);border-color:rgba(52,211,153,.2)}
+    .topnav a.green:hover{background:rgba(52,211,153,.12)}
+
+    .divider{
+      height:1px;
+      max-width:1120px;
+      margin:0 auto;
+      background:linear-gradient(90deg,transparent,var(--border),transparent);
+    }
+
+    .wrap{max-width:1120px;margin:0 auto;padding:0 5vw}
+    section{padding:96px 0}
+    .sec-tag{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.66rem;
+      letter-spacing:.35em;
+      text-transform:uppercase;
+      color:var(--cyan);
+      margin-bottom:.75rem;
+      display:block;
+    }
+    .sec-tag.violet{color:var(--violet)}
+    .sec-tag.gold{color:var(--gold)}
+    .sec-tag.green{color:var(--green)}
+    h2{
+      font-size:clamp(2rem,4vw,3.2rem);
+      line-height:1.08;
+      font-weight:700;
+      letter-spacing:-0.01em;
+      margin-bottom:1.3rem;
+    }
+    h3{
+      font-size:1.16rem;
+      font-weight:700;
+      color:var(--text);
+    }
+    p{
+      color:rgba(226,232,244,.78);
+      max-width:68ch;
+    }
+    p + p{margin-top:1rem}
+
+    .intro-grid,
+    .matters-grid,
+    .example-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:1.25rem;
+      margin-top:2rem;
+    }
+
+    .card-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:1.15rem;
+      margin-top:2rem;
+    }
+
+    .panel{
+      position:relative;
+      border:1px solid var(--border);
+      border-radius:6px;
+      padding:1.45rem 1.35rem;
+      background:linear-gradient(160deg,rgba(11,17,32,.78),rgba(6,10,20,.96));
+      overflow:hidden;
+      transition:border-color .3s, transform .3s, box-shadow .3s;
+    }
+    .panel:hover{
+      transform:translateY(-3px);
+      border-color:rgba(0,229,255,.24);
+      box-shadow:0 10px 32px rgba(0,0,0,.42);
+    }
+    .panel::before{
+      content:'';
+      position:absolute;
+      top:0;left:0;right:0;height:2px;
+      background:linear-gradient(90deg,var(--panel-accent,var(--cyan)),transparent 84%);
+    }
+    .panel.cyan{--panel-accent:var(--cyan)}
+    .panel.violet{--panel-accent:var(--violet)}
+    .panel.gold{--panel-accent:var(--gold)}
+    .panel.green{--panel-accent:var(--green)}
+    .panel.rose{--panel-accent:var(--rose)}
+    .panel.orange{--panel-accent:var(--orange)}
+
+    .micro{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.6rem;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:.45rem;
+    }
+    .panel p{
+      max-width:none;
+      font-size:.94rem;
+      color:rgba(226,232,244,.68);
+    }
+
+    .diag{
+      margin-top:2rem;
+      border:1px solid var(--border);
+      border-radius:6px;
+      padding:1.5rem;
+      background:rgba(6,10,20,.72);
+    }
+    .diag-title{
+      text-align:center;
+      font-family:'JetBrains Mono',monospace;
+      font-size:.68rem;
+      letter-spacing:.26em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:1.2rem;
+    }
+    .diag-flow{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-wrap:wrap;
+      gap:.3rem;
+    }
+    .diag-node{
+      min-width:120px;
+      padding:.75rem .95rem;
+      text-align:center;
+      border-radius:4px;
+      border:1px solid rgba(0,229,255,.28);
+      background:rgba(0,229,255,.05);
+      color:var(--cyan);
+      font-family:'JetBrains Mono',monospace;
+      font-size:.76rem;
+      line-height:1.5;
+    }
+    .diag-node small{
+      display:block;
+      color:var(--muted);
+      font-size:.58rem;
+      margin-top:.14rem;
+      letter-spacing:.08em;
+    }
+    .diag-node.violet{border-color:rgba(167,139,250,.28);background:rgba(167,139,250,.06);color:var(--violet)}
+    .diag-node.gold{border-color:rgba(245,158,11,.28);background:rgba(245,158,11,.06);color:var(--gold)}
+    .diag-node.green{border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.06);color:var(--green)}
+    .diag-node.rose{border-color:rgba(255,107,138,.28);background:rgba(255,107,138,.06);color:var(--rose)}
+    .diag-arrow{
+      color:var(--muted);
+      padding:0 .35rem;
+      font-size:1rem;
+    }
+
+    .stack-list{
+      list-style:none;
+      margin-top:.9rem;
+      display:grid;
+      gap:.6rem;
+    }
+    .stack-list li{
+      position:relative;
+      padding-left:1rem;
+      color:rgba(226,232,244,.72);
+      font-size:.92rem;
+    }
+    .stack-list li::before{
+      content:'';
+      position:absolute;
+      left:0;
+      top:.7rem;
+      width:5px;
+      height:5px;
+      border-radius:50%;
+      background:var(--cyan);
+      box-shadow:0 0 8px rgba(0,229,255,.35);
+    }
+
+    .loop{
+      margin-top:2rem;
+      display:grid;
+      grid-template-columns:repeat(7,minmax(0,1fr));
+      gap:1px;
+      border:1px solid var(--border);
+      border-radius:6px;
+      overflow:hidden;
+      background:var(--border);
+    }
+    .loop-step{
+      background:var(--bg2);
+      padding:1.15rem .9rem;
+      text-align:center;
+    }
+    .loop-step .num{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.72rem;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:.35rem;
+    }
+    .loop-step .name{
+      color:var(--text);
+      font-weight:700;
+      margin-bottom:.25rem;
+    }
+    .loop-step .desc{
+      color:rgba(226,232,244,.58);
+      font-size:.83rem;
+      line-height:1.55;
+    }
+
+    .highlight{
+      margin-top:2rem;
+      padding:1.7rem 1.8rem;
+      border:1px solid rgba(167,139,250,.22);
+      border-radius:6px;
+      background:linear-gradient(135deg,rgba(167,139,250,.06),rgba(0,229,255,.03));
+    }
+    .highlight h3{margin-bottom:.4rem}
+    .highlight p{max-width:none}
+
+    footer{
+      border-top:1px solid var(--border);
+      padding:3rem 8vw 4rem;
+    }
+    .foot-grid{
+      display:grid;
+      grid-template-columns:2fr 1fr;
+      gap:2rem;
+      margin-bottom:2rem;
+    }
+    .foot-col h4{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.7rem;
+      letter-spacing:.2em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:.9rem;
+    }
+    .foot-col p{
+      max-width:none;
+      font-size:.92rem;
+      color:rgba(226,232,244,.52);
+    }
+    .foot-links{
+      list-style:none;
+      font-family:'JetBrains Mono',monospace;
+      font-size:.76rem;
+      display:grid;
+      gap:.45rem;
+    }
+    .foot-links a{
+      text-decoration:none;
+      color:rgba(226,232,244,.58);
+      border-bottom:1px solid transparent;
+      width:max-content;
+    }
+    .foot-links a:hover{
+      color:var(--cyan);
+      border-bottom-color:rgba(0,229,255,.28);
+    }
+    .copyright{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.68rem;
+      color:rgba(94,113,146,.45);
+      letter-spacing:.1em;
+    }
+
+    .rv{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+    .rv.vis{opacity:1;transform:translateY(0)}
+    .rv-d1{transition-delay:.12s}
+    .rv-d2{transition-delay:.24s}
+    .rv-d3{transition-delay:.36s}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+    @media(max-width:980px){
+      .loop{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .intro-grid,.matters-grid,.example-grid{grid-template-columns:1fr}
+      .foot-grid{grid-template-columns:1fr}
+    }
+    @media(max-width:768px){
+      body{font-size:17px}
+      .hero{padding:72px 5vw 52px;min-height:auto}
+      .hero-title{font-size:clamp(2.4rem,12vw,4rem)}
+      section{padding:64px 0}
+      .card-grid{grid-template-columns:1fr}
+      .loop{grid-template-columns:1fr}
+      .diag-flow{gap:.4rem}
+      .diag-node{min-width:unset;width:100%}
+      .diag-arrow{transform:rotate(90deg)}
+    }
+  </style>
+</head>
+<body>
+  <div class="scroll-prog"><div class="scroll-prog-bar" id="spb"></div></div>
+
+  <header class="hero" id="top">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <canvas id="constellation-canvas"></canvas>
+
+    <div class="hero-shell">
+      <div class="hero-eyebrow">BD × AI Lab · Operating System Layer · Ljubljana, Slovenia</div>
+      <h1 class="hero-title"><span class="accent">AIM³</span><br><span class="violet">Operating System</span></h1>
+      <p class="hero-subtitle">Structured human–AI collaboration for long-horizon research, engineering, and judgment.</p>
+      <p class="hero-copy">
+        AIM³ is the operating system behind this portfolio: a practical framework for working with advanced AI systems through defined roles, persistent state, workflow rounds, trust rules, and decision trails. Bojan Dobrečevič remains the human architect and final judge; AI systems act as collaborators, builders, critics, and amplifiers inside the structure.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="index.html">Back to Portfolio →</a>
+        <a class="btn btn-secondary" href="#stack">View Core Stack</a>
+      </div>
+      <div class="hero-tags">
+        <span class="tag cyan">Role-based reasoning</span>
+        <span class="tag violet">Persistent session state</span>
+        <span class="tag gold">Workflow rounds</span>
+        <span class="tag green">Decision trails</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="divider"></div>
+
+  <nav class="topnav">
+    <span>Jump to</span>
+    <a class="cyan" href="#why">Why AIM³ Exists</a>
+    <a class="violet" href="#what">What It Is</a>
+    <a class="gold" href="#stack">Core Stack</a>
+    <a class="green" href="#practice">How It Works</a>
+    <a class="cyan" href="#example">Worked Example</a>
+    <a class="violet" href="#matters">Why It Matters</a>
+  </nav>
+
+  <section id="why">
+    <div class="wrap">
+      <span class="sec-tag rv">Why AIM³ Exists</span>
+      <h2 class="rv">Normal chat breaks on long-horizon work.</h2>
+      <p class="rv">
+        Ordinary chat is good for short tasks. It breaks when the work becomes multi-step, novel, adversarial, and cumulative. Decisions get buried. Constraints drift. Different sessions contradict each other. One model gives one answer, another gives a different answer, and the reasoning that produced either answer is rarely preserved in a reusable way.
+      </p>
+      <div class="intro-grid">
+        <div class="panel cyan rv rv-d1">
+          <div class="micro">Failure Mode</div>
+          <h3>Reactive by default</h3>
+          <p>
+            The AIM³ principles document frames the core problem directly: humans carry an internal loop of continuity and self-argument, while standard AI chat is reactive — prompt, response, gone. That makes long-horizon thinking brittle.
+          </p>
+        </div>
+        <div class="panel violet rv rv-d2">
+          <div class="micro">Failure Mode</div>
+          <h3>Context evaporates</h3>
+          <p>
+            Long projects lose accepted facts, rejected paths, priorities, and the exact reason one option beat another. Without explicit state and records, every new session risks partial amnesia.
+          </p>
+        </div>
+      </div>
+
+      <div class="highlight rv">
+        <h3>What AIM³ does instead</h3>
+        <p>
+          It replaces loose prompting with an operating model: give the work roles, give it memory, force explicit rounds on serious tasks, keep a trust contract to reduce vagueness and sycophancy, and leave behind trails that the next session can continue instead of re-guessing.
+        </p>
+      </div>
+
+      <div class="diag rv">
+        <div class="diag-title">State Structure</div>
+        <div class="diag-flow">
+          <div class="diag-node violet">Project Facts<small>stable truths and constraints</small></div>
+          <div class="diag-arrow">→</div>
+          <div class="diag-node cyan">Session Log<small>what happened this round</small></div>
+          <div class="diag-arrow">→</div>
+          <div class="diag-node gold">Next Steps<small>the active execution queue</small></div>
+          <div class="diag-arrow">→</div>
+          <div class="diag-node green">Restart Prompt<small>clean handoff into the next session</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="what">
+    <div class="wrap">
+      <span class="sec-tag violet rv">What AIM³ Actually Is</span>
+      <h2 class="rv">Infrastructure for AI teamwork at scale.</h2>
+      <p class="rv">
+        In the protocol, AIM³ is defined as AI-mediated multi-model meta-collaboration: infrastructure for AI teamwork, not just a bigger prompt. It combines role-based reasoning, persistent session state, workflow rounds for serious tasks, and a trust pact that sets the tone and rigor of the collaboration.
+      </p>
+
+      <div class="diag rv">
+        <div class="diag-title">Operating view</div>
+        <div class="diag-flow">
+          <div class="diag-node">Human lead<small>sets scope and final judgment</small></div>
+          <div class="diag-arrow">→</div>
+          <div class="diag-node violet">Roles<small>creator · skeptic · architect · expert</small></div>
+          <div class="diag-arrow">→</div>
+          <div class="diag-node gold">Rounds<small>diverge · test · synthesize · audit</small></div>
+          <div class="diag-arrow">→</div>
+          <div class="diag-node green">State + trails<small>facts · logs · next steps</small></div>
+        </div>
+      </div>
+
+      <ul class="stack-list rv">
+        <li>AIM³ is used when the work is long-horizon, multi-step, genuinely novel, or high-stakes.</li>
+        <li>Simple tasks can stay in normal chat. Frontier work should not.</li>
+        <li>The goal is not “many bots.” The goal is structured judgment across time.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="stack">
+    <div class="wrap">
+      <span class="sec-tag gold rv">The Core Stack</span>
+      <h2 class="rv">Five modules that make the collaboration hold together.</h2>
+
+      <div class="card-grid">
+        <article class="panel cyan rv rv-d1">
+          <div class="micro">Module 01</div>
+          <h3>Dream Team Protocol</h3>
+          <p>
+            A four-voice reasoning method for hard decisions: B reframes and breaks false limits, C formalizes and quantifies, S attacks weak claims, X brings domain knowledge. The point is productive argument, not consensus theater.
+          </p>
+        </article>
+
+        <article class="panel violet rv rv-d2">
+          <div class="micro">Module 02</div>
+          <h3>Session State</h3>
+          <p>
+            One project state file tracks stable facts, session log, current next steps, and a restart prompt. That gives continuity across sessions and models without pretending memory will manage itself.
+          </p>
+        </article>
+
+        <article class="panel gold rv rv-d3">
+          <div class="micro">Module 03</div>
+          <h3>Workflow Rounds</h3>
+          <p>
+            Serious work gets a structured pipeline. The protocol distinguishes simple, medium, large, and wide-funnel tasks, escalating from light verification to full rounds: spec, panel, verification, synthesis, audit, acceptance.
+          </p>
+        </article>
+
+        <article class="panel green rv rv-d1">
+          <div class="micro">Module 04</div>
+          <h3>Trust Pact</h3>
+          <p>
+            The pact defines how the collaboration should feel and how rigor should work: equal thinking partnership, honesty over agreeableness, blunt but non-demotivating tone, evidence tiers, and tests outranking opinions.
+          </p>
+        </article>
+
+        <article class="panel rose rv rv-d2">
+          <div class="micro">Module 05</div>
+          <h3>Decision Trails / Logs</h3>
+          <p>
+            Non-trivial choices are not left as vibes. AIM³ records criteria, weights, scorecards, sensitivity, and the decision record itself. Session logs keep the timeline short, readable, and recoverable.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="practice">
+    <div class="wrap">
+      <span class="sec-tag green rv">How It Works in Practice</span>
+      <h2 class="rv">Problem → roles → rounds → judgment → memory → next session.</h2>
+      <p class="rv">
+        The operational loop is simple enough to run daily and strong enough to support frontier work. A problem enters the system. Roles attack it from different angles. Higher-stakes tasks move through explicit rounds. The human lead decides what counts. The result gets written into state and logs so the next session starts from the actual frontier, not from scratch.
+      </p>
+      <p class="rv">
+        Every serious round ends with a verdict: what stays, what changes, what is rejected, and what must be tested next.
+      </p>
+
+      <div class="loop rv">
+        <div class="loop-step">
+          <div class="num">01</div>
+          <div class="name">Problem</div>
+          <div class="desc">Frame the task, constraints, and acceptance criteria.</div>
+        </div>
+        <div class="loop-step">
+          <div class="num">02</div>
+          <div class="name">Roles</div>
+          <div class="desc">Split creator, skeptic, architect, and expert functions.</div>
+        </div>
+        <div class="loop-step">
+          <div class="num">03</div>
+          <div class="name">Rounds</div>
+          <div class="desc">Use light or heavy workflow depending on stakes.</div>
+        </div>
+        <div class="loop-step">
+          <div class="num">04</div>
+          <div class="name">Conflict</div>
+          <div class="desc">Let disagreement surface gaps, edge cases, and better paths.</div>
+        </div>
+        <div class="loop-step">
+          <div class="num">05</div>
+          <div class="name">Judgment</div>
+          <div class="desc">The human architect accepts, rejects, or re-scopes.</div>
+        </div>
+        <div class="loop-step">
+          <div class="num">06</div>
+          <div class="name">State</div>
+          <div class="desc">Write stable truths, session log, next steps, restart prompt.</div>
+        </div>
+        <div class="loop-step">
+          <div class="num">07</div>
+          <div class="name">Continuity</div>
+          <div class="desc">Resume later without losing the design history.</div>
+        </div>
+      </div>
+
+      <div class="intro-grid">
+        <div class="panel cyan rv rv-d1">
+          <div class="micro">Compact-first discipline</div>
+          <h3>Not every task needs full ceremony</h3>
+          <p>
+            AIM³ stays compact by default. The protocol explicitly says to expand only when the added detail serves the task. That keeps the system usable in real work instead of turning it into bureaucracy.
+          </p>
+        </div>
+        <div class="panel gold rv rv-d2">
+          <div class="micro">Decision discipline</div>
+          <h3>Important choices get scored</h3>
+          <p>
+            When stacks, tools, or architectures are in dispute, AIM³ pushes the team toward criteria, weights, scoring, sensitivity, and a written record of why a choice was made.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="example">
+    <div class="wrap">
+      <span class="sec-tag cyan rv">Worked Example</span>
+      <h2 class="rv">The Dream Team method already produced real architectural movement.</h2>
+      <p class="rv">
+        The bundle includes a full Dream Team example from the audio roadmap. Five ideas were put through multi-voice argument. The important result is not just that ideas were discussed — it is that the dialogue changed the architecture in concrete ways.
+      </p>
+
+      <div class="example-grid">
+        <div class="panel violet rv rv-d1">
+          <div class="micro">Before</div>
+          <h3>Loose ideas</h3>
+          <p>
+            “Save overhead bytes.” “Try two-pass.” “Maybe use math generators on residuals.” On their own, these are directions, not designs.
+          </p>
+        </div>
+        <div class="panel green rv rv-d2">
+          <div class="micro">After</div>
+          <h3>Architectural decisions</h3>
+          <p>
+            The example turns those directions into specific outcomes: FLAC-minimal as a zero-overhead candidate, informed candidate pruning in two-pass architecture, stronger periodic prediction, a practical 8za2flac path, and a physical audio model library.
+          </p>
+        </div>
+      </div>
+
+      <div class="highlight rv">
+        <h3>The important proof point</h3>
+        <p>
+          The example explicitly states that the key breakthrough emerged through argument: a skeptical attack forced the expert voice to stop hand-waving and reach for concrete physics, which then became a formal architectural path. That is the point of AIM³. It uses structured conflict to convert vague possibility into testable design.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="matters">
+    <div class="wrap">
+      <span class="sec-tag violet rv">Why This Matters</span>
+      <h2 class="rv">AIM³ matters because serious human–AI work needs continuity, friction, and judgment.</h2>
+
+      <div class="matters-grid">
+        <div class="panel cyan rv rv-d1">
+          <div class="micro">For research</div>
+          <h3>Better continuity</h3>
+          <p>
+            Long research programs need accepted facts, open questions, and rejected paths to survive across months. AIM³ gives that work a durable shape instead of relying on memory, chance, or a single model’s mood.
+          </p>
+        </div>
+        <div class="panel gold rv rv-d2">
+          <div class="micro">For engineering</div>
+          <h3>More disciplined decisions</h3>
+          <p>
+            Engineering improves when disagreements are explicit, tests outrank opinions, and tradeoffs are written down. AIM³ turns that into routine practice rather than leaving it implicit.
+          </p>
+        </div>
+        <div class="panel green rv rv-d3">
+          <div class="micro">For future collaboration</div>
+          <h3>Beyond prompting</h3>
+          <p>
+            The future of human–AI work is not a lone user chatting with a compliant assistant. It is humans directing structured teams of specialized systems with memory, adversarial pressure, and continuity over time.
+          </p>
+        </div>
+        <div class="panel rose rv rv-d1">
+          <div class="micro">Already in use</div>
+          <h3>Backbone behind the portfolio</h3>
+          <p>
+            AIM³ is not presented here as a hypothetical framework. It is the operating layer behind the documents, code, reviews, and cross-domain project work shown across the broader BD × AI Lab portfolio.
+          </p>
+        </div>
+      </div>
+
+      <div class="highlight rv">
+        <h3>Public takeaway</h3>
+        <p>
+          AIM³ is a practical answer to a real problem: how to keep advanced AI collaboration coherent when the work becomes serious. Not bigger prompts. Not vague “AI agents.” A working operating model for long-horizon human–AI collaboration.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <div class="foot-grid">
+        <div class="foot-col">
+          <h4>About AIM³</h4>
+          <p>
+            AIM³ — AI-mediated multi-model meta-collaboration — is the collaboration operating system behind the BD × AI Lab portfolio. It combines roles, memory, rounds, trust rules, and decision trails so research and engineering can continue coherently across sessions and systems.
+          </p>
+        </div>
+        <div class="foot-col">
+          <h4>Navigation</h4>
+          <ul class="foot-links">
+            <li><a href="index.html">Back to main portfolio</a></li>
+            <li><a href="#top">Return to top</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="copyright">© 2026 Bojan Dobrečevič · BD × AI Lab · Ljubljana, Slovenia</div>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      const c=document.getElementById('constellation-canvas');
+      const ctx=c.getContext('2d');
+      let W,H;
+      function resize(){W=c.width=c.offsetWidth;H=c.height=c.offsetHeight}
+      resize();
+      window.addEventListener('resize',resize);
+      const N=58;
+      const pts=Array.from({length:N},()=>({
+        x:Math.random()*1.2-.1,
+        y:Math.random()*1.2-.1,
+        vx:(Math.random()-.5)*.0003,
+        vy:(Math.random()-.5)*.0003,
+        r:Math.random()*1.5+.5,
+        hue:Math.random()>.72?45:(Math.random()>.55?265:190)
+      }));
+      function draw(){
+        ctx.clearRect(0,0,W,H);
+        for(let i=0;i<N;i++){
+          const a=pts[i];
+          a.x+=a.vx;a.y+=a.vy;
+          if(a.x<-.1||a.x>1.1)a.vx*=-1;
+          if(a.y<-.1||a.y>1.1)a.vy*=-1;
+          const ax=a.x*W,ay=a.y*H;
+          for(let j=i+1;j<N;j++){
+            const b=pts[j];
+            const bx=b.x*W,by=b.y*H;
+            const d=Math.hypot(ax-bx,ay-by);
+            if(d<180){
+              const op=(.11*(1-d/180)).toFixed(3);
+              ctx.strokeStyle=`rgba(0,229,255,${op})`;
+              ctx.lineWidth=.5;
+              ctx.beginPath();
+              ctx.moveTo(ax,ay);
+              ctx.lineTo(bx,by);
+              ctx.stroke();
+            }
+          }
+          const fill=a.hue===45
+            ? `rgba(245,158,11,${(.3+Math.random()*.12).toFixed(2)})`
+            : a.hue===265
+              ? `rgba(167,139,250,${(.26+Math.random()*.12).toFixed(2)})`
+              : `rgba(0,229,255,${(.24+Math.random()*.14).toFixed(2)})`;
+          ctx.fillStyle=fill;
+          ctx.beginPath();
+          ctx.arc(ax,ay,a.r,0,Math.PI*2);
+          ctx.fill();
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    const rvs=document.querySelectorAll('.rv');
+    const io=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          entry.target.classList.add('vis');
+          io.unobserve(entry.target);
+        }
+      });
+    },{threshold:0,rootMargin:'0px 0px -30px 0px'});
+    rvs.forEach(el=>io.observe(el));
+    setTimeout(()=>{rvs.forEach(el=>{if(!el.classList.contains('vis'))el.classList.add('vis')})},3000);
+
+    const spb=document.getElementById('spb');
+    window.addEventListener('scroll',()=>{
+      const winScroll=document.body.scrollTop||document.documentElement.scrollTop;
+      const height=document.documentElement.scrollHeight-document.documentElement.clientHeight;
+      const scrolled=(winScroll/height)*100;
+      if(spb) spb.style.width=scrolled+"%";
+    });
+  </script>
+</body>
+</html>
