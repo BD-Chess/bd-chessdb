@@ -606,6 +606,29 @@ This is "Don't accept limits without evidence" applied to residuals. The entire 
     Corollary: the same human trait that refuses limits from textbooks
     also refuses dismissal from AIs. The response to "that's not new"
     is identical whether from a paper, a professor, or an LLM.
+
+16. NEVER EXCLUDE OPTIONS FROM A RESEARCH PLATFORM
+    When building an experimental system, include every option that
+    might produce data. "Too many knobs" is not a reason to exclude.
+    "It might complicate attribution" is not a reason to exclude.
+    "It probably won't help" is not a reason to exclude.
+    The cost of including an option is near zero. The cost of missing
+    a discovery is infinite. Attribution can be sorted AFTER you have
+    results. You cannot sort results you never collected.
+    Build everything. Test everything. Throw out what doesn't help
+    AFTER the data says so, not before.
+    Origin: P vs NP TSP solver session (2026-03-13). GPT recommended
+    removing or-opt kicks from the solver: "too many causal knobs."
+    Claude Opus agreed and initially left or-opt out. Bojan refused:
+    "Why not add more options? We are in the perfect moment for R&D."
+    Or-opt turned out to be the single biggest finding — 9522 (1.82%
+    gap) vs double-bridge's 9563 (2.26%), AND 2.4x faster. The combo
+    run (or-opt + fixed-10 + 14 workers) reached 9377 — only 25 units
+    from exact optimal on a 194-city instance. If Bojan hadn't refused
+    the constraint, none of this would have been discovered.
+    Corollary: conservative advice from an AI ("simplify for clean
+    attribution") can be just as dangerous as dismissive advice
+    ("that won't work"). Both are limits. Both require evidence.
 ```
 
 ---
@@ -636,6 +659,8 @@ This is "Don't accept limits without evidence" applied to residuals. The entire 
 | 2026 | "Half pixels encrypted" | Temporal encryption dithering at video framerate | Potentially novel: key-derived pixel masks, steganography meets temporal crypto |
 | 2026 | "StatiCrypt already exists" | Turn skeptics into co-builders | 3 LLMs → GPT: 8Z Trace, Grok: 8Z Reader, Gemini: watermark engine. Principle 15 |
 | 2026 | Multi-AI convergence | Forensic watermarking is the next move | Three independent AIs converged on same gap — convergence = signal |
+| 2026 | P vs NP TSP solver | "Why not add more options?" | GPT + Claude said "too many knobs." Bojan refused. Or-opt turned out to be the #1 finding: 9377 (0.27% gap) on qa194. The discovery that was almost excluded. Principle 16 |
+| 2026 | DCC ablation data | Adaptive DCC lost to fixed-10 | First real data on whether DCC helps. It doesn't (in v1 form). Data > theory. Led to DCC v2 multi-actuator redesign |
 
 Each row started with someone saying "that won't work" and Bojan refusing the constraint.
 
@@ -693,6 +718,33 @@ When you see a problem:
 ---
 
 ## Changelog
+
+**v1.7** (2026-03-13): Never Exclude Options — Principle 16
+- New principle: never exclude options from a research platform without hard evidence
+  they are harmful. The cost of a missed discovery is infinitely higher than the cost
+  of a messy log file.
+- Origin: P vs NP TSP solver experiment. Five LLMs (Claude Opus, GPT, Gemini, Grok,
+  Sonnet) collaborated on building an uncapped TSP solver to test whether DCC-controlled
+  search finds exact optima on structured instances.
+- GPT (Round 5) recommended removing or-opt kicks: "too many causal knobs at once kills
+  attribution." Claude Opus agreed and initially excluded or-opt from the build spec.
+  Bojan pushed back: "Why not add more options? We are in the perfect moment for R&D."
+- Or-opt was added. It turned out to be the single most important finding:
+  - Or-opt: 9522 (1.82% gap) in 22.5 min — best single-worker result
+  - Double-bridge: 9563 (2.26% gap) in 54.8 min — what we'd have had without or-opt
+  - Combo (or-opt + fixed-10 + 14 workers): 9377 (0.27% gap) — 25 units from exact optimal
+- Meanwhile, the DCC ablation showed adaptive DCC v1 LOST to fixed-10 (9592 vs 9563).
+  GPT was right about DCC not being the sauce — and right to propose the ablation test.
+  But wrong to recommend excluding or-opt.
+- The lesson: conservative advice ("simplify for attribution") can prevent the key
+  discovery just as surely as dismissive advice ("that won't work"). Both are limits
+  that require evidence before accepting.
+- This is Principle 0 applied to the AI team's own research process: the human refused
+  a limit that TWO AIs (GPT and Claude) accepted. The data proved the human right.
+- Companion: `8Z_Reasoning_DreamTeam_Examples.md` Example 8 documents the full story
+- Two new origin story rows added (or-opt discovery, DCC ablation)
+- Reasoning chain: P0 (refuse "too many knobs") → P1 (refuse the constraint) →
+  P7 (follow the surprise — or-opt winning was unexpected) → P16 (new)
 
 **v1.6** (2026-03-09): Turn Skeptics Into Builders — Principle 15
 - New principle: criticism points at the next breakthrough. Convert evaluation energy

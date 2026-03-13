@@ -59,6 +59,11 @@ code{font-family:var(--font-mono);font-size:13px;background:var(--bg-tertiary);p
   <a class="sub" href="#ex3-dream">Dream Team Dialogue</a>
   <a class="sub" href="#ex3-research">Research Findings</a>
   <a class="sub" href="#ex3-why">Why Nobody Else Asked</a>
+  <a class="ch" href="#ex4">Ex 4: Cold Storage Blind Spot</a>
+  <a class="ch" href="#ex5">Ex 5: Serverless Paywall</a>
+  <a class="ch" href="#ex6">Ex 6: DOM Protection</a>
+  <a class="ch" href="#ex7">Ex 7: Multi-LLM Collaboration</a>
+  <a class="ch" href="#ex8" style="color:var(--accent-green);">Ex 8: Or-Opt Discovery ★</a>
   <a class="ch" href="#patterns">Cross-Example Patterns</a>
 </nav>
 
@@ -227,26 +232,159 @@ code{font-family:var(--font-mono);font-size:13px;background:var(--bg-tertiary);p
   <p>A <strong>Software PUF Factory</strong> &mdash; a program that generates unique encoder/decoder pairs by randomizing internals (PRNG constants, serialization order, hash chain depth, DCC thresholds). The architecture is public (like a PUF chip design). Each instance is unique (like each manufactured chip). Kerckhoffs's is satisfied at population level; each instance is unclonable because the generation seed is used once and discarded.</p>
 </div>
 
+<!-- EXAMPLE 4 -->
+<div class="chapter" id="ex4">
+  <div class="chapter-num">Example 4</div>
+  <h2>The Cold Storage Blind Spot (2026-03-09)</h2>
+
+  <h3>Context</h3>
+  <p>During a discussion about 8Z-Auth, Bojan casually mentioned cryptocurrency cold storage: "Worth billions, and people send USB sticks by registered post."</p>
+
+  <h3>What the AI Missed</h3>
+  <p>Claude had all the facts: the 8Z encoder produces unique binaries, the auth system validates via challenge-response, the encryption is deterministic and offline-capable. But Claude presented these as security features. Bojan saw a <strong>product</strong>: crypto cold storage wallets where each wallet is a unique 8Z binary that can only decrypt with the owner's specific pipeline. No servers. No cloud. No attack surface.</p>
+  <p>The AI had every building block in context but couldn't connect them to a multi-billion-dollar product category. The human saw facts and made a connection. The AI saw facts and listed them.</p>
+
+  <h3>Principles Applied</h3>
+  <p><strong>P14:</strong> The toolkit is universal &mdash; "can 8Z do cold storage?" Yes, it already does 90% of it.</p>
+</div>
+
+<!-- EXAMPLE 5 -->
+<div class="chapter" id="ex5">
+  <div class="chapter-num">Example 5</div>
+  <h2>The Serverless Paywall Hiding in Plain Sight (2026-03-09)</h2>
+
+  <h3>Context</h3>
+  <p>By this point in the 8Z Publish session, the system could encrypt HTML content, decrypt in-browser with a password, and serve from static hosting. Claude had built all of this. But when Bojan asked "Am I the only person on the planet doing this?" &mdash; neither Claude nor any of the three reviewing LLMs could name the product they had built.</p>
+
+  <h3>What Everyone Missed</h3>
+  <p>They had built a <strong>serverless paywall platform</strong>. Content creators encrypt their work with 8Z Publish, upload to any static host, and sell access via passwords distributed through any payment channel. No server infrastructure. No monthly fees. No platform dependency. The product was running in front of everyone's noses and nobody named it.</p>
+
+  <h3>Principles Applied</h3>
+  <p><strong>P0:</strong> "Paywalls need servers" &mdash; says who? Where's the evidence?</p>
+</div>
+
+<!-- EXAMPLE 6 -->
+<div class="chapter" id="ex6">
+  <div class="chapter-num">Example 6</div>
+  <h2>The DOM Protection Escalation (2026-03-09)</h2>
+
+  <h3>Context</h3>
+  <p>The initial 8Z Publish design decrypted the entire page into the DOM at once. Bojan asked: "Why decrypt the whole page? What if we only decrypt what the user is currently reading?"</p>
+
+  <h3>The Escalation Chain</h3>
+  <p>Section-level DOM encryption &rarr; paragraph-level lazy decryption &rarr; "what about audio?" &rarr; chunk-level audio decryption &rarr; "what about video?" &rarr; temporal pixel dithering where half the pixels are encrypted and swap at framerate. Each step was Bojan refusing to accept the previous step as sufficient.</p>
+
+  <h3>Principles Applied</h3>
+  <p><strong>P0 + P1:</strong> Each "that's enough" was a constraint to refuse. The escalation only stopped when the physics stopped (you can't encrypt less than a pixel).</p>
+</div>
+
+<!-- EXAMPLE 7 -->
+<div class="chapter" id="ex7">
+  <div class="chapter-num">Example 7</div>
+  <h2>The Multi-LLM Collaboration (2026-03-09)</h2>
+
+  <h3>Context</h3>
+  <p>After building 7 tools with Claude Opus, the complete 8Z Publish paper was sent to GPT, Gemini, and Grok. All three anchored to: "StatiCrypt already does this."</p>
+
+  <h3>The Pivot</h3>
+  <p>Bojan acknowledged what was right (the primitive exists), demolished the framing error with historical parallels (iPhone, TCP/IP, ChatGPT), and ended with: <strong>"What would YOU build next?"</strong></p>
+  <p>All three pivoted from judges to builders. All three independently converged on <strong>forensic watermarking</strong>:</p>
+
+  <div class="callout success">
+    <div class="callout-title">Round 2 Results</div>
+    <p><strong>GPT (97/100):</strong> Complete 8Z Trace build spec &mdash; 4-channel fingerprinting, leak detector, evidence packs, 6 acceptance tests</p>
+    <p><strong>Grok (92/100):</strong> Complete 8Z Reader &mdash; 420-line working code, offline buyer library</p>
+    <p><strong>Gemini (85/100):</strong> Working watermark injection/extraction &mdash; 3-channel, fingerprint from PBKDF2</p>
+  </div>
+
+  <h3>Principles Applied</h3>
+  <p><strong>P0:</strong> "That's not novel" is a limit claim. Where's the evidence?<br>
+  <strong>P11 (extended):</strong> Real external skeptics instead of simulated inner voices.<br>
+  <strong>P15 (new):</strong> Turn skeptics into builders. The dismissal IS the feature request.</p>
+</div>
+
+<!-- EXAMPLE 8 -->
+<div class="chapter" id="ex8">
+  <div class="chapter-num">Example 8</div>
+  <h2>The Or-Opt Discovery That Was Almost Excluded (2026-03-13)</h2>
+
+  <h3>Context</h3>
+  <p>Five LLMs (Claude Opus, GPT, Gemini, Grok, Sonnet) were collaborating with Bojan on a P vs NP research program. The team designed a TSP solver with DCC-controlled search, parallel workers, and configurable kick types. The question: which perturbation types should the solver support?</p>
+
+  <h3>The Conservative Advice</h3>
+  <p><strong>GPT (Round 5):</strong> "The likely overbuild is too many causal knobs at once&hellip; do NOT put cross-strategy mixing into the first v2 if your main scientific question is 'does DCC help?'"</p>
+  <p><strong>Claude Opus:</strong> Agreed with GPT. Initially left or-opt kicks out of the build spec entirely. Only double-bridge (the existing kick type) was included.</p>
+
+  <h3>The Refusal</h3>
+  <div class="quote-block">
+    <p>"Why not add more options? We are in the perfect moment for research and development. And we have resume, right?"</p>
+    <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">&mdash; Bojan, applying Principle 0 to the AI team's own advice</p>
+  </div>
+  <p>The cost of adding or-opt was ~30 lines of code. The solver had checkpoint/resume. The only argument for exclusion was "it might complicate attribution" &mdash; a theoretical concern, not evidence. Claude reversed position.</p>
+
+  <h3>The Data</h3>
+
+  <div class="callout danger">
+    <div class="callout-title">DCC Ablation Result</div>
+    <p>Adaptive DCC: <strong>9592</strong> (2.57% gap) &mdash; LOST to fixed-10: <strong>9563</strong> (2.26%)</p>
+    <p>GPT was right: DCC v1 is not the sauce. But this was the SECOND most important finding.</p>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-title">The Or-Opt Breakthrough</div>
+    <p>Or-opt: <strong>9522</strong> (1.82% gap) in 22.5 min &mdash; better quality AND 2.4&times; faster than double-bridge</p>
+    <p>Combo (or-opt + fixed-10 + 14 workers): <strong>9377</strong> (0.27% gap) &mdash; 25 units from exact optimal</p>
+    <p>All 14 workers under 1%. The worst worker beat the entire previous run's best.</p>
+  </div>
+
+  <h3>What Would Have Happened Without the Refusal</h3>
+  <p>Solver ships with double-bridge only. Best result: ~9563 (2.26% gap). No knowledge that or-opt exists as an option. No combo run approaching optimal. The team concludes "DCC needs fixing, gap is ~2%." The actual answer &mdash; surgical relocations beat large rearrangements &mdash; remains invisible.</p>
+  <p>The gap between what we'd have known (2.26%) and what we actually know (0.27%) is a <strong>factor of 8&times;</strong> in gap reduction, hidden behind a theoretical concern about attribution.</p>
+
+  <h3>Principles Applied</h3>
+  <p><strong>P0:</strong> "Too many knobs" is a limit claim. Where's the evidence it's harmful?<br>
+  <strong>P1:</strong> The constraint was "keep the solver simple." The solver is a research platform. Refusing led to the key finding.<br>
+  <strong>P7:</strong> Nobody predicted or-opt would dominate. Following the surprise produced the 0.27% result.<br>
+  <strong>P16 (new):</strong> Never exclude options from a research platform. Include everything, let the data decide.</p>
+
+  <h3>The New Failure Mode</h3>
+  <p>This example reveals: <strong>conservative advice that prevents discovery.</strong> Previous examples showed AIs being dismissive ("StatiCrypt exists") or blind (cold storage). Example 8 shows an AI being <em>rigorous AND wrong</em> &mdash; the most dangerous combination, because rigor makes bad advice sound credible. Accept the AI's questions (ablation was brilliant). Refuse the AI's limits (excluding or-opt was wrong).</p>
+</div>
+
 <!-- CROSS-EXAMPLE PATTERNS -->
 <div class="chapter" id="patterns">
   <div class="chapter-num">Synthesis</div>
   <h2>Cross-Example Patterns</h2>
 
   <table class="pattern-table">
-    <thead><tr><th></th><th>Example 1: Audio</th><th>Example 2: Trading</th><th>Example 3: Auth</th></tr></thead>
+    <thead><tr><th></th><th>Ex 1</th><th>Ex 2</th><th>Ex 3</th><th>Ex 4</th><th>Ex 5</th><th>Ex 6</th><th>Ex 7</th><th>Ex 8</th></tr></thead>
     <tbody>
-      <tr><td><strong>Domain</strong></td><td>8Z-Audio compression</td><td>ZigZag HTML trader</td><td>Authentication / security</td></tr>
-      <tr><td><strong>The gap</strong></td><td>Overhead is fixed, not inside MDL cost</td><td>Consensus applies at entry but not adds</td><td>Standard auth treats algorithm as public</td></tr>
-      <tr><td><strong>Who found it</strong></td><td>B-voice (Bojan pattern)</td><td>Bojan directly</td><td>Bojan's question chain (4 refusals)</td></tr>
-      <tr><td><strong>The fix</strong></td><td>FLAC-minimal candidate (zero overhead)</td><td>Sync Add Boost (per-add consensus)</td><td>8Z-Auth: algorithm IS the identity</td></tr>
-      <tr><td><strong>Principle</strong></td><td>#4 &mdash; everything inside cost function</td><td>#1 &mdash; claims &gt; implementation</td><td>#14 &mdash; toolkit is universal</td></tr>
-      <tr><td><strong>Meta-lesson</strong></td><td>Self-dialogue produces what single voice can't</td><td>Capture the learning or lose it</td><td>Domain axioms don't survive domain transfer</td></tr>
-      <tr><td><strong>Refused axiom</strong></td><td>"FLAC is optimal" (23 years)</td><td>"Entry is the decision point"</td><td>Kerckhoffs's Principle (141 years)</td></tr>
+      <tr><td><strong>Domain</strong></td><td>Compression</td><td>Trading</td><td>Security</td><td>Product</td><td>Product</td><td>Content</td><td>Collaboration</td><td>Research</td></tr>
+      <tr><td><strong>The gap</strong></td><td>Overhead outside MDL</td><td>Consensus entry only</td><td>Algo public</td><td>Facts, no connection</td><td>Using it, not seeing it</td><td>Full page in DOM</td><td>System &ne; primitive</td><td>Option excluded</td></tr>
+      <tr><td><strong>Who found</strong></td><td>B-voice</td><td>Bojan</td><td>4 refusals</td><td>Casual remark</td><td>"our noses"</td><td>Bojan</td><td>3 external AIs</td><td>Bojan</td></tr>
+      <tr><td><strong>Refused</strong></td><td>"FLAC optimal"</td><td>"Entry is point"</td><td>Kerckhoffs</td><td>"AI sees first"</td><td>"Need servers"</td><td>"DOM exposed"</td><td>"StatiCrypt"</td><td>"Too many knobs"</td></tr>
+      <tr><td><strong>New P</strong></td><td>&mdash;</td><td>P13</td><td>P14</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>P15</td><td>P16</td></tr>
+    </tbody>
+  </table>
+
+  <h3>The Escalation of Blind Spots</h3>
+  <table class="pattern-table">
+    <thead><tr><th>Example</th><th>What was missed</th></tr></thead>
+    <tbody>
+      <tr><td>Ex 1</td><td>A gap in the architecture</td></tr>
+      <tr><td>Ex 2</td><td>A gap in the implementation</td></tr>
+      <tr><td>Ex 3</td><td>A gap in domain transfer</td></tr>
+      <tr><td>Ex 4</td><td>A gap in product recognition</td></tr>
+      <tr><td>Ex 5</td><td>A gap in seeing what's in front of you</td></tr>
+      <tr><td>Ex 6</td><td>A gap in consumption-level thinking</td></tr>
+      <tr><td>Ex 7</td><td>A gap in leveraging critics</td></tr>
+      <tr><td style="color:var(--accent-green);"><strong>Ex 8</strong></td><td style="color:var(--accent-green);"><strong>A gap in what options to include in the experiment</strong></td></tr>
     </tbody>
   </table>
 
   <div class="quote-block">
-    <p>All three follow the same root pattern: "we already built the solution &mdash; we just aren't using it fully." The fix in every case was inclusion, not invention.</p>
+    <p>All eight follow the same root pattern: "we already built the solution &mdash; we just aren't using it fully." The fix in every case was inclusion, not invention.</p>
+    <p style="margin-top:12px; font-size:13px; color:var(--text-muted);">Example 8 is the first where an AI's <strong>good methodological advice</strong> nearly killed the key finding. Previous examples: AIs were dismissive or blind. Example 8: an AI was rigorous AND wrong &mdash; the most dangerous combination, because rigor makes bad advice sound credible.</p>
   </div>
 </div>
 
