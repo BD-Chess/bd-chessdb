@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BD × AI Lab — 8Z-RP / TSP as Compression</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com/" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#020409;
+      --bg2:#060a14;
+      --bg3:#0b1120;
+      --surface:#0f1729;
+      --surface2:#11192d;
+      --border:rgba(0,229,255,0.10);
+      --border-strong:rgba(0,229,255,0.18);
+      --cyan:#00e5ff;
+      --cyan-dim:rgba(0,229,255,0.12);
+      --gold:#f59e0b;
+      --gold-dim:rgba(245,158,11,0.12);
+      --green:#34d399;
+      --green-dim:rgba(52,211,153,0.10);
+      --violet:#a78bfa;
+      --violet-dim:rgba(167,139,250,0.10);
+      --rose:#ff6b8a;
+      --rose-dim:rgba(255,107,138,0.10);
+      --orange:#fb923c;
+      --orange-dim:rgba(251,146,60,0.10);
+      --text:#e2e8f4;
+      --muted:#5e7192;
+      --muted-2:rgba(226,232,244,0.62);
+      --subtle:#1a2540;
+      --shadow:0 10px 30px rgba(0,0,0,0.35);
+      --radius:6px;
+    }
+
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+      background:var(--bg);
+      color:var(--text);
+      font-family:'Rajdhani',sans-serif;
+      font-size:17px;
+      line-height:1.72;
+      overflow-x:hidden;
+    }
+    body::after{
+      content:'';
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:9999;
+      opacity:0.02;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    a{color:inherit}
+    .scroll-prog{position:fixed;top:0;left:0;right:0;z-index:200;height:2px}
+    .scroll-prog-bar{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg,var(--cyan),var(--violet),var(--gold),var(--green));
+      transition:width .08s linear;
+    }
+
+    .hero{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      padding:100px 8vw 80px;
+      position:relative;
+      overflow:hidden;
+    }
+    .hero-bg{
+      position:absolute;inset:0;
+      background:
+        radial-gradient(ellipse 72% 58% at 70% 25%, rgba(0,229,255,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 58% 64% at 12% 80%, rgba(167,139,250,0.04) 0%, transparent 57%),
+        radial-gradient(ellipse 44% 40% at 84% 82%, rgba(245,158,11,0.03) 0%, transparent 54%);
+    }
+    .hero-grid{
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);
+      background-size:90px 90px;
+      mask-image:radial-gradient(ellipse 75% 75% at 50% 50%,black,transparent);
+    }
+    #constellation-canvas{position:absolute;inset:0;pointer-events:none}
+    .hero-shell{position:relative;z-index:2;max-width:860px}
+    .hero-eyebrow{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.72rem;
+      letter-spacing:.34em;
+      text-transform:uppercase;
+      color:var(--cyan);
+      margin-bottom:1.4rem;
+      opacity:0;
+      animation:fadeUp .8s .15s forwards;
+    }
+    .hero-title{
+      font-size:clamp(3rem,8vw,7rem);
+      line-height:.9;
+      font-weight:700;
+      letter-spacing:-0.03em;
+      margin-bottom:1.05rem;
+      opacity:0;
+      animation:fadeUp .8s .32s forwards;
+    }
+    .hero-title .accent{color:var(--cyan)}
+    .hero-title .gold{color:var(--gold)}
+    .hero-subtitle{
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(1.12rem,2.4vw,1.62rem);
+      font-style:italic;
+      color:var(--muted);
+      max-width:760px;
+      margin-bottom:1.1rem;
+      opacity:0;
+      animation:fadeUp .8s .48s forwards;
+    }
+    .hero-copy{
+      max-width:760px;
+      color:rgba(226,232,244,.76);
+      font-size:1.02rem;
+      margin-bottom:1.7rem;
+      opacity:0;
+      animation:fadeUp .8s .62s forwards;
+    }
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.8rem;
+      margin-bottom:1.8rem;
+      opacity:0;
+      animation:fadeUp .8s .76s forwards;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      font-family:'JetBrains Mono',monospace;
+      font-size:.72rem;
+      font-weight:600;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      text-decoration:none;
+      padding:.78rem 1rem;
+      border-radius:3px;
+      transition:all .25s ease;
+    }
+    .btn-primary{
+      color:var(--cyan);
+      background:var(--cyan-dim);
+      border:1px solid rgba(0,229,255,.28);
+    }
+    .btn-primary:hover{
+      background:rgba(0,229,255,.18);
+      box-shadow:0 0 18px rgba(0,229,255,.12);
+    }
+    .btn-secondary{
+      color:rgba(226,232,244,.72);
+      background:rgba(255,255,255,.02);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .btn-secondary:hover{border-color:rgba(255,255,255,.16)}
+    .hero-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.65rem;
+      opacity:0;
+      animation:fadeUp .8s .9s forwards;
+    }
+    .tag{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.68rem;
+      padding:.22rem .62rem;
+      border-radius:2px;
+      border:1px solid rgba(255,255,255,.08);
+      color:rgba(226,232,244,.7);
+      background:rgba(255,255,255,.03);
+    }
+    .tag.cyan{color:var(--cyan);background:var(--cyan-dim);border-color:rgba(0,229,255,.25)}
+    .tag.violet{color:var(--violet);background:var(--violet-dim);border-color:rgba(167,139,250,.25)}
+    .tag.gold{color:var(--gold);background:var(--gold-dim);border-color:rgba(245,158,11,.25)}
+    .tag.green{color:var(--green);background:var(--green-dim);border-color:rgba(52,211,153,.25)}
+    .tag.rose{color:var(--rose);background:var(--rose-dim);border-color:rgba(255,107,138,.25)}
+
+    .topnav{
+      max-width:1120px;
+      margin:0 auto;
+      padding:28px 5vw 22px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px 14px;
+      align-items:center;
+      justify-content:center;
+    }
+    .topnav span{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.58rem;
+      letter-spacing:.3em;
+      text-transform:uppercase;
+      color:rgba(226,232,244,.25);
+      margin-right:8px;
+    }
+    .topnav a{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.72rem;
+      text-decoration:none;
+      padding:3px 10px;
+      border-radius:3px;
+      letter-spacing:.05em;
+      transition:all .2s;
+      border:1px solid rgba(255,255,255,.1);
+      color:rgba(226,232,244,.72);
+    }
+    .topnav a:hover{background:rgba(255,255,255,.05)}
+    .topnav a.cyan{color:var(--cyan);border-color:rgba(0,229,255,.2)}
+    .topnav a.cyan:hover{background:rgba(0,229,255,.12)}
+    .topnav a.violet{color:var(--violet);border-color:rgba(167,139,250,.2)}
+    .topnav a.violet:hover{background:rgba(167,139,250,.12)}
+    .topnav a.gold{color:var(--gold);border-color:rgba(245,158,11,.2)}
+    .topnav a.gold:hover{background:rgba(245,158,11,.12)}
+    .topnav a.green{color:var(--green);border-color:rgba(52,211,153,.2)}
+    .topnav a.green:hover{background:rgba(52,211,153,.12)}
+    .topnav a.rose{color:var(--rose);border-color:rgba(255,107,138,.2)}
+    .topnav a.rose:hover{background:rgba(255,107,138,.12)}
+
+    .divider{
+      height:1px;
+      max-width:1120px;
+      margin:0 auto;
+      background:linear-gradient(90deg,transparent,var(--border),transparent);
+    }
+
+    .wrap{max-width:1120px;margin:0 auto;padding:0 5vw}
+    section{padding:96px 0}
+
+    .sec-tag{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.66rem;
+      letter-spacing:.35em;
+      text-transform:uppercase;
+      color:var(--cyan);
+      margin-bottom:.75rem;
+      display:block;
+    }
+    .sec-tag.gold{color:var(--gold)}
+    .sec-tag.green{color:var(--green)}
+    .sec-tag.violet{color:var(--violet)}
+    .sec-tag.rose{color:var(--rose)}
+
+    h2{
+      font-size:clamp(2rem,4vw,3.15rem);
+      line-height:1.08;
+      font-weight:700;
+      letter-spacing:-0.01em;
+      margin-bottom:1.3rem;
+    }
+    h3{
+      font-size:1.16rem;
+      font-weight:700;
+      color:var(--text);
+    }
+    p{color:rgba(226,232,244,.78);max-width:68ch}
+    p + p{margin-top:1rem}
+    strong{color:var(--text)}
+    em{font-style:italic}
+
+    .intro{
+      max-width:780px;
+    }
+
+    .stat-banner{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+      gap:1px;
+      margin:2.4rem 0 0;
+      border:1px solid var(--border);
+      border-radius:4px;
+      overflow:hidden;
+      background:var(--border);
+    }
+    .sb-cell{
+      padding:1.35rem 1.15rem;
+      background:var(--bg2);
+      text-align:center;
+    }
+    .sb-num{
+      font-family:'JetBrains Mono',monospace;
+      font-size:1.8rem;
+      font-weight:700;
+      line-height:1.05;
+    }
+    .sb-label{
+      font-size:.72rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-top:.34rem;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:1.2rem;
+      margin-top:2rem;
+    }
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:1.2rem;
+      margin-top:2rem;
+    }
+    .grid-4{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:1.15rem;
+      margin-top:2rem;
+    }
+
+    .panel{
+      position:relative;
+      border:1px solid var(--border);
+      border-radius:6px;
+      padding:1.45rem 1.35rem;
+      background:linear-gradient(160deg,rgba(11,17,32,.78),rgba(6,10,20,.96));
+      overflow:hidden;
+      transition:border-color .3s, transform .3s, box-shadow .3s;
+      box-shadow:var(--shadow);
+    }
+    .panel:hover{
+      transform:translateY(-3px);
+      border-color:rgba(0,229,255,.22);
+    }
+    .panel::before{
+      content:'';
+      position:absolute;
+      top:0;left:0;right:0;height:2px;
+      background:linear-gradient(90deg,var(--panel-accent,var(--cyan)),transparent 84%);
+    }
+    .panel.cyan{--panel-accent:var(--cyan)}
+    .panel.violet{--panel-accent:var(--violet)}
+    .panel.gold{--panel-accent:var(--gold)}
+    .panel.green{--panel-accent:var(--green)}
+    .panel.rose{--panel-accent:var(--rose)}
+    .panel.orange{--panel-accent:var(--orange)}
+
+    .micro{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.6rem;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:.45rem;
+    }
+    .panel p{
+      max-width:none;
+      font-size:.95rem;
+      color:rgba(226,232,244,.68);
+    }
+
+    .highlight{
+      margin-top:2rem;
+      padding:1.7rem 1.8rem;
+      border:1px solid rgba(167,139,250,.22);
+      border-radius:6px;
+      background:linear-gradient(135deg,rgba(167,139,250,.06),rgba(0,229,255,.03));
+      box-shadow:var(--shadow);
+    }
+    .highlight.gold{
+      border-color:rgba(245,158,11,.22);
+      background:linear-gradient(135deg,rgba(245,158,11,.06),rgba(0,229,255,.02));
+    }
+    .highlight.green{
+      border-color:rgba(52,211,153,.22);
+      background:linear-gradient(135deg,rgba(52,211,153,.06),rgba(0,229,255,.02));
+    }
+    .highlight h3{margin-bottom:.4rem}
+    .highlight p{max-width:none}
+
+    .quote{
+      margin-top:2rem;
+      border-left:3px solid var(--gold);
+      padding:1rem 1.25rem;
+      background:rgba(245,158,11,.04);
+      border-radius:0 4px 4px 0;
+    }
+    .quote p{
+      max-width:none;
+      font-family:'Cormorant Garamond',serif;
+      font-size:1.46rem;
+      line-height:1.45;
+      color:var(--text);
+      font-style:italic;
+    }
+
+    .diag{
+      margin-top:2rem;
+      border:1px solid var(--border);
+      border-radius:6px;
+      padding:1.5rem;
+      background:rgba(6,10,20,.72);
+      box-shadow:var(--shadow);
+    }
+    .diag-title{
+      text-align:center;
+      font-family:'JetBrains Mono',monospace;
+      font-size:.68rem;
+      letter-spacing:.26em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:1.2rem;
+    }
+    .diag-flow{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-wrap:wrap;
+      gap:.3rem;
+    }
+    .diag-node{
+      min-width:126px;
+      padding:.78rem .95rem;
+      text-align:center;
+      border-radius:4px;
+      border:1px solid rgba(0,229,255,.28);
+      background:rgba(0,229,255,.05);
+      color:var(--cyan);
+      font-family:'JetBrains Mono',monospace;
+      font-size:.75rem;
+      line-height:1.5;
+    }
+    .diag-node small{
+      display:block;
+      color:var(--muted);
+      font-size:.58rem;
+      margin-top:.14rem;
+      letter-spacing:.08em;
+    }
+    .diag-node.violet{border-color:rgba(167,139,250,.28);background:rgba(167,139,250,.06);color:var(--violet)}
+    .diag-node.gold{border-color:rgba(245,158,11,.28);background:rgba(245,158,11,.06);color:var(--gold)}
+    .diag-node.green{border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.06);color:var(--green)}
+    .diag-node.rose{border-color:rgba(255,107,138,.28);background:rgba(255,107,138,.06);color:var(--rose)}
+    .diag-arrow{
+      color:var(--muted);
+      padding:0 .35rem;
+      font-size:1rem;
+    }
+
+    .table-wrap{
+      margin-top:2rem;
+      overflow:auto;
+      border:1px solid var(--border);
+      border-radius:6px;
+      background:linear-gradient(160deg,rgba(11,17,32,.72),rgba(6,10,20,.95));
+      box-shadow:var(--shadow);
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:680px;
+    }
+    th{
+      text-align:left;
+      padding:1rem 1rem .95rem;
+      font-family:'JetBrains Mono',monospace;
+      font-size:.66rem;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color:var(--muted);
+      background:rgba(255,255,255,.02);
+      border-bottom:1px solid rgba(255,255,255,.06);
+      white-space:nowrap;
+    }
+    td{
+      padding:.95rem 1rem;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      color:rgba(226,232,244,.78);
+      vertical-align:top;
+    }
+    tr:last-child td{border-bottom:none}
+    tbody tr:hover td{background:rgba(255,255,255,.02)}
+    .good{color:var(--green);font-weight:700}
+    .warn{color:var(--gold);font-weight:700}
+    .note{color:var(--muted)}
+    .mono{font-family:'JetBrains Mono',monospace}
+    .tight{max-width:58ch}
+
+    .compare{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:1.2rem;
+      margin-top:2rem;
+    }
+    .compare-box{
+      border:1px solid var(--border);
+      border-radius:6px;
+      padding:1.35rem;
+      background:linear-gradient(160deg,rgba(11,17,32,.78),rgba(6,10,20,.96));
+      box-shadow:var(--shadow);
+    }
+    .compare-box h3{margin-bottom:.75rem}
+    .compare-box ul{
+      list-style:none;
+      display:grid;
+      gap:.65rem;
+    }
+    .compare-box li{
+      position:relative;
+      padding-left:1rem;
+      color:rgba(226,232,244,.72);
+    }
+    .compare-box li::before{
+      content:'';
+      position:absolute;
+      left:0;
+      top:.72rem;
+      width:5px;
+      height:5px;
+      border-radius:50%;
+      background:var(--panel-dot,var(--cyan));
+      box-shadow:0 0 8px rgba(0,229,255,.25);
+    }
+    .compare-box.bad{--panel-dot:var(--rose)}
+    .compare-box.good{--panel-dot:var(--green)}
+
+    .pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.55rem;
+      margin-top:.8rem;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      padding:.18rem .55rem;
+      border-radius:2px;
+      border:1px solid rgba(255,255,255,.08);
+      font-family:'JetBrains Mono',monospace;
+      font-size:.65rem;
+      letter-spacing:.04em;
+      color:rgba(226,232,244,.72);
+      background:rgba(255,255,255,.03);
+    }
+
+
+    .ref-panel{margin-top:1.25rem}
+    .ref-note{
+      margin-top:.55rem;
+      font-size:.8rem;
+      color:rgba(226,232,244,.5);
+      max-width:none;
+    }
+    .ref-links{
+      list-style:none;
+      display:grid;
+      gap:.55rem;
+      margin-top:.8rem;
+    }
+    .ref-links a{
+      text-decoration:none;
+      color:rgba(226,232,244,.78);
+      border-bottom:1px solid transparent;
+      width:max-content;
+      max-width:100%;
+      word-break:break-word;
+    }
+    .ref-links a:hover{
+      color:var(--cyan);
+      border-bottom-color:rgba(0,229,255,.28);
+    }
+
+    .story-grid{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:1.2rem;
+      margin-top:2rem;
+    }
+
+    .closing-links{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:1rem;
+      margin-top:2rem;
+    }
+    .mini-link{
+      border:1px solid var(--border);
+      border-radius:6px;
+      padding:1.15rem 1.15rem 1rem;
+      text-decoration:none;
+      background:linear-gradient(160deg,rgba(11,17,32,.74),rgba(6,10,20,.96));
+      transition:border-color .25s, transform .25s;
+      box-shadow:var(--shadow);
+    }
+    .mini-link:hover{
+      transform:translateY(-3px);
+      border-color:rgba(0,229,255,.22);
+    }
+    .mini-link .k{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.62rem;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:.35rem;
+    }
+    .mini-link .t{
+      font-size:1rem;
+      font-weight:700;
+      color:var(--text);
+      margin-bottom:.35rem;
+    }
+    .mini-link .d{
+      font-size:.9rem;
+      color:rgba(226,232,244,.62);
+      max-width:none;
+    }
+
+    footer{
+      border-top:1px solid var(--border);
+      padding:3rem 8vw 4rem;
+    }
+    .foot-grid{
+      display:grid;
+      grid-template-columns:2fr 1fr;
+      gap:2rem;
+      margin-bottom:2rem;
+    }
+    .foot-col h4{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.7rem;
+      letter-spacing:.2em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:.9rem;
+    }
+    .foot-col p{
+      max-width:none;
+      font-size:.92rem;
+      color:rgba(226,232,244,.52);
+    }
+    .foot-links{
+      list-style:none;
+      font-family:'JetBrains Mono',monospace;
+      font-size:.76rem;
+      display:grid;
+      gap:.45rem;
+    }
+    .foot-links a{
+      text-decoration:none;
+      color:rgba(226,232,244,.58);
+      border-bottom:1px solid transparent;
+      width:max-content;
+    }
+    .foot-links a:hover{
+      color:var(--cyan);
+      border-bottom-color:rgba(0,229,255,.28);
+    }
+    .copyright{
+      font-family:'JetBrains Mono',monospace;
+      font-size:.68rem;
+      color:rgba(94,113,146,.45);
+      letter-spacing:.1em;
+    }
+
+    .rv{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+    .rv.vis{opacity:1;transform:translateY(0)}
+    .rv-d1{transition-delay:.12s}
+    .rv-d2{transition-delay:.24s}
+    .rv-d3{transition-delay:.36s}
+
+    @keyframes fadeUp{
+      from{opacity:0;transform:translateY(22px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    @media(max-width:980px){
+      .grid-2,.grid-3,.compare,.story-grid{grid-template-columns:1fr}
+      .foot-grid{grid-template-columns:1fr}
+    }
+    @media(max-width:768px){
+      body{font-size:17px}
+      .hero{padding:74px 5vw 54px;min-height:auto}
+      .hero-title{font-size:clamp(2.45rem,12vw,4.2rem)}
+      .hero-subtitle{font-size:clamp(1rem,3vw,1.28rem)}
+      section{padding:68px 0}
+      .diag-flow{gap:.4rem}
+      .diag-node{min-width:unset;width:100%}
+      .diag-arrow{transform:rotate(90deg)}
+      .topnav{justify-content:flex-start}
+      .topnav span{width:100%}
+    }
+    @media(max-width:480px){
+      .stat-banner{grid-template-columns:repeat(2,1fr)}
+      .hero-tags{gap:.45rem}
+    }
+  </style>
+</head>
+<body>
+  <div class="scroll-prog"><div class="scroll-prog-bar" id="spb"></div></div>
+
+  <header class="hero" id="top">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <canvas id="constellation-canvas"></canvas>
+
+    <div class="hero-shell">
+      <div class="hero-eyebrow">BD × AI Lab · 8Z / MDL / DCC · Route Optimization Research</div>
+      <h1 class="hero-title"><span class="accent">8Z-RP</span><br><span class="gold">TSP as Compression</span></h1>
+      <p class="hero-subtitle">A human-led research program that treats route optimization as a mathematical-compression question — and reached the exact known optimal on qa194.</p>
+      <p class="hero-copy">
+        Human-led research by <strong>Bojan Dobrečevič</strong>, developed with advanced AI collaborators through <strong>AIM³</strong>. The architecture is not “AI made this.” The architecture is 8Z: MDL for judgment, DCC for control, experiments for truth, and route search treated as a problem of mathematical sense.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#headline">See the result</a>
+        <a class="btn btn-secondary" href="https://chessbest.org/trip/" target="_blank" rel="noopener">Open live trip optimizer ↗</a>
+        <a class="btn btn-secondary" href="index.html">Back to portfolio →</a>
+      </div>
+      <div class="hero-tags">
+        <span class="tag cyan">qa194 exact</span>
+        <span class="tag gold">9352</span>
+        <span class="tag green">3/14 workers exact</span>
+        <span class="tag violet">DCC v2 vindicated</span>
+        <span class="tag rose">uy734 frontier</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="divider"></div>
+
+  <nav class="topnav">
+    <span>Jump to</span>
+    <a class="cyan" href="#headline">Headline Result</a>
+    <a class="gold" href="#matters">Why It Matters</a>
+    <a class="violet" href="#idea">Core Idea</a>
+    <a class="green" href="#progression">Progression</a>
+    <a class="rose" href="#lessons">Lessons</a>
+    <a class="cyan" href="#research">Research Process</a>
+    <a class="gold" href="#origin">Origin Story</a>
+    <a class="green" href="#next">What Comes Next</a>
+  </nav>
+
+  <section id="headline">
+    <div class="wrap">
+      <span class="sec-tag rv">The Headline Result</span>
+      <h2 class="rv">Exact known optimal on qa194.</h2>
+      <p class="intro rv">
+        On the TSPLIB instance <strong>qa194</strong>, the 8Z-RP research solver reached the <strong>exact known optimal tour length of 9352</strong>. In the <strong>combo50</strong> run, <strong>3 of 14 workers</strong> independently reached exact optimal. The first exact hit came from <strong>Worker 7</strong> at <strong>move 2832</strong>, after roughly <strong>34 minutes</strong>.
+      </p>
+      <p class="intro rv">qa194 and uy734 are official national TSP benchmark instances from the University of Waterloo World TSP / National TSP collection.</p>
+
+      <div class="stat-banner rv">
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--cyan)">194</div>
+          <div class="sb-label">Cities</div>
+        </div>
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--gold)">9352</div>
+          <div class="sb-label">Known Optimal</div>
+        </div>
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--green)">3 / 14</div>
+          <div class="sb-label">Workers Exact</div>
+        </div>
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--violet)">2832</div>
+          <div class="sb-label">First Exact Move</div>
+        </div>
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--rose)">34m</div>
+          <div class="sb-label">First Exact Time</div>
+        </div>
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--orange)">3.43 × 10<sup>358</sup></div>
+          <div class="sb-label">qa194 Brute-Force Tours</div>
+        </div>
+      </div>
+
+      <article class="panel violet rv ref-panel">
+        <div class="micro">Benchmark provenance</div>
+        <h3>Official Benchmark References</h3>
+        <p class="ref-note">External benchmark provenance for instance definitions and known optimal tours.</p>
+        <ul class="ref-links">
+          <li><a href="https://www.math.uwaterloo.ca/tsp/world/countries.html" target="_blank" rel="noopener">Waterloo National TSPs overview</a></li>
+          <li><a href="https://www.math.uwaterloo.ca/tsp/world/qapoints.html" target="_blank" rel="noopener">QA194 point set</a></li>
+          <li><a href="https://www.math.uwaterloo.ca/tsp/world/qatour.html" target="_blank" rel="noopener">QA194 optimal tour</a></li>
+          <li><a href="https://www.math.uwaterloo.ca/tsp/world/uypoints.html" target="_blank" rel="noopener">UY734 point set</a></li>
+          <li><a href="https://www.math.uwaterloo.ca/tsp/world/uytour.html" target="_blank" rel="noopener">UY734 optimal tour</a></li>
+        </ul>
+      </article>
+
+      <div class="grid-2">
+        <article class="panel cyan rv rv-d1">
+          <div class="micro">combo50</div>
+          <h3>Human-chosen winning formula</h3>
+          <p>
+            Fixed-10 DCC mode, or-opt kicks, 14 workers, <span class="mono">n×50</span> budget. This was the first run to hit exact optimal on qa194. It proved the basin was reachable from multiple random trajectories, not from one lucky path.
+          </p>
+          <div class="pill-row">
+            <span class="pill">Best: 9352</span>
+            <span class="pill">Gap: 0.000%</span>
+            <span class="pill">Workers exact: 21%</span>
+          </div>
+        </article>
+
+        <article class="panel green rv rv-d2">
+          <div class="micro">DCC v2</div>
+          <h3>Redesigned controller beat the hand-tuned combo</h3>
+          <p>
+            After DCC v1 lost its ablation, the controller was rebuilt with floor/ceiling control, kick-type switching, time-aware measurement, and an escalation ladder. DCC v2 then reached exact optimal with <strong>5× less budget</strong> and about <strong>2.3× less wall time</strong>, while auto-discovering or-opt instead of being told to use it.
+          </p>
+          <div class="pill-row">
+            <span class="pill">Budget: n×10</span>
+            <span class="pill">First exact: 14.9m</span>
+            <span class="pill">Auto-discovers or-opt</span>
+          </div>
+        </article>
+      </div>
+
+      <div class="highlight gold rv">
+        <h3>The clean public reading</h3>
+        <p>
+          This page does <strong>not</strong> claim a proof of P = NP. It does claim something real: a compression-born research architecture, implemented in Python on ordinary hardware, reached exact optimal on a nontrivial benchmark instance and then improved further when its controller was properly redesigned.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="matters">
+    <div class="wrap">
+      <span class="sec-tag gold rv">Why This Matters</span>
+      <h2 class="rv">Not a theorem. A serious breakthrough inside the research program.</h2>
+      <p class="rv">
+        qa194 does not settle P versus NP. That would be a dishonest reading. What it does settle is that the 8Z-RP line of work is no longer just an unusual framing. It now has a hard result, a clean empirical ladder of improvement, and a controller story that survived ablation, failure, redesign, and vindication.
+      </p>
+
+      <div class="grid-4">
+        <article class="panel cyan rv rv-d1">
+          <div class="micro">Result</div>
+          <h3>Exact matters</h3>
+          <p>Moving from 3.01% gap to 0.00% gap on qa194 changes the status of the project. This is no longer “interesting direction only.”</p>
+        </article>
+        <article class="panel gold rv rv-d2">
+          <div class="micro">Method</div>
+          <h3>Original framing matters</h3>
+          <p>TSP is usually told as a heuristic story. Here it is told as a problem of structure, compressibility, and mathematical sense.</p>
+        </article>
+        <article class="panel green rv rv-d3">
+          <div class="micro">Architecture</div>
+          <h3>DCC matters</h3>
+          <p>DCC v1 deserved to lose. DCC v2 then outperformed the human-configured combo. That is a real controller result, not branding.</p>
+        </article>
+        <article class="panel violet rv rv-d1">
+          <div class="micro">Practice</div>
+          <h3>Research platform matters</h3>
+          <p>The option that was almost excluded — or-opt — turned out to be decisive. The platform learned something the plan nearly prevented.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="idea">
+    <div class="wrap">
+      <span class="sec-tag violet rv">The Core Idea</span>
+      <h2 class="rv">TSP reframed as compression and mathematical sense.</h2>
+
+      <div class="quote rv">
+        <p>“Isn’t the shortest route the one compressed the best?”</p>
+      </div>
+
+      <p class="rv">
+        That question changed the project. A shorter route tends to have more structure: fewer crossings, smoother geometry, tighter local relationships. More structure means more compressibility. 8Z already had a framework for searching structured explanations under strict cost. The TSP solver applies that same instinct to routes.
+      </p>
+      <p class="rv">
+        The public version is simple. <strong>MDL</strong> acts as the judge: a move or route state only matters if it actually pays. <strong>DCC</strong> acts as the governor: it decides how hard to explore, when to exploit, when to switch tactics, and when the current search regime is stuck.
+      </p>
+
+      <div class="diag rv">
+        <div class="diag-title">Public architecture view</div>
+        <div class="diag-flow">
+          <div class="diag-node">Instance<small>qa194 · uy734 · TSPLIB</small></div>
+          <div class="diag-arrow">→</div>
+          <div class="diag-node violet">Start Tours<small>multiple workers / seeds</small></div>
+          <div class="diag-arrow">→</div>
+          <div class="diag-node gold">Kick Arena<small>double-bridge · or-opt · mixed</small></div>
+          <div class="diag-arrow">→</div>
+          <div class="diag-node green">2-opt Polish<small>local structure recovery</small></div>
+          <div class="diag-arrow">→</div>
+          <div class="diag-node rose">DCC Governor<small>explore · exploit · switch</small></div>
+          <div class="diag-arrow">→</div>
+          <div class="diag-node">Verified Best<small>known-opt match if found</small></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <article class="panel gold rv rv-d1">
+          <div class="micro">MDL</div>
+          <h3>Why MDL belongs here</h3>
+          <p>
+            8Z was built on the idea that competing explanations should be judged by total cost. In routing, the “explanations” are move families, tour states, and control choices. The system is not asked to look elegant. It is asked to produce a better route.
+          </p>
+        </article>
+        <article class="panel cyan rv rv-d2">
+          <div class="micro">DCC</div>
+          <h3>Why DCC belongs here</h3>
+          <p>
+            Search dies in two ways: too much order and you freeze in a local basin; too much chaos and you waste compute. DCC exists to regulate that edge. In v2, it finally did.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="progression">
+    <div class="wrap">
+      <span class="sec-tag green rv">The Progression</span>
+      <h2 class="rv">From capped search to exact optimal.</h2>
+      <p class="rv tight">
+        The improvement path matters because it shows this was not one miracle run. The solver moved through a clear series of architectural steps, each pushing the gap down before exact optimal was reached.
+      </p>
+
+      <div class="table-wrap rv">
+        <table>
+          <thead>
+            <tr>
+              <th>Version</th>
+              <th>Configuration</th>
+              <th>Best</th>
+              <th>Gap</th>
+              <th>What changed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">v1.2.1</td>
+              <td>Capped at 2048 moves</td>
+              <td class="mono">9634</td>
+              <td>3.01%</td>
+              <td>Baseline pre-breakthrough</td>
+            </tr>
+            <tr>
+              <td class="mono">v2.1</td>
+              <td>8 workers, double-bridge, adaptive DCC</td>
+              <td class="mono">9534</td>
+              <td>1.95%</td>
+              <td>Parallelism + new solver frame</td>
+            </tr>
+            <tr>
+              <td class="mono">v2.1</td>
+              <td>Single worker, or-opt, adaptive DCC</td>
+              <td class="mono">9522</td>
+              <td>1.82%</td>
+              <td>or-opt wins the kick ablation</td>
+            </tr>
+            <tr>
+              <td class="mono">v2.1</td>
+              <td>14 workers, or-opt, fixed-10, n×20</td>
+              <td class="mono">9377</td>
+              <td>0.27%</td>
+              <td>Combo formula gets very close</td>
+            </tr>
+            <tr>
+              <td class="mono"><strong>v2.1</strong></td>
+              <td><strong>14 workers, or-opt, fixed-10, n×50</strong></td>
+              <td class="mono good">9352</td>
+              <td class="good">0.00%</td>
+              <td><strong>Exact known optimal on qa194</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="compare">
+        <div class="compare-box bad rv rv-d1">
+          <h3>DCC v1 lost</h3>
+          <ul>
+            <li>Adaptive DCC v1 lost the ablation to fixed settings.</li>
+            <li>The controller collapsed toward <span class="mono">u=0</span>, a death spiral.</li>
+            <li>That failure was useful because it exposed that the first controller was too crude.</li>
+          </ul>
+        </div>
+        <div class="compare-box good rv rv-d2">
+          <h3>DCC v2 won</h3>
+          <ul>
+            <li>Multi-actuator redesign: floor/ceiling, kick switching, time-aware measurement, escalation.</li>
+            <li>Reached exact on qa194 with 5× less budget and about 2.3× less wall time than combo50.</li>
+            <li>Auto-discovered or-opt instead of relying on a human to select it in advance.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="highlight green rv">
+        <h3>W7 is the public landmark</h3>
+        <p>
+          In combo50, Worker 7 sat for a long plateau around the sub-1% region, then cracked the basin and cascaded down to exact optimal at move 2832. That pattern matters. It suggests the landscape is not just noisy difficulty; it contains narrow, reachable corridors that the right move family can unlock.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="lessons">
+    <div class="wrap">
+      <span class="sec-tag rose rv">The Breakthrough Lessons</span>
+      <h2 class="rv">What the solver taught the research program.</h2>
+
+      <div class="grid-3">
+        <article class="panel gold rv rv-d1">
+          <div class="micro">Lesson 01</div>
+          <h3>or-opt mattered most</h3>
+          <p>The decisive move was the one nearly left out. It beat double-bridge on quality and speed, then became central to exact optimal.</p>
+        </article>
+        <article class="panel rose rv rv-d2">
+          <div class="micro">Lesson 02</div>
+          <h3>Do not exclude options early</h3>
+          <p>A research platform should prefer inclusion over pre-emptive tidiness. Attribution problems are cheaper than missed discoveries.</p>
+        </article>
+        <article class="panel cyan rv rv-d3">
+          <div class="micro">Lesson 03</div>
+          <h3>DCC v1 was not the sauce</h3>
+          <p>The first controller lost honestly. That was important. The architecture was not protected by optimism; it had to survive data.</p>
+        </article>
+        <article class="panel green rv rv-d1">
+          <div class="micro">Lesson 04</div>
+          <h3>DCC v2 was vindicated</h3>
+          <p>The redesigned controller changed the class of result. It stopped being a nice story and became a measurable win.</p>
+        </article>
+        <article class="panel violet rv rv-d2">
+          <div class="micro">Lesson 05</div>
+          <h3>2-opt is the main bottleneck</h3>
+          <p>2-opt still consumes essentially all compute time. That is why the speed path is now obvious: optimize the bottleneck, not the narrative.</p>
+        </article>
+        <article class="panel orange rv rv-d3">
+          <div class="micro">Lesson 06</div>
+          <h3>Surprises are signal</h3>
+          <p>The important discoveries were not the ones most confidently predicted in advance. The platform improved by following surprise, not by obeying plan purity.</p>
+        </article>
+      </div>
+
+      <div class="highlight rv">
+        <h3>The new research rule</h3>
+        <p>
+          Build everything that might produce useful data. Test it. Keep what wins. Remove what loses later. The solver’s biggest discovery arrived through the exact option that conservative cleanup would have removed.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="research">
+    <div class="wrap">
+      <span class="sec-tag cyan rv">How The Research Was Done</span>
+      <h2 class="rv">Human architect, AI collaborators, disciplined iteration.</h2>
+      <p class="rv">
+        This work was led by Bojan Dobrečevič. AI systems were used through AIM³ as critics, coders, reviewers, experiment partners, and amplifiers. They were not the authorial center. The human role was to ask the right question, reject false limits, keep the architecture coherent, and insist on tests over opinions.
+      </p>
+
+      <div class="grid-4">
+        <article class="panel cyan rv rv-d1">
+          <div class="micro">Human-led</div>
+          <h3>Architect-led framing</h3>
+          <p>The decisive framing move — TSP as compression — came from the human side, not from standard solver folklore.</p>
+        </article>
+        <article class="panel violet rv rv-d2">
+          <div class="micro">AI-assisted</div>
+          <h3>Multiple systems, explicit roles</h3>
+          <p>AI collaborators challenged assumptions, proposed patches, wrote code, and argued about the build. Their disagreement was useful.</p>
+        </article>
+        <article class="panel gold rv rv-d3">
+          <div class="micro">Discipline</div>
+          <h3>Ablations before mythology</h3>
+          <p>DCC v1 was allowed to fail. or-opt was allowed to win. That is how the project stayed real instead of self-congratulatory.</p>
+        </article>
+        <article class="panel green rv rv-d1">
+          <div class="micro">Method</div>
+          <h3>Questions + experiments + logs</h3>
+          <p>The loop was simple: pose a strong question, build enough machinery to test it, record what actually happened, then iterate.</p>
+        </article>
+      </div>
+
+      <div class="highlight gold rv">
+        <h3>What AIM³ contributed here</h3>
+        <p>
+          AIM³ made multi-LLM collaboration useful by giving it structure: roles, continuity, explicit review loops, and decision trails. That matters because frontier work breaks ordinary chat. Research needs memory, friction, and judgment.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="origin">
+    <div class="wrap">
+      <span class="sec-tag gold rv">Origin Story</span>
+      <h2 class="rv">A supporting narrative, not the whole page.</h2>
+
+      <div class="story-grid">
+        <div class="panel gold rv rv-d1">
+          <div class="micro">Before the solver</div>
+          <h3>The older question behind 8Z</h3>
+          <p>
+            Before the LLM era, the original question was not about travel at all. It was about compression: could structured data be compressed by finding the mathematical generators that made it, rather than just crushing bytes?
+          </p>
+          <p>
+            That question sat dormant for years. When it returned, it became 8Z. The TSP solver is one of the strongest transfers of that original instinct into a new domain.
+          </p>
+        </div>
+
+        <div class="panel violet rv rv-d2">
+          <div class="micro">The spark for 8Z-RP</div>
+          <h3>The route question</h3>
+          <p>
+            Looking at the 194-city Qatar instance, the next question arrived: <em>isn’t the shortest route the one that can be compressed best?</em> That reframing joined two lines of work that had been evolving separately: 8Z compression and DCC control.
+          </p>
+          <p>
+            The result was not a memoir project. It was a research system built from that question.
+          </p>
+        </div>
+      </div>
+
+      <div class="quote rv">
+        <p>“The shortest tour is the one that makes the most mathematical sense.”</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="next">
+    <div class="wrap">
+      <span class="sec-tag green rv">What Comes Next</span>
+      <h2 class="rv">uy734, broader kick arenas, fuller DCC, and later the speed path.</h2>
+      <p class="rv">
+        qa194 is not the end state. It is the proof point that justifies the next push. The current larger-instance frontier is <strong>uy734</strong>, with the same general combo formula now being tested on a much bigger search space.
+      </p>
+
+      <div class="grid-4">
+        <article class="panel rose rv rv-d1">
+          <div class="micro">Frontier now</div>
+          <h3>uy734 in progress</h3>
+          <p>734 cities. Known optimal 79114. This is the next meaningful empirical checkpoint for the program.</p>
+        </article>
+        <article class="panel gold rv rv-d2">
+          <div class="micro">v2.3</div>
+          <h3>Broader kick arena</h3>
+          <p>More or-opt variants, 3-opt, segment inversion, tour-diff analysis, batch campaigns, and a better platform for learning what really scales.</p>
+        </article>
+        <article class="panel green rv rv-d3">
+          <div class="micro">v2.4</div>
+          <h3>DCC as fuller governor</h3>
+          <p>Move toward an auto mode where the controller does more of the strategy discovery, kick selection, and convergence management itself.</p>
+        </article>
+        <article class="panel cyan rv rv-d1">
+          <div class="micro">Speed path</div>
+          <h3>Optimize the bottleneck later</h3>
+          <p>2-opt dominates runtime. That makes the engineering target plain. But first the research platform should learn a bit more on larger instances.</p>
+        </article>
+      </div>
+
+      <div class="highlight green rv">
+        <h3>The larger portfolio meaning</h3>
+        <p>
+          8Z-RP is not an isolated experiment. It is one branch of a larger 8Z / AIM³ portfolio where the same core ideas — MDL, DCC, controlled exploration, and cross-domain transfer — are tested in compression, biology, audio, trading, and now route optimization.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="closing">
+    <div class="wrap">
+      <span class="sec-tag rv">Closing</span>
+      <h2 class="rv">A route solver born from compression.</h2>
+      <p class="rv">
+        The public claim is straightforward. 8Z-RP treats route optimization as a problem of mathematical structure, not only of heuristic folklore. That framing produced an exact qa194 result, a failed controller that had to be rebuilt honestly, and then a redesigned controller that outperformed the human-configured winning combo.
+      </p>
+      <p class="rv">
+        That is a serious page in a serious research program — human-led, AI-assisted, technically grounded, and still moving.
+      </p>
+
+      <div class="closing-links">
+        <a class="mini-link rv rv-d1" href="https://chessbest.org/trip/" target="_blank" rel="noopener">
+          <div class="k">Live Tool</div>
+          <div class="t">Open Trip Optimizer ↗</div>
+          <div class="d">Use the live route-planning product built on the same DCC / TSP research direction.</div>
+        </a>
+        <a class="mini-link rv rv-d2" href="index.html">
+          <div class="k">Portfolio</div>
+          <div class="t">Back to BD × AI Lab</div>
+          <div class="d">Return to the main portfolio and the broader 8Z / AIM³ project map.</div>
+        </a>
+        <a class="mini-link rv rv-d3" href="BD_AIM3.html">
+          <div class="k">Method</div>
+          <div class="t">Read AIM³</div>
+          <div class="d">See the collaboration operating system behind the research and engineering workflow.</div>
+        </a>
+        <a class="mini-link rv" href="BD_8Z_Reasoning.html">
+          <div class="k">Reasoning</div>
+          <div class="t">Read 8Z Reasoning</div>
+          <div class="d">See the broader methodological principles that shaped this result.</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <div class="foot-grid">
+        <div class="foot-col">
+          <h4>About This Page</h4>
+          <p>
+            8Z-RP is the route-optimization / TSP branch of the larger 8Z research architecture. It applies MDL thinking and DCC control to combinatorial search, and presents the work in the same human-led, AI-assisted frame used across BD × AI Lab.
+          </p>
+        </div>
+        <div class="foot-col">
+          <h4>Navigation</h4>
+          <ul class="foot-links">
+            <li><a href="https://chessbest.org/trip/" target="_blank" rel="noopener">Open live trip optimizer</a></li>
+            <li><a href="index.html">Back to main portfolio</a></li>
+            <li><a href="#top">Return to top</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="copyright">© 2026 Bojan Dobrečevič · BD × AI Lab · Ljubljana, Slovenia</div>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      const bar = document.getElementById('spb');
+      function onScroll(){
+        const h = document.documentElement;
+        const scrolled = (h.scrollTop || document.body.scrollTop) / ((h.scrollHeight - h.clientHeight) || 1);
+        bar.style.width = (scrolled * 100) + '%';
+      }
+      document.addEventListener('scroll', onScroll, {passive:true});
+      onScroll();
+    })();
+
+    (function(){
+      const els = document.querySelectorAll('.rv');
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+          if(entry.isIntersecting){
+            entry.target.classList.add('vis');
+            io.unobserve(entry.target);
+          }
+        });
+      }, {threshold:0.14});
+      els.forEach(el=>io.observe(el));
+    })();
+
+    (function(){
+      const c = document.getElementById('constellation-canvas');
+      const ctx = c.getContext('2d');
+      let W, H;
+
+      function resize(){
+        W = c.width = c.offsetWidth;
+        H = c.height = c.offsetHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const N = 58;
+      const pts = Array.from({length:N}, ()=>({
+        x:Math.random()*1.2-.1,
+        y:Math.random()*1.2-.1,
+        vx:(Math.random()-.5)*.0003,
+        vy:(Math.random()-.5)*.0003,
+        r:Math.random()*1.5+.5,
+        hue:Math.random()>.72 ? 45 : (Math.random()>.55 ? 265 : 190)
+      }));
+
+      function draw(){
+        ctx.clearRect(0,0,W,H);
+
+        for(let i=0;i<N;i++){
+          const a = pts[i];
+          a.x += a.vx;
+          a.y += a.vy;
+
+          if(a.x < -.1 || a.x > 1.1) a.vx *= -1;
+          if(a.y < -.1 || a.y > 1.1) a.vy *= -1;
+
+          const ax = a.x * W;
+          const ay = a.y * H;
+
+          for(let j=i+1;j<N;j++){
+            const b = pts[j];
+            const bx = b.x * W;
+            const by = b.y * H;
+            const d = Math.hypot(ax - bx, ay - by);
+
+            if(d < 180){
+              const op = (.11 * (1 - d / 180)).toFixed(3);
+              ctx.strokeStyle = `rgba(0,229,255,${op})`;
+              ctx.lineWidth = .5;
+              ctx.beginPath();
+              ctx.moveTo(ax, ay);
+              ctx.lineTo(bx, by);
+              ctx.stroke();
+            }
+          }
+
+          const fill = a.hue === 45
+            ? `rgba(245,158,11,${(.28 + Math.random()*.10).toFixed(2)})`
+            : a.hue === 265
+              ? `rgba(167,139,250,${(.25 + Math.random()*.10).toFixed(2)})`
+              : `rgba(0,229,255,${(.24 + Math.random()*.10).toFixed(2)})`;
+
+          ctx.fillStyle = fill;
+          ctx.beginPath();
+          ctx.arc(ax, ay, a.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        requestAnimationFrame(draw);
+      }
+
+      draw();
+    })();
+  </script>
+</body>
+</html>
