@@ -87,6 +87,30 @@ body::after{
   display:flex;gap:2.5rem;flex-wrap:wrap;
   opacity:0;animation:fadeUp .8s .8s forwards;
 }
+
+.hero-cta-row{display:flex;gap:.8rem;flex-wrap:wrap;margin:0 0 2.2rem;opacity:0;animation:fadeUp .8s .74s forwards}
+.hero-cta,.hero-cta:visited{
+  display:inline-flex;align-items:center;gap:.45rem;
+  font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;text-decoration:none !important;
+  padding:.72rem 1rem;border-radius:3px;transition:all .25s ease;
+}
+.hero-cta-primary,.hero-cta-primary:visited{
+  color:var(--cyan) !important;background:var(--cyan-dim);border:1px solid rgba(0,229,255,.28);
+}
+.hero-cta-primary:hover{background:rgba(0,229,255,.18);box-shadow:0 0 18px rgba(0,229,255,.12)}
+.hero-cta-secondary,.hero-cta-secondary:visited{
+  color:rgba(226,232,244,.72) !important;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);
+}
+.hero-cta-secondary:hover{border-color:rgba(255,255,255,.16)}
+.jump-chip,.jump-chip:visited{
+  font-family:'JetBrains Mono',monospace;font-size:.72rem;text-decoration:none !important;
+  padding:3px 10px;border-radius:3px;transition:all .2s;letter-spacing:.05em;display:inline-flex;align-items:center;
+}
+.jump-chip-cyan,.jump-chip-cyan:visited{color:var(--cyan) !important;border:1px solid rgba(0,229,255,.2)}
+.jump-chip-cyan:hover{background:rgba(0,229,255,.12)}
+.badge-link,.badge-link:visited{display:inline-block;text-decoration:none !important}
+.badge-link:hover{filter:brightness(1.06)}
 .hm{text-align:left}
 .hm-num{
   font-family:'JetBrains Mono',monospace;
@@ -528,9 +552,9 @@ footer{
     <p style="max-width:760px;margin:-1.25rem 0 1.6rem;font-size:.95rem;color:rgba(226,232,244,.68);border-left:1px solid rgba(0,229,255,.18);padding-left:1rem;opacity:0;animation:fadeUp .8s .68s forwards">
       Human-led research and engineering by Bojan Dobrečevič, developed in close collaboration with advanced AI systems through AIM³.
     </p>
-    <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin:0 0 2.2rem;opacity:0;animation:fadeUp .8s .74s forwards">
-      <a href="BD_AIM3.html" style="display:inline-flex;align-items:center;gap:.45rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;padding:.72rem 1rem;border-radius:3px;color:var(--cyan);background:var(--cyan-dim);border:1px solid rgba(0,229,255,.28);transition:all .25s ease">Read AIM³ →</a>
-      <a href="#sec-aim3" style="display:inline-flex;align-items:center;gap:.45rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;padding:.72rem 1rem;border-radius:3px;color:rgba(226,232,244,.72);border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);transition:all .25s ease">See the stack</a>
+    <div class="hero-cta-row">
+      <a href="BD_AIM3.html" class="hero-cta hero-cta-primary">Read AIM³ →</a>
+      <a href="#sec-aim3" class="hero-cta hero-cta-secondary">See the stack</a>
     </div>
     <div class="hero-metrics">
       <div class="hm"><div class="hm-num" style="color:var(--cyan)">19</div><div class="hm-label">Active Projects</div></div>
@@ -545,7 +569,7 @@ footer{
 
 <nav style="max-width:1120px;margin:0 auto;padding:28px 5vw 24px;display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify-content:center">
   <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(226,232,244,.25);margin-right:8px">Jump to</span>
-  <a href="BD_AIM3.html" style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--cyan);text-decoration:none;padding:3px 10px;border:1px solid rgba(0,229,255,.2);border-radius:3px;transition:all .2s;letter-spacing:.05em" onmouseover="this.style.background='rgba(0,229,255,.12)'" onmouseout="this.style.background='none'">AIM³ OS</a>
+  <a href="BD_AIM3.html" class="jump-chip jump-chip-cyan">AIM³ OS</a>
   <a href="#sec-consciousness" style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--gold);text-decoration:none;padding:3px 10px;border:1px solid rgba(245,158,11,.2);border-radius:3px;transition:all .2s;letter-spacing:.05em" onmouseover="this.style.background='rgba(245,158,11,.12)'" onmouseout="this.style.background='none'">AI Consciousness · 6</a>
   <a href="#sec-research" style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--cyan);text-decoration:none;padding:3px 10px;border:1px solid rgba(0,229,255,.2);border-radius:3px;transition:all .2s;letter-spacing:.05em" onmouseover="this.style.background='rgba(0,229,255,.12)'" onmouseout="this.style.background='none'">8Z Research · 6</a>
   <a href="#sec-trading" style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--green);text-decoration:none;padding:3px 10px;border:1px solid rgba(52,211,153,.2);border-radius:3px;transition:all .2s;letter-spacing:.05em" onmouseover="this.style.background='rgba(52,211,153,.12)'" onmouseout="this.style.background='none'">Trading · 4</a>
@@ -939,19 +963,18 @@ footer{
           <div class="lc-icon">✈️</div>
           <div class="lc-meta">
             <span class="lc-domain">Travel · Optimization</span>
-            <span class="lc-title">8Z Trip Optimizer</span>
+            <span class="lc-title">8Z-RP / Trip Optimizer</span>
           </div>
         </div>
-        <div class="lc-desc">Plan optimal multi-city trips using DCC-governed TSP solving. The page now includes the exact-optimal qa194 result and official benchmark references, alongside the interactive route tool.</div>
+        <div class="lc-desc">Public research page for the 8Z-RP route-optimization work: exact-optimal qa194 result, official benchmark references, and the live Trip Optimizer linked inside.</div>
         <div class="lc-badges">
           <span class="badge green">DCC Engine</span>
-          <span class="badge green">qa194 exact</span>
-          <span class="badge muted">TSP Solver</span>
-          <span class="badge muted">Interactive</span>
+          <span class="badge cyan">qa194 exact</span>
+          <a href="BD_8ZRP.html" class="badge muted badge-link">TSP Solver</a>
         </div>
         <div class="lc-foot">
-          <span class="lc-url">chessbest.org/trip</span>
-          <a href="https://chessbest.org/trip/" target="_blank" rel="noopener" class="lc-visit" data-v="green">Visit →</a>
+          <span class="lc-url">chessbest.org/bd/BD_8ZRP.html</span>
+          <a href="BD_8ZRP.html" class="lc-visit" data-v="green">Visit →</a>
         </div>
       </div>
 
