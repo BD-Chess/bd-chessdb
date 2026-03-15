@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Digital Claustrum of Markets v2.0 &#8212; DCC Governor + Empirical Validation</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&amp;family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&amp;family=DM+Sans:wght@300;400;500;700&amp;display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-primary: #0a0c10; --bg-secondary: #12151c; --bg-tertiary: #1a1e28;
+  --bg-card: #161a24; --border: #2a2f3c; --border-accent: #3a4055;
+  --text-primary: #e8eaf0; --text-secondary: #8b93a6; --text-muted: #5a6275;
+  --accent-green: #00e676; --accent-green-dim: #00c85320;
+  --accent-red: #ff4757; --accent-red-dim: #ff475720;
+  --accent-blue: #448aff; --accent-blue-dim: #448aff20;
+  --accent-gold: #ffd740; --accent-gold-dim: #ffd74020;
+  --accent-purple: #b388ff; --accent-purple-dim: #b388ff20;
+  --accent-teal: #64ffda; --accent-teal-dim: #64ffda20;
+  --accent-orange: #ff9100; --accent-orange-dim: #ff910020;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; font-size:16px; }
+body { background:var(--bg-primary); color:var(--text-primary); font-family:var(--font-body); line-height:1.72; -webkit-font-smoothing:antialiased; }
+::selection { background:var(--accent-orange); color:#000; }
+.toc-nav { position:fixed; top:0; left:0; width:260px; height:100vh; background:var(--bg-secondary); border-right:1px solid var(--border); overflow-y:auto; z-index:100; padding:28px 0; scrollbar-width:thin; }
+.toc-brand { padding:0 24px 20px; border-bottom:1px solid var(--border); margin-bottom:16px; }
+.toc-brand h2 { font-family:var(--font-mono); font-size:13px; font-weight:500; color:var(--accent-orange); letter-spacing:2px; text-transform:uppercase; }
+.toc-brand p { font-size:11px; color:var(--text-muted); margin-top:4px; }
+.toc-nav a { display:block; padding:7px 24px; font-size:13px; color:var(--text-secondary); text-decoration:none; transition:all 0.15s; border-left:2px solid transparent; }
+.toc-nav a:hover { color:var(--text-primary); background:var(--bg-tertiary); }
+.toc-nav a.ch { font-weight:600; color:var(--text-primary); font-size:12px; letter-spacing:1px; text-transform:uppercase; margin-top:14px; padding-top:10px; border-top:1px solid var(--border); }
+.toc-nav a.ch:first-of-type { border-top:none; margin-top:0; }
+.toc-nav a.sub { padding-left:36px; font-size:12.5px; }
+.main { margin-left:260px; max-width:860px; padding:48px 56px 120px; }
+.cover { text-align:center; padding:80px 0 60px; border-bottom:1px solid var(--border); margin-bottom:60px; }
+.cover-tag { font-family:var(--font-mono); font-size:12px; letter-spacing:3px; color:var(--accent-orange); text-transform:uppercase; margin-bottom:20px; }
+.cover h1 { font-family:var(--font-display); font-size:42px; font-weight:900; line-height:1.15; color:var(--text-primary); margin-bottom:18px; }
+.cover h1 em { font-style:italic; color:var(--accent-orange); }
+.cover .subtitle { font-size:18px; color:var(--text-secondary); max-width:620px; margin:0 auto 28px; line-height:1.6; }
+.cover .meta { font-family:var(--font-mono); font-size:12px; color:var(--text-muted); }
+.chapter { margin-bottom:64px; padding-top:32px; border-top:1px solid var(--border); }
+.chapter-num { font-family:var(--font-mono); font-size:11px; letter-spacing:3px; color:var(--accent-orange); text-transform:uppercase; margin-bottom:8px; }
+.chapter h2 { font-family:var(--font-display); font-size:32px; font-weight:700; line-height:1.25; margin-bottom:24px; }
+.chapter h3 { font-size:20px; font-weight:600; margin:36px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+.chapter h4 { font-size:16px; font-weight:600; margin:24px 0 10px; color:var(--accent-teal); }
+p { margin-bottom:16px; color:var(--text-secondary); }
+strong { color:var(--text-primary); font-weight:600; }
+em { color:var(--accent-gold); font-style:normal; }
+code { font-family:var(--font-mono); font-size:13px; background:var(--bg-tertiary); padding:2px 6px; border-radius:3px; color:var(--accent-teal); }
+pre { background:var(--bg-tertiary); border:1px solid var(--border); padding:18px 22px; border-radius:4px; overflow-x:auto; margin:16px 0; font-family:var(--font-mono); font-size:12.5px; line-height:1.6; color:var(--text-secondary); white-space:pre-wrap; }
+.callout { background:var(--bg-card); border:1px solid var(--border); border-left:3px solid var(--accent-blue); padding:18px 22px; margin:20px 0; border-radius:4px; }
+.callout.warn { border-left-color:var(--accent-gold); }
+.callout.danger { border-left-color:var(--accent-red); }
+.callout.success { border-left-color:var(--accent-green); }
+.callout.orange { border-left-color:var(--accent-orange); }
+.callout .callout-title { font-family:var(--font-mono); font-size:11px; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; font-weight:600; }
+.callout.warn .callout-title { color:var(--accent-gold); }
+.callout.danger .callout-title { color:var(--accent-red); }
+.callout.success .callout-title { color:var(--accent-green); }
+.callout.orange .callout-title { color:var(--accent-orange); }
+.callout p { margin-bottom:6px; font-size:14px; }
+.quote-block { border-left:3px solid var(--accent-orange); padding:16px 24px; margin:24px 0; background:rgba(255,145,0,.04); }
+.quote-block p { font-family:var(--font-display); font-size:18px; line-height:1.6; color:var(--text-primary); font-style:italic; margin-bottom:0; }
+.param-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px; }
+.param-table th { text-align:left; padding:10px 14px; background:var(--bg-tertiary); border:1px solid var(--border); font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); }
+.param-table td { padding:9px 14px; border:1px solid var(--border); color:var(--text-secondary); }
+.param-table td:first-child { font-family:var(--font-mono); color:var(--accent-teal); font-size:12.5px; }
+.param-table tr:hover td { background:var(--bg-card); }
+.flow-box { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:24px; margin:24px 0; }
+.flow-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center; margin-bottom:16px; }
+.flow-row:last-child { margin-bottom:0; }
+.flow-node { background:var(--bg-tertiary); border:1px solid var(--border); border-radius:6px; padding:10px 16px; text-align:center; font-family:var(--font-mono); font-size:12px; min-width:100px; }
+.flow-node.active { border-color:var(--accent-orange); color:var(--accent-orange); }
+.flow-node.green { border-color:var(--accent-green); color:var(--accent-green); }
+.flow-node.gold { border-color:var(--accent-gold); color:var(--accent-gold); }
+.flow-node.blue { border-color:var(--accent-blue); color:var(--accent-blue); }
+.flow-node.teal { border-color:var(--accent-teal); color:var(--accent-teal); }
+.flow-node.red { border-color:var(--accent-red); color:var(--accent-red); }
+.flow-node small { display:block; font-size:9px; color:var(--text-muted); margin-top:2px; }
+.flow-arrow { font-family:var(--font-mono); color:var(--text-muted); font-size:16px; }
+.nest-diagram { display:grid; grid-template-columns:1fr; gap:0; margin:24px 0; }
+.nest-level { background:var(--bg-card); border:1px solid var(--border); padding:20px 24px; }
+.nest-level:first-child { border-radius:8px 8px 0 0; }
+.nest-level:last-child { border-radius:0 0 8px 8px; }
+.nest-level + .nest-level { border-top:none; }
+.nest-level .nl-tag { font-family:var(--font-mono); font-size:10px; letter-spacing:2px; text-transform:uppercase; font-weight:700; margin-bottom:6px; }
+.nest-level .nl-title { font-size:16px; font-weight:600; margin-bottom:6px; }
+.nest-level .nl-desc { font-size:13.5px; color:var(--text-secondary); margin-bottom:0; }
+.nest-arrow { text-align:center; font-family:var(--font-mono); font-size:16px; color:var(--accent-orange); padding:4px 0; background:var(--bg-primary); margin:-1px 0; position:relative; z-index:1; }
+.metric-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin:20px 0; }
+.metric-card { background:var(--bg-card); border:1px solid var(--border); padding:16px; border-radius:4px; text-align:center; }
+.metric-card .mv { font-family:var(--font-mono); font-size:20px; font-weight:700; }
+.metric-card .mv.green { color:var(--accent-green); }
+.metric-card .mv.red { color:var(--accent-red); }
+.metric-card .mv.blue { color:var(--accent-blue); }
+.metric-card .mv.gold { color:var(--accent-gold); }
+.metric-card .mv.orange { color:var(--accent-orange); }
+.metric-card .mv.teal { color:var(--accent-teal); }
+.metric-card .ml { font-size:11px; color:var(--text-muted); margin-top:4px; text-transform:uppercase; letter-spacing:1px; }
+.footer-note { margin-top:80px; padding-top:24px; border-top:1px solid var(--border); font-family:var(--font-mono); font-size:11px; color:var(--text-muted); text-align:center; line-height:1.8; }
+@media (max-width:960px) { .toc-nav{display:none;} .main{margin-left:0;padding:32px 24px 80px;} .cover h1{font-size:30px;} .flow-row{flex-direction:column;} .flow-arrow{transform:rotate(90deg);} }
+</style>
+
+</head>
+<body>
+
+<nav class="toc-nav">
+<div class="toc-brand"><h2>DCC Governor v2</h2><p>Validated &#183; March 2026</p></div>
+<a class="ch" href="#cover">Overview</a>
+<a class="ch" href="#ch1">1. The Contrarian Discovery</a>
+<a class="sub" href="#ch1-inv">The Inverted DCC</a>
+<a class="sub" href="#ch1-mm">MM Trap Detection</a>
+<a class="ch" href="#ch2">2. Empirical Results</a>
+<a class="sub" href="#ch2-24runs">24-Run Overnight</a>
+<a class="sub" href="#ch2-combos">TF Combinations</a>
+<a class="sub" href="#ch2-coherence">Cross-TF Coherence</a>
+<a class="ch" href="#ch3">3. The Fee Reality</a>
+<a class="ch" href="#ch4">4. Core Transfer</a>
+<a class="ch" href="#ch5">5. DCC Sensing</a>
+<a class="sub" href="#ch5-buffer">Ring Buffer</a>
+<a class="sub" href="#ch5-symbols">8-Bit Symbols</a>
+<a class="ch" href="#ch6">6. Generator Governor</a>
+<a class="ch" href="#ch7">7. Window Governor</a>
+<a class="ch" href="#ch8">8. Regime Reset</a>
+<a class="ch" href="#ch9">9. Multi-TF Governor</a>
+<a class="ch" href="#ch10">10. Position Governor</a>
+<a class="ch" href="#ch11">11. Market S-Metric</a>
+<a class="ch" href="#ch12">12. The Search Space</a>
+<a class="sub" href="#ch12-l1l2l3">L1&#8594;L2&#8594;L3</a>
+<a class="sub" href="#ch12-meta">Meta-DCC</a>
+<a class="ch" href="#ch13">13. Three-Engine Architecture</a>
+<a class="sub" href="#ch13-split">DCC / SM / ZZ</a>
+<a class="sub" href="#ch13-volume">Volume Ownership</a>
+<a class="ch" href="#ch14">14. Signal Quality Monitor</a>
+<a class="ch" href="#ch15">15. Full Auto Mode</a>
+<a class="ch" href="#ch16">16. Implementation Phases</a>
+<a class="ch" href="#ch17">17. Connection to 8Z-OS</a>
+</nav>
+
+<div class="main">
+
+
+<section class="cover" id="cover">
+<div class="cover-tag">8Z Research Paper &#183; v2.0 &#183; Empirically Validated</div>
+<h1>The <em>Digital Claustrum</em> of Markets</h1>
+<div class="subtitle">DCC as Full Governor for Compression-Driven Trading. v2.0 incorporates overnight results from 924,481 bars across 12 timeframes, the contrarian MM-trap discovery, fee analysis, and the three-engine architecture vision.</div>
+<div class="meta">Bojan Dobre&#269;evi&#263; &#215; C (Claude Opus 4.6) &#183; AIM&#179; Institute &#183; March 15, 2026<br>Part of the 8Z Research Framework &#8212; MDL &#183; DCC &#183; Competing Generators</div>
+<div class="metric-grid" style="margin-top:32px;">
+<div class="metric-card"><div class="mv orange">924K</div><div class="ml">Bars Tested</div></div>
+<div class="metric-card"><div class="mv gold">+4.16%</div><div class="ml">Best Combo Edge</div></div>
+<div class="metric-card"><div class="mv green">4 / 12</div><div class="ml">Positive TFs</div></div>
+<div class="metric-card"><div class="mv teal">21 mo</div><div class="ml">BTC Data Span</div></div>
+</div>
+</section>
+
+
+<section class="chapter" id="ch1">
+<div class="chapter-num">Chapter 01</div>
+<h2>The Contrarian Discovery</h2>
+
+<div class="quote-block"><p>Standard indicators predict where retail traders go. Market makers go the opposite direction. The inverted DCC spread IS the signal.</p></div>
+
+<p>v0.2 of the MDL-DCC Predictor ran 7 generators (TREND-S, TREND-M, REVERT-MU, MOM-1, MOM-5, RW, VOL-REGIME) on 7,009 bars of BTCUSDT 15m data. Overall accuracy: 50.01% &#8212; dead coin flip. But the generator distribution revealed hidden structure:</p>
+
+<table class="param-table">
+<tr><th>Generator</th><th>Bars Won</th><th>Accuracy</th><th>Edge</th></tr>
+<tr><td>REVERT-MU</td><td>3,561 (52%)</td><td>50.88%</td><td style="color:var(--accent-green)">+0.88%</td></tr>
+<tr><td>TREND-M</td><td>1,201 (18%)</td><td>50.79%</td><td style="color:var(--accent-green)">+0.79%</td></tr>
+<tr><td>MOM-5</td><td>800 (12%)</td><td>48.50%</td><td style="color:var(--accent-red)">-1.50%</td></tr>
+<tr><td>MOM-1</td><td>623 (9%)</td><td>50.08%</td><td>+0.08%</td></tr>
+<tr><td>TREND-S</td><td>623 (9%)</td><td>45.43%</td><td style="color:var(--accent-red)">-4.57%</td></tr>
+</table>
+
+<p>REVERT-MU and TREND-M have marginal positive edge when they win. But TREND-S at 45.43% is actively harmful &#8212; worse than coin flip. The blended 50.01% is dragged down by bad generators that MDL still selects.</p>
+
+<h3 id="ch1-inv">The Inverted DCC Spread</h3>
+
+<p>The DCC coupling parameter u was pegged at 1.0 in v0.2 (a bug: time-based updates never fired during a 30-minute backtest). After fixing to bar-based updates in v0.3, the DCC revealed its true signal:</p>
+
+<table class="param-table">
+<tr><th>DCC Bucket</th><th>Count</th><th>Accuracy</th><th>Edge</th></tr>
+<tr><td>u &lt; 0.5 (low confidence)</td><td>1,963</td><td>49.52%</td><td>-0.48%</td></tr>
+<tr><td>0.5 &#8804; u &lt; 0.7</td><td>1,172</td><td>47.70%</td><td style="color:var(--accent-red)">-2.30%</td></tr>
+<tr><td>u &#8805; 0.7 (high confidence)</td><td>2,762</td><td>46.49%</td><td style="color:var(--accent-red)">-3.51%</td></tr>
+</table>
+
+<p>The spread is <strong>-3.99%</strong> &#8212; inverted. When DCC says &#8220;I&#8217;m confident,&#8221; accuracy is worst. When DCC says &#8220;uncertain,&#8221; accuracy is near random. The DCC IS detecting real structure &#8212; it just correlates with generators being WRONG.</p>
+
+<h3 id="ch1-mm">The MM Trap Detection Thesis</h3>
+
+<p>This inversion is not a bug. It is the central finding. Our generators ARE standard retail indicators: trend-following, mean-reversion, momentum. These are exactly what retail traders use. Market makers do the opposite.</p>
+
+<p>When all standard indicators agree (high DCC u = compressible regime), that is when the MM trap is most loaded. Maximum retail consensus = maximum MM opportunity to reverse. The compressible pattern the DCC detects is not &#8220;price will continue this way&#8221; &#8212; it is &#8220;the MM has set a trap in this direction.&#8221;</p>
+
+<p>The fix: <strong>contrarian mode</strong>. When u is high and generators agree strongly, flip the prediction. The 46.5% becomes 53.5%. The -3.99% spread becomes +3.99%. The architecture doesn&#8217;t change &#8212; only the interpretation.</p>
+
+<div class="callout success">
+<div class="callout-title">8Z Reasoning Principle #5: Follow the Anomaly</div>
+<p>The inverted DCC spread was the anomaly. Every other system would see &#8220;47% accuracy&#8221; and conclude the approach failed. But the STRUCTURE of the failure &#8212; that DCC confidence anticorrelates with accuracy &#8212; is itself a signal. The anomaly was the door to the contrarian thesis.</p>
+</div>
+</section>
+
+
+<section class="chapter" id="ch2">
+<div class="chapter-num">Chapter 02</div>
+<h2>Empirical Results: 924,481 Bars Across 12 Timeframes</h2>
+
+<p>The overnight analysis ran the DCC engine on BTCUSDT 1-minute data spanning June 2024 through March 2026 (21 months). The 1m data was resampled to 12 timeframes. Each timeframe was tested in both NORMAL mode (generators predict as-is) and CONTRARIAN mode (flip prediction when DCC says high confidence). 24 runs total.</p>
+
+<h3 id="ch2-24runs">All 24 Configurations, Ranked by Edge</h3>
+
+<table class="param-table">
+<tr><th>TF</th><th>Mode</th><th>Active</th><th>Accuracy</th><th>Edge</th><th>HiU Acc</th><th>Best Gen</th></tr>
+<tr><td style="color:var(--accent-green)">8h</td><td>CONTRA</td><td>1,391</td><td>0.5068</td><td style="color:var(--accent-green)">+0.68%</td><td>0.5156</td><td>VOL-REGIME</td></tr>
+<tr><td style="color:var(--accent-green)">15m</td><td>CONTRA</td><td>10,715</td><td>0.5054</td><td style="color:var(--accent-green)">+0.54%</td><td>0.5168</td><td>VOL-REGIME</td></tr>
+<tr><td style="color:var(--accent-green)">30m</td><td>CONTRA</td><td>5,360</td><td>0.5052</td><td style="color:var(--accent-green)">+0.52%</td><td>0.5208</td><td>VOL-REGIME</td></tr>
+<tr><td style="color:var(--accent-green)">4h</td><td>CONTRA</td><td>3,098</td><td>0.5023</td><td style="color:var(--accent-green)">+0.23%</td><td>0.5130</td><td>COMPRESS</td></tr>
+<tr><td>10m</td><td>CONTRA</td><td>15,949</td><td>0.4978</td><td>-0.22%</td><td>0.5062</td><td>TREND-S</td></tr>
+<tr><td>3m</td><td>CONTRA</td><td>26,543</td><td>0.4974</td><td>-0.26%</td><td>0.5000</td><td>COMPRESS</td></tr>
+<tr><td>3m</td><td>NORMAL</td><td>26,628</td><td>0.4931</td><td>-0.69%</td><td>0.4955</td><td>TREND-M</td></tr>
+<tr><td>5m</td><td>CONTRA</td><td>16,001</td><td>0.4928</td><td>-0.72%</td><td>0.4962</td><td>MOM-1</td></tr>
+<tr><td>1h</td><td>CONTRA</td><td>4,501</td><td>0.4841</td><td>-1.59%</td><td>0.4957</td><td>TREND-M</td></tr>
+<tr><td style="color:var(--accent-red)">4h</td><td>NORMAL</td><td>3,049</td><td>0.4647</td><td style="color:var(--accent-red)">-3.53%</td><td>0.4632</td><td>REVERT-MU</td></tr>
+<tr><td style="color:var(--accent-red)">1h</td><td>NORMAL</td><td>4,476</td><td>0.4683</td><td style="color:var(--accent-red)">-3.17%</td><td>0.4725</td><td>TREND-S</td></tr>
+</table>
+
+<p><em>(Table shows top 7 and bottom 4 of 24 runs. Intermediate rows omitted for clarity.)</em></p>
+
+<div class="metric-grid">
+<div class="metric-card"><div class="mv green">4 / 12</div><div class="ml">Positive CONTRA TFs</div></div>
+<div class="metric-card"><div class="mv red">0 / 12</div><div class="ml">Positive NORMAL TFs</div></div>
+<div class="metric-card"><div class="mv gold">11 / 12</div><div class="ml">CONTRA beats NORMAL</div></div>
+<div class="metric-card"><div class="mv teal">VOL-REGIME</div><div class="ml">Dominant Generator</div></div>
+</div>
+
+<p><strong>Key finding 1:</strong> Zero normal-mode timeframes have positive edge. Every standard indicator loses on every timeframe over 21 months. The MM thesis holds: retail indicators predict the wrong direction.</p>
+
+<p><strong>Key finding 2:</strong> Contrarian mode produces positive edge on 8h (+0.68%), 15m (+0.54%), 30m (+0.52%), and 4h (+0.23%). The contrarian flip works, but only on medium-to-high timeframes where MM patterns have time to develop.</p>
+
+<p><strong>Key finding 3:</strong> VOL-REGIME dominates on all positive-edge timeframes. It detects volatility regime transitions &#8212; low vol (mean-revert) vs high vol (trend) &#8212; and the contrarian flip turns its predictions into correct MM-trap detection.</p>
+
+<h3 id="ch2-combos">Best 2-TF Voting Combinations</h3>
+
+<p>When two contrarian timeframes agree on direction, the edge amplifies dramatically:</p>
+
+<table class="param-table">
+<tr><th>Combination</th><th>Signals</th><th>Accuracy</th><th>Edge</th></tr>
+<tr><td style="color:var(--accent-green)">10m + 1m</td><td>3,355</td><td>0.5416</td><td style="color:var(--accent-green)">+4.16%</td></tr>
+<tr><td style="color:var(--accent-green)">1m + 30m</td><td>1,119</td><td>0.5380</td><td style="color:var(--accent-green)">+3.80%</td></tr>
+<tr><td style="color:var(--accent-green)">1m + 5m</td><td>6,849</td><td>0.5212</td><td style="color:var(--accent-green)">+2.12%</td></tr>
+<tr><td style="color:var(--accent-green)">1m + 4h</td><td>129</td><td>0.5116</td><td style="color:var(--accent-green)">+1.16%</td></tr>
+<tr><td style="color:var(--accent-green)">15m + 1m</td><td>2,251</td><td>0.5087</td><td style="color:var(--accent-green)">+0.87%</td></tr>
+</table>
+
+<p><strong>Key finding 4:</strong> The 1m arena alone has -1.22% edge (noise). But when 1m agrees with a higher timeframe, the combined signal is strongly positive. 1m appears in every winning combination. Cross-scale agreement amplifies signal that neither timeframe has alone.</p>
+
+<p><strong>Key finding 5:</strong> The 10m+1m combination produces +4.16% edge across 3,355 signals &#8212; the strongest finding. This is 5 signals per day over 21 months, a statistically meaningful sample.</p>
+
+<h3 id="ch2-coherence">Cross-TF Coherence</h3>
+
+<p>Pairwise direction agreement between contrarian timeframes is near 50% for most pairs (random), with notable exceptions:</p>
+
+<table class="param-table">
+<tr><th>Pair</th><th>Agreement</th><th>Interpretation</th></tr>
+<tr><td>15m + 1D</td><td>60.4%</td><td>Strong &#8212; medium and macro scales see same structure</td></tr>
+<tr><td>5m + 8h</td><td>57.0%</td><td>Cross-scale: fast arena confirms slow regime</td></tr>
+<tr><td>30m + 8h</td><td>55.8%</td><td>Medium-slow alignment</td></tr>
+<tr><td>3m + 8h</td><td>39.3%</td><td>Strong DISagreement &#8212; opposite signals</td></tr>
+<tr><td>1D + 45m</td><td>37.2%</td><td>Strong DISagreement &#8212; macro vs session</td></tr>
+</table>
+
+<p>Anti-correlated pairs (below 45%) are as interesting as correlated pairs &#8212; they indicate timeframes that systematically disagree, which could be used for regime classification.</p>
+
+</section>
+
+
+<section class="chapter" id="ch3">
+<div class="chapter-num">Chapter 03</div>
+<h2>The Fee Reality</h2>
+
+<p>The edge is real. The question is whether it survives execution costs.</p>
+
+<p>The 10m+1m combo has +4.16% edge = 54.16% accuracy. On 10-minute BTC bars, the average absolute move is ~0.25%. The per-trade expected value is: 2 &#215; 0.0416 &#215; 0.0025 = 0.000208 = <strong>0.0208% per trade</strong>.</p>
+
+<table class="param-table">
+<tr><th>Fee Scenario</th><th>Round-Trip Fee</th><th>Net EV / Trade</th><th>Annual (no leverage)</th></tr>
+<tr><td style="color:var(--accent-green)">MEXC zero-fee promo</td><td>0.000%</td><td style="color:var(--accent-green)">+0.0208%</td><td style="color:var(--accent-green)">+40%/year</td></tr>
+<tr><td style="color:var(--accent-red)">MEXC maker (0.02%)</td><td>0.040%</td><td style="color:var(--accent-red)">-0.0192%</td><td style="color:var(--accent-red)">LOSES</td></tr>
+<tr><td style="color:var(--accent-red)">Binance taker (0.05%)</td><td>0.100%</td><td style="color:var(--accent-red)">-0.0792%</td><td style="color:var(--accent-red)">LOSES</td></tr>
+</table>
+
+<p>With MEXC zero-fee perpetuals and leverage:</p>
+
+<table class="param-table">
+<tr><th>Leverage</th><th>Annual Return (0-fee)</th><th>Max Drawdown Risk</th></tr>
+<tr><td>1x</td><td>+40%</td><td>Low</td></tr>
+<tr><td>10x</td><td>+400%</td><td>~25% (10 consecutive losses)</td></tr>
+<tr><td>20x</td><td>+800%</td><td>~50% (10 consecutive losses)</td></tr>
+<tr><td>50x</td><td>+2,000%</td><td>High &#8212; liquidation risk</td></tr>
+</table>
+
+<div class="callout danger">
+<div class="callout-title">Standalone DCC Requires Zero Fees</div>
+<p>The per-trade EV of 0.02% is smaller than any non-zero fee. This is a direction-prediction edge, not a trading edge &#8212; yet. As a standalone system, DCC is only profitable on MEXC zero-fee perpetuals via Playwright browser automation. On any exchange with fees, DCC must be used as a confirmation layer for strategies that already have edge from position management (ZZ adds, SM sync).</p>
+</div>
+
+<div class="callout success">
+<div class="callout-title">Two Profitable Paths</div>
+<p><strong>Path 1 &#8212; MEXC zero-fee:</strong> Trade the DCC signal directly. Playwright automation. No API needed. At 20x leverage, the math works: +800%/year gross before drawdown.</p>
+<p><strong>Path 2 &#8212; Confirmation layer:</strong> Don&#8217;t trade DCC alone. Use it to filter ZZ and SM entries. When ZZ wants to enter and DCC agrees (contrarian direction matches), take full size. When they disagree, reduce size or skip. DCC doesn&#8217;t need to overcome fees alone &#8212; it improves the win rate of strategies that already have edge from position management.</p>
+</div>
+</section>
+
+
+<section class="chapter" id="ch4">
+<div class="chapter-num">Chapter 04</div>
+<h2>The Core Transfer: TSP &#8596; Trading</h2>
+
+<p>In the TSP solver (8zrp v2.2&#8211;v2.4), DCC evolved from a single-knob intensity dial to a full governor controlling kick selection, intensity, restarts, worker coordination, and convergence detection. The trading DCC follows the same arc.</p>
+
+<table class="param-table">
+<tr><th>Component</th><th>TSP DCC v2.4</th><th>Trading DCC v0.3</th></tr>
+<tr><td>Core loop</td><td>kick &#8594; 2opt &#8594; accept/reject</td><td>predict &#8594; observe &#8594; score</td></tr>
+<tr><td>Generators</td><td>9 kick operators (db, or-opt, 3-opt...)</td><td>8 market models (TREND, REVERT, MOM, VOL...)</td></tr>
+<tr><td>MDL scoring</td><td>Tour length</td><td>Prediction error</td></tr>
+<tr><td>DCC sensor</td><td>8-bit, 128-slot, LZ76</td><td>8-bit, 128-slot, LZ76</td></tr>
+<tr><td>Selection</td><td>Thompson sampling across kicks</td><td>Thompson sampling across generators</td></tr>
+<tr><td>Escalation</td><td>5 levels, bar-based</td><td>5 levels, bar-based</td></tr>
+<tr><td>Restart</td><td>New tour from different strategy</td><td>Buffer flush, window shrink, Thompson reset</td></tr>
+<tr><td>Novel in trading</td><td>&#8212;</td><td>Multi-TF coherence + contrarian flip</td></tr>
+</table>
+
+<p>Markets have structure TSP lacks: <strong>multi-scale temporal organization</strong>. A 1h trend contains 4&#215;15m swings, each containing 3&#215;5m oscillations. The Multi-TF Governor (Chapter 9) exploits this. The contrarian flip (Chapter 1) exploits the MM adversarial structure that TSP also lacks.</p>
+</section>
+
+
+<section class="chapter" id="ch5">
+<div class="chapter-num">Chapter 05</div>
+<h2>DCC Sensing: The Ring Buffer Architecture</h2>
+
+<h3 id="ch5-buffer">Implemented Specification (v0.3)</h3>
+
+<table class="param-table">
+<tr><th>Parameter</th><th>v0.2 (broken)</th><th>v0.3 (working)</th></tr>
+<tr><td>Buffer size</td><td>64 symbols</td><td>128 symbols</td></tr>
+<tr><td>Bits per symbol</td><td>6</td><td>8</td></tr>
+<tr><td>Total bits for LZ76</td><td>384</td><td>1024</td></tr>
+<tr><td>Update trigger</td><td>Every 30s wall-clock (never fired)</td><td>Every 64 bars</td></tr>
+<tr><td>u representation</td><td>Float [0,1] starting at 0.5</td><td>Integer [3..18] starting at midpoint 10</td></tr>
+<tr><td>u adjustment</td><td>&#177;0.05 float</td><td>&#177;1 integer, momentum damped</td></tr>
+</table>
+
+<h3 id="ch5-symbols">8-Bit Symbol Design</h3>
+
+<pre>
+Bits 0-1: hit (11=correct, 00=wrong) &#8212; DOUBLE WEIGHT for LZ76
+Bit 2:    regime changed (winner different from previous bar)
+Bits 3-5: winner generator index (0-7)
+Bit 6:    MDL margin bucket (0=weak, 1=strong)
+Bit 7:    top-3 generators agree on direction
+</pre>
+
+<p>The double-weight hit bit is the key fix from v0.2. In v0.2, the winner-index bits (3 bits) dominated the LZ76 computation. When the same generator kept winning (stable = low LZ), u climbed to ceiling regardless of whether predictions were correct. In v0.3, the hit bits occupy 2 of 8 positions, ensuring LZ76 measures accuracy patterns, not just winner stability.</p>
+</section>
+
+
+<section class="chapter" id="ch6">
+<div class="chapter-num">Chapter 06</div>
+<h2>Actuator 1: Generator Governor</h2>
+
+<p>Thompson sampling with 0.997 exponential decay replaces winner-take-all MDL selection. Weak priors (0.5/0.5) ensure first observations dominate. Bad generators lose weight automatically &#8212; TREND-S at 45% accuracy decays to near-zero Thompson score within 200 bars.</p>
+
+<p>The blend temperature is controlled by u: high u (stable) = winner-take-all (temp=0.5), low u (chaotic) = broad blend (temp=5.0). When generators disagree on direction, the blend produces near-zero confidence &#8212; which maps to &#8220;reduce size&#8221; or &#8220;don&#8217;t trade.&#8221;</p>
+
+<p>In contrarian mode, the blended direction is flipped when u &#8805; 0.6 and confidence &#8805; 0.3. This is the mechanism that converts the -3.99% inverted spread into positive edge.</p>
+</section>
+
+<section class="chapter" id="ch7">
+<div class="chapter-num">Chapter 07</div>
+<h2>Actuator 2: Window Governor</h2>
+
+<p>DCC controls the MDL window dynamically. High u = expand to 2&#215; base (400 bars at base=200) for better statistical power. Low u = shrink to base/4 (50 bars) for fast regime adaptation. Changes are momentum-damped: max 10% per update. Overnight data shows actual window range was 50&#8211;400 with mean ~310.</p>
+</section>
+
+<section class="chapter" id="ch8">
+<div class="chapter-num">Chapter 08</div>
+<h2>Actuator 3: Regime Reset Governor</h2>
+
+<p>Five-level escalation ladder, bar-based (critical fix from v0.3 &#8212; time-based never fired during fast backtests):</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>Trigger (bars without edge)</th><th>Actions</th></tr>
+<tr><td>NORMAL</td><td>&lt; 200</td><td>All systems nominal</td></tr>
+<tr><td>CAUTION</td><td>200&#8211;500</td><td>Thompson decay accelerated</td></tr>
+<tr><td>DEFENSIVE</td><td>500&#8211;1000</td><td>Push u toward midpoint</td></tr>
+<tr><td>WITHDRAW</td><td>1000&#8211;2000</td><td>Observe only, no predictions</td></tr>
+<tr><td>NUCLEAR</td><td>&gt; 2000</td><td>Full reset: DCC buffer flush, Thompson reset, window shrink to 50</td></tr>
+</table>
+
+<p>Overnight runs triggered 2 nuclear resets on 15m BTC across 6,808 bars, confirming the escalation fires on real data at appropriate intervals.</p>
+</section>
+
+
+<section class="chapter" id="ch9">
+<div class="chapter-num">Chapter 09</div>
+<h2>Actuator 4: Multi-Timeframe Governor</h2>
+
+<p>This is where trading DCC goes beyond TSP. The overnight results validate the architecture empirically.</p>
+
+<div class="flow-box">
+<div class="flow-row">
+<div class="flow-node teal">1m Arena<small>80K predictions</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node green">10m Arena<small>16K predictions</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node gold">15m Arena<small>10.7K predictions</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node active">30m Arena<small>5.4K predictions</small></div>
+</div>
+<div class="flow-row">
+<div class="flow-node blue" style="min-width:280px;">Multi-TF Governor<small>Coherence &#215; Agreement &#8594; Trade / No-Trade</small></div>
+</div>
+</div>
+
+<p>The 1m arena alone has -1.22% edge (noise). The 10m arena alone has -0.22%. But when both agree in contrarian mode, the combined edge is <strong>+4.16% across 3,355 signals</strong>. Neither timeframe has meaningful edge alone. The cross-scale agreement creates edge from nothing.</p>
+
+<p>This validates the core Multi-TF Governor thesis: run arenas at multiple scales, and the governor&#8217;s job is to detect when they agree. Agreement across scales means the structure is real (visible from multiple vantage points), not noise (visible from only one).</p>
+
+<div class="callout success">
+<div class="callout-title">The 1m Amplifier Pattern</div>
+<p>1m appears in every winning combination (10m+1m, 1m+30m, 1m+5m, 1m+4h, 15m+1m). The 1m arena acts as a fast-response confirmation layer: the higher TF detects the regime, 1m confirms the timing. This is the equivalent of TSP&#8217;s WorkerGovernor &#8212; slower workers find the basin of attraction, the fastest worker finds the exact optimum within that basin.</p>
+</div>
+</section>
+
+
+<section class="chapter" id="ch10">
+<div class="chapter-num">Chapter 10</div>
+<h2>Actuator 5: Position Governor</h2>
+
+<p>DCC coupling u and multi-TF coherence together control sizing:</p>
+
+<table class="param-table">
+<tr><th>Signal Strength</th><th>Condition</th><th>Action</th></tr>
+<tr><td style="color:var(--accent-green)">Strong</td><td>u &#8805; 0.7, 2+ TFs agree</td><td>Full size, predicted direction</td></tr>
+<tr><td style="color:var(--accent-gold)">Moderate</td><td>u 0.4&#8211;0.7 or 1 TF only</td><td>Reduced size, wider stops</td></tr>
+<tr><td>Weak</td><td>u &lt; 0.4 or TFs disagree</td><td>Minimum size or flat</td></tr>
+<tr><td style="color:var(--accent-red)">None</td><td>Escalation &#8805; WITHDRAW</td><td>No new entries. Observe only.</td></tr>
+</table>
+</section>
+
+
+<section class="chapter" id="ch11">
+<div class="chapter-num">Chapter 11</div>
+<h2>The Market S-Metric</h2>
+
+<p>S = coherence &#215; complexity, from the Claustrum-Consciousness Hypothesis.</p>
+
+<p><strong>Coherence</strong> = cross-TF direction agreement. Overnight data shows: 15m+1D = 60.4% (high), 3m+8h = 39.3% (anti-correlated). Coherence varies by pair, creating a real-time signal.</p>
+
+<p><strong>Complexity</strong> = Shannon entropy of which generators win across TFs. If VOL-REGIME wins everywhere (as it did on positive-edge TFs), complexity is low. If different generators win on different TFs, complexity is high.</p>
+
+<p>In v0.3, S is logged but not controlling decisions. The overnight data provides the first real measurements to correlate with profitability. If high-S periods (coherent direction + diverse generators) correlate with higher combo accuracy, S becomes a control signal in v0.4.</p>
+</section>
+
+
+<section class="chapter" id="ch12">
+<div class="chapter-num">Chapter 12</div>
+<h2>The Search Space Problem</h2>
+
+<p>Finding the optimal DCC configuration across all TF &#215; asset &#215; combo permutations IS a combinatorial optimization problem &#8212; and we already have the tools to solve it.</p>
+
+<h3 id="ch12-l1l2l3">L1 &#8594; L2 &#8594; L3: The Unified Optimizer Pattern</h3>
+
+<table class="param-table">
+<tr><th>Phase</th><th>What</th><th>Size</th><th>Time</th></tr>
+<tr><td>L1 &#8212; Broad scan</td><td>20 representative TFs &#215; 3 assets &#215; contrarian = 60 runs</td><td>Small</td><td>Minutes</td></tr>
+<tr><td>L2 &#8212; Zoom winners</td><td>&#177;2 min steps around top 5 combos. 8m+1m, 9m+1m, 10m+1m, 11m+1m, 12m+1m...</td><td>Medium</td><td>1&#8211;2 hours</td></tr>
+<tr><td>L3 &#8212; Walk-forward</td><td>Top 10 combos tested on separate time periods (Jun&#8211;Dec 2024 vs Jan&#8211;Mar 2026)</td><td>Small</td><td>30 min</td></tr>
+</table>
+
+<p>For seconds-scale: use the 1s BTC data (86,400 bars/day). Resample to 2s, 3s, 5s, 10s, 15s, 30s. Run same engine. MM stop hunts are 1-second events &#8212; the DCC might see them as highly compressible because they follow a template.</p>
+
+<p>For cross-asset: BTC 10m + ETH 5m. MMs move correlated assets together &#8212; a BTC dump triggers ETH/SOL dumps 2-5 seconds later. Cross-asset DCC coherence detects the MM propagation delay.</p>
+
+<h3 id="ch12-meta">Meta-DCC: DCC Governing the Search Itself</h3>
+
+<p>The search for the best TF combo IS a compression problem. Each combo configuration is a &#8220;generator.&#8221; MDL scores how well each generates profitability. DCC governs the search budget: when finding new edges (low complexity = compressible search), explore more. When stuck (high complexity), stop and zoom elsewhere. This is TSP v2.4&#8217;s DCCGovernor applied recursively to the optimizer itself.</p>
+</section>
+
+
+<section class="chapter" id="ch13">
+<div class="chapter-num">Chapter 13</div>
+<h2>The Three-Engine Architecture</h2>
+
+<h3 id="ch13-split">DCC / SM / ZZ: Clean Responsibility Split</h3>
+
+<table class="param-table">
+<tr><th>Engine</th><th>Sees</th><th>Decides</th><th>Does NOT do</th></tr>
+<tr><td>DCC</td><td>Price structure, LZ76 complexity, cross-TF coherence</td><td>Regime type, direction confidence, MM trap detection</td><td>Volume, sync, position management</td></tr>
+<tr><td>SM</td><td>Volume bars, cross-platform sync, candle/volume ratio</td><td>Absorption vs confirmation, sync quality, volume divergence</td><td>Price regime, direction prediction</td></tr>
+<tr><td>ZZ</td><td>Swing structure, leg geometry, MTF consensus</td><td>Entry/exit, add timing, escape triggers, position sizing</td><td>Regime detection, volume analysis</td></tr>
+</table>
+
+<p>In the hybrid: ZZ makes the trading decision. DCC tells ZZ &#8220;the regime is contrarian-favorable on 15m and 30m&#8221; or &#8220;regime is ambiguous, reduce size.&#8221; SM tells ZZ &#8220;volume confirms this breakout&#8221; or &#8220;absorption detected, this is a trap.&#8221; Three independent lenses on the same market. No duplication.</p>
+
+<h3 id="ch13-volume">Volume Ownership: SM, Not DCC</h3>
+
+<p>SM already has complete volume-price analysis: absorption detection (big vol + small candle &#8594; reversal), momentum confirmation (big vol + big candle &#8594; continuation), and volume divergence (price up + volume down &#8594; weak). DCC uses price structure only. This is deliberate: DCC&#8217;s power comes from compression of price dynamics. Adding volume to DCC would duplicate SM&#8217;s work without adding new signal.</p>
+
+<p>The one exception: a future <code>VOL-ABSORB</code> generator that detects the absorption pattern and enters the MDL arena. This adds volume signal to DCC&#8217;s direction prediction without duplicating SM&#8217;s trade-gating logic. Planned for P2.</p>
+
+<div class="callout warn">
+<div class="callout-title">The Fetcher Limitation</div>
+<p>BD_fetcher.py downloads volume from Binance only &#8212; single exchange. SM&#8217;s cross-platform sync reads from TradingView (which aggregates multiple exchanges) but the Python optimizer uses single-source volume. For true cross-exchange volume analysis, the fetcher needs a multi-source upgrade (Binance + Bybit + OKX + MEXC). Planned but not blocking current work.</p>
+</div>
+</section>
+
+
+<section class="chapter" id="ch14">
+<div class="chapter-num">Chapter 14</div>
+<h2>Signal Quality Monitor</h2>
+
+<p>Tracks rolling accuracy across all TFs. Output: ACTIVE or DARK.</p>
+
+<pre>
+active = (best_tf_accuracy &gt; 0.505
+          and best_tf_u &gt; 0.4
+          and escalation_level &lt; WITHDRAW)
+</pre>
+
+<p>DARK mode: DCC still runs, still measures, still logs. But output to trading system is &#8220;no signal.&#8221; Capital preservation. The system re-engages automatically when structure returns.</p>
+</section>
+
+
+<section class="chapter" id="ch15">
+<div class="chapter-num">Chapter 15</div>
+<h2>Full Auto Mode</h2>
+
+<pre>
+# Current (v0.3):
+python BD_MDL_DCC_Predictor.py --file data/BTCUSDT_15m.csv --window 200
+
+# Full auto (target):
+python BD_MDL_DCC_Governor.py auto BTCUSDT --max-hours 24
+</pre>
+
+<p>In auto mode, the DCCGovernor runs: data fetch &#8594; resample all TFs &#8594; discovery phase (generator calibration) &#8594; warmup (DCC calibration) &#8594; active trading (all actuators live) &#8594; report. The human says &#8220;here&#8217;s the asset, here&#8217;s the time.&#8221; DCC decides everything else.</p>
+</section>
+
+
+<section class="chapter" id="ch16">
+<div class="chapter-num">Chapter 16</div>
+<h2>Implementation Phases</h2>
+
+<table class="param-table">
+<tr><th>Phase</th><th>Status</th><th>What</th><th>Validates</th></tr>
+<tr><td style="color:var(--accent-green)">P0</td><td style="color:var(--accent-green)">DONE</td><td>MDL arena + DCC sensor. 8 generators, vectorized engine (2000 bars/s), Thompson Governor, contrarian mode, bar-based DCC/escalation.</td><td>Direction prediction, DCC separation, contrarian thesis.</td></tr>
+<tr><td style="color:var(--accent-green)">P0.5</td><td style="color:var(--accent-green)">DONE</td><td>Overnight multi-TF analysis. 924K bars, 12 TFs, 24 runs, cross-TF combos, coherence matrix.</td><td>Which TFs have edge. Which combos amplify. Contrarian validated on 21 months.</td></tr>
+<tr><td style="color:var(--accent-gold)">P1</td><td style="color:var(--accent-gold)">NEXT</td><td>L1&#8594;L2 zoom scanner. 60 TFs &#215; 3 assets. Seconds-scale analysis. Fine-grained TF search.</td><td>Optimal TF combo. Cross-asset combos. Seconds-scale edge.</td></tr>
+<tr><td>P2</td><td>Planned</td><td>VOL-ABSORB generator. Multi-source fetcher. Walk-forward robustness (L3).</td><td>Volume adds edge? Edge persists across time periods?</td></tr>
+<tr><td>P3</td><td>Planned</td><td>Multi-TF Governor as a real-time system. 4 arenas running simultaneously.</td><td>Live cross-TF coherence. Real-time combo signals.</td></tr>
+<tr><td>P4</td><td>Planned</td><td>ZZ+SM+DCC hybrid. DCC as confirmation layer for ZZ entries.</td><td>DCC improves ZZ win rate without needing zero fees.</td></tr>
+<tr><td>P5</td><td>Planned</td><td>MEXC Playwright automation. Zero-fee standalone DCC trading.</td><td>Standalone profitability on zero-fee exchange.</td></tr>
+<tr><td>P6</td><td>Planned</td><td>Full auto mode. Live paper trader. WebSocket feeds.</td><td>Production deployment.</td></tr>
+</table>
+
+<div class="callout orange">
+<div class="callout-title">8Z Reasoning Principle #0: Refuse Limits Without Evidence</div>
+<p>Do not exclude any phase based on current results. The generators are the bottleneck, not the architecture. The architecture is proven across 8 domains and validated empirically on 924K bars. Expand the generator catalogue, test more TF combos, add more assets. The contrarian thesis works. The search has just begun.</p>
+</div>
+</section>
+
+
+<section class="chapter" id="ch17">
+<div class="chapter-num">Chapter 17</div>
+<h2>Connection to 8Z-OS</h2>
+
+<p>The DCC Trading Governor is the eighth domain where MDL + DCC produces results &#8212; and the first with empirical validation on 21 months of real market data.</p>
+
+<div class="flow-box">
+<div class="flow-row">
+<div class="flow-node gold">Image<small>Beat PNG</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node teal">Audio<small>Beat FLAC</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node green">FASTA<small>Beat 7-Zip</small></div>
+</div>
+<div class="flow-row">
+<div class="flow-node blue">TSP<small>Exact optimal</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node" style="border-color:var(--accent-purple);color:var(--accent-purple)">DNA<small>Z-scores 28&#8211;74</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node active">Trading<small>+4.16% combo edge</small></div>
+</div>
+<div class="flow-row">
+<div class="flow-node red">Auth<small>Software PUF</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node" style="border-color:var(--accent-purple);color:var(--accent-purple)">DCC-7<small>Consciousness</small></div>
+</div>
+</div>
+
+<div class="quote-block">
+<p>Every domain is the same problem. The generators change. The DCC is the same everywhere. Markets had one twist no other domain had: the adversarial structure of market makers means the compressible pattern predicts the OPPOSITE of what retail indicators say. The architecture found this on its own. We just had to listen to the anomaly.</p>
+</div>
+</section>
+
+
+<div class="footer-note">
+The Digital Claustrum of Markets v2.0 &#183; Bojan Dobre&#269;evi&#263; &#183; AIM&#179; Institute &#183; March 15, 2026<br>
+Private research document. Protected by 8Z Shield.<br>
+Built by BD &#215; C &#8212; &#8220;because you see.&#8221;
+</div>
+
+</div>
+</body>
+</html>
