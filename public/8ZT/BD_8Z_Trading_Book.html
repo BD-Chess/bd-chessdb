@@ -472,6 +472,8 @@ pre .cm { color: var(--text-muted); font-style: italic; }
   <a class="sub" href="#" onclick="showReview('BD_8Z_Trading_ChatGPT_Review.html');return false">ChatGPT 5.4</a>
   <a class="sub" href="#" onclick="showReview('BD_8Z_Trading_Gemini_Review.html');return false">Gemini 3.1 Pro</a>
   <a class="sub" href="#" onclick="showReview('BD_8Z_Trading_Grok_Review.html');return false">Grok 4.2</a>
+  <a class="ch" href="#ch17">17 &mdash; The DCC Trader Vision</a>
+  <a class="ch" href="BD_8Z_DCC_Trading.html" style="color:var(--accent-gold)">&#8594; DCC Governor Paper</a>
 </nav>
 
 <!-- &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; MAIN &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; -->
@@ -635,10 +637,13 @@ Two parameter configurations, both starting from $2,000, both on 34 days of BTCU
 <p>Benchmark A is the engine ceiling. Benchmark B is the practical benchmark. The gap between them is not failure &#8212; it is the visible price of execution friction. Keeping both results side by side makes the book more honest: one shows what the math can do, the other shows what survives contact with real fees.</p>
 </div>
 
-<div class="callout">
-<div class="callout-title">Config Strings (paste into Paper Trader)</div>
-<p style="font-family:var(--font-mono);font-size:11px;word-break:break-all;color:var(--accent-teal)"><strong>Fees OFF (96&#215;):</strong> BDZv2|DV:0.5|LB:8|ET:0.49|TP:0.32|SZ:dbl_t|MA:10|ES:0.14|ED:0.6|AS:1|HS:4|SKA:5|SA:1|SC:1.49|BS:0.77|MP:50|LV:96|SS:1|CS:1|LS:1|LT:fib|LA:0|LM:3|NW:21|SAB:1|SAM:5|ESC:1|EMA:1|ETR:3|ECP:90|EP:1|CMP:1</p>
-<p style="font-family:var(--font-mono);font-size:11px;word-break:break-all;color:var(--accent-gold)"><strong>Fees ON (500&#215;):</strong> BDZv2|DV:0.5|LB:8|ET:0.5|TP:0.3|SZ:dbl_t|MA:10|ES:0.14|ED:0.6|AS:1|HS:4|SKA:0|SA:1|SC:1.5|BS:0.01|MP:50|LV:500|SS:1|CS:1|LS:1|LT:fib|LA:0|LM:3|NW:20|SAB:1|SAM:5|ESC:1|EMA:1|ETR:3|ECP:90|EP:1|CMP:1</p>
+<div class="_8z-sec _8z-lk" id="_8z-s0" data-8z-blob="mixWdcyDcdMxxnZ0tcd6fW4II5DtQNNxOKlHI1g+wL6Pqah2Uu5wCk4CnBCGiFQjNOocarwWuXR7m54pkUeLbc9g/OWbVbaY4RWRTImk7jJQBfNjqX+imcrgIsjjb4ibOmGECZtneUWk4y5Kjn+pLRwGhIn43K8WNtMdlxYvS9SmfatRt0FekGb5Zcnle2fmkKFcV4oUb7PxvARF4ncNKLFwQymyLDCW96PRymAuxLZnxf8j1QLo9IzeqxXoyM95DXluk28AfOfEG6HQxvWBG2X1/zsajffK1RAQh28oKPkbkVFxzBiKIxv79bhKBnsJ2ycqFwKKwuieUCr6cA6cOCI6XHS0zuXVNGjrKKuWdm23tHtMAFL9c6cJQAciFsq8BOkis18FlhMQJe0SK84brFzwFBk/p6Bb61EYfQoKJmAudDDi8no01ZHfmeGr0CHlj3JUuG0hGiDiHlfpgD1U2jsaKS4OY8ayH3uHFb3ACNs4eAGoPMtpM8xH7ede5tXEZ+/2igSyWCf8yKcRyn9uis7idQ1r4JOelYOsmi49bb8er2x1tFk1ZGCvxs9joMxGbqranOzJwdPtzt5LhnZfor+0EruINA==">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">BTC Config Strings</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
 </div>
 
 <!-- MULTI-ASSET VALIDATION -->
@@ -682,18 +687,14 @@ The BTC records above are spectacular, but the obvious question is: does this on
 Both use only 20&#215; leverage &#8212; not the extreme 500&#215; of the BTC record. These are <strong>conservative configurations</strong> that still 10&#215; the starting capital in 34 days. The equity curves are smoother than BTC's (more trades, more gradual compounding), the win rates are 94&#8211;95%, and the drawdowns stay under 0.4%. This confirms the strategy exploits a structural market property &#8212; mean reversion within ZigZag swing structure &#8212; not a BTC-specific artifact.
 </p>
 
-<div class="callout">
-<div class="callout-title">Cross-Asset Config Strings</div>
-<p style="font-family:var(--font-mono);font-size:11px;word-break:break-all;color:var(--accent-teal)"><strong>ETH (20&#215;):</strong> BDZv2|DV:0.5|LB:8|ET:0.4|TP:0.3|SZ:dbl_t|MA:10|ES:0.14|ED:0.6|AS:1|HS:4|SKA:4|SA:1|SC:1.5|BS:0.31|MP:50|LV:20|SS:1|CS:1|LS:1|LT:fib|LA:0|LM:3|NW:20|SAB:1|SAM:5|ESC:1|EMA:1|ETR:3|ECP:90|EP:1|CMP:1</p>
-<p style="font-family:var(--font-mono);font-size:11px;word-break:break-all;color:var(--accent-gold)"><strong>SOL (20&#215;):</strong> BDZv2|DV:0.5|LB:8|ET:0.4|TP:0.3|SZ:dbl_t|MA:10|ES:0.13|ED:0.6|AS:1|HS:4|SKA:4|SA:1|SC:1.5|BS:0.055|MP:50|LV:20|SS:1|CS:1|LS:1|LT:fib|LA:0|LM:3|NW:20|SAB:1|SAM:5|ESC:1|EMA:1|ETR:3|ECP:90|EP:1|CMP:1</p>
+<div class="_8z-sec _8z-lk" id="_8z-s1" data-8z-blob="P3plTNPweDWkf0QnFyr7Pi8BohDEGrYMIRrluqZ9LQR9UnDbVgNImv107ETRMkYnkRHaVd/1KTx8AdehVgHXpxtky6llA4247cxCsixE1b/0G8R7TWK3PXK0r6AR8AjexJJX06seAjV5AtYJB13OWDfnoBiVzU/7wOV/uHnZyPFrHgo6K8+e5WupINrgWXGNSWq7B8pX7DlKz8cnR0JBG3cGx2aX7y5yDmtNWKP8H3HJx1oYpdw5wvqpf6IcN28elWzHABuKt4zTFnkhR+PvRDP8kwoVWbIztvRaCuxCuUnwjjBwYHYobgYIeU63nreaqs9qJVLKIMIYvRjIg9t9pYt0coHX4QCz4G0SAZD8DUFA+UMbMNxooMRPtilhwsRJsU0Rx/Yzo+BLP+zgPLGQVD0+9dhEGqXdzfxLEOuNdY4nsD2azPWV0HK7LG+ElTrnkbL1KyDxA4MhWl1JfBg82WVBUKSJm577nlmXTejkUQ3M0OFIAk8cwizz065hYqb+B3gGAuybuE88Gkbioqao/k96pSkXjf1IW1EvY3/c6ruIIk8pEVaW/3WiMlVRjKuwqR71kFZ0mHaHcoDjSlypBiCdYxB1U2Og6h0/ITyNOsPpSZXFm5176Mco+WcNwPbzIkv9IQV9u0WbMPeV7dbU3zfPbQA2Z+lHElD0JTdfXuGL1QHK4IeNh0k21R2JVslMum4vXZiwIEft0eRUe6PbDrQR9Jllm1jPiyD/1WuVUvNU/45fT08LxPcEPOy5g9nmR9C4XwwyOYyqUEfBdtvsbMFEaVLd0BLj9pW5iKFPhTpudE3xo0oH3KdGZo6sDfiuXSoeYnRSC7H1tdqYHj7JFT2cIdepjV+W">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">Cross-Asset Config Strings &amp; Parameters</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
 </div>
-
-<table class="param-table" style="margin:16px 0">
-<tr><th>Asset</th><th>Leverage</th><th>Base</th><th>Result</th><th>Trades</th><th>WR</th><th>DD</th><th>Fees</th></tr>
-<tr><td><strong>BTCUSDT</strong></td><td>500&#215;</td><td>$0.01</td><td style="color:var(--accent-green)">$221K (+10,980%)</td><td>50</td><td>98.0%</td><td>0.00%</td><td>$5,155</td></tr>
-<tr><td><strong>ETHUSDT</strong></td><td>20&#215;</td><td>$0.31</td><td style="color:var(--accent-green)">$20.6K (+929%)</td><td>231</td><td>94.4%</td><td>0.27%</td><td>$2,557</td></tr>
-<tr><td><strong>SOLUSDT</strong></td><td>20&#215;</td><td>$0.055</td><td style="color:var(--accent-green)">$21K (+950%)</td><td>290</td><td>95.2%</td><td>0.39%</td><td>$1,774</td></tr>
-</table>
 
 <div class="callout success">
 <div class="callout-title">Three Tiers of ZigZag Reversion</div>
@@ -785,81 +786,14 @@ And then <strong>1s Sync Momentum v2.2</strong> happened &#8212; the distillatio
 
 <p>The entry logic is two gates in series. Both must fire simultaneously while flat.</p>
 
-<h4>Gate 1 &#8212; Sync (Cross-Correlation)</h4>
-<p>
-Over the last <code>syncLen</code> bars (default: 2 on S3), compute the percentage change of the chart symbol and the sync partner(s). For BTC chart, sync against ETH. For ETH chart, sync against BTC. Both must exceed <code>minDeltaPct</code> (0.032% on S3) in the same direction.
-</p>
-<pre>
-<span class="cm">// The sync calculation</span>
-baseDeltaSync = (close - close[syncLen]) / close[syncLen] * <span class="num">100.0</span>
-btcDeltaSync  = (btcSyncClose - btcSyncClose[syncLen]) / btcSyncClose[syncLen] * <span class="num">100.0</span>
-
-<span class="cm">// Both must agree in direction AND magnitude</span>
-upSync   = baseDeltaSync > minDeltaPct <span class="kw">AND</span> btcDeltaSync > minDeltaPct
-downSync = baseDeltaSync < -minDeltaPct <span class="kw">AND</span> btcDeltaSync < -minDeltaPct
-</pre>
-
-<h4>Gate 2 &#8212; Impulse (Velocity Filter)</h4>
-<p>
-The current 1-bar move must exceed <code>impulseFactor</code> &#215; SMA(|1-bar moves|, <code>impulseLen</code>). On S3: current move > 0.75 &#215; average absolute move over 10 bars. This ensures we enter only when the market is moving faster than its recent baseline &#8212; not during noise.
-</p>
-<pre>
-btcDelta1s  = (close - close[<span class="num">1</span>]) / close[<span class="num">1</span>] * <span class="num">100.0</span>
-avgAbsDelta = ta.sma(math.abs(btcDelta1s), impulseLen)
-
-upImpulse   = btcDelta1s > <span class="num">0</span> <span class="kw">AND</span> btcDelta1s > impulseFactor * avgAbsDelta
-downImpulse = btcDelta1s < <span class="num">0</span> <span class="kw">AND</span> |btcDelta1s| > impulseFactor * avgAbsDelta
-</pre>
-
-<div class="callout success">
-<div class="callout-title">Why This Works</div>
-<p>Sync filters out noise-driven moves (one asset moves, the other doesn't = likely reversion). Impulse filters out drift (both move but slowly = no momentum to ride). The combination selects <strong>coordinated, impulsive moves</strong> &#8212; the signature of real institutional flow propagating across venues.</p>
+<div class="_8z-sec _8z-lk" id="_8z-s2" data-8z-blob="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">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">Signal Pipeline Code &amp; Presets</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
 </div>
-
-<h3 id="ch2-exit">Exit Architecture &#8212; Where the Real Edge Lives</h3>
-
-<p>The entry is a filter. The exit is the strategy. Three layers work together:</p>
-
-<h4>Layer 1 &#8212; Hard Boundaries</h4>
-<p><strong>Initial Stop-Loss:</strong> <code>slPct</code> = 0.033% below entry (S3). At 100x leverage, this is a 3.3% equity hit &#8212; tight enough that a single losing trade doesn't damage the account, but requires the sync+impulse signal to be right within one tick of noise.</p>
-<p><strong>Take-Profit Ceiling:</strong> <code>tpPct</code> = 0.94% above entry (S3). At 100x, this caps at 94% ROE per trade. Rarely hit because the trailing stop usually closes first &#8212; but prevents holding through a reversal that would give back a massive runner.</p>
-
-<h4>Layer 2 &#8212; Breakeven Trigger</h4>
-<p>When peak unrealized profit exceeds <code>beTriggerPct</code> (0.101% on S3), the stop-loss is moved to at least breakeven. From this point forward, the trade cannot lose money. This is the "risk elimination principle" from the original January 2025 papers, now automated.</p>
-
-<h4>Layer 3 &#8212; ATR-Adaptive Trailing with Profit Lock</h4>
-<p>Once breakeven is triggered, two mechanisms compete for the tightest stop:</p>
-
-<p><strong>Profit Lock Floor:</strong> <code>lockFrac</code> &#215; (peak price &#8722; entry price). At lockFrac = 0.9, this locks 90% of the maximum excursion. If price rallied 0.5% from entry, the stop is at least 0.45% above entry.</p>
-
-<p><strong>ATR Wiggle Trail:</strong> <code>wiggleK</code> &#215; ATR / price, clamped between <code>minWiggle</code> and <code>maxWiggle</code> (0.10% to 0.50%). This gives the trade room to breathe through normal noise, but tightens in low-vol environments and widens in high-vol.</p>
-
-<p>The actual stop is <code>max(lockFloor, wiggleTrail)</code> for longs (or min for shorts). The lock floor ratchets up monotonically; the wiggle trail adapts to current volatility. Together they let winners run while guaranteeing locked profits.</p>
-
-<pre>
-<span class="cm">// The trailing stop logic (simplified)</span>
-<span class="kw">if</span> beReached:
-    floorStop = entry + lockFrac * (peakPrice - entry)   <span class="cm">// locks 90% of peak</span>
-    trailLevel = close * (<span class="num">1.0</span> - wigglePct / <span class="num">100.0</span>)    <span class="cm">// ATR-adaptive band</span>
-    dynStop = max(floorStop, trailLevel)                  <span class="cm">// tightest wins</span>
-</pre>
-
-<h3 id="ch2-presets">The Preset System</h3>
-
-<table class="param-table">
-<tr><th>Preset</th><th>syncLen</th><th>minDelta%</th><th>impulseF</th><th>SL%</th><th>TP%</th><th>BE%</th><th>Character</th></tr>
-<tr><td>S1 Safe</td><td>3</td><td>0.060</td><td>1.10</td><td>0.040</td><td>1.50</td><td>0.15</td><td>Fewer trades, higher conviction</td></tr>
-<tr><td>S2 Normal</td><td>2</td><td>0.048</td><td>0.95</td><td>0.037</td><td>1.26</td><td>0.129</td><td>Balanced frequency/quality</td></tr>
-<tr><td>S3 Aggressive</td><td>2</td><td>0.032</td><td>0.75</td><td>0.033</td><td>0.94</td><td>0.101</td><td>High frequency, default</td></tr>
-<tr><td>S4 Maximum</td><td>2</td><td>0.015</td><td>0.45</td><td>0.030</td><td>0.50</td><td>0.060</td><td>Test only &#8212; noise risk</td></tr>
-<tr><td>S5 Fast</td><td>2</td><td>0.030</td><td>0.90</td><td>0.040</td><td>1.50</td><td>0.15</td><td>Old S2 port</td></tr>
-<tr><td>S6 Balanced</td><td>3</td><td>0.050</td><td>1.00</td><td>0.050</td><td>2.00</td><td>0.20</td><td>Classic conservative</td></tr>
-<tr><td>TF1 (1m)</td><td>3</td><td>0.120</td><td>0.90</td><td>0.200</td><td>0.80</td><td>0.35</td><td>1-minute scalper</td></tr>
-<tr><td>TF2 (5m)</td><td>3</td><td>0.200</td><td>0.90</td><td>0.400</td><td>1.50</td><td>0.60</td><td>5-minute scalper</td></tr>
-<tr><td>TF3 (15m)</td><td>3</td><td>0.300</td><td>1.00</td><td>0.700</td><td>2.50</td><td>1.00</td><td>15-minute swing</td></tr>
-<tr><td>TF4 (1h)</td><td>2</td><td>0.400</td><td>1.10</td><td>1.000</td><td>4.00</td><td>1.50</td><td>Hourly swing</td></tr>
-<tr><td>TF5 (1D)</td><td>2</td><td>0.600</td><td>1.20</td><td>2.000</td><td>8.00</td><td>3.00</td><td>Daily position</td></tr>
-</table>
 
 <p>The S-family scales impulse sensitivity: S1 needs a strong, confirmed move; S4 trades almost any blip. The TF-family scales all parameters proportionally to timeframe &#8212; wider stops, higher thresholds, more room to breathe.</p>
 </section>
@@ -933,119 +867,14 @@ Average bars in winning trades: <strong>5 bars</strong> (5 seconds). Average bar
 
 <h3 id="ch4-critical">Priority 1 &#8212; Critical Fixes</h3>
 
-<h4>Fix 1: Default to Strict Sync Feeds</h4>
-<p>
-The single most important change. Flip <code>useStrictSyncFeeds</code> to <code>true</code> by default. This ensures <code>request.security()</code> uses <code>lookahead = barmerge.lookahead_off</code>, preventing any possibility of future data leaking into the sync calculation. Yes, this will reduce backtest returns. That's the point &#8212; what remains is the real edge.
-</p>
-<pre>
-<span class="cm">// v2.2 (current)</span>
-useStrictSyncFeeds = input.bool(<span class="num">false</span>, ...)
-
-<span class="cm">// v3.0 (fix)</span>
-useStrictSyncFeeds = input.bool(<span class="num">true</span>, ...)
-</pre>
-
-<h4>Fix 2: Add Trade Cooldown</h4>
-<p>
-V2.2 has no cooldown between trades. After a loss, the strategy immediately re-enters if sync+impulse fire again &#8212; often into the same failing move. The v2.5 paper specified 90-second cooldowns after stopped rescues, and the v6.0 paper extends this to general trading. Adding even a modest cooldown of 5&#8211;10 bars (5&#8211;10 seconds on 1s) after any exit filters out whipsaw chains that produce consecutive small losses.
-</p>
-<pre>
-<span class="cm">// v3.0: add cooldown logic</span>
-<span class="kw">var int</span> lastExitBar = <span class="num">0</span>
-cooldownBars = input.int(<span class="num">8</span>, <span class="str">"Cooldown bars after exit"</span>, minval=<span class="num">0</span>)
-
-<span class="kw">if</span> strategy.closedtrades > closedTradesCount
-    lastExitBar := bar_index
-    closedTradesCount := strategy.closedtrades
-
-<span class="kw">bool</span> cooldownOK = (bar_index - lastExitBar) >= cooldownBars
-
-<span class="cm">// Add to signal conditions:</span>
-longSignal  := longSignal  <span class="kw">and</span> cooldownOK
-shortSignal := shortSignal <span class="kw">and</span> cooldownOK
-</pre>
-
-<h4>Fix 3: Widen Initial SL Slightly</h4>
-<p>
-At 0.033% SL on 100x, the stop is just 3.3 ticks from entry on BTC. On a 1-second bar, normal bid-ask bounce can trigger this. The data shows 62% of trades lose &#8212; many are likely stopped out within 1&#8211;2 bars by noise, not by actual adverse moves. Widening to 0.045&#8211;0.050% while keeping BE trigger the same would reduce the "noise stop" rate while still cutting genuine reversals quickly.
-</p>
-
-<h3 id="ch4-vwap">Priority 2 &#8212; VWAP Mean-Reversion Layer</h3>
-
-<p>
-This is the bridge between your PineScript momentum strategy and your manual competition edge. You're already trading VWAP reversals manually in The Leap with great success. Integrating a VWAP z-score into the Pine adds a <strong>structural awareness</strong> that momentum-only signals lack.
-</p>
-
-<h4>The Concept (from your v2.5 paper)</h4>
-<p>
-Compute 15-minute VWAP and its z-score. When |z| > 1.0, price is extended &#8212; and the probability of mean reversion increases. Use this to bias the entry direction: if z > 1.0, favor shorts (momentum exhaustion likely); if z < &#8722;1.0, favor longs. Between &#8722;0.5 and +0.5, trade both directions equally.
-</p>
-
-<pre>
-<span class="cm">// v3.0: VWAP Tilt (adapted from v2.5 paper)</span>
-useVwapTilt = input.bool(<span class="num">false</span>, <span class="str">"Use VWAP z-score tilt?"</span>)
-
-<span class="cm">// Get VWAP from higher TF</span>
-[vwapVal, vwapUpper, _] = ta.vwap(hlc3, timeframe.change(<span class="str">"D"</span>), <span class="num">1</span>)
-vwapStdev = vwapUpper - vwapVal
-vwapZ = vwapStdev != <span class="num">0</span> ? (close - vwapVal) / vwapStdev : <span class="num">0</span>
-
-<span class="cm">// Tilt logic: don't fight extreme VWAP extension</span>
-<span class="kw">if</span> useVwapTilt
-    <span class="kw">if</span> vwapZ >  <span class="num">1.5</span>    <span class="cm">// price far above VWAP &#8594; suppress longs</span>
-        longSignal := <span class="num">false</span>
-    <span class="kw">if</span> vwapZ < -<span class="num">1.5</span>    <span class="cm">// price far below VWAP &#8594; suppress shorts</span>
-        shortSignal := <span class="num">false</span>
-</pre>
-
-<div class="callout success">
-<div class="callout-title">Why This Matters for The Leap</div>
-<p>Your manual competition trading IS this &#8212; you buy when price is extended below VWAP and sell when extended above. Adding this filter to the Pine creates a unified system: momentum entries that are also structurally sound relative to VWAP. This reduces the "catching a falling knife" failure mode where sync+impulse fire into an overextended move that's about to revert.</p>
+<div class="_8z-sec _8z-lk" id="_8z-s3" data-8z-blob="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">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">V3.0 Code Patches &amp; Improvements</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
 </div>
-
-<h3 id="ch4-cooldown">Priority 3 &#8212; Regime Detection</h3>
-
-<p>
-The v2.2 strategy trades the same parameters regardless of whether BTC is in a low-vol range or a high-vol trend day. Adding a simple ATR regime classifier allows dynamic parameter adjustment:
-</p>
-
-<pre>
-<span class="cm">// ATR regime: compare current ATR to longer-term baseline</span>
-atrShort = ta.atr(<span class="num">10</span>)
-atrLong  = ta.sma(ta.atr(<span class="num">10</span>), <span class="num">300</span>)  <span class="cm">// 5-min baseline on 1s</span>
-atrRatio = atrShort / atrLong
-
-<span class="cm">// High vol: widen SL, raise BE trigger (let trades breathe)</span>
-<span class="cm">// Low vol: tighten SL, lower thresholds (don't wait for moves that won't come)</span>
-<span class="kw">bool</span> highVol = atrRatio > <span class="num">1.5</span>
-<span class="kw">bool</span> lowVol  = atrRatio < <span class="num">0.6</span>
-
-<span class="kw">if</span> highVol
-    slPct := slPct * <span class="num">1.3</span>         <span class="cm">// more room</span>
-    beTriggerPct := beTriggerPct * <span class="num">1.2</span>
-<span class="kw">if</span> lowVol
-    impulseFactor := impulseFactor * <span class="num">0.8</span>  <span class="cm">// lower bar for entry</span>
-    maxWiggle := maxWiggle * <span class="num">0.7</span>          <span class="cm">// tighter trailing</span>
-</pre>
-
-<h3 id="ch4-volume">Priority 4 &#8212; Volume Confirmation</h3>
-
-<p>
-Your BTC Volume Sync indicator already monitors 8 exchanges. Integrating even a simplified single-venue volume check (e.g., Binance BTC perp volume > 2&#963; above 300-bar mean) into the Pine would add a third confirmation gate. The v2.5 and v6.0 papers both specify volume sync as a core filter &#8212; the v2.2 Pine omits it.
-</p>
-
-<pre>
-<span class="cm">// v3.0: Simple volume confirmation</span>
-useVolConfirm = input.bool(<span class="num">false</span>, <span class="str">"Require Binance volume spike?"</span>)
-binVol = request.security(<span class="str">"BINANCE:BTCUSDT.P"</span>, timeframe.period, volume)
-binVolAvg = ta.sma(binVol, <span class="num">300</span>)
-binVolStd = ta.stdev(binVol, <span class="num">300</span>)
-binVolSpike = binVol > binVolAvg + <span class="num">2.0</span> * binVolStd
-
-<span class="kw">if</span> useVolConfirm
-    longSignal  := longSignal  <span class="kw">and</span> binVolSpike
-    shortSignal := shortSignal <span class="kw">and</span> binVolSpike
-</pre>
 
 <h3 id="ch4-code">Summary of V3.0 Changes</h3>
 
@@ -1347,46 +1176,15 @@ The four-tool ecosystem (v2.2+ strategy, v4 strategy, parameter sweep indicator,
 <div class="chapter-num">Chapter 6</div>
 <h2>Risk Bible &#8212; The Non-Negotiables</h2>
 
-<h3 id="ch6-sizing">Position Sizing Framework</h3>
+<div class="_8z-sec _8z-lk" id="_8z-s4" data-8z-blob="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">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">Risk Bible &amp; Position Sizing</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
+</div>
 
-<p>From your v6.0 paper, adapted for the Pine strategy:</p>
-
-<table class="param-table">
-<tr><th>Parameter</th><th>Value</th><th>Rationale</th></tr>
-<tr><td>M (micro clip)</td><td>$10 USDT</td><td>Base margin; total notional = M &#215; leverage</td></tr>
-<tr><td>Leverage</td><td>100x</td><td>$10 margin &#8594; $1,000 notional exposure</td></tr>
-<tr><td>Max SL per trade</td><td>0.05% (price) = 5% (equity on margin)</td><td>One loss = $0.50 at $10 margin</td></tr>
-<tr><td>Equity buffer</td><td>&#8805; 180&#215; M = $1,800</td><td>Survive 180 consecutive SL hits (impossible but safe)</td></tr>
-<tr><td>Daily loss limit</td><td>5&#215; M = $50</td><td>Flatten and stop for the day</td></tr>
-<tr><td>Scale-up rule</td><td>+25% M after &#8805;3 green sessions with PF &#8805; 1.2</td><td>Never scale during drawdowns</td></tr>
-</table>
-
-<h3 id="ch6-scenarios">Failure Scenarios</h3>
-
-<h4>Scenario 1: Correlation Breakdown</h4>
-<p>BTC rallies while ETH dumps. Sync never fires. The strategy goes flat &#8212; no trades. This is safe. The danger is if correlation breaks <em>after</em> entry &#8212; you're long because BTC+ETH agreed, but then ETH reverses while BTC continues. The tight SL handles this: worst case is one stop-loss hit.</p>
-
-<h4>Scenario 2: Flash Crash / Gap</h4>
-<p>On 1s bars, gaps are rare but do occur (exchange maintenance, API hiccup). The micro gap filter (v2.2 Section 10) should be ON for live trading. A gap through your SL means slippage beyond the intended 0.033% &#8212; at 100x, a 0.5% gap = 50% equity loss on that trade. This is why the v6.0 paper specifies <strong>server-side MARK stops</strong> where available.</p>
-
-<h4>Scenario 3: Zero-Fee Policy Change</h4>
-<p>MEXC removes or reduces the 0% maker fee promotion. At even 0.01% per side (1 bps), the strategy loses 2 bps per round trip &#215; 160 trades/day = 320 bps daily overhead. This likely kills the 1s strategy entirely. Mitigation: reduce trade frequency (use S1 or S6), increase minimum R:R, or migrate to another zero-fee venue.</p>
-
-<h4>Scenario 4: Extended Drawdown</h4>
-<p>The negative Sharpe means prolonged losing streaks are expected. The backtest shows the first week (Feb 2&#8211;9) was essentially flat &#8212; if you started trading day 1 and saw no returns for 7 days, would you keep running? Mental preparation for 100+ consecutive losses (at 36.77% win rate, 10+ loss streaks happen daily) is essential.</p>
-
-<h3 id="ch6-hygiene">Hygiene Gates (from v2.5/v6.0)</h3>
-
-<p>The v2.2 Pine lacks the hygiene state machine from your papers. For live execution, implement these as bot-side checks:</p>
-
-<table class="param-table">
-<tr><th>State</th><th>Condition</th><th>Action</th></tr>
-<tr><td style="color: var(--accent-green);">OPERATE</td><td>Spread &#8804; 3bps, no violations</td><td>Full trading</td></tr>
-<tr><td style="color: var(--accent-gold);">HARVEST-ONLY</td><td>3&#8211;5bps spread OR mild staleness</td><td>Exits only, no new entries</td></tr>
-<tr><td style="color: var(--accent-red);">PAUSE</td><td>Spread > 5bps OR depth shock OR staleness</td><td>Flatten if needed, wait</td></tr>
-</table>
-
-<p>Also enforce: &#8804;12 orders/30s, &#8804;15 orders/min, &#8804;3 orders in any 2s window, 100&#8211;300ms random jitter between submits. These are from your v2.5 pacing specification and prevent exchange-side detection or rate-limiting.</p>
 </section>
 
 <!-- &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; -->
@@ -1422,18 +1220,15 @@ The four-tool ecosystem (v2.2+ strategy, v4 strategy, parameter sweep indicator,
 
 <p><strong>Layer 3 &#8212; Strategy Signals:</strong> SyncMomentum Unified v1.2.6 (Pine v6, SM| config protocol) or BD ZigZag Reversion v2.5 (Pine v6, BDZv2| config protocol) with signal shapes and dynamic SL/TP lines visible. Use as overlay confirmation for manual trading or as direct auto-execution. For live paper trading, the HTML paper traders (SyncMomentum_PaperTrader.html, ZigZag_PaperTrader.html) connect directly to exchange WebSockets.</p>
 
-<h3 id="ch7-params">S3 Parameter Quick Reference</h3>
-
-<div class="metric-grid">
-  <div class="metric-card"><div class="mv blue">2</div><div class="ml">SyncLen (bars)</div></div>
-  <div class="metric-card"><div class="mv gold">0.032%</div><div class="ml">MinDeltaPct</div></div>
-  <div class="metric-card"><div class="mv blue">10</div><div class="ml">ImpulseLen</div></div>
-  <div class="metric-card"><div class="mv gold">0.75</div><div class="ml">ImpulseFactor</div></div>
-  <div class="metric-card"><div class="mv red">0.033%</div><div class="ml">Stop-Loss</div></div>
-  <div class="metric-card"><div class="mv green">0.94%</div><div class="ml">Take-Profit</div></div>
-  <div class="metric-card"><div class="mv gold">0.101%</div><div class="ml">BE Trigger</div></div>
-  <div class="metric-card"><div class="mv blue">0.9</div><div class="ml">Lock Fraction</div></div>
+<div class="_8z-sec _8z-lk" id="_8z-s5" data-8z-blob="Ck3ovDtTZHpp4lwg3qDRRv8mCjF+XtoCxxBUsCpll6CIq8nNnSuQONQFxp3ZpxpijQn5VJLHPLxFgRBeRqxll3uvpu6vyLgjgkM+INWNhEtN/QiaV2ywPQmSQ7HZGFj4s5b0mUJGqAJXxQIBuURdt5mhywd6fZazmOiIRKyyls1y5ghINrafrTULystvC1HyzI5ZD464CimAPZrPR0T2bljSqqgVK4NfNXPMWUWdtg0cae/fD1bCxtyjjfKuqC+xsRP5JcrpvZG2fk3QYhVQ+kw2CiLk9H/RLpv+PmhJS9D3mPV7BXKKEUBJTU97Ey39J4fUNdyiLTz5+skCYryEZ7zZ9r+Lo0p9gsgkn37N5TkF0E5xrd8LrAPnQl+fClGKFxQ/zXBQ849rfqlFIKfwmcNA2IMmtCOqbZZvZ7M5FUn0FQqclOrwuqo+rQ==">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">S3 Parameter Quick Reference</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
 </div>
+
 </section>
 
 <!-- &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; -->
@@ -1846,21 +1641,13 @@ Each of the 18 detectors can be used as Primary (entry signal) or Confirmation (
   <div class="metric-card"><div class="mv gold">10x</div><div class="ml">Improvement from one fix</div></div>
 </div>
 
-<h3 id="ch11-dcc">DCC Regime Detection from ZigZag Data</h3>
-
-<p>
-Leg amplitude consistency reveals regime stability. We compute the coefficient of variation (CV) of the last 8 leg amplitudes: <code>cv = std(legs) / mean(legs)</code>, then <code>u = 1 - cv</code>. When u is near 1, legs are consistent (STABLE regime &#8212; exploit). When u is near 0, legs are erratic (CHAOTIC &#8212; be cautious).
-</p>
-
-<p>
-Three DCC modes tested in the optimizer: <strong>dccE</strong> (entry adjustment: stable = tighter threshold, chaos = wider), <strong>dccS</strong> (sizing: stable = full, chaos = half), <strong>dccES</strong> (both). The optimizer consistently shows dccES outperforming noDCC on average across all timeframes and symbols.
-</p>
-
-<div class="callout">
-<div class="callout-title">DCC Evolution: From Single-TF CV to Cross-Scale Fractal Coherence</div>
-<p>
-The current DCC computes coefficient of variation on a single timeframe's legs &#8212; a measure of within-scale consistency. Chapter 14 introduces the next evolution: <strong>Fractal Coherence</strong>, which measures cross-scale consistency by running ZigZag on multiple timeframes simultaneously and checking whether directions agree (MTF Direction Consensus) and whether leg amplitudes nest proportionally (Leg Amplitude Nesting). The combined Fractal Coherence score is a theoretically grounded replacement for single-TF CV as the DCC coupling signal. Empirical results: +67.5% PnL improvement over baseline on 65 days of BTCUSDT data.
-</p>
+<div class="_8z-sec _8z-lk" id="_8z-s6" data-8z-blob="WF+xk3muBLzx2P0bAuTSkiVZg9zLbuo14xgDU5NPKjFUv0/E3BThuGpAOeLmz8AtZbNuX6t+bq9Uo34r+eGPp3VG/+SjvMxEzr1z2ejaj0VMy6eKRCv+421whMHLfnWT2adgc5rAoYgvnhJs/cb9b43OMWCP4TMePuAFbnQaYx1A4zKeCQLqJOsLuWQirziax4CJu65gfPx1wy06YSzZwQaHWK3N3D4wZf8pZKy0O7VzxmsBM7eRt8B1ocsODtWl6p0AsvDL3VPGZvK1iT0vSvEoggaea95Y8v4y5XT43NxvrSov97vEMtUJwfmUhJVOro65KBPyGvojpnywG/n6rs+qQ1//wSaMfkwK1AvFyGQ05HYbI/uJsMPVE84r1ZG15S6JEi3CMEMxJ1RYrvrgxcy6p/cgIU1Iau2dIoXj3R95J2ojcv2lSKhkUkut5TkErjJJoarDTcY40pQNWLN+a0AMRl3UJCRfmcPNq9Bcyd+zpgGNG4wXLZ+yU8P5BnwvOOqimMq6srYaZpbrrzoDMnjn7GWA/8D2+TUMyUwD9pAmK9Xq45yBulI2qKLcTjimMVIfckrLakUR1WgMxJ+iXeVhdOg81N39XWBFT40dJJgrmFhIlB3kGvvZZTy6SPOr+JbAx3TTqEq43mEIvUbVDKSH3h0aFRPbtGzX9G2PEoK71kCSrqmAdehJ/YttaDuVfLffc0Yf6XzBVH8Jo/wr8FvXk8dJUfr7gG22oMa6OvZh82px+gOV3CWnR7psD6ml+QEZ/YdcJoqw7q9SGErIjAQssFFuU+fLKciB5HjWGS4hXNjO0qmpS+DAg+t7c+TffZxcBRTWJo+yyvO24IqS2MTQEN/G11z9FOM2OcthxUJxM4kQmCQu3l2E6+BdxHmdGIaisqwsaXfRCX+EeRQhKxIRce1u7hgKBpc0VRQ2UlMWL/UIPdN1GSFVfETA+CYIBEv4jUa4BTfvs4H8Ncu7ut6+NM3jS92CYeTEXrRzu0MFO2+K4aPf/y4uHludg1rShbM8Tvk4ntubnxpkgMFvElcsevMCklBQAy2qnlryh9JcLfDNPTb/tyMcYbjviAt9xGx+ztY3kPOM5mT3l84Yn1mA6WPOgDyhMmsShrJJvzybXzAK2+t6GXXtcDH83pxXYzWXGGAUvmO/9fom">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">ZZ DCC Regime Detection Formulas</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
 </div>
 
 <h3 id="ch11-adding">Adding Methods &#8212; The Position Growth Problem</h3>
@@ -2230,36 +2017,14 @@ The <code>BD_mtf_confluence.py</code> v2.0 implements and proves the first layer
 <strong>Step 4 &#8212; Size Multiplier.</strong> Map the consensus score to a position size multiplier: <code>mult = base + score &#215; (maxMult &#8722; base)</code>. High consensus = larger position (exploit). Low consensus = base size only (explore). This is a DCC-style coupling directly from fractal coherence.
 </p>
 
-<h4>Empirical Results &#8212; 65 Days BTCUSDT (Jan&#8211;Mar 2026)</h4>
-
-<table class="param-table">
-<tr><th>Consensus Level</th><th>Trades</th><th>Avg PnL/Trade</th><th>Total PnL</th><th>Multiplier</th></tr>
-<tr><td>9/9 agree</td><td>55</td><td style="color:var(--accent-green)">$73.78</td><td style="color:var(--accent-green)">$4,058</td><td>3.00x</td></tr>
-<tr><td>8/9 agree</td><td>25</td><td>$45.52</td><td>$1,138</td><td>2.78x</td></tr>
-<tr><td>7/9 agree</td><td>34</td><td>$52.69</td><td>$1,792</td><td>2.56x</td></tr>
-<tr><td>6/9 agree</td><td>34</td><td>$25.19</td><td>$856</td><td>2.33x</td></tr>
-<tr><td>5/9 agree</td><td>26</td><td>$39.75</td><td>$1,034</td><td>2.11x</td></tr>
-<tr><td>4/9 agree</td><td>15</td><td>$1.46</td><td>$22</td><td>1.89x</td></tr>
-<tr><td>3/9 agree</td><td>10</td><td>$0.20</td><td>$2</td><td>1.67x</td></tr>
-<tr><td>2/9 agree</td><td>6</td><td>$0.04</td><td>$0.23</td><td>1.44x</td></tr>
-<tr><td>1/9 agree</td><td>6</td><td>$0.08</td><td>$0.50</td><td>1.22x</td></tr>
-<tr><td>0/9 agree</td><td>1</td><td>$0.01</td><td>$0.01</td><td>1.00x</td></tr>
-</table>
-
-<div class="metric-grid">
-  <div class="metric-card"><div class="mv blue">$5,314</div><div class="ml">Baseline (no MTF)</div></div>
-  <div class="metric-card"><div class="mv green">$8,902</div><div class="ml">MTF Consensus On</div></div>
-  <div class="metric-card"><div class="mv gold">+67.5%</div><div class="ml">Improvement</div></div>
-  <div class="metric-card"><div class="mv green">100%</div><div class="ml">Win Rate (both)</div></div>
+<div class="_8z-sec _8z-lk" id="_8z-s7" data-8z-blob="XWSl72j8e8aBXRoUQ+9dHyjFPkbKe+MfPlL1fnTX2jRZld3dVEA57UThexnJH5RJS0Nclam/bJ3mQ1EWvGGAIF9shuxIyMSznMEEFQoGcQl6SwvxNrgtBV5Iri6JoIaTzUnFrdZCJZQnd6wvn6CW0LAsQaSSGDGYV5zoBEen1Wr9voA41ftnGTeP4AdOCjnOPGF1ZjNq+nA+T5ZaJ+UH+1iDa44vV4x2xCZFcZ9o2dFkaSwwfVKeYrzl6h9O/bjhAGFwQWwyNqmiaBV82rxbyJWKzAM30qVPE/eFY3lNtcCD6z9wB+BlwQev5fFw6Ui1R17h3olBBWjE0U7jorTCfwa3gk/OQJUrKS3aQ53xLxduds4bRpqIGDxrn85NwfAhf1vyWJ4WxqX2XQzP/RZYvBO0rwnBzJGavwTbuzi/cyC577EbNgfkMAYjgf3GezlPQPTZelnd1PnqpgX2XOQtqQWYBdNrb4psOmKQF+Ioyw18PK8Rz+GghCK83YVkHbWxrNbU8oD+xTtnEDiRMcglOa2AeoYL1FYveKQKo78yUPGOQqccA1MyMafXGnMgUfKUULQvo5Cr+srYz4ht8dzf4Za5D7JMbLpaDgEbV5/q2JNRiLjxFwUsCle/Eq110RelIlTdNm8VJLiuXe+7uLnkthZ+9UlbrD/zDBP8i9gQXxcGLFE0i4gHH2OL5KmBisY1UH6F8ZZU6JAZLsl/jqQpH99dXN8TKDU6HBAm2KYQ4opGjdKUL8WA9vCkKEYy5RtNcpOUhEMAzMcPPpzRtLJq6XXBModTXrUzQErH6qgjBvweh4KeoCMJuN7BwdMSAutwM1aaP62I+YD/dclpIL1xnT9X60pRM7BPc3cjtfCcndYbAfd0TjYKhh8rftw4AxyUcIuPW+UX8SLihpN4mu+cHqlouP6y5Haix3VqQQBvjvWCuntXpYtpyZfdWSKFcGwVtFLAJR2VbtAEtg5jWk5eJhLTp2vInrxxfF+2xT3NgMoyjcliR5NoZ5Ilm+rEekV9lTwx1Fd75NUiu/mZnsfHccPa6NNRE7ZGNo9Co3hbzF3lj5bKQi04iHbHRWog9R5fat0kfF2rsXeR1oN//sVX83JtXeRRGbpO9SIxeSZbbcaEbzSNKQ/5WfukI4Bswm7NdoF/7FOb82bdoyc1LqNd80dk1Q6OtFOclqNGOJXtdg8WKqKXCLpAWe5VI2eD8ydSA+Cke1CsA2E6EQm7iLW5RdSr6rI+bbvu09ezs2mr6INv91SFrFEZ5RdBo4cLXFVBlBA4ZKO9n/uZZPKf1dAwhQ==">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">MTF Consensus Empirical Results</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
 </div>
-
-<p>
-The consensus distribution itself is informative: 25.2% of bars have 9/9 agreement, meaning a quarter of the time ALL Fibonacci timeframes point the same way. That's when the fractal generator is fully coherent. The other 75% shows varying degrees of cross-scale disagreement &#8212; different generators dominating different scales.
-</p>
-
-<p>
-The simplified 4-TF version (5m, 15m, 30m, 1h) showed the same pattern: 4/4 agreement produced $73.53 avg per trade, while 0/4 produced $0.01. The improvement was even larger at +70.5% vs baseline. Fewer monitor TFs means higher consensus thresholds are more common (53.7% of bars had 4/4 agreement), which concentrates sizing even more aggressively on the best moments.
-</p>
 
 <div class="callout warn">
 <div class="callout-title">Why This Is Not Just "Multi-Timeframe Analysis"</div>
@@ -2267,42 +2032,15 @@ The simplified 4-TF version (5m, 15m, 30m, 1h) showed the same pattern: 4/4 agre
 </div>
 
 <!-- &#9472;&#9472;&#9472;&#9472; LEG AMPLITUDE NESTING &#9472;&#9472;&#9472;&#9472; -->
-<h3 id="ch14-nesting">Leg Amplitude Nesting &#8212; The Missing Layer</h3>
-
-<p>
-Direction consensus answers: "are the generators pointing the same way?" Leg amplitude nesting answers a different question: "are the generators producing <em>self-similar structure</em>?" These are independent signals that capture different aspects of fractal coherence.
-</p>
-
-<p>
-The concept: at each monitor timeframe, compute <code>avgLeg</code> (average ZigZag leg amplitude). Then check the ratio between consecutive scales:
-</p>
-
-<pre>
-<span class="cm">// Leg amplitude nesting check</span>
-ratio_5_13   = avgLeg_13m  / avgLeg_5m
-ratio_13_34  = avgLeg_34m  / avgLeg_13m
-ratio_34_89  = avgLeg_89m  / avgLeg_34m
-ratio_89_233 = avgLeg_233m / avgLeg_89m
-
-<span class="cm">// Nesting coefficient of variation &#8212; low = self-similar, high = broken</span>
-nesting_cv  = stddev(ratios) / mean(ratios)
-FC_nesting  = <span class="num">1.0</span> - clamp(nesting_cv, <span class="num">0</span>, <span class="num">1</span>)
-</pre>
-
-<p>
-When ratios are consistent across scales (nesting CV is low, FC_nesting near 1.0), the fractal structure is self-similar &#8212; the same mathematical generator is producing swings at every scale, just with proportional amplitudes. When ratios diverge (one scale shows tiny legs while another shows massive legs), the fractal is broken &#8212; different generators dominate different scales.
-</p>
-
-<p>
-This captures something direction consensus cannot: you could have 9/9 direction agreement (all scales "going up") but broken nesting &#8212; the 5m is in micro-chop (tiny legs) while the 1h is in a clean trend (large legs). The amplitudes don't nest, which means the fractal structure is incoherent despite directional agreement. Conversely, you could have perfect nesting but split direction &#8212; the structure is self-similar but timeframes disagree on which phase of the cycle we're in.
-</p>
-
-<div class="callout">
-<div class="callout-title">Status: Designed, Not Yet Tested</div>
-<p>Leg amplitude nesting is the logical next experiment after the proven direction consensus. The <code>BD_mtf_confluence.py</code> already computes <code>avgLeg</code> at each timeframe &#8212; the nesting ratio computation is a few lines of additional code. Testing against the same 65-day BTCUSDT dataset will reveal whether nesting adds value beyond direction consensus or is redundant.</p>
+<div class="_8z-sec _8z-lk" id="_8z-s8" data-8z-blob="PZYl5wm8Y6RPPwwty7Oov9UZQ3YQcJ4eJp0O9Hs+PZFanwekr57z+JG3gD/wkXDxAlU7hXCODPyokrtZ8r/GmcoDLsX9yWC1lphwlwq4xqWE+cFpMRvTsNPGVWF6F9D2ckEfQkjUmALUvq75uTAyjtJFie3mHWNXSg5JSv3axu7Ybw5rmTpVRp/8OMvjDi/FEK5Jn3XRIDgdTQeUKeVxJE23RJlie0C/lqIRk9QkHpkIwqSQNM6OyKmfJ1CM6aCuNY53f/nq1SkLl2kf+wRdL+5kFg5tqnXeJCzS+uMnoGbZT2abGYIJFyTK2vFxO8UKszeOe4RoMwpSMK2NKNGdcFmlBpOBdB8PpUww04KOTPzgUwsbvMN/qUM7z8S16o4DocaXDIymShSdoEiRWOjLlo6U8bPNFCIR4MgIgWtIV+wHgIeGcIIscnyfSZKgy2WVvx6lvgjpSTupoKqCTMUIFNNpKMtrcIiq8DyKA3HVYBTPS1hRTEJqxyCVu6AsAaH0n1IKeH8rvBD6fCc8Vv8SWOeRDtpiuPvVd8z02gur4KT2fjc8FYt0MYy4JPjFnVxS9SkWhOfhjA4361DQf9D1CmgxlAqY+eL2f3zAcPSjulM+eEF5wvPVTs0kGnWvsUTuFFtNPvHNuT44GD41QH1PSkxF8VADUagpl3YAWDYPezL9EdGn3zFeePUpy6MPaXVun+r5nJECCaTnUok8ZdkXRBAYSJwT3MSt/DKdJbhcqohp6U6wQsMUaYrTjw8O64PRttizwUKH1vjldniEp9ArpAFTBmhfCllcNCbrDgOrJSQQxLeRWShVGOAFlq9+xEecpGT1rklXmyp958qMQZlEzeeKRXH54XYAj6LAcK+hGtAYCY7FNW3lq26+ug95MkLGuGb5MA99sVcZ1U1XzQhX8NoSkXiJKjYNO8xbK6sguStSgr9192N2SHqkmqs/n54Ld9UOsaS1iWRitzXDlWQ9u6c6pxnfGVX5/k5oxFuILoQvKEu+zEvT88lMzH8rPBZ5ePt0zjFQeImV7Ae5WOz9qr8aRF234858nAtaUzrAwdWCXh1e0OjirrJARlteAJrVNqmz//2SfhHNRS5bF/51RHOjR6232j+QnBt53B0jo6BMsZKip+K64tATqnSGmhd0iRhUv9pMeeMcG2alW73VWJ2cDHCgJ4UGGtBRw/yUWnBGfioTtRpdAX9aEvnf9wG9imyV3pqhMyDwb/7YcRub1/fpWaSnAi4QX216V4JXiP+vfHEos3gAOpAIKwcWfNxPmbDw77xirFiZuZ3J87spWhNEUY2QQb4Uirz3qG+Ix6cEmFLZlPmMJcRkLW/jhrckeGD6s7YSHPka1xUVEj8wnWdTslHEjaE+HQPJCWg7OKiEaVaPdpYZaQ30HGYjjiHJc+MhPkOiyzv82RLRwMxLjuN3FHy/RKnG+59pqM4WOdDwKjPUauZ4gwz3M5sYk+6ZbPWt4EpFdHaHF1K9ab/6bTb0zjhsEPU4QX3Ga+0S7uLB4nvnhqWSi+5GrRcccOtnTy8reqn0hDi7hgtQzdUYf8ZVpxH9iSLIGez/SHPfTKpXdh6Eh99+4BFbwhjRW33tH1YwTwe9eKVRGDMOnlc=">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">Leg Amplitude Nesting Algorithm</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
 </div>
 
-<!-- &#9472;&#9472;&#9472;&#9472; COMBINED FC SCORE &#9472;&#9472;&#9472;&#9472; -->
 <h3 id="ch14-fc">Combined Fractal Coherence &#8212; Unified DCC Signal</h3>
 
 <p>
@@ -2440,27 +2178,14 @@ Low leverage &#8594; smaller early profits &#8594; slower equity growth &#8594; 
 The critical insight is that leverage alone doesn't determine risk. The <em>combination</em> of leverage, base size, and compounding mode determines risk. A $0.01 trade at 500&#215; controls $5 notional &#8212; the absolute risk per trade is tiny. But the <em>relative</em> amplification through compounding is enormous. The base size is the survival parameter; leverage is the amplification parameter. They must be tuned together.
 </p>
 
-<h3 id="ch15-pnlwinner">The PnL Winner Config</h3>
-
-<p>
-The ultimate expression of the Leverage Paradox is the "PnL Winner" preset, now available in the Paper Trader:
-</p>
-
-<table class="param-table" style="margin:16px 0">
-<tr><th>Parameter</th><th>Value</th><th>Why</th></tr>
-<tr><td>Leverage</td><td>500&#215;</td><td>Maximum amplification</td></tr>
-<tr><td>Base Size</td><td>$0.01</td><td>Maximum compounding headroom</td></tr>
-<tr><td>Sizing</td><td>DblTot</td><td>Each add = previous total &#215; 2</td></tr>
-<tr><td>Add Spacing</td><td>Fibonacci</td><td>22&#215; more price distance than fixed</td></tr>
-<tr><td>Legs Sync</td><td>6TF 3.0&#215;</td><td>Direction-validated size boost</td></tr>
-<tr><td>Add Boost</td><td>5.0&#215;</td><td>Sync-validated add multiplier</td></tr>
-<tr><td>Nesting</td><td>0.91</td><td>Amplitude coherence weight</td></tr>
-<tr><td>Timeframe</td><td>15m</td><td>Optimal leg frequency</td></tr>
-</table>
-
-<p>
-Result on 34 days of BTC 15m data: <strong>$2,000 &#8594; $221,606</strong> with $5,155 in real MEXC fees paid. That's 10,980% return, 98% win rate, and 0.00% max drawdown. The DblTot chain at 500&#215; with $0.01 base: $5&#8594;$15&#8594;$45&#8594;$135&#8594;$405&#8594;$1,215&#8594;&#8230; &#8212; it never hits the position cap because it starts so small. Every add is maximally effective.
-</p>
+<div class="_8z-sec _8z-lk" id="_8z-s9" data-8z-blob="CtYkM301hBr1cai2LkPfl6zjaQlk1+dyp8jNbSrc1hsdm0X1LL0j+dwhmeCWQ4T9w2huM5BsZF7lufulrU7UNV0MhjwLCnB38sAorTqNjSh+wXS4gEVzQIiGg6xepkrD3CQDD06p3ih/BnNl3hV2UQUXACxJoLBLIVPRK83rJ7URjByhjJwDGujsBecAHhNIdDcMzidQQNNtG83dqIbE1K0Cs0+B6GRRqF83+gh70BKQ74KSd8vklPr3SMJiB57SZ/vz91ILpXmLLXBXjRE536LBeG6AN9sYoKWQYe3eAUSOj8hN0KGXYwzjxEEmIDJL/LryAZxIp0Tp96W1wYIpygsqT40274Eyl7CgSDFGkkIcUFyCFywsmhjPMYXHu8O7lvpajVHYUcTP893kbpQyWQOOpLcOvmf0RR0inmf0i//NnxocYT2MT/Lp0ZAfyjLaeOLdbpeBv4Nizgshyx7PRdprX5yLpNar40rdBw17ZNHoW/CuVzo8AxJIEzrxWK66+7R7N3ROXwEX5oQ5i9PQIXinr7rkJnuSF2vHsOvnAYPPs1yW3wklnKkf/4Y3m6KcXhl5tJg5+FL0zXU9eGIluJjLwLz8PrLxlCN8xPqgdmYY4Gm28YxVxD4CrDUvKHz8f28r+N8U+Jbt3VQO6TZFjKf6ynrQqf8kK3t0Oahe7oeD1WoaSNZOs4pdZjK1ScCg70HvIFwJgG5aIR80bgCnRtbiw7+Bom2y+6AwWPT36MT6261bUvJQo/SP80c0YrHtSt2tY9LugTl3xs0ngv0fgeKgGMTu24mZXj666HepgfYPtecxZp0ihIsx9Mpc8MRi7RYUGuU7FsYlcb8hgjHxXWloLtCvOCd1qMqmrSXupZrotiEYUFpKOlSrzNSKj8KEz3hQUgcRXWv/kZUGV/MMqboa+HzqW4JaZv58eUlGPNLa07xSR1AyVx47N5xeoBPxtmSgsatwRI0o2mgnVUoNX3YrUKvypeEJi8EfvEeeZVDAXpUnNHcZYPd+XJ3p/amMKYbe/XG1dg==">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">PnL Winner Config &amp; Leverage Math</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
+</div>
 
 <div class="callout">
 <div class="callout-title">The Sacred Rule of the Leverage Paradox</div>
@@ -2587,6 +2312,105 @@ This is the 8Z principle of MDL competition applied to software: multiple implem
 </p>
 
 </section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 17 — THE FULL DCC TRADER VISION -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch17">
+<div class="chapter-num">Chapter 17</div>
+<h2>The Full DCC Trader Vision &#8212; Where This Converges</h2>
+
+<p>
+SM catches momentum. ZZ exploits reversion. But both still answer a binary question: long or short? The DCC Trader vision &#8212; detailed in the companion <a href="BD_8Z_DCC_Trading.html" style="color:var(--accent-gold);text-decoration:none">Digital Claustrum of Markets</a> paper &#8212; eliminates the binary entirely.
+</p>
+
+<div class="callout">
+<div class="callout-title">The Core Thesis</div>
+<p>If you can compress it, you can predict it. If you can predict it, you can trade it. The most compressible price behavior &#8212; the patterns that repeat most reliably &#8212; is the behavior most likely to continue. MDL finds the pattern. DCC measures how much to trust it.</p>
+</div>
+
+<h3>Dual-Direction Engine &#8212; Never Fully Wrong</h3>
+
+<p>
+Traditional trading asks: &#8220;should I go long or short?&#8221; The DCC Trader asks: &#8220;how much long and how much short?&#8221; Both positions are open simultaneously. The MDL prediction determines the ratio. The DCC confidence determines how asymmetric the ratio is.
+</p>
+
+<div class="_8z-sec _8z-lk" id="_8z-s10" data-8z-blob="coWXLFQr42d9LCJ/M4rVL3wfcrIH1l+SzKBW9xIIMJUKq/AmByJTzJcqfXX+7r5ZaMS67IBn3WJlsjpozeT5hK5We52NzoOHp1N/nzwwBXd7YXwPZVATb+D5GVJxCjwPfOD4xUGocQskGgXX9lvxcYaF7ZyH8mDd6aZeCT2P6uD/YIDD/ahXUylDrwHbC5ypQZyYRsFnGG27fGLSzjWtP2+F+f/5pOzkC2vseJPrWccsL156D6mkX0CxIo9juTj7IGV+gIJso5XeFK76gs482dWVZ7EhFuP1LyNT0/pPO5PDrSASpgR4tLp/WMC7iHW0nMYjpM60uXoERticUc9YittyubA/3HAxvmRs6nFfHrV2uf+6MUvkJKnMggKr6CzP1/ZhRKyl5ff9GVpdVjlMfXUz03F9Zm7RKQNoYROym8Bpzcc/DxgSoayeQz2lFgFxwMDriuEJuNuQFeI6yirZEZ8Y0cIJF2ufBsrAfOS5WgA2WkC47xb2DpSv5SZvkXfk9zavI0AVcCrL9wmQ2RwQcx15s+Lyu6HNOSUZa9Op2fbZ+7jP7oH91NapPa8y6oKPgHAxuWggvSCsEgmGMOCsrrN4UppbeA4iQu0DdlfL9FRsF/c7WY/Zp8ABvrDBC58BLzSwr3+C9TqgCTcQBmOk3ONjq3GlklOFd5snjvDR87agwpZeAb85qlWti6ufDkQNhsRIZ5vLGrXJ+u3z4ZuDQfvdkm4dLKq9evn6iZrSe2+SRWPSlu45DrQoC2kpDWcC5rKYXD74wXSP4zoVMwFZPTOSQm/18YCjvPcW+nrAzKy+3ZXuVckxhWHPX9RslR/iSw91sIBf+fg2Pg0a45giPYmq8sfGLx5QpSd1SEIyRv6oQBLiPc+iCkoq7i1YCxRvDzG2ZF5rLL/k/D9OaVBiotYyfacC">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">Dual-Direction Sizing &amp; ZZ Management</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
+</div>
+
+<h3>Three-Level Architecture</h3>
+
+<p>
+The system mirrors the 8Z-OS fractal nesting exactly:
+</p>
+
+<div class="metric-grid">
+  <div class="metric-card" style="border-color:var(--accent-gold)"><div class="mv gold">L3</div><div class="ml">Portfolio DCC</div></div>
+  <div class="metric-card" style="border-color:var(--accent-blue)"><div class="mv blue">L2</div><div class="ml">Pair DCC</div></div>
+  <div class="metric-card" style="border-color:var(--accent-teal)"><div class="mv teal">L1</div><div class="ml">Bar-Level MDL</div></div>
+</div>
+
+<p>
+<strong>Level 1 &#8212; Bar-Level MDL:</strong> 20+ generators compete on a rolling 5000-bar window. Winner = current market regime. Direction = predicted movement.
+</p>
+<p>
+<strong>Level 2 &#8212; Pair DCC:</strong> For each pair, MDL predicts direction, DCC measures confidence, dual-direction engine opens both sides with asymmetric sizing.
+</p>
+<p>
+<strong>Level 3 &#8212; Portfolio DCC:</strong> Monitors which pairs are most compressible. Routes more capital to high-compression pairs. Reduces allocation to chaotic pairs.
+</p>
+
+<h3>Five Nested Protections</h3>
+
+<div class="metric-grid">
+  <div class="metric-card" style="border-color:var(--accent-green)"><div class="mv green">1</div><div class="ml">ZZ Logic</div></div>
+  <div class="metric-card" style="border-color:var(--accent-teal)"><div class="mv teal">2</div><div class="ml">Dual-Direction</div></div>
+  <div class="metric-card" style="border-color:var(--accent-blue)"><div class="mv blue">3</div><div class="ml">Multi-Pair</div></div>
+  <div class="metric-card" style="border-color:var(--accent-gold)"><div class="mv gold">4</div><div class="ml">Skimming</div></div>
+  <div class="metric-card" style="border-color:var(--accent-purple)"><div class="mv" style="color:var(--accent-purple)">5</div><div class="ml">Small Capital</div></div>
+</div>
+
+<div class="_8z-sec _8z-lk" id="_8z-s11" data-8z-blob="DgWJlqiN2l51PWboFJcMIfqDUtGPWgm8lE1aBC1Klb9rceuIU2Jm/nBHOil+r6AOP6sFHvin23KkSKeVQixsc9EQ0w01uG3NI+QMCHDmxRZBXWjhR8u9sLrvQNhNfhj27wvQgmHumRUREM9PrTx9+umDsa0ypGZ4ZgDZF2wTeWAbbdyDlf70vUMDNRvqN5iP3dnTi7VLJoZviO7fquIfO0C7tk823BVmpsESf/+GaWjDKWV3yNuTebnTMLYQktzoKNKFMO/thX0+ZyECDVsn+yQ9CVPHKUtFwXamIrZa9AIh/w05Oa4m7jiSEs4t9WcRQI14hiXeysYkkzPn+3YGALRiMGeRgkZrlJn5TWlN0lK/Duh1ovK57iCCobzc/+Pyci6wVXr7Thd3B5ndi1WHccUaLg70Jid8nfQvmR1wIA6JkuGAtvN2J0naJsZ2BOaHv21Q/OCaQXZjbE+JboWPqYiqNfAASyYp8qc8N49hHGTMPFn+Nw8IO/k/rD+TEdf+uymqi25O8YByJ6zpJNxt8Hel/itjtx9cq/q3dj/HvhRjzPAF8GeIzDWRdbGVJUh8xmyascQ8H1IREi6wWWu4PxHpgFQ3qWdQZcgb4s3zGA248N2u4DQLnIxnGfknlrPWqPpAf6cJdX8iTPXk2V6YWx2kWSZTX9sWHd+wT+Lk0fiVRAy2fmdsVa60XvuucQgag9PcWMXDMqLat+TMveV/lqKsMPWfQY36RnHrsU7v7K/tx14Vtizyxz5bnbbz8r9vr71n6Mu4c1YlyHpNFlQY9WA/M/Ut4vinN6KUkFR2u0CYNPJnDcenE+88mhz84hs7F6SoezPkb7Vfao7H6Klurg63Sr2OG8OR/sLZmd01EORo4PQYGOFQOhAQ1Mjfdho1+vYTPCkjpFGMjICAWYB+ZQr2rSiuOfHjuiLEWdgtqBgMrMR5+1w5DL98Zq5U/wHZD3rA4sjWGQtS2/pa5SpttY70X/1AQlqM4v0lrnwMtxJR9KolsZxIgh5+36n10OukVxG16Ljm7TaJY9cTafng1LEtGTmcFQtF4AFtsJTqz5/s1Q==">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">Ruin Probability &amp; Skimming Protocol</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
+</div>
+
+<h3>Implementation Phases</h3>
+
+<p>
+<strong>Phase 1 &#8212; MDL Arena Validator:</strong> Standalone HTML page. Loads 5000 bars from Binance. Runs all generators. Outputs: winning generator, directional prediction, confidence, DCC coupling u. No trading. Pure validation.
+</p>
+<p>
+<strong>Phase 2 &#8212; Dual-Direction Engine:</strong> Wire dual-position manager to MDL arena. Single pair (BTCUSDT). Backtest on 5000+ bars.
+</p>
+<p>
+<strong>Phase 3 &#8212; Multi-Pair + Portfolio DCC:</strong> Add ETHUSDT, SOLUSDT, Gold, SPX. Implement Level 3 allocation. Backtest the full portfolio.
+</p>
+<p>
+<strong>Phase 4 &#8212; Live Paper Trading:</strong> Deploy in the same design system as ZZ and SM traders. 30+ day monitoring period.
+</p>
+
+<div class="callout warn">
+<div class="callout-title">Execution Discipline</div>
+<p>The one thing that kills this system is human override. The DCC controls the sizing, not the human&#8217;s fear or greed. Once live, the system runs as designed. The only valid human override is: shut everything down and withdraw. Never: &#8220;I think it should be more long right now.&#8221;</p>
+</div>
+
+<div class="callout success">
+<div class="callout-title">The Pattern Continues</div>
+<p>The 8Z-DCC Trader is the seventh domain where MDL + DCC produces results. Image (beat PNG), Audio (beat FLAC), FASTA (beat 7-Zip), TSP (exact optimal), DNA (Z-scores 28&#8211;74), Auth (8Z Shield), and now Trading. The architecture is universal. The generators change per domain. The DCC is the same everywhere. Full details in the <a href="BD_8Z_DCC_Trading.html" style="color:var(--accent-gold);text-decoration:none">Digital Claustrum of Markets</a> companion paper.</p>
+</div>
+
+</section>
 <!-- &#9472;&#9472;&#9472;&#9472; FOOTER &#9472;&#9472;&#9472;&#9472; -->
 <hr class="divider">
 <div style="text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 13px;">
@@ -2595,6 +2419,7 @@ This is the 8Z principle of MDL competition applied to software: multiple implem
   </p>
   <p>By Bojan Dobre&#269;evi&#269; &nbsp;&#183;&nbsp; AI Research Partners: Claude (Anthropic), GPT (OpenAI), Gemini (Google), Grok (xAI)</p>
   <p style="margin-top: 8px;">March 2026 &nbsp;&#183;&nbsp; AIM&#179; Institute, Ljubljana</p>
+  <p style="margin-top: 12px;"><a href="BD_8Z_DCC_Trading.html" style="color:var(--accent-gold);text-decoration:none;font-family:var(--font-mono);font-size:12px;letter-spacing:1px;">&#8594; THE DIGITAL CLAUSTRUM OF MARKETS &#8212; DCC GOVERNOR PAPER</a></p>
   <p style="margin-top: 20px; font-size: 11px; color: var(--text-muted); max-width: 500px; margin-left: auto; margin-right: auto;">
     This document is a technical reference for research and educational purposes.
     It does not constitute financial advice. Trading leveraged derivatives carries
@@ -2639,5 +2464,158 @@ function hideReview() {
 }
 </script>
 
+
+<!-- 8Z Shield Sections — Inline Content Protection -->
+
+<style>
+._8z-sec{position:relative;margin:1.5em 0;border-radius:12px;overflow:hidden;transition:all .4s cubic-bezier(.4,0,.2,1)}
+._8z-lk{background:rgba(255,145,0,.03);border:1px solid rgba(255,145,0,.15);border-left:3px solid #ff9100}
+._8z-ok{background:rgba(34,197,94,.03);border:1px solid rgba(34,197,94,.15);border-left:3px solid #22c55e}
+._8z-lui{padding:24px 28px;text-align:center}
+._8z-ico{font-size:28px;margin-bottom:8px;opacity:.7}
+._8z-lbl{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#ff9100;margin-bottom:4px}
+._8z-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a5268;letter-spacing:.5px}
+._8z-ct{padding:20px 28px}
+._8z-ct._8z-fi{animation:_8zFI .5s ease}
+@keyframes _8zFI{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+._8z-bar{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(8,10,14,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,145,0,.2);padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:12px;transition:all .4s}
+._8z-bar._8z-hid{transform:translateY(100%);pointer-events:none}
+._8z-bar ._l{font-family:'JetBrains Mono',monospace;font-size:10px;color:#ff9100;letter-spacing:2px;text-transform:uppercase}
+._8z-bar input{width:260px;max-width:40vw;padding:10px 14px;background:#0e1117;border:1px solid #1e2532;border-radius:8px;color:#dfe3eb;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:border-color .2s}
+._8z-bar input:focus{border-color:#ff9100}
+._8z-bar input::placeholder{color:#4a5268}
+._8z-bar button{padding:10px 20px;background:transparent;border:1.5px solid #ff9100;border-radius:8px;color:#ff9100;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+._8z-bar button:hover{background:rgba(255,145,0,.08);box-shadow:0 0 24px rgba(255,145,0,.1)}
+._8z-bar ._s{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a5268;min-width:80px;text-align:center}
+._8z-bar ._s.ok{color:#22c55e}._8z-bar ._s.err{color:#ef4444}._8z-bar ._s.wrk{color:#ffc629}
+._8z-bar ._d{font-family:'JetBrains Mono',monospace;font-size:9px;color:#4a5268;letter-spacing:.5px}
+@media print{._8z-sub::after{content:" — contact author for access"}._8z-bar{display:none!important}._8z-lk ._8z-ct{display:none!important}}
+@media(max-width:600px){._8z-bar{flex-wrap:wrap;gap:8px;padding:10px 12px}._8z-bar input{width:100%;max-width:none}._8z-bar ._l{width:100%;text-align:center}}
+</style>
+
+<script>
+(function(){
+'use strict';
+var _I=500000,_XR=1024,M=(1n<<64n)-1n,_SK='_8z_pp',_BD="chessbest.org";
+
+function XS(s){var v=s&M;this.state=v===0n?0x9E3779B97F4A7C15n:v}
+XS.prototype.n=function(){var x=this.state;x=(x^((x>>12n)&M))&M;x=(x^((x<<25n)&M))&M;x=(x^((x>>27n)&M))&M;this.state=x;return(x*2685821657736338717n)&M};
+
+function u2b(v){var b=new Uint8Array(8);for(var i=7;i>=0;i--){b[i]=Number(v&0xFFn);v>>=8n}return b}
+function b2u(b){var v=0n;for(var i=0;i<8;i++)v=(v<<8n)|BigInt(b[i]);return v}
+function sha(d){var b=(d instanceof Uint8Array)?d:new TextEncoder().encode(d);return crypto.subtle.digest('SHA-256',b).then(function(r){return new Uint8Array(r)})}
+function cat(){var l=0,a=arguments;for(var i=0;i<a.length;i++)l+=a[i].length;var o=new Uint8Array(l),p=0;for(var i=0;i<a.length;i++){o.set(a[i],p);p+=a[i].length}return o}
+
+async function dk(pp,salt){
+  var ph=await sha(pp),sm=await sha(cat(ph,salt,new TextEncoder().encode("8Z_AUTH_V1")));
+  var rng=new XS(b2u(sm.slice(0,8)));
+  for(var i=0;i<_XR;i++)rng.n();
+  var sh=await sha(u2b(rng.state)),c=cat(ph,sh);
+  var km=await crypto.subtle.importKey('raw',c,'PBKDF2',false,['deriveBits']);
+  return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:salt,iterations:_I,hash:'SHA-256'},km,256));
+}
+
+async function gzD(data){
+  var ds=new DecompressionStream('gzip');
+  var w=ds.writable.getWriter(),r=ds.readable.getReader();
+  w.write(data);w.close();
+  var ch=[];while(true){var x=await r.read();if(x.done)break;ch.push(x.value)}
+  var t=0;for(var i=0;i<ch.length;i++)t+=ch[i].length;
+  var o=new Uint8Array(t),p=0;for(var i=0;i<ch.length;i++){o.set(ch[i],p);p+=ch[i].length}return o;
+}
+
+async function dec(b64,pp){
+  var raw=Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0)});
+  if(raw.length<60)throw new Error('small');
+  var salt=raw.slice(0,32),iv=raw.slice(32,44),ct=raw.slice(44);
+  var kb=await dk(pp,salt);
+  var key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['decrypt']);
+  var comp=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,tagLength:128},key,ct));
+  return new TextDecoder().decode(await gzD(comp));
+}
+
+function show(el,html){
+  el.querySelector('._8z-ct').innerHTML=html;
+  el.querySelector('._8z-ct').style.display='';
+  el.querySelector('._8z-ct').classList.add('_8z-fi');
+  el.querySelector('._8z-lui').style.display='none';
+  el.classList.remove('_8z-lk');el.classList.add('_8z-ok');
+}
+
+function resolveKey(raw){
+  // Domain lock logic
+  if(!_BD) return raw;
+  var isLocal=(window.location.protocol==='file:');
+  var host=(window.location.hostname||'').toLowerCase();
+  var expected=_BD.toLowerCase();
+  // If user typed password||domain explicitly (owner override for local)
+  if(raw.indexOf('||')!==-1){
+    var parts=raw.split('||');
+    if(parts[1].trim().toLowerCase()===expected) return raw;
+    throw new Error('domain');
+  }
+  // On correct domain: auto-append
+  if(!isLocal && host===expected) return raw+'||'+_BD;
+  // Local without explicit domain suffix
+  if(isLocal) throw new Error('domain-local');
+  // Wrong domain
+  throw new Error('domain');
+}
+
+var secs=document.querySelectorAll('._8z-sec[data-8z-blob]');
+if(!secs.length)return;
+
+var bar=document.createElement('div');
+bar.className='_8z-bar';
+var domNote=_BD?'<span class="_d">\uD83C\uDF10 '+_BD+'</span>':'';
+bar.innerHTML='<span class="_l">\uD83D\uDD12 '+secs.length+' Protected</span>'
+  +domNote
+  +'<input type="password" id="_8z_inp" placeholder="Enter access key" autocomplete="current-password">'
+  +'<button id="_8z_btn">Unlock</button>'
+  +'<span class="_s" id="_8z_st"></span>';
+document.body.appendChild(bar);
+
+var inp=document.getElementById('_8z_inp');
+var btn=document.getElementById('_8z_btn');
+var st=document.getElementById('_8z_st');
+
+async function go(){
+  var raw=inp.value;
+  if(!raw){st.textContent='Enter a key';st.className='_s err';return}
+  var pp;
+  try{pp=resolveKey(raw)}catch(e){
+    if(e.message==='domain-local'){
+      st.textContent='Local use restricted';st.className='_s err';
+    }else{
+      st.textContent='Domain restricted';st.className='_s err';
+    }
+    return;
+  }
+  btn.disabled=true;btn.textContent='DERIVING...';
+  st.textContent='500K PBKDF2';st.className='_s wrk';
+  await new Promise(function(r){requestAnimationFrame(function(){requestAnimationFrame(r)})});
+  try{
+    var html=await dec(secs[0].getAttribute('data-8z-blob'),pp);
+    show(secs[0],html);
+    st.textContent='Decrypting '+secs.length+'...';
+    for(var i=1;i<secs.length;i++){
+      try{show(secs[i],await dec(secs[i].getAttribute('data-8z-blob'),pp));}
+      catch(e){console.warn('Section '+i+':',e)}
+    }
+    st.textContent='\u2713 Unlocked';st.className='_s ok';
+    setTimeout(function(){bar.classList.add('_8z-hid')},1500);
+    try{sessionStorage.setItem(_SK,raw)}catch(e){}
+  }catch(e){
+    st.textContent='Not yet.';st.className='_s err';
+    btn.disabled=false;btn.textContent='UNLOCK';inp.value='';inp.focus();
+  }
+}
+
+btn.addEventListener('click',go);
+inp.addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+try{var sv=sessionStorage.getItem(_SK);if(sv){inp.value=sv;go()}}catch(e){}
+})();
+</script>
+<!-- End 8Z Shield Sections -->
 </body>
 </html>
