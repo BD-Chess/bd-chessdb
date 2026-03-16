@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DCC Trading Governor &#8212; Action Plan &amp; Checklist</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&amp;family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&amp;family=DM+Sans:wght@300;400;500;700&amp;display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-primary: #0a0c10; --bg-secondary: #12151c; --bg-tertiary: #1a1e28;
+  --bg-card: #161a24; --border: #2a2f3c; --border-accent: #3a4055;
+  --text-primary: #e8eaf0; --text-secondary: #8b93a6; --text-muted: #5a6275;
+  --accent-green: #00e676; --accent-green-dim: #00c85320;
+  --accent-red: #ff4757; --accent-red-dim: #ff475720;
+  --accent-blue: #448aff; --accent-blue-dim: #448aff20;
+  --accent-gold: #ffd740; --accent-gold-dim: #ffd74020;
+  --accent-purple: #b388ff; --accent-purple-dim: #b388ff20;
+  --accent-teal: #64ffda; --accent-teal-dim: #64ffda20;
+  --accent-orange: #ff9100; --accent-orange-dim: #ff910020;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; font-size:16px; }
+body { background:var(--bg-primary); color:var(--text-primary); font-family:var(--font-body); line-height:1.72; -webkit-font-smoothing:antialiased; }
+::selection { background:var(--accent-orange); color:#000; }
+.toc-nav { position:fixed; top:0; left:0; width:260px; height:100vh; background:var(--bg-secondary); border-right:1px solid var(--border); overflow-y:auto; z-index:100; padding:28px 0; scrollbar-width:thin; }
+.toc-brand { padding:0 24px 20px; border-bottom:1px solid var(--border); margin-bottom:16px; }
+.toc-brand h2 { font-family:var(--font-mono); font-size:13px; font-weight:500; color:var(--accent-orange); letter-spacing:2px; text-transform:uppercase; }
+.toc-brand p { font-size:11px; color:var(--text-muted); margin-top:4px; }
+.toc-nav a { display:block; padding:7px 24px; font-size:13px; color:var(--text-secondary); text-decoration:none; transition:all 0.15s; border-left:2px solid transparent; }
+.toc-nav a:hover { color:var(--text-primary); background:var(--bg-tertiary); }
+.toc-nav a.ch { font-weight:600; color:var(--text-primary); font-size:12px; letter-spacing:1px; text-transform:uppercase; margin-top:14px; padding-top:10px; border-top:1px solid var(--border); }
+.toc-nav a.ch:first-of-type { border-top:none; margin-top:0; }
+.toc-nav a.sub { padding-left:36px; font-size:12.5px; }
+.main { margin-left:260px; max-width:860px; padding:48px 56px 120px; }
+.cover { text-align:center; padding:80px 0 60px; border-bottom:1px solid var(--border); margin-bottom:60px; }
+.cover-tag { font-family:var(--font-mono); font-size:12px; letter-spacing:3px; color:var(--accent-orange); text-transform:uppercase; margin-bottom:20px; }
+.cover h1 { font-family:var(--font-display); font-size:42px; font-weight:900; line-height:1.15; color:var(--text-primary); margin-bottom:18px; }
+.cover h1 em { font-style:italic; color:var(--accent-orange); }
+.cover .subtitle { font-size:18px; color:var(--text-secondary); max-width:620px; margin:0 auto 28px; line-height:1.6; }
+.cover .meta { font-family:var(--font-mono); font-size:12px; color:var(--text-muted); }
+.chapter { margin-bottom:64px; padding-top:32px; border-top:1px solid var(--border); }
+.chapter-num { font-family:var(--font-mono); font-size:11px; letter-spacing:3px; color:var(--accent-orange); text-transform:uppercase; margin-bottom:8px; }
+.chapter h2 { font-family:var(--font-display); font-size:32px; font-weight:700; line-height:1.25; margin-bottom:24px; }
+.chapter h3 { font-size:20px; font-weight:600; margin:36px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+.chapter h4 { font-size:16px; font-weight:600; margin:24px 0 10px; color:var(--accent-teal); }
+p { margin-bottom:16px; color:var(--text-secondary); }
+strong { color:var(--text-primary); font-weight:600; }
+em { color:var(--accent-gold); font-style:normal; }
+code { font-family:var(--font-mono); font-size:13px; background:var(--bg-tertiary); padding:2px 6px; border-radius:3px; color:var(--accent-teal); }
+pre { background:var(--bg-tertiary); border:1px solid var(--border); padding:18px 22px; border-radius:4px; overflow-x:auto; margin:16px 0; font-family:var(--font-mono); font-size:12.5px; line-height:1.6; color:var(--text-secondary); white-space:pre-wrap; }
+.callout { background:var(--bg-card); border:1px solid var(--border); border-left:3px solid var(--accent-blue); padding:18px 22px; margin:20px 0; border-radius:4px; }
+.callout.warn { border-left-color:var(--accent-gold); }
+.callout.danger { border-left-color:var(--accent-red); }
+.callout.success { border-left-color:var(--accent-green); }
+.callout.orange { border-left-color:var(--accent-orange); }
+.callout .callout-title { font-family:var(--font-mono); font-size:11px; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; font-weight:600; }
+.callout.warn .callout-title { color:var(--accent-gold); }
+.callout.danger .callout-title { color:var(--accent-red); }
+.callout.success .callout-title { color:var(--accent-green); }
+.callout.orange .callout-title { color:var(--accent-orange); }
+.callout p { margin-bottom:6px; font-size:14px; }
+.quote-block { border-left:3px solid var(--accent-orange); padding:16px 24px; margin:24px 0; background:rgba(255,145,0,.04); }
+.quote-block p { font-family:var(--font-display); font-size:18px; line-height:1.6; color:var(--text-primary); font-style:italic; margin-bottom:0; }
+.param-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px; }
+.param-table th { text-align:left; padding:10px 14px; background:var(--bg-tertiary); border:1px solid var(--border); font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); }
+.param-table td { padding:9px 14px; border:1px solid var(--border); color:var(--text-secondary); }
+.param-table td:first-child { font-family:var(--font-mono); color:var(--accent-teal); font-size:12.5px; }
+.param-table tr:hover td { background:var(--bg-card); }
+.flow-box { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:24px; margin:24px 0; }
+.flow-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center; margin-bottom:16px; }
+.flow-row:last-child { margin-bottom:0; }
+.flow-node { background:var(--bg-tertiary); border:1px solid var(--border); border-radius:6px; padding:10px 16px; text-align:center; font-family:var(--font-mono); font-size:12px; min-width:100px; }
+.flow-node.active { border-color:var(--accent-orange); color:var(--accent-orange); }
+.flow-node.green { border-color:var(--accent-green); color:var(--accent-green); }
+.flow-node.gold { border-color:var(--accent-gold); color:var(--accent-gold); }
+.flow-node.blue { border-color:var(--accent-blue); color:var(--accent-blue); }
+.flow-node.teal { border-color:var(--accent-teal); color:var(--accent-teal); }
+.flow-node.red { border-color:var(--accent-red); color:var(--accent-red); }
+.flow-node small { display:block; font-size:9px; color:var(--text-muted); margin-top:2px; }
+.flow-arrow { font-family:var(--font-mono); color:var(--text-muted); font-size:16px; }
+.nest-diagram { display:grid; grid-template-columns:1fr; gap:0; margin:24px 0; }
+.nest-level { background:var(--bg-card); border:1px solid var(--border); padding:20px 24px; }
+.nest-level:first-child { border-radius:8px 8px 0 0; }
+.nest-level:last-child { border-radius:0 0 8px 8px; }
+.nest-level + .nest-level { border-top:none; }
+.nest-level .nl-tag { font-family:var(--font-mono); font-size:10px; letter-spacing:2px; text-transform:uppercase; font-weight:700; margin-bottom:6px; }
+.nest-level .nl-title { font-size:16px; font-weight:600; margin-bottom:6px; }
+.nest-level .nl-desc { font-size:13.5px; color:var(--text-secondary); margin-bottom:0; }
+.nest-arrow { text-align:center; font-family:var(--font-mono); font-size:16px; color:var(--accent-orange); padding:4px 0; background:var(--bg-primary); margin:-1px 0; position:relative; z-index:1; }
+.metric-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin:20px 0; }
+.metric-card { background:var(--bg-card); border:1px solid var(--border); padding:16px; border-radius:4px; text-align:center; }
+.metric-card .mv { font-family:var(--font-mono); font-size:20px; font-weight:700; }
+.metric-card .mv.green { color:var(--accent-green); }
+.metric-card .mv.red { color:var(--accent-red); }
+.metric-card .mv.blue { color:var(--accent-blue); }
+.metric-card .mv.gold { color:var(--accent-gold); }
+.metric-card .mv.orange { color:var(--accent-orange); }
+.metric-card .mv.teal { color:var(--accent-teal); }
+.metric-card .ml { font-size:11px; color:var(--text-muted); margin-top:4px; text-transform:uppercase; letter-spacing:1px; }
+.footer-note { margin-top:80px; padding-top:24px; border-top:1px solid var(--border); font-family:var(--font-mono); font-size:11px; color:var(--text-muted); text-align:center; line-height:1.8; }
+@media (max-width:960px) { .toc-nav{display:none;} .main{margin-left:0;padding:32px 24px 80px;} .cover h1{font-size:30px;} .flow-row{flex-direction:column;} .flow-arrow{transform:rotate(90deg);} }
+</style>
+
+<style>
+.task { display:flex; gap:12px; padding:12px 16px; border:1px solid var(--border); border-radius:4px; margin:8px 0; background:var(--bg-card); align-items:flex-start; }
+.task:hover { border-color:var(--border-accent); }
+.task .check { font-family:var(--font-mono); font-size:18px; min-width:24px; text-align:center; line-height:1; margin-top:2px; }
+.task .check.done { color:var(--accent-green); }
+.task .check.next { color:var(--accent-gold); }
+.task .check.todo { color:var(--text-muted); }
+.task .body { flex:1; }
+.task .title { font-weight:600; color:var(--text-primary); font-size:14px; margin-bottom:4px; }
+.task .desc { font-size:13px; color:var(--text-secondary); margin-bottom:0; }
+.task .files { font-family:var(--font-mono); font-size:11px; color:var(--accent-teal); margin-top:6px; }
+.task .result { font-family:var(--font-mono); font-size:11px; color:var(--accent-green); margin-top:4px; }
+.task .result.negative { color:var(--accent-red); }
+.task .depends { font-family:var(--font-mono); font-size:10px; color:var(--text-muted); margin-top:4px; }
+.phase-bar { display:flex; gap:8px; margin:20px 0 8px; align-items:center; }
+.phase-tag { font-family:var(--font-mono); font-size:11px; letter-spacing:2px; text-transform:uppercase; padding:4px 12px; border-radius:3px; font-weight:600; }
+.phase-tag.done { background:var(--accent-green-dim); color:var(--accent-green); border:1px solid var(--accent-green); }
+.phase-tag.active { background:var(--accent-gold-dim); color:var(--accent-gold); border:1px solid var(--accent-gold); }
+.phase-tag.planned { background:var(--bg-tertiary); color:var(--text-muted); border:1px solid var(--border); }
+.phase-title { font-size:16px; font-weight:600; color:var(--text-primary); }
+.gate { background:var(--bg-tertiary); border:1px solid var(--border); border-left:3px solid var(--accent-gold); padding:12px 16px; margin:12px 0 20px; border-radius:4px; }
+.gate .gate-title { font-family:var(--font-mono); font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent-gold); margin-bottom:4px; }
+.gate p { font-size:13px; color:var(--text-secondary); margin-bottom:0; }
+</style>
+</head>
+<body>
+
+<nav class="toc-nav">
+<div class="toc-brand"><h2>DCC Plan</h2><p>Build &#183; Test &#183; Ship</p></div>
+<a class="ch" href="#cover">Overview</a>
+<a class="ch" href="#p0">P0: Foundation</a>
+<a class="ch" href="#p05">P0.5: Overnight Validation</a>
+<a class="ch" href="#p1">P1: L1&#8594;L2 Zoom Scanner</a>
+<a class="ch" href="#p1s">P1s: Seconds-Scale</a>
+<a class="ch" href="#p1x">P1x: Cross-Asset Combos</a>
+<a class="ch" href="#p2">P2: Generator Expansion</a>
+<a class="ch" href="#p3">P3: Multi-TF Governor (Live)</a>
+<a class="ch" href="#p4">P4: ZZ+SM+DCC Hybrid</a>
+<a class="ch" href="#p5">P5: MEXC Zero-Fee Bot</a>
+<a class="ch" href="#p6">P6: Full Auto</a>
+<a class="ch" href="#deps">Dependency Map</a>
+</nav>
+
+<div class="main">
+
+<section class="cover" id="cover">
+<div class="cover-tag">Action Plan &#183; Living Document</div>
+<h1>DCC Trading Governor <em>Checklist</em></h1>
+<div class="subtitle">Every step from overnight results to live trading. Check off as we go. Updated each session.</div>
+<div class="meta">Bojan Dobre&#269;evi&#263; &#215; C &#183; Started March 15, 2026</div>
+<div class="metric-grid" style="margin-top:32px;">
+<div class="metric-card"><div class="mv green">2 / 10</div><div class="ml">Phases Done</div></div>
+<div class="metric-card"><div class="mv gold">P1</div><div class="ml">Current Phase</div></div>
+<div class="metric-card"><div class="mv orange">~40</div><div class="ml">Total Tasks</div></div>
+<div class="metric-card"><div class="mv teal">+4.16%</div><div class="ml">Best Edge So Far</div></div>
+</div>
+</section>
+
+
+<!-- ------------------- P0: FOUNDATION ------------------- -->
+<section class="chapter" id="p0">
+<div class="chapter-num">Phase 0</div>
+<h2>Foundation &#8212; Build the Engine</h2>
+<div class="phase-bar"><span class="phase-tag done">DONE</span><span class="phase-title">March 15, 2026</span></div>
+
+<div class="task"><div class="check done">&#10003;</div><div class="body">
+<div class="title">v0.1: Basic MDL arena with 7 generators</div>
+<div class="desc">Direction prediction on single TF. DCC sensor (6-bit, 64-slot). Checkpoint/resume. CSV streaming.</div>
+<div class="files">BD_MDL_DCC_Predictor.py (single file, 1060 lines)</div>
+<div class="result">Result: 50.01% accuracy on 7,009 bars BTC 15m. REVERT-MU +0.88%. DCC pegged at u=1.0 (bug).</div>
+</div></div>
+
+<div class="task"><div class="check done">&#10003;</div><div class="body">
+<div class="title">v0.2: Fix DCC sensor bugs</div>
+<div class="desc">Identify: time-based DCC never fires in fast backtest. TREND-S poisons at -4.6%. Thompson too slow to learn.</div>
+<div class="result">Result: Diagnosis complete. u=1.0 frozen. Need bar-based updates.</div>
+</div></div>
+
+<div class="task"><div class="check done">&#10003;</div><div class="body">
+<div class="title">v0.3: Governor architecture</div>
+<div class="desc">Split into BD_DCC_engine.py (computation) + BD_MDL_DCC_Predictor.py (CLI). Vectorized numpy (1000x speedup). Thompson sampling with decay. 8-bit symbols, 128-slot buffer. Bar-based DCC and escalation. Dynamic window. Contrarian mode. 8 generators.</div>
+<div class="files">BD_DCC_engine.py (634 lines) + BD_MDL_DCC_Predictor.py (367 lines) + BD_MDL_DCC_Test.bat</div>
+<div class="result">Result: 2000 bars/s. DCC moves (u: 10&#8594;18). Escalation fires. 2 nuclear resets on real data. Contrarian on 15m: +0.54%.</div>
+</div></div>
+
+<div class="task"><div class="check done">&#10003;</div><div class="body">
+<div class="title">Governor architecture paper v1.0</div>
+<div class="desc">12-chapter paper: 5 actuators, S-metric, full auto mode, CCH bridge.</div>
+<div class="files">BD_8Z_DCC_Trading_Governor.html (v1.0, 674 lines)</div>
+</div></div>
+</section>
+
+
+<!-- ------------------- P0.5: OVERNIGHT ------------------- -->
+<section class="chapter" id="p05">
+<div class="chapter-num">Phase 0.5</div>
+<h2>Overnight Validation &#8212; 924K Bars</h2>
+<div class="phase-bar"><span class="phase-tag done">DONE</span><span class="phase-title">March 15, 2026 (overnight)</span></div>
+
+<div class="task"><div class="check done">&#10003;</div><div class="body">
+<div class="title">Build overnight multi-TF analysis suite</div>
+<div class="desc">Load 1m BTC data (924K bars, 21 months). Resample to 12 TFs. Run NORMAL + CONTRARIAN on each = 24 runs. Cross-TF coherence. 2-TF combo search.</div>
+<div class="files">BD_MDL_DCC_Overnight.py + BD_MDL_DCC_Overnight.bat</div>
+</div></div>
+
+<div class="task"><div class="check done">&#10003;</div><div class="body">
+<div class="title">Run overnight and analyze results</div>
+<div class="result">4/12 TFs positive contrarian (8h +0.68%, 15m +0.54%, 30m +0.52%, 4h +0.23%). 0/12 normal positive. 10m+1m combo = +4.16% across 3,355 signals. MM contrarian thesis validated.</div>
+</div></div>
+
+<div class="task"><div class="check done">&#10003;</div><div class="body">
+<div class="title">Fee impact analysis</div>
+<div class="result">Per-trade EV = 0.02%. Any fee above zero kills standalone edge. MEXC zero-fee = +40%/yr (1x), +400%/yr (10x). Or use as ZZ/SM confirmation layer (fees don't matter).</div>
+</div></div>
+
+<div class="task"><div class="check done">&#10003;</div><div class="body">
+<div class="title">Governor paper v2.0</div>
+<div class="desc">17 chapters. Added: contrarian discovery, overnight results, fee analysis, search space, three-engine architecture, updated phases.</div>
+<div class="files">BD_8Z_DCC_Trading_Governor.html (v2.0, 621 lines)</div>
+</div></div>
+
+<div class="gate"><div class="gate-title">Gate: P0.5 &#8594; P1</div>
+<p>&#10003; Contrarian edge exists on real data. &#10003; Multi-TF combos amplify signal. &#10003; 1m appears in all winning combos. Proceed to fine-grained search.</p></div>
+</section>
+
+
+<!-- ------------------- P1: L1->L2 ZOOM ------------------- -->
+<section class="chapter" id="p1">
+<div class="chapter-num">Phase 1</div>
+<h2>L1&#8594;L2 Zoom Scanner &#8212; Find the Optimal TF Combo</h2>
+<div class="phase-bar"><span class="phase-tag active">NEXT</span><span class="phase-title">Target: March 16&#8211;17</span></div>
+
+<div class="task"><div class="check next">&#9654;</div><div class="body">
+<div class="title">Build BD_MDL_DCC_Scanner.py</div>
+<div class="desc">Single script: L1 broad scan + L2 auto-zoom. Reuses BD_DCC_engine.py. Reads existing 1m data for BTC/ETH/SOL.</div>
+<div class="files">BD_MDL_DCC_Scanner.py + BD_MDL_DCC_Scanner.bat</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">L1: Broad scan &#8212; 30 TFs &#215; 3 assets &#215; contrarian</div>
+<div class="desc">TFs: 1m, 2m, 3m, 4m, 5m, 7m, 8m, 10m, 12m, 15m, 18m, 20m, 25m, 30m, 35m, 40m, 45m, 1h, 75m, 90m, 2h, 3h, 4h, 5h, 6h, 8h, 10h, 12h, 16h, 1D. Assets: BTC, ETH, SOL. Total: 90 runs. Expect ~30 min.</div>
+<div class="depends">Depends: ETH + SOL 1m data files in data/ folder</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">L1 analysis: rank all 90 single-TF results by edge</div>
+<div class="desc">Find which TFs and which assets have positive contrarian edge. Do ETH and SOL show same pattern as BTC? Is 15m&#8211;30m the universal sweet spot or BTC-specific?</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">L1 combos: test all 2-TF pairs from L1 winners</div>
+<div class="desc">Take top 10 single-TF results. Test all 45 pairwise combinations. Also test top cross-asset combos (BTC 10m + ETH 5m, etc).</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">L2: Zoom around winners &#8212; &#177;2 min steps</div>
+<div class="desc">If 10m+1m is best: test 8m+1m, 9m+1m, 10m+1m, 11m+1m, 12m+1m. Also 10m+2m, 10m+3m. Find the peak. Maybe 9m+2m at +5.1% is better. Auto-zoom: script picks top 5 combos and generates zoom grid automatically.</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">L2 results: identify THE combo</div>
+<div class="desc">The best TF &#215; asset &#215; combo with highest edge AND sufficient signal count (&gt;1000 signals).</div>
+</div></div>
+
+<div class="gate"><div class="gate-title">Gate: P1 &#8594; P1s</div>
+<p>Need: best combo identified with &gt;+2% edge on &gt;1000 signals across &gt;12 months data. If no combo clears this bar, expand generator catalogue (jump to P2) before continuing.</p></div>
+</section>
+
+
+<!-- ------------------- P1s: SECONDS ------------------- -->
+<section class="chapter" id="p1s">
+<div class="chapter-num">Phase 1s</div>
+<h2>Seconds-Scale Analysis</h2>
+<div class="phase-bar"><span class="phase-tag planned">PLANNED</span><span class="phase-title">After P1</span></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Run engine on 1s BTC data</div>
+<div class="desc">86,400 bars per day. Resample to 2s, 3s, 5s, 10s, 15s, 30s. Run contrarian on each. MM stop hunts are 1-second events &#8212; DCC might see them as highly compressible templates.</div>
+<div class="depends">Depends: BTCUSDT_1s data files (already have 1 day in data/)</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Test seconds + minutes cross-scale combos</div>
+<div class="desc">1s+10m, 2s+15m, 5s+30m, etc. Does adding seconds-scale confirmation to the minute-scale signal amplify edge? The MM propagation delay (stop hunt starts in 1s, plays out over 1m&#8211;5m) should be visible here.</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Fetch more 1s data if needed</div>
+<div class="desc">Currently 1 day of 1s data. May need 7&#8211;30 days for statistical significance at seconds scale.</div>
+</div></div>
+
+<div class="gate"><div class="gate-title">Gate: P1s &#8594; P1x</div>
+<p>Need: at least one seconds-scale combo with &gt;+1% edge, OR determination that seconds scale adds nothing (also useful &#8212; focus on minutes).</p></div>
+</section>
+
+
+<!-- ------------------- P1x: CROSS-ASSET ------------------- -->
+<section class="chapter" id="p1x">
+<div class="chapter-num">Phase 1x</div>
+<h2>Cross-Asset Combinations</h2>
+<div class="phase-bar"><span class="phase-tag planned">PLANNED</span><span class="phase-title">After P1s or parallel</span></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Run L1 scan on ETH and SOL (if not done in P1)</div>
+<div class="desc">Same 30 TFs, contrarian mode. Do alts show same contrarian pattern as BTC? Different TFs might dominate (ETH more volatile, SOL more manipulated).</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Cross-asset combo search</div>
+<div class="desc">BTC 10m + ETH 5m. BTC 1m + SOL 15m. All pairwise cross-asset combos from L1 winners. MMs move correlated assets together &#8212; BTC dump triggers ETH/SOL dumps 2&#8211;5 seconds later. Cross-asset coherence detects the propagation delay.</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">3-TF combo search (if 2-TF results warrant)</div>
+<div class="desc">Maybe BTC 1m + BTC 10m + ETH 5m is the ultimate signal. Combinatorial explosion: use L1&#8594;L2 zoom, not brute force. Only test 3-TF combos built from top-10 single results.</div>
+</div></div>
+
+<div class="gate"><div class="gate-title">Gate: P1x &#8594; P2</div>
+<p>Need: final &#8220;best known combo&#8221; with edge, signal count, and robustness documented. This becomes the target configuration for the live system.</p></div>
+</section>
+
+
+<!-- ------------------- P2: GENERATORS ------------------- -->
+<section class="chapter" id="p2">
+<div class="chapter-num">Phase 2</div>
+<h2>Generator Expansion + Walk-Forward</h2>
+<div class="phase-bar"><span class="phase-tag planned">PLANNED</span></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Add VOL-ABSORB generator</div>
+<div class="desc">Big volume + small candle = absorption = reversal. Uses volume data already in CSV. Competes in MDL arena alongside existing generators. Does not duplicate SM logic (DCC uses it for direction prediction, SM uses it for trade gating).</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Add STOP-HUNT generator</div>
+<div class="desc">Detect sweep below recent low / above recent high followed by reversal. Classic MM pattern. Should compress well because it repeats on a template.</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Add SESSION generator</div>
+<div class="desc">Time-of-day pattern: Asian range, London breakout, US session. Encode hour-of-day as part of the prediction signal. Requires timestamp in data.</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Multi-source fetcher upgrade</div>
+<div class="desc">Download volume from Binance + Bybit + OKX + MEXC simultaneously. Sum volumes. Cross-exchange volume divergence is itself an MM signal.</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">L3: Walk-forward robustness</div>
+<div class="desc">Take top 10 combos. Test on Jun&#8211;Dec 2024 separately from Jan&#8211;Mar 2026. Does 10m+1m work in BOTH periods? This is the overfitting test. If it only works in one period, the edge is spurious.</div>
+</div></div>
+
+<div class="gate"><div class="gate-title">Gate: P2 &#8594; P3</div>
+<p>Need: best combo passes walk-forward (positive edge in both sub-periods). New generators improve edge. If walk-forward fails, the edge is overfit &#8212; return to P1 with expanded generators.</p></div>
+</section>
+
+
+<!-- ------------------- P3: MULTI-TF LIVE ------------------- -->
+<section class="chapter" id="p3">
+<div class="chapter-num">Phase 3</div>
+<h2>Multi-TF Governor &#8212; Real-Time System</h2>
+<div class="phase-bar"><span class="phase-tag planned">PLANNED</span></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Build real-time multi-TF arena</div>
+<div class="desc">Run 2&#8211;4 arenas simultaneously on live WebSocket data. Each arena on its TF. Governor computes cross-TF coherence in real time. Outputs: direction, confidence, coherence score, S-metric.</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Live signal logging (no trading)</div>
+<div class="desc">Run for 7&#8211;14 days. Log every signal with timestamp. Compare to what actually happened. Is live accuracy consistent with backtest accuracy?</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Signal quality monitor implementation</div>
+<div class="desc">ACTIVE/DARK mode switching. Track rolling accuracy. Auto-disable when no edge detected. Auto-re-enable when structure returns.</div>
+</div></div>
+</section>
+
+
+<!-- ------------------- P4: HYBRID ------------------- -->
+<section class="chapter" id="p4">
+<div class="chapter-num">Phase 4</div>
+<h2>ZZ + SM + DCC Hybrid</h2>
+<div class="phase-bar"><span class="phase-tag planned">PLANNED</span></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">DCC as ZZ confirmation filter</div>
+<div class="desc">Boolean signal: &#8220;DCC agrees with ZZ entry direction&#8221; or &#8220;DCC says MM trap, reduce size.&#8221; ZZ makes the trading decision. DCC filters. Measure: does DCC improve ZZ win rate?</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">DCC as ZZ breakout detector</div>
+<div class="desc">When ZZ says leg exceeds average length (potential breakout), DCC says whether this is a real breakout or MM fake-out. Test: DCC contrarian on breakout bars vs non-breakout bars.</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">SM volume confirmation layer</div>
+<div class="desc">SM detects absorption (big vol, small candle) or momentum confirmation (big vol, big candle). DCC detects regime + direction. ZZ detects structure. Triple agreement = max size. Any disagreement = reduce.</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Backtest the hybrid on ZZ paper trader data</div>
+<div class="desc">Run ZZ paper trader with and without DCC filter on same data. Measure: PnL improvement, drawdown reduction, win rate change.</div>
+</div></div>
+</section>
+
+
+<!-- ------------------- P5: MEXC BOT ------------------- -->
+<section class="chapter" id="p5">
+<div class="chapter-num">Phase 5</div>
+<h2>MEXC Zero-Fee Standalone Bot</h2>
+<div class="phase-bar"><span class="phase-tag planned">PLANNED</span></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Playwright browser automation for MEXC</div>
+<div class="desc">No API (retail-locked). Browser automation opens/closes positions on MEXC zero-fee perpetuals. DCC signal drives entries directly.</div>
+<div class="depends">Depends: P3 (validated live signals)</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Paper trade on MEXC with real UI, fake money</div>
+<div class="desc">Run the bot for 14 days. Monitor: fills, slippage, latency, position management. Compare to backtest expectations.</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Live with minimum capital ($100&#8211;$200)</div>
+<div class="desc">Real money, real fills, real slippage. Start at 5x leverage. Measure: actual vs expected PnL. If positive after 30 days, scale up.</div>
+</div></div>
+</section>
+
+
+<!-- ------------------- P6: FULL AUTO ------------------- -->
+<section class="chapter" id="p6">
+<div class="chapter-num">Phase 6</div>
+<h2>Full Auto Mode</h2>
+<div class="phase-bar"><span class="phase-tag planned">PLANNED</span></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Single CLI command: auto mode</div>
+<div class="desc"><code>python BD_MDL_DCC_Governor.py auto BTCUSDT --max-hours 24</code> &#8212; DCC decides timeframes, generators, windows, thresholds, sizing, when to trade, when to stop.</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">HTML live paper trader</div>
+<div class="desc">Same design system as ZZ and SM paper traders. WebSocket feeds. Real-time equity curve, trade log, DCC dashboard. Multi-TF coherence visualization.</div>
+</div></div>
+
+<div class="task"><div class="check todo">&#9675;</div><div class="body">
+<div class="title">Compounding + skimming protocol</div>
+<div class="desc">Auto-skim at 2x equity. Cold wallet transfers. System runs with minimum human oversight. The endgame.</div>
+</div></div>
+</section>
+
+
+<!-- ------------------- DEPENDENCY MAP ------------------- -->
+<section class="chapter" id="deps">
+<div class="chapter-num">Reference</div>
+<h2>Dependency Map</h2>
+
+<div class="flow-box">
+<div class="flow-row">
+<div class="flow-node green">P0<small>Engine built</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node green">P0.5<small>Overnight validated</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node gold">P1<small>L1&#8594;L2 zoom</small></div>
+</div>
+<div class="flow-row">
+<div class="flow-node gold">P1<small>Best minutes combo</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node">P1s<small>Seconds scale</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node">P1x<small>Cross-asset</small></div>
+</div>
+<div class="flow-row">
+<div class="flow-node">P1x<small>Final combo</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node">P2<small>Generators + L3</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node">P3<small>Live multi-TF</small></div>
+</div>
+<div class="flow-row">
+<div class="flow-node">P3<small>Validated live</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node">P4<small>Hybrid ZZ+SM+DCC</small></div>
+</div>
+<div class="flow-row">
+<div class="flow-node">P3<small>Validated live</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node">P5<small>MEXC bot</small></div>
+<div class="flow-arrow">&#8594;</div>
+<div class="flow-node active">P6<small>Full auto</small></div>
+</div>
+</div>
+
+<p><strong>P4 and P5 are parallel paths</strong> after P3. P4 (hybrid) doesn&#8217;t need zero fees because DCC is a filter, not a standalone trader. P5 (MEXC bot) is the standalone zero-fee path. Both lead to P6 (full auto) where the hybrid runs on MEXC with zero fees for maximum edge.</p>
+
+<div class="callout orange">
+<div class="callout-title">Key files across all phases</div>
+<p><code>BD_DCC_engine.py</code> &#8212; Pure computation. Used by everything. Never touches I/O.</p>
+<p><code>BD_MDL_DCC_Predictor.py</code> &#8212; Single-TF CLI with resume/logging. Used for testing.</p>
+<p><code>BD_MDL_DCC_Overnight.py</code> &#8212; Multi-TF batch analysis. P0.5 tool.</p>
+<p><code>BD_MDL_DCC_Scanner.py</code> &#8212; L1&#8594;L2 zoom search. P1 tool. <em>(to build)</em></p>
+<p><code>BD_MDL_DCC_Governor.py</code> &#8212; Real-time multi-TF governor. P3 tool. <em>(to build)</em></p>
+<p><code>BD_8Z_DCC_Trading_Governor.html</code> &#8212; Architecture paper. Updated each phase.</p>
+<p><code>BD_8Z_DCC_ActionPlan.html</code> &#8212; This checklist. Updated each session.</p>
+</div>
+</section>
+
+<div class="footer-note">
+DCC Trading Governor Action Plan v1.0 &#183; Bojan Dobre&#269;evi&#263; &#183; AIM&#179; Institute &#183; March 15, 2026<br>
+Living document. Updated each session. Protected by 8Z Shield.<br>
+Built by BD &#215; C &#8212; &#8220;because you see.&#8221;
+</div>
+
+</div>
+</body>
+</html>
