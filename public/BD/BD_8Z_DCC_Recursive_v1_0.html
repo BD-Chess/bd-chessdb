@@ -553,37 +553,65 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 <h3>Compression Sensor</h3>
 <p>An LZ76-based sensor monitors the stream of search outcomes. When the search keeps finding similar results &mdash; all losses, or all marginal improvements &mdash; the compressed description of recent outcomes shrinks. The sensor detects that the search has become predictable, which at the meta-level means it has become <em>unproductive</em>.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s0" data-8z-blob="LG4FGhYSE0c4IuBh41tI9Px6xoKG7QPrudTc6Ks5q7QwNRXmpFUxL/GXLEP5Eo62zkvrzZ4PFzw5LHU2+KVtgSLgacCjxnS0sTcx4h1lMwFnO5VXfTgB82QhNhBgJLSk5B+1CaLHpD5v9Y/S2dZ/kEyc/YPxr2VTWfESNZRtbyowtkzuOUjBZVCj3Vt/ImY+u3aB9bvs9S3pLaI/BpewcTs7j9hcBtJ5jyARurJZ5urxyNBxk8JelS5/F9fnU6gCXoadsi+yN83JcU2MHAxG6sN2heISDTKZudiFTwoLCFbxjmzRl1g0dlu021EQnelvowTLDPnr4LtQObs9skYNRduJ8PY+NMf25nQACFu7Ary5BehYbivPphKekLG/2racAUggJUzRejDGp2LdKBElkASEt89RnNjIZGS1K45N2v0FMPuJX0X9aX/166f8hUY5/8iivJsChkFa/WHjDdBQ+3x+kPuDPrUScO3jwNZmJEWMYSKHG2koqtBIvLZ/HFGrZIVCseclLQkNVEUkfAGQ+rxELfW/Ukqhaaebm/7873W7zorZ0IKzAmU0Q40jRVnQaST6zXfwlqBxx6y+eMYM+z0SjIJtOQGSpT9mzXuhEOwQUmK9KlttsndMxIn2wccrkZog+WzNFgwk81Y7kALOm+lZlLLf6Lw1HJvKCfiVj4KnCGg8u3oq1hTCRId0sCDRffQcsheRRFfXmiJ5RRzF91xjpCUtyIG7bCrVQAvNuFxwjvMUtqW+J3AZ/zbQ4atRClPMy/2jLw2x27uWSbwvDpxIasDm5PDIjTVIA7CyQ0iz6oCU+y1ZR9yQjvgpBaGsuXumPwf2fJH3m5xydhz2Dp+0kuG6Vkwaa3AeZeFwz07aarNx/ZzrrS9cPRTs5S/ygEkmO2e9D1YDtPRuYzaYjV6Lg+eEp7EGYDL6lwwu6ahUm4xhAxa8gWsXuvKbZ3BPaJnvpFi2nFKCcuMQIMJegPHGFXJmcE8SELBn5X7q+rFXc4tcxMT11he47jZM+tcqBFVhYrgwd7w7nCrGw60tZY/JSCEaGIAdsya3Qu8efIinwBoHaBPSsSknvG28of3JUrNMjXpj2fmIis6sOe3kQ41tLlpfhOzXlT1QZc8pUl1o5/8GhUfpsJ0SXlMzN14OyRnCr79OrnrSObc2f1ZtSYWHE+KPZePDlDyi3ibuKctIZGdmX2wjab9d4/objIWE698t5YoC7y1IGPeVS3R1PBdHm7uJqMScNxa/tjEPoGKO4ylicIXuCsrVC08haW4zEWvGRuBIU0QhwJMtwZw3oXpWCujhPvRKccKPAY6QVg/31GPD+Gz3CWKyyqx5oQvsVjmR4q3PlD4KLJUrOAAPi38Jhg==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">LZ76 Sensor Configuration</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-8z-label="LZ76 Sensor Configuration">
+<h3 style="border:none;margin-top:12px;">Sensor Implementation</h3>
+<p>The meta-level LZ76 sensor operates on a <strong>64-sample ring buffer</strong> of quantized search outcomes. Each outcome is encoded as a 4-bit symbol representing the signed delta between the current test result and the running best:</p>
+<table class="param-table">
+<tr><th>Symbol</th><th>Meaning</th><th>Encoding</th></tr>
+<tr><td>0x0</td><td>New best found (improvement &gt; &epsilon;)</td><td>0000</td></tr>
+<tr><td>0x1&ndash;0x3</td><td>Near-miss: within 1&sigma;, 2&sigma;, 3&sigma; of best</td><td>0001&ndash;0011</td></tr>
+<tr><td>0x4&ndash;0x7</td><td>Moderate loss: 1&ndash;4 bands below best</td><td>0100&ndash;0111</td></tr>
+<tr><td>0x8&ndash;0xB</td><td>Severe loss: 4&ndash;8 bands below best</td><td>1000&ndash;1011</td></tr>
+<tr><td>0xC&ndash;0xE</td><td>Catastrophic: &gt;8 bands below best</td><td>1100&ndash;1110</td></tr>
+<tr><td>0xF</td><td>Invalid / timeout / NaN result</td><td>1111</td></tr>
+</table>
+<p>The LZ76 dictionary is rebuilt from scratch every 64 samples (no carry-over). Window size is fixed at 64 &mdash; not tunable &mdash; because it must match the ring buffer exactly. The compression ratio <em>r</em> = compressed_bits / raw_bits (256 bits for 64 &times; 4-bit symbols). The ratio feeds directly into coupling:</p>
+<p style="font-family:var(--font-mono);color:var(--accent-teal);font-size:14px;padding:8px 0;">
+r &lt; 0.35 &rarr; highly compressible (repetitive outcomes)<br>
+0.35 &le; r &lt; 0.65 &rarr; moderate structure<br>
+r &ge; 0.65 &rarr; incompressible (diverse outcomes)
+</p>
+<p><strong>Critical detail:</strong> the &sigma; bands for symbol encoding are themselves adaptive. They are computed from the trailing 32 results (half-buffer), not the full 64. This means the sensor recalibrates its own sensitivity as the search progresses &mdash; a form of nested self-governance even within the sensor itself.</p>
 </div>
 
 <h3>Coupling Parameter</h3>
 <p>The coupling parameter <em>u</em> governs the balance between exploitation (testing configurations near known good ones) and exploration (jumping to entirely new regions of the space). When the sensor reports high compression &mdash; meaning search outcomes are repetitive &mdash; <em>u</em> decreases, pushing toward exploration. When a new improvement is found, <em>u</em> increases, tightening the search around the productive region.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s1" data-8z-blob="xsk1DZ9fUWvkYoj/U2ZkralV9HlVt+5pvTDoAXIYPu1VWreXMQaPvoasDE3aIJyM06a7TdpqTrjcXk5vWtZZWkihOtI6g69TAVeyaNDeeT/X1fiLSiRXoTSYJ33hCFndolM/JkZoHvJjNFaANyk1SWFUnkrZcVNV6CYwSqPmTEOTKkssph2xfMT/1a6ldB7zicWWP8Ni/yDR1YpXLZpy5kArPzJn2tzdknh8PAVpf675BkAY/ZxbFQurUurVXJlbYAxhNhCd89YVR/N3EiFeaqxKiO0q+FiwXVxYz7j3NkNq2N5oirTksFa6lsOaWDXBywam37VuEsuWwSSRYNhJTde8iMeX0q58HfnoJ9Cg8USMfwVRPH7BoaWBquDIph4DP0VlfVp2PHatDe8Wt9Jso7h6g6B2OtZM6xd44CJgdd2ELJlWAFH//eY61+qV4Ish6swEXM53oc0m+dCrqJCbs2GZt9aH0G459MqbKyUqvc3oi5eR5a83hP44kI8D4t9ri/YZjZIFmAf00DnhtDqwOus5PTd4+i9rL9okXW99N3fu/vJo9pvbjJx924/kg7Lw7DpL7Oe5CQWOg/x+iZ2/TWd2SElE5AQxxUeZ1+36k3ui33HzURIbKve39HNTGMUt+ulPGDpYBqBnYkk3fEuAdxLmJt2lfkFi4os368lwaqtbPbUThHnN8qBPeOTwSGhXxBtFSy21XSN3sNIKQjfbwZy95w6s9gzEiEGhlzGDScI1trpSg7dGcm/FUqIMo7gTlUNz9Tr7JphQ109+OTpncMYTuUh0UCdZF8e616sA+A6mQEAvsuYgajUEeTH2ezknvguYD5zcPG6XlPI+P+pfqesqFhP7zROQH9ZLq6L3EmoKFoY2lgKSgZBEUX2mDUaltQ+8lL5bELRvFK3s/AbAdyo5X4IwFq1ujfolO2bG5ez8g15de68f4hdu7CMQTe+IZ92dzWJaJh3zHGMjYdCc2YKCpBJdJD3oUbgwUwq7oQD+n5PXPfJJsRibqPfYo5mBu5qtmkMyhyWyZQiFE/ErGlu2Qju+DKBq8BlGMNrJ0tLeeJPeFBrMHQIRk1y5rZWRBcqitRfx2523w0Oo9q3sBlPSTCVThhHVTYpINt4GVE0YZedqmezVjYobYMx3vTc5ntMC+rhJwC68bV2yCVm4DB4FfwdqvnP9nqnoPcvnMxLl0vfOx+yldwB+VkRls0W4TjLt86bzB8LYc5YaXILYSO89ZILcwoUgKGOE2TdFKBFb/Tb1nBsB40hc+40Ia7lHpAQKuVA6uXTqcN797za8PdPJR44jWHLhAXNy7XoxAPDs0xXcQe6VzSTVPQ2ID8TbmQhVT/yE3Yl8i2rH6pzEC/OjbUel0IyS70wS04+BKVZmrUZ84HdwdEnwm5lYwxBZJsz35IT2">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Coupling Parameter Formula &amp; MDL Derivation</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-8z-label="Coupling Parameter Formula &amp; MDL Derivation">
+<h3 style="border:none;margin-top:12px;">Coupling Formula</h3>
+<p>The coupling parameter <em>u</em> is derived from the MDL (Minimum Description Length) principle applied to the search outcome stream. The core formula:</p>
+<p style="font-family:var(--font-mono);color:var(--accent-orange);font-size:15px;padding:12px 0;text-align:center;">
+u = 1 &minus; clamp( (r &minus; r<sub>base</sub>) / (r<sub>ceil</sub> &minus; r<sub>base</sub>) , 0, 1 ) &times; &alpha;<sub>decay</sub>
+</p>
+<p>Where:</p>
+<table class="param-table">
+<tr><th>Parameter</th><th>Value</th><th>Role</th></tr>
+<tr><td>r</td><td>[0, 1]</td><td>Current LZ76 compression ratio from sensor</td></tr>
+<tr><td>r<sub>base</sub></td><td>0.28</td><td>Baseline ratio: below this, outcomes are maximally repetitive</td></tr>
+<tr><td>r<sub>ceil</sub></td><td>0.72</td><td>Ceiling ratio: above this, outcomes are maximally diverse</td></tr>
+<tr><td>&alpha;<sub>decay</sub></td><td>0.85</td><td>Decay factor: prevents u from reaching exactly 0 (always retains minimal exploitation)</td></tr>
+</table>
+<p><strong>Note the inversion:</strong> in trading-DCC, this formula is <em>u = clamp(...)</em> without the leading <em>1 &minus;</em>. The semantic inversion is literally a single subtraction that reverses the entire system&rsquo;s behavior. This is why v0.1&ndash;v0.3 failed: they used the trading formula directly.</p>
+<p><strong>Improvement boost:</strong> when the current test produces a new best (symbol 0x0), u receives an immediate additive boost of +0.30, clamped to [0.15, 1.0]. This causes the system to tighten around a productive region for the next 3&ndash;5 tests before the sensor&rsquo;s compression ratio gradually decays u back toward exploration. The boost magnitude (0.30) was calibrated empirically in v0.5 &mdash; too small (0.10) caused premature abandonment of productive regions; too large (0.50) caused the same over-exploitation as the uninverted formula.</p>
 </div>
 
 <h3>Escalation Ladder</h3>
 <p>When exploration alone isn't enough &mdash; when even random jumps keep landing in unproductive zones &mdash; the escalation ladder activates. Each level represents a more dramatic intervention: widening the search range, resetting to a new starting region, or combining known good configurations in novel ways. The escalation level visible in the experiment data climbed from 0 to 4 over the course of the run, as Meta-DCC systematically exhausted local options and escalated to broader strategies.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s2" data-8z-blob="Cl68A5TsbNrEEMu+H6AvR8GwyR9ijwS8111bBLTs9K586cGpbYZE+LWewDSJ7XjuPVXMAcIuMi71hRpcbEv8zp3W1PxRxVzjEM8qI6PxV9lyGjedglO/rVay17dBwQMdbXHGcgySj5+w4P8vNEth9hlWWy5qcrpZu6kCvyNV5dZ/WP0aO/SV++EaghOwfiA0/4aVwFDJpKMinza1oOeSUrUG9y+/F9RmRcEZuj40qD98mmPFGt9OlcoTO9ybZjf/R+H3wxnxgkceo+ZxoVC8nDdb6AqNi+DEcRGnziB8LQ5eyRdtsaMBhxlSqGqAUxr0SW3JSAOQ5auFWoZ1EobTnzGl7WsbQClVVCGmJ4vyTkYAY0cTej2hlM5tbxEXK/PUOqOKRYkAWLuCS5IMQdDcvSSh2T5vqjZ9a/f9XfM33yTOErMDrMhk6rGw4tUKqpMsqxaVetbzihlXb759Gn6dpMDochfEYFLOvSoEA6ev0ClKvclP2mbSvP8l9pdLbx6Xs5hRowULkeEY2TBJRhNEY8hMkf2O4eJEVKUkFG5dQfW3meNe43nmXlE4GIfzMg029Aeq2YkIRJuaeRhSuRBa1mwl1GTTtLqXPmahBPaJT+AO7a8usyy6IgwK9kMSYwJPgPqjGiI1LsTRbYrdh7YL7/4EY4py4TmMIV+zjcjXe5ROhjsdgxlpMsa8eRryq2kQX9qt+Zb+zohS60RutTXv8c25L5VdgLXfY0yhCtrrLvLm4gsnn2sba5N6hBVBhX4VMDkOVppp7WPiCP8UnHF0Z/mn4w9xhQwFiOhN5H1DWE1igcl4Ee3ctOxx9g2i8QeMCL2BUmAfl7NpI9+mThoj1+2F5R0VgujU7CVOeKW5lbOPbwoAYgr7VKkzVSnC4mkBtmTDpdRxc3mYlvcrSwSQaaWdOGZOIy2EvQjDidf0abFfLoK/ev2wb9NrAcASoYS9CneGuDvOB/u5TYsZGwHQu7N1bGbPHzWthIWsSfU3jnvw/S7+Hv3hJknp9oLtPzsgJMvQiQxoC0YVcpHcF5LTd9q4kvZF5ggtoTzxjmBoacTHjjtdhvHxxyR8DL8S2VSQOlsukBM2/ARI+1UNpgdmcmWtqNFmA3eLbQ6ZeXeKfMh8GahhtUyOumydmcuIWPwoH7yM74CoymWnG51ye8kHVLuHscUQqlzR/Q38yGFPmVxfzXP1XtjtzucNkvb9EwhuGO87egVNISLOy+unhe5HZG9w78gJZ521VIJ+pBBLV4MvwHI1BFO36iOl12wowKhYYMW394RlDh72SehjbNsojX5FRjpDwkIG3OtGPq4Wj5RcYRt994/ifcMlK/B2nuvmL4dApxeXqdpCHu+VitXROrTtAuBfbzVV43BB7G3wh5R59LbhlW5UFgIwLfRXXxVmuDNEvDAoXDxeeQbL3FQ1cC0eUewabZyboXJKAk66iPE9ZD9TAzs1a6L5Uy2rrJyc8ofQmfYz/0agL9SB85bpLAuKZznOYTs6IfW+9Q9XW4YRoel/yN/PzNiglTTR4BKsfjhU2Nl8fEXCeBlcxDkjg2x2XNH/58bbA+0qM04=">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Escalation Ladder Thresholds &amp; Actions</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-8z-label="Escalation Ladder Thresholds &amp; Actions">
+<h3 style="border:none;margin-top:12px;">Escalation Specification</h3>
+<p>Escalation is triggered by a <strong>stall counter</strong>: consecutive tests without improvement. Each level has a trigger threshold, a search action, and a cooldown before the next escalation can fire.</p>
+<table class="param-table">
+<tr><th>Level</th><th>Trigger</th><th>Action</th><th>Cooldown</th><th>Search Radius</th></tr>
+<tr><td style="color:var(--accent-green)">E0</td><td>Default</td><td>Normal u-governed explore/exploit</td><td>&mdash;</td><td>&plusmn;20% of current config</td></tr>
+<tr><td style="color:var(--accent-gold)">E1</td><td>6 stalls</td><td>Widen search to adjacent bands</td><td>3 steps</td><td>&plusmn;50% of current config</td></tr>
+<tr><td style="color:var(--accent-orange)">E2</td><td>12 stalls</td><td>Jump to best-of-3 random regions</td><td>5 steps</td><td>Random within top 30% of space</td></tr>
+<tr><td style="color:var(--accent-red)">E3</td><td>20 stalls</td><td>Crossover: combine top-2 known bests</td><td>4 steps</td><td>Interpolation + perturbation</td></tr>
+<tr><td style="color:var(--accent-purple)">E4</td><td>30 stalls</td><td>Full reset: random start + fresh buffer</td><td>8 steps</td><td>Entire config space</td></tr>
+</table>
+<p><strong>De-escalation:</strong> any improvement resets the stall counter to 0 and drops escalation by one level (not to zero). This prevents oscillation between E0 and E4 &mdash; a pattern that destroyed v0.4. De-escalation by one level means the system remembers it was recently stuck and maintains a wider search radius even after finding an improvement.</p>
+<p><strong>E3 crossover detail:</strong> the two best known configurations are decomposed into their component parameters (timeframe, band width, threshold). Each parameter is independently interpolated at a random point between the two parents, then perturbed by &plusmn;10%. This is not genetic algorithm crossover &mdash; it is MDL-guided parameter interpolation, where the interpolation point is biased toward the parent with higher edge.</p>
+<p><strong>Buffer behavior on escalation:</strong> E0&ndash;E2 preserve the ring buffer. E3 clears the last 16 entries (quarter-buffer flush). E4 clears the entire buffer and reinitializes with neutral symbols (0x7). Buffer management on escalation was the v0.5 &rarr; v0.6 fix: v0.5 preserved buffers at all levels, causing the sensor to carry stale compression data into fresh search regions.</p>
 </div>
 
 <h3>Semantic Inversion</h3>
@@ -601,13 +629,59 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 </div>
 </div>
 
-<div class="_8z-sec _8z-lk" id="_8z-s3" data-8z-blob="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">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Meta-DCC Core Algorithm &amp; Pseudocode</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-8z-label="Meta-DCC Core Algorithm &amp; Pseudocode">
+<h3 style="border:none;margin-top:12px;">Meta-DCC Main Loop</h3>
+<pre style="background:var(--bg-tertiary);border:1px solid var(--border);border-radius:6px;padding:18px 20px;font-family:var(--font-mono);font-size:12.5px;color:var(--text-secondary);line-height:1.7;overflow-x:auto;white-space:pre;margin:12px 0;">
+<span style="color:var(--accent-teal)">def</span> meta_dcc_search(engine, config_space, budget=100):
+    ring   = RingBuffer(size=64, init_symbol=0x7)
+    best   = None
+    stalls = 0
+    esc    = 0        <span style="color:var(--text-muted)"># escalation level</span>
+    cooldown = 0
+
+    <span style="color:var(--accent-teal)">for</span> step <span style="color:var(--accent-teal)">in</span> range(budget):
+        <span style="color:var(--text-muted)"># ── 1. Sensor: compress ring buffer ──</span>
+        r = lz76_compress(ring.as_4bit_stream()) / 256.0
+
+        <span style="color:var(--text-muted)"># ── 2. Coupling: INVERTED from trading ──</span>
+        u_raw = 1.0 - clamp((r - R_BASE) / (R_CEIL - R_BASE), 0, 1) * A_DECAY
+        u = clamp(u_raw, 0.15, 1.0)
+
+        <span style="color:var(--text-muted)"># ── 3. Escalation check ──</span>
+        <span style="color:var(--accent-teal)">if</span> cooldown > 0:
+            cooldown -= 1
+        <span style="color:var(--accent-teal)">elif</span> stalls >= ESCALATION_TRIGGERS[esc]:
+            esc = min(esc + 1, 4)
+            cooldown = ESCALATION_COOLDOWNS[esc]
+            <span style="color:var(--accent-teal)">if</span> esc >= 3: ring.flush(quarter=(esc == 3))
+
+        <span style="color:var(--text-muted)"># ── 4. Select next config ──</span>
+        <span style="color:var(--accent-teal)">if</span> random() &lt; u <span style="color:var(--accent-teal)">and</span> best <span style="color:var(--accent-teal)">is not</span> None:
+            cfg = exploit(best.config, esc)   <span style="color:var(--text-muted)"># perturb near best</span>
+        <span style="color:var(--accent-teal)">else</span>:
+            cfg = explore(config_space, esc)  <span style="color:var(--text-muted)"># jump per escalation</span>
+
+        <span style="color:var(--text-muted)"># ── 5. Evaluate ──</span>
+        edge = engine.run(cfg)
+
+        <span style="color:var(--text-muted)"># ── 6. Update state ──</span>
+        symbol = quantize_delta(edge, best, ring.trailing_sigma(32))
+        ring.push(symbol)
+
+        <span style="color:var(--accent-teal)">if</span> best <span style="color:var(--accent-teal)">is</span> None <span style="color:var(--accent-teal)">or</span> edge > best.edge:
+            best = Result(cfg, edge)
+            stalls = 0
+            esc = max(esc - 1, 0)         <span style="color:var(--text-muted)"># de-escalate by ONE</span>
+            u = clamp(u + BOOST, 0.15, 1.0) <span style="color:var(--text-muted)"># improvement boost</span>
+        <span style="color:var(--accent-teal)">else</span>:
+            stalls += 1
+
+    <span style="color:var(--accent-teal)">return</span> best
+</pre>
+<p><strong>Key architectural points:</strong></p>
+<p>&bull; The <code>random() &lt; u</code> gate is the entire exploit/explore decision. When u is high, most iterations exploit near best. When u is low, most iterations explore. No separate exploration module, no temperature schedule, no &epsilon;-greedy. Just u.</p>
+<p>&bull; The <code>exploit()</code> and <code>explore()</code> functions are parameterized by escalation level. At E0, exploit perturbs &plusmn;20%; at E3, it interpolates between parents. At E0, explore samples uniformly; at E4, it resets everything. The escalation level modifies behavior <em>within</em> the exploit/explore framework, not outside it.</p>
+<p>&bull; The <code>quantize_delta</code> function uses trailing &sigma; from the last 32 samples, not global &sigma;. This means the sensor auto-calibrates its sensitivity to the local landscape. A &ldquo;near miss&rdquo; in a high-variance region is different from a &ldquo;near miss&rdquo; in a flat plateau.</p>
 </div>
 </div>
 
@@ -627,13 +701,25 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 <p>A naive self-application of DCC would inherit the trading polarity: repetitive outcomes = stable = exploit harder. This would cause the search to double down on unproductive regions &mdash; exactly the wrong behavior. <strong>Our first five versions did exactly this, and they failed.</strong> The semantic inversion was discovered empirically on the sixth iteration, not predicted theoretically. Once the polarity was corrected, Meta-DCC immediately outperformed grid search.</p>
 <p>This has a profound implication: recursive self-governance is possible but <em>domain-specific calibration of the semantic layer is required</em>. The compression sensor is universal. The coupling dynamics are universal. But the meaning of "compression is high" depends entirely on what the system is governing. Getting the meaning wrong doesn't produce suboptimal results &mdash; it produces actively counterproductive behavior.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s4" data-8z-blob="Wnf29UOILwe+p0EKekf6C6sMWyjk9gT5W2FgSMyXexSsVNhXVNknj56M4SU2E4CQKeJeFE/1sNKEqXtxTlO8sKS3Sqp6pF4MpD0/ZZDthP2TuGzTu7x8lCmj+ITjeYcZU5+Cn7oCJqOymM8bm4i1iVhZaIxKIRhlaofS9Dhpxpjt7ktyjUb2HkaV8JYryoie4fTmVqogNSObHrsvvHKaiLJAou7d1FhvrlZ4ciguv6QXSavv/tjjt+WMqwpW/zwq3f7QdK+9T45PUjqwpslXm8FbI5EBmDA151kJinhg2E/GfSnhJ9J7ikPjFDZSm1JsOfFcBA+8RYbrW6YXz2LoXbJazm7AGVaHQU2FcPsfjy/VNfo0Eu6hPxltyF1qRtaqRqoruM20WnmtQ4bYhmiDABKxCydzjcOcPq57SMZBzEQRanKepMSHAlSxuq1glCLR7J9F+XwqYAW/ss43xy1jD3URcEmXeMCgRUQUFfCCahWd+P0X+MpJRH2hfUfGUXf4CZ0E1PH0qPsBe4i134882/mVTxfqzoQVF4erW9yQR4qu+Gq0uKX/3qq7lGQ+IsTG3XtbzSaL2sZNNuy7cBpUnh3afn655V4jYBY/6zhdWsgyt4ysO+dowX5CsutVtFOs0u4TVR12TiW7C/Z0PwqvSbhRXwCciLwjSac0WAHaFgQml34qcLbL0cDCzA1iwo4Rqn4ZqTmVScVLxlv8r4g58bEJdeCDJBX8wKPlUoL7Yb6za4PvOEmYB3FM4g5D7aQP97eKr8ch21Ply+Kf1Y7BuZrEPEusA5oRmC2aQp5YRBnBhFBHvnJuFoQt2D14JuaXCM9Io0XxSno20AXiL5vtVQOvNF5IXVdgfSeDFLwEm4mYeRL0ge9R3nE+6MWKHh3m1EJSJhzd81bFLyiWYYBLZEsR2BemrCJ/Vr2hiXOdNt7zGYLRCoK4tio3eRd7Lg6CmnEBxRfM542IENcG6OlhAUBdfv6uEaWFVgoQmQDbtdJrRWRFJZgzmTbG+awoBL3AuDB3Kdwa4zGHchQ0LF7e1/F+6I+D4maOaZuDi5lBQclF9rcO7/46YKR+BC8MMUov5gzKJa+BVNCzDYnQoNEHN4GtqjKUIWzQ0Obw/p9Uz6cAhto3GcLUcYappuhzkCsmMbBlDgTNbzHn1m8X3KTJD+aJS9c2zOu8lY/Uzb0JaFY0Auc2tj+nLj0HaUWVkSTG+9osuXlbepc/6ceIr/avFjN3EuuHMALtPHJoJqQPbyxapPRnqvJ7O4ahSdGnkyUoD4qCVx9PstgK+0i+o63iUQvJiU4z4cEhxM5Al4V6EMU2kcvlDtfiAKhw/QPNLVh0Bu/CF29SRkGoXGV5am/u0kCGVvWueGfTEhG42FGtUK1ylyaX9ODnqSF23Be0SoEnFBug+N5YknRC2lPxe21l4o45S8B9IBnwm4IX62VUQV1LoOzltSO0QvBgz1hCgPtsixiHT31uL3JEOXCCXD6E2WCfd1+JP9x/6SNxKMZl4rcw7DYRBtly/kEgFHEQCTk/mLaYhfiiC0xSRK5USyhgTb4zY83gJ+tP7xAREo+Ovh7znLI3I6hUdbXuxIEx4QjZLVZduA5RcFp39kxVkXoKJnlOX0Xy0wVZupvcCCUBkk+Q0ho4APvJjROtr2O2tEqBflPWyigSxRUbzFSW4K1DxUfg24rCZ2ucX7lzwq31X9dsmmzijC2WpxVA8YL6dJUlon2sGcg0Lvy89V1iO+QaCTn9wUsT8eQOJXv0AXUODrOqnue6lNuvxlCZ7/K0451bdINI9VHCkmY0Zm3fGEzosOGfscEoqFyzKpzNqKrWCNnEeK+9E4gGOf55gazJRkEjBrjzrx/hL2vXld9myw==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Semantic Inversion Rules &amp; Domain Transfer Protocol</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-8z-label="Semantic Inversion Rules &amp; Domain Transfer Protocol">
+<h3 style="border:none;margin-top:12px;">Inversion Rules</h3>
+<p>The semantic inversion is not a single flag. It is a <strong>three-component polarity vector</strong> &lsaquo;P<sub>sensor</sub>, P<sub>coupling</sub>, P<sub>escalation</sub>&rsaquo; that must be set consistently for each domain. The v0.1&ndash;v0.5 failures each resulted from inverting some but not all components.</p>
+<table class="param-table">
+<tr><th>Component</th><th>Trading Polarity</th><th>Search Polarity</th><th>What Went Wrong</th></tr>
+<tr><td>P<sub>sensor</sub></td><td>High compression = stable regime</td><td>High compression = stuck search</td><td>v0.1&ndash;v0.2: sensor output interpreted as confidence</td></tr>
+<tr><td>P<sub>coupling</sub></td><td>High compression &rarr; high u (exploit)</td><td>High compression &rarr; low u (explore)</td><td>v0.3: escalation added but coupling still wrong</td></tr>
+<tr><td>P<sub>escalation</sub></td><td>Escalate on rapid change (volatility)</td><td>Escalate on stagnation (stalls)</td><td>v0.4: coupling inverted but escalation triggered on wrong signal</td></tr>
+</table>
+<p><strong>The consistency rule:</strong> all three components must have the same polarity orientation. A system with inverted coupling but non-inverted escalation will explore when it should (coupling says &ldquo;explore&rdquo;) but then escalate when it finds volatility (escalation still using trading logic), causing it to abandon productive regions precisely when they become interesting. This was v0.4&rsquo;s failure mode: correct exploration followed by incorrect escalation.</p>
+<p><strong>Domain transfer checklist:</strong></p>
+<p>For any new domain, answer these three questions before writing code:</p>
+<p style="padding-left:16px;border-left:2px solid var(--accent-orange);">
+1. When the sensor detects <em>repetitive patterns</em> in this domain, does that mean the system is <strong>succeeding</strong> (stable &rarr; exploit) or <strong>failing</strong> (stuck &rarr; explore)?<br>
+2. When an improvement is found, should the system <strong>tighten</strong> around it (boost u) or <strong>keep searching</strong> (maintain low u)?<br>
+3. When should the system <strong>escalate</strong>: when things change rapidly (volatility) or when nothing changes (stagnation)?
+</p>
+<p>The answers to all three must be consistent. If Q1 says &ldquo;failing&rdquo;, then Q2 must say &ldquo;tighten&rdquo; (because an improvement in a failing system is valuable and rare) and Q3 must say &ldquo;stagnation&rdquo; (because the problem is lack of progress, not excess volatility). If any answer contradicts the others, the polarity vector is inconsistent and the system will oscillate.</p>
+<p><strong>Why this wasn&rsquo;t predicted:</strong> MDL theory says &ldquo;compress optimally.&rdquo; It does not say what &ldquo;optimal&rdquo; means for the system being governed. The mathematical framework is silent on polarity. This is why the inversion had to be discovered empirically &mdash; the theory provides the sensor, the engineering provides the interpretation.</p>
 </div>
 </div>
 
@@ -1229,13 +1315,33 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 <p>The critical lesson: the semantic inversion was <strong>discovered empirically, not predicted theoretically</strong>. We knew DCC could be applied recursively in principle. We did not know that the polarity had to flip, or that the flip had to be applied consistently across sensor, coupling, <em>and</em> escalation. Each of the first five failures taught us one piece of this. The theoretical framework said "recursive DCC should work." The engineering said "only if you get the semantics right for the specific domain."</p>
 <p>This means anyone building recursive DCC for a new domain should expect the same calibration process. The concept is universal. The polarity is domain-specific. Plan accordingly.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s5" data-8z-blob="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">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Polarity Calibration Procedure — Step by Step</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-8z-label="Polarity Calibration Procedure — Step by Step">
+<h3 style="border:none;margin-top:12px;">Calibration Protocol</h3>
+<p>This is the procedure we followed for each domain transfer. It took 6 iterations for trading&rarr;search. Expect 3&ndash;8 iterations for any new domain.</p>
+<p><strong>Phase 1 &mdash; Polarity Discovery (1&ndash;3 iterations)</strong></p>
+<p style="padding-left:16px;border-left:2px solid var(--accent-teal);">
+<strong>1.1</strong> Run naive DCC with trading polarity on a small subset (10% of data, 50 configs).<br>
+<strong>1.2</strong> Log the sensor output (r), coupling (u), and search behavior at each step.<br>
+<strong>1.3</strong> Identify the <em>pathological pattern</em>: does the system double down on bad regions (trading polarity on search problem) or abandon good regions (inverted polarity on stable problem)?<br>
+<strong>1.4</strong> Answer the three-question checklist from Chapter 5. Write down the polarity vector &lsaquo;P<sub>s</sub>, P<sub>c</sub>, P<sub>e</sub>&rsaquo;.<br>
+<strong>1.5</strong> Implement the inversion. Re-run on the same subset. If the pathological pattern reverses (system now explores when stuck, not when productive), polarity is correct. Proceed to Phase 2.
+</p>
+<p><strong>Phase 2 &mdash; Threshold Calibration (2&ndash;3 iterations)</strong></p>
+<p style="padding-left:16px;border-left:2px solid var(--accent-gold);">
+<strong>2.1</strong> Run on 50% of data with correct polarity. Log escalation events.<br>
+<strong>2.2</strong> Check escalation timing: does E1 fire too early (threshold too low &rarr; system never exploits locally) or too late (threshold too high &rarr; system wastes budget in unproductive regions)?<br>
+<strong>2.3</strong> Adjust stall thresholds. Rule of thumb: E1 trigger = buffer_size / 10 (rounded). E2 = 2&times;E1. E3 = 3.3&times;E1. E4 = 5&times;E1.<br>
+<strong>2.4</strong> Check improvement boost magnitude. If best configs are found and immediately abandoned, boost is too small. If system fixates on early bests and never escapes, boost is too large.<br>
+<strong>2.5</strong> Adjust r<sub>base</sub> and r<sub>ceil</sub> if the compression ratios cluster outside the [0.28, 0.72] default range. Some domains produce systematically higher or lower compression.
+</p>
+<p><strong>Phase 3 &mdash; Buffer Validation (1&ndash;2 iterations)</strong></p>
+<p style="padding-left:16px;border-left:2px solid var(--accent-green);">
+<strong>3.1</strong> Run on 100% of data. Monitor buffer state on escalation events.<br>
+<strong>3.2</strong> Check: after E4 reset, does the sensor immediately re-trigger escalation? If yes, buffer initialization symbols are wrong. Set init_symbol to the median quantized outcome for the domain, not 0x7.<br>
+<strong>3.3</strong> Check: after de-escalation, does the sensor carry stale compression? If yes, implement partial buffer flush on de-escalation (last 8 entries).<br>
+<strong>3.4</strong> Final validation: run 3&times; with different random seeds. Verify that the efficiency ratio vs. grid search is &gt;2&times; on all runs and &gt;4&times; on at least one. If not, return to Phase 2.
+</p>
+<p><strong>Time estimate:</strong> the full calibration for trading&rarr;search took one evening (6 hours, 6 iterations). For a domain structurally similar to an existing verified domain, expect 2&ndash;4 hours. For a novel domain (e.g., immune response modeling), expect 1&ndash;2 days including data pipeline setup.</p>
 </div>
 
 <div class="callout warn">
@@ -1251,158 +1357,5 @@ Conceived by Bojan Dobre&#269;evi&#269; &middot; Architecture &amp; implementati
 </div>
 
 </div><!-- .main -->
-
-<!-- 8Z Shield Sections — Inline Content Protection -->
-
-<style>
-._8z-sec{position:relative;margin:1.5em 0;border-radius:12px;overflow:hidden;transition:all .4s cubic-bezier(.4,0,.2,1)}
-._8z-lk{background:rgba(255,145,0,.03);border:1px solid rgba(255,145,0,.15);border-left:3px solid #ff9100}
-._8z-ok{background:rgba(34,197,94,.03);border:1px solid rgba(34,197,94,.15);border-left:3px solid #22c55e}
-._8z-lui{padding:24px 28px;text-align:center}
-._8z-ico{font-size:28px;margin-bottom:8px;opacity:.7}
-._8z-lbl{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#ff9100;margin-bottom:4px}
-._8z-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a5268;letter-spacing:.5px}
-._8z-ct{padding:20px 28px}
-._8z-ct._8z-fi{animation:_8zFI .5s ease}
-@keyframes _8zFI{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-._8z-bar{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(8,10,14,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,145,0,.2);padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:12px;transition:all .4s}
-._8z-bar._8z-hid{transform:translateY(100%);pointer-events:none}
-._8z-bar ._l{font-family:'JetBrains Mono',monospace;font-size:10px;color:#ff9100;letter-spacing:2px;text-transform:uppercase}
-._8z-bar input{width:260px;max-width:40vw;padding:10px 14px;background:#0e1117;border:1px solid #1e2532;border-radius:8px;color:#dfe3eb;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:border-color .2s}
-._8z-bar input:focus{border-color:#ff9100}
-._8z-bar input::placeholder{color:#4a5268}
-._8z-bar button{padding:10px 20px;background:transparent;border:1.5px solid #ff9100;border-radius:8px;color:#ff9100;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s}
-._8z-bar button:hover{background:rgba(255,145,0,.08);box-shadow:0 0 24px rgba(255,145,0,.1)}
-._8z-bar ._s{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a5268;min-width:80px;text-align:center}
-._8z-bar ._s.ok{color:#22c55e}._8z-bar ._s.err{color:#ef4444}._8z-bar ._s.wrk{color:#ffc629}
-._8z-bar ._d{font-family:'JetBrains Mono',monospace;font-size:9px;color:#4a5268;letter-spacing:.5px}
-@media print{._8z-sub::after{content:" — contact author for access"}._8z-bar{display:none!important}._8z-lk ._8z-ct{display:none!important}}
-@media(max-width:600px){._8z-bar{flex-wrap:wrap;gap:8px;padding:10px 12px}._8z-bar input{width:100%;max-width:none}._8z-bar ._l{width:100%;text-align:center}}
-</style>
-
-<script>
-(function(){
-'use strict';
-var _I=500000,_XR=1024,M=(1n<<64n)-1n,_SK='_8z_pp',_BD="chessbest.org";
-
-function XS(s){var v=s&M;this.state=v===0n?0x9E3779B97F4A7C15n:v}
-XS.prototype.n=function(){var x=this.state;x=(x^((x>>12n)&M))&M;x=(x^((x<<25n)&M))&M;x=(x^((x>>27n)&M))&M;this.state=x;return(x*2685821657736338717n)&M};
-
-function u2b(v){var b=new Uint8Array(8);for(var i=7;i>=0;i--){b[i]=Number(v&0xFFn);v>>=8n}return b}
-function b2u(b){var v=0n;for(var i=0;i<8;i++)v=(v<<8n)|BigInt(b[i]);return v}
-function sha(d){var b=(d instanceof Uint8Array)?d:new TextEncoder().encode(d);return crypto.subtle.digest('SHA-256',b).then(function(r){return new Uint8Array(r)})}
-function cat(){var l=0,a=arguments;for(var i=0;i<a.length;i++)l+=a[i].length;var o=new Uint8Array(l),p=0;for(var i=0;i<a.length;i++){o.set(a[i],p);p+=a[i].length}return o}
-
-async function dk(pp,salt){
-  var ph=await sha(pp),sm=await sha(cat(ph,salt,new TextEncoder().encode("8Z_AUTH_V1")));
-  var rng=new XS(b2u(sm.slice(0,8)));
-  for(var i=0;i<_XR;i++)rng.n();
-  var sh=await sha(u2b(rng.state)),c=cat(ph,sh);
-  var km=await crypto.subtle.importKey('raw',c,'PBKDF2',false,['deriveBits']);
-  return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:salt,iterations:_I,hash:'SHA-256'},km,256));
-}
-
-async function gzD(data){
-  var ds=new DecompressionStream('gzip');
-  var w=ds.writable.getWriter(),r=ds.readable.getReader();
-  w.write(data);w.close();
-  var ch=[];while(true){var x=await r.read();if(x.done)break;ch.push(x.value)}
-  var t=0;for(var i=0;i<ch.length;i++)t+=ch[i].length;
-  var o=new Uint8Array(t),p=0;for(var i=0;i<ch.length;i++){o.set(ch[i],p);p+=ch[i].length}return o;
-}
-
-async function dec(b64,pp){
-  var raw=Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0)});
-  if(raw.length<60)throw new Error('small');
-  var salt=raw.slice(0,32),iv=raw.slice(32,44),ct=raw.slice(44);
-  var kb=await dk(pp,salt);
-  var key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['decrypt']);
-  var comp=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,tagLength:128},key,ct));
-  return new TextDecoder().decode(await gzD(comp));
-}
-
-function show(el,html){
-  el.querySelector('._8z-ct').innerHTML=html;
-  el.querySelector('._8z-ct').style.display='';
-  el.querySelector('._8z-ct').classList.add('_8z-fi');
-  el.querySelector('._8z-lui').style.display='none';
-  el.classList.remove('_8z-lk');el.classList.add('_8z-ok');
-}
-
-function resolveKey(raw){
-  // Domain lock logic
-  if(!_BD) return raw;
-  var isLocal=(window.location.protocol==='file:');
-  var host=(window.location.hostname||'').toLowerCase();
-  var expected=_BD.toLowerCase();
-  // If user typed password||domain explicitly (owner override for local)
-  if(raw.indexOf('||')!==-1){
-    var parts=raw.split('||');
-    if(parts[1].trim().toLowerCase()===expected) return raw;
-    throw new Error('domain');
-  }
-  // On correct domain: auto-append
-  if(!isLocal && host===expected) return raw+'||'+_BD;
-  // Local without explicit domain suffix
-  if(isLocal) throw new Error('domain-local');
-  // Wrong domain
-  throw new Error('domain');
-}
-
-var secs=document.querySelectorAll('._8z-sec[data-8z-blob]');
-if(!secs.length)return;
-
-var bar=document.createElement('div');
-bar.className='_8z-bar';
-var domNote=_BD?'<span class="_d">\uD83C\uDF10 '+_BD+'</span>':'';
-bar.innerHTML='<span class="_l">\uD83D\uDD12 '+secs.length+' Protected</span>'
-  +domNote
-  +'<input type="password" id="_8z_inp" placeholder="Enter access key" autocomplete="current-password">'
-  +'<button id="_8z_btn">Unlock</button>'
-  +'<span class="_s" id="_8z_st"></span>';
-document.body.appendChild(bar);
-
-var inp=document.getElementById('_8z_inp');
-var btn=document.getElementById('_8z_btn');
-var st=document.getElementById('_8z_st');
-
-async function go(){
-  var raw=inp.value;
-  if(!raw){st.textContent='Enter a key';st.className='_s err';return}
-  var pp;
-  try{pp=resolveKey(raw)}catch(e){
-    if(e.message==='domain-local'){
-      st.textContent='Local use restricted';st.className='_s err';
-    }else{
-      st.textContent='Domain restricted';st.className='_s err';
-    }
-    return;
-  }
-  btn.disabled=true;btn.textContent='DERIVING...';
-  st.textContent='500K PBKDF2';st.className='_s wrk';
-  await new Promise(function(r){requestAnimationFrame(function(){requestAnimationFrame(r)})});
-  try{
-    var html=await dec(secs[0].getAttribute('data-8z-blob'),pp);
-    show(secs[0],html);
-    st.textContent='Decrypting '+secs.length+'...';
-    for(var i=1;i<secs.length;i++){
-      try{show(secs[i],await dec(secs[i].getAttribute('data-8z-blob'),pp));}
-      catch(e){console.warn('Section '+i+':',e)}
-    }
-    st.textContent='\u2713 Unlocked';st.className='_s ok';
-    setTimeout(function(){bar.classList.add('_8z-hid')},1500);
-    try{sessionStorage.setItem(_SK,raw)}catch(e){}
-  }catch(e){
-    st.textContent='Not yet.';st.className='_s err';
-    btn.disabled=false;btn.textContent='UNLOCK';inp.value='';inp.focus();
-  }
-}
-
-btn.addEventListener('click',go);
-inp.addEventListener('keydown',function(e){if(e.key==='Enter')go()});
-try{var sv=sessionStorage.getItem(_SK);if(sv){inp.value=sv;go()}}catch(e){}
-})();
-</script>
-<!-- End 8Z Shield Sections -->
 </body>
 </html>
