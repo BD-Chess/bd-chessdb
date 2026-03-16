@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BD Sync Momentum — SM Trader v2.0</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0c10; --bg-secondary: #12151c; --bg-tertiary: #1a1e28;
+  --bg-card: #161a24; --border: #2a2f3c; --border-accent: #3a4055;
+  --text-primary: #e8eaf0; --text-secondary: #8b93a6; --text-muted: #5a6275;
+  --accent-green: #00e676; --accent-red: #ff4757; --accent-blue: #448aff;
+  --accent-gold: #ffd740; --accent-purple: #b388ff; --accent-teal: #64ffda;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --sidebar-w: 320px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { font-size:15px; }
+body { background:var(--bg-primary); color:var(--text-primary); font-family:var(--font-body); line-height:1.5; -webkit-font-smoothing:antialiased; }
+::selection { background:var(--accent-blue); color:white; }
+::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+/* Login Gate */
+#loginGate { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-primary); z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column; }
+#loginGate .login-box { background:var(--bg-secondary); border:1px solid var(--border); border-radius:10px; padding:40px 36px; text-align:center; max-width:360px; }
+#loginGate h2 { font-family:var(--font-display); font-size:22px; margin-bottom:6px; }
+#loginGate .sub { font-size:12px; color:var(--text-muted); margin-bottom:20px; font-family:var(--font-mono); }
+#loginGate input { width:100%; background:var(--bg-tertiary); border:1px solid var(--border); border-radius:6px; padding:10px 14px; color:var(--text-primary); font-family:var(--font-mono); font-size:14px; outline:none; text-align:center; letter-spacing:2px; }
+#loginGate input:focus { border-color:var(--accent-blue); }
+#loginGate .err { color:var(--accent-red); font-size:11px; margin-top:8px; min-height:16px; font-family:var(--font-mono); }
+.app-hidden { display:none !important; }
+
+.sidebar { position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh; background:var(--bg-secondary); border-right:1px solid var(--border); overflow-y:auto; z-index:100; display:flex; flex-direction:column; }
+.sidebar-brand { padding:20px 18px 16px; border-bottom:1px solid var(--border); }
+.sidebar-brand h1 { font-family:var(--font-mono); font-size:12px; font-weight:500; color:var(--accent-green); letter-spacing:2.5px; text-transform:uppercase; }
+.sidebar-brand .sub { font-size:11px; color:var(--text-muted); margin-top:3px; font-family:var(--font-mono); }
+.sidebar-content { flex:1; overflow-y:auto; padding:12px 0; }
+.sidebar-section { border-bottom:1px solid var(--border); padding:10px 16px 14px; }
+.section-title { font-family:var(--font-mono); font-size:9.5px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none; }
+.section-title .arrow { transition:transform 0.2s; font-size:8px; }
+.section-title .arrow.collapsed { transform:rotate(-90deg); }
+.field { margin-bottom:8px; }
+.field label { display:block; font-size:10.5px; color:var(--text-secondary); margin-bottom:3px; font-family:var(--font-mono); letter-spacing:0.3px; }
+.field input, .field select, .field textarea { width:100%; background:var(--bg-tertiary); border:1px solid var(--border); border-radius:4px; padding:5px 8px; color:var(--text-primary); font-family:var(--font-mono); font-size:12px; outline:none; }
+.field input:focus, .field select:focus { border-color:var(--accent-blue); }
+.field textarea { resize:vertical; min-height:48px; font-size:11px; }
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px; }
+.field-row .field { margin-bottom:0; }
+.field-row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:8px; }
+.field-row3 .field { margin-bottom:0; }
+
+.btn { display:inline-flex; align-items:center; gap:5px; padding:6px 14px; border-radius:4px; font-family:var(--font-mono); font-size:11px; font-weight:600; letter-spacing:0.5px; cursor:pointer; border:1px solid; transition:all 0.15s; text-transform:uppercase; }
+.btn-go { background:#003322; color:var(--accent-green); border-color:#00664433; }
+.btn-go:hover { background:#004433; }
+.btn-stop { background:#331100; color:#ff8800; border-color:#66330033; }
+.btn-stop:hover { background:#442200; }
+.btn-reset { background:var(--bg-tertiary); color:var(--text-secondary); border-color:var(--border); }
+.btn-reset:hover { background:var(--bg-card); }
+.btn-sm { padding:4px 10px; font-size:10px; }
+.controls-row { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+
+.conn-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; }
+.conn-dot.live { background:var(--accent-green); box-shadow:0 0 6px var(--accent-green); }
+.conn-dot.idle { background:var(--accent-gold); box-shadow:0 0 6px var(--accent-gold); }
+.conn-dot.off  { background:var(--accent-red); box-shadow:0 0 6px var(--accent-red); }
+
+.sidebar-footer { padding:10px 16px; border-top:1px solid var(--border); font-size:10px; color:var(--text-muted); font-family:var(--font-mono); text-align:center; }
+
+.main { margin-left:var(--sidebar-w); padding:20px 24px 40px; min-height:100vh; }
+.header-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+.header-bar .title-group h2 { font-family:var(--font-display); font-size:24px; font-weight:700; }
+.header-bar .title-group .tagline { font-size:12px; color:var(--text-muted); margin-top:2px; }
+.prices { display:flex; gap:24px; align-items:baseline; }
+.price-tag .sym { font-family:var(--font-mono); font-size:10px; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; font-weight:600; }
+.price-tag .val { font-family:var(--font-mono); font-size:18px; font-weight:700; font-variant-numeric:tabular-nums; }
+
+.stats-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-bottom:16px; }
+.stats-grid2 { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-bottom:20px; }
+.stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:10px 12px; }
+.stat-card .sl { font-family:var(--font-mono); font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-muted); margin-bottom:4px; }
+.stat-card .sv { font-family:var(--font-mono); font-size:16px; font-weight:700; font-variant-numeric:tabular-nums; }
+.sv.green { color:var(--accent-green); } .sv.red { color:var(--accent-red); }
+.sv.teal { color:var(--accent-teal); } .sv.gold { color:var(--accent-gold); }
+.sv.blue { color:var(--accent-blue); } .sv.purple { color:var(--accent-purple); }
+
+.position-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:14px 16px; margin-bottom:16px; min-height:60px; }
+.position-empty { font-family:var(--font-mono); font-size:12px; color:var(--text-muted); text-align:center; padding:10px; }
+.pos-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.pos-side { font-family:var(--font-mono); font-size:14px; font-weight:700; letter-spacing:1px; }
+.pos-side.long { color:var(--accent-green); } .pos-side.short { color:var(--accent-red); }
+.pos-pnl { font-family:var(--font-mono); font-size:16px; font-weight:700; }
+.pos-details { display:grid; grid-template-columns:repeat(3,1fr); gap:4px 16px; font-family:var(--font-mono); font-size:11px; color:var(--text-secondary); margin-bottom:8px; }
+.pos-bar { height:4px; background:var(--bg-tertiary); border-radius:2px; overflow:hidden; }
+.pos-bar-fill { height:100%; border-radius:2px; transition:width 0.3s; }
+.pos-modules { margin-top:8px; font-family:var(--font-mono); font-size:10px; color:var(--text-muted); display:flex; gap:12px; flex-wrap:wrap; }
+.pos-modules .mod-active { color:var(--accent-teal); }
+
+.chart-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:14px 16px; margin-bottom:16px; position:relative; overflow:hidden; resize:vertical; min-height:200px; height:280px; max-height:600px; }
+.chart-panel .panel-title { font-family:var(--font-mono); font-size:10px; color:var(--text-muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px; display:flex; justify-content:space-between; }
+.chart-canvas { width:100%; height:calc(100% - 30px); min-height:100px; }
+
+.logs-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.log-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:14px 16px; overflow:auto; resize:vertical; min-height:120px; height:350px; }
+.log-panel .panel-title { font-family:var(--font-mono); font-size:10px; color:var(--text-muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px; }
+.log-panel table { width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:11px; }
+.log-panel th { text-align:left; font-size:9px; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; padding:4px 6px; border-bottom:1px solid var(--border); }
+.log-panel td { padding:3px 6px; border-bottom:1px solid #1a1e2833; white-space:nowrap; }
+.empty-msg { text-align:center; color:var(--text-muted); font-family:var(--font-mono); font-size:11px; padding:16px; }
+
+.signal-entry { font-family:var(--font-mono); font-size:11px; padding:3px 0; border-bottom:1px solid #1a1e2833; }
+.signal-entry .st { color:var(--text-muted); margin-right:8px; font-size:10px; }
+.signal-entry.entry { color:var(--accent-blue); }
+.signal-entry.win { color:var(--accent-green); }
+.signal-entry.loss { color:var(--accent-red); }
+.signal-entry.trail { color:var(--accent-gold); }
+.signal-entry.system { color:var(--text-secondary); }
+.signal-entry.sync { color:var(--accent-teal); }
+.signal-entry.module { color:var(--accent-purple); }
+
+/* Help modal */
+.modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:500; display:none; justify-content:center; align-items:center; }
+.modal-overlay.active { display:flex; }
+.modal-box { background:var(--bg-secondary); border:1px solid var(--border); border-radius:10px; max-width:720px; max-height:85vh; overflow-y:auto; padding:32px; width:90%; }
+.modal-box h2 { font-family:var(--font-display); margin-bottom:12px; }
+.modal-box h3 { font-family:var(--font-mono); font-size:13px; color:var(--accent-teal); margin:16px 0 6px; letter-spacing:1px; }
+.modal-box p, .modal-box li { font-size:13px; line-height:1.6; color:var(--text-secondary); }
+.modal-box code { background:var(--bg-tertiary); padding:2px 6px; border-radius:3px; font-family:var(--font-mono); font-size:11px; }
+.help-tip { background:#00e67610; border-left:3px solid var(--accent-green); padding:8px 12px; margin:8px 0; border-radius:0 4px 4px 0; font-size:12px; color:var(--text-secondary); }
+
+/* Mobile */
+.hamburger { display:none; position:fixed; top:12px; left:12px; z-index:200; background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:8px 10px; cursor:pointer; font-size:18px; color:var(--text-secondary); }
+@media (max-width:900px) {
+  .hamburger { display:block; }
+  .sidebar { transform:translateX(-100%); transition:transform 0.25s ease; z-index:300; }
+  .sidebar.open { transform:translateX(0); }
+  .main { margin-left:0; padding:16px 12px 40px; padding-top:52px; }
+  .stats-grid, .stats-grid2 { grid-template-columns:repeat(2,1fr) !important; gap:6px; }
+  .logs-grid { grid-template-columns:1fr; }
+  .header-bar { flex-direction:column; gap:10px; align-items:flex-start; }
+  .prices { flex-wrap:wrap; gap:12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN GATE ═══ -->
+<!-- login removed -->
+
+<div class="hamburger" onclick="toggleMobileSidebar()">☰</div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar" id="sidebarEl">
+  <div class="sidebar-brand" style="display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <h1>Sync Momentum</h1>
+      <div class="sub">Paper Trader v2.0 — by BD</div>
+    </div>
+    <a href="ZZ.html" target="_blank" style="font-family:var(--font-mono);font-size:10px;color:var(--accent-teal);text-decoration:none;border:1px solid var(--border);border-radius:4px;padding:4px 8px;white-space:nowrap" title="Open ZZ Trader">↗ ZZ</a>
+  </div>
+  <div class="sidebar-content">
+
+    <!-- CONFIG & PRESETS -->
+    <div class="sidebar-section">
+      <div class="section-title"><span class="conn-dot off" id="connDot"></span> ⚡ Config &amp; Presets</div>
+      <div class="field">
+        <label>Config String (SM|...)</label>
+        <textarea id="cfgPaste" rows="2" placeholder="SM|S:2|D:0.040|IL:10|..."></textarea>
+        <div class="controls-row" style="margin-top:4px">
+          <button class="btn btn-sm btn-go" onclick="importConfig()">⚡ Import</button>
+          <button class="btn btn-sm btn-reset" onclick="exportConfig()">⤴ Export</button>
+          <span id="cfgMsg" style="font-size:10px;font-family:var(--font-mono);margin-left:4px"></span>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Asset Class</label>
+          <select id="p_assetClass" onchange="onPresetChange()">
+            <option value="crypto_scalp">Crypto Scalp</option>
+            <option value="crypto_swing">Crypto Swing</option>
+            <option value="crypto_pos">Crypto Position</option>
+            <option value="stocks">Stocks</option>
+            <option value="forex">Forex</option>
+            <option value="commodities">Commodities</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Style</label>
+          <select id="p_style" onchange="onPresetChange()">
+            <option value="safe">Safe</option>
+            <option value="normal" selected>Normal</option>
+            <option value="aggressive">Aggressive</option>
+            <option value="max">Max</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="sidebar-section">
+      <div class="section-title" onclick="toggleSection(this)"><span class="arrow">▾</span> Controls</div>
+      <div class="section-body">
+        <div class="controls-row">
+          <button class="btn btn-go" id="btnStart" onclick="handleStart()">▶ Start</button>
+          <button class="btn btn-stop" id="btnStop" onclick="handleStop()" style="display:none">■ Stop</button>
+          <button class="btn btn-reset" onclick="handleReset()">↺ Reset</button>
+          <button class="btn" style="background:#1a1a30;color:var(--text-muted);border-color:#333;font-size:11px" onclick="applyDefaults()">⚙ Defaults</button>
+        </div>
+        <div class="controls-row" style="margin-top:4px">
+          <button class="btn" id="btnRecalc" onclick="recalculate()" style="background:#1a1030;color:var(--accent-gold);border-color:var(--accent-gold);font-size:11px" disabled>⟳ Recalc</button>
+          <button class="btn btn-sm" style="background:#1a1040;color:var(--accent-purple);border-color:#3a206033" onclick="exportReport()">📋 Report</button>
+          <button class="btn btn-sm" style="background:#103030;color:var(--accent-teal);border-color:#20605033" onclick="exportScreenshot()">📸 PNG</button>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-top:6px" id="connStatus">Disconnected</div>
+      </div>
+    </div>
+
+    <!-- ACCOUNT & TRADING (user-level params — always visible) -->
+    <div class="sidebar-section">
+      <div class="section-title" onclick="toggleSection(this)"><span class="arrow collapsed">▾</span> Account &amp; Trading</div>
+      <div class="section-body" style="display:none">
+        <div class="field-row3">
+          <div class="field"><label>Equity ($)</label><input id="p_equity" type="number" value="100000" step="1000"></div>
+          <div class="field"><label>Trade ($)</label><input id="p_tradeSize" type="number" value="100000" step="1000"></div>
+          <div class="field"><label>Leverage</label><input id="p_leverage" type="number" value="100" min="1" max="500"></div>
+        </div>
+        <div class="field-row3">
+          <div class="field">
+            <label>Direction</label>
+            <select id="p_direction">
+              <option value="both" selected>Both</option>
+              <option value="long">Long Only</option>
+              <option value="short">Short Only</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Exchange</label>
+            <select id="p_exchange" onchange="updateFeeDisplay()">
+              <option value="binance" selected>Binance</option>
+              <option value="mexc">MEXC</option>
+              <option value="okx">OKX</option>
+              <option value="bybit">Bybit</option>
+              <option value="bitget">Bitget</option>
+            </select>
+          </div>
+          <div class="field"><label>Symbol</label><input id="p_symbol" value="BTCUSDT"></div>
+        </div>
+        <div class="field-row3">
+          <div class="field">
+            <label>Timeframe</label>
+            <select id="p_timeframe" onchange="onTfChange()">
+              <option value="1">1s</option>
+              <option value="60" selected>1m</option>
+              <option value="180">3m</option>
+              <option value="300">5m</option>
+              <option value="900">15m</option>
+              <option value="1800">30m</option>
+              <option value="3600">1h</option>
+              <option value="14400">4h</option>
+              <option value="28800">8h</option>
+              <option value="43200">12h</option>
+              <option value="86400">1D</option>
+            </select>
+          </div>
+          <div class="field"><label>Hist. Bars</label><input id="p_histBars" type="number" value="5000" min="100" max="50000"></div>
+          <div class="field">
+            <label>Fee Mode</label>
+            <select id="p_feeMode" onchange="updateFeeDisplay()">
+              <option value="auto" selected>Auto</option>
+              <option value="custom">Custom</option>
+              <option value="off">Off</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Fee % (per side)</label><input id="p_fee" type="number" value="0.040" step="0.001" readonly>
+        </div>
+      </div>
+    </div>
+
+    <!-- SYNC ENGINE (technical — collapsed) -->
+    <div class="sidebar-section">
+      <div class="section-title" onclick="toggleSection(this)"><span class="arrow collapsed">▾</span> Sync Engine</div>
+      <div class="section-body" style="display:none">
+        <div class="field-row">
+          <div class="field"><label>Sync Length (bars)</label><input id="p_syncLen" type="number" value="2" min="1" max="10"></div>
+          <div class="field"><label>Min Delta %</label><input id="p_minDelta" type="number" value="0.048" step="0.001"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Impulse Length</label><input id="p_impulseLen" type="number" value="10" min="3" max="50"></div>
+          <div class="field"><label>Impulse Factor</label><input id="p_impulseFactor" type="number" value="0.95" step="0.05"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXIT SYSTEM (technical — collapsed) -->
+    <div class="sidebar-section">
+      <div class="section-title" onclick="toggleSection(this)"><span class="arrow collapsed">▾</span> Exit System</div>
+      <div class="section-body" style="display:none">
+        <div class="field-row">
+          <div class="field"><label>Stop Loss %</label><input id="p_slPct" type="number" value="0.037" step="0.001"></div>
+          <div class="field"><label>Take Profit %</label><input id="p_tpPct" type="number" value="1.26" step="0.01"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>BE Trigger %</label><input id="p_beTrigger" type="number" value="0.129" step="0.001"></div>
+          <div class="field"><label>Lock Fraction</label><input id="p_lockFrac" type="number" value="0.90" step="0.01" min="0" max="1"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>ATR Length</label><input id="p_atrLen" type="number" value="10" min="3" max="50"></div>
+          <div class="field"><label>Wiggle K</label><input id="p_wiggleK" type="number" value="1.2" step="0.1"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Min Wiggle %</label><input id="p_minWiggle" type="number" value="0.10" step="0.01"></div>
+          <div class="field"><label>Max Wiggle %</label><input id="p_maxWiggle" type="number" value="0.50" step="0.01"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULES (technical — collapsed) -->
+    <div class="sidebar-section">
+      <div class="section-title" onclick="toggleSection(this)"><span class="arrow collapsed">▾</span> Modules</div>
+      <div class="section-body" style="display:none">
+        <div class="field-row">
+          <div class="field"><label>MDL Regime</label><select id="p_useMDL"><option value="0" selected>OFF</option><option value="1">ON</option></select></div>
+          <div class="field"><label>DCC Adaptive</label><select id="p_useDCC"><option value="0">OFF</option><option value="1" selected>ON</option></select></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Circuit Breaker</label><select id="p_useCB"><option value="0">OFF</option><option value="1" selected>ON</option></select></div>
+          <div class="field"><label>CB Loss Streak</label><input id="p_cbStreak" type="number" value="3" min="2" max="10"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>CB Pause Bars</label><input id="p_cbPause" type="number" value="120" min="1" max="500"></div>
+          <div class="field"><label>Cooldown</label><select id="p_useCooldown"><option value="0" selected>OFF</option><option value="1">ON</option></select></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>CD Bars</label><input id="p_cdBars" type="number" value="5" min="1" max="50"></div>
+          <div class="field"><label>Equity Protection</label><select id="p_useEP"><option value="0" selected>OFF</option><option value="1">ON</option></select></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>EP DD Threshold %</label><input id="p_epDD" type="number" value="10" step="0.5" min="1"></div>
+          <div class="field"><label>EP Recovery %</label><input id="p_epRecov" type="number" value="3" step="0.5" min="0.5"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>SQS (Sync Quality)</label><select id="p_useSQS"><option value="0" selected>OFF</option><option value="1">ON</option></select></div>
+          <div class="field"><label>SQS Min Mult</label><input id="p_sqsMin" type="number" value="0.5" step="0.1"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>SQS Max Mult</label><input id="p_sqsMax" type="number" value="2.0" step="0.1"></div>
+          <div class="field"><label>Smart Invert</label><select id="p_useSI"><option value="0" selected>OFF</option><option value="1">ON</option></select></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>SI Min Bars</label><input id="p_siMinBars" type="number" value="10" min="1"></div>
+          <div class="field"><label>SI Size Mult</label><input id="p_siSizeMult" type="number" value="0.8" step="0.1"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>VWAP Tilt</label><select id="p_useVWAP"><option value="0" selected>OFF</option><option value="1">ON</option></select></div>
+          <div class="field"><label>VWAP Length</label><input id="p_vwapLen" type="number" value="20" min="5" max="100"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="sidebar-footer"><a href="ZZ.html" target="_blank" style="color:var(--accent-teal);text-decoration:none">↗ ZZ Trader</a> · SM v2.0 · v2.2 Engine · 8Z-Trading<br>Bojan Dobrečevič © 2026</div>
+</div>
+
+<!-- ═══ MAIN AREA ═══ -->
+<div class="main" id="mainEl">
+  <div class="header-bar">
+    <div class="title-group">
+      <h2>Sync Momentum</h2>
+      <div class="tagline" id="headerTagline">Connect to start scanning • <span id="tickCount">0</span> ticks • <span id="barCount">0</span> bars<span id="replayProgress"></span></div>
+    </div>
+    <div class="prices">
+      <div class="price-tag"><div class="sym">BTC</div><div class="val" id="priceBTC">—</div></div>
+      <div class="price-tag"><div class="sym">ETH</div><div class="val" id="priceETH">—</div></div>
+      <div class="price-tag"><div class="sym">SOL</div><div class="val" id="priceSOL">—</div></div>
+      <button onclick="openHelp()" style="background:var(--bg-tertiary);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--accent-blue);font-weight:700;font-size:16px;cursor:pointer;font-family:var(--font-mono);flex-shrink:0" title="Help &amp; Documentation">?</button>
+    </div>
+  </div>
+
+  <!-- Row 1: Performance -->
+  <div class="stats-grid">
+    <div class="stat-card"><div class="sl">Equity</div><div class="sv green" id="statEquity">$100,000</div></div>
+    <div class="stat-card"><div class="sl">Return</div><div class="sv green" id="statReturn">0.00%</div></div>
+    <div class="stat-card"><div class="sl">Trades</div><div class="sv blue" id="statTrades">0</div></div>
+    <div class="stat-card"><div class="sl">Win Rate</div><div class="sv teal" id="statWinRate">—</div></div>
+    <div class="stat-card"><div class="sl">Profit Factor</div><div class="sv gold" id="statPF">—</div></div>
+    <div class="stat-card"><div class="sl">Max DD</div><div class="sv red" id="statMaxDD">0.00%</div></div>
+    <div class="stat-card"><div class="sl">Fees Paid</div><div class="sv purple" id="statFees">$0</div></div>
+  </div>
+
+  <!-- Row 2: Config at a glance -->
+  <div class="stats-grid2">
+    <div class="stat-card"><div class="sl">Trade</div><div class="sv" id="statSize">$100K</div></div>
+    <div class="stat-card"><div class="sl">Leverage</div><div class="sv" id="statLev">100x</div></div>
+    <div class="stat-card"><div class="sl">Eff. Notional</div><div class="sv" id="statNotional">$1M</div></div>
+    <div class="stat-card"><div class="sl">Preset</div><div class="sv" id="statPreset">CS/Agg</div></div>
+    <div class="stat-card"><div class="sl">SL / TP</div><div class="sv" id="statSLTP">0.03/0.94</div></div>
+    <div class="stat-card"><div class="sl">Timeframe</div><div class="sv" id="statTF">1m</div></div>
+    <div class="stat-card"><div class="sl">Symbol</div><div class="sv" id="statSymbol">BTC @ Bin</div></div>
+  </div>
+
+  <!-- Position Panel -->
+  <div class="position-panel">
+    <div id="positionBody"><div class="position-empty">No open position</div></div>
+  </div>
+
+  <!-- Equity Chart -->
+  <div class="chart-panel" id="chartPanel">
+    <div class="panel-title"><span>Equity Curve</span><span id="timeSpan"></span></div>
+    <canvas id="eqChart" class="chart-canvas"></canvas>
+  </div>
+
+  <!-- Logs -->
+  <div class="logs-grid">
+    <div class="log-panel">
+      <div class="panel-title">Trade Log <span id="tradeCount">0</span></div>
+      <table><thead><tr><th>Side</th><th>Entry</th><th>Exit</th><th>PnL $</th><th>%</th><th>Exit</th><th>Dur</th><th>Mult</th></tr></thead>
+      <tbody id="tradeLog"><tr id="tradeEmpty"><td colspan="8" class="empty-msg">No trades yet</td></tr></tbody></table>
+    </div>
+    <div class="log-panel">
+      <div class="panel-title">Signal Log</div>
+      <div id="signalLogBody"><div class="empty-msg" id="sigEmpty">Waiting...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HELP MODAL ═══ -->
+<div class="modal-overlay" id="helpModal" onclick="if(event.target===this)closeHelp()">
+  <div class="modal-box">
+    <h2>Sync Momentum — Paper Trader Help</h2>
+    <h3>Signal Chain (Sacred — Never Modified)</h3>
+    <p><code>longSignal = flat AND useLongs AND upSync AND upImpulse AND inWindow</code></p>
+    <p><code>shortSignal = flat AND useShorts AND downSync AND downImpulse AND inWindow</code></p>
+    <div class="help-tip">All modules are size multipliers only (except Smart Invert which flips direction). They NEVER block signals.</div>
+
+    <h3>Sync Detection</h3>
+    <p>BTC and ETH must both move ≥ minDelta% in the same direction over syncLen bars. This cross-correlation is the core edge.</p>
+
+    <h3>Impulse Detection</h3>
+    <p>Current bar's move must exceed impulseFactor × average absolute move over impulseLen bars. Filters out noise, catches real moves.</p>
+
+    <h3>Exit System</h3>
+    <p><strong>Stop Loss:</strong> Hard stop at slPct% from entry.<br>
+    <strong>Take Profit:</strong> Hard limit at tpPct% from entry.<br>
+    <strong>Breakeven Lock:</strong> Once peak PnL reaches beTriggerPct%, lock a floor at lockFrac × peak.<br>
+    <strong>ATR Trailing:</strong> After BE lock, trail with wiggleK × ATR(atrLen), clamped to [minWiggle, maxWiggle]%.</p>
+
+    <h3>Modules</h3>
+    <p><strong>MDL:</strong> 6 statistical generators compete. Cheapest explains price → regime detection.<br>
+    <strong>DCC:</strong> Regime stability → exploit (1.2x) or explore (0.5x).<br>
+    <strong>Circuit Breaker:</strong> N consecutive losses → pause trading.<br>
+    <strong>Cooldown:</strong> Reduce size for N bars after each exit.<br>
+    <strong>Equity Protection:</strong> Halt when drawdown exceeds threshold, resume on recovery.<br>
+    <strong>SQS:</strong> Sync quality score from magnitude + breadth + volume → size multiplier.<br>
+    <strong>Smart Invert:</strong> Flip direction when MDL regime contradicts signal.<br>
+    <strong>VWAP Tilt:</strong> Z-score of price vs session VWAP.</p>
+
+    <h3>Config String</h3>
+    <p>Format: <code>SM|S:2|D:0.040|IL:10|IF:0.75|SL:0.045|TP:0.940|...</code></p>
+    <p>Import fills all parameters. Export copies the full state. Compatible with Python optimizer output.</p>
+
+    <h3>Historical Bootstrap</h3>
+    <p>On Start, fetches BTC + ETH + trading symbol candles from Binance REST API. All three are time-aligned and replayed through the engine before going live. Recalculate re-runs the stored data with new settings.</p>
+
+    <h3>Multi-Exchange Support</h3>
+    <p>Live feed from Binance, MEXC, OKX, Bybit, or Bitget. Historical data always from Binance REST.</p>
+
+    <div style="text-align:right;margin-top:20px"><button class="btn btn-reset" onclick="closeHelp()">Close</button></div>
+  </div>
+</div>
+
+<script>
+
+'use strict';
+var _engineReady = false;
+var historicalMode = false;
+var running = false;
+var ws = null, connected = false, ticks = 0;
+
+// ══════════════════════════════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════════════════════════════
+const $=id=>document.getElementById(id);
+function toggleMobileSidebar(){
+  $('sidebarEl').classList.toggle('open');
+}
+function toggleSidebar(){ toggleMobileSidebar(); }
+function collapseSidebar(){ /* no-op on desktop, mobile handled by CSS */ }
+function expandSidebar(){ /* no-op on desktop */ }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════════════════════
+const fmt=(v,d=2)=>typeof v==='number'?v.toFixed(d):'—';
+const fmtUsd=v=>'$'+fmt(v);
+const ts=()=>new Date().toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+function getP(id){const el=$(id);if(!el)return '';if(el.tagName==='SELECT')return el.value;const n=parseFloat(el.value);return isNaN(n)?el.value:n;}
+function getPN(id){return parseFloat($(id)?.value)||0;}
+function getS(id){return $(id)?.value||'';}
+
+const EXCHANGE_FEES={binance:0.040,mexc:0.060,okx:0.050,bybit:0.055,bitget:0.050};
+function updateFeeDisplay(){
+  const mode=getP('p_feeMode');
+  if(mode==='auto'){$('p_fee').value=EXCHANGE_FEES[getP('p_exchange')]||0.04;$('p_fee').readOnly=true;}
+  else if(mode==='custom'){$('p_fee').readOnly=false;}
+  else{$('p_fee').value='0';$('p_fee').readOnly=true;}
+}
+function toggleSection(el){
+  const arrow=el.querySelector('.arrow');
+  const body=el.nextElementSibling;
+  if(!body)return;
+  const collapsed=body.style.display==='none';
+  body.style.display=collapsed?'':'none';
+  if(arrow)arrow.classList.toggle('collapsed',!collapsed);
+}
+function addLog(type,msg){
+  const body=$('signalLogBody');
+  if($('sigEmpty'))$('sigEmpty').remove();
+  const div=document.createElement('div');
+  div.className='signal-entry '+type;
+  div.innerHTML=`<span class="st">${ts()}</span>${msg}`;
+  body.insertBefore(div,body.firstChild);
+  while(body.children.length>300)body.removeChild(body.lastChild);
+}
+function openHelp(){$('helpModal').classList.add('active');}
+function closeHelp(){$('helpModal').classList.remove('active');}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PRESETS (from SO_sync_engine.py — 7 classes × 4 styles)
+// ══════════════════════════════════════════════════════════════════════════════
+const PRESETS = {
+  'crypto_scalp|safe':       {p_syncLen:3,p_minDelta:0.060,p_impulseLen:10,p_impulseFactor:1.10,p_slPct:0.040,p_tpPct:1.50,p_beTrigger:0.15,p_atrLen:10,p_wiggleK:1.2,p_minWiggle:0.10,p_maxWiggle:0.50,p_lockFrac:0.90},
+  'crypto_scalp|normal':     {p_syncLen:2,p_minDelta:0.048,p_impulseLen:10,p_impulseFactor:0.95,p_slPct:0.037,p_tpPct:1.26,p_beTrigger:0.129,p_atrLen:10,p_wiggleK:1.2,p_minWiggle:0.10,p_maxWiggle:0.50,p_lockFrac:0.90},
+  'crypto_scalp|aggressive': {p_syncLen:2,p_minDelta:0.032,p_impulseLen:10,p_impulseFactor:0.75,p_slPct:0.033,p_tpPct:0.94,p_beTrigger:0.101,p_atrLen:10,p_wiggleK:1.2,p_minWiggle:0.10,p_maxWiggle:0.50,p_lockFrac:0.90},
+  'crypto_scalp|max':        {p_syncLen:2,p_minDelta:0.015,p_impulseLen:8,p_impulseFactor:0.45,p_slPct:0.030,p_tpPct:0.50,p_beTrigger:0.06,p_atrLen:8,p_wiggleK:1.1,p_minWiggle:0.08,p_maxWiggle:0.40,p_lockFrac:0.90},
+
+  'crypto_swing|safe':       {p_syncLen:3,p_minDelta:0.200,p_impulseLen:10,p_impulseFactor:0.90,p_slPct:0.40,p_tpPct:1.50,p_beTrigger:0.60,p_atrLen:14,p_wiggleK:1.6,p_minWiggle:0.25,p_maxWiggle:1.20,p_lockFrac:0.90},
+  'crypto_swing|normal':     {p_syncLen:3,p_minDelta:0.300,p_impulseLen:12,p_impulseFactor:1.00,p_slPct:0.70,p_tpPct:2.50,p_beTrigger:1.00,p_atrLen:16,p_wiggleK:1.7,p_minWiggle:0.40,p_maxWiggle:1.80,p_lockFrac:0.90},
+  'crypto_swing|aggressive': {p_syncLen:2,p_minDelta:0.400,p_impulseLen:10,p_impulseFactor:1.10,p_slPct:1.00,p_tpPct:4.00,p_beTrigger:1.50,p_atrLen:20,p_wiggleK:1.8,p_minWiggle:0.70,p_maxWiggle:2.50,p_lockFrac:0.90},
+  'crypto_swing|max':        {p_syncLen:2,p_minDelta:0.400,p_impulseLen:10,p_impulseFactor:1.10,p_slPct:1.00,p_tpPct:4.00,p_beTrigger:1.50,p_atrLen:20,p_wiggleK:1.8,p_minWiggle:0.70,p_maxWiggle:2.50,p_lockFrac:0.90},
+
+  'crypto_pos|safe':       {p_syncLen:2,p_minDelta:0.60,p_impulseLen:14,p_impulseFactor:1.20,p_slPct:2.00,p_tpPct:8.00,p_beTrigger:3.00,p_atrLen:20,p_wiggleK:2.0,p_minWiggle:1.50,p_maxWiggle:4.00,p_lockFrac:0.90},
+  'crypto_pos|normal':     {p_syncLen:2,p_minDelta:0.60,p_impulseLen:14,p_impulseFactor:1.20,p_slPct:2.00,p_tpPct:8.00,p_beTrigger:3.00,p_atrLen:20,p_wiggleK:2.0,p_minWiggle:1.50,p_maxWiggle:4.00,p_lockFrac:0.90},
+  'crypto_pos|aggressive': {p_syncLen:2,p_minDelta:0.50,p_impulseLen:14,p_impulseFactor:1.10,p_slPct:2.50,p_tpPct:10.0,p_beTrigger:3.50,p_atrLen:20,p_wiggleK:2.2,p_minWiggle:1.80,p_maxWiggle:5.00,p_lockFrac:0.90},
+  'crypto_pos|max':        {p_syncLen:2,p_minDelta:0.50,p_impulseLen:14,p_impulseFactor:1.10,p_slPct:2.50,p_tpPct:10.0,p_beTrigger:3.50,p_atrLen:20,p_wiggleK:2.2,p_minWiggle:1.80,p_maxWiggle:5.00,p_lockFrac:0.90},
+
+  'stocks|safe':       {p_syncLen:3,p_minDelta:0.040,p_impulseLen:15,p_impulseFactor:0.90,p_slPct:0.15,p_tpPct:0.60,p_beTrigger:0.20,p_atrLen:14,p_wiggleK:1.5,p_minWiggle:0.08,p_maxWiggle:0.40,p_lockFrac:0.80},
+  'stocks|normal':     {p_syncLen:3,p_minDelta:0.250,p_impulseLen:20,p_impulseFactor:1.00,p_slPct:0.80,p_tpPct:3.00,p_beTrigger:1.20,p_atrLen:20,p_wiggleK:2.0,p_minWiggle:0.50,p_maxWiggle:2.00,p_lockFrac:0.75},
+  'stocks|aggressive': {p_syncLen:2,p_minDelta:0.500,p_impulseLen:20,p_impulseFactor:1.10,p_slPct:1.50,p_tpPct:6.00,p_beTrigger:2.50,p_atrLen:20,p_wiggleK:2.5,p_minWiggle:0.80,p_maxWiggle:3.50,p_lockFrac:0.70},
+  'stocks|max':        {p_syncLen:2,p_minDelta:0.500,p_impulseLen:20,p_impulseFactor:1.10,p_slPct:1.50,p_tpPct:6.00,p_beTrigger:2.50,p_atrLen:20,p_wiggleK:2.5,p_minWiggle:0.80,p_maxWiggle:3.50,p_lockFrac:0.70},
+
+  'forex|safe':       {p_syncLen:3,p_minDelta:0.025,p_impulseLen:15,p_impulseFactor:0.85,p_slPct:0.10,p_tpPct:0.40,p_beTrigger:0.15,p_atrLen:14,p_wiggleK:1.4,p_minWiggle:0.05,p_maxWiggle:0.25,p_lockFrac:0.85},
+  'forex|normal':     {p_syncLen:2,p_minDelta:0.060,p_impulseLen:20,p_impulseFactor:1.00,p_slPct:0.30,p_tpPct:1.00,p_beTrigger:0.40,p_atrLen:20,p_wiggleK:1.8,p_minWiggle:0.15,p_maxWiggle:0.80,p_lockFrac:0.78},
+  'forex|aggressive': {p_syncLen:2,p_minDelta:0.150,p_impulseLen:20,p_impulseFactor:1.10,p_slPct:0.80,p_tpPct:3.00,p_beTrigger:1.20,p_atrLen:20,p_wiggleK:2.2,p_minWiggle:0.40,p_maxWiggle:2.00,p_lockFrac:0.70},
+  'forex|max':        {p_syncLen:2,p_minDelta:0.150,p_impulseLen:20,p_impulseFactor:1.10,p_slPct:0.80,p_tpPct:3.00,p_beTrigger:1.20,p_atrLen:20,p_wiggleK:2.2,p_minWiggle:0.40,p_maxWiggle:2.00,p_lockFrac:0.70},
+
+  'commodities|safe':       {p_syncLen:3,p_minDelta:0.030,p_impulseLen:15,p_impulseFactor:0.85,p_slPct:0.12,p_tpPct:0.50,p_beTrigger:0.20,p_atrLen:14,p_wiggleK:1.4,p_minWiggle:0.06,p_maxWiggle:0.30,p_lockFrac:0.85},
+  'commodities|normal':     {p_syncLen:2,p_minDelta:0.150,p_impulseLen:20,p_impulseFactor:1.00,p_slPct:0.60,p_tpPct:2.00,p_beTrigger:0.80,p_atrLen:20,p_wiggleK:2.0,p_minWiggle:0.30,p_maxWiggle:1.50,p_lockFrac:0.75},
+  'commodities|aggressive': {p_syncLen:2,p_minDelta:0.300,p_impulseLen:20,p_impulseFactor:1.10,p_slPct:1.00,p_tpPct:4.00,p_beTrigger:1.50,p_atrLen:20,p_wiggleK:2.2,p_minWiggle:0.50,p_maxWiggle:2.50,p_lockFrac:0.70},
+  'commodities|max':        {p_syncLen:2,p_minDelta:0.300,p_impulseLen:20,p_impulseFactor:1.10,p_slPct:1.00,p_tpPct:4.00,p_beTrigger:1.50,p_atrLen:20,p_wiggleK:2.2,p_minWiggle:0.50,p_maxWiggle:2.50,p_lockFrac:0.70},
+};
+
+function onPresetChange(){
+  const ac=getP('p_assetClass'), st=getP('p_style');
+  const key=ac+'|'+st;
+  const p=PRESETS[key]; if(!p)return;
+  Object.entries(p).forEach(([id,v])=>{const el=$(id);if(el)el.value=v;});
+}
+function onTfChange(){
+  const tf=parseInt(getP('p_timeframe'));
+  if(tf<=180)$('p_assetClass').value='crypto_scalp';
+  else if(tf<=3600)$('p_assetClass').value='crypto_swing';
+  else $('p_assetClass').value='crypto_pos';
+  onPresetChange();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CONFIG STRING (SM| protocol)
+// ══════════════════════════════════════════════════════════════════════════════
+const CFG_KEYS = {
+  S:'p_syncLen', D:'p_minDelta', IL:'p_impulseLen', IF:'p_impulseFactor',
+  SL:'p_slPct', TP:'p_tpPct', BE:'p_beTrigger', AL:'p_atrLen',
+  WK:'p_wiggleK', WN:'p_minWiggle', WX:'p_maxWiggle', LF:'p_lockFrac',
+  SZ:'p_tradeSize', LV:'p_leverage', MD:'p_useMDL', DC:'p_useDCC',
+  CB:'p_useCB', EP:'p_useEP', SI:'p_useSI', SQ:'p_useSQS',
+  VW:'p_useVWAP', CD:'p_useCooldown', CB_LS:'p_cbStreak', CB_PB:'p_cbPause',
+  CD_B:'p_cdBars', EP_DD:'p_epDD', EP_RV:'p_epRecov',
+  SQ_MN:'p_sqsMin', SQ_MX:'p_sqsMax', SI_MB:'p_siMinBars', SI_SM:'p_siSizeMult',
+  VW_L:'p_vwapLen',
+};
+const CFG_KEYS_INV = Object.fromEntries(Object.entries(CFG_KEYS).map(([k,v])=>[v,k]));
+
+function importConfig(){
+  const raw=$('cfgPaste').value.trim();
+  if(!raw.startsWith('SM|')){showCfgMsg('⚠ Must start with SM|','var(--accent-red)');return;}
+  const parts=raw.split('|').slice(1); let applied=0;
+  parts.forEach(p=>{
+    const i=p.indexOf(':'); if(i<0)return;
+    const key=p.substring(0,i), val=p.substring(i+1);
+    if(key==='DR'){$('p_direction').value=val==='L'?'long':val==='S'?'short':'both';applied++;return;}
+    const fieldId=CFG_KEYS[key];
+    if(fieldId){const el=$(fieldId);if(el){el.value=val;applied++;}}
+  });
+  showCfgMsg(`✓ Applied ${applied} params`,'var(--accent-teal)');
+}
+function exportConfig(){
+  let s='SM';
+  for(const[key,fieldId] of Object.entries(CFG_KEYS)){
+    const el=$(fieldId); if(!el)continue;
+    s+='|'+key+':'+el.value;
+  }
+  const dir=getP('p_direction');
+  s+='|DR:'+(dir==='long'?'L':dir==='short'?'S':'B');
+  $('cfgPaste').value=s;
+  navigator.clipboard.writeText(s).then(()=>showCfgMsg('✓ Copied','var(--accent-green)')).catch(()=>showCfgMsg('✓ Exported','var(--accent-gold)'));
+}
+function showCfgMsg(msg,color){$('cfgMsg').textContent=msg;$('cfgMsg').style.color=color;setTimeout(()=>{$('cfgMsg').textContent='';},4000);}
+
+// ── Engine-locked stubs ──
+function handleStart() {
+  if(!_engineReady) { addLog('system','Engine locked. Enter access key below.'); return; }
+  if(typeof _doStartReal==='function') _doStartReal();
+}
+function handleStop() {
+  if(_engineReady && typeof _doStopReal==='function') _doStopReal();
+}
+function handleReset() {
+  if(!_engineReady) { addLog('system','Engine locked'); return; }
+  if(typeof _handleReset==='function') _handleReset();
+}
+function importConfig() {
+  if(!_engineReady) { addLog('system','Engine locked'); return; }
+  if(typeof _importConfig==='function') _importConfig();
+}
+function exportConfig() {
+  if(!_engineReady) { addLog('system','Engine locked'); return; }
+  if(typeof _exportConfig==='function') _exportConfig();
+}
+function exportReport() {
+  if(!_engineReady) { addLog('system','Engine locked'); return; }
+  if(typeof _exportReport==='function') _exportReport();
+}
+function exportScreenshot() {
+  if(!_engineReady) { addLog('system','Engine locked'); return; }
+  if(typeof _exportScreenshot==='function') _exportScreenshot();
+}
+
+function drawEquityChart() {
+  const canvas=$('eqChart'); if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.getBoundingClientRect();
+  canvas.width=rect.width*dpr; canvas.height=rect.height*dpr;
+  ctx.scale(dpr,dpr);
+  ctx.fillStyle='rgba(0,229,255,0.05)';
+  ctx.fillRect(0,0,rect.width,rect.height);
+  ctx.fillStyle='rgba(0,229,255,0.3)';
+  ctx.font='12px "JetBrains Mono",monospace';
+  ctx.textAlign='center';
+  ctx.fillText(_engineReady?'Engine ready':'Engine locked — unlock to start',rect.width/2,rect.height/2);
+}
+
+const _8Z_BLOB="Ybm4iYoWTnlzpFVVyAJuijNOs4CeJcfx1DYO9X7Mbyt2JLu/k1pYvEbQ2BnrLAHUiK9nqdKYgjPHuM/qVk3IV4XgfyS8gC7lF03PGhrc1oua009uikv4BhEj+Zv7vqjl1f7gHMB6k3/dxz5iQ3FXt2wicYF1CAMyarlu/6gz4r8WmOq2d8xxRp1oN4MYOyLuB50b3+DaGpdGL0UmC+hYkcgTi6oedFY3hTLO0IzQJJ5RUkfl0PcpKeSziz5CKfsLmQOV8dS9/iS864BwIA+nNDtqgBaQ5ssdFrdQHM4KbGitjAfv3lzgV+Oj4X4e1H75BkXPgoVkIkGi7y3Vc/R0ti4O958U9OFqwkOU55H8/ZEY/xSpIWKAbiyVQk1vf5rzoxYAmCMTVqyHyVZDSsph8sFa5L+gdR3xni3k9E2wHxFPmhkuCXQqENbzE2D7t9hrHZw3ikFdbLGrZttdw4qnzGABKCXc5DjxtjkjH2KnRiJIGpzPIXTartNK09H7IL9HeC0nxdx7GP2wMuLPfm8vKuJBbFRnn/V07cDfGMmwaB9lDaSpPGqiovw+tNrz1LR+F8QSbR54kPniCsocdLlxxOcoGucBfBDH2jDO/7hPze3JYSKeVYHxtHmhYfzHIqi0MfTxisX6pu7zY5EaNQPeBtrEsqBvoXYjI+Mavo1T1E9S2poI5PfkEdQFDtWSKzDXEZ2s0gH5bvLoQXR0Gd0RzhUAPNa2heOqy40KX9CX3bInVOdAmJhidbFsX2axLKpcZnfFupCT6237IxM528gTq9e+USjWmjMx1DRiq/MwTAdRYSk4IT3QBJAFgbCRLv7dktTvpyzOO8Q5FXIDBE3riczFJKEXwbwVkWkqRcIGLIE9eOW6IhG9LsLeMyy1ptdjXQhbvvjnfwtmAkhL7exLGmp1i3qiBCKV8kwOkt1Kyy2/GddXFV7s3AcBDQxMWnm4sMMf7G927MFD4xln4f6yN6JCPJwyKRcO8PAXjU/3Zv/oUytHSGCld7iu0YndXxx9rkMGjvXwpBrv7E9rl+b1Q7LCDusKEji0B3NYDxbuhRbzSIg6dDvzw9HcP18VRgEW3t6Yp3z2GptHYFBUejcNsGSlzlp/D5t+6nkQm4qIght2FgtJeV/qIF3H/Zh9opaQBFMtHn1rKYKiaMg82EhCwVcWn/QzgwZmCnut12SDneGoNsWcToqGTJvs6FOSg+9ar+wsT6t9F4rQ0kgFsV8nbBIprWPYbOf+nV+AK7rLgUS/6EjVBd2HKiJlPnDVzZ9tb0CxnSPCrfbLLNy0MP0myAhSTspfvICwWOqDYqJD7NTnMxsqrKFgZkVVXo0L5yCy2HgMR8WmmK9y36Q7rMYeFZGerG+DrvXYIuKJ3IfyGzgypBDGeV0SwP3BKPdGHq5una0Em/49DowKYNt+2Lp678X2xYHJVxNiuivBAcvoZUDYjd4TgxRAiy4VNZSSHRuIkPGJr/pO9DV/kHPOCFNIO9dDfUqRy1Gf7ryYTQmb50jjLeO/IxBdIfw9eJZclFHphZBEAnODB2SqquhEzAPa/oP1aCBjUvYB2FWKf/KI5+4l5RS63X1zErVUuV4bAt9MR7cxoxA4ugxN6AXqBVWa6lzlm3wzkWtSgqhxu64T83+n0Id1jwlryqnYSmS+14LKVzVxlfbJ7vyF5L+58OkLGgCblhsg3P95xEcvoDIPq+FkgGjJTNzvP9ePM/fec8hZExmgG51PDOY3nmLqWsRJ5+SUvFQnBcSBf/BGozgCUUnAuE/0HkrmpYGo4yswKl+D683VB7h/VGkO5r39ctXViGfyYRFp5m3hwIDjyAZr2BqQ7wPG4YtiAcyZ1ousEG+brGb9ukBJFLDgU50RGrfGFpa/2yMvj+KxM0xhyvn462nvTH1svtvAcmHcb0Ie1fX7tFveIGdQLBkWqm4HCJtadGuxKObuE6HOGBJG8VDheaIvE4f/5ZvkfrhwPEDcNh8jqNZ1AeIDiZePxFlPexn/HcYXkVJNnfE2FHOjTCzI3mw6RSgtLe1hi3RXRwwa8KG3xyl/Fd2TkmVMDpBUB4mcnNTTqFwqmItpII9OwSQcFh9D8AfhkJ94QJ2OAR5S81kjxUx9y1AJdK1RsWOtsx4AVkHBUOLiZbjYgWiLlbUrC25gRDlyBPARa5GIyGNZxlXjwkHdtMdDW4V96QyYlBQTSr+AiAGCdamOCTfJ4L2IQ9qlc55YvdaxH4eSyyeFxX03/YPz0J+bYiUdWOL3zoIZ0fAA/aP5Emiq6ResCCtnTFHNNMA9yzMnN45DSmCymHrmDacd/Mzxaud3eQpqjocGQqV3oJ7bEi3Ezz4ce5yOZsqVKQZI0wfeDNhQZtUpDFGkESDmFmVcxKXOEacx77YuU2i9OvozlhxFgf8PCjApuNLqCc/p+Zymy/QEaAodLbDmY9+gzVIBVSMs/pDq5Z2Ch5kBRXmyaCUmBu7Q/n49CG59EanV2mH6JmRdWQHduEedfUy+bhs31X1qCwpm8dWUXmdmlnCJwDcUvO6iTPHXeQLG+QsAI1rY8t1XvFFH07BgJ40nrcuQxaLlVFLD1xIovByGFdc7JJhHnO1li7B3OyKJJWr1zmEBQTvisC3v/ImoTWtZb5fWdKRObK+EPlLF7E5jFxhW3xuxNC9cg0LHUUWUiveChFupxyWJgDVEzymqu1Wv+yOU7DOLFCDxnocEiKsgi9uqJxMOKWXjb8DDqyuDBD9DaYYTTn77wCN3FYMc5lv7h1lgXNfbYFmIE8rW7KefjxhuuqP3ZnXUxyvVWK+J3tE7b4jYIxfRVU03pCcWn5C9Ey1sxHQXbQEFDvgfn8tqVHyG10xcukw/89lIGcdZYrw4Es9IGYm2K4KQoEYMKalK8/d5SJVJrAwLflsLFU0fvwFc2NvePpElYbi+1DG7C1BFkfVEeBJlUIRO5BXX4w5CZFVga9VZ/MFo7SQpz3NQGK/yHj8EhfWzn4pxdibMYxOhWn52cfGHJaHmCEdBsmefxRJhGDmFWf9FtEDkap7l4ph7G+h8PXfWB3MRpuPkwWkYKJAFnTDD84bj0rlcxFgt78Lj5OQYtDG0pshREem+1j+726MtrXvqErcgJKVmtLBmkCzsnCJKtSxw064QRsrhJ2WKQBGzm3+y2rSbBqoShJkTdBpDqgTaTcji6e0jcG1JKXnQo5hVmRC0IvzntPDx7n/KxE+k+HDbVbDXX7hpFpBBnrFdFubqcg07Q+xbgVt9fuctp4x+if+dAvCRDiGDOt/v5L+5l/fyZeUEyywOsJJfAW2f76w+d4vNFK8QpohAcaa8eUz8UpgPIVAsrnSZOsDlHwLC6oaRkehTcdskUSjnyQF6awnY1HD8eK1klnqpkCv5qNBep4fwmvfJvgG3dfRsdCU0XrWKUZEmlUfq4IOtU1jJirSxqH8E5twqSxjMXbnj+NEfVNjK/07fU0oJsiR04aovIyLYeaiTB4L2VlKCatPmQSzWWq/m0fVIGCiJn6HRS8tiJ7ybGjoLQ+BwcU9RVuhu7y8e6nPCAGzbklZCgvZkHdaTNKQ0UBPF6lNxlrFms6uU+bniwggTKlE+dKM0Nq8Q53MVSHsAMQx3ULpzIG9CN++Bpj5Z6Fr/xxMC+hwUImHTF9FRy1cYd3ebS5rmErKtDhHAzwpojD5fdNTS0yqoWGhUL/dZH5Fa7VSrVZpB6ur8YwCWwDIWekZ6YZdeSMbrwLYkHFCsnpHa1EBlIPZ+XarI3GZbPDmHasFT6x/rsH3GZZLx+h6gSWzjKXD/NNYflg+g740mRHcO6OPtmHVyGjIo4cv3ajAQzMdr/mBGtIjZ4oXLGcYbxq3hu7Vsy+bwC06HGeIAAEEuJ4yTVqKntLBDkUVtpgn0Pxre76Kw8XQ/lhwum0x5GaIYkmCBVxGEzhIUzu2x7zSXdf1wkn5pvP1BocTF7IDJpXNRxMu66L1wXw4j/57lSh/0qPFKsDjTt44I794DpJeOIfdVfFm7zjMV3EBGXOLBtcGzwONSZTS+xrbdd/Uq6MegIwUwJBO4/MViG5TuuEsdiM/gzh0smcsh/DyGIroVpXrLBUuqXO3oDZEj1pgIUX6VJ6FD5tKoonGWBY6F6WHfn1oOjtaUVw5dejukt+trxuZghwMRdQ8kzVEH/ttNu2W8/osHuEPB5oTHPJ6YpqxZJ+lb5fjdHs5J9GWInikVz9r2+K7GJb+EhwWEsoAx+tUrd+NRFTCNA0fvF6HHxf0U/Dc0VJJEW0B0bHN1E5j9HUh3/blCIcbf4IDdgFUe69QulsoGsqcGBEEm8Vz7fozZ4IgWHCtQ9o+VmCHNxC+OgrJNuhdvaMAGaGE1T3k3jVRkcVPJOkP3fMfbZ7lYZ1v6JHa5laDxsq2+hT9EfgRhloQbUsNOaBDGn+CejUpFKYLDlJCVsImGOvZErorR3TKvrvLlW9Rual5U40t/SnERhQ2YdPwGQ2vl3dueFFcKIMhzHaRmOy0trdq4nhLKMpEBTRC+9VYVSTPnpbM+H71jdaAx+dl9JV+3atPU6IgD3pkfIkM+Vlv3Hw3Zt/Btgv6E8uEtfdpH8pgat3YcJ0w+paa32GdOJ7pc7twyDyMiAlxDJ4+oAH6/67xoiULihLGnQEQ4752uuWe0exeJOMrUeysDIkFLT2bRXW51BIdOVRZyr1cJUc+7i9Aw/dA1MziIXkpqjZxvNNIwbRdlvCZ1W4IFskODTx6AeEQI1R5Q3oJU36iAk5moLqfvMW/AWF+CNifcF6+igAx2MFRJbnsTFeRMdvXMVNOxWp3fByriHVM+FDyT4FSyBf+U9Lh7OfalT/lBkOVp60+wg/IBALfKM1RlB8AxvZxmprklrFoMXzrrhQw2RzpSMW0/suIzWeyEJsSWTNOQ+9WQT4mrwtjLgTkiEEMnJLSd/9e0K6ZRM2me0qQmHb2Httx9QX/8K8pCUZIDBoSHAmhpzdOifm3VKlLWc49N9JF7eaAEcFINxMQeBdLJ1vdCFu/mXaakUHeI69DDtFsuHupEq7zFQNFKiiHjSYUevOyogtiXSGFtbnlV/7wqL0RyfAaPY5IzE3eQ6pS33r30M1SanPrIA0Fb3jiZ0CFayxOmxS5+wuVgUtZ0tuA7LIQIMUjcqpOe+rS64v+71lIVNsp6zmKT6Xz5myxAeZpjpXPpeZfqClzbOqx5riRpbNO5ILU4K2Qzca1GC2Ra9SoeBJIu9owMt+UCu/cnBidpQ9fRKmogx1TacFaZEwyt1Y+YyKUYX/MYqmtBfrIOoo5jLL0GyTAfa4veJT2TLMZhwbakkvU4QYBQY19lERNWMH+B+2+XWwkn423YF+XKcojn7K2+zdVyJWz6hAEGbA3UKzyfD4dOcD+P7vs7+vLfku2J2optnzK+l70Ku6AETLkvDyR052yWHtwTsDJquD9cKwkmQbAVQwkTqz88HKN3pdpwj3u/VVLxRr1SMamiKTJkUMZ5CpdU2zmlL4qK8yr99XjTUl9Pwwefv1bwPvDv25Ay1WwNjgCkVazdzQs5+6AneVJpv1YCUnvIoFUAKU70zfL7buQjrc4YbaJ3EMd0JlUb6zQxU4027mjtTHyIvbTlZhqWEzXtWfFaNGV71rEj0tt6hP/8RFYSsOGcbmtBFphoPQoOa9kWe12D7xsTYLw9QZmkIiuNgkFZ8IUbv+gy9siJ8IHrkRsKYMUoUAjumACHhZvYoRdCi1T0Uy+mJaVV5d2+ZIttrsRdqznmcTH1pR9MdbKyKuL+E9JbV2GctuFJfNIBIsT52RMk5RztCgipQZ9O3n1f8GgMme8dlfItn9ykov8uIgSujx++JMw/gsM/Q/wmA6C4Dv6xQzIT3zwd09GhWBz3EyKjLhn2sVn6rbJKIhrvNqWIc/Cr013I3F060QmIRzTVNrHbXhXCiP1/GHQMkXiGTXXFT1Q5NdwyDO7Nu/Jc2Ww7OgqEtptqwtmiJrDSR8VJMhQh1WQ6Vt8rAhcgc52tWDlwNyx0Q78on2wo0UMUYk3FbeDKT00wh26EMMiXC78fhSg2lT7+s2MTP9Esys+npnIzGB2lR0uIHkAib6X6MZM2OSUK9Yl0taQYtSe6+aAhfVt7ue4YZvhNPTotWHkdIQzBapO+fzy8dmuA/cCDkykIAQYi2Und/RLgPqHnFNq8JeqrtdV7ALnWoTkzkptYze2Kz/q2/1rZsXAGLT6CX1tY8MHgUp+L5HaALnzfmMu3IodUkk6Nsnz8LmdMXB2Nul59yGI1cwNgOmWtDlS0uBw85eVaNb3y+OgXL2KEzy4WK4/t/0MrdgxJm1LR/DxnOqP2N+ejhpj4zcX1Ux954d7iYPmpbEqiOxOehBPmKKiZd6zIJrf5/Ps0K3A+kL0NOHfkOAdkBwvnIoF62SKu/tEkSlXWR1B4w2mf5e6BHQDPcIoNyFY3KQTK0EDMwA72Vn3jy547sbUXTmkDfgcveME8pw1hBZmENsRJytQ9aTAYeYpJKmVcp+f4L4+/UyW0b6BixhNSy+ij/yFniyycUIDTh6ValYzhB/PWJvN78RKCUO2lXqNcjM7Q3GPiAmNaK7K+Z54+4Fmy6N/QmPs4WaG+ROLI+NlsReRrwThcXJNaOHdPwTHD6rIRfE1Ud+7mJoX0uVGCu7Tj+GKffxEPtLbQj2bnfI5RYEucO4YGu5pa2bXIjB9F4T7zO1ItkKxfTUMRs9xnDF5e6KOec/rStlOCd0OJuLbD7KfAmdbl76S+3DUCwHskuQdefWvAN2xqL2V6Tuy/XP6p3egB3X7wOi1NA1pmG8dzAcFaXykgTIbbjp2FkJrFYPNIJtv1y3yvIaFU4oltABwg6DJVzPCfkKfkAjNgcyq52qagUNQHrYpm6eW4BkP/YdD8lSFMQB/YCq/vwQjxoFtYKY0HjopYKIsYmyqT++EqJDEUMcCeJZubN9FYdUSUFfAaHl65E5H8MhIjWBVoqeB/z52JN+vFHk7KA0QFh44mpsMLfLjhLaUsSIdGBx3xPwS6QWgAsO4pMBYCH/lO3bnT6rH6l0tZpp44hexFSJX+b+SfJj4q9aa3WTYFUWDYTJfc7F1iOs1u5Uo1fVK7jSDlIpYmQ2SiBlvJGvY4zmMbJQKvipRpabBhwc3tTKeLPjneZMropMHe5PG5NLcZSOUuBaQKJ8ngsrLHzWBtDd/kJZuHgiFgs1BIgGOMXPCr+LY+jPrrDpS5f9a7pFr/DhCydMyGDyZVtcyZNLek2uMuL61Z5wydgh++x3kHnCbK5ShKCsOOQfEUEESYYLAg1ZeXhcvJYemJdjPhCthANVqWHQyli91fDXvoedQEeEweRlU+LGNC21x6oWni2QIoc70VoEaeNfZdnXUh7yzg4k94PkoPZJCw1qXvOgkAJewkDsZlciK/jhD6Byo6qYi++EAd8kyuS0AugA2ogs1eQtPVUFVey/7h5OVJFInQFLXZNiL4fp8asRZKgJNQKSmGWcR0LPhRs3RorHpIIzwztq/gS1Qx/iKKHiftfof1dxe7FGy3kWZlKYQjZuQJFh35xyLo9qq4peL8MbYQhGoP/k9aWZN3TBSTWwwKhDvZIpiTSmd/cSDYcmqRzGsZvwVTL4KU6iCVJvN1URysDGsDFXCbOYStSu+gAmXWQq45gkHA/t1iKUdcZV74RmTWHXlI/Oqqr3NNeJBSS6RrWGyY1GFLv6nYhIUetrp+BbMbbpThKBByaQ+Mgnb0hoRpZX5k+MmCo9jabMsJtcz+v6a3udqZbheZnsowyTaNTvDE1VHLggK7QFnkHKs6MScWz6u3PVngwcuA3GW/Q6lDs0QMraTMI/BknLE3gzwRR70ztBX4Pv2nrIM+5nhnw/kjDB8utkBPwM0VXQunfI4BmFCyJOtro2ybFXGxr4Lv3rDBNGFRDFhJdhdH/ndCzd3DPganKOVckyrAGKJHTNLCbp3qxNETEZQ/RP4b5BS4dEFgjp5uORdeEHGMPdzcyfyANlxSeNUAZ9EHyYKrMpjHJMim8C9r4YanJW9oDtafCDaOJHHnxQhG4GHHG+czNcr4NEAGJsv9ja++J02g1U+KOlyDpel1M4mL+gKIgp02nAwXj3h1kHvc5w2bTnHE+Puwzfh/pL1ZIl9kY1z3GoVcusJfYMOxlu/IQc2IrH64OLRH5xbq64etZyRVwy9TONxPfsZRipR3Josoa5xvV9HUqrdDm6X/d2YL/zrMwkIuAbUPrytyZ5k/7a5wa+R3d3pdbjemj74EI4HH9E4K5UKDehpMVdIdF3awvVoQHymHj6Dgd1JHJWpZ8S3RrQknoAM87RX0+83JJiTMZS8L2DJORVb75tOsSa+oMSsNSqk63Y9i4sKVCC0GhqYCb0WGBcVzoUcw3hzZWHZWysvdu3Cm+uiCEszDGPr9At1hj3Fx6/I/fLzq1YYf+3vFWXkL0YarW3p41B9CLOo+s7tnh7PsQZs9hoM6UFowzUauYsFvHjjNh6SyAt10vM9L3j6ioMPV4oOSJzYIvtFYz6ZvNWovjPn9MrzpdihfuIrQGNAji/KXyiaPKs2crzyxc7lo0MmkyN3oHNMUDIFBF5dWiXhaoKK4fFbbozTWQdhP0G9JXMzN1/snM/0QGAzwPp3Bd+Q3c4R/SXhg2iME00uX3IZbei8J3N0qc+24SX8S7snG412RZdsaUxXV9DhW4PQzeRpqf8jrNufU0xyB23B7e0CclgmcJa11WI8GLmorjWVgf3vTzkU0jymkh9UtqZbrPkQUVBZ+lHRAX9+D6dLUzscApO5Kl/oTix20Ymzo3MywxoEjS5bAaBNqszr8VLR7wJBL6ktOTLWOYx4EET4O56xepjHMdNU7C5+7zJJ5HvlaPWVJC6MKgw7tcHysdlyva1+6XS/ajYiCDM5SNTKWFjc4fYb+E2VFcmT9+yZ5s6bpMdLvDcjbNqa26sqK8nlt4XxVhwfaaBgnQheZvTADBho62LHswAxnAm9vO+TlhWXdsJswm+XTMo91BI6Wl+QD5nJMfGNINibEJd/hdKft0YsZ6Y+EYjlqYMkrwtvXIWkJcrUKLOHSdw4+PWij/C34owjRaOylnZ3+F5j/0kMgVcZvxPLVWkRlrWveFqdu+Ia3Hl2VblebK3Ie0OiKlW84XI9t88GtyELLF2Oeyz2fwLW3OgYMhTz/GlWDt+drU40kxOLkuAdU+pfeo7jx634koAymH1VMMOtEi92DvcGxWU4rjRyjZSNFKrG7IcRiZaMsWUupU93OGuogTZWbLf/tNprq8D/n/13lP1NSIuI217W1wrEKZoXUgCPIhiFrRUUpQfjBzDu+YsiTFVPim+wHxbnjDRM/LsqsRcHWpXAibhKVilLPWeQRpjWiy0cVO6q+QYo17gQyjImRlXv5KUPpdjUVeo9h5N6ZIwyK2YEpyMfvnMR9k+j68PAYzRHsdRk1DAYyi6EydZG0MVw8IqvoHkg2QYzQTx8uI+ZsNPTJ5i+pJoxSFeZzvAJtOsU4uJ34IKZWZVnrtEd9MS9BCW0G5ukxSxBeHLreI1ckcUZcjl+YgKy9lE9u6j66AuUsyYlS720J0O+2OBqVmlisNE2f2vcMeu7E6gCteemhZGc0lZDH7d6Mi5hHY9NRQO5AzgoqIJsdBbkE/3x1Zlu5mIMQGFNq/NoI3rqbkvZMiNs/x0FFz3/xMeQjoKulaulBN/86YI5Eju6RuK0myge0jlmQoF+H6ALH5l27rMRw+YiKgLHiATnQ4FRcZwGAcbLcjdb6II15AqueI2yILpoVtPR9rLR5/bysSxqtJs5sZEgC007enrwHf/YqThemvCgL+KAnFIPk/XArxg0PwHJBIsVR5VnVRPPPEKPvTVPN8OOpz+nul+9dk4Zte1uWJaTyHiKlaTWc9bC5d24k7vedQusJydPZkmdS6I5e3phJqJh5a2a+HJEbrpmQGxEJmUqrMvq1Bzdzn8assNNC58a7LkL+WktSyek4wLRWtGMn38Q8t/FDnXfELrKlQVwvh4q2LPXu1JPk96GttlmEffcYsxfAFbzDCzvWAzTqI95628RDZ2TgbKOZ+vtSQSVh4EHew/Xv2CODP24ixKhjJwbFyYWJU8LTBLO18d+zx3QBDNiArFpamRQ4xeEkBH2s3Q8fjOgYbufYijEItaNxc5A6+2IGSycL9U+n+/BO6Aie4WrLPNuUWiGceh4cqJWmjfpvfkXRde+wGLcVrLbzIkdNbpEHG05rFOcutDe++crSt50oWH3IbKHx5eD1itH7SLxDbOeoJ01WVx4nsh8vdElt2Xp/dVgXtXBQneHeq8qC6Z/D/d6fSLoPXc2rnVPKbIddwtJ6HqwBy7nR4Dv2S1S7zjbhaLnjeip5fZV41yfPXKpxbVZuXwplYKw1a8yYI76fEJ7/V0sefiFgliBTukUpoOl7O0svpW1G9lU7WUULrGkQlBcY3KvlGhXJWeytlgqrckwXQp/x+dRUkwMCIjtEPaQp2C6WGFgSlVknls2bRGTWgwppm4HcPjj3eX3/skcWlZFNf4XGMKPsj+QYv/DIo7e2iTYs8d1lF2LS6vetPwlV/FPylpn4Bv0JwvgFCvd8b8nZcZfzyIhzCTqKU3B9bEL0y1XoHfkyMiTt6v818NCE/UoXBgETAKu0tez8EnvN6ejeB2Vla/W3I6oH8BYuVuAzx/VvfjFPlocw1Rm1/Bzn7ASzIV3oGx/xzFMCentBHoRxf6ucT6kMULRp4ePWkFAPPKedG93pFx7rHFbVW48+myQL74eZdEoKuIh7zoh+C8ARBtSIbyZPuezutN00+53mC9PadEMJir4DOIe/AXVnMLU3AnClADHMOdWGJSxboZvDjV3IN5OTfFJQUNcUeBLQ2TvjklNSdYgMdH1tIenFPbWIwX9fm947fyD1DEr4JbPrfAA/JLi27/3eqaritQ+CikJ0ZnoqsACE6DVUlyn1DbQPbRrlWa9clAvb5dZs1MRuLXe3KHJaJ+EWzGc4RzsQYM+5JRFSmovnHkqrA6uyGv+i+W7ZvBVc/U9jADR/nerAcJNRpr50N3LIFHSF30LLtLmSrAMKMmf+220vAMRYwKeS2uwi75AywYo8QWYAl4ey4FHTsh3/hNU0IejE0GzXYtDGDkuMrBcp5xYY6vFSnPEOxo+GmYTC/Bj3KzyQe35Pjw68mAjovWDTtrutHzlY3A9WYM9g1ySsSc6fRQZT9wY7AgoA8TplB4QvXH9bzCF3uJG7eoov14YvG7hiUkXLPgrzmi5RMX2KQjsxQ8Zm6haTFCD7XxWxhhrL/Q4D1JVjF/KczhR012vIwjnWxjPsJJdextoLiu98rt+OrV7q8Cb1B0tONJmK7IuPMGVxRBRc3vfZM8VGxMwlFUK+ADkmBh28IED3LOLR+CWY91FI1s3et21de1OJQX8G/3jb2YZcxTY6gcaMNj3QdXpvA8DHM66rkLX5cJVBQJd7vRnHxyUzxBbyVWUoIYlysyUh7DG7t6UXAOO4m9eFHTrEnaTc2TJK4BOuYw+EnlOqoF4NdgtF3LVkt2ld00Ui6cBoxoZmjROdHM3OmR1R5WCyB4nJT0sGwsuVNrDRIcM/PCwiyBEIcqpu8KY6AwCA2LwdFYAtfhoEiEiJYOwVOSrSYP1SeZJLgZLZ/c0UPaj5CWYOdqa1xw/dkDbTtVc5nbrWUi99lgPJTdDkY/9DziRUDDmUA5V24yo7XN6/YhEE0xVM9rxt518YHF//A8RHKD8Ix+OlVyJMj9wLuC+G4HSPPpZ3Xz5hYdL9o05L5EfJvQWG8uIGhHYmSrhffT6UGgjlOb2SYrtBDMklZb9MiQ3zByEM6Jwx870mZL2aaoruxvsaoU8b4bL4AhXpQuGLKv4/oPTw4VE5V8J0WkRA2I0C6aM8rWqP+UhlgFNQKsUGX0Tcv9DRpTAGnO2/4gtWFqmkXZWLFQL/m+4NNe6ApNvF59KgG/OfyeHFQ5KiiWcJATYZqP/YD4BdE3UuvAP/xuCWEO2/mqNOoou8Fae+PoJaB9ytdVz2Nq8iWVV9GE3LTwV7bOHhfKmZcK7ytnPBisfNnKUXik3/CdjJmtCJ0uvl2lKtQwNEjWt4M4BN4jjGV74Wssu7OiHUltDQkScW9O3UiIWXTmhOP3B3pSZ/2XFZCAsRmat23BeHlOS99KS70J8HT7+yqbxS7q5r9pjBdKhkgShgF+UgJxxoLdHBgQl1lc2y1yi729Vo1K4LdEOsW1oFVUyxF3Y00gQHbg35q1JjUKp+m6LVFRhDwPM/tX3lZ4LoEIE+bI6XoJcGEr/0zZUL4SV7jK+h5aR7JdSwEQMzvvLk4DbCI4aXwSX3T7E3qbZEmpoEWV37SozHjbUNSoLoHdmNbvKwe2cujsdKIHla6Nr56SAybayJRltyLiAHdjbKFx3XT04wBcDZIYCfr/gqqZ9xqX/zl1auSFxRmj8uHv5au0kTxQOkJQgShohQPRaHvkZiB4w/tbaeldDDWs0f1ht+uGuKmMaKOvOkDHdYaBIzSTmUAfYzODG+HW0LPxrS9rK7hQTMIaQ0c+yNzAM49g8JUjxEqKntqmfGeyyeXun0//XewYEPDTgnXMr+Z6KRO0hrbtsJTuN00FlLmJj28KBhIlzPYEqIbzmETibj6p7wIXrjvBeM50bKArsS8bCSh25mCQ2i05khdjQ0EsK+a03TT0jETIUQU7O5HNYzUPp57XzaFxcn4YspPWvExpWkonlisN5OGSEYxeGhZv00Wg6UWxoN5uVip3YjVcHo+TCjOKUlFLrDetBE20ZuBuLcnI6NUqcS754ldwrGKK7I7Gu2h4rB9N/t6hGocyDRTyC5dK15l0vu6O8JNiNfdkizoFHMX/a0Vw1BzpX4e9dcwLZi7lY2QJ8wQVXRVqGhN9DwmVa8cOaWBM3jbKWuCb57CrNzDneuExyxG+A1iARxRGpUSjCjy2SN10TGZKZ3PQBGqttUKEWHbA1KyoQJmVfXG2PdUlTVOhZjLViOZ8ghlFzuH3ZoYLdc9795re5pLtocddlgbtobGaYo+P7HaZMSgmrMvQrMr4wtkw/pb7/qWkYCpxwBEAzlM0EODTXC+5yUI6ywt7QI4KaVfPRajlUkLzozcW20pomflo4Em7uRMAR0H4hbMmS/mbP/V1x3qRwIwANvOkve26uOlZ4ATDoPgIWUd09hSz+dNfK64XifRw3npAyFx1as89wQjDhgRMM9nkkNTRSvY7ptVXuGSTHvgEWAH9iXEUv1gj5HUASIez8rozZ4OAGOKuT2dTU+tAt4pZjvethBjHYkb4Cp2ns8g/op/Q6dWpUKcDJVqfv3qLUKxNVePRuhvnIJv0YPYZz08bqTUS4bT7RzXZzFxpeHxQLzTQRA219/pN1b5OFqSELyO0r6JuslxDXAlJO6tdYmMqvy3rzNv8s1Vy0XoSUWA9AnXOXypTs4YhF98btHGbiIL4bNd3DDPGWOZlP9vJZ8IcORwgRpBg5iNmbcOX8ibA+Xwawo4jmSwzskzjFWuCACTA0sBUfRHWKz1cT7nY8mzcA5Vl4/lSN5H3Ti0g69F6fF/D+iXZP+F1ElaeFLp2ZWuRltbJRF/s72Oe5Ya288rX498/AJ5AgXPyUcDlQhDSjoL5z0KGlblgfW/kL42MHFb3Za7oc21a+udCujCQ6PJplhFBx4tcqbiKroJ5mfEsuIjdfqJKX19RzPGcFfL7MxzZEXJhwcHOM5scDJNrYOMGzsTycwfEEpuJXgwXWe6ai7OtcCeMIeLmJefrLkvK3/TPg0JC4VUUNArbXV9rTDdHz7FPnKRWftPBCqfHY35GDv3A7JmqWm/FMPC7GaqNtz9LO6EDRu7u3FHrhp3DaBw4npvdyKdqJ97FXbVBl/0NwGdGU7QSKvl/OYTZlgvamToLOoJKG/ZDGb+wnxL+RYfnmNgTRjZk8EQdRSUhvbk7Hpt4cwI4pfuhp7e3UzBYtExRfwgFlsN6wRWWCgKGisLPLopZicQIe8qdooAdwzhQikpC6y3Mwkp67w1A4FxJKkyEAtteocRqGrk+/NLyOps9ME1VB1m/csxkwq7npFxGQEozx1m51jg0dhlCmC19lbOkJwh6hENQnGyOQ359pY4C7S8QHWp47SY5J7WW2JvCgTCxM/6LS+tjh5I/OciP1Ak9388DC9tUN4LPtxZOb0eQqQYAID5LKIzTWBerVCeAjxU+YTNqIglGkAc36K/5sJzNOk8hS3Dn3EiHkFxM7wU8N9taKaS4mRFOJfAk49jk3tt6wCM6ZPsdtxJZzFVtcR7Ba1A35MClzd8B7ky06stTqfIwmxxuawqL6FUM65bp7P0e+36PWFtcuXM1IOuwleJ9StxXMlvGlUzDH7Jjeg5E/XrYaGGJG0IimX+unuHu7ZiBTMjDY5ZoZ8ppuPr9nFsC25eclvAXkhe4jO8afkI3KltYH759EU6jpKIn94eCCiwiOGpOQB5pCjaaTyDZ6ylh5RLpSDQcltxnXn8cZzmbHkPQo+A+GZdzdyUVLwBizmkanPHy7kJu2KU8Elvm7V4gCdOpYQxYOC6cDu6NlL5yJcRHvTVXL7Qvt03Ck78BTXxcjqJ4wwnt1I3DsAoI7vUmPxA5Fzkt6ZIPyDS+RNpA/+GZMoLpIV2AWqxmVDmSGsBj1ThlpzRGK/NQ63tplQEI3Dx78Kr6DR5zcO9wN5sUPS+0+/WcWvk7uj3hQ9/0+7lwyYOn+QmwBTxtBvIWIOGujpgy1A1jTW5X4/N3iog0KRlAnFx7D6OUDG09KbbgfINV85yFBAjT7f/C1+iw5nr73qvc7PbNo7S475JCzQC9SLaEVuVPOdeDp3cqk7DvcuxauDV2nwJkOwH9/9kmEeIAh5HphFiEj/hqePDR+qvpym4J0CA2bO7B6LTv2W1bVtVPyeeKkoQ88i7H4bef6TG6BtcMABv9DSjg0aFiVthwLeo60jRTlJp3VO2Fb2MhcLhC5/8koxpctN6FcCQKkr2thzfM2TxYkX5sk2XUGsBzSVz2p/hMA22FyYf8ut9J+AbsjZKmTWbKOJtSG2CKo0GhPU+bXFolUijDxiXojj4tGA1dk5OA2mGAE0S1oiX5OkpVcHM3FfQtCGXyu3dmZIGdoIoTQohWivwRhkSc2yWp5BWk7Y48cbdmaRbrkuqP6UeOwj4DxdDWa1onCvTWY+ebwoFoGsQpKoR4/rBom2uQF9ArkJ862Kdg0XBgb9PJXm/G60v2agjHFMM9vF80b6cRsFdkg7JFXTSEysIhI4JGD7yutCf6bx/jf4mi0asq2nrdZutISacUSSkgGuzvFjwT9/ERWcu0ixUs0jsJGQPZcQsA4Lxpi9SOiGGJ7kbdfSy5cW5iyUtx7yyw9d5G38DQmDokm+YMYwuepaWue8ESZTTnr7yIk4eg4iRJv6WcedzoN2Gw+SyYFtamJzHxiYl4jhLuWVO2KILczfcIfCjwRrx5YI8f7d18otOESzQjcTrn9ueMN+mUWlYU2Mef8Jj3u5gBx9Xm+qtbmFomA4eJog9EL1mGqwZh2VrJE1HYmecTmj6NLOGcT6gsK0qZYWvVzpCLTP/8Ni0A6/IPtj1Lewhtk3etcmI4MaRuRGswRuzQgQr+ScUAQBcOClfhGOctyBEDCiOexoreG7Harjd28f22/BBQpZJ/G1NcJeACQaUZbVfdiAY1FrX07VfKjKrsj5eM4ofaRGLIM4tKrLhXDmN1/v9it+G+7FtrFv7J+d4HugQ7sguZOWY23siwoxNJO3WvOEZr5CHS6b4hofLo6vTbs4WUPe5L20yDtpPeHaegT8f7qBQOzB+Lq6xFoThapG6JcfE5XO6g2rgdrxmVmMn3Ve5Q77sze0Yyo75+PbSKHkMEnwzNJa9KUWWmUDHid/fy8ojo9WZF6A4PaRZD5NbeZe4shvcyq6jQfoqcq2eJCl0e/sK3B/NwTslax7L3u+nKhLPxikC9HVIMBuWWhNmNklV3tkGm7d2TcgWabOS/FsoCFe8p1+D9+V2CnIGdUKC0jViMXJYG4c6M7r8NhF0u5cc6aJDdr4NknEwIe96p/UeRUrJr5tmHSJEAa9Ep9rfzgRbkMSr8iKBiw+0tamYmQS1vNrIVXnk1+07mDsngJbR7Fi+H2HU3LcxXZHYSEx8IOlW1jnGmu2asRzkiI8floCBRqB/dotKhh3hXYQS+WwKJrlRNwdI68WzLrl13IoLb659iiEBM9STm9Eq49Xna/A/UMZY96RP58N+xsVRXZjJBAKRIvJTSO6/pl7HXJ3xuDZnU6IJGIlKzqLdVuB35qJ/+4LgEHSQfc/eBscRQfjukr3nZAx0cLNpgUF2KrNH9XPjfgfS2e2CkwtYC7/0ebm45rII7ssbbLKwI/1tsgKNAQadLsQYStpOdjDD8isVPJe/BxOajp8kLmlFurYVYo+7Crj1KonpnlH8oEajd4j8OTy43c6oRhU2Q9jRCwR9f+iBRh/JRG2llfpNVM8cdzEGLX5jPc/gngMMlBtAJxrrK34aGxnQccrDhWXGmMHd+R9i2UON7pLWPfDGAObgV1gwJwURmU+MsgzXBgvLDNTFWBl4GVUpEVEgMngxywks2EAxfBIuiTv6ZMHCuxrVJ1AvtjxeLXPCVyjgBQLg6brhjSsH5O/eCQkCFOocYaZjXUBQF8JmqfgZ5EXC1ooWFUTnf88pEA/vFBQfo47+sYPp1Qn5ZIEiAH0uE1rnGGFwuDQ3qu5Wh9g7sGRCTTZADWMkL1/+kQD6GUmSwoP+yj3o/pYHcow4u5qOwE9t7wXA4nikwY/LolGM22W8R45CT27ohJWnZjfYf1ORo5WCuMykWadqX0g0PIedtRGLdrj/WSRb1G9fl61OTboxCGkYFdT5IqXnvHw243PGHka0PiyUXuN3RorxihHgJSBH9aMAJCcWxViYM4lIVQlQum1AjNV75n1ANnUig/pOAbQzrQIg1DVox4pRMldjd14TxFPqNLBrK0UkaGh6soKdOqilTfpqrkWCQ6D/SmCZNtopy3WGIjH97A72ibzWFZOJ5ah1cRXFsZJGkFftHgJujRnm5g5iij49KWyxbOploU177FSRT0mtfbEv7+PTvfO7EjbWATjngwisFbZWoRehwBZgvTLCyOCA2L8V74yRLQ8E0QsCOEpPGjWIcn//gAtv5eIg9AKMrflGEGzOAqhKybJPxL2/OWfvCbWjEFMSl6GiaH+oOdhtJWMRpm7w+hzndZrMs3Lv1bMn9YZSk1VlkZo+6Yv6evx048FY1JRnxxoTP55Xfhli/a20KZvE32qT0cCICAcax4PQL9WShPE5C9yvwlVquwwKgR+FQRxe6t1f4JMCgpoxysNZs+OJW94uLG4ShV32dnlJR0V1gHv9wUX5igW7H4ZjDZbN+T1ObZFRi+254Pl6ydAfLDrnKXrnfFSBKX8i0bB2hGFCMMAfcryqKTTRfvMKnoZNoPpHaR4wDqZlI7dLVQ+m9YI6ju/5L/TZ/QA+24re4H1hpI5+AmBQ0pse9eEzP0NNy/menr/uaoc6ZKdaXiPEEnPgFyc/z+Ir5mGrGySpFsirxoJxvZ/G7NBYpb5YLN2RmlsIWO1DjcsaQAgeNhB1jabFoBVJ/bFAngqvvvebM13/kL2PZh7TBgNK9kAV79WTxDrSpMM+l9iFzHBbEGdtOzWcdPFjnTtQFSkMRBpX3RbkTgBthYxIIH0rAOF/EmCbX1p0xRCzcyQBUneVsVzgSD7UyFiEDO0Lq5qOzZBEk6jG1JMRS3Y2itSaE2ltiPquz7KJatQEkBb0ixc6ySpXsSoMCmnPUWI+ETDZZvgE66wj+4yj0pbDoyDRtHbxHNxYhH3+YpI9cxjj2rb7Y5kCBBpHvWHU2XYY8dRdbsJ5hCOeIHHCFR76ofRVzYp51dyplkMxCu/vWLH2Y8KmKhPnYzb72IUIdlHaqF6F5ctLpyreRYrOuUseHLCb+Exb2L4TrIOKq3rYlBS9/65Et7wr3hxsTrqm8d0VFUIlNImsDZFNqcq3vaxzKiPg4lUeKAe186fBwyQ4Oz273syFGRqn3rngxd12VFK+XZvlJlAPdQW/O5xUpNOMPBnkqWr4e7eVYZ1SXAyqgWvHWzCzb1kwuZpgPftVXxnwQzl5ivV2mbR9gS+w7eDsSv7zjZn74jN9XJ+P2ul7V4mXW4kNx5+NTaFRNrAUqichqhnrG++nCCygCoRYxEGM82/c1mAbwqhtiav02yFJ8E1mE22wkoutREkvJRGx2qGkMjPEjvM1xZpaYqjlcGSJvfvx10EH1/XJLZJRgL3YybT7Tck8Jus+/N5aGAGGG67L20il8EenXm8cDhglmXxQkvVU4mE+rdc+tBGDo4WsvC83cAnwzl8bwdPpeLpX8rgHHZ02ItTP+gFd/WNdMMv3Idv9AeP8PFZ9m2NNlVhwNtQCts2IMZSE4RoHhT+/hqLZraZBh+Pqhf7KLKNiBQnDGUVc+Vl09s+pXKC7T8KQ1nBOBKNTwEd/w3Km6gRH28lqrSI7YHBnS7bzMQqxORekEwG+kTuiycxSrgcleVA5Npf2im8duODpzLMolLRL7Nu5+jh1iCUx/U+HvAVGMmO4VjDUrDHFAYhmw3XDtGCkl31OfF7NekbUTkTiviVJWRoaqPY7dewk1rsG80EYTuwY6J8+pXglTPLK/8NCfeKoYnN+a5hnQshLj2CSygpROqE8Gd1sL/kv2IiXtKlWVrRe3L2LiZcusI+Rqc+G2Yfiw5QigKLJJUgbm6mNMs5COLnm+zCWs5XHVhS0tczMjnav6mUnXkimsfXP3OnRS7//EYNBmoXwgs/afVbzZo04dKN360jltEMJP9y0F/yZrm6GfE6GYHqHGRrg/9GvUbpbPPDML/ERZqnncRX0IfRzTQ4xrMeD0PUTDP7F/cOHuXsPzQX5xwT7evimZqLiIEzLPXxpJR6hA8fsTsZJQSHMPVHZJp20lddz/OQizIlpZYXITJIy09MPlEfCZ9+7f2gL6hO0PTYv1fFemm5m9BObz/EXK6mslLNs1HGdPqb7KElFYYFZnC4jI9SjX6Mu/+LmDZxQLOfN0AlWGRZubv+pLgavSX5EM2VJb1n8W/lNIytRHVmTvW1YFwjQ1GAoWAK03pbcqamTqYPXjX2dqiJc2dL6H32tikFWg4vTppoAPz7Y7MZN3R1uebtu83HawiY/+N0PGu5TQnAWEiMOscHruw0XsF1zXYhwnGdWDHE05UKNvwOpuuQpQjyQ6VmOkrEZXyKnXBXYFF6JIqKqRbBIA2lEH28rL3D/WPvOjjXfM9dn7+jEKZMfwH0KF/HOjO7Nlt4q72l1qDfKilYkgF2BhXbfLfQQ3dmjyFyZWGCt9SAJEAdHXzJsNPBmNuu1O/ow/JsqYeiAEeYHv8OkPGzbZACCJqDeq/uPSAp0h+sGc+iWcYbwc0drAAVH6FajiPTE3AGt8qSFcGfEG/bLlp6h+ky5tiPMBGy+GhquMnwtj6tl3890suGv2kVaCnhs3lTUKfbgC0s7CPyu1BVNin0vl3SqyhmyTSf9RNmvlHBdK48tYvNBzfDSa2yf6eCWAiAyZ1Q7UAdKxNKuaqrUpqtSdrSZVpEDXdKtTIb9B46X2itD8R02ou86Ati3RwTVhHYBIkFzaelJcnzzjQ3wa4M525mcEatYatdw71VdWyFdtUkOJhFYlSayzrTH4yBWc9ffNC0pwqonc1j4jACYwjbfF13pH9yMT8NtBiirPYqIaet3O/gYN2s/CmGzLi8nNo1UU3yXYOO8ZrevzEGAng2D83sB+LP0X9ydH+5YP2P7ikGgPb9PfVFnncjQjIZQMz604N3Le2xeck3rAm8knfWUb99t3SFWTsibWrdac8EAfmgZGBmWKSckiXzmZQZ6H2I89wpoUmCjSrGZXOc1InPCiSBz9f8IIN4VktnX0t3lmcc7rqRRnUA0wsionjy+QmMSkk888GeJcuz6Jv9Hhxpnvbr8ovXpV+gkWXmneOME6If8EAAc3/1xkmpaPkmyygV5tcXz9w1J5YPuftS1mj0iXmpvDsivztNY24wQcqNIzVf9M4MtmSOKMMYgXMB6DNfmAXdwL46MwJvvFD8fVtNyFY6K2BZd8aZBr3oNJ+wKSIfh3rQ4f51iIUsw7GKYyATjV2rm6XYmApsWJe2RT4IWm2JRANrHmdPIV/LhBkSYI4cp2YnUD88ffgxOtgcMfgC55DN9HTCNA/Vpcw0nTBOPxQhZuiE6Cay6ABypdTZGHsoam5uiiwvU3P2w7PBEHq+Ql7ehl6kW1FD3RIYxinc8W7aaeainnbKf6NqyC3g5LyJ1/xdCwNi6Hk1UuZG1njmE1LAGVRPsXIIeYSGq2sZV8wDXpq5AXdcF985NtQC7zWe+MtO1Zu8Ippwqs2EC91sjkR2Tql0CyEC8Td9+pcoXnmC7s21RJbegO/MX4Ctnj+CtyBtWaE0JnyWuEAKEaZ5l17BRZXuk2kV1pENrj4hSU/JV6rQMogHR3P7I1JRDAzY8Ao1VU2VFnIk3zcwYXIooWd1gTQmFYtmKc7Xn0s4A53mf2LT0XBd9Za7+FRWwu7/h+dCEnjgMZuiBdk+4Qa5tBLUMCt5GZbxcvUhre7zx0/0grCkAoew31mCSSGyel02gAnPgQveyOXQ/zYoWnSAqoeMNVU9PzrXKNfbe0xfsgQxjLmhjZpkdTuJNki7nEaTLcUMDsbNiY8czOxee06COZIvK53msXe8bZM/X8ID0dwVG/i7wEKLtgFsIYXFKjzQXr3beOOL/MqxWUrit5NPql7nYk4C9Hw+XvKau1bd719HFGLErQfVh0sN/i5XWn38toxfFKr3ysolJDby//+Rkhm3yytw26lXyyf2DrJ2p6SAxCaQgw9EWhUqtNUZq9ajoQZNKi0LQ2sFHVfVCjp4G/EwjavgjqRLTeXDQd4Vutiv6uP7fujrBD2rcOMSG6gA3jbhLIX37eJaMLLsBFn/qAnm2uES4vnlSfyBYhiR2txyp5dF1i0dGqmYTdnAzvfipbzEp1SCFty8vDSA9EoZxCPrhUBkorjvqwKNwUMsTL0XvV+2SWyRR/FmhTBiNR4cpUxc2fu6HC1b3Hi953zYRWz5OBxb7IBZieWZgAV6dT2XqJuV5dbY6QIS1DMjh8hh2soLZM5AzFmZEoCTkQJSUkzqCdbXFI1X0sPFZEm45ZRLe5jPqgTRRsemcuVa1JoeN2LZu6fQ/ODR28NV4FGnRb/FpFaePXP41jeoDoPnWkzvo6i/+ppAm6Fn3Fayiak+z229ZDCpZwLBxK00fY8WZHOUdbSnBxLszKJbbOs3X9p+JIWDki3xTXLNi6c31JOU6SfS+mN7036qQKSSrbod0Q3BtjPR8URIlNeSM2xoe81Tzh1lSWSqR0yak+Kg3PSsERPb+kLJ5r8bm5CV3SUqi3F2jEeA311VTVxfSRlxYBIBRzF2thBJLrVMQIUpshlad3XgsmaTweRQf142FnVUSxjizVJ3nNQU239TOiQy+edL1kQn9inH/bD0fa9FJMCXPJTNQdDm0afZyFd4UGZTinHdh0STITye+cJj+Ov3ByMd9VNddqCIb/XKsY0jhw4ZtJiy6T3bfiT8af6Fn6608rLjs/DcSwg2RmAaYZcNjieSpN21Rf/M480eIaLiGRKtA5X8S6bRUisbHJFV7cXMuIhcomK/iKsKnOC6UrS9XqwgCHESyIT/0v/86z39e44BOZ4zmz/oVANdS29MwCkF8r+bxD2elczABQr9gd7TC8uU7BGMnKIQF19zHBDs7OLqaKjYMh+tuPjVYAojmtte6/XFWF6Vx6aQ9dcN7xNj42Qyu2V/9nHW/uTBiuaOmUsRhKCUWmEMsa/ZOA55tp7Kp6LVnzSSI43u5EzogpvkqD9cFk/4iRDb3Wd5pB4C35miQMghzd4cUTYjCQWF5iwQ6zZGOwVO8SfhSs8py4YH4cejSJHSa6/RqI/fyn0BnRkhtb8NoCRpQKOrFnYYnxjPDb7RB0YmgkoDpT/D0M4G0/7zcU/MyvnkdV1KyyuoDE8ACjBg6AEp8huQii2UG0aWUO2Rz2U9QKL4upvIkugkAs9/3vnY6HcnMkMEQ8do+CydXRlx2RVOO2X9TLHDIDQJb2rRkngyeWbMAGCkDC9aQoMtxuHGg/YDeRXDh7xZWHTD2d3HT4KtsZ3/ekS4lV9MvWQ=";
+
+const _M=(1n<<64n)-1n;
+function _XS(s){let v=s&_M;this.state=v===0n?0x9E3779B97F4A7C15n:v}
+_XS.prototype.n=function(){let x=this.state;x=(x^((x>>12n)&_M))&_M;x=(x^((x<<25n)&_M))&_M;x=(x^((x>>27n)&_M))&_M;this.state=x;return(x*2685821657736338717n)&_M};
+function _u2b(v){const b=new Uint8Array(8);for(let i=7;i>=0;i--){b[i]=Number(v&0xFFn);v>>=8n}return b}
+function _b2u(b){let v=0n;for(let i=0;i<8;i++)v=(v<<8n)|BigInt(b[i]);return v}
+async function _sha(d){const b=(d instanceof Uint8Array)?d:new TextEncoder().encode(d);return new Uint8Array(await crypto.subtle.digest('SHA-256',b))}
+function _cat(...a){let l=0;for(const x of a)l+=x.length;const o=new Uint8Array(l);let p=0;for(const x of a){o.set(x,p);p+=x.length}return o}
+async function _dk(pp,salt){const ph=await _sha(pp),sm=await _sha(_cat(ph,salt,new TextEncoder().encode("8Z_AUTH_V1")));const rng=new _XS(_b2u(sm.slice(0,8)));for(let i=0;i<1024;i++)rng.n();const sh=await _sha(_u2b(rng.state)),c=_cat(ph,sh);const km=await crypto.subtle.importKey('raw',c,'PBKDF2',false,['deriveBits']);return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:salt,iterations:500000,hash:'SHA-256'},km,256))}
+async function _dec(b64,pp){const raw=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));const salt=raw.slice(0,32),iv=raw.slice(32,44),ct=raw.slice(44);const kb=await _dk(pp,salt);const key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['decrypt']);const comp=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,tagLength:128},key,ct));const ds=new DecompressionStream('gzip');const w=ds.writable.getWriter(),r=ds.readable.getReader();w.write(comp);w.close();const ch=[];while(true){const x=await r.read();if(x.done)break;ch.push(x.value)}let t=0;for(const c of ch)t+=c.length;const res=new Uint8Array(t);let o=0;for(const c of ch){res.set(c,o);o+=c.length}return new TextDecoder().decode(res)}
+const _BD="chessbest.org";
+async function _8zUnlock(){
+  const pp=document.getElementById('_8zP').value.trim();if(!pp)return;
+  const btn=document.getElementById('_8zBtn'),st=document.getElementById('_8zSt');
+  btn.disabled=true;st.textContent='Deriving key...';st.style.color='var(--accent-gold)';
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  try{let finalKey=pp;const isLocal=(window.location.protocol==='file:');const host=(window.location.hostname||'').toLowerCase();const expected=_BD.toLowerCase();
+    if(pp.includes('||')){if(pp.split('||')[1].trim().toLowerCase()!==expected)throw new Error('x');finalKey=pp;}
+    else if(!isLocal&&host===expected){finalKey=pp+'||'+_BD;}
+    else if(isLocal){st.textContent='Local: append ||domain';st.style.color='var(--accent-red)';btn.disabled=false;return;}
+    else throw new Error('x');
+    const code=await _dec(_8Z_BLOB,finalKey);const s=document.createElement('script');s.textContent=code;document.body.appendChild(s);
+    _engineReady=true;document.getElementById('_8zBar').style.transform='translateY(100%)';
+    setTimeout(()=>{const b=document.getElementById('_8zBar');if(b)b.remove();},500);
+    addLog('system','Engine unlocked');drawEquityChart();
+    const hdrTag=$('hdrTag');if(hdrTag)hdrTag.textContent='Engine ready \u2014 press Start';
+  }catch(e){st.textContent='';btn.disabled=false;
+    const bar=document.getElementById('_8zBar');if(bar){bar.style.animation='none';bar.offsetHeight;bar.style.animation='_8zsh .4s ease';}
+    document.getElementById('_8zP').value='';document.getElementById('_8zP').focus();}
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  const bar=document.createElement('div');bar.id='_8zBar';
+  bar.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(8,10,14,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,215,64,.2);padding:12px 20px;display:flex;align-items:center;justify-content:center;gap:12px;transition:transform .4s';
+  bar.innerHTML='<span style="font-family:var(--font-mono);font-size:10px;color:var(--accent-gold);letter-spacing:2px;text-transform:uppercase">\uD83D\uDD12 Engine Locked</span>'
+    +'<input type="password" id="_8zP" placeholder="Access key" style="width:220px;padding:8px 12px;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-family:var(--font-mono);font-size:12px;outline:none;text-align:center;letter-spacing:1px">'
+    +'<button id="_8zBtn" onclick="_8zUnlock()" style="padding:8px 16px;background:transparent;border:1px solid var(--accent-gold);border-radius:6px;color:var(--accent-gold);font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer">Unlock</button>'
+    +'<span id="_8zSt" style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);min-width:60px"></span>';
+  document.body.appendChild(bar);
+  document.getElementById('_8zP').addEventListener('keydown',e=>{if(e.key==='Enter')_8zUnlock()});
+  addLog('system','SM Trader v7 loaded. Engine locked.');
+  const hdrTag=$('hdrTag');if(hdrTag)hdrTag.textContent='Engine locked \u2014 unlock to start';
+  drawEquityChart();
+});
+
+</script>
+
+</body>
+</html>
