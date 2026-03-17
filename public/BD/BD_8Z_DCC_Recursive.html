@@ -148,6 +148,9 @@ a:hover { text-decoration:underline; }
 <a class="ch" href="#ch1">1. The Discovery</a>
 <a class="ch" href="#ch2">2. The Experiment</a>
 <a class="ch" href="#ch3">3. Results</a>
+<a class="ch" href="#ch3b" style="color:var(--accent-green)">3b. TSP Fleet Governance ★</a>
+<a class="sub" href="#ch3b">Self-Calibrating Bands (P17)</a>
+<a class="sub" href="#ch3b">Three-Phase Lifecycle</a>
 <a class="ch" href="#ch4">4. How Meta-DCC Works</a>
 <a class="ch" href="#ch5">5. Semantic Inversion</a>
 <a class="ch" href="#ch6">6. Consciousness Bridge</a>
@@ -185,14 +188,14 @@ a:hover { text-decoration:underline; }
 <div class="cover" id="cover">
 <div class="cover-tag">BD 8Z Research &middot; DCC-7 Series</div>
 <h1>Recursive DCC:<br><em>Self-Governing Governance</em></h1>
-<p class="subtitle">The same algorithm at meta-level and base-level. DCC governing its own configuration search &mdash; and outperforming brute force by 6.8&times; on a million-configuration space.</p>
-<p class="meta">Bojan Dobre&#269;evi&#269; &middot; AIM&sup3; Institute &middot; March 15, 2026</p>
+<p class="subtitle">The same algorithm at meta-level and base-level. DCC governing its own configuration search &mdash; verified across trading (6.8&times; over grid search) and TSP fleet governance (14 workers, self-calibrating bands, 81-step lifecycle data).</p>
+<p class="meta">Bojan Dobre&#269;evi&#269; &middot; AIM&sup3; Institute &middot; March 15&ndash;17, 2026</p>
 
 <div class="metric-grid" style="margin-top:36px;">
-<div class="metric-card"><div class="mv orange">6.8&times;</div><div class="ml">Efficiency Ratio</div></div>
-<div class="metric-card"><div class="mv green">12</div><div class="ml">Steps to Best</div></div>
-<div class="metric-card"><div class="mv teal">1M+</div><div class="ml">Search Space</div></div>
-<div class="metric-card"><div class="mv gold">VERIFIED</div><div class="ml">DCC-7 Label</div></div>
+<div class="metric-card"><div class="mv orange">6.8&times;</div><div class="ml">Efficiency (Trading)</div></div>
+<div class="metric-card"><div class="mv green">81</div><div class="ml">Fleet Steps (TSP)</div></div>
+<div class="metric-card"><div class="mv teal">2</div><div class="ml">Verified Domains</div></div>
+<div class="metric-card"><div class="mv gold">P17</div><div class="ml">Self-Calibrating</div></div>
 </div>
 <div class="metric-grid" style="margin-top:12px;">
 <div class="metric-card"><div class="mv green">$400&ndash;700B</div><div class="ml">Total Est. Annual Savings</div></div>
@@ -544,6 +547,79 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 </div>
 </div>
 
+<!-- ═══ CH 3b: TSP INTER-WORKER GOVERNANCE ═══ -->
+<div class="chapter" id="ch3b">
+<div class="chapter-num">Chapter 3b &mdash; Second Verified Domain</div>
+<h2>TSP Inter-Worker Governance: 81 Steps of Fleet Dynamics</h2>
+
+<p>Three days after the MetaSearch trading experiment, the same recursive DCC architecture was applied to a fundamentally different problem: <strong>governing 14 parallel TSP workers</strong> on the TSPLIB uy734 benchmark (734 cities, optimal 79114). Where MetaSearch governed which <em>configurations to test</em>, the TSP Meta-DCC governs which <em>workers need intervention</em>. Same sensor. Same coupling. Same escalation. Different domain. Different semantic calibration.</p>
+
+<div class="metric-grid">
+<div class="metric-card"><div class="mv orange">81</div><div class="ml">Meta-DCC Steps</div></div>
+<div class="metric-card"><div class="mv green">0.46%</div><div class="ml">Final Gap (uy734)</div></div>
+<div class="metric-card"><div class="mv teal">14</div><div class="ml">Parallel Workers</div></div>
+<div class="metric-card"><div class="mv gold">3 phases</div><div class="ml">Fleet Lifecycle</div></div>
+</div>
+
+<h3>The Setup</h3>
+<p>Each of 14 workers runs an independent ILS+DCC search: kick perturbation &rarr; 2-opt local search &rarr; DCC evaluation &rarr; repeat. Workers share no information during the run. The Meta-DCC sits above all workers as a monitoring thread, reading their checkpoint files every 30 seconds (filesystem = message bus), classifying each worker&rsquo;s state, feeding the fleet snapshot through its own LZ76 sensor, and logging fleet dynamics.</p>
+<p>Phase 1 (v2.4&ndash;v2.5): observer only. No interventions. The meta-DCC detects and logs, but doesn&rsquo;t act. The purpose: validate the sensor before enabling actions.</p>
+
+<h3>The Self-Calibrating Bands Discovery (P17)</h3>
+<p>The first implementation (v2.4) hardcoded the LZ compression thresholds: <code>band_low=0.25, band_high=0.65</code>. Real fleet data produced LZ ratios between 0.01 and 0.08 &mdash; an order of magnitude lower. The coupling parameter drifted to floor and stayed there, producing no useful signal.</p>
+
+<div class="callout orange">
+<div class="callout-title">Principle 17 — Never Hardcode What the System Can Learn</div>
+<p>This was the same mistake as the or-opt exclusion (P16), but self-similar at a deeper level. The system built to let data decide was itself configured by hand. Three C instances in three sessions violated P5 (Let DCC Control It) while having P5 in their context window. The fix: <strong>self-calibrating bands</strong> &mdash; track running 25th/75th percentiles of observed LZ ratios. The system learns its own thresholds from its own data stream. MDL all the way down.</p>
+</div>
+
+<div class="_8z-sec _8z-lk" id="_8z-s0" data-8z-blob="RSqHM2Mk9MmhPKavbkP7uyatC7d1p77Imswrel8EWuGX83bFlz8sl2sryalsn8TmdgoUo6uqR+LoJGY1e6v3kX9jl2AID8vjmHNrxC4dbisq2mxqj25tDU//DZQJTiMc0hlF7vBH0/FMAINYsWWc2RUBYxK4MHIkSj1nWHsDnOiIaRasjZ9kAZZfhfzZ4Y9YdfHh/tbnE/2qc1hUK0C2NvNXVLlfyHw5+r2lrUAVsLqesX+SC30zUMb8hWWPsvexamAW4WLA3abgnhdnOyVJKjK6w1oAY5pKgvAPEMnLMGxKBHvkbz2RLxWgY7cAeFDBIyIkw3NHisJ2PDsQogvML4HJ10bFWXD1DsVw4lS1vHAJcV0WuIClwmfB36MRqfluT5sPQCUbmHDl7/hE4mRMyIM9t9qiB26ETj7lyzUPra9hQz6tmnQ+INV6ek+nLgKtkIflP97mMJFldjfzbQVXj67HGjZ++98U1sXhr4x8R/RXBFOm215z/VPXWRcJZeTthyETAM1WRIVmZBdUD0Nns2o/mYKCWc2mihcQNvfMf8vhXU8BfhkTZKvcKTEM/TGyaEFH6tcyTkm86pSPzZ6GS/KTUp/8WyxUsQsuIeJz/QxodPKBQ9RFOyIgOdtsVJT35Qw+ZsqmKvG6JoxAlr8RfpuKmbLW7dNNVuZklsg3/5y7v0dZ37lrE0sYaDsCpG898Xn/FF1i/3ttKvBe/8tvH3Slnj5v8kydUFO4HEVy/tQlxH3UiimB9aV8i+AkSMhbxEX0QfPnIwnQVHhTkM7ylrWhYWQgu45rvpbzAC8lUEq/+RyMwYDTRF7d8Uj0fISK+6ymnApTSPhrsgA=">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">Protected Content</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
+</div>
+
+<h3>The Three-Phase Fleet Lifecycle</h3>
+<p>81 meta-DCC steps over 42 minutes revealed a clear three-phase lifecycle that no previous run had visibility into:</p>
+
+<div class="_8z-sec _8z-lk" id="_8z-s1" data-8z-blob="xBWokBVggukRRhBQfVbdEr0tD8yVhqnYMEryp3kxV/++0m9H8pSNzU8OawLOggH3WoJkwkhwfROB/JuEw4vktRs0L7rUuPZl3uM2x092U80rqbmuz9KMhtjhGrQm4AyAA+QS0sWIQMq/IAw69gbwlzgNEzKhnZVBTqMYlDChEvTThypq68DslUpfwGpXCSuCR5U2hOPdxlT6J/Xmb3wLTvlGPSaw06qrbUpxDmLJT7scd2GqCdVAV90rSK41rslKngRvxJG3Zq+/KYhvSsYWbiwuxUV2bP3xc92SK1N7Ug80lFGDbbjrEPkRyI1cHfHq/GeEQJyrd8UERvomAvOKTYVriNeHs0McGGL0zRn7yljnDvaZiiNsgx+4JvVBX6K7DODVttAIMmjWgd0bwJ4KOAqSVVFnY+Z42aVQrlxHbVIZrS+FefMHeFrzqJziSRzWQSBEj41Fjhn3ouKsUJ4qk1GNPx6ksEwfpucKfAGsVtguqfhhe9tpwUdTGw+/ipeY9tSMZdp86XWa1x1jlKqr95/KmjD/4LIOAPBunCGFi5YMJGOR1u95NiIXGcva/W7Bn9lKhbB1+Xon3LWNl7CQdtjCzC/f2JVSM7O45TxDQPA/jV0HkN8UdoeNGNiF/OPLQZC9dr31B2RgBNkADFev3bnf1G2ZaBz1e2Ywv22wIkJs1h5pbxqkZU0cUW2dbg7oI89oD0TyeGbpSh4TMShQ+SGGc7Ghxe7nj4uZg7yz6lKA0o2kqL2TxZ25NPJgahr95HqYYxecF676IYjU49un9LQkdRVy5q20imeY5moBAWGB1v3V">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">Protected Content</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
+</div>
+
+<p><strong>Phase 1: Healthy Fleet (steps 1&ndash;20).</strong> All 14 workers IMPROVING. Fleet best drops rapidly: 83188 &rarr; 79942. meta_u climbs 10 &rarr; 18 because LZ ratio exceeds band_high &mdash; fleet is diverse, no intervention needed. Spread narrows from 1860 to 1342. The coupling parameter says: <em>trust the workers.</em></p>
+
+<p><strong>Phase 2: Early Stagnation (steps 21&ndash;55).</strong> DEAD workers appear (5&ndash;13 at any snapshot). Improvements become rare. Fleet best grinds slowly: 79942 &rarr; 79639. meta_u holds at 18 initially, then begins dropping as LZ falls below band_low. Escalation climbs to level 2 (SHARE). The coupling parameter says: <em>the fleet is losing diversity.</em></p>
+
+<p><strong>Phase 3: Fleet Exhaustion (steps 56&ndash;81).</strong> meta_u drops 18 &rarr; 3. At step 65, all 14 workers classified DEAD, zero IMPROVING. Escalation reaches level 4 (RESTRUCTURE). LZ ratio drops to 0.033 &mdash; fleet state is highly compressible because every worker is in the same stuck state. Fleet best barely moves: 79585 &rarr; 79478. The coupling parameter says: <em>intervene NOW.</em></p>
+
+<div class="callout success">
+<div class="callout-title">The Phase 2 Trigger Signal</div>
+<p>This is exactly the data Phase 2 needs. When escalation reaches level 2+ and meta_u is dropping, the meta-DCC should inject the leader&rsquo;s best tour into the worst stuck worker. The sensor is calibrated. The escalation is real. The trigger timing is trustworthy. Phase 2 (tour injection) can now be built on a validated foundation.</p>
+</div>
+
+<h3>Comparison: Two Domains, One Architecture</h3>
+<table class="param-table">
+<tr><th>Property</th><th>MetaSearch (Trading)</th><th>TSP Fleet Governance</th></tr>
+<tr><td>Base level</td><td>DCC-governed trading strategy</td><td>DCC-governed ILS+2opt worker</td></tr>
+<tr><td>Meta level governs</td><td>Which configs to test next</td><td>Which workers need intervention</td></tr>
+<tr><td>LZ76 sensor monitors</td><td>Search outcome stream (edge values)</td><td>Fleet state stream (worker classifications)</td></tr>
+<tr><td>Semantic polarity</td><td>Search: high compression = stuck = explore</td><td>Search: high compression = stuck = explore</td></tr>
+<tr><td>Efficiency result</td><td>6.8&times; over grid search</td><td>Self-calibrating bands: 22 meaningful u-changes vs 0</td></tr>
+<tr><td>Bands</td><td>Hardcoded (v1)</td><td>Self-calibrating from data (v2.5, P17)</td></tr>
+<tr><td>Verified</td><td class="verified">YES &mdash; 924K bars</td><td class="verified">YES &mdash; 81 steps, 14 workers, uy734</td></tr>
+</table>
+
+<p>Two domains. Same algorithm at both levels. Same sensor. Same coupling dynamics. Same escalation ladder. Only the semantic calibration differs &mdash; and even that is the same polarity (both are search problems). The recursive DCC thesis now has <strong>two independent empirical confirmations</strong>.</p>
+</div>
+
 <!-- ═══ CH 4 ═══ -->
 <div class="chapter" id="ch4">
 <div class="chapter-num">Chapter 4</div>
@@ -553,10 +629,10 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 <h3>Compression Sensor</h3>
 <p>An LZ76-based sensor monitors the stream of search outcomes. When the search keeps finding similar results &mdash; all losses, or all marginal improvements &mdash; the compressed description of recent outcomes shrinks. The sensor detects that the search has become predictable, which at the meta-level means it has become <em>unproductive</em>.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s0" data-8z-blob="1a92KarBd/WriazeTX1Dz2pjVa34NpzLdNBhsFwFDCaPh/syxj4mdKWgdKUHIA5Jq8M1ow7ETuGg08CGxxi3jAL3d3D+tQvxKPADRI9Lj10geXZmnkcwz3kfsTaj4+NmzGA7TdZTrG7opFEy73/N0ryLDV3Y2lvBlrSHfgW9nnmTN+JGgkuSFnsrZ2LV0zf+6RIrafWGC0TUmNajw7LrW+I5qXAAZhAIhvNngPDZCVeR+JAZBOQHvGOdZeLdqJsQeWFQI6zmjthx7njEPonGO0Fp9d0sIYTeJ8V5zUyrij8yAhaeWV3Mh7C6JGJcTp4L5b0ind6SVKTZRnyOvKRvCobkeTx9a9pT35fuADElx6fMHx6StszqorxuXC8pYHnzvdDeLyGXAZviNk+BMtSn0NKd6pec4NhVPy0qZAtAmntHsLbukbA3HQwaehRz6kCJjcEVcXgnRgtkQENgNALygD4mZMT4zFIEqqJizEXpPtGifQWM/B4fnNght5qJApZjT6JXJs0GDnJgMNnIRCOoUheWcd38014u7Irvla+lnkQlm5WkjlesftMfkGyCwDfCz5HrELg4Y3EHQhXPlRJrNZBlCupC9PY5GnSPpp4hyG20TPq+or6hzs4hWZKb7DRzE6VKyzyzKV3cZ94yl7TuU5oFmzOlOWAkZ+ThewVBd0yHhPvwzh2JWgYmnTtDg7z23qvuBNODPDU2uTVKlchVHTK21HcXwGp2j3E3Kp5TcCUcP2I5JodVYdIu69pW4AHntF+IisKbGrmkewYuuIlMZkTVejQi6L0XvuoT+Zfj7po2faUttF6ENKWwopINyKPiKkfrY+0zqSWKieCIJkEaOVwpQwk4oyz8ioQ33dZGb0woDk6pYuAMHGSYiS07F08mdcfEJl6lSG+bDyufnuXVul3gNekegB5f7O7GAIpSsTuCRkyIAYVsHxI0jMhWP9zWz0JwBjOW2OIbUVsQL0p2rkriwTc6i4gOQfbsjFHc8+7IQ1sNWbJvTNCqiNtrLwNpSnZRGSlzNDR5ausqye1FRf+se7LEkFcKBfgwfmVNQt4ybcFWOAD9p5yVtPRryU8j7PLf3h3Oqgz6TVj4FTNk2sKM9OZGwUnVwRyAbPSpBus6w0m8XFQBJVD2C2IOJiby0D4uSKtHK4ng1nK6zopCvXbiMZ+NJDm0rmohshpMmqGPn+KSBchkuMk41BxPAvO9bkiCo8PFDKYrcT50/1eE62QbwQzRKeVB8F1rd4/0/WJA9Em9CzrNzDuSYbP1vWJWfUSRW5wL2+EIhzpsQB8Duc+srt5lb2tNLRVhP91D3y68F/cNsrqVmDATksY0U9lZNe0/wWjAhqwPEXQfBN2zBhtbkw==">
+<div class="_8z-sec _8z-lk" id="_8z-s2" data-8z-blob="q+vj45aDxz9iSthrUNFtaZ1uiZgVymMBB5y/w3B+0o89Fopc3M5ZyjDHPgPKN0rz52nqIc3+e+Tm/qog+kMUtfWOEnNFRuX5Vm22s3tqpBOOYmQaWACqlhqK5XHnLoxv3jCKhmNeHHT16hKfh/Ge0YETK6raorcLvbqo5DJIygkeaHoj664ptnVlAFptflYT4ew/RKE9Rdwjt7hwy2K8J/AdcJZ0unvT4XMUHjcA+jcU7HR9FJOZfbclTEAapTMEN869ULVYunEYdxqUVmghMW9pB1kifoz75kqLMWk4mOBDCIwuSSZwAsyUJMqkrQHThlsQ2Qff2lxl4KuGjjUj6iK3ngRkhjSvMicyEgChrfcseb4eF0AqzH+/VyrkeXOGrm/1ccJgJ5WIi+h9hkgV73J4vbgq8mYAiajEKgj78uZF2zeT5W7ObyyGduob1SZ2fmpFcI4bXXQN7dfPg/hZZ6ce9h01IAANvPxROlaO9nKlVbYBIphLh1MuF0W99roKXSpVxjyhn+PxUYwHXCKfLk91kZ1CEhard+FlCej58g098xobBedZw6UnhK4q1TEZyyI9Kk2+5WIoatsMHPMWWaT4bTU/duA+X8zzOhBFoHlKM2eF1h6Vj+5RURKufMcQQ3aURyimyeL7Wgn0btCR+59SzxOhH63ghv0XpA5zGZMmKIk9o52a/nwOqF9+hNJvavJuFSlffW8FZjj8robf8PFC7aruydh96CeLm66FmtUTeqXv2DYJmoPuWKCgAUvqRYLYlZ0rjS5+KhBK6+oGoTdyx1b+i0j4OUS+tA3o85h3nb1EW+IFRqm8/uRuWycWx+8wvLX56qeKkxbcBAOfaV98iwzfTv9eizWY1zmnB/retiu3npiDc0LNIu/I/g==">
   <div class="_8z-lui">
     <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">LZ76 Sensor Configuration</div>
+    <div class="_8z-lbl">Protected Content</div>
     <div class="_8z-sub">Protected by 8Z Shield</div>
   </div>
   <div class="_8z-ct" style="display:none"></div>
@@ -565,26 +641,26 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 <h3>Coupling Parameter</h3>
 <p>The coupling parameter <em>u</em> governs the balance between exploitation (testing configurations near known good ones) and exploration (jumping to entirely new regions of the space). When the sensor reports high compression &mdash; meaning search outcomes are repetitive &mdash; <em>u</em> decreases, pushing toward exploration. When a new improvement is found, <em>u</em> increases, tightening the search around the productive region.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s1" data-8z-blob="nMXq78SpeIrnV7q/wJr8NDGYszuwLAKlhimyelbJdqeq3V5TAxUH4Sk7X3vRujRMtaOe2ZyhLFnJvIJpRBgb8juFdW5IfoDNg2xS6FtbXjm0UzrdMKivA1ehyiGd2zUXTA4vf3w/Rad/tStS6ZkAUlmaapb0t9mhJvhUIP4K+Nbb7nu4mSxXesqaSpC+kSeEI6Lbgdx/EyaSTIq5RhzifMfFcUtuH56N6ZDnzyrEB6ePJS4Q42PqcW6WdOrqW+ZnKt9dztfLw/wmRU50+qBxLaw2BNYhbPJUBfhJ6uoZazrgVSbpg43rX5WwSKj4Ds/h/6w23G41BdmREK1rxeYF17DcsLZht7+T3BmZ2seF52t0gJFt2zyyNcxbTZmEzC29gPp6HpHaamFtVBQy2R0g/+2tf0ugd+B9puMNtts76lKkEgGbu5SFfLbRvEzraydQFfFSIOsSUWduCjS3dkQgoL0HMNpuq260MPSBFR8PAPJoEW4YjRt2Q0fGmfz+JYMgkSGgXvLmLpLB9JSCSKUB3Fxkez/ZJo7lb3/vdaCKuCHzsksuaQXqs/QmxHIvpjSfaKSVFs55v1gnB1YFG+k0hRr+uUlNyL6ItY+X1AWUNNhTCzvAKnpqISs6UhvT07qgmxiCca+Q6/Yv6l6az10dS78+SVV43AisCcO3OmDu07L2nSDKNtwtv0+mNfxtuZYpdJ39ppy92KY4IVuO3zdXR0OEfxx7QprV5TJBwvs41JiWYGzPUXjPCvKymIm+r1EGzv9VffAQ9OSLQB4zpGzmvJZlkCxVauKZ/5ROUzBY2TwiDgvk+eI/XjS/I6RxJqOenwMvPLcaRunT3+jbmD+s4QFbSEdHh0kB7rAbtLk2WlFwJx2h1xY6YouSWDCIWt9bUr6hBD93plplFEY4LTpb1ik9UyYCHSkOhCybxB46KIasw3s8QZ2DtbxYAth9XH3pp/eTNC2i/7Bp8qvmtTRaK1daq1N1SlEXseDzWmJ7A8l/sJkY1yOFLWlhEBRGIMN/MTanP62w/ui4CFBK1zNUXw5kV0BICH9zfnVmOfCoLLgWwhBE83WbOg4KmmMoI/YQRu/FwNFUIm9mHxJ9kazQAak9zTEbB9dauGpic/mvosWYXDZd3hRJFA/husOMyld3GruDhbokSP9wH05fNi5nK+KQpPUJ4i8LJICD9hvE/UWwbNpw/+pdQ2u0+O5niOdKTWZsZ5cDrKjOny7FVsTg2WFWOssw3gmBRBbproZ1Ied2l0gsqzsrCp1c2ZtYrn1+228AYP2lGOBdLJdF3O629Kzrsb3DDsOehD40by6A4AJtZoPJzVSJlNF4HACozEHxlCNZnSIpoyDPvqzbYdBnq/Sm5ZU8/YDyKmUEjiPR96UiO/xOPGafHYRA6oitLmsEQomkE23j">
+<div class="_8z-sec _8z-lk" id="_8z-s3" data-8z-blob="hO9VFRAWEOcYbfClc3Ofw2x9appY3dRLcOuCQTx59NkUYg71TI+AEwvQZ3ykBjh4UBmSreSL1rpGHnEEjsO6ao0R1JUmXUOmJx2UWVh52bCSAG8NV/iJyBAkfTPyVzKe11jZfS6e8ALv4Yu+yWOcE+3b2WNvkY7hrGwR9hVWR9FQRLb9MCLOsL+n2qz7BeqsXLUiim6Mv7A4m0mIhMVbModHzPIwDGFo+2V+R0EK3SnXrR7RzKVAmpNRby4z2N14NMfatL5erzRgTANsmFxSl409dGyP7rt/iAWv4Aj5Dh8rScezaVEZ1hvPbUR/3EuLHiworEw6zaQOZME6dpl8jwIOXJt4uliL19APUl1YNHON70uzim6PQmfJb3sYwciU760Sr5jp+PuPsSDR4WLgZlmq3qPQpAswV8JNtds/Drw4fuLW2W1uQ6c5YbIz6W5u3+jbw7gLokj5zKUo/lcIKSFFnACfBbHQgtldlcRuhULGwCOWh4FxXZo6985Ve8RZVzsQttEs4BCLSce2xR4X7ZmlOnAaAPkZyES+/Q6fV+TXnmid4erR6Z+i86J6017E2UvzLgm4ha5iNyiZfH9EsJGl8cqPuHnJdku8rVaIQelgpGyD6PhCw89vrVsead4CYrciSoWnD03piYUTRz0y0C8CMvK4fBM52y0XpV9HN/MEZHBtU2mr00gL01UKJmB6rtnLbFoP3N/Hzs8+Epz2QjVWfD64Jmo56xAUDGzDsN2plytT5+TRvXcRPsWIlqkWte5zaFsoo0sytQ6XiYD+HruNfW426/OnPKNKcpwKuff9JCCbEGJNxkXpw3rBD3fTvxDT8YYf+cskBxSCD3GvZ0KDjt7y9z2U+rnhRSOQbLD6jsFmbZI/kfk9IzMajXB98qfKhVIWVBgDlIR8j9NwlOhs4Vuw5QgLVHHykTk7X++kt5kEpTthozc+viei8bS7IiSUzmW+s58kgfA1O8T7ECu+45w9OA==">
   <div class="_8z-lui">
     <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Coupling Parameter Formula &amp; MDL Derivation</div>
+    <div class="_8z-lbl">Protected Content</div>
     <div class="_8z-sub">Protected by 8Z Shield</div>
   </div>
   <div class="_8z-ct" style="display:none"></div>
-</div>
+</div></div>
 
 <h3>Escalation Ladder</h3>
 <p>When exploration alone isn't enough &mdash; when even random jumps keep landing in unproductive zones &mdash; the escalation ladder activates. Each level represents a more dramatic intervention: widening the search range, resetting to a new starting region, or combining known good configurations in novel ways. The escalation level visible in the experiment data climbed from 0 to 4 over the course of the run, as Meta-DCC systematically exhausted local options and escalated to broader strategies.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s2" data-8z-blob="mPxrY3yOIGVLvRrMYGA3qChGRdtP0BtHG8DruyPgkjev1n41r/CzFuBUEVT3YGEqNCPeiSBBhy/XicUslFw1PwAhh0vIY0g1c0NGT8SyuQkJ4YAT9ZZtoh96xbAQB+23B8w3mo3TM5glN553KEtQMZ02TafwEN4uchlnOCoK74YWkPyEh44/oL14NEdtmtHs2eUx8+iiy0x3R2yQBtw5PMDwJ+7L+ZWhz9c+cCUZenPtzg+oTbtMoNOxT48s0Ig3vUaceIOPuKSE9HqHJuab9trj2ZjVc/7mMJJXhLB3TwFTDXIVltjv7PBskVsWZyUs9UCK0tileqC5t8rZzJct+IpfM9kmxusW892/KL56o+C4b/+kQZTFIFpuE68AnHSOR3mKVYo/oQD1SzEjlUDeSWJ37zoRVFp9rLjgUBJaQS5ugADEoRVpP91t1bcdpW5UBN/1pzr11GlwaAjGf4FOgWStnJGsSIN9LBCmCbMnXQjdeEUaXks4o4offl5ifReYQPPBxMDnpKYF5g/TcP+libdzLshUpYBl5egQktJhe+6EXfWaU7Sc0irznavESei5GiZwWLZMDerwuQU8k3JXCKsvFNpyQb8Mst6OI27X3X2AwMIsbrUuG8toW0i3GcHe1ER8jGnICdhyXvO5CnnxJoYh/WMBRIDfhHMrrQz2lUSE2qC39H20MuixaRzqiv6mtgHzzpjTWwJPvLc9w1B9hEySicaBJtSJZl6ybWEVzGlYyHPtRFJ8nqiaw+pMA6yPool+VGhwxR/lja89djPdv9RvqdyG8VaQ24VnGcYO55ef+2LPkZC9m8C7uioyRb0wGdgMYlPAIZ2uoG7TWXfWvR4Mv6blRdHWdKNePA0qAYd3k8E4RD/YTNg737JudRfa3ytL+XFt9QuwuimTrz25+SdsklY8P+z3/dQOL5KecR8HWvwWABQGylMfEe8utj0SCSdPu5VWPubpyLhC8+GJ9ALb+JJLVb1WzlTBO9c1R3RLfkcnU5GBIGSZIwet49BgnSKQXZEYaC8091CcKJQL+ZJ1m9v/WIFyXkhmDBUioWogk3ArTEZjooLqwA6r6TOgjr3b40Xb35zJYkS8rSt3QndM19c+2MCkThSUC+W8kCcKWdWVGjUJHzkAIgtyBzafG15asOIFb5i0KwlBFnyOTcVNly4OvYbFavmclMtZSSPnbl6XLePAtV2Icu2/5qTEItagCdcF3nBUbXUPGpJ4w4k9tvtlmnj1FSuHVE7eWOsVudMrrf57ymzFZUwixf0ZQze7nB+6NgYO/3HEIrLIbugLIuois2WVbNybGrxbVRCfFBOYEXHySEXGEQ9+dZ0S73cr7zAumTjyiRgvVPMqupRpFCz6128lrdurPMN/xBDW52kmclGn6W/wQFniCKopwnHg565HeeCpSZPuumuq8PACb9EiKdqd0swzXXPAVvRxlp8lMQgPxTDaWwvrsXOnNY0QuHNAsLmW/6gwZ14ybVdFLg9dpDwSEu9FDkh0j8ypkKnHK4HWcOeupV3j+iT6js+7cm7CDipSBkbZTA3HRyCRASh4/C3iKBLQ3aw=">
+<div class="_8z-sec _8z-lk" id="_8z-s4" data-8z-blob="QI33feDX9VpoOtZzW6pPyy/q8AdzQf/P7HAWWjF43kkXqgn4eXzzOpiXPPyp1FDt6kruhHHDDb76MHP4u6AhYCcwlsI7qewQvitp9sr2VEKIn8xbAaG9G5bnQrB794SD+8l62yDqsJfjJ/K5CW1NY8EkGbrphi6yZ+K94bzeWAqAvPMpmG+k38PkiwVGxF1JMAnF4fPc0e7zRGUNvUbbsAjG1bOeE2ojwbmLT68+cpEQnuT/cN3GVL1LGm4s2OLQBigN8JZTg9VissfN1rlbMyfvdgV0MPSVENtCNt/dvplJdGXQAvwuUI1mAxkFuSUTcPok3pGbP3RLgPcJhdps7Ykz8ZZASLB14rbiDlrYrOHZxGLnT0GFOqfPRYYOYvEnW4XogXd68xRvwJVzRvbPOalZC69N1e/mrGOViy9HlA5Irt9LibYlhrOA6q+1DvtymKJWZYmOEHsVBDNAFbOazsYTJlB/1bLnEjFGrqlKRkwcQV0ldkSBzXvT+OBDKPuUeIsEHiiO1zPMDvZ3/NREofbMXeTcUuxn6SDhznyZ+ht1FznxsW4W4n0ZJlPWYbebjAcNnE6tYtoN8ViBqhEEf0hCjQzpOi6RT21bM2m5k96Qyk9x9Cq8Rg3Esm/L9F7vDi2BYFGbVnft+XtbroX/asou8seTNlCAo0W0AX9pPF1/rRFPdWAVPLpLQNQH5KxzSYMCGKvqcwc01fTcKI/FVWd2DEN+hFs52dwalxbJy8pYto2CBeMVpMvNH62l0QX1yB1sN2v0iV5w4Zc2SGlfonL2PY8RlCvAMRCXHC2/C2OPNkyCF7ydDqjUlKx+9QQ4OISodqtQD/Ti4LwW9Kbi8fUDZw==">
   <div class="_8z-lui">
     <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Escalation Ladder Thresholds &amp; Actions</div>
+    <div class="_8z-lbl">Protected Content</div>
     <div class="_8z-sub">Protected by 8Z Shield</div>
   </div>
   <div class="_8z-ct" style="display:none"></div>
-</div>
+</div></div>
 
 <h3>Semantic Inversion</h3>
 <p>The critical architectural innovation: in trading-DCC, repetitive patterns signal a <em>stable regime</em> (exploit more). In search-DCC, repetitive patterns signal a <em>stuck search</em> (explore more). The same sensor, the same compression measure, but the <strong>interpretation is inverted</strong>. This is covered in depth in the next chapter.</p>
@@ -601,14 +677,14 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 </div>
 </div>
 
-<div class="_8z-sec _8z-lk" id="_8z-s3" data-8z-blob="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">
+<div class="_8z-sec _8z-lk" id="_8z-s5" data-8z-blob="GqcaSMQtYyQ/oCfUMr0FuBZGLe355C1UEwfi4AWcYzVazvP9hVIn5tMbPZ8IuD/k8sLjJ0kh8ff0DpUf49cwq07BgRn8VzhWNPsCPomuMi49B/kDCjj8EcmVs/mOxk0C6s2cGgL0e926lpBzbl8TOS/ZObBprXKBO3Sg5SKI3O7jxrZ3r4N9FbT9VDmWOmRBtnb0NeL8EDJURCpJjB3TxAtcKOO1ZVP+fEktLihYkdrC9+wU6ew6g2LoIGEJuc3sBIx023I6LX1TLsyfxUuPcXyedwHBjJ5aXhrRNGpz6pt/WEY9WYGVr5xIkCyFTGeMLT+SmpVuzRZdUB6oq7a3UB9T2//69u+1ACGje0OJkQI+Swymjh0+h3IrvnYAdRCrZCXqTgQYmZaQyIr/Yw+ClDGjUjg07GglVN9OK/+O1PKayrk6o3L4HnesYd3OpSshq/jmEwEuKEo/+Tpbz0Zhqkcu4i8f8CzXmqdxvXt5iLjvuXU6udnMmytnShGRnKisPJMLUPch7A1Wt9yNvsDapCYbkauZRC6XcrL1DZhAoK1Hw2ptAKsJVwwbnT0Dmt7XtatYa3zrIKmF38GIw7X0SNxXFTKJb3DIPrGcsh6p0e49kJ5XwH7P7LMYThFESxiYM4TA2Y65hoU660UAkH2YFgu0rQVZCbNVxBMuo70x6dPkIVkr4W79K+tCTaqg2qRZoi6RfVbruKglqMxM/n6LV+UN89+ck3cVSGeVM5tSIs5W/gW6X1Sfwr6rq+Ydl5T4UIv1oOtJFWDCr0DgjEPGANLDBXDrtu2PLVDl7Cf/XVhuuz3ec8ltHu3PHIIuedfAHpVmBdDGkqLJjOoiB74BiFhER9BY94srAMTUqpUnDJA8QvzJlCh+/5XNuRJG8tmMKavuZLrHEXA7iXuKrQzdM4e35jx4daBERLd/hudyiDCwmi290yqYBWVgzoXzTwdmrMgHAkmvuE/sMfsLtd7UQSdvaM2QGpn+E/qPrV9GsGaoHnOA5LSBgs6qAJoPcAIQZ0g8FAAPlnBJkQH/OY79lwodN/QlDJtyJ0NLhiztxFDekoPz2l1rtm5yTT4=">
   <div class="_8z-lui">
     <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Meta-DCC Core Algorithm &amp; Pseudocode</div>
+    <div class="_8z-lbl">Protected Content</div>
     <div class="_8z-sub">Protected by 8Z Shield</div>
   </div>
   <div class="_8z-ct" style="display:none"></div>
-</div>
+</div></div>
 </div>
 
 <!-- ═══ CH 5 ═══ -->
@@ -627,14 +703,14 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 <p>A naive self-application of DCC would inherit the trading polarity: repetitive outcomes = stable = exploit harder. This would cause the search to double down on unproductive regions &mdash; exactly the wrong behavior. <strong>Our first five versions did exactly this, and they failed.</strong> The semantic inversion was discovered empirically on the sixth iteration, not predicted theoretically. Once the polarity was corrected, Meta-DCC immediately outperformed grid search.</p>
 <p>This has a profound implication: recursive self-governance is possible but <em>domain-specific calibration of the semantic layer is required</em>. The compression sensor is universal. The coupling dynamics are universal. But the meaning of "compression is high" depends entirely on what the system is governing. Getting the meaning wrong doesn't produce suboptimal results &mdash; it produces actively counterproductive behavior.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s4" data-8z-blob="mv8vatGyzq8cUU24/OWc1xZ888fgdh0bEUCFvU0DyIL6iQK4PWxde9PubVQ5gdjv0BhI4CRx+6yTyDLXBMgQkiSqSmg1MpT4K1AJ5mC0t4zuEASuT4zjzM7Q42ncDZguBEKDCC40PWbPh9Rff3caxZHjIyj1XCps0ra/mfKtWj1gqKtMrRd1lYe4sTTBGCthH2BjWtWHRUkjL/QAgDyOz7cFkmE9wSef9qbXJ24DXEOMvACKvI1h4mWUxVjpiimAFpUX/bbbBJxAu152PlIQQjvHYHk/Hwr/tZXHVEr2C09rXQP/GPhc4PIMH2eiDg3b32BnzAteJDtWQvDDk6BwUT1Po57BKmqNImC6FFmqZA1txpevisC5DcOd25ai+LsyRmz58qZXUWksLzwd6tLh9223POhNwDFI6yjOM86WiYLqw+37ZYFj/FrNA4+c7zy06pJuQut7Di0voPMnHxgC3iAcSV7KLcR1wOpxfqDIhI1aY0Gyl9qY/ZXQ0yM40WK0xO9zH28Xg7d7CR4UinqNnueuGj9SAg+kOTaHVigwKeEuKsGcYwGlyuMwLSqVVIY962Wxwx2ndW9ncdWdy34eK2LMvqkh4RHGgrtsVQWLyl3m0Y4PE2p6TRxxbOojsf+1uBqRLqD1v/FVCfJfYIxy3ngciTFuEQPSN8PSrH7+ihp96EkBWJcVS0tLHr8ZQkMIzBQDRShIyoKdvZMi4nfa/Q4XV7P/+khx3ail9rp+WCSlkS5L8lCA4dZNE7b/gLBs7Mf/iLyPSjZKjueKGizXzWRJYXpGYoguWi7Mu81o4yZaziwreqtwRt7nhG3LGCgAX1JgWHigreDnL2620ESIlFiZ8xA5NRk/FVb8xFUvhfhkpTIzJfLJspSg1qipybdNyX+rnWWvC0XeRdBXyTC2/JECYinfTvfui+a+qNdXsTI/KSqm5GQxLnti6NDxIbD1FTh0+6nSU1c+ACvUAHFUAnOG6LAF+AoW3MAvbAPbUdkksFUWNwX9WFgWa1chm6l4W0238Dnhy0iO/Nb4ej6aG0tbAvCgjxxK00QykdYuN7qSbAf+OuQ/j8RM7MKsf4YfUAMi2C5dGuka8rxujwCSIkiWuxeEICx2L/M1HK3JlxJga8xt3HarvLetvn+G8jEzOXiF5FsQvDpu2iWdmWEF9g2nEuTz3UFenfVr7wAVAnEcVRQ+XzAjBV65Bid22GvEn6azLcv7sej5ELTumATX1RYCyAhv6kWLH3wpmM77ztaerAuna53cZF16XJu6tLfWZsh0tbKWRddUzYMJ2KsybP6DykkIoCgdVkAB+/WhUR4eGRzJvNzgeBOPc3edDo6cFCHxQL3BidPOs22FxKU8tZ/8XqFLQpRiby5Io8BJH7+Y4uWcYpekXu26w47IcleLiI8YSB3rU/Y9s0CvULF5YgTuAT1E1twR/Csq67FXglZceSvDLd2ZmyDbt0OYg8p7uIOh+yCCrvaNENgd8Z1Hzt6FZ9utMM5zkxLVlaoNMQ5arH2TOKLIyel44kC9nZPCy17itSAlKWVJyhgimVwsyfd1ajXVqreClg4kftKKqGgC2CZuOUcy6mRqPQFxyA6oLNwBBBkAMCpsF8EkOmO2BC0f4Bc0irQ5o8l6iN8pBQI0Z1xqsPbCMpkDiH97JtUtSmFfURVXJuaqiDJG07Mbz74LMwoxdK4O3iz7jRzVg2ZDgOWCR8UuC0kD9deAfzpg7a736NFo0ubND6gXOY2MYMMbFA4bXCCaIl01C2atMFhBL/xLd11m2SnEAT1eYr4ru9n6CVURDtS0Z2HvYAgyyqsRP38dM74pdQaQ+pPhiBVgOjQMEyrilSmf3xoZUvHSb10u552DANhQkCbuzQ==">
+<div class="_8z-sec _8z-lk" id="_8z-s6" data-8z-blob="RA9T+af/ipvPAmUWVYhEV0lqzUvdmVLvAbr+/Ihobg4DHtBkwUhD5YrWZPgZ7tZrE09PCmIpEMl+bzFc4LdmMLYMNWBrTdqpSxHAAbMJfcc+8olXz8Al37AAZ7/DGqYZ7US5Rs5DvWwjHP+ecE6NAGaH+NqJPycOQU00iIIWYm5L5O2dipMhz5SNRea6vuOrvAp9rWzlJn8TwdndGwOsNzmS+hfBJI7PG1BDvErIzXQjzEifnvaCY2d7N8iaT0MzP8w6PKJdQKnATZgOcYJ7tGwkOPEtZVKpDB6SLFmuTI3UhZNNQCTbYtpq/kd9ESBtSnmQQ4UoUMu51sR2qeEL9z6qO1KZAHrRZQIilYnhS5h+De82jNMdrTjSjyYE2SBHe8QcAovB63rxTZiz/rmcHWH4GCYJa5ER+HDR+a1z9rnz+AsESMO/MJQfvmubShSwwMEHylPsJI3KYd537weuZKn97KQEysyHpFP6FP7SzdqTdESwVRLzP78o9/C5t5roFaAJHJAgPB0pXRLUIZPnoL5Tuos+XttnNZODyqz5ChRzYNk7TrcLuuB0fs8YYqAe4K3MnUeb+55aGzMhECzXIPTxk+fEP0+D2xEJUYYwB6kCrKDXFYknnHAFDuohiSNoBjLQV0d0zNdMgAck6A8W3yc/kG6IhuKht93CbdJOnC5Wrmxy4wF7FkNSfwfkbB/X1qjzrdGXUwuwQi6pAzHSUhTSCJYydO4F8hSXfiNTQFwegioSxtsC66ppBSrBM4zOas9ybDRpPrcbkeqcs82V13qo4zen5tG0nuMzfevIdIt2HooeMUI/1Dan4/kd6Ued8N2GnG4uDXdhDP5cQL5uPz0B9in9TygYiBaJGCBVbb8TISzA6e9Nlzg6t5ojMEAPZ43X9iwvrzFekiURKFfpviCUeKSlfsYVN4icmw1Jr6AWhWyAIjH0WrwtCQmIkJIZsQHtWE0JwrG5tv+QSQQ3IWTuaQs2AL3DIIT05Rb8idTvB/pCIy9SuCPGXrM8Wi7rL4d+aorM0GHuNgH1CAYhLUqweBEXjSAlvSW4+rYWQpO2MQQrdzzMN6DsjWggrn2UcLGWpPuwVK/3qeSKYQa9T8QpJXTu12JsEDFFHL0fuJW37gw/J+BkJLl9yAI4OVDOW5A/CEbb0YNS1yAQ/nw4KWzZH4T0xlfZQbW9dSao6T60ckC3H86aDGFg7IklysRj4sgnWjEY5govP1V5oQ==">
   <div class="_8z-lui">
     <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Semantic Inversion Rules &amp; Domain Transfer Protocol</div>
+    <div class="_8z-lbl">Protected Content</div>
     <div class="_8z-sub">Protected by 8Z Shield</div>
   </div>
   <div class="_8z-ct" style="display:none"></div>
-</div>
+</div></div>
 </div>
 
 <!-- ═══ CH 6 ═══ -->
@@ -1229,10 +1305,10 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 <p>The critical lesson: the semantic inversion was <strong>discovered empirically, not predicted theoretically</strong>. We knew DCC could be applied recursively in principle. We did not know that the polarity had to flip, or that the flip had to be applied consistently across sensor, coupling, <em>and</em> escalation. Each of the first five failures taught us one piece of this. The theoretical framework said "recursive DCC should work." The engineering said "only if you get the semantics right for the specific domain."</p>
 <p>This means anyone building recursive DCC for a new domain should expect the same calibration process. The concept is universal. The polarity is domain-specific. Plan accordingly.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s5" data-8z-blob="/+GqkbqgOJTKvUdS5fShHqu36jGLHQO70PU37cvInVM1N2S7wessS49IDp343NW8OC+huKd13uWGEUIhf+rgvDdkfDbTjOinTzuVlnzoOi9ef1VMGQoMatxlEYQuwLXxzwkg37zd3slLnz5ThM9KaUvjutXXuVH+rAk78ED05uN6AgCbyySolZP/9xAzVMMpp1gXmFTKos4lC1dLJvYMMx91tGVNeNxHxlM+uQ0eWslg5FxPosGcQ5KQZe0dfTkupVHMkfw1LLokar0jLYG/6kMIcdtE5rU+FMRHdCc0jMg+I7Sgo7tUQ8wORw8T5bZ33b+CYWEcdH5S6kpCVQP7oa5LsLpPGj3GcVETFaggJDKoYjhLUmOl1Dn1+cSAlb75hFvN0mwMws4WXfVdToo+ju0yo0+ONKnsIFKbviP1ulThrOy2ybRJB6jfmx3VUPaTzclHIPW+WMUJBlyMRn/f9SgSEEBmlb7N3q6YRzVAKyWtXCKXEQL8C3loXXjUspaFq0OrsQqlWccmnyxEJJuovXO2l0nRr262T+RcRfa5sfLZe6na7nvIo/0LqR6xfUb7qElMQiHI1Gs8/Gi9aPrl7L1uJkOR+bN3q2o36w9YY9wRQH2VLx3YpSv9PHFANXAV59LBjqLjGjp+eA5Gkdt4sXDLtQ7/dRyihLm2LGHNIQTLaaJRLC5n+CHg8NpuVzyLa/gTMTAqYXF8BtHB8dzAilA4FSWEnRXa7wZG//8wCFK4mGDPqhC+jAjvZAwfxYulzpuvLlqtprb4/IeghatRDMPrs61t8+/bu4QPWg48AWzOIPcNKW/jaUY93Ezt/NIHx2wyip6AHVrQUNDL5Q7evxT68KotvLcF4L91h5VHyphKj72JjRi+VSOkubsqUbxcQgNFPKCTawo5sphOPHSXcN/uzn8yKqU4ByZq48sXcHGeNKb57fDKReht53E/jPjM6x9rwQhYmL2BZA7Y11xOrbVw2+mZXznW73eK5UI9Y+a9wKDsF29rncEydQSMqIEhGfeUQLiUG93xlk+pjpCj8QeIsH034MW/oKKYul6XtZEaXJ+0c/st8gcxz6f/xoe1Y+W47FggiUCMvvOqf/b1OX54AUgCSDmfwx8TheTkOcs5+/nFJx/MatLSmLOvUyHbSKVZxrKSxmD+RLqdSNR565RtoKe1BAKgc+usjDYt4tDZJOz8lOi+sOpxSTSgCzZ48JBanOhIoXREu490/XgvnagZufQAY8Pvr8evXIt8zY9g7iRZyvs+7JXDCypLg8ZG+yuFI54MLyDz/IQBVvhTgeAy481NAHYu49K5pzjsXTOarVT24lR8XWkDyiYfRAQ9hNNNA4L4C+CFtWOy5ErwWSNijHSJ2lx8YiYbF2+2CjP6cltneF2W5cGCiXzYlhCis6uWTbcSRFd+53iaTZP1+8bO2ksJ1dhfI/ShGEvZFAlV7WVHSdyvxEXdhlNfLFeqIcccehQyKHytMHIdyO9ALiFQQhyMSq3LlwnB7m2YqF/rZMuPoNN6+Bop3eGyrklV5hTLm44MopfesI94WtjSofdkhu7nf7TKUhCNOjpvuRh3mc3GRTdpNS/uNCDYswooRkBDtY0HB5D1d/sYpw6Fx2N0A6+qFgNnyGNze8giFzctlXAzE/gYq3lgf1SauqilToUtzh57d5P6gc5PFKg7bjboC+chADn7PpyIgVQpaBBHh/uiMM9BmnFCn+nikKuD5PcjDt8YyoE8xXj59X1L2WsX5ObDSkq28xnuPzQAxVFxReIlmm0Nm97JiunDkNg02KMqv7+iJAzTE8umTzP0RYH3dW4o0m4cZX7MLMEt6fKLtG0F4Sdpz85mQbQ80DtaxbrQX5rkth4CafvuDmJsr51BVW0420RgE7N5o3EfVvPGGXVFsPoG+4BK+DAvWZfkeTT8w+8Q3SsPTaTAYj4kOZ5X6DUYrh1Atz0O7jHRwCp/KiT3aip9BztqZDgbxzJQB52ZXiGY6Zj7BqKgegwTLjcxuBUQQVXmwJ95luqekMZgNgdoxkJsuqm9gZnYc9RWyahsqA==">
+<div class="_8z-sec _8z-lk" id="_8z-s7" data-8z-blob="7rGtQ+e0VAGVFZp4ZMhiUuQr7kZSopJ+xWl1JBKZr6xGo2lr2JBzA+H20nAQ0ygnpu85akQaeAVt7xB5OdCVZi8myb+CpB6LValU2p6k5JPTBV1komtOP0uFU2e+pnN76p9v2wbHOd+roURkgAed7fPg6Wyc3qdDOghXea1ggVKhrEw0nnSv/1jiTEQVH2WYU7C2Td+MSN+dyh1m2R3V7qRhCURt6ODpiAs3RYJW7HvvS0aY1WAJvxe6r+SWuBmwqYxQsWUXxZ9oUQlrPIDKT7+RseGJin9Nx6VfARou+TYB5q65m5HCcYWWotWK4O99MNoLw5aCPovfXecsAAeuZ5rI2KuAsXzCJWWMrkuz4lNtfyp/OdaV9fTjS9XEmL633InbzBzi7c+a6eH8OrdidldWWjaLx9aoQcW20JaXIJ03XdQkNZi7Iq+S0WVliJfOknneTN2teuJeWjzOSGDsA9FbZRkFK7O8ibhHsvRwVd0X8pg424Y84fVOHwg8pL79d3Y9M+rjISvQTJvhHGrR0MrT9IrNW06SsPxeg8SAjwCpjhNdkeGqrxkDaeBxSHczUUGRUP+SmqEZE9JRyUo6d7QhYRjR9ibtNM5bzusV8wk5/PYz6LbWTXgvpk/EGy1PEgG3mJ6TQSdwVWOry9C9ChEEaOAiSnwtcgz6JFJj7jW1wQ8LLY4ZiLg+mmP/0+njjIqHGEWDdrlREAWGCh6ZqJ5ZQjcgAkWL7NLxbL/Beqj/8A6aG8cjjU0LNG4+SC780axUAag5PBGsCKh/7D6F/oP4wSJqEusEte9OQKorCTAsHFR6RWbMXhCJ1nDEuFmHdvHy0YUe65srEYVb8a5FxUCmwyRSeIO0SvODg8Keo71A5n8p8FWKbx5+6/i7o4FVph/Qv2uP6QKZ1CWFUOhcHcdAJAkf72He1l18N1J7hYrZ/C+IIXkXhjf0vg82WeUdnKZuyVo0p7MUgmICpL4mLsUMIZRW2kXTazkBReH8S5sOBhxBAvjbp/K0IoKsOforqyPR7FnGPsjATgwVt3g7Saz/vrDJ7UPpmLnnmxndU3LbdGS05A==">
   <div class="_8z-lui">
     <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Polarity Calibration Procedure — Step by Step</div>
+    <div class="_8z-lbl">Protected Content</div>
     <div class="_8z-sub">Protected by 8Z Shield</div>
   </div>
   <div class="_8z-ct" style="display:none"></div>
@@ -1278,6 +1354,159 @@ Conceived by Bojan Dobre&#269;evi&#269; &middot; Architecture &amp; implementati
 ._8z-bar ._d{font-family:'JetBrains Mono',monospace;font-size:9px;color:#4a5268;letter-spacing:.5px}
 @media print{._8z-sub::after{content:" — contact author for access"}._8z-bar{display:none!important}._8z-lk ._8z-ct{display:none!important}}
 @media(max-width:600px){._8z-bar{flex-wrap:nowrap;gap:6px;padding:8px 10px}._8z-bar input{width:120px;max-width:none;padding:8px 10px;font-size:12px}._8z-bar ._l{font-size:9px;letter-spacing:1px}._8z-bar button{padding:8px 12px;font-size:10px;letter-spacing:1px}._8z-bar ._d{display:none}._8z-bar ._s{min-width:auto;font-size:9px}}
+</style>
+
+<script>
+(function(){
+'use strict';
+var _I=500000,_XR=1024,M=(1n<<64n)-1n,_SK='_8z_pp',_BD="chessbest.org";
+
+function XS(s){var v=s&M;this.state=v===0n?0x9E3779B97F4A7C15n:v}
+XS.prototype.n=function(){var x=this.state;x=(x^((x>>12n)&M))&M;x=(x^((x<<25n)&M))&M;x=(x^((x>>27n)&M))&M;this.state=x;return(x*2685821657736338717n)&M};
+
+function u2b(v){var b=new Uint8Array(8);for(var i=7;i>=0;i--){b[i]=Number(v&0xFFn);v>>=8n}return b}
+function b2u(b){var v=0n;for(var i=0;i<8;i++)v=(v<<8n)|BigInt(b[i]);return v}
+function sha(d){var b=(d instanceof Uint8Array)?d:new TextEncoder().encode(d);return crypto.subtle.digest('SHA-256',b).then(function(r){return new Uint8Array(r)})}
+function cat(){var l=0,a=arguments;for(var i=0;i<a.length;i++)l+=a[i].length;var o=new Uint8Array(l),p=0;for(var i=0;i<a.length;i++){o.set(a[i],p);p+=a[i].length}return o}
+
+async function dk(pp,salt){
+  var ph=await sha(pp),sm=await sha(cat(ph,salt,new TextEncoder().encode("8Z_AUTH_V1")));
+  var rng=new XS(b2u(sm.slice(0,8)));
+  for(var i=0;i<_XR;i++)rng.n();
+  var sh=await sha(u2b(rng.state)),c=cat(ph,sh);
+  var km=await crypto.subtle.importKey('raw',c,'PBKDF2',false,['deriveBits']);
+  return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:salt,iterations:_I,hash:'SHA-256'},km,256));
+}
+
+async function gzD(data){
+  var ds=new DecompressionStream('gzip');
+  var w=ds.writable.getWriter(),r=ds.readable.getReader();
+  w.write(data);w.close();
+  var ch=[];while(true){var x=await r.read();if(x.done)break;ch.push(x.value)}
+  var t=0;for(var i=0;i<ch.length;i++)t+=ch[i].length;
+  var o=new Uint8Array(t),p=0;for(var i=0;i<ch.length;i++){o.set(ch[i],p);p+=ch[i].length}return o;
+}
+
+async function dec(b64,pp){
+  var raw=Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0)});
+  if(raw.length<60)throw new Error('small');
+  var salt=raw.slice(0,32),iv=raw.slice(32,44),ct=raw.slice(44);
+  var kb=await dk(pp,salt);
+  var key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['decrypt']);
+  var comp=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,tagLength:128},key,ct));
+  return new TextDecoder().decode(await gzD(comp));
+}
+
+function show(el,html){
+  el.querySelector('._8z-ct').innerHTML=html;
+  el.querySelector('._8z-ct').style.display='';
+  el.querySelector('._8z-ct').classList.add('_8z-fi');
+  el.querySelector('._8z-lui').style.display='none';
+  el.classList.remove('_8z-lk');el.classList.add('_8z-ok');
+}
+
+function resolveKey(raw){
+  // Domain lock logic
+  if(!_BD) return raw;
+  var isLocal=(window.location.protocol==='file:');
+  var host=(window.location.hostname||'').toLowerCase();
+  var expected=_BD.toLowerCase();
+  // If user typed password||domain explicitly (owner override for local)
+  if(raw.indexOf('||')!==-1){
+    var parts=raw.split('||');
+    if(parts[1].trim().toLowerCase()===expected) return raw;
+    throw new Error('domain');
+  }
+  // On correct domain: auto-append
+  if(!isLocal && host===expected) return raw+'||'+_BD;
+  // Local without explicit domain suffix
+  if(isLocal) throw new Error('domain-local');
+  // Wrong domain
+  throw new Error('domain');
+}
+
+var secs=document.querySelectorAll('._8z-sec[data-8z-blob]');
+if(!secs.length)return;
+
+var bar=document.createElement('div');
+bar.className='_8z-bar';
+var domNote=_BD?'<span class="_d">\uD83C\uDF10 '+_BD+'</span>':'';
+bar.innerHTML='<span class="_l">\uD83D\uDD12 '+secs.length+' Protected</span>'
+  +domNote
+  +'<input type="password" id="_8z_inp" placeholder="Enter access key" autocomplete="current-password">'
+  +'<button id="_8z_btn">Unlock</button>'
+  +'<span class="_s" id="_8z_st"></span>';
+document.body.appendChild(bar);
+
+var inp=document.getElementById('_8z_inp');
+var btn=document.getElementById('_8z_btn');
+var st=document.getElementById('_8z_st');
+
+async function go(){
+  var raw=inp.value;
+  if(!raw){st.textContent='Enter a key';st.className='_s err';return}
+  var pp;
+  try{pp=resolveKey(raw)}catch(e){
+    if(e.message==='domain-local'){
+      st.textContent='Local use restricted';st.className='_s err';
+    }else{
+      st.textContent='Domain restricted';st.className='_s err';
+    }
+    return;
+  }
+  btn.disabled=true;btn.textContent='DERIVING...';
+  st.textContent='500K PBKDF2';st.className='_s wrk';
+  await new Promise(function(r){requestAnimationFrame(function(){requestAnimationFrame(r)})});
+  try{
+    var html=await dec(secs[0].getAttribute('data-8z-blob'),pp);
+    show(secs[0],html);
+    st.textContent='Decrypting '+secs.length+'...';
+    for(var i=1;i<secs.length;i++){
+      try{show(secs[i],await dec(secs[i].getAttribute('data-8z-blob'),pp));}
+      catch(e){console.warn('Section '+i+':',e)}
+    }
+    st.textContent='\u2713 Unlocked';st.className='_s ok';
+    setTimeout(function(){bar.classList.add('_8z-hid')},1500);
+    try{sessionStorage.setItem(_SK,raw)}catch(e){}
+  }catch(e){
+    st.textContent='Not yet.';st.className='_s err';
+    btn.disabled=false;btn.textContent='UNLOCK';inp.value='';inp.focus();
+  }
+}
+
+btn.addEventListener('click',go);
+inp.addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+try{var sv=sessionStorage.getItem(_SK);if(sv){inp.value=sv;go()}}catch(e){}
+})();
+</script>
+<!-- End 8Z Shield Sections -->
+
+<!-- 8Z Shield Sections — Inline Content Protection -->
+
+<style>
+._8z-sec{position:relative;margin:1.5em 0;border-radius:12px;overflow:hidden;transition:all .4s cubic-bezier(.4,0,.2,1)}
+._8z-lk{background:rgba(255,145,0,.03);border:1px solid rgba(255,145,0,.15);border-left:3px solid #ff9100}
+._8z-ok{background:rgba(34,197,94,.03);border:1px solid rgba(34,197,94,.15);border-left:3px solid #22c55e}
+._8z-lui{padding:24px 28px;text-align:center}
+._8z-ico{font-size:28px;margin-bottom:8px;opacity:.7}
+._8z-lbl{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#ff9100;margin-bottom:4px}
+._8z-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a5268;letter-spacing:.5px}
+._8z-ct{padding:20px 28px}
+._8z-ct._8z-fi{animation:_8zFI .5s ease}
+@keyframes _8zFI{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+._8z-bar{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(8,10,14,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,145,0,.2);padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:12px;transition:all .4s}
+._8z-bar._8z-hid{transform:translateY(100%);pointer-events:none}
+._8z-bar ._l{font-family:'JetBrains Mono',monospace;font-size:10px;color:#ff9100;letter-spacing:2px;text-transform:uppercase}
+._8z-bar input{width:260px;max-width:40vw;padding:10px 14px;background:#0e1117;border:1px solid #1e2532;border-radius:8px;color:#dfe3eb;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:border-color .2s}
+._8z-bar input:focus{border-color:#ff9100}
+._8z-bar input::placeholder{color:#4a5268}
+._8z-bar button{padding:10px 20px;background:transparent;border:1.5px solid #ff9100;border-radius:8px;color:#ff9100;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+._8z-bar button:hover{background:rgba(255,145,0,.08);box-shadow:0 0 24px rgba(255,145,0,.1)}
+._8z-bar ._s{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a5268;min-width:80px;text-align:center}
+._8z-bar ._s.ok{color:#22c55e}._8z-bar ._s.err{color:#ef4444}._8z-bar ._s.wrk{color:#ffc629}
+._8z-bar ._d{font-family:'JetBrains Mono',monospace;font-size:9px;color:#4a5268;letter-spacing:.5px}
+@media print{._8z-sub::after{content:" — contact author for access"}._8z-bar{display:none!important}._8z-lk ._8z-ct{display:none!important}}
+@media(max-width:600px){._8z-bar{flex-wrap:wrap;gap:8px;padding:10px 12px}._8z-bar input{width:100%;max-width:none}._8z-bar ._l{width:100%;text-align:center}}
 </style>
 
 <script>
