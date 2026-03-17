@@ -646,7 +646,7 @@ section{scroll-margin-top:62px}
 
 <!-- ══ STICKY NAV ══ -->
 <nav id="sticky-nav">
-  <a href="#top" class="sn-logo" onclick="window.scrollTo({top:0,behavior:'smooth'});return false">
+  <a href="#top" class="sn-logo" onclick="snCloseOverlay();snCloseDrawer();window.scrollTo({top:0,behavior:'smooth'});return false">
     <svg width="18" height="18" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="6" fill="#020409"/><rect x="1" y="1" width="30" height="30" rx="5" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.4"/><text x="16" y="21.5" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#00e5ff" text-anchor="middle" letter-spacing="-0.5">BD</text><line x1="6" y1="25" x2="26" y2="25" stroke="#f59e0b" stroke-width="1.5" opacity="0.7"/></svg>
     BD × AI Lab
   </a>
@@ -2237,6 +2237,14 @@ document.addEventListener('click', function(e) {
 // ESC closes overlay / drawer
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') { snCloseOverlay(); snCloseDrawer(); }
+});
+
+// Section anchor chips close the overlay so the main page becomes visible
+document.querySelectorAll('#sticky-nav a[href^="#"], #sn-drawer a[href^="#"]').forEach(function(chip) {
+  chip.addEventListener('click', function() {
+    snCloseOverlay();
+    snCloseDrawer();
+  });
 });
 </script>
 
