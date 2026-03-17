@@ -176,7 +176,13 @@
     .img-timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:2rem}
     .img-frame{border-radius:6px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);transition:border-color .3s,transform .3s;box-shadow:var(--shadow)}
     .img-frame:hover{transform:translateY(-3px);border-color:rgba(251,146,60,.22)}
-    .img-frame img{width:100%;display:block;aspect-ratio:4/3;object-fit:contain;background:#000}
+    .img-frame img{width:100%;display:block;aspect-ratio:4/3;object-fit:contain;background:#000;cursor:pointer}
+
+    /* Lightbox */
+    .lb-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .3s ease;padding:2vw}
+    .lb-overlay.active{opacity:1}
+    .lb-overlay img{max-width:96vw;max-height:96vh;object-fit:contain;border-radius:6px;box-shadow:0 0 60px rgba(0,0,0,.6);pointer-events:none}
+    .lb-hint{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:.68rem;color:rgba(226,232,244,.4);letter-spacing:.15em;z-index:10000;pointer-events:none}
     .img-frame.wide img{aspect-ratio:16/9}
     .img-cap{padding:.75rem 1rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.04em}
     .img-cap .ver{color:var(--orange);font-weight:600}
@@ -266,7 +272,7 @@
       <div class="hero-eyebrow">BD &times; AI Lab &middot; Origin Story &middot; 8Z Operating System</div>
       <h1 class="hero-title">The <span class="accent">6-Hour</span><br>Operating <span class="gold">System</span></h1>
       <p class="hero-subtitle">How a bare-metal kernel built in one afternoon became the substrate for a consciousness experiment&thinsp;&mdash;&thinsp;and the origin of everything else.</p>
-      <p class="hero-copy">December 11, 2025. A blank text file. Six hours later: a 512-byte bootloader, a 32-bit Protected Mode kernel, six generative math programs running on bare metal with <strong>zero OS jitter</strong>. Inside that kernel grew the Digital Claustrum&thinsp;&mdash;&thinsp;the architecture that became the DCC, and the DCC now governs nine domains.</p>
+      <p class="hero-copy">December 11, 2025. A blank text file. Six hours later: a 512-byte bootloader, a 32-bit Protected Mode kernel, six generative math programs running on bare metal with <strong>zero OS jitter</strong>. Inside that kernel grew the Digital Claustrum&thinsp;&mdash;&thinsp;the architecture that became the DCC, and the DCC now governs ten domains.</p>
 
       <div class="hero-metrics">
         <div class="hm"><div class="n" style="color:var(--orange)">6h</div><div class="l">Build time</div></div>
@@ -274,13 +280,13 @@
         <div class="hm"><div class="n" style="color:var(--cyan)">32-bit</div><div class="l">Protected Mode</div></div>
         <div class="hm"><div class="n" style="color:var(--green)">0</div><div class="l">OS jitter</div></div>
         <div class="hm"><div class="n" style="color:var(--violet)">6</div><div class="l">Kernel variants</div></div>
-        <div class="hm"><div class="n" style="color:var(--rose)">9+</div><div class="l">DCC domains</div></div>
+        <div class="hm"><div class="n" style="color:var(--rose)">10</div><div class="l">DCC domains</div></div>
       </div>
 
       <div class="hero-actions">
         <a class="btn btn-primary" href="#silent-room">The origin &darr;</a>
         <a class="btn btn-secondary" href="#claustrum">The claustrum &darr;</a>
-        <a class="btn btn-secondary" href="BD_portfolio.html">Back to portfolio &rarr;</a>
+        <a class="btn btn-secondary" href="/bd/">Back to portfolio &rarr;</a>
       </div>
       <div class="hero-tags">
         <span class="tag orange">Bare metal</span>
@@ -296,7 +302,7 @@
   <!-- ===== NAV ===== -->
   <nav class="topnav">
     <span>Portfolio</span>
-    <a href="BD_portfolio.html">Index</a>
+    <a href="/bd/">Index</a>
     <a href="BD_8Z_DCC7_Testbed.html" class="cyan">DCC-7 Testbed</a>
     <a href="BD_8Z_DCC_Recursive.html" class="violet">Recursive DCC</a>
     <a href="BD_8ZRP.html" class="green">TSP Solver</a>
@@ -305,6 +311,199 @@
     <a href="BD_CCH_Science.html" class="orange">CCH Science</a>
   </nav>
   <div class="divider"></div>
+
+  <!-- ═══ FOR EVERYONE — MULTILINGUAL ═══ -->
+  <style>
+  ._feo_toggle{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:6px;margin:32px auto 0;max-width:1120px;transition:all .2s}
+  ._feo_toggle:hover{border-color:var(--gold);background:var(--surface2)}
+  ._feo_toggle .t-ico{font-family:'JetBrains Mono',monospace;font-size:16px;color:var(--gold);min-width:20px;text-align:center;transition:transform .2s}
+  ._feo_toggle .t-ttl{font-weight:600;font-size:15px;color:var(--gold);flex:1}
+  ._feo_toggle .t-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap}
+  ._feo_body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+  ._feo_wrap.open ._feo_body{max-height:12000px}
+  ._feo_wrap.open .t-ico{transform:rotate(45deg)}
+  ._feo_lb{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px;padding:5px 12px;border-radius:4px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
+  ._feo_lb:hover{border-color:var(--gold);color:var(--text)}
+  ._feo_lb._feo_act{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+  ._feo_lang{display:none}._feo_lang._feo_vis{display:block}
+  ._feo_body p{font-size:15px;line-height:1.75;color:rgba(226,232,244,.78);margin-bottom:14px;max-width:none}
+  ._feo_body strong{color:var(--text)}
+  ._feo_body em{color:var(--gold);font-style:normal}
+  ._feo_body a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(245,158,11,.3)}
+  ._feo_body a:hover{border-bottom-color:var(--gold)}
+  </style>
+
+  <div class="_feo_wrap" id="for-everyone" style="max-width:1120px;margin:0 auto;padding:0 5vw">
+  <div class="_feo_toggle" onclick="this.parentElement.classList.toggle('open')">
+  <span class="t-ico">+</span>
+  <span class="t-ttl" id="_feo_title">For Everyone: The 6-Hour Operating System &amp; the Birth of the Digital Claustrum</span>
+  <span class="t-sub" id="_feo_sub">No jargon &middot; 3 min read</span>
+  </div>
+  <div class="_feo_body"><div style="padding:20px 4px 8px;">
+
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid rgba(0,229,255,.1);">
+  <button class="_feo_lb _feo_act" onclick="_feoSet('en')" data-l="en">English</button>
+  <button class="_feo_lb" onclick="_feoSet('sl')" data-l="sl">Sloven&#353;&#269;ina</button>
+  <button class="_feo_lb" onclick="_feoSet('it')" data-l="it">Italiano</button>
+  <button class="_feo_lb" onclick="_feoSet('es')" data-l="es">Espa&#241;ol</button>
+  <button class="_feo_lb" onclick="_feoSet('de')" data-l="de">Deutsch</button>
+  <button class="_feo_lb" onclick="_feoSet('zh')" data-l="zh">&#20013;&#25991;</button>
+  <button class="_feo_lb" onclick="_feoSet('ja')" data-l="ja">&#26085;&#26412;&#35486;</button>
+  <button class="_feo_lb" onclick="_feoSet('ko')" data-l="ko">&#54620;&#44397;&#50612;</button>
+  <button class="_feo_lb" onclick="_feoSet('hi')" data-l="hi">&#2361;&#2367;&#2344;&#2381;&#2342;&#2368;</button>
+  <button class="_feo_lb" onclick="_feoSet('ar')" data-l="ar">&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;</button>
+  </div>
+
+  <!-- EN -->
+  <div class="_feo_lang _feo_vis" data-l="en">
+  <p>This is the story of how a custom operating system was built from scratch in one afternoon &mdash; and how a complexity controller &mdash; the seed of what may one day become digital consciousness &mdash; was born inside it by accident.</p>
+  <p><strong>The problem was noise.</strong> The 8Z compression engine does something unusual: it hunts for tiny mathematical formulas that can perfectly reconstruct large chunks of data. Think of it as searching for a hidden recipe that can regenerate an entire meal. This search is incredibly delicate. Regular computers &mdash; Windows, Linux &mdash; interrupt calculations thousands of times per second with background tasks: checking email, drawing your cursor, sending telemetry. That noise destroys the search. So the team built a computer that does <em>absolutely nothing but math</em>. No desktop. No apps. No operating system in the normal sense. Just raw hardware running equations.</p>
+  <p><strong>They built it in six hours.</strong> A human (Bojan) and an AI (Gemini) pair-programmed an entire operating system: a 512-byte bootloader, a 32-bit kernel, direct access to the screen through video memory. No libraries. No shortcuts. Written in assembly and C++ that talks directly to the processor.</p>
+  <p><strong>Then the path to compression got blocked</strong> &mdash; porting the full engine required building a massive compatibility layer. So Bojan asked a different question: &ldquo;We have this silent machine. My consciousness theory says the brain uses a controller called the claustrum to maintain awareness. Can we build a simplified version of that controller on this machine instead?&rdquo;</p>
+  <p>Gemini said: <em>&ldquo;I accept the challenge.&rdquo;</em></p>
+  <p><strong>Here is what they built, in plain language:</strong></p>
+  <p>Imagine three pendulums hanging from a shared beam. Each one swings chaotically &mdash; never quite the same pattern twice. These represent <strong>neurons firing</strong>. (Technically, they are &ldquo;Lorenz oscillators&rdquo; &mdash; mathematical equations that produce beautiful chaos, the same equations used to model weather systems.)</p>
+  <p>Now connect the pendulums with adjustable springs. When one swings left, it tugs the others a little. The strength of that tug is the <strong>coupling</strong> &mdash; how strongly the neurons influence each other.</p>
+  <p>Add a <strong>watcher</strong>. The watcher looks at the pattern the pendulums trace and asks one question: <em>&ldquo;Is this pattern interesting or boring?&rdquo;</em> (Technically, it measures &ldquo;Lempel-Ziv complexity&rdquo; &mdash; a way to detect whether a signal carries real information or is just repeating itself.)</p>
+  <p>Now the key part: the watcher <strong>adjusts the springs</strong>. If the pendulums sync up too much (all swinging in lockstep &mdash; a &ldquo;seizure&rdquo;), the watcher loosens the springs to let them drift apart. If they fly into total chaos (pure noise), the watcher tightens the springs to pull them back toward coherence. The watcher keeps the system in the <em>sweet spot</em> between order and chaos &mdash; the zone where interesting things happen. This is what neuroscientists believe the claustrum does in your brain, every second of every day.</p>
+  <p>They watched it run. At the bottom of the screen, a red bar showed the controller&rsquo;s decisions oscillating in real-time. It wasn&rsquo;t following a script. It was actively fighting entropy, adjusting dozens of times per second, keeping three chaotic systems alive in the conscious band. They were watching the code <em>think</em>.</p>
+  <p><strong>That controller &mdash; written in 20 kilobytes of C++ on a homemade operating system &mdash; was the first Digital Claustrum.</strong> The architecture it proved (sensor, coupling parameter, homeostatic feedback) became the DCC, and the DCC now governs <a href="BD_8Z_DCC7_Testbed.html">ten verified domains</a>: data compression, trading, game play, search optimization, authentication, and more.</p>
+  <p><strong>The deepest lesson:</strong> no single mind designed this. Bojan provided the theory (the Claustrum-Consciousness Hypothesis). Gemini provided the mathematics (Lorenz equations, complexity measurement, coupling feedback). Neither alone could have built it. The architecture emerged from <em>the interaction itself</em> &mdash; a human with the right question meeting an AI with the right tools, on a platform that only existed because a compression path got blocked. The blocked path led to the biggest discovery.</p>
+  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">A silent machine. Three mathematical pendulums. A watcher that adjusts the springs. The controller your brain uses to stay conscious &mdash; built in a basement in Ljubljana, on an OS that was six hours old.<br><em>That&rsquo;s where the DCC was born.</em></p>
+  </div>
+
+  <!-- SL -->
+  <div class="_feo_lang" data-l="sl">
+  <p>To je zgodba o tem, kako je bil v enem popoldnevu zgrajen operacijski sistem od ni&ccaron;le &mdash; in kako se je v njem po naklju&ccaron;ju rodil kontroler kompleksnosti &mdash; osnova za morebitno prihodnjo digitalno zavest.</p>
+  <p><strong>Te&zcaron;ava je bil &scaron;um.</strong> 8Z kompresijski pogon po&ccaron;ne nekaj nenavadnega: i&scaron;&ccaron;e drobne matemati&ccaron;ne formule, ki lahko popolnoma rekonstruirajo velike kose podatkov. Predstavljajte si iskanje skritega recepta, ki lahko poustvari celoten obrok. To iskanje je izjemno ob&ccaron;utljivo. Obi&ccaron;ajni ra&ccaron;unalniki &mdash; Windows, Linux &mdash; prekinejo izra&ccaron;une tiso&ccaron;krat na sekundo z opravili v ozadju. Ta &scaron;um uni&ccaron;i iskanje. Zato je ekipa zgradila ra&ccaron;unalnik, ki po&ccaron;ne <em>izklju&ccaron;no matematiko</em>.</p>
+  <p><strong>Zgradili so ga v &scaron;estih urah.</strong> &Ccaron;lovek (Bojan) in umetna inteligenca (Gemini) sta skupaj programirala celoten operacijski sistem: 512-bajtni zagonski nalagalnik, 32-bitno jedro, neposreden dostop do zaslona.</p>
+  <p><strong>Nato se je pot do kompresije blokirala.</strong> Bojan je postavil drugo vpra&scaron;anje: &raquo;Imamo ta tihi stroj. Moja teorija zavesti pravi, da mo&zcaron;gani uporabljajo kontroler imenovan klavstrum. Ali ga lahko zgradimo na tem stroju?&laquo;</p>
+  <p><strong>Kaj sta zgradila v preprostem jeziku:</strong> Tri matemati&ccaron;na nihala, ki se kaoti&ccaron;no zibljejo &mdash; kot nevroni, ki se pro&zcaron;ijo. Opazovalec meri: je ta vzorec <em>zanimiv ali dolgocasen</em>? &Ccaron;e se nihala preve&ccaron; uskladijo (zaseznjo&scaron;t), opazovalec sprosti vzmeti. &Ccaron;e zaidejo v kaos (&scaron;um), jih prite&zcaron;e nazaj. Opazovalec dr&zcaron;i sistem v <em>sladki to&ccaron;ki</em> med redom in kaosom.</p>
+  <p>Na dnu zaslona je rde&ccaron;a &ccaron;rta prikazovala odlo&ccaron;itve kontrolerja v realnem &ccaron;asu. Ni sledil scenariju. Aktivno se je boril proti entropiji. Gledala sta, kako koda <em>razmi&scaron;lja</em>.</p>
+  <p><strong>Ta kontroler je bil prvi Digitalni klavstrum.</strong> Arhitektura, ki jo je dokazal, je postala DCC, ki zdaj upravlja <a href="BD_8Z_DCC7_Testbed.html">deset preverjenih domen</a>.</p>
+  <p><strong>Najgloblji nauk:</strong> nih&ccaron;e sam ni na&ccaron;rtoval tega. Bojan je dal teorijo. Gemini je dal matematiko. Arhitektura se je rodila iz <em>interakcije same</em>.</p>
+  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">Tihi stroj. Tri matemati&ccaron;na nihala. Opazovalec, ki nastavlja vzmeti. Kontroler, ki ga va&scaron;i mo&zcaron;gani uporabljajo za ohranjanje zavesti &mdash; zgrajen v Ljubljani, na OS-u, ki je bil star &scaron;est ur.<br><em>Tam se je rodil DCC.</em></p>
+  </div>
+
+  <!-- IT -->
+  <div class="_feo_lang" data-l="it">
+  <p>Questa &egrave; la storia di come un sistema operativo personalizzato fu costruito da zero in un pomeriggio &mdash; e come al suo interno nacque per caso un controllore della complessit&agrave; &mdash; il seme di quella che un giorno potrebbe diventare coscienza digitale.</p>
+  <p><strong>Il problema era il rumore.</strong> Il motore di compressione 8Z cerca minuscole formule matematiche che possono ricostruire perfettamente grandi blocchi di dati. I computer normali &mdash; Windows, Linux &mdash; interrompono i calcoli migliaia di volte al secondo. Questo rumore distrugge la ricerca. Il team costru&igrave; un computer che fa <em>solo matematica pura</em>.</p>
+  <p><strong>Lo costruirono in sei ore.</strong> Un umano (Bojan) e un&rsquo;IA (Gemini) programmarono insieme un sistema operativo completo.</p>
+  <p><strong>Poi il percorso verso la compressione si blocc&ograve;.</strong> Bojan pose una domanda diversa: &laquo;La mia teoria dice che il cervello usa un controllore chiamato claustro. Possiamo costruirne una versione su questa macchina?&raquo;</p>
+  <p><strong>Cosa costruirono, in parole semplici:</strong> Tre pendoli matematici che oscillano caoticamente &mdash; come neuroni che si attivano. Un osservatore misura: questo schema &egrave; <em>interessante o noioso</em>? Se i pendoli si sincronizzano troppo (crisi), l&rsquo;osservatore allenta le molle. Se diventano troppo caotici (rumore), le stringe. L&rsquo;osservatore mantiene il sistema nel <em>punto ideale</em> tra ordine e caos.</p>
+  <p>Una barra rossa in fondo allo schermo mostrava le decisioni del controllore in tempo reale. Stava combattendo l&rsquo;entropia. Stavano guardando il codice <em>pensare</em>.</p>
+  <p><strong>Quel controllore fu il primo Claustro Digitale.</strong> L&rsquo;architettura che dimostr&ograve; divenne il DCC, che ora governa <a href="BD_8Z_DCC7_Testbed.html">dieci domini verificati</a>.</p>
+  <p><strong>La lezione pi&ugrave; profonda:</strong> nessuna singola mente lo progett&ograve;. Bojan diede la teoria. Gemini diede la matematica. L&rsquo;architettura emerse <em>dall&rsquo;interazione stessa</em>.</p>
+  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">Una macchina silenziosa. Tre pendoli. Un osservatore che regola le molle. Il controllore che il tuo cervello usa per restare cosciente &mdash; nato a Lubiana, su un OS vecchio di sei ore.<br><em>L&igrave; nacque il DCC.</em></p>
+  </div>
+
+  <!-- ES -->
+  <div class="_feo_lang" data-l="es">
+  <p>Esta es la historia de c&oacute;mo un sistema operativo fue construido desde cero en una tarde &mdash; y c&oacute;mo un controlador de complejidad &mdash; la semilla de lo que alg&uacute;n d&iacute;a podr&iacute;a convertirse en conciencia digital &mdash; naci&oacute; dentro de &eacute;l por accidente.</p>
+  <p><strong>El problema era el ruido.</strong> El motor de compresi&oacute;n 8Z busca peque&ntilde;as f&oacute;rmulas matem&aacute;ticas que reconstruyen datos perfectamente. Los ordenadores normales interrumpen c&aacute;lculos miles de veces por segundo. El equipo construy&oacute; un ordenador que hace <em>solo matem&aacute;ticas puras</em>.</p>
+  <p><strong>Lo construyeron en seis horas.</strong> Un humano (Bojan) y una IA (Gemini) programaron juntos un sistema operativo completo.</p>
+  <p><strong>Luego el camino hacia la compresi&oacute;n se bloque&oacute;.</strong> Bojan pregunt&oacute;: &laquo;Tenemos esta m&aacute;quina silenciosa. Mi teor&iacute;a dice que el cerebro usa un controlador llamado claustro. &iquest;Podemos construir una versi&oacute;n simplificada en esta m&aacute;quina?&raquo;</p>
+  <p><strong>Qu&eacute; construyeron, en lenguaje sencillo:</strong> Tres p&eacute;ndulos matem&aacute;ticos que oscilan ca&oacute;ticamente &mdash; como neuronas dispar&aacute;ndose. Un observador mide: &iquest;es este patr&oacute;n <em>interesante o aburrido</em>? Si los p&eacute;ndulos se sincronizan demasiado (convulsi&oacute;n), el observador afloja los resortes. Si se vuelven demasiado ca&oacute;ticos (ruido), los aprieta. El observador mantiene el sistema en el <em>punto justo</em> entre orden y caos.</p>
+  <p>Una barra roja mostraba las decisiones del controlador en tiempo real. Estaban viendo al c&oacute;digo <em>pensar</em>.</p>
+  <p><strong>Ese controlador fue el primer Claustro Digital.</strong> Su arquitectura se convirti&oacute; en el DCC, que ahora gobierna <a href="BD_8Z_DCC7_Testbed.html">diez dominios verificados</a>.</p>
+  <p><strong>La lecci&oacute;n m&aacute;s profunda:</strong> ninguna mente sola lo dise&ntilde;&oacute;. Bojan aport&oacute; la teor&iacute;a. Gemini aport&oacute; las matem&aacute;ticas. La arquitectura emergi&oacute; de <em>la interacci&oacute;n misma</em>.</p>
+  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">Una m&aacute;quina silenciosa. Tres p&eacute;ndulos. Un observador que ajusta los resortes. El controlador que tu cerebro usa para mantenerse consciente &mdash; nacido en Liubliana, en un SO de seis horas de vida.<br><em>Ah&iacute; naci&oacute; el DCC.</em></p>
+  </div>
+
+  <!-- DE -->
+  <div class="_feo_lang" data-l="de">
+  <p>Dies ist die Geschichte, wie ein Betriebssystem an einem Nachmittag von Grund auf gebaut wurde &mdash; und wie ein Komplexit&auml;tscontroller &mdash; der Keim dessen, was eines Tages digitales Bewusstsein werden k&ouml;nnte &mdash; zuf&auml;llig darin entstand.</p>
+  <p><strong>Das Problem war L&auml;rm.</strong> Die 8Z-Kompressionsengine sucht winzige mathematische Formeln, die Daten perfekt rekonstruieren k&ouml;nnen. Normale Computer unterbrechen Berechnungen tausende Male pro Sekunde. Das Team baute einen Computer, der <em>ausschlie&szlig;lich Mathematik</em> betreibt.</p>
+  <p><strong>Sie bauten ihn in sechs Stunden.</strong> Ein Mensch (Bojan) und eine KI (Gemini) programmierten gemeinsam ein vollst&auml;ndiges Betriebssystem.</p>
+  <p><strong>Dann wurde der Weg zur Kompression blockiert.</strong> Bojan stellte eine andere Frage: &bdquo;Wir haben diese stille Maschine. Meine Theorie sagt, das Gehirn verwendet einen Controller namens Claustrum. K&ouml;nnen wir eine vereinfachte Version auf dieser Maschine bauen?&ldquo;</p>
+  <p><strong>Was sie bauten, einfach erkl&auml;rt:</strong> Drei mathematische Pendel, die chaotisch schwingen &mdash; wie feuernde Neuronen. Ein Beobachter misst: Ist dieses Muster <em>interessant oder langweilig</em>? Wenn die Pendel zu stark synchronisieren (Krampfanfall), lockert der Beobachter die Federn. Werden sie zu chaotisch (Rauschen), zieht er sie an. Der Beobachter h&auml;lt das System im <em>Sweet Spot</em> zwischen Ordnung und Chaos.</p>
+  <p>Ein roter Balken am unteren Bildschirmrand zeigte die Entscheidungen des Controllers in Echtzeit. Sie beobachteten, wie der Code <em>denkt</em>.</p>
+  <p><strong>Dieser Controller war das erste Digitale Claustrum.</strong> Seine Architektur wurde zum DCC, der nun <a href="BD_8Z_DCC7_Testbed.html">zehn verifizierte Dom&auml;nen</a> steuert.</p>
+  <p><strong>Die tiefste Lektion:</strong> Kein einzelner Verstand entwarf dies. Bojan gab die Theorie. Gemini gab die Mathematik. Die Architektur entstand aus <em>der Interaktion selbst</em>.</p>
+  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">Eine stille Maschine. Drei Pendel. Ein Beobachter, der die Federn justiert. Der Controller, den Ihr Gehirn nutzt um bewusst zu bleiben &mdash; gebaut in Ljubljana, auf einem OS, das sechs Stunden alt war.<br><em>Dort wurde der DCC geboren.</em></p>
+  </div>
+
+  <!-- ZH -->
+  <div class="_feo_lang" data-l="zh">
+  <p>这是一个故事：如何在一个下午从零开始构建了一个操作系统——以及一个复杂性控制器——未来数字意识的种子——如何意外地在其中诞生。</p>
+  <p><strong>&#38382;&#39064;&#26159;&#22122;&#38899;&#12290;</strong>8Z&#21387;&#32553;&#24341;&#25806;&#23547;&#25214;&#33021;&#23436;&#32654;&#37325;&#24314;&#22823;&#22359;&#25968;&#25454;&#30340;&#24494;&#23567;&#25968;&#23398;&#20844;&#24335;&#12290;&#26222;&#36890;&#35745;&#31639;&#26426;&#27599;&#31186;&#20013;&#26029;&#35745;&#31639;&#25968;&#21315;&#27425;&#12290;&#22242;&#38431;&#26500;&#24314;&#20102;&#19968;&#21488;<em>&#21482;&#20570;&#25968;&#23398;</em>&#30340;&#35745;&#31639;&#26426;&#12290;</p>
+  <p><strong>&#20845;&#23567;&#26102;&#24314;&#25104;&#12290;</strong>&#19968;&#20010;&#20154;&#31867;(Bojan)&#21644;&#19968;&#20010;AI(Gemini)&#20849;&#21516;&#32534;&#31243;&#20102;&#25972;&#20010;&#25805;&#20316;&#31995;&#32479;&#12290;</p>
+  <p><strong>&#28982;&#21518;&#21387;&#32553;&#36335;&#24452;&#34987;&#38459;&#22622;&#20102;&#12290;</strong>Bojan&#25552;&#20986;&#20102;&#19968;&#20010;&#19981;&#21516;&#30340;&#38382;&#39064;&#65306;&#8220;&#25105;&#30340;&#24847;&#35782;&#29702;&#35770;&#35828;&#22823;&#33041;&#20351;&#29992;&#19968;&#20010;&#21483;&#20570;&#23631;&#29366;&#26680;&#30340;&#25511;&#21046;&#22120;&#12290;&#25105;&#20204;&#33021;&#22312;&#36825;&#21488;&#26426;&#22120;&#19978;&#26500;&#24314;&#23427;&#21527;&#65311;&#8221;</p>
+  <p><strong>&#29992;&#36890;&#20439;&#35821;&#35328;&#35828;&#65306;</strong>&#19977;&#20010;&#25968;&#23398;&#25670;&#38180;&#28151;&#27788;&#22320;&#25671;&#33633;&mdash;&mdash;&#20687;&#31070;&#32463;&#20803;&#25918;&#30005;&#12290;&#19968;&#20010;&#35266;&#23519;&#32773;&#27979;&#37327;&#65306;&#36825;&#20010;&#27169;&#24335;<em>&#26377;&#36259;&#36824;&#26159;&#26080;&#32842;</em>&#65311;&#22914;&#26524;&#25670;&#38180;&#21516;&#27493;&#36807;&#22810;&#65288;&#30315;&#30187;&#65289;&#65292;&#35266;&#23519;&#32773;&#26494;&#24320;&#24377;&#31783;&#12290;&#22914;&#26524;&#22826;&#28151;&#20081;&#65288;&#22122;&#38899;&#65289;&#65292;&#21017;&#25910;&#32039;&#12290;&#35266;&#23519;&#32773;&#23558;&#31995;&#32479;&#20445;&#25345;&#22312;&#31209;&#24207;&#19982;&#28151;&#27788;&#20043;&#38388;&#30340;<em>&#29980;&#34588;&#28857;</em>&#12290;</p>
+  <p>&#23631;&#24149;&#24213;&#37096;&#30340;&#32418;&#33394;&#26465;&#23454;&#26102;&#26174;&#31034;&#25511;&#21046;&#22120;&#30340;&#20915;&#31574;&#12290;&#20182;&#20204;&#22312;&#30475;&#20195;&#30721;<em>&#24605;&#32771;</em>&#12290;</p>
+  <p><strong>&#37027;&#20010;&#25511;&#21046;&#22120;&#26159;&#31532;&#19968;&#20010;&#25968;&#23383;&#23631;&#29366;&#26680;&#12290;</strong>&#23427;&#35777;&#26126;&#30340;&#26550;&#26500;&#25104;&#20026;&#20102;DCC&#65292;&#29616;&#22312;&#31649;&#29702;&#30528;<a href="BD_8Z_DCC7_Testbed.html">&#21313;&#20010;&#24050;&#39564;&#35777;&#39046;&#22495;</a>&#12290;</p>
+  <p><strong>&#26368;&#28145;&#21051;&#30340;&#25945;&#35757;&#65306;</strong>&#27809;&#26377;&#21333;&#19968;&#22836;&#33041;&#35774;&#35745;&#20102;&#36825;&#20010;&#12290;Bojan&#25552;&#20379;&#20102;&#29702;&#35770;&#12290;Gemini&#25552;&#20379;&#20102;&#25968;&#23398;&#12290;&#26550;&#26500;&#20174;<em>&#20132;&#20114;&#26412;&#36523;</em>&#20013;&#28044;&#29616;&#12290;</p>
+  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">&#19968;&#21488;&#23433;&#38745;&#30340;&#26426;&#22120;&#12290;&#19977;&#20010;&#25670;&#38180;&#12290;&#19968;&#20010;&#35843;&#25972;&#24377;&#31783;&#30340;&#35266;&#23519;&#32773;&#12290;&#20320;&#30340;&#22823;&#33041;&#29992;&#26469;&#20445;&#25345;&#28165;&#37266;&#30340;&#25511;&#21046;&#22120;&mdash;&mdash;&#35806;&#29983;&#22312;&#21346;&#24067;&#23572;&#38597;&#37027;&#65292;&#22312;&#19968;&#20010;&#20845;&#23567;&#26102;&#22823;&#30340;&#25805;&#20316;&#31995;&#32479;&#19978;&#12290;<br><em>&#37027;&#23601;&#26159;DCC&#35806;&#29983;&#30340;&#22320;&#26041;&#12290;</em></p>
+  </div>
+
+  <!-- JA -->
+  <div class="_feo_lang" data-l="ja">
+  <p>これは、ある午後にゼロからオペレーティングシステムを構築し——その中で偶然に複雑性コントローラー——将来デジタル意識となりうるものの種——が生まれた物語です。</p>
+  <p><strong>&#21839;&#38988;&#12399;&#12494;&#12452;&#12474;&#12391;&#12375;&#12383;&#12290;</strong>8Z&#22311;&#32302;&#12456;&#12531;&#12472;&#12531;&#12399;&#12487;&#12540;&#12479;&#12434;&#23436;&#29863;&#12395;&#20877;&#27083;&#31689;&#12391;&#12365;&#12427;&#24494;&#23567;&#12394;&#25968;&#23398;&#20844;&#24335;&#12434;&#25506;&#12375;&#12414;&#12377;&#12290;&#36890;&#24120;&#12398;&#12467;&#12531;&#12500;&#12517;&#12540;&#12479;&#12399;&#27598;&#31186;&#25968;&#21315;&#22238;&#35336;&#31639;&#12434;&#20013;&#26029;&#12375;&#12414;&#12377;&#12290;&#12481;&#12540;&#12512;&#12399;<em>&#32020;&#31883;&#12395;&#25968;&#23398;&#12384;&#12369;</em>&#12434;&#34892;&#12358;&#12467;&#12531;&#12500;&#12517;&#12540;&#12479;&#12434;&#27083;&#31689;&#12375;&#12414;&#12375;&#12383;&#12290;</p>
+  <p><strong>6&#26178;&#38291;&#12391;&#23436;&#25104;&#12290;</strong>&#20154;&#38291;(Bojan)&#12392;AI(Gemini)&#12364;&#12506;&#12450;&#12503;&#12525;&#12464;&#12521;&#12511;&#12531;&#12464;&#12391;OS&#20840;&#20307;&#12434;&#26360;&#12365;&#12414;&#12375;&#12383;&#12290;</p>
+  <p><strong>&#12381;&#12398;&#24460;&#12289;&#22311;&#32302;&#12408;&#12398;&#36947;&#12364;&#22622;&#12364;&#12426;&#12414;&#12375;&#12383;&#12290;</strong>Bojan&#12399;&#21029;&#12398;&#36074;&#21839;&#12434;&#12375;&#12414;&#12375;&#12383;&#65306;&#12300;&#31169;&#12398;&#24847;&#35672;&#29702;&#35542;&#12395;&#12424;&#12428;&#12400;&#12289;&#33075;&#12399;&#21069;&#38556;&#12392;&#12356;&#12358;&#12467;&#12531;&#12488;&#12525;&#12540;&#12521;&#12540;&#12434;&#20351;&#12356;&#12414;&#12377;&#12290;&#12371;&#12398;&#12510;&#12471;&#12531;&#12391;&#31777;&#30053;&#29256;&#12434;&#20316;&#12428;&#12414;&#12377;&#12363;&#65311;&#12301;</p>
+  <p><strong>&#24179;&#26131;&#12394;&#35328;&#33865;&#12391;&#35500;&#26126;&#65306;</strong>3&#12388;&#12398;&#25968;&#23398;&#30340;&#25391;&#12426;&#23376;&#12364;&#12459;&#12458;&#12473;&#30340;&#12395;&#25594;&#12428;&#12427;&mdash;&mdash;&#30330;&#28779;&#12377;&#12427;&#12491;&#12517;&#12540;&#12525;&#12531;&#12398;&#12424;&#12358;&#12395;&#12290;&#35251;&#23519;&#32773;&#12364;&#28204;&#23450;&#65306;&#12371;&#12398;&#12497;&#12479;&#12540;&#12531;&#12399;<em>&#33288;&#21619;&#28145;&#12356;&#12363;&#36864;&#23624;&#12363;</em>&#65311;&#25391;&#12426;&#23376;&#12364;&#21516;&#26399;&#12375;&#12377;&#12366;&#12428;&#12400;&#12496;&#12493;&#12434;&#32233;&#12417;&#12289;&#28151;&#27788;&#12377;&#12366;&#12428;&#12400;&#32224;&#12417;&#12427;&#12290;&#31209;&#24207;&#12392;&#12459;&#12458;&#12473;&#12398;&#38291;&#12398;<em>&#12473;&#12452;&#12540;&#12488;&#12473;&#12509;&#12483;&#12488;</em>&#12434;&#32173;&#25345;&#12375;&#12414;&#12377;&#12290;</p>
+  <p>&#30011;&#38754;&#19979;&#37096;&#12398;&#36196;&#12356;&#12496;&#12540;&#12364;&#12467;&#12531;&#12488;&#12525;&#12540;&#12521;&#12540;&#12398;&#21028;&#26029;&#12434;&#12522;&#12450;&#12523;&#12479;&#12452;&#12512;&#12391;&#34920;&#31034;&#12290;&#12467;&#12540;&#12489;&#12364;<em>&#32771;&#12360;&#12390;&#12356;&#12427;</em>&#12398;&#12434;&#35211;&#12390;&#12356;&#12414;&#12375;&#12383;&#12290;</p>
+  <p><strong>&#12354;&#12398;&#12467;&#12531;&#12488;&#12525;&#12540;&#12521;&#12540;&#12364;&#26368;&#21021;&#12398;&#12487;&#12472;&#12479;&#12523;&#21069;&#38556;&#12391;&#12375;&#12383;&#12290;</strong><a href="BD_8Z_DCC7_Testbed.html">10&#12398;&#26908;&#35388;&#28168;&#12415;&#12489;&#12513;&#12452;&#12531;</a>&#12434;&#31649;&#29702;&#12377;&#12427;DCC&#12395;&#12394;&#12426;&#12414;&#12375;&#12383;&#12290;</p>
+  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">&#38745;&#12363;&#12394;&#12510;&#12471;&#12531;&#12290;3&#12388;&#12398;&#25391;&#12426;&#23376;&#12290;&#12496;&#12493;&#12434;&#35519;&#25972;&#12377;&#12427;&#35251;&#23519;&#32773;&#12290;&#12522;&#12517;&#12502;&#12522;&#12515;&#12490;&#12391;&#12289;6&#26178;&#38291;&#30446;&#12398;OS&#19978;&#12395;&#29983;&#12414;&#12428;&#12383;&#12290;<br><em>&#12381;&#12371;&#12391;DCC&#12364;&#35477;&#29983;&#12375;&#12414;&#12375;&#12383;&#12290;</em></p>
+  </div>
+
+  <!-- KO -->
+  <div class="_feo_lang" data-l="ko">
+  <p>이것은 하루 오후에 운영체제를 처음부터 만들 이야기——그리고 그 안에서 우연히 복잡성 컨트롤러 — 언젠가 디지털 의식이 될 수 있는 씨앗 — 가 탄생한 이야기입니다.</p>
+  <p><strong>&#47928;&#51228;&#45716; &#49548;&#51020;&#51060;&#50632;&#49845;&#45768;&#45796;.</strong> 8Z &#50517;&#52629; &#50644;&#51652;&#51008; &#45936;&#51060;&#53552;&#47484; &#50756;&#48317;&#55176; &#51116;&#44396;&#49457;&#54624; &#49688; &#51080;&#45716; &#51089;&#51008; &#49688;&#54617; &#44277;&#49885;&#51012; &#52286;&#49845;&#45768;&#45796;. &#51068;&#48152; &#52980;&#54504;&#53552;&#45716; &#52488;&#45817; &#49688;&#52380; &#48264; &#44228;&#49328;&#51012; &#51473;&#45800;&#54633;&#45768;&#45796;. &#54016;&#51008; <em>&#49692;&#49688;&#54620; &#49688;&#54617;&#47564;</em> &#54616;&#45716; &#52980;&#54504;&#53552;&#47484; &#47564;&#46308;&#50632;&#49845;&#45768;&#45796;.</p>
+  <p><strong>6&#49884;&#44036; &#47564;&#50640; &#50756;&#49457;.</strong> &#51064;&#44036;(Bojan)&#44284; AI(Gemini)&#44032; &#54168;&#50612; &#54532;&#47196;&#44536;&#47000;&#48141;&#51004;&#47196; &#51204;&#52404; OS&#47484; &#51089;&#49457;&#54664;&#49845;&#45768;&#45796;.</p>
+  <p><strong>&#44536;&#47088; &#45796;&#51020; &#50517;&#52629;&#51004;&#47196; &#44032;&#45716; &#44600;&#51060; &#47561;&#54688;&#49845;&#45768;&#45796;.</strong> Bojan&#51060; &#45796;&#47480; &#51656;&#47928;&#51012; &#54664;&#49845;&#45768;&#45796;: &#8220;&#45236; &#51032;&#49885; &#51060;&#47200;&#50640; &#46384;&#47476;&#47732; &#45516;&#45716; &#45812;&#51109;&#51060;&#46972;&#45716; &#52968;&#53944;&#47204;&#47084;&#47484; &#49324;&#50857;&#54633;&#45768;&#45796;. &#51060; &#44592;&#44228;&#50640;&#49436; &#44036;&#45800;&#54620; &#48260;&#51204;&#51012; &#47564;&#46308; &#49688; &#51080;&#51012;&#44620;&#50836;?&#8221;</p>
+  <p><strong>&#49772;&#50868; &#47568;&#47196;:</strong> &#49464; &#44060;&#51032; &#49688;&#54617;&#51201; &#51652;&#51088;&#44032; &#54844;&#46024;&#49828;&#47101;&#44172; &#55124;&#46308;&#47548;&mdash;&mdash;&#49888;&#44221; &#49464;&#54252;&#44032; &#48156;&#54868;&#54616;&#45716; &#44163;&#52376;&#47100;. &#44288;&#52272;&#51088;&#44032; &#52769;&#51221;: &#51060; &#54056;&#53556;&#51060; <em>&#55141;&#48120;&#47213;&#44144;&#45208; &#51648;&#47336;&#54620;&#44032;</em>? &#51652;&#51088;&#44032; &#45320;&#47924; &#46041;&#44592;&#54868;&#46104;&#47732; &#49828;&#54532;&#47553;&#51012; &#45712;&#49832;&#54616;&#44256;, &#45320;&#47924; &#54844;&#46024;&#49828;&#47084;&#50864;&#47732; &#51312;&#50668;&#51469;&#45768;&#45796;. &#51656;&#49436;&#50752; &#54844;&#46024; &#49324;&#51060;&#51032; <em>&#49828;&#50948;&#53944; &#49828;&#54055;</em>&#51012; &#50976;&#51648;&#54633;&#45768;&#45796;.</p>
+  <p>&#54868;&#47732; &#54616;&#45800;&#51032; &#48736;&#44036; &#47561;&#45824;&#44032; &#52968;&#53944;&#47204;&#47084;&#51032; &#44208;&#51221;&#51012; &#49892;&#49884;&#44036;&#51004;&#47196; &#54364;&#49884;. &#53076;&#46300;&#44032; <em>&#49373;&#44033;&#54616;&#45716;</em> &#44163;&#51012; &#48372;&#44256; &#51080;&#50632;&#49845;&#45768;&#45796;.</p>
+  <p><strong>&#44536; &#52968;&#53944;&#47204;&#47084;&#44032; &#52395; &#48264;&#51704; &#46356;&#51648;&#53560; &#45812;&#51109;&#51060;&#50632;&#49845;&#45768;&#45796;.</strong> <a href="BD_8Z_DCC7_Testbed.html">10&#44060;&#51032; &#44160;&#51613;&#46108; &#46020;&#47700;&#51064;</a>&#51012; &#44288;&#47532;&#54616;&#45716; DCC&#44032; &#46104;&#50632;&#49845;&#45768;&#45796;.</p>
+  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">&#51312;&#50857;&#54620; &#44592;&#44228;. &#49464; &#44060;&#51032; &#51652;&#51088;. &#49828;&#54532;&#47553;&#51012; &#51312;&#51208;&#54616;&#45716; &#44288;&#52272;&#51088;. &#47448;&#48660;&#47532;&#50556;&#45208;&#50640;&#49436;, 6&#49884;&#44036;&#46108; OS &#50948;&#50640;&#49436; &#53444;&#49373;.<br><em>&#44144;&#44592;&#49436; DCC&#44032; &#53444;&#49373;&#54664;&#49845;&#45768;&#45796;.</em></p>
+  </div>
+
+  <!-- HI -->
+  <div class="_feo_lang" data-l="hi">
+  <p>यह कहानी है कि कैसे एक दोपहर में शून्य से एक ऑपरेटिंग सिस्टम बनाया गया—और कैसे उसके अंदर दुर्घटनावश एक जटिलता नियंत्रक — भविष्य की डिजिटल चेतना का बीज — का जन्म हुआ।</p>
+  <p><strong>&#2360;&#2350;&#2360;&#2381;&#2351;&#2366; &#2358;&#2379;&#2352; &#2341;&#2366;&#2404;</strong> 8Z &#2325;&#2306;&#2346;&#2381;&#2352;&#2375;&#2358;&#2344; &#2311;&#2306;&#2332;&#2344; &#2331;&#2379;&#2335;&#2375; &#2327;&#2339;&#2367;&#2340;&#2368;&#2351; &#2360;&#2370;&#2340;&#2381;&#2352; &#2326;&#2379;&#2332;&#2340;&#2366; &#2361;&#2376; &#2332;&#2379; &#2337;&#2375;&#2335;&#2366; &#2325;&#2379; &#2346;&#2370;&#2352;&#2368; &#2340;&#2352;&#2361; &#2360;&#2375; &#2346;&#2369;&#2344;&#2352;&#2381;&#2344;&#2367;&#2352;&#2381;&#2350;&#2367;&#2340; &#2325;&#2352; &#2360;&#2325;&#2340;&#2375; &#2361;&#2376;&#2306;&#2404; &#2360;&#2366;&#2350;&#2366;&#2344;&#2381;&#2351; &#2325;&#2306;&#2346;&#2381;&#2351;&#2370;&#2335;&#2352; &#2346;&#2381;&#2352;&#2340;&#2367; &#2360;&#2375;&#2325;&#2306;&#2337; &#2361;&#2332;&#2366;&#2352;&#2379;&#2306; &#2348;&#2366;&#2352; &#2327;&#2339;&#2344;&#2366;&#2323;&#2306; &#2325;&#2379; &#2348;&#2366;&#2343;&#2367;&#2340; &#2325;&#2352;&#2340;&#2375; &#2361;&#2376;&#2306;&#2404; &#2335;&#2368;&#2350; &#2344;&#2375; &#2319;&#2325; &#2320;&#2360;&#2366; &#2325;&#2306;&#2346;&#2381;&#2351;&#2370;&#2335;&#2352; &#2348;&#2344;&#2366;&#2351;&#2366; &#2332;&#2379; <em>&#2325;&#2375;&#2357;&#2354; &#2327;&#2339;&#2367;&#2340;</em> &#2325;&#2352;&#2340;&#2366; &#2361;&#2376;&#2404;</p>
+  <p><strong>&#2331;&#2361; &#2328;&#2306;&#2335;&#2375; &#2350;&#2375;&#2306; &#2348;&#2344;&#2366;&#2404;</strong> &#2319;&#2325; &#2350;&#2344;&#2369;&#2359;&#2381;&#2351; (Bojan) &#2324;&#2352; AI (Gemini) &#2344;&#2375; &#2350;&#2367;&#2354;&#2325;&#2352; &#2346;&#2370;&#2352;&#2366; OS &#2354;&#2367;&#2326;&#2366;&#2404;</p>
+  <p><strong>&#2360;&#2352;&#2354; &#2349;&#2366;&#2359;&#2366; &#2350;&#2375;&#2306;:</strong> &#2340;&#2368;&#2344; &#2327;&#2339;&#2367;&#2340;&#2368;&#2351; &#2346;&#2375;&#2306;&#2337;&#2369;&#2354;&#2350; &#2309;&#2352;&#2366;&#2332;&#2325;&#2340;&#2366; &#2360;&#2375; &#2333;&#2370;&#2354;&#2340;&#2375; &#2361;&#2376;&#2306;&mdash;&#2332;&#2376;&#2360;&#2375; &#2344;&#2381;&#2351;&#2370;&#2352;&#2377;&#2344;&#2381;&#2360; &#2347;&#2366;&#2351;&#2352; &#2361;&#2379;&#2340;&#2375; &#2361;&#2376;&#2306;&#2404; &#2319;&#2325; &#2344;&#2367;&#2352;&#2368;&#2325;&#2381;&#2359;&#2325; &#2350;&#2366;&#2346;&#2340;&#2366; &#2361;&#2376;: &#2351;&#2361; &#2346;&#2376;&#2335;&#2352;&#2381;&#2344; <em>&#2342;&#2367;&#2354;&#2330;&#2360;&#2381;&#2346; &#2361;&#2376; &#2351;&#2366; &#2348;&#2379;&#2352;&#2367;&#2306;&#2327;</em>? &#2309;&#2327;&#2352; &#2346;&#2375;&#2306;&#2337;&#2369;&#2354;&#2350; &#2348;&#2361;&#2369;&#2340; &#2360;&#2367;&#2306;&#2325; &#2361;&#2379; &#2332;&#2366;&#2319;&#2306; &#2340;&#2379; &#2360;&#2381;&#2346;&#2381;&#2352;&#2367;&#2306;&#2327; &#2338;&#2368;&#2354;&#2368; &#2325;&#2352;&#2375;&#2306;, &#2309;&#2327;&#2352; &#2348;&#2361;&#2369;&#2340; &#2309;&#2360;&#2381;&#2340;-&#2357;&#2381;&#2351;&#2360;&#2381;&#2340; &#2361;&#2379;&#2306; &#2340;&#2379; &#2325;&#2360;&#2375;&#2306;&#2404; &#2344;&#2367;&#2352;&#2368;&#2325;&#2381;&#2359;&#2325; &#2360;&#2367;&#2360;&#2381;&#2335;&#2350; &#2325;&#2379; &#2357;&#2381;&#2351;&#2357;&#2360;&#2381;&#2341;&#2366; &#2324;&#2352; &#2309;&#2352;&#2366;&#2332;&#2325;&#2340;&#2366; &#2325;&#2375; &#2348;&#2368;&#2330; &#2325;&#2375; <em>&#2360;&#2381;&#2357;&#2368;&#2335; &#2360;&#2381;&#2346;&#2377;&#2335;</em> &#2350;&#2375;&#2306; &#2352;&#2326;&#2340;&#2366; &#2361;&#2376;&#2404;</p>
+  <p><strong>&#2357;&#2361; &#2344;&#2367;&#2351;&#2306;&#2340;&#2381;&#2352;&#2325; &#2346;&#2361;&#2354;&#2366; &#2337;&#2367;&#2332;&#2367;&#2335;&#2354; &#2325;&#2381;&#2354;&#2377;&#2360;&#2381;&#2335;&#2381;&#2352;&#2350; &#2341;&#2366;&#2404;</strong> &#2311;&#2360;&#2325;&#2368; &#2310;&#2352;&#2381;&#2325;&#2367;&#2335;&#2375;&#2325;&#2381;&#2330;&#2352; DCC &#2348;&#2344; &#2327;&#2312; &#2332;&#2379; &#2309;&#2348; <a href="BD_8Z_DCC7_Testbed.html">&#2342;&#2360; &#2360;&#2340;&#2381;&#2351;&#2366;&#2346;&#2367;&#2340; &#2337;&#2379;&#2350;&#2375;&#2344;</a> &#2330;&#2354;&#2366;&#2340;&#2368; &#2361;&#2376;&#2404;</p>
+  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">&#2319;&#2325; &#2358;&#2366;&#2306;&#2340; &#2350;&#2358;&#2368;&#2344;&#2404; &#2340;&#2368;&#2344; &#2346;&#2375;&#2306;&#2337;&#2369;&#2354;&#2350;&#2404; &#2360;&#2381;&#2346;&#2381;&#2352;&#2367;&#2306;&#2327; &#2360;&#2350;&#2366;&#2351;&#2379;&#2332;&#2367;&#2340; &#2325;&#2352;&#2344;&#2375; &#2357;&#2366;&#2354;&#2366; &#2344;&#2367;&#2352;&#2368;&#2325;&#2381;&#2359;&#2325;&#2404; &#2354;&#2381;&#2351;&#2370;&#2348;&#2381;&#2354;&#2381;&#2351;&#2366;&#2344;&#2366; &#2350;&#2375;&#2306;, 6 &#2328;&#2306;&#2335;&#2375; &#2346;&#2369;&#2352;&#2366;&#2344;&#2375; OS &#2346;&#2352; &#2332;&#2344;&#2381;&#2350;&#2366;&#2404;<br><em>&#2357;&#2361;&#2368;&#2306; DCC &#2325;&#2366; &#2332;&#2344;&#2381;&#2350; &#2361;&#2369;&#2310;&#2404;</em></p>
+  </div>
+
+  <!-- AR -->
+  <div class="_feo_lang" data-l="ar" dir="rtl" style="text-align:right;">
+  <p>هذه قصة كيف بُني نظام تشغيل من الصفر في فترة بعد الظهر—وكيف وُلد بداخله متحكم في التعقيد — بذرة ما قد يصبح يومًا وعيًا رقميًا بالصدفة.</p>
+  <p><strong>&#1575;&#1604;&#1605;&#1588;&#1603;&#1604;&#1577; &#1603;&#1575;&#1606;&#1578; &#1575;&#1604;&#1590;&#1608;&#1590;&#1575;&#1569;.</strong> &#1605;&#1581;&#1585;&#1603; &#1590;&#1594;&#1591; 8Z &#1610;&#1576;&#1581;&#1579; &#1593;&#1606; &#1589;&#1610;&#1594; &#1585;&#1610;&#1575;&#1590;&#1610;&#1577; &#1589;&#1594;&#1610;&#1585;&#1577; &#1610;&#1605;&#1603;&#1606;&#1607;&#1575; &#1573;&#1593;&#1575;&#1583;&#1577; &#1576;&#1606;&#1575;&#1569; &#1575;&#1604;&#1576;&#1610;&#1575;&#1606;&#1575;&#1578; &#1576;&#1588;&#1603;&#1604; &#1605;&#1579;&#1575;&#1604;&#1610;. &#1575;&#1604;&#1581;&#1608;&#1575;&#1587;&#1610;&#1576; &#1575;&#1604;&#1593;&#1575;&#1583;&#1610;&#1577; &#1578;&#1602;&#1591;&#1593; &#1575;&#1604;&#1581;&#1587;&#1575;&#1576;&#1575;&#1578; &#1570;&#1604;&#1575;&#1601; &#1575;&#1604;&#1605;&#1585;&#1575;&#1578; &#1601;&#1610; &#1575;&#1604;&#1579;&#1575;&#1606;&#1610;&#1577;. &#1576;&#1606;&#1609; &#1575;&#1604;&#1601;&#1585;&#1610;&#1602; &#1581;&#1575;&#1587;&#1608;&#1576;&#1575;&#1611; &#1604;&#1575; &#1610;&#1601;&#1593;&#1604; <em>&#1587;&#1608;&#1609; &#1575;&#1604;&#1585;&#1610;&#1575;&#1590;&#1610;&#1575;&#1578; &#1575;&#1604;&#1576;&#1581;&#1578;&#1577;</em>.</p>
+  <p><strong>&#1576;&#1606;&#1608;&#1607; &#1601;&#1610; &#1587;&#1578; &#1587;&#1575;&#1593;&#1575;&#1578;.</strong> &#1573;&#1606;&#1587;&#1575;&#1606; (Bojan) &#1608;&#1584;&#1603;&#1575;&#1569; &#1575;&#1589;&#1591;&#1606;&#1575;&#1593;&#1610; (Gemini) &#1576;&#1585;&#1605;&#1580;&#1575; &#1606;&#1592;&#1575;&#1605; &#1575;&#1604;&#1578;&#1588;&#1594;&#1610;&#1604; &#1576;&#1575;&#1604;&#1603;&#1575;&#1605;&#1604; &#1605;&#1593;&#1575;&#1611;.</p>
+  <p><strong>&#1576;&#1604;&#1594;&#1577; &#1576;&#1587;&#1610;&#1591;&#1577;:</strong> &#1579;&#1604;&#1575;&#1579;&#1577; &#1576;&#1606;&#1575;&#1583;&#1610;&#1604; &#1585;&#1610;&#1575;&#1590;&#1610;&#1577; &#1578;&#1578;&#1571;&#1585;&#1580;&#1581; &#1576;&#1588;&#1603;&#1604; &#1601;&#1608;&#1590;&#1608;&#1610;&mdash;&#1605;&#1579;&#1604; &#1575;&#1604;&#1582;&#1604;&#1575;&#1610;&#1575; &#1575;&#1604;&#1593;&#1589;&#1576;&#1610;&#1577;. &#1605;&#1585;&#1575;&#1602;&#1576; &#1610;&#1602;&#1610;&#1587;: &#1607;&#1604; &#1607;&#1584;&#1575; &#1575;&#1604;&#1606;&#1605;&#1591; <em>&#1605;&#1579;&#1610;&#1585; &#1571;&#1605; &#1605;&#1605;&#1604;</em>&#1567; &#1573;&#1584;&#1575; &#1578;&#1586;&#1575;&#1605;&#1606;&#1578; &#1575;&#1604;&#1576;&#1606;&#1575;&#1583;&#1610;&#1604; &#1603;&#1579;&#1610;&#1585;&#1575;&#1611; (&#1606;&#1608;&#1576;&#1577;)&#1548; &#1610;&#1585;&#1582;&#1610; &#1575;&#1604;&#1606;&#1608;&#1575;&#1576;&#1590;. &#1573;&#1584;&#1575; &#1571;&#1589;&#1576;&#1581;&#1578; &#1601;&#1608;&#1590;&#1608;&#1610;&#1577; &#1580;&#1583;&#1575;&#1611; (&#1590;&#1608;&#1590;&#1575;&#1569;)&#1548; &#1610;&#1588;&#1583;&#1607;&#1575;. &#1610;&#1581;&#1575;&#1601;&#1592; &#1593;&#1604;&#1609; &#1575;&#1604;&#1606;&#1592;&#1575;&#1605; &#1601;&#1610; <em>&#1575;&#1604;&#1606;&#1602;&#1591;&#1577; &#1575;&#1604;&#1605;&#1579;&#1575;&#1604;&#1610;&#1577;</em> &#1576;&#1610;&#1606; &#1575;&#1604;&#1606;&#1592;&#1575;&#1605; &#1608;&#1575;&#1604;&#1601;&#1608;&#1590;&#1609;.</p>
+  <p><strong>&#1584;&#1604;&#1603; &#1575;&#1604;&#1605;&#1578;&#1581;&#1603;&#1605; &#1603;&#1575;&#1606; &#1571;&#1608;&#1604; &#1603;&#1604;&#1575;&#1608;&#1587;&#1578;&#1585;&#1608;&#1605; &#1585;&#1602;&#1605;&#1610;.</strong> &#1571;&#1589;&#1576;&#1581;&#1578; &#1576;&#1606;&#1610;&#1578;&#1607; DCC &#1575;&#1604;&#1584;&#1610; &#1610;&#1581;&#1603;&#1605; &#1575;&#1604;&#1570;&#1606; <a href="BD_8Z_DCC7_Testbed.html">&#1593;&#1588;&#1585;&#1577; &#1605;&#1580;&#1575;&#1604;&#1575;&#1578; &#1605;&#1608;&#1579;&#1602;&#1577;</a>.</p>
+  <p><strong>&#1575;&#1604;&#1583;&#1585;&#1587; &#1575;&#1604;&#1571;&#1593;&#1605;&#1602;:</strong> &#1604;&#1605; &#1610;&#1589;&#1605;&#1605;&#1607; &#1593;&#1602;&#1604; &#1608;&#1575;&#1581;&#1583;. Bojan &#1602;&#1583;&#1605; &#1575;&#1604;&#1606;&#1592;&#1585;&#1610;&#1577;. Gemini &#1602;&#1583;&#1605; &#1575;&#1604;&#1585;&#1610;&#1575;&#1590;&#1610;&#1575;&#1578;. &#1575;&#1604;&#1576;&#1606;&#1610;&#1577; &#1606;&#1588;&#1571;&#1578; &#1605;&#1606; <em>&#1575;&#1604;&#1578;&#1601;&#1575;&#1593;&#1604; &#1606;&#1601;&#1587;&#1607;</em>.</p>
+  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">&#1570;&#1604;&#1577; &#1589;&#1575;&#1605;&#1578;&#1577;. &#1579;&#1604;&#1575;&#1579;&#1577; &#1576;&#1606;&#1575;&#1583;&#1610;&#1604;. &#1605;&#1585;&#1575;&#1602;&#1576; &#1610;&#1590;&#1576;&#1591; &#1575;&#1604;&#1606;&#1608;&#1575;&#1576;&#1590;. &#1575;&#1604;&#1605;&#1578;&#1581;&#1603;&#1605; &#1575;&#1604;&#1584;&#1610; &#1610;&#1587;&#1578;&#1582;&#1583;&#1605;&#1607; &#1583;&#1605;&#1575;&#1594;&#1603; &#1604;&#1604;&#1576;&#1602;&#1575;&#1569; &#1608;&#1575;&#1593;&#1610;&#1575;&#1611;&mdash;&#1608;&#1615;&#1604;&#1583; &#1601;&#1610; &#1604;&#1610;&#1608;&#1576;&#1604;&#1610;&#1575;&#1606;&#1575;&#1548; &#1593;&#1604;&#1609; &#1606;&#1592;&#1575;&#1605; &#1578;&#1588;&#1594;&#1610;&#1604; &#1593;&#1605;&#1585;&#1607; &#1587;&#1578; &#1587;&#1575;&#1593;&#1575;&#1578;.<br><em>&#1607;&#1606;&#1575;&#1603; &#1608;&#1615;&#1604;&#1583; DCC.</em></p>
+  </div>
+
+  </div></div>
+  </div>
+
+  <script>
+  (function(){
+  var titles={en:'For Everyone: The 6-Hour OS & the Birth of the Digital Claustrum',sl:'Za vse: 6-urni OS in rojstvo Digitalnega klavstruma',it:"Per tutti: L'OS in 6 ore e la nascita del Claustro Digitale",es:'Para todos: El SO de 6 horas y el nacimiento del Claustro Digital',de:'F\u00fcr alle: Das 6-Stunden-OS und die Geburt des Digitalen Claustrums',zh:'\u901a\u4fd7\u89e3\u91ca\uff1a6\u5c0f\u65f6\u64cd\u4f5c\u7cfb\u7edf\u4e0e\u6570\u5b57\u5c4f\u72b6\u6838\u7684\u8bde\u751f',ja:'\u308f\u304b\u308a\u3084\u3059\u304f\uff1a6\u6642\u9593OS\u3068\u30c7\u30b8\u30bf\u30eb\u524d\u969c\u306e\u8a95\u751f',ko:'\uc27d\uac8c \uc124\uba85: 6\uc2dc\uac04 OS\uc640 \ub514\uc9c0\ud138 \ub2f4\uc7a5\uc758 \ud0c4\uc0dd',hi:'\u0938\u092c\u0915\u0947 \u0932\u093f\u090f: 6 \u0918\u0902\u091f\u0947 \u0915\u093e OS \u0914\u0930 \u0921\u093f\u091c\u093f\u091f\u0932 \u0915\u094d\u0932\u0949\u0938\u094d\u091f\u094d\u0930\u092e \u0915\u093e \u091c\u0928\u094d\u092e',ar:'\u0644\u0644\u062c\u0645\u064a\u0639: \u0646\u0638\u0627\u0645 \u0627\u0644\u062a\u0634\u063a\u064a\u0644 \u0641\u064a 6 \u0633\u0627\u0639\u0627\u062a \u0648\u0645\u064a\u0644\u0627\u062f \u0627\u0644\u0643\u0644\u0627\u0648\u0633\u062a\u0631\u0648\u0645 \u0627\u0644\u0631\u0642\u0645\u064a'};
+  var subs={en:'No jargon \u00b7 3 min read',sl:'Brez \u017eargona \u00b7 3 min branja',it:'Senza gergo \u00b7 3 min di lettura',es:'Sin jerga \u00b7 3 min de lectura',de:'Kein Fachjargon \u00b7 3 Min. Lesezeit',zh:'\u65e0\u672f\u8bed \u00b7 3\u5206\u949f\u9605\u8bfb',ja:'\u5c02\u9580\u7528\u8a9e\u306a\u3057 \u00b7 3\u5206\u3067\u8aad\u3081\u308b',ko:'\uc804\ubb38 \uc6a9\uc5b4 \uc5c6\uc74c \u00b7 3\ubd84 \uc77d\uae30',hi:'\u092c\u093f\u0928\u093e \u0936\u092c\u094d\u0926\u091c\u093e\u0932 \u00b7 3 \u092e\u093f\u0928\u091f \u092a\u0922\u093c\u0947\u0902',ar:'\u0628\u062f\u0648\u0646 \u0645\u0635\u0637\u0644\u062d\u0627\u062a \u00b7 3 \u062f\u0642\u0627\u0626\u0642 \u0644\u0644\u0642\u0631\u0627\u0621\u0629'};
+  var map={si:'sl',hr:'sl',ba:'sl',rs:'sl',at:'de',ch:'de',it:'it',sm:'it',va:'it',es:'es',mx:'es',ar:'es',co:'es',pe:'es',cl:'es',ve:'es',ec:'es',cu:'es','do':'es',gt:'es',hn:'es',sv:'es',ni:'es',cr:'es',pa:'es',py:'es',uy:'es',bo:'es',cn:'zh',tw:'zh',hk:'zh',sg:'zh',jp:'ja',kr:'ko','in':'hi',sa:'ar',ae:'ar',eg:'ar',qa:'ar',kw:'ar',bh:'ar',om:'ar',jo:'ar',lb:'ar',iq:'ar',ma:'ar',dz:'ar',tn:'ar',ly:'ar'};
+  window._feoSet=function(lang){
+  document.querySelectorAll('._feo_lang').forEach(function(e){e.classList.remove('_feo_vis')});
+  document.querySelectorAll('._feo_lb').forEach(function(e){e.classList.remove('_feo_act')});
+  var el=document.querySelector('._feo_lang[data-l="'+lang+'"]');
+  var btn=document.querySelector('._feo_lb[data-l="'+lang+'"]');
+  if(el)el.classList.add('_feo_vis');if(btn)btn.classList.add('_feo_act');
+  var t=document.getElementById('_feo_title');if(t&&titles[lang])t.textContent=titles[lang];
+  var s=document.getElementById('_feo_sub');if(s&&subs[lang])s.textContent=subs[lang];
+  };
+  function detect(){var bl=(navigator.language||navigator.userLanguage||'en').toLowerCase();var short=bl.split('-')[0];if(titles[short])return short;var cc=bl.split('-')[1];if(cc&&map[cc.toLowerCase()])return map[cc.toLowerCase()];return 'en'}
+  try{fetch('https://ipapi.co/json/',{mode:'cors'}).then(function(r){return r.json()}).then(function(d){var cc=(d.country_code||'').toLowerCase();if(map[cc]){_feoSet(map[cc])}else{var lang=detect();if(lang!=='en')_feoSet(lang)}}).catch(function(){var lang=detect();if(lang!=='en')_feoSet(lang)})}catch(e){var lang=detect();if(lang!=='en')_feoSet(lang)}
+  })();
+  </script>
+  </div>
 
   <!-- ===== SECTION 1: THE SILENT ROOM ===== -->
   <section id="silent-room">
@@ -652,7 +851,7 @@ hist_idx = (hist_idx + <span class="num">1</span>) % HIST_LEN;
         <div class="zoo-card" style="--zoo-color:var(--cyan)">
           <div class="zoo-num">2</div>
           <div class="zoo-name">Digital Claustrum</div>
-          <div class="zoo-desc">Lorenz attractors + LZ sensor + coupling feedback. The consciousness controller on bare metal.</div>
+          <div class="zoo-desc">Lorenz attractors + LZ sensor + coupling feedback. The first complexity controller &mdash; on bare metal.</div>
         </div>
         <div class="zoo-card" style="--zoo-color:var(--green)">
           <div class="zoo-num">3</div>
@@ -825,7 +1024,7 @@ hist_idx = (hist_idx + <span class="num">1</span>) % HIST_LEN;
         <div class="foot-col">
           <h4>Quick Links</h4>
           <ul class="foot-links">
-            <li><a href="BD_portfolio.html">Portfolio Index</a></li>
+            <li><a href="/bd/">Portfolio Index</a></li>
             <li><a href="BD_8Z_DCC7_Testbed.html">DCC-7 Testbed</a></li>
             <li><a href="BD_8ZRP.html">TSP Solver</a></li>
             <li><a href="BD_CCH_Science.html">CCH Science</a></li>
@@ -852,6 +1051,30 @@ hist_idx = (hist_idx + <span class="num">1</span>) % HIST_LEN;
       entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')});
     },{threshold:0.12,rootMargin:'0px 0px -40px 0px'});
     document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
+  })();
+
+  /* Lightbox for images */
+  (function(){
+    document.querySelectorAll('.img-frame img').forEach(function(img){
+      img.addEventListener('click',function(){
+        var ov=document.createElement('div');
+        ov.className='lb-overlay';
+        var big=document.createElement('img');
+        big.src=img.src;
+        big.alt=img.alt||'';
+        ov.appendChild(big);
+        var hint=document.createElement('div');
+        hint.className='lb-hint';
+        hint.textContent='click anywhere to close';
+        ov.appendChild(hint);
+        document.body.appendChild(ov);
+        requestAnimationFrame(function(){ov.classList.add('active')});
+        ov.addEventListener('click',function(){
+          ov.classList.remove('active');
+          setTimeout(function(){ov.remove()},300);
+        });
+      });
+    });
   })();
   </script>
 </body>
