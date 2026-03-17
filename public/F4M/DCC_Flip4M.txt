@@ -1,0 +1,148 @@
+8Z-DCC FlipFour: A Gravitational Policy Layer for Volatile Physics
+& A TSP-Style "Route-to-Victory" Controller
+Version: v0.4 (Expanded with Volatility Analysis & Simulation Specs)
+Date: 2026-01-08
+
+Author(s): Bojan Dobrečevič + LLM collaborators
+Status: Draft — intended for FlipFour: Magnetic engine development.
+
+================================================================================
+0) Executive summary
+================================================================================
+
+Standard Minimax engines struggle with "FlipFour: Magnetic" not because the game tree is too deep, but because it is too volatile. A single board rotation (Gravity Shift) invalidates 90% of positional heuristics, creating a "Horizon of Chaos" where standard evaluation functions fail to predict structural collapse.
+
+This paper proposes a hybrid engine architecture adapting two 8Z research concepts:
+1. A **Digital Claustrum Controller (DCC)** as a policy layer to filter "fragile" moves using secondary physics metrics (Gravitational Stability, Magnet Robustness, Resource Thrift).
+2. An **8Z-RP "Route Solver"** for the endgame, treating the search for a Connect-4 state not as a tree, but as a combinatorial "Shortest Path" problem (TSP) using deterministic kicks to escape local optima.
+
+The goal is to produce a "Human-Expert" style of play that prioritizes structural integrity and resource conservation over raw, brittle calculation.
+
+================================================================================
+1) Problem statement: The "Horizon of Chaos"
+================================================================================
+
+In Chess, the board geometry is static. In FlipFour, the geometry is dynamic.
+- **Volatility:** A "strong" 3-in-a-row vertical line becomes a useless scattered pile if gravity shifts 90°.
+- **Resource Blindness:** Standard Minimax treats a Magnet (costly) and a Drop (free) as equal if they produce the same immediate score. This leads to "seizure" behavior where the AI wastes winning assets on Turn 1.
+
+We need a system that asks not "Is this move winning now?", but "Will this structure survive a rotation?" and "Is this resource worth spending?"
+
+================================================================================
+2) Comparative Analysis: FlipFour vs. Chess
+================================================================================
+
+While Chess has higher combinatorial depth, FlipFour possesses higher immediate physical volatility. This distinction dictates why standard engines fail at FlipFour.
+
+**2.1 Board Geometry: Static vs. Dynamic**
+- **Chess (Static):** Moving a piece affects only local squares (from/to/path). The rest of the board remains frozen. Visuospatial stability is high.
+- **FlipFour (Dynamic):** A single rotation changes the position of every unpinned token on the board. One move redefines the entire reality. Visuospatial stability is near zero.
+
+**2.2 Complexity Type: Depth vs. Collapse**
+- **Chess:** Complexity comes from the "Horizon Effect" (the truth is 20 moves deep).
+- **FlipFour:** Complexity comes from "Structural Collapse" (the truth is 4 moves deep, but the board rules change). A depth-4 search in FlipFour is useless if it does not account for gravity settling.
+
+**2.3 Human Limitation**
+Humans have limited visuospatial working memory (tracking ~4 moving objects). A FlipFour rotation often moves 15+ objects simultaneously. This creates a "Horizon of Chaos" where human calculation fails early, making mastery deceptively difficult despite simple rules.
+
+================================================================================
+3) System Overview: The 8Z-DCC Architecture
+================================================================================
+
+Input: Board State (Grid, Gravity, Tokens)
+
+**Layer 1: The Candidate Generator (Shallow Search)**
+- Uses standard Alpha-Beta pruning to find top-K "sane" moves.
+- Output: A cluster of moves with near-equal evaluation scores.
+
+**Layer 2: The DCC Policy Filter (The "Personality")**
+Re-ranks candidates based on secondary physics metrics:
+- **Gravitational Stability (GS):** Simulate the board state after a 90° rotation. Does the player's structure collapse? Moves that build "gravity-proof" shapes (e.g., diagonals, compacted blocks) are boosted.
+- **Magnet Robustness (MR):** Worst-case sensitivity. If the opponent places a magnet next turn, does the position crumble?
+- **Thrift Factor (TF):** Explicit penalty for using Flips/Magnets. 
+  Rule: `Score = BaseEval - (ResourceCost / Volatility)`. 
+  This ensures assets are only spent to *secure* a win or *prevent* a loss, never for marginal positional gain.
+
+**Layer 3: The Endgame Route Solver (The "Sniper")**
+- Activates when Board Fill > 60%.
+- Treats the game state as a graph.
+- Goal: Find a sequence of moves (Nodes) {M1, M2... Mk} that results in `State == Win`.
+
+================================================================================
+4) Adapting 8Z-RP: From Cities to Victory States
+================================================================================
+
+The "Endgame Route Solver" adapts the **8Z-RP** TSP logic.
+
+**4.1 The Analogy**
+- **TSP City:** A Game State.
+- **Distance:** The number of moves away from a Connect-4 alignment.
+- **Tour:** A sequence of moves.
+- **Kick:** A forced, non-optimal move (e.g., a "useless" rotation) injected into the sequence to break out of a local "draw" loop.
+
+**4.2 The Algorithm**
+1. **Greedy Path (NN):** Calculate the standard forced sequence (Win/Block).
+2. **Optimization (2-Opt equivalent):** Swap the order of operations (e.g., "Rotate then Drop" vs "Drop then Rotate"). Does this reduce the "distance" to victory?
+3. **Perturbation (Double-Bridge Kick):** If stuck in a draw loop, apply a "Kick": force a random rotation or non-obvious magnet placement. Re-optimize.
+4. **Result:** This often finds "magic" sequences (e.g., Rotate -> Magnet -> Drop -> Win) that deep-tree search prunes because the intermediate states look weak.
+
+================================================================================
+5) DCC Metrics for Gravity
+================================================================================
+
+**5.1 Stability (S)**
+`S = (Eval_Current - Eval_Rotated)`.
+- Low S means the structure is "Liquid" (bad).
+- High S means the structure is "Solid" (good).
+- DCC enforces: `Select Move where S > Threshold`.
+
+**5.2 Practicality (P)**
+`P = (Number of opponent replies that do NOT win)`.
+- In FlipFour, a "sharp" line often allows the opponent a single specific counter-magnet that wins.
+- A "Practical" move maximizes the number of opponent errors required to lose.
+
+================================================================================
+6) The Simulation Laboratory (Pre-AI Phase)
+================================================================================
+
+Before building the full AI, we must quantify the physics volatility to tune the DCC parameters. This requires a headless Python simulation script (`flip4m_sim.py`).
+
+**6.1 Objectives**
+- Prove the "Harder than Chess" hypothesis with data.
+- Verify gravity logic correctness in a fast, non-GUI environment.
+- Generate the "Volatility Baseline" for DCC tuning.
+
+**6.2 Simulation Metrics**
+- **Metric A: The "Explosion Factor" (Volatility)**
+  Measure the state change of a single move.
+  - *Simulation:* Execute 1 rotation on 1,000 random boards. Count grid cell changes (0->1 or 1->0).
+  - *Hypothesis:* FlipFour will show ~5x higher state change per move than Chess.
+- **Metric B: The Prediction Horizon**
+  Train a simple predictor (simulating human intuition) to guess the board state after 1 move.
+  - *Hypothesis:* Accuracy will be low (~70%) due to gravity settling complexity, proving the "Horizon of Chaos."
+
+**6.3 Implementation**
+- Port `F4M.html` game rules to a pure Python class `FlipFourBoard`.
+- No Minimax, no Strategy. Just Physics + Random Movers + Statistics.
+- Use `multiprocessing` to run 10,000+ simulations per second.
+
+================================================================================
+7) Development Workflow: The "Lab-to-Wasm" Pipeline
+================================================================================
+
+**7.1 Phase 1: Python Lab (Headless)**
+- Rapid prototyping of physics and metrics (as detailed in Section 6).
+- Tune "Thrift Factors" via genetic evolution (Golden Set Tuning).
+
+**7.2 Phase 2: C++ Translation (Core)**
+- Once logic is proven (>90% win-rate vs Baseline), rewrite `evaluate()` and `route_solver()` in C++ for SIMD vectorization.
+
+**7.3 Phase 3: WebAssembly (Wasm)**
+- Compile the C++ engine to Wasm.
+- The `F4M.html` UI calls the Wasm module for "Pro/Grandmaster" moves, treating it as a black-box oracle.
+
+================================================================================
+8) Conclusion
+================================================================================
+
+By layering a **Deterministic Policy Controller (DCC)** over standard search, utilizing **Combinatorial Optimization (TSP)** for the endgame, and validating the physics via a **Python Simulation Laboratory**, we transform the FlipFour engine. It moves from being a brittle calculator that "seizes" on shallow tactics, to a robust agent that builds stable structures and conserves resources—playing not just correctly, but *principled* chess.
