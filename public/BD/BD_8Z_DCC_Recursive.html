@@ -203,7 +203,7 @@ a:hover { text-decoration:underline; }
 <div class="metric-card"><div class="mv teal">5</div><div class="ml">Research Directions</div></div>
 <div class="metric-card"><div class="mv gold">1</div><div class="ml">Kernel</div></div>
 </div>
-<p style="margin-top:14px; font-size:14px; color:var(--text-muted);">One kernel, 19 domains &mdash; from finance and energy grids to drug discovery and machine consciousness. <a href="#ch8" style="color:var(--accent-orange);">Explore all applications &rarr;</a></p>
+<p style="margin-top:14px; font-size:14px; color:var(--text-muted);">One kernel, 19 domains &mdash; from finance and energy grids to drug discovery and the foundations of potential machine consciousness. <a href="#ch8" style="color:var(--accent-orange);">Explore all applications &rarr;</a></p>
 </div>
 
 <!-- ═══ FOR EVERYONE — MULTILINGUAL ═══ -->
@@ -573,25 +573,29 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 <p>This was the same mistake as the or-opt exclusion (P16), but self-similar at a deeper level. The system built to let data decide was itself configured by hand. Three C instances in three sessions violated P5 (Let DCC Control It) while having P5 in their context window. The fix: <strong>self-calibrating bands</strong> &mdash; track running 25th/75th percentiles of observed LZ ratios. The system learns its own thresholds from its own data stream. MDL all the way down.</p>
 </div>
 
-<div class="_8z-sec _8z-lk" id="_8z-s0" data-8z-blob="R2RGeKckKHbj+veKLBeF8MIC+Z2wt0mF3ykXqrz+mwA566PiUhEyaR6JMl8mUl/xpzvwlCuEiiqwSPgBGJmVX5CWjqcwIQoP2wHr/Lvxzc6MvMKOAYQl098rsUETw0nNMmynrterYTWgPwAHi2Xz1tO/yKcpadfYTRE931sH4YAwCiSwg3c3mReFk/1ITwgPaWf9OUj1CVxoLh8U3PiL1Q6mgbU1E8oqxTMXWm3LmlgrzVyOYEByeTdjs/KRWAb0JZ40yfYztPpUVubiuSz5zftdpff1pXuTuB4NMosQKSsWVs1JM0cY0dYzTrCDqAqCRwivqZK8pweoLJi7DsRFSg/9/dd/+cy6oC0HADZj4rID+FknHLjbFz9Ynzsmv3Sjcrx8GgLPHcVSZ6B9BJxbOKNOIdxVnDAC5KyTqOaiZXDiQsgbaEi1l5LnDYdeBWMsl4T2/9VXzwE0xDs1/kjxb7q1j+efbz1E5qA9vsRKU1+aAF+zaPqHhXZe29SvF3cy73/jj/x2qs/+1Aw4L8NQ/po0IMUcyumJnuyEMQbmAn5sy1H781UM0K+2KeFntkWNlWasN80prc/IGSPLGfJARCa0G2qw/tzcah7AdA6xXHr8IaJEuRZyZkXyj2BhUw5Phd+epvOEQqdPVAo7f4RhnzhZvvZ9BndtntY00PPl9/rZCT9/gZhxjIrjopT4wNGVjNyZgU3Ek3lzwgUO1D7WC54tBHBS5YtVcuzdKWnNRpNkPJ44fUUR9z70E0IRxGXrloH5dNA1JtDW31zi9lINYxLKstUKjWJ9IBzK46nepVQN3NYdWW9UsheLpi3bmYYjgtEKbOb0tGBSZa4=">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Protected Content</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-label="Self-Calibrating Band Implementation">
+<h4>Self-Calibrating Bands — Technical Detail</h4>
+<p><strong>Warmup period:</strong> First 10 LZ observations are collected without adjusting meta_u. This prevents spurious coupling changes before the sensor has a statistical baseline.</p>
+<p><strong>Band calculation:</strong> After warmup, maintain a rolling window of the last 100 LZ ratio observations. band_low = 25th percentile. band_high = 75th percentile. Guard: if band_high &le; band_low, set band_high = band_low + 0.001 to prevent collapse.</p>
+<p><strong>Result on uy734:</strong> Bands self-calibrated from [0.000, 1.000] to [0.040, 0.061] &mdash; exactly where real fleet LZ data lives. meta_u then used its full range [3, 18] with 22 meaningful direction changes over 70 post-warmup steps. Compare v2.4: meta_u drifted to floor and stayed there (0 useful changes).</p>
+<p><strong>Manual override:</strong> <code>--meta-band-low 0.04 --meta-band-high 0.06</code> bypasses self-calibration for experimentation. Default: auto.</p>
 </div>
 
 <h3>The Three-Phase Fleet Lifecycle</h3>
 <p>81 meta-DCC steps over 42 minutes revealed a clear three-phase lifecycle that no previous run had visibility into:</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s1" data-8z-blob="B1o3TO6GccVMfn2jnisQBwtFGPRD3pXtPnjcDOjd1n7xR42Zxe+hEbbmytFii4w4Id5wcYA7raN0KseGm3onatgP3UpKl4Hl9hvycqMjlkt2vJxuVQ/rQ8jk0GVMiWUV2yy8jBkWrcnjSZ+3ZD61gSRAYgM2D9xyr4GH6IvxiKtBBA+FgVmkDAHJ0VDgQEr7jAx80ECt2QJeN4JPYsOpeF+1jkpVGnqw//uqorEaCx/piXmiDe6cfziOPuZh1uWsUzaSlseZuXjN+pBIt6FAV2WtknRKXHXP9qcn/ppMTpMaUMIwK0H9HdDE/S88wxYXOisjvPGthHbw39tkS5Nr8nUGRsE+5AhTDkp/xnhFzAbaCTk0PowGAexYg0ozviTXSxip5UQSLHChAcHyU7ShzkRmpJxPoJADmefyPV1/EGkEnd+YEP5R/hi6ZsFBUeFjVRtGsdj9whYNTX056/POYqA7W/OS/hoihdcv5kJucyICBuAwr4ZKi2kYmAsr1K6tGrBbn+pwcv0XRpCJfa3KqTrd2irkF1cM15GygsS11Sl6vSqs+rydRzJ3D0o65ww6i7RjvB9iVDUb24kMtfQLid8LrqIMA+Q5EUiD1B0FSGTNrWX+anaH3tW9LHHm0g8NuMavPkMvn9QYI+DxhYxCmKfEWuPfXU9Ap6KY+isU4sDAPj2BZ0GSgRwjCFq470AER56BfFng67+FvEPRBpX6DkrHG2hz37NZRQ0nII2q805TnXJ/9Svv4oLq3nYzlxZMGmTwdwDZaHmxx3Vf5C40OLLSM6+kSaaI7t4xl86GBUeAHgnN">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Protected Content</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-label="Fleet Classification & Worker State Encoding">
+<h4>Worker Classification Algorithm</h4>
+<p>Each 30-second snapshot classifies every worker into one of four states:</p>
+<table class="param-table">
+<tr><th>State</th><th>Condition</th><th>Stuck Counter</th></tr>
+<tr><td><strong>IMPROVING</strong></td><td>Found improvement since last snapshot</td><td>Reset to 0</td></tr>
+<tr><td><strong>GRINDING</strong></td><td>No improvement, but gap &le; fleet median</td><td>Decay by 1 (min 0)</td></tr>
+<tr><td><strong>STUCK</strong></td><td>No improvement, gap &gt; fleet median</td><td>Increment by 1</td></tr>
+<tr><td><strong>DEAD</strong></td><td>At nuclear escalation (level 4)</td><td>Increment by 1</td></tr>
+</table>
+<p><strong>Key design:</strong> GRINDING workers decay their stuck counter, not accumulate. Only STUCK and DEAD build toward intervention triggers. This prevents false escalation when the fleet is productively searching below-median gap.</p>
+<p><strong>Fleet snapshot encoding:</strong> One byte per worker: state(2 bits) + escalation_bucket(2 bits) + stuck_bucket(2 bits). Fed to LZ76 sensor for compression analysis.</p>
 </div>
 
 <p><strong>Phase 1: Healthy Fleet (steps 1&ndash;20).</strong> All 14 workers IMPROVING. Fleet best drops rapidly: 83188 &rarr; 79942. meta_u climbs 10 &rarr; 18 because LZ ratio exceeds band_high &mdash; fleet is diverse, no intervention needed. Spread narrows from 1860 to 1342. The coupling parameter says: <em>trust the workers.</em></p>
@@ -629,38 +633,40 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 <h3>Compression Sensor</h3>
 <p>An LZ76-based sensor monitors the stream of search outcomes. When the search keeps finding similar results &mdash; all losses, or all marginal improvements &mdash; the compressed description of recent outcomes shrinks. The sensor detects that the search has become predictable, which at the meta-level means it has become <em>unproductive</em>.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s2" data-8z-blob="omIl8AmmlbyK/51BnEQxhkw47yR1XCgLK14lv+iOcxI28nKyaGPBw9okbPVPEd+4At7+0kgrGQ/0Ol84iLa+PdLWn1UX5AL+9/3GhRFz/IX/UDYdP4mLFWaP/LIYL0QaUsxNEj1UTaAr6ga2xTjcv90jLroShF8DP24kIKZuV4fWE2Vpxq2De6VGIgClQPlG6xua7VwPiSD7F4dmGioZbULtcAkcXb0sOHHl7yvdKfJtR+YrF7XOMUIgzuyiOnmAuRgTnQYtXfgS5O9dGAniwpzM02RfyqKcUCEndUb/wSWu76KCKRln6sIvw+xi1UWtEQcbSCtQj0hHecrJ2rKK4ewVJegkeYri3atVKNl4wbUDzgnjOiygxVJ+TBzoKsphoNvK8K6C0leiwQ6ZiDcVbA1MH5yeuDJ/bjrL1BJp9VLX1hAgIK+5oK6oaJu/WmfIkyZMqkkV4WtPup5fF8SZeOIgUfzQoiyyRd0q3HKbZ+umuiLwi+CV2yO44zpc2z/uPAQgwp4FE5D4a6cm/GuLkgNQDaz5c3xWSDyzaIhbJ3jXzw5XhjgyK4tHsl214Y/59phnqLcYXliNNkPW+pL+2eXFA6AUswlbNCCt9DykADEp3d/Y1O0SFBDVY3Twg/kAA9rtjfgn8UBJAFGU+YRbcQuIyW+nnX8nilKfnidqJq3D7bFGntFRk95jOUL4jrr15ceQgN9GUEx5aUz9neUoTG/43135w7N4kEOT0Sc1GTak8yy2L7FesxLSAE7Nf09jcXzCsIDxSOnNmc2w8IM6erF+EbMMTHQ3QTNaMeXXZU/RjEtieaGV0Oz8RDf5HHkmQt9jKG6E4CjlMzuvx6JLigJW4vk80e7d5ZMlWrFcTasAN70gf8q+mnq+PGqBRg==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Protected Content</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-label="LZ76 Sensor Configuration">
+<h4>LZ76 Sensor — Technical Specification</h4>
+<p><strong>Buffer:</strong> 128-sample circular buffer. Each sample is an 8-bit symbol encoding the search outcome of one configuration test.</p>
+<p><strong>Symbol encoding (8 bits):</strong> accepted(1) | improved(1) | kick_type(2) | improvement_magnitude(2) | cost_bucket(2). The richer symbol set compared to base-level DCC (which uses 6-bit symbols in a 64-sample buffer) captures more information per observation, enabling finer-grained search productivity measurement.</p>
+<p><strong>LZ76 compression:</strong> The buffer is serialized to a binary string and compressed using the Lempel-Ziv 76 algorithm. The complexity ratio = (number of LZ phrases) / (total bits). Low ratio = highly compressible = repetitive outcomes = search is stuck. High ratio = incompressible = diverse outcomes = search is productive.</p>
+<p><strong>Update frequency:</strong> Every <code>update_interval</code> samples (default: 64). The sensor fires only when the buffer is full and the position is aligned to the update interval, preventing noisy early readings.</p>
 </div>
 
 <h3>Coupling Parameter</h3>
 <p>The coupling parameter <em>u</em> governs the balance between exploitation (testing configurations near known good ones) and exploration (jumping to entirely new regions of the space). When the sensor reports high compression &mdash; meaning search outcomes are repetitive &mdash; <em>u</em> decreases, pushing toward exploration. When a new improvement is found, <em>u</em> increases, tightening the search around the productive region.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s3" data-8z-blob="56TE7g6QHG2w//EdjGrX/QFWSCKERfAmAFqCQCG4+sDauLtjPTMgFC0kG1b0LTRMx0GCdaCYvVtmWxpwPml61TtXfuDKScpOVW0wPZvxBpz3cQ6ufarkdo1guFrJKT8nOANRy+/pYYtfeyi9uqLDOtylXt4RWvVhZz5qAVrp65O9ITnBPpt+SO2kCnzdniQStkGWYYU1f0JgSxlOnMCsbptBIjxDEWsjp+Y2ff+HX6eNZxg/+cBojfVGWbxaLftZfj+NQVtn3jLlxa/gViePmsACiUA2KKdjMO3351igTpAAYZ6e3FWMXX4BkEWQFFUJuJyehK5R/qzm3ywomVLM3vW877VJqDZVPSV+vv2+7IrRYgsbsWwt7PL+XJz6OFw5iFlE5fKo4IN9F/TtR5P6FDF2KSPqdbTjF+a87jUVmbzfaSMeHQBklrY5xPpkmMj7mEr8y9Odyxsk+m0VDpQlgNKlokNrFkrWx1tWFflfxgaTIcd1iCU6aXVdWqx8H3zQou63F7uscLPFjT54G6+fG8vip36e/RA8Cqm9nSvZwYmcavhUbePfM0OOqMym0/4DBuzT/QptLa/619H5wj8ANDgVAJdLCwUZvXPZJdLCyIOHZBdrPsf/km1id2vlhrKRrD9FfaV0me7ELG0dwqklLhjrmfTJUhTJaxnIksg6n/B8wnIzEK4Zx2QILVlbIPbIbls3RSbsCx1E24URN8kZ68qXymmA2jmdTS+ElEUOwI1PZIrOLEXPJN6bqoqe8SQNhts7JC3ry1sZSXQUpjpnxl1R9QSu2/hU8XDGqocW2MzbZFUXi9p6UjClfx1nBsrCMzk4vIxQDl0SFZMFnYe9Xhd+uVAwgnRTDNaZeyRAmuzKikdJA90LsbqpAzI2vat2iBbTjwl4PL384mCw8nHxI6WKrrYpAZmJI5utdBqoxQkQgPJTKD/m9FkBb65C+WNpk6yeVKrGA/BPjHCvkVxf/On5x3wiSA==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Protected Content</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
-</div>
+<div class="8z-protected" data-label="Coupling Parameter Formula &amp; MDL Derivation">
+<h4>Coupling Parameter u — MDL-Derived Adjustment</h4>
+<p><strong>Range:</strong> [u_floor, u_ceiling] (default: [3, 18]). Starts at midpoint (10).</p>
+<p><strong>Adjustment rule:</strong> After each LZ76 update, compare lz_ratio to band thresholds. If lz_ratio &lt; band_low: u decreases by 1 (more exploration). If lz_ratio &gt; band_high: u increases by 1 (more exploitation). If within band: u unchanged. Maximum change: &plusmn;1 per update (momentum damping prevents oscillation).</p>
+<p><strong>Effect on search:</strong> p_greedy = 500 + 20*u (probability of starting from best-known vs baseline). kick_n = 1 + ((20-u)*2)//20 (number of perturbation kicks per move). Low u = more exploration, more kicks, less greedy restarts. High u = tighter exploitation around best known.</p>
+<p><strong>MDL justification:</strong> The coupling parameter IS the MDL model selection in action. High compression of the improvement stream means the current search model (strategy + kick type + basin) has been fully exploited — its description length cannot shrink further. Low compression means the model is still productive — new structure is being found. u tracks this boundary automatically.</p>
+</div></div>
 
 <h3>Escalation Ladder</h3>
 <p>When exploration alone isn't enough &mdash; when even random jumps keep landing in unproductive zones &mdash; the escalation ladder activates. Each level represents a more dramatic intervention: widening the search range, resetting to a new starting region, or combining known good configurations in novel ways. The escalation level visible in the experiment data climbed from 0 to 4 over the course of the run, as Meta-DCC systematically exhausted local options and escalated to broader strategies.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s4" data-8z-blob="Rb5saIoFmCyejpd6gYMNkYwiWk57aIxlLm7DoHFNl90cLfkK5Gu+tywRKYENmWoxxs2yigw2MWUc34G6NCMhhGibqWx8q5P6ugH1BkAAm0Uvq9L814ikhh7TvPh5wU2EP/VmNrJZXl9crf5WD+fn/UnobP+EYJP/Tm+2KtWZDynfNk/HUERZlQCSo+1SCcMkPqNpr2pvvoi6+39ISg/xLDFV581v8mkt3DpwfqDTbooxZ75fw2s0K3ubBgWfd1d9humX7Ul1V6zBzC+s/cx5bj87pLUUnwwwoP9kOzk3pouRtgSmmqBqVFZX98CRosGFlnMTmJ8IvULkMDpDtgzXXBMKoAQIMUmqFB0caqq6U8ojY51sbpxBVIKl/+eMHLfoS1WyAE3LsH1WxrkM1Ljunk7tkKYslXuIlrHLEUyHfDNedoQVcS03+JH5lTFv5LC3lguUy1rkVmnS7znKtxJMh0Hd2AcJYW+YX8ApeXV470ucBXhWb4AQPiLJuwirMgFcJUZ+XH1G6tOm8tpAAhJMYvsYCmDdnCpOCouyRBn4RuRxl2Uop7jA/pci0eoiC657PNO7RCAADMFGmaTFRZR5+TIZA6AwHFi3LF1FJFjyFsRoGenzjCdbScDoh0G5PRrNMbLXzLoeVXV1+EanFGmwBwSGEfBqfFGUHTQK7OfPg/3IU5+VjKQeq2tyAgZDTp+9UqyUNqgvLHUCjuwxP7ezV3xQ5BJPkZq/8sGtsYOGll+53MAXtyYuGEjiSRACXbI1S9InYfrPduB0wMzZHX3+uXZpalwrdsNidcV774/lm3oaUGUoPSMgXIIxm/c+iyHRxYOHITUbqHzEq68haBuKOZIXtg==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Protected Content</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
-</div>
+<div class="8z-protected" data-label="Escalation Ladder Thresholds &amp; Actions">
+<h4>Escalation Ladder — Five Levels</h4>
+<table class="param-table">
+<tr><th>Level</th><th>Name</th><th>Trigger</th><th>Action</th></tr>
+<tr><td>0</td><td>Normal</td><td>moves_since_improvement &lt; stuck_threshold/2</td><td>Standard search. DCC controls u normally.</td></tr>
+<tr><td>1</td><td>Mild</td><td>moves_since_improvement &lt; stuck_threshold</td><td>Switch kick type if current type hasn&rsquo;t found improvement. Prefer the type that last succeeded.</td></tr>
+<tr><td>2</td><td>Moderate</td><td>moves_since_improvement &lt; stuck_threshold &times; 2</td><td>Push u toward midpoint (away from extremes). Plus kick switching from Level 1.</td></tr>
+<tr><td>3</td><td>Strong</td><td>moves_since_improvement &lt; restart_threshold</td><td>Rapid rotation: cycle through all 4 kick types every 8 moves. Maximum perturbation diversity.</td></tr>
+<tr><td>4</td><td>Nuclear</td><td>moves_since_improvement &ge; restart_threshold</td><td>Strategy restart: build entirely new tour from a different strategy (classic&rarr;hilbert&rarr;sweep&rarr;morton&rarr;greedy). Reset DCC state. Up to max_restarts (default 3).</td></tr>
+</table>
+<p><strong>Default thresholds:</strong> stuck_threshold=64 moves, restart_threshold=256 moves, max_restarts=3.</p>
+</div></div>
 
 <h3>Semantic Inversion</h3>
 <p>The critical architectural innovation: in trading-DCC, repetitive patterns signal a <em>stable regime</em> (exploit more). In search-DCC, repetitive patterns signal a <em>stuck search</em> (explore more). The same sensor, the same compression measure, but the <strong>interpretation is inverted</strong>. This is covered in depth in the next chapter.</p>
@@ -677,14 +683,43 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 </div>
 </div>
 
-<div class="_8z-sec _8z-lk" id="_8z-s5" data-8z-blob="BtVkWCBP3stkWhfXKbCdKk+vxYgfdDygCvEU+TX4oUWohMX+lbrNwqOJLNb2WAimnJWLDHNFngk/A0EIN+xfr78gLBnzid66u1ivXRXR8sHLcOhh268CH/YelNOXK6MzNmqIobM0iMmLCDFjmEolesccq4+ih5lHaFZtnJQZkQ8ONBn513T2lNXJwZvw79qNAk2V3MZv2x5OPI9HnLyLjMGAZI8kdQdDnANWZhx5tGVlgaVksKQnfkX3qsjcN0Q85St5Ezk/3jBdBLa4QAoyI7OJga88VpPY8IgO55Zrijvz+INv6Fs+t1a2DmS6HDAKwXgLp6FM9pRFQxSu/qOD5bY/Kp6qbvghzGAoi8aissEo58ZFHZmzdankyFeVubUIHQaqqGZSZQaW6pcZxNIAL2gtVeQTTArBYEi0Pfk0t6nKP4SJzdOI/7W32c5XywO4AdbKX5C7YnaMcTClyfeAMLHrjJTm/sCoe8reviWX2SVF7xQVFhv7WiQnl83cX6vfNIdSBIHN7FOX2CNZNNB7mi//mwU3EX84TWE69nj/oQANsegMRm6aCiITb2GxrlaOa9J+P7pZOrZNpDl99fnpaIkTx2kH68Z/jfC+9iwb0I0CU4wKDRrFOuTczKf9rZJN7d4dafwKLBpANMFyehjqnDCXABpZGRJud5EP4XRc7tCGEVJZ69r7sF7/D4NxdKFXA3lwWLeiWBXtM3FNeRJtTejeRgRBY9VAHBAdSfSwf+SfEYXCD/yn+90p+MLIUc2mOmnoxkqhbByyF/vsuBHDfWmg89nBOHQScwFnUoSmFwvUTGdevbKxmME8xLd+sMfSOjEynb2R5s7TIC6oEo+IHBH4iyYlGLs4wFEScxGnVr9Z4kbwATcwQDLAMkRIXtOgQqJ+FJihbjYg3eN9aOYkZ0av3vMLL3FUvfFpkPAkqGwLu6fwPtHxefpJaCB0QWzDxGeLtnyQBP/VJcJzexFxrVV91q2p/4zR661IMxoSykdNjZ4lWIh/3EKKGn+yZ9s6Bj7YzItlBd1GWUD4T12SwbZmkOV4mZ6GlgAGYAeorNrCGSv9+i96ArVupDA=">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Protected Content</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
-</div>
+<div class="8z-protected" data-label="Meta-DCC Core Algorithm &amp; Pseudocode">
+<h4>Meta-DCC Core Algorithm</h4>
+<pre>
+function MetaDCC_update(worker_states[]):
+    # 1. Classify each worker
+    for each worker w:
+        if w.improved_this_interval: state = IMPROVING
+        elif w.escalation >= 4:      state = DEAD
+        elif w.gap > fleet_median:   state = STUCK
+        else:                        state = GRINDING
+
+    # 2. Build fleet snapshot symbol (1 byte per worker)
+    for each worker w:
+        sym = state(2bit) | esc_bucket(2bit) | stuck_bucket(2bit)
+        push sym to LZ76 buffer
+
+    # 3. Compute LZ76 compression ratio
+    lz_ratio = LZ76_phrases(buffer) / total_bits
+
+    # 4. Self-calibrate bands from history (P17)
+    lz_history.append(lz_ratio)
+    if len(lz_history) >= warmup:
+        band_low  = percentile(lz_history, 25)
+        band_high = percentile(lz_history, 75)
+
+    # 5. Adjust meta_u (search polarity)
+    if lz_ratio < band_low:  meta_u -= 1  # fleet stuck, explore
+    if lz_ratio > band_high: meta_u += 1  # fleet diverse, trust
+
+    # 6. Compute escalation from persistent stuck counts
+    persistently_stuck = count(w.stuck_intervals >= threshold)
+    escalation = f(persistently_stuck, n_workers)
+
+    return (escalation_level, meta_u, classifications)
+</pre>
+<p><strong>Key design choice:</strong> GRINDING workers decay their stuck counter (not accumulate). Only STUCK and DEAD workers build toward intervention triggers. This prevents false escalation when the fleet is productively searching below-median gap.</p>
+</div></div>
 </div>
 
 <!-- ═══ CH 5 ═══ -->
@@ -703,14 +738,23 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 <p>A naive self-application of DCC would inherit the trading polarity: repetitive outcomes = stable = exploit harder. This would cause the search to double down on unproductive regions &mdash; exactly the wrong behavior. <strong>Our first five versions did exactly this, and they failed.</strong> The semantic inversion was discovered empirically on the sixth iteration, not predicted theoretically. Once the polarity was corrected, Meta-DCC immediately outperformed grid search.</p>
 <p>This has a profound implication: recursive self-governance is possible but <em>domain-specific calibration of the semantic layer is required</em>. The compression sensor is universal. The coupling dynamics are universal. But the meaning of "compression is high" depends entirely on what the system is governing. Getting the meaning wrong doesn't produce suboptimal results &mdash; it produces actively counterproductive behavior.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s6" data-8z-blob="YvydWFR2EHAJx9bqObgdSzn8amuMF1qOFKcSiuNFPl7PNX1zQabIL3AZdEVUq+HSOlARiqpYt3XlpyL/f+uDeWIFTF8tK0PAEY9qkIkQEIwtOMiKZd+XQXdM5RdPxNXompAvDebKlF3zXFi7kIx5DscE/qQOMC+bNJewuOFRJRubALPCw3q1+/tJPJFxDUxNOTPfQRm/U94jWu15v2lFve9cezjUZEt6bLH/8IjWwN8HcMuie1O2lkR01/95RsMXz9thNP4nj6ZREv84ba73g2bOBaZVVEeBVpOOoPKmpwBB38wvpPSSffvYGZCUV+AQt3nqG/trto9A6CTcjCKC3BvAiEmtdZJvI3K/jBSHzTnLw8BkKwVZoRwck0+vYKNcj/cRFQOvR6632dfYMe4xXNunfsx7Mj0gh50uEgHZw0MNk8FNJ6JdIb7j0jaRi+bQ/jqGCmA4vRP2NKrQI4r/117eZJRfbwqtLgNODR/28/muHnD3dOVQy8khAeSqN9VXTFL/1DIGsD4XXFOTOFXP2XjN36Yu4uG30ufcjXsctcQXSPj/IA/7sFJcsDwNOzOTMiGt9Aa+9xV4lsJLAPY1ho51jechTkARKFrhRNHd/y8T2Ra7GFwjrbfpYb2t3sruo88e5NmymGomW245hmvgtVNES+Mx3N0UORr/tAAExXCLs9ZcjUyemVZp2UeCeTHxU4oHfBEhQiT+UaQexe390pywHmk0cHjlUp4Vx9+nOSG/Hevvppj2DaN1UzmISGlKdsaw5F7l0LjtSTJHtuK71Grdyo75w1dtQKv7C3pcjd/1EnDuy9BPuFCQ9u3gU+Paksac/raYr9f3BsgPnrURz5AOp14KUSZRmps6j8S7OIHD+6C4d66+/oCuHOVl/w4UM3uKweFPxH9x/TGLVefOkx8LXR6rKwysNACKgr8/rfaMGaHq92stoURJ4e8akNwQhzE0AkP9vVnMW7R9rF/JlpzWpiA4tebWfZP5wwNes50sBfDS1RLDZG2iZYvXHHNLWRqTQECosuSLczTinYQh+fsirdCillfrTHFAQiv3g4ifw25yakY08XypKiVS82k/2q5jCTmisY7eS9iLF8aKllRFDzBcj1kRoPMCMhP2j/qUgPkHHv+/2GpdV5MRo+4e6rt/oSUTbpqLhou59XIoSBUyEHb6aI8XBhXFoXtJmWz04qgaQmliavNuhiLqm0R2hsPncOv3w4mJZcwt9g==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Protected Content</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
-</div>
+<div class="8z-protected" data-label="Semantic Inversion Rules &amp; Domain Transfer Protocol">
+<h4>Semantic Inversion Rules</h4>
+<table class="param-table">
+<tr><th>Domain</th><th>High Compression Means</th><th>Correct Response</th><th>Polarity</th></tr>
+<tr><td>Trading (bar-level)</td><td>Stable regime, predictable market</td><td>Exploit: increase u, trade confidently</td><td class="verified">EXPLOIT</td></tr>
+<tr><td>Config Search</td><td>Stuck search, unproductive region</td><td>Explore: decrease u, jump to new region</td><td class="verified">EXPLORE</td></tr>
+<tr><td>TSP base-level</td><td>Worker stuck, no improvements</td><td>Explore: escalate kicks, try new strategies</td><td class="verified">EXPLORE</td></tr>
+<tr><td>TSP fleet-level (Meta-DCC)</td><td>Fleet collectively stuck, all workers same state</td><td>Explore: intervene, inject tours, restructure</td><td class="verified">EXPLORE</td></tr>
+<tr><td>Trading (systemic)</td><td>All institutions correlated</td><td>Explore: diversify, reduce exposure</td><td class="proposed">EXPLORE</td></tr>
+<tr><td>Consciousness (DCC-7)</td><td>Unknown — must be discovered empirically</td><td>Repetitive output may mean deep focus OR cycling</td><td class="proposed">TBD</td></tr>
+</table>
+<h4>Domain Transfer Protocol</h4>
+<p><strong>Step 1:</strong> Identify what the sensor is pointed at in the new domain.</p>
+<p><strong>Step 2:</strong> Ask: does repetition here mean stability (exploit) or stagnation (explore)?</p>
+<p><strong>Step 3:</strong> If unsure, default to EXPLORE polarity and test. The first five Meta-DCC versions used the wrong polarity — EXPLOIT — and all failed. Getting polarity wrong doesn&rsquo;t degrade; it produces actively counterproductive behavior.</p>
+<p><strong>Step 4:</strong> After polarity is set, let the system self-calibrate its band thresholds from observed data. Never hardcode bands (P17).</p>
+</div></div>
 </div>
 
 <!-- ═══ CH 6 ═══ -->
@@ -1305,13 +1349,14 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 <p>The critical lesson: the semantic inversion was <strong>discovered empirically, not predicted theoretically</strong>. We knew DCC could be applied recursively in principle. We did not know that the polarity had to flip, or that the flip had to be applied consistently across sensor, coupling, <em>and</em> escalation. Each of the first five failures taught us one piece of this. The theoretical framework said "recursive DCC should work." The engineering said "only if you get the semantics right for the specific domain."</p>
 <p>This means anyone building recursive DCC for a new domain should expect the same calibration process. The concept is universal. The polarity is domain-specific. Plan accordingly.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s7" data-8z-blob="ML9PkWOXirTByHtvM+OCuajcq0r8Dc3geRmDQpnSZWQM4IdZqSHVkkuHVXJOHVYF2stHhz3f7C4lHHhC4qYT4bULEwoCLN4yoaprA11i8NFTkWLl2EuKBHDXhKILLBMkxYjVgDfGiP81fcRppkdJcmjB0OmljOMnx+ROEDm4ibKmMPW7F0SFnOqzNkcX5EFbQM5KDiZqNi76o1Qrr+ABU2fpsP2Pt4asdUGXC/KPJ3Q4bsSOik8qU2llOLcRvwlf3OXZHDqW4K0iOwzE9QarphJKInCZ1cnLqb/QH6rNME3pOsfOytPETje+W9bSW4Pxd+aeAblKKdtKpudJ1GZ08FHF7g5CnGdUcUGOX/386CfoUyDl/GTwPwyzH+9t44mrq0z/05kB1N9wEDhtxtd+DVfMSSR054pscWZrz3Ms/h1OjGDPKlvCj2YwhcjheYgAiel0y4gZczcDZxmpzzDEB5FiS1sPfC234WgscTLwSQ437XyMe8RRh5ppbZCSumhdUSHpBfEybYlfuvsbH8Yj19NIL0TwPjsAHu6ePgYpR1UywGCAyAOW8cUcThkLzJSxOHwM4ZlTxhP2+u0dwU8X/IsmbKLNilKYQxrIW3CXy6p+dmMutGje/ANQ34be1tRuyVIzNkT8AjsVgB6Ua494dF4DXjVKdn5Ko4TQGB/W+SPXKnOq0B2sEyF+c9MdgXGKIw/TfNLrhm7/4IqzsFiYXOh3DdDOmFgyEDEyxo+iUuFifnMqSSN2IeC4m7vVewpyKAlUEo7XaZzgvvGQgtdfwwy31EUZCJNOFYrS4o9ZSxsGsAnSBDwaUilaKAD64fqQFLmnXXJmm47O0LtWbdwHxLli8USbGC5M8gi65jwiD3E0MWkXMtNmkAhL0KzaITa1xKot/hy8fYMnVLg+nkv9mp6aLdt/Mc5ujJ2zniXNvp92JZbSS0hU6wAtBXlAuSSlSnTebZIrQVuTiG4pXYjm2Lo76N5gom4Daifi8bo5qqlBFJUaypib0KW5HKkc2ixdRMkYJFOZTzQMNsYkUehnjo/6DDrZrdpe6WJZ/GgEUnGfYxJWHw==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Protected Content</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-label="Polarity Calibration Procedure — Step by Step">
+<h4>Polarity Calibration Procedure</h4>
+<p><strong>Step 1 — Identify the stream:</strong> What does the LZ76 sensor monitor in this domain? (trade outcomes, search results, fleet states, thought patterns)</p>
+<p><strong>Step 2 — Ask the polarity question:</strong> When outcomes repeat, does that mean the system is in a productive stable state (EXPLOIT) or an unproductive stuck state (EXPLORE)?</p>
+<p><strong>Step 3 — Default to EXPLORE for search problems:</strong> In any optimization or search context, repetition almost always means stuck. The first five Meta-DCC versions defaulted to EXPLOIT and all failed.</p>
+<p><strong>Step 4 — Run a polarity test:</strong> Implement both polarities. Run the system for N steps with each. If EXPLORE polarity produces faster improvement convergence, the domain has search semantics. If EXPLOIT polarity produces more stable returns, the domain has trading semantics.</p>
+<p><strong>Step 5 — Self-calibrate bands (P17):</strong> After polarity is established, NEVER hardcode band thresholds. Let the system track its own LZ ratio distribution and derive thresholds from percentiles. Manual overrides are for experimentation only.</p>
+<p><strong>Step 6 — Validate with escalation data:</strong> If the escalation ladder activates at sensible times (climbing when the system is genuinely stuck, resetting when improvements resume), the calibration is correct. If escalation is always high or always zero, the bands or polarity are wrong.</p>
 </div>
 
 <div class="callout warn">
@@ -1327,7 +1372,6 @@ Conceived by Bojan Dobre&#269;evi&#269; &middot; Architecture &amp; implementati
 </div>
 
 </div><!-- .main -->
-
 
 <!-- 8Z Shield Sections — Inline Content Protection -->
 
@@ -1354,7 +1398,7 @@ Conceived by Bojan Dobre&#269;evi&#269; &middot; Architecture &amp; implementati
 ._8z-bar ._s.ok{color:#22c55e}._8z-bar ._s.err{color:#ef4444}._8z-bar ._s.wrk{color:#ffc629}
 ._8z-bar ._d{font-family:'JetBrains Mono',monospace;font-size:9px;color:#4a5268;letter-spacing:.5px}
 @media print{._8z-sub::after{content:" — contact author for access"}._8z-bar{display:none!important}._8z-lk ._8z-ct{display:none!important}}
-@media(max-width:600px){._8z-bar{flex-wrap:wrap;gap:8px;padding:10px 12px}._8z-bar input{width:100%;max-width:none}._8z-bar ._l{width:100%;text-align:center}}
+@media(max-width:600px){._8z-bar{flex-wrap:nowrap;gap:6px;padding:8px 10px}._8z-bar input{width:120px;max-width:none;padding:8px 10px;font-size:12px}._8z-bar ._l{font-size:9px;letter-spacing:1px}._8z-bar button{padding:8px 12px;font-size:10px;letter-spacing:1px}._8z-bar ._d{display:none}._8z-bar ._s{min-width:auto;font-size:9px}}
 </style>
 
 <script>
