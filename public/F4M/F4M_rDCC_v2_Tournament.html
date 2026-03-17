@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Flip4M · rDCC Tournament</title>
+<title>Flip4M · rDCC v2 Tournament</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
@@ -143,8 +143,8 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:'
 
 <div class="header">
   <div>
-    <h1>Flip4M · <span class="gold">rDCC</span> vs <span class="cyan">Classical</span></h1>
-    <div class="meta">8Z Research Program · AIM³ Institute · CCH Prediction P5</div>
+    <h1>Flip4M · <span class="gold">rDCC v2</span> vs <span class="cyan">Classical</span></h1>
+    <div class="meta">8Z Research Program · AIM³ Institute · CCH Prediction P5 · DCC v2 Governance</div>
   </div>
   <div class="controls">
     <div><label>Games</label><br><input type="number" id="cfgGames" value="100" min="2" max="1000" step="2"></div>
@@ -152,6 +152,7 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:'
     <div><label>Flips</label><br><select id="cfgFlips"><option value="0">0</option><option value="2" selected>2</option><option value="3">3</option></select></div>
     <div><label>Magnets</label><br><select id="cfgMags"><option value="0">0</option><option value="2" selected>2</option><option value="3">3</option></select></div>
     <div><label>Strength</label><br><select id="cfgStr" onchange="syncStrTime()"><option value="1">1 · Blitz</option><option value="2">2 · Fast</option><option value="3" selected>3 · Strong</option><option value="4">4 · Expert</option><option value="5">5 · Max</option><option value="6">6 · Med-Deep</option><option value="7">7 · Serious</option><option value="8">8 · Deep</option><option value="9">9 · SF-feel</option></select></div>
+    <div><label>Mode</label><br><select id="cfgMode"><option value="rdcc">rDCC vs Classical</option><option value="baseline">Classical vs Classical</option></select></div>
     <button class="btn btn-start" id="btnStart" onclick="T.start()">▶ START</button>
     <button class="btn btn-stop" id="btnStop" onclick="T.stop()" style="display:none">■ STOP</button>
     <button class="btn" onclick="T.reset()">↺ RESET</button>
@@ -182,8 +183,8 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:'
 
   <div style="display:flex;flex-direction:column;gap:12px;min-height:0;overflow:hidden">
     <div class="stats-row">
-      <div class="stat-card stat-gold"><div class="stat-label">rDCC Wins</div><div class="stat-value" id="statRDCC">0</div><div class="stat-sub" id="statRDCCpct">0%</div></div>
-      <div class="stat-card stat-cyan"><div class="stat-label">Classical Wins</div><div class="stat-value" id="statClassical">0</div><div class="stat-sub" id="statClassicalPct">0%</div></div>
+      <div class="stat-card stat-gold"><div class="stat-label" id="labelRDCC">rDCC Wins</div><div class="stat-value" id="statRDCC">0</div><div class="stat-sub" id="statRDCCpct">0%</div></div>
+      <div class="stat-card stat-cyan"><div class="stat-label" id="labelClassical">Classical Wins</div><div class="stat-value" id="statClassical">0</div><div class="stat-sub" id="statClassicalPct">0%</div></div>
       <div class="stat-card"><div class="stat-label">Draws</div><div class="stat-value" id="statDraws">0</div><div class="stat-sub" id="statDrawsPct">0%</div></div>
       <div class="stat-card stat-green"><div class="stat-label">Games</div><div class="stat-value" id="statGames">0</div><div class="stat-sub" id="statTotal">/100</div></div>
     </div>
@@ -203,9 +204,9 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:'
         <span class="bar-label bar-label-cyan" id="barLabelCyan">0</span>
       </div>
       <div style="display:flex;justify-content:space-between;margin-top:5px">
-        <span style="font-size:9px;color:var(--gold)">◆ rDCC</span>
+        <span style="font-size:9px;color:var(--gold)" id="legendGold">◆ rDCC</span>
         <span style="font-size:9px;color:var(--muted)" id="avgGameLen">Avg length: —</span>
-        <span style="font-size:9px;color:var(--cyan)">◆ Classical</span>
+        <span style="font-size:9px;color:var(--cyan)" id="legendCyan">◆ Classical</span>
       </div>
     </div>
 
@@ -520,10 +521,11 @@ function engineA(state,budgetMs){
 // =============================================================================
 function createDCC(){
   return{
-    // Level 2: ring buffer of game evals
+    // Level 2: ring buffer of game evals + self-calibrating bands
     evalHistory:[],evalMax:8,
-    // Level 3: meta tracking
-    posScores:[],l3Interval:4,movesSinceL3:0,aggressive:false,
+    spreadHistory:[],spreadMax:16,
+    // Level 3: graduated aggression (0.0=conservative, 1.0=aggressive)
+    posScores:[],l3Interval:4,movesSinceL3:0,aggression:0.5,
     // Logging
     lastL1:'',lastL2:'',lastL3:'',lastThrift:''
   };
@@ -546,50 +548,65 @@ function engineB(state,budgetMs,dcc){
   if(ow){let b=all.find(m=>m.type==='drop'&&m.col===ow.col);if(b)return b}
 
   // ═══════════════════════════════════════════════════════════════
-  // LEVEL 2 — Game DCC: assess game trajectory
+  // LEVEL 2 v2 — Self-Calibrating Bands
   // ═══════════════════════════════════════════════════════════════
+  // Instead of hardcoded 200/2000, use percentile-based thresholds
+  // from a running buffer of observed spread values.
+  // Semantic inversion preserved: stagnant→explore, volatile→conserve.
   let l2='normal';
+  let l2BandLo=200, l2BandHi=2000; // bootstrap defaults
   if(dcc.evalHistory.length>=3){
     const rec=dcc.evalHistory.slice(-4);
     const mean=rec.reduce((a,b)=>a+b,0)/rec.length;
     const variance=rec.reduce((a,v)=>a+(v-mean)**2,0)/rec.length;
     const spread=Math.sqrt(variance);
-    // ── SEMANTIC INVERSION (critical architectural finding) ──
-    // This is the OPPOSITE of Level 1's logic:
-    //   Level 1: "my SEARCH evals are repetitive" → stable → exploit (shorten)
-    //   Level 2: "my GAME  evals are repetitive" → stagnant → EXPLORE (disrupt!)
-    //   Level 1: "my SEARCH evals are chaotic" → sharp → deepen
-    //   Level 2: "my GAME  evals are chaotic" → volatile → CONSERVE (stabilize!)
-    // Getting this wrong (same polarity at all levels) makes rDCC WORSE.
-    // This mistake was made in rDCC v0.1–v0.5 in trading.
-    if(spread<200)l2='stagnant';      // game stuck → explore
-    else if(spread>2000)l2='volatile'; // wild swings → stabilize
+
+    // Push to spread history buffer
+    dcc.spreadHistory.push(spread);
+    if(dcc.spreadHistory.length>dcc.spreadMax)dcc.spreadHistory.shift();
+
+    // Self-calibrate: use percentile bands if we have enough data
+    if(dcc.spreadHistory.length>=4){
+      const sorted=[...dcc.spreadHistory].sort((a,b)=>a-b);
+      const n=sorted.length;
+      l2BandLo=sorted[Math.floor(n*0.25)];  // P25
+      l2BandHi=sorted[Math.floor(n*0.75)];  // P75
+    }
+    // else: use bootstrap defaults (200/2000)
+
+    if(spread<l2BandLo)l2='stagnant';
+    else if(spread>l2BandHi)l2='volatile';
   }
-  dcc.lastL2=l2;
+  dcc.lastL2=l2+'(band:'+Math.round(l2BandLo)+'-'+Math.round(l2BandHi)+')';
 
   // ═══════════════════════════════════════════════════════════════
-  // LEVEL 3 — Meta-DCC: is governance working?
+  // LEVEL 3 v2 — Graduated Aggression (0.1 to 0.9)
   // ═══════════════════════════════════════════════════════════════
+  // Replaces binary flip with graduated scale.
+  // Escalate faster (+0.15) than de-escalate (-0.1) — deliberate asymmetry.
+  // Floor 0.1, Ceiling 0.9 — never fully one extreme.
   dcc.movesSinceL3++;
   if(dcc.movesSinceL3>=dcc.l3Interval&&dcc.posScores.length>0){
     dcc.movesSinceL3=0;
     const curEval=evaluate(g,gDir,ms,player);
     const prevEval=dcc.posScores[dcc.posScores.length-1];
     if(curEval<=prevEval){
-      // Governance failing → flip aggression
-      dcc.aggressive=!dcc.aggressive;
-      dcc.lastL3=dcc.aggressive?'ESCALATE→aggr':'ESCALATE→cons';
+      // Governance failing → escalate aggression
+      dcc.aggression=Math.min(0.9,dcc.aggression+0.15);
+      dcc.lastL3='escalate(a='+dcc.aggression.toFixed(2)+')';
     }else{
-      dcc.lastL3='maintain('+(dcc.aggressive?'aggr':'cons')+')';
+      // Governance working → de-escalate
+      dcc.aggression=Math.max(0.1,dcc.aggression-0.1);
+      dcc.lastL3='maintain(a='+dcc.aggression.toFixed(2)+')';
     }
     dcc.posScores.push(curEval);
   }else if(dcc.posScores.length===0){
     dcc.posScores.push(evaluate(g,gDir,ms,player));
-    dcc.lastL3='init';
+    dcc.lastL3='init(a=0.50)';
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // THRIFT FACTOR — Resource governance
+  // THRIFT FACTOR — Resource governance (unchanged from v1)
   // ═══════════════════════════════════════════════════════════════
   const resAdv=(myT.flip+myT.mag)-(oppT.flip+oppT.mag);
   let allowTools=true,thriftMsg='';
@@ -597,7 +614,7 @@ function engineB(state,budgetMs,dcc){
     allowTools=false;
     thriftMsg='conserve(res≤0)';
   }else if(l2==='stagnant'){
-    allowTools=true; // Stagnation override
+    allowTools=true;
     thriftMsg='spend(stagnation)';
   }else{
     thriftMsg='allow(adv='+resAdv+')';
@@ -608,8 +625,8 @@ function engineB(state,budgetMs,dcc){
   let searchMoves=allowTools?all:all.filter(m=>m.type==='drop');
   if(!searchMoves.length)searchMoves=all;
 
-  // L2 stagnation + aggressive → prefer flips
-  if(l2==='stagnant'&&dcc.aggressive){
+  // L2 stagnant + high aggression → prefer flips (graduated: only when aggression > 0.7)
+  if(l2.startsWith('stagnant')&&dcc.aggression>0.7){
     searchMoves.sort((a,b)=>{
       if(a.type==='flip'&&b.type!=='flip')return-1;
       if(b.type==='flip'&&a.type!=='flip')return 1;return 0;
@@ -618,12 +635,12 @@ function engineB(state,budgetMs,dcc){
 
   // Sort remaining by center preference
   const center=(COLS-1)/2;
-  if(!(l2==='stagnant'&&dcc.aggressive)){
+  if(!(l2.startsWith('stagnant')&&dcc.aggression>0.7)){
     searchMoves.sort((a,b)=>{if(a.type==='drop'&&b.type==='drop')return Math.abs(a.col-center)-Math.abs(b.col-center);if(a.type==='drop')return-1;if(b.type==='drop')return 1;return 0});
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // ITERATIVE DEEPENING with LEVEL 1 DCC: adaptive time
+  // ITERATIVE DEEPENING with LEVEL 1 v2: Depth-Aware Time
   // ═══════════════════════════════════════════════════════════════
   const ss=createSS(budgetMs);
   let best=searchMoves[0],bestScore=-Infinity;
@@ -637,19 +654,20 @@ function engineB(state,budgetMs,dcc){
       let d=m.type==='drop'?depth-1:Math.max(1,depth-2);
       let sc=-negamax(m.grid,m.gDir,m.magState,d,-beta,-alpha,opp,ss);
 
-      // Tool penalty modulated by L2 + L3
+      // Tool penalty modulated by L2 + graduated L3 aggression
       if(m.type!=='drop'&&sc<5000){
         let pen=200;
-        if(l2==='stagnant')pen*=0.3;   // stagnant: encourage tools
-        if(l2==='volatile')pen*=1.8;    // volatile: discourage tools
-        if(dcc.aggressive)pen*=0.5;
+        if(l2.startsWith('stagnant'))pen*=0.3;
+        if(l2.startsWith('volatile'))pen*=1.8;
+        // Graduated: pen *= (1.2 - aggression). At a=0.9, pen*=0.3. At a=0.1, pen*=1.1.
+        pen*=(1.2-dcc.aggression);
         sc-=pen;
       }
-      // L2 stagnation bonus for threat-increasing moves
-      if(l2==='stagnant'){
+      // L2 stagnation bonus scaled by aggression
+      if(l2.startsWith('stagnant')){
         let newT=countThreats(m.grid,player);
         let oldT=countThreats(g,player);
-        if(newT>oldT)sc+=200;
+        if(newT>oldT)sc+=Math.round(200*dcc.aggression/0.5); // at a=0.5→200, a=0.9→360
       }
 
       if(sc>ls){ls=sc;lb=m}
@@ -658,25 +676,42 @@ function engineB(state,budgetMs,dcc){
     if(lb){best=lb;bestScore=ls;depthEvals.push(ls)}
     if(ss.aborted)break;
 
-    // ── LEVEL 1: Search DCC — adaptive time allocation ──
-    // Monitors eval volatility WITHIN iterative deepening.
-    // High variance between depths → tactically sharp → deepen search.
-    // Low variance → quiet position → save time, move on.
-    // NOTE: This is the SAME polarity as intuition (sharp→more time).
-    // The INVERSION is only at Level 2 (game trajectory).
+    // ── LEVEL 1 v2: Depth-Aware adaptive time allocation ──
+    // depthRatio = how far through iterative deepening we are
+    // Early depths: don't intervene (not enough signal)
+    // Mid depths: normal intervention
+    // Late depths: cautious intervention (position is resolving)
     if(depthEvals.length>=3){
+      const depthRatio=depth/CUR_STR.maxDepth;
       const last3=depthEvals.slice(-3);
-      const m=last3.reduce((a,b)=>a+b,0)/3;
-      const v=last3.reduce((a,x)=>a+(x-m)**2,0)/3;
+      const mn=last3.reduce((a,b)=>a+b,0)/3;
+      const v=last3.reduce((a,x)=>a+(x-mn)**2,0)/3;
       if(v>500000){
-        ss.deadline=Math.max(ss.deadline,performance.now()+budgetMs*0.5);
-        dcc.lastL1='DEEPEN(v='+Math.round(v)+')';
+        // Tactically sharp → extend time (depth-aware)
+        if(depthRatio<0.3){
+          dcc.lastL1='steady(v='+Math.round(v)+',dR='+depthRatio.toFixed(2)+',early)';
+        }else if(depthRatio<=0.7){
+          ss.deadline=Math.max(ss.deadline,performance.now()+budgetMs*0.4);
+          dcc.lastL1='DEEPEN(v='+Math.round(v)+',dR='+depthRatio.toFixed(2)+')';
+        }else{
+          ss.deadline=Math.max(ss.deadline,performance.now()+budgetMs*0.2);
+          dcc.lastL1='DEEPEN-late(v='+Math.round(v)+',dR='+depthRatio.toFixed(2)+')';
+        }
       }else if(v<50000){
-        let rem=ss.deadline-performance.now();
-        ss.deadline=performance.now()+rem*0.7;
-        dcc.lastL1='SHORTEN(v='+Math.round(v)+')';
+        // Quiet position → cut time (depth-aware)
+        if(depthRatio<0.3){
+          dcc.lastL1='steady(v='+Math.round(v)+',dR='+depthRatio.toFixed(2)+',early)';
+        }else if(depthRatio<=0.7){
+          let rem=ss.deadline-performance.now();
+          ss.deadline=performance.now()+rem*0.75;
+          dcc.lastL1='SHORTEN(v='+Math.round(v)+',dR='+depthRatio.toFixed(2)+')';
+        }else{
+          let rem=ss.deadline-performance.now();
+          ss.deadline=performance.now()+rem*0.6;
+          dcc.lastL1='SHORTEN-late(v='+Math.round(v)+',dR='+depthRatio.toFixed(2)+')';
+        }
       }else{
-        dcc.lastL1='steady(v='+Math.round(v)+')';
+        dcc.lastL1='steady(v='+Math.round(v)+',dR='+depthRatio.toFixed(2)+')';
       }
     }else{dcc.lastL1='warmup'}
   }
@@ -693,7 +728,7 @@ function engineB(state,budgetMs,dcc){
 // =============================================================================
 function createGame(flips,mags){
   return{
-    grid:emptyGrid(),gravityDir:0,
+    grid:emptyGrid(),gravityDir:0,boardAngle:0,
     mag:{top:Array(COLS).fill(null),bottom:Array(COLS).fill(null),left:Array(ROWS).fill(null),right:Array(ROWS).fill(null)},
     curPlayer:P_RED,
     tokens:{[P_RED]:{flip:flips,mag:mags},[P_YEL]:{flip:flips,mag:mags}},
@@ -707,6 +742,8 @@ function applyMove(st,move){
   if(move.type==='drop'){let t=getDropTarget(st.grid,st.gravityDir,move.col);if(t)st.grid[t.r][t.c]=p}
   else if(move.type==='flip'){
     st.tokens[p].flip--;
+    // Accumulate boardAngle incrementally like F4M.html (fixes visual rotation bug)
+    st.boardAngle+=(move.delta===1?-Math.PI/2:Math.PI/2);
     st.gravityDir=move.delta===1?CCW_MAP[st.gravityDir]:CW_MAP[st.gravityDir];
   }else if(move.type==='magnet'){
     st.tokens[p].mag--;
@@ -727,12 +764,11 @@ function applyMove(st,move){
 const bCanvas=document.getElementById('boardCanvas');
 const bCtx=bCanvas.getContext('2d',{alpha:false});
 
-function renderBoard(g,gDir){
+function renderBoard(g,gDir,boardAngle){
   const W=bCanvas.width,H=bCanvas.height;
   const cx=W/2,cy=H/2;
-  // Board rotation: match F4M.html — rotate visual so gravity always points "down"
-  // gravDir 0=down→0, 1=left→-π/2, 2=up→-π, 3=right→-3π/2
-  const angle = -gDir * Math.PI / 2;
+  // v2: use accumulated boardAngle from game state (fixes rotation visual bug)
+  const angle = boardAngle||0;
   const size=Math.min(W,H)*0.92;
   const cell=size/COLS;
   const boardW=COLS*cell;
@@ -773,7 +809,7 @@ function renderBoard(g,gDir){
 // =============================================================================
 const T={
   running:false,games:0,totalGames:100,timeBudget:500,
-  startFlips:2,startMags:2,
+  startFlips:2,startMags:2,mode:'rdcc',
   rWins:0,cWins:0,draws:0,
   gameLens:[],rFlips:[],rMags:[],cFlips:[],cMags:[],
   dccLogN:0,abortFlag:false,gameLog:[],
@@ -784,7 +820,20 @@ const T={
     this.timeBudget=parseInt(document.getElementById('cfgTime').value)||500;
     this.startFlips=parseInt(document.getElementById('cfgFlips').value);
     this.startMags=parseInt(document.getElementById('cfgMags').value);
+    this.mode=document.getElementById('cfgMode').value;
     CUR_STR=STRENGTH[parseInt(document.getElementById('cfgStr').value)||3];
+    // Update labels for mode
+    if(this.mode==='baseline'){
+      document.getElementById('labelRDCC').textContent='Red Wins';
+      document.getElementById('labelClassical').textContent='Yellow Wins';
+      document.getElementById('legendGold').textContent='◆ Red';
+      document.getElementById('legendCyan').textContent='◆ Yellow';
+    }else{
+      document.getElementById('labelRDCC').textContent='rDCC Wins';
+      document.getElementById('labelClassical').textContent='Classical Wins';
+      document.getElementById('legendGold').textContent='◆ rDCC';
+      document.getElementById('legendCyan').textContent='◆ Classical';
+    }
     this.running=true;this.abortFlag=false;
     document.getElementById('btnStart').style.display='none';
     document.getElementById('btnStop').style.display='';
@@ -827,15 +876,31 @@ const T={
     }
 
     const gn=this.games;
+    const isBaseline=this.mode==='baseline';
     // Alternate colors each game
     const rDCCp=(gn%2===0)?P_RED:P_YEL;
     const classp=rDCCp===P_RED?P_YEL:P_RED;
 
     document.getElementById('liveGameNum').textContent='#'+(gn+1);
-    document.getElementById('infoRedEngine').textContent=rDCCp===P_RED?'rDCC':'Classical';
-    document.getElementById('infoRedEngine').className=rDCCp===P_RED?'val-gold':'val-cyan';
-    document.getElementById('infoYelEngine').textContent=rDCCp===P_YEL?'rDCC':'Classical';
-    document.getElementById('infoYelEngine').className=rDCCp===P_YEL?'val-gold':'val-cyan';
+    if(isBaseline){
+      document.getElementById('infoRedEngine').textContent='Red (A)';
+      document.getElementById('infoRedEngine').className='val';
+      document.getElementById('infoYelEngine').textContent='Yellow (A)';
+      document.getElementById('infoYelEngine').className='val';
+    }else{
+      document.getElementById('infoRedEngine').textContent=rDCCp===P_RED?'rDCC':'Classical';
+      document.getElementById('infoRedEngine').className=rDCCp===P_RED?'val-gold':'val-cyan';
+      document.getElementById('infoYelEngine').textContent=rDCCp===P_YEL?'rDCC':'Classical';
+      document.getElementById('infoYelEngine').className=rDCCp===P_YEL?'val-gold':'val-cyan';
+    }
+
+    // In baseline mode, show "no DCC" in state panel
+    if(isBaseline){
+      document.getElementById('dccL1').textContent='Baseline — no DCC';
+      document.getElementById('dccL2').textContent='—';
+      document.getElementById('dccL3').textContent='—';
+      document.getElementById('dccThrift').textContent='—';
+    }
 
     const st=createGame(this.startFlips,this.startMags);
     const dcc=createDCC();
@@ -846,19 +911,20 @@ const T={
       setTimeout(()=>{
         if(this.abortFlag){resolve('abort');return}
         const isRDCC=st.curPlayer===rDCCp;
-        let move=isRDCC?engineB(st,this.timeBudget,dcc):engineA(st,this.timeBudget);
+        // Baseline mode: both sides use engineA (classical). rDCC mode: engine B for rDCC side.
+        let move=(!isBaseline&&isRDCC)?engineB(st,this.timeBudget,dcc):engineA(st,this.timeBudget);
         if(!move){resolve('no_move');return}
         if(move.type==='flip'){if(isRDCC)rDCCrots++;else classRots++;}
         applyMove(st,move);
 
         // Update display every 4 moves to reduce DOM thrash
         if(st.moveCount%4===0||st.moveCount<8){
-          renderBoard(st.grid,st.gravityDir);
+          renderBoard(st.grid,st.gravityDir,st.boardAngle);
           document.getElementById('infoMove').textContent=st.moveCount;
           document.getElementById('infoGrav').textContent=['↓','←','↑','→'][st.gravityDir];
           document.getElementById('infoRedToks').textContent='F:'+st.tokens[P_RED].flip+' M:'+st.tokens[P_RED].mag;
           document.getElementById('infoYelToks').textContent='F:'+st.tokens[P_YEL].flip+' M:'+st.tokens[P_YEL].mag;
-          if(isRDCC){
+          if(!isBaseline&&isRDCC){
             document.getElementById('dccL1').textContent=dcc.lastL1;
             document.getElementById('dccL2').textContent=dcc.lastL2;
             document.getElementById('dccL3').textContent=dcc.lastL3;
@@ -866,8 +932,8 @@ const T={
           }
         }
 
-        // Log DCC decisions (sample: every 8th rDCC move to keep log manageable)
-        if(isRDCC&&st.moveCount%8<2)this.logDCC(gn+1,st.moveCount,dcc);
+        // Log DCC decisions (sample: every 8th rDCC move, suppress in baseline)
+        if(!isBaseline&&isRDCC&&st.moveCount%8<2)this.logDCC(gn+1,st.moveCount,dcc);
 
         let w=checkWin(st.grid);
         if(w){resolve(w);return}
@@ -888,16 +954,22 @@ const T={
     this.cFlips.push(this.startFlips-cT.flip);this.cMags.push(this.startMags-cT.mag);
 
     // Final board
-    renderBoard(st.grid,st.gravityDir);
+    renderBoard(st.grid,st.gravityDir,st.boardAngle);
 
     let lc,lt;
     if(result==='draw'||result==='no_move'){this.draws++;lc='log-draw';lt='Draw'}
-    else if(result===rDCCp){this.rWins++;lc='log-win-gold';lt='rDCC wins'}
-    else{this.cWins++;lc='log-win-cyan';lt='Classical wins'}
+    else if(result===rDCCp){
+      this.rWins++;lc='log-win-gold';
+      lt=isBaseline?(rDCCp===P_RED?'Red wins':'Yellow wins'):'rDCC wins';
+    }else{
+      this.cWins++;lc='log-win-cyan';
+      lt=isBaseline?(classp===P_RED?'Red wins':'Yellow wins'):'Classical wins';
+    }
 
-    const ci=rDCCp===P_RED?'rDCC=R':'rDCC=Y';
+    const ci=isBaseline?(rDCCp===P_RED?'Red=1st':'Yel=1st'):(rDCCp===P_RED?'rDCC=R':'rDCC=Y');
     this.gameLog.push({
       game:gn+1,
+      mode:isBaseline?'baseline':'rDCC',
       result:lt,
       moves:st.moveCount,
       rDCC_color:rDCCp===P_RED?'Red':'Yellow',
@@ -924,7 +996,8 @@ const T={
     e.innerHTML='<span style="color:var(--muted)">G'+game+'M'+move+'</span> '+
       '<span class="dcc-l1">L1:'+dcc.lastL1+'</span> '+
       '<span class="dcc-l2">L2:'+dcc.lastL2+'</span> '+
-      '<span class="dcc-l3">L3:'+dcc.lastL3+'</span>';
+      '<span class="dcc-l3">L3:'+dcc.lastL3+'</span> '+
+      '<span style="color:var(--muted)">'+dcc.lastThrift+'</span>';
     el.appendChild(e);this.dccLogN++;
     document.getElementById('dccLogCount').textContent=this.dccLogN;
     if(el.children.length>400)el.removeChild(el.firstChild);
@@ -969,7 +1042,8 @@ const T={
         const ctr=(p+z*z/(2*n))/den;
         const spr=z*Math.sqrt((p*(1-p)+z*z/(4*n))/n)/den;
         const lo=Math.max(0,ctr-spr)*100,hi=Math.min(1,ctr+spr)*100;
-        document.getElementById('ciText').textContent='rDCC CI: '+lo.toFixed(1)+'%–'+hi.toFixed(1)+'% (95%)';
+        const ciLabel=this.mode==='baseline'?'Red CI: ':'rDCC CI: ';
+        document.getElementById('ciText').textContent=ciLabel+lo.toFixed(1)+'%–'+hi.toFixed(1)+'% (95%)';
       }
     }
 
@@ -997,14 +1071,15 @@ function exportCSV(){
   const keys=Object.keys(T.gameLog[0]);
   let csv=keys.join(',')+'\n';
   for(const row of T.gameLog)csv+=keys.map(k=>row[k]!=null?row[k]:'').join(',')+'\n';
-  // Summary row
   csv+='\n#SUMMARY\n';
-  csv+='total_games,rDCC_wins,classical_wins,draws,rDCC_winrate,avg_moves\n';
+  const isB=T.mode==='baseline';
+  csv+='mode,total_games,'+(isB?'red':'rDCC')+'_wins,'+(isB?'yellow':'classical')+'_wins,draws,'+(isB?'red':'rDCC')+'_winrate,avg_moves\n';
   const n=T.rWins+T.cWins;
   const wr=n>0?(T.rWins/n*100).toFixed(1):'N/A';
   const avg=T.gameLens.length>0?(T.gameLens.reduce((a,b)=>a+b,0)/T.gameLens.length).toFixed(1):'N/A';
-  csv+=T.games+','+T.rWins+','+T.cWins+','+T.draws+','+wr+'%,'+avg+'\n';
-  downloadFile('F4M_rDCC_tournament_'+new Date().toISOString().slice(0,16).replace(':','')+'.csv',csv);
+  csv+=T.mode+','+T.games+','+T.rWins+','+T.cWins+','+T.draws+','+wr+'%,'+avg+'\n';
+  const modeTag=T.mode==='baseline'?'baseline':'rDCC_v2';
+  downloadFile('F4M_'+modeTag+'_tournament_'+new Date().toISOString().slice(0,16).replace(':','')+'.csv',csv);
 }
 
 // ── EXPORT SCREENSHOT ──
@@ -1013,7 +1088,7 @@ function exportScreenshot(){
   if(typeof html2canvas==='undefined'){alert('html2canvas not loaded — check internet connection');return;}
   html2canvas(el,{backgroundColor:'#0a0c10',scale:2,useCORS:true,logging:false}).then(function(canvas){
     const link=document.createElement('a');
-    link.download='F4M_rDCC_tournament_'+new Date().toISOString().slice(0,16).replace(':','')+'.png';
+    link.download='F4M_rDCC_v2_tournament_'+new Date().toISOString().slice(0,16).replace(':','')+'.png';
     link.href=canvas.toDataURL('image/png');link.click();
   }).catch(function(e){alert('Screenshot failed: '+e.message);});
 }
