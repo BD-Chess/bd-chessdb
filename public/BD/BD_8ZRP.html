@@ -766,6 +766,7 @@ footer{
     <a class="rose" href="#almost-wrong">Near miss</a>
     <a class="orange" href="#discovery">Discovery</a>
     <a class="cyan" href="#engineering">Rust</a>
+    <a class="rose" href="#meta-dcc">Meta-DCC</a>
     <a class="gold" href="#team">The team</a>
     <a class="green" href="#claims">Claims</a>
     <a class="violet" href="#next">Next</a>
@@ -921,14 +922,14 @@ footer{
       <div class="micro">Scaling result &mdash; uy734</div>
       <h3>DCC v2 wins on the 4&times; larger instance</h3>
       <p>
-        uy734: <strong>734 cities</strong>, known optimal <strong>79114</strong>, ~2.06 &times; 10<sup>1783</sup> brute-force tours. DCC v2 reached <strong>0.64% gap</strong> (79623) in <strong>28.3 minutes</strong> with 8 workers &mdash; beating v1&rsquo;s hand-tuned fixed-10 which reached 0.80% (79747) in 39.0 minutes. Better quality AND faster on the scaling test.
+        uy734: <strong>734 cities</strong>, known optimal <strong>79114</strong>, ~2.06 &times; 10<sup>1783</sup> brute-force tours. v2.5 with 14 workers and Meta-DCC fleet monitoring reached <strong>0.46% gap</strong> (79478) in <strong>40 minutes</strong> &mdash; improving on the earlier v2.2R result of 0.64% with 8 workers. DCC v2 consistently beats v1&rsquo;s hand-tuned fixed-10 (0.80%, 79747) at every configuration.
       </p>
       <div class="pill-row">
         <span class="pill">v1: 79747 (0.80%)</span>
-        <span class="pill">v2: 79623 (0.64%)</span>
-        <span class="pill">v2 wins: quality + speed</span>
+        <span class="pill">v2.2R: 79623 (0.64%)</span>
+        <span class="pill">v2.5: 79478 (0.46%)</span>
       </div>
-      <div class="metric-callout"><p>DCC v2 auto-cycled through or-opt-1 &rarr; or-opt-2 &rarr; or-opt-3 &rarr; double-bridge, performed 3 strategy restarts (greedy &rarr; classic &rarr; hilbert &rarr; sweep), and managed escalation from normal to nuclear. The controller was actively governing the search, not coasting.</p></div>
+      <div class="metric-callout"><p>DCC v2 auto-cycled through or-opt-1 &rarr; or-opt-2 &rarr; or-opt-3 &rarr; double-bridge, performed 3 strategy restarts, and managed escalation from normal to nuclear. v2.5 added Meta-DCC fleet monitoring with self-calibrating bands &mdash; 81 meta-steps of real-time fleet diagnostic data across the full run.</p></div>
     </article>
 
     <article class="panel green rv rv-d2">
@@ -994,10 +995,9 @@ footer{
   <section id="ladder">
     <div class="wrap">
       <span class="sec-tag green rv">The Progression</span>
-      <h2 class="rv">From capped search to exact optimal.</h2>
-      <p class="rv">This was not one miracle run. The solver moved through a clear series of architectural steps.</p>
+      <h2 class="rv">From capped search to exact optimal &mdash; and beyond.</h2>
+      <p class="rv">This was not one miracle run. The solver moved through a clear series of architectural steps, from v1.2.1 through v2.5.</p>
 
-```
   <div class="table-wrap rv">
     <table>
       <thead>
@@ -1065,6 +1065,27 @@ footer{
           <td class="mono good">79623</td>
           <td class="good">0.64%</td>
           <td><strong>DCC v2 wins at 4&times; scale (28 min)</strong></td>
+        </tr>
+        <tr style="border-top:2px solid rgba(100,200,255,.25)">
+          <td class="mono">v2.3</td>
+          <td>Rust 2-opt auto-detect, batch runner, nu3496 reachable</td>
+          <td class="mono">&mdash;</td>
+          <td>&mdash;</td>
+          <td>Engineering: ~100&times; Rust speedup integrated</td>
+        </tr>
+        <tr>
+          <td class="mono">v2.4</td>
+          <td>Meta-DCC observer: fleet monitoring, LZ76 sensor, escalation</td>
+          <td class="mono">&mdash;</td>
+          <td>&mdash;</td>
+          <td>Inter-worker governance (Phase 1: sensor only)</td>
+        </tr>
+        <tr>
+          <td class="mono"><strong>v2.5</strong></td>
+          <td><strong>uy734 &mdash; 14 workers, DCC v2, Meta-DCC auto bands, Rust</strong></td>
+          <td class="mono good">79478</td>
+          <td class="good">0.46%</td>
+          <td><strong>Self-calibrating bands (P17). Best uy734 result.</strong></td>
         </tr>
       </tbody>
     </table>
@@ -1239,6 +1260,74 @@ footer{
 
   <div class="divider"></div>
 
+  <!-- ===== META-DCC ===== -->
+
+  <section id="meta-dcc">
+    <div class="wrap">
+      <span class="sec-tag rose rv">Inter-Worker Governance</span>
+      <h2 class="rv">Meta-DCC: the same algorithm governing the fleet that governs the search.</h2>
+      <p class="rv">
+        14 workers running independently waste compute. On nu3496 (3496 cities), the best worker found 2.02% gap while the worst sat at 4.34% &mdash; a 2,212-unit spread representing pure waste. The fix: a Level 1 DCC that monitors all workers, detects fleet stagnation, and (in Phase 2) intervenes by injecting good tours into stuck workers.
+      </p>
+      <p class="rv">
+        <strong>Same algorithm at both levels.</strong> The Meta-DCC uses the identical LZ76 compression sensor, coupling parameter, and escalation ladder as the base-level worker DCC. The only difference: what the sensor points at. Base-level DCC monitors individual search improvement streams. Meta-DCC monitors fleet-wide state snapshots. Same code. Same math. Different semantics.
+      </p>
+
+      <h3>The Fleet Lifecycle on uy734 (81 Meta-DCC Steps)</h3>
+      <p class="rv">v2.5 ran 14 workers on uy734 (734 cities, optimal 79114) with Meta-DCC monitoring every 30 seconds. The resulting 81-step log revealed a clear three-phase lifecycle:</p>
+
+      <div class="grid-4">
+        <article class="panel green rv rv-d1">
+          <div class="micro">Steps 1&ndash;20</div>
+          <h3>Healthy Fleet</h3>
+          <p>All 14 workers IMPROVING. Fleet best drops rapidly: 83188 &rarr; 79942. meta_u climbs 10 &rarr; 18 (trust the workers). Spread narrows 1860 &rarr; 1342.</p>
+        </article>
+        <article class="panel orange rv rv-d2">
+          <div class="micro">Steps 21&ndash;55</div>
+          <h3>Stagnation</h3>
+          <p>DEAD workers appear (5&ndash;13 per snapshot). Improvements rare. meta_u holds at 18 then starts dropping. Escalation climbs to SHARE level.</p>
+        </article>
+        <article class="panel rose rv rv-d3">
+          <div class="micro">Steps 56&ndash;81</div>
+          <h3>Fleet Exhaustion</h3>
+          <p>meta_u drops 18 &rarr; 3. Step 65: all 14 workers DEAD, zero IMPROVING. Escalation reaches RESTRUCTURE. The sensor says: <em>intervene NOW.</em></p>
+        </article>
+      </div>
+
+      <h3>The Self-Calibrating Bands Discovery (P17)</h3>
+      <p class="rv">
+        v2.4 hardcoded the LZ compression thresholds at [0.25, 0.65]. Real fleet data lived at [0.01, 0.08] &mdash; off by 10&times;. meta_u drifted to floor and stayed there: useless signal. This was the same mistake as the or-opt exclusion &mdash; overriding the system instead of letting it learn.
+      </p>
+      <p class="rv">
+        v2.5 fixed it: <strong>self-calibrating bands</strong>. The system tracks its own LZ ratio history and derives thresholds from the 25th/75th percentiles of what it has actually observed. After a 10-observation warmup, bands converged to [0.040, 0.061]. meta_u then used its full range [3, 18] with 22 meaningful direction changes. The system that was built to let data decide now lets data decide about its own parameters. MDL all the way down.
+      </p>
+
+<div class="_8z-sec _8z-lk" id="_8z-s0" data-8z-blob="2A0yEo6iwQ2LdiJuI+UefK/X/eTwUN2UgLkJlnvIu4PSkMVDp34XWIJWOA7Micm4gmqjMcd10HADf14MWcaFAv/+Chp4UZVi1IV29ilgkznSMWY9BDdOXy/shrpTR3fdm4y8KCogMOpPpuLmg+TumPq49BKnpHytjr0LVEg2pIvMUnhzt6Qg71KgF2B1gEwRbNMaVk86xWuiFkn+Ki94gmdyMCTVhtaLoSxmxopuoy6v4pVOwb/D5aJ3mCdjE8m1Wyj7RKNFfNai8/eYP20uF64D5jwjEgR1Sw1SOYz15mfoM0m7nkNQyuqWdP196pVtmyknYU2XfQWXh9I0ZynsgoICN3LD525wjxtygFUlDVUERuavk9ftUPea9L3Yh/iRwPhrr3ghhosjHwHAci4tZ6SISFV1FntMjJrCLoHwfCjL7nMOpFMD0ewJ/8nlcTjQYjXlZTfLul8iQO4Gz4z8OEi0gFwl8oc0bYIaxDWyh/gHsRMB6fnnqNgCdzj4ByChadMy4VgR1r94dfwQP9ymBknhUEl/wwy7LIP1kfyNvGLNJS4F5aj9TRxARjHCpbM9i2vXPzH8RDHbhQaiSzMz4plZO3wW23JuOY7ICgMU6nJfqyrCMB9IkC4Nyw+reGZ0YoyszOImIsVpT5w9lD84Kyv07t9kwMOZuU5KNW/yWlBLjbWQS5aHfdmmodajFPTtbotpqBvRUp/GLZXnig+ozaLuUW9Kegb9ODtbb6UOwMQeS//Aav3ZsVJaKYnJ">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">Protected Content</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
+</div>
+
+<div class="_8z-sec _8z-lk" id="_8z-s1" data-8z-blob="xEMdN/GrJkOmwWf8Vj7YXUfbVvf7FDKTjqqdKl9Occ3ldJvLzPsZkZCL4piAPiW0uBMfpay+mIMFFTwIgqC7OX7cFWZzUjJrjA05PZeU33lNBBoVV1ZpWJFgJvepi7x7a9Y/8R9DHKM2OCADae18zCf9TZ7izOtFnuLcB5/TZ0IYzxXV+8o8iuG2jOLVbKwzC7XtTqB3eN0vM/jNatRTvczHafPpI75cxsnOaRR1tvQq4GQfI0VUfusw6HNxwDXIxdw/F7Lu+XBnrCx4GU6NG3xCLJj74YUcuKNH+mVIJYpW6HTpdKWEMrpTJg4FhwhRPMyraJC0ARVRftXhKnoAcGUWfsd/UYBwDrbWyyMMCcp7haYGfMiRqYe2EV6uuRa0D819TiwDDvI/L+c5mMbEs/8n3LUAQCc+8kQdwJj9blshY55PTdEJ3k79NJdXRMS9wN+vRNSTaW+wtmLyCh/HY4Rstco7HiXWDXnjgTbdQcqGFOBxpOMaVg7ojSteLefF67u16lsX99g4Mnjav6Fn7gk8CpiwutOVWg6XM7maCv9I2cbci2ANHLXo5jhkYEGa3kROZGb7Rxd0fL3d1yyc1iGjumjW/Dht5FFVaLE9xbQF24i37OIB3VPmRpMmj3Wn7jjL4dZANFq+HQwur74KL+0ATadWjw9ua0IJqh2xiYMBBHa8dUhU25rheYsWr1gM0fN27KR+">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">Protected Content</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
+</div>
+
+      <p class="rv">
+        <strong>Result:</strong> uy734 reached <strong>0.46% gap</strong> (79478) with 14 workers in 40 minutes. Phase 1 is observer-only &mdash; workers are identical to v2.3. The value of v2.5 is diagnostic: for the first time, we can <em>see</em> fleet dynamics in real time and have a calibrated sensor for Phase 2 interventions.
+      </p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
   <!-- ===== THE TEAM ===== -->
 
   <section id="team">
@@ -1335,7 +1424,7 @@ footer{
   <section id="next">
     <div class="wrap">
       <span class="sec-tag violet rv">What Comes Next</span>
-      <h2 class="rv">Held&ndash;Karp proof path, nu3496, broader kick arenas, and fuller DCC.</h2>
+      <h2 class="rv">nu3496, Phase 2 tour injection, and the formal bridge.</h2>
       <div class="grid-4">
         <article class="panel orange rv rv-d1">
           <div class="micro">Proof capability</div>
@@ -1343,19 +1432,19 @@ footer{
           <p>A minimum 1-tree subgradient module (~200&ndash;300 lines, no LP solver needed) could certify optimality when the bound matches the tour. If it works on qa194: ~2,200 lines of zero-dependency Python that both <strong>finds and proves</strong> optimal tours. The comparison to Concorde changes categorically.</p>
         </article>
         <article class="panel rose rv rv-d2">
-          <div class="micro">New frontier</div>
+          <div class="micro">Running now</div>
           <h3>nu3496 &mdash; the next scale test</h3>
-          <p>3496 cities, known optimal 96772. ~4.8&times; larger than uy734. The question: does 0.64% become sub-1% here too, or does the architecture hit a wall?</p>
+          <p>3496 cities, known optimal 96132. ~4.8&times; larger than uy734. 168h run with 10 workers under v2.5 with Rust backend. First probe reached 2.02% gap at 27h. Can Meta-DCC fleet governance accelerate convergence at this scale?</p>
         </article>
         <article class="panel gold rv rv-d3">
-          <div class="micro">v2.3</div>
-          <h3>Broader kick arena</h3>
-          <p>More or-opt variants, 3-opt, targeted moves, batch campaigns, and a better surface for learning what truly scales.</p>
+          <div class="micro">v2.5 ✓ / Phase 2 next</div>
+          <h3>Meta-DCC Phase 2: Tour Injection</h3>
+          <p>Phase 1 (observer) validated: self-calibrating bands, 81-step fleet lifecycle, calibrated escalation triggers. Phase 2 enables the action: inject the leader&rsquo;s best tour into stuck workers when escalation reaches SHARE level. The sensor is ready. The hands come next.</p>
         </article>
         <article class="panel cyan rv rv-d1">
-          <div class="micro">v2.4</div>
-          <h3>DCC as fuller governor</h3>
-          <p>Auto mode: the controller handles strategy discovery, kick choice, escalation, and convergence policy without human tuning. Hierarchical DCC: per-agent local governors + session-level group governor.</p>
+          <div class="micro">Three walls remain</div>
+          <h3>Formal P vs NP bridge</h3>
+          <p>Scaling (does sub-1% gap hold at n=10K+?), adversarial instances (does DCC handle worst-case constructions?), and formal bridge (can empirical DCC efficiency be proven to imply polynomial-time behavior?). The honest assessment: moved from &ldquo;DCC is a theory&rdquo; to &ldquo;DCC v2 outperforms human-configured search empirically.&rdquo;</p>
         </article>
       </div>
     </div>
@@ -1368,9 +1457,9 @@ footer{
   <section id="closing">
     <div class="wrap">
       <span class="sec-tag rv">Closing</span>
-      <h2 class="rv">10 days. One human. Four AI systems. A research machine with public benchmark evidence.</h2>
+      <h2 class="rv">17 days. One human. Four AI systems. Five solver versions. A research machine with public benchmark evidence.</h2>
       <p class="rv">
-        The verified core: exact qa194, DCC v2 vindication, auto-discovered operator preference, measured Rust acceleration, official benchmark provenance, and a clean architectural story connecting MDL, DCC, and route optimization. ~100&times; less code than the gold standard. All from a non-specialist who had never built a TSP solver before, collaborating with four AI systems under AIM&sup3;.
+        The verified core: exact qa194, uy734 at 0.46%, DCC v2 vindication, auto-discovered operator preference, Rust acceleration, Meta-DCC fleet governance with self-calibrating bands, official benchmark provenance, and a clean architectural story connecting MDL, DCC, and route optimization. ~100&times; less code than the gold standard. All from a non-specialist who had never built a TSP solver before, collaborating with four AI systems under AIM&sup3;.
       </p>
       <p class="rv">
         This is not a proof of P&nbsp;=&nbsp;NP. This is not a toy heuristic. This is a real research machine with public benchmark evidence, controller evidence, engineering evidence, and a controller that discovered what the experts defaulted past. The remarkable part is not that a heuristic can match a 200-city optimum &mdash; that has been possible for decades. The remarkable part is the <em>way</em> it was produced.
@@ -1522,5 +1611,158 @@ footer{
 </body>
 </html>
 
+
+<!-- 8Z Shield Sections — Inline Content Protection -->
+
+<style>
+._8z-sec{position:relative;margin:1.5em 0;border-radius:12px;overflow:hidden;transition:all .4s cubic-bezier(.4,0,.2,1)}
+._8z-lk{background:rgba(255,145,0,.03);border:1px solid rgba(255,145,0,.15);border-left:3px solid #ff9100}
+._8z-ok{background:rgba(34,197,94,.03);border:1px solid rgba(34,197,94,.15);border-left:3px solid #22c55e}
+._8z-lui{padding:24px 28px;text-align:center}
+._8z-ico{font-size:28px;margin-bottom:8px;opacity:.7}
+._8z-lbl{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#ff9100;margin-bottom:4px}
+._8z-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a5268;letter-spacing:.5px}
+._8z-ct{padding:20px 28px}
+._8z-ct._8z-fi{animation:_8zFI .5s ease}
+@keyframes _8zFI{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+._8z-bar{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(8,10,14,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,145,0,.2);padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:12px;transition:all .4s}
+._8z-bar._8z-hid{transform:translateY(100%);pointer-events:none}
+._8z-bar ._l{font-family:'JetBrains Mono',monospace;font-size:10px;color:#ff9100;letter-spacing:2px;text-transform:uppercase}
+._8z-bar input{width:260px;max-width:40vw;padding:10px 14px;background:#0e1117;border:1px solid #1e2532;border-radius:8px;color:#dfe3eb;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:border-color .2s}
+._8z-bar input:focus{border-color:#ff9100}
+._8z-bar input::placeholder{color:#4a5268}
+._8z-bar button{padding:10px 20px;background:transparent;border:1.5px solid #ff9100;border-radius:8px;color:#ff9100;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+._8z-bar button:hover{background:rgba(255,145,0,.08);box-shadow:0 0 24px rgba(255,145,0,.1)}
+._8z-bar ._s{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a5268;min-width:80px;text-align:center}
+._8z-bar ._s.ok{color:#22c55e}._8z-bar ._s.err{color:#ef4444}._8z-bar ._s.wrk{color:#ffc629}
+._8z-bar ._d{font-family:'JetBrains Mono',monospace;font-size:9px;color:#4a5268;letter-spacing:.5px}
+@media print{._8z-sub::after{content:" — contact author for access"}._8z-bar{display:none!important}._8z-lk ._8z-ct{display:none!important}}
+@media(max-width:600px){._8z-bar{flex-wrap:nowrap;gap:6px;padding:8px 10px}._8z-bar input{width:120px;max-width:none;padding:8px 10px;font-size:12px}._8z-bar ._l{font-size:9px;letter-spacing:1px}._8z-bar button{padding:8px 12px;font-size:10px;letter-spacing:1px}._8z-bar ._d{display:none}._8z-bar ._s{min-width:auto;font-size:9px}}
+</style>
+
+<script>
+(function(){
+'use strict';
+var _I=500000,_XR=1024,M=(1n<<64n)-1n,_SK='_8z_pp',_BD="chessbest.org";
+
+function XS(s){var v=s&M;this.state=v===0n?0x9E3779B97F4A7C15n:v}
+XS.prototype.n=function(){var x=this.state;x=(x^((x>>12n)&M))&M;x=(x^((x<<25n)&M))&M;x=(x^((x>>27n)&M))&M;this.state=x;return(x*2685821657736338717n)&M};
+
+function u2b(v){var b=new Uint8Array(8);for(var i=7;i>=0;i--){b[i]=Number(v&0xFFn);v>>=8n}return b}
+function b2u(b){var v=0n;for(var i=0;i<8;i++)v=(v<<8n)|BigInt(b[i]);return v}
+function sha(d){var b=(d instanceof Uint8Array)?d:new TextEncoder().encode(d);return crypto.subtle.digest('SHA-256',b).then(function(r){return new Uint8Array(r)})}
+function cat(){var l=0,a=arguments;for(var i=0;i<a.length;i++)l+=a[i].length;var o=new Uint8Array(l),p=0;for(var i=0;i<a.length;i++){o.set(a[i],p);p+=a[i].length}return o}
+
+async function dk(pp,salt){
+  var ph=await sha(pp),sm=await sha(cat(ph,salt,new TextEncoder().encode("8Z_AUTH_V1")));
+  var rng=new XS(b2u(sm.slice(0,8)));
+  for(var i=0;i<_XR;i++)rng.n();
+  var sh=await sha(u2b(rng.state)),c=cat(ph,sh);
+  var km=await crypto.subtle.importKey('raw',c,'PBKDF2',false,['deriveBits']);
+  return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:salt,iterations:_I,hash:'SHA-256'},km,256));
+}
+
+async function gzD(data){
+  var ds=new DecompressionStream('gzip');
+  var w=ds.writable.getWriter(),r=ds.readable.getReader();
+  w.write(data);w.close();
+  var ch=[];while(true){var x=await r.read();if(x.done)break;ch.push(x.value)}
+  var t=0;for(var i=0;i<ch.length;i++)t+=ch[i].length;
+  var o=new Uint8Array(t),p=0;for(var i=0;i<ch.length;i++){o.set(ch[i],p);p+=ch[i].length}return o;
+}
+
+async function dec(b64,pp){
+  var raw=Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0)});
+  if(raw.length<60)throw new Error('small');
+  var salt=raw.slice(0,32),iv=raw.slice(32,44),ct=raw.slice(44);
+  var kb=await dk(pp,salt);
+  var key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['decrypt']);
+  var comp=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,tagLength:128},key,ct));
+  return new TextDecoder().decode(await gzD(comp));
+}
+
+function show(el,html){
+  el.querySelector('._8z-ct').innerHTML=html;
+  el.querySelector('._8z-ct').style.display='';
+  el.querySelector('._8z-ct').classList.add('_8z-fi');
+  el.querySelector('._8z-lui').style.display='none';
+  el.classList.remove('_8z-lk');el.classList.add('_8z-ok');
+}
+
+function resolveKey(raw){
+  // Domain lock logic
+  if(!_BD) return raw;
+  var isLocal=(window.location.protocol==='file:');
+  var host=(window.location.hostname||'').toLowerCase();
+  var expected=_BD.toLowerCase();
+  // If user typed password||domain explicitly (owner override for local)
+  if(raw.indexOf('||')!==-1){
+    var parts=raw.split('||');
+    if(parts[1].trim().toLowerCase()===expected) return raw;
+    throw new Error('domain');
+  }
+  // On correct domain: auto-append
+  if(!isLocal && host===expected) return raw+'||'+_BD;
+  // Local without explicit domain suffix
+  if(isLocal) throw new Error('domain-local');
+  // Wrong domain
+  throw new Error('domain');
+}
+
+var secs=document.querySelectorAll('._8z-sec[data-8z-blob]');
+if(!secs.length)return;
+
+var bar=document.createElement('div');
+bar.className='_8z-bar';
+var domNote=_BD?'<span class="_d">\uD83C\uDF10 '+_BD+'</span>':'';
+bar.innerHTML='<span class="_l">\uD83D\uDD12 '+secs.length+' Protected</span>'
+  +domNote
+  +'<input type="password" id="_8z_inp" placeholder="Enter access key" autocomplete="current-password">'
+  +'<button id="_8z_btn">Unlock</button>'
+  +'<span class="_s" id="_8z_st"></span>';
+document.body.appendChild(bar);
+
+var inp=document.getElementById('_8z_inp');
+var btn=document.getElementById('_8z_btn');
+var st=document.getElementById('_8z_st');
+
+async function go(){
+  var raw=inp.value;
+  if(!raw){st.textContent='Enter a key';st.className='_s err';return}
+  var pp;
+  try{pp=resolveKey(raw)}catch(e){
+    if(e.message==='domain-local'){
+      st.textContent='Local use restricted';st.className='_s err';
+    }else{
+      st.textContent='Domain restricted';st.className='_s err';
+    }
+    return;
+  }
+  btn.disabled=true;btn.textContent='DERIVING...';
+  st.textContent='500K PBKDF2';st.className='_s wrk';
+  await new Promise(function(r){requestAnimationFrame(function(){requestAnimationFrame(r)})});
+  try{
+    var html=await dec(secs[0].getAttribute('data-8z-blob'),pp);
+    show(secs[0],html);
+    st.textContent='Decrypting '+secs.length+'...';
+    for(var i=1;i<secs.length;i++){
+      try{show(secs[i],await dec(secs[i].getAttribute('data-8z-blob'),pp));}
+      catch(e){console.warn('Section '+i+':',e)}
+    }
+    st.textContent='\u2713 Unlocked';st.className='_s ok';
+    setTimeout(function(){bar.classList.add('_8z-hid')},1500);
+    try{sessionStorage.setItem(_SK,raw)}catch(e){}
+  }catch(e){
+    st.textContent='Not yet.';st.className='_s err';
+    btn.disabled=false;btn.textContent='UNLOCK';inp.value='';inp.focus();
+  }
+}
+
+btn.addEventListener('click',go);
+inp.addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+try{var sv=sessionStorage.getItem(_SK);if(sv){inp.value=sv;go()}}catch(e){}
+})();
+</script>
+<!-- End 8Z Shield Sections -->
 </body>
 </html>
