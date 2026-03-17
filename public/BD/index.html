@@ -533,10 +533,151 @@ body{font-size:17.5px}
 .lc-desc{font-size:1.02rem}
 .badge{font-size:.76rem}
 }
+
+/* ── STICKY NAV ── */
+#sticky-nav{
+  position:fixed;top:2px;left:0;right:0;z-index:499;height:48px;
+  background:rgba(2,4,9,0.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(0,229,255,0.10);
+  display:flex;align-items:center;padding:0 4vw;gap:0;
+}
+.sn-logo{
+  font-family:'JetBrains Mono',monospace;font-size:.7rem;font-weight:700;
+  color:var(--cyan);letter-spacing:.06em;text-decoration:none;
+  margin-right:1.2rem;flex-shrink:0;display:flex;align-items:center;gap:.45rem;
+  white-space:nowrap;transition:color .2s;
+}
+.sn-logo:hover{color:#fff}
+.sn-chips{
+  display:flex;flex-wrap:nowrap;gap:4px;overflow-x:auto;
+  scrollbar-width:none;-ms-overflow-style:none;flex:1;
+}
+.sn-chips::-webkit-scrollbar{display:none}
+.sn-chip{
+  font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.05em;
+  text-decoration:none;padding:3px 9px;border-radius:3px;
+  border:1px solid transparent;white-space:nowrap;
+  transition:all .2s;flex-shrink:0;cursor:pointer;
+}
+.sn-chip-gold  {color:var(--gold);  border-color:rgba(245,158,11,.22)}
+.sn-chip-gold:hover  {background:rgba(245,158,11,.12)}
+.sn-chip-cyan  {color:var(--cyan);  border-color:rgba(0,229,255,.22)}
+.sn-chip-cyan:hover  {background:rgba(0,229,255,.12)}
+.sn-chip-green {color:var(--green); border-color:rgba(52,211,153,.22)}
+.sn-chip-green:hover {background:rgba(52,211,153,.12)}
+.sn-chip-orange{color:var(--orange);border-color:rgba(251,146,60,.22)}
+.sn-chip-orange:hover{background:rgba(251,146,60,.12)}
+.sn-chip-rose  {color:var(--rose);  border-color:rgba(255,107,138,.22)}
+.sn-chip-rose:hover  {background:rgba(255,107,138,.12)}
+.sn-chip-violet{color:var(--violet);border-color:rgba(167,139,250,.22)}
+.sn-chip-violet:hover{background:rgba(167,139,250,.12)}
+#sn-burger{
+  display:none;background:none;border:none;cursor:pointer;
+  padding:6px;margin-left:auto;flex-direction:column;gap:5px;flex-shrink:0;
+}
+#sn-burger span{display:block;width:20px;height:2px;background:var(--cyan);border-radius:2px;transition:all .25s}
+#sn-burger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+#sn-burger.open span:nth-child(2){opacity:0}
+#sn-burger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+#sn-drawer{
+  display:none;position:fixed;top:50px;left:0;right:0;z-index:498;
+  background:rgba(6,10,20,0.97);border-bottom:1px solid rgba(0,229,255,0.12);
+  padding:14px 5vw 18px;flex-wrap:wrap;gap:8px;
+}
+#sn-drawer.open{display:flex}
+/* scroll anchor offset for all section dividers */
+.section-divider, [id^="sec-"], #sec-aim3{scroll-margin-top:62px}
+section{scroll-margin-top:62px}
+
+/* ── PAGE OVERLAY ── */
+#page-overlay{
+  display:none;position:fixed;top:50px;left:0;right:0;bottom:0;z-index:600;
+  flex-direction:column;background:var(--bg);
+}
+#page-overlay.open{display:flex}
+#po-bar{
+  height:44px;flex-shrink:0;
+  background:rgba(6,10,20,0.98);border-bottom:1px solid rgba(0,229,255,0.12);
+  display:flex;align-items:center;padding:0 4vw;gap:10px;
+}
+#po-back{
+  font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:600;
+  color:var(--cyan);background:var(--cyan-dim);
+  border:1px solid rgba(0,229,255,.3);border-radius:3px;
+  padding:.28rem .8rem;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0;
+}
+#po-back:hover{background:rgba(0,229,255,.2);box-shadow:0 0 12px rgba(0,229,255,.1)}
+#po-url{
+  font-family:'JetBrains Mono',monospace;font-size:.58rem;
+  color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;
+}
+#po-newtab{
+  font-family:'JetBrains Mono',monospace;font-size:.6rem;
+  color:rgba(226,232,244,.4);background:none;
+  border:1px solid rgba(255,255,255,.07);border-radius:3px;
+  padding:.28rem .65rem;cursor:pointer;transition:all .2s;
+  white-space:nowrap;flex-shrink:0;text-decoration:none;
+}
+#po-newtab:hover{border-color:rgba(255,255,255,.18);color:var(--text)}
+#po-iframe{flex:1;border:none;width:100%;background:var(--bg)}
+
+@media(max-width:768px){
+  #sticky-nav .sn-chips{display:none}
+  #sn-burger{display:flex}
+  #po-url{display:none}
+  #po-bar{padding:0 3vw}
+  #po-back{font-size:.7rem}
+}
+@media(max-width:480px){
+  #sn-burger{margin-left:auto}
+  .sn-logo{font-size:.68rem}
+}
 </style>
 
 </head>
 <body>
+
+<!-- ══ STICKY NAV ══ -->
+<nav id="sticky-nav">
+  <a href="#top" class="sn-logo" onclick="window.scrollTo({top:0,behavior:'smooth'});return false">
+    <svg width="18" height="18" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="6" fill="#020409"/><rect x="1" y="1" width="30" height="30" rx="5" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.4"/><text x="16" y="21.5" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#00e5ff" text-anchor="middle" letter-spacing="-0.5">BD</text><line x1="6" y1="25" x2="26" y2="25" stroke="#f59e0b" stroke-width="1.5" opacity="0.7"/></svg>
+    BD × AI Lab
+  </a>
+  <div class="sn-chips">
+    <a href="#sec-consciousness" class="sn-chip sn-chip-gold">AI Consciousness · 6</a>
+    <a href="#sec-research"      class="sn-chip sn-chip-cyan">8Z Research · 7</a>
+    <a href="#sec-trading"       class="sn-chip sn-chip-green">Trading · 6</a>
+    <a href="#sec-products"      class="sn-chip sn-chip-orange">Products · 4</a>
+    <a href="#sec-creative"      class="sn-chip sn-chip-rose">Creative · 5</a>
+    <a href="#sec-validation"    class="sn-chip sn-chip-green">Validation · 2</a>
+    <a href="BD_AIM3.html"       class="sn-chip sn-chip-cyan" data-overlay>AIM³ OS</a>
+  </div>
+  <button id="sn-burger" aria-label="Menu" onclick="snToggleDrawer()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ══ MOBILE DRAWER ══ -->
+<div id="sn-drawer">
+  <a href="#sec-consciousness" class="sn-chip sn-chip-gold"   onclick="snCloseDrawer()">AI Consciousness · 6</a>
+  <a href="#sec-research"      class="sn-chip sn-chip-cyan"   onclick="snCloseDrawer()">8Z Research · 7</a>
+  <a href="#sec-trading"       class="sn-chip sn-chip-green"  onclick="snCloseDrawer()">Trading · 6</a>
+  <a href="#sec-products"      class="sn-chip sn-chip-orange" onclick="snCloseDrawer()">Products · 4</a>
+  <a href="#sec-creative"      class="sn-chip sn-chip-rose"   onclick="snCloseDrawer()">Creative · 5</a>
+  <a href="#sec-validation"    class="sn-chip sn-chip-green"  onclick="snCloseDrawer()">Validation · 2</a>
+  <a href="BD_AIM3.html"       class="sn-chip sn-chip-cyan"   onclick="snCloseDrawer()" data-overlay>AIM³ OS</a>
+</div>
+
+<!-- ══ INLINE PAGE OVERLAY ══ -->
+<div id="page-overlay">
+  <div id="po-bar">
+    <button id="po-back" onclick="snCloseOverlay()">← Portfolio</button>
+    <span id="po-url"></span>
+    <a id="po-newtab" href="#" target="_blank" rel="noopener">Open in tab ↗</a>
+  </div>
+  <iframe id="po-iframe" src="" title="Page viewer"
+    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"></iframe>
+</div>
 
 <div class="scroll-prog"><div class="scroll-prog-bar" id="spb" style="width: 0%;"></div></div>
 
@@ -2024,6 +2165,72 @@ function closeNCI() {
 const viewer = document.getElementById('nci-viewer');
 viewer.style.display = 'none';
 }
+
+// ── Sticky Nav & Inline Page Overlay ──
+function snOpenOverlay(url) {
+  const ov  = document.getElementById('page-overlay');
+  const fr  = document.getElementById('po-iframe');
+  const lbl = document.getElementById('po-url');
+  const tab = document.getElementById('po-newtab');
+  fr.src  = url;
+  lbl.textContent = url;
+  tab.href = url;
+  ov.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function snCloseOverlay() {
+  const ov = document.getElementById('page-overlay');
+  const fr = document.getElementById('po-iframe');
+  ov.classList.remove('open');
+  setTimeout(()=>{ fr.src = ''; }, 300);
+  document.body.style.overflow = '';
+}
+function snToggleDrawer() {
+  document.getElementById('sn-drawer').classList.toggle('open');
+  document.getElementById('sn-burger').classList.toggle('open');
+}
+function snCloseDrawer() {
+  document.getElementById('sn-drawer').classList.remove('open');
+  document.getElementById('sn-burger').classList.remove('open');
+}
+
+// Intercept link clicks: open .html project pages & chessbest.org pages inline
+document.addEventListener('click', function(e) {
+  // Walk up to nearest <a>
+  let el = e.target;
+  while (el && el.tagName !== 'A') el = el.parentElement;
+  if (!el) return;
+
+  const href = el.getAttribute('href');
+  if (!href || !href.trim()) return;
+  const h = href.trim();
+
+  // Skip hash links, mailto, javascript, po-newtab itself
+  if (h.startsWith('#') || h.startsWith('mailto') || h.startsWith('javascript')) return;
+  if (el.id === 'po-newtab') return;
+
+  // Decide whether to intercept:
+  // 1. Explicit data-overlay attribute
+  // 2. lc-visit button
+  // 3. Relative .html files (project pages)
+  // 4. Absolute chessbest.org project URLs
+  const isOverlay  = el.hasAttribute('data-overlay') || !!el.closest('[data-overlay]');
+  const isLcVisit  = el.classList.contains('lc-visit');
+  const isRelHtml  = !h.startsWith('http') && h.endsWith('.html');
+  const isChessbd  = h.includes('chessbest.org') && (h.includes('/bd/') || h.includes('/os') || h.includes('/Mix') || h.includes('/LO') || h.includes('/8zt'));
+
+  if (isOverlay || isLcVisit || isRelHtml || isChessbd) {
+    e.preventDefault();
+    e.stopPropagation();
+    snCloseDrawer();
+    snOpenOverlay(h);
+  }
+}, true); // capture phase so featured banner <a> wrappers are caught
+
+// ESC closes overlay / drawer
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') { snCloseOverlay(); snCloseDrawer(); }
+});
 </script>
 
 </body>
