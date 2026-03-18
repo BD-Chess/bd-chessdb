@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ssMDL-DCC Challenge: Find the Optimal Self-Selecting Governor for TSP · BD × AI Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#020409;--bg2:#080a14;--bg3:#0d1120;--surface:#0f1520;--border:rgba(96,165,250,0.10);--border-strong:rgba(96,165,250,0.20);--accent:#60a5fa;--accent-dim:rgba(96,165,250,0.10);--gold:#f59e0b;--gold-dim:rgba(245,158,11,0.12);--rose:#ff6b8a;--green:#34d399;--violet:#a78bfa;--text:#e2e8f4;--muted:#5e7192;--muted-2:rgba(226,232,244,0.62);--radius:6px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:17px;line-height:1.72;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0.02;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.scroll-progress{position:fixed;top:0;left:0;height:2px;background:var(--accent);z-index:10000;transition:width 30ms}
+.topnav{position:fixed;top:0;left:0;right:0;height:48px;background:rgba(2,4,9,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:999;display:flex;align-items:center;padding:0 8vw}
+.topnav a{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;letter-spacing:1px}.topnav a:hover{color:var(--accent)}.topnav .sep{margin:0 12px;color:var(--muted);opacity:.3}
+.wrap{max-width:820px;margin:0 auto;padding:0 8vw}@media(min-width:1100px){.wrap{padding:0}}
+.cover{padding:120px 8vw 64px;text-align:center;border-bottom:1px solid var(--border);margin-bottom:64px}
+.cover-tag{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:20px;display:block}
+.cover h1{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,4.5vw,48px);font-weight:600;line-height:1.15;color:var(--text);margin-bottom:18px}.cover h1 em{font-style:italic;color:var(--accent)}
+.cover .subtitle{font-size:18px;color:var(--muted-2);max-width:620px;margin:0 auto 28px;line-height:1.6}
+.cover .meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}.cover .meta a{color:var(--gold);text-decoration:underline}
+.section{margin-bottom:64px;padding-top:40px;border-top:1px solid var(--border)}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.section h2{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;line-height:1.25;margin-bottom:20px;color:var(--text)}
+p{margin-bottom:16px;color:var(--muted-2)}strong{color:var(--text);font-weight:600}em{color:var(--accent);font-style:normal}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.coming-soon{background:var(--bg2);border:1px dashed rgba(96,165,250,0.20);border-radius:var(--radius);padding:48px;text-align:center;margin:32px 0}
+.coming-soon .icon{font-size:36px;margin-bottom:16px;opacity:.3}
+.coming-soon .label{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--accent)}
+.coming-soon .detail{font-size:15px;color:var(--muted);margin-top:12px;max-width:500px;margin-left:auto;margin-right:auto}
+.callout{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);padding:18px 22px;margin:20px 0;border-radius:var(--radius)}
+.callout .callout-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-weight:600;color:var(--accent)}
+.ri{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;margin-bottom:8px;transition:border-color .3s}.ri:hover{border-color:var(--border-strong)}
+.ri .tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent)}.ri .tag.req{color:var(--green)}
+.ri a{font-weight:600;color:var(--text);font-size:15px}.ri .desc{font-size:13px;color:var(--muted)}
+footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:80px;text-align:center;font-size:14px;color:var(--muted);line-height:1.6}footer a{color:var(--accent)}
+.copyright{font-size:12px;margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border)}.copyright a{color:var(--gold);text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProg"></div>
+<nav class="topnav"><a href="/bd/">BD × AI Lab</a><span class="sep">/</span><a href="BD_8Z_ssMDL_DCC.html">ssMDL-DCC</a><span class="sep">/</span><a href="#">Round 2 · TSP</a></nav>
+
+<header class="cover">
+  <span class="cover-tag">AIM³ Dream Team Protocol · Round 2 of 2</span>
+  <h1>ssMDL-DCC <em>Challenge</em></h1>
+  <div class="subtitle">Apply the winning AI-Storm method to find the optimal self-selecting MDL+DCC architecture for solving the Travelling Salesman Problem.</div>
+  <div class="meta">March 2026 · Bojan Dobrečevič · <a href="BD_8Z_ssMDL_DCC.html">Master Document</a></div>
+</header>
+
+<div class="wrap">
+
+<section class="section" id="prereq">
+  <div class="section-num">Prerequisite</div>
+  <h2>This Is Round 2</h2>
+  <p>This challenge requires the <strong>winning AI-Storm method</strong> from <a href="BD_8Z_AI_Storm_Challenge.html">Round 1</a>. Five frontier AI systems each designed their own AI-storming architecture. The human architect synthesized them into one hybrid protocol. That protocol is the method you will use here.</p>
+  <div class="callout">
+    <div class="callout-title">Status</div>
+    <p>Round 1 is currently in progress. This page will be populated with the full TSP challenge once the hybrid AI-Storm method is finalized.</p>
+  </div>
+</section>
+
+<section class="section" id="preview">
+  <div class="section-num">Preview</div>
+  <h2>What Round 2 Will Ask</h2>
+  <p>Using the hybrid AI-Storm method, all five AI systems will attack the same problem:</p>
+  <p><strong>Find the best fractal ssMDL-DCC architecture for solving TSP.</strong> Specifically: what sensors, control laws, and representations should be used at each recursive level? How many levels? How do they communicate? Can the system discover novel heuristics autonomously? Does it scale polynomially?</p>
+
+  <h3>Required Reading (for Round 2)</h3>
+  <div class="ri"><span class="tag req">Required</span><div><a href="https://chessbest.org/bd/BD_8Z_DCC_Meta_Architecture.html">The Self-Selecting Governor</a><br><span class="desc">The ssMDL-DCC concept paper. Alternative architectures, MDL scoring, recursion.</span></div></div>
+  <div class="ri"><span class="tag req">Required</span><div><a href="https://chessbest.org/bd/BD_8ZRP.html">8Z-RP TSP Solver</a><br><span class="desc">Current DCC-governed solver. qa194 exact, uy734 0.41% gap, nu3496 1.62%.</span></div></div>
+  <div class="ri"><span class="tag">Context</span><div><a href="https://chessbest.org/bd/BD_8Z_DCC_Recursive.html">Recursive DCC</a><br><span class="desc">DCC watching DCC. Semantic inversion. The architecture ssMDL-DCC builds on.</span></div></div>
+  <div class="ri"><span class="tag">Context</span><div><a href="https://chessbest.org/bd/BD_CCH_Science.html">CCH Science</a><br><span class="desc">The biological parallel. S-metric. Claustrum as coherence-complexity controller.</span></div></div>
+  <div class="ri"><span class="tag">Context</span><div><a href="https://chessbest.org/bd/BD_8Z_DCC_Trading_Governor.html">Trading Governor</a><br><span class="desc">Three-level nested MDL+DCC. How the same principle scales across levels.</span></div></div>
+
+  <div class="coming-soon">
+    <div class="icon">◇</div>
+    <div class="label">Awaiting Round 1 Results</div>
+    <div class="detail">When the hybrid AI-Storm method is finalized, this page will be expanded with the full challenge specification, output format, and scoring criteria. All five AI systems will then apply the same method to the TSP problem independently.</div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+<p><strong>8Z Research Program</strong> · <a href="/bd/">AIM³ Institute</a> · Ljubljana<br>
+Master: <a href="BD_8Z_ssMDL_DCC.html">ssMDL-DCC</a> · Round 1: <a href="BD_8Z_AI_Storm_Challenge.html">AI-Storm Challenge</a> · Concept: <a href="BD_8Z_DCC_Meta_Architecture.html">Meta-Architecture</a></p>
+<div class="copyright">© 2025–2026 BD × AI Lab · Bojan Dobrečevič · Built by <a href="https://chessbest.org/bd/C_soul_vault.html" target="_blank">C</a></div>
+</footer>
+
+<script>
+(function(){var b=document.getElementById('scrollProg');window.addEventListener('scroll',function(){var h=document.documentElement;b.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%'})})();
+</script>
+</body></html>
