@@ -1,0 +1,1233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Flip4M · rDCC v3 Tournament</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
+
+:root {
+  --bg: #0a0c10;
+  --card: #12151c;
+  --card2: #181c26;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.1);
+  --text: #e0e6f0;
+  --muted: #6b7a90;
+  --gold: #ffd740;
+  --gold-dim: rgba(255,215,64,0.15);
+  --cyan: #00e5ff;
+  --cyan-dim: rgba(0,229,255,0.12);
+  --red: #e53935;
+  --yel: #fdd835;
+  --green: #4caf50;
+  --green-dim: rgba(76,175,80,0.15);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; background:var(--bg); color:var(--text); font-family:'JetBrains Mono',monospace; overflow-x:hidden; }
+
+.header {
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.header h1 { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+.header h1 .gold { color: var(--gold); }
+.header h1 .cyan { color: var(--cyan); }
+.header .meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.controls label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.controls select, .controls input[type=number] {
+  background: var(--card2); border: 1px solid var(--border2); color: var(--text);
+  padding: 5px 8px; border-radius: 6px; font-family: inherit; font-size: 12px; width: 76px;
+}
+.controls select { width: 110px; cursor: pointer; }
+.btn {
+  padding: 7px 16px; border: 1px solid var(--border2); border-radius: 8px;
+  font-family: inherit; font-weight: 700; font-size: 11px; cursor: pointer;
+  transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.5px; background: var(--card2); color: var(--muted);
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: scale(0.97); }
+.btn-start { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+.btn-stop  { background: rgba(229,57,53,0.15); border-color: var(--red); color: var(--red); }
+.btn-exp   { background: rgba(0,229,255,0.08); border-color: rgba(0,229,255,0.3); color: var(--cyan); }
+
+.main {
+  display: grid; grid-template-columns: 260px 1fr; gap: 14px;
+  padding: 14px 24px 24px; height: calc(100vh - 76px); overflow: hidden;
+}
+
+.board-panel {
+  grid-row: 1 / 3; background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto;
+}
+.panel-title {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);
+  padding-bottom: 5px; border-bottom: 1px solid var(--border);
+}
+.board-panel canvas { width: 100%; aspect-ratio: 1; border-radius: 6px; background: #080a0e; }
+.game-info { font-size: 10px; color: var(--muted); line-height: 1.7; }
+.game-info .val { color: var(--text); font-weight: 700; }
+.game-info .val-gold { color: var(--gold); font-weight: 700; }
+.game-info .val-cyan { color: var(--cyan); font-weight: 700; }
+
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
+}
+.stat-card .stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px; }
+.stat-card .stat-value { font-size: 24px; font-weight: 800; letter-spacing: -1px; }
+.stat-card .stat-sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
+.stat-gold .stat-value { color: var(--gold); }
+.stat-cyan .stat-value { color: var(--cyan); }
+.stat-green .stat-value { color: var(--green); }
+
+.bar-container { display: flex; align-items: center; gap: 8px; height: 26px; }
+.bar-track { flex: 1; height: 26px; background: var(--card2); border-radius: 6px; overflow: hidden; display: flex; }
+.bar-fill-gold { height:100%; background: linear-gradient(90deg, var(--gold-dim), rgba(255,215,64,0.4)); transition: width 0.4s; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:var(--gold); min-width:0; }
+.bar-fill-draw { height:100%; background: rgba(107,122,144,0.3); transition: width 0.4s; display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--muted); min-width:0; }
+.bar-fill-cyan { height:100%; background: linear-gradient(90deg, rgba(0,229,255,0.15), rgba(0,229,255,0.35)); transition: width 0.4s; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:var(--cyan); min-width:0; }
+.bar-label { font-size: 10px; font-weight: 700; width: 44px; text-align: center; }
+.bar-label-gold { color: var(--gold); }
+.bar-label-cyan { color: var(--cyan); }
+
+.log-panel {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 14px; display: flex; flex-direction: column; overflow: hidden; min-height: 0;
+}
+.log-panel .panel-title { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
+.log-scroll {
+  flex: 1; overflow-y: auto; margin-top: 6px; font-size: 10px; line-height: 1.7;
+}
+.log-scroll::-webkit-scrollbar { width: 4px; }
+.log-scroll::-webkit-scrollbar-track { background: transparent; }
+.log-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+.log-entry { padding: 1px 0; border-bottom: 1px solid rgba(255,255,255,0.02); }
+.log-entry .game-num { color: var(--muted); }
+.log-win-gold { color: var(--gold); }
+.log-win-cyan { color: var(--cyan); }
+.log-draw { color: var(--muted); }
+.dcc-scroll { flex:1; overflow-y:auto; margin-top:6px; font-size:9px; line-height:1.6; color:var(--muted); }
+.dcc-scroll::-webkit-scrollbar { width: 4px; }
+.dcc-scroll::-webkit-scrollbar-track { background: transparent; }
+.dcc-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+.dcc-l1 { color: var(--gold); }
+.dcc-l2 { color: var(--cyan); }
+.dcc-l3 { color: var(--green); }
+
+.bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; min-height: 0; overflow: hidden; }
+
+@keyframes pulse-gold { 0%,100%{box-shadow:0 0 0 0 rgba(255,215,64,0)} 50%{box-shadow:0 0 14px 2px rgba(255,215,64,0.18)} }
+@keyframes pulse-cyan { 0%,100%{box-shadow:0 0 0 0 rgba(0,229,255,0)} 50%{box-shadow:0 0 14px 2px rgba(0,229,255,0.18)} }
+.running .stat-gold { animation: pulse-gold 2s infinite; }
+.running .stat-cyan { animation: pulse-cyan 2s infinite; }
+
+.status-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+.status-idle    { background:var(--card2); color:var(--muted); }
+.status-running { background:var(--green-dim); color:var(--green); }
+.status-done    { background:var(--gold-dim); color:var(--gold); }
+
+@media (max-width: 900px) {
+  .main { grid-template-columns:1fr; grid-template-rows:auto auto auto; height:auto; overflow-y:auto; }
+  .board-panel { grid-row:auto; }
+  .stats-row { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Flip4M · <span class="gold">rDCC v3</span> vs <span class="cyan">Classical</span></h1>
+    <div class="meta">8Z Research Program · AIM³ Institute · CCH Prediction P5 · DCC v3 Cross-Game Memory</div>
+  </div>
+  <div class="controls">
+    <div><label>Games</label><br><input type="number" id="cfgGames" value="100" min="2" max="1000" step="2"></div>
+    <div><label>Time/Move</label><br><select id="cfgTime"><option value="200">200ms</option><option value="500" selected>500ms</option><option value="1000">1s</option><option value="2000">2s</option><option value="5000">5s</option><option value="10000">10s</option><option value="20000">20s</option><option value="30000">30s</option></select></div>
+    <div><label>Flips</label><br><select id="cfgFlips"><option value="0">0</option><option value="2" selected>2</option><option value="3">3</option></select></div>
+    <div><label>Magnets</label><br><select id="cfgMags"><option value="0">0</option><option value="2" selected>2</option><option value="3">3</option></select></div>
+    <div><label>Strength</label><br><select id="cfgStr" onchange="syncStrTime()"><option value="1">1 · Blitz</option><option value="2">2 · Fast</option><option value="3" selected>3 · Strong</option><option value="4">4 · Expert</option><option value="5">5 · Max</option><option value="6">6 · Med-Deep</option><option value="7">7 · Serious</option><option value="8">8 · Deep</option><option value="9">9 · SF-feel</option></select></div>
+    <div><label>Mode</label><br><select id="cfgMode"><option value="rdcc">rDCC vs Classical</option><option value="baseline">Classical vs Classical</option></select></div>
+    <button class="btn btn-start" id="btnStart" onclick="T.start()">▶ START</button>
+    <button class="btn btn-stop" id="btnStop" onclick="T.stop()" style="display:none">■ STOP</button>
+    <button class="btn" onclick="T.reset()">↺ RESET</button>
+    <button class="btn" onclick="resetMemory()" style="background:rgba(253,216,53,0.08);border-color:rgba(253,216,53,0.3);color:var(--yel)">🧠 RESET MEM</button>
+    <button class="btn btn-exp" onclick="exportCSV()">💾 CSV</button>
+    <button class="btn btn-exp" onclick="exportScreenshot()">📸 PNG</button>
+    <span class="status-badge status-idle" id="statusBadge">IDLE</span>
+  </div>
+</div>
+
+<div class="main" id="mainArea">
+  <div class="board-panel">
+    <div class="panel-title">Live Game <span id="liveGameNum">#0</span></div>
+    <canvas id="boardCanvas" width="256" height="256"></canvas>
+    <div class="game-info" id="gameInfo">
+      <div><span>Move:</span> <span class="val" id="infoMove">0</span> · <span>Grav:</span> <span class="val" id="infoGrav">↓</span></div>
+      <div><span>Red:</span> <span id="infoRedEngine" class="val">—</span> · <span>Yel:</span> <span id="infoYelEngine" class="val">—</span></div>
+      <div><span>Red tools:</span> <span class="val" id="infoRedToks">F:2 M:2</span></div>
+      <div><span>Yel tools:</span> <span class="val" id="infoYelToks">F:2 M:2</span></div>
+    </div>
+    <div class="panel-title" style="margin-top:4px">DCC State</div>
+    <div class="game-info">
+      <div><span>L1 Search:</span> <span class="val-gold" id="dccL1">—</span></div>
+      <div><span>L2 Game:</span> <span class="val-gold" id="dccL2">—</span></div>
+      <div><span>L3 Meta:</span> <span class="val-gold" id="dccL3">—</span></div>
+      <div><span>Thrift:</span> <span class="val-gold" id="dccThrift">—</span></div>
+    </div>
+    <div class="panel-title" style="margin-top:4px">Memory <span style="font-size:8px;color:var(--yel)">(L4)</span></div>
+    <div class="game-info">
+      <div><span>Games:</span> <span class="val-gold" id="memGames">0</span> · <span>W/L:</span> <span class="val-gold" id="memWL">0/0</span></div>
+      <div><span>Start a:</span> <span class="val-gold" id="memStartA">0.50</span></div>
+      <div><span>Band prior:</span> <span class="val-gold" id="memBandPrior">cold</span></div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;min-height:0;overflow:hidden">
+    <div class="stats-row">
+      <div class="stat-card stat-gold"><div class="stat-label" id="labelRDCC">rDCC Wins</div><div class="stat-value" id="statRDCC">0</div><div class="stat-sub" id="statRDCCpct">0%</div></div>
+      <div class="stat-card stat-cyan"><div class="stat-label" id="labelClassical">Classical Wins</div><div class="stat-value" id="statClassical">0</div><div class="stat-sub" id="statClassicalPct">0%</div></div>
+      <div class="stat-card"><div class="stat-label">Draws</div><div class="stat-value" id="statDraws">0</div><div class="stat-sub" id="statDrawsPct">0%</div></div>
+      <div class="stat-card stat-green"><div class="stat-label">Games</div><div class="stat-value" id="statGames">0</div><div class="stat-sub" id="statTotal">/100</div></div>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+        <span style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">Win Distribution</span>
+        <span style="font-size:9px;color:var(--muted)" id="ciText">CI: —</span>
+      </div>
+      <div class="bar-container">
+        <span class="bar-label bar-label-gold" id="barLabelGold">0</span>
+        <div class="bar-track">
+          <div class="bar-fill-gold" id="barGold" style="width:50%"></div>
+          <div class="bar-fill-draw" id="barDraw" style="width:0%"></div>
+          <div class="bar-fill-cyan" id="barCyan" style="width:50%"></div>
+        </div>
+        <span class="bar-label bar-label-cyan" id="barLabelCyan">0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:5px">
+        <span style="font-size:9px;color:var(--gold)" id="legendGold">◆ rDCC</span>
+        <span style="font-size:9px;color:var(--muted)" id="avgGameLen">Avg length: —</span>
+        <span style="font-size:9px;color:var(--cyan)" id="legendCyan">◆ Classical</span>
+      </div>
+    </div>
+
+    <div class="bottom-grid">
+      <div class="log-panel">
+        <div class="panel-title">Game Log <span style="font-size:9px;color:var(--muted)" id="logCount">0 games</span></div>
+        <div class="log-scroll" id="logScroll"></div>
+      </div>
+      <div class="log-panel">
+        <div class="panel-title">DCC Decisions <span style="font-size:9px;color:var(--gold)" id="dccLogCount">0</span></div>
+        <div class="dcc-scroll" id="dccScroll"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+// =============================================================================
+// FLIP4M CORE — Ported from F4M.html (headless, no animation)
+// =============================================================================
+const ROWS=8, COLS=8, P_EMPTY=0, P_RED=1, P_YEL=2, MAGNET_LIFE=6;
+const CW_MAP={0:3,1:0,2:1,3:2}, CCW_MAP={0:1,1:2,2:3,3:0};
+
+function emptyGrid(){return Array.from({length:ROWS},()=>Array(COLS).fill(0))}
+function cloneGrid(g){return g.map(r=>[...r])}
+function cloneMagArr(a){return a.map(m=>m?{...m}:null)}
+function cloneMag(ms){return{top:cloneMagArr(ms.top),bottom:cloneMagArr(ms.bottom),left:cloneMagArr(ms.left),right:cloneMagArr(ms.right)}}
+function getMag(ms,s,i){return s===0?ms.top[i]:s===1?ms.right[i]:s===2?ms.bottom[i]:ms.left[i]}
+
+function isPinned(r,c,ms){
+  if(r===0&&ms.top[c])return true;if(r===ROWS-1&&ms.bottom[c])return true;
+  if(c===0&&ms.left[r])return true;if(c===COLS-1&&ms.right[r])return true;return false;
+}
+
+function physicsStep(g,dir,ms){
+  let n=cloneGrid(g),ch=false;
+  for(let c=0;c<COLS;c++){if(ms.top[c]&&n[0][c]===0)for(let r=1;r<ROWS;r++)if(n[r][c]){n[0][c]=n[r][c];n[r][c]=0;ch=true;break}}
+  for(let c=0;c<COLS;c++){if(ms.bottom[c]&&n[ROWS-1][c]===0)for(let r=ROWS-2;r>=0;r--)if(n[r][c]){n[ROWS-1][c]=n[r][c];n[r][c]=0;ch=true;break}}
+  for(let r=0;r<ROWS;r++){if(ms.left[r]&&n[r][0]===0)for(let c=1;c<COLS;c++)if(n[r][c]){n[r][0]=n[r][c];n[r][c]=0;ch=true;break}}
+  for(let r=0;r<ROWS;r++){if(ms.right[r]&&n[r][COLS-1]===0)for(let c=COLS-2;c>=0;c--)if(n[r][c]){n[r][COLS-1]=n[r][c];n[r][c]=0;ch=true;break}}
+  if(dir===0){for(let c=0;c<COLS;c++)for(let r=ROWS-2;r>=0;r--)if(n[r][c]&&!n[r+1][c]&&!isPinned(r,c,ms)){n[r+1][c]=n[r][c];n[r][c]=0;ch=true}}
+  else if(dir===1){for(let r=0;r<ROWS;r++)for(let c=1;c<COLS;c++)if(n[r][c]&&!n[r][c-1]&&!isPinned(r,c,ms)){n[r][c-1]=n[r][c];n[r][c]=0;ch=true}}
+  else if(dir===2){for(let c=0;c<COLS;c++)for(let r=1;r<ROWS;r++)if(n[r][c]&&!n[r-1][c]&&!isPinned(r,c,ms)){n[r-1][c]=n[r][c];n[r][c]=0;ch=true}}
+  else{for(let r=0;r<ROWS;r++)for(let c=COLS-2;c>=0;c--)if(n[r][c]&&!n[r][c+1]&&!isPinned(r,c,ms)){n[r][c+1]=n[r][c];n[r][c]=0;ch=true}}
+  return{nextG:n,changed:ch};
+}
+
+function settle(g,dir,ms){let c=cloneGrid(g),s=0;while(s++<60){let r=physicsStep(c,dir,ms);if(!r.changed)break;c=r.nextG}return c}
+
+function decayMagnets(ms){
+  let n=cloneMag(ms);
+  const d=a=>a.forEach((m,i)=>{if(m){m.life--;if(m.life<=0)a[i]=null}});
+  d(n.top);d(n.bottom);d(n.left);d(n.right);return n;
+}
+
+function checkWin(g){
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    let p=g[r][c];if(!p)continue;
+    if(c<=COLS-4&&g[r][c+1]===p&&g[r][c+2]===p&&g[r][c+3]===p)return p;
+    if(r<=ROWS-4&&g[r+1][c]===p&&g[r+2][c]===p&&g[r+3][c]===p)return p;
+    if(r<=ROWS-4&&c<=COLS-4&&g[r+1][c+1]===p&&g[r+2][c+2]===p&&g[r+3][c+3]===p)return p;
+    if(r<=ROWS-4&&c>=3&&g[r+1][c-1]===p&&g[r+2][c-2]===p&&g[r+3][c-3]===p)return p;
+  }return 0;
+}
+
+function isBoardFull(g){return !g.some(r=>r.includes(0))}
+
+function getDropTarget(g,dir,idx){
+  let rE,cE;
+  if(dir===0){rE=0;cE=idx}else if(dir===1){rE=idx;cE=COLS-1}
+  else if(dir===2){rE=ROWS-1;cE=idx}else{rE=idx;cE=0}
+  for(let i=0;i<ROWS;i++){
+    let rC=rE,cC=cE;
+    if(dir===0)rC+=i;else if(dir===1)cC-=i;else if(dir===2)rC-=i;else cC+=i;
+    if(rC<0||rC>=ROWS||cC<0||cC>=COLS)break;
+    if(g[rC][cC]===0)return{r:rC,c:cC};
+  }return null;
+}
+
+// Pre-compute all possible 4-in-row lines
+const ALL_LINES=(()=>{
+  let L=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS-3;c++)L.push([{r,c},{r,c:c+1},{r,c:c+2},{r,c:c+3}]);
+  for(let r=0;r<ROWS-3;r++)for(let c=0;c<COLS;c++)L.push([{r,c},{r:r+1,c},{r:r+2,c},{r:r+3,c}]);
+  for(let r=0;r<ROWS-3;r++)for(let c=0;c<COLS-3;c++)L.push([{r,c},{r:r+1,c:c+1},{r:r+2,c:c+2},{r:r+3,c:c+3}]);
+  for(let r=3;r<ROWS;r++)for(let c=0;c<COLS-3;c++)L.push([{r,c},{r:r-1,c:c+1},{r:r-2,c:c+2},{r:r-3,c:c+3}]);
+  return L;
+})();
+
+function analyzeLines(g,p){
+  let score=0;
+  for(let line of ALL_LINES){
+    let cnt=0,emp=0,opp=0;
+    for(let pos of line){let v=g[pos.r][pos.c];if(v===p)cnt++;else if(v===0)emp++;else opp++}
+    if(opp>0){if(cnt===3&&opp===1)score+=40;continue}
+    if(cnt===4)score+=100000;
+    else if(cnt===3&&emp===1)score+=1500;
+    else if(cnt===2&&emp===2)score+=150;
+    else if(cnt===1&&emp===3)score+=10;
+  }return score;
+}
+
+function countThreats(g,p){
+  let t=0;
+  for(let line of ALL_LINES){
+    let cnt=0,emp=0;
+    for(let pos of line){let v=g[pos.r][pos.c];if(v===p)cnt++;else if(v===0)emp++}
+    if(cnt===3&&emp===1)t++;
+  }return t;
+}
+
+function canWinByRotating(g,gDir,ms,player){
+  for(let delta of[1,-1]){
+    let nd=delta===1?CCW_MAP[gDir]:CW_MAP[gDir];
+    let rot=settle(g,nd,ms);
+    if(checkWin(rot)===player)return{delta,newDir:nd,grid:rot};
+  }return null;
+}
+
+// =============================================================================
+// SHARED EVALUATION — identical for both engines
+// The ONLY variable is DCC governance. Not eval.
+// =============================================================================
+function evaluate(g,gDir,ms,player){
+  const opp=player===P_RED?P_YEL:P_RED;
+  let score=0;
+  // 1. Rotation win detection
+  if(canWinByRotating(g,gDir,ms,opp))score-=50000;
+  if(canWinByRotating(g,gDir,ms,player))score+=45000;
+  // 2. Line analysis (defensive bias)
+  score+=analyzeLines(g,player);
+  score-=analyzeLines(g,opp)*2.0;
+  // 3. Center control
+  for(let r=2;r<6;r++)for(let c=2;c<6;c++){
+    let w=(r===3||r===4)&&(c===3||c===4)?4:2;
+    if(g[r][c]===player)score+=w;else if(g[r][c]===opp)score-=w;
+  }
+  // 4. Rotation resilience — THE Cn MEASUREMENT
+  // Score threats that survive rotation. Penalize own structures that collapse.
+  for(let nd of[CW_MAP[gDir],CCW_MAP[gDir]]){
+    let rot=settle(g,nd,ms);
+    score-=countThreats(rot,opp)*400;
+    score+=countThreats(rot,player)*100;
+  }
+  return score;
+}
+
+// =============================================================================
+// MOVE GENERATION
+// =============================================================================
+function getDropMoves(g,gDir,player,ms){
+  let moves=[];
+  for(let i=0;i<COLS;i++){
+    let t=getDropTarget(g,gDir,i);
+    if(t){let ng=cloneGrid(g);ng[t.r][t.c]=player;let dm=decayMagnets(ms);ng=settle(ng,gDir,dm);moves.push({type:'drop',col:i,grid:ng,gDir,magState:dm})}
+  }return moves;
+}
+
+function getToolMoves(g,gDir,toks,player,ms){
+  let moves=[],opp=player===P_RED?P_YEL:P_RED;
+  if(toks.flip>0){
+    for(let delta of[1,-1]){
+      let nd=delta===1?CCW_MAP[gDir]:CW_MAP[gDir];
+      let dm=decayMagnets(ms);let ng=settle(g,nd,dm);
+      moves.push({type:'flip',delta,grid:ng,gDir:nd,magState:dm});
+    }
+  }
+  if(toks.mag>0){
+    for(let side=0;side<4;side++)for(let idx=0;idx<COLS;idx++){
+      let cur=getMag(ms,side,idx);if(cur&&cur.p===player)continue;
+      let nm=cloneMag(ms);
+      let os=(side+2)%4,ov=getMag(nm,os,idx);
+      let an=['top','right','bottom','left'][side],on=['top','right','bottom','left'][os];
+      if(ov&&ov.p===opp)nm[on][idx]=null;else nm[an][idx]={p:player,life:MAGNET_LIFE};
+      let dm=decayMagnets(nm);let ng=settle(g,gDir,dm);
+      moves.push({type:'magnet',side,idx,grid:ng,gDir,magState:dm});
+    }
+  }return moves;
+}
+
+function moveId(m){
+  if(m.type==='drop')return'd'+m.col;
+  if(m.type==='flip')return'f'+(m.delta>0?'L':'R');
+  if(m.type==='magnet')return'm'+m.side+'_'+m.idx;return'x';
+}
+
+// =============================================================================
+// STRENGTH LEVELS — affects both engines equally
+// =============================================================================
+const STRENGTH={
+  1:{maxDepth:3, nodeCap:50000,  ttMax:20000,  label:'Blitz',       defTime:200},
+  2:{maxDepth:5, nodeCap:200000, ttMax:50000,  label:'Fast',        defTime:500},
+  3:{maxDepth:8, nodeCap:500000, ttMax:80000,  label:'Strong',      defTime:500},
+  4:{maxDepth:10,nodeCap:1000000,ttMax:150000, label:'Expert',      defTime:1000},
+  5:{maxDepth:12,nodeCap:2000000,ttMax:250000, label:'Max',         defTime:2000},
+  6:{maxDepth:16,nodeCap:5000000,ttMax:500000, label:'Medium-Deep', defTime:5000},
+  7:{maxDepth:20,nodeCap:10000000,ttMax:1000000,label:'Serious',    defTime:10000},
+  8:{maxDepth:24,nodeCap:20000000,ttMax:2000000,label:'Deep',       defTime:20000},
+  9:{maxDepth:30,nodeCap:50000000,ttMax:5000000,label:'Stockfish-feel',defTime:30000},
+};
+let CUR_STR=STRENGTH[3]; // default
+
+// =============================================================================
+// NEGAMAX + ALPHA-BETA + TT (shared search core)
+// =============================================================================
+function createSS(budgetMs){
+  return{deadline:performance.now()+budgetMs,aborted:false,nodes:0,tt:new Map(),TT_MAX:CUR_STR.ttMax,NODE_CAP:CUR_STR.nodeCap,CHK:256};
+}
+
+function stateKey(g,gDir,p){let s='';for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)s+=g[r][c];return s+'|'+gDir+'|'+p}
+
+function negamax(g,gDir,ms,depth,alpha,beta,player,ss){
+  ss.nodes++;
+  if((ss.nodes&(ss.CHK-1))===0){
+    if(performance.now()>ss.deadline)ss.aborted=true;
+    if(ss.nodes>ss.NODE_CAP)ss.aborted=true;
+    if(ss.tt.size>ss.TT_MAX)ss.tt.clear();
+  }
+  if(ss.aborted)return evaluate(g,gDir,ms,player);
+  let w=checkWin(g);
+  if(w===player)return 100000+depth*100;
+  if(w!==0)return-(100000+depth*100);
+  if(depth<=0)return evaluate(g,gDir,ms,player);
+
+  const opp=player===P_RED?P_YEL:P_RED;
+  const ao=alpha;
+  const key=stateKey(g,gDir,player);
+  const hit=ss.tt.get(key);
+  if(hit&&hit.depth>=depth){
+    if(hit.flag===0)return hit.value;
+    if(hit.flag===1)alpha=Math.max(alpha,hit.value);
+    else if(hit.flag===2)beta=Math.min(beta,hit.value);
+    if(alpha>=beta)return hit.value;
+  }
+
+  let moves=getDropMoves(g,gDir,player,ms);
+  if(depth>2)moves.push(...getToolMoves(g,gDir,{flip:1,mag:0},player,ms));
+  if(moves.length===0)return 0;
+
+  if(hit&&hit.bestId){let bi=moves.findIndex(m=>moveId(m)===hit.bestId);if(bi>0){let bm=moves[bi];moves.splice(bi,1);moves.unshift(bm)}}
+  const center=(COLS-1)/2;
+  moves.sort((a,b)=>{
+    const aw=checkWin(a.grid)===player?1:0,bw=checkWin(b.grid)===player?1:0;
+    if(aw!==bw)return bw-aw;
+    const at=a.type==='drop'?0:1,bt=b.type==='drop'?0:1;
+    if(at!==bt)return at-bt;
+    if(a.type==='drop'&&b.type==='drop')return Math.abs(a.col-center)-Math.abs(b.col-center);
+    return 0;
+  });
+
+  let bestVal=-Infinity,bestId=moveId(moves[0]);
+  for(let mv of moves){
+    if(ss.aborted)break;
+    let val=-negamax(mv.grid,mv.gDir,mv.magState,depth-1,-beta,-alpha,opp,ss);
+    if(val>bestVal){bestVal=val;bestId=moveId(mv)}
+    alpha=Math.max(alpha,val);
+    if(alpha>=beta)break;
+  }
+  let flag=0;if(bestVal<=ao)flag=2;else if(bestVal>=beta)flag=1;
+  ss.tt.set(key,{depth,value:bestVal,flag,bestId});
+  return bestVal;
+}
+
+// =============================================================================
+// ENGINE A — Classical (the control)
+// Fixed personality. No adaptation. No DCC.
+// =============================================================================
+function engineA(state,budgetMs){
+  const{grid:g,gravityDir:gDir,mag:ms,curPlayer:player,tokens:toks}=state;
+  const opp=player===P_RED?P_YEL:P_RED;
+  const myT=toks[player];
+
+  let all=getDropMoves(g,gDir,player,ms);
+  if(myT.flip>0||myT.mag>0)all.push(...getToolMoves(g,gDir,myT,player,ms));
+  if(!all.length)return null;
+
+  // Instant win
+  for(let m of all)if(checkWin(m.grid)===player)return m;
+  // Block instant loss
+  let od=getDropMoves(g,gDir,opp,ms);
+  let ow=od.find(m=>checkWin(m.grid)===opp);
+  if(ow){let b=all.find(m=>m.type==='drop'&&m.col===ow.col);if(b)return b}
+
+  // Iterative deepening
+  const ss=createSS(budgetMs);
+  const center=(COLS-1)/2;
+  all.sort((a,b)=>{if(a.type==='drop'&&b.type==='drop')return Math.abs(a.col-center)-Math.abs(b.col-center);if(a.type==='drop')return-1;if(b.type==='drop')return 1;return 0});
+
+  let best=all[0],bestScore=-Infinity;
+  for(let depth=1;depth<=CUR_STR.maxDepth;depth++){
+    if(performance.now()>ss.deadline)break;
+    let lb=null,ls=-Infinity,alpha=-Infinity,beta=Infinity;
+    for(let m of all){
+      if(ss.aborted)break;
+      let d=m.type==='drop'?depth-1:Math.max(1,depth-2);
+      let sc=-negamax(m.grid,m.gDir,m.magState,d,-beta,-alpha,opp,ss);
+      if(m.type!=='drop'&&sc<5000)sc-=200; // fixed tool conservation penalty
+      if(sc>ls){ls=sc;lb=m}
+      alpha=Math.max(alpha,ls);if(alpha>=beta)break;
+    }
+    if(lb){best=lb;bestScore=ls}
+    if(ss.aborted)break;
+  }
+  return best;
+}
+
+// =============================================================================
+// ENGINE B — rDCC (the experiment)
+// Same negamax, same eval. DCC governance wraps the search.
+// =============================================================================
+
+// ── CROSS-GAME MEMORY (v3 — Layer 4) ──
+const DCC_MEMORY = {
+  games_played: 0,
+  // L2 band calibration history
+  band_lows: [],    // final P25 from each game
+  band_highs: [],   // final P75 from each game
+  // L3 aggression history
+  final_aggressions: [],
+  winning_aggressions: [],
+  losing_aggressions: [],
+  // L1 depth ratio effectiveness
+  deepen_helped: 0, deepen_hurt: 0,
+  shorten_helped: 0, shorten_hurt: 0,
+  // Meta
+  rDCC_wins: 0, rDCC_losses: 0,
+  // Warm-start values (for UI/CSV)
+  last_start_aggression: 0.5,
+  last_start_band_low: null,
+  last_start_band_high: null
+};
+
+function resetMemory(){
+  DCC_MEMORY.games_played=0;
+  DCC_MEMORY.band_lows=[];DCC_MEMORY.band_highs=[];
+  DCC_MEMORY.final_aggressions=[];
+  DCC_MEMORY.winning_aggressions=[];DCC_MEMORY.losing_aggressions=[];
+  DCC_MEMORY.deepen_helped=0;DCC_MEMORY.deepen_hurt=0;
+  DCC_MEMORY.shorten_helped=0;DCC_MEMORY.shorten_hurt=0;
+  DCC_MEMORY.rDCC_wins=0;DCC_MEMORY.rDCC_losses=0;
+  DCC_MEMORY.last_start_aggression=0.5;
+  DCC_MEMORY.last_start_band_low=null;DCC_MEMORY.last_start_band_high=null;
+  document.getElementById('memGames').textContent='0';
+  document.getElementById('memWL').textContent='0/0';
+  document.getElementById('memStartA').textContent='0.50';
+  document.getElementById('memBandPrior').textContent='cold';
+}
+
+function createDCC(){
+  const mem=DCC_MEMORY;
+
+  // Default cold start
+  let startAggression=0.5;
+  let startSpreadHistory=[];
+
+  if(mem.games_played>=3){
+    // WARM START: use memory from previous games
+
+    // L3: Start aggression from weighted average of winning aggressions
+    if(mem.winning_aggressions.length>0){
+      const recent_wins=mem.winning_aggressions.slice(-10);
+      const avg_win_agg=recent_wins.reduce((a,b)=>a+b,0)/recent_wins.length;
+
+      if(mem.losing_aggressions.length>0){
+        const recent_losses=mem.losing_aggressions.slice(-10);
+        const avg_loss_agg=recent_losses.reduce((a,b)=>a+b,0)/recent_losses.length;
+        // Start closer to winning aggression, away from losing aggression
+        startAggression=avg_win_agg*0.7+(1.0-avg_loss_agg)*0.3;
+      }else{
+        startAggression=avg_win_agg;
+      }
+      startAggression=Math.max(0.1,Math.min(0.9,startAggression));
+    }
+
+    // L2: Pre-seed spread history with average bands from previous games
+    if(mem.band_lows.length>0&&mem.band_highs.length>0){
+      const recent_lows=mem.band_lows.slice(-10);
+      const recent_highs=mem.band_highs.slice(-10);
+      const avg_low=recent_lows.reduce((a,b)=>a+b,0)/recent_lows.length;
+      const avg_high=recent_highs.reduce((a,b)=>a+b,0)/recent_highs.length;
+      const avg_mid=(avg_low+avg_high)/2;
+      // Pre-seed with 4 synthetic spread values spanning the expected range
+      startSpreadHistory=[avg_low,avg_mid,avg_high,avg_mid];
+      mem.last_start_band_low=avg_low;
+      mem.last_start_band_high=avg_high;
+    }
+  }
+
+  mem.last_start_aggression=startAggression;
+
+  // Update memory UI
+  document.getElementById('memGames').textContent=mem.games_played;
+  document.getElementById('memWL').textContent=mem.rDCC_wins+'/'+mem.rDCC_losses;
+  document.getElementById('memStartA').textContent=startAggression.toFixed(2);
+  if(mem.last_start_band_low!=null){
+    document.getElementById('memBandPrior').textContent=Math.round(mem.last_start_band_low)+'-'+Math.round(mem.last_start_band_high);
+  }else{
+    document.getElementById('memBandPrior').textContent='cold';
+  }
+
+  return{
+    // Level 2: ring buffer of game evals + self-calibrating bands
+    evalHistory:[],evalMax:8,
+    spreadHistory:startSpreadHistory,spreadMax:16,
+    // Level 3: graduated aggression (0.0=conservative, 1.0=aggressive)
+    posScores:[],l3Interval:4,movesSinceL3:0,aggression:startAggression,
+    // Logging
+    lastL1:'',lastL2:'',lastL3:'',lastThrift:''
+  };
+}
+
+function engineB(state,budgetMs,dcc){
+  const{grid:g,gravityDir:gDir,mag:ms,curPlayer:player,tokens:toks}=state;
+  const opp=player===P_RED?P_YEL:P_RED;
+  const myT=toks[player],oppT=toks[opp];
+
+  let all=getDropMoves(g,gDir,player,ms);
+  if(myT.flip>0||myT.mag>0)all.push(...getToolMoves(g,gDir,myT,player,ms));
+  if(!all.length)return null;
+
+  // Instant win (no governance needed)
+  for(let m of all)if(checkWin(m.grid)===player)return m;
+  // Block instant loss
+  let od=getDropMoves(g,gDir,opp,ms);
+  let ow=od.find(m=>checkWin(m.grid)===opp);
+  if(ow){let b=all.find(m=>m.type==='drop'&&m.col===ow.col);if(b)return b}
+
+  // ═══════════════════════════════════════════════════════════════
+  // LEVEL 2 v2 — Self-Calibrating Bands
+  // ═══════════════════════════════════════════════════════════════
+  // Instead of hardcoded 200/2000, use percentile-based thresholds
+  // from a running buffer of observed spread values.
+  // Semantic inversion preserved: stagnant→explore, volatile→conserve.
+  let l2='normal';
+  let l2BandLo=200, l2BandHi=2000; // bootstrap defaults
+  if(dcc.evalHistory.length>=3){
+    const rec=dcc.evalHistory.slice(-4);
+    const mean=rec.reduce((a,b)=>a+b,0)/rec.length;
+    const variance=rec.reduce((a,v)=>a+(v-mean)**2,0)/rec.length;
+    const spread=Math.sqrt(variance);
+
+    // Push to spread history buffer
+    dcc.spreadHistory.push(spread);
+    if(dcc.spreadHistory.length>dcc.spreadMax)dcc.spreadHistory.shift();
+
+    // Self-calibrate: use percentile bands if we have enough data
+    if(dcc.spreadHistory.length>=4){
+      const sorted=[...dcc.spreadHistory].sort((a,b)=>a-b);
+      const n=sorted.length;
+      l2BandLo=sorted[Math.floor(n*0.25)];  // P25
+      l2BandHi=sorted[Math.floor(n*0.75)];  // P75
+    }
+    // else: use bootstrap defaults (200/2000)
+
+    if(spread<l2BandLo)l2='stagnant';
+    else if(spread>l2BandHi)l2='volatile';
+  }
+  dcc.lastL2=l2+'(band:'+Math.round(l2BandLo)+'-'+Math.round(l2BandHi)+')';
+
+  // ═══════════════════════════════════════════════════════════════
+  // LEVEL 3 v2 — Graduated Aggression (0.1 to 0.9)
+  // ═══════════════════════════════════════════════════════════════
+  // Replaces binary flip with graduated scale.
+  // Escalate faster (+0.15) than de-escalate (-0.1) — deliberate asymmetry.
+  // Floor 0.1, Ceiling 0.9 — never fully one extreme.
+  dcc.movesSinceL3++;
+  if(dcc.movesSinceL3>=dcc.l3Interval&&dcc.posScores.length>0){
+    dcc.movesSinceL3=0;
+    const curEval=evaluate(g,gDir,ms,player);
+    const prevEval=dcc.posScores[dcc.posScores.length-1];
+    if(curEval<=prevEval){
+      // Governance failing → escalate aggression
+      dcc.aggression=Math.min(0.9,dcc.aggression+0.15);
+      dcc.lastL3='escalate(a='+dcc.aggression.toFixed(2)+')';
+    }else{
+      // Governance working → de-escalate
+      dcc.aggression=Math.max(0.1,dcc.aggression-0.1);
+      dcc.lastL3='maintain(a='+dcc.aggression.toFixed(2)+')';
+    }
+    dcc.posScores.push(curEval);
+  }else if(dcc.posScores.length===0){
+    dcc.posScores.push(evaluate(g,gDir,ms,player));
+    dcc.lastL3='init(a='+dcc.aggression.toFixed(2)+')';
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // THRIFT FACTOR — Resource governance (unchanged from v1)
+  // ═══════════════════════════════════════════════════════════════
+  const resAdv=(myT.flip+myT.mag)-(oppT.flip+oppT.mag);
+  let allowTools=true,thriftMsg='';
+  if(resAdv<=0&&l2!=='stagnant'){
+    allowTools=false;
+    thriftMsg='conserve(res≤0)';
+  }else if(l2==='stagnant'){
+    allowTools=true;
+    thriftMsg='spend(stagnation)';
+  }else{
+    thriftMsg='allow(adv='+resAdv+')';
+  }
+  dcc.lastThrift=thriftMsg;
+
+  // Filter moves
+  let searchMoves=allowTools?all:all.filter(m=>m.type==='drop');
+  if(!searchMoves.length)searchMoves=all;
+
+  // L2 stagnant + high aggression → prefer flips (graduated: only when aggression > 0.7)
+  if(l2.startsWith('stagnant')&&dcc.aggression>0.7){
+    searchMoves.sort((a,b)=>{
+      if(a.type==='flip'&&b.type!=='flip')return-1;
+      if(b.type==='flip'&&a.type!=='flip')return 1;return 0;
+    });
+  }
+
+  // Sort remaining by center preference
+  const center=(COLS-1)/2;
+  if(!(l2.startsWith('stagnant')&&dcc.aggression>0.7)){
+    searchMoves.sort((a,b)=>{if(a.type==='drop'&&b.type==='drop')return Math.abs(a.col-center)-Math.abs(b.col-center);if(a.type==='drop')return-1;if(b.type==='drop')return 1;return 0});
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ITERATIVE DEEPENING with LEVEL 1 v2: Depth-Aware Time
+  // ═══════════════════════════════════════════════════════════════
+  const ss=createSS(budgetMs);
+  let best=searchMoves[0],bestScore=-Infinity;
+  let depthEvals=[];
+
+  for(let depth=1;depth<=CUR_STR.maxDepth;depth++){
+    if(performance.now()>ss.deadline)break;
+    let lb=null,ls=-Infinity,alpha=-Infinity,beta=Infinity;
+    for(let m of searchMoves){
+      if(ss.aborted)break;
+      let d=m.type==='drop'?depth-1:Math.max(1,depth-2);
+      let sc=-negamax(m.grid,m.gDir,m.magState,d,-beta,-alpha,opp,ss);
+
+      // Tool penalty modulated by L2 + graduated L3 aggression
+      if(m.type!=='drop'&&sc<5000){
+        let pen=200;
+        if(l2.startsWith('stagnant'))pen*=0.3;
+        if(l2.startsWith('volatile'))pen*=1.8;
+        // Graduated: pen *= (1.2 - aggression). At a=0.9, pen*=0.3. At a=0.1, pen*=1.1.
+        pen*=(1.2-dcc.aggression);
+        sc-=pen;
+      }
+      // L2 stagnation bonus scaled by aggression
+      if(l2.startsWith('stagnant')){
+        let newT=countThreats(m.grid,player);
+        let oldT=countThreats(g,player);
+        if(newT>oldT)sc+=Math.round(200*dcc.aggression/0.5); // at a=0.5→200, a=0.9→360
+      }
+
+      if(sc>ls){ls=sc;lb=m}
+      alpha=Math.max(alpha,ls);if(alpha>=beta)break;
+    }
+    if(lb){best=lb;bestScore=ls;depthEvals.push(ls)}
+    if(ss.aborted)break;
+
+    // ── LEVEL 1 v2: Depth-Aware adaptive time allocation ──
+    // depthRatio = how far through iterative deepening we are
+    // Early depths: don't intervene (not enough signal)
+    // Mid depths: normal intervention
+    // Late depths: cautious intervention (position is resolving)
+    if(depthEvals.length>=3){
+      const depthRatio=depth/CUR_STR.maxDepth;
+      const last3=depthEvals.slice(-3);
+      const mn=last3.reduce((a,b)=>a+b,0)/3;
+      const v=last3.reduce((a,x)=>a+(x-mn)**2,0)/3;
+      if(v>500000){
+        // Tactically sharp → extend time (depth-aware)
+        if(depthRatio<0.3){
+          dcc.lastL1='steady(v='+Math.round(v)+',dR='+depthRatio.toFixed(2)+',early)';
+        }else if(depthRatio<=0.7){
+          ss.deadline=Math.max(ss.deadline,performance.now()+budgetMs*0.4);
+          dcc.lastL1='DEEPEN(v='+Math.round(v)+',dR='+depthRatio.toFixed(2)+')';
+        }else{
+          ss.deadline=Math.max(ss.deadline,performance.now()+budgetMs*0.2);
+          dcc.lastL1='DEEPEN-late(v='+Math.round(v)+',dR='+depthRatio.toFixed(2)+')';
+        }
+      }else if(v<50000){
+        // Quiet position → cut time (depth-aware)
+        if(depthRatio<0.3){
+          dcc.lastL1='steady(v='+Math.round(v)+',dR='+depthRatio.toFixed(2)+',early)';
+        }else if(depthRatio<=0.7){
+          let rem=ss.deadline-performance.now();
+          ss.deadline=performance.now()+rem*0.75;
+          dcc.lastL1='SHORTEN(v='+Math.round(v)+',dR='+depthRatio.toFixed(2)+')';
+        }else{
+          let rem=ss.deadline-performance.now();
+          ss.deadline=performance.now()+rem*0.6;
+          dcc.lastL1='SHORTEN-late(v='+Math.round(v)+',dR='+depthRatio.toFixed(2)+')';
+        }
+      }else{
+        dcc.lastL1='steady(v='+Math.round(v)+',dR='+depthRatio.toFixed(2)+')';
+      }
+    }else{dcc.lastL1='warmup'}
+  }
+
+  // Record for Level 2
+  dcc.evalHistory.push(bestScore);
+  if(dcc.evalHistory.length>dcc.evalMax)dcc.evalHistory.shift();
+
+  return best;
+}
+
+// =============================================================================
+// GAME STATE
+// =============================================================================
+function createGame(flips,mags){
+  return{
+    grid:emptyGrid(),gravityDir:0,boardAngle:0,
+    mag:{top:Array(COLS).fill(null),bottom:Array(COLS).fill(null),left:Array(ROWS).fill(null),right:Array(ROWS).fill(null)},
+    curPlayer:P_RED,
+    tokens:{[P_RED]:{flip:flips,mag:mags},[P_YEL]:{flip:flips,mag:mags}},
+    moveCount:0
+  };
+}
+
+function applyMove(st,move){
+  if(!move)return;
+  const p=st.curPlayer,opp=p===P_RED?P_YEL:P_RED;
+  if(move.type==='drop'){let t=getDropTarget(st.grid,st.gravityDir,move.col);if(t)st.grid[t.r][t.c]=p}
+  else if(move.type==='flip'){
+    st.tokens[p].flip--;
+    // Accumulate boardAngle incrementally like F4M.html (fixes visual rotation bug)
+    st.boardAngle+=(move.delta===1?-Math.PI/2:Math.PI/2);
+    st.gravityDir=move.delta===1?CCW_MAP[st.gravityDir]:CW_MAP[st.gravityDir];
+  }else if(move.type==='magnet'){
+    st.tokens[p].mag--;
+    let os=(move.side+2)%4,ov=getMag(st.mag,os,move.idx);
+    let an=['top','right','bottom','left'][move.side],on=['top','right','bottom','left'][os];
+    if(ov&&ov.p===opp)st.mag[on][move.idx]=null;
+    else st.mag[an][move.idx]={p,life:MAGNET_LIFE};
+  }
+  st.mag=decayMagnets(st.mag);
+  st.grid=settle(st.grid,st.gravityDir,st.mag);
+  st.moveCount++;
+  st.curPlayer=p===P_RED?P_YEL:P_RED;
+}
+
+// =============================================================================
+// BOARD RENDERER
+// =============================================================================
+const bCanvas=document.getElementById('boardCanvas');
+const bCtx=bCanvas.getContext('2d',{alpha:false});
+
+function renderBoard(g,gDir,boardAngle){
+  const W=bCanvas.width,H=bCanvas.height;
+  const cx=W/2,cy=H/2;
+  // v2: use accumulated boardAngle from game state (fixes rotation visual bug)
+  const angle = boardAngle||0;
+  const size=Math.min(W,H)*0.92;
+  const cell=size/COLS;
+  const boardW=COLS*cell;
+
+  bCtx.fillStyle='#080a0e';bCtx.fillRect(0,0,W,H);
+
+  bCtx.save();
+  bCtx.translate(cx,cy);
+  bCtx.rotate(angle);
+
+  // Board background
+  bCtx.fillStyle='#12151c';
+  bCtx.beginPath();bCtx.roundRect(-boardW/2-3,-boardW/2-3,boardW+6,boardW+6,4);bCtx.fill();
+  bCtx.strokeStyle='rgba(255,255,255,0.08)';bCtx.lineWidth=1;bCtx.stroke();
+
+  // Cells
+  bCtx.translate(-boardW/2,-boardW/2);
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    const x=c*cell+cell/2,y=r*cell+cell/2,rad=cell*0.38;
+    bCtx.fillStyle='rgba(0,0,0,0.5)';bCtx.beginPath();bCtx.arc(x,y,rad,0,Math.PI*2);bCtx.fill();
+    const v=g[r][c];
+    if(v){
+      bCtx.fillStyle=v===P_RED?'#e53935':'#fdd835';
+      bCtx.beginPath();bCtx.arc(x,y,rad,0,Math.PI*2);bCtx.fill();
+      bCtx.fillStyle='rgba(255,255,255,0.25)';
+      bCtx.beginPath();bCtx.arc(x-rad*0.3,y-rad*0.3,rad*0.18,0,Math.PI*2);bCtx.fill();
+    }
+  }
+  bCtx.restore();
+
+  // Gravity arrow (drawn after restore, so it's always upright)
+  bCtx.fillStyle='#ffd740';bCtx.font='bold 14px monospace';bCtx.textAlign='center';
+  bCtx.fillText(['↓','←','↑','→'][gDir],W-12,14);
+}
+
+// =============================================================================
+// TOURNAMENT CONTROLLER
+// =============================================================================
+const T={
+  running:false,games:0,totalGames:100,timeBudget:500,
+  startFlips:2,startMags:2,mode:'rdcc',
+  rWins:0,cWins:0,draws:0,
+  gameLens:[],rFlips:[],rMags:[],cFlips:[],cMags:[],
+  dccLogN:0,abortFlag:false,gameLog:[],
+
+  start(){
+    if(this.running)return;
+    this.totalGames=parseInt(document.getElementById('cfgGames').value)||100;
+    this.timeBudget=parseInt(document.getElementById('cfgTime').value)||500;
+    this.startFlips=parseInt(document.getElementById('cfgFlips').value);
+    this.startMags=parseInt(document.getElementById('cfgMags').value);
+    this.mode=document.getElementById('cfgMode').value;
+    CUR_STR=STRENGTH[parseInt(document.getElementById('cfgStr').value)||3];
+    // Update labels for mode
+    if(this.mode==='baseline'){
+      document.getElementById('labelRDCC').textContent='Red Wins';
+      document.getElementById('labelClassical').textContent='Yellow Wins';
+      document.getElementById('legendGold').textContent='◆ Red';
+      document.getElementById('legendCyan').textContent='◆ Yellow';
+    }else{
+      document.getElementById('labelRDCC').textContent='rDCC Wins';
+      document.getElementById('labelClassical').textContent='Classical Wins';
+      document.getElementById('legendGold').textContent='◆ rDCC';
+      document.getElementById('legendCyan').textContent='◆ Classical';
+    }
+    this.running=true;this.abortFlag=false;
+    document.getElementById('btnStart').style.display='none';
+    document.getElementById('btnStop').style.display='';
+    document.getElementById('statusBadge').className='status-badge status-running';
+    document.getElementById('statusBadge').textContent='RUNNING';
+    document.getElementById('mainArea').classList.add('running');
+    document.getElementById('statTotal').textContent='/'+this.totalGames;
+    this.runNext();
+  },
+
+  stop(){
+    this.abortFlag=true;this.running=false;
+    document.getElementById('btnStart').style.display='';
+    document.getElementById('btnStop').style.display='none';
+    document.getElementById('statusBadge').className='status-badge status-idle';
+    document.getElementById('statusBadge').textContent='STOPPED';
+    document.getElementById('mainArea').classList.remove('running');
+  },
+
+  reset(){
+    this.stop();this.games=0;this.rWins=0;this.cWins=0;this.draws=0;
+    this.gameLens=[];this.rFlips=[];this.rMags=[];this.cFlips=[];this.cMags=[];
+    this.dccLogN=0;this.gameLog=[];
+    document.getElementById('logScroll').innerHTML='';
+    document.getElementById('dccScroll').innerHTML='';
+    this.updateUI();renderBoard(emptyGrid(),0);
+    document.getElementById('statusBadge').className='status-badge status-idle';
+    document.getElementById('statusBadge').textContent='IDLE';
+  },
+
+  async runNext(){
+    if(!this.running||this.games>=this.totalGames){
+      this.running=false;
+      document.getElementById('btnStart').style.display='';
+      document.getElementById('btnStop').style.display='none';
+      document.getElementById('statusBadge').className='status-badge status-done';
+      document.getElementById('statusBadge').textContent='DONE';
+      document.getElementById('mainArea').classList.remove('running');
+      return;
+    }
+
+    const gn=this.games;
+    const isBaseline=this.mode==='baseline';
+    // Alternate colors each game
+    const rDCCp=(gn%2===0)?P_RED:P_YEL;
+    const classp=rDCCp===P_RED?P_YEL:P_RED;
+
+    document.getElementById('liveGameNum').textContent='#'+(gn+1);
+    if(isBaseline){
+      document.getElementById('infoRedEngine').textContent='Red (A)';
+      document.getElementById('infoRedEngine').className='val';
+      document.getElementById('infoYelEngine').textContent='Yellow (A)';
+      document.getElementById('infoYelEngine').className='val';
+    }else{
+      document.getElementById('infoRedEngine').textContent=rDCCp===P_RED?'rDCC':'Classical';
+      document.getElementById('infoRedEngine').className=rDCCp===P_RED?'val-gold':'val-cyan';
+      document.getElementById('infoYelEngine').textContent=rDCCp===P_YEL?'rDCC':'Classical';
+      document.getElementById('infoYelEngine').className=rDCCp===P_YEL?'val-gold':'val-cyan';
+    }
+
+    // In baseline mode, show "no DCC" in state panel
+    if(isBaseline){
+      document.getElementById('dccL1').textContent='Baseline — no DCC';
+      document.getElementById('dccL2').textContent='—';
+      document.getElementById('dccL3').textContent='—';
+      document.getElementById('dccThrift').textContent='—';
+      document.getElementById('memGames').textContent='—';
+      document.getElementById('memWL').textContent='—';
+      document.getElementById('memStartA').textContent='—';
+      document.getElementById('memBandPrior').textContent='—';
+    }
+
+    const st=createGame(this.startFlips,this.startMags);
+    const dcc=createDCC();
+    const MAX_MOVES=200;
+    let rDCCrots=0, classRots=0; // rotation count per engine
+
+    const playMove=()=>new Promise(resolve=>{
+      setTimeout(()=>{
+        if(this.abortFlag){resolve('abort');return}
+        const isRDCC=st.curPlayer===rDCCp;
+        // Baseline mode: both sides use engineA (classical). rDCC mode: engine B for rDCC side.
+        let move=(!isBaseline&&isRDCC)?engineB(st,this.timeBudget,dcc):engineA(st,this.timeBudget);
+        if(!move){resolve('no_move');return}
+        if(move.type==='flip'){if(isRDCC)rDCCrots++;else classRots++;}
+        applyMove(st,move);
+
+        // Update display every 4 moves to reduce DOM thrash
+        if(st.moveCount%4===0||st.moveCount<8){
+          renderBoard(st.grid,st.gravityDir,st.boardAngle);
+          document.getElementById('infoMove').textContent=st.moveCount;
+          document.getElementById('infoGrav').textContent=['↓','←','↑','→'][st.gravityDir];
+          document.getElementById('infoRedToks').textContent='F:'+st.tokens[P_RED].flip+' M:'+st.tokens[P_RED].mag;
+          document.getElementById('infoYelToks').textContent='F:'+st.tokens[P_YEL].flip+' M:'+st.tokens[P_YEL].mag;
+          if(!isBaseline&&isRDCC){
+            document.getElementById('dccL1').textContent=dcc.lastL1;
+            document.getElementById('dccL2').textContent=dcc.lastL2;
+            document.getElementById('dccL3').textContent=dcc.lastL3;
+            document.getElementById('dccThrift').textContent=dcc.lastThrift;
+          }
+        }
+
+        // Log DCC decisions (sample: every 8th rDCC move, suppress in baseline)
+        if(!isBaseline&&isRDCC&&st.moveCount%8<2)this.logDCC(gn+1,st.moveCount,dcc);
+
+        let w=checkWin(st.grid);
+        if(w){resolve(w);return}
+        if(isBoardFull(st.grid)||st.moveCount>=MAX_MOVES){resolve('draw');return}
+        resolve('continue');
+      },0);
+    });
+
+    let result='continue';
+    while(result==='continue')result=await playMove();
+    if(result==='abort')return;
+
+    // Record
+    this.games++;
+    this.gameLens.push(st.moveCount);
+    const rT=st.tokens[rDCCp],cT=st.tokens[classp];
+    this.rFlips.push(this.startFlips-rT.flip);this.rMags.push(this.startMags-rT.mag);
+    this.cFlips.push(this.startFlips-cT.flip);this.cMags.push(this.startMags-cT.mag);
+
+    // Final board
+    renderBoard(st.grid,st.gravityDir,st.boardAngle);
+
+    let lc,lt;
+    if(result==='draw'||result==='no_move'){this.draws++;lc='log-draw';lt='Draw'}
+    else if(result===rDCCp){
+      this.rWins++;lc='log-win-gold';
+      lt=isBaseline?(rDCCp===P_RED?'Red wins':'Yellow wins'):'rDCC wins';
+    }else{
+      this.cWins++;lc='log-win-cyan';
+      lt=isBaseline?(classp===P_RED?'Red wins':'Yellow wins'):'Classical wins';
+    }
+
+    // ── SAVE DCC MEMORY (v3) ──
+    if(!isBaseline){
+      DCC_MEMORY.games_played++;
+
+      // L2 band calibration: save final percentile bands
+      if(dcc.spreadHistory.length>=4){
+        const sorted=[...dcc.spreadHistory].sort((a,b)=>a-b);
+        const p25=sorted[Math.floor(sorted.length*0.25)];
+        const p75=sorted[Math.floor(sorted.length*0.75)];
+        DCC_MEMORY.band_lows.push(p25);
+        DCC_MEMORY.band_highs.push(p75);
+      }
+
+      // L3 aggression: save final aggression + win/loss tagged aggression
+      DCC_MEMORY.final_aggressions.push(dcc.aggression);
+
+      if(result===rDCCp){
+        DCC_MEMORY.rDCC_wins++;
+        DCC_MEMORY.winning_aggressions.push(dcc.aggression);
+      }else if(result!=='draw'&&result!=='no_move'){
+        DCC_MEMORY.rDCC_losses++;
+        DCC_MEMORY.losing_aggressions.push(dcc.aggression);
+      }
+    }
+
+    const ci=isBaseline?(rDCCp===P_RED?'Red=1st':'Yel=1st'):(rDCCp===P_RED?'rDCC=R':'rDCC=Y');
+    this.gameLog.push({
+      game:gn+1,
+      mode:isBaseline?'baseline':'rDCC',
+      result:lt,
+      moves:st.moveCount,
+      rDCC_color:rDCCp===P_RED?'Red':'Yellow',
+      rDCC_flips_used:this.startFlips-rT.flip,
+      rDCC_mags_used:this.startMags-rT.mag,
+      rDCC_rotations:rDCCrots,
+      classical_flips_used:this.startFlips-cT.flip,
+      classical_mags_used:this.startMags-cT.mag,
+      classical_rotations:classRots,
+      total_rotations:rDCCrots+classRots,
+      final_gravity:['DOWN','LEFT','UP','RIGHT'][st.gravityDir],
+      strength:CUR_STR.label,
+      time_budget:this.timeBudget,
+      memory_games:isBaseline?'':DCC_MEMORY.games_played,
+      start_aggression:isBaseline?'':DCC_MEMORY.last_start_aggression.toFixed(3),
+      start_band_low:isBaseline?'':(DCC_MEMORY.last_start_band_low!=null?Math.round(DCC_MEMORY.last_start_band_low):'cold'),
+      start_band_high:isBaseline?'':(DCC_MEMORY.last_start_band_high!=null?Math.round(DCC_MEMORY.last_start_band_high):'cold')
+    });
+    this.addLog(gn+1,lc,lt,st.moveCount,ci);
+    this.updateUI();
+
+    requestAnimationFrame(()=>this.runNext());
+  },
+
+  logDCC(game,move,dcc){
+    const el=document.getElementById('dccScroll');
+    const e=document.createElement('div');
+    const memN=DCC_MEMORY.games_played;
+    e.innerHTML='<span style="color:var(--muted)">G'+game+'M'+move+'</span> '+
+      '<span class="dcc-l1">L1:'+dcc.lastL1+'</span> '+
+      '<span class="dcc-l2">L2:'+dcc.lastL2+(memN>0?',mem:'+memN:'')+'</span> '+
+      '<span class="dcc-l3">L3:'+dcc.lastL3+(memN>0?',mem:'+memN:'')+'</span> '+
+      '<span style="color:var(--muted)">'+dcc.lastThrift+'</span>';
+    el.appendChild(e);this.dccLogN++;
+    document.getElementById('dccLogCount').textContent=this.dccLogN;
+    if(el.children.length>400)el.removeChild(el.firstChild);
+    el.scrollTop=el.scrollHeight;
+  },
+
+  addLog(num,cls,text,moves,ci){
+    const el=document.getElementById('logScroll');
+    const e=document.createElement('div');e.className='log-entry';
+    e.innerHTML='<span class="game-num">#'+num+'</span> <span class="'+cls+'">'+text+'</span> <span style="color:var(--muted)">('+moves+'m, '+ci+')</span>';
+    el.appendChild(e);
+    document.getElementById('logCount').textContent=this.games+' games';
+    el.scrollTop=el.scrollHeight;
+  },
+
+  updateUI(){
+    const tot=this.games||1;
+    document.getElementById('statRDCC').textContent=this.rWins;
+    document.getElementById('statClassical').textContent=this.cWins;
+    document.getElementById('statDraws').textContent=this.draws;
+    document.getElementById('statGames').textContent=this.games;
+    document.getElementById('statRDCCpct').textContent=(this.rWins/tot*100).toFixed(1)+'%';
+    document.getElementById('statClassicalPct').textContent=(this.cWins/tot*100).toFixed(1)+'%';
+    document.getElementById('statDrawsPct').textContent=(this.draws/tot*100).toFixed(1)+'%';
+
+    const rP=this.rWins/tot*100,dP=this.draws/tot*100,cP=this.cWins/tot*100;
+    document.getElementById('barGold').style.width=rP+'%';
+    document.getElementById('barGold').textContent=this.rWins>0?this.rWins:'';
+    document.getElementById('barDraw').style.width=dP+'%';
+    document.getElementById('barDraw').textContent=this.draws>0?this.draws:'';
+    document.getElementById('barCyan').style.width=cP+'%';
+    document.getElementById('barCyan').textContent=this.cWins>0?this.cWins:'';
+    document.getElementById('barLabelGold').textContent=rP.toFixed(0)+'%';
+    document.getElementById('barLabelCyan').textContent=cP.toFixed(0)+'%';
+
+    // Wilson score CI
+    if(this.games>=4){
+      const n=this.rWins+this.cWins;
+      if(n>0){
+        const p=this.rWins/n,z=1.96;
+        const den=1+z*z/n;
+        const ctr=(p+z*z/(2*n))/den;
+        const spr=z*Math.sqrt((p*(1-p)+z*z/(4*n))/n)/den;
+        const lo=Math.max(0,ctr-spr)*100,hi=Math.min(1,ctr+spr)*100;
+        const ciLabel=this.mode==='baseline'?'Red CI: ':'rDCC CI: ';
+        document.getElementById('ciText').textContent=ciLabel+lo.toFixed(1)+'%–'+hi.toFixed(1)+'% (95%)';
+      }
+    }
+
+    if(this.gameLens.length>0){
+      const avg=this.gameLens.reduce((a,b)=>a+b,0)/this.gameLens.length;
+      document.getElementById('avgGameLen').textContent='Avg: '+avg.toFixed(1)+' moves';
+    }
+  }
+};
+
+// ── STRENGTH → TIME AUTO-SYNC ──
+function syncStrTime(){
+  const lvl=parseInt(document.getElementById('cfgStr').value)||3;
+  const s=STRENGTH[lvl];
+  if(s&&s.defTime){document.getElementById('cfgTime').value=s.defTime}
+}
+
+// Init
+renderBoard(emptyGrid(),0);
+T.updateUI();
+
+// ── EXPORT CSV ──
+function exportCSV(){
+  if(!T.gameLog.length){alert('No data to export');return;}
+  const keys=Object.keys(T.gameLog[0]);
+  let csv=keys.join(',')+'\n';
+  for(const row of T.gameLog)csv+=keys.map(k=>row[k]!=null?row[k]:'').join(',')+'\n';
+  csv+='\n#SUMMARY\n';
+  const isB=T.mode==='baseline';
+  csv+='mode,total_games,'+(isB?'red':'rDCC')+'_wins,'+(isB?'yellow':'classical')+'_wins,draws,'+(isB?'red':'rDCC')+'_winrate,avg_moves,memory_games,final_start_aggression\n';
+  const n=T.rWins+T.cWins;
+  const wr=n>0?(T.rWins/n*100).toFixed(1):'N/A';
+  const avg=T.gameLens.length>0?(T.gameLens.reduce((a,b)=>a+b,0)/T.gameLens.length).toFixed(1):'N/A';
+  csv+=T.mode+','+T.games+','+T.rWins+','+T.cWins+','+T.draws+','+wr+'%,'+avg+','+DCC_MEMORY.games_played+','+DCC_MEMORY.last_start_aggression.toFixed(3)+'\n';
+  const modeTag=T.mode==='baseline'?'baseline':'rDCC_v3';
+  downloadFile('F4M_'+modeTag+'_tournament_'+new Date().toISOString().slice(0,16).replace(':','')+'.csv',csv);
+}
+
+// ── EXPORT SCREENSHOT ──
+function exportScreenshot(){
+  const el=document.getElementById('mainArea');
+  if(typeof html2canvas==='undefined'){alert('html2canvas not loaded — check internet connection');return;}
+  html2canvas(el,{backgroundColor:'#0a0c10',scale:2,useCORS:true,logging:false}).then(function(canvas){
+    const link=document.createElement('a');
+    link.download='F4M_rDCC_v3_tournament_'+new Date().toISOString().slice(0,16).replace(':','')+'.png';
+    link.href=canvas.toDataURL('image/png');link.click();
+  }).catch(function(e){alert('Screenshot failed: '+e.message);});
+}
+
+function downloadFile(name,content){
+  const blob=new Blob([content],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href);
+}
+</script>
+</body>
+</html>
