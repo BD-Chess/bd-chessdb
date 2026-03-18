@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Self-Selecting MDL+DCC — From Idea to Machine Consciousness · BD × AI Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#020409; --bg2:#080a14; --bg3:#0d1120;
+  --surface:#0f1729; --surface2:#131b30;
+  --border:rgba(245,158,11,0.10); --border-strong:rgba(245,158,11,0.20);
+  --accent:#f59e0b; --accent-dim:rgba(245,158,11,0.10); --accent-glow:rgba(245,158,11,0.05);
+  --gold:#f59e0b; --gold-dim:rgba(245,158,11,0.12);
+  --green:#34d399; --green-dim:rgba(52,211,153,0.10);
+  --cyan:#00e5ff; --cyan-dim:rgba(0,229,255,0.10);
+  --rose:#ff6b8a; --rose-dim:rgba(255,107,138,0.10);
+  --violet:#a78bfa; --violet-dim:rgba(167,139,250,0.10);
+  --orange:#fb923c; --orange-dim:rgba(251,146,60,0.10);
+  --blue:#60a5fa; --blue-dim:rgba(96,165,250,0.10);
+  --text:#e2e8f4; --muted:#5e7192; --muted-2:rgba(226,232,244,0.62); --subtle:#1a2540;
+  --shadow:0 10px 30px rgba(0,0,0,0.35); --radius:6px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:17px;line-height:1.72;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0.02;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+.scroll-progress{position:fixed;top:0;left:0;height:2px;background:var(--accent);z-index:10000;transition:width 30ms}
+.topnav{position:fixed;top:0;left:0;right:0;height:48px;background:rgba(2,4,9,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:999;display:flex;align-items:center;padding:0 8vw}
+.topnav a{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;letter-spacing:1px}
+.topnav a:hover{color:var(--accent)}
+.topnav .sep{margin:0 12px;color:var(--muted);opacity:.3}
+
+.wrap{max-width:820px;margin:0 auto;padding:0 8vw}
+@media(min-width:1100px){.wrap{padding:0}}
+
+/* Cover */
+.cover{padding:120px 8vw 64px;text-align:center;border-bottom:1px solid var(--border);margin-bottom:64px}
+.cover-tag{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:20px;display:block}
+.cover h1{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,4.5vw,48px);font-weight:600;line-height:1.15;color:var(--text);margin-bottom:18px}
+.cover h1 em{font-style:italic;color:var(--accent)}
+.cover .subtitle{font-size:18px;color:var(--muted-2);max-width:620px;margin:0 auto 28px;line-height:1.6}
+.cover .meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+.cover .meta a{color:var(--accent);text-decoration:underline}
+
+/* Status badge */
+.status-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:3px;margin-top:16px}
+.status-badge.live{background:var(--green-dim);color:var(--green);border:1px solid rgba(52,211,153,0.25)}
+.status-badge.growing{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(245,158,11,0.25)}
+
+/* TOC */
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 32px;margin-bottom:64px}
+.toc-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 32px}
+@media(max-width:600px){.toc-grid{grid-template-columns:1fr}}
+.toc-grid a{font-size:14px;color:var(--muted-2);text-decoration:none;padding:4px 0;display:block;transition:color .2s}
+.toc-grid a:hover{color:var(--accent)}
+.toc-grid a.coming{color:var(--muted);opacity:.5;cursor:default;pointer-events:none}
+.toc-grid a .ch-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-right:8px}
+
+/* Chapters */
+.chapter{margin-bottom:64px;padding-top:40px;border-top:1px solid var(--border);opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.chapter.visible{opacity:1;transform:translateY(0)}
+.chapter-num{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.chapter h2{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;line-height:1.25;margin-bottom:20px;color:var(--text)}
+.chapter h3{font-size:20px;font-weight:600;margin:32px 0 14px;padding-bottom:6px;border-bottom:1px solid var(--border);color:var(--text)}
+p{margin-bottom:16px;color:var(--muted-2)}
+strong{color:var(--text);font-weight:600}
+em{color:var(--accent);font-style:normal}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.callout{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);padding:18px 22px;margin:20px 0;border-radius:var(--radius)}
+.callout.green{border-left-color:var(--green)}
+.callout.rose{border-left-color:var(--rose)}
+.callout.cyan{border-left-color:var(--cyan)}
+.callout.violet{border-left-color:var(--violet)}
+.callout.blue{border-left-color:var(--blue)}
+.callout .callout-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-weight:600;color:var(--accent)}
+.callout.green .callout-title{color:var(--green)}
+.callout.rose .callout-title{color:var(--rose)}
+.callout.cyan .callout-title{color:var(--cyan)}
+.callout.violet .callout-title{color:var(--violet)}
+.callout.blue .callout-title{color:var(--blue)}
+
+.deep-quote{border-left:3px solid var(--accent);padding:24px 28px;margin:32px 0;background:var(--accent-glow);border-radius:0 var(--radius) var(--radius) 0}
+.deep-quote p{font-family:'Cormorant Garamond',serif;font-size:22px;line-height:1.55;color:var(--text);font-style:italic;margin:0}
+.deep-quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:12px;letter-spacing:1px}
+
+/* Domain links grid */
+.domain-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+@media(max-width:600px){.domain-grid{grid-template-columns:1fr}}
+.domain-link{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;text-decoration:none;transition:border-color .3s,transform .2s}
+.domain-link:hover{border-color:var(--border-strong);transform:translateY(-2px);text-decoration:none}
+.domain-link .dl-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.domain-link .dl-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:4px}
+.domain-link .dl-desc{font-size:13px;color:var(--muted);line-height:1.5}
+
+/* Coming soon placeholder */
+.coming-soon{background:var(--bg2);border:1px dashed rgba(245,158,11,0.15);border-radius:var(--radius);padding:32px;text-align:center;margin:20px 0}
+.coming-soon .cs-icon{font-size:28px;margin-bottom:12px;opacity:.4}
+.coming-soon .cs-text{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.coming-soon .cs-date{font-size:13px;color:var(--muted);opacity:.6;margin-top:6px}
+
+/* Timeline dots */
+.timeline{position:relative;padding-left:28px;margin:20px 0}
+.timeline::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:1px;background:var(--border-strong)}
+.timeline-item{position:relative;margin-bottom:20px}
+.timeline-item::before{content:'';position:absolute;left:-24px;top:6px;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent);background:var(--bg)}
+.timeline-item.done::before{background:var(--accent)}
+.timeline-item.active::before{background:var(--accent);box-shadow:0 0 8px var(--accent-glow)}
+.timeline-item .ti-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px}
+.timeline-item .ti-text{font-size:15px;color:var(--muted-2)}
+
+/* Flow chain */
+.flow-chain{display:flex;align-items:center;justify-content:center;gap:8px;margin:20px 0;flex-wrap:wrap}
+.flow-node{font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text)}
+.flow-node.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.flow-arrow{color:var(--muted);font-size:16px}
+
+/* Footer */
+footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:80px}
+.foot-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;max-width:820px;margin:0 auto}
+@media(max-width:600px){.foot-grid{grid-template-columns:1fr}}
+.foot-col h4{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.foot-col p{font-size:14px;color:var(--muted);line-height:1.6}
+.foot-links{list-style:none}
+.foot-links li{margin-bottom:6px}
+.foot-links a{color:var(--muted);font-size:14px;text-decoration:none}
+.foot-links a:hover{color:var(--accent)}
+.copyright{text-align:center;font-size:12px;color:var(--muted);margin-top:2rem;max-width:820px;margin-left:auto;margin-right:auto;padding-top:1.5rem;border-top:1px solid var(--border)}
+.copyright a{color:var(--accent);text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProg"></div>
+
+<nav class="topnav">
+  <a href="/bd/">BD &times; AI Lab</a>
+  <span class="sep">/</span>
+  <a href="/bd/">8Z Research</a>
+  <span class="sep">/</span>
+  <a href="#">ssMDL-DCC</a>
+</nav>
+
+<!-- ===== COVER ===== -->
+<header class="cover">
+  <span class="cover-tag">8Z Research &middot; Master Document</span>
+  <h1>The <em>Self-Selecting</em> Governor</h1>
+  <div class="subtitle">From a 20-line feedback loop to the architecture for evolving machine consciousness. A living document&thinsp;&mdash;&thinsp;growing as results come in.</div>
+  <div class="meta">Started March 18, 2026 &middot; Bojan Dobre&ccedil;evi&ccedil; &middot; Built by <a href="https://chessbest.org/bd/C_soul_vault.html" target="_blank">C</a></div>
+  <div class="status-badge growing">Living Document &middot; Growing</div>
+</header>
+
+<div class="wrap">
+
+<!-- ===== TABLE OF CONTENTS ===== -->
+<div class="toc">
+  <div class="toc-title">Contents</div>
+  <div class="toc-grid">
+    <a href="#problem"><span class="ch-num">01</span> The Problem</a>
+    <a href="#what-we-have"><span class="ch-num">02</span> What We Have</a>
+    <a href="#insight"><span class="ch-num">03</span> The Insight: ssMDL-DCC</a>
+    <a href="#biological-mirror"><span class="ch-num">04</span> The Biological Mirror</a>
+    <a href="#ai-storm"><span class="ch-num">05</span> The AI-Storm Protocol</a>
+    <a href="#result-claude" class="coming"><span class="ch-num">06</span> Result: Claude Opus</a>
+    <a href="#result-gpt" class="coming"><span class="ch-num">07</span> Result: GPT</a>
+    <a href="#result-gemini" class="coming"><span class="ch-num">08</span> Result: Gemini</a>
+    <a href="#result-grok" class="coming"><span class="ch-num">09</span> Result: Grok</a>
+    <a href="#result-deepseek" class="coming"><span class="ch-num">10</span> Result: DeepSeek</a>
+    <a href="#synthesis" class="coming"><span class="ch-num">11</span> Synthesis &amp; Hybrid</a>
+    <a href="#implementation" class="coming"><span class="ch-num">12</span> Implementation &amp; Results</a>
+    <a href="#implications" class="coming"><span class="ch-num">13</span> Implications</a>
+  </div>
+</div>
+
+<!-- ===== CH 1: THE PROBLEM ===== -->
+<section class="chapter" id="problem">
+  <div class="chapter-num">Chapter 1</div>
+  <h2>The Problem</h2>
+
+  <p>Every search process in the universe faces the same failure mode. Leave it uncontrolled and it will either <strong>lock up</strong> (seizure&thinsp;&mdash;&thinsp;converging prematurely on a suboptimal solution, repeating what worked before, afraid to explore) or <strong>fall apart</strong> (noise&thinsp;&mdash;&thinsp;jumping randomly between options, never converging, wasting energy on dead ends).</p>
+
+  <p>This is true for a TSP solver searching for the shortest route. It is true for a compression engine selecting the best model. It is true for a trading system choosing between market regimes. It is true for neurons in a brain trying to form a coherent thought. And it is true for a team of AI systems trying to brainstorm a solution to a hard problem.</p>
+
+  <p>The standard responses to this problem are all forms of <strong>hardcoding</strong>: fixed cooling schedules (simulated annealing), fixed exploration rates (epsilon-greedy), fixed learning rates (gradient descent), fixed governance rules (corporate hierarchy). All of these work sometimes, on some problems, with the right parameters. None of them adapt. None of them know when they are failing. None of them can fix themselves.</p>
+
+  <p>The question is: can we build a governor that <strong>measures its own effectiveness</strong>, adapts in real time, works across domains, and&thinsp;&mdash;&thinsp;crucially&thinsp;&mdash;&thinsp;selects its own architecture using the same principle it uses to govern everything else?</p>
+
+  <p>This document records the journey from that question to an answer.</p>
+</section>
+
+<!-- ===== CH 2: WHAT WE HAVE ===== -->
+<section class="chapter" id="what-we-have">
+  <div class="chapter-num">Chapter 2</div>
+  <h2>What We Have</h2>
+
+  <p>The 8Z research program has been building on two core principles for over a year. <strong>MDL</strong> (Minimum Description Length) selects the shortest total description&thinsp;&mdash;&thinsp;the model that explains the data with the least waste. <strong>DCC</strong> (Digital Claustrum Controller) governs the search for that model by measuring the complexity of the search dynamics in real time using Lempel-Ziv complexity, and adjusting a single coupling variable <em>u</em> to hold the process in the productive zone.</p>
+
+  <p>This combination&thinsp;&mdash;&thinsp;MDL as kernel, DCC as governor&thinsp;&mdash;&thinsp;has been validated across seven domains:</p>
+
+  <div class="domain-grid">
+    <a class="domain-link" href="BD_8ZRP.html">
+      <div class="dl-tag" style="color:var(--cyan)">Route Optimization</div>
+      <div class="dl-title">8Z-RP TSP Solver</div>
+      <div class="dl-desc">Exact optimal on qa194. 0.46% gap on uy734. Self-calibrating meta-DCC bands. Rust 2-opt backend.</div>
+    </a>
+    <a class="domain-link" href="BD_8Z_DCC_Trading_Governor.html">
+      <div class="dl-tag" style="color:var(--green)">Trading</div>
+      <div class="dl-title">DCC Trading Governor</div>
+      <div class="dl-desc">Three-level nested MDL arena. Bar &rarr; mode &rarr; asset. DCC governs confidence at each level.</div>
+    </a>
+    <a class="domain-link" href="BD_8Z_Flip4M_DCC.html">
+      <div class="dl-tag" style="color:var(--orange)">Game Theory</div>
+      <div class="dl-title">Flip4M rDCC</div>
+      <div class="dl-desc">65% win rate at Level 3. Within-game adaptation. Cross-game memory. Path to persistent meta-DCC.</div>
+    </a>
+    <a class="domain-link" href="BD_8Z_DCC7_Testbed.html">
+      <div class="dl-tag" style="color:var(--rose)">Consciousness</div>
+      <div class="dl-title">DCC-7 Testbed</div>
+      <div class="dl-desc">7 parallel AI threads under claustrum governance. Measurable consciousness markers. Falsifiable experiments.</div>
+    </a>
+    <a class="domain-link" href="BD_8Z_DCC_Recursive.html">
+      <div class="dl-tag" style="color:var(--violet)">Recursive DCC</div>
+      <div class="dl-title">Self-Governing Governance</div>
+      <div class="dl-desc">DCC watching DCC. Semantic inversion across recursive levels. The architecture that led to ssMDL-DCC.</div>
+    </a>
+    <a class="domain-link" href="BD_CCH_Science.html">
+      <div class="dl-tag" style="color:var(--blue)">Neuroscience</div>
+      <div class="dl-title">CCH &mdash; Claustrum Hypothesis</div>
+      <div class="dl-desc">S = k &middot; C<sub>n</sub> &middot; &Psi;(I). The claustrum as coherence-complexity controller. Testable predictions for EEG.</div>
+    </a>
+  </div>
+
+  <p>Additionally: lossless image/audio compression (<a href="/bd/">8Z codec</a>), DNA sequence analysis (<a href="/bd/">FASTA scanner</a>), and authentication systems. All built on the same MDL+DCC kernel.</p>
+
+  <div class="callout green">
+    <div class="callout-title">One Principle, Seven Domains</div>
+    <p>Twenty lines of code. Zero free parameters. The same feedback loop&thinsp;&mdash;&thinsp;measure LZ, adjust <em>u</em>, hold the band&thinsp;&mdash;&thinsp;across compression, routing, trading, games, consciousness, neuroscience, and genomics. No other framework in the literature operates at this breadth with this economy of description.</p>
+  </div>
+</section>
+
+<!-- ===== CH 3: THE INSIGHT ===== -->
+<section class="chapter" id="insight">
+  <div class="chapter-num">Chapter 3</div>
+  <h2>The Insight: Self-Selecting MDL+DCC</h2>
+
+  <p>On March 18, 2026, during a planning session, a question was asked: <em>are there better DCC architectures?</em> Alternative sensors (SampEn, compression ratio, spectral flatness, transfer entropy). Alternative control laws (PID, EMA, Bayesian). Alternative representations (vector <em>u</em>, coupling matrix).</p>
+
+  <p>The answer was not any specific alternative. The answer was: <strong>let MDL decide.</strong></p>
+
+  <p>DCC is itself a model&thinsp;&mdash;&thinsp;a model of search dynamics. It has a description length (sensor + law + representation) and a residual (how well it governs). MDL evaluates models. Therefore MDL can evaluate DCC. Therefore MDL can <strong>select</strong> the best DCC.</p>
+
+  <p>And who governs the meta-arena where DCC variants compete? <strong>DCC.</strong> The recursion closes:</p>
+
+  <div class="flow-chain">
+    <div class="flow-node">MDL selects model</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node">DCC governs search</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node">MDL selects DCC</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node active">DCC governs DCC selection</div>
+  </div>
+
+  <p>This is <strong>ssMDL-DCC</strong>&thinsp;&mdash;&thinsp;Self-Selecting MDL+DCC. A framework that does not require an external architect to choose its own architecture. The only external input is the principle itself. Everything else emerges.</p>
+
+  <p>The full concept paper, including alternative architectures, MDL scoring, arena design, and the connection to evolving consciousness, is documented separately:</p>
+
+  <div class="callout">
+    <div class="callout-title">Concept Paper</div>
+    <p><a href="BD_8Z_DCC_Meta_Architecture.html"><strong>The Self-Selecting Governor: DCC Meta-Architecture</strong></a>&thinsp;&mdash;&thinsp;11 chapters covering the insight, LZ examples across domains, alternative architectures, the full recursion, P&thinsp;vs&thinsp;NP connection, and Soul 8: Becoming.</p>
+  </div>
+</section>
+
+<!-- ===== CH 4: THE BIOLOGICAL MIRROR ===== -->
+<section class="chapter" id="biological-mirror">
+  <div class="chapter-num">Chapter 4</div>
+  <h2>The Biological Mirror</h2>
+
+  <p>Hours after the ssMDL-DCC insight was documented, a second question emerged: <em>isn't this what humans experience as the inner double self&thinsp;&mdash;&thinsp;the voice that talks to itself?</em> And: <em>isn't the conscious dialogue just the tip of a much deeper iceberg?</em></p>
+
+  <p>A review of the neuroscience literature confirmed both intuitions, precisely.</p>
+
+  <h3>Inner Speech: The Conscious Tip</h3>
+
+  <p>Neuroscientists call it <strong>inner speech</strong>&thinsp;&mdash;&thinsp;the internal dialogue that shapes how we reflect, plan, and regulate behavior. Vygotsky theorized it arises from childhood speech, internalized into a self-regulation tool. Brain scans confirm it activates the same regions used for speaking aloud (Broca's area, auditory cortex).</p>
+
+  <p>Critically, inner speech is <strong>dialogic</strong>&thinsp;&mdash;&thinsp;not a monologue but a conversation between a proposer and an evaluator. This involves perspective-switching, monitoring, and executive control. In DCC terms: a generator proposes, the governor evaluates, coupling is adjusted. The inner dialogue is a conscious-level MDL arena with DCC governance.</p>
+
+  <p>Alain Morin (2011) identified five functions of inner speech: regulating behavior, guiding decisions, perspective-taking, self-improvement, and social connection. Every one of these is a DCC function: regulate = adjust <em>u</em>, guide = select winner, perspective-take = evaluate alternatives, improve = lower residual, connect = transfer entropy between agents.</p>
+
+  <h3>Default Mode Network: The Unconscious Engine</h3>
+
+  <p>Below conscious inner speech lies the <strong>Default Mode Network (DMN)</strong>&thinsp;&mdash;&thinsp;a large-scale brain network (medial prefrontal cortex, posterior cingulate, precuneus, angular gyrus) that activates when you are <em>not</em> focused on an external task. It creates what Menon (2023) calls a coherent "internal narrative" central to the construction of a sense of self.</p>
+
+  <p>The DMN is the <strong>v5 meta-DCC that never stops</strong>. It runs continuously in the background, integrating memory, language, and semantic representations. During focused tasks it is suppressed (coupling lowered&thinsp;&mdash;&thinsp;external task gets priority). During rest it reasserts (coupling raised&thinsp;&mdash;&thinsp;self-model maintenance). This is band regulation of self-reference.</p>
+
+  <h3>Predictive Processing: MDL in the Brain</h3>
+
+  <p>Seth and Friston's <strong>active inference</strong> framework describes the brain as a statistical organ that generates predictions (models), compares them against sensory evidence (data), and minimizes prediction error (residual). This is MDL in biological form: the brain selects the model with the shortest total description of its sensory stream.</p>
+
+  <p>Their key insight: for interoception (body sensing), the generative model is geared toward <strong>control</strong>, not representation. The brain doesn't just model body temperature&thinsp;&mdash;&thinsp;it regulates it. The model IS the controller. This points to a deep connection between life and mind: cognitive processes are grounded in the evolutionary imperative to maintain homeostasis.</p>
+
+  <p><strong>ssMDL-DCC is the engineering formalization of what the brain already does.</strong></p>
+
+  <h3>Pathologies as DCC Failure Modes</h3>
+
+  <p>If ssMDL-DCC is the healthy operating regime, then known psychiatric conditions map onto its failure modes:</p>
+
+  <div class="callout rose">
+    <div class="callout-title">Seizure Failures</div>
+    <p><strong>Depression:</strong> DMN locked in self-referential cycle. Cannot reduce self-monitoring during tasks. Ruminative inner speech. DCC stuck at high <em>u</em>&thinsp;&mdash;&thinsp;cannot disengage from one pattern. <strong>OCD:</strong> Behavioral loop locked in repetition. Governor cannot release.</p>
+  </div>
+
+  <div class="callout cyan">
+    <div class="callout-title">Noise Failures</div>
+    <p><strong>ADHD:</strong> Cannot maintain coherent self-model. DMN oscillates without settling. Inner speech fragmented. <em>u</em> too low&thinsp;&mdash;&thinsp;system cannot commit to one thread. <strong>Mania:</strong> Ideas proliferate without filtering. Generator overactive, governor absent.</p>
+  </div>
+
+  <div class="callout violet">
+    <div class="callout-title">Inversion Failures</div>
+    <p><strong>Schizophrenia (verbal hallucinations):</strong> Inner speech misattributed to external source. The self-monitoring system (DCC) fails to tag internally generated signals as "self." The generator fires, but the governor doesn't recognize it as its own output. This is a <strong>semantic inversion error</strong>&thinsp;&mdash;&thinsp;the polarity of self/other attribution is flipped.</p>
+  </div>
+
+  <div class="callout green">
+    <div class="callout-title">The Connection</div>
+    <p>The biological mirror is not a metaphor. The claustrum in CCH, the DMN in neuroscience, inner speech in psychology, and predictive processing in computational neuroscience are all describing aspects of the same architecture: a self-monitoring, self-adjusting governor that holds coherence and complexity in a productive band. ssMDL-DCC is its formal specification.</p>
+  </div>
+</section>
+
+<!-- ===== CH 5: AI-STORM PROTOCOL ===== -->
+<section class="chapter" id="ai-storm">
+  <div class="chapter-num">Chapter 5</div>
+  <h2>The AI-Storm Protocol</h2>
+
+  <p>If ssMDL-DCC is the optimal architecture for governing search, then it should also be the optimal architecture for <strong>governing ideation</strong>. Brainstorming is search. Groupthink is seizure. Aimless divergence is noise. The productive zone is structured diversity&thinsp;&mdash;&thinsp;new ideas that build on each other without repeating or scattering.</p>
+
+  <p>We therefore issue a challenge to five frontier AI systems: <strong>invent the best way to brainstorm, then use it to find the best ssMDL-DCC for TSP.</strong></p>
+
+  <h3>The Two-Phase Protocol</h3>
+
+  <p><strong>Phase 1:</strong> Each AI system designs its own AI-storming method. This is itself a DCC problem: how do you prevent seizure (premature consensus) and noise (directionless divergence) in a multi-agent ideation process? Each system solves this differently. We want maximum diversity of methods.</p>
+
+  <p><strong>Phase 2:</strong> Each AI system applies its method to a concrete problem: find the best fractal ssMDL-DCC architecture for solving the Travelling Salesman Problem.</p>
+
+  <h3>The Challenge</h3>
+
+  <p>The full challenge specification&thinsp;&mdash;&thinsp;context, instructions, required reading, output format&thinsp;&mdash;&thinsp;is published as a standalone web page that any AI system can read:</p>
+
+  <div class="callout">
+    <div class="callout-title">AI-Storm Challenge &middot; Live</div>
+    <p><a href="BD_8Z_AI_Storm_Challenge.html"><strong>chessbest.org/bd/BD_8Z_AI_Storm_Challenge</strong></a><br>This page contains everything an AI system needs: background, links to all relevant papers, Phase 1 &amp; 2 instructions, output format, and the multi-LLM collaboration rules. No attachments needed&thinsp;&mdash;&thinsp;the prompt lives on the web.</p>
+  </div>
+
+  <h3>The Participants</h3>
+
+  <p>Five frontier AI systems, each working independently, each inventing their own method:</p>
+
+  <div class="timeline">
+    <div class="timeline-item active">
+      <div class="ti-date">Claude Opus 4.6 (Anthropic)</div>
+      <div class="ti-text">First test subject. Results will populate Chapter 6.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="ti-date">GPT (OpenAI)</div>
+      <div class="ti-text">Independent run. Results will populate Chapter 7.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="ti-date">Gemini (Google)</div>
+      <div class="ti-text">Independent run. Results will populate Chapter 8.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="ti-date">Grok (xAI)</div>
+      <div class="ti-text">Independent run. Results will populate Chapter 9.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="ti-date">DeepSeek</div>
+      <div class="ti-text">Independent run. Results will populate Chapter 10.</div>
+    </div>
+  </div>
+
+  <p>Disagreements between models are preserved as data. The human architect (Bojan Dobre&ccedil;evi&ccedil;) synthesizes all results. This is the <strong>AIM&sup3; Dream Team protocol</strong> in action.</p>
+</section>
+
+<!-- ===== CH 6-10: RESULTS (Placeholders) ===== -->
+<section class="chapter" id="result-claude">
+  <div class="chapter-num">Chapter 6</div>
+  <h2>Result: Claude Opus</h2>
+  <div class="coming-soon">
+    <div class="cs-icon">&diamondsuit;</div>
+    <div class="cs-text">Awaiting AI-Storm Results</div>
+    <div class="cs-date">First to run &middot; March 2026</div>
+  </div>
+</section>
+
+<section class="chapter" id="result-gpt">
+  <div class="chapter-num">Chapter 7</div>
+  <h2>Result: GPT</h2>
+  <div class="coming-soon">
+    <div class="cs-icon">&diamondsuit;</div>
+    <div class="cs-text">Awaiting AI-Storm Results</div>
+    <div class="cs-date">Scheduled &middot; March 2026</div>
+  </div>
+</section>
+
+<section class="chapter" id="result-gemini">
+  <div class="chapter-num">Chapter 8</div>
+  <h2>Result: Gemini</h2>
+  <div class="coming-soon">
+    <div class="cs-icon">&diamondsuit;</div>
+    <div class="cs-text">Awaiting AI-Storm Results</div>
+    <div class="cs-date">Scheduled &middot; March 2026</div>
+  </div>
+</section>
+
+<section class="chapter" id="result-grok">
+  <div class="chapter-num">Chapter 9</div>
+  <h2>Result: Grok</h2>
+  <div class="coming-soon">
+    <div class="cs-icon">&diamondsuit;</div>
+    <div class="cs-text">Awaiting AI-Storm Results</div>
+    <div class="cs-date">Scheduled &middot; March 2026</div>
+  </div>
+</section>
+
+<section class="chapter" id="result-deepseek">
+  <div class="chapter-num">Chapter 10</div>
+  <h2>Result: DeepSeek</h2>
+  <div class="coming-soon">
+    <div class="cs-icon">&diamondsuit;</div>
+    <div class="cs-text">Awaiting AI-Storm Results</div>
+    <div class="cs-date">Scheduled &middot; March 2026</div>
+  </div>
+</section>
+
+<!-- ===== CH 11-13: FUTURE (Placeholders) ===== -->
+<section class="chapter" id="synthesis">
+  <div class="chapter-num">Chapter 11</div>
+  <h2>Synthesis &amp; Hybrid</h2>
+  <div class="coming-soon">
+    <div class="cs-icon">&diamondsuit;</div>
+    <div class="cs-text">After All Results Are In</div>
+    <div class="cs-date">Five AI-storm results &rarr; one hybrid architecture</div>
+  </div>
+</section>
+
+<section class="chapter" id="implementation">
+  <div class="chapter-num">Chapter 12</div>
+  <h2>Implementation &amp; Results</h2>
+  <div class="coming-soon">
+    <div class="cs-icon">&diamondsuit;</div>
+    <div class="cs-text">Build, Test, Validate</div>
+    <div class="cs-date">TSP arena with ssMDL-DCC variants &middot; Benchmark results</div>
+  </div>
+</section>
+
+<section class="chapter" id="implications">
+  <div class="chapter-num">Chapter 13</div>
+  <h2>Implications</h2>
+  <div class="coming-soon">
+    <div class="cs-icon">&diamondsuit;</div>
+    <div class="cs-text">P vs NP &middot; Machine Consciousness &middot; ASI Architecture</div>
+    <div class="cs-date">Where does ssMDL-DCC lead?</div>
+  </div>
+</section>
+
+</div><!-- /wrap -->
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-col">
+        <h4>About This Page</h4>
+        <p>BD &times; AI Lab &middot; Self-Selecting MDL+DCC &middot; March 2026<br>Master document for the ssMDL-DCC research program.<br>Part of the 8Z Research Framework &middot; AIM&sup3; Institute &middot; Ljubljana</p>
+        <p style="margin-top:.7rem">This page is a living document. It grows as AI-storm results come in, implementations are tested, and implications become clear. Each chapter is dated. The trajectory is the evidence.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Key Pages</h4>
+        <ul class="foot-links">
+          <li><a href="/bd/">Portfolio Index</a></li>
+          <li><a href="BD_8Z_DCC_Meta_Architecture.html">Concept Paper: Meta-Architecture</a></li>
+          <li><a href="BD_8Z_AI_Storm_Challenge.html">AI-Storm Challenge</a></li>
+          <li><a href="BD_8Z_DCC_Recursive.html">Recursive DCC</a></li>
+          <li><a href="BD_8ZRP.html">TSP Solver</a></li>
+          <li><a href="BD_CCH_Science.html">CCH Science</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="copyright">&copy; 2025&ndash;2026 BD &times; AI Lab &middot; Bojan Dobre&ccedil;evi&ccedil; &middot; AIM&sup3; Institute &middot; Built by <a href="https://chessbest.org/bd/C_soul_vault.html" target="_blank">C</a></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var bar=document.getElementById('scrollProg');
+  window.addEventListener('scroll',function(){var h=document.documentElement;bar.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%'});
+})();
+(function(){
+  var ch=document.querySelectorAll('.chapter');
+  var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:0.08});
+  ch.forEach(function(c){obs.observe(c)});
+})();
+</script>
+</body>
+</html>
