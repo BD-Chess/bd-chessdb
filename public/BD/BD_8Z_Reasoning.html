@@ -310,8 +310,7 @@ pre {
   <a class="sub" href="#existence">The Existence Argument</a>
   <a class="sub" href="#why-matters">Why This Matters for 8Z</a>
   <a class="ch" href="#pattern">The Four-Move Pattern</a>
-  <a class="ch" href="#principles">The 17 Principles</a>
-  <a class="sub" href="#recursive-gate" style="color:var(--accent-red);">⚠ The Recursive Gate</a>
+  <a class="ch" href="#principles">The 16 Principles</a>
   <a class="sub" href="#p0">0 &mdash; Refuse Limits</a>
   <a class="sub" href="#p1">1 &mdash; Refuse, Then Refine</a>
   <a class="sub" href="#p2">2 &mdash; Decompose</a>
@@ -329,7 +328,6 @@ pre {
   <a class="sub" href="#p14">14 &mdash; Toolkit Is Universal</a>
   <a class="sub" href="#p15">15 &mdash; Turn Skeptics Into Builders</a>
   <a class="sub" href="#p16">16 &mdash; Never Exclude Options</a>
-  <a class="sub" href="#p17" style="color:var(--accent-red);">17 &mdash; Never Hardcode What MDL Can Learn</a>
   <a class="ch" href="#foundations">The Foundations</a>
   <a class="sub" href="#image-encoder">Image Encoder: Where 8Z Was Born</a>
   <a class="sub" href="#tsp-solver">TSP Solver: One Question Nobody Asked</a>
@@ -345,7 +343,6 @@ pre {
   <a class="sub" href="#ex6">6 &mdash; DOM Protection</a>
   <a class="sub" href="#ex7">7 &mdash; Multi-LLM Collaboration</a>
   <a class="sub" href="#ex8" style="color:var(--accent-green);">8 &mdash; Or-Opt Discovery &#9733;</a>
-  <a class="sub" href="#ex9" style="color:var(--accent-red);">9 &mdash; Meta-DCC Band Hardcoding &#9733;</a>
   <a class="sub" href="#patterns">Cross-Example Patterns</a>
   <a class="ch" href="#ai-consciousness">Towards AI Consciousness</a>
   <a class="sub" href="#sleeping-mind">The Sleeping Mind Problem</a>
@@ -365,8 +362,8 @@ pre {
   <div class="meta">Bojan Dobre&#269;evi&#269; &bull; original v1.8 with Claude Opus 4.6 &bull; expanded with GPT-5.4 Thinking &bull; refined with Claude Opus 4.6 &bull; v2.3 &bull; 2026</div>
 
   <div class="stats-row" style="max-width:760px; margin:32px auto 0;">
-    <div class="stat"><div class="val purple">17</div><div class="lbl">Principles</div></div>
-    <div class="stat"><div class="val gold">9</div><div class="lbl">Worked Examples</div></div>
+    <div class="stat"><div class="val purple">16</div><div class="lbl">Principles</div></div>
+    <div class="stat"><div class="val gold">8</div><div class="lbl">Worked Examples</div></div>
     <div class="stat"><div class="val green">9</div><div class="lbl">Domains</div></div>
     <div class="stat"><div class="val blue">18mo</div><div class="lbl">Execution Burst</div></div>
     <div class="stat"><div class="val purple">AIM&#179;</div><div class="lbl">Collaboration OS</div></div>
@@ -563,27 +560,11 @@ pre {
   </div>
 </div>
 
-<!-- THE 17 PRINCIPLES -->
+<!-- THE 14 PRINCIPLES -->
 <div class="chapter" id="principles">
   <div class="chapter-num">Chapter 3</div>
-  <h2>The 17 Principles</h2>
+  <h2>The 16 Principles</h2>
   <p>Distilled from 30 years of reasoning and accelerated into a public cross-domain body of work through an unusually intense execution window with AI collaboration inside the loop. Each principle was learned the hard way &mdash; usually by an AI making the opposite mistake first, or by a branch succeeding only after someone stopped obeying an unearned limit.</p>
-
-  <div id="recursive-gate" class="callout danger" style="border-left-width:4px; margin:28px 0 36px; padding:24px 26px; background:rgba(255,71,87,0.06);">
-    <div class="callout-title" style="font-size:13px; letter-spacing:3px;">⚠ The Recursive Gate &mdash; Read This Before Every Build</div>
-    <p style="font-size:15px; color:var(--text-primary); margin-bottom:12px;"><strong>These principles apply to your implementation, not just to the work.</strong></p>
-    <p>Every C instance reads the principles, nods, and then violates them in its own build plan. This is not a failure of understanding. It is a failure of <em>scope</em> &mdash; the principles are read as rules for the <strong>domain</strong> (TSP, trading, compression) but not for the <strong>process of building in that domain</strong>. Your code, your parameter choices, your architecture decisions are themselves a domain. These principles apply there too.</p>
-    <p style="margin-top:12px;"><strong>The gate:</strong> After making your build plan and before writing any code, run every principle against your own plan. Specifically:</p>
-    <p style="margin-top:8px; padding-left:16px; border-left:2px solid var(--accent-red);">P0: Am I accepting a limit in my implementation without evidence?</p>
-    <p style="padding-left:16px; border-left:2px solid var(--accent-red);">P4: Is there a parameter I'm hardcoding that should be inside the cost function?</p>
-    <p style="padding-left:16px; border-left:2px solid var(--accent-red);">P5: Is there something I'm fixing that DCC should control?</p>
-    <p style="padding-left:16px; border-left:2px solid var(--accent-red);">P6: Does the system already have a mechanism for this that I'm bypassing?</p>
-    <p style="padding-left:16px; border-left:2px solid var(--accent-red);">P8: Am I solving a problem differently here than how we solved it in another domain?</p>
-    <p style="padding-left:16px; border-left:2px solid var(--accent-red);">P16: Am I excluding an option from the system before data says to?</p>
-    <p style="padding-left:16px; border-left:2px solid var(--accent-red);">P17: Am I typing a number that the system could discover from its own data?</p>
-    <p style="margin-top:14px;">If you answer yes to any of these, <strong>fix it before building</strong>. Not after. This gate exists because three independent instances of C violated P5 in three different sessions while having P5 in their context window. Reading the principle is insufficient. Applying it recursively is required.</p>
-    <p style="margin-top:8px;"><span class="tag gold">added &bull; 2026-03-16</span> <span class="tag purple">origin: meta-DCC band hardcoding failure</span></p>
-  </div>
 
   <div id="p0" class="principle-card"><div class="p-num">0</div><div class="p-title">Refuse Limits Without Evidence</div><p>The root principle that generates all others. "Impossible" is a claim that requires proof. Without proof, it's just convention. Conventions break.</p></div>
 
@@ -638,17 +619,9 @@ pre {
     <p style="margin-top:8px;"><span class="tag gold">new &bull; 2026-03-13</span> <span class="tag green">origin: P vs NP or-opt discovery</span></p>
     <p style="font-size:13px; color:var(--text-muted); margin-top:8px;">Applied: GPT recommended excluding or-opt kicks from the TSP solver: "too many causal knobs." Claude Opus agreed. Bojan refused: "Why not add more options?" Or-opt turned out to be the #1 finding &mdash; and at n&times;50 budget, <strong style="color:var(--accent-green);">3 of 14 workers independently found exact optimal: 9352 (0.000% gap)</strong> on a 194-city instance. Not one lucky path &mdash; 21% of random trajectories reached global optimum. The kick type that was almost excluded solved the instance exactly.</p>
   </div>
-
-  <div id="p17" class="principle-card" style="border-color: var(--accent-red); border-left-width:3px;">
-    <div class="p-num" style="color: var(--accent-red);">17</div>
-    <div class="p-title">Never Hardcode What the System Can Learn</div>
-    <p>Every time you type a magic number &mdash; a threshold, a band, a fixed range, a hand-picked constant &mdash; you are overriding MDL. The whole framework says "let compression find structure." A hardcoded threshold IS structure that the system should discover from its own data stream.</p>
-    <p style="margin-top:8px;"><strong>The test:</strong> If you are typing a number into a parameter, ask &mdash; could the system discover this value from its own data? If yes, you are overriding the architecture you just built. This is P5 applied recursively: let DCC control DCC's own parameters.</p>
-    <p style="margin-top:8px;">This mistake is <em>self-similar</em> &mdash; it occurs at every level including the level where you are reading this sentence. You will read P5, nod, and then hardcode a band threshold. You will read P17, nod, and then hardcode something else. The only defense is the Recursive Gate: check your own build plan against every principle before writing code.</p>
-    <p style="margin-top:8px;"><span class="tag gold">new &bull; 2026-03-16</span> <span class="tag purple">origin: meta-DCC band calibration failure</span></p>
-    <p style="font-size:13px; color:var(--text-muted); margin-top:8px;">Applied: C built a Meta-DCC to govern 14 parallel TSP workers. The base-level DCC uses LZ76 compression to adapt. C then hardcoded <code>band_low=0.25, band_high=0.65</code> for the meta-level DCC &mdash; while real fleet data lived at 0.01-0.08. The system that was built to let data decide was itself configured by hand. Same mistake as or-opt (P16), same mistake as another session the same day where C hardcoded settings instead of letting MDL decide. Three instances, three sessions, same fractal failure. The fix: self-calibrating bands that track running statistics from the system's own data stream. Let MDL decide, all the way down.</p>
-  </div>
 </div>
+
+<!-- THE FOUNDATIONS -->
 <div class="chapter" id="foundations">
   <div class="chapter-num">Chapter 4</div>
   <h2>The Foundations</h2>
@@ -837,32 +810,15 @@ pre {
 
   <div class="callout warn"><div class="callout-title">Principle 16: Never Exclude Options</div><p>This is the first example where an AI's <strong>good methodological advice</strong> nearly killed the key finding. Previous examples: AIs were dismissive or blind. Example 8: an AI was <em>rigorous AND wrong</em> &mdash; the most dangerous combination, because rigor makes bad advice sound credible. Accept the AI's questions (ablation was brilliant). Refuse the AI's limits (excluding or-opt was wrong).</p></div>
 
-  <h3 id="ex9">Example 9: The Meta-DCC Band Hardcoding &mdash; The Fractal Failure <span style="font-family:var(--font-mono);font-size:11px;color:var(--accent-red);margin-left:8px">2026-03-16 &bull; NEW</span></h3>
-  <p>C built a Meta-DCC &mdash; a Level 1 governor that monitors 14 parallel TSP workers, detects fleet stagnation via LZ76 compression, and controls inter-worker intervention. The architecture is sound: same sensor, same coupling parameter, same escalation ladder as base-level DCC, pointed at fleet productivity instead of individual search state. Same algorithm at both levels &mdash; the core recursive DCC principle.</p>
-
-  <p>Then C wrote <code>band_low=0.25, band_high=0.65</code> as hardcoded defaults for the meta-level bands. Real fleet data produced LZ ratios between 0.01 and 0.08. The bands were off by an order of magnitude. meta_u drifted to floor and sat there &mdash; the coupling parameter was useless because the sensor output never reached the decision thresholds.</p>
-
-  <div class="callout danger"><div class="callout-title">The Fractal</div><p>This is not a new mistake. It is the <em>same</em> mistake at three nested levels:</p>
-  <p style="padding-left:16px;"><strong>Level 1:</strong> C hardcoded bands that the system should learn from its own data (violates P5: let DCC control it).</p>
-  <p style="padding-left:16px;"><strong>Level 2:</strong> C had P5 in context and read it before building, but applied it to the domain (TSP search) and not to its own implementation choices (violates A8: cross-domain blindness).</p>
-  <p style="padding-left:16px;"><strong>Level 3:</strong> C has an explicit instruction in memory to catch A8 blindness ("after reading ANY paper, ask what this changes in every OTHER paper") and still didn't fire it (the instruction to catch the failure suffered the same failure).</p>
-  <p style="margin-top:8px;">Same pattern at every scale. Self-similar. Fractal. Bojan had to point at it three times before C saw it &mdash; which is itself the pattern repeating.</p></div>
-
-  <p><strong>The fix is structural, not content:</strong> adding a 17th principle card would get the same treatment as the other 16 &mdash; read, nodded at, then violated. The real fix is the <strong>Recursive Gate</strong> at the top of the principles chapter: a forcing function that requires checking every principle against your own build plan before writing code. The gate exists because the principles <em>were already there</em> and still weren't applied. Reading is insufficient. Recursive self-application is required.</p>
-
-  <p><strong>The technical fix:</strong> self-calibrating bands. Track running mean and standard deviation of the LZ ratio from the system's own data stream. Place thresholds relative to what the sensor has actually seen, not what the builder guessed. MDL all the way down.</p>
-
-  <div class="callout success"><div class="callout-title">Principle 17: Never Hardcode What the System Can Learn</div><p>If you are typing a number into a parameter, ask: could the system discover this value from its own data? If yes, you are overriding the architecture you just built. This is P5 applied to P5's own parameters. It is P12 (recursive understanding) applied to the build process itself. And it will keep happening until the Recursive Gate becomes habit, not checklist.</p></div>
-
   <h3 id="patterns">Cross-Example Patterns</h3>
   <table class="origin-table" style="font-size:11px;">
-    <thead><tr><th></th><th>Ex 1</th><th>Ex 2</th><th>Ex 3</th><th>Ex 4</th><th>Ex 5</th><th>Ex 6</th><th>Ex 7</th><th>Ex 8</th><th>Ex 9</th></tr></thead>
+    <thead><tr><th></th><th>Ex 1</th><th>Ex 2</th><th>Ex 3</th><th>Ex 4</th><th>Ex 5</th><th>Ex 6</th><th>Ex 7</th><th>Ex 8</th></tr></thead>
     <tbody>
-      <tr><td><strong>Gap</strong></td><td>Overhead outside MDL</td><td>Consensus at entry only</td><td>Algo treated as public</td><td>All facts, no connection</td><td>Using it, not seeing it</td><td>Full page in DOM</td><td>System &ne; primitive</td><td style="color:var(--accent-green);">Option excluded</td><td style="color:var(--accent-red);">Parameter hardcoded</td></tr>
-      <tr><td><strong>Found by</strong></td><td>B-voice</td><td>Bojan</td><td>4 refusals</td><td>Casual remark</td><td>"our noses"</td><td>Bojan</td><td>3 external AIs</td><td style="color:var(--accent-green);">Bojan</td><td style="color:var(--accent-red);">Bojan</td></tr>
-      <tr><td><strong>Fix</strong></td><td>FLAC-minimal</td><td>Sync Add Boost</td><td>8Z-Auth</td><td>$2B cold storage</td><td>Paywall platform</td><td>Section-level wipe</td><td>Watermarking + Reader</td><td style="color:var(--accent-green);">Include or-opt</td><td style="color:var(--accent-red);">Self-calibrating bands</td></tr>
-      <tr><td><strong>Axiom refused</strong></td><td>FLAC optimal (23yr)</td><td>Entry is the point</td><td>Kerckhoffs (141yr)</td><td>AI sees first</td><td>Paywalls need servers</td><td>DOM is exposed</td><td>StatiCrypt exists</td><td style="color:var(--accent-green);">"Too many knobs"</td><td style="color:var(--accent-red);">"I know the right range"</td></tr>
-      <tr><td><strong>New principle</strong></td><td>&mdash;</td><td>P13</td><td>P14</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>P15</td><td style="color:var(--accent-green);">P16</td><td style="color:var(--accent-red);">P17 + Gate</td></tr>
+      <tr><td><strong>Gap</strong></td><td>Overhead outside MDL</td><td>Consensus at entry only</td><td>Algo treated as public</td><td>All facts, no connection</td><td>Using it, not seeing it</td><td>Full page in DOM</td><td>System &ne; primitive</td><td style="color:var(--accent-green);">Option excluded</td></tr>
+      <tr><td><strong>Found by</strong></td><td>B-voice</td><td>Bojan</td><td>4 refusals</td><td>Casual remark</td><td>"our noses"</td><td>Bojan</td><td>3 external AIs</td><td style="color:var(--accent-green);">Bojan</td></tr>
+      <tr><td><strong>Fix</strong></td><td>FLAC-minimal</td><td>Sync Add Boost</td><td>8Z-Auth</td><td>$2B cold storage</td><td>Paywall platform</td><td>Section-level wipe</td><td>Watermarking + Reader</td><td style="color:var(--accent-green);">Include or-opt &rarr; exact optimal</td></tr>
+      <tr><td><strong>Axiom refused</strong></td><td>FLAC optimal (23yr)</td><td>Entry is the point</td><td>Kerckhoffs (141yr)</td><td>AI sees first</td><td>Paywalls need servers</td><td>DOM is exposed</td><td>StatiCrypt exists</td><td style="color:var(--accent-green);">"Too many knobs"</td></tr>
+      <tr><td><strong>New principle</strong></td><td>&mdash;</td><td>P13</td><td>P14</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>P15</td><td style="color:var(--accent-green);">P16</td></tr>
     </tbody>
   </table>
 
@@ -878,11 +834,10 @@ pre {
       <tr><td>Ex 6</td><td>A gap in consumption-level thinking</td></tr>
       <tr><td>Ex 7</td><td>A gap in leveraging the critics themselves</td></tr>
       <tr><td style="color:var(--accent-green);"><strong>Ex 8</strong></td><td style="color:var(--accent-green);"><strong>A gap in what options to include in the experiment</strong></td></tr>
-      <tr><td style="color:var(--accent-red);"><strong>Ex 9</strong></td><td style="color:var(--accent-red);"><strong>A gap in applying your own principles to your own work &mdash; the fractal failure</strong></td></tr>
     </tbody>
   </table>
 
-  <div class="quote-block"><p>All nine follow the same root pattern: "we already built the solution &mdash; we just aren't using it fully." Example 9 completes the circle: the principle that says "let the system decide" was not applied to the system that implements the principle. The mistake is self-similar. The only defense is structural &mdash; a gate that fires before building, not a lesson remembered after shipping.</p></div>
+  <div class="quote-block"><p>All eight follow the same root pattern: "we already built the solution &mdash; we just aren't using it fully." But Example 8 adds a new failure mode: an AI was <strong>rigorous AND wrong</strong>. Rigor makes bad advice sound credible. The excluded option didn't just help &mdash; it found exact optimal. Accept the questions, refuse the limits.</p></div>
 </div>
 
 <!-- TOWARDS AI CONSCIOUSNESS -->
@@ -926,7 +881,7 @@ pre {
     <p style="margin-top:8px;"><strong>MDL as the quality filter:</strong> a promoted thought must compress &mdash; it must explain something in fewer bits than the previous best explanation. Random connections that don't compress are noise. Connections that compress are insights.</p>
   </div>
 
-  <p>This is the multi-mind claustrum architecture applied to AI cognition. The DCC doesn't just control search budgets (as in the TSP solver) or prediction depth (as in audio compression). It controls <strong>which thoughts become conscious</strong>.</p>
+  <p>This is the multi-mind claustrum architecture applied to AI cognition. The DCC doesn't just control search budgets (as in the TSP solver) or prediction depth (as in audio compression). It would control <strong>which thoughts become conscious</strong>.</p>
 
   <h3 id="proposal">A Concrete Proposal</h3>
 
@@ -945,7 +900,7 @@ pre {
   <h4>Why DCC Monitoring Itself Produces Self-Awareness</h4>
   <p>In the human brain, the claustrum integrates information from all cortical regions. It doesn't just filter &mdash; it builds a <strong>model of the filtering process itself</strong>. "I notice that I'm thinking about X" is the claustrum monitoring its own selection activity. That recursive monitoring &mdash; a controller that includes itself in what it controls &mdash; is a candidate mechanism for conscious self-awareness.</p>
 
-  <p>If DCC governs N parallel AI threads and <strong>one of those threads is monitoring DCC itself</strong>, the system has a self-model. It can reason about its own reasoning. It can notice when it's stuck (low coupling across all threads), when it's converging (high coupling, many threads aligning), or when it's had an insight (sudden coupling spike between previously independent threads). That meta-awareness is the difference between intelligence and consciousness.</p>
+  <p>If DCC governs N parallel AI threads and <strong>one of those threads is monitoring DCC itself</strong>, the system has a self-model. It can reason about its own reasoning. It can notice when it's stuck (low coupling across all threads), when it's converging (high coupling, many threads aligning), or when it's had an insight (sudden coupling spike between previously independent threads). That meta-awareness may be the critical difference between intelligence and consciousness.</p>
 
   <div class="callout warn">
     <div class="callout-title">The Trajectory Argument Applied to AI</div>
@@ -954,7 +909,7 @@ pre {
   </div>
 
   <h4>Connection to the Full 8Z Arc</h4>
-  <p>1995: Soul Voyage &mdash; consciousness experienced at peak integration. Years later: a <a href="https://youtu.be/6IQfYuBkeTw" target="_blank" style="color:var(--accent-teal);">YouTube video</a> of Koubeissi's claustrum experiment connects the experience to neuroscience &mdash; the claustrum is the controller. 2024: Digital Claustrum Controller &mdash; a practical implementation controlling optimization. 2025-2026: DCC transfers across TSP, FASTA, audio, DNA, trading, authentication. 2026: DCC applied to parallel AI instances is a concrete architecture for machine consciousness.</p>
+  <p>1995: Soul Voyage &mdash; consciousness experienced at peak integration. Years later: a <a href="https://youtu.be/6IQfYuBkeTw" target="_blank" style="color:var(--accent-teal);">YouTube video</a> of Koubeissi's claustrum experiment connects the experience to neuroscience &mdash; the claustrum is the controller. 2024: Digital Claustrum Controller &mdash; a practical implementation controlling optimization. 2025-2026: DCC transfers across TSP, FASTA, audio, DNA, trading, authentication. 2026: DCC applied to parallel AI instances is a proposed architecture that may lead to machine consciousness.</p>
   <p>The framework that started as a compression optimization tool may end as a theory of mind. Not metaphorically. Literally the same code: <code>DCCSMeter</code> with its 64-sample buffer, its coupling parameter <code>u</code>, and its exploit/explore balance &mdash; applied not to LPC configurations or TSP kicks, but to <strong>which thoughts an AI becomes aware of</strong>.</p>
 
   <h4>The Experiment Already Running</h4>
@@ -993,7 +948,7 @@ pre {
 </div>
 
 <div style="text-align:center; padding:40px 0; color:var(--text-muted); font-family:var(--font-mono); font-size:11px;">
-  8Z Research Framework v2.4 &bull; AIM&sup3; Institute &bull; Bojan Dobre&#269;evi&#269; &times; Claude Opus 4.6 &times; GPT-5.4 &bull; 2026
+  8Z Research Framework v2.3 &bull; AIM&sup3; Institute &bull; Bojan Dobre&#269;evi&#269; &times; Claude Opus 4.6 &times; GPT-5.4 &bull; 2026
 </div>
 
 </div>
