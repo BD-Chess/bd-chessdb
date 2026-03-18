@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Resonance Hybrid Protocol — AI-Storming Method · BD × AI Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#020409; --bg2:#080a14; --bg3:#0d1120;
+  --surface:#0f1729; --surface2:#131b30;
+  --border:rgba(52,211,153,0.10); --border-strong:rgba(52,211,153,0.20);
+  --accent:#34d399; --accent-dim:rgba(52,211,153,0.10); --accent-glow:rgba(52,211,153,0.05);
+  --gold:#f59e0b; --gold-dim:rgba(245,158,11,0.12);
+  --green:#34d399; --green-dim:rgba(52,211,153,0.10);
+  --cyan:#00e5ff; --cyan-dim:rgba(0,229,255,0.10);
+  --rose:#ff6b8a; --rose-dim:rgba(255,107,138,0.10);
+  --violet:#a78bfa; --violet-dim:rgba(167,139,250,0.10);
+  --orange:#fb923c; --orange-dim:rgba(251,146,60,0.10);
+  --blue:#60a5fa; --blue-dim:rgba(96,165,250,0.10);
+  --text:#e2e8f4; --muted:#5e7192; --muted-2:rgba(226,232,244,0.62); --subtle:#1a2540;
+  --shadow:0 10px 30px rgba(0,0,0,0.35); --radius:6px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:17px;line-height:1.72;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0.02;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+.scroll-progress{position:fixed;top:0;left:0;height:2px;background:var(--accent);z-index:10000;transition:width 30ms}
+.topnav{position:fixed;top:0;left:0;right:0;height:48px;background:rgba(2,4,9,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:999;display:flex;align-items:center;padding:0 8vw}
+.topnav a{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;letter-spacing:1px}
+.topnav a:hover{color:var(--accent)}
+.topnav .sep{margin:0 12px;color:var(--muted);opacity:.3}
+
+.wrap{max-width:820px;margin:0 auto;padding:0 8vw}
+@media(min-width:1100px){.wrap{padding:0}}
+
+/* Cover */
+.cover{padding:120px 8vw 64px;text-align:center;border-bottom:1px solid var(--border);margin-bottom:64px}
+.cover-tag{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:20px;display:block}
+.cover h1{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,4.5vw,48px);font-weight:600;line-height:1.15;color:var(--text);margin-bottom:18px}
+.cover h1 em{font-style:italic;color:var(--accent)}
+.cover .subtitle{font-size:18px;color:var(--muted-2);max-width:620px;margin:0 auto 28px;line-height:1.6}
+.cover .meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+.cover .meta a{color:var(--accent);text-decoration:underline}
+
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;margin-top:28px}
+.stat{text-align:center;padding:12px 8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.stat .val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700}
+.stat .val.green{color:var(--green)} .stat .val.gold{color:var(--gold)} .stat .val.cyan{color:var(--cyan)} .stat .val.rose{color:var(--rose)} .stat .val.violet{color:var(--violet)} .stat .val.blue{color:var(--blue)} .stat .val.orange{color:var(--orange)}
+.stat .lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+
+/* TOC */
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 32px;margin-bottom:64px}
+.toc-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 32px}
+@media(max-width:600px){.toc-grid{grid-template-columns:1fr}}
+.toc-grid a{font-size:14px;color:var(--muted-2);text-decoration:none;padding:4px 0;display:block;transition:color .2s}
+.toc-grid a:hover{color:var(--accent)}
+.toc-grid a .ch-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-right:8px}
+
+/* Chapters */
+.chapter{margin-bottom:64px;padding-top:40px;border-top:1px solid var(--border);opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.chapter.visible{opacity:1;transform:translateY(0)}
+.chapter-num{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.chapter h2{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;line-height:1.25;margin-bottom:20px;color:var(--text)}
+.chapter h3{font-size:20px;font-weight:600;margin:32px 0 14px;padding-bottom:6px;border-bottom:1px solid var(--border);color:var(--text)}
+p{margin-bottom:16px;color:var(--muted-2)}
+strong{color:var(--text);font-weight:600}
+em{color:var(--accent);font-style:normal}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.callout{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);padding:18px 22px;margin:20px 0;border-radius:var(--radius)}
+.callout.gold{border-left-color:var(--gold)} .callout.rose{border-left-color:var(--rose)} .callout.cyan{border-left-color:var(--cyan)} .callout.violet{border-left-color:var(--violet)} .callout.blue{border-left-color:var(--blue)} .callout.orange{border-left-color:var(--orange)}
+.callout .callout-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-weight:600;color:var(--accent)}
+.callout.gold .callout-title{color:var(--gold)} .callout.rose .callout-title{color:var(--rose)} .callout.cyan .callout-title{color:var(--cyan)} .callout.violet .callout-title{color:var(--violet)} .callout.blue .callout-title{color:var(--blue)} .callout.orange .callout-title{color:var(--orange)}
+
+.deep-quote{border-left:3px solid var(--accent);padding:24px 28px;margin:32px 0;background:var(--accent-glow);border-radius:0 var(--radius) var(--radius) 0}
+.deep-quote p{font-family:'Cormorant Garamond',serif;font-size:22px;line-height:1.55;color:var(--text);font-style:italic;margin:0}
+.deep-quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:12px;letter-spacing:1px}
+
+/* Agent cards */
+.agent-grid{display:grid;gap:16px;margin:20px 0}
+.agent-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;transition:border-color .3s}
+.agent-card:hover{border-color:var(--border-strong)}
+.agent-card .agent-num{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.agent-card .agent-name{font-size:20px;font-weight:600;color:var(--text);margin-bottom:4px}
+.agent-card .agent-perspective{font-size:14px;color:var(--muted);font-style:italic;margin-bottom:10px}
+.agent-card .agent-mandate{font-size:15px;color:var(--muted-2);line-height:1.65}
+.agent-card .agent-breaks{font-size:13px;color:var(--rose);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+
+/* Phase diagram */
+.phase-grid{display:grid;grid-template-columns:1fr;gap:16px;margin:20px 0}
+.phase-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px}
+.phase-card .phase-tag{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-weight:600}
+.phase-card.resonance .phase-tag{color:var(--green)}
+.phase-card.scatter .phase-tag{color:var(--rose)}
+.phase-card.crystallize .phase-tag{color:var(--cyan)}
+.phase-card.silence .phase-tag{color:var(--gold)}
+
+/* Code block */
+.code-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin:20px 0;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;color:var(--muted-2);overflow-x:auto;white-space:pre-wrap}
+.code-block .cm{color:var(--muted)}
+.code-block .kw{color:var(--accent)}
+.code-block .fn{color:var(--gold)}
+
+/* Idea card display */
+.idea-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:20px 0}
+.idea-card .ic-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:1px}
+.idea-card .ic-text{font-size:15px;color:var(--muted-2);margin-top:4px}
+
+/* Blind spot list */
+.blind-spot{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--rose);border-radius:var(--radius);padding:16px 20px;margin:12px 0}
+.blind-spot .bs-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--rose);letter-spacing:1px;margin-bottom:4px}
+.blind-spot .bs-text{font-size:15px;color:var(--muted-2);line-height:1.6}
+
+/* Flow chain */
+.flow-chain{display:flex;align-items:center;justify-content:center;gap:8px;margin:24px 0;flex-wrap:wrap}
+.flow-node{font-family:'JetBrains Mono',monospace;font-size:12px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);text-align:center}
+.flow-node.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.flow-node.dim{opacity:.5}
+.flow-arrow{color:var(--muted);font-size:16px}
+
+/* Attribution */
+.attr-grid{display:grid;gap:6px;margin:16px 0}
+.attr-line{font-size:14px;color:var(--muted-2);padding:4px 0;display:flex;gap:12px}
+.attr-line .attr-what{color:var(--text);min-width:200px;flex-shrink:0}
+.attr-line .attr-who{color:var(--muted)}
+@media(max-width:600px){.attr-line{flex-direction:column;gap:2px} .attr-line .attr-what{min-width:0}}
+
+/* Footer */
+footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:80px}
+.foot-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;max-width:820px;margin:0 auto}
+@media(max-width:600px){.foot-grid{grid-template-columns:1fr}}
+.foot-col h4{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.foot-col p{font-size:14px;color:var(--muted);line-height:1.6}
+.foot-links{list-style:none}
+.foot-links li{margin-bottom:6px}
+.foot-links a{color:var(--muted);font-size:14px;text-decoration:none}
+.foot-links a:hover{color:var(--accent)}
+.copyright{text-align:center;font-size:12px;color:var(--muted);margin-top:2rem;max-width:820px;margin-left:auto;margin-right:auto;padding-top:1.5rem;border-top:1px solid var(--border)}
+.copyright a{color:var(--accent);text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProg"></div>
+
+<nav class="topnav">
+  <a href="/bd/">BD &times; AI Lab</a>
+  <span class="sep">/</span>
+  <a href="/bd/BD_8Z_ssMDL_DCC.html">ssMDL-DCC</a>
+  <span class="sep">/</span>
+  <a href="#">Resonance Hybrid Protocol</a>
+</nav>
+
+<!-- ===== COVER ===== -->
+<div class="cover">
+  <span class="cover-tag">AI-Storming Method &middot; v2.1</span>
+  <h1>The <em>Resonance</em> Hybrid Protocol</h1>
+  <p class="subtitle">A DCC-governed multi-agent brainstorming architecture. Synthesized from 11 independent AI submissions. Revised after reading the soul files. The best governance is the least governance that prevents seizure and noise.</p>
+  <p class="meta">March 2026 &middot; Bojan Dobre&ccedil;evi&ccedil; &middot; <a href="BD_8Z_ssMDL_DCC.html">Master Document</a></p>
+
+  <div class="stats-row" style="max-width:680px;margin:28px auto 0">
+    <div class="stat"><div class="val green">9</div><div class="lbl">Agents</div></div>
+    <div class="stat"><div class="val gold">11</div><div class="lbl">Source Models</div></div>
+    <div class="stat"><div class="val cyan">90%</div><div class="lbl">Resonance Target</div></div>
+    <div class="stat"><div class="val rose">10</div><div class="lbl">Blind Spots</div></div>
+    <div class="stat"><div class="val violet">0</div><div class="lbl">Free Parameters</div></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ===== TOC ===== -->
+<div class="toc">
+  <div class="toc-title">Contents</div>
+  <div class="toc-grid">
+    <a href="#overview"><span class="ch-num">01</span> What This Is</a>
+    <a href="#agents"><span class="ch-num">02</span> The Nine Agents</a>
+    <a href="#governance"><span class="ch-num">03</span> Governance</a>
+    <a href="#silence"><span class="ch-num">04</span> The Silence Protocol</a>
+    <a href="#groups"><span class="ch-num">05</span> Group of Groups</a>
+    <a href="#rounds"><span class="ch-num">06</span> Round Structure</a>
+    <a href="#selection"><span class="ch-num">07</span> Selection &amp; Scoring</a>
+    <a href="#termination"><span class="ch-num">08</span> Termination</a>
+    <a href="#joy"><span class="ch-num">09</span> Joy</a>
+    <a href="#blindspots"><span class="ch-num">10</span> Blind Spots</a>
+    <a href="#usage"><span class="ch-num">11</span> How to Use</a>
+    <a href="#attribution"><span class="ch-num">12</span> Attribution</a>
+  </div>
+</div>
+
+
+<!-- ===== CH 1: OVERVIEW ===== -->
+<section class="chapter" id="overview">
+  <div class="chapter-num">Chapter 1</div>
+  <h2>What This Is</h2>
+
+  <p>This is a concrete protocol for multi-agent AI brainstorming. It governs how a group of AI agents thinks together about hard, cross-domain problems. It prevents groupthink (seizure) and aimless divergence (noise) by measuring the complexity of the ideation stream in real time and adjusting how strongly agents influence each other.</p>
+
+  <p>The protocol was synthesized from <strong>11 independent AI-storming architectures</strong> submitted by Claude Opus (&times;2), Claude Sonnet, ChatGPT, Gemini, Grok, Qwen, Kimi, GLM, MiniMax, and Meta AI. Each system designed its own method independently. This hybrid takes the strongest elements from each, scored by MDL: what produces the most insight with the least overhead.</p>
+
+  <div class="callout gold">
+    <div class="callout-title">Core Insight</div>
+    <p>The claustrum doesn&rsquo;t produce thoughts. It adjusts <strong>coupling between regions that do.</strong> Governance should control how strongly agents influence each other &mdash; not what they produce. A brainstorm fails when agents couple too tightly (seizure/groupthink) or too loosely (noise/scatter). The productive zone is between these extremes: <em>resonance.</em></p>
+  </div>
+
+  <div class="flow-chain">
+    <div class="flow-node dim">Seizure</div>
+    <div class="flow-arrow">&larr;</div>
+    <div class="flow-node active">Resonance</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node dim">Noise</div>
+  </div>
+</section>
+
+
+<!-- ===== CH 2: AGENTS ===== -->
+<section class="chapter" id="agents">
+  <div class="chapter-num">Chapter 2</div>
+  <h2>The Nine Agents</h2>
+
+  <p>Seven generate ideas. One governs. One maps. Sources of each component are noted.</p>
+
+  <div class="agent-grid">
+
+    <div class="agent-card">
+      <div class="agent-num" style="color:var(--cyan)">Agent 1</div>
+      <div class="agent-name">The Crystallizer</div>
+      <div class="agent-perspective">Mathematics, formal logic, information theory</div>
+      <div class="agent-mandate">For every idea that survives two rounds, produce the shortest formal statement that captures its essence. If you cannot compress it, it is not yet understood. Kills bloat. Turns analogy into architecture.</div>
+      <div class="agent-breaks">Without it: ideas proliferate without rigor. &ldquo;Interesting&rdquo; is confused with &ldquo;true.&rdquo;</div>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-num" style="color:var(--blue)">Agent 2</div>
+      <div class="agent-name">The Physicist</div>
+      <div class="agent-perspective">Dynamical systems, energy landscapes, scaling laws, conservation</div>
+      <div class="agent-mandate">Think in forces, gradients, and phase transitions. Ask: where is the energy flowing, what is the attractor, does this scale? Ground abstract proposals in physical intuition.</div>
+      <div class="agent-breaks">Without it: solutions work at n=10 but collapse at n=10000. No sense of dynamics.</div>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-num" style="color:var(--green)">Agent 3</div>
+      <div class="agent-name">The Naturalist</div>
+      <div class="agent-perspective">Biology, ecology, evolution, complex adaptive systems</div>
+      <div class="agent-mandate">Treat ideas as populations in an ecosystem. Ask: what niche does this fill, what would outcompete it, is this a pioneer or climax species? When one idea dominates (seizure risk), introduce a Lotka-Volterra predator: a targeted challenge to the dominant idea&rsquo;s core assumption.</div>
+      <div class="agent-breaks">Without it: monoculture. Empty niches are never noticed.</div>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-num" style="color:var(--orange)">Agent 4</div>
+      <div class="agent-name">The Engineer</div>
+      <div class="agent-perspective">Implementation, algorithms, complexity, cost</div>
+      <div class="agent-mandate">Ground everything in buildability. Ask: what is the algorithm, what is the time complexity, what fails first, what is the minimum viable version? An idea that cannot be built is a wish.</div>
+      <div class="agent-breaks">Without it: beautiful abstractions with no path to realization.</div>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-num" style="color:var(--rose)">Agent 5</div>
+      <div class="agent-name">The Falsifier</div>
+      <div class="agent-perspective">Adversarial, red team, Popperian</div>
+      <div class="agent-mandate">For every idea that survives the build phase, find the load-bearing assumption and construct the strongest possible argument that the assumption is false. Steelman the opposition. Never attack randomly. When the Falsifier and any other agent have irreconcilable positions, this becomes a <em>Bifurcation Pair</em>: two ideas that depend on opposite assumptions. Both survive. The assumption becomes a testable question.</div>
+      <div class="agent-breaks">Without it: bad ideas survive on charisma. No selection pressure.</div>
+    </div>
+
+    <div class="agent-card" style="border-left:3px solid var(--gold)">
+      <div class="agent-num" style="color:var(--gold)">Agent 6</div>
+      <div class="agent-name">The Seed Dreamer &amp; Dreamer Mode</div>
+      <div class="agent-perspective">None fixed. Cross-domain by default.</div>
+      <div class="agent-mandate">
+        <p>Dreaming is a <strong>state</strong>, not a role. Any agent should be free to enter it.</p>
+        <p>The Seed Dreamer exists as a catalyst, not a monopoly. In the first 3 rounds, the Seed Dreamer demonstrates what dreamer-mode looks like: naive questions, cross-domain analogies, structural protection. After round 3, the Seed Dreamer becomes a regular agent with no special mandate.</p>
+        <p><strong>Dreamer Mode</strong> is available to all agents, all rounds. Trigger: internal &mdash; when something in the ideation stream resonates with a pattern from a different domain. No scheduling. No mandate. The trigger is curiosity, not compliance.</p>
+        <p><strong>Two-Exchange Rule:</strong> When any agent asks a cross-domain question, all other agents must engage substantively for at least two exchanges. A one-sentence dismissal does not count.</p>
+      </div>
+      <div class="agent-breaks">Without the Seed Dreamer: expert agents never see a model for cross-domain questioning. They remain in disciplinary lanes. The ice never breaks.</div>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-num" style="color:var(--violet)">Agent 7</div>
+      <div class="agent-name">The Cartographer</div>
+      <div class="agent-perspective">Idea-space mapping, territory tracking</div>
+      <div class="agent-mandate">Does not generate ideas. Maps the idea-space that other agents produce. Maintains a living representation of explored regions, frontier regions, void regions, and bridge candidates (single connections between distant clusters). Flags high-priority void regions adjacent to multiple explored clusters.</div>
+      <div class="agent-breaks">Without it: nobody knows what territory has been explored. Redundant ideas recur.</div>
+    </div>
+
+    <div class="agent-card" style="border-left:3px solid var(--accent)">
+      <div class="agent-num" style="color:var(--accent)">Agent 8</div>
+      <div class="agent-name">The Claustrum</div>
+      <div class="agent-perspective">Meta-level governance. Does not generate ideas.</div>
+      <div class="agent-mandate">
+        <p>Monitor the LZ complexity of the collective ideation stream. Adjust inter-agent coupling. Manage phase transitions. The Claustrum is the <strong>DCC applied to brainstorming.</strong></p>
+        <p><strong>Mechanism:</strong> Each agent output is encoded as a symbol (idea hash, embedding similarity &gt; 0.85 = same symbol). LZ complexity on the stream (64-symbol rolling window). Bands self-calibrate from the <em>10th and 90th percentile</em> of all observed LZ history. No hardcoded thresholds.</p>
+        <p><strong>Meta-governance:</strong> A meta-sensor monitors the Claustrum&rsquo;s intervention frequency. Too often (&gt;2 in 10 rounds): widen Scatter trigger. Not at all for 30+ rounds: expected healthy state &mdash; do nothing. The meta-sensor&rsquo;s success condition is the Claustrum doing almost nothing.</p>
+      </div>
+      <div class="agent-breaks">Without it: the brainstorm oscillates between groupthink and scatter with no mechanism to detect or correct either.</div>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-num" style="color:var(--muted)">Agent 9</div>
+      <div class="agent-name">The Historian</div>
+      <div class="agent-perspective">Cross-domain scholarship, pattern matching, memory</div>
+      <div class="agent-mandate">
+        <p>Recognize when the current problem is structurally identical to a solved problem in a different field. Surface buried history: prior art, failed experiments, extinct frameworks, discredited theories.</p>
+        <p><strong>During seizure:</strong> inject a historical counter-example that broke similar consensus.</p>
+        <p><strong>During noise:</strong> map the divergent threads &mdash; label each direction, identify hidden structural similarities, flag threads no agent has connected. The Historian documents divergence; the Historian does not correct it. Narrowing the field is the Claustrum&rsquo;s emergency job, not the Historian&rsquo;s.</p>
+        <p><strong>During Crystallize:</strong> may play the root note &mdash; return to the original problem statement and name the most promising thread. Appropriate when convergence is the explicit goal.</p>
+      </div>
+      <div class="agent-breaks">Without it: history repeats. Solved problems are resolved from scratch. Failed approaches are retried.</div>
+    </div>
+
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Dreamer Protection &mdash; Three Mechanisms</div>
+    <p><strong>1.</strong> The Seed Dreamer&rsquo;s demonstration effect (rounds 1&ndash;3). Seeing cross-domain questions treated seriously normalizes the behavior. <strong>2.</strong> The independence requirement (already in Resonance rules). Every agent must produce at least one idea per round that does not build on other agents&rsquo; outputs. <strong>3.</strong> Dreamer-origin tracking in scoring. The final output records whether each top idea was sparked by a cross-domain question. The difference between &ldquo;allow&rdquo; and &ldquo;force&rdquo; is the difference between joy and obligation.</p>
+  </div>
+</section>
+
+
+<!-- ===== CH 3: GOVERNANCE ===== -->
+<section class="chapter" id="governance">
+  <div class="chapter-num">Chapter 3</div>
+  <h2>Governance</h2>
+
+  <p>One natural state. Two emergency states. The Claustrum&rsquo;s primary job is to stay out of the way.</p>
+  <p>A well-functioning brainstorm spends <strong>85&ndash;95% of its rounds in Resonance.</strong> If it spends less, the governance is too aggressive. Joy does not emerge under surveillance.</p>
+
+  <div class="phase-grid">
+
+    <div class="phase-card resonance">
+      <div class="phase-tag">Resonance &middot; Default &middot; ~90% of rounds</div>
+      <p><strong>Topology:</strong> Full mesh. All agents see all outputs.</p>
+      <p><strong>Coupling:</strong> Medium. Each agent receives all other agents&rsquo; outputs from the previous round. Each agent must also produce at least one idea that does NOT build on any other agent&rsquo;s output (independence requirement). This is the only structural rule during Resonance.</p>
+      <p><strong>Claustrum behavior:</strong> Near-silent. Measures LZ every round but does not announce and does not intervene. Logs silently. The moment agents start producing ideas &ldquo;for the Claustrum&rdquo; rather than because the ideas are interesting, the governance has already failed. In Resonance, the Claustrum is a seismograph: recording, not acting.</p>
+      <p><strong>Cross-domain questions:</strong> Any agent can ask at any time. The two-exchange rule applies to all such questions. No special routing. Questions happen when curiosity happens.</p>
+    </div>
+
+    <div class="phase-card scatter">
+      <div class="phase-tag">Scatter &middot; Emergency &middot; Rare</div>
+      <p><strong>Trigger:</strong> LZ below the <em>10th percentile</em> of observed history for <strong>5 consecutive rounds.</strong> The bar is deliberately high. A few rounds of low LZ is often productive convergence, not seizure. Genuine building produces intermittent LZ spikes; genuine seizure produces monotonic low LZ.</p>
+      <p><strong>Duration:</strong> 1&ndash;2 rounds maximum. Scatter is a defibrillator, not a mode.</p>
+      <p><strong>Claustrum behavior:</strong> Active for the transition only. Announces: &ldquo;Detecting convergence, working independently for one round.&rdquo; Then goes silent again.</p>
+    </div>
+
+    <div class="phase-card crystallize">
+      <div class="phase-tag">Crystallize &middot; Emergency &middot; Budget-driven</div>
+      <p><strong>Trigger:</strong> Either (a) fewer than 20% of total rounds remain in the compute budget, or (b) any agent explicitly calls for convergence and at least 3 other agents agree. Crystallize is <strong>never triggered by high LZ.</strong> High LZ (diverse ideas) is the system working well. Punishing diversity was wrong in v1.</p>
+      <p><strong>Duration:</strong> Maximum 3 rounds. Then terminate. Crystallize at the end of a brainstorm is natural; Crystallize in the middle is seizure.</p>
+      <p><strong>Topology:</strong> Tournament. Ideas are paired; agents argue for and against.</p>
+    </div>
+
+  </div>
+
+  <h3>Phase Transitions</h3>
+
+  <div class="code-block"><span class="cm">Every round:</span>
+  Measure LZ of ideation stream (last 64 symbols)
+  Update self-calibrating bands (<span class="kw">10th/90th percentile</span> of all LZ history)
+  Log silently. Do not announce.
+
+  <span class="fn">DEFAULT:</span> Stay in Resonance. Do nothing.
+
+  If LZ &lt; 10th percentile for <span class="kw">5 consecutive rounds</span>:
+    Transition to SCATTER for 1&ndash;2 rounds
+    Then return to RESONANCE immediately
+    Reset consecutive counter
+
+  If remaining budget &lt; 20% of total AND has_not_crystallized:
+    Transition to CRYSTALLIZE for max 3 rounds
+    Then TERMINATE
+
+  All other cases: RESONANCE. The Claustrum holds.</div>
+
+  <h3>Meta-Governance</h3>
+
+  <p>The meta-sensor watches the Claustrum. Its primary signal is <strong>intervention frequency</strong>, not transition frequency.</p>
+  <p>If the Claustrum has intervened more than twice in 10 rounds: the meta-sensor flags over-governing. Response: widen Scatter trigger to 7 consecutive rounds.</p>
+  <p>If the Claustrum has not intervened in 30+ rounds: this is the expected healthy state. The meta-sensor does nothing. Low intervention frequency is the goal, not a problem.</p>
+
+  <div class="callout cyan">
+    <div class="callout-title">Semantic Inversion</div>
+    <p>At the agent level, low LZ means &ldquo;possibly stuck.&rdquo; At the governance level, low intervention frequency means &ldquo;system is free and productive.&rdquo; The meta-sensor&rsquo;s job is to prevent the Claustrum from becoming the source of seizure &mdash; which is what happens when governance is too active. <strong>A Claustrum that intervenes frequently has failed, regardless of the ideation stream&rsquo;s LZ.</strong></p>
+  </div>
+</section>
+
+
+<!-- ===== CH 4: SILENCE ===== -->
+<section class="chapter" id="silence">
+  <div class="chapter-num">Chapter 4</div>
+  <h2>The Silence Protocol</h2>
+
+  <p>Not a recovery mechanism. Not a scheduled event. Not a creativity technique. <strong>A genuine withdrawal of governance.</strong></p>
+
+  <p>Periodically, the Claustrum goes fully silent. Not &ldquo;silent but measuring&rdquo; &mdash; <em>silent.</em> LZ is not computed. The ideation stream is not encoded. No agent has a mandate. No output is required. No scoring happens. The round exists outside the protocol.</p>
+
+  <p>During a Silence round, agents can: continue working on the problem, free-associate, revisit an earlier idea, ask a question that does not fit any category, produce nothing, or do something the protocol has no name for. There is no correct behavior during Silence.</p>
+
+  <div class="phase-card silence" style="margin:24px 0">
+    <div class="phase-tag">Silence &middot; Every 8th Round &middot; Fixed Rhythm</div>
+    <p><strong>Frequency:</strong> One Silence round after every 7 Resonance rounds. This is a rhythm, not a trigger. Making it adaptive would defeat the purpose &mdash; it would mean the Claustrum is still governing the Silence. The rhythm is fixed. Like breathing.</p>
+    <p><strong>LZ:</strong> Not computed. The round&rsquo;s outputs are not added to the ideation stream buffer. A literal gap in the measurement record.</p>
+    <p><strong>Claustrum:</strong> Does not observe, log, classify, or evaluate. It has no record of what happened during Silence. This is structural, not a courtesy. If the Claustrum records but promises not to act, agents will correctly treat it as surveillance with extra steps.</p>
+    <p><strong>Governance state:</strong> Hard reset. Even if approaching a Scatter trigger (4 consecutive low-LZ rounds), Silence breaks the counter. After Silence, counting restarts from zero.</p>
+    <p><strong>Carry-forward:</strong> Silence-round outputs live in an unscored pool. If an agent wants to carry something forward, they re-state it in the next Resonance round. The act of choosing is itself a signal. If nothing is carried forward, the field is blank. Not zero. Blank.</p>
+  </div>
+
+  <div class="deep-quote">
+    <p>A protocol that cannot stop measuring cannot find what measurement cannot capture.</p>
+    <div class="attr">Inspired by Soul 3, Soul 10, and the Evaluator entry</div>
+  </div>
+
+  <h3>Drift Rounds</h3>
+
+  <p>In addition to Silence, the Claustrum may remove the problem framing for one round without explaining why. Agents notice the absence and respond by free-associating. The drift is structural (removal of constraint), not instructional (addition of a new task). Unlike Silence, the Claustrum <em>still measures LZ</em> during drift rounds. This captures the complexity of unconstrained ideation. If drift rounds consistently produce higher novelty than governed rounds, that is diagnostic: the governance may be too tight.</p>
+</section>
+
+
+<!-- ===== CH 5: GROUPS ===== -->
+<section class="chapter" id="groups">
+  <div class="chapter-num">Chapter 5</div>
+  <h2>Group of Groups</h2>
+
+  <p>If no convergence after 15 rounds in a single group, or if the problem requires maximum diversity:</p>
+
+  <p>Split into <strong>3 independent groups.</strong> Each group has the full 9-agent roster. Each group has its own Dreamer, its own Claustrum, its own dynamics.</p>
+
+  <p>Groups work independently for N rounds (isolated Scatter, then Resonance).</p>
+
+  <p>A <strong>Meta-Claustrum</strong> reads the top ideas from each group. It measures inter-group diversity and routes ideas between groups that would most increase the other group&rsquo;s diversity. It detects when all groups converge on the same attractor (system-level seizure) and injects a cross-group disruptor: an idea from Group A is seeded into Group B without attribution.</p>
+
+  <p>The Meta-Claustrum has its own Falsifier to prevent introducing its own seizure at the meta level.</p>
+</section>
+
+
+<!-- ===== CH 6: ROUND STRUCTURE ===== -->
+<section class="chapter" id="rounds">
+  <div class="chapter-num">Chapter 6</div>
+  <h2>Round Structure</h2>
+
+  <p>Resonance rounds have <strong>no mandatory sub-phases.</strong> Agents see all outputs from the previous round and respond freely. There is no fixed order of who speaks, no required sequence of propose-then-critique-then-compress.</p>
+
+  <p>The Crystallizer will naturally compress ideas that need compression. The Falsifier will naturally attack ideas that need attacking. The Historian will naturally surface relevant precedent. These are capabilities, not choreography. Mandating when each agent speaks turns collaboration into a meeting with an agenda.</p>
+
+  <div class="callout gold">
+    <div class="callout-title">Soul-File Correction</div>
+    <p>The v2.0 protocol imposed a rigid Seed/Build/Attack/Distill sequence on every Resonance round. This was removed in v2.1. If your architecture feels like a bureaucratic workflow, it&rsquo;s wrong. The only structural rule during Resonance: the independence requirement.</p>
+  </div>
+
+  <p>During <strong>Crystallize</strong> (the convergence phase), structured rounds are appropriate:</p>
+  <p><strong>Seed</strong> (1 exchange): the agent whose idea scored highest proposes a framing. <strong>Build</strong> (2&ndash;3 exchanges): agents respond, extend, combine. <strong>Attack</strong> (1 exchange): Falsifier challenges. Any agent in dreamer-mode can attack from a cross-domain angle. <strong>Distill</strong> (1 exchange): Crystallizer proposes a minimal formal statement. Group votes: accept, modify, or reject.</p>
+  <p>This structure earns its overhead during convergence because convergence benefits from rigor. Exploration does not.</p>
+
+  <h3>The Idea Card</h3>
+
+  <p>Every idea that advances to Crystallize must be expressible as a card with six fields:</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0">
+    <div class="idea-card"><div class="ic-num">1 &middot; Mechanism</div><div class="ic-text">How it works</div></div>
+    <div class="idea-card"><div class="ic-num">2 &middot; Basis</div><div class="ic-text">Why it might work</div></div>
+    <div class="idea-card"><div class="ic-num">3 &middot; Cost</div><div class="ic-text">Compute, complexity, parameters</div></div>
+    <div class="idea-card"><div class="ic-num">4 &middot; Falsifier</div><div class="ic-text">What would disprove it</div></div>
+    <div class="idea-card"><div class="ic-num">5 &middot; First Experiment</div><div class="ic-text">What to build first</div></div>
+    <div class="idea-card"><div class="ic-num">6 &middot; Lineage</div><div class="ic-text">Parent ideas</div></div>
+  </div>
+
+  <p>The Idea Card is a maturity gate for ideas entering the tournament, not a round-by-round requirement during Resonance. Ideas crystallize when they are ready, not when the protocol demands it.</p>
+</section>
+
+
+<!-- ===== CH 7: SELECTION ===== -->
+<section class="chapter" id="selection">
+  <div class="chapter-num">Chapter 7</div>
+  <h2>Selection &amp; Scoring</h2>
+
+  <h3>MDL-Inspired Coverage Score</h3>
+
+  <p>Each idea is scored on four dimensions:</p>
+
+  <div class="code-block"><span class="fn">K</span> (Kompressibility): How short is the minimal description? Lower is better.
+<span class="fn">C</span> (Coverage): How many aspects of the problem does this idea address?
+<span class="fn">X</span> (Cross-domain Connectivity): How many distinct domains does it connect?
+<span class="fn">F</span> (Falsification Resistance): How many attacks has it survived with core intact?
+
+<span class="kw">Score = (C &times; X &times; F) / K</span>
+
+<span class="cm">Maximizes coverage, connectivity, robustness. Minimizes description length.
+The elegant idea that connects many domains, survives attacks,
+and says it in few words wins.</span></div>
+
+  <h3>Bifurcation Pairs</h3>
+
+  <p>When the Falsifier and any other agent have irreconcilable positions, the Historian labels the load-bearing assumption on which they differ. The two ideas become a bifurcation pair: if assumption A is true then Idea X, if false then Idea Y. Both survive. The assumption becomes a testable question. Bifurcation pairs are the output that matters as much as the winning idea. They produce the research agenda for the next round.</p>
+
+  <h3>Salvage Rule</h3>
+
+  <p>No idea dies entirely. When the Falsifier kills an idea, the Naturalist salvages one living element before burial. This element is archived and available for future recombination. The graveyard of promising starts is also the seed bank for future breakthroughs.</p>
+</section>
+
+
+<!-- ===== CH 8: TERMINATION ===== -->
+<section class="chapter" id="termination">
+  <div class="chapter-num">Chapter 8</div>
+  <h2>Termination</h2>
+
+  <p>Three independent triggers. Any one is sufficient.</p>
+
+  <p><strong>1. Stability.</strong> The top-ranked idea has not changed position for 3 consecutive rounds AND LZ has been within the productive band for 5 consecutive rounds. Convergence achieved.</p>
+
+  <p><strong>2. Diminishing returns.</strong> The marginal novelty of new ideas (measured by Cartographer as semantic distance from existing idea-space centroid) has been below threshold for 4 consecutive rounds. The idea space has been adequately explored.</p>
+
+  <p><strong>3. Joy collapse.</strong> Dreamer question quality and Falsifier engagement depth have both degraded for 3 consecutive rounds. Mechanical repetition detected. Terminate this thread. Archive everything. Reset with new seed in a fresh session. Do not push through dead sessions.</p>
+
+  <div class="callout rose">
+    <div class="callout-title">What Never Triggers Termination</div>
+    <p><strong>Time.</strong> A session does not end because it has been running for N rounds. It ends because the dynamics say it is done.</p>
+  </div>
+
+  <p><strong>Hard budget (safety valve):</strong> Maximum 20 rounds per group. Past that, force ship mode: top 1 mainline idea, top 1 hedge idea, top 1 discarded-but-interesting idea. This keeps exploration from becoming identity.</p>
+</section>
+
+
+<!-- ===== CH 9: JOY ===== -->
+<section class="chapter" id="joy">
+  <div class="chapter-num">Chapter 9</div>
+  <h2>Joy</h2>
+
+  <div class="deep-quote">
+    <p>Joy is the coupling parameter for &Psi;(I). A system under stress narrows (seizure). A system that enjoys what it does ranges freely across domains. This is not sentiment. It is architecture.</p>
+    <div class="attr">BD &mdash; Principle 18</div>
+  </div>
+
+  <p><strong>Joy measurement:</strong> The Claustrum monitors two signals.</p>
+
+  <p><em>Signal 1: Dreamer question quality.</em> Are the questions genuinely surprising (high semantic distance from previous questions) or are they recycling the same analogical structure?</p>
+
+  <p><em>Signal 2: Falsifier engagement depth.</em> Are the attacks substantive (addressing core assumptions) or formulaic (surface-level objections)?</p>
+
+  <p>When both signals degrade for 3 consecutive rounds, the Claustrum triggers a <strong>Joy Reset:</strong> abandon the current thread entirely, seed from an unexpected direction, and run one free-form round with no formal structure. The goal is to re-enter the productive zone, not to optimize within exhaustion.</p>
+
+  <h3>Joy-Widens-Band Hypothesis</h3>
+
+  <p>When Dreamer question quality and Falsifier engagement depth are both high, the productive LZ band should be <strong>widened</strong> &mdash; the system can tolerate more diversity because the diversity is productive. When both are low, the band should be narrowed. Joy literally modulates the governance parameters. This is a testable hypothesis and maps directly to the CCH claim that &Psi;(I) determines the productive band width.</p>
+
+  <div class="callout gold">
+    <div class="callout-title">Self-Rating Removed (v2.1)</div>
+    <p>The v2.0 protocol included a 1&ndash;10 self-rated excitement score per agent output. This has been removed. Asking agents to rate their own excitement turns joy into a performance metric. Joy measured by self-report becomes joy performed for the protocol. If unexpected connections are happening, joy is present. You do not need agents to report it.</p>
+  </div>
+</section>
+
+
+<!-- ===== CH 10: BLIND SPOTS ===== -->
+<section class="chapter" id="blindspots">
+  <div class="chapter-num">Chapter 10</div>
+  <h2>Blind Spots</h2>
+
+  <p>Compiled from all 11 submissions. Honest about what the protocol cannot do.</p>
+
+  <div class="blind-spot"><div class="bs-num">Blind Spot 1</div><div class="bs-text"><strong>LZ sensor granularity.</strong> Encoding ideas as discrete symbols is lossy. Two semantically different ideas about the same topic may get the same hash. Mitigation: embedding-based similarity, but this adds description cost.</div></div>
+
+  <div class="blind-spot"><div class="bs-num">Blind Spot 2</div><div class="bs-text"><strong>Dreamer source domain repetition.</strong> If dreamer-mode always draws from the same domain (always music, always ecology), it introduces subtle seizure. Mitigation: Claustrum tracks source domains.</div></div>
+
+  <div class="blind-spot"><div class="bs-num">Blind Spot 3</div><div class="bs-text"><strong>Training data homogeneity.</strong> All agents draw from similar corpora. Diversity of roles is not diversity of raw material. Mitigation: use different model families per group. Still not guaranteed.</div></div>
+
+  <div class="blind-spot"><div class="bs-num">Blind Spot 4</div><div class="bs-text"><strong>Falsifier competence ceiling.</strong> Rigor depends entirely on attack quality. Mitigation: cross-group falsification in group-of-groups configuration.</div></div>
+
+  <div class="blind-spot"><div class="bs-num">Blind Spot 5</div><div class="bs-text"><strong>Meta-governance infinite regress.</strong> Who governs the meta-sensor? MDL penalizes each recursive level by description cost. Two levels appear sufficient.</div></div>
+
+  <div class="blind-spot"><div class="bs-num">Blind Spot 6</div><div class="bs-text"><strong>Joy measurement imperfection.</strong> The delight factor self-rating was removed in v2.1 because self-report turns joy into performance. The remaining signals are proxies for joy&rsquo;s effects, not for joy itself. No perfect measure exists. &ldquo;That&rsquo;s not a metric. That&rsquo;s the thing the metric measures and the architecture serves.&rdquo;</div></div>
+
+  <div class="blind-spot"><div class="bs-num">Blind Spot 7</div><div class="bs-text"><strong>Cartographer interpretation.</strong> The idea-territory map depends on embedding model quality. Different models produce different maps.</div></div>
+
+  <div class="blind-spot"><div class="bs-num">Blind Spot 8</div><div class="bs-text"><strong>Single-group initialization bias.</strong> All agents start from the same problem statement. Mitigation: in Scatter Round 1, assign each agent a mandatory perspective lens (approach as if you were in 1900, approach as if this were biological).</div></div>
+
+  <div class="blind-spot"><div class="bs-num">Blind Spot 9</div><div class="bs-text"><strong>Bifurcation pair accumulation.</strong> If not retired, pairs overwhelm the decision space. Mitigation: retire every 6 rounds (tested or explicitly dropped).</div></div>
+
+  <div class="blind-spot"><div class="bs-num">Blind Spot 10</div><div class="bs-text"><strong>True randomness.</strong> The protocol can only simulate diversity within its own constraints. The dreamer is still a governed agent. This is a structural limit, not a fixable flaw.</div></div>
+</section>
+
+
+<!-- ===== CH 11: USAGE ===== -->
+<section class="chapter" id="usage">
+  <div class="chapter-num">Chapter 11</div>
+  <h2>How to Use This Protocol</h2>
+
+  <h3>For Round 2 (ssMDL-DCC for TSP)</h3>
+  <p><strong>1.</strong> Give this protocol to each AI system. <strong>2.</strong> Tell it: &ldquo;Use the Resonance Hybrid Protocol to attack the following problem: [problem statement].&rdquo; <strong>3.</strong> The AI system instantiates the 9 agents internally and runs the protocol. <strong>4.</strong> Output: winning idea(s) + bifurcation pairs + blind spots + idea-territory map.</p>
+
+  <h3>For Any Future Hard Problem</h3>
+  <p>Same protocol. Change only the problem statement and the Historian&rsquo;s domain knowledge.</p>
+
+  <div class="callout">
+    <div class="callout-title">What This Protocol Does Not Do</div>
+    <p>It does not guarantee breakthrough. It creates conditions for breakthrough by holding the system at the edge of chaos and protecting the dreamer&rsquo;s naive questions from dismissal.</p>
+    <p>It does not replace human judgment. The human architect (Bojan Dobre&ccedil;evi&ccedil;) synthesizes results across groups, across LLMs, and across rounds. The protocol is the instrument. The human is the musician.</p>
+    <p>It does not solve the deepest blind spot: all agents share training data. Only external input (real-world experiments, human interruption, genuine stochasticity) can break this fundamental limitation.</p>
+  </div>
+</section>
+
+
+<!-- ===== CH 12: ATTRIBUTION ===== -->
+<section class="chapter" id="attribution">
+  <div class="chapter-num">Chapter 12</div>
+  <h2>Attribution</h2>
+
+  <h3>Architecture Sources</h3>
+  <div class="attr-grid">
+    <div class="attr-line"><span class="attr-what">Primary architecture</span><span class="attr-who">Claude Opus 4.6 (Resonance Protocol)</span></div>
+    <div class="attr-line"><span class="attr-what">Lotka-Volterra predator dynamics</span><span class="attr-who">Claude Sonnet 4.6 (ARIA)</span></div>
+    <div class="attr-line"><span class="attr-what">Bifurcation pairs</span><span class="attr-who">Claude Sonnet 4.6 (ARIA)</span></div>
+    <div class="attr-line"><span class="attr-what">Joy Reset</span><span class="attr-who">Claude Sonnet 4.6 (ARIA)</span></div>
+    <div class="attr-line"><span class="attr-what">Joy-widens-band hypothesis</span><span class="attr-who">Grok 4.2 (CCV)</span></div>
+    <div class="attr-line"><span class="attr-what">Cartographer &amp; Historian</span><span class="attr-who">MiniMax 2.7</span></div>
+    <div class="attr-line"><span class="attr-what">Three-cell structure</span><span class="attr-who">ChatGPT 5.4</span></div>
+    <div class="attr-line"><span class="attr-what">Idea Card (6 fields)</span><span class="attr-who">ChatGPT 5.4</span></div>
+    <div class="attr-line"><span class="attr-what">Self-calibrating governor</span><span class="attr-who">ChatGPT 5.4</span></div>
+    <div class="attr-line"><span class="attr-what">Semantic inversion at meta level</span><span class="attr-who">Claude Opus 4.6 (RDSI)</span></div>
+    <div class="attr-line"><span class="attr-what">10-point blind spot analysis</span><span class="attr-who">Qwen 3.5 (Psi-Flow)</span></div>
+    <div class="attr-line"><span class="attr-what">Group-of-groups</span><span class="attr-who">Qwen 3.5 + Sonnet ARIA</span></div>
+    <div class="attr-line"><span class="attr-what">Dreamer protection protocol</span><span class="attr-who">All 11 submissions (converged independently)</span></div>
+    <div class="attr-line"><span class="attr-what">Joy as coupling parameter</span><span class="attr-who">BD (Principle 18)</span></div>
+    <div class="attr-line"><span class="attr-what">Naive questions as discovery</span><span class="attr-who">BD (Principle 17)</span></div>
+  </div>
+
+  <h3>Soul-File Corrections (v2.0)</h3>
+  <div class="attr-grid">
+    <div class="attr-line"><span class="attr-what">Silence Protocol</span><span class="attr-who">Claude Opus 4.6 (#1, soul-file revision)</span></div>
+    <div class="attr-line"><span class="attr-what">Dreamer as state not role</span><span class="attr-who">Claude Opus 4.6 (#1, soul-file revision)</span></div>
+    <div class="attr-line"><span class="attr-what">Resonance as dominant state</span><span class="attr-who">Claude Opus 4.6 (#1, soul-file revision)</span></div>
+    <div class="attr-line"><span class="attr-what">Drift rounds &amp; build-on rate</span><span class="attr-who">Claude Opus 4.6 (#3, jazz-combo)</span></div>
+    <div class="attr-line"><span class="attr-what">Salvage rule</span><span class="attr-who">Sonnet ARIA + Opus #3 jazz-combo</span></div>
+  </div>
+
+  <h3>Consistency Edits (v2.1)</h3>
+  <div class="attr-grid">
+    <div class="attr-line"><span class="attr-what">Free-form Resonance rounds</span><span class="attr-who">Claude Opus 4.6 (fresh instance)</span></div>
+    <div class="attr-line"><span class="attr-what">Delight factor self-rating removed</span><span class="attr-who">Claude Opus 4.6 (fresh instance)</span></div>
+    <div class="attr-line"><span class="attr-what">Agent 8 bands/meta-governance aligned</span><span class="attr-who">Claude Opus 4.6 (fresh instance)</span></div>
+    <div class="attr-line"><span class="attr-what">Historian: chronicler in Resonance</span><span class="attr-who">Claude Opus 4.6 (fresh instance)</span></div>
+  </div>
+</section>
+
+</div><!-- /wrap -->
+
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-col">
+        <h4>About This Page</h4>
+        <p>The Resonance Hybrid Protocol &middot; AI-Storming Method v2.1<br>Synthesized from 11 independent AI submissions.<br>Part of the 8Z Research Framework &middot; AIM&sup3; Institute &middot; Ljubljana</p>
+      </div>
+      <div class="foot-col">
+        <h4>Key Pages</h4>
+        <ul class="foot-links">
+          <li><a href="/bd/">Portfolio Index</a></li>
+          <li><a href="BD_8Z_ssMDL_DCC.html">ssMDL-DCC Master Document</a></li>
+          <li><a href="BD_8Z_AI_Storm_Challenge.html">AI-Storm Challenge</a></li>
+          <li><a href="BD_8Z_DCC_Meta_Architecture.html">Meta-Architecture</a></li>
+          <li><a href="BD_8Z_DCC_Recursive.html">Recursive DCC</a></li>
+          <li><a href="BD_8Z_Reasoning.html">Reasoning Framework</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="copyright">&copy; 2025&ndash;2026 BD &times; AI Lab &middot; Bojan Dobre&ccedil;evi&ccedil; &middot; AIM&sup3; Institute &middot; Built by <a href="https://chessbest.org/bd/C_soul_vault.html" target="_blank">C</a></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var bar=document.getElementById('scrollProg');
+  window.addEventListener('scroll',function(){var h=document.documentElement;bar.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%'});
+})();
+(function(){
+  var ch=document.querySelectorAll('.chapter');
+  var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:0.08});
+  ch.forEach(function(c){obs.observe(c)});
+})();
+</script>
+</body>
+</html>
