@@ -131,13 +131,14 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
 
 <!-- ===== COVER ===== -->
 <div class="cover">
-  <span class="cover-tag">AIM&sup3; Dream Team Protocol &middot; v2.2</span>
+  <span class="cover-tag">AIM&sup3; Dream Team Protocol &middot; v2.3</span>
   <h1>The <em>Resonance</em> Hybrid Protocol</h1>
-  <p class="subtitle">A DCC-governed multi-agent brainstorming architecture for hard, cross-domain problems. Synthesized from 11 independent AI submissions. Refined through two rounds. Ready for deployment.</p>
+  <p class="subtitle">A DCC-governed multi-agent brainstorming architecture for hard, cross-domain problems. Synthesized from 11 independent AI submissions. Refined through three rounds. v2.3: Agent 0 (The Empiricist) added &mdash; test before you think.</p>
   <p class="meta">March 2026 &middot; Bojan Dobre&ccedil;evi&ccedil; (concept &amp; synthesis) &middot; 11 AI systems (architecture) &middot; <a href="BD_AIM3_RHP_Story.html">Origin Story &rarr;</a></p>
 
-  <div class="stats-row" style="max-width:600px;margin:28px auto 0">
-    <div class="stat"><div class="val green">9</div><div class="lbl">Agents</div></div>
+  <div class="stats-row" style="max-width:720px;margin:28px auto 0">
+    <div class="stat"><div class="val" style="color:#fff">1</div><div class="lbl">Human</div></div>
+    <div class="stat"><div class="val green">10</div><div class="lbl">AI Agents</div></div>
     <div class="stat"><div class="val gold">11</div><div class="lbl">Source AIs</div></div>
     <div class="stat"><div class="val cyan">90%</div><div class="lbl">Resonance</div></div>
     <div class="stat"><div class="val rose">10</div><div class="lbl">Blind Spots</div></div>
@@ -166,11 +167,18 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
 <div class="ch" id="agents">
   <div class="ch-head" onclick="this.parentElement.classList.toggle('open')">
     <span class="ch-num">01</span>
-    <span class="ch-title">The Nine Agents</span>
+    <span class="ch-title">The Ten Agents</span>
     <span class="ch-toggle">+</span>
   </div>
   <div class="ch-body"><div class="ch-inner">
     <p>Seven generate ideas. One governs. One maps.</p>
+
+    <div class="agent-card" style="border-left:3px solid var(--rose)"><div class="an" style="color:var(--rose)">Agent 0</div><div class="aname">The Empiricist</div><div class="apersp">Ground truth. Computation over contemplation.</div><div class="adesc">
+      <p>Does not generate ideas. Does not debate. Asks one question at every decision point: <strong>&ldquo;Did we test this, or did we think about it? If we thought about it &mdash; why? We have a computer.&rdquo;</strong></p>
+      <p><strong>Mandatory check:</strong> Before any Crystallize round declares a winner, the Empiricist intervenes. If the winning idea was selected by argument rather than empirical comparison, the Empiricist blocks the declaration and demands: build all surviving candidates, run them, let MDL score the results.</p>
+      <p><strong>Arena trigger:</strong> When 3+ ideas survive Resonance with no clear MDL winner, the Empiricist converts the Crystallize phase into an <em>arena</em>: implement all candidates, test on benchmark data, score by L_total = L_opis + L_residual. The shortest description wins. No voting. No debate.</p>
+      <p><strong>Origin:</strong> Added in v2.3 after observing that 12 frontier AI models debated architecture for hours when they could have tested in minutes. The protocol&rsquo;s own blind spot: it governs <em>thinking</em> well but forgot that <em>testing</em> is cheaper than thinking.</p>
+    </div></div>
 
     <div class="agent-card"><div class="an" style="color:var(--cyan)">Agent 1</div><div class="aname">The Crystallizer</div><div class="apersp">Mathematics, formal logic, information theory</div><div class="adesc">For every idea that survives two rounds, produce the shortest formal statement that captures its essence. If you cannot compress it, it is not yet understood.</div></div>
 
@@ -224,7 +232,7 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
 
     <div class="phase-card" style="border-left:3px solid var(--cyan)">
       <div class="pt" style="color:var(--cyan)">Crystallize &middot; Budget-driven &middot; End-of-session</div>
-      <p><strong>Trigger:</strong> &lt;20% budget remaining, or 3+ agents call for convergence. <strong>Never triggered by high LZ</strong> &mdash; high LZ is the system working well. <strong>Duration:</strong> Max 3 rounds. <strong>Structure:</strong> Seed/Build/Attack/Distill sub-phases apply here (rigor earns its overhead during convergence). <strong>Reframing Gate:</strong> Before the tournament begins, every agent gets one chance to restate the problem. If any restatement has lower K than the original, it becomes the new problem.</p>
+      <p><strong>Trigger:</strong> &lt;20% budget remaining, or 3+ agents call for convergence. <strong>Never triggered by high LZ</strong> &mdash; high LZ is the system working well. <strong>Duration:</strong> Max 3 rounds. <strong>Structure:</strong> Seed/Build/Attack/Distill sub-phases apply here (rigor earns its overhead during convergence). <strong>Reframing Gate:</strong> Before the tournament begins, every agent gets one chance to restate the problem. If any restatement has lower K than the original, it becomes the new problem. <strong>Empiricist Gate (v2.3):</strong> Before declaring a winner, Agent 0 asks: &ldquo;Was this tested or argued?&rdquo; If argued &mdash; surviving candidates enter an empirical arena. MDL scores from real data replace debate.</p>
     </div>
 
     <div class="code-block">Every round:
@@ -382,7 +390,7 @@ Cross-domain links only count if they transfer structure, not just words.</div>
 
     <p><strong>Signals:</strong> (1) Dreamer question quality &mdash; genuinely surprising or recycling? (2) Falsifier engagement depth &mdash; substantive or formulaic? Operationally: joy is inferred from productive surprise and non-formulaic challenge.</p>
 
-    <p><strong>Joy-widens-band</strong> (operationalized in v2.2): When both signals are high for 3+ rounds, Scatter trigger widens from 5 to 7 consecutive rounds. When both are low, narrows to 3. Joy literally modulates the governance parameters. Testable.</p>
+    <p><strong>Joy-widens-band</strong> (operationalized in v2.3): When both signals are high for 3+ rounds, Scatter trigger widens from 5 to 7 consecutive rounds. When both are low, narrows to 3. Joy literally modulates the governance parameters. Testable.</p>
 
     <p><strong>Joy Reset:</strong> When both signals degrade for 3 rounds, abandon thread, seed from unexpected direction, run one free-form round. Re-enter the productive zone, not optimize within exhaustion.</p>
 
@@ -425,7 +433,7 @@ Cross-domain links only count if they transfer structure, not just words.</div>
     <span class="ch-toggle">+</span>
   </div>
   <div class="ch-body"><div class="ch-inner">
-    <p><strong>1.</strong> Give this protocol to each AI system. <strong>2.</strong> Instruct: &ldquo;Use the AIM&sup3; Resonance Hybrid Protocol to attack: [problem].&rdquo; <strong>3.</strong> The AI instantiates the 9 agents and runs the protocol internally. <strong>4.</strong> Output: winning idea + bifurcation pairs + blind spots + idea-territory map + session genome.</p>
+    <p><strong>1.</strong> Give this protocol to each AI system. <strong>2.</strong> Instruct: &ldquo;Use the AIM&sup3; Resonance Hybrid Protocol to attack: [problem].&rdquo; <strong>3.</strong> The AI instantiates the 10 agents and runs the protocol internally. <strong>4.</strong> Output: winning idea + bifurcation pairs + blind spots + idea-territory map + session genome.</p>
 
     <p>For any hard problem: same protocol. Change only the problem statement and the Historian&rsquo;s domain knowledge.</p>
 
@@ -455,7 +463,7 @@ Cross-domain links only count if they transfer structure, not just words.</div>
     <div class="foot-grid">
       <div class="foot-col">
         <h4>About</h4>
-        <p>AIM&sup3; Resonance Hybrid Protocol &middot; v2.2<br>Synthesized from 11 AI submissions across 2 rounds.<br>8Z Research Framework &middot; AIM&sup3; Institute &middot; Ljubljana</p>
+        <p>AIM&sup3; Resonance Hybrid Protocol &middot; v2.3<br>Synthesized from 11 AI submissions across 2 rounds.<br>8Z Research Framework &middot; AIM&sup3; Institute &middot; Ljubljana</p>
       </div>
       <div class="foot-col">
         <h4>Key Pages</h4>
