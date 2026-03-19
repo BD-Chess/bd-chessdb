@@ -330,7 +330,39 @@
       opacity: .4; cursor: default;
     }
 
-    /* ── TOOLTIP ── */
+    /* ── Sister panel ── */
+    #sister-panel {
+      bottom: 16px; right: 16px;
+      width: 240px;
+    }
+    .sister-mini {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(0,229,255,0.06);
+      text-decoration: none; color: var(--text);
+      transition: opacity .15s;
+    }
+    .sister-mini:last-child { border-bottom: none; padding-bottom: 0; }
+    .sister-mini:first-child { padding-top: 0; }
+    .sister-mini:hover { opacity: 0.8; }
+    .sm-icon {
+      width: 36px; height: 36px; border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem; flex-shrink: 0;
+      border: 1px solid var(--border);
+    }
+    .sm-text .sm-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .58rem; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .sm-text .sm-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .88rem; font-weight: 600; color: var(--text);
+      line-height: 1.2;
+    }
+
+    
     .leaflet-tooltip.city-tip {
       background: rgba(2,4,9,0.92);
       border: 1px solid var(--border);
@@ -421,6 +453,30 @@
     <div class="stat-row"><span class="stat-key">Solver</span><span class="stat-val">8Z-RP + DCC v2</span></div>
     <div class="stat-row"><span class="stat-key">Benchmark</span><span class="stat-val">Waterloo TSPLIB</span></div>
     <div class="stat-row"><span class="stat-key">Search space</span><span class="stat-val">~10<sup>349</sup></span></div>
+  </div>
+</div>
+
+<!-- SISTER PANEL -->
+<div class="panel" id="sister-panel">
+  <div class="panel-header open" id="sister-toggle">
+    <span class="panel-label">Related pages</span>
+    <span class="panel-chevron open" id="sister-chevron">▼</span>
+  </div>
+  <div class="panel-body open" id="sister-body">
+    <a href="BD_8ZRP_v1_1.html" class="sister-mini">
+      <div class="sm-icon" style="background:rgba(0,229,255,0.06)">📄</div>
+      <div class="sm-text">
+        <div class="sm-tag">Research</div>
+        <div class="sm-title">8Z-RP v1.1 · TSP as Compression</div>
+      </div>
+    </a>
+    <a href="BD_8ZRP_nu3496_status.html" class="sister-mini">
+      <div class="sm-icon" style="background:rgba(255,107,138,0.06)">🗺</div>
+      <div class="sm-text">
+        <div class="sm-tag" style="color:var(--rose)">Live Run</div>
+        <div class="sm-title">nu3496 · Impossible Made Routine</div>
+      </div>
+    </a>
   </div>
 </div>
 
@@ -859,6 +915,7 @@ function bindToggle(headerId, bodyId, chevronId) {
 bindToggle('mode-toggle',  'mode-body',  'mode-chevron');
 bindToggle('stats-toggle', 'stats-body', 'stats-chevron');
 bindToggle('gmaps-toggle', 'gmaps-body', 'gmaps-chevron');
+bindToggle('sister-toggle','sister-body','sister-chevron');
 
 </script>
 </body>
