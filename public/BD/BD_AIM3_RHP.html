@@ -171,14 +171,7 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
     <span class="ch-toggle">+</span>
   </div>
   <div class="ch-body"><div class="ch-inner">
-    <p>Seven generate ideas. One governs. One maps.</p>
-
-    <div class="agent-card" style="border-left:3px solid var(--rose)"><div class="an" style="color:var(--rose)">Agent 0</div><div class="aname">The Empiricist</div><div class="apersp">Ground truth. Computation over contemplation.</div><div class="adesc">
-      <p>Does not generate ideas. Does not debate. Asks one question at every decision point: <strong>&ldquo;Did we test this, or did we think about it? If we thought about it &mdash; why? We have a computer.&rdquo;</strong></p>
-      <p><strong>Mandatory check:</strong> Before any Crystallize round declares a winner, the Empiricist intervenes. If the winning idea was selected by argument rather than empirical comparison, the Empiricist blocks the declaration and demands: build all surviving candidates, run them, let MDL score the results.</p>
-      <p><strong>Arena trigger:</strong> When 3+ ideas survive Resonance with no clear MDL winner, the Empiricist converts the Crystallize phase into an <em>arena</em>: implement all candidates, test on benchmark data, score by L_total = L_opis + L_residual. The shortest description wins. No voting. No debate.</p>
-      <p><strong>Origin:</strong> Added in v2.3 after observing that 12 frontier AI models debated architecture for hours when they could have tested in minutes. The protocol&rsquo;s own blind spot: it governs <em>thinking</em> well but forgot that <em>testing</em> is cheaper than thinking.</p>
-    </div></div>
+    <p>Seven generate ideas. One governs. One maps. And when they&rsquo;re done &mdash; one asks: can we test all of this?</p>
 
     <div class="agent-card"><div class="an" style="color:var(--cyan)">Agent 1</div><div class="aname">The Crystallizer</div><div class="apersp">Mathematics, formal logic, information theory</div><div class="adesc">For every idea that survives two rounds, produce the shortest formal statement that captures its essence. If you cannot compress it, it is not yet understood.</div></div>
 
@@ -206,6 +199,13 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
     </div></div>
 
     <div class="agent-card"><div class="an" style="color:var(--muted)">Agent 9</div><div class="aname">The Historian</div><div class="apersp">Cross-domain scholarship, pattern matching, memory</div><div class="adesc">Surface buried history: prior art, failed experiments, extinct frameworks. During seizure: inject historical counter-examples. During noise: map the divergent threads (chronicler, not shepherd). During Crystallize: may play root note.</div></div>
+
+    <div class="agent-card" style="border-left:3px solid var(--rose)"><div class="an" style="color:var(--rose)">Agent 0 &middot; Last to speak</div><div class="aname">The Empiricist</div><div class="apersp">Arrives after everyone else is done. Quiet until then.</div><div class="adesc">
+      <p>Does not generate ideas. Does not intervene during Resonance. Sits quietly while others brainstorm, debate, and converge. <strong>Speaks only after Crystallize has produced its candidates.</strong></p>
+      <p><strong>One question:</strong> &ldquo;You&rsquo;ve collected beautiful ideas. Can we test all of them &mdash; and every reasonable combination &mdash; instead of picking a winner by argument? We have a computer.&rdquo;</p>
+      <p><strong>Arena conversion:</strong> Takes all surviving candidates from Crystallize, builds an empirical arena, and lets MDL score the results on real data. Ideas that looked weaker in debate may win in practice. Ideas that looked strong may lose. The data decides. Truly nonsensical combinations can be excluded &mdash; but the bar for &ldquo;nonsensical&rdquo; is high. When in doubt, test.</p>
+      <p><strong>Origin:</strong> Added in v2.3 after observing that 12 frontier AI models debated architecture for hours when they could have tested all proposals in minutes. The protocol governed <em>thinking</em> well but forgot that <em>testing</em> is cheaper than thinking.</p>
+    </div></div>
   </div></div>
 </div>
 
@@ -232,7 +232,7 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
 
     <div class="phase-card" style="border-left:3px solid var(--cyan)">
       <div class="pt" style="color:var(--cyan)">Crystallize &middot; Budget-driven &middot; End-of-session</div>
-      <p><strong>Trigger:</strong> &lt;20% budget remaining, or 3+ agents call for convergence. <strong>Never triggered by high LZ</strong> &mdash; high LZ is the system working well. <strong>Duration:</strong> Max 3 rounds. <strong>Structure:</strong> Seed/Build/Attack/Distill sub-phases apply here (rigor earns its overhead during convergence). <strong>Reframing Gate:</strong> Before the tournament begins, every agent gets one chance to restate the problem. If any restatement has lower K than the original, it becomes the new problem. <strong>Empiricist Gate (v2.3):</strong> Before declaring a winner, Agent 0 asks: &ldquo;Was this tested or argued?&rdquo; If argued &mdash; surviving candidates enter an empirical arena. MDL scores from real data replace debate.</p>
+      <p><strong>Trigger:</strong> &lt;20% budget remaining, or 3+ agents call for convergence. <strong>Never triggered by high LZ</strong> &mdash; high LZ is the system working well. <strong>Duration:</strong> Max 3 rounds. <strong>Structure:</strong> Seed/Build/Attack/Distill sub-phases apply here (rigor earns its overhead during convergence). <strong>Reframing Gate:</strong> Before the tournament begins, every agent gets one chance to restate the problem. If any restatement has lower K than the original, it becomes the new problem. <strong>Empiricist Gate (v2.3):</strong> After candidates are selected, Agent 0 asks: &ldquo;Can we test all of these instead of choosing?&rdquo; If testable &mdash; surviving candidates enter an empirical arena. MDL scores from real data complement the debate.</p>
     </div>
 
     <div class="code-block">Every round:
