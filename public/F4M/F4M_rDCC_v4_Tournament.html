@@ -629,7 +629,8 @@ function uMode(u){
 // ── createDCC — single function, continuous blend ──
 function createDCC(){
   const mem=DCC_MEMORY;
-  const u=mem.u_memory;
+  // v4b-fix: epsilon-greedy exploration — 30% random u, 70% exploit u_memory
+  const u=(Math.random()<0.3)?Math.random():mem.u_memory;
 
   // Aggression: blend cold (0.5) with warm historical value
   const warmAgg=computeWarmAggression(mem);
