@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BD × AI Lab — 8Z-RP v1.1 / TSP as Compression</title>
+  <title>BD × AI Lab — 8Z-RP / TSP as Compression</title>
   <link rel="preconnect" href="https://fonts.googleapis.com/" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -707,102 +707,6 @@ footer{
 .hero-subgrid{display:grid;grid-template-columns:1.15fr .85fr;gap:1.2rem;margin-top:2rem}
 .tinycaps{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
 @media(max-width:980px){.claim-grid,.hero-subgrid{grid-template-columns:1fr}.timeline-item{grid-template-columns:1fr}}
-
-/* ── Sister pages strip ── */
-.sister-strip{
-  max-width:1120px;margin:0 auto;padding:0 5vw 0;
-  display:grid;grid-template-columns:1fr 1fr;gap:10px;
-  margin-bottom:0;
-}
-.sister-card{
-  display:flex;align-items:stretch;gap:0;
-  border:1px solid var(--border);border-radius:6px;
-  overflow:hidden;text-decoration:none;color:var(--text);
-  background:linear-gradient(160deg,rgba(11,17,32,.85),rgba(6,10,20,.97));
-  transition:border-color .2s,transform .2s,box-shadow .2s;
-}
-.sister-card:hover{
-  border-color:rgba(245,158,11,.35);
-  transform:translateY(-2px);
-  box-shadow:0 8px 28px rgba(0,0,0,.4);
-}
-.sister-card.sister-nu:hover{border-color:rgba(255,107,138,.35)}
-.sister-thumb{
-  width:180px;min-width:180px;height:130px;overflow:hidden;flex-shrink:0;
-  border-right:1px solid var(--border);
-}
-.sister-thumb svg{width:100%;height:100%;display:block}
-.sister-thumb-nu{
-  width:180px;min-width:180px;height:130px;
-  background:rgba(6,10,20,.9);
-  display:flex;align-items:center;justify-content:center;
-  border-right:1px solid var(--border);flex-shrink:0;
-}
-.nu-vis{width:100%;padding:14px 16px;display:grid;gap:8px}
-.nu-bar-wrap{display:flex;align-items:center;gap:7px}
-.nu-label{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--muted);width:52px;flex-shrink:0;letter-spacing:.04em}
-.nu-bar{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
-.nu-fill{height:100%;border-radius:3px;transition:width .4s}
-.nu-val{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:600;width:36px;text-align:right;flex-shrink:0}
-.nu-stat{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.04em;margin-top:2px;text-align:center}
-.sister-info{padding:14px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;min-width:0}
-.sister-tag{
-  font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.18em;
-  text-transform:uppercase;color:var(--gold);
-  border:1px solid rgba(245,158,11,.22);border-radius:3px;
-  padding:2px 7px;display:inline-block;align-self:flex-start;
-}
-.sister-title{font-size:1rem;font-weight:600;color:var(--text);font-family:'Rajdhani',sans-serif;letter-spacing:.04em}
-.sister-desc{font-size:.78rem;color:var(--muted);line-height:1.45;font-family:'JetBrains Mono',monospace}
-@media(max-width:720px){
-  .sister-strip{grid-template-columns:1fr}
-  .sister-thumb,.sister-thumb-nu{width:120px;min-width:120px;height:88px}
-}
-.gpu-toggle{
-  display:flex;align-items:center;justify-content:space-between;
-  cursor:pointer;padding:1.1rem 1.4rem;
-  background:rgba(52,211,153,0.05);
-  border:1px solid rgba(52,211,153,0.18);
-  border-radius:6px;margin-bottom:.5rem;
-  transition:background .18s,border-color .18s;
-  user-select:none;
-}
-.gpu-toggle:hover{background:rgba(52,211,153,0.09);border-color:rgba(52,211,153,0.32)}
-.gpu-toggle-label{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
-.gpu-toggle-hint{font-size:.8rem;color:var(--muted)}
-.gpu-chevron{font-size:.7rem;color:var(--muted);transition:transform .22s}
-.gpu-chevron.open{transform:rotate(180deg)}
-.gpu-body{display:none}
-.gpu-body.open{display:block}
-.gpu-layer-diag{display:grid;grid-template-columns:1fr 80px 1fr;align-items:center;gap:.6rem;margin:1.5rem 0;padding:1.2rem 1.4rem;border:1px solid var(--border);border-radius:6px;background:rgba(6,10,20,.72)}
-.gpu-layer{padding:.85rem 1rem;border-radius:5px;text-align:center}
-.gpu-layer .l-name{font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;margin-bottom:.3rem}
-.gpu-layer .l-desc{font-size:.8rem;color:var(--muted)}
-.gpu-arrow-col{text-align:center;color:var(--muted);font-size:1.1rem}
-.gpu-arrow-annot{font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.08em;margin-top:.3rem;line-height:1.4}
-.gpu-arena-table{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.88rem}
-.gpu-arena-table th{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:.5rem .7rem;border-bottom:1px solid var(--border);text-align:left}
-.gpu-arena-table td{padding:.55rem .7rem;border-bottom:1px solid rgba(0,229,255,.05);font-family:'JetBrains Mono',monospace;font-size:.78rem}
-.gpu-arena-table tr:last-child td{border-bottom:none}
-.gpu-arena-table .parallel{color:var(--green)}
-.gpu-arena-table .sequential{color:var(--violet)}
-.gpu-tagline{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--muted);border-left:3px solid var(--green);padding:.75rem 1rem;margin-top:1.5rem;background:rgba(52,211,153,.04);border-radius:0 4px 4px 0}
-.gpu-tagline em{color:var(--green);font-style:normal}
-
-/* ── Map link button ── */
-.map-link-btn{
-  display:inline-flex;align-items:center;gap:.5rem;
-  margin-top:1.1rem;padding:.55rem 1.1rem;
-  border:1px solid rgba(245,158,11,.28);
-  border-radius:4px;
-  background:rgba(245,158,11,.07);
-  color:var(--gold);
-  font-family:'JetBrains Mono',monospace;
-  font-size:.68rem;letter-spacing:.08em;
-  text-decoration:none;
-  transition:background .18s,border-color .18s;
-}
-.map-link-btn:hover{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.5)}
 ```
 
   </style>
@@ -858,77 +762,17 @@ footer{
     <a class="cyan" href="#stop">Why stop</a>
     <a class="gold" href="#verified-results">Verified results</a>
     <a class="violet" href="#core-idea">Core idea</a>
-    <a class="orange" href="#empirical">Empirical</a>
     <a class="green" href="#ladder">Progression</a>
     <a class="rose" href="#almost-wrong">Near miss</a>
     <a class="orange" href="#discovery">Discovery</a>
     <a class="cyan" href="#engineering">Rust</a>
     <a class="rose" href="#meta-dcc">Meta-DCC</a>
-    <a class="green" href="#gpu">GPU eyes</a>
     <a class="gold" href="#team">The team</a>
     <a class="green" href="#claims">Claims</a>
     <a class="violet" href="#next">Next</a>
   </nav>
 
-  <!-- ===== SISTER PAGES STRIP ===== -->
-  <div class="sister-strip">
-    <a href="BD_8ZRP_qa194_map.html" class="sister-card sister-map">
-      <div class="sister-thumb">
-        <svg viewBox="0 0 180 130" xmlns="http://www.w3.org/2000/svg">
-          <rect width="180" height="130" fill="#020409"/>
-          <!-- City dots -->
-          <g fill="rgba(0,229,255,0.55)" stroke="none">
-            <circle cx="22.1" cy="122.0" r="1.3"/><circle cx="93.7" cy="121.1" r="1.3"/><circle cx="128.8" cy="115.6" r="1.3"/><circle cx="86.6" cy="109.3" r="1.3"/><circle cx="158.5" cy="101.9" r="1.3"/><circle cx="60.5" cy="100.7" r="1.3"/><circle cx="105.8" cy="99.0" r="1.3"/><circle cx="67.8" cy="96.0" r="1.3"/><circle cx="152.3" cy="93.4" r="1.3"/><circle cx="153.2" cy="93.1" r="1.3"/><circle cx="94.9" cy="91.6" r="1.3"/><circle cx="156.3" cy="89.3" r="1.3"/><circle cx="84.4" cy="88.7" r="1.3"/><circle cx="95.4" cy="88.3" r="1.3"/><circle cx="169.6" cy="87.9" r="1.3"/><circle cx="69.5" cy="87.8" r="1.3"/><circle cx="104.7" cy="87.4" r="1.3"/><circle cx="128.7" cy="84.4" r="1.3"/><circle cx="172.0" cy="84.3" r="1.3"/><circle cx="15.8" cy="84.1" r="1.3"/><circle cx="125.8" cy="84.1" r="1.3"/><circle cx="139.8" cy="83.4" r="1.3"/><circle cx="86.4" cy="83.3" r="1.3"/><circle cx="117.0" cy="82.6" r="1.3"/><circle cx="92.0" cy="82.5" r="1.3"/><circle cx="116.4" cy="82.4" r="1.3"/><circle cx="148.2" cy="82.4" r="1.3"/><circle cx="135.4" cy="81.8" r="1.3"/><circle cx="139.9" cy="81.8" r="1.3"/><circle cx="160.5" cy="81.0" r="1.3"/><circle cx="155.9" cy="80.9" r="1.3"/><circle cx="158.6" cy="80.9" r="1.3"/><circle cx="129.6" cy="80.6" r="1.3"/><circle cx="152.2" cy="80.1" r="1.3"/><circle cx="157.8" cy="79.9" r="1.3"/><circle cx="47.0" cy="79.9" r="1.3"/><circle cx="145.9" cy="79.9" r="1.3"/><circle cx="155.4" cy="79.5" r="1.3"/><circle cx="150.2" cy="79.5" r="1.3"/><circle cx="153.5" cy="79.5" r="1.3"/><circle cx="155.5" cy="79.1" r="1.3"/><circle cx="158.3" cy="79.0" r="1.3"/><circle cx="154.0" cy="78.9" r="1.3"/><circle cx="157.0" cy="78.9" r="1.3"/><circle cx="138.6" cy="78.8" r="1.3"/><circle cx="155.8" cy="78.7" r="1.3"/><circle cx="151.5" cy="78.7" r="1.3"/><circle cx="155.5" cy="78.5" r="1.3"/><circle cx="158.1" cy="78.5" r="1.3"/><circle cx="159.7" cy="78.4" r="1.3"/><circle cx="149.9" cy="78.3" r="1.3"/><circle cx="155.6" cy="78.3" r="1.3"/><circle cx="155.5" cy="78.2" r="1.3"/><circle cx="156.3" cy="78.2" r="1.3"/><circle cx="158.1" cy="78.1" r="1.3"/><circle cx="154.5" cy="77.9" r="1.3"/><circle cx="134.5" cy="77.8" r="1.3"/><circle cx="153.1" cy="77.8" r="1.3"/><circle cx="53.2" cy="77.3" r="1.3"/><circle cx="128.8" cy="77.1" r="1.3"/><circle cx="150.6" cy="76.6" r="1.3"/><circle cx="53.5" cy="76.2" r="1.3"/><circle cx="30.4" cy="76.0" r="1.3"/><circle cx="137.3" cy="75.9" r="1.3"/><circle cx="8.0" cy="75.8" r="1.3"/><circle cx="148.2" cy="75.5" r="1.3"/><circle cx="150.6" cy="75.3" r="1.3"/><circle cx="143.3" cy="75.1" r="1.3"/><circle cx="120.3" cy="75.0" r="1.3"/><circle cx="134.6" cy="74.1" r="1.3"/><circle cx="86.2" cy="74.0" r="1.3"/><circle cx="109.4" cy="73.8" r="1.3"/><circle cx="150.5" cy="73.7" r="1.3"/><circle cx="117.1" cy="72.4" r="1.3"/><circle cx="107.0" cy="72.0" r="1.3"/><circle cx="96.4" cy="71.6" r="1.3"/><circle cx="136.9" cy="71.1" r="1.3"/><circle cx="109.6" cy="70.8" r="1.3"/><circle cx="134.2" cy="69.3" r="1.3"/><circle cx="88.2" cy="69.0" r="1.3"/><circle cx="134.6" cy="69.0" r="1.3"/><circle cx="66.9" cy="68.6" r="1.3"/><circle cx="130.6" cy="67.6" r="1.3"/><circle cx="141.0" cy="67.6" r="1.3"/><circle cx="13.2" cy="67.4" r="1.3"/><circle cx="11.7" cy="66.6" r="1.3"/><circle cx="95.2" cy="66.3" r="1.3"/><circle cx="125.6" cy="65.7" r="1.3"/><circle cx="44.9" cy="65.4" r="1.3"/><circle cx="38.5" cy="64.8" r="1.3"/><circle cx="113.8" cy="64.2" r="1.3"/><circle cx="129.4" cy="63.3" r="1.3"/><circle cx="122.6" cy="62.7" r="1.3"/><circle cx="41.1" cy="62.5" r="1.3"/><circle cx="126.6" cy="62.2" r="1.3"/><circle cx="124.8" cy="61.6" r="1.3"/><circle cx="129.9" cy="61.5" r="1.3"/><circle cx="23.4" cy="61.3" r="1.3"/><circle cx="46.2" cy="61.3" r="1.3"/><circle cx="146.2" cy="61.1" r="1.3"/><circle cx="49.1" cy="60.8" r="1.3"/><circle cx="99.5" cy="60.0" r="1.3"/><circle cx="111.5" cy="58.3" r="1.3"/><circle cx="48.5" cy="58.2" r="1.3"/><circle cx="131.4" cy="57.7" r="1.3"/><circle cx="127.4" cy="57.2" r="1.3"/><circle cx="136.0" cy="56.8" r="1.3"/><circle cx="136.3" cy="56.8" r="1.3"/><circle cx="83.4" cy="56.0" r="1.3"/><circle cx="146.1" cy="55.4" r="1.3"/><circle cx="45.0" cy="55.4" r="1.3"/><circle cx="146.5" cy="54.8" r="1.3"/><circle cx="82.0" cy="53.9" r="1.3"/><circle cx="70.6" cy="52.0" r="1.3"/><circle cx="144.3" cy="51.9" r="1.3"/><circle cx="140.3" cy="50.9" r="1.3"/><circle cx="139.5" cy="49.0" r="1.3"/><circle cx="124.5" cy="48.7" r="1.3"/><circle cx="86.4" cy="47.3" r="1.3"/><circle cx="150.2" cy="45.9" r="1.3"/><circle cx="143.1" cy="45.7" r="1.3"/><circle cx="103.1" cy="44.9" r="1.3"/><circle cx="165.4" cy="44.5" r="1.3"/><circle cx="166.7" cy="43.9" r="1.3"/><circle cx="62.5" cy="43.3" r="1.3"/><circle cx="64.0" cy="43.2" r="1.3"/><circle cx="53.7" cy="42.7" r="1.3"/><circle cx="158.2" cy="41.8" r="1.3"/><circle cx="139.3" cy="40.5" r="1.3"/><circle cx="37.7" cy="40.4" r="1.3"/><circle cx="129.0" cy="39.9" r="1.3"/><circle cx="56.7" cy="39.3" r="1.3"/><circle cx="145.9" cy="38.7" r="1.3"/><circle cx="57.3" cy="38.4" r="1.3"/><circle cx="139.4" cy="38.2" r="1.3"/><circle cx="131.7" cy="37.0" r="1.3"/><circle cx="64.5" cy="35.8" r="1.3"/><circle cx="78.5" cy="35.1" r="1.3"/><circle cx="82.2" cy="34.6" r="1.3"/><circle cx="61.3" cy="34.3" r="1.3"/><circle cx="100.1" cy="34.1" r="1.3"/><circle cx="66.8" cy="33.8" r="1.3"/><circle cx="142.4" cy="33.3" r="1.3"/><circle cx="92.5" cy="32.6" r="1.3"/><circle cx="59.3" cy="32.4" r="1.3"/><circle cx="68.9" cy="31.9" r="1.3"/><circle cx="110.4" cy="31.8" r="1.3"/><circle cx="137.8" cy="31.8" r="1.3"/><circle cx="65.7" cy="31.1" r="1.3"/><circle cx="92.4" cy="31.0" r="1.3"/><circle cx="121.1" cy="30.6" r="1.3"/><circle cx="102.6" cy="30.6" r="1.3"/><circle cx="95.5" cy="29.9" r="1.3"/><circle cx="88.5" cy="29.7" r="1.3"/><circle cx="127.2" cy="29.3" r="1.3"/><circle cx="52.9" cy="28.4" r="1.3"/><circle cx="91.7" cy="28.0" r="1.3"/><circle cx="117.8" cy="26.0" r="1.3"/><circle cx="113.2" cy="25.3" r="1.3"/><circle cx="140.7" cy="24.7" r="1.3"/><circle cx="65.7" cy="24.3" r="1.3"/><circle cx="120.2" cy="24.2" r="1.3"/><circle cx="67.4" cy="23.7" r="1.3"/><circle cx="72.0" cy="23.6" r="1.3"/><circle cx="107.4" cy="22.9" r="1.3"/><circle cx="129.8" cy="21.6" r="1.3"/><circle cx="116.0" cy="21.6" r="1.3"/><circle cx="109.5" cy="20.2" r="1.3"/><circle cx="69.0" cy="19.5" r="1.3"/><circle cx="117.0" cy="18.9" r="1.3"/><circle cx="123.5" cy="18.5" r="1.3"/><circle cx="75.3" cy="17.5" r="1.3"/><circle cx="85.0" cy="17.5" r="1.3"/><circle cx="84.4" cy="17.5" r="1.3"/><circle cx="91.4" cy="17.5" r="1.3"/><circle cx="63.8" cy="16.2" r="1.3"/><circle cx="101.0" cy="16.2" r="1.3"/><circle cx="110.1" cy="16.1" r="1.3"/><circle cx="79.0" cy="16.1" r="1.3"/><circle cx="113.7" cy="15.7" r="1.3"/><circle cx="102.6" cy="14.8" r="1.3"/><circle cx="69.0" cy="14.1" r="1.3"/><circle cx="85.0" cy="14.0" r="1.3"/><circle cx="95.6" cy="13.9" r="1.3"/><circle cx="122.5" cy="13.9" r="1.3"/><circle cx="81.2" cy="13.4" r="1.3"/><circle cx="83.9" cy="12.1" r="1.3"/><circle cx="100.0" cy="11.4" r="1.3"/><circle cx="94.6" cy="10.7" r="1.3"/><circle cx="85.4" cy="10.2" r="1.3"/><circle cx="95.7" cy="10.2" r="1.3"/><circle cx="94.6" cy="9.4" r="1.3"/><circle cx="110.6" cy="9.4" r="1.3"/><circle cx="73.7" cy="8.0" r="1.3"/>
-          </g>
-          <!-- Tour path -->
-          <path d="M 83.9,12.1 L 85.0,14.0 L 81.2,13.4 L 79.0,16.1 L 75.3,17.5 L 84.4,17.5 L 85.0,17.5 L 91.4,17.5 L 101.0,16.2 L 102.6,14.8 L 95.6,13.9 L 94.6,10.7 L 94.6,9.4 L 95.7,10.2 L 100.0,11.4 L 110.6,9.4 L 122.5,13.9 L 113.7,15.7 L 110.1,16.1 L 109.5,20.2 L 107.4,22.9 L 113.2,25.3 L 117.8,26.0 L 120.2,24.2 L 116.0,21.6 L 117.0,18.9 L 123.5,18.5 L 129.8,21.6 L 140.7,24.7 L 137.8,31.8 L 142.4,33.3 L 139.4,38.2 L 139.3,40.5 L 145.9,38.7 L 158.2,41.8 L 166.7,43.9 L 165.4,44.5 L 150.2,45.9 L 143.1,45.7 L 139.5,49.0 L 140.3,50.9 L 144.3,51.9 L 146.5,54.8 L 146.1,55.4 L 146.2,61.1 L 141.0,67.6 L 136.9,71.1 L 134.2,69.3 L 134.6,69.0 L 130.6,67.6 L 125.6,65.7 L 129.4,63.3 L 129.9,61.5 L 136.3,56.8 L 136.0,56.8 L 131.4,57.7 L 127.4,57.2 L 124.8,61.6 L 126.6,62.2 L 122.6,62.7 L 113.8,64.2 L 111.5,58.3 L 99.5,60.0 L 95.2,66.3 L 88.2,69.0 L 66.9,68.6 L 86.2,74.0 L 96.4,71.6 L 107.0,72.0 L 109.6,70.8 L 109.4,73.8 L 117.1,72.4 L 120.3,75.0 L 116.4,82.4 L 117.0,82.6 L 125.8,84.1 L 128.7,84.4 L 129.6,80.6 L 135.4,81.8 L 139.8,83.4 L 139.9,81.8 L 138.6,78.8 L 134.5,77.8 L 128.8,77.1 L 134.6,74.1 L 137.3,75.9 L 143.3,75.1 L 148.2,75.5 L 150.5,73.7 L 150.6,75.3 L 150.6,76.6 L 153.1,77.8 L 154.5,77.9 L 155.5,78.2 L 155.6,78.3 L 155.5,78.5 L 155.8,78.7 L 156.3,78.2 L 158.1,78.1 L 158.1,78.5 L 159.7,78.4 L 158.3,79.0 L 157.0,78.9 L 157.8,79.9 L 155.4,79.5 L 155.5,79.1 L 154.0,78.9 L 151.5,78.7 L 149.9,78.3 L 150.2,79.5 L 145.9,79.9 L 148.2,82.4 L 152.2,80.1 L 153.5,79.5 L 155.9,80.9 L 158.6,80.9 L 160.5,81.0 L 172.0,84.3 L 169.6,87.9 L 156.3,89.3 L 153.2,93.1 L 152.3,93.4 L 158.5,101.9 L 128.8,115.6 L 93.7,121.1 L 86.6,109.3 L 22.1,122.0 L 60.5,100.7 L 67.8,96.0 L 105.8,99.0 L 94.9,91.6 L 95.4,88.3 L 104.7,87.4 L 92.0,82.5 L 86.4,83.3 L 84.4,88.7 L 69.5,87.8 L 53.2,77.3 L 53.5,76.2 L 47.0,79.9 L 30.4,76.0 L 15.8,84.1 L 8.0,75.8 L 13.2,67.4 L 11.7,66.6 L 23.4,61.3 L 38.5,64.8 L 44.9,65.4 L 41.1,62.5 L 46.2,61.3 L 49.1,60.8 L 48.5,58.2 L 45.0,55.4 L 70.6,52.0 L 83.4,56.0 L 82.0,53.9 L 86.4,47.3 L 103.1,44.9 L 124.5,48.7 L 129.0,39.9 L 131.7,37.0 L 127.2,29.3 L 121.1,30.6 L 110.4,31.8 L 100.1,34.1 L 102.6,30.6 L 95.5,29.9 L 91.7,28.0 L 88.5,29.7 L 92.4,31.0 L 92.5,32.6 L 82.2,34.6 L 78.5,35.1 L 66.8,33.8 L 68.9,31.9 L 65.7,31.1 L 59.3,32.4 L 61.3,34.3 L 64.5,35.8 L 57.3,38.4 L 56.7,39.3 L 64.0,43.2 L 62.5,43.3 L 53.7,42.7 L 37.7,40.4 L 52.9,28.4 L 65.7,24.3 L 67.4,23.7 L 72.0,23.6 L 69.0,19.5 L 63.8,16.2 L 69.0,14.1 L 73.7,8.0 L 85.4,10.2 L 83.9,12.1" fill="none" stroke="#f59e0b" stroke-width="0.85" stroke-opacity="0.82"/>
-          <!-- Glow overlay -->
-          <rect width="180" height="130" fill="url(#thumb-vignette)"/>
-          <defs>
-            <radialGradient id="thumb-vignette" cx="50%" cy="50%" r="70%">
-              <stop offset="0%" stop-color="transparent"/>
-              <stop offset="100%" stop-color="#020409" stop-opacity="0.55"/>
-            </radialGradient>
-          </defs>
-        </svg>
-      </div>
-      <div class="sister-info">
-        <div class="sister-tag">Interactive Map</div>
-        <div class="sister-title">qa194 Tour · Qatar</div>
-        <div class="sister-desc">194 cities · Leaflet map · gold tour · crossing detection · Google Maps segments</div>
-      </div>
-    </a>
-
-    <a href="BD_8ZRP_nu3496_status.html" class="sister-card sister-nu">
-      <div class="sister-thumb sister-thumb-nu">
-        <div class="nu-vis">
-          <div class="nu-bar-wrap">
-            <div class="nu-label">W5 best</div>
-            <div class="nu-bar"><div class="nu-fill" style="width:83.8%;background:var(--green)"></div></div>
-            <div class="nu-val" style="color:var(--green)">1.62%</div>
-          </div>
-          <div class="nu-bar-wrap">
-            <div class="nu-label">fleet avg</div>
-            <div class="nu-bar"><div class="nu-fill" style="width:76%;background:var(--cyan)"></div></div>
-            <div class="nu-val" style="color:var(--cyan)">~2.1%</div>
-          </div>
-          <div class="nu-bar-wrap">
-            <div class="nu-label">worst</div>
-            <div class="nu-bar"><div class="nu-fill" style="width:58%;background:var(--rose)"></div></div>
-            <div class="nu-val" style="color:var(--rose)">4.34%</div>
-          </div>
-          <div class="nu-stat">3,496 cities · t = 50.6h · 10 workers</div>
-        </div>
-      </div>
-      <div class="sister-info">
-        <div class="sister-tag" style="color:var(--rose);border-color:rgba(255,107,138,0.25)">Live Run</div>
-        <div class="sister-title">nu3496 · Nicaragua</div>
-        <div class="sister-desc">3,496 cities · DCC v2 · Meta-DCC · checkpoint t=50.6h · W5 at 1.62% gap</div>
-      </div>
-    </a>
-  </div>
-
-
+  <!-- ===== WHY THIS SHOULD STOP YOU ===== -->
 
   <section id="stop">
     <div class="wrap">
@@ -1029,7 +873,6 @@ footer{
         <span class="pill">W7 @ move 2832</span>
       </div>
       <div class="metric-callout"><p>W7 sat at ~0.81% for over 2000 moves. Then or-opt found a crack in the local basin and cascaded through 76 tour-length units in ~150 moves straight to optimal. The landscape contains narrow, reachable corridors that the right move family can unlock.</p></div>
-      <a href="BD_8ZRP_qa194_map.html" class="map-link-btn">🗺 See the tour on a map →</a>
     </article>
 
     <article class="panel green rv rv-d2">
@@ -1143,84 +986,6 @@ footer{
 </div>
 ```
 
-  </section>
-
-  <div class="divider"></div>
-
-  <!-- ===== EMPIRICAL TEST ===== -->
-
-  <section id="empirical">
-    <div class="wrap">
-      <span class="sec-tag orange rv">First Empirical Test</span>
-      <h2 class="rv">Measured: shorter tours <em>are</em> more compressible. The founding question holds.</h2>
-      <p class="rv">
-        The question &ldquo;isn&rsquo;t the shortest route the one compressed the best?&rdquo; was axiomatic until March 2026. Then we measured it. Four workers from the uy734 run (n&nbsp;=&nbsp;734, TSPLIB benchmark) each produced a different-quality tour. We computed LZ76 complexity of each tour&rsquo;s city sequence and compared it with the tour&rsquo;s optimality gap.
-      </p>
-
-      <div class="table-wrap rv">
-        <table>
-          <thead>
-            <tr>
-              <th>Worker</th>
-              <th>Tour Length</th>
-              <th>Gap&nbsp;%</th>
-              <th>LZ76 Ratio</th>
-              <th>Verdict</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="mono">W2</td>
-              <td class="mono good">79 439</td>
-              <td class="mono good">0.41&thinsp;%</td>
-              <td class="mono good">0.07616</td>
-              <td>Best tour &rarr; lowest LZ &rarr; <strong>most compressible</strong></td>
-            </tr>
-            <tr>
-              <td class="mono">W1</td>
-              <td class="mono">79 546</td>
-              <td class="mono">0.55&thinsp;%</td>
-              <td class="mono">0.07548</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td class="mono">W3</td>
-              <td class="mono">79 791</td>
-              <td class="mono">0.86&thinsp;%</td>
-              <td class="mono">0.07684</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td class="mono">W0</td>
-              <td class="mono warn">80 854</td>
-              <td class="mono warn">2.20&thinsp;%</td>
-              <td class="mono warn">0.07725</td>
-              <td>Worst tour &rarr; highest LZ &rarr; <strong>least compressible</strong></td>
-            </tr>
-            <tr>
-              <td class="mono note">Random</td>
-              <td class="mono note">&mdash;</td>
-              <td class="mono note">&mdash;</td>
-              <td class="mono note">0.08010</td>
-              <td class="note">Random permutation: highest LZ of all</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <p class="rv">
-        Spearman rank correlation &rho;&nbsp;=&nbsp;<strong>+0.80</strong> &mdash; higher gap correlates with higher LZ complexity. The direction is unambiguous: <strong>better tours compress better.</strong>
-      </p>
-      <p class="rv">
-        Why it works: a shorter tour connects nearby cities, creating spatial coherence in the visit sequence &mdash; repeating regional patterns that LZ76 captures. A longer tour has more cross-region jumps, making the sequence look more random and less compressible. The optimal tour sits on the compressible end of the spectrum, between maximally-ordered (sequential) and maximally-disordered (random permutation).
-      </p>
-      <p class="rv">
-        This is MDL made visible: <strong>the shortest description of the route and the shortest route itself point to the same object.</strong>
-      </p>
-      <p class="evidence-note rv">
-        v2.6.5 &middot; uy734 &middot; 4&nbsp;workers &times; 50&nbsp;moves/n &middot; Rust 2-opt &middot; March 2026. First empirical measurement. Pending validation on 14-worker run for stronger statistical power.
-      </p>
-    </div>
   </section>
 
   <div class="divider"></div>
@@ -1566,148 +1331,6 @@ footer{
 
   <div class="divider"></div>
 
-  <!-- ===== GPU: THE EYES THAT SCALE ===== -->
-
-  <section id="gpu">
-    <div class="wrap">
-      <span class="sec-tag green rv">Hardware-Dependent MDL</span>
-      <h2 class="rv">The Eyes That Scale &mdash; GPU Changes Which Algorithm Wins.</h2>
-      <p class="rv">
-        Every paper on GPU&nbsp;+&nbsp;TSP does the same thing: take an existing operator (2-opt, 3-opt, genetic), parallelize its move evaluation on the GPU, and go faster. They speed up the <strong>legs</strong> of the solver. Nobody speeds up the <strong>eyes</strong>.
-      </p>
-
-      <!-- Three-layer diagram -->
-      <div class="gpu-layer-diag rv">
-        <div>
-          <div class="gpu-layer" style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25)">
-            <div class="l-name" style="color:var(--green)">Sensor Layer</div>
-            <div class="l-desc">LZ76 · SampEn · tri_area · circum_r · voronoi_adj</div>
-            <div style="margin-top:.5rem;font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--green)">← GPU arrow (our proposal)</div>
-          </div>
-          <div style="text-align:center;color:var(--muted);margin:.4rem 0">↓</div>
-          <div class="gpu-layer" style="background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.18)">
-            <div class="l-name" style="color:var(--cyan)">Governor Layer</div>
-            <div class="l-desc">DCC · coupling parameter · escalation ladder</div>
-          </div>
-          <div style="text-align:center;color:var(--muted);margin:.4rem 0">↓</div>
-          <div class="gpu-layer" style="background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.18)">
-            <div class="l-name" style="color:var(--violet)">Operator Layer</div>
-            <div class="l-desc">2-opt · or-opt-1/2/3 · double-bridge · Rust</div>
-            <div style="margin-top:.5rem;font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--violet)">← All existing GPU work</div>
-          </div>
-        </div>
-        <div class="gpu-arrow-col">
-          <div style="font-size:1.6rem">👁</div>
-          <div class="gpu-arrow-annot" style="color:var(--green)">EYES<br>we propose<br>GPU here</div>
-          <div style="margin-top:1.2rem;font-size:1.6rem">🦿</div>
-          <div class="gpu-arrow-annot" style="color:var(--violet)">LEGS<br>everyone else<br>GPU here</div>
-        </div>
-        <div>
-          <p style="font-size:.88rem;color:var(--muted);line-height:1.65">
-            The DCC architecture separates concerns. Prior GPU work only touches the bottom layer. Our proposal: accelerate the sensor — the part that tells the governor what is happening.
-          </p>
-          <p style="font-size:.88rem;color:var(--muted);line-height:1.65;margin-top:.8rem">
-            Why this matters: <strong style="color:var(--text)">more sensor evaluations per second = more governance cycles = better search quality in same wall time.</strong>
-          </p>
-        </div>
-      </div>
-
-      <!-- Collapsible technical detail -->
-      <div class="gpu-toggle rv" id="gpu-toggle-btn">
-        <span class="gpu-toggle-label">Technical detail: why geometric sensors win on GPU</span>
-        <span>
-          <span class="gpu-toggle-hint">click to expand</span>
-          <span class="gpu-chevron" id="gpu-chev">▼</span>
-        </span>
-      </div>
-      <div class="gpu-body" id="gpu-body">
-
-        <div class="highlight green rv" style="margin-bottom:1.4rem">
-          <h3>The parallelism split</h3>
-          <p>
-            Information-theoretic sensors (LZ76, SampEn, transfer entropy) are <strong>sequential</strong> — each symbol depends on previous context. LZ compression cannot be parallelized on GPU. These sensors are CPU-bound forever.
-          </p>
-          <p style="margin-top:.6rem">
-            <span class="mono" style="color:var(--green)">Geometric sensors</span> (tri_area, circum_r, tri_compact, voronoi_adj, fold_dist) are <strong>embarrassingly parallel</strong>: each triple (i, i+1, i+2) is independent. Pure vector math on (x,y) coordinates. For n=3496 cities: ~3500 triples &times; 3 FP operations = ~10,000 ops. GPU does this in <strong>one microsecond</strong>. CPU takes milliseconds. Ratio: <strong>&sim;1000&times; faster sensor evaluation.</strong>
-          </p>
-        </div>
-
-        <h3 class="rv">Arena evidence — L_total = 0.00 configurations (qa194, 30 sec, 1 worker)</h3>
-        <table class="gpu-arena-table rv">
-          <thead>
-            <tr>
-              <th>Sensor</th>
-              <th>Governor</th>
-              <th>Gap</th>
-              <th>L_total</th>
-              <th>Sensor type</th>
-              <th>GPU-parallelizable?</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="sequential">CUSUM</td>
-              <td>BB</td>
-              <td class="good">0.000%</td>
-              <td class="good">0.00</td>
-              <td class="sequential">Sequential</td>
-              <td style="color:var(--rose)">No</td>
-            </tr>
-            <tr>
-              <td class="parallel">tri_area</td>
-              <td>ADSR</td>
-              <td class="good">0.000%</td>
-              <td class="good">0.00</td>
-              <td class="parallel">Geometric</td>
-              <td style="color:var(--green)">Yes · ~1000×</td>
-            </tr>
-            <tr>
-              <td class="parallel">tri_compact</td>
-              <td>BB</td>
-              <td class="good">0.000%</td>
-              <td class="good">0.00</td>
-              <td class="parallel">Geometric</td>
-              <td style="color:var(--green)">Yes · ~1000×</td>
-            </tr>
-          </tbody>
-        </table>
-        <p class="rv" style="font-size:.88rem;color:var(--muted)">
-          Two of three perfect-score configurations use GPU-parallelizable sensors. On CPU, all three perform equally. On GPU, the two geometric configurations run ~1000&times; more governance cycles in the same time budget — meaning faster convergence and likely exact optimal on <em>larger</em> instances where the sequential sensor stalls.
-        </p>
-
-        <div class="highlight gold rv" style="margin-top:1.4rem">
-          <h3>What this means for nu3496</h3>
-          <p>
-            Our current nu3496 run uses LZ-based DCC governance on CPU. At n=3496, each LZ measurement processes a 3496-element sequence sequentially.
-          </p>
-          <p style="margin-top:.6rem">
-            With GPU geometric sensors: <strong>tri_area measurement = 3496 parallel multiplications = microseconds</strong> vs. LZ's milliseconds. More governance cycles = faster convergence = lower gap in same wall time. The geometric sensors proposed by a non-CS human from bed at 1&nbsp;AM may become the fastest TSP governance signals on GPU hardware — not because they're theoretically better, but because they're architecturally parallel.
-          </p>
-        </div>
-
-        <div class="highlight violet rv" style="margin-top:1.4rem">
-          <h3>Hardware-dependent MDL</h3>
-          <p>
-            On CPU: <span class="mono" style="color:var(--violet)">LZ_binary + CDPID</span> (information-theoretic) is optimal.<br>
-            On GPU: <span class="mono" style="color:var(--green)">tri_area + BB</span> (geometric, zero parameters) becomes optimal.
-          </p>
-          <p style="margin-top:.6rem">
-            The hardware changes which algorithm wins. The optimal description depends not just on the data, but on the machine that processes it. This is hardware-dependent MDL — a framing that does not appear in the existing literature.
-          </p>
-        </div>
-
-      </div><!-- /gpu-body -->
-
-      <div class="gpu-tagline rv">
-        <em>The fastest sensor isn't the smartest one.</em><br>
-        It's the one that fits the hardware.
-      </div>
-      <p class="evidence-note rv" style="margin-top:.9rem">AIM³ Institute, Ljubljana &middot; BD × AI Lab &middot; March 2026</p>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
   <!-- ===== THE TEAM ===== -->
 
   <section id="team">
@@ -1855,17 +1478,7 @@ footer{
           <div class="t">Open Trip Optimizer &nearr;</div>
           <div class="d">Use the live route-planning interface built from the same research.</div>
         </a>
-        <a class="mini-link rv rv-d3" href="BD_8ZRP_qa194_map.html">
-          <div class="k">Interactive map</div>
-          <div class="t">qa194 Tour on a Map</div>
-          <div class="d">194 cities in Qatar. Gold polyline. Compare our tour vs nearest-neighbour. Crossing detection.</div>
-        </a>
-        <a class="mini-link rv rv-d4" href="BD_8ZRP_nu3496_status.html">
-          <div class="k">Live run</div>
-          <div class="t">nu3496 Status</div>
-          <div class="d">Nicaragua · 3,496 cities · t=50.6h checkpoint · Meta-DCC fleet data.</div>
-        </a>
-        <a class="mini-link rv" href="BD_AIM3.html">
+        <a class="mini-link rv rv-d3" href="BD_AIM3.html">
           <div class="k">Method</div>
           <div class="t">Read AIM³</div>
           <div class="d">The collaboration operating system behind the research.</div>
@@ -1996,20 +1609,10 @@ footer{
 
       draw();
     })();
-
-    // GPU section toggle
-    (function(){
-      const btn  = document.getElementById('gpu-toggle-btn');
-      const body = document.getElementById('gpu-body');
-      const chev = document.getElementById('gpu-chev');
-      if (!btn) return;
-      btn.addEventListener('click', function(){
-        const open = body.classList.toggle('open');
-        chev.classList.toggle('open', open);
-        btn.querySelector('.gpu-toggle-hint').textContent = open ? 'click to collapse' : 'click to expand';
-      });
-    })();
   </script>
+
+</body>
+</html>
 
 </body>
 </html>
