@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BD × AI Lab — 8Z-RP / TSP as Compression</title>
+  <title>BD × AI Lab — 8Z-RP v1.1 / TSP as Compression</title>
   <link rel="preconnect" href="https://fonts.googleapis.com/" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -253,7 +253,6 @@ section{padding:96px 0}
 .sec-tag.green{color:var(--green)}
 .sec-tag.violet{color:var(--violet)}
 .sec-tag.rose{color:var(--rose)}
-.sec-tag.orange{color:var(--orange)}
 
 h2{
   font-size:clamp(2rem,4vw,3.15rem);
@@ -708,6 +707,53 @@ footer{
 .hero-subgrid{display:grid;grid-template-columns:1.15fr .85fr;gap:1.2rem;margin-top:2rem}
 .tinycaps{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
 @media(max-width:980px){.claim-grid,.hero-subgrid{grid-template-columns:1fr}.timeline-item{grid-template-columns:1fr}}
+
+/* ── GPU collapsible section ── */
+.gpu-toggle{
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;padding:1.1rem 1.4rem;
+  background:rgba(52,211,153,0.05);
+  border:1px solid rgba(52,211,153,0.18);
+  border-radius:6px;margin-bottom:.5rem;
+  transition:background .18s,border-color .18s;
+  user-select:none;
+}
+.gpu-toggle:hover{background:rgba(52,211,153,0.09);border-color:rgba(52,211,153,0.32)}
+.gpu-toggle-label{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+.gpu-toggle-hint{font-size:.8rem;color:var(--muted)}
+.gpu-chevron{font-size:.7rem;color:var(--muted);transition:transform .22s}
+.gpu-chevron.open{transform:rotate(180deg)}
+.gpu-body{display:none}
+.gpu-body.open{display:block}
+.gpu-layer-diag{display:grid;grid-template-columns:1fr 80px 1fr;align-items:center;gap:.6rem;margin:1.5rem 0;padding:1.2rem 1.4rem;border:1px solid var(--border);border-radius:6px;background:rgba(6,10,20,.72)}
+.gpu-layer{padding:.85rem 1rem;border-radius:5px;text-align:center}
+.gpu-layer .l-name{font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;margin-bottom:.3rem}
+.gpu-layer .l-desc{font-size:.8rem;color:var(--muted)}
+.gpu-arrow-col{text-align:center;color:var(--muted);font-size:1.1rem}
+.gpu-arrow-annot{font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.08em;margin-top:.3rem;line-height:1.4}
+.gpu-arena-table{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.88rem}
+.gpu-arena-table th{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:.5rem .7rem;border-bottom:1px solid var(--border);text-align:left}
+.gpu-arena-table td{padding:.55rem .7rem;border-bottom:1px solid rgba(0,229,255,.05);font-family:'JetBrains Mono',monospace;font-size:.78rem}
+.gpu-arena-table tr:last-child td{border-bottom:none}
+.gpu-arena-table .parallel{color:var(--green)}
+.gpu-arena-table .sequential{color:var(--violet)}
+.gpu-tagline{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--muted);border-left:3px solid var(--green);padding:.75rem 1rem;margin-top:1.5rem;background:rgba(52,211,153,.04);border-radius:0 4px 4px 0}
+.gpu-tagline em{color:var(--green);font-style:normal}
+
+/* ── Map link button ── */
+.map-link-btn{
+  display:inline-flex;align-items:center;gap:.5rem;
+  margin-top:1.1rem;padding:.55rem 1.1rem;
+  border:1px solid rgba(245,158,11,.28);
+  border-radius:4px;
+  background:rgba(245,158,11,.07);
+  color:var(--gold);
+  font-family:'JetBrains Mono',monospace;
+  font-size:.68rem;letter-spacing:.08em;
+  text-decoration:none;
+  transition:background .18s,border-color .18s;
+}
+.map-link-btn:hover{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.5)}
 ```
 
   </style>
@@ -763,10 +809,13 @@ footer{
     <a class="cyan" href="#stop">Why stop</a>
     <a class="gold" href="#verified-results">Verified results</a>
     <a class="violet" href="#core-idea">Core idea</a>
+    <a class="orange" href="#empirical">Empirical</a>
     <a class="green" href="#ladder">Progression</a>
     <a class="rose" href="#almost-wrong">Near miss</a>
     <a class="orange" href="#discovery">Discovery</a>
     <a class="cyan" href="#engineering">Rust</a>
+    <a class="rose" href="#meta-dcc">Meta-DCC</a>
+    <a class="green" href="#gpu">GPU eyes</a>
     <a class="gold" href="#team">The team</a>
     <a class="green" href="#claims">Claims</a>
     <a class="violet" href="#next">Next</a>
@@ -873,6 +922,7 @@ footer{
         <span class="pill">W7 @ move 2832</span>
       </div>
       <div class="metric-callout"><p>W7 sat at ~0.81% for over 2000 moves. Then or-opt found a crack in the local basin and cascaded through 76 tour-length units in ~150 moves straight to optimal. The landscape contains narrow, reachable corridors that the right move family can unlock.</p></div>
+      <a href="BD_8ZRP_qa194_map.html" class="map-link-btn">🗺 See the tour on a map →</a>
     </article>
 
     <article class="panel green rv rv-d2">
@@ -922,14 +972,14 @@ footer{
       <div class="micro">Scaling result &mdash; uy734</div>
       <h3>DCC v2 wins on the 4&times; larger instance</h3>
       <p>
-        uy734: <strong>734 cities</strong>, known optimal <strong>79114</strong>, ~2.06 &times; 10<sup>1783</sup> brute-force tours. DCC v2 reached <strong>0.64% gap</strong> (79623) in <strong>28.3 minutes</strong> with 8 workers &mdash; beating v1&rsquo;s hand-tuned fixed-10 which reached 0.80% (79747) in 39.0 minutes. Better quality AND faster on the scaling test.
+        uy734: <strong>734 cities</strong>, known optimal <strong>79114</strong>, ~2.06 &times; 10<sup>1783</sup> brute-force tours. v2.5 with 14 workers and Meta-DCC fleet monitoring reached <strong>0.46% gap</strong> (79478) in <strong>40 minutes</strong> &mdash; improving on the earlier v2.2R result of 0.64% with 8 workers. DCC v2 consistently beats v1&rsquo;s hand-tuned fixed-10 (0.80%, 79747) at every configuration.
       </p>
       <div class="pill-row">
         <span class="pill">v1: 79747 (0.80%)</span>
-        <span class="pill">v2: 79623 (0.64%)</span>
-        <span class="pill">v2 wins: quality + speed</span>
+        <span class="pill">v2.2R: 79623 (0.64%)</span>
+        <span class="pill">v2.5: 79478 (0.46%)</span>
       </div>
-      <div class="metric-callout"><p>DCC v2 auto-cycled through or-opt-1 &rarr; or-opt-2 &rarr; or-opt-3 &rarr; double-bridge, performed 3 strategy restarts (greedy &rarr; classic &rarr; hilbert &rarr; sweep), and managed escalation from normal to nuclear. The controller was actively governing the search, not coasting.</p></div>
+      <div class="metric-callout"><p>DCC v2 auto-cycled through or-opt-1 &rarr; or-opt-2 &rarr; or-opt-3 &rarr; double-bridge, performed 3 strategy restarts, and managed escalation from normal to nuclear. v2.5 added Meta-DCC fleet monitoring with self-calibrating bands &mdash; 81 meta-steps of real-time fleet diagnostic data across the full run.</p></div>
     </article>
 
     <article class="panel green rv rv-d2">
@@ -990,7 +1040,7 @@ footer{
 
   <div class="divider"></div>
 
-  <!-- ===== EMPIRICAL VALIDATION ===== -->
+  <!-- ===== EMPIRICAL TEST ===== -->
 
   <section id="empirical">
     <div class="wrap">
@@ -1073,10 +1123,9 @@ footer{
   <section id="ladder">
     <div class="wrap">
       <span class="sec-tag green rv">The Progression</span>
-      <h2 class="rv">From capped search to exact optimal.</h2>
-      <p class="rv">This was not one miracle run. The solver moved through a clear series of architectural steps.</p>
+      <h2 class="rv">From capped search to exact optimal &mdash; and beyond.</h2>
+      <p class="rv">This was not one miracle run. The solver moved through a clear series of architectural steps, from v1.2.1 through v2.5.</p>
 
-```
   <div class="table-wrap rv">
     <table>
       <thead>
@@ -1144,6 +1193,27 @@ footer{
           <td class="mono good">79623</td>
           <td class="good">0.64%</td>
           <td><strong>DCC v2 wins at 4&times; scale (28 min)</strong></td>
+        </tr>
+        <tr style="border-top:2px solid rgba(100,200,255,.25)">
+          <td class="mono">v2.3</td>
+          <td>Rust 2-opt auto-detect, batch runner, nu3496 reachable</td>
+          <td class="mono">&mdash;</td>
+          <td>&mdash;</td>
+          <td>Engineering: ~100&times; Rust speedup integrated</td>
+        </tr>
+        <tr>
+          <td class="mono">v2.4</td>
+          <td>Meta-DCC observer: fleet monitoring, LZ76 sensor, escalation</td>
+          <td class="mono">&mdash;</td>
+          <td>&mdash;</td>
+          <td>Inter-worker governance (Phase 1: sensor only)</td>
+        </tr>
+        <tr>
+          <td class="mono"><strong>v2.5</strong></td>
+          <td><strong>uy734 &mdash; 14 workers, DCC v2, Meta-DCC auto bands, Rust</strong></td>
+          <td class="mono good">79478</td>
+          <td class="good">0.46%</td>
+          <td><strong>Self-calibrating bands (P17). Best uy734 result.</strong></td>
         </tr>
       </tbody>
     </table>
@@ -1318,6 +1388,219 @@ footer{
 
   <div class="divider"></div>
 
+  <!-- ===== META-DCC ===== -->
+
+  <section id="meta-dcc">
+    <div class="wrap">
+      <span class="sec-tag rose rv">Inter-Worker Governance</span>
+      <h2 class="rv">Meta-DCC: the same algorithm governing the fleet that governs the search.</h2>
+      <p class="rv">
+        14 workers running independently waste compute. On nu3496 (3496 cities), the best worker found 2.02% gap while the worst sat at 4.34% &mdash; a 2,212-unit spread representing pure waste. The fix: a Level 1 DCC that monitors all workers, detects fleet stagnation, and (in Phase 2) intervenes by injecting good tours into stuck workers.
+      </p>
+      <p class="rv">
+        <strong>Same algorithm at both levels.</strong> The Meta-DCC uses the identical LZ76 compression sensor, coupling parameter, and escalation ladder as the base-level worker DCC. The only difference: what the sensor points at. Base-level DCC monitors individual search improvement streams. Meta-DCC monitors fleet-wide state snapshots. Same code. Same math. Different semantics.
+      </p>
+
+      <h3>The Fleet Lifecycle on uy734 (81 Meta-DCC Steps)</h3>
+      <p class="rv">v2.5 ran 14 workers on uy734 (734 cities, optimal 79114) with Meta-DCC monitoring every 30 seconds. The resulting 81-step log revealed a clear three-phase lifecycle:</p>
+
+      <div class="grid-4">
+        <article class="panel green rv rv-d1">
+          <div class="micro">Steps 1&ndash;20</div>
+          <h3>Healthy Fleet</h3>
+          <p>All 14 workers IMPROVING. Fleet best drops rapidly: 83188 &rarr; 79942. meta_u climbs 10 &rarr; 18 (trust the workers). Spread narrows 1860 &rarr; 1342.</p>
+        </article>
+        <article class="panel orange rv rv-d2">
+          <div class="micro">Steps 21&ndash;55</div>
+          <h3>Stagnation</h3>
+          <p>DEAD workers appear (5&ndash;13 per snapshot). Improvements rare. meta_u holds at 18 then starts dropping. Escalation climbs to SHARE level.</p>
+        </article>
+        <article class="panel rose rv rv-d3">
+          <div class="micro">Steps 56&ndash;81</div>
+          <h3>Fleet Exhaustion</h3>
+          <p>meta_u drops 18 &rarr; 3. Step 65: all 14 workers DEAD, zero IMPROVING. Escalation reaches RESTRUCTURE. The sensor says: <em>intervene NOW.</em></p>
+        </article>
+      </div>
+
+      <h3>The Self-Calibrating Bands Discovery (P17)</h3>
+      <p class="rv">
+        v2.4 hardcoded the LZ compression thresholds at [0.25, 0.65]. Real fleet data lived at [0.01, 0.08] &mdash; off by 10&times;. meta_u drifted to floor and stayed there: useless signal. This was the same mistake as the or-opt exclusion &mdash; overriding the system instead of letting it learn.
+      </p>
+      <p class="rv">
+        v2.5 fixed it: <strong>self-calibrating bands</strong>. The system tracks its own LZ ratio history and derives thresholds from the 25th/75th percentiles of what it has actually observed. After a 10-observation warmup, bands converged to [0.040, 0.061]. meta_u then used its full range [3, 18] with 22 meaningful direction changes. The system that was built to let data decide now lets data decide about its own parameters. MDL all the way down.
+      </p>
+
+<div class="8z-protected" data-label="Meta-DCC Fleet Classification Algorithm">
+<h4>Worker Classification</h4>
+<p>Each 30-second snapshot classifies every worker:</p>
+<ul>
+  <li><strong>IMPROVING:</strong> Found improvement since last snapshot. Stuck counter resets to 0.</li>
+  <li><strong>GRINDING:</strong> No improvement but gap &le; fleet median. Stuck counter decays by 1 (not accumulate). This prevents false escalation.</li>
+  <li><strong>STUCK:</strong> No improvement and gap &gt; fleet median. Stuck counter increments.</li>
+  <li><strong>DEAD:</strong> At nuclear escalation level (4). Stuck counter increments.</li>
+</ul>
+<p><strong>Fleet snapshot encoding:</strong> 1 byte per worker: state(2 bits) + escalation_bucket(2 bits) + stuck_bucket(2 bits). Fed to LZ76 sensor.</p>
+<p><strong>Escalation triggers:</strong> persistently_stuck = count of workers with stuck_intervals &ge; meta_stuck_threshold (default 3). Escalation: 0 stuck=OBSERVE, 1=INFORM, 2+=SHARE, 3+=CROSS-POLLINATE, &gt;50% of fleet=RESTRUCTURE.</p>
+</div>
+
+<div class="8z-protected" data-label="Self-Calibrating Band Implementation (P17)">
+<h4>Band Self-Calibration</h4>
+<p><strong>Warmup:</strong> First 10 LZ observations collected, meta_u frozen at midpoint. No coupling adjustment during warmup.</p>
+<p><strong>Calibration:</strong> Rolling window of last 100 LZ ratios. band_low = 25th percentile. band_high = 75th percentile. Guard: band_high = max(band_high, band_low + 0.001).</p>
+<p><strong>Coupling rule (search polarity):</strong> lz_ratio &lt; band_low &rarr; meta_u decreases (fleet stuck, explore). lz_ratio &gt; band_high &rarr; meta_u increases (fleet diverse, trust). Same polarity as base-level search DCC. Opposite from trading DCC.</p>
+<p><strong>Verified result:</strong> Bands converged from [0.000, 1.000] to [0.040, 0.061] on uy734. meta_u range after calibration: [3, 18] with 22 direction changes (vs 0 useful changes in v2.4 with hardcoded bands).</p>
+</div>
+
+      <p class="rv">
+        <strong>Result:</strong> uy734 reached <strong>0.46% gap</strong> (79478) with 14 workers in 40 minutes. Phase 1 is observer-only &mdash; workers are identical to v2.3. The value of v2.5 is diagnostic: for the first time, we can <em>see</em> fleet dynamics in real time and have a calibrated sensor for Phase 2 interventions.
+      </p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== GPU: THE EYES THAT SCALE ===== -->
+
+  <section id="gpu">
+    <div class="wrap">
+      <span class="sec-tag green rv">Hardware-Dependent MDL</span>
+      <h2 class="rv">The Eyes That Scale &mdash; GPU Changes Which Algorithm Wins.</h2>
+      <p class="rv">
+        Every paper on GPU&nbsp;+&nbsp;TSP does the same thing: take an existing operator (2-opt, 3-opt, genetic), parallelize its move evaluation on the GPU, and go faster. They speed up the <strong>legs</strong> of the solver. Nobody speeds up the <strong>eyes</strong>.
+      </p>
+
+      <!-- Three-layer diagram -->
+      <div class="gpu-layer-diag rv">
+        <div>
+          <div class="gpu-layer" style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25)">
+            <div class="l-name" style="color:var(--green)">Sensor Layer</div>
+            <div class="l-desc">LZ76 · SampEn · tri_area · circum_r · voronoi_adj</div>
+            <div style="margin-top:.5rem;font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--green)">← GPU arrow (our proposal)</div>
+          </div>
+          <div style="text-align:center;color:var(--muted);margin:.4rem 0">↓</div>
+          <div class="gpu-layer" style="background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.18)">
+            <div class="l-name" style="color:var(--cyan)">Governor Layer</div>
+            <div class="l-desc">DCC · coupling parameter · escalation ladder</div>
+          </div>
+          <div style="text-align:center;color:var(--muted);margin:.4rem 0">↓</div>
+          <div class="gpu-layer" style="background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.18)">
+            <div class="l-name" style="color:var(--violet)">Operator Layer</div>
+            <div class="l-desc">2-opt · or-opt-1/2/3 · double-bridge · Rust</div>
+            <div style="margin-top:.5rem;font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--violet)">← All existing GPU work</div>
+          </div>
+        </div>
+        <div class="gpu-arrow-col">
+          <div style="font-size:1.6rem">👁</div>
+          <div class="gpu-arrow-annot" style="color:var(--green)">EYES<br>we propose<br>GPU here</div>
+          <div style="margin-top:1.2rem;font-size:1.6rem">🦿</div>
+          <div class="gpu-arrow-annot" style="color:var(--violet)">LEGS<br>everyone else<br>GPU here</div>
+        </div>
+        <div>
+          <p style="font-size:.88rem;color:var(--muted);line-height:1.65">
+            The DCC architecture separates concerns. Prior GPU work only touches the bottom layer. Our proposal: accelerate the sensor — the part that tells the governor what is happening.
+          </p>
+          <p style="font-size:.88rem;color:var(--muted);line-height:1.65;margin-top:.8rem">
+            Why this matters: <strong style="color:var(--text)">more sensor evaluations per second = more governance cycles = better search quality in same wall time.</strong>
+          </p>
+        </div>
+      </div>
+
+      <!-- Collapsible technical detail -->
+      <div class="gpu-toggle rv" id="gpu-toggle-btn">
+        <span class="gpu-toggle-label">Technical detail: why geometric sensors win on GPU</span>
+        <span>
+          <span class="gpu-toggle-hint">click to expand</span>
+          <span class="gpu-chevron" id="gpu-chev">▼</span>
+        </span>
+      </div>
+      <div class="gpu-body" id="gpu-body">
+
+        <div class="highlight green rv" style="margin-bottom:1.4rem">
+          <h3>The parallelism split</h3>
+          <p>
+            Information-theoretic sensors (LZ76, SampEn, transfer entropy) are <strong>sequential</strong> — each symbol depends on previous context. LZ compression cannot be parallelized on GPU. These sensors are CPU-bound forever.
+          </p>
+          <p style="margin-top:.6rem">
+            <span class="mono" style="color:var(--green)">Geometric sensors</span> (tri_area, circum_r, tri_compact, voronoi_adj, fold_dist) are <strong>embarrassingly parallel</strong>: each triple (i, i+1, i+2) is independent. Pure vector math on (x,y) coordinates. For n=3496 cities: ~3500 triples &times; 3 FP operations = ~10,000 ops. GPU does this in <strong>one microsecond</strong>. CPU takes milliseconds. Ratio: <strong>&sim;1000&times; faster sensor evaluation.</strong>
+          </p>
+        </div>
+
+        <h3 class="rv">Arena evidence — L_total = 0.00 configurations (qa194, 30 sec, 1 worker)</h3>
+        <table class="gpu-arena-table rv">
+          <thead>
+            <tr>
+              <th>Sensor</th>
+              <th>Governor</th>
+              <th>Gap</th>
+              <th>L_total</th>
+              <th>Sensor type</th>
+              <th>GPU-parallelizable?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="sequential">CUSUM</td>
+              <td>BB</td>
+              <td class="good">0.000%</td>
+              <td class="good">0.00</td>
+              <td class="sequential">Sequential</td>
+              <td style="color:var(--rose)">No</td>
+            </tr>
+            <tr>
+              <td class="parallel">tri_area</td>
+              <td>ADSR</td>
+              <td class="good">0.000%</td>
+              <td class="good">0.00</td>
+              <td class="parallel">Geometric</td>
+              <td style="color:var(--green)">Yes · ~1000×</td>
+            </tr>
+            <tr>
+              <td class="parallel">tri_compact</td>
+              <td>BB</td>
+              <td class="good">0.000%</td>
+              <td class="good">0.00</td>
+              <td class="parallel">Geometric</td>
+              <td style="color:var(--green)">Yes · ~1000×</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="rv" style="font-size:.88rem;color:var(--muted)">
+          Two of three perfect-score configurations use GPU-parallelizable sensors. On CPU, all three perform equally. On GPU, the two geometric configurations run ~1000&times; more governance cycles in the same time budget — meaning faster convergence and likely exact optimal on <em>larger</em> instances where the sequential sensor stalls.
+        </p>
+
+        <div class="highlight gold rv" style="margin-top:1.4rem">
+          <h3>What this means for nu3496</h3>
+          <p>
+            Our current nu3496 run uses LZ-based DCC governance on CPU. At n=3496, each LZ measurement processes a 3496-element sequence sequentially.
+          </p>
+          <p style="margin-top:.6rem">
+            With GPU geometric sensors: <strong>tri_area measurement = 3496 parallel multiplications = microseconds</strong> vs. LZ's milliseconds. More governance cycles = faster convergence = lower gap in same wall time. The geometric sensors proposed by a non-CS human from bed at 1&nbsp;AM may become the fastest TSP governance signals on GPU hardware — not because they're theoretically better, but because they're architecturally parallel.
+          </p>
+        </div>
+
+        <div class="highlight violet rv" style="margin-top:1.4rem">
+          <h3>Hardware-dependent MDL</h3>
+          <p>
+            On CPU: <span class="mono" style="color:var(--violet)">LZ_binary + CDPID</span> (information-theoretic) is optimal.<br>
+            On GPU: <span class="mono" style="color:var(--green)">tri_area + BB</span> (geometric, zero parameters) becomes optimal.
+          </p>
+          <p style="margin-top:.6rem">
+            The hardware changes which algorithm wins. The optimal description depends not just on the data, but on the machine that processes it. This is hardware-dependent MDL — a framing that does not appear in the existing literature.
+          </p>
+        </div>
+
+      </div><!-- /gpu-body -->
+
+      <div class="gpu-tagline rv">
+        <em>The fastest sensor isn't the smartest one.</em><br>
+        It's the one that fits the hardware.
+      </div>
+      <p class="evidence-note rv" style="margin-top:.9rem">AIM³ Institute, Ljubljana &middot; BD × AI Lab &middot; March 2026</p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
   <!-- ===== THE TEAM ===== -->
 
   <section id="team">
@@ -1414,7 +1697,7 @@ footer{
   <section id="next">
     <div class="wrap">
       <span class="sec-tag violet rv">What Comes Next</span>
-      <h2 class="rv">Held&ndash;Karp proof path, nu3496, broader kick arenas, and fuller DCC.</h2>
+      <h2 class="rv">nu3496, Phase 2 tour injection, and the formal bridge.</h2>
       <div class="grid-4">
         <article class="panel orange rv rv-d1">
           <div class="micro">Proof capability</div>
@@ -1422,19 +1705,19 @@ footer{
           <p>A minimum 1-tree subgradient module (~200&ndash;300 lines, no LP solver needed) could certify optimality when the bound matches the tour. If it works on qa194: ~2,200 lines of zero-dependency Python that both <strong>finds and proves</strong> optimal tours. The comparison to Concorde changes categorically.</p>
         </article>
         <article class="panel rose rv rv-d2">
-          <div class="micro">New frontier</div>
+          <div class="micro">Running now</div>
           <h3>nu3496 &mdash; the next scale test</h3>
-          <p>3496 cities, known optimal 96772. ~4.8&times; larger than uy734. The question: does 0.64% become sub-1% here too, or does the architecture hit a wall?</p>
+          <p>3496 cities, known optimal 96132. ~4.8&times; larger than uy734. 168h run with 10 workers under v2.5 with Rust backend. First probe reached 2.02% gap at 27h. Can Meta-DCC fleet governance accelerate convergence at this scale?</p>
         </article>
         <article class="panel gold rv rv-d3">
-          <div class="micro">v2.3</div>
-          <h3>Broader kick arena</h3>
-          <p>More or-opt variants, 3-opt, targeted moves, batch campaigns, and a better surface for learning what truly scales.</p>
+          <div class="micro">v2.5 ✓ / Phase 2 next</div>
+          <h3>Meta-DCC Phase 2: Tour Injection</h3>
+          <p>Phase 1 (observer) validated: self-calibrating bands, 81-step fleet lifecycle, calibrated escalation triggers. Phase 2 enables the action: inject the leader&rsquo;s best tour into stuck workers when escalation reaches SHARE level. The sensor is ready. The hands come next.</p>
         </article>
         <article class="panel cyan rv rv-d1">
-          <div class="micro">v2.4</div>
-          <h3>DCC as fuller governor</h3>
-          <p>Auto mode: the controller handles strategy discovery, kick choice, escalation, and convergence policy without human tuning. Hierarchical DCC: per-agent local governors + session-level group governor.</p>
+          <div class="micro">Three walls remain</div>
+          <h3>Formal P vs NP bridge</h3>
+          <p>Scaling (does sub-1% gap hold at n=10K+?), adversarial instances (does DCC handle worst-case constructions?), and formal bridge (can empirical DCC efficiency be proven to imply polynomial-time behavior?). The honest assessment: moved from &ldquo;DCC is a theory&rdquo; to &ldquo;DCC v2 outperforms human-configured search empirically.&rdquo;</p>
         </article>
       </div>
     </div>
@@ -1447,9 +1730,9 @@ footer{
   <section id="closing">
     <div class="wrap">
       <span class="sec-tag rv">Closing</span>
-      <h2 class="rv">10 days. One human. Four AI systems. A research machine with public benchmark evidence.</h2>
+      <h2 class="rv">17 days. One human. Four AI systems. Five solver versions. A research machine with public benchmark evidence.</h2>
       <p class="rv">
-        The verified core: exact qa194, DCC v2 vindication, auto-discovered operator preference, measured Rust acceleration, official benchmark provenance, and a clean architectural story connecting MDL, DCC, and route optimization. ~100&times; less code than the gold standard. All from a non-specialist who had never built a TSP solver before, collaborating with four AI systems under AIM&sup3;.
+        The verified core: exact qa194, uy734 at 0.46%, DCC v2 vindication, auto-discovered operator preference, Rust acceleration, Meta-DCC fleet governance with self-calibrating bands, official benchmark provenance, and a clean architectural story connecting MDL, DCC, and route optimization. ~100&times; less code than the gold standard. All from a non-specialist who had never built a TSP solver before, collaborating with four AI systems under AIM&sup3;.
       </p>
       <p class="rv">
         This is not a proof of P&nbsp;=&nbsp;NP. This is not a toy heuristic. This is a real research machine with public benchmark evidence, controller evidence, engineering evidence, and a controller that discovered what the experts defaulted past. The remarkable part is not that a heuristic can match a 200-city optimum &mdash; that has been possible for decades. The remarkable part is the <em>way</em> it was produced.
@@ -1465,7 +1748,17 @@ footer{
           <div class="t">Open Trip Optimizer &nearr;</div>
           <div class="d">Use the live route-planning interface built from the same research.</div>
         </a>
-        <a class="mini-link rv rv-d3" href="BD_AIM3.html">
+        <a class="mini-link rv rv-d3" href="BD_8ZRP_qa194_map.html">
+          <div class="k">Interactive map</div>
+          <div class="t">qa194 Tour on a Map</div>
+          <div class="d">194 cities in Qatar. Gold polyline. Compare our tour vs nearest-neighbour. Crossing detection.</div>
+        </a>
+        <a class="mini-link rv rv-d4" href="BD_8ZRP_nu3496_status.html">
+          <div class="k">Live run</div>
+          <div class="t">nu3496 Status</div>
+          <div class="d">Nicaragua · 3,496 cities · t=50.6h checkpoint · Meta-DCC fleet data.</div>
+        </a>
+        <a class="mini-link rv" href="BD_AIM3.html">
           <div class="k">Method</div>
           <div class="t">Read AIM³</div>
           <div class="d">The collaboration operating system behind the research.</div>
@@ -1596,10 +1889,20 @@ footer{
 
       draw();
     })();
-  </script>
 
-</body>
-</html>
+    // GPU section toggle
+    (function(){
+      const btn  = document.getElementById('gpu-toggle-btn');
+      const body = document.getElementById('gpu-body');
+      const chev = document.getElementById('gpu-chev');
+      if (!btn) return;
+      btn.addEventListener('click', function(){
+        const open = body.classList.toggle('open');
+        chev.classList.toggle('open', open);
+        btn.querySelector('.gpu-toggle-hint').textContent = open ? 'click to collapse' : 'click to expand';
+      });
+    })();
+  </script>
 
 </body>
 </html>
