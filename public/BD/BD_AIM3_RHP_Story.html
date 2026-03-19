@@ -278,6 +278,103 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
 </section>
 
 
+<!-- ===== CH 7: PRACTICAL EXAMPLES ===== -->
+<section class="chapter" id="examples">
+  <div class="chapter-num">Chapter 7</div>
+  <h2>Practical Examples — The Protocol in the Wild</h2>
+  <p style="color:var(--muted-2);margin-bottom:28px">What happens when you actually use the protocol on real problems. These stories grow over time.</p>
+
+  <!-- EXAMPLE 1 -->
+  <div class="ex-block" id="ex1">
+    <button class="ex-toggle" onclick="toggleEx('ex1')" aria-expanded="false">
+      <div class="ex-toggle-left">
+        <span class="ex-num">01</span>
+        <div>
+          <div class="ex-title">The Geometric Blind Spot</div>
+          <div class="ex-sub">12 AI models &times; 3,240 lines &times; 0 geometric ideas</div>
+        </div>
+      </div>
+      <span class="ex-chevron">&#8250;</span>
+    </button>
+    <div class="ex-content" id="ex1-body">
+      <p>Round 2 of the AIM&sup3; protocol asked 12 frontier AI models to design the optimal ssMDL-DCC architecture for TSP. They produced brilliant work: fractal architectures, ADSR control laws from neuroscience, operator discovery spaces, polynomial scaling analyses.</p>
+      <p>Every single model thought in <strong>INFORMATION</strong> &mdash; bits, entropy, compression, LZ complexity. Not one thought in <strong style="color:var(--green)">GEOMETRY</strong> &mdash; shapes, angles, areas, distances. TSP is a geometric problem. Cities have coordinates. Tours form shapes.</p>
+      <p>That evening, a human with no formal CS training lay in bed and asked: <em>&ldquo;What do the triangles look like from a satellite?&rdquo;</em></p>
+      <p>In two hours, seven geometric ideas emerged:</p>
+      <ul class="ex-list">
+        <li><span class="ex-bullet-green">&#9670;</span> Triangle area of consecutive city triples (detour = large triangle)</li>
+        <li><span class="ex-bullet-green">&#9670;</span> Circumradius of triples (curvature of path)</li>
+        <li><span class="ex-bullet-green">&#9670;</span> Triangle compactness (rectangle minus triangle = wasted space)</li>
+        <li><span class="ex-bullet-green">&#9670;</span> Expanding circles from all cities (&rarr; Voronoi diagram, rediscovered)</li>
+        <li><span class="ex-bullet-green">&#9670;</span> Paper folding (&rarr; Hilbert space-filling curve, rediscovered)</li>
+        <li><span class="ex-bullet-green">&#9670;</span> Bat echolocation (&rarr; adaptive nearest-neighbor with re-evaluation)</li>
+        <li><span class="ex-bullet-green">&#9670;</span> Gravitational collapse (&rarr; Barnes-Hut hierarchical clustering)</li>
+      </ul>
+      <p>All parameter-free. All parallelizable. All 0 bits MDL cost. None proposed by any model.</p>
+      <p>When the follow-up prompt told the models <em>&ldquo;think in shapes, not bits&rdquo;</em> &mdash; they immediately produced dozens more geometric ideas. The capability was there. The prompt was missing. The protocol&rsquo;s blind spot: it governed THINKING well but forgot that not all thinking is in bits.</p>
+      <p>This led to two protocol changes:</p>
+      <div class="callout cyan" style="margin:14px 0 18px">
+        <div class="ct">Protocol Updates</div>
+        <p><strong style="color:var(--cyan)">Agent 11: The Child</strong> &mdash; &ldquo;stand inside the problem, apply a physical force, observe what happens&rdquo; (v2.4)</p>
+        <p style="margin-bottom:0"><strong style="color:var(--cyan)">Agent 0: The Empiricist</strong> &mdash; &ldquo;why are you debating? test everything&rdquo; (v2.3)</p>
+      </div>
+      <p>The lesson: 12 frontier models with unlimited intelligence missed an entire dimension because they all shared the same training bias. One human with physical intuition opened it in minutes. The protocol now includes both &mdash; intelligence AND intuition. Neither alone is enough.</p>
+    </div>
+  </div>
+
+  <!-- EXAMPLE 2 -->
+  <div class="ex-block" id="ex2" style="margin-top:12px">
+    <button class="ex-toggle" onclick="toggleEx('ex2')" aria-expanded="false">
+      <div class="ex-toggle-left">
+        <span class="ex-num">02</span>
+        <div>
+          <div class="ex-title">The Empiricist&rsquo;s First Day</div>
+          <div class="ex-sub">576 combinations. One computer. Why are you thinking?</div>
+        </div>
+      </div>
+      <span class="ex-chevron">&#8250;</span>
+    </button>
+    <div class="ex-content" id="ex2-body">
+      <p>After Round 2, the natural next step seemed obvious: synthesize the 12 proposals into one hybrid architecture. Pick the best sensor, the best control law, the best operators. Debate the merits.</p>
+      <p>The human asked: <em>&ldquo;Why are we picking? We have a computer.&rdquo;</em></p>
+      <p>Instead of choosing one architecture, we built an <strong>ARENA</strong> that tests ALL proposals &mdash; every sensor &times; every control law &times; every operator &times; every parameter setting. MDL scores the results on real benchmarks. The computer decides.</p>
+      <p>First results on <strong>qa194</strong> (194 cities, known optimal = 9,352):</p>
+      <div class="score-grid" style="margin:16px 0">
+        <div class="score-card"><div class="sc-name">Variants tested</div><div class="sc-val hi">24</div></div>
+        <div class="score-card"><div class="sc-name">Time to test all</div><div class="sc-val hi">12 min</div></div>
+        <div class="score-card"><div class="sc-name">LZ_dual + ADSR gap</div><div class="sc-val hi">0.000%</div></div>
+        <div class="score-card"><div class="sc-name">LZ_binary + CDPID gap</div><div class="sc-val hi">0.000%</div></div>
+      </div>
+      <p>The winning combination was never explicitly proposed by any single model. It emerged from testing combinations that nobody argued for.</p>
+      <p>This led to <strong style="color:var(--cyan)">Agent 0: The Empiricist</strong> &mdash; who speaks last, after all debate is done, and asks one question: <em>&ldquo;Can we test all of these instead of choosing? We have a computer.&rdquo;</em></p>
+      <div class="callout" style="margin:16px 0 4px">
+        <div class="ct">The Lesson</div>
+        <p style="margin:0">Testing is cheaper than thinking. The arena found the answer in minutes that debate could not find in hours. Not because the models were wrong &mdash; but because the RIGHT answer was a combination nobody thought to propose.</p>
+      </div>
+    </div>
+  </div>
+
+  <p style="margin-top:28px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px">&#x2192; More examples coming as the protocol evolves.</p>
+</section>
+
+<style>
+.ex-block{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--surface)}
+.ex-toggle{width:100%;background:none;border:none;cursor:pointer;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;text-align:left;transition:background .2s}
+.ex-toggle:hover{background:var(--surface2)}
+.ex-toggle[aria-expanded="true"]{background:var(--surface2);border-bottom:1px solid var(--border)}
+.ex-toggle-left{display:flex;align-items:center;gap:16px}
+.ex-num{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--accent);opacity:.5;flex-shrink:0;line-height:1}
+.ex-title{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;color:var(--text);line-height:1.2}
+.ex-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.5px;margin-top:4px}
+.ex-chevron{font-size:22px;color:var(--accent);transition:transform .3s;flex-shrink:0;line-height:1}
+.ex-toggle[aria-expanded="true"] .ex-chevron{transform:rotate(90deg)}
+.ex-content{max-height:0;overflow:hidden;transition:max-height .45s ease,padding .3s ease;padding:0 24px}
+.ex-content.open{max-height:2000px;padding:20px 24px 24px}
+.ex-list{list-style:none;margin:10px 0 16px;padding:0;display:flex;flex-direction:column;gap:6px}
+.ex-list li{font-size:16px;color:var(--muted-2);display:flex;align-items:baseline;gap:10px}
+.ex-bullet-green{color:var(--green);font-size:10px;flex-shrink:0;position:relative;top:-1px}
+</style>
+
 <!-- ===== LINKS ===== -->
 <div style="margin:40px 0 0;text-align:center">
   <a href="BD_AIM3_RHP.html" style="font-family:'JetBrains Mono',monospace;font-size:13px;padding:12px 28px;border:1px solid var(--green);border-radius:var(--radius);display:inline-block;background:var(--green-dim);color:var(--green)">The Protocol &rarr;</a>
@@ -315,6 +412,7 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
 <script>
 (function(){var b=document.getElementById('scrollProg');window.addEventListener('scroll',function(){var h=document.documentElement;b.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%'})})();
 (function(){var ch=document.querySelectorAll('.chapter');var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:0.08});ch.forEach(function(c){obs.observe(c)})})();
+function toggleEx(id){var btn=document.querySelector('#'+id+' .ex-toggle');var body=document.getElementById(id+'-body');var open=btn.getAttribute('aria-expanded')==='true';btn.setAttribute('aria-expanded',open?'false':'true');open?body.classList.remove('open'):body.classList.add('open');}
 </script>
 </body>
 </html>
