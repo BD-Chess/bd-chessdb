@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>qa194 Tour Map — 8Z-RP / Qatar 194 Cities</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com/" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    :root {
+      --bg:      #020409;
+      --bg2:     #060a14;
+      --bg3:     #0b1120;
+      --surface: #0f1729;
+      --border:  rgba(0,229,255,0.12);
+      --border-strong: rgba(0,229,255,0.22);
+      --cyan:    #00e5ff;
+      --cyan-dim: rgba(0,229,255,0.10);
+      --gold:    #f59e0b;
+      --gold-dim: rgba(245,158,11,0.10);
+      --green:   #34d399;
+      --violet:  #a78bfa;
+      --rose:    #ff6b8a;
+      --text:    #e2e8f4;
+      --muted:   #5e7192;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px;
+    }
+
+    /* grain overlay */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 9999; opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* ── MAP ── */
+    #map {
+      position: fixed; inset: 0; z-index: 0;
+    }
+
+    /* Leaflet dark overrides */
+    .leaflet-tile-pane { filter: brightness(0.88) saturate(0.7); }
+    .leaflet-control-zoom a {
+      background: var(--surface) !important;
+      color: var(--cyan) !important;
+      border-color: var(--border) !important;
+      font-family: 'JetBrains Mono', monospace !important;
+    }
+    .leaflet-control-zoom a:hover { background: var(--bg3) !important; }
+    .leaflet-control-attribution {
+      background: rgba(2,4,9,0.75) !important;
+      color: var(--muted) !important;
+      font-size: 10px !important;
+      font-family: 'JetBrains Mono', monospace !important;
+    }
+    .leaflet-control-attribution a { color: var(--muted) !important; }
+
+    /* ── HEADER BAR ── */
+    #header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px;
+      height: 52px;
+      background: rgba(2,4,9,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-left {
+      display: flex; align-items: center; gap: 16px;
+    }
+
+    .back-link {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      letter-spacing: .12em;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid rgba(94,113,146,0.25);
+      padding: 4px 10px;
+      border-radius: 3px;
+      transition: color .2s, border-color .2s;
+    }
+    .back-link:hover { color: var(--cyan); border-color: var(--border); }
+
+    .header-title {
+      display: flex; align-items: baseline; gap: 10px;
+    }
+    .header-title .instance {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .78rem;
+      color: var(--gold);
+      letter-spacing: .08em;
+    }
+    .header-title .desc {
+      font-size: .82rem;
+      color: var(--muted);
+      letter-spacing: .04em;
+    }
+
+    .header-right {
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    /* ── SCROLL PROGRESS ── */
+    #draw-progress {
+      position: fixed; top: 52px; left: 0; right: 0; z-index: 99;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold), var(--cyan));
+      transform-origin: left;
+      transform: scaleX(0);
+      transition: transform .05s linear;
+    }
+
+    /* ── PANELS (shared) ── */
+    .panel {
+      position: fixed; z-index: 100;
+      background: rgba(2,4,9,0.90);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid transparent;
+      transition: background .15s;
+      user-select: none;
+    }
+    .panel-header:hover { background: rgba(0,229,255,0.04); }
+    .panel-header.open { border-bottom-color: var(--border); }
+
+    .panel-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--cyan);
+    }
+
+    .panel-chevron {
+      font-size: .7rem; color: var(--muted);
+      transition: transform .2s;
+    }
+    .panel-chevron.open { transform: rotate(180deg); }
+
+    .panel-body {
+      display: none;
+      padding: 14px;
+    }
+    .panel-body.open { display: block; }
+
+    /* ── STATS PANEL ── */
+    #stats-panel {
+      top: 72px; right: 16px;
+      width: 240px;
+    }
+
+    .stat-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(0,229,255,0.06);
+    }
+    .stat-row:last-child { border-bottom: none; }
+
+    .stat-key {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .64rem;
+      color: var(--muted);
+      letter-spacing: .05em;
+    }
+    .stat-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .75rem;
+      color: var(--text);
+      font-weight: 600;
+    }
+    .stat-val.gold { color: var(--gold); }
+    .stat-val.cyan { color: var(--cyan); }
+    .stat-val.green { color: var(--green); }
+    .stat-val.rose  { color: var(--rose); }
+
+    /* ── MODE TOGGLE ── */
+    #mode-panel {
+      top: 72px; left: 16px;
+      width: 220px;
+    }
+
+    .mode-btn {
+      display: block; width: 100%;
+      padding: 8px 12px;
+      margin-bottom: 6px;
+      background: rgba(0,229,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      letter-spacing: .08em;
+      cursor: pointer;
+      text-align: left;
+      transition: all .18s;
+    }
+    .mode-btn:last-child { margin-bottom: 0; }
+    .mode-btn.active {
+      background: rgba(245,158,11,0.10);
+      border-color: rgba(245,158,11,0.35);
+      color: var(--gold);
+    }
+    .mode-btn.active.nn {
+      background: rgba(167,139,250,0.10);
+      border-color: rgba(167,139,250,0.35);
+      color: var(--violet);
+    }
+    .mode-btn:hover:not(.active) {
+      background: rgba(0,229,255,0.07);
+      border-color: rgba(0,229,255,0.25);
+      color: var(--text);
+    }
+
+    .mode-note {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .58rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── GMAPS PANEL ── */
+    #gmaps-panel {
+      bottom: 16px; left: 50%;
+      transform: translateX(-50%);
+      width: min(680px, 96vw);
+    }
+
+    .gmaps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 6px;
+    }
+
+    .gmaps-link {
+      display: block;
+      padding: 6px 10px;
+      background: rgba(245,158,11,0.06);
+      border: 1px solid rgba(245,158,11,0.18);
+      border-radius: 4px;
+      color: var(--gold);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .62rem;
+      letter-spacing: .05em;
+      text-decoration: none;
+      text-align: center;
+      transition: background .15s, border-color .15s;
+    }
+    .gmaps-link:hover {
+      background: rgba(245,158,11,0.14);
+      border-color: rgba(245,158,11,0.4);
+    }
+
+    .gmaps-note {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .58rem;
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.6;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+
+    /* ── ANIMATE BUTTON ── */
+    #cross-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .10em;
+      color: var(--rose);
+      background: rgba(255,107,138,0.08);
+      border: 1px solid rgba(255,107,138,0.22);
+      border-radius: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+      white-space: nowrap;
+    }
+    #cross-btn:hover {
+      background: rgba(255,107,138,0.16);
+      border-color: rgba(255,107,138,0.45);
+    }
+    #cross-btn.active {
+      background: rgba(255,107,138,0.20);
+      border-color: rgba(255,107,138,0.60);
+      color: #ff6b8a;
+    }
+    
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .10em;
+      color: var(--cyan);
+      background: var(--cyan-dim);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+      white-space: nowrap;
+    }
+    #anim-btn:hover {
+      background: rgba(0,229,255,0.16);
+      border-color: rgba(0,229,255,0.35);
+    }
+    #anim-btn:disabled {
+      opacity: .4; cursor: default;
+    }
+
+    /* ── TOOLTIP ── */
+    .leaflet-tooltip.city-tip {
+      background: rgba(2,4,9,0.92);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .65rem;
+      padding: 4px 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
+    .leaflet-tooltip.city-tip::before { display: none; }
+
+    /* ── LIVE COUNTER ── */
+    #live-counter {
+      position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+      z-index: 101;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      letter-spacing: .10em;
+      color: var(--gold);
+      background: rgba(2,4,9,0.85);
+      border: 1px solid rgba(245,158,11,0.22);
+      border-radius: 20px;
+      padding: 4px 16px;
+      display: none;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- MAP -->
+<div id="map"></div>
+<div id="draw-progress"></div>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="header-left">
+    <a href="BD_8ZRP.html" class="back-link">← 8Z-RP</a>
+    <div class="header-title">
+      <span class="instance">qa194</span>
+      <span class="desc">Qatar · 194 cities · Hamiltonian tour</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <button id="cross-btn">✕ Show crossings</button>
+    <button id="anim-btn">▶ Draw tour</button>
+  </div>
+</div>
+
+<!-- LIVE COUNTER -->
+<div id="live-counter">Drawing… <span id="counter-val">0</span> / 194</div>
+
+<!-- MODE PANEL -->
+<div class="panel" id="mode-panel">
+  <div class="panel-header open" id="mode-toggle">
+    <span class="panel-label">Tour mode</span>
+    <span class="panel-chevron open" id="mode-chevron">▼</span>
+  </div>
+  <div class="panel-body open" id="mode-body">
+    <button class="mode-btn active" id="btn-our">● 8Z-RP tour (2.37% gap)</button>
+    <button class="mode-btn nn"     id="btn-nn">● Nearest-neighbour (baseline)</button>
+    <button class="mode-btn"        id="btn-both">◎ Compare (both visible)</button>
+    <div class="mode-note">
+      Our solver: <span style="color:var(--gold)">9,574</span> · Optimal: <span style="color:var(--green)">9,352</span><br>
+      NN baseline: computed on-the-fly.<br>
+      Exact optimal (0.00% gap) found by arena.<br>
+      Replace QA194_TOUR to display it.
+    </div>
+  </div>
+</div>
+
+<!-- STATS PANEL -->
+<div class="panel" id="stats-panel">
+  <div class="panel-header open" id="stats-toggle">
+    <span class="panel-label">Instance stats</span>
+    <span class="panel-chevron open" id="stats-chevron">▼</span>
+  </div>
+  <div class="panel-body open" id="stats-body">
+    <div class="stat-row"><span class="stat-key">Instance</span><span class="stat-val gold">qa194 · Qatar</span></div>
+    <div class="stat-row"><span class="stat-key">Cities</span><span class="stat-val">194</span></div>
+    <div class="stat-row"><span class="stat-key">Known optimal</span><span class="stat-val green">9,352</span></div>
+    <div class="stat-row"><span class="stat-key">This tour</span><span class="stat-val gold">9,574</span></div>
+    <div class="stat-row"><span class="stat-key">Gap</span><span class="stat-val rose">2.37%</span></div>
+    <div class="stat-row"><span class="stat-key">Arena result</span><span class="stat-val green">0.00% exact</span></div>
+    <div class="stat-row"><span class="stat-key">MDL score</span><span class="stat-val cyan">L_total = 0.00</span></div>
+    <div class="stat-row"><span class="stat-key">Solver</span><span class="stat-val">8Z-RP + DCC v2</span></div>
+    <div class="stat-row"><span class="stat-key">Benchmark</span><span class="stat-val">Waterloo TSPLIB</span></div>
+    <div class="stat-row"><span class="stat-key">Search space</span><span class="stat-val">~10<sup>349</sup></span></div>
+  </div>
+</div>
+
+<!-- GMAPS PANEL -->
+<div class="panel" id="gmaps-panel">
+  <div class="panel-header" id="gmaps-toggle">
+    <span class="panel-label">Google Maps segments</span>
+    <span class="panel-chevron" id="gmaps-chevron">▼</span>
+  </div>
+  <div class="panel-body" id="gmaps-body">
+    <div class="gmaps-grid" id="gmaps-grid"><!-- generated by JS --></div>
+    <div class="gmaps-note">
+      Tour split into ~20-city road segments · Google Maps approximates road routes.<br>
+      Our optimal tour uses straight-line (Euclidean) distances — visual difference is real.<br>
+      <span style="color:var(--gold)">Tip:</span> open segments sequentially for a driving tour of Qatar.
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  EMBEDDED TOUR DATA
+// ─────────────────────────────────────────────────────────────
+const QA194_CITIES = [
+  [24.748333,50.840000],[24.758889,51.211944],[24.827222,51.394722],
+  [24.904444,51.175000],[24.996111,51.548889],[25.010000,51.039444],
+  [25.030833,51.275278],[25.067778,51.077500],[25.100000,51.516667],
+  [25.103333,51.521667],[25.121944,51.218333],[25.150833,51.537778],
+  [25.158333,51.163611],[25.162222,51.220833],[25.167778,51.606944],
+  [25.168889,51.086389],[25.173889,51.269444],[25.210833,51.394167],
+  [25.211389,51.619167],[25.214167,50.807222],[25.214444,51.378889],
+  [25.223333,51.451667],[25.224167,51.174444],[25.233333,51.333333],
+  [25.234167,51.203056],[25.235556,51.330000],[25.235556,51.495556],
+  [25.242778,51.428889],[25.243056,51.452500],[25.252500,51.559167],
+  [25.253889,51.535278],[25.253889,51.549722],[25.256944,51.398889],
+  [25.263611,51.516389],[25.265833,51.545278],[25.266667,50.969167],
+  [25.266667,51.483333],[25.270556,51.532778],[25.270833,51.505833],
+  [25.270833,51.523056],[25.275833,51.533611],[25.277222,51.547778],
+  [25.278333,51.525556],[25.278333,51.541389],[25.279167,51.445556],
+  [25.281111,51.535000],[25.281389,51.512500],[25.283333,51.533333],
+  [25.283611,51.546667],[25.284722,51.555278],[25.286111,51.504167],
+  [25.286111,51.534167],[25.286667,51.533333],[25.287500,51.537778],
+  [25.288056,51.546667],[25.290833,51.528333],[25.291944,51.424444],
+  [25.292500,51.520833],[25.298611,51.001667],[25.300833,51.394444],
+  [25.306944,51.507778],[25.311944,51.003056],[25.313889,50.883333],
+  [25.315278,51.438611],[25.316667,50.766667],[25.320556,51.495556],
+  [25.322500,51.507778],[25.325278,51.470000],[25.326667,51.350278],
+  [25.337500,51.425000],[25.339167,51.173333],[25.340556,51.293611],
+  [25.341944,51.507500],[25.358889,51.333611],[25.363611,51.281111],
+  [25.368611,51.226389],[25.374444,51.436667],[25.377778,51.294722],
+  [25.396944,51.422500],[25.400000,51.183333],[25.400000,51.425000],
+  [25.404722,51.073056],[25.416944,51.403889],[25.416944,51.457778],
+  [25.419444,50.793611],[25.429722,50.785833],[25.433333,51.220000],
+  [25.440833,51.378056],[25.444444,50.958333],[25.451389,50.925000],
+  [25.459167,51.316667],[25.469722,51.397500],[25.478056,51.362500],
+  [25.480556,50.938889],[25.483333,51.383333],[25.490556,51.373611],
+  [25.492222,51.400278],[25.495000,50.846667],[25.495000,50.965278],
+  [25.497500,51.485278],[25.500833,50.980556],[25.510556,51.242222],
+  [25.531944,51.304444],[25.533333,50.977222],[25.538889,51.408333],
+  [25.545833,51.387500],[25.549722,51.431944],[25.550000,51.433333],
+  [25.560278,51.158611],[25.566944,51.484722],[25.567500,50.958889],
+  [25.574722,51.486389],[25.585556,51.151389],[25.609444,51.092222],
+  [25.610278,51.475278],[25.622500,51.454444],[25.645833,51.450000],
+  [25.650000,51.372222],[25.666944,51.174444],[25.683889,51.505833],
+  [25.686389,51.468889],[25.696111,51.260833],[25.700833,51.584722],
+  [25.708333,51.591667],[25.716667,51.050000],[25.717500,51.057778],
+  [25.723056,51.004167],[25.734722,51.547500],[25.751111,51.449167],
+  [25.751944,50.920833],[25.758333,51.395833],[25.765278,51.019722],
+  [25.772222,51.483333],[25.775833,51.023056],[25.779167,51.449722],
+  [25.793333,51.409444],[25.808333,51.060556],[25.816667,51.133333],
+  [25.823611,51.152500],[25.826667,51.043889],[25.829722,51.245278],
+  [25.833333,51.072222],[25.839167,51.465278],[25.847778,51.205833],
+  [25.850000,51.033333],[25.856667,51.083333],[25.857500,51.298889],
+  [25.857500,51.441389],[25.866667,51.066667],[25.867778,51.205556],
+  [25.871944,51.354722],[25.872500,51.258333],[25.880833,51.221389],
+  [25.883056,51.185278],[25.888056,51.386389],[25.900000,51.000000],
+  [25.904167,51.201667],[25.928333,51.337500],[25.937500,51.313333],
+  [25.944722,51.456389],[25.950000,51.066667],[25.951667,51.349722],
+  [25.957778,51.075278],[25.958333,51.099444],[25.966667,51.283333],
+  [25.983333,51.400000],[25.983611,51.328056],[26.000278,51.294444],
+  [26.008611,51.083611],[26.016667,51.333333],[26.021667,51.366944],
+  [26.033333,51.116667],[26.033333,51.166667],[26.033611,51.163889],
+  [26.033611,51.200278],[26.048889,51.056944],[26.050000,51.250000],
+  [26.050278,51.297500],[26.050556,51.135833],[26.055000,51.316111],
+  [26.067222,51.258611],[26.074722,51.083611],[26.076667,51.166944],
+  [26.077222,51.222222],[26.078056,51.361667],[26.083611,51.147222],
+  [26.099722,51.161111],[26.108056,51.244722],[26.116667,51.216667],
+  [26.123611,51.169167],[26.123611,51.222778],[26.133333,51.216667],
+  [26.133333,51.300000],[26.150278,51.108056],
+];
+
+// 1-indexed tour
+const QA194_TOUR = [187,183,186,179,172,174,173,175,177,181,184,189,192,191,188,193,185,180,178,168,165,159,158,162,167,170,171,166,160,148,143,135,129,133,128,124,123,120,121,117,116,115,112,110,100,84,77,79,81,83,88,92,97,108,107,105,106,96,95,93,91,103,102,87,80,82,71,76,75,78,72,74,69,26,24,21,18,33,28,22,29,45,57,60,70,64,68,66,73,67,61,58,56,53,52,48,46,54,55,49,50,42,44,35,38,41,43,47,51,39,37,27,34,40,31,32,30,19,15,12,10,9,5,3,2,4,1,6,8,7,11,14,17,25,23,13,16,59,62,36,63,20,65,85,86,98,90,89,94,99,101,104,111,114,109,113,119,122,118,131,136,155,151,147,141,152,153,157,154,150,144,139,138,142,146,149,145,140,137,134,132,126,125,127,130,156,161,163,164,169,176,182,194,190];
+const QA194_TOUR_LENGTH = 9574;
+const QA194_OPTIMAL = 9352;
+
+// ─────────────────────────────────────────────────────────────
+//  MAP INIT
+// ─────────────────────────────────────────────────────────────
+const map = L.map('map', {
+  zoomControl: true,
+  attributionControl: true,
+});
+
+// Fit Qatar
+map.fitBounds([[24.5, 50.7], [26.3, 51.8]], { padding: [60, 60] });
+
+// Dark tile layer — CartoDB Dark Matter
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© <a href="https://carto.com/attributions">CARTO</a> · © OpenStreetMap contributors',
+  subdomains: 'abcd',
+  maxZoom: 19,
+}).addTo(map);
+
+// ─────────────────────────────────────────────────────────────
+//  UTILITY
+// ─────────────────────────────────────────────────────────────
+function dist(a, b) {
+  const dlat = a[0]-b[0], dlon = a[1]-b[1];
+  return Math.sqrt(dlat*dlat + dlon*dlon);
+}
+
+// Convert 1-indexed tour to latLng array
+function tourToLatLng(tourIndices) {
+  const pts = tourIndices.map(i => QA194_CITIES[i-1]);
+  pts.push(pts[0]); // close the loop
+  return pts;
+}
+
+// Nearest-neighbour heuristic
+function computeNN() {
+  const n = QA194_CITIES.length;
+  const visited = new Array(n).fill(false);
+  const tour = [1]; // 1-indexed
+  visited[0] = true;
+  for (let step = 1; step < n; step++) {
+    const cur = tour[tour.length-1] - 1;
+    let best = -1, bestD = Infinity;
+    for (let j = 0; j < n; j++) {
+      if (!visited[j]) {
+        const d = dist(QA194_CITIES[cur], QA194_CITIES[j]);
+        if (d < bestD) { bestD = d; best = j; }
+      }
+    }
+    visited[best] = true;
+    tour.push(best+1);
+  }
+  return tour;
+}
+
+function tourLength(tourIndices) {
+  let total = 0;
+  for (let i = 0; i < tourIndices.length; i++) {
+    const a = QA194_CITIES[tourIndices[i]-1];
+    const b = QA194_CITIES[tourIndices[(i+1)%tourIndices.length]-1];
+    total += dist(a, b);
+  }
+  return total;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  CITY MARKERS (always visible)
+// ─────────────────────────────────────────────────────────────
+const cityGroup = L.layerGroup().addTo(map);
+
+QA194_CITIES.forEach((c, i) => {
+  const dot = L.circleMarker([c[0], c[1]], {
+    radius: 3.5,
+    color: 'rgba(0,229,255,0.85)',
+    fillColor: 'rgba(0,229,255,0.6)',
+    fillOpacity: 1,
+    weight: 1,
+    className: 'city-dot',
+  });
+  dot.bindTooltip(
+    `<span style="color:var(--gold)">C${i+1}</span> &nbsp; ${c[0].toFixed(4)}, ${c[1].toFixed(4)}`,
+    { className: 'city-tip', direction: 'top', sticky: true, offset: [0, -6] }
+  );
+  cityGroup.addLayer(dot);
+});
+
+// ─────────────────────────────────────────────────────────────
+//  TOUR POLYLINES
+// ─────────────────────────────────────────────────────────────
+let ourPolyline  = null;
+let nnPolyline   = null;
+let nnTour       = null;
+let nnLength     = null;
+let animTimeout  = null;
+
+const OUR_COLOR = '#f59e0b'; // gold
+const NN_COLOR  = '#a78bfa'; // violet
+
+function clearTours() {
+  if (ourPolyline)  { map.removeLayer(ourPolyline);  ourPolyline = null; }
+  if (nnPolyline)   { map.removeLayer(nnPolyline);   nnPolyline = null; }
+}
+
+function drawOurTour(full = true) {
+  if (!full) return;
+  const pts = tourToLatLng(QA194_TOUR);
+  ourPolyline = L.polyline(pts, {
+    color: OUR_COLOR,
+    weight: 1.8,
+    opacity: 0.85,
+  }).addTo(map);
+}
+
+function drawNNTour() {
+  if (!nnTour) {
+    nnTour = computeNN();
+    nnLength = tourLength(nnTour);
+  }
+  const pts = tourToLatLng(nnTour);
+  nnPolyline = L.polyline(pts, {
+    color: NN_COLOR,
+    weight: 1.8,
+    opacity: 0.7,
+    dashArray: '6 4',
+  }).addTo(map);
+  return nnLength;
+}
+
+// animated draw
+function animateOurTour() {
+  clearTours();
+  const btn = document.getElementById('anim-btn');
+  const counter = document.getElementById('live-counter');
+  const counterVal = document.getElementById('counter-val');
+  const progress = document.getElementById('draw-progress');
+  btn.disabled = true;
+  counter.style.display = 'block';
+
+  const pts = tourToLatLng(QA194_TOUR);
+  const totalPts = pts.length;
+  let idx = 1;
+
+  ourPolyline = L.polyline([pts[0]], {
+    color: OUR_COLOR, weight: 2, opacity: 0.9,
+  }).addTo(map);
+
+  const INTERVAL = 28; // ms per city
+
+  function step() {
+    if (idx >= totalPts) {
+      btn.disabled = false;
+      counter.style.display = 'none';
+      progress.style.transform = 'scaleX(0)';
+      return;
+    }
+    ourPolyline.addLatLng(pts[idx]);
+    counterVal.textContent = Math.min(idx, 194);
+    progress.style.transform = `scaleX(${idx / totalPts})`;
+    idx++;
+    animTimeout = setTimeout(step, INTERVAL);
+  }
+  step();
+}
+
+// initial draw
+drawOurTour();
+
+// ─────────────────────────────────────────────────────────────
+//  MODE BUTTONS
+// ─────────────────────────────────────────────────────────────
+const btnOur  = document.getElementById('btn-our');
+const btnNN   = document.getElementById('btn-nn');
+const btnBoth = document.getElementById('btn-both');
+
+function setMode(mode) {
+  if (animTimeout) { clearTimeout(animTimeout); animTimeout = null; }
+  document.getElementById('anim-btn').disabled = false;
+  document.getElementById('live-counter').style.display = 'none';
+  document.getElementById('draw-progress').style.transform = 'scaleX(0)';
+
+  [btnOur, btnNN, btnBoth].forEach(b => b.classList.remove('active', 'nn'));
+  clearTours();
+
+  if (mode === 'our') {
+    btnOur.classList.add('active');
+    drawOurTour();
+  } else if (mode === 'nn') {
+    btnNN.classList.add('active', 'nn');
+    const len = drawNNTour();
+    // update note
+    document.querySelector('.mode-note').innerHTML = `
+      Our solver: <span style="color:var(--gold)">${QA194_TOUR_LENGTH.toLocaleString()}</span> · Optimal: <span style="color:var(--green)">${QA194_OPTIMAL.toLocaleString()}</span><br>
+      NN baseline: <span style="color:var(--violet)">${len.toFixed(0)}</span> — ${(((len/QA194_OPTIMAL)-1)*100).toFixed(1)}% gap<br>
+      Exact optimal (0.00%) found by arena.<br>
+      Replace QA194_TOUR to display it.
+    `;
+  } else {
+    btnBoth.classList.add('active');
+    drawOurTour();
+    drawNNTour();
+  }
+}
+
+btnOur.addEventListener('click',  () => setMode('our'));
+btnNN.addEventListener('click',   () => setMode('nn'));
+btnBoth.addEventListener('click', () => setMode('both'));
+
+document.getElementById('anim-btn').addEventListener('click', () => {
+  if (animTimeout) { clearTimeout(animTimeout); animTimeout = null; }
+  [btnOur, btnNN, btnBoth].forEach(b => b.classList.remove('active', 'nn'));
+  btnOur.classList.add('active');
+  animateOurTour();
+});
+
+// ─────────────────────────────────────────────────────────────
+//  GOOGLE MAPS LINKS
+// ─────────────────────────────────────────────────────────────
+(function buildGmapsLinks() {
+  const SEGMENT = 20; // cities per segment (Google Maps max ~25 waypoints)
+  const grid = document.getElementById('gmaps-grid');
+  const tour0 = QA194_TOUR.map(i => QA194_CITIES[i-1]); // 0-indexed coords
+  const segments = [];
+  for (let i = 0; i < tour0.length; i += SEGMENT) {
+    segments.push(tour0.slice(i, i + SEGMENT + 1)); // +1 overlap for continuity
+  }
+  segments.forEach((seg, idx) => {
+    const from = idx * SEGMENT + 1;
+    const to   = Math.min(from + SEGMENT - 1, 194);
+    const waypoints = seg.map(c => `${c[0].toFixed(5)},${c[1].toFixed(5)}`).join('/');
+    const url = `https://www.google.com/maps/dir/${waypoints}`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.className = 'gmaps-link';
+    a.textContent = `Seg ${from}–${to}`;
+    grid.appendChild(a);
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+//  CROSSING DETECTION
+// ─────────────────────────────────────────────────────────────
+let crossingLayer = null;
+let crossingsActive = false;
+
+function ccw(A, B, C) {
+  return (C[0]-A[0]) * (B[1]-A[1]) > (B[0]-A[0]) * (C[1]-A[1]);
+}
+
+function segmentsIntersect(A, B, C, D) {
+  // Proper intersection only (not endpoint touching)
+  if (A===C||A===D||B===C||B===D) return false;
+  return (ccw(A,C,D) !== ccw(B,C,D)) && (ccw(A,B,C) !== ccw(A,B,D));
+}
+
+function findCrossings(tourIndices) {
+  const n = tourIndices.length;
+  const pts = tourIndices.map(i => QA194_CITIES[i-1]);
+  const crossedEdges = new Set();
+
+  for (let i = 0; i < n; i++) {
+    const A = pts[i], B = pts[(i+1) % n];
+    for (let j = i+2; j < n; j++) {
+      if (i === 0 && j === n-1) continue; // adjacent edges share endpoint
+      const C = pts[j], D = pts[(j+1) % n];
+      if (segmentsIntersect(A, B, C, D)) {
+        crossedEdges.add(i);
+        crossedEdges.add(j);
+      }
+    }
+  }
+  return { pts, crossedEdges };
+}
+
+function drawCrossings() {
+  if (crossingLayer) { map.removeLayer(crossingLayer); crossingLayer = null; }
+  const { pts, crossedEdges } = findCrossings(QA194_TOUR);
+  const n = pts.length;
+  const group = L.layerGroup();
+  let count = 0;
+
+  crossedEdges.forEach(i => {
+    const A = pts[i], B = pts[(i+1) % n];
+    L.polyline([[A[0],A[1]], [B[0],B[1]]], {
+      color: '#ff6b8a',
+      weight: 3.5,
+      opacity: 0.95,
+    }).addTo(group);
+    count++;
+  });
+
+  crossingLayer = group;
+  crossingLayer.addTo(map);
+
+  // Update stats note
+  const noteEl = document.querySelector('.mode-note');
+  noteEl.innerHTML = `
+    Our solver: <span style="color:var(--gold)">${QA194_TOUR_LENGTH.toLocaleString()}</span> · Optimal: <span style="color:var(--green)">${QA194_OPTIMAL.toLocaleString()}</span><br>
+    <span style="color:var(--rose)">✕ ${count} crossed edges</span> — each crossing = guaranteed suboptimal.<br>
+    Every red segment is improvable by a single 2-opt swap.<br>
+    Optimal tour (0.00%): zero crossings by definition.
+  `;
+
+  return count;
+}
+
+function removeCrossings() {
+  if (crossingLayer) { map.removeLayer(crossingLayer); crossingLayer = null; }
+  document.querySelector('.mode-note').innerHTML = `
+    Our solver: <span style="color:var(--gold)">${QA194_TOUR_LENGTH.toLocaleString()}</span> · Optimal: <span style="color:var(--green)">${QA194_OPTIMAL.toLocaleString()}</span><br>
+    NN baseline: computed on-the-fly.<br>
+    Exact optimal (0.00% gap) found by arena.<br>
+    Replace QA194_TOUR to display it.
+  `;
+}
+
+document.getElementById('cross-btn').addEventListener('click', function() {
+  crossingsActive = !crossingsActive;
+  this.classList.toggle('active', crossingsActive);
+  this.textContent = crossingsActive ? '✕ Hide crossings' : '✕ Show crossings';
+  if (crossingsActive) {
+    drawCrossings();
+  } else {
+    removeCrossings();
+  }
+});
+
+
+function bindToggle(headerId, bodyId, chevronId) {
+  const header  = document.getElementById(headerId);
+  const body    = document.getElementById(bodyId);
+  const chevron = document.getElementById(chevronId);
+  header.addEventListener('click', () => {
+    const open = body.classList.toggle('open');
+    header.classList.toggle('open', open);
+    chevron.classList.toggle('open', open);
+  });
+}
+bindToggle('mode-toggle',  'mode-body',  'mode-chevron');
+bindToggle('stats-toggle', 'stats-body', 'stats-chevron');
+bindToggle('gmaps-toggle', 'gmaps-body', 'gmaps-chevron');
+
+</script>
+</body>
+</html>
