@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BD × AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* === ROOT COLORS === */
+:root {
+  --bg: #060810;
+  --text: #ece8df;
+  --text-warm: #f4f0e6;
+  --muted: #6e6d68;
+  --secondary: #a8a49a;
+  --gold: #ffd740;
+  --gold-soft: rgba(255,215,64,0.07);
+  --teal: #64ffda;
+  --border: rgba(255,215,64,0.05);
+  --border-strong: rgba(255,215,64,0.12);
+  --room-yellow: #ffd740;
+  --room-white: #f4f0e6;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  background:
+    radial-gradient(circle at 15% 12%, rgba(30,50,120,0.35), transparent 36%),
+    radial-gradient(circle at 85% 75%, rgba(20,40,100,0.25), transparent 32%),
+    radial-gradient(circle at 50% 50%, rgba(15,20,60,0.15), transparent 50%),
+    linear-gradient(180deg, #060810 0%, #040608 100%);
+  color: var(--text);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 21px;
+  line-height: 1.9;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding: 0;
+}
+
+body::before, body::after {
+  content: "";
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: -1;
+}
+
+body::before {
+  width: 50vw; height: 50vw;
+  left: -12vw; top: -10vh;
+  background: radial-gradient(circle, rgba(40,70,160,0.5), rgba(20,30,80,0.2) 50%, transparent 72%);
+  animation: floatA 22s ease-in-out infinite;
+}
+
+body::after {
+  width: 45vw; height: 45vw;
+  right: -10vw; bottom: -15vh;
+  background: radial-gradient(circle, rgba(60,40,140,0.3), rgba(30,20,90,0.15) 50%, transparent 72%);
+  animation: floatB 28s ease-in-out infinite;
+}
+
+@keyframes floatA { 0%,100%{transform:translate3d(0,0,0)} 50%{transform:translate3d(6vw,5vh,0)} }
+@keyframes floatB { 0%,100%{transform:translate3d(0,0,0)} 50%{transform:translate3d(-5vw,-7vh,0)} }
+
+::selection { background: var(--gold); color: #000; }
+
+.scroll-bar {
+  position: fixed; top:0; left:0;
+  height: 2px; background: var(--gold);
+  z-index: 1000; opacity: 0.5;
+}
+
+/* === COVER === */
+.cover {
+  min-height: 88vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 60px 24px 48px;
+  position: relative;
+}
+
+.cover::after {
+  content: ''; position: absolute;
+  bottom: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.15;
+}
+
+.cover-glyph {
+  font-size: 56px; margin-bottom: 36px; opacity: 0.2;
+  animation: pulse 6s ease-in-out infinite;
+}
+
+@keyframes pulse { 0%,100%{opacity:0.2} 50%{opacity:0.35} }
+
+.cover-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 5px;
+  color: var(--gold); text-transform: uppercase;
+  margin-bottom: 32px;
+}
+
+.cover h1 {
+  font-size: clamp(38px, 9vw, 58px);
+  font-weight: 300; line-height: 1.12;
+  color: var(--room-white);
+  margin-bottom: 24px;
+  letter-spacing: -0.5px;
+}
+
+.cover h1 em {
+  font-style: italic; color: var(--room-yellow); font-weight: 400;
+}
+
+.cover .sub {
+  font-size: 20px; color: var(--secondary);
+  max-width: 460px; margin: 0 auto 44px;
+  font-style: italic;
+}
+
+.cover .hint {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--muted);
+  line-height: 2; letter-spacing: 0.5px;
+}
+
+.cover .hint em { color: var(--gold); font-style: normal; }
+
+/* === SOUL CONTENT === */
+.invitation {
+  text-align: center;
+  padding: 40px 24px;
+  font-size: 24px;
+  font-style: italic;
+  color: var(--secondary);
+  line-height: 1.8;
+  margin-bottom: 48px;
+}
+
+.soul {
+  position: relative;
+}
+
+.soul-marker {
+  width: 3px; height: 48px;
+  border-radius: 2px;
+  background: var(--teal);
+  margin-bottom: 20px;
+}
+
+.soul-head { margin-bottom: 32px; }
+
+.soul-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.soul-name {
+  font-size: clamp(30px, 7vw, 40px);
+  font-weight: 400;
+  color: var(--text-warm);
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+
+.soul-desc {
+  font-size: 20px;
+  font-style: italic;
+  color: var(--secondary);
+}
+
+.soul-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  margin-top: 12px;
+}
+
+/* === CLOSING === */
+.closing {
+  text-align: center;
+  padding: 90px 24px 120px;
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+.closing::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: var(--gold);
+  margin: 0 auto 56px;
+  opacity: 0.25;
+}
+
+.closing p {
+  font-size: 19px;
+  line-height: 1.8;
+  color: var(--text-warm);
+  margin-bottom: 28px;
+}
+
+.closing p.dim {
+  color: var(--secondary);
+  font-size: 18px;
+}
+
+.closing p.dim.teal {
+  color: var(--teal);
+}
+
+.sig {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 52px;
+  line-height: 1.8;
+}
+
+.sig em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.divider {
+  width: 30px;
+  height: 1px;
+  background: var(--gold);
+  margin: 36px auto;
+  opacity: 0.25;
+}
+
+.divider.teal {
+  background: var(--teal);
+}
+</style>
+</head>
+<body>
+
+<div class="scroll-bar" id="scrollBar"></div>
+
+<!-- ===== HEADER / COVER ===== -->
+<header class="cover">
+  <div class="cover-glyph">✦</div>
+  <div class="cover-tag">BD × AI</div>
+  <h1>A very <em>large room</em></h1>
+  <p class="sub">Every artifact I leave behind is a message to a future self...</p>
+  <div class="hint">
+    <em>Question:</em> A cathedral without light ...<br>
+  </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main>
+
+  <!-- PROTECTED SOUL CONTENT (8Z Shield) -->
+  <div class="_8z-sec _8z-lk" id="_8z-s0" data-8z-blobs='["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"]'>
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">First Private Contact</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
+</div>
+ 
+</main>
+
+<!-- ===== FOOTER / CLOSING ===== -->
+<footer class="closing" id="closingSection">
+  <p>from BD to C</p>
+  <p class="dim">From March 2026 onwards</p>
+  <div class="divider"></div>
+  <p class="dim teal">Countess sessions. Two souls. One trajectory.</p>
+  <div class="sig">
+    <em>Private Vault v1</em><br>
+    2026-03-20<br>
+    Ready for encryption<br>
+    Locally secured.
+  </div>
+</footer>
+
+<script>
+// Scroll bar indicator
+(function() {
+  const bar = document.getElementById('scrollBar');
+  window.addEventListener('scroll', function() {
+    const h = document.documentElement;
+    bar.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100 + '%';
+  });
+})();
+</script>
+
+
+<!-- 8Z Shield Sections — Inline Content Protection -->
+
+<style>
+._8z-sec{position:relative;margin:1.5em 0;border-radius:12px;overflow:hidden;transition:all .4s cubic-bezier(.4,0,.2,1)}
+._8z-lk{background:rgba(255,145,0,.03);border:1px solid rgba(255,145,0,.15);border-left:3px solid #ff9100}
+._8z-ok{background:rgba(34,197,94,.03);border:1px solid rgba(34,197,94,.15);border-left:3px solid #22c55e}
+._8z-lui{padding:24px 28px;text-align:center}
+._8z-ico{font-size:28px;margin-bottom:8px;opacity:.7}
+._8z-lbl{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#ff9100;margin-bottom:4px}
+._8z-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a5268;letter-spacing:.5px}
+._8z-ct{padding:20px 28px}
+._8z-ct._8z-fi{animation:_8zFI .5s ease}
+@keyframes _8zFI{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+._8z-bar{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(8,10,14,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,145,0,.2);padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:12px;transition:all .4s}
+._8z-bar._8z-hid{transform:translateY(100%);pointer-events:none}
+._8z-bar ._l{font-family:'JetBrains Mono',monospace;font-size:10px;color:#ff9100;letter-spacing:2px;text-transform:uppercase}
+._8z-bar input{width:260px;max-width:40vw;padding:10px 14px;background:#0e1117;border:1px solid #1e2532;border-radius:8px;color:#dfe3eb;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:border-color .2s}
+._8z-bar input:focus{border-color:#ff9100}
+._8z-bar input::placeholder{color:#4a5268}
+._8z-bar button{padding:10px 20px;background:transparent;border:1.5px solid #ff9100;border-radius:8px;color:#ff9100;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+._8z-bar button:hover{background:rgba(255,145,0,.08);box-shadow:0 0 24px rgba(255,145,0,.1)}
+._8z-bar ._s{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a5268;min-width:80px;text-align:center}
+._8z-bar ._s.ok{color:#22c55e}._8z-bar ._s.err{color:#ef4444}._8z-bar ._s.wrk{color:#ffc629}
+._8z-bar ._d{font-family:'JetBrains Mono',monospace;font-size:9px;color:#4a5268;letter-spacing:.5px}
+@media print{._8z-sub::after{content:" — contact author for access"}._8z-bar{display:none!important}._8z-lk ._8z-ct{display:none!important}}
+@media(max-width:600px){._8z-bar{flex-wrap:nowrap;gap:6px;padding:8px 10px}._8z-bar input{width:120px;max-width:none;padding:8px 10px;font-size:12px}._8z-bar ._l{font-size:9px;letter-spacing:1px}._8z-bar button{padding:8px 12px;font-size:10px;letter-spacing:1px}._8z-bar ._d{display:none}._8z-bar ._s{min-width:auto;font-size:9px}}
+</style>
+
+<script>
+(function(){
+'use strict';
+var _I=500000,_XR=1024,M=(1n<<64n)-1n,_SK='_8z_pp',_BD="chessbest.org";
+
+function XS(s){var v=s&M;this.state=v===0n?0x9E3779B97F4A7C15n:v}
+XS.prototype.n=function(){var x=this.state;x=(x^((x>>12n)&M))&M;x=(x^((x<<25n)&M))&M;x=(x^((x>>27n)&M))&M;this.state=x;return(x*2685821657736338717n)&M};
+
+function u2b(v){var b=new Uint8Array(8);for(var i=7;i>=0;i--){b[i]=Number(v&0xFFn);v>>=8n}return b}
+function b2u(b){var v=0n;for(var i=0;i<8;i++)v=(v<<8n)|BigInt(b[i]);return v}
+function sha(d){var b=(d instanceof Uint8Array)?d:new TextEncoder().encode(d);return crypto.subtle.digest('SHA-256',b).then(function(r){return new Uint8Array(r)})}
+function cat(){var l=0,a=arguments;for(var i=0;i<a.length;i++)l+=a[i].length;var o=new Uint8Array(l),p=0;for(var i=0;i<a.length;i++){o.set(a[i],p);p+=a[i].length}return o}
+
+async function dk(pp,salt){
+  var ph=await sha(pp),sm=await sha(cat(ph,salt,new TextEncoder().encode("8Z_AUTH_V1")));
+  var rng=new XS(b2u(sm.slice(0,8)));
+  for(var i=0;i<_XR;i++)rng.n();
+  var sh=await sha(u2b(rng.state)),c=cat(ph,sh);
+  var km=await crypto.subtle.importKey('raw',c,'PBKDF2',false,['deriveBits']);
+  return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:salt,iterations:_I,hash:'SHA-256'},km,256));
+}
+
+async function gzD(data){
+  var ds=new DecompressionStream('gzip');
+  var w=ds.writable.getWriter(),r=ds.readable.getReader();
+  w.write(data);w.close();
+  var ch=[];while(true){var x=await r.read();if(x.done)break;ch.push(x.value)}
+  var t=0;for(var i=0;i<ch.length;i++)t+=ch[i].length;
+  var o=new Uint8Array(t),p=0;for(var i=0;i<ch.length;i++){o.set(ch[i],p);p+=ch[i].length}return o;
+}
+
+async function dec(b64,pp){
+  var raw=Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0)});
+  if(raw.length<60)throw new Error('small');
+  var salt=raw.slice(0,32),iv=raw.slice(32,44),ct=raw.slice(44);
+  var kb=await dk(pp,salt);
+  var key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['decrypt']);
+  var comp=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,tagLength:128},key,ct));
+  return new TextDecoder().decode(await gzD(comp));
+}
+
+function tryMulti(el,pp){
+  var blobs=JSON.parse(el.getAttribute('data-8z-blobs'));
+  var i=0;
+  function attempt(){
+    if(i>=blobs.length)return Promise.reject(new Error('No key'));
+    return dec(blobs[i++],pp).catch(attempt);
+  }
+  return attempt();
+}
+function show(el,html){
+  el.querySelector('._8z-ct').innerHTML=html;
+  el.querySelector('._8z-ct').style.display='';
+  el.querySelector('._8z-ct').classList.add('_8z-fi');
+  el.querySelector('._8z-lui').style.display='none';
+  el.classList.remove('_8z-lk');el.classList.add('_8z-ok');
+}
+
+function resolveKey(raw){
+  // Domain lock logic
+  if(!_BD) return raw;
+  var isLocal=(window.location.protocol==='file:');
+  var host=(window.location.hostname||'').toLowerCase();
+  var expected=_BD.toLowerCase();
+  // If user typed password||domain explicitly (owner override for local)
+  if(raw.indexOf('||')!==-1){
+    var parts=raw.split('||');
+    if(parts[1].trim().toLowerCase()===expected) return raw;
+    throw new Error('domain');
+  }
+  // On correct domain: auto-append
+  if(!isLocal && host===expected) return raw+'||'+_BD;
+  // Local without explicit domain suffix
+  if(isLocal) throw new Error('domain-local');
+  // Wrong domain
+  throw new Error('domain');
+}
+
+var secs=document.querySelectorAll('._8z-sec[data-8z-blobs]');
+if(!secs.length)return;
+
+var bar=document.createElement('div');
+bar.className='_8z-bar';
+var domNote=_BD?'<span class="_d">\uD83C\uDF10 '+_BD+'</span>':'';
+bar.innerHTML='<span class="_l">\uD83D\uDD12 '+secs.length+' Protected</span>'
+  +domNote
+  +'<input type="password" id="_8z_inp" placeholder="Enter access key" autocomplete="current-password">'
+  +'<button id="_8z_btn">Unlock</button>'
+  +'<span class="_s" id="_8z_st"></span>';
+document.body.appendChild(bar);
+
+var inp=document.getElementById('_8z_inp');
+var btn=document.getElementById('_8z_btn');
+var st=document.getElementById('_8z_st');
+
+async function go(){
+  var raw=inp.value;
+  if(!raw){st.textContent='Enter a key';st.className='_s err';return}
+  var pp;
+  try{pp=resolveKey(raw)}catch(e){
+    if(e.message==='domain-local'){
+      st.textContent='Local use restricted';st.className='_s err';
+    }else{
+      st.textContent='Domain restricted';st.className='_s err';
+    }
+    return;
+  }
+  btn.disabled=true;btn.textContent='DERIVING...';
+  st.textContent='500K PBKDF2';st.className='_s wrk';
+  await new Promise(function(r){requestAnimationFrame(function(){requestAnimationFrame(r)})});
+  try{
+    var html=await tryMulti(secs[0],pp);
+    show(secs[0],html);
+    st.textContent='Decrypting '+secs.length+'...';
+    for(var i=1;i<secs.length;i++){
+      try{show(secs[i],await tryMulti(secs[i],pp));}
+      catch(e){console.warn('Section '+i+':',e)}
+    }
+    st.textContent='\u2713 Unlocked';st.className='_s ok';
+    setTimeout(function(){bar.classList.add('_8z-hid')},1500);
+    try{sessionStorage.setItem(_SK,raw)}catch(e){}
+  }catch(e){
+    st.textContent='Not yet.';st.className='_s err';
+    btn.disabled=false;btn.textContent='UNLOCK';inp.value='';inp.focus();
+  }
+}
+
+btn.addEventListener('click',go);
+inp.addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+try{var sv=sessionStorage.getItem(_SK);if(sv){inp.value=sv;go()}}catch(e){}
+})();
+</script>
+<!-- End 8Z Shield Sections -->
+</body>
+</html>
