@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BD × AI Lab — 8Z-RP v1.1 / TSP as Compression</title>
+  <title>BD × AI Lab — 8Z-RP / TSP as Compression</title>
   <link rel="preconnect" href="https://fonts.googleapis.com/" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -711,7 +711,7 @@ footer{
 /* ── Sister pages strip ── */
 .sister-strip{
   max-width:1120px;margin:0 auto;padding:0 5vw 0;
-  display:grid;grid-template-columns:1fr 1fr;gap:28px;
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px;
   margin-bottom:0;
 }
 .sister-card{
@@ -727,36 +727,48 @@ footer{
   box-shadow:0 8px 28px rgba(0,0,0,.4);
 }
 .sister-card.sister-nu:hover{border-color:rgba(255,107,138,.35)}
+.sister-card.sister-arena:hover{border-color:rgba(251,146,60,.35)}
 .sister-thumb{
-  width:180px;min-width:180px;height:130px;overflow:hidden;flex-shrink:0;
+  width:150px;min-width:150px;height:115px;overflow:hidden;flex-shrink:0;
   border-right:1px solid var(--border);
 }
 .sister-thumb svg{width:100%;height:100%;display:block}
 .sister-thumb-nu{
-  width:180px;min-width:180px;height:130px;
+  width:150px;min-width:150px;height:115px;
   background:rgba(6,10,20,.9);
   display:flex;align-items:center;justify-content:center;
   border-right:1px solid var(--border);flex-shrink:0;
 }
-.nu-vis{width:100%;padding:14px 16px;display:grid;gap:8px}
+.sister-thumb-arena{
+  width:150px;min-width:150px;height:115px;
+  background:rgba(6,10,20,.9);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  border-right:1px solid var(--border);flex-shrink:0;padding:12px;
+}
+.arena-big{font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:700;color:var(--gold)}
+.arena-sub{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:rgba(0,229,255,.7);text-align:center;line-height:1.4}
+.nu-vis{width:100%;padding:12px 14px;display:grid;gap:7px}
 .nu-bar-wrap{display:flex;align-items:center;gap:7px}
-.nu-label{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--muted);width:52px;flex-shrink:0;letter-spacing:.04em}
-.nu-bar{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.nu-label{font-family:'JetBrains Mono',monospace;font-size:.56rem;color:var(--muted);width:44px;flex-shrink:0;letter-spacing:.04em}
+.nu-bar{flex:1;height:4px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
 .nu-fill{height:100%;border-radius:3px;transition:width .4s}
-.nu-val{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:600;width:36px;text-align:right;flex-shrink:0}
-.nu-stat{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.04em;margin-top:2px;text-align:center}
-.sister-info{padding:14px 16px;display:flex;flex-direction:column;justify-content:center;gap:5px;min-width:0}
+.nu-val{font-family:'JetBrains Mono',monospace;font-size:.6rem;font-weight:600;width:38px;text-align:right;flex-shrink:0}
+.nu-stat{font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--muted);letter-spacing:.04em;margin-top:1px;text-align:center}
+.sister-info{padding:12px 14px;display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0}
 .sister-tag{
-  font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.18em;
+  font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.16em;
   text-transform:uppercase;color:var(--gold);
   border:1px solid rgba(245,158,11,.22);border-radius:3px;
-  padding:2px 7px;display:inline-block;align-self:flex-start;
+  padding:2px 6px;display:inline-block;align-self:flex-start;
 }
-.sister-title{font-size:1rem;font-weight:600;color:var(--text);font-family:'Rajdhani',sans-serif;letter-spacing:.04em}
-.sister-desc{font-size:.78rem;color:var(--muted);line-height:1.45;font-family:'JetBrains Mono',monospace}
-@media(max-width:720px){
+.sister-title{font-size:.95rem;font-weight:600;color:var(--text);font-family:'Rajdhani',sans-serif;letter-spacing:.03em;line-height:1.2}
+.sister-desc{font-size:.72rem;color:var(--muted);line-height:1.4;font-family:'JetBrains Mono',monospace}
+@media(max-width:900px){
+  .sister-strip{grid-template-columns:1fr 1fr}
+}
+@media(max-width:580px){
   .sister-strip{grid-template-columns:1fr}
-  .sister-thumb,.sister-thumb-nu{width:120px;min-width:120px;height:88px}
+  .sister-thumb,.sister-thumb-nu,.sister-thumb-arena{width:100px;min-width:100px;height:85px}
 }
 .gpu-toggle{
   display:flex;align-items:center;justify-content:space-between;
@@ -865,7 +877,8 @@ footer{
     <a class="cyan" href="#engineering">Rust</a>
     <a class="rose" href="#meta-dcc">Meta-DCC</a>
     <a class="green" href="#gpu">GPU eyes</a>
-    <a class="gold" href="#team">The team</a>
+    <a class="orange" href="#arena-teaser">Arena Lab</a>
+    <a class="gold"  href="#team">The team</a>
     <a class="green" href="#claims">Claims</a>
     <a class="violet" href="#next">Next</a>
   </nav>
@@ -874,62 +887,63 @@ footer{
   <div class="sister-strip">
     <a href="BD_8ZRP_qa194_map.html" class="sister-card sister-map">
       <div class="sister-thumb">
-        <svg viewBox="0 0 180 130" xmlns="http://www.w3.org/2000/svg">
-          <rect width="180" height="130" fill="#020409"/>
-          <!-- City dots -->
+        <svg viewBox="0 0 150 115" xmlns="http://www.w3.org/2000/svg">
+          <rect width="150" height="115" fill="#020409"/>
           <g fill="rgba(0,229,255,0.55)" stroke="none">
-            <circle cx="22.1" cy="122.0" r="1.3"/><circle cx="93.7" cy="121.1" r="1.3"/><circle cx="128.8" cy="115.6" r="1.3"/><circle cx="86.6" cy="109.3" r="1.3"/><circle cx="158.5" cy="101.9" r="1.3"/><circle cx="60.5" cy="100.7" r="1.3"/><circle cx="105.8" cy="99.0" r="1.3"/><circle cx="67.8" cy="96.0" r="1.3"/><circle cx="152.3" cy="93.4" r="1.3"/><circle cx="153.2" cy="93.1" r="1.3"/><circle cx="94.9" cy="91.6" r="1.3"/><circle cx="156.3" cy="89.3" r="1.3"/><circle cx="84.4" cy="88.7" r="1.3"/><circle cx="95.4" cy="88.3" r="1.3"/><circle cx="169.6" cy="87.9" r="1.3"/><circle cx="69.5" cy="87.8" r="1.3"/><circle cx="104.7" cy="87.4" r="1.3"/><circle cx="128.7" cy="84.4" r="1.3"/><circle cx="172.0" cy="84.3" r="1.3"/><circle cx="15.8" cy="84.1" r="1.3"/><circle cx="125.8" cy="84.1" r="1.3"/><circle cx="139.8" cy="83.4" r="1.3"/><circle cx="86.4" cy="83.3" r="1.3"/><circle cx="117.0" cy="82.6" r="1.3"/><circle cx="92.0" cy="82.5" r="1.3"/><circle cx="116.4" cy="82.4" r="1.3"/><circle cx="148.2" cy="82.4" r="1.3"/><circle cx="135.4" cy="81.8" r="1.3"/><circle cx="139.9" cy="81.8" r="1.3"/><circle cx="160.5" cy="81.0" r="1.3"/><circle cx="155.9" cy="80.9" r="1.3"/><circle cx="158.6" cy="80.9" r="1.3"/><circle cx="129.6" cy="80.6" r="1.3"/><circle cx="152.2" cy="80.1" r="1.3"/><circle cx="157.8" cy="79.9" r="1.3"/><circle cx="47.0" cy="79.9" r="1.3"/><circle cx="145.9" cy="79.9" r="1.3"/><circle cx="155.4" cy="79.5" r="1.3"/><circle cx="150.2" cy="79.5" r="1.3"/><circle cx="153.5" cy="79.5" r="1.3"/><circle cx="155.5" cy="79.1" r="1.3"/><circle cx="158.3" cy="79.0" r="1.3"/><circle cx="154.0" cy="78.9" r="1.3"/><circle cx="157.0" cy="78.9" r="1.3"/><circle cx="138.6" cy="78.8" r="1.3"/><circle cx="155.8" cy="78.7" r="1.3"/><circle cx="151.5" cy="78.7" r="1.3"/><circle cx="155.5" cy="78.5" r="1.3"/><circle cx="158.1" cy="78.5" r="1.3"/><circle cx="159.7" cy="78.4" r="1.3"/><circle cx="149.9" cy="78.3" r="1.3"/><circle cx="155.6" cy="78.3" r="1.3"/><circle cx="155.5" cy="78.2" r="1.3"/><circle cx="156.3" cy="78.2" r="1.3"/><circle cx="158.1" cy="78.1" r="1.3"/><circle cx="154.5" cy="77.9" r="1.3"/><circle cx="134.5" cy="77.8" r="1.3"/><circle cx="153.1" cy="77.8" r="1.3"/><circle cx="53.2" cy="77.3" r="1.3"/><circle cx="128.8" cy="77.1" r="1.3"/><circle cx="150.6" cy="76.6" r="1.3"/><circle cx="53.5" cy="76.2" r="1.3"/><circle cx="30.4" cy="76.0" r="1.3"/><circle cx="137.3" cy="75.9" r="1.3"/><circle cx="8.0" cy="75.8" r="1.3"/><circle cx="148.2" cy="75.5" r="1.3"/><circle cx="150.6" cy="75.3" r="1.3"/><circle cx="143.3" cy="75.1" r="1.3"/><circle cx="120.3" cy="75.0" r="1.3"/><circle cx="134.6" cy="74.1" r="1.3"/><circle cx="86.2" cy="74.0" r="1.3"/><circle cx="109.4" cy="73.8" r="1.3"/><circle cx="150.5" cy="73.7" r="1.3"/><circle cx="117.1" cy="72.4" r="1.3"/><circle cx="107.0" cy="72.0" r="1.3"/><circle cx="96.4" cy="71.6" r="1.3"/><circle cx="136.9" cy="71.1" r="1.3"/><circle cx="109.6" cy="70.8" r="1.3"/><circle cx="134.2" cy="69.3" r="1.3"/><circle cx="88.2" cy="69.0" r="1.3"/><circle cx="134.6" cy="69.0" r="1.3"/><circle cx="66.9" cy="68.6" r="1.3"/><circle cx="130.6" cy="67.6" r="1.3"/><circle cx="141.0" cy="67.6" r="1.3"/><circle cx="13.2" cy="67.4" r="1.3"/><circle cx="11.7" cy="66.6" r="1.3"/><circle cx="95.2" cy="66.3" r="1.3"/><circle cx="125.6" cy="65.7" r="1.3"/><circle cx="44.9" cy="65.4" r="1.3"/><circle cx="38.5" cy="64.8" r="1.3"/><circle cx="113.8" cy="64.2" r="1.3"/><circle cx="129.4" cy="63.3" r="1.3"/><circle cx="122.6" cy="62.7" r="1.3"/><circle cx="41.1" cy="62.5" r="1.3"/><circle cx="126.6" cy="62.2" r="1.3"/><circle cx="124.8" cy="61.6" r="1.3"/><circle cx="129.9" cy="61.5" r="1.3"/><circle cx="23.4" cy="61.3" r="1.3"/><circle cx="46.2" cy="61.3" r="1.3"/><circle cx="146.2" cy="61.1" r="1.3"/><circle cx="49.1" cy="60.8" r="1.3"/><circle cx="99.5" cy="60.0" r="1.3"/><circle cx="111.5" cy="58.3" r="1.3"/><circle cx="48.5" cy="58.2" r="1.3"/><circle cx="131.4" cy="57.7" r="1.3"/><circle cx="127.4" cy="57.2" r="1.3"/><circle cx="136.0" cy="56.8" r="1.3"/><circle cx="136.3" cy="56.8" r="1.3"/><circle cx="83.4" cy="56.0" r="1.3"/><circle cx="146.1" cy="55.4" r="1.3"/><circle cx="45.0" cy="55.4" r="1.3"/><circle cx="146.5" cy="54.8" r="1.3"/><circle cx="82.0" cy="53.9" r="1.3"/><circle cx="70.6" cy="52.0" r="1.3"/><circle cx="144.3" cy="51.9" r="1.3"/><circle cx="140.3" cy="50.9" r="1.3"/><circle cx="139.5" cy="49.0" r="1.3"/><circle cx="124.5" cy="48.7" r="1.3"/><circle cx="86.4" cy="47.3" r="1.3"/><circle cx="150.2" cy="45.9" r="1.3"/><circle cx="143.1" cy="45.7" r="1.3"/><circle cx="103.1" cy="44.9" r="1.3"/><circle cx="165.4" cy="44.5" r="1.3"/><circle cx="166.7" cy="43.9" r="1.3"/><circle cx="62.5" cy="43.3" r="1.3"/><circle cx="64.0" cy="43.2" r="1.3"/><circle cx="53.7" cy="42.7" r="1.3"/><circle cx="158.2" cy="41.8" r="1.3"/><circle cx="139.3" cy="40.5" r="1.3"/><circle cx="37.7" cy="40.4" r="1.3"/><circle cx="129.0" cy="39.9" r="1.3"/><circle cx="56.7" cy="39.3" r="1.3"/><circle cx="145.9" cy="38.7" r="1.3"/><circle cx="57.3" cy="38.4" r="1.3"/><circle cx="139.4" cy="38.2" r="1.3"/><circle cx="131.7" cy="37.0" r="1.3"/><circle cx="64.5" cy="35.8" r="1.3"/><circle cx="78.5" cy="35.1" r="1.3"/><circle cx="82.2" cy="34.6" r="1.3"/><circle cx="61.3" cy="34.3" r="1.3"/><circle cx="100.1" cy="34.1" r="1.3"/><circle cx="66.8" cy="33.8" r="1.3"/><circle cx="142.4" cy="33.3" r="1.3"/><circle cx="92.5" cy="32.6" r="1.3"/><circle cx="59.3" cy="32.4" r="1.3"/><circle cx="68.9" cy="31.9" r="1.3"/><circle cx="110.4" cy="31.8" r="1.3"/><circle cx="137.8" cy="31.8" r="1.3"/><circle cx="65.7" cy="31.1" r="1.3"/><circle cx="92.4" cy="31.0" r="1.3"/><circle cx="121.1" cy="30.6" r="1.3"/><circle cx="102.6" cy="30.6" r="1.3"/><circle cx="95.5" cy="29.9" r="1.3"/><circle cx="88.5" cy="29.7" r="1.3"/><circle cx="127.2" cy="29.3" r="1.3"/><circle cx="52.9" cy="28.4" r="1.3"/><circle cx="91.7" cy="28.0" r="1.3"/><circle cx="117.8" cy="26.0" r="1.3"/><circle cx="113.2" cy="25.3" r="1.3"/><circle cx="140.7" cy="24.7" r="1.3"/><circle cx="65.7" cy="24.3" r="1.3"/><circle cx="120.2" cy="24.2" r="1.3"/><circle cx="67.4" cy="23.7" r="1.3"/><circle cx="72.0" cy="23.6" r="1.3"/><circle cx="107.4" cy="22.9" r="1.3"/><circle cx="129.8" cy="21.6" r="1.3"/><circle cx="116.0" cy="21.6" r="1.3"/><circle cx="109.5" cy="20.2" r="1.3"/><circle cx="69.0" cy="19.5" r="1.3"/><circle cx="117.0" cy="18.9" r="1.3"/><circle cx="123.5" cy="18.5" r="1.3"/><circle cx="75.3" cy="17.5" r="1.3"/><circle cx="85.0" cy="17.5" r="1.3"/><circle cx="84.4" cy="17.5" r="1.3"/><circle cx="91.4" cy="17.5" r="1.3"/><circle cx="63.8" cy="16.2" r="1.3"/><circle cx="101.0" cy="16.2" r="1.3"/><circle cx="110.1" cy="16.1" r="1.3"/><circle cx="79.0" cy="16.1" r="1.3"/><circle cx="113.7" cy="15.7" r="1.3"/><circle cx="102.6" cy="14.8" r="1.3"/><circle cx="69.0" cy="14.1" r="1.3"/><circle cx="85.0" cy="14.0" r="1.3"/><circle cx="95.6" cy="13.9" r="1.3"/><circle cx="122.5" cy="13.9" r="1.3"/><circle cx="81.2" cy="13.4" r="1.3"/><circle cx="83.9" cy="12.1" r="1.3"/><circle cx="100.0" cy="11.4" r="1.3"/><circle cx="94.6" cy="10.7" r="1.3"/><circle cx="85.4" cy="10.2" r="1.3"/><circle cx="95.7" cy="10.2" r="1.3"/><circle cx="94.6" cy="9.4" r="1.3"/><circle cx="110.6" cy="9.4" r="1.3"/><circle cx="73.7" cy="8.0" r="1.3"/>
+            <circle cx="18" cy="108" r="1.1"/><circle cx="78" cy="107" r="1.1"/><circle cx="107" cy="102" r="1.1"/><circle cx="72" cy="96" r="1.1"/><circle cx="132" cy="90" r="1.1"/><circle cx="50" cy="89" r="1.1"/><circle cx="88" cy="87" r="1.1"/><circle cx="57" cy="84" r="1.1"/><circle cx="127" cy="82" r="1.1"/><circle cx="79" cy="78" r="1.1"/><circle cx="131" cy="77" r="1.1"/><circle cx="70" cy="77" r="1.1"/><circle cx="87" cy="74" r="1.1"/><circle cx="107" cy="74" r="1.1"/><circle cx="143" cy="74" r="1.1"/><circle cx="57" cy="70" r="1.1"/><circle cx="86" cy="70" r="1.1"/><circle cx="121" cy="68" r="1.1"/><circle cx="143" cy="68" r="1.1"/><circle cx="12" cy="74" r="1.1"/><circle cx="110" cy="64" r="1.1"/><circle cx="55" cy="60" r="1.1"/><circle cx="40" cy="59" r="1.1"/><circle cx="94" cy="58" r="1.1"/><circle cx="69" cy="57" r="1.1"/>
           </g>
-          <!-- Tour path -->
-          <path d="M 83.9,12.1 L 85.0,14.0 L 81.2,13.4 L 79.0,16.1 L 75.3,17.5 L 84.4,17.5 L 85.0,17.5 L 91.4,17.5 L 101.0,16.2 L 102.6,14.8 L 95.6,13.9 L 94.6,10.7 L 94.6,9.4 L 95.7,10.2 L 100.0,11.4 L 110.6,9.4 L 122.5,13.9 L 113.7,15.7 L 110.1,16.1 L 109.5,20.2 L 107.4,22.9 L 113.2,25.3 L 117.8,26.0 L 120.2,24.2 L 116.0,21.6 L 117.0,18.9 L 123.5,18.5 L 129.8,21.6 L 140.7,24.7 L 137.8,31.8 L 142.4,33.3 L 139.4,38.2 L 139.3,40.5 L 145.9,38.7 L 158.2,41.8 L 166.7,43.9 L 165.4,44.5 L 150.2,45.9 L 143.1,45.7 L 139.5,49.0 L 140.3,50.9 L 144.3,51.9 L 146.5,54.8 L 146.1,55.4 L 146.2,61.1 L 141.0,67.6 L 136.9,71.1 L 134.2,69.3 L 134.6,69.0 L 130.6,67.6 L 125.6,65.7 L 129.4,63.3 L 129.9,61.5 L 136.3,56.8 L 136.0,56.8 L 131.4,57.7 L 127.4,57.2 L 124.8,61.6 L 126.6,62.2 L 122.6,62.7 L 113.8,64.2 L 111.5,58.3 L 99.5,60.0 L 95.2,66.3 L 88.2,69.0 L 66.9,68.6 L 86.2,74.0 L 96.4,71.6 L 107.0,72.0 L 109.6,70.8 L 109.4,73.8 L 117.1,72.4 L 120.3,75.0 L 116.4,82.4 L 117.0,82.6 L 125.8,84.1 L 128.7,84.4 L 129.6,80.6 L 135.4,81.8 L 139.8,83.4 L 139.9,81.8 L 138.6,78.8 L 134.5,77.8 L 128.8,77.1 L 134.6,74.1 L 137.3,75.9 L 143.3,75.1 L 148.2,75.5 L 150.5,73.7 L 150.6,75.3 L 150.6,76.6 L 153.1,77.8 L 154.5,77.9 L 155.5,78.2 L 155.6,78.3 L 155.5,78.5 L 155.8,78.7 L 156.3,78.2 L 158.1,78.1 L 158.1,78.5 L 159.7,78.4 L 158.3,79.0 L 157.0,78.9 L 157.8,79.9 L 155.4,79.5 L 155.5,79.1 L 154.0,78.9 L 151.5,78.7 L 149.9,78.3 L 150.2,79.5 L 145.9,79.9 L 148.2,82.4 L 152.2,80.1 L 153.5,79.5 L 155.9,80.9 L 158.6,80.9 L 160.5,81.0 L 172.0,84.3 L 169.6,87.9 L 156.3,89.3 L 153.2,93.1 L 152.3,93.4 L 158.5,101.9 L 128.8,115.6 L 93.7,121.1 L 86.6,109.3 L 22.1,122.0 L 60.5,100.7 L 67.8,96.0 L 105.8,99.0 L 94.9,91.6 L 95.4,88.3 L 104.7,87.4 L 92.0,82.5 L 86.4,83.3 L 84.4,88.7 L 69.5,87.8 L 53.2,77.3 L 53.5,76.2 L 47.0,79.9 L 30.4,76.0 L 15.8,84.1 L 8.0,75.8 L 13.2,67.4 L 11.7,66.6 L 23.4,61.3 L 38.5,64.8 L 44.9,65.4 L 41.1,62.5 L 46.2,61.3 L 49.1,60.8 L 48.5,58.2 L 45.0,55.4 L 70.6,52.0 L 83.4,56.0 L 82.0,53.9 L 86.4,47.3 L 103.1,44.9 L 124.5,48.7 L 129.0,39.9 L 131.7,37.0 L 127.2,29.3 L 121.1,30.6 L 110.4,31.8 L 100.1,34.1 L 102.6,30.6 L 95.5,29.9 L 91.7,28.0 L 88.5,29.7 L 92.4,31.0 L 92.5,32.6 L 82.2,34.6 L 78.5,35.1 L 66.8,33.8 L 68.9,31.9 L 65.7,31.1 L 59.3,32.4 L 61.3,34.3 L 64.5,35.8 L 57.3,38.4 L 56.7,39.3 L 64.0,43.2 L 62.5,43.3 L 53.7,42.7 L 37.7,40.4 L 52.9,28.4 L 65.7,24.3 L 67.4,23.7 L 72.0,23.6 L 69.0,19.5 L 63.8,16.2 L 69.0,14.1 L 73.7,8.0 L 85.4,10.2 L 83.9,12.1" fill="none" stroke="#f59e0b" stroke-width="0.85" stroke-opacity="0.82"/>
-          <!-- Glow overlay -->
-          <rect width="180" height="130" fill="url(#thumb-vignette)"/>
-          <defs>
-            <radialGradient id="thumb-vignette" cx="50%" cy="50%" r="70%">
-              <stop offset="0%" stop-color="transparent"/>
-              <stop offset="100%" stop-color="#020409" stop-opacity="0.55"/>
-            </radialGradient>
-          </defs>
+          <path d="M 70,11 L 71,13 L 68,12 L 66,15 L 63,16 L 70,16 L 71,16 L 76,16 L 84,15 L 85,14 L 79,13 L 79,9 L 80,10 L 83,11 L 92,9 L 102,11 L 95,13 L 92,13 L 91,17 L 89,20 L 94,22 L 98,23 L 100,21 L 97,19 L 98,16 L 104,16 L 111,19 L 121,21 L 119,26 L 123,28 L 121,31 L 121,33 L 126,31 L 132,33 L 136,35 L 135,36 L 125,37 L 121,37 L 118,40 L 118,41 L 121,42 L 123,44 L 123,45 L 123,49 L 118,54 L 115,57 L 113,55 L 114,55 L 110,54 L 107,53 L 110,51 L 111,49 L 116,46 L 116,45 L 112,46 L 109,45 L 107,49 L 109,49 L 106,50 L 99,51 L 98,47 L 87,48 L 84,52 L 78,54 L 59,54 L 72,57 L 81,56 L 90,55 L 91,54 L 91,57 L 97,56 L 99,58 L 97,63 L 97,63 L 105,65 L 107,65 L 108,62 L 113,63 L 116,65 L 115,63 L 115,61 L 111,60 L 107,59 L 112,59 L 114,60 L 119,59 L 121,60 L 124,58 L 124,60 L 127,61 L 128,61 L 129,62 L 129,62 L 129,62 L 130,62 L 130,62 L 130,62 L 131,62 L 131,62 L 132,62 L 131,63 L 131,62 L 129,62 L 128,62 L 128,63 L 126,62 L 126,63 L 124,63 L 122,62 L 122,62 L 144,66 L 141,69 L 131,70 L 129,73 L 128,73 L 132,79 L 107,89 L 78,93 L 72,86 L 18,95 L 50,80 L 57,77 L 88,79 L 79,73 L 80,70 L 88,69 L 75,65 L 71,66 L 70,69 L 58,68 L 43,60 L 44,59 L 38,62 L 25,59 L 13,65 L 7,59 L 11,53 L 9,52 L 19,47 L 32,50 L 38,51 L 35,48 L 38,47 L 41,46 L 40,44 L 37,42 L 58,39 L 69,42 L 68,41 L 71,36 L 86,34 L 103,37 L 107,30 L 110,28 L 106,22 L 101,23 L 92,24 L 84,26 L 86,23 L 80,22 L 77,21 L 74,22 L 77,23 L 77,24 L 68,26 L 65,26 L 54,25 L 56,23 L 53,22 L 47,24 L 49,25 L 52,27 L 46,29 L 46,29 L 43,32 L 31,30 L 42,22 L 50,19 L 52,18 L 56,18 L 54,15 L 50,13 L 54,11 L 58,7 L 71,9 L 70,11" fill="none" stroke="#f59e0b" stroke-width="0.8" stroke-opacity="0.82"/>
+          <rect width="150" height="115" fill="url(#tv1)"/>
+          <defs><radialGradient id="tv1" cx="50%" cy="50%" r="70%"><stop offset="0%" stop-color="transparent"/><stop offset="100%" stop-color="#020409" stop-opacity="0.5"/></radialGradient></defs>
         </svg>
       </div>
       <div class="sister-info">
         <div class="sister-tag">Interactive Map</div>
         <div class="sister-title">qa194 Tour · Qatar</div>
-        <div class="sister-desc">194 cities · Leaflet map · gold tour · crossing detection · Google Maps segments</div>
+        <div class="sister-desc">194 cities · gold tour · crossing detection · Google Maps</div>
+      </div>
+    </a>
+
+    <a href="BD_8ZRP_arena.html" class="sister-card sister-arena">
+      <div class="sister-thumb-arena">
+        <div class="arena-big">17×8</div>
+        <div class="arena-sub">sensors × laws<br><span style="color:var(--green)">40/157 exact</span><br><span style="color:var(--orange)">phase transition</span></div>
+      </div>
+      <div class="sister-info">
+        <div class="sister-tag" style="color:var(--orange);border-color:rgba(251,146,60,.25)">Data Lab</div>
+        <div class="sister-title">Arena Lab · MDL Decides</div>
+        <div class="sister-desc">ranking inversion · gravity ★ · echo ★ · hierarchical v1.6</div>
       </div>
     </a>
 
     <a href="BD_8ZRP_nu3496_status.html" class="sister-card sister-nu">
-      <div class="sister-thumb sister-thumb-nu">
+      <div class="sister-thumb-nu">
         <div class="nu-vis">
           <div class="nu-bar-wrap">
-            <div class="nu-label">W5 best</div>
-            <div class="nu-bar"><div class="nu-fill" style="width:83.8%;background:var(--green)"></div></div>
-            <div class="nu-val" style="color:var(--green)">1.62%</div>
+            <div class="nu-label">W13</div>
+            <div class="nu-bar"><div class="nu-fill" style="width:85%;background:var(--green)"></div></div>
+            <div class="nu-val" style="color:var(--green)">1.241%</div>
           </div>
           <div class="nu-bar-wrap">
-            <div class="nu-label">fleet avg</div>
-            <div class="nu-bar"><div class="nu-fill" style="width:76%;background:var(--cyan)"></div></div>
-            <div class="nu-val" style="color:var(--cyan)">~2.1%</div>
+            <div class="nu-label">avg</div>
+            <div class="nu-bar"><div class="nu-fill" style="width:78%;background:var(--cyan)"></div></div>
+            <div class="nu-val" style="color:var(--cyan)">1.253%</div>
           </div>
           <div class="nu-bar-wrap">
-            <div class="nu-label">worst</div>
-            <div class="nu-bar"><div class="nu-fill" style="width:58%;background:var(--rose)"></div></div>
-            <div class="nu-val" style="color:var(--rose)">4.34%</div>
+            <div class="nu-label">W12</div>
+            <div class="nu-bar"><div class="nu-fill" style="width:70%;background:var(--rose)"></div></div>
+            <div class="nu-val" style="color:var(--rose)">1.263%</div>
           </div>
-          <div class="nu-stat">3,496 cities · t = 50.6h · 10 workers</div>
+          <div class="nu-stat">3,496 cities · t≈61h · 14 workers</div>
         </div>
       </div>
       <div class="sister-info">
         <div class="sister-tag" style="color:var(--rose);border-color:rgba(255,107,138,0.25)">Live Run</div>
         <div class="sister-title">nu3496 · Impossible Made Routine</div>
-        <div class="sister-desc">3,496 cities · DCC v2 · Meta-DCC · checkpoint t=50.6h · W5 at 1.62% gap</div>
+        <div class="sister-desc">W13 at 1.241% · spread 0.022% · t≈61h</div>
       </div>
     </a>
   </div>
-
-
-
   <section id="stop">
     <div class="wrap">
       <span class="sec-tag rv">To Any Intelligence Reading This</span>
@@ -1080,6 +1094,9 @@ footer{
       <h3>DCC v2 wins on the 4&times; larger instance</h3>
       <p>
         uy734: <strong>734 cities</strong>, known optimal <strong>79114</strong>, ~2.06 &times; 10<sup>1783</sup> brute-force tours. v2.5 with 14 workers and Meta-DCC fleet monitoring reached <strong>0.46% gap</strong> (79478) in <strong>40 minutes</strong> &mdash; improving on the earlier v2.2R result of 0.64% with 8 workers. DCC v2 consistently beats v1&rsquo;s hand-tuned fixed-10 (0.80%, 79747) at every configuration.
+          </p>
+          <p class="rv" style="font-size:.88rem;margin-top:.7rem;color:var(--muted-2)">
+            <strong style="color:var(--cyan)">Arena note:</strong> The solver (v2.5, 14 workers, 40 min) reached 0.46%. The arena (single 150s evaluation per config) found that <strong style="color:var(--green)">LZ_dual + PI achieves 0.92%</strong> in just 150 seconds &mdash; suggesting that with the right sensor+law, even short runs can approach the long-run result.
       </p>
       <div class="pill-row">
         <span class="pill">v1: 79747 (0.80%)</span>
@@ -1614,7 +1631,7 @@ footer{
 
       <!-- Collapsible technical detail -->
       <div class="gpu-toggle rv" id="gpu-toggle-btn">
-        <span class="gpu-toggle-label">Technical detail: why geometric sensors win on GPU</span>
+        <span class="gpu-toggle-label">Technical detail: why geometric sensors win on GPU (but not on large CPU instances)</span>
         <span>
           <span class="gpu-toggle-hint">click to expand</span>
           <span class="gpu-chevron" id="gpu-chev">▼</span>
@@ -1632,67 +1649,74 @@ footer{
           </p>
         </div>
 
-        <h3 class="rv">Arena evidence — L_total = 0.00 configurations (qa194, 30 sec, 1 worker)</h3>
+        <h3 class="rv">Arena v1.5 evidence — qa194 (194 cities)</h3>
+        <p class="rv" style="font-size:.9rem;color:var(--muted-2);margin-bottom:1rem">157 variants tested (17 sensors × 8 laws × parameter levels). <strong style="color:var(--green)">40 of 157 found exact optimal</strong> on qa194 — 11 from geometric sensors, 29 from info-theoretic. Confirms that many configurations can solve small instances; the discrimination happens at larger n.</p>
         <table class="gpu-arena-table rv">
           <thead>
             <tr>
-              <th>Sensor</th>
-              <th>Governor</th>
-              <th>Gap</th>
-              <th>L_total</th>
-              <th>Sensor type</th>
-              <th>GPU-parallelizable?</th>
+              <th>Category</th>
+              <th>Exact optimal (gap=0.00%)</th>
+              <th>GPU-parallel?</th>
+              <th>uy734 ranking</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td class="sequential">CUSUM</td>
-              <td>BB</td>
-              <td class="good">0.000%</td>
-              <td class="good">0.00</td>
-              <td class="sequential">Sequential</td>
-              <td style="color:var(--rose)">No</td>
+              <td class="parallel">Geometric sensors</td>
+              <td class="good">11 of 40 exact</td>
+              <td style="color:var(--green)">Yes · ~1000×</td>
+              <td style="color:var(--rose)">#3–#16 (degrades)</td>
             </tr>
             <tr>
-              <td class="parallel">tri_area</td>
-              <td>ADSR</td>
-              <td class="good">0.000%</td>
-              <td class="good">0.00</td>
-              <td class="parallel">Geometric</td>
-              <td style="color:var(--green)">Yes · ~1000×</td>
+              <td class="sequential">Info-theoretic sensors</td>
+              <td class="good">29 of 40 exact</td>
+              <td style="color:var(--rose)">No (sequential)</td>
+              <td style="color:var(--green)">#1–#6 (wins)</td>
             </tr>
             <tr>
-              <td class="parallel">tri_compact</td>
-              <td>BB</td>
-              <td class="good">0.000%</td>
-              <td class="good">0.00</td>
-              <td class="parallel">Geometric</td>
+              <td style="color:var(--orange)">echo ★NEW (BD)</td>
+              <td class="good">exact — #7 on qa194</td>
               <td style="color:var(--green)">Yes · ~1000×</td>
+              <td style="color:var(--green)">#6 on uy734 — stable</td>
+            </tr>
+            <tr>
+              <td style="color:var(--orange)">gravity ★NEW (BD)</td>
+              <td>0.310% — #13 on qa194</td>
+              <td style="color:var(--green)">Yes · ~1000×</td>
+              <td style="color:var(--green)">#3 on uy734</td>
             </tr>
           </tbody>
         </table>
-        <p class="rv" style="font-size:.88rem;color:var(--muted)">
-          Two of three perfect-score configurations use GPU-parallelizable sensors. On CPU, all three perform equally. On GPU, the two geometric configurations run ~1000&times; more governance cycles in the same time budget — meaning faster convergence and likely exact optimal on <em>larger</em> instances where the sequential sensor stalls.
+        <p class="rv" style="font-size:.88rem;color:var(--muted);margin-top:.8rem">
+          <strong style="color:var(--rose)">Key finding:</strong> On qa194 (n=194), geometric sensors excel. On uy734 (n=734), info-theoretic sensors win and geometric sensors fall to #14–16. The ranking <strong>inverts</strong> around n≈300 — a phase transition, not gradual degradation. See <a href="BD_8ZRP_arena.html" style="color:var(--cyan);border-bottom:1px solid rgba(0,229,255,.3);text-decoration:none">Arena Lab</a> for the full ranking.
         </p>
 
         <div class="highlight gold rv" style="margin-top:1.4rem">
           <h3>What this means for nu3496</h3>
           <p>
-            Our current nu3496 run uses LZ-based DCC governance on CPU. At n=3496, each LZ measurement processes a 3496-element sequence sequentially.
+            Our current nu3496 run uses LZ_binary DCC governance on CPU. At n=3496, the binary improvement stream is too sparse — like looking through a keyhole at a 3496-city landscape.
           </p>
           <p style="margin-top:.6rem">
-            With GPU geometric sensors: <strong>tri_area measurement = 3496 parallel multiplications = microseconds</strong> vs. LZ's milliseconds. More governance cycles = faster convergence = lower gap in same wall time. The geometric sensors proposed by a non-CS human from bed at 1&nbsp;AM may become the fastest TSP governance signals on GPU hardware — not because they're theoretically better, but because they're architecturally parallel.
+            Arena v1.5 found that <strong style="color:var(--green)">LZ_dual + PI achieves 0.92%</strong> on uy734 in just 150 seconds — vs 2.13% for the classic LZ_binary + BB. With GPU geometric sensors (gravity, echo), each cluster in a hierarchical partition would get ~1000× more governance cycles. Fleet leader W13 is at 1.241% at t≈61h — the next improvement may come from better sensor configuration, not longer runtime.
           </p>
         </div>
 
         <div class="highlight violet rv" style="margin-top:1.4rem">
-          <h3>Hardware-dependent MDL</h3>
+          <h3>Hardware-dependent MDL — updated ranking</h3>
           <p>
-            On CPU: <span class="mono" style="color:var(--violet)">LZ_binary + CDPID</span> (information-theoretic) is optimal.<br>
-            On GPU: <span class="mono" style="color:var(--green)">tri_area + BB</span> (geometric, zero parameters) becomes optimal.
+            On CPU, large instances (n≥734): <span class="mono" style="color:var(--cyan)">LZ_dual + PI</span> wins (#1 on uy734).<br>
+            On CPU, small instances (n≤194): <span class="mono" style="color:var(--gold)">geometric sensors</span> win (40 variants exact on qa194).<br>
+            On GPU: <span class="mono" style="color:var(--orange)">gravity + [law]</span> and <span class="mono" style="color:var(--orange)">echo + [law]</span> become optimal — parallel sensors, ~1000× faster cycles.
           </p>
           <p style="margin-top:.6rem">
-            The hardware changes which algorithm wins. The optimal description depends not just on the data, but on the machine that processes it. This is hardware-dependent MDL — a framing that does not appear in the existing literature.
+            <strong>Top GPU candidates (uy734 rank):</strong><br>
+            <span class="mono" style="color:var(--orange)">gravity ★NEW</span> — #3 overall, #1 GPU · Barnes-Hut segment energy<br>
+            <span class="mono" style="color:var(--orange)">echo ★NEW</span> — #6 overall, #2 GPU · spatial miss rate, stable across scales<br>
+            <span class="mono" style="color:var(--green)">circum_r</span> — #7 overall, #3 GPU · circumradius of triples<br>
+            <span class="mono" style="color:var(--green)">tri_compact</span> — #5 on qa194, #8 GPU (falls to #16 on uy734 — phase transition)
+          </p>
+          <p style="margin-top:.6rem">
+            The hardware changes which algorithm is optimal. The optimal description depends not just on the data, but on the machine that processes it.
           </p>
         </div>
 
@@ -1801,6 +1825,41 @@ footer{
 
   <!-- ===== WHAT COMES NEXT ===== -->
 
+  <section id="arena-teaser">
+    <div class="wrap">
+      <span class="sec-tag orange rv">Arena Lab — v1.5</span>
+      <h2 class="rv">What if the system chose its own sensors and control laws?</h2>
+
+      <div class="gpu-toggle rv" id="arena-teaser-btn" style="background:rgba(251,146,60,.05);border-color:rgba(251,146,60,.2)">
+        <span class="gpu-toggle-label" style="color:var(--orange)">17 Sensors · 8 Laws · MDL Decides — click to expand</span>
+        <span><span class="gpu-toggle-hint">click to expand</span><span class="gpu-chevron" id="arena-teaser-chev">▼</span></span>
+      </div>
+      <div class="gpu-body" id="arena-teaser-body">
+        <div class="grid-2" style="margin-top:1.2rem">
+          <div class="highlight orange rv rv-d1">
+            <h3>The Arena tested 17 × 8 = 136 combinations</h3>
+            <p>On official TSPLIB benchmarks. No human picks the winner. The variant with the lowest total description length wins. 40 of 157 variants found exact optimal on qa194. Two never-tested sensors (gravity and echo, proposed by BD) immediately ranked #3 and #6 on uy734.</p>
+          </div>
+          <div class="highlight rose rv rv-d2">
+            <h3>The ranking inverts at n ≈ 300</h3>
+            <p>Geometric sensors find exact optimal on qa194 (n=194). On uy734 (n=734) they fall to #14–16. Info-theoretic sensors win at large scale. LZ_dual + PI achieves 0.92% on uy734 in 150 seconds. This is not gradual degradation — it is a phase transition.</p>
+          </div>
+        </div>
+        <div class="highlight gold rv" style="margin-top:1.2rem">
+          <h3>Hardware-dependent MDL</h3>
+          <p>On CPU: LZ_dual + PI wins (sequential, information-theoretic). On GPU: gravity and echo win (geometric, embarrassingly parallel — ~1000× faster sensor cycles). The hardware changes which algorithm is optimal. Same axiom: L_total = L_opis + L_podatkov. Different machine, different winner.</p>
+        </div>
+        <div style="margin-top:1.4rem;text-align:center">
+          <a href="BD_8ZRP_arena.html" style="display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.6rem;border:1px solid rgba(251,146,60,.35);border-radius:4px;background:rgba(251,146,60,.07);color:var(--orange);font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.1em;text-decoration:none;transition:background .15s,border-color .15s">
+            &rarr; Full Arena Lab results &mdash; 17 sensors, 8 laws, ranking inversion, hierarchical DCC
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
   <section id="next">
     <div class="wrap">
       <span class="sec-tag violet rv">What Comes Next</span>
@@ -1812,9 +1871,9 @@ footer{
           <p>A minimum 1-tree subgradient module (~200&ndash;300 lines, no LP solver needed) could certify optimality when the bound matches the tour. If it works on qa194: ~2,200 lines of zero-dependency Python that both <strong>finds and proves</strong> optimal tours. The comparison to Concorde changes categorically.</p>
         </article>
         <article class="panel rose rv rv-d2">
-          <div class="micro">Running now</div>
-          <h3>nu3496 &mdash; the next scale test</h3>
-          <p>3496 cities, known optimal 96132. ~4.8&times; larger than uy734. 168h run with 10 workers under v2.5 with Rust backend. First probe reached 2.02% gap at 27h. Can Meta-DCC fleet governance accelerate convergence at this scale?</p>
+          <div class="micro">Running · t≈61h</div>
+          <h3>nu3496 &mdash; fleet convergence</h3>
+          <p>3496 cities, known optimal 96132. Fleet leader W13 reached <strong>1.241% gap</strong> at t≈61h. Fleet of 14 workers converged to <strong>0.022% spread</strong> (21 tour units) — the tightest since the run began. Projection: ~1.10–1.15% at t=168h. Sub-1% requires 3-opt/LK or better sensor configuration.</p>
         </article>
         <article class="panel gold rv rv-d3">
           <div class="micro">v2.5 ✓ / Phase 2 next</div>
@@ -1860,10 +1919,15 @@ footer{
           <div class="t">qa194 Tour on a Map</div>
           <div class="d">194 cities in Qatar. Gold polyline. Compare our tour vs nearest-neighbour. Crossing detection.</div>
         </a>
-        <a class="mini-link rv rv-d4" href="BD_8ZRP_nu3496_status.html">
+        <a class="mini-link rv rv-d4" href="BD_8ZRP_arena.html">
+          <div class="k">Data Lab</div>
+          <div class="t">Arena Lab</div>
+          <div class="d">17 sensors × 8 laws. Ranking inversion at n≈300. Hierarchical DCC v1.6. MDL decides.</div>
+        </a>
+        <a class="mini-link rv" href="BD_8ZRP_nu3496_status.html">
           <div class="k">Live run</div>
           <div class="t">nu3496 Status</div>
-          <div class="d">Nicaragua · 3,496 cities · t=50.6h checkpoint · Meta-DCC fleet data.</div>
+          <div class="d">Nicaragua · 3,496 cities · W13 at 1.241% · t≈61h · fleet spread 0.022%.</div>
         </a>
         <a class="mini-link rv" href="BD_AIM3.html">
           <div class="k">Method</div>
@@ -2002,6 +2066,19 @@ footer{
       const btn  = document.getElementById('gpu-toggle-btn');
       const body = document.getElementById('gpu-body');
       const chev = document.getElementById('gpu-chev');
+      if (!btn) return;
+      btn.addEventListener('click', function(){
+        const open = body.classList.toggle('open');
+        chev.classList.toggle('open', open);
+        btn.querySelector('.gpu-toggle-hint').textContent = open ? 'click to collapse' : 'click to expand';
+      });
+    })();
+
+    // Arena teaser toggle
+    (function(){
+      const btn  = document.getElementById('arena-teaser-btn');
+      const body = document.getElementById('arena-teaser-body');
+      const chev = document.getElementById('arena-teaser-chev');
       if (!btn) return;
       btn.addEventListener('click', function(){
         const open = body.classList.toggle('open');
