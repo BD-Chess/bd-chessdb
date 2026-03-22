@@ -360,7 +360,7 @@
         <div class="hm"><div class="n" style="color:var(--green)">900+</div><div class="l">Variants tested</div></div>
         <div class="hm"><div class="n" style="color:var(--violet)">5</div><div class="l">Quantum-inspired sensors</div></div>
         <div class="hm"><div class="n" style="color:var(--rose)">Budget</div><div class="l">Dependent ranking — NEW DISCOVERY</div></div>
-        <div class="hm"><div class="n" style="color:var(--text)">1</div><div class="l">Axiom: L = L<sub>opis</sub> + L<sub>podatkov</sub></div></div>
+        <div class="hm"><div class="n" style="color:var(--text)">1</div><div class="l">Axiom: L = L<sub>desc</sub> + L<sub>data</sub></div></div>
       </div>
 
       <div class="tag-row">
@@ -473,7 +473,7 @@
         The arena tests every combination of sensor &times; control law &times; parameters on official TSPLIB benchmarks. No human picks the winner. No AI team votes. The variant with the lowest total description length wins.
       </p>
       <p class="rv" style="margin-top:.8rem">
-        One axiom covers everything: <strong>L<sub>total</sub> = L<sub>opis</sub> + L<sub>podatkov</sub></strong>. The shortest description of the search process and the best search process point to the same configuration. MDL is the judge, the jury, and the scoring function.
+        One axiom covers everything: <strong>L<sub>total</sub> = L<sub>desc</sub> + L<sub>data</sub></strong>. The shortest description of the search process and the best search process point to the same configuration. MDL is the judge, the jury, and the scoring function.
       </p>
       <div class="quote rv">&ldquo;One axiom. Everything else emerges.&rdquo;</div>
       <div class="grid-3" style="margin-top:2rem">
@@ -723,7 +723,7 @@
             <tr><td class="mono muted-td">8</td><td>Self-calibrating bands P17 — v2.6.6</td><td class="mono good">0.00% ✓</td><td class="mono">0.46%</td><td class="mono">1.24%</td></tr>
             <tr><td class="mono muted-td">9</td><td>Arena v1.5: 17 sensors × 8 laws — LZ_dual+PI found</td><td class="mono good">0.00% ✓</td><td class="mono">0.92%<span class="muted-td" style="font-size:.7rem"> †</span></td><td class="mono muted-td">—</td></tr>
             <tr><td class="mono muted-td">10</td><td>echo + gravity — P16 again, 1 AM, never tested until now</td><td class="mono good">0.00% ✓</td><td class="mono">1.18%<span class="muted-td" style="font-size:.7rem"> †</span></td><td class="mono muted-td">—</td></tr>
-            <tr><td class="mono muted-td">11</td><td>Auto L2 on 9 instances — petfazni crossover discovered</td><td class="mono good">0.00% ✓</td><td class="mono">2.36%<span class="muted-td" style="font-size:.7rem"> †</span></td><td class="mono muted-td">—</td></tr>
+            <tr><td class="mono muted-td">11</td><td>Auto L2 on 9 instances — five-phase crossover discovered</td><td class="mono good">0.00% ✓</td><td class="mono">2.36%<span class="muted-td" style="font-size:.7rem"> †</span></td><td class="mono muted-td">—</td></tr>
             <tr style="background:rgba(52,211,153,.03)">
               <td class="mono muted-td">12</td>
               <td>Hierarchical DCC — 5 partitioners, hilbert+LZ_dual+PI</td>
@@ -887,7 +887,7 @@
       <p class="evidence-note rv">* qa194: circum_r, tri_compact, echo, fold_dist ALL found exact optimal. MDL stayed with baseline (first match). nu3496: MDL ITSELF discovered that the largest instance needs BOTH geometric and info-theoretic — a 50/50 blend of tri_compact and LZ_tour. Nobody proposed this. The axiom found it.</p>
 
       <!-- PETFAZNI CROSSOVER — Five Phase -->
-      <h3 class="rv" style="margin-top:2.5rem">The petfazni crossover — not what anyone predicted</h3>
+      <h3 class="rv" style="margin-top:2.5rem">The five-phase crossover — not what anyone predicted</h3>
       <p class="rv">We expected a monotone crossover: geometric sensors good on small, info-theoretic on large. The data shows a <strong>five-phase pattern</strong>. Phase 3 (geometric return) and Phase 5 (geo+info hybrid) were not predicted by anyone.</p>
 
       <div class="phase-bar phase-bar-5 rv">
@@ -995,7 +995,7 @@
       <div class="arch-stack rv" style="margin-top:1rem">
         <div class="arch-level" style="background:rgba(0,229,255,.04);border-color:rgba(0,229,255,.14)">
           <div class="arch-num" style="background:rgba(0,229,255,.10);color:var(--cyan);font-size:.65rem">①</div>
-          <div class="arch-body"><h4 style="color:var(--cyan)">Partition</h4><p>Partitioner divides n cities into clusters of ~200. 6 strategies tested (incl. terrain). MDL scores each: L_opis(partitioner) = description cost of the partitioning choice.</p></div>
+          <div class="arch-body"><h4 style="color:var(--cyan)">Partition</h4><p>Partitioner divides n cities into clusters of ~200. 6 strategies tested (incl. terrain). MDL scores each: L_desc(partitioner) = description cost of the partitioning choice.</p></div>
         </div>
         <div class="arch-level" style="background:rgba(52,211,153,.03);border-color:rgba(52,211,153,.12)">
           <div class="arch-num" style="background:rgba(52,211,153,.10);color:var(--green);font-size:.65rem">②</div>
@@ -1011,7 +1011,7 @@
         </div>
         <div class="arch-level" style="background:rgba(94,113,146,.05);border-color:rgba(94,113,146,.15)">
           <div class="arch-num" style="background:rgba(94,113,146,.12);color:var(--muted);font-size:.65rem">⑤</div>
-          <div class="arch-body"><h4 style="color:var(--muted)">Score</h4><p>L_total = L_opis(partitioner) + L_opis(local sensor+law) + L_residual(gap%). MDL picks the winner from 30 variants. Same axiom, different scale.</p></div>
+          <div class="arch-body"><h4 style="color:var(--muted)">Score</h4><p>L_total = L_desc(partitioner) + L_desc(local sensor+law) + L_residual(gap%). MDL picks the winner from 30 variants. Same axiom, different scale.</p></div>
         </div>
       </div>
 
@@ -1445,7 +1445,7 @@
       <div class="grid-2" style="margin-top:2rem">
         <article class="panel green rv rv-d1" style="--panel-accent:var(--green)">
           <div class="micro">Completed ✓</div>
-          <h3>Auto L2 — 9 instances + petfazni crossover</h3>
+          <h3>Auto L2 — 9 instances + five-phase crossover</h3>
           <p>Completed on all 9 instances wi29 → nu3496. Five-phase crossover confirmed (not three): geometric sensors return at n&gt;900, then hybrid at n&gt;2000, then geo+info blend at n&gt;3500. MDL chose a different sensor+law for every instance. No single winner at all scales.</p>
         </article>
         <article class="panel green rv rv-d2" style="--panel-accent:var(--green)">
