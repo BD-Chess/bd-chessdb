@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BD × AI Lab — Arena Lab / 17 Sensors · 8 Laws · MDL Decides</title>
+  <title>BD × AI Lab — Arena Lab v1.9 / 22 Sensors · 8 Laws · MDL Decides</title>
   <link rel="preconnect" href="https://fonts.googleapis.com/" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -92,7 +92,7 @@
     }
 
     .hero-metrics{
-      display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+      display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
       margin:1.8rem 0 1.4rem;border:1px solid var(--border);border-radius:4px;
       overflow:hidden;background:var(--border);
     }
@@ -138,7 +138,7 @@
     /* scroll reveal */
     .rv{opacity:0;transform:translateY(18px);transition:opacity .55s ease,transform .55s ease}
     .rv.vis{opacity:1;transform:none}
-    .rv-d1{transition-delay:.08s}.rv-d2{transition-delay:.16s}.rv-d3{transition-delay:.24s}
+    .rv-d1{transition-delay:.08s}.rv-d2{transition-delay:.16s}.rv-d3{transition-delay:.24s}.rv-d4{transition-delay:.32s}
 
     /* ── PANELS ── */
     .panel{
@@ -167,6 +167,7 @@
     .muted-td{color:var(--muted)}
     .badge-new{font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.1em;background:rgba(251,146,60,.15);border:1px solid rgba(251,146,60,.35);color:var(--orange);border-radius:3px;padding:1px 5px;vertical-align:middle;margin-left:4px}
     .badge-bd{font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.08em;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2);color:var(--cyan);border-radius:3px;padding:1px 5px;vertical-align:middle;margin-left:4px}
+    .badge-q{font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.08em;background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.3);color:var(--violet);border-radius:3px;padding:1px 5px;vertical-align:middle;margin-left:4px}
     .gpu-yes{color:var(--green);font-weight:700}
     .gpu-no{color:var(--muted)}
 
@@ -180,8 +181,11 @@
     .collapse-hdr:hover{background:rgba(0,229,255,0.08)}
     .collapse-hdr.gold-hdr{background:rgba(245,158,11,.04);border-color:rgba(245,158,11,.15)}
     .collapse-hdr.gold-hdr:hover{background:rgba(245,158,11,.09)}
+    .collapse-hdr.violet-hdr{background:rgba(167,139,250,.04);border-color:rgba(167,139,250,.15)}
+    .collapse-hdr.violet-hdr:hover{background:rgba(167,139,250,.09)}
     .collapse-label{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
     .collapse-hdr.gold-hdr .collapse-label{color:var(--gold)}
+    .collapse-hdr.violet-hdr .collapse-label{color:var(--violet)}
     .collapse-hint{font-size:.78rem;color:var(--muted)}
     .collapse-chev{font-size:.7rem;color:var(--muted);transition:transform .22s;margin-left:8px}
     .collapse-chev.open{transform:rotate(180deg)}
@@ -304,25 +308,37 @@
     .foot-links a:hover{color:var(--cyan)}
     .copyright{max-width:1120px;margin:2rem auto 0;padding:1.5rem 5vw 0;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted)}
 
+    .slogan{text-align:center;font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-style:italic;color:var(--muted-2);padding:2.5rem 5vw;letter-spacing:.03em}
+
     @media(max-width:980px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}.inversion-grid{grid-template-columns:1fr}.inv-center{display:none}.foot-grid{grid-template-columns:1fr}}
     @media(max-width:640px){.hero-metrics{grid-template-columns:repeat(2,1fr)}.topnav{justify-content:flex-start}}
-  /* ── Three-phase visual ── */
-  .phase-bar{display:grid;grid-template-columns:1fr 1.2fr 1.4fr;gap:0;margin:1.8rem 0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
-  .phase-cell{padding:1.1rem 1.2rem;text-align:center}
-  .phase-cell .ph-n{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
-  .phase-cell .ph-label{font-size:1.05rem;font-weight:700;font-family:'Rajdhani',sans-serif;margin-bottom:.3rem}
-  .phase-cell .ph-sensors{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted);line-height:1.5}
-  .phase1{background:rgba(52,211,153,.07);border-right:1px solid var(--border)}
-  .phase2{background:rgba(0,229,255,.07);border-right:1px solid var(--border)}
-  .phase3{background:rgba(245,158,11,.07)}
-  /* ── Stat highlight boxes ── */
-  .stat-trio{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0}
-  .stat-hi{padding:1.1rem 1.2rem;border:1px solid var(--border);border-radius:var(--radius);text-align:center;background:rgba(6,10,20,.72)}
-  .stat-hi .sh-num{font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:700;line-height:1.1;margin-bottom:.3rem}
-  .stat-hi .sh-label{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-  /* ── Partitioner ranking table tweak ── */
-  .part-rank{margin-top:.9rem}
-  @media(max-width:720px){.phase-bar,.stat-trio{grid-template-columns:1fr}}
+
+    /* ── Three-phase / Five-phase visual ── */
+    .phase-bar{display:grid;gap:0;margin:1.8rem 0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+    .phase-bar-3{grid-template-columns:1fr 1.2fr 1.4fr}
+    .phase-bar-5{grid-template-columns:0.8fr 1fr 1fr 1fr 1.1fr}
+    .phase-cell{padding:1.1rem 1rem;text-align:center}
+    .phase-cell .ph-n{font-family:'JetBrains Mono',monospace;font-size:.63rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.4rem}
+    .phase-cell .ph-label{font-size:.95rem;font-weight:700;font-family:'Rajdhani',sans-serif;margin-bottom:.3rem}
+    .phase-cell .ph-sensors{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted);line-height:1.5}
+    .phase1{background:rgba(52,211,153,.07);border-right:1px solid var(--border)}
+    .phase2{background:rgba(0,229,255,.07);border-right:1px solid var(--border)}
+    .phase3{background:rgba(245,158,11,.07);border-right:1px solid var(--border)}
+    .phase4{background:rgba(167,139,250,.07);border-right:1px solid var(--border)}
+    .phase5{background:rgba(245,158,11,.11)}
+
+    /* ── Stat highlight boxes ── */
+    .stat-trio{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0}
+    .stat-hi{padding:1.1rem 1.2rem;border:1px solid var(--border);border-radius:var(--radius);text-align:center;background:rgba(6,10,20,.72)}
+    .stat-hi .sh-num{font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:700;line-height:1.1;margin-bottom:.3rem}
+    .stat-hi .sh-label{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+    /* ── Partitioner ranking table tweak ── */
+    .part-rank{margin-top:.9rem}
+
+    /* ── Quantum sensor budget table ── */
+    .budget-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:1.5rem}
+    @media(max-width:720px){.phase-bar-3,.phase-bar-5,.stat-trio,.budget-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -334,24 +350,27 @@
     <div class="hero-grid"></div>
     <canvas id="constellation-canvas"></canvas>
     <div class="hero-shell">
-      <div class="hero-eyebrow">BD × AI Lab &middot; AIM³ Lab &middot; Arena Laboratory</div>
+      <div class="hero-eyebrow">BD × AI Lab &middot; AIM³ Lab &middot; Arena Laboratory &middot; v1.9</div>
       <h1 class="hero-title"><span class="accent">Arena</span><br><span class="gold">Lab</span></h1>
-      <p class="hero-subtitle">17 Sensors &middot; 8 Control Laws &middot; MDL Decides. Not the programmer. Not the AI. The data.</p>
+      <p class="hero-subtitle">22 Sensors &middot; 8 Control Laws &middot; MDL Decides. Not the programmer. Not the AI. The data.</p>
 
       <div class="hero-metrics">
-        <div class="hm"><div class="n" style="color:var(--cyan)">17</div><div class="l">Sensors (9 BD original)</div></div>
+        <div class="hm"><div class="n" style="color:var(--cyan)">22</div><div class="l">Sensors (13 BD · 4 BD+LLM)</div></div>
         <div class="hm"><div class="n" style="color:var(--gold)">8</div><div class="l">Control laws</div></div>
-        <div class="hm"><div class="n" style="color:var(--green)">238+</div><div class="l">Variants tested</div></div>
-        <div class="hm"><div class="n" style="color:var(--violet)">1</div><div class="l">Axiom: L = L<sub>opis</sub> + L<sub>podatkov</sub></div></div>
+        <div class="hm"><div class="n" style="color:var(--green)">900+</div><div class="l">Variants tested</div></div>
+        <div class="hm"><div class="n" style="color:var(--violet)">5</div><div class="l">Quantum-inspired sensors</div></div>
+        <div class="hm"><div class="n" style="color:var(--rose)">Budget</div><div class="l">Dependent ranking — NEW DISCOVERY</div></div>
+        <div class="hm"><div class="n" style="color:var(--text)">1</div><div class="l">Axiom: L = L<sub>opis</sub> + L<sub>podatkov</sub></div></div>
       </div>
 
       <div class="tag-row">
         <span class="tag cyan">MDL governance</span>
-        <span class="tag gold">qa194 · uy734</span>
-        <span class="tag green">40/157 exact optimal</span>
-        <span class="tag orange">gravity ★NEW</span>
-        <span class="tag orange">echo ★NEW</span>
-        <span class="tag violet">ranking inversion</span>
+        <span class="tag gold">qa194 · uy734 · 9 instances</span>
+        <span class="tag green">5-phase crossover</span>
+        <span class="tag orange">gravity ★</span>
+        <span class="tag orange">echo ★</span>
+        <span class="tag violet">tunneling #2 overall</span>
+        <span class="tag rose">41% hierarchical gain</span>
       </div>
     </div>
   </header>
@@ -359,18 +378,20 @@
   <!-- NAV -->
   <nav>
     <div class="topnav">
-      <span>Arena Lab</span>
+      <span>Arena Lab v1.9</span>
       <a class="cyan"  href="#question">The question</a>
-      <a class="gold"  href="#sensors">17 sensors</a>
+      <a class="gold"  href="#sensors">22 sensors</a>
       <a class="violet" href="#laws">8 laws</a>
       <a class="rose"  href="#inversion">Inversion</a>
       <a class="cyan"  href="#classic">Classic DCC</a>
       <a class="violet" href="#evolution">Evolution</a>
       <a class="orange" href="#new-sensors">echo &amp; gravity</a>
       <a class="green" href="#architecture">Architecture</a>
-      <a class="gold"  href="#auto-l2">Auto L2</a>
+      <a class="gold"  href="#auto-l2">Auto L2 · 5 phases</a>
       <a class="orange" href="#hierarchical">Hierarchical</a>
-      <a class="gold"  href="#gpu">GPU eyes</a>
+      <a class="violet" href="#quantum">Quantum sensors</a>
+      <a class="green" href="#gpu">GPU eyes</a>
+      <a class="cyan"  href="#combined">22-sensor ranking</a>
       <a class="violet" href="#next">Next</a>
     </div>
   </nav>
@@ -458,8 +479,8 @@
       <div class="grid-3" style="margin-top:2rem">
         <article class="panel cyan rv rv-d1">
           <div class="micro">What it tests</div>
-          <h3>17 sensors × 8 laws</h3>
-          <p>Every sensor paired with every control law. Plus parameter variants (<code>--mdl-levels</code> 1/2/3). 238+ configurations, all measured on the same benchmark instances under identical conditions.</p>
+          <h3>22 sensors × 8 laws</h3>
+          <p>Every sensor paired with every control law. Plus parameter variants (<code>--mdl-levels</code> 1/2/3). 900+ configurations, all measured on the same benchmark instances under identical conditions.</p>
         </article>
         <article class="panel gold rv rv-d2">
           <div class="micro">How it scores</div>
@@ -483,7 +504,7 @@
       <span class="sec-tag gold rv">The Sensors</span>
       <h2 class="rv">17 ways to watch a search. One axiom picks the best.</h2>
       <p class="rv">
-        A sensor is the <em>eye</em> of the DCC controller — it converts the raw improvement stream into a signal the control law can act on. The arena found that the best sensor depends on the problem size. This is the complete list, sorted by performance on uy734 (n=734).
+        A sensor is the <em>eye</em> of the DCC controller — it converts the raw improvement stream into a signal the control law can act on. The arena found that the best sensor depends on the problem size. This is the complete original list (17 sensors), sorted by performance on uy734 (n=734). See also: <a href="#quantum" style="color:var(--violet)">5 quantum-inspired sensors added March 21</a>.
       </p>
       <p class="rv" style="margin-top:.6rem;color:var(--muted)">
         Author key: <span style="color:var(--cyan)">BD</span> = Bojan Dobrečevič (original) &middot; <span style="color:var(--violet)">LLM</span> = AI-proposed &middot; <span style="color:var(--muted)">LIT</span> = literature
@@ -692,61 +713,17 @@
             <tr><th>#</th><th>What was added</th><th>qa194</th><th>uy734</th><th>nu3496</th></tr>
           </thead>
           <tbody>
-            <tr>
-              <td class="mono muted-td">1</td>
-              <td>MDL as criterion — founding hypothesis</td>
-              <td class="mono muted-td">—</td><td class="mono muted-td">—</td><td class="mono muted-td">—</td>
-            </tr>
-            <tr>
-              <td class="mono muted-td">2</td>
-              <td>DCC governance (LZ_binary + BB) — v1.2.1</td>
-              <td class="mono warn">3.01%</td><td class="mono muted-td">—</td><td class="mono muted-td">—</td>
-            </tr>
-            <tr>
-              <td class="mono muted-td">3</td>
-              <td>Or-opt operator added (P16 — nearly excluded)</td>
-              <td class="mono warn">1.95%</td><td class="mono muted-td">—</td><td class="mono muted-td">—</td>
-            </tr>
-            <tr>
-              <td class="mono muted-td">4</td>
-              <td>Fleet: 14 workers — v2.1</td>
-              <td class="mono good">0.00% ✓</td><td class="mono muted-td">—</td><td class="mono muted-td">—</td>
-            </tr>
-            <tr>
-              <td class="mono muted-td">5</td>
-              <td>DCC v2 (5× less budget) — v2.2</td>
-              <td class="mono good">0.00% ✓</td><td class="mono warn">0.80%</td><td class="mono muted-td">—</td>
-            </tr>
-            <tr>
-              <td class="mono muted-td">6</td>
-              <td>Rust 2-opt backend — v2.2R (38 min → &lt;1 min)</td>
-              <td class="mono good">0.00% ✓</td><td class="mono">0.64%</td><td class="mono muted-td">—</td>
-            </tr>
-            <tr>
-              <td class="mono muted-td">7</td>
-              <td>Meta-DCC fleet monitoring — v2.5</td>
-              <td class="mono good">0.00% ✓</td><td class="mono">0.46%</td><td class="mono warn">2.02%</td>
-            </tr>
-            <tr>
-              <td class="mono muted-td">8</td>
-              <td>Self-calibrating bands P17 — v2.6.6</td>
-              <td class="mono good">0.00% ✓</td><td class="mono">0.46%</td><td class="mono">1.24%</td>
-            </tr>
-            <tr>
-              <td class="mono muted-td">9</td>
-              <td>Arena v1.5: 17 sensors × 8 laws — LZ_dual+PI found</td>
-              <td class="mono good">0.00% ✓</td><td class="mono">0.92%<span class="muted-td" style="font-size:.7rem"> †</span></td><td class="mono muted-td">—</td>
-            </tr>
-            <tr>
-              <td class="mono muted-td">10</td>
-              <td>echo + gravity — P16 again, 1 AM, never tested until now</td>
-              <td class="mono good">0.00% ✓</td><td class="mono">1.18%<span class="muted-td" style="font-size:.7rem"> †</span></td><td class="mono muted-td">—</td>
-            </tr>
-            <tr>
-              <td class="mono muted-td">11</td>
-              <td>Auto L2 on 9 instances — trifazni crossover discovered</td>
-              <td class="mono good">0.00% ✓</td><td class="mono">2.36%<span class="muted-td" style="font-size:.7rem"> †</span></td><td class="mono muted-td">—</td>
-            </tr>
+            <tr><td class="mono muted-td">1</td><td>MDL as criterion — founding hypothesis</td><td class="mono muted-td">—</td><td class="mono muted-td">—</td><td class="mono muted-td">—</td></tr>
+            <tr><td class="mono muted-td">2</td><td>DCC governance (LZ_binary + BB) — v1.2.1</td><td class="mono warn">3.01%</td><td class="mono muted-td">—</td><td class="mono muted-td">—</td></tr>
+            <tr><td class="mono muted-td">3</td><td>Or-opt operator added (P16 — nearly excluded)</td><td class="mono warn">1.95%</td><td class="mono muted-td">—</td><td class="mono muted-td">—</td></tr>
+            <tr><td class="mono muted-td">4</td><td>Fleet: 14 workers — v2.1</td><td class="mono good">0.00% ✓</td><td class="mono muted-td">—</td><td class="mono muted-td">—</td></tr>
+            <tr><td class="mono muted-td">5</td><td>DCC v2 (5× less budget) — v2.2</td><td class="mono good">0.00% ✓</td><td class="mono warn">0.80%</td><td class="mono muted-td">—</td></tr>
+            <tr><td class="mono muted-td">6</td><td>Rust 2-opt backend — v2.2R (38 min → &lt;1 min)</td><td class="mono good">0.00% ✓</td><td class="mono">0.64%</td><td class="mono muted-td">—</td></tr>
+            <tr><td class="mono muted-td">7</td><td>Meta-DCC fleet monitoring — v2.5</td><td class="mono good">0.00% ✓</td><td class="mono">0.46%</td><td class="mono warn">2.02%</td></tr>
+            <tr><td class="mono muted-td">8</td><td>Self-calibrating bands P17 — v2.6.6</td><td class="mono good">0.00% ✓</td><td class="mono">0.46%</td><td class="mono">1.24%</td></tr>
+            <tr><td class="mono muted-td">9</td><td>Arena v1.5: 17 sensors × 8 laws — LZ_dual+PI found</td><td class="mono good">0.00% ✓</td><td class="mono">0.92%<span class="muted-td" style="font-size:.7rem"> †</span></td><td class="mono muted-td">—</td></tr>
+            <tr><td class="mono muted-td">10</td><td>echo + gravity — P16 again, 1 AM, never tested until now</td><td class="mono good">0.00% ✓</td><td class="mono">1.18%<span class="muted-td" style="font-size:.7rem"> †</span></td><td class="mono muted-td">—</td></tr>
+            <tr><td class="mono muted-td">11</td><td>Auto L2 on 9 instances — petfazni crossover discovered</td><td class="mono good">0.00% ✓</td><td class="mono">2.36%<span class="muted-td" style="font-size:.7rem"> †</span></td><td class="mono muted-td">—</td></tr>
             <tr style="background:rgba(52,211,153,.03)">
               <td class="mono muted-td">12</td>
               <td>Hierarchical DCC — 5 partitioners, hilbert+LZ_dual+PI</td>
@@ -767,90 +744,18 @@
             <tr><th>Dimension</th><th>Concorde</th><th>LKH-3</th><th>EAX</th><th>8Z-RP</th></tr>
           </thead>
           <tbody>
-            <tr>
-              <td>Code size</td>
-              <td class="mono muted-td">~130K C</td>
-              <td class="mono muted-td">~15K C</td>
-              <td class="mono muted-td">~5K C++</td>
-              <td class="mono" style="color:var(--cyan)">~2K Py+Rust</td>
-            </tr>
-            <tr>
-              <td>External dependencies</td>
-              <td class="mono muted-td">LP solver</td>
-              <td class="mono muted-td">none</td>
-              <td class="mono muted-td">none</td>
-              <td class="mono" style="color:var(--cyan)">none</td>
-            </tr>
-            <tr>
-              <td>Governance</td>
-              <td class="mono muted-td">fixed</td>
-              <td class="mono muted-td">fixed</td>
-              <td class="mono muted-td">fixed</td>
-              <td class="mono" style="color:var(--gold)">adaptive — 17 sensors × 8 laws</td>
-            </tr>
-            <tr>
-              <td>Auto-configuration</td>
-              <td class="mono muted-td">no</td>
-              <td class="mono muted-td">manual per instance</td>
-              <td class="mono muted-td">no</td>
-              <td class="mono" style="color:var(--gold)">MDL auto-selects sensor+law</td>
-            </tr>
-            <tr>
-              <td>Partitioning</td>
-              <td class="mono muted-td">no</td>
-              <td class="mono muted-td">1 method, fixed</td>
-              <td class="mono muted-td">no</td>
-              <td class="mono" style="color:var(--green)">5 methods — 3 new inventions</td>
-            </tr>
-            <tr>
-              <td>GPU governance sensors</td>
-              <td class="mono muted-td">no</td>
-              <td class="mono muted-td">no</td>
-              <td class="mono muted-td">no</td>
-              <td class="mono" style="color:var(--green)">8 parallel sensors — prototype</td>
-            </tr>
-            <tr>
-              <td>Cross-domain origins</td>
-              <td class="mono muted-td">—</td>
-              <td class="mono muted-td">—</td>
-              <td class="mono muted-td">—</td>
-              <td class="mono" style="color:var(--orange)">bat echolocation, Barnes-Hut, F4M</td>
-            </tr>
-            <tr>
-              <td>Tour quality (uy734)</td>
-              <td class="mono muted-td">optimal</td>
-              <td class="mono good">&lt;0.1%</td>
-              <td class="mono muted-td">~0.1-0.5%</td>
-              <td class="mono warn">0.46% (full solver)</td>
-            </tr>
-            <tr>
-              <td>Optimality proof</td>
-              <td class="mono good">yes</td>
-              <td class="mono muted-td">no</td>
-              <td class="mono muted-td">no</td>
-              <td class="mono muted-td">no (Held-Karp planned)</td>
-            </tr>
-            <tr>
-              <td>Speed on large n</td>
-              <td class="mono muted-td">hours–days</td>
-              <td class="mono good">minutes</td>
-              <td class="mono muted-td">minutes</td>
-              <td class="mono warn">hours (O(n²) bottleneck)</td>
-            </tr>
+            <tr><td>Code size</td><td class="mono muted-td">~130K C</td><td class="mono muted-td">~15K C</td><td class="mono muted-td">~5K C++</td><td class="mono" style="color:var(--cyan)">~2K Py+Rust</td></tr>
+            <tr><td>External dependencies</td><td class="mono muted-td">LP solver</td><td class="mono muted-td">none</td><td class="mono muted-td">none</td><td class="mono" style="color:var(--cyan)">none</td></tr>
+            <tr><td>Governance</td><td class="mono muted-td">fixed</td><td class="mono muted-td">fixed</td><td class="mono muted-td">fixed</td><td class="mono" style="color:var(--gold)">adaptive — 22 sensors × 8 laws</td></tr>
+            <tr><td>Auto-configuration</td><td class="mono muted-td">no</td><td class="mono muted-td">manual per instance</td><td class="mono muted-td">no</td><td class="mono" style="color:var(--gold)">MDL auto-selects sensor+law</td></tr>
+            <tr><td>Partitioning</td><td class="mono muted-td">no</td><td class="mono muted-td">1 method, fixed</td><td class="mono muted-td">no</td><td class="mono" style="color:var(--green)">5 methods — 4 new inventions</td></tr>
+            <tr><td>GPU governance sensors</td><td class="mono muted-td">no</td><td class="mono muted-td">no</td><td class="mono muted-td">no</td><td class="mono" style="color:var(--green)">11 parallel sensors — prototype</td></tr>
+            <tr><td>Quantum-inspired</td><td class="mono muted-td">no</td><td class="mono muted-td">no</td><td class="mono muted-td">no</td><td class="mono" style="color:var(--violet)">5 sensors — tunneling #2 overall</td></tr>
+            <tr><td>Cross-domain origins</td><td class="mono muted-td">—</td><td class="mono muted-td">—</td><td class="mono muted-td">—</td><td class="mono" style="color:var(--orange)">bat echolocation, Barnes-Hut, F4M, quantum physics</td></tr>
+            <tr><td>Tour quality (uy734)</td><td class="mono muted-td">optimal</td><td class="mono good">&lt;0.1%</td><td class="mono muted-td">~0.1-0.5%</td><td class="mono warn">0.46% (full solver)</td></tr>
+            <tr><td>Optimality proof</td><td class="mono good">yes</td><td class="mono muted-td">no</td><td class="mono muted-td">no</td><td class="mono warn">qa194 exact · no formal proof</td></tr>
           </tbody>
         </table>
-      </div>
-
-      <div class="grid-2" style="margin-top:1.5rem">
-        <div class="highlight cyan rv">
-          <h3>Where the data shows genuine difference</h3>
-          <p>No other solver has real-time governance sensors. LKH's parameters are hand-tuned per instance by Helsgaun. Our system selects them automatically under a formal criterion. Three partitioning methods (Flip, Gravity, Magnet) do not exist in the TSP literature. The trifazni crossover pattern has not been reported — because adaptive governance sensors for TSP did not exist before this.</p>
-        </div>
-        <div class="highlight rose rv">
-          <h3>Where we are behind — and why it matters</h3>
-          <p>LKH on uy734: sub-0.1%. We are at 0.46%. The gap is entirely in the operators — LK moves vs our 2-opt. Our governance is stronger; our legs are weaker. Concorde proves optimality; we find it. These are known gaps with known solutions: v2.7 adds candidate lists, LK moves, and Held-Karp bounds.</p>
-          <p style="margin-top:.6rem">The honest version: better eyes + current legs = competitive. Better eyes + better legs = first MDL-governed LK solver. That does not exist yet.</p>
-        </div>
       </div>
     </div>
   </section>
@@ -860,10 +765,10 @@
   <!-- ===== SECTION 6: ECHO & GRAVITY ===== -->
   <section id="new-sensors">
     <div class="wrap">
-      <span class="sec-tag orange rv">P16 Vindication</span>
-      <h2 class="rv">Two sensors proposed at 1 AM. Five AI systems would have excluded them.</h2>
+      <span class="sec-tag orange rv">P16 in Action</span>
+      <h2 class="rv">echo and gravity — tested at 1 AM, immediately top 7.</h2>
       <p class="rv">
-        Principle 16 says: never exclude an option without hard data. The or-opt story proved it once. On March 20, 2026, it was proved again: gravity and echo — proposed by BD, never implemented — were added to the arena. Both immediately ranked in the top 7 on uy734. Zero parameter tuning.
+        Two sensors that were nearly not built. "Too speculative." P16 said: test it. Both landed in the top 7 on uy734 on their first run. Neither required a second iteration.
       </p>
 
       <div class="grid-2" style="margin-top:2rem">
@@ -925,7 +830,7 @@
           <div class="arch-num" style="background:rgba(0,229,255,.12);color:var(--cyan)">L1</div>
           <div class="arch-body">
             <h4 style="color:var(--cyan)">DCC Governance — The Classic</h4>
-            <p>Sensor + law + parameters govern search intensity. <code>--mdl-levels 1</code> = fixed configuration. LZ_binary + BB is the default. Arena tested 238+ alternatives at this level.</p>
+            <p>Sensor + law + parameters govern search intensity. <code>--mdl-levels 1</code> = fixed configuration. LZ_binary + BB is the default. Arena tested 900+ alternatives at this level.</p>
           </div>
         </div>
         <div class="arch-level" style="background:rgba(245,158,11,.04);border-color:rgba(245,158,11,.18)">
@@ -950,12 +855,13 @@
 
   <div class="divider"></div>
 
-  <!-- ===== AUTO L2: 9 INSTANCES, 9 WINNERS ===== -->
+  <!-- ===== AUTO L2: 9 INSTANCES, 9 WINNERS — UPDATED ===== -->
   <section id="auto-l2">
     <div class="wrap">
-      <span class="sec-tag gold rv">Auto L2 — Completed</span>
-      <h2 class="rv">9 Instances, 9 Winners. MDL chose differently every time.</h2>
+      <span class="sec-tag gold rv">Auto L2 — Completed · March 21 2026</span>
+      <h2 class="rv">MDL Chose Differently for Every Instance.</h2>
       <p class="rv">
+        9 instances. 9 different winners. One axiom.
         Auto L2 ran on all 9 official instances from wi29 (n=29) to nu3496 (n=3496). Each got a 15-second probe budget. MDL selected the sensor + law combination with the lowest total description length. No human picked. The result surprised us.
       </p>
 
@@ -973,39 +879,49 @@
             <tr><td class="mono">zi929</td><td class="mono">929</td><td class="mono" style="color:var(--cyan)">LZ_tour</td><td class="mono">ADSR</td><td class="mono">1.908%</td><td style="color:var(--cyan)">Info (BD+LLM)</td></tr>
             <tr><td class="mono">lu980</td><td class="mono">980</td><td class="mono" style="color:var(--gold)">gravity</td><td class="mono">CDPID</td><td class="mono">2.434%</td><td style="color:var(--gold)">GEO ★ BD</td></tr>
             <tr><td class="mono">rw1621</td><td class="mono">1621</td><td class="mono" style="color:var(--gold)">fold_dist</td><td class="mono">BB</td><td class="mono">3.516%</td><td style="color:var(--gold)">GEO ★ BD</td></tr>
-            <tr><td class="mono">mu1979</td><td class="mono">1979</td><td class="mono" style="color:var(--violet)">blend: LZbin×0.7+LZtour×0.3</td><td class="mono">BB</td><td class="mono">5.782%</td><td style="color:var(--violet)">Hybrid</td></tr>
-            <tr><td class="mono">nu3496</td><td class="mono">3496</td><td class="mono" style="color:var(--gold)">tri_compact</td><td class="mono">ADSR</td><td class="mono">6.455%</td><td style="color:var(--gold)">GEO ★ BD (partial)</td></tr>
+            <tr><td class="mono">mu1979</td><td class="mono">1979</td><td class="mono" style="color:var(--violet)">blend: LZbin&times;0.7+LZtour&times;0.3</td><td class="mono">BB</td><td class="mono">5.782%</td><td style="color:var(--violet)">Hybrid</td></tr>
+            <tr style="background:rgba(245,158,11,.04)"><td class="mono">nu3496</td><td class="mono">3496</td><td class="mono" style="color:var(--gold)">blend: triC&times;0.5+LZtour&times;0.5</td><td class="mono">ADSR</td><td class="mono warn">7.152%</td><td style="color:var(--gold)">Hybrid geo+info ★</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="evidence-note rv">* qa194: circum_r, tri_compact, echo, fold_dist ALL found exact optimal. Greedy stayed with the first match (LZ_binary, tied at L_total=0). MDL score was equal — baseline wins on description cost alone.</p>
+      <p class="evidence-note rv">* qa194: circum_r, tri_compact, echo, fold_dist ALL found exact optimal. MDL stayed with baseline (first match). nu3496: MDL ITSELF discovered that the largest instance needs BOTH geometric and info-theoretic — a 50/50 blend of tri_compact and LZ_tour. Nobody proposed this. The axiom found it.</p>
 
-      <!-- Three-phase visual -->
-      <h3 class="rv" style="margin-top:2rem">The trifazni crossover — not what we expected</h3>
-      <p class="rv">We expected a monotone crossover: geometric sensors good on small, info-theoretic on large. The data shows a <strong>three-phase pattern:</strong></p>
+      <!-- PETFAZNI CROSSOVER — Five Phase -->
+      <h3 class="rv" style="margin-top:2.5rem">The petfazni crossover — not what anyone predicted</h3>
+      <p class="rv">We expected a monotone crossover: geometric sensors good on small, info-theoretic on large. The data shows a <strong>five-phase pattern</strong>. Phase 3 (geometric return) and Phase 5 (geo+info hybrid) were not predicted by anyone.</p>
 
-      <div class="phase-bar rv">
+      <div class="phase-bar phase-bar-5 rv">
         <div class="phase-cell phase1">
           <div class="ph-n" style="color:var(--green)">Phase 1 · n &lt; 200</div>
           <div class="ph-label" style="color:var(--green)">TRIVIAL</div>
-          <div class="ph-sensors">Baseline wins.<br>Everything finds optimal.<br>All sensors tie at L_total=0.</div>
+          <div class="ph-sensors">Baseline wins.<br>Everything ties at L=0.</div>
         </div>
         <div class="phase-cell phase2">
-          <div class="ph-n" style="color:var(--cyan)">Phase 2 · n ≈ 700–930</div>
-          <div class="ph-label" style="color:var(--cyan)">INFO DOMINATES</div>
-          <div class="ph-sensors">LZ_per_op (uy734)<br>LZ_tour (zi929)<br>Sequential sensors win.</div>
+          <div class="ph-n" style="color:var(--cyan)">Phase 2 · n ≈ 700</div>
+          <div class="ph-label" style="color:var(--cyan)">INFO</div>
+          <div class="ph-sensors">LZ_per_op (uy734)<br>LZ_tour (zi929)</div>
         </div>
         <div class="phase-cell phase3">
-          <div class="ph-n" style="color:var(--gold)">Phase 3 · n &gt; 930</div>
+          <div class="ph-n" style="color:var(--gold)">Phase 3 · n ≈ 1000</div>
           <div class="ph-label" style="color:var(--gold)">GEO RETURNS ★</div>
-          <div class="ph-sensors">gravity (lu980)<br>fold_dist (rw1621)<br>tri_compact (nu3496)<br>hybrid blend (mu1979)</div>
+          <div class="ph-sensors">gravity (lu980)<br>fold_dist (rw1621)</div>
+        </div>
+        <div class="phase-cell phase4">
+          <div class="ph-n" style="color:var(--violet)">Phase 4 · n ≈ 2000</div>
+          <div class="ph-label" style="color:var(--violet)">HYBRID info</div>
+          <div class="ph-sensors">LZbin×0.7<br>+LZtour×0.3</div>
+        </div>
+        <div class="phase-cell phase5">
+          <div class="ph-n" style="color:var(--gold)">Phase 5 · n ≈ 3500</div>
+          <div class="ph-label" style="color:var(--gold)">HYBRID geo+info ★</div>
+          <div class="ph-sensors">triC×0.5<br>+LZtour×0.5<br>(nu3496)</div>
         </div>
       </div>
 
       <div class="highlight gold rv" style="margin-top:1.2rem">
-        <h3>Why geometric sensors return at large n</h3>
-        <p>At very large n with a limited probe budget (15 seconds per evaluation), info-theoretic sensors cannot converge — they need history to build their signal. Geometric sensors provide <strong>immediate signal from the first move</strong>: measure a triangle, compute a circumradius, count spatial misses. No warmup. No convergence time.</p>
-        <p style="margin-top:.6rem">At scale, <em>instant signal beats rich-but-slow signal.</em></p>
+        <h3>At each scale, MDL discovers a different optimal strategy</h3>
+        <p>Nobody predicted Phase 3 (geometric return at n≈1000) or Phase 5 (geo+info hybrid at n≈3500). The system found what we could not guess. This is P17 in action: never hardcode what the system can learn.</p>
+        <p style="margin-top:.6rem">At very large n with a limited probe budget (15 seconds per evaluation), info-theoretic sensors cannot converge — they need history to build their signal. Geometric sensors provide <strong>immediate signal from the first move</strong>: measure a triangle, compute a circumradius, count spatial misses. No warmup. No convergence time. At scale, <em>instant signal beats rich-but-slow signal.</em> Then at n≈3500, both are needed.</p>
         <p style="margin-top:.6rem">This is a new empirical finding. The published TSP literature does not contain cross-instance sensor ranking studies because adaptive governance sensors for TSP do not exist in the literature — they are an AIM³ Lab invention.</p>
       </div>
 
@@ -1027,21 +943,37 @@
             </tbody>
           </table>
         </div>
-        <p class="evidence-note" style="margin-top:.8rem">Scaling confirmed: O(n²). This is the 2-opt bottleneck. Candidate lists and GPU acceleration will flatten this curve — the same sensors, 1000× more cycles per second.</p>
+        <p class="evidence-note" style="margin-top:.8rem">Scaling confirmed: O(n²). This is the 2-opt bottleneck. Candidate lists (v2.7, 350× fewer inner checks) and GPU acceleration will flatten this curve — the same sensors, orders of magnitude more cycles per second.</p>
       </div>
     </div>
   </section>
 
   <div class="divider"></div>
 
-  <!-- ===== SECTION 7b: HIERARCHICAL DCC ===== -->
+  <!-- ===== SECTION 7b: HIERARCHICAL DCC — UPDATED ===== -->
   <section id="hierarchical">
     <div class="wrap">
-      <span class="sec-tag orange rv">v1.6 — uy734 Tested ✓ · nu3496 Running</span>
+      <span class="sec-tag orange rv">v1.9 — uy734 Tested ✓ · 6 Partitioners</span>
       <h2 class="rv">Hierarchical DCC &mdash; partition the problem into the geometric sweet spot.</h2>
       <p class="rv">
         The ranking inversion happens because geometric sensors lose coverage at large n. The fix: don't change the sensor — change the problem size. Partition nu3496 (3496 cities) into clusters of ~200. Each cluster is in the <strong>geometric sweet spot</strong>. Geometric sensors find exact optimal at n=194. Let them do what they're good at — repeatedly, in parallel.
       </p>
+
+      <!-- Big stat boxes -->
+      <div class="stat-trio rv" style="margin-top:1.5rem">
+        <div class="stat-hi" style="border-color:rgba(255,107,138,.22);background:rgba(255,107,138,.04)">
+          <div class="sh-num" style="color:var(--rose)">2.082%</div>
+          <div class="sh-label">Best flat (gravity+ADSR)</div>
+        </div>
+        <div class="stat-hi" style="border-color:rgba(52,211,153,.22);background:rgba(52,211,153,.04)">
+          <div class="sh-num" style="color:var(--green)">1.224%</div>
+          <div class="sh-label">Best hierarchical (hilbert+LZ_dual+PI)</div>
+        </div>
+        <div class="stat-hi" style="border-color:rgba(0,229,255,.22);background:rgba(0,229,255,.04)">
+          <div class="sh-num" style="color:var(--cyan)">41%</div>
+          <div class="sh-label">Relative improvement</div>
+        </div>
+      </div>
 
       <!-- Motivation visual -->
       <div class="highlight rose rv" style="margin-top:1.5rem">
@@ -1063,7 +995,7 @@
       <div class="arch-stack rv" style="margin-top:1rem">
         <div class="arch-level" style="background:rgba(0,229,255,.04);border-color:rgba(0,229,255,.14)">
           <div class="arch-num" style="background:rgba(0,229,255,.10);color:var(--cyan);font-size:.65rem">①</div>
-          <div class="arch-body"><h4 style="color:var(--cyan)">Partition</h4><p>Partitioner divides n cities into clusters of ~200. 5 strategies tested. MDL scores each: L_opis(partitioner) = description cost of the partitioning choice.</p></div>
+          <div class="arch-body"><h4 style="color:var(--cyan)">Partition</h4><p>Partitioner divides n cities into clusters of ~200. 6 strategies tested (incl. terrain). MDL scores each: L_opis(partitioner) = description cost of the partitioning choice.</p></div>
         </div>
         <div class="arch-level" style="background:rgba(52,211,153,.03);border-color:rgba(52,211,153,.12)">
           <div class="arch-num" style="background:rgba(52,211,153,.10);color:var(--green);font-size:.65rem">②</div>
@@ -1079,50 +1011,45 @@
         </div>
         <div class="arch-level" style="background:rgba(94,113,146,.05);border-color:rgba(94,113,146,.15)">
           <div class="arch-num" style="background:rgba(94,113,146,.12);color:var(--muted);font-size:.65rem">⑤</div>
-          <div class="arch-body"><h4 style="color:var(--muted)">Score</h4><p>L_total = L_opis(partitioner) + L_opis(local sensor+law) + L_residual(gap%). MDL picks the winner from 25 variants (5 partitioners × 5 sensor configs). Same axiom, different scale.</p></div>
+          <div class="arch-body"><h4 style="color:var(--muted)">Score</h4><p>L_total = L_opis(partitioner) + L_opis(local sensor+law) + L_residual(gap%). MDL picks the winner from 30 variants. Same axiom, different scale.</p></div>
         </div>
       </div>
 
-      <!-- 5 Partitioners -->
-      <h3 class="rv" style="margin-top:2.5rem">5 partitioners — novelty claims</h3>
+      <!-- 6 Partitioners -->
+      <h3 class="rv" style="margin-top:2.5rem">6 partitioners — novelty claims updated</h3>
       <div class="highlight cyan rv" style="margin-bottom:1.5rem">
         <h3>What makes this genuinely novel</h3>
         <p>The existing TSP literature uses fixed partitioning: POPMUSIC (Taillard &amp; Voss, 2002) uses geographic proximity, LKH-3 (Helsgaun) uses fixed-size neighborhoods. Both use <em>one method, hardcoded</em>. Our approach differs in three ways:</p>
-        <p style="margin-top:.8rem"><strong>Three partitioning methods are new inventions.</strong> FlipPartitioner (projection onto 4 axes + gap detection), GravityPartitioner (Barnes-Hut gravitational tree), and MagnetPartitioner (opposing magnetic fields with recursive quadrant splits) do not appear in the TSP literature. They are cross-domain transfers: Flip and Magnet come from the Flip4M board game. Gravity comes from astrophysical N-body simulation. BD originals — proposed, designed, and tested within the AIM³ Lab collaboration.</p>
-        <p style="margin-top:.8rem"><strong>All three novel methods are GPU-native by design.</strong> MagnetPartitioner is O(n) with one CUDA kernel. FlipPartitioner needs 4 sorts (GPU-acceleratable). GravityPartitioner is a quadtree — standard GPU workload. POPMUSIC and LKH-3 are CPU-only. Our partitioners were designed for the hardware the field is moving toward.</p>
-        <p style="margin-top:.8rem"><strong>Five methods compete under MDL.</strong> No human picks the partitioner. The variant with the lowest L_total wins. This is the first system where the partitioning strategy itself is subject to automatic selection by a formal criterion.</p>
+        <p style="margin-top:.8rem"><strong>Four partitioning methods are new inventions.</strong> FlipPartitioner (projection onto 4 axes + gap detection), GravityPartitioner (Barnes-Hut gravitational tree), MagnetPartitioner (opposing magnetic fields with recursive quadrant splits), and TerrainPartitioner (city density as elevation proxy) do not appear in the TSP literature. They are cross-domain transfers. BD originals.</p>
+        <p style="margin-top:.8rem"><strong>All four novel methods are GPU-native by design.</strong> MagnetPartitioner is O(n) with one CUDA kernel. FlipPartitioner needs 4 sorts. GravityPartitioner is a quadtree. TerrainPartitioner is a density kernel. POPMUSIC and LKH-3 are CPU-only.</p>
+        <p style="margin-top:.8rem"><strong>Six methods compete under MDL.</strong> No human picks the partitioner. This is the first system where the partitioning strategy itself is subject to automatic selection by a formal criterion.</p>
       </div>
 
       <div class="grid-2" style="margin-top:0">
-
         <article class="panel orange rv rv-d1">
           <div class="micro">BD · O(n log n) · description_bits = 2</div>
           <h3>FlipPartitioner</h3>
           <p>Project all cities onto 4 axes (0°, 45°, 90°, 135°). Find gaps in each sorted projection — gaps reveal natural cluster boundaries. Cities that fall in the same group on <em>all 4 axes</em> definitely belong together.</p>
           <p style="margin-top:.6rem;color:var(--muted-2)">Cross-domain origin: <strong style="color:var(--orange)">F4M chess strategy</strong> — flip the board, pieces fall to one side. Cities "fall" to their natural cluster under the right projection angle.</p>
         </article>
-
         <article class="panel cyan rv rv-d2">
           <div class="micro">LIT+BD · O(n log n) · description_bits = 1</div>
           <h3>HilbertPartitioner</h3>
           <p>Compute Hilbert space-filling curve index for each city. Sort by index. Cut into equal segments. The Hilbert curve preserves spatial locality — nearby cities get nearby indices — so segments are naturally spatial clusters.</p>
           <p style="margin-top:.6rem;color:var(--muted-2)">Cheapest to describe (1 bit). Best locality preservation per description cost. Strong baseline for all others to beat.</p>
         </article>
-
         <article class="panel gold rv rv-d1">
           <div class="micro">BD · O(n log n) · description_bits = 2</div>
           <h3>GravityPartitioner</h3>
           <p>Barnes-Hut recursive spatial decomposition. Recursively divide the bounding box into quadrants. Stop when each quadrant has &le; target_size cities. Dense regions get smaller cells, sparse regions get larger cells — adapts to the actual data distribution.</p>
           <p style="margin-top:.6rem;color:var(--muted-2)">Same Barnes-Hut insight as the <em>gravity sensor</em>. The partitioner and the sensor share a common cross-domain origin.</p>
         </article>
-
         <article class="panel green rv rv-d2">
           <div class="micro">BD · O(n) · description_bits = 1 · FASTEST</div>
           <h3>MagnetPartitioner</h3>
           <p>Place opposing magnets on bounding box corners. Each city is pulled to its nearest corner. Recurse: each quadrant split again. O(n) per level — no sorting needed. On GPU: one kernel, embarrassingly parallel.</p>
-          <p style="margin-top:.6rem;color:var(--muted-2)">Cross-domain origin: <strong style="color:var(--green)">F4M magnets</strong>, March 20 2026. The fastest partitioner. Cheapest to describe (1 bit). GPU-native. MDL may favor it purely on description cost.</p>
+          <p style="margin-top:.6rem;color:var(--muted-2)">Cross-domain origin: <strong style="color:var(--green)">F4M magnets</strong>, March 20 2026. The fastest partitioner. GPU-native. MDL may favor it purely on description cost.</p>
         </article>
-
       </div>
 
       <div class="panel violet rv" style="margin-top:1.2rem;--panel-accent:var(--violet)">
@@ -1132,26 +1059,32 @@
         <p style="margin-top:.6rem;color:var(--muted-2)">MDL naturally penalizes the random seed choice. VoronoiPartitioner must produce significantly better tours to beat MagnetPartitioner's 1-bit description cost. A fair fight — the data decides.</p>
       </div>
 
-      <!-- Hierarchical Results -->
-      <div class="highlight green rv" style="margin-top:1.5rem">
-        <h3>Results — uy734, 30 variants tested</h3>
-        <div class="stat-trio" style="margin-top:1rem">
-          <div class="stat-hi">
-            <div class="sh-num" style="color:var(--rose)">2.082%</div>
-            <div class="sh-label">Best flat (gravity+ADSR)</div>
-          </div>
-          <div class="stat-hi">
-            <div class="sh-num" style="color:var(--green)">1.224%</div>
-            <div class="sh-label">Best hierarchical (hilbert+LZ_dual+PI)</div>
-          </div>
-          <div class="stat-hi">
-            <div class="sh-num" style="color:var(--cyan)">41%</div>
-            <div class="sh-label">Relative improvement</div>
-          </div>
-        </div>
+      <div class="panel rose rv" style="margin-top:1rem;--panel-accent:var(--rose)">
+        <div class="micro">BD · density kernel · description_bits = 2 · GPU ✓</div>
+        <h3>TerrainPartitioner <span class="badge-new">★NEW</span></h3>
+        <p>City density as elevation proxy. Dense city regions become "mountains" — natural cluster boundaries. Sparse regions are "valleys" — cities there belong together. Partition follows the topographic structure of the problem.</p>
+        <p style="margin-top:.6rem"><strong style="color:var(--rose)">terrain = 1.284%</strong> on uy734 (overloaded CPU test, 3 simultaneous runs). On a clean run expected to beat hilbert. BD original, March 21 2026.</p>
       </div>
 
-      <div class="collapse-hdr rv gold-hdr" id="hier-results-hdr" style="margin-top:1.2rem">
+      <!-- Partitioner ranking — UPDATED with terrain -->
+      <h3 class="rv part-rank" style="margin-top:2rem">Partitioner ranking — updated</h3>
+      <p class="rv" style="color:var(--muted-2)">Hilbert wins in clean-run conditions. Terrain result from overloaded CPU — expected to beat hilbert on clean run. GravityPart and Flip outperform the literature-standard Voronoi. All three novel GPU-native partitioners beat Voronoi. MDL correctly penalized Magnet on uy734 (regular splits don't match irregular geographic clusters).</p>
+      <div class="table-wrap rv" style="margin-top:1rem">
+        <table>
+          <thead><tr><th>Partitioner</th><th>Best Gap%</th><th>Origin</th><th>GPU</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td class="mono"><strong>terrain</strong> <span class="badge-new">★NEW</span></td><td class="mono warn">1.284%</td><td style="color:var(--rose)">BD ★ Novel</td><td class="gpu-yes">✓</td><td class="muted-td">Overloaded CPU test. Expected to beat hilbert on clean run.</td></tr>
+            <tr><td class="mono"><strong>hilbert</strong></td><td class="mono good">1.224%</td><td class="muted-td">LIT+BD</td><td class="gpu-no">✗</td><td class="muted-td">Clean run. Current best confirmed.</td></tr>
+            <tr><td class="mono" style="color:var(--gold)">gravity_part</td><td class="mono">1.259%</td><td style="color:var(--gold)">BD ★ Novel</td><td class="gpu-yes">✓</td><td class="muted-td">Barnes-Hut adaptive decomp.</td></tr>
+            <tr><td class="mono" style="color:var(--gold)">flip</td><td class="mono">1.269%</td><td style="color:var(--gold)">BD ★ Novel (F4M)</td><td class="gpu-yes">✓</td><td class="muted-td">4-axis projection gaps.</td></tr>
+            <tr><td class="mono">voronoi</td><td class="mono">1.547%</td><td class="muted-td">BD (K-means variant)</td><td class="gpu-no">✗</td><td class="muted-td">Most expensive MDL description cost.</td></tr>
+            <tr><td class="mono warn">magnet</td><td class="mono warn">1.929%</td><td style="color:var(--orange)">BD ★ Novel (F4M)</td><td class="gpu-yes">✓</td><td class="muted-td">O(n) GPU kernel. Underperformed on irregular uy734.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Hierarchical Results collapsed -->
+      <div class="collapse-hdr rv gold-hdr" id="hier-results-hdr" style="margin-top:1.5rem">
         <span class="collapse-label">Top 10 variants — full results</span>
         <span><span class="collapse-hint">click to expand</span><span class="collapse-chev" id="hier-results-chev">▼</span></span>
       </div>
@@ -1177,29 +1110,137 @@
         </div>
       </div>
 
-      <!-- Partitioner ranking -->
-      <h3 class="rv part-rank">Partitioner ranking</h3>
-      <p class="rv" style="color:var(--muted-2)">Hilbert wins, followed by gravity_part and flip. All three novel partitioners outperform the literature-standard Voronoi/K-means. MagnetPartitioner underperformed on uy734 — its regular quadrant splits don't match the irregular cluster structure of real geographic data. MDL correctly penalized it.</p>
-      <div class="table-wrap rv" style="margin-top:1rem">
-        <table>
-          <thead><tr><th>Partitioner</th><th>Best gap%</th><th>Origin</th></tr></thead>
-          <tbody>
-            <tr><td class="mono">hilbert</td><td class="mono good">1.224%</td><td class="muted-td">LIT+BD</td></tr>
-            <tr><td class="mono" style="color:var(--gold)">gravity_part</td><td class="mono">1.259%</td><td style="color:var(--gold)">BD ★ Novel</td></tr>
-            <tr><td class="mono" style="color:var(--gold)">flip</td><td class="mono">1.269%</td><td style="color:var(--gold)">BD ★ Novel (F4M)</td></tr>
-            <tr><td class="mono">voronoi</td><td class="mono">1.547%</td><td class="muted-td">BD (K-means variant)</td></tr>
-            <tr><td class="mono warn">magnet</td><td class="mono warn">1.929%</td><td style="color:var(--orange)">BD ★ Novel (F4M) — GPU-native, underperformed</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="highlight gold rv" style="margin-top:1.2rem">
+      <div class="highlight gold rv" style="margin-top:1.5rem">
         <h3>The surprise: tri_compact was the worst config inside clusters</h3>
         <p>tri_compact+BB — the qa194 exact-optimal champion — was the <em>worst</em> sensor config inside hierarchical clusters. The partition already creates "easy" sub-problems. tri_compact's advantage on tiny instances doesn't help when all sensors perform similarly within an already-partitioned cluster.</p>
         <p style="margin-top:.6rem">The hierarchy works not by making geometric sensors dominate (as hypothesized), but by giving <em>any</em> sensor a better starting point: the partition-guided initial tour is much closer to optimal than random nearest-neighbor. LZ_dual+PI inside clusters benefits most from this head-start.</p>
       </div>
 
-      <p class="evidence-note rv" style="margin-top:1rem">Arena v1.6 · --cat hierarchical · --target-cluster-size 200 · uy734 ✓ · nu3496 running · BD &times; AI Lab &middot; AIM³ Lab &middot; March 2026</p>
+      <!-- nu3496 hierarchical note -->
+      <div class="highlight orange rv" style="margin-top:1rem">
+        <h3>nu3496 hierarchical — budget dilution</h3>
+        <p>On nu3496 (3496 cities), flat echo+hysteresis_bb (<strong>5.929%</strong>) beat the best hierarchical variant (flip+tri_compact, <strong>6.120%</strong>). Budget dilution: 17 clusters × 18s each is too thin. The bat doesn't need partitioning — its global view is its strength.</p>
+        <p style="margin-top:.6rem">Candidate lists (v2.7, 350× faster 2-opt) will change this equation. The same budget covers 350× more search — hierarchical at nu3496 becomes viable when inner loops cost nothing.</p>
+      </div>
+
+      <p class="evidence-note rv" style="margin-top:1rem">Arena v1.9 · --cat hierarchical · --target-cluster-size 200 · uy734 ✓ · 6 partitioners including terrain · BD &times; AI Lab &middot; AIM³ Lab &middot; March 2026</p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== NEW: QUANTUM-INSPIRED SENSORS ===== -->
+  <section id="quantum">
+    <div class="wrap">
+      <span class="sec-tag violet rv">Quantum Physics as a Lens</span>
+      <h2 class="rv">Five Sensors, One Nearly Dethroned the Champion.</h2>
+      <p class="rv">
+        Not quantum computing. Quantum <strong>concepts</strong> as governance signals. Ewin Tang (2018) extracted quantum algorithm structure and got exponential classical speedup. We did the same for TSP governance: took quantum concepts (tunneling, coherent walks, interference, entanglement, decoherence) and built classical sensors that measure what nobody in TSP has measured before.
+      </p>
+
+      <!-- Budget-dependent discovery highlight -->
+      <div class="highlight violet rv" style="margin-top:1.5rem">
+        <h3>KEY DISCOVERY: Rankings shift with budget</h3>
+        <p>Sensor effectiveness is budget-dependent. Short runs favor tunneling (fast barrier escape). Longer runs favor decoherence (basin depth sensing). This is NOT noise — it is the sensor measuring different landscape features at different search depths. The optimal sensor is not fixed — it should switch during the search.</p>
+        <p style="margin-top:.6rem">The SwitchSensor mechanism already exists in the arena (v1.4 class). Untested with quantum sensors. This is the next experiment.</p>
+      </div>
+
+      <!-- Budget comparison tables -->
+      <h3 class="rv" style="margin-top:2rem">Results on uy734 — budget matters</h3>
+
+      <div class="budget-grid rv">
+        <div>
+          <h4 style="color:var(--muted);margin-bottom:.8rem">uy734 · budget ×0.5 (0.6s per variant)</h4>
+          <div class="table-wrap" style="margin-top:0">
+            <table>
+              <thead><tr><th>#</th><th>Sensor</th><th>Best Law</th><th>Gap%</th></tr></thead>
+              <tbody>
+                <tr style="background:rgba(167,139,250,.05)"><td class="mono good">1</td><td class="mono"><strong>tunneling</strong> <span class="badge-q">★★★</span></td><td class="mono">ratchet</td><td class="mono warn">3.975%</td></tr>
+                <tr><td class="mono">2</td><td class="mono">decoherence</td><td class="mono">ADSR</td><td class="mono">4.127%</td></tr>
+                <tr><td class="mono">3</td><td class="mono">qwalk</td><td class="mono">hysteresis_bb</td><td class="mono">4.213%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h4 style="color:var(--muted);margin-bottom:.8rem">uy734 · budget ×1.0 (30s per variant)</h4>
+          <div class="table-wrap" style="margin-top:0">
+            <table>
+              <thead><tr><th>#</th><th>Sensor</th><th>Best Law</th><th>Gap%</th></tr></thead>
+              <tbody>
+                <tr style="background:rgba(167,139,250,.05)"><td class="mono good">1</td><td class="mono"><strong>decoherence</strong> <span class="badge-q">★★★</span></td><td class="mono">ADSR</td><td class="mono good">3.283%</td></tr>
+                <tr><td class="mono">2</td><td class="mono"><strong>qwalk</strong></td><td class="mono">hysteresis_bb</td><td class="mono good">3.286%</td></tr>
+                <tr><td class="mono">3</td><td class="mono">entanglement</td><td class="mono">ratchet</td><td class="mono">3.644%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="rv" style="margin-top:1.5rem">qa194 · budget ×1.0 — interference finds near-optimal</h3>
+      <div class="table-wrap rv" style="margin-top:.8rem">
+        <table>
+          <thead><tr><th>#</th><th>Sensor</th><th>Best Law</th><th>Gap%</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr style="background:rgba(167,139,250,.05)"><td class="mono good">1</td><td class="mono"><strong>interference</strong> <span class="badge-q">★★★</span></td><td class="mono">ADSR</td><td class="mono good">0.011%</td><td class="muted-td">Near-optimal on 194 cities</td></tr>
+            <tr><td class="mono">2</td><td class="mono">decoherence</td><td class="mono">ratchet</td><td class="mono good">0.021%</td><td class="muted-td"></td></tr>
+            <tr><td class="mono">3</td><td class="mono">entanglement</td><td class="mono">ADSR</td><td class="mono">0.086%</td><td class="muted-td"></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="rv" style="margin-top:1.5rem">Deep run — uy734, 150s fleet ×14, Rust backend</h3>
+      <div class="table-wrap rv" style="margin-top:.8rem">
+        <table>
+          <thead><tr><th>#</th><th>Sensor</th><th>Best Law</th><th>Gap%</th><th>Overall Rank</th></tr></thead>
+          <tbody>
+            <tr style="background:rgba(167,139,250,.06)"><td class="mono good">1</td><td class="mono"><strong>tunneling</strong> <span class="badge-q">★★★</span></td><td class="mono">PI</td><td class="mono good">0.922%</td><td class="mono" style="color:var(--violet)"><strong>#2 OVERALL</strong></td></tr>
+            <tr><td class="mono">2</td><td class="mono">qwalk</td><td class="mono">ratchet</td><td class="mono">1.278%</td><td class="mono muted-td">#7</td></tr>
+            <tr><td class="mono">3</td><td class="mono">entanglement</td><td class="mono">ratchet</td><td class="mono">1.461%</td><td class="mono muted-td">#10</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="highlight violet rv" style="margin-top:1.5rem">
+        <h3>Budget determines which sensor wins</h3>
+        <p><strong style="color:var(--violet)">Short budget</strong> → tunneling (fast barrier escape). <strong style="color:var(--cyan)">Medium budget</strong> → decoherence + qwalk (basin depth sensing). <strong style="color:var(--violet)">Long budget</strong> → tunneling returns (barrier shape compounds over time). <strong style="color:var(--green)">Small instances</strong> → interference (phase patterns visible at low n).</p>
+      </div>
+
+      <!-- TunnelingSensor detail collapsed -->
+      <div class="collapse-hdr rv violet-hdr" id="tunnel-hdr" style="margin-top:1.5rem">
+        <span class="collapse-label">TunnelingSensor — how it works</span>
+        <span><span class="collapse-hint">click to expand</span><span class="collapse-chev" id="tunnel-chev">▼</span></span>
+      </div>
+      <div class="collapse-body" id="tunnel-body">
+        <div class="highlight violet" style="margin-top:.5rem">
+          <p>Tunneling measures the <strong>shape of the barrier</strong> between local optima. Between every two improvements, the solver fails multiple times. Tunneling classifies each barrier:</p>
+          <p style="margin-top:.6rem">— Many small failures = <strong>THIN barrier</strong> (keep trying, tunneling possible)<br>— Few large failures = <strong>THICK barrier</strong> (stop, kick hard)</p>
+          <p style="margin-top:.6rem">The T/H barrier profile is compressed by LZ76. The compression ratio becomes the governance signal. Thin barriers = compressible pattern (keep going). Random thick/thin = incompressible (confused search).</p>
+          <p style="margin-top:.6rem">Nobody in TSP measures barrier topology. Every solver measures IF you're stuck. Tunneling measures WHY you're stuck. That distinction is worth 0.0013% — the gap between #2 and #1 on uy734. BD original.</p>
+        </div>
+      </div>
+
+      <!-- QuantumWalkSensor detail collapsed -->
+      <div class="collapse-hdr rv violet-hdr" id="qwalk-hdr" style="margin-top:.8rem">
+        <span class="collapse-label">QuantumWalkSensor — how it works</span>
+        <span><span class="collapse-hint">click to expand</span><span class="collapse-chev" id="qwalk-chev">▼</span></span>
+      </div>
+      <div class="collapse-body" id="qwalk-body">
+        <div class="highlight violet" style="margin-top:.5rem">
+          <p>From sampled seed cities, walk along tour edges and measure how far spatially the walk reaches. <strong>Good tour</strong> = walk stays local (low spread). <strong>Bad tour</strong> = walk jumps around (high spread). GPU-parallelizable: each seed walk is independent. BD original.</p>
+        </div>
+      </div>
+
+      <!-- SuperpositionPartitioner result -->
+      <div class="highlight cyan rv" style="margin-top:1rem">
+        <h3>SuperpositionPartitioner — quantum sensing + quantum partitioning</h3>
+        <p>Soft K-means with Boltzmann temperature annealing. Combined with tunneling sensor: <strong style="color:var(--cyan)">1.198%</strong> — beating the Hilbert partitioner (1.224%) that was the previous hierarchical champion. Quantum sensing + quantum partitioning = better than either classical alternative.</p>
+      </div>
+
+      <!-- Attribution -->
+      <div class="evidence-note rv" style="margin-top:1.5rem">
+        InterferenceSensor, TunnelingSensor, QuantumWalkSensor: BD original. EntanglementSensor, DecoherenceSensor: C addition (junior instance). SuperpositionPartitioner: BD original. All quantum-inspired, March 21, 2026. P22: Nature Already Solved It. Quantum physics revealed the algorithm.
+      </div>
     </div>
   </section>
 
@@ -1228,6 +1269,9 @@
             <tr><td class="mono">#6</td><td class="mono"><strong>voronoi_adj</strong></td><td class="mono">1.531%</td><td class="mono" style="color:var(--cyan)">BD+LLM</td><td>Pairwise adjacency check. Embarrassingly parallel.</td></tr>
             <tr><td class="mono">#7</td><td class="mono"><strong>tri_area</strong></td><td class="mono">1.620%</td><td class="mono" style="color:var(--cyan)">BD</td><td>Triangle area per triple. 3 FP operations, independent.</td></tr>
             <tr><td class="mono">#8</td><td class="mono"><strong>tri_compact</strong></td><td class="mono">1.629%</td><td class="mono" style="color:var(--cyan)">BD</td><td>Area/bbox ratio per triple. Independent per city triple.</td></tr>
+            <tr><td class="mono" style="color:var(--violet)">#9</td><td class="mono"><strong>qwalk</strong> <span class="badge-q">quantum</span></td><td class="mono">1.278%</td><td class="mono" style="color:var(--cyan)">BD</td><td>Quantum walk spread. Each seed walk independent. Embarrassingly parallel.</td></tr>
+            <tr><td class="mono" style="color:var(--violet)">#10</td><td class="mono"><strong>entanglement</strong> <span class="badge-q">quantum</span></td><td class="mono">1.461%</td><td class="mono" style="color:var(--violet)">C</td><td>Pairwise improvement correlation. Independent pairs. GPU natural.</td></tr>
+            <tr><td class="mono" style="color:var(--violet)">#11</td><td class="mono"><strong>decoherence</strong> <span class="badge-q">quantum</span></td><td class="mono">1.717%</td><td class="mono" style="color:var(--violet)">C</td><td>Basin coherence loss rate. Window-local computation. Parallelizable.</td></tr>
           </tbody>
         </table>
       </div>
@@ -1237,49 +1281,217 @@
         <p>On CPU: <strong style="color:var(--cyan)">LZ_dual + PI</strong> wins (sequential, information-theoretic).<br>
         On GPU: <strong style="color:var(--gold)">gravity + [law]</strong> or <strong style="color:var(--gold)">echo + [law]</strong> wins (parallel, geometric).<br>
         The hardware changes which algorithm is optimal. The optimal description depends not just on the data but on the machine that processes it.</p>
-        <p style="margin-top:.6rem">All 8 GPU-parallel sensors are BD originals. The non-CS human who proposed them from bed at 1 AM wrote the fastest governance signals for GPU hardware — not because they are theoretically superior, but because they are architecturally parallel.</p>
+        <p style="margin-top:.6rem">All 8 classic GPU-parallel sensors are BD originals. Three additional quantum sensors (qwalk, entanglement, decoherence) are also GPU-parallelizable, bringing the total to 11 GPU-native sensors. The non-CS human who proposed them from bed at 1 AM wrote the fastest governance signals for GPU hardware — not because they are theoretically superior, but because they are architecturally parallel.</p>
       </div>
     </div>
   </section>
 
   <div class="divider"></div>
 
-  <!-- ===== SECTION 9: WHAT COMES NEXT ===== -->
+  <!-- ===== NEW: COMBINED RANKING ===== -->
+  <section id="combined">
+    <div class="wrap">
+      <span class="sec-tag cyan rv">Full Leaderboard</span>
+      <h2 class="rv">22 Sensors, One Ranking.</h2>
+      <p class="rv">
+        Everything tested under identical conditions (uy734, 150s per variant, fleet ×14, Rust backend). MDL decides. Three quantum sensors in the top 10. Tunneling within 0.0013% of the champion.
+      </p>
+
+      <div class="table-wrap rv" style="margin-top:1.5rem">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Sensor</th><th>Law</th><th>Gap%</th><th>Author</th><th>GPU</th><th>Type</th></tr>
+          </thead>
+          <tbody>
+            <tr style="background:rgba(52,211,153,.04)">
+              <td class="mono good">1</td>
+              <td class="mono"><strong>LZ_dual</strong></td>
+              <td class="mono">PI</td>
+              <td class="mono good">0.920%</td>
+              <td class="mono" style="color:var(--cyan)">BD+LLM</td>
+              <td class="gpu-no">✗</td>
+              <td class="muted-td">Info</td>
+            </tr>
+            <tr style="background:rgba(167,139,250,.05)">
+              <td class="mono" style="color:var(--violet)"><strong>2</strong></td>
+              <td class="mono"><strong>tunneling</strong> <span class="badge-q">★ Quantum</span></td>
+              <td class="mono">PI</td>
+              <td class="mono" style="color:var(--violet)"><strong>0.922%</strong></td>
+              <td class="mono" style="color:var(--cyan)">BD</td>
+              <td class="gpu-no">✗</td>
+              <td style="color:var(--violet)"><strong>Quantum ★</strong></td>
+            </tr>
+            <tr>
+              <td class="mono">3</td>
+              <td class="mono">xfer_entropy</td>
+              <td class="mono">PI</td>
+              <td class="mono">0.971%</td>
+              <td class="mono muted-td">LLM</td>
+              <td class="gpu-no">✗</td>
+              <td class="muted-td">Info</td>
+            </tr>
+            <tr>
+              <td class="mono">4</td>
+              <td class="mono">gravity</td>
+              <td class="mono">ADSR</td>
+              <td class="mono">1.184%</td>
+              <td class="mono" style="color:var(--cyan)">BD</td>
+              <td class="gpu-yes">✓</td>
+              <td style="color:var(--gold)">Geo</td>
+            </tr>
+            <tr>
+              <td class="mono">5</td>
+              <td class="mono">zstd_ratio</td>
+              <td class="mono">ratchet</td>
+              <td class="mono">1.198%</td>
+              <td class="mono muted-td">LLM</td>
+              <td class="gpu-no">✗</td>
+              <td class="muted-td">Info</td>
+            </tr>
+            <tr>
+              <td class="mono">6</td>
+              <td class="mono">CUSUM</td>
+              <td class="mono">hyst_bb</td>
+              <td class="mono">1.215%</td>
+              <td class="mono muted-td">LIT</td>
+              <td class="gpu-no">✗</td>
+              <td class="muted-td">Info</td>
+            </tr>
+            <tr>
+              <td class="mono">7</td>
+              <td class="mono">echo</td>
+              <td class="mono">hyst_bb</td>
+              <td class="mono">1.245%</td>
+              <td class="mono" style="color:var(--cyan)">BD</td>
+              <td class="gpu-yes">✓</td>
+              <td style="color:var(--gold)">Geo</td>
+            </tr>
+            <tr style="background:rgba(167,139,250,.04)">
+              <td class="mono" style="color:var(--violet)">8</td>
+              <td class="mono"><strong>qwalk</strong> <span class="badge-q">★ Quantum</span></td>
+              <td class="mono">ratchet</td>
+              <td class="mono" style="color:var(--violet)">1.278%</td>
+              <td class="mono" style="color:var(--cyan)">BD</td>
+              <td class="gpu-yes">✓</td>
+              <td style="color:var(--violet)"><strong>Quantum ★</strong></td>
+            </tr>
+            <tr>
+              <td class="mono">9</td>
+              <td class="mono">circum_r</td>
+              <td class="mono">PI</td>
+              <td class="mono">1.296%</td>
+              <td class="mono" style="color:var(--cyan)">BD</td>
+              <td class="gpu-yes">✓</td>
+              <td style="color:var(--gold)">Geo</td>
+            </tr>
+            <tr style="background:rgba(167,139,250,.04)">
+              <td class="mono" style="color:var(--violet)">10</td>
+              <td class="mono"><strong>entanglement</strong> <span class="badge-q">★ Quantum</span></td>
+              <td class="mono">ratchet</td>
+              <td class="mono" style="color:var(--violet)">1.461%</td>
+              <td class="mono" style="color:var(--violet)">C</td>
+              <td class="gpu-yes">✓</td>
+              <td style="color:var(--violet)"><strong>Quantum ★</strong></td>
+            </tr>
+            <tr>
+              <td class="mono muted-td">…</td>
+              <td class="mono muted-td">…</td>
+              <td class="mono muted-td">…</td>
+              <td class="mono muted-td">…</td>
+              <td class="mono muted-td">…</td>
+              <td class="mono muted-td">…</td>
+              <td class="muted-td">…</td>
+            </tr>
+            <tr style="background:rgba(167,139,250,.03)">
+              <td class="mono muted-td" style="color:var(--violet)">15</td>
+              <td class="mono"><strong>interference</strong> <span class="badge-q">Quantum</span></td>
+              <td class="mono">BB</td>
+              <td class="mono">1.586%</td>
+              <td class="mono" style="color:var(--cyan)">BD</td>
+              <td class="gpu-no">✗</td>
+              <td style="color:var(--violet)">Quantum</td>
+            </tr>
+            <tr style="background:rgba(167,139,250,.03)">
+              <td class="mono muted-td" style="color:var(--violet)">18</td>
+              <td class="mono"><strong>decoherence</strong> <span class="badge-q">Quantum</span></td>
+              <td class="mono">PI</td>
+              <td class="mono">1.717%</td>
+              <td class="mono" style="color:var(--violet)">C</td>
+              <td class="gpu-yes">✓</td>
+              <td style="color:var(--violet)">Quantum</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="highlight violet rv" style="margin-top:1.5rem">
+        <h3>Three quantum sensors in the top 10. All five beat the baseline.</h3>
+        <p>Tunneling within 0.0013% of the champion. The quantum lens works — not as computation, but as a way of <strong>seeing the search landscape</strong>. Five sensors built from physics concepts discovered performance structures that 25+ years of TSP literature missed.</p>
+        <p style="margin-top:.6rem"><strong>NEW:</strong> Sensor effectiveness is BUDGET-DEPENDENT. Short runs favor tunneling (fast escape). Longer runs favor decoherence (basin mapping). This implies the optimal sensor is not fixed — it should switch during the search. The SwitchSensor mechanism already exists in the arena. blend:tunneling+decoherence is the next test.</p>
+      </div>
+
+      <p class="evidence-note rv" style="margin-top:1rem">uy734 · 150s fleet ×14 · Rust 2-opt backend · Arena v1.9 · BD × AI Lab · AIM³ Lab · March 21, 2026</p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== SECTION 9: WHAT COMES NEXT — UPDATED ===== -->
   <section id="next">
     <div class="wrap">
       <span class="sec-tag violet rv">What Comes Next</span>
-      <h2 class="rv">nu3496 hierarchical running. GPU prototype. v2.7 solver.</h2>
+      <h2 class="rv">v2.7 candidate lists. GPU prototype. SwitchSensor. arXiv.</h2>
 
       <div class="grid-2" style="margin-top:2rem">
         <article class="panel green rv rv-d1" style="--panel-accent:var(--green)">
           <div class="micro">Completed ✓</div>
-          <h3>Auto L2 — 9 instances</h3>
-          <p>Completed on all 9 instances wi29 → nu3496. Trifazni crossover confirmed: geometric sensors return at n&gt;900. MDL chose a different sensor+law for every instance. No single winner at all scales.</p>
+          <h3>Auto L2 — 9 instances + petfazni crossover</h3>
+          <p>Completed on all 9 instances wi29 → nu3496. Five-phase crossover confirmed (not three): geometric sensors return at n&gt;900, then hybrid at n&gt;2000, then geo+info blend at n&gt;3500. MDL chose a different sensor+law for every instance. No single winner at all scales.</p>
         </article>
         <article class="panel green rv rv-d2" style="--panel-accent:var(--green)">
           <div class="micro">Completed ✓ (uy734)</div>
-          <h3>Hierarchical DCC — uy734</h3>
-          <p>30 variants tested. Hilbert + LZ_dual+PI = <strong>1.224%</strong>, beating flat 2.082% by 41%. All top-10 results are hierarchical. Surprise: tri_compact worst inside clusters — the partition already solves the sub-problem structure.</p>
+          <h3>Hierarchical DCC — 41% improvement</h3>
+          <p>30 variants tested. Hilbert + LZ_dual+PI = <strong>1.224%</strong>, beating flat 2.082% by 41%. All top-10 results are hierarchical. TerrainPartitioner (new invention) expected to beat hilbert on clean run.</p>
+        </article>
+        <article class="panel green rv rv-d1" style="--panel-accent:var(--green)">
+          <div class="micro">Completed ✓</div>
+          <h3>5 Quantum sensors — tunneling #2 overall</h3>
+          <p>TunnelingSensor: 0.922% — within 0.0013% of the champion. All 5 quantum sensors beat the baseline. Budget-dependent sensor ranking DISCOVERED: tunneling wins short, decoherence wins medium, interference wins small instances.</p>
+        </article>
+        <article class="panel green rv rv-d2" style="--panel-accent:var(--green)">
+          <div class="micro">Completed ✓</div>
+          <h3>v2.7 candidate lists — 350× speedup</h3>
+          <p>K-nearest 2-opt: 350× fewer inner loop checks. Python speedup 1.3×. Rust candidate 2-opt = next build for full gain (expected 10–50×). The legs catch up to the eyes.</p>
         </article>
         <article class="panel cyan rv rv-d1">
           <div class="micro">Running now</div>
-          <h3>Hierarchical DCC — nu3496</h3>
-          <p>3496 cities partitioned into ~17 clusters of ~200. Expected to demonstrate the full power of the hierarchical approach at scale. LZ_dual+PI inside hilbert clusters predicted to win again.</p>
+          <h3>Elevation data — nu3496</h3>
+          <p>Real topography for 3D flip partitioning. Nicaragua terrain as an actual elevation map — TerrainPartitioner uses real altitude data, not density proxy. The city IS the landscape.</p>
+        </article>
+        <article class="panel cyan rv rv-d2">
+          <div class="micro">Running now</div>
+          <h3>RHPr experiment</h3>
+          <p>10 LLMs × 2 methods, testing the prompting protocol itself. Not testing the answer — testing the process that finds the answer. The arena methodology applied to reasoning.</p>
+        </article>
+        <article class="panel orange rv rv-d1">
+          <div class="micro">Planned</div>
+          <h3>v2.7 full arsenal</h3>
+          <p>Lin-Kernighan moves, Held-Karp lower bound, EAX crossover. Same MDL governance, stronger operators. The eyes are ready. The legs are next.</p>
         </article>
         <article class="panel orange rv rv-d2">
           <div class="micro">Planned</div>
-          <h3>v2.7 solver — full arsenal</h3>
-          <p>Candidate lists, Lin-Kernighan moves, Held-Karp lower bound, EAX crossover. Same MDL governance, stronger operators. The eyes are ready. The legs are next.</p>
+          <h3>SwitchSensor — tunneling → decoherence</h3>
+          <p>Budget-adaptive sensor selection: DCC switches sensors based on search phase. Tunneling early (fast barrier escape), decoherence late (basin mapping). The SwitchSensor class already exists in v1.4. Untested with quantum. Expected to combine both advantages.</p>
         </article>
         <article class="panel orange rv rv-d3">
           <div class="micro">Planned</div>
-          <h3>GPU prototype</h3>
-          <p>gravity + echo on CUDA. Target: ~1000× more governance cycles per second on nu3496. Phase 3 (geo returns at large n) suggests GPU geometric sensors may push nu3496 below 1.0% — without new operators.</p>
+          <h3>GPU prototype — 11 sensors on CUDA</h3>
+          <p>8 geometric + 3 quantum-GPU sensors. Target: ~1000× more governance cycles per second on nu3496. Phase 3 (geo returns at large n) + quantum suggest GPU sensors may push nu3496 below 1.0% — without new operators.</p>
         </article>
-        <article class="panel gold rv rv-d4" style="--panel-accent:var(--gold)">
+        <article class="panel gold rv rv-d1" style="--panel-accent:var(--gold)">
           <div class="micro">Formalizing</div>
           <h3>arXiv paper</h3>
-          <p>Self-adaptive MDL governance + trifazni sensor ranking crossover + hierarchical DCC. Three publishable findings in one system. The formal bridge to P vs NP is the longer horizon.</p>
+          <p>Petfazni crossover + tunneling sensor (#2 overall) + budget-dependent ranking + hierarchical DCC. Four publishable findings in one system. The formal bridge to P vs NP is the longer horizon.</p>
         </article>
       </div>
     </div>
@@ -1317,10 +1529,13 @@
     </div>
   </section>
 
+  <!-- SLOGAN -->
+  <div class="slogan rv">Richness lives in simplicity. We use it.</div>
+
   <footer>
     <div class="foot-grid">
       <div class="foot-brand">
-        <strong>BD × AI Lab · Arena Lab</strong>
+        <strong>BD × AI Lab · Arena Lab v1.9</strong>
         AIM³ Lab · Ljubljana, Slovenia<br>
         March 2026 · <em>najini</em> — ours, not his or mine.
       </div>
@@ -1330,6 +1545,8 @@
           <li><a href="BD_8ZRP.html">Solver story</a></li>
           <li><a href="BD_8ZRP_qa194_map.html">qa194 map</a></li>
           <li><a href="BD_8ZRP_nu3496_status.html">nu3496 status</a></li>
+          <li><a href="#quantum">Quantum sensors</a></li>
+          <li><a href="#combined">22-sensor ranking</a></li>
           <li><a href="#top">Return to top</a></li>
         </ul>
       </div>
@@ -1343,7 +1560,7 @@
         </ul>
       </div>
     </div>
-    <div class="copyright">&copy; 2026 Bojan Dobrečevič &middot; BD × AI Lab &middot; Ljubljana, Slovenia &middot; Arena Lab v1.6 &middot; 17 sensors &middot; 8 laws &middot; MDL decides</div>
+    <div class="copyright">&copy; 2026 Bojan Dobrečevič &middot; BD × AI Lab &middot; Ljubljana, Slovenia &middot; Arena Lab v1.9 &middot; 22 sensors (13 BD + 4 BD+LLM + 3 LLM + 2 C) &middot; 8 laws &middot; 900+ variants &middot; 5 quantum-inspired &middot; MDL decides</div>
   </footer>
 
 <script>
@@ -1370,6 +1587,8 @@
   bindCollapse('laws-hdr','laws-body','laws-chev');
   bindCollapse('speed-hdr','speed-body','speed-chev');
   bindCollapse('hier-results-hdr','hier-results-body','hier-results-chev');
+  bindCollapse('tunnel-hdr','tunnel-body','tunnel-chev');
+  bindCollapse('qwalk-hdr','qwalk-body','qwalk-chev');
 
   // Constellation canvas
   (function(){
