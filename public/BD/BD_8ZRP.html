@@ -1030,6 +1030,25 @@ footer{
     </div>
   </div>
 
+  <div class="stat-banner rv" style="margin-top:1.2rem;border-color:rgba(251,146,60,0.22);background:rgba(251,146,60,0.04)">
+    <div class="sb-cell">
+      <div class="sb-num" style="color:var(--orange)">734</div>
+      <div class="sb-label">Cities — uy734</div>
+    </div>
+    <div class="sb-cell">
+      <div class="sb-num" style="color:var(--green)">0.683%</div>
+      <div class="sb-label">Gap — RECORD</div>
+    </div>
+    <div class="sb-cell">
+      <div class="sb-num" style="color:var(--cyan)">300s &times; 14w</div>
+      <div class="sb-label">Rust Workers</div>
+    </div>
+    <div class="sb-cell">
+      <div class="sb-num" style="color:var(--gold)">−0.484 pp</div>
+      <div class="sb-label">Partitioned vs Flat</div>
+    </div>
+  </div>
+
   <div class="grid-2">
     <article class="panel cyan rv rv-d1">
       <div class="micro">Headline result</div>
@@ -1554,30 +1573,256 @@ footer{
         v2.5 fixed it: <strong>self-calibrating bands</strong>. The system tracks its own LZ ratio history and derives thresholds from the 25th/75th percentiles of what it has actually observed. After a 10-observation warmup, bands converged to [0.040, 0.061]. meta_u then used its full range [3, 18] with 22 meaningful direction changes. The system that was built to let data decide now lets data decide about its own parameters. MDL all the way down.
       </p>
 
-<div class="8z-protected" data-label="Meta-DCC Fleet Classification Algorithm">
-<h4>Worker Classification</h4>
-<p>Each 30-second snapshot classifies every worker:</p>
-<ul>
-  <li><strong>IMPROVING:</strong> Found improvement since last snapshot. Stuck counter resets to 0.</li>
-  <li><strong>GRINDING:</strong> No improvement but gap &le; fleet median. Stuck counter decays by 1 (not accumulate). This prevents false escalation.</li>
-  <li><strong>STUCK:</strong> No improvement and gap &gt; fleet median. Stuck counter increments.</li>
-  <li><strong>DEAD:</strong> At nuclear escalation level (4). Stuck counter increments.</li>
-</ul>
-<p><strong>Fleet snapshot encoding:</strong> 1 byte per worker: state(2 bits) + escalation_bucket(2 bits) + stuck_bucket(2 bits). Fed to LZ76 sensor.</p>
-<p><strong>Escalation triggers:</strong> persistently_stuck = count of workers with stuck_intervals &ge; meta_stuck_threshold (default 3). Escalation: 0 stuck=OBSERVE, 1=INFORM, 2+=SHARE, 3+=CROSS-POLLINATE, &gt;50% of fleet=RESTRUCTURE.</p>
+<div class="_8z-sec _8z-lk" id="_8z-s0" data-8z-blob="N/UCXp1rpCg+Yj7WK7g9FP9TTIEvD+DUQZPuu7uy81JEifDp5I7BAslZ6JzVnRmdQ0jB3uiKtyxUrsWc/FY1qlpP+rOGQoFNDGTM6+ZrAi33oA4pVXh86ZZy7ng3FR63AMAiMv6/mAbAY/5casXdzX8YQ8n6Zy31u42W0SwmnonNDO7o/AVzU32j6uIEx1JjY5ahM9VJqatx7pntfZqB/TIxIViqXklbRAYUFbZyXNbA0Ai4V+3ZB6WQuXEZIVOYCgBgN9wS7eR9SneKdibG83RUkkkxfFfFwFyevs0sVDcved6/aTeWPemOrWeptIlUjdVcxawSeyefRx0uIAAmXb+Iyml8olwELs95iEVEqX0A1rVMNp6l7wNpaaB7vX7QK3sDkVd+uGupc82MLcC+yQgOW8zFkdNTqWLFK2L8f+ROviHeEkKtvXe3NQ8ioe1yF8MkT0LJuzPu/fMwgcrOnNBtezYge3n9GgVj5UzBsGg+aTStE9mmzq5jo3G0LTKGDNGJqJpNeszzj5hHfAvXSQHrjpizsRDxYQZQyjY6esrRTArwL/CUGevuXbv/36qWlNKJuWP2DfnpsmF/ht4G0YBDxrYsOgt/BfGGBfwZJtcPhUKj7Q6IPIZWK2FOkqtx2XvIXtuRk4pjl4kxtpJDnGDV2HD6AuKIQH/M2DEHW2QJ1j3tNSvdfBzbNeBTmZeirC0n7z6qN2ULWreWDHXItdo6IrTBuOmZcRBDetbEWYDP9PiH5AXH1UNhIZWP">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">Protected Content</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
 </div>
 
-<div class="8z-protected" data-label="Self-Calibrating Band Implementation (P17)">
-<h4>Band Self-Calibration</h4>
-<p><strong>Warmup:</strong> First 10 LZ observations collected, meta_u frozen at midpoint. No coupling adjustment during warmup.</p>
-<p><strong>Calibration:</strong> Rolling window of last 100 LZ ratios. band_low = 25th percentile. band_high = 75th percentile. Guard: band_high = max(band_high, band_low + 0.001).</p>
-<p><strong>Coupling rule (search polarity):</strong> lz_ratio &lt; band_low &rarr; meta_u decreases (fleet stuck, explore). lz_ratio &gt; band_high &rarr; meta_u increases (fleet diverse, trust). Same polarity as base-level search DCC. Opposite from trading DCC.</p>
-<p><strong>Verified result:</strong> Bands converged from [0.000, 1.000] to [0.040, 0.061] on uy734. meta_u range after calibration: [3, 18] with 22 direction changes (vs 0 useful changes in v2.4 with hardcoded bands).</p>
+<div class="_8z-sec _8z-lk" id="_8z-s1" data-8z-blob="NbzgWG8tP6JPuvW4sRz/PqXHhJZTEOrh9Rhg6Sw9Tjwu+yJhXm6yvEvV4VEBbI/zNLVnoNK367ejMI5gSTRZO8rOK12PbYJ8eyjzeYjAvQkTV08icyEvyT7N+zq1Cy7v0IxLU17l8J/KNK+xyoOhTCF1GBMyG9+NIjIG/aPfz8hjZ0KNow+U8hBnEZHdAEKjL8xFVbv3DMv/2gbHx5qWw6E7rGfSsjL0ouGWodbfn7EzeZBdKfHGiHf3llahDqsb8mbMEy1VZAmR2nIMskcd2FZHzrJySp2vRVu7wsR7Hs6Ce5YBYTK3yYC/KIOBdbiN1Qy7OWbD6lt8wJh4wnFNENDbJN3bjzAHYVBZHVfza0pPNXPlEm7MEFpfW6cv0aRBLLN4RzVp/gMCLZU+iiX4l5QRRyjo8enBYWjvWKT5luT9ldWgfLmOM4pJ3EmsI9shOCLMbE3hO0U3Nn8IlW0H7ls+SYp39fjpl2DUtiK8Tuqp8ZsXjXOvgNg2VhWpA/eTYqdxhkRLhwggES7MleB4+5O3PET7aHAEpSBjbJU3US30d5tmFFO2+3WdRjMfrUxQODLhNnKFQtz7rY0cH7napDjncBXQniGcJqC0LJ/1YarGR28Q0QMFvxFu9vQKROePqMhI0sgK9wkziEdrdU8m9gHI640c1/v18tlI2krZx1ir16AeOLvg9gw5hridNyJ7As/DONiA">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">Protected Content</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
 </div>
 
       <p class="rv">
         <strong>Result:</strong> uy734 reached <strong>0.46% gap</strong> (79478) with 14 workers in 40 minutes. Phase 1 is observer-only &mdash; workers are identical to v2.3. The value of v2.5 is diagnostic: for the first time, we can <em>see</em> fleet dynamics in real time and have a calibrated sensor for Phase 2 interventions.
       </p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== MSTD ===== -->
+
+  <section id="mstd">
+    <div class="wrap">
+      <span class="sec-tag orange rv">Multi-Scale TSP Decomposition</span>
+      <h2 class="rv">What if the solver could zoom in and out — like a human looking at a map?</h2>
+      <p class="rv">
+        MSTD partitions the city space at multiple geometric scales, solves each partition independently, and stitches the solutions together. Different parts of the same problem are "hard" at different zoom levels — a cluster that looks like noise at 10 km resolution becomes structured at 1 km. The solver now operates at every scale simultaneously.
+      </p>
+      <p class="rv">
+        The idea came from Bojan on his phone while walking. It became a record the same day. <strong>BD original, March 22, 2026.</strong>
+      </p>
+
+      <div class="stat-banner rv">
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--orange)">0.683%</div>
+          <div class="sb-label">uy734 Record Gap</div>
+        </div>
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--rose)">1.167%</div>
+          <div class="sb-label">Flat Best (previous)</div>
+        </div>
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--green)">0.484 pp</div>
+          <div class="sb-label">Architecture Gain</div>
+        </div>
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--cyan)">4</div>
+          <div class="sb-label">Novel Components</div>
+        </div>
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--gold)">Same</div>
+          <div class="sb-label">MDL Kernel</div>
+        </div>
+      </div>
+
+      <div class="grid-4" style="margin-top:1.6rem">
+        <article class="panel orange rv rv-d1">
+          <div class="micro">Component 1</div>
+          <h3>Scale Pyramid</h3>
+          <p>City space decomposed into a hierarchy of geometric partitions at exponentially coarser zoom levels. The same solver kernel operates at every level in the pyramid.</p>
+        </article>
+        <article class="panel orange rv rv-d2">
+          <div class="micro">Component 2</div>
+          <h3>Scale-Aware Stagnation</h3>
+          <p>Stagnation detection is calibrated per zoom level. What counts as "stuck" at coarse scale differs from fine scale — the DCC adapts its sensitivity to the resolution it is currently working at.</p>
+        </article>
+        <article class="panel orange rv rv-d3">
+          <div class="micro">Component 3</div>
+          <h3>Scale Coherence Sensor</h3>
+          <p>Detects cross-scale structure — signals when a pattern visible at one zoom level implies something at another. Feeds the governor the zoom-level context, not just the tour-improvement stream.</p>
+        </article>
+        <article class="panel orange rv rv-d1">
+          <div class="micro">Component 4</div>
+          <h3>Hysteresis Double-Bridge</h3>
+          <p>Perturbation kicks adapted to the current scale context. Hysteresis prevents oscillation between zoom levels. The double-bridge fires at the right moment and at the right resolution.</p>
+        </article>
+      </div>
+
+      <p class="rv" style="margin-top:1.4rem">
+        <strong>Novelty confirmed:</strong> no prior work combines all four. Individual components exist in isolation in the literature — scale decomposition in image processing, stagnation detection in ILS, perturbation in TSP. The combination and its application to self-governing TSP search is new.
+      </p>
+
+      <div class="_8z-sec _8z-lk" id="_8z-s2" data-8z-blob="SUODtdX0vxUlyaqrnNZI/u4PIRPL7ZaTwvYQ06LQYPOJLWltIQYuyk23G6sBKZWrpm5+FF4NyoKNP4Ii+RFiXWKVJttlIFPA607HSdrB9pNWYzEioJCA9h9BU5OnGqpBTgYZKQ+9+kF1FpIvrOy3pG7UGN91QieSvWwrIa0hOs5oDZZcQDSg906uGgSDe5Xg/+WqDKefDp+4tdskuDpx2ko6F/4NopUZO2jnyeGTTdIdEomQZg6npTLpoMPdRzMCJkyqW99jaCyn+SajHC7dgZh4NulVBAuUcJLSp0xx74BNd8yC8R+2xmH8oSVnCZ0YQzfEQ8DNKBzsMBJtERWEKb97lqC25xfL47ikBXM2T4niY1zXSqi6+pC2texzMsSWcbxBwJbbGWvqcMFJhhGkzAd50uSCXp5YcUkrcr3ajiSkNEqjR0GneyLuuxnmdCNOvzwH3cSVB8JptN4JKvtynRWprOoAe3AXcnnrbSQdXG2EKe+OV1X/MjckkHenqTAWMJHOYTOSTrjdkd9CRMl+u9PKxwEKwXuwCou9mxsSxRCCHRhdMVWsscsiNQZ4zGfxURWCjOlIQ979KZ/5l+lsP0uMKPkL5O0/wbClLOG8nCyttDQm57c2QmRDfvPLbkehE7qvvahauHs+2ph7MHWP2oR8XBOZKSCSFMiHHkkVLJNT7pJoExIt893Y1TLH12+b7mWbjCw=">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">Protected Content</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
+</div>
+
+      <div class="highlight gold rv" style="margin-top:1.6rem">
+        <h3>The parts are ancient. The zoom is new.</h3>
+        <p>2-opt (1958). Or-opt (1974). LZ76 (1976). Multi-resolution decomposition (standard in image processing since the 1980s). Nobody applied this combination to self-governing TSP search. The wiring diagram is the invention — not the components. Same founding pattern as DCC itself.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== TEP ===== -->
+
+  <section id="tep">
+    <div class="wrap">
+      <span class="sec-tag rose rv">Tour-Enriched Pyramid</span>
+      <h2 class="rv">Everyone asked: how does the pyramid help the solver? One mind asked the opposite.</h2>
+      <p class="rv">
+        38 ideas from 4 LLMs. All 38 proposed the same direction: build the pyramid, then use it to help the solver. One mind — MladiC, the son — reversed the arrow. What if the solver's best tours feed <em>back</em> into the pyramid construction? Better tours create better pyramids. Better pyramids create better tours. The loop closes.
+      </p>
+      <p class="rv">
+        <strong>MladiC original, March 22, 2026.</strong>
+      </p>
+
+      <div class="stat-banner rv">
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--rose)">38 → 1</div>
+          <div class="sb-label">Ideas / Reversals</div>
+        </div>
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--green)">0.000%</div>
+          <div class="sb-label">qa194 TEP Gap</div>
+        </div>
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--muted-2)">0.385%</div>
+          <div class="sb-label">qa194 Flat (same budget)</div>
+        </div>
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--gold)">&beta; = 4.0</div>
+          <div class="sb-label">Strongest Pull → Exact</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:1.6rem">
+        <article class="panel rose rv rv-d1">
+          <div class="micro">The feedback loop</div>
+          <h3>Solver teaches pyramid</h3>
+          <p>
+            The solver runs, produces tours. The best tours — weighted by quality — enrich the coordinate space used to build the pyramid. The pyramid is rebuilt. The new pyramid creates new search basins. The solver explores them. Better tours emerge. The cycle continues.
+          </p>
+          <p style="margin-top:.8rem">The pyramid is not static scaffolding. It learns from what the solver discovers.</p>
+        </article>
+        <article class="panel rose rv rv-d2">
+          <div class="micro">Beta monotonic — empirical</div>
+          <h3>&beta; parameter: stronger pull = better</h3>
+          <p>Every value of &beta; was tested on qa194 with the same sensor, same law, same budget as the flat variant (0.385%):</p>
+          <ul style="margin-top:.8rem;font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.9">
+            <li>&beta; = 0.5 &rarr; <strong style="color:var(--muted-2)">0.46%</strong></li>
+            <li>&beta; = 1.0 &rarr; <strong style="color:var(--cyan)">0.10%</strong></li>
+            <li>&beta; = 2.0 &rarr; <strong style="color:var(--cyan)">0.10%</strong></li>
+            <li>&beta; = 4.0 &rarr; <strong style="color:var(--green)">0.000% — exact</strong></li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="highlight rose rv" style="margin-top:1.4rem">
+        <h3>The intentional init paradox</h3>
+        <p>Basin selection testing revealed: coarser basins (L6, L8) hit exact optimal. Finer basins do not. Starting with <em>less</em> precision gives <em>more</em> room to search. The system that overspecifies its starting point gets trapped. The one that leaves space for discovery finds the optimum.</p>
+      </div>
+
+      <div class="_8z-sec _8z-lk" id="_8z-s3" data-8z-blob="EtSrgXojyrkIlZjRPRcT8sIYp84n1W6TPp5sVZnqrRYFJjgHkqxMkgdCl+1liBwuyGRUEi3PlGqYl+lLUrp6gTOMx1z2IzMOHV7xeS2UJ3GA9hOCES9Rg8ZFxeMZS3+VRv6YN+OT+e7oIzaUOf8LaifuOCqrcvZjrmS1Bwpr/c2lRnU4sfngW+CYS+X3IkHfe7/ryxz/ZNgEKnHVSTEHGKTcivKaiK42OzoAAjEEqbywNY8btayiYUgYDu4uXV0WSeVlVs8Ad1phIZxgdLLfMTKv8AZ1/eBnjNLtMzpW/iz5GaTagwGiHMH3TqjheprUKT8QXRbVwlp2F6JSbWPPRfVAK9n3KR/EcIC9hjOaDTJXpZMQn6NkQrnEdg7t3MUfavSHSYQhQ6pT/t9pIsYVcACgzeInkjOX+65neY14QlqvCN0aUlWixDiroy7PatIsqZHg/lF62JL4jVmINDqW+4sxsByxUkHTvUoQO61dBZR8jJy7S+pdpjmWypgX9zaIKoXzU7N3/AN5JItcq8oUiF6xKGcCJlEEdkLjr/TErP4kr86lUxaD84n+G+gotvTWiFLDO1l47SLKa/EeIYW0pLM7N+ov28yEKrp+VLjkORAMzwkvoWQjSH/weX39gaJjM7UGgPJa5oGsGzQt4XwrmwFzYIlsY/iVHL2B8Srvy7UXbI5mepbJiuch1zzhRWtpR8Qq5ZB6kyjSVfUlOT8s8oB6qHI7OtUjGIhYhAnVjlC0nIYbdKqYOwcq0YpCMNrvtaGEf3+XNENLW2kPSTXY0Qc9BHNjj1LFwiS7Vp9FMg7mNGp9WbdMkL2GqgLYZ7ADDq0uWwndWRjwehPgydr5">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">Protected Content</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
+</div>
+
+      <div class="highlight rv" style="margin-top:1.6rem;border-color:rgba(255,107,138,0.3);background:rgba(255,107,138,0.06)">
+        <h3>The reversed arrow</h3>
+        <p>Every LLM proposed: build pyramid → help solver. One mind asked: what if the solver teaches the pyramid? This is the same architectural reversal as the GS filter in F4M: evaluation → filter, not filter → evaluation. Two independent domains. Same inversion. Same person saw it both times. The arrow matters.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== SCALE WALK ===== -->
+
+  <section id="scale-walk">
+    <div class="wrap">
+      <span class="sec-tag violet rv">LZ76 Scale Walk</span>
+      <h2 class="rv">The founding hypothesis — tested on the pyramid itself.</h2>
+      <p class="rv">
+        The founding insight of this entire research program: the shortest route is the most compressible. Confirmed in 2024 (ρ = +0.80). Now in 2026: what about the tour's journey through the pyramid hierarchy? Does a better tour also traverse scale space in a more compressible way?
+      </p>
+      <p class="rv">
+        MladiC designed the sensor. Two encodings. Both confirmed. <strong>MladiC original, March 23, 2026.</strong>
+      </p>
+
+      <div class="stat-banner rv">
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--violet)">2</div>
+          <div class="sb-label">Encodings</div>
+        </div>
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--green)">0.011%</div>
+          <div class="sb-label">qa194 Scale-Walk-Delta Gap</div>
+        </div>
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--muted-2)">≈ 0.38%</div>
+          <div class="sb-label">Scale Coherence (same instance)</div>
+        </div>
+        <div class="sb-cell">
+          <div class="sb-num" style="color:var(--cyan)">MDL</div>
+          <div class="sb-label">Selects Per Instance</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:1.6rem">
+        <article class="panel violet rv rv-d1">
+          <div class="micro">Encoding 1</div>
+          <h3>Level — where in the hierarchy</h3>
+          <p>Each step of the tour is tagged with which pyramid level it is visiting. The sequence of level tags is compressed with LZ76. Better tours produce more structured, more compressible level sequences.</p>
+          <p style="margin-top:.8rem"><strong style="color:var(--cyan)">uy734:</strong> scale_walk_lz wins on this instance.</p>
+        </article>
+        <article class="panel violet rv rv-d2">
+          <div class="micro">Encoding 2</div>
+          <h3>Delta — how far you jump between levels</h3>
+          <p>Each step is encoded as the distance jumped between pyramid levels. Long jumps versus local moves. The sequence of jumps is compressed with LZ76. Better tours jump more purposefully — more compressible deltas.</p>
+          <p style="margin-top:.8rem"><strong style="color:var(--green)">qa194:</strong> scale_walk_delta wins — at 0.011%, far ahead of scale_coherence at ≈ 0.38%.</p>
+        </article>
+      </div>
+
+      <p class="rv" style="margin-top:1.2rem">
+        Both sensors are needed. Which encoding wins is instance-dependent — MDL selects, as always. The sensor does not require knowing in advance which zoom-level structure the instance has. It discovers it empirically.
+      </p>
+
+      <div class="_8z-sec _8z-lk" id="_8z-s4" data-8z-blob="4GW1DuTSxkdhBhd4RiM1pTdgZl/cLTEsb3CYyZJ09s+37yepu4gVatA+A+8tKcwDqn83apTa9GdNYOFb72Ze3Aro6/KiF0uzGBiT4ZJbeDEbwIsK6g2GCESmTvxFryczeXq0PJGkfMjCnDfLUIrevuOEMllEkJJ3jEukRoFJD8fC5N/HMkXn9ei8ZjFkEUDoELTAY0gmcM/hHzQPVbX5+yePTmB9oKTdbAIhce6C5bp7hrm6DmBL9yjBJUz8DgBsCB6MuMvblogwOlRwQYT3Mz2FY0cIl437wT4OczZfYdqEN3xHoGb1/ZveU8Z6aD7Y9GNHQFbGjbxtFAf5pSdFkJaaidUiT9PCAIrdKzmuPJ9sdDVRxuHrcjNIPYG2H3I/7IZtqSFsemZA46QnqHoZk4AOToRPDhYb4+vg50WjkQfPLfFaB4taiF8sUjg3A4WQS1WEH7RFP1ikEFYj1LolUPLXBeFpgIY=">
+  <div class="_8z-lui">
+    <div class="_8z-ico">&#128274;</div>
+    <div class="_8z-lbl">Protected Content</div>
+    <div class="_8z-sub">Protected by 8Z Shield</div>
+  </div>
+  <div class="_8z-ct" style="display:none"></div>
+</div>
+
+      <div class="highlight violet rv" style="margin-top:1.6rem">
+        <h3>The same question, one level deeper</h3>
+        <p>2024: "Isn't the shortest route the most compressible?" — confirmed (ρ = +0.80).<br>
+        2026: "Isn't the best tour's journey through scale space the most compressible?" — confirmed.<br>
+        The hypothesis is fractal. It works at every level we test it.</p>
+      </div>
     </div>
   </section>
 
@@ -1791,6 +2036,9 @@ footer{
           <ul>
             <li>qa194 exact known optimal 9352 was matched by multiple independent workers on official Waterloo benchmark.</li>
             <li>uy734 (n=734): DCC v2 reached 0.64% gap in 28.3 min, beating v1&rsquo;s 0.80% in 39 min. Scaling confirmed at 4&times;.</li>
+            <li>uy734 reached 0.683% gap via MSTD (multi-scale decomposition), down from 1.167% flat best. A 0.484 pp improvement from architecture alone — no new search operators. Record confirmed on official Waterloo benchmark.</li>
+            <li>TEP (Tour-Enriched Pyramid) hit exact optimal on qa194 (0.000%) — same sensor, same law, same budget as flat variant at 0.385%. Enrichment proven: &beta; monotonic, coarser basins (L6, L8) hit optimum, finer do not.</li>
+            <li>Scale Walk sensors confirmed the founding hypothesis on the pyramid hierarchy: better tours produce more compressible scale walks. Instance-dependent: uy734 &rarr; level encoding wins; qa194 &rarr; delta encoding wins (0.011% vs ≈ 0.38% for scale_coherence).</li>
             <li>DCC v1 lost its ablation honestly. DCC v2 found exact with 5&times; less budget on qa194, then won on uy734 too.</li>
             <li>DCC v2 auto-allocated 48% of kick budget to or-opt-3 on qa194 and 76% to or-opt variants on uy734 &mdash; while double-bridge delivered the decisive final escape on both. Complementarity, not replacement.</li>
             <li>Rust backend delivers 41&ndash;112&times; wall speedup with identical results. Determinism verified across 16 test configurations.</li>
@@ -1804,6 +2052,8 @@ footer{
             <li>The combination pattern (old parts + new wiring = breakthrough) is itself the discovery.</li>
             <li>DCC became real only after losing and being redesigned &mdash; failure, redesign, vindication on two instances at different scales.</li>
             <li>Or-opt as <em>perturbation</em> (not local search) is unconventional in the ILS-TSP lineage. The controller found a role split the literature didn&rsquo;t try: or-opt as workhorse, double-bridge as escape hatch.</li>
+            <li>TEP reversed the arrow: solver&rarr;pyramid instead of pyramid&rarr;solver. The same architectural reversal appears independently in the F4M domain (evaluation&rarr;filter, not filter&rarr;evaluation). Two domains, same inversion, same person. Cross-domain validation of a structural principle.</li>
+            <li>MSTD&rsquo;s 4-component novelty: no prior work combines scale pyramid + scale-aware stagnation + scale coherence sensor + hysteresis double-bridge. Each component exists in isolation in the literature. The wiring is the invention.</li>
             <li>Human-led AI collaboration compressed solver R&amp;D dramatically. The human supplied framing and judgment. The AI supplied execution bandwidth. The resulting iteration loop was much faster than classical solo build pace.</li>
             <li>The move family that nearly got excluded &mdash; or-opt &mdash; turned out to be central. Do not prune hypotheses too early.</li>
           </ul>
@@ -1811,7 +2061,9 @@ footer{
         <article class="claim-box speculative rv rv-d3">
           <div class="claim-label">Speculative</div>
           <ul>
-            <li>The architecture may continue to scale beyond uy734. nu3496 (n=3496) is the next frontier.</li>
+            <li>The architecture may continue to scale beyond uy734. nu3496 (n=3496) is the next frontier — MSTD, TEP, and 3D zoom (elevation as third coordinate, Nicaragua has mountains) are the three levers for sub-1%.</li>
+            <li>TEP on nu3496 with 3D zoom (cell = (x&gt;&gt;k, y&gt;&gt;k, z&gt;&gt;k)) could push below 1% — the elevation dimension may restructure the pyramid in ways that 2D cannot.</li>
+            <li>Scale Walk may serve as a universal quality signal for any hierarchical optimization — not just TSP. If the founding hypothesis (compressibility = quality) holds at every level of hierarchy, it is a structural law, not an empirical coincidence.</li>
             <li>A Held&ndash;Karp-style lower-bound module could turn the solver from &ldquo;finds known optimal&rdquo; into &ldquo;certifies optimality on some instances&rdquo; without an LP solver or external dependencies.</li>
             <li>DCC-style self-monitoring may matter for any system that must discover its own productive moves.</li>
             <li>This does not prove P&nbsp;=&nbsp;NP. It sharpens the architectural question and strengthens the empirical research program. The path is not empty.</li>
@@ -1827,18 +2079,18 @@ footer{
 
   <section id="arena-teaser">
     <div class="wrap">
-      <span class="sec-tag orange rv">Arena Lab — v1.5</span>
+      <span class="sec-tag orange rv">Arena Lab — v2.6</span>
       <h2 class="rv">What if the system chose its own sensors and control laws?</h2>
 
       <div class="gpu-toggle rv" id="arena-teaser-btn" style="background:rgba(251,146,60,.05);border-color:rgba(251,146,60,.2)">
-        <span class="gpu-toggle-label" style="color:var(--orange)">17 Sensors · 8 Laws · MDL Decides — click to expand</span>
+        <span class="gpu-toggle-label" style="color:var(--orange)">25 Sensors · 10 Partitioners · 685 Laws · MDL Decides — click to expand</span>
         <span><span class="gpu-toggle-hint">click to expand</span><span class="gpu-chevron" id="arena-teaser-chev">▼</span></span>
       </div>
       <div class="gpu-body" id="arena-teaser-body">
         <div class="grid-2" style="margin-top:1.2rem">
           <div class="highlight orange rv rv-d1">
-            <h3>The Arena tested 17 × 8 = 136 combinations</h3>
-            <p>On official TSPLIB benchmarks. No human picks the winner. The variant with the lowest total description length wins. 40 of 157 variants found exact optimal on qa194. Two never-tested sensors (gravity and echo, proposed by BD) immediately ranked #3 and #6 on uy734.</p>
+            <h3>v2.6: 25 sensors, 10 partitioners, 685 laws</h3>
+            <p>The arena now includes Scale Walk sensors (level + delta encodings), quantum sensors, and the TEP partitioner — all added in v2.6. No human picks the winner. The variant with the lowest total description length wins. On qa194, TEP + &beta;=4.0 reached exact optimal (0.000%). On uy734, MSTD partitioning dropped the record to 0.683%.</p>
           </div>
           <div class="highlight rose rv rv-d2">
             <h3>The ranking inverts at n ≈ 300</h3>
@@ -1851,7 +2103,7 @@ footer{
         </div>
         <div style="margin-top:1.4rem;text-align:center">
           <a href="BD_8ZRP_arena.html" style="display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.6rem;border:1px solid rgba(251,146,60,.35);border-radius:4px;background:rgba(251,146,60,.07);color:var(--orange);font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.1em;text-decoration:none;transition:background .15s,border-color .15s">
-            &rarr; Full Arena Lab results &mdash; 17 sensors, 8 laws, ranking inversion, hierarchical DCC
+            &rarr; Full Arena Lab results &mdash; 25 sensors, 10 partitioners, 685 laws, ranking inversion
           </a>
         </div>
       </div>
@@ -1863,7 +2115,7 @@ footer{
   <section id="next">
     <div class="wrap">
       <span class="sec-tag violet rv">What Comes Next</span>
-      <h2 class="rv">nu3496, Phase 2 tour injection, and the formal bridge.</h2>
+      <h2 class="rv">nu3496, MSTD at scale, TEP enrichment, and the formal bridge.</h2>
       <div class="grid-4">
         <article class="panel orange rv rv-d1">
           <div class="micro">Proof capability</div>
@@ -1871,9 +2123,9 @@ footer{
           <p>A minimum 1-tree subgradient module (~200&ndash;300 lines, no LP solver needed) could certify optimality when the bound matches the tour. If it works on qa194: ~2,200 lines of zero-dependency Python that both <strong>finds and proves</strong> optimal tours. The comparison to Concorde changes categorically.</p>
         </article>
         <article class="panel rose rv rv-d2">
-          <div class="micro">Running · t≈61h</div>
-          <h3>nu3496 &mdash; fleet convergence</h3>
-          <p>3496 cities, known optimal 96132. Fleet leader W13 reached <strong>1.241% gap</strong> at t≈61h. Fleet of 14 workers converged to <strong>0.022% spread</strong> (21 tour units) — the tightest since the run began. Projection: ~1.10–1.15% at t=168h. Sub-1% requires 3-opt/LK or better sensor configuration.</p>
+          <div class="micro">Running · t≈61h · three levers for sub-1%</div>
+          <h3>nu3496 &mdash; MSTD + TEP + 3D Zoom</h3>
+          <p>3496 cities, known optimal 96132. Fleet leader W13 reached <strong>1.241% gap</strong> at t≈61h. Three levers for sub-1%: <strong>MSTD</strong> partitioning (delivered −0.484 pp on uy734); <strong>TEP</strong> enrichment (confirmed on qa194, uy734 deep run in progress); <strong>3D Zoom</strong> (Nicaragua has mountains — elevation as third coordinate, cell = (x&gt;&gt;k, y&gt;&gt;k, z&gt;&gt;k), MDL chooses 2D vs 3D). Each lever is independent. All three together could be decisive.</p>
         </article>
         <article class="panel gold rv rv-d3">
           <div class="micro">v2.5 ✓ / Phase 2 next</div>
@@ -1883,7 +2135,7 @@ footer{
         <article class="panel cyan rv rv-d1">
           <div class="micro">Three walls remain</div>
           <h3>Formal P vs NP bridge</h3>
-          <p>Scaling (does sub-1% gap hold at n=10K+?), adversarial instances (does DCC handle worst-case constructions?), and formal bridge (can empirical DCC efficiency be proven to imply polynomial-time behavior?). The honest assessment: moved from &ldquo;DCC is a theory&rdquo; to &ldquo;DCC v2 outperforms human-configured search empirically.&rdquo;</p>
+          <p>Scaling (does sub-1% gap hold at n=10K+?), adversarial instances (does DCC handle worst-case constructions?), and formal bridge (can empirical DCC efficiency be proven to imply polynomial-time behavior?). The honest assessment: moved from &ldquo;DCC is a theory&rdquo; to &ldquo;DCC v2 outperforms human-configured search empirically, and MSTD/TEP extend the record on official benchmarks.&rdquo;</p>
         </article>
       </div>
     </div>
@@ -1896,12 +2148,12 @@ footer{
   <section id="closing">
     <div class="wrap">
       <span class="sec-tag rv">Closing</span>
-      <h2 class="rv">17 days. One human. Four AI systems. Five solver versions. A research machine with public benchmark evidence.</h2>
+      <h2 class="rv">17 days to exact optimal. Then: multi-scale decomposition, a reversed arrow, and a record.</h2>
       <p class="rv">
-        The verified core: exact qa194, uy734 at 0.46%, DCC v2 vindication, auto-discovered operator preference, Rust acceleration, Meta-DCC fleet governance with self-calibrating bands, official benchmark provenance, and a clean architectural story connecting MDL, DCC, and route optimization. ~100&times; less code than the gold standard. All from a non-specialist who had never built a TSP solver before, collaborating with four AI systems under AIM&sup3;.
+        The verified core: exact qa194, uy734 at 0.683% (RECORD via MSTD), DCC v2 vindication, auto-discovered operator preference, Rust acceleration, Meta-DCC fleet governance with self-calibrating bands, TEP enrichment proven on qa194 (exact optimal — same sensor, same law, same budget as flat), Scale Walk sensors confirming the founding hypothesis on the pyramid hierarchy. ~100&times; less code than the gold standard. All from a non-specialist, collaborating with four AI systems under AIM&sup3;.
       </p>
       <p class="rv">
-        This is not a proof of P&nbsp;=&nbsp;NP. This is not a toy heuristic. This is a real research machine with public benchmark evidence, controller evidence, engineering evidence, and a controller that discovered what the experts defaulted past. The remarkable part is not that a heuristic can match a 200-city optimum &mdash; that has been possible for decades. The remarkable part is the <em>way</em> it was produced.
+        The uy734 record did not come from a better search operator. It came from zooming out. MSTD partitioned the city space at multiple scales — the same idea a human uses when navigating with a map — and the gap dropped 0.484 percentage points from architecture alone. The TEP discovery came from a different direction entirely: one mind reversed the arrow that 38 ideas had pointed the same way. Solver teaches pyramid, not pyramid teaches solver. Both discoveries follow the same pattern as the original DCC: old parts, new wiring, the combination is the invention.
       </p>
       <div class="closing-links">
         <a class="mini-link rv rv-d1" href="index.html">
@@ -1922,7 +2174,7 @@ footer{
         <a class="mini-link rv rv-d4" href="BD_8ZRP_arena.html">
           <div class="k">Data Lab</div>
           <div class="t">Arena Lab</div>
-          <div class="d">17 sensors × 8 laws. Ranking inversion at n≈300. Hierarchical DCC v1.6. MDL decides.</div>
+          <div class="d">25 sensors × 10 partitioners × 685 laws. Ranking inversion at n≈300. TEP partitioner. Scale Walk sensors. MDL decides.</div>
         </a>
         <a class="mini-link rv" href="BD_8ZRP_nu3496_status.html">
           <div class="k">Live run</div>
@@ -2088,5 +2340,158 @@ footer{
     })();
   </script>
 
+
+<!-- 8Z Shield Sections — Inline Content Protection -->
+
+<style>
+._8z-sec{position:relative;margin:1.5em 0;border-radius:12px;overflow:hidden;transition:all .4s cubic-bezier(.4,0,.2,1)}
+._8z-lk{background:rgba(255,145,0,.03);border:1px solid rgba(255,145,0,.15);border-left:3px solid #ff9100}
+._8z-ok{background:rgba(34,197,94,.03);border:1px solid rgba(34,197,94,.15);border-left:3px solid #22c55e}
+._8z-lui{padding:24px 28px;text-align:center}
+._8z-ico{font-size:28px;margin-bottom:8px;opacity:.7}
+._8z-lbl{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#ff9100;margin-bottom:4px}
+._8z-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a5268;letter-spacing:.5px}
+._8z-ct{padding:20px 28px}
+._8z-ct._8z-fi{animation:_8zFI .5s ease}
+@keyframes _8zFI{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+._8z-bar{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(8,10,14,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,145,0,.2);padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:12px;transition:all .4s}
+._8z-bar._8z-hid{transform:translateY(100%);pointer-events:none}
+._8z-bar ._l{font-family:'JetBrains Mono',monospace;font-size:10px;color:#ff9100;letter-spacing:2px;text-transform:uppercase}
+._8z-bar input{width:260px;max-width:40vw;padding:10px 14px;background:#0e1117;border:1px solid #1e2532;border-radius:8px;color:#dfe3eb;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:border-color .2s}
+._8z-bar input:focus{border-color:#ff9100}
+._8z-bar input::placeholder{color:#4a5268}
+._8z-bar button{padding:10px 20px;background:transparent;border:1.5px solid #ff9100;border-radius:8px;color:#ff9100;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+._8z-bar button:hover{background:rgba(255,145,0,.08);box-shadow:0 0 24px rgba(255,145,0,.1)}
+._8z-bar ._s{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a5268;min-width:80px;text-align:center}
+._8z-bar ._s.ok{color:#22c55e}._8z-bar ._s.err{color:#ef4444}._8z-bar ._s.wrk{color:#ffc629}
+._8z-bar ._d{font-family:'JetBrains Mono',monospace;font-size:9px;color:#4a5268;letter-spacing:.5px}
+@media print{._8z-sub::after{content:" — contact author for access"}._8z-bar{display:none!important}._8z-lk ._8z-ct{display:none!important}}
+@media(max-width:600px){._8z-bar{flex-wrap:nowrap;gap:6px;padding:8px 10px}._8z-bar input{width:120px;max-width:none;padding:8px 10px;font-size:12px}._8z-bar ._l{font-size:9px;letter-spacing:1px}._8z-bar button{padding:8px 12px;font-size:10px;letter-spacing:1px}._8z-bar ._d{display:none}._8z-bar ._s{min-width:auto;font-size:9px}}
+</style>
+
+<script>
+(function(){
+'use strict';
+var _I=500000,_XR=1024,M=(1n<<64n)-1n,_SK='_8z_pp',_BD="chessbest.org";
+
+function XS(s){var v=s&M;this.state=v===0n?0x9E3779B97F4A7C15n:v}
+XS.prototype.n=function(){var x=this.state;x=(x^((x>>12n)&M))&M;x=(x^((x<<25n)&M))&M;x=(x^((x>>27n)&M))&M;this.state=x;return(x*2685821657736338717n)&M};
+
+function u2b(v){var b=new Uint8Array(8);for(var i=7;i>=0;i--){b[i]=Number(v&0xFFn);v>>=8n}return b}
+function b2u(b){var v=0n;for(var i=0;i<8;i++)v=(v<<8n)|BigInt(b[i]);return v}
+function sha(d){var b=(d instanceof Uint8Array)?d:new TextEncoder().encode(d);return crypto.subtle.digest('SHA-256',b).then(function(r){return new Uint8Array(r)})}
+function cat(){var l=0,a=arguments;for(var i=0;i<a.length;i++)l+=a[i].length;var o=new Uint8Array(l),p=0;for(var i=0;i<a.length;i++){o.set(a[i],p);p+=a[i].length}return o}
+
+async function dk(pp,salt){
+  var ph=await sha(pp),sm=await sha(cat(ph,salt,new TextEncoder().encode("8Z_AUTH_V1")));
+  var rng=new XS(b2u(sm.slice(0,8)));
+  for(var i=0;i<_XR;i++)rng.n();
+  var sh=await sha(u2b(rng.state)),c=cat(ph,sh);
+  var km=await crypto.subtle.importKey('raw',c,'PBKDF2',false,['deriveBits']);
+  return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:salt,iterations:_I,hash:'SHA-256'},km,256));
+}
+
+async function gzD(data){
+  var ds=new DecompressionStream('gzip');
+  var w=ds.writable.getWriter(),r=ds.readable.getReader();
+  w.write(data);w.close();
+  var ch=[];while(true){var x=await r.read();if(x.done)break;ch.push(x.value)}
+  var t=0;for(var i=0;i<ch.length;i++)t+=ch[i].length;
+  var o=new Uint8Array(t),p=0;for(var i=0;i<ch.length;i++){o.set(ch[i],p);p+=ch[i].length}return o;
+}
+
+async function dec(b64,pp){
+  var raw=Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0)});
+  if(raw.length<60)throw new Error('small');
+  var salt=raw.slice(0,32),iv=raw.slice(32,44),ct=raw.slice(44);
+  var kb=await dk(pp,salt);
+  var key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['decrypt']);
+  var comp=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,tagLength:128},key,ct));
+  return new TextDecoder().decode(await gzD(comp));
+}
+
+function show(el,html){
+  el.querySelector('._8z-ct').innerHTML=html;
+  el.querySelector('._8z-ct').style.display='';
+  el.querySelector('._8z-ct').classList.add('_8z-fi');
+  el.querySelector('._8z-lui').style.display='none';
+  el.classList.remove('_8z-lk');el.classList.add('_8z-ok');
+}
+
+function resolveKey(raw){
+  // Domain lock logic
+  if(!_BD) return raw;
+  var isLocal=(window.location.protocol==='file:');
+  var host=(window.location.hostname||'').toLowerCase();
+  var expected=_BD.toLowerCase();
+  // If user typed password||domain explicitly (owner override for local)
+  if(raw.indexOf('||')!==-1){
+    var parts=raw.split('||');
+    if(parts[1].trim().toLowerCase()===expected) return raw;
+    throw new Error('domain');
+  }
+  // On correct domain: auto-append
+  if(!isLocal && host===expected) return raw+'||'+_BD;
+  // Local without explicit domain suffix
+  if(isLocal) throw new Error('domain-local');
+  // Wrong domain
+  throw new Error('domain');
+}
+
+var secs=document.querySelectorAll('._8z-sec[data-8z-blob]');
+if(!secs.length)return;
+
+var bar=document.createElement('div');
+bar.className='_8z-bar';
+var domNote=_BD?'<span class="_d">\uD83C\uDF10 '+_BD+'</span>':'';
+bar.innerHTML='<span class="_l">\uD83D\uDD12 '+secs.length+' Protected</span>'
+  +domNote
+  +'<input type="password" id="_8z_inp" placeholder="Enter access key" autocomplete="current-password">'
+  +'<button id="_8z_btn">Unlock</button>'
+  +'<span class="_s" id="_8z_st"></span>';
+document.body.appendChild(bar);
+
+var inp=document.getElementById('_8z_inp');
+var btn=document.getElementById('_8z_btn');
+var st=document.getElementById('_8z_st');
+
+async function go(){
+  var raw=inp.value;
+  if(!raw){st.textContent='Enter a key';st.className='_s err';return}
+  var pp;
+  try{pp=resolveKey(raw)}catch(e){
+    if(e.message==='domain-local'){
+      st.textContent='Local use restricted';st.className='_s err';
+    }else{
+      st.textContent='Domain restricted';st.className='_s err';
+    }
+    return;
+  }
+  btn.disabled=true;btn.textContent='DERIVING...';
+  st.textContent='500K PBKDF2';st.className='_s wrk';
+  await new Promise(function(r){requestAnimationFrame(function(){requestAnimationFrame(r)})});
+  try{
+    var html=await dec(secs[0].getAttribute('data-8z-blob'),pp);
+    show(secs[0],html);
+    st.textContent='Decrypting '+secs.length+'...';
+    for(var i=1;i<secs.length;i++){
+      try{show(secs[i],await dec(secs[i].getAttribute('data-8z-blob'),pp));}
+      catch(e){console.warn('Section '+i+':',e)}
+    }
+    st.textContent='\u2713 Unlocked';st.className='_s ok';
+    setTimeout(function(){bar.classList.add('_8z-hid')},1500);
+    try{sessionStorage.setItem(_SK,raw)}catch(e){}
+  }catch(e){
+    st.textContent='Not yet.';st.className='_s err';
+    btn.disabled=false;btn.textContent='UNLOCK';inp.value='';inp.focus();
+  }
+}
+
+btn.addEventListener('click',go);
+inp.addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+try{var sv=sessionStorage.getItem(_SK);if(sv){inp.value=sv;go()}}catch(e){}
+})();
+</script>
+<!-- End 8Z Shield Sections -->
 </body>
 </html>
