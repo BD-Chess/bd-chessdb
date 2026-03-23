@@ -140,6 +140,58 @@ body::after{
 .footer{text-align:center;padding:12px;font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--muted);letter-spacing:.12em}
 .footer a{color:var(--cyan);text-decoration:none}
 
+/* ── Welcome modal ── */
+.welcome-overlay{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  z-index:10;border-radius:10px;
+  background:rgba(2,4,9,0.72);
+  backdrop-filter:blur(4px);
+  transition:opacity .35s ease;
+}
+.welcome-overlay.hidden{opacity:0;pointer-events:none}
+.welcome-card{
+  text-align:center;padding:28px 32px;max-width:300px;
+  background:rgba(11,17,32,0.92);
+  border:1px solid rgba(52,211,153,0.22);
+  border-radius:10px;
+  box-shadow:0 0 40px rgba(52,211,153,0.08),0 20px 60px rgba(0,0,0,0.5);
+  animation:cardIn .4s cubic-bezier(.22,1,.36,1);
+}
+@keyframes cardIn{
+  from{transform:translateY(14px) scale(.97);opacity:0}
+  to{transform:none;opacity:1}
+}
+.welcome-card .wc-icon{font-size:2rem;margin-bottom:10px;line-height:1}
+.welcome-card h2{
+  font-family:'Rajdhani',sans-serif;font-size:1.35rem;font-weight:700;
+  color:var(--text);letter-spacing:.02em;margin-bottom:6px;line-height:1.2;
+}
+.welcome-card h2 span{color:var(--green)}
+.welcome-card p{
+  font-size:.82rem;color:rgba(226,232,244,0.55);line-height:1.6;
+  font-family:'JetBrains Mono',monospace;margin-bottom:20px;
+}
+.welcome-card .diff-hint{
+  display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:18px;
+}
+.welcome-card .diff-hint span{
+  font-family:'JetBrains Mono',monospace;font-size:.64rem;
+  padding:5px 8px;border-radius:4px;border:1px solid var(--border);
+  color:var(--muted);letter-spacing:.06em;
+}
+.welcome-card .diff-hint .d-evil{border-color:rgba(255,107,138,0.3);color:var(--rose)}
+.welcome-card .arrow-hint{
+  font-family:'JetBrains Mono',monospace;font-size:.62rem;
+  color:var(--green);letter-spacing:.08em;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  animation:arrowPulse 1.8s ease-in-out infinite;
+}
+@keyframes arrowPulse{
+  0%,100%{opacity:.6;transform:translateX(0)}
+  50%{opacity:1;transform:translateX(-4px)}
+}
+
 /* ── Topbar ── */
 .topbar{
   width:100%;background:rgba(6,10,20,0.85);border-bottom:1px solid rgba(0,229,255,0.08);
@@ -251,7 +303,27 @@ body::after{
       </div>
     </div>
   </div>
-  <div class="col-center"><div class="grid-wrap"><div class="grid" id="grid"></div></div></div>
+  <div class="col-center">
+    <div class="grid-wrap" style="position:relative">
+      <div class="welcome-overlay" id="welcomeOverlay">
+        <div class="welcome-card">
+          <div class="wc-icon">♟</div>
+          <h2>BD <span>Sudoku</span></h2>
+          <p>choose your difficulty<br>to start a new game</p>
+          <div class="diff-hint">
+            <span>Easy</span>
+            <span>Medium</span>
+            <span>Hard</span>
+            <span class="d-evil">Evil ☠</span>
+          </div>
+          <div class="arrow-hint">
+            ← pick a level on the left
+          </div>
+        </div>
+      </div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </div>
   <div class="col-right">
     <div class="panel"><div class="panel-title">AI Solver</div>
       <button class="btn green" id="solveBtn" onclick="aiSolve()">▶ AI Solve</button>
@@ -439,7 +511,10 @@ document.addEventListener('keydown',e=>{if(e.key>='1'&&e.key<='9'){placeNumber(+
 function startTimer(){stopTimer();timerSeconds=0;timerInterval=setInterval(()=>{timerSeconds++;document.getElementById('timer').textContent=String(Math.floor(timerSeconds/60)).padStart(2,'0')+':'+String(timerSeconds%60).padStart(2,'0')},1000)}
 function stopTimer(){if(timerInterval){clearInterval(timerInterval);timerInterval=null}}
 
-function newGame(diff){currentDiff=diff;gameStats.currentHints=0;gameStats.gamesPlayed++;saveStats();renderStats();aiReset();setStatus('Generating...','solving');setTimeout(()=>{const res=generatePuzzle(diff);puzzle=res.puzzle;solution=res.solution;playerGrid=copyGrid(puzzle);givenCells=puzzle.map(r=>r.map(v=>v!==0));notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];selectedCell=null;aiLog=solveLogged(copyGrid(puzzle)).log;aiStepIndex=0;resetM();const givens=puzzle.flat().filter(v=>v!==0).length;setStatus(`${diff.toUpperCase()} · ${givens} givens · ${aiLog.length} AI steps`,'');startTimer();render()},50)}
+function newGame(diff){
+  const ov=document.getElementById('welcomeOverlay');
+  if(ov)ov.classList.add('hidden');
+  currentDiff=diff;gameStats.currentHints=0;gameStats.gamesPlayed++;saveStats();renderStats();aiReset();setStatus('Generating...','solving');setTimeout(()=>{const res=generatePuzzle(diff);puzzle=res.puzzle;solution=res.solution;playerGrid=copyGrid(puzzle);givenCells=puzzle.map(r=>r.map(v=>v!==0));notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];selectedCell=null;aiLog=solveLogged(copyGrid(puzzle)).log;aiStepIndex=0;resetM();const givens=puzzle.flat().filter(v=>v!==0).length;setStatus(`${diff.toUpperCase()} · ${givens} givens · ${aiLog.length} AI steps`,'');startTimer();render()},50)}
 
 function getSpeed(){return Math.max(10,500-document.getElementById('speedSlider').value*4.8)}
 function aiSolve(){if(!puzzle||aiAnimating||!aiLog?.length)return;aiAnimating=true;setStatus('AI solving...','solving');document.getElementById('solveBtn').textContent='⏸ Pause';document.getElementById('solveBtn').onclick=aiPause;animNext()}
