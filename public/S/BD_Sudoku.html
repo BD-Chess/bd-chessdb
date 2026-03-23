@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sudoku × MDL — Phase 0 | AIM³ Lab</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23020409'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='16' font-weight='700' fill='%2300e5ff' text-anchor='middle'%3E9%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020409;--bg2:#060a14;--bg3:#0b1120;
+  --surface:rgba(15,23,41,0.82);--surface2:#141e33;
+  --border:rgba(0,229,255,0.10);--border2:rgba(0,229,255,0.22);
+  --cyan:#00e5ff;--cyan-dim:rgba(0,229,255,0.12);--cyan-glow:rgba(0,229,255,0.25);
+  --gold:#f59e0b;--gold-dim:rgba(245,158,11,0.12);
+  --green:#34d399;--green-dim:rgba(52,211,153,0.12);
+  --violet:#a78bfa;--violet-dim:rgba(167,139,250,0.12);
+  --rose:#ff6b8a;--rose-dim:rgba(255,107,138,0.12);
+  --orange:#fb923c;--orange-dim:rgba(251,146,60,0.12);
+  --text:#e2e8f4;--muted:#5e7192;--subtle:#1a2540;
+  --cell:52px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:
+    radial-gradient(circle at 20% 18%,rgba(16,120,80,0.22),transparent 32%),
+    radial-gradient(circle at 80% 70%,rgba(0,229,255,0.08),transparent 28%),
+    linear-gradient(180deg,#090b10 0%,#06070a 100%);
+  color:var(--text);
+  font-family:'Rajdhani',sans-serif;font-size:17px;line-height:1.6;
+  display:flex;flex-direction:column;align-items:center;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+/* ── Animated background blobs (shield-style, dark green) ── */
+body::before,body::after{
+  content:"";position:fixed;border-radius:50%;
+  filter:blur(80px);opacity:.30;pointer-events:none;z-index:0;
+}
+body::before{
+  width:42vw;height:42vw;left:-8vw;top:-12vh;
+  background:radial-gradient(circle,rgba(52,211,153,0.30),rgba(16,80,60,0.15) 48%,transparent 72%);
+  animation:flA 18s ease-in-out infinite;
+}
+body::after{
+  width:38vw;height:38vw;right:-10vw;bottom:-18vh;
+  background:radial-gradient(circle,rgba(0,229,255,0.12),rgba(16,60,80,0.15) 44%,transparent 72%);
+  animation:flB 24s ease-in-out infinite;
+}
+@keyframes flA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(5vw,4vh,0)}}
+@keyframes flB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-4vw,-6vh,0)}}
+
+/* Noise overlay */
+.noise{
+  position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0.018;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Everything above the blobs */
+.page{position:relative;z-index:1;width:100%;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+
+.header{width:100%;max-width:1200px;padding:16px 20px 0;display:flex;justify-content:space-between;align-items:baseline}
+.logo{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:600;color:var(--cyan);letter-spacing:.3em;text-transform:uppercase}
+.logo span{color:var(--gold)}
+.timer{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--muted);letter-spacing:.1em}
+
+.title-block{text-align:center;padding:8px 20px 0}
+.title{font-family:'Rajdhani',sans-serif;font-size:clamp(1.4rem,3.5vw,2.4rem);font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.title .accent{color:var(--cyan)}
+.subtitle{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:var(--muted);margin-top:2px}
+.status{text-align:center;font-size:.75rem;color:var(--muted);min-height:1.2em;margin:4px 0;font-family:'JetBrains Mono',monospace}
+.status.win{color:var(--gold);font-weight:600}
+.status.solving{color:var(--cyan)}
+
+/* ── 3-COLUMN LAYOUT ── */
+.main{
+  display:grid;grid-template-columns:200px auto 210px;grid-template-areas:"left center right";
+  gap:14px;padding:6px 20px;max-width:1200px;width:100%;flex:1;align-content:start;
+}
+.col-left{grid-area:left;display:flex;flex-direction:column;gap:8px}
+.col-center{grid-area:center;display:flex;flex-direction:column;align-items:center;justify-content:start}
+.col-right{grid-area:right;display:flex;flex-direction:column;gap:8px}
+
+/* ── GRID ── */
+.grid-wrap{
+  background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px;
+  box-shadow:0 0 60px rgba(0,229,255,0.04),0 0 120px rgba(52,211,153,0.02);
+  backdrop-filter:blur(12px);
+}
+.grid{display:grid;grid-template-columns:repeat(9,var(--cell));grid-template-rows:repeat(9,var(--cell));gap:1px}
+.cell{
+  width:var(--cell);height:var(--cell);
+  background:rgba(11,17,32,0.7);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:calc(var(--cell)*0.46);font-weight:700;
+  color:var(--text);cursor:pointer;position:relative;
+  transition:background .12s,border-color .12s;
+}
+.cell:hover{background:var(--subtle);border-color:var(--border2)}
+.cell.selected{background:var(--cyan-dim)!important;border-color:var(--cyan)!important;box-shadow:0 0 10px var(--cyan-glow)}
+.cell.given{color:var(--muted);cursor:default}.cell.given:hover{background:rgba(11,17,32,0.7)}
+.cell.error{color:var(--rose)!important;border-color:var(--rose)!important;background:var(--rose-dim)!important}
+.cell.highlight{background:rgba(0,229,255,0.04)}
+.cell.same-value{background:rgba(0,229,255,0.07)}
+.cell.cascade-flash{animation:cFlash .5s ease-out}
+.cell .notes{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:100%;height:100%;position:absolute;inset:0;font-size:calc(var(--cell)*0.2);color:var(--muted);font-weight:400}
+.cell .notes span{display:flex;align-items:center;justify-content:center}
+.cell.ai-naked{background:var(--green-dim)!important;border-color:var(--green)!important;color:var(--green)!important}
+.cell.ai-hidden{background:var(--cyan-dim)!important;border-color:var(--cyan)!important;color:var(--cyan)!important}
+.cell.ai-guess{background:var(--orange-dim)!important;border-color:var(--orange)!important;color:var(--orange)!important}
+.cell.ai-backtrack{background:var(--rose-dim)!important;border-color:var(--rose)!important}
+/* Box borders */
+.cell:nth-child(3n){border-right:2px solid var(--border2)}.cell:nth-child(9n){border-right:1px solid var(--border)}
+.cell:nth-child(n+19):nth-child(-n+27),.cell:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid var(--border2)}
+@keyframes cFlash{0%{box-shadow:inset 0 0 18px var(--cyan-glow)}100%{box-shadow:none}}
+
+/* ── PANELS ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;backdrop-filter:blur(8px)}
+.panel-title{font-family:'JetBrains Mono',monospace;font-size:.56rem;font-weight:600;color:var(--cyan);letter-spacing:.22em;text-transform:uppercase;margin-bottom:8px}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.numpad button,.btn{font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:700;background:rgba(11,17,32,0.6);border:1px solid var(--border);color:var(--text);padding:7px 4px;border-radius:4px;cursor:pointer;transition:all .12s}
+.numpad button:hover,.btn:hover{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan)}
+.numpad button.used{opacity:0.2;pointer-events:none}
+.btn{padding:7px 10px;width:100%;text-align:center;font-size:.7rem;letter-spacing:.06em}
+.btn.active{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan)}
+.btn.gold{border-color:var(--gold);color:var(--gold)}.btn.gold:hover{background:var(--gold-dim)}
+.btn.green{border-color:var(--green);color:var(--green)}.btn.green:hover{background:var(--green-dim)}
+.btn.rose{border-color:var(--rose);color:var(--rose)}.btn.rose:hover{background:var(--rose-dim)}
+.btn-row{display:flex;gap:3px}.btn-row .btn{flex:1}
+.diff-btns{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.metric{display:flex;justify-content:space-between;align-items:baseline;padding:2px 0}
+.metric-label{font-size:.72rem;color:var(--muted)}
+.metric-value{font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:700}
+.bar-wrap{height:3px;background:rgba(11,17,32,0.5);border-radius:2px;margin-top:3px;overflow:hidden}
+.bar{height:100%;border-radius:2px;transition:width .4s ease}
+.bar.cyan{background:var(--cyan)}.bar.green{background:var(--green)}.bar.gold{background:var(--gold)}.bar.violet{background:var(--violet)}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:5px}
+.legend-item{display:flex;align-items:center;gap:3px;font-size:.58rem;color:var(--muted)}
+.legend-dot{width:7px;height:7px;border-radius:2px}
+.footer{text-align:center;padding:12px;font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--muted);letter-spacing:.12em}
+.footer a{color:var(--cyan);text-decoration:none}
+
+@media(max-width:760px){
+  .main{grid-template-columns:1fr;grid-template-areas:"center" "left" "right";max-width:500px}
+  .col-left,.col-right{flex-direction:row;flex-wrap:wrap;gap:6px}
+  .col-left .panel,.col-right .panel{flex:1;min-width:140px}
+}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="page">
+<div class="header">
+  <div class="logo">AIM³ <span>Lab</span> · Sudoku × MDL</div>
+  <div class="timer" id="timer">00:00</div>
+</div>
+<div class="title-block">
+  <h1 class="title">Sudoku <span class="accent">Phase 0</span></h1>
+  <p class="subtitle">"En kernel. Štiri abecede."</p>
+</div>
+<div class="status" id="status">Select difficulty to begin</div>
+<div class="main">
+  <div class="col-left">
+    <div class="panel"><div class="panel-title">New Game</div>
+      <div class="diff-btns">
+        <button class="btn" onclick="newGame('easy')">Easy</button>
+        <button class="btn" onclick="newGame('medium')">Medium</button>
+        <button class="btn gold" onclick="newGame('hard')">Hard</button>
+        <button class="btn rose" onclick="newGame('evil')">Evil</button>
+      </div>
+    </div>
+    <div class="panel"><div class="panel-title">Numbers</div>
+      <div class="numpad" id="numpad"></div>
+      <div style="margin-top:5px"><button class="btn" id="notesBtn" onclick="toggleNotes()">Notes: OFF</button></div>
+      <div class="btn-row" style="margin-top:3px">
+        <button class="btn" onclick="eraseCell()">Erase</button>
+        <button class="btn" onclick="undoMove()">Undo</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-center"><div class="grid-wrap"><div class="grid" id="grid"></div></div></div>
+  <div class="col-right">
+    <div class="panel"><div class="panel-title">AI Solver</div>
+      <button class="btn green" id="solveBtn" onclick="aiSolve()">▶ AI Solve</button>
+      <div class="btn-row" style="margin-top:3px">
+        <button class="btn" onclick="aiStep()">Step</button>
+        <button class="btn rose" onclick="aiReset()">Reset</button>
+      </div>
+      <div style="margin-top:5px"><label style="font-size:.6rem;color:var(--muted)">Speed</label>
+        <input type="range" id="speedSlider" min="1" max="100" value="50" style="width:100%;accent-color:var(--cyan)">
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Naked</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div>Hidden</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Guess</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--rose)"></div>BT</div>
+      </div>
+    </div>
+    <div class="panel"><div class="panel-title">Live Metrics</div>
+      <div class="metric"><span class="metric-label">Steps</span><span class="metric-value" id="mSteps">0</span></div>
+      <div class="metric"><span class="metric-label">Backtracks</span><span class="metric-value" id="mBT" style="color:var(--rose)">0</span></div>
+      <div class="metric"><span class="metric-label">Cascades</span><span class="metric-value" id="mCascade" style="color:var(--green)">0</span></div>
+      <div class="metric"><span class="metric-label">Candidates</span><span class="metric-value" id="mCands" style="color:var(--cyan)">0</span></div>
+      <div style="margin-top:6px">
+        <div class="metric"><span class="metric-label">ADSR</span><span class="metric-value" id="mADSR" style="color:var(--gold)">—</span></div>
+        <div class="bar-wrap"><div class="bar gold" id="barADSR" style="width:0%"></div></div>
+      </div>
+      <div style="margin-top:3px">
+        <div class="metric"><span class="metric-label">Progress</span><span class="metric-value" id="mProgress" style="color:var(--violet)">0%</span></div>
+        <div class="bar-wrap"><div class="bar violet" id="barProgress" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="footer">AIM³ Lab · Bojan Dobrečevič × Claude · 2026 · <a href="https://chessbest.org/bd/">chessbest.org/bd</a></div>
+</div>
+
+<script>
+// ── Dynamic cell sizing ──
+function calcCellSize(){
+  const w=window.innerWidth, h=window.innerHeight;
+  const isMobile=w<760;
+  if(isMobile){
+    const avail=Math.min(w-40,h*0.5);
+    return Math.max(30,Math.floor((avail-20)/9.5));
+  }
+  // Landscape: board in center column, account for sidebars (~430px) and padding
+  const availW=w-480, availH=h-160;
+  const fromW=Math.floor((availW-20)/9.5);
+  const fromH=Math.floor((availH-20)/9.5);
+  return Math.max(36,Math.min(fromW,fromH,72));
+}
+function applyCellSize(){
+  document.documentElement.style.setProperty('--cell',calcCellSize()+'px');
+}
+applyCellSize();
+window.addEventListener('resize',applyCellSize);
+
+// ════════════════════════════════════════════════════
+const SIZE=9,BOX=3;
+function getCandidates(g,r,c){if(g[r][c]!==0)return new Set();const u=new Set();for(let i=0;i<9;i++){u.add(g[r][i]);u.add(g[i][c])}const br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3;for(let i=br;i<br+3;i++)for(let j=bc;j<bc+3;j++)u.add(g[i][j]);u.delete(0);const s=new Set();for(let v=1;v<=9;v++)if(!u.has(v))s.add(v);return s}
+function countCandidates(g){let t=0;for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0)t+=getCandidates(g,r,c).size;return t}
+function isValid(g,r,c,v){for(let i=0;i<9;i++){if(i!==c&&g[r][i]===v)return false;if(i!==r&&g[i][c]===v)return false}const br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3;for(let i=br;i<br+3;i++)for(let j=bc;j<bc+3;j++)if((i!==r||j!==c)&&g[i][j]===v)return false;return true}
+function isSolved(g){for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0)return false;return true}
+function copyGrid(g){return g.map(r=>[...r])}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function generateFull(){const g=Array.from({length:9},()=>Array(9).fill(0));function f(p){if(p===81)return true;const r=Math.floor(p/9),c=p%9;for(const v of shuffle([1,2,3,4,5,6,7,8,9])){if(isValid(g,r,c,v)){g[r][c]=v;if(f(p+1))return true;g[r][c]=0}}return false}f(0);return g}
+function countSolutions(g,lim=2){const t=copyGrid(g);let cnt=0;function s(p){if(cnt>=lim)return;while(p<81){if(t[Math.floor(p/9)][p%9]===0)break;p++}if(p>=81){cnt++;return}const r=Math.floor(p/9),c=p%9;for(let v=1;v<=9;v++){if(isValid(t,r,c,v)){t[r][c]=v;s(p+1);if(cnt>=lim){t[r][c]=0;return}t[r][c]=0}}}s(0);return cnt}
+function generatePuzzle(diff){const ranges={easy:[36,42],medium:[28,35],hard:[24,27],evil:[20,23]};const[lo,hi]=ranges[diff]||[28,35];const target=lo+Math.floor(Math.random()*(hi-lo+1));const sol=generateFull(),puz=copyGrid(sol);let removed=0;for(const pos of shuffle([...Array(81).keys()])){if(removed>=81-target)break;const r=Math.floor(pos/9),c=pos%9,saved=puz[r][c];puz[r][c]=0;if(countSolutions(puz)===1)removed++;else puz[r][c]=saved}return{puzzle:puz,solution:sol}}
+
+// ── Solver with snapshot-based backtracking ──
+function solveLogged(grid){const g=copyGrid(grid);const log=[];let step=0;
+function findNaked(g){for(let r=0;r<9;r++)for(let c=0;c<9;c++){if(g[r][c]===0){const cs=getCandidates(g,r,c);if(cs.size===1)return{r,c,v:[...cs][0],strategy:'naked_single'}}}return null}
+function findHidden(g){const check=(cells)=>{for(let v=1;v<=9;v++){if(cells.some(([r,c])=>g[r][c]===v))continue;const p=cells.filter(([r,c])=>g[r][c]===0&&getCandidates(g,r,c).has(v));if(p.length===1)return{r:p[0][0],c:p[0][1],v,strategy:'hidden_single'}}return null};for(let r=0;r<9;r++){const res=check([...Array(9).keys()].map(c=>[r,c]));if(res)return res}for(let c=0;c<9;c++){const res=check([...Array(9).keys()].map(r=>[r,c]));if(res)return res}for(let br=0;br<9;br+=3)for(let bc=0;bc<9;bc+=3){const cells=[];for(let i=br;i<br+3;i++)for(let j=bc;j<bc+3;j++)cells.push([i,j]);const res=check(cells);if(res)return res}return null}
+function cascade(g,r,c,v){const t=copyGrid(g);t[r][c]=v;let n=0,ch=true;while(ch){ch=false;for(let i=0;i<9;i++)for(let j=0;j<9;j++)if(t[i][j]===0){const cs=getCandidates(t,i,j);if(cs.size===1){t[i][j]=[...cs][0];n++;ch=true}}}return n}
+function solve(g){let found=true;while(found){found=false;let m=findNaked(g);if(!m)m=findHidden(g);if(m&&g[m.r][m.c]===0){const cd=cascade(g,m.r,m.c,m.v);g[m.r][m.c]=m.v;log.push({step:++step,r:m.r,c:m.c,v:m.v,strategy:m.strategy,cascade:cd,backtrack:false});found=true}}
+const empty=[];for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0)empty.push([r,c]);if(!empty.length)return true;
+let best=null,bestN=10;for(const[r,c]of empty){const n=getCandidates(g,r,c).size;if(n===0)return false;if(n<bestN){bestN=n;best=[r,c]}}
+const[r,c]=best;for(const v of[...getCandidates(g,r,c)].sort()){const snap=copyGrid(g);const cd=cascade(g,r,c,v);g[r][c]=v;log.push({step:++step,r,c,v,strategy:'guess',cascade:cd,backtrack:false});
+if(solve(g))return true;
+const restore=[];for(let i=0;i<9;i++)for(let j=0;j<9;j++)if(g[i][j]!==snap[i][j])restore.push({r:i,c:j});
+for(let i=0;i<9;i++)for(let j=0;j<9;j++)g[i][j]=snap[i][j];
+log.push({step:++step,r,c,v,strategy:'backtrack',cascade:0,backtrack:true,restore})}return false}
+solve(g);return{solved:g,log}}
+
+// ── UI ──
+let puzzle=null,solution=null,playerGrid=null,givenCells=null,selectedCell=null,notesMode=false,notes=null,history=[];
+let timerInterval=null,timerSeconds=0,aiLog=null,aiStepIndex=0,aiAnimating=false,aiTimeout=null;
+let aiM={steps:0,bt:0,cascades:0,cl:[]};
+
+function buildGrid(){const grid=document.getElementById('grid');grid.innerHTML='';for(let i=0;i<81;i++){const cell=document.createElement('div');cell.className='cell';cell.dataset.index=i;cell.addEventListener('click',()=>selectCell(i));grid.appendChild(cell)}const np=document.getElementById('numpad');np.innerHTML='';for(let n=1;n<=9;n++){const b=document.createElement('button');b.textContent=n;b.addEventListener('click',()=>placeNumber(n));np.appendChild(b)}}
+
+function render(){if(!playerGrid)return;const cells=document.querySelectorAll('.cell');const counts=Array(10).fill(0);const sR=selectedCell!==null?Math.floor(selectedCell/9):-1,sC=selectedCell!==null?selectedCell%9:-1;const sV=selectedCell!==null?playerGrid[sR]?.[sC]:0;
+cells.forEach((cell,i)=>{const r=Math.floor(i/9),c=i%9,v=playerGrid[r][c],isG=givenCells[r][c];
+const keep=cell.className.match(/ai-\w+/);cell.className='cell';if(isG)cell.classList.add('given');if(selectedCell===i)cell.classList.add('selected');if(selectedCell!==null&&(r===sR||c===sC||(Math.floor(r/3)===Math.floor(sR/3)&&Math.floor(c/3)===Math.floor(sC/3))))cell.classList.add('highlight');if(v!==0&&sV!==0&&v===sV&&i!==selectedCell)cell.classList.add('same-value');
+if(v!==0&&!isG){const tmp=playerGrid[r][c];playerGrid[r][c]=0;if(!isValid(playerGrid,r,c,tmp))cell.classList.add('error');playerGrid[r][c]=tmp}
+if(keep)cell.classList.add(keep[0]);
+if(v!==0){cell.innerHTML=v;counts[v]++}else if(notes&&notes[r][c].size>0){let h='<div class="notes">';for(let n=1;n<=9;n++)h+=`<span>${notes[r][c].has(n)?n:''}</span>`;cell.innerHTML=h+'</div>'}else cell.innerHTML=''});
+document.querySelectorAll('#numpad button').forEach((b,i)=>b.classList.toggle('used',counts[i+1]>=9));
+if(isSolved(playerGrid)){let ok=true;for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(playerGrid[r][c]!==solution[r][c])ok=false;if(ok){setStatus('Puzzle solved! 🎉','win');stopTimer()}}
+updateMetrics()}
+
+function selectCell(i){if(aiAnimating)return;selectedCell=(selectedCell===i)?null:i;render()}
+function placeNumber(n){if(selectedCell===null||aiAnimating)return;const r=Math.floor(selectedCell/9),c=selectedCell%9;if(givenCells[r][c])return;if(notesMode){if(notes[r][c].has(n))notes[r][c].delete(n);else notes[r][c].add(n);playerGrid[r][c]=0}else{history.push({r,c,prev:playerGrid[r][c],pn:new Set(notes[r][c])});playerGrid[r][c]=(playerGrid[r][c]===n)?0:n;notes[r][c].clear()}render()}
+function eraseCell(){if(selectedCell===null||aiAnimating)return;const r=Math.floor(selectedCell/9),c=selectedCell%9;if(givenCells[r][c])return;history.push({r,c,prev:playerGrid[r][c],pn:new Set(notes[r][c])});playerGrid[r][c]=0;notes[r][c].clear();render()}
+function undoMove(){if(!history.length||aiAnimating)return;const{r,c,prev,pn}=history.pop();playerGrid[r][c]=prev;notes[r][c]=pn;render()}
+function toggleNotes(){notesMode=!notesMode;document.getElementById('notesBtn').textContent=`Notes: ${notesMode?'ON':'OFF'}`;document.getElementById('notesBtn').classList.toggle('active',notesMode)}
+
+document.addEventListener('keydown',e=>{if(e.key>='1'&&e.key<='9'){placeNumber(+e.key);return}if(e.key==='Backspace'||e.key==='Delete'){eraseCell();return}if(e.key==='n'){toggleNotes();return}if(e.key==='z'&&(e.ctrlKey||e.metaKey)){undoMove();e.preventDefault();return}if(selectedCell!==null){const r=Math.floor(selectedCell/9),c=selectedCell%9;if(e.key==='ArrowUp'&&r>0){selectCell((r-1)*9+c);e.preventDefault()}if(e.key==='ArrowDown'&&r<8){selectCell((r+1)*9+c);e.preventDefault()}if(e.key==='ArrowLeft'&&c>0){selectCell(r*9+c-1);e.preventDefault()}if(e.key==='ArrowRight'&&c<8){selectCell(r*9+c+1);e.preventDefault()}}});
+
+function startTimer(){stopTimer();timerSeconds=0;timerInterval=setInterval(()=>{timerSeconds++;document.getElementById('timer').textContent=String(Math.floor(timerSeconds/60)).padStart(2,'0')+':'+String(timerSeconds%60).padStart(2,'0')},1000)}
+function stopTimer(){if(timerInterval){clearInterval(timerInterval);timerInterval=null}}
+
+function newGame(diff){aiReset();setStatus('Generating...','solving');setTimeout(()=>{const res=generatePuzzle(diff);puzzle=res.puzzle;solution=res.solution;playerGrid=copyGrid(puzzle);givenCells=puzzle.map(r=>r.map(v=>v!==0));notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];selectedCell=null;aiLog=solveLogged(copyGrid(puzzle)).log;aiStepIndex=0;resetM();const givens=puzzle.flat().filter(v=>v!==0).length;setStatus(`${diff.toUpperCase()} · ${givens} givens · ${aiLog.length} AI steps`,'');startTimer();render()},50)}
+
+function getSpeed(){return Math.max(10,500-document.getElementById('speedSlider').value*4.8)}
+function aiSolve(){if(!puzzle||aiAnimating||!aiLog?.length)return;aiAnimating=true;setStatus('AI solving...','solving');document.getElementById('solveBtn').textContent='⏸ Pause';document.getElementById('solveBtn').onclick=aiPause;animNext()}
+function animNext(){if(!aiAnimating||aiStepIndex>=aiLog.length){aiAnimating=false;document.getElementById('solveBtn').textContent='▶ AI Solve';document.getElementById('solveBtn').onclick=aiSolve;if(aiStepIndex>=aiLog.length)setStatus('AI finished! ✓','win');return}applyEntry(aiLog[aiStepIndex++],true);aiTimeout=setTimeout(animNext,getSpeed())}
+function applyEntry(e,anim){const sp=getSpeed();if(e.backtrack){if(e.restore)for(const{r,c}of e.restore)if(!givenCells[r][c]){playerGrid[r][c]=0;if(anim){const cl=document.querySelector(`.cell[data-index="${r*9+c}"]`);if(cl){cl.classList.add('ai-backtrack');setTimeout(()=>cl.classList.remove('ai-backtrack'),sp*2)}}}aiM.bt++}else{playerGrid[e.r][e.c]=e.v;if(notes)notes[e.r][e.c].clear();aiM.steps++;if(e.cascade>0)aiM.cascades+=e.cascade;aiM.cl.push(e.cascade);if(anim){const cls={naked_single:'ai-naked',hidden_single:'ai-hidden',guess:'ai-guess'}[e.strategy]||'';const cl=document.querySelector(`.cell[data-index="${e.r*9+e.c}"]`);if(cl&&cls){cl.classList.add(cls);if(e.cascade>0)cl.classList.add('cascade-flash');setTimeout(()=>cl.classList.remove(cls,'cascade-flash'),sp*3)}}}render();updateMetrics()}
+function aiPause(){aiAnimating=false;if(aiTimeout)clearTimeout(aiTimeout);document.getElementById('solveBtn').textContent='▶ Continue';document.getElementById('solveBtn').onclick=aiSolve;setStatus('Paused','')}
+function aiStep(){if(!puzzle||!aiLog||aiStepIndex>=aiLog.length)return;aiAnimating=false;if(aiTimeout)clearTimeout(aiTimeout);const e=aiLog[aiStepIndex++];applyEntry(e,true);selectedCell=e.r*9+e.c;setStatus(`Step ${aiStepIndex}: ${e.backtrack?'BACKTRACK':e.strategy.replace('_',' ').toUpperCase()} → R${e.r+1}C${e.c+1}=${e.v}`,'solving');render()}
+function aiReset(){aiAnimating=false;if(aiTimeout)clearTimeout(aiTimeout);aiStepIndex=0;resetM();if(puzzle){playerGrid=copyGrid(puzzle);notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));render()}document.getElementById('solveBtn').textContent='▶ AI Solve';document.getElementById('solveBtn').onclick=aiSolve}
+function resetM(){aiM={steps:0,bt:0,cascades:0,cl:[]};updateMetrics()}
+function updateMetrics(){document.getElementById('mSteps').textContent=aiM.steps;document.getElementById('mBT').textContent=aiM.bt;document.getElementById('mCascade').textContent=aiM.cascades;document.getElementById('mCands').textContent=playerGrid?countCandidates(playerGrid):0;const cl=aiM.cl;if(cl.length>0){const adsr=(cl.filter(d=>d===0).length+cl.filter(d=>d>=5).length)/cl.length;document.getElementById('mADSR').textContent=adsr.toFixed(2);document.getElementById('barADSR').style.width=`${adsr*100}%`}else{document.getElementById('mADSR').textContent='—';document.getElementById('barADSR').style.width='0%'}if(playerGrid){const pct=Math.round(playerGrid.flat().filter(v=>v!==0).length/81*100);document.getElementById('mProgress').textContent=`${pct}%`;document.getElementById('barProgress').style.width=`${pct}%`}}
+function setStatus(msg,cls){const el=document.getElementById('status');el.textContent=msg;el.className='status '+(cls||'')}
+buildGrid();
+</script>
+</body>
+</html>
