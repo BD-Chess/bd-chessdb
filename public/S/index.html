@@ -173,23 +173,22 @@ body::after{
   font-family:'JetBrains Mono',monospace;margin-bottom:20px;
 }
 .welcome-card .diff-hint{
-  display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:18px;
+  display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:6px;
 }
 .welcome-card .diff-hint span{
-  font-family:'JetBrains Mono',monospace;font-size:.64rem;
-  padding:5px 8px;border-radius:4px;border:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace;font-size:.78rem;font-weight:600;
+  padding:12px 8px;border-radius:5px;border:1px solid var(--border);
   color:var(--muted);letter-spacing:.06em;
+  transition:all .15s;user-select:none;
+}
+.welcome-card .diff-hint span:hover{
+  border-color:var(--green);color:var(--green);
+  background:rgba(52,211,153,0.08);
+  transform:translateY(-1px);
 }
 .welcome-card .diff-hint .d-evil{border-color:rgba(255,107,138,0.3);color:var(--rose)}
-.welcome-card .arrow-hint{
-  font-family:'JetBrains Mono',monospace;font-size:.62rem;
-  color:var(--green);letter-spacing:.08em;
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  animation:arrowPulse 1.8s ease-in-out infinite;
-}
-@keyframes arrowPulse{
-  0%,100%{opacity:.6;transform:translateX(0)}
-  50%{opacity:1;transform:translateX(-4px)}
+.welcome-card .diff-hint .d-evil:hover{
+  border-color:var(--rose);background:rgba(255,107,138,0.08);color:var(--rose);
 }
 
 /* ── Topbar ── */
@@ -309,15 +308,12 @@ body::after{
         <div class="welcome-card">
           <div class="wc-icon">♟</div>
           <h2>BD <span>Sudoku</span></h2>
-          <p>choose your difficulty<br>to start a new game</p>
+          <p>choose your difficulty</p>
           <div class="diff-hint">
-            <span>Easy</span>
-            <span>Medium</span>
-            <span>Hard</span>
-            <span class="d-evil">Evil ☠</span>
-          </div>
-          <div class="arrow-hint">
-            ← pick a level on the left
+            <span onclick="newGame('easy')" style="cursor:pointer">Easy</span>
+            <span onclick="newGame('medium')" style="cursor:pointer">Medium</span>
+            <span onclick="newGame('hard')" style="cursor:pointer">Hard</span>
+            <span class="d-evil" onclick="newGame('evil')" style="cursor:pointer">Evil ☠</span>
           </div>
         </div>
       </div>
