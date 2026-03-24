@@ -2664,6 +2664,8 @@ function jumpTo(i){
     // Rewind to start
     while (game.history().length > 0) game.undo();
     board.position(game.fen());
+    // Clear stale badges from pre-replay position
+    document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
 
     for (let i = 0; i < moves.length; i++) {
       if (replayAbort) break;
@@ -2673,6 +2675,9 @@ function jumpTo(i){
       const mv = moves[i];
       const moveUci = mv.from + mv.to + (mv.promotion || '');
 
+      // Clear badges from previous position
+      document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
+
       updateSimStatus(`Analyzing ${i + 1}/${moves.length}: ${mv.san}…`);
 
       const analysis = await analyzePosition(fen);
@@ -2681,6 +2686,22 @@ function jumpTo(i){
         trend: '', momentum: 0, tunnel: false, isDCC1: null };
 
       if (analysis) {
+        // Show badges for this position's candidates
+        if (settings.simSpeed > 0) {
+          analysis.allMoves.slice(0, settings.topN || 5).forEach((m, idx) =>
+            annotateMove(m.move, m.score, idx === 0));
+          // Overlay DCC data on analyzed candidates
+          for (const c of analysis.candidates) {
+            updateDCCBadge(c.move, {
+              trend: evalTrend([c.raw, c.dcc || c.raw]),
+              stability: c.stability, arrow: c.trend,
+              adsr: { shape: c.adsr, label: (ADSR_SHAPES[c.adsr] || {}).desc || '' },
+              tunnel: c.tunnel, momentum: c.momentum,
+              evalSequence: [], movePath: [], score: c.raw, pvDepth: 0
+            }, 'done');
+          }
+        }
+
         // Find the played move in analyzed candidates
         const played = analysis.candidates.find(c =>
           c.move.slice(0, 4) === moveUci.slice(0, 4));
@@ -2706,12 +2727,17 @@ function jumpTo(i){
 
       // Play the move forward
       game.move(mv.san);
+      board.position(game.fen());
+      // Update history panel to follow current move
+      renderHistory();
+
       if (settings.simSpeed > 0) {
-        board.position(game.fen());
         await sleep(Math.max(80, settings.simSpeed / 2));
       }
     }
 
+    // Final: clear replay badges, restore clean board
+    document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
     // Restore board
     board.position(game.fen());
 
