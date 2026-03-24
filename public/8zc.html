@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChessBest.org — 8Z DCC Eval Layer</title>
+  <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
+  <link rel="stylesheet" href="css/8zc-styles.css">
+  <style>
+    /* Desktop vs. mobile subtitle */
+    .desktop-only { display: block; }
+    .mobile-only  { display: none; }
+    @media (max-width: 600px) {
+      .desktop-only { display: none; }
+      .mobile-only  { display: block; }
+    }
+    /* Center the subtitle */
+    #pageSubtitle { text-align: center; }
+
+    /* Facts link theming */
+    :root { --facts-link-color: #fff; }
+    body.light-theme { --facts-link-color: #1565c0; }
+    #facts-link a {
+      color: var(--facts-link-color);
+      text-decoration: none;
+    }
+
+    /* Email link theming */
+    :root { --email-link-color: #eee; }
+    body.light-theme { --email-link-color: #1565c0; }
+    #credits a {
+      color: var(--email-link-color);
+      text-decoration: none;
+    }
+
+    /* Violet color for the "New" button */
+    .btn-new { background:#6f42c1; }
+    body.light-theme .btn-new { background:#7d4be0; }
+  </style>
+</head>
+<body>
+  <div id="pageTitle">
+    <a href="https://chessbest.org" id="bestMoveLink" style="text-decoration:none;color:inherit">ChessBest.org</a>
+    <span style="color:#00e5ff;font-size:0.7em;vertical-align:super;margin-left:4px">8Z</span>
+    4
+    <a href="https://www.chessdb.cn/queryc_en/" target="_blank">ChessDB.cn</a>
+  </div>
+  <div id="pageSubtitle">
+    <div class="desktop-only">
+      MDL+DCC eval layer — looks 3-5 moves deep through 48+ billion evaluations.
+    </div>
+    <div class="mobile-only">
+      MDL+DCC lookahead on 48B+ evals.
+    </div>
+  </div>
+
+  <div id="main">
+    <!-- --------------- BOARD --------------- -->
+    <div id="board-container">
+      <div id="board"></div>
+    </div>
+
+    <!-- --------------- CONTROLS --------------- -->
+    <div id="controls">
+      <!-- Navigation row -->
+      <div class="btn-group top-buttons">
+        <button class="btn btn-nav" id="first">|<</button>
+        <button class="btn btn-nav" id="prev">←</button>
+        <button class="btn btn-nav" id="btnHideEval">Hide Eval</button>
+        <button class="btn btn-nav" id="next">→️</button>
+        <button class="btn btn-nav" id="last">>|</button>
+      </div>
+
+      <!-- Game title -->
+      <div class="game-title" id="gameTitle">
+        Analyse moves with<br>
+        ChessDB + DCC Lookahead
+      </div>
+
+      <!-- Opening name -->
+      <div id="openingName"></div>
+
+      <!-- Move history -->
+      <div id="moves"></div>
+
+      <!-- DCC Info Panel — shows eval path on badge click -->
+      <div id="dccInfoPanel"></div>
+
+      <!-- DCC Accuracy Panel — shows match stats for loaded PGN -->
+      <div id="dccAccuracyPanel"></div>
+
+      <!-- ---------- ROW 1  Format | Input | Copy ---------- -->
+      <div class="btn-group">
+        <button class="btn btn-fen" id="btnFormat">FEN|pgn</button>
+        <button class="btn btn-fen" id="btnInput">Input</button>
+        <button class="btn btn-fen" id="btnCopy">Copy</button>
+      </div>
+
+      <!-- ---------- ROW 2  New | Save | Load ---------- -->
+      <div class="btn-group">
+        <button class="btn btn-new" id="btnNew">New</button>
+        <button class="btn btn-pgn" id="btnSave">Save</button>
+        <button class="btn btn-pgn" id="btnLoad">Load</button>
+        <input type="file" id="filePGN" accept=".pgn,.txt" style="display:none">
+      </div>
+
+      <!-- ---------- ROW 3  Games | Theme | Settings ---------- -->
+      <div class="btn-group bottom-controls">
+        <button class="btn btn-nav" id="btnGames">Games!</button>
+        <button class="btn btn-nav" id="btnFlip">Flip CB</button>
+        <button class="btn btn-nav" id="btnSettings">Settings</button>
+      </div>
+
+      <!-- Popular games panel -->
+      <div id="popularGamesPanel" class="panel">
+        <label for="popularGamesSelect">Load a game:</label>
+        <select id="popularGamesSelect">
+          <option value="">— select —</option>
+        </select>
+      </div>
+
+      <!-- Settings panel -->
+      <div id="settingsPanel" class="panel">
+        <label for="settingTopN">Show top moves:</label>
+        <select id="settingTopN">
+          <option value="3">3</option>
+          <option value="5" selected>5</option>
+          <option value="10">10</option>
+          <option value="all">All</option>
+        </select>
+
+        <label>
+          <input type="checkbox" id="settingNextDot" checked>
+          Show next‑move preview
+        </label>
+
+        <label for="settingEvalMode">Evaluation method:</label>
+        <select id="settingEvalMode">
+          <option value="direct">Direct</option>
+          <option value="proxy">Proxy</option>
+        </select>
+
+        <label for="settingHistorySize">History height:</label>
+        <select id="settingHistorySize">
+          <option value="smallest">Smallest</option>
+          <option value="small" selected>Small</option>
+          <option value="medium">Medium</option>
+          <option value="big">Big</option>
+        </select>
+
+        <label for="settingFont">Font size:</label>
+        <select id="settingFont">
+          <option value="14px" selected>Small</option>
+          <option value="16px">Medium</option>
+          <option value="18px">Large</option>
+        </select>
+
+        <label for="settingNotation">Badge notation:</label>
+        <select id="settingNotation">
+          <option value="score">Score</option>
+          <option value="dot">Dot</option>
+        </select>
+
+        <label for="settingPieceSize">Piece size:</label>
+        <select id="settingPieceSize">
+          <option value="small">Small</option>
+          <option value="medium" selected>Medium</option>
+          <option value="big">Big</option>
+        </select>
+
+        <label for="settingBg">Main background:</label>
+        <select id="settingBg">
+          <option value="#2e2e2e">Dark Gray</option>
+          <option value="#ffffff">White</option>
+          <option value="#cccccc">Light Gray</option>
+          <option value="#000000">Black</option>
+          <option value="#5d4037">Dark Brown</option>
+          <option value="#8d6e63">Light Brown</option>
+          <option value="#0d47a1">Dark Blue</option>
+          <option value="#90caf9">Light Blue</option>
+        </select>
+
+        <label>
+          <input type="checkbox" id="settingTheme">
+          Light theme
+        </label>
+
+        <label>
+          <input type="checkbox" id="settingDoubleBoard">
+          Double size board
+        </label>
+
+        <!-- ─── DCC Lookahead Settings ─────────────────────────── -->
+        <div class="dcc-settings-group">
+          <div class="dcc-settings-title">DCC Lookahead</div>
+
+          <label>
+            <input type="checkbox" id="settingDccEnabled" checked>
+            Enable DCC lookahead
+          </label>
+
+          <label for="settingDccDepth">Lookahead depth (half-moves):</label>
+          <select id="settingDccDepth">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+
+          <label for="settingDccTopMoves">Top moves to analyze:</label>
+          <select id="settingDccTopMoves">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+        <!-- ─────────────────────────────────────────────────────── -->
+
+        <!-- ─── Thresholds (collapsed) ─────────────────────────── -->
+        <a href="#" id="toggleThresholds" style="display:block;margin-top:10px;color:#90caf9;font-size:13px;">Thresholds ▼</a>
+        <div id="thresholdSettings" class="hidden">
+          <label for="settingDrawDelay">Draw banner duration (ms):</label>
+          <input type="number" id="settingDrawDelay" value="5000">
+
+          <label for="settingBadgeInitialDelay">Badge‐fetch initial delay (ms):</label>
+          <input type="number" id="settingBadgeInitialDelay" value="4000">
+
+          <label for="settingRetryInterval">Eval‐retry interval (ms):</label>
+          <input type="number" id="settingRetryInterval" value="6000">
+
+          <label for="settingTryLaterDuration">"Try Later" display (ms):</label>
+          <input type="number" id="settingTryLaterDuration" value="3000">
+        </div>
+        <!-- ─────────────────────────────────────────────────────── -->
+
+        <div class="btn-group" style="margin-top:12px;">
+          <button class="btn btn-nav" id="btnResetSettings">Reset Settings</button>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div id="info-links" style="text-align: center; font-size: 15px; margin-bottom: 6px;">
+        <a href="games-info.html"
+           style="text-decoration: underline; color: #90caf9; margin: 0 6px;"
+           onclick="const w = window.open(this.href,'GamesInfo'); w.moveTo(0,0); w.resizeTo(screen.availWidth, screen.availHeight); return false;">PGN Picks?</a> |
+        <a href="facts.html"
+           style="text-decoration: underline; color: #90caf9; margin: 0 6px;"
+           onclick="const w = window.open(this.href,'Facts'); w.moveTo(0,0); w.resizeTo(screen.availWidth, screen.availHeight); return false;">Why ChessDB</a> |
+        <a href="about-gui.html"
+           style="text-decoration: underline; color: #90caf9; margin: 0 6px;"
+           onclick="const w = window.open(this.href,'InterfaceInfo'); w.moveTo(0,0); w.resizeTo(screen.availWidth, screen.availHeight); return false;">About GUI</a>
+      </div>
+
+      <div id="credits">
+        Author: <a href="https://chessbest.org/bd/" id="authorLink" style="text-decoration: underline;">Boyan D.</a>
+        · <strong>v0.5.0</strong> · MDL+DCC Eval Layer
+      </div>
+      <div class="dcc-badge-label">8Z · MDL+DCC kernel</div>
+
+    </div>
+  </div>
+
+  <!-- Scripts — shared libraries from existing paths -->
+  <script src="js/jquery-3.6.0.min.js"></script>
+  <script src="js/chess.min.js"></script>
+  <script src="js/chessboard-1.0.0.min.js"></script>
+  <!-- DCC-enhanced utils -->
+  <script src="8zc-utils.js"></script>
+
+</body>
+</html>
