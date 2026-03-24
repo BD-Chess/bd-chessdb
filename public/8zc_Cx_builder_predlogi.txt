@@ -1,0 +1,46 @@
+**Trenutno v engine-u (v0.5.0):**
+- LZ76 na FEN (tiebreaker)
+- LZ76 na eval sekvenci (stabilnost)
+- ADSR shape analysis
+- DCC governance (shouldGoDeeper)
+- Eval floor + Top Candidates filtering
+- querypv + queryscore lookahead
+- Sim engine (SimW/SimB/Sim/DCCT)
+
+---
+
+**Predlogi nadgradenj — senzorji:**
+
+1. **Multi-scale encoding** — ista pozicija kodirana na 3 nivojih: pawn skeleton, piece placement, material distribution. LZ76 na vsakem. MDL izbere kateri nivo je najbolj informativen za TO pozicijo. Tiha pozicija → pawn scale. Taktična → piece scale. Isti MSTD princip kot TSP.
+
+2. **Scale Walk** — dva encodinga eval poti: level (absolutni eval na vsaki globini) vs delta (sprememba med globinami). Instance-dependent: nekatere pozicije bolje opisane z level, druge z delta. MDL izbere. Točno kot uy734 vs qa194.
+
+3. **Tunneling detector** — poteza ki izgleda slabo na globini 1-3 ampak postane dobra na globini 5+. Eval gre dol potem gor. To so najpomembnejše poteze za človeka — zahtevajo globoko kalkulacijo ki jo nasprotnik morda ne vidi. Flag: "⛏ tunnel move."
+
+4. **Interference sensor** — ko dve kandidatni potezi vodita v PV linije ki se čez 3-4 poteze ZDRUŽIJO v isto pozicijo. Pomeni: izbira med njima je lažna, strukturno sta ekvivalentni. Kolaps lažnih izbir = čistejša slika.
+
+5. **Recursive DCC** — `shouldGoDeeper()` ima zdaj hardkodirane pragove (15cp, 5cp). P17 pravi: nikoli ne hardkodiraj. Pragovi naj se kalibrirajo iz distribucije eval delt v trenutni partiji. Taktična partija z divjimi zamahi rabi drugačne pragove kot tihi endgame.
+
+6. **TEP enrichment** — utežuj lookahead veje po kvaliteti pozicij ki so jih že videle (iz cache-a). Pozicije ki pogosto nastopajo v dobrih igrah dobijo globlje analize. Cache ni samo optimizacija — je kvalitetni zemljevid. Isti princip kot TEP na TSP.
+
+7. **Arena architecture** — namesto neodvisne analize vsakega kandidata: competing workers. Najbolj obetaven kandidat dobi več globine, stagnirani se prerežejo zgodaj. Cross-pollination: če kandidat A-jev PV razkrije ključen obrambni vir, to informira kandidata B.
+
+---
+
+**Nove ideje:**
+
+8. **Positional momentum** — ne samo eval na vsaki globini, ampak POSPEŠEK: ali eval narašča hitreje ali počasneje? Drugi odvod eval krivulje. Pojemajoč pospešek = advantage se stabilizira. Naraščajoč = eksplodira (ali v tvojo ali nasprotnikovo smer).
+
+9. **Asymmetric depth** — za SVOJO stran poglej globlje kot za nasprotnikovo. Zakaj: v praksi TVOJA stran igra DCC poteze, nasprotnik igra "normalno." Asimetrični lookahead modelira realno situacijo.
+
+10. **Cache temperature** — pozicije ki so bile nedavno analizirane so "tople." Pozicije ki niso bile videne dolgo so "hladne." DCC preferira tople veje (sveži podatki, bolj zanesljivi) nad hladnimi. Isti princip kot CPU cache — locality matters.
+
+11. **Opponent modeling** — ko nasprotnik v simulaciji izbere potezo, ne predpostavljaj da igra "optimalno" (raw best). Predpostavljaj da igra "človeško" — pogosto izbere top-2 ali top-3, ne vedno top-1. DCC ki zmaga proti realnemu nasprotniku > DCC ki zmaga proti perfektnemu.
+
+12. **Endgame transition detector** — pozicija ki pelje iz midgame v endgame je kritična točka. Material se zmanjša, Syzygy tablebases prevzamejo. DCC naj detecta to tranzicijo in uteži poteze ki vodijo v ZNANE endgame pozicije (kjer ima ChessDB perfektne podatke) nad tistimi ki vodijo v neznano.
+
+13. **Zobrist hash LZ** — namesto LZ76 na FEN stringu, LZ76 na Zobrist hash sekvenci skozi globino. Zobrist hash je optimiziran za šahovske pozicije — strukturno bolj informativen od plain FEN teksta.
+
+---
+
+**Za areno testiramo vseh 13 posamič + kombinacije. MDL izbere zmagovalca.**
