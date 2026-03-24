@@ -31,7 +31,8 @@ function initAll() {
     dccOnly: false,      // hide raw ChessDB scores, show only DCC view
     simSpeed: 1000,      // ms per move (0 = max speed, no board update)
     simGames: 5,         // games per simulation run
-    dccTakeover: 'auto'  // when DCC takes over: 'auto' or number of half-moves
+    dccTakeover: 'auto',  // when DCC takes over: 'auto' or number of half-moves
+    opponentModel: 'realistic' // v0.6.0: 'perfect', 'realistic', 'weak'
   };
 
   // DCC view toggle state
@@ -295,7 +296,7 @@ gameBuckets.forEach(bucket => {
 
   // ── Eval sequence stability via LZ76 ────────────────────────────
   function evalSeqStability(evalSeq) {
-    if (evalSeq.length < 2) return 1.0;
+    if (evalSeq.length < 3) return 0.5; // v0.6.0: neutral default for short seqs (was 1.0 for <2)
     // Encode deltas as characters for LZ analysis
     const deltas = evalSeq.slice(1).map((v, i) => {
       const d = v - evalSeq[i];
@@ -347,7 +348,8 @@ gameBuckets.forEach(bucket => {
 
     // Sustain: average level in the middle 60% of the sequence
     const startIdx = Math.max(1, Math.floor(deltas.length * 0.2));
-    const endIdx = Math.max(startIdx + 1, Math.floor(deltas.length * 0.8));
+    const endIdx = Math.max(startIdx + 2, Math.floor(deltas.length * 0.8));
+    // ^^ v0.6.0 fix: minimum 2 elements in midSlice (was startIdx+1)
     const midSlice = deltas.slice(startIdx, endIdx);
     const sustain = midSlice.length > 0
       ? midSlice.reduce((a, b) => a + b, 0) / midSlice.length
@@ -363,14 +365,15 @@ gameBuckets.forEach(bucket => {
     const normalized = range > 0 ? absDecay / range : 0;
 
     let shape, label;
+    // v0.6.0 order: sustained → spike → building → collapse → volatile → mixed
     if (absAttack < 10 && absDecay < 10) {
       shape = 'sustained'; label = '▬';  // flat line, solid
     } else if (absAttack > 20 && normalized > 0.5) {
       shape = 'spike'; label = '⚡';      // sharp gain then collapse
+    } else if (attack > 10 && absDecay < 10 && release > -5) {
+      shape = 'building'; label = '▲';    // steadily growing (now before collapse)
     } else if (sustain < -10) {
       shape = 'collapse'; label = '▼';    // falls below starting level
-    } else if (attack > 10 && absDecay < 10 && release > -5) {
-      shape = 'building'; label = '▲';    // steadily growing
     } else if (absDecay > 15 && absAttack > 15) {
       shape = 'volatile'; label = '〜';   // wild oscillation
     } else {
@@ -391,16 +394,77 @@ gameBuckets.forEach(bucket => {
     unknown:   { color: '#555',    desc: 'Insufficient data' }
   };
 
+  // ── v0.6.0: DCC Weight Constants ─────────────────────────────────
+  // For v0.7.0: MDL arena over these weights — P17 on weights.
+  const DCC_WEIGHTS = {
+    stability: 20,
+    adsr_sustained: 10, adsr_building: 15,
+    adsr_spike: -5, adsr_collapse: -20, adsr_volatile: -10,
+    momentum_max: 5,
+    endgame_known: 25, endgame_unknown: -15,
+    tunnel: 10,
+    complexity: 10
+  };
+
+  // ── v0.6.0 Feature 1: Self-calibrating DCC Governor [P17] ──────
+  let dccGovernor = {
+    allDeltas: [],
+    threshDrop: -15,  // initial defaults (same as v0.5.0 hardcoded)
+    threshRise: 5,
+
+    observe(evalSeq) {
+      for (let i = 1; i < evalSeq.length; i++)
+        this.allDeltas.push(evalSeq[i] - evalSeq[i-1]);
+      // Keep bounded
+      if (this.allDeltas.length > 500)
+        this.allDeltas = this.allDeltas.slice(-300);
+      if (this.allDeltas.length >= 10) this.recalibrate();
+    },
+
+    recalibrate() {
+      const s = [...this.allDeltas].sort((a, b) => a - b);
+      this.threshDrop = s[Math.floor(s.length * 0.15)];
+      this.threshRise = s[Math.floor(s.length * 0.75)];
+    }
+  };
+
+  // ── v0.6.0 Feature 2: Positional Momentum ──────────────────────
+  function evalMomentum(evalSeq) {
+    if (evalSeq.length < 3) return 0;
+    let accSum = 0;
+    for (let i = 2; i < evalSeq.length; i++)
+      accSum += (evalSeq[i] - evalSeq[i-1]) - (evalSeq[i-1] - evalSeq[i-2]);
+    return accSum / (evalSeq.length - 2);
+  }
+
+  // ── v0.6.0 Feature 3: Endgame Transition Detector ──────────────
+  function materialCount(fen) {
+    return fen.split(' ')[0].replace(/[/1-8]/g, '').length;
+  }
+
+  // ── v0.6.0 Feature 4: Tunneling Detector ───────────────────────
+  // Moves that look bad shallow but become good deep.
+  // Same principle as TSP tunneling sensor: barrier shape matters.
+  function detectTunnel(evalSeq) {
+    if (evalSeq.length < 4) return false;
+    const start = evalSeq[0];
+    const mid = evalSeq.slice(1, -1);
+    const minMid = Math.min(...mid);
+    const end = evalSeq[evalSeq.length - 1];
+    return minMid < start - 20 && end > start + 10;
+  }
+
   // ── DCC Governance: should we look deeper? ──────────────────────
+  // v0.6.0: uses self-calibrating thresholds from dccGovernor [P17]
   function shouldGoDeeper(evalSeq) {
     if (evalSeq.length < 2) return true;
     const last = evalSeq[evalSeq.length - 1];
     const prev = evalSeq[evalSeq.length - 2];
     const trend = last - prev;
     // Falling eval → danger, look deeper
-    if (trend < -15) return true;
+    if (trend < dccGovernor.threshDrop) return true;
     // Rising and stable → no surprises, stop
-    if (trend > 5 && evalSeqStability(evalSeq) > 0.5) return false;
+    if (trend > dccGovernor.threshRise && evalSeqStability(evalSeq) > 0.5) return false;
     // Oscillating → look deeper
     const oscillation = evalSeq.some((v, i) =>
       i > 1 && Math.sign(v - evalSeq[i-1]) !== Math.sign(evalSeq[i-1] - evalSeq[i-2])
@@ -511,6 +575,13 @@ gameBuckets.forEach(bucket => {
 
   // ── DCC Lookahead — querypv first, then selective queryscore ────
   //
+  // v0.6.0 SIGN CONVENTION VERIFICATION (C1 review item):
+  // Scholar's Mate FEN (Black won): querypv returns NEGATIVE score
+  // when White (losing side) is to move. Both querypv and queryscore
+  // return from the perspective of the side to move. The sign flipping
+  // in the loop below (odd plies get negated) is CORRECT — it keeps
+  // all values normalized to the root side's perspective.
+  //
   // Flow per candidate move M:
   //   1. Make M on board copy → FEN_after
   //   2. fetchPV(FEN_after) → score, depth, PV line  [1 API call]
@@ -577,10 +648,14 @@ gameBuckets.forEach(bucket => {
       }
     }
 
+    // v0.6.0: Feed results to self-calibrating governor
+    if (evalSequence.length >= 2) {
+      dccGovernor.observe(evalSequence);
+    }
+
     return { evalSequence, movePath, pvDepth: pvResult.depth };
   }
 
-  // ── DCC Lookahead orchestrator for top N moves ──────────────────
   let activeLookaheadId = 0; // cancel stale lookaheads on board change
 
   // ── DCC Progress indicator ───────────────────────────────────────
@@ -635,9 +710,11 @@ gameBuckets.forEach(bucket => {
         const stability = evalSeqStability(evalSequence);
         const arrow = trendArrow(trend);
         const adsr = adsrAnalysis(evalSequence);
+        const momentum = evalMomentum(evalSequence);  // v0.6.0
+        const tunnel = detectTunnel(evalSequence);     // v0.6.0
         const data = {
           move: mv.move, trend, stability, arrow, evalSequence, movePath,
-          score: mv.score, pvDepth: pvDepth || 0, adsr,
+          score: mv.score, pvDepth: pvDepth || 0, adsr, momentum, tunnel,
           isMdlPick: !!document.querySelector(`.square-${mv.move.slice(-2)} .overlay.dcc-mdl-pick`)
         };
         updateDCCBadge(mv.move, data, 'done');
@@ -688,6 +765,16 @@ gameBuckets.forEach(bucket => {
         adsrEl.style.color = shapeInfo.color;
         adsrEl.title = shapeInfo.desc;
         ov.appendChild(adsrEl);
+      }
+
+      // v0.6.0: Tunnel flag — move looks bad shallow but good deep
+      if (data.tunnel) {
+        const tunnelEl = document.createElement('span');
+        tunnelEl.className = 'dcc-tunnel-label';
+        tunnelEl.textContent = '⛏';
+        tunnelEl.title = 'Tunnel move — looks bad shallow, good deep';
+        tunnelEl.style.color = '#f59e0b';
+        ov.appendChild(tunnelEl);
       }
 
       // Add stability border class
@@ -822,7 +909,7 @@ gameBuckets.forEach(bucket => {
     });
 
     let html = '<table class="dcc-analysis-table">';
-    html += '<tr class="dcc-analysis-header"><th>#</th><th>Move</th><th>Eval</th><th></th><th>Stab</th><th>ADSR</th><th></th></tr>';
+    html += '<tr class="dcc-analysis-header"><th>#</th><th>Move</th><th>Eval</th><th></th><th>Stab</th><th>Mom</th><th>ADSR</th><th></th></tr>';
     sorted.forEach((r, i) => {
       const rank = i + 1;
       const score = r.score !== undefined ? (r.score > 0 ? '+' + r.score : r.score) : '?';
@@ -831,16 +918,21 @@ gameBuckets.forEach(bucket => {
       const stabPct = r.stability !== undefined ? Math.round(r.stability * 100) + '%' : '—';
       const stabClass = r.stability > 0.6 ? 'dcc-stab-high' : r.stability < 0.35 ? 'dcc-stab-low' : 'dcc-stab-mid';
       const mdl = r.isMdlPick ? '<span class="star">★</span>' : '';
+      const tunnelFlag = r.tunnel ? '<span style="color:#f59e0b" title="Tunnel move">⛏</span>' : '';
+      const mom = r.momentum !== undefined ? (r.momentum > 0.5 ? '+' : r.momentum < -0.5 ? '−' : '·') : '·';
+      const momColor = r.momentum > 0.5 ? '#34d399' : r.momentum < -0.5 ? '#ff4c4c' : '#666';
+      const momTitle = r.momentum !== undefined ? `Momentum: ${r.momentum.toFixed(1)}` : '';
       const adsr = r.adsr || {};
       const adsrLabel = adsr.label || '';
       const adsrInfo = ADSR_SHAPES[adsr.shape] || ADSR_SHAPES.unknown;
       const pvStr = (r.movePath || []).join(' → ');
       html += `<tr class="dcc-analysis-row" data-move="${r.move}" title="${adsrInfo.desc} · PV: ${pvStr}">`;
       html += `<td class="dcc-rank">${rank}</td>`;
-      html += `<td class="dcc-move-name">${r.move}</td>`;
+      html += `<td class="dcc-move-name">${r.move}${tunnelFlag}</td>`;
       html += `<td class="dcc-eval-cell">${score}</td>`;
       html += `<td class="${trendClass}">${arrow}</td>`;
       html += `<td class="${stabClass}">${stabPct}</td>`;
+      html += `<td style="color:${momColor}" title="${momTitle}">${mom}</td>`;
       html += `<td style="color:${adsrInfo.color}" title="${adsrInfo.desc}">${adsrLabel}</td>`;
       html += `<td>${mdl}</td>`;
       html += `</tr>`;
@@ -1067,6 +1159,9 @@ gameBuckets.forEach(bucket => {
     if (dccInfoPanel && !settings.dccEnabled) dccInfoPanel.style.display = 'none';
     const dccAccPanel = document.getElementById('dccAccuracyPanel');
     if (dccAccPanel && !settings.dccEnabled) dccAccPanel.style.display = 'none';
+    // v0.6.0: Opponent model sync
+    const oppModelEl = document.getElementById('settingOpponentModel');
+    if (oppModelEl) oppModelEl.value = settings.opponentModel;
     // ─────────────────────────────────────────────────────────────────
 	
   }
@@ -1780,7 +1875,8 @@ function jumpTo(i){
 	  'settingDccOnly',
 	  'settingSimSpeed',
 	  'settingSimGames',
-	  'settingDccTakeover'
+	  'settingDccTakeover',
+	  'settingOpponentModel'
 	].forEach(id => {
 	  document.getElementById(id).onchange = e => {
 		switch (id) {
@@ -1859,6 +1955,10 @@ function jumpTo(i){
 			break;
 		  case 'settingDccTakeover':
 			settings.dccTakeover = e.target.value === 'auto' ? 'auto' : parseInt(e.target.value, 10);
+			break;
+		  // v0.6.0: Opponent model
+		  case 'settingOpponentModel':
+			settings.opponentModel = e.target.value;
 			break;
 		  // ────────────────────────────
 		}
@@ -1958,18 +2058,32 @@ function jumpTo(i){
 
       const stability = evalSeqStability(evalSeq);
       const adsr = adsrAnalysis(evalSeq);
-      // Combined DCC score: raw eval + stability bonus + ADSR shape bonus
+      // v0.6.0: Combined DCC score using DCC_WEIGHTS constants
       let dccScore = mv.score;
-      dccScore += stability * 20;  // up to +20 for perfect stability
-      if (adsr.shape === 'sustained') dccScore += 10;
-      else if (adsr.shape === 'building') dccScore += 15;
-      else if (adsr.shape === 'spike') dccScore -= 5;
-      else if (adsr.shape === 'collapse') dccScore -= 20;
-      else if (adsr.shape === 'volatile') dccScore -= 10;
+      dccScore += stability * DCC_WEIGHTS.stability;
+      if (adsr.shape === 'sustained') dccScore += DCC_WEIGHTS.adsr_sustained;
+      else if (adsr.shape === 'building') dccScore += DCC_WEIGHTS.adsr_building;
+      else if (adsr.shape === 'spike') dccScore += DCC_WEIGHTS.adsr_spike;
+      else if (adsr.shape === 'collapse') dccScore += DCC_WEIGHTS.adsr_collapse;
+      else if (adsr.shape === 'volatile') dccScore += DCC_WEIGHTS.adsr_volatile;
+
+      // v0.6.0 Feature 2: Positional momentum
+      const momentum = evalMomentum(evalSeq);
+      dccScore += Math.sign(momentum) * Math.min(Math.abs(momentum), DCC_WEIGHTS.momentum_max);
+
+      // v0.6.0 Feature 3: Endgame transition detector
+      if (materialCount(probe.fen()) <= 7) {
+        const probeResult = await cachedFetchChessDB(probe.fen());
+        if (probeResult.moves.length > 0) dccScore += DCC_WEIGHTS.endgame_known;
+        else dccScore += DCC_WEIGHTS.endgame_unknown;
+      }
+
+      // v0.6.0 Feature 4: Tunneling bonus
+      if (detectTunnel(evalSeq)) dccScore += DCC_WEIGHTS.tunnel;
 
       // LZ tiebreaker on resulting position
       const cx = fenComplexity(probe.fen());
-      dccScore -= cx * 10; // prefer simpler (more compressible) positions
+      dccScore -= cx * DCC_WEIGHTS.complexity;
 
       if (dccScore > bestScore) {
         bestScore = dccScore;
@@ -1979,11 +2093,31 @@ function jumpTo(i){
     return bestMove;
   }
 
-  // Pick move using raw ChessDB: highest score, no lookahead
+  // Pick move using raw ChessDB: opponent model governs selection
+  // v0.6.0: supports 'perfect', 'realistic', 'weak' models
   async function pickRawMove(simGame) {
     const result = await cachedFetchChessDB(simGame.fen());
     if (!result.moves || result.moves.length === 0) return null;
-    return result.moves[0]; // highest score
+    
+    const model = settings.opponentModel || 'realistic';
+    
+    if (model === 'perfect') {
+      return result.moves[0]; // always top-1
+    } else if (model === 'weak') {
+      // Uniform random from top-5
+      const pool = result.moves.slice(0, Math.min(5, result.moves.length));
+      return pool[Math.floor(Math.random() * pool.length)];
+    } else {
+      // Realistic: weighted random from top-3 (60/30/10)
+      const pool = result.moves.slice(0, Math.min(3, result.moves.length));
+      const weights = [0.6, 0.3, 0.1];
+      let r = Math.random(), cum = 0;
+      for (let i = 0; i < pool.length; i++) {
+        cum += weights[Math.min(i, weights.length - 1)];
+        if (r < cum) return pool[i];
+      }
+      return pool[0];
+    }
   }
 
   // Update sim status bar
