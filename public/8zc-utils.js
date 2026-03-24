@@ -320,6 +320,73 @@ gameBuckets.forEach(bucket => {
     return { rising: '↑', falling: '↓', stable: '→' }[trend] || '→';
   }
 
+  // ── ADSR Analysis on eval sequence ──────────────────────────────
+  // Attack-Decay-Sustain-Release shape signature
+  // Same sensor that achieved ρ = −0.50 on Sudoku, confirmed across TSP and F4M
+  function adsrAnalysis(evalSeq) {
+    if (evalSeq.length < 2) {
+      return { attack: 0, decay: 0, sustain: 0, release: 0, shape: 'unknown', label: '?' };
+    }
+
+    const baseline = evalSeq[0];
+    const deltas = evalSeq.map(v => v - baseline); // normalize to start
+
+    // Attack: maximum positive excursion from baseline
+    const peak = Math.max(...deltas);
+    const peakIdx = deltas.indexOf(peak);
+    const attack = peak; // how much we gain at best
+
+    // Decay: drop from peak to subsequent minimum (before release)
+    const afterPeak = deltas.slice(peakIdx);
+    const valley = Math.min(...afterPeak);
+    const decay = peak - valley; // how much we lose after peak
+
+    // Sustain: average level in the middle 60% of the sequence
+    const startIdx = Math.max(1, Math.floor(deltas.length * 0.2));
+    const endIdx = Math.max(startIdx + 1, Math.floor(deltas.length * 0.8));
+    const midSlice = deltas.slice(startIdx, endIdx);
+    const sustain = midSlice.length > 0
+      ? midSlice.reduce((a, b) => a + b, 0) / midSlice.length
+      : 0;
+
+    // Release: final value relative to sustain
+    const release = deltas[deltas.length - 1] - sustain;
+
+    // Shape classification
+    const absAttack = Math.abs(attack);
+    const absDecay = Math.abs(decay);
+    const range = Math.max(...evalSeq) - Math.min(...evalSeq);
+    const normalized = range > 0 ? absDecay / range : 0;
+
+    let shape, label;
+    if (absAttack < 10 && absDecay < 10) {
+      shape = 'sustained'; label = '▬';  // flat line, solid
+    } else if (absAttack > 20 && normalized > 0.5) {
+      shape = 'spike'; label = '⚡';      // sharp gain then collapse
+    } else if (sustain < -10) {
+      shape = 'collapse'; label = '▼';    // falls below starting level
+    } else if (attack > 10 && absDecay < 10 && release > -5) {
+      shape = 'building'; label = '▲';    // steadily growing
+    } else if (absDecay > 15 && absAttack > 15) {
+      shape = 'volatile'; label = '〜';   // wild oscillation
+    } else {
+      shape = 'mixed'; label = '◆';       // doesn't fit clean pattern
+    }
+
+    return { attack, decay, sustain: Math.round(sustain), release: Math.round(release), shape, label };
+  }
+
+  // ADSR shape descriptions for tooltips/display
+  const ADSR_SHAPES = {
+    sustained: { color: '#34d399', desc: 'Solid — holds advantage through depth' },
+    building:  { color: '#00e5ff', desc: 'Building — advantage grows with depth' },
+    spike:     { color: '#f59e0b', desc: 'Spike — sharp gain then fades' },
+    collapse:  { color: '#ff4c4c', desc: 'Collapse — falls apart with best play' },
+    volatile:  { color: '#a78bfa', desc: 'Volatile — wild swings, tactical chaos' },
+    mixed:     { color: '#888',    desc: 'Mixed — no clear pattern' },
+    unknown:   { color: '#555',    desc: 'Insufficient data' }
+  };
+
   // ── DCC Governance: should we look deeper? ──────────────────────
   function shouldGoDeeper(evalSeq) {
     if (evalSeq.length < 2) return true;
@@ -540,9 +607,10 @@ gameBuckets.forEach(bucket => {
         const trend = evalTrend(evalSequence);
         const stability = evalSeqStability(evalSequence);
         const arrow = trendArrow(trend);
+        const adsr = adsrAnalysis(evalSequence);
         const data = {
           move: mv.move, trend, stability, arrow, evalSequence, movePath,
-          score: mv.score, pvDepth: pvDepth || 0,
+          score: mv.score, pvDepth: pvDepth || 0, adsr,
           isMdlPick: !!document.querySelector(`.square-${mv.move.slice(-2)} .overlay.dcc-mdl-pick`)
         };
         updateDCCBadge(mv.move, data, 'done');
@@ -565,7 +633,7 @@ gameBuckets.forEach(bucket => {
     if (!ov) return;
 
     // Remove old DCC indicators
-    ov.querySelectorAll('.dcc-arrow,.dcc-loading').forEach(e => e.remove());
+    ov.querySelectorAll('.dcc-arrow,.dcc-loading,.dcc-adsr-label').forEach(e => e.remove());
     ov.classList.remove('dcc-stable', 'dcc-unstable', 'dcc-mdl-pick');
 
     if (status === 'loading') {
@@ -583,6 +651,17 @@ gameBuckets.forEach(bucket => {
       arrowEl.textContent = ' ' + data.arrow;
       ov.appendChild(arrowEl);
 
+      // Add ADSR shape label
+      if (data.adsr && data.adsr.shape !== 'unknown') {
+        const adsrEl = document.createElement('span');
+        const shapeInfo = ADSR_SHAPES[data.adsr.shape] || ADSR_SHAPES.unknown;
+        adsrEl.className = 'dcc-adsr-label';
+        adsrEl.textContent = data.adsr.label;
+        adsrEl.style.color = shapeInfo.color;
+        adsrEl.title = shapeInfo.desc;
+        ov.appendChild(adsrEl);
+      }
+
       // Add stability border class
       if (data.stability > 0.6) ov.classList.add('dcc-stable');
       else if (data.stability < 0.35) ov.classList.add('dcc-unstable');
@@ -594,6 +673,9 @@ gameBuckets.forEach(bucket => {
       ov.dataset.dccStability = data.stability.toFixed(2);
       ov.dataset.dccScore = data.score;
       ov.dataset.dccPvDepth = data.pvDepth || 0;
+      ov.dataset.dccAdsrShape = data.adsr ? data.adsr.shape : '';
+      ov.dataset.dccAdsrLabel = data.adsr ? data.adsr.label : '';
+      ov.dataset.dccAdsr = data.adsr ? JSON.stringify(data.adsr) : '';
     }
   }
 
@@ -672,11 +754,21 @@ gameBuckets.forEach(bucket => {
     const trendLabel = { rising: '↑ rising', falling: '↓ falling', stable: '→ stable' }[trend] || trend;
     const depthStr = pvDepth > 0 ? ` · d${pvDepth}` : '';
 
+    // ADSR shape display
+    let adsrStr = '';
+    try {
+      const adsr = JSON.parse(ov.dataset.dccAdsr || '{}');
+      if (adsr.shape && adsr.shape !== 'unknown') {
+        const shapeInfo = ADSR_SHAPES[adsr.shape] || ADSR_SHAPES.unknown;
+        adsrStr = ` &nbsp;|&nbsp; <span class="dcc-adsr-info" style="color:${shapeInfo.color}">${adsr.label} ${shapeInfo.desc}</span>`;
+      }
+    } catch(e) {}
+
     panel.innerHTML = `
       <div class="dcc-info-path"><span class="dcc-path-eval">${rootScore}</span><span class="dcc-path-arrow">→</span>${moveStr}</div>
       <div class="dcc-info-summary">
         Trend: <span class="dcc-trend-${trend}">${trendLabel}</span>
-        &nbsp;|&nbsp; Stability: ${stabilityPct}%${depthStr}
+        &nbsp;|&nbsp; Stability: ${stabilityPct}%${depthStr}${adsrStr}
       </div>
     `;
     panel.style.display = 'block';
@@ -702,7 +794,7 @@ gameBuckets.forEach(bucket => {
     });
 
     let html = '<table class="dcc-analysis-table">';
-    html += '<tr class="dcc-analysis-header"><th>#</th><th>Move</th><th>Eval</th><th></th><th>Stab</th><th></th></tr>';
+    html += '<tr class="dcc-analysis-header"><th>#</th><th>Move</th><th>Eval</th><th></th><th>Stab</th><th>ADSR</th><th></th></tr>';
     sorted.forEach((r, i) => {
       const rank = i + 1;
       const score = r.score !== undefined ? (r.score > 0 ? '+' + r.score : r.score) : '?';
@@ -711,13 +803,17 @@ gameBuckets.forEach(bucket => {
       const stabPct = r.stability !== undefined ? Math.round(r.stability * 100) + '%' : '—';
       const stabClass = r.stability > 0.6 ? 'dcc-stab-high' : r.stability < 0.35 ? 'dcc-stab-low' : 'dcc-stab-mid';
       const mdl = r.isMdlPick ? '<span class="star">★</span>' : '';
+      const adsr = r.adsr || {};
+      const adsrLabel = adsr.label || '';
+      const adsrInfo = ADSR_SHAPES[adsr.shape] || ADSR_SHAPES.unknown;
       const pvStr = (r.movePath || []).join(' → ');
-      html += `<tr class="dcc-analysis-row" data-move="${r.move}" title="PV: ${pvStr}">`;
+      html += `<tr class="dcc-analysis-row" data-move="${r.move}" title="${adsrInfo.desc} · PV: ${pvStr}">`;
       html += `<td class="dcc-rank">${rank}</td>`;
       html += `<td class="dcc-move-name">${r.move}</td>`;
       html += `<td class="dcc-eval-cell">${score}</td>`;
       html += `<td class="${trendClass}">${arrow}</td>`;
       html += `<td class="${stabClass}">${stabPct}</td>`;
+      html += `<td style="color:${adsrInfo.color}" title="${adsrInfo.desc}">${adsrLabel}</td>`;
       html += `<td>${mdl}</td>`;
       html += `</tr>`;
     });
