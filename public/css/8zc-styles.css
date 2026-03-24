@@ -613,6 +613,28 @@ body.light-theme .dcc-settings-group {
   transform: scale(1.5);
   transform-origin: top left;
 }
+/* Compensate layout flow: transform doesn't affect document flow,
+   so we add margin to push controls out of the way */
+#board.scaled + #controls,
+#board-container:has(#board.scaled) ~ #controls {
+  margin-left: 260px; /* 480 * 0.5 = 240px extra width + gap */
+}
+#board-container:has(#board.scaled) {
+  margin-bottom: 260px; /* extra height for mobile column layout */
+}
+/* Desktop: switch to column layout when board is scaled */
+@media (min-width: 601px) {
+  #main:has(#board.scaled) {
+    flex-direction: column;
+    align-items: center;
+  }
+  #main:has(#board.scaled) #controls {
+    margin-left: 0;
+    margin-top: 260px;
+    width: 720px; /* match scaled board width */
+    max-width: 90vw;
+  }
+}
 
 /* ── Opening name ─────────────────────────────────────────────── */
 #openingName {
