@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Help — ChessBest 8Z DCC</title>
+<style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0 auto;
+      max-width: 760px;
+      padding: 16px;
+      box-sizing: border-box;
+      line-height: 1.5;
+      color: #eee;
+      background: #2e2e2e;
+    }
+    a { color: #90caf9; }
+    h1 {
+      font-size: 1.2em;
+      margin-bottom: 4px;
+      color: #ffd966;
+    }
+    .detail-block {
+      background: #3a3a3a;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+    .detail-block h3 {
+      font-size: 1em;
+      margin-top: 0;
+      margin-bottom: 6px;
+      color: #ffd966;
+    }
+    .detail-block p,
+    .detail-block ul {
+      margin: 6px 0;
+      color: #ddd;
+    }
+    .detail-block ul {
+      margin-left: 20px;
+    }
+    .detail-block img {
+      max-width: 100%;
+      display: block;
+      margin: 8px 0;
+      border-radius: 4px;
+    }
+    .footer-note {
+      font-size: 0.95em;
+      margin-top: 24px;
+      padding-top: 12px;
+      border-top: 1px solid #444;
+      color: #aaa;
+    }
+    .dcc-section {
+      border-left: 3px solid #00e5ff;
+      background: #2a3540;
+    }
+    .dcc-section h3 { color: #00e5ff; }
+    .example-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 0.95em;
+      color: #fff;
+      margin: 0 2px;
+    }
+    .badge-blue { background: rgba(0,123,255,0.8); }
+    .badge-green { background: rgba(40,167,69,0.8); }
+    .badge-red { background: rgba(200,20,20,0.8); }
+    .badge-gray { background: rgba(128,128,128,0.8); }
+    .example-glow-green { box-shadow: 0 0 0 2px rgba(52,211,153,0.85), 0 0 6px rgba(52,211,153,0.3); }
+    .example-glow-red   { box-shadow: 0 0 0 2px rgba(255,76,76,0.85), 0 0 6px rgba(255,76,76,0.3); }
+    .star { color: #f59e0b; text-shadow: 0 0 4px rgba(245,158,11,0.6); }
+    code {
+      background: #444;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    .img-center {
+      text-align: center;
+      margin: 12px 0;
+    }
+    .img-center img {
+      max-width: 300px;
+      border-radius: 4px;
+      display: block;
+      margin: 0 auto;
+    }
+    .img-center em {
+      font-size: 0.85em;
+      color: #bbb;
+    }
+</style>
+</head>
+<body>
+
+<h1>ChessBest 8Z — Help</h1>
+
+<!-- ════════════════════════════════════════════════════════════════
+     NEW: DCC EVAL LAYER SECTION
+     ════════════════════════════════════════════════════════════════ -->
+
+<div class="detail-block dcc-section">
+<h3>DCC Lookahead — What's New in 8Z</h3>
+<p>
+  The 8Z version adds an <strong>MDL+DCC eval layer</strong> on top of the standard ChessDB badges.
+  It looks up to 10 moves ahead through existing ChessDB evaluations — no new engine computation,
+  just smarter reading of the 48+ billion positions already analyzed.
+</p>
+<p>
+  Three new visual indicators appear on the badge of each top move:
+</p>
+</div>
+
+<div class="detail-block dcc-section">
+<h3>Trend Arrows</h3>
+<p>
+  After the standard eval badges load, the top 3 moves get a small arrow:
+</p>
+<ul>
+  <li><span class="example-badge badge-blue">+30 <span style="color:#4cff4c">↑</span></span>
+  <strong>Green arrow (↑ rising)</strong> — the eval improves as you look deeper. This move leads into a position that gets better with best play from both sides. Safe choice.</li>
+  <li><span class="example-badge badge-green">+28 <span style="color:#ccc">→</span></span>
+  <strong>Gray arrow (→ stable)</strong> — the eval holds steady through depth. Solid, no surprises.</li>
+  <li><span class="example-badge badge-green example-glow-red">+32 <span style="color:#ff4c4c">↓</span></span>
+  <strong>Red arrow (↓ falling)</strong> — the eval drops when the opponent responds optimally. The score looks good now, but there's a trap or tactical risk ahead.</li>
+</ul>
+<p>
+  The arrow tells you: <em>"The score looks good NOW, but what happens NEXT?"</em>
+</p>
+</div>
+
+<div class="detail-block dcc-section">
+<h3>Stability Glow</h3>
+<p>
+  A colored border glow appears around badges that have lookahead data:
+</p>
+<ul>
+  <li><span class="example-badge badge-blue example-glow-green">+30 ↑</span>
+  <strong>Green glow</strong> — the eval path through depth is <em>compressible</em> (measured by LZ76 complexity).
+  This means the position is robust — few surprises, structurally simple.</li>
+  <li><span class="example-badge badge-green example-glow-red">+28 ↓</span>
+  <strong>Red glow</strong> — the eval path oscillates (high LZ76 complexity).
+  Tactical minefield — one wrong move and the position collapses.</li>
+  <li><span class="example-badge badge-green">+25</span>
+  <strong>No glow</strong> — no lookahead data yet (still loading, or position not in ChessDB).</li>
+</ul>
+</div>
+
+<div class="detail-block dcc-section">
+<h3>MDL Tiebreaker <span class="star">★</span></h3>
+<p>
+  When two or more moves have evaluations within 10 centipawns of each other (practically equal),
+  one gets a gold <span class="star">★</span> star. That's the <strong>MDL pick</strong>:
+  the move leading to the most <em>compressible</em> resulting position.
+</p>
+<p>
+  Structurally simpler positions have fewer things that can go wrong.
+  When the engine says two moves are equal, the one that produces a cleaner board state
+  is the more robust choice. This is the founding hypothesis of the 8Z research program
+  applied directly to move selection.
+</p>
+</div>
+
+<div class="detail-block dcc-section">
+<h3>Info Panel — Click for Details</h3>
+<p>
+  Click any badge that has DCC data (arrow visible) to see the full evaluation path
+  in the info panel below the move list:
+</p>
+<p style="background:#1a1a20; padding:8px 12px; border-radius:4px; font-family:monospace; font-size:12px;">
+  <span style="color:#aaa">+30</span>
+  <span style="color:#555">→</span>
+  <span style="color:#90caf9">e2e4</span>
+  <span style="color:#aaa">+28</span>
+  <span style="color:#555">→</span>
+  <span style="color:#90caf9">e7e5</span>
+  <span style="color:#aaa">+32</span>
+  <span style="color:#555">→</span>
+  <span style="color:#90caf9">g1f3</span>
+  <span style="color:#aaa">+30</span>
+  <br>
+  <span style="color:#999">Trend: <span style="color:#4cff4c">↑ rising</span> &nbsp;|&nbsp; Stability: 87% · d52</span>
+</p>
+<p>
+  This shows the principal variation (best play from both sides), intermediate scores,
+  the overall trend, stability percentage, and the search depth from ChessDB.
+</p>
+</div>
+
+<div class="detail-block dcc-section">
+<h3>Match Accuracy Tracker</h3>
+<p>
+  When you load a PGN game and step through the moves, a small accuracy tracker appears:
+</p>
+<p style="background:#1a1a20; padding:6px 10px; border-radius:4px; font-size:12px; text-align:center;">
+  <span style="color:#999">ChessDB accuracy:</span> <span style="font-weight:bold; font-family:monospace;">72%</span>
+  &nbsp;|&nbsp;
+  <span style="color:#999">DCC accuracy:</span> <span style="font-weight:bold; font-family:monospace; color:#4cff4c;">78%</span>
+  <span style="color:#666; font-size:11px;">(34 moves)</span>
+</p>
+<p>
+  This compares how often the player's actual move matched ChessDB's raw top pick
+  versus the DCC stability-adjusted top pick.
+  If DCC accuracy is consistently higher, it means looking deeper through existing data
+  picks moves that align better with expert play.
+</p>
+</div>
+
+<div class="detail-block dcc-section">
+<h3>DCC Settings</h3>
+<p>
+  Open <strong>Settings</strong> and scroll to the <strong>DCC Lookahead</strong> section:
+</p>
+<ul>
+  <li><strong>Enable DCC lookahead</strong> — toggle on/off (default: on)</li>
+  <li><strong>Lookahead depth</strong> — how many half-moves deep to analyze (1–10, default: 5)</li>
+  <li><strong>Top moves to analyze</strong> — how many of the top moves get the lookahead treatment (1–5, default: 3)</li>
+</ul>
+<p>
+  DCC runs silently in the background after each position loads. Higher depth means more
+  API calls to ChessDB — if you're on a slow connection, try depth 2–3. DCC governance
+  automatically stops probing stable lines early, so depth 10 doesn't always mean 10 calls.
+</p>
+</div>
+
+<div class="detail-block dcc-section">
+<h3>How It Works — Under the Hood</h3>
+<p>
+  For each top move, the system makes a single <code>querypv</code> call to ChessDB,
+  which returns the full principal variation (best play line) in one response.
+  Then selective lightweight <code>queryscore</code> calls probe key intermediate positions
+  based on DCC governance rules — stable positions get fewer probes, unstable ones get more.
+</p>
+<p>
+  Total API load: ~3–12 calls per position (for 3 candidate moves), all read-only (<code>learn=0</code>).
+  Results are cached in your browser's localStorage for instant replay.
+</p>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ORIGINAL CHESSBEST HELP CONTENT (cleaned from browser junk)
+     ════════════════════════════════════════════════════════════════ -->
+
+<h1 style="margin-top:32px; border-top:1px solid #555; padding-top:16px;">Standard ChessBest Features</h1>
+
+<div class="detail-block">
+<h3>Play, Review, Learn with Powerful Analysis</h3>
+<p>
+  ChessBest.org is an interactive chess analysis board that helps you review famous games or analyze your own.
+  It's fast, clear, and packed with insights from the powerful ChessDB engine database.
+  Whether you're a beginner or a grandmaster, the interface is designed to be intuitive and informative for all chess levels.
+</p>
+<p>
+  Under the hood, ChessBest taps into <strong>48+ billion</strong> positions many evaluated at depth 50+ by Stockfish/ChessDB.
+  In other words, you have supercomputer-level analysis at your fingertips for many moves!
+</p>
+</div>
+
+<div class="detail-block">
+<h3>Load a Game from the Library</h3>
+<p>
+  Click the <strong>Games!</strong> button to open the game library.
+  You'll find categories including top opening lines, world champions, recent masters, and engine battles.
+  Select a category, pick a game from the dropdown, and it loads on the board.
+</p>
+<p>
+  Want to analyze your own games? Use <strong>Input</strong> to paste a PGN or FEN,
+  or <strong>Load</strong> a PGN file from your device. <strong>Save</strong> exports your analysis as PGN.
+</p>
+</div>
+
+<div class="detail-block">
+<h3>Navigating Moves</h3>
+<p>
+  Use <strong>|&lt;</strong> (start), <strong>←</strong> (back), <strong>→</strong> (forward),
+  <strong>&gt;|</strong> (end) to step through moves, or click any move in the history list.
+  Keyboard: Arrow Left/Right, Home/End also work.
+</p>
+<p>
+  After each move, colored <em>badges</em> appear showing engine evaluations for the next moves.
+  Yellow circles preview the next move in the loaded game.
+</p>
+</div>
+
+<div class="detail-block">
+<h3>Visual Markers</h3>
+<ul>
+  <li><span class="example-badge badge-blue">+30</span> <strong>Blue badge:</strong> Engine's top move (best overall).</li>
+  <li><span class="example-badge badge-green">+15</span> <strong>Green badge:</strong> Strong move maintaining advantage.</li>
+  <li><span class="example-badge badge-red">-45</span> <strong>Red badge:</strong> Weaker move leading to disadvantage.</li>
+  <li><span class="example-badge badge-gray">+5</span> <strong>Gray badge:</strong> Neutral move (eval between –20 and +20 centipawns).</li>
+  <li><strong>Yellow rings:</strong> Next-move preview (one on the piece, one on its destination).</li>
+  <li><strong>Green rings:</strong> Opening-book moves from known theory.</li>
+</ul>
+<p>
+  The number is the engine's evaluation <em>after</em> that move (in centipawns, +100 ≈ one pawn advantage for White).
+</p>
+</div>
+
+<div class="detail-block">
+<h3>Branching and Returning</h3>
+<p>
+  Click any badge to branch off into that variation. The board plays that move and you can continue exploring.
+  To return to the main game, click the game title above the move list.
+  The branch point is highlighted in <span style="background:#ff5722;color:#fff;padding:1px 4px;border-radius:2px;">orange</span>.
+</p>
+</div>
+
+<div class="detail-block">
+<h3>Quick Best Move</h3>
+<p>
+  Click the <strong>"ChessBest.org"</strong> link in the header to instantly play the engine's top (blue badge) move.
+</p>
+</div>
+
+<div class="detail-block">
+<h3>Settings</h3>
+<p>
+  Click <strong>Settings</strong> to adjust: top moves count, next-move preview, evaluation method (Direct/Proxy),
+  history height, font size, piece size, badge notation, background color, light/dark theme,
+  and double-size board. <strong>Reset Settings</strong> reverts to defaults.
+</p>
+</div>
+
+<div class="footer-note">
+  <strong>v0.5.0</strong> — MDL+DCC Eval Layer · ChessBest.org
+  · Author: <a href="https://chessbest.org/bd/">Boyan D.</a>
+  · Part of the <a href="https://chessbest.org/bd/">8Z research program</a>
+</div>
+
+</body>
+</html>
