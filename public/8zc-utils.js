@@ -791,6 +791,15 @@ gameBuckets.forEach(bucket => {
       ov.dataset.dccAdsrShape = data.adsr ? data.adsr.shape : '';
       ov.dataset.dccAdsrLabel = data.adsr ? data.adsr.label : '';
       ov.dataset.dccAdsr = data.adsr ? JSON.stringify(data.adsr) : '';
+      ov.dataset.dccMomentum = data.momentum !== undefined ? data.momentum.toFixed(2) : '';
+      ov.dataset.dccTunnel = data.tunnel ? '1' : '';
+
+      // v0.6.1: Hover shows DCC info panel without moving pieces
+      ov.addEventListener('mouseenter', () => showDCCInfoPanel(ov));
+      ov.addEventListener('mouseleave', () => {
+        const panel = document.getElementById('dccInfoPanel');
+        if (panel) panel.style.display = 'none';
+      });
     }
   }
 
@@ -879,11 +888,23 @@ gameBuckets.forEach(bucket => {
       }
     } catch(e) {}
 
+    // v0.6.1: Momentum + Tunnel
+    let momStr = '';
+    const mom = parseFloat(ov.dataset.dccMomentum || '0');
+    if (mom !== 0) {
+      const momColor = mom > 0.5 ? '#34d399' : mom < -0.5 ? '#ff4c4c' : '#888';
+      const momSign = mom > 0 ? '+' : '';
+      momStr = ` &nbsp;|&nbsp; <span style="color:${momColor}">Mom: ${momSign}${mom.toFixed(1)}</span>`;
+    }
+    const tunnelStr = ov.dataset.dccTunnel === '1'
+      ? ' &nbsp;|&nbsp; <span style="color:#f59e0b">⛏ Tunnel</span>'
+      : '';
+
     panel.innerHTML = `
       <div class="dcc-info-path"><span class="dcc-path-eval">${rootScore}</span><span class="dcc-path-arrow">→</span>${moveStr}</div>
       <div class="dcc-info-summary">
         Trend: <span class="dcc-trend-${trend}">${trendLabel}</span>
-        &nbsp;|&nbsp; Stability: ${stabilityPct}%${depthStr}${adsrStr}
+        &nbsp;|&nbsp; Stability: ${stabilityPct}%${depthStr}${adsrStr}${momStr}${tunnelStr}
       </div>
     `;
     panel.style.display = 'block';
