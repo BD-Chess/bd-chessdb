@@ -2598,7 +2598,8 @@ function jumpTo(i){
       const evalSeq = [pvResult.score];
       if (pvResult.pv.length > 1) {
         const walk = new Chess(probe.fen());
-        for (let j = 0; j < Math.min(4, pvResult.pv.length); j++) {
+        const maxWalk = Math.min(settings.dccDepth || 4, pvResult.pv.length);
+        for (let j = 0; j < maxWalk; j++) {
           const uci = pvResult.pv[j];
           const wm = walk.move({ from: uci.slice(0, 2), to: uci.slice(2, 4),
             promotion: uci.length > 4 ? uci[4] : undefined });
@@ -2855,9 +2856,61 @@ function jumpTo(i){
     return pgn;
   }
 
-  // Replay button handler
+  // Replay button handler — show settings modal first
   const btnReplay = document.getElementById('btnReplay');
-  if (btnReplay) btnReplay.onclick = () => replayGame();
+  const replayModal = document.getElementById('replayModal');
+
+  if (btnReplay && replayModal) {
+    btnReplay.onclick = () => {
+      // If replay running, act as Stop button
+      if (replayRunning) { replayAbort = true; return; }
+      // Show modal
+      replayModal.style.display = 'flex';
+    };
+
+    document.getElementById('replayCancel').onclick = () => {
+      replayModal.style.display = 'none';
+    };
+
+    // Click outside modal content to cancel
+    replayModal.onclick = (e) => {
+      if (e.target === replayModal) replayModal.style.display = 'none';
+    };
+
+    document.getElementById('replayStart').onclick = async () => {
+      replayModal.style.display = 'none';
+
+      // Read replay-specific settings from modal
+      const rDepth = parseInt(document.getElementById('replayDepth').value, 10);
+      const rTopC = parseInt(document.getElementById('replayTopC').value, 10);
+      const rFloor = parseInt(document.getElementById('replayFloor').value, 10);
+      const rSpeed = parseInt(document.getElementById('replaySpeed').value, 10);
+
+      // Save current global settings
+      const saved = {
+        dccDepth: settings.dccDepth,
+        dccTopCandidates: settings.dccTopCandidates,
+        dccEvalFloor: settings.dccEvalFloor,
+        simSpeed: settings.simSpeed
+      };
+
+      // Temporarily override for replay
+      settings.dccDepth = rDepth;
+      settings.dccTopCandidates = rTopC;
+      settings.dccEvalFloor = rFloor;
+      settings.simSpeed = rSpeed;
+
+      try {
+        await replayGame();
+      } finally {
+        // Restore global settings — always, even on abort
+        settings.dccDepth = saved.dccDepth;
+        settings.dccTopCandidates = saved.dccTopCandidates;
+        settings.dccEvalFloor = saved.dccEvalFloor;
+        settings.simSpeed = saved.simSpeed;
+      }
+    };
+  }
 
   // ────────────────────────────────────────────────────────────────────
 

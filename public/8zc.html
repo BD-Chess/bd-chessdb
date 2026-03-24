@@ -85,7 +85,6 @@
         <button class="btn btn-nav" id="btnSimB" style="font-size:11px; padding:3px 8px; background:#2a2030; border:1px solid rgba(167,139,250,0.25); color:#a78bfa;" title="DCC Black vs Raw White">SimB</button>
         <button class="btn btn-nav" id="btnReplay" style="font-size:11px; padding:3px 8px; background:#203030; border:1px solid rgba(0,229,255,0.3); color:#00e5ff;" title="Replay loaded game with DCC analysis">Replay</button>
         <span id="dccProgress" style="font-family:monospace; font-size:11px; color:#00e5ff; min-width:32px;"></span>
-        <button class="btn btn-nav" id="btnTopC" style="font-size:11px; padding:3px 8px; background:#333; border:1px solid rgba(255,255,255,0.12); color:#ccc;" title="Set Top Candidates">TopC</button>
         <button class="btn btn-nav" id="btnViewToggle" style="font-size:11px; padding:3px 8px; background:#2a3540; border:1px solid rgba(0,229,255,0.2); margin-left:auto;">DCC</button>
       </div>
 
@@ -331,6 +330,46 @@
       </div>
       <div class="dcc-badge-label">8Z · MDL+DCC kernel</div>
 
+    </div>
+  </div>
+
+  <!-- Replay Settings Modal -->
+  <div id="replayModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#2a2a2a; border:1px solid rgba(0,229,255,0.4); border-radius:8px;
+      padding:20px 24px; min-width:280px; max-width:340px; color:#eee; font-size:13px;">
+      <div style="font-weight:700; color:#00e5ff; margin-bottom:14px; font-size:15px;">DCC Replay Settings</div>
+
+      <label style="display:block; margin:8px 0 4px; color:#aaa;">Lookahead depth:</label>
+      <select id="replayDepth" style="width:100%; padding:5px; background:#333; color:#eee; border:1px solid #555; border-radius:4px;">
+        <option value="3">3 (fast)</option><option value="5">5</option>
+        <option value="7">7</option><option value="10" selected>10 (deep)</option>
+      </select>
+
+      <label style="display:block; margin:8px 0 4px; color:#aaa;">Top candidates:</label>
+      <select id="replayTopC" style="width:100%; padding:5px; background:#333; color:#eee; border:1px solid #555; border-radius:4px;">
+        <option value="3">3 (fast)</option><option value="5" selected>5</option>
+        <option value="7">7</option><option value="10">10 (thorough)</option>
+      </select>
+
+      <label style="display:block; margin:8px 0 4px; color:#aaa;">Eval floor:</label>
+      <select id="replayFloor" style="width:100%; padding:5px; background:#333; color:#eee; border:1px solid #555; border-radius:4px;">
+        <option value="50">50cp (strict)</option><option value="80">80cp</option>
+        <option value="120" selected>120cp (wide)</option><option value="200">200cp (very wide)</option>
+      </select>
+
+      <label style="display:block; margin:8px 0 4px; color:#aaa;">Sim speed:</label>
+      <select id="replaySpeed" style="width:100%; padding:5px; background:#333; color:#eee; border:1px solid #555; border-radius:4px;">
+        <option value="1000">Normal (1s)</option><option value="400" selected>Fast (0.4s)</option>
+        <option value="100">Very fast (0.1s)</option><option value="0">Max (no board)</option>
+      </select>
+
+      <div style="display:flex; gap:10px; margin-top:16px;">
+        <button id="replayStart" style="flex:1; padding:8px; background:#00e5ff; color:#000;
+          border:none; border-radius:4px; font-weight:700; cursor:pointer; font-size:13px;">Start Replay</button>
+        <button id="replayCancel" style="flex:1; padding:8px; background:#555; color:#eee;
+          border:none; border-radius:4px; cursor:pointer; font-size:13px;">Cancel</button>
+      </div>
     </div>
   </div>
 
