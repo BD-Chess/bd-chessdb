@@ -80,8 +80,10 @@
       <!-- Opening name -->
       <div id="openingName"></div>
 
-      <!-- Move/DCC toggle -->
-      <div id="viewToggle" style="text-align:right; margin: 2px 0;">
+      <!-- Move/DCC/Sim toggle -->
+      <div id="viewToggle" style="display:flex; justify-content:flex-end; gap:4px; margin: 2px 0;">
+        <button class="btn btn-nav" id="btnSimW" style="font-size:11px; padding:3px 8px; background:#2a3020; border:1px solid rgba(52,211,153,0.25); color:#34d399;">SimW</button>
+        <button class="btn btn-nav" id="btnSimB" style="font-size:11px; padding:3px 8px; background:#2a2030; border:1px solid rgba(167,139,250,0.25); color:#a78bfa;">SimB</button>
         <button class="btn btn-nav" id="btnViewToggle" style="font-size:11px; padding:3px 8px; background:#2a3540; border:1px solid rgba(0,229,255,0.2);">DCC View</button>
       </div>
 
@@ -90,6 +92,12 @@
 
       <!-- DCC Analysis Panel (hidden by default, replaces moves when toggled) -->
       <div id="dccAnalysisPanel" style="display:none;"></div>
+
+      <!-- Sim Stats Panel (hidden, replaces board+moves at max speed) -->
+      <div id="simStatsPanel" style="display:none;"></div>
+
+      <!-- Sim Status Bar (shows during simulation) -->
+      <div id="simStatusBar" style="display:none;"></div>
 
       <!-- DCC Info Panel — shows eval path on badge click -->
       <div id="dccInfoPanel"></div>
@@ -234,6 +242,23 @@
             <input type="checkbox" id="settingDccOnly">
             DCC only (hide raw ChessDB scores)
           </label>
+
+          <label for="settingSimSpeed">Sim speed:</label>
+          <select id="settingSimSpeed">
+            <option value="2000">Slow (2s/move)</option>
+            <option value="1000" selected>Normal (1s)</option>
+            <option value="400">Fast (0.4s)</option>
+            <option value="0">Max (no board updates)</option>
+          </select>
+
+          <label for="settingSimGames">Sim games per run:</label>
+          <select id="settingSimGames">
+            <option value="1">1</option>
+            <option value="5" selected>5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
         </div>
         <!-- ─────────────────────────────────────────────────────── -->
 

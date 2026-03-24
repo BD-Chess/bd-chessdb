@@ -27,7 +27,9 @@ function initAll() {
     dccDepth: 5,         // half-moves of lookahead (1-10)
     dccTopMoves: 3,      // how many top moves get lookahead
     dccTieThreshold: 10, // centipawns — below this = "tied"
-    dccOnly: false       // hide raw ChessDB scores, show only DCC view
+    dccOnly: false,      // hide raw ChessDB scores, show only DCC view
+    simSpeed: 1000,      // ms per move (0 = max speed, no board update)
+    simGames: 5          // games per simulation run
   };
 
   // DCC view toggle state
@@ -1026,6 +1028,10 @@ gameBuckets.forEach(bucket => {
     if (dccTopEl) dccTopEl.value = settings.dccTopMoves;
     const dccOnlyEl = document.getElementById('settingDccOnly');
     if (dccOnlyEl) dccOnlyEl.checked = settings.dccOnly;
+    const simSpeedEl = document.getElementById('settingSimSpeed');
+    if (simSpeedEl) simSpeedEl.value = settings.simSpeed;
+    const simGamesEl = document.getElementById('settingSimGames');
+    if (simGamesEl) simGamesEl.value = settings.simGames;
     const dccInfoPanel = document.getElementById('dccInfoPanel');
     if (dccInfoPanel && !settings.dccEnabled) dccInfoPanel.style.display = 'none';
     const dccAccPanel = document.getElementById('dccAccuracyPanel');
@@ -1738,7 +1744,9 @@ function jumpTo(i){
 	  'settingDccEnabled',
 	  'settingDccDepth',
 	  'settingDccTopMoves',
-	  'settingDccOnly'
+	  'settingDccOnly',
+	  'settingSimSpeed',
+	  'settingSimGames'
 	].forEach(id => {
 	  document.getElementById(id).onchange = e => {
 		switch (id) {
@@ -1806,6 +1814,12 @@ function jumpTo(i){
 		  case 'settingDccOnly':
 			settings.dccOnly = e.target.checked;
 			break;
+		  case 'settingSimSpeed':
+			settings.simSpeed = parseInt(e.target.value, 10);
+			break;
+		  case 'settingSimGames':
+			settings.simGames = parseInt(e.target.value, 10) || 5;
+			break;
 		  // ────────────────────────────
 		}
 		saveSettings();
@@ -1846,6 +1860,265 @@ function jumpTo(i){
   applySettings();
   updateBoard(true);
   showOpening();
+
+  // ═══════════════════════════════════════════════════════════════════
+  // SIMULATION ENGINE — DCC vs Raw ChessDB
+  // ═══════════════════════════════════════════════════════════════════
+
+  let simRunning = false;
+  let simAbort = false;
+
+  // Pick move using DCC: fetch top moves, run PV+ADSR, pick by stability+trend
+  async function pickDCCMove(simGame) {
+    const fen = simGame.fen();
+    const result = await cachedFetchChessDB(fen);
+    if (!result.moves || result.moves.length === 0) return null;
+
+    const topN = Math.min(3, result.moves.length);
+    let bestMove = result.moves[0]; // fallback: raw best
+    let bestScore = -Infinity;
+
+    for (let i = 0; i < topN; i++) {
+      const mv = result.moves[i];
+      const probe = new Chess(fen);
+      const m = probe.move({
+        from: mv.move.slice(0, 2), to: mv.move.slice(2, 4),
+        promotion: mv.move.length > 4 ? mv.move[4] : 'q'
+      });
+      if (!m) continue;
+
+      const pvResult = await fetchPV(probe.fen());
+      if (pvResult.score === null) continue;
+
+      const evalSeq = [pvResult.score];
+      // Quick intermediate score if PV has moves
+      if (pvResult.pv.length > 1) {
+        const walk = new Chess(probe.fen());
+        for (let j = 0; j < Math.min(4, pvResult.pv.length); j++) {
+          const uci = pvResult.pv[j];
+          const wm = walk.move({
+            from: uci.slice(0, 2), to: uci.slice(2, 4),
+            promotion: uci.length > 4 ? uci[4] : undefined
+          });
+          if (!wm) break;
+          if (j % 2 === 1) {
+            const sc = await fetchScore(walk.fen());
+            if (sc !== null) evalSeq.push((j % 2 === 0) ? -sc : sc);
+          }
+        }
+      }
+
+      const stability = evalSeqStability(evalSeq);
+      const adsr = adsrAnalysis(evalSeq);
+      // Combined DCC score: raw eval + stability bonus + ADSR shape bonus
+      let dccScore = mv.score;
+      dccScore += stability * 20;  // up to +20 for perfect stability
+      if (adsr.shape === 'sustained') dccScore += 10;
+      else if (adsr.shape === 'building') dccScore += 15;
+      else if (adsr.shape === 'spike') dccScore -= 5;
+      else if (adsr.shape === 'collapse') dccScore -= 20;
+      else if (adsr.shape === 'volatile') dccScore -= 10;
+
+      // LZ tiebreaker on resulting position
+      const cx = fenComplexity(probe.fen());
+      dccScore -= cx * 10; // prefer simpler (more compressible) positions
+
+      if (dccScore > bestScore) {
+        bestScore = dccScore;
+        bestMove = mv;
+      }
+    }
+    return bestMove;
+  }
+
+  // Pick move using raw ChessDB: highest score, no lookahead
+  async function pickRawMove(simGame) {
+    const result = await cachedFetchChessDB(simGame.fen());
+    if (!result.moves || result.moves.length === 0) return null;
+    return result.moves[0]; // highest score
+  }
+
+  // Update sim status bar
+  function updateSimStatus(msg) {
+    const bar = document.getElementById('simStatusBar');
+    if (bar) { bar.textContent = msg; bar.style.display = 'block'; }
+  }
+
+  // Render sim stats dashboard
+  function renderSimStats(stats) {
+    const panel = document.getElementById('simStatsPanel');
+    if (!panel) return;
+
+    const total = stats.games.length;
+    const dccWins = stats.games.filter(g => g.winner === 'dcc').length;
+    const rawWins = stats.games.filter(g => g.winner === 'raw').length;
+    const draws = stats.games.filter(g => g.winner === 'draw').length;
+    const avgLen = total > 0 ? Math.round(stats.games.reduce((a, g) => a + g.moves, 0) / total) : 0;
+    const dccPct = total > 0 ? Math.round(100 * dccWins / total) : 0;
+    const rawPct = total > 0 ? Math.round(100 * rawWins / total) : 0;
+
+    let html = `
+      <div class="sim-stats-header">
+        <span class="sim-title">DCC vs Raw ChessDB — ${total} game${total !== 1 ? 's' : ''}</span>
+        <span class="sim-subtitle">DCC plays ${stats.dccColor === 'w' ? 'White' : 'Black'}</span>
+      </div>
+      <div class="sim-stats-grid">
+        <div class="sim-stat"><div class="sim-num" style="color:#34d399">${dccWins}</div><div class="sim-label">DCC wins</div></div>
+        <div class="sim-stat"><div class="sim-num" style="color:#ff4c4c">${rawWins}</div><div class="sim-label">Raw wins</div></div>
+        <div class="sim-stat"><div class="sim-num" style="color:#888">${draws}</div><div class="sim-label">Draws</div></div>
+        <div class="sim-stat"><div class="sim-num" style="color:#00e5ff">${dccPct}%</div><div class="sim-label">DCC rate</div></div>
+        <div class="sim-stat"><div class="sim-num" style="color:#f59e0b">${avgLen}</div><div class="sim-label">Avg moves</div></div>
+      </div>
+      <div class="sim-games-list">`;
+
+    stats.games.forEach((g, i) => {
+      const icon = g.winner === 'dcc' ? '✓' : g.winner === 'raw' ? '✗' : '=';
+      const color = g.winner === 'dcc' ? '#34d399' : g.winner === 'raw' ? '#ff4c4c' : '#888';
+      html += `<div class="sim-game-row" style="color:${color}">
+        <span>${icon} Game ${i + 1}</span>
+        <span>${g.moves} moves</span>
+        <span>${g.result}</span>
+      </div>`;
+    });
+
+    html += '</div>';
+    panel.innerHTML = html;
+    panel.style.display = 'block';
+  }
+
+  // Run one simulated game
+  async function runOneGame(dccColor, gameNum, totalGames, visualize) {
+    const simGame = new Chess();
+    let moveCount = 0;
+    const maxMoves = 200;
+
+    // Random opening: first 6 half-moves both sides pick randomly from top-3
+    for (let i = 0; i < 6 && !simGame.game_over(); i++) {
+      if (simAbort) return { winner: 'abort', moves: 0, result: 'aborted' };
+      const result = await cachedFetchChessDB(simGame.fen());
+      if (!result.moves || result.moves.length === 0) break;
+      const pool = result.moves.slice(0, Math.min(3, result.moves.length));
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+      const m = simGame.move({
+        from: pick.move.slice(0, 2), to: pick.move.slice(2, 4),
+        promotion: pick.move.length > 4 ? pick.move[4] : 'q'
+      });
+      if (!m) break;
+      moveCount++;
+      if (visualize && settings.simSpeed > 0) {
+        board.position(simGame.fen());
+        await sleep(Math.max(100, settings.simSpeed / 3)); // faster for opening
+      }
+    }
+
+    // Main game: DCC vs Raw
+    while (!simGame.game_over() && moveCount < maxMoves) {
+      if (simAbort) return { winner: 'abort', moves: moveCount, result: 'aborted' };
+
+      const turn = simGame.turn(); // 'w' or 'b'
+      const isDCCTurn = (turn === dccColor);
+      const pick = isDCCTurn ? await pickDCCMove(simGame) : await pickRawMove(simGame);
+
+      if (!pick) break; // no moves in DB — position unknown
+
+      const m = simGame.move({
+        from: pick.move.slice(0, 2), to: pick.move.slice(2, 4),
+        promotion: pick.move.length > 4 ? pick.move[4] : 'q'
+      });
+      if (!m) break;
+      moveCount++;
+
+      updateSimStatus(`Game ${gameNum}/${totalGames} · Move ${moveCount} · ${isDCCTurn ? 'DCC' : 'Raw'}: ${pick.move} (${pick.score > 0 ? '+' : ''}${pick.score})`);
+
+      if (visualize && settings.simSpeed > 0) {
+        board.position(simGame.fen());
+        await sleep(settings.simSpeed);
+      }
+    }
+
+    // Determine winner
+    let winner = 'draw', result = 'draw';
+    if (simGame.in_checkmate()) {
+      // The side that just moved delivered checkmate
+      const loser = simGame.turn(); // side that's in checkmate
+      winner = (loser === dccColor) ? 'raw' : 'dcc';
+      result = loser === 'w' ? '0-1' : '1-0';
+    } else if (simGame.in_stalemate()) {
+      result = '½-½ stalemate';
+    } else if (simGame.in_draw()) {
+      result = '½-½ draw';
+    } else if (moveCount >= maxMoves) {
+      result = '½-½ (200 moves)';
+    } else {
+      result = '½-½ (no DB moves)';
+    }
+
+    if (visualize && settings.simSpeed > 0) {
+      board.position(simGame.fen());
+    }
+
+    return { winner, moves: moveCount, result };
+  }
+
+  // Main simulation orchestrator
+  async function runSimulation(dccColor) {
+    if (simRunning) { simAbort = true; return; }
+    simRunning = true;
+    simAbort = false;
+
+    const numGames = settings.simGames;
+    const visualize = settings.simSpeed > 0;
+    const statsPanel = document.getElementById('simStatsPanel');
+    const statusBar = document.getElementById('simStatusBar');
+    const btnW = document.getElementById('btnSimW');
+    const btnB = document.getElementById('btnSimB');
+
+    // Update button states
+    const activeBtn = dccColor === 'w' ? btnW : btnB;
+    activeBtn.textContent = 'Stop';
+    activeBtn.style.background = '#ff4c4c';
+    activeBtn.style.color = '#fff';
+
+    if (!visualize) {
+      // Max speed: hide board, show stats panel
+      document.getElementById('board-container').style.opacity = '0.2';
+      document.getElementById('moves').style.display = 'none';
+    }
+
+    statusBar.style.display = 'block';
+
+    const stats = { dccColor, games: [] };
+
+    for (let i = 0; i < numGames; i++) {
+      if (simAbort) break;
+      updateSimStatus(`Starting game ${i + 1}/${numGames}…`);
+      const result = await runOneGame(dccColor, i + 1, numGames, visualize);
+      if (result.winner === 'abort') break;
+      stats.games.push(result);
+      renderSimStats(stats);
+    }
+
+    // Restore UI
+    simRunning = false;
+    simAbort = false;
+    btnW.textContent = 'SimW'; btnW.style.background = '#2a3020'; btnW.style.color = '#34d399';
+    btnB.textContent = 'SimB'; btnB.style.background = '#2a2030'; btnB.style.color = '#a78bfa';
+    statusBar.style.display = 'none';
+    document.getElementById('board-container').style.opacity = '1';
+    document.getElementById('moves').style.display = '';
+
+    // Show final stats
+    renderSimStats(stats);
+    updateSimStatus(`Done: ${stats.games.length} games`);
+    setTimeout(() => { statusBar.style.display = 'none'; }, 3000);
+  }
+
+  // ─── Sim button handlers ───────────────────────────────────────────
+  const btnSimW = document.getElementById('btnSimW');
+  if (btnSimW) btnSimW.onclick = () => runSimulation('w');
+  const btnSimB = document.getElementById('btnSimB');
+  if (btnSimB) btnSimB.onclick = () => runSimulation('b');
+  // ────────────────────────────────────────────────────────────────────
 
   // ─── DCC View toggle button ────────────────────────────────────────
   const btnToggle = document.getElementById('btnViewToggle');
