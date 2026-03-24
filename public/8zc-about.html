@@ -95,6 +95,26 @@
       font-size: 0.85em;
       color: #bbb;
     }
+    /* ── Collapsible blocks ──────────────────────────── */
+    .detail-block h3 {
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      padding-left: 1.2em;
+    }
+    .detail-block h3::before {
+      content: '▾';
+      position: absolute;
+      left: 0;
+      font-size: 0.8em;
+      transition: transform 0.2s;
+    }
+    .detail-block:not(.open) h3::before {
+      content: '▸';
+    }
+    .detail-block .cb { transition: max-height 0.3s ease, opacity 0.2s; overflow: hidden; }
+    .detail-block:not(.open) .cb { max-height: 0; opacity: 0; margin: 0; }
+    .detail-block.open .cb { max-height: 4000px; opacity: 1; }
 </style>
 </head>
 <body>
@@ -105,8 +125,9 @@
      WHY THIS EXISTS
      ════════════════════════════════════════════════════════════════ -->
 
-<div class="detail-block dcc-section" style="border-left-color:#f59e0b;">
+<div class="detail-block open dcc-section" style="border-left-color:#f59e0b;">
 <h3 style="color:#f59e0b;">The Only Chess Tool That Reads Depth, Not Just Numbers</h3>
+<div class="cb">
 <p>
   Every chess analysis tool on the market does the same thing: show you a number.
   <span class="example-badge badge-blue">+30</span> — is it safe? Is it a trap?
@@ -121,9 +142,11 @@
   one that's +30 but collapses to −15 after 4 accurate responses. No other tool shows you this.
 </p>
 </div>
+</div>
 
 <div class="detail-block dcc-section" style="border-left-color:#f59e0b;">
 <h3 style="color:#f59e0b;">What No Other Chess Tool Has</h3>
+<div class="cb">
 <p>
   <strong>ADSR Shape Analysis</strong> — borrowed from signal processing, validated across four independent domains
   (TSP optimization, Sudoku solving, board game AI, now chess). The same sensor that predicts Sudoku difficulty
@@ -152,9 +175,11 @@
   Compress what exists rather than compute more.
 </p>
 </div>
+</div>
 
 <div class="detail-block dcc-section" style="border-left-color:#f59e0b;">
 <h3 style="color:#f59e0b;">One Kernel, Eleven Domains</h3>
+<div class="cb">
 <p>
   The MDL+DCC architecture powering 8Z is the same mathematical kernel that:
   solves traveling salesman problems within 1.2% of optimum,
@@ -170,20 +195,24 @@
   Everything else is just a different alphabet.
 </p>
 </div>
+</div>
 
 <!-- ════════════════════════════════════════════════════════════════
      TECHNICAL: DCC EVAL LAYER FEATURES
      ════════════════════════════════════════════════════════════════ -->
 
-<div class="detail-block dcc-section">
+<div class="detail-block open dcc-section">
 <h3>DCC Lookahead — The Features</h3>
+<div class="cb">
 <p>
   Four visual layers on top of the standard ChessDB badges:
 </p>
 </div>
+</div>
 
 <div class="detail-block dcc-section">
 <h3>Trend Arrows</h3>
+<div class="cb">
 <p>
   After the standard eval badges load, the top 3 moves get a small arrow:
 </p>
@@ -199,9 +228,11 @@
   The arrow tells you: <em>"The score looks good NOW, but what happens NEXT?"</em>
 </p>
 </div>
+</div>
 
 <div class="detail-block dcc-section">
 <h3>Stability Glow</h3>
+<div class="cb">
 <p>
   A colored border glow appears around badges that have lookahead data:
 </p>
@@ -216,9 +247,11 @@
   <strong>No glow</strong> — no lookahead data yet (still loading, or position not in ChessDB).</li>
 </ul>
 </div>
+</div>
 
 <div class="detail-block dcc-section">
 <h3>ADSR Shape — Eval Path Fingerprint</h3>
+<div class="cb">
 <p>
   Each badge with DCC data shows a small shape symbol after the trend arrow.
   This is the <strong>ADSR signature</strong> — the same sensor that achieved ρ = −0.50
@@ -246,9 +279,11 @@
   even if both have the same stability score.
 </p>
 </div>
+</div>
 
 <div class="detail-block dcc-section">
 <h3>MDL Tiebreaker <span class="star">★</span></h3>
+<div class="cb">
 <p>
   When two or more moves have evaluations within 10 centipawns of each other (practically equal),
   one gets a gold <span class="star">★</span> star. That's the <strong>MDL pick</strong>:
@@ -261,9 +296,11 @@
   applied directly to move selection.
 </p>
 </div>
+</div>
 
 <div class="detail-block dcc-section">
 <h3>Info Panel — Click for Details</h3>
+<div class="cb">
 <p>
   Click any badge that has DCC data (arrow visible) to see the full evaluation path
   in the info panel below the move list:
@@ -287,9 +324,11 @@
   the overall trend, stability percentage, and the search depth from ChessDB.
 </p>
 </div>
+</div>
 
 <div class="detail-block dcc-section">
 <h3>Match Accuracy Tracker</h3>
+<div class="cb">
 <p>
   When you load a PGN game and step through the moves, a small accuracy tracker appears:
 </p>
@@ -306,9 +345,11 @@
   picks moves that align better with expert play.
 </p>
 </div>
+</div>
 
 <div class="detail-block dcc-section">
 <h3>DCC Settings</h3>
+<div class="cb">
 <p>
   Open <strong>Settings</strong> and scroll to the <strong>DCC Lookahead</strong> section:
 </p>
@@ -323,9 +364,11 @@
   automatically stops probing stable lines early, so depth 10 doesn't always mean 10 calls.
 </p>
 </div>
+</div>
 
 <div class="detail-block dcc-section">
 <h3>How It Works — Under the Hood</h3>
+<div class="cb">
 <p>
   For each top move, the system makes a single <code>querypv</code> call to ChessDB,
   which returns the full principal variation (best play line) in one response.
@@ -337,9 +380,11 @@
   Results are cached in your browser's localStorage for instant replay.
 </p>
 </div>
+</div>
 
 <div class="detail-block dcc-section" style="border-left-color:#34d399;">
 <h3 style="color:#34d399;">Live Simulation — DCC vs Raw ChessDB</h3>
+<div class="cb">
 <p>
   Two buttons next to the DCC View toggle let you watch DCC compete against raw ChessDB live:
 </p>
@@ -364,6 +409,7 @@
   Configure the number of games and speed in Settings under DCC Lookahead.
 </p>
 </div>
+</div>
 
 <!-- ════════════════════════════════════════════════════════════════
      ORIGINAL CHESSBEST HELP CONTENT (cleaned from browser junk)
@@ -373,6 +419,7 @@
 
 <div class="detail-block">
 <h3>Play, Review, Learn with Powerful Analysis</h3>
+<div class="cb">
 <p>
   ChessBest.org is an interactive chess analysis board that helps you review famous games or analyze your own.
   It's fast, clear, and packed with insights from the powerful ChessDB engine database.
@@ -383,9 +430,11 @@
   In other words, you have supercomputer-level analysis at your fingertips for many moves!
 </p>
 </div>
+</div>
 
 <div class="detail-block">
 <h3>Load a Game from the Library</h3>
+<div class="cb">
 <p>
   Click the <strong>Games!</strong> button to open the game library.
   You'll find categories including top opening lines, world champions, recent masters, and engine battles.
@@ -396,9 +445,11 @@
   or <strong>Load</strong> a PGN file from your device. <strong>Save</strong> exports your analysis as PGN.
 </p>
 </div>
+</div>
 
 <div class="detail-block">
 <h3>Navigating Moves</h3>
+<div class="cb">
 <p>
   Use <strong>|&lt;</strong> (start), <strong>←</strong> (back), <strong>→</strong> (forward),
   <strong>&gt;|</strong> (end) to step through moves, or click any move in the history list.
@@ -409,9 +460,11 @@
   Yellow circles preview the next move in the loaded game.
 </p>
 </div>
+</div>
 
 <div class="detail-block">
 <h3>Visual Markers</h3>
+<div class="cb">
 <ul>
   <li><span class="example-badge badge-blue">+30</span> <strong>Blue badge:</strong> Engine's top move (best overall).</li>
   <li><span class="example-badge badge-green">+15</span> <strong>Green badge:</strong> Strong move maintaining advantage.</li>
@@ -424,30 +477,37 @@
   The number is the engine's evaluation <em>after</em> that move (in centipawns, +100 ≈ one pawn advantage for White).
 </p>
 </div>
+</div>
 
 <div class="detail-block">
 <h3>Branching and Returning</h3>
+<div class="cb">
 <p>
   Click any badge to branch off into that variation. The board plays that move and you can continue exploring.
   To return to the main game, click the game title above the move list.
   The branch point is highlighted in <span style="background:#ff5722;color:#fff;padding:1px 4px;border-radius:2px;">orange</span>.
 </p>
 </div>
+</div>
 
 <div class="detail-block">
 <h3>Quick Best Move</h3>
+<div class="cb">
 <p>
   Click the <strong>"ChessBest.org"</strong> link in the header to instantly play the engine's top (blue badge) move.
 </p>
 </div>
+</div>
 
 <div class="detail-block">
 <h3>Settings</h3>
+<div class="cb">
 <p>
   Click <strong>Settings</strong> to adjust: top moves count, next-move preview, evaluation method (Direct/Proxy),
   history height, font size, piece size, badge notation, background color, light/dark theme,
   and double-size board. <strong>Reset Settings</strong> reverts to defaults.
 </p>
+</div>
 </div>
 
 <div class="footer-note">
@@ -457,5 +517,12 @@
   <br><em style="color:#666;">One kernel. Eleven domains. Everything else is a different alphabet.</em>
 </div>
 
+<script>
+document.querySelectorAll('.detail-block h3').forEach(h3 => {
+  h3.addEventListener('click', () => {
+    h3.closest('.detail-block').classList.toggle('open');
+  });
+});
+</script>
 </body>
 </html>
