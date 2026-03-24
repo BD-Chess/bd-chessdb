@@ -24,10 +24,16 @@ function initAll() {
     ioFormat: 'fen',   // NEW  (fen | pgn)  for Format / Input / Copy row
     /* DCC Lookahead settings */
     dccEnabled: true,
-    dccDepth: 3,         // half-moves of lookahead (1-5)
+    dccDepth: 5,         // half-moves of lookahead (1-10)
     dccTopMoves: 3,      // how many top moves get lookahead
-    dccTieThreshold: 10  // centipawns — below this = "tied"
+    dccTieThreshold: 10, // centipawns — below this = "tied"
+    dccOnly: false       // hide raw ChessDB scores, show only DCC view
   };
+
+  // DCC view toggle state
+  let dccViewActive = false;
+  // Store latest DCC results for the analysis panel
+  let latestDCCResults = [];
 
 
 	// ─── display the PGN “Opening” tag under the moves ─────────────────
@@ -510,6 +516,7 @@ gameBuckets.forEach(bucket => {
     const thisId = ++activeLookaheadId;
     const topN = Math.min(settings.dccTopMoves, moveList.length);
     const maxHalfMoves = settings.dccDepth * 2;
+    latestDCCResults = []; // reset for this position
 
     for (let i = 0; i < topN; i++) {
       if (thisId !== activeLookaheadId) return; // board changed, abort
@@ -533,13 +540,19 @@ gameBuckets.forEach(bucket => {
         const trend = evalTrend(evalSequence);
         const stability = evalSeqStability(evalSequence);
         const arrow = trendArrow(trend);
-        updateDCCBadge(mv.move, {
-          trend, stability, arrow, evalSequence, movePath,
-          score: mv.score, pvDepth: pvDepth || 0
-        }, 'done');
+        const data = {
+          move: mv.move, trend, stability, arrow, evalSequence, movePath,
+          score: mv.score, pvDepth: pvDepth || 0,
+          isMdlPick: !!document.querySelector(`.square-${mv.move.slice(-2)} .overlay.dcc-mdl-pick`)
+        };
+        updateDCCBadge(mv.move, data, 'done');
+        latestDCCResults.push(data);
       } else {
         updateDCCBadge(mv.move, null, 'none');
       }
+      // Update DCC view panel and DCC-only badges after each result
+      renderDCCView();
+      if (settings.dccOnly) applyDCCOnlyBadges();
     }
   }
 
@@ -669,6 +682,132 @@ gameBuckets.forEach(bucket => {
     panel.style.display = 'block';
   }
 
+  // ── Render DCC Analysis Panel (replaces moves when toggled) ──────
+  function renderDCCView() {
+    const panel = document.getElementById('dccAnalysisPanel');
+    if (!panel) return;
+    if (!dccViewActive) { panel.style.display = 'none'; return; }
+
+    panel.style.display = 'block';
+    if (latestDCCResults.length === 0) {
+      panel.innerHTML = '<div class="dcc-analysis-empty">DCC analysis loading…</div>';
+      return;
+    }
+
+    // Sort by stability (highest first), then by score
+    const sorted = latestDCCResults.slice().sort((a, b) => {
+      const sa = a.stability || 0, sb = b.stability || 0;
+      if (Math.abs(sb - sa) > 0.05) return sb - sa;
+      return (b.score || 0) - (a.score || 0);
+    });
+
+    let html = '<table class="dcc-analysis-table">';
+    html += '<tr class="dcc-analysis-header"><th>#</th><th>Move</th><th>Eval</th><th></th><th>Stab</th><th></th></tr>';
+    sorted.forEach((r, i) => {
+      const rank = i + 1;
+      const score = r.score !== undefined ? (r.score > 0 ? '+' + r.score : r.score) : '?';
+      const arrow = r.arrow || '';
+      const trendClass = r.trend ? 'dcc-trend-' + r.trend : '';
+      const stabPct = r.stability !== undefined ? Math.round(r.stability * 100) + '%' : '—';
+      const stabClass = r.stability > 0.6 ? 'dcc-stab-high' : r.stability < 0.35 ? 'dcc-stab-low' : 'dcc-stab-mid';
+      const mdl = r.isMdlPick ? '<span class="star">★</span>' : '';
+      const pvStr = (r.movePath || []).join(' → ');
+      html += `<tr class="dcc-analysis-row" data-move="${r.move}" title="PV: ${pvStr}">`;
+      html += `<td class="dcc-rank">${rank}</td>`;
+      html += `<td class="dcc-move-name">${r.move}</td>`;
+      html += `<td class="dcc-eval-cell">${score}</td>`;
+      html += `<td class="${trendClass}">${arrow}</td>`;
+      html += `<td class="${stabClass}">${stabPct}</td>`;
+      html += `<td>${mdl}</td>`;
+      html += `</tr>`;
+    });
+    html += '</table>';
+
+    // Show PV of the top DCC-ranked move
+    const top = sorted[0];
+    if (top && top.movePath && top.movePath.length > 0) {
+      const pvDisplay = top.movePath.join(' → ');
+      const depthStr = top.pvDepth ? ` · d${top.pvDepth}` : '';
+      html += `<div class="dcc-analysis-pv">PV: ${pvDisplay}${depthStr}</div>`;
+    }
+
+    panel.innerHTML = html;
+
+    // Click rows to show that move's full info
+    panel.querySelectorAll('.dcc-analysis-row').forEach(row => {
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', () => {
+        const mv = row.dataset.move;
+        const r = latestDCCResults.find(x => x.move === mv);
+        if (r && r.evalSequence) {
+          const infoPanel = document.getElementById('dccInfoPanel');
+          if (infoPanel) {
+            const moveStr = (r.movePath || []).map((m, i) => {
+              const s = r.evalSequence[i + 1];
+              const scoreStr = s !== undefined ? `<span class="dcc-path-eval">${s > 0 ? '+' : ''}${s}</span>` : '';
+              return `<span class="dcc-path-move">${m}</span>${scoreStr}`;
+            }).join('<span class="dcc-path-arrow">→</span>');
+            const rootScore = r.evalSequence[0] !== undefined ? `${r.evalSequence[0] > 0 ? '+' : ''}${r.evalSequence[0]}` : '?';
+            const trendLabel = { rising: '↑ rising', falling: '↓ falling', stable: '→ stable' }[r.trend] || r.trend;
+            const depthStr = r.pvDepth ? ` · d${r.pvDepth}` : '';
+            infoPanel.innerHTML = `
+              <div class="dcc-info-path"><span class="dcc-path-eval">${rootScore}</span><span class="dcc-path-arrow">→</span>${moveStr}</div>
+              <div class="dcc-info-summary">Trend: <span class="dcc-trend-${r.trend}">${trendLabel}</span> &nbsp;|&nbsp; Stability: ${Math.round((r.stability||0)*100)}%${depthStr}</div>
+            `;
+            infoPanel.style.display = 'block';
+          }
+        }
+      });
+    });
+  }
+
+  // ── DCC-only badge mode: replace raw score with DCC info ────────
+  function applyDCCOnlyBadges() {
+    if (!settings.dccOnly) return;
+    // For each overlay with DCC data, replace the text content
+    document.querySelectorAll('.overlay').forEach(ov => {
+      if (!ov.dataset.dccTrend) {
+        // No DCC data yet — dim the badge
+        ov.style.opacity = '0.3';
+        return;
+      }
+      ov.style.opacity = '1';
+      const trend = ov.dataset.dccTrend;
+      const stability = parseFloat(ov.dataset.dccStability || '0');
+      const arrow = { rising: '↑', falling: '↓', stable: '→' }[trend] || '→';
+
+      // Compute DCC rank by stability among visible overlays
+      const allStabs = [];
+      document.querySelectorAll('.overlay[data-dcc-stability]').forEach(o => {
+        allStabs.push({ el: o, stab: parseFloat(o.dataset.dccStability || '0') });
+      });
+      allStabs.sort((a, b) => b.stab - a.stab);
+      const rank = allStabs.findIndex(x => x.el === ov) + 1;
+
+      // Replace badge text: arrow + rank
+      // Keep only the arrow span, remove text nodes
+      const arrowEl = ov.querySelector('.dcc-arrow');
+      const starEl = ov.querySelector('.dcc-mdl-star');
+      ov.childNodes.forEach(n => {
+        if (n.nodeType === 3) n.textContent = ''; // clear text nodes
+      });
+      // Set new content
+      if (!ov.querySelector('.dcc-only-label')) {
+        const label = document.createElement('span');
+        label.className = 'dcc-only-label';
+        ov.insertBefore(label, ov.firstChild);
+      }
+      const label = ov.querySelector('.dcc-only-label');
+      label.textContent = `${arrow}${rank}`;
+
+      // Recolor badge by stability instead of eval sign
+      ov.classList.remove('positive', 'negative', 'zero');
+      if (stability > 0.6) ov.classList.add('positive');
+      else if (stability < 0.35) ov.classList.add('negative');
+      else ov.classList.add('zero');
+    });
+  }
+
   // ── Match Accuracy Tracker ──────────────────────────────────────
   let matchStats = { chessdbMatch: 0, dccMatch: 0, totalMoves: 0 };
 
@@ -789,6 +928,8 @@ gameBuckets.forEach(bucket => {
     if (dccDepthEl) dccDepthEl.value = settings.dccDepth;
     const dccTopEl = document.getElementById('settingDccTopMoves');
     if (dccTopEl) dccTopEl.value = settings.dccTopMoves;
+    const dccOnlyEl = document.getElementById('settingDccOnly');
+    if (dccOnlyEl) dccOnlyEl.checked = settings.dccOnly;
     const dccInfoPanel = document.getElementById('dccInfoPanel');
     if (dccInfoPanel && !settings.dccEnabled) dccInfoPanel.style.display = 'none';
     const dccAccPanel = document.getElementById('dccAccuracyPanel');
@@ -1500,7 +1641,8 @@ function jumpTo(i){
 	  'settingTryLaterDuration',
 	  'settingDccEnabled',
 	  'settingDccDepth',
-	  'settingDccTopMoves'
+	  'settingDccTopMoves',
+	  'settingDccOnly'
 	].forEach(id => {
 	  document.getElementById(id).onchange = e => {
 		switch (id) {
@@ -1560,10 +1702,13 @@ function jumpTo(i){
 			settings.dccEnabled = e.target.checked;
 			break;
 		  case 'settingDccDepth':
-			settings.dccDepth = parseInt(e.target.value, 10) || 3;
+			settings.dccDepth = parseInt(e.target.value, 10) || 5;
 			break;
 		  case 'settingDccTopMoves':
 			settings.dccTopMoves = parseInt(e.target.value, 10) || 3;
+			break;
+		  case 'settingDccOnly':
+			settings.dccOnly = e.target.checked;
 			break;
 		  // ────────────────────────────
 		}
@@ -1605,6 +1750,31 @@ function jumpTo(i){
   applySettings();
   updateBoard(true);
   showOpening();
+
+  // ─── DCC View toggle button ────────────────────────────────────────
+  const btnToggle = document.getElementById('btnViewToggle');
+  if (btnToggle) {
+    btnToggle.onclick = () => {
+      dccViewActive = !dccViewActive;
+      const movesEl = document.getElementById('moves');
+      const dccPanel = document.getElementById('dccAnalysisPanel');
+      if (dccViewActive) {
+        movesEl.style.display = 'none';
+        dccPanel.style.display = 'block';
+        btnToggle.textContent = 'Moves';
+        btnToggle.style.background = '#00e5ff';
+        btnToggle.style.color = '#000';
+        renderDCCView();
+      } else {
+        movesEl.style.display = '';
+        dccPanel.style.display = 'none';
+        btnToggle.textContent = 'DCC View';
+        btnToggle.style.background = '#2a3540';
+        btnToggle.style.color = '#fff';
+      }
+    };
+  }
+  // ────────────────────────────────────────────────────────────────────
 
   
   // ─── Clickable title: reload or jump back to orange move (and clear highlight) ───

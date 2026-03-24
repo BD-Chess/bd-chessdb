@@ -47,7 +47,7 @@
   </div>
   <div id="pageSubtitle">
     <div class="desktop-only">
-      MDL+DCC eval layer — looks 3-5 moves deep through 48+ billion evaluations.
+      MDL+DCC eval layer — looks up to 10 moves deep through 48+ billion evaluations.
     </div>
     <div class="mobile-only">
       MDL+DCC lookahead on 48B+ evals.
@@ -80,8 +80,16 @@
       <!-- Opening name -->
       <div id="openingName"></div>
 
-      <!-- Move history -->
+      <!-- Move/DCC toggle -->
+      <div id="viewToggle" style="text-align:right; margin: 2px 0;">
+        <button class="btn btn-nav" id="btnViewToggle" style="font-size:11px; padding:3px 8px; background:#2a3540; border:1px solid rgba(0,229,255,0.2);">DCC View</button>
+      </div>
+
+      <!-- Move history (default view) -->
       <div id="moves"></div>
+
+      <!-- DCC Analysis Panel (hidden by default, replaces moves when toggled) -->
+      <div id="dccAnalysisPanel" style="display:none;"></div>
 
       <!-- DCC Info Panel — shows eval path on badge click -->
       <div id="dccInfoPanel"></div>
@@ -203,9 +211,14 @@
           <select id="settingDccDepth">
             <option value="1">1</option>
             <option value="2">2</option>
-            <option value="3" selected>3</option>
+            <option value="3">3</option>
             <option value="4">4</option>
-            <option value="5">5</option>
+            <option value="5" selected>5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
           </select>
 
           <label for="settingDccTopMoves">Top moves to analyze:</label>
@@ -216,6 +229,11 @@
             <option value="4">4</option>
             <option value="5">5</option>
           </select>
+
+          <label>
+            <input type="checkbox" id="settingDccOnly">
+            DCC only (hide raw ChessDB scores)
+          </label>
         </div>
         <!-- ─────────────────────────────────────────────────────── -->
 
@@ -250,9 +268,9 @@
         <a href="facts.html"
            style="text-decoration: underline; color: #90caf9; margin: 0 6px;"
            onclick="const w = window.open(this.href,'Facts'); w.moveTo(0,0); w.resizeTo(screen.availWidth, screen.availHeight); return false;">Why ChessDB</a> |
-        <a href="about-gui.html"
+        <a href="8zc-about.html"
            style="text-decoration: underline; color: #90caf9; margin: 0 6px;"
-           onclick="const w = window.open(this.href,'InterfaceInfo'); w.moveTo(0,0); w.resizeTo(screen.availWidth, screen.availHeight); return false;">About GUI</a>
+           onclick="const w = window.open(this.href,'InterfaceInfo'); w.moveTo(0,0); w.resizeTo(screen.availWidth, screen.availHeight); return false;">Help</a>
       </div>
 
       <div id="credits">
