@@ -341,6 +341,7 @@ body::after{
         <button class="btn" onclick="eraseCell()">Erase</button>
         <button class="btn" onclick="undoMove()">Undo</button>
       </div>
+      <button class="btn" onclick="showHelp()" style="margin-top:3px;border-color:rgba(167,139,250,0.4);color:var(--violet)">? Help</button>
     </div>
   </div>
   <div class="col-center">
@@ -456,6 +457,8 @@ body::after{
       The entire engine — generator, uniqueness validator, solver with strategy logging and cascade measurement — fits in <strong style="color:var(--green)">26 lines of JavaScript. 14 functions. Zero dependencies.</strong> Formatted readably it would be ~170 lines. For context: Peter Norvig's famous Python Sudoku solver (no generator, no logging) is ~200 lines. <span style="font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--muted)">robatron/sudoku.js</span> on GitHub (1.5K stars, library only, no UI, no metrics) is 3,011 lines. Ours does more than both. Not because we minified it — because MDL applies to code too: the shortest description that captures the full structure.
     </p>
 
+  </div>
+
   <div class="collapse-hdr" id="ch3" onclick="toggleCollapse('cb3','ch3')">
     <span>How to play</span>
     <span class="arrow">▶</span>
@@ -471,6 +474,25 @@ body::after{
     <p><strong>Difficulty:</strong> Easy has 36–42 given digits and solves with pure logic. Evil has only 20–23 — the AI will guess and backtrack. Watch the ADSR drop.</p>
   </div>
 
+</div>
+
+<!-- Help modal -->
+<div id="helpModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(2,4,9,0.82);backdrop-filter:blur(6px);align-items:center;justify-content:center" onclick="if(event.target===this)hideHelp()">
+  <div style="background:#0b1120;border:1px solid rgba(167,139,250,0.25);border-radius:10px;padding:28px 32px;max-width:480px;width:90%;max-height:80vh;overflow-y:auto;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:cardIn .3s cubic-bezier(.22,1,.36,1)">
+    <button onclick="hideHelp()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:color .15s" onmouseover="this.style.color='var(--violet)'" onmouseout="this.style.color='var(--muted)'">✕</button>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.25em;text-transform:uppercase;color:var(--violet);margin-bottom:16px">How to Play</div>
+    <div style="font-size:.92rem;color:rgba(226,232,244,0.75);line-height:1.7">
+      <p style="margin-bottom:10px"><strong style="color:var(--text)">Select</strong> a cell by clicking or tapping. Highlighted cells share a row, column, or box.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--text)">Place</strong> a number using the numpad or press <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">1–9</kbd>. Click the same number again to clear it. Arrow keys move selection.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--text)">Notes mode</strong> — toggle with the Notes button or press <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">N</kbd>. Numbers become small pencil marks.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--text)">Undo</strong> with the button or <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Ctrl+Z</kbd>. <strong style="color:var(--text)">Erase</strong> with button or <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Backspace</kbd>.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--gold)">💡 Hint</strong> — highlights the next logical cell the AI would fill, and tells you why. Doesn't place the number — that's your move.</p>
+      <p style="margin-bottom:14px"><strong style="color:var(--green)">AI Solve</strong> — watch the full solve animated. <span style="color:var(--green)">Green</span> = naked single. <span style="color:var(--cyan)">Blue</span> = hidden single. <span style="color:var(--orange)">Orange</span> = guess. <span style="color:var(--rose)">Red flash</span> = backtrack.</p>
+      <div style="border-top:1px solid var(--border);padding-top:12px;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted)">
+        Easy: 36–42 givens · Medium: 28–35 · Hard: 24–27 · Evil: 20–23 (requires guessing)
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="footer">AIM³ Lab · Bojan Dobrečevič × C · 2026 · <a href="https://chessbest.org/bd/">chessbest.org/bd</a></div>
@@ -548,7 +570,9 @@ function eraseCell(){if(selectedCell===null||aiAnimating)return;const r=Math.flo
 function undoMove(){if(!history.length||aiAnimating)return;const{r,c,prev,pn}=history.pop();playerGrid[r][c]=prev;notes[r][c]=pn;render()}
 function toggleNotes(){notesMode=!notesMode;document.getElementById('notesBtn').textContent=`Notes: ${notesMode?'ON':'OFF'}`;document.getElementById('notesBtn').classList.toggle('active',notesMode)}
 
-document.addEventListener('keydown',e=>{if(e.key>='1'&&e.key<='9'){placeNumber(+e.key);return}if(e.key==='Backspace'||e.key==='Delete'){eraseCell();return}if(e.key==='n'){toggleNotes();return}if(e.key==='z'&&(e.ctrlKey||e.metaKey)){undoMove();e.preventDefault();return}if(selectedCell!==null){const r=Math.floor(selectedCell/9),c=selectedCell%9;if(e.key==='ArrowUp'&&r>0){selectCell((r-1)*9+c);e.preventDefault()}if(e.key==='ArrowDown'&&r<8){selectCell((r+1)*9+c);e.preventDefault()}if(e.key==='ArrowLeft'&&c>0){selectCell(r*9+c-1);e.preventDefault()}if(e.key==='ArrowRight'&&c<8){selectCell(r*9+c+1);e.preventDefault()}}});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){hideHelp();return}
+  if(document.getElementById('helpModal').style.display==='flex')return;if(e.key>='1'&&e.key<='9'){placeNumber(+e.key);return}if(e.key==='Backspace'||e.key==='Delete'){eraseCell();return}if(e.key==='n'){toggleNotes();return}if(e.key==='z'&&(e.ctrlKey||e.metaKey)){undoMove();e.preventDefault();return}if(selectedCell!==null){const r=Math.floor(selectedCell/9),c=selectedCell%9;if(e.key==='ArrowUp'&&r>0){selectCell((r-1)*9+c);e.preventDefault()}if(e.key==='ArrowDown'&&r<8){selectCell((r+1)*9+c);e.preventDefault()}if(e.key==='ArrowLeft'&&c>0){selectCell(r*9+c-1);e.preventDefault()}if(e.key==='ArrowRight'&&c<8){selectCell(r*9+c+1);e.preventDefault()}}});
 
 function startTimer(){stopTimer();timerSeconds=0;timerInterval=setInterval(()=>{timerSeconds++;document.getElementById('timer').textContent=String(Math.floor(timerSeconds/60)).padStart(2,'0')+':'+String(timerSeconds%60).padStart(2,'0')},1000)}
 function stopTimer(){if(timerInterval){clearInterval(timerInterval);timerInterval=null}}
@@ -567,6 +591,9 @@ function aiStep(){if(!puzzle||!aiLog||aiStepIndex>=aiLog.length)return;aiAnimati
 function aiReset(){aiAnimating=false;if(aiTimeout)clearTimeout(aiTimeout);aiStepIndex=0;resetM();if(puzzle){playerGrid=copyGrid(puzzle);notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));render()}document.getElementById('solveBtn').textContent='▶ AI Solve';document.getElementById('solveBtn').onclick=aiSolve}
 function resetM(){aiM={steps:0,bt:0,cascades:0,cl:[]};updateMetrics()}
 function updateMetrics(){document.getElementById('mSteps').textContent=aiM.steps;document.getElementById('mBT').textContent=aiM.bt;document.getElementById('mCascade').textContent=aiM.cascades;document.getElementById('mCands').textContent=playerGrid?countCandidates(playerGrid):0;const cl=aiM.cl;if(cl.length>0){const adsr=(cl.filter(d=>d===0).length+cl.filter(d=>d>=5).length)/cl.length;document.getElementById('mADSR').textContent=adsr.toFixed(2);document.getElementById('barADSR').style.width=`${adsr*100}%`}else{document.getElementById('mADSR').textContent='—';document.getElementById('barADSR').style.width='0%'}if(playerGrid){const pct=Math.round(playerGrid.flat().filter(v=>v!==0).length/81*100);document.getElementById('mProgress').textContent=`${pct}%`;document.getElementById('barProgress').style.width=`${pct}%`}}
+function showHelp(){const m=document.getElementById('helpModal');m.style.display='flex'}
+function hideHelp(){const m=document.getElementById('helpModal');m.style.display='none'}
+
 function setStatus(msg,cls){const el=document.getElementById('status');el.textContent=msg;el.className='status '+(cls||'')}
 
 // ── Game stats (localStorage) ──
