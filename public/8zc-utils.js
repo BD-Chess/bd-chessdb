@@ -2726,6 +2726,40 @@ function jumpTo(i){
 
       annotations.push(ann);
 
+      // v0.6.1: Live stats update — show running accuracy as it builds
+      {
+        const wA = annotations.filter(a => a.side === 'w' && a.isDCC1 !== null);
+        const bA = annotations.filter(a => a.side === 'b' && a.isDCC1 !== null);
+        const wM = wA.filter(a => a.isDCC1).length;
+        const bM = bA.filter(a => a.isDCC1).length;
+        const wP = wA.length > 0 ? Math.round(100 * wM / wA.length) : 0;
+        const bP = bA.length > 0 ? Math.round(100 * bM / bA.length) : 0;
+        const pct = Math.round(100 * (i + 1) / moves.length);
+        const panel = document.getElementById('simStatsPanel');
+        panel.innerHTML = `
+          <div style="padding:10px; font-size:13px; color:#ddd; line-height:1.7;">
+            <div style="color:#00e5ff; font-weight:700; margin-bottom:6px;">
+              DCC Replay — ${i + 1}/${moves.length} (${pct}%)
+            </div>
+            <div style="display:flex; gap:24px;">
+              <div>
+                <span style="color:#34d399; font-weight:600;">White</span>
+                DCC#1: <strong>${wP}%</strong>
+                <span style="color:#666">(${wM}/${wA.length})</span>
+              </div>
+              <div>
+                <span style="color:#a78bfa; font-weight:600;">Black</span>
+                DCC#1: <strong>${bP}%</strong>
+                <span style="color:#666">(${bM}/${bA.length})</span>
+              </div>
+            </div>
+            <div style="margin-top:6px; height:4px; background:#333; border-radius:2px;">
+              <div style="height:100%; width:${pct}%; background:#00e5ff; border-radius:2px; transition:width 0.2s;"></div>
+            </div>
+          </div>`;
+        panel.style.display = 'block';
+      }
+
       // Play the move forward
       game.move(mv.san);
       board.position(game.fen());
@@ -2733,7 +2767,7 @@ function jumpTo(i){
       renderHistory();
 
       if (settings.simSpeed > 0) {
-        await sleep(Math.max(80, settings.simSpeed / 2));
+        await sleep(Math.max(80, settings.simSpeed));
       }
     }
 
