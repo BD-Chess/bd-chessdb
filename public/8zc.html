@@ -81,7 +81,8 @@
       <div id="openingName"></div>
 
       <!-- Move/DCC/Sim toggle -->
-      <div id="viewToggle" style="display:flex; justify-content:flex-end; gap:4px; margin: 2px 0;">
+      <div id="viewToggle" style="display:flex; justify-content:flex-end; align-items:center; gap:4px; margin: 2px 0;">
+        <span id="dccProgress" style="font-family:monospace; font-size:11px; color:#00e5ff; margin-right:auto; padding-left:2px; min-width:50px;"></span>
         <button class="btn btn-nav" id="btnSim" style="font-size:11px; padding:3px 8px; background:#2a2520; border:1px solid rgba(245,158,11,0.25); color:#f59e0b;" title="Both sides DCC — opening book mode">Sim</button>
         <button class="btn btn-nav" id="btnSimW" style="font-size:11px; padding:3px 8px; background:#2a3020; border:1px solid rgba(52,211,153,0.25); color:#34d399;" title="DCC White vs Raw Black">SimW</button>
         <button class="btn btn-nav" id="btnSimB" style="font-size:11px; padding:3px 8px; background:#2a2030; border:1px solid rgba(167,139,250,0.25); color:#a78bfa;" title="DCC Black vs Raw White">SimB</button>
@@ -268,6 +269,16 @@
             <option value="10">10</option>
             <option value="20">20</option>
             <option value="50">50</option>
+          </select>
+
+          <label for="settingDccTakeover">DCC takeover:</label>
+          <select id="settingDccTakeover">
+            <option value="auto" selected>Auto (when DB thins out)</option>
+            <option value="4">After move 2 (4 half-moves)</option>
+            <option value="6">After move 3 (6 half-moves)</option>
+            <option value="8">After move 4 (8 half-moves)</option>
+            <option value="10">After move 5 (10 half-moves)</option>
+            <option value="12">After move 6 (12 half-moves)</option>
           </select>
         </div>
         <!-- ─────────────────────────────────────────────────────── -->

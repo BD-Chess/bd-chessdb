@@ -583,6 +583,22 @@ gameBuckets.forEach(bucket => {
   // ── DCC Lookahead orchestrator for top N moves ──────────────────
   let activeLookaheadId = 0; // cancel stale lookaheads on board change
 
+  // ── DCC Progress indicator ───────────────────────────────────────
+  function updateDCCProgress(done, total) {
+    const el = document.getElementById('dccProgress');
+    if (!el) return;
+    if (total <= 0) { el.textContent = ''; return; }
+    if (done >= total) {
+      el.textContent = 'DCC ✓';
+      el.style.color = '#34d399';
+      setTimeout(() => { if (el.textContent === 'DCC ✓') { el.textContent = ''; } }, 3000);
+    } else {
+      const pct = Math.round(100 * done / total);
+      el.textContent = `DCC ${pct}%`;
+      el.style.color = '#00e5ff';
+    }
+  }
+
   async function runDCCLookahead(moveList, baseFen) {
     const thisId = ++activeLookaheadId;
     const maxHalfMoves = settings.dccDepth * 2;
@@ -594,8 +610,10 @@ gameBuckets.forEach(bucket => {
       Math.abs(bestScore - m.score) <= settings.dccEvalFloor
     ).slice(0, settings.dccTopCandidates);
 
+    updateDCCProgress(0, candidates.length);
+
     for (let i = 0; i < candidates.length; i++) {
-      if (thisId !== activeLookaheadId) return; // board changed, abort
+      if (thisId !== activeLookaheadId) { updateDCCProgress(0, 0); return; }
 
       const mv = candidates[i];
       const probe = new Chess(baseFen);
@@ -610,7 +628,7 @@ gameBuckets.forEach(bucket => {
       updateDCCBadge(mv.move, null, 'loading');
 
       const { evalSequence, movePath, pvDepth } = await dccLookahead(probe, maxHalfMoves);
-      if (thisId !== activeLookaheadId) return;
+      if (thisId !== activeLookaheadId) { updateDCCProgress(0, 0); return; }
 
       if (evalSequence.length > 0) {
         const trend = evalTrend(evalSequence);
@@ -627,7 +645,8 @@ gameBuckets.forEach(bucket => {
       } else {
         updateDCCBadge(mv.move, null, 'none');
       }
-      // Update DCC view panel and DCC-only badges after each result
+      // Update progress + DCC view panel
+      updateDCCProgress(i + 1, candidates.length);
       renderDCCView();
       if (settings.dccOnly) applyDCCOnlyBadges();
     }
@@ -1327,6 +1346,7 @@ gameBuckets.forEach(bucket => {
 	  document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
 	  // Cancel any running DCC lookahead
 	  activeLookaheadId++;
+	  updateDCCProgress(0, 0); // clear progress indicator
 	  // Hide DCC info panel on board change
 	  const dccPanel = document.getElementById('dccInfoPanel');
 	  if (dccPanel) dccPanel.style.display = 'none';
