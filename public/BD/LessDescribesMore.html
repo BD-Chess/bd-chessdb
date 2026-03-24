@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Less Describes More — AIM³ Visual Identity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,300&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:         #020409;
+    --bg-glow:    #0a0f1a;
+    --white:      #e2e8f4;
+    --white-dim:  #8a96aa;
+    --cyan:       #00e5ff;
+    --gold:       #f59e0b;
+    --meta:       #3a4455;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #010306;
+    font-family: sans-serif;
+    padding: 48px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+    align-items: center;
+  }
+
+  /* ─── Label ──────────────────────────────────────────── */
+  .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--meta);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    text-align: left;
+    width: 100%;
+  }
+
+  .banner-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* ─── Shared banner base ─────────────────────────────── */
+  .banner {
+    background: var(--bg);
+    background-image: radial-gradient(ellipse at 50% 40%,
+      var(--bg-glow) 0%,
+      var(--bg) 65%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Hairline border — barely visible */
+  .banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(255,255,255,0.04);
+    pointer-events: none;
+  }
+
+  .slogan {
+    font-family: 'Cormorant Garamond', 'Georgia', serif;
+    font-style: italic;
+    font-weight: 300;
+    color: var(--white);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  .formula-s {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-weight: 300;
+    color: var(--cyan);
+    letter-spacing: 0.04em;
+  }
+
+  .formula-mdl {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-weight: 300;
+    color: var(--gold);
+    letter-spacing: 0.03em;
+  }
+
+  .attr {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-weight: 300;
+    color: var(--meta);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* ─── 1. WIDE BANNER  1200 × 400 ────────────────────── */
+  .wide {
+    width: 1200px;
+    height: 400px;
+    gap: 0;
+  }
+  .wide .slogan      { font-size: 88px; margin-bottom: 28px; }
+  .wide .formula-s   { font-size: 22px; margin-bottom: 14px; }
+  .wide .formula-mdl { font-size: 15px; margin-bottom: 32px; }
+  .wide .attr        { font-size: 10px; }
+
+  /* ─── 2. SQUARE  1080 × 1080 ────────────────────────── */
+  .square {
+    width: 1080px;
+    height: 1080px;
+  }
+  .square .slogan      { font-size: 110px; margin-bottom: 48px; }
+  .square .formula-s   { font-size: 28px;  margin-bottom: 20px; }
+  .square .formula-mdl { font-size: 19px;  margin-bottom: 64px; }
+  .square .attr        { font-size: 12px; }
+
+  /* ─── 3. COMPACT  800 × 200 ─────────────────────────── */
+  .compact {
+    width: 800px;
+    height: 200px;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0;
+    padding: 0 52px;
+  }
+
+  .compact-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 0 0 auto;
+    padding-right: 44px;
+    border-right: 1px solid rgba(255,255,255,0.06);
+  }
+  .compact-left .slogan      { font-size: 48px; line-height: 1; }
+  .compact-left .attr        { font-size: 8.5px; margin-top: 10px; }
+
+  .compact-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-left: 44px;
+    gap: 10px;
+  }
+  .compact-right .formula-s   { font-size: 15px; }
+  .compact-right .formula-mdl { font-size: 12px; }
+
+  /* ─── Page meta ──────────────────────────────────────── */
+  .page-header {
+    text-align: center;
+    color: var(--meta);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1.8;
+  }
+  .page-header span {
+    color: var(--white-dim);
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <span>AIM³ Institute — Visual Identity System</span><br>
+  "Less Describes More" · BD × AI · 2026<br>
+  Three formats: Wide 1200×400 · Square 1080×1080 · Compact 800×200
+</div>
+
+<!-- ══════════════════════════════════════════
+     1. WIDE BANNER  1200 × 400
+     ══════════════════════════════════════════ -->
+<div class="banner-wrap">
+  <div class="label">01 — Wide Banner &nbsp; 1200 × 400 &nbsp; / &nbsp; web header · chessbest.org/bd/</div>
+  <div class="banner wide">
+    <div class="slogan">Less describes more.</div>
+    <div class="formula-s">S = k · C<sub style="font-size:0.7em">n</sub> · Ψ(I)</div>
+    <div class="formula-mdl">MDL = min(L<sub style="font-size:0.7em">description</sub> + L<sub style="font-size:0.7em">residual</sub>)</div>
+    <div class="attr">AIM³ Institute &nbsp;·&nbsp; BD × AI &nbsp;·&nbsp; 2026</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     2. SQUARE  1080 × 1080
+     ══════════════════════════════════════════ -->
+<div class="banner-wrap">
+  <div class="label">02 — Square &nbsp; 1080 × 1080 &nbsp; / &nbsp; social media</div>
+  <div class="banner square">
+    <div class="slogan">Less describes more.</div>
+    <div class="formula-s">S = k · C<sub style="font-size:0.7em">n</sub> · Ψ(I)</div>
+    <div class="formula-mdl">MDL = min(L<sub style="font-size:0.7em">description</sub> + L<sub style="font-size:0.7em">residual</sub>)</div>
+    <div class="attr">AIM³ Institute &nbsp;·&nbsp; BD × AI &nbsp;·&nbsp; 2026</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     3. COMPACT  800 × 200
+     ══════════════════════════════════════════ -->
+<div class="banner-wrap">
+  <div class="label">03 — Compact &nbsp; 800 × 200 &nbsp; / &nbsp; email signature · document header</div>
+  <div class="banner compact">
+    <div class="compact-left">
+      <div class="slogan">Less describes more.</div>
+      <div class="attr">AIM³ Institute &nbsp;·&nbsp; BD × AI &nbsp;·&nbsp; 2026</div>
+    </div>
+    <div class="compact-right">
+      <div class="formula-s">S = k · C<sub style="font-size:0.7em">n</sub> · Ψ(I)</div>
+      <div class="formula-mdl">MDL = min(L<sub style="font-size:0.7em">description</sub> + L<sub style="font-size:0.7em">residual</sub>)</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
