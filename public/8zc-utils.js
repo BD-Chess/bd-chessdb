@@ -30,7 +30,8 @@ function initAll() {
     dccTieThreshold: 10, // centipawns — below this = "tied"
     dccOnly: false,      // hide raw ChessDB scores, show only DCC view
     simSpeed: 1000,      // ms per move (0 = max speed, no board update)
-    simGames: 5          // games per simulation run
+    simGames: 5,         // games per simulation run
+    dccTakeover: 'auto'  // when DCC takes over: 'auto' or number of half-moves
   };
 
   // DCC view toggle state
@@ -1040,6 +1041,8 @@ gameBuckets.forEach(bucket => {
     if (simSpeedEl) simSpeedEl.value = settings.simSpeed;
     const simGamesEl = document.getElementById('settingSimGames');
     if (simGamesEl) simGamesEl.value = settings.simGames;
+    const takeoverEl = document.getElementById('settingDccTakeover');
+    if (takeoverEl) takeoverEl.value = settings.dccTakeover;
     const dccInfoPanel = document.getElementById('dccInfoPanel');
     if (dccInfoPanel && !settings.dccEnabled) dccInfoPanel.style.display = 'none';
     const dccAccPanel = document.getElementById('dccAccuracyPanel');
@@ -1755,7 +1758,8 @@ function jumpTo(i){
 	  'settingDccEvalFloor',
 	  'settingDccOnly',
 	  'settingSimSpeed',
-	  'settingSimGames'
+	  'settingSimGames',
+	  'settingDccTakeover'
 	].forEach(id => {
 	  document.getElementById(id).onchange = e => {
 		switch (id) {
@@ -1831,6 +1835,9 @@ function jumpTo(i){
 			break;
 		  case 'settingSimGames':
 			settings.simGames = parseInt(e.target.value, 10) || 5;
+			break;
+		  case 'settingDccTakeover':
+			settings.dccTakeover = e.target.value === 'auto' ? 'auto' : parseInt(e.target.value, 10);
 			break;
 		  // ────────────────────────────
 		}
@@ -2027,17 +2034,31 @@ function jumpTo(i){
 
   // Run one simulated game
   async function runOneGame(dccColor, gameNum, totalGames, visualize, startFen) {
-    const simGame = new Chess(startFen || undefined); // start from current position or default
+    const simGame = new Chess(startFen || undefined);
     let moveCount = 0;
     const maxMoves = 200;
-    const bothDCC = (dccColor === 'both'); // opening book mode: both sides use DCC
+    const bothDCC = (dccColor === 'both');
+    let dccActive = false; // DCC hasn't taken over yet
 
-    // Random opening only if starting from initial position
-    if (!startFen || startFen === 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1') {
-      for (let i = 0; i < 6 && !simGame.game_over(); i++) {
+    // Book phase: play from ChessDB top moves until DCC takeover
+    // Skip if starting from a custom position (user navigated there)
+    const isStartPos = !startFen || startFen === 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    const takeoverSetting = settings.dccTakeover;
+    const maxBookMoves = (takeoverSetting === 'auto') ? 30 : parseInt(takeoverSetting, 10);
+
+    if (isStartPos) {
+      for (let i = 0; i < maxBookMoves && !simGame.game_over(); i++) {
         if (simAbort) return { winner: 'abort', moves: 0, result: 'aborted' };
         const result = await cachedFetchChessDB(simGame.fen());
         if (!result.moves || result.moves.length === 0) break;
+
+        // Auto mode: DCC takes over when DB coverage thins out (< 3 candidates)
+        if (takeoverSetting === 'auto' && result.moves.length < 3) {
+          dccActive = true;
+          break;
+        }
+
+        // Book move: pick randomly from top 3 (creates variety between games)
         const pool = result.moves.slice(0, Math.min(3, result.moves.length));
         const pick = pool[Math.floor(Math.random() * pool.length)];
         const m = simGame.move({
@@ -2046,12 +2067,16 @@ function jumpTo(i){
         });
         if (!m) break;
         moveCount++;
+
+        updateSimStatus(`Game ${gameNum}/${totalGames} · Book move ${moveCount}: ${pick.move} (${result.moves.length} candidates)`);
+
         if (visualize && settings.simSpeed > 0) {
           board.position(simGame.fen());
           await sleep(Math.max(100, settings.simSpeed / 3));
         }
       }
     }
+    dccActive = true; // DCC always active after book phase
 
     // Main game loop
     while (!simGame.game_over() && moveCount < maxMoves) {
@@ -2060,9 +2085,20 @@ function jumpTo(i){
       const turn = simGame.turn(); // 'w' or 'b'
       // In 'both' mode: both sides use DCC. Otherwise: DCC vs Raw.
       const useDCC = bothDCC || (turn === dccColor);
-      const pick = useDCC ? await pickDCCMove(simGame) : await pickRawMove(simGame);
+      let pick = useDCC ? await pickDCCMove(simGame) : await pickRawMove(simGame);
 
-      if (!pick) break; // no moves in DB — position unknown
+      // Fallback: try querybest if queryall returned nothing
+      if (!pick) {
+        await sleep(200);
+        try {
+          const fbUrl = `https://www.chessdb.cn/cdb.php?action=querybest&board=${encodeURIComponent(simGame.fen())}&learn=0`;
+          const fbTxt = await fetch(fbUrl).then(r => r.text());
+          const fbm = fbTxt.match(/move:(\w+)/);
+          if (fbm) pick = { move: fbm[1], score: 0 };
+        } catch(e) {}
+      }
+
+      if (!pick) break; // truly unknown position
 
       const m = simGame.move({
         from: pick.move.slice(0, 2), to: pick.move.slice(2, 4),
@@ -2156,6 +2192,9 @@ function jumpTo(i){
 
     const colorLabel = isBoth ? 'both' : (dccColor === 'w' ? 'White' : 'Black');
     const stats = { dccColor: colorLabel, games: [] };
+
+    // Show stats panel immediately (don't wait for first game to finish)
+    renderSimStats(stats);
 
     // Build schedule
     const schedule = [];
