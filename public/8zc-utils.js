@@ -1044,6 +1044,7 @@ gameBuckets.forEach(bucket => {
     // reuse the boardEl you declared above; no const here
     if (settings.doubleBoard) boardEl.classList.add('scaled');
     else boardEl.classList.remove('scaled');
+    board.resize(); // tell chessboard.js to recalculate dimensions
 
     // ─── DCC Lookahead settings sync ─────────────────────────────────
     const dccEl = document.getElementById('settingDccEnabled');
@@ -2397,14 +2398,12 @@ mainEl.addEventListener('click', e => {
 
 	authorLink.addEventListener("click", e => {
 	  e.preventDefault();
-	  // 1) toggle the CSS scale
 	  boardEl.classList.toggle("scaled");
+	  board.resize(); // recalculate click coordinates
 
-	  // 2) mirror it in settings & UI
 	  settings.doubleBoard = boardEl.classList.contains("scaled");
 	  document.getElementById('settingDoubleBoard').checked = settings.doubleBoard;
 
-	  // 3) persist the change
 	  saveSettings();
 	});
 
