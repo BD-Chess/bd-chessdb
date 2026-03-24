@@ -39,6 +39,9 @@ function initAll() {
   let dccViewActive = false;
   // Store latest DCC results for the analysis panel
   let latestDCCResults = [];
+  // v0.6.1: Per-move DCC annotations for PGN export
+  // Keyed by half-move index → best DCC result at that position
+  let dccMoveAnnotations = {};
 
 
 	// ─── display the PGN “Opening” tag under the moves ─────────────────
@@ -727,6 +730,12 @@ gameBuckets.forEach(bucket => {
       renderDCCView();
       if (settings.dccOnly) applyDCCOnlyBadges();
     }
+
+    // v0.6.1: Store results for PGN export, keyed by position FEN
+    if (latestDCCResults.length > 0) {
+      const fenKey = baseFen.split(' ').slice(0, 4).join(' ');
+      dccMoveAnnotations[fenKey] = latestDCCResults.slice();
+    }
   }
 
   // ── Update badge with DCC data ──────────────────────────────────
@@ -1129,8 +1138,11 @@ gameBuckets.forEach(bucket => {
 	});
 
     /* history height */
-    document.getElementById('moves').style.height =
-      { smallest: '60px', small:'140px', medium:'300px', big:'450px' }[settings.historySize];
+    const histHeight = { smallest: '60px', small:'140px', medium:'300px', big:'450px' }[settings.historySize];
+    document.getElementById('moves').style.height = histHeight;
+    // v0.6.1: DCC panel matches history height
+    const dccPanel = document.getElementById('dccAnalysisPanel');
+    if (dccPanel) { dccPanel.style.maxHeight = histHeight; dccPanel.style.overflowY = 'auto'; }
 
     /* format toggle label:  "FEN | pgn"  or  "fen | PGN" 
     document.getElementById('btnFormat').innerText =
@@ -1727,6 +1739,61 @@ function jumpTo(i){
 	showOpening();
   };
 
+  // ── v0.6.1: Generate PGN with DCC comments ────────────────────
+  function generateDCCPgn() {
+    const replay = new Chess();
+    const hist = game.history({ verbose: true });
+    const headers = game.header();
+    let pgn = '';
+
+    // PGN headers
+    for (const [k, v] of Object.entries(headers)) {
+      pgn += `[${k} "${v}"]\n`;
+    }
+    if (Object.keys(headers).length > 0) pgn += '\n';
+
+    for (let i = 0; i < hist.length; i++) {
+      const fenKey = replay.fen().split(' ').slice(0, 4).join(' ');
+      const mv = hist[i];
+
+      // Move number
+      if (i % 2 === 0) pgn += `${Math.floor(i / 2) + 1}. `;
+      else if (i === 0) pgn += '1... ';
+
+      pgn += mv.san + ' ';
+
+      // Look up DCC data for this position → this move
+      const dccResults = dccMoveAnnotations[fenKey];
+      if (dccResults) {
+        const uci = mv.from + mv.to;
+        const match = dccResults.find(r =>
+          r.move && r.move.slice(0, 4) === uci.slice(0, 4)
+        );
+        if (match) {
+          const parts = [`DCC: ${match.score > 0 ? '+' : ''}${match.score}`];
+          parts.push(match.arrow + (match.adsr ? match.adsr.label : ''));
+          if (match.stability !== undefined)
+            parts.push(`stab:${match.stability.toFixed(2)}`);
+          if (match.momentum !== undefined && Math.abs(match.momentum) > 0.1)
+            parts.push(`momentum:${match.momentum > 0 ? '+' : ''}${match.momentum.toFixed(0)}`);
+          if (match.adsr && match.adsr.shape !== 'unknown')
+            parts.push(`ADSR:${match.adsr.shape}`);
+          if (match.tunnel) parts.push('⛏tunnel');
+          pgn += `{${parts.join(' ')}} `;
+        }
+      }
+
+      replay.move(mv.san);
+    }
+
+    // Result
+    if (game.in_checkmate()) pgn += game.turn() === 'w' ? '0-1' : '1-0';
+    else if (game.in_draw() || game.in_stalemate()) pgn += '1/2-1/2';
+    else pgn += '*';
+
+    return pgn;
+  }
+
 	// FEN + moves
 	document.getElementById('btnCopy').onclick = () => {
 	  if (settings.ioFormat === 'fen') {
@@ -1735,7 +1802,7 @@ function jumpTo(i){
 		const moves = fullHistory.map(m => m.from + m.to).join(' ');
 		copyText(`${initialFen} moves ${moves}`);
 	  } else {
-		copyText(game.pgn());
+		copyText(generateDCCPgn());
 	  }
 	};
 
@@ -1767,10 +1834,10 @@ function jumpTo(i){
 
 
   document.getElementById('btnSave').onclick = () => {
-    const blob=new Blob([game.pgn()],{type:'text/plain'});
+    const blob=new Blob([generateDCCPgn()],{type:'text/plain'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
-    a.download='chessbest_game.pgn';
+    a.download='chessbest_dcc_game.pgn';
     a.click(); URL.revokeObjectURL(a.href);
   };
 
@@ -2109,6 +2176,12 @@ function jumpTo(i){
       if (dccScore > bestScore) {
         bestScore = dccScore;
         bestMove = mv;
+        // v0.6.1: attach DCC metadata for CSV export
+        bestMove._dccScore = dccScore;
+        bestMove._stability = stability;
+        bestMove._adsrShape = adsr.shape;
+        bestMove._momentum = momentum;
+        bestMove._tunnel = detectTunnel(evalSeq);
       }
     }
     return bestMove;
@@ -2145,6 +2218,22 @@ function jumpTo(i){
   function updateSimStatus(msg) {
     const bar = document.getElementById('simStatusBar');
     if (bar) { bar.textContent = msg; bar.style.display = 'block'; }
+  }
+
+  // v0.6.1: Export sim results as CSV for Python analysis
+  function exportSimCSV(stats) {
+    const header = 'game,move_num,fen,move,raw_score,dcc_score,stability,adsr_shape,momentum,tunnel,picked_by\n';
+    let csv = header;
+    stats.games.forEach((g, gi) => {
+      (g.moveLog || []).forEach(row => {
+        csv += `${gi+1},${row.move_num},"${row.fen}",${row.move},${row.raw_score},${row.dcc_score},${row.stability},${row.adsr_shape},${row.momentum},${row.tunnel},${row.picked_by}\n`;
+      });
+    });
+    const blob = new Blob([csv], {type: 'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'chessdcc_sim_results.csv';
+    a.click(); URL.revokeObjectURL(a.href);
   }
 
   // Render sim stats dashboard
@@ -2204,8 +2293,19 @@ function jumpTo(i){
     });
 
     html += '</div>';
+
+    // v0.6.1: Export CSV button (only when games have data)
+    const hasLogs = stats.games.some(g => g.moveLog && g.moveLog.length > 0);
+    if (hasLogs) {
+      html += '<div style="margin-top:8px;text-align:center"><button id="btnExportCSV" style="background:#00e5ff;color:#000;border:none;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:12px">Export CSV</button></div>';
+    }
+
     panel.innerHTML = html;
     panel.style.display = 'block';
+
+    // Wire up CSV export button
+    const csvBtn = document.getElementById('btnExportCSV');
+    if (csvBtn) csvBtn.onclick = () => exportSimCSV(stats);
   }
 
   // Run one simulated game
@@ -2215,6 +2315,7 @@ function jumpTo(i){
     const maxMoves = 200;
     const bothDCC = (dccColor === 'both');
     let dccActive = false; // DCC hasn't taken over yet
+    const moveLog = []; // v0.6.1: per-move data for CSV export
 
     // Book phase: play from ChessDB top moves until DCC takeover
     // Skip if starting from a custom position (user navigated there)
@@ -2283,6 +2384,20 @@ function jumpTo(i){
       if (!m) break;
       moveCount++;
 
+      // v0.6.1: Log move data for CSV export
+      moveLog.push({
+        move_num: moveCount,
+        fen: simGame.fen(),
+        move: pick.move,
+        raw_score: pick.score,
+        dcc_score: pick._dccScore !== undefined ? pick._dccScore.toFixed(1) : '',
+        stability: pick._stability !== undefined ? pick._stability.toFixed(2) : '',
+        adsr_shape: pick._adsrShape || '',
+        momentum: pick._momentum !== undefined ? pick._momentum.toFixed(1) : '',
+        tunnel: pick._tunnel ? 'true' : 'false',
+        picked_by: useDCC ? 'dcc' : 'raw'
+      });
+
       const sideLabel = bothDCC ? (turn === 'w' ? 'W' : 'B') : (useDCC ? 'DCC' : 'Raw');
       updateSimStatus(`Game ${gameNum}/${totalGames} · Move ${moveCount} · ${sideLabel}: ${pick.move} (${pick.score > 0 ? '+' : ''}${pick.score})`);
 
@@ -2317,7 +2432,7 @@ function jumpTo(i){
       board.position(simGame.fen());
     }
 
-    return { winner, moves: moveCount, result };
+    return { winner, moves: moveCount, result, moveLog };
   }
 
   // Main simulation orchestrator
@@ -2449,6 +2564,277 @@ function jumpTo(i){
   }
   // ────────────────────────────────────────────────────────────────────
 
+  // ═══════════════════════════════════════════════════════════════════
+  // DCC REPLAY — Analyze loaded game with DCC eval (v0.6.1)
+  // ═══════════════════════════════════════════════════════════════════
+
+  let replayRunning = false;
+  let replayAbort = false;
+
+  // Analyze a single position: return DCC data for all candidates + identify DCC #1
+  async function analyzePosition(fen) {
+    const result = await cachedFetchChessDB(fen);
+    if (!result.moves || result.moves.length === 0) return null;
+
+    const bestRawScore = result.moves[0].score;
+    const candidates = result.moves.filter(m =>
+      Math.abs(bestRawScore - m.score) <= settings.dccEvalFloor
+    ).slice(0, settings.dccTopCandidates);
+
+    let bestDCCMove = null, bestDCCScore = -Infinity;
+    const analyzed = [];
+
+    for (const mv of candidates) {
+      const probe = new Chess(fen);
+      const m = probe.move({
+        from: mv.move.slice(0, 2), to: mv.move.slice(2, 4),
+        promotion: mv.move.length > 4 ? mv.move[4] : 'q'
+      });
+      if (!m) continue;
+
+      const pvResult = await fetchPV(probe.fen());
+      if (pvResult.score === null) continue;
+
+      const evalSeq = [pvResult.score];
+      if (pvResult.pv.length > 1) {
+        const walk = new Chess(probe.fen());
+        for (let j = 0; j < Math.min(4, pvResult.pv.length); j++) {
+          const uci = pvResult.pv[j];
+          const wm = walk.move({ from: uci.slice(0, 2), to: uci.slice(2, 4),
+            promotion: uci.length > 4 ? uci[4] : undefined });
+          if (!wm) break;
+          if (j % 2 === 1) {
+            const sc = await fetchScore(walk.fen());
+            if (sc !== null) evalSeq.push((j % 2 === 0) ? -sc : sc);
+          }
+        }
+      }
+
+      const stability = evalSeqStability(evalSeq);
+      const adsr = adsrAnalysis(evalSeq);
+      const momentum = evalMomentum(evalSeq);
+      const tunnel = detectTunnel(evalSeq);
+      const trend = trendArrow(evalTrend(evalSeq));
+
+      let dccScore = mv.score;
+      dccScore += stability * DCC_WEIGHTS.stability;
+      if (adsr.shape === 'sustained') dccScore += DCC_WEIGHTS.adsr_sustained;
+      else if (adsr.shape === 'building') dccScore += DCC_WEIGHTS.adsr_building;
+      else if (adsr.shape === 'spike') dccScore += DCC_WEIGHTS.adsr_spike;
+      else if (adsr.shape === 'collapse') dccScore += DCC_WEIGHTS.adsr_collapse;
+      else if (adsr.shape === 'volatile') dccScore += DCC_WEIGHTS.adsr_volatile;
+      dccScore += Math.sign(momentum) * Math.min(Math.abs(momentum), DCC_WEIGHTS.momentum_max);
+      if (materialCount(probe.fen()) <= 7) {
+        const pr = await cachedFetchChessDB(probe.fen());
+        dccScore += pr.moves.length > 0 ? DCC_WEIGHTS.endgame_known : DCC_WEIGHTS.endgame_unknown;
+      }
+      if (tunnel) dccScore += DCC_WEIGHTS.tunnel;
+      const cx = fenComplexity(probe.fen());
+      dccScore -= cx * DCC_WEIGHTS.complexity;
+
+      const entry = { move: mv.move, raw: mv.score, dcc: Math.round(dccScore),
+        stability, adsr: adsr.shape, trend, momentum, tunnel };
+      analyzed.push(entry);
+
+      if (dccScore > bestDCCScore) { bestDCCScore = dccScore; bestDCCMove = mv.move; }
+    }
+
+    return { candidates: analyzed, dcc1Move: bestDCCMove, allMoves: result.moves };
+  }
+
+  // Main replay function
+  async function replayGame() {
+    if (replayRunning) { replayAbort = true; return; }
+    if (fullHistory.length === 0) { alert('Load a PGN game first.'); return; }
+
+    replayRunning = true;
+    replayAbort = false;
+
+    const btnReplay = document.getElementById('btnReplay');
+    btnReplay.textContent = 'Stop';
+    btnReplay.style.background = '#ff4c4c'; btnReplay.style.color = '#fff';
+
+    const statusBar = document.getElementById('simStatusBar');
+    statusBar.style.display = 'block';
+
+    const moves = fullHistory.slice();
+    const headers = game.header();
+    const annotations = [];
+
+    // Rewind to start
+    while (game.history().length > 0) game.undo();
+    board.position(game.fen());
+
+    for (let i = 0; i < moves.length; i++) {
+      if (replayAbort) break;
+
+      const fen = game.fen();
+      const side = game.turn();
+      const mv = moves[i];
+      const moveUci = mv.from + mv.to + (mv.promotion || '');
+
+      updateSimStatus(`Analyzing ${i + 1}/${moves.length}: ${mv.san}…`);
+
+      const analysis = await analyzePosition(fen);
+      let ann = { ply: i + 1, side, san: mv.san, uci: moveUci,
+        raw: null, dcc: null, stability: null, adsr: null,
+        trend: '', momentum: 0, tunnel: false, isDCC1: null };
+
+      if (analysis) {
+        // Find the played move in analyzed candidates
+        const played = analysis.candidates.find(c =>
+          c.move.slice(0, 4) === moveUci.slice(0, 4));
+        if (played) {
+          ann.raw = played.raw;
+          ann.dcc = played.dcc;
+          ann.stability = played.stability;
+          ann.adsr = played.adsr;
+          ann.trend = played.trend;
+          ann.momentum = played.momentum;
+          ann.tunnel = played.tunnel;
+        } else {
+          // Played move wasn't in DCC candidates — get raw score
+          const rawMatch = analysis.allMoves.find(m =>
+            m.move.slice(0, 4) === moveUci.slice(0, 4));
+          if (rawMatch) ann.raw = rawMatch.score;
+        }
+        ann.isDCC1 = analysis.dcc1Move
+          ? analysis.dcc1Move.slice(0, 4) === moveUci.slice(0, 4) : null;
+      }
+
+      annotations.push(ann);
+
+      // Play the move forward
+      game.move(mv.san);
+      if (settings.simSpeed > 0) {
+        board.position(game.fen());
+        await sleep(Math.max(80, settings.simSpeed / 2));
+      }
+    }
+
+    // Restore board
+    board.position(game.fen());
+
+    // Build summary
+    const wAnns = annotations.filter(a => a.side === 'w' && a.isDCC1 !== null);
+    const bAnns = annotations.filter(a => a.side === 'b' && a.isDCC1 !== null);
+    const wMatch = wAnns.filter(a => a.isDCC1).length;
+    const bMatch = bAnns.filter(a => a.isDCC1).length;
+    const wPct = wAnns.length > 0 ? Math.round(100 * wMatch / wAnns.length) : 0;
+    const bPct = bAnns.length > 0 ? Math.round(100 * bMatch / bAnns.length) : 0;
+
+    const countShapes = anns => {
+      const c = { sustained: 0, building: 0, spike: 0, collapse: 0, volatile: 0, mixed: 0 };
+      anns.forEach(a => { if (a.adsr && c[a.adsr] !== undefined) c[a.adsr]++; });
+      return c;
+    };
+    const avgStab = anns => {
+      const valid = anns.filter(a => a.stability !== null);
+      return valid.length > 0 ? (valid.reduce((s, a) => s + a.stability, 0) / valid.length) : 0;
+    };
+    const tunnelCount = anns => anns.filter(a => a.tunnel).length;
+
+    const wShapes = countShapes(wAnns);
+    const bShapes = countShapes(bAnns);
+    const wName = headers.White || 'White';
+    const bName = headers.Black || 'Black';
+    const shapeStr = s => Object.entries(s).filter(([,v]) => v > 0).map(([k,v]) => `${v} ${k}`).join(', ');
+
+    // Generate annotated PGN
+    const annotatedPGN = generateAnnotatedPGN(headers, moves, annotations, wPct, bPct);
+
+    // Render summary
+    const panel = document.getElementById('simStatsPanel');
+    panel.innerHTML = `
+      <div class="sim-stats-header">
+        <span class="sim-title">DCC Replay Complete — ${annotations.length} moves analyzed</span>
+      </div>
+      <div style="padding:8px; font-size:12px; line-height:1.6; color:#ddd;">
+        <div style="margin-bottom:8px;">
+          <strong style="color:#34d399">${wName} (White)</strong><br>
+          DCC accuracy: <strong>${wPct}%</strong> (${wMatch}/${wAnns.length} matched DCC #1)<br>
+          Avg stability: ${avgStab(wAnns).toFixed(2)} · Tunnels: ${tunnelCount(wAnns)}<br>
+          <span style="color:#888">${shapeStr(wShapes)}</span>
+        </div>
+        <div style="margin-bottom:8px;">
+          <strong style="color:#a78bfa">${bName} (Black)</strong><br>
+          DCC accuracy: <strong>${bPct}%</strong> (${bMatch}/${bAnns.length} matched DCC #1)<br>
+          Avg stability: ${avgStab(bAnns).toFixed(2)} · Tunnels: ${tunnelCount(bAnns)}<br>
+          <span style="color:#888">${shapeStr(bShapes)}</span>
+        </div>
+        <div style="color:#f59e0b; font-style:italic;">
+          ${bPct > wPct ? 'DCC says: Black played more aligned with DCC preferences.'
+           : wPct > bPct ? 'DCC says: White played more aligned with DCC preferences.'
+           : 'DCC says: Both sides equally aligned with DCC preferences.'}
+        </div>
+      </div>
+      <div style="text-align:center; margin-top:6px;">
+        <button id="btnSaveAnnotatedPGN" style="background:#00e5ff; color:#000; border:none; padding:8px 20px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:600;">Save Annotated PGN</button>
+      </div>`;
+    panel.style.display = 'block';
+
+    // Wire save button
+    document.getElementById('btnSaveAnnotatedPGN').onclick = () => {
+      const blob = new Blob([annotatedPGN], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'chessdcc_replay.pgn';
+      a.click(); URL.revokeObjectURL(a.href);
+    };
+
+    // Cleanup
+    replayRunning = false;
+    replayAbort = false;
+    btnReplay.textContent = 'Replay';
+    btnReplay.style.background = '#203030'; btnReplay.style.color = '#00e5ff';
+    statusBar.style.display = 'none';
+  }
+
+  // Generate annotated PGN with DCC headers + per-move comments
+  function generateAnnotatedPGN(headers, moves, annotations, wPct, bPct) {
+    let pgn = '';
+    for (const [k, v] of Object.entries(headers)) {
+      pgn += `[${k} "${v}"]\n`;
+    }
+    pgn += `[DCC_Version "0.6.1"]\n`;
+    pgn += `[DCC_Depth "${settings.dccDepth}"]\n`;
+    pgn += `[DCC_TopCandidates "${settings.dccTopCandidates}"]\n`;
+    pgn += `[DCC_WhiteAccuracy "${wPct}%"]\n`;
+    pgn += `[DCC_BlackAccuracy "${bPct}%"]\n`;
+    pgn += '\n';
+
+    for (let i = 0; i < moves.length; i++) {
+      if (i % 2 === 0) pgn += `${Math.floor(i / 2) + 1}. `;
+      pgn += moves[i].san + ' ';
+
+      const ann = annotations[i];
+      if (ann && ann.raw !== null) {
+        const parts = [];
+        parts.push(`raw=${ann.raw > 0 ? '+' : ''}${ann.raw}`);
+        if (ann.dcc !== null) parts.push(`dcc=${ann.dcc > 0 ? '+' : ''}${ann.dcc}`);
+        if (ann.stability !== null) parts.push(`stab=${ann.stability.toFixed(2)}`);
+        if (ann.adsr) parts.push(`ADSR=${ann.adsr}`);
+        if (ann.trend) parts.push(ann.trend);
+        if (ann.momentum !== undefined && ann.momentum !== 0)
+          parts.push(`mom=${ann.momentum > 0 ? '+' : ''}${Math.round(ann.momentum)}`);
+        if (ann.isDCC1 !== null)
+          parts.push(`DCC#1=${ann.isDCC1 ? 'yes' : 'NO'}`);
+        if (ann.tunnel) parts.push('⛏');
+        pgn += `{DCC: ${parts.join(' ')}} `;
+      }
+      if (i % 2 === 1) pgn += '\n';
+    }
+
+    pgn += (headers.Result || '*') + '\n';
+    return pgn;
+  }
+
+  // Replay button handler
+  const btnReplay = document.getElementById('btnReplay');
+  if (btnReplay) btnReplay.onclick = () => replayGame();
+
+  // ────────────────────────────────────────────────────────────────────
+
   // ─── DCC View toggle button ────────────────────────────────────────
   const btnToggle = document.getElementById('btnViewToggle');
   if (btnToggle) {
@@ -2466,7 +2852,7 @@ function jumpTo(i){
       } else {
         movesEl.style.display = '';
         dccPanel.style.display = 'none';
-        btnToggle.textContent = 'DCC View';
+        btnToggle.textContent = 'DCC';
         btnToggle.style.background = '#2a3540';
         btnToggle.style.color = '#fff';
       }
