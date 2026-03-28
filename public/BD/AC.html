@@ -397,15 +397,143 @@
   }
 
   @media (max-width: 700px) {
-    body { font-size: 19px; }
+    body { font-size: 21px; }
     header { padding: 78px 24px 48px; }
     main { padding: 28px 24px 120px; }
     .formula-block, .pull-quote, .bridge-box, .speculative-box, .comparison-card, .counter-box { padding-left: 22px; padding-right: 22px; }
     .derivation-box { padding: 22px; }
   }
+
+  body.mobile-reading {
+    font-size: 28px;
+    line-height: 1.95;
+  }
+
+  body.mobile-reading header {
+    padding: 76px 22px 44px;
+  }
+
+  body.mobile-reading .eyebrow,
+  body.mobile-reading .byline,
+  body.mobile-reading .note-label,
+  body.mobile-reading .stamp {
+    font-size: 15px;
+    letter-spacing: 0.16em;
+    line-height: 1.7;
+  }
+
+  body.mobile-reading h1 {
+    font-size: clamp(3.4rem, 12vw, 5rem);
+    line-height: 1.08;
+    margin-bottom: 20px;
+  }
+
+  body.mobile-reading .subtitle {
+    font-size: 1.42rem;
+    max-width: 92vw;
+    line-height: 1.65;
+    margin-bottom: 34px;
+  }
+
+  body.mobile-reading .hero-container {
+    padding: 0 14px;
+    margin-bottom: 42px;
+  }
+
+  body.mobile-reading main {
+    max-width: 100%;
+    padding: 24px 18px 110px;
+  }
+
+  body.mobile-reading section {
+    margin-bottom: 66px;
+  }
+
+  body.mobile-reading h2 {
+    font-size: 1.42rem;
+    letter-spacing: 0.18em;
+    line-height: 1.4;
+    margin-bottom: 26px;
+  }
+
+  body.mobile-reading p {
+    margin-bottom: 24px;
+  }
+
+  body.mobile-reading .pull-quote,
+  body.mobile-reading .formula-block,
+  body.mobile-reading .bridge-box,
+  body.mobile-reading .speculative-box,
+  body.mobile-reading .comparison-card,
+  body.mobile-reading .counter-box,
+  body.mobile-reading .derivation-box {
+    padding: 24px 20px;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  body.mobile-reading .pull-quote::before {
+    left: 18px;
+    top: -6px;
+    font-size: 4.2rem;
+  }
+
+  body.mobile-reading .pull-quote p {
+    font-size: 1.35rem;
+    line-height: 1.72;
+  }
+
+  body.mobile-reading .formula-eq {
+    font-size: clamp(1.7rem, 7vw, 2.25rem);
+    letter-spacing: 0.04em;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  body.mobile-reading .r-formula {
+    font-size: 1.22rem;
+    line-height: 1.7;
+    padding: 20px 16px;
+  }
+
+  body.mobile-reading .derivation-step {
+    font-size: 1.1rem;
+    line-height: 1.75;
+  }
+
+  body.mobile-reading .derivation-final {
+    font-size: 1.55rem;
+    line-height: 1.55;
+  }
+
+  body.mobile-reading .comparison-card h3 {
+    font-size: 1rem;
+    letter-spacing: 0.12em;
+    line-height: 1.5;
+  }
+
+  body.mobile-reading .footnote,
+  body.mobile-reading .one-sentence {
+    font-size: 1.18rem;
+    line-height: 1.75;
+  }
 </style>
 </head>
 <body>
+
+<script>
+  (function () {
+    const ua = navigator.userAgent || navigator.vendor || window.opera || '';
+    const mobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    const smallTouchScreen = window.matchMedia('(max-width: 900px)').matches && window.matchMedia('(pointer: coarse)').matches;
+    if (mobileUA || smallTouchScreen) {
+      document.addEventListener('DOMContentLoaded', function () {
+        document.body.classList.add('mobile-reading');
+      });
+    }
+  })();
+</script>
+
 
 <canvas id="stars"></canvas>
 <div id="grain"></div>
