@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>On Absolute Consciousness — AC4</title>
+<title>On Absolute Consciousness — AC</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Bebas+Neue&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
@@ -144,6 +144,50 @@
     font-size: 11px;
     letter-spacing: 0.2em;
     color: var(--gold-dim);
+  }
+
+
+  .doc-nav {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 0 auto 26px;
+    padding: 0 20px;
+  }
+
+  .doc-nav a,
+  .doc-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    border: 1px solid rgba(201,168,76,0.28);
+    background: linear-gradient(135deg, rgba(201,168,76,0.12), rgba(255,255,255,0.02));
+    color: var(--white);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .doc-nav a:hover,
+  .doc-link:hover {
+    transform: translateY(-1px);
+    border-color: rgba(201,168,76,0.55);
+    background: linear-gradient(135deg, rgba(201,168,76,0.18), rgba(255,255,255,0.03));
+  }
+
+  .end-nav {
+    margin-top: 30px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .hero-container {
@@ -397,143 +441,15 @@
   }
 
   @media (max-width: 700px) {
-    body { font-size: 21px; }
+    body { font-size: 19px; }
     header { padding: 78px 24px 48px; }
     main { padding: 28px 24px 120px; }
     .formula-block, .pull-quote, .bridge-box, .speculative-box, .comparison-card, .counter-box { padding-left: 22px; padding-right: 22px; }
     .derivation-box { padding: 22px; }
   }
-
-  body.mobile-reading {
-    font-size: 28px;
-    line-height: 1.95;
-  }
-
-  body.mobile-reading header {
-    padding: 76px 22px 44px;
-  }
-
-  body.mobile-reading .eyebrow,
-  body.mobile-reading .byline,
-  body.mobile-reading .note-label,
-  body.mobile-reading .stamp {
-    font-size: 15px;
-    letter-spacing: 0.16em;
-    line-height: 1.7;
-  }
-
-  body.mobile-reading h1 {
-    font-size: clamp(3.4rem, 12vw, 5rem);
-    line-height: 1.08;
-    margin-bottom: 20px;
-  }
-
-  body.mobile-reading .subtitle {
-    font-size: 1.42rem;
-    max-width: 92vw;
-    line-height: 1.65;
-    margin-bottom: 34px;
-  }
-
-  body.mobile-reading .hero-container {
-    padding: 0 14px;
-    margin-bottom: 42px;
-  }
-
-  body.mobile-reading main {
-    max-width: 100%;
-    padding: 24px 18px 110px;
-  }
-
-  body.mobile-reading section {
-    margin-bottom: 66px;
-  }
-
-  body.mobile-reading h2 {
-    font-size: 1.42rem;
-    letter-spacing: 0.18em;
-    line-height: 1.4;
-    margin-bottom: 26px;
-  }
-
-  body.mobile-reading p {
-    margin-bottom: 24px;
-  }
-
-  body.mobile-reading .pull-quote,
-  body.mobile-reading .formula-block,
-  body.mobile-reading .bridge-box,
-  body.mobile-reading .speculative-box,
-  body.mobile-reading .comparison-card,
-  body.mobile-reading .counter-box,
-  body.mobile-reading .derivation-box {
-    padding: 24px 20px;
-    margin-left: 0;
-    margin-right: 0;
-  }
-
-  body.mobile-reading .pull-quote::before {
-    left: 18px;
-    top: -6px;
-    font-size: 4.2rem;
-  }
-
-  body.mobile-reading .pull-quote p {
-    font-size: 1.35rem;
-    line-height: 1.72;
-  }
-
-  body.mobile-reading .formula-eq {
-    font-size: clamp(1.7rem, 7vw, 2.25rem);
-    letter-spacing: 0.04em;
-    line-height: 1.45;
-    overflow-wrap: anywhere;
-  }
-
-  body.mobile-reading .r-formula {
-    font-size: 1.22rem;
-    line-height: 1.7;
-    padding: 20px 16px;
-  }
-
-  body.mobile-reading .derivation-step {
-    font-size: 1.1rem;
-    line-height: 1.75;
-  }
-
-  body.mobile-reading .derivation-final {
-    font-size: 1.55rem;
-    line-height: 1.55;
-  }
-
-  body.mobile-reading .comparison-card h3 {
-    font-size: 1rem;
-    letter-spacing: 0.12em;
-    line-height: 1.5;
-  }
-
-  body.mobile-reading .footnote,
-  body.mobile-reading .one-sentence {
-    font-size: 1.18rem;
-    line-height: 1.75;
-  }
 </style>
 </head>
 <body>
-
-<script>
-  (function () {
-    const ua = navigator.userAgent || navigator.vendor || window.opera || '';
-    const mobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-    const smallTouchScreen = window.matchMedia('(max-width: 900px)').matches && window.matchMedia('(pointer: coarse)').matches;
-    if (mobileUA || smallTouchScreen) {
-      document.addEventListener('DOMContentLoaded', function () {
-        document.body.classList.add('mobile-reading');
-      });
-    }
-  })();
-</script>
-
 
 <canvas id="stars"></canvas>
 <div id="grain"></div>
@@ -542,7 +458,13 @@
   <div class="eyebrow">AIm³ Lab · Ljubljana · 2026</div>
   <h1>On <em>Absolute</em><br>Consciousness</h1>
   <p class="subtitle">The aim of this paper is not to assert final certainty, but to move from metaphysical intuition toward the least miraculous and most coherent grounding currently available.</p>
-  <div class="byline">BD × AI &nbsp;·&nbsp; March 2026 &nbsp;·&nbsp; AC4</div>
+  <div class="byline">BD × AI &nbsp;·&nbsp; March 2026 &nbsp;·&nbsp; AC7</div>
+
+<div class="doc-nav">
+  <a href="AC_AA.html">Read Appendix A</a>
+  <a href="https://chessbest.org/bd/">BD Portfolio</a>
+</div>
+
 </header>
 
 <div class="hero-container">
@@ -702,7 +624,22 @@
   </section>
 
   <section>
-    <h2>VIII. What Would Count Against This View?</h2>
+    <h2>VIII. A Practical Wedge: Resonance in Structured Problem Solving</h2>
+    <p>One possible research wedge does not begin with brains, but with problem-solving systems. In recent optimization work, structured human–AI collaboration produced non-trivial architectural moves not fully hand-specified in advance, including memory-bearing search structures, self-sensing search governance, and multi-scale control logic inside a route-optimization arena.</p>
+
+    <div class="bridge-box">
+      <p>This does not prove Absolute Consciousness. It does, however, provide a disciplined practical case: systems appear to become more capable not through brute force alone, but through the joint action of patterned memory, dynamic openness, selective control, and structured adaptation.</p>
+    </div>
+
+    <p>In that limited sense, such work may serve as an illustrative bridge between the ontological language of resonance and the engineering language of search, control, and emergence. The correct standard remains unchanged: not preference, but tests.</p>
+
+    <p>The practical wedge currently rests on cross-domain empirical signals: TSP (ρ = +0.80), Sudoku (ρ = +0.85), Chess (81% vs 58%), and DNA (Z-scores 28–74). Details, limits, and scope are given in <a class="doc-link" href="AC_AA.html">Appendix A</a>.</p>
+
+    <p class="footnote">Companion case study: <a class="doc-link" href="AC_AA.html">Appendix A — Resonance in Action</a></p>
+  </section>
+
+  <section>
+    <h2>IX. What Would Count Against This View?</h2>
     <p>A framework of this kind should not be protected from failure by poetic ambiguity. If it is to be taken seriously, there must be conditions under which it weakens.</p>
 
     <div class="counter-box">
@@ -726,8 +663,14 @@
 
   <div class="closer">
     <p class="one-sentence"><strong>Absolute Consciousness</strong> is the underived ground of reality, and finite existence is the degree to which patterned systems resonate with that ground.</p>
-    <div class="stamp">BD × AI &nbsp;·&nbsp; March 2026 &nbsp;·&nbsp; AIm³ Lab, Ljubljana &nbsp;·&nbsp; AC4</div>
+    <div class="stamp">BD × AI &nbsp;·&nbsp; March 2026 &nbsp;·&nbsp; AIm³ Lab, Ljubljana &nbsp;·&nbsp; AC7</div>
   </div>
+
+
+<div class="end-nav">
+  <a class="doc-link" href="AC_AA.html">Go to Appendix A</a>
+  <a class="doc-link" href="https://chessbest.org/bd/">Back to BD Portfolio</a>
+</div>
 
 </main>
 
