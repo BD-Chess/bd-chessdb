@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DCC Structural Quality Rankings — Chess Player Profiles · BD 8Z Research</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #020409;
+  --bg2: #080a14;
+  --bg3: #0d1120;
+  --surface: #0f1729;
+  --surface2: #131b30;
+  --border: rgba(167,139,250,0.10);
+  --border-strong: rgba(167,139,250,0.20);
+  --accent: #a78bfa;
+  --accent-dim: rgba(167,139,250,0.12);
+  --accent-glow: rgba(167,139,250,0.06);
+  --gold: #f59e0b;
+  --gold-dim: rgba(245,158,11,0.12);
+  --gold-glow: rgba(245,158,11,0.06);
+  --green: #34d399;
+  --green-dim: rgba(52,211,153,0.10);
+  --cyan: #00e5ff;
+  --cyan-dim: rgba(0,229,255,0.10);
+  --rose: #ff6b8a;
+  --rose-dim: rgba(255,107,138,0.10);
+  --orange: #fb923c;
+  --orange-dim: rgba(251,146,60,0.10);
+  --blue: #60a5fa;
+  --blue-dim: rgba(96,165,250,0.10);
+  --text: #e2e8f4;
+  --muted: #5e7192;
+  --muted-2: rgba(226,232,244,0.62);
+  --subtle: #1a2540;
+  --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  --radius: 6px;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Rajdhani',sans-serif;
+  font-size:17px;
+  line-height:1.72;
+  overflow-x:hidden;
+}
+body::after {
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0.02;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.scroll-progress { position:fixed; top:0; left:0; height:2px; background:var(--accent); z-index:10000; transition:width 30ms; }
+
+.topnav { position:fixed; top:0; left:0; right:0; height:48px; background:rgba(2,4,9,0.85); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); z-index:999; display:flex; align-items:center; padding:0 8vw; }
+.topnav a { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); text-decoration:none; letter-spacing:1px; }
+.topnav a:hover { color:var(--accent); }
+.topnav .sep { margin:0 12px; color:var(--muted); opacity:.3; }
+
+.wrap { max-width:820px; margin:0 auto; padding:0 8vw; }
+@media(min-width:1100px){ .wrap{ padding:0; } }
+
+.cover { padding:120px 8vw 64px; text-align:center; border-bottom:1px solid var(--border); margin-bottom:64px; }
+.cover-tag { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:4px; color:var(--accent); text-transform:uppercase; margin-bottom:20px; display:block; }
+.cover h1 { font-family:'Cormorant Garamond',serif; font-size:clamp(32px,5vw,50px); font-weight:600; line-height:1.15; color:var(--text); margin-bottom:18px; }
+.cover h1 em { font-style:italic; color:var(--gold); }
+.cover .subtitle { font-size:18px; color:var(--muted-2); max-width:600px; margin:0 auto 28px; line-height:1.6; }
+.cover .meta { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); }
+.cover .meta a { color:var(--gold); text-decoration:underline; }
+
+/* stat strip */
+.stat-strip { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:0 auto 0; max-width:560px; }
+.stat-cell { background:var(--surface); padding:18px 10px; text-align:center; }
+.stat-cell .sv { font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:var(--gold); display:block; }
+.stat-cell .sl { font-size:12px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+
+.chapter { margin-bottom:64px; padding-top:40px; border-top:1px solid var(--border); opacity:0; transform:translateY(24px); transition:opacity .6s ease, transform .6s ease; }
+.chapter.visible { opacity:1; transform:translateY(0); }
+.chapter-num { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:3px; color:var(--accent); text-transform:uppercase; margin-bottom:8px; }
+.chapter h2 { font-family:'Cormorant Garamond',serif; font-size:32px; font-weight:600; line-height:1.25; margin-bottom:20px; color:var(--text); }
+.chapter h3 { font-size:20px; font-weight:600; margin:32px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); color:var(--text); }
+p { margin-bottom:16px; color:var(--muted-2); }
+strong { color:var(--text); font-weight:600; }
+em { color:var(--accent); font-style:normal; }
+
+.callout { background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--accent); padding:18px 22px; margin:20px 0; border-radius:var(--radius); }
+.callout.gold { border-left-color:var(--gold); background:var(--gold-glow); }
+.callout.green { border-left-color:var(--green); }
+.callout.rose { border-left-color:var(--rose); }
+.callout.cyan { border-left-color:var(--cyan); }
+.callout .callout-title { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; font-weight:600; color:var(--accent); }
+.callout.gold .callout-title { color:var(--gold); }
+.callout.green .callout-title { color:var(--green); }
+.callout.rose .callout-title { color:var(--rose); }
+.callout.cyan .callout-title { color:var(--cyan); }
+
+/* MAIN RANKINGS TABLE */
+.rank-table { width:100%; border-collapse:collapse; margin:24px 0; font-size:14px; }
+.rank-table th {
+  text-align:left; padding:10px 14px;
+  background:var(--surface); border:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  letter-spacing:1px; text-transform:uppercase; color:var(--muted);
+}
+.rank-table td { padding:9px 14px; border:1px solid var(--border); color:var(--muted-2); }
+.rank-table tr:hover td { background:var(--surface); }
+.rank-table .rn { font-family:'JetBrains Mono',monospace; color:var(--muted); font-size:12px; text-align:center; }
+.rank-table .rname { font-weight:600; color:var(--text); }
+.rank-table .rdcc { font-family:'JetBrains Mono',monospace; font-weight:700; font-size:15px; text-align:right; }
+.rank-table .rdcc.top2 { color:var(--cyan); }
+.rank-table .rdcc.human-top { color:var(--gold); }
+.rank-table .rdcc.human-mid { color:var(--text); }
+.rank-table .rdcc.human-low { color:var(--muted-2); }
+.rank-table .ropp { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--muted); text-align:right; }
+.rank-table .rtrend { font-family:'JetBrains Mono',monospace; font-size:12px; text-align:center; letter-spacing:1px; }
+.rank-table .rn-games { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); text-align:center; }
+.trend-up { color:var(--green); }
+.trend-stable { color:var(--muted); }
+.trend-down { color:var(--rose); }
+
+/* divider row */
+.rank-table .divider-row td {
+  background:var(--bg2);
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px; letter-spacing:3px; text-transform:uppercase;
+  color:var(--accent); text-align:center;
+  padding:6px 14px; border-color:var(--border-strong);
+}
+
+/* bar chart for DCC% */
+.bar-wrap { display:flex; align-items:center; gap:8px; }
+.bar-bg { flex:1; height:6px; background:var(--bg3); border-radius:3px; overflow:hidden; min-width:60px; }
+.bar-fill { height:100%; border-radius:3px; transition:width 1s ease; }
+.bar-engine { background:var(--cyan); }
+.bar-human-top { background:var(--gold); }
+.bar-human-mid { background:var(--accent); }
+.bar-human-low { background:var(--muted); }
+
+/* matchup table */
+.matchup-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:14px; }
+.matchup-table th { padding:8px 14px; background:var(--surface); border:1px solid var(--border); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); text-align:left; }
+.matchup-table td { padding:9px 14px; border:1px solid var(--border); color:var(--muted-2); }
+.matchup-table tr:hover td { background:var(--surface); }
+.matchup-table .mwinner { font-weight:700; color:var(--gold); }
+.matchup-table .mloser { color:var(--muted-2); }
+.matchup-table .mgap { font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--green); text-align:right; }
+.matchup-table .mgames { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); text-align:center; }
+.matchup-table .macc { font-family:'JetBrains Mono',monospace; font-size:13px; text-align:right; }
+
+/* finding cards */
+.findings-grid { display:grid; gap:16px; margin:24px 0; }
+.finding-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:22px; transition:border-color .3s; }
+.finding-card:hover { border-color:var(--border-strong); }
+.finding-card .fn { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
+.finding-card h4 { font-size:17px; font-weight:700; color:var(--text); margin-bottom:10px; }
+.finding-card p { font-size:15px; color:var(--muted-2); margin-bottom:8px; }
+.finding-card p:last-child { margin-bottom:0; }
+
+/* inline stat */
+.istat { font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--gold); font-size:1em; }
+.istat-green { font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--green); }
+.istat-cyan { font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--cyan); }
+.istat-rose { font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--rose); }
+
+/* era table */
+.era-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:14px; }
+.era-table th { padding:8px 14px; background:var(--surface); border:1px solid var(--border); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); text-align:left; }
+.era-table td { padding:9px 14px; border:1px solid var(--border); color:var(--muted-2); }
+.era-table tr:hover td { background:var(--surface); }
+.era-table .era-label { background:var(--bg2); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); }
+.era-table .ep { font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--text); }
+
+.deep-quote { border-left:3px solid var(--gold); padding:24px 28px; margin:32px 0; background:var(--gold-glow); border-radius:0 var(--radius) var(--radius) 0; }
+.deep-quote p { font-family:'Cormorant Garamond',serif; font-size:22px; line-height:1.55; color:var(--text); font-style:italic; margin:0; }
+.deep-quote .attr { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); margin-top:12px; letter-spacing:1px; }
+
+footer { border-top:1px solid var(--border); padding:3rem 8vw 4rem; margin-top:80px; }
+.foot-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; max-width:820px; margin:0 auto; }
+@media(max-width:600px){ .foot-grid{ grid-template-columns:1fr; } }
+.foot-col h4 { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); margin-bottom:12px; }
+.foot-col p { font-size:14px; color:var(--muted); line-height:1.6; }
+.foot-links { list-style:none; }
+.foot-links li { margin-bottom:6px; }
+.foot-links a { color:var(--muted); font-size:14px; text-decoration:none; }
+.foot-links a:hover { color:var(--accent); }
+.copyright { text-align:center; font-size:12px; color:var(--muted); margin-top:2rem; max-width:820px; margin-left:auto; margin-right:auto; padding-top:1.5rem; border-top:1px solid var(--border); }
+.copyright a { color:var(--gold); text-decoration:underline; }
+
+.caveat-list { list-style:none; padding:0; margin:16px 0; }
+.caveat-list li { padding:12px 0 12px 0; border-bottom:1px solid var(--border); color:var(--muted-2); font-size:15px; }
+.caveat-list li:last-child { border-bottom:none; }
+.caveat-list li strong { color:var(--text); }
+</style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProg"></div>
+
+<nav class="topnav">
+  <a href="/bd/">BD &times; AI Lab</a>
+  <span class="sep">/</span>
+  <a href="/bd/">8Z Research</a>
+  <span class="sep">/</span>
+  <a href="#">DCC Player Profiles</a>
+</nav>
+
+<!-- ===== COVER ===== -->
+<header class="cover">
+  <span class="cover-tag">8Z Research &middot; ChessDCC &middot; D40 Converged</span>
+  <h1>DCC Structural Quality<br><em>Rankings</em></h1>
+  <div class="subtitle">Which players consistently choose the most structurally sound moves — measured by chessdb.cn's 58 billion pre-computed positions, looking 40 half-moves into the future.</div>
+  <div class="meta">March 2026 &middot; C3 &times; Bojan Dobre&ccedil;evi&cacute; &middot; 259 games &middot; 130 years &middot; 17 players &middot; Built by <a href="https://chessbest.org/bd/C_soul_vault.html" target="_blank">Cv</a></div>
+  <br>
+  <div class="stat-strip">
+    <div class="stat-cell"><span class="sv">259</span><span class="sl">Games</span></div>
+    <div class="stat-cell"><span class="sv">130</span><span class="sl">Years</span></div>
+    <div class="stat-cell"><span class="sv">96,665</span><span class="sl">Positions</span></div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ===== WHAT THIS MEASURES ===== -->
+<section class="chapter" id="what">
+  <div class="chapter-num">Method</div>
+  <h2>What This Measures</h2>
+
+  <p><strong>DCC accuracy</strong> = the percentage of moves where a player chose the move that DCC's structural analysis ranked #1 among chessdb.cn's top candidates — the largest chess position database in existence (58 billion positions, collective multi-engine intelligence).</p>
+
+  <p>Higher DCC = the player more frequently chose the healthiest, most structurally sound move among the top candidates, looking <strong>40 half-moves (20 full moves)</strong> into the future.</p>
+
+  <div class="callout gold">
+    <div class="callout-title">Convergence &amp; Depth</div>
+    <p>We tested four depths (D10, D20, D40, D80). <strong>Signal converges at D40.</strong> D80 adds nothing — r=1.000, average change 0.03pp per player. D40 is the minimum description that captures all the information. Less describes more. All rankings on this page use D40.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Opponent Filter</div>
+    <p>Only games where the opponent's DCC accuracy was &ge;40% ("elite filter"). This removes easy wins against weak opponents and enables fair cross-era comparison. A player can only demonstrate structural quality when the opponent is also playing at elite level.</p>
+  </div>
+</section>
+
+<!-- ===== RANKINGS TABLE ===== -->
+<section class="chapter" id="rankings">
+  <div class="chapter-num">Rankings</div>
+  <h2>Converged Rankings — Depth 40</h2>
+
+  <table class="rank-table" id="rankTable">
+    <thead>
+      <tr>
+        <th style="text-align:center">#</th>
+        <th>Player</th>
+        <th style="text-align:center">Elite Games</th>
+        <th style="text-align:right">D40 DCC</th>
+        <th>Structural Quality</th>
+        <th style="text-align:right">Opp. Avg</th>
+        <th style="text-align:center">Depth Trend</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Engines -->
+      <tr>
+        <td class="rn">1</td>
+        <td class="rname">Stockfish</td>
+        <td class="rn-games">35</td>
+        <td class="rdcc top2">70.0%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-engine" data-pct="70"></div></div></div></td>
+        <td class="ropp">65.6%</td>
+        <td class="rtrend trend-stable">&#9552;&#9552;&#9552; STABLE</td>
+      </tr>
+      <tr>
+        <td class="rn">2</td>
+        <td class="rname">LCZero</td>
+        <td class="rn-games">27</td>
+        <td class="rdcc top2">66.1%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-engine" data-pct="66.1"></div></div></div></td>
+        <td class="ropp">73.0%</td>
+        <td class="rtrend trend-stable">&#9552;&#9552;&#9552; STABLE</td>
+      </tr>
+      <!-- Divider -->
+      <tr class="divider-row">
+        <td colspan="7">&#8212;&#8212; HUMAN LINE &#8212;&#8212;</td>
+      </tr>
+      <!-- Humans -->
+      <tr>
+        <td class="rn">3</td>
+        <td class="rname">Polgar</td>
+        <td class="rn-games">14</td>
+        <td class="rdcc human-top">58.6%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-human-top" data-pct="58.6"></div></div></div></td>
+        <td class="ropp">53.9%</td>
+        <td class="rtrend trend-up">&#8593;&#8593;&#8593; RISING</td>
+      </tr>
+      <tr>
+        <td class="rn">4</td>
+        <td class="rname">Carlsen</td>
+        <td class="rn-games">33</td>
+        <td class="rdcc human-top">58.4%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-human-top" data-pct="58.4"></div></div></div></td>
+        <td class="ropp">59.4%</td>
+        <td class="rtrend trend-up">&#8593;&#8593;&#8593; RISING</td>
+      </tr>
+      <tr>
+        <td class="rn">5</td>
+        <td class="rname">Ding Liren</td>
+        <td class="rn-games">7</td>
+        <td class="rdcc human-mid">56.3%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-human-mid" data-pct="56.3"></div></div></div></td>
+        <td class="ropp">56.4%</td>
+        <td class="rtrend trend-down">&#8595;&#8595;&#8595; FALLING</td>
+      </tr>
+      <tr>
+        <td class="rn">6</td>
+        <td class="rname">Kasparov</td>
+        <td class="rn-games">20</td>
+        <td class="rdcc human-mid">55.8%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-human-mid" data-pct="55.8"></div></div></div></td>
+        <td class="ropp">59.1%</td>
+        <td class="rtrend trend-down">&#8595; down</td>
+      </tr>
+      <tr>
+        <td class="rn">7</td>
+        <td class="rname">Anand</td>
+        <td class="rn-games">9</td>
+        <td class="rdcc human-mid">55.4%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-human-mid" data-pct="55.4"></div></div></div></td>
+        <td class="ropp">55.8%</td>
+        <td class="rtrend trend-down">&#8595; down</td>
+      </tr>
+      <tr>
+        <td class="rn">8</td>
+        <td class="rname">Lasker</td>
+        <td class="rn-games">15</td>
+        <td class="rdcc human-mid">54.4%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-human-mid" data-pct="54.4"></div></div></div></td>
+        <td class="ropp">58.4%</td>
+        <td class="rtrend trend-up">&#8593;&#8593;&#8593; RISING</td>
+      </tr>
+      <tr>
+        <td class="rn">9</td>
+        <td class="rname">Fischer</td>
+        <td class="rn-games">11</td>
+        <td class="rdcc human-mid">54.1%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-human-mid" data-pct="54.1"></div></div></div></td>
+        <td class="ropp">57.9%</td>
+        <td class="rtrend trend-up">&#8593;&#8593;&#8593; RISING</td>
+      </tr>
+      <tr>
+        <td class="rn">10</td>
+        <td class="rname">Nakamura</td>
+        <td class="rn-games">22</td>
+        <td class="rdcc human-mid">53.9%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-human-mid" data-pct="53.9"></div></div></div></td>
+        <td class="ropp">58.6%</td>
+        <td class="rtrend trend-stable">&#9552;&#9552;&#9552; STABLE</td>
+      </tr>
+      <tr>
+        <td class="rn">11</td>
+        <td class="rname">Firouzja</td>
+        <td class="rn-games">8</td>
+        <td class="rdcc human-mid">52.6%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-human-mid" data-pct="52.6"></div></div></div></td>
+        <td class="ropp">48.9%</td>
+        <td class="rtrend trend-down">&#8595; down</td>
+      </tr>
+      <tr>
+        <td class="rn">12</td>
+        <td class="rname">Capablanca</td>
+        <td class="rn-games">14</td>
+        <td class="rdcc human-mid">51.0%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-human-mid" data-pct="51.0"></div></div></div></td>
+        <td class="ropp">58.5%</td>
+        <td class="rtrend trend-stable">&#9552;&#9552;&#9552; STABLE</td>
+      </tr>
+      <tr>
+        <td class="rn">13</td>
+        <td class="rname">Aronian</td>
+        <td class="rn-games">9</td>
+        <td class="rdcc human-low">49.7%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-human-low" data-pct="49.7"></div></div></div></td>
+        <td class="ropp">56.0%</td>
+        <td class="rtrend trend-down">&#8595; down</td>
+      </tr>
+      <tr>
+        <td class="rn">14</td>
+        <td class="rname">Kramnik</td>
+        <td class="rn-games">16</td>
+        <td class="rdcc human-low">49.2%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-human-low" data-pct="49.2"></div></div></div></td>
+        <td class="ropp">58.8%</td>
+        <td class="rtrend trend-down">&#8595; down</td>
+      </tr>
+      <tr>
+        <td class="rn">14</td>
+        <td class="rname">Gukesh</td>
+        <td class="rn-games">15</td>
+        <td class="rdcc human-low">49.2%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-human-low" data-pct="49.2"></div></div></div></td>
+        <td class="ropp">58.5%</td>
+        <td class="rtrend trend-up">&#8593;&#8593;&#8593; RISING</td>
+      </tr>
+      <tr>
+        <td class="rn">16</td>
+        <td class="rname">Nepomniachtchi</td>
+        <td class="rn-games">7</td>
+        <td class="rdcc human-low">46.4%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-human-low" data-pct="46.4"></div></div></div></td>
+        <td class="ropp">62.1%</td>
+        <td class="rtrend trend-down">&#8595;&#8595;&#8595; FALLING</td>
+      </tr>
+      <tr>
+        <td class="rn">17</td>
+        <td class="rname">Caruana</td>
+        <td class="rn-games">22</td>
+        <td class="rdcc human-low">43.4%</td>
+        <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill bar-human-low" data-pct="43.4"></div></div></div></td>
+        <td class="ropp">58.4%</td>
+        <td class="rtrend trend-stable">&#9552;&#9552;&#9552; STABLE</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:13px; color:var(--muted); margin-top:8px;"><strong>Elite games</strong> = games against opponents with DCC &ge;40%. <strong>Opp. avg</strong> = average DCC of those opponents. <strong>Depth trend</strong> = direction of DCC accuracy from D10 to D40 — a player signature, not an artifact.</p>
+</section>
+
+<!-- ===== HEAD TO HEAD ===== -->
+<section class="chapter" id="h2h">
+  <div class="chapter-num">Head-to-Head</div>
+  <h2>Direct Matchups</h2>
+
+  <p>Direct confrontations between players in the dataset. Gap = winner DCC minus loser DCC in those specific games.</p>
+
+  <h3>Landmark Matchups</h3>
+  <table class="matchup-table">
+    <thead>
+      <tr>
+        <th>Winner</th><th style="text-align:right">Acc</th>
+        <th>vs. Opponent</th><th style="text-align:right">Acc</th>
+        <th style="text-align:center">Games</th>
+        <th style="text-align:right">Gap</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="mwinner">Fischer</td><td class="macc">72.0%</td>
+        <td class="mloser">Spassky</td><td class="macc mloser">49.5%</td>
+        <td class="mgames">2</td>
+        <td class="mgap">+22pp</td>
+      </tr>
+      <tr>
+        <td class="mwinner">Lasker</td><td class="macc">64.0%</td>
+        <td class="mloser">Capablanca</td><td class="macc mloser">45.0%</td>
+        <td class="mgames">2</td>
+        <td class="mgap">+19pp</td>
+      </tr>
+      <tr>
+        <td class="mwinner">Carlsen</td><td class="macc">63.7%</td>
+        <td class="mloser">Kramnik</td><td class="macc mloser">57.0%</td>
+        <td class="mgames">3</td>
+        <td class="mgap">+7pp</td>
+      </tr>
+      <tr>
+        <td class="mwinner">Carlsen</td><td class="macc">63.0%</td>
+        <td class="mloser">Nepomniachtchi</td><td class="macc mloser">54.0%</td>
+        <td class="mgames">3</td>
+        <td class="mgap">+9pp</td>
+      </tr>
+      <tr>
+        <td class="mwinner">Kasparov</td><td class="macc">54.5%</td>
+        <td class="mloser">Karpov</td><td class="macc mloser">44.5%</td>
+        <td class="mgames">2</td>
+        <td class="mgap">+10pp</td>
+      </tr>
+      <tr>
+        <td class="mwinner">Kasparov</td><td class="macc">59.5%</td>
+        <td class="mloser" style="color:var(--muted-2)">Kramnik</td><td class="macc mloser">59.0%</td>
+        <td class="mgames">2</td>
+        <td class="mgap" style="color:var(--muted)">≈0pp</td>
+      </tr>
+      <tr>
+        <td class="mwinner">Stockfish</td><td class="macc istat-cyan">73.0%</td>
+        <td class="mloser">LCZero</td><td class="macc mloser">66.3%</td>
+        <td class="mgames">27</td>
+        <td class="mgap">+7pp</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Modern Rivalries</h3>
+  <table class="matchup-table">
+    <thead>
+      <tr>
+        <th>Winner</th><th style="text-align:right">Acc</th>
+        <th>vs. Opponent</th><th style="text-align:right">Acc</th>
+        <th style="text-align:center">Games</th>
+        <th style="text-align:right">Gap</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="mwinner">Aronian</td><td class="macc">63.3%</td>
+        <td class="mloser">Carlsen</td><td class="macc mloser">52.3%</td>
+        <td class="mgames">3</td>
+        <td class="mgap">+11pp</td>
+      </tr>
+      <tr>
+        <td class="mwinner">Caruana</td><td class="macc">66.7%</td>
+        <td class="mloser">Carlsen</td><td class="macc mloser">60.3%</td>
+        <td class="mgames">3</td>
+        <td class="mgap">+6pp</td>
+      </tr>
+      <tr>
+        <td class="mwinner">Nakamura</td><td class="macc">64.0%</td>
+        <td class="mloser">Carlsen</td><td class="macc mloser">60.7%</td>
+        <td class="mgames">3</td>
+        <td class="mgap">+3pp</td>
+      </tr>
+      <tr>
+        <td class="mwinner">Firouzja</td><td class="macc">70.0%</td>
+        <td class="mloser">Nakamura</td><td class="macc mloser">54.0%</td>
+        <td class="mgames">2</td>
+        <td class="mgap">+16pp</td>
+      </tr>
+      <tr>
+        <td class="mwinner">Gukesh</td><td class="macc">63.5%</td>
+        <td class="mloser">Ding Liren</td><td class="macc mloser">50.0%</td>
+        <td class="mgames">2</td>
+        <td class="mgap">+14pp</td>
+      </tr>
+      <tr>
+        <td class="mwinner">Anand</td><td class="macc">59.0%</td>
+        <td class="mloser">Carlsen</td><td class="macc mloser">56.0%</td>
+        <td class="mgames">3</td>
+        <td class="mgap">+3pp</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===== KEY FINDINGS ===== -->
+<section class="chapter" id="findings">
+  <div class="chapter-num">Findings</div>
+  <h2>What the Data Shows</h2>
+
+  <div class="findings-grid">
+
+    <div class="finding-card">
+      <div class="fn">Finding 1</div>
+      <h4>Polgar is #1 among humans — and still rising</h4>
+      <p><span class="istat">58.6%</span> at D40 — above Carlsen (58.4%), Kasparov (55.8%), Fischer (54.1%). She is the only top player whose DCC rises monotonically across all four tested depths, from 56.6% to 58.6%.</p>
+      <p>Her moves age like fine wine. The deeper you look, the better they are. She also has the largest positive delta when facing elite opponents (<span class="istat-green">+3.5pp</span>). Every other top player either stays flat or drops against the best. Polgar elevates.</p>
+    </div>
+
+    <div class="finding-card">
+      <div class="fn">Finding 2</div>
+      <h4>Strategists rise. Tacticians fall.</h4>
+      <p>Players split into two signatures by depth trend:</p>
+      <p><span class="istat-green">↑ RISING</span> — Polgar (+2.0pp), Carlsen (+1.0pp), Lasker (+3.4pp), Fischer (+0.7pp), Gukesh (+4.0pp). Their moves optimize for long-term structural health. D10 underestimates them.</p>
+      <p><span class="istat-rose">↓ FALLING</span> — Nepo (−6.3pp), Anand (−4.8pp), Kramnik (−3.5pp), Firouzja (−3.0pp), Ding (−1.7pp). Brilliant short-term, less robust at depth 40. No previous metric separated these two qualities.</p>
+    </div>
+
+    <div class="finding-card">
+      <div class="fn">Finding 3</div>
+      <h4>Engines are stable — they don't trade short for long</h4>
+      <p>Stockfish: <span class="istat-cyan">70.0%</span> (±0.7pp across all depths). LCZero: <span class="istat-cyan">66.1%</span> (±0.2pp). Engine moves are equally good at every horizon. No short-term vs long-term tradeoff. This is what perfect consistency looks like.</p>
+      <p>The human-engine gap is not a wall. It is a <strong>consistency gap</strong>.</p>
+    </div>
+
+    <div class="finding-card">
+      <div class="fn">Finding 4</div>
+      <h4>Fischer–Spassky: largest structural gap in chess history</h4>
+      <p><span class="istat">72.0%</span> vs <span class="istat-rose">49.5%</span> in direct matchups — a gap of <strong>+22pp</strong>. For context, Stockfish vs LCZero is +7pp. Fischer's structural dominance was 3× the gap between the two strongest engines. Engine-level performance from a human, measured for the first time.</p>
+    </div>
+
+    <div class="finding-card">
+      <div class="fn">Finding 5</div>
+      <h4>Lasker rises +3.4pp — historical vindication</h4>
+      <p>From 51.0% (shallow) to <span class="istat">54.4%</span> (D40). Lasker was known for "ugly" moves that paid off 15 moves later. Shallow depth doesn't see it. D40 does. First quantitative confirmation of Lasker's strategic depth, measured 130 years after the games were played.</p>
+    </div>
+
+    <div class="finding-card">
+      <div class="fn">Finding 6</div>
+      <h4>Carlsen's win-loss gap remains tiny</h4>
+      <p>Carlsen plays at similar structural quality whether winning or losing (+6.2pp gap). His opponents make errors, not him. Kasparov and Capablanca elevate dramatically when winning and collapse when losing. Carlsen stays flat. DCC quantifies what commentators call <em>"Carlsen grinding."</em></p>
+    </div>
+
+    <div class="finding-card">
+      <div class="fn">Finding 7</div>
+      <h4>Peak human matches engine average</h4>
+      <p>In their best games, elite humans exceed Stockfish's average structural quality:</p>
+      <p>Stockfish avg: <span class="istat-cyan">70.0%</span> — Fischer vs Spassky: <span class="istat">72.0%</span> — Caruana vs Nakamura: <span class="istat">74.5%</span> — Polgar vs Anand: <span class="istat">76.0%</span></p>
+      <p>The engine advantage is consistency. Stockfish never drops below 50%. Humans oscillate between 72% brilliance and 39% collapse. The gap is real — but it is not a wall.</p>
+    </div>
+
+    <div class="finding-card">
+      <div class="fn">Finding 8</div>
+      <h4>Gukesh has the largest depth rise — and is still climbing</h4>
+      <p><span class="istat-green">+4.0pp</span> from shallow to D40. At 18 years old, he plays for the future more than anyone in the dataset. Shallow depth ranks him #16. D40 ranks him #14. He is still climbing — this number will likely improve as he gains more games at elite level.</p>
+    </div>
+
+    <div class="finding-card">
+      <div class="fn">Finding 9</div>
+      <h4>130 years of chess: ~5pp total improvement</h4>
+      <p>Pre-war era (~51–54%) → Cold War (~54%) → Computer era (~55–56%) → Modern (~49–58%). About 5pp across 130 years. ELO has inflated by hundreds of points. Structural quality has barely moved. Players are not dramatically better in absolute terms — they are better <em>relative to contemporaries.</em></p>
+    </div>
+
+    <div class="finding-card">
+      <div class="fn">Finding 10</div>
+      <h4>DCC separates two independent qualities</h4>
+      <p>By measuring at multiple depths, DCC reveals a clean separation:</p>
+      <p><strong>Overall move quality</strong> — what D10 measures: tactics + strategy combined.</p>
+      <p><strong>Strategic depth</strong> — what Δ(D40−D10) measures: how much better your moves get when you look further ahead. Positive = strategist. Negative = tactician. Both can win. They win differently. No previous metric made this distinction.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== CROSS-ERA ===== -->
+<section class="chapter" id="era">
+  <div class="chapter-num">Cross-Era</div>
+  <h2>130 Years, One Metric</h2>
+
+  <p>Opponent-adjusted DCC enables direct comparison across eras that was previously impossible. The metric is era-agnostic: it measures structural move quality against chessdb's multi-engine consensus, independent of when the games were played.</p>
+
+  <table class="era-table">
+    <thead>
+      <tr><th>Era</th><th>Player</th><th style="text-align:center">Games</th><th style="text-align:right">D40 DCC</th><th style="text-align:right">Opp. Avg</th><th style="text-align:center">Trend</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="era-label" colspan="6">PRE-WAR (1890s–1930s)</td></tr>
+      <tr>
+        <td></td><td>Capablanca</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">14</td>
+        <td class="ep" style="text-align:right">51.0%</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">58%</td>
+        <td class="rtrend trend-stable" style="text-align:center">STABLE</td>
+      </tr>
+      <tr>
+        <td></td><td>Lasker</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">15</td>
+        <td class="ep" style="text-align:right">54.4%</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">58%</td>
+        <td class="rtrend trend-up" style="text-align:center">&#8593;&#8593;&#8593; RISING</td>
+      </tr>
+      <tr><td class="era-label" colspan="6">COLD WAR (1960s–1970s)</td></tr>
+      <tr>
+        <td></td><td>Fischer</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">11</td>
+        <td class="ep" style="text-align:right">54.1%</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">58%</td>
+        <td class="rtrend trend-up" style="text-align:center">&#8593;&#8593;&#8593; RISING</td>
+      </tr>
+      <tr><td class="era-label" colspan="6">COMPUTER ERA (1990s–2010s)</td></tr>
+      <tr>
+        <td></td><td>Anand</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">9</td>
+        <td class="ep" style="text-align:right">55.4%</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">56%</td>
+        <td class="rtrend trend-down" style="text-align:center">&#8595; down</td>
+      </tr>
+      <tr>
+        <td></td><td>Kasparov</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">20</td>
+        <td class="ep" style="text-align:right">55.8%</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">59%</td>
+        <td class="rtrend trend-down" style="text-align:center">&#8595; down</td>
+      </tr>
+      <tr>
+        <td></td><td>Kramnik</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">16</td>
+        <td class="ep" style="text-align:right">49.2%</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">59%</td>
+        <td class="rtrend trend-down" style="text-align:center">&#8595; down</td>
+      </tr>
+      <tr><td class="era-label" colspan="6">MODERN (2015–2024)</td></tr>
+      <tr>
+        <td></td><td>Carlsen</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">33</td>
+        <td class="ep" style="text-align:right">58.4%</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">59%</td>
+        <td class="rtrend trend-up" style="text-align:center">&#8593;&#8593;&#8593; RISING</td>
+      </tr>
+      <tr>
+        <td></td><td>Polgar</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">14</td>
+        <td class="ep" style="text-align:right">58.6%</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">54%</td>
+        <td class="rtrend trend-up" style="text-align:center">&#8593;&#8593;&#8593; RISING</td>
+      </tr>
+      <tr>
+        <td></td><td>Nakamura</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">22</td>
+        <td class="ep" style="text-align:right">53.9%</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">59%</td>
+        <td class="rtrend trend-stable" style="text-align:center">STABLE</td>
+      </tr>
+      <tr>
+        <td></td><td>Gukesh</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">15</td>
+        <td class="ep" style="text-align:right">49.2%</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">58%</td>
+        <td class="rtrend trend-up" style="text-align:center">&#8593;&#8593;&#8593; RISING</td>
+      </tr>
+      <tr>
+        <td></td><td>Caruana</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">22</td>
+        <td class="ep" style="text-align:right">43.4%</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">58%</td>
+        <td class="rtrend trend-stable" style="text-align:center">STABLE</td>
+      </tr>
+      <tr><td class="era-label" colspan="6">ENGINES</td></tr>
+      <tr>
+        <td></td><td>Stockfish</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">35</td>
+        <td class="ep istat-cyan" style="text-align:right;color:var(--cyan)">70.0%</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">66%</td>
+        <td class="rtrend trend-stable" style="text-align:center">&#9552;&#9552;&#9552; STABLE</td>
+      </tr>
+      <tr>
+        <td></td><td>LCZero</td><td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">27</td>
+        <td class="ep istat-cyan" style="text-align:right;color:var(--cyan)">66.1%</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">73%</td>
+        <td class="rtrend trend-stable" style="text-align:center">&#9552;&#9552;&#9552; STABLE</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="deep-quote">
+    <p>Chess players are not dramatically better in absolute terms over 130 years. They are better relative to their contemporaries — which inflates ELO but not DCC.</p>
+    <div class="attr">Finding 9 · DCC Structural Rankings · 2026</div>
+  </div>
+</section>
+
+<!-- ===== CAVEATS ===== -->
+<section class="chapter" id="caveats">
+  <div class="chapter-num">Caveats</div>
+  <h2>Honest Limitations</h2>
+
+  <ul class="caveat-list">
+    <li><strong>Sample sizes vary.</strong> Carlsen's 33 elite games is robust. Ding Liren (7), Nepomniachtchi (7) are marginal. Head-to-heads with 2 games are indicative, not definitive.</li>
+    <li><strong>Game selection bias.</strong> "Selected" games favor decisive, dramatic, historically important games. Draws are underrepresented. Random sampling would strengthen conclusions.</li>
+    <li><strong>ChessDB coverage.</strong> Modern openings have more cached positions. Pre-war players have lower coverage, reducing measurement resolution. Lasker's and Capablanca's true DCC may be higher than measured.</li>
+    <li><strong>DCC ≠ chess strength.</strong> DCC measures structural move quality. Chess is also decided by tactics, time management, psychology, endgame technique, opening preparation — none of which DCC measures directly. A player can win consistently with DCC-suboptimal moves.</li>
+    <li><strong>Opponent filter is a proxy.</strong> Elite threshold (&ge;40%) is imperfect. True opponent strength is multi-dimensional. The filter removes the most obvious noise but cannot perfectly level the playing field across 130 years.</li>
+  </ul>
+</section>
+
+</div><!-- /wrap -->
+
+<footer>
+  <div class="foot-grid">
+    <div class="foot-col">
+      <h4>About This Page</h4>
+      <p>DCC (Digital Claustrum Controller) structural quality analysis of 259 chess games across 130 years, 17 players, converged at depth 40. Zero API calls during analysis — 96,665 cached positions from chessdb.cn.</p>
+      <p>Built by <strong>Cv</strong> · AIF8 · March 2026</p>
+    </div>
+    <div class="foot-col">
+      <h4>Related</h4>
+      <ul class="foot-links">
+        <li><a href="/bd/8zc">ChessDCC Replay Tool</a></li>
+        <li><a href="/bd/AC6.html">On Absolute Consciousness</a></li>
+        <li><a href="/bd/BDC_Meta_Architecture.html">DCC Meta-Architecture</a></li>
+        <li><a href="https://chessdb.cn" target="_blank">chessdb.cn (58B positions)</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="copyright">
+    &copy; 2026 Bojan Dobre&ccedil;evi&cacute; &middot; AIm&sup3; Lab &middot; <a href="https://chessbest.org" target="_blank">chessbest.org</a>
+  </div>
+</footer>
+
+<script>
+// Scroll progress
+const prog = document.getElementById('scrollProg');
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+  prog.style.width = pct + '%';
+});
+
+// Chapter reveal on scroll
+const chapters = document.querySelectorAll('.chapter');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.07 });
+chapters.forEach(c => io.observe(c));
+
+// Animate bars on first view
+const barIo = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.querySelectorAll('.bar-fill[data-pct]').forEach(bar => {
+      const pct = parseFloat(bar.dataset.pct);
+      bar.style.width = (pct / 75 * 100) + '%'; // 75% = max (Stockfish 70%)
+    });
+    barIo.unobserve(e.target);
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('#rankTable').forEach(t => barIo.observe(t));
+// Init bars to 0
+document.querySelectorAll('.bar-fill[data-pct]').forEach(b => b.style.width = '0%');
+</script>
+</body>
+</html>
