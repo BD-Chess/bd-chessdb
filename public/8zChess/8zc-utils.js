@@ -1,6 +1,7 @@
 function initAll() {
   const STORAGE_KEY_SETTINGS = 'chessBestSettings';
   const STORAGE_KEY_GAME     = 'chessBestGame';
+  const ENABLE_COACH         = false;
 
   /* ------------------------------------------------------------------
      1. DEFAULT SETTINGS
@@ -33,7 +34,7 @@ function initAll() {
     simGames: 5,         // games per simulation run
     dccTakeover: 'auto',  // when DCC takes over: 'auto' or number of half-moves
     opponentModel: 'realistic', // v0.6.0: 'perfect', 'realistic', 'weak'
-    coachMode: 'key-moments',
+    coachMode: 'silent',
     coachOpen: false
   };
 
@@ -70,6 +71,10 @@ function initAll() {
   if (saved) {
     try { Object.assign(settings, JSON.parse(saved)); }
     catch (e) { console.error('Bad settings JSON', e); }
+  }
+  if (!ENABLE_COACH) {
+    settings.coachMode = 'silent';
+    settings.coachOpen = false;
   }
   function saveSettings() {
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
@@ -143,9 +148,12 @@ function initAll() {
 
   async function bootPlayConfigs() {
     botsConfig = await loadPlayConfig('config/bots.json', DEFAULT_BOTS_CONFIG);
-    coachConfig = await loadPlayConfig('config/coach.json', DEFAULT_COACH_CONFIG);
+    if (ENABLE_COACH) {
+      coachConfig = await loadPlayConfig('config/coach.json', DEFAULT_COACH_CONFIG);
+    }
     hydrateSimModal();
-    hydrateCoachModes();
+    if (ENABLE_COACH) hydrateCoachModes();
+    disableCoachUi();
   }
 
   /* ------------------------------------------------------------------
@@ -2184,6 +2192,7 @@ function jumpTo(i){
   updateBoard(true);
   showOpening();
   refreshPlayUi();
+  disableCoachUi();
   bootPlayConfigs().catch(err => console.warn('Play config boot failed:', err));
 
   document.querySelectorAll('input[name="simOpponent"]').forEach(el => {
@@ -2693,7 +2702,25 @@ function jumpTo(i){
     el.classList.toggle('live-thinking', !!on);
   }
 
+  function disableCoachUi() {
+    if (ENABLE_COACH) return;
+    settings.coachMode = 'silent';
+    settings.coachOpen = false;
+    const panel = document.getElementById('coachPanel');
+    const btn = document.getElementById('btnCoach');
+    const askInput = document.getElementById('coachAskInput');
+    const askBtn = document.getElementById('btnCoachAsk');
+    if (panel) {
+      panel.style.display = 'none';
+      panel.hidden = true;
+    }
+    if (btn) btn.style.display = 'none';
+    if (askInput) askInput.disabled = true;
+    if (askBtn) askBtn.disabled = true;
+  }
+
   function setCoachNotice(text) {
+    if (!ENABLE_COACH) return;
     const el = document.getElementById('coachNotice');
     if (!el) return;
     if (!text) {
@@ -2706,6 +2733,7 @@ function jumpTo(i){
   }
 
   function queueCoachMessage(kind, text, meta='') {
+    if (!ENABLE_COACH) return;
     const box = document.getElementById('coachMessages');
     if (!box || !text) return;
     const div = document.createElement('div');
@@ -2724,11 +2752,16 @@ function jumpTo(i){
   }
 
   function clearCoachMessages() {
+    if (!ENABLE_COACH) return;
     const box = document.getElementById('coachMessages');
     if (box) box.innerHTML = '';
   }
 
   function setCoachPanelOpen(open) {
+    if (!ENABLE_COACH) {
+      disableCoachUi();
+      return;
+    }
     settings.coachOpen = !!open;
     saveSettings();
     const panel = document.getElementById('coachPanel');
@@ -2738,6 +2771,7 @@ function jumpTo(i){
   }
 
   function hydrateCoachModes() {
+    if (!ENABLE_COACH) return;
     const sel = document.getElementById('coachModeSelect');
     if (!sel) return;
     sel.innerHTML = '';
@@ -2789,7 +2823,7 @@ function jumpTo(i){
         note.textContent = 'Relay mode only. During live Lichess games this page disables DCC move hints and coach advice so the board stays within Lichess fair-play rules.';
       } else if (mode === 'dccbot') {
         note.style.display = 'block';
-        note.textContent = 'Training mode. 8Z-CDB-DCC runs locally in the browser and the coach can comment live.';
+        note.textContent = 'Training mode. 8Z-CDB-DCC runs locally in the browser.';
       } else {
         note.style.display = 'none';
         note.textContent = '';
@@ -2992,6 +3026,7 @@ function jumpTo(i){
   }
 
   async function ensureAnthropicKey(promptIfMissing = false) {
+    if (!ENABLE_COACH) return '';
     let key = localStorage.getItem(ANTHROPIC_TOKEN_KEY) || '';
     if (!key && promptIfMissing) {
       key = prompt('Enter your Anthropic API key for Claude coach replies.');
@@ -3154,6 +3189,7 @@ function jumpTo(i){
   }
 
   async function requestCoachComment(snapshot, question = '') {
+    if (!ENABLE_COACH) return '';
     const key = await ensureAnthropicKey(false);
     if (!key) {
       return question
@@ -3192,6 +3228,7 @@ function jumpTo(i){
   }
 
   async function maybeEmitCoach(actorLabel, preFen, moveObj) {
+    if (!ENABLE_COACH) return;
     if (!settings.coachOpen) return;
     if (playState.active && playState.assistanceLocked) return;
     const snapshot = await buildCoachSnapshot(preFen, moveObj, actorLabel);
@@ -3207,6 +3244,7 @@ function jumpTo(i){
   }
 
   async function askCoachQuestion() {
+    if (!ENABLE_COACH) return;
     const input = document.getElementById('coachAskInput');
     if (!input) return;
     const question = (input.value || '').trim();
@@ -3355,7 +3393,10 @@ function jumpTo(i){
   const btnSimMain = document.getElementById('btnSim');
   if (btnSimMain) btnSimMain.onclick = () => openSimModal();
   const btnCoach = document.getElementById('btnCoach');
-  if (btnCoach) btnCoach.onclick = () => setCoachPanelOpen(!settings.coachOpen);
+  if (btnCoach) {
+    if (!ENABLE_COACH) btnCoach.style.display = 'none';
+    btnCoach.onclick = () => setCoachPanelOpen(!settings.coachOpen);
+  }
   // TopC: quick input for Top Candidates
   const btnTopC = document.getElementById('btnTopC');
   if (btnTopC) {
