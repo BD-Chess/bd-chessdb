@@ -130,9 +130,7 @@ function initAll() {
       streamAbort: null,
       eventAbort: null,
       lastMoves: '',
-      challengeId: null,
-      ready: false,
-      openingRetryCount: 0
+      challengeId: null
     },
     autoPilot: false,
     autoMoveBusy: false,
@@ -994,7 +992,13 @@ gameBuckets.forEach(bucket => {
       ov.dataset.dccAdsr = data.adsr ? JSON.stringify(data.adsr) : '';
       ov.dataset.dccMomentum = data.momentum !== undefined ? data.momentum.toFixed(2) : '';
       ov.dataset.dccTunnel = data.tunnel ? '1' : '';
-      // hover disabled intentionally; click still opens DCC info panel
+
+      // v0.6.1: Hover shows DCC info panel without moving pieces
+      ov.addEventListener('mouseenter', () => showDCCInfoPanel(ov));
+      ov.addEventListener('mouseleave', () => {
+        const panel = document.getElementById('dccInfoPanel');
+        if (panel) panel.style.display = 'none';
+      });
     }
   }
 
@@ -1537,7 +1541,29 @@ gameBuckets.forEach(bucket => {
 	    showDCCInfoPanel(ov);
 	  }
 	}, true);
-		// hover preview disabled intentionally; click remains active
+	
+	// ─── desktop-only hover preview by highlighting squares ───────────────────
+	const fromSq  = move.slice(0,2);
+	const fromCell = document.querySelector(`.square-${fromSq}`);
+
+	ov.addEventListener('mouseenter', () => {
+	  if (!window.matchMedia('(pointer: fine)').matches) return;
+	  // preview the move
+	  const preview = new Chess(game.fen());
+	  preview.move({ from: fromSq, to: sq, promotion: 'q' });
+	  board.position(preview.fen(), false);
+	  // highlight source and target
+	  fromCell.classList.add('preview-square');
+	  cell.classList.add('preview-square');
+	});
+
+	ov.addEventListener('mouseleave', () => {
+	  if (!window.matchMedia('(pointer: fine)').matches) return;
+	  // remove highlights and restore position
+	  fromCell.classList.remove('preview-square');
+	  cell.classList.remove('preview-square');
+	  board.position(game.fen(), false);
+	});
 
 	// clear preview highlights on mousedown (before your existing click logic runs)
 	ov.addEventListener('mousedown', () => {
@@ -2273,8 +2299,8 @@ function jumpTo(i){
   const simStartBtn = document.getElementById('simStartBtn');
   if (simStartBtn) simStartBtn.addEventListener('click', () => {
     launchFromSimModal().catch(err => {
-      queueCoachMessage('system', `Start failed: ${err.message || err}`);
-      leaveActiveSession('Play start failed.');
+      updateSimStatus(`Start failed: ${err.message || err}`);
+      leaveActiveSession('');
     });
   });
   const simCancelBtn = document.getElementById('simCancelBtn');
@@ -3003,8 +3029,6 @@ function enterActiveSession(mode, opts = {}) {
   playState.lichess.selectedColor = opts.selectedColor || 'random';
   playState.lichess.timeLabel = opts.timeLabel || '';
   playState.lichess.lastMoves = '';
-  playState.lichess.ready = false;
-  playState.lichess.openingRetryCount = 0;
 
   clearCoachMessages();
   if (mode === 'dccbot') {
@@ -3058,8 +3082,6 @@ function enterActiveSession(mode, opts = {}) {
     playState.lichess.gameId = null;
     playState.lichess.challengeId = null;
     playState.lichess.lastMoves = '';
-    playState.lichess.ready = false;
-    playState.lichess.openingRetryCount = 0;
     playState.autoPilot = false;
     playState.autoMoveBusy = false;
     if (typeof playState.prevShowEval === 'boolean') showEval = playState.prevShowEval;
@@ -3209,10 +3231,9 @@ async function startLichessGameStream(gameId) {
   });
 
   await readNdjsonStream(res, async payload => {
-    if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId) return null;
+    if (!playState.active || playState.mode !== 'lichess') return null;
     if (payload?.type === 'gameFull') {
       playState.userColor = guessUserColorFromGameFull(payload, playState.lichess.botUsername, playState.lichess.selectedColor);
-      playState.lichess.ready = true;
       board.orientation(playState.userColor === 'b' ? 'black' : 'white');
       syncGameFromMoves(payload?.state?.moves || '', payload?.initialFen || 'startpos');
       playState.waiting = game.turn() !== playState.userColor;
@@ -3225,7 +3246,6 @@ async function startLichessGameStream(gameId) {
       return null;
     }
     if (payload?.type === 'gameState' || payload?.moves !== undefined) {
-      playState.lichess.ready = true;
       syncGameFromMoves(payload.moves || '', 'startpos');
       playState.waiting = game.turn() !== playState.userColor;
       if (payload.status && payload.status !== 'started') {
@@ -3245,45 +3265,6 @@ async function startLichessGameStream(gameId) {
     }
     return null;
   }, ctrl.signal);
-}
-
-async function startLichessGameStreamLoop(gameId) {
-  let attempt = 0;
-  while (playState.active && playState.mode === 'lichess' && playState.lichess.gameId === gameId) {
-    try {
-      attempt += 1;
-      await startLichessGameStream(gameId);
-      if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId) return;
-      // Normal stream end without explicit finish signal: retry softly.
-      updateSimStatus(`Lichess stream ended · reconnect ${attempt}`);
-    } catch (err) {
-      if (err?.name === 'AbortError') return;
-      console.warn('Lichess stream error:', err);
-      if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId) return;
-      updateSimStatus(`Lichess reconnecting… (${attempt})`);
-    }
-    await sleep(Math.min(1500, 300 + attempt * 250));
-  }
-}
-
-function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
-  const kick = async (remaining) => {
-    if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId || !playState.autoPilot) return;
-    if (game.game_over()) return;
-    if (!playState.lichess.ready) {
-      if (remaining > 1) setTimeout(() => kick(remaining - 1), delayMs);
-      return;
-    }
-    if (game.turn() !== playState.userColor) return;
-    try {
-      await runLichessAutoMove();
-      return;
-    } catch (err) {
-      console.warn('Opening kick failed:', err);
-    }
-    if (remaining > 1) setTimeout(() => kick(remaining - 1), delayMs);
-  };
-  setTimeout(() => kick(tries), delayMs);
 }
 
 
@@ -3471,7 +3452,6 @@ function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
 async function runLichessAutoMove() {
   if (!playState.active || playState.mode !== 'lichess' || !playState.autoPilot) return;
   if (playState.autoMoveBusy) return;
-  if (!playState.lichess.ready) return;
   if (game.game_over()) {
     leaveActiveSession('Game over. Lichess bot session finished.');
     return;
@@ -3488,29 +3468,10 @@ async function runLichessAutoMove() {
     if (!pick || !pick.move) throw new Error('No DCC move found.');
     const san = uciToSan(fenBefore, pick.move);
     await sendLichessMove(pick.move);
-    playState.lichess.openingRetryCount = 0;
     updateSimStatus(`8Z played ${san} · waiting for ${playState.lichess.botUsername || 'bot'}…`);
   } catch (err) {
     console.error('8Z auto move failed:', err);
-    const msg = String(err?.message || err || 'unknown error');
-    const noMovesYet = !(playState.lichess.lastMoves || '').trim();
-    const retryCap = noMovesYet ? 20 : 8;
-    const retryDelay = noMovesYet ? 500 : 900;
-    const retryCount = Number(playState.lichess.openingRetryCount || 0);
-    if (retryCount < retryCap) {
-      playState.lichess.openingRetryCount = retryCount + 1;
-      updateSimStatus(noMovesYet
-        ? `Opening sync… retry ${playState.lichess.openingRetryCount}/${retryCap}`
-        : `Move relay retry ${playState.lichess.openingRetryCount}/${retryCap}`);
-      setTimeout(() => {
-        if (!playState.active || playState.mode !== 'lichess' || !playState.autoPilot) return;
-        runLichessAutoMove().catch(console.error);
-      }, retryDelay);
-    } else {
-      playState.waiting = false;
-      queueCoachMessage('system', `8Z auto move failed: ${msg}`);
-      updateSimStatus(`8Z auto move stalled: ${msg}`);
-    }
+    leaveActiveSession(`Auto 8Z move failed: ${err.message || err}`);
   } finally {
     setBoardThinking(false);
     playState.autoMoveBusy = false;
@@ -3574,16 +3535,10 @@ async function startLichessSession(botUsername, selectedColor, clock, timeLabel,
     const gameId = await challengeLichessBot(botUsername, selectedColor, clock);
     playState.lichess.gameId = gameId;
     updateSimStatus(`Lichess game ${gameId} started.`);
-    startLichessGameStreamLoop(gameId).catch(err => {
-      if (err?.name === 'AbortError') return;
-      console.warn('Lichess stream loop crashed:', err);
-    });
-    if (opts.autoPilot && guessedColor === 'w') {
-      scheduleLichessOpeningKick(gameId, 12, 300);
-    }
+    await startLichessGameStream(gameId);
   } catch (err) {
-    queueCoachMessage('system', `Lichess start failed: ${err.message || err}`);
-    leaveActiveSession('Lichess session could not be started.');
+    updateSimStatus(`Lichess failed: ${err.message || err}`);
+    leaveActiveSession('');
   }
 }
 
