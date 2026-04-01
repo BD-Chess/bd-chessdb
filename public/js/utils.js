@@ -58,7 +58,16 @@ function initAll() {
      4. POPULAR GAMES  (PGN files per category)
   ------------------------------------------------------------------*/
   const gameBuckets = [
-    { name: 'Openings - Top Lines',  file: 'Chess_Openings_Top_Lines.pgn' },
+    { name: 'Openings - Top Lines',  files: [
+      'TopLines/c4_top_43_moves.pgn',
+      'TopLines/d4_top_22_moves.pgn',
+      'TopLines/d4_top_27_moves.pgn',
+      'TopLines/e4_top_62_moves.pgn',
+      'TopLines/Nf3_top_26_moves.pgn'
+    ]},
+    { name: 'Book - DCC (flat)',     file: 'TopLines/8zC-book_dcc_flat.pgn' },
+    { name: 'Book - Raw (flat)',     file: 'TopLines/8zC-book_raw_flat.pgn' },
+    { name: 'Book - EndEval (flat)', file: 'TopLines/8zC-book_endeval_flat.pgn' },
     { name: 'Magnus Carlsen',        file: 'CarlsenM_Selected.pgn' },
     { name: 'Garry Kasparov',        file: 'KasparovG_Selected.pgn' },
     { name: 'Hikaru Nakamura',       file: 'NakamuraH_Selected.pgn' },
@@ -97,18 +106,54 @@ gameBuckets.forEach(bucket => {
   panel.appendChild(sel);
 
   // 2) Fetch and populate options into the already‑appended select
-  fetch(`Games/${bucket.file}`)
-    .then(r => r.text())
-    .then(txt => {
-      const games = txt.trim().split(/\n\s*\n(?=\[Event)/);
-      games.forEach(gt => {
-        const tags = {};
-        gt.split('\n').forEach(l => {
-          const m = l.match(/^\[(\w+)\s+"(.+)"\]$/);
-          if (m) tags[m[1]] = m[2];
+  const bucketFiles = Array.isArray(bucket.files)
+    ? bucket.files
+    : (bucket.file ? [bucket.file] : []);
+
+  Promise.allSettled(
+    bucketFiles.map(file =>
+      fetch(`Games/${file}`)
+        .then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status} for ${file}`);
+          return r.text();
+        })
+        .then(txt => ({ file, txt }))
+    )
+  )
+    .then(results => {
+      results.forEach(res => {
+        if (res.status !== 'fulfilled') {
+          console.error('Failed to load PGN bucket file:', res.reason);
+          return;
+        }
+        const { file, txt } = res.value;
+        const trimmed = String(txt || '').trim();
+        if (!trimmed) return;
+
+        const games = trimmed.split(/\n\s*\n(?=\[Event)/);
+        games.forEach(gt => {
+          const tags = {};
+          gt.split('\n').forEach(l => {
+            const m = l.match(/^\[(\w+)\s+"(.+)"\]$/);
+            if (m) tags[m[1]] = m[2];
+          });
+
+          const fileStem = file.split('/').pop().replace(/\.pgn$/i, '');
+          const sourceLabel = fileStem
+            .replace(/_/g, ' ')
+            .replace(/\btop\b/gi, 'Top')
+            .replace(/\bmoves\b/gi, 'moves');
+
+          const coreTitle = (tags.Opening && (!tags.White || tags.White === 'Book'))
+            ? `${tags.Opening} (${tags.Mode || ''})`
+            : `${tags.Result||''} ${tags.White||''} vs. ${tags.Black||''} (${tags.Site||''}, ${tags.Date||''})`;
+
+          const title = Array.isArray(bucket.files)
+            ? `${sourceLabel} — ${coreTitle}`
+            : coreTitle;
+
+          sel.appendChild(new Option(title, gt));
         });
-        const title = `${tags.Result||''} ${tags.White||''} vs. ${tags.Black||''} (${tags.Site||''}, ${tags.Date||''})`;
-        sel.appendChild(new Option(title, gt));
       });
     })
     .catch(console.error);
@@ -127,12 +172,13 @@ gameBuckets.forEach(bucket => {
 
 	  // Extract “in-book” flags, strip all comments, then load clean PGN
 	  bookFlags = extractBookFlags(e.target.value);
-	  const cleanPgn = e.target.value.replace(/\{[^}]*\}/g, '');
+	  const cleanPgn = makeLoadablePgn(e.target.value);
 	  game.load_pgn(cleanPgn);
 
 	  // Update UI
 	  document.getElementById('gameTitle').innerHTML = title;
 	  updateBoard(true);
+	  showOpening();
 	  lastMoveIndex = game.history().length - 1;
 	  fetchAnnotations();
 
