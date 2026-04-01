@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Game Collections & DCC Opening Lab — ChessBest 8Z</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0 auto; max-width: 760px; padding: 16px;
+      box-sizing: border-box; line-height: 1.5;
+      color: #eee; background: #2e2e2e;
+    }
+    a { color: #90caf9; }
+    h1 { font-size: 1.2em; margin-bottom: 4px; color: #ffd966; }
+    .detail-block {
+      background: #3a3a3a; padding: 12px; border-radius: 4px; margin-bottom: 16px;
+    }
+    .detail-block h3 { font-size: 1em; margin-top: 0; margin-bottom: 6px; color: #ffd966; }
+    .detail-block p, .detail-block ul { margin: 6px 0; color: #ddd; }
+    .detail-block ul { margin-left: 20px; }
+    .dcc-section { border-left: 3px solid #f59e0b; background: #2a2820; }
+    .dcc-section h3 { color: #f59e0b; }
+    .footer-note {
+      font-size: 0.95em; margin-top: 24px; padding-top: 12px;
+      border-top: 1px solid #444; color: #aaa;
+    }
+      /* ── Collapsible blocks ──────────────────────────── */
+    .detail-block h3 {
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      padding-left: 1.2em;
+    }
+    .detail-block h3::before {
+      content: '▾';
+      position: absolute;
+      left: 0;
+      font-size: 0.8em;
+      transition: transform 0.2s;
+    }
+    .detail-block:not(.open) h3::before {
+      content: '▸';
+    }
+    .detail-block .cb { transition: max-height 0.3s ease, opacity 0.2s; overflow: hidden; }
+    .detail-block:not(.open) .cb { max-height: 0; opacity: 0; margin: 0; }
+    .detail-block.open .cb { max-height: 4000px; opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     DCC OPENING LAB — NEW
+     ══════════════════════════════════════════════════════════════ -->
+
+<h1>DCC Opening Lab — Finding Moves Nobody Plays</h1>
+
+<div class="detail-block open dcc-section">
+<h3>The Idea</h3>
+<div class="cb">
+<p>
+  Stockfish says e4 is +30 and d4 is +28. Every grandmaster on the planet plays one of these.
+  Nobody looks deeper at Nf3 (+22) because the raw number says it's "worse."
+</p>
+<p>
+  But ChessDCC looks deeper. It reads the <strong>evaluation path</strong> through 10 moves of best play.
+  And sometimes Nf3 has a ▬ sustained profile — flat, solid advantage that holds through every response.
+  While e4 has a ⚡ spike — it looks great on the surface but a tactical problem emerges at move 8
+  that a prepared opponent can exploit.
+</p>
+<p>
+  <strong>Result:</strong> a prepared opening line that NO opponent has in their repertoire,
+  backed by mathematical analysis (ADSR shape + LZ76 stability + DCC governance)
+  showing it's actually MORE ROBUST than the mainline.
+  A grandmaster walks into a tournament, plays the "worse" move,
+  the opponent has no preparation, and the position is structurally stronger.
+</p>
+</div>
+</div>
+
+<div class="detail-block dcc-section">
+<h3>How It Works</h3>
+<div class="cb">
+<p>
+  ChessDCC crawls the opening tree from the starting position through ChessDB's 48+ billion positions.
+  For every branch it computes:
+</p>
+<ul>
+  <li><strong>Raw eval</strong> — what Stockfish says (the number everyone already sees)</li>
+  <li><strong>Stability</strong> — does the eval hold through 10 moves of best play? (LZ76 compression)</li>
+  <li><strong>ADSR shape</strong> — sustained? building? spike? collapse? (signal processing on eval path)</li>
+  <li><strong>Playing frequency</strong> — how often does this move appear in practice?</li>
+</ul>
+<p>
+  A <strong>DCC novelty</strong> is a move with: OK raw eval (not top-1, but within range),
+  TOP stability and ADSR profile, and LOW playing frequency.
+  It's a hidden diamond — structurally superior but overlooked because
+  every tool on the market only shows the raw number.
+</p>
+</div>
+</div>
+
+<div class="detail-block dcc-section">
+<h3>Status</h3>
+<div class="cb">
+<p>
+  The DCC Opening Lab is under active development. The simulation engine is built
+  (SimW/SimB/DCCT in the main interface). The tree crawler and novelty filter are next.
+  Results will appear on this page as an interactive opening tree with DCC recommendations.
+</p>
+<p>
+  Use <strong>DCCT</strong> in the main interface to run simulations that test whether
+  DCC-selected moves outperform raw ChessDB picks across both colors.
+</p>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     ORIGINAL PGN PICKS CONTENT
+     ══════════════════════════════════════════════════════════════ -->
+
+<h1 style="margin-top: 32px; border-top: 1px solid #555; padding-top: 16px;">
+  Game Collections — How the PGN Files Were Built
+</h1>
+
+<div class="detail-block open">
+  <h3>1. Core Philosophy</h3>
+<div class="cb">
+  <p>
+    The goal is to offer a <strong>representative snapshot of a player's career</strong>
+    through their most meaningful victories. We prioritize games that demonstrate
+    strategic brilliance, tactical creativity, and historical importance — while
+    ensuring a diverse and balanced collection.
+  </p>
+</div>
+</div>
+
+<div class="detail-block">
+  <h3>2. Structure: 18 Total Games per Player</h3>
+<div class="cb">
+  <p>Each player's selection includes:</p>
+  <ul>
+    <li><strong>15 curated wins:</strong>
+      <ul>
+        <li><strong>3 Early Career Wins</strong> — from the earliest stage of development,
+        highlighting the rise of a future star.</li>
+        <li><strong>7 Peak Career Wins</strong> — from the years of highest competitive level,
+        chosen against unique opponents in classical formats.</li>
+        <li><strong>5 Recent Career Wins</strong> — from the latest competitive years,
+        showing continued evolution.</li>
+      </ul>
+    </li>
+    <li><strong>2 Bonus Games:</strong> 1 Blitz Win + 1 Rapid Win from the peak period.
+    If not available, extra classical games are substituted.</li>
+    <li>A maximum of 2 games may come from online-only events.</li>
+  </ul>
+</div>
+</div>
+
+<div class="detail-block open">
+  <h3>3. Famous Games on Top</h3>
+<div class="cb">
+  <p>
+    3 of the player's most famous or historically celebrated games are added
+    at the top of the file, regardless of date. Sourced from chess communities,
+    major chess websites, and historical commentary.
+  </p>
+</div>
+</div>
+
+<div class="detail-block open">
+  <h3>4. TCEC Engine Games</h3>
+<div class="cb">
+  <p>
+    The collection includes games from the <strong>Top Chess Engine Championship (TCEC)</strong>:
+    Superfinal, Season 27, and Cup 14 (Stockfish vs Leela). These are the highest-quality
+    engine games available — depth 50+ analysis playing against itself.
+    For DCC simulation and testing, TCEC games serve as the ground truth.
+  </p>
+</div>
+</div>
+
+<div class="detail-block open">
+  <h3>5. Sorting</h3>
+<div class="cb">
+  <p>
+    Games are sorted from recent to oldest, except the 3 iconic games which always appear first.
+  </p>
+</div>
+</div>
+
+<div class="footer-note">
+  <strong>v0.5.0</strong> — ChessBest 8Z · DCC Opening Lab
+  · Author: <a href="https://chessbest.org/bd/">Bojan Dobrečevič</a>, BD × AI Lab, Ljubljana
+</div>
+
+<script>
+document.querySelectorAll('.detail-block h3').forEach(h3 => {
+  h3.addEventListener('click', () => {
+    h3.closest('.detail-block').classList.toggle('open');
+  });
+});
+</script>
+</body>
+</html>
