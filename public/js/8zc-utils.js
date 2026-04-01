@@ -95,7 +95,14 @@ function initAll() {
       { label: 'Bullet 2+1', clock: { limit: 120, increment: 1 } },
       { label: 'Blitz 3+0', clock: { limit: 180, increment: 0 } },
       { label: 'Blitz 5+0', clock: { limit: 300, increment: 0 } },
-      { label: 'Rapid 10+0', clock: { limit: 600, increment: 0 } }
+      { label: 'Rapid 10+0', clock: { limit: 600, increment: 0 } },
+      { label: 'Rapid 15+10', clock: { limit: 900, increment: 10 } },
+      { label: 'Classical 30+0', clock: { limit: 1800, increment: 0 } },
+      { label: 'Classical 30+20', clock: { limit: 1800, increment: 20 } },
+      { label: 'Classical 60+0', clock: { limit: 3600, increment: 0 } },
+      { label: 'Classical 60+30', clock: { limit: 3600, increment: 30 } },
+      { label: 'Correspondence 1d', clock: { limit: 86400, increment: 0 } },
+      { label: 'Unlimited ∞', clock: { limit: 0, increment: 0 } }
     ]
   };
 
@@ -856,6 +863,15 @@ gameBuckets.forEach(bucket => {
   }
 
   let activeLookaheadId = 0; // cancel stale lookaheads on board change
+  let dccLookaheadResolve = null;  // resolve fn for current lookahead
+  let dccLookaheadDone = Promise.resolve(); // awaitable: resolves when DCC finishes
+
+  function resetDCCLookaheadPromise() {
+    dccLookaheadDone = new Promise(r => { dccLookaheadResolve = r; });
+  }
+  function signalDCCLookaheadDone() {
+    if (dccLookaheadResolve) { dccLookaheadResolve(); dccLookaheadResolve = null; }
+  }
 
   // ── DCC Progress indicator ───────────────────────────────────────
   function updateDCCProgress(done, total) {
@@ -875,6 +891,7 @@ gameBuckets.forEach(bucket => {
 
   async function runDCCLookahead(moveList, baseFen) {
     const thisId = ++activeLookaheadId;
+    // Promise already created by updateBoard — no resetDCCLookaheadPromise here
     const maxHalfMoves = settings.dccDepth * 2;
     latestDCCResults = []; // reset for this position
 
@@ -932,6 +949,7 @@ gameBuckets.forEach(bucket => {
       const fenKey = baseFen.split(' ').slice(0, 4).join(' ');
       dccMoveAnnotations[fenKey] = latestDCCResults.slice();
     }
+    signalDCCLookaheadDone();
   }
 
   // ── Update badge with DCC data ──────────────────────────────────
@@ -1396,7 +1414,7 @@ gameBuckets.forEach(bucket => {
      9. FETCH ANNOTATIONS (ChessDB.cn)
   ------------------------------------------------------------------*/
 	async function fetchAnnotations() {
-	  if (playState.active && playState.assistanceLocked) return;
+	  if (playState.active && playState.assistanceLocked) { signalDCCLookaheadDone(); return; }
 	  const fen = encodeURIComponent(game.fen());
 
 	  function parseResponse(text) {
@@ -1474,11 +1492,14 @@ gameBuckets.forEach(bucket => {
         applyLZTiebreaker(list, baseFen);
         // Async lookahead for top N moves
         runDCCLookahead(list, baseFen);
+      } else {
+        signalDCCLookaheadDone(); // no lookahead needed — unblock waiters
       }
       // ─────────────────────────────────────────────────────────────
 
 	  } catch (err) {
 		console.error('Failed to fetch annotations:', err);
+		signalDCCLookaheadDone(); // unblock waiters on error
 	  }
 	}
 
@@ -1645,8 +1666,10 @@ gameBuckets.forEach(bucket => {
 
 	  board.position(game.fen());
 	  document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
-	  // Cancel any running DCC lookahead
+	  // Cancel any running DCC lookahead and create fresh wait-promise
 	  activeLookaheadId++;
+	  signalDCCLookaheadDone();   // resolve any old waiters
+	  resetDCCLookaheadPromise(); // new promise for the upcoming lookahead
 	  updateDCCProgress(0, 0); // clear progress indicator
 	  // Hide DCC info panel on board change
 	  const dccPanel = document.getElementById('dccInfoPanel');
@@ -1800,6 +1823,7 @@ gameBuckets.forEach(bucket => {
 		}
 	  } else {
 		document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none');
+		signalDCCLookaheadDone(); // no eval = no lookahead — unblock waiters
 	  }
 
 		// ─── Next-move dot ──────────────────────────────────────────────
@@ -3317,8 +3341,16 @@ async function startLichessEventWait(token) {
     playState.lichess.token = token;
     const body = new URLSearchParams();
     body.set('rated', 'false');
-    body.set('clock.limit', String(clock.limit || 180));
-    body.set('clock.increment', String(clock.increment || 0));
+    if (clock.limit === 86400) {
+      body.set('days', '1');  // correspondence
+    } else if (clock.limit > 0) {
+      body.set('clock.limit', String(clock.limit));
+      body.set('clock.increment', String(clock.increment || 0));
+    } else {
+      // Unlimited: use generous clock that won't expire during DCC analysis
+      body.set('clock.limit', '10800');  // 3 hours
+      body.set('clock.increment', '60');
+    }
     body.set('color', selectedColor || 'random');
 
     const startPromise = startLichessEventWait(token);
@@ -3714,7 +3746,7 @@ async function runLichessAutoMove() {
   playState.waiting = true;
   setBoardThinking(true);
 
-  updateSimStatus(usePreparedOpening ? 'Sending prepared White opening to Lichess…' : '8Z-DCC is thinking…');
+  updateSimStatus(usePreparedOpening ? 'Sending prepared White opening to Lichess…' : '8Z-DCC is analyzing…');
   const fenBefore = game.fen();
   try {
     let moveUci = '';
@@ -3723,8 +3755,20 @@ async function runLichessAutoMove() {
       moveUci = playState.lichess.preparedOpeningUci;
       san = playState.lichess.preparedOpeningSan || uciToSan(playState.startFen || 'startpos', moveUci);
     } else {
+      // Wait for DCC lookahead to finish — badges update, data goes to PGN,
+      // and ChessDB responses get cached so pickDCCMove is fast
+      await Promise.race([
+        dccLookaheadDone,
+        new Promise(r => setTimeout(r, 60000))  // 60s safety timeout
+      ]);
+      // Stale check: user may have moved manually while DCC was analyzing
+      if (game.fen() !== fenBefore) {
+        updateSimStatus('User moved — DCC yielded.');
+        return;
+      }
+      updateSimStatus('DCC done — picking best move…');
       const pick = await pickDCCMove(game);
-      // Stale check: user may have moved manually while DCC was computing
+      // Stale check again after pickDCCMove
       if (game.fen() !== fenBefore) {
         updateSimStatus('User moved — DCC yielded.');
         return;
