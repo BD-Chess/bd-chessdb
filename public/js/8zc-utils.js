@@ -382,9 +382,9 @@ gameBuckets.forEach(bucket => {
 	
 	onDrop: (src, dst) => {
 	  if (playState.active && (playState.mode === 'dccbot' || playState.mode === 'lichess')) {
-	    if (playState.autoPilot) return 'snapback';
-	    if (playState.waiting) return 'snapback';
 	    if (game.turn() !== playState.userColor) return 'snapback';
+	    // User can always move on their turn — overrides autoPilot/waiting
+	    if (playState.autoMoveBusy) playState.autoMoveBusy = false;  // cancel pending DCC
 	  }
 
 	  // Check before the move is made
@@ -2322,7 +2322,25 @@ function jumpTo(i){
   async function pickDCCMove(simGame, overrideCandidates) {
     const fen = simGame.fen();
     const result = await cachedFetchChessDB(fen);
-    if (!result.moves || result.moves.length === 0) return null;
+
+    // ── Fallback chain when ChessDB has no queryall data ──
+    if (!result.moves || result.moves.length === 0) {
+      // 1) Try querybest
+      try {
+        await sleep(200);
+        const fbUrl = `https://www.chessdb.cn/cdb.php?action=querybest&board=${encodeURIComponent(fen)}&learn=0`;
+        const fbTxt = await fetch(fbUrl).then(r => r.text());
+        const fbm = fbTxt.match(/move:(\w+)/);
+        if (fbm) return { move: fbm[1], score: 0, _fallback: 'querybest' };
+      } catch (_) {}
+      // 2) Random legal move — DCC can't score but game continues
+      const legalMoves = simGame.moves({ verbose: true });
+      if (legalMoves.length > 0) {
+        const pick = legalMoves[Math.floor(Math.random() * legalMoves.length)];
+        return { move: pick.from + pick.to + (pick.promotion || ''), score: 0, _fallback: 'random' };
+      }
+      return null;
+    }
 
     // Smart candidate selection: eval floor + max candidates
     const bestRawScore = result.moves[0].score;
@@ -3706,9 +3724,15 @@ async function runLichessAutoMove() {
       san = playState.lichess.preparedOpeningSan || uciToSan(playState.startFen || 'startpos', moveUci);
     } else {
       const pick = await pickDCCMove(game);
+      // Stale check: user may have moved manually while DCC was computing
+      if (game.fen() !== fenBefore) {
+        updateSimStatus('User moved — DCC yielded.');
+        return;
+      }
       if (!pick || !pick.move) throw new Error('No DCC move found.');
       moveUci = pick.move;
       san = uciToSan(fenBefore, pick.move);
+      if (pick._fallback) updateSimStatus(`DCC fallback (${pick._fallback}): ${san}`);
     }
 
     await sendLichessMove(moveUci);
