@@ -1542,35 +1542,9 @@ gameBuckets.forEach(bucket => {
 	  }
 	}, true);
 	
-	// ─── desktop-only hover preview by highlighting squares ───────────────────
-	const fromSq  = move.slice(0,2);
-	const fromCell = document.querySelector(`.square-${fromSq}`);
-
-	ov.addEventListener('mouseenter', () => {
-	  if (!window.matchMedia('(pointer: fine)').matches) return;
-	  // preview the move
-	  const preview = new Chess(game.fen());
-	  preview.move({ from: fromSq, to: sq, promotion: 'q' });
-	  board.position(preview.fen(), false);
-	  // highlight source and target
-	  fromCell.classList.add('preview-square');
-	  cell.classList.add('preview-square');
-	});
-
-	ov.addEventListener('mouseleave', () => {
-	  if (!window.matchMedia('(pointer: fine)').matches) return;
-	  // remove highlights and restore position
-	  fromCell.classList.remove('preview-square');
-	  cell.classList.remove('preview-square');
-	  board.position(game.fen(), false);
-	});
-
-	// clear preview highlights on mousedown (before your existing click logic runs)
-	ov.addEventListener('mousedown', () => {
-	  fromCell.classList.remove('preview-square');
-	  cell.classList.remove('preview-square');
-	});
-	// ──────────────────────────────────────────────────────────────────────────
+	// v0.6.1a: removed hover preview from move badges.
+	// The old hover-preview re-rendered the board under the cursor, which caused
+	// cursor jitter / flicker near the badges. Click-to-play stays enabled.
 
 
     cell.appendChild(ov);
@@ -3166,13 +3140,18 @@ function enterActiveSession(mode, opts = {}) {
   }
 
   function guessUserColorFromGameFull(payload, botUsername, selectedColor) {
-    if (selectedColor === 'white') return 'w';
-    if (selectedColor === 'black') return 'b';
     const bot = (botUsername || '').toLowerCase();
     const whiteName = `${payload?.white?.id || ''} ${payload?.white?.name || ''}`.toLowerCase();
     const blackName = `${payload?.black?.id || ''} ${payload?.black?.name || ''}`.toLowerCase();
+
+    // Trust the actual Lichess pairing first. This is more reliable than the
+    // requested color, because challenge color semantics can differ by flow and
+    // the accepted game payload is the source of truth.
     if (bot && whiteName.includes(bot)) return 'b';
     if (bot && blackName.includes(bot)) return 'w';
+
+    if (selectedColor === 'white') return 'w';
+    if (selectedColor === 'black') return 'b';
     return playState.userColor || 'w';
   }
 
@@ -3238,7 +3217,8 @@ async function startLichessGameStream(gameId) {
       syncGameFromMoves(payload?.state?.moves || '', payload?.initialFen || 'startpos');
       playState.waiting = game.turn() !== playState.userColor;
       if (playState.autoPilot) {
-        updateSimStatus(`8Z live · ${playState.lichess.botUsername}`);
+        const side = playState.userColor === 'w' ? 'White' : 'Black';
+        updateSimStatus(`8Z live as ${side} · ${playState.lichess.botUsername}`);
         if (!game.game_over() && game.turn() === playState.userColor) setTimeout(() => { runLichessAutoMove().catch(console.error); }, 180);
       } else {
         updateSimStatus(game.turn() === playState.userColor ? 'Your move.' : `Waiting for ${playState.lichess.botUsername}…`);
