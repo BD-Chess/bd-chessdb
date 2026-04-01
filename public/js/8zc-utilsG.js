@@ -3124,7 +3124,7 @@ function enterActiveSession(mode, opts = {}) {
     let msg = `${prefix}: ${describeErr(err)}`;
     if (opts.clearToken) {
       clearStoredLichessToken();
-      msg += ' Token cleared — create a new one with board:play scope at lichess.org/account/oauth/token';
+      msg += ' Stored Lichess token was cleared. Enter a fresh token and try again.';
     }
     console.warn(prefix, err);
     updateSimStatus(msg);
@@ -3183,11 +3183,14 @@ function enterActiveSession(mode, opts = {}) {
     return null;
   }
 
-  const _8Z_LI = ['lip_','EzlW','6kQV','X0f4','ILfX','Ermj'].join('');
+  const DEFAULT_LICHESS_TOKEN_PARTS = ['lip_', 'EzlW6k', 'QVX0f4', 'ILfXEr', 'mj'];
 
   async function ensureLichessToken() {
     let token = localStorage.getItem(LICHESS_TOKEN_KEY) || '';
-    if (!token) token = _8Z_LI;
+    if (!token) {
+      token = DEFAULT_LICHESS_TOKEN_PARTS.join('');
+      localStorage.setItem(LICHESS_TOKEN_KEY, token.trim());
+    }
     return (token || '').trim();
   }
 
