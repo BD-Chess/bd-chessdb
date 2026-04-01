@@ -2407,52 +2407,6 @@ function jumpTo(i){
     return bestMove;
   }
 
-  function pickEmergencyLegalMove(simGame) {
-    const legal = simGame.moves({ verbose: true }) || [];
-    if (!legal.length) return null;
-    const turn = simGame.turn();
-    const preferred = turn === 'w'
-      ? ['e2e4', 'd2d4', 'g1f3', 'c2c4', 'g2g3']
-      : ['e7e5', 'd7d5', 'g8f6', 'c7c5', 'g7g6'];
-    for (const uci of preferred) {
-      const found = legal.find(m => normalizeUci(m) === uci);
-      if (found) return found;
-    }
-    return legal[0] || null;
-  }
-
-  async function pickBestAvailableMove(simGame, overrideCandidates) {
-    try {
-      const dcc = await pickDCCMove(simGame, overrideCandidates);
-      if (dcc && dcc.move) return { pick: dcc, source: 'dcc' };
-    } catch (err) {
-      console.warn('pickDCCMove failed, trying fallback:', err);
-    }
-
-    try {
-      const raw = await pickRawMove(simGame);
-      if (raw && raw.move) return { pick: raw, source: 'raw' };
-    } catch (err) {
-      console.warn('pickRawMove failed, trying legal fallback:', err);
-    }
-
-    const emergency = pickEmergencyLegalMove(simGame);
-    if (emergency) {
-      return {
-        pick: {
-          move: normalizeUci(emergency),
-          score: 0,
-          rank: 999,
-          _fallback: true,
-          _fallbackSource: 'legal'
-        },
-        source: 'legal'
-      };
-    }
-
-    return { pick: null, source: 'none' };
-  }
-
   // Pick move using raw ChessDB: opponent model governs selection
   // v0.6.0: supports 'perfect', 'realistic', 'weak' models
   async function pickRawMove(simGame) {
@@ -3054,7 +3008,7 @@ function enterActiveSession(mode, opts = {}) {
   playState.lichess.botUsername = opts.botUsername || '';
   playState.lichess.selectedColor = opts.selectedColor || 'random';
   playState.lichess.timeLabel = opts.timeLabel || '';
-  playState.lichess.lastMoves = '';
+  playState.lichess.lastMoves = null;  // null = first sync not yet received
   playState.lichess.ready = false;
   playState.lichess.openingRetryCount = 0;
   playState.lichess.preparedOpeningUci = '';
@@ -3116,7 +3070,7 @@ function enterActiveSession(mode, opts = {}) {
     playState.assistanceLocked = false;
     playState.lichess.gameId = null;
     playState.lichess.challengeId = null;
-    playState.lichess.lastMoves = '';
+    playState.lichess.lastMoves = null;
     playState.lichess.ready = false;
     playState.lichess.openingRetryCount = 0;
     playState.lichess.preparedOpeningUci = '';
@@ -3180,7 +3134,9 @@ function enterActiveSession(mode, opts = {}) {
 
   function syncGameFromMoves(movesStr, initialFen = 'startpos') {
     const moves = (movesStr || '').trim() ? movesStr.trim().split(/\s+/) : [];
-    if ((playState.lichess.lastMoves || '').trim() === (movesStr || '').trim()) return;
+    // null = first call (from gameFull) — always process; skip only duplicate updates
+    if (playState.lichess.lastMoves !== null &&
+        (playState.lichess.lastMoves || '').trim() === (movesStr || '').trim()) return;
 
     const keepPreparedOpening =
       playState.active &&
@@ -3479,7 +3435,7 @@ function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
       if (remaining > 1) setTimeout(() => kick(remaining - 1), delayMs);
       return;
     }
-    if (game.turn() !== playState.userColor) return;
+    // Turn gate removed — runLichessAutoMove handles prepared-opening bypass internally
     try {
       await runLichessAutoMove();
       return;
@@ -3649,9 +3605,8 @@ async function buildCoachSnapshot(preFen, moveObj, actorLabel) {
     updateSimStatus('8Z-CDB-DCC is thinking…');
     const fenBefore = game.fen();
     try {
-      const choice = await pickBestAvailableMove(game);
-      const pick = choice.pick;
-      if (!pick) throw new Error('No engine move found.');
+      const pick = await pickDCCMove(game);
+      if (!pick) throw new Error('No DCC move found.');
       const move = game.move({
         from: pick.move.slice(0, 2),
         to: pick.move.slice(2, 4),
@@ -3692,9 +3647,8 @@ async function prepareLocalLichessOpeningPreview() {
   updateSimStatus('8Z-DCC is preparing the White opening locally…');
   const fenBefore = game.fen();
   try {
-    const choice = await pickBestAvailableMove(game);
-    const pick = choice.pick;
-    if (!pick || !pick.move) throw new Error('No engine opening move found.');
+    const pick = await pickDCCMove(game);
+    if (!pick || !pick.move) throw new Error('No DCC opening move found.');
     const move = game.move({
       from: pick.move.slice(0, 2),
       to: pick.move.slice(2, 4),
@@ -3708,11 +3662,7 @@ async function prepareLocalLichessOpeningPreview() {
     playState.lichess.preparedOpeningApplied = true;
     playState.lichess.preparedOpeningSent = false;
     updateBoard(false);
-    if (choice.source !== 'dcc') {
-      updateSimStatus(`8Z local opening ${playState.lichess.preparedOpeningSan} · fallback ${choice.source} · connecting to Lichess…`);
-    } else {
-      updateSimStatus(`8Z local opening ${playState.lichess.preparedOpeningSan} · connecting to Lichess…`);
-    }
+    updateSimStatus(`8Z local opening ${playState.lichess.preparedOpeningSan} · connecting to Lichess…`);
     return pick.move;
   } finally {
     setBoardThinking(false);
@@ -3727,12 +3677,10 @@ async function runLichessAutoMove() {
     leaveActiveSession('Game over. Lichess bot session finished.');
     return;
   }
-  if (game.turn() !== playState.userColor) return;
 
-  playState.autoMoveBusy = true;
-  playState.waiting = true;
-  setBoardThinking(true);
-
+  // ── Check for prepared opening BEFORE turn check ──
+  // prepareLocalLichessOpeningPreview applies the move to the local game,
+  // so game.turn() is already 'b' even though Lichess hasn't received it yet.
   const noMovesYet = !(playState.lichess.lastMoves || '').trim();
   const usePreparedOpening =
     noMovesYet &&
@@ -3740,6 +3688,13 @@ async function runLichessAutoMove() {
     playState.lichess.preparedOpeningApplied &&
     !playState.lichess.preparedOpeningSent &&
     !!playState.lichess.preparedOpeningUci;
+
+  // Normal turn gate — but skip it when sending a prepared opening
+  if (!usePreparedOpening && game.turn() !== playState.userColor) return;
+
+  playState.autoMoveBusy = true;
+  playState.waiting = true;
+  setBoardThinking(true);
 
   updateSimStatus(usePreparedOpening ? 'Sending prepared White opening to Lichess…' : '8Z-DCC is thinking…');
   const fenBefore = game.fen();
@@ -3750,14 +3705,10 @@ async function runLichessAutoMove() {
       moveUci = playState.lichess.preparedOpeningUci;
       san = playState.lichess.preparedOpeningSan || uciToSan(playState.startFen || 'startpos', moveUci);
     } else {
-      const choice = await pickBestAvailableMove(game);
-      const pick = choice.pick;
-      if (!pick || !pick.move) throw new Error('No engine move found.');
+      const pick = await pickDCCMove(game);
+      if (!pick || !pick.move) throw new Error('No DCC move found.');
       moveUci = pick.move;
       san = uciToSan(fenBefore, pick.move);
-      if (choice.source !== 'dcc') {
-        updateSimStatus(`8Z fallback ${choice.source} move ${san} · DCC substrate unavailable here`);
-      }
     }
 
     await sendLichessMove(moveUci);
@@ -3782,7 +3733,6 @@ async function runLichessAutoMove() {
     } else {
       playState.waiting = false;
       reportSessionIssue('8Z auto move stalled', err);
-      updateSimStatus(`8Z auto move stalled: ${msg}`);
     }
   } finally {
     setBoardThinking(false);

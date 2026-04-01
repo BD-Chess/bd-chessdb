@@ -3008,7 +3008,7 @@ function enterActiveSession(mode, opts = {}) {
   playState.lichess.botUsername = opts.botUsername || '';
   playState.lichess.selectedColor = opts.selectedColor || 'random';
   playState.lichess.timeLabel = opts.timeLabel || '';
-  playState.lichess.lastMoves = '';
+  playState.lichess.lastMoves = null;  // null = first sync not yet received
   playState.lichess.ready = false;
   playState.lichess.openingRetryCount = 0;
   playState.lichess.preparedOpeningUci = '';
@@ -3070,7 +3070,7 @@ function enterActiveSession(mode, opts = {}) {
     playState.assistanceLocked = false;
     playState.lichess.gameId = null;
     playState.lichess.challengeId = null;
-    playState.lichess.lastMoves = '';
+    playState.lichess.lastMoves = null;
     playState.lichess.ready = false;
     playState.lichess.openingRetryCount = 0;
     playState.lichess.preparedOpeningUci = '';
@@ -3124,7 +3124,7 @@ function enterActiveSession(mode, opts = {}) {
     let msg = `${prefix}: ${describeErr(err)}`;
     if (opts.clearToken) {
       clearStoredLichessToken();
-      msg += ' Token cleared — create a new one with board:play scope at lichess.org/account/oauth/token';
+      msg += ' Stored Lichess token was cleared. Enter a fresh token and try again.';
     }
     console.warn(prefix, err);
     updateSimStatus(msg);
@@ -3134,7 +3134,9 @@ function enterActiveSession(mode, opts = {}) {
 
   function syncGameFromMoves(movesStr, initialFen = 'startpos') {
     const moves = (movesStr || '').trim() ? movesStr.trim().split(/\s+/) : [];
-    if ((playState.lichess.lastMoves || '').trim() === (movesStr || '').trim()) return;
+    // null = first call (from gameFull) — always process; skip only duplicate updates
+    if (playState.lichess.lastMoves !== null &&
+        (playState.lichess.lastMoves || '').trim() === (movesStr || '').trim()) return;
 
     const keepPreparedOpening =
       playState.active &&
@@ -3183,11 +3185,14 @@ function enterActiveSession(mode, opts = {}) {
     return null;
   }
 
-  const _8Z_LI = ['lip_','EzlW','6kQV','X0f4','ILfX','Ermj'].join('');
+  const DEFAULT_LICHESS_TOKEN_PARTS = ['lip_', 'EzlW6k', 'QVX0f4', 'ILfXEr', 'mj'];
 
   async function ensureLichessToken() {
     let token = localStorage.getItem(LICHESS_TOKEN_KEY) || '';
-    if (!token) token = _8Z_LI;
+    if (!token) {
+      token = DEFAULT_LICHESS_TOKEN_PARTS.join('');
+      localStorage.setItem(LICHESS_TOKEN_KEY, token.trim());
+    }
     return (token || '').trim();
   }
 
@@ -3430,7 +3435,7 @@ function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
       if (remaining > 1) setTimeout(() => kick(remaining - 1), delayMs);
       return;
     }
-    if (game.turn() !== playState.userColor) return;
+    // Turn gate removed — runLichessAutoMove handles prepared-opening bypass internally
     try {
       await runLichessAutoMove();
       return;
@@ -3672,12 +3677,10 @@ async function runLichessAutoMove() {
     leaveActiveSession('Game over. Lichess bot session finished.');
     return;
   }
-  if (game.turn() !== playState.userColor) return;
 
-  playState.autoMoveBusy = true;
-  playState.waiting = true;
-  setBoardThinking(true);
-
+  // ── Check for prepared opening BEFORE turn check ──
+  // prepareLocalLichessOpeningPreview applies the move to the local game,
+  // so game.turn() is already 'b' even though Lichess hasn't received it yet.
   const noMovesYet = !(playState.lichess.lastMoves || '').trim();
   const usePreparedOpening =
     noMovesYet &&
@@ -3685,6 +3688,13 @@ async function runLichessAutoMove() {
     playState.lichess.preparedOpeningApplied &&
     !playState.lichess.preparedOpeningSent &&
     !!playState.lichess.preparedOpeningUci;
+
+  // Normal turn gate — but skip it when sending a prepared opening
+  if (!usePreparedOpening && game.turn() !== playState.userColor) return;
+
+  playState.autoMoveBusy = true;
+  playState.waiting = true;
+  setBoardThinking(true);
 
   updateSimStatus(usePreparedOpening ? 'Sending prepared White opening to Lichess…' : '8Z-DCC is thinking…');
   const fenBefore = game.fen();
