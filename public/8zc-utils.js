@@ -1,6 +1,7 @@
 function initAll() {
   const STORAGE_KEY_SETTINGS = 'chessBestSettings';
   const STORAGE_KEY_GAME     = 'chessBestGame';
+  const ENABLE_COACH         = false;
 
   /* ------------------------------------------------------------------
      1. DEFAULT SETTINGS
@@ -32,7 +33,9 @@ function initAll() {
     simSpeed: 1000,      // ms per move (0 = max speed, no board update)
     simGames: 5,         // games per simulation run
     dccTakeover: 'auto',  // when DCC takes over: 'auto' or number of half-moves
-    opponentModel: 'realistic' // v0.6.0: 'perfect', 'realistic', 'weak'
+    opponentModel: 'realistic', // v0.6.0: 'perfect', 'realistic', 'weak'
+    coachMode: 'silent',
+    coachOpen: false
   };
 
   // DCC view toggle state
@@ -69,8 +72,91 @@ function initAll() {
     try { Object.assign(settings, JSON.parse(saved)); }
     catch (e) { console.error('Bad settings JSON', e); }
   }
+  if (!ENABLE_COACH) {
+    settings.coachMode = 'silent';
+    settings.coachOpen = false;
+  }
   function saveSettings() {
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+  }
+  const LICHESS_TOKEN_KEY   = 'chessBestLichessToken';
+  const ANTHROPIC_TOKEN_KEY = 'chessBestAnthropicKey';
+
+  const DEFAULT_BOTS_CONFIG = {
+    lichess_bots: [
+      { label: 'Easy (~1000)', username: 'turochamp-2ply' },
+      { label: 'Medium (~1600)', username: 'sargon-3ply' },
+      { label: 'Strong (~2200)', username: 'CatrieverBot' },
+      { label: 'Expert (~2600)', username: 'bot913' },
+      { label: 'Elite (~3000+)', username: 'SF_Bot1nok' }
+    ],
+    time_controls: [
+      { label: 'Bullet 1+0', clock: { limit: 60, increment: 0 } },
+      { label: 'Bullet 2+1', clock: { limit: 120, increment: 1 } },
+      { label: 'Blitz 3+0', clock: { limit: 180, increment: 0 } },
+      { label: 'Blitz 5+0', clock: { limit: 300, increment: 0 } },
+      { label: 'Rapid 10+0', clock: { limit: 600, increment: 0 } }
+    ]
+  };
+
+  const DEFAULT_COACH_CONFIG = {
+    coach_modes: [
+      { value: 'silent', label: 'Silent', description: 'No coaching — just play' },
+      { value: 'key-moments', label: 'Key moments', description: 'Coach speaks only when it matters' },
+      { value: 'every-move', label: 'Every move', description: 'Coach comments on every move' },
+      { value: 'ask-mode', label: 'Ask mode', description: 'Coach only speaks when you ask' }
+    ]
+  };
+
+  let botsConfig = JSON.parse(JSON.stringify(DEFAULT_BOTS_CONFIG));
+  let coachConfig = JSON.parse(JSON.stringify(DEFAULT_COACH_CONFIG));
+
+  const playState = {
+    active: false,
+    mode: 'idle',
+    userColor: 'w',
+    waiting: false,
+    startFen: null,
+    preSessionFen: null,
+    preSessionPgn: null,
+    assistanceLocked: false,
+    coachWarningShown: false,
+    lichess: {
+      token: '',
+      gameId: null,
+      botUsername: '',
+      selectedColor: 'random',
+      timeLabel: '',
+      streamAbort: null,
+      eventAbort: null,
+      lastMoves: '',
+      challengeId: null
+    },
+    autoPilot: false,
+    autoMoveBusy: false,
+    launchMode: 'sim'
+  };
+
+  async function loadPlayConfig(url, fallback) {
+    try {
+      const r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const data = await r.json();
+      return data && typeof data === 'object' ? data : fallback;
+    } catch (err) {
+      console.warn('Config fallback for', url, err);
+      return JSON.parse(JSON.stringify(fallback));
+    }
+  }
+
+  async function bootPlayConfigs() {
+    botsConfig = await loadPlayConfig('config/bots.json', DEFAULT_BOTS_CONFIG);
+    if (ENABLE_COACH) {
+      coachConfig = await loadPlayConfig('config/coach.json', DEFAULT_COACH_CONFIG);
+    }
+    hydrateSimModal();
+    if (ENABLE_COACH) hydrateCoachModes();
+    disableCoachUi();
   }
 
   /* ------------------------------------------------------------------
@@ -91,7 +177,16 @@ function initAll() {
      4. POPULAR GAMES  (PGN files per category)
   ------------------------------------------------------------------*/
   const gameBuckets = [
-    { name: 'Openings - Top Lines',  file: 'Chess_Openings_Top_Lines.pgn' },
+    { name: 'Openings - Top Lines',  files: [
+      'TopLines/8zC-book_dcc.pgn',
+      'TopLines/8zC-endeval.pgn',
+      'TopLines/8zC-raw.pgn',
+      'TopLines/c4_top_43_moves.pgn',
+      'TopLines/d4_top_22_moves.pgn',
+      'TopLines/d4_top_27_moves.pgn',
+      'TopLines/e4_top_62_moves.pgn',
+      'TopLines/Nf3_top_26_moves.pgn'
+    ] },
     { name: 'Magnus Carlsen',        file: 'CarlsenM_Selected.pgn' },
     { name: 'Garry Kasparov',        file: 'KasparovG_Selected.pgn' },
     { name: 'Hikaru Nakamura',       file: 'NakamuraH_Selected.pgn' },
@@ -130,21 +225,39 @@ gameBuckets.forEach(bucket => {
   panel.appendChild(sel);
 
   // 2) Fetch and populate options into the already‑appended select
-  fetch(`Games/${bucket.file}`)
-    .then(r => r.text())
-    .then(txt => {
-      const games = txt.trim().split(/\n\s*\n(?=\[Event)/);
-      games.forEach(gt => {
-        const tags = {};
-        gt.split('\n').forEach(l => {
-          const m = l.match(/^\[(\w+)\s+"(.+)"\]$/);
-          if (m) tags[m[1]] = m[2];
-        });
-        const title = `${tags.Result||''} ${tags.White||''} vs. ${tags.Black||''} (${tags.Site||''}, ${tags.Date||''})`;
-        sel.appendChild(new Option(title, gt));
-      });
-    })
-    .catch(console.error);
+    const bucketFiles = bucket.files || [bucket.file];
+
+      Promise.all(
+        bucketFiles.map(file =>
+          fetch(`Games/${file}`)
+            .then(r => r.text())
+            .then(txt => ({ file, txt }))
+        )
+      )
+        .then(fileBlobs => {
+          fileBlobs.forEach(({ file, txt }) => {
+            const games = txt.trim().split(/\n\s*\n(?=\[Event)/);
+            const fileLabel = file.split('/').pop();
+
+            games.forEach(gt => {
+              const tags = {};
+              gt.split('\n').forEach(l => {
+                const m = l.match(/^\[(\w+)\s+\"(.+)\"\]$/);
+                if (m) tags[m[1]] = m[2];
+              });
+
+              const sourceLabel = bucketFiles.length > 1 ? `${fileLabel} — ` : '';
+              const primaryLabel = tags.Opening || tags.Event || `${tags.White || ''} vs. ${tags.Black || ''}`.trim();
+              const metaBits = [tags.Site, tags.Date].filter(Boolean).join(', ');
+              const title = metaBits
+                ? `${sourceLabel}${primaryLabel} (${metaBits})`
+                : `${sourceLabel}${primaryLabel}`;
+
+              sel.appendChild(new Option(title, gt));
+            });
+          });
+        })
+        .catch(console.error);
 
 	// 3) Wire up load-on-change
 	sel.onchange = e => {
@@ -200,7 +313,14 @@ gameBuckets.forEach(bucket => {
     pieceTheme: 'img/chesspieces/wikipedia/{piece}.png',
 	
 	onDrop: (src, dst) => {
+	  if (playState.active && (playState.mode === 'dccbot' || playState.mode === 'lichess')) {
+	    if (playState.autoPilot) return 'snapback';
+	    if (playState.waiting) return 'snapback';
+	    if (game.turn() !== playState.userColor) return 'snapback';
+	  }
+
 	  // Check before the move is made
+	  const fenBeforeMove = game.fen();
 	  const curBefore = game.history().map(x => x.san);
 	  const refBefore = fullHistory.map(x => x.san).slice(0, curBefore.length + 1);
 
@@ -218,6 +338,13 @@ gameBuckets.forEach(bucket => {
 	lastAction = 'move';
 	window._skipDivergedReset = true;
 	updateBoard(false);
+
+	  if (playState.active && (playState.mode === 'dccbot' || playState.mode === 'lichess')) {
+	    Promise.resolve(handleLiveUserMove(m, fenBeforeMove)).catch(err => {
+	      console.error('Live move handler failed:', err);
+	      queueCoachMessage('system', 'Move relay failed. The board was restored to the local position when possible.');
+	    });
+	  }
 
 	}
 
@@ -1195,6 +1322,9 @@ gameBuckets.forEach(bucket => {
     // v0.6.0: Opponent model sync
     const oppModelEl = document.getElementById('settingOpponentModel');
     if (oppModelEl) oppModelEl.value = settings.opponentModel;
+    const coachModeEl = document.getElementById('coachModeSelect');
+    if (coachModeEl) coachModeEl.value = settings.coachMode || 'key-moments';
+    setCoachPanelOpen(!!settings.coachOpen);
     // ─────────────────────────────────────────────────────────────────
 	
   }
@@ -1203,6 +1333,7 @@ gameBuckets.forEach(bucket => {
      9. FETCH ANNOTATIONS (ChessDB.cn)
   ------------------------------------------------------------------*/
 	async function fetchAnnotations() {
+	  if (playState.active && playState.assistanceLocked) return;
 	  const fen = encodeURIComponent(game.fen());
 
 	  function parseResponse(text) {
@@ -1689,6 +1820,7 @@ function startEvalRetry() {
      12. JUMP TO MOVE & NAV BUTTONS
   ------------------------------------------------------------------*/
 function jumpTo(i){
+  if (playState.active) return;
   game.reset();
   fullHistory.forEach((m,idx)=>{ if(idx<=i) game.move(m.san); });
   lastAction = 'history';
@@ -1697,6 +1829,7 @@ function jumpTo(i){
 
   ['first','prev','next','last'].forEach(id=>{
     document.getElementById(id).onclick=()=>{
+      if (playState.active) return;
       if(id==='first') jumpTo(0);
       else if(id==='prev'){
         game.undo();
@@ -2070,6 +2203,7 @@ function jumpTo(i){
      19. KEYBOARD NAVIGATION  (unchanged)
   ------------------------------------------------------------------*/
   document.addEventListener('keydown',e=>{
+    if (playState.active) return;
     if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
 	const btn = document.getElementById('btnHideEval');
 	btn.innerText = 'Hide Eval';
@@ -2088,6 +2222,45 @@ function jumpTo(i){
   applySettings();
   updateBoard(true);
   showOpening();
+  refreshPlayUi();
+  disableCoachUi();
+  bootPlayConfigs().catch(err => console.warn('Play config boot failed:', err));
+
+  document.querySelectorAll('input[name="simOpponent"]').forEach(el => {
+    el.addEventListener('change', syncSimModalState);
+  });
+  const simStartBtn = document.getElementById('simStartBtn');
+  if (simStartBtn) simStartBtn.addEventListener('click', () => {
+    launchFromSimModal().catch(err => {
+      queueCoachMessage('system', `Start failed: ${err.message || err}`);
+      leaveActiveSession('Play start failed.');
+    });
+  });
+  const simCancelBtn = document.getElementById('simCancelBtn');
+  if (simCancelBtn) simCancelBtn.addEventListener('click', closeSimModal);
+  const simModal = document.getElementById('simModal');
+  if (simModal) simModal.addEventListener('click', e => {
+    if (e.target === simModal) closeSimModal();
+  });
+
+  const coachModeSelect = document.getElementById('coachModeSelect');
+  if (coachModeSelect) coachModeSelect.addEventListener('change', e => {
+    settings.coachMode = e.target.value;
+    saveSettings();
+  });
+  const coachCloseBtn = document.getElementById('btnCoachClose');
+  if (coachCloseBtn) coachCloseBtn.addEventListener('click', () => setCoachPanelOpen(false));
+  const coachClearBtn = document.getElementById('btnCoachClear');
+  if (coachClearBtn) coachClearBtn.addEventListener('click', clearCoachMessages);
+  const coachAskBtn = document.getElementById('btnCoachAsk');
+  if (coachAskBtn) coachAskBtn.addEventListener('click', () => askCoachQuestion());
+  const coachAskInput = document.getElementById('coachAskInput');
+  if (coachAskInput) coachAskInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      askCoachQuestion();
+    }
+  });
 
   // ═══════════════════════════════════════════════════════════════════
   // SIMULATION ENGINE — DCC vs Raw ChessDB
@@ -2539,13 +2712,823 @@ function jumpTo(i){
     setTimeout(() => { statusBar.style.display = 'none'; }, 3000);
   }
 
+
+  // ═══════════════════════════════════════════════════════════════════
+  // PLAY MODAL + LIVE PLAY + COACH (v0.7.0 experimental)
+  // ═══════════════════════════════════════════════════════════════════
+
+  function getStartFen() {
+    return 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+  }
+
+  function normalizeUci(moveObj) {
+    if (!moveObj) return '';
+    if (typeof moveObj === 'string') return moveObj;
+    return (moveObj.from || '') + (moveObj.to || '') + (moveObj.promotion || '');
+  }
+
+  function setBoardThinking(on) {
+    const el = document.getElementById('board-container');
+    if (!el) return;
+    el.classList.toggle('live-thinking', !!on);
+  }
+
+  function disableCoachUi() {
+    if (ENABLE_COACH) return;
+    settings.coachMode = 'silent';
+    settings.coachOpen = false;
+    const panel = document.getElementById('coachPanel');
+    const btn = document.getElementById('btnCoach');
+    const askInput = document.getElementById('coachAskInput');
+    const askBtn = document.getElementById('btnCoachAsk');
+    if (panel) {
+      panel.style.display = 'none';
+      panel.hidden = true;
+    }
+    if (btn) btn.style.display = 'none';
+    if (askInput) askInput.disabled = true;
+    if (askBtn) askBtn.disabled = true;
+  }
+
+  function setCoachNotice(text) {
+    if (!ENABLE_COACH) return;
+    const el = document.getElementById('coachNotice');
+    if (!el) return;
+    if (!text) {
+      el.style.display = 'none';
+      el.textContent = '';
+      return;
+    }
+    el.style.display = 'block';
+    el.textContent = text;
+  }
+
+  function queueCoachMessage(kind, text, meta='') {
+    if (!ENABLE_COACH) return;
+    const box = document.getElementById('coachMessages');
+    if (!box || !text) return;
+    const div = document.createElement('div');
+    div.className = `coach-msg ${kind}`;
+    if (meta) {
+      const metaEl = document.createElement('span');
+      metaEl.className = 'coach-msg-meta';
+      metaEl.textContent = meta;
+      div.appendChild(metaEl);
+    }
+    const body = document.createElement('div');
+    body.textContent = text;
+    div.appendChild(body);
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function clearCoachMessages() {
+    if (!ENABLE_COACH) return;
+    const box = document.getElementById('coachMessages');
+    if (box) box.innerHTML = '';
+  }
+
+  function setCoachPanelOpen(open) {
+    if (!ENABLE_COACH) {
+      disableCoachUi();
+      return;
+    }
+    settings.coachOpen = !!open;
+    saveSettings();
+    const panel = document.getElementById('coachPanel');
+    const btn = document.getElementById('btnCoach');
+    if (panel) panel.style.display = open ? 'block' : 'none';
+    if (btn) btn.classList.toggle('coach-active', !!open);
+  }
+
+  function hydrateCoachModes() {
+    if (!ENABLE_COACH) return;
+    const sel = document.getElementById('coachModeSelect');
+    if (!sel) return;
+    sel.innerHTML = '';
+    (coachConfig.coach_modes || []).forEach(mode => {
+      const opt = document.createElement('option');
+      opt.value = mode.value;
+      opt.textContent = mode.label;
+      sel.appendChild(opt);
+    });
+    sel.value = settings.coachMode || 'key-moments';
+  }
+
+  function hydrateSimModal() {
+    const botSel = document.getElementById('lichessBotLevel');
+    const timeSel = document.getElementById('simTimeSelect');
+    if (!botSel || !timeSel) return;
+    botSel.innerHTML = '';
+    timeSel.innerHTML = '';
+    (botsConfig.lichess_bots || []).forEach((bot, idx) => {
+      const opt = document.createElement('option');
+      opt.value = bot.username;
+      opt.textContent = bot.label;
+      if (idx === 0) opt.selected = true;
+      botSel.appendChild(opt);
+    });
+    (botsConfig.time_controls || []).forEach(tc => {
+      const opt = document.createElement('option');
+      opt.value = JSON.stringify(tc.clock || {});
+      opt.textContent = tc.label;
+      if ((tc.label || '').includes('3+0')) opt.selected = true;
+      timeSel.appendChild(opt);
+    });
+    syncSimModalState();
+  }
+
+  function currentSimMode() {
+    const checked = document.querySelector('input[name="simOpponent"]:checked');
+    return checked ? checked.value : 'self';
+  }
+
+  
+function syncSimModalState() {
+  const mode = currentSimMode();
+  const launchMode = playState.launchMode || 'sim';
+  const lichessControls = document.getElementById('lichessControls');
+  const note = document.getElementById('simFairPlayNote');
+  const title = document.getElementById('simModalTitle');
+  const hint = document.getElementById('simModeHint');
+  const colorSel = document.getElementById('simColorSelect');
+  const colorLabel = document.getElementById('simColorLabel');
+
+  if (lichessControls) lichessControls.style.display = mode === 'lichess' ? 'grid' : 'none';
+
+  if (launchMode === 'simw') {
+    if (title) title.textContent = 'SimW — White engine, Black human';
+    if (hint) hint.textContent = 'White is the engine side you choose here. Black is human. DCC stays on for both sides and will be saved into the PGN.';
+    if (colorLabel) colorLabel.textContent = 'Engine color';
+    if (colorSel) { colorSel.value = 'white'; colorSel.disabled = true; }
+  } else if (launchMode === 'simb') {
+    if (title) title.textContent = 'SimB — Black engine, White human';
+    if (hint) hint.textContent = 'Black is the engine side you choose here. White is human. DCC stays on for both sides and will be saved into the PGN.';
+    if (colorLabel) colorLabel.textContent = 'Engine color';
+    if (colorSel) { colorSel.value = 'black'; colorSel.disabled = true; }
+  } else {
+    if (title) title.textContent = 'Sim — 8Z DCC research';
+    if (hint) hint.textContent = 'Automatic research mode. 8Z plays the chosen side, DCC stays on, both sides are analyzed, and DCC data is kept for PGN export.';
+    if (colorLabel) colorLabel.textContent = '8Z color';
+    if (colorSel) { colorSel.disabled = false; }
+  }
+
+  if (note) {
+    note.style.display = 'block';
+    if (mode === 'lichess') {
+      note.textContent = launchMode === 'sim'
+        ? 'Lichess bot research mode. 8Z will challenge the selected Lichess bot and auto-play the chosen color.'
+        : 'Lichess bot + human mode. The selected engine color is played by the Lichess bot. The opposite color is human. DCC remains on for both sides.';
+    } else if (mode === 'dccbot') {
+      note.textContent = launchMode === 'sim'
+        ? '8Z local bot mode. Use this for browser-side training and debugging without Lichess.'
+        : 'Local browser bot mode. The selected engine color is played automatically by 8Z-CDB-DCC. The other color is human.';
+    } else {
+      note.textContent = 'Self mode keeps the current local simulation path. DCC remains active and PGN comments stay enabled.';
+    }
+  }
+}
+
+
+  
+function openSimModal(launchMode = 'sim') {
+  playState.launchMode = launchMode || 'sim';
+  if (simRunning) {
+    simAbort = true;
+    return;
+  }
+  if (playState.active && (playState.mode === 'dccbot' || playState.mode === 'lichess')) {
+    leaveActiveSession(playState.mode === 'lichess'
+      ? 'Live session stopped.'
+      : '8Z session stopped.');
+    return;
+  }
+  const modal = document.getElementById('simModal');
+  if (modal) modal.style.display = 'flex';
+  syncSimModalState();
+}
+
+
+  function closeSimModal() {
+    const modal = document.getElementById('simModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  
+function refreshPlayUi() {
+  const btnSim = document.getElementById('btnSim');
+  const btnSimW = document.getElementById('btnSimW');
+  const btnSimB = document.getElementById('btnSimB');
+  const btnReplay = document.getElementById('btnReplay');
+  const btnView = document.getElementById('btnViewToggle');
+  const btnHide = document.getElementById('btnHideEval');
+
+  if (btnSim) {
+    btnSim.textContent = playState.active ? 'Stop' : 'Sim';
+    btnSim.style.background = playState.active ? '#ff4c4c' : '#2a2520';
+    btnSim.style.color = playState.active ? '#fff' : '#f59e0b';
+  }
+  if (btnSimW) btnSimW.disabled = playState.active;
+  if (btnSimB) btnSimB.disabled = playState.active;
+  if (btnReplay) btnReplay.disabled = playState.active;
+  if (btnView) btnView.disabled = false;
+  if (btnHide) btnHide.disabled = false;
+
+  const askInput = document.getElementById('coachAskInput');
+  const askBtn = document.getElementById('btnCoachAsk');
+  if (askInput) askInput.disabled = !ENABLE_COACH;
+  if (askBtn) askBtn.disabled = !ENABLE_COACH;
+
+  if (!playState.active) setCoachNotice('');
+  if (btnHide) btnHide.innerHTML = showEval ? 'Hide<br>Eval' : 'Show<br>Eval';
+}
+
+
+  
+function enterActiveSession(mode, opts = {}) {
+  playState.active = true;
+  playState.mode = mode;
+  playState.userColor = opts.userColor || 'w';
+  playState.waiting = false;
+  playState.startFen = opts.startFen || game.fen();
+  playState.preSessionFen = game.fen();
+  playState.preSessionPgn = game.pgn();
+  playState.assistanceLocked = false;
+  playState.prevShowEval = showEval;
+  playState.coachWarningShown = false;
+  playState.autoPilot = !!opts.autoPilot;
+  playState.autoMoveBusy = false;
+  playState.lichess.botUsername = opts.botUsername || '';
+  playState.lichess.selectedColor = opts.selectedColor || 'random';
+  playState.lichess.timeLabel = opts.timeLabel || '';
+  playState.lichess.lastMoves = '';
+
+  clearCoachMessages();
+  if (mode === 'dccbot') {
+    setCoachPanelOpen(true);
+    if (playState.autoPilot) {
+      queueCoachMessage('system', 'Auto research mode started. 8Z-CDB-DCC will play the chosen side automatically.', `${playState.userColor === 'w' ? '8Z = White' : '8Z = Black'}`);
+      setPlayTitle('8Z-CDB-DCC Auto Research');
+      board.orientation(playState.userColor === 'b' ? 'black' : 'white');
+    } else {
+      queueCoachMessage('system', 'Training mode started. You are playing against 8Z-CDB-DCC locally in the browser.', `You are ${playState.userColor === 'w' ? 'White' : 'Black'}`);
+      setPlayTitle('8Z-CDB-DCC Training');
+      board.orientation(playState.userColor === 'b' ? 'black' : 'white');
+    }
+  } else if (mode === 'lichess') {
+    setCoachPanelOpen(true);
+    if (playState.autoPilot) {
+      queueCoachMessage('system', '8Z vs Lichess bot mode started. DCC stays on and will drive the selected color automatically.', opts.botUsername || 'Lichess');
+      setPlayTitle(`8Z vs ${opts.botUsername || 'Bot'}`);
+    } else {
+      queueCoachMessage('system', 'Human vs engine mode started. DCC stays on for both sides and the selected engine is routed through Lichess.', opts.botUsername || 'Lichess');
+      setPlayTitle(`Human vs ${opts.botUsername || 'Bot'}`);
+    }
+    game.reset();
+    updateBoard(true);
+    board.orientation(playState.userColor === 'b' ? 'black' : 'white');
+  }
+  refreshPlayUi();
+}
+
+
+  function setPlayTitle(text) {
+    const el = document.getElementById('gameTitle');
+    if (el) el.innerHTML = text;
+  }
+
+  function clearLichessStreams() {
+    try { playState.lichess.streamAbort && playState.lichess.streamAbort.abort(); } catch (_) {}
+    try { playState.lichess.eventAbort && playState.lichess.eventAbort.abort(); } catch (_) {}
+    playState.lichess.streamAbort = null;
+    playState.lichess.eventAbort = null;
+  }
+
+  function leaveActiveSession(message = '') {
+    clearLichessStreams();
+    setBoardThinking(false);
+    const wasLocked = playState.assistanceLocked;
+    playState.active = false;
+    playState.mode = 'idle';
+    playState.waiting = false;
+    playState.assistanceLocked = false;
+    playState.lichess.gameId = null;
+    playState.lichess.challengeId = null;
+    playState.lichess.lastMoves = '';
+    playState.autoPilot = false;
+    playState.autoMoveBusy = false;
+    if (typeof playState.prevShowEval === 'boolean') showEval = playState.prevShowEval;
+    applySettings();
+    refreshPlayUi();
+    if (message) queueCoachMessage('system', message);
+    if (wasLocked) updateBoard(false);
+  }
+
+  function applyUciMove(targetGame, uci) {
+    if (!uci || uci.length < 4) return null;
+    return targetGame.move({
+      from: uci.slice(0, 2),
+      to: uci.slice(2, 4),
+      promotion: uci.length > 4 ? uci[4] : undefined
+    });
+  }
+
+  function uciToSan(fen, uci) {
+    try {
+      const probe = new Chess(fen);
+      const m = applyUciMove(probe, uci);
+      return m?.san || uci;
+    } catch (_) {
+      return uci;
+    }
+  }
+
+  function syncGameFromMoves(movesStr, initialFen = 'startpos') {
+    const moves = (movesStr || '').trim() ? movesStr.trim().split(/\s+/) : [];
+    if ((playState.lichess.lastMoves || '').trim() === (movesStr || '').trim()) return;
+    if (initialFen && initialFen !== 'startpos') game.load(initialFen);
+    else game.reset();
+    moves.forEach(uci => applyUciMove(game, uci));
+    playState.lichess.lastMoves = movesStr || '';
+    updateBoard(true);
+  }
+
+  async function readNdjsonStream(response, onEvent, signal) {
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        const payload = JSON.parse(trimmed);
+        const maybe = await onEvent(payload);
+        if (maybe) return maybe;
+      }
+    }
+    if (buffer.trim()) {
+      return await onEvent(JSON.parse(buffer.trim()));
+    }
+    return null;
+  }
+
+  async function ensureLichessToken() {
+    let token = localStorage.getItem(LICHESS_TOKEN_KEY) || '';
+    if (!token) {
+      token = prompt('Enter your Lichess API token.');
+      if (token) localStorage.setItem(LICHESS_TOKEN_KEY, token.trim());
+    }
+    return (token || '').trim();
+  }
+
+  async function ensureAnthropicKey(promptIfMissing = false) {
+    if (!ENABLE_COACH) return '';
+    let key = localStorage.getItem(ANTHROPIC_TOKEN_KEY) || '';
+    if (!key && promptIfMissing) {
+      key = prompt('Enter your Anthropic API key for Claude coach replies.');
+      if (key) localStorage.setItem(ANTHROPIC_TOKEN_KEY, key.trim());
+    }
+    return (key || '').trim();
+  }
+
+  function guessUserColorFromGameFull(payload, botUsername, selectedColor) {
+    if (selectedColor === 'white') return 'w';
+    if (selectedColor === 'black') return 'b';
+    const bot = (botUsername || '').toLowerCase();
+    const whiteName = `${payload?.white?.id || ''} ${payload?.white?.name || ''}`.toLowerCase();
+    const blackName = `${payload?.black?.id || ''} ${payload?.black?.name || ''}`.toLowerCase();
+    if (bot && whiteName.includes(bot)) return 'b';
+    if (bot && blackName.includes(bot)) return 'w';
+    return playState.userColor || 'w';
+  }
+
+  async function startLichessEventWait(token) {
+    const ctrl = new AbortController();
+    playState.lichess.eventAbort = ctrl;
+    const res = await fetch('https://lichess.org/api/stream/event', {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: ctrl.signal
+    });
+    return readNdjsonStream(res, async evt => {
+      if (evt?.type === 'gameStart') {
+        return evt.game?.gameId || evt.game?.id || evt.id || evt.gameId || null;
+      }
+      return null;
+    }, ctrl.signal);
+  }
+
+  async function challengeLichessBot(botUsername, selectedColor, clock) {
+    const token = await ensureLichessToken();
+    if (!token) throw new Error('Missing Lichess token.');
+    playState.lichess.token = token;
+    const body = new URLSearchParams();
+    body.set('rated', 'false');
+    body.set('clock.limit', String(clock.limit || 180));
+    body.set('clock.increment', String(clock.increment || 0));
+    body.set('color', selectedColor || 'random');
+
+    const startPromise = startLichessEventWait(token);
+    const resp = await fetch(`https://lichess.org/api/challenge/${encodeURIComponent(botUsername)}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body
+    });
+    if (!resp.ok) {
+      const txt = await resp.text();
+      throw new Error(txt || `Challenge failed (${resp.status})`);
+    }
+    const data = await resp.json().catch(() => ({}));
+    playState.lichess.challengeId = data?.challenge?.id || null;
+    const gameId = await Promise.race([
+      startPromise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timed out waiting for Lichess gameStart event.')), 30000))
+    ]);
+    return gameId;
+  }
+
+  
+async function startLichessGameStream(gameId) {
+  const token = playState.lichess.token;
+  const ctrl = new AbortController();
+  playState.lichess.streamAbort = ctrl;
+  const res = await fetch(`https://lichess.org/api/board/game/stream/${encodeURIComponent(gameId)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    signal: ctrl.signal
+  });
+
+  await readNdjsonStream(res, async payload => {
+    if (!playState.active || playState.mode !== 'lichess') return null;
+    if (payload?.type === 'gameFull') {
+      playState.userColor = guessUserColorFromGameFull(payload, playState.lichess.botUsername, playState.lichess.selectedColor);
+      board.orientation(playState.userColor === 'b' ? 'black' : 'white');
+      syncGameFromMoves(payload?.state?.moves || '', payload?.initialFen || 'startpos');
+      playState.waiting = game.turn() !== playState.userColor;
+      if (playState.autoPilot) {
+        updateSimStatus(`8Z live · ${playState.lichess.botUsername}`);
+        if (!game.game_over() && game.turn() === playState.userColor) setTimeout(() => { runLichessAutoMove().catch(console.error); }, 180);
+      } else {
+        updateSimStatus(game.turn() === playState.userColor ? 'Your move.' : `Waiting for ${playState.lichess.botUsername}…`);
+      }
+      return null;
+    }
+    if (payload?.type === 'gameState' || payload?.moves !== undefined) {
+      syncGameFromMoves(payload.moves || '', 'startpos');
+      playState.waiting = game.turn() !== playState.userColor;
+      if (payload.status && payload.status !== 'started') {
+        leaveActiveSession('Lichess session closed.');
+        return null;
+      }
+      if (playState.autoPilot) {
+        if (!game.game_over() && game.turn() === playState.userColor) {
+          setTimeout(() => { runLichessAutoMove().catch(console.error); }, 120);
+        } else {
+          updateSimStatus(`Waiting for ${playState.lichess.botUsername}…`);
+        }
+      } else {
+        updateSimStatus(game.turn() === playState.userColor ? 'Your move.' : `Waiting for ${playState.lichess.botUsername}…`);
+      }
+      return null;
+    }
+    return null;
+  }, ctrl.signal);
+}
+
+
+  async function sendLichessMove(uci) {
+    const token = playState.lichess.token;
+    const gameId = playState.lichess.gameId;
+    const resp = await fetch(`https://lichess.org/api/board/game/${encodeURIComponent(gameId)}/move/${encodeURIComponent(uci)}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!resp.ok) {
+      const txt = await resp.text();
+      throw new Error(txt || `Move rejected (${resp.status})`);
+    }
+  }
+
+  async function buildCoachSnapshot(preFen, moveObj, actorLabel) {
+    const analysis = await analyzePosition(preFen);
+    const uci = normalizeUci(moveObj);
+    const sorted = (analysis?.candidates || []).slice().sort((a, b) => b.dcc - a.dcc);
+    const played = sorted.find(c => c.move.slice(0, 4) === uci.slice(0, 4)) || null;
+    const dccRank = played ? (sorted.findIndex(c => c === played) + 1) : null;
+    const best = sorted[0] || null;
+    return {
+      actorLabel,
+      fen: preFen,
+      move: moveObj,
+      uci,
+      san: moveObj?.san || uci,
+      played,
+      dccRank,
+      best,
+      bestSan: best ? uciToSan(preFen, best.move) : null,
+      gap: played && best ? Math.max(0, best.dcc - played.dcc) : null,
+      candidates: sorted
+    };
+  }
+
+  function shouldSpeakCoach(snapshot) {
+    const mode = settings.coachMode || 'key-moments';
+    if (mode === 'silent' || mode === 'ask-mode') return false;
+    if (mode === 'every-move') return true;
+    if (!snapshot) return false;
+    if (snapshot.dccRank && snapshot.dccRank > 1 && (snapshot.gap || 0) >= 15) return true;
+    if (snapshot.played?.adsr === 'collapse' || snapshot.played?.adsr === 'spike') return true;
+    if (snapshot.played?.tunnel) return true;
+    return snapshot.dccRank === 1;
+  }
+
+  function fallbackCoachComment(snapshot) {
+    if (!snapshot) return 'No coach signal yet.';
+    const played = snapshot.played;
+    const best = snapshot.best;
+    const san = snapshot.san;
+    if (snapshot.dccRank === 1 && played) {
+      return `Good move. ${san} was the steadiest continuation here, and the position keeps a healthier shape over the next replies.`;
+    }
+    if (!played && best) {
+      return `${san} was outside the main DCC pool here. ${snapshot.bestSan || best.move} looked structurally safer over the next few replies.`;
+    }
+    if (played && best) {
+      const shape = played.adsr === 'collapse' ? 'It loses shape quickly under best play.'
+        : played.adsr === 'spike' ? 'It looks sharp at first but the line fades.'
+        : 'It is playable, but there was a steadier option.';
+      return `${san} is playable. ${snapshot.bestSan || best.move} was the cleaner DCC continuation. ${shape}`;
+    }
+    return `Played ${san}. The coach needs a little more data for a sharper comment here.`;
+  }
+
+  async function requestCoachComment(snapshot, question = '') {
+    if (!ENABLE_COACH) return '';
+    const key = await ensureAnthropicKey(false);
+    if (!key) {
+      return question
+        ? 'Ask mode needs your Claude API key. Automatic built-in coach comments still work without it.'
+        : fallbackCoachComment(snapshot);
+    }
+
+    const recent = game.history({ verbose: true }).slice(-8).map(m => m.san).join(' ');
+    const systemPrompt = question
+      ? 'You are a warm chess coach. Keep answers short, concrete, and practical. Prefer structure, king safety, piece activity, and plans over jargon.'
+      : 'You are a warm chess coach. Keep comments to at most 3 sentences. Praise briefly when the move is best, otherwise explain the more stable option without scolding.';
+    const userPrompt = question
+      ? `Position: ${game.fen()}\nRecent moves: ${recent}\nQuestion: ${question}\nAnswer in at most 4 short sentences.`
+      : `Position before move: ${snapshot?.fen || ''}\nMove played: ${snapshot?.san || ''}\nDCC rank: #${snapshot?.dccRank || 'n/a'}\nBest DCC move: ${snapshot?.bestSan || snapshot?.best?.move || 'n/a'}\nPlayed ADSR: ${snapshot?.played?.adsr || 'n/a'}\nBest ADSR: ${snapshot?.best?.adsr || 'n/a'}\nGap: ${snapshot?.gap || 0}\nGive one short coaching comment.`;
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 180,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+    if (!resp.ok) {
+      const txt = await resp.text();
+      throw new Error(txt || `Claude API error (${resp.status})`);
+    }
+    const data = await resp.json();
+    return data?.content?.[0]?.text || fallbackCoachComment(snapshot);
+  }
+
+  async function maybeEmitCoach(actorLabel, preFen, moveObj) {
+    if (!ENABLE_COACH) return;
+    if (!settings.coachOpen) return;
+    if (playState.active && playState.assistanceLocked) return;
+    const snapshot = await buildCoachSnapshot(preFen, moveObj, actorLabel);
+    if (!shouldSpeakCoach(snapshot)) return;
+    let text = '';
+    try {
+      text = await requestCoachComment(snapshot, '');
+    } catch (err) {
+      console.warn('Coach API failed, using fallback:', err);
+      text = fallbackCoachComment(snapshot);
+    }
+    queueCoachMessage('coach', text, `${actorLabel} played ${snapshot.san}${snapshot.dccRank ? ` · DCC #${snapshot.dccRank}` : ''}`);
+  }
+
+  async function askCoachQuestion() {
+    if (!ENABLE_COACH) return;
+    const input = document.getElementById('coachAskInput');
+    if (!input) return;
+    const question = (input.value || '').trim();
+    if (!question) return;
+    input.value = '';
+    queueCoachMessage('user', question, 'You');
+    if (playState.active && playState.assistanceLocked) {
+      queueCoachMessage('system', 'Live help is off during an ongoing Lichess game. Finish the game first, then review it here.');
+      return;
+    }
+    try {
+      const text = await requestCoachComment(null, question);
+      queueCoachMessage('coach', text, 'Coach');
+    } catch (err) {
+      queueCoachMessage('system', `Coach request failed: ${err.message || err}`);
+    }
+  }
+
+  async function runDccBotTurn() {
+    if (!playState.active || playState.mode !== 'dccbot') return;
+    if (game.game_over()) {
+      leaveActiveSession('Game over. Load the PGN or use Replay for a deeper DCC review.');
+      return;
+    }
+    setBoardThinking(true);
+    playState.waiting = true;
+    updateSimStatus('8Z-CDB-DCC is thinking…');
+    const fenBefore = game.fen();
+    try {
+      const pick = await pickDCCMove(game);
+      if (!pick) throw new Error('No DCC move found.');
+      const move = game.move({
+        from: pick.move.slice(0, 2),
+        to: pick.move.slice(2, 4),
+        promotion: pick.move.length > 4 ? pick.move[4] : 'q'
+      });
+      if (!move) throw new Error('DCC move became illegal in the current position.');
+      lastAction = 'move';
+      window._skipDivergedReset = true;
+      updateBoard(false);
+      updateSimStatus(`8Z played ${move.san}`);
+      await maybeEmitCoach('8Z', fenBefore, move);
+      if (game.game_over()) {
+        leaveActiveSession('Game over. Training session finished.');
+        return;
+      }
+    } catch (err) {
+      queueCoachMessage('system', `8Z move failed: ${err.message || err}`);
+      leaveActiveSession('Training session stopped because the local bot hit an error.');
+      return;
+    } finally {
+      setBoardThinking(false);
+      playState.waiting = false;
+    }
+    updateSimStatus('Your move.');
+  }
+
+
+async function runLichessAutoMove() {
+  if (!playState.active || playState.mode !== 'lichess' || !playState.autoPilot) return;
+  if (playState.autoMoveBusy) return;
+  if (game.game_over()) {
+    leaveActiveSession('Game over. Lichess bot session finished.');
+    return;
+  }
+  if (game.turn() !== playState.userColor) return;
+
+  playState.autoMoveBusy = true;
+  playState.waiting = true;
+  setBoardThinking(true);
+  updateSimStatus('8Z-DCC is thinking…');
+  const fenBefore = game.fen();
+  try {
+    const pick = await pickDCCMove(game);
+    if (!pick || !pick.move) throw new Error('No DCC move found.');
+    const san = uciToSan(fenBefore, pick.move);
+    await sendLichessMove(pick.move);
+    updateSimStatus(`8Z played ${san} · waiting for ${playState.lichess.botUsername || 'bot'}…`);
+  } catch (err) {
+    console.error('8Z auto move failed:', err);
+    leaveActiveSession(`Auto 8Z move failed: ${err.message || err}`);
+  } finally {
+    setBoardThinking(false);
+    playState.autoMoveBusy = false;
+  }
+}
+
+  async function handleLiveUserMove(moveObj, fenBeforeMove) {
+    if (!playState.active) return;
+    if (playState.mode === 'dccbot') {
+      await maybeEmitCoach('You', fenBeforeMove, moveObj);
+      if (game.game_over()) {
+        leaveActiveSession('Game over. Training session finished.');
+        return;
+      }
+      await sleep(180);
+      await runDccBotTurn();
+      return;
+    }
+    if (playState.mode === 'lichess') {
+      playState.waiting = true;
+      updateSimStatus('Sending move to Lichess…');
+      try {
+        await sendLichessMove(normalizeUci(moveObj));
+        updateSimStatus(`Waiting for ${playState.lichess.botUsername || 'bot'}…`);
+      } catch (err) {
+        game.undo();
+        playState.waiting = false;
+        updateBoard(false);
+        throw err;
+      }
+    }
+  }
+
+  async function startDccBotSession(selectedColor) {
+    const userColor = selectedColor === 'random'
+      ? (Math.random() < 0.5 ? 'w' : 'b')
+      : (selectedColor === 'black' ? 'b' : 'w');
+    enterActiveSession('dccbot', { userColor, startFen: game.fen(), selectedColor });
+    updateSimStatus(`8Z-CDB-DCC live · You are ${userColor === 'w' ? 'White' : 'Black'}`);
+    if (game.turn() !== userColor) {
+      await sleep(180);
+      await runDccBotTurn();
+    }
+  }
+
+  
+async function startLichessSession(botUsername, selectedColor, clock, timeLabel, opts = {}) {
+  const guessedColor = selectedColor === 'black' ? 'b' : 'w';
+  enterActiveSession('lichess', {
+    userColor: guessedColor,
+    botUsername,
+    selectedColor,
+    timeLabel,
+    startFen: getStartFen(),
+    autoPilot: !!opts.autoPilot
+  });
+  updateSimStatus(opts.autoPilot
+    ? `8Z is challenging ${botUsername} on Lichess…`
+    : `Starting human vs ${botUsername}…`);
+  try {
+    const gameId = await challengeLichessBot(botUsername, selectedColor, clock);
+    playState.lichess.gameId = gameId;
+    updateSimStatus(`Lichess game ${gameId} started.`);
+    await startLichessGameStream(gameId);
+  } catch (err) {
+    queueCoachMessage('system', `Lichess start failed: ${err.message || err}`);
+    leaveActiveSession('Lichess session could not be started.');
+  }
+}
+
+
+  
+async function launchFromSimModal() {
+  const mode = currentSimMode();
+  const launchMode = playState.launchMode || 'sim';
+  const colorSel = document.getElementById('simColorSelect');
+  const selectedColor = colorSel?.value || 'random';
+  const timeSel = document.getElementById('simTimeSelect');
+  const timeLabel = timeSel?.selectedOptions?.[0]?.textContent || 'Blitz 3+0';
+  let clock = { limit: 180, increment: 0 };
+  try { clock = JSON.parse(timeSel?.value || '{}'); } catch (_) {}
+  closeSimModal();
+
+  if (launchMode === 'sim') {
+    if (mode === 'self') {
+      runSimulation('both', game.fen());
+      return;
+    }
+    if (mode === 'dccbot') {
+      runSimulation('both', game.fen());
+      return;
+    }
+    if (mode === 'lichess') {
+      const botUsername = document.getElementById('lichessBotLevel')?.value || (botsConfig.lichess_bots?.[0]?.username || '');
+      await startLichessSession(botUsername, selectedColor, clock, timeLabel, { autoPilot: true });
+      return;
+    }
+  }
+
+  const engineColor = launchMode === 'simw' ? 'white' : 'black';
+  const humanColor = engineColor === 'white' ? 'black' : 'white';
+  if (mode === 'self' || mode === 'dccbot') {
+    await startDccBotSession(humanColor);
+    return;
+  }
+  if (mode === 'lichess') {
+    const botUsername = document.getElementById('lichessBotLevel')?.value || (botsConfig.lichess_bots?.[0]?.username || '');
+    await startLichessSession(botUsername, humanColor, clock, timeLabel, { autoPilot: false, engineColor, humanColor });
+  }
+}
+
+
   // ─── Sim button handlers ───────────────────────────────────────────
   const btnSimW = document.getElementById('btnSimW');
-  if (btnSimW) btnSimW.onclick = () => runSimulation('w', game.fen());
+  if (btnSimW) btnSimW.onclick = () => openSimModal('simw');
   const btnSimB = document.getElementById('btnSimB');
-  if (btnSimB) btnSimB.onclick = () => runSimulation('b', game.fen());
+  if (btnSimB) btnSimB.onclick = () => openSimModal('simb');
   const btnSimMain = document.getElementById('btnSim');
-  if (btnSimMain) btnSimMain.onclick = () => runSimulation('both', game.fen());
+  if (btnSimMain) btnSimMain.onclick = () => openSimModal('sim');
+  const btnCoach = document.getElementById('btnCoach');
+  if (btnCoach) {
+    if (!ENABLE_COACH) btnCoach.style.display = 'none';
+    btnCoach.onclick = () => setCoachPanelOpen(!settings.coachOpen);
+  }
   // TopC: quick input for Top Candidates
   const btnTopC = document.getElementById('btnTopC');
   if (btnTopC) {
@@ -2978,6 +3961,7 @@ function jumpTo(i){
   const titleEl = document.getElementById('gameTitle');
   titleEl.style.cursor = 'pointer';
   titleEl.onclick = () => {
+    if (playState.active) return;
     // If sim is running → stop it
     if (simRunning) {
       simAbort = true;
@@ -3020,6 +4004,7 @@ function jumpTo(i){
   // ─── “ChessBest.org” link replays the best (blue) move ────────────────
 document.getElementById('bestMoveLink').addEventListener('click', e => {
   e.preventDefault();
+  if (playState.active && playState.mode === 'lichess') return;
   const bestOv = document.querySelector('.overlay.best');
   if (!bestOv) return;
   const mv   = bestOv.dataset.move;
