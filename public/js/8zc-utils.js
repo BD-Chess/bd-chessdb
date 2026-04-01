@@ -993,12 +993,7 @@ gameBuckets.forEach(bucket => {
       ov.dataset.dccMomentum = data.momentum !== undefined ? data.momentum.toFixed(2) : '';
       ov.dataset.dccTunnel = data.tunnel ? '1' : '';
 
-      // v0.6.1: Hover shows DCC info panel without moving pieces
-      ov.addEventListener('mouseenter', () => showDCCInfoPanel(ov));
-      ov.addEventListener('mouseleave', () => {
-        const panel = document.getElementById('dccInfoPanel');
-        if (panel) panel.style.display = 'none';
-      });
+      // Hover disabled: DCC info panel opens only on click to avoid cursor jitter near overlays
     }
   }
 
@@ -1542,9 +1537,14 @@ gameBuckets.forEach(bucket => {
 	  }
 	}, true);
 	
-	// v0.6.1a: removed hover preview from move badges.
-	// The old hover-preview re-rendered the board under the cursor, which caused
-	// cursor jitter / flicker near the badges. Click-to-play stays enabled.
+	// Hover preview disabled: overlay remains click-only to avoid cursor jitter near banners
+
+	// clear preview highlights on mousedown (before your existing click logic runs)
+	ov.addEventListener('mousedown', () => {
+	  fromCell.classList.remove('preview-square');
+	  cell.classList.remove('preview-square');
+	});
+	// ──────────────────────────────────────────────────────────────────────────
 
 
     cell.appendChild(ov);
@@ -3140,18 +3140,13 @@ function enterActiveSession(mode, opts = {}) {
   }
 
   function guessUserColorFromGameFull(payload, botUsername, selectedColor) {
+    if (selectedColor === 'white') return 'w';
+    if (selectedColor === 'black') return 'b';
     const bot = (botUsername || '').toLowerCase();
     const whiteName = `${payload?.white?.id || ''} ${payload?.white?.name || ''}`.toLowerCase();
     const blackName = `${payload?.black?.id || ''} ${payload?.black?.name || ''}`.toLowerCase();
-
-    // Trust the actual Lichess pairing first. This is more reliable than the
-    // requested color, because challenge color semantics can differ by flow and
-    // the accepted game payload is the source of truth.
     if (bot && whiteName.includes(bot)) return 'b';
     if (bot && blackName.includes(bot)) return 'w';
-
-    if (selectedColor === 'white') return 'w';
-    if (selectedColor === 'black') return 'b';
     return playState.userColor || 'w';
   }
 
@@ -3217,8 +3212,7 @@ async function startLichessGameStream(gameId) {
       syncGameFromMoves(payload?.state?.moves || '', payload?.initialFen || 'startpos');
       playState.waiting = game.turn() !== playState.userColor;
       if (playState.autoPilot) {
-        const side = playState.userColor === 'w' ? 'White' : 'Black';
-        updateSimStatus(`8Z live as ${side} · ${playState.lichess.botUsername}`);
+        updateSimStatus(`8Z live · ${playState.lichess.botUsername}`);
         if (!game.game_over() && game.turn() === playState.userColor) setTimeout(() => { runLichessAutoMove().catch(console.error); }, 180);
       } else {
         updateSimStatus(game.turn() === playState.userColor ? 'Your move.' : `Waiting for ${playState.lichess.botUsername}…`);
