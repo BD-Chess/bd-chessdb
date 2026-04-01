@@ -130,9 +130,7 @@ function initAll() {
       streamAbort: null,
       eventAbort: null,
       lastMoves: '',
-      challengeId: null,
-      ready: false,
-      openingRetryCount: 0
+      challengeId: null
     },
     autoPilot: false,
     autoMoveBusy: false,
@@ -3031,8 +3029,6 @@ function enterActiveSession(mode, opts = {}) {
   playState.lichess.selectedColor = opts.selectedColor || 'random';
   playState.lichess.timeLabel = opts.timeLabel || '';
   playState.lichess.lastMoves = '';
-  playState.lichess.ready = false;
-  playState.lichess.openingRetryCount = 0;
 
   clearCoachMessages();
   if (mode === 'dccbot') {
@@ -3086,8 +3082,6 @@ function enterActiveSession(mode, opts = {}) {
     playState.lichess.gameId = null;
     playState.lichess.challengeId = null;
     playState.lichess.lastMoves = '';
-    playState.lichess.ready = false;
-    playState.lichess.openingRetryCount = 0;
     playState.autoPilot = false;
     playState.autoMoveBusy = false;
     if (typeof playState.prevShowEval === 'boolean') showEval = playState.prevShowEval;
@@ -3237,10 +3231,9 @@ async function startLichessGameStream(gameId) {
   });
 
   await readNdjsonStream(res, async payload => {
-    if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId) return null;
+    if (!playState.active || playState.mode !== 'lichess') return null;
     if (payload?.type === 'gameFull') {
       playState.userColor = guessUserColorFromGameFull(payload, playState.lichess.botUsername, playState.lichess.selectedColor);
-      playState.lichess.ready = true;
       board.orientation(playState.userColor === 'b' ? 'black' : 'white');
       syncGameFromMoves(payload?.state?.moves || '', payload?.initialFen || 'startpos');
       playState.waiting = game.turn() !== playState.userColor;
@@ -3253,7 +3246,6 @@ async function startLichessGameStream(gameId) {
       return null;
     }
     if (payload?.type === 'gameState' || payload?.moves !== undefined) {
-      playState.lichess.ready = true;
       syncGameFromMoves(payload.moves || '', 'startpos');
       playState.waiting = game.turn() !== playState.userColor;
       if (payload.status && payload.status !== 'started') {
@@ -3273,45 +3265,6 @@ async function startLichessGameStream(gameId) {
     }
     return null;
   }, ctrl.signal);
-}
-
-async function startLichessGameStreamLoop(gameId) {
-  let attempt = 0;
-  while (playState.active && playState.mode === 'lichess' && playState.lichess.gameId === gameId) {
-    try {
-      attempt += 1;
-      await startLichessGameStream(gameId);
-      if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId) return;
-      // Normal stream end without explicit finish signal: retry softly.
-      updateSimStatus(`Lichess stream ended · reconnect ${attempt}`);
-    } catch (err) {
-      if (err?.name === 'AbortError') return;
-      console.warn('Lichess stream error:', err);
-      if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId) return;
-      updateSimStatus(`Lichess reconnecting… (${attempt})`);
-    }
-    await sleep(Math.min(1500, 300 + attempt * 250));
-  }
-}
-
-function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
-  const kick = async (remaining) => {
-    if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId || !playState.autoPilot) return;
-    if (game.game_over()) return;
-    if (!playState.lichess.ready) {
-      if (remaining > 1) setTimeout(() => kick(remaining - 1), delayMs);
-      return;
-    }
-    if (game.turn() !== playState.userColor) return;
-    try {
-      await runLichessAutoMove();
-      return;
-    } catch (err) {
-      console.warn('Opening kick failed:', err);
-    }
-    if (remaining > 1) setTimeout(() => kick(remaining - 1), delayMs);
-  };
-  setTimeout(() => kick(tries), delayMs);
 }
 
 
@@ -3499,7 +3452,6 @@ function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
 async function runLichessAutoMove() {
   if (!playState.active || playState.mode !== 'lichess' || !playState.autoPilot) return;
   if (playState.autoMoveBusy) return;
-  if (!playState.lichess.ready) return;
   if (game.game_over()) {
     leaveActiveSession('Game over. Lichess bot session finished.');
     return;
@@ -3516,22 +3468,10 @@ async function runLichessAutoMove() {
     if (!pick || !pick.move) throw new Error('No DCC move found.');
     const san = uciToSan(fenBefore, pick.move);
     await sendLichessMove(pick.move);
-    playState.lichess.openingRetryCount = 0;
     updateSimStatus(`8Z played ${san} · waiting for ${playState.lichess.botUsername || 'bot'}…`);
   } catch (err) {
     console.error('8Z auto move failed:', err);
-    const noMovesYet = !(playState.lichess.lastMoves || '').trim();
-    const openingPhase = noMovesYet && playState.lichess.openingRetryCount < 6;
-    if (openingPhase) {
-      playState.lichess.openingRetryCount += 1;
-      updateSimStatus(`Opening sync… retry ${playState.lichess.openingRetryCount}/6`);
-      setTimeout(() => {
-        if (!playState.active || playState.mode !== 'lichess' || !playState.autoPilot) return;
-        runLichessAutoMove().catch(console.error);
-      }, 450);
-    } else {
-      leaveActiveSession(`Auto 8Z move failed: ${err.message || err}`);
-    }
+    leaveActiveSession(`Auto 8Z move failed: ${err.message || err}`);
   } finally {
     setBoardThinking(false);
     playState.autoMoveBusy = false;
@@ -3595,13 +3535,7 @@ async function startLichessSession(botUsername, selectedColor, clock, timeLabel,
     const gameId = await challengeLichessBot(botUsername, selectedColor, clock);
     playState.lichess.gameId = gameId;
     updateSimStatus(`Lichess game ${gameId} started.`);
-    startLichessGameStreamLoop(gameId).catch(err => {
-      if (err?.name === 'AbortError') return;
-      console.warn('Lichess stream loop crashed:', err);
-    });
-    if (opts.autoPilot && guessedColor === 'w') {
-      scheduleLichessOpeningKick(gameId, 12, 300);
-    }
+    await startLichessGameStream(gameId);
   } catch (err) {
     queueCoachMessage('system', `Lichess start failed: ${err.message || err}`);
     leaveActiveSession('Lichess session could not be started.');
