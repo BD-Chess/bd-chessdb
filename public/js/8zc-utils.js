@@ -2407,6 +2407,52 @@ function jumpTo(i){
     return bestMove;
   }
 
+  function pickEmergencyLegalMove(simGame) {
+    const legal = simGame.moves({ verbose: true }) || [];
+    if (!legal.length) return null;
+    const turn = simGame.turn();
+    const preferred = turn === 'w'
+      ? ['e2e4', 'd2d4', 'g1f3', 'c2c4', 'g2g3']
+      : ['e7e5', 'd7d5', 'g8f6', 'c7c5', 'g7g6'];
+    for (const uci of preferred) {
+      const found = legal.find(m => normalizeUci(m) === uci);
+      if (found) return found;
+    }
+    return legal[0] || null;
+  }
+
+  async function pickBestAvailableMove(simGame, overrideCandidates) {
+    try {
+      const dcc = await pickDCCMove(simGame, overrideCandidates);
+      if (dcc && dcc.move) return { pick: dcc, source: 'dcc' };
+    } catch (err) {
+      console.warn('pickDCCMove failed, trying fallback:', err);
+    }
+
+    try {
+      const raw = await pickRawMove(simGame);
+      if (raw && raw.move) return { pick: raw, source: 'raw' };
+    } catch (err) {
+      console.warn('pickRawMove failed, trying legal fallback:', err);
+    }
+
+    const emergency = pickEmergencyLegalMove(simGame);
+    if (emergency) {
+      return {
+        pick: {
+          move: normalizeUci(emergency),
+          score: 0,
+          rank: 999,
+          _fallback: true,
+          _fallbackSource: 'legal'
+        },
+        source: 'legal'
+      };
+    }
+
+    return { pick: null, source: 'none' };
+  }
+
   // Pick move using raw ChessDB: opponent model governs selection
   // v0.6.0: supports 'perfect', 'realistic', 'weak' models
   async function pickRawMove(simGame) {
@@ -3124,7 +3170,7 @@ function enterActiveSession(mode, opts = {}) {
     let msg = `${prefix}: ${describeErr(err)}`;
     if (opts.clearToken) {
       clearStoredLichessToken();
-      msg += ' Token cleared — create a new one with board:play scope at lichess.org/account/oauth/token';
+      msg += ' Stored Lichess token was cleared. Enter a fresh token and try again.';
     }
     console.warn(prefix, err);
     updateSimStatus(msg);
@@ -3183,11 +3229,14 @@ function enterActiveSession(mode, opts = {}) {
     return null;
   }
 
-  const _8Z_LI = ['lip_','EzlW','6kQV','X0f4','ILfX','Ermj'].join('');
+  const DEFAULT_LICHESS_TOKEN_PARTS = ['lip_', 'EzlW6k', 'QVX0f4', 'ILfXEr', 'mj'];
 
   async function ensureLichessToken() {
     let token = localStorage.getItem(LICHESS_TOKEN_KEY) || '';
-    if (!token) token = _8Z_LI;
+    if (!token) {
+      token = DEFAULT_LICHESS_TOKEN_PARTS.join('');
+      localStorage.setItem(LICHESS_TOKEN_KEY, token.trim());
+    }
     return (token || '').trim();
   }
 
@@ -3600,8 +3649,9 @@ async function buildCoachSnapshot(preFen, moveObj, actorLabel) {
     updateSimStatus('8Z-CDB-DCC is thinking…');
     const fenBefore = game.fen();
     try {
-      const pick = await pickDCCMove(game);
-      if (!pick) throw new Error('No DCC move found.');
+      const choice = await pickBestAvailableMove(game);
+      const pick = choice.pick;
+      if (!pick) throw new Error('No engine move found.');
       const move = game.move({
         from: pick.move.slice(0, 2),
         to: pick.move.slice(2, 4),
@@ -3642,8 +3692,9 @@ async function prepareLocalLichessOpeningPreview() {
   updateSimStatus('8Z-DCC is preparing the White opening locally…');
   const fenBefore = game.fen();
   try {
-    const pick = await pickDCCMove(game);
-    if (!pick || !pick.move) throw new Error('No DCC opening move found.');
+    const choice = await pickBestAvailableMove(game);
+    const pick = choice.pick;
+    if (!pick || !pick.move) throw new Error('No engine opening move found.');
     const move = game.move({
       from: pick.move.slice(0, 2),
       to: pick.move.slice(2, 4),
@@ -3657,7 +3708,11 @@ async function prepareLocalLichessOpeningPreview() {
     playState.lichess.preparedOpeningApplied = true;
     playState.lichess.preparedOpeningSent = false;
     updateBoard(false);
-    updateSimStatus(`8Z local opening ${playState.lichess.preparedOpeningSan} · connecting to Lichess…`);
+    if (choice.source !== 'dcc') {
+      updateSimStatus(`8Z local opening ${playState.lichess.preparedOpeningSan} · fallback ${choice.source} · connecting to Lichess…`);
+    } else {
+      updateSimStatus(`8Z local opening ${playState.lichess.preparedOpeningSan} · connecting to Lichess…`);
+    }
     return pick.move;
   } finally {
     setBoardThinking(false);
@@ -3695,10 +3750,14 @@ async function runLichessAutoMove() {
       moveUci = playState.lichess.preparedOpeningUci;
       san = playState.lichess.preparedOpeningSan || uciToSan(playState.startFen || 'startpos', moveUci);
     } else {
-      const pick = await pickDCCMove(game);
-      if (!pick || !pick.move) throw new Error('No DCC move found.');
+      const choice = await pickBestAvailableMove(game);
+      const pick = choice.pick;
+      if (!pick || !pick.move) throw new Error('No engine move found.');
       moveUci = pick.move;
       san = uciToSan(fenBefore, pick.move);
+      if (choice.source !== 'dcc') {
+        updateSimStatus(`8Z fallback ${choice.source} move ${san} · DCC substrate unavailable here`);
+      }
     }
 
     await sendLichessMove(moveUci);
@@ -3723,6 +3782,7 @@ async function runLichessAutoMove() {
     } else {
       playState.waiting = false;
       reportSessionIssue('8Z auto move stalled', err);
+      updateSimStatus(`8Z auto move stalled: ${msg}`);
     }
   } finally {
     setBoardThinking(false);
