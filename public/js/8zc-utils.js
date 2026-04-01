@@ -130,7 +130,9 @@ function initAll() {
       streamAbort: null,
       eventAbort: null,
       lastMoves: '',
-      challengeId: null
+      challengeId: null,
+      accountId: '',
+      accountName: ''
     },
     autoPilot: false,
     autoMoveBusy: false,
@@ -993,7 +995,8 @@ gameBuckets.forEach(bucket => {
       ov.dataset.dccMomentum = data.momentum !== undefined ? data.momentum.toFixed(2) : '';
       ov.dataset.dccTunnel = data.tunnel ? '1' : '';
 
-      // Hover disabled: DCC info panel opens only on click to avoid cursor jitter near overlays
+      // Hover preview intentionally disabled here.
+      // Keep badge click-only to avoid cursor jitter near overlays.
     }
   }
 
@@ -1537,7 +1540,8 @@ gameBuckets.forEach(bucket => {
 	  }
 	}, true);
 	
-	// Hover preview disabled: overlay remains click-only to avoid cursor jitter near banners
+	// Hover preview intentionally disabled.
+	// Badge stays click-only to avoid board redraw and cursor jitter near banners.
 
 	// clear preview highlights on mousedown (before your existing click logic runs)
 	ov.addEventListener('mousedown', () => {
@@ -3139,14 +3143,53 @@ function enterActiveSession(mode, opts = {}) {
     return (key || '').trim();
   }
 
+  async function ensureLichessIdentity(token) {
+    const useToken = (token || playState.lichess.token || '').trim();
+    if (!useToken) return { id: '', name: '' };
+    if (playState.lichess.accountId || playState.lichess.accountName) {
+      return {
+        id: playState.lichess.accountId || '',
+        name: playState.lichess.accountName || ''
+      };
+    }
+    try {
+      const resp = await fetch('https://lichess.org/api/account', {
+        headers: { Authorization: `Bearer ${useToken}` }
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json().catch(() => ({}));
+      playState.lichess.accountId = (data?.id || '').toLowerCase();
+      playState.lichess.accountName = (data?.username || data?.name || '').toLowerCase();
+    } catch (err) {
+      console.warn('Could not resolve Lichess account identity:', err);
+    }
+    return {
+      id: playState.lichess.accountId || '',
+      name: playState.lichess.accountName || ''
+    };
+  }
+
   function guessUserColorFromGameFull(payload, botUsername, selectedColor) {
+    const whiteId = `${payload?.white?.id || ''}`.toLowerCase();
+    const blackId = `${payload?.black?.id || ''}`.toLowerCase();
+    const whiteName = `${payload?.white?.name || ''}`.toLowerCase();
+    const blackName = `${payload?.black?.name || ''}`.toLowerCase();
+    const whiteCombined = `${whiteId} ${whiteName}`.trim();
+    const blackCombined = `${blackId} ${blackName}`.trim();
+
+    const myId = (playState.lichess.accountId || '').toLowerCase();
+    const myName = (playState.lichess.accountName || '').toLowerCase();
+    if (myId && whiteId === myId) return 'w';
+    if (myId && blackId === myId) return 'b';
+    if (myName && (whiteName === myName || whiteCombined.includes(myName))) return 'w';
+    if (myName && (blackName === myName || blackCombined.includes(myName))) return 'b';
+
+    const bot = (botUsername || '').toLowerCase();
+    if (bot && (whiteId === bot || whiteName === bot || whiteCombined.includes(bot))) return 'b';
+    if (bot && (blackId === bot || blackName === bot || blackCombined.includes(bot))) return 'w';
+
     if (selectedColor === 'white') return 'w';
     if (selectedColor === 'black') return 'b';
-    const bot = (botUsername || '').toLowerCase();
-    const whiteName = `${payload?.white?.id || ''} ${payload?.white?.name || ''}`.toLowerCase();
-    const blackName = `${payload?.black?.id || ''} ${payload?.black?.name || ''}`.toLowerCase();
-    if (bot && whiteName.includes(bot)) return 'b';
-    if (bot && blackName.includes(bot)) return 'w';
     return playState.userColor || 'w';
   }
 
@@ -3169,6 +3212,7 @@ function enterActiveSession(mode, opts = {}) {
     const token = await ensureLichessToken();
     if (!token) throw new Error('Missing Lichess token.');
     playState.lichess.token = token;
+    await ensureLichessIdentity(token);
     const body = new URLSearchParams();
     body.set('rated', 'false');
     body.set('clock.limit', String(clock.limit || 180));
@@ -3211,8 +3255,17 @@ async function startLichessGameStream(gameId) {
       board.orientation(playState.userColor === 'b' ? 'black' : 'white');
       syncGameFromMoves(payload?.state?.moves || '', payload?.initialFen || 'startpos');
       playState.waiting = game.turn() !== playState.userColor;
+      console.log('[8ZC] Lichess gameFull side resolve', {
+        selectedColor: playState.lichess.selectedColor,
+        resolvedUserColor: playState.userColor,
+        accountId: playState.lichess.accountId,
+        accountName: playState.lichess.accountName,
+        white: payload?.white,
+        black: payload?.black,
+        moves: payload?.state?.moves || ''
+      });
       if (playState.autoPilot) {
-        updateSimStatus(`8Z live · ${playState.lichess.botUsername}`);
+        updateSimStatus(`8Z live · ${playState.lichess.botUsername} · 8Z=${playState.userColor === 'w' ? 'White' : 'Black'}`);
         if (!game.game_over() && game.turn() === playState.userColor) setTimeout(() => { runLichessAutoMove().catch(console.error); }, 180);
       } else {
         updateSimStatus(game.turn() === playState.userColor ? 'Your move.' : `Waiting for ${playState.lichess.botUsername}…`);
