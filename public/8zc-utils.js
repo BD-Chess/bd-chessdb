@@ -177,16 +177,10 @@ function initAll() {
      4. POPULAR GAMES  (PGN files per category)
   ------------------------------------------------------------------*/
   const gameBuckets = [
-    { name: 'Openings - Top Lines',  files: [
-      'TopLines/8zC-book_dcc.pgn',
-      'TopLines/8zC-endeval.pgn',
-      'TopLines/8zC-raw.pgn',
-      'TopLines/c4_top_43_moves.pgn',
-      'TopLines/d4_top_22_moves.pgn',
-      'TopLines/d4_top_27_moves.pgn',
-      'TopLines/e4_top_62_moves.pgn',
-      'TopLines/Nf3_top_26_moves.pgn'
-    ] },
+    { name: 'Openings - Top Lines',  file: 'Chess_Openings_Top_Lines.pgn' },
+    { name: 'Book - DCC (flat)',     file: 'TopLines/8zC-book_dcc_flat.pgn' },
+    { name: 'Book - Raw (flat)',     file: 'TopLines/8zC-book_raw_flat.pgn' },
+    { name: 'Book - EndEval (flat)', file: 'TopLines/8zC-book_endeval_flat.pgn' },
     { name: 'Magnus Carlsen',        file: 'CarlsenM_Selected.pgn' },
     { name: 'Garry Kasparov',        file: 'KasparovG_Selected.pgn' },
     { name: 'Hikaru Nakamura',       file: 'NakamuraH_Selected.pgn' },
@@ -225,39 +219,23 @@ gameBuckets.forEach(bucket => {
   panel.appendChild(sel);
 
   // 2) Fetch and populate options into the already‑appended select
-    const bucketFiles = bucket.files || [bucket.file];
-
-      Promise.all(
-        bucketFiles.map(file =>
-          fetch(`Games/${file}`)
-            .then(r => r.text())
-            .then(txt => ({ file, txt }))
-        )
-      )
-        .then(fileBlobs => {
-          fileBlobs.forEach(({ file, txt }) => {
-            const games = txt.trim().split(/\n\s*\n(?=\[Event)/);
-            const fileLabel = file.split('/').pop();
-
-            games.forEach(gt => {
-              const tags = {};
-              gt.split('\n').forEach(l => {
-                const m = l.match(/^\[(\w+)\s+\"(.+)\"\]$/);
-                if (m) tags[m[1]] = m[2];
-              });
-
-              const sourceLabel = bucketFiles.length > 1 ? `${fileLabel} — ` : '';
-              const primaryLabel = tags.Opening || tags.Event || `${tags.White || ''} vs. ${tags.Black || ''}`.trim();
-              const metaBits = [tags.Site, tags.Date].filter(Boolean).join(', ');
-              const title = metaBits
-                ? `${sourceLabel}${primaryLabel} (${metaBits})`
-                : `${sourceLabel}${primaryLabel}`;
-
-              sel.appendChild(new Option(title, gt));
-            });
-          });
-        })
-        .catch(console.error);
+  fetch(`Games/${bucket.file}`)
+    .then(r => r.text())
+    .then(txt => {
+      const games = txt.trim().split(/\n\s*\n(?=\[Event)/);
+      games.forEach(gt => {
+        const tags = {};
+        gt.split('\n').forEach(l => {
+          const m = l.match(/^\[(\w+)\s+"(.+)"\]$/);
+          if (m) tags[m[1]] = m[2];
+        });
+        const title = (tags.Opening && (!tags.White || tags.White === 'Book'))
+          ? `${tags.Opening} (${tags.Mode || ''})`
+          : `${tags.Result||''} ${tags.White||''} vs. ${tags.Black||''} (${tags.Site||''}, ${tags.Date||''})`;
+        sel.appendChild(new Option(title, gt));
+      });
+    })
+    .catch(console.error);
 
 	// 3) Wire up load-on-change
 	sel.onchange = e => {
@@ -273,7 +251,7 @@ gameBuckets.forEach(bucket => {
 
 	  // Extract “in-book” flags, strip all comments, then load clean PGN
 	  bookFlags = extractBookFlags(e.target.value);
-	  const cleanPgn = e.target.value.replace(/\{[^}]*\}/g, '');
+	  const cleanPgn = makeLoadablePgn(e.target.value);
 	  game.load_pgn(cleanPgn);
 
 	  // Update UI
@@ -298,6 +276,22 @@ gameBuckets.forEach(bucket => {
      5. CHESS OBJECT  +  RESTORE SAVED PGN
   ------------------------------------------------------------------*/
   const game = new Chess();
+
+  function stripRAV(pgn) {
+    let out = '';
+    let depth = 0;
+    for (const ch of String(pgn || '')) {
+      if (ch === '(') { depth++; continue; }
+      if (ch === ')') { if (depth > 0) depth--; continue; }
+      if (depth === 0) out += ch;
+    }
+    return out;
+  }
+
+  function makeLoadablePgn(pgn) {
+    return stripRAV(String(pgn || '')).replace(/\{[^}]*\}/g, '');
+  }
+
   const savedGame = localStorage.getItem(STORAGE_KEY_GAME);
   if (savedGame) {
     try { game.load_pgn(savedGame); }
@@ -378,20 +372,21 @@ gameBuckets.forEach(bucket => {
 	 * return a Boolean[] aligned to each half-move.
     */
 	function extractBookFlags(pgn) {
+	  const mainline = stripRAV(pgn);
 	  // 1) Pull out every comment, note which are “Book”
 	  const rawFlags = [];
-	  pgn.replace(/\{([^}]*)\}/g, (_, comment) => {
+	  mainline.replace(/\{([^}]*)\}/g, (_, comment) => {
 		rawFlags.push(comment.includes('Book'));
 		return '';
 	  });
 
 	  // 2) Strip comments & move-numbers, split into SAN tokens
-	  const moves = pgn
+	  const moves = mainline
 		.replace(/\{[^}]*\}/g, '')          // remove comments
-		.replace(/\d+\.\s*/g, '')           // remove “1. ”, “2. ”, etc.
+		.replace(/\d+\.(\.\.)?\s*/g, '')    // remove move numbers
 		.trim()
 		.split(/\s+/)                       // split on whitespace
-		.filter(tok => tok && !/^\d+$/.test(tok)); // drop stray numbers
+		.filter(tok => tok && !/^\d+$/.test(tok) && !/^(1-0|0-1|1\/2-1\/2|\*)$/.test(tok));
 
 	  // 3) Map each SAN to its flag (default false)
 	  return moves.map((_, i) => Boolean(rawFlags[i]));
@@ -1866,7 +1861,11 @@ function jumpTo(i){
       );
     } else {
       const p=prompt('Paste PGN');
-      if(p) game.load_pgn(p);
+      if (p) {
+        lastLoadedPGN = p;
+        bookFlags = extractBookFlags(p);
+        game.load_pgn(makeLoadablePgn(p));
+      }
     }
     updateBoard(true);
 	showOpening();
@@ -1988,7 +1987,7 @@ function jumpTo(i){
 		  //game.load_pgn(evt.target.result);
 		  // parse out “{Book}” flags, then strip comments before loading
 		  bookFlags = extractBookFlags(evt.target.result);
-		  const clean = evt.target.result.replace(/\{[^}]*\}/g,'');
+		  const clean = makeLoadablePgn(evt.target.result);
 		  game.load_pgn(clean);
 		  document.getElementById('gameTitle').innerText = file.name;
 		  updateBoard(true);
@@ -3987,7 +3986,8 @@ async function launchFromSimModal() {
 
     if (lastLoadedPGN) {
       game.reset();
-      game.load_pgn(lastLoadedPGN);
+      bookFlags = extractBookFlags(lastLoadedPGN);
+      game.load_pgn(makeLoadablePgn(lastLoadedPGN));
       window._skipDivergedReset = false;
       updateBoard(true);
       if (branchPoint >= 0) {
