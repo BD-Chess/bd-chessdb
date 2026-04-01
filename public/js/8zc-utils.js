@@ -132,7 +132,11 @@ function initAll() {
       lastMoves: '',
       challengeId: null,
       ready: false,
-      openingRetryCount: 0
+      openingRetryCount: 0,
+      preparedOpeningUci: '',
+      preparedOpeningSan: '',
+      preparedOpeningApplied: false,
+      preparedOpeningSent: false
     },
     autoPilot: false,
     autoMoveBusy: false,
@@ -406,7 +410,7 @@ gameBuckets.forEach(bucket => {
 	  if (playState.active && (playState.mode === 'dccbot' || playState.mode === 'lichess')) {
 	    Promise.resolve(handleLiveUserMove(m, fenBeforeMove)).catch(err => {
 	      console.error('Live move handler failed:', err);
-	      queueCoachMessage('system', 'Move relay failed. The board was restored to the local position when possible.');
+	      reportSessionIssue('Move relay failed', err);
 	    });
 	  }
 
@@ -2273,7 +2277,9 @@ function jumpTo(i){
   const simStartBtn = document.getElementById('simStartBtn');
   if (simStartBtn) simStartBtn.addEventListener('click', () => {
     launchFromSimModal().catch(err => {
-      updateSimStatus(`Start failed: ${err.message || err}`);
+      const msg = String(err?.message || err || 'unknown error');
+      console.warn('Play start failed:', err);
+      updateSimStatus(`Start failed: ${msg}`);
       leaveActiveSession('');
     });
   });
@@ -2805,10 +2811,7 @@ function jumpTo(i){
   }
 
   function queueCoachMessage(kind, text, meta='') {
-    if (!ENABLE_COACH) {
-      if (kind === 'system' && text) updateSimStatus(text);
-      return;
-    }
+    if (!ENABLE_COACH) return;
     const box = document.getElementById('coachMessages');
     if (!box || !text) return;
     const div = document.createElement('div');
@@ -3008,6 +3011,10 @@ function enterActiveSession(mode, opts = {}) {
   playState.lichess.lastMoves = '';
   playState.lichess.ready = false;
   playState.lichess.openingRetryCount = 0;
+  playState.lichess.preparedOpeningUci = '';
+  playState.lichess.preparedOpeningSan = '';
+  playState.lichess.preparedOpeningApplied = false;
+  playState.lichess.preparedOpeningSent = false;
 
   clearCoachMessages();
   if (mode === 'dccbot') {
@@ -3063,12 +3070,19 @@ function enterActiveSession(mode, opts = {}) {
     playState.lichess.lastMoves = '';
     playState.lichess.ready = false;
     playState.lichess.openingRetryCount = 0;
+    playState.lichess.preparedOpeningUci = '';
+    playState.lichess.preparedOpeningSan = '';
+    playState.lichess.preparedOpeningApplied = false;
+    playState.lichess.preparedOpeningSent = false;
     playState.autoPilot = false;
     playState.autoMoveBusy = false;
     if (typeof playState.prevShowEval === 'boolean') showEval = playState.prevShowEval;
     applySettings();
     refreshPlayUi();
-    if (message) queueCoachMessage('system', message);
+    if (message) {
+      updateSimStatus(message);
+      queueCoachMessage('system', message);
+    }
     if (wasLocked) updateBoard(false);
   }
 
@@ -3091,14 +3105,50 @@ function enterActiveSession(mode, opts = {}) {
     }
   }
 
+  function clearStoredLichessToken() {
+    try { localStorage.removeItem(LICHESS_TOKEN_KEY); } catch (_) {}
+    playState.lichess.token = '';
+  }
+
+  function describeErr(err) {
+    return String(err?.message || err || 'unknown error').replace(/\s+/g, ' ').trim();
+  }
+
+  function reportSessionIssue(prefix, err, opts = {}) {
+    let msg = `${prefix}: ${describeErr(err)}`;
+    if (opts.clearToken) {
+      clearStoredLichessToken();
+      msg += ' Stored Lichess token was cleared. Enter a fresh token and try again.';
+    }
+    console.warn(prefix, err);
+    updateSimStatus(msg);
+    queueCoachMessage('system', msg);
+    return msg;
+  }
+
   function syncGameFromMoves(movesStr, initialFen = 'startpos') {
     const moves = (movesStr || '').trim() ? movesStr.trim().split(/\s+/) : [];
     if ((playState.lichess.lastMoves || '').trim() === (movesStr || '').trim()) return;
-    if (initialFen && initialFen !== 'startpos') game.load(initialFen);
-    else game.reset();
-    moves.forEach(uci => applyUciMove(game, uci));
+
+    const keepPreparedOpening =
+      playState.active &&
+      playState.mode === 'lichess' &&
+      playState.autoPilot &&
+      playState.userColor === 'w' &&
+      playState.lichess.preparedOpeningApplied &&
+      !playState.lichess.preparedOpeningSent &&
+      moves.length === 0 &&
+      (!initialFen || initialFen === 'startpos');
+
+    if (!keepPreparedOpening) {
+      if (initialFen && initialFen !== 'startpos') game.load(initialFen);
+      else game.reset();
+      moves.forEach(uci => applyUciMove(game, uci));
+      updateBoard(true);
+    } else {
+      updateBoard(false);
+    }
     playState.lichess.lastMoves = movesStr || '';
-    updateBoard(true);
   }
 
   async function readNdjsonStream(response, onEvent, signal) {
@@ -3167,9 +3217,8 @@ function enterActiveSession(mode, opts = {}) {
     if (!res.ok) {
       const txt = await res.text().catch(() => '');
       if (res.status === 401 || res.status === 403) {
-        localStorage.removeItem(LICHESS_TOKEN_KEY);
-        playState.lichess.token = '';
-        throw new Error('Lichess rejected the saved token for event stream. Token cleared — start again and enter a fresh token.');
+        clearStoredLichessToken();
+        throw new Error((txt || `Lichess event stream failed (${res.status})`) + ' Token rejected.');
       }
       throw new Error(txt || `Lichess event stream failed (${res.status})`);
     }
@@ -3198,11 +3247,10 @@ function enterActiveSession(mode, opts = {}) {
       body
     });
     if (!resp.ok) {
-      const txt = await resp.text();
+      const txt = await resp.text().catch(() => '');
       if (resp.status === 401 || resp.status === 403) {
-        localStorage.removeItem(LICHESS_TOKEN_KEY);
-        playState.lichess.token = '';
-        throw new Error('Lichess rejected the saved token. Token cleared — start again and enter a fresh token.');
+        clearStoredLichessToken();
+        throw new Error((txt || `Challenge failed (${resp.status})`) + ' Token rejected.');
       }
       throw new Error(txt || `Challenge failed (${resp.status})`);
     }
@@ -3224,6 +3272,14 @@ async function startLichessGameStream(gameId) {
     headers: { Authorization: `Bearer ${token}` },
     signal: ctrl.signal
   });
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    if (res.status === 401 || res.status === 403) {
+      clearStoredLichessToken();
+      throw new Error((txt || `Game stream failed (${res.status})`) + ' Token rejected.');
+    }
+    throw new Error(txt || `Game stream failed (${res.status})`);
+  }
 
   await readNdjsonStream(res, async payload => {
     if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId) return null;
@@ -3312,11 +3368,10 @@ function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (!resp.ok) {
-      const txt = await resp.text();
+      const txt = await resp.text().catch(() => '');
       if (resp.status === 401 || resp.status === 403) {
-        localStorage.removeItem(LICHESS_TOKEN_KEY);
-        playState.lichess.token = '';
-        throw new Error('Lichess rejected the saved token during move relay. Token cleared — start again and enter a fresh token.');
+        clearStoredLichessToken();
+        throw new Error((txt || `Move rejected (${resp.status})`) + ' Token rejected.');
       }
       throw new Error(txt || `Move rejected (${resp.status})`);
     }
@@ -3479,7 +3534,7 @@ function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
         return;
       }
     } catch (err) {
-      queueCoachMessage('system', `8Z move failed: ${err.message || err}`);
+      reportSessionIssue('8Z move failed', err);
       leaveActiveSession('Training session stopped because the local bot hit an error.');
       return;
     } finally {
@@ -3489,6 +3544,41 @@ function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
     updateSimStatus('Your move.');
   }
 
+
+async function prepareLocalLichessOpeningPreview() {
+  if (!playState.active || playState.mode !== 'lichess' || !playState.autoPilot) return null;
+  if (playState.userColor !== 'w') return null;
+  if (game.game_over() || game.turn() !== 'w') return null;
+  if (playState.lichess.preparedOpeningApplied && playState.lichess.preparedOpeningUci) {
+    return playState.lichess.preparedOpeningUci;
+  }
+
+  setBoardThinking(true);
+  playState.waiting = true;
+  updateSimStatus('8Z-DCC is preparing the White opening locally…');
+  const fenBefore = game.fen();
+  try {
+    const pick = await pickDCCMove(game);
+    if (!pick || !pick.move) throw new Error('No DCC opening move found.');
+    const move = game.move({
+      from: pick.move.slice(0, 2),
+      to: pick.move.slice(2, 4),
+      promotion: pick.move.length > 4 ? pick.move[4] : 'q'
+    });
+    if (!move) throw new Error('Local opening move became illegal.');
+    lastAction = 'move';
+    window._skipDivergedReset = true;
+    playState.lichess.preparedOpeningUci = pick.move;
+    playState.lichess.preparedOpeningSan = move.san || uciToSan(fenBefore, pick.move);
+    playState.lichess.preparedOpeningApplied = true;
+    playState.lichess.preparedOpeningSent = false;
+    updateBoard(false);
+    updateSimStatus(`8Z local opening ${playState.lichess.preparedOpeningSan} · connecting to Lichess…`);
+    return pick.move;
+  } finally {
+    setBoardThinking(false);
+  }
+}
 
 async function runLichessAutoMove() {
   if (!playState.active || playState.mode !== 'lichess' || !playState.autoPilot) return;
@@ -3503,35 +3593,52 @@ async function runLichessAutoMove() {
   playState.autoMoveBusy = true;
   playState.waiting = true;
   setBoardThinking(true);
-  updateSimStatus('8Z-DCC is thinking…');
+
+  const noMovesYet = !(playState.lichess.lastMoves || '').trim();
+  const usePreparedOpening =
+    noMovesYet &&
+    playState.userColor === 'w' &&
+    playState.lichess.preparedOpeningApplied &&
+    !playState.lichess.preparedOpeningSent &&
+    !!playState.lichess.preparedOpeningUci;
+
+  updateSimStatus(usePreparedOpening ? 'Sending prepared White opening to Lichess…' : '8Z-DCC is thinking…');
   const fenBefore = game.fen();
   try {
-    const pick = await pickDCCMove(game);
-    if (!pick || !pick.move) throw new Error('No DCC move found.');
-    const san = uciToSan(fenBefore, pick.move);
-    await sendLichessMove(pick.move);
+    let moveUci = '';
+    let san = '';
+    if (usePreparedOpening) {
+      moveUci = playState.lichess.preparedOpeningUci;
+      san = playState.lichess.preparedOpeningSan || uciToSan(playState.startFen || 'startpos', moveUci);
+    } else {
+      const pick = await pickDCCMove(game);
+      if (!pick || !pick.move) throw new Error('No DCC move found.');
+      moveUci = pick.move;
+      san = uciToSan(fenBefore, pick.move);
+    }
+
+    await sendLichessMove(moveUci);
     playState.lichess.openingRetryCount = 0;
+    if (usePreparedOpening) playState.lichess.preparedOpeningSent = true;
     updateSimStatus(`8Z played ${san} · waiting for ${playState.lichess.botUsername || 'bot'}…`);
   } catch (err) {
     console.error('8Z auto move failed:', err);
-    const msg = String(err?.message || err || 'unknown error');
-    const noMovesYet = !(playState.lichess.lastMoves || '').trim();
+    const msg = describeErr(err);
     const retryCap = noMovesYet ? 20 : 8;
     const retryDelay = noMovesYet ? 500 : 900;
     const retryCount = Number(playState.lichess.openingRetryCount || 0);
     if (retryCount < retryCap) {
       playState.lichess.openingRetryCount = retryCount + 1;
       updateSimStatus(noMovesYet
-        ? `Opening sync… retry ${playState.lichess.openingRetryCount}/${retryCap}`
-        : `Move relay retry ${playState.lichess.openingRetryCount}/${retryCap}`);
+        ? `Opening sync… retry ${playState.lichess.openingRetryCount}/${retryCap} · ${msg}`
+        : `Move relay retry ${playState.lichess.openingRetryCount}/${retryCap} · ${msg}`);
       setTimeout(() => {
         if (!playState.active || playState.mode !== 'lichess' || !playState.autoPilot) return;
         runLichessAutoMove().catch(console.error);
       }, retryDelay);
     } else {
       playState.waiting = false;
-      queueCoachMessage('system', `8Z auto move failed: ${msg}`);
-      updateSimStatus(`8Z auto move stalled: ${msg}`);
+      reportSessionIssue('8Z auto move stalled', err);
     }
   } finally {
     setBoardThinking(false);
@@ -3592,19 +3699,29 @@ async function startLichessSession(botUsername, selectedColor, clock, timeLabel,
   updateSimStatus(opts.autoPilot
     ? `8Z is challenging ${botUsername} on Lichess…`
     : `Starting human vs ${botUsername}…`);
+
+  const openingPrepPromise = (opts.autoPilot && guessedColor === 'w')
+    ? prepareLocalLichessOpeningPreview().catch(err => {
+        reportSessionIssue('Local opening preview failed', err);
+        return null;
+      })
+    : Promise.resolve(null);
+
   try {
     const gameId = await challengeLichessBot(botUsername, selectedColor, clock);
+    await openingPrepPromise;
     playState.lichess.gameId = gameId;
     updateSimStatus(`Lichess game ${gameId} started.`);
     startLichessGameStreamLoop(gameId).catch(err => {
       if (err?.name === 'AbortError') return;
-      console.warn('Lichess stream loop crashed:', err);
+      reportSessionIssue('Lichess stream loop crashed', err);
     });
     if (opts.autoPilot && guessedColor === 'w') {
       scheduleLichessOpeningKick(gameId, 12, 300);
     }
   } catch (err) {
-    updateSimStatus(`Lichess failed: ${err.message || err}`);
+    await openingPrepPromise.catch(() => null);
+    reportSessionIssue('Lichess start failed', err, { clearToken: /token rejected/i.test(describeErr(err)) });
     leaveActiveSession('');
   }
 }
