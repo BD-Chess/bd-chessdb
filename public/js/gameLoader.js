@@ -32,6 +32,42 @@ export function setupGameLoader() {
    { name: 'Various Games',                  file: 'Various_Games.pgn' }
  ];
 
+function cleanOpeningTitle(value) {
+  return String(value || '')
+    .replace(/\s*\(Top\s*line\)\s*$/i, '')
+    .trim();
+}
+
+function cleanEventTitle(value) {
+  return String(value || '')
+    .replace(/^\(([^,]+),\s*\d+\s*moves?\)\s*/i, '')
+    .trim();
+}
+
+function parseTopLineFileMeta(fileStem) {
+  const m = String(fileStem || '').match(/^([A-Za-z0-9+#-]+)_top_(\d+)_moves$/i);
+  return m ? { seed: m[1], moveCount: m[2] } : null;
+}
+
+function buildPrettyGameTitle(tags, bucket, file, fallbackCoreTitle) {
+  const fileStem = String(file || '').split('/').pop().replace(/\.pgn$/i, '');
+  const topMeta = parseTopLineFileMeta(fileStem);
+  const openingTitle = cleanOpeningTitle(tags.Opening || '');
+  const eventTitle = cleanEventTitle(tags.Event || '');
+
+  if (Array.isArray(bucket.files) && topMeta) {
+    const parts = [];
+    if (topMeta.seed) parts.push(topMeta.seed);
+    if (openingTitle) parts.push(openingTitle);
+    else if (eventTitle) parts.push(eventTitle);
+    if (topMeta.moveCount) parts.push(`${topMeta.moveCount} moves`);
+    return parts.join(' · ');
+  }
+
+  return openingTitle || eventTitle || fallbackCoreTitle;
+}
+
+
  const panel = document.getElementById('popularGamesPanel');
  if (!panel) return;
 
@@ -86,21 +122,15 @@ export function setupGameLoader() {
              if (m) tags[m[1]] = m[2];
            });
 
-           const fileStem = file.split('/').pop().replace(/\.pgn$/i, '');
-           const sourceLabel = fileStem
-             .replace(/_/g, ' ')
-             .replace(/\btop\b/gi, 'Top')
-             .replace(/\bmoves\b/gi, 'moves');
+           
+          const coreTitle = (tags.Opening && (!tags.White || tags.White === 'Book'))
+            ? `${cleanOpeningTitle(tags.Opening)}${tags.Mode ? ` (${tags.Mode})` : ''}`
+            : `${tags.Result||''} ${tags.White||''} vs. ${tags.Black||''} (${tags.Site||''}, ${tags.Date||''})`;
 
-           const coreTitle = (tags.Opening && (!tags.White || tags.White === 'Book'))
-             ? `${tags.Opening} (${tags.Mode || ''})`
-             : `${tags.Result || ''} ${tags.White || ''} vs. ${tags.Black || ''} (${tags.Site || ''}, ${tags.Date || ''})`;
-
-           const title = Array.isArray(bucket.files)
-             ? `${sourceLabel} — ${coreTitle}`
-             : coreTitle;
-
-           sel.appendChild(new Option(title, gt));
+          const title = buildPrettyGameTitle(tags, bucket, file, coreTitle);
+          const opt = new Option(title, gt);
+          opt.title = title;
+          sel.appendChild(opt);
          });
        });
      })
