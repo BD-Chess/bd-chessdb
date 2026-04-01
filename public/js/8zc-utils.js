@@ -3015,6 +3015,9 @@ function enterActiveSession(mode, opts = {}) {
   playState.lichess.preparedOpeningSan = '';
   playState.lichess.preparedOpeningApplied = false;
   playState.lichess.preparedOpeningSent = false;
+  playState.lichess.apiMode = 'board';
+  playState.lichess.fullId = '';
+  playState.lichess.startEvent = null;
 
   clearCoachMessages();
   if (mode === 'dccbot') {
@@ -3074,6 +3077,9 @@ function enterActiveSession(mode, opts = {}) {
     playState.lichess.preparedOpeningSan = '';
     playState.lichess.preparedOpeningApplied = false;
     playState.lichess.preparedOpeningSent = false;
+    playState.lichess.apiMode = 'board';
+    playState.lichess.fullId = '';
+    playState.lichess.startEvent = null;
     playState.autoPilot = false;
     playState.autoMoveBusy = false;
     if (typeof playState.prevShowEval === 'boolean') showEval = playState.prevShowEval;
@@ -3207,11 +3213,15 @@ function enterActiveSession(mode, opts = {}) {
     return playState.userColor || 'w';
   }
 
-  async function startLichessEventWait(token) {
+  
+async function startLichessEventWait(token) {
     const ctrl = new AbortController();
     playState.lichess.eventAbort = ctrl;
     const res = await fetch('https://lichess.org/api/stream/event', {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/x-ndjson'
+      },
       signal: ctrl.signal
     });
     if (!res.ok) {
@@ -3224,10 +3234,59 @@ function enterActiveSession(mode, opts = {}) {
     }
     return readNdjsonStream(res, async evt => {
       if (evt?.type === 'gameStart') {
-        return evt.game?.gameId || evt.game?.id || evt.id || evt.gameId || null;
+        return evt?.game || evt || null;
       }
       return null;
     }, ctrl.signal);
+  }
+
+  function pickLichessApiModeFromStart(startEvt) {
+    const compat = startEvt?.compat || startEvt?.game?.compat || {};
+    if (compat.board === true) return 'board';
+    if (compat.bot === true) return 'bot';
+    return 'board';
+  }
+
+  function lichessGameStreamUrl(gameId) {
+    const mode = playState.lichess.apiMode || 'board';
+    return mode === 'bot'
+      ? `https://lichess.org/api/bot/game/stream/${encodeURIComponent(gameId)}`
+      : `https://lichess.org/api/board/game/stream/${encodeURIComponent(gameId)}`;
+  }
+
+  function lichessMoveUrl(gameId, uci) {
+    const mode = playState.lichess.apiMode || 'board';
+    return mode === 'bot'
+      ? `https://lichess.org/api/bot/game/${encodeURIComponent(gameId)}/move/${encodeURIComponent(uci)}`
+      : `https://lichess.org/api/board/game/${encodeURIComponent(gameId)}/move/${encodeURIComponent(uci)}`;
+  }
+
+  function isHardLichessStreamError(err) {
+    const msg = describeErr(err).toLowerCase();
+    return /token rejected|missing scope|oauth|unauthorized|forbidden|401|403|404|400|not found|cannot be played via the bot api|cannot be played via the board api|rate limit/.test(msg);
+  }
+
+  function explainLichessStreamError(err) {
+    const base = describeErr(err);
+    const mode = playState.lichess.apiMode || 'board';
+    if (/token rejected/i.test(base)) {
+      return `${base} Enter a fresh token with the correct scope and try again.`;
+    }
+    if (/401|403|unauthorized|forbidden/i.test(base)) {
+      return mode === 'board'
+        ? `${base} Check token scopes: board:play is required for live board games.`
+        : `${base} Check token scopes: bot:play is required for bot API games.`;
+    }
+    if (/429|rate limit/i.test(base)) {
+      return `${base} Lichess is rate-limiting reconnects right now.`;
+    }
+    if (/404|not found/i.test(base)) {
+      return `${base} The game stream endpoint rejected this game id.`;
+    }
+    if (/failed to fetch|networkerror|load failed|typeerror/i.test(base)) {
+      return `${base} Browser/network blocked the live stream request, or the stream endpoint is not reachable from this page.`;
+    }
+    return base;
   }
 
   async function challengeLichessBot(botUsername, selectedColor, clock) {
@@ -3256,20 +3315,36 @@ function enterActiveSession(mode, opts = {}) {
     }
     const data = await resp.json().catch(() => ({}));
     playState.lichess.challengeId = data?.challenge?.id || null;
-    const gameId = await Promise.race([
+    const startEvt = await Promise.race([
       startPromise,
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timed out waiting for Lichess gameStart event.')), 30000))
     ]);
-    return gameId;
+    if (!startEvt) throw new Error('Lichess returned no gameStart payload.');
+    const gameId = startEvt?.gameId || startEvt?.id || startEvt?.game?.gameId || startEvt?.game?.id || null;
+    if (!gameId) throw new Error('Lichess gameStart payload did not contain a game id.');
+    playState.lichess.startEvent = startEvt;
+    playState.lichess.fullId = startEvt?.fullId || startEvt?.game?.fullId || '';
+    playState.lichess.apiMode = pickLichessApiModeFromStart(startEvt);
+    playState.userColor = (startEvt?.color || startEvt?.game?.color || (selectedColor === 'black' ? 'black' : 'white')).startsWith('b') ? 'b' : 'w';
+    return {
+      gameId,
+      apiMode: playState.lichess.apiMode,
+      startEvt
+    };
   }
 
-  
+
+
 async function startLichessGameStream(gameId) {
   const token = playState.lichess.token;
   const ctrl = new AbortController();
   playState.lichess.streamAbort = ctrl;
-  const res = await fetch(`https://lichess.org/api/board/game/stream/${encodeURIComponent(gameId)}`, {
-    headers: { Authorization: `Bearer ${token}` },
+  const streamUrl = lichessGameStreamUrl(gameId);
+  const res = await fetch(streamUrl, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/x-ndjson'
+    },
     signal: ctrl.signal
   });
   if (!res.ok) {
@@ -3320,22 +3395,31 @@ async function startLichessGameStream(gameId) {
   }, ctrl.signal);
 }
 
+
 async function startLichessGameStreamLoop(gameId) {
   let attempt = 0;
   while (playState.active && playState.mode === 'lichess' && playState.lichess.gameId === gameId) {
     try {
       attempt += 1;
+      updateSimStatus(attempt === 1
+        ? `Connecting ${playState.lichess.apiMode || 'board'} game stream…`
+        : `Reconnecting ${playState.lichess.apiMode || 'board'} game stream… (${attempt})`);
       await startLichessGameStream(gameId);
       if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId) return;
-      // Normal stream end without explicit finish signal: retry softly.
       updateSimStatus(`Lichess stream ended · reconnect ${attempt}`);
     } catch (err) {
       if (err?.name === 'AbortError') return;
       console.warn('Lichess stream error:', err);
       if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId) return;
-      updateSimStatus(`Lichess reconnecting… (${attempt})`);
+      const msg = explainLichessStreamError(err);
+      if (isHardLichessStreamError(err)) {
+        reportSessionIssue(`Lichess ${playState.lichess.apiMode || 'board'} stream failed`, msg, { clearToken: /token rejected/i.test(msg) });
+        leaveActiveSession('');
+        return;
+      }
+      updateSimStatus(`Lichess reconnecting… (${attempt}) ${msg}`);
     }
-    await sleep(Math.min(1500, 300 + attempt * 250));
+    await sleep(Math.min(2500, 400 + attempt * 300));
   }
 }
 
@@ -3360,10 +3444,11 @@ function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
 }
 
 
+  
   async function sendLichessMove(uci) {
     const token = playState.lichess.token;
     const gameId = playState.lichess.gameId;
-    const resp = await fetch(`https://lichess.org/api/board/game/${encodeURIComponent(gameId)}/move/${encodeURIComponent(uci)}`, {
+    const resp = await fetch(lichessMoveUrl(gameId, uci), {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -3377,7 +3462,7 @@ function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
     }
   }
 
-  async function buildCoachSnapshot(preFen, moveObj, actorLabel) {
+async function buildCoachSnapshot(preFen, moveObj, actorLabel) {
     const analysis = await analyzePosition(preFen);
     const uci = normalizeUci(moveObj);
     const sorted = (analysis?.candidates || []).slice().sort((a, b) => b.dcc - a.dcc);
@@ -3686,6 +3771,7 @@ async function runLichessAutoMove() {
   }
 
   
+
 async function startLichessSession(botUsername, selectedColor, clock, timeLabel, opts = {}) {
   const guessedColor = selectedColor === 'black' ? 'b' : 'w';
   enterActiveSession('lichess', {
@@ -3708,16 +3794,17 @@ async function startLichessSession(botUsername, selectedColor, clock, timeLabel,
     : Promise.resolve(null);
 
   try {
-    const gameId = await challengeLichessBot(botUsername, selectedColor, clock);
+    const startInfo = await challengeLichessBot(botUsername, selectedColor, clock);
     await openingPrepPromise;
-    playState.lichess.gameId = gameId;
-    updateSimStatus(`Lichess game ${gameId} started.`);
-    startLichessGameStreamLoop(gameId).catch(err => {
+    playState.lichess.gameId = startInfo.gameId;
+    playState.lichess.apiMode = startInfo.apiMode || playState.lichess.apiMode || 'board';
+    updateSimStatus(`Lichess game ${startInfo.gameId} started · ${playState.lichess.apiMode} API.`);
+    startLichessGameStreamLoop(startInfo.gameId).catch(err => {
       if (err?.name === 'AbortError') return;
       reportSessionIssue('Lichess stream loop crashed', err);
     });
-    if (opts.autoPilot && guessedColor === 'w') {
-      scheduleLichessOpeningKick(gameId, 12, 300);
+    if (opts.autoPilot && playState.userColor === 'w') {
+      scheduleLichessOpeningKick(startInfo.gameId, 12, 300);
     }
   } catch (err) {
     await openingPrepPromise.catch(() => null);
@@ -3726,8 +3813,6 @@ async function startLichessSession(botUsername, selectedColor, clock, timeLabel,
   }
 }
 
-
-  
 async function launchFromSimModal() {
   const mode = currentSimMode();
   const launchMode = playState.launchMode || 'sim';
