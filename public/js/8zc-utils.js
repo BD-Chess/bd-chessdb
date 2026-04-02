@@ -1488,12 +1488,16 @@ gameBuckets.forEach(bucket => {
       // ── DCC Layer: tiebreaker + lookahead ────────────────────────
       if (settings.dccEnabled && list.length > 0) {
         const baseFen = game.fen();
-        // LZ Tiebreaker for tied moves
         applyLZTiebreaker(list, baseFen);
-        // Async lookahead for top N moves
-        runDCCLookahead(list, baseFen);
+        // During autoPilot: pickDCCMove does DCC analysis + display in one pass
+        // During normal browsing: runDCCLookahead handles display separately
+        if (playState.active && playState.autoPilot) {
+          signalDCCLookaheadDone(); // pickDCCMove will handle everything
+        } else {
+          runDCCLookahead(list, baseFen);
+        }
       } else {
-        signalDCCLookaheadDone(); // no lookahead needed — unblock waiters
+        signalDCCLookaheadDone();
       }
       // ─────────────────────────────────────────────────────────────
 
@@ -2343,7 +2347,8 @@ function jumpTo(i){
   let preSimMoveIndex = -1;  // where we were in the game
 
   // Pick move using DCC: eval floor + candidates + PV+ADSR ranking
-  async function pickDCCMove(simGame, overrideCandidates) {
+  // When liveDisplay=true, updates badges + DCC view + stores for PGN as it analyzes
+  async function pickDCCMove(simGame, overrideCandidates, liveDisplay) {
     const fen = simGame.fen();
     const result = await cachedFetchChessDB(fen);
 
@@ -2373,6 +2378,11 @@ function jumpTo(i){
       Math.abs(bestRawScore - m.score) <= settings.dccEvalFloor
     ).slice(0, maxCandidates);
 
+    if (liveDisplay) {
+      latestDCCResults = [];
+      updateDCCProgress(0, candidates.length);
+    }
+
     let bestMove = result.moves[0]; // fallback: raw best
     let bestScore = -Infinity;
 
@@ -2385,11 +2395,12 @@ function jumpTo(i){
       });
       if (!m) continue;
 
+      if (liveDisplay) updateDCCBadge(mv.move, null, 'loading');
+
       const pvResult = await fetchPV(probe.fen());
       if (pvResult.score === null) continue;
 
       const evalSeq = [pvResult.score];
-      // Quick intermediate score if PV has moves
       if (pvResult.pv.length > 1) {
         const walk = new Chess(probe.fen());
         for (let j = 0; j < Math.min(4, pvResult.pv.length); j++) {
@@ -2408,7 +2419,6 @@ function jumpTo(i){
 
       const stability = evalSeqStability(evalSeq);
       const adsr = adsrAnalysis(evalSeq);
-      // v0.6.0: Combined DCC score using DCC_WEIGHTS constants
       let dccScore = mv.score;
       dccScore += stability * DCC_WEIGHTS.stability;
       if (adsr.shape === 'sustained') dccScore += DCC_WEIGHTS.adsr_sustained;
@@ -2417,28 +2427,38 @@ function jumpTo(i){
       else if (adsr.shape === 'collapse') dccScore += DCC_WEIGHTS.adsr_collapse;
       else if (adsr.shape === 'volatile') dccScore += DCC_WEIGHTS.adsr_volatile;
 
-      // v0.6.0 Feature 2: Positional momentum
       const momentum = evalMomentum(evalSeq);
       dccScore += Math.sign(momentum) * Math.min(Math.abs(momentum), DCC_WEIGHTS.momentum_max);
 
-      // v0.6.0 Feature 3: Endgame transition detector
       if (materialCount(probe.fen()) <= 7) {
         const probeResult = await cachedFetchChessDB(probe.fen());
         if (probeResult.moves.length > 0) dccScore += DCC_WEIGHTS.endgame_known;
         else dccScore += DCC_WEIGHTS.endgame_unknown;
       }
 
-      // v0.6.0 Feature 4: Tunneling bonus
       if (detectTunnel(evalSeq)) dccScore += DCC_WEIGHTS.tunnel;
 
-      // LZ tiebreaker on resulting position
       const cx = fenComplexity(probe.fen());
       dccScore -= cx * DCC_WEIGHTS.complexity;
+
+      // Live display: update badge + DCC view as each candidate finishes
+      if (liveDisplay) {
+        const trend = evalTrend(evalSeq);
+        const data = {
+          move: mv.move, trend, stability, arrow: trendArrow(trend), evalSequence: evalSeq,
+          movePath: [], score: mv.score, pvDepth: pvResult.depth || 0,
+          adsr, momentum, tunnel: detectTunnel(evalSeq),
+          isMdlPick: false
+        };
+        updateDCCBadge(mv.move, data, 'done');
+        latestDCCResults.push(data);
+        updateDCCProgress(i + 1, candidates.length);
+        renderDCCView();
+      }
 
       if (dccScore > bestScore) {
         bestScore = dccScore;
         bestMove = mv;
-        // v0.6.1: attach DCC metadata for CSV export
         bestMove._dccScore = dccScore;
         bestMove._stability = stability;
         bestMove._adsrShape = adsr.shape;
@@ -2446,6 +2466,13 @@ function jumpTo(i){
         bestMove._tunnel = detectTunnel(evalSeq);
       }
     }
+
+    // Store for PGN export
+    if (liveDisplay && latestDCCResults.length > 0) {
+      const fenKey = fen.split(' ').slice(0, 4).join(' ');
+      dccMoveAnnotations[fenKey] = latestDCCResults.slice();
+    }
+
     return bestMove;
   }
 
@@ -3755,20 +3782,10 @@ async function runLichessAutoMove() {
       moveUci = playState.lichess.preparedOpeningUci;
       san = playState.lichess.preparedOpeningSan || uciToSan(playState.startFen || 'startpos', moveUci);
     } else {
-      // Wait for DCC lookahead to finish — badges update, data goes to PGN,
-      // and ChessDB responses get cached so pickDCCMove is fast
-      await Promise.race([
-        dccLookaheadDone,
-        new Promise(r => setTimeout(r, 60000))  // 60s safety timeout
-      ]);
+      // pickDCCMove with liveDisplay=true: single pass — analyzes, updates badges,
+      // renders DCC view, stores for PGN, and picks best move
+      const pick = await pickDCCMove(game, null, true);
       // Stale check: user may have moved manually while DCC was analyzing
-      if (game.fen() !== fenBefore) {
-        updateSimStatus('User moved — DCC yielded.');
-        return;
-      }
-      updateSimStatus('DCC done — picking best move…');
-      const pick = await pickDCCMove(game);
-      // Stale check again after pickDCCMove
       if (game.fen() !== fenBefore) {
         updateSimStatus('User moved — DCC yielded.');
         return;
