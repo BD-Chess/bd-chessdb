@@ -82,6 +82,150 @@ function initAll() {
     return `<div class="dcc-verbose-block" style="margin-top:8px;padding:8px 10px;border:1px solid rgba(0,229,255,.18);border-radius:8px;background:rgba(0,229,255,.05);font-size:12px;line-height:1.35;color:#cfefff;">${body}</div>`;
   }
 
+  let uiEvalState = {
+    classicalCp: null,
+    dccCp: null,
+    classicalLabel: 'Classical',
+    dccLabel: 'DCC',
+    classicalSource: '',
+    dccSource: ''
+  };
+
+  function evalFillPct(cp) {
+    if (!Number.isFinite(Number(cp))) return 50;
+    const pct = 50 + Math.tanh(Number(cp) / 250) * 46;
+    return Math.max(4, Math.min(96, pct));
+  }
+
+  function ensureDualEvalBars() {
+    const boardWrap = document.getElementById('board-container');
+    if (!boardWrap) return null;
+    let shell = document.getElementById('dualEvalShell');
+    if (shell) return shell;
+    const parent = boardWrap.parentElement;
+    if (!parent) return null;
+
+    shell = document.createElement('div');
+    shell.id = 'dualEvalShell';
+    shell.style.display = 'flex';
+    shell.style.alignItems = 'stretch';
+    shell.style.justifyContent = 'center';
+    shell.style.gap = '10px';
+    shell.style.width = '100%';
+    shell.style.overflow = 'visible';
+
+    const makeBar = (kind, shortLabel, accent) => {
+      const bar = document.createElement('div');
+      bar.id = `evalBar_${kind}`;
+      bar.style.width = '18px';
+      bar.style.minWidth = '18px';
+      bar.style.position = 'relative';
+      bar.style.border = '1px solid rgba(255,255,255,.14)';
+      bar.style.borderRadius = '8px';
+      bar.style.background = '#111';
+      bar.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,.04)';
+      bar.style.overflow = 'hidden';
+
+      const fill = document.createElement('div');
+      fill.id = `evalBarFill_${kind}`;
+      fill.style.position = 'absolute';
+      fill.style.left = '0';
+      fill.style.right = '0';
+      fill.style.bottom = '0';
+      fill.style.height = '50%';
+      fill.style.background = '#f5f5f5';
+      fill.style.transition = 'height 0.18s ease';
+      bar.appendChild(fill);
+
+      const cap = document.createElement('div');
+      cap.id = `evalBarLabel_${kind}`;
+      cap.textContent = shortLabel;
+      cap.style.position = 'absolute';
+      cap.style.top = '6px';
+      cap.style.left = '50%';
+      cap.style.transform = 'translateX(-50%)';
+      cap.style.fontSize = '10px';
+      cap.style.fontWeight = '700';
+      cap.style.letterSpacing = '.3px';
+      cap.style.color = accent;
+      cap.style.textShadow = '0 1px 2px rgba(0,0,0,.75)';
+      bar.appendChild(cap);
+
+      const score = document.createElement('div');
+      score.id = `evalBarScore_${kind}`;
+      score.textContent = '—';
+      score.style.position = 'absolute';
+      score.style.left = '50%';
+      score.style.bottom = '6px';
+      score.style.transform = 'translateX(-50%) rotate(180deg)';
+      score.style.writingMode = 'vertical-rl';
+      score.style.fontSize = '10px';
+      score.style.fontWeight = '700';
+      score.style.color = accent;
+      score.style.textShadow = '0 1px 2px rgba(0,0,0,.85)';
+      bar.appendChild(score);
+
+      return bar;
+    };
+
+    const leftBar = makeBar('classical', 'C', '#7dd3fc');
+    const rightBar = makeBar('dcc', 'D', '#f59e0b');
+
+    parent.insertBefore(shell, boardWrap);
+    shell.appendChild(leftBar);
+    shell.appendChild(boardWrap);
+    shell.appendChild(rightBar);
+    boardWrap.style.flex = '0 0 auto';
+    if (parent.style.overflow === 'hidden') parent.style.overflow = 'visible';
+    return shell;
+  }
+
+  function syncDualEvalBars() {
+    const shell = ensureDualEvalBars();
+    const boardWrap = document.getElementById('board-container');
+    if (!shell || !boardWrap) return;
+    const h = Math.max(120, boardWrap.offsetHeight || boardWrap.clientHeight || 0);
+    ['classical', 'dcc'].forEach(kind => {
+      const bar = document.getElementById(`evalBar_${kind}`);
+      if (bar) bar.style.height = `${h}px`;
+    });
+  }
+
+  function renderDualEvalBars() {
+    ensureDualEvalBars();
+    syncDualEvalBars();
+    const applyBar = (kind, cp, shortLabel, source) => {
+      const fill = document.getElementById(`evalBarFill_${kind}`);
+      const cap = document.getElementById(`evalBarLabel_${kind}`);
+      const score = document.getElementById(`evalBarScore_${kind}`);
+      const bar = document.getElementById(`evalBar_${kind}`);
+      if (!fill || !cap || !score || !bar) return;
+      const pct = evalFillPct(cp);
+      fill.style.height = `${pct}%`;
+      cap.textContent = shortLabel;
+      score.textContent = Number.isFinite(Number(cp)) ? fmtCp(cp) : '—';
+      bar.title = `${shortLabel}: ${Number.isFinite(Number(cp)) ? fmtCp(cp) : 'no eval'}${source ? ` · ${source}` : ''}`;
+    };
+
+    applyBar('classical', uiEvalState.classicalCp, uiEvalState.classicalLabel || 'C', uiEvalState.classicalSource || '');
+    applyBar('dcc', uiEvalState.dccCp, uiEvalState.dccLabel || 'D', uiEvalState.dccSource || '');
+  }
+
+  function setEvalBars(next = {}) {
+    if (Object.prototype.hasOwnProperty.call(next, 'classicalCp')) uiEvalState.classicalCp = next.classicalCp;
+    if (Object.prototype.hasOwnProperty.call(next, 'dccCp')) uiEvalState.dccCp = next.dccCp;
+    if (Object.prototype.hasOwnProperty.call(next, 'classicalLabel')) uiEvalState.classicalLabel = next.classicalLabel;
+    if (Object.prototype.hasOwnProperty.call(next, 'dccLabel')) uiEvalState.dccLabel = next.dccLabel;
+    if (Object.prototype.hasOwnProperty.call(next, 'classicalSource')) uiEvalState.classicalSource = next.classicalSource;
+    if (Object.prototype.hasOwnProperty.call(next, 'dccSource')) uiEvalState.dccSource = next.dccSource;
+    renderDualEvalBars();
+  }
+
+  window.addEventListener('resize', () => {
+    syncDualEvalBars();
+    renderDualEvalBars();
+  });
+
 
 	// ─── display the PGN “Opening” tag under the moves ─────────────────
 	function showOpening() {
@@ -199,6 +343,7 @@ function initAll() {
     hydrateSimModal();
     if (ENABLE_COACH) hydrateCoachModes();
     disableCoachUi();
+  renderDualEvalBars();
   }
 
   /* ------------------------------------------------------------------
@@ -949,6 +1094,7 @@ gameBuckets.forEach(bucket => {
     const turn = fenTurn(fen);
     const dbMoves = (context.dbResult && context.dbResult.moves ? context.dbResult.moves : []).slice(0, 3);
     const seedMoves = uniqueUciMoves(dbMoves.map(m => m.move));
+    if (dbMoves.length > 0) setEvalBars({ classicalCp: dbMoves[0].score, classicalLabel: 'CDB', classicalSource: `ChessDB ${context.rootRoute || 'direct'}` });
 
     const onlineBudgetMs = context.budgetMs || ONLINE_MOVE_BUDGET_MS;
     const perCallTimeout = Math.max(700, Math.min(ONLINE_TIMEOUT_MS, onlineBudgetMs));
@@ -1008,6 +1154,7 @@ gameBuckets.forEach(bucket => {
           `Online: chess-api ${a.provider === 'chessapi' ? a.move + ' ' + fmtCp(a.rootScore) : b.move + ' ' + fmtCp(b.rootScore)} · stockfish.online ${a.provider === 'stockfishonline' ? a.move + ' ' + fmtCp(a.rootScore) : b.move + ' ' + fmtCp(b.rootScore)}`,
           `Pick: ${a.move} via online_consensus`
         ], { mode: 'online_consensus', move: a.move, score: avgScore });
+        setEvalBars({ dccCp: avgScore, dccLabel: 'DCC', dccSource: 'online consensus' });
         return { move: a.move, score: avgScore, _pickSource: 'online_consensus', _onlineSources: [a.provider, b.provider] };
       }
       const gap = Math.abs(a.rootScore - b.rootScore);
@@ -1018,6 +1165,7 @@ gameBuckets.forEach(bucket => {
           `Online: ${a.provider} ${a.move} ${fmtCp(a.rootScore)} · ${b.provider} ${b.move} ${fmtCp(b.rootScore)} · gap ${gap}cp`,
           `Pick: ${stronger.move} via ${stronger.provider}_gap`
         ], { mode: 'online_gap', move: stronger.move, gap });
+        setEvalBars({ dccCp: Math.round(stronger.rootScore), dccLabel: 'DCC', dccSource: `${stronger.provider} gap` });
         return { move: stronger.move, score: Math.round(stronger.rootScore), _pickSource: `${stronger.provider}_gap`, _onlineSources: [a.provider, b.provider], _onlineGap: gap };
       }
     }
@@ -1031,6 +1179,7 @@ gameBuckets.forEach(bucket => {
         `Online: single usable move ${only.move} ${fmtCp(only.score)} from ${only.sources.join('+')}`,
         `Pick: ${only.move} via ${onlySource}`
       ], { mode: 'online_single', move: only.move });
+      setEvalBars({ dccCp: Math.round(only.score || 0), dccLabel: 'DCC', dccSource: onlySource });
       return { move: only.move, score: Math.round(only.score || 0), _pickSource: onlySource, _onlineSources: only.sources };
     }
 
@@ -1041,6 +1190,7 @@ gameBuckets.forEach(bucket => {
         `Online: ${onlineScored.map(x => `${x.provider} ${x.move} ${fmtCp(x.rootScore)}`).join(' · ') || 'mixed candidate set'}`,
         `Pick: ${picked.move} via online_dcc_tiebreak`
       ], { mode: 'online_dcc_tiebreak', move: picked.move, candidates: candidates.length });
+      setEvalBars({ dccCp: Math.round(picked.score || 0), dccLabel: 'DCC', dccSource: 'online DCC tiebreak' });
       return picked;
     }
 
@@ -1051,6 +1201,7 @@ gameBuckets.forEach(bucket => {
         `Online: score fallback from ${best.sources.join('+')} · ${best.move} ${fmtCp(best.score)}`,
         `Pick: ${best.move} via online_score_fallback`
       ], { mode: 'online_score_fallback', move: best.move });
+      setEvalBars({ dccCp: Math.round(best.score || 0), dccLabel: 'DCC', dccSource: 'online score fallback' });
     }
     return best ? { move: best.move, score: Math.round(best.score || 0), _pickSource: 'online_score_fallback', _onlineSources: best.sources } : null;
   }
@@ -1292,6 +1443,9 @@ gameBuckets.forEach(bucket => {
       // Update progress + DCC view panel
       updateDCCProgress(i + 1, candidates.length);
       const bestNow = latestDCCResults.slice().sort((a, b) => (b.stability || 0) - (a.stability || 0) || (b.score || 0) - (a.score || 0))[0];
+      if (bestNow) {
+        setEvalBars({ dccCp: bestNow.score, dccLabel: 'DCC', dccSource: 'DCC lookahead' });
+      }
       setDccVerboseStatus([
         `Source: ChessDB analysis board`,
         `Candidates: ${candidates.length}/${moveList.length} within ${settings.dccEvalFloor}cp`,
@@ -1306,6 +1460,9 @@ gameBuckets.forEach(bucket => {
       const fenKey = baseFen.split(' ').slice(0, 4).join(' ');
       dccMoveAnnotations[fenKey] = latestDCCResults.slice();
       const bestFinal = latestDCCResults.slice().sort((a, b) => (b.stability || 0) - (a.stability || 0) || (b.score || 0) - (a.score || 0))[0];
+      if (bestFinal) {
+        setEvalBars({ dccCp: bestFinal.score, dccLabel: 'DCC', dccSource: 'DCC final' });
+      }
       setDccVerboseStatus([
         `Source: ChessDB analysis board`,
         `DCC lookahead done · ${latestDCCResults.length}/${candidates.length} moves with PV`,
@@ -1714,9 +1871,13 @@ gameBuckets.forEach(bucket => {
     /* history height */
     const histHeight = { smallest: '60px', small:'140px', medium:'300px', big:'450px' }[settings.historySize];
     document.getElementById('moves').style.height = histHeight;
-    // v0.6.1: DCC panel matches history height
+    // v0.6.1: DCC / replay panels match history height
     const dccPanel = document.getElementById('dccAnalysisPanel');
-    if (dccPanel) { dccPanel.style.maxHeight = histHeight; dccPanel.style.overflowY = 'auto'; }
+    if (dccPanel) { dccPanel.style.height = histHeight; dccPanel.style.minHeight = histHeight; dccPanel.style.maxHeight = histHeight; dccPanel.style.overflowY = 'auto'; }
+    const simStatsPanel = document.getElementById('simStatsPanel');
+    if (simStatsPanel) { simStatsPanel.style.minHeight = histHeight; simStatsPanel.style.maxHeight = histHeight; simStatsPanel.style.overflowY = 'auto'; }
+    syncDualEvalBars();
+    renderDualEvalBars();
 
     /* format toggle label:  "FEN | pgn"  or  "fen | PGN" 
     document.getElementById('btnFormat').innerText =
@@ -1850,6 +2011,13 @@ gameBuckets.forEach(bucket => {
     }
     
     list.forEach((m, i) => annotateMove(m.move, m.score, i === 0));
+    if (list.length > 0) {
+      setEvalBars({
+        classicalCp: list[0].score,
+        classicalLabel: 'CDB',
+        classicalSource: `ChessDB ${useProxy ? 'proxy' : 'direct'}`
+      });
+    }
 
       // ── DCC Layer: tiebreaker + lookahead ────────────────────────
       if (settings.dccEnabled && list.length > 0) {
@@ -2034,6 +2202,7 @@ gameBuckets.forEach(bucket => {
 
 	  board.position(game.fen());
 	  document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
+  setEvalBars({ dccCp: null, dccSource: '', dccLabel: 'DCC' });
 	  // Cancel any running DCC lookahead
 	  activeLookaheadId++;
 	  updateDCCProgress(0, 0); // clear progress indicator
@@ -2392,15 +2561,11 @@ function jumpTo(i){
 
   document.getElementById('btnNew').onclick = () => {
 	divergedIndex = -1;
-    if (playState.active && (playState.mode === 'dccbot' || playState.mode === 'lichess')) {
-      leaveActiveSession('');
-    }
     game.reset();
     updateBoard(true);
     document.getElementById('openingName').textContent = '';
     // reset title to the original placeholder
     document.getElementById('gameTitle').innerHTML = 'Analyse moves with ChessDB';
-    updateSimStatus('');
   };
 
 
@@ -2734,6 +2899,7 @@ function jumpTo(i){
 
     // Smart candidate selection: eval floor + max candidates
     const bestRawScore = result.moves[0].score;
+    setEvalBars({ classicalCp: bestRawScore, classicalLabel: 'CDB', classicalSource: `ChessDB ${rootRoute}` });
     const maxCandidates = overrideCandidates || settings.dccTopCandidates;
     const candidates = result.moves.filter(m =>
       Math.abs(bestRawScore - m.score) <= settings.dccEvalFloor
@@ -2835,6 +3001,7 @@ function jumpTo(i){
       if (onlinePick) return onlinePick;
     }
 
+    setEvalBars({ dccCp: Number.isFinite(Number(bestMove.score)) ? bestMove.score : null, dccLabel: 'DCC', dccSource: bestMove._pickSource || 'chessdb_raw' });
     setDccVerboseStatus([
       `Source: ChessDB ${rootRoute} · root ${result.moves.length} moves · attempts ${rootAttempts || 1}`,
       `Deep eval: PV ok ${pvOkCount}/${candidates.length} · best ${bestMove.move || '—'} ${fmtCp(bestMove.score)}`,
@@ -3385,6 +3552,7 @@ function openSimModal(launchMode = 'sim') {
     leaveActiveSession(playState.mode === 'lichess'
       ? 'Live session stopped.'
       : '8Z session stopped.');
+    return;
   }
   const modal = document.getElementById('simModal');
   if (modal) modal.style.display = 'flex';
@@ -4417,22 +4585,21 @@ async function launchFromSimModal() {
             <div style="color:#00e5ff; font-weight:700; margin-bottom:6px;">
               DCC Replay — ${i + 1}/${moves.length} (${pct}%)
             </div>
-            <div style="display:flex; gap:24px;">
-              <div>
-                <span style="color:#34d399; font-weight:600;">White</span>
-                DCC#1: <strong>${wP}%</strong>
-                <span style="color:#666">(${wM}/${wA.length})</span>
+            <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px;">
+              <div style="padding:8px 10px; border:1px solid rgba(52,211,153,.24); border-radius:8px; background:rgba(52,211,153,.06);">
+                <div><span style="color:#34d399; font-weight:700;">White</span></div>
+                <div>DCC#1: <strong>${wP}%</strong> <span style="color:#666">(${wM}/${wA.length})</span></div>
               </div>
-              <div>
-                <span style="color:#a78bfa; font-weight:600;">Black</span>
-                DCC#1: <strong>${bP}%</strong>
-                <span style="color:#666">(${bM}/${bA.length})</span>
+              <div style="padding:8px 10px; border:1px solid rgba(167,139,250,.24); border-radius:8px; background:rgba(167,139,250,.06);">
+                <div><span style="color:#a78bfa; font-weight:700;">Black</span></div>
+                <div>DCC#1: <strong>${bP}%</strong> <span style="color:#666">(${bM}/${bA.length})</span></div>
               </div>
             </div>
-            <div style="margin-top:6px; height:4px; background:#333; border-radius:2px;">
+            <div style="margin-top:8px; height:4px; background:#333; border-radius:2px;">
               <div style="height:100%; width:${pct}%; background:#00e5ff; border-radius:2px; transition:width 0.2s;"></div>
             </div>
           </div>`;
+        panel.style.overflowY = 'auto';
         panel.style.display = 'block';
       }
 
@@ -4487,19 +4654,21 @@ async function launchFromSimModal() {
         <span class="sim-title">DCC Replay Complete — ${annotations.length} moves analyzed</span>
       </div>
       <div style="padding:8px; font-size:12px; line-height:1.6; color:#ddd;">
-        <div style="margin-bottom:8px;">
-          <strong style="color:#34d399">${wName} (White)</strong><br>
-          DCC accuracy: <strong>${wPct}%</strong> (${wMatch}/${wAnns.length} matched DCC #1)<br>
-          Avg stability: ${avgStab(wAnns).toFixed(2)} · Tunnels: ${tunnelCount(wAnns)}<br>
-          <span style="color:#888">${shapeStr(wShapes)}</span>
+        <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; align-items:start;">
+          <div style="padding:10px; border:1px solid rgba(52,211,153,.24); border-radius:8px; background:rgba(52,211,153,.06);">
+            <strong style="color:#34d399">${wName} (White)</strong><br>
+            DCC accuracy: <strong>${wPct}%</strong> (${wMatch}/${wAnns.length} matched DCC #1)<br>
+            Avg stability: ${avgStab(wAnns).toFixed(2)} · Tunnels: ${tunnelCount(wAnns)}<br>
+            <span style="color:#888">${shapeStr(wShapes) || '—'}</span>
+          </div>
+          <div style="padding:10px; border:1px solid rgba(167,139,250,.24); border-radius:8px; background:rgba(167,139,250,.06);">
+            <strong style="color:#a78bfa">${bName} (Black)</strong><br>
+            DCC accuracy: <strong>${bPct}%</strong> (${bMatch}/${bAnns.length} matched DCC #1)<br>
+            Avg stability: ${avgStab(bAnns).toFixed(2)} · Tunnels: ${tunnelCount(bAnns)}<br>
+            <span style="color:#888">${shapeStr(bShapes) || '—'}</span>
+          </div>
         </div>
-        <div style="margin-bottom:8px;">
-          <strong style="color:#a78bfa">${bName} (Black)</strong><br>
-          DCC accuracy: <strong>${bPct}%</strong> (${bMatch}/${bAnns.length} matched DCC #1)<br>
-          Avg stability: ${avgStab(bAnns).toFixed(2)} · Tunnels: ${tunnelCount(bAnns)}<br>
-          <span style="color:#888">${shapeStr(bShapes)}</span>
-        </div>
-        <div style="color:#f59e0b; font-style:italic;">
+        <div style="color:#f59e0b; font-style:italic; margin-top:10px;">
           ${bPct > wPct ? 'DCC says: Black played more aligned with DCC preferences.'
            : wPct > bPct ? 'DCC says: White played more aligned with DCC preferences.'
            : 'DCC says: Both sides equally aligned with DCC preferences.'}
@@ -4508,6 +4677,7 @@ async function launchFromSimModal() {
       <div style="text-align:center; margin-top:6px;">
         <button id="btnSaveAnnotatedPGN" style="background:#00e5ff; color:#000; border:none; padding:8px 20px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:600;">Save Annotated PGN</button>
       </div>`;
+    panel.style.overflowY = 'auto';
     panel.style.display = 'block';
 
     // Wire save button
