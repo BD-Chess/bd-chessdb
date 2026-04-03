@@ -2392,11 +2392,15 @@ function jumpTo(i){
 
   document.getElementById('btnNew').onclick = () => {
 	divergedIndex = -1;
+    if (playState.active && (playState.mode === 'dccbot' || playState.mode === 'lichess')) {
+      leaveActiveSession('');
+    }
     game.reset();
     updateBoard(true);
     document.getElementById('openingName').textContent = '';
     // reset title to the original placeholder
     document.getElementById('gameTitle').innerHTML = 'Analyse moves with ChessDB';
+    updateSimStatus('');
   };
 
 
@@ -3381,7 +3385,6 @@ function openSimModal(launchMode = 'sim') {
     leaveActiveSession(playState.mode === 'lichess'
       ? 'Live session stopped.'
       : '8Z session stopped.');
-    return;
   }
   const modal = document.getElementById('simModal');
   if (modal) modal.style.display = 'flex';
