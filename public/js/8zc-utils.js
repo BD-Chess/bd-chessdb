@@ -3559,17 +3559,25 @@ function enterActiveSession(mode, opts = {}) {
     return msg;
   }
 
-  function syncGameFromMoves(movesStr, initialFen = 'startpos') {
-    const moves = (movesStr || '').trim() ? movesStr.trim().split(/\s+/) : [];
-    if ((playState.lichess.lastMoves || '').trim() === (movesStr || '').trim()) return;
-
-    const keepPreparedOpening =
+  function hasPendingPreparedOpening(remoteMovesStr = playState.lichess.lastMoves || '') {
+    return !!(
       playState.active &&
       playState.mode === 'lichess' &&
       playState.autoPilot &&
       playState.userColor === 'w' &&
       playState.lichess.preparedOpeningApplied &&
       !playState.lichess.preparedOpeningSent &&
+      playState.lichess.preparedOpeningUci &&
+      !(remoteMovesStr || '').trim()
+    );
+  }
+
+  function syncGameFromMoves(movesStr, initialFen = 'startpos') {
+    const moves = (movesStr || '').trim() ? movesStr.trim().split(/\s+/) : [];
+    if ((playState.lichess.lastMoves || '').trim() === (movesStr || '').trim()) return;
+
+    const keepPreparedOpening =
+      hasPendingPreparedOpening(movesStr) &&
       moves.length === 0 &&
       (!initialFen || initialFen === 'startpos');
 
@@ -3724,7 +3732,9 @@ async function startLichessGameStream(gameId) {
       playState.waiting = game.turn() !== playState.userColor;
       if (playState.autoPilot) {
         updateSimStatus(`8Z live · ${playState.lichess.botUsername}`);
-        if (!game.game_over() && game.turn() === playState.userColor) setTimeout(() => { runLichessAutoMove().catch(console.error); }, 180);
+        if (!game.game_over() && (game.turn() === playState.userColor || hasPendingPreparedOpening(payload?.state?.moves || ''))) {
+          setTimeout(() => { runLichessAutoMove().catch(console.error); }, 180);
+        }
       } else {
         updateSimStatus(game.turn() === playState.userColor ? 'Your move.' : `Waiting for ${playState.lichess.botUsername}…`);
       }
@@ -3739,7 +3749,7 @@ async function startLichessGameStream(gameId) {
         return null;
       }
       if (playState.autoPilot) {
-        if (!game.game_over() && game.turn() === playState.userColor) {
+        if (!game.game_over() && (game.turn() === playState.userColor || hasPendingPreparedOpening(payload.moves || ''))) {
           setTimeout(() => { runLichessAutoMove().catch(console.error); }, 120);
         } else {
           updateSimStatus(`Waiting for ${playState.lichess.botUsername}…`);
@@ -3780,7 +3790,7 @@ function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
       if (remaining > 1) setTimeout(() => kick(remaining - 1), delayMs);
       return;
     }
-    if (game.turn() !== playState.userColor) return;
+    if (game.turn() !== playState.userColor && !hasPendingPreparedOpening()) return;
     try {
       await runLichessAutoMove();
       return;
@@ -4021,19 +4031,15 @@ async function runLichessAutoMove() {
     leaveActiveSession('Game over. Lichess bot session finished.');
     return;
   }
-  if (game.turn() !== playState.userColor) return;
+  const pendingPreparedOpening = hasPendingPreparedOpening();
+  if (!pendingPreparedOpening && game.turn() !== playState.userColor) return;
 
   playState.autoMoveBusy = true;
   playState.waiting = true;
   setBoardThinking(true);
 
   const noMovesYet = !(playState.lichess.lastMoves || '').trim();
-  const usePreparedOpening =
-    noMovesYet &&
-    playState.userColor === 'w' &&
-    playState.lichess.preparedOpeningApplied &&
-    !playState.lichess.preparedOpeningSent &&
-    !!playState.lichess.preparedOpeningUci;
+  const usePreparedOpening = pendingPreparedOpening && noMovesYet;
 
   updateSimStatus(usePreparedOpening ? 'Sending prepared White opening to Lichess…' : '8Z-DCC is thinking…');
   const fenBefore = game.fen();
