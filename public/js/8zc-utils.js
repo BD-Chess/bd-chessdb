@@ -42,9 +42,45 @@ function initAll() {
   let dccViewActive = false;
   // Store latest DCC results for the analysis panel
   let latestDCCResults = [];
+  // Compact runtime status shown under the DCC move list
+  let dccVerboseStatus = { lines: [], updatedAt: 0, details: {} };
   // v0.6.1: Per-move DCC annotations for PGN export
   // Keyed by half-move index → best DCC result at that position
   let dccMoveAnnotations = {};
+
+  function escHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function fmtCp(v) {
+    const n = Math.round(Number(v));
+    if (!Number.isFinite(n)) return '—';
+    return n > 0 ? `+${n}` : `${n}`;
+  }
+
+  function setDccVerboseStatus(lines, details = {}) {
+    const arr = (Array.isArray(lines) ? lines : [lines])
+      .filter(Boolean)
+      .map(x => String(x).trim())
+      .filter(Boolean)
+      .slice(0, 3);
+    dccVerboseStatus = { lines: arr, updatedAt: Date.now(), details: details || {} };
+    if (dccViewActive) {
+      const panel = document.getElementById('dccAnalysisPanel');
+      if (panel && panel.style.display !== 'none') renderDCCView();
+    }
+  }
+
+  function renderDccVerboseBlock() {
+    const lines = (dccVerboseStatus && dccVerboseStatus.lines) ? dccVerboseStatus.lines : [];
+    if (!lines.length) return '';
+    const body = lines.map(line => `<div style="margin:2px 0;">${escHtml(line)}</div>`).join('');
+    return `<div class="dcc-verbose-block" style="margin-top:8px;padding:8px 10px;border:1px solid rgba(0,229,255,.18);border-radius:8px;background:rgba(0,229,255,.05);font-size:12px;line-height:1.35;color:#cfefff;">${body}</div>`;
+  }
 
 
 	// ─── display the PGN “Opening” tag under the moves ─────────────────
@@ -917,6 +953,12 @@ gameBuckets.forEach(bucket => {
     const onlineBudgetMs = context.budgetMs || ONLINE_MOVE_BUDGET_MS;
     const perCallTimeout = Math.max(700, Math.min(ONLINE_TIMEOUT_MS, onlineBudgetMs));
 
+    setDccVerboseStatus([
+      `Source: ChessDB ${context.rootRoute || 'direct'} ${dbMoves.length ? 'weak hit' : 'miss'}${context.rootAttempts ? ` · attempts ${context.rootAttempts}` : ''}`,
+      `Fallback: chess-api.com + stockfish.online · seed ${seedMoves.length} move(s)`,
+      `Status: waiting for online evals (${perCallTimeout}ms each)`
+    ], { mode: 'online_start', seedMoves: seedMoves.length, perCallTimeout, rootAttempts: context.rootAttempts || 0, rootRoute: context.rootRoute || 'direct' });
+
     const [capiRes, sfRes] = await Promise.allSettled([
       fetchChessApiEval(fen, seedMoves, perCallTimeout),
       fetchStockfishOnlineEval(fen, perCallTimeout)
@@ -928,7 +970,14 @@ gameBuckets.forEach(bucket => {
     if (sfRes.status === 'fulfilled') online.push(sfRes.value);
     else console.warn('stockfish.online fallback failed:', sfRes.reason);
 
-    if (online.length === 0) return null;
+    if (online.length === 0) {
+      setDccVerboseStatus([
+        `Source: ChessDB ${context.rootRoute || 'direct'} ${dbMoves.length ? 'weak hit' : 'miss'}`,
+        `Online fallback failed: chess-api ${capiRes.status === 'fulfilled' ? 'ok' : 'fail'} · stockfish.online ${sfRes.status === 'fulfilled' ? 'ok' : 'fail'}`,
+        'Pick: none · online providers returned no usable move'
+      ], { mode: 'online_fail' });
+      return null;
+    }
 
     const byMove = new Map();
     const addCandidate = (move, score, source) => {
@@ -954,11 +1003,21 @@ gameBuckets.forEach(bucket => {
       const [a, b] = onlineScored;
       if (a.move === b.move) {
         const avgScore = Math.round((a.rootScore + b.rootScore) / 2);
+        setDccVerboseStatus([
+          `Source: ChessDB ${context.rootRoute || 'direct'} ${dbMoves.length ? 'weak hit' : 'miss'}${context.rootAttempts ? ` · attempts ${context.rootAttempts}` : ''}`,
+          `Online: chess-api ${a.provider === 'chessapi' ? a.move + ' ' + fmtCp(a.rootScore) : b.move + ' ' + fmtCp(b.rootScore)} · stockfish.online ${a.provider === 'stockfishonline' ? a.move + ' ' + fmtCp(a.rootScore) : b.move + ' ' + fmtCp(b.rootScore)}`,
+          `Pick: ${a.move} via online_consensus`
+        ], { mode: 'online_consensus', move: a.move, score: avgScore });
         return { move: a.move, score: avgScore, _pickSource: 'online_consensus', _onlineSources: [a.provider, b.provider] };
       }
       const gap = Math.abs(a.rootScore - b.rootScore);
       if (gap >= ONLINE_EQUAL_CP) {
         const stronger = a.rootScore >= b.rootScore ? a : b;
+        setDccVerboseStatus([
+          `Source: ChessDB ${context.rootRoute || 'direct'} ${dbMoves.length ? 'weak hit' : 'miss'}${context.rootAttempts ? ` · attempts ${context.rootAttempts}` : ''}`,
+          `Online: ${a.provider} ${a.move} ${fmtCp(a.rootScore)} · ${b.provider} ${b.move} ${fmtCp(b.rootScore)} · gap ${gap}cp`,
+          `Pick: ${stronger.move} via ${stronger.provider}_gap`
+        ], { mode: 'online_gap', move: stronger.move, gap });
         return { move: stronger.move, score: Math.round(stronger.rootScore), _pickSource: `${stronger.provider}_gap`, _onlineSources: [a.provider, b.provider], _onlineGap: gap };
       }
     }
@@ -967,13 +1026,32 @@ gameBuckets.forEach(bucket => {
     if (candidates.length === 1) {
       const only = candidates[0];
       const onlySource = only.sources.filter(s => s !== 'chessdb')[0] || only.sources[0] || 'online';
+      setDccVerboseStatus([
+        `Source: ChessDB ${context.rootRoute || 'direct'} ${dbMoves.length ? 'weak hit' : 'miss'}`,
+        `Online: single usable move ${only.move} ${fmtCp(only.score)} from ${only.sources.join('+')}`,
+        `Pick: ${only.move} via ${onlySource}`
+      ], { mode: 'online_single', move: only.move });
       return { move: only.move, score: Math.round(only.score || 0), _pickSource: onlySource, _onlineSources: only.sources };
     }
 
     const picked = await chooseByQuickDcc(simGame, candidates);
-    if (picked) return picked;
+    if (picked) {
+      setDccVerboseStatus([
+        `Source: ChessDB ${context.rootRoute || 'direct'} ${dbMoves.length ? 'weak hit' : 'miss'}${context.rootAttempts ? ` · attempts ${context.rootAttempts}` : ''}`,
+        `Online: ${onlineScored.map(x => `${x.provider} ${x.move} ${fmtCp(x.rootScore)}`).join(' · ') || 'mixed candidate set'}`,
+        `Pick: ${picked.move} via online_dcc_tiebreak`
+      ], { mode: 'online_dcc_tiebreak', move: picked.move, candidates: candidates.length });
+      return picked;
+    }
 
     const best = candidates.sort((a, b) => b.score - a.score)[0];
+    if (best) {
+      setDccVerboseStatus([
+        `Source: ChessDB ${context.rootRoute || 'direct'} ${dbMoves.length ? 'weak hit' : 'miss'}`,
+        `Online: score fallback from ${best.sources.join('+')} · ${best.move} ${fmtCp(best.score)}`,
+        `Pick: ${best.move} via online_score_fallback`
+      ], { mode: 'online_score_fallback', move: best.move });
+    }
     return best ? { move: best.move, score: Math.round(best.score || 0), _pickSource: 'online_score_fallback', _onlineSources: best.sources } : null;
   }
 
@@ -1157,6 +1235,12 @@ gameBuckets.forEach(bucket => {
     const maxHalfMoves = settings.dccDepth * 2;
     latestDCCResults = []; // reset for this position
 
+    setDccVerboseStatus([
+      `Source: ChessDB analysis board`,
+      `DCC lookahead starting · depth ${settings.dccDepth} · top ${settings.dccTopCandidates}`,
+      `Status: preparing candidate scan`
+    ], { mode: 'analysis' });
+
     // Smart candidate selection: eval floor + max candidates
     const bestScore = moveList.length > 0 ? moveList[0].score : 0;
     const candidates = moveList.filter(m =>
@@ -1164,6 +1248,11 @@ gameBuckets.forEach(bucket => {
     ).slice(0, settings.dccTopCandidates);
 
     updateDCCProgress(0, candidates.length);
+    setDccVerboseStatus([
+      `Source: ChessDB analysis board`,
+      `Candidates: ${candidates.length}/${moveList.length} within ${settings.dccEvalFloor}cp`,
+      `Status: 0/${candidates.length} scanned`
+    ], { mode: 'analysis', candidates: candidates.length, totalMoves: moveList.length });
 
     for (let i = 0; i < candidates.length; i++) {
       if (thisId !== activeLookaheadId) { updateDCCProgress(0, 0); return; }
@@ -1202,6 +1291,12 @@ gameBuckets.forEach(bucket => {
       }
       // Update progress + DCC view panel
       updateDCCProgress(i + 1, candidates.length);
+      const bestNow = latestDCCResults.slice().sort((a, b) => (b.stability || 0) - (a.stability || 0) || (b.score || 0) - (a.score || 0))[0];
+      setDccVerboseStatus([
+        `Source: ChessDB analysis board`,
+        `Candidates: ${candidates.length}/${moveList.length} within ${settings.dccEvalFloor}cp`,
+        `Status: ${i + 1}/${candidates.length} scanned${bestNow ? ` · best ${bestNow.move} ${fmtCp(bestNow.score)}` : ''}`
+      ], { mode: 'analysis', candidates: candidates.length, totalMoves: moveList.length, done: i + 1 });
       renderDCCView();
       if (settings.dccOnly) applyDCCOnlyBadges();
     }
@@ -1210,6 +1305,12 @@ gameBuckets.forEach(bucket => {
     if (latestDCCResults.length > 0) {
       const fenKey = baseFen.split(' ').slice(0, 4).join(' ');
       dccMoveAnnotations[fenKey] = latestDCCResults.slice();
+      const bestFinal = latestDCCResults.slice().sort((a, b) => (b.stability || 0) - (a.stability || 0) || (b.score || 0) - (a.score || 0))[0];
+      setDccVerboseStatus([
+        `Source: ChessDB analysis board`,
+        `DCC lookahead done · ${latestDCCResults.length}/${candidates.length} moves with PV`,
+        bestFinal ? `Top DCC line: ${bestFinal.move} ${fmtCp(bestFinal.score)} · stab ${Math.round((bestFinal.stability || 0) * 100)}%` : 'Top DCC line: —'
+      ], { mode: 'analysis_done', count: latestDCCResults.length });
     }
   }
 
@@ -1399,7 +1500,7 @@ gameBuckets.forEach(bucket => {
 
     panel.style.display = 'block';
     if (latestDCCResults.length === 0) {
-      panel.innerHTML = '<div class="dcc-analysis-empty">DCC analysis loading…</div>';
+      panel.innerHTML = '<div class="dcc-analysis-empty">DCC analysis loading…</div>' + renderDccVerboseBlock();
       return;
     }
 
@@ -1449,6 +1550,7 @@ gameBuckets.forEach(bucket => {
       html += `<div class="dcc-analysis-pv">PV: ${pvDisplay}${depthStr}</div>`;
     }
 
+    html += renderDccVerboseBlock();
     panel.innerHTML = html;
 
     // Click rows to show that move's full info
@@ -1752,6 +1854,11 @@ gameBuckets.forEach(bucket => {
       // ── DCC Layer: tiebreaker + lookahead ────────────────────────
       if (settings.dccEnabled && list.length > 0) {
         const baseFen = game.fen();
+        setDccVerboseStatus([
+          `Source: ChessDB ${useProxy ? 'proxy' : 'direct'} analysis`,
+          `Root list: ${list.length} move(s) shown`,
+          'Status: launching DCC lookahead'
+        ], { mode: 'analysis_root', list: list.length, viaProxy: useProxy });
         // LZ Tiebreaker for tied moves
         applyLZTiebreaker(list, baseFen);
         // Async lookahead for top N moves
@@ -2603,10 +2710,22 @@ function jumpTo(i){
   // Pick move using DCC: eval floor + candidates + PV+ADSR ranking
   async function pickDCCMove(simGame, overrideCandidates) {
     const fen = simGame.fen();
+    setDccVerboseStatus([
+      'Source: querying ChessDB root…',
+      `Mode: DCC live pick · depth ${settings.dccDepth} · top ${overrideCandidates || settings.dccTopCandidates}`,
+      'Status: waiting for root move list'
+    ], { mode: 'live_pick' });
     const result = await cachedFetchChessDB(fen);
+    const rootAttempts = result && result._meta ? result._meta.attempts : 0;
+    const rootRoute = result && result._meta && result._meta.viaProxy ? 'proxy' : 'direct';
 
     if (!result.moves || result.moves.length === 0) {
-      return await pickOnlineFallbackMove(simGame, { dbResult: result, budgetMs: ONLINE_MOVE_BUDGET_MS });
+      setDccVerboseStatus([
+        `Source: ChessDB ${rootRoute} miss after ${rootAttempts || '?'} attempt(s)`,
+        'Fallback: online eval requested from chess-api + stockfish.online',
+        'Status: no ChessDB root moves'
+      ], { mode: 'live_pick_miss' });
+      return await pickOnlineFallbackMove(simGame, { dbResult: result, budgetMs: ONLINE_MOVE_BUDGET_MS, rootAttempts, rootRoute });
     }
 
     // Smart candidate selection: eval floor + max candidates
@@ -2615,6 +2734,12 @@ function jumpTo(i){
     const candidates = result.moves.filter(m =>
       Math.abs(bestRawScore - m.score) <= settings.dccEvalFloor
     ).slice(0, maxCandidates);
+
+    setDccVerboseStatus([
+      `Source: ChessDB ${rootRoute} · root ${result.moves.length} moves · attempts ${rootAttempts || 1}`,
+      `Candidates: ${candidates.length}/${result.moves.length} within ${settings.dccEvalFloor}cp`,
+      'Status: running PV / score checks'
+    ], { mode: 'live_pick_root', rootMoves: result.moves.length, candidates: candidates.length, rootAttempts, rootRoute });
 
     let bestMove = { ...result.moves[0], _pickSource: 'chessdb_raw' }; // fallback: raw best
     let bestScore = -Infinity;
@@ -2697,9 +2822,20 @@ function jumpTo(i){
 
     const weakChessDbHit = result.moves.length < 2 || pvOkCount === 0;
     if (weakChessDbHit) {
-      const onlinePick = await pickOnlineFallbackMove(simGame, { dbResult: result, budgetMs: ONLINE_MOVE_BUDGET_MS });
+      setDccVerboseStatus([
+        `Source: ChessDB ${rootRoute} weak hit · root ${result.moves.length} · PV ok ${pvOkCount}/${candidates.length}`,
+        'Fallback: online eval requested from chess-api + stockfish.online',
+        `Current best: ${bestMove.move || '—'} via ${bestMove._pickSource || 'chessdb_raw'}`
+      ], { mode: 'live_pick_weak', rootMoves: result.moves.length, pvOkCount, candidates: candidates.length, rootAttempts, rootRoute });
+      const onlinePick = await pickOnlineFallbackMove(simGame, { dbResult: result, budgetMs: ONLINE_MOVE_BUDGET_MS, rootAttempts, rootRoute, pvOkCount, candidateCount: candidates.length });
       if (onlinePick) return onlinePick;
     }
+
+    setDccVerboseStatus([
+      `Source: ChessDB ${rootRoute} · root ${result.moves.length} moves · attempts ${rootAttempts || 1}`,
+      `Deep eval: PV ok ${pvOkCount}/${candidates.length} · best ${bestMove.move || '—'} ${fmtCp(bestMove.score)}`,
+      `Pick: ${bestMove.move || '—'} via ${bestMove._pickSource || 'chessdb_raw'}`
+    ], { mode: 'live_pick_done', rootMoves: result.moves.length, pvOkCount, candidates: candidates.length, rootAttempts, rootRoute, pick: bestMove.move, source: bestMove._pickSource });
 
     return bestMove;
   }
