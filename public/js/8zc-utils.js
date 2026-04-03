@@ -95,14 +95,7 @@ function initAll() {
       { label: 'Bullet 2+1', clock: { limit: 120, increment: 1 } },
       { label: 'Blitz 3+0', clock: { limit: 180, increment: 0 } },
       { label: 'Blitz 5+0', clock: { limit: 300, increment: 0 } },
-      { label: 'Rapid 10+0', clock: { limit: 600, increment: 0 } },
-      { label: 'Rapid 15+10', clock: { limit: 900, increment: 10 } },
-      { label: 'Classical 30+0', clock: { limit: 1800, increment: 0 } },
-      { label: 'Classical 30+20', clock: { limit: 1800, increment: 20 } },
-      { label: 'Classical 60+0', clock: { limit: 3600, increment: 0 } },
-      { label: 'Classical 60+30', clock: { limit: 3600, increment: 30 } },
-      { label: 'Correspondence 1d', clock: { limit: 86400, increment: 0 } },
-      { label: 'Unlimited ∞', clock: { limit: 0, increment: 0 } }
+      { label: 'Rapid 10+0', clock: { limit: 600, increment: 0 } }
     ]
   };
 
@@ -389,9 +382,9 @@ gameBuckets.forEach(bucket => {
 	
 	onDrop: (src, dst) => {
 	  if (playState.active && (playState.mode === 'dccbot' || playState.mode === 'lichess')) {
+	    if (playState.autoPilot) return 'snapback';
+	    if (playState.waiting) return 'snapback';
 	    if (game.turn() !== playState.userColor) return 'snapback';
-	    // User can always move on their turn — overrides autoPilot/waiting
-	    if (playState.autoMoveBusy) playState.autoMoveBusy = false;  // cancel pending DCC
 	  }
 
 	  // Check before the move is made
@@ -698,32 +691,98 @@ gameBuckets.forEach(bucket => {
 
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+  const CHESSDB_RETRY_ATTEMPTS = 3;
+  const CHESSDB_RETRY_BACKOFF_MS = [0, 250, 700];
+  const CHESSDB_REQUEST_TIMEOUT_MS = 3000;
+  const CHESSDB_RETRY_JITTER_MS = 120;
+
+  function chessDbJitter() {
+    return Math.floor(Math.random() * CHESSDB_RETRY_JITTER_MS);
+  }
+
+  function buildChessDBUrl(action, fen, opts = {}) {
+    const learn = opts.learn ?? 0;
+    const showall = opts.showall ?? 0;
+    const canProxy = !!opts.allowProxy && action === 'queryall' && settings.evalMode === 'proxy';
+    if (canProxy) {
+      return `/.netlify/functions/queryall?board=${encodeURIComponent(fen)}&learn=${learn}&showall=${showall}`;
+    }
+    return `https://www.chessdb.cn/cdb.php?action=${action}&board=${encodeURIComponent(fen)}&learn=${learn}${action === 'queryall' ? `&showall=${showall}` : ''}`;
+  }
+
+  async function fetchTextWithTimeout(url, timeoutMs) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const resp = await fetch(url, { signal: controller.signal });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const txt = await resp.text();
+      if (!txt || !txt.trim()) throw new Error('Empty response');
+      return txt;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function fetchChessDBText(action, fen, opts = {}) {
+    const attempts = opts.attempts || CHESSDB_RETRY_ATTEMPTS;
+    const timeoutMs = opts.timeoutMs || CHESSDB_REQUEST_TIMEOUT_MS;
+    const allowProxy = !!opts.allowProxy;
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      const delay = CHESSDB_RETRY_BACKOFF_MS[Math.min(attempt - 1, CHESSDB_RETRY_BACKOFF_MS.length - 1)] || 0;
+      if (delay > 0) await sleep(delay + chessDbJitter());
+      const url = buildChessDBUrl(action, fen, {
+        learn: opts.learn,
+        showall: opts.showall,
+        allowProxy
+      });
+      try {
+        const text = await fetchTextWithTimeout(url, timeoutMs);
+        if (attempt > 1) {
+          console.info(`[ChessDB] ${action} success on retry ${attempt}/${attempts}`);
+        }
+        return {
+          text,
+          attempts: attempt,
+          viaProxy: allowProxy && action === 'queryall' && settings.evalMode === 'proxy',
+          url
+        };
+      } catch (e) {
+        lastError = e;
+        console.warn(`[ChessDB] ${action} attempt ${attempt}/${attempts} failed:`, e);
+      }
+    }
+
+    throw lastError || new Error(`ChessDB ${action} failed`);
+  }
+
   // ── Raw chessdb fetch with caching + rate limiting ──────────────
   async function cachedFetchChessDB(fen) {
     const key = fen.split(' ').slice(0, 4).join(' '); // normalize
     if (evalCache[key]) return evalCache[key];
     await sleep(200); // rate limit guard
-    const useProxy = settings.evalMode === 'proxy';
-    const baseURL = useProxy
-      ? '/.netlify/functions/queryall?'
-      : 'https://www.chessdb.cn/cdb.php?action=queryall&';
-    const url = `${baseURL}board=${encodeURIComponent(fen)}&learn=0&showall=1`;
     try {
-      const txt = await fetch(url).then(r => r.text());
-      const moves = txt.split('|').map(line => {
+      const { text, attempts, viaProxy } = await fetchChessDBText('queryall', fen, {
+        learn: 0,
+        showall: 1,
+        allowProxy: true
+      });
+      const moves = text.split('|').map(line => {
         const m = line.match(/move:(\w+),score:([-\d\?]+),rank:(\d+),/);
         if (!m || m[2] === '??') return null;
         const score = parseInt(m[2], 10), rank = parseInt(m[3], 10);
         if (isNaN(score)) return null;
         return { move: m[1], score, rank };
       }).filter(Boolean).sort((a, b) => b.score - a.score || a.rank - b.rank);
-      const result = { moves, fen };
+      const result = { moves, fen, _meta: { attempts, viaProxy } };
       evalCache[key] = result;
       persistEvalCache();
       return result;
     } catch(e) {
       console.warn('DCC cachedFetch error:', e);
-      return { moves: [], fen };
+      return { moves: [], fen, _meta: { attempts: CHESSDB_RETRY_ATTEMPTS, failed: true } };
     }
   }
 
@@ -732,30 +791,31 @@ gameBuckets.forEach(bucket => {
     const key = 'pv:' + fen.split(' ').slice(0, 4).join(' ');
     if (evalCache[key]) return evalCache[key];
     await sleep(200);
-    const url = `https://www.chessdb.cn/cdb.php?action=querypv&board=${encodeURIComponent(fen)}&learn=0`;
     try {
-      const txt = await fetch(url).then(r => r.text());
+      const { text, attempts } = await fetchChessDBText('querypv', fen, {
+        learn: 0
+      });
       // Format: score:SCORE,depth:DEPTH,pv:MOVE1|MOVE2|...|MOVEn
       // Or: "unknown" / "invalid board"
-      if (txt === 'unknown' || txt.startsWith('invalid')) {
-        const result = { score: null, depth: 0, pv: [], raw: txt };
+      if (text === 'unknown' || text.startsWith('invalid')) {
+        const result = { score: null, depth: 0, pv: [], raw: text, _meta: { attempts } };
         evalCache[key] = result;
         persistEvalCache();
         return result;
       }
-      const scoreMatch = txt.match(/score:([-\d]+)/);
-      const depthMatch = txt.match(/depth:(\d+)/);
-      const pvMatch    = txt.match(/pv:(.+)/);
+      const scoreMatch = text.match(/score:([-\d]+)/);
+      const depthMatch = text.match(/depth:(\d+)/);
+      const pvMatch    = text.match(/pv:(.+)/);
       const score = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
       const depth = depthMatch ? parseInt(depthMatch[1], 10) : 0;
       const pv    = pvMatch ? pvMatch[1].split('|').filter(Boolean) : [];
-      const result = { score, depth, pv, raw: txt };
+      const result = { score, depth, pv, raw: text, _meta: { attempts } };
       evalCache[key] = result;
       persistEvalCache();
       return result;
     } catch(e) {
       console.warn('fetchPV error:', e);
-      return { score: null, depth: 0, pv: [], raw: '' };
+      return { score: null, depth: 0, pv: [], raw: '', _meta: { attempts: CHESSDB_RETRY_ATTEMPTS, failed: true } };
     }
   }
 
@@ -764,11 +824,12 @@ gameBuckets.forEach(bucket => {
     const key = 'sc:' + fen.split(' ').slice(0, 4).join(' ');
     if (evalCache[key] !== undefined) return evalCache[key];
     await sleep(150); // slightly lighter rate limit
-    const url = `https://www.chessdb.cn/cdb.php?action=queryscore&board=${encodeURIComponent(fen)}&learn=0`;
     try {
-      const txt = await fetch(url).then(r => r.text());
+      const { text } = await fetchChessDBText('queryscore', fen, {
+        learn: 0
+      });
       // Format: eval:SCORE or "unknown"
-      const m = txt.match(/eval:([-\d]+)/);
+      const m = text.match(/eval:([-\d]+)/);
       const score = m ? parseInt(m[1], 10) : null;
       evalCache[key] = score;
       persistEvalCache();
@@ -863,15 +924,6 @@ gameBuckets.forEach(bucket => {
   }
 
   let activeLookaheadId = 0; // cancel stale lookaheads on board change
-  let dccLookaheadResolve = null;  // resolve fn for current lookahead
-  let dccLookaheadDone = Promise.resolve(); // awaitable: resolves when DCC finishes
-
-  function resetDCCLookaheadPromise() {
-    dccLookaheadDone = new Promise(r => { dccLookaheadResolve = r; });
-  }
-  function signalDCCLookaheadDone() {
-    if (dccLookaheadResolve) { dccLookaheadResolve(); dccLookaheadResolve = null; }
-  }
 
   // ── DCC Progress indicator ───────────────────────────────────────
   function updateDCCProgress(done, total) {
@@ -891,7 +943,6 @@ gameBuckets.forEach(bucket => {
 
   async function runDCCLookahead(moveList, baseFen) {
     const thisId = ++activeLookaheadId;
-    // Promise already created by updateBoard — no resetDCCLookaheadPromise here
     const maxHalfMoves = settings.dccDepth * 2;
     latestDCCResults = []; // reset for this position
 
@@ -949,7 +1000,6 @@ gameBuckets.forEach(bucket => {
       const fenKey = baseFen.split(' ').slice(0, 4).join(' ');
       dccMoveAnnotations[fenKey] = latestDCCResults.slice();
     }
-    signalDCCLookaheadDone();
   }
 
   // ── Update badge with DCC data ──────────────────────────────────
@@ -961,7 +1011,7 @@ gameBuckets.forEach(bucket => {
     if (!ov) return;
 
     // Remove old DCC indicators
-    ov.querySelectorAll('.dcc-arrow,.dcc-loading,.dcc-adsr-label').forEach(e => e.remove());
+    ov.querySelectorAll('.dcc-arrow,.dcc-loading,.dcc-adsr-label,.dcc-tunnel-label').forEach(e => e.remove());
     ov.classList.remove('dcc-stable', 'dcc-unstable', 'dcc-mdl-pick');
 
     if (status === 'loading') {
@@ -1022,6 +1072,11 @@ gameBuckets.forEach(bucket => {
 
   // ── LZ Tiebreaker — mark MDL pick among tied moves ─────────────
   function applyLZTiebreaker(moveList, baseFen) {
+    document.querySelectorAll('.overlay.dcc-mdl-pick').forEach(ov => {
+      ov.classList.remove('dcc-mdl-pick');
+    });
+    document.querySelectorAll('.dcc-mdl-star').forEach(el => el.remove());
+
     if (moveList.length < 2) return;
     const threshold = settings.dccTieThreshold;
     const bestScore = moveList[0].score;
@@ -1055,7 +1110,7 @@ gameBuckets.forEach(bucket => {
       const cell = document.querySelector(`.square-${sq}`);
       if (cell) {
         const ov = cell.querySelector('.overlay');
-        if (ov) {
+        if (ov && !ov.querySelector('.dcc-mdl-star')) {
           ov.classList.add('dcc-mdl-pick');
           const star = document.createElement('span');
           star.className = 'dcc-mdl-star';
@@ -1414,7 +1469,7 @@ gameBuckets.forEach(bucket => {
      9. FETCH ANNOTATIONS (ChessDB.cn)
   ------------------------------------------------------------------*/
 	async function fetchAnnotations() {
-	  if (playState.active && playState.assistanceLocked) { signalDCCLookaheadDone(); return; }
+	  if (playState.active && playState.assistanceLocked) return;
 	  const fen = encodeURIComponent(game.fen());
 
 	  function parseResponse(text) {
@@ -1428,20 +1483,16 @@ gameBuckets.forEach(bucket => {
 	  }
 
 	  const useProxy = settings.evalMode === 'proxy';
-	  const baseURL = useProxy
-		? '/.netlify/functions/queryall?'
-		: 'https://www.chessdb.cn/cdb.php?action=queryall&';
-
-	  const vURL = `${baseURL}board=${fen}&learn=0&showall=1`;
-	  const cURL = `${baseURL}board=${fen}&learn=1&showall=1`;
 
 	  let vTxt = null, cTxt = null;
 
 	  try {
-		[vTxt, cTxt] = await Promise.all([
-		  fetch(vURL).then(r => r.text()),
-		  fetch(cURL).then(r => r.text())
+		const [verified, cloud] = await Promise.all([
+		  fetchChessDBText('queryall', game.fen(), { learn: 0, showall: 1, allowProxy: true }),
+		  fetchChessDBText('queryall', game.fen(), { learn: 1, showall: 1, allowProxy: true })
 		]);
+		vTxt = verified.text;
+		cTxt = cloud.text;
 	  } catch (e) {
 		console.warn('Fetch error:', e);
 	  }
@@ -1488,22 +1539,15 @@ gameBuckets.forEach(bucket => {
       // ── DCC Layer: tiebreaker + lookahead ────────────────────────
       if (settings.dccEnabled && list.length > 0) {
         const baseFen = game.fen();
+        // LZ Tiebreaker for tied moves
         applyLZTiebreaker(list, baseFen);
-        // During autoPilot: pickDCCMove does DCC analysis + display in one pass
-        // During normal browsing: runDCCLookahead handles display separately
-        if (playState.active && playState.autoPilot) {
-          signalDCCLookaheadDone(); // pickDCCMove will handle everything
-        } else {
-          runDCCLookahead(list, baseFen);
-        }
-      } else {
-        signalDCCLookaheadDone();
+        // Async lookahead for top N moves
+        runDCCLookahead(list, baseFen);
       }
       // ─────────────────────────────────────────────────────────────
 
 	  } catch (err) {
 		console.error('Failed to fetch annotations:', err);
-		signalDCCLookaheadDone(); // unblock waiters on error
 	  }
 	}
 
@@ -1670,10 +1714,8 @@ gameBuckets.forEach(bucket => {
 
 	  board.position(game.fen());
 	  document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
-	  // Cancel any running DCC lookahead and create fresh wait-promise
+	  // Cancel any running DCC lookahead
 	  activeLookaheadId++;
-	  signalDCCLookaheadDone();   // resolve any old waiters
-	  resetDCCLookaheadPromise(); // new promise for the upcoming lookahead
 	  updateDCCProgress(0, 0); // clear progress indicator
 	  // Hide DCC info panel on board change
 	  const dccPanel = document.getElementById('dccInfoPanel');
@@ -1827,7 +1869,6 @@ gameBuckets.forEach(bucket => {
 		}
 	  } else {
 		document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none');
-		signalDCCLookaheadDone(); // no eval = no lookahead — unblock waiters
 	  }
 
 		// ─── Next-move dot ──────────────────────────────────────────────
@@ -2347,29 +2388,10 @@ function jumpTo(i){
   let preSimMoveIndex = -1;  // where we were in the game
 
   // Pick move using DCC: eval floor + candidates + PV+ADSR ranking
-  // When liveDisplay=true, updates badges + DCC view + stores for PGN as it analyzes
-  async function pickDCCMove(simGame, overrideCandidates, liveDisplay) {
+  async function pickDCCMove(simGame, overrideCandidates) {
     const fen = simGame.fen();
     const result = await cachedFetchChessDB(fen);
-
-    // ── Fallback chain when ChessDB has no queryall data ──
-    if (!result.moves || result.moves.length === 0) {
-      // 1) Try querybest
-      try {
-        await sleep(200);
-        const fbUrl = `https://www.chessdb.cn/cdb.php?action=querybest&board=${encodeURIComponent(fen)}&learn=0`;
-        const fbTxt = await fetch(fbUrl).then(r => r.text());
-        const fbm = fbTxt.match(/move:(\w+)/);
-        if (fbm) return { move: fbm[1], score: 0, _fallback: 'querybest' };
-      } catch (_) {}
-      // 2) Random legal move — DCC can't score but game continues
-      const legalMoves = simGame.moves({ verbose: true });
-      if (legalMoves.length > 0) {
-        const pick = legalMoves[Math.floor(Math.random() * legalMoves.length)];
-        return { move: pick.from + pick.to + (pick.promotion || ''), score: 0, _fallback: 'random' };
-      }
-      return null;
-    }
+    if (!result.moves || result.moves.length === 0) return null;
 
     // Smart candidate selection: eval floor + max candidates
     const bestRawScore = result.moves[0].score;
@@ -2378,13 +2400,11 @@ function jumpTo(i){
       Math.abs(bestRawScore - m.score) <= settings.dccEvalFloor
     ).slice(0, maxCandidates);
 
-    if (liveDisplay) {
-      latestDCCResults = [];
-      updateDCCProgress(0, candidates.length);
-    }
-
-    let bestMove = result.moves[0]; // fallback: raw best
+    let bestMove = { ...result.moves[0], _pickSource: 'raw_queryall_best' }; // fallback: raw best
     let bestScore = -Infinity;
+    let pvOkCount = 0;
+    let scoreOkCount = 0;
+    let usedDCCRanking = false;
 
     for (let i = 0; i < candidates.length; i++) {
       const mv = candidates[i];
@@ -2395,12 +2415,12 @@ function jumpTo(i){
       });
       if (!m) continue;
 
-      if (liveDisplay) updateDCCBadge(mv.move, null, 'loading');
-
       const pvResult = await fetchPV(probe.fen());
       if (pvResult.score === null) continue;
+      pvOkCount++;
 
       const evalSeq = [pvResult.score];
+      // Quick intermediate score if PV has moves
       if (pvResult.pv.length > 1) {
         const walk = new Chess(probe.fen());
         for (let j = 0; j < Math.min(4, pvResult.pv.length); j++) {
@@ -2412,13 +2432,17 @@ function jumpTo(i){
           if (!wm) break;
           if (j % 2 === 1) {
             const sc = await fetchScore(walk.fen());
-            if (sc !== null) evalSeq.push((j % 2 === 0) ? -sc : sc);
+            if (sc !== null) {
+              scoreOkCount++;
+              evalSeq.push((j % 2 === 0) ? -sc : sc);
+            }
           }
         }
       }
 
       const stability = evalSeqStability(evalSeq);
       const adsr = adsrAnalysis(evalSeq);
+      // v0.6.0: Combined DCC score using DCC_WEIGHTS constants
       let dccScore = mv.score;
       dccScore += stability * DCC_WEIGHTS.stability;
       if (adsr.shape === 'sustained') dccScore += DCC_WEIGHTS.adsr_sustained;
@@ -2427,38 +2451,29 @@ function jumpTo(i){
       else if (adsr.shape === 'collapse') dccScore += DCC_WEIGHTS.adsr_collapse;
       else if (adsr.shape === 'volatile') dccScore += DCC_WEIGHTS.adsr_volatile;
 
+      // v0.6.0 Feature 2: Positional momentum
       const momentum = evalMomentum(evalSeq);
       dccScore += Math.sign(momentum) * Math.min(Math.abs(momentum), DCC_WEIGHTS.momentum_max);
 
+      // v0.6.0 Feature 3: Endgame transition detector
       if (materialCount(probe.fen()) <= 7) {
         const probeResult = await cachedFetchChessDB(probe.fen());
         if (probeResult.moves.length > 0) dccScore += DCC_WEIGHTS.endgame_known;
         else dccScore += DCC_WEIGHTS.endgame_unknown;
       }
 
+      // v0.6.0 Feature 4: Tunneling bonus
       if (detectTunnel(evalSeq)) dccScore += DCC_WEIGHTS.tunnel;
 
+      // LZ tiebreaker on resulting position
       const cx = fenComplexity(probe.fen());
       dccScore -= cx * DCC_WEIGHTS.complexity;
 
-      // Live display: update badge + DCC view as each candidate finishes
-      if (liveDisplay) {
-        const trend = evalTrend(evalSeq);
-        const data = {
-          move: mv.move, trend, stability, arrow: trendArrow(trend), evalSequence: evalSeq,
-          movePath: [], score: mv.score, pvDepth: pvResult.depth || 0,
-          adsr, momentum, tunnel: detectTunnel(evalSeq),
-          isMdlPick: false
-        };
-        updateDCCBadge(mv.move, data, 'done');
-        latestDCCResults.push(data);
-        updateDCCProgress(i + 1, candidates.length);
-        renderDCCView();
-      }
-
       if (dccScore > bestScore) {
         bestScore = dccScore;
-        bestMove = mv;
+        bestMove = { ...mv };
+        usedDCCRanking = true;
+        // v0.6.1: attach DCC metadata for CSV export
         bestMove._dccScore = dccScore;
         bestMove._stability = stability;
         bestMove._adsrShape = adsr.shape;
@@ -2466,13 +2481,11 @@ function jumpTo(i){
         bestMove._tunnel = detectTunnel(evalSeq);
       }
     }
-
-    // Store for PGN export
-    if (liveDisplay && latestDCCResults.length > 0) {
-      const fenKey = fen.split(' ').slice(0, 4).join(' ');
-      dccMoveAnnotations[fenKey] = latestDCCResults.slice();
+    if (bestMove) {
+      bestMove._pickSource = usedDCCRanking ? 'dcc' : 'raw_queryall_best';
+      bestMove._pvOkCount = pvOkCount;
+      bestMove._scoreOkCount = scoreOkCount;
     }
-
     return bestMove;
   }
 
@@ -2657,10 +2670,9 @@ function jumpTo(i){
       if (!pick) {
         await sleep(200);
         try {
-          const fbUrl = `https://www.chessdb.cn/cdb.php?action=querybest&board=${encodeURIComponent(simGame.fen())}&learn=0`;
-          const fbTxt = await fetch(fbUrl).then(r => r.text());
+          const { text: fbTxt } = await fetchChessDBText('querybest', simGame.fen(), { learn: 0 });
           const fbm = fbTxt.match(/move:(\w+)/);
-          if (fbm) pick = { move: fbm[1], score: 0 };
+          if (fbm) pick = { move: fbm[1], score: 0, _pickSource: 'raw_querybest_fallback' };
         } catch(e) {}
       }
 
@@ -2680,6 +2692,9 @@ function jumpTo(i){
         move: pick.move,
         raw_score: pick.score,
         dcc_score: pick._dccScore !== undefined ? pick._dccScore.toFixed(1) : '',
+        pick_source: pick._pickSource || '',
+        pv_ok_count: pick._pvOkCount !== undefined ? pick._pvOkCount : '',
+        score_ok_count: pick._scoreOkCount !== undefined ? pick._scoreOkCount : '',
         stability: pick._stability !== undefined ? pick._stability.toFixed(2) : '',
         adsr_shape: pick._adsrShape || '',
         momentum: pick._momentum !== undefined ? pick._momentum.toFixed(1) : '',
@@ -3077,16 +3092,13 @@ function enterActiveSession(mode, opts = {}) {
   playState.lichess.botUsername = opts.botUsername || '';
   playState.lichess.selectedColor = opts.selectedColor || 'random';
   playState.lichess.timeLabel = opts.timeLabel || '';
-  playState.lichess.lastMoves = null;  // null = first sync not yet received
+  playState.lichess.lastMoves = '';
   playState.lichess.ready = false;
   playState.lichess.openingRetryCount = 0;
   playState.lichess.preparedOpeningUci = '';
   playState.lichess.preparedOpeningSan = '';
   playState.lichess.preparedOpeningApplied = false;
   playState.lichess.preparedOpeningSent = false;
-  playState.lichess.apiMode = 'board';
-  playState.lichess.fullId = '';
-  playState.lichess.startEvent = null;
 
   clearCoachMessages();
   if (mode === 'dccbot') {
@@ -3139,16 +3151,13 @@ function enterActiveSession(mode, opts = {}) {
     playState.assistanceLocked = false;
     playState.lichess.gameId = null;
     playState.lichess.challengeId = null;
-    playState.lichess.lastMoves = null;
+    playState.lichess.lastMoves = '';
     playState.lichess.ready = false;
     playState.lichess.openingRetryCount = 0;
     playState.lichess.preparedOpeningUci = '';
     playState.lichess.preparedOpeningSan = '';
     playState.lichess.preparedOpeningApplied = false;
     playState.lichess.preparedOpeningSent = false;
-    playState.lichess.apiMode = 'board';
-    playState.lichess.fullId = '';
-    playState.lichess.startEvent = null;
     playState.autoPilot = false;
     playState.autoMoveBusy = false;
     if (typeof playState.prevShowEval === 'boolean') showEval = playState.prevShowEval;
@@ -3203,9 +3212,7 @@ function enterActiveSession(mode, opts = {}) {
 
   function syncGameFromMoves(movesStr, initialFen = 'startpos') {
     const moves = (movesStr || '').trim() ? movesStr.trim().split(/\s+/) : [];
-    // null = first call (from gameFull) — always process; skip only duplicate updates
-    if (playState.lichess.lastMoves !== null &&
-        (playState.lichess.lastMoves || '').trim() === (movesStr || '').trim()) return;
+    if ((playState.lichess.lastMoves || '').trim() === (movesStr || '').trim()) return;
 
     const keepPreparedOpening =
       playState.active &&
@@ -3254,13 +3261,11 @@ function enterActiveSession(mode, opts = {}) {
     return null;
   }
 
-  const DEFAULT_LICHESS_TOKEN_PARTS = ['lip_', 'EzlW6k', 'QVX0f4', 'ILfXEr', 'mj'];
-
   async function ensureLichessToken() {
     let token = localStorage.getItem(LICHESS_TOKEN_KEY) || '';
     if (!token) {
-      token = DEFAULT_LICHESS_TOKEN_PARTS.join('');
-      localStorage.setItem(LICHESS_TOKEN_KEY, token.trim());
+      token = prompt('Enter your Lichess API token.');
+      if (token) localStorage.setItem(LICHESS_TOKEN_KEY, token.trim());
     }
     return (token || '').trim();
   }
@@ -3286,15 +3291,11 @@ function enterActiveSession(mode, opts = {}) {
     return playState.userColor || 'w';
   }
 
-  
-async function startLichessEventWait(token) {
+  async function startLichessEventWait(token) {
     const ctrl = new AbortController();
     playState.lichess.eventAbort = ctrl;
     const res = await fetch('https://lichess.org/api/stream/event', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/x-ndjson'
-      },
+      headers: { Authorization: `Bearer ${token}` },
       signal: ctrl.signal
     });
     if (!res.ok) {
@@ -3307,59 +3308,10 @@ async function startLichessEventWait(token) {
     }
     return readNdjsonStream(res, async evt => {
       if (evt?.type === 'gameStart') {
-        return evt?.game || evt || null;
+        return evt.game?.gameId || evt.game?.id || evt.id || evt.gameId || null;
       }
       return null;
     }, ctrl.signal);
-  }
-
-  function pickLichessApiModeFromStart(startEvt) {
-    const compat = startEvt?.compat || startEvt?.game?.compat || {};
-    if (compat.board === true) return 'board';
-    if (compat.bot === true) return 'bot';
-    return 'board';
-  }
-
-  function lichessGameStreamUrl(gameId) {
-    const mode = playState.lichess.apiMode || 'board';
-    return mode === 'bot'
-      ? `https://lichess.org/api/bot/game/stream/${encodeURIComponent(gameId)}`
-      : `https://lichess.org/api/board/game/stream/${encodeURIComponent(gameId)}`;
-  }
-
-  function lichessMoveUrl(gameId, uci) {
-    const mode = playState.lichess.apiMode || 'board';
-    return mode === 'bot'
-      ? `https://lichess.org/api/bot/game/${encodeURIComponent(gameId)}/move/${encodeURIComponent(uci)}`
-      : `https://lichess.org/api/board/game/${encodeURIComponent(gameId)}/move/${encodeURIComponent(uci)}`;
-  }
-
-  function isHardLichessStreamError(err) {
-    const msg = describeErr(err).toLowerCase();
-    return /token rejected|missing scope|oauth|unauthorized|forbidden|401|403|404|400|not found|cannot be played via the bot api|cannot be played via the board api|rate limit/.test(msg);
-  }
-
-  function explainLichessStreamError(err) {
-    const base = describeErr(err);
-    const mode = playState.lichess.apiMode || 'board';
-    if (/token rejected/i.test(base)) {
-      return `${base} Enter a fresh token with the correct scope and try again.`;
-    }
-    if (/401|403|unauthorized|forbidden/i.test(base)) {
-      return mode === 'board'
-        ? `${base} Check token scopes: board:play is required for live board games.`
-        : `${base} Check token scopes: bot:play is required for bot API games.`;
-    }
-    if (/429|rate limit/i.test(base)) {
-      return `${base} Lichess is rate-limiting reconnects right now.`;
-    }
-    if (/404|not found/i.test(base)) {
-      return `${base} The game stream endpoint rejected this game id.`;
-    }
-    if (/failed to fetch|networkerror|load failed|typeerror/i.test(base)) {
-      return `${base} Browser/network blocked the live stream request, or the stream endpoint is not reachable from this page.`;
-    }
-    return base;
   }
 
   async function challengeLichessBot(botUsername, selectedColor, clock) {
@@ -3368,16 +3320,8 @@ async function startLichessEventWait(token) {
     playState.lichess.token = token;
     const body = new URLSearchParams();
     body.set('rated', 'false');
-    if (clock.limit === 86400) {
-      body.set('days', '1');  // correspondence
-    } else if (clock.limit > 0) {
-      body.set('clock.limit', String(clock.limit));
-      body.set('clock.increment', String(clock.increment || 0));
-    } else {
-      // Unlimited: use generous clock that won't expire during DCC analysis
-      body.set('clock.limit', '10800');  // 3 hours
-      body.set('clock.increment', '60');
-    }
+    body.set('clock.limit', String(clock.limit || 180));
+    body.set('clock.increment', String(clock.increment || 0));
     body.set('color', selectedColor || 'random');
 
     const startPromise = startLichessEventWait(token);
@@ -3396,36 +3340,20 @@ async function startLichessEventWait(token) {
     }
     const data = await resp.json().catch(() => ({}));
     playState.lichess.challengeId = data?.challenge?.id || null;
-    const startEvt = await Promise.race([
+    const gameId = await Promise.race([
       startPromise,
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timed out waiting for Lichess gameStart event.')), 30000))
     ]);
-    if (!startEvt) throw new Error('Lichess returned no gameStart payload.');
-    const gameId = startEvt?.gameId || startEvt?.id || startEvt?.game?.gameId || startEvt?.game?.id || null;
-    if (!gameId) throw new Error('Lichess gameStart payload did not contain a game id.');
-    playState.lichess.startEvent = startEvt;
-    playState.lichess.fullId = startEvt?.fullId || startEvt?.game?.fullId || '';
-    playState.lichess.apiMode = pickLichessApiModeFromStart(startEvt);
-    playState.userColor = (startEvt?.color || startEvt?.game?.color || (selectedColor === 'black' ? 'black' : 'white')).startsWith('b') ? 'b' : 'w';
-    return {
-      gameId,
-      apiMode: playState.lichess.apiMode,
-      startEvt
-    };
+    return gameId;
   }
 
-
-
+  
 async function startLichessGameStream(gameId) {
   const token = playState.lichess.token;
   const ctrl = new AbortController();
   playState.lichess.streamAbort = ctrl;
-  const streamUrl = lichessGameStreamUrl(gameId);
-  const res = await fetch(streamUrl, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/x-ndjson'
-    },
+  const res = await fetch(`https://lichess.org/api/board/game/stream/${encodeURIComponent(gameId)}`, {
+    headers: { Authorization: `Bearer ${token}` },
     signal: ctrl.signal
   });
   if (!res.ok) {
@@ -3476,31 +3404,22 @@ async function startLichessGameStream(gameId) {
   }, ctrl.signal);
 }
 
-
 async function startLichessGameStreamLoop(gameId) {
   let attempt = 0;
   while (playState.active && playState.mode === 'lichess' && playState.lichess.gameId === gameId) {
     try {
       attempt += 1;
-      updateSimStatus(attempt === 1
-        ? `Connecting ${playState.lichess.apiMode || 'board'} game stream…`
-        : `Reconnecting ${playState.lichess.apiMode || 'board'} game stream… (${attempt})`);
       await startLichessGameStream(gameId);
       if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId) return;
+      // Normal stream end without explicit finish signal: retry softly.
       updateSimStatus(`Lichess stream ended · reconnect ${attempt}`);
     } catch (err) {
       if (err?.name === 'AbortError') return;
       console.warn('Lichess stream error:', err);
       if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId) return;
-      const msg = explainLichessStreamError(err);
-      if (isHardLichessStreamError(err)) {
-        reportSessionIssue(`Lichess ${playState.lichess.apiMode || 'board'} stream failed`, msg, { clearToken: /token rejected/i.test(msg) });
-        leaveActiveSession('');
-        return;
-      }
-      updateSimStatus(`Lichess reconnecting… (${attempt}) ${msg}`);
+      updateSimStatus(`Lichess reconnecting… (${attempt})`);
     }
-    await sleep(Math.min(2500, 400 + attempt * 300));
+    await sleep(Math.min(1500, 300 + attempt * 250));
   }
 }
 
@@ -3512,7 +3431,7 @@ function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
       if (remaining > 1) setTimeout(() => kick(remaining - 1), delayMs);
       return;
     }
-    // Turn gate removed — runLichessAutoMove handles prepared-opening bypass internally
+    if (game.turn() !== playState.userColor) return;
     try {
       await runLichessAutoMove();
       return;
@@ -3525,11 +3444,10 @@ function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
 }
 
 
-  
   async function sendLichessMove(uci) {
     const token = playState.lichess.token;
     const gameId = playState.lichess.gameId;
-    const resp = await fetch(lichessMoveUrl(gameId, uci), {
+    const resp = await fetch(`https://lichess.org/api/board/game/${encodeURIComponent(gameId)}/move/${encodeURIComponent(uci)}`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -3543,7 +3461,7 @@ function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
     }
   }
 
-async function buildCoachSnapshot(preFen, moveObj, actorLabel) {
+  async function buildCoachSnapshot(preFen, moveObj, actorLabel) {
     const analysis = await analyzePosition(preFen);
     const uci = normalizeUci(moveObj);
     const sorted = (analysis?.candidates || []).slice().sort((a, b) => b.dcc - a.dcc);
@@ -3754,10 +3672,12 @@ async function runLichessAutoMove() {
     leaveActiveSession('Game over. Lichess bot session finished.');
     return;
   }
+  if (game.turn() !== playState.userColor) return;
 
-  // ── Check for prepared opening BEFORE turn check ──
-  // prepareLocalLichessOpeningPreview applies the move to the local game,
-  // so game.turn() is already 'b' even though Lichess hasn't received it yet.
+  playState.autoMoveBusy = true;
+  playState.waiting = true;
+  setBoardThinking(true);
+
   const noMovesYet = !(playState.lichess.lastMoves || '').trim();
   const usePreparedOpening =
     noMovesYet &&
@@ -3766,14 +3686,7 @@ async function runLichessAutoMove() {
     !playState.lichess.preparedOpeningSent &&
     !!playState.lichess.preparedOpeningUci;
 
-  // Normal turn gate — but skip it when sending a prepared opening
-  if (!usePreparedOpening && game.turn() !== playState.userColor) return;
-
-  playState.autoMoveBusy = true;
-  playState.waiting = true;
-  setBoardThinking(true);
-
-  updateSimStatus(usePreparedOpening ? 'Sending prepared White opening to Lichess…' : '8Z-DCC is analyzing…');
+  updateSimStatus(usePreparedOpening ? 'Sending prepared White opening to Lichess…' : '8Z-DCC is thinking…');
   const fenBefore = game.fen();
   try {
     let moveUci = '';
@@ -3782,18 +3695,10 @@ async function runLichessAutoMove() {
       moveUci = playState.lichess.preparedOpeningUci;
       san = playState.lichess.preparedOpeningSan || uciToSan(playState.startFen || 'startpos', moveUci);
     } else {
-      // pickDCCMove with liveDisplay=true: single pass — analyzes, updates badges,
-      // renders DCC view, stores for PGN, and picks best move
-      const pick = await pickDCCMove(game, null, true);
-      // Stale check: user may have moved manually while DCC was analyzing
-      if (game.fen() !== fenBefore) {
-        updateSimStatus('User moved — DCC yielded.');
-        return;
-      }
+      const pick = await pickDCCMove(game);
       if (!pick || !pick.move) throw new Error('No DCC move found.');
       moveUci = pick.move;
       san = uciToSan(fenBefore, pick.move);
-      if (pick._fallback) updateSimStatus(`DCC fallback (${pick._fallback}): ${san}`);
     }
 
     await sendLichessMove(moveUci);
@@ -3865,7 +3770,6 @@ async function runLichessAutoMove() {
   }
 
   
-
 async function startLichessSession(botUsername, selectedColor, clock, timeLabel, opts = {}) {
   const guessedColor = selectedColor === 'black' ? 'b' : 'w';
   enterActiveSession('lichess', {
@@ -3888,17 +3792,16 @@ async function startLichessSession(botUsername, selectedColor, clock, timeLabel,
     : Promise.resolve(null);
 
   try {
-    const startInfo = await challengeLichessBot(botUsername, selectedColor, clock);
+    const gameId = await challengeLichessBot(botUsername, selectedColor, clock);
     await openingPrepPromise;
-    playState.lichess.gameId = startInfo.gameId;
-    playState.lichess.apiMode = startInfo.apiMode || playState.lichess.apiMode || 'board';
-    updateSimStatus(`Lichess game ${startInfo.gameId} started · ${playState.lichess.apiMode} API.`);
-    startLichessGameStreamLoop(startInfo.gameId).catch(err => {
+    playState.lichess.gameId = gameId;
+    updateSimStatus(`Lichess game ${gameId} started.`);
+    startLichessGameStreamLoop(gameId).catch(err => {
       if (err?.name === 'AbortError') return;
       reportSessionIssue('Lichess stream loop crashed', err);
     });
-    if (opts.autoPilot && playState.userColor === 'w') {
-      scheduleLichessOpeningKick(startInfo.gameId, 12, 300);
+    if (opts.autoPilot && guessedColor === 'w') {
+      scheduleLichessOpeningKick(gameId, 12, 300);
     }
   } catch (err) {
     await openingPrepPromise.catch(() => null);
@@ -3907,6 +3810,8 @@ async function startLichessSession(botUsername, selectedColor, clock, timeLabel,
   }
 }
 
+
+  
 async function launchFromSimModal() {
   const mode = currentSimMode();
   const launchMode = playState.launchMode || 'sim';
@@ -4007,6 +3912,7 @@ async function launchFromSimModal() {
 
       const pvResult = await fetchPV(probe.fen());
       if (pvResult.score === null) continue;
+      pvOkCount++;
 
       const evalSeq = [pvResult.score];
       if (pvResult.pv.length > 1) {
@@ -4019,7 +3925,10 @@ async function launchFromSimModal() {
           if (!wm) break;
           if (j % 2 === 1) {
             const sc = await fetchScore(walk.fen());
-            if (sc !== null) evalSeq.push((j % 2 === 0) ? -sc : sc);
+            if (sc !== null) {
+              scoreOkCount++;
+              evalSeq.push((j % 2 === 0) ? -sc : sc);
+            }
           }
         }
       }
