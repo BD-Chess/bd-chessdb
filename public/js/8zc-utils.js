@@ -42,189 +42,9 @@ function initAll() {
   let dccViewActive = false;
   // Store latest DCC results for the analysis panel
   let latestDCCResults = [];
-  // Compact runtime status shown under the DCC move list
-  let dccVerboseStatus = { lines: [], updatedAt: 0, details: {} };
   // v0.6.1: Per-move DCC annotations for PGN export
   // Keyed by half-move index → best DCC result at that position
   let dccMoveAnnotations = {};
-
-  function escHtml(s) {
-    return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  function fmtCp(v) {
-    const n = Math.round(Number(v));
-    if (!Number.isFinite(n)) return '—';
-    return n > 0 ? `+${n}` : `${n}`;
-  }
-
-  function setDccVerboseStatus(lines, details = {}) {
-    const arr = (Array.isArray(lines) ? lines : [lines])
-      .filter(Boolean)
-      .map(x => String(x).trim())
-      .filter(Boolean)
-      .slice(0, 3);
-    dccVerboseStatus = { lines: arr, updatedAt: Date.now(), details: details || {} };
-    if (dccViewActive) {
-      const panel = document.getElementById('dccAnalysisPanel');
-      if (panel && panel.style.display !== 'none') renderDCCView();
-    }
-  }
-
-  function renderDccVerboseBlock() {
-    const lines = (dccVerboseStatus && dccVerboseStatus.lines) ? dccVerboseStatus.lines : [];
-    if (!lines.length) return '';
-    const body = lines.map(line => `<div style="margin:2px 0;">${escHtml(line)}</div>`).join('');
-    return `<div class="dcc-verbose-block" style="margin-top:8px;padding:8px 10px;border:1px solid rgba(0,229,255,.18);border-radius:8px;background:rgba(0,229,255,.05);font-size:12px;line-height:1.35;color:#cfefff;">${body}</div>`;
-  }
-
-  let uiEvalState = {
-    classicalCp: null,
-    dccCp: null,
-    classicalLabel: 'Classical',
-    dccLabel: 'DCC',
-    classicalSource: '',
-    dccSource: ''
-  };
-
-  function evalFillPct(cp) {
-    if (!Number.isFinite(Number(cp))) return 50;
-    const pct = 50 + Math.tanh(Number(cp) / 250) * 46;
-    return Math.max(4, Math.min(96, pct));
-  }
-
-  function ensureDualEvalBars() {
-    const boardWrap = document.getElementById('board-container');
-    if (!boardWrap) return null;
-    let shell = document.getElementById('dualEvalShell');
-    if (shell) return shell;
-    const parent = boardWrap.parentElement;
-    if (!parent) return null;
-
-    shell = document.createElement('div');
-    shell.id = 'dualEvalShell';
-    shell.style.display = 'flex';
-    shell.style.alignItems = 'stretch';
-    shell.style.justifyContent = 'center';
-    shell.style.gap = '10px';
-    shell.style.width = '100%';
-    shell.style.overflow = 'visible';
-
-    const makeBar = (kind, shortLabel, accent) => {
-      const bar = document.createElement('div');
-      bar.id = `evalBar_${kind}`;
-      bar.style.width = '18px';
-      bar.style.minWidth = '18px';
-      bar.style.position = 'relative';
-      bar.style.border = '1px solid rgba(255,255,255,.14)';
-      bar.style.borderRadius = '8px';
-      bar.style.background = '#111';
-      bar.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,.04)';
-      bar.style.overflow = 'hidden';
-
-      const fill = document.createElement('div');
-      fill.id = `evalBarFill_${kind}`;
-      fill.style.position = 'absolute';
-      fill.style.left = '0';
-      fill.style.right = '0';
-      fill.style.bottom = '0';
-      fill.style.height = '50%';
-      fill.style.background = '#f5f5f5';
-      fill.style.transition = 'height 0.18s ease';
-      bar.appendChild(fill);
-
-      const cap = document.createElement('div');
-      cap.id = `evalBarLabel_${kind}`;
-      cap.textContent = shortLabel;
-      cap.style.position = 'absolute';
-      cap.style.top = '6px';
-      cap.style.left = '50%';
-      cap.style.transform = 'translateX(-50%)';
-      cap.style.fontSize = '10px';
-      cap.style.fontWeight = '700';
-      cap.style.letterSpacing = '.3px';
-      cap.style.color = accent;
-      cap.style.textShadow = '0 1px 2px rgba(0,0,0,.75)';
-      bar.appendChild(cap);
-
-      const score = document.createElement('div');
-      score.id = `evalBarScore_${kind}`;
-      score.textContent = '—';
-      score.style.position = 'absolute';
-      score.style.left = '50%';
-      score.style.bottom = '6px';
-      score.style.transform = 'translateX(-50%) rotate(180deg)';
-      score.style.writingMode = 'vertical-rl';
-      score.style.fontSize = '10px';
-      score.style.fontWeight = '700';
-      score.style.color = accent;
-      score.style.textShadow = '0 1px 2px rgba(0,0,0,.85)';
-      bar.appendChild(score);
-
-      return bar;
-    };
-
-    const leftBar = makeBar('classical', 'C', '#7dd3fc');
-    const rightBar = makeBar('dcc', 'D', '#f59e0b');
-
-    parent.insertBefore(shell, boardWrap);
-    shell.appendChild(leftBar);
-    shell.appendChild(boardWrap);
-    shell.appendChild(rightBar);
-    boardWrap.style.flex = '0 0 auto';
-    if (parent.style.overflow === 'hidden') parent.style.overflow = 'visible';
-    return shell;
-  }
-
-  function syncDualEvalBars() {
-    const shell = ensureDualEvalBars();
-    const boardWrap = document.getElementById('board-container');
-    if (!shell || !boardWrap) return;
-    const h = Math.max(120, boardWrap.offsetHeight || boardWrap.clientHeight || 0);
-    ['classical', 'dcc'].forEach(kind => {
-      const bar = document.getElementById(`evalBar_${kind}`);
-      if (bar) bar.style.height = `${h}px`;
-    });
-  }
-
-  function renderDualEvalBars() {
-    ensureDualEvalBars();
-    syncDualEvalBars();
-    const applyBar = (kind, cp, shortLabel, source) => {
-      const fill = document.getElementById(`evalBarFill_${kind}`);
-      const cap = document.getElementById(`evalBarLabel_${kind}`);
-      const score = document.getElementById(`evalBarScore_${kind}`);
-      const bar = document.getElementById(`evalBar_${kind}`);
-      if (!fill || !cap || !score || !bar) return;
-      const pct = evalFillPct(cp);
-      fill.style.height = `${pct}%`;
-      cap.textContent = shortLabel;
-      score.textContent = Number.isFinite(Number(cp)) ? fmtCp(cp) : '—';
-      bar.title = `${shortLabel}: ${Number.isFinite(Number(cp)) ? fmtCp(cp) : 'no eval'}${source ? ` · ${source}` : ''}`;
-    };
-
-    applyBar('classical', uiEvalState.classicalCp, uiEvalState.classicalLabel || 'C', uiEvalState.classicalSource || '');
-    applyBar('dcc', uiEvalState.dccCp, uiEvalState.dccLabel || 'D', uiEvalState.dccSource || '');
-  }
-
-  function setEvalBars(next = {}) {
-    if (Object.prototype.hasOwnProperty.call(next, 'classicalCp')) uiEvalState.classicalCp = next.classicalCp;
-    if (Object.prototype.hasOwnProperty.call(next, 'dccCp')) uiEvalState.dccCp = next.dccCp;
-    if (Object.prototype.hasOwnProperty.call(next, 'classicalLabel')) uiEvalState.classicalLabel = next.classicalLabel;
-    if (Object.prototype.hasOwnProperty.call(next, 'dccLabel')) uiEvalState.dccLabel = next.dccLabel;
-    if (Object.prototype.hasOwnProperty.call(next, 'classicalSource')) uiEvalState.classicalSource = next.classicalSource;
-    if (Object.prototype.hasOwnProperty.call(next, 'dccSource')) uiEvalState.dccSource = next.dccSource;
-    renderDualEvalBars();
-  }
-
-  window.addEventListener('resize', () => {
-    syncDualEvalBars();
-    renderDualEvalBars();
-  });
 
 
 	// ─── display the PGN “Opening” tag under the moves ─────────────────
@@ -343,7 +163,6 @@ function initAll() {
     hydrateSimModal();
     if (ENABLE_COACH) hydrateCoachModes();
     disableCoachUi();
-  renderDualEvalBars();
   }
 
   /* ------------------------------------------------------------------
@@ -870,406 +689,79 @@ gameBuckets.forEach(bucket => {
     } catch(e) { /* quota exceeded — silently fail */ }
   }
 
-  const CHESSDB_RETRY_ATTEMPTS = 3;
-  const CHESSDB_TIMEOUT_MS = 3000;
-  const CHESSDB_RETRY_DELAYS = [0, 250, 700];
-  const ONLINE_MOVE_BUDGET_MS = 2500;
-  const ONLINE_TIMEOUT_MS = 1400;
-  const ONLINE_EQUAL_CP = 40;
-  const CHESS_API_DEPTH = 12;
-  const CHESS_API_THINK_MS = 80;
-  const STOCKFISH_ONLINE_DEPTH = 13;
-  const ONLINE_CACHE_TTL_MS = 5 * 60 * 1000;
-
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-  function jitter(max = 120) { return Math.floor(Math.random() * max); }
-  function normalizedFenKey(fen) { return fen.split(' ').slice(0, 4).join(' '); }
-  function fenTurn(fen) { return fen.split(' ')[1] === 'b' ? 'b' : 'w'; }
-  function uniqueUciMoves(list) {
-    return [...new Set((list || []).map(m => String(m || '').toLowerCase()).filter(m => /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(m)))];
-  }
-
-  let onlineEvalCache = {};
-  function getOnlineCache(key) {
-    const hit = onlineEvalCache[key];
-    if (!hit) return null;
-    if ((Date.now() - hit.ts) > ONLINE_CACHE_TTL_MS) {
-      delete onlineEvalCache[key];
-      return null;
-    }
-    return hit.data;
-  }
-  function setOnlineCache(key, data) {
-    onlineEvalCache[key] = { ts: Date.now(), data };
-    return data;
-  }
-
-  async function fetchTextWithTimeout(url, timeoutMs, options = {}) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const res = await fetch(url, { ...options, signal: controller.signal });
-      if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
-      return await res.text();
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-
-  async function fetchJsonWithTimeout(url, timeoutMs, options = {}) {
-    const txt = await fetchTextWithTimeout(url, timeoutMs, options);
-    try {
-      return JSON.parse(txt);
-    } catch (e) {
-      throw new Error(`Bad JSON from ${url}: ${txt.slice(0, 180)}`);
-    }
-  }
-
-  async function fetchChessDBText(action, fen, extraParams = {}, opts = {}) {
-    const attempts = opts.attempts || CHESSDB_RETRY_ATTEMPTS;
-    const timeoutMs = opts.timeoutMs || CHESSDB_TIMEOUT_MS;
-    const allowProxy = !!opts.allowProxy;
-    let lastError = null;
-
-    for (let attempt = 1; attempt <= attempts; attempt++) {
-      if (attempt > 1) {
-        const delay = (CHESSDB_RETRY_DELAYS[attempt - 1] || CHESSDB_RETRY_DELAYS[CHESSDB_RETRY_DELAYS.length - 1] || 700) + jitter(120);
-        await sleep(delay);
-      }
-      try {
-        const params = new URLSearchParams({ board: fen, ...extraParams }).toString();
-        const viaProxy = allowProxy && action === 'queryall' && settings.evalMode === 'proxy';
-        const url = viaProxy
-          ? `/.netlify/functions/queryall?${params}`
-          : `https://www.chessdb.cn/cdb.php?action=${action}&${params}`;
-        const text = await fetchTextWithTimeout(url, timeoutMs);
-        return { text, attempts: attempt, viaProxy, url };
-      } catch (e) {
-        lastError = e;
-        console.warn(`[ChessDB] ${action} attempt ${attempt}/${attempts} failed:`, e);
-      }
-    }
-
-    throw lastError || new Error(`ChessDB ${action} failed`);
-  }
-
-  function scoreFromWhitePerspective(cpWhite, mateWhite, turn) {
-    if (mateWhite !== null && mateWhite !== undefined && mateWhite !== '') {
-      const mate = Number(mateWhite);
-      if (!Number.isNaN(mate)) {
-        if (mate === 0) return -100000;
-        const rootMate = turn === 'w' ? mate : -mate;
-        return Math.sign(rootMate) * (100000 - Math.min(999, Math.abs(rootMate)));
-      }
-    }
-    const cp = Number(cpWhite);
-    if (!Number.isFinite(cp)) return null;
-    return turn === 'w' ? cp : -cp;
-  }
-
-  function parseStockfishOnlineMove(bestmove) {
-    const m = String(bestmove || '').match(/\bbestmove\s+([a-h][1-8][a-h][1-8][qrbn]?)/i);
-    return m ? m[1].toLowerCase() : '';
-  }
-
-  async function fetchChessApiEval(fen, seedMoves = [], timeoutMs = ONLINE_TIMEOUT_MS) {
-    const cleanSeed = uniqueUciMoves(seedMoves);
-    const cacheKey = `capi:${normalizedFenKey(fen)}|${cleanSeed.join(' ')}`;
-    const cached = getOnlineCache(cacheKey);
-    if (cached) return cached;
-
-    const payload = {
-      fen,
-      depth: CHESS_API_DEPTH,
-      maxThinkingTime: CHESS_API_THINK_MS,
-      variants: 1
-    };
-    if (cleanSeed.length) payload.searchmoves = cleanSeed.join(' ');
-
-    const data = await fetchJsonWithTimeout('https://chess-api.com/v1', timeoutMs, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const move = String(data.move || data.lan || '').toLowerCase();
-    if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(move)) {
-      throw new Error('chess-api.com returned no usable move');
-    }
-
-    const cpWhite = data.centipawns != null
-      ? parseInt(data.centipawns, 10)
-      : (data.eval != null ? Math.round(Number(data.eval) * 100) : null);
-
-    return setOnlineCache(cacheKey, {
-      provider: 'chessapi',
-      move,
-      cpWhite: Number.isFinite(cpWhite) ? cpWhite : null,
-      mate: data.mate != null ? Number(data.mate) : null,
-      depth: Number(data.depth) || 0,
-      raw: data
-    });
-  }
-
-  async function fetchStockfishOnlineEval(fen, timeoutMs = ONLINE_TIMEOUT_MS) {
-    const cacheKey = `sfonline:${normalizedFenKey(fen)}`;
-    const cached = getOnlineCache(cacheKey);
-    if (cached) return cached;
-
-    const url = `https://stockfish.online/api/s/v2.php?fen=${encodeURIComponent(fen)}&depth=${STOCKFISH_ONLINE_DEPTH}`;
-    const data = await fetchJsonWithTimeout(url, timeoutMs);
-    if (!data || data.success !== true) {
-      throw new Error(`stockfish.online error: ${data && data.data ? data.data : 'unsuccessful response'}`);
-    }
-
-    const move = parseStockfishOnlineMove(data.bestmove);
-    if (!move) throw new Error('stockfish.online returned no usable move');
-
-    const cpWhite = data.evaluation != null
-      ? Math.round(Number(data.evaluation) * 100)
-      : (data.eval != null ? Math.round(Number(data.eval) * 100) : null);
-
-    return setOnlineCache(cacheKey, {
-      provider: 'stockfishonline',
-      move,
-      cpWhite: Number.isFinite(cpWhite) ? cpWhite : null,
-      mate: data.mate != null ? Number(data.mate) : null,
-      depth: Number(data.depth) || 0,
-      raw: data
-    });
-  }
-
-  async function quickDccRankMove(simGame, candidate) {
-    const probe = new Chess(simGame.fen());
-    const m = probe.move({
-      from: candidate.move.slice(0, 2),
-      to: candidate.move.slice(2, 4),
-      promotion: candidate.move.length > 4 ? candidate.move[4] : 'q'
-    });
-    if (!m) return null;
-
-    let dccScore = Number(candidate.score) || 0;
-    if (candidate.sources && candidate.sources.includes('chessdb')) dccScore += 10;
-
-    try {
-      const child = await cachedFetchChessDB(probe.fen());
-      if (child.moves && child.moves.length > 0) dccScore += DCC_WEIGHTS.endgame_known;
-    } catch (e) {}
-
-    const mobility = typeof probe.moves === 'function' ? probe.moves().length : 0;
-    dccScore += Math.min(30, mobility) * 0.4;
-    if (m.captured) dccScore += 4;
-    const cx = fenComplexity(probe.fen());
-    dccScore -= cx * DCC_WEIGHTS.complexity;
-
-    return {
-      move: candidate.move,
-      score: Math.round(Number(candidate.score) || 0),
-      _dccScore: dccScore,
-      _pickSource: 'online_dcc_tiebreak',
-      _onlineSources: candidate.sources || [],
-      _stability: '',
-      _adsrShape: 'online_tie',
-      _momentum: '',
-      _tunnel: false
-    };
-  }
-
-  async function chooseByQuickDcc(simGame, candidates) {
-    let best = null;
-    let bestScore = -Infinity;
-    for (const cand of candidates) {
-      const ranked = await quickDccRankMove(simGame, cand);
-      if (!ranked) continue;
-      if (ranked._dccScore > bestScore) {
-        bestScore = ranked._dccScore;
-        best = ranked;
-      }
-    }
-    return best;
-  }
-
-  async function pickOnlineFallbackMove(simGame, context = {}) {
-    const fen = simGame.fen();
-    const turn = fenTurn(fen);
-    const dbMoves = (context.dbResult && context.dbResult.moves ? context.dbResult.moves : []).slice(0, 3);
-    const seedMoves = uniqueUciMoves(dbMoves.map(m => m.move));
-    if (dbMoves.length > 0) setEvalBars({ classicalCp: dbMoves[0].score, classicalLabel: 'CDB', classicalSource: `ChessDB ${context.rootRoute || 'direct'}` });
-
-    const onlineBudgetMs = context.budgetMs || ONLINE_MOVE_BUDGET_MS;
-    const perCallTimeout = Math.max(700, Math.min(ONLINE_TIMEOUT_MS, onlineBudgetMs));
-
-    setDccVerboseStatus([
-      `Source: ChessDB ${context.rootRoute || 'direct'} ${dbMoves.length ? 'weak hit' : 'miss'}${context.rootAttempts ? ` · attempts ${context.rootAttempts}` : ''}`,
-      `Fallback: chess-api.com + stockfish.online · seed ${seedMoves.length} move(s)`,
-      `Status: waiting for online evals (${perCallTimeout}ms each)`
-    ], { mode: 'online_start', seedMoves: seedMoves.length, perCallTimeout, rootAttempts: context.rootAttempts || 0, rootRoute: context.rootRoute || 'direct' });
-
-    const [capiRes, sfRes] = await Promise.allSettled([
-      fetchChessApiEval(fen, seedMoves, perCallTimeout),
-      fetchStockfishOnlineEval(fen, perCallTimeout)
-    ]);
-
-    const online = [];
-    if (capiRes.status === 'fulfilled') online.push(capiRes.value);
-    else console.warn('chess-api.com fallback failed:', capiRes.reason);
-    if (sfRes.status === 'fulfilled') online.push(sfRes.value);
-    else console.warn('stockfish.online fallback failed:', sfRes.reason);
-
-    if (online.length === 0) {
-      setDccVerboseStatus([
-        `Source: ChessDB ${context.rootRoute || 'direct'} ${dbMoves.length ? 'weak hit' : 'miss'}`,
-        `Online fallback failed: chess-api ${capiRes.status === 'fulfilled' ? 'ok' : 'fail'} · stockfish.online ${sfRes.status === 'fulfilled' ? 'ok' : 'fail'}`,
-        'Pick: none · online providers returned no usable move'
-      ], { mode: 'online_fail' });
-      return null;
-    }
-
-    const byMove = new Map();
-    const addCandidate = (move, score, source) => {
-      if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(String(move || '').toLowerCase())) return;
-      const key = String(move).toLowerCase();
-      const scoreNum = Number(score);
-      const entry = byMove.get(key) || { move: key, score: Number.isFinite(scoreNum) ? scoreNum : 0, sources: [] };
-      if (Number.isFinite(scoreNum) && scoreNum > entry.score) entry.score = scoreNum;
-      if (!entry.sources.includes(source)) entry.sources.push(source);
-      byMove.set(key, entry);
-    };
-
-    dbMoves.forEach(m => addCandidate(m.move, m.score, 'chessdb'));
-
-    const onlineScored = online.map(entry => ({
-      ...entry,
-      rootScore: scoreFromWhitePerspective(entry.cpWhite, entry.mate, turn)
-    })).filter(entry => entry.rootScore !== null);
-
-    onlineScored.forEach(entry => addCandidate(entry.move, entry.rootScore, entry.provider));
-
-    if (onlineScored.length >= 2) {
-      const [a, b] = onlineScored;
-      if (a.move === b.move) {
-        const avgScore = Math.round((a.rootScore + b.rootScore) / 2);
-        setDccVerboseStatus([
-          `Source: ChessDB ${context.rootRoute || 'direct'} ${dbMoves.length ? 'weak hit' : 'miss'}${context.rootAttempts ? ` · attempts ${context.rootAttempts}` : ''}`,
-          `Online: chess-api ${a.provider === 'chessapi' ? a.move + ' ' + fmtCp(a.rootScore) : b.move + ' ' + fmtCp(b.rootScore)} · stockfish.online ${a.provider === 'stockfishonline' ? a.move + ' ' + fmtCp(a.rootScore) : b.move + ' ' + fmtCp(b.rootScore)}`,
-          `Pick: ${a.move} via online_consensus`
-        ], { mode: 'online_consensus', move: a.move, score: avgScore });
-        setEvalBars({ dccCp: avgScore, dccLabel: 'DCC', dccSource: 'online consensus' });
-        return { move: a.move, score: avgScore, _pickSource: 'online_consensus', _onlineSources: [a.provider, b.provider] };
-      }
-      const gap = Math.abs(a.rootScore - b.rootScore);
-      if (gap >= ONLINE_EQUAL_CP) {
-        const stronger = a.rootScore >= b.rootScore ? a : b;
-        setDccVerboseStatus([
-          `Source: ChessDB ${context.rootRoute || 'direct'} ${dbMoves.length ? 'weak hit' : 'miss'}${context.rootAttempts ? ` · attempts ${context.rootAttempts}` : ''}`,
-          `Online: ${a.provider} ${a.move} ${fmtCp(a.rootScore)} · ${b.provider} ${b.move} ${fmtCp(b.rootScore)} · gap ${gap}cp`,
-          `Pick: ${stronger.move} via ${stronger.provider}_gap`
-        ], { mode: 'online_gap', move: stronger.move, gap });
-        setEvalBars({ dccCp: Math.round(stronger.rootScore), dccLabel: 'DCC', dccSource: `${stronger.provider} gap` });
-        return { move: stronger.move, score: Math.round(stronger.rootScore), _pickSource: `${stronger.provider}_gap`, _onlineSources: [a.provider, b.provider], _onlineGap: gap };
-      }
-    }
-
-    const candidates = [...byMove.values()];
-    if (candidates.length === 1) {
-      const only = candidates[0];
-      const onlySource = only.sources.filter(s => s !== 'chessdb')[0] || only.sources[0] || 'online';
-      setDccVerboseStatus([
-        `Source: ChessDB ${context.rootRoute || 'direct'} ${dbMoves.length ? 'weak hit' : 'miss'}`,
-        `Online: single usable move ${only.move} ${fmtCp(only.score)} from ${only.sources.join('+')}`,
-        `Pick: ${only.move} via ${onlySource}`
-      ], { mode: 'online_single', move: only.move });
-      setEvalBars({ dccCp: Math.round(only.score || 0), dccLabel: 'DCC', dccSource: onlySource });
-      return { move: only.move, score: Math.round(only.score || 0), _pickSource: onlySource, _onlineSources: only.sources };
-    }
-
-    const picked = await chooseByQuickDcc(simGame, candidates);
-    if (picked) {
-      setDccVerboseStatus([
-        `Source: ChessDB ${context.rootRoute || 'direct'} ${dbMoves.length ? 'weak hit' : 'miss'}${context.rootAttempts ? ` · attempts ${context.rootAttempts}` : ''}`,
-        `Online: ${onlineScored.map(x => `${x.provider} ${x.move} ${fmtCp(x.rootScore)}`).join(' · ') || 'mixed candidate set'}`,
-        `Pick: ${picked.move} via online_dcc_tiebreak`
-      ], { mode: 'online_dcc_tiebreak', move: picked.move, candidates: candidates.length });
-      setEvalBars({ dccCp: Math.round(picked.score || 0), dccLabel: 'DCC', dccSource: 'online DCC tiebreak' });
-      return picked;
-    }
-
-    const best = candidates.sort((a, b) => b.score - a.score)[0];
-    if (best) {
-      setDccVerboseStatus([
-        `Source: ChessDB ${context.rootRoute || 'direct'} ${dbMoves.length ? 'weak hit' : 'miss'}`,
-        `Online: score fallback from ${best.sources.join('+')} · ${best.move} ${fmtCp(best.score)}`,
-        `Pick: ${best.move} via online_score_fallback`
-      ], { mode: 'online_score_fallback', move: best.move });
-      setEvalBars({ dccCp: Math.round(best.score || 0), dccLabel: 'DCC', dccSource: 'online score fallback' });
-    }
-    return best ? { move: best.move, score: Math.round(best.score || 0), _pickSource: 'online_score_fallback', _onlineSources: best.sources } : null;
-  }
 
   // ── Raw chessdb fetch with caching + rate limiting ──────────────
   async function cachedFetchChessDB(fen) {
-    const key = normalizedFenKey(fen); // normalize
+    const key = fen.split(' ').slice(0, 4).join(' '); // normalize
     if (evalCache[key]) return evalCache[key];
     await sleep(200); // rate limit guard
+    const useProxy = settings.evalMode === 'proxy';
+    const baseURL = useProxy
+      ? '/.netlify/functions/queryall?'
+      : 'https://www.chessdb.cn/cdb.php?action=queryall&';
+    const url = `${baseURL}board=${encodeURIComponent(fen)}&learn=0&showall=1`;
     try {
-      const { text, attempts, viaProxy } = await fetchChessDBText('queryall', fen, { learn: 0, showall: 1 }, { allowProxy: true });
-      const moves = text.split('|').map(line => {
-        const m = line.match(/move:(\w+),score:([\-\d\?]+),rank:(\d+),/);
+      const txt = await fetch(url).then(r => r.text());
+      const moves = txt.split('|').map(line => {
+        const m = line.match(/move:(\w+),score:([-\d\?]+),rank:(\d+),/);
         if (!m || m[2] === '??') return null;
         const score = parseInt(m[2], 10), rank = parseInt(m[3], 10);
         if (isNaN(score)) return null;
         return { move: m[1], score, rank };
       }).filter(Boolean).sort((a, b) => b.score - a.score || a.rank - b.rank);
-      const result = { moves, fen, _meta: { attempts, viaProxy } };
+      const result = { moves, fen };
       evalCache[key] = result;
       persistEvalCache();
       return result;
     } catch(e) {
       console.warn('DCC cachedFetch error:', e);
-      return { moves: [], fen, _meta: { attempts: CHESSDB_RETRY_ATTEMPTS, failed: true } };
+      return { moves: [], fen };
     }
   }
 
   // ── querypv: single call returns score + depth + full PV line ───
   async function fetchPV(fen) {
-    const key = 'pv:' + normalizedFenKey(fen);
+    const key = 'pv:' + fen.split(' ').slice(0, 4).join(' ');
     if (evalCache[key]) return evalCache[key];
     await sleep(200);
+    const url = `https://www.chessdb.cn/cdb.php?action=querypv&board=${encodeURIComponent(fen)}&learn=0`;
     try {
-      const { text, attempts } = await fetchChessDBText('querypv', fen, { learn: 0 });
+      const txt = await fetch(url).then(r => r.text());
       // Format: score:SCORE,depth:DEPTH,pv:MOVE1|MOVE2|...|MOVEn
       // Or: "unknown" / "invalid board"
-      if (text === 'unknown' || text.startsWith('invalid')) {
-        const result = { score: null, depth: 0, pv: [], raw: text, _meta: { attempts } };
+      if (txt === 'unknown' || txt.startsWith('invalid')) {
+        const result = { score: null, depth: 0, pv: [], raw: txt };
         evalCache[key] = result;
         persistEvalCache();
         return result;
       }
-      const scoreMatch = text.match(/score:([-\d]+)/);
-      const depthMatch = text.match(/depth:(\d+)/);
-      const pvMatch    = text.match(/pv:(.+)/);
+      const scoreMatch = txt.match(/score:([-\d]+)/);
+      const depthMatch = txt.match(/depth:(\d+)/);
+      const pvMatch    = txt.match(/pv:(.+)/);
       const score = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
       const depth = depthMatch ? parseInt(depthMatch[1], 10) : 0;
       const pv    = pvMatch ? pvMatch[1].split('|').filter(Boolean) : [];
-      const result = { score, depth, pv, raw: text, _meta: { attempts } };
+      const result = { score, depth, pv, raw: txt };
       evalCache[key] = result;
       persistEvalCache();
       return result;
     } catch(e) {
       console.warn('fetchPV error:', e);
-      return { score: null, depth: 0, pv: [], raw: '', _meta: { attempts: CHESSDB_RETRY_ATTEMPTS, failed: true } };
+      return { score: null, depth: 0, pv: [], raw: '' };
     }
   }
 
   // ── queryscore: lightweight single-score probe ─────────────────
   async function fetchScore(fen) {
-    const key = 'sc:' + normalizedFenKey(fen);
+    const key = 'sc:' + fen.split(' ').slice(0, 4).join(' ');
     if (evalCache[key] !== undefined) return evalCache[key];
     await sleep(150); // slightly lighter rate limit
+    const url = `https://www.chessdb.cn/cdb.php?action=queryscore&board=${encodeURIComponent(fen)}&learn=0`;
     try {
-      const { text } = await fetchChessDBText('queryscore', fen, { learn: 0 });
+      const txt = await fetch(url).then(r => r.text());
       // Format: eval:SCORE or "unknown"
-      const m = text.match(/eval:([-\d]+)/);
+      const m = txt.match(/eval:([-\d]+)/);
       const score = m ? parseInt(m[1], 10) : null;
       evalCache[key] = score;
       persistEvalCache();
@@ -1386,12 +878,6 @@ gameBuckets.forEach(bucket => {
     const maxHalfMoves = settings.dccDepth * 2;
     latestDCCResults = []; // reset for this position
 
-    setDccVerboseStatus([
-      `Source: ChessDB analysis board`,
-      `DCC lookahead starting · depth ${settings.dccDepth} · top ${settings.dccTopCandidates}`,
-      `Status: preparing candidate scan`
-    ], { mode: 'analysis' });
-
     // Smart candidate selection: eval floor + max candidates
     const bestScore = moveList.length > 0 ? moveList[0].score : 0;
     const candidates = moveList.filter(m =>
@@ -1399,11 +885,6 @@ gameBuckets.forEach(bucket => {
     ).slice(0, settings.dccTopCandidates);
 
     updateDCCProgress(0, candidates.length);
-    setDccVerboseStatus([
-      `Source: ChessDB analysis board`,
-      `Candidates: ${candidates.length}/${moveList.length} within ${settings.dccEvalFloor}cp`,
-      `Status: 0/${candidates.length} scanned`
-    ], { mode: 'analysis', candidates: candidates.length, totalMoves: moveList.length });
 
     for (let i = 0; i < candidates.length; i++) {
       if (thisId !== activeLookaheadId) { updateDCCProgress(0, 0); return; }
@@ -1442,15 +923,6 @@ gameBuckets.forEach(bucket => {
       }
       // Update progress + DCC view panel
       updateDCCProgress(i + 1, candidates.length);
-      const bestNow = latestDCCResults.slice().sort((a, b) => (b.stability || 0) - (a.stability || 0) || (b.score || 0) - (a.score || 0))[0];
-      if (bestNow) {
-        setEvalBars({ dccCp: bestNow.score, dccLabel: 'DCC', dccSource: 'DCC lookahead' });
-      }
-      setDccVerboseStatus([
-        `Source: ChessDB analysis board`,
-        `Candidates: ${candidates.length}/${moveList.length} within ${settings.dccEvalFloor}cp`,
-        `Status: ${i + 1}/${candidates.length} scanned${bestNow ? ` · best ${bestNow.move} ${fmtCp(bestNow.score)}` : ''}`
-      ], { mode: 'analysis', candidates: candidates.length, totalMoves: moveList.length, done: i + 1 });
       renderDCCView();
       if (settings.dccOnly) applyDCCOnlyBadges();
     }
@@ -1459,15 +931,6 @@ gameBuckets.forEach(bucket => {
     if (latestDCCResults.length > 0) {
       const fenKey = baseFen.split(' ').slice(0, 4).join(' ');
       dccMoveAnnotations[fenKey] = latestDCCResults.slice();
-      const bestFinal = latestDCCResults.slice().sort((a, b) => (b.stability || 0) - (a.stability || 0) || (b.score || 0) - (a.score || 0))[0];
-      if (bestFinal) {
-        setEvalBars({ dccCp: bestFinal.score, dccLabel: 'DCC', dccSource: 'DCC final' });
-      }
-      setDccVerboseStatus([
-        `Source: ChessDB analysis board`,
-        `DCC lookahead done · ${latestDCCResults.length}/${candidates.length} moves with PV`,
-        bestFinal ? `Top DCC line: ${bestFinal.move} ${fmtCp(bestFinal.score)} · stab ${Math.round((bestFinal.stability || 0) * 100)}%` : 'Top DCC line: —'
-      ], { mode: 'analysis_done', count: latestDCCResults.length });
     }
   }
 
@@ -1541,9 +1004,6 @@ gameBuckets.forEach(bucket => {
 
   // ── LZ Tiebreaker — mark MDL pick among tied moves ─────────────
   function applyLZTiebreaker(moveList, baseFen) {
-    document.querySelectorAll('.overlay.dcc-mdl-pick').forEach(ov => ov.classList.remove('dcc-mdl-pick'));
-    document.querySelectorAll('.dcc-mdl-star').forEach(el => el.remove());
-
     if (moveList.length < 2) return;
     const threshold = settings.dccTieThreshold;
     const bestScore = moveList[0].score;
@@ -1577,7 +1037,7 @@ gameBuckets.forEach(bucket => {
       const cell = document.querySelector(`.square-${sq}`);
       if (cell) {
         const ov = cell.querySelector('.overlay');
-        if (ov && !ov.querySelector('.dcc-mdl-star')) {
+        if (ov) {
           ov.classList.add('dcc-mdl-pick');
           const star = document.createElement('span');
           star.className = 'dcc-mdl-star';
@@ -1657,7 +1117,7 @@ gameBuckets.forEach(bucket => {
 
     panel.style.display = 'block';
     if (latestDCCResults.length === 0) {
-      panel.innerHTML = '<div class="dcc-analysis-empty">DCC analysis loading…</div>' + renderDccVerboseBlock();
+      panel.innerHTML = '<div class="dcc-analysis-empty">DCC analysis loading…</div>';
       return;
     }
 
@@ -1707,7 +1167,6 @@ gameBuckets.forEach(bucket => {
       html += `<div class="dcc-analysis-pv">PV: ${pvDisplay}${depthStr}</div>`;
     }
 
-    html += renderDccVerboseBlock();
     panel.innerHTML = html;
 
     // Click rows to show that move's full info
@@ -1871,13 +1330,9 @@ gameBuckets.forEach(bucket => {
     /* history height */
     const histHeight = { smallest: '60px', small:'140px', medium:'300px', big:'450px' }[settings.historySize];
     document.getElementById('moves').style.height = histHeight;
-    // v0.6.1: DCC / replay panels match history height
+    // v0.6.1: DCC panel matches history height
     const dccPanel = document.getElementById('dccAnalysisPanel');
-    if (dccPanel) { dccPanel.style.height = histHeight; dccPanel.style.minHeight = histHeight; dccPanel.style.maxHeight = histHeight; dccPanel.style.overflowY = 'auto'; }
-    const simStatsPanel = document.getElementById('simStatsPanel');
-    if (simStatsPanel) { simStatsPanel.style.minHeight = histHeight; simStatsPanel.style.maxHeight = histHeight; simStatsPanel.style.overflowY = 'auto'; }
-    syncDualEvalBars();
-    renderDualEvalBars();
+    if (dccPanel) { dccPanel.style.maxHeight = histHeight; dccPanel.style.overflowY = 'auto'; }
 
     /* format toggle label:  "FEN | pgn"  or  "fen | PGN" 
     document.getElementById('btnFormat').innerText =
@@ -2011,22 +1466,10 @@ gameBuckets.forEach(bucket => {
     }
     
     list.forEach((m, i) => annotateMove(m.move, m.score, i === 0));
-    if (list.length > 0) {
-      setEvalBars({
-        classicalCp: list[0].score,
-        classicalLabel: 'CDB',
-        classicalSource: `ChessDB ${useProxy ? 'proxy' : 'direct'}`
-      });
-    }
 
       // ── DCC Layer: tiebreaker + lookahead ────────────────────────
       if (settings.dccEnabled && list.length > 0) {
         const baseFen = game.fen();
-        setDccVerboseStatus([
-          `Source: ChessDB ${useProxy ? 'proxy' : 'direct'} analysis`,
-          `Root list: ${list.length} move(s) shown`,
-          'Status: launching DCC lookahead'
-        ], { mode: 'analysis_root', list: list.length, viaProxy: useProxy });
         // LZ Tiebreaker for tied moves
         applyLZTiebreaker(list, baseFen);
         // Async lookahead for top N moves
@@ -2202,7 +1645,6 @@ gameBuckets.forEach(bucket => {
 
 	  board.position(game.fen());
 	  document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
-  setEvalBars({ dccCp: null, dccSource: '', dccLabel: 'DCC' });
 	  // Cancel any running DCC lookahead
 	  activeLookaheadId++;
 	  updateDCCProgress(0, 0); // clear progress indicator
@@ -2879,41 +2321,18 @@ function jumpTo(i){
   // Pick move using DCC: eval floor + candidates + PV+ADSR ranking
   async function pickDCCMove(simGame, overrideCandidates) {
     const fen = simGame.fen();
-    setDccVerboseStatus([
-      'Source: querying ChessDB root…',
-      `Mode: DCC live pick · depth ${settings.dccDepth} · top ${overrideCandidates || settings.dccTopCandidates}`,
-      'Status: waiting for root move list'
-    ], { mode: 'live_pick' });
     const result = await cachedFetchChessDB(fen);
-    const rootAttempts = result && result._meta ? result._meta.attempts : 0;
-    const rootRoute = result && result._meta && result._meta.viaProxy ? 'proxy' : 'direct';
-
-    if (!result.moves || result.moves.length === 0) {
-      setDccVerboseStatus([
-        `Source: ChessDB ${rootRoute} miss after ${rootAttempts || '?'} attempt(s)`,
-        'Fallback: online eval requested from chess-api + stockfish.online',
-        'Status: no ChessDB root moves'
-      ], { mode: 'live_pick_miss' });
-      return await pickOnlineFallbackMove(simGame, { dbResult: result, budgetMs: ONLINE_MOVE_BUDGET_MS, rootAttempts, rootRoute });
-    }
+    if (!result.moves || result.moves.length === 0) return null;
 
     // Smart candidate selection: eval floor + max candidates
     const bestRawScore = result.moves[0].score;
-    setEvalBars({ classicalCp: bestRawScore, classicalLabel: 'CDB', classicalSource: `ChessDB ${rootRoute}` });
     const maxCandidates = overrideCandidates || settings.dccTopCandidates;
     const candidates = result.moves.filter(m =>
       Math.abs(bestRawScore - m.score) <= settings.dccEvalFloor
     ).slice(0, maxCandidates);
 
-    setDccVerboseStatus([
-      `Source: ChessDB ${rootRoute} · root ${result.moves.length} moves · attempts ${rootAttempts || 1}`,
-      `Candidates: ${candidates.length}/${result.moves.length} within ${settings.dccEvalFloor}cp`,
-      'Status: running PV / score checks'
-    ], { mode: 'live_pick_root', rootMoves: result.moves.length, candidates: candidates.length, rootAttempts, rootRoute });
-
-    let bestMove = { ...result.moves[0], _pickSource: 'chessdb_raw' }; // fallback: raw best
+    let bestMove = result.moves[0]; // fallback: raw best
     let bestScore = -Infinity;
-    let pvOkCount = 0;
 
     for (let i = 0; i < candidates.length; i++) {
       const mv = candidates[i];
@@ -2926,7 +2345,6 @@ function jumpTo(i){
 
       const pvResult = await fetchPV(probe.fen());
       if (pvResult.score === null) continue;
-      pvOkCount++;
 
       const evalSeq = [pvResult.score];
       // Quick intermediate score if PV has moves
@@ -2969,8 +2387,7 @@ function jumpTo(i){
       }
 
       // v0.6.0 Feature 4: Tunneling bonus
-      const tunnel = detectTunnel(evalSeq);
-      if (tunnel) dccScore += DCC_WEIGHTS.tunnel;
+      if (detectTunnel(evalSeq)) dccScore += DCC_WEIGHTS.tunnel;
 
       // LZ tiebreaker on resulting position
       const cx = fenComplexity(probe.fen());
@@ -2978,36 +2395,15 @@ function jumpTo(i){
 
       if (dccScore > bestScore) {
         bestScore = dccScore;
-        bestMove = { ...mv };
+        bestMove = mv;
         // v0.6.1: attach DCC metadata for CSV export
         bestMove._dccScore = dccScore;
         bestMove._stability = stability;
         bestMove._adsrShape = adsr.shape;
         bestMove._momentum = momentum;
-        bestMove._tunnel = tunnel;
-        bestMove._pickSource = 'chessdb_dcc';
-        bestMove._pvOkCount = pvOkCount;
+        bestMove._tunnel = detectTunnel(evalSeq);
       }
     }
-
-    const weakChessDbHit = result.moves.length < 2 || pvOkCount === 0;
-    if (weakChessDbHit) {
-      setDccVerboseStatus([
-        `Source: ChessDB ${rootRoute} weak hit · root ${result.moves.length} · PV ok ${pvOkCount}/${candidates.length}`,
-        'Fallback: online eval requested from chess-api + stockfish.online',
-        `Current best: ${bestMove.move || '—'} via ${bestMove._pickSource || 'chessdb_raw'}`
-      ], { mode: 'live_pick_weak', rootMoves: result.moves.length, pvOkCount, candidates: candidates.length, rootAttempts, rootRoute });
-      const onlinePick = await pickOnlineFallbackMove(simGame, { dbResult: result, budgetMs: ONLINE_MOVE_BUDGET_MS, rootAttempts, rootRoute, pvOkCount, candidateCount: candidates.length });
-      if (onlinePick) return onlinePick;
-    }
-
-    setEvalBars({ dccCp: Number.isFinite(Number(bestMove.score)) ? bestMove.score : null, dccLabel: 'DCC', dccSource: bestMove._pickSource || 'chessdb_raw' });
-    setDccVerboseStatus([
-      `Source: ChessDB ${rootRoute} · root ${result.moves.length} moves · attempts ${rootAttempts || 1}`,
-      `Deep eval: PV ok ${pvOkCount}/${candidates.length} · best ${bestMove.move || '—'} ${fmtCp(bestMove.score)}`,
-      `Pick: ${bestMove.move || '—'} via ${bestMove._pickSource || 'chessdb_raw'}`
-    ], { mode: 'live_pick_done', rootMoves: result.moves.length, pvOkCount, candidates: candidates.length, rootAttempts, rootRoute, pick: bestMove.move, source: bestMove._pickSource });
-
     return bestMove;
   }
 
@@ -3046,11 +2442,11 @@ function jumpTo(i){
 
   // v0.6.1: Export sim results as CSV for Python analysis
   function exportSimCSV(stats) {
-    const header = 'game,move_num,fen,move,raw_score,dcc_score,stability,adsr_shape,momentum,tunnel,picked_by,pick_source\n';
+    const header = 'game,move_num,fen,move,raw_score,dcc_score,stability,adsr_shape,momentum,tunnel,picked_by\n';
     let csv = header;
     stats.games.forEach((g, gi) => {
       (g.moveLog || []).forEach(row => {
-        csv += `${gi+1},${row.move_num},"${row.fen}",${row.move},${row.raw_score},${row.dcc_score},${row.stability},${row.adsr_shape},${row.momentum},${row.tunnel},${row.picked_by},${row.pick_source || ''}\n`;
+        csv += `${gi+1},${row.move_num},"${row.fen}",${row.move},${row.raw_score},${row.dcc_score},${row.stability},${row.adsr_shape},${row.momentum},${row.tunnel},${row.picked_by}\n`;
       });
     });
     const blob = new Blob([csv], {type: 'text/csv'});
@@ -3192,9 +2588,10 @@ function jumpTo(i){
       if (!pick) {
         await sleep(200);
         try {
-          const { text: fbTxt } = await fetchChessDBText('querybest', simGame.fen(), { learn: 0 });
+          const fbUrl = `https://www.chessdb.cn/cdb.php?action=querybest&board=${encodeURIComponent(simGame.fen())}&learn=0`;
+          const fbTxt = await fetch(fbUrl).then(r => r.text());
           const fbm = fbTxt.match(/move:(\w+)/);
-          if (fbm) pick = { move: fbm[1], score: 0, _pickSource: 'raw_querybest_fallback' };
+          if (fbm) pick = { move: fbm[1], score: 0 };
         } catch(e) {}
       }
 
@@ -3218,8 +2615,7 @@ function jumpTo(i){
         adsr_shape: pick._adsrShape || '',
         momentum: pick._momentum !== undefined ? pick._momentum.toFixed(1) : '',
         tunnel: pick._tunnel ? 'true' : 'false',
-        picked_by: useDCC ? 'dcc' : 'raw',
-        pick_source: pick._pickSource || (useDCC ? 'dcc' : 'raw')
+        picked_by: useDCC ? 'dcc' : 'raw'
       });
 
       const sideLabel = bothDCC ? (turn === 'w' ? 'W' : 'B') : (useDCC ? 'DCC' : 'Raw');
@@ -3730,25 +3126,17 @@ function enterActiveSession(mode, opts = {}) {
     return msg;
   }
 
-  function hasPendingPreparedOpening(remoteMovesStr = playState.lichess.lastMoves || '') {
-    return !!(
+  function syncGameFromMoves(movesStr, initialFen = 'startpos') {
+    const moves = (movesStr || '').trim() ? movesStr.trim().split(/\s+/) : [];
+    if ((playState.lichess.lastMoves || '').trim() === (movesStr || '').trim()) return;
+
+    const keepPreparedOpening =
       playState.active &&
       playState.mode === 'lichess' &&
       playState.autoPilot &&
       playState.userColor === 'w' &&
       playState.lichess.preparedOpeningApplied &&
       !playState.lichess.preparedOpeningSent &&
-      playState.lichess.preparedOpeningUci &&
-      !(remoteMovesStr || '').trim()
-    );
-  }
-
-  function syncGameFromMoves(movesStr, initialFen = 'startpos') {
-    const moves = (movesStr || '').trim() ? movesStr.trim().split(/\s+/) : [];
-    if ((playState.lichess.lastMoves || '').trim() === (movesStr || '').trim()) return;
-
-    const keepPreparedOpening =
-      hasPendingPreparedOpening(movesStr) &&
       moves.length === 0 &&
       (!initialFen || initialFen === 'startpos');
 
@@ -3903,9 +3291,7 @@ async function startLichessGameStream(gameId) {
       playState.waiting = game.turn() !== playState.userColor;
       if (playState.autoPilot) {
         updateSimStatus(`8Z live · ${playState.lichess.botUsername}`);
-        if (!game.game_over() && (game.turn() === playState.userColor || hasPendingPreparedOpening(payload?.state?.moves || ''))) {
-          setTimeout(() => { runLichessAutoMove().catch(console.error); }, 180);
-        }
+        if (!game.game_over() && (game.turn() === playState.userColor || hasPendingPreparedOpening(payload?.state?.moves || ''))) setTimeout(() => { runLichessAutoMove().catch(console.error); }, 180);
       } else {
         updateSimStatus(game.turn() === playState.userColor ? 'Your move.' : `Waiting for ${playState.lichess.botUsername}…`);
       }
@@ -3951,6 +3337,81 @@ async function startLichessGameStreamLoop(gameId) {
     }
     await sleep(Math.min(1500, 300 + attempt * 250));
   }
+}
+
+async function refreshLichessGameSnapshot(gameId, timeoutMs = 2500) {
+  const token = playState.lichess.token;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => {
+    try { ctrl.abort(); } catch (_) {}
+  }, timeoutMs);
+  try {
+    const res = await fetch(`https://lichess.org/api/board/game/stream/${encodeURIComponent(gameId)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: ctrl.signal
+    });
+    if (!res.ok) {
+      const txt = await res.text().catch(() => '');
+      if (res.status === 401 || res.status === 403) {
+        clearStoredLichessToken();
+        throw new Error((txt || `Game refresh failed (${res.status})`) + ' Token rejected.');
+      }
+      throw new Error(txt || `Game refresh failed (${res.status})`);
+    }
+    const payload = await readNdjsonStream(res, async evt => {
+      if (evt?.type === 'gameFull' || evt?.type === 'gameState' || evt?.moves !== undefined) return evt;
+      return null;
+    }, ctrl.signal);
+    if (!payload) return null;
+    if (payload?.type === 'gameFull') {
+      playState.userColor = guessUserColorFromGameFull(payload, playState.lichess.botUsername, playState.lichess.selectedColor);
+      board.orientation(playState.userColor === 'b' ? 'black' : 'white');
+      syncGameFromMoves(payload?.state?.moves || '', payload?.initialFen || 'startpos');
+    } else {
+      syncGameFromMoves(payload?.moves || '', 'startpos');
+    }
+    playState.lichess.ready = true;
+    playState.waiting = game.turn() !== playState.userColor;
+    return payload;
+  } finally {
+    clearTimeout(timer);
+    try { ctrl.abort(); } catch (_) {}
+  }
+}
+
+function scheduleLichessStartupWatch(gameId, tries = 18, delayMs = 600) {
+  const kick = async (remaining) => {
+    if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId || !playState.autoPilot) return;
+    if (game.game_over()) return;
+    const pendingPrepared = hasPendingPreparedOpening();
+    if (playState.lichess.ready && (pendingPrepared || game.turn() === playState.userColor)) {
+      try {
+        await runLichessAutoMove();
+        return;
+      } catch (err) {
+        console.warn('Lichess startup watch move failed:', err);
+      }
+    }
+    const noMovesYet = !(playState.lichess.lastMoves || '').trim();
+    if (noMovesYet) {
+      try {
+        await refreshLichessGameSnapshot(gameId, Math.min(3500, Math.max(1200, delayMs + 1200)));
+      } catch (err) {
+        if (err?.name !== 'AbortError') console.warn('Lichess startup watch refresh failed:', err);
+      }
+      const refreshedPending = hasPendingPreparedOpening();
+      if (playState.lichess.ready && (refreshedPending || game.turn() === playState.userColor)) {
+        try {
+          await runLichessAutoMove();
+          return;
+        } catch (err) {
+          console.warn('Lichess startup watch post-refresh move failed:', err);
+        }
+      }
+    }
+    if (remaining > 1) setTimeout(() => kick(remaining - 1), delayMs);
+  };
+  setTimeout(() => kick(tries), delayMs);
 }
 
 function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
@@ -4202,15 +3663,19 @@ async function runLichessAutoMove() {
     leaveActiveSession('Game over. Lichess bot session finished.');
     return;
   }
-  const pendingPreparedOpening = hasPendingPreparedOpening();
-  if (!pendingPreparedOpening && game.turn() !== playState.userColor) return;
+
+  const noMovesYet = !(playState.lichess.lastMoves || '').trim();
+  const usePreparedOpening =
+    noMovesYet &&
+    playState.userColor === 'w' &&
+    playState.lichess.preparedOpeningApplied &&
+    !playState.lichess.preparedOpeningSent &&
+    !!playState.lichess.preparedOpeningUci;
+  if (!usePreparedOpening && game.turn() !== playState.userColor) return;
 
   playState.autoMoveBusy = true;
   playState.waiting = true;
   setBoardThinking(true);
-
-  const noMovesYet = !(playState.lichess.lastMoves || '').trim();
-  const usePreparedOpening = pendingPreparedOpening && noMovesYet;
 
   updateSimStatus(usePreparedOpening ? 'Sending prepared White opening to Lichess…' : '8Z-DCC is thinking…');
   const fenBefore = game.fen();
@@ -4328,6 +3793,9 @@ async function startLichessSession(botUsername, selectedColor, clock, timeLabel,
     });
     if (opts.autoPilot && guessedColor === 'w') {
       scheduleLichessOpeningKick(gameId, 12, 300);
+    }
+    if (opts.autoPilot) {
+      scheduleLichessStartupWatch(gameId, guessedColor === 'w' ? 18 : 30, guessedColor === 'w' ? 600 : 1000);
     }
   } catch (err) {
     await openingPrepPromise.catch(() => null);
@@ -4585,21 +4053,22 @@ async function launchFromSimModal() {
             <div style="color:#00e5ff; font-weight:700; margin-bottom:6px;">
               DCC Replay — ${i + 1}/${moves.length} (${pct}%)
             </div>
-            <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px;">
-              <div style="padding:8px 10px; border:1px solid rgba(52,211,153,.24); border-radius:8px; background:rgba(52,211,153,.06);">
-                <div><span style="color:#34d399; font-weight:700;">White</span></div>
-                <div>DCC#1: <strong>${wP}%</strong> <span style="color:#666">(${wM}/${wA.length})</span></div>
+            <div style="display:flex; gap:24px;">
+              <div>
+                <span style="color:#34d399; font-weight:600;">White</span>
+                DCC#1: <strong>${wP}%</strong>
+                <span style="color:#666">(${wM}/${wA.length})</span>
               </div>
-              <div style="padding:8px 10px; border:1px solid rgba(167,139,250,.24); border-radius:8px; background:rgba(167,139,250,.06);">
-                <div><span style="color:#a78bfa; font-weight:700;">Black</span></div>
-                <div>DCC#1: <strong>${bP}%</strong> <span style="color:#666">(${bM}/${bA.length})</span></div>
+              <div>
+                <span style="color:#a78bfa; font-weight:600;">Black</span>
+                DCC#1: <strong>${bP}%</strong>
+                <span style="color:#666">(${bM}/${bA.length})</span>
               </div>
             </div>
-            <div style="margin-top:8px; height:4px; background:#333; border-radius:2px;">
+            <div style="margin-top:6px; height:4px; background:#333; border-radius:2px;">
               <div style="height:100%; width:${pct}%; background:#00e5ff; border-radius:2px; transition:width 0.2s;"></div>
             </div>
           </div>`;
-        panel.style.overflowY = 'auto';
         panel.style.display = 'block';
       }
 
@@ -4654,21 +4123,19 @@ async function launchFromSimModal() {
         <span class="sim-title">DCC Replay Complete — ${annotations.length} moves analyzed</span>
       </div>
       <div style="padding:8px; font-size:12px; line-height:1.6; color:#ddd;">
-        <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; align-items:start;">
-          <div style="padding:10px; border:1px solid rgba(52,211,153,.24); border-radius:8px; background:rgba(52,211,153,.06);">
-            <strong style="color:#34d399">${wName} (White)</strong><br>
-            DCC accuracy: <strong>${wPct}%</strong> (${wMatch}/${wAnns.length} matched DCC #1)<br>
-            Avg stability: ${avgStab(wAnns).toFixed(2)} · Tunnels: ${tunnelCount(wAnns)}<br>
-            <span style="color:#888">${shapeStr(wShapes) || '—'}</span>
-          </div>
-          <div style="padding:10px; border:1px solid rgba(167,139,250,.24); border-radius:8px; background:rgba(167,139,250,.06);">
-            <strong style="color:#a78bfa">${bName} (Black)</strong><br>
-            DCC accuracy: <strong>${bPct}%</strong> (${bMatch}/${bAnns.length} matched DCC #1)<br>
-            Avg stability: ${avgStab(bAnns).toFixed(2)} · Tunnels: ${tunnelCount(bAnns)}<br>
-            <span style="color:#888">${shapeStr(bShapes) || '—'}</span>
-          </div>
+        <div style="margin-bottom:8px;">
+          <strong style="color:#34d399">${wName} (White)</strong><br>
+          DCC accuracy: <strong>${wPct}%</strong> (${wMatch}/${wAnns.length} matched DCC #1)<br>
+          Avg stability: ${avgStab(wAnns).toFixed(2)} · Tunnels: ${tunnelCount(wAnns)}<br>
+          <span style="color:#888">${shapeStr(wShapes)}</span>
         </div>
-        <div style="color:#f59e0b; font-style:italic; margin-top:10px;">
+        <div style="margin-bottom:8px;">
+          <strong style="color:#a78bfa">${bName} (Black)</strong><br>
+          DCC accuracy: <strong>${bPct}%</strong> (${bMatch}/${bAnns.length} matched DCC #1)<br>
+          Avg stability: ${avgStab(bAnns).toFixed(2)} · Tunnels: ${tunnelCount(bAnns)}<br>
+          <span style="color:#888">${shapeStr(bShapes)}</span>
+        </div>
+        <div style="color:#f59e0b; font-style:italic;">
           ${bPct > wPct ? 'DCC says: Black played more aligned with DCC preferences.'
            : wPct > bPct ? 'DCC says: White played more aligned with DCC preferences.'
            : 'DCC says: Both sides equally aligned with DCC preferences.'}
@@ -4677,7 +4144,6 @@ async function launchFromSimModal() {
       <div style="text-align:center; margin-top:6px;">
         <button id="btnSaveAnnotatedPGN" style="background:#00e5ff; color:#000; border:none; padding:8px 20px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:600;">Save Annotated PGN</button>
       </div>`;
-    panel.style.overflowY = 'auto';
     panel.style.display = 'block';
 
     // Wire save button
