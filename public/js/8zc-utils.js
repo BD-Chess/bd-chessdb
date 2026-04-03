@@ -2417,7 +2417,6 @@ function jumpTo(i){
 
       const pvResult = await fetchPV(probe.fen());
       if (pvResult.score === null) continue;
-      pvOkCount++;
 
       const evalSeq = [pvResult.score];
       // Quick intermediate score if PV has moves
@@ -2433,7 +2432,6 @@ function jumpTo(i){
           if (j % 2 === 1) {
             const sc = await fetchScore(walk.fen());
             if (sc !== null) {
-              scoreOkCount++;
               evalSeq.push((j % 2 === 0) ? -sc : sc);
             }
           }
