@@ -691,32 +691,98 @@ gameBuckets.forEach(bucket => {
 
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+  const CHESSDB_RETRY_ATTEMPTS = 3;
+  const CHESSDB_RETRY_BACKOFF_MS = [0, 250, 700];
+  const CHESSDB_REQUEST_TIMEOUT_MS = 3000;
+  const CHESSDB_RETRY_JITTER_MS = 120;
+
+  function chessDbJitter() {
+    return Math.floor(Math.random() * CHESSDB_RETRY_JITTER_MS);
+  }
+
+  function buildChessDBUrl(action, fen, opts = {}) {
+    const learn = opts.learn ?? 0;
+    const showall = opts.showall ?? 0;
+    const canProxy = !!opts.allowProxy && action === 'queryall' && settings.evalMode === 'proxy';
+    if (canProxy) {
+      return `/.netlify/functions/queryall?board=${encodeURIComponent(fen)}&learn=${learn}&showall=${showall}`;
+    }
+    return `https://www.chessdb.cn/cdb.php?action=${action}&board=${encodeURIComponent(fen)}&learn=${learn}${action === 'queryall' ? `&showall=${showall}` : ''}`;
+  }
+
+  async function fetchTextWithTimeout(url, timeoutMs) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const resp = await fetch(url, { signal: controller.signal });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const txt = await resp.text();
+      if (!txt || !txt.trim()) throw new Error('Empty response');
+      return txt;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function fetchChessDBText(action, fen, opts = {}) {
+    const attempts = opts.attempts || CHESSDB_RETRY_ATTEMPTS;
+    const timeoutMs = opts.timeoutMs || CHESSDB_REQUEST_TIMEOUT_MS;
+    const allowProxy = !!opts.allowProxy;
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      const delay = CHESSDB_RETRY_BACKOFF_MS[Math.min(attempt - 1, CHESSDB_RETRY_BACKOFF_MS.length - 1)] || 0;
+      if (delay > 0) await sleep(delay + chessDbJitter());
+      const url = buildChessDBUrl(action, fen, {
+        learn: opts.learn,
+        showall: opts.showall,
+        allowProxy
+      });
+      try {
+        const text = await fetchTextWithTimeout(url, timeoutMs);
+        if (attempt > 1) {
+          console.info(`[ChessDB] ${action} success on retry ${attempt}/${attempts}`);
+        }
+        return {
+          text,
+          attempts: attempt,
+          viaProxy: allowProxy && action === 'queryall' && settings.evalMode === 'proxy',
+          url
+        };
+      } catch (e) {
+        lastError = e;
+        console.warn(`[ChessDB] ${action} attempt ${attempt}/${attempts} failed:`, e);
+      }
+    }
+
+    throw lastError || new Error(`ChessDB ${action} failed`);
+  }
+
   // ── Raw chessdb fetch with caching + rate limiting ──────────────
   async function cachedFetchChessDB(fen) {
     const key = fen.split(' ').slice(0, 4).join(' '); // normalize
     if (evalCache[key]) return evalCache[key];
     await sleep(200); // rate limit guard
-    const useProxy = settings.evalMode === 'proxy';
-    const baseURL = useProxy
-      ? '/.netlify/functions/queryall?'
-      : 'https://www.chessdb.cn/cdb.php?action=queryall&';
-    const url = `${baseURL}board=${encodeURIComponent(fen)}&learn=0&showall=1`;
     try {
-      const txt = await fetch(url).then(r => r.text());
-      const moves = txt.split('|').map(line => {
+      const { text, attempts, viaProxy } = await fetchChessDBText('queryall', fen, {
+        learn: 0,
+        showall: 1,
+        allowProxy: true
+      });
+      const moves = text.split('|').map(line => {
         const m = line.match(/move:(\w+),score:([-\d\?]+),rank:(\d+),/);
         if (!m || m[2] === '??') return null;
         const score = parseInt(m[2], 10), rank = parseInt(m[3], 10);
         if (isNaN(score)) return null;
         return { move: m[1], score, rank };
       }).filter(Boolean).sort((a, b) => b.score - a.score || a.rank - b.rank);
-      const result = { moves, fen };
+      const result = { moves, fen, _meta: { attempts, viaProxy } };
       evalCache[key] = result;
       persistEvalCache();
       return result;
     } catch(e) {
       console.warn('DCC cachedFetch error:', e);
-      return { moves: [], fen };
+      return { moves: [], fen, _meta: { attempts: CHESSDB_RETRY_ATTEMPTS, failed: true } };
     }
   }
 
@@ -725,30 +791,31 @@ gameBuckets.forEach(bucket => {
     const key = 'pv:' + fen.split(' ').slice(0, 4).join(' ');
     if (evalCache[key]) return evalCache[key];
     await sleep(200);
-    const url = `https://www.chessdb.cn/cdb.php?action=querypv&board=${encodeURIComponent(fen)}&learn=0`;
     try {
-      const txt = await fetch(url).then(r => r.text());
+      const { text, attempts } = await fetchChessDBText('querypv', fen, {
+        learn: 0
+      });
       // Format: score:SCORE,depth:DEPTH,pv:MOVE1|MOVE2|...|MOVEn
       // Or: "unknown" / "invalid board"
-      if (txt === 'unknown' || txt.startsWith('invalid')) {
-        const result = { score: null, depth: 0, pv: [], raw: txt };
+      if (text === 'unknown' || text.startsWith('invalid')) {
+        const result = { score: null, depth: 0, pv: [], raw: text, _meta: { attempts } };
         evalCache[key] = result;
         persistEvalCache();
         return result;
       }
-      const scoreMatch = txt.match(/score:([-\d]+)/);
-      const depthMatch = txt.match(/depth:(\d+)/);
-      const pvMatch    = txt.match(/pv:(.+)/);
+      const scoreMatch = text.match(/score:([-\d]+)/);
+      const depthMatch = text.match(/depth:(\d+)/);
+      const pvMatch    = text.match(/pv:(.+)/);
       const score = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
       const depth = depthMatch ? parseInt(depthMatch[1], 10) : 0;
       const pv    = pvMatch ? pvMatch[1].split('|').filter(Boolean) : [];
-      const result = { score, depth, pv, raw: txt };
+      const result = { score, depth, pv, raw: text, _meta: { attempts } };
       evalCache[key] = result;
       persistEvalCache();
       return result;
     } catch(e) {
       console.warn('fetchPV error:', e);
-      return { score: null, depth: 0, pv: [], raw: '' };
+      return { score: null, depth: 0, pv: [], raw: '', _meta: { attempts: CHESSDB_RETRY_ATTEMPTS, failed: true } };
     }
   }
 
@@ -757,11 +824,12 @@ gameBuckets.forEach(bucket => {
     const key = 'sc:' + fen.split(' ').slice(0, 4).join(' ');
     if (evalCache[key] !== undefined) return evalCache[key];
     await sleep(150); // slightly lighter rate limit
-    const url = `https://www.chessdb.cn/cdb.php?action=queryscore&board=${encodeURIComponent(fen)}&learn=0`;
     try {
-      const txt = await fetch(url).then(r => r.text());
+      const { text } = await fetchChessDBText('queryscore', fen, {
+        learn: 0
+      });
       // Format: eval:SCORE or "unknown"
-      const m = txt.match(/eval:([-\d]+)/);
+      const m = text.match(/eval:([-\d]+)/);
       const score = m ? parseInt(m[1], 10) : null;
       evalCache[key] = score;
       persistEvalCache();
@@ -943,7 +1011,7 @@ gameBuckets.forEach(bucket => {
     if (!ov) return;
 
     // Remove old DCC indicators
-    ov.querySelectorAll('.dcc-arrow,.dcc-loading,.dcc-adsr-label').forEach(e => e.remove());
+    ov.querySelectorAll('.dcc-arrow,.dcc-loading,.dcc-adsr-label,.dcc-tunnel-label').forEach(e => e.remove());
     ov.classList.remove('dcc-stable', 'dcc-unstable', 'dcc-mdl-pick');
 
     if (status === 'loading') {
@@ -1004,6 +1072,11 @@ gameBuckets.forEach(bucket => {
 
   // ── LZ Tiebreaker — mark MDL pick among tied moves ─────────────
   function applyLZTiebreaker(moveList, baseFen) {
+    document.querySelectorAll('.overlay.dcc-mdl-pick').forEach(ov => {
+      ov.classList.remove('dcc-mdl-pick');
+    });
+    document.querySelectorAll('.dcc-mdl-star').forEach(el => el.remove());
+
     if (moveList.length < 2) return;
     const threshold = settings.dccTieThreshold;
     const bestScore = moveList[0].score;
@@ -1037,7 +1110,7 @@ gameBuckets.forEach(bucket => {
       const cell = document.querySelector(`.square-${sq}`);
       if (cell) {
         const ov = cell.querySelector('.overlay');
-        if (ov) {
+        if (ov && !ov.querySelector('.dcc-mdl-star')) {
           ov.classList.add('dcc-mdl-pick');
           const star = document.createElement('span');
           star.className = 'dcc-mdl-star';
@@ -1410,20 +1483,16 @@ gameBuckets.forEach(bucket => {
 	  }
 
 	  const useProxy = settings.evalMode === 'proxy';
-	  const baseURL = useProxy
-		? '/.netlify/functions/queryall?'
-		: 'https://www.chessdb.cn/cdb.php?action=queryall&';
-
-	  const vURL = `${baseURL}board=${fen}&learn=0&showall=1`;
-	  const cURL = `${baseURL}board=${fen}&learn=1&showall=1`;
 
 	  let vTxt = null, cTxt = null;
 
 	  try {
-		[vTxt, cTxt] = await Promise.all([
-		  fetch(vURL).then(r => r.text()),
-		  fetch(cURL).then(r => r.text())
+		const [verified, cloud] = await Promise.all([
+		  fetchChessDBText('queryall', game.fen(), { learn: 0, showall: 1, allowProxy: true }),
+		  fetchChessDBText('queryall', game.fen(), { learn: 1, showall: 1, allowProxy: true })
 		]);
+		vTxt = verified.text;
+		cTxt = cloud.text;
 	  } catch (e) {
 		console.warn('Fetch error:', e);
 	  }
@@ -2331,8 +2400,11 @@ function jumpTo(i){
       Math.abs(bestRawScore - m.score) <= settings.dccEvalFloor
     ).slice(0, maxCandidates);
 
-    let bestMove = result.moves[0]; // fallback: raw best
+    let bestMove = { ...result.moves[0], _pickSource: 'raw_queryall_best' }; // fallback: raw best
     let bestScore = -Infinity;
+    let pvOkCount = 0;
+    let scoreOkCount = 0;
+    let usedDCCRanking = false;
 
     for (let i = 0; i < candidates.length; i++) {
       const mv = candidates[i];
@@ -2359,7 +2431,9 @@ function jumpTo(i){
           if (!wm) break;
           if (j % 2 === 1) {
             const sc = await fetchScore(walk.fen());
-            if (sc !== null) evalSeq.push((j % 2 === 0) ? -sc : sc);
+            if (sc !== null) {
+              evalSeq.push((j % 2 === 0) ? -sc : sc);
+            }
           }
         }
       }
@@ -2395,7 +2469,8 @@ function jumpTo(i){
 
       if (dccScore > bestScore) {
         bestScore = dccScore;
-        bestMove = mv;
+        bestMove = { ...mv };
+        usedDCCRanking = true;
         // v0.6.1: attach DCC metadata for CSV export
         bestMove._dccScore = dccScore;
         bestMove._stability = stability;
@@ -2403,6 +2478,11 @@ function jumpTo(i){
         bestMove._momentum = momentum;
         bestMove._tunnel = detectTunnel(evalSeq);
       }
+    }
+    if (bestMove) {
+      bestMove._pickSource = usedDCCRanking ? 'dcc' : 'raw_queryall_best';
+      bestMove._pvOkCount = pvOkCount;
+      bestMove._scoreOkCount = scoreOkCount;
     }
     return bestMove;
   }
@@ -2588,10 +2668,9 @@ function jumpTo(i){
       if (!pick) {
         await sleep(200);
         try {
-          const fbUrl = `https://www.chessdb.cn/cdb.php?action=querybest&board=${encodeURIComponent(simGame.fen())}&learn=0`;
-          const fbTxt = await fetch(fbUrl).then(r => r.text());
+          const { text: fbTxt } = await fetchChessDBText('querybest', simGame.fen(), { learn: 0 });
           const fbm = fbTxt.match(/move:(\w+)/);
-          if (fbm) pick = { move: fbm[1], score: 0 };
+          if (fbm) pick = { move: fbm[1], score: 0, _pickSource: 'raw_querybest_fallback' };
         } catch(e) {}
       }
 
@@ -2611,6 +2690,9 @@ function jumpTo(i){
         move: pick.move,
         raw_score: pick.score,
         dcc_score: pick._dccScore !== undefined ? pick._dccScore.toFixed(1) : '',
+        pick_source: pick._pickSource || '',
+        pv_ok_count: pick._pvOkCount !== undefined ? pick._pvOkCount : '',
+        score_ok_count: pick._scoreOkCount !== undefined ? pick._scoreOkCount : '',
         stability: pick._stability !== undefined ? pick._stability.toFixed(2) : '',
         adsr_shape: pick._adsrShape || '',
         momentum: pick._momentum !== undefined ? pick._momentum.toFixed(1) : '',
@@ -3828,6 +3910,7 @@ async function launchFromSimModal() {
 
       const pvResult = await fetchPV(probe.fen());
       if (pvResult.score === null) continue;
+      pvOkCount++;
 
       const evalSeq = [pvResult.score];
       if (pvResult.pv.length > 1) {
@@ -3840,7 +3923,10 @@ async function launchFromSimModal() {
           if (!wm) break;
           if (j % 2 === 1) {
             const sc = await fetchScore(walk.fen());
-            if (sc !== null) evalSeq.push((j % 2 === 0) ? -sc : sc);
+            if (sc !== null) {
+              scoreOkCount++;
+              evalSeq.push((j % 2 === 0) ? -sc : sc);
+            }
           }
         }
       }
