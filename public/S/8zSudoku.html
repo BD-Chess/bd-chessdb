@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sudoku × MDL — Phase 1 | AIM³ Lab</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23020409'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='16' font-weight='700' fill='%2300e5ff' text-anchor='middle'%3E9%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020409;--bg2:#060a14;--bg3:#0b1120;
+  --surface:rgba(15,23,41,0.82);--surface2:#141e33;
+  --border:rgba(0,229,255,0.10);--border2:rgba(0,229,255,0.22);
+  --cyan:#00e5ff;--cyan-dim:rgba(0,229,255,0.12);--cyan-glow:rgba(0,229,255,0.25);
+  --gold:#f59e0b;--gold-dim:rgba(245,158,11,0.12);
+  --green:#34d399;--green-dim:rgba(52,211,153,0.12);
+  --violet:#a78bfa;--violet-dim:rgba(167,139,250,0.12);
+  --rose:#ff6b8a;--rose-dim:rgba(255,107,138,0.12);
+  --orange:#fb923c;--orange-dim:rgba(251,146,60,0.12);
+  --text:#e2e8f4;--muted:#5e7192;--subtle:#1a2540;
+  --cell:52px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:
+    radial-gradient(circle at 20% 18%,rgba(16,120,80,0.22),transparent 32%),
+    radial-gradient(circle at 80% 70%,rgba(0,229,255,0.08),transparent 28%),
+    linear-gradient(180deg,#090b10 0%,#06070a 100%);
+  color:var(--text);
+  font-family:'Rajdhani',sans-serif;font-size:17px;line-height:1.6;
+  display:flex;flex-direction:column;align-items:center;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+body::before,body::after{
+  content:"";position:fixed;border-radius:50%;
+  filter:blur(80px);opacity:.30;pointer-events:none;z-index:0;
+}
+body::before{
+  width:42vw;height:42vw;left:-8vw;top:-12vh;
+  background:radial-gradient(circle,rgba(52,211,153,0.30),rgba(16,80,60,0.15) 48%,transparent 72%);
+  animation:flA 18s ease-in-out infinite;
+}
+body::after{
+  width:38vw;height:38vw;right:-10vw;bottom:-18vh;
+  background:radial-gradient(circle,rgba(0,229,255,0.12),rgba(16,60,80,0.15) 44%,transparent 72%);
+  animation:flB 24s ease-in-out infinite;
+}
+@keyframes flA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(5vw,4vh,0)}}
+@keyframes flB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-4vw,-6vh,0)}}
+.noise{
+  position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0.018;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.page{position:relative;z-index:1;width:100%;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+.header{width:100%;max-width:1200px;padding:16px 20px 0;display:flex;justify-content:space-between;align-items:baseline}
+.logo{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:600;color:var(--cyan);letter-spacing:.3em;text-transform:uppercase}
+.logo span{color:var(--gold)}
+.timer{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--muted);letter-spacing:.1em}
+.title-block{text-align:center;padding:8px 20px 0}
+.title{font-family:'Rajdhani',sans-serif;font-size:clamp(1.4rem,3.5vw,2.4rem);font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.title .accent{color:var(--cyan)}
+.subtitle{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:var(--muted);margin-top:2px}
+.status{text-align:center;font-size:.75rem;color:var(--muted);min-height:1.2em;margin:4px 0;font-family:'JetBrains Mono',monospace}
+.status.win{color:var(--gold);font-weight:600}
+.status.solving{color:var(--cyan)}
+
+/* ── 3-COLUMN LAYOUT ── */
+.main{
+  display:grid;grid-template-columns:200px auto 220px;grid-template-areas:"left center right";
+  gap:14px;padding:6px 20px;max-width:1240px;width:100%;flex:1;align-content:start;
+}
+.col-left{grid-area:left;display:flex;flex-direction:column;gap:8px}
+.col-center{grid-area:center;display:flex;flex-direction:column;align-items:center;justify-content:start}
+.col-right{grid-area:right;display:flex;flex-direction:column;gap:8px}
+
+/* ── GRID ── */
+.grid-wrap{
+  background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px;
+  box-shadow:0 0 60px rgba(0,229,255,0.04),0 0 120px rgba(52,211,153,0.02);
+  backdrop-filter:blur(12px);
+}
+.grid{display:grid;grid-template-columns:repeat(9,var(--cell));grid-template-rows:repeat(9,var(--cell));gap:1px}
+.cell{
+  width:var(--cell);height:var(--cell);
+  background:rgba(11,17,32,0.7);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:calc(var(--cell)*0.46);font-weight:700;
+  color:var(--text);cursor:pointer;position:relative;
+  transition:background .12s,border-color .12s;
+}
+.cell:hover{background:var(--subtle);border-color:var(--border2)}
+.cell.selected{background:var(--cyan-dim)!important;border-color:var(--cyan)!important;box-shadow:0 0 10px var(--cyan-glow)}
+.cell.given{color:var(--muted);cursor:default}.cell.given:hover{background:rgba(11,17,32,0.7)}
+.cell.error{color:var(--rose)!important;border-color:var(--rose)!important;background:var(--rose-dim)!important}
+.cell.highlight{background:rgba(0,229,255,0.04)}
+.cell.same-value{background:rgba(0,229,255,0.07)}
+.cell.cascade-flash{animation:cFlash .5s ease-out}
+.cell .notes{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:100%;height:100%;position:absolute;inset:0;font-size:calc(var(--cell)*0.2);color:var(--muted);font-weight:400}
+.cell .notes span{display:flex;align-items:center;justify-content:center}
+.cell.ai-naked{background:var(--green-dim)!important;border-color:var(--green)!important;color:var(--green)!important}
+.cell.ai-hidden{background:var(--cyan-dim)!important;border-color:var(--cyan)!important;color:var(--cyan)!important}
+.cell.ai-guess{background:var(--orange-dim)!important;border-color:var(--orange)!important;color:var(--orange)!important}
+.cell.ai-backtrack{background:var(--rose-dim)!important;border-color:var(--rose)!important}
+.cell.ai-pointing{background:var(--violet-dim)!important;border-color:var(--violet)!important;color:var(--violet)!important}
+.cell:nth-child(3n){border-right:2px solid var(--border2)}.cell:nth-child(9n){border-right:1px solid var(--border)}
+.cell:nth-child(n+19):nth-child(-n+27),.cell:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid var(--border2)}
+@keyframes cFlash{0%{box-shadow:inset 0 0 18px var(--cyan-glow)}100%{box-shadow:none}}
+
+/* ── PANELS ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;backdrop-filter:blur(8px)}
+.panel-title{font-family:'JetBrains Mono',monospace;font-size:.56rem;font-weight:600;color:var(--cyan);letter-spacing:.22em;text-transform:uppercase;margin-bottom:8px}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.numpad button,.btn{font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:700;background:rgba(11,17,32,0.6);border:1px solid var(--border);color:var(--text);padding:7px 4px;border-radius:4px;cursor:pointer;transition:all .12s}
+.numpad button:hover,.btn:hover{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan)}
+.numpad button.used{opacity:0.2;pointer-events:none}
+.btn{padding:7px 10px;width:100%;text-align:center;font-size:.7rem;letter-spacing:.06em}
+.btn.active{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan)}
+.btn.gold{border-color:var(--gold);color:var(--gold)}.btn.gold:hover{background:var(--gold-dim)}
+.btn.green{border-color:var(--green);color:var(--green)}.btn.green:hover{background:var(--green-dim)}
+.btn.rose{border-color:var(--rose);color:var(--rose)}.btn.rose:hover{background:var(--rose-dim)}
+.btn.violet{border-color:var(--violet);color:var(--violet)}.btn.violet:hover{background:var(--violet-dim)}
+.btn-row{display:flex;gap:3px}.btn-row .btn{flex:1}
+.diff-btns{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.metric{display:flex;justify-content:space-between;align-items:baseline;padding:2px 0}
+.metric-label{font-size:.72rem;color:var(--muted)}
+.metric-value{font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:700}
+.bar-wrap{height:3px;background:rgba(11,17,32,0.5);border-radius:2px;margin-top:3px;overflow:hidden}
+.bar{height:100%;border-radius:2px;transition:width .4s ease}
+.bar.cyan{background:var(--cyan)}.bar.green{background:var(--green)}.bar.gold{background:var(--gold)}.bar.violet{background:var(--violet)}.bar.rose{background:var(--rose)}.bar.orange{background:var(--orange)}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:5px}
+.legend-item{display:flex;align-items:center;gap:3px;font-size:.58rem;color:var(--muted)}
+.legend-dot{width:7px;height:7px;border-radius:2px}
+.footer{text-align:center;padding:12px;font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--muted);letter-spacing:.12em}
+.footer a{color:var(--cyan);text-decoration:none}
+
+/* ── Strategy selector ── */
+.strat-group{display:flex;flex-wrap:wrap;gap:2px;margin-bottom:6px}
+.strat-btn{
+  font-family:'JetBrains Mono',monospace;font-size:.58rem;font-weight:600;
+  padding:4px 6px;border-radius:3px;cursor:pointer;
+  background:rgba(11,17,32,0.5);border:1px solid var(--border);color:var(--muted);
+  transition:all .15s;letter-spacing:.04em;flex:1;text-align:center;min-width:0;
+}
+.strat-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.strat-btn.active{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan)}
+
+/* ── Compare table ── */
+.compare-table{
+  width:100%;border-collapse:collapse;margin-top:6px;
+  font-family:'JetBrains Mono',monospace;font-size:.58rem;
+}
+.compare-table th{
+  text-align:left;padding:3px 4px;color:var(--muted);font-weight:600;
+  border-bottom:1px solid var(--border);letter-spacing:.08em;font-size:.5rem;
+}
+.compare-table td{
+  padding:3px 4px;color:var(--text);border-bottom:1px solid rgba(0,229,255,0.04);
+}
+.compare-table tr.winner td{color:var(--green);font-weight:700}
+.compare-table .strat-name{color:var(--muted);font-weight:400}
+
+/* ── Welcome modal ── */
+.welcome-overlay{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  z-index:10;border-radius:10px;background:rgba(2,4,9,0.72);backdrop-filter:blur(4px);
+  transition:opacity .35s ease;
+}
+.welcome-overlay.hidden{opacity:0;pointer-events:none}
+.welcome-card{
+  text-align:center;padding:28px 32px;max-width:300px;
+  background:rgba(11,17,32,0.92);border:1px solid rgba(52,211,153,0.22);
+  border-radius:10px;box-shadow:0 0 40px rgba(52,211,153,0.08),0 20px 60px rgba(0,0,0,0.5);
+  animation:cardIn .4s cubic-bezier(.22,1,.36,1);
+}
+@keyframes cardIn{from{transform:translateY(14px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+.welcome-card .wc-icon{font-size:2rem;margin-bottom:10px;line-height:1}
+.welcome-card h2{font-family:'Rajdhani',sans-serif;font-size:1.35rem;font-weight:700;color:var(--text);letter-spacing:.02em;margin-bottom:6px;line-height:1.2}
+.welcome-card h2 span{color:var(--green)}
+.welcome-card p{font-size:.82rem;color:rgba(226,232,244,0.55);line-height:1.6;font-family:'JetBrains Mono',monospace;margin-bottom:20px}
+.welcome-card .diff-hint{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:6px}
+.welcome-card .diff-hint span{
+  font-family:'JetBrains Mono',monospace;font-size:.78rem;font-weight:600;
+  padding:12px 8px;border-radius:5px;border:1px solid var(--border);
+  color:var(--muted);letter-spacing:.06em;transition:all .15s;user-select:none;cursor:pointer;
+}
+.welcome-card .diff-hint span:hover{border-color:var(--green);color:var(--green);background:rgba(52,211,153,0.08);transform:translateY(-1px)}
+.welcome-card .diff-hint .d-evil{border-color:rgba(255,107,138,0.3);color:var(--rose)}
+.welcome-card .diff-hint .d-evil:hover{border-color:var(--rose);background:rgba(255,107,138,0.08);color:var(--rose)}
+
+/* ── Tooltip ── */
+.tip{position:relative;cursor:help;border-bottom:1px dotted rgba(245,158,11,0.4)}
+.tip::after{
+  content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  background:rgba(11,17,32,0.97);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:8px 12px;
+  font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:400;
+  color:rgba(226,232,244,0.82);letter-spacing:.04em;line-height:1.55;
+  white-space:pre-line;max-width:260px;pointer-events:none;
+  opacity:0;transition:opacity .18s;z-index:200;box-shadow:0 4px 20px rgba(0,0,0,0.5);
+}
+.tip::before{
+  content:'';position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);
+  border:5px solid transparent;border-top-color:rgba(245,158,11,0.25);
+  opacity:0;transition:opacity .18s;z-index:201;pointer-events:none;
+}
+.tip:hover::after,.tip:hover::before{opacity:1}
+
+.topbar{
+  width:100%;background:rgba(6,10,20,0.85);border-bottom:1px solid rgba(0,229,255,0.08);
+  padding:8px 20px;display:flex;align-items:center;justify-content:space-between;
+  font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted);backdrop-filter:blur(8px);
+  position:sticky;top:0;z-index:100;
+}
+.topbar a{color:var(--cyan);text-decoration:none;transition:opacity .15s}.topbar a:hover{opacity:.7}
+.topbar .tb-center{color:var(--text);font-weight:600}
+.topbar .tb-version{color:rgba(94,113,146,0.6)}
+
+/* ── Collapsible research notes ── */
+.research-notes{width:100%;max-width:1200px;padding:0 20px 8px;margin-top:8px}
+.collapse-hdr{
+  font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--muted);cursor:pointer;
+  padding:13px 4px;border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  transition:color .15s;user-select:none;
+}
+.collapse-hdr:hover{color:var(--cyan)}
+.collapse-hdr.open{color:var(--cyan)}
+.collapse-hdr .arrow{transition:transform .3s;font-size:.6rem;opacity:.6}
+.collapse-hdr.open .arrow{transform:rotate(90deg)}
+.collapse-body{
+  max-height:0;overflow:hidden;transition:max-height .4s ease;
+  font-size:.9rem;color:rgba(226,232,244,0.72);line-height:1.7;padding:0 4px;
+}
+.collapse-body.open{max-height:3000px}
+.collapse-body p{margin-bottom:12px}
+.collapse-body .stat-inline{
+  display:inline-block;font-family:'JetBrains Mono',monospace;
+  font-size:1.6rem;font-weight:700;line-height:1;margin:4px 12px 4px 0;vertical-align:middle;
+}
+.collapse-body .note-meta{
+  font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--muted);
+  letter-spacing:.1em;margin-bottom:14px;border-left:2px solid rgba(0,229,255,0.2);padding-left:10px;
+}
+
+/* ── Hint button ── */
+.cell.ai-hint{box-shadow:inset 0 0 0 2px var(--gold),0 0 12px rgba(245,158,11,0.3);animation:hintPulse 1s ease-in-out 3}
+@keyframes hintPulse{0%,100%{box-shadow:inset 0 0 0 2px var(--gold),0 0 8px rgba(245,158,11,0.2)}50%{box-shadow:inset 0 0 0 2px var(--gold),0 0 18px rgba(245,158,11,0.45)}}
+
+/* ── Stats bar ── */
+.stats-bar{
+  width:100%;max-width:1200px;padding:5px 20px 2px;
+  font-family:'JetBrains Mono',monospace;font-size:.58rem;
+  color:var(--muted);letter-spacing:.05em;display:flex;gap:16px;flex-wrap:wrap;
+}
+.stats-bar span{white-space:nowrap}
+.stats-bar .sv{color:var(--text)}
+
+/* ── Phase 1 results table in collapsible ── */
+.p1-table{
+  width:100%;border-collapse:collapse;margin:10px 0 14px;
+  font-family:'JetBrains Mono',monospace;font-size:.72rem;
+}
+.p1-table th{text-align:left;padding:5px 8px;color:var(--cyan);font-weight:600;border-bottom:1px solid var(--border2);font-size:.6rem;letter-spacing:.1em}
+.p1-table td{padding:5px 8px;color:var(--text);border-bottom:1px solid rgba(0,229,255,0.05)}
+.p1-table tr:last-child td{border-bottom:none}
+.p1-table .winner{color:var(--green);font-weight:700}
+
+/* ── Sensor section styling ── */
+.sensor-divider{
+  font-family:'JetBrains Mono',monospace;font-size:.48rem;font-weight:600;
+  color:var(--green);letter-spacing:.2em;text-transform:uppercase;
+  margin-top:8px;margin-bottom:2px;padding-top:6px;border-top:1px solid rgba(52,211,153,0.12);
+}
+
+/* ── Compare overlay ── */
+.compare-overlay{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  z-index:10;border-radius:10px;background:rgba(2,4,9,0.82);backdrop-filter:blur(4px);
+}
+.compare-card{
+  text-align:center;padding:18px;width:90%;max-width:340px;
+  background:rgba(11,17,32,0.95);border:1px solid var(--border2);border-radius:10px;
+  box-shadow:0 0 40px rgba(0,229,255,0.06);animation:cardIn .3s cubic-bezier(.22,1,.36,1);
+}
+.compare-card .cc-title{font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.2em;color:var(--cyan);text-transform:uppercase;margin-bottom:8px}
+.compare-card .cc-status{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--muted);margin-bottom:10px}
+.compare-spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:760px){
+  .main{grid-template-columns:1fr;grid-template-areas:"center" "left" "right";max-width:500px}
+  .col-left,.col-right{flex-direction:row;flex-wrap:wrap;gap:6px}
+  .col-left .panel,.col-right .panel{flex:1;min-width:140px}
+  .topbar .tb-version{display:none}
+  body{font-size:19px}
+  .title{font-size:clamp(1.7rem,6vw,2.6rem)}
+  .subtitle{font-size:1.05rem}
+  .status{font-size:.88rem}
+  .panel-title{font-size:.72rem;letter-spacing:.18em}
+  .btn{font-size:.88rem;padding:10px 8px}
+  .numpad button{font-size:1rem;padding:10px 4px}
+  .metric-label{font-size:.88rem}
+  .metric-value{font-size:1rem}
+  .legend-item{font-size:.72rem}
+  .timer{font-size:1.3rem}
+  .logo{font-size:.72rem}
+  .topbar{font-size:.68rem;padding:9px 16px}
+  .collapse-hdr{font-size:.82rem;padding:15px 4px}
+  .collapse-body{font-size:1rem}
+  .collapse-body .note-meta{font-size:.74rem}
+  .stats-bar{font-size:.72rem}
+  .footer{font-size:.65rem}
+  .welcome-card h2{font-size:1.6rem}
+  .welcome-card p{font-size:.92rem}
+  .welcome-card .diff-hint span{font-size:.92rem;padding:14px 8px}
+  .strat-btn{font-size:.72rem;padding:6px}
+}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+
+<div class="topbar">
+  <a href="/bd/">← BD Lab</a>
+  <span class="tb-center">BD Sudoku × MDL</span>
+  <span class="tb-version">Phase 1 · ρ = 0.85 · March 2026 · <a href="8zSudoku-investor.html" style="color:var(--gold);text-decoration:none">Investor Brief ↗</a></span>
+</div>
+
+<div class="page">
+<div class="header">
+  <div class="logo">AIM³ <span>Lab</span> · Sudoku × MDL</div>
+  <div class="timer" id="timer">00:00</div>
+</div>
+<div class="title-block">
+  <h1 class="title">Sudoku <span class="accent">Phase 1</span></h1>
+  <p class="subtitle">"En kernel. Štiri abecede. ρ = 0.85."</p>
+</div>
+<div class="status" id="status">Select difficulty to begin</div>
+<div class="main">
+  <div class="col-left">
+    <div class="panel"><div class="panel-title">New Game</div>
+      <div class="diff-btns">
+        <button class="btn" onclick="newGame('easy')">Easy</button>
+        <button class="btn" onclick="newGame('medium')">Medium</button>
+        <button class="btn gold" onclick="newGame('hard')">Hard</button>
+        <button class="btn rose" onclick="newGame('evil')">Evil</button>
+      </div>
+    </div>
+    <div class="panel"><div class="panel-title">Numbers</div>
+      <div class="numpad" id="numpad"></div>
+      <div style="margin-top:5px"><button class="btn" id="notesBtn" onclick="toggleNotes()">Notes: OFF</button></div>
+      <div class="btn-row" style="margin-top:3px">
+        <button class="btn" onclick="eraseCell()">Erase</button>
+        <button class="btn" onclick="undoMove()">Undo</button>
+      </div>
+      <button class="btn" onclick="showHelp()" style="margin-top:3px;border-color:rgba(167,139,250,0.4);color:var(--violet)">? Help</button>
+    </div>
+  </div>
+  <div class="col-center">
+    <div class="grid-wrap" id="gridWrap" style="position:relative">
+      <div class="welcome-overlay" id="welcomeOverlay">
+        <div class="welcome-card">
+          <div class="wc-icon">♟</div>
+          <h2>BD <span>Sudoku</span></h2>
+          <p>choose your difficulty</p>
+          <div class="diff-hint">
+            <span onclick="newGame('easy')">Easy</span>
+            <span onclick="newGame('medium')">Medium</span>
+            <span onclick="newGame('hard')">Hard</span>
+            <span class="d-evil" onclick="newGame('evil')">Evil ☠</span>
+          </div>
+        </div>
+      </div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </div>
+  <div class="col-right">
+    <div class="panel"><div class="panel-title">AI Solver</div>
+      <div style="margin-bottom:6px">
+        <div style="font-size:.5rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:3px">Strategy</div>
+        <div class="strat-group" id="stratGroup">
+          <div class="strat-btn" data-strat="random" onclick="setStrategy('random')">Random</div>
+          <div class="strat-btn" data-strat="mrv" onclick="setStrategy('mrv')">MRV</div>
+          <div class="strat-btn" data-strat="naked" onclick="setStrategy('naked')">Naked</div>
+          <div class="strat-btn active" data-strat="full" onclick="setStrategy('full')">Full</div>
+          <div class="strat-btn" data-strat="human" onclick="setStrategy('human')">Human</div>
+        </div>
+      </div>
+      <button class="btn green" id="solveBtn" onclick="aiSolve()">▶ AI Solve</button>
+      <button class="btn gold" id="hintBtn" onclick="aiHint()" style="margin-top:3px">💡 Hint</button>
+      <div class="btn-row" style="margin-top:3px">
+        <button class="btn" onclick="aiStep()">Step</button>
+        <button class="btn rose" onclick="aiReset()">Reset</button>
+      </div>
+      <button class="btn violet" onclick="compareAll()" style="margin-top:3px" id="compareBtn">⚡ Compare All</button>
+      <div style="margin-top:5px"><label style="font-size:.6rem;color:var(--muted)">Speed</label>
+        <input type="range" id="speedSlider" min="1" max="100" value="50" style="width:100%;accent-color:var(--cyan)">
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Naked</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div>Hidden</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--violet)"></div>Point</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Guess</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--rose)"></div>BT</div>
+      </div>
+    </div>
+    <div class="panel"><div class="panel-title">Live Metrics</div>
+      <div class="metric"><span class="metric-label">Steps</span><span class="metric-value" id="mSteps">0</span></div>
+      <div class="metric"><span class="metric-label">Backtracks</span><span class="metric-value" id="mBT" style="color:var(--rose)">0</span></div>
+      <div class="metric"><span class="metric-label">Guesses</span><span class="metric-value" id="mGuesses" style="color:var(--orange)">0</span></div>
+      <div class="metric"><span class="metric-label">Candidates</span><span class="metric-value" id="mCands" style="color:var(--cyan)">0</span></div>
+      <div style="margin-top:3px">
+        <div class="metric"><span class="metric-label">Progress</span><span class="metric-value" id="mProgress" style="color:var(--violet)">0%</span></div>
+        <div class="bar-wrap"><div class="bar violet" id="barProgress" style="width:0%"></div></div>
+      </div>
+
+      <!-- Phase 1 winning sensors -->
+      <div class="sensor-divider">Phase 1 Sensors</div>
+
+      <div style="margin-top:4px">
+        <div class="metric"><span class="metric-label tip" data-tip="LZ76 complexity of entropy-delta sequence.&#10;Lower = more structured process.&#10;Smarter solver → more compressible.&#10;ρ = −0.79">LZ Complexity</span><span class="metric-value" id="mLZ" style="color:var(--cyan)">—</span></div>
+        <div class="bar-wrap"><div class="bar cyan" id="barLZ" style="width:0%"></div></div>
+      </div>
+      <div style="margin-top:3px">
+        <div class="metric"><span class="metric-label tip" data-tip="Gini coefficient of cascade depths.&#10;Higher = more unequal distribution.&#10;Smart solver: rare deep cascades + many zeros.&#10;ρ = +0.83">Gini Cascade</span><span class="metric-value" id="mGini" style="color:var(--green)">—</span></div>
+        <div class="bar-wrap"><div class="bar green" id="barGini" style="width:0%"></div></div>
+      </div>
+      <div style="margin-top:3px">
+        <div class="metric"><span class="metric-label tip" data-tip="Weighted cascade power: depth × Δentropy.&#10;Higher = steps that trigger cascades&#10;are more informative.&#10;ρ = +0.84">Cascade Power</span><span class="metric-value" id="mCascPow" style="color:var(--gold)">—</span></div>
+        <div class="bar-wrap"><div class="bar gold" id="barCascPow" style="width:0%"></div></div>
+      </div>
+      <div style="margin-top:3px">
+        <div class="metric"><span class="metric-label tip" data-tip="Smoothness of candidate-count reduction.&#10;Lower = smoother descent.&#10;Structured solving = steady flow.&#10;ρ = −0.76">Density Flow</span><span class="metric-value" id="mDensity" style="color:var(--orange)">—</span></div>
+        <div class="bar-wrap"><div class="bar orange" id="barDensity" style="width:0%"></div></div>
+      </div>
+      <div style="margin-top:3px">
+        <div class="metric"><span class="metric-label tip" data-tip="ADSR bimodality — cascade vs isolation.&#10;High = structured cascades. Low = chaos.&#10;Phase 0 winner, Phase 1 context sensor.">ADSR</span><span class="metric-value" id="mADSR" style="color:var(--muted)">—</span></div>
+        <div class="bar-wrap"><div class="bar gold" id="barADSR" style="width:0%;opacity:.4"></div></div>
+      </div>
+    </div>
+
+    <!-- Compare results panel (hidden until Compare All) -->
+    <div id="comparePanel" style="display:none;padding:4px 2px">
+      <div class="panel-title" style="padding-left:2px">Strategy Comparison</div>
+      <div id="compareResults"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats bar -->
+<div class="stats-bar" id="statsBar" style="display:none">
+  <span>Played: <span class="sv" id="stPlayed">0</span></span>
+  <span>Hints: <span class="sv" id="stHints">0</span></span>
+  <span id="stBestEasy" style="display:none">Best easy: <span class="sv" id="stBEval">—</span></span>
+  <span id="stBestEvil" style="display:none">Best evil: <span class="sv" id="stBEvil">—</span></span>
+</div>
+
+<!-- Research notes — collapsible -->
+<div class="research-notes">
+
+  <!-- NEW: Phase 1 Founding Hypothesis -->
+  <div class="collapse-hdr" id="chP1" onclick="toggleCollapse('cbP1','chP1')">
+    <span>Phase 1 — Founding Hypothesis Confirmed · <span style="color:var(--gold)">ρ = 0.85</span></span>
+    <span class="arrow">▶</span>
+  </div>
+  <div class="collapse-body" id="cbP1">
+    <div class="note-meta">March 25, 2026 · AIM³ Lab · 200 puzzles × 5 strategies = 1000 solve logs</div>
+    <p>
+      <span class="stat-inline" style="color:var(--gold)">ρ = 0.85</span>
+      Smarter algorithm → more compressible solving process. Same kernel, different domain. TSP ρ = 0.80 on geometry. Sudoku ρ = 0.85 on constraint satisfaction. The kernel is domain-independent — because it works on a different alphabet.
+    </p>
+    <p>Per-strategy averages (seed99, 200 puzzles):</p>
+    <table class="p1-table">
+      <tr><th>Strategy</th><th>Steps</th><th>BT</th><th>Guesses</th><th>LZ<sub>proc</sub></th><th>Gini</th><th>Casc.Wt</th></tr>
+      <tr><td class="strat-name">random</td><td>6419</td><td>3200</td><td>3218</td><td>1.020</td><td>0.000</td><td>low</td></tr>
+      <tr><td class="strat-name">mrv</td><td>282</td><td>116</td><td>166</td><td>0.957</td><td>0.000</td><td>low</td></tr>
+      <tr><td class="strat-name">naked</td><td>339</td><td>19</td><td>23</td><td>0.455</td><td>0.971</td><td>high</td></tr>
+      <tr><td class="strat-name">full</td><td>59</td><td>0.6</td><td>1.3</td><td>0.411</td><td>0.975</td><td>high</td></tr>
+      <tr class="winner"><td>human</td><td>62</td><td>0.5</td><td>1.1</td><td>0.388</td><td>0.976</td><td>high</td></tr>
+    </table>
+    <p>Top sensors by |ρ|(strategy_rank, sensor):</p>
+    <table class="p1-table">
+      <tr><th>#</th><th>Sensor</th><th>|ρ|</th></tr>
+      <tr><td>1</td><td>n_guesses</td><td style="color:var(--gold)">0.853</td></tr>
+      <tr><td>2</td><td>cascade_weighted</td><td style="color:var(--gold)">0.839</td></tr>
+      <tr><td>3</td><td>gini_cascade</td><td style="color:var(--gold)">0.829</td></tr>
+      <tr><td>4</td><td>LZ_multi |Σ|=4</td><td style="color:var(--gold)">0.805</td></tr>
+      <tr><td>5</td><td>LZ_process</td><td style="color:var(--green)">0.786</td></tr>
+      <tr><td>6</td><td>density_flow</td><td style="color:var(--green)">0.762</td></tr>
+      <tr><td>7</td><td>LZ_cascade</td><td style="color:var(--green)">0.741</td></tr>
+      <tr><td>8</td><td>n_backtracks</td><td style="color:var(--green)">0.716</td></tr>
+    </table>
+    <p>
+      12 of 14 sensors |ρ| > 0.3. Eight above |ρ| > 0.7. LZ_process flipped from ρ = +0.09 (Phase 0, measuring problem difficulty) to ρ = −0.786 (Phase 1, measuring algorithm quality). Exactly as predicted: the real test is different algorithms on the same problem.
+    </p>
+  </div>
+
+  <div class="collapse-hdr" id="ch1" onclick="toggleCollapse('cb1','ch1')">
+    <span>Origin Story — one afternoon, one question, one answer</span>
+    <span class="arrow">▶</span>
+  </div>
+  <div class="collapse-body" id="cb1">
+    <div class="note-meta">March 23, 2026 · AIM³ Lab · Ljubljana</div>
+    <p>
+      <span class="stat-inline" style="color:var(--cyan)">310</span>
+      lines of code. That's the entire engine — puzzle generator, backtracking solver with snapshot-based state restoration, live metrics, AI animation, keyboard shortcuts, notes mode, undo history, and the ADSR measurement system. Not 310 lines for the game loop. 310 lines for everything.
+    </p>
+    <p>
+      The question that started it: does the same MDL kernel that finds optimal TSP tours — the one that navigates 3,496 cities in Nicaragua — also work on constraint satisfaction? In TSP, the founding insight was simple: the shortest route has the most structured search process (Spearman ρ = +0.80, verified on official Waterloo benchmarks). In Sudoku, the question becomes: do easier puzzles have more structured solving processes?
+    </p>
+    <p>
+      We built a backtracking solver with full process logging. Ran it on 1,000 puzzles across four difficulty levels. Measured ADSR bimodality — whether the solving process cleanly separates into cascading chain-reactions and isolated single-placements.
+    </p>
+    <p>
+      Result: <strong style="color:var(--gold)">ρ = −0.50 (p &lt; 10⁻⁶⁴)</strong>. Easier puzzles score higher. Evil puzzles drop below 0.95. The same principle that guides the TSP solver through a combinatorial space of 10<sup>1783</sup> possible tours also predicts how hard a Sudoku puzzle is. One kernel. One afternoon. Third domain confirmed.
+    </p>
+  </div>
+
+  <div class="collapse-hdr" id="ch2" onclick="toggleCollapse('cb2','ch2')">
+    <span>What the sensors are actually measuring</span>
+    <span class="arrow">▶</span>
+  </div>
+  <div class="collapse-body" id="cb2">
+    <div class="note-meta">Phase 1 winning sensors · live metrics</div>
+    <p>
+      Every Sudoku app solves puzzles. This is the only one that <em>watches itself solve</em> and shows you the structure of what it sees.
+    </p>
+    <p>
+      <strong style="color:var(--cyan)">LZ Complexity</strong> (ρ = −0.79) — Lempel-Ziv compression of the entropy-delta sequence. Each step changes the grid's uncertainty by some amount. We encode these changes as a binary string (above/below median) and compress it. Lower = the process is more structured. A smart solver produces highly compressible patterns — it finds the same lever and pulls it repeatedly.
+    </p>
+    <p>
+      <strong style="color:var(--green)">Gini Cascade</strong> (ρ = +0.83) — Inequality of cascade depths. When a smart solver places a digit, it triggers chain reactions — one move resolves 5, 10, 15 more cells. The Gini coefficient measures how unequal these cascades are: a few deep ones + many zeros = high Gini = structured solving. Random has Gini = 0 (no cascades at all).
+    </p>
+    <p>
+      <strong style="color:var(--gold)">Cascade Power</strong> (ρ = +0.84) — Weighted cascade strength: depth × entropy-delta for each step. Higher = the steps that trigger cascades are more informative. The best solvers make moves that ripple far and reduce a lot of uncertainty each time.
+    </p>
+    <p>
+      <strong style="color:var(--orange)">Density Flow</strong> (ρ = −0.76) — Smoothness of candidate-count reduction over the solving process. A structured solver drains candidates steadily. A random solver has a jagged, chaotic descent. We measure this with LZ compression on the candidate flow — lower = smoother = better.
+    </p>
+    <p>
+      <strong style="color:var(--muted)">ADSR</strong> (ρ = −0.12 on Phase 1) — Attack-Decay-Sustain-Release bimodality. This was the Phase 0 winner (ρ = −0.50 for problem difficulty) but is weak for algorithm quality. It measures problem structure, not solver intelligence. Kept as context.
+    </p>
+  </div>
+
+  <div class="collapse-hdr" id="ch3" onclick="toggleCollapse('cb3','ch3')">
+    <span>How to play</span>
+    <span class="arrow">▶</span>
+  </div>
+  <div class="collapse-body" id="cb3">
+    <div class="note-meta">Quick guide</div>
+    <p><strong>Select</strong> a cell by clicking or tapping. Highlighted cells share a row, column, or box with your selection.</p>
+    <p><strong>Place</strong> a number using the numpad below the grid, or press 1–9 on your keyboard. Click the same number again to clear it. Arrow keys move the selection.</p>
+    <p><strong>Notes mode</strong> — toggle with the Notes button or press <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">N</kbd>. Numbers become small pencil marks — candidates you're considering.</p>
+    <p><strong>Undo</strong> with the button or <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Ctrl+Z</kbd>. Erase with button or <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Backspace</kbd>.</p>
+    <p><strong>💡 Hint</strong> — highlights the next logical cell and tells you why (naked single, hidden single, pointing pair, or guess). Doesn't place the number.</p>
+    <p><strong>AI Solve</strong> — select a strategy, watch the solving process animated. Green = naked single. Blue = hidden single. Violet = pointing pair. Orange = guess. Red = backtrack. Step through one move at a time.</p>
+    <p><strong>⚡ Compare All</strong> — runs all 5 strategies on the current puzzle and shows a comparison table with steps, backtracks, and sensor readings.</p>
+    <p><strong>Difficulty:</strong> Easy has 36–42 given digits and solves with pure logic. Evil has only 20–23 — watch the sensors diverge.</p>
+  </div>
+
+
+  <div class="collapse-hdr" id="chInvestor" onclick="toggleCollapse('cbInvestor','chInvestor')">
+    <span>Investor Snapshot — why this is more than commodity Sudoku</span>
+    <span class="arrow">▶</span>
+  </div>
+  <div class="collapse-body" id="cbInvestor">
+    <div class="note-meta">Companion page · monetization lens</div>
+    <p>
+      This is not just a Sudoku skin. The real asset is the engine that shows <em>how</em> a puzzle is solved: path of play, strategy choice, cascade structure, stability, and low-entropy decision flow. The teaching effect is part of the product, not decoration.
+    </p>
+    <p>
+      The monetization logic is therefore broader than ads alone: free reach, premium coaching and explainable hints, advanced compare/replay features, subscription as reasoning training, and possible licensing into education, brain-training, or explainable decision products.
+    </p>
+    <p>
+      <a href="8zSudoku-investor.html" style="color:var(--gold);text-decoration:none;font-family:'JetBrains Mono',monospace;letter-spacing:.08em">Open the investor brief ↗</a>
+    </p>
+  </div>
+
+</div>
+
+<!-- Help modal -->
+<div id="helpModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(2,4,9,0.82);backdrop-filter:blur(6px);align-items:center;justify-content:center" onclick="if(event.target===this)hideHelp()">
+  <div style="background:#0b1120;border:1px solid rgba(167,139,250,0.25);border-radius:10px;padding:28px 32px;max-width:480px;width:90%;max-height:80vh;overflow-y:auto;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:cardIn .3s cubic-bezier(.22,1,.36,1)">
+    <button onclick="hideHelp()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:color .15s" onmouseover="this.style.color='var(--violet)'" onmouseout="this.style.color='var(--muted)'">✕</button>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.25em;text-transform:uppercase;color:var(--violet);margin-bottom:16px">How to Play · Phase 1</div>
+    <div style="font-size:.92rem;color:rgba(226,232,244,0.75);line-height:1.7">
+      <p style="margin-bottom:10px"><strong style="color:var(--text)">Select</strong> a cell by clicking/tapping. <strong style="color:var(--text)">Place</strong> with numpad or <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">1–9</kbd>.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--text)">Notes</strong> — press <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">N</kbd>. <strong style="color:var(--text)">Undo</strong> — <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Ctrl+Z</kbd>. <strong style="color:var(--text)">Erase</strong> — <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Backspace</kbd>.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--gold)">💡 Hint</strong> — shows the next logical step with reasoning.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--green)">AI Strategies:</strong> Random (blind), MRV (fewest candidates), Naked (naked singles + MRV), Full (naked + hidden + MRV), Human (+ pointing pairs).</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--violet)">⚡ Compare All</strong> — run all 5 strategies and compare sensors.</p>
+      <div style="border-top:1px solid var(--border);padding-top:12px;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted)">
+        Easy: 36–42 givens · Medium: 28–35 · Hard: 24–27 · Evil: 20–23
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;padding:2rem 5vw 0.5rem;font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:rgba(226,232,244,0.35);letter-spacing:.03em">Less describes more.</div>
+
+<div class="footer">AIM³ Lab · Bojan Dobrečevič × C · 2026 · <a href="https://chessbest.org/bd/">chessbest.org/bd</a></div>
+</div>
+
+<script>
+// ── Dynamic cell sizing ──
+function calcCellSize(){
+  const w=window.innerWidth,h=window.innerHeight;
+  if(w<760){const avail=Math.min(w-40,h*0.5);return Math.max(30,Math.floor((avail-20)/9.5))}
+  const availW=w-490,availH=h-160;
+  return Math.max(36,Math.min(Math.floor((availW-20)/9.5),Math.floor((availH-20)/9.5),72));
+}
+function applyCellSize(){document.documentElement.style.setProperty('--cell',calcCellSize()+'px')}
+applyCellSize();window.addEventListener('resize',applyCellSize);
+
+// ════════════════════════════════════════════════════════
+//  CORE ENGINE
+// ════════════════════════════════════════════════════════
+const SIZE=9,BOX=3;
+
+function getCandidates(g,r,c){
+  if(g[r][c]!==0)return new Set();
+  const u=new Set();
+  for(let i=0;i<9;i++){u.add(g[r][i]);u.add(g[i][c])}
+  const br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3;
+  for(let i=br;i<br+3;i++)for(let j=bc;j<bc+3;j++)u.add(g[i][j]);
+  u.delete(0);const s=new Set();for(let v=1;v<=9;v++)if(!u.has(v))s.add(v);return s;
+}
+function getAllCandidates(g){
+  const m=new Map();
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0)m.set(r*9+c,getCandidates(g,r,c));
+  return m;
+}
+function countCandidates(g){let t=0;for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0)t+=getCandidates(g,r,c).size;return t}
+function isValid(g,r,c,v){for(let i=0;i<9;i++){if(i!==c&&g[r][i]===v)return false;if(i!==r&&g[i][c]===v)return false}const br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3;for(let i=br;i<br+3;i++)for(let j=bc;j<bc+3;j++)if((i!==r||j!==c)&&g[i][j]===v)return false;return true}
+function isSolved(g){for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0)return false;return true}
+function copyGrid(g){return g.map(r=>[...r])}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+// ── Generator ──
+function generateFull(){const g=Array.from({length:9},()=>Array(9).fill(0));function f(p){if(p===81)return true;const r=Math.floor(p/9),c=p%9;for(const v of shuffle([1,2,3,4,5,6,7,8,9])){if(isValid(g,r,c,v)){g[r][c]=v;if(f(p+1))return true;g[r][c]=0}}return false}f(0);return g}
+function countSolutions(g,lim=2){const t=copyGrid(g);let cnt=0;function s(p){if(cnt>=lim)return;while(p<81){if(t[Math.floor(p/9)][p%9]===0)break;p++}if(p>=81){cnt++;return}const r=Math.floor(p/9),c=p%9;for(let v=1;v<=9;v++){if(isValid(t,r,c,v)){t[r][c]=v;s(p+1);if(cnt>=lim){t[r][c]=0;return}t[r][c]=0}}}s(0);return cnt}
+function generatePuzzle(diff){const ranges={easy:[36,42],medium:[28,35],hard:[24,27],evil:[20,23]};const[lo,hi]=ranges[diff]||[28,35];const target=lo+Math.floor(Math.random()*(hi-lo+1));const sol=generateFull(),puz=copyGrid(sol);let removed=0;for(const pos of shuffle([...Array(81).keys()])){if(removed>=81-target)break;const r=Math.floor(pos/9),c=pos%9,saved=puz[r][c];puz[r][c]=0;if(countSolutions(puz)===1)removed++;else puz[r][c]=saved}return{puzzle:puz,solution:sol}}
+
+// ════════════════════════════════════════════════════════
+//  LZ76 — from TSP arena, proven implementation
+// ════════════════════════════════════════════════════════
+function lz76(s){
+  const n=s.length;if(n<=1)return n;
+  let c=1,l=1,i=0,k=1,km=1;
+  while(true){
+    if(s[i+k-1]===s[l+k-1]){k++;if(l+k>n){c++;break}}
+    else{if(k>km)km=k;i++;if(i===l){c++;l+=km;if(l>=n)break;i=0;k=1;km=1}else k=1}
+  }return c;
+}
+function lz76norm(s){const n=s.length;if(n<=1)return 0;return lz76(s)/(n/Math.max(Math.log2(n),1))}
+
+// ════════════════════════════════════════════════════════
+//  STRATEGY-SPECIFIC SOLVERS (Phase 1)
+// ════════════════════════════════════════════════════════
+
+function findNaked(g){
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++){
+    if(g[r][c]===0){const cs=getCandidates(g,r,c);if(cs.size===1)return{r,c,v:[...cs][0],strategy:'naked_single'}}
+  }return null;
+}
+function findHidden(g){
+  const check=(cells)=>{for(let v=1;v<=9;v++){if(cells.some(([r,c])=>g[r][c]===v))continue;const p=cells.filter(([r,c])=>g[r][c]===0&&getCandidates(g,r,c).has(v));if(p.length===1)return{r:p[0][0],c:p[0][1],v,strategy:'hidden_single'}}return null};
+  for(let r=0;r<9;r++){const res=check([...Array(9).keys()].map(c=>[r,c]));if(res)return res}
+  for(let c=0;c<9;c++){const res=check([...Array(9).keys()].map(r=>[r,c]));if(res)return res}
+  for(let br=0;br<9;br+=3)for(let bc=0;bc<9;bc+=3){const cells=[];for(let i=br;i<br+3;i++)for(let j=bc;j<bc+3;j++)cells.push([i,j]);const res=check(cells);if(res)return res}
+  return null;
+}
+function findPointing(g){
+  const cands=getAllCandidates(g);
+  for(let br=0;br<9;br+=3)for(let bc=0;bc<9;bc+=3){
+    for(let v=1;v<=9;v++){
+      const cells=[];
+      for(let i=br;i<br+3;i++)for(let j=bc;j<bc+3;j++){const k=i*9+j;if(cands.has(k)&&cands.get(k).has(v))cells.push([i,j])}
+      if(cells.length<2)continue;
+      const rows=new Set(cells.map(c=>c[0])),cols=new Set(cells.map(c=>c[1]));
+      if(rows.size===1){const row=[...rows][0];for(let c2=0;c2<9;c2++){if(c2>=bc&&c2<bc+3)continue;const k=row*9+c2;if(cands.has(k)&&cands.get(k).has(v)&&cands.get(k).size===2){const rem=new Set(cands.get(k));rem.delete(v);if(rem.size===1)return{r:row,c:c2,v:[...rem][0],strategy:'pointing_pair'}}}}
+      if(cols.size===1){const col=[...cols][0];for(let r2=0;r2<9;r2++){if(r2>=br&&r2<br+3)continue;const k=r2*9+col;if(cands.has(k)&&cands.get(k).has(v)&&cands.get(k).size===2){const rem=new Set(cands.get(k));rem.delete(v);if(rem.size===1)return{r:r2,c:col,v:[...rem][0],strategy:'pointing_pair'}}}}
+    }
+  }
+  return null;
+}
+
+function cascadeCount(g,r,c,v){const t=copyGrid(g);t[r][c]=v;let n=0,ch=true;while(ch){ch=false;for(let i=0;i<9;i++)for(let j=0;j<9;j++)if(t[i][j]===0){const cs=getCandidates(t,i,j);if(cs.size===1){t[i][j]=[...cs][0];n++;ch=true}}}return n}
+
+// Main solver with strategy routing
+function solveWithStrategy(grid_input,strategy){
+  const g=copyGrid(grid_input);const log=[];let step=0;const MAX=10000;const t0=performance.now();
+
+  const techniques={random:[],mrv:[],naked:['naked'],full:['naked','hidden'],human:['naked','hidden','pointing']}[strategy]||['naked','hidden'];
+
+  function propagate(g,techs){
+    const placed=[];let progress=true;
+    while(progress){
+      progress=false;
+      if(techs.includes('naked')){const f=findNaked(g);if(f){g[f.r][f.c]=f.v;placed.push(f);progress=true;continue}}
+      if(techs.includes('hidden')){const f=findHidden(g);if(f&&g[f.r][f.c]===0){g[f.r][f.c]=f.v;placed.push(f);progress=true;continue}}
+      if(techs.includes('pointing')){const f=findPointing(g);if(f&&g[f.r][f.c]===0){g[f.r][f.c]=f.v;placed.push(f);progress=true;continue}}
+    }
+    return placed;
+  }
+
+  function solve(g){
+    if(step>=MAX||(performance.now()-t0)>8000)return false;
+    const cb=countCandidates(g);
+    const placed=propagate(g,techniques);
+    const cl=placed.length;
+    for(let i=0;i<placed.length;i++){
+      step++;const p=placed[i];const ca=countCandidates(g);
+      log.push({step,r:p.r,c:p.c,v:p.v,strategy:p.strategy,cascade:cl-1>0&&i===0?cl-1:0,backtrack:false,cb,ca});
+    }
+    // Check contradiction
+    for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0&&getCandidates(g,r,c).size===0){
+      for(const p of [...placed].reverse())g[p.r][p.c]=0;return false;
+    }
+    if(isSolved(g))return true;
+    // No empty cells check
+    const empty=[];for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0)empty.push([r,c]);
+    if(!empty.length)return true;
+
+    // Cell selection
+    let cr,cc,vals;
+    if(strategy==='random'){
+      const idx=Math.floor(Math.random()*empty.length);
+      [cr,cc]=empty[idx];const cs=getCandidates(g,cr,cc);vals=shuffle([...cs]);
+    }else{
+      let best=null,bestN=10;
+      for(const[r,c]of empty){const n=getCandidates(g,r,c).size;if(n===0){for(const p of[...placed].reverse())g[p.r][p.c]=0;return false}if(n<bestN){bestN=n;best=[r,c]}}
+      [cr,cc]=best;vals=[...getCandidates(g,cr,cc)].sort();
+    }
+    if(!vals||!vals.length){for(const p of[...placed].reverse())g[p.r][p.c]=0;return false}
+
+    for(const v of vals){
+      step++;const cbg=countCandidates(g);const snap=copyGrid(g);
+      g[cr][cc]=v;const cag=countCandidates(g);
+      log.push({step,r:cr,c:cc,v,strategy:'guess',cascade:0,backtrack:false,cb:cbg,ca:cag});
+      if(solve(g))return true;
+      // Backtrack
+      step++;
+      const restore=[];for(let i=0;i<9;i++)for(let j=0;j<9;j++)if(g[i][j]!==snap[i][j])restore.push({r:i,c:j});
+      for(let i=0;i<9;i++)for(let j=0;j<9;j++)g[i][j]=snap[i][j];
+      const ca2=countCandidates(g);
+      log.push({step,r:cr,c:cc,v,strategy:'backtrack',cascade:0,backtrack:true,restore,cb:cag,ca:ca2});
+    }
+    for(const p of[...placed].reverse())g[p.r][p.c]=0;
+    return false;
+  }
+  solve(g);return{solved:g,log};
+}
+
+// ════════════════════════════════════════════════════════
+//  LIVE SENSOR COMPUTATION
+// ════════════════════════════════════════════════════════
+
+function computeSensors(log){
+  if(!log||log.length<2)return{lz:0,gini:0,cascPow:0,density:0,adsr:0};
+  const nonBT=log.filter(s=>!s.backtrack);
+  // LZ_process: entropy deltas → binary → LZ
+  const deltas=log.map(s=>(s.cb||0)-(s.ca||0));
+  let lzProc=0;
+  if(deltas.length>=2){
+    const sorted=[...deltas].sort((a,b)=>a-b);const med=sorted[Math.floor(sorted.length/2)];
+    const bits=deltas.map(d=>d>med?'1':'0').join('');
+    lzProc=lz76norm(bits);
+  }
+  // Gini on cascade depths
+  const cascades=nonBT.map(s=>s.cascade||0);
+  let gini=0;
+  if(cascades.length>0){
+    const s=[...cascades].sort((a,b)=>a-b);const n=s.length;const total=s.reduce((a,b)=>a+b,0);
+    if(total>0){let cum=0;for(let i=0;i<n;i++)cum+=(2*i-n-1+2)*s[i];gini=Math.abs(cum/(n*total))}
+  }
+  // Cascade weighted: sum(cascade × delta) / n
+  let cascPow=0;
+  if(nonBT.length>0){
+    let cw=0;for(const s of nonBT)cw+=(s.cascade||0)*Math.max((s.cb||0)-(s.ca||0),0);
+    cascPow=cw/nonBT.length;
+  }
+  // Density flow: LZ on candidate flow
+  let density=0;
+  const flow=nonBT.map(s=>s.ca||0);
+  if(flow.length>=2){
+    const sorted=[...flow].sort((a,b)=>a-b);const med=sorted[Math.floor(sorted.length/2)];
+    const bits=flow.map(f=>f>med?'1':'0').join('');
+    density=lz76norm(bits);
+  }
+  // ADSR (fixed threshold = 5)
+  let adsr=0;
+  if(cascades.length>0){
+    const nz=cascades.filter(d=>d===0).length;const nd=cascades.filter(d=>d>=5).length;
+    adsr=(nz+nd)/cascades.length;
+  }
+  return{lz:lzProc,gini,cascPow,density,adsr};
+}
+
+// ════════════════════════════════════════════════════════
+//  UI STATE
+// ════════════════════════════════════════════════════════
+let puzzle=null,solution=null,playerGrid=null,givenCells=null,selectedCell=null,notesMode=false,notes=null,history=[];
+let timerInterval=null,timerSeconds=0,aiLog=null,aiStepIndex=0,aiAnimating=false,aiTimeout=null;
+let currentStrategy='full';
+let aiM={steps:0,bt:0,guesses:0,cascades:0,cl:[]};
+let fullLog=[];// accumulated log for sensor computation
+
+function buildGrid(){
+  const grid=document.getElementById('grid');grid.innerHTML='';
+  for(let i=0;i<81;i++){const cell=document.createElement('div');cell.className='cell';cell.dataset.index=i;cell.addEventListener('click',()=>selectCell(i));grid.appendChild(cell)}
+  const np=document.getElementById('numpad');np.innerHTML='';
+  for(let n=1;n<=9;n++){const b=document.createElement('button');b.textContent=n;b.addEventListener('click',()=>placeNumber(n));np.appendChild(b)}
+}
+
+function render(){
+  if(!playerGrid)return;
+  const cells=document.querySelectorAll('.cell');const counts=Array(10).fill(0);
+  const sR=selectedCell!==null?Math.floor(selectedCell/9):-1,sC=selectedCell!==null?selectedCell%9:-1;
+  const sV=selectedCell!==null?playerGrid[sR]?.[sC]:0;
+  cells.forEach((cell,i)=>{
+    const r=Math.floor(i/9),c=i%9,v=playerGrid[r][c],isG=givenCells[r][c];
+    const keep=cell.className.match(/ai-\w+/);cell.className='cell';
+    if(isG)cell.classList.add('given');
+    if(selectedCell===i)cell.classList.add('selected');
+    if(selectedCell!==null&&(r===sR||c===sC||(Math.floor(r/3)===Math.floor(sR/3)&&Math.floor(c/3)===Math.floor(sC/3))))cell.classList.add('highlight');
+    if(v!==0&&sV!==0&&v===sV&&i!==selectedCell)cell.classList.add('same-value');
+    if(v!==0&&!isG){const tmp=playerGrid[r][c];playerGrid[r][c]=0;if(!isValid(playerGrid,r,c,tmp))cell.classList.add('error');playerGrid[r][c]=tmp}
+    if(keep)cell.classList.add(keep[0]);
+    if(v!==0){cell.innerHTML=v;counts[v]++}
+    else if(notes&&notes[r][c].size>0){let h='<div class="notes">';for(let n=1;n<=9;n++)h+=`<span>${notes[r][c].has(n)?n:''}</span>`;cell.innerHTML=h+'</div>'}
+    else cell.innerHTML='';
+  });
+  document.querySelectorAll('#numpad button').forEach((b,i)=>b.classList.toggle('used',counts[i+1]>=9));
+  if(isSolved(playerGrid)){
+    let ok=true;for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(playerGrid[r][c]!==solution[r][c])ok=false;
+    if(ok){setStatus('Puzzle solved! 🎉','win');stopTimer();
+      if(currentDiff&&(!gameStats.bestTimes[currentDiff]||timerSeconds<gameStats.bestTimes[currentDiff])){gameStats.bestTimes[currentDiff]=timerSeconds;saveStats();renderStats()}}
+  }
+  updateMetrics();
+}
+
+function selectCell(i){if(aiAnimating)return;selectedCell=(selectedCell===i)?null:i;render()}
+function placeNumber(n){if(selectedCell===null||aiAnimating)return;const r=Math.floor(selectedCell/9),c=selectedCell%9;if(givenCells[r][c])return;if(notesMode){if(notes[r][c].has(n))notes[r][c].delete(n);else notes[r][c].add(n);playerGrid[r][c]=0}else{history.push({r,c,prev:playerGrid[r][c],pn:new Set(notes[r][c])});playerGrid[r][c]=(playerGrid[r][c]===n)?0:n;notes[r][c].clear()}render()}
+function eraseCell(){if(selectedCell===null||aiAnimating)return;const r=Math.floor(selectedCell/9),c=selectedCell%9;if(givenCells[r][c])return;history.push({r,c,prev:playerGrid[r][c],pn:new Set(notes[r][c])});playerGrid[r][c]=0;notes[r][c].clear();render()}
+function undoMove(){if(!history.length||aiAnimating)return;const{r,c,prev,pn}=history.pop();playerGrid[r][c]=prev;notes[r][c]=pn;render()}
+function toggleNotes(){notesMode=!notesMode;document.getElementById('notesBtn').textContent=`Notes: ${notesMode?'ON':'OFF'}`;document.getElementById('notesBtn').classList.toggle('active',notesMode)}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){hideHelp();return}
+  if(document.getElementById('helpModal').style.display==='flex')return;
+  if(e.key>='1'&&e.key<='9'){placeNumber(+e.key);return}
+  if(e.key==='Backspace'||e.key==='Delete'){eraseCell();return}
+  if(e.key==='n'){toggleNotes();return}
+  if(e.key==='z'&&(e.ctrlKey||e.metaKey)){undoMove();e.preventDefault();return}
+  if(selectedCell!==null){const r=Math.floor(selectedCell/9),c=selectedCell%9;
+    if(e.key==='ArrowUp'&&r>0){selectCell((r-1)*9+c);e.preventDefault()}
+    if(e.key==='ArrowDown'&&r<8){selectCell((r+1)*9+c);e.preventDefault()}
+    if(e.key==='ArrowLeft'&&c>0){selectCell(r*9+c-1);e.preventDefault()}
+    if(e.key==='ArrowRight'&&c<8){selectCell(r*9+c+1);e.preventDefault()}}
+});
+
+function startTimer(){stopTimer();timerSeconds=0;timerInterval=setInterval(()=>{timerSeconds++;document.getElementById('timer').textContent=String(Math.floor(timerSeconds/60)).padStart(2,'0')+':'+String(timerSeconds%60).padStart(2,'0')},1000)}
+function stopTimer(){if(timerInterval){clearInterval(timerInterval);timerInterval=null}}
+
+// ── Strategy selector ──
+function setStrategy(s){
+  currentStrategy=s;
+  document.querySelectorAll('.strat-btn').forEach(b=>b.classList.toggle('active',b.dataset.strat===s));
+  if(puzzle){
+    aiReset();
+    const res=solveWithStrategy(copyGrid(puzzle),s);
+    aiLog=res.log;aiStepIndex=0;
+    const givens=puzzle.flat().filter(v=>v!==0).length;
+    setStatus(`${currentDiff?.toUpperCase()||''} · ${givens} givens · ${s.toUpperCase()} · ${aiLog.length} AI steps`,'');
+  }
+}
+
+function newGame(diff){
+  const ov=document.getElementById('welcomeOverlay');if(ov)ov.classList.add('hidden');
+  currentDiff=diff;gameStats.currentHints=0;gameStats.gamesPlayed++;saveStats();renderStats();aiReset();
+  document.getElementById('comparePanel').style.display='none';
+  setStatus('Generating...','solving');
+  setTimeout(()=>{
+    const res=generatePuzzle(diff);puzzle=res.puzzle;solution=res.solution;
+    playerGrid=copyGrid(puzzle);givenCells=puzzle.map(r=>r.map(v=>v!==0));
+    notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];selectedCell=null;
+    const solveRes=solveWithStrategy(copyGrid(puzzle),currentStrategy);
+    aiLog=solveRes.log;aiStepIndex=0;resetM();
+    const givens=puzzle.flat().filter(v=>v!==0).length;
+    setStatus(`${diff.toUpperCase()} · ${givens} givens · ${currentStrategy.toUpperCase()} · ${aiLog.length} AI steps`,'');
+    startTimer();render();
+  },50);
+}
+
+function getSpeed(){return Math.max(10,500-document.getElementById('speedSlider').value*4.8)}
+function aiSolve(){if(!puzzle||aiAnimating||!aiLog?.length)return;aiAnimating=true;setStatus('AI solving ('+currentStrategy.toUpperCase()+')...','solving');document.getElementById('solveBtn').textContent='⏸ Pause';document.getElementById('solveBtn').onclick=aiPause;animNext()}
+function animNext(){
+  if(!aiAnimating||aiStepIndex>=aiLog.length){aiAnimating=false;document.getElementById('solveBtn').textContent='▶ AI Solve';document.getElementById('solveBtn').onclick=aiSolve;if(aiStepIndex>=aiLog.length)setStatus('AI finished ('+currentStrategy.toUpperCase()+') ✓','win');return}
+  applyEntry(aiLog[aiStepIndex++],true);aiTimeout=setTimeout(animNext,getSpeed());
+}
+function applyEntry(e,anim){
+  const sp=getSpeed();
+  if(e.backtrack){
+    if(e.restore)for(const{r,c}of e.restore)if(!givenCells[r][c]){playerGrid[r][c]=0;
+      if(anim){const cl=document.querySelector(`.cell[data-index="${r*9+c}"]`);if(cl){cl.classList.add('ai-backtrack');setTimeout(()=>cl.classList.remove('ai-backtrack'),sp*2)}}}
+    aiM.bt++;
+  }else{
+    playerGrid[e.r][e.c]=e.v;if(notes)notes[e.r][e.c].clear();
+    aiM.steps++;if(e.strategy==='guess')aiM.guesses++;
+    if(e.cascade>0)aiM.cascades+=e.cascade;aiM.cl.push(e.cascade||0);
+    if(anim){
+      const cls={naked_single:'ai-naked',hidden_single:'ai-hidden',guess:'ai-guess',pointing_pair:'ai-pointing'}[e.strategy]||'';
+      const cl=document.querySelector(`.cell[data-index="${e.r*9+e.c}"]`);
+      if(cl&&cls){cl.classList.add(cls);if(e.cascade>0)cl.classList.add('cascade-flash');setTimeout(()=>cl.classList.remove(cls,'cascade-flash'),sp*3)}
+    }
+  }
+  fullLog.push(e);
+  render();updateMetrics();
+}
+function aiPause(){aiAnimating=false;if(aiTimeout)clearTimeout(aiTimeout);document.getElementById('solveBtn').textContent='▶ Continue';document.getElementById('solveBtn').onclick=aiSolve;setStatus('Paused','')}
+function aiStep(){
+  if(!puzzle||!aiLog||aiStepIndex>=aiLog.length)return;
+  aiAnimating=false;if(aiTimeout)clearTimeout(aiTimeout);
+  const e=aiLog[aiStepIndex++];applyEntry(e,true);
+  selectedCell=e.r*9+e.c;
+  const sn=e.backtrack?'BACKTRACK':e.strategy.replace('_',' ').toUpperCase();
+  setStatus(`Step ${aiStepIndex}: ${sn} → R${e.r+1}C${e.c+1}=${e.v}`,'solving');render();
+}
+function aiReset(){
+  aiAnimating=false;if(aiTimeout)clearTimeout(aiTimeout);aiStepIndex=0;resetM();
+  if(puzzle){playerGrid=copyGrid(puzzle);notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));render()}
+  document.getElementById('solveBtn').textContent='▶ AI Solve';document.getElementById('solveBtn').onclick=aiSolve;
+}
+function resetM(){aiM={steps:0,bt:0,guesses:0,cascades:0,cl:[]};fullLog=[];updateMetrics()}
+
+function updateMetrics(){
+  document.getElementById('mSteps').textContent=aiM.steps;
+  document.getElementById('mBT').textContent=aiM.bt;
+  document.getElementById('mGuesses').textContent=aiM.guesses;
+  document.getElementById('mCands').textContent=playerGrid?countCandidates(playerGrid):0;
+  if(playerGrid){const pct=Math.round(playerGrid.flat().filter(v=>v!==0).length/81*100);document.getElementById('mProgress').textContent=`${pct}%`;document.getElementById('barProgress').style.width=`${pct}%`}
+
+  // Compute live sensors
+  const s=computeSensors(fullLog);
+  document.getElementById('mLZ').textContent=s.lz>0?s.lz.toFixed(3):'—';
+  document.getElementById('barLZ').style.width=`${Math.min(s.lz*100,100)}%`;
+  document.getElementById('mGini').textContent=s.gini>0?s.gini.toFixed(3):'—';
+  document.getElementById('barGini').style.width=`${Math.min(s.gini*100,100)}%`;
+  document.getElementById('mCascPow').textContent=s.cascPow>0?s.cascPow.toFixed(1):'—';
+  document.getElementById('barCascPow').style.width=`${Math.min(s.cascPow/5*100,100)}%`;// normalize to ~5 max
+  document.getElementById('mDensity').textContent=s.density>0?s.density.toFixed(3):'—';
+  document.getElementById('barDensity').style.width=`${Math.min(s.density*100,100)}%`;
+  document.getElementById('mADSR').textContent=s.adsr>0?s.adsr.toFixed(3):'—';
+  document.getElementById('barADSR').style.width=`${s.adsr*100}%`;
+}
+
+// ── Compare All ──
+function compareAll(){
+  if(!puzzle)return;
+  const panel=document.getElementById('comparePanel');panel.style.display='block';
+  const wrap=document.getElementById('gridWrap');
+  // Show overlay
+  let overlay=document.getElementById('compareOverlay');
+  if(!overlay){overlay=document.createElement('div');overlay.id='compareOverlay';overlay.className='compare-overlay';wrap.appendChild(overlay)}
+  overlay.style.display='flex';
+  overlay.innerHTML='<div class="compare-card"><div class="cc-title">Strategy Comparison</div><div class="cc-status" id="compareStatus"><span class="compare-spinner"></span>Running random...</div></div>';
+
+  const strats=['random','mrv','naked','full','human'];
+  const results=[];let idx=0;
+
+  function runNext(){
+    if(idx>=strats.length){showCompareResults(results);overlay.style.display='none';return}
+    const s=strats[idx];
+    document.getElementById('compareStatus').innerHTML=`<span class="compare-spinner"></span>Running ${s}... (${idx+1}/5)`;
+    setTimeout(()=>{
+      const res=solveWithStrategy(copyGrid(puzzle),s);
+      const sensors=computeSensors(res.log);
+      const steps=res.log.filter(l=>!l.backtrack).length;
+      const bt=res.log.filter(l=>l.backtrack).length;
+      const guesses=res.log.filter(l=>l.strategy==='guess').length;
+      results.push({strategy:s,steps,bt,guesses,lz:sensors.lz,gini:sensors.gini,cascPow:sensors.cascPow,density:sensors.density});
+      idx++;runNext();
+    },20);
+  }
+  runNext();
+}
+
+function showCompareResults(results){
+  // Find winner (fewest steps)
+  const minSteps=Math.min(...results.map(r=>r.steps));
+  let html='<table class="compare-table"><tr><th></th><th>Steps</th><th>BT</th><th>LZ</th><th>Gini</th><th>Casc</th><th>Flow</th></tr>';
+  for(const r of results){
+    const win=r.steps===minSteps?' winner':'';
+    html+=`<tr class="${win}"><td class="strat-name">${r.strategy}</td><td>${r.steps}</td><td>${r.bt}</td><td>${r.lz.toFixed(2)}</td><td>${r.gini.toFixed(2)}</td><td>${r.cascPow.toFixed(1)}</td><td>${r.density.toFixed(2)}</td></tr>`;
+  }
+  html+='</table>';
+  if(minSteps>0){
+    const w=results.find(r=>r.steps===minSteps);
+    html+=`<div style="font-size:.52rem;color:var(--green);margin-top:4px;letter-spacing:.06em">← ${w.strategy} wins</div>`;
+  }
+  document.getElementById('compareResults').innerHTML=html;
+}
+
+function showHelp(){document.getElementById('helpModal').style.display='flex'}
+function hideHelp(){document.getElementById('helpModal').style.display='none'}
+function setStatus(msg,cls){const el=document.getElementById('status');el.textContent=msg;el.className='status '+(cls||'')}
+
+// ── Game stats ──
+let gameStats={gamesPlayed:0,currentHints:0,bestTimes:{easy:null,medium:null,hard:null,evil:null}};
+let currentDiff=null;
+function loadStats(){try{const s=localStorage.getItem('bdSudokuStats');if(s)gameStats=JSON.parse(s)}catch(e){}}
+function saveStats(){try{localStorage.setItem('bdSudokuStats',JSON.stringify(gameStats))}catch(e){}}
+function renderStats(){
+  const bar=document.getElementById('statsBar');if(!bar)return;bar.style.display='flex';
+  document.getElementById('stPlayed').textContent=gameStats.gamesPlayed;
+  document.getElementById('stHints').textContent=gameStats.currentHints;
+  const bt=gameStats.bestTimes;
+  const fmt=s=>s?String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'):'—';
+  if(bt.easy){document.getElementById('stBestEasy').style.display='';document.getElementById('stBEval').textContent=fmt(bt.easy)}
+  if(bt.evil){document.getElementById('stBestEvil').style.display='';document.getElementById('stBEvil').textContent=fmt(bt.evil)}
+}
+loadStats();
+
+// ── Collapsible ──
+function toggleCollapse(bodyId,hdrId){
+  const b=document.getElementById(bodyId),h=document.getElementById(hdrId);if(!b||!h)return;
+  const open=b.classList.toggle('open');h.classList.toggle('open',open);
+}
+
+// ── Hint ──
+function aiHint(){
+  if(!puzzle||!aiLog||aiAnimating)return;
+  let hintStep=null;
+  for(let i=aiStepIndex;i<aiLog.length;i++){if(!aiLog[i].backtrack){hintStep=aiLog[i];aiStepIndex=i+1;break}}
+  if(!hintStep){setStatus('No hints available','');return}
+  gameStats.currentHints++;saveStats();renderStats();
+  const stratNames={
+    'naked_single':'Naked single — only one candidate in this cell',
+    'hidden_single':'Hidden single — only place for this digit in its group',
+    'pointing_pair':'Pointing pair — box constraint eliminates candidates',
+    'guess':'No logical step — requires a guess (MRV: fewest candidates)'
+  };
+  selectedCell=hintStep.r*9+hintStep.c;
+  setStatus(`Hint: R${hintStep.r+1}C${hintStep.c+1} = ${hintStep.v} · ${stratNames[hintStep.strategy]||hintStep.strategy}`,'solving');
+  const cell=document.querySelector(`.cell[data-index="${hintStep.r*9+hintStep.c}"]`);
+  if(cell){cell.classList.add('ai-hint');setTimeout(()=>cell.classList.remove('ai-hint'),3000)}
+  render();
+}
+
+buildGrid();
+</script>
+</body>
+</html>
