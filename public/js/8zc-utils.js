@@ -689,55 +689,80 @@ gameBuckets.forEach(bucket => {
     } catch(e) { /* quota exceeded — silently fail */ }
   }
 
-  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
   const CHESSDB_RETRY_ATTEMPTS = 3;
-  const CHESSDB_RETRY_BACKOFF_MS = [0, 250, 700];
-  const CHESSDB_REQUEST_TIMEOUT_MS = 3000;
-  const CHESSDB_RETRY_JITTER_MS = 120;
+  const CHESSDB_TIMEOUT_MS = 3000;
+  const CHESSDB_RETRY_DELAYS = [0, 250, 700];
+  const ONLINE_MOVE_BUDGET_MS = 2500;
+  const ONLINE_TIMEOUT_MS = 1400;
+  const ONLINE_EQUAL_CP = 40;
+  const CHESS_API_DEPTH = 12;
+  const CHESS_API_THINK_MS = 80;
+  const STOCKFISH_ONLINE_DEPTH = 13;
+  const ONLINE_CACHE_TTL_MS = 5 * 60 * 1000;
 
-  function chessDbJitter() {
-    return Math.floor(Math.random() * CHESSDB_RETRY_JITTER_MS);
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+  function jitter(max = 120) { return Math.floor(Math.random() * max); }
+  function normalizedFenKey(fen) { return fen.split(' ').slice(0, 4).join(' '); }
+  function fenTurn(fen) { return fen.split(' ')[1] === 'b' ? 'b' : 'w'; }
+  function uniqueUciMoves(list) {
+    return [...new Set((list || []).map(m => String(m || '').toLowerCase()).filter(m => /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(m)))];
   }
 
-  function buildChessDBUrl(action, fen, opts = {}) {
-    const learn = opts.learn ?? 0;
-    const showall = opts.showall ?? 0;
-    const canProxy = !!opts.allowProxy && action === 'queryall' && settings.evalMode === 'proxy';
-    if (canProxy) {
-      return `/.netlify/functions/queryall?board=${encodeURIComponent(fen)}&learn=${learn}&showall=${showall}`;
+  let onlineEvalCache = {};
+  function getOnlineCache(key) {
+    const hit = onlineEvalCache[key];
+    if (!hit) return null;
+    if ((Date.now() - hit.ts) > ONLINE_CACHE_TTL_MS) {
+      delete onlineEvalCache[key];
+      return null;
     }
-    return `https://www.chessdb.cn/cdb.php?action=${action}&board=${encodeURIComponent(fen)}&learn=${learn}${action === 'queryall' ? `&showall=${showall}` : ''}`;
+    return hit.data;
+  }
+  function setOnlineCache(key, data) {
+    onlineEvalCache[key] = { ts: Date.now(), data };
+    return data;
   }
 
-  async function fetchTextWithTimeout(url, timeoutMs) {
+  async function fetchTextWithTimeout(url, timeoutMs, options = {}) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const resp = await fetch(url, { signal: controller.signal });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const txt = await resp.text();
-      if (!txt || !txt.trim()) throw new Error('Empty response');
-      return txt;
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+      return await res.text();
     } finally {
       clearTimeout(timer);
     }
   }
 
-  async function fetchChessDBText(action, fen, opts = {}) {
+  async function fetchJsonWithTimeout(url, timeoutMs, options = {}) {
+    const txt = await fetchTextWithTimeout(url, timeoutMs, options);
+    try {
+      return JSON.parse(txt);
+    } catch (e) {
+      throw new Error(`Bad JSON from ${url}: ${txt.slice(0, 180)}`);
+    }
+  }
+
+  async function fetchChessDBText(action, fen, extraParams = {}, opts = {}) {
     const attempts = opts.attempts || CHESSDB_RETRY_ATTEMPTS;
-    const timeoutMs = opts.timeoutMs || CHESSDB_REQUEST_TIMEOUT_MS;
+    const timeoutMs = opts.timeoutMs || CHESSDB_TIMEOUT_MS;
     const allowProxy = !!opts.allowProxy;
     let lastError = null;
 
     for (let attempt = 1; attempt <= attempts; attempt++) {
-      const delay = CHESSDB_RETRY_BACKOFF_MS[Math.min(attempt - 1, CHESSDB_RETRY_BACKOFF_MS.length - 1)] || 0;
-      if (delay > 0) await sleep(delay + chessDbJitter());
-      const url = buildChessDBUrl(action, fen, { learn: opts.learn, showall: opts.showall, allowProxy });
+      if (attempt > 1) {
+        const delay = (CHESSDB_RETRY_DELAYS[attempt - 1] || CHESSDB_RETRY_DELAYS[CHESSDB_RETRY_DELAYS.length - 1] || 700) + jitter(120);
+        await sleep(delay);
+      }
       try {
+        const params = new URLSearchParams({ board: fen, ...extraParams }).toString();
+        const viaProxy = allowProxy && action === 'queryall' && settings.evalMode === 'proxy';
+        const url = viaProxy
+          ? `/.netlify/functions/queryall?${params}`
+          : `https://www.chessdb.cn/cdb.php?action=${action}&${params}`;
         const text = await fetchTextWithTimeout(url, timeoutMs);
-        if (attempt > 1) console.info(`[ChessDB] ${action} success on retry ${attempt}/${attempts}`);
-        return { text, attempts: attempt, viaProxy: allowProxy && action === 'queryall' && settings.evalMode === 'proxy', url };
+        return { text, attempts: attempt, viaProxy, url };
       } catch (e) {
         lastError = e;
         console.warn(`[ChessDB] ${action} attempt ${attempt}/${attempts} failed:`, e);
@@ -747,19 +772,220 @@ gameBuckets.forEach(bucket => {
     throw lastError || new Error(`ChessDB ${action} failed`);
   }
 
+  function scoreFromWhitePerspective(cpWhite, mateWhite, turn) {
+    if (mateWhite !== null && mateWhite !== undefined && mateWhite !== '') {
+      const mate = Number(mateWhite);
+      if (!Number.isNaN(mate)) {
+        if (mate === 0) return -100000;
+        const rootMate = turn === 'w' ? mate : -mate;
+        return Math.sign(rootMate) * (100000 - Math.min(999, Math.abs(rootMate)));
+      }
+    }
+    const cp = Number(cpWhite);
+    if (!Number.isFinite(cp)) return null;
+    return turn === 'w' ? cp : -cp;
+  }
+
+  function parseStockfishOnlineMove(bestmove) {
+    const m = String(bestmove || '').match(/\bbestmove\s+([a-h][1-8][a-h][1-8][qrbn]?)/i);
+    return m ? m[1].toLowerCase() : '';
+  }
+
+  async function fetchChessApiEval(fen, seedMoves = [], timeoutMs = ONLINE_TIMEOUT_MS) {
+    const cleanSeed = uniqueUciMoves(seedMoves);
+    const cacheKey = `capi:${normalizedFenKey(fen)}|${cleanSeed.join(' ')}`;
+    const cached = getOnlineCache(cacheKey);
+    if (cached) return cached;
+
+    const payload = {
+      fen,
+      depth: CHESS_API_DEPTH,
+      maxThinkingTime: CHESS_API_THINK_MS,
+      variants: 1
+    };
+    if (cleanSeed.length) payload.searchmoves = cleanSeed.join(' ');
+
+    const data = await fetchJsonWithTimeout('https://chess-api.com/v1', timeoutMs, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const move = String(data.move || data.lan || '').toLowerCase();
+    if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(move)) {
+      throw new Error('chess-api.com returned no usable move');
+    }
+
+    const cpWhite = data.centipawns != null
+      ? parseInt(data.centipawns, 10)
+      : (data.eval != null ? Math.round(Number(data.eval) * 100) : null);
+
+    return setOnlineCache(cacheKey, {
+      provider: 'chessapi',
+      move,
+      cpWhite: Number.isFinite(cpWhite) ? cpWhite : null,
+      mate: data.mate != null ? Number(data.mate) : null,
+      depth: Number(data.depth) || 0,
+      raw: data
+    });
+  }
+
+  async function fetchStockfishOnlineEval(fen, timeoutMs = ONLINE_TIMEOUT_MS) {
+    const cacheKey = `sfonline:${normalizedFenKey(fen)}`;
+    const cached = getOnlineCache(cacheKey);
+    if (cached) return cached;
+
+    const url = `https://stockfish.online/api/s/v2.php?fen=${encodeURIComponent(fen)}&depth=${STOCKFISH_ONLINE_DEPTH}`;
+    const data = await fetchJsonWithTimeout(url, timeoutMs);
+    if (!data || data.success !== true) {
+      throw new Error(`stockfish.online error: ${data && data.data ? data.data : 'unsuccessful response'}`);
+    }
+
+    const move = parseStockfishOnlineMove(data.bestmove);
+    if (!move) throw new Error('stockfish.online returned no usable move');
+
+    const cpWhite = data.evaluation != null
+      ? Math.round(Number(data.evaluation) * 100)
+      : (data.eval != null ? Math.round(Number(data.eval) * 100) : null);
+
+    return setOnlineCache(cacheKey, {
+      provider: 'stockfishonline',
+      move,
+      cpWhite: Number.isFinite(cpWhite) ? cpWhite : null,
+      mate: data.mate != null ? Number(data.mate) : null,
+      depth: Number(data.depth) || 0,
+      raw: data
+    });
+  }
+
+  async function quickDccRankMove(simGame, candidate) {
+    const probe = new Chess(simGame.fen());
+    const m = probe.move({
+      from: candidate.move.slice(0, 2),
+      to: candidate.move.slice(2, 4),
+      promotion: candidate.move.length > 4 ? candidate.move[4] : 'q'
+    });
+    if (!m) return null;
+
+    let dccScore = Number(candidate.score) || 0;
+    if (candidate.sources && candidate.sources.includes('chessdb')) dccScore += 10;
+
+    try {
+      const child = await cachedFetchChessDB(probe.fen());
+      if (child.moves && child.moves.length > 0) dccScore += DCC_WEIGHTS.endgame_known;
+    } catch (e) {}
+
+    const mobility = typeof probe.moves === 'function' ? probe.moves().length : 0;
+    dccScore += Math.min(30, mobility) * 0.4;
+    if (m.captured) dccScore += 4;
+    const cx = fenComplexity(probe.fen());
+    dccScore -= cx * DCC_WEIGHTS.complexity;
+
+    return {
+      move: candidate.move,
+      score: Math.round(Number(candidate.score) || 0),
+      _dccScore: dccScore,
+      _pickSource: 'online_dcc_tiebreak',
+      _onlineSources: candidate.sources || [],
+      _stability: '',
+      _adsrShape: 'online_tie',
+      _momentum: '',
+      _tunnel: false
+    };
+  }
+
+  async function chooseByQuickDcc(simGame, candidates) {
+    let best = null;
+    let bestScore = -Infinity;
+    for (const cand of candidates) {
+      const ranked = await quickDccRankMove(simGame, cand);
+      if (!ranked) continue;
+      if (ranked._dccScore > bestScore) {
+        bestScore = ranked._dccScore;
+        best = ranked;
+      }
+    }
+    return best;
+  }
+
+  async function pickOnlineFallbackMove(simGame, context = {}) {
+    const fen = simGame.fen();
+    const turn = fenTurn(fen);
+    const dbMoves = (context.dbResult && context.dbResult.moves ? context.dbResult.moves : []).slice(0, 3);
+    const seedMoves = uniqueUciMoves(dbMoves.map(m => m.move));
+
+    const onlineBudgetMs = context.budgetMs || ONLINE_MOVE_BUDGET_MS;
+    const perCallTimeout = Math.max(700, Math.min(ONLINE_TIMEOUT_MS, onlineBudgetMs));
+
+    const [capiRes, sfRes] = await Promise.allSettled([
+      fetchChessApiEval(fen, seedMoves, perCallTimeout),
+      fetchStockfishOnlineEval(fen, perCallTimeout)
+    ]);
+
+    const online = [];
+    if (capiRes.status === 'fulfilled') online.push(capiRes.value);
+    else console.warn('chess-api.com fallback failed:', capiRes.reason);
+    if (sfRes.status === 'fulfilled') online.push(sfRes.value);
+    else console.warn('stockfish.online fallback failed:', sfRes.reason);
+
+    if (online.length === 0) return null;
+
+    const byMove = new Map();
+    const addCandidate = (move, score, source) => {
+      if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(String(move || '').toLowerCase())) return;
+      const key = String(move).toLowerCase();
+      const scoreNum = Number(score);
+      const entry = byMove.get(key) || { move: key, score: Number.isFinite(scoreNum) ? scoreNum : 0, sources: [] };
+      if (Number.isFinite(scoreNum) && scoreNum > entry.score) entry.score = scoreNum;
+      if (!entry.sources.includes(source)) entry.sources.push(source);
+      byMove.set(key, entry);
+    };
+
+    dbMoves.forEach(m => addCandidate(m.move, m.score, 'chessdb'));
+
+    const onlineScored = online.map(entry => ({
+      ...entry,
+      rootScore: scoreFromWhitePerspective(entry.cpWhite, entry.mate, turn)
+    })).filter(entry => entry.rootScore !== null);
+
+    onlineScored.forEach(entry => addCandidate(entry.move, entry.rootScore, entry.provider));
+
+    if (onlineScored.length >= 2) {
+      const [a, b] = onlineScored;
+      if (a.move === b.move) {
+        const avgScore = Math.round((a.rootScore + b.rootScore) / 2);
+        return { move: a.move, score: avgScore, _pickSource: 'online_consensus', _onlineSources: [a.provider, b.provider] };
+      }
+      const gap = Math.abs(a.rootScore - b.rootScore);
+      if (gap >= ONLINE_EQUAL_CP) {
+        const stronger = a.rootScore >= b.rootScore ? a : b;
+        return { move: stronger.move, score: Math.round(stronger.rootScore), _pickSource: `${stronger.provider}_gap`, _onlineSources: [a.provider, b.provider], _onlineGap: gap };
+      }
+    }
+
+    const candidates = [...byMove.values()];
+    if (candidates.length === 1) {
+      const only = candidates[0];
+      const onlySource = only.sources.filter(s => s !== 'chessdb')[0] || only.sources[0] || 'online';
+      return { move: only.move, score: Math.round(only.score || 0), _pickSource: onlySource, _onlineSources: only.sources };
+    }
+
+    const picked = await chooseByQuickDcc(simGame, candidates);
+    if (picked) return picked;
+
+    const best = candidates.sort((a, b) => b.score - a.score)[0];
+    return best ? { move: best.move, score: Math.round(best.score || 0), _pickSource: 'online_score_fallback', _onlineSources: best.sources } : null;
+  }
+
   // ── Raw chessdb fetch with caching + rate limiting ──────────────
   async function cachedFetchChessDB(fen) {
-    const key = fen.split(' ').slice(0, 4).join(' '); // normalize
+    const key = normalizedFenKey(fen); // normalize
     if (evalCache[key]) return evalCache[key];
     await sleep(200); // rate limit guard
     try {
-      const { text, attempts, viaProxy } = await fetchChessDBText('queryall', fen, {
-        learn: 0,
-        showall: 1,
-        allowProxy: true
-      });
+      const { text, attempts, viaProxy } = await fetchChessDBText('queryall', fen, { learn: 0, showall: 1 }, { allowProxy: true });
       const moves = text.split('|').map(line => {
-        const m = line.match(/move:(\w+),score:([-\d\?]+),rank:(\d+),/);
+        const m = line.match(/move:(\w+),score:([\-\d\?]+),rank:(\d+),/);
         if (!m || m[2] === '??') return null;
         const score = parseInt(m[2], 10), rank = parseInt(m[3], 10);
         if (isNaN(score)) return null;
@@ -777,7 +1003,7 @@ gameBuckets.forEach(bucket => {
 
   // ── querypv: single call returns score + depth + full PV line ───
   async function fetchPV(fen) {
-    const key = 'pv:' + fen.split(' ').slice(0, 4).join(' ');
+    const key = 'pv:' + normalizedFenKey(fen);
     if (evalCache[key]) return evalCache[key];
     await sleep(200);
     try {
@@ -808,7 +1034,7 @@ gameBuckets.forEach(bucket => {
 
   // ── queryscore: lightweight single-score probe ─────────────────
   async function fetchScore(fen) {
-    const key = 'sc:' + fen.split(' ').slice(0, 4).join(' ');
+    const key = 'sc:' + normalizedFenKey(fen);
     if (evalCache[key] !== undefined) return evalCache[key];
     await sleep(150); // slightly lighter rate limit
     try {
@@ -996,7 +1222,7 @@ gameBuckets.forEach(bucket => {
     if (!ov) return;
 
     // Remove old DCC indicators
-    ov.querySelectorAll('.dcc-arrow,.dcc-loading,.dcc-adsr-label,.dcc-tunnel-label').forEach(e => e.remove());
+    ov.querySelectorAll('.dcc-arrow,.dcc-loading,.dcc-adsr-label').forEach(e => e.remove());
     ov.classList.remove('dcc-stable', 'dcc-unstable', 'dcc-mdl-pick');
 
     if (status === 'loading') {
@@ -1057,9 +1283,7 @@ gameBuckets.forEach(bucket => {
 
   // ── LZ Tiebreaker — mark MDL pick among tied moves ─────────────
   function applyLZTiebreaker(moveList, baseFen) {
-    document.querySelectorAll('.overlay.dcc-mdl-pick').forEach(ov => {
-      ov.classList.remove('dcc-mdl-pick');
-    });
+    document.querySelectorAll('.overlay.dcc-mdl-pick').forEach(ov => ov.classList.remove('dcc-mdl-pick'));
     document.querySelectorAll('.dcc-mdl-star').forEach(el => el.remove());
 
     if (moveList.length < 2) return;
@@ -1455,8 +1679,10 @@ gameBuckets.forEach(bucket => {
   ------------------------------------------------------------------*/
 	async function fetchAnnotations() {
 	  if (playState.active && playState.assistanceLocked) return;
+	  const fen = encodeURIComponent(game.fen());
+
 	  function parseResponse(text) {
-		return String(text || '').split('|').map(line => {
+		return text.split('|').map(line => {
 		  const m = line.match(/move:(\w+),score:([-\d\?]+),rank:(\d+),/);
 		  if (!m || m[2] === '??') return null;
 		  const score = parseInt(m[2], 10), rank = parseInt(m[3], 10);
@@ -1466,16 +1692,20 @@ gameBuckets.forEach(bucket => {
 	  }
 
 	  const useProxy = settings.evalMode === 'proxy';
+	  const baseURL = useProxy
+		? '/.netlify/functions/queryall?'
+		: 'https://www.chessdb.cn/cdb.php?action=queryall&';
+
+	  const vURL = `${baseURL}board=${fen}&learn=0&showall=1`;
+	  const cURL = `${baseURL}board=${fen}&learn=1&showall=1`;
 
 	  let vTxt = null, cTxt = null;
 
 	  try {
-		const [verified, cloud] = await Promise.all([
-		  fetchChessDBText('queryall', game.fen(), { learn: 0, showall: 1, allowProxy: true }),
-		  fetchChessDBText('queryall', game.fen(), { learn: 1, showall: 1, allowProxy: true })
+		[vTxt, cTxt] = await Promise.all([
+		  fetch(vURL).then(r => r.text()),
+		  fetch(cURL).then(r => r.text())
 		]);
-		vTxt = verified.text;
-		cTxt = cloud.text;
 	  } catch (e) {
 		console.warn('Fetch error:', e);
 	  }
@@ -2374,7 +2604,10 @@ function jumpTo(i){
   async function pickDCCMove(simGame, overrideCandidates) {
     const fen = simGame.fen();
     const result = await cachedFetchChessDB(fen);
-    if (!result.moves || result.moves.length === 0) return null;
+
+    if (!result.moves || result.moves.length === 0) {
+      return await pickOnlineFallbackMove(simGame, { dbResult: result, budgetMs: ONLINE_MOVE_BUDGET_MS });
+    }
 
     // Smart candidate selection: eval floor + max candidates
     const bestRawScore = result.moves[0].score;
@@ -2383,11 +2616,9 @@ function jumpTo(i){
       Math.abs(bestRawScore - m.score) <= settings.dccEvalFloor
     ).slice(0, maxCandidates);
 
-    let bestMove = { ...result.moves[0], _pickSource: 'raw_queryall_best' }; // fallback: raw best
+    let bestMove = { ...result.moves[0], _pickSource: 'chessdb_raw' }; // fallback: raw best
     let bestScore = -Infinity;
     let pvOkCount = 0;
-    let scoreOkCount = 0;
-    let usedDCCRanking = false;
 
     for (let i = 0; i < candidates.length; i++) {
       const mv = candidates[i];
@@ -2415,10 +2646,7 @@ function jumpTo(i){
           if (!wm) break;
           if (j % 2 === 1) {
             const sc = await fetchScore(walk.fen());
-            if (sc !== null) {
-              scoreOkCount++;
-              evalSeq.push((j % 2 === 0) ? -sc : sc);
-            }
+            if (sc !== null) evalSeq.push((j % 2 === 0) ? -sc : sc);
           }
         }
       }
@@ -2446,7 +2674,8 @@ function jumpTo(i){
       }
 
       // v0.6.0 Feature 4: Tunneling bonus
-      if (detectTunnel(evalSeq)) dccScore += DCC_WEIGHTS.tunnel;
+      const tunnel = detectTunnel(evalSeq);
+      if (tunnel) dccScore += DCC_WEIGHTS.tunnel;
 
       // LZ tiebreaker on resulting position
       const cx = fenComplexity(probe.fen());
@@ -2455,20 +2684,23 @@ function jumpTo(i){
       if (dccScore > bestScore) {
         bestScore = dccScore;
         bestMove = { ...mv };
-        usedDCCRanking = true;
         // v0.6.1: attach DCC metadata for CSV export
         bestMove._dccScore = dccScore;
         bestMove._stability = stability;
         bestMove._adsrShape = adsr.shape;
         bestMove._momentum = momentum;
-        bestMove._tunnel = detectTunnel(evalSeq);
+        bestMove._tunnel = tunnel;
+        bestMove._pickSource = 'chessdb_dcc';
+        bestMove._pvOkCount = pvOkCount;
       }
     }
-    if (bestMove) {
-      bestMove._pickSource = usedDCCRanking ? 'dcc' : 'raw_queryall_best';
-      bestMove._pvOkCount = pvOkCount;
-      bestMove._scoreOkCount = scoreOkCount;
+
+    const weakChessDbHit = result.moves.length < 2 || pvOkCount === 0;
+    if (weakChessDbHit) {
+      const onlinePick = await pickOnlineFallbackMove(simGame, { dbResult: result, budgetMs: ONLINE_MOVE_BUDGET_MS });
+      if (onlinePick) return onlinePick;
     }
+
     return bestMove;
   }
 
@@ -2507,11 +2739,11 @@ function jumpTo(i){
 
   // v0.6.1: Export sim results as CSV for Python analysis
   function exportSimCSV(stats) {
-    const header = 'game,move_num,fen,move,raw_score,dcc_score,stability,adsr_shape,momentum,tunnel,picked_by\n';
+    const header = 'game,move_num,fen,move,raw_score,dcc_score,stability,adsr_shape,momentum,tunnel,picked_by,pick_source\n';
     let csv = header;
     stats.games.forEach((g, gi) => {
       (g.moveLog || []).forEach(row => {
-        csv += `${gi+1},${row.move_num},"${row.fen}",${row.move},${row.raw_score},${row.dcc_score},${row.stability},${row.adsr_shape},${row.momentum},${row.tunnel},${row.picked_by}\n`;
+        csv += `${gi+1},${row.move_num},"${row.fen}",${row.move},${row.raw_score},${row.dcc_score},${row.stability},${row.adsr_shape},${row.momentum},${row.tunnel},${row.picked_by},${row.pick_source || ''}\n`;
       });
     });
     const blob = new Blob([csv], {type: 'text/csv'});
@@ -2675,14 +2907,12 @@ function jumpTo(i){
         move: pick.move,
         raw_score: pick.score,
         dcc_score: pick._dccScore !== undefined ? pick._dccScore.toFixed(1) : '',
-        pick_source: pick._pickSource || '',
-        pv_ok_count: pick._pvOkCount !== undefined ? pick._pvOkCount : '',
-        score_ok_count: pick._scoreOkCount !== undefined ? pick._scoreOkCount : '',
         stability: pick._stability !== undefined ? pick._stability.toFixed(2) : '',
         adsr_shape: pick._adsrShape || '',
         momentum: pick._momentum !== undefined ? pick._momentum.toFixed(1) : '',
         tunnel: pick._tunnel ? 'true' : 'false',
-        picked_by: useDCC ? 'dcc' : 'raw'
+        picked_by: useDCC ? 'dcc' : 'raw',
+        pick_source: pick._pickSource || (useDCC ? 'dcc' : 'raw')
       });
 
       const sideLabel = bothDCC ? (turn === 'w' ? 'W' : 'B') : (useDCC ? 'DCC' : 'Raw');
@@ -3193,25 +3423,17 @@ function enterActiveSession(mode, opts = {}) {
     return msg;
   }
 
-  function hasPendingPreparedOpening(remoteMovesStr = playState.lichess.lastMoves || '') {
-    return !!(
+  function syncGameFromMoves(movesStr, initialFen = 'startpos') {
+    const moves = (movesStr || '').trim() ? movesStr.trim().split(/\s+/) : [];
+    if ((playState.lichess.lastMoves || '').trim() === (movesStr || '').trim()) return;
+
+    const keepPreparedOpening =
       playState.active &&
       playState.mode === 'lichess' &&
       playState.autoPilot &&
       playState.userColor === 'w' &&
       playState.lichess.preparedOpeningApplied &&
       !playState.lichess.preparedOpeningSent &&
-      playState.lichess.preparedOpeningUci &&
-      !(remoteMovesStr || '').trim()
-    );
-  }
-
-  function syncGameFromMoves(movesStr, initialFen = 'startpos') {
-    const moves = (movesStr || '').trim() ? movesStr.trim().split(/\s+/) : [];
-    if ((playState.lichess.lastMoves || '').trim() === (movesStr || '').trim()) return;
-
-    const keepPreparedOpening =
-      hasPendingPreparedOpening(movesStr) &&
       moves.length === 0 &&
       (!initialFen || initialFen === 'startpos');
 
@@ -3366,9 +3588,7 @@ async function startLichessGameStream(gameId) {
       playState.waiting = game.turn() !== playState.userColor;
       if (playState.autoPilot) {
         updateSimStatus(`8Z live · ${playState.lichess.botUsername}`);
-        if (!game.game_over() && (game.turn() === playState.userColor || hasPendingPreparedOpening(payload?.state?.moves || ''))) {
-          setTimeout(() => { runLichessAutoMove().catch(console.error); }, 180);
-        }
+        if (!game.game_over() && game.turn() === playState.userColor) setTimeout(() => { runLichessAutoMove().catch(console.error); }, 180);
       } else {
         updateSimStatus(game.turn() === playState.userColor ? 'Your move.' : `Waiting for ${playState.lichess.botUsername}…`);
       }
@@ -3383,7 +3603,7 @@ async function startLichessGameStream(gameId) {
         return null;
       }
       if (playState.autoPilot) {
-        if (!game.game_over() && (game.turn() === playState.userColor || hasPendingPreparedOpening(payload.moves || ''))) {
+        if (!game.game_over() && game.turn() === playState.userColor) {
           setTimeout(() => { runLichessAutoMove().catch(console.error); }, 120);
         } else {
           updateSimStatus(`Waiting for ${playState.lichess.botUsername}…`);
@@ -3424,7 +3644,7 @@ function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
       if (remaining > 1) setTimeout(() => kick(remaining - 1), delayMs);
       return;
     }
-    if (game.turn() !== playState.userColor && !hasPendingPreparedOpening()) return;
+    if (game.turn() !== playState.userColor) return;
     try {
       await runLichessAutoMove();
       return;
@@ -3665,15 +3885,19 @@ async function runLichessAutoMove() {
     leaveActiveSession('Game over. Lichess bot session finished.');
     return;
   }
-  const pendingPreparedOpening = hasPendingPreparedOpening();
-  if (!pendingPreparedOpening && game.turn() !== playState.userColor) return;
+  if (game.turn() !== playState.userColor) return;
 
   playState.autoMoveBusy = true;
   playState.waiting = true;
   setBoardThinking(true);
 
   const noMovesYet = !(playState.lichess.lastMoves || '').trim();
-  const usePreparedOpening = pendingPreparedOpening && noMovesYet;
+  const usePreparedOpening =
+    noMovesYet &&
+    playState.userColor === 'w' &&
+    playState.lichess.preparedOpeningApplied &&
+    !playState.lichess.preparedOpeningSent &&
+    !!playState.lichess.preparedOpeningUci;
 
   updateSimStatus(usePreparedOpening ? 'Sending prepared White opening to Lichess…' : '8Z-DCC is thinking…');
   const fenBefore = game.fen();
@@ -3773,7 +3997,7 @@ async function startLichessSession(botUsername, selectedColor, clock, timeLabel,
     ? `8Z is challenging ${botUsername} on Lichess…`
     : `Starting human vs ${botUsername}…`);
 
-  const openingPrepPromise = (opts.autoPilot && selectedColor === 'white')
+  const openingPrepPromise = (opts.autoPilot && guessedColor === 'w')
     ? prepareLocalLichessOpeningPreview().catch(err => {
         reportSessionIssue('Local opening preview failed', err);
         return null;
@@ -3789,7 +4013,7 @@ async function startLichessSession(botUsername, selectedColor, clock, timeLabel,
       if (err?.name === 'AbortError') return;
       reportSessionIssue('Lichess stream loop crashed', err);
     });
-    if (opts.autoPilot && selectedColor === 'white') {
+    if (opts.autoPilot && guessedColor === 'w') {
       scheduleLichessOpeningKick(gameId, 12, 300);
     }
   } catch (err) {
