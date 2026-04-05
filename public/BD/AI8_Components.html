@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI8 Components — BD × AI Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #020409;
+  --bg2: #080a14;
+  --bg3: #0d1120;
+  --surface: #0f1729;
+  --surface2: #131b30;
+  --border: rgba(167,139,250,0.10);
+  --border-strong: rgba(167,139,250,0.20);
+  --accent: #a78bfa;
+  --accent-dim: rgba(167,139,250,0.12);
+  --accent-glow: rgba(167,139,250,0.06);
+  --gold: #f59e0b;
+  --gold-dim: rgba(245,158,11,0.12);
+  --green: #34d399;
+  --green-dim: rgba(52,211,153,0.10);
+  --cyan: #00e5ff;
+  --cyan-dim: rgba(0,229,255,0.10);
+  --rose: #ff6b8a;
+  --rose-dim: rgba(255,107,138,0.10);
+  --orange: #fb923c;
+  --orange-dim: rgba(251,146,60,0.10);
+  --blue: #60a5fa;
+  --blue-dim: rgba(96,165,250,0.10);
+  --text: #e2e8f4;
+  --muted: #5e7192;
+  --muted-2: rgba(226,232,244,0.62);
+  --subtle: #1a2540;
+  --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  --radius: 6px;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Rajdhani',sans-serif;
+  font-size:17px;
+  line-height:1.72;
+  overflow-x:hidden;
+}
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:9999; opacity:0.02;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.scroll-progress { position:fixed; top:0; left:0; height:2px; background:var(--accent); z-index:10000; transition:width 30ms; }
+.topnav {
+  position:fixed; top:0; left:0; right:0; height:48px;
+  background:rgba(2,4,9,0.85); backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border); z-index:999;
+  display:flex; align-items:center; padding:0 8vw;
+}
+.topnav a {
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px; color:var(--muted); text-decoration:none; letter-spacing:1px;
+}
+.topnav a:hover { color:var(--accent); }
+.topnav a.active { color:var(--accent); }
+.topnav .sep { margin:0 12px; color:var(--muted); opacity:.3; }
+.wrap { max-width:820px; margin:0 auto; padding:0 8vw; }
+@media(min-width:1100px){ .wrap{ padding:0; } }
+.cover {
+  padding:120px 8vw 64px;
+  text-align:center;
+  border-bottom:1px solid var(--border);
+  margin-bottom:64px;
+}
+.cover-tag {
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px; letter-spacing:4px; color:var(--accent);
+  text-transform:uppercase; margin-bottom:20px; display:block;
+}
+.cover h1 {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(32px,5vw,50px);
+  font-weight:600; line-height:1.15;
+  color:var(--text); margin-bottom:18px;
+}
+.cover h1 em { font-style:italic; color:var(--accent); }
+.cover .subtitle {
+  font-size:18px; color:var(--muted-2); max-width:720px; margin:0 auto 28px; line-height:1.6;
+}
+.cover .meta {
+  font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted);
+}
+.cover .meta .gold { color:var(--gold); }
+.cover .meta .green { color:var(--green); }
+.chapter {
+  margin-bottom:64px; padding-top:40px; border-top:1px solid var(--border);
+  opacity:0; transform:translateY(24px);
+  transition:opacity .6s ease, transform .6s ease;
+}
+.chapter.visible { opacity:1; transform:translateY(0); }
+.chapter-num {
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px; letter-spacing:3px; color:var(--accent);
+  text-transform:uppercase; margin-bottom:8px;
+}
+.chapter h2 {
+  font-family:'Cormorant Garamond',serif;
+  font-size:32px; font-weight:600; line-height:1.25; margin-bottom:20px; color:var(--text);
+}
+.chapter h3 {
+  font-size:20px; font-weight:600; margin:32px 0 14px;
+  padding-bottom:6px; border-bottom:1px solid var(--border); color:var(--text);
+}
+p { margin-bottom:16px; color:var(--muted-2); }
+strong { color:var(--text); font-weight:600; }
+em { color:var(--accent); font-style:normal; }
+ul, ol { margin:10px 0 18px 22px; color:var(--muted-2); }
+li { margin:8px 0; }
+.callout {
+  background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--accent);
+  padding:18px 22px; margin:20px 0; border-radius:var(--radius);
+}
+.callout.gold { border-left-color:var(--gold); }
+.callout.green { border-left-color:var(--green); }
+.callout.rose { border-left-color:var(--rose); }
+.callout.cyan { border-left-color:var(--cyan); }
+.callout.orange { border-left-color:var(--orange); }
+.callout.blue { border-left-color:var(--blue); }
+.callout .callout-title {
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; font-weight:600;
+  color:var(--accent);
+}
+.callout.gold .callout-title { color:var(--gold); }
+.callout.green .callout-title { color:var(--green); }
+.callout.rose .callout-title { color:var(--rose); }
+.callout.cyan .callout-title { color:var(--cyan); }
+.callout.orange .callout-title { color:var(--orange); }
+.callout.blue .callout-title { color:var(--blue); }
+.paper-grid { display:grid; grid-template-columns:1fr; gap:16px; margin:24px 0; }
+@media(min-width:700px){ .paper-grid{ grid-template-columns:1fr 1fr 1fr; } }
+.paper-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:22px; transition:border-color .3s;
+}
+.paper-card:hover { border-color:var(--border-strong); }
+.paper-card .ptag {
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; font-weight:600;
+}
+.paper-card h4 { font-size:18px; font-weight:600; margin-bottom:10px; color:var(--text); }
+.paper-card p { font-size:15px; margin-bottom:10px; }
+.paper-card ul { margin:12px 0 0 18px; color:var(--muted-2); }
+.paper-card li { margin:7px 0; }
+.flow-chain {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  margin:20px 0; flex-wrap:wrap;
+}
+.flow-node {
+  font-family:'JetBrains Mono',monospace; font-size:12px;
+  padding:8px 14px; background:var(--surface);
+  border:1px solid var(--border); border-radius:4px; color:var(--text);
+}
+.flow-node.active { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+.flow-arrow { color:var(--muted); font-size:16px; }
+.component-grid { display:grid; grid-template-columns:1fr; gap:14px; margin:22px 0; }
+@media(min-width:760px){ .component-grid{ grid-template-columns:1fr 1fr; } }
+.component-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px;
+}
+.component-card h4 { font-size:18px; margin-bottom:10px; color:var(--text); }
+.component-card .mono {
+  font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:1px; color:var(--accent);
+  text-transform:uppercase; margin-bottom:8px;
+}
+.component-card p { font-size:15px; margin-bottom:10px; }
+.component-card ul { margin-left:18px; color:var(--muted-2); }
+.component-card li { margin:7px 0; }
+.arena-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:14px; }
+.arena-table th {
+  text-align:left; padding:10px 14px; background:var(--surface); border:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted);
+}
+.arena-table td { padding:9px 14px; border:1px solid var(--border); color:var(--muted-2); vertical-align:top; }
+.arena-table td:first-child { font-family:'JetBrains Mono',monospace; color:var(--accent); font-size:13px; white-space:nowrap; }
+.arena-table tr:hover td { background:var(--surface); }
+.deep-quote {
+  border-left:3px solid var(--accent); padding:24px 28px; margin:32px 0;
+  background:var(--accent-glow); border-radius:0 var(--radius) var(--radius) 0;
+}
+.deep-quote p {
+  font-family:'Cormorant Garamond',serif; font-size:22px; line-height:1.55; color:var(--text); font-style:italic; margin:0;
+}
+.deep-quote .attr {
+  font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);
+  margin-top:12px; letter-spacing:1px;
+}
+.code-block {
+  background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:18px 22px;
+  margin:16px 0; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.65; overflow-x:auto; color:var(--muted-2);
+}
+.code-block .kw { color:var(--accent); }
+.code-block .cm { color:var(--muted); font-style:italic; }
+.code-block .str { color:var(--green); }
+.code-block .num { color:var(--orange); }
+.code-block .fn { color:var(--cyan); }
+footer { border-top:1px solid var(--border); padding:3rem 8vw 4rem; margin-top:80px; }
+.foot-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; max-width:820px; margin:0 auto; }
+@media(max-width:600px){ .foot-grid{ grid-template-columns:1fr; } }
+.foot-col h4 {
+  font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--accent); margin-bottom:12px;
+}
+.foot-col p { font-size:14px; color:var(--muted); line-height:1.6; }
+.foot-links { list-style:none; margin:0; }
+.foot-links li { margin-bottom:6px; }
+.foot-links a { color:var(--muted); font-size:14px; text-decoration:none; }
+.foot-links a:hover { color:var(--accent); }
+.copyright {
+  text-align:center; font-size:12px; color:var(--muted); margin-top:2rem; max-width:820px;
+  margin-left:auto; margin-right:auto; padding-top:1.5rem; border-top:1px solid var(--border);
+}
+.copyright a { color:var(--gold); text-decoration:underline; }
+
+.family-box {
+  margin: 0 0 28px;
+  padding: 18px 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+}
+.family-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: var(--gold);
+}
+.family-box p { margin-bottom: 10px; }
+.family-box p:last-child { margin-bottom: 0; }
+.family-box a {
+  color: var(--gold);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(245,158,11,0.35);
+}
+.family-box a:hover {
+  color: var(--text);
+  border-bottom-color: var(--text);
+}
+
+</style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProg"></div>
+
+<nav class="topnav">
+  <a href="/bd/">BD &times; AI Lab</a>
+  <span class="sep">/</span>
+  <a href="/bd/">8Z Research</a>
+  <span class="sep">/</span>
+  <a href="AI8_Architecture_nav.html">AI8_Architecture</a>
+  <span class="sep">/</span>
+  <a href="AI8_Companion_nav.html">AI8_Companion</a>
+  <span class="sep">/</span>
+  <a href="AI8_Components_nav.html" class="active">AI8_Components</a>
+</nav>
+
+<header class="cover">
+  <span class="cover-tag">AI8 Research &middot; Living Domain Paper</span>
+  <h1>AI8 <em>Components</em></h1>
+  <div class="subtitle">From NAS to Better AI Systems. A living paper on how a self-selecting MDL &times; DCC kernel may first learn to read existing AI design landscapes, then improve them, and later generalize across the wider AI stack.</div>
+  <div class="meta">Author: <span class="gold">Bojan Dobrečevič</span> &nbsp;&middot;&nbsp; Companion Architect: <span class="green">Ari</span> &nbsp;&middot;&nbsp; Status: <span class="gold">Seed paper / living expansion</span> &nbsp;&middot;&nbsp; Version: <span class="green">v0.1</span> &nbsp;&middot;&nbsp; Date: 2026-04-05</div>
+</header>
+
+<main class="wrap">
+<div class="family-box">
+  <div class="family-title">Document Family</div>
+  <p><strong><a href="AI8_Architecture.html">AI8_Architecture.html</a></strong> is the core theoretical spine: the continuity architecture, recursive governance logic, and the deeper DCC frame from which this applied paper descends.</p>
+  <p><strong><a href="AI8_Companion.html">AI8_Companion.html</a></strong> is the readable bridge: it translates the architecture into the AI8 file family, operating roles, and the practical logic of long-horizon human–AI collaboration.</p>
+</div>
+
+  <section class="chapter" id="why">
+    <div class="chapter-num">01 &middot; WHY THIS PAPER EXISTS</div>
+    <h2>The third paper in the AI8 family</h2>
+    <p><strong>AI8 Architecture</strong> defines the deeper continuity architecture. <strong>AI8 Companion</strong> makes that architecture readable and operational. This third paper has a different job: to ask whether the same underlying kernel can be used not only to coordinate human&ndash;AI work, but to <em>improve AI systems themselves</em>.</p>
+    <p>The claim here is intentionally disciplined. We are <strong>not</strong> claiming that AI8 has already solved AI design. We are proposing a research program: start with one clean, bounded arena such as Neural Architecture Search, learn to read the terrain properly, improve search inside that terrain, then try to shape better terrains and extend the same logic to other AI components.</p>
+    <div class="paper-grid">
+      <div class="paper-card">
+        <div class="ptag" style="color:var(--accent);">Core</div>
+        <h4>AI8 Architecture</h4>
+        <p>The base continuity architecture: governed differentiation, recursive coordination, and process-level structure.</p>
+      </div>
+      <div class="paper-card">
+        <div class="ptag" style="color:var(--gold);">Bridge</div>
+        <h4>AI8 Companion</h4>
+        <p>The readable map: what the layers do, how they relate, and how AI8 avoids collapsing into roleplay, ideology, or noise.</p>
+      </div>
+      <div class="paper-card">
+        <div class="ptag" style="color:var(--green);">Application</div>
+        <h4>AI8 Components</h4>
+        <p>The domain line: can the same kernel help us improve model architecture, data, training flow, routing, memory, and broader AI design choices?</p>
+      </div>
+    </div>
+    <div class="callout cyan">
+      <div class="callout-title">Working stance</div>
+      <p>This is a <strong>living paper</strong>. NAS carries the main weight for now. Other components are introduced as targets and future work, not as claims of finished success.</p>
+    </div>
+  </section>
+
+  <section class="chapter" id="kernel">
+    <div class="chapter-num">02 &middot; KERNEL</div>
+    <h2>From coordination logic to design logic</h2>
+    <p>The candidate kernel is <strong>self-selecting MDL &times; DCC</strong>.</p>
+    <ul>
+      <li><strong>MDL</strong> contributes descriptive pressure: choose structures, routes, or candidate families that explain observed success with fewer wasted bits and less arbitrary complication.</li>
+      <li><strong>DCC</strong> contributes adaptive governance: when a search becomes too predictable, too chaotic, too flat, or too trapped, alter the search regime rather than blindly continuing.</li>
+      <li><strong>Self-selection</strong> means the system does not assume one fixed heuristic is always right. It chooses, compares, and re-routes under pressure.</li>
+    </ul>
+    <div class="deep-quote">
+      <p>The long goal is not only to navigate one given search space better, but to learn how better spaces themselves might be recognized and eventually generated.</p>
+      <div class="attr">AI8 Components &middot; Program statement</div>
+    </div>
+    <div class="flow-chain">
+      <div class="flow-node">Read existing landscape</div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-node active">Improve search inside it</div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-node">Shape better landscapes</div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-node">Extend across AI components</div>
+    </div>
+    <div class="callout gold">
+      <div class="callout-title">Discipline</div>
+      <p>Cross-domain ambition only becomes credible if the same kernel survives cheap tests in one arena after another. This paper therefore treats NAS as a <strong>first wedge</strong>, not as the final destination.</p>
+    </div>
+  </section>
+
+  <section class="chapter" id="nas">
+    <div class="chapter-num">03 &middot; NAS AS THE FIRST WEDGE</div>
+    <h2>Why NAS is the right first arena</h2>
+    <p>Neural Architecture Search is a good first domain because it is bounded enough to test search ideas honestly, yet rich enough to expose family structure, local traps, ridges, corridors, and competing winner regimes. A benchmark NAS world does not reveal the globally ideal architecture; it reveals the best architecture <em>inside a finite, human-designed universe</em>. That is exactly why it is useful.</p>
+    <p>With a benchmark such as NATS-Bench TSS, the search problem becomes clean: can our method read and navigate the terrain better than simpler baselines? If yes, the next question becomes stronger: can the same method eventually improve the terrain itself?</p>
+    <table class="arena-table">
+      <thead>
+        <tr>
+          <th>Question</th>
+          <th>Benchmark NAS can test</th>
+          <th>Benchmark NAS cannot yet prove</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Search quality</td>
+          <td>Whether a method finds strong regions, families, and escape routes more effectively than baselines.</td>
+          <td>Whether the method has discovered the globally best neural architecture beyond the benchmark universe.</td>
+        </tr>
+        <tr>
+          <td>Landscape reading</td>
+          <td>Whether peaks, families, valleys, boundaries, and local climb paths are real and exploitable.</td>
+          <td>Whether the current search space itself is the right universe to search.</td>
+        </tr>
+        <tr>
+          <td>Generative potential</td>
+          <td>A weak but useful precursor signal: whether the method sees structure rather than only ranks points.</td>
+          <td>Whether it can already invent better architectures or better search spaces outside the benchmark.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout green">
+      <div class="callout-title">Current reality</div>
+      <p>Our immediate target is modest: <strong>better reading of an existing NAS space</strong>. Only after that do we earn the right to ask for generative NAS landscapes and broader AI-system design claims.</p>
+    </div>
+  </section>
+
+  <section class="chapter" id="flood-drain">
+    <div class="chapter-num">04 &middot; FLOOD / DRAIN</div>
+    <h2>Flood-Reveal, Rain-Lift, and Drain-Escape</h2>
+    <p>The current NAS wedge is organized around a dual reading of landscape structure.</p>
+
+    <h3>Flood-Reveal &mdash; top-down structure</h3>
+    <p>Imagine the landscape flooded above the highest terrain, then slowly drained. As the water level falls, peaks, ridges, and families emerge. The goal is not merely to ask which single point is best, but to ask:</p>
+    <ul>
+      <li>Which regions emerge first?</li>
+      <li>Which peaks remain visible for many thresholds?</li>
+      <li>Which strong architectures appear together and form families?</li>
+      <li>Which regions are broad and robust, and which are narrow spikes?</li>
+    </ul>
+
+    <h3>Rain-Lift / Boat-in-the-Valley &mdash; bottom-up navigation</h3>
+    <p>Now invert the view. We are not looking from above; we are in a valley. Heavy rain raises the water around us and exposes the slopes that actually lead upward. The question becomes practical rather than descriptive:</p>
+    <ul>
+      <li>Which nearby directions are reliably uphill?</li>
+      <li>Which routes only look good for one step, then collapse?</li>
+      <li>Which paths preserve optionality instead of trapping the search?</li>
+      <li>How do we escape mediocre basins without blind randomness?</li>
+    </ul>
+
+    <div class="component-grid">
+      <div class="component-card">
+        <div class="mono">Structure Lens</div>
+        <h4>Flood-Reveal</h4>
+        <p>Best for persistence, family emergence, region-first thinking, and top-down reading of terrain.</p>
+      </div>
+      <div class="component-card">
+        <div class="mono">Navigation Lens</div>
+        <h4>Rain-Lift / Drain-Escape</h4>
+        <p>Best for local movement, valley escape, multi-step climb quality, and route selection from ordinary starting points.</p>
+      </div>
+    </div>
+
+    <div class="callout orange">
+      <div class="callout-title">Current signal</div>
+      <p>Early v16 diagnostics suggest that <strong>rain/drain navigation carries more immediate teeth than flood alone</strong>. Flood still matters as a family/region lens, but local uphill escape may be the stronger practical operator in the near term.</p>
+    </div>
+
+    <div class="code-block"><span class="cm"># v16 program logic</span>
+<span class="kw">Read</span> current NAS terrain
+<span class="kw">Detect</span> families, boundaries, corridors, valleys
+<span class="kw">Route</span> through robust uphill escape directions
+<span class="kw">Compare</span> against simple baselines and random controls
+<span class="kw">Promote</span> only what survives the cheap tests</div>
+  </section>
+
+  <section class="chapter" id="component-map">
+    <div class="chapter-num">05 &middot; COMPONENT MAP</div>
+    <h2>The broader AI stack this paper targets</h2>
+    <p>NAS is the first major body of content here, but it is not the only intended target. If self-selecting MDL &times; DCC is real, it should gradually become useful across a wider set of AI components.</p>
+
+    <div class="component-grid">
+      <div class="component-card">
+        <div class="mono">Current wedge</div>
+        <h4>1. Model architecture</h4>
+        <p>Topology, operator patterns, winner families, ridges, corridors, and family-aware search inside bounded NAS universes.</p>
+      </div>
+      <div class="component-card">
+        <div class="mono">Next extension</div>
+        <h4>2. Search space design</h4>
+        <p>Not just searching the given terrain better, but deciding which operators, edges, and architectural motifs belong in a better terrain.</p>
+      </div>
+      <div class="component-card">
+        <div class="mono">Data layer</div>
+        <h4>3. Training data</h4>
+        <p>Selection, mixing, filtering, de-noising, and phase-aware data composition under descriptive pressure and adaptive governance.</p>
+      </div>
+      <div class="component-card">
+        <div class="mono">Training flow</div>
+        <h4>4. Curriculum and schedule</h4>
+        <p>What to teach first, what to delay, when to harden, when to revisit, and how to move between phases without frozen hand-tuning.</p>
+      </div>
+      <div class="component-card">
+        <div class="mono">Optimization</div>
+        <h4>5. Optimizer and loss policy</h4>
+        <p>Learning-rate regimes, regularization, objective mixing, augmentation, and other training controls that may benefit from self-selecting governance.</p>
+      </div>
+      <div class="component-card">
+        <div class="mono">System routing</div>
+        <h4>6. Routing, memory, and tools</h4>
+        <p>Which module or agent should act, when to branch, when to call a tool, what to keep in memory, and what to discard.</p>
+      </div>
+      <div class="component-card">
+        <div class="mono">Inference layer</div>
+        <h4>7. Inference policy</h4>
+        <p>How much compute to spend, when to go shallow or deep, when to request a second view, and when to stop early.</p>
+      </div>
+      <div class="component-card">
+        <div class="mono">Quality control</div>
+        <h4>8. Evaluation and self-improvement</h4>
+        <p>Detecting fake progress, separating lucky spikes from true winner families, and deciding which improvements deserve promotion.</p>
+      </div>
+      <div class="component-card">
+        <div class="mono">Compression side</div>
+        <h4>9. Compression, pruning, distillation</h4>
+        <p>Preserving functional structure while cutting waste, in the same spirit that drives 8Z across other domains.</p>
+      </div>
+      <div class="component-card">
+        <div class="mono">AI8 bridge</div>
+        <h4>10. Multi-agent collaboration</h4>
+        <p>Role assignment, coordination logic, diversity preservation, and agent-level orchestration as part of a broader intelligent system stack.</p>
+      </div>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">What this means</div>
+      <p>This paper is not just about one better NAS heuristic. It is a first attempt to frame <strong>AI system design itself as a family of landscapes</strong> that may be read, navigated, and eventually improved by one cross-domain kernel.</p>
+    </div>
+  </section>
+
+  <section class="chapter" id="program">
+    <div class="chapter-num">06 &middot; RESEARCH PROGRAM</div>
+    <h2>The proof ladder</h2>
+    <p>The right progression is strict. We should not claim the whole ladder before climbing the first steps.</p>
+    <ol>
+      <li><strong>Search better inside an existing NAS world.</strong> Beat simple baselines, random controls, and point-only thinking by using families, persistence, and valley escape logic.</li>
+      <li><strong>Read the existing world well enough to describe its structure.</strong> Peaks, families, boundaries, corridors, and local route quality should become explicit rather than poetic.</li>
+      <li><strong>Use those readings to propose better NAS worlds.</strong> Modify the search space itself, not just the traveler inside it.</li>
+      <li><strong>Transfer the kernel to adjacent AI components.</strong> Data, curriculum, optimization, memory, routing, and evaluation become next testing grounds.</li>
+      <li><strong>Only then argue for a wider AI design kernel.</strong> A cross-domain claim is earned, not declared.</li>
+    </ol>
+    <div class="callout rose">
+      <div class="callout-title">Failure mode to avoid</div>
+      <p>The main danger is overclaiming. A method that reads one bounded benchmark well has <strong>not yet</strong> proven that it can redesign frontier AI. The strength of this paper should come from its ladder, not from inflation.</p>
+    </div>
+  </section>
+
+  <section class="chapter" id="living-roadmap">
+    <div class="chapter-num">07 &middot; LIVING ROADMAP</div>
+    <h2>How this document will grow</h2>
+    <p>For now, NAS carries the most detail because it is the cleanest active laboratory. Over time, this document should accumulate new sections with the same discipline used here: first a bounded arena, then cheap tests, then route-level evidence, then broader design implications.</p>
+    <table class="arena-table">
+      <thead>
+        <tr>
+          <th>Section</th>
+          <th>Current state</th>
+          <th>Next expansion</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>NAS</td>
+          <td>Main active body</td>
+          <td>v16 results, family maps, flood/drain analysis, generative search-space proposals</td>
+        </tr>
+        <tr>
+          <td>Training data</td>
+          <td>Announced</td>
+          <td>Selection and curriculum wedge experiments</td>
+        </tr>
+        <tr>
+          <td>Optimization / loss</td>
+          <td>Announced</td>
+          <td>Self-selecting schedules and adaptive objective blends</td>
+        </tr>
+        <tr>
+          <td>Memory / tools / routing</td>
+          <td>Announced</td>
+          <td>AI8-linked orchestration tests and policy kernels</td>
+        </tr>
+        <tr>
+          <td>Compression / distillation</td>
+          <td>Announced</td>
+          <td>Bridge to 8Z-style structure preservation and pruning</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout green">
+      <div class="callout-title">Document rule</div>
+      <p>Every future component section should follow the same contract: <strong>state the bounded arena, define the cheap test, show what survived, then cautiously widen the claim.</strong></p>
+    </div>
+  </section>
+
+  <section class="chapter" id="bridge-back">
+    <div class="chapter-num">08 &middot; BRIDGE BACK</div>
+    <h2>How this paper connects back to AI8</h2>
+    <p><strong>AI8 Architecture</strong> remains the deeper process architecture. <strong>AI8 Companion</strong> remains the readable map of that architecture. <strong>AI8 Components</strong> is where the architecture starts touching concrete AI-system design questions.</p>
+    <p>In that sense, this paper is neither a replacement for the core AI8 framework nor an unrelated tangent. It is the first serious attempt to ask what happens when continuity architecture stops being only about coordination and becomes a wedge for <em>better model design, better training choices, and better system structure</em>.</p>
+    <div class="callout gold">
+      <div class="callout-title">Simple formulation</div>
+      <p><strong>Architecture</strong> says what AI8 is. <strong>Companion</strong> says how to read it. <strong>Components</strong> asks what it can help improve.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="foot-grid">
+    <div class="foot-col">
+      <h4>Document Family</h4>
+      <p>AI8 Architecture, AI8 Companion, and AI8 Components form a three-part family: core architecture, readable bridge, and living domain program.</p>
+      <ul class="foot-links">
+        <li><a href="AI8_Architecture.html">AI8_Architecture.html</a></li>
+        <li><a href="AI8_Companion.html">AI8_Companion.html</a></li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h4>Next likely additions</h4>
+      <ul class="foot-links">
+        <li><a href="#nas">NAS v16 results and flood/drain updates</a></li>
+        <li><a href="#component-map">Training-data and curriculum wedges</a></li>
+        <li><a href="#living-roadmap">Memory/tool orchestration section</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="copyright">AI8 Components &middot; From NAS to Better AI Systems &middot; Bojan Dobrečevič &amp; Ari</div>
+</footer>
+
+<script>
+const chapters = document.querySelectorAll('.chapter');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.12 });
+chapters.forEach(c => obs.observe(c));
+
+const prog = document.getElementById('scrollProg');
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+  prog.style.width = (scrolled * 100) + '%';
+});
+</script>
+</body>
+</html>
