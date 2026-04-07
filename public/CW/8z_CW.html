@@ -1,15 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crossword × MDL | AIM³ Lab</title>
+<title>Križanka × MDL | AIM³ Lab</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23020409'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='14' font-weight='700' fill='%2300e5ff' text-anchor='middle'%3EK%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#020409;--surface:rgba(15,23,41,0.82);--border:rgba(0,229,255,0.10);--border2:rgba(0,229,255,0.22);--cyan:#00e5ff;--cyan-dim:rgba(0,229,255,0.12);--cyan-glow:rgba(0,229,255,0.25);--gold:#f59e0b;--gold-dim:rgba(245,158,11,0.12);--green:#34d399;--green-dim:rgba(52,211,153,0.12);--rose:#ff6b8a;--rose-dim:rgba(255,107,138,0.12);--text:#e2e8f4;--muted:#5e7192;--subtle:#1a2540;--cell-size:52px}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow-x:hidden}
-body{background:radial-gradient(circle at 20% 18%,rgba(16,120,80,0.22),transparent 32%),radial-gradient(circle at 80% 70%,rgba(0,229,255,0.08),transparent 28%),linear-gradient(180deg,#090b10,#06070a);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:17px;line-height:1.6;display:flex;flex-direction:column;align-items:center;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#020409;--surface:rgba(15,23,41,0.82);
+  --border:rgba(0,229,255,0.10);--border2:rgba(0,229,255,0.22);
+  --cyan:#00e5ff;--cyan-dim:rgba(0,229,255,0.12);--cyan-glow:rgba(0,229,255,0.25);
+  --gold:#f59e0b;--gold-dim:rgba(245,158,11,0.12);
+  --green:#34d399;--green-dim:rgba(52,211,153,0.12);
+  --rose:#ff6b8a;--rose-dim:rgba(255,107,138,0.12);
+  --text:#e2e8f4;--muted:#5e7192;--subtle:#1a2540;
+  --cell-size:58px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow-x:hidden}
+body{
+  background:radial-gradient(circle at 20% 18%,rgba(16,120,80,0.22),transparent 32%),radial-gradient(circle at 80% 70%,rgba(0,229,255,0.08),transparent 28%),linear-gradient(180deg,#090b10,#06070a);
+  color:var(--text);font-family:'Rajdhani',sans-serif;font-size:17px;line-height:1.6;
+  display:flex;flex-direction:column;align-items:center;-webkit-font-smoothing:antialiased;
+}
 body::before,body::after{content:"";position:fixed;border-radius:50%;filter:blur(80px);opacity:.30;pointer-events:none;z-index:0}
 body::before{width:42vw;height:42vw;left:-8vw;top:-12vh;background:radial-gradient(circle,rgba(52,211,153,0.30),transparent 72%);animation:flA 18s ease-in-out infinite}
 body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gradient(circle,rgba(0,229,255,0.12),transparent 72%);animation:flB 24s ease-in-out infinite}
@@ -17,23 +31,40 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 @keyframes flB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-4vw,-6vh,0)}}
 .noise{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0.018;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .page{position:relative;z-index:1;width:100%;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding-bottom:40px}
-.header{width:100%;max-width:1800px;padding:12px 24px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.logo{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:600;color:var(--cyan);letter-spacing:.3em;text-transform:uppercase}.logo span{color:var(--gold)}
-.header-right{display:flex;align-items:center;gap:10px}
+.header{width:100%;max-width:1800px;padding:12px 24px 0;display:flex;justify-content:space-between;align-items:baseline}
+.logo{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:600;color:var(--cyan);letter-spacing:.3em;text-transform:uppercase}
+.logo span{color:var(--gold)}
 .timer{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--muted);letter-spacing:.1em}
-.lang-sel{font-family:'JetBrains Mono',monospace;font-size:.72rem;background:rgba(11,17,32,0.6);border:1px solid var(--border);color:var(--cyan);padding:4px 8px;border-radius:4px;cursor:pointer}.lang-sel option{background:#0a0e18;color:var(--text)}
 .title-block{text-align:center;padding:4px 20px 0}
-.title{font-family:'Rajdhani',sans-serif;font-size:clamp(1.4rem,3.5vw,2.4rem);font-weight:700;letter-spacing:-.02em;line-height:1.1}.title .accent{color:var(--cyan)}
+.title{font-family:'Rajdhani',sans-serif;font-size:clamp(1.4rem,3.5vw,2.4rem);font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.title .accent{color:var(--cyan)}
 .subtitle{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:var(--muted);margin-top:2px}
-.status{text-align:center;font-size:.75rem;color:var(--muted);min-height:1.2em;margin:2px 0;font-family:'JetBrains Mono',monospace}.status.win{color:var(--gold);font-weight:600}.status.err{color:var(--rose)}.status.gen{color:var(--cyan)}
-.main{display:grid;grid-template-columns:1fr auto 1fr;grid-template-areas:"left center right";gap:24px;padding:6px 24px;max-width:1800px;width:100%;align-content:start}
-.col-left{grid-area:left;display:flex;flex-direction:column;gap:10px;min-width:260px;max-width:400px;justify-self:end}
+.status{text-align:center;font-size:.75rem;color:var(--muted);min-height:1.2em;margin:2px 0;font-family:'JetBrains Mono',monospace}
+.status.win{color:var(--gold);font-weight:600}
+.status.err{color:var(--rose)}
+.main{
+  display:grid;grid-template-columns:1fr auto 1fr;grid-template-areas:"left center right";
+  gap:24px;padding:6px 24px;max-width:1800px;width:100%;align-content:start;
+}
+.col-left{grid-area:left;display:flex;flex-direction:column;gap:10px;min-width:280px;max-width:420px;justify-self:end}
 .col-center{grid-area:center;display:flex;flex-direction:column;align-items:center}
-.col-right{grid-area:right;display:flex;flex-direction:column;gap:10px;min-width:260px;max-width:400px}
-@media(max-width:1000px){.main{grid-template-columns:1fr;grid-template-areas:"center" "left" "right";justify-items:center}.col-left,.col-right{max-width:600px;min-width:0;width:100%;justify-self:center}}
-.grid-wrap{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px;box-shadow:0 0 60px rgba(0,229,255,0.04);backdrop-filter:blur(12px)}
+.col-right{grid-area:right;display:flex;flex-direction:column;gap:10px;min-width:280px;max-width:420px}
+@media(max-width:1000px){
+  .main{grid-template-columns:1fr;grid-template-areas:"center" "left" "right";justify-items:center}
+  .col-left,.col-right{max-width:600px;min-width:0;width:100%;justify-self:center}
+}
+.grid-wrap{
+  background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px;
+  box-shadow:0 0 60px rgba(0,229,255,0.04),0 0 120px rgba(52,211,153,0.02);backdrop-filter:blur(12px);
+}
 .grid{display:inline-grid;gap:0}
-.cell{width:var(--cell-size);height:var(--cell-size);background:rgba(11,17,32,0.7);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:calc(var(--cell-size)*0.42);font-weight:700;color:var(--text);cursor:pointer;position:relative;transition:background .12s,border-color .12s;text-transform:uppercase}
+.cell{
+  width:var(--cell-size);height:var(--cell-size);
+  background:rgba(11,17,32,0.7);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:calc(var(--cell-size)*0.42);font-weight:700;
+  color:var(--text);cursor:pointer;position:relative;transition:background .12s,border-color .12s;text-transform:uppercase;
+}
 .cell:hover{background:var(--subtle);border-color:var(--border2)}
 .cell.selected{background:var(--cyan-dim)!important;border-color:var(--cyan)!important;box-shadow:0 0 10px var(--cyan-glow)}
 .cell.word-highlight{background:rgba(0,229,255,0.04)}
@@ -44,303 +75,381 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 .cell.win-anim{animation:winPulse 1s ease-in-out 3;color:var(--gold)!important}
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;backdrop-filter:blur(8px)}
 .panel-title{font-family:'JetBrains Mono',monospace;font-size:.58rem;font-weight:600;color:var(--cyan);letter-spacing:.22em;text-transform:uppercase;margin-bottom:8px;cursor:pointer;user-select:none}
-.clue-list{max-height:500px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
-.clue-item{font-size:.88rem;padding:5px 8px;border-radius:4px;cursor:pointer;display:flex;gap:6px;line-height:1.35;transition:background .12s}.clue-item:hover{background:var(--cyan-dim)}.clue-item.active{background:var(--cyan-dim);border-left:2px solid var(--cyan)}.clue-item.solved{color:var(--green);opacity:0.6}
+.clue-list{max-height:520px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.clue-item{font-size:.9rem;padding:5px 8px;border-radius:4px;cursor:pointer;display:flex;gap:6px;line-height:1.35;transition:background .12s}
+.clue-item:hover{background:var(--cyan-dim)}
+.clue-item.active{background:var(--cyan-dim);border-left:2px solid var(--cyan)}
+.clue-item.solved{color:var(--green);opacity:0.6}
 .clue-num-label{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--gold);min-width:24px;flex-shrink:0}
 .clue-text{color:var(--muted)}.clue-item.active .clue-text{color:var(--text)}
-.btn{font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;background:rgba(11,17,32,0.6);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:4px;cursor:pointer;transition:all .12s;text-align:center;letter-spacing:.06em}
+.btn{font-family:'JetBrains Mono',monospace;font-size:.74rem;font-weight:700;background:rgba(11,17,32,0.6);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:4px;cursor:pointer;transition:all .12s;width:100%;text-align:center;letter-spacing:.06em}
 .btn:hover{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan)}
 .btn.gold{border-color:var(--gold);color:var(--gold)}.btn.gold:hover{background:var(--gold-dim)}
 .btn.green{border-color:var(--green);color:var(--green)}.btn.green:hover{background:var(--green-dim)}
 .btn.rose{border-color:var(--rose);color:var(--rose)}.btn.rose:hover{background:var(--rose-dim)}
-.btn:disabled{opacity:0.3;cursor:not-allowed}
-.btn-row{display:flex;gap:5px;flex-wrap:wrap}.btn-row .btn{flex:1;min-width:80px}
-.diff-btns{display:grid;grid-template-columns:1fr 1fr;gap:4px}
-.io-row{display:flex;gap:5px;margin-top:5px;justify-content:center}
+.btn-row{display:flex;gap:5px}.btn-row .btn{flex:1}
 .metric{display:flex;justify-content:space-between;align-items:baseline;padding:2px 0}
 .metric-label{font-size:.76rem;color:var(--muted)}
 .metric-value{font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:700}
 .bar-wrap{height:3px;background:rgba(11,17,32,0.5);border-radius:2px;margin-top:3px;overflow:hidden}
 .bar{height:100%;border-radius:2px;transition:width .4s ease}.bar.green{background:var(--green)}.bar.gold{background:var(--gold)}
-#loadFile{display:none}
+.diff-btns{display:grid;grid-template-columns:1fr 1fr;gap:4px}
 </style>
 </head>
 <body>
 <div class="noise"></div>
 <div class="page">
-<div class="header">
-  <div class="logo">AIM³ <span>Lab</span> · Crossword</div>
-  <div class="header-right">
-    <select class="lang-sel" id="langSel" onchange="switchLang(this.value)">
-      <option value="en">English</option>
-      <option value="sl">Slovenščina</option>
-    </select>
-    <div class="timer" id="timer">00:00</div>
-  </div>
-</div>
-<div class="title-block">
-  <div class="title" id="tTitle">Crossword <span class="accent">× MDL</span></div>
-  <div class="subtitle" id="tSub">Compressing thought into a grid</div>
-</div>
-<div class="status" id="status">Loading…</div>
+<div class="header"><div class="logo">AIM³ <span>Lab</span></div><div class="timer" id="timer">00:00</div></div>
+<div class="title-block"><div class="title">Križanka <span class="accent">× MDL</span></div><div class="subtitle">Kompresija misli v mrežo</div></div>
+<div class="status" id="status">Izberi težavnost →</div>
 <div class="main">
 <div class="col-left">
-  <div class="panel"><div class="panel-title" onclick="togglePanel('across')" id="tAcross">▶ Across</div><div class="clue-list" id="cluesAcross"></div></div>
-  <div class="panel">
-    <div class="panel-title" id="tStats">Statistics</div>
-    <div class="metric"><span class="metric-label" id="tProg">Progress</span><span class="metric-value" id="mProg">0%</span></div>
-    <div class="bar-wrap"><div class="bar green" id="barProg" style="width:0"></div></div>
-    <div class="metric" style="margin-top:6px"><span class="metric-label" id="tWords">Words</span><span class="metric-value" id="mWords">0/0</span></div>
-    <div class="bar-wrap"><div class="bar gold" id="barWords" style="width:0"></div></div>
-    <div class="metric" style="margin-top:6px"><span class="metric-label" id="tErr">Errors</span><span class="metric-value" id="mErr">0</span></div>
-  </div>
+<div class="panel"><div class="panel-title" onclick="togglePanel('across')">▶ Vodoravno</div><div class="clue-list" id="cluesAcross"></div></div>
+<div class="panel">
+<div class="panel-title">Statistika</div>
+<div class="metric"><span class="metric-label">Napredek</span><span class="metric-value" id="mProgress">0%</span></div>
+<div class="bar-wrap"><div class="bar green" id="barProgress" style="width:0"></div></div>
+<div class="metric" style="margin-top:6px"><span class="metric-label">Besede</span><span class="metric-value" id="mWords">0 / 0</span></div>
+<div class="bar-wrap"><div class="bar gold" id="barWords" style="width:0"></div></div>
+<div class="metric" style="margin-top:6px"><span class="metric-label">Napake</span><span class="metric-value" id="mErrors">0</span></div>
+</div>
 </div>
 <div class="col-center">
-  <div class="grid-wrap"><div class="grid" id="grid"></div></div>
-  <div style="margin-top:10px"><div class="diff-btns">
-    <button class="btn" onclick="go(9)">9×9</button>
-    <button class="btn" onclick="go(11)">11×11</button>
-    <button class="btn gold" onclick="go(13)">13×13</button>
-    <button class="btn rose" onclick="go(15)">15×15</button>
-  </div></div>
-  <div class="btn-row" style="margin-top:6px;max-width:420px;width:100%">
-    <button class="btn green" onclick="checkAll()" id="bChk">✓ Check</button>
-    <button class="btn" onclick="revealWord()" id="bRev">Reveal</button>
-    <button class="btn rose" onclick="revealAll()" id="bSol">Solution</button>
-  </div>
-  <div class="io-row">
-    <button class="btn" onclick="savePuzzle()">💾 Save</button>
-    <button class="btn" onclick="document.getElementById('loadFile').click()">📂 Load</button>
-    <input type="file" id="loadFile" accept=".json" onchange="loadPuzzle(event)">
-  </div>
-</div>
+<div class="grid-wrap"><div class="grid" id="grid"></div></div>
+<div style="margin-top:10px"><div class="diff-btns">
+<button class="btn" onclick="loadPuzzle('easy')">Lahka 9×9</button>
+<button class="btn" onclick="loadPuzzle('medium')">Srednja 11×11</button>
+<button class="btn gold" onclick="loadPuzzle('hard')">Težka 13×13</button>
+<button class="btn rose" onclick="loadPuzzle('expert')">Ekspert 15×15</button>
+</div></div>
+<div class="btn-row" style="margin-top:6px;max-width:450px;width:100%">
+<button class="btn green" onclick="checkAll()">✓ Preveri</button>
+<button class="btn" onclick="revealWord()">Razkrij besedo</button>
+<button class="btn rose" onclick="revealAll()">Rešitev</button>
+</div></div>
 <div class="col-right">
-  <div class="panel"><div class="panel-title" onclick="togglePanel('down')" id="tDown">▶ Down</div><div class="clue-list" id="cluesDown"></div></div>
-  <div class="panel"><div class="panel-title" id="tHelp">How to play</div>
-    <div id="tHelpH" style="font-size:.78rem;color:var(--muted);line-height:1.5"></div>
-  </div>
+<div class="panel"><div class="panel-title" onclick="togglePanel('down')">▶ Navpično</div><div class="clue-list" id="cluesDown"></div></div>
+<div class="panel"><div class="panel-title">Navodila</div>
+<div style="font-size:.78rem;color:var(--muted);line-height:1.5">Klikni celico, vpiši črko.<br><span style="color:var(--cyan)">Tab/Space</span> preklopi smer · <span style="color:var(--cyan)">Puščice</span> premikanje<br><span style="color:var(--cyan)">Backspace</span> izbriši · <span style="color:var(--cyan)">Enter</span> naslednja beseda<br>Šumniki: Š, Č, Ž</div></div>
 </div></div></div>
 <script>
+const B=0,W=1;
+function setCellSize(cols){
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const maxH=Math.floor((vh*0.72)/cols);
+  const maxW=Math.floor((vw*0.46)/cols);
+  let sz=Math.min(maxH,maxW,82);
+  sz=Math.max(sz,34);
+  document.documentElement.style.setProperty('--cell-size',sz+'px');
+}
 
-const I18N={
-sl:{title:'Križanka <span class="accent">× MDL</span>',sub:'Kompresija misli v mrežo',across:'▶ Vodoravno',down:'▶ Navpično',stats:'Statistika',prog:'Napredek',words:'Besede',err:'Napake',help:'Navodila',helpH:'Klikni celico, vpiši črko.<br><span style="color:var(--cyan)">Tab/Space</span> preklopi smer · <span style="color:var(--cyan)">Puščice</span> premikanje<br><span style="color:var(--cyan)">Backspace</span> izbriši · <span style="color:var(--cyan)">Enter</span> naslednja beseda',loading:'Nalaganje…',gen:'Generiram…',ready:'pripravljena',fail:'Ni uspelo — poskusi znova',checked:'Preverjeno — poišči rdeče',solved:'Rešitev prikazana',win:s=>'✦ REŠENO v '+s+'! ✦',chk:'✓ Preveri',rev:'Razkrij',sol:'Rešitev',nodict:'Slovar ni na voljo',genericHint:'Beseda'},
-en:{title:'Crossword <span class="accent">× MDL</span>',sub:'Compressing thought into a grid',across:'▶ Across',down:'▶ Down',stats:'Statistics',prog:'Progress',words:'Words',err:'Errors',help:'How to play',helpH:'Click a cell, type a letter.<br><span style="color:var(--cyan)">Tab/Space</span> toggle direction · <span style="color:var(--cyan)">Arrows</span> navigate<br><span style="color:var(--cyan)">Backspace</span> delete · <span style="color:var(--cyan)">Enter</span> next word',loading:'Loading…',gen:'Generating…',ready:'ready',fail:'Failed — try again',checked:'Checked — find the red cells',solved:'Solution revealed',win:s=>'✦ SOLVED in '+s+'! ✦',chk:'✓ Check',rev:'Reveal',sol:'Solution',nodict:'Dictionary not available',genericHint:'Word'}
+const PUZZLES={
+easy:{rows:9,cols:9,
+mask:[[W,W,W,W,B,W,W,W,W],[W,B,W,B,B,W,B,B,W],[W,W,W,W,W,W,W,W,W],[W,B,W,B,W,B,W,B,B],[B,B,W,B,W,B,W,B,B],[B,B,W,B,W,B,W,B,W],[W,W,W,W,W,W,W,W,W],[W,B,B,W,B,W,B,B,W],[W,W,W,W,B,W,W,W,W]],
+solution:[['M','O','S','T','.','L','I','P','A'],['E','.','O','.','.','A','.','.','N'],['Č','E','L','I','C','A','R','J','E'],['K','.','N','.','E','.','E','.','.'],['.','.','C','.','S','.','K','.','.'],['.','.','E','.','T','.','A','.','O'],['S','L','O','V','A','R','J','E','K'],['I','.','.','R','.','E','.','.','O'],['R','E','K','A','.','Č','E','Š','Č']],
+clues:{across:{1:{r:0,c:0,text:"Konstrukcija čez reko",len:4},5:{r:0,c:5,text:"Drevo z dišečimi cvetovi",len:4},7:{r:2,c:0,text:"Čebelarji (mn.)",len:9},10:{r:6,c:0,text:"Jezikovni priročnik (pomanjš.)",len:9},12:{r:8,c:0,text:"Tok vode v dolini",len:4},13:{r:8,c:5,text:"Drevo, ki rodi kostanj",len:4}},down:{2:{r:0,c:0,text:"Mehanizem za merjenje",len:4},3:{r:0,c:2,text:"Zimsko sonce (poetično)",len:6},4:{r:0,c:5,text:"Abeceda, ABC",len:4},6:{r:2,c:4,text:"Pot, steza",len:5},8:{r:2,c:6,text:"Promocija, oglas",len:6},9:{r:0,c:8,text:"Ptič ponoči",len:3},11:{r:6,c:3,text:"Čas, doba",len:3}}}},
+
+medium:{rows:11,cols:11,
+mask:[[W,W,W,W,W,B,W,W,W,W,W],[W,B,B,W,B,B,W,B,B,W,B],[W,W,W,W,W,W,W,W,W,W,W],[B,B,W,B,W,B,B,B,W,B,W],[W,W,W,W,W,W,B,W,W,W,W],[W,B,B,B,B,W,B,W,B,B,B],[W,W,W,W,B,W,W,W,W,W,B],[W,B,W,B,B,B,W,B,W,B,W],[W,W,W,W,W,W,W,W,W,W,W],[B,W,B,B,W,B,B,W,B,B,W],[W,W,W,W,W,B,W,W,W,W,W]],
+solution:[['G','O','Z','D','A','.','P','L','A','N','E'],['R','.','.','I','.','.','O','.','.','A','.'],['A','B','E','C','E','D','N','I','K','R','I'],['.','.','M','.','V','.','.','.','O','.','B'],['K','O','L','O','R','I','T','.','Š','A','L'],['R','.','.','.','.','M','.','Ž','.','.','.'],['U','H','A','N','.','E','N','A','S','A','D'],['H','.','L','.','.','.','I','.','L','.','E'],['P','R','O','S','T','O','R','N','I','N','A'],['.',  'E','.','.',  'O','.','.',  'A','.','.',  'Ž'],['R','Č','E','V','J','E','.','G','L','A','S']],
+clues:{across:{1:{r:0,c:0,text:"Les, drevesa skupaj",len:5},6:{r:0,c:6,text:"Raven predel v gorah",len:5},8:{r:2,c:0,text:"Knjiga za učenje črk",len:11},10:{r:4,c:0,text:"Barvitost, paleta",len:7},11:{r:4,c:8,text:"Topel ovratni okras",len:3},12:{r:6,c:0,text:"Vonj, dišava",len:4},14:{r:6,c:5,text:"Eden, skupek",len:6},16:{r:8,c:0,text:"Volumen, prostor",len:11},18:{r:10,c:0,text:"Čevljarji (mn.)",len:6},19:{r:10,c:7,text:"Zvok, ton",len:4}},down:{2:{r:0,c:0,text:"Grič, hrib",len:4},3:{r:0,c:3,text:"Dih (zastarelo)",len:3},4:{r:2,c:2,text:"Emajl, glazura",len:4},5:{r:0,c:6,text:"Ponosen",len:6},7:{r:0,c:9,text:"Pripoved, bajka",len:5},9:{r:2,c:10,text:"Sladko sadje",len:4},13:{r:4,c:5,text:"Čebelar (skr.)",len:4},15:{r:6,c:7,text:"Prtljaga",len:5},17:{r:8,c:4,text:"Tok, orodje",len:3}}}},
+
+hard:{rows:13,cols:13,
+mask:[
+[W,W,W,W,B,W,W,W,B,W,W,W,W],
+[W,B,W,B,B,W,B,W,B,B,W,B,W],
+[W,W,W,W,W,W,W,W,W,W,W,W,W],
+[B,B,W,B,W,B,W,B,W,B,B,B,W],
+[W,W,W,W,W,W,B,W,W,W,W,W,B],
+[W,B,B,W,B,B,B,B,W,B,B,W,B],
+[W,W,W,B,W,W,W,W,W,B,W,W,W],
+[B,W,B,B,B,B,W,B,B,W,B,B,W],
+[B,W,W,W,W,W,B,W,W,W,W,W,W],
+[W,B,B,B,W,B,W,B,W,B,B,B,B],
+[W,W,W,W,W,W,W,W,W,W,W,W,W],
+[W,B,W,B,B,W,B,W,B,B,W,B,W],
+[W,W,W,W,B,W,W,W,B,W,W,W,W]
+],
+solution:[
+['G','R','A','D','.','S','O','L','.','V','O','D','A'],
+['O','.','P','.','.',  'O','.','E','.','.','K','.','N'],
+['S','T','R','E','L','E','C','S','K','I','M','O','T'],
+['.','.','I','.','A','.','E','.','O','.','.','.','O'],
+['M','E','L','O','N','A','.','P','L','A','N','E','.'],
+['I','.','.',  'N','.','.','.','.',  'O','.','.',  'C','.'],
+['R','O','S','.',  'N','O','V','E','C','.','K','O','T'],
+['.','P','.','.','.','.','R','.','.',  'N','.','.',  'A'],
+['.','A','L','A','R','M','.','V','I','A','K','E','R'],
+['K','.','.','.','E','.','T','.','G','.','.','.','.'],
+['O','R','G','A','N','I','Z','A','C','I','J','S','K'],
+['T','.','O','.','.',  'G','.',  'L','.','.',  'E','.','I'],
+['A','L','D','O','.','R','A','D','.','K','R','O','G']
+],
+clues:{across:{
+1:{r:0,c:0,text:"Utrdba, trdnjava",len:4},
+2:{r:0,c:5,text:"Beli kristali za kuhanje",len:3},
+3:{r:0,c:9,text:"Tekočina za pitje",len:4},
+5:{r:2,c:0,text:"Pripadajoč strelcu (pridevnik)",len:10},
+6:{r:2,c:11,text:"Gibalo, spodbuda",len:3},
+8:{r:4,c:0,text:"Sladki sadež z luščino",len:6},
+9:{r:4,c:7,text:"Raven predel v gorah",len:5},
+11:{r:6,c:0,text:"Rosa zjutraj",len:3},
+12:{r:6,c:4,text:"Nov kovanec",len:5},
+13:{r:6,c:10,text:"Prostor živali",len:3},
+15:{r:8,c:1,text:"Signal za nevarnost",len:5},
+16:{r:8,c:7,text:"Voznik na reliju",len:6},
+18:{r:10,c:0,text:"Urejen (pridevnik, moški sp.)",len:13},
+20:{r:12,c:0,text:"Moško ime (it.)",len:4},
+21:{r:12,c:5,text:"Veselje, užitek",len:3},
+22:{r:12,c:9,text:"Kolo, obroč",len:4}
+},down:{
+1:{r:0,c:0,text:"Gostilna, gostišče",len:3},
+4:{r:0,c:2,text:"Četrti mesec",len:5},
+7:{r:0,c:9,text:"Visoka plavut",len:3},
+10:{r:0,c:12,text:"Pripovedna oblika",len:5},
+14:{r:4,c:0,text:"Mirno, tiho",len:3},
+17:{r:6,c:6,text:"Čas, vreme",len:4},
+19:{r:8,c:1,text:"Oče (latinski)",len:4},
+23:{r:0,c:7,text:"Lev (kratko)",len:3},
+24:{r:6,c:11,text:"Toplota, ogreto",len:3},
+25:{r:4,c:4,text:"Telo neba",len:3},
+26:{r:4,c:8,text:"Lokomotiva, vlak",len:4},
+27:{r:0,c:11,text:"Don (skr.)",len:3},
+28:{r:10,c:5,text:"Ogenj, žar",len:3}
+}}},
+
+expert:{rows:15,cols:15,
+mask:[
+[B,B,B,B,B,B,B,B,B,B,B,B,B,B,B],
+[B,W,W,W,W,W,B,W,W,W,W,W,W,W,B],
+[B,W,B,W,B,W,B,B,W,B,W,B,W,B,B],
+[B,W,W,W,W,W,W,W,W,W,W,W,W,W,B],
+[B,W,B,B,W,B,W,B,B,B,W,B,B,W,B],
+[B,W,W,W,W,W,W,B,W,W,W,W,W,W,B],
+[B,B,B,W,B,W,B,B,B,W,B,W,B,B,B],
+[B,W,W,W,W,W,W,W,W,W,W,W,W,B,B],
+[B,B,B,W,B,W,B,B,B,W,B,W,B,B,B],
+[B,W,W,W,W,W,W,B,W,W,W,W,W,W,B],
+[B,W,B,B,W,B,W,B,B,B,W,B,B,W,B],
+[B,W,W,W,W,W,W,W,W,W,W,W,W,W,B],
+[B,W,B,W,B,W,B,B,W,B,W,B,W,B,B],
+[B,W,W,W,W,W,B,W,W,W,W,W,W,W,B],
+[B,B,B,B,B,B,B,B,B,B,B,B,B,B,B]
+],
+solution:[
+['.','.','.','.','.','.','.','.','.','.','.','.','.','.','.'],
+['.','D','U','Š','I','C','.','O','G','N','J','I','Š','Č','.'],
+['.','E','.','U','.','E','.','.','O','.','A','.','I','.','.'],
+['.','Ž','E','M','L','J','E','P','I','S','N','A','K','A','.'],
+['.','E','.','.','A','.','R','.','.','.','G','.','.','L','.'],
+['.','L','O','V','S','K','I','.','K','O','L','E','S','O','.'],
+['.','.','.','E','.','O','.','.','.','Z','.','L','.','.','.'],
+['.','P','O','Z','I','T','I','V','I','Z','E','M','Š','.','.'],
+['.','.','.','K','.','E','.','.','.','D','.','E','.','.','.'],
+['.','S','P','O','R','O','Č','.','K','R','A','T','E','R','.'],
+['.','T','.','.','A','.','I','.','.','.','L','.','.','E','.'],
+['.','A','B','S','T','R','A','K','C','I','J','S','K','A','.'],
+['.','R','.','K','.','I','.','.','E','.','E','.','O','.','.'],
+['.','O','S','L','A','D','.','S','P','I','N','A','Č','A','.'],
+['.','.','.','.','.','.','.','.','.','.','.','.','.','.','.']
+],
+clues:{across:{
+1:{r:1,c:1,text:"Rastlina z vonjem (mn.)",len:5},
+2:{r:1,c:7,text:"Prostor ob kaminu",len:7},
+4:{r:3,c:1,text:"Poznavalec Zemljepisja",len:13},
+7:{r:5,c:1,text:"Lovski (pridevnik)",len:6},
+8:{r:5,c:8,text:"Vozilo na dveh obročih",len:6},
+10:{r:7,c:1,text:"Filozofska smer (z-izem)",len:11},
+12:{r:9,c:1,text:"Obvestilo, poročilo",len:6},
+13:{r:9,c:8,text:"Vdolbina vulkana",len:6},
+15:{r:11,c:1,text:"Abstrakten (pridevnik, ž.sp.)",len:13},
+17:{r:13,c:1,text:"Sladek okus",len:5},
+18:{r:13,c:7,text:"Zelena listnata zelenjava",len:7}
+},down:{
+1:{r:1,c:1,text:"Dežela, država (poetično)",len:4},
+3:{r:1,c:3,text:"Šum, šepet",len:4},
+5:{r:1,c:5,text:"Cerkveni zvonik",len:5},
+6:{r:1,c:10,text:"Angel, nadangel",len:4},
+9:{r:3,c:9,text:"Sinhronost, ujemanje",len:4},
+11:{r:1,c:12,text:"Šilo, igla",len:4},
+14:{r:5,c:5,text:"Kotel, posoda",len:5},
+16:{r:5,c:11,text:"Prvina, sestavina",len:5},
+19:{r:3,c:6,text:"Era, čas",len:4},
+20:{r:7,c:7,text:"Pogum, hrabrost",len:3},
+21:{r:9,c:4,text:"Raca, ptica (ljubk.)",len:4},
+22:{r:1,c:8,text:"Gorivo, olje",len:3},
+23:{r:7,c:1,text:"Postaja, stojnica",len:3}
+}}}
 };
 
-let lang='en',L=I18N.en,DB=null,P=null,PG=null,selR=-1,selC=-1,dir='across',aCl=null,tI=null,sec=0,eC=0,done=false;
-const DC={};
-function $(id){return document.getElementById(id)}
-function setS(m,c){$('status').textContent=m;$('status').className='status '+(c||'')}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]]}return a}
-function samplePool(arr, head=120, extra=120){
-  if(arr.length<=head+extra) return shuffle(arr.slice());
-  const out=arr.slice(0,head);
-  const seen=new Set();
-  while(out.length<head+extra && seen.size<arr.length-head){
-    const idx=head+((Math.random()*(arr.length-head))|0);
-    if(seen.has(idx)) continue;
-    seen.add(idx);
-    out.push(arr[idx]);
-  }
-  return shuffle(out);
+let puzzle=null,playerGrid=null,selectedR=-1,selectedC=-1,direction='across',activeClue=null,timerInterval=null,seconds=0,errorCount=0,solved=false;
+
+function loadPuzzle(d){
+  puzzle=PUZZLES[d];if(!puzzle)return;solved=false;errorCount=0;
+  playerGrid=Array.from({length:puzzle.rows},()=>Array(puzzle.cols).fill(''));
+  selectedR=-1;selectedC=-1;activeClue=null;direction='across';
+  setCellSize(puzzle.cols);buildGrid();buildClueList('across');buildClueList('down');
+  startTimer();updateMetrics();
+  setStatus(puzzle.rows+'×'+puzzle.cols+' križanka naložena','');
+  for(let r=0;r<puzzle.rows;r++)for(let c=0;c<puzzle.cols;c++)if(puzzle.mask[r][c]){selectCell(r,c);return}
 }
 
-// ─── Dict ───
-async function loadD(code){
-  if(DC[code]){DB=DC[code];return true}
-  setS(L.loading,'gen');
-  try{
-    const r=await fetch('cw_'+code+'_scored.json');
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    const d=await r.json();
-    const db={words:{},hints:{},prefix:{},total:0};
-    for(const [l,ws] of Object.entries(d.words||{})){
-      db.words[l]=ws.map(w=>w.w);
-      db.total += db.words[l].length;
-      for(const w of ws) if(w.h) db.hints[w.w]=w.h;
-    }
-    DC[code]=db; DB=db;
-    return true;
-  }catch(e){console.error('[CW] Load failed:',e);setS(L.nodict+' ('+e.message+')','err');return false}
-}
-function ensurePrefixMap(len){
-  const key=String(len);
-  if(DB.prefix[key]) return DB.prefix[key];
-  const mp=Object.create(null);
-  const words=DB.words[key]||[];
-  for(const w of words){
-    for(let i=0;i<=len;i++){
-      const p=w.slice(0,i);
-      (mp[p]||(mp[p]=[])).push(w);
-    }
-  }
-  DB.prefix[key]=mp;
-  return mp;
-}
-function wordHint(w){return DB.hints[w] || (L.genericHint+' ('+w.length+')')}
-
-// ─── Modular crossword generator ───
-function layoutSpec(size){
-  if(size===9) return {block:4,border:0};
-  if(size===11) return {block:5,border:0};
-  if(size===13) return {block:6,border:0};
-  if(size===15) return {block:6,border:1};
-  return null;
-}
-function buildMask(size){
-  const spec=layoutSpec(size); if(!spec) return null;
-  const {block:borderlessBlock,border}=spec, block=borderlessBlock;
-  const m=Array.from({length:size},()=>Array(size).fill(0));
-  const starts=[border, border+block+1];
-  for(const r0 of starts) for(const c0 of starts) for(let r=r0;r<r0+block;r++) for(let c=c0;c<c0+block;c++) m[r][c]=1;
-  return m;
-}
-function buildWordSquare(len, usedGlobal){
-  const pref=ensurePrefixMap(len);
-  const words=DB.words[String(len)]||[];
-  if(!words.length) return null;
-  const roots=samplePool(words, 140, 220);
-  for(const root of roots){
-    if(usedGlobal.has(root)) continue;
-    const rows=[root];
-    const usedLocal=new Set([root]);
-    function dfs(step){
-      if(step===len) return rows.slice();
-      const need=rows.map(r=>r[step]).join('');
-      let cands=pref[need]||[];
-      if(!cands.length) return null;
-      cands=samplePool(cands, 100, 160);
-      for(const w of cands){
-        if(usedGlobal.has(w)||usedLocal.has(w)) continue;
-        let ok=true;
-        for(let col=step+1; col<len; col++){
-          const p=rows.map(r=>r[col]).join('') + w[col];
-          if(!(pref[p] && pref[p].length)){ ok=false; break; }
-        }
-        if(!ok) continue;
-        rows.push(w); usedLocal.add(w);
-        const solved=dfs(step+1);
-        if(solved) return solved;
-        usedLocal.delete(w); rows.pop();
+function buildGrid(){
+  const g=document.getElementById('grid');
+  g.style.gridTemplateColumns='repeat('+puzzle.cols+',var(--cell-size))';
+  g.style.gridTemplateRows='repeat('+puzzle.rows+',var(--cell-size))';
+  g.innerHTML='';
+  for(let r=0;r<puzzle.rows;r++)for(let c=0;c<puzzle.cols;c++){
+    const cell=document.createElement('div');
+    cell.className='cell'+(puzzle.mask[r][c]?'':' black');
+    cell.dataset.r=r;cell.dataset.c=c;
+    if(puzzle.mask[r][c]){
+      cell.onclick=()=>selectCell(r,c);
+      let numAdded=false;
+      for(const dir of['across','down'])if(!numAdded&&puzzle.clues[dir])for(const[num,cl]of Object.entries(puzzle.clues[dir])){
+        if(cl.r===r&&cl.c===c){const s=document.createElement('span');s.className='clue-num';s.textContent=num;cell.appendChild(s);numAdded=true;break}
       }
-      return null;
     }
-    const solved=dfs(1);
-    if(solved) return solved;
+    g.appendChild(cell);
+  }
+  render();
+}
+
+function render(){
+  if(!puzzle)return;
+  const wc=getWordCells(selectedR,selectedC,direction);
+  const ws=new Set(wc.map(([r,c])=>r+'_'+c));
+  document.querySelectorAll('.cell').forEach(cell=>{
+    const r=+cell.dataset.r,c=+cell.dataset.c;
+    if(!puzzle.mask[r]?.[c])return;
+    cell.classList.remove('selected','word-highlight','correct','error');
+    if(r===selectedR&&c===selectedC)cell.classList.add('selected');
+    else if(ws.has(r+'_'+c))cell.classList.add('word-highlight');
+    const ns=cell.querySelector('.clue-num');
+    cell.textContent=playerGrid[r][c];
+    if(ns)cell.prepend(ns);
+  });
+}
+
+function buildClueList(dir){
+  const el=document.getElementById(dir==='across'?'cluesAcross':'cluesDown');
+  el.innerHTML='';if(!puzzle.clues[dir])return;
+  const nums=Object.keys(puzzle.clues[dir]).map(Number).sort((a,b)=>a-b);
+  for(const num of nums){
+    const cl=puzzle.clues[dir][num];
+    const item=document.createElement('div');item.className='clue-item';item.id='clue_'+dir+'_'+num;
+    item.innerHTML='<span class="clue-num-label">'+num+'.</span><span class="clue-text">'+cl.text+'</span>';
+    item.onclick=()=>{direction=dir;selectCell(cl.r,cl.c)};
+    el.appendChild(item);
+  }
+}
+
+function highlightClue(dir,num){
+  document.querySelectorAll('.clue-item').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById('clue_'+dir+'_'+num);
+  if(el){el.classList.add('active');el.scrollIntoView({block:'nearest'})}
+}
+
+function findClueForCell(r,c,dir){
+  if(!puzzle.clues[dir])return null;
+  for(const[num,cl]of Object.entries(puzzle.clues[dir])){
+    const cells=getWordCellsFromClue(cl,dir);
+    if(cells.some(([cr,cc])=>cr===r&&cc===c))return parseInt(num);
   }
   return null;
 }
-function buildGridFromSquares(size){
-  const spec=layoutSpec(size); if(!spec) return null;
-  const mask=buildMask(size);
-  const {block,border}=spec;
-  const starts=[border, border+block+1];
-  for(let attempt=0; attempt<14; attempt++){
-    const grid=Array.from({length:size},()=>Array(size).fill(''));
-    const usedGlobal=new Set();
-    let ok=true;
-    for(const r0 of starts){
-      for(const c0 of starts){
-        const square=buildWordSquare(block, usedGlobal);
-        if(!square){ ok=false; break; }
-        for(let r=0; r<block; r++){
-          const rowWord=square[r];
-          for(let c=0; c<block; c++) grid[r0+r][c0+c]=rowWord[c];
-        }
-        for(const w of square) usedGlobal.add(w);
-      }
-      if(!ok) break;
-    }
-    if(ok) return {mask, grid};
+
+function getWordCells(r,c,dir){
+  if(r<0||!puzzle||!puzzle.mask[r]?.[c])return[];
+  const cells=[];
+  if(dir==='across'){let sc=c;while(sc>0&&puzzle.mask[r][sc-1])sc--;for(let cc=sc;cc<puzzle.cols&&puzzle.mask[r][cc];cc++)cells.push([r,cc])}
+  else{let sr=r;while(sr>0&&puzzle.mask[sr-1]?.[c])sr--;for(let rr=sr;rr<puzzle.rows&&puzzle.mask[rr]?.[c];rr++)cells.push([rr,c])}
+  return cells;
+}
+function getWordCellsFromClue(cl,dir){
+  const cells=[];
+  if(dir==='across')for(let i=0;i<cl.len;i++)cells.push([cl.r,cl.c+i]);
+  else for(let i=0;i<cl.len;i++)cells.push([cl.r+i,cl.c]);
+  return cells;
+}
+
+function selectCell(r,c){
+  if(!puzzle||!puzzle.mask[r]?.[c])return;
+  if(r===selectedR&&c===selectedC)direction=direction==='across'?'down':'across';
+  selectedR=r;selectedC=c;
+  const num=findClueForCell(r,c,direction);
+  if(num!==null){activeClue={dir:direction,num};highlightClue(direction,num)}
+  else{const od=direction==='across'?'down':'across';const n2=findClueForCell(r,c,od);
+    if(n2!==null){direction=od;activeClue={dir:od,num:n2};highlightClue(od,n2)}}
+  render();
+}
+
+function advanceCursor(){
+  if(direction==='across'){let nc=selectedC+1;while(nc<puzzle.cols&&!puzzle.mask[selectedR][nc])nc++;if(nc<puzzle.cols)selectCell(selectedR,nc)}
+  else{let nr=selectedR+1;while(nr<puzzle.rows&&!puzzle.mask[nr]?.[selectedC])nr++;if(nr<puzzle.rows)selectCell(nr,selectedC)}
+}
+function retreatCursor(){
+  if(direction==='across'){let nc=selectedC-1;while(nc>=0&&!puzzle.mask[selectedR][nc])nc--;if(nc>=0)selectCell(selectedR,nc)}
+  else{let nr=selectedR-1;while(nr>=0&&!puzzle.mask[nr]?.[selectedC])nr--;if(nr>=0)selectCell(nr,selectedC)}
+}
+function nextWord(){
+  if(!activeClue)return;const dir=activeClue.dir;
+  const nums=Object.keys(puzzle.clues[dir]).map(Number).sort((a,b)=>a-b);
+  const idx=nums.indexOf(activeClue.num);let ni=(idx+1)%nums.length;
+  if(ni===0){const od=dir==='across'?'down':'across';if(puzzle.clues[od]){direction=od;const on=Object.keys(puzzle.clues[od]).map(Number).sort((a,b)=>a-b);const cl=puzzle.clues[od][on[0]];selectCell(cl.r,cl.c);return}}
+  const cl=puzzle.clues[dir][nums[ni]];selectCell(cl.r,cl.c);
+}
+
+document.addEventListener('keydown',e=>{
+  if(!puzzle||solved||selectedR<0)return;
+  if(e.key==='Tab'||e.key===' '){e.preventDefault();direction=direction==='across'?'down':'across';selectCell(selectedR,selectedC);return}
+  if(e.key==='Enter'){e.preventDefault();nextWord();return}
+  if(e.key==='ArrowRight'){e.preventDefault();let c=selectedC+1;while(c<puzzle.cols&&!puzzle.mask[selectedR][c])c++;if(c<puzzle.cols)selectCell(selectedR,c);return}
+  if(e.key==='ArrowLeft'){e.preventDefault();let c=selectedC-1;while(c>=0&&!puzzle.mask[selectedR][c])c--;if(c>=0)selectCell(selectedR,c);return}
+  if(e.key==='ArrowDown'){e.preventDefault();let r=selectedR+1;while(r<puzzle.rows&&!puzzle.mask[r]?.[selectedC])r++;if(r<puzzle.rows)selectCell(r,selectedC);return}
+  if(e.key==='ArrowUp'){e.preventDefault();let r=selectedR-1;while(r>=0&&!puzzle.mask[r]?.[selectedC])r--;if(r>=0)selectCell(r,selectedC);return}
+  if(e.key==='Backspace'||e.key==='Delete'){e.preventDefault();if(playerGrid[selectedR][selectedC])playerGrid[selectedR][selectedC]='';else{retreatCursor();playerGrid[selectedR][selectedC]=''}render();updateMetrics();return}
+  const ch=e.key.toUpperCase();
+  if(/^[A-ZČŠŽ]$/.test(ch)){e.preventDefault();playerGrid[selectedR][selectedC]=ch;render();advanceCursor();updateMetrics();checkWin()}
+});
+
+function checkAll(){
+  if(!puzzle)return;let ok=true;
+  document.querySelectorAll('.cell').forEach(cell=>{
+    const r=+cell.dataset.r,c=+cell.dataset.c;if(!puzzle.mask[r]?.[c])return;
+    cell.classList.remove('correct','error');
+    const p=playerGrid[r][c],s=puzzle.solution[r][c];
+    if(!p){ok=false;return}
+    if(p===s)cell.classList.add('correct');else{cell.classList.add('error');ok=false;errorCount++}
+  });
+  updateMetrics();if(ok)winGame();else setStatus('Preverjeno — poišči rdeče celice','err');
+}
+function revealWord(){if(!puzzle||selectedR<0)return;getWordCells(selectedR,selectedC,direction).forEach(([r,c])=>{playerGrid[r][c]=puzzle.solution[r][c]});render();updateMetrics();checkWin()}
+function revealAll(){if(!puzzle)return;for(let r=0;r<puzzle.rows;r++)for(let c=0;c<puzzle.cols;c++)if(puzzle.mask[r][c])playerGrid[r][c]=puzzle.solution[r][c];render();updateMetrics();setStatus('Rešitev prikazana','')}
+function checkWin(){if(!puzzle||solved)return;for(let r=0;r<puzzle.rows;r++)for(let c=0;c<puzzle.cols;c++)if(puzzle.mask[r][c]&&playerGrid[r][c]!==puzzle.solution[r][c])return;winGame()}
+function winGame(){solved=true;stopTimer();setStatus('✦ REŠENO v '+fmtTime(seconds)+'! ✦','win');document.querySelectorAll('.cell:not(.black)').forEach((cell,i)=>{setTimeout(()=>cell.classList.add('win-anim'),i*25)})}
+
+function updateMetrics(){
+  if(!puzzle)return;let filled=0,total=0,wt=0,ws=0;
+  for(let r=0;r<puzzle.rows;r++)for(let c=0;c<puzzle.cols;c++)if(puzzle.mask[r][c]){total++;if(playerGrid[r][c])filled++}
+  const pct=Math.round(filled/total*100);
+  document.getElementById('mProgress').textContent=pct+'%';document.getElementById('barProgress').style.width=pct+'%';
+  for(const dir of['across','down'])if(puzzle.clues[dir])for(const[num,cl]of Object.entries(puzzle.clues[dir])){
+    wt++;const cells=getWordCellsFromClue(cl,dir);
+    if(cells.every(([r,c])=>playerGrid[r][c]===puzzle.solution[r][c])){ws++;const el=document.getElementById('clue_'+dir+'_'+num);if(el)el.classList.add('solved')}
   }
-  return null;
-}
-function getSlots(m,n){
-  const sl=[];
-  for(let r=0;r<n;r++){let s=-1;for(let c=0;c<=n;c++){if(c<n&&m[r][c]){if(s<0)s=c}else{if(s>=0&&c-s>=3){const ce=[];for(let i=s;i<c;i++)ce.push([r,i]);sl.push({d:'across',r,c:s,len:c-s,cells:ce})}s=-1}}}
-  for(let c=0;c<n;c++){let s=-1;for(let r=0;r<=n;r++){if(r<n&&m[r][c]){if(s<0)s=r}else{if(s>=0&&r-s>=3){const ce=[];for(let i=s;i<r;i++)ce.push([i,c]);sl.push({d:'down',r:s,c,len:r-s,cells:ce})}s=-1}}}
-  return sl;
+  document.getElementById('mWords').textContent=ws+' / '+wt;
+  document.getElementById('barWords').style.width=wt?(ws/wt*100)+'%':'0';
+  document.getElementById('mErrors').textContent=errorCount;
 }
 
-// ─── Generate ───
-async function go(sz){
-  if(!DB){setS(L.nodict,'err');return}
-  setS(L.gen,'gen');
-  document.querySelectorAll('.diff-btns .btn').forEach(b=>b.disabled=true);
-  await new Promise(r=>setTimeout(r,30));
-  const t0=performance.now();
-  const built=buildGridFromSquares(sz);
-  const ms=Math.round(performance.now()-t0);
-  document.querySelectorAll('.diff-btns .btn').forEach(b=>b.disabled=false);
-  if(!built){setS(L.fail,'err');return}
-
-  const {mask,grid}=built;
-  const size=sz;
-  const slots=getSlots(mask,size);
-  const sol=grid.map(r=>r.slice());
-  const cm={across:{},down:{}},na={};let num=1;
-  for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(mask[r][c]){
-    const hA=slots.find(s=>s.d==='across'&&s.r===r&&s.c===c);
-    const hD=slots.find(s=>s.d==='down'&&s.r===r&&s.c===c);
-    if(hA||hD){
-      const nn=num++; na[r+','+c]=nn;
-      if(hA){const w=hA.cells.map(([rr,cc])=>sol[rr][cc]).join(''); cm.across[nn]={r,c,len:hA.len,text:wordHint(w),cells:hA.cells}}
-      if(hD){const w=hD.cells.map(([rr,cc])=>sol[rr][cc]).join(''); cm.down[nn]={r,c,len:hD.len,text:wordHint(w),cells:hD.cells}}
-    }
-  }
-  P={rows:size,cols:size,mask,solution:sol,cm,na};
-  PG=Array.from({length:size},()=>Array(size).fill(''));
-  selR=-1;selC=-1;dir='across';aCl=null;done=false;eC=0;
-  setCsz(size); buildG(); buildCl('across'); buildCl('down'); startT(); updM();
-  setS(size+'×'+size+' '+L.ready+' ('+ms+'ms)','');
-  for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(mask[r][c]){ sel(r,c); return; }
-}
-
-// ─── Render ───
-function setCsz(n){let sz=Math.min(Math.floor(window.innerHeight*0.68/n),Math.floor(window.innerWidth*0.42/n),72);document.documentElement.style.setProperty('--cell-size',Math.max(sz,28)+'px')}
-function buildG(){const g=$('grid');g.style.gridTemplateColumns='repeat('+P.cols+',var(--cell-size))';g.style.gridTemplateRows='repeat('+P.rows+',var(--cell-size))';g.innerHTML='';for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++){const cell=document.createElement('div');cell.className='cell'+(P.mask[r][c]?'':' black');cell.dataset.r=r;cell.dataset.c=c;if(P.mask[r][c]){cell.addEventListener('click',(rr=>cc=>()=>sel(rr,cc))(r)(c));const nn=P.na[r+','+c];if(nn){const s=document.createElement('span');s.className='clue-num';s.textContent=nn;cell.appendChild(s)}}g.appendChild(cell)}rend()}
-function rend(){if(!P)return;const wc=wCells(selR,selC,dir),ws=new Set(wc.map(([r,c])=>r+','+c));document.querySelectorAll('.cell').forEach(cell=>{const r=+cell.dataset.r,c=+cell.dataset.c;if(!P.mask[r]?.[c])return;cell.classList.remove('selected','word-highlight','correct','error');if(r===selR&&c===selC)cell.classList.add('selected');else if(ws.has(r+','+c))cell.classList.add('word-highlight');const ns=cell.querySelector('.clue-num');cell.textContent=PG[r][c];if(ns)cell.prepend(ns)})}
-function buildCl(d){const el=$(d==='across'?'cluesAcross':'cluesDown');el.innerHTML='';if(!P?.cm[d])return;for(const n of Object.keys(P.cm[d]).map(Number).sort((a,b)=>a-b)){const cl=P.cm[d][n];const it=document.createElement('div');it.className='clue-item';it.id='cl_'+d+'_'+n;it.innerHTML='<span class="clue-num-label">'+n+'.</span><span class="clue-text">'+cl.text+'</span>';it.onclick=()=>{dir=d;sel(cl.r,cl.c)};el.appendChild(it)}}
-
-// ─── Nav ───
-function wCells(r,c,d){if(r<0||!P||!P.mask[r]?.[c])return[];const cs=[];if(d==='across'){let s=c;while(s>0&&P.mask[r][s-1])s--;for(let cc=s;cc<P.cols&&P.mask[r][cc];cc++)cs.push([r,cc])}else{let s=r;while(s>0&&P.mask[s-1]?.[c])s--;for(let rr=s;rr<P.rows&&P.mask[rr]?.[c];rr++)cs.push([rr,c])}return cs}
-function fCl(r,c,d){if(!P?.cm[d])return null;for(const[n,cl]of Object.entries(P.cm[d]))if(cl.cells.some(([cr,cc])=>cr===r&&cc===c))return+n;return null}
-function sel(r,c){if(!P||!P.mask[r]?.[c])return;if(r===selR&&c===selC)dir=dir==='across'?'down':'across';selR=r;selC=c;let n=fCl(r,c,dir);if(n!==null){aCl={d:dir,n};hlCl(dir,n)}else{const od=dir==='across'?'down':'across';const n2=fCl(r,c,od);if(n2!==null){dir=od;aCl={d:od,n:n2};hlCl(od,n2)}}rend()}
-function hlCl(d,n){document.querySelectorAll('.clue-item').forEach(e=>e.classList.remove('active'));const e=$('cl_'+d+'_'+n);if(e){e.classList.add('active');e.scrollIntoView({block:'nearest'})}}
-function adv(){if(dir==='across'){let c=selC+1;while(c<P.cols&&!P.mask[selR][c])c++;if(c<P.cols)sel(selR,c)}else{let r=selR+1;while(r<P.rows&&!P.mask[r]?.[selC])r++;if(r<P.rows)sel(r,selC)}}
-function ret(){if(dir==='across'){let c=selC-1;while(c>=0&&!P.mask[selR][c])c--;if(c>=0)sel(selR,c)}else{let r=selR-1;while(r>=0&&!P.mask[r]?.[selC])r--;if(r>=0)sel(r,selC)}}
-function nxW(){if(!aCl)return;const d=aCl.d,ns=Object.keys(P.cm[d]).map(Number).sort((a,b)=>a-b),i=ns.indexOf(aCl.n);let ni=(i+1)%ns.length;if(ni===0){const od=d==='across'?'down':'across';if(P.cm[od]&&Object.keys(P.cm[od]).length){dir=od;const on=Object.keys(P.cm[od]).map(Number).sort((a,b)=>a-b);sel(P.cm[od][on[0]].r,P.cm[od][on[0]].c);return}}sel(P.cm[d][ns[ni]].r,P.cm[d][ns[ni]].c)}
-
-// ─── Keys ───
-document.addEventListener('keydown',e=>{if(!P||done||selR<0)return;if(e.key==='Tab'||e.key===' '){e.preventDefault();dir=dir==='across'?'down':'across';sel(selR,selC);return}if(e.key==='Enter'){e.preventDefault();nxW();return}if(e.key==='ArrowRight'){e.preventDefault();let c=selC+1;while(c<P.cols&&!P.mask[selR][c])c++;if(c<P.cols)sel(selR,c);return}if(e.key==='ArrowLeft'){e.preventDefault();let c=selC-1;while(c>=0&&!P.mask[selR][c])c--;if(c>=0)sel(selR,c);return}if(e.key==='ArrowDown'){e.preventDefault();let r=selR+1;while(r<P.rows&&!P.mask[r]?.[selC])r++;if(r<P.rows)sel(r,selC);return}if(e.key==='ArrowUp'){e.preventDefault();let r=selR-1;while(r>=0&&!P.mask[r]?.[selC])r--;if(r>=0)sel(r,selC);return}if(e.key==='Backspace'||e.key==='Delete'){e.preventDefault();if(PG[selR][selC])PG[selR][selC]='';else{ret();PG[selR][selC]=''}rend();updM();return}const ch=e.key.toUpperCase();if(/^[A-ZČŠŽÀÂÆÇÉÈÊËÏÎÔŒÙÛÜŸÁÍÓÚÑÄÖ]$/.test(ch)){e.preventDefault();PG[selR][selC]=ch;rend();adv();updM();chkW()}});
-
-// ─── Game ───
-function checkAll(){if(!P)return;let ok=true;document.querySelectorAll('.cell').forEach(cell=>{const r=+cell.dataset.r,c=+cell.dataset.c;if(!P.mask[r]?.[c])return;cell.classList.remove('correct','error');if(!PG[r][c]){ok=false;return}if(PG[r][c]===P.solution[r][c])cell.classList.add('correct');else{cell.classList.add('error');ok=false;eC++}});updM();if(ok)win();else setS(L.checked,'err')}
-function revealWord(){if(!P||selR<0)return;wCells(selR,selC,dir).forEach(([r,c])=>{PG[r][c]=P.solution[r][c]});rend();updM();chkW()}
-function revealAll(){if(!P)return;for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++)if(P.mask[r][c])PG[r][c]=P.solution[r][c];rend();updM();setS(L.solved,'')}
-function chkW(){if(!P||done)return;for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++)if(P.mask[r][c]&&PG[r][c]!==P.solution[r][c])return;win()}
-function win(){done=true;stopT();setS(L.win(fmtT(sec)),'win');document.querySelectorAll('.cell:not(.black)').forEach((c,i)=>{setTimeout(()=>c.classList.add('win-anim'),i*20)})}
-function updM(){if(!P)return;let f=0,t=0;for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++)if(P.mask[r][c]){t++;if(PG[r][c])f++}const pc=t?Math.round(f/t*100):0;$('mProg').textContent=pc+'%';$('barProg').style.width=pc+'%';let wt=0,ws=0;for(const d of['across','down'])if(P.cm[d])for(const[n,cl]of Object.entries(P.cm[d])){wt++;if(cl.cells.every(([r,c])=>PG[r][c]===P.solution[r][c])){ws++;const el=$('cl_'+d+'_'+n);if(el)el.classList.add('solved')}}$('mWords').textContent=ws+'/'+wt;$('barWords').style.width=wt?(ws/wt*100)+'%':'0';$('mErr').textContent=eC}
-
-// ─── Timer ───
-function startT(){stopT();sec=0;$('timer').textContent='00:00';tI=setInterval(()=>{sec++;$('timer').textContent=fmtT(sec)},1000)}
-function stopT(){if(tI)clearInterval(tI);tI=null}
-function fmtT(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
-
-// ─── Save/Load ───
-function savePuzzle(){if(!P)return;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({lang,rows:P.rows,cols:P.cols,mask:P.mask,solution:P.solution,cm:P.cm,na:P.na,PG,sec,eC})]));a.download='cw_'+lang+'_'+P.rows+'x'+P.cols+'_'+Date.now()+'.json';a.click()}
-function loadPuzzle(ev){const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.lang){lang=d.lang;L=I18N[lang]||I18N.en;$('langSel').value=lang;updUI()}P={rows:d.rows,cols:d.cols,mask:d.mask,solution:d.solution,cm:d.cm,na:d.na};PG=d.PG||Array.from({length:d.rows},()=>Array(d.cols).fill(''));sec=d.sec||0;eC=d.eC||0;done=false;selR=-1;selC=-1;dir='across';aCl=null;setCsz(d.cols);buildG();buildCl('across');buildCl('down');stopT();$('timer').textContent=fmtT(sec);tI=setInterval(()=>{sec++;$('timer').textContent=fmtT(sec)},1000);updM();for(let r=0;r<d.rows;r++)for(let c=0;c<d.cols;c++)if(d.mask[r][c]){sel(r,c);return}}catch(err){setS('Error: '+err.message,'err')}};rd.readAsText(f);ev.target.value=''}
-
-// ─── Lang ───
-async function switchLang(code){lang=code;L=I18N[lang]||I18N.en;updUI();const ok=await loadD(lang);if(ok)setS(DB.total+' '+L.words.toLowerCase()+' — '+L.ready,'')}
-function updUI(){$('tTitle').innerHTML=L.title;$('tSub').textContent=L.sub;$('tAcross').textContent=L.across;$('tDown').textContent=L.down;$('tStats').textContent=L.stats;$('tProg').textContent=L.prog;$('tWords').textContent=L.words;$('tErr').textContent=L.err;$('tHelp').textContent=L.help;$('tHelpH').innerHTML=L.helpH;$('bChk').textContent=L.chk;$('bRev').textContent=L.rev;$('bSol').textContent=L.sol}
-function togglePanel(d){const el=$(d==='across'?'cluesAcross':'cluesDown');el.style.display=el.style.display==='none'?'':'none'}
-async function detectLang(){try{const r=await fetch('https://ipapi.co/json/',{signal:AbortSignal.timeout(3000)});const d=await r.json();if(d.country_code==='SI')return 'sl'}catch(e){}return 'en'}
-
-// ─── Init ───
-window.addEventListener('resize',()=>{if(P)setCsz(P.cols)});
-(async()=>{const det=await detectLang();lang=det;L=I18N[lang];$('langSel').value=lang;updUI();const ok=await loadD(lang);if(ok)setS(DB.total+' '+L.words.toLowerCase()+' — '+L.ready,'')})();
-
+function startTimer(){stopTimer();seconds=0;document.getElementById('timer').textContent='00:00';timerInterval=setInterval(()=>{seconds++;document.getElementById('timer').textContent=fmtTime(seconds)},1000)}
+function stopTimer(){if(timerInterval)clearInterval(timerInterval);timerInterval=null}
+function fmtTime(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function togglePanel(dir){const el=document.getElementById(dir==='across'?'cluesAcross':'cluesDown');el.style.display=el.style.display==='none'?'':'none'}
+function setStatus(msg,cls){const el=document.getElementById('status');el.textContent=msg;el.className='status '+(cls||'')}
+window.addEventListener('resize',()=>{if(puzzle)setCellSize(puzzle.cols)});
+loadPuzzle('easy');
 </script>
 </body>
 </html>
