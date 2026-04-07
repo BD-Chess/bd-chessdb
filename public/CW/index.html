@@ -122,38 +122,43 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 </div></div></div>
 <script>
 const I18N={
-sl:{title:'Križanka <span class="accent">× MDL</span>',sub:'Kompresija misli v mrežo',across:'▶ Vodoravno',down:'▶ Navpično',stats:'Statistika',prog:'Napredek',words:'Besede',err:'Napake',help:'Navodila',helpH:'Klikni celico, vpiši črko.<br><span style="color:var(--cyan)">Tab/Space</span> preklopi smer · <span style="color:var(--cyan)">Puščice</span> premikanje<br><span style="color:var(--cyan)">Backspace</span> izbriši · <span style="color:var(--cyan)">Enter</span> naslednja beseda',loading:'Nalaganje…',gen:'Generiram…',ready:'pripravljena',fail:'Ni uspelo — poskusi znova',checked:'Preverjeno — poišči rdeče',solved:'Rešitev prikazana',win:s=>`✦ REŠENO v ${s}! ✦`,chk:'✓ Preveri',rev:'Razkrij',sol:'Rešitev',nodict:'Slovar ni na voljo'},
-en:{title:'Crossword <span class="accent">× MDL</span>',sub:'Compressing thought into a grid',across:'▶ Across',down:'▶ Down',stats:'Statistics',prog:'Progress',words:'Words',err:'Errors',help:'How to play',helpH:'Click a cell, type a letter.<br><span style="color:var(--cyan)">Tab/Space</span> toggle direction · <span style="color:var(--cyan)">Arrows</span> navigate<br><span style="color:var(--cyan)">Backspace</span> delete · <span style="color:var(--cyan)">Enter</span> next word',loading:'Loading…',gen:'Generating…',ready:'ready',fail:'Failed — try again',checked:'Checked — find the red cells',solved:'Solution revealed',win:s=>`✦ SOLVED in ${s}! ✦`,chk:'✓ Check',rev:'Reveal',sol:'Solution',nodict:'Dictionary not available'}
+sl:{title:'Križanka <span class="accent">× MDL</span>',sub:'Kompresija misli v mrežo',across:'▶ Vodoravno',down:'▶ Navpično',stats:'Statistika',prog:'Napredek',words:'Besede',err:'Napake',help:'Navodila',helpH:'Klikni celico, vpiši črko.<br><span style="color:var(--cyan)">Tab/Space</span> preklopi smer · <span style="color:var(--cyan)">Puščice</span> premikanje<br><span style="color:var(--cyan)">Backspace</span> izbriši · <span style="color:var(--cyan)">Enter</span> naslednja beseda',loading:'Nalaganje…',gen:'Generiram…',ready:'pripravljena',fail:'Ni uspelo — poskusi znova',checked:'Preverjeno — poišči rdeče',solved:'Rešitev prikazana',win:s=>'✦ REŠENO v '+s+'! ✦',chk:'✓ Preveri',rev:'Razkrij',sol:'Rešitev',nodict:'Slovar ni na voljo'},
+en:{title:'Crossword <span class="accent">× MDL</span>',sub:'Compressing thought into a grid',across:'▶ Across',down:'▶ Down',stats:'Statistics',prog:'Progress',words:'Words',err:'Errors',help:'How to play',helpH:'Click a cell, type a letter.<br><span style="color:var(--cyan)">Tab/Space</span> toggle direction · <span style="color:var(--cyan)">Arrows</span> navigate<br><span style="color:var(--cyan)">Backspace</span> delete · <span style="color:var(--cyan)">Enter</span> next word',loading:'Loading…',gen:'Generating…',ready:'ready',fail:'Failed — try again',checked:'Checked — find the red cells',solved:'Solution revealed',win:s=>'✦ SOLVED in '+s+'! ✦',chk:'✓ Check',rev:'Reveal',sol:'Solution',nodict:'Dictionary not available'}
 };
+
 let lang='en',L=I18N.en,DB=null,P=null,PG=null,selR=-1,selC=-1,dir='across',aCl=null,tI=null,sec=0,eC=0,done=false;
 const DC={};
 function $(id){return document.getElementById(id)}
-function setS(m,c){const e=$('status');e.textContent=m;e.className='status '+(c||'')}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function setS(m,c){$('status').textContent=m;$('status').className='status '+(c||'')}
 
 // ─── Dict ───
 async function loadD(code){
   if(DC[code]){DB=DC[code];return true}
   setS(L.loading,'gen');
   try{
-    const r=await fetch('cw_'+code+'_scored.json');if(!r.ok)throw new Error(r.status);
-    const d=await r.json();const db={h:{},all:{},hints:{}};
+    const r=await fetch('cw_'+code+'_scored.json');
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    const db={words:{},hints:{}};
     for(const[l,ws]of Object.entries(d.words)){
-      db.all[l]=ws.map(w=>w.w);
-      db.h[l]=ws.filter(w=>w.h).map(w=>w.w);
+      // Store ALL words as simple string arrays, indexed by length
+      db.words[l]=ws.map(w=>w.w);
       for(const w of ws)if(w.h)db.hints[w.w]=w.h;
     }
-    DC[code]=db;DB=db;return true;
-  }catch(e){console.error(e);setS(L.nodict,'err');return false}
+    DC[code]=db;DB=db;
+    console.log('[CW] Loaded',code,': words by length:',Object.fromEntries(Object.entries(db.words).map(([k,v])=>[k,v.length])),'hints:',Object.keys(db.hints).length);
+    return true;
+  }catch(e){console.error('[CW] Load failed:',e);setS(L.nodict+' ('+e.message+')','err');return false}
 }
 
 // ─── Template ───
 function mkTpl(n){
-  const bp=n<=9?.33:n<=11?.28:n<=13?.25:.22;
-  for(let a=0;a<100;a++){
+  // Very high black% to ensure short words (3-5) which are easy to fill
+  const bp=n<=9?.40:n<=11?.36:n<=13?.32:.28;
+  for(let a=0;a<200;a++){
     const m=Array.from({length:n},()=>Array(n).fill(1));
     const tgt=Math.floor(n*n*bp);let pl=0;
-    for(let t=0;t<tgt*5&&pl<tgt;t++){
+    for(let t=0;t<tgt*8&&pl<tgt;t++){
       const r=Math.floor(Math.random()*n),c=Math.floor(Math.random()*n);
       if(!m[r][c])continue;
       const r2=n-1-r,c2=n-1-c;
@@ -165,13 +170,15 @@ function mkTpl(n){
   return null;
 }
 function okTpl(m,n){
-  for(let r=0;r<n;r++){let run=0;for(let c=0;c<=n;c++){if(c<n&&m[r][c])run++;else{if(run>0&&run<3)return false;run=0}}}
-  for(let c=0;c<n;c++){let run=0;for(let r=0;r<=n;r++){if(r<n&&m[r][c])run++;else{if(run>0&&run<3)return false;run=0}}}
+  // No word slots shorter than 3
+  for(let r=0;r<n;r++){let run=0;for(let c=0;c<=n;c++){if(c<n&&m[r][c])run++;else{if(run===1||run===2)return false;run=0}}}
+  for(let c=0;c<n;c++){let run=0;for(let r=0;r<=n;r++){if(r<n&&m[r][c])run++;else{if(run===1||run===2)return false;run=0}}}
+  // Connectivity
   let sr=-1,sc=-1;for(let r=0;r<n&&sr<0;r++)for(let c=0;c<n;c++)if(m[r][c]){sr=r;sc=c;break}
   if(sr<0)return false;
   const v=Array.from({length:n},()=>Array(n).fill(0));const q=[[sr,sc]];v[sr][sc]=1;let cnt=1;
   while(q.length){const[r,c]=q.shift();for(const[dr,dc]of[[0,1],[0,-1],[1,0],[-1,0]]){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<n&&nc>=0&&nc<n&&m[nr][nc]&&!v[nr][nc]){v[nr][nc]=1;cnt++;q.push([nr,nc])}}}
-  return cnt===m.flat().reduce((s,v)=>s+v,0);
+  return cnt===m.flat().reduce((s,x)=>s+x,0);
 }
 
 // ─── Slots ───
@@ -182,26 +189,36 @@ function getSlots(m,n){
   return sl;
 }
 
-// ─── Backtracking Filler ───
+// ─── Backtracking ───
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=0|Math.random()*(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+
 function fill(slots,n){
   if(!DB)return null;
   const grid=Array.from({length:n},()=>Array(n).fill(''));
   const used=new Set();
-  let it=0;const MX=120000;
+  let it=0;
+  const MX=200000;
 
-  // Sort: shortest first (more constrained)
+  // Sort: shortest slots first — they have most candidates and constrain least
   slots.sort((a,b)=>a.len-b.len);
 
-  function pat(slot){return slot.cells.map(([r,c])=>grid[r][c])}
+  // Log slot distribution
+  const lenDist={};slots.forEach(s=>{lenDist[s.len]=(lenDist[s.len]||0)+1});
+  console.log('[CW] Slots:',slots.length,'distribution:',lenDist);
 
-  function cands(slot){
-    const p=pat(slot);const lk=String(slot.len);
-    const res=[];const seen=new Set();
-    // Hinted first
-    const hList=DB.h[lk]||[];
-    for(const w of hList){if(!used.has(w)&&!seen.has(w)){let ok=true;for(let i=0;i<p.length;i++)if(p[i]&&p[i]!==w[i]){ok=false;break}if(ok){res.push(w);seen.add(w)}}}
-    // Then all
-    if(res.length<30){const aList=DB.all[lk]||[];for(const w of aList){if(!used.has(w)&&!seen.has(w)){let ok=true;for(let i=0;i<p.length;i++)if(p[i]&&p[i]!==w[i]){ok=false;break}if(ok){res.push(w);seen.add(w);if(res.length>=50)break}}}}
+  function getCands(slot){
+    const pat=slot.cells.map(([r,c])=>grid[r][c]);
+    const pool=DB.words[String(slot.len)]||[];
+    const res=[];
+    for(let i=0;i<pool.length&&res.length<60;i++){
+      const w=pool[i];
+      if(used.has(w))continue;
+      let ok=true;
+      for(let j=0;j<pat.length;j++){
+        if(pat[j]!==''&&pat[j]!==w[j]){ok=false;break}
+      }
+      if(ok)res.push(w);
+    }
     return shuffle(res);
   }
 
@@ -209,55 +226,74 @@ function fill(slots,n){
     if(++it>MX)return false;
     if(idx>=slots.length)return true;
     const slot=slots[idx];
-    const cs=cands(slot);
-    for(const word of cs){
+    const cands=getCands(slot);
+    if(cands.length===0)return false;
+    for(const word of cands){
+      // Save cell state
       const saved=slot.cells.map(([r,c])=>grid[r][c]);
+      // Place word
       for(let i=0;i<slot.len;i++)grid[slot.cells[i][0]][slot.cells[i][1]]=word[i];
       used.add(word);
       if(solve(idx+1))return true;
+      // Undo
       used.delete(word);
       for(let i=0;i<slot.cells.length;i++)grid[slot.cells[i][0]][slot.cells[i][1]]=saved[i];
     }
     return false;
   }
-  return solve(0)?grid:null;
+
+  const ok=solve(0);
+  console.log('[CW] Fill result:',ok,'iterations:',it);
+  return ok?grid:null;
 }
 
 // ─── Generate ───
 async function go(sz){
-  if(!DB)return;setS(L.gen,'gen');
+  if(!DB){setS(L.nodict,'err');return}
+  setS(L.gen,'gen');
   document.querySelectorAll('.diff-btns .btn').forEach(b=>b.disabled=true);
-  await new Promise(r=>setTimeout(r,30));
+  await new Promise(r=>setTimeout(r,50));
+
   let res=null;
-  for(let a=0;a<10;a++){
-    const mask=mkTpl(sz);if(!mask)continue;
-    const slots=getSlots(mask,sz);if(slots.length<4)continue;
-    const g=fill([...slots],sz);
+  const t0=performance.now();
+  for(let a=0;a<20;a++){
+    const mask=mkTpl(sz);
+    if(!mask){console.log('[CW] Template attempt',a,'failed');continue}
+    const slots=getSlots(mask,sz);
+    console.log('[CW] Attempt',a,': slots=',slots.length);
+    if(slots.length<3)continue;
+    const g=fill(slots.map(s=>({...s,cells:[...s.cells.map(c=>[...c])]})),sz);
     if(g){res={mask,slots,grid:g,sz};break}
   }
+  const ms=Math.round(performance.now()-t0);
+  console.log('[CW] Generation took',ms,'ms');
   document.querySelectorAll('.diff-btns .btn').forEach(b=>b.disabled=false);
+
   if(!res){setS(L.fail,'err');return}
-  const{mask,slots,grid,sz:size}=res;const sol=grid.map(r=>[...r]);
+
+  // Build puzzle
+  const{mask,slots,grid,sz:size}=res;
+  const sol=grid.map(r=>[...r]);
   const cm={across:{},down:{}},na={};let num=1;
   for(let r=0;r<size;r++)for(let c=0;c<size;c++){
     const hA=slots.find(s=>s.d==='across'&&s.r===r&&s.c===c);
     const hD=slots.find(s=>s.d==='down'&&s.r===r&&s.c===c);
     if(hA||hD){const nn=num++;na[r+','+c]=nn;
-      if(hA){const w=hA.cells.map(([r,c])=>sol[r][c]).join('');cm.across[nn]={r,c,len:hA.len,text:DB.hints[w]||'…',word:w,cells:hA.cells}}
-      if(hD){const w=hD.cells.map(([r,c])=>sol[r][c]).join('');cm.down[nn]={r,c,len:hD.len,text:DB.hints[w]||'…',word:w,cells:hD.cells}}
+      if(hA){const w=hA.cells.map(([r,c])=>sol[r][c]).join('');cm.across[nn]={r,c,len:hA.len,text:DB.hints[w]||'…',cells:hA.cells}}
+      if(hD){const w=hD.cells.map(([r,c])=>sol[r][c]).join('');cm.down[nn]={r,c,len:hD.len,text:DB.hints[w]||'…',cells:hD.cells}}
     }
   }
   P={rows:size,cols:size,mask,solution:sol,cm,na};PG=Array.from({length:size},()=>Array(size).fill(''));
   selR=-1;selC=-1;dir='across';aCl=null;done=false;eC=0;
   setCsz(size);buildG();buildCl('across');buildCl('down');startT();updM();
-  setS(size+'×'+size+' '+L.ready,'');
+  setS(size+'×'+size+' '+L.ready+' ('+ms+'ms)','');
   for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(mask[r][c]){sel(r,c);return}
 }
 
 // ─── Render ───
-function setCsz(n){let sz=Math.min(Math.floor(window.innerHeight*0.68/n),Math.floor(window.innerWidth*0.42/n),72);sz=Math.max(sz,28);document.documentElement.style.setProperty('--cell-size',sz+'px')}
-function buildG(){const g=$('grid');g.style.gridTemplateColumns=`repeat(${P.cols},var(--cell-size))`;g.style.gridTemplateRows=`repeat(${P.rows},var(--cell-size))`;g.innerHTML='';for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++){const cell=document.createElement('div');cell.className='cell'+(P.mask[r][c]?'':' black');cell.dataset.r=r;cell.dataset.c=c;if(P.mask[r][c]){cell.onclick=(()=>{const rr=r,cc=c;return()=>sel(rr,cc)})();const nn=P.na[r+','+c];if(nn){const s=document.createElement('span');s.className='clue-num';s.textContent=nn;cell.appendChild(s)}}g.appendChild(cell)}rend()}
-function rend(){if(!P)return;const wc=wCells(selR,selC,dir);const ws=new Set(wc.map(([r,c])=>r+','+c));document.querySelectorAll('.cell').forEach(cell=>{const r=+cell.dataset.r,c=+cell.dataset.c;if(!P.mask[r]?.[c])return;cell.classList.remove('selected','word-highlight','correct','error');if(r===selR&&c===selC)cell.classList.add('selected');else if(ws.has(r+','+c))cell.classList.add('word-highlight');const ns=cell.querySelector('.clue-num');cell.textContent=PG[r][c];if(ns)cell.prepend(ns)})}
+function setCsz(n){let sz=Math.min(Math.floor(window.innerHeight*0.68/n),Math.floor(window.innerWidth*0.42/n),72);document.documentElement.style.setProperty('--cell-size',Math.max(sz,28)+'px')}
+function buildG(){const g=$('grid');g.style.gridTemplateColumns='repeat('+P.cols+',var(--cell-size))';g.style.gridTemplateRows='repeat('+P.rows+',var(--cell-size))';g.innerHTML='';for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++){const cell=document.createElement('div');cell.className='cell'+(P.mask[r][c]?'':' black');cell.dataset.r=r;cell.dataset.c=c;if(P.mask[r][c]){cell.addEventListener('click',(rr=>cc=>()=>sel(rr,cc))(r)(c));const nn=P.na[r+','+c];if(nn){const s=document.createElement('span');s.className='clue-num';s.textContent=nn;cell.appendChild(s)}}g.appendChild(cell)}rend()}
+function rend(){if(!P)return;const wc=wCells(selR,selC,dir),ws=new Set(wc.map(([r,c])=>r+','+c));document.querySelectorAll('.cell').forEach(cell=>{const r=+cell.dataset.r,c=+cell.dataset.c;if(!P.mask[r]?.[c])return;cell.classList.remove('selected','word-highlight','correct','error');if(r===selR&&c===selC)cell.classList.add('selected');else if(ws.has(r+','+c))cell.classList.add('word-highlight');const ns=cell.querySelector('.clue-num');cell.textContent=PG[r][c];if(ns)cell.prepend(ns)})}
 function buildCl(d){const el=$(d==='across'?'cluesAcross':'cluesDown');el.innerHTML='';if(!P?.cm[d])return;for(const n of Object.keys(P.cm[d]).map(Number).sort((a,b)=>a-b)){const cl=P.cm[d][n];const it=document.createElement('div');it.className='clue-item';it.id='cl_'+d+'_'+n;it.innerHTML='<span class="clue-num-label">'+n+'.</span><span class="clue-text">'+cl.text+'</span>';it.onclick=()=>{dir=d;sel(cl.r,cl.c)};el.appendChild(it)}}
 
 // ─── Nav ───
@@ -267,18 +303,18 @@ function sel(r,c){if(!P||!P.mask[r]?.[c])return;if(r===selR&&c===selC)dir=dir===
 function hlCl(d,n){document.querySelectorAll('.clue-item').forEach(e=>e.classList.remove('active'));const e=$('cl_'+d+'_'+n);if(e){e.classList.add('active');e.scrollIntoView({block:'nearest'})}}
 function adv(){if(dir==='across'){let c=selC+1;while(c<P.cols&&!P.mask[selR][c])c++;if(c<P.cols)sel(selR,c)}else{let r=selR+1;while(r<P.rows&&!P.mask[r]?.[selC])r++;if(r<P.rows)sel(r,selC)}}
 function ret(){if(dir==='across'){let c=selC-1;while(c>=0&&!P.mask[selR][c])c--;if(c>=0)sel(selR,c)}else{let r=selR-1;while(r>=0&&!P.mask[r]?.[selC])r--;if(r>=0)sel(r,selC)}}
-function nxW(){if(!aCl)return;const d=aCl.d;const ns=Object.keys(P.cm[d]).map(Number).sort((a,b)=>a-b);const i=ns.indexOf(aCl.n);let ni=(i+1)%ns.length;if(ni===0){const od=d==='across'?'down':'across';if(P.cm[od]&&Object.keys(P.cm[od]).length){dir=od;const on=Object.keys(P.cm[od]).map(Number).sort((a,b)=>a-b);sel(P.cm[od][on[0]].r,P.cm[od][on[0]].c);return}}sel(P.cm[d][ns[ni]].r,P.cm[d][ns[ni]].c)}
+function nxW(){if(!aCl)return;const d=aCl.d,ns=Object.keys(P.cm[d]).map(Number).sort((a,b)=>a-b),i=ns.indexOf(aCl.n);let ni=(i+1)%ns.length;if(ni===0){const od=d==='across'?'down':'across';if(P.cm[od]&&Object.keys(P.cm[od]).length){dir=od;const on=Object.keys(P.cm[od]).map(Number).sort((a,b)=>a-b);sel(P.cm[od][on[0]].r,P.cm[od][on[0]].c);return}}sel(P.cm[d][ns[ni]].r,P.cm[d][ns[ni]].c)}
 
 // ─── Keys ───
 document.addEventListener('keydown',e=>{if(!P||done||selR<0)return;if(e.key==='Tab'||e.key===' '){e.preventDefault();dir=dir==='across'?'down':'across';sel(selR,selC);return}if(e.key==='Enter'){e.preventDefault();nxW();return}if(e.key==='ArrowRight'){e.preventDefault();let c=selC+1;while(c<P.cols&&!P.mask[selR][c])c++;if(c<P.cols)sel(selR,c);return}if(e.key==='ArrowLeft'){e.preventDefault();let c=selC-1;while(c>=0&&!P.mask[selR][c])c--;if(c>=0)sel(selR,c);return}if(e.key==='ArrowDown'){e.preventDefault();let r=selR+1;while(r<P.rows&&!P.mask[r]?.[selC])r++;if(r<P.rows)sel(r,selC);return}if(e.key==='ArrowUp'){e.preventDefault();let r=selR-1;while(r>=0&&!P.mask[r]?.[selC])r--;if(r>=0)sel(r,selC);return}if(e.key==='Backspace'||e.key==='Delete'){e.preventDefault();if(PG[selR][selC])PG[selR][selC]='';else{ret();PG[selR][selC]=''}rend();updM();return}const ch=e.key.toUpperCase();if(/^[A-ZČŠŽÀÂÆÇÉÈÊËÏÎÔŒÙÛÜŸÁÍÓÚÑÄÖ]$/.test(ch)){e.preventDefault();PG[selR][selC]=ch;rend();adv();updM();chkW()}});
 
 // ─── Game ───
-function checkAll(){if(!P)return;let ok=true;document.querySelectorAll('.cell').forEach(cell=>{const r=+cell.dataset.r,c=+cell.dataset.c;if(!P.mask[r]?.[c])return;cell.classList.remove('correct','error');const p=PG[r][c],s=P.solution[r][c];if(!p){ok=false;return}if(p===s)cell.classList.add('correct');else{cell.classList.add('error');ok=false;eC++}});updM();if(ok)win();else setS(L.checked,'err')}
+function checkAll(){if(!P)return;let ok=true;document.querySelectorAll('.cell').forEach(cell=>{const r=+cell.dataset.r,c=+cell.dataset.c;if(!P.mask[r]?.[c])return;cell.classList.remove('correct','error');if(!PG[r][c]){ok=false;return}if(PG[r][c]===P.solution[r][c])cell.classList.add('correct');else{cell.classList.add('error');ok=false;eC++}});updM();if(ok)win();else setS(L.checked,'err')}
 function revealWord(){if(!P||selR<0)return;wCells(selR,selC,dir).forEach(([r,c])=>{PG[r][c]=P.solution[r][c]});rend();updM();chkW()}
 function revealAll(){if(!P)return;for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++)if(P.mask[r][c])PG[r][c]=P.solution[r][c];rend();updM();setS(L.solved,'')}
 function chkW(){if(!P||done)return;for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++)if(P.mask[r][c]&&PG[r][c]!==P.solution[r][c])return;win()}
 function win(){done=true;stopT();setS(L.win(fmtT(sec)),'win');document.querySelectorAll('.cell:not(.black)').forEach((c,i)=>{setTimeout(()=>c.classList.add('win-anim'),i*20)})}
-function updM(){if(!P)return;let f=0,t=0;for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++)if(P.mask[r][c]){t++;if(PG[r][c])f++}const pc=Math.round(f/t*100);$('mProg').textContent=pc+'%';$('barProg').style.width=pc+'%';let wt=0,ws=0;for(const d of['across','down']){if(!P.cm[d])continue;for(const[n,cl]of Object.entries(P.cm[d])){wt++;if(cl.cells.every(([r,c])=>PG[r][c]===P.solution[r][c])){ws++;const el=$('cl_'+d+'_'+n);if(el)el.classList.add('solved')}}}$('mWords').textContent=ws+'/'+wt;$('barWords').style.width=wt?(ws/wt*100)+'%':'0';$('mErr').textContent=eC}
+function updM(){if(!P)return;let f=0,t=0;for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++)if(P.mask[r][c]){t++;if(PG[r][c])f++}const pc=Math.round(f/t*100);$('mProg').textContent=pc+'%';$('barProg').style.width=pc+'%';let wt=0,ws=0;for(const d of['across','down'])if(P.cm[d])for(const[n,cl]of Object.entries(P.cm[d])){wt++;if(cl.cells.every(([r,c])=>PG[r][c]===P.solution[r][c])){ws++;const el=$('cl_'+d+'_'+n);if(el)el.classList.add('solved')}}$('mWords').textContent=ws+'/'+wt;$('barWords').style.width=wt?(ws/wt*100)+'%':'0';$('mErr').textContent=eC}
 
 // ─── Timer ───
 function startT(){stopT();sec=0;$('timer').textContent='00:00';tI=setInterval(()=>{sec++;$('timer').textContent=fmtT(sec)},1000)}
@@ -286,20 +322,18 @@ function stopT(){if(tI)clearInterval(tI);tI=null}
 function fmtT(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
 
 // ─── Save/Load ───
-function savePuzzle(){if(!P)return;const d={lang,rows:P.rows,cols:P.cols,mask:P.mask,solution:P.solution,cm:P.cm,na:P.na,PG,sec,eC};const b=new Blob([JSON.stringify(d)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='cw_'+lang+'_'+P.rows+'x'+P.cols+'_'+Date.now()+'.json';a.click()}
-function loadPuzzle(ev){const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.lang){lang=d.lang;L=I18N[lang]||I18N.en;$('langSel').value=lang;updUI()}P={rows:d.rows,cols:d.cols,mask:d.mask,solution:d.solution,cm:d.cm,na:d.na};PG=d.PG||Array.from({length:d.rows},()=>Array(d.cols).fill(''));sec=d.sec||0;eC=d.eC||0;done=false;selR=-1;selC=-1;dir='across';aCl=null;setCsz(d.cols);buildG();buildCl('across');buildCl('down');startT();if(d.sec)sec=d.sec;updM();setS(d.rows+'×'+d.cols+' loaded','');for(let r=0;r<d.rows;r++)for(let c=0;c<d.cols;c++)if(d.mask[r][c]){sel(r,c);return}}catch(err){setS('Error: '+err.message,'err')}};rd.readAsText(f);ev.target.value=''}
+function savePuzzle(){if(!P)return;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({lang,rows:P.rows,cols:P.cols,mask:P.mask,solution:P.solution,cm:P.cm,na:P.na,PG,sec,eC})]));a.download='cw_'+lang+'_'+P.rows+'x'+P.cols+'_'+Date.now()+'.json';a.click()}
+function loadPuzzle(ev){const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.lang){lang=d.lang;L=I18N[lang]||I18N.en;$('langSel').value=lang;updUI()}P={rows:d.rows,cols:d.cols,mask:d.mask,solution:d.solution,cm:d.cm,na:d.na};PG=d.PG||Array.from({length:d.rows},()=>Array(d.cols).fill(''));sec=d.sec||0;eC=d.eC||0;done=false;selR=-1;selC=-1;dir='across';aCl=null;setCsz(d.cols);buildG();buildCl('across');buildCl('down');startT();if(d.sec)sec=d.sec;updM();for(let r=0;r<d.rows;r++)for(let c=0;c<d.cols;c++)if(d.mask[r][c]){sel(r,c);return}}catch(err){setS('Error: '+err.message,'err')}};rd.readAsText(f);ev.target.value=''}
 
 // ─── Lang ───
-async function switchLang(code){lang=code;L=I18N[lang]||I18N.en;updUI();const ok=await loadD(lang);if(ok){const h=Object.values(DB.h).reduce((s,a)=>s+a.length,0);setS(h+' hints — '+L.ready,'')}}
+async function switchLang(code){lang=code;L=I18N[lang]||I18N.en;updUI();const ok=await loadD(lang);if(ok)setS(Object.keys(DB.hints).length+' hints — '+L.ready,'')}
 function updUI(){$('tTitle').innerHTML=L.title;$('tSub').textContent=L.sub;$('tAcross').textContent=L.across;$('tDown').textContent=L.down;$('tStats').textContent=L.stats;$('tProg').textContent=L.prog;$('tWords').textContent=L.words;$('tErr').textContent=L.err;$('tHelp').textContent=L.help;$('tHelpH').innerHTML=L.helpH;$('bChk').textContent=L.chk;$('bRev').textContent=L.rev;$('bSol').textContent=L.sol}
 function togglePanel(d){const el=$(d==='across'?'cluesAcross':'cluesDown');el.style.display=el.style.display==='none'?'':'none'}
-
-// ─── IP detect ───
 async function detectLang(){try{const r=await fetch('https://ipapi.co/json/',{signal:AbortSignal.timeout(3000)});const d=await r.json();if(d.country_code==='SI')return'sl'}catch(e){}return'en'}
 
 // ─── Init ───
 window.addEventListener('resize',()=>{if(P)setCsz(P.cols)});
-(async()=>{const det=await detectLang();lang=det;L=I18N[lang];$('langSel').value=lang;updUI();const ok=await loadD(lang);if(ok){const h=Object.values(DB.h).reduce((s,a)=>s+a.length,0);setS(h+' hints — '+L.ready,'')}})();
+(async()=>{const det=await detectLang();lang=det;L=I18N[lang];$('langSel').value=lang;updUI();const ok=await loadD(lang);if(ok)setS(Object.keys(DB.hints).length+' hints — '+L.ready,'')})();
 </script>
 </body>
 </html>
