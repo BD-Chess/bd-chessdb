@@ -121,15 +121,29 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
   </div>
 </div></div></div>
 <script>
+
 const I18N={
-sl:{title:'Križanka <span class="accent">× MDL</span>',sub:'Kompresija misli v mrežo',across:'▶ Vodoravno',down:'▶ Navpično',stats:'Statistika',prog:'Napredek',words:'Besede',err:'Napake',help:'Navodila',helpH:'Klikni celico, vpiši črko.<br><span style="color:var(--cyan)">Tab/Space</span> preklopi smer · <span style="color:var(--cyan)">Puščice</span> premikanje<br><span style="color:var(--cyan)">Backspace</span> izbriši · <span style="color:var(--cyan)">Enter</span> naslednja beseda',loading:'Nalaganje…',gen:'Generiram…',ready:'pripravljena',fail:'Ni uspelo — poskusi znova',checked:'Preverjeno — poišči rdeče',solved:'Rešitev prikazana',win:s=>'✦ REŠENO v '+s+'! ✦',chk:'✓ Preveri',rev:'Razkrij',sol:'Rešitev',nodict:'Slovar ni na voljo'},
-en:{title:'Crossword <span class="accent">× MDL</span>',sub:'Compressing thought into a grid',across:'▶ Across',down:'▶ Down',stats:'Statistics',prog:'Progress',words:'Words',err:'Errors',help:'How to play',helpH:'Click a cell, type a letter.<br><span style="color:var(--cyan)">Tab/Space</span> toggle direction · <span style="color:var(--cyan)">Arrows</span> navigate<br><span style="color:var(--cyan)">Backspace</span> delete · <span style="color:var(--cyan)">Enter</span> next word',loading:'Loading…',gen:'Generating…',ready:'ready',fail:'Failed — try again',checked:'Checked — find the red cells',solved:'Solution revealed',win:s=>'✦ SOLVED in '+s+'! ✦',chk:'✓ Check',rev:'Reveal',sol:'Solution',nodict:'Dictionary not available'}
+sl:{title:'Križanka <span class="accent">× MDL</span>',sub:'Kompresija misli v mrežo',across:'▶ Vodoravno',down:'▶ Navpično',stats:'Statistika',prog:'Napredek',words:'Besede',err:'Napake',help:'Navodila',helpH:'Klikni celico, vpiši črko.<br><span style="color:var(--cyan)">Tab/Space</span> preklopi smer · <span style="color:var(--cyan)">Puščice</span> premikanje<br><span style="color:var(--cyan)">Backspace</span> izbriši · <span style="color:var(--cyan)">Enter</span> naslednja beseda',loading:'Nalaganje…',gen:'Generiram…',ready:'pripravljena',fail:'Ni uspelo — poskusi znova',checked:'Preverjeno — poišči rdeče',solved:'Rešitev prikazana',win:s=>'✦ REŠENO v '+s+'! ✦',chk:'✓ Preveri',rev:'Razkrij',sol:'Rešitev',nodict:'Slovar ni na voljo',genericHint:'Beseda'},
+en:{title:'Crossword <span class="accent">× MDL</span>',sub:'Compressing thought into a grid',across:'▶ Across',down:'▶ Down',stats:'Statistics',prog:'Progress',words:'Words',err:'Errors',help:'How to play',helpH:'Click a cell, type a letter.<br><span style="color:var(--cyan)">Tab/Space</span> toggle direction · <span style="color:var(--cyan)">Arrows</span> navigate<br><span style="color:var(--cyan)">Backspace</span> delete · <span style="color:var(--cyan)">Enter</span> next word',loading:'Loading…',gen:'Generating…',ready:'ready',fail:'Failed — try again',checked:'Checked — find the red cells',solved:'Solution revealed',win:s=>'✦ SOLVED in '+s+'! ✦',chk:'✓ Check',rev:'Reveal',sol:'Solution',nodict:'Dictionary not available',genericHint:'Word'}
 };
 
 let lang='en',L=I18N.en,DB=null,P=null,PG=null,selR=-1,selC=-1,dir='across',aCl=null,tI=null,sec=0,eC=0,done=false;
 const DC={};
 function $(id){return document.getElementById(id)}
 function setS(m,c){$('status').textContent=m;$('status').className='status '+(c||'')}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function samplePool(arr, head=120, extra=120){
+  if(arr.length<=head+extra) return shuffle(arr.slice());
+  const out=arr.slice(0,head);
+  const seen=new Set();
+  while(out.length<head+extra && seen.size<arr.length-head){
+    const idx=head+((Math.random()*(arr.length-head))|0);
+    if(seen.has(idx)) continue;
+    seen.add(idx);
+    out.push(arr[idx]);
+  }
+  return shuffle(out);
+}
 
 // ─── Dict ───
 async function loadD(code){
@@ -139,49 +153,108 @@ async function loadD(code){
     const r=await fetch('cw_'+code+'_scored.json');
     if(!r.ok)throw new Error('HTTP '+r.status);
     const d=await r.json();
-    const db={words:{},hints:{}};
-    for(const[l,ws]of Object.entries(d.words)){
-      // Store ALL words as simple string arrays, indexed by length
+    const db={words:{},hints:{},prefix:{},total:0};
+    for(const [l,ws] of Object.entries(d.words||{})){
       db.words[l]=ws.map(w=>w.w);
-      for(const w of ws)if(w.h)db.hints[w.w]=w.h;
+      db.total += db.words[l].length;
+      for(const w of ws) if(w.h) db.hints[w.w]=w.h;
     }
-    DC[code]=db;DB=db;
-    console.log('[CW] Loaded',code,': words by length:',Object.fromEntries(Object.entries(db.words).map(([k,v])=>[k,v.length])),'hints:',Object.keys(db.hints).length);
+    DC[code]=db; DB=db;
     return true;
   }catch(e){console.error('[CW] Load failed:',e);setS(L.nodict+' ('+e.message+')','err');return false}
 }
-
-// ─── Template ───
-function mkTpl(n){
-  // Very high black% to ensure short words (3-5) which are easy to fill
-  const bp=n<=9?.40:n<=11?.36:n<=13?.32:.28;
-  for(let a=0;a<200;a++){
-    const m=Array.from({length:n},()=>Array(n).fill(1));
-    const tgt=Math.floor(n*n*bp);let pl=0;
-    for(let t=0;t<tgt*8&&pl<tgt;t++){
-      const r=Math.floor(Math.random()*n),c=Math.floor(Math.random()*n);
-      if(!m[r][c])continue;
-      const r2=n-1-r,c2=n-1-c;
-      m[r][c]=0;m[r2][c2]=0;
-      pl+=(r===r2&&c===c2)?1:2;
+function ensurePrefixMap(len){
+  const key=String(len);
+  if(DB.prefix[key]) return DB.prefix[key];
+  const mp=Object.create(null);
+  const words=DB.words[key]||[];
+  for(const w of words){
+    for(let i=0;i<=len;i++){
+      const p=w.slice(0,i);
+      (mp[p]||(mp[p]=[])).push(w);
     }
-    if(okTpl(m,n))return m;
+  }
+  DB.prefix[key]=mp;
+  return mp;
+}
+function wordHint(w){return DB.hints[w] || (L.genericHint+' ('+w.length+')')}
+
+// ─── Modular crossword generator ───
+function layoutSpec(size){
+  if(size===9) return {block:4,border:0};
+  if(size===11) return {block:5,border:0};
+  if(size===13) return {block:6,border:0};
+  if(size===15) return {block:6,border:1};
+  return null;
+}
+function buildMask(size){
+  const spec=layoutSpec(size); if(!spec) return null;
+  const {block:borderlessBlock,border}=spec, block=borderlessBlock;
+  const m=Array.from({length:size},()=>Array(size).fill(0));
+  const starts=[border, border+block+1];
+  for(const r0 of starts) for(const c0 of starts) for(let r=r0;r<r0+block;r++) for(let c=c0;c<c0+block;c++) m[r][c]=1;
+  return m;
+}
+function buildWordSquare(len, usedGlobal){
+  const pref=ensurePrefixMap(len);
+  const words=DB.words[String(len)]||[];
+  if(!words.length) return null;
+  const roots=samplePool(words, 140, 220);
+  for(const root of roots){
+    if(usedGlobal.has(root)) continue;
+    const rows=[root];
+    const usedLocal=new Set([root]);
+    function dfs(step){
+      if(step===len) return rows.slice();
+      const need=rows.map(r=>r[step]).join('');
+      let cands=pref[need]||[];
+      if(!cands.length) return null;
+      cands=samplePool(cands, 100, 160);
+      for(const w of cands){
+        if(usedGlobal.has(w)||usedLocal.has(w)) continue;
+        let ok=true;
+        for(let col=step+1; col<len; col++){
+          const p=rows.map(r=>r[col]).join('') + w[col];
+          if(!(pref[p] && pref[p].length)){ ok=false; break; }
+        }
+        if(!ok) continue;
+        rows.push(w); usedLocal.add(w);
+        const solved=dfs(step+1);
+        if(solved) return solved;
+        usedLocal.delete(w); rows.pop();
+      }
+      return null;
+    }
+    const solved=dfs(1);
+    if(solved) return solved;
   }
   return null;
 }
-function okTpl(m,n){
-  // No word slots shorter than 3
-  for(let r=0;r<n;r++){let run=0;for(let c=0;c<=n;c++){if(c<n&&m[r][c])run++;else{if(run===1||run===2)return false;run=0}}}
-  for(let c=0;c<n;c++){let run=0;for(let r=0;r<=n;r++){if(r<n&&m[r][c])run++;else{if(run===1||run===2)return false;run=0}}}
-  // Connectivity
-  let sr=-1,sc=-1;for(let r=0;r<n&&sr<0;r++)for(let c=0;c<n;c++)if(m[r][c]){sr=r;sc=c;break}
-  if(sr<0)return false;
-  const v=Array.from({length:n},()=>Array(n).fill(0));const q=[[sr,sc]];v[sr][sc]=1;let cnt=1;
-  while(q.length){const[r,c]=q.shift();for(const[dr,dc]of[[0,1],[0,-1],[1,0],[-1,0]]){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<n&&nc>=0&&nc<n&&m[nr][nc]&&!v[nr][nc]){v[nr][nc]=1;cnt++;q.push([nr,nc])}}}
-  return cnt===m.flat().reduce((s,x)=>s+x,0);
+function buildGridFromSquares(size){
+  const spec=layoutSpec(size); if(!spec) return null;
+  const mask=buildMask(size);
+  const {block,border}=spec;
+  const starts=[border, border+block+1];
+  for(let attempt=0; attempt<14; attempt++){
+    const grid=Array.from({length:size},()=>Array(size).fill(''));
+    const usedGlobal=new Set();
+    let ok=true;
+    for(const r0 of starts){
+      for(const c0 of starts){
+        const square=buildWordSquare(block, usedGlobal);
+        if(!square){ ok=false; break; }
+        for(let r=0; r<block; r++){
+          const rowWord=square[r];
+          for(let c=0; c<block; c++) grid[r0+r][c0+c]=rowWord[c];
+        }
+        for(const w of square) usedGlobal.add(w);
+      }
+      if(!ok) break;
+    }
+    if(ok) return {mask, grid};
+  }
+  return null;
 }
-
-// ─── Slots ───
 function getSlots(m,n){
   const sl=[];
   for(let r=0;r<n;r++){let s=-1;for(let c=0;c<=n;c++){if(c<n&&m[r][c]){if(s<0)s=c}else{if(s>=0&&c-s>=3){const ce=[];for(let i=s;i<c;i++)ce.push([r,i]);sl.push({d:'across',r,c:s,len:c-s,cells:ce})}s=-1}}}
@@ -189,105 +262,38 @@ function getSlots(m,n){
   return sl;
 }
 
-// ─── Backtracking ───
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=0|Math.random()*(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
-
-function fill(slots,n){
-  if(!DB)return null;
-  const grid=Array.from({length:n},()=>Array(n).fill(''));
-  const used=new Set();
-  let it=0;
-  const MX=200000;
-
-  // Sort: shortest slots first — they have most candidates and constrain least
-  slots.sort((a,b)=>a.len-b.len);
-
-  // Log slot distribution
-  const lenDist={};slots.forEach(s=>{lenDist[s.len]=(lenDist[s.len]||0)+1});
-  console.log('[CW] Slots:',slots.length,'distribution:',lenDist);
-
-  function getCands(slot){
-    const pat=slot.cells.map(([r,c])=>grid[r][c]);
-    const pool=DB.words[String(slot.len)]||[];
-    const res=[];
-    for(let i=0;i<pool.length&&res.length<60;i++){
-      const w=pool[i];
-      if(used.has(w))continue;
-      let ok=true;
-      for(let j=0;j<pat.length;j++){
-        if(pat[j]!==''&&pat[j]!==w[j]){ok=false;break}
-      }
-      if(ok)res.push(w);
-    }
-    return shuffle(res);
-  }
-
-  function solve(idx){
-    if(++it>MX)return false;
-    if(idx>=slots.length)return true;
-    const slot=slots[idx];
-    const cands=getCands(slot);
-    if(cands.length===0)return false;
-    for(const word of cands){
-      // Save cell state
-      const saved=slot.cells.map(([r,c])=>grid[r][c]);
-      // Place word
-      for(let i=0;i<slot.len;i++)grid[slot.cells[i][0]][slot.cells[i][1]]=word[i];
-      used.add(word);
-      if(solve(idx+1))return true;
-      // Undo
-      used.delete(word);
-      for(let i=0;i<slot.cells.length;i++)grid[slot.cells[i][0]][slot.cells[i][1]]=saved[i];
-    }
-    return false;
-  }
-
-  const ok=solve(0);
-  console.log('[CW] Fill result:',ok,'iterations:',it);
-  return ok?grid:null;
-}
-
 // ─── Generate ───
 async function go(sz){
   if(!DB){setS(L.nodict,'err');return}
   setS(L.gen,'gen');
   document.querySelectorAll('.diff-btns .btn').forEach(b=>b.disabled=true);
-  await new Promise(r=>setTimeout(r,50));
-
-  let res=null;
+  await new Promise(r=>setTimeout(r,30));
   const t0=performance.now();
-  for(let a=0;a<20;a++){
-    const mask=mkTpl(sz);
-    if(!mask){console.log('[CW] Template attempt',a,'failed');continue}
-    const slots=getSlots(mask,sz);
-    console.log('[CW] Attempt',a,': slots=',slots.length);
-    if(slots.length<3)continue;
-    const g=fill(slots.map(s=>({...s,cells:[...s.cells.map(c=>[...c])]})),sz);
-    if(g){res={mask,slots,grid:g,sz};break}
-  }
+  const built=buildGridFromSquares(sz);
   const ms=Math.round(performance.now()-t0);
-  console.log('[CW] Generation took',ms,'ms');
   document.querySelectorAll('.diff-btns .btn').forEach(b=>b.disabled=false);
+  if(!built){setS(L.fail,'err');return}
 
-  if(!res){setS(L.fail,'err');return}
-
-  // Build puzzle
-  const{mask,slots,grid,sz:size}=res;
-  const sol=grid.map(r=>[...r]);
+  const {mask,grid}=built;
+  const size=sz;
+  const slots=getSlots(mask,size);
+  const sol=grid.map(r=>r.slice());
   const cm={across:{},down:{}},na={};let num=1;
-  for(let r=0;r<size;r++)for(let c=0;c<size;c++){
+  for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(mask[r][c]){
     const hA=slots.find(s=>s.d==='across'&&s.r===r&&s.c===c);
     const hD=slots.find(s=>s.d==='down'&&s.r===r&&s.c===c);
-    if(hA||hD){const nn=num++;na[r+','+c]=nn;
-      if(hA){const w=hA.cells.map(([r,c])=>sol[r][c]).join('');cm.across[nn]={r,c,len:hA.len,text:DB.hints[w]||'…',cells:hA.cells}}
-      if(hD){const w=hD.cells.map(([r,c])=>sol[r][c]).join('');cm.down[nn]={r,c,len:hD.len,text:DB.hints[w]||'…',cells:hD.cells}}
+    if(hA||hD){
+      const nn=num++; na[r+','+c]=nn;
+      if(hA){const w=hA.cells.map(([rr,cc])=>sol[rr][cc]).join(''); cm.across[nn]={r,c,len:hA.len,text:wordHint(w),cells:hA.cells}}
+      if(hD){const w=hD.cells.map(([rr,cc])=>sol[rr][cc]).join(''); cm.down[nn]={r,c,len:hD.len,text:wordHint(w),cells:hD.cells}}
     }
   }
-  P={rows:size,cols:size,mask,solution:sol,cm,na};PG=Array.from({length:size},()=>Array(size).fill(''));
+  P={rows:size,cols:size,mask,solution:sol,cm,na};
+  PG=Array.from({length:size},()=>Array(size).fill(''));
   selR=-1;selC=-1;dir='across';aCl=null;done=false;eC=0;
-  setCsz(size);buildG();buildCl('across');buildCl('down');startT();updM();
+  setCsz(size); buildG(); buildCl('across'); buildCl('down'); startT(); updM();
   setS(size+'×'+size+' '+L.ready+' ('+ms+'ms)','');
-  for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(mask[r][c]){sel(r,c);return}
+  for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(mask[r][c]){ sel(r,c); return; }
 }
 
 // ─── Render ───
@@ -314,7 +320,7 @@ function revealWord(){if(!P||selR<0)return;wCells(selR,selC,dir).forEach(([r,c])
 function revealAll(){if(!P)return;for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++)if(P.mask[r][c])PG[r][c]=P.solution[r][c];rend();updM();setS(L.solved,'')}
 function chkW(){if(!P||done)return;for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++)if(P.mask[r][c]&&PG[r][c]!==P.solution[r][c])return;win()}
 function win(){done=true;stopT();setS(L.win(fmtT(sec)),'win');document.querySelectorAll('.cell:not(.black)').forEach((c,i)=>{setTimeout(()=>c.classList.add('win-anim'),i*20)})}
-function updM(){if(!P)return;let f=0,t=0;for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++)if(P.mask[r][c]){t++;if(PG[r][c])f++}const pc=Math.round(f/t*100);$('mProg').textContent=pc+'%';$('barProg').style.width=pc+'%';let wt=0,ws=0;for(const d of['across','down'])if(P.cm[d])for(const[n,cl]of Object.entries(P.cm[d])){wt++;if(cl.cells.every(([r,c])=>PG[r][c]===P.solution[r][c])){ws++;const el=$('cl_'+d+'_'+n);if(el)el.classList.add('solved')}}$('mWords').textContent=ws+'/'+wt;$('barWords').style.width=wt?(ws/wt*100)+'%':'0';$('mErr').textContent=eC}
+function updM(){if(!P)return;let f=0,t=0;for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++)if(P.mask[r][c]){t++;if(PG[r][c])f++}const pc=t?Math.round(f/t*100):0;$('mProg').textContent=pc+'%';$('barProg').style.width=pc+'%';let wt=0,ws=0;for(const d of['across','down'])if(P.cm[d])for(const[n,cl]of Object.entries(P.cm[d])){wt++;if(cl.cells.every(([r,c])=>PG[r][c]===P.solution[r][c])){ws++;const el=$('cl_'+d+'_'+n);if(el)el.classList.add('solved')}}$('mWords').textContent=ws+'/'+wt;$('barWords').style.width=wt?(ws/wt*100)+'%':'0';$('mErr').textContent=eC}
 
 // ─── Timer ───
 function startT(){stopT();sec=0;$('timer').textContent='00:00';tI=setInterval(()=>{sec++;$('timer').textContent=fmtT(sec)},1000)}
@@ -323,17 +329,18 @@ function fmtT(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60
 
 // ─── Save/Load ───
 function savePuzzle(){if(!P)return;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({lang,rows:P.rows,cols:P.cols,mask:P.mask,solution:P.solution,cm:P.cm,na:P.na,PG,sec,eC})]));a.download='cw_'+lang+'_'+P.rows+'x'+P.cols+'_'+Date.now()+'.json';a.click()}
-function loadPuzzle(ev){const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.lang){lang=d.lang;L=I18N[lang]||I18N.en;$('langSel').value=lang;updUI()}P={rows:d.rows,cols:d.cols,mask:d.mask,solution:d.solution,cm:d.cm,na:d.na};PG=d.PG||Array.from({length:d.rows},()=>Array(d.cols).fill(''));sec=d.sec||0;eC=d.eC||0;done=false;selR=-1;selC=-1;dir='across';aCl=null;setCsz(d.cols);buildG();buildCl('across');buildCl('down');startT();if(d.sec)sec=d.sec;updM();for(let r=0;r<d.rows;r++)for(let c=0;c<d.cols;c++)if(d.mask[r][c]){sel(r,c);return}}catch(err){setS('Error: '+err.message,'err')}};rd.readAsText(f);ev.target.value=''}
+function loadPuzzle(ev){const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.lang){lang=d.lang;L=I18N[lang]||I18N.en;$('langSel').value=lang;updUI()}P={rows:d.rows,cols:d.cols,mask:d.mask,solution:d.solution,cm:d.cm,na:d.na};PG=d.PG||Array.from({length:d.rows},()=>Array(d.cols).fill(''));sec=d.sec||0;eC=d.eC||0;done=false;selR=-1;selC=-1;dir='across';aCl=null;setCsz(d.cols);buildG();buildCl('across');buildCl('down');stopT();$('timer').textContent=fmtT(sec);tI=setInterval(()=>{sec++;$('timer').textContent=fmtT(sec)},1000);updM();for(let r=0;r<d.rows;r++)for(let c=0;c<d.cols;c++)if(d.mask[r][c]){sel(r,c);return}}catch(err){setS('Error: '+err.message,'err')}};rd.readAsText(f);ev.target.value=''}
 
 // ─── Lang ───
-async function switchLang(code){lang=code;L=I18N[lang]||I18N.en;updUI();const ok=await loadD(lang);if(ok)setS(Object.keys(DB.hints).length+' hints — '+L.ready,'')}
+async function switchLang(code){lang=code;L=I18N[lang]||I18N.en;updUI();const ok=await loadD(lang);if(ok)setS(DB.total+' '+L.words.toLowerCase()+' — '+L.ready,'')}
 function updUI(){$('tTitle').innerHTML=L.title;$('tSub').textContent=L.sub;$('tAcross').textContent=L.across;$('tDown').textContent=L.down;$('tStats').textContent=L.stats;$('tProg').textContent=L.prog;$('tWords').textContent=L.words;$('tErr').textContent=L.err;$('tHelp').textContent=L.help;$('tHelpH').innerHTML=L.helpH;$('bChk').textContent=L.chk;$('bRev').textContent=L.rev;$('bSol').textContent=L.sol}
 function togglePanel(d){const el=$(d==='across'?'cluesAcross':'cluesDown');el.style.display=el.style.display==='none'?'':'none'}
-async function detectLang(){try{const r=await fetch('https://ipapi.co/json/',{signal:AbortSignal.timeout(3000)});const d=await r.json();if(d.country_code==='SI')return'sl'}catch(e){}return'en'}
+async function detectLang(){try{const r=await fetch('https://ipapi.co/json/',{signal:AbortSignal.timeout(3000)});const d=await r.json();if(d.country_code==='SI')return 'sl'}catch(e){}return 'en'}
 
 // ─── Init ───
 window.addEventListener('resize',()=>{if(P)setCsz(P.cols)});
-(async()=>{const det=await detectLang();lang=det;L=I18N[lang];$('langSel').value=lang;updUI();const ok=await loadD(lang);if(ok)setS(Object.keys(DB.hints).length+' hints — '+L.ready,'')})();
+(async()=>{const det=await detectLang();lang=det;L=I18N[lang];$('langSel').value=lang;updUI();const ok=await loadD(lang);if(ok)setS(DB.total+' '+L.words.toLowerCase()+' — '+L.ready,'')})();
+
 </script>
 </body>
 </html>
