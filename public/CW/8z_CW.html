@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="sl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,23 +7,9 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23020409'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='14' font-weight='700' fill='%2300e5ff' text-anchor='middle'%3EK%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#020409;--surface:rgba(15,23,41,0.82);
-  --border:rgba(0,229,255,0.10);--border2:rgba(0,229,255,0.22);
-  --cyan:#00e5ff;--cyan-dim:rgba(0,229,255,0.12);--cyan-glow:rgba(0,229,255,0.25);
-  --gold:#f59e0b;--gold-dim:rgba(245,158,11,0.12);
-  --green:#34d399;--green-dim:rgba(52,211,153,0.12);
-  --rose:#ff6b8a;--rose-dim:rgba(255,107,138,0.12);
-  --text:#e2e8f4;--muted:#5e7192;--subtle:#1a2540;
-  --cell-size:52px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow-x:hidden}
-body{
-  background:radial-gradient(circle at 20% 18%,rgba(16,120,80,0.22),transparent 32%),radial-gradient(circle at 80% 70%,rgba(0,229,255,0.08),transparent 28%),linear-gradient(180deg,#090b10,#06070a);
-  color:var(--text);font-family:'Rajdhani',sans-serif;font-size:17px;line-height:1.6;
-  display:flex;flex-direction:column;align-items:center;-webkit-font-smoothing:antialiased;
-}
+:root{--bg:#020409;--surface:rgba(15,23,41,0.82);--border:rgba(0,229,255,0.10);--border2:rgba(0,229,255,0.22);--cyan:#00e5ff;--cyan-dim:rgba(0,229,255,0.12);--cyan-glow:rgba(0,229,255,0.25);--gold:#f59e0b;--gold-dim:rgba(245,158,11,0.12);--green:#34d399;--green-dim:rgba(52,211,153,0.12);--rose:#ff6b8a;--rose-dim:rgba(255,107,138,0.12);--text:#e2e8f4;--muted:#5e7192;--subtle:#1a2540;--cell-size:52px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow-x:hidden}
+body{background:radial-gradient(circle at 20% 18%,rgba(16,120,80,0.22),transparent 32%),radial-gradient(circle at 80% 70%,rgba(0,229,255,0.08),transparent 28%),linear-gradient(180deg,#090b10,#06070a);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:17px;line-height:1.6;display:flex;flex-direction:column;align-items:center;-webkit-font-smoothing:antialiased}
 body::before,body::after{content:"";position:fixed;border-radius:50%;filter:blur(80px);opacity:.30;pointer-events:none;z-index:0}
 body::before{width:42vw;height:42vw;left:-8vw;top:-12vh;background:radial-gradient(circle,rgba(52,211,153,0.30),transparent 72%);animation:flA 18s ease-in-out infinite}
 body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gradient(circle,rgba(0,229,255,0.12),transparent 72%);animation:flB 24s ease-in-out infinite}
@@ -32,31 +18,19 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 .noise{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0.018;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .page{position:relative;z-index:1;width:100%;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding-bottom:40px}
 .header{width:100%;max-width:1800px;padding:12px 24px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.logo{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:600;color:var(--cyan);letter-spacing:.3em;text-transform:uppercase}
-.logo span{color:var(--gold)}
+.logo{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:600;color:var(--cyan);letter-spacing:.3em;text-transform:uppercase}.logo span{color:var(--gold)}
 .header-right{display:flex;align-items:center;gap:10px}
 .timer{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--muted);letter-spacing:.1em}
-.lang-sel{font-family:'JetBrains Mono',monospace;font-size:.72rem;background:rgba(11,17,32,0.6);border:1px solid var(--border);color:var(--cyan);padding:4px 8px;border-radius:4px;cursor:pointer}
-.lang-sel option{background:#0a0e18;color:var(--text)}
+.lang-sel{font-family:'JetBrains Mono',monospace;font-size:.72rem;background:rgba(11,17,32,0.6);border:1px solid var(--border);color:var(--cyan);padding:4px 8px;border-radius:4px;cursor:pointer}.lang-sel option{background:#0a0e18;color:var(--text)}
 .title-block{text-align:center;padding:4px 20px 0}
-.title{font-family:'Rajdhani',sans-serif;font-size:clamp(1.4rem,3.5vw,2.4rem);font-weight:700;letter-spacing:-.02em;line-height:1.1}
-.title .accent{color:var(--cyan)}
+.title{font-family:'Rajdhani',sans-serif;font-size:clamp(1.4rem,3.5vw,2.4rem);font-weight:700;letter-spacing:-.02em;line-height:1.1}.title .accent{color:var(--cyan)}
 .subtitle{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:var(--muted);margin-top:2px}
-.status{text-align:center;font-size:.75rem;color:var(--muted);min-height:1.2em;margin:2px 0;font-family:'JetBrains Mono',monospace}
-.status.win{color:var(--gold);font-weight:600}
-.status.err{color:var(--rose)}
-.status.gen{color:var(--cyan)}
-.main{
-  display:grid;grid-template-columns:1fr auto 1fr;grid-template-areas:"left center right";
-  gap:24px;padding:6px 24px;max-width:1800px;width:100%;align-content:start;
-}
+.status{text-align:center;font-size:.75rem;color:var(--muted);min-height:1.2em;margin:2px 0;font-family:'JetBrains Mono',monospace}.status.win{color:var(--gold);font-weight:600}.status.err{color:var(--rose)}.status.gen{color:var(--cyan)}
+.main{display:grid;grid-template-columns:1fr auto 1fr;grid-template-areas:"left center right";gap:24px;padding:6px 24px;max-width:1800px;width:100%;align-content:start}
 .col-left{grid-area:left;display:flex;flex-direction:column;gap:10px;min-width:260px;max-width:400px;justify-self:end}
 .col-center{grid-area:center;display:flex;flex-direction:column;align-items:center}
 .col-right{grid-area:right;display:flex;flex-direction:column;gap:10px;min-width:260px;max-width:400px}
-@media(max-width:1000px){
-  .main{grid-template-columns:1fr;grid-template-areas:"center" "left" "right";justify-items:center}
-  .col-left,.col-right{max-width:600px;min-width:0;width:100%;justify-self:center}
-}
+@media(max-width:1000px){.main{grid-template-columns:1fr;grid-template-areas:"center" "left" "right";justify-items:center}.col-left,.col-right{max-width:600px;min-width:0;width:100%;justify-self:center}}
 .grid-wrap{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px;box-shadow:0 0 60px rgba(0,229,255,0.04);backdrop-filter:blur(12px)}
 .grid{display:inline-grid;gap:0}
 .cell{width:var(--cell-size);height:var(--cell-size);background:rgba(11,17,32,0.7);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:calc(var(--cell-size)*0.42);font-weight:700;color:var(--text);cursor:pointer;position:relative;transition:background .12s,border-color .12s;text-transform:uppercase}
@@ -64,18 +38,14 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 .cell.selected{background:var(--cyan-dim)!important;border-color:var(--cyan)!important;box-shadow:0 0 10px var(--cyan-glow)}
 .cell.word-highlight{background:rgba(0,229,255,0.04)}
 .cell.black{background:#060a14!important;border-color:rgba(0,0,0,0.3)!important;cursor:default;pointer-events:none}
-.cell.correct{color:var(--green)!important}
-.cell.error{color:var(--rose)!important;border-color:var(--rose)!important;background:var(--rose-dim)!important}
+.cell.correct{color:var(--green)!important}.cell.error{color:var(--rose)!important;border-color:var(--rose)!important;background:var(--rose-dim)!important}
 .cell .clue-num{position:absolute;top:1px;left:3px;font-size:calc(var(--cell-size)*0.20);font-weight:600;color:var(--gold);line-height:1;pointer-events:none}
 @keyframes winPulse{0%,100%{box-shadow:0 0 8px var(--gold-dim)}50%{box-shadow:0 0 20px rgba(245,158,11,0.4)}}
 .cell.win-anim{animation:winPulse 1s ease-in-out 3;color:var(--gold)!important}
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;backdrop-filter:blur(8px)}
 .panel-title{font-family:'JetBrains Mono',monospace;font-size:.58rem;font-weight:600;color:var(--cyan);letter-spacing:.22em;text-transform:uppercase;margin-bottom:8px;cursor:pointer;user-select:none}
 .clue-list{max-height:500px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
-.clue-item{font-size:.88rem;padding:5px 8px;border-radius:4px;cursor:pointer;display:flex;gap:6px;line-height:1.35;transition:background .12s}
-.clue-item:hover{background:var(--cyan-dim)}
-.clue-item.active{background:var(--cyan-dim);border-left:2px solid var(--cyan)}
-.clue-item.solved{color:var(--green);opacity:0.6}
+.clue-item{font-size:.88rem;padding:5px 8px;border-radius:4px;cursor:pointer;display:flex;gap:6px;line-height:1.35;transition:background .12s}.clue-item:hover{background:var(--cyan-dim)}.clue-item.active{background:var(--cyan-dim);border-left:2px solid var(--cyan)}.clue-item.solved{color:var(--green);opacity:0.6}
 .clue-num-label{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--gold);min-width:24px;flex-shrink:0}
 .clue-text{color:var(--muted)}.clue-item.active .clue-text{color:var(--text)}
 .btn{font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;background:rgba(11,17,32,0.6);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:4px;cursor:pointer;transition:all .12s;text-align:center;letter-spacing:.06em}
@@ -86,6 +56,7 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 .btn:disabled{opacity:0.3;cursor:not-allowed}
 .btn-row{display:flex;gap:5px;flex-wrap:wrap}.btn-row .btn{flex:1;min-width:80px}
 .diff-btns{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.io-row{display:flex;gap:5px;margin-top:5px;justify-content:center}
 .metric{display:flex;justify-content:space-between;align-items:baseline;padding:2px 0}
 .metric-label{font-size:.76rem;color:var(--muted)}
 .metric-value{font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:700}
@@ -101,789 +72,234 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
   <div class="logo">AIM³ <span>Lab</span> · Crossword</div>
   <div class="header-right">
     <select class="lang-sel" id="langSel" onchange="switchLang(this.value)">
-      <option value="sl">Slovenščina</option>
       <option value="en">English</option>
+      <option value="sl">Slovenščina</option>
     </select>
     <div class="timer" id="timer">00:00</div>
   </div>
 </div>
 <div class="title-block">
-  <div class="title" id="titleText">Križanka <span class="accent">× MDL</span></div>
-  <div class="subtitle" id="subtitleText">Kompresija misli v mrežo</div>
+  <div class="title" id="tTitle">Crossword <span class="accent">× MDL</span></div>
+  <div class="subtitle" id="tSub">Compressing thought into a grid</div>
 </div>
-<div class="status" id="status">Nalaganje slovarja…</div>
+<div class="status" id="status">Loading…</div>
 <div class="main">
 <div class="col-left">
-  <div class="panel"><div class="panel-title" onclick="togglePanel('across')" id="acrossTitle">▶ Vodoravno</div><div class="clue-list" id="cluesAcross"></div></div>
+  <div class="panel"><div class="panel-title" onclick="togglePanel('across')" id="tAcross">▶ Across</div><div class="clue-list" id="cluesAcross"></div></div>
   <div class="panel">
-    <div class="panel-title" id="statsTitle">Statistika</div>
-    <div class="metric"><span class="metric-label" id="lblProgress">Napredek</span><span class="metric-value" id="mProgress">0%</span></div>
-    <div class="bar-wrap"><div class="bar green" id="barProgress" style="width:0"></div></div>
-    <div class="metric" style="margin-top:6px"><span class="metric-label" id="lblWords">Besede</span><span class="metric-value" id="mWords">0 / 0</span></div>
+    <div class="panel-title" id="tStats">Statistics</div>
+    <div class="metric"><span class="metric-label" id="tProg">Progress</span><span class="metric-value" id="mProg">0%</span></div>
+    <div class="bar-wrap"><div class="bar green" id="barProg" style="width:0"></div></div>
+    <div class="metric" style="margin-top:6px"><span class="metric-label" id="tWords">Words</span><span class="metric-value" id="mWords">0/0</span></div>
     <div class="bar-wrap"><div class="bar gold" id="barWords" style="width:0"></div></div>
-    <div class="metric" style="margin-top:6px"><span class="metric-label" id="lblErrors">Napake</span><span class="metric-value" id="mErrors">0</span></div>
+    <div class="metric" style="margin-top:6px"><span class="metric-label" id="tErr">Errors</span><span class="metric-value" id="mErr">0</span></div>
   </div>
 </div>
 <div class="col-center">
   <div class="grid-wrap"><div class="grid" id="grid"></div></div>
-  <div style="margin-top:10px">
-    <div class="diff-btns" id="diffBtns">
-      <button class="btn" onclick="generate(9,9,0.28)">9×9</button>
-      <button class="btn" onclick="generate(11,11,0.26)">11×11</button>
-      <button class="btn gold" onclick="generate(13,13,0.24)">13×13</button>
-      <button class="btn rose" onclick="generate(15,15,0.22)">15×15</button>
-    </div>
+  <div style="margin-top:10px"><div class="diff-btns">
+    <button class="btn" onclick="go(9)">9×9</button>
+    <button class="btn" onclick="go(11)">11×11</button>
+    <button class="btn gold" onclick="go(13)">13×13</button>
+    <button class="btn rose" onclick="go(15)">15×15</button>
+  </div></div>
+  <div class="btn-row" style="margin-top:6px;max-width:420px;width:100%">
+    <button class="btn green" onclick="checkAll()" id="bChk">✓ Check</button>
+    <button class="btn" onclick="revealWord()" id="bRev">Reveal</button>
+    <button class="btn rose" onclick="revealAll()" id="bSol">Solution</button>
   </div>
-  <div class="btn-row" style="margin-top:6px;max-width:480px;width:100%">
-    <button class="btn green" onclick="checkAll()" id="btnCheck">✓</button>
-    <button class="btn" onclick="revealWord()" id="btnReveal">Razkrij</button>
-    <button class="btn rose" onclick="revealAll()" id="btnSolution">Rešitev</button>
-    <button class="btn" onclick="savePuzzle()">💾</button>
-    <button class="btn" onclick="document.getElementById('loadFile').click()">📂</button>
+  <div class="io-row">
+    <button class="btn" onclick="savePuzzle()">💾 Save</button>
+    <button class="btn" onclick="document.getElementById('loadFile').click()">📂 Load</button>
     <input type="file" id="loadFile" accept=".json" onchange="loadPuzzle(event)">
   </div>
 </div>
 <div class="col-right">
-  <div class="panel"><div class="panel-title" onclick="togglePanel('down')" id="downTitle">▶ Navpično</div><div class="clue-list" id="cluesDown"></div></div>
-  <div class="panel"><div class="panel-title" id="helpTitle">Navodila</div>
-    <div id="helpText" style="font-size:.78rem;color:var(--muted);line-height:1.5"></div>
+  <div class="panel"><div class="panel-title" onclick="togglePanel('down')" id="tDown">▶ Down</div><div class="clue-list" id="cluesDown"></div></div>
+  <div class="panel"><div class="panel-title" id="tHelp">How to play</div>
+    <div id="tHelpH" style="font-size:.78rem;color:var(--muted);line-height:1.5"></div>
   </div>
-</div>
-</div></div>
-
+</div></div></div>
 <script>
-// ═══════════════════════════════════════════════════════════════
-// 8z Crossword Engine — AIM³ Lab
-// Backtracking grid filler with scored word database
-// ═══════════════════════════════════════════════════════════════
-
-const I18N = {
-  sl: {
-    title: 'Križanka <span class="accent">× MDL</span>',
-    subtitle: 'Kompresija misli v mrežo',
-    across: '▶ Vodoravno', down: '▶ Navpično',
-    stats: 'Statistika', progress: 'Napredek', words: 'Besede', errors: 'Napake',
-    help: 'Navodila',
-    helpHtml: 'Klikni celico, vpiši črko.<br><span style="color:var(--cyan)">Tab/Space</span> preklopi smer · <span style="color:var(--cyan)">Puščice</span> premikanje<br><span style="color:var(--cyan)">Backspace</span> izbriši · <span style="color:var(--cyan)">Enter</span> naslednja beseda',
-    loading: 'Nalaganje slovarja…',
-    generating: 'Generiram križanko…',
-    generated: ' križanka pripravljena',
-    failed: 'Generiranje ni uspelo — poskusi znova',
-    checked: 'Preverjeno — poišči rdeče celice',
-    solved: 'Rešitev prikazana',
-    winMsg: s => `✦ REŠENO v ${s}! ✦`,
-    noDict: 'Slovar ni na voljo',
-    reveal: 'Razkrij', solution: 'Rešitev',
-  },
-  en: {
-    title: 'Crossword <span class="accent">× MDL</span>',
-    subtitle: 'Compressing thought into a grid',
-    across: '▶ Across', down: '▶ Down',
-    stats: 'Statistics', progress: 'Progress', words: 'Words', errors: 'Errors',
-    help: 'Instructions',
-    helpHtml: 'Click a cell, type a letter.<br><span style="color:var(--cyan)">Tab/Space</span> toggle direction · <span style="color:var(--cyan)">Arrows</span> navigate<br><span style="color:var(--cyan)">Backspace</span> delete · <span style="color:var(--cyan)">Enter</span> next word',
-    loading: 'Loading dictionary…',
-    generating: 'Generating crossword…',
-    generated: ' crossword ready',
-    failed: 'Generation failed — try again',
-    checked: 'Checked — find the red cells',
-    solved: 'Solution revealed',
-    winMsg: s => `✦ SOLVED in ${s}! ✦`,
-    noDict: 'Dictionary not available',
-    reveal: 'Reveal', solution: 'Solution',
-  }
+const I18N={
+sl:{title:'Križanka <span class="accent">× MDL</span>',sub:'Kompresija misli v mrežo',across:'▶ Vodoravno',down:'▶ Navpično',stats:'Statistika',prog:'Napredek',words:'Besede',err:'Napake',help:'Navodila',helpH:'Klikni celico, vpiši črko.<br><span style="color:var(--cyan)">Tab/Space</span> preklopi smer · <span style="color:var(--cyan)">Puščice</span> premikanje<br><span style="color:var(--cyan)">Backspace</span> izbriši · <span style="color:var(--cyan)">Enter</span> naslednja beseda',loading:'Nalaganje…',gen:'Generiram…',ready:'pripravljena',fail:'Ni uspelo — poskusi znova',checked:'Preverjeno — poišči rdeče',solved:'Rešitev prikazana',win:s=>`✦ REŠENO v ${s}! ✦`,chk:'✓ Preveri',rev:'Razkrij',sol:'Rešitev',nodict:'Slovar ni na voljo'},
+en:{title:'Crossword <span class="accent">× MDL</span>',sub:'Compressing thought into a grid',across:'▶ Across',down:'▶ Down',stats:'Statistics',prog:'Progress',words:'Words',err:'Errors',help:'How to play',helpH:'Click a cell, type a letter.<br><span style="color:var(--cyan)">Tab/Space</span> toggle direction · <span style="color:var(--cyan)">Arrows</span> navigate<br><span style="color:var(--cyan)">Backspace</span> delete · <span style="color:var(--cyan)">Enter</span> next word',loading:'Loading…',gen:'Generating…',ready:'ready',fail:'Failed — try again',checked:'Checked — find the red cells',solved:'Solution revealed',win:s=>`✦ SOLVED in ${s}! ✦`,chk:'✓ Check',rev:'Reveal',sol:'Solution',nodict:'Dictionary not available'}
 };
+let lang='en',L=I18N.en,DB=null,P=null,PG=null,selR=-1,selC=-1,dir='across',aCl=null,tI=null,sec=0,eC=0,done=false;
+const DC={};
+function $(id){return document.getElementById(id)}
+function setS(m,c){const e=$('status');e.textContent=m;e.className='status '+(c||'')}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
-// ─── State ───
-let lang = 'sl', L = I18N.sl;
-let DB = null; // {hinted: {3:[{w,h,s},...], ...}, all: {...}}
-let puzzle = null; // {rows, cols, mask, solution, slots, clueMap}
-let playerGrid = null;
-let selR = -1, selC = -1, dir = 'across', activeClue = null;
-let timerInterval = null, seconds = 0, errorCount = 0, solved = false;
-
-// ─── Dictionary ───
-const dictCache = {};
-
-async function loadDict(code) {
-  if (dictCache[code]) { DB = dictCache[code]; return true; }
-  setStatus(L.loading, 'gen');
-  try {
-    const r = await fetch(`cw_${code}_scored.json`);
-    if (!r.ok) throw new Error(r.status);
-    const data = await r.json();
-    const db = {hinted: {}, all: {}};
-    for (const [len, words] of Object.entries(data.words)) {
-      db.all[len] = words;
-      db.hinted[len] = words.filter(w => w.h);
+// ─── Dict ───
+async function loadD(code){
+  if(DC[code]){DB=DC[code];return true}
+  setS(L.loading,'gen');
+  try{
+    const r=await fetch('cw_'+code+'_scored.json');if(!r.ok)throw new Error(r.status);
+    const d=await r.json();const db={h:{},all:{},hints:{}};
+    for(const[l,ws]of Object.entries(d.words)){
+      db.all[l]=ws.map(w=>w.w);
+      db.h[l]=ws.filter(w=>w.h).map(w=>w.w);
+      for(const w of ws)if(w.h)db.hints[w.w]=w.h;
     }
-    dictCache[code] = db;
-    DB = db;
-    return true;
-  } catch(e) {
-    console.error('Dict load failed:', e);
-    setStatus(L.noDict, 'err');
-    return false;
-  }
+    DC[code]=db;DB=db;return true;
+  }catch(e){console.error(e);setS(L.nodict,'err');return false}
 }
 
-// ─── Grid Template Generation ───
-function genTemplate(rows, cols, blackPct) {
-  const maxAttempts = 50;
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const mask = Array.from({length: rows}, () => Array(cols).fill(1));
-    // Place black cells with 180° symmetry
-    const target = Math.floor(rows * cols * blackPct);
-    let placed = 0;
-    const tried = new Set();
-    while (placed < target) {
-      const r = Math.floor(Math.random() * rows);
-      const c = Math.floor(Math.random() * cols);
-      const key = `${r},${c}`;
-      if (tried.has(key)) continue;
-      tried.add(key);
-      const r2 = rows - 1 - r, c2 = cols - 1 - c;
-      if (mask[r][c] === 0) continue;
-      // Don't black out edges too aggressively
-      mask[r][c] = 0;
-      mask[r2][c2] = 0;
-      placed += (r === r2 && c === c2) ? 1 : 2;
+// ─── Template ───
+function mkTpl(n){
+  const bp=n<=9?.33:n<=11?.28:n<=13?.25:.22;
+  for(let a=0;a<100;a++){
+    const m=Array.from({length:n},()=>Array(n).fill(1));
+    const tgt=Math.floor(n*n*bp);let pl=0;
+    for(let t=0;t<tgt*5&&pl<tgt;t++){
+      const r=Math.floor(Math.random()*n),c=Math.floor(Math.random()*n);
+      if(!m[r][c])continue;
+      const r2=n-1-r,c2=n-1-c;
+      m[r][c]=0;m[r2][c2]=0;
+      pl+=(r===r2&&c===c2)?1:2;
     }
-    if (validateTemplate(mask, rows, cols)) return mask;
+    if(okTpl(m,n))return m;
   }
   return null;
 }
-
-function validateTemplate(mask, rows, cols) {
-  // Check: no word shorter than 3, all white connected
-  // Check across words
-  for (let r = 0; r < rows; r++) {
-    let run = 0;
-    for (let c = 0; c <= cols; c++) {
-      if (c < cols && mask[r][c]) run++;
-      else { if (run > 0 && run < 3) return false; run = 0; }
-    }
-  }
-  // Check down words
-  for (let c = 0; c < cols; c++) {
-    let run = 0;
-    for (let r = 0; r <= rows; r++) {
-      if (r < rows && mask[r][c]) run++;
-      else { if (run > 0 && run < 3) return false; run = 0; }
-    }
-  }
-  // Check connectivity via BFS
-  let startR = -1, startC = -1;
-  for (let r = 0; r < rows && startR < 0; r++)
-    for (let c = 0; c < cols; c++) if (mask[r][c]) { startR = r; startC = c; break; }
-  if (startR < 0) return false;
-  const visited = Array.from({length: rows}, () => Array(cols).fill(false));
-  const queue = [[startR, startC]];
-  visited[startR][startC] = true;
-  let count = 1;
-  while (queue.length) {
-    const [r, c] = queue.shift();
-    for (const [dr, dc] of [[0,1],[0,-1],[1,0],[-1,0]]) {
-      const nr = r+dr, nc = c+dc;
-      if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && mask[nr][nc] && !visited[nr][nc]) {
-        visited[nr][nc] = true; count++; queue.push([nr, nc]);
-      }
-    }
-  }
-  const totalWhite = mask.flat().reduce((s, v) => s + v, 0);
-  return count === totalWhite;
+function okTpl(m,n){
+  for(let r=0;r<n;r++){let run=0;for(let c=0;c<=n;c++){if(c<n&&m[r][c])run++;else{if(run>0&&run<3)return false;run=0}}}
+  for(let c=0;c<n;c++){let run=0;for(let r=0;r<=n;r++){if(r<n&&m[r][c])run++;else{if(run>0&&run<3)return false;run=0}}}
+  let sr=-1,sc=-1;for(let r=0;r<n&&sr<0;r++)for(let c=0;c<n;c++)if(m[r][c]){sr=r;sc=c;break}
+  if(sr<0)return false;
+  const v=Array.from({length:n},()=>Array(n).fill(0));const q=[[sr,sc]];v[sr][sc]=1;let cnt=1;
+  while(q.length){const[r,c]=q.shift();for(const[dr,dc]of[[0,1],[0,-1],[1,0],[-1,0]]){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<n&&nc>=0&&nc<n&&m[nr][nc]&&!v[nr][nc]){v[nr][nc]=1;cnt++;q.push([nr,nc])}}}
+  return cnt===m.flat().reduce((s,v)=>s+v,0);
 }
 
-// ─── Slot Extraction ───
-function extractSlots(mask, rows, cols) {
-  const slots = [];
-  // Across
-  for (let r = 0; r < rows; r++) {
-    let start = -1;
-    for (let c = 0; c <= cols; c++) {
-      if (c < cols && mask[r][c]) { if (start < 0) start = c; }
-      else {
-        if (start >= 0 && c - start >= 3) {
-          const cells = [];
-          for (let i = start; i < c; i++) cells.push([r, i]);
-          slots.push({dir: 'across', r, c: start, len: c - start, cells});
-        }
-        start = -1;
-      }
-    }
-  }
-  // Down
-  for (let c = 0; c < cols; c++) {
-    let start = -1;
-    for (let r = 0; r <= rows; r++) {
-      if (r < rows && mask[r][c]) { if (start < 0) start = r; }
-      else {
-        if (start >= 0 && r - start >= 3) {
-          const cells = [];
-          for (let i = start; i < r; i++) cells.push([i, c]);
-          slots.push({dir: 'down', r: start, c, len: r - start, cells});
-        }
-        start = -1;
-      }
-    }
-  }
-  return slots;
+// ─── Slots ───
+function getSlots(m,n){
+  const sl=[];
+  for(let r=0;r<n;r++){let s=-1;for(let c=0;c<=n;c++){if(c<n&&m[r][c]){if(s<0)s=c}else{if(s>=0&&c-s>=3){const ce=[];for(let i=s;i<c;i++)ce.push([r,i]);sl.push({d:'across',r,c:s,len:c-s,cells:ce})}s=-1}}}
+  for(let c=0;c<n;c++){let s=-1;for(let r=0;r<=n;r++){if(r<n&&m[r][c]){if(s<0)s=r}else{if(s>=0&&r-s>=3){const ce=[];for(let i=s;i<r;i++)ce.push([i,c]);sl.push({d:'down',r:s,c,len:r-s,cells:ce})}s=-1}}}
+  return sl;
 }
 
 // ─── Backtracking Filler ───
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
+function fill(slots,n){
+  if(!DB)return null;
+  const grid=Array.from({length:n},()=>Array(n).fill(''));
+  const used=new Set();
+  let it=0;const MX=120000;
 
-function fillGrid(slots, rows, cols) {
-  if (!DB) return null;
-  const grid = Array.from({length: rows}, () => Array(cols).fill(''));
-  const usedWords = new Set();
-  const wordData = {}; // word -> {w, h, s}
+  // Sort: shortest first (more constrained)
+  slots.sort((a,b)=>a.len-b.len);
 
-  // Pre-compute crossing map: for each slot, which other slots cross it and where
-  for (const slot of slots) {
-    slot.crossings = [];
-    for (const other of slots) {
-      if (other === slot) continue;
-      for (let i = 0; i < slot.cells.length; i++) {
-        for (let j = 0; j < other.cells.length; j++) {
-          if (slot.cells[i][0] === other.cells[j][0] && slot.cells[i][1] === other.cells[j][1]) {
-            slot.crossings.push({otherSlot: other, myIdx: i, otherIdx: j});
-          }
-        }
-      }
-    }
+  function pat(slot){return slot.cells.map(([r,c])=>grid[r][c])}
+
+  function cands(slot){
+    const p=pat(slot);const lk=String(slot.len);
+    const res=[];const seen=new Set();
+    // Hinted first
+    const hList=DB.h[lk]||[];
+    for(const w of hList){if(!used.has(w)&&!seen.has(w)){let ok=true;for(let i=0;i<p.length;i++)if(p[i]&&p[i]!==w[i]){ok=false;break}if(ok){res.push(w);seen.add(w)}}}
+    // Then all
+    if(res.length<30){const aList=DB.all[lk]||[];for(const w of aList){if(!used.has(w)&&!seen.has(w)){let ok=true;for(let i=0;i<p.length;i++)if(p[i]&&p[i]!==w[i]){ok=false;break}if(ok){res.push(w);seen.add(w);if(res.length>=50)break}}}}
+    return shuffle(res);
   }
 
-  // Sort: most crossings first, then shortest
-  slots.sort((a, b) => b.crossings.length - a.crossings.length || a.len - b.len);
-
-  // Build candidate lists: prefer hinted words, then all
-  function getCandidates(slot) {
-    const pattern = slot.cells.map(([r, c]) => grid[r][c] || null);
-    const lenKey = String(slot.len);
-
-    // Try hinted first
-    let pool = DB.hinted[lenKey] || [];
-    let candidates = pool.filter(w => {
-      if (usedWords.has(w.w)) return false;
-      for (let i = 0; i < slot.len; i++) {
-        if (pattern[i] && pattern[i] !== w.w[i]) return false;
-      }
-      return true;
-    });
-
-    // If not enough hinted, add from full pool
-    if (candidates.length < 3) {
-      const allPool = DB.all[lenKey] || [];
-      const extra = allPool.filter(w => {
-        if (usedWords.has(w.w)) return false;
-        if (candidates.some(c => c.w === w.w)) return false;
-        for (let i = 0; i < slot.len; i++) {
-          if (pattern[i] && pattern[i] !== w.w[i]) return false;
-        }
-        return true;
-      });
-      candidates = candidates.concat(extra.slice(0, 20));
-    }
-
-    return shuffle(candidates);
-  }
-
-  let iterations = 0;
-  const maxIter = 50000;
-
-  function solve(idx) {
-    if (++iterations > maxIter) return false;
-    if (idx >= slots.length) return true;
-    const slot = slots[idx];
-    const candidates = getCandidates(slot);
-
-    for (const cand of candidates.slice(0, 30)) { // limit per slot
-      // Place
-      for (let i = 0; i < slot.len; i++) {
-        grid[slot.cells[i][0]][slot.cells[i][1]] = cand.w[i];
-      }
-      usedWords.add(cand.w);
-      wordData[cand.w] = cand;
-
-      if (solve(idx + 1)) return true;
-
-      // Remove
-      for (let i = 0; i < slot.len; i++) {
-        // Only clear if no other placed slot uses this cell
-        grid[slot.cells[i][0]][slot.cells[i][1]] = '';
-      }
-      usedWords.delete(cand.w);
-      delete wordData[cand.w];
-    }
-
-    // Re-clear cells for this slot (fix: need to keep letters from crossing words)
-    return false;
-  }
-
-  // Fix the remove logic: only clear cells not used by previously placed slots
-  // Actually, let me fix this properly:
-  function placeWord(slot, word) {
-    for (let i = 0; i < slot.len; i++) {
-      grid[slot.cells[i][0]][slot.cells[i][1]] = word[i];
-    }
-  }
-  function removeWord(slot, placedSlots) {
-    // Only clear cells that aren't part of any earlier placed slot
-    const keepCells = new Set();
-    for (const ps of placedSlots) {
-      for (const [r, c] of ps.cells) keepCells.add(`${r},${c}`);
-    }
-    for (const [r, c] of slot.cells) {
-      if (!keepCells.has(`${r},${c}`)) grid[r][c] = '';
-    }
-  }
-
-  // Redo solve with proper cleanup
-  iterations = 0;
-  const placedSlots = [];
-
-  function solve2(idx) {
-    if (++iterations > maxIter) return false;
-    if (idx >= slots.length) return true;
-    const slot = slots[idx];
-    const candidates = getCandidates(slot);
-
-    for (const cand of candidates.slice(0, 25)) {
-      placeWord(slot, cand.w);
-      usedWords.add(cand.w);
-      wordData[cand.w] = cand;
-      placedSlots.push(slot);
-
-      if (solve2(idx + 1)) return true;
-
-      placedSlots.pop();
-      usedWords.delete(cand.w);
-      delete wordData[cand.w];
-      removeWord(slot, placedSlots);
+  function solve(idx){
+    if(++it>MX)return false;
+    if(idx>=slots.length)return true;
+    const slot=slots[idx];
+    const cs=cands(slot);
+    for(const word of cs){
+      const saved=slot.cells.map(([r,c])=>grid[r][c]);
+      for(let i=0;i<slot.len;i++)grid[slot.cells[i][0]][slot.cells[i][1]]=word[i];
+      used.add(word);
+      if(solve(idx+1))return true;
+      used.delete(word);
+      for(let i=0;i<slot.cells.length;i++)grid[slot.cells[i][0]][slot.cells[i][1]]=saved[i];
     }
     return false;
   }
-
-  if (!solve2(0)) return null;
-  return {grid, wordData, usedWords};
+  return solve(0)?grid:null;
 }
 
-// ─── Puzzle Assembly ───
-async function generate(rows, cols, blackPct) {
-  if (!DB) return;
-  setStatus(L.generating, 'gen');
-  disableButtons(true);
-
-  // Use setTimeout to let UI update
-  await new Promise(r => setTimeout(r, 20));
-
-  let result = null;
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const mask = genTemplate(rows, cols, blackPct);
-    if (!mask) continue;
-    const slots = extractSlots(mask, rows, cols);
-    if (slots.length < 4) continue;
-    const fill = fillGrid([...slots], rows, cols);
-    if (fill) {
-      result = {mask, slots, fill};
-      break;
+// ─── Generate ───
+async function go(sz){
+  if(!DB)return;setS(L.gen,'gen');
+  document.querySelectorAll('.diff-btns .btn').forEach(b=>b.disabled=true);
+  await new Promise(r=>setTimeout(r,30));
+  let res=null;
+  for(let a=0;a<10;a++){
+    const mask=mkTpl(sz);if(!mask)continue;
+    const slots=getSlots(mask,sz);if(slots.length<4)continue;
+    const g=fill([...slots],sz);
+    if(g){res={mask,slots,grid:g,sz};break}
+  }
+  document.querySelectorAll('.diff-btns .btn').forEach(b=>b.disabled=false);
+  if(!res){setS(L.fail,'err');return}
+  const{mask,slots,grid,sz:size}=res;const sol=grid.map(r=>[...r]);
+  const cm={across:{},down:{}},na={};let num=1;
+  for(let r=0;r<size;r++)for(let c=0;c<size;c++){
+    const hA=slots.find(s=>s.d==='across'&&s.r===r&&s.c===c);
+    const hD=slots.find(s=>s.d==='down'&&s.r===r&&s.c===c);
+    if(hA||hD){const nn=num++;na[r+','+c]=nn;
+      if(hA){const w=hA.cells.map(([r,c])=>sol[r][c]).join('');cm.across[nn]={r,c,len:hA.len,text:DB.hints[w]||'…',word:w,cells:hA.cells}}
+      if(hD){const w=hD.cells.map(([r,c])=>sol[r][c]).join('');cm.down[nn]={r,c,len:hD.len,text:DB.hints[w]||'…',word:w,cells:hD.cells}}
     }
   }
-
-  disableButtons(false);
-
-  if (!result) {
-    setStatus(L.failed, 'err');
-    return;
-  }
-
-  // Build puzzle
-  const {mask, slots, fill} = result;
-  const solution = fill.grid.map(row => [...row]);
-
-  // Number the slots and build clue map
-  const clueMap = {across: {}, down: {}};
-  let num = 1;
-  const numAssigned = {}; // "r,c" -> num
-
-  // Assign numbers in reading order
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const hasAcross = slots.find(s => s.dir === 'across' && s.r === r && s.c === c);
-      const hasDown = slots.find(s => s.dir === 'down' && s.r === r && s.c === c);
-      if (hasAcross || hasDown) {
-        const n = num++;
-        numAssigned[`${r},${c}`] = n;
-        if (hasAcross) {
-          const word = hasAcross.cells.map(([r,c]) => solution[r][c]).join('');
-          const entry = fill.wordData[word];
-          clueMap.across[n] = {
-            r, c, len: hasAcross.len,
-            text: entry?.h || '…',
-            word, cells: hasAcross.cells
-          };
-        }
-        if (hasDown) {
-          const word = hasDown.cells.map(([r,c]) => solution[r][c]).join('');
-          const entry = fill.wordData[word];
-          clueMap.down[n] = {
-            r, c, len: hasDown.len,
-            text: entry?.h || '…',
-            word, cells: hasDown.cells
-          };
-        }
-      }
-    }
-  }
-
-  puzzle = {rows, cols, mask, solution, clueMap, numAssigned};
-  playerGrid = Array.from({length: rows}, () => Array(cols).fill(''));
-  selR = -1; selC = -1; dir = 'across'; activeClue = null;
-  solved = false; errorCount = 0;
-
-  setCellSize(cols);
-  buildGrid();
-  buildClueList('across');
-  buildClueList('down');
-  startTimer();
-  updateMetrics();
-  setStatus(`${rows}×${cols}${L.generated}`, '');
-
-  // Select first white cell
-  for (let r = 0; r < rows; r++)
-    for (let c = 0; c < cols; c++)
-      if (mask[r][c]) { selectCell(r, c); return; }
+  P={rows:size,cols:size,mask,solution:sol,cm,na};PG=Array.from({length:size},()=>Array(size).fill(''));
+  selR=-1;selC=-1;dir='across';aCl=null;done=false;eC=0;
+  setCsz(size);buildG();buildCl('across');buildCl('down');startT();updM();
+  setS(size+'×'+size+' '+L.ready,'');
+  for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(mask[r][c]){sel(r,c);return}
 }
 
-// ─── Cell Size ───
-function setCellSize(cols) {
-  const vw = window.innerWidth, vh = window.innerHeight;
-  const maxH = Math.floor((vh * 0.68) / cols);
-  const maxW = Math.floor((vw * 0.42) / cols);
-  let sz = Math.min(maxH, maxW, 72);
-  sz = Math.max(sz, 28);
-  document.documentElement.style.setProperty('--cell-size', sz + 'px');
-}
+// ─── Render ───
+function setCsz(n){let sz=Math.min(Math.floor(window.innerHeight*0.68/n),Math.floor(window.innerWidth*0.42/n),72);sz=Math.max(sz,28);document.documentElement.style.setProperty('--cell-size',sz+'px')}
+function buildG(){const g=$('grid');g.style.gridTemplateColumns=`repeat(${P.cols},var(--cell-size))`;g.style.gridTemplateRows=`repeat(${P.rows},var(--cell-size))`;g.innerHTML='';for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++){const cell=document.createElement('div');cell.className='cell'+(P.mask[r][c]?'':' black');cell.dataset.r=r;cell.dataset.c=c;if(P.mask[r][c]){cell.onclick=(()=>{const rr=r,cc=c;return()=>sel(rr,cc)})();const nn=P.na[r+','+c];if(nn){const s=document.createElement('span');s.className='clue-num';s.textContent=nn;cell.appendChild(s)}}g.appendChild(cell)}rend()}
+function rend(){if(!P)return;const wc=wCells(selR,selC,dir);const ws=new Set(wc.map(([r,c])=>r+','+c));document.querySelectorAll('.cell').forEach(cell=>{const r=+cell.dataset.r,c=+cell.dataset.c;if(!P.mask[r]?.[c])return;cell.classList.remove('selected','word-highlight','correct','error');if(r===selR&&c===selC)cell.classList.add('selected');else if(ws.has(r+','+c))cell.classList.add('word-highlight');const ns=cell.querySelector('.clue-num');cell.textContent=PG[r][c];if(ns)cell.prepend(ns)})}
+function buildCl(d){const el=$(d==='across'?'cluesAcross':'cluesDown');el.innerHTML='';if(!P?.cm[d])return;for(const n of Object.keys(P.cm[d]).map(Number).sort((a,b)=>a-b)){const cl=P.cm[d][n];const it=document.createElement('div');it.className='clue-item';it.id='cl_'+d+'_'+n;it.innerHTML='<span class="clue-num-label">'+n+'.</span><span class="clue-text">'+cl.text+'</span>';it.onclick=()=>{dir=d;sel(cl.r,cl.c)};el.appendChild(it)}}
 
-// ─── UI Rendering ───
-function buildGrid() {
-  const g = document.getElementById('grid');
-  g.style.gridTemplateColumns = `repeat(${puzzle.cols},var(--cell-size))`;
-  g.style.gridTemplateRows = `repeat(${puzzle.rows},var(--cell-size))`;
-  g.innerHTML = '';
-  for (let r = 0; r < puzzle.rows; r++) {
-    for (let c = 0; c < puzzle.cols; c++) {
-      const cell = document.createElement('div');
-      cell.className = 'cell' + (puzzle.mask[r][c] ? '' : ' black');
-      cell.dataset.r = r; cell.dataset.c = c;
-      if (puzzle.mask[r][c]) {
-        cell.onclick = () => selectCell(r, c);
-        const numKey = `${r},${c}`;
-        if (puzzle.numAssigned[numKey]) {
-          const s = document.createElement('span');
-          s.className = 'clue-num';
-          s.textContent = puzzle.numAssigned[numKey];
-          cell.appendChild(s);
-        }
-      }
-      g.appendChild(cell);
-    }
-  }
-  render();
-}
+// ─── Nav ───
+function wCells(r,c,d){if(r<0||!P||!P.mask[r]?.[c])return[];const cs=[];if(d==='across'){let s=c;while(s>0&&P.mask[r][s-1])s--;for(let cc=s;cc<P.cols&&P.mask[r][cc];cc++)cs.push([r,cc])}else{let s=r;while(s>0&&P.mask[s-1]?.[c])s--;for(let rr=s;rr<P.rows&&P.mask[rr]?.[c];rr++)cs.push([rr,c])}return cs}
+function fCl(r,c,d){if(!P?.cm[d])return null;for(const[n,cl]of Object.entries(P.cm[d]))if(cl.cells.some(([cr,cc])=>cr===r&&cc===c))return+n;return null}
+function sel(r,c){if(!P||!P.mask[r]?.[c])return;if(r===selR&&c===selC)dir=dir==='across'?'down':'across';selR=r;selC=c;let n=fCl(r,c,dir);if(n!==null){aCl={d:dir,n};hlCl(dir,n)}else{const od=dir==='across'?'down':'across';const n2=fCl(r,c,od);if(n2!==null){dir=od;aCl={d:od,n:n2};hlCl(od,n2)}}rend()}
+function hlCl(d,n){document.querySelectorAll('.clue-item').forEach(e=>e.classList.remove('active'));const e=$('cl_'+d+'_'+n);if(e){e.classList.add('active');e.scrollIntoView({block:'nearest'})}}
+function adv(){if(dir==='across'){let c=selC+1;while(c<P.cols&&!P.mask[selR][c])c++;if(c<P.cols)sel(selR,c)}else{let r=selR+1;while(r<P.rows&&!P.mask[r]?.[selC])r++;if(r<P.rows)sel(r,selC)}}
+function ret(){if(dir==='across'){let c=selC-1;while(c>=0&&!P.mask[selR][c])c--;if(c>=0)sel(selR,c)}else{let r=selR-1;while(r>=0&&!P.mask[r]?.[selC])r--;if(r>=0)sel(r,selC)}}
+function nxW(){if(!aCl)return;const d=aCl.d;const ns=Object.keys(P.cm[d]).map(Number).sort((a,b)=>a-b);const i=ns.indexOf(aCl.n);let ni=(i+1)%ns.length;if(ni===0){const od=d==='across'?'down':'across';if(P.cm[od]&&Object.keys(P.cm[od]).length){dir=od;const on=Object.keys(P.cm[od]).map(Number).sort((a,b)=>a-b);sel(P.cm[od][on[0]].r,P.cm[od][on[0]].c);return}}sel(P.cm[d][ns[ni]].r,P.cm[d][ns[ni]].c)}
 
-function render() {
-  if (!puzzle) return;
-  const wc = getWordCells(selR, selC, dir);
-  const ws = new Set(wc.map(([r,c]) => `${r},${c}`));
-  document.querySelectorAll('.cell').forEach(cell => {
-    const r = +cell.dataset.r, c = +cell.dataset.c;
-    if (!puzzle.mask[r]?.[c]) return;
-    cell.classList.remove('selected','word-highlight','correct','error');
-    if (r === selR && c === selC) cell.classList.add('selected');
-    else if (ws.has(`${r},${c}`)) cell.classList.add('word-highlight');
-    const ns = cell.querySelector('.clue-num');
-    cell.textContent = playerGrid[r][c];
-    if (ns) cell.prepend(ns);
-  });
-}
+// ─── Keys ───
+document.addEventListener('keydown',e=>{if(!P||done||selR<0)return;if(e.key==='Tab'||e.key===' '){e.preventDefault();dir=dir==='across'?'down':'across';sel(selR,selC);return}if(e.key==='Enter'){e.preventDefault();nxW();return}if(e.key==='ArrowRight'){e.preventDefault();let c=selC+1;while(c<P.cols&&!P.mask[selR][c])c++;if(c<P.cols)sel(selR,c);return}if(e.key==='ArrowLeft'){e.preventDefault();let c=selC-1;while(c>=0&&!P.mask[selR][c])c--;if(c>=0)sel(selR,c);return}if(e.key==='ArrowDown'){e.preventDefault();let r=selR+1;while(r<P.rows&&!P.mask[r]?.[selC])r++;if(r<P.rows)sel(r,selC);return}if(e.key==='ArrowUp'){e.preventDefault();let r=selR-1;while(r>=0&&!P.mask[r]?.[selC])r--;if(r>=0)sel(r,selC);return}if(e.key==='Backspace'||e.key==='Delete'){e.preventDefault();if(PG[selR][selC])PG[selR][selC]='';else{ret();PG[selR][selC]=''}rend();updM();return}const ch=e.key.toUpperCase();if(/^[A-ZČŠŽÀÂÆÇÉÈÊËÏÎÔŒÙÛÜŸÁÍÓÚÑÄÖ]$/.test(ch)){e.preventDefault();PG[selR][selC]=ch;rend();adv();updM();chkW()}});
 
-function buildClueList(d) {
-  const el = document.getElementById(d === 'across' ? 'cluesAcross' : 'cluesDown');
-  el.innerHTML = '';
-  if (!puzzle?.clueMap[d]) return;
-  const nums = Object.keys(puzzle.clueMap[d]).map(Number).sort((a,b) => a-b);
-  for (const n of nums) {
-    const cl = puzzle.clueMap[d][n];
-    const item = document.createElement('div');
-    item.className = 'clue-item';
-    item.id = `clue_${d}_${n}`;
-    item.innerHTML = `<span class="clue-num-label">${n}.</span><span class="clue-text">${cl.text}</span>`;
-    item.onclick = () => { dir = d; selectCell(cl.r, cl.c); };
-    el.appendChild(item);
-  }
-}
-
-// ─── Navigation ───
-function getWordCells(r, c, d) {
-  if (r < 0 || !puzzle || !puzzle.mask[r]?.[c]) return [];
-  const cells = [];
-  if (d === 'across') {
-    let sc = c; while (sc > 0 && puzzle.mask[r][sc-1]) sc--;
-    for (let cc = sc; cc < puzzle.cols && puzzle.mask[r][cc]; cc++) cells.push([r, cc]);
-  } else {
-    let sr = r; while (sr > 0 && puzzle.mask[sr-1]?.[c]) sr--;
-    for (let rr = sr; rr < puzzle.rows && puzzle.mask[rr]?.[c]; rr++) cells.push([rr, c]);
-  }
-  return cells;
-}
-
-function findClueForCell(r, c, d) {
-  if (!puzzle?.clueMap[d]) return null;
-  for (const [num, cl] of Object.entries(puzzle.clueMap[d])) {
-    if (cl.cells.some(([cr,cc]) => cr === r && cc === c)) return parseInt(num);
-  }
-  return null;
-}
-
-function selectCell(r, c) {
-  if (!puzzle || !puzzle.mask[r]?.[c]) return;
-  if (r === selR && c === selC) dir = dir === 'across' ? 'down' : 'across';
-  selR = r; selC = c;
-  const num = findClueForCell(r, c, dir);
-  if (num !== null) { activeClue = {dir, num}; highlightClue(dir, num); }
-  else {
-    const od = dir === 'across' ? 'down' : 'across';
-    const n2 = findClueForCell(r, c, od);
-    if (n2 !== null) { dir = od; activeClue = {dir: od, num: n2}; highlightClue(od, n2); }
-  }
-  render();
-}
-
-function highlightClue(d, n) {
-  document.querySelectorAll('.clue-item').forEach(el => el.classList.remove('active'));
-  const el = document.getElementById(`clue_${d}_${n}`);
-  if (el) { el.classList.add('active'); el.scrollIntoView({block: 'nearest'}); }
-}
-
-function advanceCursor() {
-  if (dir === 'across') { let nc = selC+1; while (nc < puzzle.cols && !puzzle.mask[selR][nc]) nc++; if (nc < puzzle.cols) selectCell(selR, nc); }
-  else { let nr = selR+1; while (nr < puzzle.rows && !puzzle.mask[nr]?.[selC]) nr++; if (nr < puzzle.rows) selectCell(nr, selC); }
-}
-function retreatCursor() {
-  if (dir === 'across') { let nc = selC-1; while (nc >= 0 && !puzzle.mask[selR][nc]) nc--; if (nc >= 0) selectCell(selR, nc); }
-  else { let nr = selR-1; while (nr >= 0 && !puzzle.mask[nr]?.[selC]) nr--; if (nr >= 0) selectCell(nr, selC); }
-}
-function nextWord() {
-  if (!activeClue) return;
-  const d = activeClue.dir;
-  const nums = Object.keys(puzzle.clueMap[d]).map(Number).sort((a,b) => a-b);
-  const idx = nums.indexOf(activeClue.num);
-  let ni = (idx + 1) % nums.length;
-  if (ni === 0) {
-    const od = d === 'across' ? 'down' : 'across';
-    if (puzzle.clueMap[od]) {
-      dir = od;
-      const on = Object.keys(puzzle.clueMap[od]).map(Number).sort((a,b) => a-b);
-      const cl = puzzle.clueMap[od][on[0]];
-      selectCell(cl.r, cl.c); return;
-    }
-  }
-  const cl = puzzle.clueMap[d][nums[ni]];
-  selectCell(cl.r, cl.c);
-}
-
-// ─── Keyboard ───
-document.addEventListener('keydown', e => {
-  if (!puzzle || solved || selR < 0) return;
-  if (e.key === 'Tab' || e.key === ' ') { e.preventDefault(); dir = dir === 'across' ? 'down' : 'across'; selectCell(selR, selC); return; }
-  if (e.key === 'Enter') { e.preventDefault(); nextWord(); return; }
-  if (e.key === 'ArrowRight') { e.preventDefault(); let c = selC+1; while (c < puzzle.cols && !puzzle.mask[selR][c]) c++; if (c < puzzle.cols) selectCell(selR, c); return; }
-  if (e.key === 'ArrowLeft') { e.preventDefault(); let c = selC-1; while (c >= 0 && !puzzle.mask[selR][c]) c--; if (c >= 0) selectCell(selR, c); return; }
-  if (e.key === 'ArrowDown') { e.preventDefault(); let r = selR+1; while (r < puzzle.rows && !puzzle.mask[r]?.[selC]) r++; if (r < puzzle.rows) selectCell(r, selC); return; }
-  if (e.key === 'ArrowUp') { e.preventDefault(); let r = selR-1; while (r >= 0 && !puzzle.mask[r]?.[selC]) r--; if (r >= 0) selectCell(r, selC); return; }
-  if (e.key === 'Backspace' || e.key === 'Delete') {
-    e.preventDefault();
-    if (playerGrid[selR][selC]) playerGrid[selR][selC] = '';
-    else { retreatCursor(); playerGrid[selR][selC] = ''; }
-    render(); updateMetrics(); return;
-  }
-  const ch = e.key.toUpperCase();
-  if (/^[A-ZČŠŽÀÂÆÇÉÈÊËÏÎÔŒÙÛÜŸÁÍÓÚÑÄÖ]$/.test(ch)) {
-    e.preventDefault();
-    playerGrid[selR][selC] = ch;
-    render(); advanceCursor(); updateMetrics(); checkWin();
-  }
-});
-
-// ─── Game Logic ───
-function checkAll() {
-  if (!puzzle) return; let ok = true;
-  document.querySelectorAll('.cell').forEach(cell => {
-    const r = +cell.dataset.r, c = +cell.dataset.c;
-    if (!puzzle.mask[r]?.[c]) return;
-    cell.classList.remove('correct','error');
-    const p = playerGrid[r][c], s = puzzle.solution[r][c];
-    if (!p) { ok = false; return; }
-    if (p === s) cell.classList.add('correct');
-    else { cell.classList.add('error'); ok = false; errorCount++; }
-  });
-  updateMetrics();
-  if (ok) winGame(); else setStatus(L.checked, 'err');
-}
-
-function revealWord() {
-  if (!puzzle || selR < 0) return;
-  getWordCells(selR, selC, dir).forEach(([r,c]) => { playerGrid[r][c] = puzzle.solution[r][c]; });
-  render(); updateMetrics(); checkWin();
-}
-
-function revealAll() {
-  if (!puzzle) return;
-  for (let r = 0; r < puzzle.rows; r++)
-    for (let c = 0; c < puzzle.cols; c++)
-      if (puzzle.mask[r][c]) playerGrid[r][c] = puzzle.solution[r][c];
-  render(); updateMetrics(); setStatus(L.solved, '');
-}
-
-function checkWin() {
-  if (!puzzle || solved) return;
-  for (let r = 0; r < puzzle.rows; r++)
-    for (let c = 0; c < puzzle.cols; c++)
-      if (puzzle.mask[r][c] && playerGrid[r][c] !== puzzle.solution[r][c]) return;
-  winGame();
-}
-
-function winGame() {
-  solved = true; stopTimer();
-  setStatus(L.winMsg(fmtTime(seconds)), 'win');
-  document.querySelectorAll('.cell:not(.black)').forEach((cell, i) => {
-    setTimeout(() => cell.classList.add('win-anim'), i * 20);
-  });
-}
-
-// ─── Metrics ───
-function updateMetrics() {
-  if (!puzzle) return;
-  let filled = 0, total = 0;
-  for (let r = 0; r < puzzle.rows; r++)
-    for (let c = 0; c < puzzle.cols; c++)
-      if (puzzle.mask[r][c]) { total++; if (playerGrid[r][c]) filled++; }
-  const pct = Math.round(filled / total * 100);
-  document.getElementById('mProgress').textContent = pct + '%';
-  document.getElementById('barProgress').style.width = pct + '%';
-
-  let wt = 0, ws = 0;
-  for (const d of ['across','down']) {
-    if (!puzzle.clueMap[d]) continue;
-    for (const [num, cl] of Object.entries(puzzle.clueMap[d])) {
-      wt++;
-      if (cl.cells.every(([r,c]) => playerGrid[r][c] === puzzle.solution[r][c])) {
-        ws++;
-        const el = document.getElementById(`clue_${d}_${num}`);
-        if (el) el.classList.add('solved');
-      }
-    }
-  }
-  document.getElementById('mWords').textContent = `${ws} / ${wt}`;
-  document.getElementById('barWords').style.width = wt ? (ws/wt*100)+'%' : '0';
-  document.getElementById('mErrors').textContent = errorCount;
-}
+// ─── Game ───
+function checkAll(){if(!P)return;let ok=true;document.querySelectorAll('.cell').forEach(cell=>{const r=+cell.dataset.r,c=+cell.dataset.c;if(!P.mask[r]?.[c])return;cell.classList.remove('correct','error');const p=PG[r][c],s=P.solution[r][c];if(!p){ok=false;return}if(p===s)cell.classList.add('correct');else{cell.classList.add('error');ok=false;eC++}});updM();if(ok)win();else setS(L.checked,'err')}
+function revealWord(){if(!P||selR<0)return;wCells(selR,selC,dir).forEach(([r,c])=>{PG[r][c]=P.solution[r][c]});rend();updM();chkW()}
+function revealAll(){if(!P)return;for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++)if(P.mask[r][c])PG[r][c]=P.solution[r][c];rend();updM();setS(L.solved,'')}
+function chkW(){if(!P||done)return;for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++)if(P.mask[r][c]&&PG[r][c]!==P.solution[r][c])return;win()}
+function win(){done=true;stopT();setS(L.win(fmtT(sec)),'win');document.querySelectorAll('.cell:not(.black)').forEach((c,i)=>{setTimeout(()=>c.classList.add('win-anim'),i*20)})}
+function updM(){if(!P)return;let f=0,t=0;for(let r=0;r<P.rows;r++)for(let c=0;c<P.cols;c++)if(P.mask[r][c]){t++;if(PG[r][c])f++}const pc=Math.round(f/t*100);$('mProg').textContent=pc+'%';$('barProg').style.width=pc+'%';let wt=0,ws=0;for(const d of['across','down']){if(!P.cm[d])continue;for(const[n,cl]of Object.entries(P.cm[d])){wt++;if(cl.cells.every(([r,c])=>PG[r][c]===P.solution[r][c])){ws++;const el=$('cl_'+d+'_'+n);if(el)el.classList.add('solved')}}}$('mWords').textContent=ws+'/'+wt;$('barWords').style.width=wt?(ws/wt*100)+'%':'0';$('mErr').textContent=eC}
 
 // ─── Timer ───
-function startTimer() { stopTimer(); seconds = 0; document.getElementById('timer').textContent = '00:00'; timerInterval = setInterval(() => { seconds++; document.getElementById('timer').textContent = fmtTime(seconds); }, 1000); }
-function stopTimer() { if (timerInterval) clearInterval(timerInterval); timerInterval = null; }
-function fmtTime(s) { return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+function startT(){stopT();sec=0;$('timer').textContent='00:00';tI=setInterval(()=>{sec++;$('timer').textContent=fmtT(sec)},1000)}
+function stopT(){if(tI)clearInterval(tI);tI=null}
+function fmtT(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
 
-// ─── Save / Load ───
-function savePuzzle() {
-  if (!puzzle) return;
-  const data = {
-    lang, rows: puzzle.rows, cols: puzzle.cols,
-    mask: puzzle.mask, solution: puzzle.solution,
-    clueMap: puzzle.clueMap, numAssigned: puzzle.numAssigned,
-    playerGrid, seconds, errorCount
-  };
-  const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `crossword_${lang}_${puzzle.rows}x${puzzle.cols}_${Date.now()}.json`;
-  a.click();
-}
+// ─── Save/Load ───
+function savePuzzle(){if(!P)return;const d={lang,rows:P.rows,cols:P.cols,mask:P.mask,solution:P.solution,cm:P.cm,na:P.na,PG,sec,eC};const b=new Blob([JSON.stringify(d)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='cw_'+lang+'_'+P.rows+'x'+P.cols+'_'+Date.now()+'.json';a.click()}
+function loadPuzzle(ev){const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.lang){lang=d.lang;L=I18N[lang]||I18N.en;$('langSel').value=lang;updUI()}P={rows:d.rows,cols:d.cols,mask:d.mask,solution:d.solution,cm:d.cm,na:d.na};PG=d.PG||Array.from({length:d.rows},()=>Array(d.cols).fill(''));sec=d.sec||0;eC=d.eC||0;done=false;selR=-1;selC=-1;dir='across';aCl=null;setCsz(d.cols);buildG();buildCl('across');buildCl('down');startT();if(d.sec)sec=d.sec;updM();setS(d.rows+'×'+d.cols+' loaded','');for(let r=0;r<d.rows;r++)for(let c=0;c<d.cols;c++)if(d.mask[r][c]){sel(r,c);return}}catch(err){setS('Error: '+err.message,'err')}};rd.readAsText(f);ev.target.value=''}
 
-function loadPuzzle(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (data.lang) { lang = data.lang; L = I18N[lang] || I18N.en; document.getElementById('langSel').value = lang; updateUI(); }
-      puzzle = {rows: data.rows, cols: data.cols, mask: data.mask, solution: data.solution, clueMap: data.clueMap, numAssigned: data.numAssigned};
-      playerGrid = data.playerGrid || Array.from({length: data.rows}, () => Array(data.cols).fill(''));
-      seconds = data.seconds || 0; errorCount = data.errorCount || 0; solved = false;
-      selR = -1; selC = -1; dir = 'across'; activeClue = null;
-      setCellSize(data.cols);
-      buildGrid(); buildClueList('across'); buildClueList('down');
-      startTimer(); if (data.seconds) seconds = data.seconds;
-      updateMetrics();
-      setStatus(`${data.rows}×${data.cols} loaded`, '');
-      for (let r = 0; r < data.rows; r++)
-        for (let c = 0; c < data.cols; c++)
-          if (data.mask[r][c]) { selectCell(r, c); return; }
-    } catch(err) { setStatus('Load error: ' + err.message, 'err'); }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-}
+// ─── Lang ───
+async function switchLang(code){lang=code;L=I18N[lang]||I18N.en;updUI();const ok=await loadD(lang);if(ok){const h=Object.values(DB.h).reduce((s,a)=>s+a.length,0);setS(h+' hints — '+L.ready,'')}}
+function updUI(){$('tTitle').innerHTML=L.title;$('tSub').textContent=L.sub;$('tAcross').textContent=L.across;$('tDown').textContent=L.down;$('tStats').textContent=L.stats;$('tProg').textContent=L.prog;$('tWords').textContent=L.words;$('tErr').textContent=L.err;$('tHelp').textContent=L.help;$('tHelpH').innerHTML=L.helpH;$('bChk').textContent=L.chk;$('bRev').textContent=L.rev;$('bSol').textContent=L.sol}
+function togglePanel(d){const el=$(d==='across'?'cluesAcross':'cluesDown');el.style.display=el.style.display==='none'?'':'none'}
 
-// ─── Language ───
-async function switchLang(code) {
-  lang = code;
-  L = I18N[lang] || I18N.en;
-  updateUI();
-  const ok = await loadDict(lang);
-  if (ok) setStatus(`${DB.hinted[Object.keys(DB.hinted)[0]]?.length || 0}+ words ready`, '');
-}
-
-function updateUI() {
-  document.getElementById('titleText').innerHTML = L.title;
-  document.getElementById('subtitleText').textContent = L.subtitle;
-  document.getElementById('acrossTitle').textContent = L.across;
-  document.getElementById('downTitle').textContent = L.down;
-  document.getElementById('statsTitle').textContent = L.stats;
-  document.getElementById('lblProgress').textContent = L.progress;
-  document.getElementById('lblWords').textContent = L.words;
-  document.getElementById('lblErrors').textContent = L.errors;
-  document.getElementById('helpTitle').textContent = L.help;
-  document.getElementById('helpText').innerHTML = L.helpHtml;
-  document.getElementById('btnReveal').textContent = L.reveal;
-  document.getElementById('btnSolution').textContent = L.solution;
-}
-
-// ─── Utility ───
-function setStatus(msg, cls) { const el = document.getElementById('status'); el.textContent = msg; el.className = 'status ' + (cls || ''); }
-function togglePanel(d) { const el = document.getElementById(d === 'across' ? 'cluesAcross' : 'cluesDown'); el.style.display = el.style.display === 'none' ? '' : 'none'; }
-function disableButtons(v) { document.querySelectorAll('.diff-btns .btn').forEach(b => b.disabled = v); }
+// ─── IP detect ───
+async function detectLang(){try{const r=await fetch('https://ipapi.co/json/',{signal:AbortSignal.timeout(3000)});const d=await r.json();if(d.country_code==='SI')return'sl'}catch(e){}return'en'}
 
 // ─── Init ───
-window.addEventListener('resize', () => { if (puzzle) setCellSize(puzzle.cols); });
-
-(async function init() {
-  updateUI();
-  const ok = await loadDict(lang);
-  if (ok) {
-    const hTotal = Object.values(DB.hinted).reduce((s, arr) => s + arr.length, 0);
-    setStatus(`${hTotal} hinted words · choose size →`, '');
-  }
-})();
+window.addEventListener('resize',()=>{if(P)setCsz(P.cols)});
+(async()=>{const det=await detectLang();lang=det;L=I18N[lang];$('langSel').value=lang;updUI();const ok=await loadD(lang);if(ok){const h=Object.values(DB.h).reduce((s,a)=>s+a.length,0);setS(h+' hints — '+L.ready,'')}})();
 </script>
 </body>
 </html>
