@@ -363,22 +363,6 @@ function fillGrid(slots, rows, cols) {
   // Sort: most crossings first, then shortest
   slots.sort((a, b) => b.crossings.length - a.crossings.length || a.len - b.len);
 
-  // Build letter index from DB
-  const letterIdx = {};
-  for (const [lenStr, arr] of Object.entries(DB.all)) {
-    const L = parseInt(lenStr);
-    if (!arr || arr.length === 0) continue;
-    letterIdx[L] = {};
-    for (let p = 0; p < L; p++) {
-      letterIdx[L][p] = {};
-      for (let i = 0; i < arr.length; i++) {
-        const ch = arr[i].w[p];
-        if (!letterIdx[L][p][ch]) letterIdx[L][p][ch] = [];
-        letterIdx[L][p][ch].push(i);
-      }
-    }
-  }
-
   const grid = Array.from({length: rows}, () => Array(cols).fill(''));
   const usedWords = new Set();
   const wordData = {};
@@ -386,48 +370,32 @@ function fillGrid(slots, rows, cols) {
   let nodes = 0;
 
   function getCandidates(slot) {
-    const allArr = DB.all[String(slot.len)];
-    if (!allArr) return [];
-    const pattern = slot.cells.map(([r,c]) => grid[r][c] || null);
+    const pattern = slot.cells.map(([r, c]) => grid[r][c] || null);
+    const lenKey = String(slot.len);
 
-    // Use letter index for constrained positions
-    let idxSet = null;
-    const li = letterIdx[slot.len];
-    if (li) {
-      for (let p = 0; p < slot.len; p++) {
-        if (pattern[p]) {
-          const matching = li[p]?.[pattern[p]];
-          if (!matching) return [];
-          const mSet = new Set(matching);
-          idxSet = idxSet ? new Set([...idxSet].filter(x => mSet.has(x))) : mSet;
-          if (idxSet.size === 0) return [];
-        }
+    function matches(w) {
+      if (usedWords.has(w.w)) return false;
+      for (let i = 0; i < slot.len; i++) {
+        if (pattern[i] && pattern[i] !== w.w[i]) return false;
       }
+      return true;
     }
 
-    // Collect candidates: hinted first, then by score
-    const candidates = [];
-    if (idxSet) {
-      for (const i of idxSet) {
-        if (usedWords.has(allArr[i].w)) continue;
-        candidates.push(allArr[i]);
-        if (candidates.length >= 30) break;
-      }
-    } else {
-      // No constraints yet — take top scored
-      for (let i = 0; i < allArr.length && candidates.length < 30; i++) {
-        if (usedWords.has(allArr[i].w)) continue;
-        candidates.push(allArr[i]);
-      }
+    // Try hinted first
+    let candidates = (DB.hinted[lenKey] || []).filter(matches);
+
+    // If not enough hinted, add from full pool
+    if (candidates.length < 3) {
+      const hSet = new Set(candidates.map(c => c.w));
+      const extra = (DB.all[lenKey] || []).filter(w => !hSet.has(w.w) && matches(w));
+      candidates = candidates.concat(extra.slice(0, 20));
     }
 
-    // Sort: hinted first, then score descending
-    candidates.sort((a,b) => {
-      const ha = a.h ? 1 : 0, hb = b.h ? 1 : 0;
-      if (hb !== ha) return hb - ha;
-      return (b.s||0) - (a.s||0);
-    });
-
+    // Shuffle — critical for backtracking on random masks
+    for (let i = candidates.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+    }
     return candidates;
   }
 
@@ -454,8 +422,9 @@ function fillGrid(slots, rows, cols) {
 
     const slot = slots[idx];
     const candidates = getCandidates(slot);
+    if (nodes <= 3) console.log(`[Engine] solve(${idx}): slot len=${slot.len} crossings=${slot.crossings.length} candidates=${candidates.length}`);
 
-    for (const cand of candidates) {
+    for (const cand of candidates.slice(0, 25)) {
       placeWord(slot, cand.w);
       usedWords.add(cand.w);
       wordData[cand.w] = cand;
@@ -472,7 +441,10 @@ function fillGrid(slots, rows, cols) {
     return 'fail';
   }
 
-  console.log(`[Engine] Starting: ${slots.length} slots, ${rows}×${cols}, DB keys: ${Object.keys(DB.all).join(',')}`);
+  console.log(`[Engine] Starting: ${slots.length} slots, ${rows}×${cols}`);
+  console.log(`[Engine] DB: ${Object.entries(DB.all).map(([k,v])=>k+':'+v.length).join(' ')}`);
+  console.log(`[Engine] Slot lengths: ${slots.map(s=>s.len).join(',')}`);
+  console.log(`[Engine] Slot crossings: ${slots.map(s=>s.crossings.length).join(',')}`);
   const result = solve(0);
   const elapsed = ((performance.now() - t0)/1000).toFixed(1);
   console.log(`[Engine] ${result}: nodes=${nodes} ${elapsed}s`);
