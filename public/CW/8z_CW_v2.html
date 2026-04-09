@@ -102,7 +102,7 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
   <div class="header-right">
     <select class="lang-sel" id="langSel" onchange="switchLang(this.value)">
       <option value="sl">Slovenščina</option>
-      <option value="en">English</option>
+      <option value="en" selected>English</option>
     </select>
     <div class="timer" id="timer">00:00</div>
   </div>
@@ -114,14 +114,14 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 <div class="status" id="status">Nalaganje slovarja…</div>
 <div class="main">
 <div class="col-left">
-  <div class="panel"><div class="panel-title" onclick="togglePanel('across')" id="acrossTitle">▶ Vodoravno</div><div class="clue-list" id="cluesAcross"></div></div>
+  <div class="panel"><div class="panel-title" onclick="togglePanel('across')" id="acrossTitle">▶ Across</div><div class="clue-list" id="cluesAcross"></div></div>
   <div class="panel">
-    <div class="panel-title" id="statsTitle">Statistika</div>
-    <div class="metric"><span class="metric-label" id="lblProgress">Napredek</span><span class="metric-value" id="mProgress">0%</span></div>
+    <div class="panel-title" id="statsTitle">Statistics</div>
+    <div class="metric"><span class="metric-label" id="lblProgress">Progress</span><span class="metric-value" id="mProgress">0%</span></div>
     <div class="bar-wrap"><div class="bar green" id="barProgress" style="width:0"></div></div>
-    <div class="metric" style="margin-top:6px"><span class="metric-label" id="lblWords">Besede</span><span class="metric-value" id="mWords">0 / 0</span></div>
+    <div class="metric" style="margin-top:6px"><span class="metric-label" id="lblWords">Words</span><span class="metric-value" id="mWords">0 / 0</span></div>
     <div class="bar-wrap"><div class="bar gold" id="barWords" style="width:0"></div></div>
-    <div class="metric" style="margin-top:6px"><span class="metric-label" id="lblErrors">Napake</span><span class="metric-value" id="mErrors">0</span></div>
+    <div class="metric" style="margin-top:6px"><span class="metric-label" id="lblErrors">Errors</span><span class="metric-value" id="mErrors">0</span></div>
   </div>
 </div>
 <div class="col-center">
@@ -135,24 +135,26 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
     </div>
     <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
       <select id="engineSel" class="lang-sel" style="min-width:120px">
-        <option value="simple">Simple</option>
-        <option value="ac3" selected>AC-3 (v7)</option>
+        <option value="simple" selected>Simple</option>
+        <option value="ac3">AC-3 (v7)</option>
       </select>
-      <span style="font-size:.62rem;color:var(--muted);font-family:'JetBrains Mono',monospace" id="engineInfo">AC-3+MRV</span>
+      <span style="font-size:.62rem;color:var(--muted);font-family:'JetBrains Mono',monospace" id="engineInfo">Backtrack</span>
     </div>
   </div>
   <div class="btn-row" style="margin-top:6px;max-width:480px;width:100%">
     <button class="btn green" onclick="checkAll()" id="btnCheck">✓</button>
-    <button class="btn" onclick="revealWord()" id="btnReveal">Razkrij</button>
-    <button class="btn rose" onclick="revealAll()" id="btnSolution">Rešitev</button>
-    <button class="btn" onclick="savePuzzle()">💾</button>
-    <button class="btn" onclick="document.getElementById('loadFile').click()">📂</button>
+    <button class="btn" onclick="revealWord()" id="btnReveal">Reveal</button>
+    <button class="btn rose" onclick="revealAll()" id="btnSolution">Solution</button>
+  </div>
+  <div class="btn-row" style="margin-top:4px;max-width:480px;width:100%">
+    <button class="btn" onclick="savePuzzle()">💾 Save</button>
+    <button class="btn" onclick="document.getElementById('loadFile').click()">📂 Load</button>
     <input type="file" id="loadFile" accept=".json" onchange="loadPuzzle(event)">
   </div>
 </div>
 <div class="col-right">
-  <div class="panel"><div class="panel-title" onclick="togglePanel('down')" id="downTitle">▶ Navpično</div><div class="clue-list" id="cluesDown"></div></div>
-  <div class="panel"><div class="panel-title" id="helpTitle">Navodila</div>
+  <div class="panel"><div class="panel-title" onclick="togglePanel('down')" id="downTitle">▶ Down</div><div class="clue-list" id="cluesDown"></div></div>
+  <div class="panel"><div class="panel-title" id="helpTitle">Instructions</div>
     <div id="helpText" style="font-size:.78rem;color:var(--muted);line-height:1.5"></div>
   </div>
 </div>
@@ -202,7 +204,7 @@ const I18N = {
 };
 
 // ─── State ───
-let lang = 'sl', L = I18N.sl;
+let lang = 'en', L = I18N.en;
 let DB = null; // {hinted: {3:[{w,h,s},...], ...}, all: {...}}
 let puzzle = null; // {rows, cols, mask, solution, slots, clueMap}
 let playerGrid = null;
@@ -216,8 +218,10 @@ async function loadDict(code) {
   if (dictCache[code]) { DB = dictCache[code]; return true; }
   setStatus(L.loading, 'gen');
   try {
-    const r = await fetch(`cw_${code}_scored.json`);
-    if (!r.ok) throw new Error(r.status);
+    const url = `lex/cw_${code}_scored.json`;
+    console.log(`[Dict] Loading: ${url}`);
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status} for ${url}`);
     const data = await r.json();
     const db = {hinted: {}, all: {}};
     for (const [len, words] of Object.entries(data.words)) {

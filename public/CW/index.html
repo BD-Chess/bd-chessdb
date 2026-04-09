@@ -102,7 +102,7 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
   <div class="header-right">
     <select class="lang-sel" id="langSel" onchange="switchLang(this.value)">
       <option value="sl">Slovenščina</option>
-      <option value="en">English</option>
+      <option value="en" selected>English</option>
     </select>
     <div class="timer" id="timer">00:00</div>
   </div>
@@ -114,14 +114,14 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 <div class="status" id="status">Nalaganje slovarja…</div>
 <div class="main">
 <div class="col-left">
-  <div class="panel"><div class="panel-title" onclick="togglePanel('across')" id="acrossTitle">▶ Vodoravno</div><div class="clue-list" id="cluesAcross"></div></div>
+  <div class="panel"><div class="panel-title" onclick="togglePanel('across')" id="acrossTitle">▶ Across</div><div class="clue-list" id="cluesAcross"></div></div>
   <div class="panel">
-    <div class="panel-title" id="statsTitle">Statistika</div>
-    <div class="metric"><span class="metric-label" id="lblProgress">Napredek</span><span class="metric-value" id="mProgress">0%</span></div>
+    <div class="panel-title" id="statsTitle">Statistics</div>
+    <div class="metric"><span class="metric-label" id="lblProgress">Progress</span><span class="metric-value" id="mProgress">0%</span></div>
     <div class="bar-wrap"><div class="bar green" id="barProgress" style="width:0"></div></div>
-    <div class="metric" style="margin-top:6px"><span class="metric-label" id="lblWords">Besede</span><span class="metric-value" id="mWords">0 / 0</span></div>
+    <div class="metric" style="margin-top:6px"><span class="metric-label" id="lblWords">Words</span><span class="metric-value" id="mWords">0 / 0</span></div>
     <div class="bar-wrap"><div class="bar gold" id="barWords" style="width:0"></div></div>
-    <div class="metric" style="margin-top:6px"><span class="metric-label" id="lblErrors">Napake</span><span class="metric-value" id="mErrors">0</span></div>
+    <div class="metric" style="margin-top:6px"><span class="metric-label" id="lblErrors">Errors</span><span class="metric-value" id="mErrors">0</span></div>
   </div>
 </div>
 <div class="col-center">
@@ -134,26 +134,27 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
       <button class="btn rose" onclick="generate(15,15,0.22)">15×15</button>
     </div>
     <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
-      <select id="engineSel" class="lang-sel" style="min-width:150px">
-        <option value="auto" selected>Auto (AC-3→Simple)</option>
+      <select id="engineSel" class="lang-sel" style="min-width:120px">
+        <option value="simple" selected>Simple</option>
         <option value="ac3">AC-3 (v7)</option>
-        <option value="simple">Simple</option>
       </select>
-      <span style="font-size:.62rem;color:var(--muted);font-family:'JetBrains Mono',monospace" id="engineInfo">Auto fallback</span>
+      <span style="font-size:.62rem;color:var(--muted);font-family:'JetBrains Mono',monospace" id="engineInfo">Backtrack</span>
     </div>
   </div>
   <div class="btn-row" style="margin-top:6px;max-width:480px;width:100%">
     <button class="btn green" onclick="checkAll()" id="btnCheck">✓</button>
-    <button class="btn" onclick="revealWord()" id="btnReveal">Razkrij</button>
-    <button class="btn rose" onclick="revealAll()" id="btnSolution">Rešitev</button>
-    <button class="btn" onclick="savePuzzle()">💾</button>
-    <button class="btn" onclick="document.getElementById('loadFile').click()">📂</button>
+    <button class="btn" onclick="revealWord()" id="btnReveal">Reveal</button>
+    <button class="btn rose" onclick="revealAll()" id="btnSolution">Solution</button>
+  </div>
+  <div class="btn-row" style="margin-top:4px;max-width:480px;width:100%">
+    <button class="btn" onclick="savePuzzle()">💾 Save</button>
+    <button class="btn" onclick="document.getElementById('loadFile').click()">📂 Load</button>
     <input type="file" id="loadFile" accept=".json" onchange="loadPuzzle(event)">
   </div>
 </div>
 <div class="col-right">
-  <div class="panel"><div class="panel-title" onclick="togglePanel('down')" id="downTitle">▶ Navpično</div><div class="clue-list" id="cluesDown"></div></div>
-  <div class="panel"><div class="panel-title" id="helpTitle">Navodila</div>
+  <div class="panel"><div class="panel-title" onclick="togglePanel('down')" id="downTitle">▶ Down</div><div class="clue-list" id="cluesDown"></div></div>
+  <div class="panel"><div class="panel-title" id="helpTitle">Instructions</div>
     <div id="helpText" style="font-size:.78rem;color:var(--muted);line-height:1.5"></div>
   </div>
 </div>
@@ -203,7 +204,7 @@ const I18N = {
 };
 
 // ─── State ───
-let lang = 'sl', L = I18N.sl;
+let lang = 'en', L = I18N.en;
 let DB = null; // {hinted: {3:[{w,h,s},...], ...}, all: {...}}
 let puzzle = null; // {rows, cols, mask, solution, slots, clueMap}
 let playerGrid = null;
@@ -217,8 +218,10 @@ async function loadDict(code) {
   if (dictCache[code]) { DB = dictCache[code]; return true; }
   setStatus(L.loading, 'gen');
   try {
-    const r = await fetch(`cw_${code}_scored.json`);
-    if (!r.ok) throw new Error(r.status);
+    const url = `lex/cw_${code}_scored.json`;
+    console.log(`[Dict] Loading: ${url}`);
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status} for ${url}`);
     const data = await r.json();
     const db = {hinted: {}, all: {}};
     for (const [len, words] of Object.entries(data.words)) {
@@ -486,7 +489,7 @@ function fillGrid(slots, rows, cols) {
 // ─── Engine Selector ───
 document.getElementById('engineSel').onchange = function() {
   const info = document.getElementById('engineInfo');
-  info.textContent = this.value === 'ac3' ? 'AC-3+MRV' : (this.value === 'simple' ? 'Backtrack' : 'Auto fallback');
+  info.textContent = this.value === 'ac3' ? 'AC-3+MRV' : 'Backtrack';
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -497,13 +500,14 @@ document.getElementById('engineSel').onchange = function() {
 const VOWELS_SET = new Set('AEIOUY');
 const WEIRD_SET = new Set(['EEO','DPI','TRUG','INRI','EEOC','LII','TVA','OTB','ETA','PTA']);
 const MAX_PER_LEN = 4000;
-const TOPN_EARLY = 80, TOPN_LATE = 140, TOPN_SWITCH = 8;
-const CORE_DEPTH = 5, CORE_MIN_SCORE = 60, BAL_MIN_SCORE = 28, STAGE2_DEPTH = 12;
+const TOPN_EARLY = 60, TOPN_LATE = 100, TOPN_SWITCH = 8;
+const CORE_DEPTH = 4, CORE_MIN_SCORE = 60, BAL_MIN_SCORE = 20, STAGE2_DEPTH = 12;
 
 function fillGridAC3(slots, rows, cols) {
   if (!DB) return null;
   const t0 = performance.now();
-  const BUDGET_MS = Math.min(25000, Math.max(12000, rows * cols * 140)); // dynamic browser budget
+  const BUDGET_MS = 30000; // 30s budget for browser
+  console.log(`[AC-3] Starting: ${slots.length} slots, ${rows}×${cols}`);
 
   // Build word-by-length arrays (capped)
   const bylen = {}, wbl = {};
@@ -624,8 +628,7 @@ function fillGridAC3(slots, rows, cols) {
     const w = meta.w, s = meta.s || 0, hasHint = !!meta.h;
     if (depth < CORE_DEPTH) {
       if (s < CORE_MIN_SCORE) return false;
-      // softer than v2: allow some short unhinted words if score is strong
-      if (w.length <= 3 && !hasHint && s < (CORE_MIN_SCORE + 18)) return false;
+      if (w.length <= 4 && !hasHint) return false;
     } else if (depth < STAGE2_DEPTH) {
       if (s < BAL_MIN_SCORE) return false;
     }
@@ -731,7 +734,14 @@ function fillGridAC3(slots, rows, cols) {
   // Run
   const dom0 = {};
   for (const k in initDom) dom0[k] = new Set(initDom[k]);
-  if (!ac3(dom0, new Set(), new Map())) return null;
+  const domSizes = Object.values(dom0).map(s => s.size);
+  console.log(`[AC-3] Domains built: ${domSizes.length} slots, sizes: ${Math.min(...domSizes)}-${Math.max(...domSizes)}`);
+  if (!ac3(dom0, new Set(), new Map())) {
+    console.log('[AC-3] Initial AC-3 propagation wiped out domains');
+    return null;
+  }
+  const postAC3 = Object.values(dom0).map(s => s.size);
+  console.log(`[AC-3] After AC-3: sizes ${Math.min(...postAC3)}-${Math.max(...postAC3)}`);
   search(dom0, new Map(), new Set());
 
   const elapsed = ((performance.now() - t0)/1000).toFixed(1);
@@ -765,37 +775,25 @@ async function generate(rows, cols, blackPct) {
   await new Promise(r => setTimeout(r, 20));
 
   let result = null;
-  let usedEngine = engine;
-
-  const runPass = async (which, attempts) => {
-    for (let attempt = 0; attempt < attempts; attempt++) {
-      const mask = genTemplate(rows, cols, blackPct);
-      if (!mask) continue;
-      const slotsArr = extractSlots(mask, rows, cols);
-      if (slotsArr.length < 4) continue;
-      const fill = which === 'ac3'
-        ? fillGridAC3([...slotsArr], rows, cols)
-        : fillGrid([...slotsArr], rows, cols);
-      if (fill) return {mask, slots: slotsArr, fill, engine: which};
-      await new Promise(r => setTimeout(r, 10));
+  const maxAttempts = engine === 'ac3' ? 8 : 5;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const mask = genTemplate(rows, cols, blackPct);
+    if (!mask) continue;
+    const slotsArr = extractSlots(mask, rows, cols);
+    if (slotsArr.length < 4) continue;
+    if (engine === 'ac3') {
+      setStatus(`${L.generating} [AC-3 attempt ${attempt+1}/${maxAttempts}]`, 'gen');
+      await new Promise(r => setTimeout(r, 30)); // let UI update
     }
-    return null;
-  };
-
-  if (engine === 'simple') {
-    result = await runPass('simple', 5);
-  } else if (engine === 'ac3') {
-    result = await runPass('ac3', 5);
-    if (!result) {
-      setStatus('AC-3 ni našel polne mreže — preklapljam na Simple …', 'gen');
-      result = await runPass('simple', 4);
+    const fill = engine === 'ac3'
+      ? fillGridAC3([...slotsArr], rows, cols)
+      : fillGrid([...slotsArr], rows, cols);
+    if (fill) {
+      result = {mask, slots: slotsArr, fill};
+      break;
     }
-  } else {
-    result = await runPass('ac3', 4);
-    if (!result) {
-      setStatus('AC-3 fallback → Simple …', 'gen');
-      result = await runPass('simple', 4);
-    }
+    // Let UI breathe between attempts
+    await new Promise(r => setTimeout(r, 10));
   }
 
   disableButtons(false);
@@ -804,8 +802,6 @@ async function generate(rows, cols, blackPct) {
     setStatus(L.failed, 'err');
     return;
   }
-
-  usedEngine = result.engine || engine;
 
   // Build puzzle
   const {mask, slots, fill} = result;
@@ -857,7 +853,7 @@ async function generate(rows, cols, blackPct) {
   buildClueList('down');
   startTimer();
   updateMetrics();
-  const engLabel = usedEngine === 'ac3' ? 'AC-3' : 'Simple';
+  const engLabel = engine === 'ac3' ? 'AC-3' : 'Simple';
   setStatus(`${rows}×${cols}${L.generated} [${engLabel}]`, '');
 
   // Select first white cell
