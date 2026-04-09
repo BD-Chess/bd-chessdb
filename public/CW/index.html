@@ -431,19 +431,14 @@ function fillGrid(slots, rows, cols) {
     return result;
   }
 
-  // Forward check: after placing a word, do all crossing slots still have candidates?
+  // Forward check: after placing a word, do all UNASSIGNED crossing slots still have candidates?
   function forwardCheck(slot, word) {
     for (const [p, s2id, p2] of slot.xr) {
+      if (assigned.has(s2id)) continue; // Already placed — skip
       const s2 = slots[s2id];
-      const [r2, c2] = s2.cells[p2];
-      // This crossing position now has a fixed letter
-      // Check if the crossing slot can still be filled
-      const s2pattern = s2.cells.map(([r,c]) => grid[r][c] || null);
-      // Quick check via letter index
-      let possible = false;
       const li = letterIdx[s2.len];
       if (!li) return false;
-      // Find at least one word matching all filled positions
+      const s2pattern = s2.cells.map(([r,c]) => grid[r][c] || null);
       let idxSet = null;
       for (let pp = 0; pp < s2.len; pp++) {
         if (s2pattern[pp]) {
@@ -459,9 +454,9 @@ function fillGrid(slots, rows, cols) {
           if (idxSet.size === 0) return false;
         }
       }
-      // Check at least one unused word exists
       if (idxSet) {
         const arr = bylen[s2.len];
+        let possible = false;
         for (const i of idxSet) {
           if (!usedWords.has(arr[i].w)) { possible = true; break; }
         }
