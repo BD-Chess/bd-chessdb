@@ -138,7 +138,7 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
     <button class="btn green" onclick="checkAll()" id="btnCheck">✓</button>
     <button class="btn" onclick="revealWord()" id="btnReveal">Reveal</button>
     <button class="btn rose" onclick="revealAll()" id="btnSolution">Solution</button>
-  </div>
+    </div>
   <div class="btn-row" style="margin-top:4px;max-width:480px;width:100%">
     <button class="btn" onclick="savePuzzle()">💾 Save</button>
     <button class="btn" onclick="document.getElementById('loadFile').click()">📂 Load</button>
@@ -212,9 +212,14 @@ async function loadDict(code) {
   setStatus(L.loading, 'gen');
   try {
     const url = `lex/cw_${code}_scored.json`;
-    console.log(`[Dict] Loading: ${url}`);
-    const r = await fetch(url);
-    if (!r.ok) throw new Error(`HTTP ${r.status} for ${url}`);
+    console.log(`[Dict] Trying: ${url}`);
+    let r = await fetch(url);
+    if (!r.ok) {
+      const url2 = `cw_${code}_scored.json`;
+      console.log(`[Dict] Fallback: ${url2}`);
+      r = await fetch(url2);
+    }
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();
     const db = {hinted: {}, all: {}};
     for (const [len, words] of Object.entries(data.words)) {
@@ -334,26 +339,30 @@ function extractSlots(mask, rows, cols) {
   return slots;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// Crossword Solver Engine (AIM³ Lab)
-// v1 proven logic + letter index for speed
-// ═══════════════════════════════════════════════════════════════
+// ─── Backtracking Filler ───
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 function fillGrid(slots, rows, cols) {
   if (!DB) return null;
-  const t0 = performance.now();
-  const BUDGET_MS = 25000;
+  const grid = Array.from({length: rows}, () => Array(cols).fill(''));
+  const usedWords = new Set();
+  const wordData = {}; // word -> {w, h, s}
 
-  // Build crossing map BEFORE sorting
-  for (const s of slots) s.crossings = [];
-  for (let i = 0; i < slots.length; i++) {
-    for (let j = i + 1; j < slots.length; j++) {
-      for (let pi = 0; pi < slots[i].cells.length; pi++) {
-        for (let pj = 0; pj < slots[j].cells.length; pj++) {
-          if (slots[i].cells[pi][0] === slots[j].cells[pj][0] &&
-              slots[i].cells[pi][1] === slots[j].cells[pj][1]) {
-            slots[i].crossings.push({other: slots[j], myPos: pi, otherPos: pj});
-            slots[j].crossings.push({other: slots[i], myPos: pj, otherPos: pi});
+  // Pre-compute crossing map: for each slot, which other slots cross it and where
+  for (const slot of slots) {
+    slot.crossings = [];
+    for (const other of slots) {
+      if (other === slot) continue;
+      for (let i = 0; i < slot.cells.length; i++) {
+        for (let j = 0; j < other.cells.length; j++) {
+          if (slot.cells[i][0] === other.cells[j][0] && slot.cells[i][1] === other.cells[j][1]) {
+            slot.crossings.push({otherSlot: other, myIdx: i, otherIdx: j});
           }
         }
       }
@@ -363,66 +372,97 @@ function fillGrid(slots, rows, cols) {
   // Sort: most crossings first, then shortest
   slots.sort((a, b) => b.crossings.length - a.crossings.length || a.len - b.len);
 
-  const grid = Array.from({length: rows}, () => Array(cols).fill(''));
-  const usedWords = new Set();
-  const wordData = {};
-  const placedSlots = [];
-  let nodes = 0;
-
+  // Build candidate lists: prefer hinted words, then all
   function getCandidates(slot) {
     const pattern = slot.cells.map(([r, c]) => grid[r][c] || null);
     const lenKey = String(slot.len);
 
-    function matches(w) {
+    // Try hinted first
+    let pool = DB.hinted[lenKey] || [];
+    let candidates = pool.filter(w => {
       if (usedWords.has(w.w)) return false;
       for (let i = 0; i < slot.len; i++) {
         if (pattern[i] && pattern[i] !== w.w[i]) return false;
       }
       return true;
-    }
-
-    // Try hinted first
-    let candidates = (DB.hinted[lenKey] || []).filter(matches);
+    });
 
     // If not enough hinted, add from full pool
     if (candidates.length < 3) {
-      const hSet = new Set(candidates.map(c => c.w));
-      const extra = (DB.all[lenKey] || []).filter(w => !hSet.has(w.w) && matches(w));
+      const allPool = DB.all[lenKey] || [];
+      const extra = allPool.filter(w => {
+        if (usedWords.has(w.w)) return false;
+        if (candidates.some(c => c.w === w.w)) return false;
+        for (let i = 0; i < slot.len; i++) {
+          if (pattern[i] && pattern[i] !== w.w[i]) return false;
+        }
+        return true;
+      });
       candidates = candidates.concat(extra.slice(0, 20));
     }
 
-    // Shuffle — critical for backtracking on random masks
-    for (let i = candidates.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
-    }
-    return candidates;
+    return shuffle(candidates);
   }
 
+  let iterations = 0;
+  const maxIter = 50000;
+
+  function solve(idx) {
+    if (++iterations > maxIter) return false;
+    if (idx >= slots.length) return true;
+    const slot = slots[idx];
+    const candidates = getCandidates(slot);
+
+    for (const cand of candidates.slice(0, 30)) { // limit per slot
+      // Place
+      for (let i = 0; i < slot.len; i++) {
+        grid[slot.cells[i][0]][slot.cells[i][1]] = cand.w[i];
+      }
+      usedWords.add(cand.w);
+      wordData[cand.w] = cand;
+
+      if (solve(idx + 1)) return true;
+
+      // Remove
+      for (let i = 0; i < slot.len; i++) {
+        // Only clear if no other placed slot uses this cell
+        grid[slot.cells[i][0]][slot.cells[i][1]] = '';
+      }
+      usedWords.delete(cand.w);
+      delete wordData[cand.w];
+    }
+
+    // Re-clear cells for this slot (fix: need to keep letters from crossing words)
+    return false;
+  }
+
+  // Fix the remove logic: only clear cells not used by previously placed slots
+  // Actually, let me fix this properly:
   function placeWord(slot, word) {
     for (let i = 0; i < slot.len; i++) {
       grid[slot.cells[i][0]][slot.cells[i][1]] = word[i];
     }
   }
-
-  function removeWord(slot) {
+  function removeWord(slot, placedSlots) {
+    // Only clear cells that aren't part of any earlier placed slot
     const keepCells = new Set();
     for (const ps of placedSlots) {
-      for (const [r, c] of ps.cells) keepCells.add(r + ',' + c);
+      for (const [r, c] of ps.cells) keepCells.add(`${r},${c}`);
     }
     for (const [r, c] of slot.cells) {
-      if (!keepCells.has(r + ',' + c)) grid[r][c] = '';
+      if (!keepCells.has(`${r},${c}`)) grid[r][c] = '';
     }
   }
 
-  function solve(idx) {
-    nodes++;
-    if (performance.now() - t0 > BUDGET_MS) return 'timeout';
-    if (idx >= slots.length) return 'solved';
+  // Redo solve with proper cleanup
+  iterations = 0;
+  const placedSlots = [];
 
+  function solve2(idx) {
+    if (++iterations > maxIter) return false;
+    if (idx >= slots.length) return true;
     const slot = slots[idx];
     const candidates = getCandidates(slot);
-    if (nodes <= 3) console.log(`[Engine] solve(${idx}): slot len=${slot.len} crossings=${slot.crossings.length} candidates=${candidates.length}`);
 
     for (const cand of candidates.slice(0, 25)) {
       placeWord(slot, cand.w);
@@ -430,25 +470,17 @@ function fillGrid(slots, rows, cols) {
       wordData[cand.w] = cand;
       placedSlots.push(slot);
 
-      const result = solve(idx + 1);
-      if (result === 'solved' || result === 'timeout') return result;
+      if (solve2(idx + 1)) return true;
 
       placedSlots.pop();
       usedWords.delete(cand.w);
       delete wordData[cand.w];
-      removeWord(slot);
+      removeWord(slot, placedSlots);
     }
-    return 'fail';
+    return false;
   }
 
-  console.log(`[Engine] Starting: ${slots.length} slots, ${rows}×${cols}`);
-  console.log(`[Engine] DB: ${Object.entries(DB.all).map(([k,v])=>k+':'+v.length).join(' ')}`);
-  console.log(`[Engine] Slot lengths: ${slots.map(s=>s.len).join(',')}`);
-  console.log(`[Engine] Slot crossings: ${slots.map(s=>s.crossings.length).join(',')}`);
-  const result = solve(0);
-  const elapsed = ((performance.now() - t0)/1000).toFixed(1);
-  console.log(`[Engine] ${result}: nodes=${nodes} ${elapsed}s`);
-  if (result !== 'solved') return null;
+  if (!solve2(0)) return null;
   return {grid, wordData, usedWords};
 }
 
@@ -458,19 +490,18 @@ async function generate(rows, cols, blackPct) {
   setStatus(L.generating, 'gen');
   disableButtons(true);
 
+  // Use setTimeout to let UI update
   await new Promise(r => setTimeout(r, 20));
 
   let result = null;
-  for (let attempt = 0; attempt < 8; attempt++) {
-    setStatus(`${L.generating} [${attempt+1}/8]`, 'gen');
-    await new Promise(r => setTimeout(r, 30));
+  for (let attempt = 0; attempt < 5; attempt++) {
     const mask = genTemplate(rows, cols, blackPct);
     if (!mask) continue;
-    const slotsArr = extractSlots(mask, rows, cols);
-    if (slotsArr.length < 4) continue;
-    const fill = fillGrid([...slotsArr], rows, cols);
+    const slots = extractSlots(mask, rows, cols);
+    if (slots.length < 4) continue;
+    const fill = fillGrid([...slots], rows, cols);
     if (fill) {
-      result = {mask, slots: slotsArr, fill};
+      result = {mask, slots, fill};
       break;
     }
   }
