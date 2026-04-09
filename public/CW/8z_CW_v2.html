@@ -497,12 +497,13 @@ const VOWELS_SET = new Set('AEIOUY');
 const WEIRD_SET = new Set(['EEO','DPI','TRUG','INRI','EEOC','LII','TVA','OTB','ETA','PTA']);
 const MAX_PER_LEN = 4000;
 const TOPN_EARLY = 60, TOPN_LATE = 100, TOPN_SWITCH = 8;
-const CORE_DEPTH = 5, CORE_MIN_SCORE = 72, BAL_MIN_SCORE = 35, STAGE2_DEPTH = 14;
+const CORE_DEPTH = 4, CORE_MIN_SCORE = 60, BAL_MIN_SCORE = 20, STAGE2_DEPTH = 12;
 
 function fillGridAC3(slots, rows, cols) {
   if (!DB) return null;
   const t0 = performance.now();
-  const BUDGET_MS = 15000; // 15s budget for browser
+  const BUDGET_MS = 30000; // 30s budget for browser
+  console.log(`[AC-3] Starting: ${slots.length} slots, ${rows}×${cols}`);
 
   // Build word-by-length arrays (capped)
   const bylen = {}, wbl = {};
@@ -729,7 +730,14 @@ function fillGridAC3(slots, rows, cols) {
   // Run
   const dom0 = {};
   for (const k in initDom) dom0[k] = new Set(initDom[k]);
-  if (!ac3(dom0, new Set(), new Map())) return null;
+  const domSizes = Object.values(dom0).map(s => s.size);
+  console.log(`[AC-3] Domains built: ${domSizes.length} slots, sizes: ${Math.min(...domSizes)}-${Math.max(...domSizes)}`);
+  if (!ac3(dom0, new Set(), new Map())) {
+    console.log('[AC-3] Initial AC-3 propagation wiped out domains');
+    return null;
+  }
+  const postAC3 = Object.values(dom0).map(s => s.size);
+  console.log(`[AC-3] After AC-3: sizes ${Math.min(...postAC3)}-${Math.max(...postAC3)}`);
   search(dom0, new Map(), new Set());
 
   const elapsed = ((performance.now() - t0)/1000).toFixed(1);
@@ -763,12 +771,16 @@ async function generate(rows, cols, blackPct) {
   await new Promise(r => setTimeout(r, 20));
 
   let result = null;
-  const maxAttempts = engine === 'ac3' ? 3 : 5;
+  const maxAttempts = engine === 'ac3' ? 8 : 5;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const mask = genTemplate(rows, cols, blackPct);
     if (!mask) continue;
     const slotsArr = extractSlots(mask, rows, cols);
     if (slotsArr.length < 4) continue;
+    if (engine === 'ac3') {
+      setStatus(`${L.generating} [AC-3 attempt ${attempt+1}/${maxAttempts}]`, 'gen');
+      await new Promise(r => setTimeout(r, 30)); // let UI update
+    }
     const fill = engine === 'ac3'
       ? fillGridAC3([...slotsArr], rows, cols)
       : fillGrid([...slotsArr], rows, cols);
