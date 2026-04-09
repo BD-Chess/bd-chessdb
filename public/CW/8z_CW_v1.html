@@ -133,13 +133,6 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
       <button class="btn gold" onclick="generate(13,13,0.24)">13×13</button>
       <button class="btn rose" onclick="generate(15,15,0.22)">15×15</button>
     </div>
-    <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
-      <select id="engineSel" class="lang-sel" style="min-width:120px">
-        <option value="simple">Simple</option>
-        <option value="ac3" selected>AC-3 (v7)</option>
-      </select>
-      <span style="font-size:.62rem;color:var(--muted);font-family:'JetBrains Mono',monospace" id="engineInfo">AC-3+MRV</span>
-    </div>
   </div>
   <div class="btn-row" style="margin-top:6px;max-width:480px;width:100%">
     <button class="btn green" onclick="checkAll()" id="btnCheck">✓</button>
@@ -482,302 +475,26 @@ function fillGrid(slots, rows, cols) {
   return {grid, wordData, usedWords};
 }
 
-// ─── Engine Selector ───
-document.getElementById('engineSel').onchange = function() {
-  const info = document.getElementById('engineInfo');
-  info.textContent = this.value === 'ac3' ? 'AC-3+MRV' : 'Backtrack';
-};
-
-// ═══════════════════════════════════════════════════════════════
-// AC-3 Solver Engine (v7 core — ported from Python arena)
-// Fixed: AC-3 + MRV + support counting + core_require_hint
-// ═══════════════════════════════════════════════════════════════
-
-const VOWELS_SET = new Set('AEIOUY');
-const WEIRD_SET = new Set(['EEO','DPI','TRUG','INRI','EEOC','LII','TVA','OTB','ETA','PTA']);
-const MAX_PER_LEN = 4000;
-const TOPN_EARLY = 60, TOPN_LATE = 100, TOPN_SWITCH = 8;
-const CORE_DEPTH = 5, CORE_MIN_SCORE = 72, BAL_MIN_SCORE = 35, STAGE2_DEPTH = 14;
-
-function fillGridAC3(slots, rows, cols) {
-  if (!DB) return null;
-  const t0 = performance.now();
-  const BUDGET_MS = 15000; // 15s budget for browser
-
-  // Build word-by-length arrays (capped)
-  const bylen = {}, wbl = {};
-  for (const [lenStr, arr] of Object.entries(DB.all)) {
-    const L = parseInt(lenStr);
-    const sorted = [...arr].sort((a,b) => (b.s||0)-(a.s||0) || (b.h?1:0)-(a.h?1:0));
-    bylen[L] = sorted.slice(0, MAX_PER_LEN);
-    wbl[L] = bylen[L].map(x => x.w);
-  }
-
-  // Build crossing map
-  for (const s of slots) {
-    s.xr = [];
-    s.id = slots.indexOf(s);
-  }
-  const cm = {};
-  for (const s of slots) {
-    for (let p = 0; p < s.cells.length; p++) {
-      const key = s.cells[p][0] + ',' + s.cells[p][1];
-      if (!cm[key]) cm[key] = [];
-      cm[key].push([s.id, p]);
-    }
-  }
-  for (const s of slots) {
-    s.xr = [];
-    for (let p = 0; p < s.cells.length; p++) {
-      const key = s.cells[p][0] + ',' + s.cells[p][1];
-      for (const [s2id, p2] of cm[key]) {
-        if (s2id !== s.id) s.xr.push([p, s2id, p2]);
-      }
-    }
-  }
-
-  // Neighbor sets
-  const nbrs = {};
-  for (const s of slots) {
-    nbrs[s.id] = new Set(s.xr.map(([,s2]) => s2));
-  }
-
-  // Domain: set of indices into wbl[len]
-  const initDom = {};
-  for (const s of slots) {
-    initDom[s.id] = new Set();
-    const arr = wbl[s.len];
-    if (arr) for (let i = 0; i < arr.length; i++) initDom[s.id].add(i);
-  }
-
-  // CD: compute valid domain for a slot given current state
-  function cd(slot, dom, asgn, used) {
-    if (asgn.has(slot.id)) return new Set([asgn.get(slot.id)]);
-    const arr = wbl[slot.len];
-    if (!arr) return new Set();
-    const out = new Set();
-    for (const idx of dom[slot.id]) {
-      const w = arr[idx];
-      if (used.has(w)) continue;
-      let ok = true;
-      for (const [p, s2id, p2] of slot.xr) {
-        if (asgn.has(s2id)) {
-          const s2 = slots[s2id];
-          if (w[p] !== wbl[s2.len][asgn.get(s2id)][p2]) { ok = false; break; }
-        }
-      }
-      if (ok) out.add(idx);
-    }
-    return out;
-  }
-
-  // Revise
-  function revise(dom, xi, xj, used, asgn) {
-    const si = slots[xi], sj = slots[xj];
-    const xrs = [];
-    for (const [pi, s2, pj] of si.xr) { if (s2 === xj) xrs.push([pi, pj]); }
-    if (xrs.length === 0) return false;
-    const di = cd(si, dom, asgn, used);
-    const dj = cd(sj, dom, asgn, used);
-    if (di.size === 0 || dj.size === 0) { dom[xi] = new Set(); return true; }
-    const ai = wbl[si.len], aj = wbl[sj.len];
-    const sup = xrs.map(([pi, pj]) => {
-      const lts = new Set();
-      for (const j of dj) lts.add(aj[j][pj]);
-      return [pi, lts];
-    });
-    const rem = new Set();
-    for (const i of di) {
-      for (const [pi, lts] of sup) {
-        if (!lts.has(ai[i][pi])) { rem.add(i); break; }
-      }
-    }
-    if (rem.size > 0) {
-      dom[xi] = new Set([...di].filter(x => !rem.has(x)));
-      return true;
-    }
-    dom[xi] = di;
-    return false;
-  }
-
-  // AC-3
-  function ac3(dom, used, asgn) {
-    const q = [];
-    for (const s of slots) {
-      for (const nb of nbrs[s.id]) q.push([s.id, nb]);
-    }
-    while (q.length > 0) {
-      const [xi, xj] = q.shift();
-      if (revise(dom, xi, xj, used, asgn)) {
-        if (dom[xi].size === 0) return false;
-        for (const xk of nbrs[xi]) {
-          if (xk !== xj) q.push([xk, xi]);
-        }
-      }
-    }
-    return true;
-  }
-
-  // Gate
-  function gate(meta, depth) {
-    const w = meta.w, s = meta.s || 0, hasHint = !!meta.h;
-    if (depth < CORE_DEPTH) {
-      if (s < CORE_MIN_SCORE) return false;
-      if (w.length <= 4 && !hasHint) return false;
-    } else if (depth < STAGE2_DEPTH) {
-      if (s < BAL_MIN_SCORE) return false;
-    }
-    return true;
-  }
-
-  // Support count
-  function supCount(s2id, p2, ch, dom, asgn, used) {
-    const arr = wbl[slots[s2id].len];
-    let cnt = 0;
-    for (const j of cd(slots[s2id], dom, asgn, used)) {
-      if (arr[j][p2] === ch) cnt++;
-    }
-    return cnt;
-  }
-
-  // Choose slot: MRV + frozen crossing
-  function choose(dom, asgn, used) {
-    let bestSid = -1, bestKey = null, frozenSid = -1;
-    for (const s of slots) {
-      if (asgn.has(s.id)) continue;
-      const d = cd(s, dom, asgn, used);
-      dom[s.id] = d;
-      const filled = s.xr.filter(([,s2]) => asgn.has(s2)).length;
-      if (d.size === 1 && frozenSid < 0) frozenSid = s.id; // Frozen crossing
-      const key = [d.size, -filled, -s.len];
-      if (bestKey === null || key[0] < bestKey[0] ||
-          (key[0]===bestKey[0] && key[1] < bestKey[1]) ||
-          (key[0]===bestKey[0] && key[1]===bestKey[1] && key[2] < bestKey[2])) {
-        bestKey = key; bestSid = s.id;
-      }
-    }
-    return frozenSid >= 0 ? frozenSid : bestSid;
-  }
-
-  // Order candidates
-  function order(sid, dom, asgn, used) {
-    const slot = slots[sid], depth = asgn.size;
-    const d = cd(slot, dom, asgn, used);
-    const bl = bylen[slot.len] || [];
-    const scored = [];
-    for (const idx of d) {
-      const meta = bl[idx];
-      if (!meta || !gate(meta, depth)) continue;
-      const w = meta.w;
-      if (WEIRD_SET.has(w) || used.has(w)) continue;
-      let val = (meta.s||0) + (meta.h ? 14 : 0);
-      val += 4.0 * new Set(w).size / w.length;
-      if (!meta.h) val -= 18;
-      if (w.length <= 4) { let vc = 0; for (const c of w) if (VOWELS_SET.has(c)) vc++; if (vc<=1) val -= 12; }
-      if (/(.)\1\1/.test(w)) val -= 8;
-      if (new Set(w).size <= 2) val -= 8;
-      // Support counting
-      let minsup = 999999, total = 0, zero = false;
-      for (const [p, s2id, p2] of slot.xr) {
-        if (asgn.has(s2id)) continue;
-        const cnt = supCount(s2id, p2, w[p], dom, asgn, used);
-        if (cnt === 0) { zero = true; break; }
-        total += cnt; minsup = Math.min(minsup, cnt);
-      }
-      if (zero) continue;
-      val += 3.0 * Math.log(total + 1) + 2.0 * Math.log(minsup + 1);
-      scored.push([val, idx]);
-    }
-    scored.sort((a,b) => b[0]-a[0]);
-    const topn = depth < TOPN_SWITCH ? TOPN_EARLY : TOPN_LATE;
-    return scored.slice(0, topn).map(([,idx]) => idx);
-  }
-
-  // Search
-  let nodes = 0, bestDepth = 0, bestPartial = null, solution = null;
-
-  function search(dom, asgn, used) {
-    nodes++;
-    if (performance.now() - t0 > BUDGET_MS) return 'timeout';
-    if (asgn.size > bestDepth) { bestDepth = asgn.size; bestPartial = new Map(asgn); }
-    if (asgn.size === slots.length) { solution = new Map(asgn); return 'solved'; }
-    const sid = choose(dom, asgn, used);
-    if (sid < 0 || !dom[sid] || dom[sid].size === 0) return 'fail';
-    for (const idx of order(sid, dom, asgn, used)) {
-      const w = wbl[slots[sid].len][idx];
-      if (used.has(w)) continue;
-      const d2 = {}; for (const k in dom) d2[k] = new Set(dom[k]);
-      const a2 = new Map(asgn), u2 = new Set(used);
-      a2.set(sid, idx); u2.add(w); d2[sid] = new Set([idx]);
-      let ok = true;
-      for (const [p, s2id, p2] of slots[sid].xr) {
-        if (a2.has(s2id)) continue;
-        const arr2 = wbl[slots[s2id].len];
-        const nd = new Set();
-        for (const j of cd(slots[s2id], d2, a2, u2)) { if (arr2[j][p2] === w[p]) nd.add(j); }
-        d2[s2id] = nd;
-        if (nd.size === 0) { ok = false; break; }
-      }
-      if (!ok) continue;
-      if (!ac3(d2, u2, a2)) continue;
-      const result = search(d2, a2, u2);
-      if (result === 'solved' || result === 'timeout') return result;
-    }
-    return 'fail';
-  }
-
-  // Run
-  const dom0 = {};
-  for (const k in initDom) dom0[k] = new Set(initDom[k]);
-  if (!ac3(dom0, new Set(), new Map())) return null;
-  search(dom0, new Map(), new Set());
-
-  const elapsed = ((performance.now() - t0)/1000).toFixed(1);
-  const finalAsgn = solution || bestPartial;
-  if (!finalAsgn || finalAsgn.size < slots.length) {
-    console.log(`[AC-3] Failed: depth=${bestDepth}/${slots.length} nodes=${nodes} ${elapsed}s`);
-    return null;
-  }
-
-  // Build result
-  const grid = Array.from({length: rows}, () => Array(cols).fill(''));
-  const wordData = {};
-  for (const [sid, idx] of finalAsgn) {
-    const s = slots[sid];
-    const meta = bylen[s.len][idx];
-    const w = meta.w;
-    for (let i = 0; i < s.len; i++) grid[s.cells[i][0]][s.cells[i][1]] = w[i];
-    wordData[w] = meta;
-  }
-  console.log(`[AC-3] Solved: nodes=${nodes} ${elapsed}s`);
-  return {grid, wordData, usedWords: new Set(Object.keys(wordData))};
-}
-
 // ─── Puzzle Assembly ───
 async function generate(rows, cols, blackPct) {
   if (!DB) return;
   setStatus(L.generating, 'gen');
   disableButtons(true);
-  const engine = document.getElementById('engineSel').value;
 
+  // Use setTimeout to let UI update
   await new Promise(r => setTimeout(r, 20));
 
   let result = null;
-  const maxAttempts = engine === 'ac3' ? 3 : 5;
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+  for (let attempt = 0; attempt < 5; attempt++) {
     const mask = genTemplate(rows, cols, blackPct);
     if (!mask) continue;
-    const slotsArr = extractSlots(mask, rows, cols);
-    if (slotsArr.length < 4) continue;
-    const fill = engine === 'ac3'
-      ? fillGridAC3([...slotsArr], rows, cols)
-      : fillGrid([...slotsArr], rows, cols);
+    const slots = extractSlots(mask, rows, cols);
+    if (slots.length < 4) continue;
+    const fill = fillGrid([...slots], rows, cols);
     if (fill) {
-      result = {mask, slots: slotsArr, fill};
+      result = {mask, slots, fill};
       break;
     }
-    // Let UI breathe between attempts
-    await new Promise(r => setTimeout(r, 10));
   }
 
   disableButtons(false);
@@ -837,8 +554,7 @@ async function generate(rows, cols, blackPct) {
   buildClueList('down');
   startTimer();
   updateMetrics();
-  const engLabel = engine === 'ac3' ? 'AC-3' : 'Simple';
-  setStatus(`${rows}×${cols}${L.generated} [${engLabel}]`, '');
+  setStatus(`${rows}×${cols}${L.generated}`, '');
 
   // Select first white cell
   for (let r = 0; r < rows; r++)
