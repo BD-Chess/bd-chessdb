@@ -335,76 +335,46 @@ function extractSlots(mask, rows, cols) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Crossword Solver Engine (v7-lite for browser)
-// Sequential + letter index + forward check + score ordering
+// Crossword Solver Engine (AIM³ Lab)
+// v1 proven logic + letter index for speed
 // ═══════════════════════════════════════════════════════════════
-
-const WEIRD_SET = new Set(['EEO','DPI','TRUG','INRI','EEOC','LII','TVA','OTB','ETA','PTA']);
 
 function fillGrid(slots, rows, cols) {
   if (!DB) return null;
   const t0 = performance.now();
   const BUDGET_MS = 25000;
 
-  // Build sorted word arrays per length (hinted first, then score desc)
-  const bylen = {};
+  // Build crossing map BEFORE sorting
+  for (const s of slots) s.crossings = [];
+  for (let i = 0; i < slots.length; i++) {
+    for (let j = i + 1; j < slots.length; j++) {
+      for (let pi = 0; pi < slots[i].cells.length; pi++) {
+        for (let pj = 0; pj < slots[j].cells.length; pj++) {
+          if (slots[i].cells[pi][0] === slots[j].cells[pj][0] &&
+              slots[i].cells[pi][1] === slots[j].cells[pj][1]) {
+            slots[i].crossings.push({other: slots[j], myPos: pi, otherPos: pj});
+            slots[j].crossings.push({other: slots[i], myPos: pj, otherPos: pi});
+          }
+        }
+      }
+    }
+  }
+
+  // Sort: most crossings first, then shortest
+  slots.sort((a, b) => b.crossings.length - a.crossings.length || a.len - b.len);
+
+  // Build letter index from DB
+  const letterIdx = {};
   for (const [lenStr, arr] of Object.entries(DB.all)) {
     const L = parseInt(lenStr);
-    bylen[L] = [...arr].sort((a,b) => {
-      const ha = a.h ? 1 : 0, hb = b.h ? 1 : 0;
-      if (hb !== ha) return hb - ha;
-      return (b.s||0) - (a.s||0);
-    }).slice(0, 3000);
-  }
-
-  // Build letter index: letterIdx[len][pos][char] → array of indices
-  const letterIdx = {};
-  for (const L in bylen) {
-    const len = parseInt(L);
-    letterIdx[len] = {};
-    for (let p = 0; p < len; p++) {
-      letterIdx[len][p] = {};
-      for (let i = 0; i < bylen[len].length; i++) {
-        const ch = bylen[len][i].w[p];
-        if (!letterIdx[len][p][ch]) letterIdx[len][p][ch] = [];
-        letterIdx[len][p][ch].push(i);
-      }
-    }
-  }
-
-  // Build crossing map
-  for (let i = 0; i < slots.length; i++) slots[i].id = i;
-  for (const s of slots) s.crossings = [];
-  for (let i = 0; i < slots.length; i++) {
-    for (let j = i + 1; j < slots.length; j++) {
-      for (let pi = 0; pi < slots[i].cells.length; pi++) {
-        for (let pj = 0; pj < slots[j].cells.length; pj++) {
-          if (slots[i].cells[pi][0] === slots[j].cells[pj][0] &&
-              slots[i].cells[pi][1] === slots[j].cells[pj][1]) {
-            slots[i].crossings.push({other: j, myPos: pi, otherPos: pj});
-            slots[j].crossings.push({other: i, myPos: pj, otherPos: pi});
-          }
-        }
-      }
-    }
-  }
-
-  // Sort slots: most crossings first, then shortest (proven order from v1)
-  slots.sort((a, b) => b.crossings.length - a.crossings.length || a.len - b.len);
-  // Re-assign IDs after sort
-  for (let i = 0; i < slots.length; i++) slots[i].id = i;
-  // Rebuild crossing refs after sort
-  for (const s of slots) s.crossings = [];
-  for (let i = 0; i < slots.length; i++) {
-    for (let j = i + 1; j < slots.length; j++) {
-      for (let pi = 0; pi < slots[i].cells.length; pi++) {
-        for (let pj = 0; pj < slots[j].cells.length; pj++) {
-          if (slots[i].cells[pi][0] === slots[j].cells[pj][0] &&
-              slots[i].cells[pi][1] === slots[j].cells[pj][1]) {
-            slots[i].crossings.push({other: j, myPos: pi, otherPos: pj});
-            slots[j].crossings.push({other: i, myPos: pj, otherPos: pi});
-          }
-        }
+    if (!arr || arr.length === 0) continue;
+    letterIdx[L] = {};
+    for (let p = 0; p < L; p++) {
+      letterIdx[L][p] = {};
+      for (let i = 0; i < arr.length; i++) {
+        const ch = arr[i].w[p];
+        if (!letterIdx[L][p][ch]) letterIdx[L][p][ch] = [];
+        letterIdx[L][p][ch].push(i);
       }
     }
   }
@@ -412,65 +382,69 @@ function fillGrid(slots, rows, cols) {
   const grid = Array.from({length: rows}, () => Array(cols).fill(''));
   const usedWords = new Set();
   const wordData = {};
+  const placedSlots = [];
   let nodes = 0;
 
-  // Get matching candidates using letter index
   function getCandidates(slot) {
-    const arr = bylen[slot.len];
-    if (!arr) return [];
+    const allArr = DB.all[String(slot.len)];
+    if (!allArr) return [];
     const pattern = slot.cells.map(([r,c]) => grid[r][c] || null);
 
-    // Use letter index to intersect
+    // Use letter index for constrained positions
     let idxSet = null;
-    for (let p = 0; p < slot.len; p++) {
-      if (pattern[p]) {
-        const matching = letterIdx[slot.len]?.[p]?.[pattern[p]];
-        if (!matching) return [];
-        const mSet = new Set(matching);
-        idxSet = idxSet ? new Set([...idxSet].filter(x => mSet.has(x))) : mSet;
-        if (idxSet.size === 0) return [];
+    const li = letterIdx[slot.len];
+    if (li) {
+      for (let p = 0; p < slot.len; p++) {
+        if (pattern[p]) {
+          const matching = li[p]?.[pattern[p]];
+          if (!matching) return [];
+          const mSet = new Set(matching);
+          idxSet = idxSet ? new Set([...idxSet].filter(x => mSet.has(x))) : mSet;
+          if (idxSet.size === 0) return [];
+        }
       }
     }
 
-    const indices = idxSet ? [...idxSet] : Array.from({length: arr.length}, (_,i) => i);
-    const result = [];
-    for (const i of indices) {
-      const meta = arr[i];
-      if (usedWords.has(meta.w)) continue;
-      if (WEIRD_SET.has(meta.w)) continue;
-      result.push(meta);
-      if (result.length >= 50) break;
-    }
-    return result;
-  }
-
-  // Quick check: does a crossing slot still have at least one candidate?
-  function hasCandidates(slotIdx) {
-    const s = slots[slotIdx];
-    const arr = bylen[s.len];
-    if (!arr) return false;
-    const pattern = s.cells.map(([r,c]) => grid[r][c] || null);
-    const hasConstraint = pattern.some(p => p !== null);
-    if (!hasConstraint) return true; // unconstrained = plenty of candidates
-
-    let idxSet = null;
-    for (let p = 0; p < s.len; p++) {
-      if (pattern[p]) {
-        const matching = letterIdx[s.len]?.[p]?.[pattern[p]];
-        if (!matching) return false;
-        const mSet = new Set(matching);
-        idxSet = idxSet ? new Set([...idxSet].filter(x => mSet.has(x))) : mSet;
-        if (idxSet.size === 0) return false;
-      }
-    }
-    // Check at least one unused
+    // Collect candidates: hinted first, then by score
+    const candidates = [];
     if (idxSet) {
       for (const i of idxSet) {
-        if (!usedWords.has(arr[i].w)) return true;
+        if (usedWords.has(allArr[i].w)) continue;
+        candidates.push(allArr[i]);
+        if (candidates.length >= 30) break;
       }
-      return false;
+    } else {
+      // No constraints yet — take top scored
+      for (let i = 0; i < allArr.length && candidates.length < 30; i++) {
+        if (usedWords.has(allArr[i].w)) continue;
+        candidates.push(allArr[i]);
+      }
     }
-    return true;
+
+    // Sort: hinted first, then score descending
+    candidates.sort((a,b) => {
+      const ha = a.h ? 1 : 0, hb = b.h ? 1 : 0;
+      if (hb !== ha) return hb - ha;
+      return (b.s||0) - (a.s||0);
+    });
+
+    return candidates;
+  }
+
+  function placeWord(slot, word) {
+    for (let i = 0; i < slot.len; i++) {
+      grid[slot.cells[i][0]][slot.cells[i][1]] = word[i];
+    }
+  }
+
+  function removeWord(slot) {
+    const keepCells = new Set();
+    for (const ps of placedSlots) {
+      for (const [r, c] of ps.cells) keepCells.add(r + ',' + c);
+    }
+    for (const [r, c] of slot.cells) {
+      if (!keepCells.has(r + ',' + c)) grid[r][c] = '';
+    }
   }
 
   function solve(idx) {
@@ -482,35 +456,26 @@ function fillGrid(slots, rows, cols) {
     const candidates = getCandidates(slot);
 
     for (const cand of candidates) {
-      // Place
-      const saved = slot.cells.map(([r,c]) => grid[r][c]);
-      for (let i = 0; i < slot.len; i++) grid[slot.cells[i][0]][slot.cells[i][1]] = cand.w[i];
+      placeWord(slot, cand.w);
       usedWords.add(cand.w);
       wordData[cand.w] = cand;
+      placedSlots.push(slot);
 
-      // Forward check: do unplaced crossing slots still have candidates?
-      let ok = true;
-      for (const cr of slot.crossings) {
-        if (cr.other <= idx) continue; // already placed
-        if (!hasCandidates(cr.other)) { ok = false; break; }
-      }
+      const result = solve(idx + 1);
+      if (result === 'solved' || result === 'timeout') return result;
 
-      if (ok) {
-        const result = solve(idx + 1);
-        if (result === 'solved' || result === 'timeout') return result;
-      }
-
-      // Undo
+      placedSlots.pop();
       usedWords.delete(cand.w);
       delete wordData[cand.w];
-      for (let i = 0; i < slot.len; i++) grid[slot.cells[i][0]][slot.cells[i][1]] = saved[i];
+      removeWord(slot);
     }
     return 'fail';
   }
 
+  console.log(`[Engine] Starting: ${slots.length} slots, ${rows}×${cols}, DB keys: ${Object.keys(DB.all).join(',')}`);
   const result = solve(0);
   const elapsed = ((performance.now() - t0)/1000).toFixed(1);
-  console.log(`[Engine] ${result}: nodes=${nodes} ${elapsed}s slots=${slots.length}`);
+  console.log(`[Engine] ${result}: nodes=${nodes} ${elapsed}s`);
   if (result !== 'solved') return null;
   return {grid, wordData, usedWords};
 }
