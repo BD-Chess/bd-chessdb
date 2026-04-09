@@ -336,8 +336,7 @@ function extractSlots(mask, rows, cols) {
 
 // ═══════════════════════════════════════════════════════════════
 // Crossword Solver Engine (v7-lite for browser)
-// MRV + forward checking + score ordering + letter index
-// Ported from Python arena: proven core, browser-optimized
+// Sequential + letter index + forward check + score ordering
 // ═══════════════════════════════════════════════════════════════
 
 const WEIRD_SET = new Set(['EEO','DPI','TRUG','INRI','EEOC','LII','TVA','OTB','ETA','PTA']);
@@ -345,9 +344,9 @@ const WEIRD_SET = new Set(['EEO','DPI','TRUG','INRI','EEOC','LII','TVA','OTB','E
 function fillGrid(slots, rows, cols) {
   if (!DB) return null;
   const t0 = performance.now();
-  const BUDGET_MS = 20000;
+  const BUDGET_MS = 25000;
 
-  // Build sorted word arrays per length (score descending, hinted first)
+  // Build sorted word arrays per length (hinted first, then score desc)
   const bylen = {};
   for (const [lenStr, arr] of Object.entries(DB.all)) {
     const L = parseInt(lenStr);
@@ -360,34 +359,52 @@ function fillGrid(slots, rows, cols) {
 
   // Build letter index: letterIdx[len][pos][char] → array of indices
   const letterIdx = {};
-  for (const [L, arr] of Object.entries(bylen)) {
-    letterIdx[L] = {};
-    for (let p = 0; p < parseInt(L); p++) {
-      letterIdx[L][p] = {};
-      for (let i = 0; i < arr.length; i++) {
-        const ch = arr[i].w[p];
-        if (!letterIdx[L][p][ch]) letterIdx[L][p][ch] = [];
-        letterIdx[L][p][ch].push(i);
+  for (const L in bylen) {
+    const len = parseInt(L);
+    letterIdx[len] = {};
+    for (let p = 0; p < len; p++) {
+      letterIdx[len][p] = {};
+      for (let i = 0; i < bylen[len].length; i++) {
+        const ch = bylen[len][i].w[p];
+        if (!letterIdx[len][p][ch]) letterIdx[len][p][ch] = [];
+        letterIdx[len][p][ch].push(i);
       }
     }
   }
 
-  // Assign IDs and build crossing map
+  // Build crossing map
   for (let i = 0; i < slots.length; i++) slots[i].id = i;
-  const cm = {};
-  for (const s of slots) {
-    for (let p = 0; p < s.cells.length; p++) {
-      const key = s.cells[p][0] + ',' + s.cells[p][1];
-      if (!cm[key]) cm[key] = [];
-      cm[key].push([s.id, p]);
+  for (const s of slots) s.crossings = [];
+  for (let i = 0; i < slots.length; i++) {
+    for (let j = i + 1; j < slots.length; j++) {
+      for (let pi = 0; pi < slots[i].cells.length; pi++) {
+        for (let pj = 0; pj < slots[j].cells.length; pj++) {
+          if (slots[i].cells[pi][0] === slots[j].cells[pj][0] &&
+              slots[i].cells[pi][1] === slots[j].cells[pj][1]) {
+            slots[i].crossings.push({other: j, myPos: pi, otherPos: pj});
+            slots[j].crossings.push({other: i, myPos: pj, otherPos: pi});
+          }
+        }
+      }
     }
   }
-  for (const s of slots) {
-    s.xr = [];
-    for (let p = 0; p < s.cells.length; p++) {
-      const key = s.cells[p][0] + ',' + s.cells[p][1];
-      for (const [s2id, p2] of cm[key]) {
-        if (s2id !== s.id) s.xr.push([p, s2id, p2]);
+
+  // Sort slots: most crossings first, then shortest (proven order from v1)
+  slots.sort((a, b) => b.crossings.length - a.crossings.length || a.len - b.len);
+  // Re-assign IDs after sort
+  for (let i = 0; i < slots.length; i++) slots[i].id = i;
+  // Rebuild crossing refs after sort
+  for (const s of slots) s.crossings = [];
+  for (let i = 0; i < slots.length; i++) {
+    for (let j = i + 1; j < slots.length; j++) {
+      for (let pi = 0; pi < slots[i].cells.length; pi++) {
+        for (let pj = 0; pj < slots[j].cells.length; pj++) {
+          if (slots[i].cells[pi][0] === slots[j].cells[pj][0] &&
+              slots[i].cells[pi][1] === slots[j].cells[pj][1]) {
+            slots[i].crossings.push({other: j, myPos: pi, otherPos: pj});
+            slots[j].crossings.push({other: i, myPos: pj, otherPos: pi});
+          }
+        }
       }
     }
   }
@@ -395,125 +412,95 @@ function fillGrid(slots, rows, cols) {
   const grid = Array.from({length: rows}, () => Array(cols).fill(''));
   const usedWords = new Set();
   const wordData = {};
+  let nodes = 0;
 
-  // Get candidates matching current grid pattern for a slot
+  // Get matching candidates using letter index
   function getCandidates(slot) {
     const arr = bylen[slot.len];
-    if (!arr || arr.length === 0) return [];
+    if (!arr) return [];
     const pattern = slot.cells.map(([r,c]) => grid[r][c] || null);
 
-    // Use letter index for fast filtering
+    // Use letter index to intersect
     let idxSet = null;
     for (let p = 0; p < slot.len; p++) {
       if (pattern[p]) {
         const matching = letterIdx[slot.len]?.[p]?.[pattern[p]];
         if (!matching) return [];
         const mSet = new Set(matching);
-        if (idxSet === null) idxSet = mSet;
-        else idxSet = new Set([...idxSet].filter(x => mSet.has(x)));
+        idxSet = idxSet ? new Set([...idxSet].filter(x => mSet.has(x))) : mSet;
         if (idxSet.size === 0) return [];
       }
     }
 
     const indices = idxSet ? [...idxSet] : Array.from({length: arr.length}, (_,i) => i);
-    const depth = usedWords.size;
     const result = [];
     for (const i of indices) {
       const meta = arr[i];
-      const w = meta.w;
-      if (usedWords.has(w)) continue;
-      if (WEIRD_SET.has(w)) continue;
-      // Core require hint: short unhinted words gated at early depths
-      if (depth < 5 && w.length <= 4 && !meta.h) continue;
-      result.push({idx: i, meta, w, score: (meta.s||0) + (meta.h ? 20 : 0)});
-      if (result.length >= 80) break;
+      if (usedWords.has(meta.w)) continue;
+      if (WEIRD_SET.has(meta.w)) continue;
+      result.push(meta);
+      if (result.length >= 50) break;
     }
     return result;
   }
 
-  // Forward check: after placing a word, do all UNASSIGNED crossing slots still have candidates?
-  function forwardCheck(slot, word) {
-    for (const [p, s2id, p2] of slot.xr) {
-      if (assigned.has(s2id)) continue; // Already placed — skip
-      const s2 = slots[s2id];
-      const li = letterIdx[s2.len];
-      if (!li) return false;
-      const s2pattern = s2.cells.map(([r,c]) => grid[r][c] || null);
-      let idxSet = null;
-      for (let pp = 0; pp < s2.len; pp++) {
-        if (s2pattern[pp]) {
-          const matching = li[pp]?.[s2pattern[pp]];
-          if (!matching || matching.length === 0) return false;
-          const mSet = new Set(matching);
-          if (idxSet === null) idxSet = mSet;
-          else {
-            const next = new Set();
-            for (const x of idxSet) if (mSet.has(x)) next.add(x);
-            idxSet = next;
-          }
-          if (idxSet.size === 0) return false;
-        }
+  // Quick check: does a crossing slot still have at least one candidate?
+  function hasCandidates(slotIdx) {
+    const s = slots[slotIdx];
+    const arr = bylen[s.len];
+    if (!arr) return false;
+    const pattern = s.cells.map(([r,c]) => grid[r][c] || null);
+    const hasConstraint = pattern.some(p => p !== null);
+    if (!hasConstraint) return true; // unconstrained = plenty of candidates
+
+    let idxSet = null;
+    for (let p = 0; p < s.len; p++) {
+      if (pattern[p]) {
+        const matching = letterIdx[s.len]?.[p]?.[pattern[p]];
+        if (!matching) return false;
+        const mSet = new Set(matching);
+        idxSet = idxSet ? new Set([...idxSet].filter(x => mSet.has(x))) : mSet;
+        if (idxSet.size === 0) return false;
       }
-      if (idxSet) {
-        const arr = bylen[s2.len];
-        let possible = false;
-        for (const i of idxSet) {
-          if (!usedWords.has(arr[i].w)) { possible = true; break; }
-        }
-        if (!possible) return false;
+    }
+    // Check at least one unused
+    if (idxSet) {
+      for (const i of idxSet) {
+        if (!usedWords.has(arr[i].w)) return true;
       }
+      return false;
     }
     return true;
   }
 
-  // MRV: pick unassigned slot with fewest candidates (+ frozen = 1 candidate)
-  const assigned = new Set();
-  function chooseMRV() {
-    let bestSlot = null, bestCount = Infinity;
-    for (const s of slots) {
-      if (assigned.has(s.id)) continue;
-      const cands = getCandidates(s);
-      if (cands.length === 0) return {slot: s, cands: []};
-      if (cands.length === 1) return {slot: s, cands}; // Frozen: forced choice
-      if (cands.length < bestCount) {
-        bestCount = cands.length;
-        bestSlot = s;
-      }
-    }
-    if (!bestSlot) return null;
-    return {slot: bestSlot, cands: getCandidates(bestSlot)};
-  }
-
-  let nodes = 0;
-
-  function solve() {
+  function solve(idx) {
     nodes++;
     if (performance.now() - t0 > BUDGET_MS) return 'timeout';
-    if (assigned.size === slots.length) return 'solved';
+    if (idx >= slots.length) return 'solved';
 
-    const pick = chooseMRV();
-    if (!pick || pick.cands.length === 0) return 'fail';
-    const {slot, cands} = pick;
+    const slot = slots[idx];
+    const candidates = getCandidates(slot);
 
-    // Sort by score descending
-    cands.sort((a,b) => b.score - a.score);
-
-    for (const cand of cands.slice(0, 40)) {
-      // Place word
+    for (const cand of candidates) {
+      // Place
       const saved = slot.cells.map(([r,c]) => grid[r][c]);
       for (let i = 0; i < slot.len; i++) grid[slot.cells[i][0]][slot.cells[i][1]] = cand.w[i];
       usedWords.add(cand.w);
-      wordData[cand.w] = cand.meta;
-      assigned.add(slot.id);
+      wordData[cand.w] = cand;
 
-      // Forward check
-      if (forwardCheck(slot, cand.w)) {
-        const result = solve();
+      // Forward check: do unplaced crossing slots still have candidates?
+      let ok = true;
+      for (const cr of slot.crossings) {
+        if (cr.other <= idx) continue; // already placed
+        if (!hasCandidates(cr.other)) { ok = false; break; }
+      }
+
+      if (ok) {
+        const result = solve(idx + 1);
         if (result === 'solved' || result === 'timeout') return result;
       }
 
       // Undo
-      assigned.delete(slot.id);
       usedWords.delete(cand.w);
       delete wordData[cand.w];
       for (let i = 0; i < slot.len; i++) grid[slot.cells[i][0]][slot.cells[i][1]] = saved[i];
@@ -521,10 +508,9 @@ function fillGrid(slots, rows, cols) {
     return 'fail';
   }
 
-  const result = solve();
+  const result = solve(0);
   const elapsed = ((performance.now() - t0)/1000).toFixed(1);
   console.log(`[Engine] ${result}: nodes=${nodes} ${elapsed}s slots=${slots.length}`);
-
   if (result !== 'solved') return null;
   return {grid, wordData, usedWords};
 }
