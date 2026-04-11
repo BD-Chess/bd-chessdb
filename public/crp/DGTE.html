@@ -79,7 +79,7 @@ footer .quote{font-style:italic;color:var(--warm);font-size:14px;margin-bottom:1
   <h1>DGTE</h1>
   <div class="tagline">Double-Gravity Thermoelectric Engine — Low-Grade Heat to DC</div>
   <div class="origin">
-    Gravity + buoyancy convert low-grade heat to direct current via magnetised capsules. Sealed capsules with temperature-dependent density rise in a HOT column and sink in a COLD column; segmented coils harvest both strokes. A co-axial recuperator couples the columns with target effectiveness ε ≥ 0.90. No turbomachinery. No refrigerants. No moving seals in the thermal path.
+    Gravity does all the work — twice. Hot capsules become lighter than the surrounding fluid: gravity pushes the fluid down, the capsule rises. Cold capsules become heavier: gravity pulls them down directly. One force, two strokes, continuous DC. A co-axial recuperator couples the columns with target effectiveness ε ≥ 0.90. No turbomachinery. No refrigerants. No moving seals in the thermal path.
   </div>
   <div class="stats">
     <div><div class="stat-n">4–8%</div><div class="stat-l">Net Efficiency</div></div>
@@ -110,7 +110,7 @@ footer .quote{font-style:italic;color:var(--warm);font-size:14px;margin-bottom:1
 <!-- ABSTRACT -->
 <div id="abstract" style="padding:28px 24px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
 <h2 style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--warm);margin-bottom:14px;letter-spacing:1px">ABSTRACT</h2>
-<p style="font-size:14px;color:#bbb;line-height:1.8;margin:0 0 12px">DGTE is a gravity–buoyancy heat engine that converts low-grade heat (60–150 °C) into direct DC electricity. Sealed, magnetised capsules with temperature-dependent density rise in a HOT column and sink in a COLD column inside a co-axial vessel. Segmented linear coils harvest electromagnetic energy from both strokes — no turbines, no pistons, no refrigerants. A full-height annular counter-current recuperator couples the columns with target effectiveness ε ≥ 0.90, recovering heat that would otherwise be lost.</p>
+<p style="font-size:14px;color:#bbb;line-height:1.8;margin:0 0 12px">DGTE is a double-gravity heat engine. The name says what it does: gravity acts twice per cycle. When a sealed capsule is heated, its density drops below the surrounding fluid — gravity pulls the fluid down, displacing the capsule upward. When the capsule cools, its density rises above the fluid — gravity pulls the capsule down directly. Same force, two directions, two power strokes. Segmented linear coils harvest electromagnetic energy from both strokes — no turbines, no pistons, no refrigerants. A full-height annular counter-current recuperator couples the HOT and COLD columns with target effectiveness ε ≥ 0.90, recovering heat that would otherwise be lost.</p>
 <p style="font-size:14px;color:#bbb;line-height:1.8;margin:0 0 12px">Two crossover variants are formalised: V1 (rotary airlocks, baseline — proven mechanics, 9/10 confidence) and V2 (magnetic coupling, R&D — higher long-term upside, 5/10 confidence). The architecture accepts both as swappable cartridges. Pilot acceptance targets: net efficiency η = 4–8% at 90–120/20–30 °C, duty factor φ ≥ 0.85, availability ≥ 99% over 30 days, parasitics ≤ 100W, zero crossover-attributable jams.</p>
 <p style="font-size:14px;color:#bbb;line-height:1.8;margin:0 0 12px">Best-fit sources: industrial waste heat (compressor oil coolers, CIP/pasteurisation), low-enthalpy geothermal, solar-thermal, district heat. FOAK economics: €40–80k/kWₑ with 12–18 year payback at €0.20/kWh; volume targets €10–15k/kWₑ with 3–5 year payback at high tariffs. The system trades peak thermodynamic efficiency for simplicity, safety, availability, and direct DC output.</p>
 <p style="font-size:14px;color:var(--warm);line-height:1.8;margin:0">Conceived, designed, and authored by Bojan Dobrečevič with AI teamwork (ChatGPT, Claude, Gemini, DeepSeek). The recuperation architecture was seeded by a human insight — "capsules don't traverse the exchanger; fluid does" — and elaborated through multi-LLM iteration into the co-axial annular design adopted as baseline.</p>
@@ -120,7 +120,7 @@ footer .quote{font-style:italic;color:var(--warm);font-size:14px;margin-bottom:1
 <div class="ch" id="ch1">
 <div class="ch-head" onclick="toggle(this)"><span class="ch-num">1</span><span class="ch-title">How It Works</span><span class="ch-arrow">▸</span></div>
 <div class="ch-body">
-<p>DGTE is a buoyancy-driven heat engine. Capsules with temperature-dependent density move up in the HOT column and down in the COLD column. Motion through segmented linear coils generates electricity on both strokes — a dual-stroke linear generator with gravity as the piston.</p>
+<p>DGTE exploits gravity twice. A capsule heated in the HOT column becomes less dense than the bath fluid — the fluid sinks under gravity, and the capsule is displaced upward. At the top, it crosses to the COLD column, cools, becomes denser than the fluid — and gravity pulls it straight down. Both motions pass through segmented coils that generate electricity. Two strokes, one force. Gravity is both the piston and the return spring.</p>
 <h3>The 12-Step Capsule Loop</h3>
 <ol>
 <li>Preheat loops to setpoints; baseline ε</li>
@@ -139,7 +139,7 @@ footer .quote{font-style:italic;color:var(--warm);font-size:14px;margin-bottom:1
 <h3>Co-Axial Vessel Architecture</h3>
 <p>Central HOT riser and annular COLD downcomer separated by a full-height annular recuperator wall. Crossovers at top and bottom complete the capsule loop. The recuperator is not a separate unit — it IS the wall between the columns, transferring heat continuously via counter-current flow.</p>
 <h3>Key Physics</h3>
-<div class="eq">F_net = (ρ_bath − ρ_capsule) · V · g → buoyancy drives motion</div>
+<div class="eq">F_net = (ρ_bath − ρ_capsule) · V · g → gravity on the density difference drives both strokes</div>
 <div class="eq">F_drag = ½ · C_D · ρ_bath · A · v² → design v ≤ 0.4 m/s in coil zones</div>
 <div class="eq">ε_recup = [1 − exp(−NTU(1−C_r))] / [1 − C_r · exp(−NTU(1−C_r))]</div>
 <div class="eq">P_net = η_gen · P_gross − P_parasitic → direct DC output</div>
@@ -361,7 +361,7 @@ footer .quote{font-style:italic;color:var(--warm);font-size:14px;margin-bottom:1
 </div></div>
 
 <footer>
-  <div class="quote">"Gravity + buoyancy. Two strokes. Direct DC. No turbines."</div>
+  <div class="quote">"One force, two strokes. Direct DC. No turbines."</div>
   <p>Bojan Dobrečevič · AIM³ Lab · 8Z Research Program · August 2025</p>
   <p>bd@siol.net · +386 31 741 748 · chessbest.org</p>
 </footer>
