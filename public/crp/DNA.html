@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DNA — Mathematical Structure in Genomic DNA/RNA · 8Z Research</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
+:root{--bg:#080810;--card:#0e0e1c;--border:#1a1a30;--text:#d0d0e0;--dim:#666680;--muted:#444460;--blue:#4a9ede;--green:#2ecc94;--orange:#e8943a;--red:#e05070;--teal:#3ecdc4;--gold:#e8c840;--violet:#8b7cf6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+.wrap{max-width:900px;margin:0 auto;padding:32px 20px}
+header{text-align:center;padding:48px 0 36px;border-bottom:1px solid var(--border)}
+h1{font-family:'IBM Plex Mono',monospace;font-size:27px;font-weight:700;color:var(--green);letter-spacing:2px}
+.tagline{font-size:15px;color:var(--dim);margin:8px 0 20px}
+.origin{font-size:13px;color:#888;line-height:1.8;max-width:760px;margin:0 auto;font-style:italic;padding:16px;background:var(--card);border-radius:8px;border-left:3px solid var(--green)}
+.stats{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;margin:24px 0 0}
+.stat-n{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:700;color:var(--green)}
+.stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+nav{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:10px 0}
+nav .inner{max-width:900px;margin:0 auto;display:flex;gap:6px;flex-wrap:wrap;padding:0 20px;justify-content:center}
+nav a{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:4px 10px;color:var(--dim);text-decoration:none;border:1px solid var(--border);border-radius:3px;transition:all .2s}
+nav a:hover{color:var(--green);border-color:var(--green)}
+.ch{margin:40px 0 0}.ch-head{display:flex;align-items:center;gap:12px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer;user-select:none;transition:border-color .2s}.ch-head:hover{border-color:var(--green)}.ch-head.open{border-color:var(--green);border-radius:8px 8px 0 0}.ch-num{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:var(--muted);min-width:36px}.ch-title{font-size:16px;font-weight:600;flex:1}.ch-arrow{font-size:14px;color:var(--muted);transition:transform .2s}.ch-head.open .ch-arrow{transform:rotate(90deg)}.ch-body{display:none;padding:24px;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;background:var(--card)}.ch-body.open{display:block}
+.ch-body h3{font-size:15px;font-weight:600;color:var(--green);margin:24px 0 10px}.ch-body h3:first-child{margin-top:0}
+.ch-body p{margin:8px 0;font-size:14px;color:#bbb;line-height:1.7}
+.eq{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--teal);text-align:center;padding:10px;margin:12px 0;background:#0a1520;border-radius:4px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}th{background:#122018;color:var(--green);padding:8px 10px;text-align:left;font-weight:600;border:1px solid var(--border)}td{padding:7px 10px;border:1px solid var(--border);color:#bbb}tr:nth-child(even) td{background:#0c0c1a}
+.note{padding:12px;margin:16px 0;border-radius:6px;font-size:13px;line-height:1.6}
+.note-green{background:#0a1a15;border-left:3px solid var(--green);color:var(--green)}
+.note-orange{background:#1a1510;border-left:3px solid var(--orange);color:var(--orange)}
+.note-red{background:#1a0a10;border-left:3px solid var(--red);color:var(--red)}
+.note-blue{background:#0a1028;border-left:3px solid var(--blue);color:var(--blue)}
+.note-violet{background:#121028;border-left:3px solid var(--violet);color:#b5a8ff}
+ul,ol{padding-left:24px;margin:8px 0} li{margin:6px 0;font-size:14px;color:#bbb}
+footer{text-align:center;padding:40px 0 24px;border-top:1px solid var(--border);margin-top:48px}footer p{font-size:12px;color:var(--muted)}footer .quote{font-style:italic;color:var(--green);font-size:14px;margin-bottom:16px}
+@media(max-width:640px){h1{font-size:20px}.stats{gap:16px}.ch-body{padding:16px}table{font-size:11px}}
+.crp-topbar{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);background:rgba(8,8,16,.88);border-bottom:1px solid rgba(0,229,255,.08);padding:9px 0}
+.crp-topbar-inner{max-width:940px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:.8rem}
+.crp-brand{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:#4a9ede;text-decoration:none}
+.crp-links{display:flex;gap:.5rem;flex-wrap:wrap}
+.crp-links a{font-family:'IBM Plex Mono',monospace;font-size:.65rem;text-decoration:none;padding:4px 9px;border-radius:999px;border:1px solid rgba(0,229,255,.14);color:rgba(226,232,244,.6)}
+.crp-links a:hover{border-color:rgba(0,229,255,.3);color:#4a9ede}
+</style>
+</head>
+<body>
+<div class="crp-topbar"><div class="crp-topbar-inner">
+<a class="crp-brand" href="/crp/">BD × AI Lab</a>
+<div class="crp-links">
+<a href="/crp/">All Papers</a>
+<a href="/crp/AI8_Reasoning.html">Method</a>
+<a href="/crp/MDLxDCC.html">MDL×DCC</a>
+<a href="/crp/DNA.html">DNA</a>
+<a href="/crp/DGTE.html">DGTE</a>
+<a href="/crp/HTH.html">HTH</a>
+<a href="/bd/">Portfolio</a>
+</div>
+</div></div>
+
+<div class="wrap">
+<header>
+  <h1>DNA</h1>
+  <div class="tagline">Mathematical Structure in Genomic DNA/RNA — discovery, validation, and multi-domain characterization</div>
+  <div class="origin">
+    This paper compresses the DNA_Math v3.0 research suite into one public-facing CRP page. It is not just a paper claim: it is backed by a purpose-built Python research stack, cross-genome validation, generator tuning, merge experiments, reverse-engineering work, and multi-domain attacks. The deeper origin story reaches back to Soul Voyage (1995) and CFH/CCH on one side, and independent 8Z compression research on the other, with TSP acting as the bridge that made biological transfer credible.
+  </div>
+  <div class="stats">
+    <div><div class="stat-n">50</div><div class="stat-l">Genomes tested</div></div>
+    <div><div class="stat-n">37.98</div><div class="stat-l">Peak Z-score</div></div>
+    <div><div class="stat-n">7</div><div class="stat-l">Validated generators</div></div>
+    <div><div class="stat-n">9</div><div class="stat-l">Python tools</div></div>
+    <div><div class="stat-n">13.5k</div><div class="stat-l">Lines of code</div></div>
+    <div><div class="stat-n">0.86</div><div class="stat-l">DNA-likeness</div></div>
+  </div>
+</header>
+</div>
+
+<nav><div class="inner">
+  <a href="#abstract">Abstract</a>
+  <a href="#ch1">Why It Matters</a>
+  <a href="#ch2">Pipeline</a>
+  <a href="#ch3">Main Results</a>
+  <a href="#ch4">Merge Test</a>
+  <a href="#ch5">Generators</a>
+  <a href="#ch6">Multi-Domain</a>
+  <a href="#ch7">Code Stack</a>
+  <a href="#ch8">Confirmed / Open</a>
+  <a href="#ch9">MDL×DCC Role</a>
+  <a href="#ch10">Next Bridges</a>
+</div></nav>
+
+<div class="wrap">
+
+<div id="abstract" style="padding:28px 24px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
+<h2 style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--green);margin-bottom:14px;letter-spacing:1px">ABSTRACT</h2>
+<p style="font-size:14px;color:#bbb;line-height:1.8;margin:0 0 12px">DNA_Math v3.0 reports empirical evidence for mathematical structure in genomic DNA that survives beyond simple composition and trinucleotide (Markov-2) statistics. Across a 50-genome collection spanning viruses, bacteria, organelles, and eukaryotes, the 8Z-LO research stack detects signal up to <strong style="color:var(--text)">z = 37.98</strong> under Fisher-shuffle nulls, with the strongest positions becoming <strong style="color:var(--text)">more significant under harder tests</strong> rather than collapsing.</p>
+<p style="font-size:14px;color:#bbb;line-height:1.8;margin:0 0 12px">The pipeline combines ROI detection, null-model confirmation, generator-specific MDL attacks, rule profiling, validator cross-checking, merge experiments, reverse-engineering, and domain-transfer attacks. The biological claim is therefore not resting on one metric or one script. It rests on a layered apparatus that repeatedly asks whether the signal survives when the representation, the null model, or the analytical lens changes.</p>
+<p style="font-size:14px;color:var(--green);line-height:1.8;margin:0">For the wider 8Z / AI8 program, DNA matters because it is one of the strongest bridges away from "games and routing" into biology. It upgrades the proof layer from five to six domains and shows that the kernel can survive contact with real sequence data, hard nulls, and a much heavier scientific toolchain.</p>
+</div>
+
+<div class="ch" id="ch1">
+<div class="ch-head open" onclick="toggle(this)"><span class="ch-num">1</span><span class="ch-title">Why This Matters</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body open">
+<p>This page is about more than "DNA contains patterns." The stronger claim is methodological: a unified MDL×DCC-style research program can enter biology, build a real detection-and-validation stack, and produce non-trivial signals that survive progressively harder tests.</p>
+<h3>Three public reasons this page matters</h3>
+<ul>
+<li><strong>Biological seriousness:</strong> the work is backed by a dedicated Python lab stack, not only by papers or visual anecdotes.</li>
+<li><strong>Bridge value:</strong> DNA gives the wider program a real empirical foothold in biology, not just in optimization, games, and compression.</li>
+<li><strong>Kernel transfer:</strong> the same family of ideas — compressibility, representation attack, governed search, and cheap kill tests — shows up here in a different alphabet.</li>
+</ul>
+<div class="note note-green">Public reading rule: this page centers the empirical line first. Deeper ontology and origin questions are real parts of the research suite, but they sit downstream of what the pipeline can already measure.</div>
+<h3>The corrected genealogy</h3>
+<p>The v3.0 suite explicitly rejects the simplistic story that the DNA work came straight from consciousness theory. The stronger story is two-stream convergence: <strong>CFH/CCH</strong> developed independently on one side, <strong>8Z compression</strong> on the other, and <strong>TSP</strong> became the neutral bridge that made transfer into biology credible. That is a better story because independent convergence is harder to explain away as rhetoric.</p>
+</div></div>
+
+<div class="ch" id="ch2">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">2</span><span class="ch-title">Pipeline Architecture</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<p>The main paper describes a six-tool 8Z-LO DNA analysis pipeline. The actual codebase now visible in this project is even broader: a nine-tool Python research stack with orchestration, merge utilities, and a FASTA encoder. The important point is not the exact count. The important point is that this is a <strong>layered scientific workflow</strong>, not one monolithic script.</p>
+<table>
+<tr><th>Layer</th><th>Tool</th><th>Role</th></tr>
+<tr><td>0</td><td>8Z_Pipeline.py</td><td>Command center; per-FASTA orchestration, run control, step gating, batch management</td></tr>
+<tr><td>1</td><td>8Z_Detector.py</td><td>ROI discovery; detective + wave + visual + ImageLab + WaveCA channels</td></tr>
+<tr><td>2</td><td>8Z_Detective.py</td><td>Scout/confirm significance testing under stronger null models</td></tr>
+<tr><td>3</td><td>8Z_Scanner.py</td><td>Generator-specific MDL-style representation attacks; ROI-aligned matching</td></tr>
+<tr><td>4</td><td>8Z_Profiler.py</td><td>Rule profiling, heatmaps, streaming analysis, large-genome handling</td></tr>
+<tr><td>5</td><td>8Z_Validator.py</td><td>Wide+deep cross-validation, multi-null testing, holdout/gap checks, FDR</td></tr>
+<tr><td>6</td><td>8Z_FASTA_Merge.py</td><td>Cross-genome merge construction for robustness tests</td></tr>
+<tr><td>7</td><td>8Z-FE_HYB4.py</td><td>Independent FASTA encoder; domain compression path and representation pressure</td></tr>
+</table>
+<div class="eq">Input genomes → ROI detection → null-model confirmation → generator attack → rule profiling → validator cross-checks → merge robustness → compression comparison</div>
+<h3>Why the code stack matters publicly</h3>
+<p>Anyone can write "we found structure in DNA." A more serious claim needs a research apparatus. This one already includes batch orchestration, ROI gating, strong nulls, multi-tool convergence, merge experiments, and a parallel compression line. That is why DNA should be read as a research platform, not as a one-off result.</p>
+<div class="note note-blue">Measured code depth in the uploaded stack: <strong>9 Python tools, ~13,495 lines</strong>. TSP remains the cleaner reusable engine; DNA is the bigger domain-specific lab.</div>
+</div></div>
+
+<div class="ch" id="ch3">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">3</span><span class="ch-title">Main Empirical Results</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>Headline findings from the v3.0 suite</h3>
+<table>
+<tr><th>Finding</th><th>Result</th><th>Why it matters</th></tr>
+<tr><td>Peak signal</td><td><strong>z = 37.98</strong></td><td>Strongest signal yet observed in the pipeline; null probability effectively negligible</td></tr>
+<tr><td>Collection scale</td><td>50 genomes</td><td>Not one cherry-picked sequence but a mixed collection across biological classes</td></tr>
+<tr><td>Generator set</td><td>7 validated generators</td><td>Scanner moved from broad speculative generator pool to empirically tuned production set</td></tr>
+<tr><td>Latent factor</td><td>PC1 explains 78–97% of inter-generator agreement</td><td>Generators are not acting independently; they converge on a shared latent compressibility signal</td></tr>
+<tr><td>Unexplained portion</td><td><strong>84.3%</strong> of PC1 unexplained by standard sequence statistics through 4-mers</td><td>Suggests the main signal is not reducible to simple composition or short k-mer counts</td></tr>
+<tr><td>Superposition</td><td><strong>0.86 DNA-likeness</strong></td><td>Simple generator combinations reproduce 6 of 7 DNA fingerprint dimensions</td></tr>
+</table>
+<h3>F21 Synthia as methodological validation</h3>
+<p>The synthetic genome Synthia is especially important because it behaved like a positive control for method quality. It vanished in one unbalanced merge where E. coli dominated the sequence mass, then recovered fully in the size-matched bacterial merge. That is exactly the kind of behavior you want from a methodologically honest pipeline: disappearance under bad context, recovery under the correct test context.</p>
+<div class="note note-green">The strongest public sentence here is simple: <strong>genuine signals do not collapse when the tests become harder; in the strongest cases they amplify.</strong></div>
+</div></div>
+
+<div class="ch" id="ch4">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">4</span><span class="ch-title">The Merge Experiment and the Three-Tier Signal Map</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<p>Appendix A is one of the strongest parts of the suite. By merging genomes and forcing the null model to shuffle across multiple source sequences, it asks whether the signal is composition-dependent noise or something structurally deeper.</p>
+<table>
+<tr><th>Tier</th><th>Description</th><th>Examples</th></tr>
+<tr><td>Tier 1</td><td>Compositional artifacts (fragile)</td><td>Small viral genomes, human mitochondrion, SARS-CoV-2</td></tr>
+<tr><td>Tier 2</td><td>Genuine but context-sensitive</td><td>Intermediate cases that require the right merge context to show clearly</td></tr>
+<tr><td>Tier 3</td><td>Robust mathematical structure</td><td>Yeast chromosome I, E. coli hot zones</td></tr>
+</table>
+<h3>Progressive amplification</h3>
+<table>
+<tr><th>Position</th><th>Individual</th><th>Big merge</th><th>Size-matched merge</th></tr>
+<tr><td>Yeast chrI telomere</td><td>z = 12.96</td><td>z = 20.37</td><td><strong>z = 37.98</strong></td></tr>
+<tr><td>Yeast chrI centromere</td><td>z = 13.36</td><td>z = 16.69</td><td><strong>z = 34.24</strong></td></tr>
+<tr><td>E. coli hotspot</td><td>~13.1</td><td>z = 17.70</td><td><strong>z = 33.32</strong></td></tr>
+</table>
+<p>This is the signature that lifts the work above many bio-pattern claims. Harder tests do not make the best signals disappear. They make them sharper.</p>
+<h3>Degrees of freedom hypothesis</h3>
+<p>The suite proposes that stronger mathematical structure should correlate with the amount of sequence not fully pinned down by protein-coding constraints. Small viral genomes have almost no spare capacity; larger genomes have more room for structural organization to coexist with biological function.</p>
+<div class="note note-orange">This is a hypothesis, not yet a universal law. But it is a good example of the page's style: a testable bridge emerging from empirical results, not a decorative philosophical add-on.</div>
+</div></div>
+
+<div class="ch" id="ch5">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">5</span><span class="ch-title">Generator Validation: from 20 Generators to 7</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<p>One of the most credibility-boosting parts of the suite is that it did <strong>not</strong> simply celebrate every generator hit. The scanner's earlier era showed that most individual hits were composition artifacts. That painful discovery led to threshold tuning, generator removal, and a smaller but more trustworthy production scanner.</p>
+<table>
+<tr><th>Stage</th><th>State</th><th>Meaning</th></tr>
+<tr><td>M8 era</td><td>20 generators, little empirical validation</td><td>Good discovery engine, weak trust in individual generator hits</td></tr>
+<tr><td>Artifact discovery</td><td>94.3% of individual hits composition-driven</td><td>Most generators were not reading deep structure cleanly</td></tr>
+<tr><td>M6.3 scanner</td><td>7 validated generators</td><td>Production set with empirically tuned gates and stronger reliability</td></tr>
+</table>
+<h3>Why this matters</h3>
+<ul>
+<li>The project is willing to kill weak generators rather than keep them for beauty.</li>
+<li>The final scanner is smaller, stricter, and therefore more credible.</li>
+<li>The paradox remains interesting: even when many individual generators were weak, aggregate structure still survived at the collection level.</li>
+</ul>
+<div class="note note-green">This is how a real research program matures: not by accumulating mechanisms, but by removing flattering noise until the surviving core becomes sharper.</div>
+</div></div>
+
+<div class="ch" id="ch6">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">6</span><span class="ch-title">Multi-Domain Characterization</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<p>Appendices C, D, and E push the question beyond "is there signal?" toward "what kind of signal might this be?" The answer is not that one specific generator explains DNA. The answer is closer to a latent structural factor that multiple domains can partially approximate.</p>
+<h3>Three big moves in the multi-domain line</h3>
+<ol>
+<li><strong>Latent compressibility factor:</strong> PC1 captures most inter-generator agreement yet remains largely unexplained by standard statistics.</li>
+<li><strong>Generator superposition:</strong> small generator sets reproduce 6/7 DNA fingerprint dimensions with DNA-likeness around 0.86.</li>
+<li><strong>Domain equivalence:</strong> binary, sonic, and hybrid pools all reach the same 0.86 DNA-likeness, suggesting the organizing principle is not tied to one descriptive alphabet.</li>
+</ol>
+<h3>Why domain equivalence matters</h3>
+<p>If binary cellular automata, sonic/wave generators, and hybrid systems converge on the same statistical fingerprint, then the relevant structure may live at a level of abstraction deeper than the wave/computation distinction. That does not prove any metaphysical thesis by itself. It does, however, change the character of the empirical puzzle.</p>
+<div class="eq">Binary generators = 0.86 DNA-likeness<br>Sonic generators = 0.86 DNA-likeness<br>Hybrid generators = 0.86 DNA-likeness</div>
+<div class="note note-violet">Appendix D pushes even further through reverse-engineering: phase sweeps, generator substitution, Hénon-map improvements, 2-bit encoding with CpG suppression, and recipe optimization up to 6/7 fingerprint dimensions with ~72–86% explainability depending on genome and metric.</div>
+</div></div>
+
+<div class="ch" id="ch7">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">7</span><span class="ch-title">The Python Research Stack</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<p>The uploaded code changes how the page should be read. This is not a paper looking for code. The code already exists and is substantial.</p>
+<table>
+<tr><th>File</th><th>Approx. lines</th><th>Role</th></tr>
+<tr><td>8Z_Pipeline.py</td><td>1,989</td><td>Command center, orchestration, GUI, subfolder run control</td></tr>
+<tr><td>8Z_Detector.py</td><td>2,568</td><td>ROI-gated multi-channel detection</td></tr>
+<tr><td>8Z_Detective.py</td><td>1,119</td><td>Scout/confirm significance engine</td></tr>
+<tr><td>8Z_Scanner.py</td><td>1,636</td><td>MDL-inspired generator scanner</td></tr>
+<tr><td>8Z_Profiler.py</td><td>440</td><td>Profiling and heatmaps</td></tr>
+<tr><td>8Z_Validator.py</td><td>2,561</td><td>Wide+deep validator with strong nulls</td></tr>
+<tr><td>8Z_FASTA_Merge.py</td><td>349</td><td>Cross-genome merge construction</td></tr>
+<tr><td>8Z-FE_HYB4.py</td><td>2,833</td><td>Streaming FASTA encoder</td></tr>
+</table>
+<h3>TSP vs DNA code, honestly</h3>
+<p>The TSP arena is still the cleaner reusable research engine. The DNA stack is the bigger domain-specific lab. That is exactly why DNA helps the public story: it shows the kernel can support not only elegant architecture, but also a heavy empirical workflow in a much messier scientific domain.</p>
+<div class="note note-blue">Compressed verdict: <strong>TSP is the cleaner engine. DNA is the bigger lab.</strong></div>
+</div></div>
+
+<div class="ch" id="ch8">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">8</span><span class="ch-title">What Is Confirmed, What Is Open, What Is Speculative</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>Confirmed enough to say publicly</h3>
+<ul>
+<li>There is reproducible non-trivial signal in the pipeline beyond simple composition-matched nulls.</li>
+<li>The strongest signals survive and even amplify under harder merge contexts.</li>
+<li>The scanner improved by killing weak generators and keeping a stricter validated set.</li>
+<li>Multi-domain characterization reveals convergence on a latent factor not explained by standard short-range statistics alone.</li>
+<li>The research is supported by a real code stack, not only by narrative claims.</li>
+</ul>
+<h3>Open empirical questions</h3>
+<ul>
+<li>How universal is the degrees-of-freedom pattern across the full 50-genome collection?</li>
+<li>How much of the remaining 15–28% unexplained variance is positional / heterogeneous rather than fundamentally different?</li>
+<li>Can the reverse-engineered recipes generalize cleanly on held-out genomes and larger benchmark sets?</li>
+<li>Which multi-domain attack vectors produce the strongest next wave of evidence: 3D CGR, recurrence plots, graph methods, TDA, mutual information fields, or others?</li>
+</ul>
+<h3>Speculative layer</h3>
+<p>The suite also contains a real speculative appendix about the "origin gap" and candidate prebiotic organizers. That belongs in the ecosystem. But it should be read after the empirical sections above, not in place of them.</p>
+<div class="note note-red">Public discipline matters here: <strong>this page does not claim that origin-of-life questions are solved.</strong> It claims that the empirical signal is interesting enough to make the origin question sharper.</div>
+</div></div>
+
+<div class="ch" id="ch9">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">9</span><span class="ch-title">Why This Is a Proof-Bearing MDL×DCC Domain</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<p>Within the larger research map, DNA should not be treated as a decorative side note. It is one of the strongest proof-bearing domains because it pushes the kernel into a domain where cheap praise is harder and biological messiness is unavoidable.</p>
+<table>
+<tr><th>Domain</th><th>What it proved</th></tr>
+<tr><td>TSP</td><td>Compressibility and quality correlate in optimisation search</td></tr>
+<tr><td>Sudoku</td><td>The same principle transfers to constraint satisfaction</td></tr>
+<tr><td>Chess</td><td>DCC can read quality differences in competitive evaluation traces</td></tr>
+<tr><td>Trading</td><td>Recursive governance can work in live market sequence problems</td></tr>
+<tr><td>Compression</td><td>Domain-aware representation and MDL governance beat generic treatment</td></tr>
+<tr><td><strong>DNA</strong></td><td><strong>The kernel survives contact with biological sequence data, hard nulls, and multi-tool validation</strong></td></tr>
+</table>
+<p>That is why DNA upgrades the proof layer from five to six domains. It changes the public shape of the whole program.</p>
+<div class="note note-green">Without DNA, outsiders can still say "interesting but mostly games, routing, and compression." With DNA, that dismissal becomes much weaker.</div>
+</div></div>
+
+<div class="ch" id="ch10">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">10</span><span class="ch-title">Next Bridges</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>Immediate next bridge</h3>
+<p>The most natural next biological bridge is <strong>protein folding / structure prediction</strong>. The logic is straightforward: if DNA work established a sequence-level structural signal and the project already has a strong search/governance kernel from TSP and MDL, the next question is whether a comparable bridge appears between sequence organization and folding-level organization.</p>
+<h3>Near-term work paths</h3>
+<ol>
+<li>Sharpen the public DNA page and integrate it into the MDL×DCC proof layer.</li>
+<li>Use the existing code stack to produce cleaner visual benchmarks and held-out validations.</li>
+<li>Run the smallest credible protein-folding pilot, not a giant speculative jump.</li>
+<li>Keep empirical and speculative layers clearly separated so the public-facing story stays strong.</li>
+</ol>
+<div class="note note-green">Best public reading: <strong>DNA is not the end of the biology story. It is the first serious bridge.</strong></div>
+</div></div>
+
+<footer>
+  <div class="quote">"The project does not just have a DNA paper. It has a DNA research platform."</div>
+  <p>Bojan Dobrečevič · AIM³ Lab · 8Z Research Program · February–April 2026</p>
+  <p>DNA_Math v3.0 synthesis page for CRP · chessbest.org</p>
+</footer>
+</div>
+<script>
+function toggle(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+</script>
+</body>
+</html>
