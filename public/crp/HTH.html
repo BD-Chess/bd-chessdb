@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTH — Horizontal Trompe Hybrid · 8Z Research</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
+:root{--bg:#080810;--card:#0e0e1c;--border:#1a1a30;--text:#d0d0e0;--dim:#666680;--muted:#444460;--blue:#4a9ede;--green:#2ecc94;--orange:#e8943a;--red:#e05070;--teal:#3ecdc4;--gold:#e8c840}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+.wrap{max-width:860px;margin:0 auto;padding:32px 20px}
+header{text-align:center;padding:48px 0 36px;border-bottom:1px solid var(--border)}
+h1{font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:700;color:var(--blue);letter-spacing:3px}
+.tagline{font-size:15px;color:var(--dim);margin:8px 0 20px}
+.origin{font-size:13px;color:#888;line-height:1.8;max-width:700px;margin:0 auto;font-style:italic;padding:16px;background:var(--card);border-radius:8px;border-left:3px solid var(--teal)}
+.stats{display:flex;justify-content:center;gap:32px;flex-wrap:wrap;margin:24px 0 0}
+.stat-n{font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:700;color:var(--green)}
+.stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+nav{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:10px 0}
+nav .wrap{display:flex;gap:6px;flex-wrap:wrap;padding:0 20px;justify-content:center}
+nav a{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:4px 10px;color:var(--dim);text-decoration:none;border:1px solid var(--border);border-radius:3px;transition:all .2s}
+nav a:hover{color:var(--blue);border-color:var(--blue)}
+.ch{margin:40px 0 0}
+.ch-head{display:flex;align-items:center;gap:12px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer;user-select:none;transition:border-color .2s}
+.ch-head:hover{border-color:var(--blue)}
+.ch-head.open{border-color:var(--blue);border-radius:8px 8px 0 0}
+.ch-num{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:var(--muted);min-width:36px}
+.ch-title{font-size:16px;font-weight:600;flex:1}
+.ch-arrow{font-size:14px;color:var(--muted);transition:transform .2s}
+.ch-head.open .ch-arrow{transform:rotate(90deg)}
+.ch-body{display:none;padding:24px;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;background:var(--card)}
+.ch-body.open{display:block}
+.ch-body h3{font-size:15px;font-weight:600;color:var(--blue);margin:24px 0 10px}
+.ch-body h3:first-child{margin-top:0}
+.ch-body p{margin:8px 0;font-size:14px;color:#bbb;line-height:1.7}
+.eq{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--teal);text-align:center;padding:10px;margin:12px 0;background:#0a1520;border-radius:4px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+th{background:#141428;color:var(--blue);padding:8px 10px;text-align:left;font-weight:600;border:1px solid var(--border)}
+td{padding:7px 10px;border:1px solid var(--border);color:#bbb}
+tr:nth-child(even) td{background:#0c0c1a}
+.note{padding:12px;margin:16px 0;border-radius:6px;font-size:13px;line-height:1.6}
+.note-green{background:#0a1a15;border-left:3px solid var(--green);color:var(--green)}
+.note-orange{background:#1a1510;border-left:3px solid var(--orange);color:var(--orange)}
+.note-red{background:#1a0a10;border-left:3px solid var(--red);color:var(--red)}
+.note-blue{background:#0a1028;border-left:3px solid var(--blue);color:var(--blue)}
+ul,ol{padding-left:24px;margin:8px 0}
+li{margin:6px 0;font-size:14px;color:#bbb}
+.conf-table td:nth-child(2){font-family:'IBM Plex Mono',monospace;font-weight:600}
+footer{text-align:center;padding:40px 0 24px;border-top:1px solid var(--border);margin-top:48px}
+footer p{font-size:12px;color:var(--muted)}
+footer .quote{font-style:italic;color:var(--blue);font-size:14px;margin-bottom:16px}
+@media(max-width:640px){h1{font-size:20px}.stats{gap:16px}.ch-body{padding:16px}table{font-size:11px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <h1>HORIZONTAL TROMPE HYBRID</h1>
+  <div class="tagline">Multi-Channel River & Ocean Energy Harvesting System</div>
+  <div class="origin">
+    Origin: A dream about a boat travelling faster than river current, propelled only by internal tube geometry compressing air-water mixture. Morning analysis revealed connections to DGTE (low-temperature heat engine), MDL (information compression), and the trompe (historical hydraulic air compressor). No literature describes a horizontal trompe exploiting current velocity rather than vertical head.
+  </div>
+  <div class="stats">
+    <div><div class="stat-n">3</div><div class="stat-l">Energy Sources</div></div>
+    <div><div class="stat-n">15</div><div class="stat-l">Channels</div></div>
+    <div><div class="stat-n">0</div><div class="stat-l">Moving Parts</div></div>
+    <div><div class="stat-n">30+</div><div class="stat-l">Year Lifespan</div></div>
+  </div>
+</header>
+</div>
+
+<nav><div class="wrap" style="max-width:860px">
+  <a href="#ch1">Physics</a>
+  <a href="#ch2">River System</a>
+  <a href="#ch3">River Sizing</a>
+  <a href="#ch4">Ocean System</a>
+  <a href="#ch5">Ocean Sizing</a>
+  <a href="#ch6">PV/DGTE</a>
+  <a href="#ch7">Economics</a>
+  <a href="#ch8">Cross-Domain</a>
+  <a href="#ch9">Originality</a>
+  <a href="#ch10">Open Questions</a>
+  <a href="#ch11">Next Steps</a>
+</div></nav>
+
+<div class="wrap">
+
+<div style="padding:28px 24px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
+<h2 style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--blue);margin-bottom:14px;letter-spacing:1px">ABSTRACT</h2>
+<p style="font-size:14px;color:#bbb;line-height:1.8;margin:0 0 12px">This paper introduces the Horizontal Trompe Hybrid (HTH) — a passive hydraulic air compression architecture that harvests energy from river and ocean currents without moving parts. Unlike classical trompes which require vertical waterfalls or dams, HTH uses a funnel-Venturi intake to entrain air into horizontal or diagonal flow, combining three energy sources in a single system: kinetic current velocity, hydrostatic depth, and natural river gradient. An adaptive polyline pipe layout follows local topography rather than imposing fixed geometry, reading the river the way a mountaineer reads terrain.</p>
+<p style="font-size:14px;color:#bbb;line-height:1.8;margin:0 0 12px">A parametric simulator validates three fatal kill tests across all configurations: air entrainment occurs at velocities ≥0.5 m/s, bubbles survive transport to the separation chamber, and net energy is positive. Counterintuitively, deep slow pools produce more power than fast shallow sections — hydrostatic head dominates kinetic energy. A 200m adaptive polyline along a varied river profile yields ~2 kW continuous from standard HDPE pipes with zero maintenance.</p>
+<p style="font-size:14px;color:#bbb;line-height:1.8;margin:0 0 12px">The architecture extends to ocean environments (tidal currents, wave columns, OTEC coupling) and integrates with PV/DGTE solar-thermal hybrids. Economic analysis shows HTH costs 39% of micro-hydro turbine TCO at 30 years due to near-zero OPEX. No prior art describes a horizontal or terrain-adaptive trompe; the closest patent (WO2016046689A1, 2016) covers a related but distinct submerged compressor concept.</p>
+<p style="font-size:14px;color:var(--teal);line-height:1.8;margin:0">The founding hypothesis — compressibility correlates with quality — manifests literally: physical air compression directly measures energy extraction. HTH is the sixth independent domain confirmation of the MDL×DCC kernel after TSP, Sudoku, Chess, DNA, and NAS. The system that compresses best, harvests most.</p>
+</div>
+
+<!-- CH1 -->
+<div class="ch" id="ch1">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">1</span><span class="ch-title">Founding Physics</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>1.1 Why Classical Trompe Requires Vertical Head</h3>
+<p>A classical trompe compresses air by entraining bubbles in falling water. The compression pressure equals the hydrostatic head: P = ρgh, where h is the vertical drop. No drop, no compression. All known trompe installations — from Catalan forges (1600s) through Ragged Chutes (1910) to modern mine-water treatment — require waterfalls, dams, or deep shafts.</p>
+
+<h3>1.2 Three Untapped Energy Sources in Horizontal Flow</h3>
+<p>A river carries energy in three forms simultaneously. No existing device harvests all three:</p>
+<ul>
+<li><strong>Kinetic energy:</strong> E_k = ½mv². A river at 3 m/s has stagnation pressure ½ρv² ≈ 4.5 kPa.</li>
+<li><strong>Hydrostatic potential:</strong> Even without a waterfall, depth below the surface provides a column. A 3m deep river with 2m burial gives 5m of head ≈ 49 kPa.</li>
+<li><strong>River gradient:</strong> Rivers drop. A gradient of 0.5% over 100m gives 0.5m of additional head ≈ 4.9 kPa.</li>
+</ul>
+<p>Combined: up to ~58 kPa (≈0.57 atm) from a fast, deep river section. Comparable to small classical trompes which operated at 0.3–1.0 atm.</p>
+
+<h3>1.3 The Funnel-Venturi Principle</h3>
+<p>A submerged funnel facing upstream captures river flow across its full aperture area A_in and accelerates it through a constriction A_throat. By continuity: v_throat = v_river × (A_in / A_throat). At the throat, the Venturi effect creates a low-pressure zone that entrains air through ports above the waterline.</p>
+<div class="eq">P_stagnation = ½ρv² = ½(1000)(3²) = 4500 Pa</div>
+<div class="eq">v_throat = v_river × (A_in / A_throat)</div>
+<div class="eq">P_compression = ρg(h_depth + h_burial) + ΔP_gradient</div>
+
+<h3>1.4 Thermodynamic Legitimacy</h3>
+<p>Unlike a perpetuum mobile, HTH has clearly identified external energy sources: gravitational potential energy driving river flow (ultimately solar-driven evaporation and rainfall) and solar heating of the water surface. No thermodynamic law is violated.</p>
+</div></div>
+
+<!-- CH2 -->
+<div class="ch" id="ch2">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">2</span><span class="ch-title">River HTH System Architecture</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>2.1 Core Components</h3>
+<ol>
+<li><strong>Funnel-Venturi Intake:</strong> Submerged funnel oriented upstream, with Venturi throat and air ports above waterline.</li>
+<li><strong>Downpipe Array:</strong> Pipes descending from throat to buried separation chamber. Multiple parallel pipes increase throughput.</li>
+<li><strong>Separation Chamber:</strong> Buried below river bed. Air separates from water and collects under pressure.</li>
+<li><strong>Compressed Air Reservoir & Discharge:</strong> Air storage with controlled release. Powers air turbine for electricity.</li>
+<li><strong>Water Return:</strong> Outflow pipe exits downstream, using river gradient for additional driving force.</li>
+</ol>
+
+<h3>2.2 Additional Energy Channels</h3>
+<table>
+<tr><th>#</th><th>Channel</th><th>Mechanism</th><th>Notes</th></tr>
+<tr><td>1</td><td>Kinetic (trompe)</td><td>Funnel + Venturi + air entrainment</td><td>Core HTH</td></tr>
+<tr><td>2</td><td>Hydrostatic</td><td>Depth of separation chamber below surface</td><td>Core HTH</td></tr>
+<tr><td>3</td><td>River gradient</td><td>Downstream outflow at lower elevation</td><td>Core HTH</td></tr>
+<tr><td>4</td><td>Thermal (DGTE)</td><td>Solar-heated surface vs. cold depth</td><td>Requires DGTE unit</td></tr>
+<tr><td>5</td><td>Vortex shedding</td><td>Kármán vortices; piezo or linear induction</td><td>Even at low velocity</td></tr>
+<tr><td>6</td><td>Evaporative ΔT</td><td>Moist air above river vs. ambient</td><td>Climate-dependent</td></tr>
+<tr><td>7</td><td>Bypass turbine</td><td>Conventional rotary turbine on parallel path</td><td>Governed split</td></tr>
+<tr><td>8</td><td>Air turbine</td><td>Compressed air drives turbine at discharge</td><td>Time-shifted output</td></tr>
+</table>
+
+<h3>2.3 DCC-Style Channel Governance</h3>
+<p>The multi-channel architecture creates a resource allocation problem identical to DCC governance in TSP, NAS, and ChessDCC. A DCC controller monitors output from each channel and dynamically allocates flow. This is the same kernel operating in a new alphabet.</p>
+
+<h3>2.4 Adaptive Polyline Pipe — Reading the River</h3>
+<p>The distinction between "horizontal" and "vertical" trompe is a false binary. Real rivers have continuously varying profiles. The optimal HTH pipe layout is a polyline that adapts to local topography:</p>
+<ul>
+<li><strong>Fast shallow section</strong> → funnel/Venturi intake: maximum kinetic capture</li>
+<li><strong>Steep drop or cascade</strong> → diagonal/vertical pipe run: classical trompe physics</li>
+<li><strong>Deep pool (tolmun)</strong> → natural separation chamber: no excavation needed</li>
+<li><strong>Gentle glide</strong> → long diagonal run following riverbed gradient</li>
+<li><strong>Rocky step</strong> → vertical trompe segment: concentrated head gain</li>
+</ul>
+<p>The pipe "reads" the river — it does not force a single geometry onto varied landscape. This is a TSP problem: find the path through candidate nodes that optimises total energy harvest minus installation cost.</p>
+<div class="note note-green">Simulator discovery: deep slow pools (tolmun) produce MORE power than fast shallow sections. Depth dominates velocity. The MDL-optimal layout targets the deepest segments, not the fastest.</div>
+</div></div>
+
+<!-- CH3 -->
+<div class="ch" id="ch3">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">3</span><span class="ch-title">Dimensioning: River Applications</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>3.1 Large Installation — Fast River Power Plant</h3>
+<p>Parameters: River velocity 3 m/s, depth 4m, gradient 0.3%, chamber buried 3m below riverbed.</p>
+<table>
+<tr><th>Parameter</th><th>Value</th><th>Unit</th></tr>
+<tr><td>Funnel aperture</td><td>4 × 3</td><td>m (W × H)</td></tr>
+<tr><td>Contraction ratio</td><td>8:1</td><td></td></tr>
+<tr><td>Throat velocity</td><td>24</td><td>m/s</td></tr>
+<tr><td>Hydrostatic head</td><td>7</td><td>m</td></tr>
+<tr><td>Total pressure</td><td>~76</td><td>kPa</td></tr>
+<tr><td>Downpipes (30cm ⌀)</td><td>12–20</td><td>pipes</td></tr>
+<tr><td>Est. net output (30% eff.)</td><td>~24</td><td>kW</td></tr>
+<tr><td>Annual output</td><td>~210</td><td>MWh/yr</td></tr>
+</table>
+
+<h3>3.2 Small Installation — Personal Use</h3>
+<p>Parameters: Stream velocity 1 m/s, depth 1.5m, gradient 1%, chamber buried 1m.</p>
+<table>
+<tr><th>Parameter</th><th>Value</th><th>Unit</th></tr>
+<tr><td>Funnel aperture</td><td>1.0 × 0.8</td><td>m</td></tr>
+<tr><td>Contraction ratio</td><td>4:1</td><td></td></tr>
+<tr><td>Total pressure</td><td>~25</td><td>kPa</td></tr>
+<tr><td>Downpipes (10cm ⌀)</td><td>3</td><td>pipes</td></tr>
+<tr><td>Est. net output</td><td>~133</td><td>W</td></tr>
+<tr><td>Annual output</td><td>~1,161</td><td>kWh/yr</td></tr>
+</table>
+<p>133W continuous: enough for LED lighting, phone charging, small electronics, Wi-Fi router. For an off-grid cabin, this is meaningful.</p>
+
+<h3>3.3 Adaptive Polyline — River Profile Simulation</h3>
+<table>
+<tr><th>Segment</th><th>L(m)</th><th>v(m/s)</th><th>Depth</th><th>Net(W)</th><th>Pass?</th></tr>
+<tr><td>Fast shallow riffle</td><td>30</td><td>2.5</td><td>1.0</td><td>114</td><td>✓</td></tr>
+<tr><td>Transition slope</td><td>15</td><td>2.0</td><td>2.0</td><td>298</td><td>✓</td></tr>
+<tr><td style="color:var(--green);font-weight:600">Deep pool (tolmun)</td><td>25</td><td>0.8</td><td>4.5</td><td style="color:var(--green);font-weight:600">410</td><td>✓</td></tr>
+<tr><td>Rocky cascade</td><td>10</td><td>3.5</td><td>1.5</td><td>245</td><td>✓</td></tr>
+<tr><td>Moderate glide</td><td>40</td><td>1.5</td><td>2.5</td><td>343</td><td>✓</td></tr>
+<tr><td>Steep drop</td><td>8</td><td>3.0</td><td>2.0</td><td>354</td><td>✓</td></tr>
+<tr><td style="color:var(--red)">Lower pool</td><td>20</td><td>0.7</td><td>4.0</td><td style="color:var(--red)">0</td><td>✗</td></tr>
+<tr><td>Outflow glide</td><td>50</td><td>1.2</td><td>2.0</td><td>264</td><td>✓</td></tr>
+<tr><th>TOTAL</th><th>198</th><th></th><th></th><th style="color:var(--green)">2,028</th><th></th></tr>
+</table>
+<div class="note note-green">The deep pool at only 0.8 m/s produces the MOST power (410W) because hydrostatic head dominates kinetic energy. Compressibility = quality: deeper compression → more energy. MDL in physics.</div>
+</div></div>
+
+<!-- CH4 -->
+<div class="ch" id="ch4">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">4</span><span class="ch-title">Ocean HTH System Architecture</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>Ocean-Specific Energy Channels</h3>
+<table>
+<tr><th>#</th><th>Channel</th><th>Mechanism</th><th>Potential</th></tr>
+<tr><td>9</td><td>Wave pressure oscillation</td><td>Crest = overpressure, trough = underpressure. Natural pulsing.</td><td>30–70 kW/m wavefront</td></tr>
+<tr><td>10</td><td>OWC</td><td>Semi-submerged chamber, wave compresses air through turbine.</td><td>Proven (Mutriku, Spain)</td></tr>
+<tr><td>11</td><td>Tidal current</td><td>Predictable bi-directional, 2–5 m/s. HTH funnel reverses.</td><td>Very high (dense water)</td></tr>
+<tr><td>12</td><td>OTEC thermal</td><td>Surface 25°C, 1000m depth 4°C. ΔT = 21°C. DGTE ideal.</td><td>Theoretical TW-scale</td></tr>
+<tr><td>13</td><td>Salinity gradient</td><td>River mouths: osmotic pressure. ~0.7 kWh/m³ freshwater.</td><td>Niche but proven</td></tr>
+<tr><td>14</td><td>Wave vortex</td><td>Underwater cylinders, double Kármán vortices, piezo.</td><td>Low power, zero maintenance</td></tr>
+<tr><td>15</td><td>Wave column trompe</td><td>Vertical pipe, wave raises water, compresses air at bottom.</td><td>Elegant; no moving parts</td></tr>
+</table>
+
+<h3>Deployment Scenarios</h3>
+<p><strong>Coastal Fixed Platform:</strong> Breakwater-mounted. Captures waves + tidal flow. Dual purpose: coastal protection + energy. Compressed air piped ashore.</p>
+<p><strong>Offshore Floating:</strong> Moored in strong current (Gulf Stream 1.5–2.5 m/s). HTH funnel beneath hull. Heave drives OWC. Autonomous power for offshore sensors.</p>
+<p><strong>Deep-Water OTEC + HTH:</strong> Full OTEC with HTH on cold-water intake pipe. Highest energy scenario.</p>
+</div></div>
+
+<!-- CH5 -->
+<div class="ch" id="ch5">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">5</span><span class="ch-title">Dimensioning: Ocean Applications</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>5.1 Tidal Channel Installation</h3>
+<table>
+<tr><th>Parameter</th><th>Value</th><th>Unit</th></tr>
+<tr><td>Funnel aperture (symmetric)</td><td>5 × 5</td><td>m</td></tr>
+<tr><td>Tidal current</td><td>3</td><td>m/s (seawater)</td></tr>
+<tr><td>Kinetic power (ρ=1025)</td><td>~346</td><td>kW</td></tr>
+<tr><td>Compression pressure</td><td>~200</td><td>kPa (2 atm)</td></tr>
+<tr><td>Est. net output (35% eff.)</td><td>~120</td><td>kW</td></tr>
+<tr><td>Annual output (70% duty)</td><td>~730</td><td>MWh/yr</td></tr>
+</table>
+<p>Key advantage: no moving parts underwater. Corrosion-resistant pipes, passive operation, maintenance only at surface-level air discharge.</p>
+
+<h3>5.2 Wave Column Trompe (Channel 15)</h3>
+<p>Vertical pipe anchored to seabed, open at top, sealed at bottom with air outlet. Wave crests raise water level, compressing trapped air. An array of 50 pipes along a breakwater: 25–100 kW with zero moving parts.</p>
+</div></div>
+
+<!-- CH6 -->
+<div class="ch" id="ch6">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">6</span><span class="ch-title">PV/DGTE Integration</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<p>PV panels lose ~0.4%/°C efficiency above 25°C. A DGTE module beneath PV panels extracts waste heat, cooling the panel and generating additional electricity. Both systems benefit.</p>
+<p>Combined efficiency from solar: ~25% vs. ~20% for standalone PV — 25% more electricity from the same surface area. The HTH/DGTE combination adds weather-independent baseload.</p>
+<ul>
+<li>HTH: baseload power from river current (24/7)</li>
+<li>PV: daytime solar electricity</li>
+<li>DGTE on PV: waste heat recovery + panel cooling</li>
+<li>DGTE on HTH: surface/depth thermal gradient</li>
+<li>Compressed air storage: time-shifting to demand peaks</li>
+</ul>
+</div></div>
+
+<!-- CH7 -->
+<div class="ch" id="ch7">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">7</span><span class="ch-title">Economics: HTH vs. Micro-Hydro</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>7.1 The MDL Principle</h3>
+<p>Each additional channel increases output but also cost. The optimal design is where marginal cost of the next channel exceeds its marginal return. MDL applied to engineering economics: the system that harvests the most with the least complexity wins.</p>
+
+<h3>7.2 Channel Hierarchy by ROI</h3>
+<table>
+<tr><th>Tier</th><th>Channels</th><th>Added CAPEX</th><th>Moving Parts</th></tr>
+<tr><td style="color:var(--green);font-weight:600">1</td><td>1+2+3 (core trompe)</td><td>Base cost</td><td>Zero</td></tr>
+<tr><td>2</td><td>8 (air turbine)</td><td>+15–20%</td><td>One (dry, accessible)</td></tr>
+<tr><td>3</td><td>7 (bypass turbine)</td><td>+25–35%</td><td>Turbine + valve</td></tr>
+<tr><td>4</td><td>4 (DGTE thermal)</td><td>+40–60%</td><td>Pump (small)</td></tr>
+<tr><td>5</td><td>5,6 (vortex, evap.)</td><td>+20–30%</td><td>Zero (piezo)</td></tr>
+</table>
+<div class="note note-blue">Tier 1+2 is the sweet spot: compressed air + electricity, zero underwater moving parts, air turbine at surface for easy maintenance.</div>
+
+<h3>7.3 Total Cost of Ownership: 100W Small Installation</h3>
+<table>
+<tr><th>Period</th><th>HTH TCO (€)</th><th>Micro-Hydro TCO (€)</th><th>HTH Advantage</th></tr>
+<tr><td>Year 0 (CAPEX)</td><td>2,600</td><td>2,500</td><td>−€100</td></tr>
+<tr><td>10-year</td><td>3,050</td><td>4,900</td><td style="color:var(--green)">+€1,850 (38%)</td></tr>
+<tr><td>20-year</td><td>3,650</td><td>7,700</td><td style="color:var(--green)">+€4,050 (53%)</td></tr>
+<tr><td style="font-weight:600">30-year</td><td style="font-weight:600">4,200</td><td style="font-weight:600">10,800</td><td style="color:var(--green);font-weight:600">+€6,600 (61%)</td></tr>
+</table>
+<p>At 30 years, HTH costs <strong>39%</strong> of micro-hydro. The curves diverge because HTH OPEX is near-zero while turbine OPEX accumulates.</p>
+
+<h3>7.4 The MDL Verdict</h3>
+<p>If objective is 10-year cost, turbine wins. If 30-year cost, HTH wins. If reliability + remote deployment, HTH wins decisively — the real cost of a broken turbine in a remote village is not €800 for parts but months without power.</p>
+</div></div>
+
+<!-- CH8 -->
+<div class="ch" id="ch8">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">8</span><span class="ch-title">Cross-Domain Transfer — 8Z Kernel</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<table>
+<tr><th>Concept</th><th>TSP</th><th>NAS</th><th>HTH</th></tr>
+<tr><td>Sensors</td><td>22+ geometric</td><td>Drain, poly-fovea, scent</td><td>15 energy channels</td></tr>
+<tr><td>Governance</td><td>MDL selects sensors</td><td>DCC on trajectories</td><td>DCC allocates flow</td></tr>
+<tr><td>Arena</td><td>Tour quality (gap %)</td><td>Val. accuracy</td><td>kWh output</td></tr>
+<tr><td>Compression</td><td>MDL on tour structure</td><td>MDL on arch. space</td><td>Physical air + MDL on governance</td></tr>
+</table>
+<div class="note note-green">The founding hypothesis — compressibility correlates with quality — manifests literally in HTH: physical compression of air directly measures how much energy the system extracts. This would be the sixth independent domain confirmation after TSP, Sudoku, Chess, DNA, and NAS.</div>
+</div></div>
+
+<!-- CH9 -->
+<div class="ch" id="ch9">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">9</span><span class="ch-title">Originality Assessment & Kill Tests</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>9.1 What Is Original</h3>
+<ol>
+<li><strong>Horizontal trompe:</strong> All known trompe literature from 1588 onward describes vertical devices. No publication describes a trompe driven by horizontal current velocity via funnel-Venturi intake.</li>
+<li><strong>Adaptive polyline pipe:</strong> A pipe that follows river topography, switching between geometries. No precedent.</li>
+<li><strong>Multi-channel on single passive infrastructure</strong> with DCC governance. Architecturally novel.</li>
+<li><strong>MDL/TSP optimisation of pipe layout:</strong> Novel cross-domain transfer.</li>
+</ol>
+
+<h3>9.2 What Is NOT Original</h3>
+<p>The trompe itself (16th century). Venturi entrainment. OWC wave energy. OTEC. CAES. PV/thermal hybrids. The novelty is in the combination, geometry, and governance — not individual components.</p>
+<div class="note note-orange">Patent WO2016046689A1 (2016) describes a submerged hydraulic air compressor with river/marine current and Venturi effect. This narrows but does not eliminate the novelty claim. The specific combination of adaptive polyline + multi-channel + DCC governance remains novel.</div>
+
+<h3>9.3 Fatal Kill Tests</h3>
+<div class="note note-red"><strong>KT1 — Insufficient Venturi entrainment:</strong> If a funnel in 1–3 m/s flow cannot entrain enough air, the horizontal mechanism fails. This is THE question. TEST: transparent pipe in stream, visual confirmation.</div>
+<div class="note note-red"><strong>KT2 — Bubble collapse:</strong> If bubbles are destroyed before reaching the chamber. TEST: measure air volume at chamber vs. air entrained.</div>
+<div class="note note-red"><strong>KT3 — Net energy negative:</strong> If hydraulic drag exceeds stored energy. TEST: measure net pressure in chamber minus losses.</div>
+
+<h3>9.4 Simulator Verdict</h3>
+<p>All three kill tests PASS for velocity ≥0.5 m/s and depth ≥1.5m. The simulator confirms thermodynamics permits the concept and power output (100W–66kW) is in useful range. It does NOT prove the device works — it eliminates the possibility that the idea is thermodynamically absurd.</p>
+
+<h3>9.5 Confidence Assessment</h3>
+<table class="conf-table">
+<tr><th>Claim</th><th>Confidence</th><th>Basis</th></tr>
+<tr><td>Concept is novel</td><td style="color:var(--green)">85%</td><td>Literature search + patent check</td></tr>
+<tr><td>Venturi entrains air at river velocity</td><td style="color:var(--orange)">60%</td><td>Physics supports; no empirical data for horizontal</td></tr>
+<tr><td>Useful compression without vertical head alone</td><td style="color:var(--red)">40%</td><td>4.5 kPa from velocity alone is very low</td></tr>
+<tr><td>Hybrid (horizontal + diagonal + depth) viable</td><td style="color:var(--green)">70%</td><td>Combines proven physics; nothing exotic</td></tr>
+<tr><td>TCO advantage over turbines at 30yr</td><td style="color:var(--green)">80%</td><td>Zero moving parts = near-zero OPEX</td></tr>
+<tr><td>Small-scale (100W) practical</td><td style="color:var(--orange)">55%</td><td>Depends on KT1 and scaling laws</td></tr>
+<tr><td>DCC governance adds value</td><td style="color:var(--green)">70%</td><td>Proven in TSP/NAS/Chess</td></tr>
+</table>
+</div></div>
+
+<!-- CH10 -->
+<div class="ch" id="ch10">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">10</span><span class="ch-title">Open Questions for AI8 Family</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<ol>
+<li>Funnel geometry: optimal contraction ratio for maximising entrainment while minimising cavitation?</li>
+<li>Bubble dynamics: at >10 m/s throat velocity, do bubbles survive or collapse?</li>
+<li>Corrosion and biofouling in ocean deployments: anti-fouling coating vs. active CIP?</li>
+<li>Separation chamber design: does horizontal input require different geometry? CFD recommended.</li>
+<li>DCC governance: can we instrument 15 channels with real-time sensors at useful time-scales?</li>
+<li>Regulatory: environmental impact, fish passage, debris management?</li>
+<li>Wave column array: resonance tuning — pipe length matched to dominant wave period?</li>
+<li>Hybrid PV/DGTE/HTH: optimal site profile — sunny river valley? Coastal thermal gradient?</li>
+<li>Init paradox: does deliberately sub-optimal pipe placement lead to better flow discovery?</li>
+<li>Can the polyline layout optimiser become a standalone product even if the hardware is weak?</li>
+</ol>
+</div></div>
+
+<!-- CH11 -->
+<div class="ch" id="ch11">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">11</span><span class="ch-title">Proposed Next Steps</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<ol>
+<li><strong>Phase 0:</strong> AI8 family review. Each member critiques from their domain perspective.</li>
+<li><strong>Phase 1:</strong> CFD simulation of funnel-Venturi-downpipe. Validate entrainment rates.</li>
+<li><strong>Phase 2:</strong> Desktop prototype. Clear acrylic pipes, horizontal intake with funnel. ~€100–200.</li>
+<li><strong>Phase 3:</strong> Small stream deployment. 3–5 downpipes, 1m burial, target 50–100W.</li>
+<li><strong>Phase 4:</strong> Ocean variant. Wave column trompe array on test breakwater.</li>
+<li><strong>Phase 5:</strong> DCC governance. Instrument channels, run adaptive allocation, test founding hypothesis in domain 6.</li>
+</ol>
+<div class="note note-green">The cheapest kill test: €100–200 in HDPE pipe, one weekend in a stream. If bubbles compress in the chamber — forward. If not — learn and move on.</div>
+</div></div>
+
+<footer>
+  <div class="quote">"Less describes more." — The system that compresses best, harvests most.</div>
+  <p>Concept: Bojan Dobrečevič · 8Z Research Program · AIM³ Lab · April 2026</p>
+  <p>bd@siol.net · chessbest.org</p>
+</footer>
+
+</div>
+
+<script>
+function toggle(el){
+  el.classList.toggle('open');
+  el.nextElementSibling.classList.toggle('open');
+}
+</script>
+</body>
+</html>

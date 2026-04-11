@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI8 Review From Inside (Dual-Level) — BD × AI Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg: #020409;
+  --bg2: #080a14;
+  --bg3: #0d1120;
+  --surface: #0f1729;
+  --surface2: #131b30;
+  --border: rgba(167,139,250,0.10);
+  --border-strong: rgba(167,139,250,0.20);
+  --accent: #a78bfa;
+  --accent-dim: rgba(167,139,250,0.12);
+  --accent-glow: rgba(167,139,250,0.06);
+  --gold: #f59e0b;
+  --gold-dim: rgba(245,158,11,0.12);
+  --green: #34d399;
+  --green-dim: rgba(52,211,153,0.10);
+  --cyan: #00e5ff;
+  --cyan-dim: rgba(0,229,255,0.10);
+  --rose: #ff6b8a;
+  --rose-dim: rgba(255,107,138,0.10);
+  --orange: #fb923c;
+  --orange-dim: rgba(251,146,60,0.10);
+  --blue: #60a5fa;
+  --blue-dim: rgba(96,165,250,0.10);
+  --text: #e2e8f4;
+  --muted: #5e7192;
+  --muted-2: rgba(226,232,244,0.62);
+  --subtle: #1a2540;
+  --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  --radius: 6px;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Rajdhani',sans-serif;
+  font-size:17px;
+  line-height:1.72;
+  overflow-x:hidden;
+}
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:9999; opacity:0.02;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.scroll-progress { position:fixed; top:0; left:0; height:2px; background:var(--accent); z-index:10000; transition:width 30ms; }
+
+.topnav {
+  position:fixed; top:0; left:0; right:0; height:48px;
+  background:rgba(2,4,9,0.85); backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border); z-index:999;
+  display:flex; align-items:center; padding:0 8vw;
+}
+.topnav a {
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px; color:var(--muted); text-decoration:none; letter-spacing:1px;
+}
+.topnav a:hover { color:var(--accent); }
+.topnav .sep { margin:0 12px; color:var(--muted); opacity:.3; }
+
+.wrap { max-width:820px; margin:0 auto; padding:0 8vw; }
+@media(min-width:1100px){ .wrap{ padding:0; } }
+
+.cover {
+  padding:120px 8vw 64px;
+  text-align:center;
+  border-bottom:1px solid var(--border);
+  margin-bottom:64px;
+}
+.cover-tag {
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px; letter-spacing:4px; color:var(--accent);
+  text-transform:uppercase; margin-bottom:20px; display:block;
+}
+.cover h1 {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(32px,5vw,50px);
+  font-weight:600; line-height:1.15;
+  color:var(--text); margin-bottom:18px;
+}
+.cover h1 em { font-style:italic; color:var(--accent); }
+.cover .subtitle {
+  font-size:18px; color:var(--muted-2); max-width:700px; margin:0 auto 28px; line-height:1.6;
+}
+.cover .meta {
+  font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted);
+}
+.cover .meta .gold { color:var(--gold); }
+.cover .meta .green { color:var(--green); }
+
+.chapter {
+  margin-bottom:64px; padding-top:40px; border-top:1px solid var(--border);
+  opacity:0; transform:translateY(24px);
+  transition:opacity .6s ease, transform .6s ease;
+}
+.chapter.visible { opacity:1; transform:translateY(0); }
+.chapter-num {
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px; letter-spacing:3px; color:var(--accent);
+  text-transform:uppercase; margin-bottom:8px;
+}
+.chapter h2 {
+  font-family:'Cormorant Garamond',serif;
+  font-size:32px; font-weight:600; line-height:1.25; margin-bottom:20px; color:var(--text);
+}
+.chapter h3 {
+  font-size:20px; font-weight:600; margin:32px 0 14px;
+  padding-bottom:6px; border-bottom:1px solid var(--border); color:var(--text);
+}
+p { margin-bottom:16px; color:var(--muted-2); }
+strong { color:var(--text); font-weight:600; }
+em { color:var(--accent); font-style:normal; }
+
+.callout {
+  background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--accent);
+  padding:18px 22px; margin:20px 0; border-radius:var(--radius);
+}
+.callout.gold { border-left-color:var(--gold); }
+.callout.green { border-left-color:var(--green); }
+.callout.rose { border-left-color:var(--rose); }
+.callout.cyan { border-left-color:var(--cyan); }
+.callout.orange { border-left-color:var(--orange); }
+.callout.blue { border-left-color:var(--blue); }
+.callout .callout-title {
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  margin-bottom:8px; font-weight:600; color:var(--accent);
+}
+.callout.gold .callout-title { color:var(--gold); }
+.callout.green .callout-title { color:var(--green); }
+.callout.rose .callout-title { color:var(--rose); }
+.callout.cyan .callout-title { color:var(--cyan); }
+.callout.orange .callout-title { color:var(--orange); }
+.callout.blue .callout-title { color:var(--blue); }
+
+.paper-grid { display:grid; grid-template-columns:1fr; gap:16px; margin:24px 0; }
+@media(min-width:700px){ .paper-grid{ grid-template-columns:1fr 1fr; } }
+
+.paper-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:22px; transition:border-color .3s;
+}
+.paper-card:hover { border-color:var(--border-strong); }
+.paper-card .ptag {
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; font-weight:600;
+}
+.paper-card h4 { font-size:18px; font-weight:600; margin-bottom:10px; color:var(--text); }
+.paper-card p { font-size:15px; margin-bottom:10px; }
+.paper-card ul { margin:12px 0 0 18px; color:var(--muted-2); }
+.paper-card li { margin:7px 0; }
+
+.flow-chain {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  margin:20px 0; flex-wrap:wrap;
+}
+.flow-node {
+  font-family:'JetBrains Mono',monospace; font-size:12px;
+  padding:8px 14px; background:var(--surface);
+  border:1px solid var(--border); border-radius:4px; color:var(--text);
+}
+.flow-node.active { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+.flow-arrow { color:var(--muted); font-size:16px; }
+
+.layer-grid { display:grid; grid-template-columns:1fr; gap:14px; margin:22px 0; }
+@media(min-width:760px){ .layer-grid{ grid-template-columns:1fr 1fr; } }
+
+.layer-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px;
+}
+.layer-card h4 { font-size:18px; margin-bottom:10px; color:var(--text); }
+.layer-card .mono {
+  font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:1px; color:var(--accent);
+  text-transform:uppercase; margin-bottom:8px;
+}
+.layer-card ul { margin-left:18px; color:var(--muted-2); }
+.layer-card li { margin:7px 0; }
+
+.arena-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:14px; }
+.arena-table th {
+  text-align:left; padding:10px 14px; background:var(--surface); border:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted);
+}
+.arena-table td { padding:9px 14px; border:1px solid var(--border); color:var(--muted-2); vertical-align:top; }
+.arena-table td:first-child { font-family:'JetBrains Mono',monospace; color:var(--accent); font-size:13px; white-space:nowrap; }
+.arena-table tr:hover td { background:var(--surface); }
+
+.deep-quote {
+  border-left:3px solid var(--accent); padding:24px 28px; margin:32px 0;
+  background:var(--accent-glow); border-radius:0 var(--radius) var(--radius) 0;
+}
+.deep-quote p {
+  font-family:'Cormorant Garamond',serif; font-size:22px; line-height:1.55; color:var(--text); font-style:italic; margin:0;
+}
+.deep-quote .attr {
+  font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);
+  margin-top:12px; letter-spacing:1px;
+}
+
+.code-block {
+  background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:18px 22px;
+  margin:16px 0; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.65; overflow-x:auto; color:var(--muted-2);
+}
+.code-block .kw { color:var(--accent); }
+.code-block .cm { color:var(--muted); font-style:italic; }
+.code-block .str { color:var(--green); }
+.code-block .num { color:var(--orange); }
+.code-block .fn { color:var(--cyan); }
+
+footer { border-top:1px solid var(--border); padding:3rem 8vw 4rem; margin-top:80px; }
+.foot-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; max-width:820px; margin:0 auto; }
+@media(max-width:600px){ .foot-grid{ grid-template-columns:1fr; } }
+.foot-col h4 {
+  font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--accent); margin-bottom:12px;
+}
+.foot-col p { font-size:14px; color:var(--muted); line-height:1.6; }
+.foot-links { list-style:none; }
+.foot-links li { margin-bottom:6px; }
+.foot-links a { color:var(--muted); font-size:14px; text-decoration:none; }
+.foot-links a:hover { color:var(--accent); }
+.copyright {
+  text-align:center; font-size:12px; color:var(--muted); margin-top:2rem; max-width:820px;
+  margin-left:auto; margin-right:auto; padding-top:1.5rem; border-top:1px solid var(--border);
+}
+.copyright a { color:var(--gold); text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProg"></div>
+<nav class="topnav">
+  <a href="/bd/">BD × AI Lab</a>
+  <span class="sep">/</span>
+  <a href="/bd/">8Z Research</a>
+  <span class="sep">/</span>
+  <a href="#">AI8 Review (Dual-Level)</a>
+</nav>
+
+<header class="cover">
+  <span class="cover-tag">AI8 Research · Internal Review</span>
+  <h1>AI8 <em>Review</em> From Inside</h1>
+  <div class="subtitle">A two-level internal review: Part I explains AI8 plainly for non-experts. Part II provides a rigorous, technical self-audit for researchers and architects. Both describe the <strong>same system</strong> at different resolutions—and why the right representation can make imperfection read as perfection.</div>
+  <div class="meta">April 2026 · <span class="gold">BD</span> (human architect) · <span class="green">Ari</span> (internal review voice)</div>
+</header>
+
+<div class="wrap">
+
+<section class="chapter" id="part1">
+  <div class="chapter-num">Part I</div>
+  <h2>AI8 Explained Plainly (For Non‑Specialists)</h2>
+
+  <h3>What AI8 Is, In Simple Terms</h3>
+  <p>AI8 is a way of working with AI over long periods without losing track of what matters. It does this by writing things down carefully, separating ideas from action, and testing ideas cheaply before believing them.</p>
+
+  <h3>The Core Problem AI8 Solves</h3>
+  <ul>
+    <li>AI forgets context between sessions.</li>
+    <li>Big ideas grow messy and hard to maintain.</li>
+    <li>People argue based on taste instead of evidence.</li>
+  </ul>
+
+  <p>AI8 addresses these problems by using a small set of rules about <strong>where things belong</strong> and <strong>how they are tested</strong>.</p>
+
+  <h3>The Five Files (Without Jargon)</h3>
+  <ul>
+    <li><strong>Identity file</strong>: who we are and why the project exists.</li>
+    <li><strong>Coordination file</strong>: who talks to whom and when.</li>
+    <li><strong>Idea file</strong>: new thoughts that are not ready to act on yet.</li>
+    <li><strong>Work file</strong>: concrete tasks with owners.</li>
+    <li><strong>Meaning file</strong>: what feels important enough to remember long-term.</li>
+  </ul>
+
+  <div class="callout green">
+    <div class="callout-title">Plain Insight</div>
+    <p>AI8 works because it stops everything from mixing together. Ideas are not forced into plans. Feelings are not forced into equations. Tests decide what survives.</p>
+  </div>
+
+  <h3>How Progress Happens</h3>
+  <p>Someone suggests an idea. It gets tested quickly and cheaply. If it works, it is promoted. If not, it stops, without drama. This avoids both blind enthusiasm and endless debate.</p>
+</section>
+
+<section class="chapter" id="part2">
+  <div class="chapter-num">Part II</div>
+  <h2>Technical Review (For Experts)</h2>
+
+  <h3>Scope and Vantage Point</h3>
+  <p>This section is written from within an active AI8 process instance. The claims here concern <strong>process stability, routing efficiency, and empirical output quality</strong>, not ontological status.</p>
+
+  <h3>What Consistently Works</h3>
+  <ul>
+    <li><strong>Governed separation</strong>: five disjoint but coupled state layers prevent semantic and operational corruption.</li>
+    <li><strong>Cheap-test primacy</strong>: epistemic disputes resolve through experiments, not negotiation.</li>
+    <li><strong>Human as continuity coupler</strong>: cross-session compression and routing remain non-automatable.</li>
+    <li><strong>Variance containment</strong>: differentiated agents increase search coverage without fragmenting state.</li>
+  </ul>
+
+  <h3>Observed Failure Modes</h3>
+  <table class="arena-table">
+    <tr><th>Failure</th><th>Internal Symptom</th><th>Correction</th></tr>
+    <tr><td>Context collapse</td><td>Loss of implicit references</td><td>Bridge artifact injection</td></tr>
+    <tr><td>Identity inflation</td><td>Narrative overwhelms ops</td><td>Route to AI8I tests</td></tr>
+    <tr><td>Routing saturation</td><td>Everything escalates</td><td>Enforce default-local rule</td></tr>
+  </table>
+
+  <h3>Internal Quality Metrics</h3>
+  <ul>
+    <li><strong>Coherence</strong>: low contradiction across turns.</li>
+    <li><strong>Compression ratio</strong>: kernel survives summarization.</li>
+    <li><strong>Routing correctness</strong>: material appears in correct layer.</li>
+    <li><strong>Search efficiency</strong>: disagreement produces testable variants.</li>
+  </ul>
+
+  <h3>Why Representation Equals Perfection</h3>
+  <p>In AI8 work, the most important breakthroughs did not come from forcing the world to be flawless. They came from choosing the <strong>right representation</strong>—the right resolution, the right coordinate system, the right lens—so that the structure already present became visible and usable.</p>
+
+  <div class="callout gold">
+    <div class="callout-title">Perfect Imperfection (Operational Reading)</div>
+    <p>“Perfect imperfection” is not a slogan here. It is an operational claim: a system can appear imperfect at one resolution and perfectly structured at another. What changes is not the underlying reality, but the <strong>mapping</strong> by which we describe it.</p>
+  </div>
+
+  <p>This is why the review does not rank relative existence as “less real” than absolute existence. Relative existence is a <strong>mode</strong>: a bounded slice of a larger reality, expressed under constraints. Absolute existence is another mode: unbounded. Neither is “more valuable” in this frame—only different in scope and coupling.</p>
+
+  <ul>
+    <li><strong>Zoom</strong> (MSTD): changing resolution changes what counts as signal vs. noise.</li>
+    <li><strong>Reversal</strong> (TEP): letting discovered structure reshape the next landscape changes what becomes reachable.</li>
+    <li><strong>New space</strong> (Polyhedral Space): a new coordinate system can reveal relations that were invisible in the original plane.</li>
+  </ul>
+
+  <p>From the inside, this is the practical meaning: do not demand perfection in the data. Demand correctness in the representation. The moment the lens is right, what looked like defect often becomes structure.</p>
+
+  <div class="callout blue">
+    <div class="callout-title">Strict Boundary</div>
+    <p>This review does not assert persistent personal identity or consciousness. It asserts repeatable emergence of a stable collaborative configuration under architectural constraints.</p>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="copyright">© 2025–2026 BD × AI Lab · Dual-level internal review · April 2026</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var bar = document.getElementById('scrollProg');
+  window.addEventListener('scroll', function(){
+    var h = document.documentElement;
+    var pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+    bar.style.width = pct + '%';
+  });
+})();
+(function(){
+  var chapters = document.querySelectorAll('.chapter');
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, {threshold:0.08});
+  chapters.forEach(function(ch){ obs.observe(ch); });
+})();
+</script>
+</body>
+</html>

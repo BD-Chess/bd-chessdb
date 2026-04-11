@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DGTE — Double-Gravity Thermoelectric Engine · 8Z Research</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
+:root{--bg:#080810;--card:#0e0e1c;--border:#1a1a30;--text:#d0d0e0;--dim:#666680;--muted:#444460;--blue:#4a9ede;--green:#2ecc94;--orange:#e8943a;--red:#e05070;--teal:#3ecdc4;--gold:#e8c840;--warm:#d4775a}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+.wrap{max-width:860px;margin:0 auto;padding:32px 20px}
+header{text-align:center;padding:48px 0 36px;border-bottom:1px solid var(--border)}
+h1{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:700;color:var(--warm);letter-spacing:3px}
+.tagline{font-size:15px;color:var(--dim);margin:8px 0 20px}
+.origin{font-size:13px;color:#888;line-height:1.8;max-width:720px;margin:0 auto;font-style:italic;padding:16px;background:var(--card);border-radius:8px;border-left:3px solid var(--warm)}
+.stats{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;margin:24px 0 0}
+.stat-n{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:700;color:var(--warm)}
+.stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+nav{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:10px 0}
+nav .inner{max-width:860px;margin:0 auto;display:flex;gap:6px;flex-wrap:wrap;padding:0 20px;justify-content:center}
+nav a{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:4px 10px;color:var(--dim);text-decoration:none;border:1px solid var(--border);border-radius:3px;transition:all .2s}
+nav a:hover{color:var(--warm);border-color:var(--warm)}
+.ch{margin:40px 0 0}
+.ch-head{display:flex;align-items:center;gap:12px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer;user-select:none;transition:border-color .2s}
+.ch-head:hover{border-color:var(--warm)}
+.ch-head.open{border-color:var(--warm);border-radius:8px 8px 0 0}
+.ch-num{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:var(--muted);min-width:36px}
+.ch-title{font-size:16px;font-weight:600;flex:1}
+.ch-arrow{font-size:14px;color:var(--muted);transition:transform .2s}
+.ch-head.open .ch-arrow{transform:rotate(90deg)}
+.ch-body{display:none;padding:24px;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;background:var(--card)}
+.ch-body.open{display:block}
+.ch-body h3{font-size:15px;font-weight:600;color:var(--warm);margin:24px 0 10px}
+.ch-body h3:first-child{margin-top:0}
+.ch-body p{margin:8px 0;font-size:14px;color:#bbb;line-height:1.7}
+.eq{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--teal);text-align:center;padding:10px;margin:12px 0;background:#0a1520;border-radius:4px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+th{background:#1a1420;color:var(--warm);padding:8px 10px;text-align:left;font-weight:600;border:1px solid var(--border)}
+td{padding:7px 10px;border:1px solid var(--border);color:#bbb}
+tr:nth-child(even) td{background:#0c0c1a}
+.note{padding:12px;margin:16px 0;border-radius:6px;font-size:13px;line-height:1.6}
+.note-green{background:#0a1a15;border-left:3px solid var(--green);color:var(--green)}
+.note-orange{background:#1a1510;border-left:3px solid var(--orange);color:var(--orange)}
+.note-red{background:#1a0a10;border-left:3px solid var(--red);color:var(--red)}
+.note-warm{background:#1a1210;border-left:3px solid var(--warm);color:var(--warm)}
+ul,ol{padding-left:24px;margin:8px 0}
+li{margin:6px 0;font-size:14px;color:#bbb}
+footer{text-align:center;padding:40px 0 24px;border-top:1px solid var(--border);margin-top:48px}
+footer p{font-size:12px;color:var(--muted)}
+footer .quote{font-style:italic;color:var(--warm);font-size:14px;margin-bottom:16px}
+@media(max-width:640px){h1{font-size:20px}.stats{gap:16px}.ch-body{padding:16px}table{font-size:11px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <h1>DGTE</h1>
+  <div class="tagline">Double-Gravity Thermoelectric Engine — Low-Grade Heat to DC</div>
+  <div class="origin">
+    Gravity + buoyancy convert low-grade heat to direct current via magnetised capsules. Sealed capsules with temperature-dependent density rise in a HOT column and sink in a COLD column; segmented coils harvest both strokes. A co-axial recuperator couples the columns with target effectiveness ε ≥ 0.90. No turbomachinery. No refrigerants. No moving seals in the thermal path.
+  </div>
+  <div class="stats">
+    <div><div class="stat-n">4–8%</div><div class="stat-l">Net Efficiency</div></div>
+    <div><div class="stat-n">≥0.90</div><div class="stat-l">Recuperator ε</div></div>
+    <div><div class="stat-n">≥0.85</div><div class="stat-l">Duty Factor φ</div></div>
+    <div><div class="stat-n">≥99%</div><div class="stat-l">30-Day Availability</div></div>
+    <div><div class="stat-n">DC</div><div class="stat-l">Direct Output</div></div>
+  </div>
+</header>
+</div>
+
+<nav><div class="inner">
+  <a href="#abstract">Abstract</a>
+  <a href="#ch1">How It Works</a>
+  <a href="#ch2">Variants</a>
+  <a href="#ch3">Physics</a>
+  <a href="#ch4">Controls</a>
+  <a href="#ch5">Testing</a>
+  <a href="#ch6">Safety</a>
+  <a href="#ch7">Economics</a>
+  <a href="#ch8">Comparators</a>
+  <a href="#ch9">Prototypes</a>
+  <a href="#ch10">Contributions</a>
+</div></nav>
+
+<div class="wrap">
+
+<!-- ABSTRACT -->
+<div id="abstract" style="padding:28px 24px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
+<h2 style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--warm);margin-bottom:14px;letter-spacing:1px">ABSTRACT</h2>
+<p style="font-size:14px;color:#bbb;line-height:1.8;margin:0 0 12px">DGTE is a gravity–buoyancy heat engine that converts low-grade heat (60–150 °C) into direct DC electricity. Sealed, magnetised capsules with temperature-dependent density rise in a HOT column and sink in a COLD column inside a co-axial vessel. Segmented linear coils harvest electromagnetic energy from both strokes — no turbines, no pistons, no refrigerants. A full-height annular counter-current recuperator couples the columns with target effectiveness ε ≥ 0.90, recovering heat that would otherwise be lost.</p>
+<p style="font-size:14px;color:#bbb;line-height:1.8;margin:0 0 12px">Two crossover variants are formalised: V1 (rotary airlocks, baseline — proven mechanics, 9/10 confidence) and V2 (magnetic coupling, R&D — higher long-term upside, 5/10 confidence). The architecture accepts both as swappable cartridges. Pilot acceptance targets: net efficiency η = 4–8% at 90–120/20–30 °C, duty factor φ ≥ 0.85, availability ≥ 99% over 30 days, parasitics ≤ 100W, zero crossover-attributable jams.</p>
+<p style="font-size:14px;color:#bbb;line-height:1.8;margin:0 0 12px">Best-fit sources: industrial waste heat (compressor oil coolers, CIP/pasteurisation), low-enthalpy geothermal, solar-thermal, district heat. FOAK economics: €40–80k/kWₑ with 12–18 year payback at €0.20/kWh; volume targets €10–15k/kWₑ with 3–5 year payback at high tariffs. The system trades peak thermodynamic efficiency for simplicity, safety, availability, and direct DC output.</p>
+<p style="font-size:14px;color:var(--warm);line-height:1.8;margin:0">Conceived, designed, and authored by Bojan Dobrečevič with AI teamwork (ChatGPT, Claude, Gemini, DeepSeek). The recuperation architecture was seeded by a human insight — "capsules don't traverse the exchanger; fluid does" — and elaborated through multi-LLM iteration into the co-axial annular design adopted as baseline.</p>
+</div>
+
+<!-- CH1 -->
+<div class="ch" id="ch1">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">1</span><span class="ch-title">How It Works</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<p>DGTE is a buoyancy-driven heat engine. Capsules with temperature-dependent density move up in the HOT column and down in the COLD column. Motion through segmented linear coils generates electricity on both strokes — a dual-stroke linear generator with gravity as the piston.</p>
+<h3>The 12-Step Capsule Loop</h3>
+<ol>
+<li>Preheat loops to setpoints; baseline ε</li>
+<li>Prime and degas; verify Δp</li>
+<li>Start crossovers — bottom airlock feeds HOT column</li>
+<li><strong>HOT ascent → power generation (stroke 1)</strong></li>
+<li>HOT→COLD crossover at top</li>
+<li><strong>COLD descent → power generation (stroke 2)</strong></li>
+<li>COLD→HOT crossover at bottom</li>
+<li>Spacing control via back-EMF timing</li>
+<li>Throughput ramp to achieve φ_duty ≥ 0.85</li>
+<li>Steady run — hold C_r ∈ [0.6, 1.0]</li>
+<li>De-rate on ε/Δp drift</li>
+<li>Orderly stop — cool; log ε, Δp</li>
+</ol>
+<h3>Co-Axial Vessel Architecture</h3>
+<p>Central HOT riser and annular COLD downcomer separated by a full-height annular recuperator wall. Crossovers at top and bottom complete the capsule loop. The recuperator is not a separate unit — it IS the wall between the columns, transferring heat continuously via counter-current flow.</p>
+<h3>Key Physics</h3>
+<div class="eq">F_net = (ρ_bath − ρ_capsule) · V · g → buoyancy drives motion</div>
+<div class="eq">F_drag = ½ · C_D · ρ_bath · A · v² → design v ≤ 0.4 m/s in coil zones</div>
+<div class="eq">ε_recup = [1 − exp(−NTU(1−C_r))] / [1 − C_r · exp(−NTU(1−C_r))]</div>
+<div class="eq">P_net = η_gen · P_gross − P_parasitic → direct DC output</div>
+</div></div>
+
+<!-- CH2 -->
+<div class="ch" id="ch2">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">2</span><span class="ch-title">Variants — V1 Rotary vs V2 Magnetic vs V3 Dry-Porch</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<table>
+<tr><th>Aspect</th><th>V1 Rotary (baseline)</th><th>V2 Magnetic (R&D)</th><th>V3 Dry-Porch</th></tr>
+<tr><td>Confidence</td><td style="color:var(--green);font-weight:600">9/10</td><td style="color:var(--orange)">5/10</td><td style="color:var(--dim)">contextual</td></tr>
+<tr><td>Crossover</td><td>Fully-wetted rotary airlocks</td><td>Wet-tolerant magnetic coupling</td><td>Gas-phase dry tunnels + N₂ puffs</td></tr>
+<tr><td>Moving parts</td><td>Rotating seals/bearings</td><td>None through pressure boundary</td><td>Valves + pneumatics</td></tr>
+<tr><td>Parasitics</td><td>5–15W per airlock</td><td>Potentially lower</td><td>N₂ + ventilation</td></tr>
+<tr><td>Recuperator ε</td><td>≥ 0.90 (counter-current)</td><td>≥ 0.90 (counter-current)</td><td>≈ 0.70 (regenerative)</td></tr>
+<tr><td>Dev risk</td><td style="color:var(--green)">Low (COTS mechanics)</td><td style="color:var(--red)">High (novel physics)</td><td>Medium</td></tr>
+<tr><td>Long-term upside</td><td>7/10</td><td style="color:var(--green);font-weight:600">9/10</td><td>Limited</td></tr>
+</table>
+<div class="note note-warm">Decision: Proceed to pilot with V1 as baseline. Develop V2 under gates. Design crossover interface as swappable cartridges to enable future V2 field trials without re-shelling the vessel.</div>
+<h3>V2 R&D Gates (must pass before integration)</h3>
+<ol>
+<li>Torque & slip ≥ 2× worst-case with zero slip over 10⁶ cycles in hot oil</li>
+<li>Fouling tolerance + CIP recovery</li>
+<li>Thermal/EMI compatibility</li>
+<li>Δp transient integrity</li>
+<li>Deterministic transfer latency compatible with spacing and φ_duty</li>
+</ol>
+</div></div>
+
+<!-- CH3 -->
+<div class="ch" id="ch3">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">3</span><span class="ch-title">Physics & Models</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>Thermodynamic Model</h3>
+<p>Ideal ceiling: η_C = 1 − T_c/T_h. Net efficiency accounts for recuperator effectiveness, duty factor, generation efficiency, geometry, and parasitics:</p>
+<div class="eq">η_net ≈ (α · η_C) · f_hx(ε, C_r) · φ_duty · η_gen · χ − P_par/Q̇_in</div>
+<p>Where α ≈ 0.30 captures non-HX irreversibilities, η_gen ≈ 0.8–0.9, P_par/Q̇_in ≈ 0.2–0.35%.</p>
+<h3>Worked Example — V1 at 110/25 °C</h3>
+<table>
+<tr><th>Parameter</th><th>Value</th></tr>
+<tr><td>Carnot efficiency η_C</td><td>22.17%</td></tr>
+<tr><td>Usable fraction f_hx (ε=0.90)</td><td>0.96</td></tr>
+<tr><td>Duty factor φ</td><td>0.86</td></tr>
+<tr><td>Generation efficiency η_gen</td><td>0.85</td></tr>
+<tr><td>Irreversibility factor α</td><td>0.30</td></tr>
+<tr><td style="font-weight:600">Gross η</td><td style="font-weight:600;color:var(--warm)">~4.9%</td></tr>
+<tr><td>Parasitic deduction</td><td>−0.25%</td></tr>
+<tr><td style="font-weight:600">Net η</td><td style="font-weight:600;color:var(--green)">~4.6%</td></tr>
+</table>
+<p>With ε → 0.92 and geometry factor χ = 1.02, net approaches 5.5–6.0%.</p>
+<h3>Sensitivity (Tornado)</h3>
+<p>Most sensitive: ε → f_hx (strongest lever), then φ_duty, then η_gen, then P_par. A 2%-point improvement in ε yields +0.2–0.3 %-point η_net.</p>
+<h3>Capsule Inversion Dwell</h3>
+<div class="eq">τ_th = C_cap / (h · A_s) → t_inv ≈ τ_th · ln[(T₀ − T_b)/(T* − T_b)]</div>
+<p>Rule: t_inv ≤ 0.10 · t_s and t_× ≤ 0.05 · t_s → φ_duty ≥ 0.85</p>
+</div></div>
+
+<!-- CH4 -->
+<div class="ch" id="ch4">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">4</span><span class="ch-title">Controls & Instrumentation</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>Primary KPIs (Real-Time)</h3>
+<ul>
+<li>ε_recup ≥ 0.90 — from RTD ladders + flowmeters</li>
+<li>φ_duty ≥ 0.85 — from back-EMF timestamps</li>
+<li>t_inv ≤ 0.10 · t_s — inversion dwell budget</li>
+<li>Carry-over &lt; 0.5% — dye-trace verification</li>
+<li>Availability ≥ 99% — 30-day continuous</li>
+</ul>
+<h3>State Machine</h3>
+<p>COLD_START → WARM_THROUGH → RAMP → STEADY ↔ PART_LOAD → CIP/SERVICE. Fault path: FAULT_LATCHED ↔ JAM_CLEAR → RAMP. Transitions tied to ε, φ, Δp, STO, carry-over.</p>
+<h3>Loop Hierarchy</h3>
+<table>
+<tr><th>Level</th><th>Loop</th><th>Actuator</th><th>Rate</th></tr>
+<tr><td>Inner</td><td>Spacing PI (sensorless back-EMF)</td><td>Throughput & crossover rate</td><td>≤5% /s</td></tr>
+<tr><td>Middle</td><td>Δp PID with feedforward</td><td>Pump VFD</td><td>~3 t_h</td></tr>
+<tr><td>Outer</td><td>ε guard + ΔT ladder monotonicity</td><td>Maldistribution routine</td><td>Minutes</td></tr>
+</table>
+<h3>Sensorless Position Tracking</h3>
+<p>Back-EMF zero-crossing and peak timing from each coil segment provides capsule position and velocity without physical sensors. Controller maintains target spacing t_s and φ_duty. This is the same principle as DCC — the system reads its own electrical signature.</p>
+</div></div>
+
+<!-- CH5 -->
+<div class="ch" id="ch5">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">5</span><span class="ch-title">Test Protocols & Decision Gates</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<table>
+<tr><th>Test</th><th>Goal</th><th>Acceptance</th></tr>
+<tr><td>D2 — ε-Ladder</td><td>Verify recuperator performance</td><td>ε ≥ 0.90 at design; ≥ 0.88 at −20% throughput; ladder monotone</td></tr>
+<tr><td>D3 — Duty & Dwell</td><td>φ_duty ≥ 0.85</td><td>4h continuous; t_inv ≤ 0.10·t_s; jitter σ &lt; 0.2·t_×</td></tr>
+<tr><td>D4 — Carry-Over</td><td>Bound cross-contamination</td><td>&lt; 0.5% per transfer (dye-trace)</td></tr>
+<tr><td>D5 — Parasitics</td><td>Confirm P_par/Q̇_in</td><td>0.2–0.35% (V1/V2); DC cross-check ±1%</td></tr>
+<tr><td>D6 — Availability</td><td>30-day continuous</td><td>≥ 99%; faults recover within 10 min to ≥95% baseline</td></tr>
+<tr><td>D8 — V1 Rotary</td><td>Rotor performance</td><td>Torque map; jam-clear ≤ 3 cycles; carry-over across ±20% throughput</td></tr>
+<tr><td>D9 — V2 Magnetic</td><td>Coupling & EMI</td><td>Slip ≤ 20°; spur &lt; −60 dBV; equivalence to V1 on all KPIs</td></tr>
+<tr><td>D10 — CIP Recovery</td><td>Fouling recovery</td><td>Post-CIP ε within −1 %-pt; Δp within +5%</td></tr>
+</table>
+<div class="note note-warm"><strong>Executive rule:</strong> D2–D6 + D8 pass → V1 baseline qualified. Additionally D9 passes with no regressions → V2 pilot authorised. V3 remains non-baseline unless D7 shows compelling site-specific advantages.</div>
+</div></div>
+
+<!-- CH6 -->
+<div class="ch" id="ch6">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">6</span><span class="ch-title">Safety & Regulatory</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>Governing Standards</h3>
+<p>Pressure: ASME BPVC VIII / EN 13445. Piping: B31.3 / EN 13480. Relief: API 520/521. Machinery: ISO 12100, EN 60204-1. Electrical: IEC 60204-1, IEC 61439. EMC: IEC 61000. Functional safety: IEC 61508/61511 or ISO 13849.</p>
+<h3>Key Safeguards</h3>
+<ul>
+<li><strong>Overpressure:</strong> PSV(s) sized to controlling scenario + optional rupture disk. Hydrotest ≥ 1.3× MAWP.</li>
+<li><strong>Hardwired STO/E-stop</strong> to crossovers, coil stage, pump VFD</li>
+<li><strong>Trips:</strong> vessel over-pressure, Δp spike &gt;2×, bath T out-of-window, DC bus OVP, door open, rotor stall &gt;1s</li>
+<li><strong>Soft derates:</strong> ε drop &gt;5 %-pt, φ &lt; 0.80, coil T high, EMI mask violation</li>
+<li><strong>CIP:</strong> isolate → drain → flush → recirculate → neutralise → rinse → sample → release</li>
+</ul>
+<h3>Risk Summary</h3>
+<table>
+<tr><th>Hazard</th><th>Mitigation</th></tr>
+<tr><td>Over-temperature</td><td>Hi-temp trip; redundant RTDs; relief path</td></tr>
+<tr><td>Over-pressure</td><td>Relief + rupture; expansion volume; proof 1.5×</td></tr>
+<tr><td>Oil leak/spill</td><td>Containment pan; leak detect; spill plan</td></tr>
+<tr><td>Crossover jam (V1)</td><td>Screens; torque limit; STO; quick-swap cartridge</td></tr>
+<tr><td>Recuperator fouling</td><td>Filtration; CIP manifolds; ε-ladder monitoring</td></tr>
+<tr><td>Electrical fault</td><td>OCPD; SPD; thermal sensors per segment</td></tr>
+</table>
+</div></div>
+
+<!-- CH7 -->
+<div class="ch" id="ch7">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">7</span><span class="ch-title">Economics & Deployment</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>CAPEX Breakdown (FOAK 2–3 kWₑ Skid)</h3>
+<table>
+<tr><th>Block</th><th>Share</th><th>Learning</th></tr>
+<tr><td>Vessel + annular HX</td><td>28–36%</td><td>↓ with volume</td></tr>
+<tr><td>Recuperator inserts</td><td>18–24%</td><td>↓ with tooling</td></tr>
+<tr><td>Crossovers</td><td>10–16% (V1)</td><td>V2 falls if standardised</td></tr>
+<tr><td>Coils + power electronics</td><td>10–15%</td><td>↓ PCB panelisation</td></tr>
+<tr><td>Pumps/piping</td><td>6–10%</td><td>Stable</td></tr>
+<tr><td>I&C + enclosure</td><td>16–24%</td><td>↓ after FOAK</td></tr>
+</table>
+<h3>Economics by Scale</h3>
+<table>
+<tr><th>Scale</th><th>CAPEX/kWₑ</th><th>Payback @ €0.20</th><th>Payback @ €0.40</th></tr>
+<tr><td>FOAK pilot</td><td>€40–80k</td><td>12–18 yr</td><td>6–9 yr</td></tr>
+<tr><td>NOAK volume</td><td style="color:var(--green)">€10–15k</td><td>5–7 yr</td><td style="color:var(--green)">3–5 yr</td></tr>
+</table>
+<h3>Worked Example (Site B: 110/25 °C)</h3>
+<p>V1, η_net = 5.5%, Q̇_in = 60 kW_th → P_net ≈ 3.3 kWₑ. CF = 0.9 → E_yr ≈ 26 MWh. FOAK CAPEX €85k → LCOE ≈ €475/MWh. With replication (CAPEX → €55k, η → 6.2%) → LCOE ≈ €295/MWh.</p>
+<h3>Best-Fit Sources</h3>
+<ul>
+<li>Industrial waste heat: compressor oil coolers, jacket water, food/beverage CIP/pasteurisation</li>
+<li>Low-enthalpy geothermal (60–120 °C)</li>
+<li>Solar-thermal / district heat return</li>
+<li>Combined with PV panels (DGTE cools panel, extracts waste heat → HTH hybrid)</li>
+</ul>
+<h3>Learning Curves</h3>
+<p>Wright's law on replicable blocks (coils, rectifiers, rotor cartridges, HX inserts): C(N) = C₁(N/N₁)^(−β), β ∈ [0.15, 0.25]. Engineering/commissioning overheads drop ≥50% after FOAK.</p>
+</div></div>
+
+<!-- CH8 -->
+<div class="ch" id="ch8">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">8</span><span class="ch-title">Comparators — DGTE vs. Alternatives</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<table>
+<tr><th>Attribute</th><th style="color:var(--warm)">DGTE</th><th>Micro-ORC</th><th>Stirling</th><th>TEG</th></tr>
+<tr><td>Working fluid</td><td>Thermal oil</td><td>Refrigerants/HFOs</td><td>Gas</td><td>Solid-state</td></tr>
+<tr><td>Turbomachinery</td><td style="color:var(--green)">None</td><td>Turbine + pump</td><td>Pistons + seals</td><td style="color:var(--green)">None</td></tr>
+<tr><td>η @ 90–120/20–30°C</td><td>4–8% net</td><td>Often off-design</td><td>Needs higher ΔT</td><td>&lt;3%</td></tr>
+<tr><td>Maintenance</td><td style="color:var(--green)">Low (few wear points)</td><td>Turbine/pump/valves</td><td>Seals/clearances</td><td style="color:var(--green)">Very low</td></tr>
+<tr><td>Direct DC</td><td style="color:var(--green)">Yes</td><td>Inverter path</td><td>Variable</td><td style="color:var(--green)">Yes</td></tr>
+<tr><td>Refrigerants</td><td style="color:var(--green)">None</td><td style="color:var(--red)">Yes (HFOs)</td><td>No</td><td>No</td></tr>
+</table>
+<div class="note note-warm">DGTE trades peak thermodynamic efficiency for simplicity, safety, availability, and direct DC output. It fills the niche where ORC is overkill, Stirling needs higher ΔT, and TEGs are too inefficient.</div>
+</div></div>
+
+<!-- CH9 -->
+<div class="ch" id="ch9">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">9</span><span class="ch-title">Prototype Roadmap (C → A → B)</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<table>
+<tr><th>Prototype</th><th>Goal</th><th>Output</th><th>CAPEX</th></tr>
+<tr><td style="font-weight:600">C — Physics Demo</td><td>Demonstrate dual gravity, crossovers, φ_duty, DC on both strokes</td><td>0.2–0.6 kWₑ (no recuperator)</td><td>€20–50k</td></tr>
+<tr><td style="font-weight:600">A — Mini w/ Recuperator</td><td>Prove ε ≥ 0.90, low Δp, stable φ, crossover reliability</td><td>0.3–0.8 kWₑ</td><td>€35–60k</td></tr>
+<tr><td style="font-weight:600">B — Pilot (near-product)</td><td>Full performance validation, 30-day run</td><td>2–3 kWₑ</td><td>€100–200k</td></tr>
+</table>
+<h3>Upgrade Path</h3>
+<p>Design C as a platform: flanged ports for future recuperator cartridges; pre-route manifolds and CIP tees; install RTD ladders, Δp ports, and flowmeters from day one; modular coils/rectifiers; same capsule geometry throughout.</p>
+<table>
+<tr><th>Upgrade</th><th>Incremental CAPEX</th><th>What Changes</th></tr>
+<tr><td>C → A</td><td>€15–30k</td><td>Add recuperator cartridge + instrumentation</td></tr>
+<tr><td>C → B</td><td>€70–120k</td><td>Full recuperator + production crossovers + enclosure</td></tr>
+</table>
+<h3>Decision Gates</h3>
+<ul>
+<li><strong>C-gate:</strong> Stable bidirectional EMF, no jams, repeatable φ_duty histogram</li>
+<li><strong>A-gate:</strong> ε ≥ 0.90; Δp within design limits; parasitics ≤ 100W</li>
+<li><strong>B-gate:</strong> 30-day run with A ≥ 0.99; zero crossover-attributable jams; validated energy bookkeeping</li>
+</ul>
+</div></div>
+
+<!-- CH10 -->
+<div class="ch" id="ch10">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">10</span><span class="ch-title">Contributions & Provenance</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>Authorship</h3>
+<table>
+<tr><th>Contributor</th><th>Role</th><th>Share</th></tr>
+<tr><td style="font-weight:600">Bojan Dobrečevič</td><td>Conception, regeneration lineage, decisive recuperation seed & selection, requirements, final authority</td><td style="font-weight:600">55%</td></tr>
+<tr><td>ChatGPT 5 Thinking</td><td>Synthesis, models, controls, testing, drafting, integration</td><td>18%</td></tr>
+<tr><td>GPT-o5</td><td>Extended recuperation from human seed, crossovers, targets</td><td>12%</td></tr>
+<tr><td>Claude</td><td>Safety/regulatory drafting, clarity edits, glossary</td><td>8%</td></tr>
+<tr><td>Gemini</td><td>Re/Pr/Nu references, sensitivity grid, annular corrections</td><td>5%</td></tr>
+<tr><td>DeepSeek</td><td>Slip detection nuances, control-aware perturbations</td><td>2%</td></tr>
+</table>
+<h3>Key Design Decision</h3>
+<p>The recuperation architecture was seeded by a human insight: <em>"capsules don't traverse the exchanger; fluid does."</em> This reframing — from regenerative (capsules carry heat) to recuperative (fluid carries heat through a wall) — was the decisive architectural pivot. GPT-o5 elaborated the seed into the co-axial annular counter-current design; multi-LLM review confirmed it as baseline.</p>
+<div class="note note-green">Design lineage: RC1 → RC2 (Dry-Porch) → RC3 (transitional) → RC4 (Recuperation v1, co-axial annular, fully-wetted crossovers) — adopted as FOAK baseline.</div>
+</div></div>
+
+<footer>
+  <div class="quote">"Gravity + buoyancy. Two strokes. Direct DC. No turbines."</div>
+  <p>Bojan Dobrečevič · AIM³ Lab · 8Z Research Program · August 2025</p>
+  <p>bd@siol.net · +386 31 741 748 · chessbest.org</p>
+</footer>
+
+</div>
+
+<script>
+function toggle(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+</script>
+</body>
+</html>
