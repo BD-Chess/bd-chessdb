@@ -645,6 +645,50 @@ section{scroll-margin-top:62px}
   #sn-burger{margin-left:auto}
   .sn-logo{font-size:.68rem}
 }
+
+/* ── CORE RESEARCH PAPERS BANNER ── */
+.crp-banner-wrap{padding:26px 0 18px}
+.crp-banner{
+  display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.9fr);gap:1.25rem;align-items:center;
+  border:1px solid rgba(0,229,255,.14);border-radius:8px;overflow:hidden;
+  background:
+    radial-gradient(circle at 82% 22%, rgba(0,229,255,0.08), transparent 34%),
+    radial-gradient(circle at 18% 78%, rgba(245,158,11,0.06), transparent 38%),
+    linear-gradient(135deg, rgba(11,17,32,.92), rgba(8,12,24,.96));
+  box-shadow:0 14px 50px rgba(0,0,0,.28);
+}
+.crp-banner-copy{padding:1.4rem 1.5rem 1.45rem}
+.crp-banner-eyebrow{
+  font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:.75rem;
+}
+.crp-banner h3{font-size:clamp(1.25rem,2.2vw,1.9rem);line-height:1.08;margin-bottom:.7rem}
+.crp-banner p{max-width:60ch;color:rgba(226,232,244,.76);font-size:.94rem}
+.crp-banner-meta{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:1rem}
+.crp-banner-side{
+  align-self:stretch;display:flex;flex-direction:column;justify-content:center;gap:.8rem;
+  padding:1.35rem 1.4rem;border-left:1px solid rgba(0,229,255,.08);
+  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+}
+.crp-banner-side .crp-mini{
+  font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;
+}
+.crp-banner-side .crp-mini strong{display:block;color:var(--text);font-size:1.2rem;letter-spacing:normal;margin-top:.15rem}
+.crp-banner-cta{display:flex;gap:.65rem;flex-wrap:wrap;margin-top:.2rem}
+.crp-banner-link,.crp-banner-link:visited{
+  display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
+  font-family:'JetBrains Mono',monospace;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
+  text-decoration:none !important;padding:.78rem 1rem;border-radius:4px;transition:all .2s ease;
+}
+.crp-banner-link.primary{color:var(--cyan) !important;background:var(--cyan-dim);border:1px solid rgba(0,229,255,.26)}
+.crp-banner-link.primary:hover{background:rgba(0,229,255,.18);box-shadow:0 0 16px rgba(0,229,255,.12)}
+.crp-banner-link.secondary{color:rgba(226,232,244,.72) !important;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02)}
+.crp-banner-link.secondary:hover{border-color:rgba(255,255,255,.16)}
+@media(max-width:860px){
+  .crp-banner{grid-template-columns:1fr}
+  .crp-banner-side{border-left:none;border-top:1px solid rgba(0,229,255,.08)}
+}
+
 </style>
 
 </head>
@@ -715,6 +759,7 @@ section{scroll-margin-top:62px}
     <div class="hero-cta-row">
       <a href="BD_AIM3.html" class="hero-cta hero-cta-primary">Read AIM³ →</a>
       <a href="#sec-aim3" class="hero-cta hero-cta-secondary">See the stack</a>
+      <a href="/crp/" class="hero-cta hero-cta-secondary">Core Research Papers ↗</a>
     </div>
     <div class="hero-metrics">
       <div class="hm"><div class="hm-num" style="color:var(--gold)">30</div><div class="hm-label">Live Pages</div></div>
@@ -824,6 +869,31 @@ section{scroll-margin-top:62px}
     </div>
   </a>
 </div>
+
+
+<section class="crp-banner-wrap">
+  <div class="wrap">
+    <div class="crp-banner">
+      <div class="crp-banner-copy">
+        <div class="crp-banner-eyebrow">Core Research Papers</div>
+        <h3>The paper hub behind the portfolio</h3>
+        <p>Method, architecture, consciousness, and applied engineering gathered into one clean map. The portfolio stays at <strong>BD × AI Lab</strong>; the papers now live in their own research space at <strong>/crp/</strong>.</p>
+        <div class="crp-banner-meta">
+          <span class="badge cyan">12 papers</span>
+          <span class="badge gold">4 families</span>
+          <span class="badge green">1 research hub</span>
+        </div>
+      </div>
+      <div class="crp-banner-side">
+        <div class="crp-mini">New research entry<strong>Core Research Papers</strong></div>
+        <div class="crp-banner-cta">
+          <a href="/crp/" class="crp-banner-link primary">Open /crp/ →</a>
+          <a href="/crp/#start-here" class="crp-banner-link secondary">Start with the method</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <div class="divider"></div>
 
