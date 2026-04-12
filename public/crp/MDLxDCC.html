@@ -106,12 +106,7 @@ header .stat-label{font-size:11px;color:var(--text-muted);text-transform:upperca
 <header>
   <h1>MDL × DCC Domain Map</h1>
   <div class="subtitle">A public research map of where the same kernel appears to transfer: one destination, six verified anchors, and a wider candidate field organised by lens rather than by a single misleading ladder.</div>
-  <div class="stats">
-    <div class="stat"><div class="stat-num">1</div><div class="stat-label">Destination</div></div>
-    <div class="stat"><div class="stat-num">6</div><div class="stat-label">Verified anchors</div></div>
-    <div class="stat"><div class="stat-num">37</div><div class="stat-label">Candidate domains</div></div>
-    <div class="stat"><div class="stat-num">44</div><div class="stat-label">Total entries</div></div>
-  </div>
+  <div class="stats" id="header-stats"></div>
 </header>
 <div class="intro"><strong>How to read this page:</strong> it is not one absolute ranking. The map is split into three layers. <strong>ASI</strong> appears as a destination, not as a normal market candidate. <strong>Verified anchors</strong> are the domains that already carry proof weight. <strong>Candidate domains</strong> are listed once and can be re-sorted by lens: commercial, upstream research value, MVP speed, and other structural views. Average LLM scores are shown only as a compact secondary signal; clicking an AVG badge reveals the per-model breakdown.</div>
 <section class="section" id="destination-section">
@@ -158,9 +153,7 @@ function statusTag(item){ const st=STATUS_CONFIG[item.status]; return tagHtml(st
 function catTag(item){ const cfg=CAT_CONFIG[item.cat]; return tagHtml(cfg.label, cfg.color); }
 function sourceTag(item){ return tagHtml((SOURCE_CONFIG[item.source]||{label:item.source}).label, '#8fa0c7'); }
 function scoreMetric(item, includeDetails=true){
-  const avgChip = item.id===37
-    ? `<div class="metric-chip avg-chip" onclick="toggleLlm(event,${item.id})"><div class="lbl">DEST</div><div class="val" style="color:var(--pink)">#1</div></div>`
-    : item.noLlm
+  const avgChip = item.noLlm
       ? `<div class="metric-chip avg-chip" onclick="toggleLlm(event,${item.id})"><div class="lbl">VER</div><div class="val" style="color:var(--gold)">DNA</div></div>`
       : `<div class="metric-chip avg-chip" onclick="toggleLlm(event,${item.id})"><div class="lbl">AVG</div><div class="val" style="color:var(--gold)">${Math.round(item.llmAvg)}</div></div>`;
   return `<div class="metrics-row">${avgChip}<div class="metric-chip"><div class="lbl">A</div><div class="val" style="color:var(--purple)">${item.A}</div></div><div class="metric-chip"><div class="lbl">C€</div><div class="val" style="color:var(--green)">${item.commercialPriority}</div></div><div class="metric-chip"><div class="lbl">U↑</div><div class="val" style="color:var(--blue)">${item.upstreamPriority}</div></div>${includeDetails?`<div class="metric-chip details-btn" onclick="toggleDetails(event,${item.id})"><div class="lbl">View</div><div class="val" style="font-size:13px;color:#d9e2f8">Details</div></div>`:''}</div>`;
@@ -187,15 +180,7 @@ function renderAnchors(){
   const anchors = VERIFIED_ORDER.map(getById).filter(Boolean);
   document.getElementById('anchors-grid').innerHTML = anchors.map((item,idx)=>`<div class="anchor-card"><div class="anchor-top"><div><div class="rank-badge">Anchor ${idx+1}</div><div class="card-title">${item.name}</div><div class="card-sub">${statusTag(item)}${catTag(item)}${sourceTag(item)}</div></div></div><p class="card-text">${item.note}</p>${scoreMetric(item,false)}${llmBreakdownHtml(item)}<div class="link-list">${(item.links||[]).slice(0,3).map(l=>`<a class="card-link" href="${l[0]}" target="_blank">${l[1]} →</a>`).join('')}</div></div>`).join('');
 }
-function rankCandidates(sortKey){
-  const arr=candidates().slice();
-  arr.sort((a,b)=>{
-    const av = sortKey in a.d ? a.d[sortKey] : a[sortKey];
-    const bv = sortKey in b.d ? b.d[sortKey] : b[sortKey];
-    return (bv||0)-(av||0);
-  });
-  return arr;
-}
+
 function sortCatalog(items){
   const arr=items.slice();
   arr.sort((a,b)=>{
@@ -222,10 +207,19 @@ function renderCatalog(){
   document.getElementById('catalog-list').innerHTML = items.map(item=>`<div class="catalog-card"><div class="catalog-top"><div><div class="card-title">${item.name}</div><div class="card-sub">${statusTag(item)}${catTag(item)}${sourceTag(item)}${item.savings?tagHtml(item.savings + '/yr', '#2ecc94'):''}</div></div></div>${scoreMetric(item)}${bodyHtml(item)}</div>`).join('');
 }
 function toggleDetails(ev,id){ ev.stopPropagation(); if(openDetails.has(id)) openDetails.delete(id); else openDetails.add(id); renderCatalog(); }
-function toggleLlm(ev,id){ ev.stopPropagation(); if(openLlm.has(id)) openLlm.delete(id); else openLlm.add(id); renderAnchors(); renderCatalog(); }
+function toggleLlm(ev,id){ ev.stopPropagation(); if(openLlm.has(id)) openLlm.delete(id); else openLlm.add(id); const _item=getById(id); if(_item&&_item.status==='verified') renderAnchors(); else renderCatalog(); }
 function setCatalogSort(key){ currentSort=key; renderCatalog(); }
 function setCat(key){ currentCat=key; renderCatalog(); }
-renderDestination(); renderAnchors(); renderCatalog();
+function renderHeader(){
+  const nDest=DATA.filter(x=>x.status==='destination').length;
+  const nVerified=DATA.filter(x=>x.status==='verified').length;
+  const nCandidates=DATA.filter(isCandidate).length;
+  const nTotal=DATA.length;
+  document.getElementById('header-stats').innerHTML=[
+    [nDest,'Destination'],[nVerified,'Verified anchors'],[nCandidates,'Candidate domains'],[nTotal,'Total entries']
+  ].map(([n,l])=>`<div class="stat"><div class="stat-num">${n}</div><div class="stat-label">${l}</div></div>`).join('');
+}
+renderHeader(); renderDestination(); renderAnchors(); renderCatalog();
 </script>
 </body>
 </html>
