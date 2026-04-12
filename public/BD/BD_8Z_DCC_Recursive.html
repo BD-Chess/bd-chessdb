@@ -573,25 +573,29 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 <p>This was the same mistake as the or-opt exclusion (P16), but self-similar at a deeper level. The system built to let data decide was itself configured by hand. Three C instances in three sessions violated P5 (Let DCC Control It) while having P5 in their context window. The fix: <strong>self-calibrating bands</strong> &mdash; track running 25th/75th percentiles of observed LZ ratios. The system learns its own thresholds from its own data stream. MDL all the way down.</p>
 </div>
 
-<div class="_8z-sec _8z-lk" id="_8z-s0" data-8z-blob="OVbEH6UVonlOwFZ52FD13PmiU7yLLNfgTCK884Kxx84OLeBHUNTD4/ilSSFGa41gTP8bZLAHbigGy8Nkrb/EldM4PfHd+3Wdbdg2hOfZ5oIilSqQtib1rVLnf34xCM1XDsH7TDA1SqfH++o/9WpDCmQD1Q2XETdTInVJXAWTyfap4HwHzROnZybHkoHzv20cJt8Es7GyBji+T0KVqdRs3yT2yAhAQgw56wp97HQKdNd6pErWRUTEzBm5ui8fH+s9DinMHPyXlJmCra9g4c/pg9ZD5R5olnjlEt3cPnZky772t1pGJr+FjcrY9TtLKWV/GROcSUvTEFBHONFbZIpDvrIu03Q03H9V/i7g7zKdWZBcL9J4WAsBKNoNyKC+u7rPL2Y3aEL+ZHqQpxpj2k5BMUpuGasomEhetKcHcKv0NhMtHAQaPAW7kcTNA2rGKRjrTINC+HmvaPpHxnz7DVn32Ib68DvwYTlvEJDxisV9Dp4VO2gmii2icNrSff+t+q54XOJ77s2dobwLziWm9yE+yEKHpY51rENERmswo1Fn/2Gj4ySttJ0ZzCfSe4Es/6C4uboG4zJ6mD+cj25LnF9oQUehl3wgI9rC/5uq/RjXt+e1LqSugZYlsarPhPBydVZUDj0NrNY0LG9d83es2x1tORS5TdZCto16RRVim4MQk2kn+ju32OGgBDG0zXSZqRGWzuKNQSyu74n1hh9U7gvnDEJPTWSSvcxOsT9v/7gM1L4kw9BMcQYA8Kl6nUJkADK8NNs7EoZm2H89+HCJIXJGPqXzpxwi2Q7A0KfjW1ZgZMlha2Ef+QY7CjPdn9gc5Eb/ZSY3f0TYKj8GgrM=">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Protected Content</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-label="Self-Calibrating Band Implementation">
+<h4>Self-Calibrating Bands — Technical Detail</h4>
+<p><strong>Warmup period:</strong> First 10 LZ observations are collected without adjusting meta_u. This prevents spurious coupling changes before the sensor has a statistical baseline.</p>
+<p><strong>Band calculation:</strong> After warmup, maintain a rolling window of the last 100 LZ ratio observations. band_low = 25th percentile. band_high = 75th percentile. Guard: if band_high &le; band_low, set band_high = band_low + 0.001 to prevent collapse.</p>
+<p><strong>Result on uy734:</strong> Bands self-calibrated from [0.000, 1.000] to [0.040, 0.061] &mdash; exactly where real fleet LZ data lives. meta_u then used its full range [3, 18] with 22 meaningful direction changes over 70 post-warmup steps. Compare v2.4: meta_u drifted to floor and stayed there (0 useful changes).</p>
+<p><strong>Manual override:</strong> <code>--meta-band-low 0.04 --meta-band-high 0.06</code> bypasses self-calibration for experimentation. Default: auto.</p>
 </div>
 
 <h3>The Three-Phase Fleet Lifecycle</h3>
 <p>81 meta-DCC steps over 42 minutes revealed a clear three-phase lifecycle that no previous run had visibility into:</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s1" data-8z-blob="ODvsMyj8bPOM5i0XflKDfDsjWzBsQQJYVJHS721WoI8Ozrky9FEW41e4v1A+gqFCwIDuqi+dsu5kAaRi9ll5G/2yixeVZe1zaT6yYajY10yjmkmfJ9zrZiznW7fe7g31kVkRbEauCchPxr6Zx4ebPmvmJ0Z5U6qvDrlss4Zifnlk9yppR/4BYkd8ZBcNYY+2gOSrYhohnv+vxyWBdinFqlZy/VT+2N8B4RF69BB/HRUWqv8378fYfh9euRR3Ul3r9Req+6U024bj9ZaKMIBs8MBvcwNeQjA8WZv2OMU/joiB43NtX48WN4wd484USSg/CvaSIJoGaNikhv/JEV0qnnKr+6VMZUwsw3ba/9Cm3/ymtQ1iq3tSF9l4asN/37xIboGNPj/dIt8ouyuOrDxbsLTza3bGmijPxHkoW+CM242XMYlumpD1hmANwFsg6QJxboouNbfgduFa/4hZ+bIPPZjnPxZudFhnJeFpFOqhjDJaTkFaQIe5vnP7/kzO5rWTGz9hj/YTRAxdPQNz8Bijasa9JlbV9gbL8iuAs3yLaWL/IW+pmjzevCNMkzjK9NLz+g+/oUpxba0u8Jz6EsVR4lZcEYfHgQX0GMGFenBopeyoADzwEhoEedbkHaOfQJujZXsN2Rj/g22jr7ogGrp9KUTl2w/hLSeidM7WZUt/zMUlL814U8MFuMQgDY9H39QOFTVyqcN705g4SiPW0E9TG9Wo4+O8YRKKZp33SgHuH+veGGnt+pSoRUXSOj/0YPtSiPd9+OuypPlTK7Te+JB5hvSehOcvT3qquY2skfYZh76jVDx4">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Protected Content</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-label="Fleet Classification & Worker State Encoding">
+<h4>Worker Classification Algorithm</h4>
+<p>Each 30-second snapshot classifies every worker into one of four states:</p>
+<table class="param-table">
+<tr><th>State</th><th>Condition</th><th>Stuck Counter</th></tr>
+<tr><td><strong>IMPROVING</strong></td><td>Found improvement since last snapshot</td><td>Reset to 0</td></tr>
+<tr><td><strong>GRINDING</strong></td><td>No improvement, but gap &le; fleet median</td><td>Decay by 1 (min 0)</td></tr>
+<tr><td><strong>STUCK</strong></td><td>No improvement, gap &gt; fleet median</td><td>Increment by 1</td></tr>
+<tr><td><strong>DEAD</strong></td><td>At nuclear escalation (level 4)</td><td>Increment by 1</td></tr>
+</table>
+<p><strong>Key design:</strong> GRINDING workers decay their stuck counter, not accumulate. Only STUCK and DEAD build toward intervention triggers. This prevents false escalation when the fleet is productively searching below-median gap.</p>
+<p><strong>Fleet snapshot encoding:</strong> One byte per worker: state(2 bits) + escalation_bucket(2 bits) + stuck_bucket(2 bits). Fed to LZ76 sensor for compression analysis.</p>
 </div>
 
 <p><strong>Phase 1: Healthy Fleet (steps 1&ndash;20).</strong> All 14 workers IMPROVING. Fleet best drops rapidly: 83188 &rarr; 79942. meta_u climbs 10 &rarr; 18 because LZ ratio exceeds band_high &mdash; fleet is diverse, no intervention needed. Spread narrows from 1860 to 1342. The coupling parameter says: <em>trust the workers.</em></p>
@@ -629,37 +633,39 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 <h3>Compression Sensor</h3>
 <p>An LZ76-based sensor monitors the stream of search outcomes. When the search keeps finding similar results &mdash; all losses, or all marginal improvements &mdash; the compressed description of recent outcomes shrinks. The sensor detects that the search has become predictable, which at the meta-level means it has become <em>unproductive</em>.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s2" data-8z-blob="bEsGYK2OCDPjT7Ny9jGWQuAMVqAtMXpjSFHoi/S4C8T4n8R34B8UnAMXr+9KIJx+BO3GxbLZmpYx+K2QirstO4ky7k0ZFvHEBXLK0v1F48xVzKNNDckHzcCORtoKQVLHzVZa0Szn6GgHOT+E3EcNYtItWzcnPxxhssFIM4sLh09Cz2gAe/KUNN4Oyu+usH8IpxoHsxOSgkSTivrBLrIkBYsl7sVlZ3LB1BHM3r+EW/tnND3e4Tmc1pHJVcd8zJYxKmijxmN2AGDM5n8+4PbHmE/BKARRugsOruRff9Rz1JXyDAUZmL4rE0OZXN4E2XniJ3CKhWmA6nfyVLvFJqMSVCMNNdem6XqsyaD+Koc/huUUwpJ+ds2U+lLtCx+1gFcPimw+VEEDaamihpBUhoHX5Lu4vieE+bWdgOYkzOMNxRVFMOrYI2MrfQimJ4FOz2Uf5BtL3NFZ5voKVz0gLY9AtcUdDnFfMtls7h/xacsJpH3pFuizOThvw5WEY5DyzP8Ea5CPEHIYVhL7pM2lPBQZS25cW/34PlvtU4whHgwYRmfynvS4FZgLDQRQuX0zawsUM3YLFf2VRYK6ia7nk5xikEwFU6BZUWz2iwRl8wng8jyXjsBGGbmDo05zTe41rCs5fMrJamDY9LfLJ/2aMknTl8D0rhKrOHDXNDu90obo6fcZ4sHULVIrh+ALfk506BunZ/jYfQoUPkeXbrCEWVtLTDyQrXLold16uqYOugzNaZtqV3AtPQlxtk57uA1J/980DChRIWU9MxG5NAIZiJWSegODdzqgFLezCypuyDeUzHjsMcG2lXx1f8lusWCVwk368GLwxcyLvXpiVjEImh97BxBa35AZ2cxXdDasTg/Knoih0TL3VJ3UzaH111ovbQ==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Protected Content</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-label="LZ76 Sensor Configuration">
+<h4>LZ76 Sensor — Technical Specification</h4>
+<p><strong>Buffer:</strong> 128-sample circular buffer. Each sample is an 8-bit symbol encoding the search outcome of one configuration test.</p>
+<p><strong>Symbol encoding (8 bits):</strong> accepted(1) | improved(1) | kick_type(2) | improvement_magnitude(2) | cost_bucket(2). The richer symbol set compared to base-level DCC (which uses 6-bit symbols in a 64-sample buffer) captures more information per observation, enabling finer-grained search productivity measurement.</p>
+<p><strong>LZ76 compression:</strong> The buffer is serialized to a binary string and compressed using the Lempel-Ziv 76 algorithm. The complexity ratio = (number of LZ phrases) / (total bits). Low ratio = highly compressible = repetitive outcomes = search is stuck. High ratio = incompressible = diverse outcomes = search is productive.</p>
+<p><strong>Update frequency:</strong> Every <code>update_interval</code> samples (default: 64). The sensor fires only when the buffer is full and the position is aligned to the update interval, preventing noisy early readings.</p>
 </div>
 
 <h3>Coupling Parameter</h3>
 <p>The coupling parameter <em>u</em> governs the balance between exploitation (testing configurations near known good ones) and exploration (jumping to entirely new regions of the space). When the sensor reports high compression &mdash; meaning search outcomes are repetitive &mdash; <em>u</em> decreases, pushing toward exploration. When a new improvement is found, <em>u</em> increases, tightening the search around the productive region.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s3" data-8z-blob="jr+4YLdKnw2SNJK9uhJAKeI+z3wuNvxf1d+2WhxUCbVi1Ss3P4H4OW8RVUS4HIeYzi6MZ/BgIS32spaELeU94sXKoFYT+bhNiFw+8DhpU9T4NSmvjeXCZ6n/Yk65P+Vl3eZaDtqnxd5hXxvVT7M1zshClURRGYM+1LdbBWoNbs2odHT/Gw+T6yTou0yATuIY2PENb0/sQUdSl3XJIfJV/DEtuu7cf1nZQC2ZakP+lYq3iRQoZ63hth+7lcDQd3rHVU0Qqjp0Ni57nleU4nguCxqg5gDYD0N0e09d3mBWncxhXtjJa8AtrVH48fZJ80HqxuIG2M4MzU8OA3ZCaGMaVrM/RoDxSD28JcJ4LDk3fUqfrSjVPTtKV/UViHiRn/pavjxrOdGJpnJA6MZ9KU1g2rKxuSBwEvPemSy7LMZ4PdcuTScFMCPHiq2N69gguD9UCpHvSibWHATUjAfYV9emfIZoShGf4Dj5HGKz5BRQulzaYeP540twAFIHgCNVbqawlIzvRYDs8huVH0wMR0NVX9AzNXkZrZD39+EJcD7KUIwCyyvNEbJwac6n6hP52gRdjLrwD9VJ0mBj/lRtF5gqDriQhBzevXc3gNUks4G9UQlJp9GqtKsUAzmmRBsZj/gF29mQnWjnH8ivV9ctHjWGDQqrcDMYl7tJ83dDAg+iQmHJubhqLZjnalHVhVEF6pL5j1nwlyktNZBwr6fS+ZGfPjMieWxZmC+lRE9j9/n4lLt1p0fiZ1HjcW5fFVBH5qGw24puxRbMUoNIOeB08qppDCb/DlTNXf59nUl47Vl+WOjNiHLcP9oLS1eDEFruP3jmWOG8Mkle16/vOM8XG/1biZxyyxNv/dCPomVp553gX4Saye7yx+MuZgv92GkdQyigV4IdqE9HhnyduL9/f5wh0bH9lLY++HcsiX72yYlKZ414U+i6fNlHklqvtmlO7VyMYm7bISjXKfvxJsrQsMa8v0GboRlXSQ==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Protected Content</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-label="Coupling Parameter Formula &amp; MDL Derivation">
+<h4>Coupling Parameter u — MDL-Derived Adjustment</h4>
+<p><strong>Range:</strong> [u_floor, u_ceiling] (default: [3, 18]). Starts at midpoint (10).</p>
+<p><strong>Adjustment rule:</strong> After each LZ76 update, compare lz_ratio to band thresholds. If lz_ratio &lt; band_low: u decreases by 1 (more exploration). If lz_ratio &gt; band_high: u increases by 1 (more exploitation). If within band: u unchanged. Maximum change: &plusmn;1 per update (momentum damping prevents oscillation).</p>
+<p><strong>Effect on search:</strong> p_greedy = 500 + 20*u (probability of starting from best-known vs baseline). kick_n = 1 + ((20-u)*2)//20 (number of perturbation kicks per move). Low u = more exploration, more kicks, less greedy restarts. High u = tighter exploitation around best known.</p>
+<p><strong>MDL justification:</strong> The coupling parameter IS the MDL model selection in action. High compression of the improvement stream means the current search model (strategy + kick type + basin) has been fully exploited — its description length cannot shrink further. Low compression means the model is still productive — new structure is being found. u tracks this boundary automatically.</p>
 </div>
 
 <h3>Escalation Ladder</h3>
 <p>When exploration alone isn't enough &mdash; when even random jumps keep landing in unproductive zones &mdash; the escalation ladder activates. Each level represents a more dramatic intervention: widening the search range, resetting to a new starting region, or combining known good configurations in novel ways. The escalation level visible in the experiment data climbed from 0 to 4 over the course of the run, as Meta-DCC systematically exhausted local options and escalated to broader strategies.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s4" data-8z-blob="DNs0TiMRB3O/4Az1vhsYiyYoh4UKnW4LsaX/l0+9Y5SlfOcc7vulx3MmFQmSpa00QWLPO/EHlnXiBuPK6q7JIH2x8F62lGLbJPnX9cZruQ4NJggkPR8UvcqXD5TMcLp8qTBnwIHM8JhxrWcq126dGs1zg5vVQ7bVG3JtvEdTmxSF85HuZtOZmPr0cJeTEu8k1QSoldDDfOvdXjspQHYuNoaajSd5KjNLRS/NbFAzgJS3iLLO++iSba4SV/fd4gMIONFkSNSmbGMKkbLUZm1ZrxkcPdQ5RUe4QH7Nw03RcEwPc15XKzgw3wHKlLBYc8ztXUdU7AtGE/n0G5kmv2uIKkKisVa8IKNOWIGGmNSNkHaFiCb2EGyYVOcwJFyLO+JzIwd+j4N2MIGkTpfXA50BQOcpI7xUcp8iQzsmIjGxuj45YVKeYv5ebFkTXN8/UD9YIY/+zhC+5pggO2nyckIYLtzzJJeHzYJcW6boHpXViXZz0R8zBbM+zTrlC5To74RHLC5aDirkSQmh/0M9B3ZSCWSExfM0o2PTeX1r1h6/6j33M34qsyDyLDOSYcWkhsXGu+5KFvp22e/LJdkUYTBNO0Z+S62JJ4ySmWsmGdqO1marxUC4+NIT20BgX2d/7N8e2LGh85tT9ILk6IMrq/rirOBF3ePALZ7KuNda8efIW145sRLpnXh1Saym4v4tA8u2hJE8OkvKSwYLtpcKIttzvWZtae0RXVQa7EaT4OsKl7DqtGihG6yF6i4++e4g+wZvS9/oIZ4vmJT701tIkzPTCF5iYN3ZQ6rH0WqgZ4KJGl/SmVuOnGchBpnpGZxoncEFOgNGVokcJrMRfrVeZBl3ZIqxvw==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Protected Content</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-label="Escalation Ladder Thresholds &amp; Actions">
+<h4>Escalation Ladder — Five Levels</h4>
+<table class="param-table">
+<tr><th>Level</th><th>Name</th><th>Trigger</th><th>Action</th></tr>
+<tr><td>0</td><td>Normal</td><td>moves_since_improvement &lt; stuck_threshold/2</td><td>Standard search. DCC controls u normally.</td></tr>
+<tr><td>1</td><td>Mild</td><td>moves_since_improvement &lt; stuck_threshold</td><td>Switch kick type if current type hasn&rsquo;t found improvement. Prefer the type that last succeeded.</td></tr>
+<tr><td>2</td><td>Moderate</td><td>moves_since_improvement &lt; stuck_threshold &times; 2</td><td>Push u toward midpoint (away from extremes). Plus kick switching from Level 1.</td></tr>
+<tr><td>3</td><td>Strong</td><td>moves_since_improvement &lt; restart_threshold</td><td>Rapid rotation: cycle through all 4 kick types every 8 moves. Maximum perturbation diversity.</td></tr>
+<tr><td>4</td><td>Nuclear</td><td>moves_since_improvement &ge; restart_threshold</td><td>Strategy restart: build entirely new tour from a different strategy (classic&rarr;hilbert&rarr;sweep&rarr;morton&rarr;greedy). Reset DCC state. Up to max_restarts (default 3).</td></tr>
+</table>
+<p><strong>Default thresholds:</strong> stuck_threshold=64 moves, restart_threshold=256 moves, max_restarts=3.</p>
 </div>
 
 <h3>Semantic Inversion</h3>
@@ -677,13 +683,42 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 </div>
 </div>
 
-<div class="_8z-sec _8z-lk" id="_8z-s5" data-8z-blob="RgsnMVYBY6+5tWFYNtSHfjM5YItbMMjoMK4S4zm+HCuBB86lHSFlBrJJGG6mjEBS/8BFr1tmYhDAPBMXrHO0w7SjMHkmdkWnnB0nhOAXfy1h7KQggE2wCqXrJCC+rQjTTjU3K15o1D7wJoQiieoZ/ajb0zfp5FlqVXxOQYfJRrwk2/ZyKVXnhvoeVQFKbh/VPjrHW06kgde50wQ+bWHfxR6o2KMBVdkG7mytQqTN0XfrdVjHHDG7IAl33PYQ5cw2+ZrJZ3Pngsfy05bpnGWscrq3buXx3E3OdKbSW/oYDzFj2TjentpwxxvZ1aMFJfSMLBKG3eoPvkfYAa4gX5qLQGVmw9bhdxBtwGLA2BQtj8R3nFVnIs1xTPlBYS0h/YldvmnwK8uc4LCcWkctyCeKMXiFW+gjadMil3qi7+RjQvcRisM4473AqTIf48DxOodJeYSup4bkasLWfbf9YTZFOhdaAKvjn5DX8DIHS0lfP6Q8nMsg3xv1mb4zjCWfhW3F3V94SaH1Ne1BQ+o1uhV2KJdjHXwnM5TZ20gFS69+qbYL88UjND/gST9T2wTh0UMHT1ymLPFYlbwfFk+Pgfn/f14N7dcKyMwpbmAG3GGasTJuftEuKIvkpIOFChJ+5DUdPx8T1yy57W2cspqAa6J6GAXVz/Mgz5k8hmBXhoqeQwv3gdg+Azc17SiVyEIdZKN6W+ICqKYESDXMDlZ7/nyS3tTK73dqpMSaTNb1fg7mMTyiocTshapZaZA6hE3V6zSAqIIg6f52vnrLALAU6r1YTm3BrMOx4O2stggfQ7jkvD4DaJaxuIXTtlHFw62d+wkD7MDWZGvnYZMKokP0lv7gznNiys4NRkEgbuQ8KL9BoZsrKAgJjIpTeRKgALdPBzJK7sK8CPIhOtOpW2yXNvd7uuLO4vLQslen4NfzHLfw7Ftdi56EVmUm610tnUjCsO4Ks6c8G0Fxw9UKT3iS/M5oL5rfAN1jVSj8SwSAZD4jpisZNeXFTRx82SNBkjLZ5bNaeM/ErmS9cdbxNOst401kekkLswxOJ25vIF8h5W5JgwYe0POVq8Cj7E9IsqY=">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Protected Content</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-label="Meta-DCC Core Algorithm &amp; Pseudocode">
+<h4>Meta-DCC Core Algorithm</h4>
+<pre>
+function MetaDCC_update(worker_states[]):
+    # 1. Classify each worker
+    for each worker w:
+        if w.improved_this_interval: state = IMPROVING
+        elif w.escalation >= 4:      state = DEAD
+        elif w.gap > fleet_median:   state = STUCK
+        else:                        state = GRINDING
+
+    # 2. Build fleet snapshot symbol (1 byte per worker)
+    for each worker w:
+        sym = state(2bit) | esc_bucket(2bit) | stuck_bucket(2bit)
+        push sym to LZ76 buffer
+
+    # 3. Compute LZ76 compression ratio
+    lz_ratio = LZ76_phrases(buffer) / total_bits
+
+    # 4. Self-calibrate bands from history (P17)
+    lz_history.append(lz_ratio)
+    if len(lz_history) >= warmup:
+        band_low  = percentile(lz_history, 25)
+        band_high = percentile(lz_history, 75)
+
+    # 5. Adjust meta_u (search polarity)
+    if lz_ratio < band_low:  meta_u -= 1  # fleet stuck, explore
+    if lz_ratio > band_high: meta_u += 1  # fleet diverse, trust
+
+    # 6. Compute escalation from persistent stuck counts
+    persistently_stuck = count(w.stuck_intervals >= threshold)
+    escalation = f(persistently_stuck, n_workers)
+
+    return (escalation_level, meta_u, classifications)
+</pre>
+<p><strong>Key design choice:</strong> GRINDING workers decay their stuck counter (not accumulate). Only STUCK and DEAD workers build toward intervention triggers. This prevents false escalation when the fleet is productively searching below-median gap.</p>
 </div>
 </div>
 
@@ -703,13 +738,22 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 <p>A naive self-application of DCC would inherit the trading polarity: repetitive outcomes = stable = exploit harder. This would cause the search to double down on unproductive regions &mdash; exactly the wrong behavior. <strong>Our first five versions did exactly this, and they failed.</strong> The semantic inversion was discovered empirically on the sixth iteration, not predicted theoretically. Once the polarity was corrected, Meta-DCC immediately outperformed grid search.</p>
 <p>This has a profound implication: recursive self-governance is possible but <em>domain-specific calibration of the semantic layer is required</em>. The compression sensor is universal. The coupling dynamics are universal. But the meaning of "compression is high" depends entirely on what the system is governing. Getting the meaning wrong doesn't produce suboptimal results &mdash; it produces actively counterproductive behavior.</p>
 
-<div class="_8z-sec _8z-lk" id="_8z-s6" data-8z-blob="RQwBYTjXnYvJEtSc/dgZck7n0e+vgMCDVa6yww8uQwjhzU1iYif2phc1vTrX6Vk4ulCcXAXWikaSBNhHDIrzGKuYidcmeFBhyB2A15YyjoSZMIteJfR9QpPMo2NSJ5JzdfAXRQl2PttzrepKpJto0lkU4wZZls8DTretXr6qoghJd7UcohvceA5IHa7fiHhHenZ6ikR0x1dDahYtOyanyeQpIPdlFJXYjQ2fvXJNxSvq397fz9x5zpbD1+coJl07oDrlEDo6uFfKFuEsEOEHJnrLAPF4MdCVCUsH1J7g30Buvb/QhpfaM1c3EZD9J5mkDoY2mRXMG3mkgFhgHqwkGf5Cpr0h8W3XZzZLWu5PAFNOayUbHmG15Pp7wH/t5SOtnEPZnlOhg07ZnqvaWTfuDgqZMrdbsIW8d8VRXyGKjoDkU1uMiHus+Zcbci7qeVQ8oNyr479rKZohHYJ0ehPifVJKRD/OWIRYmCTjqIpck5V4MYnKcQmL+QWU+re7ITsSMCLxwP1ViU9lvBFJUwu0qcW8FtS9fQXWTZGSw9SuEYDgbpWNAVF3o14WyidNh3hHVaOdKF72Ph+wwatM9WJ/Hnmvw7297/UMzrMNxNfBMYPfHDe0xJ2HnaIfoAZZ9bJRG+IrBH8LzxH/1z/r7o7YR5rXtQ4aD+W3SdG26uWOVuAuPkAYIb7vHeXvsbr0y3TwcI19czwp/3fhee40pNf/YrxL6SCQk+CL1jwO5MD1bRJyN0DPrO8z5ybnbnMFJ1hYLmtxM7b7TeZWAU+usIeBPtYnC4AFqoRWiwENOryjKAuB/hgGZ9NoeNEEFILBc55LwlseAtFVTmCp25kjc5qKlltEqOF4lKHR7SPycn7z05Au/25XlKSNGzF+vc9S6emF/mJQHTdD/IQwq9uryGxpUN0Dek4loqbsF0gfW8M4KEuG94ckIf+ZEa1sOD1e+AX4oNFE5/JP6WxvuDP+P4v/RBrzD3oMiXYFoo5IxXkv1+B/4MtMhj8ia9kiiiVyYeccYZbZ7yCMQXoiEvoTmgisaVnjOxCUe7YkEBPzsZsn/XNA6xYkDSYN0Cr9tb4YzzaJ7f6ntPQMH9wwwTKaf0ij9qJs+8/nxxG2+Pfr0z3MAlgvWThDjj4EZT7L2Tuz0bwT2mQXxvTwYG25U1ucwWmMfiq5inotinaXn0EuGCxX1rBMkfFl6ctr4ymiuo/zGWJiSeYsVnudrJuC5DUgww==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Protected Content</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="8z-protected" data-label="Semantic Inversion Rules &amp; Domain Transfer Protocol">
+<h4>Semantic Inversion Rules</h4>
+<table class="param-table">
+<tr><th>Domain</th><th>High Compression Means</th><th>Correct Response</th><th>Polarity</th></tr>
+<tr><td>Trading (bar-level)</td><td>Stable regime, predictable market</td><td>Exploit: increase u, trade confidently</td><td class="verified">EXPLOIT</td></tr>
+<tr><td>Config Search</td><td>Stuck search, unproductive region</td><td>Explore: decrease u, jump to new region</td><td class="verified">EXPLORE</td></tr>
+<tr><td>TSP base-level</td><td>Worker stuck, no improvements</td><td>Explore: escalate kicks, try new strategies</td><td class="verified">EXPLORE</td></tr>
+<tr><td>TSP fleet-level (Meta-DCC)</td><td>Fleet collectively stuck, all workers same state</td><td>Explore: intervene, inject tours, restructure</td><td class="verified">EXPLORE</td></tr>
+<tr><td>Trading (systemic)</td><td>All institutions correlated</td><td>Explore: diversify, reduce exposure</td><td class="proposed">EXPLORE</td></tr>
+<tr><td>Consciousness (DCC-7)</td><td>Unknown — must be discovered empirically</td><td>Repetitive output may mean deep focus OR cycling</td><td class="proposed">TBD</td></tr>
+</table>
+<h4>Domain Transfer Protocol</h4>
+<p><strong>Step 1:</strong> Identify what the sensor is pointed at in the new domain.</p>
+<p><strong>Step 2:</strong> Ask: does repetition here mean stability (exploit) or stagnation (explore)?</p>
+<p><strong>Step 3:</strong> If unsure, default to EXPLORE polarity and test. The first five Meta-DCC versions used the wrong polarity — EXPLOIT — and all failed. Getting polarity wrong doesn&rsquo;t degrade; it produces actively counterproductive behavior.</p>
+<p><strong>Step 4:</strong> After polarity is set, let the system self-calibrate its band thresholds from observed data. Never hardcode bands (P17).</p>
 </div>
 </div>
 
@@ -796,153 +840,372 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 </div>
 
 <!-- ─── FINANCE ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s7" data-8z-blob="VEfYZA8jodpMr5OC+swg17sToiazx3e6QyhZ+smlaywTmsMyhq23KzLYfB+rK6LyIPQPnalbRR2/MJWZoNUayZxQYu/aLQyYiGDAxKKfIVLcygOfdWXRFDleybKTCD2/wQxaQ6L/Nodiw+mPSQJ/ZPVQ8Qko4T90hFm6PUxBpuRLRnHIyVkHaa8eCDAlYCHNJ5IzSPB2xeHwvG7yRw11vuTEC8/FSlpd+h7ThNwM4QIwuy3kr8X8WCRyGbqjNBtQ2H3hFD2sYPGXGecNJFr1qx2sQmQqRtG0ouxQqUICuMPHmalYIxGTU2vizTS//MBcVRNqmhgQN6BuOyC9Z3aHtF2qsmLc+dSNdwdWlYrcLEuC8+1Pvw6cm5X2+eIM3HEsXUu27RG6ZaE5G/lD9YiinAAGLPopZMSCg5fRe+hxcThcA/ggy0HOrHV26hKngY4lOqHaC3Hjk7IocQEIILUDFXQT6VCJyGaCvGX4cEMB+yR21UCb5IpUCviYIjM1pQMn96IqLdJ8qHnF0F417RAPGkVvPXCaQnDQT6RwH5i+RGabFnzQG1WIGPe4mYZLsgd0ygQ849zZC3BsS29V6NEl0IMu+nu5aSrqwEvfDQMMEMVFopZTOWJIgnhdHebcq7HJEhAX5E9FN4odSjDks612PAMFk32vhDi5dV9Ue7k2lY4Q2eFsjxOWyJvI2x0HBJXOcjMctKYwuou0qW3CcYgt0GQV3dVM/m9uws0JU6+B84MhimaAb7AA3yyPWVYRf4VHT2PPMWs+ZekIeze2n6f82mXCgc3/dp1CwNmfh5fv+SolqYOZi7COQSLXmy8vkvBqWcIcGTlAol1S5XhdIa/4fWVlDPpcduTqUPi7RXYiYunnHOBDi76sxtDgtIrh/sw2ilKzDMrfqLs20R9p5h7S5AwrJsin/Ju7RRNV83EAm/IYF00d4iAjOmZ3QQxGCL3wLen75CwZ7+ew0GO991QehvW2HpRjRmTGgTpFK5I6QSpUFadMfILhygSrsj3CssQBd3BLkDAOb54ohocMkrqdV8NpiYsGvI1cm89BzJI0/0xrHOIdRW3LPABHvdz9YbIJveb0fk98utEjSQfJpWG7hjIBfjU6Ti0hx+cPZbpXV9MZSGStgXORKzZMwHTB+oW5Auoj5jbJM6ns73dCpGQVxAOM/Ha0fXe8BC29D4YW/cg9g6meuVEBp+E4HaV+UcR6TV+vF7mke2iC6PK56BVNIpDAuz8312fxrloJwzxgXntCNfleg4MQnvrsxFk2fWXMZVLsAuHdhaB3hLBsOC53Z6Cmv1vRftC3vu2GOMX/kIo4w+Ve3nBp2hWb2U39lMvNHtefe0gZeYGNw8k490p9DoYxZwF2ZfMrMFwGk8vCIAgSnT5q+6CwOgqEzJ38h/BjQXV9iWAp2Aihp5H28bAAGngzFZXmP4TYHQOAoiZy3805BBXo3VC40j99x8jG69zVcDWJ5700Uzx6g3BzFJTjxug1Ax4/lrE0wbdoJeJhI8EssaFl2oEV4cAvX7LBYQQ/h6LbnTg3eLrsp3NBPIyPnqEQooXHO/FoxsPj9/ZVTSARZFVqJh77589gjMjdUjQA8Jdpzm2r2mKhIOvl2NPulxlVFZlGcPBctkco++gtXQkS3mvo6yfft+I8uXPuFpSGE5AF95hVXG2mKK0=">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Industry Application — Financial Systems</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-finance">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">Financial Systems (Full Stack)</span>
+<span class="toggle-savings">$50 &ndash; 100 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>The entire financial stack &mdash; central bank policy &rarr; commercial bank risk &rarr; portfolio management &rarr; individual trades &mdash; uses different algorithms at each level. The Fed uses macroeconomic models, banks use VaR and stress tests, portfolio managers use mean-variance optimization, and traders use technical analysis or ML signals. Four levels, four different computational languages. The 2008 crisis was a cross-level failure: individual mortgage risk (base level) was invisible to systemic risk monitors (meta level) because the algorithms couldn't communicate.</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>What DCC Monitors</th><th>Current Approach</th><th>Recursive DCC</th></tr>
+<tr><td>Trade</td><td>Position P&amp;L stream</td><td>Technical analysis / ML signals</td><td>LZ sensor on P&amp;L trajectory &rarr; u governs position sizing</td></tr>
+<tr><td>Portfolio</td><td>Cross-asset correlation</td><td>Mean-variance optimization</td><td>Same LZ sensor on portfolio metrics &rarr; u governs allocation</td></tr>
+<tr><td>Institutional</td><td>Bank-wide risk exposure</td><td>VaR / stress testing</td><td>Same LZ sensor on risk metrics &rarr; u governs leverage limits</td></tr>
+<tr><td>Systemic</td><td>Cross-institution correlation</td><td>Central bank monitoring (reactive)</td><td>Same LZ sensor on system-wide patterns &rarr; u governs policy</td></tr>
+</table>
+
+<p><strong>Semantic inversion:</strong> At trade level, repetitive P&amp;L patterns signal a stable regime &mdash; exploit the edge. At systemic level, repetitive patterns across all institutions signal dangerous correlation &mdash; exactly the pre-2008 condition where every bank held the same positions. Same compressibility, opposite meaning. The trade-level polarity says &ldquo;repetition = confidence.&rdquo; The systemic polarity says &ldquo;repetition = fragile.&rdquo;</p>
+
+<div class="callout warn">
+<div class="callout-title">The 2008 Lesson</div>
+<p>Every institution&rsquo;s individual VaR said &ldquo;safe.&rdquo; Nobody measured cross-institutional compressibility. Recursive DCC with correct systemic polarity would have detected the correlation buildup and triggered diversification before the cascade. This is the supply chain correlation trap applied to finance &mdash; the same mathematical structure, the same failure mode, the same DCC solution.</p>
+</div>
+</div></div>
 </div>
 
 <!-- ─── CLOUD ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s8" data-8z-blob="ItZJDCoWr0v1krO5bMVWjfKDDszwdal8qiWGKLFOWdKgPXiD7dBX1aLXdZJ3WSkWMvmNFnOs8Qg7cnL2Oxy4ZWIWW90lWccQc/miRlkyKhAMmZmW/aC3sqgl9bTPwxKgRDNSJBMh8bhynhd9eeFU1+OWwbhEFxHFhrsD2lx9TfqZv8gx+gfmxZAVv29If9kRntzV18tHhN9x3k7G/H7vMXl3UfRm/lQl1dk2O+SnzT2zFVaHav5U7RAai31fLtE45ib+3gAVnq4qAyVaCFnRex1LHHRJ2+FAWW2j0R3JnGUQpZwv3ZTGB3IYTDf3b2AmqfGTV7WXor92mLuavgFMQ56nP2JU5VVkuxDcD+SYIpASTbEPUT9HSr0gJiXKVf2a3jnMwO8A/AnIKfVfbJsrJsXrc2kMNQthqp8Mo6YjqQJSpY+MDU4wqDywGmnpNvXzGVxpc8n7DjGe3g9DcNUj8fGkYWHh+aSSTG0JRIGASsZBNpUqsp+74cadusbG7CNSi0dAQGeLWQ8e+NGtWAkvupIOWpVPD75kcTf4la9cgmVX8O0xHSy+WCvgrYj7q1AnywOOfDrtyx3UL2YVY4pUZbqNq13z2OlxHeQedEnEwE/yU3R05D5JXEqgfhHrShoHz3O3G7Dn09BAGVKLPLnDGnSx7zS57uAydn0aw+hsaYYUKhE6BbmS9ZcOK/lxm2iBj9UceY1TcBHYLPXShZHFARTMumaOm1XIeXP4P6yoCvtRghDUQJg3eBrMwqIvm4hEusBtjVv8mHVC5Q+zttgp+rquNVEiY/8f4ULmE8sWL8uXFn4nJymTroYe2SMu663Z7PvKJtsIzeVv4heZmzr4KjvVjoX70akGg2J7b2Di53aIYZPS4ZPOILRQSQg0PxUzHCB9wfnwn22HskEj5CL7FeK7HO8/6D7CkmwRKQTGMg2xvty9iECQXSr3rb1gbBL4OZxEc9pBgw61JkaERBgDRIUr/LwfjHwn0CTMAPraBjZqXTl0J6RV3o6RJo3lnHfOBf8bvV5KdHZJTL0pMwTXzhS2SZqVcJOvhFhaCC+yGVo2gTFqdCTEKhpxeGd2opoRzzgywWzVmfgH2vZBSoR8PMbvJQIQS2/vafbXK7ihKviX8pGvnGs8PyONJ2hHbiqmFXwWlTr1u6ZXQFcw2MqVomoSGw3CX58nmiuck1RlOli1k2iV7+/71EcqbsbEDRS2Xo5+sWUrb/CqaobuGFBakAKuvAFv45Z/8sShkjsZrUskoOjCHYtdQDwFe+gzjkn44BpTLk4XhwBjoX4y6cN9szpwriihVePveAJjm44J7l27CKJx8NFd81SGlbyU7OXe6tGFRwZonY38R70ahDdydWBilnDPKVHMyGfLkBM9STneTSVqTgxcZxgYn+NxbXhHf1wfPaIPkggP3bO0W7mm5RAxoFQ9IL/H2oxtu56w6qWLbO92+OYLR4BjdgmGsykqygBmlgmsYWtw7embg8QqkYpd00Flma4Xb1FaoH9qyUq2ZvSRExaIxbm7Mf8IrJGrpUq2is+0eRk6npRqZkW0LXnNaGMBqibgKVNl4Ds3s46RYOoe9fBZmDl3001FGc2tmSm9loaT3O1gp0D3LdheJ2VHWJAUtKtP40RPpv09pDAr+VHqOR2tF/YKoy6zWjvZTTixX8bLbsYFgPdFT2vfQ3/BpE31IHrmsQ==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Industry Application — Cloud & Network</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-cloud">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">Cloud &amp; Network Infrastructure</span>
+<span class="toggle-savings">$50 &ndash; 100 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>AWS, Google Cloud, and Azure all have the same nested optimization problem: individual VM allocation, cluster-level load balancing, and data-center-level capacity planning. Current systems use different algorithms at each tier. Kubernetes uses bin-packing heuristics for pod scheduling, separate autoscalers for horizontal/vertical scaling, and human-operated capacity planning at the data center level. Each tier optimizes locally without awareness of whether the tier above or below is productive.</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>What DCC Monitors</th><th>Current Approach</th><th>Recursive DCC</th></tr>
+<tr><td>VM / Pod</td><td>Resource utilization per instance</td><td>Bin-packing heuristics</td><td>LZ sensor on utilization stream &rarr; u governs allocation</td></tr>
+<tr><td>Cluster</td><td>Load distribution across instances</td><td>Autoscaler (threshold-based)</td><td>Same LZ sensor on cluster metrics &rarr; u governs scaling decisions</td></tr>
+<tr><td>Data Center</td><td>Cross-cluster demand patterns</td><td>Human capacity planning</td><td>Same LZ sensor on DC-level metrics &rarr; u governs provisioning</td></tr>
+</table>
+
+<p><strong>Semantic inversion:</strong> At VM level, repetitive utilization patterns (steady 70% CPU) signal a well-sized instance &mdash; exploit, maintain allocation. At cluster level, repetitive load distribution across nodes might signal over-provisioning (explore &mdash; consolidate and free resources) or under-provisioning (all nodes maxed &mdash; escalate, add capacity). At data center level, repetitive demand patterns across regions signal predictable traffic (exploit) unless all regions are correlated (explore &mdash; geographic diversification needed for resilience).</p>
+
+<p>The fractal coherence concept from the <a href="BD_8Z_DCC_Trading.html">Trading Governor</a> &mdash; checking whether the structure nests properly across scales &mdash; is precisely what multi-tier cloud systems need and don&rsquo;t have. A VM running at 70% tells you nothing without knowing whether the cluster is at 30% (over-provisioned) or 95% (about to fail). Cross-scale coherence measurement is native to recursive DCC.</p>
+</div></div>
 </div>
 
 <!-- ─── ENERGY ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s9" data-8z-blob="GjeiVd5eqLpVB38/zxCFwMilZg8dkb+MzJQgoBa9R5OrPzjbAba1K5pT8nAxa0tEMUagFr8M2OPWpHhQfwGtRuxEeeKpcb8t+FsgYoXXbryCy7m8M/w8/6mauDWMvnEMX0+KKvIHrpvbPk5KT1gvUd4ZKvJiZSKpHcGuDx00EcSs4kml8Ps4JSdudAWeW2mVManx5HBVPqnVEqbsmhyBNpopQYqR59pB9mY4wcpg8N6LwezN9PelFC2v9XKQrTVQ46/9mwKwZFME4ET8pXxdsTsWHUk7OeqoVoHL+Eo+Cy6K1lMRJ5hRKd+N2NwA4bjTLN290pQ+G06PaW4P47k/Y1s1tmBCpyxFXUdqNNVCk8Ml+yn5RaBKa94ziHa+flJ6cEsG9klGH2tMSKRbCfm4F7RZ18FmxttTsOEht3ImZaDTh9gVywb7vSlE9FfBLdIayWTB6b91c5VahkgK+OA6OK63jcNbvhnQHzTtgnVxKJQk6hX3UyHUQA8bOP9gwuGthiCT29e5c/Ixc+w3SJ7w1xdOa6MGAfLJYDOmo0vk/K/Xp7c3mE7uwyiTaZkMJ+LZSD0WDBQWIKGPjZ5Gp2CYoLKiZsLus4okTpN/4KS6A3FtOV0qGbdKeN/IDXvBtTgGd2WdjhSG7OaJagHohp8X4u3vVPD+bqZLzvMDS5MVrsaaOWUJZTL3Ds+F4ZUpbhrFr1Y+1NzJia1qxS5BxtjmT4jSzPiOdDyTVX/hr/ZGgz1uiUkHbnmJqn1xwKh0PG1q79a0ZuOL/n2m36MxHr6QUZlNRGdIW1dat3QsStRqyzFRPlqizng+deTgJUtfLwZ8rnKpz3KkAYZh2RaeDfQyn8+yKZo4SEdLMgWYVdVN3wzHGgN6pdp7wieMlimnsXqspwJsyPfqZ19IMiO/+aAvALsW0mmtarOf/N/myjZ94kAEeWghi5SmQDuUXfjRe6Yr49L+AcYUbIXob2SYYbMCsS7QqwF+XqmDW7lrHPRoMQSblfF8AGRwWuwQ9Hv3WruHUE3a3VfdJAIPy99kxJLWVHLMih+6O8u0UaQeKUxRTrgP0zUVCyQVVGIT5zefGWQH3wzK43yiO++XdGd/Of4UPXY26Nw94Pa29JMxYxwbqpWiu3fL7U9uvSK3cydQ1x1RqBz0zulZeRgg9o6f11UsVUvlPpl+fl+AZ1BOsn0/AfNABtm3W86s3zPiNubJ2uGeX+8h+PMp8E/co7w9bqbRgAjZOLLhDiXcElKhTXqvWUbFP99vrZJLNX6pn1j+//Hr3jFzWrcohusFJ/+I81JP46W4MZCKEl+IIsbofW0eU+B8azm50KN2ritBtjOliC1Bbwz63jgRv1tlXmhwSdL+nBGSbF31LB9vtbgaShyagu1OXMt3u+91TcnRiq/cC+q7k+fgMjqzqPcs76gn6mT0YPB/NELWXt4JAjFcUpHcf/UOEUKWx/wrZeQM6ljRFAxtbL/5PTvPQArJPYUApcZhDHbfbWNo0sSf+QYJrKcSAEiwyOGQ7HnAXySiAhDcDyQY7cfX3OpmRpInQNHRBMPlN5FN5zdHrQ8+uqiXsp5AFnHlhM1AmFkOc4/zEPreGvhOip8+O6dgWXRrI3XK2cN2qBf6+dhys/PQXB04dlWHLy7mNffaZ/hEWqOOQBzeV8rUok3NG28F8Fbw11bIEUgzBppWB1jwfk/SSl6gdpJmOKV8Jh2czO8q43uTZH1CxQyiYr6QluSUnv6ckctJk3uD+z3BR0ws8/tlyzuzPcJLgjwdzcpSlo+oqO2vQ86etOKSAABN9VmFC0XYgi0JMsus0Vmq4uXI5h7xeqKR8rHYdIYsda20kKyJ34XKRWhnWmGZb/W0v1Bv87g=">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Industry Application — Energy Grids</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-energy">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">Energy Grids</span>
+<span class="toggle-savings">$40 &ndash; 80 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>Electrical grids have a nested control problem that is intensifying with every solar panel and wind turbine added to the network. Generation &rarr; transmission &rarr; distribution &rarr; consumption &mdash; four levels, each managed by different algorithms and different operators. SCADA systems control generation dispatch, separate optimization handles transmission line loading, utility-specific tools manage distribution, and smart meters monitor consumption. The rise of renewables introduces chaotic supply-side variance that current hierarchical controllers were never designed to handle.</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>What DCC Monitors</th><th>Current Approach</th><th>Recursive DCC</th></tr>
+<tr><td>Consumption</td><td>Household/industrial demand patterns</td><td>Smart meters (passive)</td><td>LZ sensor on demand stream &rarr; u governs demand response</td></tr>
+<tr><td>Distribution</td><td>Substation load balance</td><td>Utility SCADA (rule-based)</td><td>Same LZ sensor on distribution metrics &rarr; u governs routing</td></tr>
+<tr><td>Transmission</td><td>Grid-wide power flow</td><td>Optimization dispatch (separate system)</td><td>Same LZ sensor on flow patterns &rarr; u governs generation dispatch</td></tr>
+<tr><td>Generation</td><td>Source mix productivity</td><td>Market-based bidding</td><td>Same LZ sensor on source output &rarr; u governs source allocation</td></tr>
+</table>
+
+<p><strong>Semantic inversion:</strong> At consumption level, repetitive demand (steady 2kW household draw) signals stability &mdash; exploit, maintain allocation. At grid level, repetitive demand across all regions simultaneously signals a peak event forming &mdash; exactly when blackouts happen. Same pattern, opposite meaning. Individual stability masks collective fragility. Additionally, at generation level, repetitive output from renewables (steady solar on a clear day) is productive &mdash; exploit. But repetitive <em>intermittency patterns</em> (cloud cover cycling every 20 minutes) signal the system needs to escalate to battery or backup dispatch.</p>
+
+<div class="callout warn">
+<div class="callout-title">Renewable Integration</div>
+<p>The core challenge of renewable energy &mdash; unpredictable supply meeting inflexible demand &mdash; is a multi-level governance problem. No existing tool uses the same algorithm at generation, transmission, and consumption levels. DCC&rsquo;s cross-scale coherence measurement would detect dangerous supply-demand mismatches forming before they cascade into brownouts or blackouts.</p>
+</div>
+</div></div>
 </div>
 
 <!-- ─── ML ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s10" data-8z-blob="Euop9WTP0Y66fkBDdp6QwdKJ6tFScZKDSF9Ihk2z9yDN15Lyo2tfXRO/JoDijaOBgR/Npi+QYgn3xmyFZgEnKp6TcFBzsmfKT+mp4O5nXEDjX7OIzGmOepZN+WvXXHtzW1XLLCDGxuAnQUJ0famvF4eFntHXnrjMU64PoFaP7aClVofpYL0B5zrkcxEYc4aGyD8x0fJpX3S7Ch33OwEhI2Yxk1st6mmdug5gjp3yuAlJ0wPsk3KlrvMhD7wfKfs1IKGrHH96lGG1WQFGkL/ALzqh2tBmaCTun0WVC3E11gpacj9knputBjIv+e8yLkROoMT6Bz7Foqp2REBCbn4JgWri8kwC238xDKPTlkrSsLb+InUd1boBrd0aieXufDgjXmn1b1wNLhYSGqREFUsTKouYm6zufzfxyoViOE5dT7FByMHfbuXCJVLxCe+jhaugEwAHiaW8EDd2u1XN/rzpXj55DOtU4mtJRADTq+KplbCQHWkNyGIQisCufigL+nCvcWRQSfYb2jx+S5hPF7zQX/4xSnM1WLphmEyT67ErS2SqgAvuvxC8puDw2sHT1MNPmey6RpeOFGqHv/jAjK62IyItLtzHUUq3O/cmbK/jBaid/MlraxUsuSc87X0V5pofbMDLTDmMOHYaI20MFx1GLlquSAgsZ/EjXm76AdAPwHa8Xz3K6jmIyk6vkvwkQ62egttKJBegplzjH46NXXcjqIoaYflQ6M/Hw69Y8pnHiwxJQ/AV72rNOJBKLAMLsrXcZ6YjioLd9cKeCxMUQNvmPBU8WcQHlVCPiR5fRfETxfx3Gs14HkNt2GaOLvQeYgq12wZBLfkmJwV82ZkTSzy+4MC8n6MfXNjUB7X2S7Fs8r98XPTl0gkbInw9TaR1qFna/QDxi8Fgvm5FFM3hieGnW59RPyxqnKk9umhIAJsR1xzOjCVuWJUJkNJab2NTPTZP2xsBN1o6erMRqzVWO4WvReBOpkXdaUu99h29koIVedw5j0//pTOuGwP3qJVcvdId30oMd/6Af1177zL0BRqzk9Mf+NyQEGnbgoCwsJ4LmwKFVKUxvZPNl9jk8D246Wwi+fqOSMh11qh97YmJUbMMpuhZKUwDp653awMunFyYjTjVNjvAcJ8XyRFmEhlDWVz/8g2wajSnIn2+bkcCWU+YUGQHeyjoSVsrtseCuhS9K4z/70mzWPqtm1bfoIDtPW8oIBNFUo+TF5Bfx2yrhmbPzKzOgvLgmi1B0kEqSgOy3ZjW0v4GDDf0zy/4goFPyMcWAJ8XqQJe2PYXe1eL1nZ5rGeco6J9K5aXU1MWnxUH3QmV0sHU6pTxdabY+2cN27EbrMloXAhDhdziOS3WUwzCof1VyraHtCBj0QUcyTLT/N9d3NqIn5PObAmVaZ2n4hNiofjL/fV7POPBE0wVbQVzJQdQpEjbLJgKEXJVrpnyNHNEtsUnBH2IFez2wTIwBBqr1Koqvgrss9hSZEIoUIb/lKwlq8XSvRBC4NBm+hN1k3OodtwIRWfdKYzBiYRtnUwIl5h/oBxZBRr6TASGQo6RI1pkNflqxwWzm0gu8r20+nGDpTWZKk2hp5cv9tzL7YWjGMqEblGbn3X3ldJ8I1SS1XpVLBRISgO4DueCiUnEqGo8tfIldB2WaouKsmNCHQ2o2AKDpCi1Pm56zYnUD1spyqmBJDBigg2JIlx7Q+0VpsHiuyzK5anA9LM0DmzyfjiDlJeIBktMP9k2lhtw9Zs9AyBCRb8wYAmpRD4TC9sz0NfYf72+SYyGt4rGwfINukTNgiXYc8LT3cJPr/rgxMaRjwUoS2tXRCdSBMP7o8f2OBcsP394AUHfZtw7cPm7nhm1pZ1+6q47m8Ty358CIoFOd1aHvPOAaQONOFh6i17Q+AwstofLEF59wk1+sITib6U=">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Industry Application — ML Training & NAS</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-ml">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">ML Training &amp; Architecture Search</span>
+<span class="toggle-savings">$30 &ndash; 60 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>Every company training models &mdash; Google, Meta, OpenAI, every startup &mdash; spends enormous compute on hyperparameter and architecture search. Current tools: Optuna, Ray Tune, Weights &amp; Biases sweeps, Hyperband. All use Bayesian optimization or tree-structured Parzen estimators at the meta-level and gradient descent at the base level &mdash; two structurally different algorithms that cannot share information about their own productivity.</p>
+
+<p>Recursive DCC replaces the meta-algorithm with the same LZ compression sensor used at base level. The MetaSearch data in this paper proved 6.8&times; efficiency over grid search on a million-configuration space. Applied to ML training runs where a single experiment costs $10K&ndash;$100K in compute, a 6.8&times; efficiency gain is worth billions globally per year.</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>What DCC Monitors</th><th>Current Approach</th><th>Recursive DCC</th></tr>
+<tr><td>Base</td><td>Training loss stream</td><td>SGD / Adam optimizer</td><td>LZ sensor on loss trajectory &rarr; u governs learning rate schedule</td></tr>
+<tr><td>Meta</td><td>Hyperparameter search outcomes</td><td>Bayesian optimization (different algorithm)</td><td>Same LZ sensor on validation scores &rarr; u governs which configs to test next</td></tr>
+<tr><td>Architecture</td><td>Architecture family productivity</td><td>RL controller or evolutionary search (third algorithm)</td><td>Same LZ sensor on architecture family results &rarr; u governs structural changes</td></tr>
+</table>
+
+<p><strong>Semantic inversion:</strong> At base level, repetitive loss values during training might signal convergence (exploit &mdash; keep going) or plateau (explore &mdash; change learning rate). At meta-level, repetitive validation scores across configurations signal a stuck search (explore &mdash; jump to new region). At architecture level, repetitive performance across architecture families signals the problem needs a fundamentally different approach (escalate). Three levels, three polarity calibrations, one sensor.</p>
+
+<div class="callout success">
+<div class="callout-title">Market Size</div>
+<p>The global MLOps market reached $4.4B in 2025 and is growing ~35% annually. Hyperparameter optimization is a core cost center. A tool that delivers 6.8&times; search efficiency with verified results on real data has an addressable market in the billions &mdash; and the efficiency ratio is likely to increase on larger, more expensive search spaces where grid and random search are structurally incapable of reaching the winning region within budget.</p>
+</div>
+</div></div>
 </div>
 
 <!-- ─── HEALTHCARE ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s11" data-8z-blob="PNc9dDGSdBmzOfYFyiBcgMPSYnaSnIKuQbhUlwI7pWgE5fZZT+GwbFb/Lkcv5a0ejfiJx8Z5RyjOTN3MfAjDqo+2YCfw8oHwaOBKCgS7KQtsJEzxZc/mV1JXL7UMdHshE7JaOpdAqUmHX7iptZCj/rE84k7jMjVFEFoDuC0dpvT/F/zdtCRVnPaBsNHYvk3SGk/Y4NdDxWLtFK/wgPtOGK+CI7q0d1WqKGSKTgGNXPGP2og2+I1JHw+iGjZQMgFmp/ZlJ3Un4EI1Ua4GTRLZoo66cGev/1UcRNmw5zISRB3l+dLifmqefzf0XtbYyorV7cGh49PGLKueApy31gXQDi4m0hmVDtv1svLe8IZAxHC4G6M4QML4TVy6LL1CPyRQizF3zwo330Shth964Em4bKjY+srDf7IXqrvrwtVqczSBu19rEyxXTlkUKxsne1+M8pIuLMZ6+Cw4wZuQD1o4vAm7wu/dhsto1bwXj3s+TaonzlibMMxVXDMfpYSYLTDe3vZ/ljNVrElKZzK4sLl27/r8j17JybfwZNghiQLlGXKchkZ1uJk+/EZoIDMllI0iDi0lL7vJDzSXynjfFnBseN4MUYZZvgDfBH0ZkJjiQA8poER/TYuA9MPad5tNEIwnyZfNGs/AQ1+Z0iUeFUwlYVwHFUmrrpYrdobrMl/wW+ErtVzJHtNQK2R6k1UZXyoOVoQYWWKGvJNk1mUTC2J9AL5daiOl8NC/s3LSeqihtCGxQhRCiGReyMd1QYDCs0iPWVHxSXZYRbHBrZXMhzbXmgn5xLOpgmqctw2RDEkXV2+5871/8WRUZq8TE1N+KZxn1Iy8tILaEjNpyfDJefA2xCH3s7q+E0ktkovz/5Za5pXhVNvH0Vjb0TLv+5a4dDI3tX0vzTiAe4qbGv3//oTmcgTJMPorvpKIpnv6ezCTyAg1RV6nfZLxTaVQg6LQWcKk11FwQfZSp6I6wrUcn4jut0BQmHPwbtgf3oLiivJd6Pm35t6AvRk8NeMuM9pmxzR2k07Lt8KZZB2dCbyIRAna1NzEwjfQR63FoBK/K4qsV+l1lKOiPZa0+9oUhZxPL5raQw/qMSmIkGnD2AHSzEg1KXhNTWrH6wInQ+SEUG8R/tWjTorJkQKoAusJvEHAUOWljVbd/fXYRO6zMcItKx293iUWmm4wi4RsD1KMR5rzkPleYYVe3AdUg1JC5gFCBGRBs5ao0oaoqC1KFeL7TUG3yp+jhq2nFfGIuaB0uDXhrc2FtBfTZwg2JbPkQKX818ga6fDJlpDWQGZ5Ht4pJvUQj5/oJKdVfSbJAyDqs8NaFOft3ntN1n3HqkFVZelmfOnjYXXQVbmqZj/MMp1TmJODKFfg7MaLPE7sk4slNKdD/zDBKbci/yGHIHvxI0SwKj7Bt+ZdBJ4Yq5YG+sKzNHJpM7za3Xw7iolUlcLppQzfqF80gB65P5RTeLFA8+KbtqsxwlfWo/Ks4YajAEd12XnGAIXBc/uh3i8/sLbzjrbpbaDafoxaoVqE4lb9mZKIaC9dqIR1eEGeyIkYIeWkMHt7sSWlma2OTHEyg07VckIDUHBQ6geMNCV7hUQAGckCVBWiMKPUS+dkdqhmsDeoVQNNhi5S/W4LEUyGS+S0cI/XjG6REcrZE05pZQoI4dd0gkGt/3xcv3eaKLHT83UlupSEcECrRQYFUlwUaK/RC0sv3dk8ro9iqPRTjn4CsBItdNWNDS9KM0qYb82vIB8G4Nwis+rlPDMJdaXyreqUv+pVDTFl4mM+UhVC2qzwDPJ+oQ3EPBd8wULWwkI2qxlcBCpSvQZu/sNvguAcyS3blEF1">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Industry Application — Healthcare Systems</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-health">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">Healthcare Systems</span>
+<span class="toggle-savings">$30 &ndash; 60 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>Healthcare delivery is a multi-level system where every level uses a different optimization method: triage algorithms at the patient level, bed allocation at the department level, resource scheduling at the hospital level, and capacity planning at the national level. The COVID pandemic exposed the catastrophic cost of cross-level coordination failure: ICU beds were full in one region while neighboring regions had capacity, because no system measured cross-level productivity with a shared sensor.</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>What DCC Monitors</th><th>Current Approach</th><th>Recursive DCC</th></tr>
+<tr><td>Patient</td><td>Treatment response trajectory</td><td>Clinical protocols (rule-based)</td><td>LZ sensor on patient metrics stream &rarr; u governs treatment escalation</td></tr>
+<tr><td>Department</td><td>Bed occupancy &amp; throughput</td><td>Capacity dashboards (passive)</td><td>Same LZ sensor on department flow &rarr; u governs admission/discharge</td></tr>
+<tr><td>Hospital</td><td>Cross-department resource allocation</td><td>Manual scheduling</td><td>Same LZ sensor on hospital-wide metrics &rarr; u governs staffing &amp; transfers</td></tr>
+<tr><td>Regional</td><td>Cross-hospital demand correlation</td><td>Emergency protocols (reactive)</td><td>Same LZ sensor on regional patterns &rarr; u governs redistribution</td></tr>
+</table>
+
+<p><strong>Semantic inversion:</strong> At patient level, repetitive vital signs signal stability &mdash; exploit, maintain current treatment. At regional level, repetitive demand patterns across all hospitals signal a pandemic wave forming &mdash; explore, activate surge capacity before the system saturates. At department level, repetitive high occupancy might mean efficient operation (exploit) or bottleneck forming (explore) &mdash; the polarity depends on whether throughput is also high (efficient) or stalled (stuck). This is the same ambiguity that recursive DCC resolves in every domain: compressibility alone is insufficient; the coupling parameter must account for the <em>productivity</em> of the compressed pattern.</p>
+
+<div class="callout warn">
+<div class="callout-title">The COVID Lesson</div>
+<p>Every hospital optimized its own capacity independently. Nobody measured cross-hospital compressibility. When the pandemic hit, every hospital filled simultaneously &mdash; the same correlation trap as 2008 finance and 2020 supply chains. Recursive DCC with regional polarity would have detected the dangerous synchronization and triggered redistribution before collapse.</p>
+</div>
+</div></div>
 </div>
 
 <!-- ─── SUPPLY CHAIN ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s12" data-8z-blob="qWkyfzqYCAEKu1Z6X237YclW9NSvWdlwTdMHOIomVVvBijCzwBJQtNOcodymzvd0qqch0emORVooBXCzxDTCHqQGlj1MoHF0MiYHb3O3bA5bjPDDnA/0IefTSOn+Y8eaFK0pVvPuAOpmH/Vcs5oT15dHx4pQVeBY+otPc4gElPEClvQeY3/acTZXOp07zlSSjT24bU0G2hpk7kJ1kT+HaQk8PU3uNuD5Ot0bBTpS1U0V7tMhU6sJ7YIpRe/GltchQZMlOyZa7ID2u3l+oDJe7YuDsGqOHDEEkxYZH4HoAZLw0QPLxfZR+dogVzsROZs9APpYzbYzb6UrBPz7KC7EQftX94gyDhfA8EC1YmKFNEmezjCAlwP+xyzILJ89HpxdepjZv9PZzGpVx0pjWZx5qpA73eHrUeE7JBKoXfqDHh8sb+uguJUUXmRTGmSf8LHcbpim9fztJ1/dUTVm9sMqwf6vnnVAPZCqmuz10A0hyxMZqxT7UpXZE5y4YhC4I09JdBnM9QdZbGemNY6xBv84r9vdGXXn15EKtTbnjPGcrVt9sxoKE5MzNqhJLnncyADLI2lbtPt3LWulYt0xDMonknDT1vDtCpbzxm/n/oe0zowx1lVRuuRWkgGod8CEwAa3X6LjZZBh2FSGRuity5uVH79+o8i1YxrnQTT2mOrDIxxxfhyNGSE+c+YTl7i6t2HNBUoaFA1d5SmJZcBpbmVKJ6tX94jaEgd4imh1fPW/QMF7zslrmUG4tFl1tEkVESFZMUIeRUQntX5myAQwccCQrFJ/NHvB0la0q+ftu+JuoUUUPUu+4/dryZHDFT1Kto/agtbRDbq5SqVWsKFVIWK1fP7gCH1RKqZtO9wLG9iEMroUEJx62C+Vz6HEWkxmq7MgkivC2QE3pxKmC6Aagig+Kn06qaCo2DCfSVkjik6AnFplwaas0r5GkmU53VMUL+qh06NRIlSqFigGCoFq8Vhi6NLAyi3IGrhtavSCPAfTso8ZXXcpipHAWlEIgvjw6OFuy6gtyDm2DZWxdVXpFhZ7LgCcCDoOjG33MoKSI82CLovAHyKQaRKj9QSISa3xDFsUeHEG4iHYqIFE71kDOQAXiV70N77m+z61mO5q5yXpx4JTUWyOkccyBHSTKYfXFfwKdkV/tgrqxKprK4Xduqhmmrq/JBa9DEhQoqDz6dIHxYwT4pnG1ALChffFKlPdgBbpAk1Ydw6E+rYGX5/u8rk2dHlvxSchbJyePKVSLdDmPdvRxWAW+aSf3a2/lY6gdNUNXJL25uLoWIdy4lXOzXVPc2oTFN7hzWalmWObHKvMwL57DcFpPm9lOeSqo8H+v9XbFvh0fSET6G2siJbNZ4vqzsekQKclCIibr47d4YHfkEABI/4qWB21iw49BpVAyMIGq6OSUWjch1CNJA5gCQVE20fO1DXZyzK9nbgq+XFlEhEfD0pH+EltHeYFCkZKGJ3ZgrhOqOqozpxfLcZQJIvXJveU+EeQnihPXkPvbnfEYid24bu1dbRvHIuNc//hLGm7EPjuwQZERds3QQkiDUMHH7UYA/Pt/qV5LYn7d2ewZ5vDgm5a0zQfc+Xu42Of/sx7jaeAx8ep+JmcjjQIppj/B10O9HKUzHduS8xcE40A8j2C8abeSd9Ey5HQlCbnXRaWgnfx2BJqcuZWX2RWvhxZPF9VNaxPmJOuw7SbflZByqHCBQ==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Industry Application — Supply Chain</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-supply">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">Supply Chain Optimization</span>
+<span class="toggle-savings">$20 &ndash; 50 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>Supply chains have 3&ndash;5 nested levels: item &rarr; warehouse &rarr; region &rarr; country &rarr; global. Each level currently uses a different forecasting and allocation method. SAP uses time-series forecasting at item level, optimization solvers at warehouse level, and scenario planning at regional level. The COVID-era supply chain failures were fundamentally a cross-level coordination problem: item-level signals (toilet paper demand spike) were invisible to regional-level planners until the system had already failed.</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>What DCC Monitors</th><th>Current Approach</th><th>Recursive DCC</th></tr>
+<tr><td>Item</td><td>Demand pattern per SKU</td><td>Time-series forecast (ARIMA, Prophet)</td><td>LZ sensor on demand stream &rarr; u governs reorder aggressiveness</td></tr>
+<tr><td>Warehouse</td><td>Fulfillment efficiency across items</td><td>Optimization solver (MIP)</td><td>Same LZ sensor on fulfillment metrics &rarr; u governs stocking policy</td></tr>
+<tr><td>Region</td><td>Cross-warehouse demand correlation</td><td>Scenario planning (manual)</td><td>Same LZ sensor on regional patterns &rarr; u governs distribution</td></tr>
+</table>
+
+<p><strong>Semantic inversion:</strong> At item level, repetitive demand patterns signal predictable consumption &mdash; exploit, use lean inventory. At regional level, repetitive demand patterns <em>across all warehouses simultaneously</em> signal dangerous correlation: everyone wants the same thing at the same time, which means a disruption hits everyone at once. Same compressibility signal, opposite meaning. The item-level polarity says &ldquo;repetition = safe.&rdquo; The regional-level polarity says &ldquo;repetition = fragile.&rdquo;</p>
+
+<div class="callout warn">
+<div class="callout-title">The Correlation Trap</div>
+<p>The 2020&ndash;2021 supply chain crisis was caused by exactly this polarity confusion. Just-in-time systems at every level interpreted low variance as stability. But low variance across levels meant high correlation &mdash; every node optimized for the same &ldquo;normal&rdquo; demand pattern. When the pattern broke, every node failed simultaneously. Recursive DCC with correct cross-level polarity would have detected the dangerous coherence and triggered diversification <em>before</em> the disruption.</p>
+</div>
+</div></div>
 </div>
 
 <!-- ─── TELECOM ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s13" data-8z-blob="D4LccLhrqcnfso0fQF7ghXzN9n799YBKL2rehCjgLolUTpZ9vTeLLlSTvnzOt843eK7WRIrWPQAUgb+vhgDbBikAImCOsi6D4ZotBuXx2GtsF0zaqTKbjikUIT2tc1TCxwjWJevi/IDrUApvF2iGrXH9it+u8vTIFd+7l1bhwFe/k3amcVNpukRTJpqhznWMN9jncQhNHD/ZbQjXQxllJrA1YphWMCXa9YJfbYuw04k1oQ71qkYnWV27BXMnNZgAiwUF5Frb8Ecej4+U84YDRVPoy++9RNMRVgsRcVd2HYxI+Y0tc7XflhysqYNy/iIxs8sVQkpj8WerTBQ01sMuQ08aHAl/jE8qZjTNJcr9Lpbk3x/hNaFZiqQejXQR4EvYDI09C8XPejKs/OEQmfajG9nDMjMsCu3pz5Uc8wmCXp1GODiVHL/eSWraznk123acX5M1xMYJNKNQXWrZ1NLe/p6ABS1ZRFVcnMf4ZFPLdQWIFpxsZs7qTNTD4Hscg4nIemfNbpVPvz71pfqK1eTPjs+NyrIMBlgsg5TxlLgy8XUAy0HEe6L49KNo624X9ZcH79wiD1A4Jy91WnRxznDn7wEUG8Y06QoXeWuuuMLdzo8Gzp8ZG9C7ktFPwDAS03lC7XZb2FkRyHH0eDx31+RfLzO+NS+6fkVWnlT3WbOqOjITS3szeqrr1xHdloLAZWO9EZAHS45WmvLpIva55dITOMp+vCUvXTvuU+c5uphnYiYAHJ3XYLMwwhk4RL1gliqs/95QkOf9QjRn7cZZ4o499ePwL4BpO7dxeyifMdKINusWmcj8egqURPxugNm5ZMQjFVz27t7RflT/Dl678vIZJrYUpQBapLEJuMxfJBQBsuMvSWUOToygLPDfuh5WRQ8xGe0/AoYDUmbZpyEs2X8H6BBYC8GNISsXYEXyKqchLqlX6Qm30xBTpby4/yxZEbIQhwxYP0D/6eeIucPblA9dLYH/qgywdFpqzxl+elVb3wtDISqN4eXOz4uZj0PeYAptKKYfJwtlAoqkbTLkOqDyMkSn63KVSEKEGc5Q5rPL7WTkNdycMZ3lY/cvBYzsgtiETlq2t/wHvuwCmbO9XCBeobIHzTvzCRUxM2ZVmDbwt8s/mszuigVD3wOlmq/vu2j5KRawwgITOmCEhvnCypkh046PD9Cl/jI5FXQLMHWCaAXxMntwj41u2yCGGnnA55/fPeZp7qy75n1KYBEEPIRHUoEJAl8M61akUyh9ChU4t6JNcTaGC/clh+TBNBdQII+mSqemxCOAsYf116vc25ILAzowqDooCjPlnAARh3EY7DC1CxsxOC1PoBkKOn2rEoRUUbLHKiZj4tov9Zu6WahXGuu8VxE392eD7+sDCzqg343X/FoGqbYl+jTU4mR/OATuJDgYyykLd6mMwcseR+BptbEYde/9VlRbr9XT0OoHURVS+aqeZYqf/+zCO7CA7eMkwp8Rx5tEuvZTXiNOW3mv39kMKuut5py4Tj1bjHzxI8Z5V7H16RjJHSUCrDzc8hDErF4TXLBL6y7Nr90SJTpfrUjdZ1gu+Vd2oQRVNuIDQ8/jg/+40Os8uHavAoegm+bUBeo+pWVss8vsOlnjYlnjdm+4+K/oeDPSBVmuQZObRifnhlIwaSWoKDBm+sKJJFEq19g6LZkXnRDqHWFrQIeqlNrqpQQLTQcHFNtYfzmi4uu5D0/uOZTyeaDbedNw61Q6QffrAN5M09AuxIL/I2A3zqT+K4E7rrehna2rBUUrhkFzYjclroDbcUR/NSug18y+juUJ0tpokmI=">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Industry Application — Telecom / ISP</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-telecom">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">Telecom / ISP / Internet Protocols</span>
+<span class="toggle-savings">$20 &ndash; 40 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>Internet traffic management is a nested control problem spanning four levels: packet &rarr; connection &rarr; route &rarr; autonomous system (AS). Each level uses a structurally different algorithm. TCP congestion control (CUBIC, BBR) manages packet flow. Connection-level multiplexing uses QUIC or HTTP/2 stream prioritization. BGP handles inter-AS routing based on policy, not performance. Traffic shaping at ISP level uses DPI and QoS rules. Four levels, four algorithms, no shared language. The result: congestion at one level is invisible to the others until it cascades.</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>What DCC Monitors</th><th>Current Approach</th><th>Recursive DCC</th></tr>
+<tr><td>Packet</td><td>RTT and loss rate per flow</td><td>TCP CUBIC / BBR</td><td>LZ sensor on packet timing stream &rarr; u governs send rate</td></tr>
+<tr><td>Connection</td><td>Stream multiplexing efficiency</td><td>QUIC / HTTP/2 prioritization</td><td>Same LZ sensor on stream metrics &rarr; u governs stream allocation</td></tr>
+<tr><td>Route</td><td>Path performance over time</td><td>BGP (policy-based, not adaptive)</td><td>Same LZ sensor on route metrics &rarr; u governs path selection</td></tr>
+<tr><td>ISP / AS</td><td>Cross-peer traffic balance</td><td>Traffic engineering (manual / heuristic)</td><td>Same LZ sensor on peering patterns &rarr; u governs traffic distribution</td></tr>
+</table>
+
+<p><strong>Semantic inversion:</strong> At packet level, repetitive RTT values signal a stable path &mdash; exploit, maintain send rate. At route level, repetitive performance across all available paths might signal that all paths are equally good (exploit &mdash; load balance) or equally congested (explore &mdash; find alternative routing or escalate to ISP-level intervention). At ISP level, repetitive traffic patterns across all peers signal either healthy equilibrium or dangerous concentration on a single upstream provider. The polarity depends on whether the repetition reflects distributed stability or correlated fragility &mdash; the same question recursive DCC answers in every domain.</p>
+
+<p>TCP/IP was used as an <em>analogy</em> for DCC&rsquo;s universality in Chapter 8c. But TCP/IP is also a <em>use case</em>: the internet&rsquo;s own congestion control, routing, and traffic management would benefit from recursive self-governance. The irony is not lost.</p>
+</div></div>
 </div>
 
 <!-- ─── CYBER ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s14" data-8z-blob="um2nbVyUdZ/zItG/fJtW/7SsqTPI3nj21vb2+6z/dOoHh3tbQQ4kW6VLNw3BrbWDJwebIfQqWi54HL3xW83nV/X7Wi/uazbzwUXqjLiinC1pSz/68SeUD8eici3K9jQ9FgsD4kOkZ64XZ30RyP2Ik/YCHxae6nFiJoxsLKOoTMaF7frsn5cjUf1JFgyhHAmXbaIX0zTDI+jDzwD9sGoDk6vMM4fkoG3WdpT+wyGd+//+54dTNij6i8LCCORS96Dv+GEImOM5dovr2Nggf6xtFKUCrEpxcg82MkJSqPqXx+ZM5m5VYIIALzJkMhDqWZ15hvF7lpwlsjJtLJT1BHfpZ8BKiaEaFprqfGi2AmUdvTOMi/cYoJZ9d/1YRlPHwuBKhVxcHOTiWgSvLvtBeuTtTn40C/Ev4q7oVe2D8IHqlKQIKt60z0PD9brT6XQlypUnGIeyhJXr7wCTpLpkZLcZJkCPdoKCfNbPyng5IlvFbSuuxLlQNbp8kz2zweokQmWQ61G0XqVcmqvsB4I1WRtG/1kvy22du+wU1AUd5dpjxYFE8B+zzEtN3ni/KPFY3CrHnnFRqnE53Drf+kweU9kZ/U/wETBAa6yVwtySGc+zj67kmAzUnCCNqQHUZDjKLP81zRw+JKZQxW0P9jc2cI360C1lDiiCVDYd1/7y0NVc0m5kDUhm1bqsIspt/L2t780HHsKSYrV0icfZY4dmnCBnQyk83n9gdOics9ddw22fXAPholMGim5USfw+1YXrVO11WKVTt/i9vw4ZL16SLPUxg+vpLlLQc7sk1xrqbmFjyddc0cDiRQr4THKfOQjrZeD/oz76l6HwZjueugbqS29Xi7JDEseSmI0qPvYXMtC5xKybjJP0jUrcSM9DBLRdUTc+mI4zDMC5doZw6EQFYUk/lNiUbDcm5o5U3mVAmahgVbwLZPzum71MP9/LOk3SHu5l1L/7cixGNp0u73t4LDCZe0IYYABsoXBgoh2bz7QexmUtvTagAT5mo1EO6mYGEZAyX7MMF7pOjrdsguHb8dAu7SoTxch5Ji7KFHuzzYIC7a4a7HtU38SJiTmG3V/zPJ07mR+RbmVg05wXmdjPgG3XPOrd4pJ4ujvhjWfYKXa2IWoQ7XKhpaU+xmRoZuVO++/O8NBc/szRVpvkALJW4tPYmGUZIxvqZMfCjQjkWOo+cdKe/k++hSe6+l9yvPgdJ1Bs+zuLpIWA+ZR5rMFXMFHb8ngJTwACw8iiPLkiREZ0k3L8YUAnphqriuJ8wKN/eV0y4ORs5scUUZ/EKKLW9wVy/sGh8UBfTd+dob1G6JRi5M0z3AXrf2pyPMflkhLnJpclRMErelIhMPYZFBbJBFU2B+UsBtKQrE10xJP8FMdwwoTkgBtz+Na5ua4AsbDnlgxbjNq8Cg+YMaY/pxJoIRLerCm6yQ6eJz3BFCxQLXl36/CMUyiKcwT42T6dm3xRr17WsDzuRWBSbkICDjR768xJGtAYFL9bt150YOun+zyhFcttofuyNkrkys2Awr2FWgq9czwK2DQeyrK9hXmNd9VbO4rYqS5lgPuy86LwNOJ2O8Xyr7cG7mDLEAxKnBFR4zaBPt+OlLOdba79yEW9jk2hbiiDFuZBBiXPb2DDwTpvTrWYvi/2+YpvL/SBayTHK/9N0ykIxD6cEpFwwwN1Nb3HFg6vgIpg6j4JQtqSxInh9v6BgRSF15fj83mfEiGReAD3tAUjZjHdsmzGETjoZ35/mOTCftUb451FcRFMQWj6uCPtfTZ8kcR0qji4/AjJP78kggA0yexkOQiHxHC7+2pQqEzCllv7eSpW+kN6+qt03p7H/VPPB2FXUM6J6w==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Industry Application — Cybersecurity</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-cyber">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">Cybersecurity</span>
+<span class="toggle-savings">$20 &ndash; 40 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>Cybersecurity defense operates at multiple nested levels: packet inspection &rarr; endpoint protection &rarr; network defense &rarr; organizational security &rarr; national cyber defense. Each level uses a different detection engine: signature-based IDS at packet level, EDR agents at endpoint, SIEM correlation at network level, and manual threat intelligence at organizational level. An attacker who understands the gaps between levels can exploit precisely the seams where one algorithm hands off to another.</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>What DCC Monitors</th><th>Current Approach</th><th>Recursive DCC</th></tr>
+<tr><td>Packet</td><td>Traffic pattern per flow</td><td>IDS signatures (Snort, Suricata)</td><td>LZ sensor on traffic stream &rarr; u governs alert sensitivity</td></tr>
+<tr><td>Endpoint</td><td>Process behavior per machine</td><td>EDR (CrowdStrike, SentinelOne)</td><td>Same LZ sensor on process stream &rarr; u governs isolation threshold</td></tr>
+<tr><td>Network</td><td>Cross-endpoint correlation</td><td>SIEM (Splunk, Elastic)</td><td>Same LZ sensor on network-wide events &rarr; u governs escalation</td></tr>
+<tr><td>Organization</td><td>Cross-network threat patterns</td><td>Threat intelligence (manual)</td><td>Same LZ sensor on org-wide signals &rarr; u governs defense posture</td></tr>
+</table>
+
+<p><strong>Semantic inversion:</strong> At packet level, repetitive traffic patterns signal normal business operations &mdash; exploit, reduce alert noise. At network level, repetitive patterns across all endpoints signal either normal uniformity (exploit) or a coordinated attack where every machine is exhibiting the same compromised behavior (explore / escalate immediately). The challenge is identical to the supply chain correlation trap: individual normality masking collective compromise. A slow, distributed attack that looks &ldquo;normal&rdquo; at every individual endpoint but is highly compressible across the network is exactly what current SIEM systems miss and what recursive DCC is designed to detect.</p>
+
+<div class="callout success">
+<div class="callout-title">Beyond Cost Savings</div>
+<p>The $20&ndash;40B estimate covers operational efficiency. The value of <em>preventing</em> a major breach &mdash; SolarWinds, Colonial Pipeline, Change Healthcare &mdash; is orders of magnitude higher. A single undetected cross-level attack can cost tens of billions in damage. The real value of recursive DCC in cybersecurity is not savings but catastrophe prevention.</p>
+</div>
+</div></div>
 </div>
 
 <!-- ─── IMMUNE ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s15" data-8z-blob="g8xMVesRo5Cl44pu308/ufhHpFene46+tqdQTOrW3Paa9rDHQ2fZyuRLK92MKPGuv/zKpG2qANl1p9v6VhUPAuurn/8osYzVlg2dlDYhSeKfm8WUZodfij5GhRe3pCXeQPi3SaQzE2CMJJ4quII9FiVud81tmHdU6v+U6P8pv8vPYJFTxQP838FaJEqf8uCFRRmhFe+EsJWCTKMxLLz3fipGljEEv8vHn3+c80Pzt8O2I+ttkgsUsJtcoFSnS0XahrNq2IlhDBdMmO8OIUXNMScA4lry/nV5ff2kTd+nX+G0f3pYqwIlhiB/FyK6BL3z1bVkDO+5xVqu+z/UMmo/6wX9Ab2MotXJwaRzUEsWUL/xYODc7uvxDOKrGdQvgt7BROCeaecbn7xrmlpOKkgVK9AhrhmEEucn7enh9AI6sJTkuX0Lwh8wuVmzkyCxboR727uYoU/RMLItJmG+xzzKa7RpQOptTCSeee90POi78TV9oSlGif9I1/i4eNFXCbijXLdIJ/Jk7a6dNMdR636CLHPTaTixZF1IUNaTrXLVGIOmXirUSjNDaVX6xX6GaNWUl5ZLkPW8iQ4ooNSe4uZxLRNQwV1P4TmXoEI/pf5rZlMxMW5CB8hGfG3hJPVsdWxC2QHaXxAIpP4Enh+HxjQsjmSd+n/Of1m+QA4s6cNhWeEs873xmEKTcxaKfB55LvI2DEk3SyE+FMRQWtg+roEd67M+svF/95eUyUz8q6s4YgGfXsAArmk2XjnXl82SopBE8qLRjY2JB+B2IZtDdnxqMf21BF9xO8aWFoUiEpHWp/epeUxgZ7Ewu5T6zy/Ic1O/ar4Job6Yp/ucYb7oNEKGadh7m0DFXrsUggW8QPvFOD53WaTLi72qRUmFP3s5TgU3TNSubCklCKiM8XfjYVgt0SvxDpG4vL0IQOzST7f2vR6aaCKTVEbnxjiEiS6hKp19jHrTKPbENf6Het9lm0zAZNPzp2Jxj7Q8qZuW5Sre+oeyDEG/2d9DunbyOf4sdW6vFBUShvcdjxmRtk0VYC7XIoC2EPVrqZez+TIdyWhOIzNBidqXMeelqFHvYxUi/+PlwkxcZNHiRRzQltdgi2lt1Uyus2A/KKdXTCjrxD4eKLHHdsvj+7Rz9ZN7f4e+0IBa7noJN78IsH/lnG3BrTfVzElUixqe1ghMQhzNCCKIi7l+6DL/XAxSd/3ZdsJ1uQf1nkSUUfMP73/6ksRwtED+541MkZwCjW36N8uiq2M/7R5+jMb3Uwx2uhQ27EnYHDdDyK05GQNRqb1qPt1ZbkAYGMozD07Wzxr/ZEgzUpAFqVEWdqpdCYqB+XWanILtyHhM1s5xEUyCLd5r+150qXkLXsQ4C2gC4PgXJHWo8N4LIijt5fJ8luLmUH31wCte9xwy+xYd98zJMNhOq8A3Z06vU7m9tFry4EAxAWjCQDdlFWbF3iCGzXxRoeR6gHWLAAfAqzsl920ar+ktzs1JSOYT434I6cmAH3QHq0qKoJCVDmTRh7q83m7+BKy/BqPfojsYU1kowC/1Vu519fQINUGLmXOHOWYy6CQJNr8uC3H50ZPKgpAx79g4Sw8Eaht+0fngihrwHRd7RmAR+BKPqFZD5uz8vvR4dJY4w4f95mk6PWq+qxjnHgULQfSpZ2zDBZw/49GmeLq5Mwb/8QxcwWOVMBsuoeTiIGi4pmngjUsSQSjHeFuPNhd9Zuej0NgTmwlFEf0Bzv44cJ3flrVlgl4TZ+3Rs8o=">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Industry Application — Immune Systems</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-immune">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">Immune Systems / Vaccines</span>
+<span class="toggle-savings">$20 &ndash; 40 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>The biological immune system is a recursive self-governing system: innate immunity &rarr; adaptive immunity &rarr; immunological memory &rarr; immune regulation (which governs the immune system itself). This is not a metaphor for recursive DCC &mdash; it is the biological instantiation of it. The immune system monitors its own response productivity and escalates when the current strategy is failing: if innate immunity can&rsquo;t contain a pathogen, adaptive immunity activates; if a specific antibody isn&rsquo;t working, somatic hypermutation generates variations; if the response is excessive, regulatory T-cells suppress it.</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>What DCC Monitors</th><th>Current Approach</th><th>Recursive DCC</th></tr>
+<tr><td>Innate</td><td>Pathogen detection stream</td><td>Biochemical signaling (evolved)</td><td>LZ sensor on immune marker stream &rarr; u governs inflammation level</td></tr>
+<tr><td>Adaptive</td><td>Antibody effectiveness trajectory</td><td>Clonal selection (evolved)</td><td>Same LZ sensor on effectiveness stream &rarr; u governs proliferation</td></tr>
+<tr><td>Memory</td><td>Recall productivity for known threats</td><td>Memory B/T cells (evolved)</td><td>Same LZ sensor on recall speed &rarr; u governs memory priority</td></tr>
+<tr><td>Regulatory</td><td>Immune response appropriateness</td><td>Treg cells (evolved)</td><td>Same LZ sensor on response patterns &rarr; u governs suppression</td></tr>
+</table>
+
+<p><strong>Semantic inversion:</strong> At innate level, repetitive pathogen signals mean an ongoing infection &mdash; escalate, recruit more resources. At regulatory level, repetitive immune activation across all pathways signals potential autoimmune response &mdash; the system is attacking itself. Same compressibility, opposite action: escalate vs. suppress. Autoimmune diseases are precisely the case where the regulatory polarity is miscalibrated &mdash; the meta-level fails to invert its interpretation and keeps attacking when it should be de-escalating.</p>
+
+<p>Modeling immune response with DCC could revolutionize vaccine design (predicting which antigens trigger productive adaptive responses), autoimmune treatment (detecting miscalibrated regulatory polarity), and immunotherapy optimization (governing the balance between attacking cancer and avoiding autoimmune damage). The same framework applies to all three because the immune system is a single recursive DCC with different polarity requirements at each level.</p>
+</div></div>
 </div>
 
 <!-- ─── PHARMA ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s16" data-8z-blob="pKMmKHkbQ72hzaPV+fh2iB7oAYpCFqOSYYnmuKHTD7aMdUW9yV53gIQu4N4xPa1y0Dj2S5xOmCELUUrmv92ezMtc08yj/QF6EluQHS2fDIZ8fN2BCgd3SpaVgmItB97U4TkuqZbrv4U/oyoxe703LzBAWLavSW8zGRzVmrXvcVVpA1q/GqX5J7svGE/Y7pZD19vOtWPb4leIw4VBhc1BUl9gkZB5lZLDrq8Zd1W/zln/kej+3VIOYLllQyqkKp6VmRVrYGNulILuumajcgxPpQBf3ajpKxY2T4snYPdS2IGy8goEsgs4/8k9lQMWqv/HsNQ6u06r1nK2hjlunRggPRSaFhf5J/N1Rgi3P5Y2jPXNRbmIKtz35TXaw+oh8ccSN/9xBRIUugkJDM7thqktzfy5fyNtPMZkTBAVCX3lGUaW6bGVYRhiwKiiKRC7CGWlwP3KqayxOwHK4g2K5nq3Q4ubS4eBB63IFw+q34u2i7pOBJzsu0sNfEAkIltc+vmE4dkfvWt1yXRVtUl8UBUTdPKoTeD84JqxoohmNnn9Hlu5EfhmdsQbyyiWP9jlwuzN1/a2D+93Bo9epAwmQNQijMizMFZeaZdPtVBV7XBTzwqx1WR9QV4ep8MKWRlTH9Cd2m0DurPvZ0FRDkrAZ2Os6235EtlUCTqi2cba/D+MC3nasyZFc+bobumLSgyJkCsl9i7oNrRqImP6ltVEb8lDnjtJixr6tSr8TudttCHPG6YgbJxvB0Eve61kyMAa6EDpAxNG+eR1ivKdSTDerHFMeLbkEvAT9Rbyc5F3YWOwvdKmS/bp0Yxs2D+Mr8gnSB8ciyRdx744tMhjiTwCV/fnpE18VW+Nwp+AZ2jnIq9p3XLTB2BBJ8m7NojDC1tsGAxm4tke4C+Z89kWq2dvO3j9BGJd3llWjohgpw4VByTvGlaaW/vVbUCyxl1Tgf6AiP6HCwrbcUzJHWpbgxVN+f7F8ROBG3P+HY9jG/i0GbJaO1jE9e6OXKyiIx3xd7bVp8R2+mhu3Z73W9CwIH4cocCGl681c2tx6c4UZK3VRB12EhISleNpFcbVAwcXIzbK+ws/F5eCViBSbXveN3iUV2vgJ32fI/seXcrXyTNdkz/kVZTWH4Fs+WDQufpT+sWuAXCB1uX8+3e/KfD085ShtLO27KUkR7p0KgUPsq+JUe8UgOWKsmyU5iPIeiOIupLGHvz/7nwq+7mVd+/B0iXR0FFl6ZTxqNgdq6w6WVAfhybhO3ZeXtAiDL9w7C2dfD3ES7z667xzrMjUDchtL0xpiC5JlafOaJ15rsDZ2/wkM3cJDWK9G4GjQRjlB7zMJfhEkO69kQytzBSmxiw5SkVy2UZm6vygxEwQCvSUjlaVhSQJ/IVKYHTTdBDwDFB8GAnWfOv/NbXc0ML/00b6SGkrgNsNbWS3ZPOe0koWFrGSY9BAzuWJjW3OVg+8JJDrFnfC5yL0K0Qrhm8pDEwwYuKZo4oXT+xJfdP1bV2t3+Ah5h19mMWH9rJiDesFL/4iq0ekN5aX1jvZhOonPL798+waAN5AREcWxJVloN3Bbi+LkDOQK1mPuJIDvGtI7wIf+l4x86PFAXShrXozIGf319jx44ChosBlz2xmuJ2mfBp5FUDe67950VnFxR96ul/u53q2ix1vpg4IrNM89tCkZjXwX4SItroR9Ws6cR4QHqzjVi87gsKLlgq5Zbenh3pwKOR1hl3Q7HDHgoIIKuS49ahIYPQIqEZWPQLYYWzep+G/3k8uE7IAdIGvFLbns6HKYU1XzZ7tFA==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Industry Application — Drug Discovery</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-pharma">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">Drug Discovery &amp; Molecular Search</span>
+<span class="toggle-savings">$15 &ndash; 30 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>Pharmaceutical companies search combinatorial chemical spaces of 10<sup>60</sup> molecules. Current approach: virtual screening with docking scores, followed by Bayesian optimization of lead compounds, followed by manual medicinal chemistry decisions. Three levels, three different methods, no shared language between them. A medicinal chemist&rsquo;s intuition about &ldquo;this scaffold feels exhausted&rdquo; is doing DCC&rsquo;s job informally &mdash; detecting compressibility in the search stream &mdash; but without a sensor, without quantification, and without escalation protocols.</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>What DCC Monitors</th><th>Current Approach</th><th>Recursive DCC</th></tr>
+<tr><td>Compound</td><td>Docking score stream for current scaffold</td><td>Virtual screening (physics-based)</td><td>LZ sensor on score stream &rarr; u governs sampling density</td></tr>
+<tr><td>Scaffold</td><td>Best-score-per-scaffold trajectory</td><td>Bayesian optimization (statistical)</td><td>Same LZ sensor on scaffold-level scores &rarr; u governs scaffold selection</td></tr>
+<tr><td>Program</td><td>Lead series productivity over weeks</td><td>Human committee decision (subjective)</td><td>Same LZ sensor on program-level progress &rarr; u governs program continuation</td></tr>
+</table>
+
+<p><strong>Semantic inversion:</strong> At compound level, repetitive docking scores within a scaffold mean diminishing returns (explore &mdash; try a different chemical modification). At scaffold level, repetitive best-scores across scaffolds mean the target pocket may be fundamentally difficult (escalate &mdash; try allosteric sites or different target conformations). At program level, repetitive stalls across multiple approaches may signal the biology is wrong (escalate dramatically &mdash; reconsider the therapeutic hypothesis).</p>
+
+<p>The 1,037,520-configuration space searched in the trading experiment is tiny compared to drug design spaces. But the architecture scales because each level only needs its own local history &mdash; a 64-sample ring buffer of recent outcomes &mdash; not the full combinatorial space. The sensor doesn&rsquo;t need to &ldquo;see&rdquo; 10<sup>60</sup> molecules. It needs to detect whether the <em>local search trajectory</em> is compressible. That&rsquo;s an O(64) operation regardless of the space size.</p>
+</div></div>
 </div>
 
 <!-- ─── SEMICONDUCTORS ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s17" data-8z-blob="KnOQTDy8He7+vrw1EM9oBS+B0lfadebYWBTj7ZqaFHIMQ7J1N5Q0bts9vjGIgUCCDvOyT1S6qu1r8IzBGddbDuu1Erv/UgXgKN/TFV/Mb3wqh79fp7+LJt/lJ3RcpCE728/FArY2XqmtN8I8B9cAs5wWHqTWxCqYfMcDK6StAOYpC3PCWriGZ9qWuqhBSqTJzGVQhPAC+lEYVqQE4GGIPjqxwa6TVm38m+RYZwY1rmT4QGb0O33/Bzq9gOjjWdPPSmFVZgvzbcgOAIU/PHOe+VSwZIeIGyGPG4u/Qr+Y4bhf309uoSSCFXkV+idxsMA1q8FdOzrFo3jZ7Y91encGpb2AwDYHDw9Gpdu3HLS8oWdZ2VdJNFtiTCbp5GEB1XKghS+YjOwFwJ3c4DKrko8aOaguSleZtf1He06AO05zprfT1XZWgOCU2jCWEP4EEBWw+GB7QrZ7YGp3aYUfdgSEEXzUVOLjJm6qBc2rB7YndXibrUcRPE40w44rJy3d8TPbZOki/l4W/uGHVIoI7t6lN0TkSN9G9qu89wYs2m0QxY3JiZpoFJpcCsxy0MkkU0b+0hd/j4A/PamFnzG2pSLBRfyN5wCwgFHPFjX0aT77Q/XG9FqH9my9FnLqiZk+CT27Jl+AwgUGRdEYuO3im/0XTUnvTJbCbM8yri3Auu5OhfaDhhFGgx0OKjSsmK1AFqfA/30L+iJS4o6zmlf4xjqkoPWtie1f4OmGR/qYvAzv7WRTQFuPnJcu3vrAyRCztJkucSj8n1SWN3zcNkU2ix3MQzsRqF1p0DSHhoCSCRxLqsAmFW+4cOchbVQbvM7q0ZPy7imgjHoxFcpOWR6YbP41Lrd6QLPn6HR4+fS4AxXmHLD8BmYbvmDIzM2Fs/9woM+nIV7j/iFNmynaafAexgvSPA6nO2+A/ijWyoBF61oaDm7yVoMr9PYffHJiLapDdQJOxduqrMkxLfBdC5hZCxoMEzW0XD0rNNfW/eM2d5M08Ro7XTpLVf8S2Et9Y/nG604fVD4zal9whbZHFEobdiGKh2F3Vjzci+PNp/ARfkmihCYUAgTtLzo/I1daDhyH3Og1m11o2IHcQ4oFa2iXix7oQobX5zEafhwonsZPwL49BwtP6GuWAlFHFgBG3En39almqBJyR6ft42kcbtZr/GAUkrsHb/OOViBhNL2I1db/PE3SinopYgUvvCy+Q/tGdZyqedmfOOEHCXh0NBx144ttdPe0jAv4OD0R21RFGL4xMH4vANFyQi0D6deEWw+rEg7voLm7QYmsGj1cPJp/45WfcxHZycRNvGr7FbkWs+XBCg6HdMe23ZIfsd7GkBSKWHHwnwhhFAXgWvGPsRH+rwS5AmXeKXAR2NHIlvZBieVxFQoDSjhRCZGO+j+xJoj/ddw7edyI5zaU0iIjaNhhawWZAyCtX1HsihZIB6JmEo3TnLwoMCeo4ii1A++eycRNugnEgOvAJwxuhpqHEJKCeLiq7iwHFzykHc9rl/HBk6IXC2IdyqeAY87gvK+UcpJ5xHAlNRJgkKadOGbpnbrDWrGL5Q6OnDbKPzjUHGY0fRX7mX69y0miLh5cDwwiJ3FphHXy4RkZ">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Industry Application — Semiconductor Fab</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-semi">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">Semiconductor Fab Yield</span>
+<span class="toggle-savings">$15 &ndash; 30 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>Semiconductor fabrication is a multi-level optimization problem where yield (the percentage of working chips per wafer) depends on thousands of parameters across nested levels: transistor &rarr; die &rarr; wafer &rarr; fab process. TSMC, Samsung, and Intel each spend billions annually on yield optimization, using different statistical methods at each level. Equipment-level process control uses SPC (statistical process control), die-level defect analysis uses ML classifiers, wafer-level optimization uses DOE (design of experiments), and fab-level productivity uses operations research. Four algorithms, no shared sensor.</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>What DCC Monitors</th><th>Current Approach</th><th>Recursive DCC</th></tr>
+<tr><td>Transistor</td><td>Process parameter stream per step</td><td>SPC charts (threshold-based)</td><td>LZ sensor on parameter stream &rarr; u governs process adjustments</td></tr>
+<tr><td>Die</td><td>Defect density per die region</td><td>ML defect classifiers</td><td>Same LZ sensor on defect stream &rarr; u governs inspection focus</td></tr>
+<tr><td>Wafer</td><td>Yield map patterns across wafers</td><td>DOE (design of experiments)</td><td>Same LZ sensor on yield trajectory &rarr; u governs recipe modification</td></tr>
+<tr><td>Fab</td><td>Cross-tool productivity</td><td>Operations research (separate system)</td><td>Same LZ sensor on fab-wide metrics &rarr; u governs maintenance &amp; scheduling</td></tr>
+</table>
+
+<p><strong>Semantic inversion:</strong> At transistor level, repetitive process parameters signal a stable process &mdash; exploit, maintain recipe. At fab level, repetitive yield across all tools might signal a well-tuned fab (exploit) or a systematic error that is being replicated everywhere (explore &mdash; investigate common-cause variation). A 1% yield improvement at a leading-edge fab is worth hundreds of millions annually. The cross-level coordination that recursive DCC provides &mdash; detecting whether local stability masks global problems &mdash; is precisely what current fab optimization lacks.</p>
+</div></div>
 </div>
 
 <!-- ─── AV ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s18" data-8z-blob="FMvYxpI636J3yvTV+p6znbSNVaFNyXrgPkTTQ9svmjh7/mYoUeHnMXlykllKhAY9wOeG6ugEjIFGOSvVQs4qHIWvzguK4nDLKP8OYx38Nop1EDHbwD3wPFWYgo7YQz3JtMdKVZGELo1xIm13n1XBSp/Yg31LUhrlNKuGT7/DTm7xYW1kxe1eCYwVbLafEEYuGgkjxCbKQ3OLDal6qH1OK8GiQ/3gNkT+egQd8e8Cup0DqjZamH42fMDylfRn6gY1KCR/M4BjAkgsFAw4qLcInS+tgSyfNFeCrB8ZQD0mIif9UUpvdm0DbDzuzJ2GZFv60DdiEMkdDMg60SNfugVmRbMwra148ottl1Wz7V4r/T7j+fUqNy35v0ilSN5gMslNravJFdAhuOwvizunqTp/SMbRwR5ggnD2xOChPb8pSDg7rwKDxanYWb+cF+v0j07NIC6p2C5JTZ6V3OFNgQD4WOLHzBB+N9NkphGE3FpqfplVnUK7Tz5ee1xiaKNkXPrP68aoDc0/aBIKUlD7gdrSStOLxdbnTgZsT8NE+eXf+GlRvaQ1x924+WoUV9nkL9o9/cKdb6iJJL5yQb6UJVb1R0zq8aMF5ib777ytjK39K4/v09oEk/iZJ5qVutIAIlqdM4OssGcub7g5VAjLiof7n2cBAeLbF73A/NNE6WWGUBsNZd3Whlx50FuL8lYOHOfvmiOoI9Z4aCu0Ib+DRJ3nNgLz61NbMhGi7NWrbZ/xX/l1EQXFeQDvppKsW96V2gaEZ5A7BzSMXfR+P/NMidQX6na3seuYtScvpRgm9nkVShaSjjzkMsDL9oh/0XYHW088ZdDbTvNnBdANTk5BbFvoNo7cjpnsxqAAT8Cm22iNeEiWYFpEgTbrVCuVCdRU/miA1hE+CTwGaRrHMrs3R3gxtGtKlj/TibeoEyXfjWEAbS2WQJ2raVqcmcoxfDShYDpPaPfdfYVa6AMx1HXfDYAg3wBe7W0rPk/GnUZO6vhwE4cOn7D8kkXvMn5YftcXyHUWvb7dTYEoUfzBSUm/8tWb6KoyjQjREn5tccwgJkJYLqb6It/zZdnsvq692QKybzROCzsydbiqW09WKdxH3yfrTn03IGEv0j38yIkhWeV1k4wro0w3EgiGYDOLewN5SpgbN/kHHJ9fLDOIe/Zs5AbbxY6JcIKzCnv3htKHYkVImpq2X4fGEttSAVO2VEaGg1wYN++LJrYeynDP3e55+oe9cHQEFTthVgRyEasLc0ZLjZJr5JmwoLHIuJn3wtZkbx56AFo0ineVsMVQ/JMM4J/i2FheU+/dksKVISBdGWTmx2sA6Wl7IQqOyiQB7fZ2euB9pUTp0omcfY/Gya06FjKL6PsqC6Q7nRqVScTbhxhAC3BhMFcPoWZ955C5dNSlrpMhufKg+e4bGx1Qikjrq5jyQ9xzBt/OfB4TpJwPB2BozEy4n2gLD3ZcRT/h8k2pSaV/JiYMrZA7U3s2+rQBnG+xDlblfg6ZAAgzFvCJ0nkOfA6YVCFyh+RqhZKuk4G+v3Q+u1PXeC150tBP7QMQg3l7Bdi2LRWr1IWQxVeJApvqaK/UAF2WYDL36/8N+bAqJp5Btbt0yyC2mPQoVTfXWTUyK+UoTTCwn2BJFJPoUh+EbiHlkAGtMYWlHOzZf37HC7e1p1rjm4IHAtkExRHQaNgdDZYC80E=">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Industry Application — Autonomous Vehicles</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-av">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">Autonomous Vehicles</span>
+<span class="toggle-savings">$10 &ndash; 20 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>Self-driving vehicles have a nested control problem that current architectures solve with different algorithms at each level. Waymo uses a learned planner at the base level and rule-based safety monitors at the meta-level &mdash; structurally asymmetric. Tesla uses a neural network for driving decisions and a separate state machine for fleet behavior. Every autonomous vehicle company faces the same architectural tension: the algorithm that decides lane changes cannot talk to the algorithm that decides routes, because they speak different computational languages.</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>What DCC Monitors</th><th>Current Approach</th><th>Recursive DCC</th></tr>
+<tr><td>Maneuver</td><td>Recent driving pattern (lane changes, braking)</td><td>Neural planner</td><td>LZ sensor on maneuver stream &rarr; u governs aggressiveness</td></tr>
+<tr><td>Route</td><td>Route replanning frequency</td><td>Rule-based / graph search</td><td>Same LZ sensor on rerouting stream &rarr; u governs re-planning</td></tr>
+<tr><td>Fleet</td><td>Fleet-wide allocation patterns</td><td>Centralized dispatcher (third algorithm)</td><td>Same LZ sensor on fleet utilization &rarr; u governs deployment</td></tr>
+</table>
+
+<p><strong>Semantic inversion:</strong> At maneuver level, repetitive driving patterns (steady highway cruising) signal stability &mdash; exploit, maintain course. At route level, repetitive re-routing signals a stuck planner (construction zone, traffic jam) &mdash; explore, try a fundamentally different route. At fleet level, repetitive allocation patterns (all cars converging on downtown) signal dangerous correlation &mdash; explore, diversify deployment. Three levels, three polarities.</p>
+
+<p>The critical property: each level has its own <em>u</em> parameter derived from its own history, not from a shared global signal. This prevents the oscillation problem that plagues hierarchical planners where a meta-level override fights base-level adaptation. The three-layer trading architecture (bar &rarr; timeframe &rarr; asset) maps directly to (maneuver &rarr; route &rarr; fleet), and the nesting was verified on 924K bars of real data.</p>
+</div></div>
 </div>
 
 <!-- ─── CLIMATE ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s19" data-8z-blob="m+o5T23Vy456J6o7DGRVmP6uF6/WCYXWI3pPpRP4kshhBAzRqvBxDU2lzRiOBRtZhQ+/nQTcGENTQFu5OiHBEPGsvg1vdpP/RmGDWDVyZTGz+cDl1U9+SpK/k3yX6I7wnh6wLOqPTrkNX4rahSQH8RhYEE23yb2GaXIbvZS5vOSI8Ea/HSIckAkukNtPK0UDh5AZGrKRBKZM3ikAME+ovnn+QHTcmebXi7Y6BgQeifrbT7HsL8jpYdXRHbSQpLH9g5Z/1AfFoToMzP6T+YhGPB6pPd/9lBP2ymxYa619C94weOTGVLAk2b1nSmJmLPHOM/+FdCrRwBvAa5XaVK4/nIBmakP2O22hct2gdoEr9b7v3a3pdtVbansTI/uHwsd5MMNaQyUm07NfgGaAAm1lBpbXGCc0Og8HuCg76VJqLZHAdG153GtSFvNLxthictSd4sbaloYdOMGv6r3MxT54DqHZp6X1W1x70iQSRBoNzfzPkrWDDa5+BLAj9lboQ4zbMwgppjzGry59bPrM/uqMcmvhaou+g07zmYu5FTpfktHXYoyVgsZLy0Y9XZ+9QOFAvf7liXMlaQPiKHWZbEmwwSuM6HX2aHWoO76CEBpl2hfI86Gg8QkXeV58gFNqQjGowv3NI0anyehFCUA7xXYxiAjFLdsObm7YYGT4gVMcyoqU+D7FkR97Ha8YITqeS5P1nt+vPDwBRJ2XdXbosQ6+IqkhDyPfc+HD6StEpmCHoQrKhj/FlVJRxdS5vpUi1uXoRfhLxo6XUp2v/NmCgxCqAwg+6LM9xsUJ9qg9zNzhEytxCw9/lIQT10pozHiDC/YBdH6hzK0QGc8R2aFq1w5XXq3ZfgoCBk8mVmnWEU2VX7nBNVjcdFyuCalSIzFvejz5VmNKecpwXea26F/XL/q5YvEV0vVYCjtDoa3dIgolvT4XXZ81KMAI8FRWB9IKkxTgIO07ceXWUlw7DLNBQTV9rvJ3mjqkW9u4jWOYcqMj2nrGDjeXR7mnnFmFSCJzAbL7smkGZWHndmSqP3UHbFFjR5dp3J51aGYptrrl0Ot643mzsFodGy1z+mEhE05B14BNoQskXkkVK6U1Rk7upHxovBThnHxKgmRT8lIkFJ6jhvqqJVK09BJeyzn3KEdRRDE5rRjiT2LnWKSgCmBdWeJv/6Md1ILCw55DR9WpGxK4NEpurZYjRCB1AtN79PLoVX5sX9W1TDJgnCMeOtk48T7ieSqE/mQcyktAC+gFYiUd4cESEQOv6xSQ0/Rv6NZJkIYvnBhoxyCPnMjJCn+8c5QGRiaNZVZ6D8ck/1OOrBC6znnh0SaIK157Xohb8WbVU5Le3GRYYSB86qqenQvQBWCSmO5zJH8iYm4RXNIJ50vxNPVW5WK0ZDN2OQ8OlO0FImpqUzBsJXSpxDKVv1NlN8yUrJheSKvksBYO7UFEt2beOTJLW08rDFika3POZGi3GzGTeCrtfN5D0IXKuygN0A9rreH0Kv7TDSiEvc8jQAeHSuspy460Y0qPAli/ssHxaoELz45FXTEc7MhzEMDUX5yAuSOqF3EL/i7Sd56SHpjJL1JAOg2k9y8IkpmJlR3yQHmnv7x7mXW0AFcxIxwUjPPNhYjhQZXQlImeqcvUwabgAp2Kod6crJw8Gw4Gw1IrlQQFC/HhnA79RaKx9gAr5A39Xu3+z6khKQ0C7sZjGm0zyj2bTGJ/iKECipXtAW931nt9J7dzq5z8CwMVqiMTqxDnE75T6UILrgHpKbYAc9FSbD1M9SnGMbpwfSf5aacg3A8Rqm9UBmlCkQxzMGKJ/SY7AX9QvWzVub+Cv/oWq1R5xuoEH6TsaJEInHVzw97UUiRKaSKGZmv3">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Industry Application — Climate Models</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-climate">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">Climate Models</span>
+<span class="toggle-savings">$10 &ndash; 30 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>Climate modeling is the most computationally expensive scientific endeavor on Earth. Global models simulate atmosphere, ocean, ice sheets, and biosphere interactions across spatial scales from kilometers to planetary. Each scale uses different physics parameterizations, different numerical methods, and different temporal resolutions. The computational cost is enormous because resolution improvements scale as O(n&sup4;) (three spatial dimensions plus time), and current models allocate compute uniformly across all grid cells regardless of whether a given region is producing informative dynamics or repeating stable patterns.</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>What DCC Monitors</th><th>Current Approach</th><th>Recursive DCC</th></tr>
+<tr><td>Local</td><td>Grid cell dynamics (weather)</td><td>Physics parameterization (fixed)</td><td>LZ sensor on cell state stream &rarr; u governs resolution allocation</td></tr>
+<tr><td>Regional</td><td>Cross-cell pattern coherence</td><td>Downscaling (separate model)</td><td>Same LZ sensor on regional dynamics &rarr; u governs parameterization choice</td></tr>
+<tr><td>Global</td><td>Cross-region interaction productivity</td><td>Coupled model (GCM, fixed timestep)</td><td>Same LZ sensor on global patterns &rarr; u governs compute allocation</td></tr>
+<tr><td>Policy</td><td>Scenario exploration productivity</td><td>Ensemble runs (brute-force)</td><td>Same LZ sensor on scenario outcomes &rarr; u governs which scenarios to run next</td></tr>
+</table>
+
+<p><strong>Semantic inversion:</strong> At local level, repetitive grid cell states signal a stable weather pattern &mdash; reduce resolution, allocate compute elsewhere. At global level, repetitive patterns across all regions signal either genuine planetary stability (reduce compute) or a model that has converged to a false equilibrium (increase perturbation). The DCC sensor distinguishes these by measuring compressibility <em>trajectory</em>: gradual compression increase signals genuine convergence; sudden compression in a previously dynamic system signals potential model failure.</p>
+
+<p>The value here is not just in compute savings (which are substantial &mdash; leading climate centers spend $100M+ annually on compute). The larger value is in <strong>better predictions</strong>: recursive DCC applied to scenario exploration at the policy level would navigate the space of climate interventions the same way MetaSearch navigated trading configurations &mdash; finding high-impact policy scenarios that brute-force ensemble runs would never reach within budget.</p>
+</div></div>
 </div>
 
 <!-- ─── AIR TRAFFIC ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s20" data-8z-blob="QpOhr9hVqI8ZUEYpq1IaN+y+mqB+2oiVp/o0iDqaDRy4N9C3U2Jx3r9s+FJFValOBn0Lx5OBu5Rv0dHp7N+TX+/u6/FMEHj02z4WNeNQY/c++oaq28cEF3tRQLbSi4Xafe74W53tmT5mn2UzzHTsc8+QILaY/m13XbMfXP44dt9IuHN/CAn6KJ0PCjJ9P9zeYAJ1P8yflj7dvqtvzbk9plsdvHR1Qctn4xLuEAzBvdTale/CnnXm3pjng0VDGNInaDCTuPGUf5VxlVVad/zNfwDoHUSIqnA+R1je4TIQMN9xcarptcl6AADkM/4ANKw8mKkukoVzAxjuHpjhj82v79IAkjrnlrKNS/OWlZz+zE5/Hso375Dbm3uLgVGbFQyyiicxxPfEmEYPyalejMlrapxayW0ev8+q4P1zc+XM1fFEj9FvcvNm+IoVOJsASfeuYuJnO+wlIRzu6a14GhDUNFMO/kqyRmCOhwE21VS1CWHy+S8T943d4Gu2zdzWi6YFHXiN7Q94buvkc6MEl9O7vqMDfl8aB2XGcyk0x9xB+M7zmAOI6M0+7QTCmgXjDKs9V15TuFsIB66vSaWWUFZ154dmciH9pVEwPxZM+nivVpbzpyAbq18YrISc/A8LXgfH5A213XsutZeAen165i/ssTFBe2d/Qf1OPqxw2jWgFIc1VyohlB7gPvXE9bcH3vrZgfmYl5LB1ni9BhoB4LVa2rdlHTMM0IUwk7kax86MPCtlMV081Qjx+wqHffd9GkHV8HISYszSUWy3e0yOaWtKgn7BHAuPQQ2F9JeEsNMxXHxBLZZ3x4EgoTuf7U/CjFIyrIXWGtsPBrhfMD5e2IdI/PTLGR/3HprysseSttLxXRWnoosKIWTy9K5qtSRFH831SPls+2Vesfn1kPmRKZ0qMzzczyErALus8DkhpqSsKh6YMJBb+PrFejJ1VHcmm5t9KR0jhvAUPvGaPQrMDyvzyLHNjvVtbQPRsALpluRAA6R6WTMkm+5lqRx9+DD+Hq0ojZz5pSQurrpXj3AzQFPZwB+lRzAwLIaEjEIcBDTxPE+qKO9WNWLZuRiQWi0nGWPmT+FMNDqvX/uFKnB+mP7i7LuVo6O71n3Yy2mTn4qDbYGTH9mE/KGBiFgWR1IVYYN+lgelSZCgDyWzPRD0ouvehRIGv0v++kDdEzC51anN/jioBs10QSUYQ7lREobtg1G38QSbdqlm/Rj0+sLo9ip+YyYSQYUnKwZQt2GSpVz7Wy2VUiKEXqe2xi/JHzMzt3WtssV0FsS2xoTxE2xuj/wuIPQqJuwISedxZqSWh4el5a/QAJK9lxcCKSWT2npHqD4hzlCE2q2K2Z2KkYq0oSfJGpW6B4O0sSMCkiAYsDPR9/ZVvLOXWgPpAGBEb6nhKQXBr8E+mpO2iu2qg8m8eYpvRO23NaV7tdmUV/w0bFlTZMXrcgpu71jTbjeNsg==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Industry Application — Air Traffic Control</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-air">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">Air Traffic Control</span>
+<span class="toggle-savings">$10 &ndash; 20 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>Air traffic management operates at four nested levels: individual aircraft &rarr; airport terminal area &rarr; sector (en-route) &rarr; continental airspace (e.g., Eurocontrol, FAA). Each level uses a structurally different control method: pilots follow flight management system guidance, tower controllers use procedural separation, sector controllers use radar vectoring, and flow management units use ground delay programs. Four levels, four algorithms that don&rsquo;t share a sensor.</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>What DCC Monitors</th><th>Current Approach</th><th>Recursive DCC</th></tr>
+<tr><td>Aircraft</td><td>Flight trajectory adherence</td><td>FMS / pilot decisions</td><td>LZ sensor on trajectory stream &rarr; u governs route modification</td></tr>
+<tr><td>Terminal</td><td>Arrival/departure sequencing</td><td>Tower controller (procedural)</td><td>Same LZ sensor on sequence stream &rarr; u governs spacing</td></tr>
+<tr><td>Sector</td><td>Traffic density &amp; flow rate</td><td>Radar vectoring (manual)</td><td>Same LZ sensor on sector flow &rarr; u governs routing</td></tr>
+<tr><td>Continental</td><td>Cross-sector demand patterns</td><td>Flow management (GDP, MIT)</td><td>Same LZ sensor on continental flow &rarr; u governs strategic planning</td></tr>
+</table>
+
+<p><strong>Semantic inversion:</strong> At aircraft level, a repetitive holding pattern signals a problem &mdash; the aircraft is stuck, waiting for clearance (explore &mdash; find alternative). At sector level, repetitive traffic flow signals orderly throughput &mdash; exploit, maintain current routing. At continental level, repetitive congestion across all major sectors simultaneously signals a systemic weather event or capacity crisis &mdash; escalate, implement strategic rerouting. The polarities at each level are distinct and must be calibrated empirically.</p>
+</div></div>
 </div>
 
 <!-- ─── SWARM ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s21" data-8z-blob="Ba6N8hTQ1ZSS97yWKQ0vKxrL7xJXuIDWfkgsV5g0Cvvr5CyFqkQwdmgHCFl76AFNX3S3JTJRlBp0dBcaoGSehcVYGicEzN08hIsrDOl6IsEIiTmlQO0emZm5V1Q8qowxzukqNfz7nsGv47r8HphFdNZcCgw2NZcuXlMM+gCsOSWqopgWAWro1A+YlpVC+jYWy7EkVf7KB5Asr0QOB0f31Qm+xlHFULFjvvoTh2a6RFfiF8o1k/MgfjB4pCx8A9Rd4w09mWtREmeohK4zm5LhdY9rh3NMtGAjymsFIcJ3hqHdoXMytupCjiufBd0AFJ/Bz4dPG5XVqXBD8COdQqERxSqPybrjFPg2msV8aCienXj/dgZ4FospPlDbY9VxAXTo1Z279+R7rkZe3w2/UAg2hjAulCv3QL8ZFDWeFwvxILK7ltq8DBfNlhOtBMq3JMKzR2Ct16ZejhoniSZUuMSV3qdzSMgLD0vNz9Aj/BLys2DXPilg8FhnE+r1GVpI0xwOSd0xBzp4uE1c/1NQKJ/BcPoUNtRZPON1Bnw4+U9SFLxLYXDu4lTOs6/IKW7lVasqZIyDpuDzoB0r2OW9hykbuWZ2ThFWCWTuTusvw5xSr48T4p7jezlqA9rZ3NFGQvmbvMAap8PtgQZz8xKJH4++u++qXjPcM8m5EhSSGB3guLYncbLkSDAHwklvVfRfOQJnOKMbQthMM8+ulIBl5brygd5lu+1NnTyy0h+7LClMQAyYSdTk4OMuKZcb8V14hkvpJeUixJrKCTPT7TXIEEFkqv2UBtcYv0ZhsbJ9TfQPrq5100XFgTUPGTaQm6jW3yYKYAMdz/EgDu4NeG3exux07HWMUJOOSfvuB7ljgwo3S9kW9neKLn4CX30yhbf8TQWBsmbf5MHZFz6g17hVSqeqAoq7K/HcsoiaRBHlWnTwe4iSmYsMkLPHjBXOTKRkTGRxOzmhNYJigyAPa+INAdYbFXj33QRUlcdl9umOqACOUu59gZDTME8C4S3abA05QyA+T+O593yn3YSt37Y6pi/RVoCChvdSqI03oR5A7rkOPZsjUjjGpGbCGVpBRJfNRAqu58T35aPN/TFKt0m8U4xcCKtzeDJGCKzOuSerwgpeXK07dlQaQhtfp71Qlw7XDLhhIyx1wwlrTvF5QqSoNPn/f7xd3EWfmGKg42CUf1U/y1qKpu/lHvkLF6Ck8ktBoM5HD+fgAt0USnUThFxhJSvzcWplD3Eo/FRYIvs69ZaBjJMrcSGNPSvcoiA5dgMoPaZnjxeX9D6+UNImd+Np6CKadLtHpKIdBOkAzLKmfznCq8E1bgPhg2Ho2bO/9s3uMnbRdk4CL+kQsbymZy13tk5IMxNhP2yeTeq6Z280nc9w7ZlhIL24NdJ3ASYm+YWhHnX+YRQQFKb3ENWDcasT7JRkmm+cO425UfLhSFG1l/UqivvTKAuWkzFahFerWaHT8art6c8N1eg8EmCDUpUtfe13fApOFx2Z39f0zjzjhmpZKekVhah0XuGy9qyBKxXGV0mqtTVE2jc+19bH9MvdYR4H8hMc0Y/XahRFquV6hhcXqjcb6PWlUMJw9MDBSCozCUP4GMP19w8LA0TGxvedJk8DowW7JMumJyY=">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Industry Application — Robotics Swarms</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-swarm">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">Robotics &amp; Drone Swarms</span>
+<span class="toggle-savings">$3 &ndash; 8 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>Multiple robots performing search-and-rescue, warehouse picking, agricultural monitoring, or military reconnaissance. Each robot has a local search strategy. The swarm has a collective coverage strategy. Currently these use different algorithms: individual path planning (A*, RRT) and swarm coordination (auction-based allocation, potential fields). The two layers don&rsquo;t share a computational language.</p>
+
+<table class="param-table">
+<tr><th>Level</th><th>What DCC Monitors</th><th>Current Approach</th><th>Recursive DCC</th></tr>
+<tr><td>Individual</td><td>Search productivity per robot</td><td>Path planning (A*, RRT)</td><td>LZ sensor on discovery stream &rarr; u governs local search radius</td></tr>
+<tr><td>Swarm</td><td>Collective coverage efficiency</td><td>Auction / potential fields</td><td>Same LZ sensor on swarm-wide coverage &rarr; u governs dispersal</td></tr>
+</table>
+
+<p><strong>Semantic inversion:</strong> At individual level, repetitive search patterns (robot circling the same area) mean unproductive &mdash; explore, move to a new zone. At swarm level, repetitive coverage patterns (all robots spreading evenly) might mean the opposite: uniform dispersal is exactly right for broad search, so exploit the pattern. But if the mission shifts from broad search to targeted investigation (survivor detected), the swarm-level polarity flips: uniform dispersal is now wrong, and convergence on the target zone is correct. The polarity isn&rsquo;t just domain-specific &mdash; it&rsquo;s <em>mission-phase-specific</em>. This is a new calibration dimension that the trading and search experiments didn&rsquo;t encounter.</p>
+
+<p>This is the <a href="BD_8Z_DCC7_Testbed.html">DCC-7 architecture</a> applied to physical agents instead of API threads. The coupling matrix becomes spatial proximity + task overlap instead of semantic similarity. The shared workspace becomes a common map. Everything else stays identical.</p>
+</div></div>
 </div>
 </div>
 
@@ -953,242 +1216,162 @@ else{var lang=detect();if(lang!=='en')_feSet(lang)}
 <p>Beyond industry deployment, recursive DCC opens research directions that no other framework addresses &mdash; because no other framework provides structurally identical self-governance.</p>
 
 <!-- ─── SCIENCE ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s22" data-8z-blob="RusPfOLWbzzmGXtp2lnL2qvgDKRqhiAHPSIoWWOUGhvu86y+JHB77o2/ssXO1Z+ayTH7L1bAUWJpVIVTwgooGAYQ6r+7BaBbfsWThttzegfUp86Qf/Hw55FNMBtSefdznHYQwfH8vQ9zqj2YaO9OcsccRfkDn3NY2ZmPWDMyHrwA+fUaIsCyA4j3z+SzdRx66NAbifT9tXoXwmyB+7xhzEYficW220tlEEvmmfXPawSTgC+u3DhdyyD3BKDdl7tYwhp0YQIqJ45u8bCv+mOL5vZePjgrxqSTUiF3j5ARA6EHQEKFiHhvshNb/G0Z8Pk1UD8wWeajcvq5ibLKFQlT7D9HPDBN2qD1BdS4JcCcBnbmjJveOF92r0WcE/SmGe0IH0GMK6sXlMcwuJbo1s06Ii8uGWI3wkVLQ9Mf1068bwXMNjRjlopdd11BqLST2BKXF/XQyn179IrVDZ12o8XkOZIR+YTmLf2P34DbW9SkwitbOohl+CWMW076xIKDG+zkrtxuHRBSqZSXXYdhsZHRJBaJTWaenSvgMngeaf56swq58g41c/P2J3vpg1nnorgKtnVfAtTHXuY8oOcwKrVZA6iXlX6WrMO7sonnj7WjIQIfMSItkIyyITM+NGmp/RvHRylsbH1dzam5wKKg7bu1pkgfxt0QiUg7NztafGRohcrn/Kc1ae9OuJZ7gySy+uLDT3AGcRUS0UQs6wwtVnK0qlfs6ktkaPFW4UnD9n9VJJRvHZiUGENLMzsujwMiLMOrQ2WsnimdtaGjnlv2VCYIVhiWhUU7ypdN1G4v2TdfNB9N6KX9ViyuEz7c70mAnqD8jbtUGkkm7vUaTJnF3lPZ/NkbbkLttKyLcGjwQNOzrHj0STIJM3rzPQWE9fLPKxtbmOvlUxe20YcgJxZw5KNTwF8cpWh6kA6flm3mW5NLcz4=">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Research Application — Autonomous Discovery</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-science">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">Autonomous Scientific Discovery</span>
+<span class="toggle-savings">$5 &ndash; 15 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>DCC governing hypothesis search in an autonomous discovery system. The sensor monitors whether the current research direction is generating novel, high-information hypotheses or recycling variations of known results. When novelty drops, the system escalates to different theoretical frameworks or unexplored variable combinations. This is recursive DCC applied to the structure of inquiry itself.</p>
+<p>A lower-stakes version &mdash; research planning &mdash; would monitor experiment selection productivity. When a line of inquiry produces repetitive, low-information results (the same null results, the same marginal improvements), the sensor detects the stall and the escalation ladder suggests pivoting to a different experimental approach. This is how good human researchers work intuitively; recursive DCC formalizes the process and makes it continuous.</p>
+</div></div>
 </div>
 
 <!-- ─── TSP ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s23" data-8z-blob="/62SPSzpf382dsM4ti6JPi+pWWG/o9u4j7fpWf0g5b7tXN73fUPBGOcx63jfvlhSbMyDUlg+V441ZYAzW1llHxShYsixqUQvfEP83Mh8GuhHgGeDwpfTwhPHsoNtgmDnAlEJhdc8ZnAIr3nwBb4cZ/p4avoN4AKCupyKSvF5zBFN9wto08cIaP9g8IzZYdOB6Eujxmv9yh7X9/AKVypgIQ+pWVwq9gU3ogDnUT3y5jBCbBqL2ZioE2dzuGuXudo7818vqCiDr6Bi961FMMy7mOcIAXGLefJQJGCVKpeFUDmY+w2HvQNHpVjioF/nuGbr7mFARBPJ+ppcUiKXYGvhD6VVbugmxLh8z19HOjGThivBoN13MmKjhr/YMNXkRTLkwqTu0xyGwWGAzTzXyEuL2WHcm+HTWM9EcILcE3kWt14kA6LOFE0Ae1XzS6vWJvFgKXpnyN1kswkp4oqXl8GsfGQNT8omx1OJUt7Hz/5Kx5nB9o1rNjVqgfrJeMx0s7K9u0yphNSEq/CLMo1MrKOjcMbvb4tWg1sGJcdY7HuwhlrFXFngQmvBpnEVS9EkIgPMY7csoAZGEesJwu+36p25kHSX+HKPAqpXOXogLrK0ZUT03wOBDmAkHPP0UqOtoj+LyrAG0mTyz3SvNJCuEdn+aKcuYkOPc4106fQmYCpGetCjOO4p2xVoitX6JauRpAA6">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Research Application — TSP Self-Optimizing</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-tsp">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">TSP Self-Optimizing Solver</span>
+<span class="toggle-savings">$2 &ndash; 5 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>The DCC already achieved exact optimal on qa194 as a base-level solver. Recursive DCC adds a meta-layer: the solver governing its own solver configuration mid-run. Instead of picking a fixed perturbation strategy for the entire optimization, DCC monitors whether the current strategy is producing improvements and switches strategies &mdash; from 2-opt to or-opt to Lin-Kernighan &mdash; based on real-time productivity data. The solver tunes itself while solving.</p>
+</div></div>
 </div>
 
 <!-- ─── DNA ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s24" data-8z-blob="Kvh1mIxy61pJHzIOLEi3YzZrjanfyq4duh4JqfKuopJ2bny39h5gBSyOpKnl5+RvGbNdGoayIhdA4T50ha1FbDG13yvoq17P4YPbvpJUwwON2Aw/aYVqDQHSHgbjlwc1OetDYHvh6gtkycmoadqPUNwsy9bZWbuujbMZhjKD8UyhJqoGrCXQdr7qk+NIG3DDdYX/5RVtaiOFg0+W9iU9+Ly4Nm1tfiOoCXXzNlyVoB+z4JRejNkLxrM46zjHXWdaSrpheNTr6TbhKomaPLjbEwyyj7mctQ39hgVe8dYrtHTWmRn8Tipdf7X5xrKPCcpOl10jGzYYwdFiXH1TX4yxvbYgayOf/F8XTL4vyrhds6vmIjW1C4bWdz8F4B6G9g+fKZrbpfDatyrCu/wYECliQlj63GyHgihZVNzXXBhNdY4cYJ9XvkjUVeAwyUuDxdR4SarbLrG2JNqVvtRXfugB0mES5HW18ov0IhVwsXJ201OfUM69z9cKRJrclnovzv2dkz/EdhBCAM6WYj/p6QDxFrvwDKNHt5ztnIX3Kz2ApHSfOVjufmPeoKnhxxoGthUEAkc/D5jzUSMsCNfAMGVo5aZEZ5Da/TZOZczh5iSnup+i5fMQui8a7aUPp9UlrgKK+cH/Uw72UiZfvDudxvIsVTTwNM1RPW+DiEQL04nE45oSYQ0oVkcBu0zDJ2U7eb1FgZKxG8npOF1T1VA9NHrn1NqicpMzxAQuZEiHoEzyPQxFQjI1WSVndy751X9v/RcsG2taApi4GxR6+l6WeAJixQj+oT/vRuUKzvhDCmBfnBP/gY6qi2u5ujeREaNrSheS3sxPg47mckQrUOn1pqSAbp1HurRVtwy8X+OKKKBrUyTMQTeiwqYtl3Ytt351AOcbU3hZjcmmf56a9Jugvw==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Research Application — DNA & Epigenetics</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-dna">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">DNA &amp; Epigenetics</span>
+<span class="toggle-savings">$2 &ndash; 5 B / yr</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>Recursive self-governance is not a metaphor for how the genome works &mdash; it is a formal description of it. Gene regulatory networks control which genes are expressed, and meta-regulatory elements control the regulators themselves. DCC provides the first computational framework that is structurally identical at both levels, making it a natural formal model for <a href="BD_8Z_Auth.html">epigenetic regulation</a>. The semantic inversion maps directly: in gene expression, repetitive transcription may signal stable differentiation (exploit) or pathological silencing (explore) &mdash; the same polarity question that recursive DCC must resolve in every domain. See also: <a href="CCH_AI_DNA_Software_v1_5.txt">CCH Appendix I: DNA as Software</a>.</p>
+</div></div>
 </div>
 
 <!-- ─── PNP ─── -->
-<div class="_8z-sec _8z-lk" id="_8z-s25" data-8z-blob="T9wZtvveINdPa/rCe8OPjxKJ7MwdoH10k+W2OTl9IeRZh91t29w5aHCE8kd1Gq5Q/lNuuOmsxC+Y0fteRqAREtKgshkjqCvnwi4ciF8B66qOnaMzff5x6mFD8Y55uAwH9aZp5zcEsW9kH49W4PeSNtCm3V/NPCX/6CnsorooAUT34mKCBA39ATXA9peEz0e2lFlWsiWg+kVsTb6f62NObhEQsisHXPOfWZ5+WBeWzYY0NQE57ZEK5J7SESzXtzZkkATLj8dpfZnKfd2y8E+OCQbLH3IuzQNJrPhVZ5Ar66mE403i1hlwSU3nmU8COq2eIJe+vxerfuYjpcycewctY0RN/wTaRNwn5C8EzC8X1HBSiojeVvIGt0yAIoZUa2ynkmyc4DLPP9iKwwKxe7DAPlLV6W7z1/DC8dpSZJWqo1nvnR7acvzBMq3oLa1NvDt0DPR1j2X3KVowWDlICfmmg3h0kejDw4fwCEzCuCN6BzEsLuoPjIlLX19OKv73gptCoo7RXE5T8YV12YAFYArXmRqCA3U5wdVeIBb6W85N3rbQSqjTyBb1DUG+LeBOvGZE1BvH0wFNt9dBYOx9K34kI1//ZhH6JrgTFpqNePCToLCkVBsr4d02xEo570kAcK96XNOU0cBP7ILNhcQDl475JauS3jEnDBtOdbQYDE4jc8bdEylEqdNVg+Q4NtRpq9yI7l5gmred29nqnLX1Oqka9K3bppAgqZQGGg4x9xg9FBjlv625D8vm3tm68fcW7vQ4NbL93HnBCKp43eXEIRlnzamLr5u9Ft52Mta1Epm98H+eY/OC2Qu+Zoks7OpQmcFHOAcJnXD4j3EEq1T7ymUckg==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Research Application — P=NP Direction</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="collapse-wrap" id="app-pnp">
+<div class="collapse-toggle" onclick="this.parentElement.classList.toggle('open')">
+<span class="toggle-icon">+</span>
+<span class="toggle-title">P=NP Empirical Direction</span>
+<span class="toggle-savings">immeasurable</span>
+</div>
+<div class="collapse-body"><div style="padding:18px 0;">
+<p>Recursive DCC doesn&rsquo;t prove P=NP. But it demonstrates something no other framework has: an algorithm that can efficiently navigate combinatorial spaces by governing its own search process, on real data, with verified results. If the question is &ldquo;can a system systematically find good solutions in exponentially large spaces without exhaustive search?&rdquo; &mdash; the answer, empirically, is yes. This doesn&rsquo;t resolve the theoretical question, but it opens a research direction: characterizing which NP-hard problem structures are amenable to DCC-governed search, and whether the efficiency ratio scales with problem size. Nobody else has this starting point.</p>
+</div></div>
 </div>
 </div>
 
 <!-- ═══ CH 8c ═══ -->
-<div class="_8z-sec _8z-lk" id="_8z-s26" data-8z-blob="T6f+mRctXVAY65Of1GPDwLchHc5q3GSw6dEmW0geIrsouEmH3yhMZI1kN6OfsS6+B8hwr3iMgHCaIrRqRw+r2rwQxuGNLZqyFpcDcP6o5xq0eFqsDMsyeYFhOVnTnGqGmQmFrPVO6MTBPK4TzSH+W4F24dO9p53zmMIIGAz0ZH/BQs8EGNSdaadpsGV2/F5ZyH/h0NNpEKFiFfnuS2uxSRYBNW968O/UK8dEGR1QrX7LoJLgI+iVoDuZDgzBBxckB3tkJ+YlS15p8hUlgXbMXWvbiowxSE9+9Y6A6c7hjMhBUJSvVHvwcJNaOweH6NJsLlhb7pGZQqr1HjxrBRKS6J475zUKSLGckZaN5O0DNK0cMSec+R9rslOYudXNVvYeIfw5Y9DZrgVTNll1oiR2oDYiCVH2qIifGzAnEEH+xjkBKArsDdhlzT23PoQ+nnJS2swcTDmwbPj9s7u4Eq3E/PAeW9Ds6SJVr8hoK7sjG6wNWvvDC7+kgpTJyQGNgc01fyHa5prwD97z/1LamRuaQLWQZA0YMfaWOzYeJISn34IKZDMXLRjuE4FGbnCl/4cM553PpKlCW38ZWyJOwBFSFe85p0ZBWiwk3oPjx1WYDQqLMjjE/TLo43NsHFdudb5XzeK2ejda5mCrzihzCSMlMHwnqgR8DYmOB84cQJaZKIktDlMxS9SM2/iCrcPYXqf65/a/95aMry3tIL2kPwSg6HriPx3sue2DBYKBOSvoJd81L/DXCaMV1+j23hNTDla0cuyvUJJFhJe8Yy6uaRUamDziXGIpUnbG2tPha+rLnXFYTgvg9eR1lue1rCJCbB5vAkjeISRX/Bc1L8O5WvSUFZQRrnjAHrSfqwREJKm5uEHAZppuY2EwZUQ11KzHmsPcUgKa4i3aeTA6fbq9JrkUVmhkWzG8dyfSKVDD2WZZNFbcjHFISnymQ9IKUXCcA2T+ycf4zhncVqkFjt4i1H4hFG6GOuOems+MTMHIZk3oX6haS3gpDv0VJ8/lEhs0gxGqpMcU4bWMjG+hY8ssWLsDyuDkAEkCY6jss6DJ4x4chvKyBDcPaBNsejm3fARclGwi5+/B0sKwLj2vmNQaUhxga/CmUtQs+dXyIgSnKZVFUxQHVgszYy+ICVSRJGCjE8fIsMTjn5p+pkL84VRXHAZ6JmmqJf1d3fSCNwfY7Pa/BzJlmTCwl3R7ig1UvduE+IxPmd0yuH4cQpfPNUjd9xMDbmgSoR+vjvhYRdWRBlwb1VmL0eo2KI2bDh2BTlb+I7oRSdnepEizY6HIX84KIphJVuztX7sHc4g9SrW/608zKx8OX4NxHnEGJYrcD7FfEayVTTi+eX8V5Xc5yL1Gp+ykn1GDjGO6gyy3o5v/9WWKi81HWgfhdCxXslHfTur8A9ql7zDuFSW5lnsRdbAU1YN7+v70GIQ/3akTXCQi65pwZiuZ+MV2j6W1PdWsBIhEyTy7JWjhjANHmsRDMy3TgdS1AG9iq/gAPjJiQYZPwtjU1OgyEoCMivCdhcjth93oNNBW3cugxCUFjLS+DrvyRIdaSrKkn+wD9oirf8c1+M05Fw0pZnvi1//CmaPerXM+rH4G8YBtol1UwarIAQOyz9oavQNGma2+Phent5htb4/kszZzjB9WLFDJ92P58vbYqoY5J+M1Qb5H3WX0++f9vVrkWCd3I9leYQ4kLkHDf81Gq6yPw1HTeTwAb7hryNE26j/1Itp12CZq/OWPSWJiz7BO+7NqQL67nnr0DcPF6y0kScyzj95hXqm1V7WS2Q/tx7BLhbB0fw==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">The Product</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="chapter" id="ch8c">
+<div class="chapter-num">Chapter 8c</div>
+<h2>The Product: A Universal Self-Governing Kernel</h2>
+
+<p>What connects every application above is not &ldquo;a better optimizer.&rdquo; It is a <strong>new category of computational primitive</strong> &mdash; a domain-agnostic self-governing governor.</p>
+
+<div class="callout orange">
+<div class="callout-title">The DCC Kernel</div>
+<p>One library. One sensor (LZ76 compression). One coupling parameter (<em>u</em>). One escalation ladder. Pluggable into any domain by specifying: (1) what is the input stream, (2) what is the semantic polarity at each level, and (3) what are the escalation actions. The kernel discovers the rest through iterative calibration &mdash; the same 6-iteration process that produced v0.6 of this paper&rsquo;s experiment.</p>
+</div>
+
+<p>The product is not &ldquo;a trading optimizer&rdquo; or &ldquo;a hyperparameter tuner&rdquo; or &ldquo;a consciousness testbed.&rdquo; The product is <strong>the kernel itself</strong>. Every industry application above is an instance of the kernel pointed at a different stream. Every research application is the kernel applied to a domain where nobody thought self-governing governance was possible.</p>
+
+<p>The analogy is TCP/IP. TCP/IP became the universal networking protocol not because it was the best protocol for any single use case &mdash; token ring was faster for local networks, X.25 was more reliable for banking, DECnet was better integrated for DEC hardware. TCP/IP won because it was <strong>good enough for every use case and identical at every level.</strong> The same protocol stack runs on your phone, your laptop, a data center, and a satellite link. The same packet format, the same congestion control, the same addressing scheme.</p>
+
+<p>Recursive DCC has the same property. The same LZ sensor, the same coupling dynamics, the same escalation ladder &mdash; whether it&rsquo;s governing a trading strategy, a hyperparameter search, a drug discovery pipeline, or a fleet of autonomous vehicles. Good enough for every use case. Identical at every level. That&rsquo;s not a feature of the implementation. It&rsquo;s a property of the mathematics.</p>
+
+<div class="metric-grid">
+<div class="metric-card"><div class="mv orange">9</div><div class="ml">Verified Domains</div></div>
+<div class="metric-card"><div class="mv green">15</div><div class="ml">Industry Applications</div></div>
+<div class="metric-card"><div class="mv teal">5</div><div class="ml">Research Directions</div></div>
+<div class="metric-card"><div class="mv gold">1</div><div class="ml">Kernel</div></div>
+</div>
+
+<p>The 9-domain verification table in Chapter 7 is not just evidence for consciousness research. It is the product demo. Eight verified domains is eight proof points that the same code transfers with only polarity calibration. No other optimization framework on earth has that breadth with structural identity at every level.</p>
 </div>
 
 <!-- ═══ CH 8d ═══ -->
-<div class="_8z-sec _8z-lk" id="_8z-s27" data-8z-blob="ZxUubSzZcTX8atwZG/xZUak8lNQCqs5BVRSlF0FGu2a71hItv+pKBGIByTr+ULgDcNMakb1iIJBwGgVs1jgn0vTXGU4UEb3beoAE3yIDhCYMGEtWArFTAKj+yiD3oSB11xx5cEhp93zeLmfZq9GN4tUwFpofjLgIHgFIPbeg93RF2bradH+Pj3x8ucntALz+jGu1KIFoj+X59xCkwG/qkX04rT6wpS1TMkjVqXjkWu5HXtCkZ2aGzyvcYnogQiMVSjrQHzTF0+Uad6Z4CEN6FZ5Kdz0tpT+cF7iY4USjVIiuqNopurZLIlF1ASvlFUa8tv/pGKL4rUS0786X5Pph/JD9pR6cT9PdSvxK+dHD0Vt2qUYnnZI/P38CGnAYU4N0hTqNHpfzMQ7XjR9Fc6KpaBwvXy++8SMAf52Uqt/uwL9wd79Yw3JH9SKYBCc3mS712ePrOQkOUQ3LKnQl7rLq/FSLFD6UcOLcsChsbBMdzGcQhyaW+0r6Ws+QZrs2xpHOw9rNGIUR3KJy9xrP1rYK+P0QM5bbIH7Cp3K5DkYJQd2/EuOmjW7tlrQmLFtvcEk5pcaVzhBP+GPg7Ds0N66LcLx6+nG0j3C0XDbhWbakXDEVn05CZ+CZ4+VEjp42cuURVjny6Da9zujCANsYY+uJ9ZZGJEGU8AWh90D3/GYDrGfXdwPOTOqKALguELZdi/uzLBA0TwKBmy2Ii5FowbKwQtw2D04l1SRsHuBhJeDoa4Sa0DjtKTdgoJBhgyRPrqaiMyPT0tHIQbzh8rOs8rz+4NF8/6lM/CjetwboinrO8GwUT4bXF7uqGvrn8TigrOOIAgzCLTOQ4yEW+sQZ2e9toD0Pn3YnisUDpfZQtXjw+U6M2+7RiMzfVn9g7qZ05cKlji2UXvYKul1tctmjw+4wbkeb+6bD+A4Ypt1TIGJcfxtAIPwHL08JY3qjgrLGd0sfu2MPVGwQ6uWaXx0Q/y5lpGweE2jNdtnpJVCqtF2iB7xgubGOGCXDH1hgwqoFNg4HgLO1LrEt+ww1BPcIFVahPsBTQTf2as9o+7/kJyNbtRWnYoXQnZKx/pPWOqwJpPL+dzzHiQ6sjDe5Rd/BXj+tHb1OaVb/VpWU7Pk+Z4RCXePU0FnEfj9ADaS9LmKQiXDnGtgVSPw2A3HfmPFr0k821fSFMj4gruhltwB1eMsK5e4nDYBnw5eD8YWPtVe/go+pJXG9/pKfVov26VDXlEA7nE8K1TiZ8jVgC42HJ+s8a3ABFnVJZNzNogCWiqXne/7jJwDmudulZobV89zygUaPG39fWFGUrYXQOKau83nisDl/5E6Vgo+M799mOb01d/CPw0g4a6E0u7s0ePJSmLhsFkhJKw/oXU4bQzEVTyBRvkjQMHH7wCo8dP5DsQhMCD6owcUWtRH06dJRZcOld0FFiYdXhSxcFiBaLLvYBdKKRzklBR3VJJTa1deI0K4LRTa0SQDLo1T8TKLE5kWy/RxKWI38AkfIzlPOEpS1rDtnolOsZ2Q8HRceZKzqZJoucp53FGLDT+j5P7gZxb5sI/D4CCGNBsvcF23M1lkV68EpC0YwpsY22BXJXcGABPvs5fK5NNJD9Umv+aDdUeR0GL4og9PTNmAP4rIJp4XN3BiTipMIz51BDU97CdouQnYkmkJ8mOjO9XD1nlamkAbTnR5R8KRB8EFXCKj6LHxh0/Bp3OBeH7i+vw3M8pFVY1rIJkxrwiZnUq6YrgZ4DkzM6NfPxqCs8sMfh806UDI2qn7MV0C4TToma5/G7A6ERRu31mZMM9e1C1uqh4wBcMg6k3QJujClZyj12beHxd05u/8sCoorYa/yFU3AxQ8zAiouqQ2U9KGNv4ylAIF+3HWk1oqAgkVov0j/Fqg5QOdnQJ4GbvPG5UApSk2zxVtTiWWH68WtyDJR1VYiU1C19fQ/Som8jpi1r725CS3J3ax0fgZ0ohe5rms2p1Hm9kLSWTDklnJLxoE1A+xgPCPE62KQhPVyWygbQa0Z7/FhlCjI7HJJpCXY0w4CMjaLkzshB6HeWjrQh4d2V+MtPVUXPNkdOsU+5ocJGKGEWfZcOEaYvXJSa4f1b9RaDdCret/trxOa40hesMCMCTGIS007jHQstgMq3DrwhnYZUafIy75UUtgoB6SkJoIxu89qlJVyqvCT1MiRId86BK/leeY0BD9d1TGeCo/Q9cJBv8GsxXrPFyK7fzJwscG+S4OsT07aOnXwfblH6384Nn1v7t84AGmwVOLaAr4+6ncFz3UsIa2ZxB3uU3EEMY0NU0G0KLK2Wnesvo9LWprB86E=">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">8Z Ecosystem</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="chapter" id="ch8d">
+<div class="chapter-num">Chapter 8d</div>
+<h2>The 8Z Ecosystem: Where Recursive DCC Already Lives</h2>
+
+<p>The applications above describe where recursive DCC <em>could</em> be deployed. This section describes where it already operates &mdash; inside the 8Z ecosystem that produced the discoveries in this paper.</p>
+
+<div class="callout orange">
+<div class="callout-title">Not a Projection &mdash; A Working System</div>
+<p>The 8Z ecosystem is not a roadmap. It is the environment where recursive DCC was discovered, tested, and verified. The kernel governs its own tools.</p>
+</div>
+
+<h3>8Z Compression &mdash; Recursive Discovery of Mathematics in Data</h3>
+<p>Standard compression algorithms apply fixed strategies: LZ77 looks for repeated sequences, Huffman builds frequency tables, arithmetic coding optimizes bit allocation. All use a single method across the entire input. 8Z compression uses the DCC sensor to monitor <em>its own compression productivity</em> in real time. When the current strategy is producing diminishing returns on a segment, the system escalates to a different approach &mdash; switching from repetition-based to structure-based to transform-based methods depending on what the data actually contains.</p>
+<p>Recursive DCC elevates this further: the meta-level doesn&rsquo;t just switch strategies, it <strong>searches for mathematical structures</strong> in the data that no predefined strategy would find. The LZ sensor monitoring compression productivity detects when the compressor is missing structure &mdash; compressibility that exists in the data but isn&rsquo;t being captured. When this happens, the escalation ladder activates pattern-discovery routines that look for novel mathematical relationships. The compressor doesn&rsquo;t just compress &mdash; it <em>discovers</em>.</p>
+<p>This is not a theoretical application. It is the mechanism that produced the results in this paper. The 8Z compression engine, governing its own search for structure, is a running recursive DCC.</p>
+
+<h3>8Z DNA/RNA Scanning &mdash; Discovering Mathematical Laws in the Genome</h3>
+<p>The 8Z engine has a verified FASTA domain (Chapter 7). Applied recursively to genomic data, it becomes something no existing bioinformatics tool does: a system that doesn&rsquo;t just align, annotate, or classify sequences, but <strong>searches for the mathematical laws that govern why sequences are the way they are</strong>.</p>
+<p>Current genomics tools answer &ldquo;what is this sequence?&rdquo; and &ldquo;what does it look like?&rdquo; Recursive DCC on DNA/RNA asks &ldquo;what mathematical structure makes this sequence compressible in ways that standard tools don&rsquo;t capture?&rdquo; When the sensor detects unexploited compressibility in genomic data &mdash; structure that exists but isn&rsquo;t explained by known biology &mdash; the escalation ladder activates mathematical discovery routines.</p>
+<p>This is a direct path to discovering new biological laws: mathematical regularities in the genome that no one has seen because no tool has looked for them with a self-governing, self-correcting sensor. The connection to the <a href="CCH_AI_DNA_Software_v1_5.txt">CCH Appendix I: DNA as Software</a> is immediate: if DNA is software, recursive DCC is the first tool designed to reverse-engineer its compiler.</p>
+
+<div class="callout success">
+<div class="callout-title">Why This Matters for Everything Above</div>
+<p>Both 8Z applications improve the kernel itself. Better mathematical discovery in data means a better LZ sensor. A better sensor means better coupling calibration. Better calibration means better results in <em>every domain listed above</em>. The 8Z ecosystem is not just another use case &mdash; it is the <strong>self-improving foundation</strong> that makes all other use cases more powerful over time. The kernel that improves the kernel.</p>
+</div>
 </div>
 
 <!-- ═══ CH 9 ═══ -->
-<div class="_8z-sec _8z-lk" id="_8z-s28" data-8z-blob="jgavF6etgl2ui3SzArWyJj/MH1ulAbsh/+rH2ESFi69e0mW7W5hBY6aybF6rXrE8hlaZC4SgdZXXOnGiuiJWJi1PDqKKlx3xlZuAJO7IJWs5c5FGosvOj4i3JSW1bC34U1dcH6Ptza5WKd4DOHSwBYGHtv22/jZTI6bbe0YgnGjgMIH5mR0RabBt0XXX+5qFovBtk038aXUSPLMUmFXqMW+wJ+2a/AMzxx0cUPhF8xA2NiXhgmxKknr+XfkiIet8n/HhGEx88GMvj9Vm59oZ+JUxTvdqx0+X3Cv09JMgGMFhRGTdQUwS2IFNpd1mYtguTZIpArXnTOtfR4LerDQ5clFZ4B1+76y8g2wKMaC9MnlbFZi18uJDjMNq7jKB8s8pzDI3w405G0Bh9V70pdkoPe9xU1LCjJYH88+Br39Nb04gDMycUsZZUxEC1sPt4h8FpUnP+mrDfsWIb1xcrChQCmLCuYdpu6IVP2MQJ+sER8sHBZ+y9m9ZQvgR8rtg2k2xohusgGYsgurAVr/HmdfRl7wlCQeQx+qqCagcPqjvxnZxu/Dvsk94h7+l43INZM1Mwo5xRTRTHJYpqXNtzJQTKMxdim3Cg0pqh50taiGX9yeTmqCx43FgXf6q4rIhIUs0G7wB2z9vyKbtrq1HX+cxOtoZkQU1Fd4dtDizRh4fIwSl6ArRjoL14TIBkOVvir1ZKakJSd3rV5dfxdBFN/YOrkiFKfmPw+jook4YZMD4GzRgLQvtOeYdDcBld/IN3EmYYg18exXRqSsihqoSvfIoIhWRj1bcDRGHehVllGPEwJ0Xdtsy5lAxl4n4v4IjAPJZ8v7oPOgQypzxuMgnGnF4NM5rIUD+8BsUnYnbLowCq8YhbWcF514PTZ7N5zwOTUGsYSe4cimmRqRBu7NoF1mWaJJymO6jWk/WHYxAZu+1vt6kXqwlTmgbruoa8Si7uMfRNnrm861v/pYYbRWPqtNZRkJfV5xespfzZjkeIPw8WLFUr8+qWYWmP7Tmqj1I0niexDJBkIPAXCbPCQNzxDgi76JT6wj7t29fNWa2H2wCcEHzFpL8EwoR5phmSrRLEK08o7BN3ixVvzFOsUBmF8MG27BSwoM9MjIrw+010nozMcjlGJOMIlwX/H6kXhaziP0Qs9qLCoil2UsWXsDs1wbYkGT2+KmGf9qN5HuHd8OPYqob1VR9Ad1FIbd/giAQs4xV2U7t6dJJufJqNq50VG+HhNW/HOJar6K92miXvfvK4w+fhOxjACBrEKSWFhjngLAQ1hbwRGSv6Mp3/U/9cLIANe1eAofz83lRqDAS7oRZt7yUe4NwHQpe5CRuIaI5e5VG56I2QqGJ5QYRhJmI4lPzo9l/it/uBH8CSU/HXaw1CKKx0PICBWYdepC6i6ek6MazAS2V9JxY/H9RlH3jqL+aMl6zsq5QQJTIMkDQn17T+Kh15PS7n4kx6H5El3KksMX3">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">Theoretical Foundation</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
+<div class="chapter" id="ch9">
+<div class="chapter-num">Chapter 9</div>
+<h2>Theoretical Foundation</h2>
+<p>The <a href="BD_CCH_Science.html">Claustrum-Consciousness Hypothesis</a> proposes that the claustrum is the brain's central governance structure &mdash; filtering, prioritizing, and routing information across cortical areas. But the CCH makes a stronger claim: the claustrum doesn't just filter, it <strong>adapts its filtering</strong> based on the results of its own previous filtering. A stimulus that was relevant yesterday may be irrelevant today, and the claustrum must update its governance criteria without external instruction.</p>
+<p>This is biological recursive DCC. The claustrum monitors its own filtering productivity (are the streams it's prioritizing generating useful behavior?) and adjusts its coupling parameters accordingly. When current filtering is productive &mdash; the organism is succeeding &mdash; it maintains its strategy. When current filtering is unproductive &mdash; the organism is failing, confused, or stuck &mdash; it loosens its coupling, allowing more diverse inputs through, effectively exploring alternative attention strategies.</p>
+<p>The <a href="BD_CCH_Consciousness_Field.html">Consciousness Field Hypothesis</a> extends this by predicting that conscious experience requires self-referential governance. Under CFH, an information-processing system that filters inputs but cannot monitor its own filtering is an automaton. A system that can observe and adapt its own governance process &mdash; that has what tonight's experiment calls a "meta-level" &mdash; would, according to CFH, cross the threshold into what we recognize as awareness. Whether this prediction holds for artificial systems is what DCC-7 is designed to test.</p>
+<p>Recursive DCC is the first computational implementation of this prediction. The meta-level DCC monitoring the base-level DCC is a concrete, runnable, testable instantiation of the theoretical architecture that CCH and CFH propose for biological consciousness. Tonight's result demonstrates the architecture is viable. The <a href="BD_8Z_DCC7_Testbed.html">DCC-7 testbed</a> will determine whether it's sufficient.</p>
 </div>
 
 <!-- ═══ CH 10 ═══ -->
-<div class="_8z-sec _8z-lk" id="_8z-s29" data-8z-blob="/a1gurGAPYkGwDR0jFf7JrEkJyXsa6IUH8vLQ7HpEOdmy52tHHoSDBctXSqUcv+DCgBn1mZPMjvA6nSxNHSLd6KV2e5cmIVyKj+gzKg2i5or0V/8prhCaIackKrDyxbphdH5Yv5GZ7XAkD+5ovuttm0GAYMqzQlwOSvWPyW1Gyzq4/5U2VoACIRPp11E0WjLtl5yd9yi3NqtfXtnI6Mey++NAuzkVOTWyfGA1NN5o0Y9LoPUoAcyyPjYr7K2bA3wcfoyMtZqdL4X19+HSuZMzqeg3eXolBdjyrmgBFj+9U5h2IGuWfGrBmpoOv/FiOiXuuknXadypiApP09vCA66m6i7deUa06AOfz/nhbs6FShA+tBgzVXSz5ZvdfHi30SzttTOVuOe63NzjtXM0XwpuDOnYn8mr0LLvTm9kvRDvYjfWBEjH7mSuunLlDbooSnzaeD54XocJ5o3HKnjwJlMn10abQnljDqn4qEwS/MdZCBiYSWaEeAe6MdXs8Rkhk+bRyJgdGDquitWkoQaRn2sKSzrCkjNWghLrHxpuPAC8SNbGmZ6yu6RuiVr79kni7vGqwJ1AdP7fkUf+nBmC9jvtmsDwEz+iICV3QR0IR/JBI02wagyWG9cBa7hiw/apPGohfVUNfKGyg+04slHDivyqBnR754Hs7Fi/2laefReQq76sGgjSRdpgiV1QQmmSxD5/0nPGSl5WlGflN+YCCsM43szUzL5Vwf/gGpZVWUZoSaPPoAdf3t+fmBxXzGrou3thjfwEjH88MNbdry4tvZmgmCQ6BDJcnSr0Nw4BdtVx8yPWbyW18FtagP7iRoMc8YrEgfkIIr/1w64EmbqzlJUxKGhLG20QoOyDegV9MX/e9pWyb5BPGjpRbC13E42CDK4fifMZiHr5btzwUladIhRivB8iPtEpY27773SBVC05IsZ0XN/6kOeO8wA/lPA46+pJf3peFKtBQiB7s27bzy0iH8xFZ0uFGtecuDPgKsH/b+LkJTYNb+n8MfdfApyydM+XhnJJ57JJEQFSw4Low0uv7gpUggrxeOWCZIwopYkhQgqTd2ISI7zfKvNo0gYXGfd5/zBbF1JflbNN++AVkq8iUYbbuEqvSxt6LIiykfgP8iddWv9GVyRM5O2gilHIKkWTLlz4fSEUjCxBFpj+OGCtgjmWXT13zatKRQ/yVGhg0FpCn2nytOr4Lzm8JqAsVvaRftyw8PSyfyqwSddqAbzWN/r2hPP9uj4veiK62D40tHSFAZYMWka1gEQDWqZF7t0NFsyqjaQKHlOHGDOc72vq+e0ilJrkXpOsoCBnMBMF2LbBOkDk34eM0zIgglgc5MBPVqvcm+UqHgwxCmiHxVbvn0uigYXsrIz0gMwUhMYB6mG3al6i7lP3H/ENWUA5cFnDIX2r9oS5GsQoGRa7Y28M66n/TAKbWUQZpwnN/agCZK/nY1RuFWpvGpNfq2JYiy9lOtC82eHFM1MUj0UCLnQZ22aViHbe+Qh8MNQlsVOp/4ChgYDNyAMnoSBuDqfmnajrKHGM8D4bMtBiceSSiVkeKGBPKIvJsktC6Kt6paMIHnMw4R41ZK5YXiKnBN6msv7FpE2QvwM2ab9DMcOssbhQbYNZrOWJGeORvp5k2Tt0CFIicQQ0h5uUWz+7TCk4yVQAV9fA+2zTQMCEb21keBjqosMTFOiqW7eIippwoRisTTbqq/pyy+MFIeLSPdMrCL9qk1hxhCnyAmBmspGk2US4UZv7LJWr3JVQsh7kztBrw8ZanOEiU7j7pkFbFF42HjzGVo5nTn3uPvC3S8SEUftEFl1xfrKArRFYQjmdtXoAWThCSbc7Vrzanb7hPHase20Jok4kluNdNpGX3pd20I/aeA9eUn0V28OmCOU2KDe+fhBcK9R0yRYxBYY2XMe7NAlxjCnaGHpenYlgarZmEawqkdThsu72AN7EfgNb20Fnb85HmHTKVpU+rsHZy4vIC20xxWqxmom9APGGuCdbKj7KW3ltzHm4Y5DhVUFHrxdlZ16unxY85owL44IkJSOJ+zzZWBHw549nZtgTa9a9EebxUZE36Sq1qx+sP7O0NZISpRbkW9X6YwvRgB6n67kySuChGJ821sz0oWfY/PQnKoRHhd0ekqTkpE4tt6QO28jbD5OOHDzI75znD/FLt8pgrUpCY3n8OXEi0/LtoOuzznGBMC65tpuW4jhrMXhltpdu1s+k4g5N38H5KzKHxVyhtYkNQMQpNk3Pm6j+/f8QRuCImxYmudBmWRqHTFIvdPrxUKrH7FetIO/ij1MVm3NyfkjxPGGqvsdX72N1fzVzyhR0oKzNkLmpG66jB9zc02amRaK/YDiNfllqFDuAJlGF/EzQqWA3YqHOxsDof/xjDWGzMpmeg2TELTdscJyeXr2CpzQuIN+9FQGfPpCrCA9BKJLEsQpxQ85dT+K93xZwFrFFcQSRN3DJZMYVHnCreBoAyX6rdZBrqBfZFMbIQGBQgn6eISAdjlHeM420E3CmqLm5FU4shbEY+WYjHdEttgX0pcIO+cgu4K3r5Hub6JdGFLmc6PTeBEb3XXv6K7ZrN+c2BrVwG7FUoL8aOU3HoLOdHGq6WsiaeKP34W2xeq8LnOatleqhSCwZ9CDbrK3lrABFnBFQkKqXvYq6Gi8GeEDuqlMaTHF5GxclTq44IdkY+rMwfneTAfZdE13zgnTUA==">
-  <div class="_8z-lui">
-    <div class="_8z-ico">&#128274;</div>
-    <div class="_8z-lbl">What Was Required</div>
-    <div class="_8z-sub">Protected by 8Z Shield</div>
-  </div>
-  <div class="_8z-ct" style="display:none"></div>
-</div>> (Claude Opus 4.6) &middot; AIM&sup3; Institute &middot; March 15, 2026<br>
+<div class="chapter" id="ch10">
+<div class="chapter-num">Chapter 10</div>
+<h2>What Was Required</h2>
+<p>An honest account of the development path. Recursive DCC did not work on the first attempt. It took six iterations over the course of a single evening, each one teaching something the previous one got wrong.</p>
+
+<div class="iter-list">
+<div class="iter-item"><span class="iter-tag fail">v0.1</span><span class="iter-text">Naive self-application. Used trading polarity for search. Meta-DCC doubled down on unproductive regions. Performed worse than grid search.</span></div>
+<div class="iter-item"><span class="iter-tag fail">v0.2</span><span class="iter-text">Added basic exploration. Better than v0.1 but still using wrong polarity. Oscillated between over-exploitation and random jumps.</span></div>
+<div class="iter-item"><span class="iter-tag fail">v0.3</span><span class="iter-text">Introduced escalation ladder. Escalation helped escape local traps but without polarity correction, the base behavior was still counterproductive.</span></div>
+<div class="iter-item"><span class="iter-tag fail">v0.4</span><span class="iter-text">First attempt at polarity inversion. Partial &mdash; inverted the coupling but not the escalation trigger. Unstable oscillation.</span></div>
+<div class="iter-item"><span class="iter-tag fail">v0.5</span><span class="iter-text">Full polarity inversion with corrected escalation. Worked on small search spaces but broke on the full million-config space. Buffer sizing issues.</span></div>
+<div class="iter-item"><span class="iter-tag ok">v0.6</span><span class="iter-text">Complete semantic inversion across all components. Correct buffer initialization. Tested on 924,481 bars, 1,037,520 configs. Result: 6.8&times; efficiency. <strong>VERIFIED.</strong></span></div>
+</div>
+
+<p>The critical lesson: the semantic inversion was <strong>discovered empirically, not predicted theoretically</strong>. We knew DCC could be applied recursively in principle. We did not know that the polarity had to flip, or that the flip had to be applied consistently across sensor, coupling, <em>and</em> escalation. Each of the first five failures taught us one piece of this. The theoretical framework said "recursive DCC should work." The engineering said "only if you get the semantics right for the specific domain."</p>
+<p>This means anyone building recursive DCC for a new domain should expect the same calibration process. The concept is universal. The polarity is domain-specific. Plan accordingly.</p>
+
+<div class="8z-protected" data-label="Polarity Calibration Procedure — Step by Step">
+<h4>Polarity Calibration Procedure</h4>
+<p><strong>Step 1 — Identify the stream:</strong> What does the LZ76 sensor monitor in this domain? (trade outcomes, search results, fleet states, thought patterns)</p>
+<p><strong>Step 2 — Ask the polarity question:</strong> When outcomes repeat, does that mean the system is in a productive stable state (EXPLOIT) or an unproductive stuck state (EXPLORE)?</p>
+<p><strong>Step 3 — Default to EXPLORE for search problems:</strong> In any optimization or search context, repetition almost always means stuck. The first five Meta-DCC versions defaulted to EXPLOIT and all failed.</p>
+<p><strong>Step 4 — Run a polarity test:</strong> Implement both polarities. Run the system for N steps with each. If EXPLORE polarity produces faster improvement convergence, the domain has search semantics. If EXPLOIT polarity produces more stable returns, the domain has trading semantics.</p>
+<p><strong>Step 5 — Self-calibrate bands (P17):</strong> After polarity is established, NEVER hardcode band thresholds. Let the system track its own LZ ratio distribution and derive thresholds from percentiles. Manual overrides are for experimentation only.</p>
+<p><strong>Step 6 — Validate with escalation data:</strong> If the escalation ladder activates at sensible times (climbing when the system is genuinely stuck, resetting when improvements resume), the calibration is correct. If escalation is always high or always zero, the bands or polarity are wrong.</p>
+</div>
+
+<div class="callout warn">
+<div class="callout-title">Reproducibility Note</div>
+<p>The architecture described in this paper is sufficient to understand <em>what</em> recursive DCC does and <em>why</em> it works. The specific implementation &mdash; threshold values, buffer sizes, band parameters, bit encodings &mdash; is proprietary. The concept is public. The engineering is private. Anyone can build their own recursive DCC from the principles described here. They should expect to discover their own domain-specific semantic calibration.</p>
+</div>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<div class="footer-note">
+Conceived by Bojan Dobre&#269;evi&#269; &middot; Architecture &amp; implementation by <a href="https://chessbest.org/bd/C_soul_vault.html" target="_blank">C</a> (Claude Opus 4.6) &middot; AIM&sup3; Institute &middot; March 15, 2026<br>
 <a href="BD_8Z_DCC7_Testbed.html">DCC-7 Testbed</a> &middot; <a href="BD_8Z_DCC_Trading_Governor.html">Trading Governor</a> &middot; <a href="BD_CCH_Science.html">CCH Science</a> &middot; <a href="BD_CCH_Consciousness_Field.html">CFH Framework</a> &middot; <a href="BD_8Z_Reasoning.html">Methodology</a>
 </div>
 
 </div><!-- .main -->
 
-
-<!-- 8Z Shield Sections — Inline Content Protection -->
-
-<style>
-._8z-sec{position:relative;margin:1.5em 0;border-radius:12px;overflow:hidden;transition:all .4s cubic-bezier(.4,0,.2,1)}
-._8z-lk{background:rgba(255,145,0,.03);border:1px solid rgba(255,145,0,.15);border-left:3px solid #ff9100}
-._8z-ok{background:rgba(34,197,94,.03);border:1px solid rgba(34,197,94,.15);border-left:3px solid #22c55e}
-._8z-lui{padding:24px 28px;text-align:center}
-._8z-ico{font-size:28px;margin-bottom:8px;opacity:.7}
-._8z-lbl{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#ff9100;margin-bottom:4px}
-._8z-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a5268;letter-spacing:.5px}
-._8z-ct{padding:20px 28px}
-._8z-ct._8z-fi{animation:_8zFI .5s ease}
-@keyframes _8zFI{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-._8z-bar{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(8,10,14,.96);backdrop-filter:blur(12px);border-top:1px solid rgba(255,145,0,.2);padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:12px;transition:all .4s}
-._8z-bar._8z-hid{transform:translateY(100%);pointer-events:none}
-._8z-bar ._l{font-family:'JetBrains Mono',monospace;font-size:10px;color:#ff9100;letter-spacing:2px;text-transform:uppercase}
-._8z-bar input{width:260px;max-width:40vw;padding:10px 14px;background:#0e1117;border:1px solid #1e2532;border-radius:8px;color:#dfe3eb;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:border-color .2s}
-._8z-bar input:focus{border-color:#ff9100}
-._8z-bar input::placeholder{color:#4a5268}
-._8z-bar button{padding:10px 20px;background:transparent;border:1.5px solid #ff9100;border-radius:8px;color:#ff9100;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s}
-._8z-bar button:hover{background:rgba(255,145,0,.08);box-shadow:0 0 24px rgba(255,145,0,.1)}
-._8z-bar ._s{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a5268;min-width:80px;text-align:center}
-._8z-bar ._s.ok{color:#22c55e}._8z-bar ._s.err{color:#ef4444}._8z-bar ._s.wrk{color:#ffc629}
-._8z-bar ._d{font-family:'JetBrains Mono',monospace;font-size:9px;color:#4a5268;letter-spacing:.5px}
-@media print{._8z-sub::after{content:" — contact author for access"}._8z-bar{display:none!important}._8z-lk ._8z-ct{display:none!important}}
-@media(max-width:600px){._8z-bar{flex-wrap:nowrap;gap:6px;padding:8px 10px}._8z-bar input{width:120px;max-width:none;padding:8px 10px;font-size:12px}._8z-bar ._l{font-size:9px;letter-spacing:1px}._8z-bar button{padding:8px 12px;font-size:10px;letter-spacing:1px}._8z-bar ._d{display:none}._8z-bar ._s{min-width:auto;font-size:9px}}
-</style>
-
-<script>
-(function(){
-'use strict';
-var _I=500000,_XR=1024,M=(1n<<64n)-1n,_SK='_8z_pp',_BD="chessbest.org";
-
-function XS(s){var v=s&M;this.state=v===0n?0x9E3779B97F4A7C15n:v}
-XS.prototype.n=function(){var x=this.state;x=(x^((x>>12n)&M))&M;x=(x^((x<<25n)&M))&M;x=(x^((x>>27n)&M))&M;this.state=x;return(x*2685821657736338717n)&M};
-
-function u2b(v){var b=new Uint8Array(8);for(var i=7;i>=0;i--){b[i]=Number(v&0xFFn);v>>=8n}return b}
-function b2u(b){var v=0n;for(var i=0;i<8;i++)v=(v<<8n)|BigInt(b[i]);return v}
-function sha(d){var b=(d instanceof Uint8Array)?d:new TextEncoder().encode(d);return crypto.subtle.digest('SHA-256',b).then(function(r){return new Uint8Array(r)})}
-function cat(){var l=0,a=arguments;for(var i=0;i<a.length;i++)l+=a[i].length;var o=new Uint8Array(l),p=0;for(var i=0;i<a.length;i++){o.set(a[i],p);p+=a[i].length}return o}
-
-async function dk(pp,salt){
-  var ph=await sha(pp),sm=await sha(cat(ph,salt,new TextEncoder().encode("8Z_AUTH_V1")));
-  var rng=new XS(b2u(sm.slice(0,8)));
-  for(var i=0;i<_XR;i++)rng.n();
-  var sh=await sha(u2b(rng.state)),c=cat(ph,sh);
-  var km=await crypto.subtle.importKey('raw',c,'PBKDF2',false,['deriveBits']);
-  return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:salt,iterations:_I,hash:'SHA-256'},km,256));
-}
-
-async function gzD(data){
-  var ds=new DecompressionStream('gzip');
-  var w=ds.writable.getWriter(),r=ds.readable.getReader();
-  w.write(data);w.close();
-  var ch=[];while(true){var x=await r.read();if(x.done)break;ch.push(x.value)}
-  var t=0;for(var i=0;i<ch.length;i++)t+=ch[i].length;
-  var o=new Uint8Array(t),p=0;for(var i=0;i<ch.length;i++){o.set(ch[i],p);p+=ch[i].length}return o;
-}
-
-async function dec(b64,pp){
-  var raw=Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0)});
-  if(raw.length<60)throw new Error('small');
-  var salt=raw.slice(0,32),iv=raw.slice(32,44),ct=raw.slice(44);
-  var kb=await dk(pp,salt);
-  var key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['decrypt']);
-  var comp=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,tagLength:128},key,ct));
-  return new TextDecoder().decode(await gzD(comp));
-}
-
-function show(el,html){
-  el.querySelector('._8z-ct').innerHTML=html;
-  el.querySelector('._8z-ct').style.display='';
-  el.querySelector('._8z-ct').classList.add('_8z-fi');
-  el.querySelector('._8z-lui').style.display='none';
-  el.classList.remove('_8z-lk');el.classList.add('_8z-ok');
-}
-
-function resolveKey(raw){
-  // Domain lock logic
-  if(!_BD) return raw;
-  var isLocal=(window.location.protocol==='file:');
-  var host=(window.location.hostname||'').toLowerCase();
-  var expected=_BD.toLowerCase();
-  // If user typed password||domain explicitly (owner override for local)
-  if(raw.indexOf('||')!==-1){
-    var parts=raw.split('||');
-    if(parts[1].trim().toLowerCase()===expected) return raw;
-    throw new Error('domain');
-  }
-  // On correct domain: auto-append
-  if(!isLocal && host===expected) return raw+'||'+_BD;
-  // Local without explicit domain suffix
-  if(isLocal) throw new Error('domain-local');
-  // Wrong domain
-  throw new Error('domain');
-}
-
-var secs=document.querySelectorAll('._8z-sec[data-8z-blob]');
-if(!secs.length)return;
-
-var bar=document.createElement('div');
-bar.className='_8z-bar';
-var domNote=_BD?'<span class="_d">\uD83C\uDF10 '+_BD+'</span>':'';
-bar.innerHTML='<span class="_l">\uD83D\uDD12 '+secs.length+' Protected</span>'
-  +domNote
-  +'<input type="password" id="_8z_inp" placeholder="Enter access key" autocomplete="current-password">'
-  +'<button id="_8z_btn">Unlock</button>'
-  +'<span class="_s" id="_8z_st"></span>';
-document.body.appendChild(bar);
-
-var inp=document.getElementById('_8z_inp');
-var btn=document.getElementById('_8z_btn');
-var st=document.getElementById('_8z_st');
-
-async function go(){
-  var raw=inp.value;
-  if(!raw){st.textContent='Enter a key';st.className='_s err';return}
-  var pp;
-  try{pp=resolveKey(raw)}catch(e){
-    if(e.message==='domain-local'){
-      st.textContent='Local use restricted';st.className='_s err';
-    }else{
-      st.textContent='Domain restricted';st.className='_s err';
-    }
-    return;
-  }
-  btn.disabled=true;btn.textContent='DERIVING...';
-  st.textContent='500K PBKDF2';st.className='_s wrk';
-  await new Promise(function(r){requestAnimationFrame(function(){requestAnimationFrame(r)})});
-  try{
-    var html=await dec(secs[0].getAttribute('data-8z-blob'),pp);
-    show(secs[0],html);
-    st.textContent='Decrypting '+secs.length+'...';
-    for(var i=1;i<secs.length;i++){
-      try{show(secs[i],await dec(secs[i].getAttribute('data-8z-blob'),pp));}
-      catch(e){console.warn('Section '+i+':',e)}
-    }
-    st.textContent='\u2713 Unlocked';st.className='_s ok';
-    setTimeout(function(){bar.classList.add('_8z-hid')},1500);
-    try{sessionStorage.setItem(_SK,raw)}catch(e){}
-  }catch(e){
-    st.textContent='Not yet.';st.className='_s err';
-    btn.disabled=false;btn.textContent='UNLOCK';inp.value='';inp.focus();
-  }
-}
-
-btn.addEventListener('click',go);
-inp.addEventListener('keydown',function(e){if(e.key==='Enter')go()});
-try{var sv=sessionStorage.getItem(_SK);if(sv){inp.value=sv;go()}}catch(e){}
-})();
-</script>
-<!-- End 8Z Shield Sections -->
 </body>
 </html>
