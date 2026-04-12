@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDL × DCC — 60 High-Potential Domains | BD × AI Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020409; --bg2:#060a14; --bg3:#0b1120; --surface:rgba(15,23,41,.84);
+  --border:rgba(0,229,255,.11); --border-strong:rgba(0,229,255,.24);
+  --cyan:#00e5ff; --cyan-dim:rgba(0,229,255,.12);
+  --gold:#f59e0b; --gold-dim:rgba(245,158,11,.11);
+  --green:#34d399; --green-dim:rgba(52,211,153,.11);
+  --violet:#a78bfa; --violet-dim:rgba(167,139,250,.11);
+  --rose:#ff6b8a; --rose-dim:rgba(255,107,138,.11);
+  --orange:#fb923c; --orange-dim:rgba(251,146,60,.11);
+  --text:#e2e8f4; --muted:#5e7192; --subtle:#1a2540;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(circle at 16% 16%, rgba(0,229,255,.05), transparent 28%),
+    radial-gradient(circle at 84% 74%, rgba(245,158,11,.04), transparent 24%),
+    linear-gradient(180deg,var(--bg),#05070d 100%);
+  color:var(--text); font-family:'Rajdhani',sans-serif; font-size:17px; line-height:1.7; overflow-x:hidden;
+}
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.02;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")
+}
+.wrap{max-width:1240px;margin:0 auto;padding:0 5vw}
+.topbar{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);background:rgba(2,4,9,.84);border-bottom:1px solid rgba(0,229,255,.08)}
+.topbar-inner{max-width:1320px;margin:0 auto;padding:11px 5vw;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.brand,.brand:visited{display:inline-flex;align-items:center;gap:.7rem;text-decoration:none !important;color:var(--text)}
+.brand-mark{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan)}
+.top-links{display:flex;gap:.55rem;flex-wrap:wrap;justify-content:flex-end}
+.top-links a,.top-links a:visited{
+  font-family:'JetBrains Mono',monospace;font-size:.68rem;text-decoration:none !important;padding:.42rem .72rem;border-radius:999px;
+  border:1px solid rgba(0,229,255,.14);color:rgba(226,232,244,.72);background:rgba(255,255,255,.02)
+}
+.top-links a:hover{border-color:rgba(0,229,255,.3);color:var(--cyan)}
+.hero{padding:92px 0 48px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:-10% -5% auto auto;width:44vw;height:44vw;border-radius:50%;filter:blur(100px);background:radial-gradient(circle, rgba(0,229,255,.10), transparent 60%);opacity:.32;pointer-events:none}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px);background-size:96px 96px;mask-image:radial-gradient(ellipse 70% 65% at 50% 35%, black, transparent)}
+.hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin-bottom:1.2rem}
+.hero h1{font-size:clamp(2.6rem,7vw,6rem);line-height:.9;letter-spacing:-.03em;margin-bottom:1.15rem}
+.hero h1 .accent{color:var(--cyan)}
+.hero-sub{font-family:'Cormorant Garamond',serif;font-size:clamp(1.1rem,2vw,1.5rem);font-style:italic;color:var(--muted);max-width:820px;margin-bottom:1.2rem}
+.hero-copy{position:relative;z-index:1}
+.hero-copy p{max-width:78ch;color:rgba(226,232,244,.78)}
+.hero-actions{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.3rem}
+.cta,.cta:visited{
+  display:inline-flex;align-items:center;justify-content:center;gap:.45rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;
+  font-weight:600;letter-spacing:.08em;text-transform:uppercase;text-decoration:none !important;padding:.78rem 1rem;border-radius:4px;transition:all .2s ease
+}
+.cta.primary{color:var(--cyan)!important;background:var(--cyan-dim);border:1px solid rgba(0,229,255,.28)}
+.cta.primary:hover{background:rgba(0,229,255,.18);box-shadow:0 0 16px rgba(0,229,255,.12)}
+.cta.secondary{color:rgba(226,232,244,.74)!important;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.02)}
+.cta.secondary:hover{border-color:rgba(255,255,255,.16)}
+.hero-stats{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.4rem}
+.stat{padding:.72rem .9rem;border-radius:6px;background:rgba(11,17,32,.58);border:1px solid var(--border)}
+.stat strong{display:block;font-family:'JetBrains Mono',monospace;font-size:1.35rem;line-height:1;color:var(--text)}
+.stat span{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.callout{margin-top:1.6rem;border:1px solid rgba(245,158,11,.18);border-radius:8px;background:linear-gradient(135deg, rgba(245,158,11,.08), rgba(11,17,32,.68));padding:1rem 1.1rem}
+.callout h3{font-size:1.08rem;margin-bottom:.4rem}
+.callout p{max-width:78ch;color:rgba(226,232,244,.78)}
+.callout strong{color:var(--gold)}
+.divider{height:1px;max-width:1240px;margin:0 auto;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+section{padding:72px 0}
+.section-head{display:flex;gap:1.1rem;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:1.1rem}
+.section-tag{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.34em;text-transform:uppercase;color:var(--cyan);display:block;margin-bottom:.8rem}
+.section-tag.gold{color:var(--gold)} .section-tag.green{color:var(--green)} .section-tag.violet{color:var(--violet)}
+.section-tag.orange{color:var(--orange)} .section-tag.rose{color:var(--rose)}
+h2{font-size:clamp(1.9rem,4vw,3rem);line-height:1.05;letter-spacing:-.01em}
+.lead{max-width:78ch;color:rgba(226,232,244,.78)}
+.family-nav{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:1rem}
+.family-nav a,.family-nav a:visited{
+  font-family:'JetBrains Mono',monospace;font-size:.68rem;text-decoration:none !important;padding:.38rem .68rem;border-radius:999px;
+  border:1px solid rgba(0,229,255,.14);color:rgba(226,232,244,.72);background:rgba(255,255,255,.02)
+}
+.family-nav a:hover{color:var(--cyan);border-color:rgba(0,229,255,.3)}
+.family{padding:36px 0}
+.family-card{
+  border:1px solid var(--border);border-radius:12px;background:rgba(11,17,32,.64);overflow:hidden;
+  box-shadow:0 12px 36px rgba(0,0,0,.18)
+}
+.family-top{padding:1.1rem 1.1rem .8rem;border-bottom:1px solid rgba(0,229,255,.08);display:flex;gap:1rem;justify-content:space-between;flex-wrap:wrap}
+.family-top h3{font-size:1.28rem;line-height:1.1}
+.family-top .meta{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.family-top .status-evidence{color:var(--green)}
+.family-top .status-highfit{color:var(--cyan)}
+.family-top .status-frontier{color:var(--gold)}
+.domain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;padding:1rem 1.1rem 1.1rem}
+.domain-card{
+  position:relative;border:1px solid rgba(0,229,255,.09);border-radius:10px;padding:1rem;background:rgba(255,255,255,.02);min-height:172px;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease
+}
+.domain-card:hover{transform:translateY(-3px);border-color:var(--border-strong);box-shadow:0 12px 28px rgba(0,0,0,.22)}
+.domain-no{font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.55rem}
+.domain-title{font-size:1.02rem;font-weight:700;line-height:1.18;margin-bottom:.45rem}
+.domain-desc{font-size:.92rem;line-height:1.58;color:var(--muted)}
+.badge{
+  display:inline-flex;align-items:center;font-family:'JetBrains Mono',monospace;font-size:.64rem;padding:.16rem .46rem;border-radius:999px;
+  border:1px solid transparent;margin-left:.5rem
+}
+.badge.evidence{background:var(--green-dim);color:var(--green);border-color:rgba(52,211,153,.25)}
+.badge.highfit{background:var(--cyan-dim);color:var(--cyan);border-color:rgba(0,229,255,.25)}
+.badge.frontier{background:var(--gold-dim);color:var(--gold);border-color:rgba(245,158,11,.25)}
+.legend{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.15rem}
+.legend span{font-family:'JetBrains Mono',monospace;font-size:.67rem;color:var(--muted)}
+.legend b{font-weight:600}
+.summary-box{
+  margin-top:1.5rem;border:1px solid rgba(0,229,255,.12);border-radius:8px;background:rgba(11,17,32,.58);padding:1rem 1.05rem
+}
+.summary-box h3{font-size:1.02rem;margin-bottom:.35rem}
+.summary-box p{max-width:78ch;color:rgba(226,232,244,.78)}
+.footer{padding:44px 0 80px;text-align:center;color:var(--muted)}
+.footer a,.footer a:visited{color:var(--cyan);text-decoration:none !important}
+.footer a:hover{opacity:.82}
+@media(max-width:900px){.topbar-inner{align-items:flex-start;flex-direction:column}.top-links{justify-content:flex-start}}
+@media(max-width:760px){
+  body{font-size:18px}.hero{padding-top:72px}.domain-grid{grid-template-columns:1fr}
+  .hero-stats{gap:.7rem}.stat{flex:1 1 130px}
+}
+</style>
+</head>
+<body>
+  <nav class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/bd/"><span class="brand-mark">BD × AI Lab</span></a>
+      <div class="top-links">
+        <a href="#map">Overview</a>
+        <a href="#families">Families</a>
+        <a href="/crp/">Core Research Papers</a>
+        <a href="/bd/">BD Lab</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero" id="map">
+    <div class="hero-grid"></div>
+    <div class="wrap hero-copy">
+      <div class="hero-eyebrow">MDL × DCC Domain Map</div>
+      <h1>MDL × DCC across <span class="accent">60 domains</span></h1>
+      <div class="hero-sub">A structured map of where MDL × DCC could matter next — from routing, weather, and aerodynamics to games, robotics, medicine, and cosmology.</div>
+      <p>This page takes the earlier domain list and expands it into a cleaner 60-item map. It includes the already-demonstrated proof domains, plus the larger industrial, scientific, media, infrastructure, and frontier areas that appear especially compatible with an MDL × DCC style approach.</p>
+      <p style="margin-top:.85rem">It is meant as an <strong>upgrade of the original MDLxDCC paper page</strong>, not a separate island: the earlier reasoning is preserved, but the domain map is widened so it better reflects the real scope of the method.</p>
+      <div class="hero-actions">
+        <a class="cta primary" href="#families">Open the domain map →</a>
+        <a class="cta secondary" href="/crp/">Back to Core Research Papers</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><strong>60</strong><span>domains</span></div>
+        <div class="stat"><strong>10</strong><span>families</span></div>
+        <div class="stat"><strong>$3T+</strong><span>project upside / year</span></div>
+      </div>
+      <div class="callout">
+        <h3>Why this page uses <strong>$3T+/year</strong></h3>
+        <p>This page uses <strong>$3T+/year</strong> as a directional <strong>project-level upside estimate</strong>. The reason is simple: once the map includes not only the already proven cross-domain core, but also large opportunity surfaces such as gaming and real-time 3D worlds, immersive video, telecom routing, weather and climate compute, aerospace and automotive aerodynamics, robotics, HPC, and hybrid quantum workflows, the higher band becomes the more coherent framing. It is not presented as a precise TAM claim. It is a broad upside signal for what this architecture could matter across many industries if the strongest transfers keep validating.</p>
+      </div>
+      <div class="family-nav">
+        <a href="#family-01">01 · Proof</a>
+        <a href="#family-02">02 · Compute</a>
+        <a href="#family-03">03 · Infra</a>
+        <a href="#family-04">04 · Games & Media</a>
+        <a href="#family-05">05 · Robotics</a>
+        <a href="#family-06">06 · Engineering</a>
+        <a href="#family-07">07 · Energy & Weather</a>
+        <a href="#family-08">08 · Life & Discovery</a>
+        <a href="#family-09">09 · Health</a>
+        <a href="#family-10">10 · Space & Systems</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="divider"></div>
+
+  <section id="families">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="section-tag">Expanded domain map</span>
+          <h2>From proven core to frontier scale</h2>
+        </div>
+        <p class="lead">The status tags below are simple on purpose: <strong>Evidence</strong> means already supported by direct project work, <strong>High-Fit</strong> means industrially strong and architecturally near, and <strong>Frontier</strong> means high-upside but still more exploratory.</p>
+      </div>
+      <div class="legend">
+        <span><b style="color:var(--green)">Evidence</b> · already grounded by direct project work</span>
+        <span><b style="color:var(--cyan)">High-Fit</b> · strong architecture fit and clear industrial value</span>
+        <span><b style="color:var(--gold)">Frontier</b> · large upside, more exploratory or longer-horizon</span>
+      </div>
+
+      <div class="family" id="family-01">
+        <div class="family-card">
+          <div class="family-top">
+            <div>
+              <div class="meta">Family 01</div>
+              <h3>Demonstrated Proof Domains</h3>
+            </div>
+            <div class="meta status-evidence">Evidence · 6 domains</div>
+          </div>
+          <div class="domain-grid">
+
+            <article class="domain-card">
+              <div class="domain-no">01 <span class="badge evidence">Evidence</span></div>
+              <div class="domain-title">Data Compression & Representation</div>
+              <div class="domain-desc">The 8Z trunk domain: shorter generative descriptions, MDL selection, exactness, and adaptive compression.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">02 <span class="badge evidence">Evidence</span></div>
+              <div class="domain-title">TSP & Route Planning</div>
+              <div class="domain-desc">Search governance, multi-scale routing, budget-aware exploration, and path improvement under huge combinatorial spaces.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">03 <span class="badge evidence">Evidence</span></div>
+              <div class="domain-title">Sudoku & Constraint Satisfaction</div>
+              <div class="domain-desc">Structured solving processes, strategy ranking, compressibility of solution paths, and DCC-guided decision layers.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">04 <span class="badge evidence">Evidence</span></div>
+              <div class="domain-title">Chess Evaluation & Move Selection</div>
+              <div class="domain-desc">Tie-break governance, multi-engine arbitration, depth-stability analysis, and strategic signal extraction.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">05 <span class="badge evidence">Evidence</span></div>
+              <div class="domain-title">Crossword Generation & Lexical Search</div>
+              <div class="domain-desc">Word-placement search, hint quality control, clue-lexicon refinement, and combinatorial layout governance.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">06 <span class="badge evidence">Evidence</span></div>
+              <div class="domain-title">Neural Architecture Search Landscapes</div>
+              <div class="domain-desc">Search-space navigation, noise filtering, cheap probes before expensive training, and landscape governance.</div>
+            </article>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="family" id="family-02">
+        <div class="family-card">
+          <div class="family-top">
+            <div>
+              <div class="meta">Family 02</div>
+              <h3>Strategic Compute & AI Systems</h3>
+            </div>
+            <div class="meta status-highfit">High-Fit · 6 domains</div>
+          </div>
+          <div class="domain-grid">
+
+            <article class="domain-card">
+              <div class="domain-no">07 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">GPU Workload Orchestration</div>
+              <div class="domain-desc">Route the right kernels and candidate batches to parallel hardware instead of spending budget uniformly.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">08 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">HPC / Supercomputer Job Steering</div>
+              <div class="domain-desc">Use MDL × DCC as a governor over enormous simulation campaigns, not just inside a single run.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">09 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Hybrid CPU–GPU Pipeline Governance</div>
+              <div class="domain-desc">Decide what stays on CPU, what expands on GPU, and when to escalate or compress the workflow.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">10 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Hybrid Quantum–Classical Workflow Orchestration</div>
+              <div class="domain-desc">Treat quantum as a costly specialist tier and govern when it is worth invoking.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">11 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Quantum Circuit / Ansatz Search</div>
+              <div class="domain-desc">Search and rank circuit families, ansatz choices, and measurement strategies under limited quantum budget.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">12 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Program Synthesis & Code Architecture Search</div>
+              <div class="domain-desc">Explore code structures, refactors, and module choices through cheapest tests before full implementation.</div>
+            </article>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="family" id="family-03">
+        <div class="family-card">
+          <div class="family-top">
+            <div>
+              <div class="meta">Family 03</div>
+              <h3>Networks & Digital Infrastructure</h3>
+            </div>
+            <div class="meta status-highfit">High-Fit · 6 domains</div>
+          </div>
+          <div class="domain-grid">
+
+            <article class="domain-card">
+              <div class="domain-no">13 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Telecom IP Routing & Traffic Engineering</div>
+              <div class="domain-desc">Real-time path selection, policy-aware routing, congestion relief, and multi-flow orchestration.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">14 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Cloud Resource Orchestration</div>
+              <div class="domain-desc">Govern compute, storage, and service placement across changing demand and cost surfaces.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">15 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Datacenter Power & Cooling Optimization</div>
+              <div class="domain-desc">Treat thermals, energy, and workload placement as one governed optimization surface.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">16 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Cyber Defense Simulation & Response Routing</div>
+              <div class="domain-desc">Prioritize detection, response, and containment paths under uncertainty and attack pressure.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">17 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Edge / IoT Fleet Orchestration</div>
+              <div class="domain-desc">Coordinate huge numbers of constrained devices across topology, latency, and power limits.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">18 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Distributed Storage, Retrieval & Data Movement</div>
+              <div class="domain-desc">Govern what to cache, move, reconstruct, compress, or regenerate across large systems.</div>
+            </article>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="family" id="family-04">
+        <div class="family-card">
+          <div class="family-top">
+            <div>
+              <div class="meta">Family 04</div>
+              <h3>Gaming, Rendering & Media Worlds</h3>
+            </div>
+            <div class="meta status-highfit">High-Fit · 6 domains</div>
+          </div>
+          <div class="domain-grid">
+
+            <article class="domain-card">
+              <div class="domain-no">19 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">3D Rendering Budget Governance</div>
+              <div class="domain-desc">Allocate detail, lighting, sampling, and compute where they matter most instead of everywhere equally.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">20 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Real-Time Game World Simulation</div>
+              <div class="domain-desc">Run world updates, local physics, and state transitions under budget while preserving coherence.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">21 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">NPC / Swarm Behavior Orchestration</div>
+              <div class="domain-desc">Coordinate many agents with layered goals, local signals, and global stability constraints.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">22 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">AI Movie Scene Generation</div>
+              <div class="domain-desc">Move from brute frame synthesis toward governed scene selection, world continuity, and cheaper refinement.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">23 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Immersive Video / VR World Continuity</div>
+              <div class="domain-desc">Preserve identity, camera logic, style, and temporal coherence across long sequences.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">24 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Virtual Production & Camera Planning</div>
+              <div class="domain-desc">Search shot sequences, staging, blocking, and cinematic paths across story and compute constraints.</div>
+            </article>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="family" id="family-05">
+        <div class="family-card">
+          <div class="family-top">
+            <div>
+              <div class="meta">Family 05</div>
+              <h3>Robotics, Autonomy & Digital Twins</h3>
+            </div>
+            <div class="meta status-highfit">High-Fit · 6 domains</div>
+          </div>
+          <div class="domain-grid">
+
+            <article class="domain-card">
+              <div class="domain-no">25 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Embodied Robotics Control</div>
+              <div class="domain-desc">Link perception, world-model compression, and action selection under real-time constraints.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">26 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Drone Fleet Coordination</div>
+              <div class="domain-desc">Govern route, sensing, battery, spacing, and mission adaptation across many flying agents.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">27 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Autonomous Vehicle Planning</div>
+              <div class="domain-desc">Handle path search, local hazard response, and system-level routing under changing environments.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">28 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Warehouse & Fulfillment Robotics</div>
+              <div class="domain-desc">Optimize flows among robots, shelves, tasks, and bottlenecks without brute-force scheduling.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">29 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Industrial Robot Cell Orchestration</div>
+              <div class="domain-desc">Coordinate multi-arm, multi-station production cells with adaptive sequencing and safety-aware routing.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">30 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Digital Twins for Machines & Factories</div>
+              <div class="domain-desc">Run governed model hierarchies where cheap twins decide when expensive simulation is worth it.</div>
+            </article>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="family" id="family-06">
+        <div class="family-card">
+          <div class="family-top">
+            <div>
+              <div class="meta">Family 06</div>
+              <h3>Engineering Design, CFD & Physical Systems</h3>
+            </div>
+            <div class="meta status-highfit">High-Fit · 6 domains</div>
+          </div>
+          <div class="domain-grid">
+
+            <article class="domain-card">
+              <div class="domain-no">31 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Aircraft Aerodynamic Design</div>
+              <div class="domain-desc">Search fuselage, wing, and surface variants through multi-fidelity aerodynamic pipelines.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">32 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Automotive Aerodynamic Design</div>
+              <div class="domain-desc">Govern shape search for drag, cooling, stability, and manufacturability across many candidates.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">33 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Turbine, Propeller & Fan Optimization</div>
+              <div class="domain-desc">Select geometry families and simulation depth under competing efficiency and stability goals.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">34 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">CFD Multi-Fidelity Simulation Pipelines</div>
+              <div class="domain-desc">Use cheap surrogate passes to decide where expensive fluid simulations should concentrate.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">35 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Generative CAD & Mechanical Design</div>
+              <div class="domain-desc">Search structural forms, parameter sets, and manufacturable assemblies with governed escalation.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">36 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Advanced Materials & Structural Design</div>
+              <div class="domain-desc">Treat material formulas and structural layouts as generator spaces to be searched, not guessed.</div>
+            </article>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="family" id="family-07">
+        <div class="family-card">
+          <div class="family-top">
+            <div>
+              <div class="meta">Family 07</div>
+              <h3>Energy, Weather & Earth Systems</h3>
+            </div>
+            <div class="meta status-highfit">High-Fit · 6 domains</div>
+          </div>
+          <div class="domain-grid">
+
+            <article class="domain-card">
+              <div class="domain-no">37 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Weather Forecasting Compute Allocation</div>
+              <div class="domain-desc">Govern ensemble members, regional resolution, and escalation to expensive runs where forecast value is highest.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">38 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Climate Model Ensemble Governance</div>
+              <div class="domain-desc">Coordinate many long-horizon models, scenarios, and uncertainties under limited compute budget.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">39 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Smart Grid Orchestration</div>
+              <div class="domain-desc">Balance generation, storage, routing, and failure response across dynamic energy networks.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">40 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Renewable Siting & Dispatch</div>
+              <div class="domain-desc">Search optimal placement and dispatch for solar, wind, storage, and hybrid systems.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">41 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">Fusion / Plasma Control</div>
+              <div class="domain-desc">Govern diagnostics, control policies, and simulation focus inside unstable high-dimensional regimes.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">42 <span class="badge highfit">High-Fit</span></div>
+              <div class="domain-title">HVAC & Building Energy Control</div>
+              <div class="domain-desc">Treat buildings as dynamic governed systems balancing comfort, cost, and energy.</div>
+            </article>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="family" id="family-08">
+        <div class="family-card">
+          <div class="family-top">
+            <div>
+              <div class="meta">Family 08</div>
+              <h3>Life, Biology & Discovery Engines</h3>
+            </div>
+            <div class="meta status-frontier">Frontier · 6 domains</div>
+          </div>
+          <div class="domain-grid">
+
+            <article class="domain-card">
+              <div class="domain-no">43 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Origin-of-Life Simulations</div>
+              <div class="domain-desc">Search rule sets, environments, and emergence pathways rather than brute-force every chemistry equally.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">44 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Artificial Life & Emergent Ecosystems</div>
+              <div class="domain-desc">Govern large spaces of agents, rules, and niches to find meaningful emergent behaviors.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">45 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Protein Folding & Conformational Search</div>
+              <div class="domain-desc">Use governed candidate exploration over expensive biological state spaces.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">46 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Molecular Dynamics Campaign Steering</div>
+              <div class="domain-desc">Decide which trajectories, regions, or conditions deserve deeper simulation budget.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">47 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Drug Discovery & Molecule Search</div>
+              <div class="domain-desc">Search molecule families, docking hypotheses, and synthesis pathways under structured constraints.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">48 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Genomics & Sequence Structure Discovery</div>
+              <div class="domain-desc">Look for shorter explanatory generators and hidden regularities in biological sequences.</div>
+            </article>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="family" id="family-09">
+        <div class="family-card">
+          <div class="family-top">
+            <div>
+              <div class="meta">Family 09</div>
+              <h3>Health, Medicine & Experimental Systems</h3>
+            </div>
+            <div class="meta status-frontier">Frontier · 6 domains</div>
+          </div>
+          <div class="domain-grid">
+
+            <article class="domain-card">
+              <div class="domain-no">49 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Medical Imaging Reconstruction & Triage</div>
+              <div class="domain-desc">Allocate expensive reconstruction or review effort where uncertainty and impact are highest.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">50 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Personalized Treatment Pathway Search</div>
+              <div class="domain-desc">Explore intervention sequences under competing goals, constraints, and patient-specific signals.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">51 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Synthetic Biology Design Loops</div>
+              <div class="domain-desc">Search gene circuits, constructs, and staged tests through governed experimental pipelines.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">52 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Epidemiology & Outbreak Scenario Simulation</div>
+              <div class="domain-desc">Govern scenario families, regional focus, and adaptive model depth during changing outbreaks.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">53 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Lab Automation & Experiment Planning</div>
+              <div class="domain-desc">Use DCC-style scheduling to decide which next experiment buys the most information per cost.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">54 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Biomedical Device Design Optimization</div>
+              <div class="domain-desc">Search geometry, materials, safety, and performance under multi-objective medical constraints.</div>
+            </article>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="family" id="family-10">
+        <div class="family-card">
+          <div class="family-top">
+            <div>
+              <div class="meta">Family 10</div>
+              <h3>Space, Society & Large-Scale Systems</h3>
+            </div>
+            <div class="meta status-frontier">Frontier · 6 domains</div>
+          </div>
+          <div class="domain-grid">
+
+            <article class="domain-card">
+              <div class="domain-no">55 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Universe / Cosmology Simulation Governance</div>
+              <div class="domain-desc">Decide which scales, hypotheses, and regions deserve the deepest simulation budget.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">56 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Galaxy & Large-Scale Structure Modeling</div>
+              <div class="domain-desc">Coordinate model families and resolution choices across extreme-scale cosmological computation.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">57 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Satellite Constellation Routing</div>
+              <div class="domain-desc">Optimize paths, handoffs, capacity, and resilience in large orbital communication systems.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">58 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Space Mission & Trajectory Planning</div>
+              <div class="domain-desc">Apply governed search to route design, fuel trade-offs, timing windows, and mission staging.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">59 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Urban Traffic & Logistics Ecosystems</div>
+              <div class="domain-desc">Treat roads, fleets, depots, and flows as one adaptive governed network.</div>
+            </article>
+
+            <article class="domain-card">
+              <div class="domain-no">60 <span class="badge frontier">Frontier</span></div>
+              <div class="domain-title">Financial Market Microstructure Simulation</div>
+              <div class="domain-desc">Search and govern strategies, liquidity regimes, and reaction policies in high-frequency environments.</div>
+            </article>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-box">
+        <h3>What this map is really saying</h3>
+        <p>MDL × DCC should not be framed as “just another AI model.” The deeper claim is that it can act as a search governor, compute allocator, representation selector, and multi-scale bridge across many expensive domains. That is why the map now reaches cleanly from compression and TSP to telecom routing, weather, HPC, robotics, CFD, immersive media, and quantum-adjacent workflows.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p>BD × AI Lab · Core research map for MDL × DCC</p>
+      <p><a href="/crp/">Back to Core Research Papers</a> · <a href="/bd/">Back to BD portfolio</a></p>
+    </div>
+  </footer>
+</body>
+</html>
