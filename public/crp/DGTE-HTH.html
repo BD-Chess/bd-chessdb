@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DGTE × HTH Hybrid — Best Synthesis · 8Z Research</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+:root{
+  --bg:#060914;
+  --bg2:#0a0f1d;
+  --panel:#0d1325;
+  --panel2:#11192f;
+  --panel3:#141f3c;
+  --line:#1b2748;
+  --soft:#25345f;
+  --text:#e6ebf6;
+  --dim:#9aa7c7;
+  --muted:#6f7b98;
+  --cyan:#38c8ff;
+  --teal:#3de0c4;
+  --gold:#ffd34d;
+  --warm:#ff9b5e;
+  --green:#54d48a;
+  --orange:#f0a249;
+  --red:#ff6e88;
+  --violet:#a68bff;
+  --shadow:0 20px 60px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'IBM Plex Sans',sans-serif;
+  color:var(--text);
+  line-height:1.72;
+  background:
+    radial-gradient(circle at 14% 14%, rgba(56,200,255,.12), transparent 28%),
+    radial-gradient(circle at 88% 10%, rgba(255,211,77,.10), transparent 20%),
+    radial-gradient(circle at 50% 82%, rgba(61,224,196,.08), transparent 28%),
+    linear-gradient(180deg, #060914 0%, #05070f 100%);
+}
+body::before, body::after{
+  content:""; position:fixed; inset:auto; border-radius:50%; filter:blur(80px); pointer-events:none; z-index:-1; opacity:.2;
+}
+body::before{width:32vw;height:32vw;left:-10vw;top:20vh;background:rgba(56,200,255,.22)}
+body::after{width:28vw;height:28vw;right:-8vw;top:60vh;background:rgba(255,155,94,.18)}
+
+a{color:var(--cyan)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+.topbar{
+  position:sticky; top:0; z-index:50;
+  backdrop-filter:blur(14px);
+  background:rgba(6,9,20,.88);
+  border-bottom:1px solid rgba(56,200,255,.10);
+}
+.topbar-inner{
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  padding:10px 0;
+}
+.brand{
+  font-family:'IBM Plex Mono',monospace; text-transform:uppercase;
+  letter-spacing:.24em; font-size:.7rem; color:var(--cyan); text-decoration:none;
+}
+.links{display:flex;gap:.5rem;flex-wrap:wrap}
+.links a{
+  font-family:'IBM Plex Mono',monospace; font-size:.64rem; text-decoration:none;
+  color:rgba(230,235,246,.65); padding:4px 10px; border:1px solid rgba(56,200,255,.12);
+  border-radius:999px;
+}
+.links a:hover{color:var(--cyan);border-color:rgba(56,200,255,.26)}
+.hero{padding:72px 0 32px;border-bottom:1px solid var(--line)}
+.kicker{
+  display:inline-block; margin:0 auto 18px; padding:6px 12px;
+  font-family:'IBM Plex Mono',monospace; font-size:.67rem; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--gold); border:1px solid rgba(255,211,77,.18); border-radius:999px; background:rgba(255,211,77,.06);
+}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:end}
+.hero-copy h1{
+  font-family:'IBM Plex Mono',monospace; font-size:clamp(2rem,4vw,3.5rem); line-height:1.04; letter-spacing:.03em;
+  color:var(--gold); margin-bottom:16px;
+}
+.hero-copy h1 span{color:var(--text)}
+.subtitle{font-size:1.08rem; color:var(--dim); max-width:760px}
+.thesis{
+  margin-top:22px; padding:18px 20px; background:linear-gradient(180deg, rgba(17,25,47,.92), rgba(13,19,37,.92));
+  border:1px solid var(--line); border-left:3px solid var(--warm); border-radius:14px; box-shadow:var(--shadow)
+}
+.thesis strong{color:var(--warm)}
+.hero-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.stat{
+  background:linear-gradient(180deg, rgba(17,25,47,.95), rgba(13,19,37,.95));
+  border:1px solid var(--line); border-radius:16px; padding:16px 16px 14px; box-shadow:var(--shadow)
+}
+.stat .n{font-family:'IBM Plex Mono',monospace;font-size:1.6rem;color:var(--gold);font-weight:700}
+.stat .l{font-size:.73rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.nav2{position:sticky;top:49px;z-index:40;background:rgba(6,9,20,.92);border-bottom:1px solid var(--line)}
+.nav2 .wrap{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:12px 22px}
+.nav2 a{
+  font-family:'IBM Plex Mono',monospace;font-size:.63rem;text-decoration:none;color:var(--dim);
+  border:1px solid var(--line);padding:6px 11px;border-radius:999px
+}
+.nav2 a:hover{color:var(--gold);border-color:rgba(255,211,77,.35)}
+section{padding:52px 0 0}
+.section-head{margin-bottom:18px}
+.section-kicker{
+  font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px
+}
+.section-title{font-family:'IBM Plex Mono',monospace;font-size:1.45rem;color:var(--text);margin-bottom:10px}
+.section-title span{color:var(--gold)}
+.section-lead{max-width:900px;color:var(--dim)}
+.panel{
+  background:linear-gradient(180deg, rgba(17,25,47,.93), rgba(13,19,37,.94));
+  border:1px solid var(--line); border-radius:18px; padding:24px; box-shadow:var(--shadow)
+}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{
+  background:linear-gradient(180deg, rgba(20,31,60,.78), rgba(13,19,37,.95));
+  border:1px solid var(--line); border-radius:16px; padding:18px
+}
+.card h3{font-size:1.02rem;margin:4px 0 10px;color:var(--text)}
+.card p{font-size:.95rem;color:var(--dim)}
+.badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;padding:4px 9px;border-radius:999px;border:1px solid var(--line);margin-bottom:10px}
+.b-cyan{color:var(--cyan);border-color:rgba(56,200,255,.26);background:rgba(56,200,255,.07)}
+.b-gold{color:var(--gold);border-color:rgba(255,211,77,.25);background:rgba(255,211,77,.07)}
+.b-green{color:var(--green);border-color:rgba(84,212,138,.25);background:rgba(84,212,138,.07)}
+.b-orange{color:var(--orange);border-color:rgba(240,162,73,.25);background:rgba(240,162,73,.07)}
+.b-red{color:var(--red);border-color:rgba(255,110,136,.25);background:rgba(255,110,136,.07)}
+.b-violet{color:var(--violet);border-color:rgba(166,139,255,.25);background:rgba(166,139,255,.07)}
+.list{padding-left:18px}
+.list li{margin:8px 0;color:var(--dim)}
+.note{padding:16px 18px;border-radius:14px;border-left:3px solid var(--line);font-size:.94rem}
+.note strong{color:var(--text)}
+.note-gold{background:rgba(255,211,77,.06);border-left-color:var(--gold);color:#eadfb0}
+.note-cyan{background:rgba(56,200,255,.06);border-left-color:var(--cyan);color:#b9def1}
+.note-orange{background:rgba(240,162,73,.07);border-left-color:var(--orange);color:#efcfaf}
+.note-red{background:rgba(255,110,136,.07);border-left-color:var(--red);color:#f0bfca}
+.note-green{background:rgba(84,212,138,.07);border-left-color:var(--green);color:#c3eccf}
+.diagram{overflow:auto;border-radius:18px;border:1px solid var(--line);background:linear-gradient(180deg,#0c1223,#09101f);padding:18px;box-shadow:var(--shadow)}
+.diagram svg{width:100%;height:auto;display:block}
+.eq{font-family:'IBM Plex Mono',monospace;font-size:.84rem;color:var(--teal);padding:12px 14px;background:#091321;border:1px solid rgba(61,224,196,.12);border-radius:12px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{padding:12px 12px;border:1px solid var(--line);vertical-align:top}
+th{font-family:'IBM Plex Mono',monospace;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);background:#11182e;text-align:left}
+td{color:var(--dim);background:rgba(17,25,47,.72)}
+tr:nth-child(even) td{background:rgba(13,19,37,.84)}
+.score{font-family:'IBM Plex Mono',monospace;color:var(--gold)}
+.timeline{display:grid;gap:14px}
+.step{display:grid;grid-template-columns:60px 1fr;gap:14px;align-items:start}
+.step-n{font-family:'IBM Plex Mono',monospace;font-size:1.2rem;font-weight:700;color:var(--gold);padding-top:2px}
+.step-body{padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:rgba(17,25,47,.72)}
+.step-body h3{font-size:1rem;color:var(--text);margin-bottom:6px}
+.mini{font-size:.86rem;color:var(--muted)}
+.accordion{display:grid;gap:10px}
+details{border:1px solid var(--line);border-radius:14px;background:rgba(17,25,47,.72);overflow:hidden}
+summary{cursor:pointer;list-style:none;padding:14px 16px;font-family:'IBM Plex Mono',monospace;font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text)}
+summary::-webkit-details-marker{display:none}
+details .body{padding:0 16px 16px;color:var(--dim)}
+footer{padding:60px 0 80px;border-top:1px solid var(--line);margin-top:58px;text-align:center}
+footer .quote{font-size:1.02rem;font-style:italic;color:var(--gold);margin-bottom:12px}
+footer p{color:var(--muted);font-size:.88rem}
+.small{font-size:.85rem;color:var(--muted)}
+@media (max-width:980px){
+  .hero-grid,.grid-2,.grid-3{grid-template-columns:1fr}
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:640px){
+  .topbar-inner{align-items:flex-start;flex-direction:column}
+  .hero{padding-top:48px}
+  .hero-stats{grid-template-columns:1fr 1fr}
+  .section-title{font-size:1.18rem}
+  .panel,.card{padding:18px}
+  .nav2{top:77px}
+  .step{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="/crp/">BD × AI Lab</a>
+      <div class="links">
+        <a href="/crp/">All Papers</a>
+        <a href="/crp/DGTE.html">DGTE</a>
+        <a href="/crp/HTH.html">HTH</a>
+        <a href="/crp/MDLxDCC.html">MDL×DCC</a>
+        <a href="/bd/">Portfolio</a>
+      </div>
+    </div>
+  </div>
+
+  <header class="hero">
+    <div class="wrap">
+      <div class="kicker">8Z Research · April 2026 · Meta-Synthesis of 5 Model Drafts</div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1>DGTE × HTH <span>Hybrid</span></h1>
+          <p class="subtitle">One page built from the strongest parts of all submitted variants: GPT’s decision discipline, Claude’s heart-lungs framing, Gemini’s visual clarity and thermodynamic bridge, Grok’s TBH system ambition, and Qwen’s sharp architectural separation of bubbles versus capsules.</p>
+          <div class="thesis">
+            <strong>Main thesis:</strong> the best hybrid is not a chaotic bubble replacement of DGTE capsules. The best hybrid is a <strong>channel-coupled architecture</strong> where <strong>DGTE remains the ordered thermal core</strong>, <strong>HTH becomes the hydraulic-pneumatic organ around it</strong>, and <strong>DCC/MDL governs which channel dominates</strong> under real site conditions.
+          </div>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><div class="n">5</div><div class="l">source drafts merged</div></div>
+          <div class="stat"><div class="n">3</div><div class="l">serious design lanes</div></div>
+          <div class="stat"><div class="n">4</div><div class="l">kill tests before scale-up</div></div>
+          <div class="stat"><div class="n">1</div><div class="l">recommended baseline</div></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="nav2">
+    <div class="wrap">
+      <a href="#consensus">Consensus</a>
+      <a href="#architecture">Reference Architecture</a>
+      <a href="#lanes">Design Lanes</a>
+      <a href="#diagram">Block Diagram</a>
+      <a href="#physics">Physics</a>
+      <a href="#tests">Kill Tests</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#appendix">Model Contributions</a>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section id="consensus">
+      <div class="section-head">
+        <div class="section-kicker">Section 01</div>
+        <h2 class="section-title">What all five drafts <span>actually agree on</span></h2>
+        <p class="section-lead">Under different wording, every serious version converged to the same structural answer. That agreement is the real signal.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <div class="badge b-green">Strong agreement</div>
+          <h3>Do not replace DGTE capsules with free bubbles</h3>
+          <p>Bubble-native versions look seductive but break the exact property DGTE needs: ordered, repeatable, individually trackable buoyancy cycles. Merging, splitting, dissolving, and turbulence make the loop physically messy and operationally weak.</p>
+        </div>
+        <div class="card">
+          <div class="badge b-cyan">Strong agreement</div>
+          <h3>Pair the systems as organs, not as a slurry</h3>
+          <p>DGTE is the heart: closed, disciplined, thermal, traceable. HTH is the lungs: open, passive, hydraulic, pneumatic, terrain-aware. The strongest hybrid couples them while preserving what each does well.</p>
+        </div>
+        <div class="card">
+          <div class="badge b-gold">Strong agreement</div>
+          <h3>DCC/MDL should govern the channel mix</h3>
+          <p>The hybrid should not be hardcoded into one dominant mechanism. River speed, depth, thermal gradient, storage state, and duty target should determine when flow, thermal lift, or compressed-air assist leads.</p>
+        </div>
+      </div>
+      <div style="margin-top:18px" class="note note-gold">
+        <strong>Best single sentence from the whole comparison:</strong> HTH should not replace DGTE. HTH should become the <strong>hydro-pneumatic organ around the DGTE capsule core</strong>.
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="section-head">
+        <div class="section-kicker">Section 02</div>
+        <h2 class="section-title">Reference architecture — <span>the best baseline</span></h2>
+        <p class="section-lead">This is the lane worth building first. It captures almost all of the upside without inheriting the worst instability risks.</p>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="badge b-cyan">Recommended baseline</div>
+          <h3 style="margin-bottom:10px;color:var(--text)">Modular tandem hybrid</h3>
+          <ul class="list">
+            <li><strong>DGTE module:</strong> sealed capsules, hot ascent, cold descent, linear generators, recuperator, strict repeatability.</li>
+            <li><strong>HTH module:</strong> Venturi entrainment, polyline routing, depth head, passive compression, degassing, air buffering.</li>
+            <li><strong>Shared infrastructure:</strong> cold sink, site geometry, power electronics, sensors, valves, DCC layer, maintenance access.</li>
+            <li><strong>Shared logic:</strong> when river kinetic power is high, HTH carries more load; when thermal gradient is strong, DGTE dominates; when storage or crossover assistance is needed, compressed air becomes an active support channel.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <div class="badge b-violet">Why this wins</div>
+          <ul class="list">
+            <li>Preserves DGTE order instead of destroying it.</li>
+            <li>Lets HTH contribute without forcing its turbulence into the capsule core.</li>
+            <li>Supports multi-source sites: river + depth + waste heat + solar thermal + storage.</li>
+            <li>Fits staged R&amp;D: you can test each module independently, then test coupling.</li>
+            <li>Provides an immediate product story: <strong>DC + compressed air + thermal harvesting</strong> in one site-adaptive skid.</li>
+          </ul>
+          <div class="note note-cyan" style="margin-top:14px">
+            <strong>Design rule:</strong> mix control layers, not uncontrolled working bodies.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="lanes">
+      <div class="section-head">
+        <div class="section-kicker">Section 03</div>
+        <h2 class="section-title">Three design lanes <span>worth keeping</span></h2>
+        <p class="section-lead">All five models generated variants. These three are the ones still worth serious attention after removing noise.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <div class="badge b-green">Lane A · build first</div>
+          <h3>Modular tandem</h3>
+          <p>The practical baseline. DGTE and HTH stay physically distinct but operationally coupled. Lowest technical drama. Best path to first credible prototype.</p>
+        </div>
+        <div class="card">
+          <div class="badge b-orange">Lane B · frontier but plausible</div>
+          <h3>Trompe-assisted DGTE</h3>
+          <p>Use HTH-derived compression and flow only to help DGTE: self-priming, crossover assist, pressure smoothing, degassing, and short-term storage. Same DGTE core, stronger breathing.</p>
+        </div>
+        <div class="card">
+          <div class="badge b-violet">Lane C · speculative frontier</div>
+          <h3>Semi-sealed buoyancy pods</h3>
+          <p>Not free bubbles. Not rigid capsules. A middle class of thermal-pressure-responsive pods with bounded deformability. This is interesting, but it is a later R&amp;D lane, not the first product lane.</p>
+        </div>
+      </div>
+      <div style="margin-top:18px" class="grid-2">
+        <div class="note note-orange">
+          <strong>What to reject early:</strong> a single chaotic pipe where capsules, free bubbles, entrainment turbulence, and thermal cycling all happen together. It sounds elegant and usually collapses into a control nightmare.
+        </div>
+        <div class="note note-red">
+          <strong>Reason for rejection:</strong> once your working body is no longer individually predictable, DGTE stops being DGTE. At that point you have a pretty story, not a machine.
+        </div>
+      </div>
+    </section>
+
+    <section id="diagram">
+      <div class="section-head">
+        <div class="section-kicker">Section 04</div>
+        <h2 class="section-title">Hybrid block diagram — <span>one clean view</span></h2>
+        <p class="section-lead">This takes Qwen’s architectural separation, Claude’s heart-lungs metaphor, GPT’s decision clarity, and Gemini/Grok’s stronger visual intuition into one diagram.</p>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 1100 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DGTE HTH hybrid block diagram">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#18274a"/>
+              <stop offset="100%" stop-color="#0f1630"/>
+            </linearGradient>
+            <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#153027"/>
+              <stop offset="100%" stop-color="#0f211b"/>
+            </linearGradient>
+            <linearGradient id="g3" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#352818"/>
+              <stop offset="100%" stop-color="#251a10"/>
+            </linearGradient>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#38c8ff"/>
+            </marker>
+            <marker id="arrowGold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#ffd34d"/>
+            </marker>
+          </defs>
+
+          <rect x="30" y="70" width="300" height="450" rx="18" fill="url(#g2)" stroke="#1b5c4b"/>
+          <text x="55" y="108" fill="#54d48a" font-family="IBM Plex Mono" font-size="24">HTH MODULE</text>
+          <text x="55" y="138" fill="#b7d7c3" font-family="IBM Plex Sans" font-size="16">Open hydraulic / pneumatic organ</text>
+
+          <rect x="55" y="170" width="250" height="72" rx="12" fill="#102318" stroke="#246045"/>
+          <text x="76" y="198" fill="#54d48a" font-family="IBM Plex Mono" font-size="15">Venturi + Entrainment</text>
+          <text x="76" y="220" fill="#dce8df" font-family="IBM Plex Sans" font-size="14">Current capture, terrain-following flow</text>
+
+          <rect x="55" y="264" width="250" height="72" rx="12" fill="#102318" stroke="#246045"/>
+          <text x="76" y="292" fill="#54d48a" font-family="IBM Plex Mono" font-size="15">Depth Head + Compression</text>
+          <text x="76" y="314" fill="#dce8df" font-family="IBM Plex Sans" font-size="14">Hydrostatic air compression / buffer</text>
+
+          <rect x="55" y="358" width="250" height="72" rx="12" fill="#102318" stroke="#246045"/>
+          <text x="76" y="386" fill="#54d48a" font-family="IBM Plex Mono" font-size="15">Degassing + Assist</text>
+          <text x="76" y="408" fill="#dce8df" font-family="IBM Plex Sans" font-size="14">Priming, crossover assist, storage</text>
+
+          <rect x="400" y="50" width="300" height="500" rx="18" fill="url(#g1)" stroke="#274787"/>
+          <text x="425" y="88" fill="#ffd34d" font-family="IBM Plex Mono" font-size="24">DGTE CORE</text>
+          <text x="425" y="118" fill="#cfdaf5" font-family="IBM Plex Sans" font-size="16">Closed thermal loop, ordered capsules</text>
+
+          <rect x="430" y="150" width="110" height="300" rx="20" fill="#112040" stroke="#3a63b8"/>
+          <text x="448" y="178" fill="#ff9b5e" font-family="IBM Plex Mono" font-size="14">HOT</text>
+          <text x="443" y="198" fill="#dbe5ff" font-family="IBM Plex Sans" font-size="13">ascent</text>
+          <line x1="485" y1="420" x2="485" y2="215" stroke="#ff9b5e" stroke-width="8" marker-end="url(#arrowGold)"/>
+
+          <rect x="560" y="150" width="110" height="300" rx="20" fill="#112040" stroke="#3a63b8"/>
+          <text x="576" y="178" fill="#38c8ff" font-family="IBM Plex Mono" font-size="14">COLD</text>
+          <text x="576" y="198" fill="#dbe5ff" font-family="IBM Plex Sans" font-size="13">descent</text>
+          <line x1="615" y1="215" x2="615" y2="420" stroke="#38c8ff" stroke-width="8" marker-end="url(#arrow)"/>
+
+          <rect x="457" y="468" width="185" height="48" rx="12" fill="#0e1830" stroke="#3156a3"/>
+          <text x="479" y="498" fill="#dce6ff" font-family="IBM Plex Sans" font-size="14">Recuperator + crossover zone</text>
+
+          <rect x="770" y="70" width="300" height="450" rx="18" fill="url(#g3)" stroke="#6d4a1a"/>
+          <text x="795" y="108" fill="#ffd34d" font-family="IBM Plex Mono" font-size="24">DCC / MDL LAYER</text>
+          <text x="795" y="138" fill="#e6dcb9" font-family="IBM Plex Sans" font-size="16">Shared governor and scheduler</text>
+
+          <rect x="795" y="170" width="250" height="72" rx="12" fill="#24190e" stroke="#78511d"/>
+          <text x="816" y="198" fill="#ffd34d" font-family="IBM Plex Mono" font-size="15">Channel Arbitration</text>
+          <text x="816" y="220" fill="#efe5c8" font-family="IBM Plex Sans" font-size="14">Flow vs thermal vs assist priority</text>
+
+          <rect x="795" y="264" width="250" height="72" rx="12" fill="#24190e" stroke="#78511d"/>
+          <text x="816" y="292" fill="#ffd34d" font-family="IBM Plex Mono" font-size="15">Site-Adaptive Routing</text>
+          <text x="816" y="314" fill="#efe5c8" font-family="IBM Plex Sans" font-size="14">Pool, river, coastal, waste-heat modes</text>
+
+          <rect x="795" y="358" width="250" height="72" rx="12" fill="#24190e" stroke="#78511d"/>
+          <text x="816" y="386" fill="#ffd34d" font-family="IBM Plex Mono" font-size="15">Duty / Stability Control</text>
+          <text x="816" y="408" fill="#efe5c8" font-family="IBM Plex Sans" font-size="14">Crossover assist, storage, anti-chaos logic</text>
+
+          <path d="M 305 205 C 350 205, 372 205, 430 205" stroke="#54d48a" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+          <path d="M 305 300 C 352 300, 370 300, 455 300" stroke="#54d48a" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+          <path d="M 305 395 C 352 395, 375 395, 455 395" stroke="#54d48a" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+
+          <path d="M 700 205 C 730 205, 740 205, 795 205" stroke="#ffd34d" stroke-width="4" fill="none" marker-end="url(#arrowGold)"/>
+          <path d="M 700 300 C 730 300, 740 300, 795 300" stroke="#ffd34d" stroke-width="4" fill="none" marker-end="url(#arrowGold)"/>
+          <path d="M 700 395 C 730 395, 740 395, 795 395" stroke="#ffd34d" stroke-width="4" fill="none" marker-end="url(#arrowGold)"/>
+
+          <text x="65" y="478" fill="#9ec7b0" font-family="IBM Plex Sans" font-size="14">Result: HTH supports, feeds, buffers, and routes.</text>
+          <text x="425" y="580" fill="#cdd8f8" font-family="IBM Plex Sans" font-size="14">Result: DGTE stays ordered, thermal, traceable, and generator-friendly.</text>
+        </svg>
+      </div>
+    </section>
+
+    <section id="physics">
+      <div class="section-head">
+        <div class="section-kicker">Section 05</div>
+        <h2 class="section-title">Physics summary — <span>what is actually being added</span></h2>
+        <p class="section-lead">The hybrid is not magic. It is a stack of force contributions and control decisions.</p>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3 style="margin-bottom:12px;color:var(--text)">Core force picture</h3>
+          <div class="eq">F<tspan style="font-size:80%;vertical-align:sub">net</tspan> ≈ F<tspan style="font-size:80%;vertical-align:sub">thermal buoyancy</tspan> + F<tspan style="font-size:80%;vertical-align:sub">flow assist</tspan> + F<tspan style="font-size:80%;vertical-align:sub">hydrostatic / pneumatic assist</tspan></div>
+          <ul class="list">
+            <li><strong>DGTE term:</strong> density difference between capsule and surrounding bath drives ordered ascent/descent.</li>
+            <li><strong>HTH term:</strong> current, depth head, and compression do not replace the capsule cycle; they lower the burden on weak parts of it.</li>
+            <li><strong>Control term:</strong> DCC chooses whether assistance goes to priming, buffering, crossover stabilization, storage, or direct output support.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3 style="margin-bottom:12px;color:var(--text)">Three useful readings from the model set</h3>
+          <ul class="list">
+            <li><strong>Claude:</strong> river geometry can remove some crossover pain at system level, even if not by letting raw bubbles take over.</li>
+            <li><strong>Gemini:</strong> compression + later heating is a real thermodynamic bridge, not just a metaphor.</li>
+            <li><strong>Qwen:</strong> one-pipe mixed-medium dreams usually die on stability and control; separate channels are cleaner and more defensible.</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:18px" class="table-wrap panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Channel</th>
+              <th>Source</th>
+              <th>Role in hybrid</th>
+              <th>Keep / reject</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Thermal density swing</td>
+              <td>DGTE</td>
+              <td>Primary ordered work cycle</td>
+              <td><span class="score">Keep</span></td>
+            </tr>
+            <tr>
+              <td>River / ocean current</td>
+              <td>HTH</td>
+              <td>Transport assist, entrainment, site leverage</td>
+              <td><span class="score">Keep</span></td>
+            </tr>
+            <tr>
+              <td>Depth head</td>
+              <td>HTH</td>
+              <td>Passive compression and stabilization</td>
+              <td><span class="score">Keep</span></td>
+            </tr>
+            <tr>
+              <td>Compressed air</td>
+              <td>HTH</td>
+              <td>Buffer, priming, crossover assist, storage</td>
+              <td><span class="score">Keep</span></td>
+            </tr>
+            <tr>
+              <td>Free bubbles as DGTE working body</td>
+              <td>Mixed fantasy</td>
+              <td>Destroys traceability and stability</td>
+              <td style="color:var(--red)">Reject early</td>
+            </tr>
+            <tr>
+              <td>Semi-sealed responsive pods</td>
+              <td>Frontier R&amp;D</td>
+              <td>Later research lane only</td>
+              <td style="color:var(--orange)">Hold for later</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tests">
+      <div class="section-head">
+        <div class="section-kicker">Section 06</div>
+        <h2 class="section-title">Strategic kill tests — <span>do these before romance</span></h2>
+        <p class="section-lead">Every draft had some version of this. The good versions converge to staged falsification rather than generic optimism.</p>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="timeline">
+            <div class="step">
+              <div class="step-n">KT1</div>
+              <div class="step-body">
+                <h3>Assist without chaos</h3>
+                <p>Can HTH-derived pneumatic / hydraulic assistance improve DGTE priming, crossover passage, or duty factor without destabilizing the capsule loop?</p>
+                <div class="mini">Pass signal: measurable stability gain with no new jamming regime.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-n">KT2</div>
+              <div class="step-body">
+                <h3>Thermal cycle stays dominant where it should</h3>
+                <p>When heat is present, does the DGTE channel still behave as the main ordered work cycle rather than becoming noise under flow coupling?</p>
+                <div class="mini">Pass signal: back-EMF and cycle timing remain interpretable.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-n">KT3</div>
+              <div class="step-body">
+                <h3>Site gradient is real enough</h3>
+                <p>For chosen river / pool / coastal geometry, are the usable gradients strong enough in practice: flow, depth, and thermal? Beautiful architecture cannot rescue a dead site.</p>
+                <div class="mini">Pass signal: measured gradients beat parasitics with margin.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-n">KT4</div>
+              <div class="step-body">
+                <h3>Storage / assist actually earns its complexity</h3>
+                <p>Does compressed-air buffering increase uptime, control, or output enough to justify extra plumbing and control logic?</p>
+                <div class="mini">Pass signal: duty factor or stability gain is clearly worth it.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="note note-green" style="margin-bottom:14px">
+            <strong>Best sequencing rule:</strong> first prove the modular tandem. Then add assist. Only then touch pods or exotic fusion ideas.
+          </div>
+          <div class="note note-orange" style="margin-bottom:14px">
+            <strong>Cheap prototype logic:</strong> bench rig with transparent sections, one thermal column, one cold column, one assist line, one air buffer, and enough sensing to see whether order improves or collapses.
+          </div>
+          <div class="note note-red">
+            <strong>Hard truth:</strong> if the hybrid only works in prose and not in staged instrumentation, it should die early and cleanly.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="roadmap">
+      <div class="section-head">
+        <div class="section-kicker">Section 07</div>
+        <h2 class="section-title">Roadmap — <span>smallest sane path forward</span></h2>
+        <p class="section-lead">This path is deliberately conservative at first. It keeps the frontier alive without letting it hijack the build.</p>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3 style="margin-bottom:12px;color:var(--text)">Phase A — prove the baseline</h3>
+          <ul class="list">
+            <li>Build the modular tandem concept page and bench architecture.</li>
+            <li>Instrument DGTE duty factor, crossover success, ascent / descent timing, and back-EMF.</li>
+            <li>Add HTH-derived assist only as a controllable support line.</li>
+            <li>Measure whether assist improves stability and startup.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3 style="margin-bottom:12px;color:var(--text)">Phase B — prove site coupling</h3>
+          <ul class="list">
+            <li>Test at one pool / river / coastal geometry with real depth and flow.</li>
+            <li>Validate that HTH-side compression or routing improves overall operation rather than adding friction.</li>
+            <li>Decide whether air storage is a real gain or just a clever complication.</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:18px" class="grid-2">
+        <div class="panel">
+          <h3 style="margin-bottom:12px;color:var(--text)">Phase C — controlled frontier branch</h3>
+          <ul class="list">
+            <li>Only after A and B pass, test semi-sealed buoyancy pods.</li>
+            <li>Focus on membrane fatigue, hysteresis, pod equality, and jam risk.</li>
+            <li>Keep this branch isolated from the baseline product lane.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3 style="margin-bottom:12px;color:var(--text)">Phase D — public paper / investor version</h3>
+          <ul class="list">
+            <li>Once there is measured signal, split output into a clean technical paper and a simpler market-facing page.</li>
+            <li>Public story: multi-source passive energy platform for river/coastal/waste-heat sites.</li>
+            <li>Internal story: channel arbitration architecture guided by DCC/MDL.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="appendix">
+      <div class="section-head">
+        <div class="section-kicker">Section 08</div>
+        <h2 class="section-title">What each model draft contributed <span>that was actually useful</span></h2>
+        <p class="section-lead">Not every page was equally strong overall, but each one had something worth stealing.</p>
+      </div>
+      <div class="accordion">
+        <details open>
+          <summary>GPT draft — strongest decision discipline</summary>
+          <div class="body">
+            <p>Best at cutting through the central confusion. It gave the cleanest ranking, the clearest rejection of bubble-native DGTE, and the strongest baseline recommendation: modular tandem first, assist second, responsive pods later.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Claude draft — strongest metaphor and system pairing</summary>
+          <div class="body">
+            <p>The “heart + lungs” framing is the best single public metaphor. It also handled variant ranking well and gave the hybrid a more coherent narrative identity than most of the others.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Gemini deck — strongest visual packaging and thermal bridge intuition</summary>
+          <div class="body">
+            <p>The slide deck was the best visual object in the set. Its most useful conceptual addition was the compression-then-heating bridge, which helps explain why HTH and DGTE are not just neighbors but can be thermodynamically cooperative.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Grok draft — strongest ambition and named hybrid identity</summary>
+          <div class="body">
+            <p>TBH / Trompe-Buoyancy Hybrid is a memorable codename, and the Grok version was strong at showing the product picture: multi-channel harvesting, compressed-air output, and long-life low-maintenance architecture.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Qwen draft — strongest architecture hygiene</summary>
+          <div class="body">
+            <p>Qwen was the sharpest about the physical separation problem: bubbles are not capsules, one chaotic mixed pipe is usually a trap, and the real hybrid should be modular, synchronized, and DCC-governed. That discipline materially improved this final page.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <footer>
+      <div class="quote">"Do not mix order away just because the fusion looks poetic."</div>
+      <p>Final synthesis page built from the uploaded DGTE-HTH model variants. Public-facing wording, internal discipline.</p>
+    </footer>
+  </main>
+</body>
+</html>
