@@ -57,7 +57,7 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
   .main{grid-template-columns:1fr;grid-template-areas:"center" "left" "right";justify-items:center}
   .col-left,.col-right{max-width:600px;min-width:0;width:100%;justify-self:center}
 }
-.grid-wrap{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px;box-shadow:0 0 60px rgba(0,229,255,0.04);backdrop-filter:blur(12px)}
+.grid-wrap{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px;box-shadow:0 0 60px rgba(0,229,255,0.04);backdrop-filter:blur(12px);margin-bottom:16px}
 .grid{display:inline-grid;gap:0}
 .cell{width:var(--cell-size);height:var(--cell-size);background:rgba(11,17,32,0.7);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:calc(var(--cell-size)*0.42);font-weight:700;color:var(--text);cursor:pointer;position:relative;transition:background .12s,border-color .12s;text-transform:uppercase}
 .cell:hover{background:var(--subtle);border-color:var(--border2)}
@@ -92,7 +92,7 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 .bar-wrap{height:3px;background:rgba(11,17,32,0.5);border-radius:2px;margin-top:3px;overflow:hidden}
 .bar{height:100%;border-radius:2px;transition:width .4s ease}.bar.green{background:var(--green)}.bar.gold{background:var(--gold)}
 #loadFile{display:none}
-.pack-panel{margin-top:10px;max-width:560px;width:100%}
+.pack-panel{margin-top:0;max-width:560px;width:100%}
 .pack-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .pack-select{
   flex:1;min-width:170px;
@@ -121,7 +121,7 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
   <div class="title" id="titleText">Križanka <span class="accent">× MDL</span></div>
   <div class="subtitle" id="subtitleText">Kompresija misli v mrežo</div>
 </div>
-<div class="status" id="status">Nalaganje slovarja…</div>
+<div class="status" id="status">Loading prepared puzzles…</div>
 <div class="main">
 <div class="col-left">
   <div class="panel"><div class="panel-title" onclick="togglePanel('across')" id="acrossTitle">▶ Across</div><div class="clue-list" id="cluesAcross"></div></div>
@@ -181,7 +181,9 @@ const I18N = {
     stats: 'Statistika', progress: 'Napredek', words: 'Besede', errors: 'Napake',
     help: 'Navodila',
     helpHtml: 'Klikni celico, vpiši črko.<br><span style="color:var(--cyan)">Tab/Space</span> preklopi smer · <span style="color:var(--cyan)">Puščice</span> premikanje<br><span style="color:var(--cyan)">Backspace</span> izbriši · <span style="color:var(--cyan)">Enter</span> naslednja beseda',
-    loading: 'Nalaganje slovarja…',
+    loading: 'Nalaganje pripravljenih križank…',
+    packLoading: 'Nalaganje pripravljenih križank…',
+    packMissingStatus: 'Pack pripravljenih križank ni najden — uporabi Load ali dodaj cw_puzzles_pack.js v isto mapo.',
     generating: 'Generiram križanko…',
     generated: ' križanka pripravljena',
     failed: 'Generiranje ni uspelo — poskusi znova',
@@ -205,7 +207,9 @@ const I18N = {
     stats: 'Statistics', progress: 'Progress', words: 'Words', errors: 'Errors',
     help: 'Instructions',
     helpHtml: 'Click a cell, type a letter.<br><span style="color:var(--cyan)">Tab/Space</span> toggle direction · <span style="color:var(--cyan)">Arrows</span> navigate<br><span style="color:var(--cyan)">Backspace</span> delete · <span style="color:var(--cyan)">Enter</span> next word',
-    loading: 'Loading dictionary…',
+    loading: 'Loading prepared puzzles…',
+    packLoading: 'Loading prepared puzzles…',
+    packMissingStatus: 'Prepared puzzle pack not found — use Load or add cw_puzzles_pack.js to the same folder.',
     generating: 'Generating crossword…',
     generated: ' crossword ready',
     failed: 'Generation failed — try again',
@@ -950,7 +954,7 @@ function loadPreparedPuzzle(data, idx = -1) {
   startTimer();
   updateMetrics();
   updatePackUI();
-  setStatus(`${p.title}${L.loaded}`, '');
+  setStatus(p.title || `${p.rows}×${p.cols}`, '');
   for (let r = 0; r < p.rows; r++) {
     for (let c = 0; c < p.cols; c++) {
       if (p.mask[r][c]) { selectCell(r, c); return; }
@@ -972,7 +976,6 @@ function setPack(packObj) {
   });
   sel.value = String(packIndex);
   loadPreparedPuzzle(PACK.puzzles[packIndex], packIndex);
-  setStatus(L.packLoaded(packIndex, PACK.puzzles.length), '');
   return true;
 }
 
@@ -1008,6 +1011,7 @@ function nextPackPuzzle() {
 }
 
 async function tryAutoloadPack() {
+  setStatus(L.packLoading || L.loading, 'gen');
   if (window.CW_PUZZLES_PACK && Array.isArray(window.CW_PUZZLES_PACK.puzzles) && window.CW_PUZZLES_PACK.puzzles.length) {
     return setPack(window.CW_PUZZLES_PACK);
   }
@@ -1035,8 +1039,7 @@ async function switchLang(code) {
   updateUI();
   const ok = await loadDict(lang);
   if (ok && !PACK && !puzzle) {
-    const hTotal = Object.values(DB.hinted).reduce((s, arr) => s + arr.length, 0);
-    setStatus(`${hTotal} hinted words · choose size →`, '');
+    setStatus(L.packMissingStatus, 'err');
   }
 }
 
