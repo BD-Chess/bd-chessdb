@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crossword × MDL | AIM³ Lab</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23020409'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='14' font-weight='700' fill='%2300e5ff' text-anchor='middle'%3EK%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020409;--surface:rgba(15,23,41,0.82);
+  --border:rgba(0,229,255,0.10);--border2:rgba(0,229,255,0.22);
+  --cyan:#00e5ff;--cyan-dim:rgba(0,229,255,0.12);--cyan-glow:rgba(0,229,255,0.25);
+  --gold:#f59e0b;--gold-dim:rgba(245,158,11,0.12);
+  --green:#34d399;--green-dim:rgba(52,211,153,0.12);
+  --rose:#ff6b8a;--rose-dim:rgba(255,107,138,0.12);
+  --text:#e2e8f4;--muted:#5e7192;--subtle:#1a2540;
+  --cell-size:52px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow-x:hidden}
+body{
+  background:radial-gradient(circle at 20% 18%,rgba(16,120,80,0.22),transparent 32%),radial-gradient(circle at 80% 70%,rgba(0,229,255,0.08),transparent 28%),linear-gradient(180deg,#090b10,#06070a);
+  color:var(--text);font-family:'Rajdhani',sans-serif;font-size:17px;line-height:1.6;
+  display:flex;flex-direction:column;align-items:center;-webkit-font-smoothing:antialiased;
+}
+body::before,body::after{content:"";position:fixed;border-radius:50%;filter:blur(80px);opacity:.30;pointer-events:none;z-index:0}
+body::before{width:42vw;height:42vw;left:-8vw;top:-12vh;background:radial-gradient(circle,rgba(52,211,153,0.30),transparent 72%);animation:flA 18s ease-in-out infinite}
+body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gradient(circle,rgba(0,229,255,0.12),transparent 72%);animation:flB 24s ease-in-out infinite}
+@keyframes flA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(5vw,4vh,0)}}
+@keyframes flB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-4vw,-6vh,0)}}
+.noise{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0.018;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.page{position:relative;z-index:1;width:100%;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding-bottom:40px}
+.header{width:100%;max-width:1800px;padding:12px 24px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:600;color:var(--cyan);letter-spacing:.3em;text-transform:uppercase}
+.logo span{color:var(--gold)}
+.header-right{display:flex;align-items:center;gap:10px}
+.timer{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--muted);letter-spacing:.1em}
+.lang-sel{font-family:'JetBrains Mono',monospace;font-size:.72rem;background:rgba(11,17,32,0.6);border:1px solid var(--border);color:var(--cyan);padding:4px 8px;border-radius:4px;cursor:pointer}
+.lang-sel option{background:#0a0e18;color:var(--text)}
+.title-block{text-align:center;padding:4px 20px 0}
+.title{font-family:'Rajdhani',sans-serif;font-size:clamp(1.4rem,3.5vw,2.4rem);font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.title .accent{color:var(--cyan)}
+.subtitle{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:var(--muted);margin-top:2px}
+.status{text-align:center;font-size:.75rem;color:var(--muted);min-height:1.2em;margin:2px 0;font-family:'JetBrains Mono',monospace}
+.status.win{color:var(--gold);font-weight:600}
+.status.err{color:var(--rose)}
+.status.gen{color:var(--cyan)}
+.main{
+  display:grid;grid-template-columns:1fr auto 1fr;grid-template-areas:"left center right";
+  gap:24px;padding:6px 24px;max-width:1800px;width:100%;align-content:start;
+}
+.col-left{grid-area:left;display:flex;flex-direction:column;gap:10px;min-width:260px;max-width:400px;justify-self:end}
+.col-center{grid-area:center;display:flex;flex-direction:column;align-items:center}
+.col-right{grid-area:right;display:flex;flex-direction:column;gap:10px;min-width:260px;max-width:400px}
+@media(max-width:1000px){
+  .main{grid-template-columns:1fr;grid-template-areas:"center" "left" "right";justify-items:center}
+  .col-left,.col-right{max-width:600px;min-width:0;width:100%;justify-self:center}
+}
+.grid-wrap{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px;box-shadow:0 0 60px rgba(0,229,255,0.04);backdrop-filter:blur(12px)}
+.grid{display:inline-grid;gap:0}
+.cell{width:var(--cell-size);height:var(--cell-size);background:rgba(11,17,32,0.7);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:calc(var(--cell-size)*0.42);font-weight:700;color:var(--text);cursor:pointer;position:relative;transition:background .12s,border-color .12s;text-transform:uppercase}
+.cell:hover{background:var(--subtle);border-color:var(--border2)}
+.cell.selected{background:var(--cyan-dim)!important;border-color:var(--cyan)!important;box-shadow:0 0 10px var(--cyan-glow)}
+.cell.word-highlight{background:rgba(0,229,255,0.04)}
+.cell.black{background:#060a14!important;border-color:rgba(0,0,0,0.3)!important;cursor:default;pointer-events:none}
+.cell.correct{color:var(--green)!important}
+.cell.error{color:var(--rose)!important;border-color:var(--rose)!important;background:var(--rose-dim)!important}
+.cell .clue-num{position:absolute;top:1px;left:3px;font-size:calc(var(--cell-size)*0.20);font-weight:600;color:var(--gold);line-height:1;pointer-events:none}
+@keyframes winPulse{0%,100%{box-shadow:0 0 8px var(--gold-dim)}50%{box-shadow:0 0 20px rgba(245,158,11,0.4)}}
+.cell.win-anim{animation:winPulse 1s ease-in-out 3;color:var(--gold)!important}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;backdrop-filter:blur(8px)}
+.panel-title{font-family:'JetBrains Mono',monospace;font-size:.58rem;font-weight:600;color:var(--cyan);letter-spacing:.22em;text-transform:uppercase;margin-bottom:8px;cursor:pointer;user-select:none}
+.clue-list{max-height:500px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.clue-item{font-size:.88rem;padding:5px 8px;border-radius:4px;cursor:pointer;display:flex;gap:6px;line-height:1.35;transition:background .12s}
+.clue-item:hover{background:var(--cyan-dim)}
+.clue-item.active{background:var(--cyan-dim);border-left:2px solid var(--cyan)}
+.clue-item.solved{color:var(--green);opacity:0.6}
+.clue-num-label{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--gold);min-width:24px;flex-shrink:0}
+.clue-text{color:var(--muted)}.clue-item.active .clue-text{color:var(--text)}
+.btn{font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;background:rgba(11,17,32,0.6);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:4px;cursor:pointer;transition:all .12s;text-align:center;letter-spacing:.06em}
+.btn:hover{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan)}
+.btn.gold{border-color:var(--gold);color:var(--gold)}.btn.gold:hover{background:var(--gold-dim)}
+.btn.green{border-color:var(--green);color:var(--green)}.btn.green:hover{background:var(--green-dim)}
+.btn.rose{border-color:var(--rose);color:var(--rose)}.btn.rose:hover{background:var(--rose-dim)}
+.btn:disabled{opacity:0.3;cursor:not-allowed}
+.btn-row{display:flex;gap:5px;flex-wrap:wrap}.btn-row .btn{flex:1;min-width:80px}
+.diff-btns{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.metric{display:flex;justify-content:space-between;align-items:baseline;padding:2px 0}
+.metric-label{font-size:.76rem;color:var(--muted)}
+.metric-value{font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:700}
+.bar-wrap{height:3px;background:rgba(11,17,32,0.5);border-radius:2px;margin-top:3px;overflow:hidden}
+.bar{height:100%;border-radius:2px;transition:width .4s ease}.bar.green{background:var(--green)}.bar.gold{background:var(--gold)}
+#loadFile{display:none}
+.pack-panel{margin-top:10px;max-width:560px;width:100%}
+.pack-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pack-select{
+  flex:1;min-width:170px;
+  font-family:'JetBrains Mono',monospace;font-size:.72rem;
+  background:rgba(11,17,32,0.6);border:1px solid var(--border);color:var(--text);
+  padding:8px 10px;border-radius:4px;cursor:pointer
+}
+.pack-meta{margin-top:8px;font-size:.74rem;color:var(--muted);line-height:1.45}
+.pack-meta strong{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="page">
+<div class="header">
+  <div class="logo">AIM³ <span>Lab</span> · Crossword</div>
+  <div class="header-right">
+    <select class="lang-sel" id="langSel" onchange="switchLang(this.value)">
+      <option value="sl">Slovenščina</option>
+      <option value="en" selected>English</option>
+    </select>
+    <div class="timer" id="timer">00:00</div>
+  </div>
+</div>
+<div class="title-block">
+  <div class="title" id="titleText">Križanka <span class="accent">× MDL</span></div>
+  <div class="subtitle" id="subtitleText">Kompresija misli v mrežo</div>
+</div>
+<div class="status" id="status">Nalaganje slovarja…</div>
+<div class="main">
+<div class="col-left">
+  <div class="panel"><div class="panel-title" onclick="togglePanel('across')" id="acrossTitle">▶ Across</div><div class="clue-list" id="cluesAcross"></div></div>
+  <div class="panel">
+    <div class="panel-title" id="statsTitle">Statistics</div>
+    <div class="metric"><span class="metric-label" id="lblProgress">Progress</span><span class="metric-value" id="mProgress">0%</span></div>
+    <div class="bar-wrap"><div class="bar green" id="barProgress" style="width:0"></div></div>
+    <div class="metric" style="margin-top:6px"><span class="metric-label" id="lblWords">Words</span><span class="metric-value" id="mWords">0 / 0</span></div>
+    <div class="bar-wrap"><div class="bar gold" id="barWords" style="width:0"></div></div>
+    <div class="metric" style="margin-top:6px"><span class="metric-label" id="lblErrors">Errors</span><span class="metric-value" id="mErrors">0</span></div>
+  </div>
+</div>
+<div class="col-center">
+  <div class="grid-wrap"><div class="grid" id="grid"></div></div>
+  <div class="panel pack-panel">
+    <div class="panel-title" id="packTitle">Prepared Puzzles</div>
+    <div class="pack-row">
+      <button class="btn" onclick="prevPackPuzzle()" id="btnPrevPack">◀ Prev</button>
+      <select class="pack-select" id="packSelect" onchange="loadPackSelection()">
+        <option value="">Autoload pack…</option>
+      </select>
+      <button class="btn" onclick="nextPackPuzzle()" id="btnNextPack">Next ▶</button>
+    </div>
+    <div class="pack-meta" id="packMeta">Looking for <strong>cw_puzzles_pack.js</strong> or <strong>cw_puzzles_pack.json</strong> in the same folder.</div>
+  </div>
+  <div class="btn-row" style="margin-top:6px;max-width:480px;width:100%">
+    <button class="btn green" onclick="checkAll()" id="btnCheck">✓</button>
+    <button class="btn" onclick="revealWord()" id="btnReveal">Reveal</button>
+    <button class="btn rose" onclick="revealAll()" id="btnSolution">Solution</button>
+    </div>
+  <div class="btn-row" style="margin-top:4px;max-width:480px;width:100%">
+    <button class="btn" onclick="savePuzzle()">💾 Save</button>
+    <button class="btn" onclick="document.getElementById('loadFile').click()">📂 Load</button>
+    <input type="file" id="loadFile" accept=".json" onchange="loadPuzzle(event)">
+  </div>
+</div>
+<div class="col-right">
+  <div class="panel"><div class="panel-title" onclick="togglePanel('down')" id="downTitle">▶ Down</div><div class="clue-list" id="cluesDown"></div></div>
+  <div class="panel"><div class="panel-title" id="helpTitle">Instructions</div>
+    <div id="helpText" style="font-size:.78rem;color:var(--muted);line-height:1.5"></div>
+  </div>
+</div>
+</div></div>
+
+<script src="cw_puzzles_pack.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// 8z Crossword Engine — AIM³ Lab
+// Backtracking grid filler with scored word database
+// ═══════════════════════════════════════════════════════════════
+
+const I18N = {
+  sl: {
+    title: 'Križanka <span class="accent">× MDL</span>',
+    subtitle: 'Kompresija misli v mrežo',
+    across: '▶ Vodoravno', down: '▶ Navpično',
+    stats: 'Statistika', progress: 'Napredek', words: 'Besede', errors: 'Napake',
+    help: 'Navodila',
+    helpHtml: 'Klikni celico, vpiši črko.<br><span style="color:var(--cyan)">Tab/Space</span> preklopi smer · <span style="color:var(--cyan)">Puščice</span> premikanje<br><span style="color:var(--cyan)">Backspace</span> izbriši · <span style="color:var(--cyan)">Enter</span> naslednja beseda',
+    loading: 'Nalaganje slovarja…',
+    generating: 'Generiram križanko…',
+    generated: ' križanka pripravljena',
+    failed: 'Generiranje ni uspelo — poskusi znova',
+    checked: 'Preverjeno — poišči rdeče celice',
+    solved: 'Rešitev prikazana',
+    winMsg: s => `✦ REŠENO v ${s}! ✦`,
+    noDict: 'Slovar ni na voljo',
+    reveal: 'Razkrij', solution: 'Rešitev',
+    packTitle: 'Pripravljene križanke',
+    packWaiting: 'Iščem <strong>cw_puzzles_pack.js</strong> ali <strong>cw_puzzles_pack.json</strong> v isti mapi.',
+    packLoaded: (i, n) => `Naložen pack · križanka ${i + 1} / ${n}`,
+    packMissingLocal: 'Lokalni file mode blokira JSON autoload. Dodaj <strong>cw_puzzles_pack.js</strong> za offline autoload.',
+    packMissing: 'Pack ni najden v isti mapi.',
+    packMeta: p => `<strong>${p.title || (p.rows + '×' + p.cols)}</strong>${p.sourceLabel ? ' · ' + p.sourceLabel : ''}${p.meta?.quality != null ? ' · Q ' + Number(p.meta.quality).toFixed(4) : ''}`,
+    loaded: ' naložena',
+  },
+  en: {
+    title: 'Crossword <span class="accent">× MDL</span>',
+    subtitle: 'Compressing thought into a grid',
+    across: '▶ Across', down: '▶ Down',
+    stats: 'Statistics', progress: 'Progress', words: 'Words', errors: 'Errors',
+    help: 'Instructions',
+    helpHtml: 'Click a cell, type a letter.<br><span style="color:var(--cyan)">Tab/Space</span> toggle direction · <span style="color:var(--cyan)">Arrows</span> navigate<br><span style="color:var(--cyan)">Backspace</span> delete · <span style="color:var(--cyan)">Enter</span> next word',
+    loading: 'Loading dictionary…',
+    generating: 'Generating crossword…',
+    generated: ' crossword ready',
+    failed: 'Generation failed — try again',
+    checked: 'Checked — find the red cells',
+    solved: 'Solution revealed',
+    winMsg: s => `✦ SOLVED in ${s}! ✦`,
+    noDict: 'Dictionary not available',
+    reveal: 'Reveal', solution: 'Solution',
+    packTitle: 'Prepared Puzzles',
+    packWaiting: 'Looking for <strong>cw_puzzles_pack.js</strong> or <strong>cw_puzzles_pack.json</strong> in the same folder.',
+    packLoaded: (i, n) => `Loaded pack · puzzle ${i + 1} / ${n}`,
+    packMissingLocal: 'Local file mode blocks JSON autoload. Add <strong>cw_puzzles_pack.js</strong> for offline autoload.',
+    packMissing: 'Pack not found in the same folder.',
+    packMeta: p => `<strong>${p.title || (p.rows + '×' + p.cols)}</strong>${p.sourceLabel ? ' · ' + p.sourceLabel : ''}${p.meta?.quality != null ? ' · Q ' + Number(p.meta.quality).toFixed(4) : ''}`,
+    loaded: ' loaded',
+  }
+};
+
+// ─── State ───
+let lang = 'en', L = I18N.en;
+let DB = null; // {hinted: {3:[{w,h,s},...], ...}, all: {...}}
+let puzzle = null; // {rows, cols, mask, solution, clueMap, numAssigned}
+let playerGrid = null;
+let selR = -1, selC = -1, dir = 'across', activeClue = null;
+let timerInterval = null, seconds = 0, errorCount = 0, solved = false;
+let PACK = null, packIndex = -1;
+
+// ─── Dictionary ───
+const dictCache = {};
+
+async function loadDict(code) {
+  if (dictCache[code]) { DB = dictCache[code]; return true; }
+  setStatus(L.loading, 'gen');
+  try {
+    const r = await fetch('lex/cw_en.json');
+    if (!r.ok) throw new Error(r.status);
+    const data = await r.json();
+    const db = {hinted: {}, all: {}};
+    for (const [len, words] of Object.entries(data.words)) {
+      db.all[len] = words;
+      db.hinted[len] = words.filter(w => w.h);
+    }
+    dictCache[code] = db;
+    DB = db;
+    return true;
+  } catch(e) {
+    console.error('Dict load failed:', e);
+    setStatus(L.noDict, 'err');
+    return false;
+  }
+}
+
+// ─── Grid Template Generation ───
+function genTemplate(rows, cols, blackPct) {
+  const maxAttempts = 50;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const mask = Array.from({length: rows}, () => Array(cols).fill(1));
+    // Place black cells with 180° symmetry
+    const target = Math.floor(rows * cols * blackPct);
+    let placed = 0;
+    const tried = new Set();
+    while (placed < target) {
+      const r = Math.floor(Math.random() * rows);
+      const c = Math.floor(Math.random() * cols);
+      const key = `${r},${c}`;
+      if (tried.has(key)) continue;
+      tried.add(key);
+      const r2 = rows - 1 - r, c2 = cols - 1 - c;
+      if (mask[r][c] === 0) continue;
+      // Don't black out edges too aggressively
+      mask[r][c] = 0;
+      mask[r2][c2] = 0;
+      placed += (r === r2 && c === c2) ? 1 : 2;
+    }
+    if (validateTemplate(mask, rows, cols)) return mask;
+  }
+  return null;
+}
+
+function validateTemplate(mask, rows, cols) {
+  // Check: no word shorter than 3, all white connected
+  // Check across words
+  for (let r = 0; r < rows; r++) {
+    let run = 0;
+    for (let c = 0; c <= cols; c++) {
+      if (c < cols && mask[r][c]) run++;
+      else { if (run > 0 && run < 3) return false; run = 0; }
+    }
+  }
+  // Check down words
+  for (let c = 0; c < cols; c++) {
+    let run = 0;
+    for (let r = 0; r <= rows; r++) {
+      if (r < rows && mask[r][c]) run++;
+      else { if (run > 0 && run < 3) return false; run = 0; }
+    }
+  }
+  // Check connectivity via BFS
+  let startR = -1, startC = -1;
+  for (let r = 0; r < rows && startR < 0; r++)
+    for (let c = 0; c < cols; c++) if (mask[r][c]) { startR = r; startC = c; break; }
+  if (startR < 0) return false;
+  const visited = Array.from({length: rows}, () => Array(cols).fill(false));
+  const queue = [[startR, startC]];
+  visited[startR][startC] = true;
+  let count = 1;
+  while (queue.length) {
+    const [r, c] = queue.shift();
+    for (const [dr, dc] of [[0,1],[0,-1],[1,0],[-1,0]]) {
+      const nr = r+dr, nc = c+dc;
+      if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && mask[nr][nc] && !visited[nr][nc]) {
+        visited[nr][nc] = true; count++; queue.push([nr, nc]);
+      }
+    }
+  }
+  const totalWhite = mask.flat().reduce((s, v) => s + v, 0);
+  return count === totalWhite;
+}
+
+// ─── Slot Extraction ───
+function extractSlots(mask, rows, cols) {
+  const slots = [];
+  // Across
+  for (let r = 0; r < rows; r++) {
+    let start = -1;
+    for (let c = 0; c <= cols; c++) {
+      if (c < cols && mask[r][c]) { if (start < 0) start = c; }
+      else {
+        if (start >= 0 && c - start >= 3) {
+          const cells = [];
+          for (let i = start; i < c; i++) cells.push([r, i]);
+          slots.push({dir: 'across', r, c: start, len: c - start, cells});
+        }
+        start = -1;
+      }
+    }
+  }
+  // Down
+  for (let c = 0; c < cols; c++) {
+    let start = -1;
+    for (let r = 0; r <= rows; r++) {
+      if (r < rows && mask[r][c]) { if (start < 0) start = r; }
+      else {
+        if (start >= 0 && r - start >= 3) {
+          const cells = [];
+          for (let i = start; i < r; i++) cells.push([i, c]);
+          slots.push({dir: 'down', r: start, c, len: r - start, cells});
+        }
+        start = -1;
+      }
+    }
+  }
+  return slots;
+}
+
+// ─── Backtracking Filler ───
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function fillGrid(slots, rows, cols) {
+  if (!DB) return null;
+  const grid = Array.from({length: rows}, () => Array(cols).fill(''));
+  const usedWords = new Set();
+  const wordData = {}; // word -> {w, h, s}
+
+  // Pre-compute crossing map: for each slot, which other slots cross it and where
+  for (const slot of slots) {
+    slot.crossings = [];
+    for (const other of slots) {
+      if (other === slot) continue;
+      for (let i = 0; i < slot.cells.length; i++) {
+        for (let j = 0; j < other.cells.length; j++) {
+          if (slot.cells[i][0] === other.cells[j][0] && slot.cells[i][1] === other.cells[j][1]) {
+            slot.crossings.push({otherSlot: other, myIdx: i, otherIdx: j});
+          }
+        }
+      }
+    }
+  }
+
+  // Sort: most crossings first, then shortest
+  slots.sort((a, b) => b.crossings.length - a.crossings.length || a.len - b.len);
+
+  // Build candidate lists: prefer hinted words, then all
+  function getCandidates(slot) {
+    const pattern = slot.cells.map(([r, c]) => grid[r][c] || null);
+    const lenKey = String(slot.len);
+
+    // Try hinted first
+    let pool = DB.hinted[lenKey] || [];
+    let candidates = pool.filter(w => {
+      if (usedWords.has(w.w)) return false;
+      for (let i = 0; i < slot.len; i++) {
+        if (pattern[i] && pattern[i] !== w.w[i]) return false;
+      }
+      return true;
+    });
+
+    // If not enough hinted, add from full pool
+    if (candidates.length < 3) {
+      const allPool = DB.all[lenKey] || [];
+      const extra = allPool.filter(w => {
+        if (usedWords.has(w.w)) return false;
+        if (candidates.some(c => c.w === w.w)) return false;
+        for (let i = 0; i < slot.len; i++) {
+          if (pattern[i] && pattern[i] !== w.w[i]) return false;
+        }
+        return true;
+      });
+      candidates = candidates.concat(extra.slice(0, 20));
+    }
+
+    return shuffle(candidates);
+  }
+
+  let iterations = 0;
+  const maxIter = 50000;
+
+  function solve(idx) {
+    if (++iterations > maxIter) return false;
+    if (idx >= slots.length) return true;
+    const slot = slots[idx];
+    const candidates = getCandidates(slot);
+
+    for (const cand of candidates.slice(0, 30)) { // limit per slot
+      // Place
+      for (let i = 0; i < slot.len; i++) {
+        grid[slot.cells[i][0]][slot.cells[i][1]] = cand.w[i];
+      }
+      usedWords.add(cand.w);
+      wordData[cand.w] = cand;
+
+      if (solve(idx + 1)) return true;
+
+      // Remove
+      for (let i = 0; i < slot.len; i++) {
+        // Only clear if no other placed slot uses this cell
+        grid[slot.cells[i][0]][slot.cells[i][1]] = '';
+      }
+      usedWords.delete(cand.w);
+      delete wordData[cand.w];
+    }
+
+    // Re-clear cells for this slot (fix: need to keep letters from crossing words)
+    return false;
+  }
+
+  // Fix the remove logic: only clear cells not used by previously placed slots
+  // Actually, let me fix this properly:
+  function placeWord(slot, word) {
+    for (let i = 0; i < slot.len; i++) {
+      grid[slot.cells[i][0]][slot.cells[i][1]] = word[i];
+    }
+  }
+  function removeWord(slot, placedSlots) {
+    // Only clear cells that aren't part of any earlier placed slot
+    const keepCells = new Set();
+    for (const ps of placedSlots) {
+      for (const [r, c] of ps.cells) keepCells.add(`${r},${c}`);
+    }
+    for (const [r, c] of slot.cells) {
+      if (!keepCells.has(`${r},${c}`)) grid[r][c] = '';
+    }
+  }
+
+  // Redo solve with proper cleanup
+  iterations = 0;
+  const placedSlots = [];
+
+  function solve2(idx) {
+    if (++iterations > maxIter) return false;
+    if (idx >= slots.length) return true;
+    const slot = slots[idx];
+    const candidates = getCandidates(slot);
+
+    for (const cand of candidates.slice(0, 25)) {
+      placeWord(slot, cand.w);
+      usedWords.add(cand.w);
+      wordData[cand.w] = cand;
+      placedSlots.push(slot);
+
+      if (solve2(idx + 1)) return true;
+
+      placedSlots.pop();
+      usedWords.delete(cand.w);
+      delete wordData[cand.w];
+      removeWord(slot, placedSlots);
+    }
+    return false;
+  }
+
+  if (!solve2(0)) return null;
+  return {grid, wordData, usedWords};
+}
+
+// ─── Puzzle Assembly ───
+async function generate(rows, cols, blackPct) {
+  if (!DB) return;
+  setStatus(L.generating, 'gen');
+  disableButtons(true);
+
+  await new Promise(r => setTimeout(r, 20));
+
+  let result = null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const mask = genTemplate(rows, cols, blackPct);
+    if (!mask) continue;
+    const slotsArr = extractSlots(mask, rows, cols);
+    if (slotsArr.length < 4) continue;
+    const fill = fillGrid([...slotsArr], rows, cols);
+    if (fill) {
+      result = {mask, slots: slotsArr, fill};
+      break;
+    }
+    await new Promise(r => setTimeout(r, 10));
+  }
+  disableButtons(false);
+
+  if (!result) {
+    setStatus(L.failed, 'err');
+    return;
+  }
+
+  // Build puzzle
+  const {mask, slots, fill} = result;
+  const solution = fill.grid.map(row => [...row]);
+
+  // Number the slots and build clue map
+  const clueMap = {across: {}, down: {}};
+  let num = 1;
+  const numAssigned = {}; // "r,c" -> num
+
+  // Assign numbers in reading order
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const hasAcross = slots.find(s => s.dir === 'across' && s.r === r && s.c === c);
+      const hasDown = slots.find(s => s.dir === 'down' && s.r === r && s.c === c);
+      if (hasAcross || hasDown) {
+        const n = num++;
+        numAssigned[`${r},${c}`] = n;
+        if (hasAcross) {
+          const word = hasAcross.cells.map(([r,c]) => solution[r][c]).join('');
+          const entry = fill.wordData[word];
+          clueMap.across[n] = {
+            r, c, len: hasAcross.len,
+            text: entry?.h || '…',
+            word, cells: hasAcross.cells
+          };
+        }
+        if (hasDown) {
+          const word = hasDown.cells.map(([r,c]) => solution[r][c]).join('');
+          const entry = fill.wordData[word];
+          clueMap.down[n] = {
+            r, c, len: hasDown.len,
+            text: entry?.h || '…',
+            word, cells: hasDown.cells
+          };
+        }
+      }
+    }
+  }
+
+  puzzle = {rows, cols, mask, solution, clueMap, numAssigned};
+  playerGrid = Array.from({length: rows}, () => Array(cols).fill(''));
+  selR = -1; selC = -1; dir = 'across'; activeClue = null;
+  solved = false; errorCount = 0;
+
+  setCellSize(cols);
+  buildGrid();
+  buildClueList('across');
+  buildClueList('down');
+  startTimer();
+  updateMetrics();
+  setStatus(`${rows}×${cols}${L.generated}`, '');
+
+  // Select first white cell
+  for (let r = 0; r < rows; r++)
+    for (let c = 0; c < cols; c++)
+      if (mask[r][c]) { selectCell(r, c); return; }
+}
+
+// ─── Cell Size ───
+function setCellSize(cols) {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const maxH = Math.floor((vh * 0.68) / cols);
+  const maxW = Math.floor((vw * 0.42) / cols);
+  let sz = Math.min(maxH, maxW, 72);
+  sz = Math.max(sz, 28);
+  document.documentElement.style.setProperty('--cell-size', sz + 'px');
+}
+
+// ─── UI Rendering ───
+function buildGrid() {
+  const g = document.getElementById('grid');
+  g.style.gridTemplateColumns = `repeat(${puzzle.cols},var(--cell-size))`;
+  g.style.gridTemplateRows = `repeat(${puzzle.rows},var(--cell-size))`;
+  g.innerHTML = '';
+  for (let r = 0; r < puzzle.rows; r++) {
+    for (let c = 0; c < puzzle.cols; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (puzzle.mask[r][c] ? '' : ' black');
+      cell.dataset.r = r; cell.dataset.c = c;
+      if (puzzle.mask[r][c]) {
+        cell.onclick = () => selectCell(r, c);
+        const numKey = `${r},${c}`;
+        if (puzzle.numAssigned[numKey]) {
+          const s = document.createElement('span');
+          s.className = 'clue-num';
+          s.textContent = puzzle.numAssigned[numKey];
+          cell.appendChild(s);
+        }
+      }
+      g.appendChild(cell);
+    }
+  }
+  render();
+}
+
+function render() {
+  if (!puzzle) return;
+  const wc = getWordCells(selR, selC, dir);
+  const ws = new Set(wc.map(([r,c]) => `${r},${c}`));
+  document.querySelectorAll('.cell').forEach(cell => {
+    const r = +cell.dataset.r, c = +cell.dataset.c;
+    if (!puzzle.mask[r]?.[c]) return;
+    cell.classList.remove('selected','word-highlight','correct','error');
+    if (r === selR && c === selC) cell.classList.add('selected');
+    else if (ws.has(`${r},${c}`)) cell.classList.add('word-highlight');
+    const ns = cell.querySelector('.clue-num');
+    cell.textContent = playerGrid[r][c];
+    if (ns) cell.prepend(ns);
+  });
+}
+
+function buildClueList(d) {
+  const el = document.getElementById(d === 'across' ? 'cluesAcross' : 'cluesDown');
+  el.innerHTML = '';
+  if (!puzzle?.clueMap[d]) return;
+  const nums = Object.keys(puzzle.clueMap[d]).map(Number).sort((a,b) => a-b);
+  for (const n of nums) {
+    const cl = puzzle.clueMap[d][n];
+    const item = document.createElement('div');
+    item.className = 'clue-item';
+    item.id = `clue_${d}_${n}`;
+    item.innerHTML = `<span class="clue-num-label">${n}.</span><span class="clue-text">${cl.text}</span>`;
+    item.onclick = () => { dir = d; selectCell(cl.r, cl.c); };
+    el.appendChild(item);
+  }
+}
+
+// ─── Navigation ───
+function getWordCells(r, c, d) {
+  if (r < 0 || !puzzle || !puzzle.mask[r]?.[c]) return [];
+  const cells = [];
+  if (d === 'across') {
+    let sc = c; while (sc > 0 && puzzle.mask[r][sc-1]) sc--;
+    for (let cc = sc; cc < puzzle.cols && puzzle.mask[r][cc]; cc++) cells.push([r, cc]);
+  } else {
+    let sr = r; while (sr > 0 && puzzle.mask[sr-1]?.[c]) sr--;
+    for (let rr = sr; rr < puzzle.rows && puzzle.mask[rr]?.[c]; rr++) cells.push([rr, c]);
+  }
+  return cells;
+}
+
+function findClueForCell(r, c, d) {
+  if (!puzzle?.clueMap[d]) return null;
+  for (const [num, cl] of Object.entries(puzzle.clueMap[d])) {
+    if (cl.cells.some(([cr,cc]) => cr === r && cc === c)) return parseInt(num);
+  }
+  return null;
+}
+
+function selectCell(r, c) {
+  if (!puzzle || !puzzle.mask[r]?.[c]) return;
+  if (r === selR && c === selC) dir = dir === 'across' ? 'down' : 'across';
+  selR = r; selC = c;
+  const num = findClueForCell(r, c, dir);
+  if (num !== null) { activeClue = {dir, num}; highlightClue(dir, num); }
+  else {
+    const od = dir === 'across' ? 'down' : 'across';
+    const n2 = findClueForCell(r, c, od);
+    if (n2 !== null) { dir = od; activeClue = {dir: od, num: n2}; highlightClue(od, n2); }
+  }
+  render();
+}
+
+function highlightClue(d, n) {
+  document.querySelectorAll('.clue-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(`clue_${d}_${n}`);
+  if (el) { el.classList.add('active'); el.scrollIntoView({block: 'nearest'}); }
+}
+
+function advanceCursor() {
+  if (dir === 'across') { let nc = selC+1; while (nc < puzzle.cols && !puzzle.mask[selR][nc]) nc++; if (nc < puzzle.cols) selectCell(selR, nc); }
+  else { let nr = selR+1; while (nr < puzzle.rows && !puzzle.mask[nr]?.[selC]) nr++; if (nr < puzzle.rows) selectCell(nr, selC); }
+}
+function retreatCursor() {
+  if (dir === 'across') { let nc = selC-1; while (nc >= 0 && !puzzle.mask[selR][nc]) nc--; if (nc >= 0) selectCell(selR, nc); }
+  else { let nr = selR-1; while (nr >= 0 && !puzzle.mask[nr]?.[selC]) nr--; if (nr >= 0) selectCell(nr, selC); }
+}
+function nextWord() {
+  if (!activeClue) return;
+  const d = activeClue.dir;
+  const nums = Object.keys(puzzle.clueMap[d]).map(Number).sort((a,b) => a-b);
+  const idx = nums.indexOf(activeClue.num);
+  let ni = (idx + 1) % nums.length;
+  if (ni === 0) {
+    const od = d === 'across' ? 'down' : 'across';
+    if (puzzle.clueMap[od]) {
+      dir = od;
+      const on = Object.keys(puzzle.clueMap[od]).map(Number).sort((a,b) => a-b);
+      const cl = puzzle.clueMap[od][on[0]];
+      selectCell(cl.r, cl.c); return;
+    }
+  }
+  const cl = puzzle.clueMap[d][nums[ni]];
+  selectCell(cl.r, cl.c);
+}
+
+// ─── Keyboard ───
+document.addEventListener('keydown', e => {
+  if (!puzzle || solved || selR < 0) return;
+  if (e.key === 'Tab' || e.key === ' ') { e.preventDefault(); dir = dir === 'across' ? 'down' : 'across'; selectCell(selR, selC); return; }
+  if (e.key === 'Enter') { e.preventDefault(); nextWord(); return; }
+  if (e.key === 'ArrowRight') { e.preventDefault(); let c = selC+1; while (c < puzzle.cols && !puzzle.mask[selR][c]) c++; if (c < puzzle.cols) selectCell(selR, c); return; }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); let c = selC-1; while (c >= 0 && !puzzle.mask[selR][c]) c--; if (c >= 0) selectCell(selR, c); return; }
+  if (e.key === 'ArrowDown') { e.preventDefault(); let r = selR+1; while (r < puzzle.rows && !puzzle.mask[r]?.[selC]) r++; if (r < puzzle.rows) selectCell(r, selC); return; }
+  if (e.key === 'ArrowUp') { e.preventDefault(); let r = selR-1; while (r >= 0 && !puzzle.mask[r]?.[selC]) r--; if (r >= 0) selectCell(r, selC); return; }
+  if (e.key === 'Backspace' || e.key === 'Delete') {
+    e.preventDefault();
+    if (playerGrid[selR][selC]) playerGrid[selR][selC] = '';
+    else { retreatCursor(); playerGrid[selR][selC] = ''; }
+    render(); updateMetrics(); return;
+  }
+  const ch = e.key.toUpperCase();
+  if (/^[A-ZČŠŽÀÂÆÇÉÈÊËÏÎÔŒÙÛÜŸÁÍÓÚÑÄÖ]$/.test(ch)) {
+    e.preventDefault();
+    playerGrid[selR][selC] = ch;
+    render(); advanceCursor(); updateMetrics(); checkWin();
+  }
+});
+
+// ─── Game Logic ───
+function checkAll() {
+  if (!puzzle) return; let ok = true;
+  document.querySelectorAll('.cell').forEach(cell => {
+    const r = +cell.dataset.r, c = +cell.dataset.c;
+    if (!puzzle.mask[r]?.[c]) return;
+    cell.classList.remove('correct','error');
+    const p = playerGrid[r][c], s = puzzle.solution[r][c];
+    if (!p) { ok = false; return; }
+    if (p === s) cell.classList.add('correct');
+    else { cell.classList.add('error'); ok = false; errorCount++; }
+  });
+  updateMetrics();
+  if (ok) winGame(); else setStatus(L.checked, 'err');
+}
+
+function revealWord() {
+  if (!puzzle || selR < 0) return;
+  getWordCells(selR, selC, dir).forEach(([r,c]) => { playerGrid[r][c] = puzzle.solution[r][c]; });
+  render(); updateMetrics(); checkWin();
+}
+
+function revealAll() {
+  if (!puzzle) return;
+  for (let r = 0; r < puzzle.rows; r++)
+    for (let c = 0; c < puzzle.cols; c++)
+      if (puzzle.mask[r][c]) playerGrid[r][c] = puzzle.solution[r][c];
+  render(); updateMetrics(); setStatus(L.solved, '');
+}
+
+function checkWin() {
+  if (!puzzle || solved) return;
+  for (let r = 0; r < puzzle.rows; r++)
+    for (let c = 0; c < puzzle.cols; c++)
+      if (puzzle.mask[r][c] && playerGrid[r][c] !== puzzle.solution[r][c]) return;
+  winGame();
+}
+
+function winGame() {
+  solved = true; stopTimer();
+  setStatus(L.winMsg(fmtTime(seconds)), 'win');
+  document.querySelectorAll('.cell:not(.black)').forEach((cell, i) => {
+    setTimeout(() => cell.classList.add('win-anim'), i * 20);
+  });
+}
+
+// ─── Metrics ───
+function updateMetrics() {
+  if (!puzzle) return;
+  let filled = 0, total = 0;
+  for (let r = 0; r < puzzle.rows; r++)
+    for (let c = 0; c < puzzle.cols; c++)
+      if (puzzle.mask[r][c]) { total++; if (playerGrid[r][c]) filled++; }
+  const pct = Math.round(filled / total * 100);
+  document.getElementById('mProgress').textContent = pct + '%';
+  document.getElementById('barProgress').style.width = pct + '%';
+
+  let wt = 0, ws = 0;
+  for (const d of ['across','down']) {
+    if (!puzzle.clueMap[d]) continue;
+    for (const [num, cl] of Object.entries(puzzle.clueMap[d])) {
+      wt++;
+      if (cl.cells.every(([r,c]) => playerGrid[r][c] === puzzle.solution[r][c])) {
+        ws++;
+        const el = document.getElementById(`clue_${d}_${num}`);
+        if (el) el.classList.add('solved');
+      }
+    }
+  }
+  document.getElementById('mWords').textContent = `${ws} / ${wt}`;
+  document.getElementById('barWords').style.width = wt ? (ws/wt*100)+'%' : '0';
+  document.getElementById('mErrors').textContent = errorCount;
+}
+
+// ─── Timer ───
+function startTimer() { stopTimer(); seconds = 0; document.getElementById('timer').textContent = '00:00'; timerInterval = setInterval(() => { seconds++; document.getElementById('timer').textContent = fmtTime(seconds); }, 1000); }
+function stopTimer() { if (timerInterval) clearInterval(timerInterval); timerInterval = null; }
+function fmtTime(s) { return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+
+// ─── Save / Load ───
+function savePuzzle() {
+  if (!puzzle) return;
+  const data = {
+    lang, rows: puzzle.rows, cols: puzzle.cols,
+    mask: puzzle.mask, solution: puzzle.solution,
+    clueMap: puzzle.clueMap, numAssigned: puzzle.numAssigned,
+    playerGrid, seconds, errorCount
+  };
+  const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `crossword_${lang}_${puzzle.rows}x${puzzle.cols}_${Date.now()}.json`;
+  a.click();
+}
+
+function loadPuzzle(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.lang) {
+        lang = data.lang;
+        L = I18N[lang] || I18N.en;
+        document.getElementById('langSel').value = lang;
+        updateUI();
+      }
+      if (Array.isArray(data.puzzles)) {
+        setPack(data);
+      } else {
+        loadPreparedPuzzle(data, -1);
+      }
+    } catch(err) {
+      setStatus('Load error: ' + err.message, 'err');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+
+// ─── Prepared Pack Support ───
+function normalizePreparedPuzzle(data) {
+  const rows = Number(data.rows);
+  const cols = Number(data.cols);
+  const mask = (data.mask || []).map(row => row.map(v => v ? 1 : 0));
+  const solution = (data.solution || []).map((row, r) =>
+    row.map((ch, c) => (mask[r] && mask[r][c]) ? String(ch || '').toUpperCase() : '')
+  );
+  const clueMap = {across: {}, down: {}};
+  for (const d of ['across', 'down']) {
+    const src = (data.clueMap && data.clueMap[d]) ? data.clueMap[d] : {};
+    for (const [num, cl] of Object.entries(src)) {
+      const cells = Array.isArray(cl.cells) ? cl.cells : [];
+      const first = cells[0] || [0, 0];
+      clueMap[d][num] = {
+        num: cl.num != null ? cl.num : Number(num),
+        r: cl.r != null ? cl.r : first[0],
+        c: cl.c != null ? cl.c : first[1],
+        len: cl.len != null ? cl.len : cells.length,
+        text: cl.text || cl.clue || '…',
+        word: String(cl.word || cl.answer || '').toUpperCase(),
+        cells,
+        score: cl.score
+      };
+    }
+  }
+  const numAssigned = data.numAssigned || {};
+  if (!Object.keys(numAssigned).length) {
+    for (const d of ['across', 'down']) {
+      for (const [num, cl] of Object.entries(clueMap[d])) {
+        if (cl.cells && cl.cells.length) {
+          const [r, c] = cl.cells[0];
+          numAssigned[`${r},${c}`] = Number(num);
+        }
+      }
+    }
+  }
+  const player = Array.isArray(data.playerGrid)
+    ? data.playerGrid.map((row, r) => row.map((ch, c) => (mask[r] && mask[r][c]) ? String(ch || '').toUpperCase() : ''))
+    : Array.from({length: rows}, () => Array(cols).fill(''));
+
+  return {
+    id: data.id || '',
+    title: data.title || `${rows}×${cols}`,
+    rows, cols, mask, solution, clueMap, numAssigned,
+    playerGrid: player,
+    sourceLabel: data.sourceLabel || '',
+    meta: data.meta || {}
+  };
+}
+
+function loadPreparedPuzzle(data, idx = -1) {
+  const p = normalizePreparedPuzzle(data);
+  puzzle = {
+    rows: p.rows,
+    cols: p.cols,
+    mask: p.mask,
+    solution: p.solution,
+    clueMap: p.clueMap,
+    numAssigned: p.numAssigned,
+    title: p.title,
+    sourceLabel: p.sourceLabel,
+    meta: p.meta
+  };
+  playerGrid = p.playerGrid;
+  selR = -1; selC = -1; dir = 'across'; activeClue = null;
+  solved = false; errorCount = 0;
+  if (idx >= 0) packIndex = idx;
+  setCellSize(p.cols);
+  buildGrid();
+  buildClueList('across');
+  buildClueList('down');
+  startTimer();
+  updateMetrics();
+  updatePackUI();
+  setStatus(`${p.title}${L.loaded}`, '');
+  for (let r = 0; r < p.rows; r++) {
+    for (let c = 0; c < p.cols; c++) {
+      if (p.mask[r][c]) { selectCell(r, c); return; }
+    }
+  }
+}
+
+function setPack(packObj) {
+  if (!packObj || !Array.isArray(packObj.puzzles) || !packObj.puzzles.length) return false;
+  PACK = packObj;
+  if (packIndex < 0 || packIndex >= PACK.puzzles.length) packIndex = 0;
+  const sel = document.getElementById('packSelect');
+  sel.innerHTML = '';
+  PACK.puzzles.forEach((p, i) => {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = `${i + 1}. ${p.title || (p.rows + '×' + p.cols)}`;
+    sel.appendChild(opt);
+  });
+  sel.value = String(packIndex);
+  loadPreparedPuzzle(PACK.puzzles[packIndex], packIndex);
+  setStatus(L.packLoaded(packIndex, PACK.puzzles.length), '');
+  return true;
+}
+
+function updatePackUI() {
+  document.getElementById('packTitle').textContent = L.packTitle;
+  const metaEl = document.getElementById('packMeta');
+  if (PACK && packIndex >= 0 && PACK.puzzles[packIndex]) {
+    metaEl.innerHTML = L.packMeta(PACK.puzzles[packIndex]);
+    document.getElementById('packSelect').value = String(packIndex);
+  } else {
+    metaEl.innerHTML = L.packWaiting;
+  }
+  document.getElementById('btnPrevPack').disabled = !(PACK && PACK.puzzles && PACK.puzzles.length > 1);
+  document.getElementById('btnNextPack').disabled = !(PACK && PACK.puzzles && PACK.puzzles.length > 1);
+}
+
+function loadPackSelection() {
+  if (!PACK) return;
+  const idx = Number(document.getElementById('packSelect').value || 0);
+  if (Number.isFinite(idx) && PACK.puzzles[idx]) loadPreparedPuzzle(PACK.puzzles[idx], idx);
+}
+
+function prevPackPuzzle() {
+  if (!PACK || !PACK.puzzles?.length) return;
+  const idx = (packIndex - 1 + PACK.puzzles.length) % PACK.puzzles.length;
+  loadPreparedPuzzle(PACK.puzzles[idx], idx);
+}
+
+function nextPackPuzzle() {
+  if (!PACK || !PACK.puzzles?.length) return;
+  const idx = (packIndex + 1) % PACK.puzzles.length;
+  loadPreparedPuzzle(PACK.puzzles[idx], idx);
+}
+
+async function tryAutoloadPack() {
+  if (window.CW_PUZZLES_PACK && Array.isArray(window.CW_PUZZLES_PACK.puzzles) && window.CW_PUZZLES_PACK.puzzles.length) {
+    return setPack(window.CW_PUZZLES_PACK);
+  }
+  if (location.protocol !== 'file:') {
+    try {
+      const r = await fetch('cw_puzzles_pack.json', {cache: 'no-store'});
+      if (r.ok) {
+        const data = await r.json();
+        return setPack(data);
+      }
+    } catch (e) {
+      console.warn('JSON autoload failed:', e);
+    }
+    document.getElementById('packMeta').innerHTML = L.packMissing;
+    return false;
+  }
+  document.getElementById('packMeta').innerHTML = L.packMissingLocal;
+  return false;
+}
+
+// ─── Language ───
+async function switchLang(code) {
+  lang = code;
+  L = I18N[lang] || I18N.en;
+  updateUI();
+  const ok = await loadDict(lang);
+  if (ok && !PACK && !puzzle) {
+    const hTotal = Object.values(DB.hinted).reduce((s, arr) => s + arr.length, 0);
+    setStatus(`${hTotal} hinted words · choose size →`, '');
+  }
+}
+
+function updateUI() {
+  document.getElementById('titleText').innerHTML = L.title;
+  document.getElementById('subtitleText').textContent = L.subtitle;
+  document.getElementById('acrossTitle').textContent = L.across;
+  document.getElementById('downTitle').textContent = L.down;
+  document.getElementById('statsTitle').textContent = L.stats;
+  document.getElementById('lblProgress').textContent = L.progress;
+  document.getElementById('lblWords').textContent = L.words;
+  document.getElementById('lblErrors').textContent = L.errors;
+  document.getElementById('helpTitle').textContent = L.help;
+  document.getElementById('helpText').innerHTML = L.helpHtml;
+  document.getElementById('btnReveal').textContent = L.reveal;
+  document.getElementById('btnSolution').textContent = L.solution;
+  updatePackUI();
+}
+
+// ─── Utility ───
+function setStatus(msg, cls) { const el = document.getElementById('status'); el.textContent = msg; el.className = 'status ' + (cls || ''); }
+function togglePanel(d) { const el = document.getElementById(d === 'across' ? 'cluesAcross' : 'cluesDown'); el.style.display = el.style.display === 'none' ? '' : 'none'; }
+function disableButtons(v) { document.querySelectorAll('.diff-btns .btn').forEach(b => b.disabled = v); }
+
+// ─── Init ───
+window.addEventListener('resize', () => { if (puzzle) setCellSize(puzzle.cols); });
+
+(async function init() {
+  updateUI();
+  const autoloaded = await tryAutoloadPack();
+  const ok = await loadDict(lang);
+  if (!autoloaded && ok) {
+    const hTotal = Object.values(DB.hinted).reduce((s, arr) => s + arr.length, 0);
+    setStatus(`${hTotal} hinted words · choose size →`, '');
+  } else if (!autoloaded && !ok) {
+    setStatus(L.noDict, 'err');
+  }
+})();
+</script>
+</body>
+</html>
