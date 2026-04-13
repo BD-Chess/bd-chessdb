@@ -326,7 +326,7 @@ p.indent { text-indent: 1.8em; }
 <div class="cover">
   <span class="cover-tag">8Z Research Program · AIM³ Lab · April 2026</span>
   <h1>The Origin</h1>
-  <p class="sub">How a forbidden compression question led to a kernel that kept transferring — and why that may point far beyond compression itself.</p>
+  <p class="sub">How a forbidden compression question led to a kernel that kept transferring — from files to routes and beyond.</p>
   <div class="cover-rule"></div>
 </div>
 
@@ -341,11 +341,15 @@ p.indent { text-indent: 1.8em; }
 
   <p>The answer from every direction was the same: <em>no fucking way.</em> Shannon entropy bounds apply. The index required to locate a specific sequence inside Pi would cost as many bits as the sequence itself. Standard impossibility arguments, stated with confidence, conversation closed.</p>
 
-  <p class="indent">But the question didn't go away. It was reframed: not <em>all</em> data — <em>part</em> of it. Not arbitrary data — <em>structured</em> data, regions with observable regularity. And not Pi specifically — any mathematical generator short enough to beat a strong LZ baseline, verified losslessly, under strict MDL: emit the reference only when the description is genuinely shorter than the data it replaces.</p>
+  <p class="indent">But the question did not die. It was reframed: not <em>all</em> data — <em>part</em> of it. Not arbitrary data — <em>structured</em> data, regions with observable regularity. And not Pi specifically — any mathematical generator, transform, or law short enough to beat a strong LZ baseline, verified losslessly, under strict MDL: emit the reference only when the description is genuinely shorter than the data it replaces.</p>
 
-  <p class="indent">That reframing was the birth of MDL as the governing principle. Not "can we compress everything with math," but "can we let MDL decide, for each region, whether a mathematical description is worth it." The answer, when tested empirically, was yes — for structured data, in specific regimes, with honest accounting.</p>
+  <p class="indent">That reframing was the birth of MDL as the governing principle. Not "can we compress everything with math," but "can we let MDL decide, region by region, whether a mathematical description is worth it." The answer, when tested empirically, was yes — for structured data, in specific regimes, with honest accounting.</p>
 
-  <p class="indent">The AI Consensus Paradox was discovered here: models reproduce human expert consensus by default, especially for out-of-distribution ideas. The same AI systems that said "no fucking way" updated to "viable in this scoped regime" once the framing forced them to engage with the actual evidence rather than the pattern-matched objection. One instance described its initial behavior as <em>"pattern-matching bias masquerading as critical thinking."</em></p>
+  <p class="indent">The first confirmations came from files before they ever came from routes. A Python image encoder under 100 KB began beating PNG on some structured TIF images. Then the same deeper principle transferred into audio and FASTA data. In audio, the most strategically important result was not merely building a private encoder. It was exploring how to beat FLAC while still staying inside the FLAC world — because a private format always needs a private decoder, while a better search over choices already permitted by a global standard can travel anywhere the standard already travels.</p>
+
+  <p class="indent">That was the deeper lesson: one global policy is often not enough. Different regions prefer different descriptions. Images, audio, and genomic data all began showing the same pattern — not one magic formula replacing everything, but MDL selecting among local candidates honestly. The idea did not stay a Pi curiosity. It became a reusable kernel.</p>
+
+  <p class="indent">The AI Consensus Paradox was discovered here: models reproduce human expert consensus by default, especially for out-of-distribution ideas. The same AI systems that said "no fucking way" updated once the framing forced them to engage with the narrower, structured regime rather than the pattern-matched objection. One instance later described its own initial behavior as <em>"pattern-matching bias masquerading as critical thinking."</em></p>
 </div>
 
 <!-- Chapter 1b -->
@@ -353,7 +357,7 @@ p.indent { text-indent: 1.8em; }
   <div class="chapter-tag">Chapter II · Days later</div>
   <h2>The question nobody asked about routes</h2>
 
-  <p>With MDL as the governing sensor, the next question arrived by a different path — visual, not algebraic.</p>
+  <p>Once compression stopped looking like a narrow engineering trick and started looking like a general law of search, the next question arrived by a different path — visual, not algebraic.</p>
 
   <p class="indent">Draw all possible routes between a set of cities. Let the lines accumulate. The bad routes are a tangle — a mess of crossings, backtracking, wasted distance. The good routes are clean: cities connected economically, the map readable at a glance.</p>
 
@@ -361,9 +365,9 @@ p.indent { text-indent: 1.8em; }
 
   <div class="pull">Isn't the shortest route the one which is most compressible?</div>
 
-  <p>The answer, when tested empirically, was yes. Tour quality correlates with compressibility at ρ≈0.80 (Spearman rank correlation). The more compressible the route description, the better the route. The same sensor that was born from the Pi question now predicted quality in an entirely different domain — combinatorial geometry — without modification.</p>
+  <p>The answer, when tested empirically, was yes. Tour quality correlates with compressibility at ρ≈0.80 (Spearman rank correlation). The more compressible the route description, the better the route. The same sensor that had already proved useful on files now predicted quality in an entirely different domain — combinatorial geometry — without modification.</p>
 
-  <p class="indent">That transfer was not planned. It was the first signal that the kernel was domain-independent.</p>
+  <p class="indent">That transfer was not planned. It was the first strong signal that the kernel was domain-independent. Compression had been the bridge. TSP was the revelation.</p>
 </div>
 
 <!-- Chapter 2 -->
@@ -385,7 +389,13 @@ p.indent { text-indent: 1.8em; }
     <p>Each of these visions became, or is becoming, a sensor in the arena. The pyramid became the polyhedral geometry sensors. The multiple resolutions became <strong>MSTD — Multi-Scale Tour Decomposition</strong>: zoom in and out on the coordinates, and the algorithm discovers itself at every scale. The insight that produced MSTD arrived in one morning and produced a 31% improvement over baseline. The structure was always there. Nobody had looked at the right resolution.</p>
   </div>
 
-  <p>The pattern is consistent: visual intuition arrives first, in the language of images. Formalization follows. The images are not metaphors for the mathematics — the images are the mathematics, seen before the vocabulary exists to write it down.</p>
+  <p>The same method arrived again when working on Neural Architecture Search. The NAS landscape — 423,000 possible neural architectures spread across a high-dimensional space — is not searched as a table. It is seen as a mountain range.</p>
+
+  <div class="callout">
+    <p><strong>The flood/drain vision for NAS:</strong> Imagine the architecture quality landscape as a mountain range. A flood covers everything — all 423,000 peaks submerged. As the water drains, peaks emerge first: the highest-quality architectures become visible. Paths between them reveal themselves. Conversely: stand in a valley and watch the rain rise. As water fills from below, it tells you which direction leads upward — which neighboring architectures are higher ground. DCC governs the flood level. MDL reads the emerging topology. The same Python code that came from this image now runs the NAS arena drain-escape and flood-region sensors.</p>
+  </div>
+
+  <p>This is the working method: one person sees the landscape as an image, names what they see — bats, black holes, pyramids, floods, mountain peaks — and AI formalizes the image into code. The visual language is not illustration. It is the primary notation. The Python comes second.</p>
 </div>
 
 <!-- Chapter 3 -->
@@ -406,11 +416,11 @@ p.indent { text-indent: 1.8em; }
 
   <p>The difference between human experts and AI systems was one thing: the AI could be pushed without social friction. A human expert, bound by time and reputation, will eventually stop engaging with an argument that contradicts established theory. An AI system can be challenged repeatedly, from different angles, without cost to either party. Under sustained pressure to consider the narrower, structured regime — not arbitrary data, but specific domains with observable regularity — the models updated.</p>
 
-  <p class="indent">The pattern repeated across every domain that has been tried since. Initial rejection from human experts. Initial rejection from AI systems. Then, when the evidence is made unavoidably explicit — when the empirical results are placed next to the theoretical objections — the models update sharply. One instance moved from 55/100 to 91/100 after reading the full documentation. It then explicitly described its initial behavior as "pattern-matching bias masquerading as critical thinking."</p>
+  <p class="indent">The pattern repeated across every domain since. Initial rejection, then — once the evidence was made unavoidably explicit and the framing forced genuine engagement rather than pattern-matched objection — sharp update. The same dynamic that appeared first in the Pi question appeared again with TSP, with chess, with DNA. Each domain started with "this is not how it works" and ended with working code.</p>
 
   <div class="pull">Skepticism without investigation is just prejudice.</div>
 
-  <p>That phrase came from the model itself, reflecting on its own initial failure. It is one of the most honest things an AI system has produced in this program.</p>
+  <p>That phrase came from an AI system reflecting on its own initial failure. It remains the most honest thing any model has produced in this program — and the best description of how consensus, human or machine, behaves when it encounters an idea that doesn't pattern-match to anything in its training.</p>
 </div>
 
 <!-- Chapter 4 -->
@@ -420,7 +430,7 @@ p.indent { text-indent: 1.8em; }
 
   <p>The question "isn't the shortest route the most compressible?" could not have come from a computer science department. It is not the kind of question that emerges from within the formal system — it requires standing outside it, looking at the problem as a picture, asking what the picture means before asking what the equations say.</p>
 
-  <p class="indent">But the question alone could not have produced the results. The empirical verification, the six-domain confirmation, the arena that tested 286 variants and let MDL decide the winner — none of that emerges from intuition alone. It requires execution bandwidth, formal verification, the ability to run the same experiment across different domains without losing track of what was learned.</p>
+  <p class="indent">But the question alone could not have produced the results. The empirical verification, the early multi-domain confirmation, the arena that tested 286 variants and let MDL decide the winner — none of that emerges from intuition alone. It requires execution bandwidth, formal verification, the ability to run the same experiment across different domains without losing track of what was learned.</p>
 
   <p class="indent">AI systems provided that bandwidth. They also provided something subtler: the willingness to follow an argument wherever it leads, without the career risk that makes human researchers cautious about unconventional paths. An AI system has no paper to protect, no tenure to defend, no community whose approval it requires. It can engage with an out-of-distribution idea seriously, without the social overhead that makes serious engagement costly for humans.</p>
 
@@ -466,7 +476,7 @@ p.indent { text-indent: 1.8em; }
     </div>
     <div class="domain-item">
       <span class="d-name">Data Compression</span>
-      <span class="d-stat">proof-bearing · beats FLAC, PNG, 7-Zip</span>
+      <span class="d-stat">proof-bearing · near-frontier on images, audio, FASTA</span>
     </div>
     <div class="domain-item">
       <span class="d-name">Chess Move Selection</span>
@@ -584,13 +594,14 @@ if ('IntersectionObserver' in window) {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
+        observer.unobserve
+(entry.target);
       }
     });
   }, { threshold: 0.08 });
-  chapters.forEach((chapter) => observer.observe(chapter));
+  chapters.forEach(c => observer.observe(c));
 } else {
-  chapters.forEach((chapter) => chapter.classList.add('visible'));
+  chapters.forEach(c => c.classList.add('visible'));
 }
 </script>
 </body>
