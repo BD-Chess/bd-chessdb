@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>8Z Crossword Viewer — Arena Pack</title>
+<style>
+:root{
+  --bg:#060912; --bg2:#0b1222; --panel:#0f1830; --panel2:#121d39; --line:#203055;
+  --text:#e8eefb; --muted:#90a0c4; --cyan:#40d4ff; --gold:#ffd34d; --green:#59d390;
+  --red:#ff798c; --violet:#a68cff; --shadow:0 18px 50px rgba(0,0,0,.32); --cell:44px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(64,212,255,.08), transparent 24%),
+    radial-gradient(circle at 85% 12%, rgba(255,211,77,.07), transparent 18%),
+    linear-gradient(180deg, #060912 0%, #05070d 100%);
+  color:var(--text); min-height:100vh;
+}
+.topbar{
+  position:sticky; top:0; z-index:20; backdrop-filter:blur(12px);
+  background:rgba(6,9,18,.86); border-bottom:1px solid rgba(64,212,255,.10);
+}
+.topbar .inner{max-width:1420px; margin:0 auto; padding:12px 18px; display:flex; justify-content:space-between; gap:16px; align-items:center}
+.brand{font-size:.76rem; letter-spacing:.24em; text-transform:uppercase; color:var(--cyan); font-weight:700}
+.brand span{color:var(--gold)}
+.top-actions{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+button,.btn{
+  border:1px solid var(--line); background:linear-gradient(180deg, rgba(18,29,57,.96), rgba(12,20,40,.96));
+  color:var(--text); border-radius:10px; padding:10px 14px; cursor:pointer; font-weight:600;
+}
+button:hover,.btn:hover{border-color:rgba(64,212,255,.42); color:var(--cyan)}
+button.green{border-color:rgba(89,211,144,.34); color:var(--green)}
+button.red{border-color:rgba(255,121,140,.34); color:var(--red)}
+.page{max-width:1420px; margin:0 auto; padding:18px; display:grid; grid-template-columns:300px minmax(420px,1fr) 320px; gap:16px}
+.panel{background:linear-gradient(180deg, rgba(18,29,57,.92), rgba(12,20,40,.95)); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow)}
+.sidebar{padding:14px; display:flex; flex-direction:column; gap:12px}
+.panel-title{font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--cyan); margin-bottom:8px; font-weight:700}
+.meta-note{font-size:.9rem; line-height:1.6; color:var(--muted)}
+#puzzleList{display:flex; flex-direction:column; gap:10px; max-height:calc(100vh - 260px); overflow:auto; padding-right:4px}
+.puzzle-card{padding:12px; border:1px solid rgba(64,212,255,.10); border-radius:14px; background:rgba(8,14,28,.55); cursor:pointer}
+.puzzle-card:hover{border-color:rgba(64,212,255,.34)}
+.puzzle-card.active{border-color:rgba(255,211,77,.42); box-shadow:0 0 0 1px rgba(255,211,77,.18) inset}
+.puzzle-card .t{font-weight:700; color:var(--text); margin-bottom:6px}
+.puzzle-card .m{font-size:.86rem; color:var(--muted); line-height:1.45}
+.center{padding:16px; display:flex; flex-direction:column; gap:14px; align-items:center}
+.headline{width:100%}
+.headline h1{font-size:clamp(1.4rem, 2.5vw, 2rem); margin-bottom:6px}
+.sub{color:var(--muted); line-height:1.5}
+.stats{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; width:100%}
+.stat{padding:10px 12px; border:1px solid rgba(64,212,255,.08); border-radius:12px; background:rgba(8,14,28,.46)}
+.stat .k{font-size:.74rem; text-transform:uppercase; letter-spacing:.12em; color:var(--muted)}
+.stat .v{font-size:1.05rem; font-weight:700; margin-top:4px}
+.grid-wrap{padding:14px; border-radius:16px; background:rgba(8,14,28,.55); border:1px solid rgba(64,212,255,.08)}
+#grid{display:grid; gap:1px}
+.cell{
+  width:var(--cell); height:var(--cell); background:#0f1930; border:1px solid rgba(64,212,255,.12);
+  position:relative; display:flex; align-items:center; justify-content:center; text-transform:uppercase;
+}
+.cell.black{background:#060a14; border-color:#091121}
+.cell.selected{background:rgba(64,212,255,.15); border-color:var(--cyan)}
+.cell.word{background:rgba(166,140,255,.10)}
+.cell.correct{background:rgba(89,211,144,.12)}
+.cell.error{background:rgba(255,121,140,.14); border-color:rgba(255,121,140,.36)}
+.cell .num{position:absolute; top:2px; left:4px; font-size:.58rem; color:var(--muted)}
+.cell input{
+  width:100%; height:100%; border:none; outline:none; background:transparent; color:var(--text); text-align:center;
+  font-size:1.2rem; font-weight:800; text-transform:uppercase;
+}
+.center-actions{display:flex; gap:8px; flex-wrap:wrap; width:100%; justify-content:center}
+.right{padding:14px; display:flex; flex-direction:column; gap:12px}
+.clues{display:grid; gap:12px}
+.clue-box{padding:12px; border:1px solid rgba(64,212,255,.08); border-radius:14px; background:rgba(8,14,28,.46)}
+.clue-list{display:flex; flex-direction:column; gap:8px; max-height:300px; overflow:auto; padding-right:4px}
+.clue{padding:8px 10px; border-radius:10px; cursor:pointer; border:1px solid transparent}
+.clue:hover{background:rgba(64,212,255,.06)}
+.clue.active{background:rgba(64,212,255,.10); border-color:rgba(64,212,255,.28)}
+.clue .n{color:var(--gold); font-weight:700; margin-right:6px}
+.clue .a{display:block; font-size:.78rem; color:var(--muted); margin-top:4px}
+.footer-note{font-size:.86rem; color:var(--muted); line-height:1.6}
+.hidden{display:none !important}
+input[type=file]{display:none}
+@media (max-width:1180px){
+  .page{grid-template-columns:1fr;}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  #puzzleList{max-height:none}
+}
+@media (max-width:640px){
+  .topbar .inner{flex-direction:column; align-items:flex-start}
+  :root{--cell:34px}
+  .stats{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="inner">
+      <div class="brand">8Z <span>Crossword Viewer</span></div>
+      <div class="top-actions">
+        <button onclick="document.getElementById('packFile').click()">Load pack</button>
+        <button onclick="document.getElementById('singleFile').click()">Load single puzzle</button>
+        <input id="packFile" type="file" accept=".json" onchange="loadPackFile(event)">
+        <input id="singleFile" type="file" accept=".json" onchange="loadSinglePuzzleFile(event)">
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <aside class="panel sidebar">
+      <div>
+        <div class="panel-title">Puzzle library</div>
+        <div class="meta-note">Offline Python arena results exported into an HTML-ready pack. This page is only a viewer/player. Generation stays in Python.</div>
+      </div>
+      <div id="libraryInfo" class="meta-note">Trying to load <code>cw_puzzles_pack_curated.json</code> from the same folder…</div>
+      <div id="puzzleList"></div>
+    </aside>
+
+    <main class="panel center">
+      <div class="headline">
+        <h1 id="title">No puzzle loaded</h1>
+        <div class="sub" id="sourceLine">Autoload prefers <code>cw_puzzles_pack.js</code> for offline use. Over HTTP it can also fetch <code>cw_puzzles_pack.json</code>.</div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="k">Quality</div><div class="v" id="statQuality">—</div></div>
+        <div class="stat"><div class="k">Nodes</div><div class="v" id="statNodes">—</div></div>
+        <div class="stat"><div class="k">Progress</div><div class="v" id="statProgress">0%</div></div>
+        <div class="stat"><div class="k">Words solved</div><div class="v" id="statWords">0 / 0</div></div>
+      </div>
+      <div class="grid-wrap"><div id="grid"></div></div>
+      <div class="center-actions">
+        <button class="green" onclick="checkAll()">Check</button>
+        <button onclick="revealWord()">Reveal word</button>
+        <button class="red" onclick="revealAll()">Reveal all</button>
+        <button onclick="clearGrid()">Clear</button>
+      </div>
+    </main>
+
+    <section class="panel right">
+      <div>
+        <div class="panel-title">Current clue</div>
+        <div id="currentClue" class="footer-note">Select a clue or click a white cell.</div>
+      </div>
+      <div class="clues">
+        <div class="clue-box">
+          <div class="panel-title">Across</div>
+          <div id="cluesAcross" class="clue-list"></div>
+        </div>
+        <div class="clue-box">
+          <div class="panel-title">Down</div>
+          <div id="cluesDown" class="clue-list"></div>
+        </div>
+      </div>
+      <div class="footer-note">Tip: click a clue to jump to it. Letters are checked only when you press <strong>Check</strong> or reveal something.</div>
+    </section>
+  </div>
+
+<script>
+let pack = null;
+let puzzle = null;
+let playerGrid = null;
+let cellEls = [];
+let selR = -1, selC = -1, dir = 'across', activeNum = null;
+
+const $ = (id) => document.getElementById(id);
+
+function cloneGrid(rows, cols, fill=''){
+  return Array.from({length: rows}, () => Array(cols).fill(fill));
+}
+
+function puzzleWordCount(p){
+  return Object.keys(p.clueMap.across).length + Object.keys(p.clueMap.down).length;
+}
+
+function boardAnswerAt(r,c){
+  return puzzle.solution[r][c] || '';
+}
+
+function getWordCells(r,c,d){
+  if (!puzzle || !puzzle.mask?.[r]?.[c]) return [];
+  const cells = [];
+  if (d === 'across') {
+    let sc = c; while (sc > 0 && puzzle.mask[r][sc-1]) sc--;
+    for (let cc = sc; cc < puzzle.cols && puzzle.mask[r][cc]; cc++) cells.push([r,cc]);
+  } else {
+    let sr = r; while (sr > 0 && puzzle.mask[sr-1]?.[c]) sr--;
+    for (let rr = sr; rr < puzzle.rows && puzzle.mask[rr]?.[c]; rr++) cells.push([rr,c]);
+  }
+  return cells;
+}
+
+function activeClueObj(){
+  if (!puzzle || !activeNum) return null;
+  return puzzle.clueMap[dir][String(activeNum)] || null;
+}
+
+function getClueForCell(r,c,d){
+  const cells = getWordCells(r,c,d);
+  if (!cells.length) return null;
+  const start = cells[0];
+  const num = puzzle.numAssigned[`${start[0]},${start[1]}`];
+  return { num, clue: puzzle.clueMap[d][String(num)] };
+}
+
+function setActive(r,c,d=dir){
+  if (!puzzle || !puzzle.mask?.[r]?.[c]) return;
+  selR = r; selC = c; dir = d;
+  const data = getClueForCell(r,c,d);
+  activeNum = data ? data.num : null;
+  renderGridHighlights();
+  renderClueHighlights();
+  if (data?.clue) {
+    $('currentClue').innerHTML = `<strong>${d === 'across' ? 'Across' : 'Down'} ${data.num}</strong><br>${data.clue.clue}<br><span style="color:var(--muted)">${data.clue.answer.length} letters</span>`;
+  }
+}
+
+function renderLibrary(){
+  const host = $('puzzleList');
+  host.innerHTML = '';
+  if (!pack?.puzzles?.length) {
+    host.innerHTML = '<div class="meta-note">No puzzles in pack.</div>';
+    return;
+  }
+  pack.puzzles.forEach((p, idx) => {
+    const card = document.createElement('div');
+    card.className = 'puzzle-card' + ((puzzle && puzzle.id === p.id) ? ' active' : '');
+    const q = p.meta?.quality;
+    card.innerHTML = `<div class="t">${p.title}</div>
+      <div class="m">${p.sourceLabel || 'Unknown source'}<br>Quality: ${q != null ? q.toFixed(4) : '—'} · Nodes: ${p.meta?.nodes ?? '—'}</div>`;
+    card.onclick = () => loadPuzzleObject(p);
+    host.appendChild(card);
+  });
+}
+
+function renderGrid(){
+  const grid = $('grid');
+  grid.innerHTML = '';
+  cellEls = cloneGrid(puzzle.rows, puzzle.cols, null);
+  grid.style.gridTemplateColumns = `repeat(${puzzle.cols}, var(--cell))`;
+  grid.style.gridTemplateRows = `repeat(${puzzle.rows}, var(--cell))`;
+
+  for (let r=0; r<puzzle.rows; r++) {
+    for (let c=0; c<puzzle.cols; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (puzzle.mask[r][c] ? '' : ' black');
+      if (puzzle.mask[r][c]) {
+        const n = puzzle.numAssigned[`${r},${c}`];
+        if (n) {
+          const num = document.createElement('div');
+          num.className = 'num';
+          num.textContent = n;
+          cell.appendChild(num);
+        }
+        const inp = document.createElement('input');
+        inp.maxLength = 1;
+        inp.value = playerGrid[r][c];
+        inp.addEventListener('focus', () => setActive(r,c,dir));
+        inp.addEventListener('click', () => setActive(r,c,dir));
+        inp.addEventListener('input', (e) => {
+          const ch = (e.target.value || '').replace(/[^A-Za-z]/g, '').toUpperCase();
+          e.target.value = ch;
+          playerGrid[r][c] = ch;
+          moveNext();
+          updateStats();
+          renderGridHighlights();
+        });
+        inp.addEventListener('keydown', (e) => handleKey(e, r, c));
+        cell.appendChild(inp);
+      }
+      cellEls[r][c] = cell;
+      grid.appendChild(cell);
+    }
+  }
+  renderGridHighlights();
+}
+
+function renderGridHighlights(){
+  if (!puzzle) return;
+  const activeCells = (selR >= 0) ? getWordCells(selR, selC, dir) : [];
+  const activeSet = new Set(activeCells.map(([r,c]) => `${r},${c}`));
+  for (let r=0; r<puzzle.rows; r++) {
+    for (let c=0; c<puzzle.cols; c++) {
+      const cell = cellEls[r][c];
+      if (!cell || !puzzle.mask[r][c]) continue;
+      cell.classList.remove('selected','word','correct','error');
+      if (activeSet.has(`${r},${c}`)) cell.classList.add('word');
+      if (r === selR && c === selC) cell.classList.add('selected');
+      const input = cell.querySelector('input');
+      if (input) input.value = playerGrid[r][c];
+    }
+  }
+}
+
+function renderClues(){
+  for (const d of ['across', 'down']) {
+    const host = $(d === 'across' ? 'cluesAcross' : 'cluesDown');
+    host.innerHTML = '';
+    const nums = Object.keys(puzzle.clueMap[d]).map(Number).sort((a,b)=>a-b);
+    nums.forEach((n) => {
+      const cl = puzzle.clueMap[d][String(n)];
+      const div = document.createElement('div');
+      div.className = 'clue';
+      div.dataset.dir = d;
+      div.dataset.num = n;
+      div.innerHTML = `<span class="n">${n}.</span>${cl.clue}<span class="a">${cl.answer.length} letters</span>`;
+      div.onclick = () => {
+        const [r,c] = cl.cells[0];
+        setActive(r,c,d);
+        const input = cellEls[r][c]?.querySelector('input');
+        if (input) input.focus();
+      };
+      host.appendChild(div);
+    });
+  }
+  renderClueHighlights();
+}
+
+function renderClueHighlights(){
+  document.querySelectorAll('.clue').forEach((el) => {
+    el.classList.toggle('active', el.dataset.dir === dir && Number(el.dataset.num) === activeNum);
+  });
+}
+
+function moveNext(){
+  const cells = getWordCells(selR, selC, dir);
+  const idx = cells.findIndex(([r,c]) => r === selR && c === selC);
+  if (idx >= 0 && idx < cells.length - 1) {
+    const [nr,nc] = cells[idx + 1];
+    setActive(nr, nc, dir);
+    cellEls[nr][nc]?.querySelector('input')?.focus();
+  }
+}
+
+function movePrev(){
+  const cells = getWordCells(selR, selC, dir);
+  const idx = cells.findIndex(([r,c]) => r === selR && c === selC);
+  if (idx > 0) {
+    const [nr,nc] = cells[idx - 1];
+    setActive(nr, nc, dir);
+    cellEls[nr][nc]?.querySelector('input')?.focus();
+  }
+}
+
+function handleKey(e, r, c){
+  if (e.key === 'Tab' || e.key === ' ') {
+    e.preventDefault();
+    dir = (dir === 'across') ? 'down' : 'across';
+    setActive(r,c,dir);
+    return;
+  }
+  if (e.key === 'Backspace' && !playerGrid[r][c]) {
+    e.preventDefault();
+    movePrev();
+    return;
+  }
+  if (e.key === 'ArrowRight') { e.preventDefault(); setArrow(r,c,'across',+1); return; }
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); setArrow(r,c,'across',-1); return; }
+  if (e.key === 'ArrowDown')  { e.preventDefault(); setArrow(r,c,'down',+1); return; }
+  if (e.key === 'ArrowUp')    { e.preventDefault(); setArrow(r,c,'down',-1); return; }
+}
+
+function setArrow(r,c,d,step){
+  if (d === 'across') {
+    let nc = c + step;
+    while (nc >= 0 && nc < puzzle.cols && !puzzle.mask[r][nc]) nc += step;
+    if (nc >= 0 && nc < puzzle.cols) {
+      setActive(r,nc,d);
+      cellEls[r][nc]?.querySelector('input')?.focus();
+    }
+  } else {
+    let nr = r + step;
+    while (nr >= 0 && nr < puzzle.rows && !puzzle.mask[nr]?.[c]) nr += step;
+    if (nr >= 0 && nr < puzzle.rows) {
+      setActive(nr,c,d);
+      cellEls[nr][c]?.querySelector('input')?.focus();
+    }
+  }
+}
+
+function checkAll(){
+  if (!puzzle) return;
+  for (let r=0; r<puzzle.rows; r++) {
+    for (let c=0; c<puzzle.cols; c++) {
+      if (!puzzle.mask[r][c]) continue;
+      const cell = cellEls[r][c];
+      cell.classList.remove('correct','error');
+      if (!playerGrid[r][c]) continue;
+      if (playerGrid[r][c] === boardAnswerAt(r,c)) cell.classList.add('correct');
+      else cell.classList.add('error');
+    }
+  }
+  updateStats();
+}
+
+function revealWord(){
+  const cl = activeClueObj();
+  if (!cl) return;
+  cl.cells.forEach(([r,c]) => playerGrid[r][c] = boardAnswerAt(r,c));
+  renderGridHighlights();
+  updateStats();
+}
+
+function revealAll(){
+  if (!puzzle) return;
+  for (let r=0; r<puzzle.rows; r++) {
+    for (let c=0; c<puzzle.cols; c++) {
+      if (puzzle.mask[r][c]) playerGrid[r][c] = boardAnswerAt(r,c);
+    }
+  }
+  renderGridHighlights();
+  updateStats();
+}
+
+function clearGrid(){
+  if (!puzzle) return;
+  playerGrid = cloneGrid(puzzle.rows, puzzle.cols, '');
+  renderGridHighlights();
+  updateStats();
+}
+
+function updateStats(){
+  if (!puzzle) return;
+  let total = 0, filled = 0;
+  for (let r=0; r<puzzle.rows; r++) {
+    for (let c=0; c<puzzle.cols; c++) {
+      if (!puzzle.mask[r][c]) continue;
+      total++;
+      if (playerGrid[r][c]) filled++;
+    }
+  }
+  $('statProgress').textContent = `${Math.round((filled / Math.max(total,1)) * 100)}%`;
+
+  let solvedWords = 0;
+  for (const d of ['across','down']) {
+    for (const key of Object.keys(puzzle.clueMap[d])) {
+      const cl = puzzle.clueMap[d][key];
+      const ok = cl.cells.every(([r,c]) => playerGrid[r][c] === boardAnswerAt(r,c));
+      if (ok) solvedWords++;
+    }
+  }
+  $('statWords').textContent = `${solvedWords} / ${puzzleWordCount(puzzle)}`;
+}
+
+function loadPuzzleObject(obj){
+  puzzle = JSON.parse(JSON.stringify(obj));
+  playerGrid = obj.playerGrid ? obj.playerGrid.map(row => [...row]) : cloneGrid(obj.rows, obj.cols, '');
+  $('title').textContent = obj.title || 'Crossword';
+  $('sourceLine').textContent = obj.sourceLabel || 'Imported puzzle';
+  $('statQuality').textContent = (obj.meta?.quality != null) ? Number(obj.meta.quality).toFixed(4) : '—';
+  $('statNodes').textContent = obj.meta?.nodes ?? '—';
+  renderLibrary();
+  renderGrid();
+  renderClues();
+  updateStats();
+  // focus first across clue
+  const nums = Object.keys(obj.clueMap.across).map(Number).sort((a,b)=>a-b);
+  if (nums.length) {
+    const cl = obj.clueMap.across[String(nums[0])];
+    const [r,c] = cl.cells[0];
+    setActive(r,c,'across');
+  }
+}
+
+function loadPackObject(obj){
+  if (obj.format === 'cw_html_pack_v1' || Array.isArray(obj.puzzles)) {
+    pack = obj;
+  } else if (obj.rows && obj.cols && obj.clueMap) {
+    pack = { format: 'cw_html_pack_v1', puzzles: [obj], puzzle_count: 1 };
+  } else {
+    throw new Error('Unsupported pack format');
+  }
+  $('libraryInfo').textContent = `Loaded ${pack.puzzles.length} puzzle(s).`;
+  renderLibrary();
+  if (pack.puzzles.length) loadPuzzleObject(pack.puzzles[0]);
+}
+
+async function tryFetchDefaultPack(){
+  if (window.CW_PUZZLES_PACK) {
+    try {
+      loadPackObject(window.CW_PUZZLES_PACK);
+      $('libraryInfo').textContent = `Autoloaded cw_puzzles_pack.js (${window.CW_PUZZLES_PACK.puzzle_count || window.CW_PUZZLES_PACK.puzzles?.length || 0} puzzle(s)).`;
+      return;
+    } catch (err) {
+      console.warn('Pack script load failed', err);
+    }
+  }
+
+  const candidates = ['cw_puzzles_pack.json'];
+  for (const name of candidates) {
+    try {
+      const res = await fetch(name, {cache: 'no-store'});
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      loadPackObject(data);
+      $('libraryInfo').textContent = `Autoloaded ${name} (${data.puzzle_count || data.puzzles?.length || 0} puzzle(s)).`;
+      return;
+    } catch (err) {
+      console.warn('Pack fetch failed', name, err);
+    }
+  }
+
+  if (window.location.protocol === 'file:') {
+    $('libraryInfo').innerHTML = 'Local <code>file://</code> pages usually cannot fetch sibling JSON files. For offline autoload use <strong>cw_puzzles_pack.js</strong>, or use <strong>Load pack</strong>, or serve the folder over HTTP.';
+  } else {
+    $('libraryInfo').innerHTML = 'Default pack not found. Expected <code>cw_puzzles_pack.js</code> or <code>cw_puzzles_pack.json</code>. Use <strong>Load pack</strong> above.';
+  }
+}
+
+function readJsonFile(file, cb){
+  const reader = new FileReader();
+  reader.onload = e => cb(JSON.parse(e.target.result));
+  reader.readAsText(file);
+}
+
+function loadPackFile(event){
+  const file = event.target.files?.[0];
+  if (!file) return;
+  readJsonFile(file, loadPackObject);
+}
+
+function loadSinglePuzzleFile(event){
+  const file = event.target.files?.[0];
+  if (!file) return;
+  readJsonFile(file, (obj) => {
+    pack = { format: 'cw_html_pack_v1', puzzles: [obj], puzzle_count: 1 };
+    $('libraryInfo').textContent = `Loaded single puzzle: ${file.name}`;
+    renderLibrary();
+    loadPuzzleObject(obj);
+  });
+}
+
+tryFetchDefaultPack();
+</script>
+</body>
+</html>
