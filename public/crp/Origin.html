@@ -53,7 +53,7 @@ body::before {
   padding: 10px 0;
 }
 .topbar-inner {
-  max-width: 800px;
+  max-width: 1040px;
   margin: 0 auto;
   padding: 0 24px;
   display: flex;
@@ -88,7 +88,7 @@ body::before {
 
 /* Layout */
 .page {
-  max-width: 680px;
+  max-width: 980px;
   margin: 0 auto;
   padding: 0 24px 120px;
   position: relative;
@@ -125,7 +125,7 @@ body::before {
   font-size: 20px;
   color: var(--muted);
   font-style: italic;
-  max-width: 480px;
+  max-width: 620px;
   margin: 0 auto;
   line-height: 1.7;
 }
@@ -299,6 +299,67 @@ p.indent { text-indent: 1.8em; }
   to { opacity: 1; transform: none; }
 }
 
+
+
+/* Vision map */
+.vision-map {
+  margin: 34px 0 38px;
+  border: 1px solid rgba(200,164,78,.12);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(8,11,22,.92), rgba(6,9,18,.96));
+  overflow: hidden;
+}
+.vision-map-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(200,164,78,.10);
+  background: rgba(200,164,78,.05);
+}
+.vision-map-head strong {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.vision-map-head span {
+  font-size: 16px;
+  color: var(--text);
+  line-height: 1.7;
+}
+.vision-table-wrap {
+  overflow-x: auto;
+}
+.vision-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.vision-table th,
+.vision-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.vision-table th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-align: left;
+  background: rgba(200,164,78,.04);
+}
+.vision-table td {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--text);
+}
+.vision-table tr:last-child td { border-bottom: 0; }
+.vision-table .v-seed { width: 17%; }
+.vision-table .v-models { width: 33%; color: rgba(200,180,140,.78); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.vision-table .v-meaning { width: 50%; }
+
 @media (max-width: 600px) {
   .page { padding: 0 16px 80px; }
   .cover { padding: 56px 0 44px; }
@@ -396,19 +457,66 @@ p.indent { text-indent: 1.8em; }
 
   <p>Before a single line was written, there were images. Thinking about the TSP problem produced not equations but pictures — ways of seeing the space of routes that standard computer science had not formalized.</p>
 
-  <p class="indent"><strong>Bats.</strong> Echo-location: sound sent toward each city, reflected back, carrying not just distance in two dimensions but depth — a 3D acoustic map of the tour space that the 2D coordinate plane cannot show.</p>
+  <p class="indent">The TSP arena is not one solver but a research harness: sensors, partitioners, init paths, governance laws, and search schedules compete inside the same system. In one documented round, <strong>286 variants</strong> entered the arena. <strong>MDL</strong> acts as the judge: it decides which representation or strategy earns the right to stay. <strong>DCC</strong> acts as the governor: it decides when to explore, when to trust a regime, and when to hand control to another path. The visual ideas below are not decorative metaphors. They are raw arena ingredients — seeds that later became sensors, partitioners, and search families.</p>
 
-  <p class="indent"><strong>A black hole at the centre of the map.</strong> Every city drawn toward it by gravity. As time passes, as mass accumulates, the field reveals structure invisible in the flat coordinates — clusters, corridors, natural groupings the Euclidean metric misses.</p>
-
-  <p class="indent"><strong>A 3D pyramid.</strong> The same 2D map projected onto each of its four faces. Straight lines connecting the same city across faces pass through a new three-dimensional space that did not exist before the projection — a space where proximity means something the original map could not say.</p>
-
-  <p class="indent"><strong>Multiple resolutions simultaneously.</strong> Zoom in: local structure. Zoom out: global pattern. Hold both at once. See what neither scale alone can show.</p>
-
-  <div class="callout">
-    <p>Each of these visions became, or is becoming, a sensor in the arena. The pyramid became the polyhedral geometry sensors. The multiple resolutions became <strong>MSTD — Multi-Scale Tour Decomposition</strong>: zoom in and out on the coordinates, and the algorithm discovers itself at every scale. The insight that produced MSTD arrived in one morning and produced a 31% improvement over baseline. The structure was always there. Nobody had looked at the right resolution.</p>
+  <div class="vision-map">
+    <div class="vision-map-head">
+      <strong>From image to arena</strong>
+      <span>Seed first. Then formalization. Then arena competition under MDL × DCC.</span>
+    </div>
+    <div class="vision-table-wrap">
+      <table class="vision-table">
+        <thead>
+          <tr>
+            <th class="v-seed">Visual seed</th>
+            <th class="v-models">Arena formalization</th>
+            <th class="v-meaning">What it opened</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="v-seed"><strong>Bats</strong><br>Echo-location over the map</td>
+            <td class="v-models">EchoSensor · echo init tours · HyperDim echo autoconfig</td>
+            <td class="v-meaning">Distance is not only flat geometry. The route space can be probed as reflected structure, not just measured as Euclidean coordinates.</td>
+          </tr>
+          <tr>
+            <td class="v-seed"><strong>Black hole</strong><br>Gravity field at the centre</td>
+            <td class="v-models">GravitySensor · GravityPartitioner · gravity-style geometric warping</td>
+            <td class="v-meaning">Cities are not only points on a plane. Under field distortion, hidden clusters, corridors, and structural pull become visible.</td>
+          </tr>
+          <tr>
+            <td class="v-seed"><strong>Pyramid / polyhedron</strong><br>Project the same map onto new faces</td>
+            <td class="v-models">ProjPyramidSensor · Polyhedral geometry family · chord / convex / disagreement variants</td>
+            <td class="v-meaning">A new space of proximity appears when the same cities are viewed across multiple geometric faces. Structure emerges that the flat map does not express.</td>
+          </tr>
+          <tr>
+            <td class="v-seed"><strong>Multiple resolutions</strong><br>Zoom in and zoom out together</td>
+            <td class="v-models">MSTD · ScaleCoherenceSensor · ScaleSplit / HyperScaleSplit · ScaleWalk family</td>
+            <td class="v-meaning">Local and global pattern can be held simultaneously. The solver gains a way to discover natural boundaries, corridors, and cross-scale composition.</td>
+          </tr>
+          <tr>
+            <td class="v-seed"><strong>Solver teaches geometry</strong><br>The arrow reverses</td>
+            <td class="v-models">TEP — Tour-Enriched Pyramid</td>
+            <td class="v-meaning">Representation does not only guide search. Search feeds back into representation. The best tours become instruction for the next geometry.</td>
+          </tr>
+          <tr>
+            <td class="v-seed"><strong>Higher dimensions / strange spaces</strong><br>New axes beyond the plane</td>
+            <td class="v-models">HyperDim · HourglassSensor · elevation / compact dimensions · noise dimensions as regularizer</td>
+            <td class="v-meaning">The 2D coordinate plane is not sacred. Additional dimensions can stabilize, separate, or reveal structure that is collapsed in the ordinary map.</td>
+          </tr>
+          <tr>
+            <td class="v-seed"><strong>Quantum-style behavior</strong><br>Interference, tunneling, superposition</td>
+            <td class="v-models">InterferenceSensor · TunnelingSensor · QuantumWalkSensor · EntanglementSensor · SuperpositionPartitioner</td>
+            <td class="v-meaning">Not a physics claim, but a search metaphor made operational: multiple candidate pathways can be scored as interacting wave-like possibilities rather than isolated moves.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <p>The pattern is consistent: visual intuition arrives first, in the language of images. Formalization follows. The images are not metaphors for the mathematics — the images are the mathematics, seen before the vocabulary exists to write it down.</p>
+  <div class="callout">
+    <p>The pattern is consistent: visual intuition arrives first, in the language of images. Formalization follows. The images are not metaphors for the mathematics — the images are the mathematics, seen before the vocabulary exists to write it down.</p>
+  </div>
 </div>
 
 <!-- Chapter 3 -->
