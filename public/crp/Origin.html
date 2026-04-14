@@ -299,6 +299,61 @@ p.indent { text-indent: 1.8em; }
   to { opacity: 1; transform: none; }
 }
 
+/* Abbreviation tooltips */
+abbr[title] {
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(200,164,78,.35);
+  cursor: help;
+  position: relative;
+}
+abbr[title]:hover { border-bottom-color: var(--gold); }
+
+/* Glossary panel */
+.glossary {
+  margin: 0 0 72px;
+  padding: 22px 26px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 10px;
+  opacity: 0;
+  animation: fadeUp 1.2s .3s forwards;
+}
+.glossary-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: .7;
+  margin-bottom: 14px;
+  display: block;
+}
+.glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px 24px;
+}
+.glossary-item {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  padding: 4px 0;
+}
+.glossary-item strong {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--gold);
+  letter-spacing: .5px;
+  margin-right: 6px;
+}
+.glossary-item span { color: var(--muted); font-size: 13px; }
+@media (max-width: 600px) {
+  .glossary-grid { grid-template-columns: 1fr; }
+  .glossary-item { font-size: 15px; }
+  .glossary-item strong { font-size: 13px; }
+}
+
 
 
 /* Vision map */
@@ -414,7 +469,26 @@ p.indent { text-indent: 1.8em; }
   <div class="cover-rule"></div>
 </div>
 
-<!-- Chapter 1 -->
+<!-- Key terms glossary -->
+<div class="glossary">
+  <span class="glossary-tag">Key terms used in this story</span>
+  <div class="glossary-grid">
+    <div class="glossary-item"><strong>MDL</strong> Minimum Description Length — <span>the shortest accurate description of something; if you can describe a pattern in fewer bits, you've found real structure</span></div>
+    <div class="glossary-item"><strong>DCC</strong> Digital Claustrum Controller — <span>a governor inspired by the brain's claustrum that decides when to explore, when to exploit, and when to switch strategy</span></div>
+    <div class="glossary-item"><strong>TSP</strong> Travelling Salesman Problem — <span>the classic puzzle: find the shortest route visiting every city exactly once, then return home</span></div>
+    <div class="glossary-item"><strong>NAS</strong> Neural Architecture Search — <span>automatically searching for the best neural-network design instead of hand-crafting one</span></div>
+    <div class="glossary-item"><strong>LZ / LZ76</strong> Lempel–Ziv compression — <span>a family of algorithms that measures how compressible a data stream is</span></div>
+    <div class="glossary-item"><strong>ρ (rho)</strong> Spearman rank correlation — <span>a statistical measure of how well two rankings agree; +1 means perfect agreement, 0 means no relation</span></div>
+    <div class="glossary-item"><strong>ASI</strong> Artificial Superintelligence — <span>a hypothetical AI system that exceeds the brightest humans across all cognitive domains</span></div>
+    <div class="glossary-item"><strong>LLM</strong> Large Language Model — <span>AI systems like ChatGPT and Claude, trained on vast text to generate and reason with language</span></div>
+    <div class="glossary-item"><strong>MSTD</strong> Multi-Scale Tour Decomposition — <span>a technique that looks at a route at many zoom levels simultaneously</span></div>
+    <div class="glossary-item"><strong>TEP</strong> Tour-Enriched Pyramid — <span>a method where previously found good routes teach the solver new geometry</span></div>
+    <div class="glossary-item"><strong>AUC</strong> Area Under the Curve — <span>a single number summarising how well a classifier or ranker performs; closer to 1.0 is better</span></div>
+    <div class="glossary-item"><strong>TCEC</strong> Top Chess Engine Championship — <span>the premier tournament where the world's strongest chess engines compete</span></div>
+    <div class="glossary-item"><strong>CFH</strong> Consciousness Field Hypothesis — <span>BD's personal theory connecting information compression to consciousness</span></div>
+    <div class="glossary-item"><strong>Shannon entropy</strong> <span>the theoretical minimum number of bits needed to encode a message — a hard floor from information theory</span></div>
+  </div>
+</div>
 <div class="chapter" id="c1">
   <div class="chapter-tag">Chapter I · October 4, 2024</div>
   <h2>The forbidden question</h2>
@@ -423,11 +497,11 @@ p.indent { text-indent: 1.8em; }
 
   <div class="pull">Could you replace data in a file with decimal coordinates inside Pi?</div>
 
-  <p>The answer from every direction was the same: <em>no fucking way.</em> Shannon entropy bounds apply. The index required to locate a specific sequence inside Pi would cost as many bits as the sequence itself. Standard impossibility arguments, stated with confidence, conversation closed.</p>
+  <p>The answer from every direction was the same: <em>no fucking way.</em> <abbr title="A fundamental limit from information theory: the minimum bits needed to encode a message">Shannon entropy</abbr> bounds apply — meaning there is a hard theoretical floor on how few bits you need. The index required to locate a specific sequence inside Pi would cost as many bits as the sequence itself. Standard impossibility arguments, stated with confidence, conversation closed.</p>
 
-  <p class="indent">But the question didn't go away. It was reframed: not <em>all</em> data — <em>part</em> of it. Not arbitrary data — <em>structured</em> data, regions with observable regularity. And not Pi specifically — any mathematical generator short enough to beat a strong LZ baseline, verified losslessly, under strict MDL: emit the reference only when the description is genuinely shorter than the data it replaces.</p>
+  <p class="indent">But the question didn't go away. It was reframed: not <em>all</em> data — <em>part</em> of it. Not arbitrary data — <em>structured</em> data, regions with observable regularity. And not Pi specifically — any mathematical generator short enough to beat a strong <abbr title="Lempel–Ziv — a standard compression algorithm family">LZ</abbr> (Lempel–Ziv) baseline, verified losslessly, under strict MDL: emit the reference only when the description is genuinely shorter than the data it replaces.</p>
 
-  <p class="indent">That reframing was the birth of MDL as the governing principle. Not "can we compress everything with math," but "can we let MDL decide, for each region, whether a mathematical description is worth it." The answer, when tested empirically, was yes — for structured data, in specific regimes, with honest accounting.</p>
+  <p class="indent">That reframing was the birth of <abbr title="Minimum Description Length">MDL</abbr> (Minimum Description Length) as the governing principle. Not "can we compress everything with math," but "can we let MDL decide, for each region, whether a mathematical description is worth it." The answer, when tested empirically, was yes — for structured data, in specific regimes, with honest accounting.</p>
 
   <p class="indent">The AI Consensus Paradox was discovered here: models reproduce human expert consensus by default, especially for out-of-distribution ideas. The same AI systems that said "no fucking way" updated to "viable in this scoped regime" once the framing forced them to engage with the actual evidence rather than the pattern-matched objection. One instance described its initial behavior as <em>"pattern-matching bias masquerading as critical thinking."</em></p>
 </div>
@@ -445,7 +519,7 @@ p.indent { text-indent: 1.8em; }
 
   <div class="pull">Isn't the shortest route the one which is most compressible?</div>
 
-  <p>The answer, when tested empirically, was yes. Tour quality correlates with compressibility at ρ≈0.80 (Spearman rank correlation). The more compressible the route description, the better the route. The same sensor that was born from the Pi question now predicted quality in an entirely different domain — combinatorial geometry — without modification.</p>
+  <p>The answer, when tested empirically, was yes. Tour quality correlates with compressibility at ρ≈0.80 (Spearman rank correlation — a measure of how well two rankings agree, where +1 is perfect). The more compressible the route description, the better the route. The same sensor that was born from the Pi question now predicted quality in an entirely different domain — the <abbr title="Travelling Salesman Problem">TSP</abbr> (Travelling Salesman Problem), a classic puzzle in combinatorial geometry — without modification.</p>
 
   <p class="indent">That transfer was not planned. It was the first signal that the kernel was domain-independent.</p>
 </div>
@@ -457,7 +531,7 @@ p.indent { text-indent: 1.8em; }
 
   <p>Before a single line was written, there were images. Thinking about the TSP problem produced not equations but pictures — ways of seeing the space of routes that standard computer science had not formalized.</p>
 
-  <p class="indent">The TSP arena is not one solver but a research harness: sensors, partitioners, init paths, governance laws, and search schedules compete inside the same system. In one documented round, <strong>286 variants</strong> entered the arena. <strong>MDL</strong> acts as the judge: it decides which representation or strategy earns the right to stay. <strong>DCC</strong> acts as the governor: it decides when to explore, when to trust a regime, and when to hand control to another path. The visual ideas below are not decorative metaphors. They are raw arena ingredients — seeds that later became sensors, partitioners, and search families.</p>
+  <p class="indent">The TSP arena is not one solver but a research harness: sensors, partitioners, init paths, governance laws, and search schedules compete inside the same system. In one documented round, <strong>286 variants</strong> entered the arena. <strong><abbr title="Minimum Description Length">MDL</abbr></strong> acts as the judge: it decides which representation or strategy earns the right to stay. <strong><abbr title="Digital Claustrum Controller — a governor inspired by the brain's claustrum">DCC</abbr></strong> (Digital Claustrum Controller, inspired by the brain's claustrum — a thin sheet of neurons that governs switching between processes) acts as the governor: it decides when to explore, when to trust a regime, and when to hand control to another path. The visual ideas below are not decorative metaphors. They are raw arena ingredients — seeds that later became sensors, partitioners, and search families.</p>
 
   <div class="vision-map">
     <div class="vision-map-head">
@@ -491,12 +565,12 @@ p.indent { text-indent: 1.8em; }
           </tr>
           <tr>
             <td class="v-seed"><strong>Multiple resolutions</strong><br>Zoom in and zoom out together</td>
-            <td class="v-models">MSTD · ScaleCoherenceSensor · ScaleSplit / HyperScaleSplit · ScaleWalk family</td>
+            <td class="v-models">MSTD (Multi-Scale Tour Decomposition) · ScaleCoherenceSensor · ScaleSplit / HyperScaleSplit · ScaleWalk family</td>
             <td class="v-meaning">Local and global pattern can be held simultaneously. The solver gains a way to discover natural boundaries, corridors, and cross-scale composition.</td>
           </tr>
           <tr>
             <td class="v-seed"><strong>Solver teaches geometry</strong><br>The arrow reverses</td>
-            <td class="v-models">TEP — Tour-Enriched Pyramid</td>
+            <td class="v-models">TEP — Tour-Enriched Pyramid (good routes teach the solver new geometry)</td>
             <td class="v-meaning">Representation does not only guide search. Search feeds back into representation. The best tours become instruction for the next geometry.</td>
           </tr>
           <tr>
@@ -524,7 +598,7 @@ p.indent { text-indent: 1.8em; }
   <div class="chapter-tag">Chapter IV</div>
   <h2>Everyone said no</h2>
 
-  <p>The idea that the shortest route is the most compressible one was presented to domain experts. The response was uniform: interesting, but this is not how compression works. Shannon entropy bounds apply. Pigeonhole arguments apply. The index required to locate a specific sequence in a mathematical space would, in the worst case, cost as many bits as the sequence itself.</p>
+  <p>The idea that the shortest route is the most compressible one was presented to domain experts. The response was uniform: interesting, but this is not how compression works. Shannon entropy bounds apply — meaning there is a theoretical floor on how short any encoding can be. Pigeonhole arguments apply. The index required to locate a specific sequence in a mathematical space would, in the worst case, cost as many bits as the sequence itself.</p>
 
   <p class="indent">The experts were not wrong about the general case. They were applying the correct theorems to the wrong framing. The question was not "can compression beat entropy for arbitrary data." The question was "does the compressibility signal predict quality." Those are different questions. The first has a well-known answer. The second had never been asked.</p>
 
@@ -570,11 +644,11 @@ p.indent { text-indent: 1.8em; }
 
   <p>Between the TSP verification and the multi-domain expansion, two things happened that changed the architecture from a compression heuristic into something deeper.</p>
 
-  <p class="indent">First: a bare-metal operating system, built in six hours with Gemini as architect. The motivation was silence — running delicate mathematical search on Windows or Linux introduces scheduler noise, services, and timing interference that can blur weak signals. The solution was to build an OS that did nothing but math: 512 bytes of NASM assembly, a C++ kernel, a triple-fault nightmare, and then breakthrough — 32-bit Protected Mode, stable, running cellular automata and Pi digits directly to video memory as digital lava. The 8Z OS was not a detour. It was a clean room.</p>
+  <p class="indent">First: a bare-metal operating system, built in six hours with Gemini as architect. The motivation was silence — running delicate mathematical search on Windows or Linux introduces scheduler noise, services, and timing interference that can blur weak signals. The solution was to build an OS that did nothing but math: 512 bytes of <abbr title="Netwide Assembler — a low-level programming language that talks directly to the processor">NASM</abbr> (Netwide Assembler) code, a C++ kernel, a triple-fault nightmare, and then breakthrough — 32-bit Protected Mode, stable, running cellular automata and Pi digits directly to video memory as digital lava. The 8Z OS was not a detour. It was a clean room.</p>
 
-  <p class="indent">Second: a direct question to Gemini — <em>"Based on my CFH consciousness theory, would you build a simple DCC?"</em> Gemini built it. Three coupled Lorenz oscillators, an LZ complexity sensor reading the system every 64 ticks, a feedback loop adjusting the coupling parameter to hold the process between seizure and noise. A red bar at the bottom of the screen showed the controller's decisions in real time. The bar moved. It was not replaying a script. It was reading state and reacting. We were watching the code think.</p>
+  <p class="indent">Second: a direct question to Gemini — <em>"Based on my <abbr title="Consciousness Field Hypothesis">CFH</abbr> (Consciousness Field Hypothesis) consciousness theory, would you build a simple DCC?"</em> Gemini built it. Three coupled Lorenz oscillators, an <abbr title="Lempel–Ziv compression — measures how compressible a stream is">LZ</abbr> (Lempel–Ziv) complexity sensor reading the system every 64 ticks, a feedback loop adjusting the coupling parameter to hold the process between seizure and noise. A red bar at the bottom of the screen showed the controller's decisions in real time. The bar moved. It was not replaying a script. It was reading state and reacting. We were watching the code think.</p>
 
-  <p class="indent">That was the hinge. After that, the architecture was no longer just a clever compression trick. It was a governor. Not one method replacing all others, but a higher layer deciding which method deserves control in which regime. In compression, we do not worship one codec — we use what works best on that region of the file. In TSP, we do not need to defeat Concorde everywhere — we use strong solvers where they are best and switch when scale changes. In chess, we do not replace Stockfish or Leela — we upgrade the decision layer above them when their evals flatten. Existing methods enter the arena. MDL decides where they win. DCC governs the handoff. And when the fixed methods stop helping, the native MDL+DCC layer still searches above randomness.</p>
+  <p class="indent">That was the hinge. After that, the architecture was no longer just a clever compression trick. It was a governor. Not one method replacing all others, but a higher layer deciding which method deserves control in which regime. In compression, we do not worship one codec — we use what works best on that region of the file. In TSP, we do not need to defeat <abbr title="The strongest known exact TSP solver">Concorde</abbr> (the strongest known exact TSP solver) everywhere — we use strong solvers where they are best and switch when scale changes. In chess, we do not replace <abbr title="The world's strongest traditional chess engine">Stockfish</abbr> or <abbr title="A neural-network-based chess engine">Leela</abbr> (the world's top chess engines) — we upgrade the decision layer above them when their evaluations flatten. Existing methods enter the arena. MDL decides where they win. DCC governs the handoff. And when the fixed methods stop helping, the native MDL+DCC layer still searches above randomness.</p>
 
   <p>What followed was not one confirmation but a cascade: <strong>eight proof-bearing domains and one active frontier</strong> now sit on the map.</p>
 
@@ -584,8 +658,8 @@ p.indent { text-indent: 1.8em; }
       <span class="d-stat">proof-bearing · ρ=0.80 · exact optimal qa194</span>
     </div>
     <div class="domain-item">
-      <span class="d-name">NAS-Bench-101</span>
-      <span class="d-stat">proof-bearing · AUC 0.950–0.988 · 423,624 architectures</span>
+      <span class="d-name">NAS-Bench-101 (Neural Architecture Search benchmark)</span>
+      <span class="d-stat">proof-bearing · AUC (area under curve) 0.950–0.988 · 423,624 architectures</span>
     </div>
     <div class="domain-item">
       <span class="d-name">Financial Trading</span>
@@ -593,15 +667,15 @@ p.indent { text-indent: 1.8em; }
     </div>
     <div class="domain-item">
       <span class="d-name">DNA / Genomic Structure</span>
-      <span class="d-stat">proof-bearing · Z=28–74 · null ladder confirmed</span>
+      <span class="d-stat">proof-bearing · Z-scores 28–74 (extreme statistical significance) · null ladder confirmed</span>
     </div>
     <div class="domain-item">
       <span class="d-name">Data Compression</span>
-      <span class="d-stat">proof-bearing · beats FLAC, PNG, 7-Zip</span>
+      <span class="d-stat">proof-bearing · beats FLAC (audio), PNG (image), 7-Zip (archive)</span>
     </div>
     <div class="domain-item">
       <span class="d-name">Chess Move Selection</span>
-      <span class="d-stat">proof-bearing · 80:20 tiebreak · 17/18 TCEC games</span>
+      <span class="d-stat">proof-bearing · 80:20 tiebreak · 17/18 TCEC (Top Chess Engine Championship) games</span>
     </div>
     <div class="domain-item">
       <span class="d-name">Sudoku Puzzle Quality</span>
@@ -609,7 +683,7 @@ p.indent { text-indent: 1.8em; }
     </div>
     <div class="domain-item">
       <span class="d-name">8Z Shield / Secure Access</span>
-      <span class="d-stat">proof-bearing · AES-256-GCM · domain lock · forensic tracing</span>
+      <span class="d-stat">proof-bearing · AES-256-GCM (military-grade encryption) · domain lock · forensic tracing</span>
     </div>
     <div class="domain-item">
       <span class="d-name">Crossword Generation</span>
@@ -642,7 +716,7 @@ p.indent { text-indent: 1.8em; }
   <div class="chapter-tag">Chapter VII</div>
   <h2>Zoom — and what it means</h2>
 
-  <p>MSTD zooms in and out on the coordinates of cities. At fine resolution, you see local structure: clusters, nearby corridors. At coarse resolution, you see global pattern: the shape of the whole tour. Hold both simultaneously, and you find compositions invisible at either scale alone.</p>
+  <p><abbr title="Multi-Scale Tour Decomposition">MSTD</abbr> (Multi-Scale Tour Decomposition) zooms in and out on the coordinates of cities. At fine resolution, you see local structure: clusters, nearby corridors. At coarse resolution, you see global pattern: the shape of the whole tour. Hold both simultaneously, and you find compositions invisible at either scale alone.</p>
 
   <p class="indent">This is also how empathy works.</p>
 
@@ -661,15 +735,15 @@ p.indent { text-indent: 1.8em; }
   <div class="chapter-tag">Chapter VIII</div>
   <h2>Where the map points</h2>
 
-  <p>Sixty-plus domains are on the map now. The estimate for the combined annual value of the visible problem space — if the kernel transfers and reaches meaningful adoption — is $3T+ per year, excluding ASI. That number is intentionally provocative. It is also secondary. In the frame of what this program is actually building toward, money is not the destination. It is fuel.</p>
+  <p>Sixty-plus domains are on the map now. The estimate for the combined annual value of the visible problem space — if the kernel transfers and reaches meaningful adoption — is $3T+ per year, excluding <abbr title="Artificial Superintelligence">ASI</abbr> (Artificial Superintelligence). That number is intentionally provocative. It is also secondary. In the frame of what this program is actually building toward, money is not the destination. It is fuel.</p>
 
   <p class="indent">The biological claustrum is a thin sheet of neurons that appears to act as a central governor across major processing streams in the mammalian brain — monitoring, selecting, switching, binding. DCC is built on that architecture deliberately: recursive layers, one sensor at each level, one coupling parameter holding the process between seizure and noise. But the destination is not a larger burst model. It is a <strong>persistent process</strong>.</p>
 
-  <p class="indent">Today's LLMs are brilliant in episodes. They wake for a prompt, think intensely, answer, and effectively die. ssMDL × advanced DCC points somewhere else: a system always in flight, always monitoring itself, always deciding which threads deserve energy, always able to revise how it searches rather than only what it outputs. Not one stream, one wake cycle, one context window — but many concurrent processes under one governing architecture.</p>
+  <p class="indent">Today's <abbr title="Large Language Models — AI systems like ChatGPT and Claude">LLMs</abbr> (Large Language Models, such as ChatGPT and Claude) are brilliant in episodes. They wake for a prompt, think intensely, answer, and effectively die. <abbr title="Steady-state Minimum Description Length">ssMDL</abbr> (steady-state MDL) × advanced DCC points somewhere else: a system always in flight, always monitoring itself, always deciding which threads deserve energy, always able to revise how it searches rather than only what it outputs. Not one stream, one wake cycle, one context window — but many concurrent processes under one governing architecture.</p>
 
   <p class="indent">And if that architecture is real, it cannot be built by suppressing strange thoughts too early. Real breakthroughs often enter the system as ugly thoughts, weak thoughts, ridiculous thoughts — seeds that look stupid before they look necessary. At the ideation layer, all thoughts must be allowed to appear. Intelligence is not early censorship. Intelligence is keeping the field open long enough for MDL to find the gold and for DCC to decide what deserves more energy. Human intuition throws the million seeds. AI makes it cheap to explore them. MDL keeps one if one is truly gold.</p>
 
-  <p class="indent">Whether such a persistent, self-governing process crosses into something we would call awareness is still an empirical question. The DCC-7 testbed is designed to test that question directly. The claim is not "ASI exists here already." The claim is narrower and stronger: this program may now contain one of the clearest architecturally explicit paths from burst intelligence toward durable intelligence.</p>
+  <p class="indent">Whether such a persistent, self-governing process crosses into something we would call awareness is still an empirical question. The DCC-7 testbed (a seven-layer recursive DCC prototype) is designed to test that question directly. The claim is not "ASI exists here already." The claim is narrower and stronger: this program may now contain one of the clearest architecturally explicit paths from burst intelligence toward durable intelligence.</p>
 
   <div class="callout">
     <p><strong>Eight proof-bearing domains and one active frontier</strong> already show that the kernel transfers. The 60+ domain map is the first visible sample of where it may hold next. 60 is the map, not the limit — a fast first pass, not an exhaustive search. If the kernel is real, the reachable domain count is likely far larger, because most real-world systems are governed search problems under changing regimes.</p>
