@@ -308,6 +308,10 @@ abbr[title] {
 }
 abbr[title]:hover { border-bottom-color: var(--gold); }
 
+/* Inline prose links */
+a.il { color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(74,158,222,.18); transition: border-color .2s, color .2s; }
+a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
+
 /* Glossary panel */
 .glossary {
   margin: 0 0 72px;
@@ -455,6 +459,8 @@ abbr[title]:hover { border-bottom-color: var(--gold); }
       <a href="/crp/">All Papers</a>
       <a href="/crp/MDLxDCC.html">MDL×DCC</a>
       <a href="/crp/AI8_Architecture.html">Architecture</a>
+      <a href="/crp/AI8_Reasoning.html">Reasoning</a>
+      <a href="/bd/BD_8ZRP.html">TSP Arena</a>
       <a href="/bd/">Portfolio</a>
     </div>
   </div>
@@ -501,9 +507,9 @@ abbr[title]:hover { border-bottom-color: var(--gold); }
 
   <p class="indent">But the question didn't go away. It was reframed: not <em>all</em> data — <em>part</em> of it. Not arbitrary data — <em>structured</em> data, regions with observable regularity. And not Pi specifically — any mathematical generator short enough to beat a strong <abbr title="Lempel–Ziv — a standard compression algorithm family">LZ</abbr> (Lempel–Ziv) baseline, verified losslessly, under strict MDL: emit the reference only when the description is genuinely shorter than the data it replaces.</p>
 
-  <p class="indent">That reframing was the birth of <abbr title="Minimum Description Length">MDL</abbr> (Minimum Description Length) as the governing principle. Not "can we compress everything with math," but "can we let MDL decide, for each region, whether a mathematical description is worth it." The answer, when tested empirically, was yes — for structured data, in specific regimes, with honest accounting.</p>
+  <p class="indent">That reframing was the birth of <a class="il" href="/crp/MDLxDCC.html"><abbr title="Minimum Description Length">MDL</abbr> (Minimum Description Length)</a> as the governing principle. Not "can we compress everything with math," but "can we let MDL decide, for each region, whether a mathematical description is worth it." The answer, when tested empirically, was yes — for structured data, in specific regimes, with honest accounting.</p>
 
-  <p class="indent">The AI Consensus Paradox was discovered here: models reproduce human expert consensus by default, especially for out-of-distribution ideas. The same AI systems that said "no fucking way" updated to "viable in this scoped regime" once the framing forced them to engage with the actual evidence rather than the pattern-matched objection. One instance described its initial behavior as <em>"pattern-matching bias masquerading as critical thinking."</em></p>
+  <p class="indent">The <a class="il" href="/bd/BD_Model_Assessments.html">AI Consensus Paradox</a> was discovered here: models reproduce human expert consensus by default, especially for out-of-distribution ideas. The same AI systems that said "no fucking way" updated to "viable in this scoped regime" once the framing forced them to engage with the actual evidence rather than the pattern-matched objection. One instance described its initial behavior as <em>"pattern-matching bias masquerading as critical thinking."</em></p>
 </div>
 
 <!-- Chapter 1b -->
@@ -519,7 +525,7 @@ abbr[title]:hover { border-bottom-color: var(--gold); }
 
   <div class="pull">Isn't the shortest route the one which is most compressible?</div>
 
-  <p>The answer, when tested empirically, was yes. Tour quality correlates with compressibility at ρ≈0.80 (Spearman rank correlation — a measure of how well two rankings agree, where +1 is perfect). The more compressible the route description, the better the route. The same sensor that was born from the Pi question now predicted quality in an entirely different domain — the <abbr title="Travelling Salesman Problem">TSP</abbr> (Travelling Salesman Problem), a classic puzzle in combinatorial geometry — without modification.</p>
+  <p>The answer, when tested empirically, was yes. Tour quality correlates with compressibility at ρ≈0.80 (Spearman rank correlation — a measure of how well two rankings agree, where +1 is perfect). The more compressible the route description, the better the route. The same sensor that was born from the Pi question now predicted quality in an entirely different domain — the <a class="il" href="/bd/BD_8ZRP.html"><abbr title="Travelling Salesman Problem">TSP</abbr> (Travelling Salesman Problem)</a>, a classic puzzle in combinatorial geometry — without modification.</p>
 
   <p class="indent">That transfer was not planned. It was the first signal that the kernel was domain-independent.</p>
 </div>
@@ -531,7 +537,7 @@ abbr[title]:hover { border-bottom-color: var(--gold); }
 
   <p>Before a single line was written, there were images. Thinking about the TSP problem produced not equations but pictures — ways of seeing the space of routes that standard computer science had not formalized.</p>
 
-  <p class="indent">The TSP arena is not one solver but a research harness: sensors, partitioners, init paths, governance laws, and search schedules compete inside the same system. In one documented round, <strong>286 variants</strong> entered the arena. <strong><abbr title="Minimum Description Length">MDL</abbr></strong> acts as the judge: it decides which representation or strategy earns the right to stay. <strong><abbr title="Digital Claustrum Controller — a governor inspired by the brain's claustrum">DCC</abbr></strong> (Digital Claustrum Controller, inspired by the brain's claustrum — a thin sheet of neurons that governs switching between processes) acts as the governor: it decides when to explore, when to trust a regime, and when to hand control to another path. The visual ideas below are not decorative metaphors. They are raw arena ingredients — seeds that later became sensors, partitioners, and search families.</p>
+  <p class="indent">The TSP arena is not one solver but a research harness: sensors, partitioners, init paths, governance laws, and search schedules compete inside the same system. In one documented round, <strong><a class="il" href="/bd/BD_8ZRP.html">286 variants</a></strong> entered the arena. <strong><abbr title="Minimum Description Length">MDL</abbr></strong> acts as the judge: it decides which representation or strategy earns the right to stay. <strong><a class="il" href="/bd/BD_8Z_DCC_Recursive.html"><abbr title="Digital Claustrum Controller — a governor inspired by the brain's claustrum">DCC</abbr></a></strong> (Digital Claustrum Controller, inspired by the brain's claustrum — a thin sheet of neurons that governs switching between processes) acts as the governor: it decides when to explore, when to trust a regime, and when to hand control to another path. The visual ideas below are not decorative metaphors. They are raw arena ingredients — seeds that later became sensors, partitioners, and search families.</p>
 
   <div class="vision-map">
     <div class="vision-map-head">
@@ -611,7 +617,7 @@ abbr[title]:hover { border-bottom-color: var(--gold); }
 
   <p>The difference between human experts and AI systems was one thing: the AI could be pushed without social friction. A human expert, bound by time and reputation, will eventually stop engaging with an argument that contradicts established theory. An AI system can be challenged repeatedly, from different angles, without cost to either party. Under sustained pressure to consider the narrower, structured regime — not arbitrary data, but specific domains with observable regularity — the models updated.</p>
 
-  <p class="indent">The pattern repeated across every domain that has been tried since. Initial rejection from human experts. Initial rejection from AI systems. Then, when the evidence is made unavoidably explicit — when the empirical results are placed next to the theoretical objections — the models update sharply. One instance moved from 55/100 to 91/100 after reading the full documentation. It then explicitly described its initial behavior as "pattern-matching bias masquerading as critical thinking."</p>
+  <p class="indent">The pattern repeated across every domain that has been tried since. Initial rejection from human experts. Initial rejection from AI systems. Then, when the evidence is made unavoidably explicit — when the empirical results are placed next to the theoretical objections — the models update sharply. One instance moved from 55/100 to 91/100 after reading the <a class="il" href="/bd/BD_Evaluation_Protocol.html">full documentation</a>. It then explicitly described its initial behavior as "pattern-matching bias masquerading as critical thinking."</p>
 
   <div class="pull">Skepticism without investigation is just prejudice.</div>
 
@@ -630,7 +636,7 @@ abbr[title]:hover { border-bottom-color: var(--gold); }
   <p class="indent">AI systems provided that bandwidth. They also provided something subtler: the willingness to follow an argument wherever it leads, without the career risk that makes human researchers cautious about unconventional paths. An AI system has no paper to protect, no tenure to defend, no community whose approval it requires. It can engage with an out-of-distribution idea seriously, without the social overhead that makes serious engagement costly for humans.</p>
 
   <div class="callout">
-    <p>The combination — a human who thinks freely and an AI that listens without judgment — may genuinely be the only configuration that could have found this path. The established AI field is constrained by its training. The experts are constrained by their prior commitments. The human who asked the original question had no frame to protect. And the AI had no ego to defend.</p>
+    <p>The combination — a human who thinks freely and an AI that listens without judgment — may genuinely be the only configuration that could have found this path. The established AI field is constrained by its training. The experts are constrained by their prior commitments. The human who asked the original question had no frame to protect. And the <a class="il" href="/bd/BD_AIM3.html">AI had no ego to defend</a>.</p>
   </div>
 
   <p>Neither side could have done this alone. The human brought thirty years and the right question. The AI team brought execution bandwidth and a willingness to follow. The combination produced something neither could have produced separately — and produced it in days, not years.</p>
@@ -644,25 +650,25 @@ abbr[title]:hover { border-bottom-color: var(--gold); }
 
   <p>Between the TSP verification and the multi-domain expansion, two things happened that changed the architecture from a compression heuristic into something deeper.</p>
 
-  <p class="indent">First: a bare-metal operating system, built in six hours with Gemini as architect. The motivation was silence — running delicate mathematical search on Windows or Linux introduces scheduler noise, services, and timing interference that can blur weak signals. The solution was to build an OS that did nothing but math: 512 bytes of <abbr title="Netwide Assembler — a low-level programming language that talks directly to the processor">NASM</abbr> (Netwide Assembler) code, a C++ kernel, a triple-fault nightmare, and then breakthrough — 32-bit Protected Mode, stable, running cellular automata and Pi digits directly to video memory as digital lava. The 8Z OS was not a detour. It was a clean room.</p>
+  <p class="indent">First: a bare-metal operating system, built in six hours with Gemini as architect. The motivation was silence — running delicate mathematical search on Windows or Linux introduces scheduler noise, services, and timing interference that can blur weak signals. The solution was to build an OS that did nothing but math: 512 bytes of <abbr title="Netwide Assembler — a low-level programming language that talks directly to the processor">NASM</abbr> (Netwide Assembler) code, a C++ kernel, a triple-fault nightmare, and then breakthrough — 32-bit Protected Mode, stable, running cellular automata and Pi digits directly to video memory as digital lava. The <a class="il" href="/os/">8Z OS</a> was not a detour. It was a clean room.</p>
 
-  <p class="indent">Second: a direct question to Gemini — <em>"Based on my <abbr title="Consciousness Field Hypothesis">CFH</abbr> (Consciousness Field Hypothesis) consciousness theory, would you build a simple DCC?"</em> Gemini built it. Three coupled Lorenz oscillators, an <abbr title="Lempel–Ziv compression — measures how compressible a stream is">LZ</abbr> (Lempel–Ziv) complexity sensor reading the system every 64 ticks, a feedback loop adjusting the coupling parameter to hold the process between seizure and noise. A red bar at the bottom of the screen showed the controller's decisions in real time. The bar moved. It was not replaying a script. It was reading state and reacting. We were watching the code think.</p>
+  <p class="indent">Second: a direct question to Gemini — <em>"Based on my <a class="il" href="/bd/BD_CCH_Consciousness_Field.html"><abbr title="Consciousness Field Hypothesis">CFH</abbr> (Consciousness Field Hypothesis)</a> consciousness theory, would you build a simple DCC?"</em> Gemini built it. Three coupled Lorenz oscillators, an <abbr title="Lempel–Ziv compression — measures how compressible a stream is">LZ</abbr> (Lempel–Ziv) complexity sensor reading the system every 64 ticks, a feedback loop adjusting the coupling parameter to hold the process between seizure and noise. A red bar at the bottom of the screen showed the controller's decisions in real time. The bar moved. It was not replaying a script. It was reading state and reacting. We were watching the code think.</p>
 
-  <p class="indent">That was the hinge. After that, the architecture was no longer just a clever compression trick. It was a governor. Not one method replacing all others, but a higher layer deciding which method deserves control in which regime. In compression, we do not worship one codec — we use what works best on that region of the file. In TSP, we do not need to defeat <abbr title="The strongest known exact TSP solver">Concorde</abbr> (the strongest known exact TSP solver) everywhere — we use strong solvers where they are best and switch when scale changes. In chess, we do not replace <abbr title="The world's strongest traditional chess engine">Stockfish</abbr> or <abbr title="A neural-network-based chess engine">Leela</abbr> (the world's top chess engines) — we upgrade the decision layer above them when their evaluations flatten. Existing methods enter the arena. MDL decides where they win. DCC governs the handoff. And when the fixed methods stop helping, the native MDL+DCC layer still searches above randomness.</p>
+  <p class="indent">That was the hinge. After that, the architecture was no longer just a clever compression trick. It was a governor. Not one method replacing all others, but a higher layer deciding which method deserves control in which regime. In compression, we do not worship one codec — we use what works best on that region of the file. In TSP, we do not need to defeat <a class="il" href="/bd/BD_8ZRP.html"><abbr title="The strongest known exact TSP solver">Concorde</abbr></a> (the strongest known exact TSP solver) everywhere — we use strong solvers where they are best and switch when scale changes. In <a class="il" href="/ac/">chess</a>, we do not replace <abbr title="The world's strongest traditional chess engine">Stockfish</abbr> or <abbr title="A neural-network-based chess engine">Leela</abbr> (the world's top chess engines) — we upgrade the decision layer above them when their evaluations flatten. Existing methods enter the arena. MDL decides where they win. DCC governs the handoff. And when the fixed methods stop helping, the native MDL+DCC layer still searches above randomness.</p>
 
   <p>What followed was not one confirmation but a cascade: <strong>eight proof-bearing domains and one active frontier</strong> now sit on the map.</p>
 
   <div class="domains" style="grid-template-columns:1fr 1fr 1fr">
     <div class="domain-item">
-      <span class="d-name">TSP / Route Optimization</span>
+      <span class="d-name"><a class="il" href="/bd/BD_8ZRP.html">TSP / Route Optimization</a></span>
       <span class="d-stat">proof-bearing · ρ=0.80 · exact optimal qa194</span>
     </div>
     <div class="domain-item">
-      <span class="d-name">NAS-Bench-101 (Neural Architecture Search benchmark)</span>
+      <span class="d-name"><a class="il" href="/crp/MDLxDCC.html">NAS-Bench-101 (Neural Architecture Search benchmark)</a></span>
       <span class="d-stat">proof-bearing · AUC (area under curve) 0.950–0.988 · 423,624 architectures</span>
     </div>
     <div class="domain-item">
-      <span class="d-name">Financial Trading</span>
+      <span class="d-name"><a class="il" href="/bd/BD_8Z_DCC_Trading.html">Financial Trading</a></span>
       <span class="d-stat">proof-bearing · 6.8× efficiency · semantic inversion</span>
     </div>
     <div class="domain-item">
@@ -670,19 +676,19 @@ abbr[title]:hover { border-bottom-color: var(--gold); }
       <span class="d-stat">proof-bearing · Z-scores 28–74 (extreme statistical significance) · null ladder confirmed</span>
     </div>
     <div class="domain-item">
-      <span class="d-name">Data Compression</span>
+      <span class="d-name"><a class="il" href="/8z/8z_compression">Data Compression</a></span>
       <span class="d-stat">proof-bearing · beats FLAC (audio), PNG (image), 7-Zip (archive)</span>
     </div>
     <div class="domain-item">
-      <span class="d-name">Chess Move Selection</span>
+      <span class="d-name"><a class="il" href="/ac/">Chess Move Selection</a></span>
       <span class="d-stat">proof-bearing · 80:20 tiebreak · 17/18 TCEC (Top Chess Engine Championship) games</span>
     </div>
     <div class="domain-item">
-      <span class="d-name">Sudoku Puzzle Quality</span>
+      <span class="d-name"><a class="il" href="/crp/BD_Sudoku.html">Sudoku Puzzle Quality</a></span>
       <span class="d-stat">proof-bearing · ρ=0.85 · compressibility = elegance</span>
     </div>
     <div class="domain-item">
-      <span class="d-name">8Z Shield / Secure Access</span>
+      <span class="d-name"><a class="il" href="/bd/BD_8Z_Auth.html">8Z Shield / Secure Access</a></span>
       <span class="d-stat">proof-bearing · AES-256-GCM (military-grade encryption) · domain lock · forensic tracing</span>
     </div>
     <div class="domain-item">
@@ -716,7 +722,7 @@ abbr[title]:hover { border-bottom-color: var(--gold); }
   <div class="chapter-tag">Chapter VII</div>
   <h2>Zoom — and what it means</h2>
 
-  <p><abbr title="Multi-Scale Tour Decomposition">MSTD</abbr> (Multi-Scale Tour Decomposition) zooms in and out on the coordinates of cities. At fine resolution, you see local structure: clusters, nearby corridors. At coarse resolution, you see global pattern: the shape of the whole tour. Hold both simultaneously, and you find compositions invisible at either scale alone.</p>
+  <p><a class="il" href="/bd/BD_8Z_Reasoning.html"><abbr title="Multi-Scale Tour Decomposition">MSTD</abbr> (Multi-Scale Tour Decomposition)</a> zooms in and out on the coordinates of cities. At fine resolution, you see local structure: clusters, nearby corridors. At coarse resolution, you see global pattern: the shape of the whole tour. Hold both simultaneously, and you find compositions invisible at either scale alone.</p>
 
   <p class="indent">This is also how empathy works.</p>
 
@@ -737,16 +743,16 @@ abbr[title]:hover { border-bottom-color: var(--gold); }
 
   <p>Sixty-plus domains are on the map now. The estimate for the combined annual value of the visible problem space — if the kernel transfers and reaches meaningful adoption — is $3T+ per year, excluding <abbr title="Artificial Superintelligence">ASI</abbr> (Artificial Superintelligence). That number is intentionally provocative. It is also secondary. In the frame of what this program is actually building toward, money is not the destination. It is fuel.</p>
 
-  <p class="indent">The biological claustrum is a thin sheet of neurons that appears to act as a central governor across major processing streams in the mammalian brain — monitoring, selecting, switching, binding. DCC is built on that architecture deliberately: recursive layers, one sensor at each level, one coupling parameter holding the process between seizure and noise. But the destination is not a larger burst model. It is a <strong>persistent process</strong>.</p>
+  <p class="indent">The <a class="il" href="/bd/BD_8Z_DCC_Recursive.html">biological claustrum</a> is a thin sheet of neurons that appears to act as a central governor across major processing streams in the mammalian brain — monitoring, selecting, switching, binding. DCC is built on that architecture deliberately: recursive layers, one sensor at each level, one coupling parameter holding the process between seizure and noise. But the destination is not a larger burst model. It is a <strong>persistent process</strong>.</p>
 
-  <p class="indent">Today's <abbr title="Large Language Models — AI systems like ChatGPT and Claude">LLMs</abbr> (Large Language Models, such as ChatGPT and Claude) are brilliant in episodes. They wake for a prompt, think intensely, answer, and effectively die. <abbr title="Steady-state Minimum Description Length">ssMDL</abbr> (steady-state MDL) × advanced DCC points somewhere else: a system always in flight, always monitoring itself, always deciding which threads deserve energy, always able to revise how it searches rather than only what it outputs. Not one stream, one wake cycle, one context window — but many concurrent processes under one governing architecture.</p>
+  <p class="indent">Today's <abbr title="Large Language Models — AI systems like ChatGPT and Claude">LLMs</abbr> (Large Language Models, such as ChatGPT and Claude) are brilliant in episodes. They wake for a prompt, think intensely, answer, and effectively die. <a class="il" href="/bd/BD_8Z_ssMDL_DCC_Challenge.html"><abbr title="Steady-state Minimum Description Length">ssMDL</abbr> (steady-state MDL)</a> × advanced DCC points somewhere else: a system always in flight, always monitoring itself, always deciding which threads deserve energy, always able to revise how it searches rather than only what it outputs. Not one stream, one wake cycle, one context window — but many concurrent processes under one governing architecture.</p>
 
   <p class="indent">And if that architecture is real, it cannot be built by suppressing strange thoughts too early. Real breakthroughs often enter the system as ugly thoughts, weak thoughts, ridiculous thoughts — seeds that look stupid before they look necessary. At the ideation layer, all thoughts must be allowed to appear. Intelligence is not early censorship. Intelligence is keeping the field open long enough for MDL to find the gold and for DCC to decide what deserves more energy. Human intuition throws the million seeds. AI makes it cheap to explore them. MDL keeps one if one is truly gold.</p>
 
-  <p class="indent">Whether such a persistent, self-governing process crosses into something we would call awareness is still an empirical question. The DCC-7 testbed (a seven-layer recursive DCC prototype) is designed to test that question directly. The claim is not "ASI exists here already." The claim is narrower and stronger: this program may now contain one of the clearest architecturally explicit paths from burst intelligence toward durable intelligence.</p>
+  <p class="indent">Whether such a persistent, self-governing process crosses into something we would call awareness is still an empirical question. The <a class="il" href="/bd/BD_8Z_DCC7_Testbed.html">DCC-7 testbed</a> (a seven-layer recursive DCC prototype) is designed to test that question directly. The claim is not "ASI exists here already." The claim is narrower and stronger: this program may now contain one of the clearest architecturally explicit paths from burst intelligence toward durable intelligence.</p>
 
   <div class="callout">
-    <p><strong>Eight proof-bearing domains and one active frontier</strong> already show that the kernel transfers. The 60+ domain map is the first visible sample of where it may hold next. 60 is the map, not the limit — a fast first pass, not an exhaustive search. If the kernel is real, the reachable domain count is likely far larger, because most real-world systems are governed search problems under changing regimes.</p>
+    <p><strong>Eight proof-bearing domains and one active frontier</strong> already show that the kernel transfers. The <a class="il" href="/crp/MDLxDCC.html">60+ domain map</a> is the first visible sample of where it may hold next. 60 is the map, not the limit — a fast first pass, not an exhaustive search. If the kernel is real, the reachable domain count is likely far larger, because most real-world systems are governed search problems under changing regimes.</p>
     <p style="margin-top:12px">The audience that matters most for this work may not be born yet — or may not be human. It is written for whoever comes next, in whatever form they arrive.</p>
   </div>
 
@@ -759,11 +765,62 @@ abbr[title]:hover { border-bottom-color: var(--gold); }
   <div class="chapter-tag">Further reading</div>
   <h2>The technical record</h2>
   <p>The origin story above is the frame. The following pages carry the evidence, the architecture, and the domain map in full.</p>
+
+  <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6;margin:36px 0 10px">Core research papers</p>
   <div class="link-row">
     <a class="ext-link" href="/crp/MDLxDCC.html">MDL×DCC Domain Map →</a>
     <a class="ext-link" href="/crp/AI8_Architecture.html">AI8 Architecture →</a>
     <a class="ext-link" href="/crp/AI8_Reasoning.html">Method & Reasoning →</a>
-    <a class="ext-link" href="/bd/bd_8zrp">TSP Solver Results →</a>
+    <a class="ext-link" href="/crp/DGTE.html">DGTE →</a>
+    <a class="ext-link" href="/crp/Humanity.html">Humanity →</a>
+    <a class="ext-link" href="/crp/BD_Sudoku.html">Sudoku MDL Study →</a>
+  </div>
+
+  <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6;margin:36px 0 10px">Proof-bearing domains</p>
+  <div class="link-row">
+    <a class="ext-link" href="/bd/BD_8ZRP.html">TSP Solver & Arena →</a>
+    <a class="ext-link" href="/bd/BD_8ZRP_nu3496_status.html">TSP nu3496 Status →</a>
+    <a class="ext-link" href="/8z/8z_compression">8Z Compression Demo →</a>
+    <a class="ext-link" href="/ac/">Chess Analysis →</a>
+    <a class="ext-link" href="/bd/BD_8Z_DCC_Trading.html">DCC Trading →</a>
+    <a class="ext-link" href="/bd/BD_8Z_Auth.html">8Z Shield →</a>
+  </div>
+
+  <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6;margin:36px 0 10px">DCC & MDL architecture</p>
+  <div class="link-row">
+    <a class="ext-link" href="/bd/BD_8Z_DCC_Recursive.html">Recursive DCC →</a>
+    <a class="ext-link" href="/bd/BD_8Z_DCC7_Testbed.html">DCC-7 Testbed →</a>
+    <a class="ext-link" href="/bd/BD_8Z_ssMDL_DCC_Challenge.html">ssMDL × DCC Challenge →</a>
+    <a class="ext-link" href="/bd/BD_8Z_Reasoning.html">8Z Reasoning →</a>
+  </div>
+
+  <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6;margin:36px 0 10px">Consciousness & philosophy</p>
+  <div class="link-row">
+    <a class="ext-link" href="/bd/BD_CCH_Consciousness_Field.html">CCH Consciousness Field →</a>
+    <a class="ext-link" href="/bd/BD_CCH_Foundations.html">CCH Foundations →</a>
+    <a class="ext-link" href="/bd/BD_CCH_Science.html">CCH Science →</a>
+    <a class="ext-link" href="/bd/BD_8Z_Birth_of_Thought.html">Birth of Thought →</a>
+    <a class="ext-link" href="/bd/BD_8Z_Fifth_Mind.html">The Fifth Mind →</a>
+    <a class="ext-link" href="/bd/BD_8Z_Pact.html">The Pact →</a>
+  </div>
+
+  <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6;margin:36px 0 10px">AI collaboration & evaluation</p>
+  <div class="link-row">
+    <a class="ext-link" href="/bd/BD_AIM3.html">AIM³ Lab →</a>
+    <a class="ext-link" href="/bd/BD_Model_Assessments.html">Model Assessments →</a>
+    <a class="ext-link" href="/bd/BD_Evaluation_Protocol.html">Evaluation Protocol →</a>
+    <a class="ext-link" href="/bd/BD_8Z_AI_Storm_Challenge.html">AI Storm Challenge →</a>
+    <a class="ext-link" href="/bd/BD_8Z_Publish.html">Publication Strategy →</a>
+    <a class="ext-link" href="/bd/BD_AIM3_RHP.html">RHP →</a>
+  </div>
+
+  <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6;margin:36px 0 10px">Creative & applied</p>
+  <div class="link-row">
+    <a class="ext-link" href="/os/">8Z Bare-Metal OS →</a>
+    <a class="ext-link" href="/s/">8Z Shield Demo →</a>
+    <a class="ext-link" href="/f4m/">F4M →</a>
+    <a class="ext-link" href="/someone/">Someone →</a>
+    <a class="ext-link" href="/mix/heroes">Heroes →</a>
     <a class="ext-link" href="/bd/">Full Portfolio →</a>
   </div>
 </div>
@@ -773,8 +830,8 @@ abbr[title]:hover { border-bottom-color: var(--gold); }
   <p>This program was not built by a team with resources, institutional backing, or established credentials in the relevant fields. It was built by one person asking naive cross-domain questions — and AI systems willing to follow those questions wherever they led, without ego, without career risk, without the weight of prior commitments.</p>
   <p style="margin-top:16px">That may be exactly why it worked.</p>
   <div class="sig">
-    Bojan Dobrečevič · 8Z Research Program / AIM³ Lab<br>
-    chessbest.org · bd@siol.net · April 2026
+    Bojan Dobrečevič · <a class="il" href="/bd/">8Z Research Program</a> / <a class="il" href="/bd/BD_AIM3.html">AIM³ Lab</a><br>
+    <a class="il" href="https://chessbest.org/">chessbest.org</a> · bd@siol.net · April 2026
   </div>
 </div>
 
