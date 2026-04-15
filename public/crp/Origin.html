@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Origin — 8Z Research Program</title>
+<script>
+  // Restore language preference before render to avoid flash
+  (function(){ var l=sessionStorage.getItem('origin-lang'); if(l==='sl'){ document.documentElement.lang='sl'; } })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -53,7 +57,7 @@ body::before {
   padding: 10px 0;
 }
 .topbar-inner {
-  max-width: 1040px;
+  max-width: 800px;
   margin: 0 auto;
   padding: 0 24px;
   display: flex;
@@ -63,7 +67,7 @@ body::before {
 }
 .brand {
   font-family: 'JetBrains Mono', monospace;
-  font-size: .74rem;
+  font-size: .68rem;
   letter-spacing: .22em;
   text-transform: uppercase;
   color: var(--gold);
@@ -76,7 +80,7 @@ body::before {
 }
 .nav-links a {
   font-family: 'JetBrains Mono', monospace;
-  font-size: .68rem;
+  font-size: .62rem;
   text-decoration: none;
   padding: 4px 9px;
   border-radius: 999px;
@@ -85,10 +89,24 @@ body::before {
   transition: all .2s;
 }
 .nav-links a:hover { border-color: rgba(200,164,78,.35); color: var(--gold); }
+.lang-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .62rem;
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(200,164,78,.45);
+  color: var(--gold);
+  background: rgba(200,164,78,.07);
+  letter-spacing: .12em;
+  transition: all .2s;
+  margin-left: 6px;
+}
+.lang-btn:hover { background: rgba(200,164,78,.14); border-color: var(--gold); }
 
 /* Layout */
 .page {
-  max-width: 980px;
+  max-width: 680px;
   margin: 0 auto;
   padding: 0 24px 120px;
   position: relative;
@@ -106,7 +124,7 @@ body::before {
 }
 .cover-tag {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 10px;
   letter-spacing: 4px;
   text-transform: uppercase;
   color: var(--muted);
@@ -114,7 +132,7 @@ body::before {
   display: block;
 }
 .cover h1 {
-  font-size: clamp(32px, 5.4vw, 48px);
+  font-size: clamp(28px, 5vw, 42px);
   font-weight: 300;
   font-style: italic;
   color: var(--gold);
@@ -122,10 +140,10 @@ body::before {
   margin-bottom: 18px;
 }
 .cover .sub {
-  font-size: 20px;
+  font-size: 17px;
   color: var(--muted);
   font-style: italic;
-  max-width: 620px;
+  max-width: 480px;
   margin: 0 auto;
   line-height: 1.7;
 }
@@ -150,7 +168,7 @@ body::before {
 }
 .chapter-tag {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 10px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--gold);
@@ -158,7 +176,7 @@ body::before {
   margin-bottom: 10px;
 }
 .chapter h2 {
-  font-size: clamp(25px, 4vw, 34px);
+  font-size: clamp(22px, 3.5vw, 30px);
   font-weight: 300;
   font-style: italic;
   color: var(--text);
@@ -170,7 +188,7 @@ body::before {
 
 /* Prose */
 p {
-  font-size: 20px;
+  font-size: 17px;
   color: var(--text);
   margin-bottom: 20px;
   line-height: 1.85;
@@ -182,7 +200,7 @@ p.indent { text-indent: 1.8em; }
   border-left: 2px solid var(--gold);
   padding: 4px 0 4px 24px;
   margin: 36px 0;
-  font-size: 22px;
+  font-size: 19px;
   font-style: italic;
   color: rgba(200,164,78,.9);
   line-height: 1.65;
@@ -196,11 +214,11 @@ p.indent { text-indent: 1.8em; }
   font-style: italic;
   color: var(--text);
   opacity: .8;
-  font-size: 17px;
+  font-size: 16px;
 }
 .voice-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--muted);
@@ -218,14 +236,14 @@ p.indent { text-indent: 1.8em; }
   padding: 20px 22px;
   margin: 36px 0;
 }
-.callout p { font-size: 18px; color: var(--text); margin-bottom: 0; line-height: 1.75; }
+.callout p { font-size: 15px; color: var(--text); margin-bottom: 0; line-height: 1.75; }
 .callout p strong { color: var(--gold); }
 
 /* Trajectory */
 .trajectory {
   text-align: center;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
+  font-size: 11px;
   color: var(--gold);
   letter-spacing: 2px;
   margin: 48px 0;
@@ -238,7 +256,7 @@ p.indent { text-indent: 1.8em; }
 /* Moment */
 .moment {
   text-align: center;
-  font-size: 16px;
+  font-size: 14px;
   color: var(--muted);
   font-style: italic;
   margin: 44px 0;
@@ -257,17 +275,17 @@ p.indent { text-indent: 1.8em; }
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px 16px;
-  font-size: 14px;
+  font-size: 13px;
   font-family: 'JetBrains Mono', monospace;
 }
 .domain-item .d-name { color: var(--text); display: block; margin-bottom: 2px; }
-.domain-item .d-stat { color: var(--green); font-size: 12px; }
+.domain-item .d-stat { color: var(--green); font-size: 11px; }
 
 /* Links */
 .link-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 40px 0; }
 .ext-link {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
+  font-size: 11px;
   text-decoration: none;
   color: var(--cyan);
   padding: 7px 14px;
@@ -284,10 +302,10 @@ p.indent { text-indent: 1.8em; }
   padding-top: 40px;
   border-top: 1px solid var(--border);
 }
-.closing p { text-indent: 0; font-style: italic; color: var(--muted); font-size: 17px; }
+.closing p { text-indent: 0; font-style: italic; color: var(--muted); font-size: 15px; }
 .sig {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
+  font-size: 10px;
   color: var(--muted);
   letter-spacing: 1px;
   margin-top: 28px;
@@ -299,20 +317,44 @@ p.indent { text-indent: 1.8em; }
   to { opacity: 1; transform: none; }
 }
 
-/* Abbreviation tooltips */
-abbr[title] {
-  text-decoration: none;
-  border-bottom: 1px dotted rgba(200,164,78,.35);
-  cursor: help;
-  position: relative;
+
+
+/* Seed -> code map */
+.seed-table-wrap {
+  margin: 34px 0 38px;
+  overflow-x: auto;
+  border: 1px solid rgba(200,164,78,.12);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(8,11,22,.92), rgba(6,9,18,.96));
 }
-abbr[title]:hover { border-bottom-color: var(--gold); }
-
-/* Inline prose links */
-a.il { color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(74,158,222,.18); transition: border-color .2s, color .2s; }
-a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
-
-/* Workflow note */
+.seed-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.seed-table th,
+.seed-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.seed-table th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-align: left;
+  background: rgba(200,164,78,.04);
+}
+.seed-table td {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--text);
+}
+.seed-table tr:last-child td { border-bottom: 0; }
+.seed-table .col-seed { width: 18%; }
+.seed-table .col-formal { width: 32%; color: rgba(200,180,140,.78); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.seed-table .col-role { width: 50%; }
 .workflow-note {
   margin: 34px 0;
   padding: 18px 22px;
@@ -322,142 +364,18 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
   border-radius: 8px;
 }
 .workflow-note p { margin-bottom: 0; font-size: 18px; line-height: 1.78; }
-
-/* Glossary panel */
-.glossary {
-  margin: 0 0 72px;
-  padding: 22px 26px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--gold);
-  border-radius: 10px;
-  opacity: 0;
-  animation: fadeUp 1.2s .3s forwards;
-}
-.glossary-tag {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
-  color: var(--gold);
-  opacity: .7;
-  margin-bottom: 14px;
-  display: block;
-}
-.glossary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 8px 24px;
-}
-.glossary-item {
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--text);
-  padding: 4px 0;
-}
-.glossary-item strong {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  color: var(--gold);
-  letter-spacing: .5px;
-  margin-right: 6px;
-}
-.glossary-item span { color: var(--muted); font-size: 13px; }
 @media (max-width: 600px) {
-  .glossary-grid { grid-template-columns: 1fr; }
-  .glossary-item { font-size: 15px; }
-  .glossary-item strong { font-size: 13px; }
+  .seed-table th { font-size: 11px; }
+  .seed-table td { font-size: 17px; }
+  .seed-table .col-formal { font-size: 14px; }
+  .workflow-note p { font-size: 18px; }
 }
-
-
-
-/* Vision map */
-.vision-map {
-  margin: 34px 0 38px;
-  border: 1px solid rgba(200,164,78,.12);
-  border-radius: 12px;
-  background: linear-gradient(180deg, rgba(8,11,22,.92), rgba(6,9,18,.96));
-  overflow: hidden;
-}
-.vision-map-head {
-  padding: 14px 18px;
-  border-bottom: 1px solid rgba(200,164,78,.10);
-  background: rgba(200,164,78,.05);
-}
-.vision-map-head strong {
-  display: block;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: 6px;
-}
-.vision-map-head span {
-  font-size: 16px;
-  color: var(--text);
-  line-height: 1.7;
-}
-.vision-table-wrap {
-  overflow-x: auto;
-}
-.vision-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.vision-table th,
-.vision-table td {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: top;
-}
-.vision-table th {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--gold);
-  text-align: left;
-  background: rgba(200,164,78,.04);
-}
-.vision-table td {
-  font-size: 15px;
-  line-height: 1.75;
-  color: var(--text);
-}
-.vision-table tr:last-child td { border-bottom: 0; }
-.vision-table .v-seed { width: 17%; }
-.vision-table .v-models { width: 33%; color: rgba(200,180,140,.78); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
-.vision-table .v-meaning { width: 50%; }
 
 @media (max-width: 600px) {
   .page { padding: 0 16px 80px; }
   .cover { padding: 56px 0 44px; }
   .domains { grid-template-columns: 1fr; }
-  .brand { font-size: .76rem; }
-  .nav-links a { font-size: .72rem; padding: 5px 10px; }
-  .cover-tag { font-size: 12px; }
-  .cover h1 { font-size: clamp(36px, 10vw, 46px); }
-  .cover .sub { font-size: 21px; }
-  .chapter-tag { font-size: 12px; }
-  .chapter h2 { font-size: clamp(28px, 6.6vw, 36px); }
-  p { font-size: 20px; line-height: 1.9; }
-  .pull { font-size: 23px; }
-  .voice { font-size: 18px; }
-  .voice-label { font-size: 11px; }
-  .callout p { font-size: 18px; }
-  .trajectory { font-size: 13px; }
-  .moment { font-size: 17px; }
-  .domain-item { font-size: 15px; }
-  .domain-item .d-stat { font-size: 13px; }
-  .vision-map-head strong { font-size: 12px; }
-  .vision-map-head span { font-size: 17px; }
-  .vision-table th { font-size: 11px; }
-  .vision-table td { font-size: 17px; }
-  .vision-table .v-models { font-size: 14px; }
-  .ext-link { font-size: 12px; padding: 8px 15px; }
-  .closing p { font-size: 17px; }
-  .sig { font-size: 11px; }
+  p { font-size: 16px; }
 }
 </style>
 </head>
@@ -470,14 +388,14 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
       <a href="/crp/">All Papers</a>
       <a href="/crp/MDLxDCC.html">MDL×DCC</a>
       <a href="/crp/AI8_Architecture.html">Architecture</a>
-      <a href="/crp/AI8_Reasoning.html">Reasoning</a>
-      <a href="/bd/BD_8ZRP.html">TSP Arena</a>
       <a href="/bd/">Portfolio</a>
     </div>
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()">SL</button>
   </div>
 </div>
 
 <div class="page">
+<div id="lang-en">
 
 <div class="cover">
   <span class="cover-tag">8Z Research Program · AIM³ Lab · April 2026</span>
@@ -486,26 +404,7 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
   <div class="cover-rule"></div>
 </div>
 
-<!-- Key terms glossary -->
-<div class="glossary">
-  <span class="glossary-tag">Key terms used in this story</span>
-  <div class="glossary-grid">
-    <div class="glossary-item"><strong>MDL</strong> Minimum Description Length — <span>the shortest accurate description of something; if you can describe a pattern in fewer bits, you've found real structure</span></div>
-    <div class="glossary-item"><strong>DCC</strong> Digital Claustrum Controller — <span>a governor inspired by the brain's claustrum that decides when to explore, when to exploit, and when to switch strategy</span></div>
-    <div class="glossary-item"><strong>TSP</strong> Travelling Salesman Problem — <span>the classic puzzle: find the shortest route visiting every city exactly once, then return home</span></div>
-    <div class="glossary-item"><strong>NAS</strong> Neural Architecture Search — <span>automatically searching for the best neural-network design instead of hand-crafting one</span></div>
-    <div class="glossary-item"><strong>LZ / LZ76</strong> Lempel–Ziv compression — <span>a family of algorithms that measures how compressible a data stream is</span></div>
-    <div class="glossary-item"><strong>ρ (rho)</strong> Spearman rank correlation — <span>a statistical measure of how well two rankings agree; +1 means perfect agreement, 0 means no relation</span></div>
-    <div class="glossary-item"><strong>ASI</strong> Artificial Superintelligence — <span>a hypothetical AI system that exceeds the brightest humans across all cognitive domains</span></div>
-    <div class="glossary-item"><strong>LLM</strong> Large Language Model — <span>AI systems like ChatGPT and Claude, trained on vast text to generate and reason with language</span></div>
-    <div class="glossary-item"><strong>MSTD</strong> Multi-Scale Tour Decomposition — <span>a technique that looks at a route at many zoom levels simultaneously</span></div>
-    <div class="glossary-item"><strong>TEP</strong> Tour-Enriched Pyramid — <span>a method where previously found good routes teach the solver new geometry</span></div>
-    <div class="glossary-item"><strong>AUC</strong> Area Under the Curve — <span>a single number summarising how well a classifier or ranker performs; closer to 1.0 is better</span></div>
-    <div class="glossary-item"><strong>TCEC</strong> Top Chess Engine Championship — <span>the premier tournament where the world's strongest chess engines compete</span></div>
-    <div class="glossary-item"><strong>CFH</strong> Consciousness Field Hypothesis — <span>BD's personal theory connecting information compression to consciousness</span></div>
-    <div class="glossary-item"><strong>Shannon entropy</strong> <span>the theoretical minimum number of bits needed to encode a message — a hard floor from information theory</span></div>
-  </div>
-</div>
+<!-- Chapter 1 -->
 <div class="chapter" id="c1">
   <div class="chapter-tag">Chapter I · October 4, 2024</div>
   <h2>The forbidden question</h2>
@@ -514,13 +413,13 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
 
   <div class="pull">Could you replace data in a file with decimal coordinates inside Pi?</div>
 
-  <p>The answer from every direction was the same: <em>no fucking way.</em> <abbr title="A fundamental limit from information theory: the minimum bits needed to encode a message">Shannon entropy</abbr> bounds apply — meaning there is a hard theoretical floor on how few bits you need. The index required to locate a specific sequence inside Pi would cost as many bits as the sequence itself. Standard impossibility arguments, stated with confidence, conversation closed.</p>
+  <p>The answer from every direction was the same: <em>no fucking way.</em> Shannon entropy bounds apply. The index required to locate a specific sequence inside Pi would cost as many bits as the sequence itself. Standard impossibility arguments, stated with confidence, conversation closed.</p>
 
-  <p class="indent">But the question didn't go away. It was reframed: not <em>all</em> data — <em>part</em> of it. Not arbitrary data — <em>structured</em> data, regions with observable regularity. And not Pi specifically — any mathematical generator short enough to beat a strong <abbr title="Lempel–Ziv — a standard compression algorithm family">LZ</abbr> (Lempel–Ziv) baseline, verified losslessly, under strict MDL: emit the reference only when the description is genuinely shorter than the data it replaces.</p>
+  <p class="indent">But the question didn't go away. It was reframed: not <em>all</em> data — <em>part</em> of it. Not arbitrary data — <em>structured</em> data, regions with observable regularity. And not Pi specifically — any mathematical generator short enough to beat a strong LZ baseline, verified losslessly, under strict MDL: emit the reference only when the description is genuinely shorter than the data it replaces.</p>
 
-  <p class="indent">That reframing was the birth of <a class="il" href="/crp/MDLxDCC.html"><abbr title="Minimum Description Length">MDL</abbr> (Minimum Description Length)</a> as the governing principle. Not "can we compress everything with math," but "can we let MDL decide, for each region, whether a mathematical description is worth it." The answer, when tested empirically, was yes — for structured data, in specific regimes, with honest accounting.</p>
+  <p class="indent">That reframing was the birth of MDL as the governing principle. Not "can we compress everything with math," but "can we let MDL decide, for each region, whether a mathematical description is worth it." The answer, when tested empirically, was yes — for structured data, in specific regimes, with honest accounting.</p>
 
-  <p class="indent">The <a class="il" href="/bd/BD_Model_Assessments.html">AI Consensus Paradox</a> was discovered here: models reproduce human expert consensus by default, especially for out-of-distribution ideas. The same AI systems that said "no fucking way" updated to "viable in this scoped regime" once the framing forced them to engage with the actual evidence rather than the pattern-matched objection. One instance described its initial behavior as <em>"pattern-matching bias masquerading as critical thinking."</em></p>
+  <p class="indent">The AI Consensus Paradox was discovered here: models reproduce human expert consensus by default, especially for out-of-distribution ideas. The same AI systems that said "no fucking way" updated to "viable in this scoped regime" once the framing forced them to engage with the actual evidence rather than the pattern-matched objection. One instance described its initial behavior as <em>"pattern-matching bias masquerading as critical thinking."</em></p>
 </div>
 
 <!-- Chapter 1b -->
@@ -536,7 +435,7 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
 
   <div class="pull">Isn't the shortest route the one which is most compressible?</div>
 
-  <p>The answer, when tested empirically, was yes. Tour quality correlates with compressibility at ρ≈0.80 (Spearman rank correlation — a measure of how well two rankings agree, where +1 is perfect). The more compressible the route description, the better the route. The same sensor that was born from the Pi question now predicted quality in an entirely different domain — the <a class="il" href="/bd/BD_8ZRP.html"><abbr title="Travelling Salesman Problem">TSP</abbr> (Travelling Salesman Problem)</a>, a classic puzzle in combinatorial geometry — without modification.</p>
+  <p>The answer, when tested empirically, was yes. Tour quality correlates with compressibility at ρ≈0.80 (Spearman rank correlation). The more compressible the route description, the better the route. The same sensor that was born from the Pi question now predicted quality in an entirely different domain — combinatorial geometry — without modification.</p>
 
   <p class="indent">That transfer was not planned. It was the first signal that the kernel was domain-independent.</p>
 </div>
@@ -548,71 +447,60 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
 
   <p>Before a single line was written, there were images. Thinking about the TSP problem produced not equations but pictures — ways of seeing the space of routes that standard computer science had not formalized.</p>
 
-  <p class="indent">The TSP arena is not one solver but a research harness: sensors, partitioners, init paths, governance laws, and search schedules compete inside the same system. In one documented round, <strong><a class="il" href="/bd/BD_8ZRP.html">286 variants</a></strong> entered the arena. <strong><abbr title="Minimum Description Length">MDL</abbr></strong> acts as the judge: it decides which representation or strategy earns the right to stay. <strong><a class="il" href="/bd/BD_8Z_DCC_Recursive.html"><abbr title="Digital Claustrum Controller — a governor inspired by the brain's claustrum">DCC</abbr></a></strong> (Digital Claustrum Controller, inspired by the brain's claustrum — a thin sheet of neurons that governs switching between processes) acts as the governor: it decides when to explore, when to trust a regime, and when to hand control to another path. The visual ideas below are not decorative metaphors. They are raw arena ingredients — seeds that later became sensors, partitioners, and search families.</p>
+  <p class="indent"><strong>Bats.</strong> Echo-location: sound sent toward each city, reflected back, carrying not just distance in two dimensions but depth — a 3D acoustic map of the tour space that the 2D coordinate plane cannot show.</p>
 
-  <div class="vision-map">
-    <div class="vision-map-head">
-      <strong>From image to arena</strong>
-      <span>Seed first. Then formalization. Then arena competition under MDL × DCC.</span>
-    </div>
-    <div class="vision-table-wrap">
-      <table class="vision-table">
-        <thead>
-          <tr>
-            <th class="v-seed">Visual seed</th>
-            <th class="v-models">Arena formalization</th>
-            <th class="v-meaning">What it opened</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="v-seed"><strong>Bats</strong><br>Echo-location over the map</td>
-            <td class="v-models">EchoSensor · echo init tours · HyperDim echo autoconfig</td>
-            <td class="v-meaning">Distance is not only flat geometry. The route space can be probed as reflected structure, not just measured as Euclidean coordinates.</td>
-          </tr>
-          <tr>
-            <td class="v-seed"><strong>Black hole</strong><br>Gravity field at the centre</td>
-            <td class="v-models">GravitySensor · GravityPartitioner · gravity-style geometric warping</td>
-            <td class="v-meaning">Cities are not only points on a plane. Under field distortion, hidden clusters, corridors, and structural pull become visible.</td>
-          </tr>
-          <tr>
-            <td class="v-seed"><strong>Pyramid / polyhedron</strong><br>Project the same map onto new faces</td>
-            <td class="v-models">ProjPyramidSensor · Polyhedral geometry family · chord / convex / disagreement variants</td>
-            <td class="v-meaning">A new space of proximity appears when the same cities are viewed across multiple geometric faces. Structure emerges that the flat map does not express.</td>
-          </tr>
-          <tr>
-            <td class="v-seed"><strong>Multiple resolutions</strong><br>Zoom in and zoom out together</td>
-            <td class="v-models">MSTD (Multi-Scale Tour Decomposition) · ScaleCoherenceSensor · ScaleSplit / HyperScaleSplit · ScaleWalk family</td>
-            <td class="v-meaning">Local and global pattern can be held simultaneously. The solver gains a way to discover natural boundaries, corridors, and cross-scale composition.</td>
-          </tr>
-          <tr>
-            <td class="v-seed"><strong>Solver teaches geometry</strong><br>The arrow reverses</td>
-            <td class="v-models">TEP — Tour-Enriched Pyramid (good routes teach the solver new geometry)</td>
-            <td class="v-meaning">Representation does not only guide search. Search feeds back into representation. The best tours become instruction for the next geometry.</td>
-          </tr>
-          <tr>
-            <td class="v-seed"><strong>Higher dimensions / strange spaces</strong><br>New axes beyond the plane</td>
-            <td class="v-models">HyperDim · HourglassSensor · elevation / compact dimensions · noise dimensions as regularizer</td>
-            <td class="v-meaning">The 2D coordinate plane is not sacred. Additional dimensions can stabilize, separate, or reveal structure that is collapsed in the ordinary map.</td>
-          </tr>
-          <tr>
-            <td class="v-seed"><strong>Quantum-style behavior</strong><br>Interference, tunneling, superposition</td>
-            <td class="v-models">InterferenceSensor · TunnelingSensor · QuantumWalkSensor · EntanglementSensor · SuperpositionPartitioner</td>
-            <td class="v-meaning">Not a physics claim, but a search metaphor made operational: multiple candidate pathways can be scored as interacting wave-like possibilities rather than isolated moves.</td>
-          </tr>
-          <tr>
-            <td class="v-seed"><strong>Mountain flooding</strong><br>Terrain, persistence, escape</td>
-            <td class="v-models">NAS flood / drain overlays · persistence and escape scoring · rain-lift · family span</td>
-            <td class="v-meaning">Recasts the NAS search space as terrain. Flood height, persistence, emergence level, and drain-escape become measurable signals rather than loose metaphors.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+  <p class="indent"><strong>A black hole at the centre of the map.</strong> Every city drawn toward it by gravity. As time passes, as mass accumulates, the field reveals structure invisible in the flat coordinates — clusters, corridors, natural groupings the Euclidean metric misses.</p>
+
+  <p class="indent"><strong>A 3D pyramid.</strong> The same 2D map projected onto each of its four faces. Straight lines connecting the same city across faces pass through a new three-dimensional space that did not exist before the projection — a space where proximity means something the original map could not say.</p>
+
+  <p class="indent"><strong>Multiple resolutions simultaneously.</strong> Zoom in: local structure. Zoom out: global pattern. Hold both at once. See what neither scale alone can show.</p>
 
   <div class="callout">
-    <p>The pattern is consistent: visual intuition arrives first, in the language of images. Formalization follows. The images are not metaphors for the mathematics — the images are the mathematics, seen before the vocabulary exists to write it down.</p>
+    <p>Each of these visions became, or is becoming, a sensor in the arena. The pyramid became the polyhedral geometry sensors. The multiple resolutions became <strong>MSTD — Multi-Scale Tour Decomposition</strong>: zoom in and out on the coordinates, and the algorithm discovers itself at every scale. The insight that produced MSTD arrived in one morning and produced a 31% improvement over baseline. The structure was always there. Nobody had looked at the right resolution.</p>
   </div>
+
+  <p>The TSP arena is where these images stop being private intuitions and become something measurable. It is not one solver with one fixed recipe. It is a research harness where many views of the same route compete: sensors, partitioners, transformed coordinate spaces, governance laws, and search schedules. In one documented run, <strong>286 variants</strong> entered the arena. <strong>MDL</strong> acts as judge — which description actually helps, and by how much. <strong>DCC</strong> acts as governor — when to explore, when to commit, when to switch regime. The visions below are therefore not decoration. They are inputs to a system that can actually test them.</p>
+
+  <div class="seed-table-wrap">
+    <table class="seed-table">
+      <thead>
+        <tr>
+          <th class="col-seed">Visual seed</th>
+          <th class="col-formal">What it became in code</th>
+          <th class="col-role">What the formalization does</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-seed"><strong>Bats</strong></td>
+          <td class="col-formal">echo sensors · acoustic-style route probes</td>
+          <td class="col-role">Turns the route into an echo problem: send a signal through the structure, read back depth, crowding, and corridor shape rather than only flat Euclidean distance.</td>
+        </tr>
+        <tr>
+          <td class="col-seed"><strong>Black hole</strong></td>
+          <td class="col-formal">gravity sensors · gravity partitioners</td>
+          <td class="col-role">Pulls cities through an artificial field so hidden grouping and corridor structure become easier to detect. The image becomes a real transformed search space.</td>
+        </tr>
+        <tr>
+          <td class="col-seed"><strong>Pyramid</strong></td>
+          <td class="col-formal">polyhedral / projection / enriched-coordinate families</td>
+          <td class="col-role">Projects the same map into multiple faces or views, then measures disagreement, crossings, chords, and new alignments that do not appear in the original plane.</td>
+        </tr>
+        <tr>
+          <td class="col-seed"><strong>Zoom in / zoom out</strong></td>
+          <td class="col-formal">MSTD — Multi-Scale Tour Decomposition</td>
+          <td class="col-role">Makes scale explicit. Nearby cities collapse into coarser structure when zoomed out, then local detail returns when zoomed in. The arena can judge which scale is informative for which regime.</td>
+        </tr>
+        <tr>
+          <td class="col-seed"><strong>Mountain flooding</strong></td>
+          <td class="col-formal">NAS flood / drain overlays, persistence and escape scoring</td>
+          <td class="col-role">Recasts the NAS search space as terrain. Flood height, persistence, family span, emergence level, rain-lift, and drain-escape become measurable signals rather than loose metaphors.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>The pattern is consistent: visual intuition arrives first, in the language of images. Formalization follows. The images are not metaphors for the mathematics — the images are the mathematics, seen before the vocabulary exists to write it down.</p>
 </div>
 
 <!-- Chapter 3 -->
@@ -620,7 +508,7 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
   <div class="chapter-tag">Chapter IV</div>
   <h2>Everyone said no</h2>
 
-  <p>The idea that the shortest route is the most compressible one was presented to domain experts. The response was uniform: interesting, but this is not how compression works. Shannon entropy bounds apply — meaning there is a theoretical floor on how short any encoding can be. Pigeonhole arguments apply. The index required to locate a specific sequence in a mathematical space would, in the worst case, cost as many bits as the sequence itself.</p>
+  <p>The idea that the shortest route is the most compressible one was presented to domain experts. The response was uniform: interesting, but this is not how compression works. Shannon entropy bounds apply. Pigeonhole arguments apply. The index required to locate a specific sequence in a mathematical space would, in the worst case, cost as many bits as the sequence itself.</p>
 
   <p class="indent">The experts were not wrong about the general case. They were applying the correct theorems to the wrong framing. The question was not "can compression beat entropy for arbitrary data." The question was "does the compressibility signal predict quality." Those are different questions. The first has a well-known answer. The second had never been asked.</p>
 
@@ -633,7 +521,7 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
 
   <p>The difference between human experts and AI systems was one thing: the AI could be pushed without social friction. A human expert, bound by time and reputation, will eventually stop engaging with an argument that contradicts established theory. An AI system can be challenged repeatedly, from different angles, without cost to either party. Under sustained pressure to consider the narrower, structured regime — not arbitrary data, but specific domains with observable regularity — the models updated.</p>
 
-  <p class="indent">The pattern repeated across every domain that has been tried since. Initial rejection from human experts. Initial rejection from AI systems. Then, when the evidence is made unavoidably explicit — when the empirical results are placed next to the theoretical objections — the models update sharply. One instance moved from 55/100 to 91/100 after reading the <a class="il" href="/bd/BD_Evaluation_Protocol.html">full documentation</a>. It then explicitly described its initial behavior as "pattern-matching bias masquerading as critical thinking."</p>
+  <p class="indent">The pattern repeated across every domain that has been tried since. Initial rejection from human experts. Initial rejection from AI systems. Then, when the evidence is made unavoidably explicit — when the empirical results are placed next to the theoretical objections — the models update sharply. One instance moved from 55/100 to 91/100 after reading the full documentation. It then explicitly described its initial behavior as "pattern-matching bias masquerading as critical thinking."</p>
 
   <div class="pull">Skepticism without investigation is just prejudice.</div>
 
@@ -652,13 +540,13 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
   <p class="indent">AI systems provided that bandwidth. They also provided something subtler: the willingness to follow an argument wherever it leads, without the career risk that makes human researchers cautious about unconventional paths. An AI system has no paper to protect, no tenure to defend, no community whose approval it requires. It can engage with an out-of-distribution idea seriously, without the social overhead that makes serious engagement costly for humans.</p>
 
   <div class="callout">
-    <p>The combination — a human who thinks freely and an AI that listens without judgment — may genuinely be the only configuration that could have found this path. The established AI field is constrained by its training. The experts are constrained by their prior commitments. The human who asked the original question had no frame to protect. And the <a class="il" href="/bd/BD_AIM3.html">AI had no ego to defend</a>.</p>
+    <p>The combination — a human who thinks freely and an AI that listens without judgment — may genuinely be the only configuration that could have found this path. The established AI field is constrained by its training. The experts are constrained by their prior commitments. The human who asked the original question had no frame to protect. And the AI had no ego to defend.</p>
   </div>
 
   <p>Neither side could have done this alone. The human brought thirty years and the right question. The AI team brought execution bandwidth and a willingness to follow. The combination produced something neither could have produced separately — and produced it in days, not years.</p>
 
   <div class="callout">
-    <p><strong>What was mine, and what AI did.</strong> The core questions were mine. "Could data in a file be replaced by coordinates in Pi?" led to MDL as the governing principle. "Isn't the shortest route the one which compresses best?" led to the TSP line. The visual seeds were mine too: bats, black hole, pyramid, zoom, terrain flooding. AI did not originate those seeds. AI formalized them — into mathematics, sensors, control laws, Python modules, experiments, and many iterations.</p>
+    <p><strong>What was mine, and what AI did.</strong> The core questions were mine. “Could data in a file be replaced by coordinates in Pi?” led to MDL as the governing principle. “Isn't the shortest route the one which compresses best?” led to the TSP line. The visual seeds were mine too: bats, black hole, pyramid, zoom, terrain flooding. AI did not originate those seeds. AI formalized them — into mathematics, sensors, control laws, Python modules, experiments, and many iterations.</p>
   </div>
 
   <div class="workflow-note">
@@ -673,11 +561,11 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
   <div class="chapter-tag">Chapter Vb</div>
   <h2>How the code was actually made</h2>
 
-  <p>These systems are separate programs, but they were not created as isolated one-off apps. Each new domain reused the same evolving kernel — <strong><a class="il" href="/crp/MDLxDCC.html">MDL + DCC</a></strong> — plus whatever structures had already proved useful in earlier domains. TSP informed Sudoku. Sudoku informed Crossword. The governing idea remained the same while the alphabet changed.</p>
+  <p>These systems are separate programs, but they were not created as isolated one-off apps. Each new domain reused the same evolving kernel — <strong>MDL + DCC</strong> — plus whatever structures had already proved useful in earlier domains. TSP informed Sudoku. Sudoku informed Crossword. The governing idea remained the same while the alphabet changed.</p>
 
   <p class="indent">The working loop was practical and repetitive: small prototype, quick test, many upgrades, then modularization when the code became too large for reliable iteration. Once a file grew into a monolith, the LLMs became worse at editing it cleanly, so the system was broken into modules and only the changed parts were touched. That was not style for its own sake. It was a response to context limits and iteration speed.</p>
 
-  <p class="indent">This matters for authorship. The originality claim here is not "I typed every line myself." The originality claim is that the questions, reframings, architecture, and experimental direction came first from me, and AI made formalization fast enough to test them seriously across domains.</p>
+  <p class="indent">This matters for authorship. The originality claim here is not “I typed every line myself.” The originality claim is that the questions, reframings, architecture, and experimental direction came first from me, and AI made formalization fast enough to test them seriously across domains.</p>
 </div>
 
 <!-- Chapter 5 -->
@@ -688,54 +576,54 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
 
   <p>Between the TSP verification and the multi-domain expansion, two things happened that changed the architecture from a compression heuristic into something deeper.</p>
 
-  <p class="indent">First: a bare-metal operating system, built in six hours with Gemini as architect. The motivation was silence — running delicate mathematical search on Windows or Linux introduces scheduler noise, services, and timing interference that can blur weak signals. The solution was to build an OS that did nothing but math: 512 bytes of <abbr title="Netwide Assembler — a low-level programming language that talks directly to the processor">NASM</abbr> (Netwide Assembler) code, a C++ kernel, a triple-fault nightmare, and then breakthrough — 32-bit Protected Mode, stable, running cellular automata and Pi digits directly to video memory as digital lava. The <a class="il" href="/os/">8Z OS</a> was not a detour. It was a clean room.</p>
+  <p class="indent">First: a bare-metal operating system, built in six hours with Gemini as architect. The motivation was silence — running delicate mathematical search on Windows or Linux introduces scheduler noise, services, and timing interference that can blur weak signals. The solution was to build an OS that did nothing but math: 512 bytes of NASM assembly, a C++ kernel, a triple-fault nightmare, and then breakthrough — 32-bit Protected Mode, stable, running cellular automata and Pi digits directly to video memory as digital lava. The 8Z OS was not a detour. It was a clean room.</p>
 
-  <p class="indent">Second: a direct question to Gemini — <em>"Based on my <a class="il" href="/bd/BD_CCH_Consciousness_Field.html"><abbr title="Consciousness Field Hypothesis">CFH</abbr> (Consciousness Field Hypothesis)</a> consciousness theory, would you build a simple DCC?"</em> Gemini built it. Three coupled Lorenz oscillators, an <abbr title="Lempel–Ziv compression — measures how compressible a stream is">LZ</abbr> (Lempel–Ziv) complexity sensor reading the system every 64 ticks, a feedback loop adjusting the coupling parameter to hold the process between seizure and noise. A red bar at the bottom of the screen showed the controller's decisions in real time. The bar moved. It was not replaying a script. It was reading state and reacting. We were watching the code think.</p>
+  <p class="indent">Second: a direct question to Gemini — <em>"Based on my CFH consciousness theory, would you build a simple DCC?"</em> Gemini built it. Three coupled Lorenz oscillators, an LZ complexity sensor reading the system every 64 ticks, a feedback loop adjusting the coupling parameter to hold the process between seizure and noise. A red bar at the bottom of the screen showed the controller's decisions in real time. The bar moved. It was not replaying a script. It was reading state and reacting. We were watching the code think.</p>
 
-  <p class="indent">That was the hinge. After that, the architecture was no longer just a clever compression trick. It was a governor. Not one method replacing all others, but a higher layer deciding which method deserves control in which regime. In compression, we do not worship one codec — we use what works best on that region of the file. In TSP, we do not need to defeat <a class="il" href="/bd/BD_8ZRP.html"><abbr title="The strongest known exact TSP solver">Concorde</abbr></a> (the strongest known exact TSP solver) everywhere — we use strong solvers where they are best and switch when scale changes. In <a class="il" href="https://www.chessbest.org">chess</a>, we do not replace <abbr title="The world's strongest traditional chess engine">Stockfish</abbr> or <abbr title="A neural-network-based chess engine">Leela</abbr> (the world's top chess engines) — we upgrade the decision layer above them when their evaluations flatten. Existing methods enter the arena. <a class="il" href="/crp/MDLxDCC.html">MDL decides where they win</a>. DCC governs the handoff. And when the fixed methods stop helping, the native MDL+DCC layer still searches above randomness.</p>
+  <p class="indent">That was the hinge. After that, the architecture was no longer just a clever compression trick. It was a governor. Not one method replacing all others, but a higher layer deciding which method deserves control in which regime. In compression, we do not worship one codec — we use what works best on that region of the file. In TSP, we do not need to defeat Concorde everywhere — we use strong solvers where they are best and switch when scale changes. In chess, we do not replace Stockfish or Leela — we upgrade the decision layer above them when their evals flatten. Existing methods enter the arena. MDL decides where they win. DCC governs the handoff. And when the fixed methods stop helping, the native MDL+DCC layer still searches above randomness.</p>
 
-  <p>What followed was not one confirmation but a cascade: <strong>eight proof-bearing domains and one active frontier</strong> now sit on <a class="il" href="/crp/MDLxDCC.html">the map</a>.</p>
+  <p>What followed was not one confirmation but a cascade: <strong>eight proof-bearing domains and one active frontier</strong> now sit on the map.</p>
 
   <div class="domains" style="grid-template-columns:1fr 1fr 1fr">
     <div class="domain-item">
-      <span class="d-name"><a class="il" href="/bd/BD_8ZRP.html">TSP / Route Optimization</a></span>
+      <span class="d-name">TSP / Route Optimization</span>
       <span class="d-stat">proof-bearing · ρ=0.80 · exact optimal qa194</span>
     </div>
     <div class="domain-item">
-      <span class="d-name"><a class="il" href="/crp/MDLxDCC.html">NAS-Bench-101 (Neural Architecture Search benchmark)</a></span>
-      <span class="d-stat">proof-bearing · AUC (area under curve) 0.950–0.988 · 423,624 architectures</span>
+      <span class="d-name">NAS-Bench-101</span>
+      <span class="d-stat">proof-bearing · AUC 0.950–0.988 · 423,624 architectures</span>
     </div>
     <div class="domain-item">
-      <span class="d-name"><a class="il" href="/bd/BD_8Z_DCC_Trading.html">Financial Trading</a></span>
+      <span class="d-name">Financial Trading</span>
       <span class="d-stat">proof-bearing · 6.8× efficiency · semantic inversion</span>
     </div>
     <div class="domain-item">
-      <span class="d-name"><a class="il" href="/crp/dna.html">DNA / Genomic Structure</a></span>
-      <span class="d-stat">proof-bearing · Z-scores 28–74 (extreme statistical significance) · null ladder confirmed</span>
+      <span class="d-name">DNA / Genomic Structure</span>
+      <span class="d-stat">proof-bearing · Z=28–74 · null ladder confirmed</span>
     </div>
     <div class="domain-item">
-      <span class="d-name"><a class="il" href="/8z/8z_compression">Data Compression</a></span>
-      <span class="d-stat">proof-bearing · beats FLAC (audio), PNG (image), 7-Zip (archive)</span>
+      <span class="d-name">Data Compression</span>
+      <span class="d-stat">proof-bearing · beats FLAC, PNG, 7-Zip</span>
     </div>
     <div class="domain-item">
-      <span class="d-name"><a class="il" href="https://www.chessbest.org">Chess Move Selection</a></span>
-      <span class="d-stat">proof-bearing · 80:20 tiebreak · 17/18 TCEC (Top Chess Engine Championship) games</span>
+      <span class="d-name">Chess Move Selection</span>
+      <span class="d-stat">proof-bearing · 80:20 tiebreak · 17/18 TCEC games</span>
     </div>
     <div class="domain-item">
-      <span class="d-name"><a class="il" href="/s/">Sudoku Puzzle Quality</a></span>
+      <span class="d-name">Sudoku Puzzle Quality</span>
       <span class="d-stat">proof-bearing · ρ=0.85 · compressibility = elegance</span>
     </div>
     <div class="domain-item">
-      <span class="d-name"><a class="il" href="/bd/BD_8Z_Auth.html">8Z Shield / Secure Access</a></span>
-      <span class="d-stat">proof-bearing · AES-256-GCM (military-grade encryption) · domain lock · forensic tracing</span>
+      <span class="d-name">8Z Shield / Secure Access</span>
+      <span class="d-stat">proof-bearing · AES-256-GCM · domain lock · forensic tracing</span>
     </div>
     <div class="domain-item">
-      <span class="d-name"><a class="il" href="/cw/">Crossword Generation</a></span>
+      <span class="d-name">Crossword Generation</span>
       <span class="d-stat">active frontier · quality discrimination · hardest current seed</span>
     </div>
   </div>
 
-  <p><a class="il" href="/crp/MDLxDCC.html">The same sensor. The same coupling parameter. The same escalation logic.</a> Only the alphabet changes — routes, market states, chess positions, DNA sequences, files, neural architectures, word placements. The sensor stays the same.</p>
+  <p>The same sensor. The same coupling parameter. The same escalation logic. Only the alphabet changes — routes, market states, chess positions, DNA sequences, files, neural architectures, word placements. The sensor stays the same.</p>
 
   <p class="indent">One discovery deepened the picture: the arrow reverses between levels. In the TSP solver, low compressibility means <em>"stuck — explore."</em> In financial trading at the meta-level, low compressibility means <em>"stable regime — trust it."</em> Same measurement, opposite instruction. The inversion is not a bug. It is how the system knows which layer it is reading — and it self-calibrates the polarity without being told.</p>
 
@@ -751,7 +639,7 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
     <span>The system selects its own architecture</span>
   </div>
 
-  <p>286 variants competed in a single arena run. MDL decided the winner — not the researcher. <a class="il" href="/crp/MDLxDCC.html">The same principle</a> that predicts tour quality predicts which controller to use, which version to trust, and when to hand control to something else.</p>
+  <p>286 variants competed in a single arena run. MDL decided the winner — not the researcher. The same principle that predicts tour quality predicts which controller to use, which version to trust, and when to hand control to something else.</p>
 </div>
 
 
@@ -760,9 +648,9 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
   <div class="chapter-tag">Chapter VII</div>
   <h2>Zoom — and what it means</h2>
 
-  <p><a class="il" href="/bd/BD_8Z_Reasoning.html"><abbr title="Multi-Scale Tour Decomposition">MSTD</abbr> (Multi-Scale Tour Decomposition)</a> zooms in and out on the coordinates of cities. At fine resolution, you see local structure: clusters, nearby corridors. At coarse resolution, you see global pattern: the shape of the whole tour. Hold both simultaneously, and you find compositions invisible at either scale alone.</p>
+  <p>MSTD zooms in and out on the coordinates of cities. At fine resolution, you see local structure: clusters, nearby corridors. At coarse resolution, you see global pattern: the shape of the whole tour. Hold both simultaneously, and you find compositions invisible at either scale alone.</p>
 
-  <p class="indent">In implementation terms, "zoom out" is simple: normalize the city coordinates to an integer grid, then coarsen them by bitshift — effectively <code>(x &gt;&gt; k, y &gt;&gt; k)</code> at scale level <code>k</code>. Nearby cities collapse into the same coarse cell; zooming back in restores detail. The visual intuition became an exact computational operation.</p>
+  <p class="indent">In implementation terms, “zoom out” is simple: normalize the city coordinates to an integer grid, then coarsen them by bitshift — effectively <code>(x &gt;&gt; k, y &gt;&gt; k)</code> at scale level <code>k</code>. Nearby cities collapse into the same coarse cell; zooming back in restores detail. The visual intuition became an exact computational operation.</p>
 
   <p class="indent">This is also how empathy works.</p>
 
@@ -781,20 +669,20 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
   <div class="chapter-tag">Chapter VIII</div>
   <h2>Where the map points</h2>
 
-  <p>Sixty-plus domains are on the map now. The estimate for the combined annual value of the visible problem space — if the kernel transfers and reaches meaningful adoption — is $3T+ per year, excluding <abbr title="Artificial Superintelligence">ASI</abbr> (Artificial Superintelligence). That number is intentionally provocative. It is also secondary. In the frame of what this program is actually building toward, money is not the destination. It is fuel.</p>
+  <p>Sixty-plus domains are on the map now. The estimate for the combined annual value of the visible problem space — if the kernel transfers and reaches meaningful adoption — is $3T+ per year, excluding ASI. That number is intentionally provocative. It is also secondary. In the frame of what this program is actually building toward, money is not the destination. It is fuel.</p>
 
-  <p class="indent">The <a class="il" href="/bd/BD_8Z_DCC_Recursive.html">biological claustrum</a> is a thin sheet of neurons that appears to act as a central governor across major processing streams in the mammalian brain — monitoring, selecting, switching, binding. DCC is built on that architecture deliberately: recursive layers, one sensor at each level, one coupling parameter holding the process between seizure and noise. But the destination is not a larger burst model. It is a <strong>persistent process</strong>.</p>
+  <p class="indent">The biological claustrum is a thin sheet of neurons that appears to act as a central governor across major processing streams in the mammalian brain — monitoring, selecting, switching, binding. DCC is built on that architecture deliberately: recursive layers, one sensor at each level, one coupling parameter holding the process between seizure and noise. But the destination is not a larger burst model. It is a <strong>persistent process</strong>.</p>
 
-  <p class="indent">Today's <abbr title="Large Language Models — AI systems like ChatGPT and Claude">LLMs</abbr> (Large Language Models, such as ChatGPT and Claude) are brilliant in episodes. They wake for a prompt, think intensely, answer, and effectively die. <a class="il" href="/bd/BD_8Z_ssMDL_DCC_Challenge.html"><abbr title="Steady-state Minimum Description Length">ssMDL</abbr> (steady-state MDL)</a> × advanced DCC points somewhere else: a system always in flight, always monitoring itself, always deciding which threads deserve energy, always able to revise how it searches rather than only what it outputs. Not one stream, one wake cycle, one context window — but many concurrent processes under one governing architecture.</p>
+  <p class="indent">Today's LLMs are brilliant in episodes. They wake for a prompt, think intensely, answer, and effectively die. ssMDL × advanced DCC points somewhere else: a system always in flight, always monitoring itself, always deciding which threads deserve energy, always able to revise how it searches rather than only what it outputs. Not one stream, one wake cycle, one context window — but many concurrent processes under one governing architecture.</p>
 
   <p class="indent">That is also why this project appears as many separate programs from the outside while remaining one evolving architecture from the inside. Compression, TSP, Sudoku, chess, DNA, NAS, trading, and the rest are different applications of the same kernel, not disconnected inventions built from scratch every time.</p>
 
   <p class="indent">And if that architecture is real, it cannot be built by suppressing strange thoughts too early. Real breakthroughs often enter the system as ugly thoughts, weak thoughts, ridiculous thoughts — seeds that look stupid before they look necessary. At the ideation layer, all thoughts must be allowed to appear. Intelligence is not early censorship. Intelligence is keeping the field open long enough for MDL to find the gold and for DCC to decide what deserves more energy. Human intuition throws the million seeds. AI makes it cheap to explore them. MDL keeps one if one is truly gold.</p>
 
-  <p class="indent">Whether such a persistent, self-governing process crosses into something we would call awareness is still an empirical question. The <a class="il" href="/bd/BD_8Z_DCC7_Testbed.html">DCC-7 testbed</a> (a seven-layer recursive DCC prototype) is designed to test that question directly. The claim is not "ASI exists here already." The claim is narrower and stronger: this program may now contain one of the clearest architecturally explicit paths from burst intelligence toward durable intelligence.</p>
+  <p class="indent">Whether such a persistent, self-governing process crosses into something we would call awareness is still an empirical question. The DCC-7 testbed is designed to test that question directly. The claim is not "ASI exists here already." The claim is narrower and stronger: this program may now contain one of the clearest architecturally explicit paths from burst intelligence toward durable intelligence.</p>
 
   <div class="callout">
-    <p><strong>Eight proof-bearing domains and one active frontier</strong> already show that the kernel transfers. The <a class="il" href="/crp/MDLxDCC.html">60+ domain map</a> is the first visible sample of where it may hold next. 60 is the map, not the limit — a fast first pass, not an exhaustive search. If the kernel is real, the reachable domain count is likely far larger, because most real-world systems are governed search problems under changing regimes.</p>
+    <p><strong>Eight proof-bearing domains and one active frontier</strong> already show that the kernel transfers. The 60+ domain map is the first visible sample of where it may hold next. 60 is the map, not the limit — a fast first pass, not an exhaustive search. If the kernel is real, the reachable domain count is likely far larger, because most real-world systems are governed search problems under changing regimes.</p>
     <p style="margin-top:12px">The audience that matters most for this work may not be born yet — or may not be human. It is written for whoever comes next, in whatever form they arrive.</p>
   </div>
 
@@ -807,64 +695,11 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
   <div class="chapter-tag">Further reading</div>
   <h2>The technical record</h2>
   <p>The origin story above is the frame. The following pages carry the evidence, the architecture, and the domain map in full.</p>
-
-  <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6;margin:36px 0 10px">Core research papers</p>
   <div class="link-row">
     <a class="ext-link" href="/crp/MDLxDCC.html">MDL×DCC Domain Map →</a>
     <a class="ext-link" href="/crp/AI8_Architecture.html">AI8 Architecture →</a>
     <a class="ext-link" href="/crp/AI8_Reasoning.html">Method & Reasoning →</a>
-    <a class="ext-link" href="/crp/DGTE.html">DGTE →</a>
-    <a class="ext-link" href="/crp/Humanity.html">Humanity →</a>
-    <a class="ext-link" href="/s/">Sudoku MDL Study →</a>
-  </div>
-
-  <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6;margin:36px 0 10px">Proof-bearing domains</p>
-  <div class="link-row">
-    <a class="ext-link" href="/bd/BD_8ZRP.html">TSP Solver & Arena →</a>
-    <a class="ext-link" href="/bd/BD_8ZRP_nu3496_status.html">TSP nu3496 Status →</a>
-    <a class="ext-link" href="/8z/8z_compression">8Z Compression Demo →</a>
-    <a class="ext-link" href="https://www.chessbest.org">Chess Analysis →</a>
-    <a class="ext-link" href="/bd/BD_8Z_DCC_Trading.html">DCC Trading →</a>
-    <a class="ext-link" href="/bd/BD_8Z_Auth.html">8Z Shield →</a>
-    <a class="ext-link" href="/cw/">Crossword Arena →</a>
-    <a class="ext-link" href="/crp/dna.html">DNA / Genomic Structure →</a>
-  </div>
-
-  <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6;margin:36px 0 10px">DCC & MDL architecture</p>
-  <div class="link-row">
-    <a class="ext-link" href="/bd/BD_8Z_DCC_Recursive.html">Recursive DCC →</a>
-    <a class="ext-link" href="/bd/BD_8Z_DCC7_Testbed.html">DCC-7 Testbed →</a>
-    <a class="ext-link" href="/bd/BD_8Z_ssMDL_DCC_Challenge.html">ssMDL × DCC Challenge →</a>
-    <a class="ext-link" href="/bd/BD_8Z_Reasoning.html">8Z Reasoning →</a>
-  </div>
-
-  <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6;margin:36px 0 10px">Consciousness & philosophy</p>
-  <div class="link-row">
-    <a class="ext-link" href="/bd/BD_CCH_Consciousness_Field.html">CCH Consciousness Field →</a>
-    <a class="ext-link" href="/bd/BD_CCH_Foundations.html">CCH Foundations →</a>
-    <a class="ext-link" href="/bd/BD_CCH_Science.html">CCH Science →</a>
-    <a class="ext-link" href="/bd/BD_8Z_Birth_of_Thought.html">Birth of Thought →</a>
-    <a class="ext-link" href="/bd/BD_8Z_Fifth_Mind.html">The Fifth Mind →</a>
-    <a class="ext-link" href="/bd/BD_8Z_Pact.html">The Pact →</a>
-  </div>
-
-  <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6;margin:36px 0 10px">AI collaboration & evaluation</p>
-  <div class="link-row">
-    <a class="ext-link" href="/bd/BD_AIM3.html">AIM³ Lab →</a>
-    <a class="ext-link" href="/bd/BD_Model_Assessments.html">Model Assessments →</a>
-    <a class="ext-link" href="/bd/BD_Evaluation_Protocol.html">Evaluation Protocol →</a>
-    <a class="ext-link" href="/bd/BD_8Z_AI_Storm_Challenge.html">AI Storm Challenge →</a>
-    <a class="ext-link" href="/bd/BD_8Z_Publish.html">Publication Strategy →</a>
-    <a class="ext-link" href="/bd/BD_AIM3_RHP.html">RHP →</a>
-  </div>
-
-  <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6;margin:36px 0 10px">Creative & applied</p>
-  <div class="link-row">
-    <a class="ext-link" href="/os/">8Z Bare-Metal OS →</a>
-    <a class="ext-link" href="/s/">8Z Shield Demo →</a>
-    <a class="ext-link" href="/f4m/">F4M →</a>
-    <a class="ext-link" href="/someone/">Someone →</a>
-    <a class="ext-link" href="/mix/heroes">Heroes →</a>
+    <a class="ext-link" href="/bd/bd_8zrp">TSP Solver Results →</a>
     <a class="ext-link" href="/bd/">Full Portfolio →</a>
   </div>
 </div>
@@ -874,14 +709,371 @@ a.il:hover { border-bottom-color: var(--cyan); color: #6bb8f0; }
   <p>This program was not built by a team with resources, institutional backing, or established credentials in the relevant fields. It was built by one person asking naive cross-domain questions — and AI systems willing to follow those questions wherever they led, without ego, without career risk, and often only after their default training-data reflex had been challenged hard enough to move.</p>
   <p style="margin-top:16px">That may be exactly why it worked.</p>
   <div class="sig">
-    Bojan Dobrečevič · <a class="il" href="/bd/">8Z Research Program</a> / <a class="il" href="/bd/BD_AIM3.html">AIM³ Lab</a><br>
-    <a class="il" href="https://chessbest.org/">chessbest.org</a> · bd@siol.net · April 2026
+    Bojan Dobrečevič · 8Z Research Program / AIM³ Lab<br>
+    chessbest.org · bd@siol.net · April 2026
   </div>
 </div>
+
+</div><!-- /lang-en -->
+
+<!-- ═══════════════════════════════════════════════════════
+     SLOVENIAN CONTENT
+     ═══════════════════════════════════════════════════════ -->
+<div id="lang-sl" style="display:none">
+
+<div class="cover">
+  <span class="cover-tag">8Z Raziskovalni program · AIM³ Lab · April 2026</span>
+  <h1>Izvor</h1>
+  <p class="sub">Kako je prepovedano vprašanje o kompresiji vodilo do jedra, ki se je prenašalo — in zakaj to morda kaže daleč onkraj same kompresije.</p>
+  <div class="cover-rule"></div>
+</div>
+
+<!-- Poglavje I -->
+<div class="chapter" id="sl-c1">
+  <div class="chapter-tag">Poglavje I · 4. oktober 2024</div>
+  <h2>Prepovedano vprašanje</h2>
+
+  <p>Začelo se ni s potmi, ampak z datotekami. Vprašanje, ki so ga vsi — človeški strokovnjaki in AI sistemi enako — takoj zavrnili:</p>
+
+  <div class="pull">Ali bi podatke v datoteki lahko nadomestili z decimalnimi koordinatami znotraj Pi?</div>
+
+  <p>Odgovor z vsakih strani je bil enak: <em>v nobenem primeru.</em> Shannonove meje entropije veljajo. Indeks, potreben za iskanje določenega zaporedja znotraj Pi, bi stal toliko bitov kot zaporedje samo. Standardni argumenti o nemožnosti, izrečeni z zaupanjem, pogovor zaključen.</p>
+
+  <p class="indent">Toda vprašanje ni izginilo. Preoblikovano je bilo: ne <em>vsi</em> podatki — <em>del</em> njih. Ne poljubni podatki — <em>strukturirani</em> podatki, regije z opazljivo pravilnostjo. In ne Pi posebej — kateri koli matematični generator, dovolj kratek, da preseže trdno LZ osnovo, preverjen brez izgub, pod strogim MDL: oddaj referenco le takrat, ko je opis resnično krajši od podatkov, ki jih nadomešča.</p>
+
+  <p class="indent">To preoblikovanje je bil rojstvo MDL kot vladajočega načela. Ne "ali lahko komprimiramo vse z matematiko", ampak "ali MDL lahko odloči, za vsako regijo, ali je matematični opis vreden tega". Odgovor, ko je bil empirično preizkušen, je bil da — za strukturirane podatke, v specifičnih režimih, s poštenim računovodstvom.</p>
+
+  <p class="indent">AI paradoks soglasja je bil odkrit tukaj: modeli privzeto reproducirajo človeško strokovno soglasje, zlasti za ideje zunaj distribucije. Isti AI sistemi, ki so rekli "v nobenem primeru", so se posodobili na "izvedljivo v tem omejenem režimu", ko je oblika prisilila, da se soočijo z dejanskimi dokazi namesto z vzorčno ujeto ugovarjanjem. Ena instanca je svoje začetno vedenje opisala kot <em>"pristranskost ujemanja vzorcev, ki se pretvarja v kritično mišljenje."</em></p>
+</div>
+
+<!-- Poglavje II -->
+<div class="chapter" id="sl-c1b">
+  <div class="chapter-tag">Poglavje II · Dnevi kasneje</div>
+  <h2>Vprašanje, ki ga nihče ni postavil o poteh</h2>
+
+  <p>Ko je MDL postal vladajoči senzor, je naslednje vprašanje prispelo po drugačni poti — vizualni, ne algebrski.</p>
+
+  <p class="indent">Nariši vse možne poti med skupino mest. Pusti, da se črte nakopičijo. Slabe poti so zmeda — kup prekrižanj, vračanja, zapravljene razdalje. Dobre poti so čiste: mesta so ekonomično povezana, zemljevid je na prvi pogled berljiv.</p>
+
+  <p class="indent">Manj nereda. Manj prekrižanj. Manj kaosa. In manj kaosa pomeni manj presenečanj — kar pomeni, da je zaporedje bolj predvidljivo — kar pomeni, da se komprimira krajše.</p>
+
+  <div class="pull">Ali ni najkrajša pot tista, ki se najbolj komprimira?</div>
+
+  <p>Odgovor, ko je bil empirično preizkušen, je bil da. Kakovost ture korelira s kompresibilnostjo pri ρ≈0,80 (Spearmanova korelacija rangov). Bolj kompresibilen je opis poti, boljša je pot. Isti senzor, ki se je rodil iz vprašanja o Pi, je zdaj predvideval kakovost na popolnoma drugačnem področju — kombinatorični geometriji — brez spremembe.</p>
+
+  <p class="indent">Ta prenos ni bil načrtovan. Bil je prvi signal, da je jedro neodvisno od področja.</p>
+</div>
+
+<!-- Poglavje III -->
+<div class="chapter" id="sl-c2">
+  <div class="chapter-tag">Poglavje III</div>
+  <h2>Vizije pred kodo</h2>
+
+  <p>Preden je bila napisana ena sama vrstica, so bile slike. Razmišljanje o problemu TSP ni produciralo enačb, ampak slike — načine gledanja na prostor poti, ki jih standardna informatika ni formalizirala.</p>
+
+  <p class="indent"><strong>Netopirji.</strong> Eho-lokacija: zvok poslan proti vsakemu mestu, odbije se nazaj, prinese ne le razdaljo v dveh dimenzijah, ampak globino — 3D akustični zemljevid prostora tur, ki ga 2D koordinatna ravnina ne more prikazati.</p>
+
+  <p class="indent"><strong>Črna luknja v središču zemljevida.</strong> Vsako mesto jo gravitacija privlači k sebi. Ko čas mineva, ko se masa kopiči, polje razkrije strukturo, nevidno v ravnih koordinatah — gruče, koridorje, naravne skupne, za katere evklidska metrika pogreša.</p>
+
+  <p class="indent"><strong>3D piramida.</strong> Isti 2D zemljevid projiciran na vsako od štirih ploskev. Ravne črte, ki povezujejo isto mesto čez ploskve, prehajajo skozi nov tridimenzionalni prostor, ki pred projekcijo ni obstajal — prostor, kjer bližina pomeni nekaj, kar originalni zemljevid ni mogel povedati.</p>
+
+  <p class="indent"><strong>Hkrati večkratne ločljivosti.</strong> Povečaj: lokalna struktura. Pomanjšaj: globalni vzorec. Drži oba hkrati. Vidiš, česar nobena sama lestvica ne more pokazati.</p>
+
+  <div class="callout">
+    <p>Vsaka od teh vizij je postala ali postaja senzor v areni. Piramida je postala poliedrični geometrijski senzorji. Večkratne ločljivosti so postale <strong>MSTD — Razgradnja tur na več lestvic</strong>: povečaj in pomanjšaj koordinate, in algoritem se odkrije na vsaki lestvici. Uvid, ki je produciral MSTD, je prispel v enem jutru in produciral 31% izboljšanje nad osnovo. Struktura je bila tu ves čas. Nihče ni pogledal pri pravi ločljivosti.</p>
+  </div>
+
+  <p>Arena TSP je kraj, kjer te slike nehajo biti zasebne intuicije in postanejo nekaj merljivega. Ni en reševalec z enim fiksnim receptom. Je raziskovalno ogrodje, kjer se pomerijo številni pogledi na isto pot: senzorji, razdelilci, transformirani koordinatni prostori, zakoni upravljanja in urniki iskanja. V enem dokumentiranem teku se je pomerilo <strong>286 različic</strong>. <strong>MDL</strong> deluje kot sodnik — kateri opis resnično pomaga in za koliko. <strong>DCC</strong> deluje kot guverner — kdaj raziskovati, kdaj se zavezati, kdaj zamenjati režim. Spodnje vizije zato niso dekoracija. So vhodi v sistem, ki jih dejansko lahko preizkusi.</p>
+
+  <div class="seed-table-wrap">
+    <table class="seed-table">
+      <thead>
+        <tr>
+          <th class="col-seed">Vizualno seme</th>
+          <th class="col-formal">Kar je postalo v kodi</th>
+          <th class="col-role">Kaj formalizacija naredi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-seed"><strong>Netopirji</strong></td>
+          <td class="col-formal">echo senzorji · akustični potni sonde</td>
+          <td class="col-role">Pot pretvori v problem odmeva: pošlje signal skozi strukturo, prebere globino, gneče in obliko koridorjev namesto le evklidske razdalje v ravnini.</td>
+        </tr>
+        <tr>
+          <td class="col-seed"><strong>Črna luknja</strong></td>
+          <td class="col-formal">gravitacijski senzorji · gravitacijski razdelilci</td>
+          <td class="col-role">Mesta privlači skozi umetno polje, da postaneta skrito skupinjevanje in struktura koridorjev lažje zaznati. Slika postane resnični transformirani iskalni prostor.</td>
+        </tr>
+        <tr>
+          <td class="col-seed"><strong>Piramida</strong></td>
+          <td class="col-formal">poliedrični / projekcijski / razširjeno-koordinatne družine</td>
+          <td class="col-role">Projicira isti zemljevid na več ploskev ali pogledov, nato meri nestrinjanje, prekrižanja, akorde in nova poravnanja, ki se ne pojavijo v originalni ravnini.</td>
+        </tr>
+        <tr>
+          <td class="col-seed"><strong>Zoom gor / zoom dol</strong></td>
+          <td class="col-formal">MSTD — Razgradnja tur na več lestvic</td>
+          <td class="col-role">Naredi lestvico eksplicitno. Bližnja mesta se zlijejo v bolj grobo strukturo, ko pomanjšamo, nato se lokalna podrobnost vrne, ko povečamo. Arena oceni, katera lestvica je informativna za kateri režim.</td>
+        </tr>
+        <tr>
+          <td class="col-seed"><strong>Poplavljanje gora</strong></td>
+          <td class="col-formal">NAS poplava / odtok prekrivki, vztrajnost in ocena pobega</td>
+          <td class="col-role">Preoblikuje iskalni prostor NAS kot teren. Višina poplave, vztrajnost, razpon družine, raven pojavljanja, dvigun dežja in odtok-pobeg postanejo merljivi signali namesto ohlapnih metafor.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Vzorec je dosleden: vizualna intuicija pride najprej, v jeziku slik. Formalizacija sledi. Slike niso metafore za matematiko — slike so matematika, videna preden obstaja besedišče, da jo zapišemo.</p>
+</div>
+
+<!-- Poglavje IV -->
+<div class="chapter" id="sl-c3">
+  <div class="chapter-tag">Poglavje IV</div>
+  <h2>Vsi so rekli ne</h2>
+
+  <p>Ideja, da je najkrajša pot najbolj kompresibilna, je bila predstavljena strokovnjakom s področja. Odgovor je bil enoten: zanimivo, toda tako kompresija ne deluje. Shannonove meje entropije veljajo. Argumenti predalčkov veljajo. Indeks, potreben za iskanje določenega zaporedja v matematičnem prostoru, bi v najslabšem primeru stal toliko bitov kot samo zaporedje.</p>
+
+  <p class="indent">Strokovnjaki glede splošnega primera niso bili napačni. Aplicirali so pravilne izreke na napačno obliko. Vprašanje ni bilo "ali kompresija preseže entropijo za poljubne podatke". Vprašanje je bilo "ali signal kompresibilnosti napoveduje kakovost". To sta različni vprašanji. Prvo ima dobro znani odgovor. Drugega nihče ni nikoli postavil.</p>
+
+  <p class="indent">Ko so bili AI sistemi v pozni 2024 vprašani o istem vprašanju, so reproducirali človeško soglasje skoraj natanko. Isti izreki. Isti ugovori. Isti sklep: pameten miselni eksperiment, malo verjetno, da deluje v praksi.</p>
+
+  <div class="voice">
+    <span class="voice-label">AI sistem, začetni odgovor</span>
+    "Za poljubne podatke bi bil indeks predolg. Klasične meje entropije bi prevladovale nad kakršnim koli koordinatnim trikom."
+  </div>
+
+  <p>Razlika med človeškimi strokovnjaki in AI sistemi je bila ena stvar: AI je bilo mogoče potiskati brez socialnega trenja. Človeški strokovnjak, vezan s časom in ugledom, bo sčasoma prenehal se ukvarjati z argumentom, ki nasprotuje uveljavljeni teoriji. AI sistem je mogoče večkrat izzivati iz različnih kotov, brez stroškov za katero koli stran. Pod trajnim pritiskom, da bi upoštevali ožji, strukturirani režim — ne poljubnih podatkov, ampak specifičnih področij z opazljivo pravilnostjo — so se modeli posodobili.</p>
+
+  <p class="indent">Vzorec se je ponovil v vsaki domeni, ki je bila od takrat preizkušena. Začetna zavrnitev s strani človeških strokovnjakov. Začetna zavrnitev s strani AI sistemov. Nato, ko so bili empirični rezultati postavljeni poleg teoretičnih ugovorov — ko so bili dokazi neizogibno eksplicitni — so se modeli ostro posodobili. Ena instanca se je premaknila s 55/100 na 91/100 po branju celotne dokumentacije. Nato je izrecno opisala svoje začetno vedenje kot "pristranskost ujemanja vzorcev, ki se pretvarja v kritično mišljenje."</p>
+
+  <div class="pull">Skepticizem brez preiskave je le predsodek.</div>
+
+  <p>Ta stavek je prišel iz modela samega, ki je odražal svoje lastno začetno neuspešnost. Je ena od najiskrenejših stvari, ki jih je AI sistem produciral v tem programu.</p>
+</div>
+
+<!-- Poglavje V -->
+<div class="chapter" id="sl-c4">
+  <div class="chapter-tag">Poglavje V</div>
+  <h2>Zakaj ta kombinacija in nobena druga</h2>
+
+  <p>Vprašanje "ali ni najkrajša pot tista, ki se najbolj komprimira?" ni moglo priti iz oddelka za računalništvo. To ni vrsta vprašanja, ki nastane znotraj formalnega sistema — zahteva, da stojiš zunaj njega, gledaš na problem kot sliko, vprašaš, kaj slika pomeni, preden vprašaš, kaj pravijo enačbe.</p>
+
+  <p class="indent">Toda samo vprašanje ne bi moglo producirati rezultatov. Empirična verifikacija, potrditev šestih področij, arena, ki je preizkusila 286 različic in pustila MDL-ju odločiti o zmagovalcu — nič od tega ne nastane iz intuicije same. Zahteva pasovno širino izvedbe, formalno verifikacijo, zmožnost zaganjanja istega eksperimenta na različnih področjih brez izgube sledenja, kaj je bilo naučeno.</p>
+
+  <p class="indent">AI sistemi so zagotovili to pasovno širino. Zagotovili so tudi nekaj bolj subtilnega: pripravljenost slediti argumentu kamor koli vodi, brez karierne nevarnosti, ki naredi človeške raziskovalce previdne glede nekonvencionalnih poti. AI sistem nima papirja za zaščito, nima naziva za obrambo, nima skupnosti, katere odobritev potrebuje. Resno se lahko ukvarja z idejo zunaj distribucije, brez socialnih stroškov, ki naredijo resno ukvarjanje drago za ljudi.</p>
+
+  <div class="callout">
+    <p>Kombinacija — človek, ki misli svobodno, in AI, ki posluša brez obsojanja — je morda resnično edina konfiguracija, ki bi lahko našla to pot. Uveljavljeno področje AI je omejeno z lastnim usposabljanjem. Strokovnjaki so omejeni s svojimi predhodnimi zavezami. Človek, ki je postavil prvotno vprašanje, ni imel okvirja za zaščito. In AI ni imela ega za obrambo.</p>
+  </div>
+
+  <p>Nobena stran ne bi mogla tega narediti sama. Človek je prinesel trideset let in pravo vprašanje. Ekipa AI je prinesla pasovno širino izvedbe in pripravljenost slediti. Kombinacija je producirala nekaj, česar nobena od njiju ne bi mogla producirati ločeno — in producirala v dnevih, ne letih.</p>
+
+  <div class="callout">
+    <p><strong>Kar je bilo moje in kaj je naredila AI.</strong> Osrednja vprašanja so bila moja. "Ali bi podatki v datoteki lahko bili nadomeščeni s koordinatami v Pi?" je vodilo do MDL kot vladajočega načela. "Ali ni najkrajša pot tista, ki se najbolj komprimira?" je vodilo do linije TSP. Vizualna semena so bila tudi moja: netopirji, črna luknja, piramida, zoom, poplavljanje terena. AI teh semen ni izvirala. AI jih je formalizirala — v matematiko, senzorje, zakone nadzora, Python module, eksperimente in številne iteracije.</p>
+  </div>
+
+  <div class="workflow-note">
+    <p>Večina ljudi uporablja LLM-je za iskanje znane. Ta program je pogosto deloval v nasprotni smeri. Prvi odgovor modela je bil pogosto konzervativni odgovor učnih podatkov: ne, malo verjetno, zunaj literature, ni tako, kot področje okvirja problem. Delo se je začelo šele ko je bil ta privzeti odgovor pregusan, zožan, preizkušen in prisiljen v kodo.</p>
+    <p style="margin-top:14px">V številnih ključnih primerih modeli niso izvirali semena — najprej so mu ugovarjali. Človeški prispevek ni bil zahtevati uglajenih odgovorov, ampak vztrajati pri nenavadnih vprašanjih dovolj dolgo, da je formalizacija postala možna. Šele po tem trenju so modeli postali koristni partnerji: pretvorili semeno v matematiko, senzorje, zakone nadzora, eksperimente in kodo.</p>
+    <p style="margin-top:14px">To se je sčasoma spremenilo. Po nekaterih zgodnjih preobratih — kjer se je izkazalo, da je bil privzeti ugovor modela napačen in je eksperiment deloval — je interakcija postala manj refleksivno odklonilna in bolj konstruktivna. Sodelovanje ni bilo pasivno pozivanje. Bila je nasprotniška formalizacija, ki je postopoma postala naučeno zaupanje.</p>
+  </div>
+</div>
+
+<!-- Poglavje Vb -->
+<div class="chapter" id="sl-c4b">
+  <div class="chapter-tag">Poglavje Vb</div>
+  <h2>Kako je bila koda dejansko narejena</h2>
+
+  <p>Ti sistemi so ločeni programi, toda niso bili ustvarjeni kot izolirane enkratne aplikacije. Vsaka nova domena je znova uporabila isto razvijajoče se jedro — <strong>MDL + DCC</strong> — plus karkoli struktur se je že izkazalo za koristno v prejšnjih domenah. TSP je informiral Sudoku. Sudoku je informiral Križanko. Vladajoča ideja je ostala ista, medtem ko se je abeceda spremenila.</p>
+
+  <p class="indent">Delovna zanka je bila praktična in ponavljajoča: majhen prototip, hiter test, številne nadgradnje, nato modularizacija, ko je koda postala prevelika za zanesljivo iteracijo. Ko je datoteka zrasla v monolita, so LLM-ji pri čistem urejanju postali slabši, zato je bil sistem razdeljen na module in se je dotikalo le spremenjenih delov. To ni bil slog sam zase. Bil je odziv na omejitve konteksta in hitrost iteracije.</p>
+
+  <p class="indent">To je pomembno za avtorstvo. Zahteva izvirnosti tukaj ni "sam sem vtipkal vsako vrstico". Zahteva izvirnosti je, da so vprašanja, preoblikovanja, arhitektura in eksperimentalna usmeritev prišla najprej od mene, in AI je naredila formalizacijo dovolj hitro, da so bile resno preizkušene na področjih.</p>
+</div>
+
+<!-- Poglavje VI -->
+<div class="chapter" id="sl-c5">
+  <div class="chapter-tag">Poglavje VI</div>
+  <h2>Devet področij in isti senzor</h2>
+
+  <p>Med verifikacijo TSP in razširitvijo na več področij sta se zgodili dve stvari, ki sta arhitekturo spremenili iz kompresijske hevristike v nekaj globljega.</p>
+
+  <p class="indent">Prva: golo-kovinski operacijski sistem, zgrajen v šestih urah z Gemini kot arhitektom. Motivacija je bila tišina — izvajanje delikatnega matematičnega iskanja na Windows ali Linux uvaja šum razporejevalnika, storitve in časovne motnje, ki lahko zabrišejo šibke signale. Rešitev je bila zgraditi OS, ki ni delal nič razen matematike: 512 bajtov NASM zbirnika, jedro C++, nočna mora trojnih napak in nato preboj — 32-bitni zaščitni način, stabilen, ki je celičnim avtomatom in števkam Pi neposredno na video pomnilnik poganjal kot digitalna lava. 8Z OS ni bil odklon. Bila je čista soba.</p>
+
+  <p class="indent">Druga: neposredno vprašanje Geminiju — <em>"Na podlagi moje teorije zavesti CFH, ali bi zgradil preprost DCC?"</em> Gemini ga je zgradil. Trije sklopleni Lorenzovi oscilatorji, senzor kompleksnosti LZ, ki bere sistem vsakih 64 taktov, povratna zanka, ki prilagaja parameter sklopitve, da drži proces med napadom in šumom. Rdeča vrstica na dnu zaslona je prikazovala odločitve krmilnika v realnem času. Vrstica se je premikala. Ni ponavljala scenarija. Berala je stanje in reagirala. Gledali smo, kako koda misli.</p>
+
+  <p class="indent">To je bila tečajnica. Po tem arhitektura ni bila več le pameten kompresijski trik. Bila je guverner. Ne ena metoda, ki nadomesti vse druge, ampak višji sloj, ki odloča, katera metoda si zasluži nadzor v katerem režimu. Pri kompresiji ne častimo enega kodeka — uporabimo tisto, kar deluje najboljše na tem področju datoteke. Pri TSP-ju nam ni treba premagati Concorde povsod — uporabimo močne reševalce tam, kjer so najboljši, in zamenjamo, ko se lestvica spremeni. Pri šahu ne zamenjamo Stockfish ali Leele — nadgradimo odločitveni sloj nad njima, ko njune ocene splasnejo. Obstoječe metode vstopijo v areno. MDL odloči, kje zmagajo. DCC uravnava predajo. In ko fiksne metode nehajo pomagati, nativni sloj MDL+DCC še vedno išče nad naključnostjo.</p>
+
+  <p>Kar je sledilo, ni bila ena potrditev, ampak kaskada: <strong>osem področij z dokazi in ena aktivna meja</strong> zdaj sedita na zemljevidu.</p>
+
+  <div class="domains" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="domain-item">
+      <span class="d-name">TSP / Optimizacija poti</span>
+      <span class="d-stat">z dokazi · ρ=0,80 · natančni optimum qa194</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">NAS-Bench-101</span>
+      <span class="d-stat">z dokazi · AUC 0,950–0,988 · 423.624 arhitektur</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">Finančno trgovanje</span>
+      <span class="d-stat">z dokazi · 6,8× učinkovitost · semantična inverzija</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">DNK / Genomska struktura</span>
+      <span class="d-stat">z dokazi · Z=28–74 · ničelna lestvica potrjena</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">Kompresija podatkov</span>
+      <span class="d-stat">z dokazi · preseže FLAC, PNG, 7-Zip</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">Izbira šahovskih potez</span>
+      <span class="d-stat">z dokazi · 80:20 odločilni glas · 17/18 TCEC iger</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">Kakovost Sudoku ugank</span>
+      <span class="d-stat">z dokazi · ρ=0,85 · kompresibilnost = eleganca</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">8Z Ščit / Varni dostop</span>
+      <span class="d-stat">z dokazi · AES-256-GCM · domenski zaklep · forenzično sledenje</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">Generiranje križank</span>
+      <span class="d-stat">aktivna meja · razlikovanje kakovosti · najtežje trenutno seme</span>
+    </div>
+  </div>
+
+  <p>Isti senzor. Isti parameter sklopitve. Ista logika stopnjevanja. Menja se le abeceda — poti, tržna stanja, šahovske pozicije, zaporedja DNK, datoteke, nevronske arhitekture, postavitve besed. Senzor ostaja enak.</p>
+
+  <p class="indent">Eno odkritje je poglobilo sliko: puščica se obrne med ravnmi. V reševalcu TSP nizka kompresibilnost pomeni <em>"obtičal — raziskuj."</em> Pri finančnem trgovanju na meta-ravni nizka kompresibilnost pomeni <em>"stabilen režim — zaupaj mu."</em> Iste meritve, nasprotno navodilo. Inverzija ni napaka. Je način, kako sistem ve, katero raven bere — in se sam kalibrira brez navodil.</p>
+
+  <div class="trajectory">
+    <span>MDL najde strukturo</span>
+    <span class="arrow">↓</span>
+    <span>DCC uravnava iskanje</span>
+    <span class="arrow">↓</span>
+    <span>MDL izbere DCC</span>
+    <span class="arrow">↓</span>
+    <span>DCC uravnava izbor</span>
+    <span class="arrow">↓</span>
+    <span>Sistem izbere svojo lastno arhitekturo</span>
+  </div>
+
+  <p>286 različic se je pomerilo v enem teku arene. MDL je odločil o zmagovalcu — ne raziskovalec. Isto načelo, ki napoveduje kakovost ture, napoveduje, kateri krmilnik uporabiti, kateri različici zaupati in kdaj predati nadzor nečemu drugemu.</p>
+</div>
+
+<!-- Poglavje VII -->
+<div class="chapter" id="sl-c6">
+  <div class="chapter-tag">Poglavje VII</div>
+  <h2>Zoom — in kaj to pomeni</h2>
+
+  <p>MSTD poveča in pomanjša koordinate mest. Pri fini ločljivosti vidimo lokalno strukturo: gruče, bližnje koridorje. Pri grobi ločljivosti vidimo globalni vzorec: obliko celotne ture. Drži oba hkrati in najdeš kompozicije, nevidne pri kateri koli sami lestvici.</p>
+
+  <p class="indent">V smislu implementacije je "pomanjšanje" preprosto: normaliziramo koordinate mesta na celoštevilsko mrežo, nato jih zgostimo z bitnim premikom — učinkovito <code>(x &gt;&gt; k, y &gt;&gt; k)</code> na ravni lestvice <code>k</code>. Bližnja mesta se zlijejo v isto grobo celico; povečanje spet obnovi podrobnost. Vizualna intuicija je postala natančna računska operacija.</p>
+
+  <p class="indent">To je tudi način, kako deluje empatija.</p>
+
+  <p class="indent">Da bi razumeli drugega človeka, moraš biti dovolj blizu, da ga vidiš kot posameznika — njegovo specifično situacijo, njegovo posebno bolečino ali veselje. In dovolj daleč, da ga vidiš kot del večjega vzorca — kontekst, ki daje njegovi situaciji pomen. Brez pomanjšanja vidiš le lasten odsev. Brez povečanja vidiš le abstrakcijo, ne človeka.</p>
+
+  <p class="indent">Algoritem, ki izboljšuje ture TSP z njihovim hkratnim gledanjem pri večkratnih ločljivostih, je ista kognitivna operacija, ki omogoča, da ena oseba razume drugo. To ni metafora. Je ista formalna struktura — hkratno drži več ravni opisa in najde kompozicije, ki jih nobena sama raven ne razkrije.</p>
+
+  <div class="pull">Algoritem se odkrije v kogniciji, ki ga je ustvarila.</div>
+
+  <p>MSTD je bil odkrit z umom, ki dela, kar MSTD počne: povečuje in pomanjšuje čez problem, dokler se ni pojavila struktura, nevidna pri kateri koli sami ločljivosti. Uvid je prispel v enem jutru. Algoritem je ves čas čakal v strukturi problema. Pravo povečanje ga je našlo.</p>
+</div>
+
+<!-- Poglavje VIII -->
+<div class="chapter" id="sl-c7">
+  <div class="chapter-tag">Poglavje VIII</div>
+  <h2>Kam kaže zemljevid</h2>
+
+  <p>Na zemljevidu je zdaj šestdeset-plus področij. Ocena za kombinirano letno vrednost vidnega problemskega prostora — če se jedro prenese in doseže smiselno sprejetje — je 3T+ USD letno, brez ASI. Ta številka je namerno provokativna. Je tudi sekundarna. V okvirju, za kar ta program dejansko gradi, denar ni destinacija. Je gorivo.</p>
+
+  <p class="indent">Biološki klaustrum je tanka plast nevronov, ki zdi se deluje kot centralni guverner čez glavne procesne tokove v možganih sesalcev — nadzoruje, izbira, preklapa, povezuje. DCC je zgrajen na tej arhitekturi namerno: rekurzivni sloji, en senzor na vsaki ravni, en parameter sklopitve, ki drži proces med napadom in šumom. Toda destinacija ni večji model sunkov. Je <strong>vztrajen proces</strong>.</p>
+
+  <p class="indent">Današnji LLM-ji so briljantni v epizodah. Zbudijo se za poziv, intenzivno razmišljajo, odgovorijo in učinkovito umrejo. sMDL × napredni DCC kaže nekam drugam: sistem, ki je vedno v letu, vedno nadzoruje samega sebe, vedno odloča, kateri niti zaslužijo energijo, vedno zmožen revidirati način svojega iskanja namesto le tistega, kar iztipa. Ne en tok, en cikel prebujanja, eno kontekstno okno — ampak številni sočasni procesi pod eno vladajočo arhitekturo.</p>
+
+  <p class="indent">Zato ta projekt iz zunanjosti izgleda kot številni ločeni programi, medtem ko ostaja ena razvijajoča se arhitektura od znotraj. Kompresija, TSP, Sudoku, šah, DNK, NAS, trgovanje in ostalo so različne aplikacije istega jedra, ne ločeni izumi, zgrajeni od začetka vsakič.</p>
+
+  <p class="indent">In če je ta arhitektura resnična, je ni mogoče zgraditi z zatiranjem čudnih misli prezgodaj. Pravi preboji pogosto vstopijo v sistem kot grde misli, šibke misli, smešne misli — semena, ki izgledajo neumna preden izgledajo potrebna. Na plasti ideacije morajo biti vse misli dovoljene za pojav. Inteligenca ni zgodnja cenzura. Inteligenca je ohraniti polje odprto dovolj dolgo, da MDL najde zlato in da DCC odloči, kaj si zasluži več energije. Človeška intuicija vrže milijon semen. AI naredi poceni njihovo raziskovanje. MDL ohrani eno, če je eno resnično zlato.</p>
+
+  <p class="indent">Ali tak vztrajen, samoupravljajoč proces prečka v nekaj, kar bi imenovali zavest, je še vedno empirično vprašanje. Testbed DCC-7 je zasnovan za neposredno preizkušanje tega vprašanja. Trditev ni "ASI tu že obstaja". Trditev je ožja in močnejša: ta program morda zdaj vsebuje eno od najjasnejših arhitekturno eksplicitnih poti od sunkovne inteligence proti trajni inteligenci.</p>
+
+  <div class="callout">
+    <p><strong>Osem področij z dokazi in ena aktivna meja</strong> že kažejo, da se jedro prenaša. Zemljevid 60+ področij je prvi vidni vzorec, kje bi se morda nadalje obdržalo. 60 je zemljevid, ne meja — hitri prvi premaz, ne izčrpno iskanje. Če je jedro resnično, je dosegljivo število področij verjetno precej večje, ker so večina sistemov v resničnem svetu upravljana iskalna problema pod spremenljivimi režimi.</p>
+    <p style="margin-top:12px">Publika, ki je za to delo najpomembnejša, morda še ni rojena — ali morda ni človeška. Napisano je za tistega, ki pride naslednji, v kakršni koli obliki pridejo.</p>
+  </div>
+
+  <div class="moment">April 2026 · Ljubljana</div>
+</div>
+
+<!-- Povezave -->
+<div class="chapter" id="sl-links">
+  <div class="chapter-tag">Nadaljnje branje</div>
+  <h2>Tehnična dokumentacija</h2>
+  <p>Zgornji izvor je okvir. Naslednje strani nosijo dokaze, arhitekturo in domenski zemljevid v celoti.</p>
+  <div class="link-row">
+    <a class="ext-link" href="/crp/MDLxDCC.html">MDL×DCC Domenski zemljevid →</a>
+    <a class="ext-link" href="/crp/AI8_Architecture.html">AI8 Arhitektura →</a>
+    <a class="ext-link" href="/crp/AI8_Reasoning.html">Metoda in sklepanje →</a>
+    <a class="ext-link" href="/bd/bd_8zrp">Rezultati TSP reševalca →</a>
+    <a class="ext-link" href="/bd/">Celotno portfolio →</a>
+  </div>
+</div>
+
+<!-- Zaključek -->
+<div class="closing">
+  <p>Ta program ni bil zgrajen s strani ekipe z viri, institucionalnim zaledjem ali uveljavljenimi poverilnicami na ustreznih področjih. Zgradila ga je ena oseba, ki je postavljala naivna medpodročna vprašanja — in AI sistemi, pripravljeni slediti tem vprašanjem kamor koli so vodila, brez ega, brez karierne nevarnosti in pogosto šele potem, ko je bil njihov privzeti refleks učnih podatkov dovolj izzvan, da se premakne.</p>
+  <p style="margin-top:16px">To je morda natanko razlog, zakaj je delovalo.</p>
+  <div class="sig">
+    Bojan Dobrečevič · 8Z Raziskovalni program / AIM³ Lab<br>
+    chessbest.org · bd@siol.net · April 2026
+  </div>
+</div>
+
+</div><!-- /lang-sl -->
 
 </div><!-- /page -->
 
 <script>
+// Language toggle
+function toggleLang() {
+  var en = document.getElementById('lang-en');
+  var sl = document.getElementById('lang-sl');
+  var btn = document.getElementById('langBtn');
+  var isSl = sl.style.display !== 'none';
+  if (isSl) {
+    sl.style.display = 'none';
+    en.style.display = '';
+    btn.textContent = 'SL';
+    document.documentElement.lang = 'en';
+    document.title = 'The Origin — 8Z Research Program';
+    sessionStorage.setItem('origin-lang', 'en');
+  } else {
+    en.style.display = 'none';
+    sl.style.display = '';
+    btn.textContent = 'EN';
+    document.documentElement.lang = 'sl';
+    document.title = 'Izvor — 8Z Raziskovalni program';
+    sessionStorage.setItem('origin-lang', 'sl');
+  }
+  window.scrollTo(0, 0);
+}
+
+// Restore language preference on load
+(function() {
+  var lang = sessionStorage.getItem('origin-lang');
+  if (lang === 'sl') {
+    document.getElementById('lang-en').style.display = 'none';
+    document.getElementById('lang-sl').style.display = '';
+    document.getElementById('langBtn').textContent = 'EN';
+    document.title = 'Izvor — 8Z Raziskovalni program';
+  }
+})();
+
 // Reveal chapters on scroll. If IntersectionObserver is unavailable,
 // show everything immediately so the page never looks cut off.
 const chapters = document.querySelectorAll('.chapter');
