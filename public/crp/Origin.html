@@ -57,7 +57,7 @@ body::before {
   padding: 10px 0;
 }
 .topbar-inner {
-  max-width: 800px;
+  max-width: 1020px;
   margin: 0 auto;
   padding: 0 24px;
   display: flex;
@@ -106,7 +106,7 @@ body::before {
 
 /* Layout */
 .page {
-  max-width: 680px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 0 24px 120px;
   position: relative;
@@ -140,10 +140,10 @@ body::before {
   margin-bottom: 18px;
 }
 .cover .sub {
-  font-size: 17px;
+  font-size: 19px;
   color: var(--muted);
   font-style: italic;
-  max-width: 480px;
+  max-width: 560px;
   margin: 0 auto;
   line-height: 1.7;
 }
@@ -188,7 +188,7 @@ body::before {
 
 /* Prose */
 p {
-  font-size: 17px;
+  font-size: 19px;
   color: var(--text);
   margin-bottom: 20px;
   line-height: 1.85;
@@ -236,7 +236,7 @@ p.indent { text-indent: 1.8em; }
   padding: 20px 22px;
   margin: 36px 0;
 }
-.callout p { font-size: 15px; color: var(--text); margin-bottom: 0; line-height: 1.75; }
+.callout p { font-size: 17px; color: var(--text); margin-bottom: 0; line-height: 1.75; }
 .callout p strong { color: var(--gold); }
 
 /* Trajectory */
@@ -366,7 +366,7 @@ p.indent { text-indent: 1.8em; }
 .workflow-note p { margin-bottom: 0; font-size: 18px; line-height: 1.78; }
 @media (max-width: 600px) {
   .seed-table th { font-size: 11px; }
-  .seed-table td { font-size: 17px; }
+  .seed-table td { font-size: 18px; }
   .seed-table .col-formal { font-size: 14px; }
   .workflow-note p { font-size: 18px; }
 }
@@ -375,7 +375,7 @@ p.indent { text-indent: 1.8em; }
   .page { padding: 0 16px 80px; }
   .cover { padding: 56px 0 44px; }
   .domains { grid-template-columns: 1fr; }
-  p { font-size: 16px; }
+  p { font-size: 18px; }
 }
 </style>
 </head>
@@ -566,6 +566,14 @@ p.indent { text-indent: 1.8em; }
   <p class="indent">The working loop was practical and repetitive: small prototype, quick test, many upgrades, then modularization when the code became too large for reliable iteration. Once a file grew into a monolith, the LLMs became worse at editing it cleanly, so the system was broken into modules and only the changed parts were touched. That was not style for its own sake. It was a response to context limits and iteration speed.</p>
 
   <p class="indent">This matters for authorship. The originality claim here is not “I typed every line myself.” The originality claim is that the questions, reframings, architecture, and experimental direction came first from me, and AI made formalization fast enough to test them seriously across domains.</p>
+
+  <div class="workflow-note">
+    <p><strong>How the collaboration actually works.</strong> The process was not “ask an AI for an answer.” It was usually the opposite. A simple question or visual intuition arrived first from the human side. The models often resisted it at first, because the idea did not fit training-data expectations. The work moved forward only after sustained reframing, argument, and testing. Once the seed survived that phase, AI became useful as a formalization partner: turning the seed into prompts, mathematics, sensors, control laws, experiments, and code. The result was then tested, upgraded many times, and useful structures were carried forward into the next domain.</p>
+  </div>
+
+  <div class="trajectory" style="line-height:1.8">
+    <span>seed</span><span class="arrow"> → </span><span>bridge</span><span class="arrow"> → </span><span>test</span><span class="arrow"> → </span><span>result</span>
+  </div>
 </div>
 
 <!-- Chapter 5 -->
@@ -803,7 +811,7 @@ p.indent { text-indent: 1.8em; }
         <tr>
           <td class="col-seed"><strong>Črna luknja</strong></td>
           <td class="col-formal">gravitacijski senzorji · gravitacijski razdelilci</td>
-          <td class="col-role">Mesta privlači skozi umetno polje, da postaneta skrito skupinjevanje in struktura koridorjev lažje zaznati. Slika postane resnični transformirani iskalni prostor.</td>
+          <td class="col-role">Mesta privlači skozi umetno polje, da postaneta skrite gruče in struktura koridorjev lažje zaznati. Slika postane resnični transformirani iskalni prostor.</td>
         </tr>
         <tr>
           <td class="col-seed"><strong>Piramida</strong></td>
@@ -816,9 +824,9 @@ p.indent { text-indent: 1.8em; }
           <td class="col-role">Naredi lestvico eksplicitno. Bližnja mesta se zlijejo v bolj grobo strukturo, ko pomanjšamo, nato se lokalna podrobnost vrne, ko povečamo. Arena oceni, katera lestvica je informativna za kateri režim.</td>
         </tr>
         <tr>
-          <td class="col-seed"><strong>Poplavljanje gora</strong></td>
+          <td class="col-seed"><strong>Poplavljanje terena</strong></td>
           <td class="col-formal">NAS poplava / odtok prekrivki, vztrajnost in ocena pobega</td>
-          <td class="col-role">Preoblikuje iskalni prostor NAS kot teren. Višina poplave, vztrajnost, razpon družine, raven pojavljanja, dvigun dežja in odtok-pobeg postanejo merljivi signali namesto ohlapnih metafor.</td>
+          <td class="col-role">Preoblikuje iskalni prostor NAS kot teren. Višina poplave, vztrajnost, razpon družine, raven pojavljanja, dežni dvig in odtok-pobeg postanejo merljivi signali namesto ohlapnih metafor.</td>
         </tr>
       </tbody>
     </table>
@@ -874,9 +882,9 @@ p.indent { text-indent: 1.8em; }
   </div>
 
   <div class="workflow-note">
-    <p>Večina ljudi uporablja LLM-je za iskanje znane. Ta program je pogosto deloval v nasprotni smeri. Prvi odgovor modela je bil pogosto konzervativni odgovor učnih podatkov: ne, malo verjetno, zunaj literature, ni tako, kot področje okvirja problem. Delo se je začelo šele ko je bil ta privzeti odgovor pregusan, zožan, preizkušen in prisiljen v kodo.</p>
+    <p>Večina ljudi uporablja LLM-je za iskanje znane. Ta program je pogosto deloval v nasprotni smeri. Prvi odgovor modela je bil pogosto konzervativni odgovor učnih podatkov: ne, malo verjetno, zunaj literature, ni tako, kot področje razume problem. Delo se je začelo šele ko je bil ta privzeti odgovor pregusan, zožan, preizkušen in prisiljen v kodo.</p>
     <p style="margin-top:14px">V številnih ključnih primerih modeli niso izvirali semena — najprej so mu ugovarjali. Človeški prispevek ni bil zahtevati uglajenih odgovorov, ampak vztrajati pri nenavadnih vprašanjih dovolj dolgo, da je formalizacija postala možna. Šele po tem trenju so modeli postali koristni partnerji: pretvorili semeno v matematiko, senzorje, zakone nadzora, eksperimente in kodo.</p>
-    <p style="margin-top:14px">To se je sčasoma spremenilo. Po nekaterih zgodnjih preobratih — kjer se je izkazalo, da je bil privzeti ugovor modela napačen in je eksperiment deloval — je interakcija postala manj refleksivno odklonilna in bolj konstruktivna. Sodelovanje ni bilo pasivno pozivanje. Bila je nasprotniška formalizacija, ki je postopoma postala naučeno zaupanje.</p>
+    <p style="margin-top:14px">To se je sčasoma spremenilo. Po nekaterih zgodnjih preobratih — kjer se je izkazalo, da je bil privzeti ugovor modela napačen in je eksperiment deloval — je interakcija postala manj refleksivno odklonilna in bolj konstruktivna. Sodelovanje ni bilo pasivno pozivanje. Bila je formalizacija skozi trenje, ki je postopoma postala naučeno zaupanje.</p>
   </div>
 </div>
 
@@ -890,6 +898,14 @@ p.indent { text-indent: 1.8em; }
   <p class="indent">Delovna zanka je bila praktična in ponavljajoča: majhen prototip, hiter test, številne nadgradnje, nato modularizacija, ko je koda postala prevelika za zanesljivo iteracijo. Ko je datoteka zrasla v monolita, so LLM-ji pri čistem urejanju postali slabši, zato je bil sistem razdeljen na module in se je dotikalo le spremenjenih delov. To ni bil slog sam zase. Bil je odziv na omejitve konteksta in hitrost iteracije.</p>
 
   <p class="indent">To je pomembno za avtorstvo. Zahteva izvirnosti tukaj ni "sam sem vtipkal vsako vrstico". Zahteva izvirnosti je, da so vprašanja, preoblikovanja, arhitektura in eksperimentalna usmeritev prišla najprej od mene, in AI je naredila formalizacijo dovolj hitro, da so bile resno preizkušene na področjih.</p>
+
+  <div class="workflow-note">
+    <p><strong>Kako sodelovanje dejansko deluje.</strong> Proces ni bil „prosi AI za odgovor.“ Navadno je bilo ravno obratno. Preprosto vprašanje ali vizualna intuicija je prispela najprej s človeške strani. Modeli so ji pogosto najprej ugovarjali, ker ideja ni ustrezala pričakovanjem učnih podatkov. Delo je napredovalo naprej šele po trajnem preoblikovanju, argumentiranju in preizkušanju. Ko je seme preživelo to fazo, je AI postala koristna partnerica za formalizacijo: pretvori seme v vprašanja, matematiko, senzorje, zakone nadzora, eksperimente in kodo. Rezultat je bil nato preizkušen, večkrat nadgrajen, in koristne strukture so bile prenesene naprej v naslednjo domeno.</p>
+  </div>
+
+  <div class="trajectory" style="line-height:1.8">
+    <span>seme</span><span class="arrow"> → </span><span>most</span><span class="arrow"> → </span><span>preizkus</span><span class="arrow"> → </span><span>rezultat</span>
+  </div>
 </div>
 
 <!-- Poglavje VI -->
