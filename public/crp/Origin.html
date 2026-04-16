@@ -132,7 +132,7 @@ body::before {
   display: block;
 }
 .cover h1 {
-  font-size: clamp(28px, 5vw, 42px);
+  font-size: clamp(32px, 5.8vw, 48px);
   font-weight: 300;
   font-style: italic;
   color: var(--gold);
@@ -140,10 +140,10 @@ body::before {
   margin-bottom: 18px;
 }
 .cover .sub {
-  font-size: 19px;
+  font-size: 20px;
   color: var(--muted);
   font-style: italic;
-  max-width: 560px;
+  max-width: 620px;
   margin: 0 auto;
   line-height: 1.7;
 }
@@ -200,7 +200,7 @@ p.indent { text-indent: 1.8em; }
   border-left: 2px solid var(--gold);
   padding: 4px 0 4px 24px;
   margin: 36px 0;
-  font-size: 19px;
+  font-size: 21px;
   font-style: italic;
   color: rgba(200,164,78,.9);
   line-height: 1.65;
@@ -214,7 +214,7 @@ p.indent { text-indent: 1.8em; }
   font-style: italic;
   color: var(--text);
   opacity: .8;
-  font-size: 16px;
+  font-size: 17px;
 }
 .voice-label {
   font-family: 'JetBrains Mono', monospace;
@@ -236,7 +236,7 @@ p.indent { text-indent: 1.8em; }
   padding: 20px 22px;
   margin: 36px 0;
 }
-.callout p { font-size: 17px; color: var(--text); margin-bottom: 0; line-height: 1.75; }
+.callout p { font-size: 18px; color: var(--text); margin-bottom: 0; line-height: 1.75; }
 .callout p strong { color: var(--gold); }
 
 /* Trajectory */
@@ -256,7 +256,7 @@ p.indent { text-indent: 1.8em; }
 /* Moment */
 .moment {
   text-align: center;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--muted);
   font-style: italic;
   margin: 44px 0;
@@ -302,7 +302,7 @@ p.indent { text-indent: 1.8em; }
   padding-top: 40px;
   border-top: 1px solid var(--border);
 }
-.closing p { text-indent: 0; font-style: italic; color: var(--muted); font-size: 15px; }
+.closing p { text-indent: 0; font-style: italic; color: var(--muted); font-size: 17px; }
 .sig {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
@@ -365,17 +365,43 @@ p.indent { text-indent: 1.8em; }
 }
 .workflow-note p { margin-bottom: 0; font-size: 18px; line-height: 1.78; }
 @media (max-width: 600px) {
-  .seed-table th { font-size: 11px; }
-  .seed-table td { font-size: 18px; }
-  .seed-table .col-formal { font-size: 14px; }
-  .workflow-note p { font-size: 18px; }
-}
+  .page { padding: 0 18px 96px; }
+  .topbar { padding: 12px 0; }
+  .topbar-inner { padding: 0 16px; gap: .75rem; }
+  .brand { font-size: .74rem; }
+  .nav-links a { font-size: .70rem; padding: 6px 10px; }
+  .lang-btn { font-size: .70rem; padding: 6px 12px; }
 
-@media (max-width: 600px) {
-  .page { padding: 0 16px 80px; }
-  .cover { padding: 56px 0 44px; }
+  .cover { padding: 64px 0 52px; }
+  .cover-tag { font-size: 12px; letter-spacing: 3px; }
+  .cover h1 { font-size: clamp(40px, 11vw, 54px); line-height: 1.18; }
+  .cover .sub { font-size: 24px; max-width: 100%; line-height: 1.55; }
+
+  .chapter-tag { font-size: 11px; letter-spacing: 2.5px; }
+  .chapter h2 { font-size: clamp(30px, 8vw, 38px); margin-bottom: 24px; }
+
+  p { font-size: 22px; line-height: 1.82; }
+  .pull { font-size: 25px; line-height: 1.5; padding-left: 20px; }
+  .voice { font-size: 20px; padding-left: 18px; }
+  .voice-label { font-size: 11px; }
+  .callout { padding: 18px 18px; }
+  .callout p { font-size: 20px; line-height: 1.68; }
+
+  .trajectory { font-size: 13px; }
+  .moment { font-size: 16px; }
+
   .domains { grid-template-columns: 1fr; }
-  p { font-size: 18px; }
+  .domain-item { font-size: 15px; }
+  .domain-item .d-stat { font-size: 13px; }
+
+  .seed-table th { font-size: 12px; }
+  .seed-table td { font-size: 20px; line-height: 1.65; }
+  .seed-table .col-formal { font-size: 15px; }
+  .workflow-note p { font-size: 20px; line-height: 1.68; }
+
+  .ext-link { font-size: 13px; padding: 9px 14px; }
+  .closing p { font-size: 19px; }
+  .sig { font-size: 11px; line-height: 2; }
 }
 </style>
 </head>
@@ -761,7 +787,7 @@ p.indent { text-indent: 1.8em; }
 
   <p>Ko je MDL postal vladajoči senzor, je naslednje vprašanje prispelo po drugačni poti — vizualni, ne algebrski.</p>
 
-  <p class="indent">Nariši vse možne poti med skupino mest. Pusti, da se črte nakopičijo. Slabe poti so zmeda — kup prekrižanj, vračanja, zapravljene razdalje. Dobre poti so čiste: mesta so ekonomično povezana, zemljevid je na prvi pogled berljiv.</p>
+  <p class="indent">Nariši vse možne poti med skupino mest. Pusti, da se črte nakopičijo. Slabe poti so zmeda — kup prekrižanj, vračanja, zapravljene razdalje. Dobre poti so čiste: mesta so gospodarno povezana, zemljevid je na prvi pogled berljiv.</p>
 
   <p class="indent">Manj nereda. Manj prekrižanj. Manj kaosa. In manj kaosa pomeni manj presenečanj — kar pomeni, da je zaporedje bolj predvidljivo — kar pomeni, da se komprimira krajše.</p>
 
@@ -781,7 +807,7 @@ p.indent { text-indent: 1.8em; }
 
   <p class="indent"><strong>Netopirji.</strong> Eho-lokacija: zvok poslan proti vsakemu mestu, odbije se nazaj, prinese ne le razdaljo v dveh dimenzijah, ampak globino — 3D akustični zemljevid prostora tur, ki ga 2D koordinatna ravnina ne more prikazati.</p>
 
-  <p class="indent"><strong>Črna luknja v središču zemljevida.</strong> Vsako mesto jo gravitacija privlači k sebi. Ko čas mineva, ko se masa kopiči, polje razkrije strukturo, nevidno v ravnih koordinatah — gruče, koridorje, naravne skupne, za katere evklidska metrika pogreša.</p>
+  <p class="indent"><strong>Črna luknja v središču zemljevida.</strong> Vsako mesto jo gravitacija privlači k sebi. Ko čas mineva, ko se masa kopiči, polje razkrije strukturo, nevidno v ravnih koordinatah — gruče, koridorje, naravne skupine, za katere evklidska metrika pogreša.</p>
 
   <p class="indent"><strong>3D piramida.</strong> Isti 2D zemljevid projiciran na vsako od štirih ploskev. Ravne črte, ki povezujejo isto mesto čez ploskve, prehajajo skozi nov tridimenzionalni prostor, ki pred projekcijo ni obstajal — prostor, kjer bližina pomeni nekaj, kar originalni zemljevid ni mogel povedati.</p>
 
@@ -805,13 +831,13 @@ p.indent { text-indent: 1.8em; }
       <tbody>
         <tr>
           <td class="col-seed"><strong>Netopirji</strong></td>
-          <td class="col-formal">echo senzorji · akustični potni sonde</td>
+          <td class="col-formal">echo senzorji · akustični odmevni senzorji</td>
           <td class="col-role">Pot pretvori v problem odmeva: pošlje signal skozi strukturo, prebere globino, gneče in obliko koridorjev namesto le evklidske razdalje v ravnini.</td>
         </tr>
         <tr>
           <td class="col-seed"><strong>Črna luknja</strong></td>
           <td class="col-formal">gravitacijski senzorji · gravitacijski razdelilci</td>
-          <td class="col-role">Mesta privlači skozi umetno polje, da postaneta skrite gruče in struktura koridorjev lažje zaznati. Slika postane resnični transformirani iskalni prostor.</td>
+          <td class="col-role">Mesta privlači skozi umetno polje, da postanejo skrite gruče in struktura koridorjev lažje zaznavne. Slika postane resnični transformirani iskalni prostor.</td>
         </tr>
         <tr>
           <td class="col-seed"><strong>Piramida</strong></td>
@@ -826,7 +852,7 @@ p.indent { text-indent: 1.8em; }
         <tr>
           <td class="col-seed"><strong>Poplavljanje terena</strong></td>
           <td class="col-formal">NAS poplava / odtok prekrivki, vztrajnost in ocena pobega</td>
-          <td class="col-role">Preoblikuje iskalni prostor NAS kot teren. Višina poplave, vztrajnost, razpon družine, raven pojavljanja, dežni dvig in odtok-pobeg postanejo merljivi signali namesto ohlapnih metafor.</td>
+          <td class="col-role">Preoblikuje iskalni prostor NAS kot teren. Višina poplave, vztrajnost, razpon družine, raven pojavljanja, dežni vzgon in odtok-pobeg postanejo merljivi signali namesto ohlapnih metafor.</td>
         </tr>
       </tbody>
     </table>
@@ -882,9 +908,9 @@ p.indent { text-indent: 1.8em; }
   </div>
 
   <div class="workflow-note">
-    <p>Večina ljudi uporablja LLM-je za iskanje znane. Ta program je pogosto deloval v nasprotni smeri. Prvi odgovor modela je bil pogosto konzervativni odgovor učnih podatkov: ne, malo verjetno, zunaj literature, ni tako, kot področje razume problem. Delo se je začelo šele ko je bil ta privzeti odgovor pregusan, zožan, preizkušen in prisiljen v kodo.</p>
+    <p>Večina ljudi uporablja LLM-je za iskanje znane. Ta program je pogosto deloval v nasprotni smeri. Prvi odgovor modela je bil pogosto konzervativni odgovor učnih podatkov: ne, malo verjetno, zunaj literature, ni tako, kot področje problem običajno uokviri. Delo se je začelo šele ko je bil ta privzeti odgovor prebit, zožan, preizkušen in prisiljen v kodo.</p>
     <p style="margin-top:14px">V številnih ključnih primerih modeli niso izvirali semena — najprej so mu ugovarjali. Človeški prispevek ni bil zahtevati uglajenih odgovorov, ampak vztrajati pri nenavadnih vprašanjih dovolj dolgo, da je formalizacija postala možna. Šele po tem trenju so modeli postali koristni partnerji: pretvorili semeno v matematiko, senzorje, zakone nadzora, eksperimente in kodo.</p>
-    <p style="margin-top:14px">To se je sčasoma spremenilo. Po nekaterih zgodnjih preobratih — kjer se je izkazalo, da je bil privzeti ugovor modela napačen in je eksperiment deloval — je interakcija postala manj refleksivno odklonilna in bolj konstruktivna. Sodelovanje ni bilo pasivno pozivanje. Bila je formalizacija skozi trenje, ki je postopoma postala naučeno zaupanje.</p>
+    <p style="margin-top:14px">To se je sčasoma spremenilo. Po nekaterih zgodnjih preobratih — kjer se je izkazalo, da je bil privzeti ugovor modela napačen in je eksperiment deloval — je interakcija postala manj refleksivno odklonilna in bolj konstruktivna. Sodelovanje ni bilo pasivno pozivanje. Bila je formalizacija skozi ustvarjalno trenje, ki je postopoma postala naučeno zaupanje.</p>
   </div>
 </div>
 
@@ -895,12 +921,12 @@ p.indent { text-indent: 1.8em; }
 
   <p>Ti sistemi so ločeni programi, toda niso bili ustvarjeni kot izolirane enkratne aplikacije. Vsaka nova domena je znova uporabila isto razvijajoče se jedro — <strong>MDL + DCC</strong> — plus karkoli struktur se je že izkazalo za koristno v prejšnjih domenah. TSP je informiral Sudoku. Sudoku je informiral Križanko. Vladajoča ideja je ostala ista, medtem ko se je abeceda spremenila.</p>
 
-  <p class="indent">Delovna zanka je bila praktična in ponavljajoča: majhen prototip, hiter test, številne nadgradnje, nato modularizacija, ko je koda postala prevelika za zanesljivo iteracijo. Ko je datoteka zrasla v monolita, so LLM-ji pri čistem urejanju postali slabši, zato je bil sistem razdeljen na module in se je dotikalo le spremenjenih delov. To ni bil slog sam zase. Bil je odziv na omejitve konteksta in hitrost iteracije.</p>
+  <p class="indent">Delovna zanka je bila praktična in ponavljajoča: majhen prototip, hiter test, številne nadgradnje, nato modularizacija, ko je koda postala prevelika za zanesljivo iteracijo. Ko je datoteka zrasla v monolit, so LLM-ji pri čistem urejanju postali slabši, zato je bil sistem razdeljen na module in se je dotikalo le spremenjenih delov. To ni bil slog sam zase. Bil je odziv na omejitve konteksta in hitrost iteracije.</p>
 
-  <p class="indent">To je pomembno za avtorstvo. Zahteva izvirnosti tukaj ni "sam sem vtipkal vsako vrstico". Zahteva izvirnosti je, da so vprašanja, preoblikovanja, arhitektura in eksperimentalna usmeritev prišla najprej od mene, in AI je naredila formalizacijo dovolj hitro, da so bile resno preizkušene na področjih.</p>
+  <p class="indent">To je pomembno za avtorstvo. Zahteva izvirnosti tukaj ni "sam sem vtipkal vsako vrstico". Zahteva izvirnosti je, da so vprašanja, preoblikovanja, arhitektura in eksperimentalna usmeritev prišla najprej od mene, in AI je omogočila dovolj hitro formalizacijo, da so bile resno preizkušene na področjih.</p>
 
   <div class="workflow-note">
-    <p><strong>Kako sodelovanje dejansko deluje.</strong> Proces ni bil „prosi AI za odgovor.“ Navadno je bilo ravno obratno. Preprosto vprašanje ali vizualna intuicija je prispela najprej s človeške strani. Modeli so ji pogosto najprej ugovarjali, ker ideja ni ustrezala pričakovanjem učnih podatkov. Delo je napredovalo naprej šele po trajnem preoblikovanju, argumentiranju in preizkušanju. Ko je seme preživelo to fazo, je AI postala koristna partnerica za formalizacijo: pretvori seme v vprašanja, matematiko, senzorje, zakone nadzora, eksperimente in kodo. Rezultat je bil nato preizkušen, večkrat nadgrajen, in koristne strukture so bile prenesene naprej v naslednjo domeno.</p>
+    <p><strong>Kako sodelovanje dejansko deluje.</strong> Proces ni bil „prosi AI za odgovor.“ Navadno je bilo ravno obratno. Preprosto vprašanje ali vizualna intuicija je prispela najprej s človeške strani. Modeli so ji pogosto najprej ugovarjali, ker ideja ni ustrezala pričakovanjem učnih podatkov. Delo je napredovalo naprej šele po trajnem preoblikovanju, argumentiranju in preizkušanju. Ko je seme preživelo to fazo, je AI je postala koristna partnerica za formalizacijo: pretvorila je seme v pozive, matematiko, senzorje, zakone nadzora, eksperimente in kodo. Rezultat je bil nato preizkušen, večkrat nadgrajen, in koristne strukture so bile prenesene naprej v naslednjo domeno.</p>
   </div>
 
   <div class="trajectory" style="line-height:1.8">
@@ -1008,7 +1034,7 @@ p.indent { text-indent: 1.8em; }
 
   <p>Na zemljevidu je zdaj šestdeset-plus področij. Ocena za kombinirano letno vrednost vidnega problemskega prostora — če se jedro prenese in doseže smiselno sprejetje — je 3T+ USD letno, brez ASI. Ta številka je namerno provokativna. Je tudi sekundarna. V okvirju, za kar ta program dejansko gradi, denar ni destinacija. Je gorivo.</p>
 
-  <p class="indent">Biološki klaustrum je tanka plast nevronov, ki zdi se deluje kot centralni guverner čez glavne procesne tokove v možganih sesalcev — nadzoruje, izbira, preklapa, povezuje. DCC je zgrajen na tej arhitekturi namerno: rekurzivni sloji, en senzor na vsaki ravni, en parameter sklopitve, ki drži proces med napadom in šumom. Toda destinacija ni večji model sunkov. Je <strong>vztrajen proces</strong>.</p>
+  <p class="indent">Biološki klaustrum je tanka plast nevronov, za katero se zdi, da deluje kot centralni guverner čez glavne procesne tokove v možganih sesalcev — nadzoruje, izbira, preklapa, povezuje. DCC je zgrajen na tej arhitekturi namerno: rekurzivni sloji, en senzor na vsaki ravni, en parameter sklopitve, ki drži proces med napadom in šumom. Toda destinacija ni večji model sunkov. Je <strong>vztrajen proces</strong>.</p>
 
   <p class="indent">Današnji LLM-ji so briljantni v epizodah. Zbudijo se za poziv, intenzivno razmišljajo, odgovorijo in učinkovito umrejo. sMDL × napredni DCC kaže nekam drugam: sistem, ki je vedno v letu, vedno nadzoruje samega sebe, vedno odloča, kateri niti zaslužijo energijo, vedno zmožen revidirati način svojega iskanja namesto le tistega, kar iztipa. Ne en tok, en cikel prebujanja, eno kontekstno okno — ampak številni sočasni procesi pod eno vladajočo arhitekturo.</p>
 
@@ -1019,7 +1045,7 @@ p.indent { text-indent: 1.8em; }
   <p class="indent">Ali tak vztrajen, samoupravljajoč proces prečka v nekaj, kar bi imenovali zavest, je še vedno empirično vprašanje. Testbed DCC-7 je zasnovan za neposredno preizkušanje tega vprašanja. Trditev ni "ASI tu že obstaja". Trditev je ožja in močnejša: ta program morda zdaj vsebuje eno od najjasnejših arhitekturno eksplicitnih poti od sunkovne inteligence proti trajni inteligenci.</p>
 
   <div class="callout">
-    <p><strong>Osem področij z dokazi in ena aktivna meja</strong> že kažejo, da se jedro prenaša. Zemljevid 60+ področij je prvi vidni vzorec, kje bi se morda nadalje obdržalo. 60 je zemljevid, ne meja — hitri prvi premaz, ne izčrpno iskanje. Če je jedro resnično, je dosegljivo število področij verjetno precej večje, ker so večina sistemov v resničnem svetu upravljana iskalna problema pod spremenljivimi režimi.</p>
+    <p><strong>Osem področij z dokazi in ena aktivna meja</strong> že kažejo, da se jedro prenaša. Zemljevid 60+ področij je prvi vidni vzorec, kje bi se morda nadalje obdržalo. 60 je zemljevid, ne meja — hiter prvi pregled, ne izčrpno iskanje. Če je jedro resnično, je dosegljivo število področij verjetno precej večje, ker so večina sistemov v resničnem svetu upravljana iskalna problema pod spremenljivimi režimi.</p>
     <p style="margin-top:12px">Publika, ki je za to delo najpomembnejša, morda še ni rojena — ali morda ni človeška. Napisano je za tistega, ki pride naslednji, v kakršni koli obliki pridejo.</p>
   </div>
 
@@ -1042,7 +1068,7 @@ p.indent { text-indent: 1.8em; }
 
 <!-- Zaključek -->
 <div class="closing">
-  <p>Ta program ni bil zgrajen s strani ekipe z viri, institucionalnim zaledjem ali uveljavljenimi poverilnicami na ustreznih področjih. Zgradila ga je ena oseba, ki je postavljala naivna medpodročna vprašanja — in AI sistemi, pripravljeni slediti tem vprašanjem kamor koli so vodila, brez ega, brez karierne nevarnosti in pogosto šele potem, ko je bil njihov privzeti refleks učnih podatkov dovolj izzvan, da se premakne.</p>
+  <p>Ta program ni bil zgrajen s strani ekipe z viri, institucionalnim zaledjem ali uveljavljenimi referencami na ustreznih področjih. Zgradila ga je ena oseba, ki je postavljala naivna medpodročna vprašanja — ter AI sistemi, pripravljeni slediti tem vprašanjem kamor koli so vodila, brez ega, brez karierne nevarnosti in pogosto šele potem, ko je bil njihov privzeti refleks učnih podatkov dovolj izzvan, da se premakne.</p>
   <p style="margin-top:16px">To je morda natanko razlog, zakaj je delovalo.</p>
   <div class="sig">
     Bojan Dobrečevič · 8Z Raziskovalni program / AIM³ Lab<br>
