@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<title>Absolute Consciousness as the Least-Miraculous Ground of Experience</title>
+<link rel='preconnect' href='https://fonts.googleapis.com'>
+<link href='https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap' rel='stylesheet'>
+<style>
+:root {
+  --bg: #06060a;
+  --surface: #0d0d14;
+  --surface-2: #101019;
+  --surface-3: rgba(13,13,20,0.78);
+  --gold: #c9a84c;
+  --gold-dim: #8a6e2f;
+  --gold-glow: rgba(201,168,76,0.12);
+  --text: #e8e0d0;
+  --text-dim: #9a9080;
+  --white: #f5f0e8;
+  --accent: #4a7fa5;
+  --accent-dim: rgba(74,127,165,0.15);
+  --green: #5aa384;
+  --green-dim: rgba(90,163,132,0.14);
+  --rose: #b96d6d;
+  --rose-dim: rgba(185,109,109,0.14);
+  --violet: #8f78c9;
+  --violet-dim: rgba(143,120,201,0.14);
+  --line: rgba(201,168,76,0.15);
+  --line-strong: rgba(201,168,76,0.28);
+  --shadow: 0 20px 60px rgba(0,0,0,0.28);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(28,55,140,0.38), transparent 38%),
+    radial-gradient(circle at 88% 80%, rgba(14,72,52,0.32), transparent 36%),
+    radial-gradient(circle at 50% 50%, rgba(10,18,55,0.18), transparent 55%),
+    linear-gradient(170deg, #06070f 0%, #05080a 55%, #040a07 100%);
+  color: var(--text);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 21px;
+  line-height: 1.85;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+body::before, body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+body::before {
+  width: 55vw; height: 55vw; left: -14vw; top: -12vh;
+  background: radial-gradient(circle, rgba(38,72,168,0.55), rgba(18,32,88,0.22) 52%, transparent 74%);
+  filter: blur(110px); opacity: 0.28; animation: floatA 24s ease-in-out infinite;
+}
+body::after {
+  width: 50vw; height: 50vw; right: -12vw; bottom: -18vh;
+  background: radial-gradient(circle, rgba(16,90,62,0.55), rgba(8,48,34,0.22) 52%, transparent 74%);
+  filter: blur(120px); opacity: 0.24; animation: floatB 30s ease-in-out infinite;
+}
+@keyframes floatA { 0%,100% { transform: translate3d(0,0,0);} 50% { transform: translate3d(7vw,6vh,0);} }
+@keyframes floatB { 0%,100% { transform: translate3d(0,0,0);} 50% { transform: translate3d(-6vw,-8vh,0);} }
+#grain {
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9999; opacity: 0.45;
+}
+#stars { position: fixed; inset: 0; pointer-events: none; z-index: 2; opacity: 0.45; }
+#progress {
+  position: fixed; top:0; left:0; height:2px; width:0; z-index: 100;
+  background: linear-gradient(90deg, var(--gold), #f1d385);
+  box-shadow: 0 0 18px rgba(201,168,76,0.45);
+}
+.topbar {
+  position: sticky; top: 0; z-index: 40; backdrop-filter: blur(14px);
+  background: rgba(6,7,12,0.78); border-bottom: 1px solid var(--line);
+}
+.topbar-inner {
+  max-width: 1760px; margin: 0 auto; padding: 14px 34px;
+  display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
+}
+.brand {
+  color: var(--gold); text-decoration: none; font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.22em; text-transform: uppercase; font-size: 12px;
+}
+.brand:hover { color: #e2c067; }
+.nav { display: flex; flex-wrap: wrap; gap: 8px; }
+.nav a {
+  text-decoration: none; color: var(--text-dim); border: 1px solid rgba(201,168,76,0.16);
+  padding: 5px 11px; border-radius: 999px; font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 0.08em; background: rgba(255,255,255,0.01);
+}
+.nav a.active, .nav a:hover {
+  color: var(--gold); border-color: rgba(201,168,76,0.45); background: rgba(201,168,76,0.06);
+}
+.page {
+  position: relative; z-index: 3; max-width: 1760px; margin: 0 auto; padding: 0 34px 120px;
+}
+.cover { padding: 90px 0 44px; text-align: center; max-width: 1320px; margin: 0 auto; }
+.eyebrow {
+  color: var(--gold); opacity: 0.78; font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 18px;
+}
+h1 {
+  color: var(--white); font-weight: 300; font-size: clamp(38px, 6vw, 68px);
+  line-height: 1.08; margin-bottom: 16px;
+}
+h1 em { color: var(--gold); font-style: italic; }
+.subtitle {
+  color: var(--text-dim); font-style: italic; font-size: 22px; max-width: 1240px; margin: 0 auto 24px;
+}
+.byline { font-family: 'JetBrains Mono', monospace; color: var(--gold-dim); font-size: 11px; letter-spacing: 0.16em; }
+.series-badges {
+  display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin: 24px 0 0;
+}
+.badge {
+  border:1px solid rgba(201,168,76,0.18); border-radius:999px; padding:6px 12px;
+  font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+  color: var(--text-dim); background: rgba(255,255,255,0.02);
+}
+.badge.good { border-color: rgba(90,163,132,0.34); color: #9fd0b9; background: var(--green-dim); }
+.badge.bridge { border-color: rgba(74,127,165,0.34); color: #aac8df; background: var(--accent-dim); }
+.badge.warn { border-color: rgba(185,109,109,0.34); color: #dfaaaa; background: var(--rose-dim); }
+.badge.violet { border-color: rgba(143,120,201,0.34); color: #d0c4f1; background: var(--violet-dim); }
+.rule { width: 88px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 24px auto 0; opacity: 0.55; }
+.layout { display:grid; grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); gap: 34px; align-items: start; }
+.sidebar {
+  position: sticky; top: 82px; z-index: 4;
+}
+.card, .toc, .callout, .note-box, .table-wrap, .quote-box, .footer-nav {
+  background: linear-gradient(180deg, rgba(13,13,20,0.92), rgba(16,16,25,0.88));
+  border: 1px solid rgba(201,168,76,0.13); border-radius: 16px; box-shadow: var(--shadow);
+}
+.card { padding: 18px 18px 16px; margin-bottom: 14px; }
+.card h3, .toc-title, .mini-title {
+  color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+}
+.card h3 { margin-bottom: 12px; }
+.card p, .card li { font-size: 17px; line-height: 1.62; color: var(--text-dim); }
+.card ul { padding-left: 1.1em; }
+.card li { margin-bottom: 8px; }
+.toc { padding: 18px 22px; margin: 0 0 24px; }
+.toc-title { margin-bottom: 10px; }
+.toc ul { list-style: none; }
+.toc li { margin: 8px 0; color: var(--text-dim); }
+.toc a { color: var(--text-dim); text-decoration: none; }
+.toc a:hover { color: var(--gold); }
+.main { min-width: 0; }
+.chapter { margin: 0 0 66px; }
+.chapter-tag {
+  color: var(--gold); opacity: 0.72; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 10px;
+}
+.chapter h2 {
+  color: var(--white); font-size: clamp(28px, 4.4vw, 42px); line-height: 1.18; font-weight: 400;
+  padding-bottom: 14px; margin-bottom: 24px; border-bottom: 1px solid var(--line);
+}
+.chapter h3 { color: var(--white); font-size: 28px; font-weight: 400; margin: 30px 0 14px; }
+p { margin: 0 0 20px; }
+p.lead { font-size: 23px; color: var(--white); }
+.callout, .note-box, .quote-box { padding: 22px 24px; margin: 26px 0; }
+.callout strong, .note-box strong, .quote-box strong { color: var(--gold); }
+.callout p:last-child, .note-box p:last-child, .quote-box p:last-child { margin-bottom: 0; }
+.callout.good { border-color: rgba(90,163,132,0.28); background: linear-gradient(180deg, rgba(10,24,19,0.82), rgba(13,24,20,0.76)); }
+.callout.warn { border-color: rgba(185,109,109,0.28); background: linear-gradient(180deg, rgba(26,14,14,0.82), rgba(24,15,15,0.76)); }
+.callout.bridge { border-color: rgba(74,127,165,0.28); background: linear-gradient(180deg, rgba(13,19,28,0.84), rgba(14,18,24,0.78)); }
+.callout.violet { border-color: rgba(143,120,201,0.28); background: linear-gradient(180deg, rgba(20,15,31,0.84), rgba(17,14,24,0.78)); }
+.pull {
+  margin: 34px 0; padding: 10px 0 10px 20px; border-left: 2px solid var(--gold); color: var(--gold);
+  font-size: 25px; line-height: 1.55; font-style: italic;
+}
+.pill-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 28px; }
+.pill {
+  border: 1px solid rgba(201,168,76,0.18); background: rgba(201,168,76,0.05); border-radius: 999px;
+  padding: 7px 12px; color: var(--text-dim); font-size: 14px;
+}
+ul.clean, ol.clean { padding-left: 1.2em; margin: 18px 0 22px; }
+ul.clean li, ol.clean li { margin-bottom: 10px; }
+.table-wrap { overflow-x: auto; margin: 26px 0 30px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 14px 16px; text-align: left; vertical-align: top; border-bottom: 1px solid rgba(201,168,76,0.08); }
+th { color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.14em; background: rgba(201,168,76,0.04); }
+tr:last-child td { border-bottom: none; }
+.code {
+  font-family: 'JetBrains Mono', monospace; background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.05);
+  padding: 2px 7px; border-radius: 7px; font-size: 0.9em;
+}
+.footer-nav { margin-top: 30px; padding: 18px 20px; display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+.footer-nav a {
+  text-decoration:none; color: var(--text-dim); border:1px solid rgba(201,168,76,0.15); border-radius:999px; padding:8px 14px;
+  font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+}
+.footer-nav a:hover { color: var(--gold); border-color: rgba(201,168,76,0.4); background: rgba(201,168,76,0.05); }
+footer.doc-footer { max-width: 1180px; margin: 0 auto; padding-top: 22px; border-top:1px solid var(--line); color: var(--text-dim); }
+footer.doc-footer p { font-size: 17px; }
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.index-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:18px; margin-top:28px; }
+.index-card {
+  display:block; text-decoration:none; color:inherit; padding:22px 22px 18px;
+  background: linear-gradient(180deg, rgba(13,13,20,0.92), rgba(16,16,25,0.88));
+  border:1px solid rgba(201,168,76,0.13); border-radius:16px; box-shadow: var(--shadow);
+}
+.index-card h2 { color: var(--white); font-weight: 400; font-size: 30px; margin: 8px 0 12px; }
+.index-card p { color: var(--text-dim); font-size: 18px; }
+.index-card:hover { border-color: rgba(201,168,76,0.35); transform: translateY(-2px); transition: 0.2s ease; }
+.kicker { font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color: var(--gold); opacity: 0.75; }
+@media (max-width: 1360px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; }
+}
+@media (max-width: 700px) {
+  body { font-size: 19px; }
+  .page { padding: 0 18px 90px; }
+  .cover { padding-top: 64px; }
+  .subtitle { font-size: 19px; }
+  .index-grid { grid-template-columns: 1fr; }
+}
+
+.claim-tag{display:inline-block;margin:0 8px 8px 0;padding:5px 9px;border-radius:999px;font-family:'JetBrains Mono', monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(201,168,76,.16);background:rgba(255,255,255,.02);color:var(--text-dim)}
+.claim-tag.core{border-color:rgba(90,163,132,.34);color:#9fd0b9;background:var(--green-dim)}
+.claim-tag.operational{border-color:rgba(74,127,165,.34);color:#aac8df;background:var(--accent-dim)}
+.claim-tag.spec{border-color:rgba(185,109,109,.34);color:#dfaaaa;background:var(--rose-dim)}
+.claim-tag.status{border-color:rgba(143,120,201,.34);color:#d0c4f1;background:var(--violet-dim)}
+.lead-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:22px;margin:22px 0 30px}
+@media(max-width:900px){.lead-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id='progress'></div><canvas id='stars'></canvas><div id='grain'></div>
+<div class='topbar'><div class='topbar-inner'><a class='brand' href='index.html'>AC / CCH</a><nav class='nav'><a href='AC_01_Flagship.html'>P1</a><a href='AC_02_Operational_Bridge.html'>P2</a><a href='AC_03_Discrete_Physics_Companion.html'>P3</a><a href='AC_04_Zero_Framework_Companion.html'>P4</a><a href='AC_05_Massless_Carriers_Companion.html'>P5</a><a href='AC_06_Method_Resonance_in_Action.html'>P6</a><a href='index.html'>Index</a></nav></div></div>
+<div class='page'>
+<header class='cover reveal'>
+<div class='eyebrow'>Paper 1 · flagship ontology</div>
+<h1>Absolute Consciousness as the Least-Miraculous Ground of Experience</h1>
+<div class='subtitle'>A flagship paper that keeps the empirical achievements of current science while arguing that presence itself may require a deeper ontological ground.</div>
+<div class='series-badges'><span class='badge good'>preserve science</span><span class='badge bridge'>ontological upgrade</span><span class='badge warn'>not empirical proof</span></div>
+<div class='rule'></div>
+</header>
+<div class='layout'>
+<aside class='sidebar'><div class='toc'><div class='toc-title'>Contents</div><ul><li><a href='#problem'>Problem</a></li><li><a href='#keep'>What AC keeps</a></li><li><a href='#move'>The ontological move</a></li><li><a href='#resonance'>Resonance and relative existence</a></li><li><a href='#rivals'>Rivals</a></li><li><a href='#discipline'>Discipline</a></li></ul></div><div class='card'><h3>Status map</h3><p><span class='claim-tag core'>core ontology</span><span class='claim-tag operational'>bridge-ready</span><span class='claim-tag status'>not empirical proof</span></p><p>This flagship paper is intentionally narrower than the companions. Its job is to make the strongest ontological move cleanly.</p></div><div class='card'><h3>One-sentence spine</h3><p>Current science may describe mechanisms extraordinarily well while still failing to explain why any mechanism is present at all. AC is offered as a less miraculous ground of that presence.</p></div></aside>
+<main class='main'>
+<section class='chapter reveal' id='problem'><div class='chapter-tag'>I · The pressure point</div><h2>1. The problem AC is trying to solve</h2>
+<p class='lead'>The pressure point is not whether physics and neuroscience have learned real things. They plainly have. The pressure point is whether their most successful descriptions of mechanism finish the job of explaining presence.</p>
+<div class='lead-grid'>
+<div class='callout bridge'><p><strong>Rebuild principle.</strong> This paper does not discard standard science. It preserves causal structure, measurement, neural dynamics, and physical law as real achievements. What it challenges is the reflex that a complete description of mechanism automatically becomes a complete description of why anything is experientially present.</p></div>
+<div class='note-box'><p><strong>Claim type.</strong> The central move here is ontological, not laboratory-final. It is a proposal about what kind of ground makes experience least mysterious while preserving the empirical success of current science.</p></div>
+</div>
+<p>If a framework can describe signal flow, memory, integration, causal organization, and behavior, that matters. But if it still leaves us saying, “and somehow this became felt presence,” then a real explanatory remainder remains.</p>
+<p>AC begins exactly there.</p>
+</section><section class='chapter reveal' id='keep'><div class='chapter-tag'>II · Preservation</div><h2>2. What AC keeps from current science</h2>
+<p>AC is strongest when it behaves like a disciplined upgrade, not a theatrical overthrow. It keeps at least five major achievements of current science intact:</p>
+<ul class='clean'>
+<li><strong>Physics keeps its lawful structure.</strong> AC does not ask us to throw away conservation laws, field dynamics, or successful low-level models.</li>
+<li><strong>Neuroscience keeps its mechanism.</strong> Brains still have rhythms, lesions, integration patterns, global coordination problems, and clinically observable state gradients.</li>
+<li><strong>Information theory keeps its usefulness.</strong> Complexity, integration, and structure remain powerful descriptive tools.</li>
+<li><strong>Computation keeps its place.</strong> Computation can still describe state evolution, control, and information processing.</li>
+<li><strong>Engineering keeps its approximations.</strong> Continuum descriptions, algorithmic models, and standard mathematics still work where they work.</li>
+</ul>
+<div class='callout good'><p><strong>Upgrade claim.</strong> AC says the success of those descriptions should be preserved, then placed inside a deeper ontology in which presence is not a late miracle but a primitive fact.</p></div>
+</section><section class='chapter reveal' id='move'><div class='chapter-tag'>III · Least-miraculous move</div><h2>3. The ontological move</h2>
+<p>The flagship move is simple:</p>
+<div class='pull'>If experience is real, a world in which presence is primitive may be less miraculous than a world in which wholly non-experiential mechanism somehow becomes experience.</div>
+<p>This does not prove AC. It changes the burden structure. Instead of asking AC to justify why presence exists at all, it asks matter-only views why a non-experiential base should ever yield felt presence in the first place.</p>
+<p>That is why AC is best presented as a <strong>least-miraculous ontology</strong>. It is not “mysticism added on top of science.” It is a proposal that science may already describe the machinery correctly while still grounding that machinery in an ontologically thinner way than reality warrants.</p>
+<div class='quote-box violet'><p><strong>Strictness point.</strong> AC does not erase mechanism. It says mechanism may be derivative description, while presence is more basic.</p></div>
+</section><section class='chapter reveal' id='resonance'><div class='chapter-tag'>IV · Relation, not lab equation</div><h2>4. Resonance and relative existence</h2>
+<p>The rebuilt flagship keeps the resonance move, but with stricter labeling. Expressions such as <span class='code'>RE = AC · R</span> are treated here as <strong>ontological relations</strong> or <strong>compressed philosophical notation</strong>, not as established physics equations.</p>
+<p>The intended meaning is that finite being is not outside the ground, but modulated within it: relative existence is grounded manifestation, not independent self-subsistence.</p>
+<div class='table-wrap'><table><thead><tr><th>Expression</th><th>Status in this paper</th><th>Role</th></tr></thead><tbody>
+<tr><td><span class='code'>RE = AC · R</span></td><td>Ontological relation</td><td>Compresses the thought that finite existence is grounded, resonant manifestation.</td></tr>
+<tr><td>Resonance language</td><td>Bridge metaphor with philosophical load</td><td>Connects ground and expression without reducing one to the other.</td></tr>
+<tr><td>S / coherence / complexity</td><td>Deferred to operational bridge</td><td>Not used here as proof, only as the next-step bridge.</td></tr>
+</tbody></table></div>
+<p>This is one of the biggest discipline gains of the rebuild: equations of different kinds no longer quietly borrow authority from one another.</p>
+</section><section class='chapter reveal' id='rivals'><div class='chapter-tag'>V · Rival views under pressure</div><h2>5. Rivals under pressure</h2>
+<p>AC should win only if it is genuinely cleaner than its rivals.</p>
+<div class='table-wrap'><table><thead><tr><th>View</th><th>What it gets right</th><th>Pressure point</th></tr></thead><tbody>
+<tr><td>Physicalism</td><td>Mechanism, intervention, predictive power</td><td>Leaves presence explanatorily underdescribed.</td></tr>
+<tr><td>Emergentism</td><td>Admits novelty at higher levels</td><td>Often renames surprise instead of grounding it.</td></tr>
+<tr><td>Panpsychism</td><td>Refuses a dead start</td><td>Struggles with graded unity and asymmetric organization.</td></tr>
+<tr><td>Neutral monism</td><td>Strong rival; avoids crude binaries</td><td>Can become too neutral to explain why presence is special.</td></tr>
+<tr><td>AC</td><td>Makes presence basic from the start</td><td>Must avoid bloat, overclaim, and vague symbolism.</td></tr>
+</tbody></table></div>
+<p>In this light, AC is not a rebellion against science. It is a proposal that science may need a better ontological home.</p>
+</section><section class='chapter reveal' id='discipline'><div class='chapter-tag'>VI · Discipline and pressure tests</div><h2>6. What this paper claims, and what would weaken it</h2>
+<p><span class='claim-tag core'>claims</span><span class='claim-tag status'>non-claims</span><span class='claim-tag operational'>next-step bridge</span></p>
+<div class='callout warn'><p><strong>Claims.</strong> Experience is a datum. Mechanism may be insufficient to ground it. AC is a serious least-miraculous candidate for that ground.</p></div>
+<div class='callout bridge'><p><strong>Does not claim.</strong> That AC is experimentally proven, that physics has already been rederived from it, or that the companions are already complete scientific replacements for existing frameworks.</p></div>
+<ul class='clean'>
+<li><strong>Weakening condition:</strong> a rival ontology explains presence equally well with less machinery.</li>
+<li><strong>Weakening condition:</strong> the bridge papers add no real discriminating power beyond current theories.</li>
+<li><strong>Failure aspiration:</strong> if mechanism alone one day explains presence without residue, AC loses much of its reason for being.</li>
+</ul>
+<p>That is the right tone: preserve current science where it works, then demand a deeper answer where it still gestures instead of explains.</p>
+</section>
+<div class='footer-nav reveal'><a href='index.html'>&larr; Previous</a><a href='AC_02_Operational_Bridge.html'>Next &rarr;</a></div>
+<footer class='doc-footer reveal'><p><strong>Editorial stance.</strong> This rebuild frames the stack as an attempt to preserve the empirical successes of current science while refining its ontology, tightening its category boundaries, and adding sharper discriminating questions where current interpretations feel shallow.</p></footer>
+</main>
+</div></div>
+<script src='assets/app.js'></script>
+</body></html>
