@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang='en'>
+
+<html lang="en">
 <head>
-<meta charset='UTF-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>From Absolute Consciousness to Testable Structure</title>
-<link rel='preconnect' href='https://fonts.googleapis.com'>
-<link href='https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap' rel='stylesheet'>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
 <style>
 :root {
   --bg: #06060a;
@@ -80,7 +81,7 @@ body::after {
   background: rgba(6,7,12,0.78); border-bottom: 1px solid var(--line);
 }
 .topbar-inner {
-  max-width: 1760px; margin: 0 auto; padding: 14px 34px;
+  max-width: 1240px; margin: 0 auto; padding: 14px 22px;
   display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
 }
 .brand {
@@ -98,9 +99,9 @@ body::after {
   color: var(--gold); border-color: rgba(201,168,76,0.45); background: rgba(201,168,76,0.06);
 }
 .page {
-  position: relative; z-index: 3; max-width: 1760px; margin: 0 auto; padding: 0 34px 120px;
+  position: relative; z-index: 3; max-width: 1240px; margin: 0 auto; padding: 0 26px 120px;
 }
-.cover { padding: 90px 0 44px; text-align: center; max-width: 1320px; margin: 0 auto; }
+.cover { padding: 90px 0 44px; text-align: center; max-width: 840px; margin: 0 auto; }
 .eyebrow {
   color: var(--gold); opacity: 0.78; font-family: 'JetBrains Mono', monospace;
   font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 18px;
@@ -111,7 +112,7 @@ h1 {
 }
 h1 em { color: var(--gold); font-style: italic; }
 .subtitle {
-  color: var(--text-dim); font-style: italic; font-size: 22px; max-width: 1240px; margin: 0 auto 24px;
+  color: var(--text-dim); font-style: italic; font-size: 22px; max-width: 760px; margin: 0 auto 24px;
 }
 .byline { font-family: 'JetBrains Mono', monospace; color: var(--gold-dim); font-size: 11px; letter-spacing: 0.16em; }
 .series-badges {
@@ -127,7 +128,7 @@ h1 em { color: var(--gold); font-style: italic; }
 .badge.warn { border-color: rgba(185,109,109,0.34); color: #dfaaaa; background: var(--rose-dim); }
 .badge.violet { border-color: rgba(143,120,201,0.34); color: #d0c4f1; background: var(--violet-dim); }
 .rule { width: 88px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 24px auto 0; opacity: 0.55; }
-.layout { display:grid; grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); gap: 34px; align-items: start; }
+.layout { display:grid; grid-template-columns: minmax(0, 250px) minmax(0, 1fr); gap: 28px; align-items: start; }
 .sidebar {
   position: sticky; top: 82px; z-index: 4;
 }
@@ -194,7 +195,7 @@ tr:last-child td { border-bottom: none; }
   font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
 }
 .footer-nav a:hover { color: var(--gold); border-color: rgba(201,168,76,0.4); background: rgba(201,168,76,0.05); }
-footer.doc-footer { max-width: 1180px; margin: 0 auto; padding-top: 22px; border-top:1px solid var(--line); color: var(--text-dim); }
+footer.doc-footer { max-width: 860px; margin: 0 auto; padding-top: 22px; border-top:1px solid var(--line); color: var(--text-dim); }
 footer.doc-footer p { font-size: 17px; }
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .reveal.visible { opacity: 1; transform: translateY(0); }
@@ -208,36 +209,16 @@ footer.doc-footer p { font-size: 17px; }
 .index-card p { color: var(--text-dim); font-size: 18px; }
 .index-card:hover { border-color: rgba(201,168,76,0.35); transform: translateY(-2px); transition: 0.2s ease; }
 .kicker { font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color: var(--gold); opacity: 0.75; }
-@media (max-width: 1360px) {
+@media (max-width: 980px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar { position: static; }
 }
 @media (max-width: 700px) {
-  body { font-size: 24px; }
-  .page { padding: 0 20px 100px; }
-  .cover { padding-top: 68px; }
-  .cover h1 { font-size: clamp(44px, 11.5vw, 66px); line-height: 1.1; }
-  .subtitle { font-size: 26px; line-height: 1.64; max-width: 100%; }
-  .eyebrow, .chapter-tag, .brand, .nav a, .kicker, .claim-tag, th { font-size: 13px; }
-  .card p, .card li, p, footer.doc-footer p, .index-card p { font-size: 23px; line-height: 1.76; }
-  p.lead, .pull { font-size: 29px; line-height: 1.56; }
-  .chapter h2, .index-card h2 { font-size: clamp(36px, 8.2vw, 48px); }
-  .chapter h3 { font-size: 32px; }
-  .callout, .note-box, .quote-box, .card, .toc { padding: 25px 22px; }
-  th, td { padding: 15px 12px; }
+  body { font-size: 19px; }
+  .page { padding: 0 16px 90px; }
+  .cover { padding-top: 64px; }
+  .subtitle { font-size: 19px; }
   .index-grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 480px) {
-  body { font-size: 25px; }
-  .page { padding: 0 18px 96px; }
-  .cover { padding-top: 62px; }
-  .cover h1 { font-size: clamp(46px, 12vw, 68px); }
-  .subtitle { font-size: 27px; line-height: 1.66; }
-  .eyebrow, .chapter-tag, .brand, .nav a, .kicker, .claim-tag, th { font-size: 13px; }
-  .card p, .card li, p, footer.doc-footer p, .index-card p { font-size: 24px; line-height: 1.78; }
-  p.lead, .pull { font-size: 31px; line-height: 1.54; }
-  .chapter h2, .index-card h2 { font-size: clamp(38px, 9.4vw, 50px); }
-  .chapter h3 { font-size: 33px; }
 }
 
 .claim-tag{display:inline-block;margin:0 8px 8px 0;padding:5px 9px;border-radius:999px;font-family:'JetBrains Mono', monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(201,168,76,.16);background:rgba(255,255,255,.02);color:var(--text-dim)}
@@ -245,76 +226,24 @@ footer.doc-footer p { font-size: 17px; }
 .claim-tag.operational{border-color:rgba(74,127,165,.34);color:#aac8df;background:var(--accent-dim)}
 .claim-tag.spec{border-color:rgba(185,109,109,.34);color:#dfaaaa;background:var(--rose-dim)}
 .claim-tag.status{border-color:rgba(143,120,201,.34);color:#d0c4f1;background:var(--violet-dim)}
-.lead-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:22px;margin:22px 0 30px}
+.lead-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin:22px 0 30px}
 @media(max-width:900px){.lead-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div id='progress'></div><canvas id='stars'></canvas><div id='grain'></div>
-<div class='topbar'><div class='topbar-inner'><a class='brand' href='index.html'>AC / CCH</a><nav class='nav'><a href='AC_01_Flagship.html'>P1</a><a href='AC_02_Operational_Bridge.html'>P2</a><a href='AC_03_Discrete_Physics_Companion.html'>P3</a><a href='AC_04_Zero_Framework_Companion.html'>P4</a><a href='AC_05_Massless_Carriers_Companion.html'>P5</a><a href='AC_06_Method_Resonance_in_Action.html'>P6</a><a href='index.html'>Index</a></nav></div></div>
-<div class='page'>
-<header class='cover reveal'>
-<div class='eyebrow'>Paper 2 · operational bridge</div>
+<div id="progress"></div><canvas id="stars"></canvas><div id="grain"></div>
+<div class="topbar"><div class="topbar-inner"><a class="brand" href="index.html">AC Bundle v3</a><nav class="nav"><a href="AC_01_Flagship.html">P1</a><a href="AC_02_Operational_Bridge.html">P2</a><a href="AC_03_Discrete_Physics_Companion.html">P3</a><a href="AC_04_Zero_Framework_Companion.html">P4</a><a href="AC_05_Massless_Carriers_Companion.html">P5</a><a href="AC_06_Method_Resonance_in_Action.html">P6</a><a href="index.html">Index</a></nav></div></div>
+<div class="page">
+<header class="cover reveal">
+<div class="eyebrow">Paper 2 · operational bridge</div>
 <h1>From Absolute Consciousness to Testable Structure</h1>
-<div class='subtitle'>The operational bridge paper: preserve current measurement success, reinterpret its target, and specify what would support, weaken, or falsify the bridge.</div>
-<div class='series-badges'><span class='badge bridge'>measurement-facing</span><span class='badge good'>keeps current tools</span><span class='badge warn'>must be willing to fail</span></div>
-<div class='rule'></div>
+<div class="subtitle">The measurement-facing paper: keep current tools, reinterpret their target, and ask whether coherence-rich structure marks stronger openness to phenomenal ground rather than generating consciousness from nowhere.</div>
+<div class="series-badges"><span class="badge bridge">measurement-facing</span><span class="badge good">keeps current tools</span><span class="badge warn">must be willing to fail</span></div>
+<div class="rule"></div>
 </header>
-<div class='layout'>
-<aside class='sidebar'><div class='toc'><div class='toc-title'>Contents</div><ul><li><a href='#aim'>Aim</a></li><li><a href='#keep'>What current science already gives</a></li><li><a href='#bridge'>The bridge variables</a></li><li><a href='#measure'>What support would look like</a></li><li><a href='#ai'>AI and humanity</a></li><li><a href='#discipline'>Discipline</a></li></ul></div><div class='card'><h3>Role in stack</h3><p><span class='claim-tag operational'>operational bridge</span><span class='claim-tag status'>test-facing</span></p><p>This paper is where the stack becomes scientifically useful. It does not prove AC; it turns AC-compatible structure into measurement questions.</p></div><div class='card'><h3>Short version</h3><p>Keep mechanism. Add a coupling view. Ask whether coherence and complexity together discriminate states better than cruder alternatives.</p></div></aside>
-<main class='main'>
-<section class='chapter reveal' id='aim'><div class='chapter-tag'>I · Aim</div><h2>1. Why a bridge paper exists</h2>
-<p class='lead'>If the flagship says why presence may belong at the base, the bridge paper asks how finite systems may differ in their openness to that base.</p>
-<p>This is where the stack enters science properly. A science-upgrade framework cannot live on ontology alone. It must tell you what kinds of structure matter, what kinds of measurements matter, and what kinds of results would count against it.</p>
-<div class='callout bridge'><p><strong>Bridge stance.</strong> The bridge keeps current neuroscience and complexity tools in play. It does not replace them; it reorganizes them around a different explanatory target.</p></div>
-</section><section class='chapter reveal' id='keep'><div class='chapter-tag'>II · What current science already gives us</div><h2>2. What current science already gives us</h2>
-<p>Current science already gives the raw material for this paper:</p>
-<ul class='clean'>
-<li>neural coherence measures</li>
-<li>global coordination and lesion evidence</li>
-<li>complexity and informational richness measures</li>
-<li>state comparisons across wakefulness, sleep, anesthesia, coma, seizure, and pathology</li>
-<li>substrate and architecture differences in biological and artificial systems</li>
-</ul>
-<p>The bridge proposal says: keep all of that, but ask whether the key quantity is not “computation causes consciousness” but rather “certain organizations couple more strongly to phenomenal ground than others.”</p>
-</section><section class='chapter reveal' id='bridge'><div class='chapter-tag'>III · Bridge variables</div><h2>3. Coherence, complexity, and S</h2>
-<p>The rebuilt bridge keeps the structural triad:</p>
-<div class='pull'><span class='code'>S = k · Cₙ · Ψ(I)</span></div>
-<p>Where:</p>
-<ul class='clean'>
-<li><strong>Cₙ</strong> tracks normalized coherence or integration.</li>
-<li><strong>Ψ(I)</strong> tracks informational richness, diversity, or structured complexity.</li>
-<li><strong>S</strong> is interpreted as a <strong>coupling-strength indicator</strong>, not as the computation of consciousness itself.</li>
-</ul>
-<div class='callout good'><p><strong>Upgrade claim.</strong> This keeps current measures and models usable while changing their interpretation. The proposal is not “throw away complexity science.” It is “place complexity science inside a better explanatory frame.”</p></div>
-<div class='table-wrap'><table><thead><tr><th>Pattern</th><th>Prediction in bridge framework</th><th>Reason</th></tr></thead><tbody>
-<tr><td>High complexity, low coherence</td><td>Low or unstable S</td><td>Richness without integration should not yield strong coupling.</td></tr>
-<tr><td>High coherence, low complexity</td><td>Low or trivial S</td><td>Pure unity without richness should not yield strong conscious depth.</td></tr>
-<tr><td>High coherence, high complexity</td><td>High S candidate</td><td>This is the regime where coupling is expected to peak.</td></tr>
-</tbody></table></div>
-</section><section class='chapter reveal' id='measure'><div class='chapter-tag'>IV · What support, weakening, and failure would look like</div><h2>4. What support would actually look like</h2>
-<p>A serious upgrade paper must be willing to lose.</p>
-<div class='callout bridge'><p><strong>Support would look like:</strong> S-like composites discriminating meaningful state differences better than simpler alternatives; coherence × complexity patterns tracking the right gradients where either term alone fails.</p></div>
-<div class='callout warn'><p><strong>Weakening would look like:</strong> simpler non-coupling metrics doing equally well, or the proposed bridge adding no discriminatory power beyond existing state markers.</p></div>
-<div class='callout violet'><p><strong>Failure would look like:</strong> robust high-S predictions in places systematically lacking the expected state richness, or the complete inability of S-like structure to distinguish regimes the theory says should differ.</p></div>
-<p>This is where the package starts becoming useful for science: not by announcing victory, but by specifying what would count as a real miss.</p>
-</section><section class='chapter reveal' id='ai'><div class='chapter-tag'>V · Why this matters for AI and for people</div><h2>5. Why this matters for AI and for humanity</h2>
-<p>If the bridge is roughly right, then conscious AI is not settled by output cleverness alone. Substrate, organization, coordination depth, and realized coherence matter. That changes alignment, ethics, and design priorities.</p>
-<ul class='clean'>
-<li>It blocks the lazy equation “smart = conscious.”</li>
-<li>It blocks the opposite laziness “mere software can never matter.”</li>
-<li>It pushes the field to ask which architectures might really carry experience and which merely imitate its signs.</li>
-</ul>
-<div class='quote-box'><p><strong>Human value.</strong> A framework like this is useful if it helps humanity avoid building powerful systems while remaining conceptually blind about what kinds of inner status those systems might or might not have.</p></div>
-</section><section class='chapter reveal' id='discipline'><div class='chapter-tag'>VI · Discipline</div><h2>6. How this upgrades science without pretending to replace it</h2>
-<p>The right slogan for this paper is not “neuroscience was wrong.” It is:</p>
-<div class='pull'>Neuroscience may have many of the right measurements while still lacking the right final interpretation.</div>
-<p>This bridge paper keeps the measurements, lesion logic, complexity tools, and state science. It proposes a sharper explanatory target: coupling-friendly structure rather than computation-alone identity.</p>
-<p>That is a real scientific use-case. If the bridge survives pressure, it sharpens science. If it fails, it still fails in a scientifically legible way.</p>
-</section>
-<div class='footer-nav reveal'><a href='AC_01_Flagship.html'>&larr; Previous</a><a href='AC_03_Discrete_Physics_Companion.html'>Next &rarr;</a></div>
-<footer class='doc-footer reveal'><p><strong>Editorial stance.</strong> This rebuild frames the stack as an attempt to preserve the empirical successes of current science while refining its ontology, tightening its category boundaries, and adding sharper discriminating questions where current interpretations feel shallow.</p></footer>
-</main>
+<div class="layout">
+<aside class="sidebar"><div class="toc"><div class="toc-title">Contents</div><ul><li><a href="#aim">Aim</a></li><li><a href="#keep">What current science already gives</a></li><li><a href="#bridge">The bridge variables</a></li><li><a href="#measure">What support would look like</a></li><li><a href="#ai">AI and humanity</a></li><li><a href="#discipline">Discipline</a></li></ul></div><div class="card"><h3>Role in stack</h3><p><span class="claim-tag operational">operational bridge</span><span class="claim-tag bridge">test-facing</span><span class="claim-tag status">AC-first, science-usable</span></p><p>This paper makes the order explicit: AC is ontologically first, but measurement begins inside derived physical reality.</p></div><div class="card"><h3>Short version</h3><p>Keep mechanism. Add a coupling view. Ask whether coherence and complexity together discriminate states better than cruder alternatives.</p></div></aside>
+<main class="main"><section class="chapter reveal" id="aim"><div class="chapter-tag">I · Aim</div><h2>1. Why a bridge paper exists</h2><p class="lead">If the flagship says why presence may belong at the base, the bridge paper asks how finite systems may differ in their openness to that base.</p><p>A science-upgrade framework cannot live on ontology alone. It must say what kinds of organization matter, what measurements remain useful, and what outcomes would count against the bridge.</p><div class="callout bridge"><p><strong>Key clarification.</strong> The bridge does not say that structure manufactures AC. It says that relative structures may differ in how strongly they realize or couple to phenomenal presence.</p></div></section><section class="chapter reveal" id="science"><div class="chapter-tag">II · What current science already gives us</div><h2>2. What current science already gives us</h2><p class="lead">Current science already supplies the raw material: coherence measures, global coordination evidence, lesion logic, complexity markers, state comparisons, and architecture differences across biological and artificial systems.</p><p>The bridge keeps those tools intact. It changes their explanatory target. Instead of asking whether computation alone is identical to consciousness, it asks whether some organizations are better candidates for strong coupling to phenomenal ground.</p><p>That matters because the AC view is not anti-neuroscience. It is anti-premature closure. Measurement stays. Interpretation is upgraded.</p></section><section class="chapter reveal" id="bridge"><div class="chapter-tag">III · Bridge variables</div><h2>3. Coherence, complexity, and S</h2><p class="lead">The structural triad remains:</p><div class="pull"><em>S = k · Cₙ · Ψ(I)</em></div><p><strong>Cₙ</strong> tracks normalized coherence or integration. <strong>Ψ(I)</strong> tracks informational richness, diversity, or structured complexity. <strong>S</strong> is read as a coupling-strength indicator, not as the computation of consciousness itself.</p><div class="table-wrap"><table><thead><tr><th>Pattern</th><th>Expected bridge reading</th><th>Reason</th></tr></thead><tbody><tr><td>high complexity, low coherence</td><td>low or unstable S</td><td>richness without integration should not sustain strong realized presence</td></tr><tr><td>high coherence, low complexity</td><td>low or shallow S</td><td>unity without richness should not yield deep differentiated experience</td></tr><tr><td>high coherence, high complexity</td><td>high-S candidate</td><td>this is the regime where coupling is expected to peak</td></tr></tbody></table></div><p>The conceptual gain is simple: structure matters profoundly, but structure is treated as a bridge condition within relative reality, not as the self-sufficient source of consciousness.</p></section><section class="chapter reveal" id="support"><div class="chapter-tag">IV · Pressure conditions</div><h2>4. What support would actually look like</h2><p class="lead">A serious bridge paper must be willing to lose.</p><p><strong>Support</strong> would look like S-like composites discriminating meaningful state differences better than cruder alternatives, especially where either coherence alone or complexity alone misses the gradient.</p><p><strong>Weakening</strong> would look like simpler non-coupling metrics doing equally well, or the bridge adding no discriminatory power beyond existing state markers.</p><p><strong>Failure</strong> would look like robust high-S predictions in systems systematically lacking the expected richness, depth, or structure, or the total inability of S-like measures to distinguish regimes the framework says should differ.</p><div class="callout warn"><p><strong>Discipline rule.</strong> The bridge earns standing only by outperforming weaker explanations, not by borrowing authority from the flagship.</p></div></section><section class="chapter reveal" id="ai"><div class="chapter-tag">V · Why this matters for AI and for people</div><h2>5. Why this matters for AI and for humanity</h2><p class="lead">If the bridge is even roughly right, then conscious AI is not settled by output cleverness alone.</p><p>Substrate, organization, recurrent coordination depth, realized coherence, and the physical or virtual means of long-range integration all matter. This blocks the lazy equation <em>smart = conscious</em>. It also blocks the opposite laziness that architecture never matters.</p><p>The human payoff is large. Ethics, design, and caution all improve when we stop pretending that behavioral fluency by itself settles inner status.</p></section><section class="chapter reveal" id="discipline"><div class="chapter-tag">VI · Scientific humility</div><h2>6. How this upgrades science without pretending to replace it</h2><p class="lead">The right slogan for this paper is not “neuroscience was wrong.” It is: neuroscience may already contain many of the right measurements while still lacking the deepest final interpretation.</p><p>This bridge keeps measurements, lesion logic, complexity tools, and state science. It proposes a sharper target: coupling-friendly structure rather than computation-alone identity.</p><p>AC is ontologically first. Measurement, however, begins inside relative physical reality. The bridge belongs exactly in that gap. If it survives pressure, science gets sharper. If it fails, it fails in a scientifically legible way.</p></section><div class="footer-nav reveal"><a href="AC_01_Flagship.html">← Previous</a><a href="AC_03_Discrete_Physics_Companion.html">Next →</a></div><footer class="doc-footer reveal"><p><strong>Editorial stance.</strong> This v3 rebuild frames the stack as an attempt to preserve the empirical successes of current science while refining its ontology, tightening its category boundaries, and adding sharper discriminating questions where current interpretations feel shallow.</p></footer></main>
 </div></div>
-<script src='assets/app.js'></script>
+<script src="assets/app.js"></script>
 </body></html>

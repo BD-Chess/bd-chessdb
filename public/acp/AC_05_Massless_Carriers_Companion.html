@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang='en'>
+
+<html lang="en">
 <head>
-<meta charset='UTF-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Massless Carriers, Grid Speed, and Ontological Absence</title>
-<link rel='preconnect' href='https://fonts.googleapis.com'>
-<link href='https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap' rel='stylesheet'>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
 <style>
 :root {
   --bg: #06060a;
@@ -80,7 +81,7 @@ body::after {
   background: rgba(6,7,12,0.78); border-bottom: 1px solid var(--line);
 }
 .topbar-inner {
-  max-width: 1760px; margin: 0 auto; padding: 14px 34px;
+  max-width: 1240px; margin: 0 auto; padding: 14px 22px;
   display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
 }
 .brand {
@@ -98,9 +99,9 @@ body::after {
   color: var(--gold); border-color: rgba(201,168,76,0.45); background: rgba(201,168,76,0.06);
 }
 .page {
-  position: relative; z-index: 3; max-width: 1760px; margin: 0 auto; padding: 0 34px 120px;
+  position: relative; z-index: 3; max-width: 1240px; margin: 0 auto; padding: 0 26px 120px;
 }
-.cover { padding: 90px 0 44px; text-align: center; max-width: 1320px; margin: 0 auto; }
+.cover { padding: 90px 0 44px; text-align: center; max-width: 840px; margin: 0 auto; }
 .eyebrow {
   color: var(--gold); opacity: 0.78; font-family: 'JetBrains Mono', monospace;
   font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 18px;
@@ -111,7 +112,7 @@ h1 {
 }
 h1 em { color: var(--gold); font-style: italic; }
 .subtitle {
-  color: var(--text-dim); font-style: italic; font-size: 22px; max-width: 1240px; margin: 0 auto 24px;
+  color: var(--text-dim); font-style: italic; font-size: 22px; max-width: 760px; margin: 0 auto 24px;
 }
 .byline { font-family: 'JetBrains Mono', monospace; color: var(--gold-dim); font-size: 11px; letter-spacing: 0.16em; }
 .series-badges {
@@ -127,7 +128,7 @@ h1 em { color: var(--gold); font-style: italic; }
 .badge.warn { border-color: rgba(185,109,109,0.34); color: #dfaaaa; background: var(--rose-dim); }
 .badge.violet { border-color: rgba(143,120,201,0.34); color: #d0c4f1; background: var(--violet-dim); }
 .rule { width: 88px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 24px auto 0; opacity: 0.55; }
-.layout { display:grid; grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); gap: 34px; align-items: start; }
+.layout { display:grid; grid-template-columns: minmax(0, 250px) minmax(0, 1fr); gap: 28px; align-items: start; }
 .sidebar {
   position: sticky; top: 82px; z-index: 4;
 }
@@ -194,7 +195,7 @@ tr:last-child td { border-bottom: none; }
   font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
 }
 .footer-nav a:hover { color: var(--gold); border-color: rgba(201,168,76,0.4); background: rgba(201,168,76,0.05); }
-footer.doc-footer { max-width: 1180px; margin: 0 auto; padding-top: 22px; border-top:1px solid var(--line); color: var(--text-dim); }
+footer.doc-footer { max-width: 860px; margin: 0 auto; padding-top: 22px; border-top:1px solid var(--line); color: var(--text-dim); }
 footer.doc-footer p { font-size: 17px; }
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .reveal.visible { opacity: 1; transform: translateY(0); }
@@ -208,36 +209,16 @@ footer.doc-footer p { font-size: 17px; }
 .index-card p { color: var(--text-dim); font-size: 18px; }
 .index-card:hover { border-color: rgba(201,168,76,0.35); transform: translateY(-2px); transition: 0.2s ease; }
 .kicker { font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color: var(--gold); opacity: 0.75; }
-@media (max-width: 1360px) {
+@media (max-width: 980px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar { position: static; }
 }
 @media (max-width: 700px) {
-  body { font-size: 24px; }
-  .page { padding: 0 20px 100px; }
-  .cover { padding-top: 68px; }
-  .cover h1 { font-size: clamp(44px, 11.5vw, 66px); line-height: 1.1; }
-  .subtitle { font-size: 26px; line-height: 1.64; max-width: 100%; }
-  .eyebrow, .chapter-tag, .brand, .nav a, .kicker, .claim-tag, th { font-size: 13px; }
-  .card p, .card li, p, footer.doc-footer p, .index-card p { font-size: 23px; line-height: 1.76; }
-  p.lead, .pull { font-size: 29px; line-height: 1.56; }
-  .chapter h2, .index-card h2 { font-size: clamp(36px, 8.2vw, 48px); }
-  .chapter h3 { font-size: 32px; }
-  .callout, .note-box, .quote-box, .card, .toc { padding: 25px 22px; }
-  th, td { padding: 15px 12px; }
+  body { font-size: 19px; }
+  .page { padding: 0 16px 90px; }
+  .cover { padding-top: 64px; }
+  .subtitle { font-size: 19px; }
   .index-grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 480px) {
-  body { font-size: 25px; }
-  .page { padding: 0 18px 96px; }
-  .cover { padding-top: 62px; }
-  .cover h1 { font-size: clamp(46px, 12vw, 68px); }
-  .subtitle { font-size: 27px; line-height: 1.66; }
-  .eyebrow, .chapter-tag, .brand, .nav a, .kicker, .claim-tag, th { font-size: 13px; }
-  .card p, .card li, p, footer.doc-footer p, .index-card p { font-size: 24px; line-height: 1.78; }
-  p.lead, .pull { font-size: 31px; line-height: 1.54; }
-  .chapter h2, .index-card h2 { font-size: clamp(38px, 9.4vw, 50px); }
-  .chapter h3 { font-size: 33px; }
 }
 
 .claim-tag{display:inline-block;margin:0 8px 8px 0;padding:5px 9px;border-radius:999px;font-family:'JetBrains Mono', monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(201,168,76,.16);background:rgba(255,255,255,.02);color:var(--text-dim)}
@@ -245,57 +226,24 @@ footer.doc-footer p { font-size: 17px; }
 .claim-tag.operational{border-color:rgba(74,127,165,.34);color:#aac8df;background:var(--accent-dim)}
 .claim-tag.spec{border-color:rgba(185,109,109,.34);color:#dfaaaa;background:var(--rose-dim)}
 .claim-tag.status{border-color:rgba(143,120,201,.34);color:#d0c4f1;background:var(--violet-dim)}
-.lead-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:22px;margin:22px 0 30px}
+.lead-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin:22px 0 30px}
 @media(max-width:900px){.lead-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div id='progress'></div><canvas id='stars'></canvas><div id='grain'></div>
-<div class='topbar'><div class='topbar-inner'><a class='brand' href='index.html'>AC / CCH</a><nav class='nav'><a href='AC_01_Flagship.html'>P1</a><a href='AC_02_Operational_Bridge.html'>P2</a><a href='AC_03_Discrete_Physics_Companion.html'>P3</a><a href='AC_04_Zero_Framework_Companion.html'>P4</a><a href='AC_05_Massless_Carriers_Companion.html'>P5</a><a href='AC_06_Method_Resonance_in_Action.html'>P6</a><a href='index.html'>Index</a></nav></div></div>
-<div class='page'>
-<header class='cover reveal'>
-<div class='eyebrow'>Paper 5 · massless-carriers companion</div>
+<div id="progress"></div><canvas id="stars"></canvas><div id="grain"></div>
+<div class="topbar"><div class="topbar-inner"><a class="brand" href="index.html">AC Bundle v3</a><nav class="nav"><a href="AC_01_Flagship.html">P1</a><a href="AC_02_Operational_Bridge.html">P2</a><a href="AC_03_Discrete_Physics_Companion.html">P3</a><a href="AC_04_Zero_Framework_Companion.html">P4</a><a href="AC_05_Massless_Carriers_Companion.html">P5</a><a href="AC_06_Method_Resonance_in_Action.html">P6</a><a href="index.html">Index</a></nav></div></div>
+<div class="page">
+<header class="cover reveal">
+<div class="eyebrow">Paper 5 · massless-carriers companion</div>
 <h1>Massless Carriers, Grid Speed, and Ontological Absence</h1>
-<div class='subtitle'>A speculative companion on photons, gravitons, propagation ceilings, and coherence-building roles — explicitly framed as extension rather than completed replacement.</div>
-<div class='series-badges'><span class='badge spec'>speculative note</span><span class='badge bridge'>conceptual bridge</span><span class='badge warn'>status guarded</span></div>
-<div class='rule'></div>
+<div class="subtitle">A speculative companion on massless carriers, propagation ceilings, and coherence-building roles — now explicitly anchored inside an AC-first ontology rather than a physics-first reading.</div>
+<div class="series-badges"><span class="badge spec">speculative note</span><span class="badge bridge">conceptual bridge</span><span class="badge warn">status guarded</span></div>
+<div class="rule"></div>
 </header>
-<div class='layout'>
-<aside class='sidebar'><div class='toc'><div class='toc-title'>Contents</div><ul><li><a href='#why'>Why separate note</a></li><li><a href='#massless'>Massless carriers</a></li><li><a href='#grid'>Grid-speed bridge</a></li><li><a href='#coherence'>Builders of coherence</a></li><li><a href='#limits'>What keeps this honest</a></li></ul></div><div class='card'><h3>Status</h3><p><span class='claim-tag spec'>speculative extension</span><span class='claim-tag bridge'>structured companion</span></p><p>This note is intentionally parked outside the flagship because it is fertile but attackable.</p></div></aside>
-<main class='main'>
-<section class='chapter reveal' id='why'><div class='chapter-tag'>I · Why this is a separate note</div><h2>1. Why photons and gravitons belong in a companion note</h2>
-<p class='lead'>This note becomes useful only when its status is honest. It is not a replacement for established particle physics. It is a speculative extension that asks whether the AC/CCH stack suggests a cleaner ontological reading of massless carriers.</p>
-<p>That is enough reason to keep it — separately.</p>
-</section><section class='chapter reveal' id='massless'><div class='chapter-tag'>II · Rest-mass absence as reinterpretation</div><h2>2. Massless carriers as ontological reinterpretation</h2>
-<p>The disciplined version of the proposal is not “standard physics made a stupid mistake.” It is:</p>
-<div class='pull'>Within this framework, massless carriers may be better interpreted as cases of rest-mass absence rather than merely zero-valued rest mass.</div>
-<p>That is a real conceptual proposal. It becomes scientific only if it one day pays rent in cleaner derivations, constraints, or unifications without violating known success conditions.</p>
-</section><section class='chapter reveal' id='grid'><div class='chapter-tag'>III · Grid-speed as bridge</div><h2>3. Grid-speed and propagation ceilings</h2>
-<p>The strongest idea in this note is probably the simplest one: light-speed language may be interpreted as a substrate propagation ceiling rather than merely one more ordinary derived velocity. That gives a useful bridge between discrete-bottom intuition and standard ceiling behavior.</p>
-<div class='callout good'><p><strong>Good use.</strong> It sharpens intuition about why massless carriers might belong to a different descriptive class than ordinary matter-like motion.</p></div>
-<div class='callout warn'><p><strong>Limit.</strong> This remains interpretive until it fully respects the known relativistic constraint set.</p></div>
-</section><section class='chapter reveal' id='coherence'><div class='chapter-tag'>IV · Builders of coherence, not necessarily conscious subjects</div><h2>4. Why light may matter to consciousness without being conscious</h2>
-<p>This is the strongest human-scientific payoff of the note. Light and related carrier dynamics can matter enormously to the construction of coherent biological structure without being conscious in themselves.</p>
-<p>That matters because it gives a cleaner middle path:
-<ul class='clean'>
-<li>not “everything that participates is conscious”</li>
-<li>not “carrier dynamics are irrelevant to consciousness”</li>
-<li>but “some physical carriers help build the coherence conditions under which high-S regimes become possible”</li>
-</ul>
-<p>That is a useful refinement, especially for neuroscience and AI substrate discussions.</p>
-</section><section class='chapter reveal' id='limits'><div class='chapter-tag'>V · What keeps this note honest</div><h2>5. What keeps this note honest</h2>
-<p>This note should be kept under four constraints:</p>
-<ul class='clean'>
-<li>do not speak as if relativity has already been rederived</li>
-<li>do not smuggle Zero Framework semantics in as if they were already standard formal physics</li>
-<li>do not overclaim dark-energy replacement or cosmological completion</li>
-<li>do preserve the note as a source of structured hypotheses and conceptual pressure</li>
-</ul>
-<p>In that role, it is worth keeping. It helps the stack imagine beyond current orthodoxy without pretending it has already replaced it.</p>
-</section>
-<div class='footer-nav reveal'><a href='AC_04_Zero_Framework_Companion.html'>&larr; Previous</a><a href='AC_06_Method_Resonance_in_Action.html'>Next &rarr;</a></div>
-<footer class='doc-footer reveal'><p><strong>Editorial stance.</strong> This rebuild frames the stack as an attempt to preserve the empirical successes of current science while refining its ontology, tightening its category boundaries, and adding sharper discriminating questions where current interpretations feel shallow.</p></footer>
-</main>
+<div class="layout">
+<aside class="sidebar"><div class="toc"><div class="toc-title">Contents</div><ul><li><a href="#why">Why separate note</a></li><li><a href="#grid">Propagation ceilings</a></li><li><a href="#tests">What would strengthen it</a></li></ul></div><div class="card"><h3>Status</h3><p><span class="claim-tag spec">speculative extension</span><span class="claim-tag bridge">structured companion</span><span class="claim-tag status">AC-first guardrails added</span></p><p>This note now makes its scope explicit: it discusses derived physical reality, not the ontological ground itself.</p></div></aside>
+<main class="main"><section class="chapter reveal" id="why"><div class="chapter-tag">I · Why this is a separate note</div><h2>1. Why photons and gravitons belong in a companion note</h2><p class="lead">This note becomes useful only when its status is honest. It is not a replacement for established particle physics. It is a speculative extension asking whether the AC/CCH stack suggests a cleaner ontological reading of massless carriers.</p><div class="callout bridge"><p><strong>Foundational guardrail.</strong> AC remains the ontological ground. This note concerns structures and classes inside derived physical reality. Nothing here should be read as making photons, gravitons, or propagation ceilings ontologically prior to AC.</p></div><p>That distinction matters. Without it, a companion note about physical carriers can quietly collapse back into a physics-first ontology. With it, the note keeps the right scope: relative mechanics, not ultimate ground.</p></section><section class="chapter reveal" id="massless"><div class="chapter-tag">II · Rest-mass absence as reinterpretation</div><h2>2. Massless carriers as ontological reinterpretation</h2><p class="lead">The disciplined version of the proposal is not “standard physics made a stupid mistake.” It is narrower and cleaner: within this framework, massless carriers may be better interpreted as cases of rest-mass absence rather than merely zero-valued rest mass.</p><div class="pull">Massless may mark a different descriptive class, not just an ordinary class with a parameter set to zero.</div><p>This is where the note brushes against the Zero Framework without depending on it. The conceptual suggestion is that <em>absence of a rest-mass term</em> may sometimes be a better ontological reading than <em>an ordinary matter-like quantity whose value happens to be zero</em>.</p><p>That is a real proposal, but it becomes scientifically meaningful only if it one day pays rent through cleaner derivations, tighter unifications, or sharper constraints while preserving known success conditions.</p></section><section class="chapter reveal" id="grid"><div class="chapter-tag">III · Propagation ceilings within relative reality</div><h2>3. Grid-speed and propagation ceilings</h2><p class="lead">Within derived physical reality, light-speed language may be interpreted as a substrate propagation ceiling rather than merely one more ordinary derived velocity.</p><p>Read carefully, this says something precise: the relative substrate appears to have a maximum rate for causal propagation, synchronization, correction, and feedback closure. That ceiling constrains how quickly coherent physical organization can integrate itself across space.</p><div class="callout good"><p><strong>Good use.</strong> The idea clarifies why massless carriers may belong to a different descriptive class than matter-like transport. They look less like ordinary transported objects and more like ceiling-marking propagation modes of the substrate itself.</p></div><div class="callout warn"><p><strong>Limit.</strong> This is still interpretive. It does not yet rederive relativity, eliminate the need for Lorentz-invariant recovery, or license casual claims about preferred-frame physics.</p></div><p>Most importantly, the ceiling is a property of relative physical organization. It is not a speed of AC, not a speed of presence, and not a direct statement about the ground itself.</p></section><section class="chapter reveal" id="coherence"><div class="chapter-tag">IV · Builders of coherence, not necessarily conscious subjects</div><h2>4. Why light may matter to consciousness without being conscious</h2><p class="lead">This is the strongest human-scientific payoff of the note. Light and related carrier dynamics can matter enormously to the construction of coherent biological structure without being conscious in themselves.</p><p>That matters because it gives a clean middle path:</p><ul class="clean"><li>not “everything that participates is conscious”</li><li>not “carrier dynamics are irrelevant to consciousness”</li><li>but “some carriers help build, stabilize, and maintain the coherence conditions under which strong realized presence becomes possible”</li></ul><p>In biological systems that can include long-range coordination, signaling speed, timing windows, feedback closure, oscillatory stability, and the physical maintenance of organized living structure. In artificial systems the analogous question becomes whether a substrate supports the depth, recurrence, and low-latency integration required for anything like high-S organization.</p><div class="pull">Carrier importance is structural, not automatically phenomenal.</div><p>That is the key distinction. Carriers may help build the instrument without being the music, and may help realize coherent structure without being conscious subjects in themselves.</p></section><section class="chapter reveal" id="tests"><div class="chapter-tag">V · What would make this note stronger or weaker</div><h2>5. What would actually move it forward</h2><p class="lead">Speculative notes earn survival only by generating disciplined next questions.</p><p><strong>Stronger</strong> would mean: a cleaner classification of massless carriers, derivational payoff, a sharper relation between propagation ceilings and realizable coherence, or biologically relevant predictions about structure-building constraints.</p><p><strong>Weaker</strong> would mean: the reinterpretation adds no explanatory value beyond standard language, collapses into metaphor, or conflicts with robust relativistic success conditions.</p><p>That standard should stay explicit. Fertility alone is not enough.</p></section><section class="chapter reveal" id="limits"><div class="chapter-tag">VI · What keeps this note honest</div><h2>6. What keeps this note honest</h2><p class="lead">This note should stay under six constraints.</p><ul class="clean"><li>Do not speak as if relativity has already been rederived.</li><li>Do not smuggle Zero Framework semantics in as if they were already standard formal physics.</li><li>Do not overclaim cosmological completion or dark-energy replacement.</li><li>Do keep AC ontologically first and the physical layer explicitly derivative.</li><li>Do preserve the note as a source of structured hypotheses rather than rhetorical inflation.</li><li>Do ask whether the reinterpretation improves science, not merely whether it sounds deep.</li></ul><p>In that role the note is worth keeping. It helps the stack imagine beyond current orthodoxy without pretending it has already replaced it.</p></section><div class="footer-nav reveal"><a href="AC_04_Zero_Framework_Companion.html">← Previous</a><a href="AC_06_Method_Resonance_in_Action.html">Next →</a></div><footer class="doc-footer reveal"><p><strong>Editorial stance.</strong> This v3 rebuild frames the stack as an attempt to preserve the empirical successes of current science while refining its ontology, tightening its category boundaries, and adding sharper discriminating questions where current interpretations feel shallow.</p></footer></main>
 </div></div>
-<script src='assets/app.js'></script>
+<script src="assets/app.js"></script>
 </body></html>

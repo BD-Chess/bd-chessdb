@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang='en'>
+
+<html lang="en">
 <head>
-<meta charset='UTF-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Discrete Physics and Non-Computational Consciousness</title>
-<link rel='preconnect' href='https://fonts.googleapis.com'>
-<link href='https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap' rel='stylesheet'>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
 <style>
 :root {
   --bg: #06060a;
@@ -80,7 +81,7 @@ body::after {
   background: rgba(6,7,12,0.78); border-bottom: 1px solid var(--line);
 }
 .topbar-inner {
-  max-width: 1760px; margin: 0 auto; padding: 14px 34px;
+  max-width: 1240px; margin: 0 auto; padding: 14px 22px;
   display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
 }
 .brand {
@@ -98,9 +99,9 @@ body::after {
   color: var(--gold); border-color: rgba(201,168,76,0.45); background: rgba(201,168,76,0.06);
 }
 .page {
-  position: relative; z-index: 3; max-width: 1760px; margin: 0 auto; padding: 0 34px 120px;
+  position: relative; z-index: 3; max-width: 1240px; margin: 0 auto; padding: 0 26px 120px;
 }
-.cover { padding: 90px 0 44px; text-align: center; max-width: 1320px; margin: 0 auto; }
+.cover { padding: 90px 0 44px; text-align: center; max-width: 840px; margin: 0 auto; }
 .eyebrow {
   color: var(--gold); opacity: 0.78; font-family: 'JetBrains Mono', monospace;
   font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 18px;
@@ -111,7 +112,7 @@ h1 {
 }
 h1 em { color: var(--gold); font-style: italic; }
 .subtitle {
-  color: var(--text-dim); font-style: italic; font-size: 22px; max-width: 1240px; margin: 0 auto 24px;
+  color: var(--text-dim); font-style: italic; font-size: 22px; max-width: 760px; margin: 0 auto 24px;
 }
 .byline { font-family: 'JetBrains Mono', monospace; color: var(--gold-dim); font-size: 11px; letter-spacing: 0.16em; }
 .series-badges {
@@ -127,7 +128,7 @@ h1 em { color: var(--gold); font-style: italic; }
 .badge.warn { border-color: rgba(185,109,109,0.34); color: #dfaaaa; background: var(--rose-dim); }
 .badge.violet { border-color: rgba(143,120,201,0.34); color: #d0c4f1; background: var(--violet-dim); }
 .rule { width: 88px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 24px auto 0; opacity: 0.55; }
-.layout { display:grid; grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); gap: 34px; align-items: start; }
+.layout { display:grid; grid-template-columns: minmax(0, 250px) minmax(0, 1fr); gap: 28px; align-items: start; }
 .sidebar {
   position: sticky; top: 82px; z-index: 4;
 }
@@ -194,7 +195,7 @@ tr:last-child td { border-bottom: none; }
   font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
 }
 .footer-nav a:hover { color: var(--gold); border-color: rgba(201,168,76,0.4); background: rgba(201,168,76,0.05); }
-footer.doc-footer { max-width: 1180px; margin: 0 auto; padding-top: 22px; border-top:1px solid var(--line); color: var(--text-dim); }
+footer.doc-footer { max-width: 860px; margin: 0 auto; padding-top: 22px; border-top:1px solid var(--line); color: var(--text-dim); }
 footer.doc-footer p { font-size: 17px; }
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .reveal.visible { opacity: 1; transform: translateY(0); }
@@ -208,36 +209,16 @@ footer.doc-footer p { font-size: 17px; }
 .index-card p { color: var(--text-dim); font-size: 18px; }
 .index-card:hover { border-color: rgba(201,168,76,0.35); transform: translateY(-2px); transition: 0.2s ease; }
 .kicker { font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color: var(--gold); opacity: 0.75; }
-@media (max-width: 1360px) {
+@media (max-width: 980px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar { position: static; }
 }
 @media (max-width: 700px) {
-  body { font-size: 24px; }
-  .page { padding: 0 20px 100px; }
-  .cover { padding-top: 68px; }
-  .cover h1 { font-size: clamp(44px, 11.5vw, 66px); line-height: 1.1; }
-  .subtitle { font-size: 26px; line-height: 1.64; max-width: 100%; }
-  .eyebrow, .chapter-tag, .brand, .nav a, .kicker, .claim-tag, th { font-size: 13px; }
-  .card p, .card li, p, footer.doc-footer p, .index-card p { font-size: 23px; line-height: 1.76; }
-  p.lead, .pull { font-size: 29px; line-height: 1.56; }
-  .chapter h2, .index-card h2 { font-size: clamp(36px, 8.2vw, 48px); }
-  .chapter h3 { font-size: 32px; }
-  .callout, .note-box, .quote-box, .card, .toc { padding: 25px 22px; }
-  th, td { padding: 15px 12px; }
+  body { font-size: 19px; }
+  .page { padding: 0 16px 90px; }
+  .cover { padding-top: 64px; }
+  .subtitle { font-size: 19px; }
   .index-grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 480px) {
-  body { font-size: 25px; }
-  .page { padding: 0 18px 96px; }
-  .cover { padding-top: 62px; }
-  .cover h1 { font-size: clamp(46px, 12vw, 68px); }
-  .subtitle { font-size: 27px; line-height: 1.66; }
-  .eyebrow, .chapter-tag, .brand, .nav a, .kicker, .claim-tag, th { font-size: 13px; }
-  .card p, .card li, p, footer.doc-footer p, .index-card p { font-size: 24px; line-height: 1.78; }
-  p.lead, .pull { font-size: 31px; line-height: 1.54; }
-  .chapter h2, .index-card h2 { font-size: clamp(38px, 9.4vw, 50px); }
-  .chapter h3 { font-size: 33px; }
 }
 
 .claim-tag{display:inline-block;margin:0 8px 8px 0;padding:5px 9px;border-radius:999px;font-family:'JetBrains Mono', monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(201,168,76,.16);background:rgba(255,255,255,.02);color:var(--text-dim)}
@@ -245,60 +226,24 @@ footer.doc-footer p { font-size: 17px; }
 .claim-tag.operational{border-color:rgba(74,127,165,.34);color:#aac8df;background:var(--accent-dim)}
 .claim-tag.spec{border-color:rgba(185,109,109,.34);color:#dfaaaa;background:var(--rose-dim)}
 .claim-tag.status{border-color:rgba(143,120,201,.34);color:#d0c4f1;background:var(--violet-dim)}
-.lead-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:22px;margin:22px 0 30px}
+.lead-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin:22px 0 30px}
 @media(max-width:900px){.lead-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div id='progress'></div><canvas id='stars'></canvas><div id='grain'></div>
-<div class='topbar'><div class='topbar-inner'><a class='brand' href='index.html'>AC / CCH</a><nav class='nav'><a href='AC_01_Flagship.html'>P1</a><a href='AC_02_Operational_Bridge.html'>P2</a><a href='AC_03_Discrete_Physics_Companion.html'>P3</a><a href='AC_04_Zero_Framework_Companion.html'>P4</a><a href='AC_05_Massless_Carriers_Companion.html'>P5</a><a href='AC_06_Method_Resonance_in_Action.html'>P6</a><a href='index.html'>Index</a></nav></div></div>
-<div class='page'>
-<header class='cover reveal'>
-<div class='eyebrow'>Paper 3 · discrete-physics companion</div>
+<div id="progress"></div><canvas id="stars"></canvas><div id="grain"></div>
+<div class="topbar"><div class="topbar-inner"><a class="brand" href="index.html">AC Bundle v3</a><nav class="nav"><a href="AC_01_Flagship.html">P1</a><a href="AC_02_Operational_Bridge.html">P2</a><a href="AC_03_Discrete_Physics_Companion.html">P3</a><a href="AC_04_Zero_Framework_Companion.html">P4</a><a href="AC_05_Massless_Carriers_Companion.html">P5</a><a href="AC_06_Method_Resonance_in_Action.html">P6</a><a href="index.html">Index</a></nav></div></div>
+<div class="page">
+<header class="cover reveal">
+<div class="eyebrow">Paper 3 · discrete-physics companion</div>
 <h1>Discrete Physics and Non-Computational Consciousness</h1>
-<div class='subtitle'>A companion paper arguing that a discrete substrate can sharpen physics interpretation without collapsing phenomenal presence into mere computation.</div>
-<div class='series-badges'><span class='badge bridge'>compatibility paper</span><span class='badge good'>clarifies categories</span><span class='badge warn'>not a full physics replacement</span></div>
-<div class='rule'></div>
+<div class="subtitle">A companion on discrete-bottom intuitions, propagation ceilings, and the crucial difference between ontological order and analytic order.</div>
+<div class="series-badges"><span class="badge bridge">compatibility paper</span><span class="badge good">clarifies categories</span><span class="badge warn">not a full physics replacement</span></div>
+<div class="rule"></div>
 </header>
-<div class='layout'>
-<aside class='sidebar'><div class='toc'><div class='toc-title'>Contents</div><ul><li><a href='#why'>Why keep this paper</a></li><li><a href='#layers'>Two-layer architecture</a></li><li><a href='#discrete'>Discrete substrate without collapse</a></li><li><a href='#light'>Grid-speed as bridge</a></li><li><a href='#limits'>What it still does not finish</a></li></ul></div><div class='card'><h3>Role in stack</h3><p><span class='claim-tag operational'>bridge-supporting</span><span class='claim-tag status'>compatibility argument</span></p><p>This paper protects the stack from one recurring confusion: that any appeal to discrete physics must secretly collapse back into computationalism.</p></div></aside>
-<main class='main'>
-<section class='chapter reveal' id='why'><div class='chapter-tag'>I · Why keep this paper</div><h2>1. Why a discrete-physics companion is still useful</h2>
-<p class='lead'>The value of this companion is not that it replaces physics. Its value is that it clarifies one conceptual junction: a physically computational substrate need not mean consciousness is computational.</p>
-<p>That is already a scientific refinement. It says current physics may describe state evolution correctly while still leaving the ontological question of presence open.</p>
-</section><section class='chapter reveal' id='layers'><div class='chapter-tag'>II · Layering without confusion</div><h2>2. Two layers, two jobs</h2>
-<p>The cleaned framing is:</p>
-<ul class='clean'>
-<li><strong>Physical layer:</strong> state evolution, lawful dynamics, substrate transitions, possibly discrete at some bottom scale.</li>
-<li><strong>Consciousness ground:</strong> phenomenal presence, not reducible merely to state transition description.</li>
-<li><strong>Bridge:</strong> structured systems may stand in differing coupling relation to that ground.</li>
-</ul>
-<div class='callout bridge'><p><strong>Precision gain.</strong> This does not reverse current science. It says science may already capture the mechanism of evolution while missing the best ontological reading of what that mechanism is evolution <em>within</em>.</p></div>
-</section><section class='chapter reveal' id='discrete'><div class='chapter-tag'>III · Discreteness without collapse</div><h2>3. Why a discrete substrate does not collapse the framework</h2>
-<p>Even if physical reality is discrete at bottom scale, what follows immediately is a claim about state updates, not a completed claim about phenomenal identity. A frame-update picture can describe how the world evolves without exhausting why any evolved structure is present at all.</p>
-<p>That matters because it preserves a real distinction:</p>
-<div class='table-wrap'><table><thead><tr><th>Question</th><th>Handled by</th></tr></thead><tbody>
-<tr><td>How do physical configurations evolve?</td><td>Physics, computation, update laws</td></tr>
-<tr><td>Why is any eligible configuration phenomenally present?</td><td>Not settled merely by update law description</td></tr>
-</tbody></table></div>
-<p>That is not anti-scientific. It is just category discipline.</p>
-</section><section class='chapter reveal' id='light'><div class='chapter-tag'>IV · Grid-speed as interpretive bridge</div><h2>4. The speed of light as an interpretive bridge</h2>
-<p>Reading the speed of light as a substrate propagation ceiling rather than just a familiar velocity is a useful conceptual move. It is useful because it gives intuitive shape to the difference between ordinary matter-like dynamics within a substrate and propagation-limited carriers that mark its ceiling behavior.</p>
-<div class='callout good'><p><strong>Good use.</strong> As an interpretive bridge, this helps unify discrete intuition and relativistic ceiling intuition.</p></div>
-<div class='callout warn'><p><strong>Not yet enough.</strong> It still does not derive relativity in full. Lorentz invariance, low-energy recovery, dispersion constraints, and preferred-frame absence remain mandatory if this path wants to become more than interpretation.</p></div>
-</section><section class='chapter reveal' id='limits'><div class='chapter-tag'>V · Limits and value</div><h2>5. What this paper adds — and what it still does not finish</h2>
-<p>This companion adds scientific value if it makes one confusion harder to commit: that mechanism-level discreteness automatically settles the consciousness question. It does not.</p>
-<p>What it still does not finish:
-<ul class='clean'>
-<li>full relativity recovery</li>
-<li>a complete derivation of bridge variables from first principles</li>
-<li>a final account of substrate consciousness criteria</li>
-</ul>
-<p>That is fine. As part of the rebuilt stack, its job is refinement: preserve physics, clarify categories, and remove false forced choices.</p>
-</section>
-<div class='footer-nav reveal'><a href='AC_02_Operational_Bridge.html'>&larr; Previous</a><a href='AC_04_Zero_Framework_Companion.html'>Next &rarr;</a></div>
-<footer class='doc-footer reveal'><p><strong>Editorial stance.</strong> This rebuild frames the stack as an attempt to preserve the empirical successes of current science while refining its ontology, tightening its category boundaries, and adding sharper discriminating questions where current interpretations feel shallow.</p></footer>
-</main>
+<div class="layout">
+<aside class="sidebar"><div class="toc"><div class="toc-title">Contents</div><ul><li><a href="#why">Why keep this paper</a></li><li><a href="#discrete">Discrete substrate</a></li><li><a href="#brains">Why this matters for systems</a></li></ul></div><div class="card"><h3>Role in stack</h3><p><span class="claim-tag bridge">category clarification</span><span class="claim-tag operational">interpretive bridge</span><span class="claim-tag status">layer order repaired</span></p><p>This paper no longer lets analytic starting-point language quietly override AC-first ontology.</p></div></aside>
+<main class="main"><section class="chapter reveal" id="why"><div class="chapter-tag">I · Why keep this paper</div><h2>1. Why a discrete-physics companion is still useful</h2><p class="lead">The value of this companion is not that it replaces physics. Its value is that it clarifies a junction where confusion appears easily: a computational or discrete substrate does not by itself settle the consciousness question.</p><p>That remains a real scientific refinement. Physics may describe state evolution brilliantly while still leaving the ontological question of presence open.</p></section><section class="chapter reveal" id="order"><div class="chapter-tag">II · Two orders, not one</div><h2>2. Ontological order and analytic order</h2><p class="lead">The earlier version risked an avoidable mistake: treating the order in which science usually proceeds as if it were the order of reality itself.</p><div class="table-wrap"><table><thead><tr><th>Order</th><th>First term</th><th>Meaning</th></tr></thead><tbody><tr><td>Ontological order</td><td>AC</td><td>Ground of reality; what is self-subsisting.</td></tr><tr><td>Relative order</td><td>physical substrate, laws, propagation, structure</td><td>Derived manifestation within AC.</td></tr><tr><td>Analytic order</td><td>physics first, ontology later</td><td>How inquiry usually begins because measurement starts with the relative world.</td></tr></tbody></table></div><p>This distinction repairs the layer confusion. In AC ontology, physical reality is not Layer 1 in the deepest sense. It is already relative reality. Scientists begin there because that is what they can measure, not because it is the final ground.</p><div class="callout bridge"><p><strong>Therefore:</strong> saying “physical substrate” first in an analytic paper does not mean the substrate is ontologically prior to AC.</p></div></section><section class="chapter reveal" id="discrete"><div class="chapter-tag">III · Discreteness without collapse</div><h2>3. Why a discrete substrate does not collapse the framework</h2><p class="lead">Even if physical reality is discrete at bottom scale, what follows immediately is a claim about update law, not a completed claim about phenomenal identity.</p><p>A frame-update picture can describe how configurations evolve without exhausting why any eligible configuration is phenomenally present at all. That keeps a necessary distinction intact:</p><ul class="clean"><li><strong>Physics / computation</strong> answer: how do relative configurations evolve?</li><li><strong>AC ontology</strong> asks: why is any configuration present at all, and why in graded ways?</li></ul><p>This is not anti-scientific. It is category discipline. A discrete-bottom model may be correct about mechanism and still incomplete about presence.</p></section><section class="chapter reveal" id="grid"><div class="chapter-tag">IV · Propagation ceilings</div><h2>4. The speed of light as an interpretive bridge</h2><p class="lead">Within derived physical reality, light-speed language may be interpreted as a substrate propagation ceiling rather than merely one more ordinary velocity.</p><p>Read carefully, this means a limit on how fast causal influence, synchronization, correction signals, and feedback closure can propagate through the relative substrate. It is a statement about the bandwidth and latency constraints of physical organization.</p><div class="pull">This is a ceiling on relative coordination, not a speed of AC itself.</div><p>That is the clean use of the idea. It helps connect discrete-bottom intuition with relativistic ceiling behavior without pretending relativity has already been rederived.</p><div class="callout warn"><p><strong>Limit.</strong> Lorentz invariance, low-energy recovery, dispersion constraints, and preferred-frame absence remain mandatory if this path wants to become more than interpretation.</p></div></section><section class="chapter reveal" id="brains"><div class="chapter-tag">V · Why this matters for brains and AI systems</div><h2>5. Why this paper matters beyond metaphysics</h2><p class="lead">If physically realized coherence matters, then propagation ceilings matter.</p><p>Brains, bodies, and future AI substrates cannot integrate arbitrarily fast. Long-range coordination, phase-locking, recurrent closure, and whole-system stabilization all happen under real propagation limits. That means the physical side of a high-S regime is constrained by actual bandwidth and timing.</p><p>This does not make propagation itself conscious. It makes propagation one of the conditions under which coherent structure can or cannot be realized strongly enough to matter.</p></section><section class="chapter reveal" id="limits"><div class="chapter-tag">VI · Limits and value</div><h2>6. What this paper adds — and what it still does not finish</h2><p class="lead">This companion earns its keep if it makes one confusion harder to commit: that mechanism-level discreteness automatically settles the consciousness question.</p><p>What it still does not finish: full relativity recovery, a first-principles derivation of bridge variables, or a final account of substrate criteria for strong realized presence.</p><p>That is acceptable. Its job is refinement: preserve physics, repair the order of layers, and prevent analytic language from quietly reversing the ontology.</p></section><div class="footer-nav reveal"><a href="AC_02_Operational_Bridge.html">← Previous</a><a href="AC_04_Zero_Framework_Companion.html">Next →</a></div><footer class="doc-footer reveal"><p><strong>Editorial stance.</strong> This v3 rebuild frames the stack as an attempt to preserve the empirical successes of current science while refining its ontology, tightening its category boundaries, and adding sharper discriminating questions where current interpretations feel shallow.</p></footer></main>
 </div></div>
-<script src='assets/app.js'></script>
+<script src="assets/app.js"></script>
 </body></html>

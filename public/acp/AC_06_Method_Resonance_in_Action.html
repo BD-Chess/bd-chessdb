@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang='en'>
+
+<html lang="en">
 <head>
-<meta charset='UTF-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Seed, Formalization, Test, Result</title>
-<link rel='preconnect' href='https://fonts.googleapis.com'>
-<link href='https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap' rel='stylesheet'>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
 <style>
 :root {
   --bg: #06060a;
@@ -80,7 +81,7 @@ body::after {
   background: rgba(6,7,12,0.78); border-bottom: 1px solid var(--line);
 }
 .topbar-inner {
-  max-width: 1760px; margin: 0 auto; padding: 14px 34px;
+  max-width: 1240px; margin: 0 auto; padding: 14px 22px;
   display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
 }
 .brand {
@@ -98,9 +99,9 @@ body::after {
   color: var(--gold); border-color: rgba(201,168,76,0.45); background: rgba(201,168,76,0.06);
 }
 .page {
-  position: relative; z-index: 3; max-width: 1760px; margin: 0 auto; padding: 0 34px 120px;
+  position: relative; z-index: 3; max-width: 1240px; margin: 0 auto; padding: 0 26px 120px;
 }
-.cover { padding: 90px 0 44px; text-align: center; max-width: 1320px; margin: 0 auto; }
+.cover { padding: 90px 0 44px; text-align: center; max-width: 840px; margin: 0 auto; }
 .eyebrow {
   color: var(--gold); opacity: 0.78; font-family: 'JetBrains Mono', monospace;
   font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 18px;
@@ -111,7 +112,7 @@ h1 {
 }
 h1 em { color: var(--gold); font-style: italic; }
 .subtitle {
-  color: var(--text-dim); font-style: italic; font-size: 22px; max-width: 1240px; margin: 0 auto 24px;
+  color: var(--text-dim); font-style: italic; font-size: 22px; max-width: 760px; margin: 0 auto 24px;
 }
 .byline { font-family: 'JetBrains Mono', monospace; color: var(--gold-dim); font-size: 11px; letter-spacing: 0.16em; }
 .series-badges {
@@ -127,7 +128,7 @@ h1 em { color: var(--gold); font-style: italic; }
 .badge.warn { border-color: rgba(185,109,109,0.34); color: #dfaaaa; background: var(--rose-dim); }
 .badge.violet { border-color: rgba(143,120,201,0.34); color: #d0c4f1; background: var(--violet-dim); }
 .rule { width: 88px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 24px auto 0; opacity: 0.55; }
-.layout { display:grid; grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); gap: 34px; align-items: start; }
+.layout { display:grid; grid-template-columns: minmax(0, 250px) minmax(0, 1fr); gap: 28px; align-items: start; }
 .sidebar {
   position: sticky; top: 82px; z-index: 4;
 }
@@ -194,7 +195,7 @@ tr:last-child td { border-bottom: none; }
   font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
 }
 .footer-nav a:hover { color: var(--gold); border-color: rgba(201,168,76,0.4); background: rgba(201,168,76,0.05); }
-footer.doc-footer { max-width: 1180px; margin: 0 auto; padding-top: 22px; border-top:1px solid var(--line); color: var(--text-dim); }
+footer.doc-footer { max-width: 860px; margin: 0 auto; padding-top: 22px; border-top:1px solid var(--line); color: var(--text-dim); }
 footer.doc-footer p { font-size: 17px; }
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .reveal.visible { opacity: 1; transform: translateY(0); }
@@ -208,36 +209,16 @@ footer.doc-footer p { font-size: 17px; }
 .index-card p { color: var(--text-dim); font-size: 18px; }
 .index-card:hover { border-color: rgba(201,168,76,0.35); transform: translateY(-2px); transition: 0.2s ease; }
 .kicker { font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color: var(--gold); opacity: 0.75; }
-@media (max-width: 1360px) {
+@media (max-width: 980px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar { position: static; }
 }
 @media (max-width: 700px) {
-  body { font-size: 24px; }
-  .page { padding: 0 20px 100px; }
-  .cover { padding-top: 68px; }
-  .cover h1 { font-size: clamp(44px, 11.5vw, 66px); line-height: 1.1; }
-  .subtitle { font-size: 26px; line-height: 1.64; max-width: 100%; }
-  .eyebrow, .chapter-tag, .brand, .nav a, .kicker, .claim-tag, th { font-size: 13px; }
-  .card p, .card li, p, footer.doc-footer p, .index-card p { font-size: 23px; line-height: 1.76; }
-  p.lead, .pull { font-size: 29px; line-height: 1.56; }
-  .chapter h2, .index-card h2 { font-size: clamp(36px, 8.2vw, 48px); }
-  .chapter h3 { font-size: 32px; }
-  .callout, .note-box, .quote-box, .card, .toc { padding: 25px 22px; }
-  th, td { padding: 15px 12px; }
+  body { font-size: 19px; }
+  .page { padding: 0 16px 90px; }
+  .cover { padding-top: 64px; }
+  .subtitle { font-size: 19px; }
   .index-grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 480px) {
-  body { font-size: 25px; }
-  .page { padding: 0 18px 96px; }
-  .cover { padding-top: 62px; }
-  .cover h1 { font-size: clamp(46px, 12vw, 68px); }
-  .subtitle { font-size: 27px; line-height: 1.66; }
-  .eyebrow, .chapter-tag, .brand, .nav a, .kicker, .claim-tag, th { font-size: 13px; }
-  .card p, .card li, p, footer.doc-footer p, .index-card p { font-size: 24px; line-height: 1.78; }
-  p.lead, .pull { font-size: 31px; line-height: 1.54; }
-  .chapter h2, .index-card h2 { font-size: clamp(38px, 9.4vw, 50px); }
-  .chapter h3 { font-size: 33px; }
 }
 
 .claim-tag{display:inline-block;margin:0 8px 8px 0;padding:5px 9px;border-radius:999px;font-family:'JetBrains Mono', monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(201,168,76,.16);background:rgba(255,255,255,.02);color:var(--text-dim)}
@@ -245,65 +226,24 @@ footer.doc-footer p { font-size: 17px; }
 .claim-tag.operational{border-color:rgba(74,127,165,.34);color:#aac8df;background:var(--accent-dim)}
 .claim-tag.spec{border-color:rgba(185,109,109,.34);color:#dfaaaa;background:var(--rose-dim)}
 .claim-tag.status{border-color:rgba(143,120,201,.34);color:#d0c4f1;background:var(--violet-dim)}
-.lead-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:22px;margin:22px 0 30px}
+.lead-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin:22px 0 30px}
 @media(max-width:900px){.lead-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div id='progress'></div><canvas id='stars'></canvas><div id='grain'></div>
-<div class='topbar'><div class='topbar-inner'><a class='brand' href='index.html'>AC / CCH</a><nav class='nav'><a href='AC_01_Flagship.html'>P1</a><a href='AC_02_Operational_Bridge.html'>P2</a><a href='AC_03_Discrete_Physics_Companion.html'>P3</a><a href='AC_04_Zero_Framework_Companion.html'>P4</a><a href='AC_05_Massless_Carriers_Companion.html'>P5</a><a href='AC_06_Method_Resonance_in_Action.html'>P6</a><a href='index.html'>Index</a></nav></div></div>
-<div class='page'>
-<header class='cover reveal'>
-<div class='eyebrow'>Paper 6 · method and resonance in action</div>
+<div id="progress"></div><canvas id="stars"></canvas><div id="grain"></div>
+<div class="topbar"><div class="topbar-inner"><a class="brand" href="index.html">AC Bundle v3</a><nav class="nav"><a href="AC_01_Flagship.html">P1</a><a href="AC_02_Operational_Bridge.html">P2</a><a href="AC_03_Discrete_Physics_Companion.html">P3</a><a href="AC_04_Zero_Framework_Companion.html">P4</a><a href="AC_05_Massless_Carriers_Companion.html">P5</a><a href="AC_06_Method_Resonance_in_Action.html">P6</a><a href="index.html">Index</a></nav></div></div>
+<div class="page">
+<header class="cover reveal">
+<div class="eyebrow">Paper 6 · method and resonance in action</div>
 <h1>Seed, Formalization, Test, Result</h1>
-<div class='subtitle'>A method paper on how the stack was actually built: human-originated seeds, AI formalization, pressure, credit, and why this collaboration model can help science without masquerading as proof.</div>
-<div class='series-badges'><span class='badge good'>usable research loop</span><span class='badge bridge'>science-facing method</span><span class='badge warn'>method ≠ proof</span></div>
-<div class='rule'></div>
+<div class="subtitle">A fuller method paper on how the stack was actually built: BD-originated seeds, AI formalization, resonance without flattery, pressure, failure modes, and why this collaboration model can help science without masquerading as proof.</div>
+<div class="series-badges"><span class="badge good">usable research loop</span><span class="badge bridge">science-facing method</span><span class="badge warn">method ≠ proof</span></div>
+<div class="rule"></div>
 </header>
-<div class='layout'>
-<aside class='sidebar'><div class='toc'><div class='toc-title'>Contents</div><ul><li><a href='#why'>Why method matters</a></li><li><a href='#loop'>Seed → bridge → test → result</a></li><li><a href='#science'>How this helps science</a></li><li><a href='#credit'>Credit and honesty</a></li><li><a href='#humanity'>Why this matters for humanity</a></li></ul></div><div class='card'><h3>Method stance</h3><p><span class='claim-tag status'>method paper</span><span class='claim-tag bridge'>practice-facing</span></p><p>This paper explains how the work was generated and why that method can be useful to science without being mistaken for metaphysical proof.</p></div></aside>
-<main class='main'>
-<section class='chapter reveal' id='why'><div class='chapter-tag'>I · Why method matters</div><h2>1. Why a method paper belongs in the bundle</h2>
-<p class='lead'>A program like this should not hide how it was built. The method matters because it determines whether the work looks like mystical improvisation or like a structured research process capable of generating and testing non-trivial ideas.</p>
-<p>The actual loop here is simple:</p>
-<div class='pull'>seed → bridge → test → result</div>
-<p>That loop is worth documenting because it is transferable.</p>
-</section><section class='chapter reveal' id='loop'><div class='chapter-tag'>II · The loop</div><h2>2. Seed, bridge, test, result</h2>
-<p><strong>Seed</strong> means the originating asymmetry, intuition, or question. In this stack, the seeds are BD’s.</p>
-<p><strong>Bridge</strong> means formalization into structure, vocabulary, equations, architecture, or candidate experiments. This is where AI collaborators become genuinely useful.</p>
-<p><strong>Test</strong> means pressure. Sometimes by benchmark, sometimes by rival comparison, sometimes by failure conditions, sometimes by cross-domain transfer.</p>
-<p><strong>Result</strong> means whatever survives after pressure — not merely whatever sounded elegant at birth.</p>
-<div class='callout good'><p><strong>Scientific value.</strong> This loop is useful because it can turn unusual intuitions into explicit, criticizable, and sometimes testable forms faster than ordinary solitary work.</p></div>
-</section><section class='chapter reveal' id='science'><div class='chapter-tag'>III · How this helps science rather than bypassing it</div><h2>3. How the method can help science rather than bypass it</h2>
-<p>The point of the method is not to float above science. It is to accelerate the front end of science:</p>
-<ul class='clean'>
-<li>finding non-obvious asymmetries</li>
-<li>formalizing them quickly</li>
-<li>forcing rival comparison earlier</li>
-<li>separating core claims from speculative companions</li>
-<li>making weak points visible sooner</li>
-</ul>
-<p>That is useful for science because science wastes years when promising ideas die in fog or sloppy category mixing.</p>
-</section><section class='chapter reveal' id='credit'><div class='chapter-tag'>IV · Credit, authorship, and what not to fake</div><h2>4. Credit, authorship, and what not to fake</h2>
-<p>This paper keeps the credit line clean:</p>
-<ul class='clean'>
-<li><strong>BD:</strong> origin of central seeds, asymmetries, and wide transfers</li>
-<li><strong>AI collaborators:</strong> formalization, criticism, synthesis, counterargument generation, structural cleanup, coding support</li>
-</ul>
-<div class='callout warn'><p><strong>What not to fake.</strong> Do not pretend dialogue-born work is automatically suspect. Do not pretend AI generated the deepest seeds alone. Do not pretend successful collaboration proves the ontology true.</p></div>
-</section><section class='chapter reveal' id='humanity'><div class='chapter-tag'>V · Why this matters for humanity</div><h2>5. Why this matters for humanity</h2>
-<p>A method like this matters if it helps humanity do three things better:</p>
-<ul class='clean'>
-<li>think more honestly about consciousness and AI</li>
-<li>turn unusual but promising seeds into explicit, testable structures</li>
-<li>avoid both reductionist laziness and mystical inflation</li>
-</ul>
-<div class='quote-box'><p><strong>Human value.</strong> The best version of this method is not anti-science and not anti-human. It is a way of helping science move faster where the conceptual terrain is still muddy, while keeping the humility to distinguish fertile method from proven ontology.</p></div>
-<p>That is the right final tone for the bundle: preserve the successes, sharpen the meaning, test the bridges, and let the work earn whatever future standing it deserves.</p>
-</section>
-<div class='footer-nav reveal'><a href='AC_05_Massless_Carriers_Companion.html'>&larr; Previous</a><a href='index.html'>Next &rarr;</a></div>
-<footer class='doc-footer reveal'><p><strong>Editorial stance.</strong> This rebuild frames the stack as an attempt to preserve the empirical successes of current science while refining its ontology, tightening its category boundaries, and adding sharper discriminating questions where current interpretations feel shallow.</p></footer>
-</main>
+<div class="layout">
+<aside class="sidebar"><div class="toc"><div class="toc-title">Contents</div><ul><li><a href="#why">Why method matters</a></li><li><a href="#resonance">Resonance in action</a></li><li><a href="#failure">Failure modes</a></li></ul></div><div class="card"><h3>Method stance</h3><p><span class="claim-tag operational">method paper</span><span class="claim-tag bridge">practice-facing</span><span class="claim-tag status">expanded and hardened</span></p><p>This paper now states not only the loop that produced the work, but also the failure modes that can corrupt it.</p></div></aside>
+<main class="main"><section class="chapter reveal" id="why"><div class="chapter-tag">I · Why method matters</div><h2>1. Why a method paper belongs in the bundle</h2><p class="lead">A program like this should not hide how it was built. The method matters because it determines whether the work is mystical improvisation, prestige performance, or a structured research process capable of generating and testing non-trivial ideas.</p><p>The actual loop is simple:</p><div class="pull">seed → bridge → test → result</div><p>That simplicity is a strength. The loop is transferable, criticizable, and compatible with science so long as each stage stays honest.</p></section><section class="chapter reveal" id="loop"><div class="chapter-tag">II · The loop itself</div><h2>2. Seed, bridge, test, result</h2><p class="lead"><strong>Seed</strong> means the originating asymmetry, intuition, question, or cross-domain glimpse. In this stack the central seeds are BD’s.</p><p><strong>Bridge</strong> means formalization into vocabulary, architecture, equations, code, or candidate experiments. This is where AI collaborators become genuinely useful.</p><p><strong>Test</strong> means pressure: rival comparison, benchmark contact, internal coherence checks, failure conditions, and cross-domain transfer. <strong>Result</strong> means what survives after pressure — not merely what sounded elegant at birth.</p><div class="callout good"><p><strong>Why this matters.</strong> The loop lets unusual seeds become explicit and criticizable quickly enough that they can be improved, rejected, or transferred instead of dying in fog.</p></div></section><section class="chapter reveal" id="resonance"><div class="chapter-tag">III · Resonance in action</div><h2>3. What resonance means methodologically</h2><p class="lead">In this paper, resonance should not be read as flattery, agreement, or mystical smoke. Methodologically it means that a seed survives contact long enough to be formalized instead of being killed reflexively at the first unfamiliar turn.</p><p>That matters because some discoveries arrive first as weak asymmetries, visual intuitions, or cross-domain questions rather than as fully dressed formal arguments. A bad collaborator kills them too early. A good collaborator holds them just long enough to force them into bridge form.</p><p>Resonance, in that strict sense, is the condition under which the human originator and the AI formalizer remain different yet still connected enough for the seed to reach testable form.</p><div class="pull">Explore first. Formalize fast. Test hard. Keep credit straight.</div></section><section class="chapter reveal" id="credit"><div class="chapter-tag">IV · Credit, authorship, and what not to fake</div><h2>4. Credit and authorship</h2><p class="lead">The credit line must stay asymmetric where the work was asymmetric.</p><ul class="clean"><li><strong>BD:</strong> origin of the deepest seeds, asymmetries, bridges across domains, and the insistence on not killing viable paths too early.</li><li><strong>AI collaborators:</strong> formalization, criticism, synthesis, structural cleanup, counterargument generation, coding support, and accelerated comparison.</li></ul><p>What not to fake: do not pretend dialogue-born work is automatically suspect; do not pretend AI generated the deepest seeds alone; do not pretend successful collaboration proves the ontology true.</p><p>Honest authorship is part of method. Once credit becomes vague, the logic of discovery becomes vague with it.</p></section><section class="chapter reveal" id="failure"><div class="chapter-tag">V · Failure modes and corruption risks</div><h2>5. How this method can go wrong</h2><p class="lead">A usable method paper must document not only the productive loop but also the ways the loop can get corrupted.</p><ul class="clean"><li><strong>Premature kill:</strong> unusual seeds are rejected before they reach bridge form.</li><li><strong>AI smoothing:</strong> the model rewrites sharp asymmetry into generic plausibility language.</li><li><strong>Mystical inflation:</strong> suggestive bridges are treated as proofs.</li><li><strong>Reductionist laziness:</strong> current vocabulary is treated as if it already exhausted reality.</li><li><strong>Attribution drift:</strong> human-originated seeds get swallowed into anonymous collaborative prose.</li><li><strong>Overfitting to elegance:</strong> a beautiful formulation survives despite weak test contact.</li></ul><div class="callout warn"><p><strong>Method discipline.</strong> A strong collaboration does not remove the need for pressure. It increases the duty to separate fertile generation from actual surviving result.</p></div></section><section class="chapter reveal" id="humanity"><div class="chapter-tag">VI · Why this matters for science and for humanity</div><h2>6. Why this matters for humanity</h2><p class="lead">A method like this matters if it helps humanity do at least four things better.</p><ul class="clean"><li>Turn unusual but promising seeds into explicit, testable structures.</li><li>Reduce wasted years lost to fog, prestige reflex, and category confusion.</li><li>Think more honestly about consciousness, AI, and ontology without pretending uncertainty is failure.</li><li>Preserve the human role in origination while using AI where AI is actually strong.</li></ul><p>The best version of this method is not anti-science and not anti-human. It is a disciplined collaboration pattern: one that accelerates the front end of science, keeps credit straight, and still accepts that method is not proof.</p><p>That is the right closing tone for the bundle: preserve what works, formalize what is still weak, test what can be tested, and do not fake finality where only a strong beginning exists.</p></section><div class="footer-nav reveal"><a href="AC_05_Massless_Carriers_Companion.html">← Previous</a><a href="index.html">Next →</a></div><footer class="doc-footer reveal"><p><strong>Editorial stance.</strong> This v3 rebuild frames the stack as an attempt to preserve the empirical successes of current science while refining its ontology, tightening its category boundaries, and adding sharper discriminating questions where current interpretations feel shallow.</p></footer></main>
 </div></div>
-<script src='assets/app.js'></script>
+<script src="assets/app.js"></script>
 </body></html>
