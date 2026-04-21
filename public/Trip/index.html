@@ -1,173 +1,120 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Trip Optimizer (8Z-RP)</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>8Z Trip Optimizer</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="logo">8Z</div>
-      <div class="titles">
-        <div class="title">Trip Optimizer</div>
-        <div class="subtitle">
-          <span class="desktop-text">Author: Bojan Dobrečevič | Jan 2026 | Deterministic route optimizer • Same input ⇒ same route</span>
-          <span class="mobile-text">Author: Bojan Dobrečevič | Deterministic optimizer!</span>
-        </div>
-      </div>
-    </div>
-    <div class="top-actions">
-      <a id="btnChatToggle" href="#" style="color:#fff; text-shadow:0 0 10px rgba(106,169,255,0.5);">✨ Plan with AI Chatbot</a>
-      <span style="color:var(--border)">|</span>
-      <a id="btnAbout" href="#">About</a>
-      <span style="color:var(--border)">|</span>
-      <a id="btnHelp" href="#">Help / Guide</a>
-    </div>
-  </header>
 
-  <main class="split">
-    <button id="btnCollapse" class="panel-toggle" title="Hide Toolbar">«</button>
-    <button id="btnExpand" class="panel-toggle-open" style="display:none;" title="Show Toolbar">»</button>
-
-    <section id="leftPanel" class="panel left">
-      <div class="card">
-        <h2>Plan Your Trip</h2>
+  <div class="app-wrapper">
+    <header>
+      <div class="brand">8Z <span>Optimizer</span></div>
+      <nav>
+        <button id="btnPlanMode" class="nav-btn">Plan</button>
+        <button id="btnMapMode" class="nav-btn">Map</button>
         
-        <input type="text" id="tripSearch" placeholder="🔍 Search trips (e.g. Ljubljana)..." 
-               style="width:100%; padding:8px; margin-bottom:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+        <span style="color:var(--border); margin:0 5px;">|</span>
         
-        <div id="presetTree" class="tree-view"></div>
+        <button id="btnAbout" class="nav-btn">About</button>
+        <button id="btnHelp" class="nav-btn">Help</button>
+      </nav>
+    </header>
 
-        <p class="muted small" style="margin-top:0;">
-          Select a trip above or <a href="#" onclick="document.getElementById('btnHelp').click(); return false;" style="color:var(--accent); text-decoration:none;">see help</a>.
-        </p>
-
-        <textarea id="input" spellcheck="false" placeholder="Enter stops here..."></textarea>
-
-        <div class="row tight" style="margin-top:5px; margin-bottom:15px;">
-          <button id="btnSave" class="secondary small-btn">💾 Save</button>
-          <button id="btnLoad" class="secondary small-btn">📂 Load</button>
-          <input type="file" id="fileLoader" style="display:none" accept=".txt" />
-        </div>
-
-        <div class="row">
-          <button id="btnStandard">Optimize (Standard)</button>
-          <button id="btnDeep" class="secondary">Optimize (Precise)</button>
-        </div>
-
-        <div class="row">
-          <button id="btnDriving">🚗 Driving</button>
-          <button id="btnWalking" class="secondary">🚶 Walking</button>
-        </div>
-
-        <div class="row tight">
-          <label class="check">
-            <input id="chkRoundTrip" type="checkbox" checked />
-            <span>Round trip</span>
-          </label>
-          <label class="check">
-            <input id="chkDirect" type="checkbox" />
-            <span class="muted small">Direct lines</span>
-          </label>
-          <label class="check">
-            <input id="chkGoogleStyle" type="checkbox" />
-            <span class="muted small">Google Style</span>
-          </label>
-        </div>
-
-        <div id="status" class="status"></div>
+    <div class="panel">
+      <h3>Plan Your Trip</h3>
+      
+      <input type="text" id="tripSearch" placeholder="Search library..." style="margin-bottom: 8px;">
+      <div id="presetTree" class="library-box">
+        <div style="padding:10px; color:#64748b;">Loading trips...</div>
       </div>
 
-      <div class="card">
-        <h2>Route Stats</h2>
-        <div class="metrics">
-          <div class="metric">
-            <div class="k">Distance</div>
-            <div class="v" id="distKm">—</div>
-          </div>
-          <div class="metric">
-            <div class="k">Saved</div>
-            <div class="v" id="savedKm">—</div>
-          </div>
-        </div>
-
-        <ol id="routeList" class="route"></ol>
-        <div id="links" class="links"></div>
+      <h3>Trip Editor</h3>
+      <textarea id="input" placeholder="Enter stops (e.g. Paris, London)..." spellcheck="false"></textarea>
+      
+      <div class="grid-2">
+        <button id="btnSave" class="btn-neutral">💾 Save</button>
+        <button id="btnLoad" class="btn-neutral">📂 Load</button>
+        <input type="file" id="fileLoader" hidden>
       </div>
-    </section>
 
-    <section class="panel right">
-      <div id="mapContainer" style="display:none; width:100%; height:100%; position:relative;">
-        <div id="mapPlaceholder" class="placeholder-msg">
-          <div class="big-icon">🗺️</div>
-          <h2>Ready to Route</h2>
-          <p class="muted box-width">
-            To save API costs, the map is paused.
-          </p>
-          <div style="margin-top: 20px;">
-            <button id="btnEnableMap" style="width: auto; padding: 10px 20px;">Enable Map & Start</button>
-          </div>
+      <div class="grid-2">
+        <button id="btnStandard" class="btn-primary">Optimize (Fast)</button>
+        <button id="btnDeep" class="btn-secondary">Optimize (Deep)</button>
+      </div>
+
+      <div class="grid-2">
+        <button id="btnDriving" class="btn-mode active">🚗 Drive</button>
+        <button id="btnWalking" class="btn-mode">🚶 Walk</button>
+      </div>
+
+      <div class="options">
+        <label><input type="checkbox" id="chkRoundTrip" checked> Round Trip</label>
+        <label><input type="checkbox" id="chkDirect"> Direct Line</label>
+        <input type="checkbox" id="chkGoogleStyle" hidden>
+        <button id="btnCollapse" hidden></button>
+        <button id="btnExpand" hidden></button>
+        <button id="btnChatToggle" hidden></button>
+      </div>
+      
+      <div id="status" class="status"></div>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+        <h3 style="margin:0; border:none; padding:0;">Results</h3>
+        <a href="#links" style="font-size:0.85rem; color:var(--primary); text-decoration:none;">See map links ↓</a>
+      </div>
+      
+      <div class="stats">
+        <div>Dist: <span id="distKm" class="val">—</span></div>
+        <div>Saved: <span id="savedKm" class="saved">—</span></div>
+      </div>
+
+      <div id="mapContainer">
+        <div id="mapPlaceholder">
+          <p>Map Inactive</p>
+          <button id="btnEnableMap" class="btn-primary" style="width:auto;">Load Map</button>
         </div>
         <div id="map"></div>
       </div>
 
-      <div id="chatPanel" style="display:flex; width:100%; height:100%; flex-direction:column; background:var(--bg);">
-        <div class="chat-header" style="padding:15px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:rgba(15,22,33,0.9);">
-          <div>
-            <h2 style="margin:0; font-size:16px; color:var(--text);">✨ AI Travel Assistant</h2>
-            <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
-              <span class="muted small">Model:</span>
-              <select id="modelSelector" style="background:#0b0f14; color:#fff; border:1px solid #1f2a3a; border-radius:4px; font-size:11px; padding:2px 6px;">
-                <option value="gemini-1.5-flash">Loading models...</option>
-              </select>
-            </div>
-          </div>
-          <button id="btnCloseChat" class="secondary small-btn" style="width:auto; padding:6px 12px;">Close Chat ✕</button>
-        </div>
-        
-        <div id="chatHistory" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:15px;">
-          <div class="chat-msg ai">
-            <strong>👋 Welcome to 8Z-RP Trip Optimizer!</strong><br><br>
-            I am your intelligent travel assistant. This tool is different from others you might have used:<br>
-            <ul>
-              <li>🛡️ <strong>100% Private:</strong> Your trip data never leaves your browser.</li>
-              <li>🎯 <strong>Deterministic:</strong> We use advanced math to find the <em>exact</em> best route, every time.</li>
-            </ul>
-            <p><strong>How can I help you today?</strong></p>
-            <p>
-              1. You can <strong>browse the Trip Library</strong> on the left.<br>
-              2. Or ask me: <em>"Find the 5 best restaurants in Ljubljana and add them to my trip."</em><br>
-              3. Finally, click <strong>Optimize</strong> on the left to see your route on the map!
-            </p>
-          </div>
-        </div>
+      <ul id="routeList"></ul>
+      <div id="links" class="links-area"></div>
+    </div>
 
-        <div class="chat-input-area" style="padding:15px; border-top:1px solid var(--border); background:var(--card);">
-          <div style="display:flex; gap:10px;">
-            <input type="text" id="chatInput" placeholder="Ask Gemini to find places..." style="flex:1; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
-            <button id="btnSendChat" style="width:auto; padding:0 20px;">Send ➢</button>
-          </div>
+    <div id="chatPanel">
+      <div class="chat-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="chat-title">✨ AI Trip Chatbot <small class="chat-state-text" style="opacity:0.7; font-weight:400; margin-left:8px;"></small></div>
+        <div style="display:none;">
+          <select id="modelSelector"></select>
+          <button id="btnCloseChat"></button>
         </div>
       </div>
-
-      <div id="helpOverlay" class="help-overlay">
-        <div class="help-content">
-          <button id="btnCloseHelp" class="close-help-btn">← Back to Map</button>
-          <div id="helpBody"></div>
-        </div>
+      
+      <div id="chatHistory">
+        <div class="msg ai"><strong>Gemini:</strong> Welcome to 8Z! 🌍 I can build optimized itineraries, find the perfect "Base Camp" hotel for your route, and suggest dining spots. Where are we going?</div>
       </div>
-    </section>
-  </main>
+      
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Message Gemini...">
+        <button id="btnSendChat">➤</button>
+      </div>
+    </div>
 
-  <footer class="footer">
-    <span class="muted small">8Z-RP Trip Optimizer • Powered by Google Maps Platform & Gemini AI</span>
-  </footer>
+  </div> <div id="helpOverlay">
+    <div class="modal-content">
+      <button id="btnCloseHelp" class="close-icon">×</button>
+      <div id="helpBody"></div>
+    </div>
+  </div>
 
   <script src="trips.js"></script>
-  <script src="help.js"></script>
   <script src="about.js"></script>
+  <script src="help.js"></script>
   <script src="app.js"></script>
+
 </body>
 </html>

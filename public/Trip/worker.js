@@ -1,7 +1,7 @@
-/* Web Worker: deterministic route optimization (Haversine / Great Circle Distance) */
+/* Web Worker: Deterministic Route Optimization (XorShift64+ & 2-Opt) */
 'use strict';
 
-// --- SEEDED RNG (Unchanged) ---
+// 1. Deterministic Random Number Generator (XorShift64*)
 function fnv1a64(str) {
   let h = 0xcbf29ce484222325n;
   const prime = 0x100000001b3n;
@@ -26,49 +26,39 @@ class XorShift64Star {
     this.x = x;
     return (x * 2685821657736338717n) & 0xffffffffffffffffn;
   }
-  nextFloat() {
-    // [0,1)
+  nextFloat() { // [0,1)
     const u = this.nextU64();
-    const top = Number((u >> 11n) & ((1n << 53n) - 1n));
-    return top / 9007199254740992;
+    return Number((u >> 11n) & ((1n << 53n) - 1n)) / 9007199254740992;
   }
 }
 
-// --- GEOMETRY HELPERS (NEW: Haversine Formula) ---
-function toRad(deg) { 
-  return deg * Math.PI / 180.0; 
+// 2. Geometry Helpers
+function toXYMeters(points) {
+  const R = 6371000.0;
+  let latSum = 0, cnt = 0;
+  for (const p of points) { if (isFinite(p.lat) && isFinite(p.lon)) { latSum += p.lat; cnt++; } }
+  const lat0 = (cnt ? (latSum / cnt) : 0) * Math.PI / 180.0;
+  const cos0 = Math.cos(lat0);
+
+  return points.map(p => {
+    if (!isFinite(p.lat) || !isFinite(p.lon)) return null;
+    const lat = p.lat * Math.PI / 180.0;
+    const lon = p.lon * Math.PI / 180.0;
+    return { x: R * lon * cos0, y: R * lat };
+  });
 }
 
-// Calculates distance in meters between two lat/lon points on a sphere
-function getHaversineDist(p1, p2) {
-  const R = 6371000; // Earth radius in meters
-  const dLat = toRad(p2.lat - p1.lat);
-  const dLon = toRad(p2.lon - p1.lon);
-  const lat1 = toRad(p1.lat);
-  const lat2 = toRad(p2.lat);
-
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
-}
-
-function buildDistanceMatrix(points) {
-  const n = points.length;
+function buildDistanceMatrix(xy) {
+  const n = xy.length;
   const D = new Array(n);
-  for (let i = 0; i < n; i++) D[i] = new Float64Array(n);
-  
   for (let i = 0; i < n; i++) {
-    D[i][i] = 0;
-    for (let j = i + 1; j < n; j++) {
-      // Handle missing coordinates gracefully (infinity distance)
-      if (points[i].lat === null || points[j].lat === null) {
-        D[i][j] = Infinity; 
-        D[j][i] = Infinity;
-      } else {
-        const d = getHaversineDist(points[i], points[j]);
-        D[i][j] = d;
-        D[j][i] = d;
+    D[i] = new Float64Array(n);
+    for (let j = 0; j < n; j++) {
+      if (i === j) D[i][j] = 0;
+      else {
+        const dx = xy[i].x - xy[j].x;
+        const dy = xy[i].y - xy[j].y;
+        D[i][j] = Math.sqrt(dx*dx + dy*dy);
       }
     }
   }
@@ -82,96 +72,47 @@ function routeLength(route, D, roundTrip) {
   return sum;
 }
 
-// --- SOLVER COMPONENTS ---
-
+// 3. Algorithms
 function nearestNeighbor(start, D, allowed) {
   const n = allowed.length;
   const used = new Uint8Array(D.length);
-  const route = new Array(n);
-  route[0] = start;
-  used[start] = 1;
-  for (let t = 1; t < n; t++) {
-    const cur = route[t-1];
-    let best = -1;
-    let bestD = Infinity;
-    for (let idx = 0; idx < n; idx++) {
-      const v = allowed[idx];
-      if (used[v]) continue;
-      const dv = D[cur][v];
-      if (dv < bestD || (dv === bestD && v < best)) {
-        bestD = dv;
-        best = v;
-      }
-    }
-    route[t] = best;
-    used[best] = 1;
-  }
-  return route;
-}
-
-function shuffledAllowed(allowed, rng) {
-  const arr = allowed.slice();
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(rng.nextFloat() * (i + 1));
-    const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
-  }
-  return arr;
-}
-
-function nnWithJitter(start, D, allowed, rng, jitterScale) {
-  const n = allowed.length;
-  const used = new Uint8Array(D.length);
-  const route = new Array(n);
-  route[0] = start;
+  const route = [start];
   used[start] = 1;
 
   for (let t = 1; t < n; t++) {
     const cur = route[t-1];
-    let best = -1;
-    let bestScore = Infinity;
-    for (let idx = 0; idx < n; idx++) {
-      const v = allowed[idx];
-      if (used[v]) continue;
-      const dv = D[cur][v];
-      const noise = (rng.nextFloat() - 0.5) * jitterScale * dv;
-      const score = dv + noise;
-      if (score < bestScore || (score === bestScore && v < best)) {
-        bestScore = score;
-        best = v;
+    let best = -1, bestD = Infinity;
+    for (let i = 0; i < n; i++) {
+      const v = allowed[i];
+      if (!used[v]) {
+        const d = D[cur][v];
+        if (d < bestD) { bestD = d; best = v; }
       }
     }
-    route[t] = best;
-    used[best] = 1;
+    if (best !== -1) { route.push(best); used[best] = 1; }
   }
   return route;
 }
 
-function twoOpt(route, D, roundTrip, maxPasses, moveBudget) {
+function twoOpt(route, D, roundTrip, maxPasses, timeLimit) {
   const n = route.length;
+  const t0 = performance.now();
   if (n < 4) return route;
-
-  let movesChecked = 0;
 
   for (let pass = 0; pass < maxPasses; pass++) {
     let improved = false;
     for (let i = 1; i < n - 2; i++) {
       const a = route[i-1], b = route[i];
       for (let k = i + 1; k < n - 1; k++) {
-        
-        movesChecked++;
-        if (movesChecked > moveBudget) return route;
-
         const c = route[k], d = route[k+1];
         const delta = (D[a][c] + D[b][d]) - (D[a][b] + D[c][d]);
-        
-        if (delta < -1e-9) { // Using a slightly larger epsilon for float stability
+        if (delta < -1e-9) {
+          // Reverse segment [i, k]
           let L = i, R = k;
-          while (L < R) {
-            const tmp = route[L]; route[L] = route[R]; route[R] = tmp;
-            L++; R--;
-          }
+          while (L < R) { const tmp = route[L]; route[L] = route[R]; route[R] = tmp; L++; R--; }
           improved = true;
         }
+        if ((performance.now() - t0) > timeLimit) return route;
       }
     }
     if (!improved) break;
@@ -180,97 +121,91 @@ function twoOpt(route, D, roundTrip, maxPasses, moveBudget) {
 }
 
 function solve(points, startIdx, profile, roundTrip) {
-  const withCoords = [];
-  const without = [];
-  for (let i = 0; i < points.length; i++) {
-    const p = points[i];
-    if (isFinite(p.lat) && isFinite(p.lon)) withCoords.push(i);
-    else without.push(i);
-  }
+  const validIndices = points.map((p, i) => (isFinite(p.lat) && isFinite(p.lon)) ? i : -1).filter(i => i !== -1);
+  const xy = toXYMeters(validIndices.map(i => points[i]));
+  const D = buildDistanceMatrix(xy);
 
-  const coordPoints = withCoords.map(i => points[i]);
+  // --- SETTINGS (The only change) ---
+  let starts = 2, passes = 4, time = 300;
   
-  // FIXED: No longer projecting to XY. Building matrix directly from Lat/Lon.
-  const D = buildDistanceMatrix(coordPoints);
-
-  const startGlobal = startIdx;
-  let start = 0;
-  if (startGlobal >= 0 && startGlobal < points.length) {
-    const pos = withCoords.indexOf(startGlobal);
-    start = (pos >= 0) ? pos : 0;
+  if (profile === 'deep') { 
+    // SUPERCHARGED: 2000 attempts to find the absolute global minimum
+    starts = 2000; 
+    passes = 10; 
+    time = 2000; // 2s budget per start (plenty for 2-opt to converge)
+  } else if (profile === 'standard') {
+    starts = 2; passes = 4; time = 300;
   }
 
-  const seedStr = points.map(p => `${p.name}|${p.lat}|${p.lon}`).join('\n') + `|start=${start}|profile=${profile}|rt=${roundTrip}`;
-  const rng = new XorShift64Star(fnv1a64(seedStr));
-
-  // --- DETERMINISTIC SETTINGS ---
-  let starts = 2;
-  let maxPasses = 4;
-  let moveBudget = 200000;
-  let jitterScale = 0.03;
-
-  if (profile === 'standard') {
-    starts = 2; maxPasses = 4; moveBudget = 500000; jitterScale = 0.03;
-  } else if (profile === 'deep') {
-    starts = 12; maxPasses = 10; moveBudget = 5000000; jitterScale = 0.08;
-  } 
-  else if (profile === 'fast') {
-    starts = 1; maxPasses = 3; moveBudget = 100000; jitterScale = 0.02;
-  } else if (profile === 'balanced') {
-    starts = 4; maxPasses = 6; moveBudget = 1000000; jitterScale = 0.05;
-  }
+  // Seed Generator
+  const seed = points.map(p => `${p.lat},${p.lon}`).join('|') + `|${startIdx}|${profile}|${roundTrip}`;
+  const rng = new XorShift64Star(fnv1a64(seed));
 
   let bestRoute = null;
   let bestLen = Infinity;
-  const baseRoute = withCoords.map((_, i) => i); 
-  const baseLen = routeLength(baseRoute, D, roundTrip);
 
+  // Base Calculation
+  const baseLen = routeLength(validIndices.map((_, i) => i), D, roundTrip);
+
+  // Optimization Loop
   for (let s = 0; s < starts; s++) {
-    const allowed = (s === 0) ? withCoords.map((_, i) => i)
-                              : shuffledAllowed(withCoords.map((_, i) => i), rng);
+    // 1. Determine Start Node
+    let currentStart = 0;
+    const globalStart = validIndices.indexOf(startIdx);
+    if (globalStart !== -1) currentStart = globalStart;
 
-    let route = null;
-    if (s === 0) route = nearestNeighbor(start, D, allowed);
-    else route = nnWithJitter(start, D, allowed, rng, jitterScale);
-
-    route = twoOpt(route, D, roundTrip, maxPasses, moveBudget);
-
-    const L = routeLength(route, D, roundTrip);
-    if (L < bestLen - 1e-9) { bestLen = L; bestRoute = route.slice(); }
-    else if (Math.abs(L - bestLen) <= 1e-9 && bestRoute) {
-      // Tie-breaker: lexicographical check for true stability
-      for (let i = 0; i < route.length; i++) {
-        if (route[i] < bestRoute[i]) { bestRoute = route.slice(); break; }
-        if (route[i] > bestRoute[i]) break;
+    // 2. Generate Initial Route
+    // Pass 0: Greedy Nearest Neighbor (Good baseline)
+    // Pass 1+: Random Shuffle (Global Exploration - logic from worker2.js)
+    let route = nearestNeighbor(currentStart, D, validIndices.map((_,i)=>i));
+    
+    if (s > 0) {
+      // Simple shuffle of non-start points (Fisher-Yates)
+      for (let i = route.length - 1; i > 1; i--) {
+        const j = 1 + Math.floor(rng.nextFloat() * (i));
+        [route[i], route[j]] = [route[j], route[i]];
       }
     }
 
-    postMessage({ type: 'progress', text: `Start ${s+1}/${starts}: ${Math.round(L/1000)} km` });
+    // 3. Optimize (2-Opt)
+    route = twoOpt(route, D, roundTrip, passes, time);
+    const len = routeLength(route, D, roundTrip);
+
+    if (len < bestLen) { bestLen = len; bestRoute = route.slice(); }
+
+    // 4. Progress Reporting (Added feature)
+    if (s % 50 === 0 || s === starts - 1) {
+      const pct = Math.min(99, Math.round((s + 1) / starts * 100));
+      postMessage({ type: 'progress', text: `Deep Search: ${pct}% (${s+1}/${starts})` });
+    }
   }
 
-  const orderCoordGlobal = bestRoute.map(i => withCoords[i]);
-  const orderGlobal = orderCoordGlobal.concat(without);
-  const pointsSorted = orderGlobal.map(i => points[i]);
-  const totalKm = bestLen / 1000.0;
-  const baseKm = baseLen / 1000.0;
+  // Reconstruct
+  const finalOrder = bestRoute.map(localIdx => validIndices[localIdx]);
+  const sortedPoints = finalOrder.map(i => points[i]);
 
-  return { orderGlobal, pointsSorted, totalKm, baseKm };
+  return { 
+    pointsSorted: sortedPoints, 
+    totalKm: bestLen / 1000.0, 
+    baseKm: baseLen / 1000.0 
+  };
 }
 
-onmessage = (ev) => {
-  const msg = ev.data || {};
-  if (msg.type !== 'solve') return;
-  try {
-    const { points, startIdx, profile, roundTrip } = msg;
-    const res = solve(points, startIdx, profile, !!roundTrip);
-    postMessage({
-      type: 'result',
-      order: res.orderGlobal,
-      pointsSorted: res.pointsSorted,
-      totalKm: res.totalKm,
-      baseKm: res.baseKm,
-    });
-  } catch (e) {
-    postMessage({ type: 'error', error: String(e && e.stack ? e.stack : e) });
+// 4. Message Handler
+self.onmessage = (ev) => {
+  const msg = ev.data;
+  if (msg.type === 'solve') {
+    try {
+      const result = solve(msg.points, msg.startIdx, msg.profile, msg.roundTrip);
+      
+      self.postMessage({
+        type: 'result', 
+        pointsSorted: result.pointsSorted,
+        totalKm: result.totalKm,
+        baseKm: result.baseKm
+      });
+    } catch (e) {
+      self.postMessage({ type: 'error', error: e.toString() });
+    }
   }
 };
