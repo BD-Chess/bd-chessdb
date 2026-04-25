@@ -89,6 +89,7 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
   <a href="#economics">Economics</a>
   <a href="#modes">Modes</a>
   <a href="#variants">Variants</a>
+  <a href="#ship">Ship Charging</a>
   <a href="#dcc">DCC</a>
   <a href="#risks">Kill Tests</a>
   <a href="#roadmap">Roadmap</a>
@@ -280,18 +281,88 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
 </table>
 
 <h3>6.4 Ship Auxiliary Variant</h3>
-<p>A moving ship cannot use a breakwater geometry directly. But the same family can inspire side floats, wave-devouring foils, or hydraulic absorbers for auxiliary power. This is plausible as fuel saving or emergency slow propulsion, not as a full main engine for large ships at commercial speed.</p>
-<div class="note orange"><strong>Ship verdict:</strong> strong for slow autonomous vessels and auxiliary power; weak as full replacement for multi-megawatt ship propulsion.</div>
+<p>A moving ship cannot use a breakwater geometry directly. But the same wave-piston family can inspire side floats, wave-devouring foils, hydraulic absorbers, or deployable charging modules for auxiliary power. Because this branch is different enough from harbor infrastructure, it is expanded as a separate proposal in Section 7.</p>
+<div class="note orange"><strong>Ship verdict:</strong> strong for anchored charging, auxiliary loads, slow autonomous vessels, and fuel-saving assist; weak as a full replacement for multi-megawatt main propulsion.</div>
+</div>
+</section>
+
+<section id="ship" class="ch">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">7</span><span class="ch-title">Ship-Derived Proposal: Wave Piston Charging System</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>7.1 Why Ships Are a Separate Branch</h3>
+<p>A ship is not a breakwater. A breakwater is fixed and absorbs incoming waves for protection. A ship moves, changes heading, and must avoid adding dangerous drag or handling loads. Therefore the ship version should not be framed as the main MGHB product. It is a daughter architecture: a deployable wave-piston auxiliary system for charging, hotel loads, emergency power, and limited propulsion assist.</p>
+<div class="note cyan"><strong>Core distinction:</strong> MGHB protects a harbor and harvests wave energy from a fixed structure. The ship branch harvests hull-relative wave motion while the vessel is anchored, drifting, waiting offshore, or moving slowly.</div>
+
+<h3>7.2 Best First Use: Anchored Charging</h3>
+<p>The cleanest ship use case is not propulsion during fast ocean crossing. It is battery and DC-bus charging while the ship is anchored, drifting, moored offshore, or waiting outside a port. In that state, added drag is far less important, and deployable pistons/floats can be extended away from the hull.</p>
+<div class="diagram">
+  <div class="flow">
+    <div class="node"><div class="n-title">Anchored Ship</div><div class="n-sub">low forward speed, wave motion available</div></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="n-title">Deployable Pistons</div><div class="n-sub">side floats, stern modules, or hinged arms</div></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="n-title">Hydraulic / Linear PTO</div><div class="n-sub">pressure accumulator or direct DC generation</div></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="n-title">Battery / DC Bus</div><div class="n-sub">hotel load, pumps, sensors, emergency reserve</div></div>
+  </div>
+</div>
+
+<h3>7.3 Possible Hardware Forms</h3>
+<table>
+<tr><th>Variant</th><th>Mechanism</th><th>Best Use</th><th>Main Risk</th></tr>
+<tr><td>Side piston arms</td><td>Buoyant floats rise/fall relative to hull, driving hydraulic pistons or linear generators.</td><td>Anchored charging and standby loads.</td><td>Fatigue, collision, deployment safety.</td></tr>
+<tr><td>Stern charging cassette</td><td>Aft deployable float uses wave-induced motion behind the vessel.</td><td>Retrofit, smaller vessels, research ships.</td><td>Wake interaction and limited capture width.</td></tr>
+<tr><td>Wave-devouring foil</td><td>Submerged foil converts heave/pitch into forward thrust or generator work.</td><td>Underway assist, slow propulsion, autonomous vessels.</td><td>Drag penalty at speed and control complexity.</td></tr>
+<tr><td>HTH air module</td><td>Water motion drives air compression; air turbine or tank smooths output.</td><td>Rugged auxiliary charging with fewer exposed moving parts.</td><td>Lower capture unless tuned well.</td></tr>
+</table>
+
+<h3>7.4 Expected Power Range</h3>
+<p>Exact power depends on sea state, deployed width, stroke, damping, and survivability limits. For a large vessel with practical deployable modules, a useful early sizing range is:</p>
+<table>
+<tr><th>Sea State</th><th>Likely Average Output</th><th>Usefulness</th></tr>
+<tr><td>Weak harbor motion</td><td>5–40 kW</td><td>Sensors, small auxiliaries, trickle charging.</td></tr>
+<tr><td>Moderate offshore swell</td><td>40–250 kW</td><td>Meaningful hotel-load reduction and battery charging.</td></tr>
+<tr><td>Strong swell</td><td>150–700 kW</td><td>Large auxiliary reduction if survival loads are controlled.</td></tr>
+<tr><td>Storm</td><td>energy abundant but unsafe</td><td>Retract, lock, or enter survival mode; do not chase max output.</td></tr>
+</table>
+<div class="note gold"><strong>Practical interpretation:</strong> even 50–200 kW average can matter when a vessel spends many hours or days waiting offshore. This is not main propulsion, but it can reduce auxiliary diesel runtime.</div>
+
+<h3>7.5 Fuel-Saving Logic</h3>
+<p>If a diesel generator consumes roughly 0.20–0.25 kg of fuel per kWh, then anchored charging can save meaningful fuel over long waits:</p>
+<table>
+<tr><th>Average Electrical Output</th><th>Energy per Day</th><th>Approx. Fuel Saved per Day</th></tr>
+<tr><td>50 kW</td><td>1.2 MWh/day</td><td>0.24–0.30 tonnes/day</td></tr>
+<tr><td>200 kW</td><td>4.8 MWh/day</td><td>0.96–1.20 tonnes/day</td></tr>
+<tr><td>500 kW</td><td>12.0 MWh/day</td><td>2.40–3.00 tonnes/day</td></tr>
+</table>
+<p>During cruising, the same family may act as a fuel-saver through foils or controlled side modules, but the claim should stay conservative: small single-digit savings are more realistic than replacing the main engine.</p>
+
+<h3>7.6 Ship Branch Positioning</h3>
+<div class="grid-2">
+  <div class="box"><h3>WPAS</h3><p><strong>Wave Piston Assist System:</strong> underway or slow-speed assist. Goal: reduce main-engine load by harvesting heave/pitch energy without adding more drag than it saves.</p></div>
+  <div class="box"><h3>WPCS</h3><p><strong>Wave Piston Charging System:</strong> anchored or drifting charger. Goal: reduce auxiliary diesel runtime, charge batteries, and provide emergency reserve.</p></div>
+</div>
+
+<h3>7.7 Ship-Specific Kill Tests</h3>
+<table>
+<tr><th>Test</th><th>Pass Criterion</th></tr>
+<tr><td>Deployment safety</td><td>Modules deploy/retract without creating navigation, crew, or collision hazards.</td></tr>
+<tr><td>Net energy while anchored</td><td>Measured DC output exceeds hydraulic/electrical losses with useful margin.</td></tr>
+<tr><td>Drag penalty while underway</td><td>Any underway assist saves more fuel than added resistance costs.</td></tr>
+<tr><td>Fatigue and slam survival</td><td>System survives repeated cycles and wave impacts without jamming or structural damage.</td></tr>
+<tr><td>Fail-safe behavior</td><td>Failure mode is locked/retracted/passive, not loose equipment in the sea.</td></tr>
+</table>
+<div class="note green"><strong>Best next experiment:</strong> small floating test platform with one deployable side piston, battery, load resistor, wave-height logging, and 24-hour output logging. Measure real kWh, not story power.</div>
 </div>
 </section>
 
 <section id="dcc" class="ch">
-<div class="ch-head" onclick="toggle(this)"><span class="ch-num">7</span><span class="ch-title">DCC / MDL Governance</span><span class="ch-arrow">▸</span></div>
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">8</span><span class="ch-title">DCC / MDL Governance</span><span class="ch-arrow">▸</span></div>
 <div class="ch-body">
-<h3>7.1 Why DCC Belongs Here</h3>
+<h3>8.1 Why DCC Belongs Here</h3>
 <p>The hybrid creates a real allocation problem. At each moment, incoming wave energy can be sent into mechanical piston generation, air compression, OWC turbine flow, bypass, or pure protection. Fixed rules will be suboptimal across sea states.</p>
 
-<h3>7.2 What the Controller Measures</h3>
+<h3>8.2 What the Controller Measures</h3>
 <table>
 <tr><th>Sensor</th><th>Meaning</th><th>Decision Use</th></tr>
 <tr><td>Incoming wave height/period</td><td>available resource</td><td>select damping/resonance target</td></tr>
@@ -302,7 +373,7 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
 <tr><td>Maintenance indicators</td><td>wear, fouling, friction</td><td>penalize high-output but high-wear modes</td></tr>
 </table>
 
-<h3>7.3 MDL Objective</h3>
+<h3>8.3 MDL Objective</h3>
 <p>The winner is not the most complicated cell. The winner is the smallest reliable architecture that produces the best combined score:</p>
 <div class="eq">Score = kWh + ProtectionValue + StorageValue − CAPEX − OPEX − WearPenalty − ComplexityPenalty</div>
 <div class="note cyan"><strong>Less describes more:</strong> if a passive HTH channel gives 80% of the benefit with 20% of the moving parts, MDL should choose it. If the piston gives much higher protection and output, MDL should choose the piston. The data decides.</div>
@@ -310,9 +381,9 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
 </section>
 
 <section id="risks" class="ch">
-<div class="ch-head" onclick="toggle(this)"><span class="ch-num">8</span><span class="ch-title">Kill Tests and Risks</span><span class="ch-arrow">▸</span></div>
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">9</span><span class="ch-title">Kill Tests and Risks</span><span class="ch-arrow">▸</span></div>
 <div class="ch-body">
-<h3>8.1 Fatal Kill Tests</h3>
+<h3>9.1 Fatal Kill Tests</h3>
 <table>
 <tr><th>Test</th><th>Failure Meaning</th><th>Minimum Experiment</th></tr>
 <tr><td>KT1 — Capture efficiency</td><td>Cell absorbs too little usable wave energy.</td><td>Wave tank: input wave energy vs. electrical/air output.</td></tr>
@@ -322,7 +393,7 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
 <tr><td>KT5 — Economics</td><td>Extra energy layer costs more than energy/protection value.</td><td>Incremental CAPEX + O&M model per meter.</td></tr>
 </table>
 
-<h3>8.2 Main Engineering Risks</h3>
+<h3>9.2 Main Engineering Risks</h3>
 <ul>
 <li><strong>Storm loads:</strong> survival mode must be designed before energy mode is optimized.</li>
 <li><strong>Corrosion and biofouling:</strong> every underwater moving interface is guilty until proven reliable.</li>
@@ -336,7 +407,7 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
 </section>
 
 <section id="roadmap" class="ch">
-<div class="ch-head" onclick="toggle(this)"><span class="ch-num">9</span><span class="ch-title">Prototype Roadmap</span><span class="ch-arrow">▸</span></div>
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">10</span><span class="ch-title">Prototype Roadmap</span><span class="ch-arrow">▸</span></div>
 <div class="ch-body">
 <h3>Phase 0 — Paper / HTML Concept</h3>
 <p>Define architecture, claims, open questions, and fatal kill tests. Avoid overclaiming novelty or economics.</p>
