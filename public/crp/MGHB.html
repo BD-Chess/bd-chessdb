@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTH-WGPB — Wave Gravity Piston Breakwater · 8Z Research</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
+:root{
+  --bg:#070812;--card:#0d1020;--card2:#10162b;--border:#202843;--text:#d9e0ef;--dim:#8a92aa;--muted:#566079;
+  --blue:#58a6ff;--cyan:#41d6d0;--green:#36d399;--gold:#e9c46a;--orange:#f4a261;--red:#ef476f;--violet:#9b8cff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'IBM Plex Sans',sans-serif;background:radial-gradient(circle at top,#111a33 0,#070812 42%,#05060d 100%);color:var(--text);line-height:1.72}
+a{color:var(--blue)}
+.wrap{max-width:980px;margin:0 auto;padding:30px 20px}
+.topbar{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(7,8,18,.88);border-bottom:1px solid rgba(88,166,255,.15)}
+.topbar .inner{max-width:1040px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);text-decoration:none;font-weight:700}
+.links{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.links a{font-family:'IBM Plex Mono',monospace;font-size:.65rem;text-decoration:none;padding:4px 9px;border-radius:999px;border:1px solid rgba(88,166,255,.18);color:rgba(217,224,239,.68)}
+.links a:hover{border-color:rgba(65,214,208,.55);color:var(--cyan)}
+header{text-align:center;padding:58px 0 38px;border-bottom:1px solid var(--border)}
+.kicker{font-family:'IBM Plex Mono',monospace;color:var(--cyan);font-size:.74rem;letter-spacing:.24em;text-transform:uppercase;margin-bottom:12px}
+h1{font-family:'IBM Plex Mono',monospace;font-size:34px;line-height:1.15;color:var(--blue);letter-spacing:2px;margin-bottom:10px}
+.subtitle{font-size:17px;color:var(--dim);max-width:820px;margin:0 auto 22px}
+.origin{font-size:13px;color:#aeb7cc;line-height:1.8;max-width:850px;margin:0 auto;padding:16px 18px;background:rgba(13,16,32,.82);border-radius:12px;border:1px solid var(--border);border-left:4px solid var(--cyan);text-align:left}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:26px auto 0;max-width:820px}
+.stat{padding:14px 10px;background:linear-gradient(180deg,rgba(16,22,43,.95),rgba(9,12,25,.95));border:1px solid var(--border);border-radius:12px}
+.stat-n{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:700;color:var(--green)}
+.stat-l{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+nav.section-nav{position:sticky;top:44px;z-index:40;background:rgba(7,8,18,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+nav.section-nav .wrap{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;padding:10px 20px}
+nav.section-nav a{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:5px 10px}
+nav.section-nav a:hover{color:var(--cyan);border-color:var(--cyan)}
+.hero-card{background:linear-gradient(135deg,rgba(16,22,43,.95),rgba(9,14,29,.95));border:1px solid var(--border);border-radius:16px;padding:26px;margin:28px 0;box-shadow:0 16px 50px rgba(0,0,0,.25)}
+h2{font-family:'IBM Plex Mono',monospace;font-size:18px;letter-spacing:.08em;color:var(--blue);margin-bottom:14px;text-transform:uppercase}
+h3{font-size:15px;color:var(--cyan);margin:24px 0 9px;font-weight:700}
+p{font-size:14px;color:#c3cad9;margin:9px 0}
+ul,ol{padding-left:24px;margin:9px 0}li{margin:6px 0;font-size:14px;color:#c3cad9}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+.box{background:rgba(11,15,31,.85);border:1px solid var(--border);border-radius:12px;padding:16px}.box h3{margin-top:0}
+.note{border-radius:10px;padding:14px 16px;margin:18px 0;font-size:13px;line-height:1.65;border-left:4px solid var(--blue);background:rgba(10,18,40,.75);color:#cbd5e1}
+.note strong{color:#fff}.green{border-left-color:var(--green);background:rgba(7,33,25,.72)}.orange{border-left-color:var(--orange);background:rgba(35,23,9,.72)}.red{border-left-color:var(--red);background:rgba(36,9,20,.72)}.gold{border-left-color:var(--gold);background:rgba(35,29,8,.72)}.cyan{border-left-color:var(--cyan);background:rgba(6,31,35,.72)}
+.eq{font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:center;color:var(--cyan);background:#071724;border:1px solid rgba(65,214,208,.18);border-radius:9px;padding:12px;margin:14px 0;overflow-x:auto}
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:13px;overflow:hidden;border-radius:8px}th{background:#141a31;color:var(--blue);text-align:left;padding:9px 10px;border:1px solid var(--border);font-weight:700}td{padding:8px 10px;border:1px solid var(--border);color:#c3cad9}tr:nth-child(even) td{background:#0a0e1d}.good{color:var(--green);font-weight:700}.warn{color:var(--orange);font-weight:700}.bad{color:var(--red);font-weight:700}.mono{font-family:'IBM Plex Mono',monospace}
+.diagram{background:#08101f;border:1px solid var(--border);border-radius:14px;padding:22px;margin:20px 0;overflow-x:auto}.flow{display:flex;align-items:stretch;gap:10px;min-width:760px}.node{flex:1;min-width:120px;padding:12px;border:1px solid rgba(88,166,255,.25);border-radius:12px;background:linear-gradient(180deg,#10172d,#090e1d);text-align:center}.node .n-title{font-family:'IBM Plex Mono',monospace;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.node .n-sub{font-size:12px;color:#b9c1d4;margin-top:5px}.arrow{display:flex;align-items:center;color:var(--gold);font-size:22px;font-family:'IBM Plex Mono',monospace}
+.ch{margin:34px 0 0}.ch-head{display:flex;align-items:center;gap:12px;padding:16px;background:rgba(13,16,32,.88);border:1px solid var(--border);border-radius:12px;cursor:pointer;user-select:none;transition:.2s}.ch-head:hover{border-color:var(--cyan)}.ch-head.open{border-color:var(--cyan);border-radius:12px 12px 0 0}.ch-num{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:var(--muted);min-width:36px}.ch-title{font-size:16px;font-weight:700;flex:1}.ch-arrow{font-size:15px;color:var(--muted);transition:transform .2s}.ch-head.open .ch-arrow{transform:rotate(90deg)}.ch-body{display:none;padding:24px;border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;background:rgba(13,16,32,.76)}.ch-body.open{display:block}
+.badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(65,214,208,.28);color:var(--cyan);border-radius:999px;padding:3px 8px;margin:2px 4px 2px 0}.badge.green{color:var(--green);border-color:rgba(54,211,153,.35);background:transparent}.badge.orange{color:var(--orange);border-color:rgba(244,162,97,.35);background:transparent}.badge.red{color:var(--red);border-color:rgba(239,71,111,.35);background:transparent}
+footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);margin-top:50px}.quote{font-style:italic;color:var(--blue);font-size:14px;margin-bottom:14px}footer p{font-size:12px;color:var(--muted)}
+@media(max-width:760px){h1{font-size:24px}.stats{grid-template-columns:repeat(2,1fr)}.grid-2,.grid-3{grid-template-columns:1fr}.topbar .inner{align-items:flex-start;flex-direction:column}nav.section-nav{top:74px}.ch-body{padding:18px}table{font-size:11px}.wrap{padding-left:16px;padding-right:16px}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="inner">
+  <a class="brand" href="/crp/">BD × AI Lab</a>
+  <div class="links">
+    <a href="/crp/">All Papers</a>
+    <a href="/crp/HTH.html">HTH</a>
+    <a href="/crp/DGTE.html">DGTE</a>
+    <a href="/crp/MDLxDCC.html">MDL×DCC</a>
+    <a href="/bd/">Portfolio</a>
+  </div>
+</div></div>
+
+<div class="wrap">
+<header>
+  <div class="kicker">8Z Research · Marine Energy Architecture</div>
+  <h1>HTH-WGPB</h1>
+  <div class="subtitle">Horizontal Trompe Hybrid + Wave Gravity Piston Breakwater</div>
+  <div class="origin">
+    <strong>Origin:</strong> This page extends the Horizontal Trompe Hybrid into a modular coastal system: a smart breakwater that uses guided floating pistons, wave-column trompe channels, compressed-air buffering, and DCC/MDL governance. The aim is not a perpetual-motion claim. The system harvests real wave, tidal, hydrostatic, and thermal gradients while also reducing wave energy entering a harbor.
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-n">2×</div><div class="stat-l">Purpose</div></div>
+    <div class="stat"><div class="stat-n">4+</div><div class="stat-l">Energy Paths</div></div>
+    <div class="stat"><div class="stat-n">24/7</div><div class="stat-l">Possible Cycles</div></div>
+    <div class="stat"><div class="stat-n">MDL</div><div class="stat-l">Design Judge</div></div>
+  </div>
+</header>
+</div>
+
+<nav class="section-nav"><div class="wrap">
+  <a href="#abstract">Abstract</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#physics">Physics</a>
+  <a href="#energy">Energy</a>
+  <a href="#economics">Economics</a>
+  <a href="#modes">Modes</a>
+  <a href="#variants">Variants</a>
+  <a href="#dcc">DCC</a>
+  <a href="#risks">Kill Tests</a>
+  <a href="#roadmap">Roadmap</a>
+</div></nav>
+
+<div class="wrap">
+
+<section id="abstract" class="hero-card">
+<h2>Abstract</h2>
+<p><strong>HTH-WGPB</strong> proposes a modular wave-energy breakwater that combines two mechanisms: a guided wave piston that converts vertical wave motion into controlled generator work, and an HTH/trompe layer that converts water motion and hydrostatic pressure into compressed air. The compressed air layer can smooth pulsed wave output, power an air turbine, and provide short-duration storage.</p>
+<p>The system is designed as infrastructure first and power plant second. Its strongest use case is not competing with utility solar or wind as a generic electricity source. Its strongest use case is <strong>harbor protection that also produces local electricity</strong>, especially during night, cloudy weather, or low local wind when incoming swell still carries energy.</p>
+<div class="note green"><strong>Core thesis:</strong> If a port must already spend money to remove destructive wave energy, a smart breakwater can capture part of that removed energy instead of wasting all of it as turbulence and heat.</div>
+</section>
+
+<section class="hero-card">
+<h2>One-Sentence Concept</h2>
+<div class="eq">incoming waves → guided pistons + trompe channels → electricity + compressed air + calmer harbor water</div>
+<p>A normal breakwater only dissipates wave energy. HTH-WGPB tries to do three jobs with the same coastal footprint:</p>
+<ul>
+<li><strong>Protect:</strong> reduce wave height behind the structure.</li>
+<li><strong>Harvest:</strong> convert part of the absorbed wave energy into electricity.</li>
+<li><strong>Buffer:</strong> store part of the energy as compressed air to smooth output.</li>
+</ul>
+</section>
+
+<section id="architecture" class="ch">
+<div class="ch-head open" onclick="toggle(this)"><span class="ch-num">1</span><span class="ch-title">System Architecture</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body open">
+<h3>1.1 Modular Smart Breakwater Cell</h3>
+<p>Each cell is a rectangular marine cassette. The front faces incoming waves. Inside is a guided floating piston or buoyant block moving on rails. Beneath and beside it are HTH-style water/air channels.</p>
+<div class="diagram">
+  <div class="flow">
+    <div class="node"><div class="n-title">Waves / Swell</div><div class="n-sub">surface pressure + orbital flow</div></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="n-title">Guided Piston</div><div class="n-sub">buoyant mass rises and falls</div></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="n-title">Generator Brake</div><div class="n-sub">linear, hydraulic, magnetic, rack</div></div>
+    <div class="arrow">+</div>
+    <div class="node"><div class="n-title">HTH Trompe</div><div class="n-sub">Venturi + air entrainment + separator</div></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="n-title">Calmer Harbor</div><div class="n-sub">lower transmitted wave energy</div></div>
+  </div>
+</div>
+
+<h3>1.2 Four Energy Paths in One Cell</h3>
+<table>
+<tr><th>#</th><th>Path</th><th>Mechanism</th><th>Role</th></tr>
+<tr><td>1</td><td>Wave piston</td><td>Wave lifts guided buoyant mass; controlled fall drives generator.</td><td>Main mechanical harvesting path.</td></tr>
+<tr><td>2</td><td>OWC / air chamber</td><td>Wave column compresses/expands air through turbine.</td><td>Simple pneumatic wave harvesting.</td></tr>
+<tr><td>3</td><td>HTH trompe</td><td>Venturi water flow entrains air; depth separates compressed air.</td><td>Compressed-air production and buffering.</td></tr>
+<tr><td>4</td><td>Underwater orbital flow</td><td>Subsurface wave motion drives secondary foils/flaps or water channels.</td><td>Additional capture below surface and reduced slamming.</td></tr>
+</table>
+
+<h3>1.3 Why Piston Instead of Sphere</h3>
+<p>A sphere is intuitive, but a rectangular piston cassette is better engineering. It has controlled motion, easier power take-off, less collision risk, better packing density, and simpler maintenance.</p>
+<div class="grid-2">
+  <div class="box"><h3>Sphere Concept</h3><p>Simple mental model, but hard to guide, hard to seal, hard to couple to a generator, and risky under storm impacts.</p></div>
+  <div class="box"><h3>Guided Piston Concept</h3><p>Rail-guided, serviceable, modular, and compatible with linear generators, hydraulic pistons, rack drives, or magnetic braking.</p></div>
+</div>
+</div>
+</section>
+
+<section id="physics" class="ch">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">2</span><span class="ch-title">Founding Physics</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>2.1 No Free Energy</h3>
+<p>The wave does work on the piston. If the piston later produces electricity while falling, that energy came from the wave field. The device is an energy absorber, not an energy source by itself.</p>
+<div class="eq">E_{piston} = m g h \times \eta_{PTO}</div>
+<p>Where <span class="mono">m</span> is effective moving mass, <span class="mono">h</span> is useful stroke height, and <span class="mono">ηPTO</span> is the generator/power-take-off efficiency.</p>
+
+<h3>2.2 Wave Power Boundary</h3>
+<p>For rough early design, wave power per meter of wave front can be estimated by:</p>
+<div class="eq">P_{wave} \approx 0.5 \times H_s^2 \times T_e \quad \text{kW/m}</div>
+<p>That is the upper resource crossing a meter of wave crest. The device can capture only a fraction. Real capture depends on geometry, resonance, control, spacing, and losses.</p>
+
+<h3>2.3 Why Subsurface Motion Matters</h3>
+<p>Surface waves also create orbital water motion below the surface. A smart cell can use a submerged channel or flap where loads are smoother than at the air-water interface. This does not create a second independent energy source; it harvests another part of the same wave field.</p>
+<div class="note orange"><strong>Design warning:</strong> subsurface wave motion decays with depth. Too shallow and the structure takes violent impacts; too deep and the available motion falls. Optimal depth is a site-specific tuning problem.</div>
+
+<h3>2.4 HTH Pneumatic Layer</h3>
+<p>The HTH part uses water motion and hydrostatic depth to entrain and compress air. In the hybrid, this compressed air becomes both an energy output and a buffer that can smooth the piston’s pulsed output.</p>
+<div class="eq">water motion + depth + air entrainment → compressed air → air turbine / storage</div>
+</div>
+</section>
+
+<section id="energy" class="ch">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">3</span><span class="ch-title">Energy Potential</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>3.1 Order-of-Magnitude Output</h3>
+<p>The energy ceiling is set by incoming wave climate, not by optimism. A 100 m breakwater in weak seas may produce useful local energy but not utility-scale baseload. The same length on an energetic ocean coast can become much more serious.</p>
+<table>
+<tr><th>Wave Climate</th><th>Resource</th><th>Assumed Capture to Electricity</th><th>100 m Average Power</th><th>100 m Annual Energy</th></tr>
+<tr><td>Low-energy sea / small harbor</td><td>2–3 kW/m</td><td>10–25%</td><td>20–75 kW</td><td>0.18–0.66 GWh/yr</td></tr>
+<tr><td>Moderate coast</td><td>8–12 kW/m</td><td>15–30%</td><td>120–360 kW</td><td>1.1–3.2 GWh/yr</td></tr>
+<tr><td>Good ocean coast</td><td>20–30 kW/m</td><td>15–35%</td><td>300–1050 kW</td><td>2.6–9.2 GWh/yr</td></tr>
+<tr><td>Extreme exposed site</td><td>40+ kW/m</td><td>site-limited</td><td>high but storm-limited</td><td>depends on survival strategy</td></tr>
+</table>
+<div class="note gold"><strong>Interpretation:</strong> this is not a promise. It is a sizing frame. The first prototype must measure capture efficiency, wave reduction, and maintenance burden.</div>
+
+<h3>3.2 Why It Can Complement Solar and Wind</h3>
+<p>Waves can arrive after distant storms even when the local air is calm. They also operate at night. Therefore the hybrid is not just another intermittent source; it can be a coastal complement to solar, local wind, batteries, and port microgrids.</p>
+<table>
+<tr><th>Source</th><th>Strength</th><th>Weakness</th><th>Best Role</th></tr>
+<tr><td>Solar PV</td><td>cheap, simple, scalable</td><td>no night output, weather dependent</td><td>daytime energy</td></tr>
+<tr><td>Wind</td><td>cheap where resource is strong</td><td>visual/noise/permitting, variable</td><td>bulk renewable power</td></tr>
+<tr><td>Battery</td><td>fast response</td><td>storage duration cost</td><td>short-term smoothing</td></tr>
+<tr><td>HTH-WGPB</td><td>night/swell operation + harbor protection</td><td>marine cost, storm survival, lower maturity</td><td>smart coastal infrastructure</td></tr>
+</table>
+</div>
+</section>
+
+<section id="economics" class="ch">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">4</span><span class="ch-title">Economics and Cost Logic</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>4.1 The Correct Economic Question</h3>
+<p>The wrong question is: “Can this beat the cheapest solar farm on raw €/kWh?” Usually no.</p>
+<p>The right question is: <strong>“If a breakwater is needed anyway, how much extra does the energy layer cost, and how much value does it return?”</strong></p>
+<div class="eq">value = electricity + wave protection + avoided battery/fuel + local resilience − extra CAPEX − O&M</div>
+
+<h3>4.2 Incremental-Cost View</h3>
+<table>
+<tr><th>Cost Bucket</th><th>Passive Breakwater</th><th>HTH-WGPB Extra</th><th>Comment</th></tr>
+<tr><td>Foundation / coastal civil works</td><td>already required</td><td>shared</td><td>This is the big economic advantage.</td></tr>
+<tr><td>Concrete/steel chambers</td><td>already present</td><td>modified geometry</td><td>Design must keep this simple.</td></tr>
+<tr><td>Pistons / guides</td><td>none</td><td>added</td><td>Main maintenance risk.</td></tr>
+<tr><td>PTO generators</td><td>none</td><td>added</td><td>Keep above water if possible.</td></tr>
+<tr><td>HTH air channels</td><td>none</td><td>added</td><td>Low moving parts, but needs anti-fouling.</td></tr>
+<tr><td>Control / sensors</td><td>minimal</td><td>added</td><td>DCC only if it beats passive mode.</td></tr>
+</table>
+
+<h3>4.3 The “Cheap Enough” Rule</h3>
+<p>For low-energy seas, the system must be very cheap or the protective function must carry most of the value. For strong ocean coasts, the electricity revenue can justify a larger energy layer.</p>
+<div class="note green"><strong>Best business frame:</strong> not “wave power plant.” Say “energy-positive breakwater” or “smart breakwater retrofit.”</div>
+
+<h3>4.4 Where It Could Win</h3>
+<ul>
+<li>Ports already planning new breakwaters.</li>
+<li>Marinas and islands with expensive grid/fuel electricity.</li>
+<li>Coastal defense projects where wave reduction has high value.</li>
+<li>Research harbors that can host a modular demonstration.</li>
+<li>Remote military/scientific stations needing resilient local power.</li>
+</ul>
+</div>
+</section>
+
+<section id="modes" class="ch">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">5</span><span class="ch-title">Operating Modes</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>5.1 Normal Harvest Mode</h3>
+<p>Moderate waves drive piston motion and HTH/OWC channels. The DCC controller tunes damping to maximize net energy while keeping transmitted waves within harbor limits.</p>
+<span class="badge green">energy</span><span class="badge green">protection</span><span class="badge">compressed air</span>
+
+<h3>5.2 Calm-Sea Mode</h3>
+<p>If waves are too weak, the system should not waste energy on control. It enters low-friction passive mode, using only sensors and maybe small tidal/HTH channels if available.</p>
+<span class="badge orange">low yield</span><span class="badge">minimal wear</span>
+
+<h3>5.3 Storm Survival Mode</h3>
+<p>In storms, the objective changes from maximum energy to survival. Bypass gates open, pistons can lock or move in protected stroke ranges, and excess wave force is dissipated rather than harvested.</p>
+<span class="badge red">survival first</span><span class="badge">bypass</span><span class="badge">fail-safe</span>
+
+<h3>5.4 Maintenance Mode</h3>
+<p>Individual cassettes isolate. The rest of the breakwater remains active. A failed module must degrade into a passive breakwater cell, not a hazard.</p>
+<span class="badge">modular service</span><span class="badge green">graceful failure</span>
+</div>
+</section>
+
+<section id="variants" class="ch">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">6</span><span class="ch-title">Design Variants</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>6.1 Variant A — Pure Wave Piston Breakwater</h3>
+<p>The simplest build: guided buoyant piston + generator brake. No trompe layer. Best for first mechanical testing.</p>
+<table>
+<tr><th>Pros</th><th>Cons</th></tr>
+<tr><td>simple, measurable, intuitive</td><td>pulsed output, more moving wear</td></tr>
+</table>
+
+<h3>6.2 Variant B — HTH Pneumatic Breakwater</h3>
+<p>No large piston. Uses wave-column/trompe/OWC channels to compress air. Lower moving parts but potentially lower capture.</p>
+<table>
+<tr><th>Pros</th><th>Cons</th></tr>
+<tr><td>rugged, fewer moving parts, storage-friendly</td><td>needs careful air-water separation and entrainment proof</td></tr>
+</table>
+
+<h3>6.3 Variant C — Full Hybrid</h3>
+<p>Guided piston for primary capture, HTH/OWC for secondary capture and storage. This is the strongest architecture, but only after A and B pass kill tests.</p>
+<table>
+<tr><th>Pros</th><th>Cons</th></tr>
+<tr><td>highest value density, smoother output, dual function</td><td>more complex, requires DCC/MDL governance to avoid overbuilding</td></tr>
+</table>
+
+<h3>6.4 Ship Auxiliary Variant</h3>
+<p>A moving ship cannot use a breakwater geometry directly. But the same family can inspire side floats, wave-devouring foils, or hydraulic absorbers for auxiliary power. This is plausible as fuel saving or emergency slow propulsion, not as a full main engine for large ships at commercial speed.</p>
+<div class="note orange"><strong>Ship verdict:</strong> strong for slow autonomous vessels and auxiliary power; weak as full replacement for multi-megawatt ship propulsion.</div>
+</div>
+</section>
+
+<section id="dcc" class="ch">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">7</span><span class="ch-title">DCC / MDL Governance</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>7.1 Why DCC Belongs Here</h3>
+<p>The hybrid creates a real allocation problem. At each moment, incoming wave energy can be sent into mechanical piston generation, air compression, OWC turbine flow, bypass, or pure protection. Fixed rules will be suboptimal across sea states.</p>
+
+<h3>7.2 What the Controller Measures</h3>
+<table>
+<tr><th>Sensor</th><th>Meaning</th><th>Decision Use</th></tr>
+<tr><td>Incoming wave height/period</td><td>available resource</td><td>select damping/resonance target</td></tr>
+<tr><td>Transmitted wave height</td><td>protection performance</td><td>limit energy harvesting if harbor safety worsens</td></tr>
+<tr><td>Piston stroke/speed</td><td>mechanical state</td><td>avoid impacts and fatigue</td></tr>
+<tr><td>Air pressure / flow</td><td>HTH output</td><td>route to tank, turbine, or bypass</td></tr>
+<tr><td>Generator output</td><td>real power</td><td>MDL score of channel usefulness</td></tr>
+<tr><td>Maintenance indicators</td><td>wear, fouling, friction</td><td>penalize high-output but high-wear modes</td></tr>
+</table>
+
+<h3>7.3 MDL Objective</h3>
+<p>The winner is not the most complicated cell. The winner is the smallest reliable architecture that produces the best combined score:</p>
+<div class="eq">Score = kWh + ProtectionValue + StorageValue − CAPEX − OPEX − WearPenalty − ComplexityPenalty</div>
+<div class="note cyan"><strong>Less describes more:</strong> if a passive HTH channel gives 80% of the benefit with 20% of the moving parts, MDL should choose it. If the piston gives much higher protection and output, MDL should choose the piston. The data decides.</div>
+</div>
+</section>
+
+<section id="risks" class="ch">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">8</span><span class="ch-title">Kill Tests and Risks</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>8.1 Fatal Kill Tests</h3>
+<table>
+<tr><th>Test</th><th>Failure Meaning</th><th>Minimum Experiment</th></tr>
+<tr><td>KT1 — Capture efficiency</td><td>Cell absorbs too little usable wave energy.</td><td>Wave tank: input wave energy vs. electrical/air output.</td></tr>
+<tr><td>KT2 — Wave reduction</td><td>It makes power but fails as a breakwater.</td><td>Measure wave height before/after module array.</td></tr>
+<tr><td>KT3 — Mechanical survival</td><td>Piston/rails wear, jam, or slam under real sea states.</td><td>Accelerated cycling + storm-load simulation.</td></tr>
+<tr><td>KT4 — HTH entrainment</td><td>Trompe layer does not entrain/compress enough air.</td><td>Transparent channel + pressure/flow meter.</td></tr>
+<tr><td>KT5 — Economics</td><td>Extra energy layer costs more than energy/protection value.</td><td>Incremental CAPEX + O&M model per meter.</td></tr>
+</table>
+
+<h3>8.2 Main Engineering Risks</h3>
+<ul>
+<li><strong>Storm loads:</strong> survival mode must be designed before energy mode is optimized.</li>
+<li><strong>Corrosion and biofouling:</strong> every underwater moving interface is guilty until proven reliable.</li>
+<li><strong>Debris:</strong> logs, ropes, nets, plastic, seaweed.</li>
+<li><strong>Fatigue:</strong> millions of cycles per year.</li>
+<li><strong>Ecology and permitting:</strong> fish passage, sediment, noise, navigation.</li>
+<li><strong>Overcomplexity:</strong> too many channels can destroy the economic advantage.</li>
+</ul>
+<div class="note red"><strong>Hard rule:</strong> a failed module must become a passive breakwater segment, not loose marine debris, not a harbor hazard, and not a maintenance trap.</div>
+</div>
+</section>
+
+<section id="roadmap" class="ch">
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">9</span><span class="ch-title">Prototype Roadmap</span><span class="ch-arrow">▸</span></div>
+<div class="ch-body">
+<h3>Phase 0 — Paper / HTML Concept</h3>
+<p>Define architecture, claims, open questions, and fatal kill tests. Avoid overclaiming novelty or economics.</p>
+
+<h3>Phase 1 — Desktop Water-Tank MVP</h3>
+<ul>
+<li>Rectangular acrylic chamber.</li>
+<li>Small guided buoyant piston on rails.</li>
+<li>Simple generator/load or force sensor.</li>
+<li>Manual or motorized wave input.</li>
+<li>Measure input wave height, piston stroke, generated power, and wave reduction.</li>
+</ul>
+
+<h3>Phase 2 — HTH Side-Channel Test</h3>
+<ul>
+<li>Add Venturi/trompe air entrainment path.</li>
+<li>Measure compressed air pressure and flow.</li>
+<li>Compare piston-only vs. pneumatic-only vs. hybrid.</li>
+</ul>
+
+<h3>Phase 3 — Small Outdoor Wave/Harbor Model</h3>
+<ul>
+<li>Array of 3–5 modules.</li>
+<li>Test spacing and shadowing.</li>
+<li>Track transmitted wave reduction.</li>
+<li>Log 24/7 cycles for fouling and wear clues.</li>
+</ul>
+
+<h3>Phase 4 — Harbor Demonstrator</h3>
+<ul>
+<li>One replaceable cassette mounted on existing breakwater or test pier.</li>
+<li>Above-water generator where possible.</li>
+<li>Fail-safe passive mode.</li>
+<li>Public dashboard: wave in, wave out, kWh, air pressure, uptime.</li>
+</ul>
+
+<h3>Phase 5 — DCC Arena</h3>
+<p>Build a simulator that mutates piston mass, stroke, damping, chamber shape, HTH channel size, bypass settings, and module spacing. MDL selects the simplest design that wins on measured output + protection + cost.</p>
+<div class="note green"><strong>Smallest real next step:</strong> build the desktop cell and answer two questions: how much wave height does it remove, and how much of that removed energy becomes useful work?</div>
+</div>
+</section>
+
+<section class="hero-card">
+<h2>Final Verdict</h2>
+<p><strong>HTH-WGPB is not a magic wave engine.</strong> It is a plausible smart-infrastructure architecture: a coastal protection system that tries to convert part of the wave energy it already has to absorb.</p>
+<p>The strongest version is not one huge ball in one huge pipe. The strongest version is a <strong>modular array of guided piston cassettes</strong>, with <strong>HTH pneumatic channels</strong> for additional capture and buffering, governed by a simple MDL/DCC controller that keeps only the channels that prove their value.</p>
+<div class="note green"><strong>Best positioning:</strong> energy-positive breakwater, not standalone miracle power plant.</div>
+</section>
+
+<footer>
+  <div class="quote">“The system that absorbs best, protects best, and wastes least, wins.”</div>
+  <p>Concept: BD + AI · 8Z Research Program · AIM³ Lab · April 2026</p>
+  <p>Draft page: HTH-WGPB — Horizontal Trompe Hybrid + Wave Gravity Piston Breakwater</p>
+</footer>
+
+</div>
+
+<script>
+function toggle(el){
+  el.classList.toggle('open');
+  const body = el.nextElementSibling;
+  if(body) body.classList.toggle('open');
+}
+</script>
+</body>
+</html>

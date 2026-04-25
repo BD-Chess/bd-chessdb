@@ -67,6 +67,7 @@ section{padding:72px 0}
 h2{font-size:clamp(1.85rem,4vw,3rem);line-height:1.06;letter-spacing:-.01em;margin-bottom:1rem}
 .lead{max-width:70ch;color:rgba(226,232,244,.78)}
 .paper-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:1.7rem}
+.engineering-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
 .paper-card{position:relative;border:1px solid var(--border);border-radius:8px;padding:1.2rem 1.15rem;background:rgba(11,17,32,.68);overflow:hidden;transition:transform .22s,border-color .22s,box-shadow .22s}
 .paper-card:hover{transform:translateY(-3px);border-color:var(--border-strong);box-shadow:0 12px 36px rgba(0,0,0,.34)}
 .paper-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--card, var(--cyan)), transparent)}
@@ -92,7 +93,7 @@ h2{font-size:clamp(1.85rem,4vw,3rem);line-height:1.06;letter-spacing:-.01em;marg
 .footer a,.footer a:visited{color:var(--cyan);text-decoration:none !important}
 .footer a:hover{opacity:.8}
 @media(max-width:900px){.topbar-inner{align-items:flex-start;flex-direction:column}.top-links{justify-content:flex-start}}
-@media(max-width:760px){body{font-size:18px}.hero{padding-top:72px}.paper-grid{grid-template-columns:1fr}.hero-stats{gap:.7rem}.stat{flex:1 1 130px}}
+@media(max-width:760px){body{font-size:18px}.hero{padding-top:72px}.paper-grid,.engineering-grid{grid-template-columns:1fr}.hero-stats{gap:.7rem}.stat{flex:1 1 130px}}
 </style>
 </head>
 <body>
@@ -126,7 +127,7 @@ h2{font-size:clamp(1.85rem,4vw,3rem);line-height:1.06;letter-spacing:-.01em;marg
         <a class="cta secondary" href="/bd/">Open BD portfolio</a>
       </div>
       <div class="hero-stats">
-        <div class="stat"><strong>13+</strong><span>core papers</span></div>
+        <div class="stat"><strong>14+</strong><span>core papers</span></div>
         <div class="stat"><strong>4</strong><span>paper families</span></div>
         <div class="stat"><strong>2</strong><span>research hubs</span></div>
       </div>
@@ -287,8 +288,8 @@ h2{font-size:clamp(1.85rem,4vw,3rem);line-height:1.06;letter-spacing:-.01em;marg
     <div class="wrap">
       <span class="section-tag green">Engineering Concepts</span>
       <h2>Applied technical concepts and hardware directions</h2>
-      <p class="lead">These sit closer to concrete engineering. They belong here because they show the same habit of cross-domain building, but in harder physical systems.</p>
-      <div class="paper-grid">
+      <p class="lead">These sit closer to concrete engineering. They belong here because they show the same habit of cross-domain building, but in harder physical systems. The bottom set is intentionally arranged as two rows: DGTE + HTH first, then the hybrid synthesis + the new marine breakwater branch.</p>
+      <div class="paper-grid engineering-grid">
         <article class="paper-card" data-c="green">
           <div class="pc-kind">Energy system</div>
           <div class="pc-title">DGTE</div>
@@ -309,6 +310,13 @@ h2{font-size:clamp(1.85rem,4vw,3rem);line-height:1.06;letter-spacing:-.01em;marg
           <div class="pc-desc">A curated synthesis of the DGTE–HTH direction: design lanes, reference architecture, physics summary, kill tests, roadmap, and model-contribution appendix. Best read after DGTE and HTH when the reader wants the merged path instead of two separate concepts.</div>
           <div class="pc-tags"><span class="badge orange">hybrid</span><span class="badge gold">synthesis</span><span class="badge green">next-step concept</span></div>
           <div class="pc-links"><a href="DGTE-HTH.html">Open paper →</a></div>
+        </article>
+        <article class="paper-card" data-c="cyan">
+          <div class="pc-kind">Marine energy infrastructure</div>
+          <div class="pc-title">MGHB</div>
+          <div class="pc-desc">Marine Gravity Hybrid Breakwater — a modular smart breakwater branch combining guided wave pistons, HTH/trompe pneumatic channels, compressed-air buffering, and harbor protection. Best read after HTH, or after DGTE × HTH if the reader wants the coastal hybrid path.</div>
+          <div class="pc-tags"><span class="badge cyan">marine</span><span class="badge green">breakwater</span><span class="badge orange">wave energy</span></div>
+          <div class="pc-links"><a href="MGHB.html">Open paper →</a></div>
         </article>
       </div>
     </div>
