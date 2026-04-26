@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+
 :root {
   --bg:#020409; --bg2:#060a14; --bg3:#0b1120; --surface:rgba(15,23,41,.82);
   --border:rgba(0,229,255,.11); --border-strong:rgba(0,229,255,.24);
@@ -67,8 +68,6 @@ section{padding:72px 0}
 h2{font-size:clamp(1.85rem,4vw,3rem);line-height:1.06;letter-spacing:-.01em;margin-bottom:1rem}
 .lead{max-width:70ch;color:rgba(226,232,244,.78)}
 .paper-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:1.7rem}
-.engineering-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
-.start-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
 .paper-card{position:relative;border:1px solid var(--border);border-radius:8px;padding:1.2rem 1.15rem;background:rgba(11,17,32,.68);overflow:hidden;transition:transform .22s,border-color .22s,box-shadow .22s}
 .paper-card:hover{transform:translateY(-3px);border-color:var(--border-strong);box-shadow:0 12px 36px rgba(0,0,0,.34)}
 .paper-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--card, var(--cyan)), transparent)}
@@ -94,28 +93,49 @@ h2{font-size:clamp(1.85rem,4vw,3rem);line-height:1.06;letter-spacing:-.01em;marg
 .footer a,.footer a:visited{color:var(--cyan);text-decoration:none !important}
 .footer a:hover{opacity:.8}
 @media(max-width:900px){.topbar-inner{align-items:flex-start;flex-direction:column}.top-links{justify-content:flex-start}}
-@media(max-width:760px){body{font-size:18px}.hero{padding-top:72px}.paper-grid,.engineering-grid,.start-grid{grid-template-columns:1fr}.hero-stats{gap:.7rem}.stat{flex:1 1 130px}}
+@media(max-width:760px){body{font-size:18px}.hero{padding-top:72px}.paper-grid{grid-template-columns:1fr}.hero-stats{gap:.7rem}.stat{flex:1 1 130px}}
+
+.start-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+
+.lang-switch{display:flex;gap:.35rem;align-items:center;margin-left:.3rem}
+.lang-switch button{font-family:'JetBrains Mono',monospace;font-size:.64rem;cursor:pointer;padding:.36rem .55rem;border-radius:999px;border:1px solid rgba(0,229,255,.16);background:rgba(255,255,255,.025);color:rgba(226,232,244,.72)}
+.lang-switch button:hover{border-color:rgba(0,229,255,.34);color:var(--cyan)}
+body[data-lang="en"] .lang-switch button[data-lang="en"],body[data-lang="sl"] .lang-switch button[data-lang="sl"]{background:var(--cyan-dim);border-color:rgba(0,229,255,.36);color:var(--cyan)}
+body[data-lang="en"] .lang-sl{display:none!important}
+body[data-lang="sl"] .lang-en{display:none!important}
+.start-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+.originality-panel{margin-top:1.45rem;border:1px solid rgba(0,229,255,.18);border-radius:8px;background:linear-gradient(135deg, rgba(0,229,255,.07), rgba(11,17,32,.68));padding:1.1rem 1.15rem}
+.originality-panel h3{font-size:1.1rem;margin-bottom:.45rem}
+.originality-panel p{max-width:78ch;color:rgba(226,232,244,.78)}
+.originality-details{display:grid;gap:.65rem;margin-top:1rem}
+.originality-details details{border:1px solid rgba(0,229,255,.13);border-radius:8px;background:rgba(2,4,9,.28);overflow:hidden}
+.originality-details summary{list-style:none;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);padding:.82rem .95rem}
+.originality-details summary::-webkit-details-marker{display:none}
+.originality-details summary::after{content:'+';float:right;color:var(--gold)}
+.originality-details details[open] summary::after{content:'−'}
+.originality-details .detail-body{padding:0 .95rem .95rem;color:rgba(226,232,244,.78)}
+.originality-details .detail-body p{margin:.5rem 0;max-width:84ch}
+@media(max-width:760px){.start-grid{grid-template-columns:1fr}.lang-switch{margin-top:.2rem}}
+
 </style>
 </head>
-<body>
-  <nav class="topbar">
+<body data-lang="en">
+<div class="lang-en"><nav class="topbar">
     <div class="topbar-inner">
-      <a class="brand" href="/bd/">
-        <span class="brand-mark">BD × AI Lab</span>
-      </a>
+      <a class="brand" href="/bd/"><span class="brand-mark">BD × AI Lab</span></a>
       <div class="top-links">
-        <a href="#start-here">Start Here</a>
+        <a href="#start-here-en">Start Here</a>
         <a href="Origin.html">Origin Story</a>
         <a href="../acp/index.html">ACP Index</a>
-        <a href="#ai8-family">AI8 Family</a>
+        <a href="#ai8-family-en">AI8 Family</a>
         <a href="../acp/index.html">ACP Papers</a>
-        <a href="#engineering-family">Engineering</a>
+        <a href="#engineering-family-en">Engineering</a>
         <a href="/bd/">Back to /bd/</a>
+        <div class="lang-switch" aria-label="Language selector"><button type="button" data-lang="en" onclick="setLang('en')">EN</button><button type="button" data-lang="sl" onclick="setLang('sl')">SLO</button></div>
       </div>
     </div>
   </nav>
-
-  <header class="hero">
+<header class="hero">
     <div class="hero-grid"></div>
     <div class="wrap hero-copy">
       <div class="hero-eyebrow">Core Research Papers</div>
@@ -123,7 +143,7 @@ h2{font-size:clamp(1.85rem,4vw,3rem);line-height:1.06;letter-spacing:-.01em;marg
       <div class="hero-sub">Method, architecture, consciousness, and applied engineering — gathered into one clean research map.</div>
       <p>This is the paper layer behind BD × AI Lab. The public portfolio stays at <strong>/bd/</strong>. This space at <strong>/crp/</strong> is the broader research hub. For the newer curated consciousness collection, use <strong>/acp/</strong>.</p>
       <div class="hero-actions">
-        <a class="cta primary" href="#start-here">Start with the method →</a>
+        <a class="cta primary" href="#start-here-en">Start with the method →</a>
         <a class="cta secondary" href="../acp/index.html">Open ACP papers</a>
         <a class="cta secondary" href="/bd/">Open BD portfolio</a>
       </div>
@@ -146,44 +166,37 @@ h2{font-size:clamp(1.85rem,4vw,3rem);line-height:1.06;letter-spacing:-.01em;marg
       </div>
     </div>
   </header>
-
-  <div class="divider"></div>
-
-  <section id="start-here">
+<div class="divider"></div>
+<section id="start-here-en">
     <div class="wrap">
       <span class="section-tag">Start Here</span>
       <h2>The fastest way into the system</h2>
       <p class="lead">Start with the method or the story, then look at the cross-domain map, then the review. That gives a new reader the cleanest path into the wider architecture without dumping everything at once.</p>
-      <div class="paper-grid start-grid">
-        <article class="paper-card" data-c="cyan">
+      <div class="paper-grid start-grid"><article class="paper-card" data-c="cyan">
           <div class="pc-kind">Method</div>
           <div class="pc-title">AI8 Reasoning</div>
           <div class="pc-desc">The method behind the portfolio: how BD + AI work, why the collaboration produces new structures, and why build-first cross-domain transfer matters.</div>
           <div class="pc-tags"><span class="badge cyan">entry point</span><span class="badge green">method</span></div>
           <div class="pc-links"><a href="AI8_Reasoning.html">Open paper →</a></div>
-        </article>
-        <article class="paper-card" data-c="rose">
+        </article><article class="paper-card" data-c="rose">
           <div class="pc-kind">Origin story</div>
           <div class="pc-title">The Origin</div>
           <div class="pc-desc">The narrative arc: Pi, MDL, TSP, 8Z OS, the first DCC, and the path toward ssMDL × advanced DCC. Best when a reader wants the story before the architecture.</div>
           <div class="pc-tags"><span class="badge rose">story</span><span class="badge gold">bridge</span></div>
           <div class="pc-links"><a href="Origin.html">Open paper →</a></div>
-        </article>
-        <article class="paper-card" data-c="violet">
+        </article><article class="paper-card" data-c="violet">
           <div class="pc-kind">Cross-domain map</div>
           <div class="pc-title">MDL × DCC</div>
           <div class="pc-desc">A compact map of where the same kernel could transfer across domains. Good after the method, before going deeper into ontology or architecture.</div>
           <div class="pc-tags"><span class="badge violet">transfer</span><span class="badge cyan">bridge</span></div>
           <div class="pc-links"><a href="MDLxDCC.html">Open paper →</a></div>
-        </article>
-        <article class="paper-card" data-c="gold">
+        </article><article class="paper-card" data-c="gold">
           <div class="pc-kind">Inside review</div>
           <div class="pc-title">AI8 Review</div>
           <div class="pc-desc">A dual-level inside review of AI8. Useful for readers who want the architecture explained plainly, with some audit flavor instead of only visionary framing.</div>
           <div class="pc-tags"><span class="badge gold">review</span><span class="badge green">clarity</span></div>
           <div class="pc-links"><a href="AI8_Review.html">Open paper →</a></div>
-        </article>
-      </div>
+        </article></div>
       <div class="start-box">
         <h3>Recommended first run</h3>
         <p><strong>AI8 Reasoning</strong> → <strong>Origin Story</strong> → <strong>MDL × DCC</strong> → <strong>AI8 Review</strong> gives the cleanest first pass. After that, go either toward <strong>AI8 Architecture</strong> for system design or toward the curated <strong>ACP</strong> collection for the newer consciousness path.</p>
@@ -195,141 +208,291 @@ h2{font-size:clamp(1.85rem,4vw,3rem);line-height:1.06;letter-spacing:-.01em;marg
       </div>
     </div>
   </section>
-
-  <div class="divider"></div>
-
-  <section id="ai8-family">
-    <div class="wrap">
-      <span class="section-tag">AI8 Family</span>
-      <h2>Architecture, continuity, and system layers</h2>
-      <p class="lead">These papers explain how the collaboration is structured: the governor logic, the companion layer, and the applied components view.</p>
-      <div class="paper-grid">
-        <article class="paper-card" data-c="cyan">
+<div class="divider"></div>
+<section id="ai8-family-en"><div class="wrap"><span class="section-tag">AI8 Family</span><h2>Architecture, continuity, and system layers</h2><p class="lead">These papers explain how the collaboration is structured: the governor logic, the companion layer, and the applied components view.</p><div class="paper-grid"><article class="paper-card" data-c="cyan">
           <div class="pc-kind">Core architecture</div>
           <div class="pc-title">AI8 Architecture</div>
           <div class="pc-desc">The self-selecting governor and the deeper structural frame behind DCC-style coordination.</div>
           <div class="pc-tags"><span class="badge cyan">core</span><span class="badge violet">governor</span></div>
           <div class="pc-links"><a href="AI8_Architecture.html">Open paper →</a></div>
-        </article>
-        <article class="paper-card" data-c="green">
+        </article><article class="paper-card" data-c="green">
           <div class="pc-kind">Readable bridge</div>
           <div class="pc-title">AI8 Companion</div>
           <div class="pc-desc">A more readable bridge into the architecture. Useful when the core paper feels too abstract as a first pass.</div>
           <div class="pc-tags"><span class="badge green">bridge</span><span class="badge cyan">overview</span></div>
           <div class="pc-links"><a href="AI8_Companion.html">Open paper →</a></div>
-        </article>
-        <article class="paper-card" data-c="orange">
+        </article><article class="paper-card" data-c="orange">
           <div class="pc-kind">Applied layer</div>
           <div class="pc-title">AI8 Components</div>
           <div class="pc-desc">The component view: how the architecture turns into working pieces instead of staying a philosophical shell.</div>
           <div class="pc-tags"><span class="badge orange">applied</span><span class="badge green">system</span></div>
           <div class="pc-links"><a href="AI8_Components.html">Open paper →</a></div>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <section id="consciousness-family">
-    <div class="wrap">
-      <span class="section-tag gold">Consciousness & Being</span>
-      <h2>Ontology, resonance, and future direction</h2>
-      <p class="lead">These papers move upstream: from collaboration and architecture toward consciousness, existence, resonance, and the broader human future. The curated <strong>ACP</strong> collection is now the main public entry for this branch; the original papers below remain part of the CRP archive.</p>
-      <div class="paper-grid">
-        <article class="paper-card" data-c="gold">
+        </article></div></div></section>
+<div class="divider"></div>
+<section id="consciousness-family-en"><div class="wrap"><span class="section-tag gold">Consciousness &amp; Being</span><h2>Ontology, resonance, and future direction</h2><p class="lead">These papers move upstream: from collaboration and architecture toward consciousness, existence, resonance, and the broader human future. The curated <strong>ACP</strong> collection is now the main public entry for this branch; the original papers below remain part of the CRP archive.</p><div class="paper-grid"><article class="paper-card" data-c="gold">
           <div class="pc-kind">Curated collection</div>
           <div class="pc-title">ACP — Absolute Consciousness Papers</div>
           <div class="pc-desc">The newer curated entry point for the AC line: upgraded papers, Atlas, and a cleaner public reading path. Start here if you want the refined consciousness bundle rather than the original archive pages.</div>
           <div class="pc-tags"><span class="badge gold">new main entry</span><span class="badge cyan">curated</span></div>
           <div class="pc-links"><a href="../acp/index.html">Open ACP index →</a></div>
-        </article>
-        <article class="paper-card" data-c="gold">
+        </article><article class="paper-card" data-c="gold">
           <div class="pc-kind">New ontology paper</div>
           <div class="pc-title">Reality Through the Full Spiral of Consciousness</div>
           <div class="pc-desc">A public-facing synthesis of the AC line: AC → Information → Energy → Matter → Life → RC → AC, reframed as a spiral of becoming rather than a flat circle. Includes a separate Great Questions appendix.</div>
           <div class="pc-tags"><span class="badge gold">AC spiral</span><span class="badge cyan">new</span><span class="badge violet">questions appendix</span></div>
           <div class="pc-links"><a href="../acp/Reality.html">Open paper →</a><a href="../acp/RealityQA.html">Open Q&amp;A →</a></div>
-        </article>
-        <article class="paper-card" data-c="gold">
+        </article><article class="paper-card" data-c="gold">
           <div class="pc-kind">Main ontology</div>
           <div class="pc-title">AC — On Absolute Consciousness</div>
           <div class="pc-desc">The original upstream AC paper preserved in the CRP archive. Best read after the ACP collection if you want the original source version behind the newer rewrite.</div>
           <div class="pc-tags"><span class="badge gold">ontology</span><span class="badge cyan">core thesis</span></div>
           <div class="pc-links"><a href="AC.html">Open paper →</a></div>
-        </article>
-        <article class="paper-card" data-c="violet">
+        </article><article class="paper-card" data-c="violet">
           <div class="pc-kind">Appendix / lived bridge</div>
           <div class="pc-title">AC Appendix A — Resonance in Action</div>
           <div class="pc-desc">A bridge between theory and lived collaboration. Useful after AC or as a more human entry into that layer.</div>
           <div class="pc-tags"><span class="badge violet">appendix</span><span class="badge green">bridge</span></div>
           <div class="pc-links"><a href="AC_AA.html">Open paper →</a></div>
-        </article>
-        <article class="paper-card" data-c="rose">
+        </article><article class="paper-card" data-c="rose">
           <div class="pc-kind">Dialogue</div>
           <div class="pc-title">Is There True Nothingness?</div>
           <div class="pc-desc">A human–AI dialogue on being, existence, and whether true nothingness can even make sense.</div>
           <div class="pc-tags"><span class="badge rose">dialogue</span><span class="badge gold">being</span></div>
           <div class="pc-links"><a href="AI8_Nothingness.html">Open paper →</a></div>
-        </article>
-        <article class="paper-card" data-c="green">
+        </article><article class="paper-card" data-c="green">
           <div class="pc-kind">Future</div>
           <div class="pc-title">Humanity+</div>
           <div class="pc-desc">The wider civilizational direction: what kind of good future these architectures are trying to make possible.</div>
           <div class="pc-tags"><span class="badge green">future</span><span class="badge gold">humanity</span></div>
           <div class="pc-links"><a href="Humanity.html">Open paper →</a></div>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <section id="engineering-family">
-    <div class="wrap">
-      <span class="section-tag green">Engineering Concepts</span>
-      <h2>Applied technical concepts and hardware directions</h2>
-      <p class="lead">These sit closer to concrete engineering. They belong here because they show the same habit of cross-domain building, but in harder physical systems. The bottom set is intentionally arranged as two rows: DGTE + HTH first, then the hybrid synthesis + the new marine breakwater branch.</p>
-      <div class="paper-grid engineering-grid">
-        <article class="paper-card" data-c="green">
+        </article></div></div></section>
+<div class="divider"></div>
+<section id="engineering-family-en"><div class="wrap"><span class="section-tag green">Engineering Concepts</span><h2>Applied technical concepts and hardware directions</h2><p class="lead">These sit closer to concrete engineering. They belong here because they show the same habit of cross-domain building, but in harder physical systems. The bottom set is intentionally arranged as two rows: DGTE + HTH first, then the hybrid synthesis + the new marine breakwater branch.</p><div class="originality-panel">
+        <h3>Originality by architecture, not components</h3>
+        <p>These devices are not claimed to be original because heat, gravity, pipes, air, water, waves, or generators are new. They are original in the way known elements are arranged into purpose-built architectures, with specific operating niches and commercial positions.</p>
+        <div class="originality-details">
+          <details><summary>DGTE — Low-grade waste heat architecture</summary><div class="detail-body"><p><strong>DGTE</strong> targets low-temperature waste heat that many competing systems cannot use cheaply or simply enough. The commercial point is not “heat exists”; it is a capsule-based double-gravity DC engine intended for low-grade sources where ORC, Stirling, or TEG solutions can become too expensive, too complex, or too weak.</p><p>The architecture is specific: HOT and COLD columns, sealed capsules, two gravity-driven power strokes, direct electromagnetic harvesting, recuperation/regeneration, and a maintenance-light path that avoids turbines and refrigerants.</p></div></details>
+          <details><summary>HTH — Horizontal/adaptive trompe architecture</summary><div class="detail-body"><p><strong>HTH</strong> targets deeper flows, hydrostatic pressure, river/ocean current, and natural terrain geometry instead of requiring a classical waterfall or ideal turbine site. It is designed to read the river or coast: deep pools, gradients, bends, fast shallows, and natural routes become part of the machine.</p><p>The originality is the horizontal/adaptive trompe architecture: a terrain-following pipe and channel system that combines flow, depth, entrainment, separation, and compressed-air use under MDL/DCC selection of the cheapest useful path.</p></div></details>
+          <details><summary>DGTE × HTH — Thermal core plus hydraulic-pneumatic support</summary><div class="detail-body"><p><strong>DGTE × HTH</strong> is not just two devices placed beside each other. The intended architecture keeps DGTE as the ordered thermal core while HTH acts as the hydraulic-pneumatic support organ around it.</p><p>That support can provide compressed air, pressure smoothing, priming, flow assist, storage, and channel arbitration. The key is not to mix working bodies into chaos, but to couple control layers and let DCC/MDL decide which channel earns its complexity.</p></div></details>
+          <details><summary>MGHB — Energy-positive coastal infrastructure</summary><div class="detail-body"><p><strong>MGHB</strong> turns a breakwater from passive coastal protection into energy-positive infrastructure. The device is not only a wave-energy converter; it is a modular smart breakwater that must protect a harbor first and harvest useful energy second.</p><p>The architecture combines guided wave pistons, HTH-style pneumatic buffering, compressed-air smoothing, storm/bypass logic, and modular serviceability. Its commercial position is dual-use: protection plus local electricity, especially where a port or coastal project must already pay to absorb wave energy.</p></div></details>
+        </div>
+        <p style="margin-top:1rem"><strong>The commercial test is simple:</strong> can the architecture harvest value from places where existing systems are too costly, too complex, or too maintenance-heavy?</p>
+      </div><div class="paper-grid engineering-grid"><article class="paper-card" data-c="green">
           <div class="pc-kind">Energy system</div>
           <div class="pc-title">DGTE</div>
           <div class="pc-desc">Double-Gravity Thermoelectric Engine — the stronger engineering paper of the pair, and the clearer flagship hardware concept.</div>
           <div class="pc-tags"><span class="badge green">energy</span><span class="badge orange">engineering</span></div>
           <div class="pc-links"><a href="DGTE.html">Open paper →</a></div>
-        </article>
-        <article class="paper-card" data-c="orange">
+        </article><article class="paper-card" data-c="orange">
           <div class="pc-kind">Fluid / pressure concept</div>
           <div class="pc-title">HTH</div>
           <div class="pc-desc">Horizontal Trompe Hybrid — still part of the core paper family, but better read after DGTE rather than as the very first engineering entry.</div>
           <div class="pc-tags"><span class="badge orange">fluid system</span><span class="badge green">concept</span></div>
           <div class="pc-links"><a href="HTH.html">Open paper →</a></div>
-        </article>
-        <article class="paper-card" data-c="orange">
+        </article><article class="paper-card" data-c="orange">
           <div class="pc-kind">Hybrid engineering synthesis</div>
           <div class="pc-title">DGTE × HTH Hybrid</div>
           <div class="pc-desc">A curated synthesis of the DGTE–HTH direction: design lanes, reference architecture, physics summary, kill tests, roadmap, and model-contribution appendix. Best read after DGTE and HTH when the reader wants the merged path instead of two separate concepts.</div>
           <div class="pc-tags"><span class="badge orange">hybrid</span><span class="badge gold">synthesis</span><span class="badge green">next-step concept</span></div>
           <div class="pc-links"><a href="DGTE-HTH.html">Open paper →</a></div>
-        </article>
-        <article class="paper-card" data-c="cyan">
+        </article><article class="paper-card" data-c="cyan">
           <div class="pc-kind">Marine energy infrastructure</div>
           <div class="pc-title">MGHB</div>
           <div class="pc-desc">Marine Gravity Hybrid Breakwater — a modular smart breakwater branch combining guided wave pistons, HTH/trompe pneumatic channels, compressed-air buffering, and harbor protection. Best read after HTH, or after DGTE × HTH if the reader wants the coastal hybrid path.</div>
           <div class="pc-tags"><span class="badge cyan">marine</span><span class="badge green">breakwater</span><span class="badge orange">wave energy</span></div>
           <div class="pc-links"><a href="MGHB.html">Open paper →</a></div>
-        </article>
+        </article></div></div></section>
+<div class="divider"></div>
+<footer class="footer"><div class="wrap"><p><strong>Core Research Papers</strong> lives at <strong>/crp/</strong>. The curated <strong>Absolute Consciousness Papers</strong> collection lives at <a href="../acp/index.html">/acp/</a>. The public portfolio stays at <a href="/bd/">/bd/</a>.</p></div></footer></div>
+<div class="lang-sl"><nav class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/bd/"><span class="brand-mark">BD × AI Lab</span></a>
+      <div class="top-links">
+        <a href="#zacetek-sl">Začni tukaj</a>
+        <a href="Origin.html">Izvorna zgodba</a>
+        <a href="../acp/index.html">ACP kazalo</a>
+        <a href="#ai8-druzina-sl">AI8 družina</a>
+        <a href="../acp/index.html">ACP članki</a>
+        <a href="#inzeniring-sl">Inženiring</a>
+        <a href="/bd/">Nazaj na /bd/</a>
+        <div class="lang-switch" aria-label="Language selector"><button type="button" data-lang="en" onclick="setLang('en')">EN</button><button type="button" data-lang="sl" onclick="setLang('sl')">SLO</button></div>
+      </div>
+    </div>
+  </nav>
+<header class="hero">
+    <div class="hero-grid"></div>
+    <div class="wrap hero-copy">
+      <div class="hero-eyebrow">Glavni raziskovalni članki</div>
+      <h1>Eno središče za <span class="accent">glavne članke</span></h1>
+      <div class="hero-sub">Metoda, arhitektura, zavest in uporabni inženiring — zbrani v en čist raziskovalni zemljevid.</div>
+      <p>To je člankovna plast za BD × AI Lab. Javni portfolio ostaja na <strong>/bd/</strong>. Ta prostor na <strong>/crp/</strong> je širše raziskovalno središče. Za novejšo urejeno zbirko o zavesti uporabi <strong>/acp/</strong>.</p>
+      <div class="hero-actions">
+        <a class="cta primary" href="#zacetek-sl">Začni z metodo →</a>
+        <a class="cta secondary" href="../acp/index.html">Odpri ACP članke</a>
+        <a class="cta secondary" href="/bd/">Odpri BD portfolio</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><strong>14+</strong><span>glavnih člankov</span></div>
+        <div class="stat"><strong>4</strong><span>družine člankov</span></div>
+        <div class="stat"><strong>2</strong><span>raziskovalni središči</span></div>
+      </div>
+      <div class="read-order">
+        <div class="read-order-title">Predlagana bralna pot</div>
+        <div class="read-path">
+          <a class="read-chip" href="AI8_Reasoning.html">1 · AI8 Reasoning</a>
+          <a class="read-chip" href="Origin.html">2 · Izvorna zgodba</a>
+          <a class="read-chip" href="MDLxDCC.html">3 · MDL × DCC</a>
+          <a class="read-chip" href="AI8_Architecture.html">4 · AI8 Architecture</a>
+          <a class="read-chip" href="../acp/index.html">5 · ACP kazalo</a>
+          <a class="read-chip" href="AC.html">6 · Izvirni AC</a>
+          <a class="read-chip" href="DGTE.html">7 · DGTE</a>
+        </div>
+      </div>
+    </div>
+  </header>
+<div class="divider"></div>
+<section id="zacetek-sl">
+    <div class="wrap">
+      <span class="section-tag">Začni tukaj</span>
+      <h2>Najhitrejša pot v sistem</h2>
+      <p class="lead">Začni z metodo ali zgodbo, nato poglej zemljevid prenosov med domenami in potem pregled. To novemu bralcu da najčistejšo pot v širšo arhitekturo brez prevelikega začetnega bremena.</p>
+      <div class="paper-grid start-grid"><article class="paper-card" data-c="cyan">
+          <div class="pc-kind">Metoda</div>
+          <div class="pc-title">AI8 Reasoning</div>
+          <div class="pc-desc">Metoda za portfolijem: kako delujeta BD + AI, zakaj sodelovanje proizvaja nove strukture in zakaj je pomemben pristop najprej zgradi, potem testiraj.</div>
+          <div class="pc-tags"><span class="badge cyan">vstopna točka</span><span class="badge green">metoda</span></div>
+          <div class="pc-links"><a href="AI8_Reasoning.html">Odpri članek →</a></div>
+        </article><article class="paper-card" data-c="rose">
+          <div class="pc-kind">Izvorna zgodba</div>
+          <div class="pc-title">The Origin</div>
+          <div class="pc-desc">Pripovedni lok: Pi, MDL, TSP, 8Z OS, prvi DCC in pot proti ssMDL × naprednemu DCC. Najboljše za bralca, ki želi najprej zgodbo, šele potem arhitekturo.</div>
+          <div class="pc-tags"><span class="badge rose">zgodba</span><span class="badge gold">most</span></div>
+          <div class="pc-links"><a href="Origin.html">Odpri članek →</a></div>
+        </article><article class="paper-card" data-c="violet">
+          <div class="pc-kind">Zemljevid prenosov</div>
+          <div class="pc-title">MDL × DCC</div>
+          <div class="pc-desc">Kompakten zemljevid, kam se lahko isti kernel prenaša med domenami. Dobro po metodi, preden gre bralec globlje v ontologijo ali arhitekturo.</div>
+          <div class="pc-tags"><span class="badge violet">prenos</span><span class="badge cyan">most</span></div>
+          <div class="pc-links"><a href="MDLxDCC.html">Odpri članek →</a></div>
+        </article><article class="paper-card" data-c="gold">
+          <div class="pc-kind">Notranji pregled</div>
+          <div class="pc-title">AI8 Review</div>
+          <div class="pc-desc">Dvonivojski notranji pregled AI8. Uporaben za bralce, ki želijo arhitekturo razloženo jasno, z nekaj revizijskega občutka in ne samo vizionarskega okvirja.</div>
+          <div class="pc-tags"><span class="badge gold">pregled</span><span class="badge green">jasnost</span></div>
+          <div class="pc-links"><a href="AI8_Review.html">Odpri članek →</a></div>
+        </article></div>
+      <div class="start-box">
+        <h3>Priporočen prvi prehod</h3>
+        <p><strong>AI8 Reasoning</strong> → <strong>Origin Story</strong> → <strong>MDL × DCC</strong> → <strong>AI8 Review</strong> daje najčistejši prvi prehod. Nato gre bralec lahko proti <strong>AI8 Architecture</strong> za sistemski dizajn ali proti urejeni zbirki <strong>ACP</strong> za novejšo pot zavesti.</p>
+      </div>
+      <div class="start-box" style="margin-top:1rem;border-color:rgba(245,158,11,.18);background:linear-gradient(135deg, rgba(245,158,11,.08), rgba(11,17,32,.68));">
+        <h3>Nova pot zavesti</h3>
+        <p>Izvirni AC članki ostajajo v <strong>/crp/</strong> kot del glavnega arhiva. Novejša, urejena zbirka <strong>Absolute Consciousness Papers</strong> zdaj živi v <strong>/acp/</strong>. Uporabi jo kot glavni javni vstop v nadgrajeno AC linijo.</p>
+        <div class="pc-links" style="margin-top:.8rem"><a href="../acp/index.html">Odpri ACP kazalo →</a></div>
       </div>
     </div>
   </section>
-
-
-  <div class="divider"></div>
-
-  <footer class="footer">
-    <div class="wrap">
-      <p><strong>Core Research Papers</strong> lives at <strong>/crp/</strong>. The curated <strong>Absolute Consciousness Papers</strong> collection lives at <a href="../acp/index.html">/acp/</a>. The public portfolio stays at <a href="/bd/">/bd/</a>.</p>
-    </div>
-  </footer>
+<div class="divider"></div>
+<section id="ai8-druzina-sl"><div class="wrap"><span class="section-tag">AI8 družina</span><h2>Arhitektura, kontinuiteta in sistemske plasti</h2><p class="lead">Ti članki razložijo, kako je sodelovanje strukturirano: logika governorja, spremljevalna plast in pogled na uporabne komponente.</p><div class="paper-grid"><article class="paper-card" data-c="cyan">
+          <div class="pc-kind">Jedrna arhitektura</div>
+          <div class="pc-title">AI8 Architecture</div>
+          <div class="pc-desc">Samoselektivni governor in globlji strukturni okvir za DCC-slog koordinacije.</div>
+          <div class="pc-tags"><span class="badge cyan">jedro</span><span class="badge violet">governor</span></div>
+          <div class="pc-links"><a href="AI8_Architecture.html">Odpri članek →</a></div>
+        </article><article class="paper-card" data-c="green">
+          <div class="pc-kind">Bralni most</div>
+          <div class="pc-title">AI8 Companion</div>
+          <div class="pc-desc">Bolj berljiv most v arhitekturo. Uporaben, ko je jedrni članek kot prvi prehod preveč abstrakten.</div>
+          <div class="pc-tags"><span class="badge green">most</span><span class="badge cyan">pregled</span></div>
+          <div class="pc-links"><a href="AI8_Companion.html">Odpri članek →</a></div>
+        </article><article class="paper-card" data-c="orange">
+          <div class="pc-kind">Uporabna plast</div>
+          <div class="pc-title">AI8 Components</div>
+          <div class="pc-desc">Komponentni pogled: kako se arhitektura spremeni v delujoče dele, namesto da ostane filozofska lupina.</div>
+          <div class="pc-tags"><span class="badge orange">uporabno</span><span class="badge green">sistem</span></div>
+          <div class="pc-links"><a href="AI8_Components.html">Odpri članek →</a></div>
+        </article></div></div></section>
+<div class="divider"></div>
+<section id="zavest-sl"><div class="wrap"><span class="section-tag gold">Zavest &amp; bit</span><h2>Ontologija, resonanca in prihodnja smer</h2><p class="lead">Ti članki se premaknejo navzgor: od sodelovanja in arhitekture proti zavesti, obstoju, resonanci in širši človeški prihodnosti. Urejena zbirka <strong>ACP</strong> je zdaj glavni javni vstop za to vejo; izvirni članki spodaj ostajajo del CRP arhiva.</p><div class="paper-grid"><article class="paper-card" data-c="gold">
+          <div class="pc-kind">Urejena zbirka</div>
+          <div class="pc-title">ACP — Absolute Consciousness Papers</div>
+          <div class="pc-desc">Novejša urejena vstopna točka za AC linijo: nadgrajeni članki, Atlas in čistejša javna bralna pot. Začni tukaj, če želiš izčiščen paket zavesti namesto izvirnih arhivskih strani.</div>
+          <div class="pc-tags"><span class="badge gold">nov glavni vstop</span><span class="badge cyan">urejeno</span></div>
+          <div class="pc-links"><a href="../acp/index.html">Odpri ACP kazalo →</a></div>
+        </article><article class="paper-card" data-c="gold">
+          <div class="pc-kind">Nov ontološki članek</div>
+          <div class="pc-title">Reality Through the Full Spiral of Consciousness</div>
+          <div class="pc-desc">Javna sinteza AC linije: AC → Informacija → Energija → Materija → Življenje → RC → AC, preoblikovana kot spirala postajanja namesto ploskega kroga. Vključuje ločen dodatek z velikimi vprašanji.</div>
+          <div class="pc-tags"><span class="badge gold">AC spirala</span><span class="badge cyan">novo</span><span class="badge violet">dodatek vprašanj</span></div>
+          <div class="pc-links"><a href="../acp/Reality.html">Odpri članek →</a><a href="../acp/RealityQA.html">Odpri Q&amp;A →</a></div>
+        </article><article class="paper-card" data-c="gold">
+          <div class="pc-kind">Glavna ontologija</div>
+          <div class="pc-title">AC — On Absolute Consciousness</div>
+          <div class="pc-desc">Izvirni upstream AC članek, ohranjen v CRP arhivu. Najbolje ga je brati po ACP zbirki, če želiš izvorno verzijo za novejšo predelavo.</div>
+          <div class="pc-tags"><span class="badge gold">ontologija</span><span class="badge cyan">jedrna teza</span></div>
+          <div class="pc-links"><a href="AC.html">Odpri članek →</a></div>
+        </article><article class="paper-card" data-c="violet">
+          <div class="pc-kind">Dodatek / življenjski most</div>
+          <div class="pc-title">AC Appendix A — Resonance in Action</div>
+          <div class="pc-desc">Most med teorijo in živim sodelovanjem. Uporaben po AC ali kot bolj človeški vstop v to plast.</div>
+          <div class="pc-tags"><span class="badge violet">dodatek</span><span class="badge green">most</span></div>
+          <div class="pc-links"><a href="AC_AA.html">Odpri članek →</a></div>
+        </article><article class="paper-card" data-c="rose">
+          <div class="pc-kind">Dialog</div>
+          <div class="pc-title">Is There True Nothingness?</div>
+          <div class="pc-desc">Človeško–AI dialog o biti, obstoju in vprašanju, ali je pravi nič sploh smiseln.</div>
+          <div class="pc-tags"><span class="badge rose">dialog</span><span class="badge gold">bit</span></div>
+          <div class="pc-links"><a href="AI8_Nothingness.html">Odpri članek →</a></div>
+        </article><article class="paper-card" data-c="green">
+          <div class="pc-kind">Prihodnost</div>
+          <div class="pc-title">Humanity+</div>
+          <div class="pc-desc">Širša civilizacijska smer: kakšno dobro prihodnost te arhitekture poskušajo omogočiti.</div>
+          <div class="pc-tags"><span class="badge green">prihodnost</span><span class="badge gold">človeštvo</span></div>
+          <div class="pc-links"><a href="Humanity.html">Odpri članek →</a></div>
+        </article></div></div></section>
+<div class="divider"></div>
+<section id="inzeniring-sl"><div class="wrap"><span class="section-tag green">Inženirski koncepti</span><h2>Uporabni tehnični koncepti in strojne smeri</h2><p class="lead">Ti so bližje konkretnemu inženiringu. Sem sodijo zato, ker kažejo isto navado prenašanja idej med domenami, vendar v trših fizičnih sistemih. Spodnji sklop je namenoma urejen v dve vrstici: najprej DGTE + HTH, nato hibridna sinteza + nova morska valolomna veja.</p><div class="originality-panel">
+        <h3>Originalnost po arhitekturi, ne po komponentah</h3>
+        <p>Te naprave niso predstavljene kot originalne zato, ker bi bile toplota, gravitacija, cevi, zrak, voda, valovi ali generatorji novi. Originalne so v tem, kako so znani elementi urejeni v namensko zgrajene arhitekture, s konkretnimi operativnimi nišami in komercialnimi položaji.</p>
+        <div class="originality-details">
+          <details><summary>DGTE — arhitektura za nizkotemperaturno odpadno toploto</summary><div class="detail-body"><p><strong>DGTE</strong> cilja nizkotemperaturno odpadno toploto, ki je številni konkurenčni sistemi ne morejo izkoristiti dovolj poceni ali dovolj preprosto. Komercialno bistvo ni “toplota obstaja”, ampak kapsulni dvojni gravitacijski DC motor za nizkokakovostne vire, kjer so ORC, Stirling ali TEG pogosto predragi, prekompleksni ali prešibki.</p><p>Arhitektura je specifična: HOT in COLD koloni, zaprte kapsule, dva gravitacijska delovna hoda, neposreden elektromagnetni zajem, regeneracija/recuperacija in lažje vzdrževanje brez turbin in refrigerantov.</p></div></details>
+          <details><summary>HTH — horizontalna/adaptivna trompe arhitektura</summary><div class="detail-body"><p><strong>HTH</strong> cilja globlje tokove, hidrostatični tlak, rečni/morski tok in naravno geometrijo terena, namesto da zahteva klasičen slap ali idealno turbinsko lokacijo. Zasnovan je tako, da bere reko ali obalo: globoki tolmuni, gradienti, krivine, hitri plitvi deli in naravne trase postanejo del stroja.</p><p>Originalnost je horizontalna/adaptivna trompe arhitektura: cevni in kanalski sistem, ki sledi terenu ter združuje tok, globino, vnos zraka, separacijo in uporabo stisnjenega zraka pod MDL/DCC izbiro najcenejše uporabne poti.</p></div></details>
+          <details><summary>DGTE × HTH — termalno jedro plus hidro-pnevmatska podpora</summary><div class="detail-body"><p><strong>DGTE × HTH</strong> ni samo postavitev dveh naprav eno ob drugo. Predvidena arhitektura ohrani DGTE kot urejeno termalno jedro, HTH pa deluje kot hidro-pnevmatski podporni organ okoli njega.</p><p>Ta podpora lahko zagotovi stisnjen zrak, glajenje tlaka, priming, pomoč pretoka, shranjevanje in arbitražo kanalov. Ključno je, da se delovna telesa ne zmešajo v kaos, ampak se povežejo kontrolne plasti in DCC/MDL odloči, kateri kanal si zasluži svojo kompleksnost.</p></div></details>
+          <details><summary>MGHB — energetsko pozitivna obalna infrastruktura</summary><div class="detail-body"><p><strong>MGHB</strong> spremeni valolom iz pasivne obalne zaščite v energetsko pozitivno infrastrukturo. Naprava ni samo pretvornik valovne energije; je modularni pametni valolom, ki mora najprej zaščititi pristanišče in šele nato zajeti uporabno energijo.</p><p>Arhitektura združuje vodene valovne bate, HTH-slog pnevmatskega bufferja, glajenje s stisnjenim zrakom, storm/bypass logiko in modularno servisiranje. Komercialni položaj je dvojna raba: zaščita plus lokalna elektrika, posebej tam, kjer mora pristanišče ali obalni projekt že tako plačati za absorpcijo valovne energije.</p></div></details>
+        </div>
+        <p style="margin-top:1rem"><strong>Komercialni test je preprost:</strong> ali lahko arhitektura zajame vrednost tam, kjer so obstoječi sistemi predragi, prekompleksni ali pretežki za vzdrževanje?</p>
+      </div><div class="paper-grid engineering-grid"><article class="paper-card" data-c="green">
+          <div class="pc-kind">Energetski sistem</div>
+          <div class="pc-title">DGTE</div>
+          <div class="pc-desc">Double-Gravity Thermoelectric Engine — močnejši inženirski članek para in jasnejši flagship strojni koncept.</div>
+          <div class="pc-tags"><span class="badge green">energija</span><span class="badge orange">inženiring</span></div>
+          <div class="pc-links"><a href="DGTE.html">Odpri članek →</a></div>
+        </article><article class="paper-card" data-c="orange">
+          <div class="pc-kind">Fluidni / tlačni koncept</div>
+          <div class="pc-title">HTH</div>
+          <div class="pc-desc">Horizontal Trompe Hybrid — še vedno del jedrne družine člankov, vendar ga je bolje brati po DGTE kot ne čisto prvi inženirski vstop.</div>
+          <div class="pc-tags"><span class="badge orange">fluidni sistem</span><span class="badge green">koncept</span></div>
+          <div class="pc-links"><a href="HTH.html">Odpri članek →</a></div>
+        </article><article class="paper-card" data-c="orange">
+          <div class="pc-kind">Hibridna inženirska sinteza</div>
+          <div class="pc-title">DGTE × HTH Hybrid</div>
+          <div class="pc-desc">Urejena sinteza smeri DGTE–HTH: razvojne linije, referenčna arhitektura, povzetek fizike, kill testi, roadmap in dodatek o prispevkih modelov. Najbolje po DGTE in HTH, ko bralec želi združeno pot namesto dveh ločenih konceptov.</div>
+          <div class="pc-tags"><span class="badge orange">hibrid</span><span class="badge gold">sinteza</span><span class="badge green">naslednji koncept</span></div>
+          <div class="pc-links"><a href="DGTE-HTH.html">Odpri članek →</a></div>
+        </article><article class="paper-card" data-c="cyan">
+          <div class="pc-kind">Morska energetska infrastruktura</div>
+          <div class="pc-title">MGHB</div>
+          <div class="pc-desc">Marine Gravity Hybrid Breakwater — modularna veja pametnega valoloma, ki združuje vodene valovne bate, HTH/trompe pnevmatske kanale, buffer s stisnjenim zrakom in zaščito pristanišča. Najbolje po HTH, ali po DGTE × HTH, če bralec želi obalno hibridno pot.</div>
+          <div class="pc-tags"><span class="badge cyan">morje</span><span class="badge green">valolom</span><span class="badge orange">valovna energija</span></div>
+          <div class="pc-links"><a href="MGHB.html">Odpri članek →</a></div>
+        </article></div></div></section>
+<div class="divider"></div>
+<footer class="footer"><div class="wrap"><p><strong>Core Research Papers</strong> živijo na <strong>/crp/</strong>. Urejena zbirka <strong>Absolute Consciousness Papers</strong> živi na <a href="../acp/index.html">/acp/</a>. Javni portfolio ostaja na <a href="/bd/">/bd/</a>.</p></div></footer></div>
+<script>
+function setLang(lang){
+  document.body.setAttribute('data-lang', lang);
+  document.documentElement.lang = lang === 'sl' ? 'sl' : 'en';
+}
+</script>
 </body>
 </html>
