@@ -66,7 +66,9 @@ section{padding:72px 0}
 .section-tag.gold{color:var(--gold)} .section-tag.green{color:var(--green)} .section-tag.violet{color:var(--violet)} .section-tag.orange{color:var(--orange)}
 h2{font-size:clamp(1.85rem,4vw,3rem);line-height:1.06;letter-spacing:-.01em;margin-bottom:1rem}
 .lead{max-width:70ch;color:rgba(226,232,244,.78)}
-.paper-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:1.7rem}
+.paper-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1.7rem}
+.paper-card.wide-card{grid-column:1/-1}
+.paper-card.wide-card .pc-desc{max-width:88ch}
 .paper-card{position:relative;border:1px solid var(--border);border-radius:8px;padding:1.2rem 1.15rem;background:rgba(11,17,32,.68);overflow:hidden;transition:transform .22s,border-color .22s,box-shadow .22s}
 .paper-card:hover{transform:translateY(-3px);border-color:var(--border-strong);box-shadow:0 12px 36px rgba(0,0,0,.34)}
 .paper-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--card, var(--cyan)), transparent)}
@@ -143,6 +145,7 @@ h2{font-size:clamp(1.85rem,4vw,3rem);line-height:1.06;letter-spacing:-.01em;marg
           <a class="read-chip" href="Justice.html">8 · Justice</a>
           <a class="read-chip" href="GoodAndEvil.html">9 · Good & Evil</a>
           <a class="read-chip" href="DGTE.html">10 · DGTE</a>
+          <a class="read-chip" href="MGHB.html">11 · MGHB</a>
         </div>
       </div>
     </div>
@@ -205,24 +208,24 @@ h2{font-size:clamp(1.85rem,4vw,3rem);line-height:1.06;letter-spacing:-.01em;marg
       <h2>Architecture, continuity, and system layers</h2>
       <p class="lead">These papers explain how the collaboration is structured: the governor logic, the companion layer, and the applied components view.</p>
       <div class="paper-grid">
-        <article class="paper-card" data-c="cyan">
+        <article class="paper-card wide-card" data-c="cyan">
           <div class="pc-kind">Core architecture</div>
           <div class="pc-title">AI8 Architecture</div>
-          <div class="pc-desc">The self-selecting governor and the deeper structural frame behind DCC-style coordination.</div>
+          <div class="pc-desc">The central architecture paper for AI8: the self-selecting governor, the continuity layer, and the DCC-style routing logic behind the collaboration. This is the best place to understand the system as a living coordination architecture rather than only a set of separate papers, tools, or AI sessions.</div>
           <div class="pc-tags"><span class="badge cyan">core</span><span class="badge violet">governor</span></div>
           <div class="pc-links"><a href="AI8_Architecture.html">Open paper →</a></div>
         </article>
         <article class="paper-card" data-c="green">
           <div class="pc-kind">Readable bridge</div>
           <div class="pc-title">AI8 Companion</div>
-          <div class="pc-desc">A more readable bridge into the architecture. Useful when the core paper feels too abstract as a first pass.</div>
+          <div class="pc-desc">A more readable bridge into the architecture. It explains the same system in friendlier language: why continuity matters, how the companion layer helps preserve direction across sessions, and how a reader can enter AI8 without first absorbing the full technical/governance paper.</div>
           <div class="pc-tags"><span class="badge green">bridge</span><span class="badge cyan">overview</span></div>
           <div class="pc-links"><a href="AI8_Companion.html">Open paper →</a></div>
         </article>
         <article class="paper-card" data-c="orange">
           <div class="pc-kind">Applied layer</div>
           <div class="pc-title">AI8 Components</div>
-          <div class="pc-desc">The component view: how the architecture turns into working pieces instead of staying a philosophical shell.</div>
+          <div class="pc-desc">The component view of the system: how AI8 becomes working modules, not just a philosophical frame. This page is useful after the architecture paper because it shows how abstract ideas turn into operational pieces, interfaces, memory layers, review paths, and buildable structures.</div>
           <div class="pc-tags"><span class="badge orange">applied</span><span class="badge green">system</span></div>
           <div class="pc-links"><a href="AI8_Components.html">Open paper →</a></div>
         </article>
@@ -311,24 +314,32 @@ h2{font-size:clamp(1.85rem,4vw,3rem);line-height:1.06;letter-spacing:-.01em;marg
         <article class="paper-card" data-c="green">
           <div class="pc-kind">Energy system</div>
           <div class="pc-title">DGTE</div>
-          <div class="pc-desc">Double-Gravity Thermoelectric Engine — the stronger engineering paper of the pair, and the clearer flagship hardware concept.</div>
+          <div class="pc-desc">Double-Gravity Thermoelectric Engine — the flagship hardware concept in this branch. It explores low-grade waste-heat recovery through gravity-assisted thermal cycling, with the main value proposition being access to temperature ranges that ordinary power systems usually cannot exploit economically.</div>
           <div class="pc-tags"><span class="badge green">energy</span><span class="badge orange">engineering</span></div>
           <div class="pc-links"><a href="DGTE.html">Open paper →</a></div>
         </article>
         <article class="paper-card" data-c="orange">
           <div class="pc-kind">Fluid / pressure concept</div>
           <div class="pc-title">HTH</div>
-          <div class="pc-desc">Horizontal Trompe Hybrid — still part of the core paper family, but better read after DGTE rather than as the very first engineering entry.</div>
+          <div class="pc-desc">Horizontal Trompe Hybrid — a fluid/pressure architecture that extends old trompe logic into a terrain-aware horizontal system. Its strongest idea is not one isolated component, but the use of deeper flows, natural terrain curvature, and simple pressure mechanics as a practical energy and air-compression path.</div>
           <div class="pc-tags"><span class="badge orange">fluid system</span><span class="badge green">concept</span></div>
           <div class="pc-links"><a href="HTH.html">Open paper →</a></div>
         </article>
         <article class="paper-card" data-c="orange">
           <div class="pc-kind">Hybrid engineering synthesis</div>
           <div class="pc-title">DGTE × HTH Hybrid</div>
-          <div class="pc-desc">A curated synthesis of the DGTE–HTH direction: design lanes, reference architecture, physics summary, kill tests, roadmap, and model-contribution appendix. Best read after DGTE and HTH when the reader wants the merged path instead of two separate concepts.</div>
+          <div class="pc-desc">A curated synthesis of the DGTE–HTH direction: design lanes, reference architecture, physics summary, kill tests, roadmap, and model-contribution appendix. Best read after DGTE and HTH when the reader wants the merged path: how waste heat, gravity cycling, hydraulic pressure, and compressed-air buffering could be evaluated as one hybrid engineering family.</div>
           <div class="pc-tags"><span class="badge orange">hybrid</span><span class="badge gold">synthesis</span><span class="badge green">next-step concept</span></div>
           <div class="pc-links"><a href="DGTE-HTH.html">Open paper →</a></div>
         </article>
+        <article class="paper-card" data-c="cyan">
+          <div class="pc-kind">Marine / breakwater architecture</div>
+          <div class="pc-title">MGHB / HTH-WGPB</div>
+          <div class="pc-desc">Marine Gravity Hybrid Breakwater / Horizontal Trompe Hybrid + Wave Gravity Piston Breakwater. This is the coastal-infrastructure branch: a smart breakwater that protects a harbor while trying to harvest part of the wave, hydrostatic, tidal, and pneumatic energy it already absorbs. Best positioned as energy-positive coastal protection, not as a miracle standalone wave engine.</div>
+          <div class="pc-tags"><span class="badge cyan">marine</span><span class="badge green">breakwater</span><span class="badge orange">wave energy</span></div>
+          <div class="pc-links"><a href="MGHB.html">Open paper →</a></div>
+        </article>
+
       </div>
     </div>
   </section>
