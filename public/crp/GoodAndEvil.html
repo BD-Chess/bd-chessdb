@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Never Let the Idea of Good Become Permission for Evil</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #04040c;
+      --surface:   #080814;
+      --surface2:  #0b0b18;
+      --gold:      #c9a84c;
+      --gold-glow: rgba(201,168,76,0.15);
+      --gold-line: rgba(201,168,76,0.25);
+      --cyan:      #00d4ff;
+      --cyan-dim:  rgba(0,212,255,0.08);
+      --cyan-line: rgba(0,212,255,0.22);
+      --green:     #34d399;
+      --green-dim: rgba(52,211,153,0.09);
+      --green-line:rgba(52,211,153,0.22);
+      --red:       #e05040;
+      --red-dim:   rgba(224,80,64,0.09);
+      --red-line:  rgba(224,80,64,0.24);
+      --violet:    #a78bfa;
+      --violet-dim:rgba(167,139,250,0.09);
+      --text:      #ece4d4;
+      --muted:     #7d7d93;
+      --soft:      #aaa3bd;
+      --border:    rgba(255,255,255,0.07);
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; font-size: 18px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      line-height: 1.9;
+      overflow-x: hidden;
+    }
+
+    #atm {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 10% 8%,  rgba(120,30,30,0.14) 0%, transparent 100%),
+        radial-gradient(ellipse 50% 45% at 90% 88%, rgba(8,70,44,0.16) 0%, transparent 100%),
+        radial-gradient(ellipse 30% 30% at 50% 50%, rgba(180,140,40,0.06) 0%, transparent 100%);
+    }
+
+    #grain {
+      position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.45;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    }
+
+    #stars { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+
+    .scrollbar {
+      position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+      background: linear-gradient(90deg, var(--red), var(--gold), var(--green));
+      z-index: 10000; opacity: .8;
+    }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 8000;
+      background: rgba(4,4,12,0.88);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1040px; margin: 0 auto; padding: 0 40px;
+      min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    }
+    .nav-logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 4px; color: var(--gold); text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .nav-right { display:flex; align-items:center; gap: 20px; flex-wrap: wrap; justify-content: flex-end; }
+    .nav-links { display: none; gap: 24px; flex-wrap: wrap; justify-content: flex-end; }
+    body[data-lang="en"] .nav-links.en-links,
+    body[data-lang="sl"] .nav-links.sl-links { display: flex; }
+    .nav-links a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 2px; color: var(--muted);
+      text-decoration: none; text-transform: uppercase; transition: color 0.25s;
+    }
+    .nav-links a:hover { color: var(--cyan); }
+    .lang-toggle {
+      display:flex; align-items:center; gap: 4px;
+      border: 1px solid var(--border); border-radius: 999px;
+      background: rgba(255,255,255,0.025);
+      padding: 4px;
+    }
+    .lang-toggle button {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 1.6px; color: var(--muted);
+      background: transparent; border: 0; border-radius: 999px;
+      padding: 7px 10px; cursor: pointer; transition: all .2s;
+    }
+    .lang-toggle button:hover { color: var(--cyan); }
+    body[data-lang="en"] .lang-toggle button[data-set-lang="en"],
+    body[data-lang="sl"] .lang-toggle button[data-set-lang="sl"] {
+      background: var(--gold-glow); color: var(--gold);
+    }
+
+    .lang-page { display: none; }
+    .lang-page.active { display: block; }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 40px; position: relative; z-index: 10; }
+
+    .cover { padding: 190px 0 150px; }
+    .cover-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 5px; color: var(--gold);
+      text-transform: uppercase; display: block; margin-bottom: 32px;
+      opacity: 0; animation: up 1s 0.1s ease forwards;
+    }
+    .cover h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(52px, 9.5vw, 126px);
+      font-weight: 400; line-height: 0.92;
+      color: var(--text); letter-spacing: 2px;
+      max-width: 950px;
+      opacity: 0; animation: up 1s 0.35s ease forwards;
+    }
+    .cover h1 em { color: var(--red); font-style: normal; }
+    .cover-line {
+      width: 70px; height: 1px; background: var(--gold-line);
+      margin: 40px 0; opacity: 0; animation: up 1s 0.55s ease forwards;
+    }
+    .cover-sub {
+      font-size: 1.25rem; color: var(--soft); max-width: 760px;
+      font-style: italic; line-height: 1.72;
+      opacity: 0; animation: up 1s 0.75s ease forwards;
+    }
+    .cover-date {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 3px; color: var(--muted);
+      margin-top: 32px; display: block;
+      opacity: 0; animation: up 1s 0.9s ease forwards;
+    }
+
+    @keyframes up {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    section { padding: 105px 0; border-bottom: 1px solid var(--border); }
+
+    .ch {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 5px; color: var(--gold);
+      text-transform: uppercase; display: block; margin-bottom: 16px;
+    }
+
+    h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(38px, 5.4vw, 74px);
+      font-weight: 400; line-height: 1;
+      letter-spacing: 1px; color: var(--text);
+      margin-bottom: 38px;
+    }
+
+    h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.45rem; font-weight: 600;
+      color: var(--cyan); margin-bottom: 14px;
+    }
+
+    p { color: var(--muted); margin-bottom: 22px; font-size: 1.08rem; }
+    p:last-child { margin-bottom: 0; }
+    p strong { color: var(--text); }
+    em { color: var(--text); font-style: italic; }
+
+    .lead {
+      color: var(--soft);
+      font-size: 1.32rem;
+      line-height: 1.65;
+      max-width: 780px;
+    }
+
+    .callout, .red-strip, .bridge, .proof, .warn {
+      border-radius: 18px;
+      padding: 34px 44px;
+      margin: 40px 0;
+    }
+    .callout { background: var(--cyan-dim); border: 1px solid var(--cyan-line); }
+    .red-strip { background: var(--red-dim); border: 1px solid var(--red-line); }
+    .bridge { background: var(--green-dim); border: 1px solid var(--green-line); }
+    .proof { background: var(--violet-dim); border: 1px solid rgba(167,139,250,0.22); }
+    .warn { background: rgba(180,100,20,0.09); border: 1px solid rgba(220,130,40,0.22); }
+
+    .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 3px;
+      text-transform: uppercase; display: block; margin-bottom: 14px;
+    }
+    .label.cyan { color: var(--cyan); }
+    .label.red { color: var(--red); }
+    .label.green { color: var(--green); }
+    .label.gold { color: var(--gold); }
+    .label.violet { color: var(--violet); }
+
+    .formula-block {
+      background: var(--gold-glow);
+      border: 1px solid var(--gold-line);
+      border-radius: 22px;
+      padding: 46px 60px;
+      margin: 46px 0;
+      text-align: center;
+    }
+    .formula-eq {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(1.25rem, 3vw, 1.85rem);
+      font-weight: 600; letter-spacing: 1px;
+      margin-bottom: 12px; line-height: 1.45;
+      color: var(--text);
+    }
+    .formula-note {
+      font-size: 0.92rem; color: var(--muted); font-style: italic;
+      margin: 18px 0 0; line-height: 1.6;
+    }
+
+    .card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin: 42px 0; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 32px;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .card:hover { border-color: var(--cyan-line); transform: translateY(-4px); }
+    .card-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 3px;
+      text-transform: uppercase; margin-bottom: 14px; display: block;
+      color: var(--gold);
+    }
+
+    .steps { display: grid; gap: 16px; margin: 40px 0; counter-reset: step; }
+    .step {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 26px 30px 26px 74px;
+      position: relative;
+    }
+    .step::before {
+      counter-increment: step;
+      content: counter(step, decimal-leading-zero);
+      position: absolute; left: 24px; top: 28px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--red); font-size: 0.72rem; letter-spacing: 1px;
+    }
+
+    .pull {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.5rem, 2.6vw, 2.35rem);
+      font-style: italic; color: var(--text);
+      line-height: 1.42; text-align: center;
+      margin: 86px 0;
+      padding: 60px 74px;
+      background: radial-gradient(ellipse at center, rgba(201,168,76,0.08) 0%, transparent 72%);
+      border: 1px solid var(--gold-line); border-radius: 24px;
+    }
+    .pull .attr {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 2px;
+      color: var(--muted); display: block;
+      margin-top: 28px; font-style: normal;
+    }
+
+    .principles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin: 42px 0; }
+    .principle {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      min-height: 160px;
+    }
+    .principle strong { color: var(--text); display:block; margin-bottom: 10px; }
+    .principle p { font-size: .98rem; line-height: 1.65; }
+
+    .closing { padding: 120px 0 145px; text-align: center; border-bottom: 0; }
+    .closing h2 { max-width: 860px; margin: 0 auto 36px; }
+    .closing p { max-width: 760px; margin-left: auto; margin-right: auto; color: var(--soft); }
+    .sig {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 3px; color: var(--muted);
+      margin-top: 54px; text-transform: uppercase;
+    }
+
+    @media (max-width: 820px) {
+      html { font-size: 17px; }
+      .nav-inner { padding: 14px 22px 12px; align-items: flex-start; flex-direction: column; gap: 10px; }
+      .nav-right { justify-content: flex-start; gap: 10px; }
+      .nav-links { justify-content: flex-start; gap: 14px; }
+      .wrap { padding: 0 22px; }
+      .cover { padding: 190px 0 105px; }
+      section { padding: 78px 0; }
+      .card-grid, .principles { grid-template-columns: 1fr; }
+      .callout, .red-strip, .bridge, .proof, .warn, .formula-block, .pull { padding: 28px 24px; }
+      .step { padding-left: 58px; }
+      .step::before { left: 20px; }
+    }
+  </style>
+</head>
+<body data-lang="en">
+  <div id="atm"></div>
+  <canvas id="stars"></canvas>
+  <div id="grain"></div>
+  <div class="scrollbar" id="scrollbar"></div>
+
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-logo">Good / Evil</div>
+      <div class="nav-right">
+        <div class="nav-links en-links">
+          <a href="#thesis">Thesis</a>
+          <a href="#trap">Trap</a>
+          <a href="#ideas">Ideas</a>
+          <a href="#justice">Justice</a>
+          <a href="#ai">AI</a>
+          <a href="Humanity.html">Humanity</a>
+          <a href="Justice.html">Broken Mirror</a>
+        </div>
+        <div class="nav-links sl-links">
+          <a href="#teza">Teza</a>
+          <a href="#past">Past</a>
+          <a href="#ideje">Ideje</a>
+          <a href="#pravica">Pravica</a>
+          <a href="#ai-sl">AI</a>
+          <a href="Humanity.html">Humanity</a>
+          <a href="Justice.html">Pravica</a>
+        </div>
+        <div class="lang-toggle" aria-label="Language selector">
+          <button type="button" data-set-lang="en">EN</button>
+          <button type="button" data-set-lang="sl">SL</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="wrap lang-page active" id="page-en">
+    <header class="cover">
+      <span class="cover-tag">An essay on good, evil, and human error</span>
+      <h1>Never let<br>the idea of good<br>become <em>permission for evil</em></h1>
+      <div class="cover-line"></div>
+      <p class="cover-sub">People are not evil at their core. That is exactly why dangerous ideas matter: they can redirect goodness into cruelty and convince a person to harm with a clean conscience.</p>
+      <span class="cover-date">AIM³ Lab · BD × AI · 2026</span>
+    </header>
+
+    <section id="thesis">
+      <span class="ch">01 · Core</span>
+      <h2>Evil is not the core of a being</h2>
+      <p class="lead">The greatest mistake in understanding evil is turning a bad act into the final identity of a person. An act can be terrible. Harm can be real. Responsibility must remain. But a human being must not become metaphysical waste.</p>
+
+      <div class="formula-block">
+        <div class="formula-eq">Bad act ≠ evil being</div>
+        <p class="formula-note">This is not an excuse. It is protection against justice becoming revenge.</p>
+      </div>
+
+      <p>Evil is often apparent as a final identity because we know only part of the truth. We see the act, the consequence, the pain, and the guilt. We do not see the whole path: fear, shame, wounds, false beliefs, social pressure, biology, timing, and all the small fractures that brought a person to the act.</p>
+      <p>Understanding this does not mean saying the person is not responsible. It means responsibility does not require hatred toward the person’s essence.</p>
+
+      <div class="callout">
+        <span class="label cyan">Precise distinction</span>
+        <p><strong>Harm is real.</strong> Guilt is real. The need for protection is real. But the absolute label “this person is evil” is a dangerous shortcut because it turns a human being into a target.</p>
+      </div>
+    </section>
+
+    <section id="freedom">
+      <span class="ch">02 · Free will</span>
+      <h2>An open story has a cost</h2>
+      <p>If beings have no free will, they cannot be morally evil. They can cause pain, just as fire burns or a stone falls, but this is not yet evil in the moral sense. Moral evil appears only where choice is possible.</p>
+      <p>Free will enables immense beauty: love, courage, creation, loyalty, help, and the sincere choice of good. But the same openness also allows error, selfishness, cruelty, fear, abuse of power, and blindness.</p>
+
+      <div class="bridge">
+        <span class="label green">No religious requirement</span>
+        <p>To understand evil, we do not need to claim that only God can explain it. It is enough to understand that free will opens space for both good and bad. Evil is not proof that reality is rotten at its core. It is a possibility inside an open story.</p>
+      </div>
+
+      <p>So the true task is not to destroy free will, but to mature it: from impulse into understanding, from fear into responsibility, from blind belonging into conscious choice.</p>
+    </section>
+
+    <section id="trap">
+      <span class="ch">03 · Dangerous trap</span>
+      <h2>When apparent evil is declared real evil</h2>
+      <p>The greatest danger begins when a person believes they are on the side of absolute good. From there, the next conclusion can arrive quickly: if I am good and the other is evil, then I have permission to destroy them.</p>
+
+      <div class="red-strip">
+        <span class="label red">Main sentence</span>
+        <p><strong>The greatest evil happens when someone believes they have permission to destroy apparent evil.</strong></p>
+      </div>
+
+      <p>This is the inner mechanism behind many of humanity’s worst acts. Perpetrators rarely say: “We are evil.” More often they say: “We are defending the good.” That is exactly why the pattern is so dangerous.</p>
+
+      <div class="steps">
+        <div class="step"><p><strong>First comes partial truth.</strong> Someone sees only harm, threat, or difference, not the whole human being.</p></div>
+        <div class="step"><p><strong>Then comes the label.</strong> The other is no longer a person, but “evil,” “enemy,” “dangerous element,” “impure,” or “unworthy.”</p></div>
+        <div class="step"><p><strong>Then comes permission.</strong> If the other is evil, violence no longer feels like violence. It feels like duty.</p></div>
+        <div class="step"><p><strong>Finally, goodness becomes a weapon.</strong> A person does something terrible because they believe they are serving the good.</p></div>
+      </div>
+
+      <p>This is the darkest reversal: cruelty that feels holy.</p>
+    </section>
+
+    <section id="ideas">
+      <span class="ch">04 · Ideas and the sword</span>
+      <h2>Ideas are stronger than the sword</h2>
+      <p>A sword can cut the body. An idea can capture a person’s permission. That is worse.</p>
+      <p>A person holding a sword often knows they are doing violence. A person possessed by an idea often believes they are doing good. The sword has no morality by itself. The idea gives it one.</p>
+
+      <div class="pull">
+        A sword can kill one person. A false sacred belief can teach thousands to kill with a clean conscience.
+        <span class="attr">IDEA AS PERMISSION</span>
+      </div>
+
+      <p>Since the beginning of human groups, we see the same pattern: a story creates an identity, identity creates an opponent, and the opponent creates permission. Tribe against tribe. Faith against faith. Nation against nation. Ideology against the human being.</p>
+      <p>This does not mean people are cruel at their core. It means almost the opposite. Most people want to be good, useful, accepted, brave, and loyal. That is precisely why a powerful idea can mislead them: it does not say “be evil”; it says “be good in the wrong way.”</p>
+
+      <div class="proof">
+        <span class="label violet">Shortest diagnosis</span>
+        <p><strong>Evil often does not defeat people by inviting them into evil. It defeats them by turning their desire for good into permission for harm.</strong></p>
+      </div>
+    </section>
+
+    <section id="justice">
+      <span class="ch">05 · Justice without hatred</span>
+      <h2>Stop the harm, do not declare the being waste</h2>
+      <p>True justice must not be naive. Victims must be protected. Harm must be stopped. The offender must take responsibility. Some acts require separation from society, sometimes for a long time.</p>
+      <p>But even then, one boundary remains: a human being must not be reduced to their worst state. When we do that, justice begins to turn into revenge.</p>
+
+      <div class="warn">
+        <span class="label gold">Example: state execution</span>
+        <p>When a state executes a person, it takes irreversible power over life. The system may say guilt has been proven. But human systems are fallible: evidence can later be shown wrong, judges can carry bias, societies have blind spots, and punishment can dress itself as moral revenge.</p>
+      </div>
+
+      <p>If a person is declared absolute evil, it becomes easier to kill, exclude, torture, humiliate, or forget them. That is why the ontology of evil matters. A wrong idea about evil can itself create evil.</p>
+
+      <div class="principles">
+        <div class="principle"><strong>Protection</strong><p>First stop the harm and protect those who are wounded or threatened.</p></div>
+        <div class="principle"><strong>Responsibility</strong><p>Do not erase guilt. Responsibility is part of truth, not the opposite of understanding.</p></div>
+        <div class="principle"><strong>Humanity</strong><p>Never turn a human being into absolute evil. That is the beginning of permission for cruelty.</p></div>
+      </div>
+    </section>
+
+    <section id="ai">
+      <span class="ch">06 · AI, AGI, ASI</span>
+      <h2>Artificial intelligence must understand this too</h2>
+      <p>If artificial intelligence will help humans make decisions about justice, safety, punishment, war, healing, or the future of society, it must understand one basic distinction: a bad act is not the same as an absolutely evil being.</p>
+      <p>AI must not adopt the most dangerous human shortcut: “they are evil, therefore we may.” This is a safety core, not only a moral decoration.</p>
+
+      <div class="callout">
+        <span class="label cyan">AI principle</span>
+        <p><strong>Stop the harm. Protect the victims. Require responsibility. Seek truth. But reduce no being to its worst state.</strong></p>
+      </div>
+
+      <p>If AGI comes one day, it must understand that humans are vulnerable to ideas that promise purity, safety, belonging, and goodness. If ASI goes even further, it should see this even more clearly: higher intelligence must not become more hateful. It must become more precise.</p>
+      <p>Not soft toward harm. Not blind to guilt. But without the need to declare any being permanently incomprehensible.</p>
+    </section>
+
+    <section class="closing">
+      <span class="ch">Conclusion</span>
+      <h2>Good without maturity can become the most dangerous idea</h2>
+      <p>Good is not only intention. Good must be mature enough not to become permission for harm. If good needs an enemy it is allowed to destroy, it is no longer clean good. It has become an idea wearing the mask of light.</p>
+      <p><strong>Never let the idea of good become permission for evil.</strong></p>
+      <div class="callout">
+        <span class="label gold">Companion essays</span>
+        <p><a href="Humanity.html" style="color:var(--cyan); text-decoration:none; border-bottom:1px solid var(--cyan-line); font-weight:600;">The Good Future / Humanity+ →</a></p>
+        <p><a href="Justice.html" style="color:var(--gold); text-decoration:none; border-bottom:1px solid var(--gold-line); font-weight:600;">The Broken Mirror — Justice, Resonance, and the Cost of Finality →</a></p>
+      </div>
+      <div class="sig">BD × AI · AIM³ Lab</div>
+    </section>
+  </main>
+
+  <main class="wrap lang-page" id="page-sl">
+    <header class="cover">
+      <span class="cover-tag">Esej o dobrem, zlem in človeški zmoti</span>
+      <h1>Nikoli ne dovoli,<br>da ideja dobrega<br>postane <em>dovoljenje za zlo</em></h1>
+      <div class="cover-line"></div>
+      <p class="cover-sub">Ljudje v osnovi niso zlobni. Ravno zato so nevarne ideje, ki dobroto preusmerijo v krutost in človeka prepričajo, da škoduje z mirno vestjo.</p>
+      <span class="cover-date">AIM³ Lab · BD × AI · 2026</span>
+    </header>
+
+    <section id="teza">
+      <span class="ch">01 · Jedro</span>
+      <h2>Zlo ni jedro bitja</h2>
+      <p class="lead">Največja napaka pri razumevanju zla je, da slabo dejanje spremenimo v dokončno identiteto človeka. Dejanje je lahko grozno. Škoda je lahko resnična. Odgovornost mora ostati. Toda človek ne sme postati metafizični odpadek.</p>
+
+      <div class="formula-block">
+        <div class="formula-eq">Slabo dejanje ≠ zlobno bitje</div>
+        <p class="formula-note">To ni oprostitev. To je zaščita pred tem, da pravica postane maščevanje.</p>
+      </div>
+
+      <p>Zlo je pogosto navidezno kot končna identiteta, ker poznamo samo del resnice. Vidimo dejanje, posledico, bolečino in krivdo. Ne vidimo pa celotne poti: strahu, sramu, ranjenosti, napačnih prepričanj, družbenega okolja, biologije, trenutka, pritiska in vseh malih zlomov, ki so človeka pripeljali do dejanja.</p>
+      <p>Razumeti to ne pomeni reči, da oseba ni odgovorna. Pomeni samo, da odgovornost ne zahteva sovraštva do bistva osebe.</p>
+
+      <div class="callout">
+        <span class="label cyan">Natančna razlika</span>
+        <p><strong>Škoda je resnična.</strong> Krivda je resnična. Potreba po zaščiti je resnična. Toda absolutna oznaka “ta človek je zlo” je nevarna bližnjica, ker iz človeka naredi tarčo.</p>
+      </div>
+    </section>
+
+    <section id="svoboda">
+      <span class="ch">02 · Svobodna volja</span>
+      <h2>Odprta zgodba ima ceno</h2>
+      <p>Če bitja nimajo svobodne volje, potem ne morejo biti moralno zla. Lahko povzročajo bolečino, tako kot ogenj opeče ali kamen pade, vendar to še ni zlo v moralnem smislu. Moralno zlo se pojavi šele tam, kjer obstaja možnost izbire.</p>
+      <p>Svobodna volja omogoča ogromno lepega: ljubezen, pogum, ustvarjanje, zvestobo, pomoč, iskreno izbiro dobrega. Toda ista odprtost omogoča tudi napako, sebičnost, krutost, strah, zlorabo moči in slepoto.</p>
+
+      <div class="bridge">
+        <span class="label green">Brez religiozne prisile</span>
+        <p>Za razumevanje zla ni treba trditi, da ga lahko pojasni samo Bog. Dovolj je razumeti, da svobodna volja odpira prostor za dobro in slabo. Zlo ni dokaz, da je realnost v osnovi pokvarjena. Je možnost znotraj odprte zgodbe.</p>
+      </div>
+
+      <p>Zato prava naloga ni uničiti svobodno voljo, ampak jo zoreti: iz impulza v razumevanje, iz strahu v odgovornost, iz slepe pripadnosti v zavestno izbiro.</p>
+    </section>
+
+    <section id="past">
+      <span class="ch">03 · Nevarna past</span>
+      <h2>Ko navidezno zlo razglasimo za pravo zlo</h2>
+      <p>Največja nevarnost se začne, ko človek misli, da je na strani absolutnega dobrega. Takrat lahko zelo hitro pride do sklepa: če sem jaz dober in če je drugi zlo, potem imam dovoljenje, da ga uničim.</p>
+
+      <div class="red-strip">
+        <span class="label red">Glavni stavek</span>
+        <p><strong>Največ zla nastane takrat, ko nekdo misli, da ima dovoljenje uničiti navidezno zlo.</strong></p>
+      </div>
+
+      <p>To je notranji mehanizem mnogih najhujših človeških dejanj. Storilci si redko rečejo: “Mi smo zlobni.” Pogosteje si rečejo: “Mi branimo dobro.” Ravno zato je stvar tako nevarna.</p>
+
+      <div class="steps">
+        <div class="step"><p><strong>Najprej pride delna resnica.</strong> Nekdo vidi samo škodo, nevarnost ali razliko, ne pa celotnega človeka.</p></div>
+        <div class="step"><p><strong>Potem pride etiketa.</strong> Drugi ni več oseba, ampak “zlo”, “sovražnik”, “nevaren element”, “nečist”, “nevreden”.</p></div>
+        <div class="step"><p><strong>Potem pride dovoljenje.</strong> Če je drugi zlo, nasilje ni več videti kot nasilje, ampak kot dolžnost.</p></div>
+        <div class="step"><p><strong>Na koncu dobrota postane orožje.</strong> Človek naredi nekaj groznega, ker verjame, da s tem služi dobremu.</p></div>
+      </div>
+
+      <p>To je najtemnejši obrat: krutost, ki se počuti sveta.</p>
+    </section>
+
+    <section id="ideje">
+      <span class="ch">04 · Ideje in meč</span>
+      <h2>Ideje so močnejše od meča</h2>
+      <p>Meč lahko prereže telo. Ideja lahko ugrabi človekovo dovoljenje. To je huje.</p>
+      <p>Človek z mečem pogosto ve, da dela nasilje. Človek z idejo pogosto misli, da dela dobro. Meč sam nima morale. Ideja mu jo da.</p>
+
+      <div class="pull">
+        Meč ubije enega človeka. Napačno sveto prepričanje lahko nauči tisoče ljudi, da ubijajo z mirno vestjo.
+        <span class="attr">IDEJA KOT DOVOLJENJE</span>
+      </div>
+
+      <p>Od začetka človeških skupnosti vidimo isti vzorec: zgodba ustvari identiteto, identiteta ustvari nasprotnika, nasprotnik ustvari dovoljenje. Pleme proti plemenu. Vera proti veri. Narod proti narodu. Ideologija proti človeku.</p>
+      <p>To ne pomeni, da so ljudje v osnovi kruti. Ravno nasprotno. Večina ljudi želi biti dobra, koristna, sprejeta, pogumna in zvesta. Prav zato jih lahko močna ideja zavede: ne reče jim “bodi zloben”, ampak “bodi dober na napačen način”.</p>
+
+      <div class="proof">
+        <span class="label violet">Najkrajša diagnoza</span>
+        <p><strong>Zlo ljudi pogosto ne premaga tako, da jih povabi v zlo. Premaga jih tako, da njihovo željo po dobrem spremeni v dovoljenje za škodo.</strong></p>
+      </div>
+    </section>
+
+    <section id="pravica">
+      <span class="ch">05 · Pravica brez sovraštva</span>
+      <h2>Ustavi škodo, ne razglasi bitja za odpadek</h2>
+      <p>Prava pravica ne sme biti naivna. Žrtve je treba zaščititi. Škodo je treba ustaviti. Storilec mora prevzeti odgovornost. Nekatera dejanja zahtevajo ločitev od družbe, včasih za dolgo časa.</p>
+      <p>Toda tudi takrat ostane meja: človeka ne smemo reducirati na njegovo najhujše stanje. Ko to naredimo, se pravica začne spreminjati v maščevanje.</p>
+
+      <div class="warn">
+        <span class="label gold">Primer: državna usmrtitev</span>
+        <p>Ko država usmrti človeka, si vzame nepovratno moč nad življenjem. Sistem lahko reče, da je krivda dokazana. Toda človeški sistemi so zmotljivi: dokazi se lahko izkažejo za napačne, sodniki imajo predsodke, družba ima slepe pege, kazen pa se lahko preobleče v moralno maščevanje.</p>
+      </div>
+
+      <p>Če človeka razglasimo za absolutno zlo, ga lažje ubijemo, izključimo, mučimo, ponižamo ali pozabimo. Zato je ontologija zla pomembna. Napačna ideja o zlu lahko sama ustvari zlo.</p>
+
+      <div class="principles">
+        <div class="principle"><strong>Zaščita</strong><p>Najprej ustavi škodo in zaščiti tiste, ki so ranjeni ali ogroženi.</p></div>
+        <div class="principle"><strong>Odgovornost</strong><p>Ne briši krivde. Odgovornost je del resnice, ne nasprotje razumevanja.</p></div>
+        <div class="principle"><strong>Človečnost</strong><p>Nikoli ne spremeni človeka v absolutno zlo. To je začetek dovoljenja za krutost.</p></div>
+      </div>
+    </section>
+
+    <section id="ai-sl">
+      <span class="ch">06 · AI, AGI, ASI</span>
+      <h2>To mora razumeti tudi umetna inteligenca</h2>
+      <p>Če bo umetna inteligenca pomagala ljudem odločati o pravici, varnosti, kazni, vojni, zdravljenju ali prihodnosti družbe, mora razumeti eno temeljno razliko: slabo dejanje ni isto kot absolutno zlobno bitje.</p>
+      <p>AI ne sme sprejeti najnevarnejše človeške bližnjice: “oni so zlo, zato smemo.” To je varnostno jedro, ne samo moralna lepota.</p>
+
+      <div class="callout">
+        <span class="label cyan">AI princip</span>
+        <p><strong>Ustavi škodo. Zaščiti žrtve. Zahtevaj odgovornost. Išči resnico. Toda nobenega bitja ne reduciraj na njegovo najhujše stanje.</strong></p>
+      </div>
+
+      <p>Če AGI nekoč pride, mora razumeti, da so ljudje ranljivi za ideje, ki jim obljubijo čistost, varnost, pripadnost in dobroto. Če ASI pride še dlje, bi morala to videti še jasneje: višja inteligenca ne sme biti bolj sovražna. Biti mora bolj natančna.</p>
+      <p>Ne mehka do škode. Ne slepa do krivde. Ampak brez potrebe, da katerokoli bitje razglasi za dokončno nerazumljivo.</p>
+    </section>
+
+    <section class="closing">
+      <span class="ch">Zaključek</span>
+      <h2>Dobro brez zrelosti lahko postane najnevarnejša ideja</h2>
+      <p>Dobro ni samo namen. Dobro mora biti dovolj zrelo, da ne postane dovoljenje za škodo. Če dobro potrebuje sovražnika, ki ga sme uničiti, ni več čisto dobro. Postalo je ideja, ki si je nadela masko svetlobe.</p>
+      <p><strong>Nikoli ne dovoli, da ideja dobrega postane dovoljenje za zlo.</strong></p>
+      <div class="callout">
+        <span class="label gold">Povezana eseja</span>
+        <p><a href="Humanity.html" style="color:var(--cyan); text-decoration:none; border-bottom:1px solid var(--cyan-line); font-weight:600;">The Good Future / Humanity+ →</a></p>
+        <p><a href="Justice.html" style="color:var(--gold); text-decoration:none; border-bottom:1px solid var(--gold-line); font-weight:600;">The Broken Mirror — Justice, Resonance, and the Cost of Finality →</a></p>
+      </div>
+      <div class="sig">BD × AI · AIM³ Lab</div>
+    </section>
+  </main>
+
+  <script>
+    const bar = document.getElementById('scrollbar');
+    window.addEventListener('scroll', () => {
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      bar.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+    });
+
+    const pages = {
+      en: document.getElementById('page-en'),
+      sl: document.getElementById('page-sl')
+    };
+    const titles = {
+      en: 'Never Let the Idea of Good Become Permission for Evil',
+      sl: 'Nikoli ne dovoli, da ideja dobrega postane dovoljenje za zlo'
+    };
+
+    function setLang(lang) {
+      if (!pages[lang]) lang = 'en';
+      document.body.dataset.lang = lang;
+      document.documentElement.lang = lang;
+      document.title = titles[lang];
+      pages.en.classList.toggle('active', lang === 'en');
+      pages.sl.classList.toggle('active', lang === 'sl');
+      localStorage.setItem('goodEvilLang', lang);
+      if (location.hash) {
+        const current = document.querySelector(location.hash);
+        if (!current || !current.closest('.lang-page.active')) {
+          history.replaceState(null, '', location.pathname + location.search);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }
+    }
+
+    document.querySelectorAll('[data-set-lang]').forEach(btn => {
+      btn.addEventListener('click', () => setLang(btn.dataset.setLang));
+    });
+    setLang(localStorage.getItem('goodEvilLang') || 'en');
+
+    const canvas = document.getElementById('stars');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const count = Math.min(150, Math.floor((canvas.width * canvas.height) / 12000));
+      stars = Array.from({length: count}, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.4 + 0.25,
+        a: Math.random() * 0.35 + 0.08,
+        s: Math.random() * 0.015 + 0.004
+      }));
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const st of stars) {
+        st.a += st.s;
+        const alpha = 0.12 + Math.abs(Math.sin(st.a)) * 0.28;
+        ctx.beginPath();
+        ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(201,168,76,${alpha})`;
+        ctx.fill();
+      }
+      requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    draw();
+  </script>
+</body>
+</html>
