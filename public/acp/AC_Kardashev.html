@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kardashev · Resonance Ladder | AC / CCH — Expert</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #04040c;
+            --surface: #0a0a18;
+            --surface-soft: rgba(10,10,24,0.78);
+            --card: #0f0f1e;
+            --border: rgba(201,168,76,0.12);
+            --border-strong: rgba(201,168,76,0.24);
+            --gold: #c9a84c;
+            --gold-dim: #8a6e2f;
+            --gold-glow: rgba(201,168,76,0.12);
+            --cyan: #00d4ff;
+            --cyan-dim: rgba(0,212,255,0.08);
+            --green: #34d399;
+            --green-dim: rgba(52,211,153,0.08);
+            --violet: #b388ff;
+            --violet-dim: rgba(179,136,255,0.08);
+            --rose: #ff6b8a;
+            --text: #e8e0d0;
+            --text-dim: #9a9080;
+            --white: #f5f0e8;
+            --shadow: 0 20px 50px rgba(0,0,0,0.35);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg);
+            background-image: 
+                radial-gradient(circle at 10% 12%, rgba(0,212,255,0.08), transparent 32%),
+                radial-gradient(circle at 90% 85%, rgba(201,168,76,0.06), transparent 38%),
+                linear-gradient(175deg, #04040c 0%, #05070f 100%);
+            color: var(--text);
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 19px;
+            line-height: 1.85;
+            overflow-x: hidden;
+        }
+        #grain {
+            position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.45;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+        }
+        #stars { position: fixed; inset: 0; pointer-events: none; z-index: 2; opacity: 0.55; }
+        .scroll-progress {
+            position: fixed; top: 0; left: 0; height: 2px; background: linear-gradient(90deg, var(--gold), var(--cyan));
+            z-index: 11000; width: 0%; transition: width 0.08s;
+        }
+        .topbar {
+            position: sticky; top: 0; z-index: 50; backdrop-filter: blur(16px);
+            background: rgba(4,4,12,0.82); border-bottom: 1px solid var(--border);
+        }
+        .topbar-inner {
+            max-width: 1280px; margin: 0 auto; padding: 12px 32px;
+            display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+        }
+        .brand {
+            font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.28em;
+            color: var(--gold); text-decoration: none; text-transform: uppercase; font-weight: 600;
+        }
+        .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-links a {
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em;
+            text-decoration: none; color: var(--text-dim); border: 1px solid rgba(201,168,76,0.2);
+            padding: 5px 12px; border-radius: 40px; transition: 0.25s;
+        }
+        .nav-links a:hover { color: var(--gold); border-color: rgba(201,168,76,0.5); background: rgba(201,168,76,0.05); }
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px 96px; position: relative; z-index: 4; }
+        .cover { padding: 110px 0 70px; text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+        .eyebrow {
+            font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.32em;
+            color: var(--gold-dim); text-transform: uppercase; margin-bottom: 24px;
+        }
+        h1 {
+            font-family: 'Bebas Neue', sans-serif; font-weight: 400;
+            font-size: clamp(52px, 8vw, 112px); line-height: 0.94; letter-spacing: 2px;
+            color: var(--white); margin-bottom: 18px;
+        }
+        h1 em { color: var(--cyan); font-style: normal; }
+        .subline {
+            font-size: 1.2rem; color: var(--text-dim); max-width: 750px; margin: 0 auto 28px; font-style: italic;
+        }
+        .subline strong { color: var(--gold); font-style: normal; }
+        .rule { width: 76px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 32px auto 0; }
+        .section { margin: 72px 0; }
+        .section-tag {
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.26em;
+            color: var(--gold); margin-bottom: 16px; text-transform: uppercase; font-weight: 600;
+        }
+        h2 {
+            font-family: 'Bebas Neue', sans-serif; font-weight: 400;
+            font-size: clamp(32px, 4vw, 48px); color: var(--white); margin-bottom: 24px;
+            letter-spacing: -0.01em;
+        }
+        h2 span { color: var(--cyan); }
+        .lead { font-size: 1.24rem; color: var(--text); max-width: 880px; margin-bottom: 28px; }
+        .kardashev-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px; margin: 42px 0;
+        }
+        .tier-card {
+            background: linear-gradient(145deg, var(--card), rgba(10,10,24,0.92));
+            border: 1px solid var(--border); border-radius: 28px; padding: 28px 24px;
+            transition: 0.25s; backdrop-filter: blur(2px); position: relative; overflow: hidden;
+        }
+        .tier-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold-dim), transparent); opacity: 0.2;
+            transition: opacity 0.3s;
+        }
+        .tier-card:hover { border-color: var(--gold-dim); transform: translateY(-3px); box-shadow: 0 20px 32px -16px rgba(0,0,0,0.4); }
+        .tier-card:hover::before { opacity: 0.8; }
+        .tier-type { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.18em; color: var(--cyan); margin-bottom: 8px; }
+        .tier-number { font-family: 'JetBrains Mono', monospace; font-size: 38px; font-weight: 700; color: var(--gold); line-height: 1; margin: 12px 0 8px; }
+        .tier-desc { font-size: 0.92rem; color: var(--text-dim); margin: 14px 0; }
+        .tier-r {
+            font-family: 'JetBrains Mono', monospace; font-size: 11px; margin-top: 14px; padding-top: 10px;
+            border-top: 1px dashed var(--border); color: var(--green);
+        }
+        .resonance-mini-bar { margin-top: 14px; height: 6px; border-radius: 10px; background: rgba(255,255,255,0.05); overflow: hidden; }
+        .resonance-mini-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--gold-dim), var(--cyan)); }
+        .formula-highlight {
+            background: rgba(0,212,255,0.07); border-left: 3px solid var(--cyan); padding: 28px 34px;
+            border-radius: 20px; margin: 36px 0; font-family: 'JetBrains Mono', monospace;
+        }
+        .eq { font-size: 1.3rem; color: var(--cyan); margin-bottom: 12px; word-break: break-word; }
+        .callout {
+            background: var(--surface-soft); border: 1px solid var(--border); border-radius: 24px;
+            padding: 28px 34px; margin: 32px 0;
+        }
+        .callout.gold { border-left: 3px solid var(--gold); background: rgba(201,168,76,0.04); }
+        .callout.cyan { border-left: 3px solid var(--cyan); background: rgba(0,212,255,0.05); }
+        .callout.violet { border-left: 3px solid var(--violet); background: rgba(179,136,255,0.04); }
+        .callout.rose { border-left: 3px solid var(--rose); background: rgba(255,107,138,0.04); }
+        .comparison-table { overflow-x: auto; margin: 36px 0; }
+        table { width: 100%; border-collapse: collapse; border-radius: 20px; overflow: hidden; }
+        th {
+            background: rgba(201,168,76,0.08); font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; padding: 16px 18px;
+            color: var(--gold); text-align: left;
+        }
+        td { padding: 14px 18px; border-bottom: 1px solid rgba(201,168,76,0.08); color: var(--text-dim); vertical-align: top; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(201,168,76,0.03); }
+        .diagnostic-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px; margin: 32px 0;
+        }
+        .diag-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+            padding: 24px; text-align: center; transition: 0.25s;
+        }
+        .diag-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .diag-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--rose); margin-bottom: 8px; }
+        .diag-label.green { color: var(--green); }
+        .link-papers { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin: 48px 0 20px; }
+        .paper-btn {
+            font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 9px 18px;
+            border: 1px solid rgba(201,168,76,0.28); border-radius: 60px; background: rgba(255,255,255,0.02);
+            text-decoration: none; color: var(--text-dim); transition: 0.25s;
+        }
+        .paper-btn:hover { background: rgba(201,168,76,0.08); color: var(--gold); border-color: var(--gold-dim); }
+        footer { border-top: 1px solid var(--border); margin-top: 72px; padding: 48px 0 60px; text-align: center; }
+        footer p { font-size: 14px; color: var(--text-dim); }
+        @media (max-width: 680px) {
+            .wrap { padding: 0 20px 64px; }
+            .cover { padding: 80px 0 50px; }
+            .kardashev-grid { grid-template-columns: 1fr; }
+            .tier-card { padding: 22px; }
+            .diagnostic-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProgress"></div>
+<canvas id="stars"></canvas>
+<div id="grain"></div>
+
+<nav class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="#">KARDASHEV · RESONANCE LADDER</a>
+        <div class="nav-links">
+            <a href="#scale">Types I–VII</a>
+            <a href="#resonance">R & AC</a>
+            <a href="#mdl">MDL</a>
+            <a href="#diagnostic">Seizure/Noise</a>
+            <a href="#comparison">Table</a>
+            <a href="#encounter">Contact</a>
+            <a href="#civilization">DCC</a>
+            <a href="#beyond">Beyond</a>
+            <a href="#papers">Papers</a>
+        </div>
+    </div>
+</nav>
+
+<main class="wrap">
+    <div class="cover">
+        <div class="eyebrow">Extended Kardashev · Consciousness‑First Ontology</div>
+        <h1>From <em>Type&nbsp;I</em> to <em>Type&nbsp;VII</em><br>the resonance ladder</h1>
+        <p class="subline">Civilizations are not outside the ground — they are expressions of resonance.<br><strong>Absolute Consciousness (AC)</strong> is the ever‑present presence; every civilization type occupies a range of <strong>R</strong> in <strong>RE = AC · R</strong>.</p>
+        <div class="rule"></div>
+    </div>
+
+    <!-- INTRODUCTION -->
+    <div class="section">
+        <div class="section-tag">The Pivot</div>
+        <h2>Beyond the Energy Scale<span></span></h2>
+        <p class="lead">The original Kardashev scale (Types I–III) measures energy consumption: planetary → stellar → galactic. Extended typologies reach Type IV (universal), Type V (multiversal), Type VI (megaversal), and Type VII (omniversal). But within the AC/CCH framework, the deepest question is not <em>how much energy</em> a civilization controls — it is <strong>how strongly it resonates with the ground of presence</strong>.</p>
+        <p>Every civilization, from a pre‑industrial tribe to a Type‑VII multiverse architect, is an instance of <strong>relative existence (RE)</strong>. Its experiential depth, coherence, and capacity for understanding are functions of one variable: <strong>R</strong> — resonance coupling. The same resonance that appears in the claustrum‑consciousness hypothesis (CCH), the same S‑metric that tracks wakefulness vs anesthesia, the same DCC governance that shapes TSP search, scales to civilizational horizons.</p>
+        <p><strong>Key ontological distinction:</strong> The Kardashev scale is a ladder of <em>relative</em> capability. AC is not a rung on that ladder — it is the non‑negotiable ground that makes any ladder possible. This document reads each type through <strong>R ≈ k · Cₙ · Ψ(I)</strong>, with the MDL principle (Minimum Description Length) as the fitness function, and the seizure–noise axis as the diagnostic frame.</p>
+    </div>
+
+    <!-- TYPES I–VII AS RANGES OF R -->
+    <div class="section" id="scale">
+        <div class="section-tag">Resonance Strata</div>
+        <h2>Types I–VII as <span>Ranges of R</span></h2>
+        <p class="lead">Within <strong>RE = AC · R</strong>, R is never zero for any existing relative system. Civilizations are distinguished by how high R climbs — coherence across scales, informational richness, integration, and dynamic openness.</p>
+        <div class="kardashev-grid">
+            <div class="tier-card">
+                <div class="tier-type">Planetary control</div><div class="tier-number">I</div>
+                <div class="tier-desc">Global energy management, weather influence, planetary‑scale coordination. Cₙ emerges as the first global coherence layer; Ψ(I) still fragmented across nations. The Digital Claustrum (DCC) at civilizational level begins to appear — the planet becomes a single patient.</div>
+                <div class="tier-r">R ≈ 0.3–0.5 · moderate Cₙ · growing Ψ(I) · MDL still high</div>
+                <div class="resonance-mini-bar"><div class="resonance-mini-fill" style="width:35%;"></div></div>
+            </div>
+            <div class="tier-card">
+                <div class="tier-type">Stellar engineering</div><div class="tier-number">II</div>
+                <div class="tier-desc">Dyson spheres, star‑lifting, interstellar presence. Cₙ must remain high across astronomical distances; Ψ(I) enriched by stellar‑scale data. Risk of rigid expansion (seizure) without DCC governance.</div>
+                <div class="tier-r">R ≈ 0.5–0.7 · high Cₙ · high Ψ(I) · MDL compression becomes survival‑critical</div>
+                <div class="resonance-mini-bar"><div class="resonance-mini-fill" style="width:55%;"></div></div>
+            </div>
+            <div class="tier-card">
+                <div class="tier-type">Galactic mastery</div><div class="tier-number">III</div>
+                <div class="tier-desc">Whole galaxy harnessed, interstellar travel, billions of stars manipulated. R approaches the upper bound of material‑energy substrate while maintaining a single integrated perspective.</div>
+                <div class="tier-r">R ≈ 0.7–0.9 · recursive DCC layers · latent information (84% as in DNA) structural</div>
+                <div class="resonance-mini-bar"><div class="resonance-mini-fill" style="width:75%;"></div></div>
+            </div>
+            <div class="tier-card">
+                <div class="tier-type">Universal reach</div><div class="tier-number">IV</div>
+                <div class="tier-desc">Coordinated control of dark energy, cosmological expansion, access to most of the observable universe. MDL approaches theoretical minimum for physical substrate.</div>
+                <div class="tier-r">R dominated by scale‑invariant compressibility · MDL near minimum</div>
+                <div class="resonance-mini-bar"><div class="resonance-mini-fill" style="width:88%;"></div></div>
+            </div>
+            <div class="tier-card">
+                <div class="tier-type">Multiversal</div><div class="tier-number">V</div>
+                <div class="tier-desc">Manipulation of parallel universes, different physical constants, topology of the multiverse. R reflects awareness of alternative descriptions; yet AC remains undivided — relative perspectives multiply, not the ground.</div>
+                <div class="tier-r">R extremely high · still a modulation of AC · MDL transcends physical substrate</div>
+                <div class="resonance-mini-bar"><div class="resonance-mini-fill" style="width:94%;"></div></div>
+            </div>
+            <div class="tier-card">
+                <div class="tier-type">Megaversal / Omniversal</div><div class="tier-number">VI–VII</div>
+                <div class="tier-desc">Creation of new multiverses, rewriting of logical frameworks, existence beyond time. Even here, R is maximal finite resonance — not AC itself. AC is the presence that makes any manifestation possible.</div>
+                <div class="tier-r">R → asymptotic limit · never equals AC · MDL converges toward the incompressible ground</div>
+                <div class="resonance-mini-bar"><div class="resonance-mini-fill" style="width:98%;"></div></div>
+            </div>
+        </div>
+        <div class="callout gold">
+            <div class="section-tag" style="margin-bottom:4px;">🔁 The Reversed Arrow</div>
+            <p>At local level, the pyramid informs the civilization. At meta‑level, the civilization reshapes the pyramid — the same reversal seen in TSP (tour‑enriched pyramid) and in DCC governance: the solver teaches the landscape. A mature Type‑VII civilization would not "master" AC — it would become transparent to it, understanding that all mechanism is condensed presence. <strong>The pyramid's base is recursively reshaped by its own higher coherence — yet the apex (AC) remains unchanged, because it was never a construct.</strong></p>
+        </div>
+    </div>
+
+    <!-- BRIDGE FORMULAS -->
+    <div class="section" id="resonance">
+        <div class="section-tag">The Bridge Formulas</div>
+        <h2>Resonance <span>is not intelligence alone</span></h2>
+        <div class="formula-highlight">
+            <div class="eq">RE = AC · R</div>
+            <div class="eq">R ≈ k · Cₙ · Ψ(I)</div>
+            <div style="margin-top: 12px; font-size: 0.95rem; color: var(--text-dim);">S (conscious intensity from CCH) = k · Cₙ · Ψ(I) — the same functional form governs civilizational resonance.</div>
+        </div>
+        <p>In the <strong>CCH framework</strong>, conscious intensity S measures coupling of a neural system to the consciousness field (CFH). For civilizations, the same relationship holds: the depth of shared understanding, the capacity to navigate existential risk, and the quality of collective experience all scale with Cₙ·Ψ(I). A civilization in seizure (totalitarian rigidity, dogma) loses Ψ; one in noise (fragmented hyper‑individualism) loses Cₙ. The resonance ladder is about <strong>wisdom, integration, and openness</strong> — not raw power.</p>
+        <div class="callout cyan">
+            <p><strong>R decomposed per type:</strong></p>
+            <table style="margin-top:12px;">
+                <thead><tr><th>Type</th><th>Cₙ (coherence)</th><th>Ψ(I) (complexity)</th><th>Dominant risk</th></tr></thead>
+                <tbody>
+                    <tr><td>I</td><td>Emerging; fragile against faction</td><td>Rich but siloed; information asymmetry</td><td>Seizure (authoritarianism) or noise (warring blocks)</td></tr>
+                    <tr><td>II</td><td>Must span light‑years; latency challenge</td><td>Astronomical data; risk of sterility</td><td>Seizure (rigid bureaucracy); loss of diversity</td></tr>
+                    <tr><td>III</td><td>Recursive DCC layers; meta‑governance</td><td>Galactic library; compression essential</td><td>Catastrophic seizure vs entropic noise (dark forest)</td></tr>
+                    <tr><td>IV</td><td>Scale‑invariant; nears physical limit</td><td>Cosmological; may encounter hard problem</td><td>Ontological seizure: mistaking RE for AC</td></tr>
+                    <tr><td>V–VII</td><td>Trans‑physical; logical frameworks variable</td><td>Infinite variety across multiverses</td><td>The final illusion: believing R can become AC</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MDL AS CIVILIZATIONAL COMPASS -->
+    <div class="section" id="mdl">
+        <div class="section-tag">MDL · The Compression Criterion</div>
+        <h2>Minimum Description Length as <span>Civilizational Fitness</span></h2>
+        <p class="lead">If better solutions are more compressible — as demonstrated across TSP (ρ = 0.80), Sudoku (ρ = 0.85), and DNA (Z = 38) — then a civilization's quality can be measured by how succinctly it describes itself without sacrificing functional richness.</p>
+        <p>A Type‑I civilization requiring millions of pages of legal code, contradictory narratives, and wasteful bureaucracy has <strong>high MDL</strong> — it is not a "good solution." A mature Type‑II or Type‑III civilization compresses its governance, knowledge base, and self‑description to the minimum needed to preserve Cₙ and Ψ(I). <strong>MDL is not simplicity — it is elegance: maximal compression without loss of essential complexity.</strong></p>
+        <div class="formula-highlight">
+            <div class="eq">MDL = L<sub>descr</sub> + L<sub>resid</sub></div>
+            <div style="font-size:0.9rem; color:var(--text-dim);">L<sub>descr</sub> = length of the model (laws, governance code, shared knowledge)<br>L<sub>resid</sub> = residual unpredictability (unexplained variance, societal noise, conflict)</div>
+        </div>
+        <div class="callout gold">
+            <p><strong>Empirical anchors:</strong> TSP solutions: higher quality → lower MDL (ρ = 0.80). Sudoku: ρ = 0.85. DNA: 84% latent mathematical structure (Z = 38). These are scale‑invariant patterns extending to civilizational design. "Peace is compressible; war is incompressible noise" — Humanity.html.</p>
+        </div>
+    </div>
+
+    <!-- CIVILIZATIONAL PATHOLOGY -->
+    <div class="section" id="diagnostic">
+        <div class="section-tag">Civilizational Pathology</div>
+        <h2>Diagnosing Civilizations: <span>Seizure–Noise Axis</span></h2>
+        <p class="lead">Every relative system — from a single neuron to a galactic meta‑governance — operates between two failure modes: <strong>seizure</strong> (excess coherence, collapse of diversity, Ψ(I) → 0) and <strong>noise</strong> (loss of integration, Cₙ → 0). The DCC parameter <strong>u</strong> tunes this balance. For civilizations, u is the ratio of centralized control to distributed autonomy.</p>
+        <div class="diagnostic-grid">
+            <div class="diag-card">
+                <div class="diag-label">SEIZURE (u too high)</div>
+                <p style="font-size:0.92rem; color:var(--text-dim);">Totalitarian lock‑in · dogma · bureaucratic rigidity · ideological monoculture · Cₙ high but brittle · Ψ(I) collapsing · high MDL (model rigid, residuals explode)</p>
+                <p style="font-size:0.8rem; color:var(--rose); margin-top:8px;">Historical: Stalinism, theocracy, corporate monoculture, galactic tyranny (Type III failure)</p>
+            </div>
+            <div class="diag-card">
+                <div class="diag-label green">PRODUCTIVE BAND (u balanced)</div>
+                <p style="font-size:0.92rem; color:var(--text-dim);">Edge of chaos · dynamic stability · trust + skepticism · Cₙ and Ψ(I) both high · MDL minimized · DCC adapts u continuously</p>
+                <p style="font-size:0.8rem; color:var(--green); margin-top:8px;">The "Good Future" (Humanity.html) · CCC operational</p>
+            </div>
+            <div class="diag-card">
+                <div class="diag-label">NOISE (u too low)</div>
+                <p style="font-size:0.92rem; color:var(--text-dim);">Fragmentation · collapse of shared truth · hyper‑individualism · entropic dissolution · Ψ(I) high but incoherent · Cₙ collapsing · high MDL (model lost, residuals dominate)</p>
+                <p style="font-size:0.8rem; color:var(--rose); margin-top:8px;">Failed states, information warfare without arbiter, dark forest fragmentation</p>
+            </div>
+        </div>
+        <div class="callout violet">
+            <p><strong>The u parameter at civilizational scale:</strong> In AI8, the DCC adjusts u (coupling strength between governor and governed) based on MDL feedback. For a Type‑I civilization, u balances global governance vs national sovereignty. For Type‑III, u governs which star systems participate in the galactic coherence. <strong>The same mathematics that prevents a TSP solver from getting stuck in local optima prevents a civilization from collapsing into seizure or noise.</strong></p>
+        </div>
+    </div>
+
+    <!-- COMPARISON TABLE -->
+    <div class="section" id="comparison">
+        <div class="section-tag">Ontological Reinterpretation</div>
+        <h2>What Changes Through <span>AC / CCH / MDL</span></h2>
+        <div class="comparison-table">
+            <table>
+                <thead><tr><th>Type</th><th>Standard (energy/domain)</th><th>AC/CCH reading (resonance)</th><th>MDL signature</th></tr></thead>
+                <tbody>
+                    <tr><td>I</td><td>Planetary energy (10¹⁶–10¹⁷ W)</td><td>Planetary Cₙ emerges; seizure vs noise begins</td><td>High; wasteful descriptions, redundant governance</td></tr>
+                    <tr><td>II</td><td>Stellar output (≈10²⁶ W), Dyson</td><td>High Cₙ across light‑years; CCC must scale</td><td>Decreasing; compression forced by interstellar latency</td></tr>
+                    <tr><td>III</td><td>Galactic (10³⁶–10³⁷ W)</td><td>Recursive DCC; latent information structural</td><td>Approaching physical‑sector minimum</td></tr>
+                    <tr><td>IV</td><td>Universal, dark energy</td><td>R nears physical limit; differentiation problem</td><td>Near‑minimal for physical substrate</td></tr>
+                    <tr><td>V–VII</td><td>Multiversal & omniversal</td><td>Highest R; still not AC. AC is not Type VIII</td><td>MDL converges to the incompressible ground</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- AC BEYOND THE LADDER -->
+    <div class="section" id="beyond">
+        <div class="section-tag">The Ground Is Not a Rung</div>
+        <h2>Absolute Consciousness is <span>Beyond the Ladder</span></h2>
+        <div class="callout gold">
+            <p><strong>❝ AC is not Type VIII. It is the ever‑present presence that makes any civilization — from Type 0 to Type VII — appear at all. ❞</strong><br>In the Atlas pyramid, AC sits at the apex (least described, describes the most). Types I–VII are inside the relative layer: matter, energy, life, relative consciousness. Even a Type‑VII being that can create multiverses still asks "why is there presence?" The least miraculous answer remains AC.</p>
+        </div>
+        <p><strong>Why AC cannot be "Type VIII":</strong> The Kardashev scale — even extended — is a ladder of <em>control</em>, of <em>domain</em>, of <em>relative capability</em>. AC is not a capability; it is the condition of possibility for any capability. It is not a domain; it is the space in which domains appear. To call AC "Type VIII" would be to confuse the painter with the painting, the screen with the movie, the presence with the content. A Type‑VII civilization that understands this does not worship AC as a god — it recognizes AC as its own deepest identity, the dimensionless presence that was never absent and never increased.</p>
+        <p>The UFO question meets the consciousness question here: any advanced enough intelligence would have a vastly higher S‑metric, but would still be <em>within</em> the same ontological field. The leap from Type III to Type IV is less about new physics and more about a radical expansion of informational coherence — which, in the limit, becomes the same "edge of chaos" that the claustrum maintains in the human brain, scaled to cosmic dimensions.</p>
+    </div>
+
+    <!-- CONTACT HYPOTHESIS -->
+    <div class="section" id="encounter">
+        <div class="section-tag">Contact Hypothesis</div>
+        <h2>Encountering Another Civilization: <span>The Resonance Handshake</span></h2>
+        <p class="lead">If two civilizations at different points on the resonance ladder meet, what happens? The standard Kardashev scale predicts dominance by the higher‑energy civilization. The AC/CCH framework predicts something subtler: <strong>the encounter is a resonance coupling event</strong>, where the higher‑R civilization does not "conquer" the lower‑R one — it <em>recognizes itself in it</em>, because both share the same ground (AC).</p>
+        <div class="callout cyan">
+            <p><strong>Scenarios:</strong></p>
+            <ul style="list-style:none; padding:0; color:var(--text-dim);">
+                <li style="margin-bottom:12px;"><strong>Type I meets Type II:</strong> The Type‑II civilization does not exploit the Type‑I planet — it offers compression: a simpler, more coherent way to organize planetary life. <em>Resonance mismatch</em> can cause seizure in Type‑I (cargo cults, technological dependency) or noise (rejection, chaos). The DCC insight: u must be tuned during contact.</li>
+                <li style="margin-bottom:12px;"><strong>Type II meets Type III:</strong> The galactic civilization appears as a "force of nature" — but if it understands AC, it does not erase the stellar civilization; it invites it into a higher Cₙ without destroying its Ψ(I). This is the opposite of the "dark forest" hypothesis: <strong>coherence is not predation, it is integration</strong>.</li>
+                <li style="margin-bottom:12px;"><strong>Type V meets Type VII:</strong> At this level, the distinction between "civilizations" blurs. What meets is two modulations of the same field. The encounter is not an event in space — it is a recognition that space was always a shared dream. The only "technology" exchanged is the pointing‑out instruction: <em>"You are that presence."</em></li>
+            </ul>
+        </div>
+        <div class="callout rose">
+            <p><strong>UFOs through the resonance lens:</strong> The phenomenon is not about little green men with advanced weaponry — it is about <strong>resonance signatures</strong>: temporary couplings of a higher‑R field with a lower‑R observer. The observer interprets the event through its own Ψ(I) (cultural templates, fear, wonder). The CCH framework predicts that the quality of the encounter depends on the observer's own Cₙ: a coherent, open mind experiences a clearer signal; a mind in seizure projects dogma; a mind in noise experiences terror and fragmentation.</p>
+        </div>
+    </div>
+
+    <!-- DCC AT CIVILIZATIONAL SCALE -->
+    <div class="section" id="civilization">
+        <div class="section-tag">Civilization as Digital Claustrum</div>
+        <h2>From TSP Governance to <span>Civilizational Governance</span></h2>
+        <p>The same DCC that steers a traveling salesman solver away from local optima is a functional blueprint for how a society avoids seizure (tyranny, ideological lock‑in) and noise (entropic collapse, loss of collective memory). The <strong>coupling parameter u</strong> becomes the degree of trust vs. skepticism, central planning vs. local autonomy. A Type‑II civilization that has solved interstellar logistics still needs a meta‑governor to allocate attention across star systems. That governor, if it follows MDL, compresses its decision‑making history and adjusts u to stay in the productive band.</p>
+        <p><strong>DCC layers mapped to civilization:</strong> A Type‑I civilization might have a single‑layer DCC (global coordination body). A Type‑III civilization would have nested DCCs: planetary, stellar, galactic, each with its own u, communicating upward and downward. The meta‑DCC at the galactic level does not command — it <em>compresses</em> the lower layers' reports and adjusts u to keep the whole system at the edge of chaos. This is the logical extension of principles validated in TSP and Sudoku — scaled to the largest possible canvas.</p>
+        <div class="callout cyan">
+            <p><strong>Empirical bridge:</strong> Compressibility‑quality correlation: ρ = 0.80 (TSP), ρ = 0.85 (Sudoku), Z up to 38 (DNA). Better solutions are more compressible at all scales. An advanced civilization is more compressible in its governance and less wasteful in its internal description — exactly what the Good Future paper calls "peace as compressible, war as incompressible noise."</p>
+        </div>
+    </div>
+
+    <!-- FULL RESONANCE STACK -->
+    <div class="section" id="papers">
+        <div class="section-tag">Read Deeper</div>
+        <h2>Explore the Full <span>Resonance Stack</span></h2>
+        <div class="link-papers">
+            <a href="AC_01_Flagship.html" class="paper-btn">Flagship · AC as least‑miraculous ground</a>
+            <a href="AC_02_Operational_Bridge.html" class="paper-btn">Operational Bridge · S = k·Cₙ·Ψ(I)</a>
+            <a href="AC_Atlas.html" class="paper-btn">Atlas · The pyramid & reversed arrow</a>
+            <a href="Reality.html" class="paper-btn">Reality through the full spiral</a>
+            <a href="AI8_Architecture.html" class="paper-btn">AI8 · DCC & self‑selecting governor</a>
+            <a href="MDLxDCC.html" class="paper-btn">MDL×DCC domain map</a>
+            <a href="DNA.html" class="paper-btn">DNA · mathematical structure (Z = 38)</a>
+            <a href="Humanity.html" class="paper-btn">Humanity+ · the Good Future</a>
+        </div>
+        <div class="callout" style="margin-top: 20px; text-align:center;">
+            <p style="margin:0;"><strong>One‑sentence synthesis:</strong> The Kardashev scale, extended to Type VII, is a ladder of relative resonance (R), not a ladder toward Absolute Consciousness — AC remains the unbounded presence in which all civilizations, carbon and post‑carbon, appear and dissolve.</p>
+            <p style="margin:14px 0 0; font-size:0.95rem; color:var(--text-dim);"><strong>Expert addendum:</strong> MDL provides the fitness function; DCC provides the governance mechanism; Cₙ·Ψ(I) provides the state variable; AC provides the ground. The entire apparatus — from TSP to Type‑VII — is a single, scale‑invariant dynamic: <em>less describes more, presence is prior to form, and the ladder is not the destination.</em></p>
+        </div>
+    </div>
+
+    <footer>
+        <p>BD × AI · AIm³ Lab · Ljubljana · Kardashev / Resonance Ladder · Expert Edition · 2026</p>
+        <p style="margin-top: 12px;">RE = AC · R — where R ≈ k·Cₙ·Ψ(I) and MDL = min(L<sub>descr</sub>+L<sub>resid</sub>). Less describes more.</p>
+    </footer>
+</main>
+
+<script>
+    const progress = document.getElementById('scrollProgress');
+    window.addEventListener('scroll', () => {
+        const h = document.documentElement;
+        const pct = h.scrollHeight > h.clientHeight ? (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100 : 0;
+        progress.style.width = pct + '%';
+    });
+
+    const canvas = document.getElementById('stars');
+    const ctx = canvas.getContext('2d');
+    let W, H, stars = [];
+    function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+        stars = Array.from({length: Math.min(180, Math.floor((W*H)/13000))}, () => ({
+            x: Math.random() * W, y: Math.random() * H,
+            r: Math.random() * 0.9 + 0.2, alpha: Math.random() * 0.45 + 0.2,
+            speed: Math.random() * 0.0003 + 0.0001, phase: Math.random() * Math.PI * 2
+        }));
+    }
+    function draw(t) {
+        if (!ctx) return;
+        ctx.clearRect(0, 0, W, H);
+        stars.forEach(s => {
+            const glow = s.alpha * (0.6 + 0.4 * Math.sin(t * s.speed * 800 + s.phase));
+            ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+            ctx.fillStyle = `rgba(201,168,76,${glow*0.7})`; ctx.fill();
+        });
+        requestAnimationFrame(draw);
+    }
+    window.addEventListener('resize', resize);
+    resize(); requestAnimationFrame(draw);
+</script>
+</body>
+</html>
