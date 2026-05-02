@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prime Gaps Through the 8Z/DCC Lens – v0.4 E2 Results</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #121212; color: #e0e0e0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 18px; line-height: 1.72; padding: 2em; }
+        .container { max-width: 900px; margin: auto; }
+        h1 { color: #f0c040; border-bottom: 1px solid #333; padding-bottom: 0.5em; margin-bottom: 0.5em; }
+        h2 { color: #e0b030; margin-top: 1.8em; margin-bottom: 0.5em; border-bottom: 1px solid #333; padding-bottom: 0.2em; }
+        h3 { color: #c0a020; margin-top: 1.4em; margin-bottom: 0.3em; }
+        p { margin: 0.9em 0; }
+        a { color: #90c0ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        pre, code { background: #1e1e1e; color: #d4d4d4; padding: 0.2em 0.4em; border-radius: 4px; font-family: 'Fira Code', 'Cascadia Code', monospace; }
+        pre { padding: 1em; overflow-x: auto; margin: 1em 0; }
+        table { border-collapse: collapse; width: 100%; margin: 1em 0; background: #1a1a2e; border: 1px solid #333; overflow-x: auto; }
+        th, td { padding: 0.5em 0.8em; text-align: left; border-bottom: 1px solid #333; }
+        th { background: #242436; color: #f0c040; }
+        td { background: #1a1a2e; }
+        tr:last-child td { border-bottom: none; }
+        .note { color: #a0a0a0; font-style: italic; }
+        .warning { border-left: 4px solid #f0c040; padding-left: 1em; margin: 1em 0; }
+        .highlight { color: #f0c040; }
+        .meta { color: #888; font-size: 0.9em; margin-bottom: 1.2em; }
+        .status-callout {
+            border-left: 4px solid #f0c040;
+            background: #1b1b1b;
+            padding: 1em 1.2em;
+            margin: 1.2em 0 2em 0;
+            color: #d8d8d8;
+        }
+        .status-callout strong { color: #f0c040; }
+        blockquote {
+            border-left: 4px solid #f0c040;
+            background: #181818;
+            color: #f0d890;
+            margin: 1.2em 0;
+            padding: 1em 1.2em;
+            font-size: 1.05em;
+        }
+        blockquote p { margin: 0; }
+        ul, ol { margin: 0.5em 0 0.5em 2em; }
+        li { margin: 0.3em 0; }
+        .ladder { margin: 1em 0; }
+        .ladder td:first-child { width: 2em; text-align: center; }
+
+        .toc {
+            background: #181818;
+            border: 1px solid #333;
+            border-left: 4px solid #f0c040;
+            padding: 1.1em 1.3em;
+            margin: 1.4em 0 2em 0;
+        }
+        .toc h2 {
+            border-bottom: none;
+            margin: 0 0 0.6em 0;
+            padding: 0;
+            font-size: 1.15em;
+        }
+        .toc-main {
+            margin: 0.4em 0 0 0;
+            list-style: none;
+        }
+        .toc-item {
+            margin: 0.28em 0;
+        }
+        .toc a {
+            color: #f0d890;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+        .toc details {
+            margin: 0.1em 0;
+        }
+        .toc summary {
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 0.45em;
+            color: #f0d890;
+        }
+        .toc summary::-webkit-details-marker {
+            display: none;
+        }
+        .toc-plus::before {
+            content: "+";
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 1.1em;
+            height: 1.1em;
+            border: 1px solid #5a4a18;
+            border-radius: 3px;
+            color: #f0c040;
+            font-weight: 700;
+            font-size: 0.86em;
+            line-height: 1;
+        }
+        .toc details[open] .toc-plus::before {
+            content: "−";
+        }
+        .toc-sub {
+            margin: 0.35em 0 0.55em 1.7em;
+            padding-left: 0.7em;
+            border-left: 1px solid #333;
+            font-size: 0.94em;
+            list-style: none;
+        }
+        .toc-sub li {
+            margin: 0.22em 0;
+        }
+        .toc-sub a {
+            color: #c9b06a;
+        }
+        .section-anchor {
+            color: #777;
+            font-size: 0.7em;
+            margin-left: 0.35em;
+            text-decoration: none;
+            opacity: 0.75;
+        }
+        .section-anchor:hover { color: #f0c040; opacity: 1; }
+@media (max-width: 700px) {
+            body { padding: 0.9em; font-size: 19px; line-height: 1.78; }
+            .container { max-width: 100%; }
+            h1 { font-size: 2.05em; line-height: 1.18; }
+            h2 { font-size: 1.55em; line-height: 1.25; margin-top: 1.55em; }
+            h3 { font-size: 1.25em; line-height: 1.3; }
+            .meta { font-size: 0.98em; line-height: 1.65; }
+            .status-callout { font-size: 1.02em; line-height: 1.65; padding: 1em; }
+            .toc { font-size: 1.02em; }
+            table { display: block; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; font-size: 0.92em; }
+            th, td { padding: 0.55em 0.75em; }
+            pre { font-size: 0.92em; line-height: 1.55; }
+            code { font-size: 0.95em; }
+            blockquote { font-size: 1.08em; line-height: 1.6; }
+        }
+    </style>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1>Prime Gaps Through the 8Z / DCC Lens</h1>
+    <div class="meta">
+        <strong>Author:</strong> Bojan Dobrečevič (BD), with AI-assisted synthesis (GPT, Claude, DeepSeek)<br>
+        <strong>Version:</strong> v0.4 working paper · <strong>Date:</strong> May 2, 2026<br>
+        <strong>Status:</strong> Preliminary empirical — E1 completed, E2 night controls analyzed<br>
+        <strong>Project context:</strong> 8Z / MDL / DCC cross-domain research program
+    </div>
+
+    <div class="status-callout">
+        <strong>Working status:</strong> E1 and the first E2 overnight controls are now analyzed. E2 narrowed the broad shuffle result but strengthened the precise claim: raw prime-gap order still shows compression-detectable structure after wheel-aware and Markov-preserving controls. This remains an empirical signal study, not an RH proof.
+    </div>
+    <nav class="toc" id="contents">
+        <h2>Contents</h2>
+        <ul class="toc-main">
+            <li class="toc-item"><a href="#abstract">Abstract</a></li>
+            <li class="toc-item"><a href="#1-purpose">1. Purpose</a></li>
+            <li class="toc-item"><a href="#2-background-why-prime-gaps">2. Background: Why Prime Gaps?</a></li>
+            <li class="toc-item"><a href="#3-dcc-edge-of-chaos-motivation">3. DCC / Edge-of-Chaos Motivation</a></li>
+            <li class="toc-item"><a href="#4-important-boundary-not-an-rh-proof">4. Important Boundary: Not an RH Proof</a></li>
+            <li class="toc-item"><a href="#5-e1-experiment-prime-gap-lz76-against-shuffled-controls">5. E1 Experiment: Prime-Gap LZ76 Against Shuffled Controls</a></li>
+            <li class="toc-item">
+                <details>
+                    <summary><span class="toc-plus" aria-hidden="true"></span><a href="#6-e1-results">6. E1 Results</a></summary>
+                    <ul class="toc-sub">
+                        <li><a href="#6-1-first-run-20-000-primes">6.1 First run: 20,000 primes</a></li>
+                        <li><a href="#6-2-stronger-run-100-000-primes">6.2 Stronger run: 100,000 primes</a></li>
+                    </ul>
+                </details>
+            </li>
+            <li class="toc-item"><a href="#7-interpretation-of-e1">7. Interpretation of E1</a></li>
+            <li class="toc-item"><a href="#8-e2-stronger-null-controls">8. E2: Stronger Null Controls</a></li>
+            <li class="toc-item"><a href="#9-e2-acceptance-criteria">9. E2 Acceptance Criteria</a></li>
+            <li class="toc-item">
+                <details>
+                    <summary><span class="toc-plus" aria-hidden="true"></span><a href="#10-e2-night-results-stronger-controls">10. E2 Night Results: Stronger Controls</a></summary>
+                    <ul class="toc-sub">
+                        <li><a href="#10-1-key-raw-gap-summary">10.1 Key raw gap summary</a></li>
+                        <li><a href="#10-2-interpretation">10.2 Interpretation</a></li>
+                        <li><a href="#10-3-sensor-demotion-after-e2">10.3 Sensor demotion after E2</a></li>
+                        <li><a href="#10-4-revised-e2-thesis">10.4 Revised E2 thesis</a></li>
+                    </ul>
+                </details>
+            </li>
+            <li class="toc-item"><a href="#10-relation-to-8z-dcc-founding-hypothesis">11. Relation to 8Z/DCC Founding Hypothesis</a></li>
+            <li class="toc-item"><a href="#11-revised-position-on-original-rh-ac-hypothesis">12. Revised Position on Original RH/AC Hypothesis</a></li>
+            <li class="toc-item">
+                <details>
+                    <summary><span class="toc-plus" aria-hidden="true"></span><a href="#12-zero-framework-current-status">13. Zero Framework: Current Status and Deeper Critique</a></summary>
+                    <ul class="toc-sub">
+                        <li><a href="#13-1-two-zeros">13.1 The two zeros</a></li>
+                        <li><a href="#13-2-analytic-continuation-as-ontological-smuggling">13.2 Analytic continuation as ontological smuggling</a></li>
+                        <li><a href="#13-3-axiom-level-vs-interpretation-level">13.3 Axiom-level vs. interpretation-level critique</a></li>
+                        <li><a href="#13-4-implication-for-rh">13.4 Implication for RH specifically</a></li>
+                    </ul>
+                </details>
+            </li>
+            <li class="toc-item"><a href="#13-corrected-language-about-zeta-zeros">14. Corrected Language About Zeta Zeros</a></li>
+            <li class="toc-item"><a href="#14-current-working-thesis">15. Current Working Thesis</a></li>
+            <li class="toc-item"><a href="#15-next-experiments">16. Next Experiments</a></li>
+            <li class="toc-item"><a href="#16-preliminary-conclusion">17. Preliminary Conclusion</a></li>
+            <li class="toc-item">
+                <details>
+                    <summary><span class="toc-plus" aria-hidden="true"></span><a href="#17-what-would-count-as-an-rh-proof-path">18. What Would Count as an RH Proof Path?</a></summary>
+                    <ul class="toc-sub">
+                        <li><a href="#17-1-the-required-bridge">17.1 The required bridge</a></li>
+                        <li><a href="#17-2-prime-counting-error-route">17.2 Prime-counting error route</a></li>
+                        <li><a href="#17-3-explicit-formula-route">17.3 Explicit-formula route</a></li>
+                        <li><a href="#17-4-equivalent-criterion-route">17.4 Equivalent-criterion route</a></li>
+                        <li><a href="#17-5-proof-roadmap-phases">17.5 Proof-roadmap phases</a></li>
+                        <li><a href="#17-6-current-position">17.6 Current position</a></li>
+                    </ul>
+                </details>
+            </li>
+            <li class="toc-item"><a href="#appendix-a-e1-result-tables">Appendix A – E1 Result Tables</a></li>
+            <li class="toc-item"><a href="#appendix-b-interpretation-ladder">Appendix B – Interpretation Ladder</a></li>
+            <li class="toc-item"><a href="#appendix-c-working-language-rules">Appendix C – Working Language Rules</a></li>
+            <li class="toc-item">
+                <details>
+                    <summary><span class="toc-plus" aria-hidden="true"></span><a href="#appendix-d-methodology-reproducibility">Appendix D – Methodology &amp; Reproducibility</a></summary>
+                    <ul class="toc-sub">
+                        <li><a href="#d1-e1-shuffle-protocol">D1. E1 Shuffle Protocol</a></li>
+                        <li><a href="#d2-windowing">D2. Windowing</a></li>
+                        <li><a href="#d3-encodings">D3. Encodings</a></li>
+                        <li><a href="#d4-main-statistic">D4. Main Statistic</a></li>
+                        <li><a href="#d5-permutation-p-value">D5. Permutation p-value</a></li>
+                        <li><a href="#d6-known-likely-sources-of-signal">D6. Known Likely Sources of Signal</a></li>
+                        <li><a href="#d7-current-limitation">D7. Current Limitation</a></li>
+                    </ul>
+                </details>
+            </li>
+            <li class="toc-item"><a href="#appendix-e-tomorrow-s-update-slot">Appendix E – Next Update Slot</a></li>
+        </ul>
+    </nav>
+
+    <h2 id="abstract">Abstract<a class="section-anchor" href="#abstract" aria-label="Link to this section">#</a></h2>
+    <p>This working paper reframes the previous speculative Riemann Hypothesis brainstorming note into a smaller, testable research program. The empirical question is: <strong>Do ordered prime gaps contain measurable compression structure beyond their marginal distribution?</strong></p>
+    <p>Using the first 20,000 and 100,000 primes, we compared LZ76 complexity of real prime-gap order against shuffled controls preserving the same multiset. At 100,000 primes, the raw gap encoding produced:</p>
+    <ul>
+        <li>real mean LZ76: <strong>2898.80</strong></li>
+        <li>shuffled mean LZ76: <strong>3066.76</strong></li>
+        <li>delta: <strong>−167.96</strong></li>
+        <li>mean z-score: <strong>−32.38</strong></li>
+    </ul>
+    <p>This does <em>not</em> prove RH, but establishes a first compression-detectable signal. The first E2 overnight run then tested stronger controls: block shuffle, wheel-aware shuffle, Markov-preserving surrogates, Cramér-like synthetic gaps, and 500k scaling checks.</p>
+    <p><strong>E2 result:</strong> the broad E1 signal is partly explained by local/arithmetic structure, but the raw <code>gap</code> signal survives wheel-aware and Markov-preserving controls. At 500k primes, the Markov-preserving raw gap test gave delta <strong>−65.18</strong>, z <strong>−5.42</strong>, p <strong>0.004975</strong>.</p>
+
+    <h2 id="1-purpose">1. Purpose<a class="section-anchor" href="#1-purpose" aria-label="Link to this section">#</a></h2>
+    <p>The original brainstorming paper mixed three levels: empirical observations, reasoned interpretations, and metaphysical speculation. This version separates them. The empirical core is now simple: prime gaps are treated as a sequence, the real order is compared against null models, and MDL/LZ76 decides whether additional structure exists.</p>
+
+    <h2 id="2-background-why-prime-gaps">2. Background: Why Prime Gaps?<a class="section-anchor" href="#2-background-why-prime-gaps" aria-label="Link to this section">#</a></h2>
+    <p>Prime gaps \(g_n = p_{n+1} - p_n\) are not independent. Their distribution changes with scale, and primes obey arithmetic constraints. The sharper question is: <em>After preserving basic statistics, does the ordered sequence still compress better than appropriate controls?</em> That is exactly the kind of question the 8Z/MDL/DCC program is built to ask.</p>
+
+    <h2 id="3-dcc-edge-of-chaos-motivation">3. DCC / Edge-of-Chaos Motivation<a class="section-anchor" href="#3-dcc-edge-of-chaos-motivation" aria-label="Link to this section">#</a></h2>
+    <p>DCC balances between seizure (excessive order) and noise (excessive disorder). The original speculative analogy placed Re(s)=1/2 as the edge-of-chaos line. This remains a conceptual analogy, not a proof. The empirical test only asks whether prime gaps show measurable structure under compression tools.</p>
+
+    <h2 id="4-important-boundary-not-an-rh-proof">4. Important Boundary: Not an RH Proof<a class="section-anchor" href="#4-important-boundary-not-an-rh-proof" aria-label="Link to this section">#</a></h2>
+    <p>This paper makes no claim to prove the Riemann Hypothesis. It only asserts that ordered prime gaps are more compressible than shuffled controls preserving the same gap distribution. Any bridge to RH remains speculative future motivation.</p>
+
+    <h2 id="5-e1-experiment-prime-gap-lz76-against-shuffled-controls">5. E1 Experiment: Prime-Gap LZ76 Against Shuffled Controls<a class="section-anchor" href="#5-e1-experiment-prime-gap-lz76-against-shuffled-controls" aria-label="Link to this section">#</a></h2>
+    <p>We generated the first <em>N</em> primes, computed gaps, and applied several encodings (gap, delta, abs_delta, mod6, bucket_log2). Each real ordered window was compared against shuffled controls. The main statistic is \(\Delta_{LZ} = LZ76(real) - mean(LZ76(control))\); a negative value indicates the real sequence is more compressible.</p>
+
+    <h2 id="6-e1-results">6. E1 Results<a class="section-anchor" href="#6-e1-results" aria-label="Link to this section">#</a></h2>
+    <h3 id="6-1-first-run-20-000-primes">6.1 First run: 20,000 primes<a class="section-anchor" href="#6-1-first-run-20-000-primes" aria-label="Link to this section">#</a></h3>
+    <p>Configuration: 20,000 primes, 30 trials, window 5,000. Summary:</p>
+    <table>
+        <tr><th>Encoding</th><th>Real LZ76</th><th>Shuffled LZ76</th><th>Delta</th><th>Z-score</th><th>Interpretation</th></tr>
+        <tr><td>gap</td><td>1486.75</td><td>1579.31</td><td>−92.56</td><td>−22.85</td><td>strong</td></tr>
+        <tr><td>gap_div2</td><td>1486.75</td><td>1579.14</td><td>−92.39</td><td>−23.86</td><td>strong</td></tr>
+        <tr><td>delta</td><td>1753.00</td><td>1820.93</td><td>−67.93</td><td>−16.72</td><td>strong, but needs special control</td></tr>
+        <tr><td>abs_delta</td><td>1520.00</td><td>1537.62</td><td>−17.62</td><td>−4.44</td><td>moderate/strong</td></tr>
+        <tr><td>mod6</td><td>714.75</td><td>882.10</td><td>−167.35</td><td>−88.43</td><td>sanity check; partly expected</td></tr>
+        <tr><td>bucket_log2</td><td>1045.25</td><td>1054.22</td><td>−8.97</td><td>−3.92</td><td>weak but present</td></tr>
+    </table>
+
+    <h3 id="6-2-stronger-run-100-000-primes">6.2 Stronger run: 100,000 primes<a class="section-anchor" href="#6-2-stronger-run-100-000-primes" aria-label="Link to this section">#</a></h3>
+    <p>Configuration: 100,000 primes, 50 trials, window 10,000. Summary:</p>
+    <table>
+        <tr><th>Encoding</th><th>Real LZ76</th><th>Shuffled LZ76</th><th>Delta</th><th>Z-score</th><th>Interpretation</th></tr>
+        <tr><td>gap</td><td>2898.80</td><td>3066.76</td><td>−167.96</td><td>−32.38</td><td>very strong</td></tr>
+        <tr><td>gap_div2</td><td>2898.80</td><td>3067.18</td><td>−168.38</td><td>−32.83</td><td>very strong</td></tr>
+        <tr><td>delta</td><td>3395.10</td><td>3532.89</td><td>−137.79</td><td>−23.90</td><td>very strong, needs control</td></tr>
+        <tr><td>abs_delta</td><td>2959.50</td><td>3002.05</td><td>−42.55</td><td>−8.25</td><td>strong</td></tr>
+        <tr><td>mod6</td><td>1281.40</td><td>1603.32</td><td>−321.92</td><td>−127.43</td><td>sanity check</td></tr>
+        <tr><td>bucket_log2</td><td>1974.80</td><td>1984.15</td><td>−9.35</td><td>−3.01</td><td>weak but present</td></tr>
+    </table>
+    <p class="highlight">Raw prime gaps are about 5.5% more compressible in real order than in shuffled order.</p>
+
+    <h2 id="7-interpretation-of-e1">7. Interpretation of E1<a class="section-anchor" href="#7-interpretation-of-e1" aria-label="Link to this section">#</a></h2>
+    <p><strong>Supported:</strong> The order of prime gaps carries structure beyond marginal distribution. <strong>Not yet shown:</strong> that it survives Markov-preserving controls, that it connects to zeta zeros, or that AC/Zero Framework is correct. <code>mod6</code> is a sanity check; <code>delta</code> needs caution due to lag-1 artifacts.</p>
+
+    <h2 id="8-e2-stronger-null-controls">8. E2: Stronger Null Controls<a class="section-anchor" href="#8-e2-stronger-null-controls" aria-label="Link to this section">#</a></h2>
+    <ul>
+        <li><strong>C0 Full Shuffle</strong> – already done. Distribution alone does not explain compressibility.</li>
+        <li><strong>C1 Block Shuffle</strong> – preserve local order; test long-range structure.</li>
+        <li><strong>C2 Wheel-Aware</strong> – preserve modular/residue constraints; test if signal is just residue arithmetic.</li>
+        <li><strong>C3 Markov-Preserving</strong> – preserve first-order transition behavior; the key hard control.</li>
+        <li><strong>C4 Cramér-Like</strong> – random-prime heuristic synthetic gaps.</li>
+        <li><strong>C5 Depth/Scaling</strong> – early vs. late windows; see if signal grows.</li>
+    </ul>
+
+    <h2 id="9-e2-acceptance-criteria">9. E2 Acceptance Criteria<a class="section-anchor" href="#9-e2-acceptance-criteria" aria-label="Link to this section">#</a></h2>
+    <p><strong>Minimal success:</strong> raw <code>gap</code> outperforms full shuffle, block shuffle, and wheel-aware. <strong>Strong success:</strong> outperforms Markov surrogates. <strong>Very strong:</strong> survives all controls and shows scaling growth.</p>
+
+    <h2 id="10-e2-night-results-stronger-controls">10. E2 Night Results: Stronger Controls<a class="section-anchor" href="#10-e2-night-results-stronger-controls" aria-label="Link to this section">#</a></h2>
+
+    <p>The first E2 overnight run tested whether the E1 shuffle signal survives harder null models. The result is positive, but narrower than the first E1 impression. The large shuffle signal is partly local/arithmetic, yet raw prime-gap order still survives the key wheel-aware and Markov-preserving controls.</p>
+
+    <blockquote>
+        <p>E2 weakens the broad version of the E1 claim but strengthens the precise version: prime-gap order contains compression-detectable sequential structure not fully explained by marginal gap distribution, mod-6 wheel structure, or first-order Markov transitions.</p>
+    </blockquote>
+
+    <h3 id="10-1-key-raw-gap-summary">10.1 Key raw <code>gap</code> summary<a class="section-anchor" href="#10-1-key-raw-gap-summary" aria-label="Link to this section">#</a></h3>
+    <table>
+        <tr><th>Test</th><th>Control</th><th>Delta</th><th>Relative</th><th>Z-score</th><th>p</th><th>Reading</th></tr>
+        <tr><td>100k shuffle, 1000 trials</td><td>C0 shuffle</td><td>−168.24</td><td>−5.49%</td><td>−31.71</td><td>0.000999</td><td>E1 confirmed</td></tr>
+        <tr><td>100k block10</td><td>C1 block</td><td>−51.10</td><td>−1.73%</td><td>−8.75</td><td>0.001996</td><td>local signal survives</td></tr>
+        <tr><td>100k block50</td><td>C1 block</td><td>−14.21</td><td>−0.49%</td><td>−2.62</td><td>0.014970</td><td>weak but alive</td></tr>
+        <tr><td>100k block100</td><td>C1 block</td><td>−8.60</td><td>−0.30%</td><td>−1.64</td><td>0.078842</td><td>marginal</td></tr>
+        <tr><td>100k wheel6</td><td>C2 wheel</td><td>−19.97</td><td>−0.68%</td><td>−3.84</td><td>0.002994</td><td>survives wheel</td></tr>
+        <tr><td>100k Markov</td><td>C3 Markov</td><td>−32.42</td><td>−1.11%</td><td>−3.61</td><td>0.001996</td><td>survives first-order transitions</td></tr>
+        <tr><td>100k Cramér</td><td>C4 Cramér</td><td>−207.98</td><td>−6.69%</td><td>−21.56</td><td>0.006623</td><td>supportive, less decisive</td></tr>
+        <tr><td>500k shuffle</td><td>C0 shuffle</td><td>−312.62</td><td>−5.26%</td><td>−44.38</td><td>0.004975</td><td>scales</td></tr>
+        <tr><td>500k wheel6</td><td>C2 wheel</td><td>−33.40</td><td>−0.59%</td><td>−4.68</td><td>0.004975</td><td>survives wheel at depth</td></tr>
+        <tr><td>500k Markov</td><td>C3 Markov</td><td>−65.18</td><td>−1.14%</td><td>−5.42</td><td>0.004975</td><td>strongest E2 result</td></tr>
+    </table>
+
+    <h3 id="10-2-interpretation">10.2 Interpretation<a class="section-anchor" href="#10-2-interpretation" aria-label="Link to this section">#</a></h3>
+    <p><strong>Shuffle is confirmed.</strong> With 1000 trials at 100k primes, the raw <code>gap</code> signal remains around −5.5% relative compression advantage over shuffled controls.</p>
+    <p><strong>Block shuffle narrows the claim.</strong> The signal is strong at block10, weak at block50, and marginal at block100. This means much of the signal is local-to-medium scale.</p>
+    <p><strong>Wheel-aware controls are passed.</strong> After preserving simple mod-6 wheel structure, raw <code>gap</code> still remains more compressible than controls. The signal is not only the trivial \(6k \pm 1\) residue pattern.</p>
+    <p><strong>Markov-preserving controls are the key win.</strong> Raw <code>gap</code> survives first-order transition controls at both 100k and 500k primes. This supports the stronger E2 claim: the real sequence contains compression-detectable structure beyond marginal distribution and beyond first-order transition statistics.</p>
+    <p><strong>Cramér-like controls are supportive but not decisive.</strong> Real prime gaps strongly outperform Cramér-like synthetic gaps, but this control does not preserve enough arithmetic structure to be the hardest null model. Wheel-aware and Markov-preserving controls matter more.</p>
+
+    <h3 id="10-3-sensor-demotion-after-e2">10.3 Sensor demotion after E2<a class="section-anchor" href="#10-3-sensor-demotion-after-e2" aria-label="Link to this section">#</a></h3>
+    <p>The <code>delta</code> and <code>abs_delta</code> encodings looked strong under full shuffle, but weaken or flip under harder controls. They should be treated as diagnostic sensors, not primary evidence. The primary evidence is now raw <code>gap</code>.</p>
+
+    <h3 id="10-4-revised-e2-thesis">10.4 Revised E2 thesis<a class="section-anchor" href="#10-4-revised-e2-thesis" aria-label="Link to this section">#</a></h3>
+    <blockquote>
+        <p>Prime-gap order contains a surviving compression signal that is not fully explained by gap distribution, simple wheel residue structure, or first-order Markov transition statistics. The effect is smaller than the initial shuffle result but more meaningful.</p>
+    </blockquote>
+
+
+
+
+    <h2 id="10-relation-to-8z-dcc-founding-hypothesis">11. Relation to 8Z/DCC Founding Hypothesis<a class="section-anchor" href="#10-relation-to-8z-dcc-founding-hypothesis" aria-label="Link to this section">#</a></h2>
+    <p>If E2 confirms, number theory becomes a credible ninth domain for the 8Z/DCC approach. The strongest future claim would be: <em>8Z/DCC compression tools detect nontrivial order-sensitive structure in prime gaps.</em></p>
+
+    <h2 id="11-revised-position-on-original-rh-ac-hypothesis">12. Revised Position on Original RH/AC Hypothesis<a class="section-anchor" href="#11-revised-position-on-original-rh-ac-hypothesis" aria-label="Link to this section">#</a></h2>
+    <p>The critical line as edge-of-chaos remains speculative motivation only. Verified: E1 signal. Reasoned: compression advantage suggests order-sensitive structure. Speculative: AC/Zero Framework explanations are not evidence.</p>
+
+    <h2 id="12-zero-framework-current-status">13. Zero Framework: Current Status and Deeper Critique<a class="section-anchor" href="#12-zero-framework-current-status" aria-label="Link to this section">#</a></h2>
+    <p>The distinction between numeric zero \(0\) and ontological nothingness \(\emptyset\) is philosophically interesting but not yet mathematically formalized for RH. This section records a sharper version of the critique that emerged during development of the framework.</p>
+
+    <h3 id="13-1-two-zeros">13.1 The two zeros</h3>
+    <p>Standard mathematics treats zero as a single object: the neutral element of addition, the result of \(x - x\), the point where a function "vanishes." The Zero Framework proposes that this conflation carries an ontological cost. Two fundamentally different things are being called by the same name:</p>
+    <ul>
+        <li><strong>Numeric zero \(0\)</strong>: a position on the number line, a result of cancellation, a value that a function attains. It exists within a system of relations.</li>
+        <li><strong>Ontological nothingness \(\emptyset\)</strong>: the absence of existence itself. Not a point. Not a value. Not reachable by any arithmetic operation on existing quantities.</li>
+    </ul>
+    <p>A function that equals zero at some point has not "vanished into nothing." It has reached a specific, structured location. The zeta function at a nontrivial zero is doing something precise — destructive interference across infinitely many terms — not ceasing to exist. The language of "annihilation" that earlier drafts of this paper used was therefore ontologically incorrect, independent of any question about RH.</p>
+
+    <h3 id="13-2-analytic-continuation-as-ontological-smuggling">13.2 Analytic continuation as ontological smuggling</h3>
+    <p>The deeper concern is not about language. It is about what analytic continuation actually does and whether current mathematics is fully transparent about it.</p>
+    <p>The sum \(\zeta(s) = \sum_{n=1}^{\infty} n^{-s}\) converges for \(\text{Re}(s) > 1\). For \(s = 1\), the harmonic series diverges — there is no finite value. For \(s = -1\), the sum \(1 + 2 + 3 + \cdots\) diverges to infinity. Yet analytic continuation assigns \(\zeta(-1) = -\frac{1}{12}\).</p>
+    <p>This is internally consistent. The extended function is smooth, unique, and useful in physics. But the statement "\(1 + 2 + 3 + \cdots = -\frac{1}{12}\)" is a notational abuse: it presents the output of a different object (the analytically continued function) using the symbol of the original sum. The two agree where the sum converges. They are not the same thing where it does not.</p>
+    <p>The ontological critique is this: by silently substituting one object for another under the same name, mathematics imports a metaphysical claim — that the "true value" of a divergent process exists and is reachable by algebraic extension — without making that claim explicit or subjecting it to scrutiny. Whether this matters for internal consistency is no. Whether it matters for the question of what mathematics actually describes about reality is open.</p>
+
+    <h3 id="13-3-axiom-level-vs-interpretation-level">13.3 Axiom-level critique vs. interpretation-level critique</h3>
+    <p>There are two versions of the Zero Framework critique, and it is important to keep them separate:</p>
+    <ul>
+        <li><strong>Interpretation-level:</strong> Current mathematics is correct but its language misleads. "Zeta zero" should be called "destructive interference point." "\(\zeta(-1) = -\frac{1}{12}\)" should be read as "the analytic continuation evaluated at \(-1\)." These are clarifications, not corrections.</li>
+        <li><strong>Axiom-level:</strong> The identification of numeric zero with ontological nothingness is embedded in the foundations, not just the language. A mathematics built on a clean distinction between \(0\) and \(\emptyset\) from the start might produce a different structure — one where certain currently valid moves (analytic continuation across poles, summing divergent series to finite values) are either disallowed or require explicit ontological justification before proceeding.</li>
+    </ul>
+    <p>The interpretation-level critique is already partially implemented in this paper (see Section 14). The axiom-level critique is a research program, not yet a theorem. Its historical analogy is Lobachevsky: for two millennia, Euclid's parallel postulate appeared self-evident. Replacing it with a different axiom produced a geometry that was equally consistent and physically more accurate. The Zero Framework at the axiom level is asking whether the identification \(0 \equiv \text{"nothing"}\) is a parallel postulate of arithmetic — a convenience that has been mistaken for a necessity.</p>
+
+    <h3 id="13-4-implication-for-rh">13.4 Implication for RH specifically</h3>
+    <p>If the axiom-level critique is correct, the consequences for RH are indirect but potentially significant. RH is a statement about where \(\zeta(s) = 0\). If the meaning of "equals zero" in the analytically continued zeta function carries unexamined ontological weight, then the question "why do all nontrivial zeros lie on the critical line?" may partly be asking a question that the current formalism is not equipped to answer cleanly — because the formalism does not distinguish between the structured cancellation that produces a zero and the ontological void that the word "nothing" implies.</p>
+    <p>This does not make RH false. It suggests that a proof, if found, may require making explicit something the current framework leaves implicit.</p>
+    <p class="note">Current status of this critique: philosophically motivated, axiom-level version unformalized, interpretation-level version partially implemented. Listed as L8 (highly speculative) in Appendix B.</p>
+
+    <h2 id="13-corrected-language-about-zeta-zeros">14. Corrected Language About Zeta Zeros<a class="section-anchor" href="#13-corrected-language-about-zeta-zeros" aria-label="Link to this section">#</a></h2>
+    <p>Zeta zeros are points of exact cancellation (destructive interference), not annihilation. The stronger language is reserved for a future formal annihilation operator, if defined. This correction is an application of the interpretation-level Zero Framework (Section 13.3) and is not speculative: the distinction between a function attaining the value zero and a quantity ceasing to exist is precise and the correct language is "cancellation."</p>
+
+    <h2 id="14-current-working-thesis">15. Current Working Thesis<a class="section-anchor" href="#14-current-working-thesis" aria-label="Link to this section">#</a></h2>
+    <blockquote>
+        <p>Ordered prime gaps contain measurable compression structure beyond their marginal distribution. After E2, the surviving raw-gap signal also exceeds simple wheel-aware and first-order Markov-preserving controls, though much of the broader signal is local/arithmetic.</p>
+    </blockquote>
+    <p>The strongest current thesis is narrower than the original speculation but stronger than the initial shuffle-only result.</p>
+
+    <h2 id="15-next-experiments">16. Next Experiments<a class="section-anchor" href="#15-next-experiments" aria-label="Link to this section">#</a></h2>
+    <p>Recommended sequence: higher-trial C0, block shuffle, wheel-aware, Markov surrogate, Cramér, depth comparison. See the full paper for exact command lines.</p>
+
+    <h2 id="16-preliminary-conclusion">17. Preliminary Conclusion<a class="section-anchor" href="#16-preliminary-conclusion" aria-label="Link to this section">#</a></h2>
+    <p>E1 delivered a clear shuffle signal. E2 then narrowed and strengthened the result. The broad shuffle advantage is partly local/arithmetic, but the raw <code>gap</code> signal survives both wheel-aware and Markov-preserving controls, including at 500k primes.</p>
+    <p>The current conclusion is therefore:</p>
+    <blockquote>
+        <p>The prime-gap compression signal is real, smaller under harder controls, and still alive where it matters most: raw gap order survives beyond marginal distribution, simple wheel structure, and first-order transition statistics.</p>
+    </blockquote>
+    <p>This is not RH evidence yet, but it is a legitimate 8Z/DCC number-theory signal candidate.</p>
+
+
+
+    <h2 id="17-what-would-count-as-an-rh-proof-path">18. What Would Count as an RH Proof Path?<a class="section-anchor" href="#17-what-would-count-as-an-rh-proof-path" aria-label="Link to this section">#</a></h2>
+
+    <p>The current compression experiments cannot prove the Riemann Hypothesis. They are empirical signal tests. A proof would require a formal mathematical invariant or theorem that applies to all relevant cases, not only to tested prime ranges.</p>
+
+    <p>The useful question is therefore not:</p>
+    <blockquote>
+        <p>Do prime gaps compress better, therefore RH is true?</p>
+    </blockquote>
+
+    <p>That would be invalid. The better question is:</p>
+    <blockquote>
+        <p>Can compression/DCC analysis help discover a formal invariant that forbids off-critical-line zeros?</p>
+    </blockquote>
+
+    <h3 id="17-1-the-required-bridge">17.1 The required bridge<a class="section-anchor" href="#17-1-the-required-bridge" aria-label="Link to this section">#</a></h3>
+    <p>A possible proof path would need the following form:</p>
+    <ol>
+        <li>Use 8Z/DCC/MDL tools to discover a stable invariant in prime-gap dynamics, prime-counting error, or another RH-adjacent arithmetic trace.</li>
+        <li>Formalize that invariant as a precise mathematical statement.</li>
+        <li>Prove that the invariant holds for all relevant values, not merely for tested ranges.</li>
+        <li>Show that the invariant implies RH, or is equivalent to RH.</li>
+    </ol>
+
+    <p>In short:</p>
+    <pre>empirical signal → formal invariant → equivalence/implication → proof</pre>
+
+    <h3 id="17-2-prime-counting-error-route">17.2 Prime-counting error route<a class="section-anchor" href="#17-2-prime-counting-error-route" aria-label="Link to this section">#</a></h3>
+    <p>One possible route is through prime-counting error. RH is deeply connected to how tightly prime-counting functions stay near their expected main terms. A compression-based approach would need to discover a bound or regularity in the prime-gap trace that implies an appropriate bound on prime-counting error.</p>
+
+    <p>A rough proof-seed form would be:</p>
+    <pre>If every prime-gap window has bounded normalized MDL excess,
+then prime-counting error remains within an RH-compatible bound.</pre>
+
+    <p>This is not yet a theorem. It is a target shape for future formalization.</p>
+
+    <h3 id="17-3-explicit-formula-route">17.3 Explicit-formula route<a class="section-anchor" href="#17-3-explicit-formula-route" aria-label="Link to this section">#</a></h3>
+    <p>The most RH-adjacent route would connect compression structure in prime gaps to the oscillatory terms generated by zeta zeros in explicit formulas. In that direction, the desired contradiction would look like this:</p>
+
+    <ol>
+        <li>Assume an off-critical-line zero exists.</li>
+        <li>Show that such a zero forces a detectable oscillatory or compressible signature in prime-counting error or prime-gap dynamics.</li>
+        <li>Show that a proven MDL/DCC invariant forbids that signature.</li>
+        <li>Conclude that no off-critical-line zero can exist.</li>
+    </ol>
+
+    <p>Symbolically:</p>
+    <pre>off-line zero → forbidden oscillation/compression signature → contradiction → RH</pre>
+
+    <h3 id="17-4-equivalent-criterion-route">17.4 Equivalent-criterion route<a class="section-anchor" href="#17-4-equivalent-criterion-route" aria-label="Link to this section">#</a></h3>
+    <p>Another route is discovery of a new RH-equivalent condition. 8Z/DCC could search for a new boundedness, monotonicity, spectral, or compression condition that appears empirically stable. The mathematical task would then be:</p>
+    <ol>
+        <li>prove the new condition is equivalent to RH or implies RH,</li>
+        <li>then prove the new condition directly.</li>
+    </ol>
+
+    <p>This may be more realistic than directly proving statements about zeta zeros from compression data.</p>
+
+    <h3 id="17-5-proof-roadmap-phases">17.5 Proof-roadmap phases<a class="section-anchor" href="#17-5-proof-roadmap-phases" aria-label="Link to this section">#</a></h3>
+    <table>
+        <tr><th>Phase</th><th>Goal</th><th>Status</th></tr>
+        <tr><td>1</td><td>Detect empirical signal in prime-gap order</td><td>started; E1 positive</td></tr>
+        <tr><td>2</td><td>Test signal against stronger null controls</td><td>active; E2 running</td></tr>
+        <tr><td>3</td><td>Build multi-scale MDL/compression spectrum</td><td>planned</td></tr>
+        <tr><td>4</td><td>Relate spectrum to prime-counting error or explicit-formula terms</td><td>planned</td></tr>
+        <tr><td>5</td><td>Extract candidate invariant</td><td>future</td></tr>
+        <tr><td>6</td><td>Prove invariant and RH implication/equivalence</td><td>future</td></tr>
+        <tr><td>7</td><td>Formal verification where possible</td><td>future</td></tr>
+    </table>
+
+    <h3 id="17-6-current-position">17.6 Current position<a class="section-anchor" href="#17-6-current-position" aria-label="Link to this section">#</a></h3>
+    <p>The current strongest honest formulation is:</p>
+    <blockquote>
+        <p>8Z/DCC may help discover a new RH-adjacent regularity by treating prime gaps as a multi-scale information trace and searching for stable compression invariants that bound or constrain prime-distribution error.</p>
+    </blockquote>
+
+    <p>This keeps the door open without pretending that E1 or E2 can prove RH by themselves.</p>
+
+
+    <h2 id="appendix-a-e1-result-tables">Appendix A – E1 Result Tables<a class="section-anchor" href="#appendix-a-e1-result-tables" aria-label="Link to this section">#</a></h2>
+    <p>Tables are shown in Section 6 above.</p>
+
+    <h2 id="appendix-b-interpretation-ladder">Appendix B – Interpretation Ladder<a class="section-anchor" href="#appendix-b-interpretation-ladder" aria-label="Link to this section">#</a></h2>
+    <table class="ladder">
+        <tr><th>Level</th><th>Claim</th><th>Status</th></tr>
+        <tr><td>L1</td><td>Prime-gap order compresses better than shuffled gaps</td><td>✅ supported by E1</td></tr>
+        <tr><td>L2</td><td>Signal is not only marginal distribution</td><td>✅ supported by E1</td></tr>
+        <tr><td>L3</td><td>Signal survives wheel-aware controls</td><td>⏳ pending E2</td></tr>
+        <tr><td>L4</td><td>Signal survives Markov-preserving controls</td><td>⏳ pending E2</td></tr>
+        <tr><td>L5</td><td>Signal scales with prime depth</td><td>⏳ pending E2/E3</td></tr>
+        <tr><td>L6</td><td>Signal relates to zeta-zero statistics</td><td>🔮 speculative</td></tr>
+        <tr><td>L7</td><td>DCC edge-of-chaos explains critical line</td><td>🔮 speculative</td></tr>
+        <tr><td>L8</td><td>AC/Zero Framework explains RH truth/proof difficulty</td><td>🔮 highly speculative</td></tr>
+    </table>
+
+    <h2 id="appendix-c-working-language-rules">Appendix C – Working Language Rules<a class="section-anchor" href="#appendix-c-working-language-rules" aria-label="Link to this section">#</a></h2>
+    <p><strong>Use:</strong> “compression-detectable structure”, “order-sensitive signal”, “preliminary empirical result”, “null controls”, “not an RH proof”. <strong>Avoid:</strong> “RH confirmed”, “proof”, “annihilation of zeta zeros”, “AC requires RH”.</p>
+
+
+    <h2 id="appendix-d-methodology-reproducibility">Appendix D – Methodology & Reproducibility<a class="section-anchor" href="#appendix-d-methodology-reproducibility" aria-label="Link to this section">#</a></h2>
+
+    <h3 id="d1-e1-shuffle-protocol">D1. E1 Shuffle Protocol<a class="section-anchor" href="#d1-e1-shuffle-protocol" aria-label="Link to this section">#</a></h3>
+    <p>For each analysis window independently, the exact multiset of gap tokens inside that window is shuffled. This preserves the local gap distribution of that window and destroys only the ordering inside the window.</p>
+    <p>This matters because the E1 claim is not that prime gaps have a special distribution. The claim is narrower: <strong>the real order of those same gaps is more compressible than shuffled order.</strong></p>
+
+    <h3 id="d2-windowing">D2. Windowing<a class="section-anchor" href="#d2-windowing" aria-label="Link to this section">#</a></h3>
+    <ul>
+        <li><strong>20k run:</strong> window = 5,000, stride = 5,000.</li>
+        <li><strong>100k run:</strong> window = 10,000, stride = 10,000.</li>
+        <li><strong>Mean LZ76:</strong> averaged across windows.</li>
+    </ul>
+    <p>These are non-overlapping main windows in the reported E1 runs. Later E2/E3 runs may add overlapping or depth-specific windows, but those should be reported separately.</p>
+
+    <h3 id="d3-encodings">D3. Encodings<a class="section-anchor" href="#d3-encodings" aria-label="Link to this section">#</a></h3>
+    <p>Each encoding maps the prime-gap sequence into a token sequence before LZ76 is computed:</p>
+    <ul>
+        <li><code>gap</code>: raw integer prime-gap values.</li>
+        <li><code>gap_div2</code>: normalized even gap values after the initial special case.</li>
+        <li><code>delta</code>: first difference, \(g_{n+1} - g_n\).</li>
+        <li><code>abs_delta</code>: absolute first difference, \(|g_{n+1} - g_n|\).</li>
+        <li><code>mod6</code>: gap values modulo 6.</li>
+        <li><code>bucket_log2</code>: logarithmic bucket encoding of gap size.</li>
+    </ul>
+
+    <h3 id="d4-main-statistic">D4. Main Statistic<a class="section-anchor" href="#d4-main-statistic" aria-label="Link to this section">#</a></h3>
+    <p>The primary statistic is:</p>
+    <pre>Delta_LZ = LZ76(real) - mean(LZ76(control))</pre>
+    <p>A negative value means the real ordered sequence is more compressible than the control sequences.</p>
+
+    <h3 id="d5-permutation-p-value">D5. Permutation p-value<a class="section-anchor" href="#d5-permutation-p-value" aria-label="Link to this section">#</a></h3>
+    <p>The permutation p-value is computed as:</p>
+    <pre>p = (1 + count(control_LZ <= real_LZ)) / (trials + 1)</pre>
+    <p>With 50 trials, the minimum possible p-value is \(1/51 \approx 0.0196\). Therefore, the E1 p-values should be read as “the real sequence beat all sampled controls,” not as a final high-resolution significance estimate.</p>
+
+    <h3 id="d6-known-likely-sources-of-signal">D6. Known Likely Sources of Signal<a class="section-anchor" href="#d6-known-likely-sources-of-signal" aria-label="Link to this section">#</a></h3>
+    <p>The E1 compression advantage may partly reflect known arithmetic constraints and scale effects, including:</p>
+    <ul>
+        <li>changing average prime-gap size with scale, approximately related to \(\log n\),</li>
+        <li>residue-class restrictions such as \(6k \pm 1\),</li>
+        <li>local gap correlations,</li>
+        <li>twin-prime and prime-constellation effects,</li>
+        <li>sieve structure and wheel-like constraints.</li>
+    </ul>
+    <p>This is why E2 adds block, wheel-aware, Markov-preserving, Cramér-like, and depth/scaling controls. The purpose is to separate obvious arithmetic structure from deeper sequential compression structure.</p>
+
+    <h3 id="d7-current-limitation">D7. Current Limitation<a class="section-anchor" href="#d7-current-limitation" aria-label="Link to this section">#</a></h3>
+    <p>The current E1 result defeats full-shuffle controls only. It does <strong>not</strong> yet defeat block-shuffle, wheel-aware, Markov-preserving, or Cramér-like null models. Those are the active E2 tests.</p>
+
+
+    <h2 id="appendix-e-tomorrow-s-update-slot">Appendix E – Next Update Slot<a class="section-anchor" href="#appendix-e-tomorrow-s-update-slot" aria-label="Link to this section">#</a></h2>
+    <p><em>Next:</em> Add full per-control CSV/JSON audit tables, window-level depth plots, and a sensor leaderboard. If the 500k/1M tests remain stable, the paper advances to v0.5 with a dedicated multi-scale signal-arena section.</p>
+
+    <hr>
+    <p class="note">Version 0.4.1 · May 2, 2026 · Working HTML page · E2 night results added · Section 13 expanded with Zero Framework deeper critique (two-zeros distinction, analytic continuation as ontological smuggling, axiom-level vs. interpretation-level split, RH implication) · Next: v0.5 after deeper scaling/sensor-arena tests.</p>
+</div>
+</body>
+</html>
