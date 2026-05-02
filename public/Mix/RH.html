@@ -60,14 +60,64 @@
             padding: 0;
             font-size: 1.15em;
         }
-        .toc ul { margin: 0.4em 0 0.4em 1.2em; }
-        .toc li { margin: 0.22em 0; }
-        .toc a { color: #f0d890; }
-        .toc a:hover { color: #ffffff; }
-        .toc .toc-sub {
-            margin-left: 1.2em;
+        .toc-main {
+            margin: 0.4em 0 0 0;
+            list-style: none;
+        }
+        .toc-item {
+            margin: 0.28em 0;
+        }
+        .toc a {
+            color: #f0d890;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+        .toc details {
+            margin: 0.1em 0;
+        }
+        .toc summary {
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 0.45em;
+            color: #f0d890;
+        }
+        .toc summary::-webkit-details-marker {
+            display: none;
+        }
+        .toc-plus::before {
+            content: "+";
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 1.1em;
+            height: 1.1em;
+            border: 1px solid #5a4a18;
+            border-radius: 3px;
+            color: #f0c040;
+            font-weight: 700;
+            font-size: 0.86em;
+            line-height: 1;
+        }
+        .toc details[open] .toc-plus::before {
+            content: "−";
+        }
+        .toc-sub {
+            margin: 0.35em 0 0.55em 1.7em;
+            padding-left: 0.7em;
+            border-left: 1px solid #333;
             font-size: 0.94em;
-            color: #aaa;
+            list-style: none;
+        }
+        .toc-sub li {
+            margin: 0.22em 0;
+        }
+        .toc-sub a {
+            color: #c9b06a;
         }
         .section-anchor {
             color: #777;
@@ -77,8 +127,7 @@
             opacity: 0.75;
         }
         .section-anchor:hover { color: #f0c040; opacity: 1; }
-
-        @media (max-width: 700px) {
+@media (max-width: 700px) {
             body { padding: 1em; font-size: 16px; }
             .container { max-width: 100%; }
             h1 { font-size: 1.65em; line-height: 1.2; }
@@ -109,54 +158,65 @@
     <div class="status-callout">
         <strong>Working status:</strong> This is a live research page. E1 is completed; E2 overnight controls are in progress. Conclusions may change after block, wheel-aware, Markov-preserving, Cramér-like, and depth/scaling tests.
     </div>
-
     <nav class="toc" id="contents">
         <h2>Contents</h2>
-        <ul>
-            <li><a href="#abstract">Abstract</a></li>
-            <li><a href="#1-purpose">1. Purpose</a></li>
-            <li><a href="#2-background-why-prime-gaps">2. Background: Why Prime Gaps?</a></li>
-            <li><a href="#3-dcc-edge-of-chaos-motivation">3. DCC / Edge-of-Chaos Motivation</a></li>
-            <li><a href="#4-important-boundary-not-an-rh-proof">4. Important Boundary: Not an RH Proof</a></li>
-            <li><a href="#5-e1-experiment-prime-gap-lz76-against-shuffled-controls">5. E1 Experiment: Prime-Gap LZ76 Against Shuffled Controls</a></li>
-            <li><a href="#6-e1-results">6. E1 Results</a></li>
-            <ul class="toc-sub">
-                <li><a href="#6-1-first-run-20-000-primes">6.1 First run: 20,000 primes</a></li>
-                <li><a href="#6-2-stronger-run-100-000-primes">6.2 Stronger run: 100,000 primes</a></li>
-            </ul>
-            <li><a href="#7-interpretation-of-e1">7. Interpretation of E1</a></li>
-            <li><a href="#8-e2-stronger-null-controls">8. E2: Stronger Null Controls</a></li>
-            <li><a href="#9-e2-acceptance-criteria">9. E2 Acceptance Criteria</a></li>
-            <li><a href="#10-relation-to-8z-dcc-founding-hypothesis">10. Relation to 8Z/DCC Founding Hypothesis</a></li>
-            <li><a href="#11-revised-position-on-original-rh-ac-hypothesis">11. Revised Position on Original RH/AC Hypothesis</a></li>
-            <li><a href="#12-zero-framework-current-status">12. Zero Framework: Current Status</a></li>
-            <li><a href="#13-corrected-language-about-zeta-zeros">13. Corrected Language About Zeta Zeros</a></li>
-            <li><a href="#14-current-working-thesis">14. Current Working Thesis</a></li>
-            <li><a href="#15-next-experiments">15. Next Experiments</a></li>
-            <li><a href="#16-preliminary-conclusion">16. Preliminary Conclusion</a></li>
-            <li><a href="#17-what-would-count-as-an-rh-proof-path">17. What Would Count as an RH Proof Path?</a></li>
-            <ul class="toc-sub">
-                <li><a href="#17-1-the-required-bridge">17.1 The required bridge</a></li>
-                <li><a href="#17-2-prime-counting-error-route">17.2 Prime-counting error route</a></li>
-                <li><a href="#17-3-explicit-formula-route">17.3 Explicit-formula route</a></li>
-                <li><a href="#17-4-equivalent-criterion-route">17.4 Equivalent-criterion route</a></li>
-                <li><a href="#17-5-proof-roadmap-phases">17.5 Proof-roadmap phases</a></li>
-                <li><a href="#17-6-current-position">17.6 Current position</a></li>
-            </ul>
-            <li><a href="#appendix-a-e1-result-tables">Appendix A – E1 Result Tables</a></li>
-            <li><a href="#appendix-b-interpretation-ladder">Appendix B – Interpretation Ladder</a></li>
-            <li><a href="#appendix-c-working-language-rules">Appendix C – Working Language Rules</a></li>
-            <li><a href="#appendix-d-methodology-reproducibility">Appendix D – Methodology &amp; Reproducibility</a></li>
-            <ul class="toc-sub">
-                <li><a href="#d1-e1-shuffle-protocol">D1. E1 Shuffle Protocol</a></li>
-                <li><a href="#d2-windowing">D2. Windowing</a></li>
-                <li><a href="#d3-encodings">D3. Encodings</a></li>
-                <li><a href="#d4-main-statistic">D4. Main Statistic</a></li>
-                <li><a href="#d5-permutation-p-value">D5. Permutation p-value</a></li>
-                <li><a href="#d6-known-likely-sources-of-signal">D6. Known Likely Sources of Signal</a></li>
-                <li><a href="#d7-current-limitation">D7. Current Limitation</a></li>
-            </ul>
-            <li><a href="#appendix-e-tomorrow-s-update-slot">Appendix E – Tomorrow’s Update Slot</a></li>
+        <ul class="toc-main">
+            <li class="toc-item"><a href="#abstract">Abstract</a></li>
+            <li class="toc-item"><a href="#1-purpose">1. Purpose</a></li>
+            <li class="toc-item"><a href="#2-background-why-prime-gaps">2. Background: Why Prime Gaps?</a></li>
+            <li class="toc-item"><a href="#3-dcc-edge-of-chaos-motivation">3. DCC / Edge-of-Chaos Motivation</a></li>
+            <li class="toc-item"><a href="#4-important-boundary-not-an-rh-proof">4. Important Boundary: Not an RH Proof</a></li>
+            <li class="toc-item"><a href="#5-e1-experiment-prime-gap-lz76-against-shuffled-controls">5. E1 Experiment: Prime-Gap LZ76 Against Shuffled Controls</a></li>
+            <li class="toc-item">
+                <details>
+                    <summary><span class="toc-plus" aria-hidden="true"></span><a href="#6-e1-results">6. E1 Results</a></summary>
+                    <ul class="toc-sub">
+                        <li><a href="#6-1-first-run-20-000-primes">6.1 First run: 20,000 primes</a></li>
+                        <li><a href="#6-2-stronger-run-100-000-primes">6.2 Stronger run: 100,000 primes</a></li>
+                    </ul>
+                </details>
+            </li>
+            <li class="toc-item"><a href="#7-interpretation-of-e1">7. Interpretation of E1</a></li>
+            <li class="toc-item"><a href="#8-e2-stronger-null-controls">8. E2: Stronger Null Controls</a></li>
+            <li class="toc-item"><a href="#9-e2-acceptance-criteria">9. E2 Acceptance Criteria</a></li>
+            <li class="toc-item"><a href="#10-relation-to-8z-dcc-founding-hypothesis">10. Relation to 8Z/DCC Founding Hypothesis</a></li>
+            <li class="toc-item"><a href="#11-revised-position-on-original-rh-ac-hypothesis">11. Revised Position on Original RH/AC Hypothesis</a></li>
+            <li class="toc-item"><a href="#12-zero-framework-current-status">12. Zero Framework: Current Status</a></li>
+            <li class="toc-item"><a href="#13-corrected-language-about-zeta-zeros">13. Corrected Language About Zeta Zeros</a></li>
+            <li class="toc-item"><a href="#14-current-working-thesis">14. Current Working Thesis</a></li>
+            <li class="toc-item"><a href="#15-next-experiments">15. Next Experiments</a></li>
+            <li class="toc-item"><a href="#16-preliminary-conclusion">16. Preliminary Conclusion</a></li>
+            <li class="toc-item">
+                <details>
+                    <summary><span class="toc-plus" aria-hidden="true"></span><a href="#17-what-would-count-as-an-rh-proof-path">17. What Would Count as an RH Proof Path?</a></summary>
+                    <ul class="toc-sub">
+                        <li><a href="#17-1-the-required-bridge">17.1 The required bridge</a></li>
+                        <li><a href="#17-2-prime-counting-error-route">17.2 Prime-counting error route</a></li>
+                        <li><a href="#17-3-explicit-formula-route">17.3 Explicit-formula route</a></li>
+                        <li><a href="#17-4-equivalent-criterion-route">17.4 Equivalent-criterion route</a></li>
+                        <li><a href="#17-5-proof-roadmap-phases">17.5 Proof-roadmap phases</a></li>
+                        <li><a href="#17-6-current-position">17.6 Current position</a></li>
+                    </ul>
+                </details>
+            </li>
+            <li class="toc-item"><a href="#appendix-a-e1-result-tables">Appendix A – E1 Result Tables</a></li>
+            <li class="toc-item"><a href="#appendix-b-interpretation-ladder">Appendix B – Interpretation Ladder</a></li>
+            <li class="toc-item"><a href="#appendix-c-working-language-rules">Appendix C – Working Language Rules</a></li>
+            <li class="toc-item">
+                <details>
+                    <summary><span class="toc-plus" aria-hidden="true"></span><a href="#appendix-d-methodology-reproducibility">Appendix D – Methodology &amp; Reproducibility</a></summary>
+                    <ul class="toc-sub">
+                        <li><a href="#d1-e1-shuffle-protocol">D1. E1 Shuffle Protocol</a></li>
+                        <li><a href="#d2-windowing">D2. Windowing</a></li>
+                        <li><a href="#d3-encodings">D3. Encodings</a></li>
+                        <li><a href="#d4-main-statistic">D4. Main Statistic</a></li>
+                        <li><a href="#d5-permutation-p-value">D5. Permutation p-value</a></li>
+                        <li><a href="#d6-known-likely-sources-of-signal">D6. Known Likely Sources of Signal</a></li>
+                        <li><a href="#d7-current-limitation">D7. Current Limitation</a></li>
+                    </ul>
+                </details>
+            </li>
+            <li class="toc-item"><a href="#appendix-e-tomorrow-s-update-slot">Appendix E – Tomorrow’s Update Slot</a></li>
         </ul>
     </nav>
 
@@ -405,7 +465,7 @@ then prime-counting error remains within an RH-compatible bound.</pre>
     <p><em>After E2 overnight results:</em> Add combined summary tables, Markov result interpretation, depth comparison, and revised conclusion. The paper advances to v0.4.</p>
 
     <hr>
-    <p class="note">Version 0.3 · May 2, 2026 · Working HTML page · Linkable contents added · Next: v0.4 after E2 controls.</p>
+    <p class="note">Version 0.3 · May 2, 2026 · Working HTML page · Collapsible contents added · Next: v0.4 after E2 controls.</p>
 </div>
 </body>
 </html>
