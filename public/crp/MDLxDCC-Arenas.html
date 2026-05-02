@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDLxDCC Arenas — Grand Challenge Hub</title>
+<style>
+:root{
+  --bg:#0a0a14; --card:#10101e; --card2:#0d1324; --text:#d8dceb; --dim:#9da4bd; --muted:#69708b;
+  --line:#242842; --blue:#4a9ede; --green:#2ecc94; --gold:#e8c840; --red:#e05070; --purple:#a87cdf; --teal:#3ecdc4; --pink:#e868a0;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:18px;line-height:1.72}
+.wrapper{max-width:1140px;margin:0 auto;padding:0 16px 60px}
+.topbar{position:sticky;top:0;z-index:10;background:rgba(8,8,16,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);margin:0 -16px 22px;padding:10px 16px}
+.topbar-inner{max-width:1140px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--blue);letter-spacing:.18em;text-transform:uppercase;font-size:.78rem;text-decoration:none}
+.nav{display:flex;gap:8px;flex-wrap:wrap}
+.nav a{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.74rem;color:var(--dim);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:5px 10px}
+.nav a:hover{border-color:var(--blue);color:var(--blue)}
+header{padding:34px 0 26px;border-bottom:1px solid var(--line);margin-bottom:24px}
+.kicker{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--green);letter-spacing:.22em;text-transform:uppercase;font-size:.78rem;margin-bottom:10px}
+h1{font-size:clamp(2.2rem,5.5vw,4.3rem);line-height:1.03;margin:0 0 12px;color:#fff}
+.subtitle{max-width:900px;color:var(--dim);font-size:1.08rem}
+.meta{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted);font-size:.8rem;margin-top:14px}
+h2{font-size:1.72rem;color:#fff;margin:2.1em 0 .55em;border-bottom:1px solid var(--line);padding-bottom:.35em}
+h3{font-size:1.15rem;color:#fff;margin:.2em 0 .45em}
+p{margin:.72em 0}
+a{color:var(--blue)}
+.callout{background:linear-gradient(135deg,rgba(74,158,222,.1),rgba(46,204,148,.07));border:1px solid rgba(74,158,222,.28);border-left:4px solid var(--blue);border-radius:12px;padding:17px 20px;margin:20px 0;color:#dce7ff}
+.callout strong{color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:18px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;transition:.18s transform,.18s border-color}
+.card:hover{transform:translateY(-2px);border-color:rgba(74,158,222,.55)}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.badge{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.72rem;color:var(--dim)}
+.active{border-color:var(--green);color:var(--green);background:rgba(46,204,148,.09)}
+.ready{border-color:var(--blue);color:var(--blue);background:rgba(74,158,222,.09)}
+.designed{border-color:var(--purple);color:var(--purple);background:rgba(168,124,223,.09)}
+.future{border-color:var(--muted);color:var(--dim);background:rgba(105,112,139,.08)}
+.positive{border-color:var(--gold);color:var(--gold);background:rgba(232,200,64,.1)}
+.verified{border-color:var(--teal);color:var(--teal);background:rgba(62,205,196,.09)}
+.deep{border-color:var(--pink);color:var(--pink);background:rgba(232,104,160,.09)}
+.card p{font-size:.94rem;color:#bbc4dc}
+.card-link{display:inline-flex;align-items:center;gap:4px;text-decoration:none;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.8rem;border:1px solid rgba(74,158,222,.28);border-radius:999px;padding:5px 11px;margin-top:8px}
+.card-link:hover{background:rgba(74,158,222,.1)}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;margin:16px 0}
+table{width:100%;border-collapse:collapse;font-size:.92rem;min-width:780px}
+th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:#171b2f;color:#fff}
+td{background:#0f1220;color:#d0d6e8}
+tr:last-child td{border-bottom:none}
+code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+pre{background:#080d18;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:.9rem;line-height:1.55;color:#dce8ff}
+footer{border-top:1px solid var(--line);margin-top:42px;padding-top:16px;color:var(--muted);font-size:.9rem}
+@media(max-width:700px){
+  body{font-size:19px;line-height:1.78}
+  .wrapper{padding:0 12px 48px}
+  .topbar{margin:0 -12px 18px;padding:9px 12px}
+  h1{font-size:2.35rem}
+  h2{font-size:1.55rem}
+  .card p{font-size:1rem}
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+<div class="topbar"><div class="topbar-inner">
+  <a class="brand" href="#top">BD × AI Lab</a>
+  <div class="nav">
+    <a href="MDLxDCC.html">Kernel</a>
+    <a href="MDLxDCC-arena-millennium.html">Millennium</a>
+    <a href="MDLxDCC-arena-rh.html">RH / Prime Gaps</a>
+    <a href="#formal">Formal</a>
+    <a href="#benchmark">Benchmarks</a>
+    <a href="#practical">Practical</a>
+    <a href="#naming">Naming</a>
+  </div>
+</div></div>
+
+<header id="top">
+  <div class="kicker">MDLxDCC execution hub</div>
+  <h1>Grand Challenge Arenas</h1>
+  <div class="subtitle">A single map of the formal, benchmark, and practical arenas where MDLxDCC will be tested: from the Clay Millennium Prize Problems to ARC, Hutter, SAT/SMT, CASP, DREAM, XPRIZE, and already-working practical domains like TSP, DNA/RNA, NAS, Sudoku, chess, compression, trading, and RH prime gaps.</div>
+  <div class="meta">Version 0.2 · May 3, 2026 · BD × AI · public working page · linked hub</div>
+</header>
+
+<div class="callout">
+  <strong>Core distinction.</strong> <em>MDLxDCC.html</em> explains the kernel. <em>MDLxDCC-arenas.html</em> tracks where we test it. Deep-dive arena papers such as <em>MDLxDCC-arena-millennium.html</em> and <em>MDLxDCC-arena-rh.html</em> document individual high-value arenas.
+</div>
+
+<section id="model">
+<h2>1. Arena model</h2>
+<p>Each arena follows the same pattern:</p>
+<pre>problem → trace → encoding → MDL sensors → null controls → DCC search/governance → invariant target → practical output or proof bridge</pre>
+
+<div class="grid">
+  <div class="card">
+    <h3>Formal frontier</h3>
+    <div class="badges"><span class="badge deep">proof-facing</span></div>
+    <p>Problems where the endpoint is a formal invariant, theorem, or proof bridge. Clay Millennium problems belong here.</p>
+  </div>
+  <div class="card">
+    <h3>Benchmark frontier</h3>
+    <div class="badges"><span class="badge ready">metric-facing</span></div>
+    <p>Competitions and open benchmarks with clear scoring: ARC, Hutter, SAT/SMT/PACE, CASP, DREAM, MLPerf, Kaggle-like arenas.</p>
+  </div>
+  <div class="card">
+    <h3>Practical frontier</h3>
+    <div class="badges"><span class="badge verified">use-facing</span></div>
+    <p>Domains where value comes from working solutions now: TSP/trips, routing, compression, trading, drug discovery, protein folding, cyber, logistics.</p>
+  </div>
+</div>
+</section>
+
+<section id="formal">
+<h2>2. Formal mathematics arenas</h2>
+<div class="grid">
+  <div class="card">
+    <div class="card-head"><h3>Clay Millennium Prize Problems</h3></div>
+    <div class="badges"><span class="badge deep">deep dive</span><span class="badge active">RH active</span><span class="badge positive">Poincaré control</span></div>
+    <p>All seven Clay problems mapped into signal arenas. RH is already active through prime-gap compression; Poincaré serves as a solved positive control.</p>
+    <a class="card-link" href="MDLxDCC-arena-millennium.html">Open millennium arena →</a>
+  </div>
+  <div class="card">
+    <h3>Riemann Hypothesis / Prime Gaps</h3>
+    <div class="badges"><span class="badge active">active</span><span class="badge ready">E2/SEA</span></div>
+    <p>Prime gaps, wheel/Markov controls, scaling tests, and the search for a formal prime-distribution invariant.</p>
+    <a class="card-link" href="MDLxDCC-arena-rh.html">Open RH arena →</a>
+  </div>
+  <div class="card">
+    <h3>P vs NP Practical Tractability</h3>
+    <div class="badges"><span class="badge designed">designed</span></div>
+    <p>Not a claim of formal P=NP. The practical question: how much of the real problem universe is structurally compressible enough to become governable?</p>
+    <a class="card-link" href="MDLxDCC-arena-p-vs-np.html">Future page →</a>
+  </div>
+  <div class="card">
+    <h3>Poincaré Positive Control</h3>
+    <div class="badges"><span class="badge positive">positive control</span></div>
+    <p>Use the solved case to test whether MDLxDCC can detect known simplification / invariant structure in Ricci-flow or topology traces.</p>
+    <a class="card-link" href="MDLxDCC-arena-poincare.html">Future page →</a>
+  </div>
+</div>
+</section>
+
+<section id="benchmark">
+<h2>3. Benchmark and competition arenas</h2>
+<div class="grid">
+  <div class="card">
+    <h3>ARC Prize / ARC-AGI</h3>
+    <div class="badges"><span class="badge ready">ready</span><span class="badge deep">pure MDL</span></div>
+    <p>Program synthesis as shortest explanatory rule. Primitive transforms, MDL program length, DCC search-depth governance.</p>
+    <a class="card-link" href="MDLxDCC-arena-arc.html">Future page →</a>
+  </div>
+  <div class="card">
+    <h3>Hutter Prize</h3>
+    <div class="badges"><span class="badge ready">ready</span><span class="badge deep">compression intelligence</span></div>
+    <p>Compression as intelligence. Natural home for 8Z/MDL generators and DCC codec switching.</p>
+    <a class="card-link" href="MDLxDCC-arena-hutter.html">Future page →</a>
+  </div>
+  <div class="card">
+    <h3>SAT / SMT / PACE / MiniZinc</h3>
+    <div class="badges"><span class="badge ready">ready</span><span class="badge deep">P vs NP practical</span></div>
+    <p>Solver traces, restarts, clause-learning motifs, hardness signatures, and practical tractability maps.</p>
+    <a class="card-link" href="MDLxDCC-arena-sat-smt-pace.html">Future page →</a>
+  </div>
+  <div class="card">
+    <h3>CASP / Protein Structure</h3>
+    <div class="badges"><span class="badge designed">designed</span><span class="badge verified">DNA bridge</span></div>
+    <p>Sequence-to-structure traces, contact maps, folding motifs, and the DNA/RNA scanner transfer path.</p>
+    <a class="card-link" href="MDLxDCC-arena-casp-protein.html">Future page →</a>
+  </div>
+  <div class="card">
+    <h3>DREAM / Biomedical Challenges</h3>
+    <div class="badges"><span class="badge designed">designed</span></div>
+    <p>Omics, biomarkers, drug response, disease subtypes, and biological predictor governance under strong null controls.</p>
+    <a class="card-link" href="MDLxDCC-arena-dream-bio.html">Future page →</a>
+  </div>
+  <div class="card">
+    <h3>XPRIZE / Applied Civilization Problems</h3>
+    <div class="badges"><span class="badge future">future</span></div>
+    <p>Wildfire, water, carbon removal, quantum applications, healthspan, and other real-world DCC governance arenas.</p>
+    <a class="card-link" href="MDLxDCC-arena-xprize.html">Future page →</a>
+  </div>
+</div>
+</section>
+
+<section id="practical">
+<h2>4. Practical proof-bearing and high-value arenas</h2>
+<div class="grid">
+  <div class="card">
+    <h3>TSP / Trip Optimizer</h3>
+    <div class="badges"><span class="badge verified">verified</span><span class="badge active">client-side</span></div>
+    <p>Fast, good-enough JavaScript route optimization in the browser. The practical value is deployment: local, private, cheap, no heavy server.</p>
+    <a class="card-link" href="../bd/">Portfolio / app context →</a>
+  </div>
+  <div class="card">
+    <h3>DNA / RNA Structure</h3>
+    <div class="badges"><span class="badge verified">verified</span><span class="badge deep">Z=70+ family</span></div>
+    <p>High-Z biological sequence signals show that MDLxDCC can detect hidden mathematical order in natural sequence data.</p>
+    <a class="card-link" href="DNA.html">DNA paper →</a>
+  </div>
+  <div class="card">
+    <h3>NAS / Architecture Search</h3>
+    <div class="badges"><span class="badge verified">verified</span></div>
+    <p>Search spaces become steerable when architecture traces reveal compressible structure.</p>
+    <a class="card-link" href="MDLxDCC.html">Domain map →</a>
+  </div>
+  <div class="card">
+    <h3>Compression / 8Z</h3>
+    <div class="badges"><span class="badge verified">verified</span></div>
+    <p>Images, audio, FASTA/genomics, and other formats demonstrate MDL as shorter description of real structure.</p>
+    <a class="card-link" href="MDLxDCC.html">Domain map →</a>
+  </div>
+  <div class="card">
+    <h3>Chess / Sudoku / Crosswords</h3>
+    <div class="badges"><span class="badge verified">verified + active</span></div>
+    <p>Decision quality, elegance, and constraint satisfaction can be governed through compressibility and DCC scoring.</p>
+    <a class="card-link" href="../s/">Sudoku →</a>
+  </div>
+  <div class="card">
+    <h3>Trading / Regime Governance</h3>
+    <div class="badges"><span class="badge verified">verified</span></div>
+    <p>Market traces, lead-lag structure, and semantic inversion across DCC layers: same sensor, different action depending on governance level.</p>
+    <a class="card-link" href="MDLxDCC.html">Domain map →</a>
+  </div>
+  <div class="card">
+    <h3>Protein Folding / Drug Discovery</h3>
+    <div class="badges"><span class="badge designed">designed</span></div>
+    <p>Natural next life-science arenas: sequence-to-structure, contact maps, molecule search, biological null ladders.</p>
+    <a class="card-link" href="MDLxDCC-arena-casp-protein.html">Future protein arena →</a>
+  </div>
+  <div class="card">
+    <h3>Telecom / Routing / HPC / Cloud</h3>
+    <div class="badges"><span class="badge designed">designed</span></div>
+    <p>Fleet governance, traffic engineering, scheduling, resource allocation, and regime switching across large infrastructure systems.</p>
+    <a class="card-link" href="MDLxDCC.html">Domain map →</a>
+  </div>
+</div>
+</section>
+
+<section id="catalog">
+<h2>5. First arena catalog</h2>
+<div class="table-wrap">
+<table>
+<tr><th>Arena</th><th>Status</th><th>First useful experiment</th><th>Canonical page name</th></tr>
+<tr><td>Grand Challenge hub</td><td>active</td><td>Maintain all arenas and statuses</td><td><code>MDLxDCC-arenas.html</code></td></tr>
+<tr><td>Clay Millennium</td><td>deep dive</td><td>Formal signal maps for all 7 problems</td><td><code>MDLxDCC-arena-millennium.html</code></td></tr>
+<tr><td>RH / prime gaps</td><td>active</td><td>LZ76 + wheel/Markov/Cramér + scaling</td><td><code>MDLxDCC-arena-rh.html</code></td></tr>
+<tr><td>P vs NP</td><td>designed</td><td>SAT/TSP/NAS practical tractability traces</td><td><code>MDLxDCC-arena-p-vs-np.html</code></td></tr>
+<tr><td>Poincaré</td><td>positive control</td><td>Ricci-flow/topology simplification traces</td><td><code>MDLxDCC-arena-poincare.html</code></td></tr>
+<tr><td>ARC Prize</td><td>ready</td><td>Primitive transform MDL program search</td><td><code>MDLxDCC-arena-arc.html</code></td></tr>
+<tr><td>Hutter Prize</td><td>ready</td><td>Compression-intelligence benchmark</td><td><code>MDLxDCC-arena-hutter.html</code></td></tr>
+<tr><td>SAT/SMT/PACE</td><td>ready</td><td>Solver-trace compression / hardness signatures</td><td><code>MDLxDCC-arena-sat-smt-pace.html</code></td></tr>
+<tr><td>CASP / protein</td><td>designed</td><td>DNA scanner → protein sequence / contact map</td><td><code>MDLxDCC-arena-casp-protein.html</code></td></tr>
+<tr><td>DREAM / biomedicine</td><td>designed</td><td>Omics / biomarkers / drug response</td><td><code>MDLxDCC-arena-dream-bio.html</code></td></tr>
+<tr><td>XPRIZE</td><td>future</td><td>Applied DCC governance challenges</td><td><code>MDLxDCC-arena-xprize.html</code></td></tr>
+</table>
+</div>
+</section>
+
+<section id="naming">
+<h2>6. Naming convention</h2>
+<p>Use a single prefix for every problem-specific page:</p>
+<pre>MDLxDCC-arena-[short-name].html</pre>
+
+<p>Keep <code>MDLxDCC.html</code> as the kernel/domain-map page. Use <code>MDLxDCC-arenas.html</code> as the execution hub. Every deeper page gets the <code>MDLxDCC-arena-</code> prefix.</p>
+</section>
+
+<footer>
+<p><strong>Version 0.1.</strong> Initial arena hub. Next: connect to renamed files after deployment, add filters/sorting, and create first child pages beyond Millennium/RH.</p>
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDLxDCC Millennium Signal Arena — v0.2</title>
+<style>
+:root{
+  --bg:#0b0b13; --card:#111120; --card2:#0f1528; --text:#e1e4f2; --dim:#a5abc4; --muted:#6d738c;
+  --line:#252842; --blue:#5db2ff; --green:#39d98a; --gold:#f0c94a; --red:#ff6f8f; --purple:#b892ff; --teal:#38d5c7;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:18px;line-height:1.72}
+.wrapper{max-width:1060px;margin:0 auto;padding:22px 16px 60px}
+.topbar{position:sticky;top:0;z-index:5;background:rgba(8,8,15,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:10px 16px;margin:0 -16px 22px}
+.topbar-inner{max-width:1060px;margin:0 auto;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.brand{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--blue);letter-spacing:.16em;text-transform:uppercase;font-size:.78rem;text-decoration:none}
+.navlinks{display:flex;gap:8px;flex-wrap:wrap}
+.navlinks a{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.74rem;color:var(--dim);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:5px 10px}
+.navlinks a:hover{color:var(--blue);border-color:var(--blue)}
+header{padding:34px 0 22px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.kicker{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-transform:uppercase;letter-spacing:.22em;color:var(--green);font-size:.78rem;margin-bottom:10px}
+h1{font-size:clamp(2rem,5vw,4rem);line-height:1.04;margin:0 0 12px;color:#fff}
+.subtitle{font-size:1.1rem;color:var(--dim);max-width:880px}
+.meta{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.8rem;color:var(--muted);margin-top:16px}
+.callout{background:linear-gradient(135deg,rgba(93,178,255,.10),rgba(57,217,138,.08));border:1px solid rgba(93,178,255,.32);border-left:4px solid var(--blue);border-radius:12px;padding:18px 20px;margin:22px 0;color:#dce8ff}
+.warning{background:rgba(255,111,143,.08);border-color:rgba(255,111,143,.35);border-left-color:var(--red)}
+.good{background:rgba(57,217,138,.08);border-color:rgba(57,217,138,.35);border-left-color:var(--green)}
+.toc{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:24px 0}
+.toc h2{margin-top:0;border-bottom:none}
+.toc ul{margin:0;padding-left:20px}
+.toc a{color:#d9c878;text-decoration:none}
+.toc a:hover{text-decoration:underline;color:#fff}
+h2{font-size:1.75rem;line-height:1.24;margin:2.2em 0 .6em;color:#fff;border-bottom:1px solid var(--line);padding-bottom:.35em}
+h3{font-size:1.22rem;margin:1.55em 0 .35em;color:#f3f5ff}
+p{margin:.8em 0}
+a{color:var(--blue)}
+code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+pre{background:#090d18;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;color:#d9e6ff;font-size:.9rem;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:18px 0;border:1px solid var(--line);font-size:.94rem}
+th,td{border:1px solid var(--line);padding:10px 12px;vertical-align:top}
+th{background:#171b2f;color:#fff;text-align:left}
+td{background:#0f1220}
+.badge{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.75rem;color:var(--dim);margin:2px}
+.badge.active{border-color:var(--green);color:var(--green);background:rgba(57,217,138,.08)}
+.badge.future{border-color:var(--purple);color:var(--purple);background:rgba(184,146,255,.08)}
+.badge.control{border-color:var(--gold);color:var(--gold);background:rgba(240,201,74,.08)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:18px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.card h3{margin-top:0;color:#fff}
+.small{font-size:.92rem;color:var(--dim)}
+.problem-title{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.problem-title h2{border:none;padding:0;margin:2em 0 .3em}
+.status{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.78rem;color:var(--gold);border:1px solid rgba(240,201,74,.38);border-radius:999px;padding:5px 10px;margin-top:3.5em}
+.anchor{color:var(--muted);text-decoration:none;font-size:.75em;margin-left:.35em}
+footer{border-top:1px solid var(--line);margin-top:40px;padding-top:16px;color:var(--muted);font-size:.9rem}
+@media(max-width:700px){
+  body{font-size:19px;line-height:1.78}
+  .wrapper{padding:14px 12px 48px}
+  h1{font-size:2.35rem}
+  h2{font-size:1.55rem}
+  table{display:block;overflow-x:auto;white-space:nowrap;font-size:.9rem}
+  .status{margin-top:.5em}
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+<div class="topbar"><div class="topbar-inner">
+  <a class="brand" href="#top">BD × AI Lab</a>
+    <div class="navlinks">
+    <a href="MDLxDCC.html">Kernel</a>
+    <a href="MDLxDCC-arenas.html">All Arenas</a>
+    <a href="MDLxDCC-arena-rh.html">RH Arena</a>
+    <a href="#practical">Practical Proof</a>
+    <a href="#method">Method</a>
+    <a href="#problems">Problems</a>
+    <a href="#roadmap">Roadmap</a>
+  </div>
+</div></div>
+
+<header id="top">
+  <div class="kicker">Working paper · v0.2</div>
+  <h1>MDLxDCC Millennium Signal Arena</h1>
+  <div class="subtitle">A practical structure-discovery program for the Clay Millennium Prize Problems. Proof remains the final certificate. MDLxDCC searches for the invariant that may become certifiable.</div>
+  <div class="meta">BD × AI · May 2, 2026 · exploratory research paper · not a proof claim</div>
+</header>
+
+<div class="callout warning">
+  <strong>Boundary statement.</strong> This paper does not claim to solve any unsolved Millennium Prize Problem. It proposes a repeatable way to turn each problem into a measurable signal arena: choose mathematical traces, define MDL sensors, build strong null controls, search for stable invariants, and then ask whether any invariant can be formalized into a theorem.
+</div>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ul>
+    <li><a href="#abstract">Abstract</a></li>
+    <li><a href="#position">1. Position</a></li>
+    <li><a href="#evidence">2. Why MDLxDCC Is Worth Trying</a></li>
+    <li><a href="#practical">3. Practical Value Before Formal Mathematics</a></li>
+    <li><a href="#method">4. The Signal-Arena Method</a></li>
+    <li><a href="#overview">5. Millennium Arena Overview</a></li>
+    <li><a href="#problems">6. Seven Problem Arenas</a></li>
+    <li><a href="#positive-control">7. Poincaré as Positive Control</a></li>
+    <li><a href="#outputs">8. What Would Count as Progress?</a></li>
+    <li><a href="#roadmap">9. Roadmap</a></li>
+    <li><a href="#conclusion">10. Conclusion</a></li>
+  </ul>
+</nav>
+
+<section id="abstract">
+<h2>Abstract</h2>
+<p>The Clay Millennium Prize Problems are among the deepest formal problems in mathematics. MDLxDCC should not be presented as a replacement for proof. It should be presented as something different: a practical structure-discovery engine that can search the empirical and computational shadows of deep problems for stable, formalizable invariants.</p>
+
+<p>The core method is simple:</p>
+<pre>trace → encoding → MDL sensors → null controls → DCC search → invariant target → proof bridge</pre>
+
+<p>Riemann Hypothesis is already active through prime-gap compression experiments. Poincaré Conjecture, already solved by Perelman, becomes a positive control: can MDLxDCC detect the simplification/invariant structure in a problem whose solution path is already known? The remaining unsolved problems become future arenas: P vs NP, Navier–Stokes, Yang–Mills mass gap, Birch and Swinnerton-Dyer, and Hodge.</p>
+
+<p>The claim is not that MDLxDCC proves these problems. The claim is that the same kernel that has already shown practical transfer across DNA/RNA, TSP/routing, NAS, Sudoku, chess, compression, trading, access governance, and prime gaps may be used to generate new testable mathematical hypotheses where direct proof is currently inaccessible. Its current value is practical first and formal second: it works as a structure-discovery engine before it becomes a theorem engine.</p>
+</section>
+
+<section id="position">
+<h2>1. Position</h2>
+
+<div class="callout good">
+  <strong>Two truths at once:</strong><br>
+  Mathematical proof is the final certificate.<br>
+  MDLxDCC is the search engine for structure that may eventually become certifiable.
+</div>
+
+<p>Classical proof answers: <em>is the statement true?</em> MDLxDCC asks earlier questions:</p>
+<ul>
+  <li>Where is the structure hiding?</li>
+  <li>Which trace exposes it?</li>
+  <li>Which sensor detects it?</li>
+  <li>Which null model destroys it?</li>
+  <li>Which invariant survives scaling?</li>
+  <li>Can that invariant be formalized?</li>
+</ul>
+
+<p>This distinction matters. A method can be valuable before it proves a theorem. In engineering, science, and search, a method that reliably detects exploitable structure can be more useful today than a final proof that may take decades. The goal here is not to lower the standard of mathematics. It is to add a discovery layer before proof.</p>
+
+<h3>1.1 Two-track strategy</h3>
+<table>
+  <tr><th>Track</th><th>Goal</th><th>Success condition</th></tr>
+  <tr><td><strong>Track A — proof-facing</strong></td><td>Find an invariant that implies, is equivalent to, or meaningfully constrains a Millennium statement.</td><td>A formal theorem, proof bridge, or new equivalent criterion.</td></tr>
+  <tr><td><strong>Track B — MDLxDCC-native</strong></td><td>Build an information-theoretic account of the structure behind the problem.</td><td>A measurable invariant that survives null controls and scales across instances, even before a full proof exists.</td></tr>
+</table>
+
+<p>The Riemann Hypothesis paper already uses this two-track frame: RH is the benchmark; the deeper prize is the invariant. The Millennium Signal Arena extends that frame to all seven Clay problems.</p>
+</section>
+
+<section id="evidence">
+<h2>2. Why MDLxDCC Is Worth Trying</h2>
+
+<p>MDLxDCC is not an abstract slogan. It already has a cross-domain evidence base. The current MDLxDCC domain map presents MDL as the quality arbiter and DCC as the recursive governance layer, with proof-bearing domains including TSP, trading, DNA, NAS, compression, chess, Sudoku, and 8Z Shield, plus an active frontier in crosswords.</p>
+
+<div class="grid">
+  <div class="card">
+    <h3>DNA / RNA</h3>
+    <p>Reported mathematical sequence structures with very high Z-scores, including Z=70+ in the broader program. This matters because it shows the kernel can detect hidden order in natural biological data, not only artificial puzzles.</p>
+  </div>
+  <div class="card">
+    <h3>TSP / Routing</h3>
+    <p>The arena does not replace exact solvers like Concorde for small exact cases. Its value is different: scalable, approximate, structure-guided solving in very large spaces where exact methods may not even start.</p>
+  </div>
+  <div class="card">
+    <h3>NAS / Search</h3>
+    <p>Architecture search can be treated as a trace-governance problem. MDL detects useful structure in search spaces and DCC allocates search pressure.</p>
+  </div>
+  <div class="card">
+    <h3>Sudoku / Chess</h3>
+    <p>Constraint and decision systems show that compressibility can track elegance, resilience, or quality, not only raw optimality.</p>
+  </div>
+  <div class="card">
+    <h3>Trading</h3>
+    <p>Market traces become regime signals. The lesson is semantic inversion: the same compressibility sensor can mean different actions at different governance layers.</p>
+  </div>
+  <div class="card">
+    <h3>Prime gaps</h3>
+    <p>The RH arena has already found raw prime-gap compression structure surviving wheel-aware and Markov-preserving controls up to 2M primes in partial SEA tests.</p>
+  </div>
+</div>
+
+<p>The repeated pattern is:</p>
+<pre>complex domain ≠ random search space
+complex domain = trace + hidden structure + scale-dependent controls</pre>
+
+<p>This is why the Millennium problems are worth attempting with MDLxDCC. Not because the method guarantees proof, but because it may reveal the kind of structure from which proof can later be built.</p>
+</section>
+
+
+<section id="practical">
+<h2>3. Practical Value Before Formal Mathematics</h2>
+
+<div class="callout good">
+  <strong>Current position:</strong> MDLxDCC has not yet produced formal mathematical proofs of Millennium-class statements. Its strength today is practical: across multiple unrelated domains, it repeatedly detects compressible structure that can be measured, exploited, and used to steer search, prediction, compression, or decision-making.
+</div>
+
+<p>This practical success is not weaker than mathematics. It is earlier than mathematics. It is the discovery layer from which formal mathematics may later extract invariants.</p>
+
+<p>The important claim is not that every hard formal problem becomes easy. The important claim is that many real domains are not random worst cases. They contain traces, regimes, motifs, and hidden compressible structure. MDLxDCC turns that structure into a steering signal.</p>
+
+<table>
+<tr><th>Domain</th><th>Practical evidence</th><th>Why it matters</th><th>Related paper / page</th></tr>
+<tr>
+  <td><strong>MDLxDCC kernel</strong></td>
+  <td>Cross-domain map of proof-bearing domains, active frontier, and 60+ candidate domains.</td>
+  <td>Shows that the method is not one trick in one domain, but a transferable governance kernel.</td>
+  <td><a href="MDLxDCC.html">MDLxDCC Domain Map</a></td>
+</tr>
+<tr>
+  <td><strong>Riemann / prime gaps</strong></td>
+  <td>Raw prime-gap order survives first-pass wheel-aware and Markov-preserving controls up to 2M primes in partial SEA tests.</td>
+  <td>Creates the first active Millennium signal arena and shows that MDLxDCC can help number-theory exploration.</td>
+  <td><a href="MDLxDCC-arena-rh.html">RH / Prime-Gap Arena</a></td>
+</tr>
+<tr>
+  <td><strong>DNA / RNA</strong></td>
+  <td>Mathematical sequence-structure signals with very high Z-scores, including Z=70+ in the broader program.</td>
+  <td>Shows the kernel can detect hidden order in biological sequence data, not only in artificial puzzles.</td>
+  <td><a href="DNA.html">DNA paper</a> · <a href="AI8_Reasoning.html">Method</a></td>
+</tr>
+<tr>
+  <td><strong>TSP / routing / trip optimization</strong></td>
+  <td>Structure-guided approximate solving, including client-side JavaScript route optimization in seconds inside BD’s own trip-optimization HTML application.</td>
+  <td>Practical advantage over exact solvers is not just scale; it is deployment: good-enough routes, local browser execution, no heavy server, low cost, and privacy.</td>
+  <td><a href="MDLxDCC.html">MDLxDCC Map</a> · <a href="../bd/">BD Portfolio</a></td>
+</tr>
+<tr>
+  <td><strong>NAS / architecture search</strong></td>
+  <td>Search-space structure can be detected and used to steer architecture selection.</td>
+  <td>Connects MDLxDCC directly to practical P-vs-NP-style search: huge spaces become governable when traces are compressible.</td>
+  <td><a href="AI8_Reasoning.html">Method</a> · <a href="MDLxDCC.html">Domain Map</a></td>
+</tr>
+<tr>
+  <td><strong>Sudoku</strong></td>
+  <td>MDL correlates with puzzle elegance and solving-path quality.</td>
+  <td>Shows that compressibility can track quality, not only binary correctness.</td>
+  <td><a href="../s/">BD Sudoku</a></td>
+</tr>
+<tr>
+  <td><strong>Chess</strong></td>
+  <td>DCC acts where engines lose resolution: move resilience, tie-breaking, structural evaluation.</td>
+  <td>Shows governance over strong existing solvers rather than replacement of the solver itself.</td>
+  <td><a href="../bd/">BD Portfolio</a></td>
+</tr>
+<tr>
+  <td><strong>Compression</strong></td>
+  <td>Domain-specific compression work across images, audio, FASTA/genomics, and related formats.</td>
+  <td>Directly demonstrates the MDL principle: useful structure can be converted into shorter descriptions.</td>
+  <td><a href="MDLxDCC.html">Domain Map</a></td>
+</tr>
+<tr>
+  <td><strong>Trading</strong></td>
+  <td>Market traces can be governed through regime detection, lead-lag structure, and semantic inversion across layers.</td>
+  <td>Shows that the same sensor can mean opposite actions at different DCC levels; this is governance, not static pattern matching.</td>
+  <td><a href="MDLxDCC.html">Domain Map</a></td>
+</tr>
+<tr>
+  <td><strong>8Z Shield / Auth</strong></td>
+  <td>Practical governance of access, exposure, attribution, and controlled release.</td>
+  <td>Shows MDLxDCC-like governance outside search: not all domains are optimization problems.</td>
+  <td><a href="../bd/">BD Portfolio</a></td>
+</tr>
+<tr>
+  <td><strong>Consciousness / AC context</strong></td>
+  <td>The broader AC/CFH/CCH frame motivates why compression, coherence, and recursive governance may matter beyond engineering.</td>
+  <td>Not empirical proof of consciousness claims, but a conceptual bridge into why DCC-like architecture may generalize.</td>
+  <td><a href="../acp/index.html">ACP index</a> · <a href="../acp/AC.html">AC</a> · <a href="../acp/Reality.html">Reality</a></td>
+</tr>
+</table>
+
+<h3>3.1 Practical tractability vs. formal P = NP</h3>
+<p>The cross-domain evidence does not prove \(P = NP\). It does not even directly imply it in the formal worst-case sense. What it does suggest is a practically important alternative:</p>
+
+<blockquote>
+  <p>Large parts of the real problem universe may be structurally compressible enough to be governed effectively, even when the worst-case formal problem remains hard.</p>
+</blockquote>
+
+<p>This is why the TSP result matters. Exact solvers such as Concorde remain the gold standard when exact optimality is required and the instance is within reach. MDLxDCC targets a different practical territory: fast, structure-guided, client-side optimization that produces good routes in seconds without heavy servers. In BD’s trip-optimization HTML application, the JavaScript solver can optimize travel routes locally in the user’s browser. That makes the method deployable, private, cheap, and useful at the edge.</p>
+
+<p>For real users, the relevant question is often not:</p>
+<pre>Can the global optimum be certified?</pre>
+
+<p>It is:</p>
+<pre>Can a very good solution be found quickly, cheaply, privately, and reliably where the user actually needs it?</pre>
+
+<p>That is a different kind of value. It is not formal proof, but it is practical power.</p>
+
+<h3>3.2 Why this belongs in a Millennium paper</h3>
+<p>The Millennium problems live at the summit of formal mathematics, but the way toward them may begin with practical structure discovery. If MDLxDCC repeatedly finds robust signals in unrelated domains, then applying it to RH, P vs NP, Navier–Stokes, Yang–Mills, BSD, Hodge, and Poincaré is not random speculation. It is a disciplined extension of a working pattern.</p>
+
+<blockquote>
+  <p>Exact proof is the summit. Practical structure discovery is the climb.</p>
+</blockquote>
+</section>
+
+
+<section id="method">
+<h2>4. The Signal-Arena Method</h2>
+
+<p>Each Millennium problem should be converted into an arena with the same seven components.</p>
+
+<table>
+<tr><th>Step</th><th>Name</th><th>Question</th></tr>
+<tr><td>1</td><td>Trace</td><td>What observable sequence, field, graph, spectrum, flow, or algebraic object carries the problem’s structure?</td></tr>
+<tr><td>2</td><td>Encoding</td><td>How do we turn that object into a token stream, tensor field, graph, spectrum, or multi-scale representation?</td></tr>
+<tr><td>3</td><td>MDL sensors</td><td>Which compressibility, entropy, residual, dictionary, or model-length sensors expose structure?</td></tr>
+<tr><td>4</td><td>Null ladder</td><td>Which controls preserve trivial structure while destroying deeper order?</td></tr>
+<tr><td>5</td><td>DCC governance</td><td>How does the controller choose scale, sensor family, null model, or search direction?</td></tr>
+<tr><td>6</td><td>Invariant target</td><td>What measured quantity appears stable across scale and resistant to controls?</td></tr>
+<tr><td>7</td><td>Proof bridge</td><td>Can the invariant be formalized into a theorem, bound, equivalence, or obstruction?</td></tr>
+</table>
+
+<h3>3.1 The null ladder rule</h3>
+<p>The null model must get harder over time. A signal that beats a weak random shuffle is interesting but not enough. The signal becomes serious only when it survives controls preserving more and more of the known structure.</p>
+
+<pre>C0: naive random / shuffle
+C1: distribution-preserving
+C2: local-structure preserving
+C3: Markov / transition preserving
+C4: model-based surrogate
+C5: theorem-aware or domain-matched surrogate</pre>
+
+<h3>3.2 The invariant rule</h3>
+<p>A measured signal is not yet mathematics. It becomes mathematically useful only if it points to a stable invariant. The invariant may be a bound, monotonic quantity, conserved structure, forbidden pattern, finite-size scaling law, or equivalent criterion.</p>
+</section>
+
+<section id="overview">
+<h2>5. Millennium Arena Overview</h2>
+
+<table>
+<tr><th>#</th><th>Problem</th><th>Status</th><th>MDLxDCC role</th><th>First arena</th></tr>
+<tr><td>1</td><td>Riemann Hypothesis</td><td>Unsolved</td><td>Active arena</td><td>Prime gaps, zeta zeros, prime-counting error</td></tr>
+<tr><td>2</td><td>P vs NP</td><td>Unsolved</td><td>Search-structure arena</td><td>SAT/TSP/NAS traces, hardness landscapes</td></tr>
+<tr><td>3</td><td>Navier–Stokes Existence and Smoothness</td><td>Unsolved</td><td>Field/singularity arena</td><td>Vorticity, enstrophy, turbulence cascades</td></tr>
+<tr><td>4</td><td>Yang–Mills Existence and Mass Gap</td><td>Unsolved</td><td>Spectral/lattice arena</td><td>Lattice gauge fields, spectra, Wilson loops</td></tr>
+<tr><td>5</td><td>Birch and Swinnerton-Dyer</td><td>Unsolved</td><td>Arithmetic-rank arena</td><td>Elliptic curves, L-values, rank features</td></tr>
+<tr><td>6</td><td>Hodge Conjecture</td><td>Unsolved</td><td>Geometry/cohomology arena</td><td>Algebraic cycles, Hodge classes, cohomology traces</td></tr>
+<tr><td>7</td><td>Poincaré Conjecture</td><td>Solved</td><td>Positive control</td><td>Ricci flow / geometrization simplification traces</td></tr>
+</table>
+</section>
+
+<section id="problems">
+<h2>6. Seven Problem Arenas</h2>
+
+<div class="problem-title"><h2 id="rh">5.1 Riemann Hypothesis</h2><div class="status">active</div></div>
+<p><strong>Classical statement.</strong> The nontrivial zeros of the zeta function have real part 1/2. In Clay’s summary, the prime number theorem gives the average distribution of primes, while RH tells us about deviation from that average.</p>
+
+<table>
+<tr><th>Arena element</th><th>Design</th></tr>
+<tr><td>Trace</td><td>Prime gaps, zero spacings, Möbius function, Chebyshev \(\psi(x)-x\), prime-counting error.</td></tr>
+<tr><td>Sensors</td><td>LZ76 phrase count, compression excess, multi-scale entropy, dictionary motifs, spectral residual sensors.</td></tr>
+<tr><td>Null controls</td><td>Shuffle, wheel-aware, Markov-preserving, Cramér-like, explicit-formula-inspired surrogates.</td></tr>
+<tr><td>Invariant target</td><td>A stable multi-scale constraint on prime-gap or prime-counting error structure.</td></tr>
+<tr><td>Proof bridge</td><td>Show that the invariant implies an RH-compatible error bound, forbids off-critical-line zeros, or becomes an RH-equivalent criterion.</td></tr>
+</table>
+
+<p><strong>Current status.</strong> This is the first live Millennium arena. Raw prime-gap order has shown compression structure surviving first-pass wheel-aware and Markov-preserving controls up to 2M primes in partial SEA tests. This is not RH evidence yet, but it is a serious signal candidate.</p>
+
+<div class="problem-title"><h2 id="pnp">5.2 P vs NP</h2><div class="status">future arena</div></div>
+<p><strong>Classical statement.</strong> If a solution can be checked quickly, can it also be found quickly?</p>
+
+<table>
+<tr><th>Arena element</th><th>Design</th></tr>
+<tr><td>Trace</td><td>SAT solver traces, TSP search trajectories, NAS search logs, proof-search paths, phase-transition statistics.</td></tr>
+<tr><td>Sensors</td><td>Search-trace compressibility, clause-learning dictionary motifs, restart entropy, backtrack profile MDL, instance hardness signatures.</td></tr>
+<tr><td>Null controls</td><td>Random SAT, planted SAT, degree-preserving graph controls, hardness-matched instances, distribution-shifted benchmarks.</td></tr>
+<tr><td>Invariant target</td><td>A structure class where solution search is compressible and steerable, versus a class where verification remains easy but search trace remains incompressible.</td></tr>
+<tr><td>Proof bridge</td><td>Not “prove P=NP by solving examples.” Instead: formalize a hardness/structure law, a compressible-subclass theorem, or a barrier diagnostic relevant to P vs NP.</td></tr>
+</table>
+
+<p><strong>MDLxDCC value.</strong> Even without solving P vs NP, this arena can map where real instances differ from worst-case instances. That is practically valuable: many real NP-hard domains are solvable because they contain structure.</p>
+
+<div class="problem-title"><h2 id="navier">5.3 Navier–Stokes Existence and Smoothness</h2><div class="status">future arena</div></div>
+<p><strong>Classical statement.</strong> Do smooth solutions to the three-dimensional Navier–Stokes equations always exist and remain smooth under appropriate conditions, or can singularities form?</p>
+
+<table>
+<tr><th>Arena element</th><th>Design</th></tr>
+<tr><td>Trace</td><td>Vorticity fields, enstrophy, energy spectra, pressure gradients, vortex stretching, turbulence cascade snapshots.</td></tr>
+<tr><td>Sensors</td><td>Multi-scale compression of vorticity fields, pre-singularity entropy slope, coherent-structure dictionary growth, cascade MDL excess.</td></tr>
+<tr><td>Null controls</td><td>Reynolds-matched turbulence surrogates, phase-randomized spectra, energy-preserving field shuffles, known smooth benchmark flows.</td></tr>
+<tr><td>Invariant target</td><td>A quantity that remains bounded in all smooth simulations or changes sharply before blow-up-like numerical behavior.</td></tr>
+<tr><td>Proof bridge</td><td>Convert a stable numerical invariant into an analytic bound or obstruction for blow-up scenarios.</td></tr>
+</table>
+
+<p><strong>First useful experiment.</strong> Compare compression trajectories of known stable flows, high-Re turbulence, and numerically extreme vortex-stretching scenarios. Ask whether pre-singularity candidates have a distinctive MDL signature.</p>
+
+<div class="problem-title"><h2 id="yangmills">5.4 Yang–Mills Existence and Mass Gap</h2><div class="status">future arena</div></div>
+<p><strong>Classical statement.</strong> Establish the existence of quantum Yang–Mills theory on \(\mathbb{R}^4\) and prove a positive mass gap. Clay notes that experiment and computer simulations suggest a mass gap, but no proof is known.</p>
+
+<table>
+<tr><th>Arena element</th><th>Design</th></tr>
+<tr><td>Trace</td><td>Lattice gauge configurations, Wilson loops, correlation functions, spectral gaps, plaquette energy fields.</td></tr>
+<tr><td>Sensors</td><td>Spectral compression, correlation-length MDL, Wilson-loop dictionary structure, finite-size scaling of gap signatures.</td></tr>
+<tr><td>Null controls</td><td>Gauge-randomized controls, beta-matched lattice surrogates, finite-size matched ensembles, abelian comparison models.</td></tr>
+<tr><td>Invariant target</td><td>A persistent positive spectral/information gap that survives continuum-limit extrapolation.</td></tr>
+<tr><td>Proof bridge</td><td>Use the invariant to guide a rigorous construction or bound for the quantum field theory.</td></tr>
+</table>
+
+<p><strong>First useful experiment.</strong> Work only with public lattice-gauge simulation outputs or toy Yang–Mills-like models. Build a mass-gap signal sensor and test finite-size scaling.</p>
+
+<div class="problem-title"><h2 id="bsd">5.5 Birch and Swinnerton-Dyer Conjecture</h2><div class="status">future arena</div></div>
+<p><strong>Classical statement.</strong> The rank of the group of rational points on an elliptic curve is related to the behavior of the curve’s L-function at \(s=1\).</p>
+
+<table>
+<tr><th>Arena element</th><th>Design</th></tr>
+<tr><td>Trace</td><td>Elliptic curve invariants, conductors, coefficients \(a_p\), L-series approximations, known ranks, Selmer-related features.</td></tr>
+<tr><td>Sensors</td><td>Rank-feature compression, coefficient-sequence MDL, L-value residual structure, conductor-stratified pattern detection.</td></tr>
+<tr><td>Null controls</td><td>Conductor-matched curves, rank-matched controls, coefficient shuffles preserving local statistics, isogeny-class controls.</td></tr>
+<tr><td>Invariant target</td><td>A stable information relation between algebraic rank features and analytic L-function behavior.</td></tr>
+<tr><td>Proof bridge</td><td>Turn the detected relation into a formally stated arithmetic invariant or new equivalent criterion.</td></tr>
+</table>
+
+<p><strong>First useful experiment.</strong> Build a small elliptic-curve feature arena over public curve databases. Start modestly: can MDL sensors distinguish rank classes under conductor-matched controls?</p>
+
+<div class="problem-title"><h2 id="hodge">5.6 Hodge Conjecture</h2><div class="status">future arena</div></div>
+<p><strong>Classical statement.</strong> Which cohomology classes on complex projective algebraic varieties arise from algebraic cycles?</p>
+
+<table>
+<tr><th>Arena element</th><th>Design</th></tr>
+<tr><td>Trace</td><td>Cohomology representations, algebraic cycles, period matrices, Hodge decompositions, computable families of varieties.</td></tr>
+<tr><td>Sensors</td><td>Representation compression, algebraic-vs-transcendental residual, cycle-basis MDL, cohomology-pattern dictionary growth.</td></tr>
+<tr><td>Null controls</td><td>Dimension/class-matched varieties, random cohomology-like structures, known algebraic cycle controls, special-case validations.</td></tr>
+<tr><td>Invariant target</td><td>A compression signature distinguishing algebraic Hodge classes from non-algebraic-like controls.</td></tr>
+<tr><td>Proof bridge</td><td>Identify a condition that can be turned into a statement about algebraicity of Hodge classes.</td></tr>
+</table>
+
+<p><strong>First useful experiment.</strong> Do not begin at full generality. Start with computable special families where known results exist. Use them as calibration cases for algebraic-cycle detectability.</p>
+
+<div class="problem-title"><h2 id="poincare">5.7 Poincaré Conjecture</h2><div class="status">positive control</div></div>
+<p><strong>Classical statement.</strong> The three-dimensional sphere is characterized as the unique simply connected closed 3-manifold. Perelman’s proof, through the geometrization program and Ricci flow with surgery, resolved the problem.</p>
+
+<table>
+<tr><th>Arena element</th><th>Design</th></tr>
+<tr><td>Trace</td><td>Ricci flow trajectories, curvature distributions, surgery events, triangulation simplification sequences, standard-piece decomposition.</td></tr>
+<tr><td>Sensors</td><td>Geometric-complexity compression, curvature-field MDL, topology-simplification trace length, piece-decomposition dictionary.</td></tr>
+<tr><td>Null controls</td><td>Perturbed manifold controls, random triangulations, known non-spherical manifolds, synthetic flow-like sequences.</td></tr>
+<tr><td>Invariant target</td><td>A compression signature of simplification toward standard geometries.</td></tr>
+<tr><td>Proof bridge</td><td>Not needed for discovery; proof exists. Use this as a calibration arena to test whether MDLxDCC points toward known solution structure.</td></tr>
+</table>
+
+<p><strong>Why this matters.</strong> Poincaré is the solved Millennium problem, so it can test the method. If MDLxDCC cannot see structure in the solved case, its claim to help with unsolved cases weakens. If it does see the known simplification structure, it becomes a useful positive control.</p>
+</section>
+
+<section id="positive-control">
+<h2>7. Poincaré as Positive Control</h2>
+
+<p>The positive-control role of Poincaré is central. It prevents the Millennium Signal Arena from becoming pure speculation. The test is not whether MDLxDCC can re-prove Perelman. The test is whether it can detect the same kind of simplification direction that the proof path reveals.</p>
+
+<table>
+<tr><th>Control question</th><th>Desired outcome</th></tr>
+<tr><td>Can MDLxDCC distinguish standard 3-sphere-like simplification traces from controls?</td><td>Yes, with stable compression/invariant signatures.</td></tr>
+<tr><td>Can it detect transition points analogous to surgery/simplification events?</td><td>Yes, as DCC regime changes or complexity drops.</td></tr>
+<tr><td>Can it rank known geometric pieces by representation simplicity?</td><td>Yes, if the encoding is good.</td></tr>
+<tr><td>Can it do this without being told the answer directly?</td><td>That is the real positive-control test.</td></tr>
+</table>
+
+<p>If this works, it does not prove the other problems. But it gives the method credibility: it can identify meaningful structure in a solved deep problem.</p>
+</section>
+
+<section id="outputs">
+<h2>8. What Would Count as Progress?</h2>
+
+<p>Progress should be staged. Do not jump from “signal exists” to “the theorem is solved.”</p>
+
+<table>
+<tr><th>Level</th><th>Claim</th><th>Example</th></tr>
+<tr><td>L1</td><td>Trace defined</td><td>Prime gaps, vorticity fields, lattice gauge spectra.</td></tr>
+<tr><td>L2</td><td>Weak signal found</td><td>Beats naive random controls.</td></tr>
+<tr><td>L3</td><td>Signal survives domain-aware controls</td><td>Wheel/Markov for primes, Reynolds-matched controls for fluids.</td></tr>
+<tr><td>L4</td><td>Signal scales</td><td>Survives larger ranges / lattices / simulations.</td></tr>
+<tr><td>L5</td><td>Invariant candidate extracted</td><td>A stable bound, monotone, motif, spectrum, or obstruction.</td></tr>
+<tr><td>L6</td><td>Formal statement written</td><td>The invariant is stated mathematically.</td></tr>
+<tr><td>L7</td><td>Proof bridge shown</td><td>The invariant implies, constrains, or is equivalent to a known target.</td></tr>
+<tr><td>L8</td><td>Theorem</td><td>A formal proof accepted by experts.</td></tr>
+</table>
+
+<div class="callout">
+  <strong>Current status:</strong> RH is at L3/L4 candidate status inside this framework. Poincaré can become a positive-control calibration arena. The other five unsolved problems are at L0/L1 design stage. The practical evidence layer is already broader: MDLxDCC has useful demonstrations across biological sequence data, routing, search, games, compression, trading, and access governance.
+</div>
+</section>
+
+<section id="roadmap">
+<h2>9. Roadmap</h2>
+
+<h3>Phase 0 — Write the umbrella paper</h3>
+<p>This document. Define the frame, boundaries, problem mapping, and success ladder.</p>
+
+<h3>Phase 1 — Finish RH v0.6</h3>
+<p>Complete the continuation batch, add 500k bridge tests, 1M shuffle baseline, Cramér status, sensor-arena summary, and window plots. Extract LZ76 dictionary motifs as E3.</p>
+
+<h3>Phase 2 — Poincaré positive-control design</h3>
+<p>Build a small computational topology / geometry simplification test. Start with toy triangulations or accessible Ricci-flow-like simplification traces. The goal is not proof, but detection of known simplification structure.</p>
+
+<h3>Phase 3 — P vs NP practical-hardness arena</h3>
+<p>Use SAT/TSP/NAS traces to map compressible versus incompressible search behavior. Define hardness signatures and compare real instances with planted/random controls.</p>
+
+<h3>Phase 4 — Navier–Stokes and Yang–Mills pilot arenas</h3>
+<p>Start only where public simulation data or toy models exist. The initial goal is precursor detection and finite-size/simulation scaling, not theorem claims.</p>
+
+<h3>Phase 5 — BSD and Hodge pilot arenas</h3>
+<p>These are algebraically heavy and require careful collaboration or slower preparation. Start with small computable families and known special cases.</p>
+</section>
+
+<section id="conclusion">
+<h2>10. Conclusion</h2>
+
+<p>MDLxDCC should be used on the Millennium problems not because it magically bypasses mathematics, but because it does something mathematics also needs: it finds structure.</p>
+
+<p>The central thesis is:</p>
+<blockquote>
+  <p>Formal proof is the final certificate. MDLxDCC is a practical structure-discovery engine that can search the traces of deep problems, identify stable invariants, and generate formal targets that may later become theorems.</p>
+</blockquote>
+
+<p>This is stronger than merely trying to “prove RH by compression” or “solve P vs NP by running big solvers.” The real program is broader:</p>
+
+<pre>detect structure → survive controls → scale → extract invariant → formalize → bridge to proof</pre>
+
+<p>If this works even once beyond RH as an empirical signal arena, it becomes a serious new research methodology. If Poincaré works as a positive control, it strengthens the case. If RH continues to scale under harder nulls, the first live Millennium arena becomes more than philosophical: it becomes a map toward a possible invariant.</p>
+</section>
+
+<footer>
+  <p><strong>Sources and context.</strong> The official Clay Mathematics Institute page lists the Millennium Prize Problems, describes the prize fund and problem status, lists six unsolved problems, and identifies Poincaré as solved. The MDLxDCC domain map provides the broader cross-domain kernel context and proof-bearing domain frame.</p>
+  <p>Version 0.2 · May 2, 2026 · BD × AI · Working HTML paper · Practical evidence layer added · Next: add live RH results, graphs, and a Poincaré positive-control experimental design.</p>
+</footer>
+
+</div>
+</body>
+</html>
