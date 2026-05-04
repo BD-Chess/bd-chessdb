@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI8 AGI Positioning — Self-Selecting Reasoning Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020409;--bg2:#080a14;--surface:#0f1729;--surface2:#131b30;
+  --border:rgba(167,139,250,.14);--border2:rgba(167,139,250,.26);
+  --text:#e2e8f4;--muted:#6f82a5;--muted2:rgba(226,232,244,.68);
+  --accent:#a78bfa;--cyan:#00e5ff;--gold:#f59e0b;--green:#34d399;--rose:#ff6b8a;--blue:#60a5fa;
+  --accentDim:rgba(167,139,250,.12);--cyanDim:rgba(0,229,255,.10);--goldDim:rgba(245,158,11,.12);
+  --greenDim:rgba(52,211,153,.10);--roseDim:rgba(255,107,138,.10);--blueDim:rgba(96,165,250,.10);
+  --radius:7px;
+}
+*{box-sizing:border-box;margin:0;padding:0} html{scroll-behavior:smooth}
+body{background:radial-gradient(circle at 20% 8%,rgba(167,139,250,.10),transparent 28%),radial-gradient(circle at 80% 35%,rgba(0,229,255,.06),transparent 30%),var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:17px;line-height:1.72;-webkit-font-smoothing:antialiased;}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.018;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.scroll-progress{position:fixed;top:0;left:0;height:2px;background:var(--accent);z-index:1000;transition:width 40ms}
+.topnav{position:fixed;top:0;left:0;right:0;height:48px;background:rgba(2,4,9,.86);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:999;display:flex;align-items:center;padding:0 8vw;gap:12px;overflow:auto;white-space:nowrap}
+.topnav a{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;letter-spacing:1px}.topnav a:hover,.topnav .active{color:var(--accent)}.sep{color:var(--muted);opacity:.35}
+.cover{padding:120px 8vw 64px;text-align:center;border-bottom:1px solid var(--border);margin-bottom:64px}.cover-tag{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;display:block;margin-bottom:20px}.cover h1{font-family:'Cormorant Garamond',serif;font-size:clamp(34px,5vw,56px);font-weight:600;line-height:1.12;margin-bottom:18px}.cover h1 em{font-style:italic;color:var(--gold)}.subtitle{font-size:18px;color:var(--muted2);max-width:760px;margin:0 auto 26px}.meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+.wrap{max-width:900px;margin:0 auto;padding:0 8vw}@media(min-width:1100px){.wrap{padding:0}}
+.chapter{margin-bottom:64px;padding-top:40px;border-top:1px solid var(--border)}.chapter-num{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}.chapter h2{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;line-height:1.25;margin-bottom:20px}.chapter h3{font-size:20px;font-weight:600;margin:30px 0 14px;padding-bottom:6px;border-bottom:1px solid var(--border)}p{margin-bottom:16px;color:var(--muted2)}strong{color:var(--text);font-weight:600}em{font-style:normal;color:var(--accent)}
+.callout{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius);padding:18px 22px;margin:20px 0}.callout-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:600;color:var(--accent);margin-bottom:8px}.callout.gold{border-left-color:var(--gold)}.callout.gold .callout-title{color:var(--gold)}.callout.green{border-left-color:var(--green)}.callout.green .callout-title{color:var(--green)}.callout.cyan{border-left-color:var(--cyan)}.callout.cyan .callout-title{color:var(--cyan)}.callout.rose{border-left-color:var(--rose)}.callout.rose .callout-title{color:var(--rose)}
+.grid{display:grid;grid-template-columns:1fr;gap:14px;margin:22px 0}@media(min-width:760px){.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:1fr 1fr 1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}.card h4{font-size:18px;margin-bottom:10px}.tag{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:8px}.card p,.card li{font-size:15px}.card ul{margin:8px 0 0 18px;color:var(--muted2)}
+.flow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;margin:24px 0}.node{font-family:'JetBrains Mono',monospace;font-size:12px;padding:9px 13px;border:1px solid var(--border);border-radius:5px;background:var(--surface)}.node.hot{color:var(--gold);border-color:rgba(245,158,11,.28);background:var(--goldDim)}.arrow{color:var(--muted)}
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px}th{text-align:left;padding:10px 12px;background:var(--surface);border:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}td{vertical-align:top;padding:10px 12px;border:1px solid var(--border);color:var(--muted2)}td:first-child{color:var(--text);font-weight:600}.refs a{color:var(--cyan);text-decoration:none;border-bottom:1px solid rgba(0,229,255,.25)}.refs a:hover{color:var(--text);border-bottom-color:var(--text)}footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:80px;text-align:center;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:12px}
+</style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProg"></div>
+<nav class="topnav">
+  <a href="/bd/">BD × AI Lab</a><span class="sep">/</span>
+  <a href="AI8_Architecture.html">AI8 Architecture</a><span class="sep">/</span>
+  <a href="AI8_Reasoning.html">AI8 Reasoning</a><span class="sep">/</span>
+  <a href="AI8_Components.html">AI8 Components</a><span class="sep">/</span>
+  <a class="active" href="#">AGI Positioning</a>
+</nav>
+<header class="cover">
+  <span class="cover-tag">AI8 Research · Positioning Paper</span>
+  <h1>AI8 and the <em>Current AGI Landscape</em></h1>
+  <p class="subtitle">Where the self-selecting MDL × DCC governor fits relative to frontier LLMs, agent memory, test-time reasoning, world models, ARC-style benchmarks, and Mark Burgin’s General Theory of Information.</p>
+  <div class="meta">Bojan Dobrečevič · BD × AI Lab · Draft v0.1 · May 2026</div>
+</header>
+<main class="wrap">
+  <section class="chapter" id="why">
+    <div class="chapter-num">01 · Why this page exists</div>
+    <h2>The bridge paper, not another cathedral chapter</h2>
+    <p><strong>AI8_Architecture</strong> defines the self-selecting governor. <strong>AI8_Reasoning</strong> explains the human + LLM invention method that keeps generating new branches. <strong>AI8_Components</strong> asks how the kernel may improve AI systems themselves.</p>
+    <p>This page has a narrower job: position the AI8 AGI vision against current work in the world. It should stay updateable, source-facing, and explicit about what is verified, reasoned, and speculative.</p>
+    <div class="callout gold"><div class="callout-title">Editorial decision</div><p>Do not bury this comparison inside the core architecture. Keep the core paper stable. Add one short bridge section there, then let this page carry the external comparison and future updates.</p></div>
+  </section>
+
+  <section class="chapter" id="core">
+    <div class="chapter-num">02 · Core claim</div>
+    <h2>AI8 is not “one bigger model”</h2>
+    <p>The AI8 AGI route is best described as a <strong>persistent, self-selecting reasoning architecture</strong>. It can use frontier models, tools, memories, world models, search programs, human seeds, and external benchmarks, but the intelligence is not assigned to any one component. It is in the governed trajectory.</p>
+    <div class="flow"><span class="node">seed</span><span class="arrow">→</span><span class="node">bridge</span><span class="arrow">→</span><span class="node">cheap test</span><span class="arrow">→</span><span class="node hot">MDL selection</span><span class="arrow">→</span><span class="node hot">DCC governance</span><span class="arrow">→</span><span class="node">memory promotion</span></div>
+    <p>The next step is <strong>ssMDL×DCC-R</strong>: self-selecting MDL × DCC with explicit reasoning and autonomous seed generation. This is the transition from human-seeded AI8 to a system that can propose its own seeds, compose its own bridges, and run its own first tests.</p>
+  </section>
+
+  <section class="chapter" id="landscape">
+    <div class="chapter-num">03 · Current AGI landscape</div>
+    <h2>Where the world is moving</h2>
+    <div class="grid two">
+      <div class="card"><div class="tag">Frontier LLMs + TTC</div><h4>Reasoning by spending more thought</h4><p>Repeated sampling, self-correction, and tree search are now central test-time compute strategies for stronger reasoning. AI8’s DCC layer asks the next question: who governs when to branch, reflect, stop, or switch?</p></div>
+      <div class="card"><div class="tag">Agent memory</div><h4>From stateless chat to adaptive agents</h4><p>Modern agent work increasingly treats memory as a write–manage–read loop coupled to perception and action. AI8 agrees, but adds promotion discipline: not all memory deserves equal status.</p></div>
+      <div class="card"><div class="tag">ARC-AGI</div><h4>Fluid intelligence under interaction</h4><p>ARC-AGI-3 pushes agents into environments requiring exploration, goal inference, world modeling, and planning without explicit instructions. This is close to the kind of benchmark AI8 should eventually face.</p></div>
+      <div class="card"><div class="tag">World models</div><h4>Grounded dynamics for action</h4><p>World-model research tries to learn environment dynamics that support planning. AI8 is not a replacement for world models; it is a governor that could decide which model, memory, planner, or sensor deserves control.</p></div>
+      <div class="card"><div class="tag">Burgin / Mikkilineni</div><h4>Information as transformation</h4><p>GTI gives a useful ontology: information is system-relative transformation capacity. Mindful Machines add structural machines, memory, and self-regulation. AI8 adds arena pressure and recursive selection of the governor itself.</p></div>
+      <div class="card"><div class="tag">Multi-agent systems</div><h4>Teams, roles, and scaffolds</h4><p>Most agent frameworks add tools, roles, and planning around an LLM. AI8 treats the society, continuity files, idea incubator, and governor as part of the cognitive substrate.</p></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="comparison">
+    <div class="chapter-num">04 · Comparison table</div>
+    <h2>What AI8 adds</h2>
+    <table>
+      <thead><tr><th>Route</th><th>Main strength</th><th>Typical gap</th><th>AI8 relation</th></tr></thead>
+      <tbody>
+        <tr><td>LLM scaling</td><td>Powerful bursts of language, coding, and reasoning.</td><td>Weak persistence, grounding, and process governance.</td><td>Use as engines inside the governor, not as the governor itself.</td></tr>
+        <tr><td>Test-time compute</td><td>More inference budget can improve difficult reasoning.</td><td>Budget strategy is often externally selected or task-specific.</td><td>DCC becomes the budget governor; MDL scores which reasoning path earns continuation.</td></tr>
+        <tr><td>Agent memory</td><td>Turns session-local systems into longer-horizon agents.</td><td>Memory pollution, contradiction, latency, and weak consolidation.</td><td>AI8 separates family, society, ideas, operations, and book-of-souls layers; promotion is explicit.</td></tr>
+        <tr><td>World models</td><td>Learn action-conditioned dynamics for planning.</td><td>Model selection and revision remain hard under changing regimes.</td><td>AI8 can govern model choice, revision pressure, and test selection.</td></tr>
+        <tr><td>ARC-style benchmarks</td><td>Expose fluid adaptation gaps beyond knowledge coverage.</td><td>Current systems struggle when exploration and goal inference are required.</td><td>AI8 should be tested on autonomous exploration: discover rule, build model, plan action, preserve learning.</td></tr>
+        <tr><td>Burgin / GTI</td><td>Strong ontology of information as system-relative transformation.</td><td>Less concrete selection pressure for what becomes trusted knowledge or action.</td><td>AI8 says: transformations compete; MDL selects; DCC governs; memory records provenance.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="chapter" id="autonomous-seeds">
+    <div class="chapter-num">05 · From BD-seeded to self-seeded</div>
+    <h2>ssMDL×DCC-R: reasoning with autonomous seed generation</h2>
+    <p>The current AI8 system is strongest as <strong>human + AI supercognition</strong>. BD often supplies the unusual seed; AI systems formalize, test, build, and preserve it. The next research direction is to internalize that seed function.</p>
+    <div class="grid two">
+      <div class="card"><div class="tag">Seed generators</div><h4>Where autonomous questions come from</h4><ul><li>anomaly scanner: what result should not have happened?</li><li>anti-hardcode scanner: what did we decide by hand?</li><li>cross-domain mapper: what solved a similar shape elsewhere?</li><li>nature analog finder: what physical process already solves this?</li><li>question auditor: is the evaluation protocol itself wrong?</li></ul></div>
+      <div class="card"><div class="tag">Governor loop</div><h4>How seeds become knowledge</h4><ul><li>extract structural signature, not just topic summary</li><li>compare active threads at multiple zoom levels</li><li>compose candidate bridges</li><li>propose cheapest falsifying test</li><li>promote only if MDL gain + residual test survive</li></ul></div>
+    </div>
+    <div class="callout cyan"><div class="callout-title">Pass condition</div><p>AI8 proposes a bridge BD did not point at, turns it into a cheap test, runs or specifies the test, and produces a measurable result. That is the first serious sign that the zoom layer has moved from BD into the machine.</p></div>
+  </section>
+
+  <section class="chapter" id="burgin">
+    <div class="chapter-num">06 · Burgin relation</div>
+    <h2>Burgin gives ontology; AI8 gives governance</h2>
+    <p>Mark Burgin’s General Theory of Information is useful because it defines information relative to a receiving system and its infological structure. This fits AI8: a seed is not valuable because it exists; it is valuable if it changes the system’s future search, memory, and action.</p>
+    <p>But ontology alone does not solve AGI. AI8’s contribution is to ask which transformations are worth keeping, which get tested, which become operational memory, and which controller is allowed to govern the next transformation.</p>
+    <table>
+      <thead><tr><th>Layer</th><th>Burgin / Mikkilineni</th><th>AI8</th></tr></thead>
+      <tbody>
+        <tr><td>Information</td><td>Capacity to change a system or infological system.</td><td>Signal that changes routing, memory status, and future search.</td></tr>
+        <tr><td>Knowledge</td><td>Structured cognitive / operational elements.</td><td>Compressed structure that survives tests and earns future control.</td></tr>
+        <tr><td>Machine cognition</td><td>Structural machines, triadic automata, Digital Genome, self-regulation.</td><td>Self-selecting MDL × DCC governor with arena feedback and multi-resolution thought routing.</td></tr>
+        <tr><td>Weak point</td><td>Can remain blueprint-driven and functional rather than autonomously generative.</td><td>Still needs autonomous seed generation, grounding, and robust idea-signature featurization.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="chapter" id="risks">
+    <div class="chapter-num">07 · What could fail</div>
+    <h2>The hard parts are real</h2>
+    <p>The main risk is <strong>idea representation</strong>. MSTD works on coordinates because coordinates are clean. Thought signatures are not yet clean. If signatures become vague semantic similarity, the system collapses into ordinary RAG + agents.</p>
+    <p>The second risk is <strong>false compression</strong>. MDL can reward elegant wrongness unless it is paired with residual error, adversarial cases, delayed validation, and external tests.</p>
+    <p>The third risk is <strong>human dependence</strong>. As long as BD supplies the key asymmetric seeds, AI8 is a powerful human–AI research organism, not autonomous AGI. That is not a failure; it is the current honest state.</p>
+    <div class="callout rose"><div class="callout-title">Clean claim</div><p>AI8 should not claim solved AGI or solved consciousness. It should claim a serious route toward persistent adaptive cognition, with autonomous seed generation as the next testable threshold.</p></div>
+  </section>
+
+  <section class="chapter refs" id="sources">
+    <div class="chapter-num">08 · Sources to keep attached</div>
+    <h2>External anchors</h2>
+    <p><a href="https://arxiv.org/abs/2603.24621">ARC-AGI-3: A New Challenge for Frontier Agentic Intelligence</a></p>
+    <p><a href="https://arxiv.org/abs/2603.07670">Memory for Autonomous LLM Agents: Mechanisms, Evaluation, and Emerging Frontiers</a></p>
+    <p><a href="https://arxiv.org/abs/2501.02497">A Survey of Test-Time Compute: From Intuitive Inference to Deliberate Reasoning</a></p>
+    <p><a href="https://arxiv.org/html/2604.22748v1">Agentic World Modeling: Foundations, Capabilities, Laws, and Beyond</a></p>
+    <p><a href="https://www.mdpi.com/2504-3900/1/3/164">Burgin: The General Theory of Information as a Unifying Factor for Information Studies</a></p>
+    <p><a href="https://www.mdpi.com/2504-3900/126/1/3">Mikkilineni: General Theory of Information and Mindful Machines</a></p>
+  </section>
+</main>
+<footer>AI8 AGI Positioning · Draft bridge page · BD × AI Lab · May 2026</footer>
+<script>
+(function(){const bar=document.getElementById('scrollProg');window.addEventListener('scroll',()=>{const h=document.documentElement;bar.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';});})();
+</script>
+</body>
+</html>
