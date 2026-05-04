@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDLxDCC Arena — AMR Strategy Control v0.1</title>
+<style>
+:root{
+  --bg:#070912;--panel:#11172a;--panel2:#0d1324;--text:#d8dceb;--dim:#9da4bd;--muted:#69708b;
+  --line:#242842;--blue:#4a9ede;--green:#2ecc94;--gold:#e8c840;--red:#e05070;--purple:#a87cdf;--teal:#3ecdc4;--pink:#e868a0;
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 18% 8%,rgba(46,204,148,.13),transparent 28%),radial-gradient(circle at 80% 70%,rgba(74,158,222,.10),transparent 30%),var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:18px;line-height:1.72;overflow-x:hidden}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}.wrap{max-width:1120px;margin:0 auto;padding:0 18px 64px}.topbar{position:sticky;top:0;z-index:20;background:rgba(7,9,18,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);margin:0 -18px 24px;padding:10px 18px}.topbar .inner{max-width:1120px;margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.brand{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.76rem;letter-spacing:.18em;text-transform:uppercase;color:var(--green)}.nav{display:flex;gap:8px;flex-wrap:wrap}.nav a{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.70rem;border:1px solid var(--line);border-radius:999px;padding:5px 10px;color:var(--dim)}.nav a:hover{border-color:var(--blue);color:var(--blue);text-decoration:none;background:rgba(74,158,222,.08)}header{padding:44px 0 28px;border-bottom:1px solid var(--line);margin-bottom:24px}.kicker{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--green);letter-spacing:.22em;text-transform:uppercase;font-size:.78rem;margin-bottom:12px}h1{font-size:clamp(2.2rem,5.4vw,4.4rem);line-height:1.03;margin:0 0 14px;color:#fff;letter-spacing:-.04em;max-width:940px}.subtitle{max-width:900px;color:var(--dim);font-size:1.08rem}.meta{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.79rem;color:var(--muted);margin-top:16px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.72rem;color:var(--dim)}.pill.green{border-color:rgba(46,204,148,.35);color:var(--green);background:rgba(46,204,148,.08)}.pill.gold{border-color:rgba(232,200,64,.35);color:var(--gold);background:rgba(232,200,64,.08)}.pill.purple{border-color:rgba(168,124,223,.35);color:var(--purple);background:rgba(168,124,223,.08)}.pill.red{border-color:rgba(224,80,112,.35);color:var(--red);background:rgba(224,80,112,.08)}.callout{background:linear-gradient(135deg,rgba(74,158,222,.10),rgba(46,204,148,.07));border:1px solid rgba(74,158,222,.30);border-left:4px solid var(--blue);border-radius:14px;padding:17px 20px;margin:20px 0;color:#dce7ff}.callout strong{color:#fff}.warn{background:rgba(224,80,112,.08);border-color:rgba(224,80,112,.35);border-left-color:var(--red)}.good{background:rgba(46,204,148,.08);border-color:rgba(46,204,148,.32);border-left-color:var(--green)}.gold{background:rgba(232,200,64,.08);border-color:rgba(232,200,64,.30);border-left-color:var(--gold)}.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:20px 0 28px}.metric{background:linear-gradient(180deg,rgba(17,23,42,.94),rgba(13,19,36,.80));border:1px solid var(--line);border-radius:15px;padding:16px 18px}.metric .label{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);font-size:.66rem;margin-bottom:8px}.metric .value{font-size:1.65rem;font-weight:760;color:#fff;line-height:1.15}.metric .value.green{color:var(--green)}.metric .value.gold{color:var(--gold)}.metric .value.purple{color:var(--purple)}.metric .note{color:var(--dim);font-size:.9rem;margin-top:6px;line-height:1.45}.toc{background:rgba(13,19,36,.82);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:24px 0}.toc h2{margin:0 0 10px;border:0;padding:0;font-size:1.35rem}.toc ul{margin:.3em 0;padding-left:20px}.toc a{color:#dfcf7a}.paper{background:rgba(10,12,24,.46);border:1px solid rgba(36,40,66,.70);border-radius:18px;padding:8px 0 0}.paper>h2,.paper>h3,.paper>p,.paper>ul,.paper>ol,.paper>pre,.paper>.callout{margin-left:24px;margin-right:24px}.paper h2{font-size:1.72rem;color:#fff;margin-top:2em;margin-bottom:.65em;border-bottom:1px solid var(--line);padding-bottom:.38em}.paper h3{font-size:1.18rem;color:#fff;margin-top:1.45em;margin-bottom:.45em}.paper p{margin:.78em 0;color:var(--text)}.paper ul,.paper ol{padding-left:1.35em}.paper li{margin:.35em 0}.paper code{background:rgba(74,158,222,.10);border:1px solid rgba(74,158,222,.18);border-radius:5px;padding:.08em .32em;color:#f2f6ff}.paper pre{background:#080d18;border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow:auto;color:#dce8ff;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.86rem;line-height:1.55}.paper table{width:calc(100% - 48px);border-collapse:separate;border-spacing:0;margin:18px 24px;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:.91rem}.paper th,.paper td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}.paper th{background:#171b2f;color:#fff}.paper td{background:#0f1220;color:#d0d6e8}.paper tr:last-child td{border-bottom:none}.goodtxt{color:var(--green);font-weight:700}.badtxt{color:var(--red);font-weight:700}.muted{color:var(--muted)}.section-anchor{font-size:.72em;color:var(--muted);margin-left:.35em}.footer{border-top:1px solid var(--line);margin-top:36px;padding:18px 0;color:var(--muted);font-size:.9rem}@media(max-width:760px){body{font-size:19px;line-height:1.78}.wrap{padding:0 12px 48px}.topbar{margin:0 -12px 18px;padding:9px 12px}h1{font-size:2.35rem}.paper>h2,.paper>h3,.paper>p,.paper>ul,.paper>ol,.paper>pre,.paper>.callout{margin-left:14px;margin-right:14px}.paper table{display:block;width:calc(100% - 28px);margin:16px 14px;overflow-x:auto;white-space:nowrap;font-size:.88rem}.metrics{grid-template-columns:1fr}.nav a{font-size:.66rem;padding:5px 8px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="topbar"><div class="inner"><div class="brand">BD × AI · MDLxDCC</div><nav class="nav"><a href="MDLxDCC.html">Kernel</a><a href="MDLxDCC-Arenas.html">Arenas</a><a href="MDLxDCC-Arena-RH.html">RH</a><a href="MDLxDCC-Arena-Poincare.html">Poincare</a><a href="#results">Interim Results</a><a href="#upgrade">vNext</a></nav></div></div>
+<header id="top">
+  <div class="kicker">Applied control arena · interim evidence page</div>
+  <h1>AMR Strategy Control Arena</h1>
+  <div class="subtitle">A simulated antimicrobial-resistance strategy arena for testing whether MDLxDCC can discover robust control kernels under deceptive, rugged, multi-basin escape landscapes. This is a governance and strategy-calibration experiment, not a medical or wet-lab protocol.</div>
+  <div class="meta">Version v0.1 · May 4, 2026 · built from <code>amr_arena_v1.3-final</code> interim snapshot · run still in progress</div>
+  <div class="pills"><span class="pill green">42,682 clean runs</span><span class="pill gold">592 / 900 complete strategies</span><span class="pill purple">WEAKEN_ESCAPED kernel</span><span class="pill red">DCC basic failed</span></div>
+</header>
+
+<div class="callout warn"><strong>Boundary.</strong> This page reports an abstract simulation arena. Operator names such as <code>KILL</code>, <code>WEAKEN</code>, and <code>WEAKEN_ESCAPED</code> are model-side pressure operators, not clinical recommendations, biological protocols, or treatment guidance. The value is in the MDLxDCC method: strategy search, null controls, robustness testing, and governance failure analysis.</div>
+
+<div class="metrics">
+  <div class="metric"><div class="label">Progress</div><div class="value green">65.9%</div><div class="note">42,682 / 64,800 tasks completed in the uploaded snapshot.</div></div>
+  <div class="metric"><div class="label">Health</div><div class="value green">0</div><div class="note">duplicate tasks, JSON errors, checkpoint/runlog mismatches, or pending/runlog overlap.</div></div>
+  <div class="metric"><div class="label">Viable strategies</div><div class="value gold">18</div><div class="note">all 18 complete viable strategies contained <code>WEAKEN_ESCAPED</code>.</div></div>
+  <div class="metric"><div class="label">Current winner</div><div class="value purple">0.888</div><div class="note"><code>combo__weaken_escaped__freeze_dim</code> control score.</div></div>
+</div>
+
+<nav class="toc"><h2>Contents</h2><ul>
+<li><a href="#abstract">Abstract</a></li>
+<li><a href="#why">1. Why AMR deserves its own arena page</a></li>
+<li><a href="#arena">2. Arena configuration</a></li>
+<li><a href="#results">3. Interim results</a></li>
+<li><a href="#kernel">4. Kernel discovery</a></li>
+<li><a href="#dcc">5. DCC result: useful failure</a></li>
+<li><a href="#limits">6. Honest limits</a></li>
+<li><a href="#upgrade">7. AMR Arena vNext</a></li>
+<li><a href="#update-slot">8. Completion update slot</a></li>
+</ul></nav>
+
+<article class="paper">
+<h2 id="abstract">Abstract<a class="section-anchor" href="#abstract">#</a></h2>
+<p>The AMR arena asks a MDLxDCC-native question: in a deceptive, rugged escape landscape, can a wide strategy catalog discover a small control kernel that prevents population escape better than baseline or manually obvious pressure patterns?</p>
+<p>The interim answer is already strong enough to document: among the 592 fully completed strategies in the snapshot, every viable strategy contained <code>WEAKEN_ESCAPED</code>. The current robust winner is <code>combo__weaken_escaped__freeze_dim</code>, while the MDL winner is the cheaper <code>combo__weaken__weaken_escaped</code>. The run is not complete, so this is not the final AMR verdict. It is a strong interim signal and a clear target for DCC improvement.</p>
+
+<h2 id="why">1. Why AMR deserves its own arena page<a class="section-anchor" href="#why">#</a></h2>
+<div class="callout good"><strong>Verdict:</strong> yes, this is page-worthy now — as an interim result page, not as a final paper.</div>
+<p>AMR is different from a normal candidate domain because it tests three things at once:</p>
+<ul>
+  <li><strong>Applied relevance:</strong> resistance dynamics are a high-value public-health problem class, even though this arena remains abstract and non-clinical.</li>
+  <li><strong>Governance relevance:</strong> the arena does not only rank strategies; it exposes when a DCC selector chooses the wrong bundle.</li>
+  <li><strong>Kernel relevance:</strong> the current signal is not vague. A single operator family, <code>WEAKEN_ESCAPED</code>, appears in every viable complete strategy.</li>
+</ul>
+<p>This makes AMR a better fit for a dedicated page than for a footnote inside the domain map. The page can later become the stable place for final results, vNext arena upgrades, and DCC selector patches.</p>
+
+<h2 id="arena">2. Arena configuration<a class="section-anchor" href="#arena">#</a></h2>
+<p>The uploaded run is a large, deceptive-landscape strategy sweep:</p>
+<pre>python amr_arena.py --profile custom --pop 700 --timesteps 350 --landscapes 12 --seeds 6 --strategy-mode all --dcc basic --workers 5 --max-generated-strategies 900 --sampling-mode family_balanced --mutation 0.05 --transfer 0.02 --ruggedness 0.70 --landscape-mode deceptive --n-basins 16 --tunnel-prob 0.24 --deadend-frac 0.20 --jackpot-frac 0.10 --corridor-frac 0.24 --pop-profile batch --topology batch --checkpoint-every-seconds 60 --out-prefix amr_240h_v13_w5</pre>
+<table>
+<tr><th>Dimension</th><th>Value</th><th>Why it matters</th></tr>
+<tr><td>Population</td><td>700 agents</td><td>Large enough to expose escape and late-collapse behavior.</td></tr>
+<tr><td>Landscape suite</td><td>12 landscapes × 6 seeds</td><td>Enables fair per-strategy ranking over 72 runs per complete strategy.</td></tr>
+<tr><td>Strategy catalog</td><td>900 strategies</td><td>Wide search across mono, combo, staged, triple, pulse, and adaptive families.</td></tr>
+<tr><td>Landscape mode</td><td>deceptive, ruggedness 0.70, 16 basins</td><td>Designed to punish naive pressure and reveal robust control kernels.</td></tr>
+<tr><td>Checkpointing</td><td>JSONL runlog + checkpoint</td><td>Allows interim analysis without stopping the long run.</td></tr>
+</table>
+
+<h2 id="results">3. Interim results<a class="section-anchor" href="#results">#</a></h2>
+<h3>3.1 Health and coverage</h3>
+<table>
+<tr><th>Metric</th><th>Snapshot value</th></tr>
+<tr><td>Runlog rows</td><td>42,682</td></tr>
+<tr><td>Checkpoint completed / total</td><td>42,682 / 64,800</td></tr>
+<tr><td>Complete strategies</td><td>592 / 900</td></tr>
+<tr><td>Partial strategies</td><td>1 — <code>combo__weaken__tax_diversity</code></td></tr>
+<tr><td>Untouched strategies</td><td>307</td></tr>
+<tr><td>Duplicate task keys</td><td>0</td></tr>
+<tr><td>Checkpoint/runlog mismatch</td><td>0</td></tr>
+</table>
+
+<h3>3.2 Current leaderboard</h3>
+<table>
+<tr><th>Rank</th><th>Strategy</th><th>Tier</th><th>Control</th><th>MDL</th><th>Mean final escaped</th><th>Interpretation</th></tr>
+<tr><td>1</td><td><code>combo__weaken_escaped__freeze_dim</code></td><td>MEDIUM</td><td>0.888</td><td>222.0</td><td>62.3 / 700</td><td class="goodtxt">best robust control</td></tr>
+<tr><td>2</td><td><code>combo__weaken__weaken_escaped</code></td><td>CHEAP</td><td>0.886</td><td>186.2</td><td>134.8 / 700</td><td class="goodtxt">MDL seed</td></tr>
+<tr><td>3</td><td><code>combo__weaken_escaped__force_mix</code></td><td>MEDIUM</td><td>0.865</td><td>225.7</td><td>91.8 / 700</td><td>strong dynamic/niche add-on</td></tr>
+<tr><td>4</td><td><code>combo__weaken_escaped__slow</code></td><td>CHEAP</td><td>0.863</td><td>220.3</td><td>100.3 / 700</td><td>cheap stabilizer</td></tr>
+<tr><td>5</td><td><code>combo__weaken_escaped__burden</code></td><td>CHEAP</td><td>0.861</td><td>217.2</td><td>108.0 / 700</td><td>cheap stabilizer</td></tr>
+</table>
+
+<h3>3.3 Landscape wound</h3>
+<p>The hardest current regime is <code>L3 high_cost_adaptive / patches</code>. Even the best complete strategy still leaves about <strong>257.8 / 700</strong> final escaped there. This is the main target for the follow-up run: not a sign the arena failed, but the best identified stress point.</p>
+
+<h2 id="kernel">4. Kernel discovery<a class="section-anchor" href="#kernel">#</a></h2>
+<div class="callout good"><strong>Current kernel:</strong> <code>WEAKEN_ESCAPED</code>. All 18 viable complete strategies contain it. Without it, no completed strategy is currently viable.</div>
+<table>
+<tr><th>Operator present</th><th>Complete strategies</th><th>Viable</th><th>Best control</th><th>Median control</th><th>Best strategy</th></tr>
+<tr><td><code>WEAKEN_ESCAPED</code></td><td>23</td><td>18</td><td>0.888</td><td>0.826</td><td><code>combo__weaken_escaped__freeze_dim</code></td></tr>
+<tr><td><code>FREEZE_DIM</code></td><td>31</td><td>1</td><td>0.888</td><td>0.338</td><td><code>combo__weaken_escaped__freeze_dim</code></td></tr>
+<tr><td><code>FORCE_MIX</code></td><td>31</td><td>2</td><td>0.865</td><td>0.209</td><td><code>combo__weaken_escaped__force_mix</code></td></tr>
+<tr><td><code>SLOW</code></td><td>47</td><td>1</td><td>0.863</td><td>0.237</td><td><code>combo__weaken_escaped__slow</code></td></tr>
+<tr><td><code>BURDEN</code></td><td>44</td><td>1</td><td>0.861</td><td>0.206</td><td><code>combo__weaken_escaped__burden</code></td></tr>
+</table>
+<p>The key interpretation is not “freeze dimension wins.” <code>FREEZE_DIM</code> alone is weak. It becomes strong when paired with the escape-targeted weakening kernel. The same pattern holds for <code>FORCE_MIX</code>, <code>SLOW</code>, and <code>BURDEN</code>: they are add-ons, not the root.</p>
+
+<h2 id="dcc">5. DCC result: useful failure<a class="section-anchor" href="#dcc">#</a></h2>
+<table>
+<tr><th>Strategy</th><th>Final escaped</th><th>Control</th><th>Selected bundle</th><th>Verdict</th></tr>
+<tr><td><code>adaptive_dcc_basic</code></td><td>700 / 700</td><td>0.196</td><td><code>WEAKEN + RAISE_ESCAPE_COST + SLOW</code></td><td class="badtxt">failed selector</td></tr>
+</table>
+<p>This is a valuable negative result. It does not show that DCC is useless. It shows that <code>dcc basic</code> selected the wrong bundle because its candidate pool or selection prior missed the discovered kernel. In MDLxDCC terms, the arena has generated the patch target: DCC must learn from historical strategy evidence or include an expert-pool prior.</p>
+
+<h2 id="limits">6. Honest limits<a class="section-anchor" href="#limits">#</a></h2>
+<ul>
+  <li>The run is incomplete. The result is strong interim evidence, not final certification.</li>
+  <li>The unfinished region still includes important <code>WEAKEN_ESCAPED</code> combinations.</li>
+  <li>The arena is a simulation. It should not be translated into biological or clinical action.</li>
+  <li>The current hardest landscape remains unsolved enough to justify a narrowed follow-up.</li>
+</ul>
+
+<h2 id="upgrade">7. AMR Arena vNext<a class="section-anchor" href="#upgrade">#</a></h2>
+<p>The next arena should not simply run a larger random grid. It should preserve the current wide run, then build a narrowed vNext around the discovered kernel.</p>
+<table>
+<tr><th>Upgrade</th><th>Purpose</th></tr>
+<tr><td>DCC expert pool</td><td>Force candidate consideration of <code>WEAKEN_ESCAPED</code>, <code>WEAKEN_ESCAPED + FREEZE_DIM</code>, <code>WEAKEN_ESCAPED + FORCE_MIX</code>, <code>WEAKEN + WEAKEN_ESCAPED</code>, <code>WEAKEN_ESCAPED + SLOW</code>, and <code>WEAKEN_ESCAPED + BURDEN</code>.</td></tr>
+<tr><td>Historical prior</td><td>Let DCC initialize from completed runlog evidence instead of choosing static bundles blind.</td></tr>
+<tr><td>Landscape-specialized selector</td><td>Separate <code>high_cost_adaptive / patches</code>, dynamic fragmented landscapes, and well-mixed transfer-heavy landscapes.</td></tr>
+<tr><td>Evidence metric pack</td><td>Export a universal metric bundle comparable with TSP, Sudoku, NAS, CW, RH, Poincare, and future AMR runs.</td></tr>
+<tr><td>Kill-test suite</td><td>Test whether the <code>WEAKEN_ESCAPED</code> kernel survives changed seeds, different basin geometry, lower/higher transfer, and alternate scoring weights.</td></tr>
+</table>
+
+<h2 id="update-slot">8. Completion update slot<a class="section-anchor" href="#update-slot">#</a></h2>
+<p><em>Next update after run completion:</em> replace interim counts with the final 64,800-run summary, add full operator-family heatmaps, confirm or revise the current winner, and document whether the remaining <code>WEAKEN_ESCAPED</code> neighborhood changes the top rank. If the kernel survives completion, AMR becomes one of the cleanest applied-control demonstrations in the MDLxDCC arena family.</p>
+<hr style="border:0;border-top:1px solid var(--line);margin:24px">
+<p class="muted">Version 0.1 · May 4, 2026 · AMR interim page. Snapshot: 42,682 / 64,800 tasks complete, 592 complete strategies, current winner <code>combo__weaken_escaped__freeze_dim</code>, MDL seed <code>combo__weaken__weaken_escaped</code>, DCC basic selector failure documented.</p>
+</article>
+<footer class="footer"><p><strong>Version:</strong> v0.1 interim result page · May 4, 2026 · Added to the MDLxDCC arena family as an applied-control arena, not as clinical guidance.</p></footer>
+</div>
+</body>
+</html>
