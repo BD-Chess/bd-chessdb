@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MDLxDCC Arena — Riemann Hypothesis / Prime Gaps v0.7b</title>
+<title>MDLxDCC Arena — Riemann Hypothesis / Prime Gaps v0.8</title>
 <style>
 :root{
   --bg:#0a0a14; --card:#10101e; --card2:#0d1324; --panel:#11172a; --text:#d8dceb; --dim:#9da4bd; --muted:#69708b;
@@ -55,27 +55,27 @@ h1{font-size:clamp(2.25rem,5.6vw,4.55rem);line-height:1.02;margin:0 0 14px;color
 <header class="hero" id="top">
   <div class="kicker">Active formal frontier arena</div>
   <h1>Prime Gaps Through the 8Z / DCC Lens</h1>
-  <div class="subtitle">Prime gaps as a measurable information trace: from LZ76 compression signal to wheel/Markov controls, scaling tests, inverse-generator search, and a three-track RH + MDLxDCC invariant roadmap.</div>
+  <div class="subtitle">Prime gaps as a measurable information trace: from LZ76 compression signal to wheel/Markov controls, v0.3 generator diagnostics, invariant candidates, and a three-track RH + MDLxDCC roadmap.</div>
   <div class="meta">
 <strong>Author:</strong> Bojan Dobrečevič (BD), with AI-assisted synthesis (GPT, Claude, DeepSeek)<br/>
-<strong>Version:</strong> v0.7b RH Arena transition update · <strong>Date:</strong> May 3, 2026<br/>
-<strong>Status:</strong> Preliminary empirical — E1 completed, final E2/SEA batch analyzed, inverse-generator layer added, v0.3 repair run in progress<br/>
+<strong>Version:</strong> v0.8 RH Arena v0.3 result update · <strong>Date:</strong> May 4, 2026<br/>
+<strong>Status:</strong> Preliminary empirical — E1/E2/SEA analyzed, inverse-generator layer added, v0.3 1M Arena run analyzed<br/>
 <strong>Project context:</strong> 8Z / MDL / DCC cross-domain research program
     </div>
-  <div class="pill-row"><span class="pill active">ACTIVE</span><span class="pill gold">Final E2 / SEA</span><span class="pill purple">Inverse generator arena</span><span class="pill">v0.3 repair running</span></div>
+  <div class="pill-row"><span class="pill active">ACTIVE</span><span class="pill gold">Final E2 / SEA</span><span class="pill purple">Inverse generator arena</span><span class="pill">v0.3 1M analyzed</span></div>
 </header>
 
 <div class="status-callout">
-<strong>Working status:</strong> E1, first E2 controls, and the full SEA batch are analyzed. The v0.7 layer reframes the next step as an <strong>inverse-generator arena</strong>: trace → encoding → sensors → controls → generators → MDL score → holdout validation → invariant candidate. The 1M v0.2b Arena run adds stronger diagnostics: raw <code>gap</code>/<code>gap_div2</code> signals survive shuffle, block, wheel6, Markov1, and Cramér-like controls, while Markov2 becomes the new boundary. The v0.3 run repairs the residue/Cramér interpretation by separating gap-residue traces from prime-residue traces and by using wheel-aware Cramér controls. This remains an empirical signal/generator study, not an RH proof.
+<strong>Working status:</strong> E1, E2/SEA, the 1M v0.2b Arena, and the 1M v0.3 Arena run are now analyzed. The v0.3 run used <strong>1,000,000 primes</strong>, <strong>400 trials</strong>, <strong>50,000-token windows</strong>, and <strong>10 workers</strong>. It completed <strong>2,200 window tasks</strong> and <strong>88 generator tasks</strong>. The main result is sharper than before: raw <code>gap</code>/<code>gap_div2</code> still survive shuffle, block, wheel6, Markov1, and wheel-aware Cramér controls, but <strong>Markov2 remains the hard boundary</strong>. With predictive-bits scoring, <code>markov2</code> now wins the raw-gap generator arena, while <code>hybrid_dcc</code> moves to second place but does not yet beat the Markov2 baseline. This remains an empirical signal/generator study, not an RH proof.
     </div>
 
 <section class="metric-grid" aria-label="Key results">
-  <div class="metric-card green"><div class="metric-label">Strongest current line</div><div class="metric-value">2M Markov</div><div class="metric-note">Δ −142.34 · z −8.76 · 50/50 windows negative</div></div>
-  <div class="metric-card gold"><div class="metric-label">500k bridge</div><div class="metric-value">Confirmed</div><div class="metric-note">Markov z −5.41 · wheel6 z −4.75 · 25/25 windows negative</div></div>
-  <div class="metric-card purple"><div class="metric-label">1M baseline</div><div class="metric-value">Shuffle added</div><div class="metric-note">Δ −301.62 · z −41.62 · 50/50 windows negative</div></div>
-  <div class="metric-card"><div class="metric-label">Boundary</div><div class="metric-value">No proof claim</div><div class="metric-note">Signal survives controls; formal invariant remains future work</div></div>
-  <div class="metric-card green"><div class="metric-label">1M v0.2b Arena</div><div class="metric-value">Markov2 line</div><div class="metric-note">gap: Markov1 z −11.30 · Markov2 z +2.58</div></div>
-  <div class="metric-card gold"><div class="metric-label">v0.3 repair</div><div class="metric-value">Wheel-aware</div><div class="metric-note">gap_mod vs prime_residue split · Cramér warmup · predictive MDL</div></div>
+  <div class="metric-card green"><div class="metric-label">v0.3 run</div><div class="metric-value">Completed</div><div class="metric-note">1M primes · 400 trials · 2,200 window tasks · 88 generators</div></div>
+  <div class="metric-card gold"><div class="metric-label">Raw gap vs Markov1</div><div class="metric-value">z −11.35</div><div class="metric-note">20/20 windows negative · Δ −204.54 · p floor 0.00249</div></div>
+  <div class="metric-card purple"><div class="metric-label">Raw gap vs Markov2</div><div class="metric-value">Boundary</div><div class="metric-note">z +2.59 · only 1/20 windows negative · signal absorbed/reversed</div></div>
+  <div class="metric-card"><div class="metric-label">Generator winner</div><div class="metric-value">Markov2</div><div class="metric-note">raw gap and gap_div2; hybrid_dcc second, not yet better</div></div>
+  <div class="metric-card green"><div class="metric-label">Stable candidates</div><div class="metric-value">gap_mod</div><div class="metric-note">strongest motif families are residue/gap-class patterns, not raw-gap formulas yet</div></div>
+  <div class="metric-card gold"><div class="metric-label">Boundary</div><div class="metric-value">No proof</div><div class="metric-note">Signal/generator/invariant candidates only; no RH proof claim</div></div>
 </section>
 
 <nav class="toc" id="contents">
@@ -153,13 +153,14 @@ h1{font-size:clamp(2.25rem,5.6vw,4.55rem);line-height:1.02;margin:0 0 14px;color
 <li class="toc-item"><a href="#19-inverse-generator-hypothesis">19. Inverse Generator Hypothesis</a></li>
 <li class="toc-item">
 <details>
-<summary><span aria-hidden="true" class="toc-plus"></span><a href="#20-rh-arena-v02b-to-v03-transition">20. RH Arena v0.2b → v0.3 Transition</a></summary>
+<summary><span aria-hidden="true" class="toc-plus"></span><a href="#20-rh-arena-v03-results">20. RH Arena v0.3 Results</a></summary>
 <ul class="toc-sub">
-<li><a href="#20-1-what-v02b-changed">20.1 What v0.2b changed</a></li>
-<li><a href="#20-2-core-signal-after-1m-arena-run">20.2 Core signal after the 1M Arena run</a></li>
-<li><a href="#20-3-generator-arena-result">20.3 Generator arena result</a></li>
-<li><a href="#20-4-why-v03-repair-was-needed">20.4 Why v0.3 repair was needed</a></li>
-<li><a href="#20-5-current-readout-before-v03-results">20.5 Current readout before v0.3 results</a></li>
+<li><a href="#20-1-v03-run-integrity">20.1 Run integrity</a></li>
+<li><a href="#20-2-v03-core-sensor-readout">20.2 Core sensor readout</a></li>
+<li><a href="#20-3-v03-residue-and-cramer-readout">20.3 Residue and Cramér readout</a></li>
+<li><a href="#20-4-v03-generator-leaderboard">20.4 Generator leaderboard</a></li>
+<li><a href="#20-5-v03-invariant-candidates">20.5 Invariant candidates</a></li>
+<li><a href="#20-6-v03-conclusion">20.6 Conclusion and next step</a></li>
 </ul>
 </details>
 </li>
@@ -468,61 +469,89 @@ then prime-counting error remains within an RH-compatible bound.</pre>
 </ol>
 <p>In this language, the Arena does not “prove RH.” It searches for compact generator/invariant candidates. Proof would be a later certificate.</p>
 
-<h2 id="20-rh-arena-v02b-to-v03-transition">20. RH Arena v0.2b → v0.3 Transition<a aria-label="Link to this section" class="section-anchor" href="#20-rh-arena-v02b-to-v03-transition">#</a></h2>
-<p>The first full Arena run at 1M scale changed the project state. It showed that the original LZ signal survives many controls, but it also exposed the next hard boundary: second-order Markov structure and wheel-aware residue handling.</p>
-<h3 id="20-1-what-v02b-changed">20.1 What v0.2b changed<a aria-label="Link to this section" class="section-anchor" href="#20-1-what-v02b-changed">#</a></h3>
-<p>The v0.2b run was not only a larger LZ76 test. It was the first RH Arena pass with trace families, control modes, motif extraction, generator scores, holdout validation, resume/checkpointing, and worker execution. The run used 1,000,000 primes, 600 trials, 50,000-token windows, 10 workers, and 1,800 completed window tasks.</p>
-<p>The main readout:</p>
-<blockquote><p>Core prime-gap LZ structure is strong and survives shuffle, block, wheel6, Markov1, and Cramér-like controls. Markov2 becomes the new boundary. Hybrid DCC and motif grammar do not yet beat Markov baselines.</p></blockquote>
-<h3 id="20-2-core-signal-after-1m-arena-run">20.2 Core signal after the 1M Arena run<a aria-label="Link to this section" class="section-anchor" href="#20-2-core-signal-after-1m-arena-run">#</a></h3>
+<h2 id="20-rh-arena-v03-results">20. RH Arena v0.3 Results<a aria-label="Link to this section" class="section-anchor" href="#20-rh-arena-v03-results">#</a></h2>
+<p>The completed v0.3 Arena run is the first cleaned-up version after the v0.2b diagnosis. It separates <code>gap_mod6</code>/<code>gap_mod30</code> from <code>prime_residue6</code>/<code>prime_residue30</code>, uses wheel-aware Cramér controls with warmup, excludes the Cramér global window-0 artifact from summary aggregation, and scores generators using predictive bits over the holdout length.</p>
+<h3 id="20-1-v03-run-integrity">20.1 Run integrity<a aria-label="Link to this section" class="section-anchor" href="#20-1-v03-run-integrity">#</a></h3>
 <table>
-<tr><th>Trace</th><th>Control</th><th>Mean ΔLZ</th><th>Mean z</th><th>Readout</th></tr>
-<tr><td><code>gap</code></td><td>shuffle</td><td>−785.98</td><td>−77.10</td><td>Strong order signal.</td></tr>
-<tr><td><code>gap</code></td><td>block10</td><td>−241.51</td><td>−21.37</td><td>Survives local block preservation.</td></tr>
-<tr><td><code>gap</code></td><td>wheel6</td><td>−86.63</td><td>−8.62</td><td>Survives first wheel-aware control.</td></tr>
-<tr><td><code>gap</code></td><td>markov1</td><td>−204.82</td><td>−11.30</td><td>Survives first-order transition baseline.</td></tr>
-<tr><td><code>gap</code></td><td>wheel30</td><td>−8.76</td><td>−0.88</td><td>Mostly absorbed by stronger wheel structure.</td></tr>
-<tr><td><code>gap</code></td><td>markov2</td><td>+44.84</td><td>+2.58</td><td>Signal killed/reversed; new boundary.</td></tr>
-<tr><td><code>cumulative_error_walk</code></td><td>shuffle</td><td>−8140.12</td><td>−516.65</td><td>Huge sequential signal.</td></tr>
-<tr><td><code>cumulative_error_walk</code></td><td>markov2</td><td>+348.03</td><td>+1.63</td><td>Mostly Markov-explainable in current form.</td></tr>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Script</td><td><code>8z-rh-arena-v0.3</code></td></tr>
+<tr><td>Prime range</td><td>1,000,000 primes; last prime 15,485,863; 999,999 gaps</td></tr>
+<tr><td>Train / test</td><td>500,000 / 1,000,000 primes</td></tr>
+<tr><td>Window / stride</td><td>50,000 / 50,000</td></tr>
+<tr><td>Trials</td><td>400 per control task; p-value floor ≈ 0.00249</td></tr>
+<tr><td>Workers</td><td>10 requested / 10 used</td></tr>
+<tr><td>Completed work</td><td>2,200 window tasks; 88 generator tasks; 30,491 motif rows; 16,892 invariant-candidate rows</td></tr>
+<tr><td>Elapsed</td><td>52,970 seconds, about 14.7 hours</td></tr>
 </table>
-<p>The important conclusion is not only “the signal is strong.” It is sharper:</p>
-<pre>future invariant candidates must survive Markov2 or explain why Markov2 is the correct local shadow of a deeper generator.</pre>
-<h3 id="20-3-generator-arena-result">20.3 Generator arena result<a aria-label="Link to this section" class="section-anchor" href="#20-3-generator-arena-result">#</a></h3>
-<p>The generator leaderboard currently favors Markov baselines. For raw <code>gap</code>, the best holdout scores were:</p>
+<p>The run completed cleanly with <code>windows.done.json</code>, <code>generators.done.json</code>, and <code>run.done.json</code>. The result is usable as a v0.3 baseline.</p>
+<h3 id="20-2-v03-core-sensor-readout">20.2 Core sensor readout<a aria-label="Link to this section" class="section-anchor" href="#20-2-v03-core-sensor-readout">#</a></h3>
+<p>The core raw-gap signal remains real under most controls, but Markov2 is still the hard boundary.</p>
 <table>
-<tr><th>Encoding</th><th>Rank 1</th><th>Rank 2</th><th>Rank 3</th><th>Interpretation</th></tr>
-<tr><td><code>gap</code></td><td>markov1</td><td>markov2</td><td>lz_dictionary</td><td>DCC/hybrid not yet better than simple Markov.</td></tr>
-<tr><td><code>gap_div2</code></td><td>markov1</td><td>markov2</td><td>lz_dictionary</td><td>Same as raw gap.</td></tr>
-<tr><td><code>bucket_log2</code></td><td>markov1</td><td>markov2</td><td>wheel_only</td><td>Coarse gap classes are transition-dominated.</td></tr>
-<tr><td><code>cumulative_error_walk</code></td><td>lz_dictionary</td><td>markov1</td><td>markov2</td><td>Interesting exception; dictionary replay deserves follow-up.</td></tr>
-<tr><td><code>normalized_gap</code></td><td>local_cramer</td><td>wheel_only</td><td>shuffle</td><td>Density trend dominates this encoding.</td></tr>
-<tr><td><code>gap_minus_logp</code></td><td>local_cramer</td><td>markov2</td><td>markov1</td><td>Density-corrected trace needs better scoring.</td></tr>
+<tr><th>Trace</th><th>Control</th><th>Mean ΔLZ</th><th>Mean z</th><th>Window stability</th><th>Readout</th></tr>
+<tr><td><code>gap</code></td><td>shuffle</td><td>−785.94</td><td>−77.49</td><td>20/20 negative</td><td>Strong order signal.</td></tr>
+<tr><td><code>gap</code></td><td>block10</td><td>−241.47</td><td>−21.32</td><td>20/20 negative</td><td>Survives short-block preservation.</td></tr>
+<tr><td><code>gap</code></td><td>markov1</td><td>−204.54</td><td>−11.35</td><td>20/20 negative</td><td>Survives first-order transition baseline.</td></tr>
+<tr><td><code>gap</code></td><td>wheel6</td><td>−86.68</td><td>−8.66</td><td>20/20 negative</td><td>Survives simple wheel-aware control.</td></tr>
+<tr><td><code>gap</code></td><td>local_cramer</td><td>−165.82</td><td>−7.69</td><td>20/20 negative</td><td>Survives wheel-aware local-density surrogate.</td></tr>
+<tr><td><code>gap</code></td><td>cramer_global</td><td>−124.69</td><td>−5.80</td><td>19/19 negative</td><td>Survives after excluding window-0 artifact.</td></tr>
+<tr><td><code>gap</code></td><td>block50</td><td>−57.68</td><td>−5.54</td><td>20/20 negative</td><td>Still stable.</td></tr>
+<tr><td><code>gap</code></td><td>block100</td><td>−29.86</td><td>−2.92</td><td>20/20 negative</td><td>Weaker but present.</td></tr>
+<tr><td><code>gap</code></td><td>wheel30</td><td>−8.86</td><td>−0.88</td><td>16/20 negative</td><td>Mostly absorbed by stronger wheel structure.</td></tr>
+<tr><td><code>gap</code></td><td>markov2</td><td>+44.71</td><td>+2.59</td><td>1/20 negative</td><td>Signal killed/reversed; current boundary.</td></tr>
 </table>
-<p>This is a useful failure of the early DCC generator, not a dead end. The Arena correctly punished generators that were too compressible, too motif-collapsed, or too weak against Markov baselines.</p>
-<h3 id="20-4-why-v03-repair-was-needed">20.4 Why v0.3 repair was needed<a aria-label="Link to this section" class="section-anchor" href="#20-4-why-v03-repair-was-needed">#</a></h3>
-<p>The v0.2b run exposed two design problems that had to be repaired before a larger run could be trusted:</p>
-<ol>
-<li><strong>Residue trace ambiguity:</strong> <code>residue6</code>/<code>residue30</code> mixed prime-residue interpretation with gap-residue interpretation. v0.3 separates <code>gap_mod6</code>/<code>gap_mod30</code> from <code>prime_residue6</code>/<code>prime_residue30</code>.</li>
-<li><strong>Cramér not wheel-aware enough:</strong> Cramér-like controls produced huge residue effects that mainly measured surrogate weakness rather than a new invariant. v0.3 uses wheel-aware Cramér behavior and warmup to reduce window-0 artifacts.</li>
-<li><strong>Generator scoring needed predictive scale:</strong> next-gap logloss must count as predictive bits over the holdout length, not as a small side metric.</li>
-</ol>
-<p>The repair scope is therefore:</p>
-<pre>gap_mod vs prime_residue split
-+ wheel-aware Cramér
-+ Cramér warmup
-+ predictive-bits MDL scoring
-+ invariant_candidates.csv</pre>
-<h3 id="20-5-current-readout-before-v03-results">20.5 Current readout before v0.3 results<a aria-label="Link to this section" class="section-anchor" href="#20-5-current-readout-before-v03-results">#</a></h3>
-<p>The v0.3 run should not be interpreted until it completes. Before that result, the honest state is:</p>
+<p><code>gap_div2</code> repeats the same picture almost exactly. This confirms that the core raw-gap signal is not a token-scaling artifact.</p>
+<h3 id="20-3-v03-residue-and-cramer-readout">20.3 Residue and Cramér readout<a aria-label="Link to this section" class="section-anchor" href="#20-3-v03-residue-and-cramer-readout">#</a></h3>
+<p>The v0.3 split clarified the old residue confusion. <code>gap_mod6</code> and <code>gap_mod30</code> contain strong, stable gap-residue motif structure. <code>prime_residue6</code> and <code>prime_residue30</code> are now explicit prime-residue traces and should be treated as wheel-state diagnostics, not as raw evidence for a new invariant.</p>
+<table>
+<tr><th>Trace</th><th>Control</th><th>Mean z</th><th>Readout</th></tr>
+<tr><td><code>gap_mod6</code></td><td>markov2</td><td>−29.53</td><td>Gap-residue structure survives second-order local baseline.</td></tr>
+<tr><td><code>gap_mod30</code></td><td>markov2</td><td>−2.44</td><td>Weaker but still negative in 20/20 windows.</td></tr>
+<tr><td><code>prime_residue6</code></td><td>markov2</td><td>−0.15</td><td>Mostly absorbed; useful as wheel-state diagnostic.</td></tr>
+<tr><td><code>prime_residue30</code></td><td>markov2</td><td>+1.02</td><td>Mostly absorbed/reversed; not a primary invariant signal.</td></tr>
+<tr><td><code>gap_mod6</code></td><td>local_cramer</td><td>+14.20</td><td>Cramér surrogate over-explains or mismatches this residue view; read cautiously.</td></tr>
+<tr><td><code>gap_mod30</code></td><td>local_cramer</td><td>+14.93</td><td>Same caution.</td></tr>
+</table>
+<p>The earlier huge residue/Cramér readout is no longer treated as a discovery by itself. It is now a diagnostic showing where surrogate design and residue-state modeling still need care.</p>
+<h3 id="20-4-v03-generator-leaderboard">20.4 Generator leaderboard<a aria-label="Link to this section" class="section-anchor" href="#20-4-v03-generator-leaderboard">#</a></h3>
+<p>The generator arena changed meaningfully after predictive-bits scoring. For raw gaps, <code>markov2</code> now beats <code>markov1</code>, and <code>hybrid_dcc</code> moves to second place but still does not beat the Markov2 baseline.</p>
+<table>
+<tr><th>Encoding</th><th>Winner</th><th>Second</th><th>Third</th><th>Readout</th></tr>
+<tr><td><code>gap</code></td><td>markov2</td><td>hybrid_dcc</td><td>markov1</td><td>Markov2 is the current raw-gap baseline to beat.</td></tr>
+<tr><td><code>gap_div2</code></td><td>markov2</td><td>hybrid_dcc</td><td>markov1</td><td>Same as raw gap.</td></tr>
+<tr><td><code>abs_delta</code></td><td>markov2</td><td>hybrid_dcc</td><td>markov1</td><td>Second-order transition structure dominates.</td></tr>
+<tr><td><code>gap_mod6</code></td><td>markov2</td><td>hybrid_dcc</td><td>markov1</td><td>Strong residue-state transition structure.</td></tr>
+<tr><td><code>gap_mod30</code></td><td>markov2</td><td>hybrid_dcc</td><td>markov1</td><td>Same hierarchy at finer wheel scale.</td></tr>
+<tr><td><code>prime_residue6</code></td><td>markov2</td><td>hybrid_dcc</td><td>markov1</td><td>Mostly wheel-state transition modeling.</td></tr>
+<tr><td><code>prime_residue30</code></td><td>markov2</td><td>hybrid_dcc</td><td>markov1</td><td>Mostly wheel-state transition modeling.</td></tr>
+<tr><td><code>cumulative_error_walk</code></td><td>markov1</td><td>motif_grammar</td><td>lz_dictionary</td><td>Still interesting, but not yet a clean invariant.</td></tr>
+<tr><td><code>normalized_gap</code></td><td>local_cramer</td><td>shuffle</td><td>wheel_only</td><td>Density trend dominates this encoding.</td></tr>
+<tr><td><code>gap_minus_logp</code></td><td>markov1</td><td>motif_grammar</td><td>lz_dictionary</td><td>Needs better density-corrected generator design.</td></tr>
+</table>
+<blockquote><p>Current generator verdict: the Arena has not yet found a DCC/motif generator that beats Markov2 on raw gaps. That is not a failure. It is the clean next target.</p></blockquote>
+<h3 id="20-5-v03-invariant-candidates">20.5 Invariant candidates<a aria-label="Link to this section" class="section-anchor" href="#20-5-v03-invariant-candidates">#</a></h3>
+<p>The v0.3 run emitted <code>invariant_candidates.csv</code>. The strongest stable candidates are not yet raw-gap formulas. They are mostly gap-residue and coarse gap-class motif families.</p>
+<table>
+<tr><th>Encoding</th><th>Candidate motif</th><th>Controls survived</th><th>Window support</th><th>Min z</th><th>Readout</th></tr>
+<tr><td><code>gap_mod6</code></td><td><code>2,0,4</code></td><td>9</td><td>20</td><td>35.09</td><td>Very strong residue motif family.</td></tr>
+<tr><td><code>gap_mod6</code></td><td><code>4,0,2</code></td><td>7</td><td>20</td><td>35.85</td><td>Companion residue motif.</td></tr>
+<tr><td><code>gap_mod6</code></td><td><code>2,4,2</code></td><td>6</td><td>20</td><td>37.51</td><td>Stable alternating residue motif.</td></tr>
+<tr><td><code>gap_mod30</code></td><td><code>4,6,14</code></td><td>6</td><td>14</td><td>9.67</td><td>Finer wheel-residue candidate.</td></tr>
+<tr><td><code>gap_mod30</code></td><td><code>10,2,10</code></td><td>5</td><td>17</td><td>8.61</td><td>Stable finer gap-residue motif.</td></tr>
+<tr><td><code>bucket_log2</code></td><td><code>4,1,4</code></td><td>7</td><td>20</td><td>5.03</td><td>Coarse size-class candidate.</td></tr>
+<tr><td><code>gap</code></td><td><code>2,12,10</code></td><td>4</td><td>10</td><td>2.30</td><td>Weak raw-gap candidate; not invariant-level yet.</td></tr>
+</table>
+<p>This is the right shape of result for an early inverse-generator arena: it does not magically produce an RH invariant, but it tells us where the stable motifs live. The strongest motifs are currently residue/gap-class structures. Raw integer gap motifs are weaker and need deeper filtering.</p>
+<h3 id="20-6-v03-conclusion">20.6 Conclusion and next step<a aria-label="Link to this section" class="section-anchor" href="#20-6-v03-conclusion">#</a></h3>
+<p>The v0.3 result sharpens the project:</p>
 <ul>
-<li><strong>confirmed signal:</strong> raw <code>gap</code>/<code>gap_div2</code> LZ structure vs shuffle/block/wheel6/Markov1,</li>
-<li><strong>new boundary:</strong> Markov2 absorbs or reverses the simple raw-gap LZ advantage,</li>
-<li><strong>control caution:</strong> old residue/Cramér signals are partly artifacts and must be re-read under v0.3,</li>
-<li><strong>generator status:</strong> Markov1/Markov2 are the current baselines to beat,</li>
-<li><strong>next target:</strong> find motif families, dictionary generators, or DCC hybrids that survive Markov2 and scale.</li>
+<li><strong>Confirmed:</strong> raw <code>gap</code>/<code>gap_div2</code> LZ structure survives shuffle, block, wheel6, Markov1, and wheel-aware Cramér controls at 1M scale.</li>
+<li><strong>Boundary:</strong> Markov2 absorbs/reverses the raw-gap LZ advantage.</li>
+<li><strong>Generator floor:</strong> Markov2 is now the baseline to beat for raw gaps.</li>
+<li><strong>DCC status:</strong> <code>hybrid_dcc</code> improved to second place for many encodings, but it still does not beat Markov2.</li>
+<li><strong>Candidate status:</strong> strongest motif families are gap-residue/coarse-class motifs, not a raw-gap invariant yet.</li>
 </ul>
-<p>No RH proof claim follows from this. The Arena is now doing what it should: converting a compression signal into sharper generator candidates and sharper falsification tests.</p>
+<blockquote><p>v0.3 does not close the RH problem. It gives a cleaner target: build a generator or invariant that beats Markov2 on holdout while preserving the stable motif and residue-family structure discovered by the Arena.</p></blockquote>
+<p>The next code step should be a focused v0.4 generator arena: Markov2+DCC hybrids, variable-order Markov, motif-conditioned Markov, density-feedback states, and per-encoding generator leaderboards. The next paper step is to update this page after v0.4 shows whether any compact generator can actually beat the Markov2 floor.</p>
 <h2 id="appendix-a-e1-result-tables">Appendix A – E1 Result Tables<a aria-label="Link to this section" class="section-anchor" href="#appendix-a-e1-result-tables">#</a></h2>
 <p>Tables are shown in Section 6 above.</p>
 <h2 id="appendix-b-interpretation-ladder">Appendix B – Interpretation Ladder<a aria-label="Link to this section" class="section-anchor" href="#appendix-b-interpretation-ladder">#</a></h2>
@@ -601,15 +630,15 @@ while i &lt; len(tokens):
 <ul>
 <li><strong>v0.1:</strong> first RH Arena: windows, controls, sensors, motif extraction, generators, holdout outputs.</li>
 <li><strong>v0.2b:</strong> resume/workers/progress hardening and 1M generator benchmark.</li>
-<li><strong>v0.3:</strong> gap-residue vs prime-residue split, wheel-aware Cramér, Cramér warmup, predictive-bits generator scoring, and <code>invariant_candidates.csv</code>.</li>
+<li><strong>v0.3:</strong> gap-residue vs prime-residue split, wheel-aware Cramér, Cramér warmup, predictive-bits generator scoring, <code>invariant_candidates.csv</code>, and completed 1M analysis.</li>
 </ul><h2 id="appendix-e-next-update-slot">Appendix E – Next Update Slot<a aria-label="Link to this section" class="section-anchor" href="#appendix-e-next-update-slot">#</a></h2>
-<p><em>Next:</em> Analyze the completed v0.3 output, update the generator-by-encoding leaderboard, re-read residue/Cramér signals under wheel-aware controls, and promote only motifs/generators that survive holdout and Markov2-scale baselines. The scientific question is now: which compact generator or invariant explains the surviving raw-gap advantage without collapsing into a known local-transition control?</p><hr/>
-<p class="note">Version 0.7b · May 3, 2026 · Inverse Generator Hypothesis preserved · v0.2b 1M RH Arena diagnosis integrated · v0.3 repair scope documented · no RH proof claim · next: completed v0.3 result analysis and invariant-candidate filtering.</p>
+<p><em>Next:</em> Build a focused v0.4 generator arena: variable-order Markov, motif-conditioned Markov, density-feedback states, and DCC hybrids that explicitly try to beat the Markov2 raw-gap floor on holdout. The scientific question is now: can any compact generator explain the surviving raw-gap advantage without collapsing into a known local-transition control?</p><hr/>
+<p class="note">Version 0.8 · May 4, 2026 · Inverse Generator Hypothesis preserved · completed v0.3 1M RH Arena analyzed · Markov2 boundary confirmed · invariant-candidate filtering added · no RH proof claim · next: v0.4 focused generator arena.</p>
 
 </article>
 
 <footer class="footer">
-  <p><strong>Version:</strong> v0.7b RH Arena transition update · May 3, 2026 · Built as a patch of the supplied MDLxDCC-Arena-RH.html page · Final SEA preserved · inverse-generator layer and v0.2b→v0.3 Arena transition integrated.</p>
+  <p><strong>Version:</strong> v0.8 RH Arena v0.3 result update · May 4, 2026 · Built from the latest preserved v0.7b RH page · Final SEA preserved · completed v0.3 1M Arena results integrated · no RH proof claim.</p>
 </footer>
 </div>
 </body>
