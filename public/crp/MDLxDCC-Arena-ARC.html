@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-AGI × MDLxDCC Arena</title>
+<style>
+:root{
+  --bg:#0a0a14; --card:#10101e; --card2:#0d1324; --panel:#11172a; --text:#d8dceb; --dim:#9da4bd; --muted:#69708b;
+  --line:#242842; --blue:#4a9ede; --green:#2ecc94; --gold:#e8c840; --red:#e05070; --purple:#a87cdf; --teal:#3ecdc4; --pink:#e868a0; --cyan:#5db2ff;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:18px;line-height:1.72;overflow-x:hidden}
+body::before,body::after{content:"";position:fixed;border-radius:50%;filter:blur(90px);opacity:.30;pointer-events:none;z-index:-1}
+body::before{width:50vw;height:50vw;left:-14vw;top:-18vh;background:radial-gradient(circle,rgba(93,178,255,.34),rgba(62,205,196,.12) 48%,transparent 72%);animation:floatA 22s ease-in-out infinite}
+body::after{width:44vw;height:44vw;right:-14vw;bottom:-18vh;background:radial-gradient(circle,rgba(168,124,223,.30),rgba(232,200,64,.08) 45%,transparent 72%);animation:floatB 28s ease-in-out infinite}
+@keyframes floatA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(6vw,4vh,0)}}
+@keyframes floatB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-5vw,-6vh,0)}}
+::selection{background:var(--gold);color:#05060b}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+.wrapper{max-width:1160px;margin:0 auto;padding:0 16px 64px}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(8,8,16,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);margin:0 -16px 24px;padding:10px 16px}
+.topbar-inner{max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--blue);letter-spacing:.18em;text-transform:uppercase;font-size:.78rem;text-decoration:none}
+.nav{display:flex;gap:8px;flex-wrap:wrap}
+.nav a{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.74rem;color:var(--dim);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:5px 10px}
+.nav a:hover{border-color:var(--blue);color:var(--blue);background:rgba(74,158,222,.08)}
+.hero{position:relative;padding:44px 0 28px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.kicker{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--green);letter-spacing:.22em;text-transform:uppercase;font-size:.78rem;margin-bottom:10px}
+h1{font-size:clamp(2.25rem,5.6vw,4.55rem);line-height:1.02;margin:0 0 14px;color:#fff;letter-spacing:-.04em;max-width:980px}
+.hero .subtitle{max-width:920px;color:var(--dim);font-size:1.08rem;margin-bottom:18px}
+.hero .meta{background:rgba(16,16,30,.72);border:1px solid var(--line);border-radius:14px;padding:14px 16px;color:var(--dim);font-size:.93rem;line-height:1.7}
+.hero .meta strong{color:#fff}
+.status-callout,.callout{background:linear-gradient(135deg,rgba(74,158,222,.10),rgba(46,204,148,.07));border:1px solid rgba(74,158,222,.30);border-left:4px solid var(--blue);border-radius:14px;padding:17px 20px;margin:20px 0;color:#dce7ff}
+.status-callout strong,.callout strong{color:#fff}
+.warning{background:rgba(224,80,112,.08);border-color:rgba(224,80,112,.35);border-left-color:var(--red)}
+.good{background:rgba(46,204,148,.08);border-color:rgba(46,204,148,.30);border-left-color:var(--green)}
+.goldcall{background:rgba(232,200,64,.08);border-color:rgba(232,200,64,.30);border-left-color:var(--gold)}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:20px 0 26px}
+.metric-card{background:linear-gradient(180deg,rgba(16,16,30,.92),rgba(13,19,36,.78));border:1px solid var(--line);border-radius:15px;padding:16px 18px;box-shadow:0 18px 60px rgba(0,0,0,.18)}
+.metric-label{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);font-size:.68rem;margin-bottom:8px}
+.metric-value{font-size:1.65rem;font-weight:760;color:#fff;line-height:1.15}
+.metric-card.green .metric-value{color:var(--green)}.metric-card.gold .metric-value{color:var(--gold)}.metric-card.purple .metric-value{color:var(--purple)}.metric-card.teal .metric-value{color:var(--teal)}
+.metric-note{color:var(--dim);font-size:.92rem;margin-top:6px;line-height:1.45}
+.toc{background:rgba(13,19,36,.82);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:24px 0;box-shadow:0 18px 60px rgba(0,0,0,.14)}
+.toc h2{margin:0 0 10px;border:0;padding:0;font-size:1.35rem}.toc ul{margin:.3em 0;padding-left:20px}.toc li{margin:.22em 0}.toc a{color:#dfcf7a}.toc a:hover{color:#fff}
+.paper{background:rgba(10,12,24,.44);border:1px solid rgba(36,40,66,.65);border-radius:18px;padding:8px 0 0}
+.paper>h2,.paper>h3,.paper>p,.paper>ul,.paper>ol,.paper>blockquote,.paper>pre,.paper>table,.paper>.callout,.paper>.table-wrap{margin-left:24px;margin-right:24px}
+.paper h2{font-size:1.72rem;color:#fff;margin-top:2em;margin-bottom:.65em;border-bottom:1px solid var(--line);padding-bottom:.38em;letter-spacing:-.01em}
+.paper h3{font-size:1.18rem;color:#fff;margin-top:1.45em;margin-bottom:.45em}
+.paper p{margin:.78em 0;color:var(--text)}.paper ul,.paper ol{padding-left:1.35em}.paper li{margin:.35em 0}
+.paper code{background:rgba(74,158,222,.10);border:1px solid rgba(74,158,222,.18);border-radius:5px;padding:.08em .32em;color:#f2f6ff}
+.paper pre{background:#080d18;border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow:auto;color:#dce8ff;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.9rem;line-height:1.55}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:16px;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:.92rem;min-width:760px}th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}th{background:#171b2f;color:#fff}td{background:#0f1220;color:#d0d6e8}tr:last-child td{border-bottom:none}
+.section-anchor{font-size:.72em;color:var(--muted);margin-left:.35em;text-decoration:none}.section-anchor:hover{color:var(--blue)}
+.footer{border-top:1px solid var(--line);margin-top:36px;padding:18px 0;color:var(--muted);font-size:.9rem}
+.note{color:var(--muted);font-size:.92rem}
+.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.72rem;color:var(--dim)}.pill.active{border-color:var(--green);color:var(--green);background:rgba(46,204,148,.08)}.pill.gold{border-color:var(--gold);color:var(--gold);background:rgba(232,200,64,.08)}.pill.purple{border-color:var(--purple);color:var(--purple);background:rgba(168,124,223,.08)}.pill.red{border-color:var(--red);color:var(--red);background:rgba(224,80,112,.08)}
+@media(max-width:760px){body{font-size:19px;line-height:1.78}.wrapper{padding:0 12px 48px}.topbar{margin:0 -12px 18px;padding:9px 12px}h1{font-size:2.4rem}.hero{padding:30px 0 20px}.paper{border-radius:14px}.paper>h2,.paper>h3,.paper>p,.paper>ul,.paper>ol,.paper>blockquote,.paper>pre,.paper>.callout,.paper>.table-wrap{margin-left:14px;margin-right:14px}.paper h2{font-size:1.48rem}.paper h3{font-size:1.18rem}table{font-size:.88rem}.metric-grid{grid-template-columns:1fr}.nav{gap:6px}.nav a{font-size:.68rem;padding:5px 8px}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+<div class="topbar"><div class="topbar-inner">
+  <a class="brand" href="MDLxDCC-arenas.html">MDLxDCC Arenas</a>
+  <div class="nav">
+    <a href="MDLxDCC.html">Kernel</a>
+    <a href="MDLxDCC-Arenas.html">All Arenas</a>
+    <a href="MDLxDCC-Arena-RH.html">RH</a>
+    <a href="MDLxDCC-Arena-AMR.html">AMR</a>
+    <a href="#results">Results</a>
+    <a href="#roadmap">Roadmap</a>
+  </div>
+</div></div>
+
+<header class="hero" id="top">
+  <div class="kicker">Active benchmark frontier arena</div>
+  <h1>ARC-AGI × MDLxDCC Arena</h1>
+  <div class="subtitle">Private research prototype for dynamic ARC primitive discovery: ARC JSON loader, task signatures, category routing, wide primitive families, MDL selector, DCC trace, LOO validation, and failure mining.</div>
+  <div class="meta">
+    <strong>Version:</strong> v0.4 partial overnight snapshot · v0.5 planned<br/>
+    <strong>Date:</strong> May 5, 2026<br/>
+    <strong>Status:</strong> preliminary internal research page; not an ARC Prize submission<br/>
+    <strong>Source snapshot:</strong> <code>summary_index.json</code> with 24 completed/partial indexed runs, plus <code>cmd_text.txt</code> console snapshot.
+  </div>
+  <div class="pill-row"><span class="pill active">private prototype</span><span class="pill gold">dynamic primitives</span><span class="pill purple">MDL selector</span><span class="pill">DCC trace</span><span class="pill red">no solve claim</span></div>
+</header>
+
+<div class="status-callout">
+<strong>Current read:</strong> v0.4 is already useful as an arena, not as a solved ARC system. The partial overnight data says category/family routing is more informative than raw global exact rate. The strongest early routes are <code>integer_expand → macro</code>, <code>expand → macro</code>, <code>crop_like → core/object</code>, and <code>recolor_or_paint → color/morphology/line</code>. Blind global <code>chain2</code> is currently too expensive for the wins it produces.
+</div>
+
+<section class="metric-grid" aria-label="Key ARC snapshot metrics">
+  <div class="metric-card green"><div class="metric-label">Snapshot</div><div class="metric-value">24 runs</div><div class="metric-note">summary_index partial snapshot; overnight batch still evolving</div></div>
+  <div class="metric-card gold"><div class="metric-label">Best exact count</div><div class="metric-value">11</div><div class="metric-note">same_shape, in_canvas, and recolor_or_paint family-routed runs</div></div>
+  <div class="metric-card purple"><div class="metric-label">Best LOO avg</div><div class="metric-value">0.121</div><div class="metric-note">integer_expand wide; 4 exact / 38 tasks</div></div>
+  <div class="metric-card teal"><div class="metric-label">Fastest useful route</div><div class="metric-value">expand→macro</div><div class="metric-note">4 exact / 68 in 42 seconds; same wins as all-family expand</div></div>
+  <div class="metric-card "><div class="metric-label">Chain2 global value</div><div class="metric-value">weak</div><div class="metric-note">global baseline: 0 chain2 exact; same exact with no-chain2 at ~54% runtime</div></div>
+  <div class="metric-card gold"><div class="metric-label">Core signal</div><div class="metric-value">routing</div><div class="metric-note">family/category slices reveal more than raw global solve %</div></div>
+</section>
+
+<nav class="toc" id="contents"><h2>Contents</h2><ul>
+<li><a href="#boundary">1. Boundary</a></li>
+<li><a href="#method">2. Method</a></li>
+<li><a href="#progression">3. Version progression</a></li>
+<li><a href="#results">4. Partial v0.4 results</a></li>
+<li><a href="#families">5. Primitive-family signal</a></li>
+<li><a href="#failure-mining">6. Failure mining</a></li>
+<li><a href="#natural-law">7. Natural-law primitive lens</a></li>
+<li><a href="#philosophy">8. Arena philosophy</a></li>
+<li><a href="#reproducibility">9. Reproducibility</a></li>
+<li><a href="#roadmap">10. Roadmap</a></li>
+<li><a href="#appendix">Appendix — artifacts</a></li>
+</ul></nav>
+
+<article class="paper">
+<h2 id="boundary">1. Boundary<a class="section-anchor" href="#boundary">#</a></h2>
+<div class="callout warning"><strong>Boundary:</strong> This is not an official ARC Prize submission, does not expose proprietary MDLxDCC core, and does not claim that ARC is solved. The measured signal is train-fit, LOO survival, category/family routing value, primitive discovery, and failure interpretability.</div>
+<p>The arena intentionally uses dynamic primitives learned from train pairs. It should not memorize ARC task IDs, hardcode task-specific solutions, or bake in ARC answer tables. The value is in discovering which primitive families explain which task families under MDL/DCC pressure.</p>
+
+<h2 id="method">2. Method<a class="section-anchor" href="#method">#</a></h2>
+<p>The v0.4 pipeline is:</p>
+<pre>ARC JSON → grid validation → features/categories → candidate primitive families → MDL score → DCC trace → train-fit + LOO → test prediction → JSON/HTML reports</pre>
+<p>v0.4 added <code>--cat</code> slicing, <code>--workers</code>, budget presets, family category filters, and prior-result reruns. The run summary script flattens each run into <code>summary_index.csv</code> and <code>summary_index.json</code> with exact, HIGH, LOO average, candidate count, runtime, chain2 exact count, family signals, and failure buckets.</p>
+<div class="callout good"><strong>Good structure:</strong> JSON is already the source of truth. HTML and CSV are views over run artifacts. This matches the TSP/NAS/Sudoku/CW arena pattern: arena remembers, compares, and then routes.</div>
+
+<h2 id="progression">3. Version progression<a class="section-anchor" href="#progression">#</a></h2>
+<div class="table-wrap"><table><tr><th>Version</th><th>Exact train-fit</th><th>HIGH</th><th>Signal</th></tr>
+<tr><td>v0.1</td><td>≈2 / 50</td><td>1 robust HIGH</td><td>single primitive baseline; useful loader/scoring/DCC/LOO spine</td></tr>
+<tr><td>v0.2</td><td>no gain</td><td>no chain2 exact winners</td><td>blind depth-2 beam did not raise solve rate</td></tr>
+<tr><td>v0.3b</td><td>4 / 50</td><td>3 HIGH</td><td>natural-law primitive pack became canonical baseline</td></tr>
+<tr><td>v0.4 partial</td><td>up to 11 exact in category slices</td><td>up to 9 HIGH</td><td>wide arena + categories + workers + family routing; partial overnight snapshot</td></tr>
+<tr><td>v0.5 target</td><td>not yet claimed</td><td>not yet measured</td><td>memory, routed budget, better categories, richer dynamic primitives</td></tr>
+</table></div>
+<p>The important transition is v0.3b → v0.4: v0.3b proved natural-law primitives can create robust exact wins; v0.4 turned that into a broad experiment harness with categories, family filters, workers, and batch summarization.</p>
+
+<h2 id="results">4. Partial v0.4 results<a class="section-anchor" href="#results">#</a></h2>
+<div class="callout"><strong>Partial snapshot:</strong> The table below is based on the attached <code>summary_index.json</code> snapshot, not the final completed overnight folder. Some runs were still absent or still updating when the CMD snapshot was captured.</div>
+<div class="table-wrap"><table><tr><th>Run</th><th>Cat</th><th>Family cat</th><th>Budget</th><th>Tasks</th><th>Exact</th><th>HIGH</th><th>LOO avg</th><th>Runtime</th><th>Exact families</th></tr>
+<tr><td><code>11_cat_in_canvas_wide</code></td><td>in_canvas</td><td>all</td><td>wide</td><td>160</td><td>11</td><td>9</td><td>0.066</td><td>4:12:26</td><td><code>line_connect:2;diagonal_connect:1;fill_holes:1;gravity_pack:1;outline_foreground:1;recolor_by_map:1;rotate:1;symmetry_complete:1</code></td></tr>
+<tr><td><code>10_cat_same_shape_wide</code></td><td>same_shape</td><td>all</td><td>wide</td><td>160</td><td>11</td><td>9</td><td>0.066</td><td>4:36:48</td><td><code>line_connect:2;diagonal_connect:1;fill_holes:1;gravity_pack:1;outline_foreground:1;recolor_by_map:1;rotate:1;symmetry_complete:1</code></td></tr>
+<tr><td><code>45_paint_family_color_morph</code></td><td>recolor_or_paint</td><td>color,morphology,line</td><td>wide</td><td>220</td><td>11</td><td>9</td><td>0.050</td><td>2:20:06</td><td><code>chain2:2;line_connect:2;diagonal_connect:1;erode_color:1;fill_holes:1;outline_foreground:1;ray_cast:1;recolor_by_map:1</code></td></tr>
+<tr><td><code>51_crop_family_core_object</code></td><td>crop_like</td><td>core,object</td><td>wide</td><td>186</td><td>10</td><td>8</td><td>0.060</td><td>0:12:41</td><td><code>tile_repeat:3;crop_largest_object:2;chain2:1;crop_non_bg_bbox:1;extract_object:1;pad_resize:1;remove_background:1</code></td></tr>
+<tr><td><code>50_natural_like_family_natural</code></td><td>natural_like</td><td>natural</td><td>wide</td><td>220</td><td>6</td><td>5</td><td>0.033</td><td>2:52:44</td><td><code>wire_connect:3;diagonal_connect:1;gravity_pack:1;outline_foreground:1</code></td></tr>
+<tr><td><code>14_cat_integer_expand_wide</code></td><td>integer_expand</td><td>all</td><td>wide</td><td>38</td><td>4</td><td>4</td><td>0.121</td><td>0:01:33</td><td><code>scale_up_integer:2;substitution_expand:2</code></td></tr>
+<tr><td><code>60_full_integer_expand_macro</code></td><td>integer_expand</td><td>macro</td><td>full</td><td>38</td><td>4</td><td>4</td><td>0.113</td><td>0:01:13</td><td><code>scale_up_integer:2;substitution_expand:2</code></td></tr>
+<tr><td><code>43_expand_family_macro</code></td><td>expand</td><td>macro</td><td>wide</td><td>68</td><td>4</td><td>4</td><td>0.070</td><td>0:00:42</td><td><code>scale_up_integer:2;substitution_expand:2</code></td></tr>
+<tr><td><code>13_cat_expand_wide</code></td><td>expand</td><td>all</td><td>wide</td><td>68</td><td>4</td><td>4</td><td>0.068</td><td>0:18:10</td><td><code>scale_up_integer:2;substitution_expand:2</code></td></tr>
+<tr><td><code>02_dev50_wide_nochain2</code></td><td>all</td><td>all</td><td>wide</td><td>50</td><td>4</td><td>3</td><td>0.065</td><td>0:24:47</td><td><code>fill_holes:1;recolor_by_map:1;substitution_expand:1;wire_connect:1</code></td></tr>
+<tr><td><code>01_dev50_wide_all</code></td><td>all</td><td>all</td><td>wide</td><td>50</td><td>4</td><td>3</td><td>0.065</td><td>0:46:11</td><td><code>fill_holes:1;recolor_by_map:1;substitution_expand:1;wire_connect:1</code></td></tr>
+<tr><td><code>46_object_family_object</code></td><td>object</td><td>object</td><td>wide</td><td>220</td><td>4</td><td>3</td><td>0.025</td><td>0:05:21</td><td><code>extract_multicolor_object:2;extract_object:1;translate_object:1</code></td></tr>
+</table></div>
+<h3>4.1 Exact per runtime</h3>
+<div class="table-wrap"><table><tr><th>Run</th><th>Exact / hour</th><th>Exact</th><th>Runtime</th><th>Tasks</th><th>Family cat</th></tr>
+<tr><td><code>43_expand_family_macro</code></td><td>343.9</td><td>4</td><td>0:00:42</td><td>68</td><td>macro</td></tr>
+<tr><td><code>49_motion_family_motion_object</code></td><td>302.8</td><td>2</td><td>0:00:24</td><td>19</td><td>motion,object</td></tr>
+<tr><td><code>60_full_integer_expand_macro</code></td><td>196.3</td><td>4</td><td>0:01:13</td><td>38</td><td>macro</td></tr>
+<tr><td><code>14_cat_integer_expand_wide</code></td><td>154.4</td><td>4</td><td>0:01:33</td><td>38</td><td>all</td></tr>
+<tr><td><code>44_color_family_color</code></td><td>51.5</td><td>2</td><td>0:02:20</td><td>220</td><td>color</td></tr>
+<tr><td><code>51_crop_family_core_object</code></td><td>47.3</td><td>10</td><td>0:12:41</td><td>186</td><td>core,object</td></tr>
+<tr><td><code>46_object_family_object</code></td><td>44.9</td><td>4</td><td>0:05:21</td><td>220</td><td>object</td></tr>
+<tr><td><code>48_morphology_family_morph</code></td><td>40.3</td><td>3</td><td>0:04:28</td><td>220</td><td>morphology</td></tr>
+<tr><td><code>62_full_color_family</code></td><td>32.7</td><td>1</td><td>0:01:50</td><td>80</td><td>color</td></tr>
+<tr><td><code>47_multicolor_family_object_color</code></td><td>29.1</td><td>3</td><td>0:06:12</td><td>220</td><td>object,color</td></tr>
+</table></div>
+<h3>4.2 Chain2 ablation</h3>
+<p>The global 50-task baseline with chain2 produced 4 exact / 3 HIGH in 46:11. The no-chain2 baseline produced the same 4 exact / 3 HIGH in 24:47. Both had 0 chain2 exact wins. This says blind depth-2 should not be default-global; it should be routed.</p>
+<div class="table-wrap"><table><tr><th>Run</th><th>Tasks</th><th>Exact</th><th>HIGH</th><th>Chain2 enabled</th><th>Chain2 exact</th><th>Runtime</th><th>Exact families</th></tr>
+<tr><td><code>01_dev50_wide_all</code></td><td>50</td><td>4</td><td>3</td><td>True</td><td>0</td><td>0:46:11</td><td><code>fill_holes:1;recolor_by_map:1;substitution_expand:1;wire_connect:1</code></td></tr>
+<tr><td><code>02_dev50_wide_nochain2</code></td><td>50</td><td>4</td><td>3</td><td>False</td><td>0</td><td>0:24:47</td><td><code>fill_holes:1;recolor_by_map:1;substitution_expand:1;wire_connect:1</code></td></tr>
+</table></div>
+<h3>4.3 CMD / ETA read</h3>
+<p>cmd_text snapshot ends during 15_cat_crop_like_wide at 150/160 progress; no timestamps in progress lines, so exact ETA is not derivable. The console text still gives useful progress context: at the captured tail, <code>15_cat_crop_like_wide</code> was at <strong>150 / 160</strong> with 11 exact so far, so that specific run was near completion. Exact total batch ETA cannot be computed from this text alone because the progress lines have no wall-clock timestamps.</p>
+
+<h2 id="families">5. Primitive-family signal<a class="section-anchor" href="#families">#</a></h2>
+<p>The strongest family signal is not just which family wins exact, but which family creates many near misses. Near misses tell us where a small dynamic rule extension may unlock new exact winners.</p>
+<div class="table-wrap"><table><tr><th>Family</th><th>Aggregated exact wins across indexed runs</th><th>Aggregated near-miss count</th><th>Read</th></tr>
+<tr><td><code>fill_holes</code></td><td>10</td><td><code>185</code></td><td>exact + near-miss signal</td></tr>
+<tr><td><code>substitution_expand</code></td><td>10</td><td><code>16</code></td><td>exact + near-miss signal</td></tr>
+<tr><td><code>recolor_by_map</code></td><td>8</td><td><code>0</code></td><td>exact only</td></tr>
+<tr><td><code>scale_up_integer</code></td><td>8</td><td><code>44</code></td><td>exact + near-miss signal</td></tr>
+<tr><td><code>line_connect</code></td><td>7</td><td><code>166</code></td><td>exact + near-miss signal</td></tr>
+<tr><td><code>wire_connect</code></td><td>6</td><td><code>10</code></td><td>exact + near-miss signal</td></tr>
+<tr><td><code>diagonal_connect</code></td><td>5</td><td><code>114</code></td><td>exact + near-miss signal</td></tr>
+<tr><td><code>chain2</code></td><td>5</td><td><code>63</code></td><td>exact + near-miss signal</td></tr>
+<tr><td><code>extract_multicolor_object</code></td><td>5</td><td><code>74</code></td><td>exact + near-miss signal</td></tr>
+<tr><td><code>outline_foreground</code></td><td>4</td><td><code>50</code></td><td>exact + near-miss signal</td></tr>
+<tr><td><code>gravity_pack</code></td><td>3</td><td><code>18</code></td><td>exact + near-miss signal</td></tr>
+<tr><td><code>extract_object</code></td><td>3</td><td><code>48</code></td><td>exact + near-miss signal</td></tr>
+<tr><td><code>tile_repeat</code></td><td>3</td><td><code>61</code></td><td>exact + near-miss signal</td></tr>
+<tr><td><code>rotate</code></td><td>2</td><td><code>0</code></td><td>exact only</td></tr>
+<tr><td><code>symmetry_complete</code></td><td>2</td><td><code>0</code></td><td>exact only</td></tr>
+<tr><td><code>translate_object</code></td><td>2</td><td><code>153</code></td><td>exact + near-miss signal</td></tr>
+</table></div>
+<div class="callout goldcall"><strong>Current family read:</strong> <code>substitution_expand</code>, <code>scale_up_integer</code>, <code>fill_holes</code>, <code>line_connect</code>, <code>wire_connect</code>, <code>diagonal_connect</code>, <code>recolor_by_map</code>, and crop/object extraction families are worth keeping alive. <code>global_color_replace</code>, <code>pad_resize</code>, <code>frame_extract</code>, and <code>erode/fill/line</code> near-misses are primitive-discovery seeds, not dead ends.</div>
+
+<h2 id="failure-mining">6. Failure mining<a class="section-anchor" href="#failure-mining">#</a></h2>
+<p>The current failure buckets are useful but too coarse. <code>needs_depth2_composition</code> is the biggest bucket, but it describes many unrelated cases. v0.5 should split it into macro-grid, object matching, count, marker instruction, line completion, crop/extract, local cellular, and color-role buckets.</p>
+<div class="table-wrap"><table><tr><th>Failure bucket</th><th>Aggregated count</th><th>v0.5 interpretation</th></tr>
+<tr><td><code>needs_depth2_composition</code></td><td>2850</td><td>too broad; composition needed but bucket needs splitting</td></tr>
+<tr><td><code>near_miss_small_rule_gap</code></td><td>1513</td><td>highest-value mining pool: small residuals</td></tr>
+<tr><td><code>needs_natural_law_primitive</code></td><td>751</td><td>good signal for new dynamic primitives</td></tr>
+<tr><td><code>needs_relational_object_reasoning</code></td><td>719</td><td>object graph / matching gap</td></tr>
+<tr><td><code>needs_in_canvas_rule</code></td><td>366</td><td>same-canvas local rule gap</td></tr>
+<tr><td><code>needs_wire_crossing_or_signal_priority</code></td><td>156</td><td>line/wire priority and crossing rules</td></tr>
+<tr><td><code>needs_crop_resize_or_canvas_transform</code></td><td>135</td><td>crop/resize/canvas path</td></tr>
+<tr><td><code>needs_substitution_or_morphogenesis</code></td><td>113</td><td>macro/morphogenesis route</td></tr>
+<tr><td><code>needs_crop_then_recolor_or_mask_cleanup</code></td><td>108</td><td>composition/crop cleanup</td></tr>
+<tr><td><code>unknown_or_small_missing_step</code></td><td>21</td><td>needs manual split</td></tr>
+<tr><td><code>needs_transform_then_crop_or_recolor</code></td><td>4</td><td>needs manual split</td></tr>
+</table></div>
+
+<h2 id="natural-law">7. Natural-law primitive lens<a class="section-anchor" href="#natural-law">#</a></h2>
+<ul>
+<li><code>substitution_expand</code> — morphogenesis: one cell expresses a learned motif.</li>
+<li><code>wire_connect</code> / <code>line_connect</code> — signal wires and priority/crossing behavior.</li>
+<li><code>sequence_extend</code> — growth vector / phase extension.</li>
+<li><code>macro_grid</code> / <code>scale_up_integer</code> / <code>block_expand</code> — tissue/lattice reasoning.</li>
+<li><code>ray_cast</code> / marker propagation — instruction from marker to boundary.</li>
+<li><code>gravity_pack</code> / motion/object alignment — physical relaxation, packing, and contact.</li>
+</ul>
+<p>The current data supports the lens: natural-law primitives are not decorative. They produced exact wins in v0.3b and continue to appear in exact and near-miss families in v0.4.</p>
+
+<h2 id="philosophy">8. Arena philosophy<a class="section-anchor" href="#philosophy">#</a></h2>
+<p>The arena should remain wide. A low global exact rate is not the only score. The more important diagnostic is whether the arena finds dynamic primitive families, separates task families, exposes wasted compute, and makes failures more interpretable.</p>
+<blockquote><p><strong>Seed → bridge → test → result.</strong> Do not kill a path because the first global slice is weak. Route it, compare it, and let MDL/DCC decide under category evidence.</p></blockquote>
+
+<h2 id="reproducibility">9. Reproducibility<a class="section-anchor" href="#reproducibility">#</a></h2>
+<h3>Smoke</h3>
+<pre>python arc_mdlxdcc_arena_v0_4.py --data-dir D:\8Z\8z\ARC\ARC-AGI-2 --split dev --max-tasks 10 --outdir out_arc_v04_smoke --mode both --fresh --budget smoke --workers 1 --progress-every 1</pre>
+<h3>Wide quick</h3>
+<pre>python arc_mdlxdcc_arena_v0_4.py --data-dir D:\8Z\8z\ARC\ARC-AGI-2 --split dev --max-tasks 50 --outdir out_arc_v04_quick_w10 --mode both --fresh --budget wide --workers 10 --progress-every 5</pre>
+<h3>Overnight</h3>
+<pre>run_arc_v04_overnight_w10.bat
+python summarize_arc_overnight.py out_arc_v04_overnight_w10</pre>
+<h3>Useful routed probes</h3>
+<pre>python arc_mdlxdcc_arena_v0_4.py --data-dir D:\8Z\8z\ARC\ARC-AGI-2 --split dev --cat expand --family-cat macro --max-tasks 220 --budget wide --workers 10 --outdir out_arc_v04_expand_macro --fresh
+python arc_mdlxdcc_arena_v0_4.py --data-dir D:\8Z\8z\ARC\ARC-AGI-2 --split dev --cat crop_like --family-cat core,object --max-tasks 220 --budget wide --workers 10 --outdir out_arc_v04_crop_core_object --fresh
+python arc_mdlxdcc_arena_v0_4.py --data-dir D:\8Z\8z\ARC\ARC-AGI-2 --split dev --cat integer_expand --family-cat macro --max-tasks 0 --budget full --workers 10 --outdir out_arc_v04_full_integer_macro --fresh</pre>
+
+<h2 id="roadmap">10. Roadmap<a class="section-anchor" href="#roadmap">#</a></h2>
+<h3>v0.5 priorities</h3>
+<ul>
+<li><strong>Category confidence:</strong> store category reasons and evidence scores; support <code>--cat-report</code>, <code>prev_exact</code>, <code>prev_failed</code>, <code>slow_risk</code>, <code>near_miss_small_rule_gap</code>, and composed filters.</li>
+<li><strong>Memory layer:</strong> add <code>arc_az.json</code> and task cache with task signature hash, category evidence, successful/failed/near-miss families, runtime cost, and best candidate summaries.</li>
+<li><strong>DCC budget governor:</strong> make <code>chain2</code> <em>routed</em>, not global; add per-category family activation and per-family caps.</li>
+<li><strong>Primitive expansion:</strong> macro-grid cell rules, periodic lattice completion, symmetry completion, marker rays, enclosed-region recolor, object matching, counting, crop-between-markers, object gravity/contact, local cellular rules, and blockwise majority/rank maps.</li>
+<li><strong>Failure mining:</strong> split the broad buckets into actionable buckets such as object matching, counting, macro-grid, symmetry, marker instruction, local cellular, canvas resize, and exact-fit-but-low-LOO.</li>
+<li><strong>Report viewer:</strong> show input/target/prediction/diff, test prediction, winner/top five, categories/reasons, failure bucket, residual heatmap, and filters by family/category/confidence.</li>
+</ul>
+<div class="callout good"><strong>Next overnight stance:</strong> ready to keep running v0.4 to completion, but v0.5 should not simply add more beam. The next build should add memory + routed budget + sharper failure buckets + a wider dynamic primitive pack.</div>
+
+<h2 id="appendix">Appendix — artifact list<a class="section-anchor" href="#appendix">#</a></h2>
+<div class="table-wrap"><table><tr><th>Artifact</th><th>Purpose</th></tr>
+<tr><td><code>arc_mdlxdcc_arena_v0_4.py</code></td><td>current arena code; v0.5 patch target</td></tr>
+<tr><td><code>run_arc_v04_overnight_w10.bat</code></td><td>multi-hour category/family/full-budget batch</td></tr>
+<tr><td><code>summarize_arc_overnight.py</code></td><td>builds <code>summary_index.csv</code> and <code>summary_index.json</code></td></tr>
+<tr><td><code>summary_index.csv/json</code></td><td>partial run index used by this page</td></tr>
+<tr><td><code>cmd_text.txt</code></td><td>console snapshot; useful progress signal, not enough for exact ETA</td></tr>
+<tr><td><code>arc_results.json</code></td><td>per-task output; needed for deeper task-bomb and near-miss mining</td></tr>
+<tr><td><code>arc_failures.json</code></td><td>failure buckets and best near-miss details</td></tr>
+<tr><td><code>arc_candidates.jsonl</code></td><td>candidate-level audit; top 30 + exact candidates</td></tr>
+<tr><td><code>arc_report.html</code></td><td>local solver-generated report; should be upgraded in v0.5</td></tr>
+</table></div>
+</article>
+<div class="footer">MDLxDCC ARC Arena page · private research prototype · generated from partial v0.4 snapshot on May 5, 2026 · no ARC solve claim.</div>
+</div>
+</body>
+</html>
