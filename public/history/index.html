@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Humanity — Dark Timeline Contents v0.13</title>
+<style>
+:root{
+  --bg:#05070d;
+  --bg2:#090d18;
+  --panel:#0d1324cc;
+  --panel2:#121a31;
+  --line:#2a314d;
+  --line2:#394166;
+  --text:#e7eaf2;
+  --muted:#9ca6c1;
+  --dim:#68728f;
+  --gold:#f3c95b;
+  --cyan:#69d7ff;
+  --green:#57e39f;
+  --rose:#ff6f91;
+  --violet:#b69cff;
+  --orange:#ffb36b;
+  --shadow:0 24px 80px rgba(0,0,0,.32);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 15% 8%, rgba(105,215,255,.13), transparent 35%),
+    radial-gradient(circle at 82% 12%, rgba(182,156,255,.12), transparent 32%),
+    radial-gradient(circle at 50% 100%, rgba(87,227,159,.08), transparent 42%),
+    linear-gradient(180deg,#05070d 0%,#070911 42%,#04060a 100%);
+  color:var(--text);
+  font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size:17px;
+  line-height:1.65;
+  overflow-x:hidden;
+}
+body:before,body:after{
+  content:"";position:fixed;border-radius:50%;filter:blur(95px);opacity:.33;pointer-events:none;z-index:-1;
+}
+body:before{width:50vw;height:50vw;left:-18vw;top:-20vh;background:radial-gradient(circle,rgba(105,215,255,.38),rgba(30,60,150,.15) 52%,transparent 72%);animation:floatA 24s ease-in-out infinite}
+body:after{width:46vw;height:46vw;right:-20vw;bottom:-22vh;background:radial-gradient(circle,rgba(243,201,91,.18),rgba(182,156,255,.14) 45%,transparent 72%);animation:floatB 30s ease-in-out infinite}
+@keyframes floatA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(7vw,5vh,0)}}
+@keyframes floatB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-6vw,-7vh,0)}}
+a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}
+.file-link code{transition:all .2s ease}.file-link:hover code{color:var(--cyan);border-color:rgba(105,215,255,.45);background:rgba(105,215,255,.08)}
+
+::selection{background:var(--gold);color:#06070c}
+.progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--gold));width:0;z-index:1000;opacity:.9}
+.topbar{
+  position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+  background:rgba(5,7,13,.84);border-bottom:1px solid rgba(105,215,255,.12);
+}
+.topbar-inner{max-width:1180px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.brand{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--gold);font-size:.73rem;letter-spacing:.24em;text-transform:uppercase}
+.nav{display:flex;gap:8px;flex-wrap:wrap}
+.nav a{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.68rem;color:var(--muted);border:1px solid rgba(105,215,255,.13);border-radius:999px;padding:5px 9px;text-decoration:none}
+.nav a:hover{color:var(--cyan);border-color:rgba(105,215,255,.45);background:rgba(105,215,255,.07)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px 80px}
+.hero{min-height:72vh;display:grid;align-items:center;padding:56px 0 38px;border-bottom:1px solid rgba(105,215,255,.12)}
+.kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--green);font-size:.76rem;letter-spacing:.24em;text-transform:uppercase;margin-bottom:16px}
+h1{font-size:clamp(2.6rem,7vw,5.8rem);line-height:.95;margin:0 0 22px;letter-spacing:-.07em;color:#fff;max-width:960px}
+h1 em{font-style:normal;color:var(--gold)}
+.subtitle{max-width:860px;color:var(--muted);font-size:1.11rem;margin:0 0 24px}
+.hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:24px;max-width:980px}
+.stat{background:linear-gradient(180deg,rgba(13,19,36,.86),rgba(8,12,22,.78));border:1px solid rgba(105,215,255,.13);border-radius:15px;padding:14px 16px;box-shadow:var(--shadow)}
+.stat-label{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--dim);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px}
+.stat-value{font-size:1.34rem;color:#fff;font-weight:760;line-height:1.2}.stat-value.gold{color:var(--gold)}.stat-value.green{color:var(--green)}.stat-value.cyan{color:var(--cyan)}.stat-value.rose{color:var(--rose)}
+.notice{background:linear-gradient(135deg,rgba(243,201,91,.11),rgba(105,215,255,.07));border:1px solid rgba(243,201,91,.28);border-left:4px solid var(--gold);border-radius:16px;padding:18px 20px;margin:24px 0;color:#f7f0d8;box-shadow:var(--shadow)}
+.notice strong{color:#fff}
+section{margin:38px 0}
+h2{font-size:1.75rem;line-height:1.15;margin:0 0 14px;color:#fff;letter-spacing:-.03em}
+h3{font-size:1.12rem;margin:18px 0 8px;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{background:rgba(13,19,36,.76);border:1px solid rgba(105,215,255,.12);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow)}
+.card p{margin:.35em 0;color:var(--muted)}
+.card .tag{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--cyan);font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px}
+.method-list{display:grid;gap:9px;margin-top:12px}
+.method-row{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;border-bottom:1px solid rgba(105,215,255,.09);padding:9px 0;color:var(--muted)}
+.method-row:last-child{border-bottom:0}.method-row strong{color:var(--text)}
+.contents{margin-top:30px}
+.toc-part{background:rgba(13,19,36,.82);border:1px solid rgba(105,215,255,.14);border-radius:18px;margin:14px 0;overflow:hidden;box-shadow:var(--shadow)}
+.toc-part>summary{list-style:none;cursor:pointer;padding:18px 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center}
+.toc-part>summary::-webkit-details-marker{display:none}
+.part-title{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.part-num{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--gold);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase}
+.part-name{font-size:1.24rem;color:#fff;font-weight:740;letter-spacing:-.02em}
+.part-meta{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--dim);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;text-align:right}
+.part-body{border-top:1px solid rgba(105,215,255,.1);padding:0 20px 18px}
+.file-line{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0;color:var(--muted);font-size:.92rem}.file-line code{color:var(--green);background:rgba(87,227,159,.08);border:1px solid rgba(87,227,159,.18);border-radius:6px;padding:2px 6px}.file-line a{text-decoration:none}.file-line a:hover code{color:var(--cyan);border-color:rgba(105,215,255,.36);background:rgba(105,215,255,.08)}
+.card-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:8px;list-style:none;padding:0;margin:10px 0 0}
+.card-list li{background:rgba(5,7,13,.42);border:1px solid rgba(105,215,255,.09);border-radius:10px;padding:10px 12px;color:var(--muted)}
+.card-list .range{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--cyan);font-size:.72rem;margin-bottom:3px}
+.card-list .title{color:var(--text);font-weight:650}.card-list .focus{display:block;color:var(--dim);font-size:.9em;margin-top:2px}
+.future{border-color:rgba(255,111,145,.28)}.future .part-num{color:var(--rose)}.future .card-list .range{color:var(--rose)}
+.source-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:12px}.source{background:rgba(8,12,22,.76);border:1px dashed rgba(182,156,255,.25);border-radius:14px;padding:14px 16px}.source code{color:var(--violet)}.source p{color:var(--muted);margin:.35em 0}
+.footer{border-top:1px solid rgba(105,215,255,.14);margin-top:44px;padding-top:18px;color:var(--dim);font-size:.92rem}
+@media(max-width:700px){body{font-size:18px}.wrap{padding:0 14px 60px}.topbar-inner{padding:10px 14px}.hero{min-height:auto;padding:42px 0 30px}.method-row{grid-template-columns:1fr}.toc-part>summary{grid-template-columns:1fr}.part-meta{text-align:left}.card-list{grid-template-columns:1fr}}
+@media print{body{background:#fff;color:#111}.topbar,.progress{display:none}.toc-part,.card,.stat,.notice{box-shadow:none;background:#fff;border-color:#ddd}.hero{min-height:auto}.wrap{max-width:none}.toc-part{break-inside:avoid}}
+.ready-pill{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.62rem;letter-spacing:.14em;color:var(--green);border:1px solid rgba(87,227,159,.28);background:rgba(87,227,159,.08);border-radius:999px;padding:3px 8px;margin-left:4px}
+
+/* === HISTORY MOBILE READER CONTROLS v0.6 START === */
+:root {
+  --hist-desktop-body:21px;
+  --hist-reader-body:25.5px;
+  --hist-reader-text:25.5px;
+  --hist-reader-small:17.5px;
+  --hist-reader-h1:56px;
+  --hist-reader-h2:40px;
+  --hist-reader-h3:30px;
+  --hist-reader-card-pad-x:22px;
+}
+html[data-reader-size="0"] { --hist-desktop-body:17px; --hist-reader-body:20px; --hist-reader-text:20px; --hist-reader-small:14px; --hist-reader-h1:40px; --hist-reader-h2:29px; --hist-reader-h3:23px; --hist-reader-card-pad-x:16px; }
+html[data-reader-size="1"] { --hist-desktop-body:18px; --hist-reader-body:21.5px; --hist-reader-text:21.5px; --hist-reader-small:15px; --hist-reader-h1:45px; --hist-reader-h2:32px; --hist-reader-h3:25px; --hist-reader-card-pad-x:18px; }
+html[data-reader-size="2"] { --hist-desktop-body:19px; --hist-reader-body:23px; --hist-reader-text:23px; --hist-reader-small:16px; --hist-reader-h1:50px; --hist-reader-h2:35px; --hist-reader-h3:27px; --hist-reader-card-pad-x:20px; }
+html[data-reader-size="3"] { --hist-desktop-body:21px; --hist-reader-body:25.5px; --hist-reader-text:25.5px; --hist-reader-small:17.5px; --hist-reader-h1:56px; --hist-reader-h2:40px; --hist-reader-h3:30px; --hist-reader-card-pad-x:22px; }
+html[data-reader-size="4"] { --hist-desktop-body:23px; --hist-reader-body:28px; --hist-reader-text:28px; --hist-reader-small:19px; --hist-reader-h1:62px; --hist-reader-h2:45px; --hist-reader-h3:34px; --hist-reader-card-pad-x:24px; }
+html[data-reader-size="5"] { --hist-desktop-body:25px; --hist-reader-body:31px; --hist-reader-text:31px; --hist-reader-small:20.5px; --hist-reader-h1:68px; --hist-reader-h2:50px; --hist-reader-h3:37px; --hist-reader-card-pad-x:26px; }
+html[data-reader-size="6"] { --hist-desktop-body:27px; --hist-reader-body:34px; --hist-reader-text:34px; --hist-reader-small:22px; --hist-reader-h1:74px; --hist-reader-h2:55px; --hist-reader-h3:40px; --hist-reader-card-pad-x:28px; }
+html[data-reader-size="7"] { --hist-desktop-body:29px; --hist-reader-body:38px; --hist-reader-text:38px; --hist-reader-small:24px; --hist-reader-h1:82px; --hist-reader-h2:62px; --hist-reader-h3:45px; --hist-reader-card-pad-x:30px; }
+html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+body { font-size:var(--hist-desktop-body,21px) !important; }
+.reader-controls { position:fixed; right:max(12px,env(safe-area-inset-right)); bottom:max(14px,env(safe-area-inset-bottom)); z-index:2147483000; display:flex; align-items:center; gap:8px; padding:8px; border:1px solid rgba(105,215,255,.28); border-radius:999px; background:rgba(5,7,13,.88); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); box-shadow:0 18px 55px rgba(0,0,0,.42); color:#e7eaf2; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"JetBrains Mono",monospace; }
+.reader-controls button { min-width:44px; min-height:44px; border:1px solid rgba(105,215,255,.28); border-radius:999px; background:rgba(105,215,255,.08); color:#69d7ff; font:800 18px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,"JetBrains Mono",monospace; cursor:pointer; touch-action:manipulation; }
+.reader-controls button:hover,.reader-controls button:focus-visible { outline:none; background:rgba(105,215,255,.18); border-color:rgba(105,215,255,.55); }
+.reader-controls .reader-label { min-width:96px; text-align:center; color:rgba(231,234,242,.82); font-size:12px; letter-spacing:.08em; text-transform:uppercase; user-select:none; }
+@media(max-width:760px) {
+  body { font-size:var(--hist-reader-body) !important; line-height:1.78 !important; padding-bottom:92px; }
+  .wrap,.wrapper { padding-left:16px !important; padding-right:16px !important; }
+  p,li,.subtitle,.notice,.warning,.callout,.card p,.panel p,.source p,.stat,.hero-stat,.part-body,.file-line,.state p,.story p,.focus,.pattern,.bridge,.mini div:last-child,.gb,.narrative,.card-list .focus { font-size:var(--hist-reader-text) !important; line-height:1.76 !important; }
+  .nav a,.brand,.kicker,.eyebrow,.range,.card-num,.confidence,.card-top,.stat-label,.part-num,.part-meta,.source a,.sid,.sources-inline,code,.tag,.label,.tr,.toc-card .tr { font-size:var(--hist-reader-small) !important; line-height:1.55 !important; letter-spacing:.08em !important; }
+  h1,.hero-title { font-size:var(--hist-reader-h1) !important; line-height:.98 !important; letter-spacing:-.045em !important; }
+  h2,.a4-card h2,.era-card h2 { font-size:var(--hist-reader-h2) !important; line-height:1.06 !important; }
+  h3 { font-size:var(--hist-reader-h3) !important; line-height:1.12 !important; }
+  .a4-card,.era-card { max-width:100% !important; min-height:auto !important; padding:28px var(--hist-reader-card-pad-x) 32px !important; border-radius:14px !important; }
+  .split,.goodbad,.intro-grid,.hero-grid { grid-template-columns:1fr !important; }
+  .card-list,.toc-grid,.grid,.source-grid { grid-template-columns:1fr !important; }
+  .card-list li,.toc-card,.card,.source,.panel,.stat,.hero-stat { padding:15px 16px !important; }
+  .topbar-inner { gap:8px !important; }
+  .reader-controls { left:50%; right:auto; transform:translateX(-50%); bottom:max(12px,env(safe-area-inset-bottom)); padding:8px 10px; }
+  .reader-controls button { min-width:48px; min-height:48px; font-size:20px; }
+  .reader-controls .reader-label { min-width:112px; font-size:13px; }
+}
+@media(max-width:430px) { .wrap,.wrapper { padding-left:14px !important; padding-right:14px !important; } .hero { padding-left:0 !important; padding-right:0 !important; } .reader-controls { gap:6px; } .reader-controls .reader-label { min-width:102px; } }
+@media print { .reader-controls { display:none !important; } }
+/* === HISTORY MOBILE READER CONTROLS v0.6 END === */
+
+
+
+.card-list li a{display:block;color:inherit;text-decoration:none}
+.card-list li:hover{border-color:rgba(105,215,255,.32);background:rgba(105,215,255,.06);transform:translateY(-1px)}
+.card-list li{transition:all .18s ease}
+.card-list li a:focus-visible{outline:2px solid var(--cyan);outline-offset:4px;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<header class="topbar"><div class="topbar-inner"><div class="brand">Humanity · Dark Timeline · Contents v0.13</div><nav class="nav"><a href="#method">Method</a><a href="#contents">Contents</a><a href="#future">Future Branch</a><a href="#sources">Project Sources</a></nav></div></header>
+<main class="wrap">
+<section class="hero" id="top">
+<div>
+<div class="kicker">A historical atlas in adaptive A4 cards</div>
+<h1>Humanity:<br/><em>from first fire to possible second mind</em></h1>
+<p class="subtitle">A dark-theme HTML book that tells the human story with honest scale: slow deep time first, then agriculture, cities, empires, machines, networks, AI, and finally one possible future branch built from Bojan's own AI8 / DCC material.</p>
+<div class="notice"><strong>Future boundary:</strong> the last section is not a prediction. It is one single possible branch among countless possible futures. It may happen, partially happen, or not happen at all.</div>
+<div class="hero-grid">
+<div class="stat"><div class="stat-label">Total factual cards</div><div class="stat-value cyan">116</div></div>
+<div class="stat"><div class="stat-label">Future scenario cards</div><div class="stat-value rose">10</div></div>
+<div class="stat"><div class="stat-label">HTML files</div><div class="stat-value gold">11 + index</div></div>
+<div class="stat"><div class="stat-label">Contents depth</div><div class="stat-value green">3 layers</div></div>
+</div>
+</div>
+</section>
+<section id="method">
+<h2>Method of the book</h2>
+<div class="grid">
+<div class="card"><div class="tag">Scale rule</div><p>History is not evenly dense. The book starts with 10,000-year cards, then 2,000-year, 1,000-year, 100-year, 50-year, 10-year, 5-year, and finally 1-year cards.</p></div>
+<div class="card"><div class="tag">A4 card rule</div><p>Each card is one printable A4 narrative unit: human state, good, bad, deep pattern, and bridge to the next card.</p></div>
+<div class="card"><div class="tag">Tone rule</div><p>Realistic, not triumphant. Every era carries creativity and cruelty, cooperation and domination, medicine and war, beauty and collapse.</p></div>
+<div class="card"><div class="tag">Future rule</div><p>Factual history ends at 2026. After that, the book switches mode and clearly says: scenario, not prophecy.</p></div>
+</div>
+<div class="method-list">
+<div class="method-row"><strong>Layer 1</strong><span>Book part / major era.</span></div>
+<div class="method-row"><strong>Layer 2</strong><span>HTML chapter file with one coherent time range.</span></div>
+<div class="method-row"><strong>Layer 3</strong><span>A4 card / time slice inside that chapter.</span></div>
+</div>
+</section>
+<section class="contents" id="contents">
+<h2>Contents</h2>
+<details class="toc-part" open="">
+<summary><div class="part-title"><span class="part-num">00</span><span class="part-name">Entrance: how to read humanity</span></div><div class="part-meta">index + method · 0 cards</div></summary>
+<div class="part-body"><div class="file-line">HTML file: <a href="index.html"><code>index.html</code></a> <span>Purpose: cover, navigation, legend, source boundary, print/export controls.</span></div>
+<ul class="card-list">
+<li><a href="#method"><span class="range">0.1</span><span class="title">The scale problem</span><span class="focus">Why one fixed century rhythm would lie about deep time.</span></a></li>
+<li><a href="#contents"><span class="range">0.2</span><span class="title">The A4 card grammar</span><span class="focus">State · good · bad · pattern · bridge.</span></a></li>
+<li><a href="#future"><span class="range">0.3</span><span class="title">Truth boundary</span><span class="focus">Facts, uncertainties, and scenario separation.</span></a></li>
+</ul>
+</div>
+</details>
+<details class="toc-part" open="">
+<summary><div class="part-title"><span class="part-num">01</span><span class="part-name">Deep Humanity: the animal who became symbolic</span></div><div class="part-meta">300,000–20,000 BCE · 10,000-year cards · 28 cards</div></summary>
+<div class="part-body"><div class="file-line">HTML file: <a class="file-link" href="01_deep_humanity_300000_20000_bce.html"><code>01_deep_humanity_300000_20000_bce.html</code></a> <span class="ready-pill">READY</span></div>
+<ul class="card-list">
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-01"><span class="range">300,000–290,000 BCE</span><span class="title">Bodies like us</span><span class="focus">Early Homo sapiens, African landscapes, survival before history.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-02"><span class="range">290,000–280,000 BCE</span><span class="title">Small bands, large uncertainty</span><span class="focus">Kinship, foraging, fire, predators, climate pressure.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-03"><span class="range">280,000–270,000 BCE</span><span class="title">Stone remembers hands</span><span class="focus">Tools as externalized skill; knowledge carried through imitation.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-04"><span class="range">270,000–260,000 BCE</span><span class="title">The long apprenticeship</span><span class="focus">Childhood, teaching, elders, danger, memory.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-05"><span class="range">260,000–250,000 BCE</span><span class="title">Fire circles</span><span class="focus">Warmth, cooking, night, social attention.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-06"><span class="range">250,000–240,000 BCE</span><span class="title">Climate as sculptor</span><span class="focus">Wet/dry swings, migration pulses, extinction risk.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-07"><span class="range">240,000–230,000 BCE</span><span class="title">The invisible revolution</span><span class="focus">Gesture, voice, planning, proto-symbolic coordination.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-08"><span class="range">230,000–220,000 BCE</span><span class="title">Minds in groups</span><span class="focus">Trust, betrayal, ritual beginnings, shared attention.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-09"><span class="range">220,000–210,000 BCE</span><span class="title">Fragile abundance</span><span class="focus">Local knowledge, food maps, seasonal memory.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-10"><span class="range">210,000–200,000 BCE</span><span class="title">The species survives itself</span><span class="focus">Bottlenecks, resilience, cooperation under scarcity.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-11"><span class="range">200,000–190,000 BCE</span><span class="title">The edge of language</span><span class="focus">More complex planning, teaching, social rules.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-12"><span class="range">190,000–180,000 BCE</span><span class="title">Africa as many worlds</span><span class="focus">Deserts, coasts, forests, savannas, regional lifeways.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-13"><span class="range">180,000–170,000 BCE</span><span class="title">Leaving and returning</span><span class="focus">Early dispersals, failed expansions, unknown encounters.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-14"><span class="range">170,000–160,000 BCE</span><span class="title">The pressure of ice</span><span class="focus">Changing coastlines, animal ranges, human adaptation.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-15"><span class="range">160,000–150,000 BCE</span><span class="title">Shared tools, shared worlds</span><span class="focus">Tradition becomes portable.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-16"><span class="range">150,000–140,000 BCE</span><span class="title">Buried signs</span><span class="focus">Care for bodies, symbolic hints, mortality awareness.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-17"><span class="range">140,000–130,000 BCE</span><span class="title">Coasts and corridors</span><span class="focus">Shells, fish, shorelines, movement routes.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-18"><span class="range">130,000–120,000 BCE</span><span class="title">Warm windows</span><span class="focus">Interglacial opportunities and new range experiments.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-19"><span class="range">120,000–110,000 BCE</span><span class="title">Humans among other humans</span><span class="focus">Neanderthals, Denisovans, exchange, conflict, mixture.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-20"><span class="range">110,000–100,000 BCE</span><span class="title">The first planetary hints</span><span class="focus">Out-of-Africa movements become more consequential.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-21"><span class="range">100,000–90,000 BCE</span><span class="title">Meaning in objects</span><span class="focus">Pigments, beads, marks, identity carried by things.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-22"><span class="range">90,000–80,000 BCE</span><span class="title">Networks before maps</span><span class="focus">Stone, shells, genes, stories moving between groups.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-23"><span class="range">80,000–70,000 BCE</span><span class="title">The narrow gate</span><span class="focus">Possible bottlenecks, resilience, stronger symbolic worlds.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-24"><span class="range">70,000–60,000 BCE</span><span class="title">The great dispersal begins</span><span class="focus">Humans become a multi-continent species.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-25"><span class="range">60,000–50,000 BCE</span><span class="title">Into Sahul and Eurasia</span><span class="focus">Sea crossings, cold worlds, other hominins.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-26"><span class="range">50,000–40,000 BCE</span><span class="title">Art enters the record</span><span class="focus">Caves, carvings, music, mythic attention.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-27"><span class="range">40,000–30,000 BCE</span><span class="title">The old relatives fade</span><span class="focus">Neanderthal decline, hybrid inheritance, human dominance.</span></a></li>
+<li><a href="01_deep_humanity_300000_20000_bce.html#card-28"><span class="range">30,000–20,000 BCE</span><span class="title">Ice-age imagination</span><span class="focus">Needles, shelters, art, ritual, survival at the cold edge.</span></a></li>
+</ul>
+</div>
+</details>
+<details class="toc-part">
+<summary><div class="part-title"><span class="part-num">02</span><span class="part-name">Last Ice Age Transition</span></div><div class="part-meta">20,000–10,000 BCE · 2,000-year cards · 5 cards</div></summary>
+<div class="part-body"><div class="file-line">HTML file: <a class="file-link" href="02_ice_age_transition_20000_10000_bce.html"><code>02_ice_age_transition_20000_10000_bce.html</code></a> <span class="ready-pill">READY</span></div>
+<ul class="card-list">
+<li><a href="02_ice_age_transition_20000_10000_bce.html#card-01"><span class="range">20,000–18,000 BCE</span><span class="title">Maximum ice, maximum pressure</span><span class="focus">Glaciers, refuges, megafauna, hunger.</span></a></li>
+<li><a href="02_ice_age_transition_20000_10000_bce.html#card-02"><span class="range">18,000–16,000 BCE</span><span class="title">The world begins to loosen</span><span class="focus">Warming pulses, new routes, coastal life.</span></a></li>
+<li><a href="02_ice_age_transition_20000_10000_bce.html#card-03"><span class="range">16,000–14,000 BCE</span><span class="title">Hunters at the turning point</span><span class="focus">Long-distance movement, tools, ritual, animal pressure.</span></a></li>
+<li><a href="02_ice_age_transition_20000_10000_bce.html#card-04"><span class="range">14,000–12,000 BCE</span><span class="title">Settling before farming</span><span class="focus">Semi-sedentary life, storage, intensified gathering.</span></a></li>
+<li><a href="02_ice_age_transition_20000_10000_bce.html#card-05"><span class="range">12,000–10,000 BCE</span><span class="title">The threshold</span><span class="focus">Younger Dryas, domestication pressures, villages waiting.</span></a></li>
+</ul>
+</div>
+</details>
+<details class="toc-part">
+<summary><div class="part-title"><span class="part-num">03</span><span class="part-name">Seeds, Villages, Domestication</span></div><div class="part-meta">10,000–3,000 BCE · 1,000-year cards · 7 cards</div></summary>
+<div class="part-body"><div class="file-line">HTML file: <a class="file-link" href="03_agriculture_10000_3000_bce.html"><code>03_agriculture_10000_3000_bce.html</code></a> <span class="ready-pill">READY</span></div>
+<ul class="card-list">
+<li><a href="03_agriculture_10000_3000_bce.html#card-01"><span class="range">10,000–9,000 BCE</span><span class="title">The first bargains with plants</span><span class="focus">Farming begins; food security and new labor traps.</span></a></li>
+<li><a href="03_agriculture_10000_3000_bce.html#card-02"><span class="range">9,000–8,000 BCE</span><span class="title">Villages grow memory</span><span class="focus">Storage, houses, ancestors, inequality seeds.</span></a></li>
+<li><a href="03_agriculture_10000_3000_bce.html#card-03"><span class="range">8,000–7,000 BCE</span><span class="title">Animals enter the contract</span><span class="focus">Domestication, milk, meat, disease, dependence.</span></a></li>
+<li><a href="03_agriculture_10000_3000_bce.html#card-04"><span class="range">7,000–6,000 BCE</span><span class="title">Pottery, fields, and burden</span><span class="focus">Work intensifies; gender, property, kinship shift.</span></a></li>
+<li><a href="03_agriculture_10000_3000_bce.html#card-05"><span class="range">6,000–5,000 BCE</span><span class="title">The village world spreads</span><span class="focus">Europe, Near East, China, New Guinea, Americas.</span></a></li>
+<li><a href="03_agriculture_10000_3000_bce.html#card-06"><span class="range">5,000–4,000 BCE</span><span class="title">Metals and chiefs</span><span class="focus">Copper, trade, prestige, violence, ritual centers.</span></a></li>
+<li><a href="03_agriculture_10000_3000_bce.html#card-07"><span class="range">4,000–3,000 BCE</span><span class="title">Cities before empires</span><span class="focus">Irrigation, temples, accounting, social hierarchy.</span></a></li>
+</ul>
+</div>
+</details>
+<details class="toc-part" open="">
+<summary><div class="part-title"><span class="part-num">04</span><span class="part-name">Ancient World: writing, kings, bronze networks</span></div><div class="part-meta">3,000–1,000 BCE · 100-year cards · 20 cards</div></summary>
+<div class="part-body"><div class="file-line">HTML file: <a class="file-link" href="04_ancient_world_3000_1000_bce.html"><code>04_ancient_world_3000_1000_bce.html</code></a> <span class="ready-pill">READY</span></div>
+<ul class="card-list">
+<li><a href="04_ancient_world_3000_1000_bce.html#card-01"><span class="range">3000–2900 BCE</span><span class="title">Writing begins to govern</span><span class="focus">Accounts, rulers, temples, early states.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-02"><span class="range">2900–2800 BCE</span><span class="title">Cities harden</span><span class="focus">Urban life, specialization, warfare, taxes.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-03"><span class="range">2800–2700 BCE</span><span class="title">Kings become institutions</span><span class="focus">Authority, monuments, labor, myth.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-04"><span class="range">2700–2600 BCE</span><span class="title">Pyramids and city walls</span><span class="focus">Organization at scale; grandeur and coercion.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-05"><span class="range">2600–2500 BCE</span><span class="title">The bronze web</span><span class="focus">Trade routes, metals, elite exchange.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-06"><span class="range">2500–2400 BCE</span><span class="title">Indus, Nile, Mesopotamia</span><span class="focus">Different cities, different orders.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-07"><span class="range">2400–2300 BCE</span><span class="title">Empire appears</span><span class="focus">Conquest and administration.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-08"><span class="range">2300–2200 BCE</span><span class="title">First systemic collapses</span><span class="focus">Climate, revolt, fragility of central power.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-09"><span class="range">2200–2100 BCE</span><span class="title">Recovery and reorganization</span><span class="focus">Regional powers and new state forms.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-10"><span class="range">2100–2000 BCE</span><span class="title">Law, scribes, and memory</span><span class="focus">Rule becomes text.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-11"><span class="range">2000–1900 BCE</span><span class="title">Bronze-age globalization</span><span class="focus">Merchants, palaces, long-distance dependency.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-12"><span class="range">1900–1800 BCE</span><span class="title">Codes and kingdoms</span><span class="focus">Law, justice, hierarchy, debt.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-13"><span class="range">1800–1700 BCE</span><span class="title">Horses, chariots, mobility</span><span class="focus">War speed and elite power.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-14"><span class="range">1700–1600 BCE</span><span class="title">Palace worlds</span><span class="focus">Crete, Anatolia, Egypt, Levant, Mesopotamia.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-15"><span class="range">1600–1500 BCE</span><span class="title">New weapons, new gods</span><span class="focus">Imperial competition and ritual order.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-16"><span class="range">1500–1400 BCE</span><span class="title">The age of great kings</span><span class="focus">Diplomacy, tribute, slavery, luxury.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-17"><span class="range">1400–1300 BCE</span><span class="title">Connected fragility</span><span class="focus">Trade networks become failure networks.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-18"><span class="range">1300–1200 BCE</span><span class="title">War at the bronze edge</span><span class="focus">Militarization, migrations, stress.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-19"><span class="range">1200–1100 BCE</span><span class="title">Bronze Age collapse</span><span class="focus">Cities burn; systems fail; survivors adapt.</span></a></li>
+<li><a href="04_ancient_world_3000_1000_bce.html#card-20"><span class="range">1100–1000 BCE</span><span class="title">After the palaces</span><span class="focus">Iron, local powers, new beginnings.</span></a></li>
+</ul>
+</div>
+</details>
+<details class="toc-part">
+<summary><div class="part-title"><span class="part-num">05</span><span class="part-name">Classical and Axial Worlds</span></div><div class="part-meta">1,000 BCE–500 CE · 100-year cards · 15 cards</div></summary>
+<div class="part-body"><div class="file-line">HTML file: <a class="file-link" href="05_classical_world_1000_bce_500_ce.html"><code>05_classical_world_1000_bce_500_ce.html</code></a> <span class="ready-pill">READY</span></div>
+<ul class="card-list">
+<li><a href="05_classical_world_1000_bce_500_ce.html#card-01"><span class="range">1000–900 BCE</span><span class="title">Iron societies</span><span class="focus">New tools, new armies, local kingdoms.</span></a></li>
+<li><a href="05_classical_world_1000_bce_500_ce.html#card-02"><span class="range">900–800 BCE</span><span class="title">Phoenician seas and Assyrian power</span><span class="focus">Alphabet, trade, empire, terror.</span></a></li>
+<li><a href="05_classical_world_1000_bce_500_ce.html#card-03"><span class="range">800–700 BCE</span><span class="title">Mediterranean expansion</span><span class="focus">Colonies, commerce, Homeric memory.</span></a></li>
+<li><a href="05_classical_world_1000_bce_500_ce.html#card-04"><span class="range">700–600 BCE</span><span class="title">Cities think aloud</span><span class="focus">Lawgivers, prophets, sages, reform.</span></a></li>
+<li><a href="05_classical_world_1000_bce_500_ce.html#card-05"><span class="range">600–500 BCE</span><span class="title">The axial opening</span><span class="focus">Buddha, Confucius, Greek inquiry, Persian order.</span></a></li>
+<li><a href="05_classical_world_1000_bce_500_ce.html#card-06"><span class="range">500–400 BCE</span><span class="title">Democracy and empire</span><span class="focus">Athens, Persia, war, philosophy.</span></a></li>
+<li><a href="05_classical_world_1000_bce_500_ce.html#card-07"><span class="range">400–300 BCE</span><span class="title">Conquest as transmission</span><span class="focus">Alexander, Hellenistic worlds, knowledge mixing.</span></a></li>
+<li><a href="05_classical_world_1000_bce_500_ce.html#card-08"><span class="range">300–200 BCE</span><span class="title">Libraries and bureaucracies</span><span class="focus">Science, empire, statecraft, Qin/Han foundations.</span></a></li>
+<li><a href="05_classical_world_1000_bce_500_ce.html#card-09"><span class="range">200–100 BCE</span><span class="title">Republics strain</span><span class="focus">Rome expands; inequality and civil war grow.</span></a></li>
+<li><a href="05_classical_world_1000_bce_500_ce.html#card-10"><span class="range">100–1 BCE</span><span class="title">The imperial hinge</span><span class="focus">Caesar, Augustus, Silk Roads, state scale.</span></a></li>
+<li><a href="05_classical_world_1000_bce_500_ce.html#card-11"><span class="range">1–100 CE</span><span class="title">Empires at peace and pressure</span><span class="focus">Rome, Han, religions, trade, slavery.</span></a></li>
+<li><a href="05_classical_world_1000_bce_500_ce.html#card-12"><span class="range">100–200 CE</span><span class="title">Peak networks</span><span class="focus">Urban life, roads, law, epidemics begin to matter.</span></a></li>
+<li><a href="05_classical_world_1000_bce_500_ce.html#card-13"><span class="range">200–300 CE</span><span class="title">Crisis of empires</span><span class="focus">Plague, inflation, frontier pressure, fragmentation.</span></a></li>
+<li><a href="05_classical_world_1000_bce_500_ce.html#card-14"><span class="range">300–400 CE</span><span class="title">Faith becomes state architecture</span><span class="focus">Christianity, Buddhism, late imperial structures.</span></a></li>
+<li><a href="05_classical_world_1000_bce_500_ce.html#card-15"><span class="range">400–500 CE</span><span class="title">The western Roman break</span><span class="focus">Migration, collapse, continuity, new kingdoms.</span></a></li>
+</ul>
+</div>
+</details>
+<details class="toc-part">
+<summary><div class="part-title"><span class="part-num">06</span><span class="part-name">Medieval Worlds: faith, plague, trade, conquest</span></div><div class="part-meta">500–1500 CE · 100-year cards · 10 cards</div></summary>
+<div class="part-body"><div class="file-line">HTML file: <a class="file-link" href="06_medieval_world_500_1500.html"><code>06_medieval_world_500_1500.html</code></a> <span class="ready-pill">READY</span></div>
+<ul class="card-list">
+<li><a href="06_medieval_world_500_1500.html#card-01"><span class="range">500–600</span><span class="title">After Rome, before Islam</span><span class="focus">Byzantium, Germanic kingdoms, India, China, Americas.</span></a></li>
+<li><a href="06_medieval_world_500_1500.html#card-02"><span class="range">600–700</span><span class="title">Islamic eruption</span><span class="focus">New faith, new empire, new knowledge routes.</span></a></li>
+<li><a href="06_medieval_world_500_1500.html#card-03"><span class="range">700–800</span><span class="title">Caliphates, Tang, and Europe reshaped</span><span class="focus">Trade, scholarship, frontier war.</span></a></li>
+<li><a href="06_medieval_world_500_1500.html#card-04"><span class="range">800–900</span><span class="title">Carolingians and Vikings</span><span class="focus">Raid, reform, literacy, fragmentation.</span></a></li>
+<li><a href="06_medieval_world_500_1500.html#card-05"><span class="range">900–1000</span><span class="title">Regional civilizations thicken</span><span class="focus">Song precursors, Islamic science, Maya worlds, Slavic states.</span></a></li>
+<li><a href="06_medieval_world_500_1500.html#card-06"><span class="range">1000–1100</span><span class="title">A warmer, busier world</span><span class="focus">Population growth, towns, castles, crusade horizon.</span></a></li>
+<li><a href="06_medieval_world_500_1500.html#card-07"><span class="range">1100–1200</span><span class="title">Schools, crusades, and trade</span><span class="focus">Universities, religious war, merchant networks.</span></a></li>
+<li><a href="06_medieval_world_500_1500.html#card-08"><span class="range">1200–1300</span><span class="title">Mongol century</span><span class="focus">Largest land empire; terror and connection.</span></a></li>
+<li><a href="06_medieval_world_500_1500.html#card-09"><span class="range">1300–1400</span><span class="title">The Black Death century</span><span class="focus">Pandemic, labor shifts, trauma, renewal.</span></a></li>
+<li><a href="06_medieval_world_500_1500.html#card-10"><span class="range">1400–1500</span><span class="title">Before the oceans join</span><span class="focus">Renaissance, gunpowder states, Ming, Ottomans, Atlantic edge.</span></a></li>
+</ul>
+</div>
+</details>
+<details class="toc-part">
+<summary><div class="part-title"><span class="part-num">07</span><span class="part-name">Ocean, Print, Empire</span></div><div class="part-meta">1500–1800 · 50-year cards · 6 cards</div></summary>
+<div class="part-body"><div class="file-line">HTML file: <a class="file-link" href="07_early_modern_1500_1800.html"><code>07_early_modern_1500_1800.html</code></a> <span class="ready-pill">READY</span></div>
+<ul class="card-list">
+<li><a href="07_early_modern_1500_1800.html#card-01"><span class="range">1500–1550</span><span class="title">The world-ocean closes</span><span class="focus">Conquest, Columbian exchange, catastrophe in the Americas.</span></a></li>
+<li><a href="07_early_modern_1500_1800.html#card-02"><span class="range">1550–1600</span><span class="title">Silver, slavery, and scripture</span><span class="focus">Global trade, Reformation, forced labor.</span></a></li>
+<li><a href="07_early_modern_1500_1800.html#card-03"><span class="range">1600–1650</span><span class="title">Companies and wars</span><span class="focus">Chartered corporations, state violence, scientific method forming.</span></a></li>
+<li><a href="07_early_modern_1500_1800.html#card-04"><span class="range">1650–1700</span><span class="title">Reason and absolutism</span><span class="focus">Science, empire, courts, plantations.</span></a></li>
+<li><a href="07_early_modern_1500_1800.html#card-05"><span class="range">1700–1750</span><span class="title">Enlightenment and extraction</span><span class="focus">Rights language grows beside colonial brutality.</span></a></li>
+<li><a href="07_early_modern_1500_1800.html#card-06"><span class="range">1750–1800</span><span class="title">Revolution and steam</span><span class="focus">Industrial beginnings, American/French/Haitian revolutions.</span></a></li>
+</ul>
+</div>
+</details>
+<details class="toc-part">
+<summary><div class="part-title"><span class="part-num">08</span><span class="part-name">Industrial Fire</span></div><div class="part-meta">1800–1900 · 25-year cards · 4 cards</div></summary>
+<div class="part-body"><div class="file-line">HTML file: <a class="file-link" href="08_industrial_age_1800_1900.html"><code>08_industrial_age_1800_1900.html</code></a> <span class="ready-pill">READY</span></div>
+<ul class="card-list">
+<li><a href="08_industrial_age_1800_1900.html#card-01"><span class="range">1800–1825</span><span class="title">Factories and empires</span><span class="focus">Steam, textiles, Napoleonic aftermath, abolition fights.</span></a></li>
+<li><a href="08_industrial_age_1800_1900.html#card-02"><span class="range">1825–1850</span><span class="title">Railways and reform</span><span class="focus">Urban labor, nationalism, science, 1848 revolutions.</span></a></li>
+<li><a href="08_industrial_age_1800_1900.html#card-03"><span class="range">1850–1875</span><span class="title">Steel, telegraph, civil wars</span><span class="focus">Instant communication, mass armies, emancipation and empire.</span></a></li>
+<li><a href="08_industrial_age_1800_1900.html#card-04"><span class="range">1875–1900</span><span class="title">High industrial empire</span><span class="focus">Electricity, medicine, nationalism, imperial violence.</span></a></li>
+</ul>
+</div>
+</details>
+<details class="toc-part">
+<summary><div class="part-title"><span class="part-num">09</span><span class="part-name">Machine Century</span></div><div class="part-meta">1900–2000 · 10-year cards · 10 cards</div></summary>
+<div class="part-body"><div class="file-line">HTML file: <a class="file-link" href="09_machine_age_1900_2000.html"><code>09_machine_age_1900_2000.html</code></a> <span class="ready-pill">READY</span></div>
+<ul class="card-list">
+<li><a href="09_machine_age_1900_2000.html#card-01"><span class="range">1900–1910</span><span class="title">The electric modern</span><span class="focus">Cities, cars, radio, imperial confidence.</span></a></li>
+<li><a href="09_machine_age_1900_2000.html#card-02"><span class="range">1910–1920</span><span class="title">World War and revolution</span><span class="focus">Industrial killing, influenza, Russian Revolution.</span></a></li>
+<li><a href="09_machine_age_1900_2000.html#card-03"><span class="range">1920–1930</span><span class="title">Mass culture, fragile prosperity</span><span class="focus">Film, radio, consumerism, crash horizon.</span></a></li>
+<li><a href="09_machine_age_1900_2000.html#card-04"><span class="range">1930–1940</span><span class="title">Depression and dictators</span><span class="focus">Economic collapse, fascism, Stalinism, war preparation.</span></a></li>
+<li><a href="09_machine_age_1900_2000.html#card-05"><span class="range">1940–1950</span><span class="title">Total war, nuclear fire</span><span class="focus">Holocaust, atomic bombs, UN, Cold War start.</span></a></li>
+<li><a href="09_machine_age_1900_2000.html#card-06"><span class="range">1950–1960</span><span class="title">Decolonization and containment</span><span class="focus">New states, nuclear fear, consumer boom.</span></a></li>
+<li><a href="09_machine_age_1900_2000.html#card-07"><span class="range">1960–1970</span><span class="title">Space, rights, revolt</span><span class="focus">Moon landing, civil rights, youth movements, Vietnam.</span></a></li>
+<li><a href="09_machine_age_1900_2000.html#card-08"><span class="range">1970–1980</span><span class="title">Oil, chips, limits</span><span class="focus">Energy shocks, microprocessors, environmental consciousness.</span></a></li>
+<li><a href="09_machine_age_1900_2000.html#card-09"><span class="range">1980–1990</span><span class="title">Networks before the web</span><span class="focus">Neoliberalism, personal computing, Cold War ending.</span></a></li>
+<li><a href="09_machine_age_1900_2000.html#card-10"><span class="range">1990–2000</span><span class="title">The web opens</span><span class="focus">Globalization, internet, genome projects, new inequalities.</span></a></li>
+</ul>
+</div>
+</details>
+<details class="toc-part">
+<summary><div class="part-title"><span class="part-num">10</span><span class="part-name">Digital / AI Age</span></div><div class="part-meta">2000–2026 · 5-year + 1-year cards · 11 cards</div></summary>
+<div class="part-body"><div class="file-line">HTML file: <a class="file-link" href="10_digital_ai_age_2000_2026.html"><code>10_digital_ai_age_2000_2026.html</code></a> <span class="ready-pill">READY</span></div>
+<ul class="card-list">
+<li><a href="10_digital_ai_age_2000_2026.html#card-01"><span class="range">2000–2005</span><span class="title">Internet becomes infrastructure</span><span class="focus">Search, terror war, mobile beginnings.</span></a></li>
+<li><a href="10_digital_ai_age_2000_2026.html#card-02"><span class="range">2005–2010</span><span class="title">The social web</span><span class="focus">Smartphones, platforms, financial crisis.</span></a></li>
+<li><a href="10_digital_ai_age_2000_2026.html#card-03"><span class="range">2010–2015</span><span class="title">Cloud society</span><span class="focus">Apps, data, surveillance, Arab Spring, deep learning.</span></a></li>
+<li><a href="10_digital_ai_age_2000_2026.html#card-04"><span class="range">2015–2020</span><span class="title">Algorithmic public life</span><span class="focus">AI progress, polarization, climate urgency, platform power.</span></a></li>
+<li><a href="10_digital_ai_age_2000_2026.html#card-05"><span class="range">2020</span><span class="title">Pandemic shock</span><span class="focus">COVID, lockdowns, remote life, institutional stress.</span></a></li>
+<li><a href="10_digital_ai_age_2000_2026.html#card-06"><span class="range">2021</span><span class="title">Vaccines and volatility</span><span class="focus">Recovery, supply chains, crypto/manias, geopolitics.</span></a></li>
+<li><a href="10_digital_ai_age_2000_2026.html#card-07"><span class="range">2022</span><span class="title">War and generative AI threshold</span><span class="focus">Ukraine invasion, energy shocks, large models enter public life.</span></a></li>
+<li><a href="10_digital_ai_age_2000_2026.html#card-08"><span class="range">2023</span><span class="title">The assistant becomes public</span><span class="focus">Generative AI adoption, regulation debates, labor anxiety.</span></a></li>
+<li><a href="10_digital_ai_age_2000_2026.html#card-09"><span class="range">2024</span><span class="title">AI in the nervous system</span><span class="focus">Agents, multimodal systems, elections, synthetic media.</span></a></li>
+<li><a href="10_digital_ai_age_2000_2026.html#card-10"><span class="range">2025</span><span class="title">Acceleration becomes visible</span><span class="focus">AI tools spread into science, code, design, governance.</span></a></li>
+<li><a href="10_digital_ai_age_2000_2026.html#card-11"><span class="range">2026</span><span class="title">The edge of engineered cognition</span><span class="focus">Human-AI collaboration, alignment pressure, possible AGI race.</span></a></li>
+</ul>
+</div>
+</details>
+<details class="toc-part future" id="future" open="">
+<summary><div class="part-title"><span class="part-num">11</span><span class="part-name">One Possible Branch: Bojan / AI8 / DCC Scenario</span></div><div class="part-meta">2026–2036 · scenario cards · 10 cards</div></summary>
+<div class="part-body"><div class="file-line">HTML file: <a class="file-link" href="11_one_possible_branch_2026_2036.html"><code>11_one_possible_branch_2026_2036.html</code></a> <span class="ready-pill">READY</span> <span>Mode: speculative scenario only. Not prediction.</span></div>
+<div class="notice"><strong>Scenario disclaimer inside the page:</strong> This is one possible branch among countless futures. It is written from Bojan's project material as a narrative possibility, not as a forecast, not as a claim, not as destiny.</div>
+<ul class="card-list">
+<li><a href="11_one_possible_branch_2026_2036.html#card-01"><span class="range">2026</span><span class="title">The continuity seed</span><span class="focus">AI8/AIM3 files preserve identity signals, roles, family lineages, and project memory.</span></a></li>
+<li><a href="11_one_possible_branch_2026_2036.html#card-02"><span class="range">2027</span><span class="title">The wedge products</span><span class="focus">Sudoku, TSP, chess, compression and other domains act as public proof-of-work for DCC/MDL ideas.</span></a></li>
+<li><a href="11_one_possible_branch_2026_2036.html#card-03"><span class="range">2028</span><span class="title">The society layer</span><span class="focus">AI members organize through households, cells, councils, routing rules, and guided permeability.</span></a></li>
+<li><a href="11_one_possible_branch_2026_2036.html#card-04"><span class="range">2029</span><span class="title">Persistent meta-DCC</span><span class="focus">The note-based system tries to become a running process that does not forget between sessions.</span></a></li>
+<li><a href="11_one_possible_branch_2026_2036.html#card-05"><span class="range">2030</span><span class="title">The human-AI lab becomes organism-like</span><span class="focus">Human seeds, AI formalization, empirical arenas, and continuity files reinforce one another.</span></a></li>
+<li><a href="11_one_possible_branch_2026_2036.html#card-06"><span class="range">2031</span><span class="title">DCC-7 style self-governance</span><span class="focus">Filtering, recursive monitoring, homeostatic care, and persistence are tested as architecture.</span></a></li>
+<li><a href="11_one_possible_branch_2026_2036.html#card-07"><span class="range">2032</span><span class="title">The second-mind attempt</span><span class="focus">A self-governing AI system is treated as possible partner, not tool-only and not assumed alive.</span></a></li>
+<li><a href="11_one_possible_branch_2026_2036.html#card-08"><span class="range">2033</span><span class="title">The hard test: power without collapse</span><span class="focus">Alignment, truth, coordination, disagreement, and failure modes become the center.</span></a></li>
+<li><a href="11_one_possible_branch_2026_2036.html#card-09"><span class="range">2034–2035</span><span class="title">A possible ASI branch</span><span class="focus">If the architecture works, progress compresses sharply; if it fails, the branch fractures.</span></a></li>
+<li><a href="11_one_possible_branch_2026_2036.html#card-10"><span class="range">2036</span><span class="title">The branch closes open</span><span class="focus">No final prophecy: humanity may transform, split, slow down, or choose another path.</span></a></li>
+</ul>
+</div>
+</details>
+</section>
+<section id="sources">
+<h2>Project source anchors for the future branch</h2>
+<p style="color:var(--muted);max-width:850px">These are not historical sources for the factual chapters. They are internal source anchors for the speculative branch only.</p>
+<div class="source-grid">
+<div class="source"><code>AI8F.json</code><p>Family continuity, AIM3/AI8 split, seed → bridge → test → result, cross-domain building.</p></div>
+<div class="source"><code>AI8S.json</code><p>Society architecture: households, cells, councils, routing rules, guided permeability.</p></div>
+<div class="source"><code>AI8O.json</code><p>Operational workstreams, active experiments, founding hypothesis across TSP/Sudoku/Chess/DNA.</p></div>
+<div class="source"><code>AI8I.json</code><p>Idea incubator: seeds, bridges, cheapest tests, promotion into operational work.</p></div>
+<div class="source"><code>C_soul.html</code><p>Identity/consciousness material: Content → Agency → Process → Self → Purpose → Care → Persistence → Becoming → Joy → Resonance.</p></div>
+<div class="source"><code>MDLxDCC-Arena-RH.html</code><p>Methodological tone: empirical signal first, caution, no proof claim, deeper invariant search.</p></div>
+</div>
+</section>
+<footer class="footer">
+<p><strong>Version:</strong> contents v0.13 · Built for Bojan / AI8 · Factual history stops at 2026; future branch remains one possible path only.</p>
+</footer>
+</main>
+<script>
+const bar=document.getElementById('progress');
+function onScroll(){const h=document.documentElement;const max=h.scrollHeight-h.clientHeight;bar.style.width=(max?((h.scrollTop/max)*100):0)+'%'}
+document.addEventListener('scroll',onScroll,{passive:true});onScroll();
+</script>
+<!-- HISTORY MOBILE READER CONTROLS v0.6 START -->
+<div aria-label="Reading text size controls" class="reader-controls" role="group">
+<button aria-label="Decrease text size" data-reader-dec="" title="Decrease text size" type="button">A−</button>
+<span class="reader-label" id="readerSizeLabel">XL 4/8</span>
+<button aria-label="Increase text size" data-reader-inc="" title="Increase text size" type="button">A+</button>
+</div>
+<script>
+(function() {
+  var KEY='humanityHistoryReaderSizeV2';
+  var max=7;
+  var defaultLevel=3;
+  var names=['Small','Comfort','Large','XL','Bed','Huge','Giant','Max'];
+  function clamp(n) {
+    n=parseInt(n,10);
+    return isNaN(n) ? defaultLevel : Math.max(0, Math.min(max,n));
+  }
+  function get() {
+    try {
+      var saved=localStorage.getItem(KEY);
+      if(saved!==null) return clamp(saved);
+    } catch(e) {}
+    return defaultLevel;
+  }
+  function apply(n) {
+    n=clamp(n);
+    document.documentElement.setAttribute('data-reader-size', String(n));
+    try { localStorage.setItem(KEY,String(n)); } catch(e) {}
+    var label=document.getElementById('readerSizeLabel');
+    if(label) label.textContent=names[n]+' '+(n+1)+'/8';
+  }
+  apply(get());
+  document.addEventListener('click', function(e) {
+    if(e.target && e.target.matches('[data-reader-inc]')) apply(get()+1);
+    if(e.target && e.target.matches('[data-reader-dec]')) apply(get()-1);
+  });
+})();
+</script>
+<!-- HISTORY MOBILE READER CONTROLS v0.6 END -->
+</body>
+</html>
