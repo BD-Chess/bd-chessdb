@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<title>Humanity — Dark Timeline Contents v0.16</title>
+<title>Humanity — Dark Timeline Contents v0.16.1</title>
 <style>
 :root{
   --bg:#05070d;
@@ -178,18 +178,64 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 @media print{body{background:#fff!important;color:#111!important}.topbar,.progress,.reader-controls,.back-top,.hero,.footer-nav{display:none!important}.contents,.sources,.people{display:block!important}.contents{page-break-before:always;break-before:page}.sources{page-break-before:always;break-before:page}.wrap,.wrapper{max-width:none!important;padding:0!important}.a4-card{background:#fff!important;color:#111!important;box-shadow:none!important;border:0!important;border-radius:0!important;page-break-after:always;break-after:page}.a4-card *,.people *,.sources *,.contents *{color:#111!important}.people,.sources,.contents{background:#fff!important;border:1px solid #ccc!important;box-shadow:none!important;break-inside:avoid}.person-card,.source{background:#fff!important;border:1px solid #ddd!important}.mini,.pattern,.bridge,.focus,.balance-note,.fast-path,.omissions-note,.climate-thread{background:#fff!important;color:#111!important;border-color:#ccc!important}.src-ref,a{color:#111!important;text-decoration:underline!important}}
 /* === HISTORY v0.16 PUBLIC RELEASE POLISH END === */
 
+
+/* === HISTORY v0.16.1 INDEX MICRO PATCH START === */
+.method-2-3-grid,
+.reader-link-grid.trust-2-3-grid{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:14px;
+}
+.method-2-3-grid > *,
+.reader-link-grid.trust-2-3-grid > *{
+  grid-column:span 2;
+}
+.method-2-3-grid > *:nth-child(-n+2),
+.reader-link-grid.trust-2-3-grid > *:nth-child(-n+2){
+  grid-column:span 3;
+}
+@media(max-width:900px){
+  .method-2-3-grid,
+  .reader-link-grid.trust-2-3-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .method-2-3-grid > *,
+  .method-2-3-grid > *:nth-child(-n+2),
+  .reader-link-grid.trust-2-3-grid > *,
+  .reader-link-grid.trust-2-3-grid > *:nth-child(-n+2){
+    grid-column:span 1;
+  }
+  .method-2-3-grid > *:last-child,
+  .reader-link-grid.trust-2-3-grid > *:last-child{
+    grid-column:1 / -1;
+  }
+}
+@media(max-width:700px){
+  .method-2-3-grid,
+  .reader-link-grid.trust-2-3-grid{
+    grid-template-columns:1fr;
+  }
+  .method-2-3-grid > *,
+  .method-2-3-grid > *:last-child,
+  .reader-link-grid.trust-2-3-grid > *,
+  .reader-link-grid.trust-2-3-grid > *:last-child{
+    grid-column:1 / -1;
+  }
+}
+/* === HISTORY v0.16.1 INDEX MICRO PATCH END === */
+
 </style>
 </head>
 <body>
 <div class="progress" id="progress"></div>
-<header class="topbar"><div class="topbar-inner"><div class="brand">Humanity · Dark Timeline · Contents v0.16</div><span class="version-badge">v0.16</span><nav class="nav"><a aria-label="About" href="about.html">About</a><a aria-label="Methodology" href="methodology.html">Methodology</a><a aria-label="Timeline" href="timeline.html">Timeline</a><a aria-label="Glossary" href="glossary.html">Glossary</a><a aria-label="Changelog" href="changelog.html">Changelog</a><a aria-label="Contents" href="#contents">Contents</a><a aria-label="Future Branch" href="#future">Future Branch</a><a aria-label="Project Sources" href="#sources">Project Sources</a></nav></div></header>
+<header class="topbar"><div class="topbar-inner"><div class="brand">Humanity · Dark Timeline · Contents v0.16.1</div><span class="version-badge">v0.16.1</span><nav class="nav"><a aria-label="About" href="about.html">About</a><a aria-label="Methodology" href="methodology.html">Methodology</a><a aria-label="Timeline" href="timeline.html">Timeline</a><a aria-label="Glossary" href="glossary.html">Glossary</a><a aria-label="Changelog" href="changelog.html">Changelog</a><a aria-label="Contents" href="#contents">Contents</a><a aria-label="Future Branch" href="#future">Future Branch</a><a aria-label="Project Sources" href="#sources">Project Sources</a></nav></div></header>
 <main class="wrap">
 <section class="hero" id="top">
 <div>
 <div class="kicker">A historical atlas in adaptive A4 cards</div>
 <h1>Humanity:<br/><em>from first fire to possible second mind</em></h1>
 <p class="subtitle">A dark-theme HTML book that tells the human story with honest scale: slow deep time first, then agriculture, cities, empires, machines, networks, AI, and finally one possible future branch using Bojan's AI8 / DCC material as a worked example of wider human-AI questions.</p>
-<div class="notice"><strong>Future boundary:</strong> the last section is not a prediction. It is one single possible branch among countless possible futures. It may happen, partially happen, or not happen at all.</div><div class="version-line">v0.16 · public-release polish + rebalanced Part 02 / Part 08 · built 2026-05-05</div><div class="reader-trust-bar"><a aria-label="Methodology" href="methodology.html">Methodology</a><a aria-label="About" href="about.html">About</a><a aria-label="Timeline map" href="timeline.html">Timeline map</a><a aria-label="Glossary" href="glossary.html">Glossary</a><a aria-label="Changelog" href="changelog.html">Changelog</a><span>Factual history stops at 2026</span></div>
+<div class="notice"><strong>Future boundary:</strong> the last section is not a prediction. It is one single possible branch among countless possible futures. It may happen, partially happen, or not happen at all.</div><div class="version-line">v0.16.1 · index layout/collapse micro-patch · built 2026-05-05</div><div class="reader-trust-bar"><a aria-label="Methodology" href="methodology.html">Methodology</a><a aria-label="About" href="about.html">About</a><a aria-label="Timeline map" href="timeline.html">Timeline map</a><a aria-label="Glossary" href="glossary.html">Glossary</a><a aria-label="Changelog" href="changelog.html">Changelog</a><span>Factual history stops at 2026</span></div>
 <div class="hero-grid">
 <div class="stat"><div class="stat-label">Total factual cards</div><div class="stat-value cyan">122</div></div>
 <div class="stat"><div class="stat-label">Future scenario cards</div><div class="stat-value rose">18</div></div>
@@ -200,7 +246,7 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 </section>
 <section id="method">
 <h2>Method of the book</h2>
-<div class="grid">
+<div class="grid method-2-3-grid">
 <div class="card"><div class="tag">Scale rule</div><p>History is not evenly dense. The book starts with 10,000-year cards, then 1,000-year cards for the late Ice Age and agriculture, 100-year cards for ancient/classical/medieval history, 50-year cards for early modernity, 20-year cards for the nineteenth century, 10-year cards for the twentieth, and 5-year / 1-year cards for the digital-AI age.</p></div>
 <div class="card"><div class="tag">A4 card rule</div><p>Each card is one printable A4 narrative unit: human state, good, bad, deep pattern, and bridge to the next card.</p></div>
 <div class="card"><div class="tag">Tone rule</div><p>Realistic, not triumphant. Every era carries creativity and cruelty, cooperation and domination, medicine and war, beauty and collapse.</p></div>
@@ -212,10 +258,10 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 <div class="method-row"><strong>Layer 3</strong><span>A4 card / time slice inside that chapter.</span></div>
 </div>
 </section>
-<section id="reader-trust"><h2>Reader trust layer</h2><div class="reader-link-grid"><a aria-label="Methodology How scale, cards, sources, omissions, people, and scenario boundaries work." class="reader-link-card" href="methodology.html"><b>Methodology</b><span>How scale, cards, sources, omissions, people, and scenario boundaries work.</span></a><a aria-label="About Project context, Bojan / BD, AI8 / DCC, and why Part 11 exists." class="reader-link-card" href="about.html"><b>About</b><span>Project context, Bojan / BD, AI8 / DCC, and why Part 11 exists.</span></a><a aria-label="Timeline map A logarithmic overview of the accelerating frame rate." class="reader-link-card" href="timeline.html"><b>Timeline map</b><span>A logarithmic overview of the accelerating frame rate.</span></a><a aria-label="Changelog Version memory for patches and public release changes." class="reader-link-card" href="changelog.html"><b>Changelog</b><span>Version memory for patches and public release changes.</span></a><a aria-label="Glossary Shared terms: adaptive resolution, A4 card, Axial Age, AGI/ASI, DCC, AI8, scenario boundary, and more." class="reader-link-card" href="glossary.html"><b>Glossary</b><span>Shared terms: adaptive resolution, A4 card, Axial Age, AGI/ASI, DCC, AI8, scenario boundary, and more.</span></a></div><div class="scope-note"><strong>Scope note:</strong> this is a serious narrative atlas, not a complete academic encyclopedia. It compresses humanity into readable A4 cards. Some regional histories — especially Oceania, Southeast Asia, pre-colonial North America, interior Africa, and local Latin American continuities — need dedicated volumes for full treatment. The future branch remains scenario mode only.</div></section>
+<section id="reader-trust"><h2>Reader trust layer</h2><div class="reader-link-grid trust-2-3-grid"><a aria-label="Methodology How scale, cards, sources, omissions, people, and scenario boundaries work." class="reader-link-card" href="methodology.html"><b>Methodology</b><span>How scale, cards, sources, omissions, people, and scenario boundaries work.</span></a><a aria-label="About Project context, Bojan / BD, AI8 / DCC, and why Part 11 exists." class="reader-link-card" href="about.html"><b>About</b><span>Project context, Bojan / BD, AI8 / DCC, and why Part 11 exists.</span></a><a aria-label="Timeline map A logarithmic overview of the accelerating frame rate." class="reader-link-card" href="timeline.html"><b>Timeline map</b><span>A logarithmic overview of the accelerating frame rate.</span></a><a aria-label="Changelog Version memory for patches and public release changes." class="reader-link-card" href="changelog.html"><b>Changelog</b><span>Version memory for patches and public release changes.</span></a><a aria-label="Glossary Shared terms: adaptive resolution, A4 card, Axial Age, AGI/ASI, DCC, AI8, scenario boundary, and more." class="reader-link-card" href="glossary.html"><b>Glossary</b><span>Shared terms: adaptive resolution, A4 card, Axial Age, AGI/ASI, DCC, AI8, scenario boundary, and more.</span></a></div><div class="scope-note"><strong>Scope note:</strong> this is a serious narrative atlas, not a complete academic encyclopedia. It compresses humanity into readable A4 cards. Some regional histories — especially Oceania, Southeast Asia, pre-colonial North America, interior Africa, and local Latin American continuities — need dedicated volumes for full treatment. The future branch remains scenario mode only.</div></section>
 <section class="contents" id="contents">
 <h2>Contents</h2><div class="search-box"><label for="historySearch">Search cards and chapters</label><input autocomplete="off" id="historySearch" placeholder="Try: plague, fire, Rome, AI, justice, China, agriculture…" type="search"/><div class="search-status" id="searchStatus">Showing all contents.</div></div>
-<details class="toc-part" open="">
+<details class="toc-part" data-always-open="true" open>
 <summary><div class="part-title"><span class="part-num">00</span><span class="part-name">Entrance: how to read humanity</span></div><div class="part-meta">index + method · 0 cards</div></summary>
 <div class="part-body"><div class="file-line">HTML file: <a aria-label="index.html" href="index.html"><code>index.html</code></a> <span>Purpose: cover, navigation, legend, source boundary, print/export controls.</span></div>
 <ul class="card-list">
@@ -225,7 +271,7 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 </ul>
 </div>
 </details>
-<details class="toc-part" open="">
+<details class="toc-part">
 <summary><div class="part-title"><span class="part-num">01</span><span class="part-name">Deep Humanity: the animal who became symbolic</span></div><div class="part-meta">300,000–20,000 BCE · 10,000-year cards · 28 cards</div></summary>
 <div class="part-body"><div class="file-line">HTML file: <a aria-label="01_deep_humanity_300000_20000_bce.html" class="file-link" href="01_deep_humanity_300000_20000_bce.html"><code>01_deep_humanity_300000_20000_bce.html</code></a> <span class="ready-pill">READY</span></div>
 <ul class="card-list">
@@ -280,7 +326,7 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 </ul>
 </div>
 </details>
-<details class="toc-part" open="">
+<details class="toc-part">
 <summary><div class="part-title"><span class="part-num">04</span><span class="part-name">Ancient World: writing, kings, bronze networks</span></div><div class="part-meta">3,000–1,000 BCE · 100-year cards · 20 cards</div></summary>
 <div class="part-body"><div class="file-line">HTML file: <a aria-label="04_ancient_world_3000_1000_bce.html" class="file-link" href="04_ancient_world_3000_1000_bce.html"><code>04_ancient_world_3000_1000_bce.html</code></a> <span class="ready-pill">READY</span></div>
 <ul class="card-list">
@@ -400,7 +446,7 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 </ul>
 </div>
 </details>
-<details class="toc-part future" id="future" open="">
+<details class="toc-part future" id="future">
 <summary><div class="part-title"><span class="part-num">11</span><span class="part-name">One Possible Branch: Humanity, Justice, and the Second Mind <span class="scenario-pill">scenario module</span></span></div><div class="part-meta">2026–2036 · scenario only · 18 cards</div></summary>
 <div class="part-body"><div class="file-line">HTML file: <a aria-label="11_one_possible_branch_2026_2036.html" class="file-link" href="11_one_possible_branch_2026_2036.html"><code>11_one_possible_branch_2026_2036.html</code></a> <span class="ready-pill">READY</span> <span>Mode: speculative scenario only. Not prediction. AI8/DCC is a worked example, not the only branch.</span></div>
 <div class="notice"><strong>Scenario disclaimer inside the page:</strong> This is one possible branch among countless futures. It is written from Bojan's project material as a narrative possibility, not as a forecast, not as a claim, not as destiny.</div>
@@ -424,12 +470,43 @@ const bar=document.getElementById('progress');
 function onScroll(){const h=document.documentElement;const max=h.scrollHeight-h.clientHeight;bar.style.width=(max?((h.scrollTop/max)*100):0)+'%'}
 document.addEventListener('scroll',onScroll,{passive:true});onScroll();
 </script>
+
+<script>
+(function(){
+  function initContentsCollapse(){
+    var parts=[].slice.call(document.querySelectorAll('.toc-part'));
+    if(!parts.length) return;
+    parts.forEach(function(part, idx){
+      if(idx===0){
+        part.open=true;
+        part.setAttribute('data-always-open','true');
+        if(!part.__historyAlwaysOpenBound){
+          part.__historyAlwaysOpenBound=true;
+          part.addEventListener('toggle', function(){
+            if(!part.open){
+              requestAnimationFrame(function(){ part.open=true; });
+            }
+          });
+        }
+      }else{
+        part.open=false;
+      }
+    });
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded', initContentsCollapse);
+  }else{
+    initContentsCollapse();
+  }
+})();
+</script>
+
 <script>
 function filterHistoryContents(){
   const q=(document.getElementById('historySearch')?.value||'').trim().toLowerCase();
   const parts=[...document.querySelectorAll('.toc-part')];
   let visibleCards=0, visibleParts=0;
-  parts.forEach(part=>{
+  parts.forEach((part,idx)=>{
     let partText=(part.querySelector('summary')?.innerText||'').toLowerCase();
     let lis=[...part.querySelectorAll('.card-list li')];
     let any=false;
@@ -439,8 +516,9 @@ function filterHistoryContents(){
       if(match){any=true; visibleCards++;}
     });
     if(!lis.length && (!q || part.innerText.toLowerCase().includes(q))) any=true;
+    if(idx===0){any=true; part.open=true;}
     part.classList.toggle('is-hidden', !any);
-    if(any){visibleParts++; if(q) part.open=true;}
+    if(any){visibleParts++; if(q || idx===0) part.open=true;}
   });
   const status=document.getElementById('searchStatus');
   if(status) status.textContent = q ? `Showing ${visibleCards} matching cards in ${visibleParts} section(s).` : 'Showing all contents.';
