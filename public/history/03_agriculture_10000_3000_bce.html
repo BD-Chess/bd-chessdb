@@ -28,29 +28,33 @@ a{color:inherit}.progress{position:fixed;top:0;left:0;height:2px;background:line
 @media(max-width:520px){.hero-grid{grid-template-columns:1fr}h1{font-size:3rem}.a4-card h2{font-size:2.25rem}}
 @page{size:A4;margin:0}@media print{body{background:#020409;color:var(--text);print-color-adjust:exact;-webkit-print-color-adjust:exact}.topbar,.progress,.hero,.intro,.contents,.footer-nav{display:none}.wrap{max-width:none;padding:0}.cards{padding:0}.a4-card{width:210mm;min-height:297mm;max-width:none;margin:0;padding:18mm 17mm;border-radius:0;box-shadow:none;page-break-after:always}.sources{page-break-before:always;padding:18mm}.source{break-inside:avoid}}
 
-/* === HISTORY MOBILE READER CONTROLS v0.4 START === */
-:root, html[data-reader-size="2"] {
-  --hist-desktop-body: 19px;
-  --hist-reader-body: 23px;
-  --hist-reader-text: 23px;
-  --hist-reader-small: 16px;
-  --hist-reader-h1: 50px;
-  --hist-reader-h2: 35px;
-  --hist-reader-h3: 27px;
-  --hist-reader-card-pad-x: 20px;
+/* === HISTORY MOBILE READER CONTROLS v0.6 START === */
+:root {
+  --hist-desktop-body:21px;
+  --hist-reader-body:25.5px;
+  --hist-reader-text:25.5px;
+  --hist-reader-small:17.5px;
+  --hist-reader-h1:56px;
+  --hist-reader-h2:40px;
+  --hist-reader-h3:30px;
+  --hist-reader-card-pad-x:22px;
 }
 html[data-reader-size="0"] { --hist-desktop-body:17px; --hist-reader-body:20px; --hist-reader-text:20px; --hist-reader-small:14px; --hist-reader-h1:40px; --hist-reader-h2:29px; --hist-reader-h3:23px; --hist-reader-card-pad-x:16px; }
 html[data-reader-size="1"] { --hist-desktop-body:18px; --hist-reader-body:21.5px; --hist-reader-text:21.5px; --hist-reader-small:15px; --hist-reader-h1:45px; --hist-reader-h2:32px; --hist-reader-h3:25px; --hist-reader-card-pad-x:18px; }
+html[data-reader-size="2"] { --hist-desktop-body:19px; --hist-reader-body:23px; --hist-reader-text:23px; --hist-reader-small:16px; --hist-reader-h1:50px; --hist-reader-h2:35px; --hist-reader-h3:27px; --hist-reader-card-pad-x:20px; }
 html[data-reader-size="3"] { --hist-desktop-body:21px; --hist-reader-body:25.5px; --hist-reader-text:25.5px; --hist-reader-small:17.5px; --hist-reader-h1:56px; --hist-reader-h2:40px; --hist-reader-h3:30px; --hist-reader-card-pad-x:22px; }
 html[data-reader-size="4"] { --hist-desktop-body:23px; --hist-reader-body:28px; --hist-reader-text:28px; --hist-reader-small:19px; --hist-reader-h1:62px; --hist-reader-h2:45px; --hist-reader-h3:34px; --hist-reader-card-pad-x:24px; }
+html[data-reader-size="5"] { --hist-desktop-body:25px; --hist-reader-body:31px; --hist-reader-text:31px; --hist-reader-small:20.5px; --hist-reader-h1:68px; --hist-reader-h2:50px; --hist-reader-h3:37px; --hist-reader-card-pad-x:26px; }
+html[data-reader-size="6"] { --hist-desktop-body:27px; --hist-reader-body:34px; --hist-reader-text:34px; --hist-reader-small:22px; --hist-reader-h1:74px; --hist-reader-h2:55px; --hist-reader-h3:40px; --hist-reader-card-pad-x:28px; }
+html[data-reader-size="7"] { --hist-desktop-body:29px; --hist-reader-body:38px; --hist-reader-text:38px; --hist-reader-small:24px; --hist-reader-h1:82px; --hist-reader-h2:62px; --hist-reader-h3:45px; --hist-reader-card-pad-x:30px; }
 html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
-body { font-size:var(--hist-desktop-body,18px) !important; }
+body { font-size:var(--hist-desktop-body,21px) !important; }
 .reader-controls { position:fixed; right:max(12px,env(safe-area-inset-right)); bottom:max(14px,env(safe-area-inset-bottom)); z-index:2147483000; display:flex; align-items:center; gap:8px; padding:8px; border:1px solid rgba(105,215,255,.28); border-radius:999px; background:rgba(5,7,13,.88); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); box-shadow:0 18px 55px rgba(0,0,0,.42); color:#e7eaf2; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"JetBrains Mono",monospace; }
 .reader-controls button { min-width:44px; min-height:44px; border:1px solid rgba(105,215,255,.28); border-radius:999px; background:rgba(105,215,255,.08); color:#69d7ff; font:800 18px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,"JetBrains Mono",monospace; cursor:pointer; touch-action:manipulation; }
 .reader-controls button:hover,.reader-controls button:focus-visible { outline:none; background:rgba(105,215,255,.18); border-color:rgba(105,215,255,.55); }
-.reader-controls .reader-label { min-width:78px; text-align:center; color:rgba(231,234,242,.82); font-size:12px; letter-spacing:.08em; text-transform:uppercase; user-select:none; }
+.reader-controls .reader-label { min-width:96px; text-align:center; color:rgba(231,234,242,.82); font-size:12px; letter-spacing:.08em; text-transform:uppercase; user-select:none; }
 @media(max-width:760px) {
-  body { font-size:var(--hist-reader-body) !important; line-height:1.78 !important; padding-bottom:86px; }
+  body { font-size:var(--hist-reader-body) !important; line-height:1.78 !important; padding-bottom:92px; }
   .wrap,.wrapper { padding-left:16px !important; padding-right:16px !important; }
   p,li,.subtitle,.notice,.warning,.callout,.card p,.panel p,.source p,.stat,.hero-stat,.part-body,.file-line,.state p,.story p,.focus,.pattern,.bridge,.mini div:last-child,.gb,.narrative,.card-list .focus { font-size:var(--hist-reader-text) !important; line-height:1.76 !important; }
   .nav a,.brand,.kicker,.eyebrow,.range,.card-num,.confidence,.card-top,.stat-label,.part-num,.part-meta,.source a,.sid,.sources-inline,code,.tag,.label,.tr,.toc-card .tr { font-size:var(--hist-reader-small) !important; line-height:1.55 !important; letter-spacing:.08em !important; }
@@ -64,11 +68,12 @@ body { font-size:var(--hist-desktop-body,18px) !important; }
   .topbar-inner { gap:8px !important; }
   .reader-controls { left:50%; right:auto; transform:translateX(-50%); bottom:max(12px,env(safe-area-inset-bottom)); padding:8px 10px; }
   .reader-controls button { min-width:48px; min-height:48px; font-size:20px; }
-  .reader-controls .reader-label { min-width:92px; font-size:13px; }
+  .reader-controls .reader-label { min-width:112px; font-size:13px; }
 }
-@media(max-width:430px) { .wrap,.wrapper { padding-left:14px !important; padding-right:14px !important; } .hero { padding-left:0 !important; padding-right:0 !important; } .reader-controls { gap:6px; } .reader-controls .reader-label { min-width:84px; } }
+@media(max-width:430px) { .wrap,.wrapper { padding-left:14px !important; padding-right:14px !important; } .hero { padding-left:0 !important; padding-right:0 !important; } .reader-controls { gap:6px; } .reader-controls .reader-label { min-width:102px; } }
 @media print { .reader-controls { display:none !important; } }
-/* === HISTORY MOBILE READER CONTROLS v0.4 END === */
+/* === HISTORY MOBILE READER CONTROLS v0.6 END === */
+
 
 </style>
 </head>
@@ -223,23 +228,45 @@ body { font-size:var(--hist-desktop-body,18px) !important; }
 </main>
 <script>const bar=document.getElementById('progress');addEventListener('scroll',()=>{const h=document.documentElement;const max=h.scrollHeight-h.clientHeight;bar.style.width=(max?((h.scrollTop/max)*100):0)+'%';},{passive:true});</script>
 
-<!-- HISTORY MOBILE READER CONTROLS v0.4 START -->
+<!-- HISTORY MOBILE READER CONTROLS v0.6 START -->
 <div class="reader-controls" role="group" aria-label="Reading text size controls">
-  <button type="button" data-reader-dec aria-label="Decrease text size">A−</button>
-  <span class="reader-label" id="readerSizeLabel">Large 3/5</span>
-  <button type="button" data-reader-inc aria-label="Increase text size">A+</button>
+  <button type="button" data-reader-dec aria-label="Decrease text size" title="Decrease text size">A−</button>
+  <span class="reader-label" id="readerSizeLabel">XL 4/8</span>
+  <button type="button" data-reader-inc aria-label="Increase text size" title="Increase text size">A+</button>
 </div>
 <script>
 (function() {
-  var KEY='humanityHistoryReaderSize'; var max=4; var names=['Small','Comfort','Large','XL','Bed'];
-  function clamp(n) { n=parseInt(n,10); return isNaN(n) ? 2 : Math.max(0, Math.min(max,n)); }
-  function get() { try { return clamp(localStorage.getItem(KEY)); } catch(e) { return 2; } }
-  function apply(n) { n=clamp(n); document.documentElement.setAttribute('data-reader-size', String(n)); try { localStorage.setItem(KEY,String(n)); } catch(e) {} var label=document.getElementById('readerSizeLabel'); if(label) label.textContent=names[n]+' '+(n+1)+'/5'; }
+  var KEY='humanityHistoryReaderSizeV2';
+  var max=7;
+  var defaultLevel=3;
+  var names=['Small','Comfort','Large','XL','Bed','Huge','Giant','Max'];
+  function clamp(n) {
+    n=parseInt(n,10);
+    return isNaN(n) ? defaultLevel : Math.max(0, Math.min(max,n));
+  }
+  function get() {
+    try {
+      var saved=localStorage.getItem(KEY);
+      if(saved!==null) return clamp(saved);
+    } catch(e) {}
+    return defaultLevel;
+  }
+  function apply(n) {
+    n=clamp(n);
+    document.documentElement.setAttribute('data-reader-size', String(n));
+    try { localStorage.setItem(KEY,String(n)); } catch(e) {}
+    var label=document.getElementById('readerSizeLabel');
+    if(label) label.textContent=names[n]+' '+(n+1)+'/8';
+  }
   apply(get());
-  document.addEventListener('click', function(e) { if(e.target && e.target.matches('[data-reader-inc]')) apply(get()+1); if(e.target && e.target.matches('[data-reader-dec]')) apply(get()-1); });
+  document.addEventListener('click', function(e) {
+    if(e.target && e.target.matches('[data-reader-inc]')) apply(get()+1);
+    if(e.target && e.target.matches('[data-reader-dec]')) apply(get()-1);
+  });
 })();
 </script>
-<!-- HISTORY MOBILE READER CONTROLS v0.4 END -->
+<!-- HISTORY MOBILE READER CONTROLS v0.6 END -->
+
 
 </body>
 </html>
