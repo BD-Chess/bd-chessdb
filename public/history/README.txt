@@ -1,8 +1,8 @@
-Humanity Dark Timeline — v0.16
+Humanity Dark Timeline — v0.16.3
 
 Install: extract this ZIP inside your /bd/ folder so it creates /bd/history/. Open /bd/history/index.html.
 
-v0.16 adds / changes:
+v0.16 base adds / changes:
 - Part 02 rebalanced from 5 cards to 10 cards (1,000 years per card)
 - Part 08 rebalanced from 4 cards to 5 cards (20 years per card)
 - glossary.html added
@@ -17,3 +17,15 @@ v0.16 adds / changes:
 - mobile A− / A+ reader controls preserved, 8 levels
 
 Boundary: factual history stops at 2026. Part 11 is scenario only: one possible branch among countless.
+
+
+v0.16.2 index micro-patch:
+- history/index.html only
+- Method section layout refined
+- Project source anchor cards made active links to existing CRP pages
+
+v0.16.3 rhythm patch:
+- Part 01 Deep Humanity reduced from 28 cards to 14 cards.
+- Resolution changed from 10,000 years/card to 20,000 years/card.
+- Index, timeline, methodology, manifest and changelog updated.
+- Chapter files 02-11 unchanged.
