@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MDLxDCC Arena — Riemann Hypothesis / Prime Gaps v0.8</title>
+<title>MDLxDCC Arena — Riemann Hypothesis / Prime Gaps v0.10</title>
 <style>
 :root{
   --bg:#0a0a14; --card:#10101e; --card2:#0d1324; --panel:#11172a; --text:#d8dceb; --dim:#9da4bd; --muted:#69708b;
@@ -47,7 +47,9 @@ h1{font-size:clamp(2.25rem,5.6vw,4.55rem);line-height:1.02;margin:0 0 14px;color
     <a href="MDLxDCC-arena-millennium.html">Millennium</a>
     <a href="#10-e2-sea-partial-results-stronger-controls-and-scaling">SEA Results</a>
     <a href="#19-inverse-generator-hypothesis">Inverse Generator</a>
-    <a href="#20-rh-arena-v02b-to-v03-transition">v0.3 Transition</a>
+    <a href="#20-rh-arena-v03-results">v0.3 Results</a>
+    <a href="#21-rh-arena-v04-results">v0.4 Results</a>
+    <a href="#22-rh-arena-v05-smoke-results">v0.5 Smoke</a>
     <a href="#18-two-track-roadmap-rh-proof-path-and-mdlxdcc-native-invariant">Roadmap</a>
   </div>
 </div></div>
@@ -55,27 +57,27 @@ h1{font-size:clamp(2.25rem,5.6vw,4.55rem);line-height:1.02;margin:0 0 14px;color
 <header class="hero" id="top">
   <div class="kicker">Active formal frontier arena</div>
   <h1>Prime Gaps Through the 8Z / DCC Lens</h1>
-  <div class="subtitle">Prime gaps as a measurable information trace: from LZ76 compression signal to wheel/Markov controls, v0.3 generator diagnostics, invariant candidates, and a three-track RH + MDLxDCC roadmap.</div>
+  <div class="subtitle">Prime gaps as a measurable information trace: from LZ76 compression signal to wheel/Markov controls, v0.3 baseline diagnostics, v0.4 Markov2-floor generator results, v0.5 smoke ablation, invariant candidates, and a three-track RH + MDLxDCC roadmap.</div>
   <div class="meta">
 <strong>Author:</strong> Bojan Dobrečevič (BD), with AI-assisted synthesis (GPT, Claude, DeepSeek)<br/>
-<strong>Version:</strong> v0.8 RH Arena v0.3 result update · <strong>Date:</strong> May 4, 2026<br/>
-<strong>Status:</strong> Preliminary empirical — E1/E2/SEA analyzed, inverse-generator layer added, v0.3 1M Arena run analyzed<br/>
+<strong>Version:</strong> v0.10 RH Arena v0.5 smoke-ablation update · <strong>Date:</strong> May 5, 2026<br/>
+<strong>Status:</strong> Preliminary empirical — E1/E2/SEA analyzed, v0.3/v0.4 preserved, v0.5 120k smoke completed<br/>
 <strong>Project context:</strong> 8Z / MDL / DCC cross-domain research program
     </div>
-  <div class="pill-row"><span class="pill active">ACTIVE</span><span class="pill gold">Final E2 / SEA</span><span class="pill purple">Inverse generator arena</span><span class="pill">v0.3 1M analyzed</span></div>
+  <div class="pill-row"><span class="pill active">ACTIVE</span><span class="pill gold">Final E2 / SEA</span><span class="pill purple">Inverse generator arena</span><span class="pill">v0.4 1M analyzed</span><span class="pill active">Markov2 floor breached</span><span class="pill gold">v0.5 smoke complete</span></div>
 </header>
 
 <div class="status-callout">
-<strong>Working status:</strong> E1, E2/SEA, the 1M v0.2b Arena, and the 1M v0.3 Arena run are now analyzed. The v0.3 run used <strong>1,000,000 primes</strong>, <strong>400 trials</strong>, <strong>50,000-token windows</strong>, and <strong>10 workers</strong>. It completed <strong>2,200 window tasks</strong> and <strong>88 generator tasks</strong>. The main result is sharper than before: raw <code>gap</code>/<code>gap_div2</code> still survive shuffle, block, wheel6, Markov1, and wheel-aware Cramér controls, but <strong>Markov2 remains the hard boundary</strong>. With predictive-bits scoring, <code>markov2</code> now wins the raw-gap generator arena, while <code>hybrid_dcc</code> moves to second place but does not yet beat the Markov2 baseline. This remains an empirical signal/generator study, not an RH proof.
+<strong>Working status:</strong> E1, E2/SEA, v0.3, v0.4, and the first <strong>v0.5 smoke-ablation run</strong> are now analyzed. The v0.5 smoke used <strong>120,000 primes</strong>, <strong>60,000 train primes</strong>, <strong>20,000-token windows</strong>, <strong>50 trials</strong>, and <strong>1 worker</strong>. It completed <strong>120 window tasks</strong> and <strong>544 generator replicates</strong> cleanly. The sensor layer still says: raw <code>gap</code>/<code>gap_div2</code> survives shuffle, wheel6, Markov1, and wheel-aware local Cramér controls, while <strong>Markov2 remains the hard raw-gap LZ-control boundary</strong>. The generator layer adds a sharper v0.5 ablation signal: at 120k scale, <code>density_markov1</code> beats <code>markov2</code> for raw <code>gap</code>/<code>gap_div2</code> across main, early, mid, and late splits; <code>variable_markov</code> wins <code>gap_mod6</code>; and the leakage guard passes for all safe density generators while deliberately flagging oracle diagnostics. This remains an empirical signal/generator study, not an RH proof.
     </div>
 
 <section class="metric-grid" aria-label="Key results">
-  <div class="metric-card green"><div class="metric-label">v0.3 run</div><div class="metric-value">Completed</div><div class="metric-note">1M primes · 400 trials · 2,200 window tasks · 88 generators</div></div>
-  <div class="metric-card gold"><div class="metric-label">Raw gap vs Markov1</div><div class="metric-value">z −11.35</div><div class="metric-note">20/20 windows negative · Δ −204.54 · p floor 0.00249</div></div>
-  <div class="metric-card purple"><div class="metric-label">Raw gap vs Markov2</div><div class="metric-value">Boundary</div><div class="metric-note">z +2.59 · only 1/20 windows negative · signal absorbed/reversed</div></div>
-  <div class="metric-card"><div class="metric-label">Generator winner</div><div class="metric-value">Markov2</div><div class="metric-note">raw gap and gap_div2; hybrid_dcc second, not yet better</div></div>
-  <div class="metric-card green"><div class="metric-label">Stable candidates</div><div class="metric-value">gap_mod</div><div class="metric-note">strongest motif families are residue/gap-class patterns, not raw-gap formulas yet</div></div>
-  <div class="metric-card gold"><div class="metric-label">Boundary</div><div class="metric-value">No proof</div><div class="metric-note">Signal/generator/invariant candidates only; no RH proof claim</div></div>
+  <div class="metric-card green"><div class="metric-label">v0.5 smoke</div><div class="metric-value">Clean</div><div class="metric-note">120k primes · 50 trials · 120 windows · 544 generator replicates · 1 worker</div></div>
+  <div class="metric-card purple"><div class="metric-label">Sensor boundary</div><div class="metric-value">Markov2</div><div class="metric-note">raw gap vs Markov2: Δ +25.79 · z +2.19 · only 1/6 windows negative</div></div>
+  <div class="metric-card green"><div class="metric-label">Raw-gap ablation</div><div class="metric-value">Density+M1</div><div class="metric-note">density_markov1 beats Markov2 on gap/gap_div2 across all four splits</div></div>
+  <div class="metric-card gold"><div class="metric-label">gap_mod6 winner</div><div class="metric-value">VarMarkov</div><div class="metric-note">variable_markov beats Markov2 by −5,854 on main gap_mod6 holdout</div></div>
+  <div class="metric-card green"><div class="metric-label">Leakage guard</div><div class="metric-value">Passed</div><div class="metric-note">safe density generators pass; oracle diagnostic is correctly flagged</div></div>
+  <div class="metric-card"><div class="metric-label">Boundary</div><div class="metric-value">No proof</div><div class="metric-note">Smoke-scale ablation only; next test is 1M/2M scaling</div></div>
 </section>
 
 <nav class="toc" id="contents">
@@ -164,6 +166,29 @@ h1{font-size:clamp(2.25rem,5.6vw,4.55rem);line-height:1.02;margin:0 0 14px;color
 </ul>
 </details>
 </li>
+<li class="toc-item">
+<details>
+<summary><span aria-hidden="true" class="toc-plus"></span><a href="#21-rh-arena-v04-results">21. RH Arena v0.4 Results</a></summary>
+<ul class="toc-sub">
+<li><a href="#21-1-v04-run-integrity">21.1 Run integrity</a></li>
+<li><a href="#21-2-v04-sensor-readout">21.2 Sensor readout</a></li>
+<li><a href="#21-3-v04-generator-floor">21.3 Generator floor</a></li>
+<li><a href="#21-4-v04-invariant-candidates">21.4 Invariant candidates</a></li>
+<li><a href="#21-5-v04-conclusion">21.5 Conclusion and next step</a></li>
+</ul>
+</details>
+</li>
+<li class="toc-item">
+<details>
+<summary><span aria-hidden="true" class="toc-plus"></span><a href="#22-rh-arena-v05-smoke-results">22. RH Arena v0.5 Smoke Results</a></summary>
+<ul class="toc-sub">
+<li><a href="#22-1-v05-run-integrity">22.1 Run integrity</a></li>
+<li><a href="#22-2-v05-sensor-readout">22.2 Sensor readout</a></li>
+<li><a href="#22-3-v05-generator-ablation">22.3 Generator ablation</a></li>
+<li><a href="#22-4-v05-conclusion">22.4 Conclusion and next step</a></li>
+</ul>
+</details>
+</li>
 <li class="toc-item"><a href="#appendix-a-e1-result-tables">Appendix A – E1 Result Tables</a></li>
 <li class="toc-item"><a href="#appendix-b-interpretation-ladder">Appendix B – Interpretation Ladder</a></li>
 <li class="toc-item"><a href="#appendix-c-working-language-rules">Appendix C – Working Language Rules</a></li>
@@ -197,7 +222,8 @@ h1{font-size:clamp(2.25rem,5.6vw,4.55rem);line-height:1.02;margin:0 0 14px;color
 <p>Using the first 20,000 and 100,000 primes, we first compared LZ76 complexity of real prime-gap order against shuffled controls preserving the same multiset. At 100,000 primes, the raw gap encoding produced delta <strong>−167.96</strong> and mean z-score <strong>−32.38</strong> against shuffled controls.</p>
 <p>The final E2/SEA batch now extends the test ladder to stronger controls and larger ranges. It includes <strong>15 runs</strong>, <strong>60 summary rows</strong>, and <strong>1,960 window rows</strong>, covering Markov-preserving, wheel-aware, block-shuffle, and shuffle controls across 100k, 500k, 1M, and 2M prime ranges.</p>
 <p><strong>Final SEA finding:</strong> the broad E1 shuffle signal is partly explained by local/arithmetic structure, but the raw <code>gap</code> signal survives wheel-aware and Markov-preserving controls from 100k through 2M primes. The 500k bridge is positive, the 1M shuffle baseline is now present, and the strongest line remains the 2M Markov-preserving raw gap test: delta <strong>−142.34</strong>, z <strong>−8.76</strong>, with <strong>50/50</strong> windows negative <span class="note">(100 trials at 2M; limited p-value resolution; see Section 10.5)</span>.</p>
-<p>This does <em>not</em> prove RH. It does show a robust, order-sensitive prime-gap compression signal that survives first-pass domain-aware null controls and is now strong enough to justify the next phase: motif extraction, deeper controls, and search for a formal MDLxDCC invariant.</p><h2 id="1-purpose">1. Purpose<a aria-label="Link to this section" class="section-anchor" href="#1-purpose">#</a></h2>
+<p>The v0.4 generator-floor run now tests the next question: can any compact generator beat the Markov2 baseline on holdout? The answer is empirically yes at 1M scale. The run completed <strong>1,620 window tasks</strong> and <strong>72 generator tasks</strong>. At the sensor/control layer, raw <code>gap</code> still fails against Markov2. At the generator layer, however, <code>density_markov2</code> wins raw <code>gap</code>/<code>gap_div2</code>, and all <strong>9/9</strong> tested encodings have a non-Markov2 winner beating the Markov2 holdout floor.</p>
+<p>This does <em>not</em> prove RH. It shows a robust, order-sensitive prime-gap compression signal and now a first empirical breach of the Markov2 generator floor. The next phase is scaling, ablation, and conversion of the best generator/motif candidates into a formal MDLxDCC invariant candidate.</p><h2 id="1-purpose">1. Purpose<a aria-label="Link to this section" class="section-anchor" href="#1-purpose">#</a></h2>
 <p>The original brainstorming paper mixed three levels: empirical observations, reasoned interpretations, and metaphysical speculation. This version separates them. The empirical core is now simple: prime gaps are treated as a sequence, the real order is compared against null models, and MDL/LZ76 decides whether additional structure exists.</p>
 <h2 id="2-background-why-prime-gaps">2. Background: Why Prime Gaps?<a aria-label="Link to this section" class="section-anchor" href="#2-background-why-prime-gaps">#</a></h2>
 <p>Prime gaps \(g_n = p_{n+1} - p_n\) are not independent. Their distribution changes with scale, and primes obey arithmetic constraints. The sharper question is: <em>After preserving basic statistics, does the ordered sequence still compress better than appropriate controls?</em> That is exactly the kind of question the 8Z/MDL/DCC program is built to ask.</p>
@@ -350,13 +376,13 @@ h1{font-size:clamp(2.25rem,5.6vw,4.55rem);line-height:1.02;margin:0 0 14px;color
 </blockquote>
 <p>The strongest current thesis is narrower than the original speculation but stronger than the initial shuffle-only result. The longer-term target is a formal information-theoretic invariant of prime distribution, not merely another route to the existing RH statement.</p>
 <p>Operationally, the project now runs on two tracks: Track A seeks an RH-facing formal bridge; Track B seeks a native MDLxDCC invariant describing prime-gap structure directly.</p><h2 id="16-next-experiments">16. Next Experiments<a aria-label="Link to this section" class="section-anchor" href="#16-next-experiments">#</a></h2>
-<p>The continuation batch is now complete. Next work should move from “does the signal survive?” to “what structure produces the signal?” The priority list is:</p>
+<p>The continuation batch and the focused v0.4 Markov2-floor run are now complete. Next work should move from “can anything beat Markov2 on holdout?” to “which part of the winning generator is carrying the signal?” The priority list is:</p>
 <ul>
-<li><strong>E3 dictionary / motif extraction:</strong> extract LZ76 phrase dictionaries from real and control sequences and identify recurring prime-gap motifs.</li>
-<li><strong>Window-level depth plots:</strong> visualize delta/z by window and prime-depth, especially for Markov and wheel controls.</li>
-<li><strong>Sensor-arena leaderboard:</strong> compare raw gap, gap_div2, abs_delta, bucket_log2, entropy, zlib/lzma, and future compressors under identical controls.</li>
-<li><strong>Replicate 2M with more trials:</strong> raise Markov/wheel 2M from 100 trials to a higher resolution run when compute budget allows.</li>
-<li><strong>Cramér and explicit-formula bridge:</strong> clarify Cramér-like surrogate behavior and begin connecting the compression trace to prime-counting error or zeta-zero related observables.</li>
+<li><strong>v0.5 scaling:</strong> the 120k smoke is complete; next rerun the full ablation ladder at 1M, then move to 2M/5M if the density-Markov gain survives.</li>
+<li><strong>Ablation:</strong> separate Markov order, density bins, motif injection, and DCC weighting; the smoke suggests <code>density_markov1</code> is the first raw-gap carrier to scale-test.</li>
+<li><strong>Seed replication:</strong> repeat v0.4 with independent seeds and check whether winner order and Δholdout are stable.</li>
+<li><strong>Invariant extraction:</strong> compress the all-control motif survivors, especially the <code>gap_mod6</code> families, into a smaller candidate rule.</li>
+<li><strong>Explicit-formula bridge:</strong> begin connecting the best generator residuals to prime-counting error, zero-related observables, or another RH-adjacent arithmetic trace.</li>
 </ul><h2 id="17-preliminary-conclusion">17. Preliminary Conclusion<a aria-label="Link to this section" class="section-anchor" href="#17-preliminary-conclusion">#</a></h2>
 <p>E1 delivered a clear shuffle signal. E2 narrowed and strengthened the result. The final SEA batch now confirms that the broad shuffle advantage is partly local/arithmetic, but the raw <code>gap</code> signal survives wheel-aware and Markov-preserving controls at 100k, 500k, 1M, and 2M.</p>
 <p>The current conclusion is therefore:</p>
@@ -372,7 +398,7 @@ h1{font-size:clamp(2.25rem,5.6vw,4.55rem);line-height:1.02;margin:0 0 14px;color
 <tr><th>Track</th><th>Name</th><th>Target</th><th>Status</th></tr>
 <tr><td><strong>A</strong></td><td>RH-facing formal bridge</td><td>Use the empirical signal to search for a formal invariant connected to prime-counting error, zeta-zero structure, explicit formulas, or an RH-equivalent criterion.</td><td>Future formal work; not claimed by E1/E2/SEA/Arena.</td></tr>
 <tr><td><strong>B</strong></td><td>MDLxDCC-native prime-structure invariant</td><td>Build a new information-theoretic description of prime-gap structure where RH is a benchmark, not the only definition of success.</td><td>Motivated by surviving compression signal.</td></tr>
-<tr><td><strong>C</strong></td><td>Inverse generator arena</td><td>Search over compact generators, grammars, automata, dictionaries, and multi-scale programs that reproduce prime-gap structure better than null models.</td><td>Immediate engineering target: v0.2b/v0.3 and onward.</td></tr>
+<tr><td><strong>C</strong></td><td>Inverse generator arena</td><td>Search over compact generators, grammars, automata, dictionaries, and multi-scale programs that reproduce prime-gap structure better than null models.</td><td>v0.4 achieved the first 1M Markov2-floor breach on generator holdout; next target is scaling, ablation, and formalization.</td></tr>
 </table>
 <p>This distinction matters. A successful MDLxDCC invariant could be valuable even before it proves RH, and a generator that survives holdout and scaling could become the first concrete object from which a stronger invariant is extracted.</p>
 <blockquote><p>The higher target is not merely “prove RH by compression.” The higher target is to discover a formal invariant or compact generator of prime-distribution structure. RH then becomes one benchmark such an invariant may imply, explain, or sit beside.</p></blockquote>
@@ -552,6 +578,144 @@ then prime-counting error remains within an RH-compatible bound.</pre>
 </ul>
 <blockquote><p>v0.3 does not close the RH problem. It gives a cleaner target: build a generator or invariant that beats Markov2 on holdout while preserving the stable motif and residue-family structure discovered by the Arena.</p></blockquote>
 <p>The next code step should be a focused v0.4 generator arena: Markov2+DCC hybrids, variable-order Markov, motif-conditioned Markov, density-feedback states, and per-encoding generator leaderboards. The next paper step is to update this page after v0.4 shows whether any compact generator can actually beat the Markov2 floor.</p>
+
+<h2 id="21-rh-arena-v04-results">21. RH Arena v0.4 Results: Markov2 Floor Attack<a aria-label="Link to this section" class="section-anchor" href="#21-rh-arena-v04-results">#</a></h2>
+<p>The v0.4 Arena run executes the next step proposed by v0.3: stop asking only whether raw gaps survive controls, and ask whether a compact generator can beat the <code>markov2</code> holdout floor. This section should be read with a strict split:</p>
+<ul>
+<li><strong>Sensor/control layer:</strong> raw <code>gap</code> still hits the Markov2 boundary.</li>
+<li><strong>Generator/holdout layer:</strong> new density-conditioned and DCC-style generators now beat the Markov2 floor.</li>
+</ul>
+<blockquote><p>v0.4 does not remove the Markov2 boundary from the LZ control test. It crosses the Markov2 floor in the generator arena.</p></blockquote>
+<h3 id="21-1-v04-run-integrity">21.1 Run integrity<a aria-label="Link to this section" class="section-anchor" href="#21-1-v04-run-integrity">#</a></h3>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Script</td><td><code>8z-rh-arena-v0.4</code></td></tr>
+<tr><td>Schema</td><td><code>rh_arena_schema_v0.4</code></td></tr>
+<tr><td>Prime range</td><td>1,000,000 primes; last prime 15,485,863; 999,999 gaps</td></tr>
+<tr><td>Train / test</td><td>500,000 / 1,000,000 primes</td></tr>
+<tr><td>Window / stride</td><td>50,000 / 50,000</td></tr>
+<tr><td>Trials</td><td>400 per control task; p-value floor ≈ 0.00249</td></tr>
+<tr><td>Workers</td><td>10 requested / 10 used</td></tr>
+<tr><td>Encodings</td><td><code>gap</code>, <code>gap_div2</code>, <code>abs_delta</code>, <code>bucket_log2</code>, <code>normalized_gap</code>, <code>gap_minus_logp</code>, <code>cumulative_error_walk</code>, <code>gap_mod6</code>, <code>gap_mod30</code></td></tr>
+<tr><td>Control modes</td><td><code>shuffle</code>, <code>block50</code>, <code>block100</code>, <code>wheel6</code>, <code>wheel30</code>, <code>markov1</code>, <code>markov2</code>, <code>local_cramer</code>, <code>cramer_global</code></td></tr>
+<tr><td>Generator modes</td><td><code>markov2</code>, <code>markov3</code>, <code>markov4</code>, <code>variable_markov</code>, <code>motif_markov2</code>, <code>density_markov2</code>, <code>markov2_dcc</code>, <code>density_dcc</code></td></tr>
+<tr><td>Completed work</td><td>1,620 window tasks; 72 generator tasks; 10,696 motif rows; 5,826 invariant-candidate rows</td></tr>
+<tr><td>Elapsed</td><td>31,280.007 seconds, about 8 h 41 min 20 s</td></tr>
+</table>
+<p>The run completed cleanly with <code>windows.done.json</code>, <code>generators.done.json</code>, and <code>run.done.json</code>. No completed tasks came from checkpoint; this was a fresh complete run.</p>
+<h3 id="21-2-v04-sensor-readout">21.2 Sensor readout: Markov2 still kills raw-gap LZ advantage<a aria-label="Link to this section" class="section-anchor" href="#21-2-v04-sensor-readout">#</a></h3>
+<p>The raw-gap sensor picture remains almost exactly the v0.3 lesson. <code>gap</code> survives many controls, including Markov1 and wheel-aware Cramér, but not Markov2.</p>
+<table>
+<tr><th>Control</th><th>Mean ΔLZ</th><th>Mean z</th><th>Window stability</th><th>Median p</th><th>Readout</th></tr>
+<tr><td><code>shuffle</code></td><td>-785.94</td><td>-77.49</td><td>20/20 negative</td><td>0.00249</td><td>Strong order signal; same broad baseline as before.</td></tr>
+<tr><td><code>markov1</code></td><td>-204.54</td><td>-11.35</td><td>20/20 negative</td><td>0.00249</td><td>Survives first-order transition baseline.</td></tr>
+<tr><td><code>wheel6</code></td><td>-86.68</td><td>-8.66</td><td>20/20 negative</td><td>0.00249</td><td>Survives simple mod-6 wheel-aware control.</td></tr>
+<tr><td><code>local_cramer</code></td><td>-165.82</td><td>-7.69</td><td>20/20 negative</td><td>0.00249</td><td>Survives wheel-aware local-density surrogate.</td></tr>
+<tr><td><code>cramer_global</code></td><td>-124.69</td><td>-5.80</td><td>19/19 negative</td><td>0.00249</td><td>Survives after excluding the known window-0 artifact.</td></tr>
+<tr><td><code>block50</code></td><td>-57.68</td><td>-5.54</td><td>20/20 negative</td><td>0.00249</td><td>Stable local/medium-scale signal.</td></tr>
+<tr><td><code>block100</code></td><td>-29.86</td><td>-2.92</td><td>20/20 negative</td><td>0.00249</td><td>Weaker but still negative in all windows.</td></tr>
+<tr><td><code>wheel30</code></td><td>-8.86</td><td>-0.88</td><td>16/20 negative</td><td>0.15835</td><td>Mostly absorbed by stronger wheel structure.</td></tr>
+<tr><td><code>markov2</code></td><td>44.71</td><td>+2.59</td><td>1/20 negative</td><td>0.99875</td><td>Signal killed/reversed; sensor-level boundary.</td></tr>
+</table>
+<p><code>gap_div2</code> repeats the same pattern: Markov2 is again positive/reversed, while shuffle, Markov1, wheel6, block, and Cramér controls remain negative. The important interpretation is that the LZ sensor no longer says “raw gaps beat everything.” It says “raw gaps beat first-order/local/wheel/Cramér controls, but second-order transition memory is enough to absorb this sensor.”</p>
+<h3 id="21-3-v04-generator-floor">21.3 Generator floor: Markov2 is beaten on holdout<a aria-label="Link to this section" class="section-anchor" href="#21-3-v04-generator-floor">#</a></h3>
+<p>The generator result is the new signal. The v0.4 challengers were designed specifically to attack the Markov2 floor. They succeeded across all tested encodings.</p>
+<table>
+<tr><th>Encoding</th><th>Winner</th><th>Runner-up</th><th>Δ holdout vs Markov2</th><th>Δ bits/token vs Markov2</th><th>Winner margin</th></tr>
+<tr><td><code>gap</code></td><td><code>density_markov2</code></td><td><code>density_dcc</code></td><td>-7,953.28</td><td>-0.015946</td><td>4,297.46</td></tr>
+<tr><td><code>gap_div2</code></td><td><code>density_markov2</code></td><td><code>density_dcc</code></td><td>-7,954.26</td><td>-0.015946</td><td>4,298.46</td></tr>
+<tr><td><code>abs_delta</code></td><td><code>density_markov2</code></td><td><code>density_dcc</code></td><td>-7,262.93</td><td>-0.014544</td><td>5,486.79</td></tr>
+<tr><td><code>bucket_log2</code></td><td><code>density_markov2</code></td><td><code>markov2</code></td><td>-1,329.38</td><td>-0.002755</td><td>1,329.38</td></tr>
+<tr><td><code>normalized_gap</code></td><td><code>markov2_dcc</code></td><td><code>density_dcc</code></td><td>-1,568.44</td><td>-0.000723</td><td>43.88</td></tr>
+<tr><td><code>gap_minus_logp</code></td><td><code>density_dcc</code></td><td><code>markov2_dcc</code></td><td>-372,137.19</td><td>-0.743387</td><td>2,470.89</td></tr>
+<tr><td><code>cumulative_error_walk</code></td><td><code>density_dcc</code></td><td><code>markov2_dcc</code></td><td>-112,715.09</td><td>-0.225453</td><td>14,854.76</td></tr>
+<tr><td><code>gap_mod6</code></td><td><code>variable_markov</code></td><td><code>markov4</code></td><td>-50,185.35</td><td>-0.100330</td><td>5,160.61</td></tr>
+<tr><td><code>gap_mod30</code></td><td><code>markov3</code></td><td><code>density_markov2</code></td><td>-40,125.27</td><td>-0.080438</td><td>39,471.28</td></tr>
+</table>
+<p>For raw <code>gap</code>, the first accepted breach is not a complicated motif grammar. The best generator is <code>density_markov2</code>: a Markov2 spine conditioned by local density state. The DCC hybrid is second, meaning DCC helps but is not yet the simplest winning explanation.</p>
+<table>
+<tr><th>Rank</th><th>Generator</th><th>Holdout score</th><th>Δ holdout vs Markov2</th><th>Bits/token</th><th>Δ bits/token</th><th>Motif distance</th><th>LZ error</th></tr>
+<tr><td>1</td><td><code>density_markov2</code></td><td>1,936,623.45</td><td>-7,953.28</td><td>3.872776</td><td>-0.015946</td><td>0.01028</td><td>0.02110</td></tr>
+<tr><td>2</td><td><code>density_dcc</code></td><td>1,940,920.91</td><td>-3,655.82</td><td>3.881239</td><td>-0.007483</td><td>0.03494</td><td>0.03376</td></tr>
+<tr><td>3</td><td><code>markov2</code></td><td>1,944,576.73</td><td>0.00</td><td>3.888722</td><td>0.000000</td><td>0.01262</td><td>0.02565</td></tr>
+<tr><td>4</td><td><code>markov2_dcc</code></td><td>1,947,542.12</td><td>2,965.39</td><td>3.894477</td><td>0.005755</td><td>0.05036</td><td>0.04351</td></tr>
+<tr><td>5</td><td><code>motif_markov2</code></td><td>1,965,111.90</td><td>20,535.17</td><td>3.929558</td><td>0.040836</td><td>0.07454</td><td>0.06210</td></tr>
+</table>
+<blockquote><p>v0.4 generator verdict: the Markov2 floor is no longer unbroken. The best current raw-gap explanation is Markov2 plus local density state, with DCC hybrids close behind but not yet dominant.</p></blockquote>
+<h3 id="21-4-v04-invariant-candidates">21.4 Invariant candidates: robust motifs still live mostly in residue space<a aria-label="Link to this section" class="section-anchor" href="#21-4-v04-invariant-candidates">#</a></h3>
+<p>The invariant-candidate file contains <strong>5,826</strong> rows. Of these, <strong>168</strong> survive at least 6 controls, <strong>39</strong> survive at least 8 controls, and <strong>22</strong> survive all 9 controls. Among the all-control survivors, <strong>21/22</strong> are <code>gap_mod6</code> motif families and one is <code>bucket_log2</code>.</p>
+<table>
+<tr><th>Encoding</th><th>Motif</th><th>Length</th><th>Controls</th><th>Window support sum</th><th>Min z</th><th>Median z</th><th>Median lift</th><th>Total count</th><th>Score</th></tr>
+<tr><td><code>gap_mod6</code></td><td><code>2,0,0,4,2</code></td><td>5</td><td>9</td><td>175</td><td>20.15</td><td>93.05</td><td>1.979</td><td>148,955</td><td>141.27</td></tr>
+<tr><td><code>gap_mod6</code></td><td><code>4,2,0,0,4</code></td><td>5</td><td>9</td><td>171</td><td>19.43</td><td>89.34</td><td>1.956</td><td>143,686</td><td>136.21</td></tr>
+<tr><td><code>gap_mod6</code></td><td><code>2,4,2,0,4</code></td><td>5</td><td>9</td><td>171</td><td>4.48</td><td>34.95</td><td>1.208</td><td>196,367</td><td>31.40</td></tr>
+<tr><td><code>bucket_log2</code></td><td><code>3,3,4,1</code></td><td>4</td><td>9</td><td>91</td><td>3.94</td><td>5.53</td><td>1.186</td><td>13,199</td><td>27.60</td></tr>
+<tr><td><code>gap_mod6</code></td><td><code>4,2,0,4</code></td><td>4</td><td>9</td><td>176</td><td>3.17</td><td>69.15</td><td>1.400</td><td>357,528</td><td>22.23</td></tr>
+</table>
+<p>This confirms the v0.3 motif lesson at higher focus: the most stable candidate layer is still residue/gap-class structure, especially <code>gap_mod6</code>. Raw integer gap motifs exist, but they are weaker and do not yet look like the final invariant object.</p>
+<h3 id="21-5-v04-conclusion">21.5 Conclusion and next step<a aria-label="Link to this section" class="section-anchor" href="#21-5-v04-conclusion">#</a></h3>
+<ul>
+<li><strong>Confirmed:</strong> v0.4 completed the targeted Markov2-floor attack cleanly.</li>
+<li><strong>Sensor boundary:</strong> raw <code>gap</code>/<code>gap_div2</code> still lose or reverse against Markov2 in LZ-control testing.</li>
+<li><strong>Generator breakthrough:</strong> all 9 tested encodings now have a non-Markov2 generator winner beating the Markov2 holdout baseline.</li>
+<li><strong>Raw-gap winner:</strong> <code>density_markov2</code>, not full DCC, is the smallest current winner.</li>
+<li><strong>DCC status:</strong> <code>density_dcc</code> and <code>markov2_dcc</code> are strong, especially on density-adjusted/error-walk encodings, but they still need ablation and scaling.</li>
+<li><strong>Invariant status:</strong> stable motifs remain mostly gap-residue/coarse-class candidates, not a theorem-ready raw-gap formula.</li>
+</ul>
+<blockquote><p>v0.4 changes the project state from “Markov2 is the generator floor to beat” to “Markov2 has been beaten empirically at 1M by density-conditioned generators; now prove the gain survives scaling, ablation, and formalization.”</p></blockquote>
+<p>The v0.5 smoke now changes the next code step: scale the whole ablation ladder, not only <code>density_markov2</code>/<code>density_dcc</code>. At smoke scale, <code>density_markov1</code> is the raw-gap winner, <code>variable_markov</code> is the <code>gap_mod6</code> winner, and DCC/motif terms remain candidates rather than confirmed carriers. The next paper step is to compress the stable <code>gap_mod6</code> motif families and the raw-gap density-Markov gain into one smaller invariant candidate.</p>
+
+<h2 id="22-rh-arena-v05-smoke-results">22. RH Arena v0.5 Smoke Results: Density Ablation and Split Stability<a aria-label="Link to this section" class="section-anchor" href="#22-rh-arena-v05-smoke-results">#</a></h2>
+<p>The first v0.5 run is a smoke-scale ablation, not a replacement for the v0.4 1M result. Its value is that it cleanly separates the raw Markov2 boundary from the generator layer and begins isolating which ingredient carries the generator gain.</p>
+<blockquote><p>v0.5 smoke verdict: the raw-gap LZ sensor boundary is still Markov2, but the generator floor is beaten again. At 120k scale the raw-gap winner is <code>density_markov1</code>, not a motif/DCC hybrid. This points to density-conditioned transition structure as the first ingredient to scale-test.</p></blockquote>
+<h3 id="22-1-v05-run-integrity">22.1 Run integrity<a aria-label="Link to this section" class="section-anchor" href="#22-1-v05-run-integrity">#</a></h3>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Script</td><td><code>8z-rh-arena-v0.5</code></td></tr>
+<tr><td>Schema</td><td><code>rh_arena_schema_v0.5</code></td></tr>
+<tr><td>Run size</td><td>120,000 primes; last prime 1,583,539; 119,999 gaps</td></tr>
+<tr><td>Train / test</td><td>60,000 / 120,000 primes</td></tr>
+<tr><td>Windows</td><td>20,000-token window; 20,000 stride; 6 windows per encoding/control</td></tr>
+<tr><td>Trials</td><td>50 sampled controls; p floor 0.019608</td></tr>
+<tr><td>Workers</td><td>1 requested / 1 used</td></tr>
+<tr><td>Completed work</td><td>120 window tasks; 272 generator tasks; 544 generator replicates</td></tr>
+<tr><td>Generator splits</td><td><code>main</code>, <code>early</code>, <code>mid</code>, <code>late</code></td></tr>
+<tr><td>Density guard</td><td><code>safe</code> mode; safe density generators do not use actual holdout prime coordinates; oracle diagnostic intentionally flagged</td></tr>
+</table>
+<h3 id="22-2-v05-sensor-readout">22.2 Sensor readout: Markov2 still absorbs raw-gap LZ advantage<a aria-label="Link to this section" class="section-anchor" href="#22-2-v05-sensor-readout">#</a></h3>
+<p>The sensor layer remains consistent with the earlier v0.3/v0.4 story. Raw <code>gap</code> and <code>gap_div2</code> are strongly more compressible than shuffle, wheel6, Markov1, and local Cramér controls, but not under Markov2. The <code>gap_mod6</code> residue trace remains strongly structured even under Markov2.</p>
+<table>
+<tr><th>Encoding</th><th>Control</th><th>Mean ΔLZ</th><th>Mean z</th><th>Negative windows</th><th>Readout</th></tr>
+<tr><td><code>gap</code></td><td>shuffle</td><td>−343.81</td><td>−54.76</td><td>6/6</td><td>strong order signal</td></tr>
+<tr><td><code>gap</code></td><td>local_cramer</td><td>−151.40</td><td>−9.81</td><td>6/6</td><td>survives wheel-aware local density control</td></tr>
+<tr><td><code>gap</code></td><td>markov1</td><td>−83.46</td><td>−6.58</td><td>6/6</td><td>survives first-order transition control</td></tr>
+<tr><td><code>gap</code></td><td>markov2</td><td>+25.79</td><td>+2.19</td><td>1/6</td><td>raw-gap LZ advantage absorbed/reversed</td></tr>
+<tr><td><code>gap_div2</code></td><td>markov2</td><td>+26.32</td><td>+2.20</td><td>1/6</td><td>same boundary as raw gap</td></tr>
+<tr><td><code>gap_mod6</code></td><td>markov2</td><td>−73.37</td><td>−14.58</td><td>6/6</td><td>residue-state structure survives Markov2</td></tr>
+<tr><td><code>normalized_gap</code></td><td>markov2</td><td>+152.83</td><td>+7.77</td><td>0/6</td><td>density-adjusted trace is not a raw sensor win here</td></tr>
+</table>
+<h3 id="22-3-v05-generator-ablation">22.3 Generator ablation: density_markov1 wins raw gap at smoke scale<a aria-label="Link to this section" class="section-anchor" href="#22-3-v05-generator-ablation">#</a></h3>
+<p>The generator layer is where v0.5 changes the working hypothesis. On raw <code>gap</code>/<code>gap_div2</code>, the best safe non-Markov2 generator is <code>density_markov1</code> across all four tested splits. That is a useful simplification: at this scale, adding Markov order 2, motif injection, or full DCC does not improve the raw-gap winner.</p>
+<table>
+<tr><th>Split</th><th>Encoding</th><th>Winner</th><th>Δholdout vs Markov2</th><th>Runner-up</th><th>Readout</th></tr>
+<tr><td>main</td><td><code>gap</code></td><td><code>density_markov1</code></td><td>−2,423.76</td><td><code>density_wrong_scale_markov2</code></td><td>density + first-order transition wins raw gap</td></tr>
+<tr><td>early</td><td><code>gap</code></td><td><code>density_markov1</code></td><td>−2,343.44</td><td><code>density_wrong_scale_markov2</code></td><td>same winner in early split</td></tr>
+<tr><td>mid</td><td><code>gap</code></td><td><code>density_markov1</code></td><td>−3,146.49</td><td><code>density_only</code></td><td>density itself becomes strong</td></tr>
+<tr><td>late</td><td><code>gap</code></td><td><code>density_markov1</code></td><td>−4,150.22</td><td><code>density_only</code></td><td>density signal strengthens later</td></tr>
+<tr><td>main</td><td><code>gap_div2</code></td><td><code>density_markov1</code></td><td>−2,424.96</td><td><code>density_wrong_scale_markov2</code></td><td>same as raw gap</td></tr>
+<tr><td>main</td><td><code>gap_mod6</code></td><td><code>variable_markov</code></td><td>−5,853.89</td><td><code>markov3</code></td><td>residue trace prefers variable-order memory</td></tr>
+<tr><td>main</td><td><code>normalized_gap</code></td><td><code>dcc_only</code></td><td>−39,430.74</td><td><code>density_dcc_full</code></td><td>read as density-adjusted diagnostic, not raw-gap invariant</td></tr>
+</table>
+<p>The leakage guard is also behaving as intended: all safe density generators are marked non-leaking, while <code>density_oracle_markov2</code> is deliberately flagged as using actual test-prime coordinates and should not be used as a public winner.</p>
+<h3 id="22-4-v05-conclusion">22.4 Conclusion and next step<a aria-label="Link to this section" class="section-anchor" href="#22-4-v05-conclusion">#</a></h3>
+<ul>
+<li><strong>Confirmed by smoke:</strong> v0.5 runs cleanly, resumes/writes all expected reports, and the leakage guard works.</li>
+<li><strong>Sensor layer:</strong> raw-gap Markov2 boundary remains; <code>gap_mod6</code> still carries strong residue-state structure.</li>
+<li><strong>Generator layer:</strong> Markov2 holdout floor is beaten again, but the raw-gap winner is simpler than expected: <code>density_markov1</code>.</li>
+<li><strong>Ablation readout:</strong> density clock + low-order transition is the first ingredient to scale-test; motif/DCC interactions remain candidates, not winners, on raw gap at this smoke scale.</li>
+</ul>
+<blockquote><p>v0.5 changes the next test: do not only scale <code>density_markov2</code>. Scale the whole ablation ladder — <code>density_only</code>, <code>density_markov0</code>, <code>density_markov1</code>, <code>density_markov2</code>, density-DCC variants, and variable Markov — and ask which ingredient survives at 1M, 2M, and beyond.</p></blockquote>
+
 <h2 id="appendix-a-e1-result-tables">Appendix A – E1 Result Tables<a aria-label="Link to this section" class="section-anchor" href="#appendix-a-e1-result-tables">#</a></h2>
 <p>Tables are shown in Section 6 above.</p>
 <h2 id="appendix-b-interpretation-ladder">Appendix B – Interpretation Ladder<a aria-label="Link to this section" class="section-anchor" href="#appendix-b-interpretation-ladder">#</a></h2>
@@ -566,7 +730,9 @@ then prime-counting error remains within an RH-compatible bound.</pre>
 <tr><td>L7</td><td>DCC edge-of-chaos explains critical line</td><td>🔮 speculative</td></tr>
 <tr><td>L8</td><td>AC/Zero Framework explains RH truth/proof difficulty</td><td>🔮 highly speculative</td></tr>
 <tr><td>L9</td><td>Zero Framework at axiom level: \(0 \ne \emptyset\) as a possible foundational distinction</td><td>🔮 philosophical hypothesis, pre-formal</td></tr>
-<tr><td>L10</td><td>Compact generator/invariant beats Markov2 and wheel-aware Cramér on holdout</td><td>🎯 active Arena target, not yet achieved</td></tr>
+<tr><td>L10</td><td>Compact generator beats the Markov2 holdout floor</td><td>✅ empirically achieved in v0.4 across 9/9 tested encodings; still not a formal invariant or proof</td></tr>
+<tr><td>L11</td><td>Generator gain survives scaling, ablation, and independent seeds</td><td>🧪 started by v0.5 120k smoke; 1M/2M scaling pending</td></tr>
+<tr><td>L12</td><td>Generator/invariant connects to prime-counting error, explicit formula residuals, or RH-equivalent criterion</td><td>🔮 future formal bridge</td></tr>
 </table>
 <h2 id="appendix-c-working-language-rules">Appendix C – Working Language Rules<a aria-label="Link to this section" class="section-anchor" href="#appendix-c-working-language-rules">#</a></h2>
 <p><strong>Use:</strong> “compression-detectable structure”, “order-sensitive signal”, “generator candidate”, “invariant candidate”, “holdout validation”, “preliminary empirical result”, “null controls”, “not an RH proof”. <strong>Avoid:</strong> “RH confirmed”, “proof”, “annihilation of zeta zeros”, “AC requires RH”, “generator proves RH”.</p>
@@ -632,13 +798,13 @@ while i &lt; len(tokens):
 <li><strong>v0.2b:</strong> resume/workers/progress hardening and 1M generator benchmark.</li>
 <li><strong>v0.3:</strong> gap-residue vs prime-residue split, wheel-aware Cramér, Cramér warmup, predictive-bits generator scoring, <code>invariant_candidates.csv</code>, and completed 1M analysis.</li>
 </ul><h2 id="appendix-e-next-update-slot">Appendix E – Next Update Slot<a aria-label="Link to this section" class="section-anchor" href="#appendix-e-next-update-slot">#</a></h2>
-<p><em>Next:</em> Build a focused v0.4 generator arena: variable-order Markov, motif-conditioned Markov, density-feedback states, and DCC hybrids that explicitly try to beat the Markov2 raw-gap floor on holdout. The scientific question is now: can any compact generator explain the surviving raw-gap advantage without collapsing into a known local-transition control?</p><hr/>
-<p class="note">Version 0.8 · May 4, 2026 · Inverse Generator Hypothesis preserved · completed v0.3 1M RH Arena analyzed · Markov2 boundary confirmed · invariant-candidate filtering added · no RH proof claim · next: v0.4 focused generator arena.</p>
+<p><em>Next:</em> Run the v0.5 scaling batch at 1M with the full ablation ladder. The new question is whether the smoke winner <code>density_markov1</code> remains best, whether <code>density_markov2</code> reappears at scale, and whether DCC/motif terms add anything beyond the density clock.</p><hr/>
+<p class="note">Version 0.10 · May 5, 2026 · v0.5 120k smoke integrated · raw-gap sensor boundary preserved · Markov2 holdout floor beaten again at smoke scale · density_markov1 identified as raw-gap ablation winner · no RH proof claim · next: v0.5 1M scaling.</p>
 
 </article>
 
 <footer class="footer">
-  <p><strong>Version:</strong> v0.8 RH Arena v0.3 result update · May 4, 2026 · Built from the latest preserved v0.7b RH page · Final SEA preserved · completed v0.3 1M Arena results integrated · no RH proof claim.</p>
+  <p><strong>Version:</strong> v0.10 RH Arena v0.5 smoke-ablation update · May 5, 2026 · Built from the preserved v0.9 RH page · Final SEA, v0.3, and v0.4 preserved · completed v0.5 120k smoke integrated · no RH proof claim.</p>
 </footer>
 </div>
 </body>
