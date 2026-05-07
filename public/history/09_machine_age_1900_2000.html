@@ -73,7 +73,106 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 @media print{body{background:#fff!important;color:#111!important}.topbar,.progress,.reader-controls,.back-top,.hero,.footer-nav{display:none!important}.contents,.sources,.people{display:block!important}.contents{page-break-before:always;break-before:page}.sources{page-break-before:always;break-before:page}.wrap,.wrapper{max-width:none!important;padding:0!important}.a4-card{background:#fff!important;color:#111!important;box-shadow:none!important;border:0!important;border-radius:0!important;page-break-after:always;break-after:page}.a4-card *,.people *,.sources *,.contents *{color:#111!important}.people,.sources,.contents{background:#fff!important;border:1px solid #ccc!important;box-shadow:none!important;break-inside:avoid}.person-card,.source{background:#fff!important;border:1px solid #ddd!important}.mini,.pattern,.bridge,.focus,.balance-note,.fast-path,.omissions-note,.climate-thread{background:#fff!important;color:#111!important;border-color:#ccc!important}.src-ref,a{color:#111!important;text-decoration:underline!important}}
 /* === HISTORY v0.16 PUBLIC RELEASE POLISH END === */
 
-</style></head><body id="top"><div class="progress" id="progress"></div><header class="topbar"><div class="topbar-inner"><a aria-label="Humanity · Part 09 · Machine Century" class="brand" href="index.html">Humanity · Part 09 · Machine Century</a><nav class="nav"><a aria-label="Methodology" href="methodology.html">Methodology</a><a aria-label="Timeline" href="timeline.html">Timeline</a><a aria-label="Glossary" href="glossary.html">Glossary</a><a aria-label="About" href="about.html">About</a><a aria-label="Contents" href="index.html">Contents</a><a aria-label="Previous" href="08_industrial_age_1800_1900.html">Previous</a><a aria-label="Cards" href="#cards">Cards</a><a aria-label="People" href="#people">People</a><a aria-label="Sources" href="#sources">Sources</a><a aria-label="Next" href="10_digital_ai_age_2000_2026.html">Next</a></nav></div></header><main>
+
+
+/* === HISTORY MOBILE HEADER v0.16.4 START === */
+.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none;}
+@media (max-width:700px){
+  :root{--mobile-hist-header-h:104px;}
+  html{scroll-padding-top:calc(var(--mobile-hist-header-h) + 14px)!important;}
+  body{padding-top:calc(var(--mobile-hist-header-h) + env(safe-area-inset-top,0px))!important;}
+  .topbar{display:none!important;}
+  .mobile-topbar{
+    display:block;position:fixed;top:0;left:0;right:0;z-index:9990;
+    padding:calc(env(safe-area-inset-top,0px) + 9px) 12px 10px;
+    background:rgba(5,7,13,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border-bottom:1px solid rgba(105,215,255,.20);
+    box-shadow:0 10px 38px rgba(0,0,0,.36);
+  }
+  .mobile-topbar:before{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--cyan),var(--green),var(--gold));opacity:.88;}
+  .mobile-title{
+    display:block;padding:0 0 8px 0;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:clamp(18px,5vw,25px);font-weight:800;line-height:1.05;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--cyan)!important;text-decoration:none!important;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .mobile-actions{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;}
+  .mobile-navbtn{
+    min-height:42px;padding:9px 11px;border:1px solid rgba(105,215,255,.22);border-radius:999px;
+    background:rgba(11,17,32,.66);color:var(--text)!important;text-decoration:none!important;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:clamp(13px,3.4vw,16px);font-weight:700;
+    letter-spacing:.05em;line-height:1;display:flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);
+  }
+  .mobile-prev{justify-content:flex-start;}
+  .mobile-next{justify-content:flex-end;}
+  .mobile-menu-toggle{color:var(--gold)!important;cursor:pointer;}
+  .mobile-disabled{opacity:.38;pointer-events:none;}
+  .mobile-menu-backdrop{position:fixed;inset:0;z-index:9980;background:rgba(0,0,0,.48);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
+  body.mobile-menu-open .mobile-menu-backdrop{display:block;}
+  .mobile-menu-panel{
+    position:fixed;z-index:9991;top:calc(var(--mobile-hist-header-h) + env(safe-area-inset-top,0px) + 8px);left:12px;right:12px;
+    max-height:calc(100vh - var(--mobile-hist-header-h) - env(safe-area-inset-top,0px) - 28px);overflow:auto;
+    padding:14px;border:1px solid rgba(105,215,255,.26);border-radius:22px;
+    background:linear-gradient(180deg,rgba(9,13,24,.98),rgba(5,7,13,.98));
+    box-shadow:0 24px 90px rgba(0,0,0,.62);
+  }
+  body.mobile-menu-open .mobile-menu-panel{display:block;}
+  .mobile-menu-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(105,215,255,.14);}
+  .mobile-menu-head span{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--gold);font-size:14px;letter-spacing:.18em;text-transform:uppercase;}
+  .mobile-menu-head button{width:38px;height:38px;border-radius:999px;border:1px solid rgba(105,215,255,.22);background:rgba(255,255,255,.03);color:var(--text);font-size:24px;line-height:1;}
+  .mobile-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+  .mobile-menu-grid a{
+    min-height:44px;padding:11px 12px;border:1px solid rgba(105,215,255,.18);border-radius:14px;
+    background:rgba(18,26,49,.78);color:var(--text)!important;text-decoration:none!important;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;font-weight:700;letter-spacing:.04em;
+    display:flex;align-items:center;justify-content:center;text-align:center;
+  }
+  .mobile-menu-grid a:active{transform:scale(.985);border-color:rgba(105,215,255,.45);}
+  .reader-controls{bottom:calc(78px + env(safe-area-inset-bottom,0px))!important;}
+  #top,.hero,.card,.a4-card,section[id],article[id],.people-section,.sources{scroll-margin-top:calc(var(--mobile-hist-header-h) + 18px)!important;}
+}
+@media (max-width:420px){
+  .mobile-navbtn{padding-left:9px;padding-right:9px;font-size:13px;}
+  .mobile-menu-grid{grid-template-columns:1fr;}
+}
+@media (min-width:701px){
+  .mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none!important;}
+}
+@media print{
+  .mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none!important;}
+  body{padding-top:0!important;}
+}
+/* === HISTORY MOBILE HEADER v0.16.4 END === */
+</style></head><body id="top"><div class="progress" id="progress"></div><header class="topbar"><div class="topbar-inner"><a aria-label="Humanity · Part 09 · Machine Century" class="brand" href="index.html">Humanity · Part 09 · Machine Century</a><nav class="nav"><a aria-label="Methodology" href="methodology.html">Methodology</a><a aria-label="Timeline" href="timeline.html">Timeline</a><a aria-label="Glossary" href="glossary.html">Glossary</a><a aria-label="About" href="about.html">About</a><a aria-label="Contents" href="index.html">Contents</a><a aria-label="Previous" href="08_industrial_age_1800_1900.html">Previous</a><a aria-label="Cards" href="#cards">Cards</a><a aria-label="People" href="#people">People</a><a aria-label="Sources" href="#sources">Sources</a><a aria-label="Next" href="10_digital_ai_age_2000_2026.html">Next</a></nav></div></header>
+<!-- === HISTORY MOBILE HEADER v0.16.4 START === -->
+<div class="mobile-menu-backdrop" data-mobile-menu-close aria-hidden="true"></div>
+<header class="mobile-topbar" aria-label="Mobile navigation">
+  <a class="mobile-title" href="index.html">HUMANITY HISTORY</a>
+  <div class="mobile-actions" role="navigation" aria-label="Mobile chapter navigation">
+    <a class="mobile-navbtn mobile-prev" href="08_industrial_age_1800_1900.html">← Previous</a>
+    <button class="mobile-navbtn mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu-panel">Menu</button>
+    <a class="mobile-navbtn mobile-next" href="10_digital_ai_age_2000_2026.html">Next →</a>
+  </div>
+</header>
+<aside class="mobile-menu-panel" id="mobile-menu-panel" aria-label="Mobile menu" aria-hidden="true">
+  <div class="mobile-menu-head"><span>Menu</span><button type="button" data-mobile-menu-close aria-label="Close menu">×</button></div>
+  <div class="mobile-menu-grid">
+<a href="methodology.html">Methodology</a>
+<a href="timeline.html">Timeline</a>
+<a href="glossary.html">Glossary</a>
+<a href="about.html">About</a>
+<a href="index.html">Contents</a>
+<a href="08_industrial_age_1800_1900.html">Previous</a>
+<a href="#cards">Cards</a>
+<a href="#people">People</a>
+<a href="#sources">Sources</a>
+<a href="10_digital_ai_age_2000_2026.html">Next</a>
+  </div>
+</aside>
+<!-- === HISTORY MOBILE HEADER v0.16.4 END === -->
+<main>
 <section class="hero"><div class="hero-inner"><div class="eyebrow">1900–2000 CE · 10-year cards</div><h1>Machine <span>Century</span></h1><p class="subtitle">The century when electricity, oil, radio, total war, nuclear weapons, antibiotics, rockets, decolonization, civil rights, computers, networks, and the web turned humanity into a planetary technical species.</p><div class="hero-grid"><div class="hero-stat"><b>10</b><span>A4 cards</span></div><div class="hero-stat"><b>10 years</b><span>per card</span></div><div class="hero-stat"><b>1900–2000</b><span>range</span></div><div class="hero-stat"><b>49</b><span>source anchors</span></div></div><div class="warning">This chapter treats the twentieth century as morally double: humanity cures, connects, liberates, and reaches the Moon, while also building genocide systems, total war, nuclear extinction risk, ecological crisis, and industrial propaganda.</div></div></section>
 <section class="intro wrap"><h2>How to read this chapter</h2><p>The twentieth century is the acceleration hinge. A person born around 1900 enters a world of horses, empires, coal smoke, telegrams, and early airplanes. By 2000, humans have nuclear weapons, antibiotics, television, jet travel, satellites, moon landings, personal computers, the Internet, the Web, and early genome maps.</p><p>The century is not one story of progress. It is a coupled system: each new capability increases the range of good and bad. The same science that heals can weaponize; the same networks that inform can manipulate; the same state that builds welfare can build camps. Key factual anchors were checked online before writing.</p></section><div class="balance-note wrap"><strong>Regional balance note:</strong> the machine century was not only Europe, Russia, China, and the United States. Bandung, African state-building, Latin American industrialization and dictatorship, Middle Eastern oil politics, South Asian partition and development, Pacific warfare, and Cold War proxy pressure all belong to the century’s core machinery.</div>
 <section class="contents wrap"><h2>Cards in this chapter</h2><div class="toc-grid"><a aria-label="01 1900–1910 The electric modern" href="#card-01"><span>01</span><b>1900–1910</b><em>The electric modern</em></a>
@@ -292,4 +391,30 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
   });
 })();
 </script>
-<!-- HISTORY MOBILE READER CONTROLS v0.6 END --></body></html>
+<!-- HISTORY MOBILE READER CONTROLS v0.6 END -->
+
+<!-- === HISTORY MOBILE HEADER v0.16.4 SCRIPT START === -->
+<script>
+(function(){
+  function closeMenu(){
+    document.body.classList.remove('mobile-menu-open');
+    document.querySelectorAll('.mobile-menu-toggle').forEach(function(btn){btn.setAttribute('aria-expanded','false');});
+    document.querySelectorAll('.mobile-menu-panel').forEach(function(panel){panel.setAttribute('aria-hidden','true');});
+  }
+  function openMenu(){
+    document.body.classList.add('mobile-menu-open');
+    document.querySelectorAll('.mobile-menu-toggle').forEach(function(btn){btn.setAttribute('aria-expanded','true');});
+    document.querySelectorAll('.mobile-menu-panel').forEach(function(panel){panel.setAttribute('aria-hidden','false');});
+  }
+  document.addEventListener('click',function(ev){
+    var toggle=ev.target.closest&&ev.target.closest('.mobile-menu-toggle');
+    if(toggle){ev.preventDefault();document.body.classList.contains('mobile-menu-open')?closeMenu():openMenu();return;}
+    if(ev.target.closest&&ev.target.closest('[data-mobile-menu-close]')){ev.preventDefault();closeMenu();return;}
+    if(ev.target.closest&&ev.target.closest('.mobile-menu-panel a')){closeMenu();}
+  });
+  document.addEventListener('keydown',function(ev){if(ev.key==='Escape')closeMenu();});
+})();
+</script>
+<!-- === HISTORY MOBILE HEADER v0.16.4 SCRIPT END === -->
+
+</body></html>

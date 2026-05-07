@@ -90,8 +90,107 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 @media print{body{background:#fff!important;color:#111!important}.topbar,.progress,.reader-controls,.back-top,.hero,.footer-nav{display:none!important}.contents,.sources,.people{display:block!important}.contents{page-break-before:always;break-before:page}.sources{page-break-before:always;break-before:page}.wrap,.wrapper{max-width:none!important;padding:0!important}.a4-card{background:#fff!important;color:#111!important;box-shadow:none!important;border:0!important;border-radius:0!important;page-break-after:always;break-after:page}.a4-card *,.people *,.sources *,.contents *{color:#111!important}.people,.sources,.contents{background:#fff!important;border:1px solid #ccc!important;box-shadow:none!important;break-inside:avoid}.person-card,.source{background:#fff!important;border:1px solid #ddd!important}.mini,.pattern,.bridge,.focus,.balance-note,.fast-path,.omissions-note,.climate-thread{background:#fff!important;color:#111!important;border-color:#ccc!important}.src-ref,a{color:#111!important;text-decoration:underline!important}}
 /* === HISTORY v0.16 PUBLIC RELEASE POLISH END === */
 
+
+
+/* === HISTORY MOBILE HEADER v0.16.4 START === */
+.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none;}
+@media (max-width:700px){
+  :root{--mobile-hist-header-h:104px;}
+  html{scroll-padding-top:calc(var(--mobile-hist-header-h) + 14px)!important;}
+  body{padding-top:calc(var(--mobile-hist-header-h) + env(safe-area-inset-top,0px))!important;}
+  .topbar{display:none!important;}
+  .mobile-topbar{
+    display:block;position:fixed;top:0;left:0;right:0;z-index:9990;
+    padding:calc(env(safe-area-inset-top,0px) + 9px) 12px 10px;
+    background:rgba(5,7,13,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border-bottom:1px solid rgba(105,215,255,.20);
+    box-shadow:0 10px 38px rgba(0,0,0,.36);
+  }
+  .mobile-topbar:before{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--cyan),var(--green),var(--gold));opacity:.88;}
+  .mobile-title{
+    display:block;padding:0 0 8px 0;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:clamp(18px,5vw,25px);font-weight:800;line-height:1.05;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--cyan)!important;text-decoration:none!important;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .mobile-actions{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;}
+  .mobile-navbtn{
+    min-height:42px;padding:9px 11px;border:1px solid rgba(105,215,255,.22);border-radius:999px;
+    background:rgba(11,17,32,.66);color:var(--text)!important;text-decoration:none!important;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:clamp(13px,3.4vw,16px);font-weight:700;
+    letter-spacing:.05em;line-height:1;display:flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);
+  }
+  .mobile-prev{justify-content:flex-start;}
+  .mobile-next{justify-content:flex-end;}
+  .mobile-menu-toggle{color:var(--gold)!important;cursor:pointer;}
+  .mobile-disabled{opacity:.38;pointer-events:none;}
+  .mobile-menu-backdrop{position:fixed;inset:0;z-index:9980;background:rgba(0,0,0,.48);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
+  body.mobile-menu-open .mobile-menu-backdrop{display:block;}
+  .mobile-menu-panel{
+    position:fixed;z-index:9991;top:calc(var(--mobile-hist-header-h) + env(safe-area-inset-top,0px) + 8px);left:12px;right:12px;
+    max-height:calc(100vh - var(--mobile-hist-header-h) - env(safe-area-inset-top,0px) - 28px);overflow:auto;
+    padding:14px;border:1px solid rgba(105,215,255,.26);border-radius:22px;
+    background:linear-gradient(180deg,rgba(9,13,24,.98),rgba(5,7,13,.98));
+    box-shadow:0 24px 90px rgba(0,0,0,.62);
+  }
+  body.mobile-menu-open .mobile-menu-panel{display:block;}
+  .mobile-menu-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(105,215,255,.14);}
+  .mobile-menu-head span{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--gold);font-size:14px;letter-spacing:.18em;text-transform:uppercase;}
+  .mobile-menu-head button{width:38px;height:38px;border-radius:999px;border:1px solid rgba(105,215,255,.22);background:rgba(255,255,255,.03);color:var(--text);font-size:24px;line-height:1;}
+  .mobile-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+  .mobile-menu-grid a{
+    min-height:44px;padding:11px 12px;border:1px solid rgba(105,215,255,.18);border-radius:14px;
+    background:rgba(18,26,49,.78);color:var(--text)!important;text-decoration:none!important;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;font-weight:700;letter-spacing:.04em;
+    display:flex;align-items:center;justify-content:center;text-align:center;
+  }
+  .mobile-menu-grid a:active{transform:scale(.985);border-color:rgba(105,215,255,.45);}
+  .reader-controls{bottom:calc(78px + env(safe-area-inset-bottom,0px))!important;}
+  #top,.hero,.card,.a4-card,section[id],article[id],.people-section,.sources{scroll-margin-top:calc(var(--mobile-hist-header-h) + 18px)!important;}
+}
+@media (max-width:420px){
+  .mobile-navbtn{padding-left:9px;padding-right:9px;font-size:13px;}
+  .mobile-menu-grid{grid-template-columns:1fr;}
+}
+@media (min-width:701px){
+  .mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none!important;}
+}
+@media print{
+  .mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none!important;}
+  body{padding-top:0!important;}
+}
+/* === HISTORY MOBILE HEADER v0.16.4 END === */
 </style></head>
-<body id="top"><div class="progress" id="progress"></div><header class="topbar"><div class="topbar-inner"><a aria-label="Humanity · Dark Timeline" class="brand" href="index.html">Humanity · Dark Timeline</a><nav class="nav"><a aria-label="Methodology" href="methodology.html">Methodology</a><a aria-label="Timeline" href="timeline.html">Timeline</a><a aria-label="Glossary" href="glossary.html">Glossary</a><a aria-label="About" href="about.html">About</a><a aria-label="Contents" href="index.html">Contents</a><a aria-label="Cards" href="#cards">Cards</a><a aria-label="People" href="#people">People</a><a aria-label="Sources" href="#sources">Sources</a><a aria-label="← Part 07" href="07_early_modern_1500_1800.html">← Part 07</a><a aria-label="Part 09 →" href="09_machine_age_1900_2000.html">Part 09 →</a></nav></div></header><main>
+<body id="top"><div class="progress" id="progress"></div><header class="topbar"><div class="topbar-inner"><a aria-label="Humanity · Dark Timeline" class="brand" href="index.html">Humanity · Dark Timeline</a><nav class="nav"><a aria-label="Methodology" href="methodology.html">Methodology</a><a aria-label="Timeline" href="timeline.html">Timeline</a><a aria-label="Glossary" href="glossary.html">Glossary</a><a aria-label="About" href="about.html">About</a><a aria-label="Contents" href="index.html">Contents</a><a aria-label="Cards" href="#cards">Cards</a><a aria-label="People" href="#people">People</a><a aria-label="Sources" href="#sources">Sources</a><a aria-label="← Part 07" href="07_early_modern_1500_1800.html">← Part 07</a><a aria-label="Part 09 →" href="09_machine_age_1900_2000.html">Part 09 →</a></nav></div></header>
+<!-- === HISTORY MOBILE HEADER v0.16.4 START === -->
+<div class="mobile-menu-backdrop" data-mobile-menu-close aria-hidden="true"></div>
+<header class="mobile-topbar" aria-label="Mobile navigation">
+  <a class="mobile-title" href="index.html">HUMANITY HISTORY</a>
+  <div class="mobile-actions" role="navigation" aria-label="Mobile chapter navigation">
+    <a class="mobile-navbtn mobile-prev" href="07_early_modern_1500_1800.html">← Previous</a>
+    <button class="mobile-navbtn mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu-panel">Menu</button>
+    <a class="mobile-navbtn mobile-next" href="09_machine_age_1900_2000.html">Next →</a>
+  </div>
+</header>
+<aside class="mobile-menu-panel" id="mobile-menu-panel" aria-label="Mobile menu" aria-hidden="true">
+  <div class="mobile-menu-head"><span>Menu</span><button type="button" data-mobile-menu-close aria-label="Close menu">×</button></div>
+  <div class="mobile-menu-grid">
+<a href="methodology.html">Methodology</a>
+<a href="timeline.html">Timeline</a>
+<a href="glossary.html">Glossary</a>
+<a href="about.html">About</a>
+<a href="index.html">Contents</a>
+<a href="#cards">Cards</a>
+<a href="#people">People</a>
+<a href="#sources">Sources</a>
+<a href="07_early_modern_1500_1800.html">← Part 07</a>
+<a href="09_machine_age_1900_2000.html">Part 09 →</a>
+  </div>
+</aside>
+<!-- === HISTORY MOBILE HEADER v0.16.4 END === -->
+<main>
 <section class="hero"><div class="hero-inner"><div class="eyebrow">Part 08 · 1800–1900 CE · 5 A4 cards</div><h1>Industrial <span>Fire</span></h1><p class="subtitle">The nineteenth century as industrial acceleration: coal, rail, steel, telegraph, germ theory, abolition, labor, empire, suffrage, and the brutal contradiction between progress and domination.</p><div class="hero-grid"><div class="hero-stat"><b>1800–1900</b><span>CE range</span></div><div class="hero-stat"><b>5</b><span>A4 cards</span></div><div class="hero-stat"><b>20</b><span>years / card</span></div><div class="hero-stat"><b>38</b><span>source anchors</span></div></div><div class="warning"><strong>Scale note:</strong> this chapter now uses 20-year cards because the nineteenth century is too dense for a single 50-year rhythm and too important to compress into only four cards. Industry, empire, medicine, communications, rights movements, and mass politics accelerate together.</div></div></section>
 <section class="intro wrap"><h2>What changes in this chapter</h2><p>The original 25-year rhythm made the nineteenth century feel a little too compressed. This v0.16 reframe uses 20-year cards: still compact, but better suited to the speed of railways, abolition struggles, imperial expansion, industrial science, labor politics, and global state transformation.</p><div class="balance-note"><strong>Regional balance note:</strong> industrial modernity was not simply exported from Europe to passive recipients. Latin America, India, China, Japan, the Ottoman world, Africa, Oceania, and Indigenous nations were pulled into industrial systems through trade, coercion, reform, resistance, war, migration, and selective adaptation. This chapter is still compressed, but it marks that asymmetry explicitly.</div></section>
 <section class="contents wrap"><h2>Contents · 5 A4 cards</h2><div class="toc-grid"><a aria-label="01 1800–1820 CE Coal, cotton, revolution aftershocks" href="#card-01"><span>01</span><b>1800–1820 CE</b><em>Coal, cotton, revolution aftershocks</em></a><a aria-label="02 1820–1840 CE Railways, reform, and factory law" href="#card-02"><span>02</span><b>1820–1840 CE</b><em>Railways, reform, and factory law</em></a><a aria-label="03 1840–1860 CE Famine, revolution, steel, and evolution" href="#card-03"><span>03</span><b>1840–1860 CE</b><em>Famine, revolution, steel, and evolution</em></a><a aria-label="04 1860–1880 CE Civil war, emancipation, Meiji, and wires" href="#card-04"><span>04</span><b>1860–1880 CE</b><em>Civil war, emancipation, Meiji, and wires</em></a><a aria-label="05 1880–1900 CE High industrial empire" href="#card-05"><span>05</span><b>1880–1900 CE</b><em>High industrial empire</em></a></div></section>
@@ -227,4 +326,30 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
   });
 })();
 </script>
-<!-- HISTORY MOBILE READER CONTROLS v0.6 END --></body></html>
+<!-- HISTORY MOBILE READER CONTROLS v0.6 END -->
+
+<!-- === HISTORY MOBILE HEADER v0.16.4 SCRIPT START === -->
+<script>
+(function(){
+  function closeMenu(){
+    document.body.classList.remove('mobile-menu-open');
+    document.querySelectorAll('.mobile-menu-toggle').forEach(function(btn){btn.setAttribute('aria-expanded','false');});
+    document.querySelectorAll('.mobile-menu-panel').forEach(function(panel){panel.setAttribute('aria-hidden','true');});
+  }
+  function openMenu(){
+    document.body.classList.add('mobile-menu-open');
+    document.querySelectorAll('.mobile-menu-toggle').forEach(function(btn){btn.setAttribute('aria-expanded','true');});
+    document.querySelectorAll('.mobile-menu-panel').forEach(function(panel){panel.setAttribute('aria-hidden','false');});
+  }
+  document.addEventListener('click',function(ev){
+    var toggle=ev.target.closest&&ev.target.closest('.mobile-menu-toggle');
+    if(toggle){ev.preventDefault();document.body.classList.contains('mobile-menu-open')?closeMenu():openMenu();return;}
+    if(ev.target.closest&&ev.target.closest('[data-mobile-menu-close]')){ev.preventDefault();closeMenu();return;}
+    if(ev.target.closest&&ev.target.closest('.mobile-menu-panel a')){closeMenu();}
+  });
+  document.addEventListener('keydown',function(ev){if(ev.key==='Escape')closeMenu();});
+})();
+</script>
+<!-- === HISTORY MOBILE HEADER v0.16.4 SCRIPT END === -->
+
+</body></html>

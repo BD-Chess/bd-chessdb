@@ -88,9 +88,108 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 @media print{body{background:#fff!important;color:#111!important}.topbar,.progress,.reader-controls,.back-top,.hero,.footer-nav{display:none!important}.contents,.sources,.people{display:block!important}.contents{page-break-before:always;break-before:page}.sources{page-break-before:always;break-before:page}.wrap,.wrapper{max-width:none!important;padding:0!important}.a4-card{background:#fff!important;color:#111!important;box-shadow:none!important;border:0!important;border-radius:0!important;page-break-after:always;break-after:page}.a4-card *,.people *,.sources *,.contents *{color:#111!important}.people,.sources,.contents{background:#fff!important;border:1px solid #ccc!important;box-shadow:none!important;break-inside:avoid}.person-card,.source{background:#fff!important;border:1px solid #ddd!important}.mini,.pattern,.bridge,.focus,.balance-note,.fast-path,.omissions-note,.climate-thread{background:#fff!important;color:#111!important;border-color:#ccc!important}.src-ref,a{color:#111!important;text-decoration:underline!important}}
 /* === HISTORY v0.16 PUBLIC RELEASE POLISH END === */
 
+
+
+/* === HISTORY MOBILE HEADER v0.16.4 START === */
+.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none;}
+@media (max-width:700px){
+  :root{--mobile-hist-header-h:104px;}
+  html{scroll-padding-top:calc(var(--mobile-hist-header-h) + 14px)!important;}
+  body{padding-top:calc(var(--mobile-hist-header-h) + env(safe-area-inset-top,0px))!important;}
+  .topbar{display:none!important;}
+  .mobile-topbar{
+    display:block;position:fixed;top:0;left:0;right:0;z-index:9990;
+    padding:calc(env(safe-area-inset-top,0px) + 9px) 12px 10px;
+    background:rgba(5,7,13,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border-bottom:1px solid rgba(105,215,255,.20);
+    box-shadow:0 10px 38px rgba(0,0,0,.36);
+  }
+  .mobile-topbar:before{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--cyan),var(--green),var(--gold));opacity:.88;}
+  .mobile-title{
+    display:block;padding:0 0 8px 0;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:clamp(18px,5vw,25px);font-weight:800;line-height:1.05;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--cyan)!important;text-decoration:none!important;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .mobile-actions{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;}
+  .mobile-navbtn{
+    min-height:42px;padding:9px 11px;border:1px solid rgba(105,215,255,.22);border-radius:999px;
+    background:rgba(11,17,32,.66);color:var(--text)!important;text-decoration:none!important;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:clamp(13px,3.4vw,16px);font-weight:700;
+    letter-spacing:.05em;line-height:1;display:flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);
+  }
+  .mobile-prev{justify-content:flex-start;}
+  .mobile-next{justify-content:flex-end;}
+  .mobile-menu-toggle{color:var(--gold)!important;cursor:pointer;}
+  .mobile-disabled{opacity:.38;pointer-events:none;}
+  .mobile-menu-backdrop{position:fixed;inset:0;z-index:9980;background:rgba(0,0,0,.48);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
+  body.mobile-menu-open .mobile-menu-backdrop{display:block;}
+  .mobile-menu-panel{
+    position:fixed;z-index:9991;top:calc(var(--mobile-hist-header-h) + env(safe-area-inset-top,0px) + 8px);left:12px;right:12px;
+    max-height:calc(100vh - var(--mobile-hist-header-h) - env(safe-area-inset-top,0px) - 28px);overflow:auto;
+    padding:14px;border:1px solid rgba(105,215,255,.26);border-radius:22px;
+    background:linear-gradient(180deg,rgba(9,13,24,.98),rgba(5,7,13,.98));
+    box-shadow:0 24px 90px rgba(0,0,0,.62);
+  }
+  body.mobile-menu-open .mobile-menu-panel{display:block;}
+  .mobile-menu-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(105,215,255,.14);}
+  .mobile-menu-head span{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--gold);font-size:14px;letter-spacing:.18em;text-transform:uppercase;}
+  .mobile-menu-head button{width:38px;height:38px;border-radius:999px;border:1px solid rgba(105,215,255,.22);background:rgba(255,255,255,.03);color:var(--text);font-size:24px;line-height:1;}
+  .mobile-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+  .mobile-menu-grid a{
+    min-height:44px;padding:11px 12px;border:1px solid rgba(105,215,255,.18);border-radius:14px;
+    background:rgba(18,26,49,.78);color:var(--text)!important;text-decoration:none!important;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;font-weight:700;letter-spacing:.04em;
+    display:flex;align-items:center;justify-content:center;text-align:center;
+  }
+  .mobile-menu-grid a:active{transform:scale(.985);border-color:rgba(105,215,255,.45);}
+  .reader-controls{bottom:calc(78px + env(safe-area-inset-bottom,0px))!important;}
+  #top,.hero,.card,.a4-card,section[id],article[id],.people-section,.sources{scroll-margin-top:calc(var(--mobile-hist-header-h) + 18px)!important;}
+}
+@media (max-width:420px){
+  .mobile-navbtn{padding-left:9px;padding-right:9px;font-size:13px;}
+  .mobile-menu-grid{grid-template-columns:1fr;}
+}
+@media (min-width:701px){
+  .mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none!important;}
+}
+@media print{
+  .mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none!important;}
+  body{padding-top:0!important;}
+}
+/* === HISTORY MOBILE HEADER v0.16.4 END === */
 </style></head><body id="top">
 <div class="progress" id="progress"></div>
 <nav class="topbar"><div class="topbar-inner"><div class="brand">Humanity · Dark Timeline · Part 04</div><div class="nav"><a aria-label="Method" href="methodology.html">Method</a><a aria-label="Timeline" href="timeline.html">Timeline</a><a aria-label="Glossary" href="glossary.html">Glossary</a><a aria-label="About" href="about.html">About</a><a aria-label="Contents" href="index.html">Contents</a><a aria-label="← Part 03" href="03_agriculture_10000_3000_bce.html">← Part 03</a><a aria-label="Cards" href="#cards">Cards</a><a aria-label="People" href="#people">People</a><a aria-label="Sources" href="#sources">Sources</a><a aria-label="Part 05 →" href="05_classical_world_1000_bce_500_ce.html">Part 05 →</a></div></div></nav>
+<!-- === HISTORY MOBILE HEADER v0.16.4 START === -->
+<div class="mobile-menu-backdrop" data-mobile-menu-close aria-hidden="true"></div>
+<header class="mobile-topbar" aria-label="Mobile navigation">
+  <a class="mobile-title" href="index.html">HUMANITY HISTORY</a>
+  <div class="mobile-actions" role="navigation" aria-label="Mobile chapter navigation">
+    <a class="mobile-navbtn mobile-prev" href="03_agriculture_10000_3000_bce.html">← Previous</a>
+    <button class="mobile-navbtn mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu-panel">Menu</button>
+    <a class="mobile-navbtn mobile-next" href="05_classical_world_1000_bce_500_ce.html">Next →</a>
+  </div>
+</header>
+<aside class="mobile-menu-panel" id="mobile-menu-panel" aria-label="Mobile menu" aria-hidden="true">
+  <div class="mobile-menu-head"><span>Menu</span><button type="button" data-mobile-menu-close aria-label="Close menu">×</button></div>
+  <div class="mobile-menu-grid">
+<a href="methodology.html">Method</a>
+<a href="timeline.html">Timeline</a>
+<a href="glossary.html">Glossary</a>
+<a href="about.html">About</a>
+<a href="index.html">Contents</a>
+<a href="03_agriculture_10000_3000_bce.html">← Part 03</a>
+<a href="#cards">Cards</a>
+<a href="#people">People</a>
+<a href="#sources">Sources</a>
+<a href="05_classical_world_1000_bce_500_ce.html">Part 05 →</a>
+  </div>
+</aside>
+<!-- === HISTORY MOBILE HEADER v0.16.4 END === -->
+
 <header class="hero"><div class="hero-inner"><div class="eyebrow">Adaptive scale · 100 years per A4 card</div><h1>Ancient World:<br/><span>Writing, Kings, Bronze</span></h1><p class="subtitle">From tablets and pyramids to empire, law, chariots, palaces, great-power diplomacy, collapse, iron, alphabets, and new beginnings. This is the first chapter where century-by-century history becomes meaningful.</p><div class="hero-grid"><div class="hero-stat"><b>3000–1000</b><span>BCE, rounded</span></div><div class="hero-stat"><b>20</b><span>A4 cards</span></div><div class="hero-stat"><b>100</b><span>years / card</span></div><div class="hero-stat"><b>Bronze → Iron</b><span>network acceleration</span></div></div><div class="warning"><strong>Boundary:</strong> dates are rounded to fit the century-card rhythm. The chapter avoids one-civilization tunnel vision: Mesopotamia, Egypt, Indus, Aegean, Anatolia, China, Britain, the Andes, and Mesoamerica appear where the evidence makes them important.</div></div></header>
 <main><section class="intro wrap"><div class="intro-grid"><div class="panel"><h2>What changes in this chapter?</h2><p>Human society gains external memory, stronger institutions, law, kingship, empire, bronze networks, formal diplomacy, palace economies, and collapse lessons. Civilization becomes more powerful, more beautiful, and more dangerous.</p></div><div class="panel"><h2>The honest hinge</h2><p>Writing and bronze do not simply “advance” humanity. They also make humans easier to count, command, tax, arm, and sacrifice. The ancient world is a story of coordination becoming power.</p></div></div></section>
 <section class="contents wrap"><div class="toc-grid"><a aria-label="3000–2900 BCE Writing begins to govern Accounts, rulers, temples, early states." class="toc-card" href="#card-01"><span class="tr">3000–2900 BCE</span><b>Writing begins to govern</b><span>Accounts, rulers, temples, early states.</span></a><a aria-label="2900–2800 BCE Cities harden Urban life, specialization, warfare, taxes." class="toc-card" href="#card-02"><span class="tr">2900–2800 BCE</span><b>Cities harden</b><span>Urban life, specialization, warfare, taxes.</span></a><a aria-label="2800–2700 BCE Kings become institutions Authority, monuments, labor, myth." class="toc-card" href="#card-03"><span class="tr">2800–2700 BCE</span><b>Kings become institutions</b><span>Authority, monuments, labor, myth.</span></a><a aria-label="2700–2600 BCE Pyramids and city walls Organization at scale; grandeur and coercion." class="toc-card" href="#card-04"><span class="tr">2700–2600 BCE</span><b>Pyramids and city walls</b><span>Organization at scale; grandeur and coercion.</span></a><a aria-label="2600–2500 BCE The bronze web Trade routes, metals, elite exchange." class="toc-card" href="#card-05"><span class="tr">2600–2500 BCE</span><b>The bronze web</b><span>Trade routes, metals, elite exchange.</span></a><a aria-label="2500–2400 BCE Indus, Nile, Mesopotamia Different cities, different orders." class="toc-card" href="#card-06"><span class="tr">2500–2400 BCE</span><b>Indus, Nile, Mesopotamia</b><span>Different cities, different orders.</span></a><a aria-label="2400–2300 BCE Empire appears Conquest and administration." class="toc-card" href="#card-07"><span class="tr">2400–2300 BCE</span><b>Empire appears</b><span>Conquest and administration.</span></a><a aria-label="2300–2200 BCE First systemic collapses Climate, revolt, fragility of central power." class="toc-card" href="#card-08"><span class="tr">2300–2200 BCE</span><b>First systemic collapses</b><span>Climate, revolt, fragility of central power.</span></a><a aria-label="2200–2100 BCE Recovery and reorganization Regional powers and new state forms." class="toc-card" href="#card-09"><span class="tr">2200–2100 BCE</span><b>Recovery and reorganization</b><span>Regional powers and new state forms.</span></a><a aria-label="2100–2000 BCE Law, scribes, and memory Rule becomes text." class="toc-card" href="#card-10"><span class="tr">2100–2000 BCE</span><b>Law, scribes, and memory</b><span>Rule becomes text.</span></a><a aria-label="2000–1900 BCE Bronze-age globalization Merchants, palaces, long-distance dependency." class="toc-card" href="#card-11"><span class="tr">2000–1900 BCE</span><b>Bronze-age globalization</b><span>Merchants, palaces, long-distance dependency.</span></a><a aria-label="1900–1800 BCE Codes and kingdoms Law, justice, hierarchy, debt." class="toc-card" href="#card-12"><span class="tr">1900–1800 BCE</span><b>Codes and kingdoms</b><span>Law, justice, hierarchy, debt.</span></a><a aria-label="1800–1700 BCE Horses, chariots, mobility War speed and elite power." class="toc-card" href="#card-13"><span class="tr">1800–1700 BCE</span><b>Horses, chariots, mobility</b><span>War speed and elite power.</span></a><a aria-label="1700–1600 BCE Palace worlds Crete, Anatolia, Egypt, Levant, Mesopotamia." class="toc-card" href="#card-14"><span class="tr">1700–1600 BCE</span><b>Palace worlds</b><span>Crete, Anatolia, Egypt, Levant, Mesopotamia.</span></a><a aria-label="1600–1500 BCE New weapons, new gods Imperial competition and ritual order." class="toc-card" href="#card-15"><span class="tr">1600–1500 BCE</span><b>New weapons, new gods</b><span>Imperial competition and ritual order.</span></a><a aria-label="1500–1400 BCE The age of great kings Diplomacy, tribute, slavery, luxury." class="toc-card" href="#card-16"><span class="tr">1500–1400 BCE</span><b>The age of great kings</b><span>Diplomacy, tribute, slavery, luxury.</span></a><a aria-label="1400–1300 BCE Connected fragility Trade networks become failure networks." class="toc-card" href="#card-17"><span class="tr">1400–1300 BCE</span><b>Connected fragility</b><span>Trade networks become failure networks.</span></a><a aria-label="1300–1200 BCE War at the bronze edge Militarization, migrations, stress." class="toc-card" href="#card-18"><span class="tr">1300–1200 BCE</span><b>War at the bronze edge</b><span>Militarization, migrations, stress.</span></a><a aria-label="1200–1100 BCE Bronze Age collapse Cities burn; systems fail; survivors adapt." class="toc-card" href="#card-19"><span class="tr">1200–1100 BCE</span><b>Bronze Age collapse</b><span>Cities burn; systems fail; survivors adapt.</span></a><a aria-label="1100–1000 BCE After the palaces Iron, local powers, new beginnings." class="toc-card" href="#card-20"><span class="tr">1100–1000 BCE</span><b>After the palaces</b><span>Iron, local powers, new beginnings.</span></a></div></section><nav aria-label="Jump to a card" class="card-jump wrap"><label for="cardJump">Jump</label><select id="cardJump" onchange="if(this.value){location.hash=this.value;this.selectedIndex=0}"><option value="">Jump to card…</option><option value="#card-01">Card 01 · 3000–2900 BCE · Writing begins to govern</option><option value="#card-02">Card 02 · 2900–2800 BCE · Cities harden</option><option value="#card-03">Card 03 · 2800–2700 BCE · Kings become institutions</option><option value="#card-04">Card 04 · 2700–2600 BCE · Pyramids and city walls</option><option value="#card-05">Card 05 · 2600–2500 BCE · The bronze web</option><option value="#card-06">Card 06 · 2500–2400 BCE · Indus, Nile, Mesopotamia</option><option value="#card-07">Card 07 · 2400–2300 BCE · Empire appears</option><option value="#card-08">Card 08 · 2300–2200 BCE · First systemic collapses</option><option value="#card-09">Card 09 · 2200–2100 BCE · Recovery and reorganization</option><option value="#card-10">Card 10 · 2100–2000 BCE · Law, scribes, and memory</option><option value="#card-11">Card 11 · 2000–1900 BCE · Bronze-age globalization</option><option value="#card-12">Card 12 · 1900–1800 BCE · Codes and kingdoms</option><option value="#card-13">Card 13 · 1800–1700 BCE · Horses, chariots, mobility</option><option value="#card-14">Card 14 · 1700–1600 BCE · Palace worlds</option><option value="#card-15">Card 15 · 1600–1500 BCE · New weapons, new gods</option><option value="#card-16">Card 16 · 1500–1400 BCE · The age of great kings</option><option value="#card-17">Card 17 · 1400–1300 BCE · Connected fragility</option><option value="#card-18">Card 18 · 1300–1200 BCE · War at the bronze edge</option><option value="#card-19">Card 19 · 1200–1100 BCE · Bronze Age collapse</option><option value="#card-20">Card 20 · 1100–1000 BCE · After the palaces</option></select><a aria-label="Sources ↓" class="tiny-link" href="#sources">Sources ↓</a></nav>
@@ -276,4 +375,30 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 })();
 </script>
 <!-- HISTORY MOBILE READER CONTROLS v0.6 END -->
+
+
+<!-- === HISTORY MOBILE HEADER v0.16.4 SCRIPT START === -->
+<script>
+(function(){
+  function closeMenu(){
+    document.body.classList.remove('mobile-menu-open');
+    document.querySelectorAll('.mobile-menu-toggle').forEach(function(btn){btn.setAttribute('aria-expanded','false');});
+    document.querySelectorAll('.mobile-menu-panel').forEach(function(panel){panel.setAttribute('aria-hidden','true');});
+  }
+  function openMenu(){
+    document.body.classList.add('mobile-menu-open');
+    document.querySelectorAll('.mobile-menu-toggle').forEach(function(btn){btn.setAttribute('aria-expanded','true');});
+    document.querySelectorAll('.mobile-menu-panel').forEach(function(panel){panel.setAttribute('aria-hidden','false');});
+  }
+  document.addEventListener('click',function(ev){
+    var toggle=ev.target.closest&&ev.target.closest('.mobile-menu-toggle');
+    if(toggle){ev.preventDefault();document.body.classList.contains('mobile-menu-open')?closeMenu():openMenu();return;}
+    if(ev.target.closest&&ev.target.closest('[data-mobile-menu-close]')){ev.preventDefault();closeMenu();return;}
+    if(ev.target.closest&&ev.target.closest('.mobile-menu-panel a')){closeMenu();}
+  });
+  document.addEventListener('keydown',function(ev){if(ev.key==='Escape')closeMenu();});
+})();
+</script>
+<!-- === HISTORY MOBILE HEADER v0.16.4 SCRIPT END === -->
+
 </body></html>
