@@ -1,4 +1,4 @@
-Humanity Dark Timeline — v0.16.4
+Humanity Dark Timeline — v0.16.5
 
 Install: extract this ZIP inside your /bd/ folder so it creates /bd/history/. Open /bd/history/index.html.
 
@@ -24,12 +24,15 @@ v0.16.2 index micro-patch:
 - Method section layout refined
 - Project source anchor cards made active links to existing CRP pages
 
-v0.16.4 rhythm patch:
+v0.16.5 rhythm patch:
 - Part 01 Deep Humanity reduced from 28 cards to 14 cards.
 - Resolution changed from 10,000 years/card to 20,000 years/card.
 - Index, timeline, methodology, manifest and changelog updated.
 - Chapter files 02-11 unchanged.
 
 
-[v0.16.4 — Mobile Header Patch]
+[v0.16.5 — Mobile Header Patch]
 Mobile phones now use a compact fixed two-row header: title on row 1, and ← Previous | Menu | Next → on row 2. The Menu button opens the full navigation drawer. Desktop and tablet navigation are unchanged.
+
+
+v0.16.5 — removed Previous/Next duplicates from the opened mobile menu drawer; the fixed mobile header still shows Previous/Menu/Next.
