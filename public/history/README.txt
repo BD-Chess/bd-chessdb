@@ -1,4 +1,4 @@
-Humanity Dark Timeline — v0.16.6
+Humanity History — v0.16.7
 
 Install: extract this ZIP inside your /bd/ folder so it creates /bd/history/. Open /bd/history/index.html.
 
@@ -24,21 +24,21 @@ v0.16.2 index micro-patch:
 - Method section layout refined
 - Project source anchor cards made active links to existing CRP pages
 
-v0.16.5 rhythm patch:
+v0.16.7 rhythm patch:
 - Part 01 Deep Humanity reduced from 28 cards to 14 cards.
 - Resolution changed from 10,000 years/card to 20,000 years/card.
 - Index, timeline, methodology, manifest and changelog updated.
 - Chapter files 02-11 unchanged.
 
 
-[v0.16.5 — Mobile Header Patch]
+[v0.16.7 — Mobile Header Patch]
 Mobile phones now use a compact fixed two-row header: title on row 1, and ← Previous | Menu | Next → on row 2. The Menu button opens the full navigation drawer. Desktop and tablet navigation are unchanged.
 
 
-v0.16.5 — removed Previous/Next duplicates from the opened mobile menu drawer; the fixed mobile header still shows Previous/Menu/Next.
+v0.16.7 — removed Previous/Next duplicates from the opened mobile menu drawer; the fixed mobile header still shows Previous/Menu/Next.
 
 
-v0.16.6 mobile-title patch:
+v0.16.7 mobile-title patch:
 - Mobile top title now shows the current page title instead of the generic HUMANITY HISTORY label.
 - Mobile top title is an active link back to history/index.html.
 - Link color is locked to the same cyan style for normal, visited, hover, and focus states.
