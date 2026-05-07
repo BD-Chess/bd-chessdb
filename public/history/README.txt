@@ -1,4 +1,4 @@
-Humanity Dark Timeline — v0.16.5
+Humanity Dark Timeline — v0.16.6
 
 Install: extract this ZIP inside your /bd/ folder so it creates /bd/history/. Open /bd/history/index.html.
 
@@ -36,3 +36,9 @@ Mobile phones now use a compact fixed two-row header: title on row 1, and ← Pr
 
 
 v0.16.5 — removed Previous/Next duplicates from the opened mobile menu drawer; the fixed mobile header still shows Previous/Menu/Next.
+
+
+v0.16.6 mobile-title patch:
+- Mobile top title now shows the current page title instead of the generic HUMANITY HISTORY label.
+- Mobile top title is an active link back to history/index.html.
+- Link color is locked to the same cyan style for normal, visited, hover, and focus states.
