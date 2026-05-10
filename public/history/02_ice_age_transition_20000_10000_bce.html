@@ -169,8 +169,81 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 }
 /* === HISTORY MOBILE HEADER v0.16.7 END === */
 </style>
+
+
+<!-- v0.17.0 bilingual/conflict layer -->
+<style id="hist-bilingual-conflict-style">
+  .hist-lang-sl{display:none!important}
+  body.hist-lang-sl .hist-lang-en{display:none!important}
+  body.hist-lang-sl .hist-lang-sl{display:block!important}
+  body.hist-lang-sl span.hist-lang-sl{display:inline!important}
+  body.hist-lang-sl .hist-lang-inline.hist-lang-sl{display:inline!important}
+  .hist-lang-toggle,.hist-war-jump{
+    position:fixed;right:14px;z-index:1003;border:1px solid rgba(105,215,255,.28);
+    background:rgba(5,7,13,.82);color:var(--text,#e7eaf2);border-radius:999px;
+    padding:8px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12px;letter-spacing:.08em;text-decoration:none;box-shadow:0 12px 40px rgba(0,0,0,.28);
+    backdrop-filter:blur(14px);cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease;
+  }
+  .hist-lang-toggle{bottom:14px}
+  .hist-war-jump{bottom:56px;color:var(--gold,#f3c95b)}
+  .hist-lang-toggle:hover,.hist-war-jump:hover{transform:translateY(-1px);border-color:rgba(243,201,91,.55);background:rgba(13,19,36,.92);text-decoration:none}
+  .hist-war-layer{max-width:1120px;margin:70px auto 54px;padding:0 18px;position:relative;z-index:2}
+  .hist-war-shell{border:1px solid rgba(255,111,145,.22);border-radius:22px;background:linear-gradient(135deg,rgba(255,111,145,.08),rgba(105,215,255,.045)),rgba(13,19,36,.74);box-shadow:0 24px 80px rgba(0,0,0,.28);overflow:hidden}
+  .hist-war-head{padding:26px 26px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .hist-war-kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--rose,#ff6f91);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:8px}
+  .hist-war-title{font-size:clamp(1.65rem,3vw,2.55rem);line-height:1.08;margin:0;color:#fff;letter-spacing:-.04em}
+  .hist-war-sub{max-width:880px;color:var(--muted,#9ca6c1);font-size:1.02rem;margin:10px 0 0;line-height:1.68}
+  .hist-war-body{padding:22px 26px 26px}
+  .hist-war-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:16px}
+  .hist-war-card{border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(5,7,13,.38);padding:16px 17px}
+  .hist-war-card h3{margin:.1rem 0 .45rem;color:#fff;font-size:1.12rem;letter-spacing:-.02em}
+  .hist-war-card p{margin:.4rem 0;color:var(--muted,#9ca6c1);line-height:1.62}
+  .hist-war-card ul{margin:.55rem 0 0 1.1rem;padding:0;color:var(--muted,#9ca6c1)}
+  .hist-war-card li{margin:.28rem 0}
+  .hist-war-note{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--dim,#68728f);font-size:.78rem;line-height:1.7;margin-top:18px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px}
+  @media(max-width:760px){.hist-lang-toggle,.hist-war-jump{right:10px;padding:7px 10px;font-size:11px}.hist-war-layer{padding:0 14px;margin:46px auto}.hist-war-head,.hist-war-body{padding:18px}.hist-war-grid{grid-template-columns:1fr}}
+  @media print{.hist-lang-toggle,.hist-war-jump{display:none!important}.hist-lang-sl{display:block!important}.hist-war-shell{border-color:#ccc;background:#fff;box-shadow:none}.hist-war-card{background:#f8f8f8;border-color:#ddd}}
+</style>
+<script id="hist-bilingual-conflict-script">
+(function(){
+  const KEY='humanityHistoryLanguageV1';
+  function apply(lang){
+    const sl = lang === 'sl';
+    document.documentElement.lang = sl ? 'sl' : 'en';
+    if(document.body){document.body.classList.toggle('hist-lang-sl', sl); if(document.getElementById('sl-summary')) document.body.classList.add('hist-sl-page');}
+    const btn=document.getElementById('histLangToggle');
+    if(btn){btn.setAttribute('aria-pressed', sl ? 'true':'false'); btn.setAttribute('title', sl ? 'Switch to English':'Preklopi v slovenščino');}
+  }
+  window.histSetLang=function(lang){localStorage.setItem(KEY, lang);apply(lang);}
+  window.histToggleLang=function(){const cur=localStorage.getItem(KEY)==='sl'?'en':'sl';window.histSetLang(cur);}
+  document.addEventListener('DOMContentLoaded',function(){apply(localStorage.getItem(KEY)||'en');});
+})();
+</script>
+
+
+<style id="hist-sl-summary-style">
+  .hist-sl-summary{display:none!important;max-width:1120px;margin:42px auto 34px;padding:0 18px;position:relative;z-index:2}
+  body.hist-lang-sl .hist-sl-summary{display:block!important}
+  body.hist-lang-sl.hist-sl-page main > section:not(.hist-sl-summary):not(.hist-war-layer),
+  body.hist-lang-sl.hist-sl-page main > div:not(.hist-sl-summary):not(.hist-war-layer),
+  body.hist-lang-sl.hist-sl-page main > article:not(.hist-sl-summary):not(.hist-war-layer){display:none!important}
+  .hist-sl-summary .sl-box{border:1px solid rgba(105,215,255,.22);border-radius:22px;background:linear-gradient(135deg,rgba(105,215,255,.07),rgba(243,201,91,.045)),rgba(13,19,36,.78);box-shadow:0 24px 80px rgba(0,0,0,.26);padding:26px}
+  .hist-sl-summary .sl-kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--cyan,#69d7ff);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:9px}
+  .hist-sl-summary h1,.hist-sl-summary h2{margin:.2rem 0 .7rem;color:#fff;font-size:clamp(1.7rem,3.5vw,3rem);line-height:1.05;letter-spacing:-.05em}
+  .hist-sl-summary p{color:var(--muted,#9ca6c1);font-size:1.06rem;line-height:1.72;margin:.8rem 0}
+  .hist-sl-summary .sl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:16px}
+  .hist-sl-summary .sl-card{border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(5,7,13,.35);padding:15px 16px;color:var(--muted,#9ca6c1)}
+  .hist-sl-summary .sl-card strong{display:block;color:#fff;margin-bottom:.3rem;font-size:1.05rem}
+  .hist-sl-summary .sl-note{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.78rem;color:var(--dim,#68728f);line-height:1.7}
+</style>
+
 </head>
 <body id="top">
+
+<button id="histLangToggle" class="hist-lang-toggle" onclick="histToggleLang()" aria-pressed="false"><span class="hist-lang-en hist-lang-inline">SLO</span><span class="hist-lang-sl hist-lang-inline">EN</span></button>
+<a class="hist-war-jump" href="#conflicts"><span class="hist-lang-en hist-lang-inline">Conflict layer</span><span class="hist-lang-sl hist-lang-inline">Sloj konfliktov</span></a>
+
 <div class="progress" id="progress"></div>
 <nav class="topbar">
 <div class="topbar-inner">
@@ -224,6 +297,17 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 </div>
 </header>
 <main>
+
+<section id="sl-summary" class="hist-sl-summary" lang="sl" data-added="v0.17.0-sl-summary">
+  <div class="sl-box">
+    <div class="sl-kicker">Slovenski zgoščeni pogled · SLO</div>
+    <h1>Prehod iz ledene dobe</h1>
+    <p>Podnebje se premika, ledeniki se umikajo, poti se odpirajo in zapirajo. Človeške skupine se učijo živeti v svetu, kjer bogati koridorji in stresna območja menjajo mesta.</p>
+    <div class="sl-grid"><div class="sl-card"><strong>Stisk</strong>Ko je dober prostor redek, postane strateški.</div><div class="sl-card"><strong>Mobilnost</strong>Selitev je še mogoča, a ponekod vedno dražja.</div><div class="sl-card"><strong>Prehod</strong>Tu se pripravlja logika stalnega naselja: prostor ni več samo pot, ampak vrednost.</div></div>
+    <div class="sl-note">To je slovenska zgoščena plast iste strani. Za celotno izvirno besedilo preklopi nazaj na EN; sloj konfliktov spodaj je dvojezičen in se preklaplja na isti strani.</div>
+  </div>
+</section>
+
 <section class="intro wrap"><h2>What changes in this chapter</h2><p>The first chapter moved in 10,000-year blocks because deep prehistory changes slowly in the surviving record. Here the tempo quickens. One thousand years is still a coarse container, but it lets the reader feel the tightening hinge between ice-age survival, richer ecological edges, semi-settlement, and the first agricultural pressures.</p><p>This is not yet the agricultural world. Most people remain hunter-gatherers. But the bridge is now visible: storage, semi-sedentary settlements, plant processing, ritual gathering, stronger place-identity, and the first steps toward domestication.</p></section>
 <section class="contents wrap" id="contents">
 <h2>Contents · 10 A4 cards</h2>
@@ -418,6 +502,28 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 <a aria-label="Contents" href="index.html">Contents</a>
 <a aria-label="Next: Seeds, Villages, Domestication →" href="03_agriculture_10000_3000_bce.html">Next: Seeds, Villages, Domestication →</a>
 </div>
+
+<section id="conflicts" class="hist-war-layer" data-added="v0.17.0-conflicts-slo">
+  <div class="hist-war-shell">
+    <div class="hist-war-head">
+      <div class="hist-war-kicker">Conflict / War Layer · v0.17</div>
+      <div class="hist-lang-en"><h2 class="hist-war-title">The first pressure corridor</h2><p class="hist-war-sub">Climate instability, migration routes, resource bottlenecks, and denser seasonal gathering sites made conflict more structured. Violence begins to look less random and more territorial.</p></div><div class="hist-lang-sl" lang="sl"><h2 class="hist-war-title">Prvi koridor pritiska</h2><p class="hist-war-sub">Podnebna nestabilnost, migracijske poti, ozka grla virov in gostejša sezonska zbirališča so konflikt naredili bolj strukturiran. Nasilje začne izgledati manj naključno in bolj teritorialno.</p></div>
+    </div>
+    <div class="hist-war-body">
+      <div class="hist-war-grid">
+        <div class="hist-war-card">
+<div class="hist-lang-en"><h3>Resource compression</h3><p>As ice retreated and ecosystems shifted, some zones became rich corridors while others became stress zones. Good land and routes became strategic before states existed.</p></div><div class="hist-lang-sl" lang="sl"><h3>Stisk virov</h3><p>Ko se je led umikal in so se ekosistemi premikali, so nekatera območja postala bogati koridorji, druga stresna območja. Dobra zemlja in poti so postale strateške še pred državami.</p></div>
+</div><div class="hist-war-card">
+<div class="hist-lang-en"><h3>Representative pattern</h3><p>Late Pleistocene and early Holocene evidence suggests episodes of group violence and massacre-like events, but still not continuous state warfare.</p></div><div class="hist-lang-sl" lang="sl"><h3>Predstavniški vzorec</h3><p>Poznopleistocenski in zgodnjeholocenski dokazi kažejo epizode skupinskega nasilja in dogodke podobne pokolom, vendar še ne stalne državne vojne.</p></div>
+</div><div class="hist-war-card">
+<div class="hist-lang-en"><h3>Transition logic</h3><p>The conflict engine changes when mobility declines. Once groups invest in place, leaving becomes expensive; defending becomes rational.</p></div><div class="hist-lang-sl" lang="sl"><h3>Logika prehoda</h3><p>Motor konflikta se spremeni, ko se zmanjša mobilnost. Ko skupine vlagajo v prostor, odhod postane drag; obramba postane racionalna.</p></div>
+</div>
+      </div>
+      <div class="hist-war-note"><div class="hist-lang-en">This is a compact conflict layer, not a full military history. It marks where organized violence shaped the era and why it matters for the long arc of human coordination.</div><div class="hist-lang-sl" lang="sl">To je zgoščen sloj konfliktov, ne celotna vojaška zgodovina. Označi, kje je organizirano nasilje oblikovalo dobo in zakaj je pomembno za dolg lok človeškega usklajevanja.</div></div>
+    </div>
+  </div>
+</section>
+
 </main>
 <script>
 const bar=document.getElementById('progress');

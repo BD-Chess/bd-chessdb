@@ -178,8 +178,81 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 }
 /* === HISTORY MOBILE HEADER v0.16.7 END === */
 </style>
+
+
+<!-- v0.17.0 bilingual/conflict layer -->
+<style id="hist-bilingual-conflict-style">
+  .hist-lang-sl{display:none!important}
+  body.hist-lang-sl .hist-lang-en{display:none!important}
+  body.hist-lang-sl .hist-lang-sl{display:block!important}
+  body.hist-lang-sl span.hist-lang-sl{display:inline!important}
+  body.hist-lang-sl .hist-lang-inline.hist-lang-sl{display:inline!important}
+  .hist-lang-toggle,.hist-war-jump{
+    position:fixed;right:14px;z-index:1003;border:1px solid rgba(105,215,255,.28);
+    background:rgba(5,7,13,.82);color:var(--text,#e7eaf2);border-radius:999px;
+    padding:8px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12px;letter-spacing:.08em;text-decoration:none;box-shadow:0 12px 40px rgba(0,0,0,.28);
+    backdrop-filter:blur(14px);cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease;
+  }
+  .hist-lang-toggle{bottom:14px}
+  .hist-war-jump{bottom:56px;color:var(--gold,#f3c95b)}
+  .hist-lang-toggle:hover,.hist-war-jump:hover{transform:translateY(-1px);border-color:rgba(243,201,91,.55);background:rgba(13,19,36,.92);text-decoration:none}
+  .hist-war-layer{max-width:1120px;margin:70px auto 54px;padding:0 18px;position:relative;z-index:2}
+  .hist-war-shell{border:1px solid rgba(255,111,145,.22);border-radius:22px;background:linear-gradient(135deg,rgba(255,111,145,.08),rgba(105,215,255,.045)),rgba(13,19,36,.74);box-shadow:0 24px 80px rgba(0,0,0,.28);overflow:hidden}
+  .hist-war-head{padding:26px 26px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .hist-war-kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--rose,#ff6f91);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:8px}
+  .hist-war-title{font-size:clamp(1.65rem,3vw,2.55rem);line-height:1.08;margin:0;color:#fff;letter-spacing:-.04em}
+  .hist-war-sub{max-width:880px;color:var(--muted,#9ca6c1);font-size:1.02rem;margin:10px 0 0;line-height:1.68}
+  .hist-war-body{padding:22px 26px 26px}
+  .hist-war-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:16px}
+  .hist-war-card{border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(5,7,13,.38);padding:16px 17px}
+  .hist-war-card h3{margin:.1rem 0 .45rem;color:#fff;font-size:1.12rem;letter-spacing:-.02em}
+  .hist-war-card p{margin:.4rem 0;color:var(--muted,#9ca6c1);line-height:1.62}
+  .hist-war-card ul{margin:.55rem 0 0 1.1rem;padding:0;color:var(--muted,#9ca6c1)}
+  .hist-war-card li{margin:.28rem 0}
+  .hist-war-note{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--dim,#68728f);font-size:.78rem;line-height:1.7;margin-top:18px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px}
+  @media(max-width:760px){.hist-lang-toggle,.hist-war-jump{right:10px;padding:7px 10px;font-size:11px}.hist-war-layer{padding:0 14px;margin:46px auto}.hist-war-head,.hist-war-body{padding:18px}.hist-war-grid{grid-template-columns:1fr}}
+  @media print{.hist-lang-toggle,.hist-war-jump{display:none!important}.hist-lang-sl{display:block!important}.hist-war-shell{border-color:#ccc;background:#fff;box-shadow:none}.hist-war-card{background:#f8f8f8;border-color:#ddd}}
+</style>
+<script id="hist-bilingual-conflict-script">
+(function(){
+  const KEY='humanityHistoryLanguageV1';
+  function apply(lang){
+    const sl = lang === 'sl';
+    document.documentElement.lang = sl ? 'sl' : 'en';
+    if(document.body){document.body.classList.toggle('hist-lang-sl', sl); if(document.getElementById('sl-summary')) document.body.classList.add('hist-sl-page');}
+    const btn=document.getElementById('histLangToggle');
+    if(btn){btn.setAttribute('aria-pressed', sl ? 'true':'false'); btn.setAttribute('title', sl ? 'Switch to English':'Preklopi v slovenščino');}
+  }
+  window.histSetLang=function(lang){localStorage.setItem(KEY, lang);apply(lang);}
+  window.histToggleLang=function(){const cur=localStorage.getItem(KEY)==='sl'?'en':'sl';window.histSetLang(cur);}
+  document.addEventListener('DOMContentLoaded',function(){apply(localStorage.getItem(KEY)||'en');});
+})();
+</script>
+
+
+<style id="hist-sl-summary-style">
+  .hist-sl-summary{display:none!important;max-width:1120px;margin:42px auto 34px;padding:0 18px;position:relative;z-index:2}
+  body.hist-lang-sl .hist-sl-summary{display:block!important}
+  body.hist-lang-sl.hist-sl-page main > section:not(.hist-sl-summary):not(.hist-war-layer),
+  body.hist-lang-sl.hist-sl-page main > div:not(.hist-sl-summary):not(.hist-war-layer),
+  body.hist-lang-sl.hist-sl-page main > article:not(.hist-sl-summary):not(.hist-war-layer){display:none!important}
+  .hist-sl-summary .sl-box{border:1px solid rgba(105,215,255,.22);border-radius:22px;background:linear-gradient(135deg,rgba(105,215,255,.07),rgba(243,201,91,.045)),rgba(13,19,36,.78);box-shadow:0 24px 80px rgba(0,0,0,.26);padding:26px}
+  .hist-sl-summary .sl-kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--cyan,#69d7ff);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:9px}
+  .hist-sl-summary h1,.hist-sl-summary h2{margin:.2rem 0 .7rem;color:#fff;font-size:clamp(1.7rem,3.5vw,3rem);line-height:1.05;letter-spacing:-.05em}
+  .hist-sl-summary p{color:var(--muted,#9ca6c1);font-size:1.06rem;line-height:1.72;margin:.8rem 0}
+  .hist-sl-summary .sl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:16px}
+  .hist-sl-summary .sl-card{border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(5,7,13,.35);padding:15px 16px;color:var(--muted,#9ca6c1)}
+  .hist-sl-summary .sl-card strong{display:block;color:#fff;margin-bottom:.3rem;font-size:1.05rem}
+  .hist-sl-summary .sl-note{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.78rem;color:var(--dim,#68728f);line-height:1.7}
+</style>
+
 </head>
 <body id="top">
+
+<button id="histLangToggle" class="hist-lang-toggle" onclick="histToggleLang()" aria-pressed="false"><span class="hist-lang-en hist-lang-inline">SLO</span><span class="hist-lang-sl hist-lang-inline">EN</span></button>
+<a class="hist-war-jump" href="#conflicts"><span class="hist-lang-en hist-lang-inline">Conflict layer</span><span class="hist-lang-sl hist-lang-inline">Sloj konfliktov</span></a>
+
 <div class="progress"><span id="progressBar"></span></div>
 <nav class="topbar">
 <div class="topbar-inner">
@@ -231,6 +304,17 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 </header><section class="fast-path wrap"><strong>Fast path through Deep Humanity:</strong> this chapter is now compressed to 14 stronger 20,000-year cards. Readers who want the densest anchors can jump straight to the high-signal later cards.<div class="fast-links"><a href="#card-07">Herto / old edge</a><a href="#card-10">other humans</a><a href="#card-11">meaning in objects</a><a href="#card-12">great dispersal</a><a href="#card-13">Sahul / art</a><a href="#card-14">Ice-age imagination</a></div></section>
 <nav aria-label="Jump to a card" class="card-jump wrap"><label for="cardJump">Jump</label><select id="cardJump" onchange="if(this.value){location.hash=this.value;this.selectedIndex=0}"><option value="">Jump to card…</option><option value="#card-01">Card 01 · 300,000–280,000 BCE · Bodies like us, not yet history</option><option value="#card-02">Card 02 · 280,000–260,000 BCE · Stone, fire, and external memory</option><option value="#card-03">Card 03 · 260,000–240,000 BCE · Climate as sculptor</option><option value="#card-04">Card 04 · 240,000–220,000 BCE · The invisible revolution</option><option value="#card-05">Card 05 · 220,000–200,000 BCE · Continuity under pressure</option><option value="#card-06">Card 06 · 200,000–180,000 BCE · More human in many Africas</option><option value="#card-07">Card 07 · 180,000–160,000 BCE · Herto and the old edge</option><option value="#card-08">Card 08 · 160,000–140,000 BCE · Coasts, food maps, fragile abundance</option><option value="#card-09">Card 09 · 140,000–120,000 BCE · Warm windows and old roads</option><option value="#card-10">Card 10 · 120,000–100,000 BCE · Humans among other humans</option><option value="#card-11">Card 11 · 100,000–80,000 BCE · Meaning in objects</option><option value="#card-12">Card 12 · 80,000–60,000 BCE · The narrow gate and the great dispersal</option><option value="#card-13">Card 13 · 60,000–40,000 BCE · Sahul, Eurasia, and the image-making species</option><option value="#card-14">Card 14 · 40,000–20,000 BCE · Relatives fade, ice-age imagination</option></select><a aria-label="Sources ↓" class="tiny-link" href="#sources">Sources ↓</a></nav>
 <main class="wrap">
+
+<section id="sl-summary" class="hist-sl-summary" lang="sl" data-added="v0.17.0-sl-summary">
+  <div class="sl-box">
+    <div class="sl-kicker">Slovenski zgoščeni pogled · SLO</div>
+    <h1>Globoka človeškost</h1>
+    <p>Začetek ni kraljestvo in ni država. Je dolgo obdobje teles, orodij, ognja, jezika, sorodstva in majhnih skupin, ki nosijo človeško prihodnost še brez zgodovine v klasičnem smislu.</p>
+    <div class="sl-grid"><div class="sl-card"><strong>Merilo</strong>Konflikt ostaja lokalno omejen; moč se še ne more razširiti v imperij.</div><div class="sl-card"><strong>Preboj</strong>Simboli, sodelovanje in učenje ustvarijo prenos med generacijami.</div><div class="sl-card"><strong>Lekcija</strong>Človek ni bil nikoli samo nasilje ali samo mir. Bil je prilagodljiv sistem pod pritiskom okolja.</div></div>
+    <div class="sl-note">To je slovenska zgoščena plast iste strani. Za celotno izvirno besedilo preklopi nazaj na EN; sloj konfliktov spodaj je dvojezičen in se preklaplja na isti strani.</div>
+  </div>
+</section>
+
 <div class="section-title"><h2>Chapter card map</h2></div>
 <section aria-label="Deep Humanity card map" class="toc">
 <a aria-label="300,000–280,000 BCE Bodies like us, not yet history Early Homo sapiens, African landscapes, survival before writing or remembered names." href="#card-01"><div class="r">300,000–280,000 BCE</div><div class="t">Bodies like us, not yet history</div><div class="f">Early Homo sapiens, African landscapes, survival before writing or remembered names.</div></a>
@@ -586,6 +670,28 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 <a aria-label="← Back to history index" href="index.html">← Back to history index</a>
 <a aria-label="Next: Ice Age Transition · 20,000–10,000 BCE →" href="02_ice_age_transition_20000_10000_bce.html">Next: Ice Age Transition · 20,000–10,000 BCE →</a>
 </nav>
+
+<section id="conflicts" class="hist-war-layer" data-added="v0.17.0-conflicts-slo">
+  <div class="hist-war-shell">
+    <div class="hist-war-head">
+      <div class="hist-war-kicker">Conflict / War Layer · v0.17</div>
+      <div class="hist-lang-en"><h2 class="hist-war-title">Before war: violence without states</h2><p class="hist-war-sub">This era probably contained violence, revenge, raiding, and group tension, but not yet the large, bureaucratic war systems of later history. Conflict existed as local pressure, not as imperial machinery.</p></div><div class="hist-lang-sl" lang="sl"><h2 class="hist-war-title">Pred vojno: nasilje brez držav</h2><p class="hist-war-sub">Ta doba je verjetno vsebovala nasilje, maščevanje, plenjenje in napetosti med skupinami, ne pa še velikih birokratskih vojnih sistemov poznejše zgodovine. Konflikt je obstajal kot lokalni pritisk, ne kot imperialni stroj.</p></div>
+    </div>
+    <div class="hist-war-body">
+      <div class="hist-war-grid">
+        <div class="hist-war-card">
+<div class="hist-lang-en"><h3>Scale</h3><p>Mostly interpersonal violence, small-group raids, revenge cycles, and territorial pressure around food, mates, prestige, and safe routes.</p></div><div class="hist-lang-sl" lang="sl"><h3>Merilo</h3><p>Pretežno osebno nasilje, manjši napadi, maščevalni krogi ter pritisk za hrano, partnerje, ugled in varne poti.</p></div>
+</div><div class="hist-war-card">
+<div class="hist-lang-en"><h3>Evidence pattern</h3><p>The record is fragmentary: trauma on bones, rare massacre sites, defensive behavior, and ethnographic analogies. Absence of evidence is not evidence of peace.</p></div><div class="hist-lang-sl" lang="sl"><h3>Vzorec dokazov</h3><p>Zapis je razdrobljen: poškodbe na kosteh, redka mesta pokolov, obrambno vedenje in etnografske primerjave. Manj dokazov ne pomeni nujno miru.</p></div>
+</div><div class="hist-war-card">
+<div class="hist-lang-en"><h3>Why it matters</h3><p>The key point is not that early humans were peaceful or brutal. It is that conflict was constrained by small scale. The later problem is scale amplification.</p></div><div class="hist-lang-sl" lang="sl"><h3>Zakaj je pomembno</h3><p>Bistvo ni, da so bili zgodnji ljudje miroljubni ali brutalni. Bistvo je, da je bil konflikt omejen z majhnim merilom. Poznejši problem je ojačanje merila.</p></div>
+</div>
+      </div>
+      <div class="hist-war-note"><div class="hist-lang-en">This is a compact conflict layer, not a full military history. It marks where organized violence shaped the era and why it matters for the long arc of human coordination.</div><div class="hist-lang-sl" lang="sl">To je zgoščen sloj konfliktov, ne celotna vojaška zgodovina. Označi, kje je organizirano nasilje oblikovalo dobo in zakaj je pomembno za dolg lok človeškega usklajevanja.</div></div>
+    </div>
+  </div>
+</section>
+
 </main>
 <script>
 const bar = document.getElementById('progressBar');

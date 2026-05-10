@@ -42,3 +42,11 @@ v0.16.7 mobile-title patch:
 - Mobile top title now shows the current page title instead of the generic HUMANITY HISTORY label.
 - Mobile top title is an active link back to history/index.html.
 - Link color is locked to the same cyan style for normal, visited, hover, and focus states.
+
+
+---
+Patch v0.17.0 — Conflict / War Layer + SLO Toggle
+- Added a compact conflict-and-war layer to all 11 main history chapters.
+- Added Conflict Axis sections to index.html and timeline.html.
+- Added same-page EN/SLO toggle for the new bilingual layer and navigation controls.
+- Default remains English; click SLO to show Slovenian text blocks.

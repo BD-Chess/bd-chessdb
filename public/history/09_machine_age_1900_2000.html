@@ -146,7 +146,80 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
   body{padding-top:0!important;}
 }
 /* === HISTORY MOBILE HEADER v0.16.7 END === */
-</style></head><body id="top"><div class="progress" id="progress"></div><header class="topbar"><div class="topbar-inner"><a aria-label="Humanity · Part 09 · Machine Century" class="brand" href="index.html">Humanity · Part 09 · Machine Century</a><nav class="nav"><a aria-label="Methodology" href="methodology.html">Methodology</a><a aria-label="Timeline" href="timeline.html">Timeline</a><a aria-label="Glossary" href="glossary.html">Glossary</a><a aria-label="About" href="about.html">About</a><a aria-label="Contents" href="index.html">Contents</a><a aria-label="Previous" href="08_industrial_age_1800_1900.html">Previous</a><a aria-label="Cards" href="#cards">Cards</a><a aria-label="People" href="#people">People</a><a aria-label="Sources" href="#sources">Sources</a><a aria-label="Next" href="10_digital_ai_age_2000_2026.html">Next</a></nav></div></header>
+</style>
+
+<!-- v0.17.0 bilingual/conflict layer -->
+<style id="hist-bilingual-conflict-style">
+  .hist-lang-sl{display:none!important}
+  body.hist-lang-sl .hist-lang-en{display:none!important}
+  body.hist-lang-sl .hist-lang-sl{display:block!important}
+  body.hist-lang-sl span.hist-lang-sl{display:inline!important}
+  body.hist-lang-sl .hist-lang-inline.hist-lang-sl{display:inline!important}
+  .hist-lang-toggle,.hist-war-jump{
+    position:fixed;right:14px;z-index:1003;border:1px solid rgba(105,215,255,.28);
+    background:rgba(5,7,13,.82);color:var(--text,#e7eaf2);border-radius:999px;
+    padding:8px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12px;letter-spacing:.08em;text-decoration:none;box-shadow:0 12px 40px rgba(0,0,0,.28);
+    backdrop-filter:blur(14px);cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease;
+  }
+  .hist-lang-toggle{bottom:14px}
+  .hist-war-jump{bottom:56px;color:var(--gold,#f3c95b)}
+  .hist-lang-toggle:hover,.hist-war-jump:hover{transform:translateY(-1px);border-color:rgba(243,201,91,.55);background:rgba(13,19,36,.92);text-decoration:none}
+  .hist-war-layer{max-width:1120px;margin:70px auto 54px;padding:0 18px;position:relative;z-index:2}
+  .hist-war-shell{border:1px solid rgba(255,111,145,.22);border-radius:22px;background:linear-gradient(135deg,rgba(255,111,145,.08),rgba(105,215,255,.045)),rgba(13,19,36,.74);box-shadow:0 24px 80px rgba(0,0,0,.28);overflow:hidden}
+  .hist-war-head{padding:26px 26px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .hist-war-kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--rose,#ff6f91);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:8px}
+  .hist-war-title{font-size:clamp(1.65rem,3vw,2.55rem);line-height:1.08;margin:0;color:#fff;letter-spacing:-.04em}
+  .hist-war-sub{max-width:880px;color:var(--muted,#9ca6c1);font-size:1.02rem;margin:10px 0 0;line-height:1.68}
+  .hist-war-body{padding:22px 26px 26px}
+  .hist-war-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:16px}
+  .hist-war-card{border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(5,7,13,.38);padding:16px 17px}
+  .hist-war-card h3{margin:.1rem 0 .45rem;color:#fff;font-size:1.12rem;letter-spacing:-.02em}
+  .hist-war-card p{margin:.4rem 0;color:var(--muted,#9ca6c1);line-height:1.62}
+  .hist-war-card ul{margin:.55rem 0 0 1.1rem;padding:0;color:var(--muted,#9ca6c1)}
+  .hist-war-card li{margin:.28rem 0}
+  .hist-war-note{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--dim,#68728f);font-size:.78rem;line-height:1.7;margin-top:18px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px}
+  @media(max-width:760px){.hist-lang-toggle,.hist-war-jump{right:10px;padding:7px 10px;font-size:11px}.hist-war-layer{padding:0 14px;margin:46px auto}.hist-war-head,.hist-war-body{padding:18px}.hist-war-grid{grid-template-columns:1fr}}
+  @media print{.hist-lang-toggle,.hist-war-jump{display:none!important}.hist-lang-sl{display:block!important}.hist-war-shell{border-color:#ccc;background:#fff;box-shadow:none}.hist-war-card{background:#f8f8f8;border-color:#ddd}}
+</style>
+<script id="hist-bilingual-conflict-script">
+(function(){
+  const KEY='humanityHistoryLanguageV1';
+  function apply(lang){
+    const sl = lang === 'sl';
+    document.documentElement.lang = sl ? 'sl' : 'en';
+    if(document.body){document.body.classList.toggle('hist-lang-sl', sl); if(document.getElementById('sl-summary')) document.body.classList.add('hist-sl-page');}
+    const btn=document.getElementById('histLangToggle');
+    if(btn){btn.setAttribute('aria-pressed', sl ? 'true':'false'); btn.setAttribute('title', sl ? 'Switch to English':'Preklopi v slovenščino');}
+  }
+  window.histSetLang=function(lang){localStorage.setItem(KEY, lang);apply(lang);}
+  window.histToggleLang=function(){const cur=localStorage.getItem(KEY)==='sl'?'en':'sl';window.histSetLang(cur);}
+  document.addEventListener('DOMContentLoaded',function(){apply(localStorage.getItem(KEY)||'en');});
+})();
+</script>
+
+
+<style id="hist-sl-summary-style">
+  .hist-sl-summary{display:none!important;max-width:1120px;margin:42px auto 34px;padding:0 18px;position:relative;z-index:2}
+  body.hist-lang-sl .hist-sl-summary{display:block!important}
+  body.hist-lang-sl.hist-sl-page main > section:not(.hist-sl-summary):not(.hist-war-layer),
+  body.hist-lang-sl.hist-sl-page main > div:not(.hist-sl-summary):not(.hist-war-layer),
+  body.hist-lang-sl.hist-sl-page main > article:not(.hist-sl-summary):not(.hist-war-layer){display:none!important}
+  .hist-sl-summary .sl-box{border:1px solid rgba(105,215,255,.22);border-radius:22px;background:linear-gradient(135deg,rgba(105,215,255,.07),rgba(243,201,91,.045)),rgba(13,19,36,.78);box-shadow:0 24px 80px rgba(0,0,0,.26);padding:26px}
+  .hist-sl-summary .sl-kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--cyan,#69d7ff);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:9px}
+  .hist-sl-summary h1,.hist-sl-summary h2{margin:.2rem 0 .7rem;color:#fff;font-size:clamp(1.7rem,3.5vw,3rem);line-height:1.05;letter-spacing:-.05em}
+  .hist-sl-summary p{color:var(--muted,#9ca6c1);font-size:1.06rem;line-height:1.72;margin:.8rem 0}
+  .hist-sl-summary .sl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:16px}
+  .hist-sl-summary .sl-card{border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(5,7,13,.35);padding:15px 16px;color:var(--muted,#9ca6c1)}
+  .hist-sl-summary .sl-card strong{display:block;color:#fff;margin-bottom:.3rem;font-size:1.05rem}
+  .hist-sl-summary .sl-note{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.78rem;color:var(--dim,#68728f);line-height:1.7}
+</style>
+
+</head><body id="top">
+
+<button id="histLangToggle" class="hist-lang-toggle" onclick="histToggleLang()" aria-pressed="false"><span class="hist-lang-en hist-lang-inline">SLO</span><span class="hist-lang-sl hist-lang-inline">EN</span></button>
+<a class="hist-war-jump" href="#conflicts"><span class="hist-lang-en hist-lang-inline">Conflict layer</span><span class="hist-lang-sl hist-lang-inline">Sloj konfliktov</span></a>
+<div class="progress" id="progress"></div><header class="topbar"><div class="topbar-inner"><a aria-label="Humanity · Part 09 · Machine Century" class="brand" href="index.html">Humanity · Part 09 · Machine Century</a><nav class="nav"><a aria-label="Methodology" href="methodology.html">Methodology</a><a aria-label="Timeline" href="timeline.html">Timeline</a><a aria-label="Glossary" href="glossary.html">Glossary</a><a aria-label="About" href="about.html">About</a><a aria-label="Contents" href="index.html">Contents</a><a aria-label="Previous" href="08_industrial_age_1800_1900.html">Previous</a><a aria-label="Cards" href="#cards">Cards</a><a aria-label="People" href="#people">People</a><a aria-label="Sources" href="#sources">Sources</a><a aria-label="Next" href="10_digital_ai_age_2000_2026.html">Next</a></nav></div></header>
 <!-- === HISTORY MOBILE HEADER v0.16.7 START === -->
 <div class="mobile-menu-backdrop" data-mobile-menu-close aria-hidden="true"></div>
 <header class="mobile-topbar" aria-label="Mobile navigation">
@@ -172,6 +245,17 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 </aside>
 <!-- === HISTORY MOBILE HEADER v0.16.7 END === -->
 <main>
+
+<section id="sl-summary" class="hist-sl-summary" lang="sl" data-added="v0.17.0-sl-summary">
+  <div class="sl-box">
+    <div class="sl-kicker">Slovenski zgoščeni pogled · SLO</div>
+    <h1>Doba strojev</h1>
+    <p>Dvajseto stoletje pokaže zgornjo mejo vojne: industrijsko ubijanje, genocid, totalna mobilizacija, jedrsko orožje in planetarno tveganje.</p>
+    <div class="sl-grid"><div class="sl-card"><strong>Totalna vojna</strong>Družba kot celota postane del bojišča.</div><div class="sl-card"><strong>Jedrska meja</strong>Človeštvo prvič dobi moč, da ogrozi samo sebe kot civilizacijo.</div><div class="sl-card"><strong>Protiutež</strong>OZN, človekove pravice, dekolonizacija in nadzor orožja so odzivi na vojni stroj.</div></div>
+    <div class="sl-note">To je slovenska zgoščena plast iste strani. Za celotno izvirno besedilo preklopi nazaj na EN; sloj konfliktov spodaj je dvojezičen in se preklaplja na isti strani.</div>
+  </div>
+</section>
+
 <section class="hero"><div class="hero-inner"><div class="eyebrow">1900–2000 CE · 10-year cards</div><h1>Machine <span>Century</span></h1><p class="subtitle">The century when electricity, oil, radio, total war, nuclear weapons, antibiotics, rockets, decolonization, civil rights, computers, networks, and the web turned humanity into a planetary technical species.</p><div class="hero-grid"><div class="hero-stat"><b>10</b><span>A4 cards</span></div><div class="hero-stat"><b>10 years</b><span>per card</span></div><div class="hero-stat"><b>1900–2000</b><span>range</span></div><div class="hero-stat"><b>49</b><span>source anchors</span></div></div><div class="warning">This chapter treats the twentieth century as morally double: humanity cures, connects, liberates, and reaches the Moon, while also building genocide systems, total war, nuclear extinction risk, ecological crisis, and industrial propaganda.</div></div></section>
 <section class="intro wrap"><h2>How to read this chapter</h2><p>The twentieth century is the acceleration hinge. A person born around 1900 enters a world of horses, empires, coal smoke, telegrams, and early airplanes. By 2000, humans have nuclear weapons, antibiotics, television, jet travel, satellites, moon landings, personal computers, the Internet, the Web, and early genome maps.</p><p>The century is not one story of progress. It is a coupled system: each new capability increases the range of good and bad. The same science that heals can weaponize; the same networks that inform can manipulate; the same state that builds welfare can build camps. Key factual anchors were checked online before writing.</p></section><div class="balance-note wrap"><strong>Regional balance note:</strong> the machine century was not only Europe, Russia, China, and the United States. Bandung, African state-building, Latin American industrialization and dictatorship, Middle Eastern oil politics, South Asian partition and development, Pacific warfare, and Cold War proxy pressure all belong to the century’s core machinery.</div>
 <section class="contents wrap"><h2>Cards in this chapter</h2><div class="toc-grid"><a aria-label="01 1900–1910 The electric modern" href="#card-01"><span>01</span><b>1900–1910</b><em>The electric modern</em></a>
@@ -352,7 +436,29 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 <div class="source" id="source-S46"><div class="sid">S46</div><a aria-label="Britannica — Rwanda genocide" href="https://www.britannica.com/event/Rwanda-genocide-of-1994" rel="noopener" target="_blank">Britannica — Rwanda genocide</a><p>The 1994 genocide in Rwanda.</p></div>
 <div class="source" id="source-S47"><div class="sid">S47</div><a aria-label="Britannica — World Trade Organization" href="https://www.britannica.com/topic/World-Trade-Organization" rel="noopener" target="_blank">Britannica — World Trade Organization</a><p>WTO operations beginning January 1, 1995.</p></div>
 <div class="source" id="source-S48"><div class="sid">S48</div><a aria-label="Britannica — Human Genome Project" href="https://www.britannica.com/event/Human-Genome-Project" rel="noopener" target="_blank">Britannica — Human Genome Project</a><p>Human Genome Project, 1990–2003.</p></div>
-<div class="source" id="source-S49"><div class="sid">S49</div><a aria-label="Britannica — Postapartheid South Africa" href="https://www.britannica.com/place/South-Africa/Postapartheid-South-Africa" rel="noopener" target="_blank">Britannica — Postapartheid South Africa</a><p>South Africa’s 1994 all-race election and transition.</p></div></div></section><div class="footer-nav wrap"><a aria-label="← Previous: Industrial Fire" href="08_industrial_age_1800_1900.html">← Previous: Industrial Fire</a><a aria-label="Contents" href="index.html">Contents</a><a aria-label="Next: Digital / AI Age →" href="10_digital_ai_age_2000_2026.html">Next: Digital / AI Age →</a></div></main><script>const bar=document.getElementById('progress');addEventListener('scroll',()=>{const h=document.documentElement;const max=h.scrollHeight-h.clientHeight;bar.style.width=(max?((h.scrollTop/max)*100):0)+'%';},{passive:true});</script><!-- HISTORY MOBILE READER CONTROLS v0.6 START -->
+<div class="source" id="source-S49"><div class="sid">S49</div><a aria-label="Britannica — Postapartheid South Africa" href="https://www.britannica.com/place/South-Africa/Postapartheid-South-Africa" rel="noopener" target="_blank">Britannica — Postapartheid South Africa</a><p>South Africa’s 1994 all-race election and transition.</p></div></div></section><div class="footer-nav wrap"><a aria-label="← Previous: Industrial Fire" href="08_industrial_age_1800_1900.html">← Previous: Industrial Fire</a><a aria-label="Contents" href="index.html">Contents</a><a aria-label="Next: Digital / AI Age →" href="10_digital_ai_age_2000_2026.html">Next: Digital / AI Age →</a></div>
+<section id="conflicts" class="hist-war-layer" data-added="v0.17.0-conflicts-slo">
+  <div class="hist-war-shell">
+    <div class="hist-war-head">
+      <div class="hist-war-kicker">Conflict / War Layer · v0.17</div>
+      <div class="hist-lang-en"><h2 class="hist-war-title">Total war and nuclear restraint</h2><p class="hist-war-sub">The twentieth century is the clearest proof that intelligence without sufficient governance can amplify destruction faster than morality can absorb it.</p></div><div class="hist-lang-sl" lang="sl"><h2 class="hist-war-title">Totalna vojna in jedrska zadržanost</h2><p class="hist-war-sub">Dvajseto stoletje je najjasnejši dokaz, da lahko inteligenca brez zadostnega upravljanja ojača uničenje hitreje, kot ga morala lahko vsrka.</p></div>
+    </div>
+    <div class="hist-war-body">
+      <div class="hist-war-grid">
+        <div class="hist-war-card">
+<div class="hist-lang-en"><h3>Representative conflicts</h3><p>World War I, Russian Civil War, World War II and the Holocaust, Chinese Civil War, Korean War, Vietnam War, Cold War proxy wars, Arab–Israeli wars, Iran–Iraq War, Rwanda, and the Balkan wars.</p></div><div class="hist-lang-sl" lang="sl"><h3>Značilni konflikti</h3><p>Prva svetovna vojna, ruska državljanska vojna, druga svetovna vojna in holokavst, kitajska državljanska vojna, korejska vojna, vietnamska vojna, hladnovojne posredniške vojne, arabsko-izraelske vojne, iransko-iraška vojna, Ruanda in balkanske vojne.</p></div>
+</div><div class="hist-war-card">
+<div class="hist-lang-en"><h3>Destruction ceiling</h3><p>Industrial killing, genocide, aerial bombing, mechanized armies, submarines, missiles, and nuclear weapons create a new fact: civilization can threaten itself.</p></div><div class="hist-lang-sl" lang="sl"><h3>Zgornja meja uničenja</h3><p>Industrijsko ubijanje, genocid, zračno bombardiranje, mehanizirane vojske, podmornice, rakete in jedrsko orožje ustvarijo novo dejstvo: civilizacija lahko ogrozi samo sebe.</p></div>
+</div><div class="hist-war-card">
+<div class="hist-lang-en"><h3>Governance lesson</h3><p>The same century produces the UN, human-rights language, decolonization, arms control, and nuclear deterrence. The war machine forces the first planetary governance attempts.</p></div><div class="hist-lang-sl" lang="sl"><h3>Lekcija upravljanja</h3><p>Isto stoletje ustvari OZN, jezik človekovih pravic, dekolonizacijo, nadzor orožja in jedrsko odvračanje. Vojni stroj izsili prve planetarne poskuse upravljanja.</p></div>
+</div>
+      </div>
+      <div class="hist-war-note"><div class="hist-lang-en">This is a compact conflict layer, not a full military history. It marks where organized violence shaped the era and why it matters for the long arc of human coordination.</div><div class="hist-lang-sl" lang="sl">To je zgoščen sloj konfliktov, ne celotna vojaška zgodovina. Označi, kje je organizirano nasilje oblikovalo dobo in zakaj je pomembno za dolg lok človeškega usklajevanja.</div></div>
+    </div>
+  </div>
+</section>
+
+</main><script>const bar=document.getElementById('progress');addEventListener('scroll',()=>{const h=document.documentElement;const max=h.scrollHeight-h.clientHeight;bar.style.width=(max?((h.scrollTop/max)*100):0)+'%';},{passive:true});</script><!-- HISTORY MOBILE READER CONTROLS v0.6 START -->
 <a aria-label="Back to top" class="back-top" href="#top">↑ Top</a>
 <div aria-label="Reading text size controls" class="reader-controls" role="group">
 <button aria-label="Decrease text size" data-reader-dec="" title="Decrease text size" type="button">A−</button>

@@ -334,8 +334,81 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 }
 /* === HISTORY MOBILE HEADER v0.16.7 END === */
 </style>
+
+
+<!-- v0.17.0 bilingual/conflict layer -->
+<style id="hist-bilingual-conflict-style">
+  .hist-lang-sl{display:none!important}
+  body.hist-lang-sl .hist-lang-en{display:none!important}
+  body.hist-lang-sl .hist-lang-sl{display:block!important}
+  body.hist-lang-sl span.hist-lang-sl{display:inline!important}
+  body.hist-lang-sl .hist-lang-inline.hist-lang-sl{display:inline!important}
+  .hist-lang-toggle,.hist-war-jump{
+    position:fixed;right:14px;z-index:1003;border:1px solid rgba(105,215,255,.28);
+    background:rgba(5,7,13,.82);color:var(--text,#e7eaf2);border-radius:999px;
+    padding:8px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12px;letter-spacing:.08em;text-decoration:none;box-shadow:0 12px 40px rgba(0,0,0,.28);
+    backdrop-filter:blur(14px);cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease;
+  }
+  .hist-lang-toggle{bottom:14px}
+  .hist-war-jump{bottom:56px;color:var(--gold,#f3c95b)}
+  .hist-lang-toggle:hover,.hist-war-jump:hover{transform:translateY(-1px);border-color:rgba(243,201,91,.55);background:rgba(13,19,36,.92);text-decoration:none}
+  .hist-war-layer{max-width:1120px;margin:70px auto 54px;padding:0 18px;position:relative;z-index:2}
+  .hist-war-shell{border:1px solid rgba(255,111,145,.22);border-radius:22px;background:linear-gradient(135deg,rgba(255,111,145,.08),rgba(105,215,255,.045)),rgba(13,19,36,.74);box-shadow:0 24px 80px rgba(0,0,0,.28);overflow:hidden}
+  .hist-war-head{padding:26px 26px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .hist-war-kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--rose,#ff6f91);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:8px}
+  .hist-war-title{font-size:clamp(1.65rem,3vw,2.55rem);line-height:1.08;margin:0;color:#fff;letter-spacing:-.04em}
+  .hist-war-sub{max-width:880px;color:var(--muted,#9ca6c1);font-size:1.02rem;margin:10px 0 0;line-height:1.68}
+  .hist-war-body{padding:22px 26px 26px}
+  .hist-war-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:16px}
+  .hist-war-card{border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(5,7,13,.38);padding:16px 17px}
+  .hist-war-card h3{margin:.1rem 0 .45rem;color:#fff;font-size:1.12rem;letter-spacing:-.02em}
+  .hist-war-card p{margin:.4rem 0;color:var(--muted,#9ca6c1);line-height:1.62}
+  .hist-war-card ul{margin:.55rem 0 0 1.1rem;padding:0;color:var(--muted,#9ca6c1)}
+  .hist-war-card li{margin:.28rem 0}
+  .hist-war-note{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--dim,#68728f);font-size:.78rem;line-height:1.7;margin-top:18px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px}
+  @media(max-width:760px){.hist-lang-toggle,.hist-war-jump{right:10px;padding:7px 10px;font-size:11px}.hist-war-layer{padding:0 14px;margin:46px auto}.hist-war-head,.hist-war-body{padding:18px}.hist-war-grid{grid-template-columns:1fr}}
+  @media print{.hist-lang-toggle,.hist-war-jump{display:none!important}.hist-lang-sl{display:block!important}.hist-war-shell{border-color:#ccc;background:#fff;box-shadow:none}.hist-war-card{background:#f8f8f8;border-color:#ddd}}
+</style>
+<script id="hist-bilingual-conflict-script">
+(function(){
+  const KEY='humanityHistoryLanguageV1';
+  function apply(lang){
+    const sl = lang === 'sl';
+    document.documentElement.lang = sl ? 'sl' : 'en';
+    if(document.body){document.body.classList.toggle('hist-lang-sl', sl); if(document.getElementById('sl-summary')) document.body.classList.add('hist-sl-page');}
+    const btn=document.getElementById('histLangToggle');
+    if(btn){btn.setAttribute('aria-pressed', sl ? 'true':'false'); btn.setAttribute('title', sl ? 'Switch to English':'Preklopi v slovenščino');}
+  }
+  window.histSetLang=function(lang){localStorage.setItem(KEY, lang);apply(lang);}
+  window.histToggleLang=function(){const cur=localStorage.getItem(KEY)==='sl'?'en':'sl';window.histSetLang(cur);}
+  document.addEventListener('DOMContentLoaded',function(){apply(localStorage.getItem(KEY)||'en');});
+})();
+</script>
+
+
+<style id="hist-sl-summary-style">
+  .hist-sl-summary{display:none!important;max-width:1120px;margin:42px auto 34px;padding:0 18px;position:relative;z-index:2}
+  body.hist-lang-sl .hist-sl-summary{display:block!important}
+  body.hist-lang-sl.hist-sl-page main > section:not(.hist-sl-summary):not(.hist-war-layer),
+  body.hist-lang-sl.hist-sl-page main > div:not(.hist-sl-summary):not(.hist-war-layer),
+  body.hist-lang-sl.hist-sl-page main > article:not(.hist-sl-summary):not(.hist-war-layer){display:none!important}
+  .hist-sl-summary .sl-box{border:1px solid rgba(105,215,255,.22);border-radius:22px;background:linear-gradient(135deg,rgba(105,215,255,.07),rgba(243,201,91,.045)),rgba(13,19,36,.78);box-shadow:0 24px 80px rgba(0,0,0,.26);padding:26px}
+  .hist-sl-summary .sl-kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--cyan,#69d7ff);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:9px}
+  .hist-sl-summary h1,.hist-sl-summary h2{margin:.2rem 0 .7rem;color:#fff;font-size:clamp(1.7rem,3.5vw,3rem);line-height:1.05;letter-spacing:-.05em}
+  .hist-sl-summary p{color:var(--muted,#9ca6c1);font-size:1.06rem;line-height:1.72;margin:.8rem 0}
+  .hist-sl-summary .sl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:16px}
+  .hist-sl-summary .sl-card{border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(5,7,13,.35);padding:15px 16px;color:var(--muted,#9ca6c1)}
+  .hist-sl-summary .sl-card strong{display:block;color:#fff;margin-bottom:.3rem;font-size:1.05rem}
+  .hist-sl-summary .sl-note{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.78rem;color:var(--dim,#68728f);line-height:1.7}
+</style>
+
 </head>
 <body>
+
+<button id="histLangToggle" class="hist-lang-toggle" onclick="histToggleLang()" aria-pressed="false"><span class="hist-lang-en hist-lang-inline">SLO</span><span class="hist-lang-sl hist-lang-inline">EN</span></button>
+<a class="hist-war-jump" href="#conflicts"><span class="hist-lang-en hist-lang-inline">Conflict layer</span><span class="hist-lang-sl hist-lang-inline">Sloj konfliktov</span></a>
+
 <div class="progress" id="progress"></div>
 <header class="topbar"><div class="topbar-inner"><div class="brand">Humanity History · Contents v0.16.7</div><span class="version-badge">v0.16.7</span><nav class="nav"><a aria-label="About" href="about.html">About</a><a aria-label="Methodology" href="methodology.html">Methodology</a><a aria-label="Timeline" href="timeline.html">Timeline</a><a aria-label="Glossary" href="glossary.html">Glossary</a><a aria-label="Changelog" href="changelog.html">Changelog</a><a aria-label="Contents" href="#contents">Contents</a><a aria-label="Future Branch" href="#future">Future Branch</a><a aria-label="Project Sources" href="#sources">Project Sources</a></nav></div></header>
 <!-- === HISTORY MOBILE HEADER v0.16.7 START === -->
@@ -364,6 +437,17 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 <!-- === HISTORY MOBILE HEADER v0.16.7 END === -->
 
 <main class="wrap">
+
+<section id="sl-summary" class="hist-sl-summary" lang="sl" data-added="v0.17.0-sl-summary">
+  <div class="sl-box">
+    <div class="sl-kicker">Slovenski zgoščeni pogled · SLO</div>
+    <h1>Zgodovina človeštva — kazalo</h1>
+    <p>Ta arhiv bere človeško zgodovino kot zaporedje prehodov: od telesa in ognja do kmetijstva, mest, imperijev, industrije, digitalnih omrežij in možne AI prihodnosti.</p>
+    <div class="sl-grid"><div class="sl-card"><strong>Kako brati</strong>Vsako poglavje je časovni korak, ne enciklopedija. Namen je videti spremembo merila, ne nabrati vse podatke.</div><div class="sl-card"><strong>Nova plast</strong>Dodana je plast konfliktov in vojn, ker se brez nje zgodovina preveč zgladi.</div><div class="sl-card"><strong>Jedro</strong>Vprašanje ni samo kaj smo zgradili, ampak kaj je vsaka nova moč naredila z našo sposobnostjo koordinacije.</div></div>
+    <div class="sl-note">To je slovenska zgoščena plast iste strani. Za celotno izvirno besedilo preklopi nazaj na EN; sloj konfliktov spodaj je dvojezičen in se preklaplja na isti strani.</div>
+  </div>
+</section>
+
 <section class="hero" id="top">
 <div>
 <div class="kicker">A historical atlas in adaptive A4 cards</div>
@@ -584,6 +668,28 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 <footer class="footer">
 <p><strong>Version:</strong> contents v0.16.7 · Reader Trust + Navigation Layer · Built for Bojan / AI8 · Factual history stops at 2026; future branch remains one possible path only.</p>
 </footer>
+
+<section id="conflicts" class="hist-war-layer" data-added="v0.17.0-conflicts-slo">
+  <div class="hist-war-shell">
+    <div class="hist-war-head">
+      <div class="hist-war-kicker">Conflict / War Layer · v0.17</div>
+      <div class="hist-lang-en"><h2 class="hist-war-title">Conflict and war layer across the archive</h2><p class="hist-war-sub">This package now carries a compact conflict map for every main era. The purpose is not to glorify war, but to show where violence acted as a coordination failure, a technology amplifier, and a pressure test for civilization.</p></div><div class="hist-lang-sl" lang="sl"><h2 class="hist-war-title">Sloj konfliktov in vojn skozi arhiv</h2><p class="hist-war-sub">Ta paket zdaj nosi zgoščen zemljevid konfliktov za vsako glavno dobo. Namen ni poveličevanje vojne, ampak prikaz, kje je nasilje delovalo kot napaka koordinacije, tehnološki ojačevalec in stresni test civilizacije.</p></div>
+    </div>
+    <div class="hist-war-body">
+      <div class="hist-war-grid">
+        <div class="hist-war-card">
+<div class="hist-lang-en"><h3>Pre-state conflict</h3><p>Parts 01–03 track the movement from small-scale violence to fixed villages and defendable surplus.</p><ul><li>Deep Humanity</li><li>Ice Age transition</li><li>Agriculture</li></ul></div><div class="hist-lang-sl" lang="sl"><h3>Konflikt pred državo</h3><p>Deli 01–03 sledijo premiku od nasilja majhnega merila do stalnih vasi in branljivega presežka.</p><ul><li>Globoka človeškost</li><li>Prehod iz ledene dobe</li><li>Kmetijstvo</li></ul></div>
+</div><div class="hist-war-card">
+<div class="hist-lang-en"><h3>State and empire war</h3><p>Parts 04–08 track how writing, taxation, bronze, gunpowder, finance, and industry made war repeatable and scalable.</p><ul><li>Ancient</li><li>Classical</li><li>Medieval</li><li>Early modern</li><li>Industrial</li></ul></div><div class="hist-lang-sl" lang="sl"><h3>Vojna države in imperija</h3><p>Deli 04–08 sledijo, kako so pisava, davki, bron, smodnik, finance in industrija naredili vojno ponovljivo in razširljivo.</p><ul><li>Stari svet</li><li>Klasični svet</li><li>Srednji vek</li><li>Zgodnji novi vek</li><li>Industrijska doba</li></ul></div>
+</div><div class="hist-war-card">
+<div class="hist-lang-en"><h3>Planetary risk</h3><p>Parts 09–11 track total war, nuclear restraint, networked conflict, and the AI hinge decade.</p><ul><li>Machine age</li><li>Digital/AI age</li><li>Possible 2026–2036 branch</li></ul></div><div class="hist-lang-sl" lang="sl"><h3>Planetarno tveganje</h3><p>Deli 09–11 sledijo totalni vojni, jedrski zadržanosti, omreženemu konfliktu in AI prelomnemu desetletju.</p><ul><li>Doba strojev</li><li>Digitalna/AI doba</li><li>Možna veja 2026–2036</li></ul></div>
+</div>
+      </div>
+      <div class="hist-war-note"><div class="hist-lang-en">This is a compact conflict layer, not a full military history. It marks where organized violence shaped the era and why it matters for the long arc of human coordination.</div><div class="hist-lang-sl" lang="sl">To je zgoščen sloj konfliktov, ne celotna vojaška zgodovina. Označi, kje je organizirano nasilje oblikovalo dobo in zakaj je pomembno za dolg lok človeškega usklajevanja.</div></div>
+    </div>
+  </div>
+</section>
+
 </main>
 <script>
 const bar=document.getElementById('progress');

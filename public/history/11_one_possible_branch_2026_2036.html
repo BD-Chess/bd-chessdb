@@ -148,8 +148,81 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
   body{padding-top:0!important;}
 }
 /* === HISTORY MOBILE HEADER v0.16.7 END === */
-</style></head>
-<body><div class="progress" id="progress"></div><header class="topbar"><div class="topbar-inner"><a aria-label="Humanity History" class="brand" href="index.html">Humanity History</a><nav class="nav"><a aria-label="Methodology" href="methodology.html">Methodology</a><a aria-label="Timeline" href="timeline.html">Timeline</a><a aria-label="Glossary" href="glossary.html">Glossary</a><a aria-label="About" href="about.html">About</a><a aria-label="Contents" href="index.html">Contents</a><a aria-label="← Part 10" href="10_digital_ai_age_2000_2026.html">← Part 10</a><a aria-label="Proposal" href="#proposal">Proposal</a><a aria-label="Scenario" href="#scenario">Scenario</a><a aria-label="Sources" href="#sources">Sources</a></nav></div></header>
+</style>
+
+<!-- v0.17.0 bilingual/conflict layer -->
+<style id="hist-bilingual-conflict-style">
+  .hist-lang-sl{display:none!important}
+  body.hist-lang-sl .hist-lang-en{display:none!important}
+  body.hist-lang-sl .hist-lang-sl{display:block!important}
+  body.hist-lang-sl span.hist-lang-sl{display:inline!important}
+  body.hist-lang-sl .hist-lang-inline.hist-lang-sl{display:inline!important}
+  .hist-lang-toggle,.hist-war-jump{
+    position:fixed;right:14px;z-index:1003;border:1px solid rgba(105,215,255,.28);
+    background:rgba(5,7,13,.82);color:var(--text,#e7eaf2);border-radius:999px;
+    padding:8px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12px;letter-spacing:.08em;text-decoration:none;box-shadow:0 12px 40px rgba(0,0,0,.28);
+    backdrop-filter:blur(14px);cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease;
+  }
+  .hist-lang-toggle{bottom:14px}
+  .hist-war-jump{bottom:56px;color:var(--gold,#f3c95b)}
+  .hist-lang-toggle:hover,.hist-war-jump:hover{transform:translateY(-1px);border-color:rgba(243,201,91,.55);background:rgba(13,19,36,.92);text-decoration:none}
+  .hist-war-layer{max-width:1120px;margin:70px auto 54px;padding:0 18px;position:relative;z-index:2}
+  .hist-war-shell{border:1px solid rgba(255,111,145,.22);border-radius:22px;background:linear-gradient(135deg,rgba(255,111,145,.08),rgba(105,215,255,.045)),rgba(13,19,36,.74);box-shadow:0 24px 80px rgba(0,0,0,.28);overflow:hidden}
+  .hist-war-head{padding:26px 26px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .hist-war-kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--rose,#ff6f91);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:8px}
+  .hist-war-title{font-size:clamp(1.65rem,3vw,2.55rem);line-height:1.08;margin:0;color:#fff;letter-spacing:-.04em}
+  .hist-war-sub{max-width:880px;color:var(--muted,#9ca6c1);font-size:1.02rem;margin:10px 0 0;line-height:1.68}
+  .hist-war-body{padding:22px 26px 26px}
+  .hist-war-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:16px}
+  .hist-war-card{border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(5,7,13,.38);padding:16px 17px}
+  .hist-war-card h3{margin:.1rem 0 .45rem;color:#fff;font-size:1.12rem;letter-spacing:-.02em}
+  .hist-war-card p{margin:.4rem 0;color:var(--muted,#9ca6c1);line-height:1.62}
+  .hist-war-card ul{margin:.55rem 0 0 1.1rem;padding:0;color:var(--muted,#9ca6c1)}
+  .hist-war-card li{margin:.28rem 0}
+  .hist-war-note{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--dim,#68728f);font-size:.78rem;line-height:1.7;margin-top:18px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px}
+  @media(max-width:760px){.hist-lang-toggle,.hist-war-jump{right:10px;padding:7px 10px;font-size:11px}.hist-war-layer{padding:0 14px;margin:46px auto}.hist-war-head,.hist-war-body{padding:18px}.hist-war-grid{grid-template-columns:1fr}}
+  @media print{.hist-lang-toggle,.hist-war-jump{display:none!important}.hist-lang-sl{display:block!important}.hist-war-shell{border-color:#ccc;background:#fff;box-shadow:none}.hist-war-card{background:#f8f8f8;border-color:#ddd}}
+</style>
+<script id="hist-bilingual-conflict-script">
+(function(){
+  const KEY='humanityHistoryLanguageV1';
+  function apply(lang){
+    const sl = lang === 'sl';
+    document.documentElement.lang = sl ? 'sl' : 'en';
+    if(document.body){document.body.classList.toggle('hist-lang-sl', sl); if(document.getElementById('sl-summary')) document.body.classList.add('hist-sl-page');}
+    const btn=document.getElementById('histLangToggle');
+    if(btn){btn.setAttribute('aria-pressed', sl ? 'true':'false'); btn.setAttribute('title', sl ? 'Switch to English':'Preklopi v slovenščino');}
+  }
+  window.histSetLang=function(lang){localStorage.setItem(KEY, lang);apply(lang);}
+  window.histToggleLang=function(){const cur=localStorage.getItem(KEY)==='sl'?'en':'sl';window.histSetLang(cur);}
+  document.addEventListener('DOMContentLoaded',function(){apply(localStorage.getItem(KEY)||'en');});
+})();
+</script>
+
+
+<style id="hist-sl-summary-style">
+  .hist-sl-summary{display:none!important;max-width:1120px;margin:42px auto 34px;padding:0 18px;position:relative;z-index:2}
+  body.hist-lang-sl .hist-sl-summary{display:block!important}
+  body.hist-lang-sl.hist-sl-page main > section:not(.hist-sl-summary):not(.hist-war-layer),
+  body.hist-lang-sl.hist-sl-page main > div:not(.hist-sl-summary):not(.hist-war-layer),
+  body.hist-lang-sl.hist-sl-page main > article:not(.hist-sl-summary):not(.hist-war-layer){display:none!important}
+  .hist-sl-summary .sl-box{border:1px solid rgba(105,215,255,.22);border-radius:22px;background:linear-gradient(135deg,rgba(105,215,255,.07),rgba(243,201,91,.045)),rgba(13,19,36,.78);box-shadow:0 24px 80px rgba(0,0,0,.26);padding:26px}
+  .hist-sl-summary .sl-kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--cyan,#69d7ff);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:9px}
+  .hist-sl-summary h1,.hist-sl-summary h2{margin:.2rem 0 .7rem;color:#fff;font-size:clamp(1.7rem,3.5vw,3rem);line-height:1.05;letter-spacing:-.05em}
+  .hist-sl-summary p{color:var(--muted,#9ca6c1);font-size:1.06rem;line-height:1.72;margin:.8rem 0}
+  .hist-sl-summary .sl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:16px}
+  .hist-sl-summary .sl-card{border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(5,7,13,.35);padding:15px 16px;color:var(--muted,#9ca6c1)}
+  .hist-sl-summary .sl-card strong{display:block;color:#fff;margin-bottom:.3rem;font-size:1.05rem}
+  .hist-sl-summary .sl-note{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.78rem;color:var(--dim,#68728f);line-height:1.7}
+</style>
+
+</head>
+<body>
+
+<button id="histLangToggle" class="hist-lang-toggle" onclick="histToggleLang()" aria-pressed="false"><span class="hist-lang-en hist-lang-inline">SLO</span><span class="hist-lang-sl hist-lang-inline">EN</span></button>
+<a class="hist-war-jump" href="#conflicts"><span class="hist-lang-en hist-lang-inline">Conflict layer</span><span class="hist-lang-sl hist-lang-inline">Sloj konfliktov</span></a>
+<div class="progress" id="progress"></div><header class="topbar"><div class="topbar-inner"><a aria-label="Humanity History" class="brand" href="index.html">Humanity History</a><nav class="nav"><a aria-label="Methodology" href="methodology.html">Methodology</a><a aria-label="Timeline" href="timeline.html">Timeline</a><a aria-label="Glossary" href="glossary.html">Glossary</a><a aria-label="About" href="about.html">About</a><a aria-label="Contents" href="index.html">Contents</a><a aria-label="← Part 10" href="10_digital_ai_age_2000_2026.html">← Part 10</a><a aria-label="Proposal" href="#proposal">Proposal</a><a aria-label="Scenario" href="#scenario">Scenario</a><a aria-label="Sources" href="#sources">Sources</a></nav></div></header>
 <!-- === HISTORY MOBILE HEADER v0.16.7 START === -->
 <div class="mobile-menu-backdrop" data-mobile-menu-close aria-hidden="true"></div>
 <header class="mobile-topbar" aria-label="Mobile navigation">
@@ -177,7 +250,18 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 <!-- === HISTORY MOBILE HEADER v0.16.7 END === -->
 
 <section class="hero" id="top"><div class="hero-inner"><div class="eyebrow">Part 11 · 2026–2036 · one possible branch only</div><h1>Humanity, Justice,<br/><span>and the Second Mind</span></h1><p class="subtitle">A longer closing chapter for the humanity book: not prediction, not prophecy, not destiny — one worked example of a broader human–AI collaborative research branch, using Bojan’s AI8 / DCC / Good Future material, after factual history has stopped.</p><div class="hero-grid"><div class="hero-stat"><b>18</b><span>A4 cards</span></div><div class="hero-stat"><b>3</b><span>layers: boundary · proposal · scenario</span></div><div class="hero-stat"><b>2026–2036</b><span>scenario range</span></div><div class="hero-stat"><b>0</b><span>prophecy claims</span></div></div><div class="warning"><b>Boundary:</b> this is one possible future branch among countless possible branches. It could happen, partially happen, or not happen at all. Its function is to present a civilizational proposal, with AI8/DCC as one concrete worked example, and stress-test it narratively — not to predict the future.</div></div></section>
-<main class="wrap"><section class="intro" id="boundary"><h2>How to read this final page</h2><p>The factual timeline ends at 2026. This page is deliberately different: it is a scenario vessel for the ideas in The Good Future, The Broken Mirror, Good &amp; Evil, AI8, DCC, and related project material.</p><p>The final chapter asks: after 300,000 years of hunger, fear, war, art, tools, empire, science, machines, and AI, what kind of civilization do we propose if intelligence becomes powerful enough to remove old constraints?</p><div class="mode-bands"><a aria-label="Boundary cards" href="#boundary">Boundary cards</a><a aria-label="Civilizational proposal" href="#proposal">Civilizational proposal</a><a aria-label="2026–2036 branch" href="#scenario">2026–2036 branch</a><a aria-label="Source anchors" href="#sources">Source anchors</a></div></section>
+<main class="wrap">
+
+<section id="sl-summary" class="hist-sl-summary" lang="sl" data-added="v0.17.0-sl-summary">
+  <div class="sl-box">
+    <div class="sl-kicker">Slovenski zgoščeni pogled · SLO</div>
+    <h1>Možna veja 2026–2036</h1>
+    <p>To ni prerokba, ampak pogojni scenarij. Desetletje po 2026 je nevaren prehod: orodja postanejo dovolj močna, upravljanje pa še ni nujno dovolj zrelo.</p>
+    <div class="sl-grid"><div class="sl-card"><strong>Tveganje</strong>AI tekma, droni, kibernetski napadi in krize legitimnosti lahko znižajo ceno konflikta.</div><div class="sl-card"><strong>Možnost</strong>Dvojni ključ, preverjanje, računsko upravljanje in kontinuiteta lahko znižajo eskalacijo.</div><div class="sl-card"><strong>Jedro</strong>Prihodnost se ne odloči sama. Odloči jo kakovost koordinacije.</div></div>
+    <div class="sl-note">To je slovenska zgoščena plast iste strani. Za celotno izvirno besedilo preklopi nazaj na EN; sloj konfliktov spodaj je dvojezičen in se preklaplja na isti strani.</div>
+  </div>
+</section>
+<section class="intro" id="boundary"><h2>How to read this final page</h2><p>The factual timeline ends at 2026. This page is deliberately different: it is a scenario vessel for the ideas in The Good Future, The Broken Mirror, Good &amp; Evil, AI8, DCC, and related project material.</p><p>The final chapter asks: after 300,000 years of hunger, fear, war, art, tools, empire, science, machines, and AI, what kind of civilization do we propose if intelligence becomes powerful enough to remove old constraints?</p><div class="mode-bands"><a aria-label="Boundary cards" href="#boundary">Boundary cards</a><a aria-label="Civilizational proposal" href="#proposal">Civilizational proposal</a><a aria-label="2026–2036 branch" href="#scenario">2026–2036 branch</a><a aria-label="Source anchors" href="#sources">Source anchors</a></div></section>
 <section class="intro scenario-bridge" id="scenario-protocol"><h2>Scenario protocol: wider than AI8, concrete through AI8</h2><p><strong>General pattern first:</strong> this chapter asks what a humane human–AI research civilization might require: public memory, truth-boundaries, reversibility, alignment pressure, justice without finality, and careful treatment of possible minds under uncertainty.</p><p><strong>Worked example second:</strong> Bojan / AI8 / DCC is used as one concrete branch because it has actual files, artifacts, methods, code, and moral commitments. It is not presented as the only path, the central path, or the inevitable path.</p><div class="falsifiability"><strong>Update / falsifiability rule:</strong> this branch should shrink or change if evidence shows that AI8 methods fail, if the public artifacts do not reproduce, if the justice claims ignore victims or safety, if future AI systems do not develop the assumed capacities, or if another path proves more humane and more testable.</div><div class="alt-futures"><strong>Other branches remain alive:</strong> slow AI tools, fragmented AI empires, strong regulation, open-source acceleration, collapse, spiritual backlash, biotech-first futures, climate-first futures, or futures none of us can currently imagine. This page is one branch, not the tree.</div></section>
 <section class="contents"><h2>Cards on this page</h2><div class="toc-grid"><a aria-label="01 Opening boundary Not a prophecy" href="#card-01"><span>01</span><b>Opening boundary</b><em>Not a prophecy</em></a>
 <a aria-label="02 Humanity under lifted pressure What humanity might be when pressure lifts" href="#card-02"><span>02</span><b>Humanity under lifted pressure</b><em>What humanity might be when pressure lifts</em></a>
@@ -489,7 +573,29 @@ body { font-size:var(--hist-desktop-body,21px) !important; }
 <div class="source" id="source-EU-AI-Act"><div class="sid">EU AI Act</div><a aria-label="European Commission — AI Act enters force" href="https://commission.europa.eu/news-and-media/news/ai-act-enters-force-2024-08-01_en" rel="noopener noreferrer" target="_blank">European Commission — AI Act enters force</a><p>External governance anchor: EU AI Act entered into force on 1 August 2024.</p></div>
 <div class="source" id="source-UN-Global-Digital-Compact"><div class="sid">UN Global Digital Compact</div><a aria-label="United Nations — Global Digital Compact" href="https://www.un.org/global-digital-compact/en" rel="noopener noreferrer" target="_blank">United Nations — Global Digital Compact</a><p>External governance anchor: digital cooperation, human rights online, safe and secure digital space.</p></div></div></section>
 <section class="closing-note"><h2>The moral compression</h2><p>Humanity suffered because it lacked power. Then it suffered because it gained power without wisdom. The next test is whether intelligence can become powerful without becoming final, cruel, or blind.</p></section>
-<nav class="footer-nav"><a aria-label="← Part 10 · Digital / AI Age" href="10_digital_ai_age_2000_2026.html">← Part 10 · Digital / AI Age</a><a aria-label="Contents" href="index.html">Contents</a><a aria-label="Top ↑" href="#top">Top ↑</a></nav></main><script>const bar=document.getElementById('progress');function onScroll(){const h=document.documentElement;const max=h.scrollHeight-h.clientHeight;bar.style.width=(max?((h.scrollTop/max)*100):0)+'%'}document.addEventListener('scroll',onScroll,{passive:true});onScroll();</script><!-- HISTORY MOBILE READER CONTROLS v0.6 START -->
+<nav class="footer-nav"><a aria-label="← Part 10 · Digital / AI Age" href="10_digital_ai_age_2000_2026.html">← Part 10 · Digital / AI Age</a><a aria-label="Contents" href="index.html">Contents</a><a aria-label="Top ↑" href="#top">Top ↑</a></nav>
+<section id="conflicts" class="hist-war-layer" data-added="v0.17.0-conflicts-slo">
+  <div class="hist-war-shell">
+    <div class="hist-war-head">
+      <div class="hist-war-kicker">Conflict / War Layer · v0.17</div>
+      <div class="hist-lang-en"><h2 class="hist-war-title">The dangerous hinge decade</h2><p class="hist-war-sub">This future chapter is scenario, not prophecy. The conflict layer must therefore be conditional: the same tools can produce arms races, automated escalation, or a narrow bridge toward enforced de-escalation.</p></div><div class="hist-lang-sl" lang="sl"><h2 class="hist-war-title">Nevarno prelomno desetletje</h2><p class="hist-war-sub">To prihodnje poglavje je scenarij, ne prerokba. Sloj konfliktov mora biti zato pogojen: ista orodja lahko ustvarijo oboroževalno tekmo, avtomatizirano eskalacijo ali ozek most k prisiljeni deeskalaciji.</p></div>
+    </div>
+    <div class="hist-war-body">
+      <div class="hist-war-grid">
+        <div class="hist-war-card">
+<div class="hist-lang-en"><h3>Likely pressure points</h3><p>AI arms races, drone saturation, cyberattacks on infrastructure, contested elections, migration stress, water/food shocks, regional proxy wars, and legitimacy crises.</p></div><div class="hist-lang-sl" lang="sl"><h3>Verjetne točke pritiska</h3><p>AI oboroževalna tekma, nasičenost z droni, kibernetski napadi na infrastrukturo, sporne volitve, migracijski stres, vodni/prehranski šoki, regionalne posredniške vojne in krize legitimnosti.</p></div>
+</div><div class="hist-war-card">
+<div class="hist-lang-en"><h3>Fork A: escalation</h3><p>Cheap autonomous systems lower the cost of violence. States and non-state actors may learn that disruption is easier than construction.</p></div><div class="hist-lang-sl" lang="sl"><h3>Razcep A: eskalacija</h3><p>Poceni avtonomni sistemi znižajo ceno nasilja. Države in nedržavni akterji se lahko naučijo, da je motenje lažje kot gradnja.</p></div>
+</div><div class="hist-war-card">
+<div class="hist-lang-en"><h3>Fork B: governance</h3><p>If dual-key systems, verification, compute governance, and human–AI continuity mature quickly enough, AI can become a pressure-release system instead of a trigger.</p></div><div class="hist-lang-sl" lang="sl"><h3>Razcep B: upravljanje</h3><p>Če se sistemi dvojnega ključa, preverjanje, upravljanje računske moči in človeško-AI kontinuiteta razvijejo dovolj hitro, lahko AI postane ventil za pritisk namesto sprožilec.</p></div>
+</div>
+      </div>
+      <div class="hist-war-note"><div class="hist-lang-en">Scenario boundary: this page is not a prediction of specific wars. It marks structural conflict risks that any 2026–2036 future branch must confront.</div><div class="hist-lang-sl" lang="sl">Meja scenarija: ta stran ne napoveduje konkretnih vojn. Označuje strukturna tveganja konflikta, s katerimi se mora soočiti vsaka veja prihodnosti 2026–2036.</div></div>
+    </div>
+  </div>
+</section>
+
+</main><script>const bar=document.getElementById('progress');function onScroll(){const h=document.documentElement;const max=h.scrollHeight-h.clientHeight;bar.style.width=(max?((h.scrollTop/max)*100):0)+'%'}document.addEventListener('scroll',onScroll,{passive:true});onScroll();</script><!-- HISTORY MOBILE READER CONTROLS v0.6 START -->
 <a aria-label="Back to top" class="back-top" href="#top">↑ Top</a>
 <div aria-label="Reading text size controls" class="reader-controls" role="group">
 <button aria-label="Decrease text size" data-reader-dec="" title="Decrease text size" type="button">A−</button>
