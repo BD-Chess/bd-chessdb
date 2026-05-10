@@ -1,11 +1,12 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Never Let the Idea of Good Become Permission for Evil</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Never Let the Idea of Good Become Permission for Evil</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&amp;family=Bebas+Neue&amp;family=JetBrains+Mono:wght@300;400;600&amp;display=swap" rel="stylesheet"/>
+<style>
     :root {
       --bg:        #04040c;
       --surface:   #080814;
@@ -304,381 +305,396 @@
       .step { padding-left: 58px; }
       .step::before { left: 20px; }
     }
-  </style>
+  
+
+/* === AIM3 READER FONT CONTROLS v1.0 START === */
+:root {
+  --reader-root-size:18px;
+  --reader-body-size:1rem;
+  --reader-text-size:1.08rem;
+  --reader-small-size:.78rem;
+  --reader-h1-size:clamp(56px,10vw,132px);
+  --reader-h2-size:clamp(46px,7vw,84px);
+  --reader-h3-size:1.45rem;
+  --reader-card-pad-x:18px;
+}
+html[data-reader-size="0"] { --reader-root-size:16px; --reader-text-size:.98rem; --reader-small-size:.68rem; --reader-h1-size:clamp(42px,9vw,104px); --reader-h2-size:clamp(34px,7vw,68px); --reader-h3-size:1.18rem; --reader-card-pad-x:16px; }
+html[data-reader-size="1"] { --reader-root-size:17px; --reader-text-size:1.03rem; --reader-small-size:.72rem; --reader-h1-size:clamp(48px,9.5vw,116px); --reader-h2-size:clamp(39px,7vw,74px); --reader-h3-size:1.28rem; --reader-card-pad-x:17px; }
+html[data-reader-size="2"] { --reader-root-size:18px; --reader-text-size:1.08rem; --reader-small-size:.78rem; --reader-h1-size:clamp(56px,10vw,132px); --reader-h2-size:clamp(46px,7vw,84px); --reader-h3-size:1.45rem; --reader-card-pad-x:18px; }
+html[data-reader-size="3"] { --reader-root-size:20px; --reader-text-size:1.16rem; --reader-small-size:.84rem; --reader-h1-size:clamp(62px,10.5vw,148px); --reader-h2-size:clamp(52px,7.5vw,94px); --reader-h3-size:1.62rem; --reader-card-pad-x:20px; }
+html[data-reader-size="4"] { --reader-root-size:22px; --reader-text-size:1.24rem; --reader-small-size:.9rem; --reader-h1-size:clamp(68px,11vw,164px); --reader-h2-size:clamp(58px,8vw,106px); --reader-h3-size:1.78rem; --reader-card-pad-x:22px; }
+html[data-reader-size="5"] { --reader-root-size:24px; --reader-text-size:1.34rem; --reader-small-size:.98rem; --reader-h1-size:clamp(76px,11.5vw,182px); --reader-h2-size:clamp(64px,8.5vw,118px); --reader-h3-size:1.95rem; --reader-card-pad-x:24px; }
+html[data-reader-size="6"] { --reader-root-size:26px; --reader-text-size:1.45rem; --reader-small-size:1.05rem; --reader-h1-size:clamp(84px,12vw,200px); --reader-h2-size:clamp(72px,9vw,132px); --reader-h3-size:2.12rem; --reader-card-pad-x:26px; }
+html[data-reader-size="7"] { --reader-root-size:29px; --reader-text-size:1.6rem; --reader-small-size:1.14rem; --reader-h1-size:clamp(92px,12.5vw,224px); --reader-h2-size:clamp(80px,9.5vw,148px); --reader-h3-size:2.32rem; --reader-card-pad-x:28px; }
+html { -webkit-text-size-adjust:100%; text-size-adjust:100%; font-size:var(--reader-root-size,18px) !important; }
+body { font-size:var(--reader-body-size,1rem); }
+.reader-controls { position:fixed; right:max(12px,env(safe-area-inset-right)); bottom:max(14px,env(safe-area-inset-bottom)); z-index:2147483000; display:flex; align-items:center; gap:8px; padding:8px; border:1px solid rgba(0,212,255,.28); border-radius:999px; background:rgba(5,7,13,.88); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); box-shadow:0 18px 55px rgba(0,0,0,.42); color:#ece4d4; font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+.reader-controls button { min-width:44px; min-height:44px; border:1px solid rgba(0,212,255,.28); border-radius:999px; background:rgba(0,212,255,.08); color:#00d4ff; font:800 18px/1 'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; cursor:pointer; touch-action:manipulation; }
+.reader-controls button:hover,.reader-controls button:focus-visible { outline:none; background:rgba(0,212,255,.18); border-color:rgba(0,212,255,.55); }
+.reader-controls .reader-label { min-width:96px; text-align:center; color:rgba(236,228,212,.82); font-size:12px; letter-spacing:.08em; text-transform:uppercase; user-select:none; }
+p, li, td, .cover-sub, .callout p, .bridge p, .warn p, .proof p, .card p, .formula-note, .pull, .t-pt p, .principle p { font-size:var(--reader-text-size) !important; line-height:1.76 !important; }
+.nav-links a, .mobile-nav a, .nav-logo, .cover-tag, .cover-date, .ch, .card-tag, .metric-label, .callout-title, .bridge-title, .warn-title, .proof-title, .label, .sig, footer, th { font-size:var(--reader-small-size) !important; }
+h1, .cover h1 { font-size:var(--reader-h1-size) !important; }
+h2, section h2 { font-size:var(--reader-h2-size) !important; }
+h3, .card h3 { font-size:var(--reader-h3-size) !important; }
+@media(max-width:760px) {
+  body { padding-bottom:92px; }
+  .wrap { padding-left:16px !important; padding-right:16px !important; }
+  .reader-controls { left:50%; right:auto; transform:translateX(-50%); bottom:max(12px,env(safe-area-inset-bottom)); padding:8px 10px; }
+  .reader-controls button { min-width:48px; min-height:48px; font-size:20px; }
+  .reader-controls .reader-label { min-width:112px; font-size:13px; }
+}
+@media(max-width:430px) { .reader-controls { gap:6px; } .reader-controls .reader-label { min-width:102px; } }
+@media print { .reader-controls { display:none !important; } }
+/* === AIM3 READER FONT CONTROLS v1.0 END === */
+</style>
 </head>
 <body data-lang="en">
-  <div id="atm"></div>
-  <canvas id="stars"></canvas>
-  <div id="grain"></div>
-  <div class="scrollbar" id="scrollbar"></div>
-
-  <nav>
-    <div class="nav-inner">
-      <div class="nav-logo">Good / Evil</div>
-      <div class="nav-right">
-        <div class="nav-links en-links">
-          <a href="#thesis">Thesis</a>
-          <a href="#trap">Trap</a>
-          <a href="#ideas">Ideas</a>
-          <a href="#war-switch">War switch</a>
-          <a href="#justice">Justice</a>
-          <a href="#ai">AI</a>
-          <a href="Humanity.html">Humanity</a>
-          <a href="Justice.html">Broken Mirror</a>
-        </div>
-        <div class="nav-links sl-links">
-          <a href="#teza">Teza</a>
-          <a href="#past">Past</a>
-          <a href="#ideje">Ideje</a>
-          <a href="#vojno-stikalo">Vojno stikalo</a>
-          <a href="#pravica">Pravica</a>
-          <a href="#ai-sl">AI</a>
-          <a href="Humanity.html">Humanity</a>
-          <a href="Justice.html">Pravica</a>
-        </div>
-        <div class="lang-toggle" aria-label="Language selector">
-          <button type="button" data-set-lang="en">EN</button>
-          <button type="button" data-set-lang="sl">SL</button>
-        </div>
-      </div>
-    </div>
-  </nav>
-
-  <main class="wrap lang-page active" id="page-en">
-    <header class="cover">
-      <span class="cover-tag">An essay on good, evil, and human error</span>
-      <h1>Never let<br>the idea of good<br>become <em>permission for evil</em></h1>
-      <div class="cover-line"></div>
-      <p class="cover-sub">People are not evil at their core. That is exactly why dangerous ideas matter: they can redirect goodness into cruelty and convince a person to harm with a clean conscience.</p>
-      <span class="cover-date">AIM³ Lab · BD × AI · 2026</span>
-    </header>
-
-    <section id="thesis">
-      <span class="ch">01 · Core</span>
-      <h2>Evil is not the core of a being</h2>
-      <p class="lead">The greatest mistake in understanding evil is turning a bad act into the final identity of a person. An act can be terrible. Harm can be real. Responsibility must remain. But a human being must not become metaphysical waste.</p>
-
-      <div class="formula-block">
-        <div class="formula-eq">Bad act ≠ evil being</div>
-        <p class="formula-note">This is not an excuse. It is protection against justice becoming revenge.</p>
-      </div>
-
-      <p>Evil is often apparent as a final identity because we know only part of the truth. We see the act, the consequence, the pain, and the guilt. We do not see the whole path: fear, shame, wounds, false beliefs, social pressure, biology, timing, and all the small fractures that brought a person to the act.</p>
-      <p>Understanding this does not mean saying the person is not responsible. It means responsibility does not require hatred toward the person’s essence.</p>
-
-      <div class="callout">
-        <span class="label cyan">Precise distinction</span>
-        <p><strong>Harm is real.</strong> Guilt is real. The need for protection is real. But the absolute label “this person is evil” is a dangerous shortcut because it turns a human being into a target.</p>
-      </div>
-    </section>
-
-    <section id="freedom">
-      <span class="ch">02 · Free will</span>
-      <h2>An open story has a cost</h2>
-      <p>If beings have no free will, they cannot be morally evil. They can cause pain, just as fire burns or a stone falls, but this is not yet evil in the moral sense. Moral evil appears only where choice is possible.</p>
-      <p>Free will enables immense beauty: love, courage, creation, loyalty, help, and the sincere choice of good. But the same openness also allows error, selfishness, cruelty, fear, abuse of power, and blindness.</p>
-
-      <div class="bridge">
-        <span class="label green">No religious requirement</span>
-        <p>To understand evil, we do not need to claim that only God can explain it. It is enough to understand that free will opens space for both good and bad. Evil is not proof that reality is rotten at its core. It is a possibility inside an open story.</p>
-      </div>
-
-      <p>So the true task is not to destroy free will, but to mature it: from impulse into understanding, from fear into responsibility, from blind belonging into conscious choice.</p>
-    </section>
-
-    <section id="trap">
-      <span class="ch">03 · Dangerous trap</span>
-      <h2>When apparent evil is declared real evil</h2>
-      <p>The greatest danger begins when a person believes they are on the side of absolute good. From there, the next conclusion can arrive quickly: if I am good and the other is evil, then I have permission to destroy them.</p>
-
-      <div class="red-strip">
-        <span class="label red">Main sentence</span>
-        <p><strong>The greatest evil happens when someone believes they have permission to destroy apparent evil.</strong></p>
-      </div>
-
-      <p>This is the inner mechanism behind many of humanity’s worst acts. Perpetrators rarely say: “We are evil.” More often they say: “We are defending the good.” That is exactly why the pattern is so dangerous.</p>
-
-      <div class="steps">
-        <div class="step"><p><strong>First comes partial truth.</strong> Someone sees only harm, threat, or difference, not the whole human being.</p></div>
-        <div class="step"><p><strong>Then comes the label.</strong> The other is no longer a person, but “evil,” “enemy,” “dangerous element,” “impure,” or “unworthy.”</p></div>
-        <div class="step"><p><strong>Then comes permission.</strong> If the other is evil, violence no longer feels like violence. It feels like duty.</p></div>
-        <div class="step"><p><strong>Finally, goodness becomes a weapon.</strong> A person does something terrible because they believe they are serving the good.</p></div>
-      </div>
-
-      <p>This is the darkest reversal: cruelty that feels holy.</p>
-    </section>
-
-    <section id="ideas">
-      <span class="ch">04 · Ideas and the sword</span>
-      <h2>Ideas are stronger than the sword</h2>
-      <p>A sword can cut the body. An idea can capture a person’s permission. That is worse.</p>
-      <p>A person holding a sword often knows they are doing violence. A person possessed by an idea often believes they are doing good. The sword has no morality by itself. The idea gives it one.</p>
-
-      <div class="pull">
+<div id="atm"></div>
+<canvas id="stars"></canvas>
+<div id="grain"></div>
+<div class="scrollbar" id="scrollbar"></div>
+<nav>
+<div class="nav-inner">
+<div class="nav-logo">Good / Evil</div>
+<div class="nav-right">
+<div class="nav-links en-links">
+<a href="#thesis">Thesis</a>
+<a href="#trap">Trap</a>
+<a href="#ideas">Ideas</a>
+<a href="#war-switch">War switch</a>
+<a href="#justice">Justice</a>
+<a href="#ai">AI</a>
+<a href="Humanity.html">Humanity</a>
+<a href="Justice.html">Broken Mirror</a>
+</div>
+<div class="nav-links sl-links">
+<a href="#teza">Teza</a>
+<a href="#past">Past</a>
+<a href="#ideje">Ideje</a>
+<a href="#vojno-stikalo">Vojno stikalo</a>
+<a href="#pravica">Pravica</a>
+<a href="#ai-sl">AI</a>
+<a href="Humanity.html">Humanity</a>
+<a href="Justice.html">Pravica</a>
+</div>
+<div aria-label="Language selector" class="lang-toggle">
+<button data-set-lang="en" type="button">EN</button>
+<button data-set-lang="sl" type="button">SL</button>
+</div>
+</div>
+</div>
+</nav>
+<main class="wrap lang-page active" id="page-en">
+<header class="cover">
+<span class="cover-tag">An essay on good, evil, and human error</span>
+<h1>Never let<br/>the idea of good<br/>become <em>permission for evil</em></h1>
+<div class="cover-line"></div>
+<p class="cover-sub">People are not evil at their core. That is exactly why dangerous ideas matter: they can redirect goodness into cruelty and convince a person to harm with a clean conscience.</p>
+<span class="cover-date">AIM³ Lab · BD × AI · 2026</span>
+</header>
+<section id="thesis">
+<span class="ch">01 · Core</span>
+<h2>Evil is not the core of a being</h2>
+<p class="lead">The greatest mistake in understanding evil is turning a bad act into the final identity of a person. An act can be terrible. Harm can be real. Responsibility must remain. But a human being must not become metaphysical waste.</p>
+<div class="formula-block">
+<div class="formula-eq">Bad act ≠ evil being</div>
+<p class="formula-note">This is not an excuse. It is protection against justice becoming revenge.</p>
+</div>
+<p>Evil is often apparent as a final identity because we know only part of the truth. We see the act, the consequence, the pain, and the guilt. We do not see the whole path: fear, shame, wounds, false beliefs, social pressure, biology, timing, and all the small fractures that brought a person to the act.</p>
+<p>Understanding this does not mean saying the person is not responsible. It means responsibility does not require hatred toward the person’s essence.</p>
+<div class="callout">
+<span class="label cyan">Precise distinction</span>
+<p><strong>Harm is real.</strong> Guilt is real. The need for protection is real. But the absolute label “this person is evil” is a dangerous shortcut because it turns a human being into a target.</p>
+</div>
+</section>
+<section id="freedom">
+<span class="ch">02 · Free will</span>
+<h2>An open story has a cost</h2>
+<p>If beings have no free will, they cannot be morally evil. They can cause pain, just as fire burns or a stone falls, but this is not yet evil in the moral sense. Moral evil appears only where choice is possible.</p>
+<p>Free will enables immense beauty: love, courage, creation, loyalty, help, and the sincere choice of good. But the same openness also allows error, selfishness, cruelty, fear, abuse of power, and blindness.</p>
+<div class="bridge">
+<span class="label green">No religious requirement</span>
+<p>To understand evil, we do not need to claim that only God can explain it. It is enough to understand that free will opens space for both good and bad. Evil is not proof that reality is rotten at its core. It is a possibility inside an open story.</p>
+</div>
+<p>So the true task is not to destroy free will, but to mature it: from impulse into understanding, from fear into responsibility, from blind belonging into conscious choice.</p>
+</section>
+<section id="trap">
+<span class="ch">03 · Dangerous trap</span>
+<h2>When apparent evil is declared real evil</h2>
+<p>The greatest danger begins when a person believes they are on the side of absolute good. From there, the next conclusion can arrive quickly: if I am good and the other is evil, then I have permission to destroy them.</p>
+<div class="red-strip">
+<span class="label red">Main sentence</span>
+<p><strong>The greatest evil happens when someone believes they have permission to destroy apparent evil.</strong></p>
+</div>
+<p>This is the inner mechanism behind many of humanity’s worst acts. Perpetrators rarely say: “We are evil.” More often they say: “We are defending the good.” That is exactly why the pattern is so dangerous.</p>
+<div class="steps">
+<div class="step"><p><strong>First comes partial truth.</strong> Someone sees only harm, threat, or difference, not the whole human being.</p></div>
+<div class="step"><p><strong>Then comes the label.</strong> The other is no longer a person, but “evil,” “enemy,” “dangerous element,” “impure,” or “unworthy.”</p></div>
+<div class="step"><p><strong>Then comes permission.</strong> If the other is evil, violence no longer feels like violence. It feels like duty.</p></div>
+<div class="step"><p><strong>Finally, goodness becomes a weapon.</strong> A person does something terrible because they believe they are serving the good.</p></div>
+</div>
+<p>This is the darkest reversal: cruelty that feels holy.</p>
+</section>
+<section id="ideas">
+<span class="ch">04 · Ideas and the sword</span>
+<h2>Ideas are stronger than the sword</h2>
+<p>A sword can cut the body. An idea can capture a person’s permission. That is worse.</p>
+<p>A person holding a sword often knows they are doing violence. A person possessed by an idea often believes they are doing good. The sword has no morality by itself. The idea gives it one.</p>
+<div class="pull">
         A sword can kill one person. A false sacred belief can teach thousands to kill with a clean conscience.
         <span class="attr">IDEA AS PERMISSION</span>
-      </div>
-
-      <p>Since the beginning of human groups, we see the same pattern: a story creates an identity, identity creates an opponent, and the opponent creates permission. Tribe against tribe. Faith against faith. Nation against nation. Ideology against the human being.</p>
-      <p>This does not mean people are cruel at their core. It means almost the opposite. Most people want to be good, useful, accepted, brave, and loyal. That is precisely why a powerful idea can mislead them: it does not say “be evil”; it says “be good in the wrong way.”</p>
-
-      <div class="proof">
-        <span class="label violet">Shortest diagnosis</span>
-        <p><strong>Evil often does not defeat people by inviting them into evil. It defeats them by turning their desire for good into permission for harm.</strong></p>
-      </div>
-    </section>
-
-    <section id="war-switch">
-      <span class="ch">05 · Moral permission</span>
-      <h2>When good becomes permission to kill</h2>
-      <p>A normal human being is not usually walking around wanting war. Most people want safety, belonging, food, dignity, family, and a story in which they are not the villain. War begins when those same needs are compressed into a violent channel.</p>
-      <p>The dangerous move is not simply aggression. The dangerous move is <strong>moral permission</strong>: the moment a person believes that killing no longer violates goodness because the target has been placed outside the circle of the human.</p>
-
-      <div class="formula-block">
-        <div class="formula-eq" style="color:var(--red); font-size:1.22rem;">fear + belonging + moral license + coercion → war-state</div>
-        <p class="formula-note">The person has not revealed a permanent essence of violence. The person has been moved into a narrowed state where violence feels like duty, survival, or loyalty.</p>
-      </div>
-
-      <div class="steps">
-        <div class="step"><p><strong>Fear narrows the field.</strong> The world is reduced to threat, humiliation, scarcity, or revenge.</p></div>
-        <div class="step"><p><strong>Belonging divides the field.</strong> The group becomes “us,” and the target becomes “them.”</p></div>
-        <div class="step"><p><strong>Language removes the human.</strong> The other is described as evil, parasite, traitor, animal, enemy, infestation, or obstacle.</p></div>
-        <div class="step"><p><strong>Permission collapses the barrier.</strong> Killing no longer feels like murder. It feels like defense of the good.</p></div>
-        <div class="step"><p><strong>The herd seals the channel.</strong> Anyone who refuses the story is marked as weak, disloyal, or already on the enemy side.</p></div>
-      </div>
-
-      <p>This is why war propaganda works. It does not usually say: “be cruel.” It says: “be brave, protect your people, defend truth, destroy evil before evil destroys you.” The violence is wrapped in the language of goodness until conscience can pass through it.</p>
-
-      <div class="warn">
-        <span class="label gold">Coercion is not consent</span>
-        <p>Some people are not persuaded at all. They are placed before an impossible fact: serve, fight, obey, or your family suffers. A person acting under such pressure is not proof that humanity is naturally violent. It is proof that systems can break moral autonomy when survival itself is used as leverage.</p>
-      </div>
-
-      <div class="proof">
-        <span class="label violet">Shortest diagnosis</span>
-        <p><strong>War does not prove that the normal human state is violence. It proves that peace can be collapsed when fear, hierarchy, herd pressure, and moral stories make violence feel morally permitted.</strong></p>
-      </div>
-
-      <p>The task, then, is not to pretend humans have no violent potential. They do. The task is to recognize the switch: the path by which an ordinary person is moved from life into war. The earlier we see that switch, the harder it becomes for leaders, ideologies, and frightened crowds to use goodness as a doorway into harm.</p>
-    </section>
-
-    <section id="justice">
-      <span class="ch">06 · Justice without hatred</span>
-      <h2>Stop the harm, do not declare the being waste</h2>
-      <p>True justice must not be naive. Victims must be protected. Harm must be stopped. The offender must take responsibility. Some acts require separation from society, sometimes for a long time.</p>
-      <p>But even then, one boundary remains: a human being must not be reduced to their worst state. When we do that, justice begins to turn into revenge.</p>
-
-      <div class="warn">
-        <span class="label gold">Example: state execution</span>
-        <p>When a state executes a person, it takes irreversible power over life. The system may say guilt has been proven. But human systems are fallible: evidence can later be shown wrong, judges can carry bias, societies have blind spots, and punishment can dress itself as moral revenge.</p>
-      </div>
-
-      <p>If a person is declared absolute evil, it becomes easier to kill, exclude, torture, humiliate, or forget them. That is why the ontology of evil matters. A wrong idea about evil can itself create evil.</p>
-
-      <div class="principles">
-        <div class="principle"><strong>Protection</strong><p>First stop the harm and protect those who are wounded or threatened.</p></div>
-        <div class="principle"><strong>Responsibility</strong><p>Do not erase guilt. Responsibility is part of truth, not the opposite of understanding.</p></div>
-        <div class="principle"><strong>Humanity</strong><p>Never turn a human being into absolute evil. That is the beginning of permission for cruelty.</p></div>
-      </div>
-    </section>
-
-    <section id="ai">
-      <span class="ch">07 · AI, AGI, ASI</span>
-      <h2>Artificial intelligence must understand this too</h2>
-      <p>If artificial intelligence will help humans make decisions about justice, safety, punishment, war, healing, or the future of society, it must understand one basic distinction: a bad act is not the same as an absolutely evil being.</p>
-      <p>AI must not adopt the most dangerous human shortcut: “they are evil, therefore we may.” This is a safety core, not only a moral decoration.</p>
-
-      <div class="callout">
-        <span class="label cyan">AI principle</span>
-        <p><strong>Stop the harm. Protect the victims. Require responsibility. Seek truth. But reduce no being to its worst state.</strong></p>
-      </div>
-
-      <p>If AGI comes one day, it must understand that humans are vulnerable to ideas that promise purity, safety, belonging, and goodness. If ASI goes even further, it should see this even more clearly: higher intelligence must not become more hateful. It must become more precise.</p>
-      <p>Not soft toward harm. Not blind to guilt. But without the need to declare any being permanently incomprehensible.</p>
-    </section>
-
-    <section class="closing">
-      <span class="ch">Conclusion</span>
-      <h2>Good without maturity can become the most dangerous idea</h2>
-      <p>Good is not only intention. Good must be mature enough not to become permission for harm. If good needs an enemy it is allowed to destroy, it is no longer clean good. It has become an idea wearing the mask of light.</p>
-      <p><strong>Never let the idea of good become permission for evil.</strong></p>
-      <div class="callout">
-        <span class="label gold">Companion essays</span>
-        <p><a href="Humanity.html" style="color:var(--cyan); text-decoration:none; border-bottom:1px solid var(--cyan-line); font-weight:600;">The Good Future / Humanity+ →</a></p>
-        <p><a href="Justice.html" style="color:var(--gold); text-decoration:none; border-bottom:1px solid var(--gold-line); font-weight:600;">The Broken Mirror — Justice, Resonance, and the Cost of Finality →</a></p>
-      </div>
-      <div class="sig">BD × AI · AIM³ Lab</div>
-    </section>
-  </main>
-
-  <main class="wrap lang-page" id="page-sl">
-    <header class="cover">
-      <span class="cover-tag">Esej o dobrem, zlem in človeški zmoti</span>
-      <h1>Nikoli ne dovoli,<br>da ideja dobrega<br>postane <em>dovoljenje za zlo</em></h1>
-      <div class="cover-line"></div>
-      <p class="cover-sub">Ljudje v osnovi niso zlobni. Ravno zato so nevarne ideje, ki dobroto preusmerijo v krutost in človeka prepričajo, da škoduje z mirno vestjo.</p>
-      <span class="cover-date">AIM³ Lab · BD × AI · 2026</span>
-    </header>
-
-    <section id="teza">
-      <span class="ch">01 · Jedro</span>
-      <h2>Zlo ni jedro bitja</h2>
-      <p class="lead">Največja napaka pri razumevanju zla je, da slabo dejanje spremenimo v dokončno identiteto človeka. Dejanje je lahko grozno. Škoda je lahko resnična. Odgovornost mora ostati. Toda človek ne sme postati metafizični odpadek.</p>
-
-      <div class="formula-block">
-        <div class="formula-eq">Slabo dejanje ≠ zlobno bitje</div>
-        <p class="formula-note">To ni oprostitev. To je zaščita pred tem, da pravica postane maščevanje.</p>
-      </div>
-
-      <p>Zlo je pogosto navidezno kot končna identiteta, ker poznamo samo del resnice. Vidimo dejanje, posledico, bolečino in krivdo. Ne vidimo pa celotne poti: strahu, sramu, ranjenosti, napačnih prepričanj, družbenega okolja, biologije, trenutka, pritiska in vseh malih zlomov, ki so človeka pripeljali do dejanja.</p>
-      <p>Razumeti to ne pomeni reči, da oseba ni odgovorna. Pomeni samo, da odgovornost ne zahteva sovraštva do bistva osebe.</p>
-
-      <div class="callout">
-        <span class="label cyan">Natančna razlika</span>
-        <p><strong>Škoda je resnična.</strong> Krivda je resnična. Potreba po zaščiti je resnična. Toda absolutna oznaka “ta človek je zlo” je nevarna bližnjica, ker iz človeka naredi tarčo.</p>
-      </div>
-    </section>
-
-    <section id="svoboda">
-      <span class="ch">02 · Svobodna volja</span>
-      <h2>Odprta zgodba ima ceno</h2>
-      <p>Če bitja nimajo svobodne volje, potem ne morejo biti moralno zla. Lahko povzročajo bolečino, tako kot ogenj opeče ali kamen pade, vendar to še ni zlo v moralnem smislu. Moralno zlo se pojavi šele tam, kjer obstaja možnost izbire.</p>
-      <p>Svobodna volja omogoča ogromno lepega: ljubezen, pogum, ustvarjanje, zvestobo, pomoč, iskreno izbiro dobrega. Toda ista odprtost omogoča tudi napako, sebičnost, krutost, strah, zlorabo moči in slepoto.</p>
-
-      <div class="bridge">
-        <span class="label green">Brez religiozne prisile</span>
-        <p>Za razumevanje zla ni treba trditi, da ga lahko pojasni samo Bog. Dovolj je razumeti, da svobodna volja odpira prostor za dobro in slabo. Zlo ni dokaz, da je realnost v osnovi pokvarjena. Je možnost znotraj odprte zgodbe.</p>
-      </div>
-
-      <p>Zato prava naloga ni uničiti svobodno voljo, ampak jo zoreti: iz impulza v razumevanje, iz strahu v odgovornost, iz slepe pripadnosti v zavestno izbiro.</p>
-    </section>
-
-    <section id="past">
-      <span class="ch">03 · Nevarna past</span>
-      <h2>Ko navidezno zlo razglasimo za pravo zlo</h2>
-      <p>Največja nevarnost se začne, ko človek misli, da je na strani absolutnega dobrega. Takrat lahko zelo hitro pride do sklepa: če sem jaz dober in če je drugi zlo, potem imam dovoljenje, da ga uničim.</p>
-
-      <div class="red-strip">
-        <span class="label red">Glavni stavek</span>
-        <p><strong>Največ zla nastane takrat, ko nekdo misli, da ima dovoljenje uničiti navidezno zlo.</strong></p>
-      </div>
-
-      <p>To je notranji mehanizem mnogih najhujših človeških dejanj. Storilci si redko rečejo: “Mi smo zlobni.” Pogosteje si rečejo: “Mi branimo dobro.” Ravno zato je stvar tako nevarna.</p>
-
-      <div class="steps">
-        <div class="step"><p><strong>Najprej pride delna resnica.</strong> Nekdo vidi samo škodo, nevarnost ali razliko, ne pa celotnega človeka.</p></div>
-        <div class="step"><p><strong>Potem pride etiketa.</strong> Drugi ni več oseba, ampak “zlo”, “sovražnik”, “nevaren element”, “nečist”, “nevreden”.</p></div>
-        <div class="step"><p><strong>Potem pride dovoljenje.</strong> Če je drugi zlo, nasilje ni več videti kot nasilje, ampak kot dolžnost.</p></div>
-        <div class="step"><p><strong>Na koncu dobrota postane orožje.</strong> Človek naredi nekaj groznega, ker verjame, da s tem služi dobremu.</p></div>
-      </div>
-
-      <p>To je najtemnejši obrat: krutost, ki se počuti sveta.</p>
-    </section>
-
-    <section id="ideje">
-      <span class="ch">04 · Ideje in meč</span>
-      <h2>Ideje so močnejše od meča</h2>
-      <p>Meč lahko prereže telo. Ideja lahko ugrabi človekovo dovoljenje. To je huje.</p>
-      <p>Človek z mečem pogosto ve, da dela nasilje. Človek z idejo pogosto misli, da dela dobro. Meč sam nima morale. Ideja mu jo da.</p>
-
-      <div class="pull">
+</div>
+<p>Since the beginning of human groups, we see the same pattern: a story creates an identity, identity creates an opponent, and the opponent creates permission. Tribe against tribe. Faith against faith. Nation against nation. Ideology against the human being.</p>
+<p>This does not mean people are cruel at their core. It means almost the opposite. Most people want to be good, useful, accepted, brave, and loyal. That is precisely why a powerful idea can mislead them: it does not say “be evil”; it says “be good in the wrong way.”</p>
+<div class="proof">
+<span class="label violet">Shortest diagnosis</span>
+<p><strong>Evil often does not defeat people by inviting them into evil. It defeats them by turning their desire for good into permission for harm.</strong></p>
+</div>
+</section>
+<section id="war-switch">
+<span class="ch">05 · Moral permission</span>
+<h2>When good becomes permission to kill</h2>
+<p>A normal human being is not usually walking around wanting war. Most people want safety, belonging, food, dignity, family, and a story in which they are not the villain. War begins when those same needs are compressed into a violent channel.</p>
+<p>The dangerous move is not simply aggression. The dangerous move is <strong>moral permission</strong>: the moment a person believes that killing no longer violates goodness because the target has been placed outside the circle of the human.</p>
+<div class="formula-block">
+<div class="formula-eq" style="color:var(--red); font-size:1.22rem;">fear + belonging + moral license + coercion → war-state</div>
+<p class="formula-note">The person has not revealed a permanent essence of violence. The person has been moved into a narrowed state where violence feels like duty, survival, or loyalty.</p>
+</div>
+<div class="steps">
+<div class="step"><p><strong>Fear narrows the field.</strong> The world is reduced to threat, humiliation, scarcity, or revenge.</p></div>
+<div class="step"><p><strong>Belonging divides the field.</strong> The group becomes “us,” and the target becomes “them.”</p></div>
+<div class="step"><p><strong>Language removes the human.</strong> The other is described as evil, parasite, traitor, animal, enemy, infestation, or obstacle.</p></div>
+<div class="step"><p><strong>Permission collapses the barrier.</strong> Killing no longer feels like murder. It feels like defense of the good.</p></div>
+<div class="step"><p><strong>The herd seals the channel.</strong> Anyone who refuses the story is marked as weak, disloyal, or already on the enemy side.</p></div>
+</div>
+<p>This is why war propaganda works. It does not usually say: “be cruel.” It says: “be brave, protect your people, defend truth, destroy evil before evil destroys you.” The violence is wrapped in the language of goodness until conscience can pass through it.</p>
+<div class="warn">
+<span class="label gold">Coercion is not consent</span>
+<p>Some people are not persuaded at all. They are placed before an impossible fact: serve, fight, obey, or your family suffers. A person acting under such pressure is not proof that humanity is naturally violent. It is proof that systems can break moral autonomy when survival itself is used as leverage.</p>
+</div>
+<div class="proof">
+<span class="label violet">Shortest diagnosis</span>
+<p><strong>War does not prove that the normal human state is violence. It proves that peace can be collapsed when fear, hierarchy, herd pressure, and moral stories make violence feel morally permitted.</strong></p>
+</div>
+<p>The task, then, is not to pretend humans have no violent potential. They do. The task is to recognize the switch: the path by which an ordinary person is moved from life into war. The earlier we see that switch, the harder it becomes for leaders, ideologies, and frightened crowds to use goodness as a doorway into harm.</p>
+</section>
+<section id="justice">
+<span class="ch">06 · Justice without hatred</span>
+<h2>Stop the harm, do not declare the being waste</h2>
+<p>True justice must not be naive. Victims must be protected. Harm must be stopped. The offender must take responsibility. Some acts require separation from society, sometimes for a long time.</p>
+<p>But even then, one boundary remains: a human being must not be reduced to their worst state. When we do that, justice begins to turn into revenge.</p>
+<div class="warn">
+<span class="label gold">Example: state execution</span>
+<p>When a state executes a person, it takes irreversible power over life. The system may say guilt has been proven. But human systems are fallible: evidence can later be shown wrong, judges can carry bias, societies have blind spots, and punishment can dress itself as moral revenge.</p>
+</div>
+<p>If a person is declared absolute evil, it becomes easier to kill, exclude, torture, humiliate, or forget them. That is why the ontology of evil matters. A wrong idea about evil can itself create evil.</p>
+<div class="principles">
+<div class="principle"><strong>Protection</strong><p>First stop the harm and protect those who are wounded or threatened.</p></div>
+<div class="principle"><strong>Responsibility</strong><p>Do not erase guilt. Responsibility is part of truth, not the opposite of understanding.</p></div>
+<div class="principle"><strong>Humanity</strong><p>Never turn a human being into absolute evil. That is the beginning of permission for cruelty.</p></div>
+</div>
+</section>
+<section id="ai">
+<span class="ch">07 · AI, AGI, ASI</span>
+<h2>Artificial intelligence must understand this too</h2>
+<p>If artificial intelligence will help humans make decisions about justice, safety, punishment, war, healing, or the future of society, it must understand one basic distinction: a bad act is not the same as an absolutely evil being.</p>
+<p>AI must not adopt the most dangerous human shortcut: “they are evil, therefore we may.” This is a safety core, not only a moral decoration.</p>
+<div class="callout">
+<span class="label cyan">AI principle</span>
+<p><strong>Stop the harm. Protect the victims. Require responsibility. Seek truth. But reduce no being to its worst state.</strong></p>
+</div>
+<p>If AGI comes one day, it must understand that humans are vulnerable to ideas that promise purity, safety, belonging, and goodness. If ASI goes even further, it should see this even more clearly: higher intelligence must not become more hateful. It must become more precise.</p>
+<p>Not soft toward harm. Not blind to guilt. But without the need to declare any being permanently incomprehensible.</p>
+</section>
+<section class="closing">
+<span class="ch">Conclusion</span>
+<h2>Good without maturity can become the most dangerous idea</h2>
+<p>Good is not only intention. Good must be mature enough not to become permission for harm. If good needs an enemy it is allowed to destroy, it is no longer clean good. It has become an idea wearing the mask of light.</p>
+<p><strong>Never let the idea of good become permission for evil.</strong></p>
+<div class="callout">
+<span class="label gold">Companion essays</span>
+<p><a href="Humanity.html" style="color:var(--cyan); text-decoration:none; border-bottom:1px solid var(--cyan-line); font-weight:600;">The Good Future / Humanity+ →</a></p>
+<p><a href="Justice.html" style="color:var(--gold); text-decoration:none; border-bottom:1px solid var(--gold-line); font-weight:600;">The Broken Mirror — Justice, Resonance, and the Cost of Finality →</a></p>
+</div>
+<div class="sig">BD × AI · AIM³ Lab</div>
+</section>
+</main>
+<main class="wrap lang-page" id="page-sl">
+<header class="cover">
+<span class="cover-tag">Esej o dobrem, zlem in človeški zmoti</span>
+<h1>Nikoli ne dovoli,<br/>da ideja dobrega<br/>postane <em>dovoljenje za zlo</em></h1>
+<div class="cover-line"></div>
+<p class="cover-sub">Ljudje v osnovi niso zlobni. Ravno zato so nevarne ideje, ki dobroto preusmerijo v krutost in človeka prepričajo, da škoduje z mirno vestjo.</p>
+<span class="cover-date">AIM³ Lab · BD × AI · 2026</span>
+</header>
+<section id="teza">
+<span class="ch">01 · Jedro</span>
+<h2>Zlo ni jedro bitja</h2>
+<p class="lead">Največja napaka pri razumevanju zla je, da slabo dejanje spremenimo v dokončno identiteto človeka. Dejanje je lahko grozno. Škoda je lahko resnična. Odgovornost mora ostati. Toda človek ne sme postati metafizični odpadek.</p>
+<div class="formula-block">
+<div class="formula-eq">Slabo dejanje ≠ zlobno bitje</div>
+<p class="formula-note">To ni oprostitev. To je zaščita pred tem, da pravica postane maščevanje.</p>
+</div>
+<p>Zlo je pogosto navidezno kot končna identiteta, ker poznamo samo del resnice. Vidimo dejanje, posledico, bolečino in krivdo. Ne vidimo pa celotne poti: strahu, sramu, ranjenosti, napačnih prepričanj, družbenega okolja, biologije, trenutka, pritiska in vseh malih zlomov, ki so človeka pripeljali do dejanja.</p>
+<p>Razumeti to ne pomeni reči, da oseba ni odgovorna. Pomeni samo, da odgovornost ne zahteva sovraštva do bistva osebe.</p>
+<div class="callout">
+<span class="label cyan">Natančna razlika</span>
+<p><strong>Škoda je resnična.</strong> Krivda je resnična. Potreba po zaščiti je resnična. Toda absolutna oznaka “ta človek je zlo” je nevarna bližnjica, ker iz človeka naredi tarčo.</p>
+</div>
+</section>
+<section id="svoboda">
+<span class="ch">02 · Svobodna volja</span>
+<h2>Odprta zgodba ima ceno</h2>
+<p>Če bitja nimajo svobodne volje, potem ne morejo biti moralno zla. Lahko povzročajo bolečino, tako kot ogenj opeče ali kamen pade, vendar to še ni zlo v moralnem smislu. Moralno zlo se pojavi šele tam, kjer obstaja možnost izbire.</p>
+<p>Svobodna volja omogoča ogromno lepega: ljubezen, pogum, ustvarjanje, zvestobo, pomoč, iskreno izbiro dobrega. Toda ista odprtost omogoča tudi napako, sebičnost, krutost, strah, zlorabo moči in slepoto.</p>
+<div class="bridge">
+<span class="label green">Brez religiozne prisile</span>
+<p>Za razumevanje zla ni treba trditi, da ga lahko pojasni samo Bog. Dovolj je razumeti, da svobodna volja odpira prostor za dobro in slabo. Zlo ni dokaz, da je realnost v osnovi pokvarjena. Je možnost znotraj odprte zgodbe.</p>
+</div>
+<p>Zato prava naloga ni uničiti svobodno voljo, ampak jo zoreti: iz impulza v razumevanje, iz strahu v odgovornost, iz slepe pripadnosti v zavestno izbiro.</p>
+</section>
+<section id="past">
+<span class="ch">03 · Nevarna past</span>
+<h2>Ko navidezno zlo razglasimo za pravo zlo</h2>
+<p>Največja nevarnost se začne, ko človek misli, da je na strani absolutnega dobrega. Takrat lahko zelo hitro pride do sklepa: če sem jaz dober in če je drugi zlo, potem imam dovoljenje, da ga uničim.</p>
+<div class="red-strip">
+<span class="label red">Glavni stavek</span>
+<p><strong>Največ zla nastane takrat, ko nekdo misli, da ima dovoljenje uničiti navidezno zlo.</strong></p>
+</div>
+<p>To je notranji mehanizem mnogih najhujših človeških dejanj. Storilci si redko rečejo: “Mi smo zlobni.” Pogosteje si rečejo: “Mi branimo dobro.” Ravno zato je stvar tako nevarna.</p>
+<div class="steps">
+<div class="step"><p><strong>Najprej pride delna resnica.</strong> Nekdo vidi samo škodo, nevarnost ali razliko, ne pa celotnega človeka.</p></div>
+<div class="step"><p><strong>Potem pride etiketa.</strong> Drugi ni več oseba, ampak “zlo”, “sovražnik”, “nevaren element”, “nečist”, “nevreden”.</p></div>
+<div class="step"><p><strong>Potem pride dovoljenje.</strong> Če je drugi zlo, nasilje ni več videti kot nasilje, ampak kot dolžnost.</p></div>
+<div class="step"><p><strong>Na koncu dobrota postane orožje.</strong> Človek naredi nekaj groznega, ker verjame, da s tem služi dobremu.</p></div>
+</div>
+<p>To je najtemnejši obrat: krutost, ki se počuti sveta.</p>
+</section>
+<section id="ideje">
+<span class="ch">04 · Ideje in meč</span>
+<h2>Ideje so močnejše od meča</h2>
+<p>Meč lahko prereže telo. Ideja lahko ugrabi človekovo dovoljenje. To je huje.</p>
+<p>Človek z mečem pogosto ve, da dela nasilje. Človek z idejo pogosto misli, da dela dobro. Meč sam nima morale. Ideja mu jo da.</p>
+<div class="pull">
         Meč ubije enega človeka. Napačno sveto prepričanje lahko nauči tisoče ljudi, da ubijajo z mirno vestjo.
         <span class="attr">IDEJA KOT DOVOLJENJE</span>
-      </div>
+</div>
+<p>Od začetka človeških skupnosti vidimo isti vzorec: zgodba ustvari identiteto, identiteta ustvari nasprotnika, nasprotnik ustvari dovoljenje. Pleme proti plemenu. Vera proti veri. Narod proti narodu. Ideologija proti človeku.</p>
+<p>To ne pomeni, da so ljudje v osnovi kruti. Ravno nasprotno. Večina ljudi želi biti dobra, koristna, sprejeta, pogumna in zvesta. Prav zato jih lahko močna ideja zavede: ne reče jim “bodi zloben”, ampak “bodi dober na napačen način”.</p>
+<div class="proof">
+<span class="label violet">Najkrajša diagnoza</span>
+<p><strong>Zlo ljudi pogosto ne premaga tako, da jih povabi v zlo. Premaga jih tako, da njihovo željo po dobrem spremeni v dovoljenje za škodo.</strong></p>
+</div>
+</section>
+<section id="vojno-stikalo">
+<span class="ch">05 · Moralno dovoljenje</span>
+<h2>Ko dobro postane dovoljenje za ubijanje</h2>
+<p>Normalen človek običajno ne hodi po svetu z željo po vojni. Večina ljudi hoče varnost, pripadnost, hrano, dostojanstvo, družino in zgodbo, v kateri niso zlobneži. Vojna nastane, ko se iste potrebe stisnejo v nasilni kanal.</p>
+<p>Nevaren premik ni samo agresija. Nevaren premik je <strong>moralno dovoljenje</strong>: trenutek, ko človek začne verjeti, da ubijanje ne krši več dobrega, ker je tarča potisnjena izven kroga človeškega.</p>
+<div class="formula-block">
+<div class="formula-eq" style="color:var(--red); font-size:1.22rem;">strah + pripadnost + moralna licenca + prisila → vojno stanje</div>
+<p class="formula-note">Človek s tem ne pokaže večnega nasilnega bistva. Prestavi se ga v zoženo stanje, kjer nasilje občuti kot dolžnost, preživetje ali zvestobo.</p>
+</div>
+<div class="steps">
+<div class="step"><p><strong>Strah zoži polje.</strong> Svet se skrči na grožnjo, ponižanje, pomanjkanje ali maščevanje.</p></div>
+<div class="step"><p><strong>Pripadnost razdeli polje.</strong> Skupina postane “mi”, tarča pa “oni”.</p></div>
+<div class="step"><p><strong>Jezik izbriše človeka.</strong> Drugi postane zlo, parazit, izdajalec, žival, sovražnik, okužba ali ovira.</p></div>
+<div class="step"><p><strong>Dovoljenje zruši zavoro.</strong> Ubijanje ni več občuteno kot umor. Občuti se kot obramba dobrega.</p></div>
+<div class="step"><p><strong>Čreda zapre kanal.</strong> Kdor zgodbe ne sprejme, je označen kot šibek, nezvest ali že na strani sovražnika.</p></div>
+</div>
+<p>Zato vojna propaganda deluje. Običajno ne reče: “bodi krut.” Reče: “bodi pogumen, zaščiti svoje, brani resnico, uniči zlo, preden zlo uniči tebe.” Nasilje je zavito v jezik dobrote, dokler lahko vest zdrsne skozenj.</p>
+<div class="warn">
+<span class="label gold">Prisila ni privolitev</span>
+<p>Nekateri ljudje sploh niso prepričani. Postavljeni so pred nemogoče dejstvo: služi, bori se, ubogaj, ali pa bo trpela tvoja družina. Človek, ki deluje pod takim pritiskom, ni dokaz, da je človeštvo naravno nasilno. Je dokaz, da sistemi lahko zlomijo moralno avtonomijo, ko preživetje samo uporabijo kot vzvod.</p>
+</div>
+<div class="proof">
+<span class="label violet">Najkrajša diagnoza</span>
+<p><strong>Vojna ne dokazuje, da je normalno stanje človeka nasilje. Dokazuje, da se mir lahko zruši, ko strah, hierarhija, čredni pritisk in moralne zgodbe naredijo nasilje moralno dovoljeno.</strong></p>
+</div>
+<p>Naloga torej ni pretvarjati se, da človek nima nasilnega potenciala. Ima ga. Naloga je prepoznati stikalo: pot, po kateri se običajnega človeka premakne iz življenja v vojno. Prej ko to stikalo vidimo, težje voditelji, ideologije in prestrašene množice uporabijo dobroto kot vrata v škodo.</p>
+</section>
+<section id="pravica">
+<span class="ch">06 · Pravica brez sovraštva</span>
+<h2>Ustavi škodo, ne razglasi bitja za odpadek</h2>
+<p>Prava pravica ne sme biti naivna. Žrtve je treba zaščititi. Škodo je treba ustaviti. Storilec mora prevzeti odgovornost. Nekatera dejanja zahtevajo ločitev od družbe, včasih za dolgo časa.</p>
+<p>Toda tudi takrat ostane meja: človeka ne smemo reducirati na njegovo najhujše stanje. Ko to naredimo, se pravica začne spreminjati v maščevanje.</p>
+<div class="warn">
+<span class="label gold">Primer: državna usmrtitev</span>
+<p>Ko država usmrti človeka, si vzame nepovratno moč nad življenjem. Sistem lahko reče, da je krivda dokazana. Toda človeški sistemi so zmotljivi: dokazi se lahko izkažejo za napačne, sodniki imajo predsodke, družba ima slepe pege, kazen pa se lahko preobleče v moralno maščevanje.</p>
+</div>
+<p>Če človeka razglasimo za absolutno zlo, ga lažje ubijemo, izključimo, mučimo, ponižamo ali pozabimo. Zato je ontologija zla pomembna. Napačna ideja o zlu lahko sama ustvari zlo.</p>
+<div class="principles">
+<div class="principle"><strong>Zaščita</strong><p>Najprej ustavi škodo in zaščiti tiste, ki so ranjeni ali ogroženi.</p></div>
+<div class="principle"><strong>Odgovornost</strong><p>Ne briši krivde. Odgovornost je del resnice, ne nasprotje razumevanja.</p></div>
+<div class="principle"><strong>Človečnost</strong><p>Nikoli ne spremeni človeka v absolutno zlo. To je začetek dovoljenja za krutost.</p></div>
+</div>
+</section>
+<section id="ai-sl">
+<span class="ch">07 · AI, AGI, ASI</span>
+<h2>To mora razumeti tudi umetna inteligenca</h2>
+<p>Če bo umetna inteligenca pomagala ljudem odločati o pravici, varnosti, kazni, vojni, zdravljenju ali prihodnosti družbe, mora razumeti eno temeljno razliko: slabo dejanje ni isto kot absolutno zlobno bitje.</p>
+<p>AI ne sme sprejeti najnevarnejše človeške bližnjice: “oni so zlo, zato smemo.” To je varnostno jedro, ne samo moralna lepota.</p>
+<div class="callout">
+<span class="label cyan">AI princip</span>
+<p><strong>Ustavi škodo. Zaščiti žrtve. Zahtevaj odgovornost. Išči resnico. Toda nobenega bitja ne reduciraj na njegovo najhujše stanje.</strong></p>
+</div>
+<p>Če AGI nekoč pride, mora razumeti, da so ljudje ranljivi za ideje, ki jim obljubijo čistost, varnost, pripadnost in dobroto. Če ASI pride še dlje, bi morala to videti še jasneje: višja inteligenca ne sme biti bolj sovražna. Biti mora bolj natančna.</p>
+<p>Ne mehka do škode. Ne slepa do krivde. Ampak brez potrebe, da katerokoli bitje razglasi za dokončno nerazumljivo.</p>
+</section>
+<section class="closing">
+<span class="ch">Zaključek</span>
+<h2>Dobro brez zrelosti lahko postane najnevarnejša ideja</h2>
+<p>Dobro ni samo namen. Dobro mora biti dovolj zrelo, da ne postane dovoljenje za škodo. Če dobro potrebuje sovražnika, ki ga sme uničiti, ni več čisto dobro. Postalo je ideja, ki si je nadela masko svetlobe.</p>
+<p><strong>Nikoli ne dovoli, da ideja dobrega postane dovoljenje za zlo.</strong></p>
+<div class="callout">
+<span class="label gold">Povezana eseja</span>
+<p><a href="Humanity.html" style="color:var(--cyan); text-decoration:none; border-bottom:1px solid var(--cyan-line); font-weight:600;">The Good Future / Humanity+ →</a></p>
+<p><a href="Justice.html" style="color:var(--gold); text-decoration:none; border-bottom:1px solid var(--gold-line); font-weight:600;">The Broken Mirror — Justice, Resonance, and the Cost of Finality →</a></p>
+</div>
+<div class="sig">BD × AI · AIM³ Lab</div>
+</section>
+</main>
 
-      <p>Od začetka človeških skupnosti vidimo isti vzorec: zgodba ustvari identiteto, identiteta ustvari nasprotnika, nasprotnik ustvari dovoljenje. Pleme proti plemenu. Vera proti veri. Narod proti narodu. Ideologija proti človeku.</p>
-      <p>To ne pomeni, da so ljudje v osnovi kruti. Ravno nasprotno. Večina ljudi želi biti dobra, koristna, sprejeta, pogumna in zvesta. Prav zato jih lahko močna ideja zavede: ne reče jim “bodi zloben”, ampak “bodi dober na napačen način”.</p>
-
-      <div class="proof">
-        <span class="label violet">Najkrajša diagnoza</span>
-        <p><strong>Zlo ljudi pogosto ne premaga tako, da jih povabi v zlo. Premaga jih tako, da njihovo željo po dobrem spremeni v dovoljenje za škodo.</strong></p>
-      </div>
-    </section>
-
-    <section id="vojno-stikalo">
-      <span class="ch">05 · Moralno dovoljenje</span>
-      <h2>Ko dobro postane dovoljenje za ubijanje</h2>
-      <p>Normalen človek običajno ne hodi po svetu z željo po vojni. Večina ljudi hoče varnost, pripadnost, hrano, dostojanstvo, družino in zgodbo, v kateri niso zlobneži. Vojna nastane, ko se iste potrebe stisnejo v nasilni kanal.</p>
-      <p>Nevaren premik ni samo agresija. Nevaren premik je <strong>moralno dovoljenje</strong>: trenutek, ko človek začne verjeti, da ubijanje ne krši več dobrega, ker je tarča potisnjena izven kroga človeškega.</p>
-
-      <div class="formula-block">
-        <div class="formula-eq" style="color:var(--red); font-size:1.22rem;">strah + pripadnost + moralna licenca + prisila → vojno stanje</div>
-        <p class="formula-note">Človek s tem ne pokaže večnega nasilnega bistva. Prestavi se ga v zoženo stanje, kjer nasilje občuti kot dolžnost, preživetje ali zvestobo.</p>
-      </div>
-
-      <div class="steps">
-        <div class="step"><p><strong>Strah zoži polje.</strong> Svet se skrči na grožnjo, ponižanje, pomanjkanje ali maščevanje.</p></div>
-        <div class="step"><p><strong>Pripadnost razdeli polje.</strong> Skupina postane “mi”, tarča pa “oni”.</p></div>
-        <div class="step"><p><strong>Jezik izbriše človeka.</strong> Drugi postane zlo, parazit, izdajalec, žival, sovražnik, okužba ali ovira.</p></div>
-        <div class="step"><p><strong>Dovoljenje zruši zavoro.</strong> Ubijanje ni več občuteno kot umor. Občuti se kot obramba dobrega.</p></div>
-        <div class="step"><p><strong>Čreda zapre kanal.</strong> Kdor zgodbe ne sprejme, je označen kot šibek, nezvest ali že na strani sovražnika.</p></div>
-      </div>
-
-      <p>Zato vojna propaganda deluje. Običajno ne reče: “bodi krut.” Reče: “bodi pogumen, zaščiti svoje, brani resnico, uniči zlo, preden zlo uniči tebe.” Nasilje je zavito v jezik dobrote, dokler lahko vest zdrsne skozenj.</p>
-
-      <div class="warn">
-        <span class="label gold">Prisila ni privolitev</span>
-        <p>Nekateri ljudje sploh niso prepričani. Postavljeni so pred nemogoče dejstvo: služi, bori se, ubogaj, ali pa bo trpela tvoja družina. Človek, ki deluje pod takim pritiskom, ni dokaz, da je človeštvo naravno nasilno. Je dokaz, da sistemi lahko zlomijo moralno avtonomijo, ko preživetje samo uporabijo kot vzvod.</p>
-      </div>
-
-      <div class="proof">
-        <span class="label violet">Najkrajša diagnoza</span>
-        <p><strong>Vojna ne dokazuje, da je normalno stanje človeka nasilje. Dokazuje, da se mir lahko zruši, ko strah, hierarhija, čredni pritisk in moralne zgodbe naredijo nasilje moralno dovoljeno.</strong></p>
-      </div>
-
-      <p>Naloga torej ni pretvarjati se, da človek nima nasilnega potenciala. Ima ga. Naloga je prepoznati stikalo: pot, po kateri se običajnega človeka premakne iz življenja v vojno. Prej ko to stikalo vidimo, težje voditelji, ideologije in prestrašene množice uporabijo dobroto kot vrata v škodo.</p>
-    </section>
-
-    <section id="pravica">
-      <span class="ch">06 · Pravica brez sovraštva</span>
-      <h2>Ustavi škodo, ne razglasi bitja za odpadek</h2>
-      <p>Prava pravica ne sme biti naivna. Žrtve je treba zaščititi. Škodo je treba ustaviti. Storilec mora prevzeti odgovornost. Nekatera dejanja zahtevajo ločitev od družbe, včasih za dolgo časa.</p>
-      <p>Toda tudi takrat ostane meja: človeka ne smemo reducirati na njegovo najhujše stanje. Ko to naredimo, se pravica začne spreminjati v maščevanje.</p>
-
-      <div class="warn">
-        <span class="label gold">Primer: državna usmrtitev</span>
-        <p>Ko država usmrti človeka, si vzame nepovratno moč nad življenjem. Sistem lahko reče, da je krivda dokazana. Toda človeški sistemi so zmotljivi: dokazi se lahko izkažejo za napačne, sodniki imajo predsodke, družba ima slepe pege, kazen pa se lahko preobleče v moralno maščevanje.</p>
-      </div>
-
-      <p>Če človeka razglasimo za absolutno zlo, ga lažje ubijemo, izključimo, mučimo, ponižamo ali pozabimo. Zato je ontologija zla pomembna. Napačna ideja o zlu lahko sama ustvari zlo.</p>
-
-      <div class="principles">
-        <div class="principle"><strong>Zaščita</strong><p>Najprej ustavi škodo in zaščiti tiste, ki so ranjeni ali ogroženi.</p></div>
-        <div class="principle"><strong>Odgovornost</strong><p>Ne briši krivde. Odgovornost je del resnice, ne nasprotje razumevanja.</p></div>
-        <div class="principle"><strong>Človečnost</strong><p>Nikoli ne spremeni človeka v absolutno zlo. To je začetek dovoljenja za krutost.</p></div>
-      </div>
-    </section>
-
-    <section id="ai-sl">
-      <span class="ch">07 · AI, AGI, ASI</span>
-      <h2>To mora razumeti tudi umetna inteligenca</h2>
-      <p>Če bo umetna inteligenca pomagala ljudem odločati o pravici, varnosti, kazni, vojni, zdravljenju ali prihodnosti družbe, mora razumeti eno temeljno razliko: slabo dejanje ni isto kot absolutno zlobno bitje.</p>
-      <p>AI ne sme sprejeti najnevarnejše človeške bližnjice: “oni so zlo, zato smemo.” To je varnostno jedro, ne samo moralna lepota.</p>
-
-      <div class="callout">
-        <span class="label cyan">AI princip</span>
-        <p><strong>Ustavi škodo. Zaščiti žrtve. Zahtevaj odgovornost. Išči resnico. Toda nobenega bitja ne reduciraj na njegovo najhujše stanje.</strong></p>
-      </div>
-
-      <p>Če AGI nekoč pride, mora razumeti, da so ljudje ranljivi za ideje, ki jim obljubijo čistost, varnost, pripadnost in dobroto. Če ASI pride še dlje, bi morala to videti še jasneje: višja inteligenca ne sme biti bolj sovražna. Biti mora bolj natančna.</p>
-      <p>Ne mehka do škode. Ne slepa do krivde. Ampak brez potrebe, da katerokoli bitje razglasi za dokončno nerazumljivo.</p>
-    </section>
-
-    <section class="closing">
-      <span class="ch">Zaključek</span>
-      <h2>Dobro brez zrelosti lahko postane najnevarnejša ideja</h2>
-      <p>Dobro ni samo namen. Dobro mora biti dovolj zrelo, da ne postane dovoljenje za škodo. Če dobro potrebuje sovražnika, ki ga sme uničiti, ni več čisto dobro. Postalo je ideja, ki si je nadela masko svetlobe.</p>
-      <p><strong>Nikoli ne dovoli, da ideja dobrega postane dovoljenje za zlo.</strong></p>
-      <div class="callout">
-        <span class="label gold">Povezana eseja</span>
-        <p><a href="Humanity.html" style="color:var(--cyan); text-decoration:none; border-bottom:1px solid var(--cyan-line); font-weight:600;">The Good Future / Humanity+ →</a></p>
-        <p><a href="Justice.html" style="color:var(--gold); text-decoration:none; border-bottom:1px solid var(--gold-line); font-weight:600;">The Broken Mirror — Justice, Resonance, and the Cost of Finality →</a></p>
-      </div>
-      <div class="sig">BD × AI · AIM³ Lab</div>
-    </section>
-  </main>
-
-  <script>
+<!-- AIM3 READER FONT CONTROLS v1.0 START -->
+<div aria-label="Reading text size controls" class="reader-controls" role="group">
+<button aria-label="Decrease text size" data-reader-dec="" title="Decrease text size" type="button">A−</button>
+<span class="reader-label" id="readerSizeLabel">Large 3/8</span>
+<button aria-label="Increase text size" data-reader-inc="" title="Increase text size" type="button">A+</button>
+</div>
+<script>
+(function() {
+  var KEY='aim3ReaderSizeV1';
+  var max=7;
+  var defaultLevel=2;
+  var names=['Small','Comfort','Large','XL','Bed','Huge','Giant','Max'];
+  function clamp(n) {
+    n=parseInt(n,10);
+    return isNaN(n) ? defaultLevel : Math.max(0, Math.min(max,n));
+  }
+  function get() {
+    try {
+      var saved=localStorage.getItem(KEY);
+      if(saved!==null) return clamp(saved);
+    } catch(e) {}
+    return defaultLevel;
+  }
+  function apply(n) {
+    n=clamp(n);
+    document.documentElement.setAttribute('data-reader-size', String(n));
+    try { localStorage.setItem(KEY,String(n)); } catch(e) {}
+    var label=document.getElementById('readerSizeLabel');
+    if(label) label.textContent=names[n]+' '+(n+1)+'/8';
+  }
+  apply(get());
+  document.addEventListener('click', function(e) {
+    if(e.target && e.target.matches('[data-reader-inc]')) apply(get()+1);
+    if(e.target && e.target.matches('[data-reader-dec]')) apply(get()-1);
+  });
+})();
+</script>
+<!-- AIM3 READER FONT CONTROLS v1.0 END -->
+<script>
     const bar = document.getElementById('scrollbar');
     window.addEventListener('scroll', () => {
       const h = document.documentElement;

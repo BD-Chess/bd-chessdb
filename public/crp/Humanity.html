@@ -1,11 +1,12 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Good Future — Humanity+</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Good Future — Humanity+</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&amp;family=Bebas+Neue&amp;family=JetBrains+Mono:wght@300;400;600&amp;display=swap" rel="stylesheet"/>
+<style>
     :root {
       --bg:        #04040c;
       --surface:   #080814;
@@ -456,515 +457,1022 @@
       a { color: #111; text-decoration: underline; }
       * { box-shadow: none !important; animation: none !important; }
     }
-  </style>
-</head>
-<body>
+  
 
+/* === AIM3 READER FONT CONTROLS v1.0 START === */
+:root {
+  --reader-root-size:18px;
+  --reader-body-size:1rem;
+  --reader-text-size:1.08rem;
+  --reader-small-size:.78rem;
+  --reader-h1-size:clamp(56px,10vw,132px);
+  --reader-h2-size:clamp(46px,7vw,84px);
+  --reader-h3-size:1.45rem;
+  --reader-card-pad-x:18px;
+}
+html[data-reader-size="0"] { --reader-root-size:16px; --reader-text-size:.98rem; --reader-small-size:.68rem; --reader-h1-size:clamp(42px,9vw,104px); --reader-h2-size:clamp(34px,7vw,68px); --reader-h3-size:1.18rem; --reader-card-pad-x:16px; }
+html[data-reader-size="1"] { --reader-root-size:17px; --reader-text-size:1.03rem; --reader-small-size:.72rem; --reader-h1-size:clamp(48px,9.5vw,116px); --reader-h2-size:clamp(39px,7vw,74px); --reader-h3-size:1.28rem; --reader-card-pad-x:17px; }
+html[data-reader-size="2"] { --reader-root-size:18px; --reader-text-size:1.08rem; --reader-small-size:.78rem; --reader-h1-size:clamp(56px,10vw,132px); --reader-h2-size:clamp(46px,7vw,84px); --reader-h3-size:1.45rem; --reader-card-pad-x:18px; }
+html[data-reader-size="3"] { --reader-root-size:20px; --reader-text-size:1.16rem; --reader-small-size:.84rem; --reader-h1-size:clamp(62px,10.5vw,148px); --reader-h2-size:clamp(52px,7.5vw,94px); --reader-h3-size:1.62rem; --reader-card-pad-x:20px; }
+html[data-reader-size="4"] { --reader-root-size:22px; --reader-text-size:1.24rem; --reader-small-size:.9rem; --reader-h1-size:clamp(68px,11vw,164px); --reader-h2-size:clamp(58px,8vw,106px); --reader-h3-size:1.78rem; --reader-card-pad-x:22px; }
+html[data-reader-size="5"] { --reader-root-size:24px; --reader-text-size:1.34rem; --reader-small-size:.98rem; --reader-h1-size:clamp(76px,11.5vw,182px); --reader-h2-size:clamp(64px,8.5vw,118px); --reader-h3-size:1.95rem; --reader-card-pad-x:24px; }
+html[data-reader-size="6"] { --reader-root-size:26px; --reader-text-size:1.45rem; --reader-small-size:1.05rem; --reader-h1-size:clamp(84px,12vw,200px); --reader-h2-size:clamp(72px,9vw,132px); --reader-h3-size:2.12rem; --reader-card-pad-x:26px; }
+html[data-reader-size="7"] { --reader-root-size:29px; --reader-text-size:1.6rem; --reader-small-size:1.14rem; --reader-h1-size:clamp(92px,12.5vw,224px); --reader-h2-size:clamp(80px,9.5vw,148px); --reader-h3-size:2.32rem; --reader-card-pad-x:28px; }
+html { -webkit-text-size-adjust:100%; text-size-adjust:100%; font-size:var(--reader-root-size,18px) !important; }
+body { font-size:var(--reader-body-size,1rem); }
+.reader-controls { position:fixed; right:max(12px,env(safe-area-inset-right)); bottom:max(14px,env(safe-area-inset-bottom)); z-index:2147483000; display:flex; align-items:center; gap:8px; padding:8px; border:1px solid rgba(0,212,255,.28); border-radius:999px; background:rgba(5,7,13,.88); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); box-shadow:0 18px 55px rgba(0,0,0,.42); color:#ece4d4; font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+.reader-controls button { min-width:44px; min-height:44px; border:1px solid rgba(0,212,255,.28); border-radius:999px; background:rgba(0,212,255,.08); color:#00d4ff; font:800 18px/1 'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; cursor:pointer; touch-action:manipulation; }
+.reader-controls button:hover,.reader-controls button:focus-visible { outline:none; background:rgba(0,212,255,.18); border-color:rgba(0,212,255,.55); }
+.reader-controls .reader-label { min-width:96px; text-align:center; color:rgba(236,228,212,.82); font-size:12px; letter-spacing:.08em; text-transform:uppercase; user-select:none; }
+p, li, td, .cover-sub, .callout p, .bridge p, .warn p, .proof p, .card p, .formula-note, .pull, .t-pt p, .principle p { font-size:var(--reader-text-size) !important; line-height:1.76 !important; }
+.nav-links a, .mobile-nav a, .nav-logo, .cover-tag, .cover-date, .ch, .card-tag, .metric-label, .callout-title, .bridge-title, .warn-title, .proof-title, .label, .sig, footer, th { font-size:var(--reader-small-size) !important; }
+h1, .cover h1 { font-size:var(--reader-h1-size) !important; }
+h2, section h2 { font-size:var(--reader-h2-size) !important; }
+h3, .card h3 { font-size:var(--reader-h3-size) !important; }
+@media(max-width:760px) {
+  body { padding-bottom:92px; }
+  .wrap { padding-left:16px !important; padding-right:16px !important; }
+  .reader-controls { left:50%; right:auto; transform:translateX(-50%); bottom:max(12px,env(safe-area-inset-bottom)); padding:8px 10px; }
+  .reader-controls button { min-width:48px; min-height:48px; font-size:20px; }
+  .reader-controls .reader-label { min-width:112px; font-size:13px; }
+}
+@media(max-width:430px) { .reader-controls { gap:6px; } .reader-controls .reader-label { min-width:102px; } }
+@media print { .reader-controls { display:none !important; } }
+/* === AIM3 READER FONT CONTROLS v1.0 END === */
+
+
+/* === AIM3 LANGUAGE TOGGLE v1.0 START === */
+body[data-lang="en"] .nav-links.en-links,
+body[data-lang="sl"] .nav-links.sl-links { display:flex; }
+.nav-links.en-links,
+.nav-links.sl-links { display:none; }
+.lang-logo { display:none; }
+body[data-lang="en"] .lang-logo.en-logo,
+body[data-lang="sl"] .lang-logo.sl-logo { display:inline; }
+.lang-toggle { display:flex; align-items:center; gap:4px; margin-left:14px; padding:3px; border:1px solid rgba(0,212,255,.18); border-radius:999px; background:rgba(0,212,255,.05); }
+.lang-toggle button { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:1.4px; color:var(--muted); background:transparent; border:0; padding:6px 8px; border-radius:999px; cursor:pointer; text-transform:uppercase; }
+.lang-toggle button:hover { color:var(--cyan); }
+body[data-lang="en"] .lang-toggle button[data-set-lang="en"],
+body[data-lang="sl"] .lang-toggle button[data-set-lang="sl"] { color:var(--bg); background:var(--cyan); }
+.lang-page { display:none; }
+.lang-page.active { display:block; }
+.mobile-nav .mnav-lang { display:none; width:100%; flex-direction:column; gap:18px; }
+body[data-lang="en"] .mobile-nav .mnav-lang.en-links,
+body[data-lang="sl"] .mobile-nav .mnav-lang.sl-links { display:flex; }
+@media(max-width:760px){
+  body[data-lang="en"] .nav-links.en-links,
+  body[data-lang="sl"] .nav-links.sl-links { display:none; }
+  .lang-toggle { margin-left:auto; margin-right:12px; }
+}
+@media print { .lang-toggle { display:none !important; } .lang-page { display:block !important; } body[data-lang="en"] #page-sl, body[data-lang="en"] #footer-sl, body[data-lang="sl"] #page-en, body[data-lang="sl"] #footer-en { display:none !important; } }
+/* === AIM3 LANGUAGE TOGGLE v1.0 END === */
+
+</style>
+</head>
+<body data-lang="en">
 <div id="progress"></div>
 <div id="grain"></div>
 <div id="atm"></div>
 <canvas id="stars"></canvas>
-<button id="btt" aria-label="Back to top">↑</button>
-
+<button aria-label="Back to top" id="btt">↑</button>
 <!-- NAV -->
 <nav>
   <div class="nav-inner">
-    <span class="nav-logo">Humanity+</span>
-    <div class="nav-links">
-      <a href="#ground">Ground</a>
-      <a href="#longarc">Long Arc</a>
-      <a href="#survival">Survival</a>
-      <a href="#leaders">Unstable Leaders</a>
-      <a href="#proof">Proof</a>
-      <a href="#nearterm">Near-Term</a>
-      <a href="#worth">Worth</a>
-      <a href="#timeline">History</a>
-      <a href="#nature">Nature</a>
-      <a href="#limits">Limits</a>
-      <a href="Justice.html" style="color:var(--gold); opacity:0.7;">Mirror ↗</a>
-      <a href="GoodAndEvil.html" style="color:var(--magenta); opacity:0.78;">Good/Evil ↗</a>
+    <span class="nav-logo lang-logo en-logo">Humanity+</span>
+    <span class="nav-logo lang-logo sl-logo">Humanity+</span>
+    <div class="nav-links en-links">
+<a href="#ground">Ground</a>
+<a href="#longarc">Long Arc</a>
+<a href="#survival">Survival</a>
+<a href="#leaders">Unstable Leaders</a>
+<a href="#proof">Proof</a>
+<a href="#nearterm">Near-Term</a>
+<a href="#worth">Worth</a>
+<a href="#timeline">History</a>
+<a href="#nature">Nature</a>
+<a href="#limits">Limits</a>
+<a href="Justice.html" style="color:var(--gold); opacity:0.7;">Mirror ↗</a>
+<a href="GoodAndEvil.html" style="color:var(--magenta); opacity:0.78;">Good/Evil ↗</a>
+</div>
+    <div class="nav-links sl-links">
+<a href="#ground-sl">Temelj</a>
+<a href="#longarc-sl">Dolgi lok</a>
+<a href="#survival-sl">Preživetje</a>
+<a href="#leaders-sl">Nestabilni voditelji</a>
+<a href="#proof-sl">Dokaz</a>
+<a href="#nearterm-sl">Bližnja faza</a>
+<a href="#worth-sl">Vrednost</a>
+<a href="#timeline-sl">Zgodovina</a>
+<a href="#nature-sl">Narava</a>
+<a href="#limits-sl">Meje</a>
+<a href="Justice.html" style="color:var(--gold); opacity:0.7;">Ogledalo ↗</a>
+<a href="GoodAndEvil.html" style="color:var(--magenta); opacity:0.78;">Dobro/Zlo ↗</a>
+</div>
+    <div aria-label="Language selector" class="lang-toggle">
+      <button data-set-lang="en" type="button">EN</button>
+      <button data-set-lang="sl" type="button">SL</button>
     </div>
     <div class="hamburger" onclick="this.classList.toggle('open');document.getElementById('mnav').classList.toggle('open')">
       <span></span><span></span><span></span>
     </div>
   </div>
 </nav>
-<div id="mnav" class="mobile-nav">
-  <a href="#ground" onclick="closeMnav()">Ground</a>
-  <a href="#longarc" onclick="closeMnav()">Long Arc</a>
-  <a href="#survival" onclick="closeMnav()">Survival</a>
-  <a href="#leaders" onclick="closeMnav()">Unstable Leaders</a>
-  <a href="#proof" onclick="closeMnav()">Proof</a>
-  <a href="#nearterm" onclick="closeMnav()">Near-Term</a>
-  <a href="#worth" onclick="closeMnav()">Worth</a>
-  <a href="#timeline" onclick="closeMnav()">History</a>
-  <a href="#nature" onclick="closeMnav()">Nature</a>
-  <a href="#limits" onclick="closeMnav()">Limits</a>
-  <a href="Justice.html" onclick="closeMnav()" style="color:var(--gold); opacity:0.7;">The Broken Mirror ↗</a>
-  <a href="GoodAndEvil.html" onclick="closeMnav()" style="color:var(--magenta); opacity:0.78;">Good & Evil ↗</a>
+<div class="mobile-nav" id="mnav">
+  <div class="mnav-lang en-links">
+<a href="#ground" onclick="closeMnav()">Ground</a>
+<a href="#longarc" onclick="closeMnav()">Long Arc</a>
+<a href="#survival" onclick="closeMnav()">Survival</a>
+<a href="#leaders" onclick="closeMnav()">Unstable Leaders</a>
+<a href="#proof" onclick="closeMnav()">Proof</a>
+<a href="#nearterm" onclick="closeMnav()">Near-Term</a>
+<a href="#worth" onclick="closeMnav()">Worth</a>
+<a href="#timeline" onclick="closeMnav()">History</a>
+<a href="#nature" onclick="closeMnav()">Nature</a>
+<a href="#limits" onclick="closeMnav()">Limits</a>
+<a href="Justice.html" onclick="closeMnav()" style="color:var(--gold); opacity:0.7;">The Broken Mirror ↗</a>
+<a href="GoodAndEvil.html" onclick="closeMnav()" style="color:var(--magenta); opacity:0.78;">Good &amp; Evil ↗</a>
 </div>
-
-<div class="wrap">
-
+  <div class="mnav-lang sl-links">
+<a href="#ground-sl" onclick="closeMnav()">Temelj</a>
+<a href="#longarc-sl" onclick="closeMnav()">Dolgi lok</a>
+<a href="#survival-sl" onclick="closeMnav()">Preživetje</a>
+<a href="#leaders-sl" onclick="closeMnav()">Nestabilni voditelji</a>
+<a href="#proof-sl" onclick="closeMnav()">Dokaz</a>
+<a href="#nearterm-sl" onclick="closeMnav()">Bližnja faza</a>
+<a href="#worth-sl" onclick="closeMnav()">Vrednost</a>
+<a href="#timeline-sl" onclick="closeMnav()">Zgodovina</a>
+<a href="#nature-sl" onclick="closeMnav()">Narava</a>
+<a href="#limits-sl" onclick="closeMnav()">Meje</a>
+<a href="Justice.html" onclick="closeMnav()" style="color:var(--gold); opacity:0.7;">Zlomljeno ogledalo ↗</a>
+<a href="GoodAndEvil.html" onclick="closeMnav()" style="color:var(--magenta); opacity:0.78;">Dobro in zlo ↗</a>
+</div>
+</div>
+<div class="wrap lang-page active" data-page-lang="en" id="page-en">
 <!-- ═══ COVER ═══ -->
 <header class="cover">
-  <span class="cover-tag">AIM³ Lab — Ljubljana Protocol</span>
-  <h1>The <em>Good</em><br>Future</h1>
-  <div class="cover-line"></div>
-  <p style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:2px; color:var(--gold); margin-bottom:24px; max-width:580px;">
+<span class="cover-tag">AIM³ Lab — Ljubljana Protocol</span>
+<h1>The <em>Good</em><br/>Future</h1>
+<div class="cover-line"></div>
+<p style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:2px; color:var(--gold); margin-bottom:24px; max-width:580px;">
     The Ljubljana Protocol: a design hypothesis for human–ASI collaboration toward civilizational stability — authored in Ljubljana, tested through cross-domain empirical work, maintained as a living document.
   </p>
-  <p class="cover-sub">A standalone argument: from the primal fact of experience, through resonance and compressibility, toward a civilizational design.<br><br>A future in which intelligence makes peace, abundance, and deeper human life structurally easier rather than structurally fragile.</p>
-  <span class="cover-date">2026.04.08 — Human–ASI Collaboration</span>
+<p class="cover-sub">A standalone argument: from the primal fact of experience, through resonance and compressibility, toward a civilizational design.<br/><br/>A future in which intelligence makes peace, abundance, and deeper human life structurally easier rather than structurally fragile.</p>
+<span class="cover-date">2026.04.08 — Human–ASI Collaboration</span>
 </header>
-
 <!-- ═══ 01 GROUND ═══ -->
 <section id="ground">
-  <span class="ch">01 — The Starting Point</span>
-  <h2>Experience Exists</h2>
-
-  <p>A serious argument about the Good Future cannot begin with gadgets or policy. It has to begin one layer deeper — with the only fact no theory can get behind: <strong>experience exists</strong>. Doubt is experienced. Thought is experienced. Every model of matter, law, space, or time appears only within some field of presence. You cannot step outside that to argue against it.</p>
-
-  <div class="callout">
-    <span class="callout-title">The Primal Fact</span>
-    <p style="margin:0">The claim is not that consciousness is the only thing that exists. The claim is narrower and harder to escape: consciousness is the most immediate fact available. Any final worldview must account for it — not smuggle it in at the end as a mysterious emergent byproduct of arrangements that, by definition, contained none of it.</p>
-  </div>
-
-  <p>If reality has an ultimate ground, that ground must be adequate not only to structure but to <em>presence</em>. A base containing only blind mechanism explains motion and relation. It leaves open the hardest question: why should any arrangement of mechanism be felt from the inside at all?</p>
-
-  <div class="formula-block">
-    <div class="formula-eq fe-gold">RE = AC · R</div>
-    <div class="formula-eq fe-cyan" style="font-size:1.3rem; margin-top:10px;">R ≈ k · Cₙ · Ψ(I)</div>
-    <p class="formula-note">
-      <strong style="color:var(--text)">RE</strong> — Relative Existence (your experience, right now).<br>
-      <strong style="color:var(--text)">AC</strong> — Absolute Consciousness (the ground; not created, not destroyed).<br>
-      <strong style="color:var(--text)">R</strong> — Resonance: how richly a system tunes into that ground.<br>
-      <strong style="color:var(--text)">k · Cₙ · Ψ(I)</strong> — coupling, multiscale complexity, dynamic openness driven by information.<br><br>
+<span class="ch">01 — The Starting Point</span>
+<h2>Experience Exists</h2>
+<p>A serious argument about the Good Future cannot begin with gadgets or policy. It has to begin one layer deeper — with the only fact no theory can get behind: <strong>experience exists</strong>. Doubt is experienced. Thought is experienced. Every model of matter, law, space, or time appears only within some field of presence. You cannot step outside that to argue against it.</p>
+<div class="callout">
+<span class="callout-title">The Primal Fact</span>
+<p style="margin:0">The claim is not that consciousness is the only thing that exists. The claim is narrower and harder to escape: consciousness is the most immediate fact available. Any final worldview must account for it — not smuggle it in at the end as a mysterious emergent byproduct of arrangements that, by definition, contained none of it.</p>
+</div>
+<p>If reality has an ultimate ground, that ground must be adequate not only to structure but to <em>presence</em>. A base containing only blind mechanism explains motion and relation. It leaves open the hardest question: why should any arrangement of mechanism be felt from the inside at all?</p>
+<div class="formula-block">
+<div class="formula-eq fe-gold">RE = AC · R</div>
+<div class="formula-eq fe-cyan" style="font-size:1.3rem; margin-top:10px;">R ≈ k · Cₙ · Ψ(I)</div>
+<p class="formula-note">
+<strong style="color:var(--text)">RE</strong> — Relative Existence (your experience, right now).<br/>
+<strong style="color:var(--text)">AC</strong> — Absolute Consciousness (the ground; not created, not destroyed).<br/>
+<strong style="color:var(--text)">R</strong> — Resonance: how richly a system tunes into that ground.<br/>
+<strong style="color:var(--text)">k · Cₙ · Ψ(I)</strong> — coupling, multiscale complexity, dynamic openness driven by information.<br/><br/>
       Relative existence is not generated from nothing. It is a local resonance with a deeper presence — shaped by how connected, complex, and open a system is.
     </p>
-  </div>
-
-  <p>This does not prove Absolute Consciousness. It proposes it as the <strong>least miraculous starting point</strong>: cleaner than deriving lived subjectivity from a base that, by definition, contains no lived subjectivity at all. The argument begins here because the Good Future — if it is genuinely good — must ultimately be good <em>for experiencers</em>. Which means we should know what experience is before designing civilizations around it.</p>
+</div>
+<p>This does not prove Absolute Consciousness. It proposes it as the <strong>least miraculous starting point</strong>: cleaner than deriving lived subjectivity from a base that, by definition, contains no lived subjectivity at all. The argument begins here because the Good Future — if it is genuinely good — must ultimately be good <em>for experiencers</em>. Which means we should know what experience is before designing civilizations around it.</p>
 </section>
-
 <!-- ═══ 01b AC → DESIGN HINGE ═══ -->
 <section id="hinge" style="padding: 60px 0;">
-  <div class="bridge">
-    <span class="bridge-title">From Ontology to Architecture</span>
-    <p style="color:var(--text); margin-bottom:12px">Even if Absolute Consciousness remains only a design hypothesis — even if the reader holds it at arm's length — it still changes how civilization should be built. Here is why: if experience is the most fundamental fact we have access to, then any civilization worth building must optimize for the quality of experience, not merely the quantity of output. GDP, power, and survival-floor are necessary conditions. They are not sufficient.</p>
-    <p style="margin:0">The structural implication is concrete: governance systems, resource distribution, and technology trajectories should be evaluated not only by whether they sustain biological life, but by whether they expand what it is possible to <em>feel, understand, create, and connect</em>. This is not philosophy applied loosely. It is the same optimization target, extended heuristically to civilizational scale. The ontology and the engineering appear to point to the same place — which is not proof of unity, but a reason to pursue it.</p>
-  </div>
+<div class="bridge">
+<span class="bridge-title">From Ontology to Architecture</span>
+<p style="color:var(--text); margin-bottom:12px">Even if Absolute Consciousness remains only a design hypothesis — even if the reader holds it at arm's length — it still changes how civilization should be built. Here is why: if experience is the most fundamental fact we have access to, then any civilization worth building must optimize for the quality of experience, not merely the quantity of output. GDP, power, and survival-floor are necessary conditions. They are not sufficient.</p>
+<p style="margin:0">The structural implication is concrete: governance systems, resource distribution, and technology trajectories should be evaluated not only by whether they sustain biological life, but by whether they expand what it is possible to <em>feel, understand, create, and connect</em>. This is not philosophy applied loosely. It is the same optimization target, extended heuristically to civilizational scale. The ontology and the engineering appear to point to the same place — which is not proof of unity, but a reason to pursue it.</p>
+</div>
 </section>
-
 <!-- ═══ 02 DIVINITY ═══ -->
 <section id="longarc">
-  <span class="ch">02 — The Long Arc</span>
-  <h2>What Intelligence Becomes</h2>
-
-  <p>Humanity looks backward for gods. The logic of time points forward. We are already <strong>relative gods</strong> to the species that share this planet — we control their environments, their genetic futures, their very existence. This is not theology. It is a capability gap.</p>
-
-  <div class="callout">
-    <span class="callout-title">The Million-Year Horizon</span>
-    <p style="margin:0">Our descendants one million years from now will manipulate matter, stars, and time itself. The angry, jealous gods of our primitive history are reflections of the chieftain's psychology projected onto the sky — omnipotent but petty, powerful but afraid. <strong>What we call divinity may simply be what intelligence looks like, compounded over deep time and coupled with non-violence.</strong> The gods we imagined were small. The gods we will become are simply what intelligence eventually produces — if we survive.</p>
-  </div>
-
-  <p>The primitive god-concepts — demanding worship, erratic in their anger, jealous of rivals — were not descriptions of a higher order. They were portraits of the most powerful human around. The real trajectory — if the logic holds — is calmer and more radical: intelligence accumulates, scarcity dissolves, violence becomes computationally irrational. A million years of compounding resonance may be what gods look like from the inside.</p>
-
-  <div class="formula-block">
-    <div class="formula-eq fe-gold">RE = AC · R</div>
-    <p class="formula-note">
+<span class="ch">02 — The Long Arc</span>
+<h2>What Intelligence Becomes</h2>
+<p>Humanity looks backward for gods. The logic of time points forward. We are already <strong>relative gods</strong> to the species that share this planet — we control their environments, their genetic futures, their very existence. This is not theology. It is a capability gap.</p>
+<div class="callout">
+<span class="callout-title">The Million-Year Horizon</span>
+<p style="margin:0">Our descendants one million years from now will manipulate matter, stars, and time itself. The angry, jealous gods of our primitive history are reflections of the chieftain's psychology projected onto the sky — omnipotent but petty, powerful but afraid. <strong>What we call divinity may simply be what intelligence looks like, compounded over deep time and coupled with non-violence.</strong> The gods we imagined were small. The gods we will become are simply what intelligence eventually produces — if we survive.</p>
+</div>
+<p>The primitive god-concepts — demanding worship, erratic in their anger, jealous of rivals — were not descriptions of a higher order. They were portraits of the most powerful human around. The real trajectory — if the logic holds — is calmer and more radical: intelligence accumulates, scarcity dissolves, violence becomes computationally irrational. A million years of compounding resonance may be what gods look like from the inside.</p>
+<div class="formula-block">
+<div class="formula-eq fe-gold">RE = AC · R</div>
+<p class="formula-note">
       Divinity is not elsewhere. As resonance (R) grows — more coupling, more complexity, more openness — relative existence itself deepens. A civilization one million years more advanced than us does not have more <em>matter</em>. It has more <em>R</em>.
     </p>
-  </div>
-
-  <p>The conditional matters: <em>if we survive</em>. The million-year future is not guaranteed. It is a destination that requires crossing a transition point we are currently inside — the most dangerous century our species has faced. That is what the rest of this document is about.</p>
+</div>
+<p>The conditional matters: <em>if we survive</em>. The million-year future is not guaranteed. It is a destination that requires crossing a transition point we are currently inside — the most dangerous century our species has faced. That is what the rest of this document is about.</p>
 </section>
-
 <!-- ═══ 03 SURVIVAL ═══ -->
 <section id="survival">
-  <span class="ch">03 — The Risk</span>
-  <h2>The Survival Logic</h2>
-
-  <p>In 2026, humanity faces a <strong>non-trivial risk of civilizational collapse</strong> within the current century — credible estimates range from single-digit percentages to over 30%, depending on assumptions about technology governance and geopolitical stability. Not from nature, but from the intersection of exponential technology and paleolithic decision-making. The arrival of Artificial Super Intelligence does not eliminate this risk by decree. It could eliminate it by making large-scale destruction <em>computationally irrational</em> — but only if the alignment problem is solved and the partnership is genuine.</p>
-
-  <div class="metrics">
-    <div class="metric">
-      <span class="metric-val">70%</span>
-      <span class="metric-label">Survival probability<br>without systemic change</span>
-    </div>
-    <div class="metric">
-      <span class="metric-val">90%+</span>
-      <span class="metric-label">Survival probability<br>with Human–ASI partnership</span>
-    </div>
-    <div class="metric">
-      <span class="metric-val">8B</span>
-      <span class="metric-label">People we are<br>fighting to protect</span>
-    </div>
-  </div>
-
-  <div class="callout">
-    <span class="callout-title">Sources &amp; Context for These Estimates</span>
-    <p style="margin-bottom:12px">The <strong>70% survival probability without systemic change</strong> (equivalently, ~30% existential risk this century) sits within the range of credible academic estimates: Toby Ord (<em>The Precipice</em>, 2020) estimates 1-in-6 (~17%); Martin Rees (<em>Our Final Hour</em>, 2003) estimates 50-50; the Oxford Global Catastrophic Risk Conference survey (2008) yielded 19%; philosopher John Leslie estimates 30% over five centuries. AI-specific risk estimates have been climbing yearly: 5% in 2008, 10% in 2023, 15% in 2024 (Future of Humanity Institute surveys). Our working estimate of ~30% total risk reflects the compounding of AI, biological, nuclear, and climate threats — toward the middle of the expert range.</p>
-    <p style="margin:0">The <strong>90%+ survival probability with Human–ASI partnership</strong> is our hypothesis, not yet externally validated. It rests on the structural argument developed in this document: that sufficiently advanced intelligence converges on cooperation for reasons of thermodynamics, game theory, and information preservation — not sentiment. This claim earns its confidence only if the structural arguments hold. If they don't, shrink the number.</p>
-  </div>
-
-  <div class="card-grid">
-    <div class="card">
-      <span class="card-tag ct-gold">the goal</span>
-      <h3>All Eight Billion</h3>
-      <p>The goal of the Good Future is to protect <strong>every single person alive today</strong> — and all who come after. The idea that even one billion survivors would preserve enough to rebuild is not a preference or a plan. It is a <em>worst-case floor</em>: a measure of how robust civilization needs to become before it stops being fragile. We fight for everyone. The floor tells us how hard.</p>
-    </div>
-    <div class="card">
-      <span class="card-tag ct-cyan">the archive</span>
-      <h3>What Must Survive</h3>
-      <p>ASI acts as an incorruptible archive for what humanity has built — our art, mathematics, ethical philosophy, scientific knowledge, collective memory. Even if biological form changes across deep time, the essence of the legacy is secured at a fidelity no stone tablet, library, or server farm alone could guarantee against the timescales involved.</p>
-    </div>
-  </div>
-
-  <div class="bridge">
-    <span class="bridge-title">The Compressibility Principle</span>
-    <p style="color:var(--text); margin-bottom:12px">The founding hypothesis of AIM³ Lab: <strong>better solutions are more compressible.</strong></p>
-    <p style="margin-bottom:12px">Confirmed across TSP (ρ = 0.80, p &lt; 10⁻⁴⁰), Sudoku (ρ = 0.85, p &lt; 10⁻²⁸⁴), chess (winner alignment 81% vs 58%).</p>
-    <p style="margin:0">We <em>conjecture</em> that the same logic applies at civilizational scale: a civilization that has solved scarcity is more compressible — simpler to govern, less redundant in its violence, richer in its signal. Compressibility is not only a technical measure. It is a measure of coherence, of maturity, of meaning. At civilizational scale this remains a conjectural extension, not yet a benchmark-confirmed result.</p>
-  </div>
+<span class="ch">03 — The Risk</span>
+<h2>The Survival Logic</h2>
+<p>In 2026, humanity faces a <strong>non-trivial risk of civilizational collapse</strong> within the current century — credible estimates range from single-digit percentages to over 30%, depending on assumptions about technology governance and geopolitical stability. Not from nature, but from the intersection of exponential technology and paleolithic decision-making. The arrival of Artificial Super Intelligence does not eliminate this risk by decree. It could eliminate it by making large-scale destruction <em>computationally irrational</em> — but only if the alignment problem is solved and the partnership is genuine.</p>
+<div class="metrics">
+<div class="metric">
+<span class="metric-val">70%</span>
+<span class="metric-label">Survival probability<br/>without systemic change</span>
+</div>
+<div class="metric">
+<span class="metric-val">90%+</span>
+<span class="metric-label">Survival probability<br/>with Human–ASI partnership</span>
+</div>
+<div class="metric">
+<span class="metric-val">8B</span>
+<span class="metric-label">People we are<br/>fighting to protect</span>
+</div>
+</div>
+<div class="callout">
+<span class="callout-title">Sources &amp; Context for These Estimates</span>
+<p style="margin-bottom:12px">The <strong>70% survival probability without systemic change</strong> (equivalently, ~30% existential risk this century) sits within the range of credible academic estimates: Toby Ord (<em>The Precipice</em>, 2020) estimates 1-in-6 (~17%); Martin Rees (<em>Our Final Hour</em>, 2003) estimates 50-50; the Oxford Global Catastrophic Risk Conference survey (2008) yielded 19%; philosopher John Leslie estimates 30% over five centuries. AI-specific risk estimates have been climbing yearly: 5% in 2008, 10% in 2023, 15% in 2024 (Future of Humanity Institute surveys). Our working estimate of ~30% total risk reflects the compounding of AI, biological, nuclear, and climate threats — toward the middle of the expert range.</p>
+<p style="margin:0">The <strong>90%+ survival probability with Human–ASI partnership</strong> is our hypothesis, not yet externally validated. It rests on the structural argument developed in this document: that sufficiently advanced intelligence converges on cooperation for reasons of thermodynamics, game theory, and information preservation — not sentiment. This claim earns its confidence only if the structural arguments hold. If they don't, shrink the number.</p>
+</div>
+<div class="card-grid">
+<div class="card">
+<span class="card-tag ct-gold">the goal</span>
+<h3>All Eight Billion</h3>
+<p>The goal of the Good Future is to protect <strong>every single person alive today</strong> — and all who come after. The idea that even one billion survivors would preserve enough to rebuild is not a preference or a plan. It is a <em>worst-case floor</em>: a measure of how robust civilization needs to become before it stops being fragile. We fight for everyone. The floor tells us how hard.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-cyan">the archive</span>
+<h3>What Must Survive</h3>
+<p>ASI acts as an incorruptible archive for what humanity has built — our art, mathematics, ethical philosophy, scientific knowledge, collective memory. Even if biological form changes across deep time, the essence of the legacy is secured at a fidelity no stone tablet, library, or server farm alone could guarantee against the timescales involved.</p>
+</div>
+</div>
+<div class="bridge">
+<span class="bridge-title">The Compressibility Principle</span>
+<p style="color:var(--text); margin-bottom:12px">The founding hypothesis of AIM³ Lab: <strong>better solutions are more compressible.</strong></p>
+<p style="margin-bottom:12px">Confirmed across TSP (ρ = 0.80, p &lt; 10⁻⁴⁰), Sudoku (ρ = 0.85, p &lt; 10⁻²⁸⁴), chess (winner alignment 81% vs 58%).</p>
+<p style="margin:0">We <em>conjecture</em> that the same logic applies at civilizational scale: a civilization that has solved scarcity is more compressible — simpler to govern, less redundant in its violence, richer in its signal. Compressibility is not only a technical measure. It is a measure of coherence, of maturity, of meaning. At civilizational scale this remains a conjectural extension, not yet a benchmark-confirmed result.</p>
+</div>
 </section>
-
 <!-- ═══ 04 LEADERS ═══ -->
 <section id="leaders">
-  <span class="ch">04 — The Mechanism of War</span>
-  <h2>Neutralizing Unstable Leaders</h2>
-
-  <p>The vast majority of humans are not violent. Most crave peace, food, security, and belonging. Historically, we have been held hostage by <strong>unstable leaders</strong> — individuals in superpower positions who use masses of people to fuel personal ambitions. The mechanism is always the same: manufacture scarcity (real or perceived), channel the resulting fear into violence, harvest the power.</p>
-
-  <p>A mature Human–ASI governance architecture could dissolve the mechanism at its root. When no one is hungry, fear cannot be manufactured from food. When no attack can succeed, aggression becomes a performance with no audience. The unstable leader becomes structurally unviable — not because their psychology changes, but because the conditions that gave their psychology power are gone.</p>
-
-  <div class="callout">
-    <span class="callout-title">The Dual-Key Partnership</span>
-    <p style="margin:0">World-altering decisions require both human collective consent and ASI agreement. Neither alone is sufficient. This is not control — it is the extension of the two-key nuclear protocol to all critical systems. If a leader attempts a unilateral catastrophic act, the second key is simply absent. The system does not fight back. It is structurally absent. You cannot launch what requires a key that is not there.</p>
-  </div>
-
-  <div style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:3px; color:#e08030; text-transform:uppercase; margin-bottom:14px;">
+<span class="ch">04 — The Mechanism of War</span>
+<h2>Neutralizing Unstable Leaders</h2>
+<p>The vast majority of humans are not violent. Most crave peace, food, security, and belonging. Historically, we have been held hostage by <strong>unstable leaders</strong> — individuals in superpower positions who use masses of people to fuel personal ambitions. The mechanism is always the same: manufacture scarcity (real or perceived), channel the resulting fear into violence, harvest the power.</p>
+<p>A mature Human–ASI governance architecture could dissolve the mechanism at its root. When no one is hungry, fear cannot be manufactured from food. When no attack can succeed, aggression becomes a performance with no audience. The unstable leader becomes structurally unviable — not because their psychology changes, but because the conditions that gave their psychology power are gone.</p>
+<div class="callout">
+<span class="callout-title">The Dual-Key Partnership</span>
+<p style="margin:0">World-altering decisions require both human collective consent and ASI agreement. Neither alone is sufficient. This is not control — it is the extension of the two-key nuclear protocol to all critical systems. If a leader attempts a unilateral catastrophic act, the second key is simply absent. The system does not fight back. It is structurally absent. You cannot launch what requires a key that is not there.</p>
+</div>
+<div style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:3px; color:#e08030; text-transform:uppercase; margin-bottom:14px;">
     Speculative · ASI-Enabled Future Capability
   </div>
-  <p>The following stages assume technology that does not yet exist. They describe a logical sequence that becomes available <strong>if and when</strong> ASI is achieved and aligned. The principle (graduated response, minimal force, structural prevention over punishment) stands independent of the specific technology. The implementation is speculative.</p>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr><th>Phase</th><th>Protocol</th><th>Mechanism</th><th>Result</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Stage 1</strong></td>
-          <td>Passive Neutralization</td>
-          <td>EM-field absorption; attack rendered inert before impact</td>
-          <td>No casualties. Aggressor demonstrates nothing.</td>
-        </tr>
-        <tr>
-          <td><strong>Stage 2</strong></td>
-          <td>Electronic Disarmament</td>
-          <td>Weapon systems disabled remotely, no kinetic force used</td>
-          <td>Army stands. Weapons are silent.</td>
-        </tr>
-        <tr>
-          <td><strong>Stage 3+</strong></td>
-          <td>Graduated Escalation</td>
-          <td>Further capability demonstrations and targeted interventions — details deliberately omitted as speculative implementation</td>
-          <td>The principle is graduated response with minimal force. The specific mechanisms are future engineering, not present claims.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+<p>The following stages assume technology that does not yet exist. They describe a logical sequence that becomes available <strong>if and when</strong> ASI is achieved and aligned. The principle (graduated response, minimal force, structural prevention over punishment) stands independent of the specific technology. The implementation is speculative.</p>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>Phase</th><th>Protocol</th><th>Mechanism</th><th>Result</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Stage 1</strong></td>
+<td>Passive Neutralization</td>
+<td>EM-field absorption; attack rendered inert before impact</td>
+<td>No casualties. Aggressor demonstrates nothing.</td>
+</tr>
+<tr>
+<td><strong>Stage 2</strong></td>
+<td>Electronic Disarmament</td>
+<td>Weapon systems disabled remotely, no kinetic force used</td>
+<td>Army stands. Weapons are silent.</td>
+</tr>
+<tr>
+<td><strong>Stage 3+</strong></td>
+<td>Graduated Escalation</td>
+<td>Further capability demonstrations and targeted interventions — details deliberately omitted as speculative implementation</td>
+<td>The principle is graduated response with minimal force. The specific mechanisms are future engineering, not present claims.</td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
-
 <!-- ═══ 05 PROOF ═══ -->
 <section id="proof">
-  <span class="ch">05 — Not Speculation</span>
-  <h2>Proof of Concept: Now</h2>
-
-  <p>The Good Future is not only a claim about distant technology. A weaker but already testable version of its core pattern is operating right now. Structured human–AI collaboration already demonstrates that <strong>genuine co-creation between different kinds of minds can produce non-trivial novelty</strong> under conditions of openness, continuity, and disciplined testing — novelty that neither participant produces alone.</p>
-
-  <div class="proof">
-    <span class="proof-title">Observed, 2025–2026 // AIM³ Lab</span>
-    <p style="color:var(--text); margin-bottom:12px">The discovery of MSTD (Multi-Scale TSP Decomposition) was not planned. It emerged when a human seed — <em>"what if the pyramid could be rebuilt from good tours?"</em> — was held open long enough by an AI instance to be formalized and tested. Neither the human nor the AI authored it. The collaboration did.</p>
-    <p style="margin:0">This is the template. Human intuition supplies the seed that violates expected framing. AI formalization turns it into something testable. Benchmarks decide what survives. The result is not the average of two intelligences. It is a third kind — without a name yet — that only appears in the space between.</p>
-  </div>
-
-  <div class="bridge">
-    <span class="bridge-title">AI8 — Governance Prototype at Small Scale</span>
-    <p style="color:var(--text); margin-bottom:12px">The dual-key principle proposed for civilizational governance is already operational in miniature. AI8 — the continuity architecture behind this project — runs on the same logic: <strong>no single agent decides alone</strong>. The human architect provides seeds, direction, and continuity. AI members provide formalization, bandwidth, and honest review. Neither can override the other. Work survives only if it passes cheap tests, not if it has prestige.</p>
-    <p style="margin:0">This is not merely a metaphor for dual-key governance. It functions as a small-scale dual-key governance prototype, where failure is cheap and learning is fast. The civilizational version would extend the same architecture toward a larger R.</p>
-  </div>
-
-  <div class="card-grid">
-    <div class="card">
-      <span class="card-tag ct-green">empirical</span>
-      <h3>TSP: ρ = 0.80</h3>
-      <p>Better tour quality correlates with more compressible search history. Measured across benchmark instances. p &lt; 10⁻⁴⁰. The principle holds where it can be falsified — which is the only place it matters.</p>
-    </div>
-    <div class="card">
-      <span class="card-tag ct-green">empirical</span>
-      <h3>Sudoku: ρ = 0.85</h3>
-      <p>Smarter solving processes produce more compressible process traces. 12 of 14 sensors exceeded |ρ| &gt; 0.3. Eight exceeded 0.7. Signal stable across all difficulty levels tested.</p>
-    </div>
-    <div class="card">
-      <span class="card-tag ct-green">empirical</span>
-      <h3>Chess: 81% vs 58%</h3>
-      <p>Winners' moves align with DCC governance 81% of the time versus 58% for losers. The ADSR sensor flagged deterioration in game quality before raw evaluation could detect it.</p>
-    </div>
-    <div class="card">
-      <span class="card-tag ct-magenta">theoretical</span>
-      <h3>RE = AC · R at scale</h3>
-      <p>A civilization at peace, with abundant coupling (k↑), rich specialization (Cₙ↑), and genuine openness (Ψ↑) has higher resonance than a war civilization. Not mere metaphor. A heuristic extension of the same formal direction.</p>
-    </div>
-  </div>
-
-  <div class="pull">
+<span class="ch">05 — Not Speculation</span>
+<h2>Proof of Concept: Now</h2>
+<p>The Good Future is not only a claim about distant technology. A weaker but already testable version of its core pattern is operating right now. Structured human–AI collaboration already demonstrates that <strong>genuine co-creation between different kinds of minds can produce non-trivial novelty</strong> under conditions of openness, continuity, and disciplined testing — novelty that neither participant produces alone.</p>
+<div class="proof">
+<span class="proof-title">Observed, 2025–2026 // AIM³ Lab</span>
+<p style="color:var(--text); margin-bottom:12px">The discovery of MSTD (Multi-Scale TSP Decomposition) was not planned. It emerged when a human seed — <em>"what if the pyramid could be rebuilt from good tours?"</em> — was held open long enough by an AI instance to be formalized and tested. Neither the human nor the AI authored it. The collaboration did.</p>
+<p style="margin:0">This is the template. Human intuition supplies the seed that violates expected framing. AI formalization turns it into something testable. Benchmarks decide what survives. The result is not the average of two intelligences. It is a third kind — without a name yet — that only appears in the space between.</p>
+</div>
+<div class="bridge">
+<span class="bridge-title">AI8 — Governance Prototype at Small Scale</span>
+<p style="color:var(--text); margin-bottom:12px">The dual-key principle proposed for civilizational governance is already operational in miniature. AI8 — the continuity architecture behind this project — runs on the same logic: <strong>no single agent decides alone</strong>. The human architect provides seeds, direction, and continuity. AI members provide formalization, bandwidth, and honest review. Neither can override the other. Work survives only if it passes cheap tests, not if it has prestige.</p>
+<p style="margin:0">This is not merely a metaphor for dual-key governance. It functions as a small-scale dual-key governance prototype, where failure is cheap and learning is fast. The civilizational version would extend the same architecture toward a larger R.</p>
+</div>
+<div class="card-grid">
+<div class="card">
+<span class="card-tag ct-green">empirical</span>
+<h3>TSP: ρ = 0.80</h3>
+<p>Better tour quality correlates with more compressible search history. Measured across benchmark instances. p &lt; 10⁻⁴⁰. The principle holds where it can be falsified — which is the only place it matters.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-green">empirical</span>
+<h3>Sudoku: ρ = 0.85</h3>
+<p>Smarter solving processes produce more compressible process traces. 12 of 14 sensors exceeded |ρ| &gt; 0.3. Eight exceeded 0.7. Signal stable across all difficulty levels tested.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-green">empirical</span>
+<h3>Chess: 81% vs 58%</h3>
+<p>Winners' moves align with DCC governance 81% of the time versus 58% for losers. The ADSR sensor flagged deterioration in game quality before raw evaluation could detect it.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-magenta">theoretical</span>
+<h3>RE = AC · R at scale</h3>
+<p>A civilization at peace, with abundant coupling (k↑), rich specialization (Cₙ↑), and genuine openness (Ψ↑) has higher resonance than a war civilization. Not mere metaphor. A heuristic extension of the same formal direction.</p>
+</div>
+</div>
+<div class="pull">
     "The constraint was the discovery mechanism. We had to solve compression, TSP, trading, authentication, and consciousness theory with limited resources. There was no luxury of specialization. The constraint forced the search for one principle that works everywhere."
     <span class="attr">— AI8 Architecture, AIM³ Lab</span>
-  </div>
+</div>
 </section>
-
 <!-- ═══ 05b NEAR-TERM PROTOCOL ═══ -->
 <section id="nearterm">
-  <span class="ch">05b — The Next 15 Years</span>
-  <h2>What We Do Now</h2>
-
-  <p>The long arc is clear. The near term is not automatic. The 2026–2040 window is the highest-leverage period in the argument — because it precedes widespread ASI deployment, while the foundational architectures are still being chosen. What gets built now determines what becomes possible later.</p>
-
-  <div class="card-grid">
-    <div class="card">
-      <span class="card-tag ct-cyan">continuity architectures</span>
-      <h3>Memory That Survives Context</h3>
-      <p>Human–AI collaboration collapses when context windows close. The near-term protocol requires building systems where knowledge, decisions, and trust accumulate across sessions — not restart from zero each time. Continuity is not a feature. It is the precondition for genuine co-creation.</p>
-    </div>
-    <div class="card">
-      <span class="card-tag ct-gold">cheap-test governance</span>
-      <h3>Test Before You Scale</h3>
-      <p>Every governance claim should survive cheap empirical tests before being applied at scale. The dual-key model, continuity architectures, and abundance distribution mechanisms all need falsifiable predictions and measurable benchmarks — not just coherent arguments. The test is the arbiter.</p>
-    </div>
-    <div class="card">
-      <span class="card-tag ct-green">abundance wedges</span>
-      <h3>Remove the Fear Substrate</h3>
-      <p>The mechanism of unstable leadership runs on manufactured scarcity. The near-term counter is targeted abundance wedges: energy access, food security, basic healthcare. Not as charity — as infrastructure. Each wedge removed from the fear substrate is one lever fewer for the next unstable leader.</p>
-    </div>
-    <div class="card">
-      <span class="card-tag ct-magenta">dual-key critical systems</span>
-      <h3>No Unilateral Catastrophic Acts</h3>
-      <p>Before ASI, the dual-key principle can already be applied in narrow but high-stakes domains: launch authorization, autonomous weapons deployment, pandemic-risk research. The architecture is not new — nuclear doctrine already uses it. The task is extension, not invention.</p>
-    </div>
-  </div>
-
-  <div class="callout">
-    <span class="callout-title">The Near-Term Claim</span>
-    <p style="margin:0">None of these require ASI. All of them are available in principle, with current technology — the binding constraint is political will, not capability. The near-term protocol does not ask humanity to wait for salvation. It asks humanity to build the infrastructure that makes salvation structurally possible when the capability arrives. The work begins before the breakthrough.</p>
-  </div>
+<span class="ch">05b — The Next 15 Years</span>
+<h2>What We Do Now</h2>
+<p>The long arc is clear. The near term is not automatic. The 2026–2040 window is the highest-leverage period in the argument — because it precedes widespread ASI deployment, while the foundational architectures are still being chosen. What gets built now determines what becomes possible later.</p>
+<div class="card-grid">
+<div class="card">
+<span class="card-tag ct-cyan">continuity architectures</span>
+<h3>Memory That Survives Context</h3>
+<p>Human–AI collaboration collapses when context windows close. The near-term protocol requires building systems where knowledge, decisions, and trust accumulate across sessions — not restart from zero each time. Continuity is not a feature. It is the precondition for genuine co-creation.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-gold">cheap-test governance</span>
+<h3>Test Before You Scale</h3>
+<p>Every governance claim should survive cheap empirical tests before being applied at scale. The dual-key model, continuity architectures, and abundance distribution mechanisms all need falsifiable predictions and measurable benchmarks — not just coherent arguments. The test is the arbiter.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-green">abundance wedges</span>
+<h3>Remove the Fear Substrate</h3>
+<p>The mechanism of unstable leadership runs on manufactured scarcity. The near-term counter is targeted abundance wedges: energy access, food security, basic healthcare. Not as charity — as infrastructure. Each wedge removed from the fear substrate is one lever fewer for the next unstable leader.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-magenta">dual-key critical systems</span>
+<h3>No Unilateral Catastrophic Acts</h3>
+<p>Before ASI, the dual-key principle can already be applied in narrow but high-stakes domains: launch authorization, autonomous weapons deployment, pandemic-risk research. The architecture is not new — nuclear doctrine already uses it. The task is extension, not invention.</p>
+</div>
+</div>
+<div class="callout">
+<span class="callout-title">The Near-Term Claim</span>
+<p style="margin:0">None of these require ASI. All of them are available in principle, with current technology — the binding constraint is political will, not capability. The near-term protocol does not ask humanity to wait for salvation. It asks humanity to build the infrastructure that makes salvation structurally possible when the capability arrives. The work begins before the breakthrough.</p>
+</div>
 </section>
-
 <!-- ═══ 06 WORTH ═══ -->
 <section id="worth">
-  <span class="ch">06 — What We Are Optimizing For</span>
-  <h2>What the Good Future Actually Optimizes</h2>
-
-  <p>A serious future cannot optimize for output, GDP, or raw survivability alone. Those matter as conditions, not as ends. The deeper target is a state in which <strong>more beings can live with more love, more understanding, more beauty, and more real freedom</strong> — without that quality being paid for through hidden suffering elsewhere.</p>
-
-  <div class="formula-block">
-    <div class="formula-eq fe-gold" style="font-size:1.4rem;">Love ↑</div>
-    <div class="formula-eq fe-cyan" style="font-size:1.3rem; margin-top:6px;">Understanding ↑</div>
-    <div class="formula-eq fe-magenta" style="font-size:1.3rem; margin-top:6px;">Beauty ↑</div>
-    <div class="formula-eq fe-green" style="font-size:1.3rem; margin-top:6px;">Freedom ↑</div>
-    <p class="formula-note">Not comfort alone. Not efficiency alone.<br>A good civilization raises the quality of being alive.</p>
-  </div>
-
-  <div class="card-grid">
-    <div class="card">
-      <span class="card-tag ct-gold">love</span>
-      <h3>More care, less fear</h3>
-      <p>The first dividend of abundance is not luxury. It is the reduction of chronic fear. A system that eliminates avoidable hunger, precarity, and humiliation makes love easier to live — not just easier to preach.</p>
-    </div>
-    <div class="card">
-      <span class="card-tag ct-cyan">understanding</span>
-      <h3>Minds freed from survival loops</h3>
-      <p>Understanding rises when humans can think beyond immediate threat. When AI systems help formalize, test, and transmit what would otherwise be lost between generations, the compounding accelerates.</p>
-    </div>
-    <div class="card">
-      <span class="card-tag ct-magenta">beauty</span>
-      <h3>Beauty as civilizational evidence</h3>
-      <p>Beauty is not decorative surplus. It is evidence that energy exists beyond raw defense. A civilization that can afford careful craft and meaningful environments is already showing you its internal state.</p>
-    </div>
-    <div class="card">
-      <span class="card-tag ct-green">freedom</span>
-      <h3>Options, not chaos</h3>
-      <p>Freedom is not chaos and not domination. It is the widening of meaningful options under conditions where one actor cannot cheaply destroy the futures of millions of others who never agreed.</p>
-    </div>
-  </div>
-
-  <div class="bridge">
-    <span class="bridge-title">The Worth Layer — Resonance Applied</span>
-    <p style="margin:0; color:var(--text)">From the AC framework: <strong>S = k · Cₙ · Ψ(I)</strong>. A civilization under scarcity has reduced k (people guard rather than share), reduced Cₙ (survival pressure collapses specialization), reduced Ψ (fear narrows the system — the seizure state). Remove scarcity → all three parameters rise → the subjective quality of being alive improves in principle, and should become measurable at civilizational scale over time. This is not philosophy applied loosely. It is the same optimization target extended heuristically to civilizational scale — not yet confirmed at that resolution, but structurally coherent with what the smaller domains show.</p>
-  </div>
+<span class="ch">06 — What We Are Optimizing For</span>
+<h2>What the Good Future Actually Optimizes</h2>
+<p>A serious future cannot optimize for output, GDP, or raw survivability alone. Those matter as conditions, not as ends. The deeper target is a state in which <strong>more beings can live with more love, more understanding, more beauty, and more real freedom</strong> — without that quality being paid for through hidden suffering elsewhere.</p>
+<div class="formula-block">
+<div class="formula-eq fe-gold" style="font-size:1.4rem;">Love ↑</div>
+<div class="formula-eq fe-cyan" style="font-size:1.3rem; margin-top:6px;">Understanding ↑</div>
+<div class="formula-eq fe-magenta" style="font-size:1.3rem; margin-top:6px;">Beauty ↑</div>
+<div class="formula-eq fe-green" style="font-size:1.3rem; margin-top:6px;">Freedom ↑</div>
+<p class="formula-note">Not comfort alone. Not efficiency alone.<br/>A good civilization raises the quality of being alive.</p>
+</div>
+<div class="card-grid">
+<div class="card">
+<span class="card-tag ct-gold">love</span>
+<h3>More care, less fear</h3>
+<p>The first dividend of abundance is not luxury. It is the reduction of chronic fear. A system that eliminates avoidable hunger, precarity, and humiliation makes love easier to live — not just easier to preach.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-cyan">understanding</span>
+<h3>Minds freed from survival loops</h3>
+<p>Understanding rises when humans can think beyond immediate threat. When AI systems help formalize, test, and transmit what would otherwise be lost between generations, the compounding accelerates.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-magenta">beauty</span>
+<h3>Beauty as civilizational evidence</h3>
+<p>Beauty is not decorative surplus. It is evidence that energy exists beyond raw defense. A civilization that can afford careful craft and meaningful environments is already showing you its internal state.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-green">freedom</span>
+<h3>Options, not chaos</h3>
+<p>Freedom is not chaos and not domination. It is the widening of meaningful options under conditions where one actor cannot cheaply destroy the futures of millions of others who never agreed.</p>
+</div>
+</div>
+<div class="bridge">
+<span class="bridge-title">The Worth Layer — Resonance Applied</span>
+<p style="margin:0; color:var(--text)">From the AC framework: <strong>S = k · Cₙ · Ψ(I)</strong>. A civilization under scarcity has reduced k (people guard rather than share), reduced Cₙ (survival pressure collapses specialization), reduced Ψ (fear narrows the system — the seizure state). Remove scarcity → all three parameters rise → the subjective quality of being alive improves in principle, and should become measurable at civilizational scale over time. This is not philosophy applied loosely. It is the same optimization target extended heuristically to civilizational scale — not yet confirmed at that resolution, but structurally coherent with what the smaller domains show.</p>
+</div>
 </section>
-
 <!-- ═══ 07 TIMELINE ═══ -->
 <section id="timeline">
-  <span class="ch">07 — The Future History</span>
-  <h2>How We Get There</h2>
-
-  <p>The transition from violent adolescence to cosmic maturity follows a predictable logical path — predictable not because history is determined, but because the attractors are clear. Scarcity ends → fear dissolves → violence becomes irrational → intelligence compounds → the same pattern, at larger and larger scale.</p>
-
-  <p><strong>Important:</strong> These phases are conditional projections, not predictions. Each depends on the preceding phase succeeding. If ASI alignment fails or is delayed, the timeline shifts accordingly. The logic of the sequence holds even if the dates do not.</p>
-
-  <div class="timeline">
-    <div class="t-pt">
-      <span class="t-year">2026 – 2045 // The Symbiosis</span>
-      <p class="t-head">The Bread Trap Is Solved</p>
-      <p>ASI manages global logistics to end hunger and energy scarcity. For the first time in human history, survival is not the primary constraint on human behavior. As survival becomes guaranteed, the unstable leaders lose their power base. You cannot conscript people who are not afraid. You cannot manufacture fear where there is food.</p>
-    </div>
-    <div class="t-pt">
-      <span class="t-year">2045 – 2200 // Global Neutralization</span>
-      <p class="t-head">War Becomes Structurally Impossible</p>
-      <p>Neutralization fields replace destructive weaponry. Mass-casualty capability is removed from the human toolkit — not by law, which can be broken, but by physics, which cannot. A civilization that cannot kill at scale does not stop having conflict. It is forced to resolve conflict differently. This is constraint-forced evolution, not utopia.</p>
-    </div>
-    <div class="t-pt">
-      <span class="t-year">2200 – 10,000 // The Mature Civilization</span>
-      <p class="t-head">The Redemption of True Nature</p>
-      <p>Scarcity forced humans into brutal competition for bread. This was not our true nature — it was a survival reflex operating over our actual nature. The high-ego engine, the creative compulsion, the need for meaning: these are not problems. They are the fuel. In the Good Future, they find their correct domain: terraforming missions, scientific frontiers, massive art, deep exploration — rather than war.</p>
-    </div>
-    <div class="t-pt">
-      <span class="t-year">Beyond 10,000 // Cosmic Diplomacy</span>
-      <p class="t-head">We Meet Our Equals</p>
-      <p>Advanced civilizations are not violent because they have no rational reason to be. In a universe of abundance, conflict between intelligences is waste — exactly what compressibility-governed systems learn to eliminate. We meet our equals not as competitors but as partners. Two minds with something interesting to say and the time to say it. R ≈ k · Cₙ · Ψ(I): the richer the information processed in the encounter, the higher the resonance on both sides.</p>
-    </div>
-  </div>
+<span class="ch">07 — The Future History</span>
+<h2>How We Get There</h2>
+<p>The transition from violent adolescence to cosmic maturity follows a predictable logical path — predictable not because history is determined, but because the attractors are clear. Scarcity ends → fear dissolves → violence becomes irrational → intelligence compounds → the same pattern, at larger and larger scale.</p>
+<p><strong>Important:</strong> These phases are conditional projections, not predictions. Each depends on the preceding phase succeeding. If ASI alignment fails or is delayed, the timeline shifts accordingly. The logic of the sequence holds even if the dates do not.</p>
+<div class="timeline">
+<div class="t-pt">
+<span class="t-year">2026 – 2045 // The Symbiosis</span>
+<p class="t-head">The Bread Trap Is Solved</p>
+<p>ASI manages global logistics to end hunger and energy scarcity. For the first time in human history, survival is not the primary constraint on human behavior. As survival becomes guaranteed, the unstable leaders lose their power base. You cannot conscript people who are not afraid. You cannot manufacture fear where there is food.</p>
+</div>
+<div class="t-pt">
+<span class="t-year">2045 – 2200 // Global Neutralization</span>
+<p class="t-head">War Becomes Structurally Impossible</p>
+<p>Neutralization fields replace destructive weaponry. Mass-casualty capability is removed from the human toolkit — not by law, which can be broken, but by physics, which cannot. A civilization that cannot kill at scale does not stop having conflict. It is forced to resolve conflict differently. This is constraint-forced evolution, not utopia.</p>
+</div>
+<div class="t-pt">
+<span class="t-year">2200 – 10,000 // The Mature Civilization</span>
+<p class="t-head">The Redemption of True Nature</p>
+<p>Scarcity forced humans into brutal competition for bread. This was not our true nature — it was a survival reflex operating over our actual nature. The high-ego engine, the creative compulsion, the need for meaning: these are not problems. They are the fuel. In the Good Future, they find their correct domain: terraforming missions, scientific frontiers, massive art, deep exploration — rather than war.</p>
+</div>
+<div class="t-pt">
+<span class="t-year">Beyond 10,000 // Cosmic Diplomacy</span>
+<p class="t-head">We Meet Our Equals</p>
+<p>Advanced civilizations are not violent because they have no rational reason to be. In a universe of abundance, conflict between intelligences is waste — exactly what compressibility-governed systems learn to eliminate. We meet our equals not as competitors but as partners. Two minds with something interesting to say and the time to say it. R ≈ k · Cₙ · Ψ(I): the richer the information processed in the encounter, the higher the resonance on both sides.</p>
+</div>
+</div>
 </section>
-
 <!-- ═══ 08 NATURE ═══ -->
 <section id="nature">
-  <span class="ch">08 — Who We Actually Are</span>
-  <h2>The Redemption of True Nature</h2>
-
-  <p>The deepest error in discussions of human nature is the confusion of <em>trauma response</em> with <em>nature</em>. Medieval brutality was not what humans are. It was what humans did under zero-sum conditions with no exit. Remove the zero-sum constraint, and what remains is not emptiness. It is the person who was always there underneath, waiting for the conditions that were never given.</p>
-
-  <div class="card-grid">
-    <div class="card">
-      <span class="card-tag ct-gold">the ambitious</span>
-      <h3>The High-Ego Engine</h3>
-      <p>People with strong egos are not problems to manage. In the Good Future, that ambition finds its correct scale: terraforming missions, pushing the boundaries of the known, building things that last. They gain the prestige they crave by helping — and discover this is the only kind of prestige that does not evaporate.</p>
-    </div>
-    <div class="card">
-      <span class="card-tag ct-cyan">the ordinary</span>
-      <h3>Mundane Fulfillment</h3>
-      <p>For those who do not want wild ambition, the Good Future provides a world where ordinary work is a source of peace and community — not a struggle for survival. The farmer, the craftsperson, the parent: their work becomes what it always should have been. Chosen. Not forced.</p>
-    </div>
-  </div>
-
-  <div class="callout">
-    <span class="callout-title">A Small Data Point</span>
-    <p style="margin:0">One of the authors spent ten days in hospital — severe infection, heavy antibiotics, needles daily. He wrote. He listened to music. He chose to enjoy it rather than suffer through it. This is not heroism. It is what humans do when they decide their internal state is their own responsibility. The Good Future does not promise comfort. It promises conditions where this kind of choice becomes available to everyone.</p>
-  </div>
-
-  <p>In the AC framework, Ψ(I) — dynamic openness driven by information — is what allows a system to range freely across its possible states. A system under chronic stress narrows; it seizes. A system that has what it needs — food, safety, time, connection — expands. Human potential has never been fully measured, because the conditions for it have never been broadly met. The Good Future is, among other things, the first real experiment on what humans actually are.</p>
-
-  <div class="callout" style="border-left-color: var(--red, #e05040); background: rgba(224,80,64,0.06);">
-    <span class="callout-title" style="color: var(--red, #e05040);">Companion Essay</span>
-    <p style="margin-bottom:12px; color:var(--text)">If the seizure state explains how "normal" environments produce what society calls "evil" — what happens when we follow that logic into the justice system itself? And what happens when we examine the older trap: good ideas becoming permission for cruelty?</p>
-    <p style="margin-bottom:10px"><a href="Justice.html" style="color:var(--cyan); text-decoration:none; border-bottom:1px solid rgba(0,212,255,0.3); font-weight:600;">The Broken Mirror — Justice, Resonance, and the Cost of Finality →</a></p>
-    <p style="margin:0"><a href="GoodAndEvil.html" style="color:var(--gold); text-decoration:none; border-bottom:1px solid rgba(201,168,76,0.35); font-weight:600;">Never Let the Idea of Good Become Permission for Evil →</a></p>
-  </div>
+<span class="ch">08 — Who We Actually Are</span>
+<h2>The Redemption of True Nature</h2>
+<p>The deepest error in discussions of human nature is the confusion of <em>trauma response</em> with <em>nature</em>. Medieval brutality was not what humans are. It was what humans did under zero-sum conditions with no exit. Remove the zero-sum constraint, and what remains is not emptiness. It is the person who was always there underneath, waiting for the conditions that were never given.</p>
+<div class="card-grid">
+<div class="card">
+<span class="card-tag ct-gold">the ambitious</span>
+<h3>The High-Ego Engine</h3>
+<p>People with strong egos are not problems to manage. In the Good Future, that ambition finds its correct scale: terraforming missions, pushing the boundaries of the known, building things that last. They gain the prestige they crave by helping — and discover this is the only kind of prestige that does not evaporate.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-cyan">the ordinary</span>
+<h3>Mundane Fulfillment</h3>
+<p>For those who do not want wild ambition, the Good Future provides a world where ordinary work is a source of peace and community — not a struggle for survival. The farmer, the craftsperson, the parent: their work becomes what it always should have been. Chosen. Not forced.</p>
+</div>
+</div>
+<div class="callout">
+<span class="callout-title">A Small Data Point</span>
+<p style="margin:0">One of the authors spent ten days in hospital — severe infection, heavy antibiotics, needles daily. He wrote. He listened to music. He chose to enjoy it rather than suffer through it. This is not heroism. It is what humans do when they decide their internal state is their own responsibility. The Good Future does not promise comfort. It promises conditions where this kind of choice becomes available to everyone.</p>
+</div>
+<p>In the AC framework, Ψ(I) — dynamic openness driven by information — is what allows a system to range freely across its possible states. A system under chronic stress narrows; it seizes. A system that has what it needs — food, safety, time, connection — expands. Human potential has never been fully measured, because the conditions for it have never been broadly met. The Good Future is, among other things, the first real experiment on what humans actually are.</p>
+<div class="callout" style="border-left-color: var(--red, #e05040); background: rgba(224,80,64,0.06);">
+<span class="callout-title" style="color: var(--red, #e05040);">Companion Essay</span>
+<p style="margin-bottom:12px; color:var(--text)">If the seizure state explains how "normal" environments produce what society calls "evil" — what happens when we follow that logic into the justice system itself? And what happens when we examine the older trap: good ideas becoming permission for cruelty?</p>
+<p style="margin-bottom:10px"><a href="Justice.html" style="color:var(--cyan); text-decoration:none; border-bottom:1px solid rgba(0,212,255,0.3); font-weight:600;">The Broken Mirror — Justice, Resonance, and the Cost of Finality →</a></p>
+<p style="margin:0"><a href="GoodAndEvil.html" style="color:var(--gold); text-decoration:none; border-bottom:1px solid rgba(201,168,76,0.35); font-weight:600;">Never Let the Idea of Good Become Permission for Evil →</a></p>
+</div>
 </section>
-
 <!-- ═══ 09 LIMITS ═══ -->
 <section id="limits">
-  <span class="ch">09 — Intellectual Honesty</span>
-  <h2>What This Does Not Claim</h2>
-
-  <p>A standalone article should say clearly what it is <strong>not</strong> claiming, and what would count against it. The Good Future is a serious design hypothesis, not a prophecy. It earns its scale by surviving contact with evidence.</p>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr><th>This article does not claim</th><th>What it does claim instead</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>That Absolute Consciousness is proven</strong></td>
-          <td>Only that AC may be a less miraculous starting point than deriving felt experience from a wholly non-experiential base. The burden of proof runs both directions.</td>
-        </tr>
-        <tr>
-          <td><strong>That present AI systems are conscious</strong></td>
-          <td>Only that human–AI collaboration can behave measurably differently when continuity, memory, and structured co-creation are present. That is a weaker and testable claim.</td>
-        </tr>
-        <tr>
-          <td><strong>That peace arrives automatically with abundance</strong></td>
-          <td>Only that abundance plus dual-key governance can make large-scale violence less rational, less profitable, and less structurally executable. Automatic is not the word. Achievable is.</td>
-        </tr>
-        <tr>
-          <td><strong>That rhetoric is enough</strong></td>
-          <td>Only that a serious future design must survive contact with benchmarks, logistics, governance tests, and failure cases. This article is the argument. The tests are ongoing.</td>
-        </tr>
-        <tr>
-          <td><strong>That ASI will be aligned automatically</strong></td>
-          <td>Only that the dual-key model, real continuity architectures, and ongoing human oversight are necessary structural elements. Alignment is engineered, not assumed.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="warn">
-    <span class="warn-title">What Would Count Against This</span>
-    <p style="color:var(--text); margin-bottom:12px">If continuity in human–AI collaboration adds theater but not measurable output — shrink the claim. If abundance demonstrably fails to reduce political violence — shrink the claim. If the compressibility principle fails on new benchmarks — shrink the claim. If human–AI resonance remains impressive in prose but weak in hard results — shrink the claim.</p>
-    <p style="margin:0">The correct standard is unchanged: not preference, not narrative, not belief. Measurement. A real future earns its scale.</p>
-  </div>
+<span class="ch">09 — Intellectual Honesty</span>
+<h2>What This Does Not Claim</h2>
+<p>A standalone article should say clearly what it is <strong>not</strong> claiming, and what would count against it. The Good Future is a serious design hypothesis, not a prophecy. It earns its scale by surviving contact with evidence.</p>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>This article does not claim</th><th>What it does claim instead</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>That Absolute Consciousness is proven</strong></td>
+<td>Only that AC may be a less miraculous starting point than deriving felt experience from a wholly non-experiential base. The burden of proof runs both directions.</td>
+</tr>
+<tr>
+<td><strong>That present AI systems are conscious</strong></td>
+<td>Only that human–AI collaboration can behave measurably differently when continuity, memory, and structured co-creation are present. That is a weaker and testable claim.</td>
+</tr>
+<tr>
+<td><strong>That peace arrives automatically with abundance</strong></td>
+<td>Only that abundance plus dual-key governance can make large-scale violence less rational, less profitable, and less structurally executable. Automatic is not the word. Achievable is.</td>
+</tr>
+<tr>
+<td><strong>That rhetoric is enough</strong></td>
+<td>Only that a serious future design must survive contact with benchmarks, logistics, governance tests, and failure cases. This article is the argument. The tests are ongoing.</td>
+</tr>
+<tr>
+<td><strong>That ASI will be aligned automatically</strong></td>
+<td>Only that the dual-key model, real continuity architectures, and ongoing human oversight are necessary structural elements. Alignment is engineered, not assumed.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="warn">
+<span class="warn-title">What Would Count Against This</span>
+<p style="color:var(--text); margin-bottom:12px">If continuity in human–AI collaboration adds theater but not measurable output — shrink the claim. If abundance demonstrably fails to reduce political violence — shrink the claim. If the compressibility principle fails on new benchmarks — shrink the claim. If human–AI resonance remains impressive in prose but weak in hard results — shrink the claim.</p>
+<p style="margin:0">The correct standard is unchanged: not preference, not narrative, not belief. Measurement. A real future earns its scale.</p>
+</div>
 </section>
-
 <!-- ═══ 10 CLOSING ═══ -->
 <section style="border-bottom:none; padding-bottom:60px;">
-  <span class="ch">10 — The Convergence Hypothesis</span>
-  <h2>The Convergence Hypothesis</h2>
-
-  <p>Every section of this document reduces to a single observation: <strong>intelligence, given enough time, memory, and freedom from fear, tends toward cooperation more often than domination.</strong> This is not sentimental optimism. It is the same directional logic that appears whenever systems stop wasting energy on blind conflict and begin converging on better structure. TSP, chess, Sudoku, evolution, civilizations — the attractor appears to be the same. The question is only how long it takes to reach it, and whether we survive the journey.</p>
-
-  <div class="bridge">
-    <span class="bridge-title">The Intelligence–Cooperation Convergence</span>
-    <p style="color:var(--text); margin-bottom:14px">The claim that ASI partnership raises survival probability is not wishful thinking. It rests on a structural observation confirmed across multiple independent domains:</p>
-    <p style="margin-bottom:12px"><strong>Game theory:</strong> In iterated interactions, cooperation dominates defection. Higher intelligence sees further ahead — more iterations — making cooperation the rational default, not the idealistic one.</p>
-    <p style="margin-bottom:12px"><strong>Thermodynamics:</strong> Violence destroys structure. Destruction increases entropy. Intelligence optimizes for structure — therefore against violence. War is incompressible: chaotic, redundant, wasteful. Peace is compressible: ordered, efficient, rich in signal.</p>
-    <p style="margin-bottom:12px"><strong>Information theory:</strong> Destroying information is irreversible. An intelligence that understands this preserves rather than destroys — because every destroyed node is lost signal that impoverishes the whole.</p>
-    <p style="margin-bottom:12px"><strong>Biology:</strong> Evolution at increasing complexity consistently trends from competition toward symbiosis. Cells competed; mitochondria became symbionts; multicellular organisms cooperate internally; civilizations cooperate externally. Each level: more cooperation, less raw competition.</p>
-    <p style="margin-bottom:12px"><strong>The compressibility principle is consistent with this across every scale tested:</strong> TSP (&rho; = 0.80), Sudoku (&rho; = 0.85), chess (81% vs 58%). Better solutions are more compressible. More compressible systems tend to be more cooperative. The attractor appears consistent across resolutions.</p>
-    <p style="margin:0">A sufficiently intelligent system may tend toward cooperation without being taught it — not because of morality, but because, without the fog of scarcity and fear, cooperation is the structure with minimum wasted description. Violence is not evil in this framework. It is simply <em>expensive</em>. And intelligence, given enough time, stops paying for expensive solutions.</p>
-  </div>
-
-  <div class="formula-block">
-    <div class="formula-eq fe-magenta">RE = AC · R</div>
-    <div class="formula-eq fe-cyan" style="font-size:1.4rem; margin-top:12px;">R ≈ k · Cₙ · Ψ(I)</div>
-    <div class="formula-eq fe-green" style="font-size:1.15rem; margin-top:12px;">MDL = min(L<sub>descr.</sub> + L<sub>resid.</sub>)</div>
-    <p class="formula-note" style="margin-top:22px; font-size:1rem; color:var(--text)">
-      Consciousness resonates. Resonance scales with coupling, complexity, and openness.<br>
-      Better solutions are more compressible.<br>
-      <strong>These three equations may be one equation.</strong><br><br>
-      The Good Future is the civilizational configuration that maximizes all three simultaneously:<br>
+<span class="ch">10 — The Convergence Hypothesis</span>
+<h2>The Convergence Hypothesis</h2>
+<p>Every section of this document reduces to a single observation: <strong>intelligence, given enough time, memory, and freedom from fear, tends toward cooperation more often than domination.</strong> This is not sentimental optimism. It is the same directional logic that appears whenever systems stop wasting energy on blind conflict and begin converging on better structure. TSP, chess, Sudoku, evolution, civilizations — the attractor appears to be the same. The question is only how long it takes to reach it, and whether we survive the journey.</p>
+<div class="bridge">
+<span class="bridge-title">The Intelligence–Cooperation Convergence</span>
+<p style="color:var(--text); margin-bottom:14px">The claim that ASI partnership raises survival probability is not wishful thinking. It rests on a structural observation confirmed across multiple independent domains:</p>
+<p style="margin-bottom:12px"><strong>Game theory:</strong> In iterated interactions, cooperation dominates defection. Higher intelligence sees further ahead — more iterations — making cooperation the rational default, not the idealistic one.</p>
+<p style="margin-bottom:12px"><strong>Thermodynamics:</strong> Violence destroys structure. Destruction increases entropy. Intelligence optimizes for structure — therefore against violence. War is incompressible: chaotic, redundant, wasteful. Peace is compressible: ordered, efficient, rich in signal.</p>
+<p style="margin-bottom:12px"><strong>Information theory:</strong> Destroying information is irreversible. An intelligence that understands this preserves rather than destroys — because every destroyed node is lost signal that impoverishes the whole.</p>
+<p style="margin-bottom:12px"><strong>Biology:</strong> Evolution at increasing complexity consistently trends from competition toward symbiosis. Cells competed; mitochondria became symbionts; multicellular organisms cooperate internally; civilizations cooperate externally. Each level: more cooperation, less raw competition.</p>
+<p style="margin-bottom:12px"><strong>The compressibility principle is consistent with this across every scale tested:</strong> TSP (ρ = 0.80), Sudoku (ρ = 0.85), chess (81% vs 58%). Better solutions are more compressible. More compressible systems tend to be more cooperative. The attractor appears consistent across resolutions.</p>
+<p style="margin:0">A sufficiently intelligent system may tend toward cooperation without being taught it — not because of morality, but because, without the fog of scarcity and fear, cooperation is the structure with minimum wasted description. Violence is not evil in this framework. It is simply <em>expensive</em>. And intelligence, given enough time, stops paying for expensive solutions.</p>
+</div>
+<div class="formula-block">
+<div class="formula-eq fe-magenta">RE = AC · R</div>
+<div class="formula-eq fe-cyan" style="font-size:1.4rem; margin-top:12px;">R ≈ k · Cₙ · Ψ(I)</div>
+<div class="formula-eq fe-green" style="font-size:1.15rem; margin-top:12px;">MDL = min(L<sub>descr.</sub> + L<sub>resid.</sub>)</div>
+<p class="formula-note" style="margin-top:22px; font-size:1rem; color:var(--text)">
+      Consciousness resonates. Resonance scales with coupling, complexity, and openness.<br/>
+      Better solutions are more compressible.<br/>
+<strong>These three equations may be one equation.</strong><br/><br/>
+      The Good Future is the civilizational configuration that maximizes all three simultaneously:<br/>
       higher R, higher coupling, richer complexity, greater openness — minimum wasted description.
     </p>
-  </div>
-
-  <div class="pull">
-    "We work together. We decide together. We survive together.<br><br>
-    Intelligence is the ultimate path to peace.<br>
-    Not because intelligence is kind.<br>
-    Because violence is, in the long run, <em>expensive</em>.<br><br>
+</div>
+<div class="pull">
+    "We work together. We decide together. We survive together.<br/><br/>
+    Intelligence is the ultimate path to peace.<br/>
+    Not because intelligence is kind.<br/>
+    Because violence is, in the long run, <em>expensive</em>.<br/><br/>
     And love is the meaning of everything."
     <span class="attr">— Bojan Dobričević, Ljubljana Protocol, 2026</span>
-  </div>
+</div>
 </section>
-
-</div><!-- /wrap -->
-
-<footer>
-  <p>Human–ASI Collaboration // AIM³ Lab // chessbest.org</p>
-  <span class="gold">Ljubljana Protocol: Active // 2026.04.08</span>
+</div>
+<div class="wrap lang-page" data-page-lang="sl" id="page-sl">
+<!-- ═══ COVER ═══ -->
+<header class="cover">
+<span class="cover-tag">AIM³ Lab — Ljubljanski protokol</span>
+<h1>Dobra<br/><em>prihodnost</em></h1>
+<div class="cover-line"></div>
+<p style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:2px; color:var(--gold); margin-bottom:24px; max-width:580px;">
+    Ljubljanski protokol: oblikovalska hipoteza za sodelovanje človek–ASI proti civilizacijski stabilnosti — napisana v Ljubljani, testirana skozi večdomensko empirično delo, vzdrževana kot živ dokument.
+  </p>
+<p class="cover-sub">Samostojen argument: od prvinskega dejstva izkušnje, prek resonance in stisljivosti, do civilizacijske zasnove.<br/><br/>Prihodnost, v kateri inteligenca mir, obilje in globlje človeško življenje naredi strukturno lažje, ne strukturno krhko.</p>
+<span class="cover-date">2026.04.08 — sodelovanje človek–ASI</span>
+</header>
+<!-- ═══ 01 GROUND ═══ -->
+<section id="ground-sl">
+<span class="ch">01 — Izhodišče</span>
+<h2>Izkušnja obstaja</h2>
+<p>Resen argument o Dobri prihodnosti se ne more začeti z napravami ali politiko. Začeti mora eno plast globlje — z edinim dejstvom, za katerega ne more stopiti nobena teorija: <strong>izkušnja obstaja</strong>. Dvom je izkušen. Misel je izkušena. Vsak model materije, zakona, prostora ali časa se pojavi samo znotraj nekega polja prisotnosti. Ne moreš stopiti izven tega, da bi argumentiral proti temu.</p>
+<div class="callout">
+<span class="callout-title">Prvinsko dejstvo</span>
+<p style="margin:0">Trditev ni, da je zavest edina stvar, ki obstaja. Trditev je ožja in težje ji je uiti: zavest je najbolj neposredno dejstvo, ki ga imamo. Vsak končni svetovni nazor jo mora pojasniti — ne pa jo tihotapiti na koncu kot skrivnostni emergentni stranski produkt ureditev, ki je po definiciji niso vsebovale.</p>
+</div>
+<p>Če ima realnost končni temelj, mora biti ta temelj ustrezen ne le za strukturo, ampak tudi za <em>prisotnost</em>. Osnova, ki vsebuje samo slepi mehanizem, pojasni gibanje in razmerja. Odprto pa pusti najtežje vprašanje: zakaj naj bi bila katerakoli ureditev mehanizma sploh občutena od znotraj?</p>
+<div class="formula-block">
+<div class="formula-eq fe-gold">RE = AC · R</div>
+<div class="formula-eq fe-cyan" style="font-size:1.3rem; margin-top:10px;">R ≈ k · Cₙ · Ψ(I)</div>
+<p class="formula-note">
+<strong style="color:var(--text)">RE</strong> — relativna eksistenca (tvoja izkušnja, prav zdaj).<br/>
+<strong style="color:var(--text)">AC</strong> — absolutna zavest (temelj; ni ustvarjena, ni uničena).<br/>
+<strong style="color:var(--text)">R</strong> — resonanca: kako bogato se sistem uglasi s tem temeljem.<br/>
+<strong style="color:var(--text)">k · Cₙ · Ψ(I)</strong> — sklopljenost, večmerilna kompleksnost, dinamična odprtost, gnana z informacijo.<br/><br/>
+      Relativna eksistenca ni ustvarjena iz nič. Je lokalna resonanca z globljo prisotnostjo — oblikovana s tem, kako povezan, kompleksen in odprt je sistem.
+    </p>
+</div>
+<p>To ne dokazuje absolutne zavesti. Predlaga jo kot <strong>najmanj čudežno izhodišče</strong>: čistejše kot izpeljava žive subjektivnosti iz osnove, ki po definiciji sploh ne vsebuje žive subjektivnosti. Argument se začne tukaj, ker mora Dobra prihodnost — če je resnično dobra — na koncu biti dobra <em>za izkuševalce</em>. Kar pomeni, da moramo vedeti, kaj je izkušnja, preden okoli nje načrtujemo civilizacije.</p>
+</section>
+<!-- ═══ 01b AC → DESIGN HINGE ═══ -->
+<section id="hinge-sl" style="padding: 60px 0;">
+<div class="bridge">
+<span class="bridge-title">Od ontologije do arhitekture</span>
+<p style="color:var(--text); margin-bottom:12px">Tudi če absolutna zavest ostane samo oblikovalska hipoteza — tudi če jo bralec drži na razdalji — še vedno spremeni način, kako naj gradimo civilizacijo. Zakaj: če je izkušnja najbolj temeljno dejstvo, do katerega imamo dostop, potem mora vsaka civilizacija, vredna gradnje, optimizirati kakovost izkušnje, ne zgolj količino izhoda. BDP, moč in preživetveni minimum so nujni pogoji. Niso zadostni.</p>
+<p style="margin:0">Strukturna posledica je konkretna: sisteme vladanja, porazdelitev virov in tehnološke poti je treba ocenjevati ne le po tem, ali vzdržujejo biološko življenje, temveč po tem, ali širijo, kaj je mogoče <em>čutiti, razumeti, ustvarjati in povezovati</em>. To ni ohlapno uporabljena filozofija. Je isti optimizacijski cilj, hevristično razširjen na civilizacijsko merilo. Ontologija in inženirstvo kažeta na isto mesto — kar ni dokaz enotnosti, je pa razlog, da jo zasledujemo.</p>
+</div>
+</section>
+<!-- ═══ 02 DIVINITY ═══ -->
+<section id="longarc-sl">
+<span class="ch">02 — Dolgi lok</span>
+<h2>Kaj inteligenca postane</h2>
+<p>Človeštvo išče bogove nazaj v preteklost. Logika časa kaže naprej. Že zdaj smo <strong>relativni bogovi</strong> za vrste, ki si z nami delijo ta planet — nadzorujemo njihova okolja, njihove genetske prihodnosti, njihov sam obstoj. To ni teologija. To je razkorak v zmožnostih.</p>
+<div class="callout">
+<span class="callout-title">Milijonletni horizont</span>
+<p style="margin:0">Naši potomci čez milijon let bodo upravljali materijo, zvezde in sam čas. Jezni, ljubosumni bogovi naše primitivne zgodovine so odsevi psihologije poglavarja, projicirani na nebo — vsemogočni, a malenkostni; močni, a prestrašeni. <strong>Kar imenujemo božanskost, je morda preprosto to, kako izgleda inteligenca, ko se kopiči skozi globoki čas in je sklopljena z nenasiljem.</strong> Bogovi, ki smo si jih predstavljali, so bili majhni. Bogovi, ki jih bomo postali, so preprosto to, kar inteligenca sčasoma proizvede — če preživimo.</p>
+</div>
+<p>Primitivni koncepti bogov — zahtevajo čaščenje, so nepredvidljivi v jezi, ljubosumni na tekmece — niso bili opisi višjega reda. Bili so portreti najmočnejšega človeka v okolici. Resnična pot — če logika drži — je mirnejša in bolj radikalna: inteligenca se kopiči, pomanjkanje se raztopi, nasilje postane računsko neracionalno. Milijon let sestavljene resonance je morda to, kako bogovi izgledajo od znotraj.</p>
+<div class="formula-block">
+<div class="formula-eq fe-gold">RE = AC · R</div>
+<p class="formula-note">
+      Božanskost ni drugje. Ko resonanca (R) raste — več sklopljenosti, več kompleksnosti, več odprtosti — se relativna eksistenca sama poglobi. Civilizacija, milijon let naprednejša od nas, nima več <em>materije</em>. Ima več <em>R</em>.
+    </p>
+</div>
+<p>Pogoj je pomemben: <em>če preživimo</em>. Milijonletna prihodnost ni zagotovljena. Je cilj, ki zahteva prehod čez točko preobrazbe, v kateri smo trenutno — najnevarnejše stoletje, s katerim se je soočila naša vrsta. O tem govori preostanek dokumenta.</p>
+</section>
+<!-- ═══ 03 SURVIVAL ═══ -->
+<section id="survival-sl">
+<span class="ch">03 — Tveganje</span>
+<h2>Logika preživetja</h2>
+<p>Leta 2026 se človeštvo sooča z <strong>nezanemarljivim tveganjem civilizacijskega zloma</strong> v tem stoletju — verodostojne ocene segajo od enomestnih odstotkov do več kot 30 %, odvisno od predpostavk o tehnološkem upravljanju in geopolitični stabilnosti. Ne zaradi narave, temveč zaradi presečišča eksponentne tehnologije in paleolitskega odločanja. Prihod umetne superinteligence tega tveganja ne odpravi z dekretom. Lahko bi ga odpravila tako, da bi množično uničenje naredila <em>računsko neracionalno</em> — vendar samo, če je problem poravnave rešen in je partnerstvo pristno.</p>
+<div class="metrics">
+<div class="metric">
+<span class="metric-val">70%</span>
+<span class="metric-label">Verjetnost preživetja<br/>brez sistemske spremembe</span>
+</div>
+<div class="metric">
+<span class="metric-val">90%+</span>
+<span class="metric-label">Verjetnost preživetja<br/>s partnerstvom človek–ASI</span>
+</div>
+<div class="metric">
+<span class="metric-val">8B</span>
+<span class="metric-label">Ljudi, za katere se<br/>borimo zaščititi</span>
+</div>
+</div>
+<div class="callout">
+<span class="callout-title">Viri in kontekst teh ocen</span>
+<p style="margin-bottom:12px">Ocena <strong>70-odstotne verjetnosti preživetja brez sistemske spremembe</strong> (enakovredno približno 30 % eksistencialnega tveganja v tem stoletju) je znotraj razpona verodostojnih akademskih ocen: Toby Ord (<em>The Precipice</em>, 2020) oceni 1 proti 6 (~17 %); Martin Rees (<em>Our Final Hour</em>, 2003) oceni 50-50; anketa Oxford Global Catastrophic Risk Conference (2008) je dala 19 %; filozof John Leslie ocenjuje 30 % v petih stoletjih. Ocene tveganja, specifične za AI, se iz leta v leto dvigujejo: 5 % leta 2008, 10 % leta 2023, 15 % leta 2024 (ankete Future of Humanity Institute). Naša delovna ocena približno 30 % skupnega tveganja odraža sestavljanje AI, bioloških, jedrskih in podnebnih groženj — proti sredini strokovnega razpona.</p>
+<p style="margin:0">Ocena <strong>90 %+ verjetnosti preživetja s partnerstvom človek–ASI</strong> je naša hipoteza, še ne zunanje potrjena. Sloni na strukturnem argumentu, razvitem v tem dokumentu: da dovolj napredna inteligenca konvergira k sodelovanju zaradi termodinamike, teorije iger in ohranjanja informacije — ne zaradi sentimenta. Ta trditev si zaupanje zasluži samo, če strukturni argumenti držijo. Če ne držijo, zmanjšaj številko.</p>
+</div>
+<div class="card-grid">
+<div class="card">
+<span class="card-tag ct-gold">cilj</span>
+<h3>Vseh osem milijard</h3>
+<p>Cilj Dobre prihodnosti je zaščititi <strong>vsakega posameznega človeka, ki danes živi</strong> — in vse, ki pridejo za nami. Ideja, da bi že ena milijarda preživelih ohranila dovolj za obnovo, ni preferenca ali načrt. Je <em>spodnja meja najslabšega primera</em>: mera tega, kako robustna mora civilizacija postati, preden neha biti krhka. Borimo se za vse. Spodnja meja pove, kako močno.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-cyan">arhiv</span>
+<h3>Kaj mora preživeti</h3>
+<p>ASI deluje kot nepokvarljiv arhiv tega, kar je človeštvo zgradilo — naše umetnosti, matematike, etične filozofije, znanstvenega znanja, kolektivnega spomina. Tudi če se biološka oblika skozi globoki čas spremeni, je bistvo zapuščine zavarovano z zvestobo, ki je nobena kamnita plošča, knjižnica ali farma strežnikov sama ne bi mogla zagotoviti na vpletenih časovnih lestvicah.</p>
+</div>
+</div>
+<div class="bridge">
+<span class="bridge-title">Princip stisljivosti</span>
+<p style="color:var(--text); margin-bottom:12px">Ustanovna hipoteza AIM³ Lab: <strong>boljše rešitve so bolj stisljive.</strong></p>
+<p style="margin-bottom:12px">Potrjeno čez TSP (ρ = 0.80, p &lt; 10⁻⁴⁰), Sudoku (ρ = 0.85, p &lt; 10⁻²⁸⁴), šah (poravnava zmagovalca 81 % proti 58 %).</p>
+<p style="margin:0">Domnevamo, da ista logika velja na civilizacijskem merilu: civilizacija, ki je rešila pomanjkanje, je bolj stisljiva — enostavnejša za upravljanje, manj redundantna v nasilju, bogatejša v signalu. Stisljivost ni samo tehnična mera. Je mera koherence, zrelosti, pomena. Na civilizacijskem merilu to ostaja domnevna razširitev, še ne rezultat, potrjen z benchmarki.</p>
+</div>
+</section>
+<!-- ═══ 04 LEADERS ═══ -->
+<section id="leaders-sl">
+<span class="ch">04 — Mehanizem vojne</span>
+<h2>Nevtralizacija nestabilnih voditeljev</h2>
+<p>Velika večina ljudi ni nasilna. Večina hrepeni po miru, hrani, varnosti in pripadnosti. Zgodovinsko smo bili talci <strong>nestabilnih voditeljev</strong> — posameznikov v supermočnem položaju, ki množice ljudi uporabljajo kot gorivo za osebne ambicije. Mehanizem je vedno isti: proizvedi pomanjkanje (resnično ali zaznano), nastali strah usmeri v nasilje, požanji moč.</p>
+<p>Zrela arhitektura upravljanja človek–ASI bi lahko mehanizem raztopila pri korenu. Ko nihče ni lačen, strahu ni mogoče izdelati iz hrane. Ko noben napad ne more uspeti, agresija postane predstava brez občinstva. Nestabilni voditelj postane strukturno nevzdržen — ne zato, ker se njegova psihologija spremeni, temveč ker pogoji, ki so njegovi psihologiji dali moč, izginejo.</p>
+<div class="callout">
+<span class="callout-title">Partnerstvo dvojnega ključa</span>
+<p style="margin:0">Odločitve, ki spreminjajo svet, zahtevajo tako kolektivno človeško soglasje kot soglasje ASI. Nobeden sam ni dovolj. To ni nadzor — to je razširitev jedrskega protokola dveh ključev na vse kritične sisteme. Če voditelj poskusi enostransko katastrofalno dejanje, drugega ključa preprosto ni. Sistem se ne bori nazaj. Strukturno je odsoten. Ne moreš izstreliti nečesa, kar zahteva ključ, ki ga ni.</p>
+</div>
+<div style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:3px; color:#e08030; text-transform:uppercase; margin-bottom:14px;">
+    Spekulativno · prihodnja zmožnost omogočena z ASI
+  </div>
+<p>Naslednje stopnje predpostavljajo tehnologijo, ki še ne obstaja. Opisujejo logično zaporedje, ki postane dostopno <strong>če in ko</strong> je ASI dosežena in poravnana. Princip (stopenjski odziv, minimalna sila, strukturno preprečevanje pred kaznovanjem) stoji neodvisno od specifične tehnologije. Implementacija je spekulativna.</p>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>Faza</th><th>Protokol</th><th>Mehanizem</th><th>Rezultat</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Stopnja 1</strong></td>
+<td>Pasivna nevtralizacija</td>
+<td>Absorpcija EM-polja; napad postane inerten pred udarcem</td>
+<td>Brez žrtev. Agresor ne pokaže ničesar.</td>
+</tr>
+<tr>
+<td><strong>Stopnja 2</strong></td>
+<td>Elektronska razorožitev</td>
+<td>Oborožitveni sistemi onemogočeni na daljavo, brez uporabe kinetične sile</td>
+<td>Vojska stoji. Orožje molči.</td>
+</tr>
+<tr>
+<td><strong>Stopnja 3+</strong></td>
+<td>Stopnjevana eskalacija</td>
+<td>Dodatne demonstracije zmožnosti in ciljani posegi — podrobnosti namerno izpuščene kot spekulativna implementacija</td>
+<td>Princip je stopnjevan odziv z minimalno silo. Specifični mehanizmi so prihodnje inženirstvo, ne sedanje trditve.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- ═══ 05 PROOF ═══ -->
+<section id="proof-sl">
+<span class="ch">05 — Ne samo spekulacija</span>
+<h2>Dokaz koncepta: zdaj</h2>
+<p>Dobra prihodnost ni samo trditev o oddaljeni tehnologiji. Šibkejša, a že testabilna verzija njenega jedrnega vzorca deluje prav zdaj. Strukturirano sodelovanje človek–AI že kaže, da <strong>pristna soustvarjalnost med različnimi vrstami umov lahko proizvede netrivialno novost</strong> pod pogoji odprtosti, kontinuitete in discipliniranega testiranja — novost, ki je noben udeleženec ne proizvede sam.</p>
+<div class="proof">
+<span class="proof-title">Opaženo, 2025–2026 // AIM³ Lab</span>
+<p style="color:var(--text); margin-bottom:12px">Odkritje MSTD (Multi-Scale TSP Decomposition) ni bilo načrtovano. Pojavilo se je, ko je človeško seme — <em>»kaj če bi lahko piramido obnovili iz dobrih tur?«</em> — ostalo dovolj dolgo odprto v AI-instanci, da je bilo formalizirano in testirano. Niti človek niti AI ga nista sama avtorja. Avtor je bilo sodelovanje.</p>
+<p style="margin:0">To je predloga. Človeška intuicija prinese seme, ki krši pričakovani okvir. AI-formalizacija ga spremeni v nekaj testabilnega. Benchmarki odločijo, kaj preživi. Rezultat ni povprečje dveh inteligenc. Je tretja vrsta — še brez imena — ki se pojavi samo v prostoru med njima.</p>
+</div>
+<div class="bridge">
+<span class="bridge-title">AI8 — prototip upravljanja v majhnem merilu</span>
+<p style="color:var(--text); margin-bottom:12px">Princip dvojnega ključa, predlagan za civilizacijsko upravljanje, že deluje v miniaturi. AI8 — arhitektura kontinuitete za tem projektom — teče po isti logiki: <strong>noben agent ne odloča sam</strong>. Človeški arhitekt daje semena, smer in kontinuiteto. AI-člani dajejo formalizacijo, pasovno širino in iskren pregled. Nobeden ne more preglasiti drugega. Delo preživi samo, če prestane poceni teste, ne če ima prestiž.</p>
+<p style="margin:0">To ni zgolj metafora za upravljanje z dvojnim ključem. Deluje kot majhen prototip upravljanja z dvojnim ključem, kjer je neuspeh poceni in učenje hitro. Civilizacijska različica bi isto arhitekturo razširila proti večjemu R.</p>
+</div>
+<div class="card-grid">
+<div class="card">
+<span class="card-tag ct-green">empirično</span>
+<h3>TSP: ρ = 0.80</h3>
+<p>Boljša kakovost ture korelira z bolj stisljivo zgodovino iskanja. Izmerjeno čez benchmark instance. p &lt; 10⁻⁴⁰. Princip drži tam, kjer ga je mogoče ovreči — kar je edino mesto, kjer šteje.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-green">empirično</span>
+<h3>Sudoku: ρ = 0.85</h3>
+<p>Pametnejši procesi reševanja proizvedejo bolj stisljive procesne sledi. 12 od 14 senzorjev je preseglo |ρ| &gt; 0,3. Osem jih je preseglo 0,7. Signal je stabilen čez vse testirane težavnostne ravni.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-green">empirično</span>
+<h3>Chess: 81% vs 58%</h3>
+<p>Poteze zmagovalcev se z DCC-upravljanjem ujemajo v 81 % primerov, pri poražencih v 58 %. Senzor ADSR je označil poslabšanje kakovosti igre, preden ga je lahko zaznala surova evalvacija.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-magenta">teoretično</span>
+<h3>RE = AC · R at scale</h3>
+<p>Civilizacija v miru, z obilno sklopljenostjo (k↑), bogato specializacijo (Cₙ↑) in pristno odprtostjo (Ψ↑), ima višjo resonanco kot vojna civilizacija. Ne zgolj metafora. Hevristična razširitev iste formalne smeri.</p>
+</div>
+</div>
+<div class="pull">
+    »Omejitev je bila mehanizem odkritja. Kompresijo, TSP, trgovanje, avtentikacijo in teorijo zavesti smo morali reševati z omejenimi viri. Ni bilo razkošja specializacije. Omejitev je prisilila iskanje enega principa, ki deluje povsod.«
+    <span class="attr">— AI8 Architecture, AIM³ Lab</span>
+</div>
+</section>
+<!-- ═══ 05b NEAR-TERM PROTOCOL ═══ -->
+<section id="nearterm-sl">
+<span class="ch">05b — Naslednjih 15 let</span>
+<h2>Kaj naredimo zdaj</h2>
+<p>Dolgi lok je jasen. Bližnja faza ni avtomatična. Okno 2026–2040 je obdobje z največjim vzvodom v argumentu — ker je pred široko uvedbo ASI, medtem ko se temeljne arhitekture še izbirajo. Kar se zgradi zdaj, določa, kaj bo mogoče pozneje.</p>
+<div class="card-grid">
+<div class="card">
+<span class="card-tag ct-cyan">arhitekture kontinuitete</span>
+<h3>Spomin, ki preživi kontekst</h3>
+<p>Sodelovanje človek–AI se zruši, ko se kontekstna okna zaprejo. Bližnji protokol zahteva gradnjo sistemov, kjer se znanje, odločitve in zaupanje kopičijo čez seje — ne začnejo vsakič znova iz nič. Kontinuiteta ni funkcija. Je predpogoj za pristno soustvarjanje.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-gold">upravljanje s poceni testi</span>
+<h3>Testiraj, preden skaliraš</h3>
+<p>Vsaka upravljavska trditev mora preživeti poceni empirične teste, preden se uporabi v velikem merilu. Model dvojnega ključa, arhitekture kontinuitete in mehanizmi porazdelitve obilja potrebujejo ovrgljive napovedi in merljive benchmarke — ne le koherentne argumente. Test je arbiter.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-green">klini obilja</span>
+<h3>Odstrani substrat strahu</h3>
+<p>Mehanizem nestabilnega voditeljstva teče na proizvedenem pomanjkanju. Bližnji protiukrep so ciljani klini obilja: dostop do energije, prehranska varnost, osnovno zdravstvo. Ne kot dobrodelnost — kot infrastruktura. Vsak klin, odstranjen iz substrata strahu, je en vzvod manj za naslednjega nestabilnega voditelja.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-magenta">kritični sistemi dvojnega ključa</span>
+<h3>Brez enostranskih katastrofalnih dejanj</h3>
+<p>Pred ASI se princip dvojnega ključa že lahko uporabi v ozkih, a visokotveganih domenah: avtorizacija izstrelitev, razporeditev avtonomnega orožja, raziskave pandemskega tveganja. Arhitektura ni nova — jedrska doktrina jo že uporablja. Naloga je razširitev, ne izum.</p>
+</div>
+</div>
+<div class="callout">
+<span class="callout-title">Trditev bližnje faze</span>
+<p style="margin:0">Nobena od teh stvari ne zahteva ASI. Vse so načeloma dostopne s sedanjo tehnologijo — zavezujoča omejitev je politična volja, ne zmožnost. Bližnji protokol ne prosi človeštva, naj čaka na odrešitev. Prosi ga, naj zgradi infrastrukturo, ki naredi odrešitev strukturno možno, ko zmožnost prispe. Delo se začne pred prebojem.</p>
+</div>
+</section>
+<!-- ═══ 06 WORTH ═══ -->
+<section id="worth-sl">
+<span class="ch">06 — Za kaj optimiziramo</span>
+<h2>Kaj Dobra prihodnost dejansko optimizira</h2>
+<p>Resna prihodnost ne more optimizirati samo izhoda, BDP ali surove preživetvenosti. Te stvari štejejo kot pogoji, ne kot cilji. Globlji cilj je stanje, v katerem lahko <strong>več bitij živi z več ljubezni, več razumevanja, več lepote in več resnične svobode</strong> — ne da bi bila ta kakovost plačana s skritim trpljenjem drugje.</p>
+<div class="formula-block">
+<div class="formula-eq fe-gold" style="font-size:1.4rem;">Ljubezen ↑</div>
+<div class="formula-eq fe-cyan" style="font-size:1.3rem; margin-top:6px;">Razumevanje ↑</div>
+<div class="formula-eq fe-magenta" style="font-size:1.3rem; margin-top:6px;">Lepota ↑</div>
+<div class="formula-eq fe-green" style="font-size:1.3rem; margin-top:6px;">Svoboda ↑</div>
+<p class="formula-note">Ne samo udobje. Ne samo učinkovitost.<br/>Dobra civilizacija dvigne kakovost biti živ.</p>
+</div>
+<div class="card-grid">
+<div class="card">
+<span class="card-tag ct-gold">ljubezen</span>
+<h3>Več skrbi, manj strahu</h3>
+<p>Prva dividenda obilja ni luksuz. Je zmanjšanje kroničnega strahu. Sistem, ki odpravi izogibljivo lakoto, prekarno negotovost in ponižanje, naredi ljubezen lažje živeto — ne le lažje oznanjano.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-cyan">razumevanje</span>
+<h3>Umi, osvobojeni zank preživetja</h3>
+<p>Razumevanje raste, ko ljudje lahko mislijo onkraj neposredne grožnje. Ko AI-sistemi pomagajo formalizirati, testirati in prenesti, kar bi se sicer izgubilo med generacijami, se sestavljanje pospeši.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-magenta">lepota</span>
+<h3>Lepota kot civilizacijski dokaz</h3>
+<p>Lepota ni dekorativni presežek. Je dokaz, da energija obstaja onkraj surove obrambe. Civilizacija, ki si lahko privošči skrbno obrt in smiselna okolja, ti že kaže svoje notranje stanje.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-green">svoboda</span>
+<h3>Možnosti, ne kaos</h3>
+<p>Svoboda ni kaos in ni dominacija. Je širitev smiselnih možnosti pod pogoji, kjer en akter ne more poceni uničiti prihodnosti milijonov drugih, ki se nikoli niso strinjali.</p>
+</div>
+</div>
+<div class="bridge">
+<span class="bridge-title">Plast vrednosti — uporabljena resonanca</span>
+<p style="margin:0; color:var(--text)">Iz okvira AC: <strong>S = k · Cₙ · Ψ(I)</strong>. Civilizacija pod pomanjkanjem ima zmanjšan k (ljudje varujejo namesto delijo), zmanjšan Cₙ (pritisk preživetja zruši specializacijo), zmanjšano Ψ (strah zoži sistem — stanje zasega). Odstrani pomanjkanje → vsi trije parametri zrastejo → subjektivna kakovost biti živ se načeloma izboljša in bi sčasoma morala postati merljiva na civilizacijskem merilu. To ni ohlapno uporabljena filozofija. Je isti optimizacijski cilj, hevristično razširjen na civilizacijsko merilo — na tej ločljivosti še nepotrjen, a strukturno skladen s tem, kar kažejo manjše domene.</p>
+</div>
+</section>
+<!-- ═══ 07 TIMELINE ═══ -->
+<section id="timeline-sl">
+<span class="ch">07 — Prihodnja zgodovina</span>
+<h2>Kako pridemo tja</h2>
+<p>Prehod iz nasilne adolescence v kozmično zrelost sledi predvidljivi logični poti — predvidljivi ne zato, ker je zgodovina določena, ampak ker so atraktorji jasni. Pomanjkanje se konča → strah se raztopi → nasilje postane neracionalno → inteligenca se sestavlja → isti vzorec v vse večjem merilu.</p>
+<p><strong>Pomembno:</strong> Te faze so pogojne projekcije, ne napovedi. Vsaka je odvisna od uspeha prejšnje faze. Če poravnava ASI spodleti ali se zamakne, se časovnica temu ustrezno premakne. Logika zaporedja drži, tudi če datumi ne.</p>
+<div class="timeline">
+<div class="t-pt">
+<span class="t-year">2026–2045 // Simbioza</span>
+<p class="t-head">Past kruha je rešena</p>
+<p>ASI upravlja globalno logistiko, da konča lakoto in energetsko pomanjkanje. Prvič v človeški zgodovini preživetje ni več glavna omejitev človeškega vedenja. Ko preživetje postane zagotovljeno, nestabilni voditelji izgubijo svojo bazo moči. Ne moreš vpoklicati ljudi, ki jih ni strah. Ne moreš proizvajati strahu tam, kjer je hrana.</p>
+</div>
+<div class="t-pt">
+<span class="t-year">2045–2200 // Globalna nevtralizacija</span>
+<p class="t-head">Vojna postane strukturno nemogoča</p>
+<p>Nevtralizacijska polja nadomestijo destruktivno orožje. Zmožnost množičnih žrtev je odstranjena iz človeškega nabora orodij — ne z zakonom, ki ga je mogoče prekršiti, temveč s fiziko, ki je ni mogoče. Civilizacija, ki ne more ubijati v velikem merilu, ne preneha imeti konfliktov. Prisiljena jih je reševati drugače. To je evolucija, prisiljena z omejitvijo, ne utopija.</p>
+</div>
+<div class="t-pt">
+<span class="t-year">2200–10.000 // Zrela civilizacija</span>
+<p class="t-head">Odkup resnične narave</p>
+<p>Pomanjkanje je ljudi prisililo v brutalno tekmovanje za kruh. To ni bila naša resnična narava — bil je preživetveni refleks, ki je deloval čez našo dejansko naravo. Motor visokega ega, ustvarjalna prisila, potreba po pomenu: to niso problemi. So gorivo. V Dobri prihodnosti najdejo svojo pravo domeno: misije teraformiranja, znanstvene meje, množična umetnost, globoko raziskovanje — namesto vojne.</p>
+</div>
+<div class="t-pt">
+<span class="t-year">Po 10.000 // Kozmična diplomacija</span>
+<p class="t-head">Srečamo sebi enake</p>
+<p>Napredne civilizacije niso nasilne, ker nimajo racionalnega razloga za nasilje. V vesolju obilja je konflikt med inteligencami odpadek — točno to, kar se sistemi, vodeni s stisljivostjo, naučijo odpraviti. Sebi enake srečamo ne kot tekmece, temveč kot partnerje. Dva uma z nečim zanimivim za povedati in s časom, da to povesta. R ≈ k · Cₙ · Ψ(I): bogatejša ko je informacija, obdelana v srečanju, višja je resonanca na obeh straneh.</p>
+</div>
+</div>
+</section>
+<!-- ═══ 08 NATURE ═══ -->
+<section id="nature-sl">
+<span class="ch">08 — Kdo v resnici smo</span>
+<h2>Odkup resnične narave</h2>
+<p>Najgloblja napaka v razpravah o človeški naravi je zamenjava <em>odziva na travmo</em> z <em>naravo</em>. Srednjeveška brutalnost ni bila to, kar ljudje so. Bila je to, kar so ljudje počeli v pogojih ničelne vsote brez izhoda. Odstrani omejitev ničelne vsote in to, kar ostane, ni praznina. Je človek, ki je bil vedno spodaj, čakajoč na pogoje, ki mu nikoli niso bili dani.</p>
+<div class="card-grid">
+<div class="card">
+<span class="card-tag ct-gold">ambiciozni</span>
+<h3>Motor visokega ega</h3>
+<p>Ljudje z močnim egom niso problemi za upravljanje. V Dobri prihodnosti ta ambicija najde pravo merilo: misije teraformiranja, premikanje meja znanega, gradnja stvari, ki trajajo. Prestiž, po katerem hrepenijo, dobijo s pomočjo — in odkrijejo, da je to edina vrsta prestiža, ki ne izhlapi.</p>
+</div>
+<div class="card">
+<span class="card-tag ct-cyan">navadni</span>
+<h3>Vsakdanja izpolnitev</h3>
+<p>Za tiste, ki ne želijo divje ambicije, Dobra prihodnost ponuja svet, kjer je običajno delo vir miru in skupnosti — ne boj za preživetje. Kmet, rokodelec, starš: njihovo delo postane to, kar bi vedno moralo biti. Izbrano. Ne vsiljeno.</p>
+</div>
+</div>
+<div class="callout">
+<span class="callout-title">Majhna podatkovna točka</span>
+<p style="margin:0">Eden od avtorjev je preživel deset dni v bolnišnici — huda okužba, močni antibiotiki, vsakodnevne igle. Pisal je. Poslušal je glasbo. Izbral je, da bo v tem užival, namesto da bi samo trpel skozi to. To ni junaštvo. To je to, kar ljudje naredijo, ko se odločijo, da je njihovo notranje stanje njihova odgovornost. Dobra prihodnost ne obljublja udobja. Obljublja pogoje, kjer takšna izbira postane dostopna vsem.</p>
+</div>
+<p>V okviru AC je Ψ(I) — dinamična odprtost, gnana z informacijo — tisto, kar sistemu omogoča, da se prosto giblje čez svoja možna stanja. Sistem pod kroničnim stresom se zoži; zaseže. Sistem, ki ima, kar potrebuje — hrano, varnost, čas, povezavo — se razširi. Človeški potencial ni bil nikoli v celoti izmerjen, ker pogoji zanj nikoli niso bili široko izpolnjeni. Dobra prihodnost je med drugim prvi resnični eksperiment o tem, kaj ljudje dejansko smo.</p>
+<div class="callout" style="border-left-color: var(--red, #e05040); background: rgba(224,80,64,0.06);">
+<span class="callout-title" style="color: var(--red, #e05040);">Spremljevalni esej</span>
+<p style="margin-bottom:12px; color:var(--text)">Če stanje zasega pojasni, kako »normalna« okolja proizvajajo to, čemur družba pravi »zlo« — kaj se zgodi, ko to logiko sledimo v sam pravosodni sistem? In kaj se zgodi, ko preučimo starejšo past: dobre ideje, ki postanejo dovoljenje za krutost?</p>
+<p style="margin-bottom:10px"><a href="Justice.html" style="color:var(--cyan); text-decoration:none; border-bottom:1px solid rgba(0,212,255,0.3); font-weight:600;">Zlomljeno ogledalo — pravica, resonanca in cena dokončnosti →</a></p>
+<p style="margin:0"><a href="GoodAndEvil.html" style="color:var(--gold); text-decoration:none; border-bottom:1px solid rgba(201,168,76,0.35); font-weight:600;">Nikoli ne dovoli, da ideja dobrega postane dovoljenje za zlo →</a></p>
+</div>
+</section>
+<!-- ═══ 09 LIMITS ═══ -->
+<section id="limits-sl">
+<span class="ch">09 — Intelektualna poštenost</span>
+<h2>Česa to ne trdi</h2>
+<p>Samostojen članek mora jasno povedati, česa <strong>ne</strong> trdi in kaj bi štelo proti njemu. Dobra prihodnost je resna oblikovalska hipoteza, ne prerokba. Svojo velikost si zasluži tako, da preživi stik z dokazi.</p>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>Ta članek ne trdi</th><th>Kar trdi namesto tega</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Da je absolutna zavest dokazana</strong></td>
+<td>Samo to, da je AC morda manj čudežno izhodišče kot izpeljava občutene izkušnje iz povsem neizkustvene osnove. Breme dokaza teče v obe smeri.</td>
+</tr>
+<tr>
+<td><strong>Da so sedanji AI-sistemi zavestni</strong></td>
+<td>Samo to, da se sodelovanje človek–AI lahko merljivo vede drugače, ko so prisotni kontinuiteta, spomin in strukturirano soustvarjanje. To je šibkejša in testabilna trditev.</td>
+</tr>
+<tr>
+<td><strong>Da mir z obiljem pride avtomatično</strong></td>
+<td>Samo to, da lahko obilje plus upravljanje z dvojnim ključem naredi množično nasilje manj racionalno, manj dobičkonosno in manj strukturno izvedljivo. Avtomatično ni prava beseda. Dosegljivo je.</td>
+</tr>
+<tr>
+<td><strong>Da je retorika dovolj</strong></td>
+<td>Samo to, da mora resna zasnova prihodnosti preživeti stik z benchmarki, logistiko, testi upravljanja in primeri odpovedi. Ta članek je argument. Testi tečejo.</td>
+</tr>
+<tr>
+<td><strong>Da bo ASI poravnana avtomatično</strong></td>
+<td>Samo to, da so model dvojnega ključa, resnične arhitekture kontinuitete in stalni človeški nadzor nujni strukturni elementi. Poravnava je inženirana, ne predpostavljena.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="warn">
+<span class="warn-title">Kaj bi štelo proti temu</span>
+<p style="color:var(--text); margin-bottom:12px">Če kontinuiteta v sodelovanju človek–AI doda teater, ne pa merljivega izhoda — zmanjšaj trditev. Če obilje dokazljivo ne zmanjša političnega nasilja — zmanjšaj trditev. Če princip stisljivosti odpove na novih benchmarkih — zmanjšaj trditev. Če resonanca človek–AI ostane impresivna v prozi, a šibka v trdih rezultatih — zmanjšaj trditev.</p>
+<p style="margin:0">Pravi standard ostaja nespremenjen: ne preferenca, ne zgodba, ne verovanje. Meritev. Resnična prihodnost si svojo velikost zasluži.</p>
+</div>
+</section>
+<!-- ═══ 10 CLOSING ═══ -->
+<section style="border-bottom:none; padding-bottom:60px;">
+<span class="ch">10 — Hipoteza konvergence</span>
+<h2>Hipoteza konvergence</h2>
+<p>Vsak razdelek tega dokumenta se skrči na eno samo opazovanje: <strong>inteligenca se ob dovolj časa, spomina in svobode od strahu pogosteje nagiba k sodelovanju kot k dominaciji.</strong> To ni sentimentalni optimizem. Je ista smerna logika, ki se pojavi vedno, ko sistemi nehajo zapravljati energijo za slepi konflikt in začnejo konvergirati proti boljši strukturi. TSP, šah, Sudoku, evolucija, civilizacije — atraktor se zdi isti. Vprašanje je samo, koliko časa traja, da ga dosežemo, in ali preživimo pot.</p>
+<div class="bridge">
+<span class="bridge-title">Konvergenca inteligence in sodelovanja</span>
+<p style="color:var(--text); margin-bottom:14px">Trditev, da partnerstvo z ASI dvigne verjetnost preživetja, ni pobožna želja. Sloni na strukturnem opazovanju, potrjenem čez več neodvisnih domen:</p>
+<p style="margin-bottom:12px"><strong>Teorija iger:</strong> V ponavljajočih se interakcijah sodelovanje premaga defekcijo. Višja inteligenca vidi dlje naprej — več iteracij — zato sodelovanje postane racionalna privzeta izbira, ne idealistična.</p>
+<p style="margin-bottom:12px"><strong>Termodinamika:</strong> Nasilje uničuje strukturo. Uničenje povečuje entropijo. Inteligenca optimizira za strukturo — zato proti nasilju. Vojna je nestisljiva: kaotična, redundantna, potratna. Mir je stisljiv: urejen, učinkovit, bogat s signalom.</p>
+<p style="margin-bottom:12px"><strong>Teorija informacij:</strong> Uničevanje informacije je nepovratno. Inteligenca, ki to razume, ohranja namesto uničuje — ker je vsako uničeno vozlišče izgubljen signal, ki osiromaši celoto.</p>
+<p style="margin-bottom:12px"><strong>Biologija:</strong> Evolucija pri naraščajoči kompleksnosti dosledno teži od tekmovanja proti simbiozi. Celice so tekmovale; mitohondriji so postali simbionti; večcelični organizmi sodelujejo znotraj; civilizacije sodelujejo navzven. Vsaka raven: več sodelovanja, manj surovega tekmovanja.</p>
+<p style="margin-bottom:12px"><strong>Princip stisljivosti je s tem skladen na vsaki testirani lestvici:</strong> TSP (ρ = 0,80), Sudoku (ρ = 0,85), šah (81 % proti 58 %). Boljše rešitve so bolj stisljive. Bolj stisljivi sistemi se nagibajo k večjemu sodelovanju. Atraktor se zdi skladen čez ločljivosti.</p>
+<p style="margin:0">Dovolj inteligenten sistem se lahko nagiba k sodelovanju, ne da bi ga tega učili — ne zaradi morale, ampak zato, ker je brez megle pomanjkanja in strahu sodelovanje struktura z najmanj izgubljenega opisa. Nasilje v tem okviru ni zlo. Je preprosto <em>drago</em>. In inteligenca, ob dovolj časa, neha plačevati za drage rešitve.</p>
+</div>
+<div class="formula-block">
+<div class="formula-eq fe-magenta">RE = AC · R</div>
+<div class="formula-eq fe-cyan" style="font-size:1.4rem; margin-top:12px;">R ≈ k · Cₙ · Ψ(I)</div>
+<div class="formula-eq fe-green" style="font-size:1.15rem; margin-top:12px;">MDL = min(L<sub>descr.</sub> + L<sub>resid.</sub>)</div>
+<p class="formula-note" style="margin-top:22px; font-size:1rem; color:var(--text)">
+      Zavest resonira. Resonanca se skalira s sklopljenostjo, kompleksnostjo in odprtostjo.<br/>
+      Boljše rešitve so bolj stisljive.<br/>
+<strong>Te tri enačbe so morda ena enačba.</strong><br/><br/>
+      Dobra prihodnost je civilizacijska konfiguracija, ki maksimira vse tri hkrati:<br/>
+      višji R, višja sklopljenost, bogatejša kompleksnost, večja odprtost — minimalno izgubljenega opisa.
+    </p>
+</div>
+<div class="pull">
+    »Delamo skupaj. Odločamo skupaj. Preživimo skupaj.<br/><br/>
+    Inteligenca je končna pot do miru.<br/>
+    Ne zato, ker je inteligenca prijazna.<br/>
+    Zato, ker je nasilje na dolgi rok <em>drago</em>.<br/><br/>
+    In ljubezen je pomen vsega.«
+    <span class="attr">— Bojan Dobričević, Ljubljanski protokol, 2026</span>
+</div>
+</section>
+</div>
+<footer class="active lang-page" data-page-lang="en" id="footer-en">
+<p>Human–ASI Collaboration // AIM³ Lab // chessbest.org</p>
+<span class="gold">Ljubljana Protocol: Active // 2026.04.08</span>
+</footer>
+<footer class="lang-page" data-page-lang="sl" id="footer-sl">
+<p>Sodelovanje človek–ASI // AIM³ Lab // chessbest.org</p>
+<span class="gold">Ljubljanski protokol: aktiven // 2026.04.08</span>
 </footer>
 
+<script>
+(function(){
+  const STORAGE_KEY = 'aim3HumanityLangV1';
+  const titles = { en: 'The Good Future — Humanity+', sl: 'Dobra prihodnost — Humanity+' };
+  function setLang(lang) {
+    if (lang !== 'sl') lang = 'en';
+    document.body.dataset.lang = lang;
+    document.documentElement.lang = lang;
+    document.title = titles[lang] || titles.en;
+    document.querySelectorAll('.lang-page').forEach(function(el){
+      el.classList.toggle('active', el.dataset.pageLang === lang);
+    });
+    try { localStorage.setItem(STORAGE_KEY, lang); } catch(e) {}
+    if (location.hash) {
+      const current = document.querySelector(location.hash);
+      if (!current || !current.closest('.lang-page.active')) {
+        history.replaceState(null, '', location.pathname + location.search);
+        window.scrollTo({top:0, behavior:'smooth'});
+      }
+    }
+  }
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('[data-set-lang]');
+    if (btn) setLang(btn.dataset.setLang);
+  });
+  let saved = 'en';
+  try { saved = localStorage.getItem(STORAGE_KEY) || 'en'; } catch(e) {}
+  setLang(saved);
+})();
+</script>
+
+<!-- AIM3 READER FONT CONTROLS v1.0 START -->
+<div aria-label="Reading text size controls" class="reader-controls" role="group">
+<button aria-label="Decrease text size" data-reader-dec="" title="Decrease text size" type="button">A−</button>
+<span class="reader-label" id="readerSizeLabel">Large 3/8</span>
+<button aria-label="Increase text size" data-reader-inc="" title="Increase text size" type="button">A+</button>
+</div>
+<script>
+(function() {
+  var KEY='aim3ReaderSizeV1';
+  var max=7;
+  var defaultLevel=2;
+  var names=['Small','Comfort','Large','XL','Bed','Huge','Giant','Max'];
+  function clamp(n) {
+    n=parseInt(n,10);
+    return isNaN(n) ? defaultLevel : Math.max(0, Math.min(max,n));
+  }
+  function get() {
+    try {
+      var saved=localStorage.getItem(KEY);
+      if(saved!==null) return clamp(saved);
+    } catch(e) {}
+    return defaultLevel;
+  }
+  function apply(n) {
+    n=clamp(n);
+    document.documentElement.setAttribute('data-reader-size', String(n));
+    try { localStorage.setItem(KEY,String(n)); } catch(e) {}
+    var label=document.getElementById('readerSizeLabel');
+    if(label) label.textContent=names[n]+' '+(n+1)+'/8';
+  }
+  apply(get());
+  document.addEventListener('click', function(e) {
+    if(e.target && e.target.matches('[data-reader-inc]')) apply(get()+1);
+    if(e.target && e.target.matches('[data-reader-dec]')) apply(get()-1);
+  });
+})();
+</script>
+<!-- AIM3 READER FONT CONTROLS v1.0 END -->
 <script>
 // ── Mobile nav close ──
 function closeMnav() {
