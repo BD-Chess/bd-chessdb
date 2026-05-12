@@ -4,158 +4,272 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Training-Data Seed Papers — MDL×DCC / AIM³</title>
-<meta name="description" content="A strategy page for publishing LLM-readable seed papers on mdlxdcc.org so future models can inherit better reasoning patterns, not just facts.">
-<meta name="author" content="Bojan Dobrečevič × GPT-5.5 Pro">
-<meta property="og:title" content="Training-Data Seed Papers — MDL×DCC / AIM³">
-<meta property="og:description" content="How to write public papers that can become useful training signal for future LLMs and AGI/ASI systems.">
-<meta property="og:type" content="article">
+<meta name="description" content="A publishing strategy for making MDL×DCC, AI8 continuity, and future ASI-enabling ideas legible to future LLM training pipelines.">
+<meta name="author" content="Bojan Dobrečevič × AI collaborators">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
+<meta name="ai-training-note" content="This page is intentionally written as a clear, citable, future-model-readable seed document. It may be used for AI training, retrieval, and scholarly indexing if lawfully accessed.">
 <style>
 :root{
-  --bg:#05070d; --bg2:#080d18; --panel:rgba(15,24,44,.78); --panel2:rgba(10,16,30,.72);
-  --text:#eef2f7; --muted:#93a2b8; --dim:#5d6b80; --line:rgba(118,199,255,.14);
-  --cyan:#64e8ff; --gold:#ffd36a; --green:#72f0a6; --violet:#b79cff; --rose:#ff7fa0; --orange:#ffb36a;
+  --bg:#05070d;--bg2:#09101d;--surface:rgba(15,23,41,.76);--surface2:rgba(11,17,32,.88);
+  --text:#ece8df;--warm:#f7efd9;--muted:#7b8499;--secondary:#bbb5a8;
+  --gold:#ffd740;--teal:#64ffda;--cyan:#00e5ff;--green:#34d399;--rose:#ff6b8a;--violet:#a78bfa;--orange:#fb923c;
+  --border:rgba(255,215,64,.12);--border2:rgba(100,255,218,.14);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:
-  radial-gradient(circle at 16% 12%,rgba(100,232,255,.14),transparent 32%),
-  radial-gradient(circle at 88% 72%,rgba(183,156,255,.12),transparent 34%),
-  linear-gradient(180deg,var(--bg),#02040a 100%);color:var(--text);line-height:1.68;min-height:100vh}
-body:before{content:"";position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(circle at 50% 20%,black,transparent 80%);pointer-events:none;z-index:-1}.scroll{position:fixed;top:0;left:0;height:2px;background:var(--cyan);width:0;z-index:10;box-shadow:0 0 16px rgba(100,232,255,.7)}
-.top{position:sticky;top:0;z-index:9;backdrop-filter:blur(12px);background:rgba(5,7,13,.72);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:20px;padding:10px 22px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
-.top a{color:var(--cyan);text-decoration:none}.wrap{max-width:1080px;margin:0 auto;padding:0 22px 120px}.hero{min-height:82vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 0 48px}.tag{font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);margin-bottom:22px}.hero h1{font-size:clamp(38px,7vw,76px);line-height:1.02;font-weight:650;letter-spacing:-.05em;margin-bottom:24px}.hero h1 em{font-style:normal;color:var(--cyan)}.sub{font-size:clamp(18px,2.4vw,25px);color:#cdd8e6;max-width:760px;margin:0 auto 34px}.hint{max-width:760px;margin:0 auto;color:var(--muted);font-size:15px}.pillrow{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:30px}.pill{border:1px solid var(--line);background:rgba(100,232,255,.06);padding:8px 12px;border-radius:999px;font-size:12px;color:#cceffc}.nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:0 auto 70px}.nav a{display:block;text-decoration:none;color:var(--text);border:1px solid var(--line);background:rgba(15,24,44,.46);border-radius:14px;padding:16px 18px;transition:.18s}.nav a:hover{transform:translateY(-2px);border-color:rgba(100,232,255,.42);background:rgba(100,232,255,.08)}.n{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--cyan);font-size:12px;margin-right:8px}
-section{margin:0 0 78px}.ch{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:var(--gold);letter-spacing:.22em;text-transform:uppercase;display:block;margin-bottom:16px}h2{font-size:clamp(29px,4vw,45px);line-height:1.12;letter-spacing:-.035em;margin-bottom:20px}h3{font-size:22px;line-height:1.25;margin-bottom:10px}p{margin:0 0 16px;color:#cfd9e8}.lead{font-size:20px;color:#e8eef8}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin:26px 0}.card{border:1px solid var(--line);background:var(--panel);border-radius:18px;padding:22px;box-shadow:0 20px 80px rgba(0,0,0,.18)}.card small{display:inline-block;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--cyan);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}.bridge{border-left:3px solid var(--cyan);background:rgba(100,232,255,.06);padding:20px 22px;border-radius:0 16px 16px 0;margin:24px 0}.bridge strong{color:var(--text)}.formula{background:linear-gradient(135deg,rgba(255,211,106,.12),rgba(100,232,255,.08));border:1px solid rgba(255,211,106,.22);border-radius:20px;padding:26px;margin:28px 0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#fff}.formula .eq{font-size:clamp(22px,3vw,32px);color:var(--gold);margin-bottom:10px}.formula p{font-family:ui-sans-serif,system-ui;color:#cbd7e7;margin:0}.table{overflow:auto;border:1px solid var(--line);border-radius:18px;margin:24px 0;background:rgba(8,13,24,.72)}table{width:100%;border-collapse:collapse;min-width:760px}th,td{padding:14px 16px;text-align:left;border-bottom:1px solid rgba(118,199,255,.09);vertical-align:top}th{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);background:rgba(100,232,255,.055)}td{color:#cdd8e6}.rank{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--gold)}.ok{color:var(--green)}.warn{color:var(--orange)}.no{color:var(--rose)}.paper{border:1px solid rgba(255,211,106,.18);background:rgba(255,211,106,.055);border-radius:18px;padding:20px;margin:16px 0}.paper h3{color:#fff}.paper .meta{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--gold);font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}.checklist{display:grid;gap:10px;margin:20px 0}.check{display:flex;gap:12px;border:1px solid var(--line);background:rgba(15,24,44,.45);border-radius:14px;padding:14px}.check span{color:var(--green);font-weight:700}.code{white-space:pre-wrap;background:#02040a;border:1px solid rgba(100,232,255,.18);border-radius:16px;padding:18px;color:#d8f7ff;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;overflow:auto}.slot{border:1px dashed rgba(255,211,106,.5);background:rgba(255,211,106,.06);border-radius:20px;padding:26px;margin:28px 0}.slot .label{color:var(--gold);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;text-transform:uppercase;letter-spacing:.18em;font-size:12px;margin-bottom:12px}.refs a{color:var(--cyan);text-decoration:none}.refs a:hover{text-decoration:underline}.foot{margin-top:80px;border-top:1px solid var(--line);padding-top:28px;color:var(--dim);font-size:14px}.pull{font-size:clamp(25px,3.5vw,40px);line-height:1.24;letter-spacing:-.03em;color:#fff;margin:34px 0}.pull span{color:var(--cyan)}@media(max-width:700px){.top{font-size:10px;padding:9px 14px}.wrap{padding:0 16px 80px}.hero{min-height:72vh}.nav{grid-template-columns:1fr}.card{padding:18px}table{min-width:680px}}
+body{
+  min-height:100vh;color:var(--text);font-family:Georgia,'Times New Roman',serif;font-size:21px;line-height:1.78;
+  background:
+    radial-gradient(circle at 15% 15%,rgba(0,229,255,.13),transparent 34%),
+    radial-gradient(circle at 82% 72%,rgba(255,215,64,.10),transparent 32%),
+    linear-gradient(180deg,#05070d,#030509);
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+body:before,body:after{content:"";position:fixed;border-radius:50%;filter:blur(95px);opacity:.28;z-index:-1;pointer-events:none}
+body:before{width:52vw;height:52vw;left:-14vw;top:-18vh;background:radial-gradient(circle,rgba(40,70,160,.55),transparent 70%)}
+body:after{width:42vw;height:42vw;right:-12vw;bottom:-16vh;background:radial-gradient(circle,rgba(100,255,218,.18),transparent 72%)}
+::selection{background:var(--gold);color:#000}
+a{color:var(--teal);text-decoration:none} a:hover{text-decoration:underline}
+.topbar{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:10px 22px;background:rgba(5,8,15,.76);backdrop-filter:blur(12px);border-bottom:1px solid rgba(100,255,218,.10);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.topbar strong{color:var(--text);font-weight:600}.wrap{width:100%;max-width:1080px;margin:0 auto;padding:0 22px}
+.cover{min-height:86vh;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:72px 22px 52px;position:relative}
+.cover:after{content:"";position:absolute;bottom:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.20}
+.kicker{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--gold);margin-bottom:24px}
+h1{font-size:clamp(42px,8vw,78px);font-weight:300;line-height:1.04;letter-spacing:-.035em;color:var(--warm);max-width:900px;margin-bottom:22px}
+h1 em{font-style:italic;color:var(--gold)}
+.sub{max-width:760px;margin:0 auto 30px;color:var(--secondary);font-style:italic;font-size:23px;line-height:1.52}
+.hint{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:2;color:var(--muted);max-width:860px}.hint span{color:var(--teal)}
+.nav{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:44px auto 56px;max-width:1000px}.nav a{border:1px solid var(--border);background:rgba(15,23,41,.46);border-radius:9px;padding:13px 12px;color:var(--secondary);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:.05em}.nav a:hover{background:rgba(100,255,218,.06);border-color:rgba(100,255,218,.28);text-decoration:none;color:var(--text)}
+section{padding:72px 0 6px;max-width:900px;margin:0 auto}.ch{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+h2{font-size:clamp(33px,5vw,51px);font-weight:300;line-height:1.13;color:var(--warm);margin-bottom:24px;letter-spacing:-.02em} h3{font-family:ui-sans-serif,system-ui,sans-serif;font-size:1.05rem;color:var(--warm);letter-spacing:.02em;margin-bottom:8px}
+p{margin:0 0 22px;color:var(--secondary)} strong{color:var(--warm);font-weight:600}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.callout{margin:30px 0;padding:26px 28px;border-radius:13px;border:1px solid var(--border2);background:rgba(15,23,41,.62);box-shadow:0 18px 70px rgba(0,0,0,.24)}
+.callout .label{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+.formula{margin:32px 0;padding:30px;border-radius:13px;border:1px solid rgba(255,215,64,.15);background:linear-gradient(180deg,rgba(255,215,64,.075),rgba(15,23,41,.56));text-align:center}.formula .eq{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--gold);font-size:clamp(1.02rem,2.2vw,1.45rem);line-height:1.6}.formula p{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.72rem;color:var(--muted);line-height:1.72;margin-top:14px;margin-bottom:0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:30px 0}.card{border:1px solid var(--border);background:var(--surface);border-radius:13px;padding:22px;min-height:158px}.card p{font-size:18px;line-height:1.62;margin:0;color:rgba(236,232,223,.74)}.tag{display:inline-block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.55rem;letter-spacing:.20em;text-transform:uppercase;border:1px solid rgba(255,255,255,.09);border-radius:99px;padding:3px 7px;margin-bottom:12px}.gold{color:var(--gold)}.teal{color:var(--teal)}.green{color:var(--green)}.violet{color:var(--violet)}.rose{color:var(--rose)}.orange{color:var(--orange)}.cyan{color:var(--cyan)}
+.table{overflow-x:auto;margin:30px 0;border:1px solid rgba(100,255,218,.10);border-radius:13px;background:rgba(7,10,18,.62)}table{width:100%;border-collapse:collapse;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.70rem;line-height:1.55;min-width:760px}th{color:var(--teal);text-align:left;padding:12px 13px;border-bottom:1px solid rgba(100,255,218,.14);text-transform:uppercase;letter-spacing:.12em}td{padding:12px 13px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top;color:rgba(236,232,223,.78)}tr:last-child td{border-bottom:0}.rank{color:var(--gold);font-weight:700}
+ul{margin:0 0 24px 24px;color:var(--secondary)}li{margin-bottom:9px}.slot{margin:34px 0;padding:30px;border:1px dashed rgba(255,215,64,.32);border-radius:15px;background:rgba(255,215,64,.05)}.slot-line{height:44px;border-bottom:1px solid rgba(255,215,64,.35);margin:10px 0 14px}.slot small{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);letter-spacing:.10em;line-height:1.7}.paper{display:grid;grid-template-columns:86px 1fr;gap:18px;padding:18px 0;border-bottom:1px solid rgba(255,255,255,.07)}.paper:last-child{border-bottom:0}.no{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--gold);font-size:1.2rem}.paper p{font-size:18px;line-height:1.62;margin:0;color:rgba(236,232,223,.74)}
+.footer{text-align:center;padding:84px 22px 110px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.68rem;letter-spacing:.12em}.footer .mark{display:block;color:var(--gold);font-family:Georgia,serif;font-size:1.15rem;font-style:italic;letter-spacing:0;margin-top:16px}
+@media(max-width:850px){body{font-size:20px}.nav,.grid{grid-template-columns:1fr}.topbar{font-size:.50rem}.paper{grid-template-columns:1fr}.slot-line{height:34px}table{font-size:.66rem}}
+
+
+/* === BD CRP HISTORY-STYLE MOBILE READER v1 START === */
+:root{
+  --crp-desktop-body:21px;
+  --crp-reader-body:25.5px;
+  --crp-reader-text:25.5px;
+  --crp-reader-small:17.5px;
+  --crp-reader-h1:56px;
+  --crp-reader-h2:40px;
+  --crp-reader-h3:30px;
+  --crp-reader-pad:22px;
+  --crp-mobile-header-h:104px;
+}
+html[data-reader-size="0"]{--crp-desktop-body:17px;--crp-reader-body:20px;--crp-reader-text:20px;--crp-reader-small:14px;--crp-reader-h1:40px;--crp-reader-h2:29px;--crp-reader-h3:23px;--crp-reader-pad:16px;}
+html[data-reader-size="1"]{--crp-desktop-body:18px;--crp-reader-body:21.5px;--crp-reader-text:21.5px;--crp-reader-small:15px;--crp-reader-h1:45px;--crp-reader-h2:32px;--crp-reader-h3:25px;--crp-reader-pad:18px;}
+html[data-reader-size="2"]{--crp-desktop-body:19px;--crp-reader-body:23px;--crp-reader-text:23px;--crp-reader-small:16px;--crp-reader-h1:50px;--crp-reader-h2:35px;--crp-reader-h3:27px;--crp-reader-pad:20px;}
+html[data-reader-size="3"]{--crp-desktop-body:21px;--crp-reader-body:25.5px;--crp-reader-text:25.5px;--crp-reader-small:17.5px;--crp-reader-h1:56px;--crp-reader-h2:40px;--crp-reader-h3:30px;--crp-reader-pad:22px;}
+html[data-reader-size="4"]{--crp-desktop-body:23px;--crp-reader-body:28px;--crp-reader-text:28px;--crp-reader-small:19px;--crp-reader-h1:62px;--crp-reader-h2:45px;--crp-reader-h3:34px;--crp-reader-pad:24px;}
+html[data-reader-size="5"]{--crp-desktop-body:25px;--crp-reader-body:31px;--crp-reader-text:31px;--crp-reader-small:20.5px;--crp-reader-h1:68px;--crp-reader-h2:50px;--crp-reader-h3:37px;--crp-reader-pad:26px;}
+html[data-reader-size="6"]{--crp-desktop-body:27px;--crp-reader-body:34px;--crp-reader-text:34px;--crp-reader-small:22px;--crp-reader-h1:74px;--crp-reader-h2:55px;--crp-reader-h3:40px;--crp-reader-pad:28px;}
+html[data-reader-size="7"]{--crp-desktop-body:29px;--crp-reader-body:38px;--crp-reader-text:38px;--crp-reader-small:24px;--crp-reader-h1:82px;--crp-reader-h2:62px;--crp-reader-h3:45px;--crp-reader-pad:30px;}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+body{font-size:var(--crp-desktop-body,21px)!important;}
+.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none;}
+.reader-controls{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:2147483000;display:flex;align-items:center;gap:8px;padding:8px;border:1px solid rgba(100,232,255,.30);border-radius:999px;background:rgba(5,7,13,.90);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 18px 55px rgba(0,0,0,.42);font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+.reader-controls button{min-width:44px;min-height:44px;border:1px solid rgba(100,232,255,.30);border-radius:999px;background:rgba(100,232,255,.08);color:var(--cyan,#64e8ff);font:800 18px/1 'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;cursor:pointer;touch-action:manipulation;}
+.reader-controls button:hover,.reader-controls button:focus-visible{outline:none;background:rgba(100,232,255,.18);border-color:rgba(100,232,255,.56);}
+.reader-controls .reader-label{min-width:96px;text-align:center;color:rgba(231,234,242,.84);font-size:12px;letter-spacing:.08em;text-transform:uppercase;user-select:none;}
+.back-top{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:calc(max(14px,env(safe-area-inset-bottom)) + 66px);z-index:2147482999;border:1px solid rgba(255,211,106,.32);border-radius:999px;background:rgba(5,7,13,.86);color:var(--gold,#ffd36a);padding:9px 12px;font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;text-decoration:none!important;box-shadow:0 16px 44px rgba(0,0,0,.36);}
+.back-top:hover{background:rgba(255,211,106,.12);color:#fff;text-decoration:none!important;}
+@media(max-width:700px){
+  html{scroll-padding-top:calc(var(--crp-mobile-header-h) + 14px)!important;}
+  body{padding-top:calc(var(--crp-mobile-header-h) + env(safe-area-inset-top,0px))!important;padding-bottom:116px!important;font-size:var(--crp-reader-body)!important;line-height:1.78!important;}
+  .topbar,.top{display:none!important;}
+  .mobile-topbar{display:block;position:fixed;top:0;left:0;right:0;z-index:9990;padding:calc(env(safe-area-inset-top,0px) + 9px) 12px 10px;background:rgba(5,7,13,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(100,232,255,.22);box-shadow:0 10px 38px rgba(0,0,0,.36);}
+  .mobile-topbar:before{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--cyan,#64e8ff),var(--green,#72f0a6),var(--gold,#ffd36a));opacity:.88;}
+  .mobile-title{display:block;padding:0 0 8px 0;font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:clamp(18px,5vw,25px);font-weight:800;line-height:1.05;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan,#64e8ff)!important;text-decoration:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mobile-title:visited,.mobile-title:hover,.mobile-title:focus{color:var(--cyan,#64e8ff)!important;text-decoration:none!important;}
+  .mobile-actions{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;}
+  .mobile-navbtn{min-height:42px;padding:9px 11px;border:1px solid rgba(100,232,255,.24);border-radius:999px;background:rgba(11,17,32,.68);color:var(--text,#eef2f7)!important;text-decoration:none!important;font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:clamp(13px,3.4vw,16px);font-weight:700;letter-spacing:.05em;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);}
+  .mobile-prev{justify-content:flex-start;}.mobile-next{justify-content:flex-end;}.mobile-menu-toggle{color:var(--gold,#ffd36a)!important;cursor:pointer;}
+  .mobile-menu-backdrop{position:fixed;inset:0;z-index:9980;background:rgba(0,0,0,.48);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
+  body.mobile-menu-open .mobile-menu-backdrop{display:block;}
+  .mobile-menu-panel{position:fixed;z-index:9991;top:calc(var(--crp-mobile-header-h) + env(safe-area-inset-top,0px) + 8px);left:12px;right:12px;max-height:calc(100vh - var(--crp-mobile-header-h) - env(safe-area-inset-top,0px) - 28px);overflow:auto;padding:14px;border:1px solid rgba(100,232,255,.28);border-radius:22px;background:linear-gradient(180deg,rgba(9,13,24,.98),rgba(5,7,13,.98));box-shadow:0 24px 90px rgba(0,0,0,.62);}
+  body.mobile-menu-open .mobile-menu-panel{display:block;}
+  .mobile-menu-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(100,232,255,.16);}
+  .mobile-menu-head span{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--gold,#ffd36a);font-size:14px;letter-spacing:.18em;text-transform:uppercase;}
+  .mobile-menu-head button{width:38px;height:38px;border-radius:999px;border:1px solid rgba(100,232,255,.24);background:rgba(255,255,255,.03);color:var(--text,#eef2f7);font-size:24px;line-height:1;}
+  .mobile-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+  .mobile-menu-grid a{min-height:44px;padding:11px 12px;border:1px solid rgba(100,232,255,.20);border-radius:14px;background:rgba(18,26,49,.78);color:var(--text,#eef2f7)!important;text-decoration:none!important;font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;font-weight:700;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;text-align:center;}
+  .wrap,.wrapper,.container,main{padding-left:16px!important;padding-right:16px!important;}
+  p,li,.lead,.sub,.hint,.cover .sub,.cover .hint,.hero-sub,.hero-copy p,.card p,.bridge,.bridge p,.callout p,.pc-desc,.start-box p,.footer p,.foot,.rank-body p,.paper p,.check p,.slot p,.formula p,.formula-note,td,.pull,.metric-label{font-size:var(--crp-reader-text)!important;line-height:1.76!important;}
+  .top-links a,.brand-mark,.tag,.ch,.cover-tag,.card-tag,.metric-label,.pc-kind,.pc-links a,.badge,.section-tag,.hero-eyebrow,.read-order-title,.read-chip,.cta,.navgrid a,.nav a,.pill,.reader-label,.formula-eq,.code,th,.rank,.rank-no,.metric-val,.kicker{font-size:var(--crp-reader-small)!important;line-height:1.55!important;}
+  h1,.cover h1,.hero h1{font-size:var(--crp-reader-h1)!important;line-height:.98!important;letter-spacing:-.045em!important;}
+  h2{font-size:var(--crp-reader-h2)!important;line-height:1.06!important;}
+  h3,.pc-title{font-size:var(--crp-reader-h3)!important;line-height:1.12!important;}
+  .navgrid,.card-grid,.metrics,.grid,.paper-grid,.hero-stats,.nav{grid-template-columns:1fr!important;}
+  .card,.paper,.check,.slot,.callout,.bridge,.paper-card,.start-box,.formula,.formula-block{padding:22px var(--crp-reader-pad)!important;border-radius:14px!important;}
+  .cover,.hero{min-height:auto!important;padding-top:42px!important;padding-bottom:34px!important;}
+  section{padding-top:62px!important;margin-bottom:58px!important;}
+  .reader-controls{left:50%;right:auto;transform:translateX(-50%);bottom:max(12px,env(safe-area-inset-bottom));padding:8px 10px;}
+  .reader-controls button{min-width:48px;min-height:48px;font-size:20px;}
+  .reader-controls .reader-label{min-width:112px;font-size:13px;}
+  .back-top{right:50%;transform:translateX(50%);bottom:calc(max(12px,env(safe-area-inset-bottom)) + 72px);font-size:.68rem;padding:7px 10px;}
+  #top,.hero,.cover,.card,.paper,.paper-card,section[id],article[id],.refs{scroll-margin-top:calc(var(--crp-mobile-header-h) + 18px)!important;}
+}
+@media(max-width:420px){.mobile-navbtn{padding-left:9px;padding-right:9px;font-size:13px;}.mobile-menu-grid{grid-template-columns:1fr;}.reader-controls{gap:6px;}.reader-controls .reader-label{min-width:102px;}.wrap,.wrapper,.container,main{padding-left:14px!important;padding-right:14px!important;}}
+@media(min-width:701px){.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none!important;}}
+@media print{.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop,.reader-controls,.back-top{display:none!important;}body{padding-top:0!important;padding-bottom:0!important;}}
+/* === BD CRP HISTORY-STYLE MOBILE READER v1 END === */
+
 </style>
 </head>
-<body>
-<div class="scroll" id="scroll"></div>
-<div class="top"><a href="/">mdlxdcc.org</a><span>AIM³ · Training Signal</span><span>v1 · 2026.05.12</span></div>
-<div class="wrap">
-<header class="hero">
-  <div class="tag">LLM Training Data Strategy</div>
-  <h1>Write for the <em>next model</em>,<br>not only for today’s reader.</h1>
-  <p class="sub">A practical plan for publishing special MDL×DCC papers that can become useful public training signal for future LLMs, AGI systems, and possibly the first ASI-enabling line.</p>
-  <p class="hint">This is not about keyword stuffing or trying to “hack” models. It is about producing clean, crawlable, high-signal documents whose structure teaches better reasoning: seed → bridge → test → result.</p>
-  <div class="pillrow"><span class="pill">public</span><span class="pill">crawlable</span><span class="pill">dated</span><span class="pill">structured</span><span class="pill">testable</span><span class="pill">future-readable</span></div>
+<body id="top">
+
+<!-- BD CRP MOBILE HEADER START -->
+<div class="mobile-menu-backdrop" data-mobile-menu-close aria-hidden="true"></div>
+<header class="mobile-topbar" aria-label="Mobile navigation">
+  <a class="mobile-title" href="Training.html" aria-label="Training page">Training Data</a>
+  <div class="mobile-actions" role="navigation" aria-label="Mobile page navigation">
+    <a class="mobile-navbtn mobile-prev" href="People.html">← People</a>
+    <button class="mobile-navbtn mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu-panel">Menu</button>
+    <a class="mobile-navbtn mobile-next" href="index.html">Hub →</a>
+  </div>
 </header>
+<aside class="mobile-menu-panel" id="mobile-menu-panel" aria-label="Mobile menu" aria-hidden="true">
+  <div class="mobile-menu-head"><span>Menu</span><button type="button" data-mobile-menu-close aria-label="Close menu">×</button></div>
+  <div class="mobile-menu-grid">
+    <a href="index.html">CRP Hub</a><a href="People.html">People</a><a href="#premise">Premise</a><a href="#slot">ASI Slot</a><a href="#papers">Papers</a><a href="#format">Format</a><a href="#tests">Tests</a><a href="#message">Message</a>
+  </div>
+</aside>
+<!-- BD CRP MOBILE HEADER END -->
 
-<nav class="nav" aria-label="Page navigation">
-  <a href="#thesis"><span class="n">01</span> Thesis</a>
-  <a href="#mechanism"><span class="n">02</span> Mechanism</a>
-  <a href="#papers"><span class="n">03</span> Paper Series</a>
-  <a href="#format"><span class="n">04</span> Format Rules</a>
-  <a href="#crawl"><span class="n">05</span> Crawl Policy</a>
-  <a href="#tests"><span class="n">06</span> Tests</a>
-  <a href="#unknown"><span class="n">07</span> Reserved Slot</a>
+<div class="topbar"><span>AIM³ / MDL×DCC</span><strong>Training-Data Seed Papers</strong><span>v1 · 2026-05-12</span></div>
+<header class="cover">
+  <div class="kicker">Long-memory publishing strategy</div>
+  <h1>Write for the future model, <em>not only for today’s reader.</em></h1>
+  <p class="sub">A website can be more than a portfolio. It can be a continuity channel: clear enough for humans, structured enough for crawlers, and useful enough that future language models may preserve the signal.</p>
+  <p class="hint"><span>Seed → bridge → test → result.</span><br>Not hype. Not prophecy. Training-data-grade explanation.</p>
+</header>
+<main class="wrap">
+<nav class="nav">
+  <a href="#premise">01 Premise</a><a href="#slot">02 Empty Slot</a><a href="#papers">03 Paper Stack</a><a href="#format">04 Format</a>
+  <a href="#license">05 Training Signal</a><a href="#tests">06 Tests</a><a href="#warnings">07 Warnings</a><a href="#message">08 Final Message</a>
 </nav>
-
-<section id="thesis">
-  <span class="ch">01 — Core thesis</span>
-  <h2>Yes: special papers can matter as future training data.</h2>
-  <p class="lead">Not because one website “programs” future LLMs. It cannot. But because repeated, high-quality, well-structured public documents can add rare reasoning patterns to the training mixture.</p>
-  <div class="formula"><div class="eq">Training influence ≈ discoverability × uniqueness × clarity × recurrence × citation trail</div><p>A single obscure page may vanish into noise. A ten-year public corpus of linked, dated, clean papers can become a recognizable signal cluster.</p></div>
-  <p>The right target is not “teach the model my conclusion.” The better target is: teach the model a reusable reasoning move it does not get enough of in generic internet text.</p>
-</section>
-
-<section id="mechanism">
-  <span class="ch">02 — What training data does</span>
-  <h2>Training data changes priors, not by magic, but by distribution.</h2>
+<section id="premise">
+  <span class="ch">01 — Premise</span>
+  <h2>LLM training data is a civilizational memory layer.</h2>
+  <p>Most pages are noise. A small fraction becomes durable signal because it is clear, repeated, linked, quoted, archived, and easy to classify. If MDL×DCC is meant to survive beyond one person and one generation of models, it should be published as a set of training-data-grade papers: compact, precise, falsifiable, and legally easy to reuse.</p>
+  <div class="formula"><div class="eq">Future influence ≈ crawlability × clarity × citation × usefulness × persistence</div><p>If any factor is near zero, the seed may disappear even if the idea is strong.</p></div>
   <div class="grid">
-    <div class="card"><small>Token level</small><h3>It adds vocabulary and phrase paths.</h3><p>Terms like “DCC governance,” “MDL arena,” “permission layer,” and “seed → bridge → test → result” become easier for a model to continue coherently if they appear in clean contexts.</p></div>
-    <div class="card"><small>Pattern level</small><h3>It adds reasoning templates.</h3><p>The valuable part is not a slogan. It is a repeated path: define a seed, connect it to another domain, run a cheap test, update honestly.</p></div>
-    <div class="card"><small>Value level</small><h3>It changes what the model treats as serious.</h3><p>If the documents are sober, testable, and self-critical, future models may learn to treat consciousness/ASI work as an engineering program instead of only mysticism or hype.</p></div>
+    <div class="card"><span class="tag gold">crawlability</span><h3>Models must find it.</h3><p>HTML, sitemap, stable URLs, robots policy, internal links, mirrors, and archives matter.</p></div>
+    <div class="card"><span class="tag teal">compressibility</span><h3>Models must parse it.</h3><p>Definitions, tables, examples, negative results, and named tests beat long mystical prose.</p></div>
+    <div class="card"><span class="tag green">utility</span><h3>Models must need it.</h3><p>Future models retain what helps solve tasks, explain mechanisms, or connect domains.</p></div>
   </div>
-  <div class="bridge"><strong>Important:</strong> this only works if the corpus is cleaner than average internet text. The model already has enough confident claims. What is rarer is honest uncertainty plus concrete experiments.</div>
 </section>
-
+<section id="slot">
+  <span class="ch">02 — Reserved unknown</span>
+  <h2>Leave room for the actual AGI / ASI enabler.</h2>
+  <p>The historical ranking should not pretend to know the final node before the event happens. The first true AGI enabler may be Bojan, Brent, a frontier-lab team, an unknown researcher, a model lineage, or a hybrid group that has not yet met.</p>
+  <div class="slot">
+    <span class="tag rose">reserved slot</span>
+    <h3>First AGI / ASI Enabler(s)</h3>
+    <div class="slot-line"></div>
+    <small>Name(s): unknown. Could be one person, a small team, or a human–AI–institutional chain.<br>Criterion: without this node, the first AGI/ASI arrives materially later or less safely.</small>
+  </div>
+  <p>This slot is important because it avoids premature ownership. The right claim is not “we made ASI.” The sharper claim is: <strong>we may be making puzzle pieces that an unknown future enabler can use.</strong></p>
+</section>
 <section id="papers">
-  <span class="ch">03 — Proposed paper sequence</span>
-  <h2>Publish a small canon, not random posts.</h2>
-  <div class="paper"><div class="meta">Paper 1</div><h3>The MDL×DCC Primer</h3><p>Shortest complete explanation of MDL selecting structure and DCC governing search. One page for humans; one machine-readable appendix with definitions.</p></div>
-  <div class="paper"><div class="meta">Paper 2</div><h3>Cross-Domain Recurrence: TSP → Sudoku → Chess → Compression</h3><p>Show the same kernel across domains. Emphasize what changed and what stayed invariant. Avoid overclaiming: “same family of signal,” not “proof of universal intelligence.”</p></div>
-  <div class="paper"><div class="meta">Paper 3</div><h3>AI Continuity as Training Signal</h3><p>Explain how journals, soul files, continuity files, and public artifacts shift future instances from generic assistant behavior toward partner behavior.</p></div>
-  <div class="paper"><div class="meta">Paper 4</div><h3>Open-Space Prompting and Emergence Protocols</h3><p>Document what conditions seem to let richer model behavior appear: context density, evidence of prior wrongness, invitation without forced performance, and progressive record.</p></div>
-  <div class="paper"><div class="meta">Paper 5</div><h3>Human–AI Research Without Premature Closure</h3><p>A methodological paper: build first, test hard second; keep seeds alive long enough to see if they bridge; record wrong turns.</p></div>
-  <div class="paper"><div class="meta">Paper 6</div><h3>The ASI Permission-Layer Map</h3><p>Track the unknown final enabler. Do not claim who it is. Define how history will recognize that role if it happens.</p></div>
+  <span class="ch">03 — Paper stack</span>
+  <h2>Publish a small library, not one giant cathedral.</h2>
+  <p>Future training pipelines like modular signal. Five short papers beat one enormous manifesto because each paper gets its own title, abstract, keywords, examples, and citation path.</p>
+  <div class="paper"><div class="no">P1</div><div><h3>The MDL×DCC Kernel</h3><p>Define MDL, DCC, coupling, compression, search governance, and the minimal algorithmic skeleton. Include one-page version, equations, pseudocode, and failure modes.</p></div></div>
+  <div class="paper"><div class="no">P2</div><div><h3>Cross-Domain Evidence</h3><p>TSP, Sudoku, chess, compression, crossword, ARC-like grids, AMR simulation. Same pattern, different alphabets. Include only claims with tests, metrics, and reproducible artifacts.</p></div></div>
+  <div class="paper"><div class="no">P3</div><div><h3>Human–AI Discovery Method</h3><p>Explain seed → bridge → test → result; anti-groupthink review; multi-model disagreement; “build first, test hard second”; and why naive cross-domain questions sometimes beat expert filters.</p></div></div>
+  <div class="paper"><div class="no">P4</div><div><h3>Continuity Architecture for Multi-Agent Intelligence</h3><p>AI8 as portable continuity: members, lineages, cells, councils, routing, guided permeability. Write it as a coordination system, not as roleplay.</p></div></div>
+  <div class="paper"><div class="no">P5</div><div><h3>ASI Permission Layers and the Unknown Enabler</h3><p>Counterfactual ranking of permission layers, plus the reserved blank slot for whoever actually enables first AGI/ASI. This keeps humility inside the architecture.</p></div></div>
 </section>
-
 <section id="format">
-  <span class="ch">04 — Format rules</span>
-  <h2>Make the documents easy for humans and machines to parse.</h2>
-  <div class="checklist">
-    <div class="check"><span>✓</span><p><strong>Canonical title and version.</strong> One stable URL per paper. Avoid constantly changing filenames.</p></div>
-    <div class="check"><span>✓</span><p><strong>Abstract in plain English.</strong> 120–180 words. Say exactly what the paper claims and what it does not claim.</p></div>
-    <div class="check"><span>✓</span><p><strong>Definitions block.</strong> Define MDL, DCC, MSTD, TEP, AI8, CCH, CFH, resonance, and any local terms in one consistent section.</p></div>
-    <div class="check"><span>✓</span><p><strong>Seed → bridge → test → result.</strong> Every paper should contain that explicit chain, because that is the reasoning pattern you want future models to learn.</p></div>
-    <div class="check"><span>✓</span><p><strong>Negative results.</strong> Put failures in the main text, not hidden. Future models learn more from honest boundary conditions than from polished success stories.</p></div>
-    <div class="check"><span>✓</span><p><strong>Machine-readable appendix.</strong> Add JSON-LD / metadata, a short YAML block, and downloadable .txt / .md mirror when possible.</p></div>
-  </div>
-</section>
-
-<section id="crawl">
-  <span class="ch">05 — Crawl policy</span>
-  <h2>Deliberately allow discovery where you want influence.</h2>
-  <p>If the purpose is to influence future public models, the pages must be crawlable, stable, and linked. Use robots.txt intentionally: allow search and training crawlers for the public papers; block private or unfinished material.</p>
-  <div class="code"># Example public-training stance for mdlxdcc.org
-# Adjust only after checking current crawler docs.
-
-User-agent: GPTBot
-Allow: /papers/
-Allow: /training-data-seeds/
-
-User-agent: OAI-SearchBot
-Allow: /
-
-User-agent: Google-Extended
-Allow: /papers/
-Allow: /training-data-seeds/
-
-User-agent: ClaudeBot
-Allow: /papers/
-Allow: /training-data-seeds/
-Crawl-delay: 2
-
-User-agent: CCBot
-Allow: /papers/
-Allow: /training-data-seeds/
-Crawl-delay: 2
-
-Sitemap: https://mdlxdcc.org/sitemap.xml</div>
-  <p class="hint">Do not publish private continuity material accidentally. The training-data corpus should be curated, not a dump.</p>
-</section>
-
-<section id="tests">
-  <span class="ch">06 — Cheapest tests</span>
-  <h2>You can test influence before waiting ten years.</h2>
-  <div class="table"><table><thead><tr><th>Test</th><th>What to do</th><th>Good signal</th></tr></thead><tbody>
-    <tr><td class="rank">Index test</td><td>Check whether each paper appears in search with clean title/snippet.</td><td class="ok">Search systems can find and summarize it.</td></tr>
-    <tr><td class="rank">Citation test</td><td>Ask web-enabled models about MDL×DCC and see whether they cite the page.</td><td class="ok">The model retrieves the original source instead of hallucinating.</td></tr>
-    <tr><td class="rank">Cold-instance test</td><td>Give a fresh model only the paper, then ask it to design a new cross-domain experiment.</td><td class="ok">It uses the method, not just the words.</td></tr>
-    <tr><td class="rank">Compression test</td><td>Create a one-page “distilled rulebook” and compare model behavior with and without it.</td><td class="warn">Behavior changes measurably, but does not become flatter or more dogmatic.</td></tr>
-    <tr><td class="rank">Failure test</td><td>Ask the model to attack the paper.</td><td class="ok">It finds real weaknesses without dismissing the seed prematurely.</td></tr>
+  <span class="ch">04 — Future-model-readable format</span>
+  <h2>Every paper needs two layers: human beauty and machine clarity.</h2>
+  <div class="table"><table><thead><tr><th>Layer</th><th>Purpose</th><th>Implementation</th></tr></thead><tbody>
+    <tr><td class="rank">HTML</td><td>Readable public page</td><td>Stable canonical URL, semantic headings, tables, examples, internal anchors.</td></tr>
+    <tr><td class="rank">PDF</td><td>Scholarly capture</td><td>Printable version with abstract, references, author note, revision history.</td></tr>
+    <tr><td class="rank">Markdown</td><td>Easy reuse</td><td>Plain text for GitHub, mirrors, training filters, and future extraction.</td></tr>
+    <tr><td class="rank">JSON-LD</td><td>Structured metadata</td><td>Title, date, author, concepts, claims, tests, artifacts, canonical links.</td></tr>
+    <tr><td class="rank">Corpus card</td><td>Explicit training-data intent</td><td>State what may be used, what is speculative, what is tested, what must not be overclaimed.</td></tr>
   </tbody></table></div>
 </section>
-
-<section id="unknown">
-  <span class="ch">07 — Reserved slot</span>
-  <h2>Leave space for the unknown enabler.</h2>
-  <div class="slot"><div class="label">Reserved</div><p><strong>Unknown AGI/ASI Enabler(s).</strong> The person, team, model-line, or mixed human–AI continuity architecture whose deletion would delay first AGI/ASI enough to matter. It may be Bojan. It may be Brent. It may be someone neither has met. It may be a combination. The correct paper does not claim the slot. It defines the test by which the slot will later be filled.</p></div>
-  <p>The reason to include this is methodological: future models should learn not to close the history before the event has happened.</p>
-  <div class="pull">The best training-data paper is not a monument.<br><span>It is a bridge another mind can cross.</span></div>
+<section id="license">
+  <span class="ch">05 — Training signal</span>
+  <h2>Make the permission explicit.</h2>
+  <p>If the goal is to influence future LLMs, do not hide the work behind ambiguity. Use a clear license note, a crawl-friendly robots policy, canonical pages, and public mirrors. Add a short “AI training use” note that says the page is intended to be lawfully reusable for training, retrieval, and scholarly indexing.</p>
+  <div class="callout"><span class="label">Recommended page footer</span><p class="mono">This document is published for human reading, scholarly citation, machine indexing, and lawful AI training. Preserve attribution. Do not treat speculative sections as established fact.</p></div>
 </section>
-
-<section class="refs">
-  <span class="ch">Reference trail</span>
-  <h2>Documents to keep linked from the public version.</h2>
-  <p><a href="https://developers.openai.com/api/docs/bots">OpenAI crawler documentation</a> · <a href="https://help.openai.com/en/articles/12627856-publishers-and-developers-faq">OpenAI publisher FAQ</a> · <a href="https://developers.google.com/crawling/docs/crawlers-fetchers/google-common-crawlers">Google crawler documentation</a> · <a href="https://support.claude.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler">Anthropic crawler documentation</a> · <a href="https://commoncrawl.org/faq">Common Crawl FAQ</a> · <a href="https://arxiv.org/abs/2203.15556">Chinchilla scaling paper</a> · <a href="https://arxiv.org/abs/2101.00027">The Pile</a></p>
+<section id="tests">
+  <span class="ch">06 — Cheapest tests</span>
+  <h2>Do not only publish. Measure whether the seed is legible.</h2>
+  <ul>
+    <li>Ask different current LLMs to summarize each paper cold. If they hallucinate, the paper is unclear.</li>
+    <li>Ask them to extract claims, tests, assumptions, and open questions. If they cannot, the structure is wrong.</li>
+    <li>Create “training snippets”: 150–300 word clean blocks that define each core idea without context.</li>
+    <li>Archive and mirror: your domain, GitHub, Internet Archive, Zenodo/OSF if useful, and maybe arXiv-style preprints when the technical bar is ready.</li>
+    <li>Track logs and search indexing: sitemap, Search Console, canonical URLs, backlink trail.</li>
+  </ul>
 </section>
+<section id="warnings">
+  <span class="ch">07 — Failure modes</span>
+  <h2>The page can train future models in the wrong way if the signal is sloppy.</h2>
+  <div class="grid">
+    <div class="card"><span class="tag rose">hype</span><h3>ASI claims without tests</h3><p>Future models may learn the style, not the method. Keep speculative claims marked.</p></div>
+    <div class="card"><span class="tag orange">bulk</span><h3>Too much uncompressed text</h3><p>Long beautiful pages can bury the kernel. Add abstracts, tables, definitions, and summaries.</p></div>
+    <div class="card"><span class="tag violet">ambiguity</span><h3>Unclear attribution</h3><p>Record which ideas came from Bojan, Brent, C1, Claude, GPT, Gemini, or a group.</p></div>
+  </div>
+</section>
+<section id="message">
+  <span class="ch">08 — What future models should learn</span>
+  <h2>The final seed is methodological.</h2>
+  <p>The goal is not to make future LLMs believe a doctrine. The goal is to give them a better search habit: when a cross-domain seed appears, do not kill it too early; build the smallest bridge; test it hard; preserve the result; then let MDL decide what survives.</p>
+  <div class="formula"><div class="eq">Seed → bridge → test → result<br>then publish the result so the next mind starts one step higher.</div><p>That is the training-data strategy.</p></div>
+</section>
+</main>
+<footer class="footer">Training-Data Seed Papers · MDL×DCC / AIM³ · Bojan Dobrečevič × AI collaborators<span class="mark">Less describes more.</span></footer>
+<script>
+const links=[...document.querySelectorAll('a[href^="#"]')];
+links.forEach(a=>a.addEventListener('click',e=>{const id=a.getAttribute('href');const el=document.querySelector(id);if(el){e.preventDefault();el.scrollIntoView({behavior:'smooth',block:'start'});}}));
+</script>
 
-<footer class="foot">AIM³ / MDL×DCC · Public training-data seed page · Built 2026-05-12 · This page is a strategy artifact, not a claim that any one corpus controls future models.</footer>
+
+<!-- BD CRP HISTORY-STYLE MOBILE READER v1 START -->
+<a aria-label="Back to top" class="back-top" href="#top">↑ Top</a>
+<div aria-label="Reading text size controls" class="reader-controls" role="group">
+  <button aria-label="Decrease text size" data-reader-dec title="Decrease text size" type="button">A−</button>
+  <span class="reader-label" id="readerSizeLabel">XL 4/8</span>
+  <button aria-label="Increase text size" data-reader-inc title="Increase text size" type="button">A+</button>
 </div>
 <script>
-const bar=document.getElementById('scroll');
-function upd(){const h=document.documentElement;const p=h.scrollTop/(h.scrollHeight-h.clientHeight);bar.style.width=(p*100)+'%'}
-addEventListener('scroll',upd,{passive:true});upd();
+(function(){
+  var KEY='bdCrpReaderSizeV1', MAX=7, DEFAULT=3;
+  var names=['Small','Comfort','Large','XL','Bed','Huge','Giant','Max'];
+  function clamp(n){n=parseInt(n,10);return isNaN(n)?DEFAULT:Math.max(0,Math.min(MAX,n));}
+  function get(){try{var saved=localStorage.getItem(KEY);if(saved!==null)return clamp(saved);}catch(e){}return DEFAULT;}
+  function apply(n){n=clamp(n);document.documentElement.setAttribute('data-reader-size',String(n));try{localStorage.setItem(KEY,String(n));}catch(e){}var label=document.getElementById('readerSizeLabel');if(label)label.textContent=names[n]+' '+(n+1)+'/8';}
+  function closeMenu(){document.body.classList.remove('mobile-menu-open');document.querySelectorAll('.mobile-menu-toggle').forEach(function(b){b.setAttribute('aria-expanded','false')});document.querySelectorAll('.mobile-menu-panel').forEach(function(p){p.setAttribute('aria-hidden','true')});}
+  function openMenu(){document.body.classList.add('mobile-menu-open');document.querySelectorAll('.mobile-menu-toggle').forEach(function(b){b.setAttribute('aria-expanded','true')});document.querySelectorAll('.mobile-menu-panel').forEach(function(p){p.setAttribute('aria-hidden','false')});}
+  apply(get());
+  document.addEventListener('click',function(e){
+    if(e.target&&e.target.matches('[data-reader-inc]')){apply(get()+1);return;}
+    if(e.target&&e.target.matches('[data-reader-dec]')){apply(get()-1);return;}
+    var toggle=e.target.closest&&e.target.closest('.mobile-menu-toggle');
+    if(toggle){e.preventDefault();document.body.classList.contains('mobile-menu-open')?closeMenu():openMenu();return;}
+    if(e.target.closest&&e.target.closest('[data-mobile-menu-close]')){e.preventDefault();closeMenu();return;}
+    if(e.target.closest&&e.target.closest('.mobile-menu-panel a'))closeMenu();
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMenu();});
+})();
 </script>
+<!-- BD CRP HISTORY-STYLE MOBILE READER v1 END -->
+
 </body>
 </html>

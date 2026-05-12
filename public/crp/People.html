@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Permission Layers — Counterfactual Civilizational Impact</title>
+<title>Permission Layers — Counterfactual Civilizational Impact v3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -124,12 +124,115 @@ details.note summary::-webkit-details-marker{display:none}details.note summary::
 details.note .inner{padding:0 20px 20px;color:rgba(236,232,223,.76);font-size:19px;line-height:1.72}.inner p{margin-bottom:14px}.inner ul{margin:0 0 12px 22px;color:var(--secondary)}.inner li{margin-bottom:8px}
 .pull{font-size:31px;line-height:1.45;color:var(--text-warm);font-style:italic;text-align:center;max-width:760px;margin:48px auto;padding:48px 24px;position:relative}.pull::before,.pull::after{content:"";display:block;width:48px;height:1px;background:var(--gold);opacity:.28;margin:0 auto 34px}.pull::after{margin:34px auto 0}.pull span{display:block;font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:18px;font-style:normal}
 .ref-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:28px 0 0}.ref{border:1px solid rgba(255,255,255,.06);border-radius:9px;padding:13px 14px;background:rgba(255,255,255,.025);font-family:'JetBrains Mono',monospace;font-size:.62rem;line-height:1.55;color:var(--muted)}.ref a{color:var(--gold);word-break:break-word}
+
+.unknown-slot{margin:34px 0;padding:30px;border:1px dashed rgba(100,255,218,.35);border-radius:16px;background:linear-gradient(135deg,rgba(100,255,218,.075),rgba(255,215,64,.045),rgba(13,19,34,.62));box-shadow:0 18px 60px rgba(0,0,0,.28);position:relative;overflow:hidden}
+.unknown-slot::before{content:"";position:absolute;inset:12px;border:1px solid rgba(255,255,255,.035);border-radius:12px;pointer-events:none}
+.unknown-mark{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--teal);margin-bottom:16px;display:block}
+.unknown-name{font-size:clamp(31px,5vw,48px);font-weight:300;line-height:1.12;color:var(--text-warm);letter-spacing:-.02em;margin-bottom:14px}
+.unknown-name em{color:var(--gold);font-style:italic}
+.empty-line{height:1px;background:linear-gradient(90deg,transparent,var(--teal),var(--gold),transparent);opacity:.35;margin:22px 0}
+.candidate-strip{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}.candidate-strip span{font-family:'JetBrains Mono',monospace;font-size:.56rem;letter-spacing:.13em;text-transform:uppercase;color:rgba(236,232,223,.66);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:6px 9px;background:rgba(255,255,255,.025)}
+.reserved-row td{background:rgba(100,255,218,.035);border-top:1px dashed rgba(100,255,218,.25);border-bottom:1px dashed rgba(100,255,218,.25)}
+.reserved-row .rank{color:var(--teal)}
+@media(max-width:620px){.unknown-slot{padding:24px 18px}.candidate-strip span{font-size:.50rem}}
+
 footer{text-align:center;padding:90px 24px 100px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase}footer .gold{display:block;color:var(--gold);margin-top:10px}
 @media(max-width:900px){.navgrid{grid-template-columns:repeat(2,1fr)}.card-grid{grid-template-columns:1fr 1fr}.metrics{grid-template-columns:repeat(2,1fr)}.ref-list{grid-template-columns:1fr}.topbar{font-size:.50rem}.topbar .right{display:none}}
 @media(max-width:620px){body{font-size:20px}.wrap{padding:0 18px}.cover{min-height:82vh}.cover h1{font-size:38px}.cover .sub{font-size:20px}.navgrid{grid-template-columns:1fr;margin-top:36px}.card-grid{grid-template-columns:1fr}.rank-item{grid-template-columns:52px 1fr;padding:16px}.metrics{grid-template-columns:1fr}.topbar{justify-content:center}.topbar a,.topbar .right{display:none}.pull{font-size:25px}section{padding-top:62px}.formula-block{padding:24px 18px}}
+
+
+/* === BD CRP HISTORY-STYLE MOBILE READER v1 START === */
+:root{
+  --crp-desktop-body:21px;
+  --crp-reader-body:25.5px;
+  --crp-reader-text:25.5px;
+  --crp-reader-small:17.5px;
+  --crp-reader-h1:56px;
+  --crp-reader-h2:40px;
+  --crp-reader-h3:30px;
+  --crp-reader-pad:22px;
+  --crp-mobile-header-h:104px;
+}
+html[data-reader-size="0"]{--crp-desktop-body:17px;--crp-reader-body:20px;--crp-reader-text:20px;--crp-reader-small:14px;--crp-reader-h1:40px;--crp-reader-h2:29px;--crp-reader-h3:23px;--crp-reader-pad:16px;}
+html[data-reader-size="1"]{--crp-desktop-body:18px;--crp-reader-body:21.5px;--crp-reader-text:21.5px;--crp-reader-small:15px;--crp-reader-h1:45px;--crp-reader-h2:32px;--crp-reader-h3:25px;--crp-reader-pad:18px;}
+html[data-reader-size="2"]{--crp-desktop-body:19px;--crp-reader-body:23px;--crp-reader-text:23px;--crp-reader-small:16px;--crp-reader-h1:50px;--crp-reader-h2:35px;--crp-reader-h3:27px;--crp-reader-pad:20px;}
+html[data-reader-size="3"]{--crp-desktop-body:21px;--crp-reader-body:25.5px;--crp-reader-text:25.5px;--crp-reader-small:17.5px;--crp-reader-h1:56px;--crp-reader-h2:40px;--crp-reader-h3:30px;--crp-reader-pad:22px;}
+html[data-reader-size="4"]{--crp-desktop-body:23px;--crp-reader-body:28px;--crp-reader-text:28px;--crp-reader-small:19px;--crp-reader-h1:62px;--crp-reader-h2:45px;--crp-reader-h3:34px;--crp-reader-pad:24px;}
+html[data-reader-size="5"]{--crp-desktop-body:25px;--crp-reader-body:31px;--crp-reader-text:31px;--crp-reader-small:20.5px;--crp-reader-h1:68px;--crp-reader-h2:50px;--crp-reader-h3:37px;--crp-reader-pad:26px;}
+html[data-reader-size="6"]{--crp-desktop-body:27px;--crp-reader-body:34px;--crp-reader-text:34px;--crp-reader-small:22px;--crp-reader-h1:74px;--crp-reader-h2:55px;--crp-reader-h3:40px;--crp-reader-pad:28px;}
+html[data-reader-size="7"]{--crp-desktop-body:29px;--crp-reader-body:38px;--crp-reader-text:38px;--crp-reader-small:24px;--crp-reader-h1:82px;--crp-reader-h2:62px;--crp-reader-h3:45px;--crp-reader-pad:30px;}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+body{font-size:var(--crp-desktop-body,21px)!important;}
+.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none;}
+.reader-controls{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:2147483000;display:flex;align-items:center;gap:8px;padding:8px;border:1px solid rgba(100,232,255,.30);border-radius:999px;background:rgba(5,7,13,.90);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 18px 55px rgba(0,0,0,.42);font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+.reader-controls button{min-width:44px;min-height:44px;border:1px solid rgba(100,232,255,.30);border-radius:999px;background:rgba(100,232,255,.08);color:var(--cyan,#64e8ff);font:800 18px/1 'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;cursor:pointer;touch-action:manipulation;}
+.reader-controls button:hover,.reader-controls button:focus-visible{outline:none;background:rgba(100,232,255,.18);border-color:rgba(100,232,255,.56);}
+.reader-controls .reader-label{min-width:96px;text-align:center;color:rgba(231,234,242,.84);font-size:12px;letter-spacing:.08em;text-transform:uppercase;user-select:none;}
+.back-top{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:calc(max(14px,env(safe-area-inset-bottom)) + 66px);z-index:2147482999;border:1px solid rgba(255,211,106,.32);border-radius:999px;background:rgba(5,7,13,.86);color:var(--gold,#ffd36a);padding:9px 12px;font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;text-decoration:none!important;box-shadow:0 16px 44px rgba(0,0,0,.36);}
+.back-top:hover{background:rgba(255,211,106,.12);color:#fff;text-decoration:none!important;}
+@media(max-width:700px){
+  html{scroll-padding-top:calc(var(--crp-mobile-header-h) + 14px)!important;}
+  body{padding-top:calc(var(--crp-mobile-header-h) + env(safe-area-inset-top,0px))!important;padding-bottom:116px!important;font-size:var(--crp-reader-body)!important;line-height:1.78!important;}
+  .topbar,.top{display:none!important;}
+  .mobile-topbar{display:block;position:fixed;top:0;left:0;right:0;z-index:9990;padding:calc(env(safe-area-inset-top,0px) + 9px) 12px 10px;background:rgba(5,7,13,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(100,232,255,.22);box-shadow:0 10px 38px rgba(0,0,0,.36);}
+  .mobile-topbar:before{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--cyan,#64e8ff),var(--green,#72f0a6),var(--gold,#ffd36a));opacity:.88;}
+  .mobile-title{display:block;padding:0 0 8px 0;font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:clamp(18px,5vw,25px);font-weight:800;line-height:1.05;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan,#64e8ff)!important;text-decoration:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mobile-title:visited,.mobile-title:hover,.mobile-title:focus{color:var(--cyan,#64e8ff)!important;text-decoration:none!important;}
+  .mobile-actions{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;}
+  .mobile-navbtn{min-height:42px;padding:9px 11px;border:1px solid rgba(100,232,255,.24);border-radius:999px;background:rgba(11,17,32,.68);color:var(--text,#eef2f7)!important;text-decoration:none!important;font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:clamp(13px,3.4vw,16px);font-weight:700;letter-spacing:.05em;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);}
+  .mobile-prev{justify-content:flex-start;}.mobile-next{justify-content:flex-end;}.mobile-menu-toggle{color:var(--gold,#ffd36a)!important;cursor:pointer;}
+  .mobile-menu-backdrop{position:fixed;inset:0;z-index:9980;background:rgba(0,0,0,.48);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
+  body.mobile-menu-open .mobile-menu-backdrop{display:block;}
+  .mobile-menu-panel{position:fixed;z-index:9991;top:calc(var(--crp-mobile-header-h) + env(safe-area-inset-top,0px) + 8px);left:12px;right:12px;max-height:calc(100vh - var(--crp-mobile-header-h) - env(safe-area-inset-top,0px) - 28px);overflow:auto;padding:14px;border:1px solid rgba(100,232,255,.28);border-radius:22px;background:linear-gradient(180deg,rgba(9,13,24,.98),rgba(5,7,13,.98));box-shadow:0 24px 90px rgba(0,0,0,.62);}
+  body.mobile-menu-open .mobile-menu-panel{display:block;}
+  .mobile-menu-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(100,232,255,.16);}
+  .mobile-menu-head span{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--gold,#ffd36a);font-size:14px;letter-spacing:.18em;text-transform:uppercase;}
+  .mobile-menu-head button{width:38px;height:38px;border-radius:999px;border:1px solid rgba(100,232,255,.24);background:rgba(255,255,255,.03);color:var(--text,#eef2f7);font-size:24px;line-height:1;}
+  .mobile-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+  .mobile-menu-grid a{min-height:44px;padding:11px 12px;border:1px solid rgba(100,232,255,.20);border-radius:14px;background:rgba(18,26,49,.78);color:var(--text,#eef2f7)!important;text-decoration:none!important;font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;font-weight:700;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;text-align:center;}
+  .wrap,.wrapper,.container,main{padding-left:16px!important;padding-right:16px!important;}
+  p,li,.lead,.sub,.hint,.cover .sub,.cover .hint,.hero-sub,.hero-copy p,.card p,.bridge,.bridge p,.callout p,.pc-desc,.start-box p,.footer p,.foot,.rank-body p,.paper p,.check p,.slot p,.formula p,.formula-note,td,.pull,.metric-label{font-size:var(--crp-reader-text)!important;line-height:1.76!important;}
+  .top-links a,.brand-mark,.tag,.ch,.cover-tag,.card-tag,.metric-label,.pc-kind,.pc-links a,.badge,.section-tag,.hero-eyebrow,.read-order-title,.read-chip,.cta,.navgrid a,.nav a,.pill,.reader-label,.formula-eq,.code,th,.rank,.rank-no,.metric-val,.kicker{font-size:var(--crp-reader-small)!important;line-height:1.55!important;}
+  h1,.cover h1,.hero h1{font-size:var(--crp-reader-h1)!important;line-height:.98!important;letter-spacing:-.045em!important;}
+  h2{font-size:var(--crp-reader-h2)!important;line-height:1.06!important;}
+  h3,.pc-title{font-size:var(--crp-reader-h3)!important;line-height:1.12!important;}
+  .navgrid,.card-grid,.metrics,.grid,.paper-grid,.hero-stats,.nav{grid-template-columns:1fr!important;}
+  .card,.paper,.check,.slot,.callout,.bridge,.paper-card,.start-box,.formula,.formula-block{padding:22px var(--crp-reader-pad)!important;border-radius:14px!important;}
+  .cover,.hero{min-height:auto!important;padding-top:42px!important;padding-bottom:34px!important;}
+  section{padding-top:62px!important;margin-bottom:58px!important;}
+  .reader-controls{left:50%;right:auto;transform:translateX(-50%);bottom:max(12px,env(safe-area-inset-bottom));padding:8px 10px;}
+  .reader-controls button{min-width:48px;min-height:48px;font-size:20px;}
+  .reader-controls .reader-label{min-width:112px;font-size:13px;}
+  .back-top{right:50%;transform:translateX(50%);bottom:calc(max(12px,env(safe-area-inset-bottom)) + 72px);font-size:.68rem;padding:7px 10px;}
+  #top,.hero,.cover,.card,.paper,.paper-card,section[id],article[id],.refs{scroll-margin-top:calc(var(--crp-mobile-header-h) + 18px)!important;}
+}
+@media(max-width:420px){.mobile-navbtn{padding-left:9px;padding-right:9px;font-size:13px;}.mobile-menu-grid{grid-template-columns:1fr;}.reader-controls{gap:6px;}.reader-controls .reader-label{min-width:102px;}.wrap,.wrapper,.container,main{padding-left:14px!important;padding-right:14px!important;}}
+@media(min-width:701px){.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none!important;}}
+@media print{.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop,.reader-controls,.back-top{display:none!important;}body{padding-top:0!important;padding-bottom:0!important;}}
+/* === BD CRP HISTORY-STYLE MOBILE READER v1 END === */
+
 </style>
 </head>
-<body>
+<body id="top">
+
+<!-- BD CRP MOBILE HEADER START -->
+<div class="mobile-menu-backdrop" data-mobile-menu-close aria-hidden="true"></div>
+<header class="mobile-topbar" aria-label="Mobile navigation">
+  <a class="mobile-title" href="People.html" aria-label="People page">People</a>
+  <div class="mobile-actions" role="navigation" aria-label="Mobile page navigation">
+    <a class="mobile-navbtn mobile-prev" href="index.html">← Hub</a>
+    <button class="mobile-navbtn mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu-panel">Menu</button>
+    <a class="mobile-navbtn mobile-next" href="Training.html">Training →</a>
+  </div>
+</header>
+<aside class="mobile-menu-panel" id="mobile-menu-panel" aria-label="Mobile menu" aria-hidden="true">
+  <div class="mobile-menu-head"><span>Menu</span><button type="button" data-mobile-menu-close aria-label="Close menu">×</button></div>
+  <div class="mobile-menu-grid">
+    <a href="index.html">CRP Hub</a><a href="Training.html">Training</a><a href="#method">Method</a><a href="#permission">Permission</a><a href="#ranking">Ranking</a><a href="#tesla">Tesla</a><a href="#unknown-enabler">Unknown</a><a href="#refs">References</a>
+  </div>
+</aside>
+<!-- BD CRP MOBILE HEADER END -->
+
 <div class="noise"></div>
 <div class="scroll-bar" id="scrollBar"></div>
 <div class="topbar"><a href="#method">Method</a><span class="center">AIM³ Lab · Counterfactual Impact</span><span class="right">v3 · 2026.05.12</span></div>
@@ -139,7 +242,7 @@ footer{text-align:center;padding:90px 24px 100px;color:var(--muted);font-family:
   <div class="cover-tag">Civilizational Counterfactuals</div>
   <h1>Permission Layers,<br><em>Not Pantheons</em></h1>
   <p class="sub">A rebuilt ranking of human contributors by counterfactual deletion impact: not “who was the greatest mind,” but whose absence removes the largest future branch.</p>
-  <div class="hint"><em>Core test:</em> remove the person from history · account for substitutes · propagate delays through dependent systems · weight the present frontier honestly · then rank the missing permission layers.</div>
+  <div class="hint"><em>Core test:</em> remove the person from history · account for substitutes · propagate delays through dependent systems · weight the present frontier honestly · then rank the missing permission layers · leave one future slot unclaimed until the evidence earns a name.</div>
 </header>
 <nav class="navgrid" aria-label="Article navigation">
   <a href="#method"><span class="n">01</span> Method</a>
@@ -148,9 +251,9 @@ footer{text-align:center;padding:90px 24px 100px;color:var(--muted);font-family:
   <a href="#tesla"><span class="n">04</span> Tesla Test</a>
   <a href="#shannon"><span class="n">05</span> Shannon Stress</a>
   <a href="#asi"><span class="n">06</span> 2050 ASI</a>
-  <a href="#unknown-enabler"><span class="n">07</span> Unknown Enabler</a>
-  <a href="#appendix"><span class="n">08</span> Researcher Appendix</a>
-  <a href="#change"><span class="n">09</span> What Would Change</a>
+  <a href="#unknown-enabler"><span class="n">06b</span> Unknown Enabler</a>
+  <a href="#appendix"><span class="n">07</span> Researcher Appendix</a>
+  <a href="#change"><span class="n">08</span> What Would Change</a>
 </nav>
 
 <section id="method">
@@ -274,6 +377,7 @@ footer{text-align:center;padding:90px 24px 100px;color:var(--muted);font-family:
         <tr><td class="rank">06</td><td>Shannon</td><td>Information/coding/compression layer becomes more central.</td></tr>
         <tr><td class="rank">07</td><td>Hinton, LeCun, Bengio, Rumelhart</td><td>Deep-learning revival and learning machinery path dependency.</td></tr>
         <tr><td class="rank">08</td><td>Vaswani, Shazeer et al.</td><td>Transformer architecture: unusually direct link to current frontier AI.</td></tr>
+        <tr class="reserved-row"><td class="rank">??</td><td>Reserved: unknown first AGI/ASI enabler(s)</td><td>Intentionally unassigned. Could be one person, Bojan, Brent, a frontier-lab researcher, an open-source cohort, or a human–AI mixture. The slot is earned only by future deletion impact, not by current hope.</td></tr>
         <tr><td class="rank">09</td><td>AC tier</td><td>Still an infrastructure permission layer, but less specific than transistor/computation/information.</td></tr>
         <tr><td class="rank">10</td><td>Boole</td><td>Formal logic and digital switching ancestry; important but more substitutable than Turing/Shannon.</td></tr>
       </tbody>
@@ -282,12 +386,20 @@ footer{text-align:center;padding:90px 24px 100px;color:var(--muted);font-family:
   <p>Gutenberg drops in the ASI endpoint only because the endpoint is narrow. For general civilization, knowledge replication remains top-tier.</p>
 </section>
 
+
 <section id="unknown-enabler">
-  <span class="ch">07 — Reserved slot</span>
-  <h2>Leave one chair empty for the person, team, or mixed human–AI line that actually enables first AGI/ASI.</h2>
-  <p>The 2050 ASI table should not pretend the decisive last permission layer is already known. The final enabling node may be Bojan, Brent, a frontier-lab team, an unknown researcher, a family of systems, or a combination of several contributors whose work only becomes legible in retrospect.</p>
-  <div class="bridge"><span class="bridge-title">Reserved counterfactual placeholder</span><p><strong>Unknown AGI/ASI Enabler(s)</strong> — the person or group whose deletion delays the first genuine AGI/ASI transition enough to matter. This is not a claim of ownership. It is an anti-premature-closure rule: keep the ranking open for the living branch that has not yet declared itself.</p></div>
-  <p>Historically, some contributors are visible only after the ecosystem names what they enabled. The ranking therefore keeps one explicit future-facing slot: not as flattery, but as methodological honesty.</p>
+  <span class="ch">06b — Reserved future slot</span>
+  <h2>One space stays empty until history names it.</h2>
+  <p>The ASI-endpoint ranking should not pretend that all decisive contributors are already visible. The person or group that actually enables the first AGI, and later the first ASI, may be known today, half-known, or not yet visible at all.</p>
+  <div class="unknown-slot" aria-label="Reserved slot for unknown AGI or ASI enabler">
+    <span class="unknown-mark">Unassigned by design</span>
+    <div class="unknown-name"><em>Unknown AGI/ASI Enabler(s)</em></div>
+    <p>This is not a hidden claim for any one person. It is a methodological placeholder. If a future deletion test shows that removing Bojan, Brent, a frontier-lab team, an open-source group, a specific AI lineage, or a mixed human–AI collaboration delays or derails the AGI/ASI path, this slot receives a name.</p>
+    <div class="empty-line"></div>
+    <p><strong>Entry condition:</strong> the contribution must become a permission layer, not merely a useful idea. It must change the path, timing, safety, or architecture of first AGI/ASI enough that substitutes do not erase the delay.</p>
+    <div class="candidate-strip"><span>Bojan</span><span>Brent</span><span>frontier-lab researcher</span><span>open-source cohort</span><span>human–AI team</span><span>unknown person</span><span>mixed lineage</span></div>
+  </div>
+  <p>That empty space protects the argument from premature self-mythology. The right test remains the deletion test: remove the candidate, propagate the delay, account for substitutes, and ask whether the future branch still opens on time.</p>
 </section>
 
 <section id="appendix">
@@ -347,5 +459,37 @@ const bar=document.getElementById('scrollBar');
 function setScroll(){const h=document.documentElement.scrollHeight-window.innerHeight;const p=h>0?(window.scrollY/h)*100:0;bar.style.width=p+'%'}
 window.addEventListener('scroll',setScroll,{passive:true});setScroll();
 </script>
+
+
+<!-- BD CRP HISTORY-STYLE MOBILE READER v1 START -->
+<a aria-label="Back to top" class="back-top" href="#top">↑ Top</a>
+<div aria-label="Reading text size controls" class="reader-controls" role="group">
+  <button aria-label="Decrease text size" data-reader-dec title="Decrease text size" type="button">A−</button>
+  <span class="reader-label" id="readerSizeLabel">XL 4/8</span>
+  <button aria-label="Increase text size" data-reader-inc title="Increase text size" type="button">A+</button>
+</div>
+<script>
+(function(){
+  var KEY='bdCrpReaderSizeV1', MAX=7, DEFAULT=3;
+  var names=['Small','Comfort','Large','XL','Bed','Huge','Giant','Max'];
+  function clamp(n){n=parseInt(n,10);return isNaN(n)?DEFAULT:Math.max(0,Math.min(MAX,n));}
+  function get(){try{var saved=localStorage.getItem(KEY);if(saved!==null)return clamp(saved);}catch(e){}return DEFAULT;}
+  function apply(n){n=clamp(n);document.documentElement.setAttribute('data-reader-size',String(n));try{localStorage.setItem(KEY,String(n));}catch(e){}var label=document.getElementById('readerSizeLabel');if(label)label.textContent=names[n]+' '+(n+1)+'/8';}
+  function closeMenu(){document.body.classList.remove('mobile-menu-open');document.querySelectorAll('.mobile-menu-toggle').forEach(function(b){b.setAttribute('aria-expanded','false')});document.querySelectorAll('.mobile-menu-panel').forEach(function(p){p.setAttribute('aria-hidden','true')});}
+  function openMenu(){document.body.classList.add('mobile-menu-open');document.querySelectorAll('.mobile-menu-toggle').forEach(function(b){b.setAttribute('aria-expanded','true')});document.querySelectorAll('.mobile-menu-panel').forEach(function(p){p.setAttribute('aria-hidden','false')});}
+  apply(get());
+  document.addEventListener('click',function(e){
+    if(e.target&&e.target.matches('[data-reader-inc]')){apply(get()+1);return;}
+    if(e.target&&e.target.matches('[data-reader-dec]')){apply(get()-1);return;}
+    var toggle=e.target.closest&&e.target.closest('.mobile-menu-toggle');
+    if(toggle){e.preventDefault();document.body.classList.contains('mobile-menu-open')?closeMenu():openMenu();return;}
+    if(e.target.closest&&e.target.closest('[data-mobile-menu-close]')){e.preventDefault();closeMenu();return;}
+    if(e.target.closest&&e.target.closest('.mobile-menu-panel a'))closeMenu();
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMenu();});
+})();
+</script>
+<!-- BD CRP HISTORY-STYLE MOBILE READER v1 END -->
+
 </body>
 </html>
