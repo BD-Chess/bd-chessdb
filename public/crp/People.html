@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Permission Layers — Counterfactual Civilizational Impact</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05070d;
+  --bg2:#080d18;
+  --surface:rgba(13,19,34,0.78);
+  --surface2:rgba(18,28,50,0.72);
+  --surface3:rgba(7,10,18,0.86);
+  --text:#ece8df;
+  --text-warm:#f6f0df;
+  --secondary:#b3afa4;
+  --muted:#6f788d;
+  --subtle:#26314f;
+  --gold:#ffd740;
+  --gold2:#f59e0b;
+  --teal:#64ffda;
+  --cyan:#00e5ff;
+  --green:#34d399;
+  --violet:#a78bfa;
+  --rose:#ff6b8a;
+  --orange:#fb923c;
+  --border:rgba(255,215,64,0.09);
+  --border2:rgba(100,255,218,0.12);
+  --cyan-dim:rgba(0,229,255,0.10);
+  --gold-dim:rgba(255,215,64,0.09);
+  --green-dim:rgba(52,211,153,0.10);
+  --rose-dim:rgba(255,107,138,0.10);
+  --violet-dim:rgba(167,139,250,0.10);
+  --shadow:0 22px 80px rgba(0,0,0,0.38);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 16% 12%,rgba(40,70,160,0.30),transparent 34%),
+    radial-gradient(circle at 83% 74%,rgba(0,229,255,0.08),transparent 32%),
+    radial-gradient(circle at 48% 50%,rgba(255,215,64,0.04),transparent 42%),
+    linear-gradient(180deg,#05070d 0%,#030509 100%);
+  color:var(--text);
+  font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:21px;
+  line-height:1.86;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+body::before,body::after{
+  content:"";position:fixed;border-radius:50%;filter:blur(96px);opacity:.28;pointer-events:none;z-index:-1;
+}
+body::before{width:52vw;height:52vw;left:-14vw;top:-14vh;background:radial-gradient(circle,rgba(40,70,160,.48),rgba(20,35,90,.18) 52%,transparent 74%);animation:floatA 24s ease-in-out infinite}
+body::after{width:45vw;height:45vw;right:-12vw;bottom:-16vh;background:radial-gradient(circle,rgba(100,255,218,.14),rgba(80,40,140,.16) 48%,transparent 72%);animation:floatB 29s ease-in-out infinite}
+@keyframes floatA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(5vw,5vh,0)}}
+@keyframes floatB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-5vw,-7vh,0)}}
+::selection{background:var(--gold);color:#000}
+a{color:var(--teal);text-decoration:none}
+a:hover{text-decoration:underline}
+.scroll-bar{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--gold),var(--teal));z-index:1000;opacity:.75}
+.noise{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.018;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.topbar{
+  position:sticky;top:0;z-index:99;width:100%;
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  padding:10px 22px;background:rgba(5,8,15,.76);backdrop-filter:blur(13px);
+  border-bottom:1px solid rgba(100,255,218,.08);
+  font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.20em;text-transform:uppercase;color:var(--muted);
+}
+.topbar .center{color:var(--text);font-weight:600;letter-spacing:.28em;text-align:center}
+.topbar .right{color:rgba(236,232,223,.38);white-space:nowrap}
+.wrap{width:100%;max-width:1180px;margin:0 auto;padding:0 22px}
+.cover{min-height:86vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:58px 20px 48px;position:relative}
+.cover::after{content:"";position:absolute;bottom:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.18}
+.cover-glyph{font-size:58px;margin-bottom:34px;opacity:.24;animation:pulse 6.5s ease-in-out infinite;color:var(--gold)}
+@keyframes pulse{0%,100%{opacity:.18;transform:scale(1)}50%{opacity:.34;transform:scale(1.035)}}
+.cover-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:5px;color:var(--gold);text-transform:uppercase;margin-bottom:28px}
+.cover h1{font-size:clamp(42px,9vw,76px);font-weight:300;line-height:1.03;letter-spacing:-.025em;color:var(--text-warm);max-width:860px;margin-bottom:24px}
+.cover h1 em{font-style:italic;color:var(--gold);font-weight:400}
+.cover .sub{font-size:22px;color:var(--secondary);max-width:760px;margin:0 auto 34px;font-style:italic;line-height:1.55}
+.cover .hint{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);line-height:2;letter-spacing:.08em;max-width:780px}
+.cover .hint strong{color:var(--teal);font-weight:500}.cover .hint em{color:var(--gold);font-style:normal}
+.navgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:52px auto 62px;max-width:1020px}
+.navgrid a{display:flex;align-items:center;gap:10px;padding:14px 14px;border:1px solid var(--border);border-radius:9px;background:rgba(13,19,34,.45);color:var(--secondary);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;text-decoration:none;transition:all .18s ease}
+.navgrid a:hover{border-color:rgba(100,255,218,.28);background:rgba(100,255,218,.05);color:var(--text);transform:translateY(-1px)}
+.navgrid .n{color:var(--gold);font-size:10px;opacity:.9;min-width:28px}
+section{max-width:900px;margin:0 auto;padding:76px 0 10px}
+.ch{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;opacity:.88}
+h2{font-size:clamp(34px,5vw,52px);font-weight:300;line-height:1.12;color:var(--text-warm);margin-bottom:24px;letter-spacing:-.02em}
+h3{font-family:'Rajdhani',sans-serif;font-size:1.28rem;line-height:1.22;letter-spacing:.02em;color:var(--text-warm);margin-bottom:8px}
+p{margin:0 0 22px;color:var(--secondary)}
+strong{color:var(--text-warm);font-weight:600}
+em{color:var(--text-warm)}
+hr.soft{border:0;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:42px 0}
+.formula-block{margin:34px 0;padding:30px 30px 26px;border:1px solid rgba(255,215,64,.14);border-radius:12px;background:linear-gradient(180deg,rgba(255,215,64,.07),rgba(13,19,34,.62));box-shadow:var(--shadow);text-align:center}
+.formula-eq{font-family:'JetBrains Mono',monospace;font-size:clamp(1.05rem,2.5vw,1.55rem);line-height:1.55;color:var(--gold);letter-spacing:.03em}
+.formula-note{font-family:'JetBrains Mono',monospace;font-size:.72rem;line-height:1.75;color:var(--muted);margin:16px auto 0;max-width:760px}
+.callout,.bridge{margin:32px 0;padding:26px 28px;border-radius:12px;background:rgba(15,23,41,.58);border:1px solid rgba(100,255,218,.12);box-shadow:0 12px 50px rgba(0,0,0,.22)}
+.callout-title,.bridge-title{display:block;font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--teal);margin-bottom:13px}
+.callout p,.bridge p{margin-bottom:12px;color:rgba(236,232,223,.78)}
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:28px 0 34px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 22px 20px;min-height:160px;box-shadow:0 12px 46px rgba(0,0,0,.22)}
+.card p{font-size:18px;line-height:1.65;margin:0;color:rgba(236,232,223,.70)}
+.card-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.21em;text-transform:uppercase;margin-bottom:12px;padding:3px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.09)}
+.ct-gold{color:var(--gold);background:var(--gold-dim)}.ct-cyan{color:var(--cyan);background:var(--cyan-dim)}.ct-green{color:var(--green);background:var(--green-dim)}.ct-violet{color:var(--violet);background:var(--violet-dim)}.ct-rose{color:var(--rose);background:var(--rose-dim)}.ct-orange{color:var(--orange);background:rgba(251,146,60,.10)}
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:28px 0 36px}
+.metric{border:1px solid rgba(0,229,255,.10);background:rgba(9,15,27,.58);border-radius:10px;padding:16px 12px;text-align:center}
+.metric-val{font-family:'JetBrains Mono',monospace;font-size:1.28rem;color:var(--gold);display:block;line-height:1.1;margin-bottom:7px}.metric-label{font-family:'JetBrains Mono',monospace;font-size:.54rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);line-height:1.5}
+.table-wrap{overflow-x:auto;margin:30px 0 36px;border:1px solid rgba(100,255,218,.10);border-radius:12px;background:rgba(7,10,18,.58);box-shadow:0 16px 50px rgba(0,0,0,.26)}
+table{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:.69rem;line-height:1.55;min-width:780px}
+th{color:var(--teal);text-align:left;font-weight:600;letter-spacing:.12em;text-transform:uppercase;background:rgba(100,255,218,.045);border-bottom:1px solid rgba(100,255,218,.13);padding:12px 13px}
+td{padding:12px 13px;border-bottom:1px solid rgba(255,255,255,.045);color:rgba(236,232,223,.74);vertical-align:top}
+tr:last-child td{border-bottom:0}.rank{color:var(--gold);font-weight:700}.band-core{color:var(--gold)}.band-high{color:var(--teal)}.band-edge{color:var(--violet)}.muted{color:var(--muted)}
+.rank-list{display:grid;gap:12px;margin:28px 0 36px}
+.rank-item{display:grid;grid-template-columns:72px 1fr;gap:16px;align-items:start;padding:18px 20px;border:1px solid var(--border);border-radius:12px;background:linear-gradient(90deg,rgba(255,215,64,.05),rgba(13,19,34,.58))}
+.rank-no{font-family:'JetBrains Mono',monospace;font-size:1.25rem;color:var(--gold);line-height:1.2}.rank-body h3{margin-bottom:5px}.rank-body p{font-size:18px;line-height:1.6;margin:0;color:rgba(236,232,223,.74)}
+.tier{margin:32px 0 16px;padding:8px 0 8px;border-top:1px solid rgba(255,215,64,.12);font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+details.note{margin:20px 0;border:1px solid rgba(100,255,218,.12);border-radius:11px;background:rgba(9,15,27,.56);overflow:hidden}
+details.note summary{cursor:pointer;list-style:none;padding:17px 20px;font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);display:flex;justify-content:space-between;gap:12px}
+details.note summary::-webkit-details-marker{display:none}details.note summary::after{content:'▶';opacity:.55;transition:transform .2s}details.note[open] summary::after{transform:rotate(90deg)}
+details.note .inner{padding:0 20px 20px;color:rgba(236,232,223,.76);font-size:19px;line-height:1.72}.inner p{margin-bottom:14px}.inner ul{margin:0 0 12px 22px;color:var(--secondary)}.inner li{margin-bottom:8px}
+.pull{font-size:31px;line-height:1.45;color:var(--text-warm);font-style:italic;text-align:center;max-width:760px;margin:48px auto;padding:48px 24px;position:relative}.pull::before,.pull::after{content:"";display:block;width:48px;height:1px;background:var(--gold);opacity:.28;margin:0 auto 34px}.pull::after{margin:34px auto 0}.pull span{display:block;font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:18px;font-style:normal}
+.ref-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:28px 0 0}.ref{border:1px solid rgba(255,255,255,.06);border-radius:9px;padding:13px 14px;background:rgba(255,255,255,.025);font-family:'JetBrains Mono',monospace;font-size:.62rem;line-height:1.55;color:var(--muted)}.ref a{color:var(--gold);word-break:break-word}
+footer{text-align:center;padding:90px 24px 100px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase}footer .gold{display:block;color:var(--gold);margin-top:10px}
+@media(max-width:900px){.navgrid{grid-template-columns:repeat(2,1fr)}.card-grid{grid-template-columns:1fr 1fr}.metrics{grid-template-columns:repeat(2,1fr)}.ref-list{grid-template-columns:1fr}.topbar{font-size:.50rem}.topbar .right{display:none}}
+@media(max-width:620px){body{font-size:20px}.wrap{padding:0 18px}.cover{min-height:82vh}.cover h1{font-size:38px}.cover .sub{font-size:20px}.navgrid{grid-template-columns:1fr;margin-top:36px}.card-grid{grid-template-columns:1fr}.rank-item{grid-template-columns:52px 1fr;padding:16px}.metrics{grid-template-columns:1fr}.topbar{justify-content:center}.topbar a,.topbar .right{display:none}.pull{font-size:25px}section{padding-top:62px}.formula-block{padding:24px 18px}}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="scroll-bar" id="scrollBar"></div>
+<div class="topbar"><a href="#method">Method</a><span class="center">AIM³ Lab · Counterfactual Impact</span><span class="right">v2 · 2026.05.11</span></div>
+<div class="wrap">
+<header class="cover">
+  <div class="cover-glyph">◇</div>
+  <div class="cover-tag">Civilizational Counterfactuals</div>
+  <h1>Permission Layers,<br><em>Not Pantheons</em></h1>
+  <p class="sub">A rebuilt ranking of human contributors by counterfactual deletion impact: not “who was the greatest mind,” but whose absence removes the largest future branch.</p>
+  <div class="hint"><em>Core test:</em> remove the person from history · account for substitutes · propagate delays through dependent systems · weight the present frontier honestly · then rank the missing permission layers.</div>
+</header>
+<nav class="navgrid" aria-label="Article navigation">
+  <a href="#method"><span class="n">01</span> Method</a>
+  <a href="#matrix"><span class="n">02</span> Scoring Matrix</a>
+  <a href="#ranking"><span class="n">03</span> 2026 Ranking</a>
+  <a href="#tesla"><span class="n">04</span> Tesla Test</a>
+  <a href="#shannon"><span class="n">05</span> Shannon Stress</a>
+  <a href="#asi"><span class="n">06</span> 2050 ASI</a>
+  <a href="#appendix"><span class="n">07</span> Researcher Appendix</a>
+  <a href="#change"><span class="n">08</span> What Would Change</a>
+</nav>
+
+<section id="method">
+  <span class="ch">01 — The deletion test</span>
+  <h2>The “greatest mind” question is the wrong compression.</h2>
+  <p>The usual question mixes two different measurements: <strong>difficulty of intellectual achievement</strong> and <strong>importance to civilization</strong>. Newton may dominate the first. Norman Borlaug may dominate some versions of the second. Those are not the same axis.</p>
+  <p>The sharper question is counterfactual: remove one contributor from history and ask what disappears, what gets delayed, who substitutes, and how much the delay compounds through later technologies.</p>
+  <div class="formula-block">
+    <div class="formula-eq">Impact ≈ M × I × C × F × T</div>
+    <p class="formula-note"><strong>M</strong> magnitude · <strong>I</strong> irreplaceability · <strong>C</strong> cascade depth · <strong>F</strong> present-frontier leverage · <strong>T</strong> time-criticality. Ecosystem permission layers multiply the result because they do not merely add devices; they open whole branches.</p>
+  </div>
+  <div class="card-grid">
+    <div class="card"><span class="card-tag ct-gold">magnitude</span><h3>How much changed?</h3><p>A useful invention matters. A permission layer changes what can be invented afterward.</p></div>
+    <div class="card"><span class="card-tag ct-cyan">irreplaceability</span><h3>Who else was close?</h3><p>If ten groups were days away, deletion causes small delay. If no one was on the path, deletion cuts deeper.</p></div>
+    <div class="card"><span class="card-tag ct-green">cascade</span><h3>How many branches depend on it?</h3><p>Electricity, computation, printing, information theory, medicine, agriculture: these are not endpoints. They are generators.</p></div>
+  </div>
+  <p>This ranking is not moral worth, not personal virtue, not pure IQ, and not fame. It is a counterfactual engineering question about civilization’s dependency graph.</p>
+</section>
+
+<section id="permission">
+  <span class="ch">01b — Permission layers</span>
+  <h2>Deep upstream layers beat visible downstream devices.</h2>
+  <p>Popular rankings favor inventors whose products can be pictured: light bulbs, motors, crops, radio towers. The deletion test favors people whose work is <strong>upstream of multiple later ecosystems</strong>.</p>
+  <div class="bridge">
+    <span class="bridge-title">Permission layer</span>
+    <p>A permission layer is a discovery or system without which many later discoveries do not arrive on time. It is not necessarily the thing people buy. It is the condition that makes the later market, laboratory, factory, or theory possible.</p>
+  </div>
+  <p>Faraday’s induction does not merely enable a generator. It opens practical electrification. Maxwell does not merely write equations. He unifies the conceptual field in which radio, electronics, signal propagation, and modern electromagnetic engineering become coherent. Turing does not merely describe an abstract machine. He gives computation its universal form.</p>
+</section>
+
+<section id="matrix">
+  <span class="ch">02 — Transparent scoring</span>
+  <h2>Not fake precision. Visible assumptions.</h2>
+  <p>The numbers below are not a mathematical proof. They are an audit trail. The goal is to make the ranking harder to dismiss as vibes: show what is being weighted, then let disagreement attack the weights instead of the conclusion.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Contributor / Layer</th><th>M</th><th>I</th><th>C</th><th>F</th><th>T</th><th>Band</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Faraday</strong></td><td>5</td><td>5</td><td>5</td><td>5</td><td>4</td><td class="band-core">Core</td><td>Induction as electrical permission layer; very low substitutability.</td></tr>
+        <tr><td><strong>Maxwell</strong></td><td>5</td><td>4</td><td>5</td><td>5</td><td>4</td><td class="band-core">Core</td><td>Electromagnetic synthesis; converts scattered effects into a theory engine.</td></tr>
+        <tr><td><strong>Turing</strong></td><td>5</td><td>4</td><td>5</td><td>5</td><td>5</td><td class="band-core">Core</td><td>Universal computation; direct substrate of software and AI.</td></tr>
+        <tr><td><strong>Newton</strong></td><td>5</td><td>3</td><td>5</td><td>4</td><td>3</td><td class="band-core">Core</td><td>Mathematical physics; replaceability not zero, but synthesis depth enormous.</td></tr>
+        <tr><td><strong>AC tier</strong></td><td>5</td><td>3</td><td>5</td><td>5</td><td>4</td><td class="band-high">High</td><td>Practical electrification ecosystem; shared among Tesla, Ferraris, Dolivo-Dobrovolsky, Westinghouse/AEG systems.</td></tr>
+        <tr><td><strong>Transistor team</strong></td><td>5</td><td>3</td><td>5</td><td>5</td><td>5</td><td class="band-high">High</td><td>Atomic unit of digital scaling; many groups nearby, but delay at this node compounds sharply.</td></tr>
+        <tr><td><strong>Shannon</strong></td><td>5</td><td>4</td><td>5</td><td>5</td><td>4</td><td class="band-high">High</td><td>Information theory, coding, compression, channel capacity; direct ASI-path relevance.</td></tr>
+        <tr><td><strong>Gutenberg</strong></td><td>5</td><td>3</td><td>5</td><td>3</td><td>3</td><td class="band-high">High</td><td>Knowledge replication; enormous long-run cascade, weaker present-frontier weighting.</td></tr>
+        <tr><td><strong>Boole</strong></td><td>4</td><td>3</td><td>4</td><td>5</td><td>4</td><td class="band-edge">Edge</td><td>Formal logic layer for digital circuits and computation, but later formal systems partly substitute.</td></tr>
+        <tr><td><strong>Haber–Bosch / Borlaug</strong></td><td>5</td><td>3</td><td>4</td><td>3</td><td>4</td><td class="band-edge">Edge</td><td>Demographic substrate for modern scale; rises sharply if population substrate is weighted higher.</td></tr>
+        <tr><td><strong>Medical cohort</strong></td><td>5</td><td>3</td><td>4</td><td>3</td><td>3</td><td class="band-edge">Edge</td><td>Healthy-population substrate; collective more defensible than a single-person rank.</td></tr>
+        <tr><td><strong>Tesla individually</strong></td><td>4</td><td>2</td><td>4</td><td>4</td><td>4</td><td class="band-edge">Edge</td><td>Major AC contributor, but shared gate with Ferraris and Dolivo-Dobrovolsky.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The key move is separating <strong>collective layer impact</strong> from <strong>individual replaceability</strong>. AC electrification is a top civilizational layer. Tesla individually is not the whole layer.</p>
+</section>
+
+<section id="ranking">
+  <span class="ch">03 — General ranking, current world</span>
+  <h2>Top 10 under the 2026 deletion test.</h2>
+  <p>Exact order below the first four is less stable than the tier placement. That is not weakness. It is the honest shape of the problem.</p>
+  <div class="tier">Tier 1 — Civilization-permission layers</div>
+  <div class="rank-list">
+    <div class="rank-item"><div class="rank-no">01</div><div class="rank-body"><h3>Michael Faraday</h3><p>Electromagnetic induction. The root of generators, motors, transformers, grid electricity, and the industrial electrical ecosystem.</p></div></div>
+    <div class="rank-item"><div class="rank-no">02</div><div class="rank-body"><h3>James Clerk Maxwell</h3><p>Electromagnetic synthesis. Without the theoretical unification, the later electronics and communication stack loses its deepest compass.</p></div></div>
+    <div class="rank-item"><div class="rank-no">03</div><div class="rank-body"><h3>Alan Turing</h3><p>Universal computation. The conceptual foundation of software, digital machines, and AI.</p></div></div>
+    <div class="rank-item"><div class="rank-no">04</div><div class="rank-body"><h3>Isaac Newton</h3><p>Mathematical physics. Replaceability is not zero because calculus and mechanics had nearby successors, but the synthesis is civilization-scale.</p></div></div>
+  </div>
+  <div class="tier">Tier 2 — Electrical and digital substrate</div>
+  <div class="rank-list">
+    <div class="rank-item"><div class="rank-no">05</div><div class="rank-body"><h3>AC tier: Tesla + Ferraris + Dolivo-Dobrovolsky</h3><p>Practical long-distance electrification and induction-motor ecosystem. A collective layer, not a single-owner invention.</p></div></div>
+    <div class="rank-item"><div class="rank-no">06</div><div class="rank-body"><h3>Bardeen, Brattain, Shockley</h3><p>The transistor. The unit of digital scaling and the hinge from vacuum-tube computation to integrated electronics.</p></div></div>
+    <div class="rank-item"><div class="rank-no">07</div><div class="rank-body"><h3>Claude Shannon</h3><p>Information theory. The bridge from communication to compression, coding, entropy, and modern signal/information infrastructure.</p></div></div>
+  </div>
+  <div class="tier">Tier 3 — Knowledge, logic, and population substrate</div>
+  <div class="rank-list">
+    <div class="rank-item"><div class="rank-no">08</div><div class="rank-body"><h3>Johannes Gutenberg</h3><p>Movable-type knowledge replication. The long cascade is enormous; present-frontier weighting keeps him below the electrical/digital roots.</p></div></div>
+    <div class="rank-item"><div class="rank-no">09</div><div class="rank-body"><h3>George Boole</h3><p>Symbolic logic. A formal substrate of digital computation, especially when later connected to switching circuits.</p></div></div>
+    <div class="rank-item"><div class="rank-no">10</div><div class="rank-body"><h3>Haber–Bosch + Norman Borlaug</h3><p>Demographic substrate. Modern research, manufacturing, and specialization depend on population scale and food stability.</p></div></div>
+  </div>
+  <details class="note"><summary>Boundary cases</summary><div class="inner"><p><strong>Pasteur, Jenner, and the antibiotics cohort</strong> sit near the top ten if healthy-population substrate is weighted above information/electrical substrate. <strong>Tesla individually</strong> sits around 8–12 rather than top 5 because the AC gate is shared. <strong>Von Neumann</strong>, <strong>Edison</strong>, <strong>Watt</strong>, <strong>Einstein</strong>, and the semiconductor-manufacturing ecosystem belong in the larger pool, but their deletion effects are more substitutable or harder to isolate as single-person permission layers.</p></div></details>
+</section>
+
+<section id="tesla">
+  <span class="ch">04 — The Tesla correction</span>
+  <h2>Tesla is neither mythic god nor footnote.</h2>
+  <p>The common popular view inflates Tesla into the inventor of modern electricity. The common academic counter-view deflates him into an overrated showman. The deletion test lands in the middle.</p>
+  <p>Tesla’s real contribution is large: polyphase AC, practical induction-motor patents, and systems-level deployment through Westinghouse. But the gate was not his alone. Galileo Ferraris demonstrated rotating magnetic fields and induction-motor principles independently. Mikhail Dolivo-Dobrovolsky built the three-phase induction-motor and transmission ecosystem that became central to European electrification.</p>
+  <div class="callout"><span class="callout-title">Revised counterfactual</span><p>Remove Tesla specifically: AC probably still arrives through Ferraris, Dolivo-Dobrovolsky, AEG/Oerlikon, and other industrial paths, but the American deployment and patent-commercialization path slows. A defensible estimate is a <strong>5–15 year root delay</strong>, with possible compounding into <strong>one or more lost technology generations</strong> at the smartphone/AI frontier. The older “1995–2005 by 2026” claim is best treated as a high-end scenario, not the central estimate.</p></div>
+  <p>The AC tier collectively ranks near the top. Tesla individually ranks high, but not as sole owner of the gate.</p>
+</section>
+
+<section id="ecosystem">
+  <span class="ch">04b — Ecosystem causality</span>
+  <h2>Modern alternatives do not rewrite historical birth conditions.</h2>
+  <p>A subtle mistake: “modern computers can run on DC, therefore AC was not essential.” That answers the wrong question.</p>
+  <div class="bridge"><span class="bridge-title">The correct counterfactual</span><p>Could the industrial-electrical-research ecosystem that produced vacuum tubes, high-power laboratories, telecom networks, Bell Labs, semiconductors, chip fabs, and AI infrastructure have emerged on the same timeline without grid-scale AC electrification?</p></div>
+  <p>Probably not. AC was not just a component choice. It was a historical permission layer for the computer ecosystem. Component causality asks whether a finished device can operate under another power regime. Ecosystem causality asks whether the world that invented the device would have existed on time.</p>
+</section>
+
+<section id="shannon">
+  <span class="ch">05 — Shannon stress test</span>
+  <h2>The biggest omission was Shannon.</h2>
+  <p>Claude Shannon belongs in the tested ranking pool. His 1948 information theory does not merely add a useful theory to communication. It gives civilization a quantitative language for information, noise, redundancy, channel capacity, coding, compression, and entropy.</p>
+  <p>His rank depends on the endpoint. In the general civilization ranking, he fits around <strong>#7</strong>, competing with Gutenberg and Boole. In an ASI-endpoint ranking, he rises because modern AI is not only computation; it is computation over information channels, coding, compression, prediction, and signal extraction.</p>
+  <div class="formula-block"><div class="formula-eq">Turing tells us what computation can be.<br>Shannon tells us what information costs.</div><p class="formula-note">Together they form the conceptual digital substrate: machines that compute, channels that carry, codes that protect, compression that extracts structure.</p></div>
+</section>
+
+<section id="asi">
+  <span class="ch">06 — Endpoint-dependent ranking</span>
+  <h2>Under a 2050 ASI endpoint, the ordering shifts.</h2>
+  <p>Fix a different endpoint: <strong>ASI emerges by 2050 in time to prevent a planetary catastrophe</strong>. Now the ranking favors contributors on the specific AI path, not the whole civilization path.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Rank</th><th>Contributor / Layer</th><th>Why it rises or holds</th></tr></thead>
+      <tbody>
+        <tr><td class="rank">01</td><td>Faraday</td><td>Electrical permission layer remains root.</td></tr>
+        <tr><td class="rank">02</td><td>Maxwell</td><td>Electromagnetic theory remains root.</td></tr>
+        <tr><td class="rank">03</td><td>Turing</td><td>Universal computation is directly on the ASI path.</td></tr>
+        <tr><td class="rank">04</td><td>Bardeen, Brattain, Shockley</td><td>Transistor scaling is time-critical for compute density.</td></tr>
+        <tr><td class="rank">05</td><td>Newton</td><td>Physics substrate still necessary, but less directly endpoint-specific than computation/electronics.</td></tr>
+        <tr><td class="rank">06</td><td>Shannon</td><td>Information/coding/compression layer becomes more central.</td></tr>
+        <tr><td class="rank">07</td><td>Hinton, LeCun, Bengio, Rumelhart</td><td>Deep-learning revival and learning machinery path dependency.</td></tr>
+        <tr><td class="rank">08</td><td>Vaswani, Shazeer et al.</td><td>Transformer architecture: unusually direct link to current frontier AI.</td></tr>
+        <tr><td class="rank">09</td><td>AC tier</td><td>Still an infrastructure permission layer, but less specific than transistor/computation/information.</td></tr>
+        <tr><td class="rank">10</td><td>Boole</td><td>Formal logic and digital switching ancestry; important but more substitutable than Turing/Shannon.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Gutenberg drops in the ASI endpoint only because the endpoint is narrow. For general civilization, knowledge replication remains top-tier.</p>
+</section>
+
+<section id="appendix">
+  <span class="ch">07 — Appendix, applied note</span>
+  <h2>What this means for independent researchers.</h2>
+  <p>The enabler-creator distinction matters today. A researcher working on multi-LLM collaboration, anti-groupthink protocols, DCC-style governance, or consciousness-substrate frameworks may not build ASI directly. But they may create part of the ecosystem in which safer ASI becomes possible.</p>
+  <details class="note" open><summary>Self-patronage model</summary><div class="inner"><p>Independent researchers face a structural credibility problem: valuable work can be dismissed as “LLM-generated slop” because the surrounding category is noisy. Historically, economic validation changes attention. Tesla’s patents became legible when Westinghouse paid for them. Jim Simons’ mathematics became impossible to ignore when Renaissance’s returns became visible.</p><p>The modern self-patronage path is: keep the research free, timestamped, and publicly attributable; generate economic credibility through an orthogonal mechanism such as quantitative trading; let the wealth make the research investigable without making the research a sales product.</p><p>This belongs in the appendix because it is strategic, not part of the ranking proof. But it is not decorative. Historical recognition often depends not only on being right, but on creating the conditions under which others are willing to inspect the rightness.</p></div></details>
+</section>
+
+<section id="change">
+  <span class="ch">08 — Sensitivity analysis</span>
+  <h2>What would change the ranking?</h2>
+  <div class="card-grid">
+    <div class="card"><span class="card-tag ct-gold">less frontier weighting</span><h3>Gutenberg rises.</h3><p>If all centuries are weighted more evenly, knowledge replication climbs toward the top five.</p></div>
+    <div class="card"><span class="card-tag ct-green">more biology weighting</span><h3>Medicine and food rise.</h3><p>Haber–Bosch, Borlaug, Pasteur, Jenner, and antibiotics become top-ten locks.</p></div>
+    <div class="card"><span class="card-tag ct-cyan">more ASI specificity</span><h3>Shannon and AI figures rise.</h3><p>Hinton, Bengio, LeCun, Rumelhart, and Transformer authors gain direct endpoint leverage.</p></div>
+    <div class="card"><span class="card-tag ct-violet">more irreplaceability</span><h3>Faraday and Turing hold.</h3><p>Low-substitute conceptual gates dominate even harder.</p></div>
+    <div class="card"><span class="card-tag ct-orange">more ecosystem weighting</span><h3>AC tier stays high.</h3><p>The collective layer outranks any one AC inventor.</p></div>
+    <div class="card"><span class="card-tag ct-rose">more single-person purity</span><h3>Cohorts fall.</h3><p>Medical, transistor, AC, and agriculture clusters become harder to rank as individuals.</p></div>
+  </div>
+</section>
+
+<section id="meta">
+  <span class="ch">09 — Reasoning movement</span>
+  <h2>The framework should update before pride has to.</h2>
+  <p>The original position overcorrected against Tesla mythology. The better position is more precise: Tesla is not the singular father of modern electricity, but he is also not a trivial popular myth. His individual deletion has a large but shared effect.</p>
+  <p>The same correction produced the Shannon insertion. A good deletion framework should not protect its first answer. It should expose omissions, test substitutions, and revise the ranking when the dependency graph demands it.</p>
+  <div class="pull">Civilization is not moved only by inventors.<br>It is moved by permission layers.<span>The deepest contributors are the ones whose absence removes whole future branches.</span></div>
+</section>
+
+<section id="refs">
+  <span class="ch">Reference trail</span>
+  <h2>Sources worth checking.</h2>
+  <p>This article’s ranking is an interpretive model. The links below anchor the main historical nodes; they do not prove the ranking by themselves.</p>
+  <div class="ref-list">
+    <div class="ref">Faraday induction · <a href="https://www.computerhistory.org/storageengine/faraday-describes-electro-magnetic-induction/">Computer History Museum</a></div>
+    <div class="ref">Maxwell 1865 · <a href="https://royalsocietypublishing.org/doi/10.1098/rstl.1865.0008">Royal Society paper DOI</a></div>
+    <div class="ref">Turing 1936 · <a href="https://www.cs.virginia.edu/~robins/Turing_Paper_1936.pdf">On Computable Numbers</a></div>
+    <div class="ref">Transistor · <a href="https://www.nokia.com/bell-labs/about/awards/1956-nobel-prize-physics/">Nokia Bell Labs history</a></div>
+    <div class="ref">Shannon 1948 · <a href="https://people.math.harvard.edu/~ctm/home/text/others/shannon/entropy/entropy.pdf">A Mathematical Theory of Communication</a></div>
+    <div class="ref">Tesla motor patents · <a href="https://www.thehenryford.org/collections/explore/artifact/169052">The Henry Ford</a></div>
+    <div class="ref">Ferraris rotating field · <a href="https://ethw.org/Milestones:Rotating_Fields_and_Early_Induction_Motors,_1885-1888">IEEE ETHW milestone</a></div>
+    <div class="ref">Lauffen–Frankfurt 1891 · <a href="https://ethw.org/Milestones:Long_Distance_Electric_Power_Transmission_Using_Three-Phase_Alternating_Current,_1891">IEEE ETHW milestone</a></div>
+    <div class="ref">Gutenberg · <a href="https://www.britannica.com/biography/Johannes-Gutenberg">Britannica</a></div>
+    <div class="ref">Haber–Bosch / Borlaug · <a href="https://www.nobelprize.org/uploads/2018/06/borlaug-lecture.pdf">Nobel lecture PDF</a></div>
+    <div class="ref">Deep learning · <a href="https://www.nature.com/articles/nature14539">Nature overview</a></div>
+    <div class="ref">Transformer · <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a></div>
+  </div>
+</section>
+</div>
+<footer>
+  <p>Permission Layers · Counterfactual Civilizational Impact · AIM³ Lab</p>
+  <span class="gold">Less describes more.</span>
+</footer>
+<script>
+const bar=document.getElementById('scrollBar');
+function setScroll(){const h=document.documentElement.scrollHeight-window.innerHeight;const p=h>0?(window.scrollY/h)*100:0;bar.style.width=p+'%'}
+window.addEventListener('scroll',setScroll,{passive:true});setScroll();
+</script>
+</body>
+</html>
