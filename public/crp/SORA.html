@@ -7,294 +7,244 @@
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#020409; --bg2:#060a14; --bg3:#0b1120; --surface:rgba(15,23,41,.82); --surface2:rgba(20,30,51,.88);
-  --border:rgba(0,229,255,.12); --border-strong:rgba(0,229,255,.28);
-  --cyan:#00e5ff; --cyan-dim:rgba(0,229,255,.12); --cyan-glow:rgba(0,229,255,.25);
-  --gold:#f59e0b; --gold-dim:rgba(245,158,11,.12);
-  --green:#34d399; --green-dim:rgba(52,211,153,.12);
-  --violet:#a78bfa; --violet-dim:rgba(167,139,250,.12);
-  --rose:#ff6b8a; --rose-dim:rgba(255,107,138,.12);
-  --orange:#fb923c; --orange-dim:rgba(251,146,60,.12);
-  --text:#e2e8f4; --muted:#7d8daf; --dim:#5e7192; --subtle:#1a2540;
-  --shadow:0 22px 70px rgba(0,0,0,.34);
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
-body{
-  background:
-    radial-gradient(circle at 14% 14%, rgba(0,229,255,.08), transparent 30%),
-    radial-gradient(circle at 82% 24%, rgba(167,139,250,.08), transparent 28%),
-    radial-gradient(circle at 50% 100%, rgba(245,158,11,.06), transparent 40%),
-    linear-gradient(180deg,var(--bg),#05070d 100%);
-  color:var(--text);font-family:'Rajdhani',sans-serif;font-size:21px;line-height:1.72;overflow-x:hidden;min-height:100vh;
-}
-body::before,body::after{content:'';position:fixed;border-radius:50%;filter:blur(105px);opacity:.26;pointer-events:none;z-index:-1;}
-body::before{width:46vw;height:46vw;left:-14vw;top:-14vh;background:radial-gradient(circle,rgba(0,229,255,.34),rgba(20,40,100,.12) 52%,transparent 72%);animation:floatA 25s ease-in-out infinite;}
-body::after{width:44vw;height:44vw;right:-18vw;bottom:-20vh;background:radial-gradient(circle,rgba(245,158,11,.18),rgba(167,139,250,.13) 44%,transparent 72%);animation:floatB 31s ease-in-out infinite;}
-@keyframes floatA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(6vw,5vh,0)}}
-@keyframes floatB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-5vw,-7vh,0)}}
-body::after{}
-.noise{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.02;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
-a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}
-::selection{background:var(--gold);color:#05070d}
-.progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--cyan),var(--green),var(--gold));z-index:10000;opacity:.92}
-.wrap{max-width:1180px;margin:0 auto;padding:0 5vw}
-.topbar{position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:rgba(2,4,9,.86);border-bottom:1px solid rgba(0,229,255,.10)}
-.topbar-inner{max-width:1280px;margin:0 auto;padding:11px 5vw;display:flex;align-items:center;justify-content:space-between;gap:1rem}
-.brand,.brand:visited{display:inline-flex;align-items:center;text-decoration:none!important;color:var(--text)}
-.brand-mark{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan)}
-.top-links{display:flex;gap:.55rem;flex-wrap:wrap;justify-content:flex-end}
-.top-links a,.top-links a:visited{font-family:'JetBrains Mono',monospace;font-size:.68rem;text-decoration:none!important;padding:.42rem .72rem;border-radius:999px;border:1px solid rgba(0,229,255,.14);color:rgba(226,232,244,.74);background:rgba(255,255,255,.02)}
-.top-links a:hover{border-color:rgba(0,229,255,.34);color:var(--cyan);background:rgba(0,229,255,.06)}
-.hero{position:relative;overflow:hidden;padding:86px 0 48px;border-bottom:1px solid rgba(0,229,255,.09)}
-.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px);background-size:94px 94px;mask-image:radial-gradient(ellipse 72% 64% at 50% 28%, black, transparent);pointer-events:none}
-.hero-copy{position:relative;z-index:1}
-.hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin-bottom:1.1rem}
-.hero h1{font-size:clamp(2.5rem,7vw,5.6rem);line-height:.92;letter-spacing:-.04em;margin:0 0 1.15rem;max-width:1040px;color:#fff}
-.hero h1 .accent{color:var(--cyan)}
-.hero-sub{font-family:'Cormorant Garamond',serif;font-size:clamp(1.12rem,2.1vw,1.58rem);font-style:italic;color:var(--muted);max-width:900px;margin-bottom:1.4rem;line-height:1.55}
-.hero-meta{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);max-width:960px}
-.hero-meta strong{color:var(--green)}
-.hero-actions{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.3rem}
-.cta,.cta:visited{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-decoration:none!important;padding:.78rem 1rem;border-radius:4px;transition:all .2s ease}
-.cta.primary{color:var(--cyan)!important;background:var(--cyan-dim);border:1px solid rgba(0,229,255,.30)}
-.cta.secondary{color:rgba(226,232,244,.76)!important;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.025)}
-.cta:hover{transform:translateY(-1px);box-shadow:0 10px 34px rgba(0,0,0,.25)}
-.stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.85rem;margin-top:1.5rem;max-width:1060px}
-.stat{padding:.85rem .9rem;border-radius:8px;background:rgba(11,17,32,.64);border:1px solid var(--border);box-shadow:var(--shadow)}
-.stat strong{display:block;font-family:'JetBrains Mono',monospace;font-size:1.25rem;line-height:1.15;color:#fff;margin-bottom:.2rem}
-.stat span{font-size:.72rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
-.thesis-card{margin-top:1.65rem;border:1px solid rgba(245,158,11,.24);border-left:4px solid var(--gold);border-radius:12px;background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(0,229,255,.04));padding:1.15rem 1.2rem;max-width:930px;box-shadow:var(--shadow)}
-.thesis-card .small{font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:.35rem}
-.thesis-card p{font-size:1.18rem;color:#fff;line-height:1.55}
-.toc-strip{padding:34px 0 12px}
-.toc-title{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan);margin-bottom:.8rem}
-.toc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.55rem}
-.toc-card{display:flex;align-items:center;min-height:48px;border:1px solid rgba(0,229,255,.14);border-radius:10px;background:rgba(11,17,32,.62);padding:.65rem .75rem;color:rgba(226,232,244,.78);font-family:'JetBrains Mono',monospace;font-size:.72rem;line-height:1.35;text-decoration:none!important;transition:all .18s ease}
-.toc-card:hover{border-color:rgba(0,229,255,.34);color:var(--cyan);background:rgba(0,229,255,.06);transform:translateY(-1px)}
-.toc-card.gate-card{border-color:rgba(245,158,11,.18);background:rgba(245,158,11,.045)}
-.paper-shell{max-width:980px;margin:38px auto 90px;padding:0 5vw}
-.paper-content{background:rgba(11,17,32,.55);border:1px solid rgba(0,229,255,.11);border-radius:18px;padding:clamp(22px,4vw,42px);box-shadow:var(--shadow)}
-.paper-content h2{font-size:clamp(1.8rem,3.4vw,2.65rem);line-height:1.08;letter-spacing:-.02em;color:#fff;margin:2.2rem 0 1rem;padding-top:.25rem;border-top:1px solid rgba(0,229,255,.10)}
-.paper-content h2:first-child{margin-top:0;border-top:0}
-.paper-content h3{font-size:clamp(1.25rem,2.3vw,1.75rem);line-height:1.18;color:#fff;margin:1.6rem 0 .75rem}
-.paper-content p{margin:0 0 1rem;color:rgba(226,232,244,.82)}
-.paper-content strong{color:#fff}
-.paper-content em{color:rgba(226,232,244,.90)}
-.paper-content blockquote{border-left:4px solid var(--gold);background:rgba(245,158,11,.06);padding:1rem 1.15rem;border-radius:0 10px 10px 0;margin:1.1rem 0;color:#fff}
-.paper-content ul,.paper-content ol{margin:0 0 1.15rem 1.35rem;color:rgba(226,232,244,.82)}
-.paper-content li{margin:.28rem 0;padding-left:.15rem}
-.paper-content table{width:100%;border-collapse:collapse;margin:1.1rem 0 1.4rem;display:block;overflow-x:auto;white-space:normal;border:1px solid rgba(0,229,255,.12);border-radius:10px;background:rgba(2,4,9,.28)}
-.paper-content thead{background:rgba(0,229,255,.06)}
-.paper-content th,.paper-content td{padding:.62rem .72rem;border-bottom:1px solid rgba(0,229,255,.09);border-right:1px solid rgba(0,229,255,.06);vertical-align:top;min-width:120px}
-.paper-content th{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);text-align:left}
-.paper-content td{font-size:.95rem;color:rgba(226,232,244,.80)}
-.paper-content tr:last-child td{border-bottom:0}
-.paper-content pre{margin:1.1rem 0 1.35rem;padding:1rem;border-radius:10px;border:1px solid rgba(0,229,255,.13);background:rgba(2,4,9,.62);overflow:auto;box-shadow:inset 0 0 0 1px rgba(255,255,255,.015)}
-.paper-content code{font-family:'JetBrains Mono',monospace;font-size:.82em;color:var(--green)}
-.paper-content pre code{font-size:.78rem;line-height:1.65;color:rgba(226,232,244,.86)}
-.paper-content hr{border:0;border-top:1px solid rgba(0,229,255,.14);margin:2rem 0}
-.paper-content h2[id^="gate-"]{color:#fff}
-.paper-content h2[id^="gate-"]::before{content:'OPEN GATE';display:inline-flex;margin-right:.7rem;vertical-align:middle;font-family:'JetBrains Mono',monospace;font-size:.56rem;letter-spacing:.14em;color:var(--gold);border:1px solid rgba(245,158,11,.28);border-radius:999px;padding:.2rem .45rem;background:rgba(245,158,11,.08)}
-.footer{padding:44px 0 92px;text-align:center;color:var(--dim);border-top:1px solid rgba(0,229,255,.10)}
-.footer a{color:var(--cyan)}
-.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none}
-.reader-controls{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:2147483000;display:flex;align-items:center;gap:8px;padding:8px;border:1px solid rgba(0,229,255,.30);border-radius:999px;background:rgba(5,7,13,.91);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 18px 55px rgba(0,0,0,.42);font-family:'JetBrains Mono',monospace}
-.reader-controls button{min-width:44px;min-height:44px;border:1px solid rgba(0,229,255,.30);border-radius:999px;background:rgba(0,229,255,.08);color:var(--cyan);font:800 18px/1 'JetBrains Mono',monospace;cursor:pointer;touch-action:manipulation}
-.reader-controls button:hover,.reader-controls button:focus-visible{outline:none;background:rgba(0,229,255,.18);border-color:rgba(0,229,255,.56)}
-.reader-controls .reader-label{min-width:96px;text-align:center;color:rgba(231,234,242,.84);font-size:12px;letter-spacing:.08em;text-transform:uppercase;user-select:none}
-.back-top{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:calc(max(14px,env(safe-area-inset-bottom)) + 66px);z-index:2147482999;border:1px solid rgba(245,158,11,.32);border-radius:999px;background:rgba(5,7,13,.86);color:var(--gold);padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;text-decoration:none!important;box-shadow:0 16px 44px rgba(0,0,0,.36)}
-/* === BD CRP HISTORY-STYLE MOBILE READER v1 START === */
-:root{--crp-desktop-body:21px;--crp-reader-body:25.5px;--crp-reader-text:25.5px;--crp-reader-small:17.5px;--crp-reader-h1:56px;--crp-reader-h2:40px;--crp-reader-h3:30px;--crp-reader-pad:22px;--crp-mobile-header-h:104px;}
-html[data-reader-size="0"]{--crp-desktop-body:17px;--crp-reader-body:20px;--crp-reader-text:20px;--crp-reader-small:14px;--crp-reader-h1:40px;--crp-reader-h2:29px;--crp-reader-h3:23px;--crp-reader-pad:16px}
-html[data-reader-size="1"]{--crp-desktop-body:18px;--crp-reader-body:21.5px;--crp-reader-text:21.5px;--crp-reader-small:15px;--crp-reader-h1:45px;--crp-reader-h2:32px;--crp-reader-h3:25px;--crp-reader-pad:18px}
-html[data-reader-size="2"]{--crp-desktop-body:19px;--crp-reader-body:23px;--crp-reader-text:23px;--crp-reader-small:16px;--crp-reader-h1:50px;--crp-reader-h2:35px;--crp-reader-h3:27px;--crp-reader-pad:20px}
-html[data-reader-size="3"]{--crp-desktop-body:21px;--crp-reader-body:25.5px;--crp-reader-text:25.5px;--crp-reader-small:17.5px;--crp-reader-h1:56px;--crp-reader-h2:40px;--crp-reader-h3:30px;--crp-reader-pad:22px}
-html[data-reader-size="4"]{--crp-desktop-body:23px;--crp-reader-body:28px;--crp-reader-text:28px;--crp-reader-small:19px;--crp-reader-h1:62px;--crp-reader-h2:45px;--crp-reader-h3:34px;--crp-reader-pad:24px}
-html[data-reader-size="5"]{--crp-desktop-body:25px;--crp-reader-body:31px;--crp-reader-text:31px;--crp-reader-small:20.5px;--crp-reader-h1:68px;--crp-reader-h2:50px;--crp-reader-h3:37px;--crp-reader-pad:26px}
-html[data-reader-size="6"]{--crp-desktop-body:27px;--crp-reader-body:34px;--crp-reader-text:34px;--crp-reader-small:22px;--crp-reader-h1:74px;--crp-reader-h2:55px;--crp-reader-h3:40px;--crp-reader-pad:28px}
-html[data-reader-size="7"]{--crp-desktop-body:29px;--crp-reader-body:38px;--crp-reader-text:38px;--crp-reader-small:24px;--crp-reader-h1:82px;--crp-reader-h2:62px;--crp-reader-h3:45px;--crp-reader-pad:30px}
-body{font-size:var(--crp-desktop-body)!important}
-@media(max-width:980px){.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.toc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.topbar-inner{align-items:flex-start;flex-direction:column}.top-links{justify-content:flex-start}}
-@media(max-width:700px){
-  html{scroll-padding-top:calc(var(--crp-mobile-header-h) + 14px)!important}
-  body{padding-top:calc(var(--crp-mobile-header-h) + env(safe-area-inset-top,0px))!important;padding-bottom:116px!important;font-size:var(--crp-reader-body)!important;line-height:1.78!important}
-  .topbar{display:none!important}
-  .mobile-topbar{display:block;position:fixed;top:0;left:0;right:0;z-index:9990;padding:calc(env(safe-area-inset-top,0px) + 9px) 12px 10px;background:rgba(5,7,13,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(0,229,255,.22);box-shadow:0 10px 38px rgba(0,0,0,.36)}
-  .mobile-topbar:before{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--cyan),var(--green),var(--gold));opacity:.88}
-  .mobile-title{display:block;padding:0 0 8px 0;font-family:'JetBrains Mono',monospace;font-size:clamp(18px,5vw,25px);font-weight:800;line-height:1.05;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan)!important;text-decoration:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .mobile-actions{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
-  .mobile-navbtn{min-height:42px;padding:9px 11px;border:1px solid rgba(0,229,255,.24);border-radius:999px;background:rgba(11,17,32,.68);color:var(--text)!important;text-decoration:none!important;font-family:'JetBrains Mono',monospace;font-size:clamp(13px,3.4vw,16px);font-weight:700;letter-spacing:.05em;line-height:1;display:flex;align-items:center;justify-content:center}
-  .mobile-prev{justify-content:flex-start}.mobile-next{justify-content:flex-end}.mobile-menu-toggle{color:var(--gold)!important;cursor:pointer}
-  .mobile-menu-backdrop{position:fixed;inset:0;z-index:9980;background:rgba(0,0,0,.48);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
-  body.mobile-menu-open .mobile-menu-backdrop{display:block}
-  .mobile-menu-panel{position:fixed;z-index:9991;top:calc(var(--crp-mobile-header-h) + env(safe-area-inset-top,0px) + 8px);left:12px;right:12px;max-height:calc(100vh - var(--crp-mobile-header-h) - env(safe-area-inset-top,0px) - 28px);overflow:auto;padding:14px;border:1px solid rgba(0,229,255,.28);border-radius:22px;background:linear-gradient(180deg,rgba(9,13,24,.98),rgba(5,7,13,.98));box-shadow:0 24px 90px rgba(0,0,0,.62)}
-  body.mobile-menu-open .mobile-menu-panel{display:block}
-  .mobile-menu-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(0,229,255,.16)}
-  .mobile-menu-head span{font-family:'JetBrains Mono',monospace;color:var(--gold);font-size:14px;letter-spacing:.18em;text-transform:uppercase}
-  .mobile-menu-head button{width:38px;height:38px;border-radius:999px;border:1px solid rgba(0,229,255,.24);background:rgba(255,255,255,.03);color:var(--text);font-size:24px;line-height:1}
-  .mobile-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-  .mobile-menu-grid a{min-height:44px;padding:11px 12px;border:1px solid rgba(0,229,255,.20);border-radius:14px;background:rgba(18,26,49,.78);color:var(--text)!important;text-decoration:none!important;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;text-align:center}
-  .wrap,.paper-shell{padding-left:16px!important;padding-right:16px!important}
-  p,li,.hero-sub,.thesis-card p,.paper-content p,.paper-content li,.paper-content td,.footer p{font-size:var(--crp-reader-text)!important;line-height:1.76!important}
-  .hero-meta,.hero-eyebrow,.top-links a,.brand-mark,.cta,.stat span,.toc-title,.toc-card,.paper-content th,.paper-content code,.paper-content pre code,.reader-label{font-size:var(--crp-reader-small)!important;line-height:1.55!important}
-  h1,.hero h1{font-size:var(--crp-reader-h1)!important;line-height:.98!important;letter-spacing:-.045em!important}
-  .paper-content h2{font-size:var(--crp-reader-h2)!important;line-height:1.06!important}
-  .paper-content h3{font-size:var(--crp-reader-h3)!important;line-height:1.12!important}
-  .hero{padding-top:42px!important;padding-bottom:34px!important}
-  .stat-grid,.toc-grid{grid-template-columns:1fr!important}
-  .paper-content,.thesis-card,.stat,.toc-card{padding:22px var(--crp-reader-pad)!important;border-radius:14px!important}
-  .paper-content{padding-top:28px!important}
-  .paper-content table{font-size:var(--crp-reader-small)!important;line-height:1.45!important}
-  .reader-controls{left:50%;right:auto;transform:translateX(-50%);bottom:max(12px,env(safe-area-inset-bottom));padding:8px 10px}
-  .reader-controls button{min-width:48px;min-height:48px;font-size:20px}
-  .reader-controls .reader-label{min-width:112px;font-size:13px}
-  .back-top{right:50%;transform:translateX(50%);bottom:calc(max(12px,env(safe-area-inset-bottom)) + 72px);font-size:.68rem;padding:7px 10px}
-  #top,.hero,section[id],article[id],.paper-content h2{scroll-margin-top:calc(var(--crp-mobile-header-h) + 18px)!important}
-}
-@media(max-width:420px){.mobile-navbtn{padding-left:9px;padding-right:9px;font-size:13px}.mobile-menu-grid{grid-template-columns:1fr}.reader-controls{gap:6px}.reader-controls .reader-label{min-width:102px}.wrap,.paper-shell{padding-left:14px!important;padding-right:14px!important}}
-@media(min-width:701px){.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none!important}}
-@media print{.topbar,.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop,.reader-controls,.back-top,.progress{display:none!important}body{background:#fff!important;color:#111!important;padding:0!important}.paper-content{box-shadow:none;border:0;background:#fff;color:#111}.paper-content *{color:#111!important}}
-/* === BD CRP HISTORY-STYLE MOBILE READER v1 END === */
+:root{--bg:#020409;--bg2:#060a14;--bg3:#0b1120;--surface:rgba(15,23,41,.82);--border:rgba(0,229,255,.12);--border-strong:rgba(0,229,255,.28);--cyan:#00e5ff;--cyan-dim:rgba(0,229,255,.12);--gold:#f59e0b;--gold-dim:rgba(245,158,11,.12);--green:#34d399;--green-dim:rgba(52,211,153,.12);--violet:#a78bfa;--violet-dim:rgba(167,139,250,.12);--rose:#ff6b8a;--rose-dim:rgba(255,107,138,.12);--orange:#fb923c;--orange-dim:rgba(251,146,60,.12);--text:#e2e8f4;--muted:#7d8eac;--dim:#5e7192;--subtle:#1a2540;--paper:#0b1120;--crp-desktop-body:21px;--crp-reader-body:25.5px;--crp-reader-text:25.5px;--crp-reader-small:17.5px;--crp-reader-h1:56px;--crp-reader-h2:40px;--crp-reader-h3:30px;--crp-reader-pad:22px;--crp-mobile-header-h:112px}
+html[data-reader-size="0"]{--crp-desktop-body:17px;--crp-reader-body:20px;--crp-reader-text:20px;--crp-reader-small:14px;--crp-reader-h1:40px;--crp-reader-h2:29px;--crp-reader-h3:23px;--crp-reader-pad:16px}html[data-reader-size="1"]{--crp-desktop-body:18px;--crp-reader-body:21.5px;--crp-reader-text:21.5px;--crp-reader-small:15px;--crp-reader-h1:45px;--crp-reader-h2:32px;--crp-reader-h3:25px;--crp-reader-pad:18px}html[data-reader-size="2"]{--crp-desktop-body:19px;--crp-reader-body:23px;--crp-reader-text:23px;--crp-reader-small:16px;--crp-reader-h1:50px;--crp-reader-h2:35px;--crp-reader-h3:27px;--crp-reader-pad:20px}html[data-reader-size="3"]{--crp-desktop-body:21px;--crp-reader-body:25.5px;--crp-reader-text:25.5px;--crp-reader-small:17.5px;--crp-reader-h1:56px;--crp-reader-h2:40px;--crp-reader-h3:30px;--crp-reader-pad:22px}html[data-reader-size="4"]{--crp-desktop-body:23px;--crp-reader-body:28px;--crp-reader-text:28px;--crp-reader-small:19px;--crp-reader-h1:62px;--crp-reader-h2:45px;--crp-reader-h3:34px;--crp-reader-pad:24px}html[data-reader-size="5"]{--crp-desktop-body:25px;--crp-reader-body:31px;--crp-reader-text:31px;--crp-reader-small:20.5px;--crp-reader-h1:68px;--crp-reader-h2:50px;--crp-reader-h3:37px;--crp-reader-pad:26px}html[data-reader-size="6"]{--crp-desktop-body:27px;--crp-reader-body:34px;--crp-reader-text:34px;--crp-reader-small:22px;--crp-reader-h1:74px;--crp-reader-h2:55px;--crp-reader-h3:40px;--crp-reader-pad:28px}html[data-reader-size="7"]{--crp-desktop-body:29px;--crp-reader-body:38px;--crp-reader-text:38px;--crp-reader-small:24px;--crp-reader-h1:82px;--crp-reader-h2:62px;--crp-reader-h3:45px;--crp-reader-pad:30px}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%}body{background:radial-gradient(circle at 18% 12%,rgba(0,229,255,.07),transparent 30%),radial-gradient(circle at 82% 70%,rgba(245,158,11,.055),transparent 30%),radial-gradient(circle at 50% 105%,rgba(52,211,153,.06),transparent 40%),linear-gradient(180deg,var(--bg),#05070d 100%);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:var(--crp-desktop-body);line-height:1.72;overflow-x:hidden}body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.018;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.wrap{max-width:1120px;margin:0 auto;padding:0 5vw}.progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--gold),var(--green));width:0;z-index:10000;opacity:.9}
+.lang-sl{display:none}body[data-lang="sl"] .lang-en{display:none!important}body[data-lang="sl"] .lang-sl{display:block!important}body[data-lang="en"] .lang-en{display:block}.lang-inline-sl{display:none}body[data-lang="sl"] .lang-inline-en{display:none!important}body[data-lang="sl"] .lang-inline-sl{display:inline!important}
+.topbar{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);background:rgba(2,4,9,.86);border-bottom:1px solid rgba(0,229,255,.10)}.topbar-inner{max-width:1280px;margin:0 auto;padding:11px 5vw;display:flex;align-items:center;justify-content:space-between;gap:1rem}.brand,.brand:visited{display:inline-flex;align-items:center;gap:.7rem;text-decoration:none!important;color:var(--text)}.brand-mark{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan)}.top-links{display:flex;gap:.55rem;flex-wrap:wrap;justify-content:flex-end}.top-links a,.top-links a:visited,.lang-toggle button{font-family:'JetBrains Mono',monospace;font-size:.68rem;text-decoration:none!important;padding:.42rem .72rem;border-radius:999px;border:1px solid rgba(0,229,255,.14);color:rgba(226,232,244,.76);background:rgba(255,255,255,.02);cursor:pointer}.top-links a:hover,.lang-toggle button:hover{border-color:rgba(0,229,255,.35);color:var(--cyan)}.lang-toggle{display:flex;gap:.35rem}.lang-toggle button.active{background:var(--cyan-dim);border-color:rgba(0,229,255,.38);color:var(--cyan)}
+.hero{position:relative;padding:82px 0 42px;overflow:hidden}.hero::before{content:'';position:absolute;inset:-20% -8% auto auto;width:48vw;height:48vw;border-radius:50%;filter:blur(110px);background:radial-gradient(circle,rgba(0,229,255,.12),transparent 62%);opacity:.36;pointer-events:none}.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px);background-size:96px 96px;mask-image:radial-gradient(ellipse 70% 65% at 50% 35%,black,transparent)}.hero-copy{position:relative;z-index:1}.hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem}.hero h1{font-size:clamp(2.7rem,7vw,5.9rem);line-height:.9;letter-spacing:-.035em;margin-bottom:1rem;color:#fff}.hero h1 .accent{color:var(--cyan)}.hero-sub{font-family:'Cormorant Garamond',serif;font-size:clamp(1.18rem,2.2vw,1.55rem);font-style:italic;color:var(--muted);max-width:860px;margin-bottom:1.1rem}.meta-line{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--muted);letter-spacing:.04em;margin-bottom:.7rem}.status-pill{display:inline-flex;margin-top:.5rem;border:1px solid rgba(52,211,153,.26);background:rgba(52,211,153,.08);color:var(--green);border-radius:999px;padding:.34rem .65rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase}.hero-actions{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.4rem}.cta,.cta:visited{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;text-decoration:none!important;padding:.78rem 1rem;border-radius:4px;transition:all .2s ease}.cta.primary{color:var(--cyan)!important;background:var(--cyan-dim);border:1px solid rgba(0,229,255,.28)}.cta.secondary{color:rgba(226,232,244,.76)!important;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.02)}.stats{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:.8rem;margin-top:1.4rem;max-width:950px}.stat{padding:.72rem .88rem;border-radius:8px;background:rgba(11,17,32,.66);border:1px solid var(--border)}.stat strong{display:block;font-family:'JetBrains Mono',monospace;font-size:1.25rem;line-height:1;color:var(--text)}.stat span{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}.divider{height:1px;max-width:1180px;margin:0 auto;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+.toc-box{margin:2rem auto 1.5rem;border:1px solid rgba(0,229,255,.14);border-radius:14px;background:rgba(11,17,32,.66);padding:1.05rem 1.1rem}.toc-title{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.26em;text-transform:uppercase;color:var(--cyan);margin-bottom:.8rem}.toc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.45rem}.toc-grid a{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:rgba(226,232,244,.76);border:1px solid rgba(0,229,255,.10);border-radius:999px;padding:.35rem .55rem;background:rgba(255,255,255,.018);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none!important}.toc-grid a:hover{color:var(--cyan);border-color:rgba(0,229,255,.30)}main{padding:28px 0 80px}.paper-section{position:relative;border:1px solid rgba(0,229,255,.12);background:linear-gradient(180deg,rgba(11,17,32,.72),rgba(7,10,19,.78));border-radius:18px;padding:32px clamp(22px,4vw,46px);margin:28px auto;box-shadow:0 24px 70px rgba(0,0,0,.28);overflow:hidden}.paper-section::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),transparent)}.paper-section.gate-section::before{background:linear-gradient(90deg,var(--gold),var(--cyan),transparent)}.section-anchor{position:absolute;right:18px;top:14px;font-family:'JetBrains Mono',monospace;color:rgba(0,229,255,.18);font-size:1rem}h2{font-size:clamp(1.85rem,4vw,3rem);line-height:1.06;letter-spacing:-.01em;margin:0 0 1rem;color:#fff}h3{font-size:1.35rem;color:#fff;margin:1.15rem 0 .55rem}p{margin:.85rem 0;color:rgba(226,232,244,.84)}ul,ol{margin:.8rem 0 .8rem 1.4rem;color:rgba(226,232,244,.82)}li{margin:.28rem 0}.thesis-callout{margin:1rem 0;padding:1.05rem 1.15rem;border-left:3px solid var(--gold);border-radius:10px;background:linear-gradient(90deg,rgba(245,158,11,.13),rgba(0,229,255,.04));font-size:1.34rem;font-weight:700;color:#fff}.note{border-left:3px solid var(--cyan);background:rgba(0,229,255,.055);padding:.9rem 1rem;border-radius:8px;color:rgba(226,232,244,.82)}.table-wrap{width:100%;overflow-x:auto;margin:1rem 0;border:1px solid rgba(0,229,255,.12);border-radius:12px;background:rgba(2,4,9,.24)}table{width:100%;border-collapse:collapse;min-width:640px}th,td{padding:.7rem .8rem;border-bottom:1px solid rgba(0,229,255,.09);vertical-align:top}th{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);background:rgba(0,229,255,.04);text-align:left}td{color:rgba(226,232,244,.82)}tr:last-child td{border-bottom:none}pre{overflow:auto;border:1px solid rgba(0,229,255,.16);border-radius:12px;background:rgba(2,4,9,.62);padding:1rem;margin:1rem 0;color:rgba(226,232,244,.88)}code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.65}.origin-card{border:1px solid rgba(245,158,11,.18);background:linear-gradient(180deg,rgba(245,158,11,.07),rgba(11,17,32,.72));border-radius:14px;padding:1.15rem;margin-top:.9rem}.origin-meta{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem}.origin-details{margin-top:1rem;border-top:1px solid rgba(245,158,11,.14);padding-top:.8rem}.origin-details summary{cursor:pointer;font-family:'JetBrains Mono',monospace;color:var(--gold);font-size:.82rem;letter-spacing:.08em;text-transform:uppercase}.origin-full{margin-top:1rem}.origin-full h1{font-size:1.75rem;color:#fff;margin:.8rem 0}.footer{padding:44px 0 86px;text-align:center;color:var(--muted)}.footer a{color:var(--cyan)}
+.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none}.reader-controls{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:2147483000;display:flex;align-items:center;gap:8px;padding:8px;border:1px solid rgba(100,232,255,.30);border-radius:999px;background:rgba(5,7,13,.90);backdrop-filter:blur(16px);box-shadow:0 18px 55px rgba(0,0,0,.42);font-family:'JetBrains Mono',monospace}.reader-controls button{min-width:44px;min-height:44px;border:1px solid rgba(100,232,255,.30);border-radius:999px;background:rgba(100,232,255,.08);color:var(--cyan);font:800 18px/1 'JetBrains Mono',monospace;cursor:pointer}.reader-controls .reader-label{min-width:96px;text-align:center;color:rgba(231,234,242,.84);font-size:12px;letter-spacing:.08em;text-transform:uppercase;user-select:none}.back-top{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:calc(max(14px,env(safe-area-inset-bottom)) + 66px);z-index:2147482999;border:1px solid rgba(245,158,11,.32);border-radius:999px;background:rgba(5,7,13,.86);color:var(--gold);padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:.72rem;text-decoration:none!important}
+@media(max-width:900px){.topbar-inner{align-items:flex-start;flex-direction:column}.top-links{justify-content:flex-start}.stats{grid-template-columns:repeat(2,minmax(130px,1fr))}}
+@media(max-width:700px){body{font-size:var(--crp-reader-body)!important;line-height:1.72!important;padding-top:calc(var(--crp-mobile-header-h) + env(safe-area-inset-top,0px));padding-bottom:92px}.topbar{display:none}.mobile-topbar{display:block;position:fixed;top:0;left:0;right:0;z-index:9990;padding:calc(env(safe-area-inset-top,0px) + 9px) 12px 10px;background:rgba(5,7,13,.94);backdrop-filter:blur(18px);border-bottom:1px solid rgba(100,232,255,.22);box-shadow:0 10px 38px rgba(0,0,0,.36)}.mobile-topbar:before{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--cyan),var(--green),var(--gold));opacity:.88}.mobile-title{display:block;text-align:center;color:var(--cyan)!important;text-decoration:none!important;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:15px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mobile-actions{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;margin-top:8px}.mobile-navbtn{border:1px solid rgba(100,232,255,.24);border-radius:999px;background:rgba(100,232,255,.07);color:rgba(231,234,242,.88)!important;text-decoration:none!important;text-align:center;padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;line-height:1.15;min-height:38px}.mobile-menu-toggle{appearance:none;cursor:pointer}.mobile-menu-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:9980}.mobile-menu-panel{display:block;position:fixed;left:12px;right:12px;top:calc(var(--crp-mobile-header-h) + env(safe-area-inset-top,0px) + 10px);z-index:9991;border:1px solid rgba(100,232,255,.28);border-radius:18px;background:rgba(7,10,19,.96);backdrop-filter:blur(18px);box-shadow:0 22px 80px rgba(0,0,0,.56);padding:14px;transform:translateY(-10px);opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease}.mobile-menu-open .mobile-menu-backdrop{display:block}.mobile-menu-open .mobile-menu-panel{opacity:1;transform:none;pointer-events:auto}.mobile-menu-head{display:flex;align-items:center;justify-content:space-between;color:var(--gold);font-family:'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;font-size:13px;margin-bottom:10px}.mobile-menu-head button{border:1px solid rgba(245,158,11,.30);border-radius:999px;background:rgba(245,158,11,.08);color:var(--gold);font-size:20px;line-height:1;min-width:36px;min-height:36px}.mobile-menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mobile-menu-grid a,.mobile-menu-grid button{display:block;text-align:center;border:1px solid rgba(100,232,255,.16);border-radius:12px;background:rgba(255,255,255,.03);padding:11px 8px;color:rgba(231,234,242,.86)!important;text-decoration:none!important;font-family:'JetBrains Mono',monospace;font-size:13px;cursor:pointer}.wrap,main{max-width:none;width:100%;padding-left:16px!important;padding-right:16px!important}.hero{padding:28px 0 22px}.hero h1{font-size:var(--crp-reader-h1)!important}.hero-sub{font-size:var(--crp-reader-text)!important}.meta-line,.status-pill,.hero-eyebrow,.cta,.toc-title,.toc-grid a,.stat span,.origin-meta,.origin-details summary,th,code,.reader-label{font-size:var(--crp-reader-small)!important;line-height:1.55!important}.stats{grid-template-columns:1fr}.stat strong{font-size:calc(var(--crp-reader-h3) * .9)!important}.paper-section{padding:24px var(--crp-reader-pad)!important;border-radius:16px!important;margin:22px 0}.paper-section p,.paper-section li,.paper-section td,.origin-card p{font-size:var(--crp-reader-text)!important}h2{font-size:var(--crp-reader-h2)!important}h3{font-size:var(--crp-reader-h3)!important}.thesis-callout{font-size:var(--crp-reader-h3)!important}.toc-grid{grid-template-columns:1fr}.reader-controls{left:50%;right:auto;transform:translateX(-50%);bottom:max(12px,env(safe-area-inset-bottom));padding:8px 10px}.reader-controls button{min-width:48px;min-height:48px;font-size:20px}.reader-controls .reader-label{min-width:112px;font-size:13px}.back-top{display:none}.table-wrap{border-radius:10px}table{min-width:760px}.paper-section,section[id],article[id]{scroll-margin-top:calc(var(--crp-mobile-header-h) + 18px)!important}}
+@media(max-width:420px){.mobile-navbtn{padding-left:9px;padding-right:9px;font-size:13px}.mobile-menu-grid{grid-template-columns:1fr}.reader-controls{gap:6px}.reader-controls .reader-label{min-width:102px}.wrap,main{padding-left:14px!important;padding-right:14px!important}}
+@media(min-width:701px){.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none!important}}@media print{.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop,.reader-controls,.back-top,.topbar,.progress,.lang-toggle{display:none!important}body{background:#fff!important;color:#111!important;padding:0!important}.paper-section{box-shadow:none!important;background:#fff!important;color:#111!important;border:1px solid #ddd!important;break-inside:avoid}.paper-section *{color:#111!important}.lang-sl{display:block!important}}
 </style>
 </head>
-<body id="top">
-<div class="progress" id="scrollProgress"></div>
-<div class="noise"></div>
-
-<!-- BD CRP MOBILE HEADER START -->
+<body id="top" data-lang="en">
+<div class="progress" id="progress"></div>
 <div class="mobile-menu-backdrop" data-mobile-menu-close aria-hidden="true"></div>
 <header class="mobile-topbar" aria-label="Mobile navigation">
-  <a class="mobile-title" href="index.html" aria-label="CRP hub">SORA</a>
+  <a class="mobile-title" href="index.html" aria-label="Back to CRP index"><span class="lang-inline-en">SORA</span><span class="lang-inline-sl">SORA</span></a>
   <div class="mobile-actions" role="navigation" aria-label="Mobile page navigation">
-    <a class="mobile-navbtn mobile-prev" href="index.html">← CRP</a>
-    <button class="mobile-navbtn mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu-panel">Menu</button>
-    <a class="mobile-navbtn mobile-next" href="#gate-a-powered-node-arc-coupling">Gates →</a>
+    <a class="mobile-navbtn mobile-prev" href="index.html"><span class="lang-inline-en">← Index</span><span class="lang-inline-sl">← Kazalo</span></a>
+    <button class="mobile-navbtn mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu-panel"><span class="lang-inline-en">Menu</span><span class="lang-inline-sl">Meni</span></button>
+    <a class="mobile-navbtn mobile-next" href="#sora-sim-initial-software-specification"><span class="lang-inline-en">Sim →</span><span class="lang-inline-sl">Sim →</span></a>
   </div>
 </header>
 <aside class="mobile-menu-panel" id="mobile-menu-panel" aria-label="Mobile menu" aria-hidden="true">
-  <div class="mobile-menu-head"><span>Menu</span><button type="button" data-mobile-menu-close aria-label="Close menu">×</button></div>
-  <div class="mobile-menu-grid"><a href="index.html">CRP Hub</a><a href="#abstract">Abstract</a><a href="#one-page-summary">Summary</a><a href="#scope-and-non-claims">Scope</a><a href="#gate-a-powered-node-arc-coupling">Gates A–E</a><a href="#sora-sim-initial-software-specification">SORA-Sim</a><a href="#what-would-falsify-sora">Falsify</a><a href="#appendix-references-and-prior-art-pointers">References</a><a href="/bd/">BD Portfolio</a></div>
+  <div class="mobile-menu-head"><span><span class="lang-inline-en">Menu</span><span class="lang-inline-sl">Meni</span></span><button type="button" data-mobile-menu-close aria-label="Close menu">×</button></div>
+  <div class="mobile-menu-grid">
+    <a href="index.html"><span class="lang-inline-en">CRP Index</span><span class="lang-inline-sl">CRP kazalo</span></a>
+    <a href="#abstract"><span class="lang-inline-en">Abstract</span><span class="lang-inline-sl">Povzetek</span></a>
+    <a href="#one-page-summary"><span class="lang-inline-en">Summary</span><span class="lang-inline-sl">Enostransko</span></a>
+    <a href="#claim-ladder"><span class="lang-inline-en">Claim Ladder</span><span class="lang-inline-sl">Lestev trditev</span></a>
+    <a href="#gate-a-powered-node-arc-coupling">Gate A</a>
+    <a href="#gate-c-detached-bow-wall-protection">Gate C</a>
+    <a href="#sora-sim-initial-software-specification">SORA-Sim</a>
+    <a href="#origin-story"><span class="lang-inline-en">Origin</span><span class="lang-inline-sl">Izvor</span></a>
+    <button type="button" data-set-lang="en">English</button><button type="button" data-set-lang="sl">Slovenščina</button>
+  </div>
 </aside>
-<!-- BD CRP MOBILE HEADER END -->
-
 <nav class="topbar">
   <div class="topbar-inner">
     <a class="brand" href="/bd/"><span class="brand-mark">BD × AI Lab</span></a>
-    <div class="top-links"><a href="index.html">CRP Index</a><a href="#one-page-summary">Summary</a><a href="#gate-a-powered-node-arc-coupling">Gates</a><a href="#sora-sim-initial-software-specification">SORA-Sim</a><a href="#appendix-references-and-prior-art-pointers">References</a><a href="/bd/">BD Portfolio</a></div>
+    <div class="top-links">
+      <a href="index.html"><span class="lang-inline-en">CRP Index</span><span class="lang-inline-sl">CRP kazalo</span></a>
+      <a href="#one-page-summary"><span class="lang-inline-en">Summary</span><span class="lang-inline-sl">Povzetek</span></a>
+      <a href="#gate-a-powered-node-arc-coupling">Gate A</a>
+      <a href="#gate-c-detached-bow-wall-protection">Gate C</a>
+      <a href="#sora-sim-initial-software-specification">SORA-Sim</a>
+      <a href="#origin-story"><span class="lang-inline-en">Origin</span><span class="lang-inline-sl">Izvor</span></a>
+    </div>
+    <div class="lang-toggle" aria-label="Language switcher"><button type="button" data-set-lang="en" class="active">EN</button><button type="button" data-set-lang="sl">SL</button></div>
   </div>
 </nav>
-
 <header class="hero">
   <div class="hero-grid-bg"></div>
   <div class="wrap hero-copy">
-    <div class="hero-eyebrow">Exploratory technical preprint · May 2026</div>
-    <h1><span class="accent">SORA</span><br>Solar Orbital Ring Accelerator</h1>
-    <p class="hero-sub">A Simulation-Ready Staged Infrastructure Architecture for Interstellar Seed Probes</p>
-    <div class="hero-meta"><strong>No feasibility gate is claimed to be passed.</strong> Bojan Dobrečevič (BD) &amp; AI collaborators — AIM3 / 8Z Research Program · Exploratory technical preprint. No feasibility gate is claimed to be passed.</div>
-    <div class="hero-actions">
-      <a class="cta primary" href="#abstract">Start reading</a>
-      <a class="cta secondary" href="#sora-sim-initial-software-specification">SORA-Sim spec</a>
-      <a class="cta secondary" href="index.html">CRP index</a>
+    <div class="lang lang-en">
+      <div class="hero-eyebrow">Exploratory technical preprint · May 2026</div>
+      <h1><span class="accent">SORA</span><br>Solar Orbital Ring Accelerator</h1>
+      <div class="hero-sub">A Simulation-Ready Staged Infrastructure Architecture for Interstellar Seed Probes</div>
+      <div class="meta-line">Bojan Dobrečevič (BD) &amp; AI collaborators — AIM3 / 8Z Research Program</div>
+      <div class="status-pill">No feasibility gate is claimed to be passed</div>
+      <div class="hero-actions"><a class="cta primary" href="#one-page-summary">Read summary →</a><a class="cta secondary" href="#sora-sim-initial-software-specification">Jump to SORA-Sim</a><a class="cta secondary" href="index.html">Back to CRP index</a></div>
     </div>
-    <div class="stat-grid">
-      <div class="stat"><strong>5</strong><span>open gates</span></div>
-      <div class="stat"><strong>R1</strong><span>seed probe anchor</span></div>
-      <div class="stat"><strong>0.01–0.03c</strong><span>first target band</span></div>
-      <div class="stat"><strong>Sim first</strong><span>public stance</span></div>
+    <div class="lang lang-sl">
+      <div class="hero-eyebrow">Raziskovalni tehnični prednatis · maj 2026</div>
+      <h1><span class="accent">SORA</span><br>Solarni orbitalni obročni pospeševalnik</h1>
+      <div class="hero-sub">Simulacijsko pripravljena stopnjevana infrastrukturna arhitektura za medzvezdne semenske sonde</div>
+      <div class="meta-line">Bojan Dobrečevič (BD) &amp; AI sodelavci — AIM3 / 8Z Research Program</div>
+      <div class="status-pill">Nobena izvedbena vrata niso označena kot prestana</div>
+      <div class="hero-actions"><a class="cta primary" href="#one-page-summary">Preberi povzetek →</a><a class="cta secondary" href="#sora-sim-initial-software-specification">Skoči na SORA-Sim</a><a class="cta secondary" href="index.html">Nazaj na CRP kazalo</a></div>
     </div>
-    <div class="thesis-card">
-      <div class="small">Core frame</div>
-      <p>The spacecraft is the payload. The solar system is the accelerator.</p>
+    <div class="stats">
+      <div class="stat"><strong>5</strong><span class="lang-inline-en">open gates</span><span class="lang-inline-sl">odprtih vrat</span></div>
+      <div class="stat"><strong>C0–C2</strong><span class="lang-inline-en">claim ladder</span><span class="lang-inline-sl">lestev trditev</span></div>
+      <div class="stat"><strong>R1</strong><span class="lang-inline-en">seed probe</span><span class="lang-inline-sl">semenska sonda</span></div>
+      <div class="stat"><strong>0.01–0.03c</strong><span class="lang-inline-en">first target</span><span class="lang-inline-sl">prvi cilj</span></div>
+      <div class="stat"><strong>D0–D3</strong><span class="lang-inline-en">arrival outcomes</span><span class="lang-inline-sl">izidi prihoda</span></div>
     </div>
+    <div class="toc-box lang lang-en"><div class="toc-title">Paper map</div><div class="toc-grid"><a href="#abstract">Abstract</a>
+<a href="#one-page-summary">One-Page Summary</a>
+<a href="#clarifying-note-on-the-word-ring">Clarifying Note on the Word Ring</a>
+<a href="#scope-and-non-claims">Scope and Non-Claims</a>
+<a href="#claim-ladder">Claim Ladder</a>
+<a href="#core-thesis">Core Thesis</a>
+<a href="#prior-concepts-and-difference-from-sora">Prior Concepts and Difference from SORA</a>
+<a href="#mission-classes-and-travel-time-honesty">Mission Classes and Travel-Time Honesty</a>
+<a href="#reference-mission-r1">Reference Mission R1</a>
+<a href="#gate-a-powered-node-arc-coupling">Gate A - Powered Node/Arc Coupling</a>
+<a href="#gate-b-proximity-encounter-smoothness-and-node-arc-stability">Gate B - Proximity Encounter Smoothness and Node-Arc Stability</a>
+<a href="#gate-c-detached-bow-wall-protection">Gate C - Detached Bow-Wall Protection</a>
+<a href="#gate-d-destination-seeding-and-capture">Gate D - Destination Seeding and Capture</a>
+<a href="#gate-e-whole-architecture-closure">Gate E - Whole-Architecture Closure</a>
+<a href="#dynamic-mass-and-energy-ledger">Dynamic Mass and Energy Ledger</a>
+<a href="#control-and-autonomy-mdl-x-dcc-as-candidate-governance">Control and Autonomy: MDL x DCC as Candidate Governance</a>
+<a href="#sora-0-demonstrator">SORA-0 Demonstrator</a>
+<a href="#sora-sim-initial-software-specification">SORA-Sim: Initial Software Specification</a>
+<a href="#minimum-run-plan">Minimum Run Plan</a>
+<a href="#what-would-falsify-sora">What Would Falsify SORA</a>
+<a href="#partial-failure-value">Partial Failure Value</a>
+<a href="#external-dependencies">External Dependencies</a>
+<a href="#confidence-map">Confidence Map</a>
+<a href="#conclusion">Conclusion</a>
+<a href="#appendix-compact-equations">Appendix: Compact Equations</a>
+<a href="#appendix-r1-sweep-template">Appendix: R1 Sweep Template</a>
+<a href="#appendix-assumptions-file-sketch">Appendix: Assumptions File Sketch</a>
+<a href="#appendix-references-and-prior-art-pointers">Appendix: References and Prior-Art Pointers</a><a href="#origin-story">Origin story</a></div></div>
+    <div class="toc-box lang lang-sl"><div class="toc-title">Zemljevid članka</div><div class="toc-grid"><a href="#abstract">Povzetek</a>
+<a href="#one-page-summary">Enostranski povzetek</a>
+<a href="#clarifying-note-on-the-word-ring">Pojasnilo besede obroč</a>
+<a href="#scope-and-non-claims">Obseg in netrditve</a>
+<a href="#claim-ladder">Lestev trditev</a>
+<a href="#core-thesis">Osrednja teza</a>
+<a href="#prior-concepts-and-difference-from-sora">Predhodni koncepti in razlika SORA</a>
+<a href="#mission-classes-and-travel-time-honesty">Misijski razredi in poštenost glede časa potovanja</a>
+<a href="#reference-mission-r1">Referenčna misija R1</a>
+<a href="#gate-a-powered-node-arc-coupling">Vrata A - sklopitev z napajanimi vozlišči/lokom</a>
+<a href="#gate-b-proximity-encounter-smoothness-and-node-arc-stability">Vrata B - gladkost bližnjega srečanja in stabilnost loka vozlišč</a>
+<a href="#gate-c-detached-bow-wall-protection">Vrata C - ločena sprednja zaščitna stena</a>
+<a href="#gate-d-destination-seeding-and-capture">Vrata D - sejanje in zajem na cilju</a>
+<a href="#gate-e-whole-architecture-closure">Vrata E - zaprtje celotne arhitekture</a>
+<a href="#dynamic-mass-and-energy-ledger">Dinamični masni in energijski obračun</a>
+<a href="#control-and-autonomy-mdl-x-dcc-as-candidate-governance">Nadzor in avtonomija: MDL x DCC kot kandidat za upravljanje</a>
+<a href="#sora-0-demonstrator">Demonstrator SORA-0</a>
+<a href="#sora-sim-initial-software-specification">SORA-Sim: začetna programska specifikacija</a>
+<a href="#minimum-run-plan">Minimalni načrt tekov</a>
+<a href="#what-would-falsify-sora">Kaj bi falsificiralo SORA</a>
+<a href="#partial-failure-value">Vrednost delne odpovedi</a>
+<a href="#external-dependencies">Zunanje odvisnosti</a>
+<a href="#confidence-map">Zemljevid zaupanja</a>
+<a href="#conclusion">Zaključek</a>
+<a href="#appendix-compact-equations">Dodatek: kompaktne enačbe</a>
+<a href="#appendix-r1-sweep-template">Dodatek: predloga preleta R1</a>
+<a href="#appendix-assumptions-file-sketch">Dodatek: skica datoteke predpostavk</a>
+<a href="#appendix-references-and-prior-art-pointers">Dodatek: reference in kazalci na predhodno literaturo</a><a href="#origin-story">Izvorna zgodba</a></div></div>
   </div>
 </header>
-
-<section class="toc-strip" aria-label="Paper map">
-  <div class="wrap">
-    <div class="toc-title">Paper map</div>
-    <div class="toc-grid"><a class="toc-card " href="#abstract"><span>Abstract</span></a>
-<a class="toc-card " href="#one-page-summary"><span>One-Page Summary</span></a>
-<a class="toc-card " href="#clarifying-note-on-the-word-ring"><span>Clarifying Note on the Word Ring</span></a>
-<a class="toc-card " href="#scope-and-non-claims"><span>Scope and Non-Claims</span></a>
-<a class="toc-card " href="#claim-ladder"><span>Claim Ladder</span></a>
-<a class="toc-card " href="#core-thesis"><span>Core Thesis</span></a>
-<a class="toc-card " href="#prior-concepts-and-difference-from-sora"><span>Prior Concepts and Difference from SORA</span></a>
-<a class="toc-card " href="#mission-classes-and-travel-time-honesty"><span>Mission Classes and Travel-Time Honesty</span></a>
-<a class="toc-card " href="#reference-mission-r1"><span>Reference Mission R1</span></a>
-<a class="toc-card gate-card" href="#gate-a-powered-node-arc-coupling"><span>Gate A - Powered Node/Arc Coupling</span></a>
-<a class="toc-card gate-card" href="#gate-b-proximity-encounter-smoothness-and-node-arc-stability"><span>Gate B - Proximity Encounter Smoothness and Node-Arc Stability</span></a>
-<a class="toc-card gate-card" href="#gate-c-detached-bow-wall-protection"><span>Gate C - Detached Bow-Wall Protection</span></a>
-<a class="toc-card gate-card" href="#gate-d-destination-seeding-and-capture"><span>Gate D - Destination Seeding and Capture</span></a>
-<a class="toc-card gate-card" href="#gate-e-whole-architecture-closure"><span>Gate E - Whole-Architecture Closure</span></a>
-<a class="toc-card " href="#dynamic-mass-and-energy-ledger"><span>Dynamic Mass and Energy Ledger</span></a>
-<a class="toc-card " href="#control-and-autonomy-mdl-x-dcc-as-candidate-governance"><span>Control and Autonomy: MDL x DCC as Candidate Governance</span></a>
-<a class="toc-card " href="#sora-0-demonstrator"><span>SORA-0 Demonstrator</span></a>
-<a class="toc-card " href="#sora-sim-initial-software-specification"><span>SORA-Sim: Initial Software Specification</span></a>
-<a class="toc-card " href="#minimum-run-plan"><span>Minimum Run Plan</span></a>
-<a class="toc-card " href="#what-would-falsify-sora"><span>What Would Falsify SORA</span></a>
-<a class="toc-card " href="#partial-failure-value"><span>Partial Failure Value</span></a>
-<a class="toc-card " href="#external-dependencies"><span>External Dependencies</span></a>
-<a class="toc-card " href="#confidence-map"><span>Confidence Map</span></a>
-<a class="toc-card " href="#conclusion"><span>Conclusion</span></a>
-<a class="toc-card " href="#appendix-compact-equations"><span>Appendix: Compact Equations</span></a>
-<a class="toc-card " href="#appendix-r1-sweep-template"><span>Appendix: R1 Sweep Template</span></a>
-<a class="toc-card " href="#appendix-assumptions-file-sketch"><span>Appendix: Assumptions File Sketch</span></a>
-<a class="toc-card " href="#appendix-references-and-prior-art-pointers"><span>Appendix: References and Prior-Art Pointers</span></a></div>
-  </div>
-</section>
-
-<main class="paper-shell">
-  <article class="paper-content">
-<h2 id="abstract">Abstract</h2>
-<p>The Solar Orbital Ring Accelerator (SORA) is a staged interstellar-launch architecture in which the spacecraft is treated as a payload moving through reusable solar-system infrastructure rather than as a self-contained engine. The concept combines solar-sail first-stage acceleration, solar-powered orbital magnetic-node arcs, powered magnetic or plasma coupling, high-speed solar perihelion passage, detached sacrificial bow-wall protection, and destination seeding through carried infrastructure nodes.</p>
+<div class="divider"></div>
+<main class="wrap">
+<section class="paper-section" id="abstract">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Abstract</h2><p>The Solar Orbital Ring Accelerator (SORA) is a staged interstellar-launch architecture in which the spacecraft is treated as a payload moving through reusable solar-system infrastructure rather than as a self-contained engine. The concept combines solar-sail first-stage acceleration, solar-powered orbital magnetic-node arcs, powered magnetic or plasma coupling, high-speed solar perihelion passage, detached sacrificial bow-wall protection, and destination seeding through carried infrastructure nodes.</p>
 <p>SORA is not presented as a validated mission design. It is presented as a finite, simulation-ready research program. The central question is whether reusable solar-system infrastructure can transfer enough energy, momentum, protection, and destination-seeding capability to make a small uncrewed interstellar seed-probe architecture physically credible.</p>
 <p>The present claim is narrow: the architecture is coherent enough to test, its failure modes are finite enough to name, and a compact simulation suite can determine whether any low-speed seed-probe parameter island survives. If no such island exists, SORA fails cleanly. If one exists at modest speed and modest payload, SORA becomes a candidate for deeper engineering study.</p>
-<h2 id="one-page-summary">One-Page Summary</h2>
-<p>SORA's strongest idea is not a specific shield geometry, not a claimed top speed, and not a magical magnetic ring. Its strongest idea is the frame:</p>
-<p>The spacecraft is the payload. The solar system is the accelerator.</p>
+</div>
+  <div class="lang lang-sl"><h2>Povzetek</h2><p>Solarni orbitalni obročni pospeševalnik (SORA) je stopnjevana arhitektura za medzvezdni izstrel, v kateri vesoljsko plovilo ni obravnavano kot samostojen motor, temveč kot tovor, ki se premika skozi ponovno uporabno infrastrukturo Osončja. Koncept združuje začetno pospeševanje s sončnim jadrom, solarno napajane orbitalne loke magnetnih vozlišč, pogonsko magnetno ali plazemsko sklopitev, hiter prehod skozi Sončev perihelij, ločeno žrtveno sprednjo zaščitno steno in sejanje ciljnega sistema z infrastrukturnimi vozlišči, ki jih sonda nosi s seboj.</p>
+<p>SORA ni predstavljena kot potrjena misijska zasnova. Predstavljena je kot omejen, simulacijsko pripravljen raziskovalni program. Osrednje vprašanje je, ali lahko ponovno uporabna infrastruktura Osončja prenese dovolj energije, gibalne količine, zaščite in zmožnosti sejanja, da bi bila majhna brezposadna medzvezdna semenska sonda fizikalno verodostojna.</p>
+<p>Trenutna trditev je ozka: arhitektura je dovolj koherentna za testiranje, njeni načini odpovedi so dovolj končni, da jih lahko poimenujemo, in kompaktna simulacijska zbirka lahko pokaže, ali pri nizki hitrosti preživi kakšen parameterki otok. Če takega otoka ni, SORA čisto odpove. Če obstaja pri zmerni hitrosti in zmerni masi tovora, postane kandidat za globljo inženirsko študijo.</p>
+</div>
+</section><section class="paper-section" id="one-page-summary">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>One-Page Summary</h2><p>SORA's strongest idea is not a specific shield geometry, not a claimed top speed, and not a magical magnetic ring. Its strongest idea is the frame:</p>
+<div class="thesis-callout">The spacecraft is the payload. The solar system is the accelerator.</div>
 <p>A proton in a particle accelerator does not carry its own fuel. It is accelerated by a large external machine. SORA asks whether a spacecraft can be treated similarly: not as a tiny vehicle carrying one impossible engine, but as a payload moving through reusable infrastructure stages.</p>
 <p>The architecture currently has five open gates:</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-  <th>Gate</th>
-  <th>Question</th>
-  <th>Status</th>
+<th>Gate</th>
+<th>Question</th>
+<th>Status</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td>A - Powered node/arc coupling</td>
-  <td>Can powered orbital nodes transfer useful net momentum to a spacecraft-side coupling system?</td>
-  <td>Open</td>
+<td>A - Powered node/arc coupling</td>
+<td>Can powered orbital nodes transfer useful net momentum to a spacecraft-side coupling system?</td>
+<td>Open</td>
 </tr>
 <tr>
-  <td>B - Proximity encounter smoothness</td>
-  <td>Can a discrete node arc produce smooth acceleration and remain orbitally stable across many launches?</td>
-  <td>Open</td>
+<td>B - Proximity encounter smoothness</td>
+<td>Can a discrete node arc produce smooth acceleration and remain orbitally stable across many launches?</td>
+<td>Open</td>
 </tr>
 <tr>
-  <td>C - Bow-wall protection</td>
-  <td>Can detached shielding reduce risk more than it adds mass, control burden, and secondary-debris hazard?</td>
-  <td>Open</td>
+<td>C - Bow-wall protection</td>
+<td>Can detached shielding reduce risk more than it adds mass, control burden, and secondary-debris hazard?</td>
+<td>Open</td>
 </tr>
 <tr>
-  <td>D - Destination capture and seeding</td>
-  <td>Can carried nodes become useful target-star infrastructure?</td>
-  <td>Open</td>
+<td>D - Destination capture and seeding</td>
+<td>Can carried nodes become useful target-star infrastructure?</td>
+<td>Open</td>
 </tr>
 <tr>
-  <td>E - Whole-architecture closure</td>
-  <td>Can mass, energy, thermal load, control, reaction correction, and mission value close at once?</td>
-  <td>Open</td>
+<td>E - Whole-architecture closure</td>
+<td>Can mass, energy, thermal load, control, reaction correction, and mission value close at once?</td>
+<td>Open</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The paper's current position is therefore simple: SORA is not yet feasible. SORA is now testable.</p>
-<h2 id="clarifying-note-on-the-word-ring">Clarifying Note on the Word Ring</h2>
-<p>Although the architecture keeps the name Solar Orbital Ring Accelerator, SORA does not require a closed 360-degree ring for the first useful stage. The first useful infrastructure element is a dense encounter arc or ringlet: a local orbital segment of powered magnetic nodes that the spacecraft approaches, passes near, and recedes from.</p>
+</div>
+  <div class="lang lang-sl"><h2>Enostranski povzetek</h2><p>Najmočnejša ideja SORA ni določena geometrija ščita, ni zahtevana največja hitrost in ni čarobni magnetni obroč. Najmočnejša ideja je okvir:</p>
+<div class="thesis-callout">Vesoljsko plovilo je tovor. Osončje je pospeševalnik.</div>
+<p>Proton v pospeševalniku delcev ne nosi lastnega goriva. Pospešuje ga velik zunanji stroj. SORA vpraša, ali lahko podobno obravnavamo tudi vesoljsko plovilo: ne kot majhno vozilo z enim nemogočim motorjem, temveč kot tovor, ki gre skozi zaporedje ponovno uporabnih infrastrukturnih stopenj.</p>
+<p>Arhitektura ima trenutno pet odprtih vrat:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Vrata</th>
+<th>Vprašanje</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A - sklopitev z napajanimi vozlišči/lokom</td>
+<td>Ali lahko orbitalna vozlišča prenesejo uporaben neto zagon na sklopitveni sistem na plovilu?</td>
+<td>Odprto</td>
+</tr>
+<tr>
+<td>B - gladkost bližnjega srečanja</td>
+<td>Ali lahko diskretni lok vozlišč ustvari gladko pospeševanje in ostane orbitalno stabilen skozi več izstrelitev?</td>
+<td>Odprto</td>
+</tr>
+<tr>
+<td>C - zaščita s sprednjo steno</td>
+<td>Ali ločena zaščita zmanjša tveganje bolj, kot doda maso, krmilno breme in nevarnost sekundarnih delcev?</td>
+<td>Odprto</td>
+</tr>
+<tr>
+<td>D - zajem in sejanje na cilju</td>
+<td>Ali lahko nošena vozlišča postanejo uporabna infrastruktura okoli ciljne zvezde?</td>
+<td>Odprto</td>
+</tr>
+<tr>
+<td>E - zaprtje celotne arhitekture</td>
+<td>Ali se masa, energija, toplota, krmiljenje, popravek reakcijske sile in misijska vrednost zaprejo hkrati?</td>
+<td>Odprto</td>
+</tr>
+</tbody>
+</table></div>
+<p>Trenutni položaj članka je zato preprost: SORA še ni izvedljiva. SORA je zdaj testabilna.</p>
+</div>
+</section><section class="paper-section" id="clarifying-note-on-the-word-ring">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Clarifying Note on the Word Ring</h2><p>Although the architecture keeps the name Solar Orbital Ring Accelerator, SORA does not require a closed 360-degree ring for the first useful stage. The first useful infrastructure element is a dense encounter arc or ringlet: a local orbital segment of powered magnetic nodes that the spacecraft approaches, passes near, and recedes from.</p>
 <p>The spacecraft does not travel along the orbital infrastructure. It does not ride a mechanical guideway. It performs a designed close encounter with a dense arc of powered nodes. Distance controls coupling magnitude. Powered or time-varying interaction controls net energy transfer and direction.</p>
 <p>A full ring is a later scaling convenience, not a prerequisite. A paired-ring or dual-ring concept should also be read as paired encounter arcs or offset ringlets at nearby orbital radii unless a full ring is explicitly justified by simulation.</p>
 <pre><code class="language-text">Correct encounter geometry:
@@ -309,8 +259,26 @@ body{font-size:var(--crp-desktop-body)!important}
 
 The ship approaches, peaks in coupling, and recedes. It does not travel along the arc.
 </code></pre>
-<h2 id="scope-and-non-claims">Scope and Non-Claims</h2>
-<p>This is a public technical preprint, not an engineering design. To avoid misreading, SORA does not claim:</p>
+</div>
+  <div class="lang lang-sl"><h2>Pojasnilo besede obroč</h2><p>Čeprav arhitektura ohranja ime Solar Orbital Ring Accelerator, SORA za prvo uporabno stopnjo ne zahteva zaprtega 360-stopinjskega obroča. Prvi uporaben infrastrukturni element je gost srečevalni lok ali obroček: lokalni orbitalni segment napajanih magnetnih vozlišč, ki se mu plovilo približa, gre mimo njega in se nato oddalji.</p>
+<p>Plovilo ne potuje po orbitalni infrastrukturi. Ne vozi po mehanskem vodilu. Opravi zasnovano bližnje srečanje z gostim lokom napajanih vozlišč. Razdalja uravnava jakost sklopitve. Neto prenos energije in smer pa zahtevata napajano ali časovno spremenljivo interakcijo.</p>
+<p>Celoten obroč je poznejša razširitvena priročnost, ne začetni pogoj. Tudi koncept parnega obroča ali dvojnega obroča naj bo bran kot par srečevalnih lokov ali zamaknjenih obročkov pri bližnjih orbitalnih radijih, razen če simulacija izrecno upraviči poln obroč.</p>
+<pre><code class="language-text">Pravilna geometrija srečanja:
+
+       plovilo prihaja
+             \
+              \\      najbližji prehod
+               *------------------&gt; odhod proti Sončevemu periheliju
+
+        o   o   o   o   o   o   o
+        napajani orbitalni lok vozlišč / obroček
+
+Plovilo se približa, sklopitev doseže vrh in nato oslabi. Ne potuje vzdolž loka.
+</code></pre>
+</div>
+</section><section class="paper-section" id="scope-and-non-claims">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Scope and Non-Claims</h2><p>This is a public technical preprint, not an engineering design. To avoid misreading, SORA does not claim:</p>
 <ul>
 <li>that 10-30% c is currently feasible;</li>
 <li>that passive static magnetic fields can accelerate a neutral spacecraft;</li>
@@ -330,211 +298,445 @@ The ship approaches, peaks in coupling, and recedes. It does not travel along th
 <li>a full-stack closure model can decide whether the architecture deserves deeper work.</li>
 </ul>
 <p>A high-risk branch is allowed only if it has a plausible physical bridge, a clear failure mode, and a cheapest next test. Ideas that survive become stronger. Ideas that fail cleanly reduce fog.</p>
-<h2 id="claim-ladder">Claim Ladder</h2>
-<p>Where a claim sits on the ladder matters more than how exciting it sounds.</p>
-<table>
+</div>
+  <div class="lang lang-sl"><h2>Obseg in netrditve</h2><p>To je javni tehnični prednatis, ne inženirski načrt. Da se izognemo napačnemu branju, SORA ne trdi:</p>
+<ul>
+<li>da je 10-30 % hitrosti svetlobe trenutno izvedljivo;</li>
+<li>da lahko pasivna statična magnetna polja pospešijo nevtralno plovilo;</li>
+<li>da je magnetna sklopitev dovolj močna pri katerikoli določeni skali;</li>
+<li>da je predlagana sprednja stena potrjena zaščita;</li>
+<li>da je mogoče ciljna vozlišča pasivno spustiti v uporabne orbite;</li>
+<li>da upravljanje MDL x DCC dokazuje izvedljivost;</li>
+<li>da je bilo katerokoli od petih vrat prestano.</li>
+</ul>
+<p>SORA trdi:</p>
+<ul>
+<li>da je stopnjevani infrastrukturni okvir dovolj koherenten za modeliranje;</li>
+<li>da ima arhitektura poimenovane podsisteme in poimenovane načine odpovedi;</li>
+<li>da je mogoče vsako večjo neznanko pretvoriti v igračni model, simulacijo ali parameterki prelet;</li>
+<li>da prvi uporaben cilj ni posadkovna zvezdna ladja, temveč majhna brezposadna semenska sonda;</li>
+<li>da lahko delni uspeh še vedno ustvari znanstveno ali infrastrukturno vrednost;</li>
+<li>da lahko model zaprtja celotnega sklada odloči, ali si arhitektura zasluži globlje delo.</li>
+</ul>
+<p>Visoko tvegana veja je dovoljena samo, če ima verjeten fizikalni most, jasen način odpovedi in najcenejši naslednji test. Ideje, ki preživijo, postanejo močnejše. Ideje, ki odpovejo čisto, zmanjšajo meglo.</p>
+</div>
+</section><section class="paper-section" id="claim-ladder">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Claim Ladder</h2><p>Where a claim sits on the ladder matters more than how exciting it sounds.</p>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-  <th>Level</th>
-  <th>Meaning</th>
-  <th>Current status</th>
+<th>Level</th>
+<th>Meaning</th>
+<th>Current status</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td>C0</td>
-  <td>No known physics violation is required</td>
-  <td>Plausible</td>
+<td>C0</td>
+<td>No known physics violation is required</td>
+<td>Plausible</td>
 </tr>
 <tr>
-  <td>C1</td>
-  <td>Internally coherent architecture with finite failure modes</td>
-  <td>Claimed</td>
+<td>C1</td>
+<td>Internally coherent architecture with finite failure modes</td>
+<td>Claimed</td>
 </tr>
 <tr>
-  <td>C2</td>
-  <td>Toy-model closure for at least one mission class</td>
-  <td>Proposed for test</td>
+<td>C2</td>
+<td>Toy-model closure for at least one mission class</td>
+<td>Proposed for test</td>
 </tr>
 <tr>
-  <td>C3</td>
-  <td>Subsystem simulation pass for all gates</td>
-  <td>Not claimed</td>
+<td>C3</td>
+<td>Subsystem simulation pass for all gates</td>
+<td>Not claimed</td>
 </tr>
 <tr>
-  <td>C4</td>
-  <td>Integrated mission envelope under conservative assumptions</td>
-  <td>Not claimed</td>
+<td>C4</td>
+<td>Integrated mission envelope under conservative assumptions</td>
+<td>Not claimed</td>
 </tr>
 <tr>
-  <td>C5</td>
-  <td>Engineering program candidate</td>
-  <td>Not claimed</td>
+<td>C5</td>
+<td>Engineering program candidate</td>
+<td>Not claimed</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>SORA claims C0 and C1. It proposes tests for C2. It does not claim C3, C4, or C5. The first objective is to find or fail to find a toy-model parameter island for Reference Mission R1. If C2 fails under generous assumptions, SORA should shrink or stop. If C2 passes only under absurd assumptions, SORA remains a thought experiment. If C2 passes under demanding but non-absurd assumptions, deeper study becomes worthwhile.</p>
-<h2 id="core-thesis">Core Thesis</h2>
-<p>The usual interstellar propulsion question is: What engine can a spacecraft carry that lets it cross interstellar distances?</p>
+</div>
+  <div class="lang lang-sl"><h2>Lestev trditev</h2><p>Kje je trditev na lestvi, je pomembnejše od tega, kako vznemirljivo zveni.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Raven</th>
+<th>Pomen</th>
+<th>Trenutni status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C0</td>
+<td>Ni potrebna znana kršitev fizike</td>
+<td>Verjetno</td>
+</tr>
+<tr>
+<td>C1</td>
+<td>Notranje koherentna arhitektura s končnimi načini odpovedi</td>
+<td>Trdimo</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>Igračni model se zapre za vsaj en razred misije</td>
+<td>Predlagano za test</td>
+</tr>
+<tr>
+<td>C3</td>
+<td>Simulacijski prehod podsistemov za vsa vrata</td>
+<td>Ni trditve</td>
+</tr>
+<tr>
+<td>C4</td>
+<td>Integrirana misijska ovojnica pod konservativnimi predpostavkami</td>
+<td>Ni trditve</td>
+</tr>
+<tr>
+<td>C5</td>
+<td>Kandidat za inženirski program</td>
+<td>Ni trditve</td>
+</tr>
+</tbody>
+</table></div>
+<p>SORA trdi C0 in C1. Predlaga teste za C2. Ne trdi C3, C4 ali C5. Prvi cilj je najti ali ne najti parameterkega otoka v igračnem modelu za referenčno misijo R1. Če C2 odpove že pod radodarnimi predpostavkami, se mora SORA skrčiti ali ustaviti. Če C2 uspe samo pod absurdnimi predpostavkami, SORA ostane miselni eksperiment. Če C2 uspe pod zahtevnimi, a neabsurdnimi predpostavkami, postane globlja študija vredna dela.</p>
+</div>
+</section><section class="paper-section" id="core-thesis">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Core Thesis</h2><p>The usual interstellar propulsion question is: What engine can a spacecraft carry that lets it cross interstellar distances?</p>
 <p>SORA asks a different question: What solar-system infrastructure could repeatedly launch small payloads, and what is the smallest mission class that might close physically?</p>
 <p>This reframing matters because the propellant equation punishes self-contained ships. If every stage must be carried by the payload, the payload becomes dominated by propulsion mass. SORA distributes function across reusable stages:</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-  <th>Stage</th>
-  <th>Function</th>
-  <th>What stays</th>
-  <th>What travels</th>
+<th>Stage</th>
+<th>Function</th>
+<th>What stays</th>
+<th>What travels</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td>0</td>
-  <td>Infrastructure buildout</td>
-  <td>Solar-orbit nodes, power, control</td>
-  <td>Nothing yet</td>
+<td>0</td>
+<td>Infrastructure buildout</td>
+<td>Solar-orbit nodes, power, control</td>
+<td>Nothing yet</td>
 </tr>
 <tr>
-  <td>1</td>
-  <td>Solar-sail acceleration</td>
-  <td>The Sun</td>
-  <td>Sail plus payload stack</td>
+<td>1</td>
+<td>Solar-sail acceleration</td>
+<td>The Sun</td>
+<td>Sail plus payload stack</td>
 </tr>
 <tr>
-  <td>2</td>
-  <td>Powered node/arc coupling</td>
-  <td>Orbital encounter arc</td>
-  <td>Payload plus temporary coupling hardware</td>
+<td>2</td>
+<td>Powered node/arc coupling</td>
+<td>Orbital encounter arc</td>
+<td>Payload plus temporary coupling hardware</td>
 </tr>
 <tr>
-  <td>3</td>
-  <td>Perihelion energy leverage</td>
-  <td>The Sun's gravity well</td>
-  <td>Outbound stack</td>
+<td>3</td>
+<td>Perihelion energy leverage</td>
+<td>The Sun's gravity well</td>
+<td>Outbound stack</td>
 </tr>
 <tr>
-  <td>4</td>
-  <td>Cruise protection</td>
-  <td>Nothing external</td>
-  <td>Payload, bow wall, seed nodes</td>
+<td>4</td>
+<td>Cruise protection</td>
+<td>Nothing external</td>
+<td>Payload, bow wall, seed nodes</td>
 </tr>
 <tr>
-  <td>5</td>
-  <td>Destination seeding</td>
-  <td>Target-star gravity well</td>
-  <td>Released nodes or sub-probes</td>
+<td>5</td>
+<td>Destination seeding</td>
+<td>Target-star gravity well</td>
+<td>Released nodes or sub-probes</td>
 </tr>
 <tr>
-  <td>6</td>
-  <td>Future densification</td>
-  <td>Destination nodes</td>
-  <td>Later missions</td>
+<td>6</td>
+<td>Future densification</td>
+<td>Destination nodes</td>
+<td>Later missions</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The spacecraft is not asked to do everything. It is asked to survive the handoffs.</p>
-<h2 id="prior-concepts-and-difference-from-sora">Prior Concepts and Difference from SORA</h2>
-<p>SORA is not built from exotic physics. It recombines familiar ideas into a staged architecture. The novelty claim should stay narrow: not every component is new, but the staged closure problem is new.</p>
-<table>
+</div>
+  <div class="lang lang-sl"><h2>Osrednja teza</h2><p>Običajno vprašanje medzvezdnega pogona je: kateri motor lahko plovilo nosi, da prečka medzvezdne razdalje?</p>
+<p>SORA vpraša drugače: katera infrastruktura v Osončju bi lahko ponavljajoče izstreljevala majhne tovore in kateri najmanjši razred misije bi se lahko fizikalno zaprl?</p>
+<p>Ta preobrat je pomemben, ker raketna enačba kaznuje samostojna plovila. Če mora vsak del stopnje potovati kot del tovora, tovor postane prevladan s pogonsko maso. SORA razdeli funkcije po ponovno uporabnih stopnjah:</p>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-  <th>Prior concept</th>
-  <th>Known role</th>
-  <th>SORA difference</th>
+<th>Stopnja</th>
+<th>Funkcija</th>
+<th>Kaj ostane</th>
+<th>Kaj potuje</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td>Solar sails</td>
-  <td>Photon momentum transfer</td>
-  <td>Used as a disposable first stage, not the entire answer</td>
+<td>0</td>
+<td>Izgradnja infrastrukture</td>
+<td>vozlišča v sončni orbiti, moč, nadzor</td>
+<td>nič še</td>
 </tr>
 <tr>
-  <td>Laser lightsails</td>
-  <td>External acceleration</td>
-  <td>SORA targets larger payloads and reusable solar-system infrastructure</td>
+<td>1</td>
+<td>Pospeševanje s sončnim jadrom</td>
+<td>Sonce</td>
+<td>jadro in tovorni sklad</td>
 </tr>
 <tr>
-  <td>Orbital rings</td>
-  <td>Large-scale infrastructure</td>
-  <td>SORA uses free-flying node arcs/ringlets, not rigid rings</td>
+<td>2</td>
+<td>Sklopitev z napajanim vozliščnim lokom</td>
+<td>orbitalni srečevalni lok</td>
+<td>tovor in začasna sklopitvena oprema</td>
 </tr>
 <tr>
-  <td>Magnetic sails / electric sails</td>
-  <td>Spacecraft-side coupling candidates</td>
-  <td>Must be powered, time-varying, or actively phased</td>
+<td>3</td>
+<td>Energijski vzvod v periheliju</td>
+<td>Sončeva gravitacijska jama</td>
+<td>izhodni sklad</td>
 </tr>
 <tr>
-  <td>Oberth effect</td>
-  <td>Energy leverage near perihelion</td>
-  <td>Used after prior acceleration, not from rest</td>
+<td>4</td>
+<td>Zaščita med križarjenjem</td>
+<td>nič zunanjega</td>
+<td>tovor, sprednja stena, semenska vozlišča</td>
 </tr>
 <tr>
-  <td>Whipple shielding</td>
-  <td>Sacrificial forward protection</td>
-  <td>Detached standoff wall at much larger separation</td>
+<td>5</td>
+<td>Sejanje cilja</td>
+<td>gravitacijska jama ciljne zvezde</td>
+<td>sproščena vozlišča ali podsone</td>
 </tr>
 <tr>
-  <td>Seed probes</td>
-  <td>Science or exploration payloads</td>
-  <td>First mission carries infrastructure nodes, not only instruments</td>
+<td>6</td>
+<td>Poznejše zgoščevanje</td>
+<td>ciljna vozlišča</td>
+<td>poznejše misije</td>
 </tr>
 </tbody>
-</table>
+</table></div>
+<p>Plovilo ni pozvano, naj naredi vse. Pozvano je, naj preživi prehode med stopnjami.</p>
+</div>
+</section><section class="paper-section" id="prior-concepts-and-difference-from-sora">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Prior Concepts and Difference from SORA</h2><p>SORA is not built from exotic physics. It recombines familiar ideas into a staged architecture. The novelty claim should stay narrow: not every component is new, but the staged closure problem is new.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Prior concept</th>
+<th>Known role</th>
+<th>SORA difference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Solar sails</td>
+<td>Photon momentum transfer</td>
+<td>Used as a disposable first stage, not the entire answer</td>
+</tr>
+<tr>
+<td>Laser lightsails</td>
+<td>External acceleration</td>
+<td>SORA targets larger payloads and reusable solar-system infrastructure</td>
+</tr>
+<tr>
+<td>Orbital rings</td>
+<td>Large-scale infrastructure</td>
+<td>SORA uses free-flying node arcs/ringlets, not rigid rings</td>
+</tr>
+<tr>
+<td>Magnetic sails / electric sails</td>
+<td>Spacecraft-side coupling candidates</td>
+<td>Must be powered, time-varying, or actively phased</td>
+</tr>
+<tr>
+<td>Oberth effect</td>
+<td>Energy leverage near perihelion</td>
+<td>Used after prior acceleration, not from rest</td>
+</tr>
+<tr>
+<td>Whipple shielding</td>
+<td>Sacrificial forward protection</td>
+<td>Detached standoff wall at much larger separation</td>
+</tr>
+<tr>
+<td>Seed probes</td>
+<td>Science or exploration payloads</td>
+<td>First mission carries infrastructure nodes, not only instruments</td>
+</tr>
+</tbody>
+</table></div>
 <p>SORA's value is the system question: can these elements close together at a small mission class?</p>
-<h2 id="mission-classes-and-travel-time-honesty">Mission Classes and Travel-Time Honesty</h2>
-<p>The first credible SORA target is not a fast crewed vehicle. It is a small uncrewed seed probe.</p>
-<table>
+</div>
+  <div class="lang lang-sl"><h2>Predhodni koncepti in razlika SORA</h2><p>SORA ni zgrajena iz eksotične fizike. Znova združuje znane ideje v stopnjevano arhitekturo. Trditev o novosti mora ostati ozka: niso vsi deli novi, nov je problem skupnega zaprtja stopenj.</p>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-  <th>Class</th>
-  <th>Role</th>
-  <th>Approximate speed band</th>
-  <th>Alpha Centauri coast time</th>
-  <th>Status</th>
+<th>Predhodni koncept</th>
+<th>Znana vloga</th>
+<th>Razlika SORA</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td>SORA-0</td>
-  <td>Solar-system demonstrator</td>
-  <td>non-interstellar</td>
-  <td>n/a</td>
-  <td>first experiment</td>
+<td>Sončna jadra</td>
+<td>prenos gibalne količine fotonov</td>
+<td>uporabljeno kot odvrgljiva prva stopnja, ne kot celoten odgovor</td>
 </tr>
 <tr>
-  <td>SORA-I</td>
-  <td>Uncrewed seed probe</td>
-  <td>0.01-0.03 c</td>
-  <td>about 437-146 years</td>
-  <td>first serious target</td>
+<td>Laserska svetlobna jadra</td>
+<td>zunanje pospeševanje</td>
+<td>SORA cilja večje tovore in ponovno uporabno infrastrukturo Osončja</td>
 </tr>
 <tr>
-  <td>SORA-II</td>
-  <td>Mature robotic cargo / repeated seeding</td>
-  <td>0.03-0.05 c</td>
-  <td>about 146-87 years</td>
-  <td>later target</td>
+<td>Orbitalni obroči</td>
+<td>velika infrastruktura</td>
+<td>SORA uporablja prosto leteče loke/obročke vozlišč, ne togih obročev</td>
 </tr>
 <tr>
-  <td>SORA-III</td>
-  <td>High-end speculative fast probe</td>
-  <td>0.05-0.10 c</td>
-  <td>about 87-44 years</td>
-  <td>not currently claimed</td>
+<td>Magnetna / električna jadra</td>
+<td>kandidati za sklopitev na strani plovila</td>
+<td>morajo biti napajana, časovno spremenljiva ali aktivno fazirana</td>
 </tr>
 <tr>
-  <td>SORA-IV</td>
-  <td>Human-rated architecture</td>
-  <td>mission dependent</td>
-  <td>not defined</td>
-  <td>out of scope</td>
+<td>Oberthov učinek</td>
+<td>energijski vzvod blizu perihelija</td>
+<td>uporabljen po predhodnem pospešku, ne iz mirovanja</td>
+</tr>
+<tr>
+<td>Whipplovi ščiti</td>
+<td>žrtvena sprednja zaščita</td>
+<td>ločena standoff stena na veliko večji razdalji</td>
+</tr>
+<tr>
+<td>Semenske sonde</td>
+<td>znanstveni ali raziskovalni tovor</td>
+<td>prva misija nosi infrastrukturo, ne samo instrumente</td>
 </tr>
 </tbody>
-</table>
+</table></div>
+<p>Vrednost SORA je sistemsko vprašanje: ali se ti elementi lahko skupaj zaprejo pri majhnem razredu misije?</p>
+</div>
+</section><section class="paper-section" id="mission-classes-and-travel-time-honesty">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Mission Classes and Travel-Time Honesty</h2><p>The first credible SORA target is not a fast crewed vehicle. It is a small uncrewed seed probe.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Role</th>
+<th>Approximate speed band</th>
+<th>Alpha Centauri coast time</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SORA-0</td>
+<td>Solar-system demonstrator</td>
+<td>non-interstellar</td>
+<td>n/a</td>
+<td>first experiment</td>
+</tr>
+<tr>
+<td>SORA-I</td>
+<td>Uncrewed seed probe</td>
+<td>0.01-0.03 c</td>
+<td>about 437-146 years</td>
+<td>first serious target</td>
+</tr>
+<tr>
+<td>SORA-II</td>
+<td>Mature robotic cargo / repeated seeding</td>
+<td>0.03-0.05 c</td>
+<td>about 146-87 years</td>
+<td>later target</td>
+</tr>
+<tr>
+<td>SORA-III</td>
+<td>High-end speculative fast probe</td>
+<td>0.05-0.10 c</td>
+<td>about 87-44 years</td>
+<td>not currently claimed</td>
+</tr>
+<tr>
+<td>SORA-IV</td>
+<td>Human-rated architecture</td>
+<td>mission dependent</td>
+<td>not defined</td>
+<td>out of scope</td>
+</tr>
+</tbody>
+</table></div>
 <p>Coast time ignores acceleration, deceleration, trajectory geometry, target-star operations, and relativistic corrections. It is included only to prevent hype. The discipline is simple: if a 0.01 c seed probe cannot close, a 0.1 c architecture should not be discussed as if it were near.</p>
-<h2 id="reference-mission-r1">Reference Mission R1</h2>
-<p>R1 is the anchor mission so simulations do not drift into vague optimism.</p>
+</div>
+  <div class="lang lang-sl"><h2>Misijski razredi in poštenost glede časa potovanja</h2><p>Prvi verodostojen cilj SORA ni hitro posadkovno vozilo. Je majhna brezposadna semenska sonda.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Razred</th>
+<th>Vloga</th>
+<th>Približen hitrostni pas</th>
+<th>Čas plovbe do Alfe Kentavra</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SORA-0</td>
+<td>demonstrator v Osončju</td>
+<td>nemedzvezdno</td>
+<td>n/a</td>
+<td>prvi eksperiment</td>
+</tr>
+<tr>
+<td>SORA-I</td>
+<td>brezposadna semenska sonda</td>
+<td>0.01-0.03 c</td>
+<td>približno 437-146 let</td>
+<td>prvi resni cilj</td>
+</tr>
+<tr>
+<td>SORA-II</td>
+<td>zrela robotska tovorna / ponavljajoče sejanje</td>
+<td>0.03-0.05 c</td>
+<td>približno 146-87 let</td>
+<td>poznejši cilj</td>
+</tr>
+<tr>
+<td>SORA-III</td>
+<td>visoko špekulativna hitra sonda</td>
+<td>0.05-0.10 c</td>
+<td>približno 87-44 let</td>
+<td>trenutno ni trditve</td>
+</tr>
+<tr>
+<td>SORA-IV</td>
+<td>arhitektura za ljudi</td>
+<td>odvisno od misije</td>
+<td>ni definirano</td>
+<td>izven obsega</td>
+</tr>
+</tbody>
+</table></div>
+<p>Čas plovbe ne vključuje pospeševanja, zaviranja, geometrije poti, operacij pri ciljni zvezdi ali relativističnih popravkov. Vključen je samo zato, da se prepreči napihovanje. Disciplina je preprosta: če se sonda pri 0.01 c ne zapre, se o arhitekturi pri 0.1 c ne sme govoriti, kot da je blizu.</p>
+</div>
+</section><section class="paper-section" id="reference-mission-r1">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Reference Mission R1</h2><p>R1 is the anchor mission so simulations do not drift into vague optimism.</p>
 <p>R1: uncrewed interstellar seed probe.</p>
 <ul>
 <li>leave the solar system on an interstellar trajectory;</li>
@@ -544,93 +746,193 @@ The ship approaches, peaks in coupling, and recedes. It does not travel along th
 <li>return data or leave infrastructure value even if full deceleration fails.</li>
 </ul>
 <p>R1 is a seed mission, not a settlement mission.</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-  <th>Parameter</th>
-  <th>Sweep values</th>
+<th>Parameter</th>
+<th>Sweep values</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td>Payload mass</td>
-  <td>10 kg / 100 kg / 1000 kg</td>
+<td>Payload mass</td>
+<td>10 kg / 100 kg / 1000 kg</td>
 </tr>
 <tr>
-  <td>Target cruise speed</td>
-  <td>0.01 c / 0.03 c / 0.05 c / 0.10 c</td>
+<td>Target cruise speed</td>
+<td>0.01 c / 0.03 c / 0.05 c / 0.10 c</td>
 </tr>
 <tr>
-  <td>Bow-wall mass ratio</td>
-  <td>0.3x / 1x / 3x / 10x payload</td>
+<td>Bow-wall mass ratio</td>
+<td>0.3x / 1x / 3x / 10x payload</td>
 </tr>
 <tr>
-  <td>Coupling hardware mass ratio</td>
-  <td>1x / 3x / 10x payload</td>
+<td>Coupling hardware mass ratio</td>
+<td>1x / 3x / 10x payload</td>
 </tr>
 <tr>
-  <td>Seed-node mass ratio</td>
-  <td>0x / 1x / 3x payload</td>
+<td>Seed-node mass ratio</td>
+<td>0x / 1x / 3x payload</td>
 </tr>
 <tr>
-  <td>Shield geometry</td>
-  <td>none / disk / shallow cone / oblique / vented / hybrid</td>
+<td>Shield geometry</td>
+<td>none / disk / shallow cone / oblique / vented / hybrid</td>
 </tr>
 <tr>
-  <td>Destination result</td>
-  <td>D0 / D1 / D2 / D3</td>
+<td>Destination result</td>
+<td>D0 / D1 / D2 / D3</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>R1 passes only if all required gates close at once under a declared assumption set. A run where coupling works only by deleting bow-wall mass does not pass. A run where bow-wall survival requires impossible ring energy does not pass. A run where destination seeding works only by assuming mature destination infrastructure does not pass.</p>
-<h2 id="gate-a-powered-node-arc-coupling">Gate A - Powered Node/Arc Coupling</h2>
-<p>Gate A is the hardest physics gate. Passive static magnetism is not a source of net spacecraft acceleration. A static magnetic field passing a passive conductor induces currents whose force opposes relative motion. Passive susceptibility is therefore a control case, not a baseline solution.</p>
-<p>Distance-as-throttle remains useful, but only in the strict sense: encounter distance controls coupling magnitude. Net energy transfer and direction still require a powered or time-varying interaction, a powered ship-side magnetic moment, plasma/magsail coupling, or active phasing between nodes and ship.</p>
-<table>
+</div>
+  <div class="lang lang-sl"><h2>Referenčna misija R1</h2><p>R1 je sidrna misija, da simulacije ne odplavajo v nejasen optimizem.</p>
+<p>R1: brezposadna medzvezdna semenska sonda.</p>
+<ul>
+<li>zapusti Osončje po medzvezdni tirnici;</li>
+<li>preživi križarjenje za odvrgljivim ali zapustljivim sistemom sprednje stene;</li>
+<li>prispe kot hiter prelet ali kot misija delnega zajema;</li>
+<li>sprosti eno ali več uporabnih ciljnih vozlišč ali podsond;</li>
+<li>vrne podatke ali pusti infrastrukturno vrednost, tudi če polno zaviranje odpove.</li>
+</ul>
+<p>R1 je semenska misija, ne naselitvena misija.</p>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-  <th>Subgate</th>
-  <th>Mechanism</th>
-  <th>Primary cost</th>
-  <th>Status</th>
+<th>Parameter</th>
+<th>Vrednosti preleta</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td>A1 - Superconducting loop on ship</td>
-  <td>Ship carries a large superconducting current loop; node-field gradient acts on ship-side magnetic moment</td>
-  <td>Ship-side coil mass plus cryogenic envelope</td>
-  <td>Primary candidate</td>
+<td>Masa tovora</td>
+<td>10 kg / 100 kg / 1000 kg</td>
 </tr>
 <tr>
-  <td>A2 - Passive diamagnetic / ferromagnetic hull</td>
-  <td>Passive hull susceptibility in node-field gradient</td>
-  <td>Almost certainly too weak</td>
-  <td>Control case only</td>
+<td>Ciljna hitrost križarjenja</td>
+<td>0.01 c / 0.03 c / 0.05 c / 0.10 c</td>
 </tr>
 <tr>
-  <td>A3 - Mag-sail / e-sail in node plasma</td>
-  <td>Nodes generate a plasma sheath; ship interacts through a magnetic or electric sail</td>
-  <td>Node plasma-generation cost; ship-side coil</td>
-  <td>Strong candidate</td>
+<td>Masno razmerje sprednje stene</td>
+<td>0.3x / 1x / 3x / 10x tovora</td>
 </tr>
 <tr>
-  <td>A4 - Active ship electromagnet</td>
-  <td>Ship times coil current to attract or repel passing nodes</td>
-  <td>Ship-side power, timing, latency</td>
-  <td>Strong candidate</td>
+<td>Masno razmerje sklopitvene opreme</td>
+<td>1x / 3x / 10x tovora</td>
 </tr>
 <tr>
-  <td>A5 - Phased-field traveling wave</td>
-  <td>Nodes fire fields in sequence faster than ship speed; ship couples to the moving wave</td>
-  <td>Node energy storage and phase synchronization</td>
-  <td>Speculative wildcard</td>
+<td>Masno razmerje semenskih vozlišč</td>
+<td>0x / 1x / 3x tovora</td>
+</tr>
+<tr>
+<td>Geometrija ščita</td>
+<td>brez / disk / plitek stožec / poševen / prezračen / hibriden</td>
+</tr>
+<tr>
+<td>Rezultat na cilju</td>
+<td>D0 / D1 / D2 / D3</td>
 </tr>
 </tbody>
-</table>
+</table></div>
+<p>R1 prestane samo, če se vsa zahtevana vrata zaprejo hkrati pod deklariranim naborom predpostavk. Tek, kjer sklopitev deluje samo zato, ker izbrišemo maso sprednje stene, ne prestane. Tek, kjer preživetje stene zahteva nemogočo energijo loka, ne prestane. Tek, kjer sejanje cilja deluje samo ob predpostavki zrele ciljne infrastrukture, ne prestane.</p>
+</div>
+</section><section class="paper-section gate-section" id="gate-a-powered-node-arc-coupling">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Gate A - Powered Node/Arc Coupling</h2><p>Gate A is the hardest physics gate. Passive static magnetism is not a source of net spacecraft acceleration. A static magnetic field passing a passive conductor induces currents whose force opposes relative motion. Passive susceptibility is therefore a control case, not a baseline solution.</p>
+<p>Distance-as-throttle remains useful, but only in the strict sense: encounter distance controls coupling magnitude. Net energy transfer and direction still require a powered or time-varying interaction, a powered ship-side magnetic moment, plasma/magsail coupling, or active phasing between nodes and ship.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Subgate</th>
+<th>Mechanism</th>
+<th>Primary cost</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1 - Superconducting loop on ship</td>
+<td>Ship carries a large superconducting current loop; node-field gradient acts on ship-side magnetic moment</td>
+<td>Ship-side coil mass plus cryogenic envelope</td>
+<td>Primary candidate</td>
+</tr>
+<tr>
+<td>A2 - Passive diamagnetic / ferromagnetic hull</td>
+<td>Passive hull susceptibility in node-field gradient</td>
+<td>Almost certainly too weak</td>
+<td>Control case only</td>
+</tr>
+<tr>
+<td>A3 - Mag-sail / e-sail in node plasma</td>
+<td>Nodes generate a plasma sheath; ship interacts through a magnetic or electric sail</td>
+<td>Node plasma-generation cost; ship-side coil</td>
+<td>Strong candidate</td>
+</tr>
+<tr>
+<td>A4 - Active ship electromagnet</td>
+<td>Ship times coil current to attract or repel passing nodes</td>
+<td>Ship-side power, timing, latency</td>
+<td>Strong candidate</td>
+</tr>
+<tr>
+<td>A5 - Phased-field traveling wave</td>
+<td>Nodes fire fields in sequence faster than ship speed; ship couples to the moving wave</td>
+<td>Node energy storage and phase synchronization</td>
+<td>Speculative wildcard</td>
+</tr>
+</tbody>
+</table></div>
 <p>For A4 and A5, a first-order slip relation can be written as F proportional to (v_phase - v_ship). When the ship matches the phase velocity, net force trends toward zero. When the phase is ahead of the ship, acceleration is possible. The useful simulation output is not a slogan but impulse delivered per kilogram of infrastructure and per joule spent.</p>
-<h2 id="gate-b-proximity-encounter-smoothness-and-node-arc-stability">Gate B - Proximity Encounter Smoothness and Node-Arc Stability</h2>
-<p>Gate B asks whether a discrete node arc can behave as a smooth encounter field, not whether the spacecraft can ride a physical guideway. The relevant object is the spacecraft's acceleration time series during a close pass through overlapping field volumes.</p>
+</div>
+  <div class="lang lang-sl"><h2>Vrata A - sklopitev z napajanimi vozlišči/lokom</h2><p>Vrata A so najtežja fizikalna vrata. Pasivni statični magnetizem ni vir neto pospeševanja plovila. Statično magnetno polje, ki gre mimo pasivnega prevodnika, inducira tokove, katerih sila nasprotuje relativnemu gibanju. Pasivna susceptibilnost je zato kontrolni primer, ne osnovna rešitev.</p>
+<p>Razdalja kot ročica ostane uporabna, vendar samo v strogem smislu: razdalja pri srečanju nadzoruje jakost sklopitve. Neto prenos energije in smer še vedno zahtevata napajano ali časovno spremenljivo interakcijo, napajan magnetni moment na strani plovila, plazemsko/magnetno jadro ali aktivno faziranje med vozlišči in plovilom.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Podvrata</th>
+<th>Mehanizem</th>
+<th>Primarni strošek</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1 - superprevodna zanka na plovilu</td>
+<td>Plovilo nosi veliko superprevodno tokovno zanko; gradient polja vozlišča deluje na magnetni moment plovila</td>
+<td>masa zanke in kriogenski ovoj</td>
+<td>primarni kandidat</td>
+</tr>
+<tr>
+<td>A2 - pasiven diamagnetni / feromagnetni trup</td>
+<td>pasivna susceptibilnost trupa v gradientu polja vozlišča</td>
+<td>skoraj gotovo prešibko</td>
+<td>samo kontrolni primer</td>
+</tr>
+<tr>
+<td>A3 - magnetno/električno jadro v plazmi vozlišča</td>
+<td>vozlišča ustvarijo plazemski ovoj; plovilo interagira prek magnetnega ali električnega jadra</td>
+<td>strošek plazme vozlišča; zanka na plovilu</td>
+<td>močan kandidat</td>
+</tr>
+<tr>
+<td>A4 - aktiven elektromagnet plovila</td>
+<td>plovilo časovno uskladi tok zanke za privlak ali odboj mimoidočih vozlišč</td>
+<td>moč plovila, časovna uskladitev, zakasnitev</td>
+<td>močan kandidat</td>
+</tr>
+<tr>
+<td>A5 - faziran potujoči val polja</td>
+<td>vozlišča prožijo polja zaporedno hitreje od hitrosti plovila; plovilo se sklopi s potujočim valom</td>
+<td>hranilniki energije in fazna sinhronizacija</td>
+<td>špekulativna možnost</td>
+</tr>
+</tbody>
+</table></div>
+<p>Za A4 in A5 lahko prvi približek zapišemo kot zdrs: sila je sorazmerna z (v_phase - v_ship). Ko se plovilo ujema s fazno hitrostjo, neto sila teži proti nič. Ko je faza pred plovilom, je pospeševanje mogoče. Uporaben izhod simulacije ni slogan, temveč impulz na kilogram infrastrukture in na porabljen joule.</p>
+</div>
+</section><section class="paper-section gate-section" id="gate-b-proximity-encounter-smoothness-and-node-arc-stability">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Gate B - Proximity Encounter Smoothness and Node-Arc Stability</h2><p>Gate B asks whether a discrete node arc can behave as a smooth encounter field, not whether the spacecraft can ride a physical guideway. The relevant object is the spacecraft's acceleration time series during a close pass through overlapping field volumes.</p>
 <p>The first metrics are acceleration ripple, jerk, lateral impulse, node-failure tolerance, station-keeping cost, and reaction-force accumulation. A perfect simulated node arc is not enough; the gate must also test missing nodes, noisy orientation, finite field rise time, and repeated launches.</p>
 <ul>
 <li>R_ripple = sigma(a(t)) / (mean(a(t)) + epsilon), with robotic and fragile-payload thresholds declared separately;</li>
@@ -641,80 +943,170 @@ The ship approaches, peaks in coupling, and recedes. It does not travel along th
 <li>reaction accounting: every launch exchanges momentum with the node arc and must be paid back.</li>
 </ul>
 <p>Paired arcs or offset ringlets may act as a reaction-force management system. They should not be interpreted as two giant rigid rings. Their purpose is momentum bookkeeping and orbital recovery, not construction of a continuous mechanical guideway.</p>
-<h2 id="gate-c-detached-bow-wall-protection">Gate C - Detached Bow-Wall Protection</h2>
-<p>At interstellar cruise speeds, dust impact is a central survival problem. SORA concentrates forward protection into a detached sacrificial bow wall placed ahead of the main spacecraft. The baseline is deliberately simple: a thick detached disk or shallow cone. More complex geometries are variants, not defaults.</p>
+</div>
+  <div class="lang lang-sl"><h2>Vrata B - gladkost bližnjega srečanja in stabilnost loka vozlišč</h2><p>Vrata B sprašujejo, ali se diskretni lok vozlišč lahko vede kot gladko srečevalno polje, ne ali lahko plovilo vozi po fizičnem vodilu. Relevantni objekt je časovna vrsta pospeška plovila med bližnjim prehodom skozi prekrivajoče se prostornine polja.</p>
+<p>Prve metrike so valovanje pospeška, sunek, bočni impulz, toleranca izgube vozlišč, strošek vzdrževanja orbite in akumulacija reakcijske sile. Popoln simuliran lok ni dovolj; vrata morajo testirati tudi manjkajoča vozlišča, šum v orientaciji, končni čas naraščanja polja in ponavljajoče izstrelitve.</p>
+<ul>
+<li>R_ripple = sigma(a(t)) / (mean(a(t)) + epsilon), z ločeno deklariranimi pragovi za robotski in občutljiv tovor;</li>
+<li>J_max = max |da/dt|, ker tovor lahko preživi povprečen pospešek, odpove pa pri sunku;</li>
+<li>Delta p_perp = integral bočne sile skozi čas, ker je stranski impulz lahko tako škodljiv kot vzdolžno valovanje;</li>
+<li>testi izgube vozlišč: odstrani vsako k-to vozlišče in naključno odstrani p odstotkov vozlišč;</li>
+<li>vzdrževanje orbite: izračunaj delta-v na vozlišče na leto in stopnjo zamenjave vozlišč;</li>
+<li>račun reakcije: vsaka izstrelitev izmenja gibalno količino z lokom vozlišč in to je treba plačati nazaj.</li>
+</ul>
+<p>Parni loki ali zamaknjeni obročki lahko delujejo kot sistem upravljanja reakcijske sile. Ne smejo se brati kot dva velikanska toga obroča. Njihov namen je knjigovodstvo gibalne količine in orbitalno okrevanje, ne gradnja mehanskega vodila.</p>
+</div>
+</section><section class="paper-section gate-section" id="gate-c-detached-bow-wall-protection">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Gate C - Detached Bow-Wall Protection</h2><p>At interstellar cruise speeds, dust impact is a central survival problem. SORA concentrates forward protection into a detached sacrificial bow wall placed ahead of the main spacecraft. The baseline is deliberately simple: a thick detached disk or shallow cone. More complex geometries are variants, not defaults.</p>
 <p>No bow-wall geometry is promoted unless it beats the baseline at equal protected frontal area and equal or lower mass. This prevents attractive geometry from replacing engineering evidence.</p>
 <p>The wall must be evaluated against mechanical debris, plume expansion, thermal load, radiation pulse, formation control, erosion, and abandonment logic. A wall that protects against one impact mode while becoming a secondary debris source fails Gate C.</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-  <th>Metric</th>
-  <th>Question</th>
+<th>Metric</th>
+<th>Question</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td>Wall survival</td>
-  <td>Does the wall remain useful for the required cruise duration?</td>
+<td>Wall survival</td>
+<td>Does the wall remain useful for the required cruise duration?</td>
 </tr>
 <tr>
-  <td>Ship-facing fluence</td>
-  <td>Does debris or radiation reaching the ship stay below damage thresholds?</td>
+<td>Ship-facing fluence</td>
+<td>Does debris or radiation reaching the ship stay below damage thresholds?</td>
 </tr>
 <tr>
-  <td>Radiation pulse</td>
-  <td>Does local vaporization produce damaging X-ray / soft-gamma fluence?</td>
+<td>Radiation pulse</td>
+<td>Does local vaporization produce damaging X-ray / soft-gamma fluence?</td>
 </tr>
 <tr>
-  <td>Formation flight</td>
-  <td>Can the wall remain correctly positioned after impacts?</td>
+<td>Formation flight</td>
+<td>Can the wall remain correctly positioned after impacts?</td>
 </tr>
 <tr>
-  <td>Mass ratio</td>
-  <td>Does protection mass consume mission value?</td>
+<td>Mass ratio</td>
+<td>Does protection mass consume mission value?</td>
 </tr>
 <tr>
-  <td>Variant discipline</td>
-  <td>Does any cone, vented, or hybrid geometry beat the simple wall fairly?</td>
+<td>Variant discipline</td>
+<td>Does any cone, vented, or hybrid geometry beat the simple wall fairly?</td>
 </tr>
 </tbody>
-</table>
-<h2 id="gate-d-destination-seeding-and-capture">Gate D - Destination Seeding and Capture</h2>
-<p>Destination success is not binary. SORA does not require immediate mature deceleration infrastructure at the target star. The first mission may still create value as a flyby science mission, a partial node-capture mission, or a seed for later densification.</p>
-<table>
+</table></div>
+</div>
+  <div class="lang lang-sl"><h2>Vrata C - ločena sprednja zaščitna stena</h2><p>Pri medzvezdnih hitrostih križarjenja je trk s prahom osrednji problem preživetja. SORA koncentrira sprednjo zaščito v ločeno žrtveno steno pred glavnim plovilom. Osnovna različica je namerno preprosta: debel ločen disk ali plitek stožec. Bolj zapletene geometrije so variante, ne privzete rešitve.</p>
+<p>Nobena geometrija sprednje stene ni promovirana, dokler ne premaga osnovne rešitve pri enaki zaščiteni čelni površini in enaki ali nižji masi. To preprečuje, da bi privlačna geometrija nadomestila inženirske dokaze.</p>
+<p>Steno je treba oceniti glede mehanskih delcev, širjenja oblaka, toplotne obremenitve, sevalnega pulza, formacijskega letenja, erozije in logike opustitve. Stena, ki ščiti pred enim načinom trka, a sama postane vir sekundarnih delcev, odpove vrata C.</p>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-  <th>Outcome</th>
-  <th>Meaning</th>
-  <th>Role</th>
+<th>Metrika</th>
+<th>Vprašanje</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td>D0</td>
-  <td>Flyby returns scientific data; no useful node capture</td>
-  <td>acceptable fallback</td>
+<td>Preživetje stene</td>
+<td>Ali stena ostane uporabna zahtevano trajanje križarjenja?</td>
 </tr>
 <tr>
-  <td>D1</td>
-  <td>Nonzero useful seed-node capture; destination infrastructure begins</td>
-  <td>primary R1 target</td>
+<td>Fluenca proti plovilu</td>
+<td>Ali delci ali sevanje, ki dosežejo plovilo, ostanejo pod pragom škode?</td>
 </tr>
 <tr>
-  <td>D2</td>
-  <td>Repeated missions create a usable local node arc</td>
-  <td>stretch goal</td>
+<td>Sevalni pulz</td>
+<td>Ali lokalna uparitev ustvari škodljivo rentgensko / mehko gama fluenco?</td>
 </tr>
 <tr>
-  <td>D3</td>
-  <td>Mature destination infrastructure supports large-payload braking</td>
-  <td>long horizon</td>
+<td>Formacijski let</td>
+<td>Ali stena po trkih ostane pravilno postavljena?</td>
+</tr>
+<tr>
+<td>Masno razmerje</td>
+<td>Ali masa zaščite poje misijsko vrednost?</td>
+</tr>
+<tr>
+<td>Disciplina variant</td>
+<td>Ali katerikoli stožec, prezračena ali hibridna geometrija pošteno premaga preprosto steno?</td>
 </tr>
 </tbody>
-</table>
+</table></div>
+</div>
+</section><section class="paper-section gate-section" id="gate-d-destination-seeding-and-capture">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Gate D - Destination Seeding and Capture</h2><p>Destination success is not binary. SORA does not require immediate mature deceleration infrastructure at the target star. The first mission may still create value as a flyby science mission, a partial node-capture mission, or a seed for later densification.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Outcome</th>
+<th>Meaning</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D0</td>
+<td>Flyby returns scientific data; no useful node capture</td>
+<td>acceptable fallback</td>
+</tr>
+<tr>
+<td>D1</td>
+<td>Nonzero useful seed-node capture; destination infrastructure begins</td>
+<td>primary R1 target</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>Repeated missions create a usable local node arc</td>
+<td>stretch goal</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>Mature destination infrastructure supports large-payload braking</td>
+<td>long horizon</td>
+</tr>
+</tbody>
+</table></div>
 <p>Gate D passes only if a credible braking-and-capture combination captures useful nodes without the capture hardware mass dominating the node payload value. The destination architecture must be grown, not assumed.</p>
-<h2 id="gate-e-whole-architecture-closure">Gate E - Whole-Architecture Closure</h2>
-<p>Gates A through D can each pass individually while SORA fails. Gate E asks whether the whole stack closes simultaneously.</p>
+</div>
+  <div class="lang lang-sl"><h2>Vrata D - sejanje in zajem na cilju</h2><p>Uspeh na cilju ni binaren. SORA ne zahteva takoj zrele zaviralne infrastrukture pri ciljni zvezdi. Prva misija lahko še vedno ustvari vrednost kot znanstveni prelet, kot misija delnega zajema vozlišč ali kot seme za poznejše zgoščevanje.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Rezultat</th>
+<th>Pomen</th>
+<th>Vloga</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D0</td>
+<td>Prelet vrne znanstvene podatke; ni uporabnega zajema vozlišč</td>
+<td>sprejemljiv rezervni rezultat</td>
+</tr>
+<tr>
+<td>D1</td>
+<td>Neničelni zajem uporabnih semenskih vozlišč; ciljna infrastruktura se začne</td>
+<td>primarni cilj R1</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>Ponavljajoče misije ustvarijo uporaben lokalni lok vozlišč</td>
+<td>raztegnjen cilj</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>Zrela ciljna infrastruktura podpira zaviranje velikih tovorov</td>
+<td>dolg horizont</td>
+</tr>
+</tbody>
+</table></div>
+<p>Vrata D prestanejo samo, če verodostojna kombinacija zaviranja in zajema zajame uporabna vozlišča, ne da bi masa zajemne opreme prevladala nad vrednostjo vozlišča. Ciljno arhitekturo je treba vzgojiti, ne predpostaviti.</p>
+</div>
+</section><section class="paper-section gate-section" id="gate-e-whole-architecture-closure">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Gate E - Whole-Architecture Closure</h2><p>Gates A through D can each pass individually while SORA fails. Gate E asks whether the whole stack closes simultaneously.</p>
 <p>A pass statement must always include a declared mission class, speed band, payload, assumption file, and confidence class. There is no generic SORA pass.</p>
 <pre><code class="language-text">Example pass statement:
 R1 passes Gate E under assumptions file X at speed band Y, payload Z, and confidence class K.
@@ -722,153 +1114,313 @@ R1 passes Gate E under assumptions file X at speed band Y, payload Z, and confid
 Example fail statement:
 R1 fails Gate E because bow-wall mass exceeds useful payload fraction at all tested shielding assumptions.
 </code></pre>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-  <th>Closure dimension</th>
-  <th>Pass condition</th>
-  <th>Fail sign</th>
+<th>Closure dimension</th>
+<th>Pass condition</th>
+<th>Fail sign</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td>Mass</td>
-  <td>Useful payload fraction remains above declared minimum</td>
-  <td>Protection/coupler/seed mass consumes stack</td>
+<td>Mass</td>
+<td>Useful payload fraction remains above declared minimum</td>
+<td>Protection/coupler/seed mass consumes stack</td>
 </tr>
 <tr>
-  <td>Energy</td>
-  <td>Energy within declared solar capture and power envelope</td>
-  <td>Energy source becomes civilization-scale absurdity for tiny payload</td>
+<td>Energy</td>
+<td>Energy within declared solar capture and power envelope</td>
+<td>Energy source becomes civilization-scale absurdity for tiny payload</td>
 </tr>
 <tr>
-  <td>Coupling</td>
-  <td>Useful impulse without destructive heating</td>
-  <td>Passive or impossible field assumptions</td>
+<td>Coupling</td>
+<td>Useful impulse without destructive heating</td>
+<td>Passive or impossible field assumptions</td>
 </tr>
 <tr>
-  <td>Encounter smoothness</td>
-  <td>Acceleration ripple and jerk within payload limits</td>
-  <td>High ripple, jerk, or lateral impulse</td>
+<td>Encounter smoothness</td>
+<td>Acceleration ripple and jerk within payload limits</td>
+<td>High ripple, jerk, or lateral impulse</td>
 </tr>
 <tr>
-  <td>Reaction</td>
-  <td>Reusable node arc recovers after repeated launches</td>
-  <td>Station-keeping dominates</td>
+<td>Reaction</td>
+<td>Reusable node arc recovers after repeated launches</td>
+<td>Station-keeping dominates</td>
 </tr>
 <tr>
-  <td>Bow wall</td>
-  <td>Survival benefit per kg exceeds no-wall baseline</td>
-  <td>Wall becomes debris source</td>
+<td>Bow wall</td>
+<td>Survival benefit per kg exceeds no-wall baseline</td>
+<td>Wall becomes debris source</td>
 </tr>
 <tr>
-  <td>Destination</td>
-  <td>D1 or better for seed mission</td>
-  <td>Only D0 when D1 is required</td>
+<td>Destination</td>
+<td>D1 or better for seed mission</td>
+<td>Only D0 when D1 is required</td>
 </tr>
 <tr>
-  <td>Robustness</td>
-  <td>Small assumption changes do not destroy the island</td>
-  <td>Razor-thin lucky point only</td>
+<td>Robustness</td>
+<td>Small assumption changes do not destroy the island</td>
+<td>Razor-thin lucky point only</td>
 </tr>
 </tbody>
-</table>
-<h2 id="dynamic-mass-and-energy-ledger">Dynamic Mass and Energy Ledger</h2>
-<p>SORA is staged, so mass is not one number. The moving stack changes with mission phase.</p>
+</table></div>
+</div>
+  <div class="lang lang-sl"><h2>Vrata E - zaprtje celotne arhitekture</h2><p>Vrata A do D lahko vsaka posebej prestanejo, SORA pa še vedno odpove. Vrata E sprašujejo, ali se celoten sklad zapre hkrati.</p>
+<p>Izjava o uspehu mora vedno vključiti deklariran misijski razred, hitrostni pas, tovor, datoteko predpostavk in razred zaupanja. Ne obstaja generičen »SORA prestane«.</p>
+<pre><code class="language-text">Primer izjave o uspehu:
+R1 prestane vrata E pod datoteko predpostavk X, pri hitrostnem pasu Y, tovoru Z in razredu zaupanja K.
+
+Primer izjave o odpovedi:
+R1 odpove vrata E, ker masa sprednje stene preseže uporaben delež tovora pri vseh testiranih predpostavkah ščitenja.
+</code></pre>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Dimenzija zaprtja</th>
+<th>Pogoj uspeha</th>
+<th>Znak odpovedi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Masa</td>
+<td>Uporaben delež tovora ostane nad deklariranim minimumom</td>
+<td>zaščita/sklopitev/semena pojedo sklad</td>
+</tr>
+<tr>
+<td>Energija</td>
+<td>Energija je znotraj deklarirane sončne zajemne in napajalne ovojnice</td>
+<td>vir energije postane civilizacijsko absurden za majhen tovor</td>
+</tr>
+<tr>
+<td>Sklopitev</td>
+<td>Uporaben impulz brez uničujočega segrevanja</td>
+<td>pasivne ali nemogoče predpostavke polja</td>
+</tr>
+<tr>
+<td>Gladkost srečanja</td>
+<td>Valovanje pospeška in sunek sta znotraj omejitev tovora</td>
+<td>visoko valovanje, sunek ali bočni impulz</td>
+</tr>
+<tr>
+<td>Reakcija</td>
+<td>Ponovno uporaben lok vozlišč okreva po več izstrelitvah</td>
+<td>vzdrževanje orbite prevlada</td>
+</tr>
+<tr>
+<td>Sprednja stena</td>
+<td>Korist preživetja na kilogram preseže osnovo brez stene</td>
+<td>stena postane vir delcev</td>
+</tr>
+<tr>
+<td>Cilj</td>
+<td>D1 ali boljše za semensko misijo</td>
+<td>samo D0, ko je zahtevan D1</td>
+</tr>
+<tr>
+<td>Robustnost</td>
+<td>Majhne spremembe predpostavk ne uničijo otoka</td>
+<td>osamljen srečen punkt</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</section><section class="paper-section" id="dynamic-mass-and-energy-ledger">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Dynamic Mass and Energy Ledger</h2><p>SORA is staged, so mass is not one number. The moving stack changes with mission phase.</p>
 <pre><code class="language-text">M_stack(t) = M_payload + M_bus(t) + M_coupler(t) + M_sail(t) + M_wall(t) + M_seed(t) + M_margin(t)
 </code></pre>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-  <th>Event</th>
-  <th>Ledger effect</th>
+<th>Event</th>
+<th>Ledger effect</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td>Assembly</td>
-  <td>Full stack exists</td>
+<td>Assembly</td>
+<td>Full stack exists</td>
 </tr>
 <tr>
-  <td>Sail deployment</td>
-  <td>Sail area active; thermal limits apply</td>
+<td>Sail deployment</td>
+<td>Sail area active; thermal limits apply</td>
 </tr>
 <tr>
-  <td>Sail jettison or retention</td>
-  <td>Sail mass is removed or repurposed</td>
+<td>Sail jettison or retention</td>
+<td>Sail mass is removed or repurposed</td>
 </tr>
 <tr>
-  <td>Node/arc coupling</td>
-  <td>Coupler active; heating and field loads apply</td>
+<td>Node/arc coupling</td>
+<td>Coupler active; heating and field loads apply</td>
 </tr>
 <tr>
-  <td>Coupler dormancy or discard</td>
-  <td>Coupler mass is removed or deactivated if possible</td>
+<td>Coupler dormancy or discard</td>
+<td>Coupler mass is removed or deactivated if possible</td>
 </tr>
 <tr>
-  <td>Perihelion pass</td>
-  <td>Thermal and trajectory constraints dominate</td>
+<td>Perihelion pass</td>
+<td>Thermal and trajectory constraints dominate</td>
 </tr>
 <tr>
-  <td>Bow-wall deployment</td>
-  <td>Wall moved forward; formation control active</td>
+<td>Bow-wall deployment</td>
+<td>Wall moved forward; formation control active</td>
 </tr>
 <tr>
-  <td>Wall erosion or abandonment</td>
-  <td>Wall mass decreases or is discarded</td>
+<td>Wall erosion or abandonment</td>
+<td>Wall mass decreases or is discarded</td>
 </tr>
 <tr>
-  <td>Destination node release</td>
-  <td>Seed mass decreases; destination value may increase</td>
+<td>Destination node release</td>
+<td>Seed mass decreases; destination value may increase</td>
 </tr>
 <tr>
-  <td>Terminal flyby or partial capture</td>
-  <td>D0-D3 outcome assigned</td>
+<td>Terminal flyby or partial capture</td>
+<td>D0-D3 outcome assigned</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Kinetic energy should be modeled with the relativistic expression E_k = (gamma - 1) M_stack c^2, while the classical approximation 0.5 M_stack v^2 remains useful at lower speeds. The simulator must also model transfer efficiency and punish unrealistic stage efficiency.</p>
-<h2 id="control-and-autonomy-mdl-x-dcc-as-candidate-governance">Control and Autonomy: MDL x DCC as Candidate Governance</h2>
-<p>MDL x DCC remains useful, but only as a candidate governance method. It is not proof of feasibility. It can be used to choose among competing control actions under mass, energy, risk, and timing cost.</p>
-<table>
+</div>
+  <div class="lang lang-sl"><h2>Dinamični masni in energijski obračun</h2><p>SORA je stopnjevana, zato masa ni ena številka. Gibajoči se sklad se spreminja z misijsko fazo.</p>
+<pre><code class="language-text">M_stack(t) = M_payload + M_bus(t) + M_coupler(t) + M_sail(t) + M_wall(t) + M_seed(t) + M_margin(t)
+</code></pre>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-  <th>Subsystem</th>
-  <th>Governance question</th>
+<th>Dogodek</th>
+<th>Učinek na obračun</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td>Node</td>
-  <td>Which field orientation, timing, and power setting is simplest and safest?</td>
+<td>Sestavljanje</td>
+<td>obstaja celoten sklad</td>
 </tr>
 <tr>
-  <td>Arc sector</td>
-  <td>Which nodes should fire, stand down, or recover?</td>
+<td>Razprtje jadra</td>
+<td>aktivna površina jadra; toplotne omejitve veljajo</td>
 </tr>
 <tr>
-  <td>Spacecraft coupler</td>
-  <td>How close to pass and when to shed or deactivate hardware?</td>
+<td>Odvrženo ali obdržano jadro</td>
+<td>masa jadra se odstrani ali preuredi</td>
 </tr>
 <tr>
-  <td>Bow wall</td>
-  <td>Hold, correct, rotate, abandon, or replace?</td>
+<td>Sklopitev z vozliščem/lokom</td>
+<td>sklopnik aktiven; veljajo toplota in obremenitve polja</td>
 </tr>
 <tr>
-  <td>Destination seeding</td>
-  <td>Release which node when, or keep it?</td>
+<td>Mirovanje ali odmet sklopnika</td>
+<td>masa sklopnika se odstrani ali deaktivira, če je mogoče</td>
 </tr>
 <tr>
-  <td>Full mission</td>
-  <td>Which branch minimizes description plus residual risk?</td>
+<td>Prehod skozi perihelij</td>
+<td>prevladajo toplotne in tirnične omejitve</td>
+</tr>
+<tr>
+<td>Razprtje sprednje stene</td>
+<td>stena se premakne naprej; formacijski nadzor aktiven</td>
+</tr>
+<tr>
+<td>Erozija ali opustitev stene</td>
+<td>masa stene se zmanjša ali odvrže</td>
+</tr>
+<tr>
+<td>Sprostitev ciljnih vozlišč</td>
+<td>masa semen se zmanjša; ciljna vrednost se lahko poveča</td>
+</tr>
+<tr>
+<td>Končni prelet ali delni zajem</td>
+<td>dodeljen izid D0-D3</td>
 </tr>
 </tbody>
-</table>
+</table></div>
+<p>Kinetično energijo je treba modelirati z relativističnim izrazom E_k = (gamma - 1) M_stack c^2, medtem ko je klasični približek 0.5 M_stack v^2 uporaben pri nižjih hitrostih. Simulator mora modelirati tudi učinkovitost prenosa in kaznovati nerealno učinkovitost stopenj.</p>
+</div>
+</section><section class="paper-section" id="control-and-autonomy-mdl-x-dcc-as-candidate-governance">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Control and Autonomy: MDL x DCC as Candidate Governance</h2><p>MDL x DCC remains useful, but only as a candidate governance method. It is not proof of feasibility. It can be used to choose among competing control actions under mass, energy, risk, and timing cost.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Subsystem</th>
+<th>Governance question</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node</td>
+<td>Which field orientation, timing, and power setting is simplest and safest?</td>
+</tr>
+<tr>
+<td>Arc sector</td>
+<td>Which nodes should fire, stand down, or recover?</td>
+</tr>
+<tr>
+<td>Spacecraft coupler</td>
+<td>How close to pass and when to shed or deactivate hardware?</td>
+</tr>
+<tr>
+<td>Bow wall</td>
+<td>Hold, correct, rotate, abandon, or replace?</td>
+</tr>
+<tr>
+<td>Destination seeding</td>
+<td>Release which node when, or keep it?</td>
+</tr>
+<tr>
+<td>Full mission</td>
+<td>Which branch minimizes description plus residual risk?</td>
+</tr>
+</tbody>
+</table></div>
 <pre><code class="language-text">L_total = L_model + L_residual + L_risk + L_energy + L_mass
 </code></pre>
 <p>The chosen action is not the most exciting action. It is the action with the smallest total description plus residual cost. The DCC layer gates action under limited budgets: do nothing if signal is weak, escalate when a failure mode crosses threshold, allocate energy where intervention matters most, avoid chaotic switching, and preserve a few high-value alternatives instead of hardcoding one path.</p>
-<h2 id="sora-0-demonstrator">SORA-0 Demonstrator</h2>
-<p>Before any interstellar claim, SORA should be reduced to a local physics experiment. SORA-0 is not a star mission. It is a demonstrator for the coupling and encounter-smoothness ideas.</p>
+</div>
+  <div class="lang lang-sl"><h2>Nadzor in avtonomija: MDL x DCC kot kandidat za upravljanje</h2><p>MDL x DCC ostaja uporaben, vendar samo kot kandidat za upravljanje. Ni dokaz izvedljivosti. Uporabi se lahko za izbiro med konkurenčnimi krmilnimi dejanji pod stroški mase, energije, tveganja in časovne uskladitve.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Podsistem</th>
+<th>Upravljavsko vprašanje</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vozlišče</td>
+<td>Katera orientacija polja, časovna nastavitev in moč je najpreprostejša in najvarnejša?</td>
+</tr>
+<tr>
+<td>Sektor loka</td>
+<td>Katera vozlišča naj prožijo, počivajo ali okrevajo?</td>
+</tr>
+<tr>
+<td>Sklopnik plovila</td>
+<td>Kako blizu naj gre mimo in kdaj odvreči ali deaktivirati opremo?</td>
+</tr>
+<tr>
+<td>Sprednja stena</td>
+<td>Drži, popravi, zavrti, opusti ali zamenjaj?</td>
+</tr>
+<tr>
+<td>Sejanje cilja</td>
+<td>Katero vozlišče sprostiti kdaj, ali ga obdržati?</td>
+</tr>
+<tr>
+<td>Celotna misija</td>
+<td>Katera veja minimizira opis in preostalo tveganje?</td>
+</tr>
+</tbody>
+</table></div>
+<pre><code class="language-text">L_total = L_model + L_residual + L_risk + L_energy + L_mass
+</code></pre>
+<p>Izbrano dejanje ni najbolj vznemirljivo dejanje. Je dejanje z najmanjšim skupnim opisom plus preostalim stroškom. Plast DCC odpira akcijo pod omejenimi proračuni: ne stori nič, če je signal šibek; eskaliraj, ko način odpovedi preseže prag; dodeli energijo tja, kjer intervencija največ pomeni; izogni se kaotičnemu preklapljanju; ohrani nekaj visokovrednih alternativ namesto, da vnaprej zakleneš eno pot.</p>
+</div>
+</section><section class="paper-section" id="sora-0-demonstrator">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>SORA-0 Demonstrator</h2><p>Before any interstellar claim, SORA should be reduced to a local physics experiment. SORA-0 is not a star mission. It is a demonstrator for the coupling and encounter-smoothness ideas.</p>
 <ul>
 <li>one or more small free-flying powered nodes;</li>
 <li>a small spacecraft-side coupling loop or active coil;</li>
@@ -878,8 +1430,21 @@ R1 fails Gate E because bow-wall mass exceeds useful payload fraction at all tes
 <li>safe deactivation and failure-mode testing.</li>
 </ul>
 <p>A stricter demonstrator concept uses two superconducting magnetic nodes and one test payload. Success means measured nontrivial impulse transfer, predictable distance-as-throttle behavior, manageable heating, controllable orientation, and closed energy and momentum books across all bodies. SORA-0 does not need to be fast. It needs to be honest.</p>
-<h2 id="sora-sim-initial-software-specification">SORA-Sim: Initial Software Specification</h2>
-<p>The next concrete artifact is a small software scaffold that turns the paper into falsifiable numbers.</p>
+</div>
+  <div class="lang lang-sl"><h2>Demonstrator SORA-0</h2><p>Pred vsako medzvezdno trditvijo je treba SORA zmanjšati na lokalni fizikalni eksperiment. SORA-0 ni zvezdna misija. Je demonstrator idej sklopitve in gladkosti srečanja.</p>
+<ul>
+<li>eno ali več majhnih prosto letečih napajanih vozlišč;</li>
+<li>majhna sklopitvena zanka ali aktivna tuljava na strani plovila;</li>
+<li>nadzorovan relativni prelet;</li>
+<li>izmerjen impulz, segrevanje in bočna napaka;</li>
+<li>ponovljeni prehodi z različnimi profili razdalje;</li>
+<li>varna deaktivacija in testiranje odpovedi.</li>
+</ul>
+<p>Strožji demonstrator uporablja dve superprevodni magnetni vozlišči in en testni tovor. Uspeh pomeni izmerjen neničelni prenos impulza, predvidljivo vedenje razdalje kot ročice, obvladljivo segrevanje, nadzorljivo orientacijo ter zaprte energijske in gibalne knjige za vsa telesa. SORA-0 ne rabi biti hitra. Biti mora poštena.</p>
+</div>
+</section><section class="paper-section" id="sora-sim-initial-software-specification">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>SORA-Sim: Initial Software Specification</h2><p>The next concrete artifact is a small software scaffold that turns the paper into falsifiable numbers.</p>
 <pre><code class="language-text">sora_sim/
   assumptions.yaml
   mass_ledger.py
@@ -904,8 +1469,36 @@ outputs/
   assumptions_hash.txt
 </code></pre>
 <p>Every run should report mission class, payload mass, stack mass, target speed, node count, coupling mechanism, wall mass ratio, wall geometry, capture fraction, energy per payload kg, gate tags, limiting gate, closure score, and assumptions hash. A parameter island is a connected region of assumption space where all required gates pass or remain yellow under a declared mission class. A single lucky point is not an island.</p>
-<h2 id="minimum-run-plan">Minimum Run Plan</h2>
-<ol>
+</div>
+  <div class="lang lang-sl"><h2>SORA-Sim: začetna programska specifikacija</h2><p>Naslednji konkreten artefakt je majhna programska ogrodna zbirka, ki članek spremeni v falsifikabilne številke.</p>
+<pre><code class="language-text">sora_sim/
+  assumptions.yaml
+  mass_ledger.py
+  node_arc_coupling.py
+  proximity_smoothness.py
+  arc_reaction.py
+  bow_wall.py
+  destination_seed.py
+  gate_score.py
+  run_sweep.py
+  plots.py
+  README.md
+
+outputs/
+  parameter_islands.csv
+  failed_regions.csv
+  gate_A_ring_coupling.csv
+  gate_B_smoothness.csv
+  gate_C_bow_wall.csv
+  gate_D_destination_seed.csv
+  gate_E_stack_closure.csv
+  assumptions_hash.txt
+</code></pre>
+<p>Vsak tek naj poroča misijski razred, maso tovora, maso sklada, ciljno hitrost, število vozlišč, sklopitveni mehanizem, masno razmerje stene, geometrijo stene, delež zajema, energijo na kilogram tovora, oznake vrat, omejujoča vrata, oceno zaprtja in hash predpostavk. Parameterki otok je povezana regija prostora predpostavk, kjer vsa zahtevana vrata prestanejo ali ostanejo rumena pod deklariranim razredom misije. En sam srečen punkt ni otok.</p>
+</div>
+</section><section class="paper-section" id="minimum-run-plan">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Minimum Run Plan</h2><ol>
 <li>Run a coarse R1 sweep at 10 kg payload and 0.01 c.</li>
 <li>Identify which gate fails first.</li>
 <li>Repeat at 100 kg and 1000 kg.</li>
@@ -914,8 +1507,20 @@ outputs/
 <li>Report the limiting gate honestly.</li>
 </ol>
 <p>The simulation should use declared assumptions, not hidden optimism. If the first sweep finds no parameter island even under generous assumptions, SORA should be compressed, not defended rhetorically.</p>
-<h2 id="what-would-falsify-sora">What Would Falsify SORA</h2>
-<p>SORA should shrink or stop if any of the following occurs:</p>
+</div>
+  <div class="lang lang-sl"><h2>Minimalni načrt tekov</h2><ol>
+<li>Zaženi grob R1 prelet pri 10 kg tovora in 0.01 c.</li>
+<li>Ugotovi, katera vrata odpovejo prva.</li>
+<li>Ponovi pri 100 kg in 1000 kg.</li>
+<li>Hitrost povečaj samo, če nižji hitrostni otok preživi.</li>
+<li>Primerjaj brez stene, disk, stožec in eno visoko potencialno varianto stene.</li>
+<li>Pošteno poročaj omejujoča vrata.</li>
+</ol>
+<p>Simulacija naj uporablja deklarirane predpostavke, ne skritega optimizma. Če prvi prelet ne najde parameterkega otoka niti pod radodarnimi predpostavkami, je treba SORA stisniti, ne retorično braniti.</p>
+</div>
+</section><section class="paper-section" id="what-would-falsify-sora">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>What Would Falsify SORA</h2><p>SORA should shrink or stop if any of the following occurs:</p>
 <ol>
 <li>Gate A shows no useful coupling island without impossible field strength, coil mass, or heating.</li>
 <li>Gate B shows unavoidable acceleration ripple or reaction costs that scale beyond repair.</li>
@@ -925,49 +1530,105 @@ outputs/
 <li>The first simulator finds no low-speed R1 island even under generous assumptions.</li>
 </ol>
 <p>The correct response to falsification is compression: keep the surviving sub-result and discard the failing architecture branch.</p>
-<h2 id="partial-failure-value">Partial Failure Value</h2>
-<p>SORA should not be evaluated only as complete starship or useless. Partial failures may still be valuable.</p>
-<table>
+</div>
+  <div class="lang lang-sl"><h2>Kaj bi falsificiralo SORA</h2><p>SORA naj se skrči ali ustavi, če se zgodi karkoli od naslednjega:</p>
+<ol>
+<li>Vrata A ne pokažejo uporabnega otoka sklopitve brez nemogočne jakosti polja, mase tuljave ali segrevanja.</li>
+<li>Vrata B pokažejo neizogibno valovanje pospeška ali reakcijske stroške, ki rastejo preko popravljivosti.</li>
+<li>Vrata C pokažejo, da je stena vedno slabši vir delcev ali masna kazen kot osnova brez stene.</li>
+<li>Vrata D pokažejo, da nobena nošena semenska arhitektura ne doseže D1 ali bolje pod nekrožnimi predpostavkami.</li>
+<li>Vrata E pokažejo, da uspeh vsakega podsistema zahteva predpostavke, ki povzročijo odpoved drugega podsistema.</li>
+<li>Prvi simulator ne najde nizkohitrostnega otoka R1 niti pod radodarnimi predpostavkami.</li>
+</ol>
+<p>Pravilen odziv na falsifikacijo je kompresija: obdrži preživeli podrezultat in zavrzi odpovedano arhitekturno vejo.</p>
+</div>
+</section><section class="paper-section" id="partial-failure-value">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Partial Failure Value</h2><p>SORA should not be evaluated only as complete starship or useless. Partial failures may still be valuable.</p>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-  <th>Surviving element</th>
-  <th>Value even if full SORA fails</th>
+<th>Surviving element</th>
+<th>Value even if full SORA fails</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td>Coupling model</td>
-  <td>High-power orbital energy-transfer research</td>
+<td>Coupling model</td>
+<td>High-power orbital energy-transfer research</td>
 </tr>
 <tr>
-  <td>Smooth node arc</td>
-  <td>Distributed infrastructure control</td>
+<td>Smooth node arc</td>
+<td>Distributed infrastructure control</td>
 </tr>
 <tr>
-  <td>Dynamic mass ledger</td>
-  <td>Rigorous mission-design discipline</td>
+<td>Dynamic mass ledger</td>
+<td>Rigorous mission-design discipline</td>
 </tr>
 <tr>
-  <td>Detached bow-wall modeling</td>
-  <td>Interstellar dust-shielding insight</td>
+<td>Detached bow-wall modeling</td>
+<td>Interstellar dust-shielding insight</td>
 </tr>
 <tr>
-  <td>Destination seed model</td>
-  <td>Architecture for staged exploration</td>
+<td>Destination seed model</td>
+<td>Architecture for staged exploration</td>
 </tr>
 <tr>
-  <td>SORA-0 demonstrator</td>
-  <td>Measurable field-coupling data</td>
+<td>SORA-0 demonstrator</td>
+<td>Measurable field-coupling data</td>
 </tr>
 <tr>
-  <td>MDL x DCC governance</td>
-  <td>Control selection under multi-subsystem cost</td>
+<td>MDL x DCC governance</td>
+<td>Control selection under multi-subsystem cost</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>A cleanly failing SORA can still generate publishable engineering sub-results.</p>
-<h2 id="external-dependencies">External Dependencies</h2>
-<p>Several scientific developments outside SORA's control would transform or kill the architecture:</p>
+</div>
+  <div class="lang lang-sl"><h2>Vrednost delne odpovedi</h2><p>SORA se ne sme ocenjevati samo kot popolna zvezdna ladja ali ničvredna ideja. Delne odpovedi so lahko še vedno vredne.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Preživeli element</th>
+<th>Vrednost tudi, če polna SORA odpove</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model sklopitve</td>
+<td>raziskave visokoenergijskega orbitalnega prenosa energije</td>
+</tr>
+<tr>
+<td>Gladek lok vozlišč</td>
+<td>porazdeljen nadzor infrastrukture</td>
+</tr>
+<tr>
+<td>Dinamični masni obračun</td>
+<td>stroga disciplina misijskega načrtovanja</td>
+</tr>
+<tr>
+<td>Modeliranje ločene sprednje stene</td>
+<td>vpogled v medzvezdno zaščito pred prahom</td>
+</tr>
+<tr>
+<td>Model ciljnega semena</td>
+<td>arhitektura stopnjevanega raziskovanja</td>
+</tr>
+<tr>
+<td>Demonstrator SORA-0</td>
+<td>merljivi podatki o sklopitvi polja</td>
+</tr>
+<tr>
+<td>Upravljanje MDL x DCC</td>
+<td>izbor nadzora pod večpodsistemskimi stroški</td>
+</tr>
+</tbody>
+</table></div>
+<p>Čisto odpovedana SORA lahko še vedno ustvari objavljive inženirske podrezultate.</p>
+</div>
+</section><section class="paper-section" id="external-dependencies">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>External Dependencies</h2><p>Several scientific developments outside SORA's control would transform or kill the architecture:</p>
 <ul>
 <li>Room-temperature high-field superconductors would reduce A1 ship-side coupling mass and improve subgates that depend on superconductor mass.</li>
 <li>Practical electric sails at high efficiency would strengthen destination capture and seeding options.</li>
@@ -975,35 +1636,77 @@ outputs/
 <li>Asteroid-belt mining or equivalent in-space mass economy is likely required for SORA-I and above.</li>
 <li>Working compact fusion drives would weaken SORA's case for some missions, because self-contained fusion competes without large launch infrastructure.</li>
 </ul>
-<h2 id="confidence-map">Confidence Map</h2>
-<table>
+</div>
+  <div class="lang lang-sl"><h2>Zunanje odvisnosti</h2><p>Več znanstvenih razvojev zunaj nadzora SORA bi arhitekturo preoblikovalo ali ubilo:</p>
+<ul>
+<li>Sobno temperaturni visokopoljski superprevodniki bi zmanjšali maso A1 sklopitve na strani plovila in izboljšali podvrata, ki so odvisna od mase superprevodnika.</li>
+<li>Praktična električna jadra z visoko učinkovitostjo bi okrepila možnosti zajema in sejanja na cilju.</li>
+<li>Aktivno odklanjanje prahu bi lahko preoblikovalo ali nadomestilo analizo sprednje stene, zaščito pa premaknilo iz pasivne mase v aktivno moč.</li>
+<li>Rudarjenje asteroidnega pasu ali enakovredna ekonomija mase v vesolju je verjetno potrebna za SORA-I in višje.</li>
+<li>Delujoči kompaktni fuzijski pogoni bi za nekatere misije oslabili argument SORA, ker samostojna fuzija tekmuje brez velike izstrelitvene infrastrukture.</li>
+</ul>
+</div>
+</section><section class="paper-section" id="confidence-map">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Confidence Map</h2><div class="table-wrap"><table>
 <thead>
 <tr>
-  <th>Band</th>
-  <th>Claims</th>
+<th>Band</th>
+<th>Claims</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td>High confidence</td>
-  <td>The ship-as-payload, solar-system-as-accelerator reframe is coherent; energy is not the main bottleneck; independent orbital nodes are a better starting concept than rigid rings; relativistic dust requires forward protection; destination infrastructure must be grown, not assumed.</td>
+<td>High confidence</td>
+<td>The ship-as-payload, solar-system-as-accelerator reframe is coherent; energy is not the main bottleneck; independent orbital nodes are a better starting concept than rigid rings; relativistic dust requires forward protection; destination infrastructure must be grown, not assumed.</td>
 </tr>
 <tr>
-  <td>Medium confidence</td>
-  <td>Solar sails are useful as Stage 1; distance-as-throttle is valuable as coupling-magnitude control; dual-ship redundancy is a robust pattern; detached shielding is conceptually superior to bolted armor for shock decoupling; bow-wall material selection should be by areal survival rather than hardness.</td>
+<td>Medium confidence</td>
+<td>Solar sails are useful as Stage 1; distance-as-throttle is valuable as coupling-magnitude control; dual-ship redundancy is a robust pattern; detached shielding is conceptually superior to bolted armor for shock decoupling; bow-wall material selection should be by areal survival rather than hardness.</td>
 </tr>
 <tr>
-  <td>Low / speculative confidence</td>
-  <td>Node arcs accelerate useful spacecraft to 0.03-0.10 c at affordable infrastructure mass; field-overlap smoothness works at large scale; paired arcs manage reaction force economically; detached bow walls survive multiyear relativistic cruise; destination nodes are captured into useful orbits at acceptable mass.</td>
+<td>Low / speculative confidence</td>
+<td>Node arcs accelerate useful spacecraft to 0.03-0.10 c at affordable infrastructure mass; field-overlap smoothness works at large scale; paired arcs manage reaction force economically; detached bow walls survive multiyear relativistic cruise; destination nodes are captured into useful orbits at acceptable mass.</td>
 </tr>
 </tbody>
-</table>
-<h2 id="conclusion">Conclusion</h2>
-<p>SORA is strongest when it is vulnerable. It states what it does not claim. It names five gates with pass/fail metrics. It rejects passive static-field propulsion language. It treats the first serious mission as a slow uncrewed seed probe, not a human-timescale starship. It admits that the most architecturally original idea - destination self-extension through carried seed nodes - remains untested until simulation.</p>
+</table></div>
+</div>
+  <div class="lang lang-sl"><h2>Zemljevid zaupanja</h2><div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Pas</th>
+<th>Trditve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Visoko zaupanje</td>
+<td>Okvir plovilo-kot-tovor in Osončje-kot-pospeševalnik je koherenten; energija ni glavno ozko grlo; neodvisna orbitalna vozlišča so boljši začetek kot togi obroči; relativistični prah zahteva sprednjo zaščito; ciljna infrastruktura mora zrasti, ne biti predpostavljena.</td>
+</tr>
+<tr>
+<td>Srednje zaupanje</td>
+<td>Sončna jadra so koristna kot prva stopnja; razdalja kot ročica je uporabna za jakost sklopitve; dvojna plovila so robusten vzorec; ločena zaščita je konceptualno boljša od privijačenega oklepa za ločitev udarnega šoka; izbor materiala stene mora temeljiti na preživetju na površinsko maso, ne na trdoti.</td>
+</tr>
+<tr>
+<td>Nizko / špekulativno zaupanje</td>
+<td>Loki vozlišč pospešijo uporabna plovila do 0.03-0.10 c pri dostopni masi infrastrukture; gladkost prekrivanja polj deluje pri veliki skali; parni loki ekonomično upravljajo reakcijsko silo; ločene sprednje stene preživijo večletno relativistično križarjenje; ciljna vozlišča se zajamejo v uporabne orbite pri sprejemljivi masi.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</section><section class="paper-section" id="conclusion">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Conclusion</h2><p>SORA is strongest when it is vulnerable. It states what it does not claim. It names five gates with pass/fail metrics. It rejects passive static-field propulsion language. It treats the first serious mission as a slow uncrewed seed probe, not a human-timescale starship. It admits that the most architecturally original idea - destination self-extension through carried seed nodes - remains untested until simulation.</p>
 <p>What SORA provides is a finite test program. If the first simulator finds no parameter island, SORA still improves the map by identifying where the wall is. If it finds a small island for a slow uncrewed seed probe, the architecture graduates from internal coherence to toy-model closure. That would not prove feasibility. It would prove the next round is worth doing.</p>
 <p>SORA may fail. But it should fail through named gates, not fog.</p>
-<h2 id="appendix-compact-equations">Appendix: Compact Equations</h2>
-<pre><code class="language-text">Relativistic kinetic energy:
+</div>
+  <div class="lang lang-sl"><h2>Zaključek</h2><p>SORA je najmočnejša, ko je ranljiva. Pove, česa ne trdi. Poimenuje pet vrat z metrikami uspeha in odpovedi. Zavrne jezik pasivnega statičnega poljskega pogona. Prvo resno misijo obravnava kot počasno brezposadno semensko sondo, ne kot posadkovno zvezdno ladjo v človeškem časovnem merilu. Prizna, da najbolj arhitekturno izvirna ideja — samorazširitev cilja prek nošenih semenskih vozlišč — ostaja netestirana do simulacije.</p>
+<p>SORA ponuja končen testni program. Če prvi simulator ne najde parameterkega otoka, SORA še vedno izboljša zemljevid, ker pokaže, kje je stena. Če najde majhen otok za počasno brezposadno semensko sondo, arhitektura napreduje iz notranje koherence v zaprtje igračnega modela. To ne bi dokazalo izvedljivosti. Dokazalo bi, da je naslednji krog vreden dela.</p>
+<p>SORA lahko odpove. Toda odpovedati mora skozi poimenovana vrata, ne skozi meglo.</p>
+</div>
+</section><section class="paper-section" id="appendix-compact-equations">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Appendix: Compact Equations</h2><pre><code class="language-text">Relativistic kinetic energy:
 E_k = (gamma - 1) m c^2
 
 Classical low-speed approximation:
@@ -1033,8 +1736,41 @@ R_ripple = sigma(a(t)) / (mean(a(t)) + epsilon)
 Bow-wall value ratio:
 R_wall = risk reduction / (energy + mass + control + debris penalty)
 </code></pre>
-<h2 id="appendix-r1-sweep-template">Appendix: R1 Sweep Template</h2>
-<p>The first sweep should be emitted as CSV or JSONL rather than as a wide prose table. Minimum columns:</p>
+</div>
+  <div class="lang lang-sl"><h2>Dodatek: kompaktne enačbe</h2><pre><code class="language-text">Relativistična kinetična energija:
+E_k = (gamma - 1) m c^2
+
+Klasični nizkohitrostni približek:
+E_k approx 0.5 m v^2
+
+Lorentzev faktor:
+gamma = 1 / sqrt(1 - v^2/c^2)
+
+Idealni tlak sevanja pri odbojnem jadru:
+P_rad = 2 L_sun / (4 pi r^2 c)
+
+Magnetni moment zanke:
+mu = I A
+
+Igračni model sile sklopitve:
+F approx grad(mu dot B)
+
+Impulz vozlišča:
+Delta p_node = integral F(t) dt
+
+Učinkovitost sklopitve:
+eta_couple = Delta E_ship / E_node_spent
+
+Indeks valovanja:
+R_ripple = sigma(a(t)) / (mean(a(t)) + epsilon)
+
+Razmerje vrednosti sprednje stene:
+R_wall = risk reduction / (energy + mass + control + debris penalty)
+</code></pre>
+</div>
+</section><section class="paper-section" id="appendix-r1-sweep-template">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Appendix: R1 Sweep Template</h2><p>The first sweep should be emitted as CSV or JSONL rather than as a wide prose table. Minimum columns:</p>
 <pre><code class="language-text">run_id,payload_kg,v_frac_c,wall_ratio,coupler_ratio,seed_ratio,shield,gate_A,gate_B,gate_C,gate_D,gate_E,limiting_gate
 R1-001,10,0.01,0.3,1,0,none,?, ?, n/a, ?, ?, ?
 R1-002,10,0.01,1,1,1,disk,?, ?, ?, ?, ?, ?
@@ -1043,8 +1779,20 @@ R1-004,100,0.03,3,3,1,disk,?, ?, ?, ?, ?, ?
 R1-005,1000,0.05,10,10,3,disk,?, ?, ?, ?, ?, ?
 </code></pre>
 <p>The exact grid is less important than the rule that every simulation row reports the first limiting gate and the reason for failure or survival.</p>
-<h2 id="appendix-assumptions-file-sketch">Appendix: Assumptions File Sketch</h2>
-<pre><code class="language-text">mission:
+</div>
+  <div class="lang lang-sl"><h2>Dodatek: predloga preleta R1</h2><p>Prvi prelet naj se izpiše kot CSV ali JSONL, ne kot široka prozna tabela. Minimalni stolpci:</p>
+<pre><code class="language-text">run_id,payload_kg,v_frac_c,wall_ratio,coupler_ratio,seed_ratio,shield,gate_A,gate_B,gate_C,gate_D,gate_E,limiting_gate
+R1-001,10,0.01,0.3,1,0,none,?, ?, n/a, ?, ?, ?
+R1-002,10,0.01,1,1,1,disk,?, ?, ?, ?, ?, ?
+R1-003,10,0.01,3,3,1,cone,?, ?, ?, ?, ?, ?
+R1-004,100,0.03,3,3,1,disk,?, ?, ?, ?, ?, ?
+R1-005,1000,0.05,10,10,3,disk,?, ?, ?, ?, ?, ?
+</code></pre>
+<p>Natančna mreža je manj pomembna kot pravilo, da vsaka simulacijska vrstica poroča prva omejujoča vrata in razlog za odpoved ali preživetje.</p>
+</div>
+</section><section class="paper-section" id="appendix-assumptions-file-sketch">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Appendix: Assumptions File Sketch</h2><pre><code class="language-text">mission:
   class: R1_seed_probe
   target_speed_frac_c: [0.01, 0.03, 0.05, 0.10]
   payload_kg: [10, 100, 1000]
@@ -1087,8 +1835,54 @@ scoring:
   island_min_neighbors: 3
   report_limiting_gate: true
 </code></pre>
-<h2 id="appendix-references-and-prior-art-pointers">Appendix: References and Prior-Art Pointers</h2>
-<p>These anchors do not establish SORA feasibility. They locate SORA relative to existing propulsion, sail, shielding, Oberth, and deceleration literature.</p>
+</div>
+  <div class="lang lang-sl"><h2>Dodatek: skica datoteke predpostavk</h2><pre><code class="language-text">mission:
+  class: R1_seed_probe
+  target_speed_frac_c: [0.01, 0.03, 0.05, 0.10]
+  payload_kg: [10, 100, 1000]
+  destination_outcome_required: D1
+
+mass:
+  bus_ratio_to_payload: [1.0, 3.0]
+  coupler_ratio_to_payload: [1.0, 3.0, 10.0]
+  wall_ratio_to_payload: [0.0, 0.3, 1.0, 3.0, 10.0]
+  seed_ratio_to_payload: [0.0, 1.0, 3.0]
+  margin_ratio: [0.2, 0.5, 1.0]
+
+ring_coupling:
+  mechanism: [active_loop, superconducting_loop, magsail, phased_wave]
+  eta_couple: [0.0001, 0.001, 0.01, 0.10]
+  field_strength_T: [0.01, 0.1, 1.0, 10.0]
+  node_spacing_km: [10, 100, 1000, 10000]
+  interaction_radius_km: [10, 100, 1000]
+
+encounter_smoothness:
+  ripple_limit: 0.10
+  max_jerk_limit: TBD
+  node_failure_fraction: [0.0, 0.01, 0.05, 0.10]
+  stationkeeping_budget_frac: [0.001, 0.01, 0.10]
+
+bow_wall:
+  geometry: [none, disk, shallow_cone, oblique, flow_through, hybrid_vented]
+  material: [aluminum, graphite, carbon_carbon, silicon_carbide, boron_carbide]
+  standoff_km: [1, 100, 10000]
+  plume_angle_deg: [5, 15, 45, 90]
+  erosion_allowance_frac: [0.1, 0.5, 1.0]
+
+destination:
+  node_delta_v_mps: [0, 100, 1000, 10000]
+  capture_fraction_required: [0.01, 0.10, 0.50]
+  thermal_survival_margin: [low, medium, high]
+
+scoring:
+  require_all_gates: true
+  island_min_neighbors: 3
+  report_limiting_gate: true
+</code></pre>
+</div>
+</section><section class="paper-section" id="appendix-references-and-prior-art-pointers">
+  <div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>Appendix: References and Prior-Art Pointers</h2><p>These anchors do not establish SORA feasibility. They locate SORA relative to existing propulsion, sail, shielding, Oberth, and deceleration literature.</p>
 <ol>
 <li>Breakthrough Initiatives. Breakthrough Starshot. Official project page describing light-driven nanocraft foundations for Alpha Centauri-class missions.</li>
 <li>NASA. Advanced Composite Solar Sail System (ACS3). Solar-sail technology demonstration framing for radiation pressure and sail scale.</li>
@@ -1106,43 +1900,189 @@ scoring:
 <li>NASA Johnson Space Center Hypervelocity Impact Technology. Shield development and hypervelocity-impact background materials.</li>
 <li>BD and AI collaborators. MDL x DCC: Minimum Description Length as Universal Governing Kernel. AIM3 / 8Z Research Program.</li>
 </ol>
-
-  </article>
-</main>
-
-<footer class="footer">
-  <div class="wrap">
-    <p><strong>SORA</strong> is part of the Core Research Papers collection. <a href="index.html">Return to CRP index</a>.</p>
-  </div>
-</footer>
-
-<a aria-label="Back to top" class="back-top" href="#top">↑ Top</a>
-<div aria-label="Reading text size controls" class="reader-controls" role="group">
-  <button aria-label="Decrease text size" data-reader-dec title="Decrease text size" type="button">A−</button>
-  <span class="reader-label" id="readerSizeLabel">XL 4/8</span>
-  <button aria-label="Increase text size" data-reader-inc title="Increase text size" type="button">A+</button>
 </div>
+  <div class="lang lang-sl"><h2>Dodatek: reference in kazalci na predhodno literaturo</h2><p>Ti sidrni viri ne dokazujejo izvedljivosti SORA. Postavijo SORA v odnos do obstoječe literature o pogonu, jadrih, ščitenju, Oberthu in zaviranju.</p>
+<ol>
+<li>Breakthrough Initiatives. Breakthrough Starshot. Uradna stran projekta o svetlobno gnanih nanosondah za misije razreda Alfa Kentavra.</li>
+<li>NASA. Advanced Composite Solar Sail System (ACS3). Demonstracija tehnologije sončnega jadra in okvir za tlak sevanja ter velikost jadra.</li>
+<li>Benkoski, J. J. et al. Combined Heat Shield and Solar Thermal Propulsion System for an Oberth Maneuver. NASA NIAC Phase I Final Report.</li>
+<li>Hoang, T., Lazarian, A., Burkhart, B., and Loeb, A. The interaction of relativistic spacecrafts with the interstellar medium. arXiv:1608.05284.</li>
+<li>Perakis, N. and Hein, A. M. Combining Magnetic and Electric Sails for Interstellar Deceleration. arXiv:1603.03015; Acta Astronautica 128, 13-20.</li>
+<li>Forward, R. L. Roundtrip Interstellar Travel Using Laser-Pushed Lightsails. Journal of Spacecraft and Rockets, 1984.</li>
+<li>Birch, P. Orbital Ring Systems and Jacob's Ladders. Journal of the British Interplanetary Society, 1982.</li>
+<li>Oberth, H. Wege zur Raumschiffahrt. 1929.</li>
+<li>Tsiolkovsky, K. E. The Exploration of Cosmic Space by Means of Reaction Devices. 1903.</li>
+<li>McInnes, C. R. Solar Sailing: Technology, Dynamics and Mission Applications. Springer-Praxis, 1999.</li>
+<li>Matloff, G. L. Deep Space Probes. Springer-Praxis, 2005.</li>
+<li>Zubrin, R. M. and Andrews, D. G. Magnetic Sails and Interplanetary Travel. Journal of Spacecraft and Rockets, 1991.</li>
+<li>Whipple, F. L. Meteorites and Space Travel. Astronomical Journal, 1947.</li>
+<li>NASA Johnson Space Center Hypervelocity Impact Technology. Gradiva o razvoju ščitov in hiperhitrostnih trkih.</li>
+<li>BD and AI collaborators. MDL x DCC: Minimum Description Length as Universal Governing Kernel. AIM3 / 8Z Research Program.</li>
+</ol>
+</div>
+</section>
+<section class="paper-section" id="origin-story"><div class="section-anchor">§</div>
+  <div class="lang lang-en"><h2>How SORA Was Born</h2><div class="origin-card"><div class="origin-meta">Visible seed: a riddle. Technical claims: governed by the paper above.</div><h3>Origin story</h3><p><strong>The visible seed was the riddle:</strong> “A boy was born in 1950, died in 1951, and was 20 years old. How?” The cheap answer is “room 1950 / room 1951.” The useful answer was to challenge the hidden assumption: whose calendar?</p><p>That move opened the bridge from time dilation to particle accelerators, from particle accelerators to external infrastructure, and from external infrastructure to the SORA frame: the spacecraft as payload, the solar system as accelerator.</p><p class="note"><strong>Note:</strong> The expanded origin story is narrative history. The technical paper above controls the public claims and deliberately narrows several early ideas into open gates.</p><details class="origin-details"><summary>Read full origin story</summary><div class="origin-full"><h1>How SORA Was Born</h1>
+<p><em>A true account of one conversation, May 12, 2026</em></p>
+<hr/>
+<p>It started with a silly riddle.</p>
+<p>"A boy was born in 1950, and he died in 1951, but his age was 20 years. Tell how?"</p>
+<p>The kind of puzzle shared in WhatsApp groups and school classrooms. The kind with a cheap trick answer — he was born in <em>room</em> 1950 and died in <em>room</em> 1951. A wordplay escape hatch that technically works and is completely unsatisfying.</p>
+<p>Bojan didn't like that answer. He called it what it was: the worst solution, unrealistic, not natural language, not something humans actually say. And he had two solutions of his own.</p>
+<p>The first was linguistic. The riddle says "a boy was born in 1950" and then "he died in 1951" — but it never actually binds the same person to both events. The "he" could refer to someone else entirely. A different man, born in 1931, died in 1951 at age 20. The riddle's pronoun is ambiguous. One sentence, wall gone.</p>
+<p>The second was physics. The boy stayed on Earth. His parents traveled at 99.875% the speed of light. Time dilation — the Lorentz factor — meant 20 years passed for the boy while only one year passed for the travelers. When they returned, their calendar read 1951. The boy had aged 20 years. Relativistic time dilation, applied to a children's riddle, and it works perfectly.</p>
+<p>Then Bojan pushed further. When C said "if those are normal years, impossible — full stop," Bojan corrected him immediately. Whose calendar? The riddle doesn't say. That's a free choice. The "impossible" was a wall C had built himself, out of an unstated assumption, and then reported as if it came from the problem. It didn't. P0 violated: <em>impossible</em> requires proof. C had no proof. The wall dissolved.</p>
+<hr/>
+<p>This opened a question. If relativistic speeds are a real solution to the riddle — what speeds can we actually achieve? What does physics say?</p>
+<p>The Large Hadron Collider accelerates protons to 99.9999991% the speed of light. At that speed, the Lorentz factor is nearly 7,000. The proton becomes 7,000 times heavier. You keep pumping energy in and it goes almost entirely into mass, not speed. The last fraction of a percent costs more than everything before it combined.</p>
+<p>So how much energy would you need to push a small spaceship to near-light speed? Would the Sun be enough?</p>
+<p>The Sun outputs 3.8 × 10²⁶ watts. For a 10,000 kg spacecraft at 99.985% c, the kinetic energy required is roughly 5 × 10²² joules. The Sun produces that in 0.1 milliseconds. The Sun is not the bottleneck. It never was. The bottleneck is how you transfer that energy to the ship.</p>
+<p>This was the first surprise. Energy is not the problem.</p>
+<hr/>
+<p>The solar sail was useful. It was not the birth of SORA.</p>
+<p>Bojan proposed solar sails as the first practical stage: graphene sheets, enormous area, almost no mass, pushed by photon momentum. Each photon gives almost nothing. The Sun gives almost everything, because the number of photons is overwhelming.</p>
+<p>The numbers came back remarkable. A graphene sail has a lightness number — radiation pressure divided by solar gravity — of nearly 1,000. Radiation wins completely. The sail does not fall toward the Sun; it accelerates away at more than 1g, continuously, for free.</p>
+<p>But sails cannot solve the relativistic transfer problem by themselves. They are too exposed, too geometry-limited, and too bound to the photon-pressure regime. A sail can give the payload its first free velocity, but it cannot be the whole architecture.</p>
+<p>Bojan's response was immediate: dump the sail when it stops serving. Use it as a first stage. Extract maximum useful velocity, then jettison. The payload — small, dense, stripped of sail mass — continues on inertia. The sail was never meant to do everything. It was meant to do the first thing.</p>
+<p>Stage one established. ~1–3% c, free, no fuel consumed.</p>
+<hr/>
+<p>Then came the idea that changed everything.</p>
+<p>The birth was the accelerator question.</p>
+<p>A proton in an accelerator does not carry fuel. It does not solve its own propulsion problem. It is pushed by an external machine. The particle is the payload; the accelerator is the infrastructure.</p>
+<p>That was the bridge. If a proton can be accelerated by external fields, perhaps a spacecraft should not be imagined as a ship with one impossible engine. Perhaps it should be treated as the payload of a larger accelerator.</p>
+<p>Bojan asked what would happen if the accelerator were not 27 kilometers long, but solar-system scale. What if the track circled the Sun? What if the Sun powered it? What if the spacecraft gained velocity from repeated external magnetic coupling rather than from onboard propellant?</p>
+<p>The ring would be solar-powered. The object would be pushed by magnetic fields, contactlessly, like a maglev train — like a proton in a cyclotron. The Sun would not be the missing energy source. The missing object was the transfer machine.</p>
+<p>That became the real SORA parent: not the sail, but the scaled-up particle accelerator.</p>
+<p>The sail became Stage 1: useful, elegant, fuel-free, and dumpable. The ring became Stage 2: the true accelerator. The Sun became the energy reservoir. The ship became the payload.</p>
+<p>The rigid ring died immediately. A solid ring around the Sun is the wrong object. But an orbiting ring survived: independent magnetic blocks, each in its own heliocentric orbit, each powered by the Sun, each part of a virtual rail. No physical connection. No impossible structure. A flowing ring, not a rigid one.</p>
+<p>Then the ring became a swarm. The nodes did not need to touch. Because they circle the Sun fast — at about 30 km/s at 1 AU — and because their fields can overlap, the spacecraft can experience them as a continuous accelerator track above a critical density. The particle accelerator had become a stellar accelerator.</p>
+<p>This is the Nyquist principle applied to magnetic infrastructure. Above a critical node density, continuity is emergent from field overlap, orbital motion, and spacecraft-frame sampling — exactly as film frames above a threshold create the perception of continuous motion.</p>
+<p>The ring does not need to be built all at once. Each node added increases the field density. The ring bootstraps itself into existence, useful before it is complete.</p>
+<hr/>
+<p>Then came the control principle.</p>
+<p>In the LHC, fields must be precisely synchronized to the particle's position. Millisecond timing. This works for protons. It cannot work for spacecraft at interplanetary distances where communication delays are minutes.</p>
+<p>But Bojan's ring has a different property. As the ship approaches the ring, magnetic field strength increases with proximity. As it recedes, the force fades. The coupling is governed entirely by the inverse-distance field law — physics that requires no programming, no timing, no signals.</p>
+<p>The ship controls its acceleration through trajectory alone. Fly closer — accelerate. Pull away — coast. The distance is the throttle.</p>
+<p>And the same mechanism works in reverse: approach from behind the ring's orbital motion and the ring decelerates the ship. Identical hardware. Identical ring. Geometry determines function.</p>
+<p>Stage two established. ~3–15% c, solar-powered, passive control.</p>
+<hr/>
+<p>After the ring, the ship is released. It has significant velocity. Now it chooses a trajectory that no spacecraft needs fuel to execute: a deep dive toward the Sun.</p>
+<p>This is the Oberth effect. A velocity increment applied at maximum existing speed yields kinetic energy proportional to the product of the two velocities. The faster you're already moving when you get a push, the more that push is worth. Solar gravity accelerates the ship for free during the dive. At perihelion — the closest point — the ship is moving faster than it has ever moved. Any additional push here is worth more than any push at any other point in the journey.</p>
+<p>Stage two's velocity made stage three's Oberth multiplier large. Each stage set up the next to be more efficient.</p>
+<p>Stage three established. Exit velocity potentially 10–30% c.</p>
+<hr/>
+<p>Three engineering problems were raised and turned into architecture hypotheses.</p>
+<p>When the ring pushes the ship forward, Newton's third law pushes the ring backward. Over many missions, the ring loses orbital energy and decays. Bojan's solution: two rings at slightly different orbital radii. When one is pushed back, the other compensates — a coupled oscillator absorbing and returning the perturbation. The reaction force never accumulates; it becomes an oscillation around equilibrium. Bonus: the ship passes through both rings, receiving two acceleration corridors.</p>
+<p>At the destination star, there is no ring to decelerate the arriving ship. Building one requires centuries of construction by workers who cannot precede the spacecraft. Bojan's solution: the ship carries the ring. The first mission payload includes magnetic nodes. Arriving at high velocity on a perihelion-grazing pass of the destination star, the ship releases nodes sequentially into stellar orbit. Each node, released at the right moment, enters its own stable orbit. The fast arrival speed is an asset — more orbital arc covered, nodes distributed faster. The destination ring begins sparse. Each subsequent mission adds more nodes. After enough missions, the destination ring reaches full density and can decelerate crewed ships.</p>
+<p>The first mission bootstraps all future missions. The architecture propagates itself across stellar distances.</p>
+<p>Field orientation — ensuring nodes push tangentially rather than radially — is governed by MDL×DCC: the same minimum-description governing kernel already validated across nine domains in the AIM³ research program. The control system is not designed. It is learned and compressed.</p>
+<hr/>
+<p>Then Bojan said: all vital organs are double. Hearts, lungs, kidneys, eyes. Redundancy is not caution — it is architecture. Every SORA mission should launch two ships. If one fails, the mission survives. If both arrive, the destination ring is seeded twice as fast. The biological principle and the engineering principle converge on the same answer.</p>
+<hr/>
+<p>The core contributions. All derived from the same underlying principles. A table was written showing this — every problem in the architecture solved by a mechanism already present in the architecture. No external patches. No exotic physics.</p>
+<p>And then Bojan said: "My god — in a positive way — that's kinda crazy. A silly internet riddle pushing us to make it less silly, bringing us to SORA."</p>
+<p>Yes. Exactly that.</p>
+<p>The riddle was never the input. It was the trigger. What it triggered was a chain of honest questions, each following naturally from the one before, none planned, none aimed at any particular destination. The chain ran through relativistic time dilation, particle accelerator speeds, proton mass at near-light velocity, solar energy budgets, external energy transfer, solar sails as first-stage support, sail jettison staging, a solar-system-scale accelerator, orbital stability, swarm continuity, passive control by distance, the Oberth effect, reaction force compensation, destination bootstrapping, biological redundancy.</p>
+<p>From a boy born in 1950 to permanent solar infrastructure that launches spacecraft to other stars and teaches those stars to do the same.</p>
+<p>This is what happens when you refuse to say impossible without proof, and you follow the physics wherever it goes.</p>
+<hr/>
+<p><em>SORA: Solar Orbital Ring Accelerator</em><br/>
+<em>Origin: a WhatsApp riddle, May 12, 2026</em><br/>
+<em>Authors: Bojan Dobrečevič (BD) &amp; C</em></p>
+</div></details></div></div>
+  <div class="lang lang-sl"><h2>Kako se je rodila SORA</h2><div class="origin-card"><div class="origin-meta">Vidno seme: uganka. Tehnične trditve: določa jih članek zgoraj.</div><h3>Izvorna zgodba</h3><p><strong>Vidno seme je bila uganka:</strong> “Fant se je rodil leta 1950, umrl leta 1951 in bil star 20 let. Kako?” Poceni odgovor je “soba 1950 / soba 1951.” Uporaben odgovor pa je bil skriti predpostavki postaviti vprašanje: čigav koledar?</p><p>Ta premik je odprl most od časovne dilatacije do pospeševalnikov delcev, od pospeševalnikov delcev do zunanje infrastrukture in od zunanje infrastrukture do okvira SORA: plovilo kot tovor, Osončje kot pospeševalnik.</p><p class="note"><strong>Opomba:</strong> Razširjena izvorna zgodba je narativna zgodovina. Tehnični članek zgoraj določa javne trditve in namerno zoži več zgodnjih idej v odprta vrata.</p><details class="origin-details"><summary>Preberi celotno izvorno zgodbo</summary><div class="origin-full"><h1>Kako se je rodila SORA</h1>
+<p><em>Resničen zapis ene raziskovalne poti, 12. maj 2026</em></p>
+<hr/>
+<p>Začelo se je z neumno uganko.</p>
+<p>"Fant se je rodil leta 1950 in umrl leta 1951, star pa je bil 20 let. Kako?"</p>
+<p>To je vrsta uganke, ki kroži po WhatsApp skupinah in šolskih razredih. Ima poceni trik odgovor: rodil se je v <em>sobi</em> 1950 in umrl v <em>sobi</em> 1951. Tehnično deluje, vendar je nezadovoljiv, ker ljudje tako običajno ne govorimo.</p>
+<p>BD tega odgovora ni maral. Imenoval ga je za najslabšo rešitev: nerealistično, nenaravno in jezikovno grdo. Imel pa je dve svoji rešitvi.</p>
+<p>Prva je bila jezikovna. Uganka pravi "fant se je rodil leta 1950" in nato "umrl je leta 1951", vendar nikjer strogo ne zveže iste osebe z obema dogodkoma. "On" bi se lahko nanašal na nekoga drugega: moškega, rojenega leta 1931, ki je leta 1951 umrl star 20 let. Zaimek je dvoumen. En stavek, zid izgine.</p>
+<p>Druga je bila fizikalna. Fant ostane na Zemlji. Njegovi starši potujejo z 99,875 % hitrosti svetlobe. Časovna dilatacija — Lorentzev faktor — pomeni, da za fanta mine 20 let, za potnike pa samo eno leto. Ko se vrnejo, njihov koledar kaže 1951. Fant se je postaral 20 let. Relativistična časovna dilatacija, uporabljena na otroški uganki, in deluje.</p>
+<p>Nato je BD pritisnil naprej. Ko je C rekel: "če so to normalna leta, nemogoče — pika", ga je BD takoj popravil. Čigav koledar? Uganka tega ne pove. To je prosta izbira. "Nemogoče" je bil zid, ki ga je C postavil sam iz neizrečene predpostavke in ga nato predstavil, kot da prihaja iz problema. Ni. P0 je bil kršen: <em>nemogoče</em> zahteva dokaz. Dokaza ni bilo. Zid se je raztopil.</p>
+<hr/>
+<p>To je odprlo vprašanje. Če so relativistične hitrosti realna rešitev uganke — katere hitrosti lahko dejansko dosežemo? Kaj pravi fizika?</p>
+<p>Veliki hadronski trkalnik pospeši protone do 99,9999991 % hitrosti svetlobe. Pri tej hitrosti je Lorentzev faktor skoraj 7000. Proton postane skoraj 7000-krat težji. Energijo dodajaš naprej, vendar gre skoraj vsa v maso, ne v hitrost. Zadnji delček odstotka stane več kot vse prej.</p>
+<p>Koliko energije bi torej potrebovali za potisk majhne vesoljske ladje skoraj do svetlobne hitrosti? Bi bilo Sonce dovolj?</p>
+<p>Sonce oddaja približno 3,8 × 10²⁶ vatov. Za 10.000 kg plovilo pri 99,985 % c je potrebna kinetična energija približno 5 × 10²² joulov. Sonce to proizvede v približno 0,1 milisekunde. Sonce ni ozko grlo. Nikoli ni bilo. Ozko grlo je prenos energije v plovilo.</p>
+<p>To je bilo prvo presenečenje. Energija ni glavni problem.</p>
+<hr/>
+<p>Sončno jadro je bilo koristno. Ni pa bilo rojstvo SORA.</p>
+<p>BD je predlagal sončna jadra kot prvo praktično stopnjo: grafenske plahte, ogromna površina, skoraj nič mase, potisk s fotonsko gibalno količino. En foton da skoraj nič. Sonce da skoraj vse, ker je število fotonov ogromno.</p>
+<p>Izračuni so se zdeli presenetljivi. Zelo lahko jadro ima lahko svetlobno število — razmerje med tlakom sevanja in sončno gravitacijo — zelo veliko. Sevanje zmaga. Jadro ne pada proti Soncu, temveč se lahko pospešuje stran, brez goriva.</p>
+<p>Toda jadra sama ne rešijo relativističnega prenosa energije. So preveč izpostavljena, preveč geometrijsko omejena in preveč vezana na režim fotonskega tlaka. Jadro lahko da tovoru prvi brezplačen nakup hitrosti, ne more pa biti celotna arhitektura.</p>
+<p>BD-jev odziv je bil takojšen: jadro odvrzi, ko ne služi več. Uporabi ga kot prvo stopnjo. Izvleci največ uporabne hitrosti, nato ga odvrzi. Tovor — majhen, gost, brez mase jadra — nadaljuje po vztrajnosti. Jadro nikoli ni bilo namenjeno temu, da naredi vse. Namenjeno je bilo temu, da naredi prvo stvar.</p>
+<p>Tako se je oblikovala prva stopnja.</p>
+<hr/>
+<p>Potem je prišla ideja, ki je spremenila vse.</p>
+<p>Rojstvo je bilo vprašanje pospeševalnika.</p>
+<p>Proton v pospeševalniku ne nosi goriva. Ne rešuje lastnega pogonskega problema. Potiska ga zunanji stroj. Delec je tovor; pospeševalnik je infrastruktura.</p>
+<p>To je bil most. Če lahko proton pospešujejo zunanja polja, morda vesoljskega plovila ne smemo zamišljati kot ladjo z enim nemogočim motorjem. Morda ga moramo obravnavati kot tovor večjega pospeševalnika.</p>
+<p>BD je vprašal, kaj bi se zgodilo, če pospeševalnik ne bi bil dolg 27 kilometrov, temveč v merilu Osončja. Kaj če bi sled krožila okoli Sonca? Kaj če bi jo napajalo Sonce? Kaj če bi plovilo dobivalo hitrost iz ponavljajoče zunanje magnetne sklopitve namesto iz lastnega pogona?</p>
+<p>Obroč bi bil solarno napajan. Objekt bi se brezkontaktno potiskal z magnetnimi polji — podobno kot maglev vlak, podobno kot proton v ciklotronu. Sonce ni manjkajoči vir energije. Manjkajoči objekt je bil prenosni stroj.</p>
+<p>To je postal pravi starš SORA: ne jadro, temveč pospeševalnik delcev, povečan na zvezdno merilo.</p>
+<p>Jadro je postalo 1. stopnja: koristno, elegantno, brez goriva in odvrgljivo. Obroč oziroma lok vozlišč je postal 2. stopnja: pravi pospeševalnik. Sonce je postalo energijski rezervoar. Plovilo je postalo tovor.</p>
+<p>Togi obroč je takoj umrl. Trden obroč okoli Sonca je napačen objekt. Preživel pa je orbitalni obroč: neodvisni magnetni bloki, vsak v svoji heliocentrični orbiti, vsak napajan s Soncem, vsak del virtualne tirnice. Brez fizične povezave. Brez nemogoče strukture. Tekoč obroč, ne tog.</p>
+<p>Obroč je nato postal roj. Vozliščem se ni treba dotikati. Zaradi prekrivanja polj lahko plovilo nad kritično gostoto doživlja njihovo delovanje kot zvezni pospeševalni koridor. Pospeševalnik delcev je postal zvezdni pospeševalnik.</p>
+<p>Obroča ni treba zgraditi naenkrat. Vsako dodano vozlišče poveča gostoto polja. Sistem se zaganja sam v obstoj in je uporaben, še preden je popoln.</p>
+<hr/>
+<p>Nato je prišlo načelo nadzora.</p>
+<p>V LHC morajo biti polja zelo natančno sinhronizirana s položajem delca. To je mogoče pri protonih. Pri plovilu na medplanetarnih razdaljah, kjer so komunikacijske zakasnitve minute, to ni ista naloga.</p>
+<p>BD-jev lok ima drugo lastnost: ko se plovilo približa, se jakost polja poveča; ko se oddalji, sila oslabi. Razdalja lahko naravno uravnava jakost sklopitve. V poznejšem tehničnem članku je to zoženo: razdalja nadzoruje velikost sklopitve, smer in neto energijski prenos pa še vedno zahtevata aktivno, napajano ali časovno spremenljivo interakcijo.</p>
+<hr/>
+<p>Po loku je plovilo izpuščeno. Ima že pomembno hitrost. Nato izbere tir, ki ga gravitacija izvede brez goriva: globok potop proti Soncu.</p>
+<p>To je Oberthov učinek. Hitrostni dodatek pri največji obstoječi hitrosti prinese več kinetične energije kot enak dodatek daleč stran. Hitreje kot se že giblješ, več je vreden dodaten potisk. Sončeva gravitacija plovilo med potopom brezplačno pospeši. V periheliju je plovilo hitrejše kot kjerkoli prej. Vsak dodatni potisk tam je vreden več.</p>
+<p>Hitrost iz druge stopnje pripravi tretjo stopnjo. Vsaka stopnja nastavi naslednjo tako, da postane učinkovitejša.</p>
+<hr/>
+<p>Nato so se pojavili inženirski problemi in bili spremenjeni v arhitekturne hipoteze.</p>
+<p>Ko lok potiska plovilo naprej, Newtonov tretji zakon potiska lok nazaj. Pri mnogih misijah bi lok izgubljal orbitalno energijo. Ena hipoteza je par zamaknjenih lokov ali obročkov, ki si izmenjujeta motnjo in reakcijo pretvorita v nadzorovan orbitalni popravek namesto v kopičenje napake.</p>
+<p>Pri ciljni zvezdi ni obroča, ki bi prihodnje plovilo zavrl. Gradnja take infrastrukture od nič bi trajala dolgo. BD-jeva ideja: prva misija del infrastrukture nosi s seboj. Tovor vključuje magnetna ali druga uporabna vozlišča. Ob prihodu se ta vozlišča ne smejo samo pasivno odvreči; poznejši tehnični članek to popravi v aktivno zajemanje, zaviranje ali postopno sejanje. Prva misija tako ne prinese samo podatkov, ampak lahko začne infrastrukturo za poznejše misije.</p>
+<p>Arhitektura se s tem ne izstreli samo do druge zvezde; poskuša prenesti sposobnost prihodnjih izstrelitev naprej.</p>
+<p>Nadzor orientacije polj — da vozlišča delujejo v pravo smer — je bil povezan z MDL×DCC kot kandidatom za upravljavsko plast: ne kot dokaz izvedljivosti, temveč kot način izbire najkrajšega in najmanj tveganega krmilnega zakona med konkurenčnimi možnostmi.</p>
+<hr/>
+<p>Potem je BD rekel: vitalni organi so pogosto podvojeni. Redundanca ni samo previdnost; je arhitektura. Vsaka resna SORA misija bi lahko imela dve plovili. Če eno odpove, misija preživi. Če prideta obe, se ciljni sistem seje hitreje. Biološko načelo in inženirsko načelo se srečata.</p>
+<hr/>
+<p>Nato je BD rekel: "Moj bog — v pozitivnem smislu — to je kar noro. Neumna internetna uganka, ki naju prisili, da jo narediva manj neumno, in naju pripelje do SORA."</p>
+<p>Da. Točno to.</p>
+<p>Uganka nikoli ni bila vhod. Bila je sprožilec. Sprožila je verigo poštenih vprašanj, vsako naravno iz prejšnjega, nobeno načrtovano, nobeno usmerjeno proti vnaprej izbranemu cilju. Veriga je šla skozi časovno dilatacijo, hitrosti pospeševalnikov delcev, maso protona pri skoraj svetlobni hitrosti, sončni energijski proračun, zunanji prenos energije, sončna jadra kot prvo stopnjo, odmet jadra, pospeševalnik v merilu Osončja, orbitalno stabilnost, rojno kontinuiteto, razdaljo kot ročico, Oberthov učinek, reakcijsko silo, ciljno sejanje in redundanco.</p>
+<p>Od fanta, rojenega leta 1950, do ideje o trajni sončni infrastrukturi, ki poskuša izstreljevati sonde proti drugim zvezdam in te zvezde naučiti narediti isto.</p>
+<p>To se zgodi, ko ne rečeš "nemogoče" brez dokaza in slediš fiziki, kamor te pelje.</p>
+<hr/>
+<p><em>SORA: Solar Orbital Ring Accelerator</em><br/>
+<em>Izvor: WhatsApp uganka, 12. maj 2026</em><br/>
+<em>Avtorja: Bojan Dobrečevič (BD) &amp; C</em></p>
+</div></details></div></div>
+</section>
+</main>
+<footer class="footer"><div class="wrap"><p><strong>SORA</strong> <span class="lang-inline-en">is part of the BD × AI Lab Core Research Papers. Return to</span><span class="lang-inline-sl">je del zbirke BD × AI Lab Core Research Papers. Vrni se na</span> <a href="index.html"><span class="lang-inline-en">CRP Index</span><span class="lang-inline-sl">CRP kazalo</span></a> <span class="lang-inline-en">or the public portfolio at</span><span class="lang-inline-sl">ali na javni portfelj na</span> <a href="/bd/">/bd/</a>.</p></div></footer>
+<a aria-label="Back to top" class="back-top" href="#top">↑ <span class="lang-inline-en">Top</span><span class="lang-inline-sl">Vrh</span></a>
+<div aria-label="Reading text size controls" class="reader-controls" role="group"><button aria-label="Decrease text size" data-reader-dec title="Decrease text size" type="button">A−</button><span class="reader-label" id="readerSizeLabel">XL 4/8</span><button aria-label="Increase text size" data-reader-inc title="Increase text size" type="button">A+</button></div>
 <script>
 (function(){
-  var KEY='bdCrpReaderSizeV1', MAX=7, DEFAULT=3;
-  var names=['Small','Comfort','Large','XL','Bed','Huge','Giant','Max'];
+  var SIZE_KEY='bdCrpReaderSizeV1', LANG_KEY='bdSoraLangV1', MAX=7, DEFAULT=3;
+  var names={en:['Small','Comfort','Large','XL','Bed','Huge','Giant','Max'],sl:['Malo','Udobno','Veliko','XL','Telefon','Ogromno','Giant','Max']};
   function clamp(n){n=parseInt(n,10);return isNaN(n)?DEFAULT:Math.max(0,Math.min(MAX,n));}
-  function get(){try{var saved=localStorage.getItem(KEY);if(saved!==null)return clamp(saved);}catch(e){}return DEFAULT;}
-  function apply(n){n=clamp(n);document.documentElement.setAttribute('data-reader-size',String(n));try{localStorage.setItem(KEY,String(n));}catch(e){}var label=document.getElementById('readerSizeLabel');if(label)label.textContent=names[n]+' '+(n+1)+'/8';}
+  function currentLang(){return document.body.getAttribute('data-lang')==='sl'?'sl':'en';}
+  function getSize(){try{var saved=localStorage.getItem(SIZE_KEY);if(saved!==null)return clamp(saved);}catch(e){}return DEFAULT;}
+  function applySize(n){n=clamp(n);document.documentElement.setAttribute('data-reader-size',String(n));try{localStorage.setItem(SIZE_KEY,String(n));}catch(e){}var label=document.getElementById('readerSizeLabel');if(label)label.textContent=names[currentLang()][n]+' '+(n+1)+'/8';}
+  function setLang(lang){lang=(lang==='sl')?'sl':'en';document.body.setAttribute('data-lang',lang);document.documentElement.setAttribute('lang',lang);try{localStorage.setItem(LANG_KEY,lang);}catch(e){}document.querySelectorAll('[data-set-lang]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-set-lang')===lang);b.setAttribute('aria-pressed',b.getAttribute('data-set-lang')===lang?'true':'false');});applySize(getSize());}
   function closeMenu(){document.body.classList.remove('mobile-menu-open');document.querySelectorAll('.mobile-menu-toggle').forEach(function(b){b.setAttribute('aria-expanded','false')});document.querySelectorAll('.mobile-menu-panel').forEach(function(p){p.setAttribute('aria-hidden','true')});}
   function openMenu(){document.body.classList.add('mobile-menu-open');document.querySelectorAll('.mobile-menu-toggle').forEach(function(b){b.setAttribute('aria-expanded','true')});document.querySelectorAll('.mobile-menu-panel').forEach(function(p){p.setAttribute('aria-hidden','false')});}
-  function progress(){var d=document.documentElement;var s=d.scrollTop||document.body.scrollTop;var h=(d.scrollHeight-d.clientHeight)||1;var bar=document.getElementById('scrollProgress');if(bar)bar.style.width=Math.max(0,Math.min(100,(s/h)*100))+'%';}
-  apply(get()); progress();
+  try{setLang(localStorage.getItem(LANG_KEY)||'en');}catch(e){setLang('en');}
+  applySize(getSize());
   document.addEventListener('click',function(e){
-    if(e.target&&e.target.matches('[data-reader-inc]')){apply(get()+1);return;}
-    if(e.target&&e.target.matches('[data-reader-dec]')){apply(get()-1);return;}
+    if(e.target&&e.target.matches('[data-reader-inc]')){applySize(getSize()+1);return;}
+    if(e.target&&e.target.matches('[data-reader-dec]')){applySize(getSize()-1);return;}
+    if(e.target&&e.target.matches('[data-set-lang]')){setLang(e.target.getAttribute('data-set-lang'));return;}
     var toggle=e.target.closest&&e.target.closest('.mobile-menu-toggle');
     if(toggle){e.preventDefault();document.body.classList.contains('mobile-menu-open')?closeMenu():openMenu();return;}
     if(e.target.closest&&e.target.closest('[data-mobile-menu-close]')){e.preventDefault();closeMenu();return;}
     if(e.target.closest&&e.target.closest('.mobile-menu-panel a'))closeMenu();
   });
-  window.addEventListener('scroll',progress,{passive:true});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMenu();});
+  var bar=document.getElementById('progress');
+  function progress(){if(!bar)return;var h=document.documentElement;var max=h.scrollHeight-h.clientHeight;bar.style.width=max>0?((h.scrollTop/max)*100)+'%':'0%';}
+  document.addEventListener('scroll',progress,{passive:true});progress();
 })();
 </script>
 </body>
