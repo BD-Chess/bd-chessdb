@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en" data-reader-size="3">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SORA — Solar Orbital Ring Accelerator | BD × AI Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#020409; --bg2:#060a14; --bg3:#0b1120; --surface:rgba(15,23,41,.82); --surface2:rgba(20,30,51,.88);
+  --border:rgba(0,229,255,.12); --border-strong:rgba(0,229,255,.28);
+  --cyan:#00e5ff; --cyan-dim:rgba(0,229,255,.12); --cyan-glow:rgba(0,229,255,.25);
+  --gold:#f59e0b; --gold-dim:rgba(245,158,11,.12);
+  --green:#34d399; --green-dim:rgba(52,211,153,.12);
+  --violet:#a78bfa; --violet-dim:rgba(167,139,250,.12);
+  --rose:#ff6b8a; --rose-dim:rgba(255,107,138,.12);
+  --orange:#fb923c; --orange-dim:rgba(251,146,60,.12);
+  --text:#e2e8f4; --muted:#7d8daf; --dim:#5e7192; --subtle:#1a2540;
+  --shadow:0 22px 70px rgba(0,0,0,.34);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+body{
+  background:
+    radial-gradient(circle at 14% 14%, rgba(0,229,255,.08), transparent 30%),
+    radial-gradient(circle at 82% 24%, rgba(167,139,250,.08), transparent 28%),
+    radial-gradient(circle at 50% 100%, rgba(245,158,11,.06), transparent 40%),
+    linear-gradient(180deg,var(--bg),#05070d 100%);
+  color:var(--text);font-family:'Rajdhani',sans-serif;font-size:21px;line-height:1.72;overflow-x:hidden;min-height:100vh;
+}
+body::before,body::after{content:'';position:fixed;border-radius:50%;filter:blur(105px);opacity:.26;pointer-events:none;z-index:-1;}
+body::before{width:46vw;height:46vw;left:-14vw;top:-14vh;background:radial-gradient(circle,rgba(0,229,255,.34),rgba(20,40,100,.12) 52%,transparent 72%);animation:floatA 25s ease-in-out infinite;}
+body::after{width:44vw;height:44vw;right:-18vw;bottom:-20vh;background:radial-gradient(circle,rgba(245,158,11,.18),rgba(167,139,250,.13) 44%,transparent 72%);animation:floatB 31s ease-in-out infinite;}
+@keyframes floatA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(6vw,5vh,0)}}
+@keyframes floatB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-5vw,-7vh,0)}}
+body::after{}
+.noise{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.02;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}
+::selection{background:var(--gold);color:#05070d}
+.progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--cyan),var(--green),var(--gold));z-index:10000;opacity:.92}
+.wrap{max-width:1180px;margin:0 auto;padding:0 5vw}
+.topbar{position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:rgba(2,4,9,.86);border-bottom:1px solid rgba(0,229,255,.10)}
+.topbar-inner{max-width:1280px;margin:0 auto;padding:11px 5vw;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.brand,.brand:visited{display:inline-flex;align-items:center;text-decoration:none!important;color:var(--text)}
+.brand-mark{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan)}
+.top-links{display:flex;gap:.55rem;flex-wrap:wrap;justify-content:flex-end}
+.top-links a,.top-links a:visited{font-family:'JetBrains Mono',monospace;font-size:.68rem;text-decoration:none!important;padding:.42rem .72rem;border-radius:999px;border:1px solid rgba(0,229,255,.14);color:rgba(226,232,244,.74);background:rgba(255,255,255,.02)}
+.top-links a:hover{border-color:rgba(0,229,255,.34);color:var(--cyan);background:rgba(0,229,255,.06)}
+.hero{position:relative;overflow:hidden;padding:86px 0 48px;border-bottom:1px solid rgba(0,229,255,.09)}
+.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px);background-size:94px 94px;mask-image:radial-gradient(ellipse 72% 64% at 50% 28%, black, transparent);pointer-events:none}
+.hero-copy{position:relative;z-index:1}
+.hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin-bottom:1.1rem}
+.hero h1{font-size:clamp(2.5rem,7vw,5.6rem);line-height:.92;letter-spacing:-.04em;margin:0 0 1.15rem;max-width:1040px;color:#fff}
+.hero h1 .accent{color:var(--cyan)}
+.hero-sub{font-family:'Cormorant Garamond',serif;font-size:clamp(1.12rem,2.1vw,1.58rem);font-style:italic;color:var(--muted);max-width:900px;margin-bottom:1.4rem;line-height:1.55}
+.hero-meta{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);max-width:960px}
+.hero-meta strong{color:var(--green)}
+.hero-actions{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.3rem}
+.cta,.cta:visited{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-decoration:none!important;padding:.78rem 1rem;border-radius:4px;transition:all .2s ease}
+.cta.primary{color:var(--cyan)!important;background:var(--cyan-dim);border:1px solid rgba(0,229,255,.30)}
+.cta.secondary{color:rgba(226,232,244,.76)!important;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.025)}
+.cta:hover{transform:translateY(-1px);box-shadow:0 10px 34px rgba(0,0,0,.25)}
+.stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.85rem;margin-top:1.5rem;max-width:1060px}
+.stat{padding:.85rem .9rem;border-radius:8px;background:rgba(11,17,32,.64);border:1px solid var(--border);box-shadow:var(--shadow)}
+.stat strong{display:block;font-family:'JetBrains Mono',monospace;font-size:1.25rem;line-height:1.15;color:#fff;margin-bottom:.2rem}
+.stat span{font-size:.72rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.thesis-card{margin-top:1.65rem;border:1px solid rgba(245,158,11,.24);border-left:4px solid var(--gold);border-radius:12px;background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(0,229,255,.04));padding:1.15rem 1.2rem;max-width:930px;box-shadow:var(--shadow)}
+.thesis-card .small{font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:.35rem}
+.thesis-card p{font-size:1.18rem;color:#fff;line-height:1.55}
+.toc-strip{padding:34px 0 12px}
+.toc-title{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan);margin-bottom:.8rem}
+.toc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.55rem}
+.toc-card{display:flex;align-items:center;min-height:48px;border:1px solid rgba(0,229,255,.14);border-radius:10px;background:rgba(11,17,32,.62);padding:.65rem .75rem;color:rgba(226,232,244,.78);font-family:'JetBrains Mono',monospace;font-size:.72rem;line-height:1.35;text-decoration:none!important;transition:all .18s ease}
+.toc-card:hover{border-color:rgba(0,229,255,.34);color:var(--cyan);background:rgba(0,229,255,.06);transform:translateY(-1px)}
+.toc-card.gate-card{border-color:rgba(245,158,11,.18);background:rgba(245,158,11,.045)}
+.paper-shell{max-width:980px;margin:38px auto 90px;padding:0 5vw}
+.paper-content{background:rgba(11,17,32,.55);border:1px solid rgba(0,229,255,.11);border-radius:18px;padding:clamp(22px,4vw,42px);box-shadow:var(--shadow)}
+.paper-content h2{font-size:clamp(1.8rem,3.4vw,2.65rem);line-height:1.08;letter-spacing:-.02em;color:#fff;margin:2.2rem 0 1rem;padding-top:.25rem;border-top:1px solid rgba(0,229,255,.10)}
+.paper-content h2:first-child{margin-top:0;border-top:0}
+.paper-content h3{font-size:clamp(1.25rem,2.3vw,1.75rem);line-height:1.18;color:#fff;margin:1.6rem 0 .75rem}
+.paper-content p{margin:0 0 1rem;color:rgba(226,232,244,.82)}
+.paper-content strong{color:#fff}
+.paper-content em{color:rgba(226,232,244,.90)}
+.paper-content blockquote{border-left:4px solid var(--gold);background:rgba(245,158,11,.06);padding:1rem 1.15rem;border-radius:0 10px 10px 0;margin:1.1rem 0;color:#fff}
+.paper-content ul,.paper-content ol{margin:0 0 1.15rem 1.35rem;color:rgba(226,232,244,.82)}
+.paper-content li{margin:.28rem 0;padding-left:.15rem}
+.paper-content table{width:100%;border-collapse:collapse;margin:1.1rem 0 1.4rem;display:block;overflow-x:auto;white-space:normal;border:1px solid rgba(0,229,255,.12);border-radius:10px;background:rgba(2,4,9,.28)}
+.paper-content thead{background:rgba(0,229,255,.06)}
+.paper-content th,.paper-content td{padding:.62rem .72rem;border-bottom:1px solid rgba(0,229,255,.09);border-right:1px solid rgba(0,229,255,.06);vertical-align:top;min-width:120px}
+.paper-content th{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);text-align:left}
+.paper-content td{font-size:.95rem;color:rgba(226,232,244,.80)}
+.paper-content tr:last-child td{border-bottom:0}
+.paper-content pre{margin:1.1rem 0 1.35rem;padding:1rem;border-radius:10px;border:1px solid rgba(0,229,255,.13);background:rgba(2,4,9,.62);overflow:auto;box-shadow:inset 0 0 0 1px rgba(255,255,255,.015)}
+.paper-content code{font-family:'JetBrains Mono',monospace;font-size:.82em;color:var(--green)}
+.paper-content pre code{font-size:.78rem;line-height:1.65;color:rgba(226,232,244,.86)}
+.paper-content hr{border:0;border-top:1px solid rgba(0,229,255,.14);margin:2rem 0}
+.paper-content h2[id^="gate-"]{color:#fff}
+.paper-content h2[id^="gate-"]::before{content:'OPEN GATE';display:inline-flex;margin-right:.7rem;vertical-align:middle;font-family:'JetBrains Mono',monospace;font-size:.56rem;letter-spacing:.14em;color:var(--gold);border:1px solid rgba(245,158,11,.28);border-radius:999px;padding:.2rem .45rem;background:rgba(245,158,11,.08)}
+.footer{padding:44px 0 92px;text-align:center;color:var(--dim);border-top:1px solid rgba(0,229,255,.10)}
+.footer a{color:var(--cyan)}
+.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none}
+.reader-controls{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:2147483000;display:flex;align-items:center;gap:8px;padding:8px;border:1px solid rgba(0,229,255,.30);border-radius:999px;background:rgba(5,7,13,.91);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 18px 55px rgba(0,0,0,.42);font-family:'JetBrains Mono',monospace}
+.reader-controls button{min-width:44px;min-height:44px;border:1px solid rgba(0,229,255,.30);border-radius:999px;background:rgba(0,229,255,.08);color:var(--cyan);font:800 18px/1 'JetBrains Mono',monospace;cursor:pointer;touch-action:manipulation}
+.reader-controls button:hover,.reader-controls button:focus-visible{outline:none;background:rgba(0,229,255,.18);border-color:rgba(0,229,255,.56)}
+.reader-controls .reader-label{min-width:96px;text-align:center;color:rgba(231,234,242,.84);font-size:12px;letter-spacing:.08em;text-transform:uppercase;user-select:none}
+.back-top{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:calc(max(14px,env(safe-area-inset-bottom)) + 66px);z-index:2147482999;border:1px solid rgba(245,158,11,.32);border-radius:999px;background:rgba(5,7,13,.86);color:var(--gold);padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;text-decoration:none!important;box-shadow:0 16px 44px rgba(0,0,0,.36)}
+/* === BD CRP HISTORY-STYLE MOBILE READER v1 START === */
+:root{--crp-desktop-body:21px;--crp-reader-body:25.5px;--crp-reader-text:25.5px;--crp-reader-small:17.5px;--crp-reader-h1:56px;--crp-reader-h2:40px;--crp-reader-h3:30px;--crp-reader-pad:22px;--crp-mobile-header-h:104px;}
+html[data-reader-size="0"]{--crp-desktop-body:17px;--crp-reader-body:20px;--crp-reader-text:20px;--crp-reader-small:14px;--crp-reader-h1:40px;--crp-reader-h2:29px;--crp-reader-h3:23px;--crp-reader-pad:16px}
+html[data-reader-size="1"]{--crp-desktop-body:18px;--crp-reader-body:21.5px;--crp-reader-text:21.5px;--crp-reader-small:15px;--crp-reader-h1:45px;--crp-reader-h2:32px;--crp-reader-h3:25px;--crp-reader-pad:18px}
+html[data-reader-size="2"]{--crp-desktop-body:19px;--crp-reader-body:23px;--crp-reader-text:23px;--crp-reader-small:16px;--crp-reader-h1:50px;--crp-reader-h2:35px;--crp-reader-h3:27px;--crp-reader-pad:20px}
+html[data-reader-size="3"]{--crp-desktop-body:21px;--crp-reader-body:25.5px;--crp-reader-text:25.5px;--crp-reader-small:17.5px;--crp-reader-h1:56px;--crp-reader-h2:40px;--crp-reader-h3:30px;--crp-reader-pad:22px}
+html[data-reader-size="4"]{--crp-desktop-body:23px;--crp-reader-body:28px;--crp-reader-text:28px;--crp-reader-small:19px;--crp-reader-h1:62px;--crp-reader-h2:45px;--crp-reader-h3:34px;--crp-reader-pad:24px}
+html[data-reader-size="5"]{--crp-desktop-body:25px;--crp-reader-body:31px;--crp-reader-text:31px;--crp-reader-small:20.5px;--crp-reader-h1:68px;--crp-reader-h2:50px;--crp-reader-h3:37px;--crp-reader-pad:26px}
+html[data-reader-size="6"]{--crp-desktop-body:27px;--crp-reader-body:34px;--crp-reader-text:34px;--crp-reader-small:22px;--crp-reader-h1:74px;--crp-reader-h2:55px;--crp-reader-h3:40px;--crp-reader-pad:28px}
+html[data-reader-size="7"]{--crp-desktop-body:29px;--crp-reader-body:38px;--crp-reader-text:38px;--crp-reader-small:24px;--crp-reader-h1:82px;--crp-reader-h2:62px;--crp-reader-h3:45px;--crp-reader-pad:30px}
+body{font-size:var(--crp-desktop-body)!important}
+@media(max-width:980px){.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.toc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.topbar-inner{align-items:flex-start;flex-direction:column}.top-links{justify-content:flex-start}}
+@media(max-width:700px){
+  html{scroll-padding-top:calc(var(--crp-mobile-header-h) + 14px)!important}
+  body{padding-top:calc(var(--crp-mobile-header-h) + env(safe-area-inset-top,0px))!important;padding-bottom:116px!important;font-size:var(--crp-reader-body)!important;line-height:1.78!important}
+  .topbar{display:none!important}
+  .mobile-topbar{display:block;position:fixed;top:0;left:0;right:0;z-index:9990;padding:calc(env(safe-area-inset-top,0px) + 9px) 12px 10px;background:rgba(5,7,13,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(0,229,255,.22);box-shadow:0 10px 38px rgba(0,0,0,.36)}
+  .mobile-topbar:before{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--cyan),var(--green),var(--gold));opacity:.88}
+  .mobile-title{display:block;padding:0 0 8px 0;font-family:'JetBrains Mono',monospace;font-size:clamp(18px,5vw,25px);font-weight:800;line-height:1.05;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan)!important;text-decoration:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mobile-actions{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+  .mobile-navbtn{min-height:42px;padding:9px 11px;border:1px solid rgba(0,229,255,.24);border-radius:999px;background:rgba(11,17,32,.68);color:var(--text)!important;text-decoration:none!important;font-family:'JetBrains Mono',monospace;font-size:clamp(13px,3.4vw,16px);font-weight:700;letter-spacing:.05em;line-height:1;display:flex;align-items:center;justify-content:center}
+  .mobile-prev{justify-content:flex-start}.mobile-next{justify-content:flex-end}.mobile-menu-toggle{color:var(--gold)!important;cursor:pointer}
+  .mobile-menu-backdrop{position:fixed;inset:0;z-index:9980;background:rgba(0,0,0,.48);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+  body.mobile-menu-open .mobile-menu-backdrop{display:block}
+  .mobile-menu-panel{position:fixed;z-index:9991;top:calc(var(--crp-mobile-header-h) + env(safe-area-inset-top,0px) + 8px);left:12px;right:12px;max-height:calc(100vh - var(--crp-mobile-header-h) - env(safe-area-inset-top,0px) - 28px);overflow:auto;padding:14px;border:1px solid rgba(0,229,255,.28);border-radius:22px;background:linear-gradient(180deg,rgba(9,13,24,.98),rgba(5,7,13,.98));box-shadow:0 24px 90px rgba(0,0,0,.62)}
+  body.mobile-menu-open .mobile-menu-panel{display:block}
+  .mobile-menu-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(0,229,255,.16)}
+  .mobile-menu-head span{font-family:'JetBrains Mono',monospace;color:var(--gold);font-size:14px;letter-spacing:.18em;text-transform:uppercase}
+  .mobile-menu-head button{width:38px;height:38px;border-radius:999px;border:1px solid rgba(0,229,255,.24);background:rgba(255,255,255,.03);color:var(--text);font-size:24px;line-height:1}
+  .mobile-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .mobile-menu-grid a{min-height:44px;padding:11px 12px;border:1px solid rgba(0,229,255,.20);border-radius:14px;background:rgba(18,26,49,.78);color:var(--text)!important;text-decoration:none!important;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;text-align:center}
+  .wrap,.paper-shell{padding-left:16px!important;padding-right:16px!important}
+  p,li,.hero-sub,.thesis-card p,.paper-content p,.paper-content li,.paper-content td,.footer p{font-size:var(--crp-reader-text)!important;line-height:1.76!important}
+  .hero-meta,.hero-eyebrow,.top-links a,.brand-mark,.cta,.stat span,.toc-title,.toc-card,.paper-content th,.paper-content code,.paper-content pre code,.reader-label{font-size:var(--crp-reader-small)!important;line-height:1.55!important}
+  h1,.hero h1{font-size:var(--crp-reader-h1)!important;line-height:.98!important;letter-spacing:-.045em!important}
+  .paper-content h2{font-size:var(--crp-reader-h2)!important;line-height:1.06!important}
+  .paper-content h3{font-size:var(--crp-reader-h3)!important;line-height:1.12!important}
+  .hero{padding-top:42px!important;padding-bottom:34px!important}
+  .stat-grid,.toc-grid{grid-template-columns:1fr!important}
+  .paper-content,.thesis-card,.stat,.toc-card{padding:22px var(--crp-reader-pad)!important;border-radius:14px!important}
+  .paper-content{padding-top:28px!important}
+  .paper-content table{font-size:var(--crp-reader-small)!important;line-height:1.45!important}
+  .reader-controls{left:50%;right:auto;transform:translateX(-50%);bottom:max(12px,env(safe-area-inset-bottom));padding:8px 10px}
+  .reader-controls button{min-width:48px;min-height:48px;font-size:20px}
+  .reader-controls .reader-label{min-width:112px;font-size:13px}
+  .back-top{right:50%;transform:translateX(50%);bottom:calc(max(12px,env(safe-area-inset-bottom)) + 72px);font-size:.68rem;padding:7px 10px}
+  #top,.hero,section[id],article[id],.paper-content h2{scroll-margin-top:calc(var(--crp-mobile-header-h) + 18px)!important}
+}
+@media(max-width:420px){.mobile-navbtn{padding-left:9px;padding-right:9px;font-size:13px}.mobile-menu-grid{grid-template-columns:1fr}.reader-controls{gap:6px}.reader-controls .reader-label{min-width:102px}.wrap,.paper-shell{padding-left:14px!important;padding-right:14px!important}}
+@media(min-width:701px){.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop{display:none!important}}
+@media print{.topbar,.mobile-topbar,.mobile-menu-panel,.mobile-menu-backdrop,.reader-controls,.back-top,.progress{display:none!important}body{background:#fff!important;color:#111!important;padding:0!important}.paper-content{box-shadow:none;border:0;background:#fff;color:#111}.paper-content *{color:#111!important}}
+/* === BD CRP HISTORY-STYLE MOBILE READER v1 END === */
+</style>
+</head>
+<body id="top">
+<div class="progress" id="scrollProgress"></div>
+<div class="noise"></div>
+
+<!-- BD CRP MOBILE HEADER START -->
+<div class="mobile-menu-backdrop" data-mobile-menu-close aria-hidden="true"></div>
+<header class="mobile-topbar" aria-label="Mobile navigation">
+  <a class="mobile-title" href="index.html" aria-label="CRP hub">SORA</a>
+  <div class="mobile-actions" role="navigation" aria-label="Mobile page navigation">
+    <a class="mobile-navbtn mobile-prev" href="index.html">← CRP</a>
+    <button class="mobile-navbtn mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu-panel">Menu</button>
+    <a class="mobile-navbtn mobile-next" href="#gate-a-powered-node-arc-coupling">Gates →</a>
+  </div>
+</header>
+<aside class="mobile-menu-panel" id="mobile-menu-panel" aria-label="Mobile menu" aria-hidden="true">
+  <div class="mobile-menu-head"><span>Menu</span><button type="button" data-mobile-menu-close aria-label="Close menu">×</button></div>
+  <div class="mobile-menu-grid"><a href="index.html">CRP Hub</a><a href="#abstract">Abstract</a><a href="#one-page-summary">Summary</a><a href="#scope-and-non-claims">Scope</a><a href="#gate-a-powered-node-arc-coupling">Gates A–E</a><a href="#sora-sim-initial-software-specification">SORA-Sim</a><a href="#what-would-falsify-sora">Falsify</a><a href="#appendix-references-and-prior-art-pointers">References</a><a href="/bd/">BD Portfolio</a></div>
+</aside>
+<!-- BD CRP MOBILE HEADER END -->
+
+<nav class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/bd/"><span class="brand-mark">BD × AI Lab</span></a>
+    <div class="top-links"><a href="index.html">CRP Index</a><a href="#one-page-summary">Summary</a><a href="#gate-a-powered-node-arc-coupling">Gates</a><a href="#sora-sim-initial-software-specification">SORA-Sim</a><a href="#appendix-references-and-prior-art-pointers">References</a><a href="/bd/">BD Portfolio</a></div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="wrap hero-copy">
+    <div class="hero-eyebrow">Exploratory technical preprint · May 2026</div>
+    <h1><span class="accent">SORA</span><br>Solar Orbital Ring Accelerator</h1>
+    <p class="hero-sub">A Simulation-Ready Staged Infrastructure Architecture for Interstellar Seed Probes</p>
+    <div class="hero-meta"><strong>No feasibility gate is claimed to be passed.</strong> Bojan Dobrečevič (BD) &amp; AI collaborators — AIM3 / 8Z Research Program · Exploratory technical preprint. No feasibility gate is claimed to be passed.</div>
+    <div class="hero-actions">
+      <a class="cta primary" href="#abstract">Start reading</a>
+      <a class="cta secondary" href="#sora-sim-initial-software-specification">SORA-Sim spec</a>
+      <a class="cta secondary" href="index.html">CRP index</a>
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><strong>5</strong><span>open gates</span></div>
+      <div class="stat"><strong>R1</strong><span>seed probe anchor</span></div>
+      <div class="stat"><strong>0.01–0.03c</strong><span>first target band</span></div>
+      <div class="stat"><strong>Sim first</strong><span>public stance</span></div>
+    </div>
+    <div class="thesis-card">
+      <div class="small">Core frame</div>
+      <p>The spacecraft is the payload. The solar system is the accelerator.</p>
+    </div>
+  </div>
+</header>
+
+<section class="toc-strip" aria-label="Paper map">
+  <div class="wrap">
+    <div class="toc-title">Paper map</div>
+    <div class="toc-grid"><a class="toc-card " href="#abstract"><span>Abstract</span></a>
+<a class="toc-card " href="#one-page-summary"><span>One-Page Summary</span></a>
+<a class="toc-card " href="#clarifying-note-on-the-word-ring"><span>Clarifying Note on the Word Ring</span></a>
+<a class="toc-card " href="#scope-and-non-claims"><span>Scope and Non-Claims</span></a>
+<a class="toc-card " href="#claim-ladder"><span>Claim Ladder</span></a>
+<a class="toc-card " href="#core-thesis"><span>Core Thesis</span></a>
+<a class="toc-card " href="#prior-concepts-and-difference-from-sora"><span>Prior Concepts and Difference from SORA</span></a>
+<a class="toc-card " href="#mission-classes-and-travel-time-honesty"><span>Mission Classes and Travel-Time Honesty</span></a>
+<a class="toc-card " href="#reference-mission-r1"><span>Reference Mission R1</span></a>
+<a class="toc-card gate-card" href="#gate-a-powered-node-arc-coupling"><span>Gate A - Powered Node/Arc Coupling</span></a>
+<a class="toc-card gate-card" href="#gate-b-proximity-encounter-smoothness-and-node-arc-stability"><span>Gate B - Proximity Encounter Smoothness and Node-Arc Stability</span></a>
+<a class="toc-card gate-card" href="#gate-c-detached-bow-wall-protection"><span>Gate C - Detached Bow-Wall Protection</span></a>
+<a class="toc-card gate-card" href="#gate-d-destination-seeding-and-capture"><span>Gate D - Destination Seeding and Capture</span></a>
+<a class="toc-card gate-card" href="#gate-e-whole-architecture-closure"><span>Gate E - Whole-Architecture Closure</span></a>
+<a class="toc-card " href="#dynamic-mass-and-energy-ledger"><span>Dynamic Mass and Energy Ledger</span></a>
+<a class="toc-card " href="#control-and-autonomy-mdl-x-dcc-as-candidate-governance"><span>Control and Autonomy: MDL x DCC as Candidate Governance</span></a>
+<a class="toc-card " href="#sora-0-demonstrator"><span>SORA-0 Demonstrator</span></a>
+<a class="toc-card " href="#sora-sim-initial-software-specification"><span>SORA-Sim: Initial Software Specification</span></a>
+<a class="toc-card " href="#minimum-run-plan"><span>Minimum Run Plan</span></a>
+<a class="toc-card " href="#what-would-falsify-sora"><span>What Would Falsify SORA</span></a>
+<a class="toc-card " href="#partial-failure-value"><span>Partial Failure Value</span></a>
+<a class="toc-card " href="#external-dependencies"><span>External Dependencies</span></a>
+<a class="toc-card " href="#confidence-map"><span>Confidence Map</span></a>
+<a class="toc-card " href="#conclusion"><span>Conclusion</span></a>
+<a class="toc-card " href="#appendix-compact-equations"><span>Appendix: Compact Equations</span></a>
+<a class="toc-card " href="#appendix-r1-sweep-template"><span>Appendix: R1 Sweep Template</span></a>
+<a class="toc-card " href="#appendix-assumptions-file-sketch"><span>Appendix: Assumptions File Sketch</span></a>
+<a class="toc-card " href="#appendix-references-and-prior-art-pointers"><span>Appendix: References and Prior-Art Pointers</span></a></div>
+  </div>
+</section>
+
+<main class="paper-shell">
+  <article class="paper-content">
+<h2 id="abstract">Abstract</h2>
+<p>The Solar Orbital Ring Accelerator (SORA) is a staged interstellar-launch architecture in which the spacecraft is treated as a payload moving through reusable solar-system infrastructure rather than as a self-contained engine. The concept combines solar-sail first-stage acceleration, solar-powered orbital magnetic-node arcs, powered magnetic or plasma coupling, high-speed solar perihelion passage, detached sacrificial bow-wall protection, and destination seeding through carried infrastructure nodes.</p>
+<p>SORA is not presented as a validated mission design. It is presented as a finite, simulation-ready research program. The central question is whether reusable solar-system infrastructure can transfer enough energy, momentum, protection, and destination-seeding capability to make a small uncrewed interstellar seed-probe architecture physically credible.</p>
+<p>The present claim is narrow: the architecture is coherent enough to test, its failure modes are finite enough to name, and a compact simulation suite can determine whether any low-speed seed-probe parameter island survives. If no such island exists, SORA fails cleanly. If one exists at modest speed and modest payload, SORA becomes a candidate for deeper engineering study.</p>
+<h2 id="one-page-summary">One-Page Summary</h2>
+<p>SORA's strongest idea is not a specific shield geometry, not a claimed top speed, and not a magical magnetic ring. Its strongest idea is the frame:</p>
+<p>The spacecraft is the payload. The solar system is the accelerator.</p>
+<p>A proton in a particle accelerator does not carry its own fuel. It is accelerated by a large external machine. SORA asks whether a spacecraft can be treated similarly: not as a tiny vehicle carrying one impossible engine, but as a payload moving through reusable infrastructure stages.</p>
+<p>The architecture currently has five open gates:</p>
+<table>
+<thead>
+<tr>
+  <th>Gate</th>
+  <th>Question</th>
+  <th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>A - Powered node/arc coupling</td>
+  <td>Can powered orbital nodes transfer useful net momentum to a spacecraft-side coupling system?</td>
+  <td>Open</td>
+</tr>
+<tr>
+  <td>B - Proximity encounter smoothness</td>
+  <td>Can a discrete node arc produce smooth acceleration and remain orbitally stable across many launches?</td>
+  <td>Open</td>
+</tr>
+<tr>
+  <td>C - Bow-wall protection</td>
+  <td>Can detached shielding reduce risk more than it adds mass, control burden, and secondary-debris hazard?</td>
+  <td>Open</td>
+</tr>
+<tr>
+  <td>D - Destination capture and seeding</td>
+  <td>Can carried nodes become useful target-star infrastructure?</td>
+  <td>Open</td>
+</tr>
+<tr>
+  <td>E - Whole-architecture closure</td>
+  <td>Can mass, energy, thermal load, control, reaction correction, and mission value close at once?</td>
+  <td>Open</td>
+</tr>
+</tbody>
+</table>
+<p>The paper's current position is therefore simple: SORA is not yet feasible. SORA is now testable.</p>
+<h2 id="clarifying-note-on-the-word-ring">Clarifying Note on the Word Ring</h2>
+<p>Although the architecture keeps the name Solar Orbital Ring Accelerator, SORA does not require a closed 360-degree ring for the first useful stage. The first useful infrastructure element is a dense encounter arc or ringlet: a local orbital segment of powered magnetic nodes that the spacecraft approaches, passes near, and recedes from.</p>
+<p>The spacecraft does not travel along the orbital infrastructure. It does not ride a mechanical guideway. It performs a designed close encounter with a dense arc of powered nodes. Distance controls coupling magnitude. Powered or time-varying interaction controls net energy transfer and direction.</p>
+<p>A full ring is a later scaling convenience, not a prerequisite. A paired-ring or dual-ring concept should also be read as paired encounter arcs or offset ringlets at nearby orbital radii unless a full ring is explicitly justified by simulation.</p>
+<pre><code class="language-text">Correct encounter geometry:
+
+       spacecraft inbound
+             \
+              \\       closest pass
+               *------------------&gt; outbound toward solar perihelion
+
+        o   o   o   o   o   o   o
+        powered orbital node arc / ringlet
+
+The ship approaches, peaks in coupling, and recedes. It does not travel along the arc.
+</code></pre>
+<h2 id="scope-and-non-claims">Scope and Non-Claims</h2>
+<p>This is a public technical preprint, not an engineering design. To avoid misreading, SORA does not claim:</p>
+<ul>
+<li>that 10-30% c is currently feasible;</li>
+<li>that passive static magnetic fields can accelerate a neutral spacecraft;</li>
+<li>that magnetic coupling is strong enough at any specific scale;</li>
+<li>that the proposed bow wall is validated shielding;</li>
+<li>that destination nodes can be passively released into useful orbits;</li>
+<li>that MDL x DCC governance proves feasibility;</li>
+<li>that any of the five gates has passed.</li>
+</ul>
+<p>SORA does claim:</p>
+<ul>
+<li>the staged-infrastructure framing is coherent enough to model;</li>
+<li>the architecture has named subsystems with named failure modes;</li>
+<li>each major unknown can be converted into a toy model, simulation, or parameter sweep;</li>
+<li>the first useful target is not a crewed starship but a small uncrewed seed probe;</li>
+<li>partial mission success may still create scientific or infrastructural value;</li>
+<li>a full-stack closure model can decide whether the architecture deserves deeper work.</li>
+</ul>
+<p>A high-risk branch is allowed only if it has a plausible physical bridge, a clear failure mode, and a cheapest next test. Ideas that survive become stronger. Ideas that fail cleanly reduce fog.</p>
+<h2 id="claim-ladder">Claim Ladder</h2>
+<p>Where a claim sits on the ladder matters more than how exciting it sounds.</p>
+<table>
+<thead>
+<tr>
+  <th>Level</th>
+  <th>Meaning</th>
+  <th>Current status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>C0</td>
+  <td>No known physics violation is required</td>
+  <td>Plausible</td>
+</tr>
+<tr>
+  <td>C1</td>
+  <td>Internally coherent architecture with finite failure modes</td>
+  <td>Claimed</td>
+</tr>
+<tr>
+  <td>C2</td>
+  <td>Toy-model closure for at least one mission class</td>
+  <td>Proposed for test</td>
+</tr>
+<tr>
+  <td>C3</td>
+  <td>Subsystem simulation pass for all gates</td>
+  <td>Not claimed</td>
+</tr>
+<tr>
+  <td>C4</td>
+  <td>Integrated mission envelope under conservative assumptions</td>
+  <td>Not claimed</td>
+</tr>
+<tr>
+  <td>C5</td>
+  <td>Engineering program candidate</td>
+  <td>Not claimed</td>
+</tr>
+</tbody>
+</table>
+<p>SORA claims C0 and C1. It proposes tests for C2. It does not claim C3, C4, or C5. The first objective is to find or fail to find a toy-model parameter island for Reference Mission R1. If C2 fails under generous assumptions, SORA should shrink or stop. If C2 passes only under absurd assumptions, SORA remains a thought experiment. If C2 passes under demanding but non-absurd assumptions, deeper study becomes worthwhile.</p>
+<h2 id="core-thesis">Core Thesis</h2>
+<p>The usual interstellar propulsion question is: What engine can a spacecraft carry that lets it cross interstellar distances?</p>
+<p>SORA asks a different question: What solar-system infrastructure could repeatedly launch small payloads, and what is the smallest mission class that might close physically?</p>
+<p>This reframing matters because the propellant equation punishes self-contained ships. If every stage must be carried by the payload, the payload becomes dominated by propulsion mass. SORA distributes function across reusable stages:</p>
+<table>
+<thead>
+<tr>
+  <th>Stage</th>
+  <th>Function</th>
+  <th>What stays</th>
+  <th>What travels</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>0</td>
+  <td>Infrastructure buildout</td>
+  <td>Solar-orbit nodes, power, control</td>
+  <td>Nothing yet</td>
+</tr>
+<tr>
+  <td>1</td>
+  <td>Solar-sail acceleration</td>
+  <td>The Sun</td>
+  <td>Sail plus payload stack</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>Powered node/arc coupling</td>
+  <td>Orbital encounter arc</td>
+  <td>Payload plus temporary coupling hardware</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td>Perihelion energy leverage</td>
+  <td>The Sun's gravity well</td>
+  <td>Outbound stack</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td>Cruise protection</td>
+  <td>Nothing external</td>
+  <td>Payload, bow wall, seed nodes</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td>Destination seeding</td>
+  <td>Target-star gravity well</td>
+  <td>Released nodes or sub-probes</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td>Future densification</td>
+  <td>Destination nodes</td>
+  <td>Later missions</td>
+</tr>
+</tbody>
+</table>
+<p>The spacecraft is not asked to do everything. It is asked to survive the handoffs.</p>
+<h2 id="prior-concepts-and-difference-from-sora">Prior Concepts and Difference from SORA</h2>
+<p>SORA is not built from exotic physics. It recombines familiar ideas into a staged architecture. The novelty claim should stay narrow: not every component is new, but the staged closure problem is new.</p>
+<table>
+<thead>
+<tr>
+  <th>Prior concept</th>
+  <th>Known role</th>
+  <th>SORA difference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Solar sails</td>
+  <td>Photon momentum transfer</td>
+  <td>Used as a disposable first stage, not the entire answer</td>
+</tr>
+<tr>
+  <td>Laser lightsails</td>
+  <td>External acceleration</td>
+  <td>SORA targets larger payloads and reusable solar-system infrastructure</td>
+</tr>
+<tr>
+  <td>Orbital rings</td>
+  <td>Large-scale infrastructure</td>
+  <td>SORA uses free-flying node arcs/ringlets, not rigid rings</td>
+</tr>
+<tr>
+  <td>Magnetic sails / electric sails</td>
+  <td>Spacecraft-side coupling candidates</td>
+  <td>Must be powered, time-varying, or actively phased</td>
+</tr>
+<tr>
+  <td>Oberth effect</td>
+  <td>Energy leverage near perihelion</td>
+  <td>Used after prior acceleration, not from rest</td>
+</tr>
+<tr>
+  <td>Whipple shielding</td>
+  <td>Sacrificial forward protection</td>
+  <td>Detached standoff wall at much larger separation</td>
+</tr>
+<tr>
+  <td>Seed probes</td>
+  <td>Science or exploration payloads</td>
+  <td>First mission carries infrastructure nodes, not only instruments</td>
+</tr>
+</tbody>
+</table>
+<p>SORA's value is the system question: can these elements close together at a small mission class?</p>
+<h2 id="mission-classes-and-travel-time-honesty">Mission Classes and Travel-Time Honesty</h2>
+<p>The first credible SORA target is not a fast crewed vehicle. It is a small uncrewed seed probe.</p>
+<table>
+<thead>
+<tr>
+  <th>Class</th>
+  <th>Role</th>
+  <th>Approximate speed band</th>
+  <th>Alpha Centauri coast time</th>
+  <th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>SORA-0</td>
+  <td>Solar-system demonstrator</td>
+  <td>non-interstellar</td>
+  <td>n/a</td>
+  <td>first experiment</td>
+</tr>
+<tr>
+  <td>SORA-I</td>
+  <td>Uncrewed seed probe</td>
+  <td>0.01-0.03 c</td>
+  <td>about 437-146 years</td>
+  <td>first serious target</td>
+</tr>
+<tr>
+  <td>SORA-II</td>
+  <td>Mature robotic cargo / repeated seeding</td>
+  <td>0.03-0.05 c</td>
+  <td>about 146-87 years</td>
+  <td>later target</td>
+</tr>
+<tr>
+  <td>SORA-III</td>
+  <td>High-end speculative fast probe</td>
+  <td>0.05-0.10 c</td>
+  <td>about 87-44 years</td>
+  <td>not currently claimed</td>
+</tr>
+<tr>
+  <td>SORA-IV</td>
+  <td>Human-rated architecture</td>
+  <td>mission dependent</td>
+  <td>not defined</td>
+  <td>out of scope</td>
+</tr>
+</tbody>
+</table>
+<p>Coast time ignores acceleration, deceleration, trajectory geometry, target-star operations, and relativistic corrections. It is included only to prevent hype. The discipline is simple: if a 0.01 c seed probe cannot close, a 0.1 c architecture should not be discussed as if it were near.</p>
+<h2 id="reference-mission-r1">Reference Mission R1</h2>
+<p>R1 is the anchor mission so simulations do not drift into vague optimism.</p>
+<p>R1: uncrewed interstellar seed probe.</p>
+<ul>
+<li>leave the solar system on an interstellar trajectory;</li>
+<li>survive cruise behind a detachable or abandonable bow-wall system;</li>
+<li>arrive as a fast flyby or partial-capture seed mission;</li>
+<li>release one or more useful destination nodes or sub-probes;</li>
+<li>return data or leave infrastructure value even if full deceleration fails.</li>
+</ul>
+<p>R1 is a seed mission, not a settlement mission.</p>
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Sweep values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Payload mass</td>
+  <td>10 kg / 100 kg / 1000 kg</td>
+</tr>
+<tr>
+  <td>Target cruise speed</td>
+  <td>0.01 c / 0.03 c / 0.05 c / 0.10 c</td>
+</tr>
+<tr>
+  <td>Bow-wall mass ratio</td>
+  <td>0.3x / 1x / 3x / 10x payload</td>
+</tr>
+<tr>
+  <td>Coupling hardware mass ratio</td>
+  <td>1x / 3x / 10x payload</td>
+</tr>
+<tr>
+  <td>Seed-node mass ratio</td>
+  <td>0x / 1x / 3x payload</td>
+</tr>
+<tr>
+  <td>Shield geometry</td>
+  <td>none / disk / shallow cone / oblique / vented / hybrid</td>
+</tr>
+<tr>
+  <td>Destination result</td>
+  <td>D0 / D1 / D2 / D3</td>
+</tr>
+</tbody>
+</table>
+<p>R1 passes only if all required gates close at once under a declared assumption set. A run where coupling works only by deleting bow-wall mass does not pass. A run where bow-wall survival requires impossible ring energy does not pass. A run where destination seeding works only by assuming mature destination infrastructure does not pass.</p>
+<h2 id="gate-a-powered-node-arc-coupling">Gate A - Powered Node/Arc Coupling</h2>
+<p>Gate A is the hardest physics gate. Passive static magnetism is not a source of net spacecraft acceleration. A static magnetic field passing a passive conductor induces currents whose force opposes relative motion. Passive susceptibility is therefore a control case, not a baseline solution.</p>
+<p>Distance-as-throttle remains useful, but only in the strict sense: encounter distance controls coupling magnitude. Net energy transfer and direction still require a powered or time-varying interaction, a powered ship-side magnetic moment, plasma/magsail coupling, or active phasing between nodes and ship.</p>
+<table>
+<thead>
+<tr>
+  <th>Subgate</th>
+  <th>Mechanism</th>
+  <th>Primary cost</th>
+  <th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>A1 - Superconducting loop on ship</td>
+  <td>Ship carries a large superconducting current loop; node-field gradient acts on ship-side magnetic moment</td>
+  <td>Ship-side coil mass plus cryogenic envelope</td>
+  <td>Primary candidate</td>
+</tr>
+<tr>
+  <td>A2 - Passive diamagnetic / ferromagnetic hull</td>
+  <td>Passive hull susceptibility in node-field gradient</td>
+  <td>Almost certainly too weak</td>
+  <td>Control case only</td>
+</tr>
+<tr>
+  <td>A3 - Mag-sail / e-sail in node plasma</td>
+  <td>Nodes generate a plasma sheath; ship interacts through a magnetic or electric sail</td>
+  <td>Node plasma-generation cost; ship-side coil</td>
+  <td>Strong candidate</td>
+</tr>
+<tr>
+  <td>A4 - Active ship electromagnet</td>
+  <td>Ship times coil current to attract or repel passing nodes</td>
+  <td>Ship-side power, timing, latency</td>
+  <td>Strong candidate</td>
+</tr>
+<tr>
+  <td>A5 - Phased-field traveling wave</td>
+  <td>Nodes fire fields in sequence faster than ship speed; ship couples to the moving wave</td>
+  <td>Node energy storage and phase synchronization</td>
+  <td>Speculative wildcard</td>
+</tr>
+</tbody>
+</table>
+<p>For A4 and A5, a first-order slip relation can be written as F proportional to (v_phase - v_ship). When the ship matches the phase velocity, net force trends toward zero. When the phase is ahead of the ship, acceleration is possible. The useful simulation output is not a slogan but impulse delivered per kilogram of infrastructure and per joule spent.</p>
+<h2 id="gate-b-proximity-encounter-smoothness-and-node-arc-stability">Gate B - Proximity Encounter Smoothness and Node-Arc Stability</h2>
+<p>Gate B asks whether a discrete node arc can behave as a smooth encounter field, not whether the spacecraft can ride a physical guideway. The relevant object is the spacecraft's acceleration time series during a close pass through overlapping field volumes.</p>
+<p>The first metrics are acceleration ripple, jerk, lateral impulse, node-failure tolerance, station-keeping cost, and reaction-force accumulation. A perfect simulated node arc is not enough; the gate must also test missing nodes, noisy orientation, finite field rise time, and repeated launches.</p>
+<ul>
+<li>R_ripple = sigma(a(t)) / (mean(a(t)) + epsilon), with robotic and fragile-payload thresholds declared separately;</li>
+<li>J_max = max |da/dt|, because payloads can survive mean acceleration but fail under jerk;</li>
+<li>Delta p_perp = integral of lateral force over time, because sideways impulse can be as damaging as forward ripple;</li>
+<li>node-loss tests: remove every kth node and randomly remove p percent of nodes;</li>
+<li>station-keeping: compute delta-v per node per year and node replacement rate;</li>
+<li>reaction accounting: every launch exchanges momentum with the node arc and must be paid back.</li>
+</ul>
+<p>Paired arcs or offset ringlets may act as a reaction-force management system. They should not be interpreted as two giant rigid rings. Their purpose is momentum bookkeeping and orbital recovery, not construction of a continuous mechanical guideway.</p>
+<h2 id="gate-c-detached-bow-wall-protection">Gate C - Detached Bow-Wall Protection</h2>
+<p>At interstellar cruise speeds, dust impact is a central survival problem. SORA concentrates forward protection into a detached sacrificial bow wall placed ahead of the main spacecraft. The baseline is deliberately simple: a thick detached disk or shallow cone. More complex geometries are variants, not defaults.</p>
+<p>No bow-wall geometry is promoted unless it beats the baseline at equal protected frontal area and equal or lower mass. This prevents attractive geometry from replacing engineering evidence.</p>
+<p>The wall must be evaluated against mechanical debris, plume expansion, thermal load, radiation pulse, formation control, erosion, and abandonment logic. A wall that protects against one impact mode while becoming a secondary debris source fails Gate C.</p>
+<table>
+<thead>
+<tr>
+  <th>Metric</th>
+  <th>Question</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Wall survival</td>
+  <td>Does the wall remain useful for the required cruise duration?</td>
+</tr>
+<tr>
+  <td>Ship-facing fluence</td>
+  <td>Does debris or radiation reaching the ship stay below damage thresholds?</td>
+</tr>
+<tr>
+  <td>Radiation pulse</td>
+  <td>Does local vaporization produce damaging X-ray / soft-gamma fluence?</td>
+</tr>
+<tr>
+  <td>Formation flight</td>
+  <td>Can the wall remain correctly positioned after impacts?</td>
+</tr>
+<tr>
+  <td>Mass ratio</td>
+  <td>Does protection mass consume mission value?</td>
+</tr>
+<tr>
+  <td>Variant discipline</td>
+  <td>Does any cone, vented, or hybrid geometry beat the simple wall fairly?</td>
+</tr>
+</tbody>
+</table>
+<h2 id="gate-d-destination-seeding-and-capture">Gate D - Destination Seeding and Capture</h2>
+<p>Destination success is not binary. SORA does not require immediate mature deceleration infrastructure at the target star. The first mission may still create value as a flyby science mission, a partial node-capture mission, or a seed for later densification.</p>
+<table>
+<thead>
+<tr>
+  <th>Outcome</th>
+  <th>Meaning</th>
+  <th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>D0</td>
+  <td>Flyby returns scientific data; no useful node capture</td>
+  <td>acceptable fallback</td>
+</tr>
+<tr>
+  <td>D1</td>
+  <td>Nonzero useful seed-node capture; destination infrastructure begins</td>
+  <td>primary R1 target</td>
+</tr>
+<tr>
+  <td>D2</td>
+  <td>Repeated missions create a usable local node arc</td>
+  <td>stretch goal</td>
+</tr>
+<tr>
+  <td>D3</td>
+  <td>Mature destination infrastructure supports large-payload braking</td>
+  <td>long horizon</td>
+</tr>
+</tbody>
+</table>
+<p>Gate D passes only if a credible braking-and-capture combination captures useful nodes without the capture hardware mass dominating the node payload value. The destination architecture must be grown, not assumed.</p>
+<h2 id="gate-e-whole-architecture-closure">Gate E - Whole-Architecture Closure</h2>
+<p>Gates A through D can each pass individually while SORA fails. Gate E asks whether the whole stack closes simultaneously.</p>
+<p>A pass statement must always include a declared mission class, speed band, payload, assumption file, and confidence class. There is no generic SORA pass.</p>
+<pre><code class="language-text">Example pass statement:
+R1 passes Gate E under assumptions file X at speed band Y, payload Z, and confidence class K.
+
+Example fail statement:
+R1 fails Gate E because bow-wall mass exceeds useful payload fraction at all tested shielding assumptions.
+</code></pre>
+<table>
+<thead>
+<tr>
+  <th>Closure dimension</th>
+  <th>Pass condition</th>
+  <th>Fail sign</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Mass</td>
+  <td>Useful payload fraction remains above declared minimum</td>
+  <td>Protection/coupler/seed mass consumes stack</td>
+</tr>
+<tr>
+  <td>Energy</td>
+  <td>Energy within declared solar capture and power envelope</td>
+  <td>Energy source becomes civilization-scale absurdity for tiny payload</td>
+</tr>
+<tr>
+  <td>Coupling</td>
+  <td>Useful impulse without destructive heating</td>
+  <td>Passive or impossible field assumptions</td>
+</tr>
+<tr>
+  <td>Encounter smoothness</td>
+  <td>Acceleration ripple and jerk within payload limits</td>
+  <td>High ripple, jerk, or lateral impulse</td>
+</tr>
+<tr>
+  <td>Reaction</td>
+  <td>Reusable node arc recovers after repeated launches</td>
+  <td>Station-keeping dominates</td>
+</tr>
+<tr>
+  <td>Bow wall</td>
+  <td>Survival benefit per kg exceeds no-wall baseline</td>
+  <td>Wall becomes debris source</td>
+</tr>
+<tr>
+  <td>Destination</td>
+  <td>D1 or better for seed mission</td>
+  <td>Only D0 when D1 is required</td>
+</tr>
+<tr>
+  <td>Robustness</td>
+  <td>Small assumption changes do not destroy the island</td>
+  <td>Razor-thin lucky point only</td>
+</tr>
+</tbody>
+</table>
+<h2 id="dynamic-mass-and-energy-ledger">Dynamic Mass and Energy Ledger</h2>
+<p>SORA is staged, so mass is not one number. The moving stack changes with mission phase.</p>
+<pre><code class="language-text">M_stack(t) = M_payload + M_bus(t) + M_coupler(t) + M_sail(t) + M_wall(t) + M_seed(t) + M_margin(t)
+</code></pre>
+<table>
+<thead>
+<tr>
+  <th>Event</th>
+  <th>Ledger effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Assembly</td>
+  <td>Full stack exists</td>
+</tr>
+<tr>
+  <td>Sail deployment</td>
+  <td>Sail area active; thermal limits apply</td>
+</tr>
+<tr>
+  <td>Sail jettison or retention</td>
+  <td>Sail mass is removed or repurposed</td>
+</tr>
+<tr>
+  <td>Node/arc coupling</td>
+  <td>Coupler active; heating and field loads apply</td>
+</tr>
+<tr>
+  <td>Coupler dormancy or discard</td>
+  <td>Coupler mass is removed or deactivated if possible</td>
+</tr>
+<tr>
+  <td>Perihelion pass</td>
+  <td>Thermal and trajectory constraints dominate</td>
+</tr>
+<tr>
+  <td>Bow-wall deployment</td>
+  <td>Wall moved forward; formation control active</td>
+</tr>
+<tr>
+  <td>Wall erosion or abandonment</td>
+  <td>Wall mass decreases or is discarded</td>
+</tr>
+<tr>
+  <td>Destination node release</td>
+  <td>Seed mass decreases; destination value may increase</td>
+</tr>
+<tr>
+  <td>Terminal flyby or partial capture</td>
+  <td>D0-D3 outcome assigned</td>
+</tr>
+</tbody>
+</table>
+<p>Kinetic energy should be modeled with the relativistic expression E_k = (gamma - 1) M_stack c^2, while the classical approximation 0.5 M_stack v^2 remains useful at lower speeds. The simulator must also model transfer efficiency and punish unrealistic stage efficiency.</p>
+<h2 id="control-and-autonomy-mdl-x-dcc-as-candidate-governance">Control and Autonomy: MDL x DCC as Candidate Governance</h2>
+<p>MDL x DCC remains useful, but only as a candidate governance method. It is not proof of feasibility. It can be used to choose among competing control actions under mass, energy, risk, and timing cost.</p>
+<table>
+<thead>
+<tr>
+  <th>Subsystem</th>
+  <th>Governance question</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Node</td>
+  <td>Which field orientation, timing, and power setting is simplest and safest?</td>
+</tr>
+<tr>
+  <td>Arc sector</td>
+  <td>Which nodes should fire, stand down, or recover?</td>
+</tr>
+<tr>
+  <td>Spacecraft coupler</td>
+  <td>How close to pass and when to shed or deactivate hardware?</td>
+</tr>
+<tr>
+  <td>Bow wall</td>
+  <td>Hold, correct, rotate, abandon, or replace?</td>
+</tr>
+<tr>
+  <td>Destination seeding</td>
+  <td>Release which node when, or keep it?</td>
+</tr>
+<tr>
+  <td>Full mission</td>
+  <td>Which branch minimizes description plus residual risk?</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-text">L_total = L_model + L_residual + L_risk + L_energy + L_mass
+</code></pre>
+<p>The chosen action is not the most exciting action. It is the action with the smallest total description plus residual cost. The DCC layer gates action under limited budgets: do nothing if signal is weak, escalate when a failure mode crosses threshold, allocate energy where intervention matters most, avoid chaotic switching, and preserve a few high-value alternatives instead of hardcoding one path.</p>
+<h2 id="sora-0-demonstrator">SORA-0 Demonstrator</h2>
+<p>Before any interstellar claim, SORA should be reduced to a local physics experiment. SORA-0 is not a star mission. It is a demonstrator for the coupling and encounter-smoothness ideas.</p>
+<ul>
+<li>one or more small free-flying powered nodes;</li>
+<li>a small spacecraft-side coupling loop or active coil;</li>
+<li>controlled relative flyby;</li>
+<li>measured impulse, heating, and lateral error;</li>
+<li>repeated passes with different distance profiles;</li>
+<li>safe deactivation and failure-mode testing.</li>
+</ul>
+<p>A stricter demonstrator concept uses two superconducting magnetic nodes and one test payload. Success means measured nontrivial impulse transfer, predictable distance-as-throttle behavior, manageable heating, controllable orientation, and closed energy and momentum books across all bodies. SORA-0 does not need to be fast. It needs to be honest.</p>
+<h2 id="sora-sim-initial-software-specification">SORA-Sim: Initial Software Specification</h2>
+<p>The next concrete artifact is a small software scaffold that turns the paper into falsifiable numbers.</p>
+<pre><code class="language-text">sora_sim/
+  assumptions.yaml
+  mass_ledger.py
+  node_arc_coupling.py
+  proximity_smoothness.py
+  arc_reaction.py
+  bow_wall.py
+  destination_seed.py
+  gate_score.py
+  run_sweep.py
+  plots.py
+  README.md
+
+outputs/
+  parameter_islands.csv
+  failed_regions.csv
+  gate_A_ring_coupling.csv
+  gate_B_smoothness.csv
+  gate_C_bow_wall.csv
+  gate_D_destination_seed.csv
+  gate_E_stack_closure.csv
+  assumptions_hash.txt
+</code></pre>
+<p>Every run should report mission class, payload mass, stack mass, target speed, node count, coupling mechanism, wall mass ratio, wall geometry, capture fraction, energy per payload kg, gate tags, limiting gate, closure score, and assumptions hash. A parameter island is a connected region of assumption space where all required gates pass or remain yellow under a declared mission class. A single lucky point is not an island.</p>
+<h2 id="minimum-run-plan">Minimum Run Plan</h2>
+<ol>
+<li>Run a coarse R1 sweep at 10 kg payload and 0.01 c.</li>
+<li>Identify which gate fails first.</li>
+<li>Repeat at 100 kg and 1000 kg.</li>
+<li>Increase speed only if a lower-speed island survives.</li>
+<li>Compare no-wall, disk wall, cone wall, and one high-upside wall variant.</li>
+<li>Report the limiting gate honestly.</li>
+</ol>
+<p>The simulation should use declared assumptions, not hidden optimism. If the first sweep finds no parameter island even under generous assumptions, SORA should be compressed, not defended rhetorically.</p>
+<h2 id="what-would-falsify-sora">What Would Falsify SORA</h2>
+<p>SORA should shrink or stop if any of the following occurs:</p>
+<ol>
+<li>Gate A shows no useful coupling island without impossible field strength, coil mass, or heating.</li>
+<li>Gate B shows unavoidable acceleration ripple or reaction costs that scale beyond repair.</li>
+<li>Gate C shows the wall is always a worse debris source or mass penalty than the no-wall baseline.</li>
+<li>Gate D shows no carried seed architecture can achieve D1 or better under non-circular assumptions.</li>
+<li>Gate E shows every subsystem pass requires assumptions that cause another subsystem to fail.</li>
+<li>The first simulator finds no low-speed R1 island even under generous assumptions.</li>
+</ol>
+<p>The correct response to falsification is compression: keep the surviving sub-result and discard the failing architecture branch.</p>
+<h2 id="partial-failure-value">Partial Failure Value</h2>
+<p>SORA should not be evaluated only as complete starship or useless. Partial failures may still be valuable.</p>
+<table>
+<thead>
+<tr>
+  <th>Surviving element</th>
+  <th>Value even if full SORA fails</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Coupling model</td>
+  <td>High-power orbital energy-transfer research</td>
+</tr>
+<tr>
+  <td>Smooth node arc</td>
+  <td>Distributed infrastructure control</td>
+</tr>
+<tr>
+  <td>Dynamic mass ledger</td>
+  <td>Rigorous mission-design discipline</td>
+</tr>
+<tr>
+  <td>Detached bow-wall modeling</td>
+  <td>Interstellar dust-shielding insight</td>
+</tr>
+<tr>
+  <td>Destination seed model</td>
+  <td>Architecture for staged exploration</td>
+</tr>
+<tr>
+  <td>SORA-0 demonstrator</td>
+  <td>Measurable field-coupling data</td>
+</tr>
+<tr>
+  <td>MDL x DCC governance</td>
+  <td>Control selection under multi-subsystem cost</td>
+</tr>
+</tbody>
+</table>
+<p>A cleanly failing SORA can still generate publishable engineering sub-results.</p>
+<h2 id="external-dependencies">External Dependencies</h2>
+<p>Several scientific developments outside SORA's control would transform or kill the architecture:</p>
+<ul>
+<li>Room-temperature high-field superconductors would reduce A1 ship-side coupling mass and improve subgates that depend on superconductor mass.</li>
+<li>Practical electric sails at high efficiency would strengthen destination capture and seeding options.</li>
+<li>Active dust deflection could transform or replace the bow-wall analysis, shifting protection from passive mass to active power.</li>
+<li>Asteroid-belt mining or equivalent in-space mass economy is likely required for SORA-I and above.</li>
+<li>Working compact fusion drives would weaken SORA's case for some missions, because self-contained fusion competes without large launch infrastructure.</li>
+</ul>
+<h2 id="confidence-map">Confidence Map</h2>
+<table>
+<thead>
+<tr>
+  <th>Band</th>
+  <th>Claims</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>High confidence</td>
+  <td>The ship-as-payload, solar-system-as-accelerator reframe is coherent; energy is not the main bottleneck; independent orbital nodes are a better starting concept than rigid rings; relativistic dust requires forward protection; destination infrastructure must be grown, not assumed.</td>
+</tr>
+<tr>
+  <td>Medium confidence</td>
+  <td>Solar sails are useful as Stage 1; distance-as-throttle is valuable as coupling-magnitude control; dual-ship redundancy is a robust pattern; detached shielding is conceptually superior to bolted armor for shock decoupling; bow-wall material selection should be by areal survival rather than hardness.</td>
+</tr>
+<tr>
+  <td>Low / speculative confidence</td>
+  <td>Node arcs accelerate useful spacecraft to 0.03-0.10 c at affordable infrastructure mass; field-overlap smoothness works at large scale; paired arcs manage reaction force economically; detached bow walls survive multiyear relativistic cruise; destination nodes are captured into useful orbits at acceptable mass.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="conclusion">Conclusion</h2>
+<p>SORA is strongest when it is vulnerable. It states what it does not claim. It names five gates with pass/fail metrics. It rejects passive static-field propulsion language. It treats the first serious mission as a slow uncrewed seed probe, not a human-timescale starship. It admits that the most architecturally original idea - destination self-extension through carried seed nodes - remains untested until simulation.</p>
+<p>What SORA provides is a finite test program. If the first simulator finds no parameter island, SORA still improves the map by identifying where the wall is. If it finds a small island for a slow uncrewed seed probe, the architecture graduates from internal coherence to toy-model closure. That would not prove feasibility. It would prove the next round is worth doing.</p>
+<p>SORA may fail. But it should fail through named gates, not fog.</p>
+<h2 id="appendix-compact-equations">Appendix: Compact Equations</h2>
+<pre><code class="language-text">Relativistic kinetic energy:
+E_k = (gamma - 1) m c^2
+
+Classical low-speed approximation:
+E_k approx 0.5 m v^2
+
+Lorentz factor:
+gamma = 1 / sqrt(1 - v^2/c^2)
+
+Ideal reflective sail radiation pressure:
+P_rad = 2 L_sun / (4 pi r^2 c)
+
+Magnetic-loop moment:
+mu = I A
+
+Toy coupling force:
+F approx grad(mu dot B)
+
+Node impulse:
+Delta p_node = integral F(t) dt
+
+Coupling efficiency:
+eta_couple = Delta E_ship / E_node_spent
+
+Ripple index:
+R_ripple = sigma(a(t)) / (mean(a(t)) + epsilon)
+
+Bow-wall value ratio:
+R_wall = risk reduction / (energy + mass + control + debris penalty)
+</code></pre>
+<h2 id="appendix-r1-sweep-template">Appendix: R1 Sweep Template</h2>
+<p>The first sweep should be emitted as CSV or JSONL rather than as a wide prose table. Minimum columns:</p>
+<pre><code class="language-text">run_id,payload_kg,v_frac_c,wall_ratio,coupler_ratio,seed_ratio,shield,gate_A,gate_B,gate_C,gate_D,gate_E,limiting_gate
+R1-001,10,0.01,0.3,1,0,none,?, ?, n/a, ?, ?, ?
+R1-002,10,0.01,1,1,1,disk,?, ?, ?, ?, ?, ?
+R1-003,10,0.01,3,3,1,cone,?, ?, ?, ?, ?, ?
+R1-004,100,0.03,3,3,1,disk,?, ?, ?, ?, ?, ?
+R1-005,1000,0.05,10,10,3,disk,?, ?, ?, ?, ?, ?
+</code></pre>
+<p>The exact grid is less important than the rule that every simulation row reports the first limiting gate and the reason for failure or survival.</p>
+<h2 id="appendix-assumptions-file-sketch">Appendix: Assumptions File Sketch</h2>
+<pre><code class="language-text">mission:
+  class: R1_seed_probe
+  target_speed_frac_c: [0.01, 0.03, 0.05, 0.10]
+  payload_kg: [10, 100, 1000]
+  destination_outcome_required: D1
+
+mass:
+  bus_ratio_to_payload: [1.0, 3.0]
+  coupler_ratio_to_payload: [1.0, 3.0, 10.0]
+  wall_ratio_to_payload: [0.0, 0.3, 1.0, 3.0, 10.0]
+  seed_ratio_to_payload: [0.0, 1.0, 3.0]
+  margin_ratio: [0.2, 0.5, 1.0]
+
+ring_coupling:
+  mechanism: [active_loop, superconducting_loop, magsail, phased_wave]
+  eta_couple: [0.0001, 0.001, 0.01, 0.10]
+  field_strength_T: [0.01, 0.1, 1.0, 10.0]
+  node_spacing_km: [10, 100, 1000, 10000]
+  interaction_radius_km: [10, 100, 1000]
+
+encounter_smoothness:
+  ripple_limit: 0.10
+  max_jerk_limit: TBD
+  node_failure_fraction: [0.0, 0.01, 0.05, 0.10]
+  stationkeeping_budget_frac: [0.001, 0.01, 0.10]
+
+bow_wall:
+  geometry: [none, disk, shallow_cone, oblique, flow_through, hybrid_vented]
+  material: [aluminum, graphite, carbon_carbon, silicon_carbide, boron_carbide]
+  standoff_km: [1, 100, 10000]
+  plume_angle_deg: [5, 15, 45, 90]
+  erosion_allowance_frac: [0.1, 0.5, 1.0]
+
+destination:
+  node_delta_v_mps: [0, 100, 1000, 10000]
+  capture_fraction_required: [0.01, 0.10, 0.50]
+  thermal_survival_margin: [low, medium, high]
+
+scoring:
+  require_all_gates: true
+  island_min_neighbors: 3
+  report_limiting_gate: true
+</code></pre>
+<h2 id="appendix-references-and-prior-art-pointers">Appendix: References and Prior-Art Pointers</h2>
+<p>These anchors do not establish SORA feasibility. They locate SORA relative to existing propulsion, sail, shielding, Oberth, and deceleration literature.</p>
+<ol>
+<li>Breakthrough Initiatives. Breakthrough Starshot. Official project page describing light-driven nanocraft foundations for Alpha Centauri-class missions.</li>
+<li>NASA. Advanced Composite Solar Sail System (ACS3). Solar-sail technology demonstration framing for radiation pressure and sail scale.</li>
+<li>Benkoski, J. J. et al. Combined Heat Shield and Solar Thermal Propulsion System for an Oberth Maneuver. NASA NIAC Phase I Final Report.</li>
+<li>Hoang, T., Lazarian, A., Burkhart, B., and Loeb, A. The interaction of relativistic spacecrafts with the interstellar medium. arXiv:1608.05284.</li>
+<li>Perakis, N. and Hein, A. M. Combining Magnetic and Electric Sails for Interstellar Deceleration. arXiv:1603.03015; Acta Astronautica 128, 13-20.</li>
+<li>Forward, R. L. Roundtrip Interstellar Travel Using Laser-Pushed Lightsails. Journal of Spacecraft and Rockets, 1984.</li>
+<li>Birch, P. Orbital Ring Systems and Jacob's Ladders. Journal of the British Interplanetary Society, 1982.</li>
+<li>Oberth, H. Wege zur Raumschiffahrt. 1929.</li>
+<li>Tsiolkovsky, K. E. The Exploration of Cosmic Space by Means of Reaction Devices. 1903.</li>
+<li>McInnes, C. R. Solar Sailing: Technology, Dynamics and Mission Applications. Springer-Praxis, 1999.</li>
+<li>Matloff, G. L. Deep Space Probes. Springer-Praxis, 2005.</li>
+<li>Zubrin, R. M. and Andrews, D. G. Magnetic Sails and Interplanetary Travel. Journal of Spacecraft and Rockets, 1991.</li>
+<li>Whipple, F. L. Meteorites and Space Travel. Astronomical Journal, 1947.</li>
+<li>NASA Johnson Space Center Hypervelocity Impact Technology. Shield development and hypervelocity-impact background materials.</li>
+<li>BD and AI collaborators. MDL x DCC: Minimum Description Length as Universal Governing Kernel. AIM3 / 8Z Research Program.</li>
+</ol>
+
+  </article>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p><strong>SORA</strong> is part of the Core Research Papers collection. <a href="index.html">Return to CRP index</a>.</p>
+  </div>
+</footer>
+
+<a aria-label="Back to top" class="back-top" href="#top">↑ Top</a>
+<div aria-label="Reading text size controls" class="reader-controls" role="group">
+  <button aria-label="Decrease text size" data-reader-dec title="Decrease text size" type="button">A−</button>
+  <span class="reader-label" id="readerSizeLabel">XL 4/8</span>
+  <button aria-label="Increase text size" data-reader-inc title="Increase text size" type="button">A+</button>
+</div>
+<script>
+(function(){
+  var KEY='bdCrpReaderSizeV1', MAX=7, DEFAULT=3;
+  var names=['Small','Comfort','Large','XL','Bed','Huge','Giant','Max'];
+  function clamp(n){n=parseInt(n,10);return isNaN(n)?DEFAULT:Math.max(0,Math.min(MAX,n));}
+  function get(){try{var saved=localStorage.getItem(KEY);if(saved!==null)return clamp(saved);}catch(e){}return DEFAULT;}
+  function apply(n){n=clamp(n);document.documentElement.setAttribute('data-reader-size',String(n));try{localStorage.setItem(KEY,String(n));}catch(e){}var label=document.getElementById('readerSizeLabel');if(label)label.textContent=names[n]+' '+(n+1)+'/8';}
+  function closeMenu(){document.body.classList.remove('mobile-menu-open');document.querySelectorAll('.mobile-menu-toggle').forEach(function(b){b.setAttribute('aria-expanded','false')});document.querySelectorAll('.mobile-menu-panel').forEach(function(p){p.setAttribute('aria-hidden','true')});}
+  function openMenu(){document.body.classList.add('mobile-menu-open');document.querySelectorAll('.mobile-menu-toggle').forEach(function(b){b.setAttribute('aria-expanded','true')});document.querySelectorAll('.mobile-menu-panel').forEach(function(p){p.setAttribute('aria-hidden','false')});}
+  function progress(){var d=document.documentElement;var s=d.scrollTop||document.body.scrollTop;var h=(d.scrollHeight-d.clientHeight)||1;var bar=document.getElementById('scrollProgress');if(bar)bar.style.width=Math.max(0,Math.min(100,(s/h)*100))+'%';}
+  apply(get()); progress();
+  document.addEventListener('click',function(e){
+    if(e.target&&e.target.matches('[data-reader-inc]')){apply(get()+1);return;}
+    if(e.target&&e.target.matches('[data-reader-dec]')){apply(get()-1);return;}
+    var toggle=e.target.closest&&e.target.closest('.mobile-menu-toggle');
+    if(toggle){e.preventDefault();document.body.classList.contains('mobile-menu-open')?closeMenu():openMenu();return;}
+    if(e.target.closest&&e.target.closest('[data-mobile-menu-close]')){e.preventDefault();closeMenu();return;}
+    if(e.target.closest&&e.target.closest('.mobile-menu-panel a'))closeMenu();
+  });
+  window.addEventListener('scroll',progress,{passive:true});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMenu();});
+})();
+</script>
+</body>
+</html>
