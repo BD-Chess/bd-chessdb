@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+
+<html data-lang="sl" lang="sl"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/><meta content="Slovenski komentarji BD × AI Lab: politika, razvoj, talenti in prihodnost Slovenije." name="description"/><title>Od zadrževanja k kroženju talentov · Slovenija 2026</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&amp;family=Rajdhani:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><style>
+:root{
+  --bg:#020409;--bg2:#060a14;--surface:#0d1424;--surface2:#101a2f;
+  --text:#e8edf7;--muted:#8290ad;--dim:#53617e;--line:rgba(0,229,255,.13);
+  --cyan:#00e5ff;--gold:#f59e0b;--green:#34d399;--rose:#ff6b8a;--violet:#a78bfa;--orange:#fb923c;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:radial-gradient(circle at 78% 12%,rgba(0,229,255,.10),transparent 34%),radial-gradient(circle at 13% 75%,rgba(245,158,11,.08),transparent 34%),radial-gradient(circle at 55% 45%,rgba(167,139,250,.06),transparent 42%),linear-gradient(180deg,#020409 0%,#050814 58%,#020409 100%);color:var(--text);font-family:'Rajdhani',system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:18px;line-height:1.68;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+a{color:inherit}
+.progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--gold),var(--green));width:0;z-index:1000;opacity:.95}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(2,4,9,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.topbar-inner{max-width:1180px;margin:0 auto;padding:10px 5vw;display:flex;gap:.65rem;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.brand{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);text-decoration:none;font-weight:700}
+.nav{display:flex;gap:.45rem;flex-wrap:wrap;align-items:center}
+.nav a{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.64rem;text-decoration:none;border:1px solid rgba(255,255,255,.09);color:rgba(226,232,244,.72);padding:.35rem .65rem;border-radius:999px}
+.nav a:hover{border-color:rgba(0,229,255,.35);color:var(--cyan);background:rgba(0,229,255,.08)}
+.lang-switch{display:inline-flex;border:1px solid rgba(245,158,11,.30);border-radius:999px;overflow:hidden;font-family:'JetBrains Mono',ui-monospace,monospace}
+.lang-switch button{background:transparent;border:0;color:var(--muted);padding:.35rem .7rem;font-size:.62rem;letter-spacing:.16em;cursor:pointer;font-family:inherit;text-transform:uppercase}
+.lang-switch button.active{background:rgba(245,158,11,.18);color:var(--gold)}
+.lang-switch button:hover:not(.active){color:var(--text)}
+html[data-lang="sl"] [data-lang-only="en"]{display:none!important}
+html[data-lang="en"] [data-lang-only="sl"]{display:none!important}
+.hero{min-height:76vh;display:flex;align-items:center;position:relative;padding:90px 5vw 70px;border-bottom:1px solid var(--line)}
+.hero-inner{max-width:1180px;margin:0 auto;width:100%}
+.eyebrow{font-family:'JetBrains Mono',ui-monospace,monospace;color:var(--gold);font-size:.72rem;letter-spacing:.34em;text-transform:uppercase;margin-bottom:1.2rem}
+h1{font-size:clamp(3rem,8vw,7.2rem);line-height:.88;letter-spacing:-.055em;margin-bottom:1.4rem}
+h1 .accent{color:var(--cyan)}
+.subtitle{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:clamp(1.2rem,2.3vw,1.7rem);color:rgba(226,232,244,.72);max-width:820px;line-height:1.35;margin-bottom:2.1rem}
+.hero-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;border:1px solid var(--line);background:var(--line);max-width:920px}
+.hero-stat{background:rgba(6,10,20,.82);padding:1.1rem 1rem}
+.hero-stat b{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:1.35rem;color:var(--text);display:block;line-height:1}
+.hero-stat .lbl{font-size:.75rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.warning{max-width:920px;margin-top:1.3rem;border:1px solid rgba(245,158,11,.22);border-left:3px solid var(--gold);background:rgba(245,158,11,.07);padding:1rem 1.1rem;color:rgba(226,232,244,.76)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 5vw}
+.intro{padding:70px 0 40px}
+.intro h2,.contents h2,.sources h2{font-size:clamp(2rem,4vw,3.1rem);line-height:1.05;margin-bottom:1rem}
+p{color:rgba(226,232,244,.78);max-width:78ch}
+.intro p+p{margin-top:1rem}
+.contents{padding:35px 0 80px}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:.65rem;margin-top:1.4rem}
+.toc-grid a{display:grid;grid-template-columns:34px 1fr;gap:.5rem;text-decoration:none;padding:.8rem .85rem;border:1px solid rgba(0,229,255,.10);background:rgba(11,17,32,.58);border-radius:6px;transition:.2s}
+.toc-grid a:hover{border-color:rgba(0,229,255,.35);transform:translateY(-2px);background:rgba(0,229,255,.06)}
+.toc-grid .num{grid-row:1/3;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.78rem;color:var(--gold)}
+.toc-grid b{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.72rem;color:var(--cyan);font-weight:600}
+.toc-grid em{font-style:normal;color:rgba(226,232,244,.82);font-weight:600}
+.cards{padding:20px 0 90px}
+.a4-card{position:relative;max-width:920px;min-height:1120px;margin:0 auto 34px;padding:42px 48px 44px;background:linear-gradient(180deg,rgba(15,23,41,.96),rgba(7,12,24,.98)),radial-gradient(circle at 90% 10%,rgba(0,229,255,.08),transparent 32%);border:1px solid rgba(0,229,255,.16);border-radius:10px;box-shadow:0 24px 80px rgba(0,0,0,.42)}
+.card-top{display:flex;justify-content:space-between;gap:1rem;margin-bottom:24px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.card-num{color:var(--gold)}
+.confidence{color:var(--dim);text-align:right}
+.range{font-family:'JetBrains Mono',ui-monospace,monospace;color:var(--cyan);font-size:.82rem;letter-spacing:.12em;margin-bottom:.7rem}
+.a4-card h2{font-size:clamp(2.2rem,5vw,4.15rem);line-height:.95;letter-spacing:-.035em;margin-bottom:.65rem}
+.focus{font-family:Georgia,'Times New Roman',serif;font-style:italic;color:var(--gold);font-size:1.2rem;margin-bottom:1.2rem}
+.state{border-left:2px solid var(--cyan);padding-left:1rem;margin-bottom:20px}
+.story p{margin:.78rem 0}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:25px 0}
+.mini{border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:1rem 1.05rem;background:rgba(255,255,255,.025)}
+.mini .label{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:.45rem}
+.mini.good .label{color:var(--green)}
+.mini.bad .label{color:var(--rose)}
+.mini .body{color:rgba(226,232,244,.78)}
+.pattern{border:1px solid rgba(245,158,11,.18);background:rgba(245,158,11,.06);padding:1rem 1.1rem;border-radius:7px;color:rgba(255,243,211,.86);margin-bottom:1rem}
+.pattern b{color:var(--gold)}
+.bridge{border-top:1px solid rgba(0,229,255,.12);padding-top:1rem;color:rgba(226,232,244,.72)}
+.sources-inline{margin-top:1.2rem;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.src-ref{display:inline-flex;align-items:center;justify-content:center;margin-left:.25rem;color:var(--violet);border:1px solid rgba(167,139,250,.22);border-radius:999px;padding:.18rem .48rem;text-decoration:none}
+.src-ref:hover{background:rgba(167,139,250,.12)}
+.proposal{border:1px solid rgba(52,211,153,.22);background:rgba(52,211,153,.05);border-radius:8px;padding:1rem 1.1rem;margin:.7rem 0}
+.proposal .pnum{font-family:'JetBrains Mono',ui-monospace,monospace;color:var(--green);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;margin-bottom:.35rem}
+.proposal h4{color:var(--text);font-size:1.15rem;margin-bottom:.4rem;line-height:1.2}
+.proposal p{font-size:.95rem;margin:0;color:rgba(226,232,244,.78)}
+.sources{padding:20px 0 70px}
+.source-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:1.2rem}
+.source{border:1px solid rgba(255,255,255,.08);background:rgba(11,17,32,.55);border-radius:8px;padding:1rem}
+.sid{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.7rem;color:var(--gold);margin-bottom:.4rem}
+.source a{color:var(--cyan);text-decoration:none;font-weight:700}
+.source p{font-size:.93rem;color:var(--muted);margin-top:.4rem}
+.footer-nav{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin:0 0 70px}
+.footer-nav a{border:1px solid rgba(0,229,255,.18);border-radius:999px;padding:.65rem 1rem;text-decoration:none;color:var(--cyan);background:rgba(0,229,255,.04)}
+.back-top{position:fixed;right:18px;bottom:18px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);border:1px solid rgba(0,229,255,.28);background:rgba(2,4,9,.74);padding:8px 12px;border-radius:999px;text-decoration:none;backdrop-filter:blur(8px);z-index:60}
+.back-top:hover{background:rgba(0,229,255,.1)}
+.reader-controls{position:fixed;left:18px;bottom:18px;display:inline-flex;gap:6px;background:rgba(2,4,9,.74);border:1px solid var(--line);border-radius:999px;padding:6px 8px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.7rem;backdrop-filter:blur(8px);z-index:60}
+.reader-controls button{background:transparent;border:0;color:var(--cyan);padding:2px 6px;cursor:pointer;font-family:inherit;font-size:.78rem}
+.reader-controls .reader-label{color:var(--muted);letter-spacing:.1em;padding:2px 4px;align-self:center}
+@media(max-width:800px){body{font-size:18px}.hero{min-height:auto;padding:70px 5vw 50px}.hero-grid{grid-template-columns:1fr 1fr}.a4-card{min-height:auto;padding:28px 22px}.split{grid-template-columns:1fr}.card-top{flex-direction:column}.confidence{text-align:left}.toc-grid{grid-template-columns:1fr}}
+@media(max-width:520px){.hero-grid{grid-template-columns:1fr}h1{font-size:3rem}.a4-card h2{font-size:2.25rem}}
+@page{size:A4;margin:0}
+@media print{body{background:#020409;color:var(--text);print-color-adjust:exact;-webkit-print-color-adjust:exact}.topbar,.progress,.hero,.intro,.contents,.footer-nav,.back-top,.reader-controls{display:none}.wrap{max-width:none;padding:0}.cards{padding:0}.a4-card{width:210mm;min-height:297mm;max-width:none;margin:0;padding:18mm 17mm;border-radius:0;box-shadow:none;page-break-after:always}.sources{page-break-before:always;padding:18mm}.source{break-inside:avoid}}
+
+
+/* === /slo/ linking layer === */
+.slo-context-strip{max-width:1180px;margin:0 auto;padding:16px 5vw 0;display:grid;grid-template-columns:1fr;gap:.65rem}
+.slo-context-box{border:1px solid rgba(0,229,255,.16);background:rgba(11,17,32,.55);border-radius:9px;padding:1rem 1.05rem;color:rgba(226,232,244,.78)}
+.slo-context-box b{color:var(--cyan)}
+.slo-context-links{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.75rem}
+.slo-context-links a,.inline-pill-link{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;border:1px solid rgba(0,229,255,.18);border-radius:999px;padding:.38rem .62rem;color:var(--cyan);background:rgba(0,229,255,.045)}
+.slo-context-links a:hover,.inline-pill-link:hover{background:rgba(0,229,255,.10);border-color:rgba(0,229,255,.38)}
+.slo-context-links a.gold,.inline-pill-link.gold{border-color:rgba(245,158,11,.28);color:var(--gold);background:rgba(245,158,11,.055)}
+.slo-context-links a.green,.inline-pill-link.green{border-color:rgba(52,211,153,.28);color:var(--green);background:rgba(52,211,153,.055)}
+@media(max-width:760px){.topbar-inner{padding:9px 4vw}.nav{gap:.32rem}.nav a{font-size:.66rem;padding:.42rem .55rem}.brand{font-size:.66rem}.slo-context-strip{padding:12px 4vw 0}.slo-context-links a{font-size:.66rem}}
+
+
+/* === /slo/ hub additions === */
+.hub-strip{max-width:920px;margin-top:.95rem;display:flex;gap:.55rem;flex-wrap:wrap;align-items:center}
+.hub-strip a,.hub-strip span{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;border:1px solid rgba(0,229,255,.18);border-radius:999px;padding:.42rem .7rem;color:rgba(226,232,244,.76);background:rgba(0,229,255,.045)}
+.hub-strip a:hover{color:var(--cyan);border-color:rgba(0,229,255,.38);background:rgba(0,229,255,.09)}
+.hub-strip .gold{color:var(--gold);border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.06)}
+.related{padding:10px 0 70px}
+.related h2{font-size:clamp(2rem,4vw,3.1rem);line-height:1.05;margin-bottom:1rem}
+.related-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem}
+.related-card{display:block;text-decoration:none;border:1px solid rgba(0,229,255,.12);background:rgba(11,17,32,.55);border-radius:10px;padding:1rem 1.05rem;min-height:145px;transition:.18s}
+.related-card:hover{transform:translateY(-2px);border-color:rgba(0,229,255,.36);background:rgba(0,229,255,.06)}
+.related-card .tag{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:.45rem}
+.related-card h3{font-size:1.3rem;line-height:1.15;margin-bottom:.45rem;color:var(--text)}
+.related-card p{font-size:.95rem;color:rgba(226,232,244,.70);line-height:1.55;margin:0}
+.cross-note{border:1px solid rgba(0,229,255,.16);background:rgba(0,229,255,.045);border-left:3px solid var(--cyan);border-radius:8px;padding:1rem 1.1rem;margin:1rem 0;color:rgba(226,232,244,.78)}
+.cross-note a{color:var(--cyan);text-decoration:none;font-weight:700}
+.cross-note a:hover{text-decoration:underline}
+@media(max-width:760px){.topbar-inner{padding:8px 4vw}.nav{gap:.32rem}.nav a{font-size:.62rem;padding:.33rem .5rem}.brand{font-size:.68rem}.hub-strip a,.hub-strip span{font-size:.6rem;padding:.38rem .58rem}.related-card{min-height:auto}}
+
+</style></head><body id="top">
+<div class="progress" id="progress"></div>
+<nav class="topbar"><div class="topbar-inner">
+<a class="brand" href="index.html">BD × SLO · komentarji</a>
+<div class="nav">
+<a href="index.html">SLO index</a>
+<a href="/bd/">BD portfolio</a>
+<a href="/crp/">CRP</a>
+<a href="Interventni_zakon_2026.html">Interventni zakon</a>
+<a href="#cards"><span data-lang-only="sl">Kartice</span><span data-lang-only="en">Cards</span></a>
+<a href="#sources"><span data-lang-only="sl">Viri</span><span data-lang-only="en">Sources</span></a>
+<span aria-label="Language" class="lang-switch" role="group"><button class="active" data-set-lang="sl" type="button">SL</button><button data-set-lang="en" type="button">EN</button></span>
+</div>
+</div></nav>
+<main>
+<header class="hero"><div class="hero-inner">
+<div class="eyebrow"><span data-lang-only="sl">Slovenija · Strategija človeškega kapitala · 2026</span><span data-lang-only="en">Slovenia · Human Capital Strategy · 2026</span></div>
+<h1><span data-lang-only="sl">Od zadrževanja k <span class="accent">kroženju</span> talentov</span><span data-lang-only="en">From Retention to <span class="accent">Circulation</span> of Talent</span></h1>
+<p class="subtitle"><span data-lang-only="sl">Slovenija ne more zmagati z igro zadrževanja. Lahko zmaga z igro kroženja — pošlji ven, izbrusi se proti najboljšim, pridi nazaj močnejši. Tajvan, Izrael, Koreja in Irska so to dokazali. Slovenski šport to že počne. Vprašanje je, ali bomo isti princip prenesli na gospodarstvo, znanost in podjetništvo.</span><span data-lang-only="en">Slovenia cannot win with a retention game. It can win with a circulation game — send out, sharpen against the best, return stronger. Taiwan, Israel, Korea, and Ireland have proven this. Slovenian sport already does it. The question is whether we transfer the same principle to economy, science, and entrepreneurship.</span></p>
+<div class="hero-grid">
+<div class="hero-stat"><b>10</b><div class="lbl"><span data-lang-only="sl">A4 kartic</span><span data-lang-only="en">A4 cards</span></div></div>
+<div class="hero-stat"><b>4</b><div class="lbl"><span data-lang-only="sl">primeri držav</span><span data-lang-only="en">country cases</span></div></div>
+<div class="hero-stat"><b>7</b><div class="lbl"><span data-lang-only="sl">konkretnih predlogov</span><span data-lang-only="en">concrete proposals</span></div></div>
+<div class="hero-stat"><b>18</b><div class="lbl"><span data-lang-only="sl">virov</span><span data-lang-only="en">sources</span></div></div>
+</div>
+<div class="warning"><span data-lang-only="sl"><strong>Opozorilo o pristopu:</strong> ta dokument ne zagovarja levice ali desnice. Sprejet Interventni zakon (11. 5. 2026) presoja po tem, ali premakne Slovenijo iz <em>retention paradigme</em> (zadrži, kar imaš) v <em>circulation paradigmo</em> (pošlji ven, pridobi nazaj boljše). Ocena: dober prvi korak, premalo ambiciozen.</span><span data-lang-only="en"><strong>Note on approach:</strong> this document does not argue left or right. It evaluates the Intervention Act (passed 11 May 2026) by whether it moves Slovenia from a <em>retention paradigm</em> (keep what you have) to a <em>circulation paradigm</em> (send out, gain back stronger). Verdict: a good first step, not ambitious enough.</span></div><div class="hub-strip">
+<a href="index.html">/slo/ index</a>
+<a class="gold" href="Interventni_zakon_2026.html">Aktualno: interventni zakon 2026</a>
+<a href="/bd/">BD portfolio</a>
+<a href="/crp/">ostali dokumenti</a>
+</div>
+</div></header>
+<section aria-label="SLO context" class="slo-context-strip">
+<div class="slo-context-box">
+<span data-lang-only="sl"><b>Ta stran je globlji talent-strateški dodatek.</b> Če želiš najprej aktualni zakonodajni okvir, je povezan članek o interventnem zakonu krajši in bolj neposredno političen.</span>
+<span data-lang-only="en"><b>This page is the deeper talent-strategy companion.</b> For the current legislative frame first, the companion article on the intervention act is shorter and more directly political.</span>
+<div class="slo-context-links">
+<a class="gold" href="Interventni_zakon_2026.html"><span data-lang-only="sl">Povezani članek: Interventni zakon</span><span data-lang-only="en">Companion: Intervention Act</span></a>
+<a href="index.html"><span data-lang-only="sl">SLO kazalo</span><span data-lang-only="en">SLO index</span></a>
+<a href="/crp/people"><span data-lang-only="sl">People / permission layer</span><span data-lang-only="en">People / permission layer</span></a>
+<a href="/bd/">BD portfolio</a>
+</div>
+</div>
+</section>
+<section class="intro wrap" id="intro">
+<h2><span data-lang-only="sl">Kako brati ta dokument</span><span data-lang-only="en">How to read this document</span></h2><div class="cross-note">
+<span data-lang-only="sl"><strong>Povezava z aktualno politiko:</strong> ta članek je strateško ozadje. Za neposredno analizo sprejetega interventnega zakona 2026 glej <a href="Interventni_zakon_2026.html">Interventni zakon 2026</a>.</span>
+<span data-lang-only="en"><strong>Connection to current policy:</strong> this article is the strategic background. For the direct analysis of the adopted 2026 Intervention Act, see <a href="Interventni_zakon_2026.html">Intervention Act 2026</a>.</span>
+</div>
+<div data-lang-only="sl">
+<p>Slovenija ima eno največjih neizkoriščenih prednosti v Evropi: izjemno visok človeški kapital na prebivalca. Med najvišjimi deleži STEM diplomantov v EU. Najvišjo produktivnost dela v Vzhodni Evropi. Globalno prepoznavna visokotehnološka podjetja. Športne rezultate, ki na prebivalca nimajo primerjave.</p>
+<p>In vendar že leta govorimo o <em>begu možganov</em> — defenzivno, kot da je vsak odhod izguba. To je napačen okvir. Razvite male države z visokim človeškim kapitalom (Tajvan, Izrael, Južna Koreja, Irska) so dokazale, da je <em>brain circulation</em> močnejša strategija kot <em>brain retention</em>. Ne zadrži vsega. Pošlji ven, naredi povratek privlačen, gradi diasporno mrežo.</p>
+<p>Ta dokument je sestavljen iz desetih A4 kartic, ki sledijo isti strukturi: stanje, zgodba, dobro/slabo, globlji vzorec, most v naslednjo kartico. Pet kartic gradi okvir (princip, šport, štirje primeri), tri presojajo trenutni zakon (kaj dela dobro, kaj zgreši cilj, primerjava), zadnji dve sta operativni: sedem konkretnih predlogov in tveganja pri izvedbi.</p>
+</div>
+<div data-lang-only="en">
+<p>Slovenia holds one of Europe's largest underused advantages: extraordinarily high human capital per capita. Among the highest shares of STEM graduates in the EU. The highest labor productivity in Eastern Europe. Globally recognized high-tech companies. Sports results per capita that have no comparison.</p>
+<p>And yet for years we have spoken of <em>brain drain</em> — defensively, as if each departure were a loss. That is the wrong frame. Developed small states with high human capital (Taiwan, Israel, South Korea, Ireland) have demonstrated that <em>brain circulation</em> is a stronger strategy than <em>brain retention</em>. Don't keep everything. Send out, make returning attractive, build a diaspora network.</p>
+<p>This document consists of ten A4 cards following the same structure: state, story, good/bad, deep pattern, bridge to the next card. Five cards build the framework (principle, sport, four cases), three evaluate the current act (what it does well, where it misses, comparison), the last two are operational: seven concrete proposals and implementation risks.</p>
+</div>
+<div class="slo-context-box inline" style="margin-top:1.2rem">
+<span data-lang-only="sl"><b>Uredniška opomba:</b> ta stran je namenoma širša od aktualnega zakona. Zakon je samo sprožilec; glavna tema je dolgoročna slovenska strategija kroženja talentov. Za konkretno presojo interventnega zakona odpri povezani članek.</span>
+<span data-lang-only="en"><b>Editorial note:</b> this page is intentionally broader than the current act. The act is only the trigger; the main topic is Slovenia’s long-term talent-circulation strategy. For the concrete assessment of the intervention act, open the companion article.</span>
+<div class="slo-context-links"><a class="gold" href="Interventni_zakon_2026.html"><span data-lang-only="sl">Interventni zakon 2026 →</span><span data-lang-only="en">Intervention Act 2026 →</span></a><a href="index.html"><span data-lang-only="sl">SLO kazalo</span><span data-lang-only="en">SLO index</span></a></div>
+</div>
+</section>
+<section class="contents wrap">
+<h2><span data-lang-only="sl">Vsebina</span><span data-lang-only="en">Contents</span></h2>
+<div class="toc-grid">
+<a href="#card-01"><span class="num">01</span><b><span data-lang-only="sl">Diagnoza</span><span data-lang-only="en">Diagnosis</span></b><em><span data-lang-only="sl">Visok kapital, defenzivni okvir</span><span data-lang-only="en">High capital, defensive frame</span></em></a>
+<a href="#card-02"><span class="num">02</span><b><span data-lang-only="sl">Princip</span><span data-lang-only="en">Principle</span></b><em><span data-lang-only="sl">Retention vs Circulation</span><span data-lang-only="en">Retention vs Circulation</span></em></a>
+<a href="#card-03"><span class="num">03</span><b><span data-lang-only="sl">Šport kot dokaz</span><span data-lang-only="en">Sport as proof</span></b><em><span data-lang-only="sl">Pogačar, Dončić, Prevc</span><span data-lang-only="en">Pogačar, Dončić, Prevc</span></em></a>
+<a href="#card-04"><span class="num">04</span><b><span data-lang-only="sl">Tajvan</span><span data-lang-only="en">Taiwan</span></b><em><span data-lang-only="sl">Hsinchu in TSMC</span><span data-lang-only="en">Hsinchu and TSMC</span></em></a>
+<a href="#card-05"><span class="num">05</span><b><span data-lang-only="sl">Izrael</span><span data-lang-only="en">Israel</span></b><em><span data-lang-only="sl">Returning Home program</span><span data-lang-only="en">Returning Home program</span></em></a>
+<a href="#card-06"><span class="num">06</span><b><span data-lang-only="sl">Koreja in Irska</span><span data-lang-only="en">Korea and Ireland</span></b><em><span data-lang-only="sl">Samsung, irski tech boom</span><span data-lang-only="en">Samsung, Irish tech boom</span></em></a>
+<a href="#card-07"><span class="num">07</span><b><span data-lang-only="sl">Zakon: pluse</span><span data-lang-only="en">Act: positives</span></b><em><span data-lang-only="sl">Mikro s.p., DDV, energenti</span><span data-lang-only="en">Mikro s.p., VAT, energy</span></em></a>
+<a href="#card-08"><span class="num">08</span><b><span data-lang-only="sl">Zakon: zgrešena kapica</span><span data-lang-only="en">Act: missed cap</span></b><em><span data-lang-only="sl">7.500 € meri retention</span><span data-lang-only="en">€7,500 measures retention</span></em></a>
+<a href="#card-09"><span class="num">09</span><b><span data-lang-only="sl">Sedem predlogov</span><span data-lang-only="en">Seven proposals</span></b><em><span data-lang-only="sl">Circulation paket 2027</span><span data-lang-only="en">Circulation package 2027</span></em></a>
+<a href="#card-10"><span class="num">10</span><b><span data-lang-only="sl">Nevidnih 90 %</span><span data-lang-only="en">Invisible 90%</span></b><em><span data-lang-only="sl">Implementacijska tveganja</span><span data-lang-only="en">Implementation risks</span></em></a>
+</div>
+</section>
+<section class="cards wrap" id="cards">
+<article class="a4-card" id="card-01">
+<div class="card-top">
+<div>
+<div class="card-num"><span data-lang-only="sl">Kartica 01 · Diagnoza</span><span data-lang-only="en">Card 01 · Diagnosis</span></div>
+<div class="range"><span data-lang-only="sl">Stanje 2026</span><span data-lang-only="en">State 2026</span></div>
+</div>
+<div class="confidence"><span data-lang-only="sl">SURS + Eurostat + OECD potrjeno</span><span data-lang-only="en">SURS + Eurostat + OECD verified</span></div>
+</div>
+<h2><span data-lang-only="sl">Visok kapital, defenzivni okvir</span><span data-lang-only="en">High capital, defensive frame</span></h2>
+<p class="focus"><span data-lang-only="sl">Slovenija ima izjemen vir, a ga obravnava kot blago, ki ga je treba zadržati doma.</span><span data-lang-only="en">Slovenia has an exceptional resource, but treats it as goods to be kept at home.</span></p>
+<div class="state">
+<div data-lang-only="sl"><p>Slovenija je leta 2026 majhna država (približno 2,1 milijona prebivalcev) z empirično dokazljivo visoko kakovostjo človeškega kapitala. STEM diplomanti so med najvišjimi v EU glede na delež populacije, produktivnost dela presega vse vzhodnoevropske primerjave, raziskovalna intenziteta (BERD + GERD) je nadpovprečna v regiji. Hkrati v javnem diskurzu prevladuje okvir "bega možganov" — implicitno: vsak Slovenec, ki odide, je izgubljen.</p></div>
+<div data-lang-only="en"><p>In 2026, Slovenia is a small country (about 2.1 million people) with empirically demonstrable high quality of human capital. STEM graduates rank among the highest in the EU by population share, labor productivity surpasses all Eastern European comparators, and research intensity (BERD + GERD) is above the regional average. At the same time, public discourse is dominated by a "brain drain" frame — implicit: every Slovenian who leaves is lost.</p></div>
+</div>
+<div class="story">
+<div data-lang-only="sl">
+<p>Ta okvir je psihološka past. Predpostavlja zaprt sistem: ali si tu in prispevaš, ali si zunaj in si izguba. V resnici je svet odprt graf, ne škatla. Slovenec, ki dela v Münchnu pri BMW, ali raziskovalec v Bostonu pri MIT, ali inženirka v Zürichu — ti niso izgubljeni. So potencialni viri, ki čakajo na pravi gradijent privlačnosti.</p>
+<p>Težava torej ni odliv, ampak <em>asimetrija toka</em>. Iz Slovenije gre ven približno toliko visoko kvalificiranih, kot pride v Slovenijo — vendar vstopni tok prihaja iz nižje kvalificirane baze (Zahodni Balkan, deloma vzhodna EU). Izstopni tok gre v vrhunska okolja (München, Zürich, London, Silicijeva dolina, Boston, Singapur). Neto je torej kvalitativno negativen, ne nujno kvantitativno.</p>
+<p>Dodatna težava: država tega toka ne meri sistematično. Nimamo registra slovenske diaspore po domenah, nimamo strukturiranega vzdrževanja stikov, nimamo institucije, ki bi spremljala karierne poti slovenskih doktorantov v tujini. Tisto, česar ne merimo, ne moremo upravljati.</p>
+</div>
+<div data-lang-only="en">
+<p>This frame is a psychological trap. It assumes a closed system: either you are here and contribute, or you are out and you are a loss. In reality, the world is an open graph, not a box. A Slovenian working in Munich at BMW, or a researcher in Boston at MIT, or an engineer in Zürich — they are not lost. They are potential resources awaiting the right gradient of attractiveness.</p>
+<p>The problem is therefore not outflow, but <em>asymmetry of flow</em>. About as many high-skilled people leave Slovenia as enter it — but the inflow comes from a lower-skilled base (Western Balkans, partly Eastern EU). The outflow goes to top-tier environments (Munich, Zürich, London, Silicon Valley, Boston, Singapore). The net is therefore qualitatively negative, not necessarily quantitatively.</p>
+<p>An additional problem: the state does not measure this flow systematically. We have no register of Slovenian diaspora by domain, no structured maintenance of contacts, no institution tracking career trajectories of Slovenian PhDs abroad. What we do not measure, we cannot manage.</p>
+</div>
+</div>
+<div class="split">
+<section class="mini good"><div class="label"><span data-lang-only="sl">Dobro</span><span data-lang-only="en">Good</span></div><div class="body"><span data-lang-only="sl">Visoka kakovost izobraževanja, močna STEM baza, kulturna povezanost diaspore s Slovenijo, jezikovna ohranjenost druge generacije v številnih primerih.</span><span data-lang-only="en">High education quality, strong STEM base, cultural connection of diaspora to Slovenia, language preservation in many second-generation cases.</span></div></section>
+<section class="mini bad"><div class="label"><span data-lang-only="sl">Slabo</span><span data-lang-only="en">Bad</span></div><div class="body"><span data-lang-only="sl">Defenzivni okvir "bega možganov", odsotnost merjenja, nestrukturirana diasporna politika, hierarhična kultura, ki uspeh povratnikov pogosto sprejema z zavistjo.</span><span data-lang-only="en">Defensive "brain drain" frame, absence of measurement, unstructured diaspora policy, hierarchical culture that often greets returnee success with envy.</span></div></section>
+</div>
+<div class="pattern"><b><span data-lang-only="sl">Globlji vzorec:</span><span data-lang-only="en">Deep pattern:</span></b> <span data-lang-only="sl">Seme: visok kapital. Most: izstop v vrhunska okolja. Test: ali ga znamo pripeljati nazaj? Rezultat: brez infrastrukture krožnosti vsak preboj v tujini ostane tuje bogastvo.</span><span data-lang-only="en">Seed: high capital. Bridge: exit to top-tier environments. Test: can we bring it back? Result: without circulation infrastructure, every breakthrough abroad becomes foreign wealth.</span></div>
+<div class="bridge"><strong><span data-lang-only="sl">Most:</span><span data-lang-only="en">Bridge:</span></strong> <span data-lang-only="sl">Naslednja kartica postavi paradigemski premik — od defenzivne retention strategije k ofenzivni circulation strategiji.</span><span data-lang-only="en">The next card sets the paradigmatic shift — from defensive retention strategy to offensive circulation strategy.</span></div>
+<div class="sources-inline"><span data-lang-only="sl">Sidra:</span><span data-lang-only="en">Anchors:</span> <a class="src-ref" href="#src-S01">S01</a><a class="src-ref" href="#src-S02">S02</a><a class="src-ref" href="#src-S03">S03</a></div>
+</article>
+<article class="a4-card" id="card-02">
+<div class="card-top">
+<div>
+<div class="card-num"><span data-lang-only="sl">Kartica 02 · Princip</span><span data-lang-only="en">Card 02 · Principle</span></div>
+<div class="range"><span data-lang-only="sl">Paradigemski okvir</span><span data-lang-only="en">Paradigmatic frame</span></div>
+</div>
+<div class="confidence"><span data-lang-only="sl">Saxenian + OECD diaspora studies</span><span data-lang-only="en">Saxenian + OECD diaspora studies</span></div>
+</div>
+<h2><span data-lang-only="sl">Retention vs Circulation</span><span data-lang-only="en">Retention vs Circulation</span></h2>
+<p class="focus"><span data-lang-only="sl">Dve različni strategiji, dva različna mentalna modela države.</span><span data-lang-only="en">Two different strategies, two different mental models of the state.</span></p>
+<div class="state">
+<div data-lang-only="sl"><p><strong>Retention</strong> (zadrževanje) je defenzivna strategija. Vprašanje: kako preprečiti, da bi naši najboljši odšli? Mehanizmi: višje plače doma, davčne razbremenitve za top kadre, omejitve mobilnosti, čustveni pritisk ("ostani v domovini"). Implicitna predpostavka: vsako kvalificirano gibanje ven je izguba.</p>
+<p><strong>Circulation</strong> (kroženje) je ofenzivna strategija. Vprašanje: kako izkoristiti globalni tok talentov v svojo korist? Mehanizmi: pošlji ven sistematično (štipendije, izmenjave, podjetniške ekspedicije), gradi diasporno mrežo, ustvari privlačen povratek (davčni počitki, equity, dual-career, raziskovalna infrastruktura). Implicitna predpostavka: izstop je investicija, vrnitev je donos.</p></div>
+<div data-lang-only="en"><p><strong>Retention</strong> is a defensive strategy. The question: how to prevent our best from leaving? Mechanisms: higher salaries at home, tax breaks for top earners, mobility restrictions, emotional pressure ("stay in the homeland"). Implicit assumption: every qualified movement outward is a loss.</p>
+<p><strong>Circulation</strong> is an offensive strategy. The question: how to leverage the global flow of talent? Mechanisms: send out systematically (scholarships, exchanges, entrepreneurial expeditions), build a diaspora network, create an attractive return (tax holidays, equity, dual-career, research infrastructure). Implicit assumption: exit is investment, return is yield.</p></div>
+</div>
+<div class="story">
+<div data-lang-only="sl">
+<p>Saxenian je v študiji <em>The New Argonauts</em> (2006) dokumentirala, kako so med 1980 in 2005 v Silicijevi dolini nastale globalno raztegnjene karierne mreže Tajvancev, Indijcev, Izraelcev in Kitajcev. Skupna lastnost: ti ljudje so ostali identitetno povezani z izvorno državo, čeprav so delali v ZDA. Ko se je v izvorni državi pojavila prava priložnost — Hsinchu Park, Bangalore, Tel Aviv — so se vrnili z znanjem, povezavami, kapitalom in mentaliteto svetovnega vrha.</p>
+<p>Kritični element: <em>identitetna povezanost ostane samo, če država ne stigmatizira odhoda</em>. Če rojaki, ki delajo v tujini, prejmejo signal "izdajalec doma", se prekine emocionalni kanal, ki bi omogočil vrnitev. Slovenska kultura je tu ambivalentna: Pogačarja in Dončića sprejemamo kot junaka, znanstvenika v Stanfordu ali podjetnika v Berlinu pa pogosto kot "tujca, ki je pozabil, od kod prihaja".</p>
+<p>Druga ključna ugotovitev OECD študij (2019, 2023): circulation prinaša pozitivne neto donose državam s <em>kritično maso domačega kapitala</em> (univerze, podjetja, infrastruktura). Brez te mase je circulation = drain. Slovenija to maso ima — kar pomeni, da je circulation strategija realna možnost, ne fantazija.</p>
+</div>
+<div data-lang-only="en">
+<p>In her study <em>The New Argonauts</em> (2006), Saxenian documented how, between 1980 and 2005, globally extended career networks of Taiwanese, Indian, Israeli, and Chinese professionals formed in Silicon Valley. Common feature: these people remained identity-connected to their country of origin while working in the US. When a genuine opportunity arose in the origin country — Hsinchu Park, Bangalore, Tel Aviv — they returned with knowledge, contacts, capital, and a world-class mindset.</p>
+<p>Critical element: <em>identity connection persists only if the country does not stigmatize departure</em>. If compatriots working abroad receive a "traitor at home" signal, the emotional channel that would enable return is severed. Slovenian culture is ambivalent here: Pogačar and Dončić are received as heroes, a scientist at Stanford or an entrepreneur in Berlin often as "a foreigner who forgot where they came from".</p>
+<p>Another key OECD finding (2019, 2023): circulation produces positive net returns for countries with a <em>critical mass of domestic capital</em> (universities, companies, infrastructure). Without that mass, circulation = drain. Slovenia has that mass — meaning circulation is a real option, not fantasy.</p>
+</div>
+</div>
+<div class="split">
+<section class="mini good"><div class="label"><span data-lang-only="sl">Dobro</span><span data-lang-only="en">Good</span></div><div class="body"><span data-lang-only="sl">Circulation izkorišča globalno učenje, dvigne standarde lokalno, prinaša kapital in povezave, sproži pozitivno povratno zanko (več povratnikov → privlačnejše okolje → več povratnikov).</span><span data-lang-only="en">Circulation leverages global learning, raises local standards, brings capital and contacts, triggers a positive feedback loop (more returnees → more attractive environment → more returnees).</span></div></section>
+<section class="mini bad"><div class="label"><span data-lang-only="sl">Slabo</span><span data-lang-only="en">Bad</span></div><div class="body"><span data-lang-only="sl">Retention je psihološko privlačnejša politikom (videz odločnosti), a empirično šibkejša. Tudi visoke razbremenitve top kadrov le redko zadržijo najboljše — ti se odločajo po kakovosti okolja, ne po neto plači.</span><span data-lang-only="en">Retention is psychologically more attractive to politicians (appearance of resolve), but empirically weaker. Even high tax breaks for top talent rarely retain the best — they decide on environment quality, not net salary.</span></div></section>
+</div>
+<div class="pattern"><b><span data-lang-only="sl">Globlji vzorec:</span><span data-lang-only="en">Deep pattern:</span></b> <span data-lang-only="sl">Seme: globalni odprt graf talentov. Most: identitetna povezanost. Test: ali država gradi krožnost ali zid? Rezultat: zid izgubi obe smeri; krožnost zmaga v obeh.</span><span data-lang-only="en">Seed: global open graph of talent. Bridge: identity connection. Test: does the state build circularity or a wall? Result: a wall loses both directions; circularity wins both.</span></div>
+<div class="bridge"><strong><span data-lang-only="sl">Most:</span><span data-lang-only="en">Bridge:</span></strong> <span data-lang-only="sl">Slovenija ima živ dokaz, da circulation deluje na slovenski populaciji — v športu. Naslednja kartica pokaže, kako.</span><span data-lang-only="en">Slovenia has a living proof that circulation works on the Slovenian population — in sport. The next card shows how.</span></div>
+<div class="sources-inline"><span data-lang-only="sl">Sidra:</span><span data-lang-only="en">Anchors:</span> <a class="src-ref" href="#src-S04">S04</a><a class="src-ref" href="#src-S05">S05</a><a class="src-ref" href="#src-S06">S06</a></div>
+</article>
+<article class="a4-card" id="card-03">
+<div class="card-top">
+<div>
+<div class="card-num"><span data-lang-only="sl">Kartica 03 · Šport kot dokaz</span><span data-lang-only="en">Card 03 · Sport as proof</span></div>
+<div class="range"><span data-lang-only="sl">Domači empirični dokaz</span><span data-lang-only="en">Domestic empirical proof</span></div>
+</div>
+<div class="confidence"><span data-lang-only="sl">Karierne poti javno preverljive</span><span data-lang-only="en">Career paths publicly verifiable</span></div>
+</div>
+<h2><span data-lang-only="sl">Pogačar, Dončić, Prevc</span><span data-lang-only="en">Pogačar, Dončić, Prevc</span></h2>
+<p class="focus"><span data-lang-only="sl">Slovenski šport že desetletje deluje po circulation modelu — z izjemnimi rezultati.</span><span data-lang-only="en">Slovenian sport has worked on a circulation model for a decade — with extraordinary results.</span></p>
+<div class="state">
+<div data-lang-only="sl"><p>Slovenski športni vrh, dosežen v 2020-ih, ni nastal v domačih treningih. Nastal je v tujih ekipah in mednarodnih kampih, z ohranjeno identitetno povezavo s Slovenijo. Tadej Pogačar tekmuje za UAE Team Emirates od 2019; Luka Dončić je šel skozi mlade selekcije Real Madrida (2015–2018) in NBA od 2018; bratje Prevc so gradili kariere skozi mednarodne kampe in svetovne pokale. Vsi ostajajo slovenski reprezentanti.</p></div>
+<div data-lang-only="en"><p>The Slovenian sporting peak achieved in the 2020s did not arise from domestic training alone. It arose in foreign teams and international camps, with preserved identity ties to Slovenia. Tadej Pogačar has competed for UAE Team Emirates since 2019; Luka Dončić passed through Real Madrid's youth system (2015–2018) and NBA since 2018; the Prevc brothers built their careers through international camps and World Cup circuits. All remain Slovenian national team athletes.</p></div>
+</div>
+<div class="story">
+<div data-lang-only="sl">
+<p>Vzorec je dosleden in lahko ga formaliziramo v štirih korakih:</p>
+<p>1. <strong>Lokalna baza:</strong> osnovna izobrazba, talent identifikacija, prvi treningi v Sloveniji (kolesarski klub, košarkarska šola, smučarski skoki na Ljubnem).</p>
+<p>2. <strong>Izstop v vrhunsko okolje:</strong> prestop v ekipo, kjer je dnevna kakovost treninga, tekmovanja in tehnične podpore neprimerljiva s slovensko (UAE, Real Madrid, Mavericks, mednarodni FIS kampi).</p>
+<p>3. <strong>Identitetna povezanost:</strong> športnik ostane Slovenec, igra za reprezentanco, govori javno o domovini, vrača se na priprave in obiske. Država tega ne preprečuje, podpira pa promocijo.</p>
+<p>4. <strong>Povratna kontribucija:</strong> znanje, sponzorji, mreže, mentorstvo mlajših generacij, dvig nacionalnega ugleda. Pogačarjev fenomen je dvignil slovensko kolesarstvo v celoti.</p>
+<p>To je <strong>identičen model</strong> kot Saxenian "New Argonaut" za tehnologijo, le da v športni domeni. Slovenija je torej že razvila <em>nacionalno kompetenco za circulation</em>. Vprašanje ni, ali zmoremo. Vprašanje je, zakaj ta kompetenca ostaja izolirana na šport in se ne prenese na gospodarstvo in znanost.</p>
+</div>
+<div data-lang-only="en">
+<p>The pattern is consistent and can be formalized in four steps:</p>
+<p>1. <strong>Local base:</strong> primary education, talent identification, first training in Slovenia (cycling club, basketball academy, ski jumping at Ljubno).</p>
+<p>2. <strong>Exit to top-tier environment:</strong> transfer to a team where daily quality of training, competition, and technical support is incomparable to Slovenia (UAE, Real Madrid, Mavericks, international FIS camps).</p>
+<p>3. <strong>Identity connection:</strong> the athlete remains Slovenian, plays for the national team, speaks publicly about the homeland, returns for camps and visits. The state does not prevent this; it supports promotion.</p>
+<p>4. <strong>Return contribution:</strong> knowledge, sponsors, networks, mentoring of younger generations, lifting of national reputation. The Pogačar phenomenon raised Slovenian cycling as a whole.</p>
+<p>This is an <strong>identical model</strong> to Saxenian's "New Argonaut" for technology, only in the sporting domain. Slovenia has therefore already developed a <em>national competence for circulation</em>. The question is not whether we can. The question is why this competence remains isolated to sport and does not transfer to economy and science.</p>
+</div>
+</div>
+<div class="split">
+<section class="mini good"><div class="label"><span data-lang-only="sl">Dobro</span><span data-lang-only="en">Good</span></div><div class="body"><span data-lang-only="sl">Empirični dokaz: model deluje na slovenski populaciji. Imamo institucionalno znanje, javno podporo in psihološko sprejetje, da naši najboljši grejo ven in se vrnejo močnejši.</span><span data-lang-only="en">Empirical proof: the model works on the Slovenian population. We have institutional knowledge, public support, and psychological acceptance that our best go out and return stronger.</span></div></section>
+<section class="mini bad"><div class="label"><span data-lang-only="sl">Slabo</span><span data-lang-only="en">Bad</span></div><div class="body"><span data-lang-only="sl">Kompetenca ostaja izolirana. Inženir, ki gre v Zürich, ne uživa enake javne podpore in povratniške infrastrukture kot kolesar v UAE. Asimetrija obravnave po domeni.</span><span data-lang-only="en">The competence remains isolated. An engineer going to Zürich enjoys neither the same public support nor the return infrastructure as a cyclist in UAE. Asymmetric treatment by domain.</span></div></section>
+</div>
+<div class="pattern"><b><span data-lang-only="sl">Globlji vzorec:</span><span data-lang-only="en">Deep pattern:</span></b> <span data-lang-only="sl">Seme: talent. Most: vrhunsko tuje okolje. Test: ali identiteta preživi premor? Rezultat: če preživi, povratna kontribucija večkratno povrne stroške izstopa.</span><span data-lang-only="en">Seed: talent. Bridge: top-tier foreign environment. Test: does identity survive the absence? Result: if it survives, return contribution recovers exit costs many times over.</span></div>
+<div class="bridge"><strong><span data-lang-only="sl">Most:</span><span data-lang-only="en">Bridge:</span></strong> <span data-lang-only="sl">Štirje primeri tujih držav pokažejo, kako je circulation prešla iz športa v gospodarstvo. Začnemo s Tajvanom.</span><span data-lang-only="en">Four foreign case studies show how circulation crossed from sport to economy. We start with Taiwan.</span></div>
+<div class="sources-inline"><span data-lang-only="sl">Sidra:</span><span data-lang-only="en">Anchors:</span> <a class="src-ref" href="#src-S07">S07</a><a class="src-ref" href="#src-S08">S08</a></div>
+</article>
+<article class="a4-card" id="card-04">
+<div class="card-top">
+<div>
+<div class="card-num"><span data-lang-only="sl">Kartica 04 · Tajvan</span><span data-lang-only="en">Card 04 · Taiwan</span></div>
+<div class="range"><span data-lang-only="sl">1980–2010 · Hsinchu</span><span data-lang-only="en">1980–2010 · Hsinchu</span></div>
+</div>
+<div class="confidence"><span data-lang-only="sl">TSMC + ITRI dokumentirano</span><span data-lang-only="en">TSMC + ITRI documented</span></div>
+</div>
+<h2><span data-lang-only="sl">Hsinchu in TSMC</span><span data-lang-only="en">Hsinchu and TSMC</span></h2>
+<p class="focus"><span data-lang-only="sl">Tajvan ni izumljal lastnih polprevodnikov — pripeljal jih je nazaj iz Silicijeve doline.</span><span data-lang-only="en">Taiwan did not invent its own semiconductors — it brought them back from Silicon Valley.</span></p>
+<div class="state">
+<div data-lang-only="sl"><p>Hsinchu Science Park je bil ustanovljen leta 1980 kot ciljani magnet za tajvanske inženirje, ki so v 1960-ih in 1970-ih študirali in delali v ZDA (predvsem Stanford, Berkeley, Bell Labs, IBM). Vlada je vlagala v tri stvari hkrati: davčne razbremenitve, infrastrukturo svetovnega razreda (laboratoriji, čiste sobe) in dvojezične šole za otroke povratnikov. Industrial Technology Research Institute (ITRI) je deloval kot raziskovalna inkubacijska enota.</p></div>
+<div data-lang-only="en"><p>Hsinchu Science Park was established in 1980 as a targeted magnet for Taiwanese engineers who studied and worked in the US during the 1960s and 1970s (mainly Stanford, Berkeley, Bell Labs, IBM). The government invested simultaneously in three things: tax breaks, world-class infrastructure (labs, clean rooms), and bilingual schools for returnees' children. The Industrial Technology Research Institute (ITRI) served as research incubation unit.</p></div>
+</div>
+<div class="story">
+<div data-lang-only="sl">
+<p>TSMC (Taiwan Semiconductor Manufacturing Company), danes najpomembnejše polprevodniško podjetje na svetu, je leta 1987 ustanovil Morris Chang — Tajvanec, ki je 25 let delal v ZDA (Texas Instruments, generalni direktor polprevodniške divizije), nato se vrnil v Hsinchu kot CEO ITRI. Chang ni "ostal doma". Vrnil se je v zrelih 50-ih letih z znanjem in mrežo, ki je bila neprimerljiva z domačo.</p>
+<p>Vzorec se je ponovil pri MediaTek (čip designer, drugi največji na svetu po Qualcommu), UMC, ASE in desetinah manjših podjetij. Skupna značilnost ustanoviteljev: 10–25 let v ZDA, vrnitev v Hsinchu, kjer so jih čakali fiskalni paket, podpora ITRI in lokalni dobavni veriga elektronike, ki se je razvijala vzporedno.</p>
+<p>Številke: med 1980 in 2010 se je v Hsinchu vrnilo več kot 10.000 tajvanskih inženirjev z izkušnjami v ZDA. Tajvanski izvoz polprevodnikov je leta 2024 presegel 165 milijard USD — kar pomeni, da je strategija svojo investicijo (par milijard USD v parku in davčnih izpadih) povrnila več kot 50-krat in postala glavni steber nacionalnega gospodarstva.</p>
+<p>Ključna lekcija za Slovenijo: <em>vlada ni gradila industrije. Gradila je magnet.</em> Industrijo so prinesli povratniki sami.</p>
+</div>
+<div data-lang-only="en">
+<p>TSMC (Taiwan Semiconductor Manufacturing Company), today the world's most important semiconductor company, was founded in 1987 by Morris Chang — a Taiwanese who had worked in the US for 25 years (Texas Instruments, general manager of the semiconductor division), then returned to Hsinchu as ITRI CEO. Chang did not "stay home". He returned in his mature 50s with knowledge and a network incomparable to the domestic one.</p>
+<p>The pattern repeated at MediaTek (chip designer, world's second-largest after Qualcomm), UMC, ASE, and dozens of smaller companies. Common founder profile: 10–25 years in the US, return to Hsinchu, where they were awaited by a fiscal package, ITRI support, and a local electronics supply chain developing in parallel.</p>
+<p>Numbers: between 1980 and 2010, over 10,000 Taiwanese engineers with US experience returned to Hsinchu. Taiwanese semiconductor exports exceeded USD 165 bn in 2024 — meaning the strategy returned its investment (a few billion USD in the park and tax forgone) more than 50-fold and became the main pillar of the national economy.</p>
+<p>Key lesson for Slovenia: <em>the government did not build the industry. It built the magnet.</em> The industry was brought by the returnees themselves.</p>
+</div>
+</div>
+<div class="split">
+<section class="mini good"><div class="label"><span data-lang-only="sl">Dobro</span><span data-lang-only="en">Good</span></div><div class="body"><span data-lang-only="sl">Strategija sočasnih treh investicij (davki + infrastruktura + dvojezične šole) je rešila glavne ovire za vrnitev. Magnet je deloval brez prisile in brez zapiranja meja.</span><span data-lang-only="en">A strategy of three simultaneous investments (taxes + infrastructure + bilingual schools) resolved the main return barriers. The magnet worked without coercion and without closing borders.</span></div></section>
+<section class="mini bad"><div class="label"><span data-lang-only="sl">Slabo</span><span data-lang-only="en">Bad</span></div><div class="body"><span data-lang-only="sl">Hsinchu je ustvaril ekstremno koncentracijo (eno mesto, ena industrija), kar Tajvan dela geopolitično ranljivega. Slovenija bi morala diverzificirati po več nišnih domenah.</span><span data-lang-only="en">Hsinchu produced extreme concentration (one city, one industry), making Taiwan geopolitically vulnerable. Slovenia should diversify across several niche domains.</span></div></section>
+</div>
+<div class="pattern"><b><span data-lang-only="sl">Globlji vzorec:</span><span data-lang-only="en">Deep pattern:</span></b> <span data-lang-only="sl">Seme: 25-letna investicija v izstopne karierne poti. Most: ciljani fiskalno-infrastrukturni magnet. Test: ali ima domače okolje kritično maso, da povratniki obstanejo? Rezultat: na Tajvanu da; mesto je postalo nujen člen globalne dobavne verige.</span><span data-lang-only="en">Seed: a 25-year investment in exit career paths. Bridge: a targeted fiscal-infrastructural magnet. Test: does the domestic environment have critical mass for returnees to stay? Result: in Taiwan yes; the city became an essential link in the global supply chain.</span></div>
+<div class="bridge"><strong><span data-lang-only="sl">Most:</span><span data-lang-only="en">Bridge:</span></strong> <span data-lang-only="sl">Drugi primer — Izrael — pokaže, kako država pripravi <em>operativni paket</em> za povratnike: davčni počitki, oprema, dual-career.</span><span data-lang-only="en">The second case — Israel — shows how a state prepares an <em>operational package</em> for returnees: tax holidays, equipment, dual-career.</span></div>
+<div class="sources-inline"><span data-lang-only="sl">Sidra:</span><span data-lang-only="en">Anchors:</span> <a class="src-ref" href="#src-S07">S07</a><a class="src-ref" href="#src-S09">S09</a><a class="src-ref" href="#src-S10">S10</a></div>
+</article>
+<article class="a4-card" id="card-05">
+<div class="card-top">
+<div>
+<div class="card-num"><span data-lang-only="sl">Kartica 05 · Izrael</span><span data-lang-only="en">Card 05 · Israel</span></div>
+<div class="range"><span data-lang-only="sl">1990–2025 · Returning Home</span><span data-lang-only="en">1990–2025 · Returning Home</span></div>
+</div>
+<div class="confidence"><span data-lang-only="sl">Ministrstvo za alijo + IIA</span><span data-lang-only="en">Ministry of Aliyah + IIA</span></div>
+</div>
+<h2><span data-lang-only="sl">Returning Home program</span><span data-lang-only="en">Returning Home program</span></h2>
+<p class="focus"><span data-lang-only="sl">Operativni paket: davčni počitek, sofinanciranje opreme, dual-career za partnerja.</span><span data-lang-only="en">An operational package: tax holiday, equipment co-financing, dual-career for partners.</span></p>
+<div class="state">
+<div data-lang-only="sl"><p>Izrael ima eno najbolj razvitih državnih infrastruktur za vrnitev visoko kvalificiranih državljanov. "Returning Home" vodi Ministrstvo za alijo in integracijo. Sestavljen je iz desetih konkretnih ukrepov, ki pokrivajo davke, raziskovalno infrastrukturo, družinske potrebe in podjetniški kapital.</p></div>
+<div data-lang-only="en"><p>Israel has one of the most developed state infrastructures for the return of highly qualified citizens. "Returning Home" is led by the Ministry of Aliyah and Integration. It consists of ten concrete measures covering taxes, research infrastructure, family needs, and entrepreneurial capital.</p></div>
+</div>
+<div class="story">
+<div data-lang-only="sl">
+<p>Tri stebrne komponente:</p>
+<p><strong>1. Davčni počitek.</strong> Izraelski državljan, ki se vrne po vsaj 10 letih v tujini, prejme 10-letno oprostitev davka na tuj dohodek in dobičke. Pet let oprostitve poročanja o tujem premoženju. Status "vrnjenega rezidenta" je administrativna oznaka z avtomatskimi pravicami.</p>
+<p><strong>2. Sofinanciranje opreme in laboratorijev.</strong> Israel Innovation Authority (IIA) sofinancira do 50 % stroškov ustanavljanja raziskovalnih skupin za povratnike v določenih nišah (deep tech, kvantne tehnologije, biomedicina, kibernetska varnost). Sofinanciranje teče skozi univerze in raziskovalne inštitute.</p>
+<p><strong>3. Dual-career program.</strong> Partner povratnika dobi prioritetno obravnavo pri zaposlitvi v javnem sektorju, fast-track priznavanje tujih kvalifikacij in pomoč pri zagonu lastnega podjetja. To je <em>najpodcenjeni del</em> celotne strategije — empirično je dual-career največja blokada za vrnitev visokokvalificiranih oseb.</p>
+<p>Številke: med 2010 in 2024 se je v Izrael vrnilo več kot 30.000 visoko kvalificiranih državljanov, od tega okoli 8.000 doktorjev znanosti. Izraelska tech industrija (Wix, Mobileye, Checkpoint, Waze, Mellanox) je do izrazite mere zgrajena na povratnikih.</p>
+<p>Ključna lekcija za Slovenijo: <em>davčni počitek brez dual-career programa ne deluje.</em> Top kader v 30. in 40. letih je tipično v zvezi/zakonu z drugim top kadrom. Če partner nima poti, se par ne vrne.</p>
+</div>
+<div data-lang-only="en">
+<p>Three pillar components:</p>
+<p><strong>1. Tax holiday.</strong> An Israeli citizen returning after at least 10 years abroad receives a 10-year exemption from tax on foreign income and gains. Five years of foreign-asset reporting exemption. "Returning resident" status is an administrative tag with automatic rights.</p>
+<p><strong>2. Equipment and lab co-financing.</strong> The Israel Innovation Authority (IIA) co-finances up to 50% of the cost of establishing research groups for returnees in specific niches (deep tech, quantum technologies, biomedicine, cybersecurity). Co-financing flows through universities and research institutes.</p>
+<p><strong>3. Dual-career program.</strong> The returnee's partner receives priority treatment for public-sector employment, fast-track recognition of foreign qualifications, and assistance in starting their own business. This is the <em>most underestimated part</em> of the whole strategy — empirically, dual-career is the biggest blocker for the return of high-skilled individuals.</p>
+<p>Numbers: between 2010 and 2024, over 30,000 highly qualified citizens returned to Israel, including about 8,000 PhDs. The Israeli tech industry (Wix, Mobileye, Checkpoint, Waze, Mellanox) is to a marked extent built on returnees.</p>
+<p>Key lesson for Slovenia: <em>a tax holiday without a dual-career program does not work.</em> Top talent in their 30s and 40s is typically in a relationship with another top professional. If the partner has no path, the couple does not return.</p>
+</div>
+</div>
+<div class="split">
+<section class="mini good"><div class="label"><span data-lang-only="sl">Dobro</span><span data-lang-only="en">Good</span></div><div class="body"><span data-lang-only="sl">Integrirani paket pokriva vse tri kritične ovire: davke, infrastrukturo, družino. Administrativna preprostost ("status vrnjenega rezidenta") znižuje psihološko bariero.</span><span data-lang-only="en">An integrated package covers all three critical barriers: taxes, infrastructure, family. Administrative simplicity ("returning resident status") lowers the psychological barrier.</span></div></section>
+<section class="mini bad"><div class="label"><span data-lang-only="sl">Slabo</span><span data-lang-only="en">Bad</span></div><div class="body"><span data-lang-only="sl">Izraelski model temelji na močnem narativu domovine, ki ga Slovenija nima v enaki intenziteti. Slovenija bi morala graditi pragmatičen, ne nacionalistični kanal vrnitve.</span><span data-lang-only="en">The Israeli model rests on a strong homeland narrative that Slovenia does not have at the same intensity. Slovenia should build a pragmatic, not nationalistic return channel.</span></div></section>
+</div>
+<div class="pattern"><b><span data-lang-only="sl">Globlji vzorec:</span><span data-lang-only="en">Deep pattern:</span></b> <span data-lang-only="sl">Seme: kombinacija davkov + infrastrukture + dual-career. Most: državna agencija, ki paket koordinira kot eno samo storitev. Test: ali povratnik dobi vse na enem mestu? Rezultat: ja → vrnitev se zgodi; ne → ostane v tujini.</span><span data-lang-only="en">Seed: combination of taxes + infrastructure + dual-career. Bridge: a state agency coordinating the package as a single service. Test: does the returnee get everything in one place? Result: yes → return happens; no → stays abroad.</span></div>
+<div class="bridge"><strong><span data-lang-only="sl">Most:</span><span data-lang-only="en">Bridge:</span></strong> <span data-lang-only="sl">Tretji in četrti primer — Južna Koreja in Irska — pokažeta, kako so povratniki postali jedro nacionalnih tehnoloških gigantov.</span><span data-lang-only="en">The third and fourth cases — South Korea and Ireland — show how returnees became the core of national tech giants.</span></div>
+<div class="sources-inline"><span data-lang-only="sl">Sidra:</span><span data-lang-only="en">Anchors:</span> <a class="src-ref" href="#src-S11">S11</a><a class="src-ref" href="#src-S12">S12</a></div>
+</article>
+<article class="a4-card" id="card-06">
+<div class="card-top">
+<div>
+<div class="card-num"><span data-lang-only="sl">Kartica 06 · Koreja in Irska</span><span data-lang-only="en">Card 06 · Korea and Ireland</span></div>
+<div class="range"><span data-lang-only="sl">1990–2010 · dva modela</span><span data-lang-only="en">1990–2010 · two models</span></div>
+</div>
+<div class="confidence"><span data-lang-only="sl">Samsung + IDA Ireland dokumentirano</span><span data-lang-only="en">Samsung + IDA Ireland documented</span></div>
+</div>
+<h2><span data-lang-only="sl">Samsung in irski tech boom</span><span data-lang-only="en">Samsung and the Irish tech boom</span></h2>
+<p class="focus"><span data-lang-only="sl">Dva pristopa: korporativna sponzorska vrnitev (Koreja) in razvojna agencija (Irska).</span><span data-lang-only="en">Two approaches: corporate-sponsored return (Korea) and a development agency (Ireland).</span></p>
+<div class="state">
+<div data-lang-only="sl"><p>Južna Koreja in Irska sta v 1990-ih letih izhajali iz različnih izhodišč — Koreja kot industrializirana država pred izstopom v high-tech, Irska kot post-agrarno periferno gospodarstvo EU — vendar sta obe dosegli preboj z aktivno politiko brain circulation. Razlika je predvsem v izvajalcu: Koreja prek korporacij (chaeboli), Irska prek državne agencije IDA.</p></div>
+<div data-lang-only="en"><p>South Korea and Ireland in the 1990s started from different baselines — Korea as an industrialized country before its high-tech leap, Ireland as a post-agrarian peripheral EU economy — but both achieved breakthroughs through active brain circulation policy. The difference is mainly in the executor: Korea through corporations (chaebols), Ireland through a state agency (IDA).</p></div>
+</div>
+<div class="story">
+<div data-lang-only="sl">
+<p><strong>Korejski model — korporativna sponzorska vrnitev.</strong> Samsung, LG in Hyundai so v 1980-ih in 1990-ih sistematično iskali korejske doktorske študente na ameriških univerzah (MIT, Stanford, Caltech, Bell Labs). Ponujali so jim: takojšnjo zaposlitev z direktorsko plačo, raziskovalni proračun pod njihovim nadzorom, štipendije za otroke v mednarodnih šolah v Seulu in vrnitev po 5–7 letih z opcijo "nadaljnje izmenjave" med Seulom in ZDA.</p>
+<p>Samsung Research, ustanovljen 1987, je v veliki meri zgrajen na teh povratnikih. Rezultat: Samsung Electronics je danes globalni lider v pomnilniških čipih, OLED zaslonih in mobilnih napravah. LG Chem prevladuje v baterijah. Korporacijski sponzorski model je deloval, ker so podjetja sama imela vire in motivacijo — države niso čakala.</p>
+<p><strong>Irski model — razvojna agencija.</strong> IDA Ireland (Industrial Development Authority) je v 1990-ih sistematično obiskovala Irce v ZDA (zlasti Boston, San Francisco, New York), gradila lokalne irsko-ameriške mreže in jih privabljala nazaj z dvema instrumentoma: ugodno fiskalno politiko za podjetja in podporno infrastrukturo za posameznike. Hkrati je privlačila ameriška podjetja v Dublin (Microsoft, Google, Facebook, Pfizer) — kar je ustvarjalo zaposlitvene možnosti, ki so povratnikom omogočale tehnične kariere brez selitve v korporativni sedež.</p>
+<p>Irska je med 1990 in 2010 obrnila zgodovinski tok izseljevanja v neto priliv kvalificiranega kadra. BDP per capita je presegel britanskega in nemškega. Šele kasneje se je strategija spremenila v davčno oazo za multinacionalke, kar je prineslo nove probleme (Apple Tax Case, EU pritiski).</p>
+<p>Ključna razlika med modeloma: <strong>Koreja je investirala v ljudi pred infrastrukturo, Irska v infrastrukturo pred ljudmi.</strong> Oba sta delovala. Slovenija bi lahko ubrala hibrid: javna agencija za signaliziranje in koordinacijo, korporativni partnerji (Krka, Lek, Pipistrel, Iskratel, Cosylab) kot izvajalci sponzorske vrnitve v specifičnih domenah.</p>
+</div>
+<div data-lang-only="en">
+<p><strong>The Korean model — corporate-sponsored return.</strong> In the 1980s and 1990s, Samsung, LG, and Hyundai systematically sought out Korean PhD students at US universities (MIT, Stanford, Caltech, Bell Labs). They offered: immediate director-level employment, research budget under their control, scholarships for children at Seoul international schools, and return after 5–7 years with an option for "ongoing exchange" between Seoul and the US.</p>
+<p>Samsung Research, founded in 1987, is to a great extent built on these returnees. Result: Samsung Electronics is today the global leader in memory chips, OLED displays, and mobile devices. LG Chem dominates batteries. The corporate sponsorship model worked because companies themselves had resources and motivation — they did not wait for the state.</p>
+<p><strong>The Irish model — development agency.</strong> IDA Ireland (Industrial Development Authority) in the 1990s systematically visited the Irish in the US (especially Boston, San Francisco, New York), built local Irish-American networks, and lured them back with two instruments: favorable corporate fiscal policy and supportive infrastructure for individuals. Simultaneously, it attracted US companies to Dublin (Microsoft, Google, Facebook, Pfizer) — creating employment opportunities that allowed returnees to pursue technical careers without relocating to corporate HQ.</p>
+<p>Between 1990 and 2010, Ireland reversed its historical emigration flow into a net inflow of qualified personnel. GDP per capita surpassed both British and German. Only later did the strategy shift into a corporate tax haven, bringing new problems (Apple Tax Case, EU pressure).</p>
+<p>Key difference between the two models: <strong>Korea invested in people before infrastructure; Ireland in infrastructure before people.</strong> Both worked. Slovenia could pursue a hybrid: a public agency for signaling and coordination, corporate partners (Krka, Lek, Pipistrel, Cosylab, Iskratel) as executors of sponsored return in specific domains.</p>
+</div>
+</div>
+<div class="split">
+<section class="mini good"><div class="label"><span data-lang-only="sl">Dobro</span><span data-lang-only="en">Good</span></div><div class="body"><span data-lang-only="sl">Dva delujoča modela z različnimi izvajalci — Slovenija si lahko izbere kombinacijo, prilagojeno svoji velikosti in podjetniški strukturi.</span><span data-lang-only="en">Two working models with different executors — Slovenia can pick a combination tailored to its size and corporate structure.</span></div></section>
+<section class="mini bad"><div class="label"><span data-lang-only="sl">Slabo</span><span data-lang-only="en">Bad</span></div><div class="body"><span data-lang-only="sl">Korejski model zahteva globoke korporacije z dolgoročnim horizontom, kakršnih Slovenija ima le peščico. Irski model zahteva državno agencijo z mandatom, kar zahteva politični konsenz, ki ga zdaj nimamo.</span><span data-lang-only="en">The Korean model requires deep corporations with long horizons, of which Slovenia has only a handful. The Irish model requires a state agency with a mandate, requiring political consensus we currently lack.</span></div></section>
+</div>
+<div class="pattern"><b><span data-lang-only="sl">Globlji vzorec:</span><span data-lang-only="en">Deep pattern:</span></b> <span data-lang-only="sl">Seme: ciljano iskanje sonarodnjakov v tujini. Most: paket sponzorstva (korporativen ali državen). Test: ali povratnik dobi okvir, v katerem lahko nadaljuje znanstveno-podjetniško rast? Rezultat: če da, postane vozlišče nove industrije.</span><span data-lang-only="en">Seed: targeted search for compatriots abroad. Bridge: sponsorship package (corporate or state). Test: does the returnee receive a framework to continue scientific-entrepreneurial growth? Result: if yes, becomes a node of a new industry.</span></div>
+<div class="bridge"><strong><span data-lang-only="sl">Most:</span><span data-lang-only="en">Bridge:</span></strong> <span data-lang-only="sl">Z okvirjem in primeri zdaj presodimo trenutni slovenski zakon — najprej pluse, nato pomanjkljivosti.</span><span data-lang-only="en">With the framework and case studies in hand, we now evaluate the current Slovenian act — first the positives, then the gaps.</span></div>
+<div class="sources-inline"><span data-lang-only="sl">Sidra:</span><span data-lang-only="en">Anchors:</span> <a class="src-ref" href="#src-S13">S13</a><a class="src-ref" href="#src-S14">S14</a></div>
+</article>
+<article class="a4-card" id="card-07">
+<div class="card-top">
+<div>
+<div class="card-num"><span data-lang-only="sl">Kartica 07 · Zakon: pluse</span><span data-lang-only="en">Card 07 · Act: positives</span></div>
+<div class="range"><span data-lang-only="sl">ZIURS · 11. 5. 2026</span><span data-lang-only="en">ZIURS · 11 May 2026</span></div>
+</div>
+<div class="confidence"><span data-lang-only="sl">Uradni list + STA poročanje</span><span data-lang-only="en">Official Gazette + STA reporting</span></div>
+</div>
+<h2><span data-lang-only="sl">Kaj zakon dela dobro</span><span data-lang-only="en">What the act does well</span></h2>
+<p class="focus"><span data-lang-only="sl">Mikro s.p., DDV na hrano, energenti — ukrepi z realnim učinkom na široko bazo.</span><span data-lang-only="en">Mikro s.p., VAT on food, energy — measures with real impact on a broad base.</span></p>
+<div class="state">
+<div data-lang-only="sl"><p>Zakon o interventnih ukrepih za razvoj Slovenije (ZIURS) je bil sprejet 11. maja 2026 z 47 glasovi za in 35 proti. Vsebuje 59 členov in posega v deset sistemskih zakonov. Med ukrepi so trije, ki so po naši oceni resnično pozitivni in dobro premišljeni: status mikro s.p., znižanje DDV na osnovna živila in vladni vzvod za znižanje DDV na energente.</p></div>
+<div data-lang-only="en"><p>The Intervention Measures Act for Development of Slovenia (ZIURS) was adopted on 11 May 2026 with 47 votes in favor and 35 against. It contains 59 articles and intervenes in ten systemic laws. Among the measures, three are genuinely positive and well thought through in our assessment: the mikro s.p. status, reduction of VAT on basic food, and the government lever for reducing VAT on energy.</p></div>
+</div>
+<div class="story">
+<div data-lang-only="sl">
+<p><strong>1. Mikro s.p.</strong> Samostojni podjetniki in kmetje s prihodki do bruto minimalne plače (cca. 18.000 € letno) prispevke odslej plačujejo od osnove v višini 45 % minimalne plače — namesto dosedanjih 60 % povprečne plače. V praksi: mesečni prispevki padejo z okoli 650 € na okoli 250 €. To je velika sprememba za desettisoče potencialnih malih podjetnikov, dopolnilnih dejavnosti in prostih poklicev.</p>
+<p>Zakaj je dobro: znižuje vstopno bariero za samozaposlitev na evropsko primerljivo raven. Avstrija, Nemčija in Češka imajo podobne ali ugodnejše režime za male samozaposlene. Mikro s.p. neposredno podpira eno od skupin, ki bi se lahko vrnile iz tujine — slovenske inženirje in profesionalce, ki tehtajo neodvisno svetovanje doma proti rednemu zaposlitvenemu razmerju v tujini.</p>
+<p><strong>2. DDV na osnovna živila.</strong> 15 skupin osnovnih živil (kruh, mleko, jajca, meso, sadje, zelenjava, olje, sladkor, brezglutensko) bo obdavčeno po stopnji 5 % namesto 9,5 %. Z davčnega vidika je to regresivna razbremenitev (vsi plačajo isto stopnjo), z dohodkovnega vidika pa je relativno bolj koristna nižjim dohodkovnim skupinam, ki večji delež proračuna namenjajo hrani.</p>
+<p><strong>3. Vladni vzvod za DDV na energente.</strong> Vlada lahko z izvedbenim aktom za največ devet mesecev zniža DDV na energente na 9,5 %. Gre za fleksibilen instrument, ki ga je mogoče sprožiti pri prihodnji cenovni krizi — kar je bila glavna sistemska šibkost v letih 2022–2023.</p>
+<p>Skupni komentar: vsi trije ukrepi dvigujejo motivacijo in znižujejo strošek življenja. Sledijo logiki, ki jo prepoznava vedenjska ekonomija: pri visokem človeškem kapitalu manj obremenitev pomeni več motivacije in več ustvarjenega. Ti ukrepi v ozkem pomenu <em>res</em> ustrezajo Slovencu, ki bi se vrnil — nižja stroška dela kot samostojni podjetnik, nižji strošek življenja, fleksibilen energetski okvir.</p>
+</div>
+<div data-lang-only="en">
+<p><strong>1. Mikro s.p.</strong> Self-employed persons and farmers with income up to gross minimum wage (about €18,000 per year) now pay contributions on a base of 45% of the minimum wage — instead of the previous 60% of average wage. In practice: monthly contributions drop from about €650 to about €250. This is a major change for tens of thousands of potential small entrepreneurs, supplementary activities, and free professions.</p>
+<p>Why it is good: it lowers the entry barrier to self-employment to a level comparable to European peers. Austria, Germany, and the Czech Republic have similar or more favorable regimes for small self-employed. Mikro s.p. directly supports one of the groups that might return from abroad — Slovenian engineers and professionals weighing independent consulting at home against employment abroad.</p>
+<p><strong>2. VAT on basic food.</strong> 15 groups of basic foods (bread, milk, eggs, meat, fruit, vegetables, oil, sugar, gluten-free) will be taxed at 5% instead of 9.5%. From a tax perspective this is regressive relief (everyone pays the same rate); from an income perspective it is relatively more beneficial to lower-income groups, who spend a larger share of their budget on food.</p>
+<p><strong>3. Government lever for VAT on energy.</strong> The government may, by implementing act, reduce VAT on energy to 9.5% for up to nine months. This is a flexible instrument that can be triggered in a future price crisis — which was the main systemic weakness in 2022–2023.</p>
+<p>Joint comment: all three measures raise motivation and lower the cost of living. They follow logic recognized by behavioral economics: with high human capital, less burden means more motivation and more created. In a narrow sense, these measures <em>do</em> suit a Slovenian who might return — lower cost of work as a self-employed person, lower cost of living, flexible energy framework.</p>
+</div>
+</div>
+<div class="split">
+<section class="mini good"><div class="label"><span data-lang-only="sl">Dobro</span><span data-lang-only="en">Good</span></div><div class="body"><span data-lang-only="sl">Trije ukrepi z neposredno motivacijsko vrednostjo. Mikro s.p. naslavlja samozaposlitev (eno od ključnih oblik povratniške aktivacije). DDV ukrepi znižujejo strošek življenja.</span><span data-lang-only="en">Three measures with direct motivational value. Mikro s.p. addresses self-employment (a key form of returnee activation). VAT measures lower cost of living.</span></div></section>
+<section class="mini bad"><div class="label"><span data-lang-only="sl">Slabo</span><span data-lang-only="en">Bad</span></div><div class="body"><span data-lang-only="sl">Skupna fiskalna teža je velika (predlagatelji 570 mio €, ministrstvo za finance 1 mrd €). Brez pokritja na odhodkovni strani pomeni dolg ali rezi v človeški kapital (šolstvo, raziskave).</span><span data-lang-only="en">Combined fiscal weight is large (€570 m by proposers, €1 bn by Ministry of Finance). Without coverage on the expenditure side, this means debt or cuts in human capital (education, research).</span></div></section>
+</div>
+<div class="pattern"><b><span data-lang-only="sl">Globlji vzorec:</span><span data-lang-only="en">Deep pattern:</span></b> <span data-lang-only="sl">Seme: znižanje vstopnih barier za delo in podjetništvo. Most: davčna razbremenitev. Test: ali se učinek pretvori v dejansko povečano aktivnost? Rezultat: za mikro s.p. zelo verjetno; za DDV indirektno prek razpoložljivega dohodka.</span><span data-lang-only="en">Seed: lowering entry barriers for work and entrepreneurship. Bridge: tax relief. Test: does the effect convert into actual increased activity? Result: for mikro s.p. very likely; for VAT indirectly via disposable income.</span></div>
+<div class="bridge"><strong><span data-lang-only="sl">Most:</span><span data-lang-only="en">Bridge:</span></strong> <span data-lang-only="sl">Zdaj prehajamo na najbolj kontroverzen ukrep — kapico pri 7.500 € — in pokažemo, zakaj ne ustreza circulation strategiji.</span><span data-lang-only="en">Now we turn to the most controversial measure — the €7,500 cap — and show why it does not fit the circulation strategy.</span></div>
+<div class="sources-inline"><span data-lang-only="sl">Sidra:</span><span data-lang-only="en">Anchors:</span> <a class="src-ref" href="#src-S15">S15</a><a class="src-ref" href="#src-S16">S16</a></div>
+</article>
+<article class="a4-card" id="card-08">
+<div class="card-top">
+<div>
+<div class="card-num"><span data-lang-only="sl">Kartica 08 · Zakon: zgrešen cilj</span><span data-lang-only="en">Card 08 · Act: missed target</span></div>
+<div class="range"><span data-lang-only="sl">Kapica 7.500 € · analiza</span><span data-lang-only="en">€7,500 cap · analysis</span></div>
+</div>
+<div class="confidence"><span data-lang-only="sl">Strukturna kritika, ne politična</span><span data-lang-only="en">Structural critique, not political</span></div>
+</div>
+<h2><span data-lang-only="sl">7.500 € meri retention, ne circulation</span><span data-lang-only="en">€7,500 measures retention, not circulation</span></h2>
+<p class="focus"><span data-lang-only="sl">Pravi ukrep, napačno usmerjen: brezbrižen do dejanske geografije slovenskega talenta.</span><span data-lang-only="en">A real measure, wrongly targeted: indifferent to the actual geography of Slovenian talent.</span></p>
+<div class="state">
+<div data-lang-only="sl"><p>Zakon uvaja zgornjo mejo (kapico) za plačilo socialnih prispevkov pri 7.500 € bruto mesečne plače. Nad tem pragom se prispevki ne obračunavajo. Ukrep zadeva po podatkih ZZZS okoli 13.750 zaposlenih, pretežno v energetiki, finančnem sektorju, zdravstvu in informatiki. Predlagatelji ga utemeljujejo kot ukrep za zadrževanje visoko izobraženih kadrov v Sloveniji in usklajevanje z evropskimi standardi (Avstrija 6.930 €, Češka ~8.000 €, Nemčija ~5.800 €).</p></div>
+<div data-lang-only="en"><p>The act introduces an upper limit (cap) on social contributions at €7,500 gross monthly salary. Above that threshold, contributions are not levied. According to ZZZS data, the measure affects about 13,750 employees, predominantly in energy, finance, healthcare, and IT. The proposers justify it as a measure for retaining highly educated personnel in Slovenia and aligning with European standards (Austria €6,930, Czechia ~€8,000, Germany ~€5,800).</p></div>
+</div>
+<div class="story">
+<div data-lang-only="sl">
+<p>Kritika kapice s circulation perspektive ima štiri ločene argumente, vsak strukturno različen od standardne leve kritike "ukrep za bogate":</p>
+<p><strong>1. Geografska zgrešenost.</strong> Slovenec, ki bi se lahko vrnil iz Münchna, Züricha ali Bostona, ne dela v slovenskem podjetju z bruto 7.500 €. Dela v tujini z neto, ki je dvakrat do trikrat višji od slovenske kapice. Slovenska kapica ga ne premakne, ker njegova alternativa ni "manj davkov doma" ampak "ostani v tujini z mnogokrat boljšim okvirjem". Kapica meri populacijo, ki je <em>že</em> v Sloveniji.</p>
+<p><strong>2. Napačna predpostavka o motivu odhoda.</strong> Empirično mednarodna mobilnost top kadrov ni primarno davčna. Pri anketah migracije znanstvenikov in inženirjev (OECD 2019, GTC 2023) davki niso v prvih petih razlogih za izstop. Prvih pet: kakovost raziskovalnega okolja, dostop do globalnih projektov, plačni razpon (ne neto, ampak razlika med ravnmi), kakovost vsakdanjega življenja, perspektiva otrok. Kapica zato deluje na perifernem motivatorju.</p>
+<p><strong>3. Notranja distribucijska problematičnost.</strong> Kapica koncentrirano koristi približno 0,7 % zaposlenih (13.750 od 1,9 mio aktivne populacije). To je dejstvo, ne mnenje. Ali je to politično sprejemljivo, je ločeno vprašanje, vendar v circulation perspektivi to ni glavni problem — glavni problem je, da je ta koncentriran ukrep namenjen <em>narobni populaciji</em>.</p>
+<p><strong>4. Manjkajoča komplementarnost.</strong> Avstrija, Češka in Nemčija imajo kapico na prispevke <em>v paketu</em> z drugimi instrumenti za retention in attraction (raziskovalna infrastruktura, dual-career, davčni počitki za povratnike). Slovenija uvaja samo kapico, brez paketa. Tako kapica izgubi sistemski smisel: postane razdelitev ugodnosti, ne strateški instrument.</p>
+<p>Zaključek: kapica ni "ukrep za bogate" — to je preprosta retorika. Je <strong>strukturno zgrešen ukrep</strong>, ker meri populacijo, ki ni glavna ovira za slovenski razvoj. Glavna ovira je tok, ki ne pride nazaj iz tujine. Za tisti tok kapica ne naredi ničesar.</p>
+</div>
+<div data-lang-only="en">
+<p>The cap critique from a circulation perspective has four distinct arguments, each structurally different from the standard left-wing "measure for the rich" critique:</p>
+<p><strong>1. Geographic misalignment.</strong> A Slovenian who might return from Munich, Zürich, or Boston does not work at a Slovenian company with €7,500 gross. They work abroad with net two to three times the Slovenian cap. The Slovenian cap does not move them, because their alternative is not "fewer taxes at home" but "stay abroad in a vastly better framework". The cap measures a population that is <em>already</em> in Slovenia.</p>
+<p><strong>2. Wrong assumption about the motive for leaving.</strong> Empirically, international top-talent mobility is not primarily tax-driven. In scientist and engineer migration surveys (OECD 2019, GTC 2023), taxes are not among the top five reasons for exit. Top five: quality of research environment, access to global projects, salary range (not net, but range between levels), quality of daily life, perspective for children. The cap therefore operates on a peripheral motivator.</p>
+<p><strong>3. Internal distributional issue.</strong> The cap concentrates benefit on about 0.7% of employees (13,750 out of 1.9 million active population). This is fact, not opinion. Whether this is politically acceptable is a separate question, but in a circulation perspective this is not the main problem — the main problem is that this concentrated measure targets the <em>wrong population</em>.</p>
+<p><strong>4. Missing complementarity.</strong> Austria, Czechia, and Germany have a contribution cap <em>in a package</em> with other retention and attraction instruments (research infrastructure, dual-career, tax holidays for returnees). Slovenia introduces only the cap, without the package. Thus the cap loses its systemic meaning: it becomes distribution of advantage, not a strategic instrument.</p>
+<p>Conclusion: the cap is not "a measure for the rich" — that is simple rhetoric. It is <strong>a structurally misaligned measure</strong>, because it targets a population that is not the main obstacle to Slovenian development. The main obstacle is the flow that does not return from abroad. For that flow, the cap does nothing.</p>
+</div>
+</div>
+<div class="split">
+<section class="mini good"><div class="label"><span data-lang-only="sl">Dobro</span><span data-lang-only="en">Good</span></div><div class="body"><span data-lang-only="sl">Princip kapice je legitimen in evropsko primerljiv. Z dobrim dopolnilnim paketom bi lahko postal koristen del širše strategije.</span><span data-lang-only="en">The cap principle is legitimate and comparable to European peers. With a good complementary package it could become a useful part of a broader strategy.</span></div></section>
+<section class="mini bad"><div class="label"><span data-lang-only="sl">Slabo</span><span data-lang-only="en">Bad</span></div><div class="body"><span data-lang-only="sl">Kot samostojen ukrep ne premika talentskega toka. Porabi fiskalni prostor, ki bi bil v circulation paketu desetkrat bolj donosen.</span><span data-lang-only="en">As a standalone measure it does not shift the talent flow. It consumes fiscal space that would be tenfold more productive in a circulation package.</span></div></section>
+</div>
+<div class="pattern"><b><span data-lang-only="sl">Globlji vzorec:</span><span data-lang-only="en">Deep pattern:</span></b> <span data-lang-only="sl">Seme: pravilna intuicija (top kader potrebuje konkurenčen davčni okvir). Most: napačen prevod intuicije (kapica za že-zaposlene namesto privlačnosti za povratnike). Test: ali ukrep premakne tok ali samo razdeli obstoječo torto? Rezultat: razdeli torto, toka ne premakne.</span><span data-lang-only="en">Seed: correct intuition (top talent needs a competitive tax framework). Bridge: wrong translation of intuition (a cap for the already-employed instead of attractiveness for returnees). Test: does the measure shift the flow or merely redistribute the existing pie? Result: redistributes the pie, does not shift the flow.</span></div>
+<div class="bridge"><strong><span data-lang-only="sl">Most:</span><span data-lang-only="en">Bridge:</span></strong> <span data-lang-only="sl">Naslednja kartica ponuja konkretno alternativo: sedem ukrepov, ki bi razvojni zakon dvignili iz retention v circulation paradigmo.</span><span data-lang-only="en">The next card offers a concrete alternative: seven measures that would lift the development act from a retention to a circulation paradigm.</span></div>
+<div class="sources-inline"><span data-lang-only="sl">Sidra:</span><span data-lang-only="en">Anchors:</span> <a class="src-ref" href="#src-S15">S15</a><a class="src-ref" href="#src-S17">S17</a><a class="src-ref" href="#src-S18">S18</a></div>
+</article>
+<article class="a4-card" id="card-09">
+<div class="card-top">
+<div>
+<div class="card-num"><span data-lang-only="sl">Kartica 09 · Sedem predlogov</span><span data-lang-only="en">Card 09 · Seven proposals</span></div>
+<div class="range"><span data-lang-only="sl">Circulation paket 2027</span><span data-lang-only="en">Circulation package 2027</span></div>
+</div>
+<div class="confidence"><span data-lang-only="sl">Operativna izhodišča</span><span data-lang-only="en">Operational starting points</span></div>
+</div>
+<h2 id="proposals"><span data-lang-only="sl">Sedem konkretnih ukrepov</span><span data-lang-only="en">Seven concrete measures</span></h2>
+<p class="focus"><span data-lang-only="sl">Vsak predlog ima jasno funkcijo v krožni arhitekturi talentov.</span><span data-lang-only="en">Each proposal has a clear function in the circular architecture of talent.</span></p>
+<div class="state">
+<div data-lang-only="sl"><p>Spodnji paket je zasnovan kot operativni dodatek ali alternativa k delu obstoječega zakona. Sedem ukrepov pokriva tri faze toka: izstop (1, 2), tujino (3, 4) in vrnitev (5, 6, 7). Vsak ukrep navaja funkcijo, instrument in oceno reda velikosti stroška.</p></div>
+<div data-lang-only="en"><p>The package below is designed as an operational supplement or alternative to part of the existing act. The seven measures cover three flow phases: exit (1, 2), abroad (3, 4), and return (5, 6, 7). Each measure states a function, instrument, and order-of-magnitude cost estimate.</p></div>
+</div>
+<div class="proposal">
+<div class="pnum"><span data-lang-only="sl">Ukrep 01 · izstop</span><span data-lang-only="en">Measure 01 · exit</span></div>
+<h4><span data-lang-only="sl">Slovenia Outbound Track — sistematične izmenjave</span><span data-lang-only="en">Slovenia Outbound Track — systematic exchanges</span></h4>
+<p><span data-lang-only="sl"><strong>Funkcija:</strong> namerno pošiljanje 300–500 najboljših letno v vrhunska tuja okolja. <strong>Instrument:</strong> dvojni štipendijski sklad (javno-zasebno partnerstvo) za doktorat in podjetniške ekspedicije. <strong>Strošek:</strong> 15–25 mio € letno.</span><span data-lang-only="en"><strong>Function:</strong> deliberately sending 300–500 top profiles annually to top foreign environments. <strong>Instrument:</strong> dual scholarship fund (public-private partnership) for doctorate and entrepreneurial expeditions. <strong>Cost:</strong> €15–25 m per year.</span></p>
+</div>
+<div class="proposal">
+<div class="pnum"><span data-lang-only="sl">Ukrep 02 · izstop</span><span data-lang-only="en">Measure 02 · exit</span></div>
+<h4><span data-lang-only="sl">Korporativni ambasadorski program</span><span data-lang-only="en">Corporate ambassador program</span></h4>
+<p><span data-lang-only="sl"><strong>Funkcija:</strong> sistematično plasiranje slovenskih kadrov v tujih top podjetjih z izrecnim dogovorom o povratniški opciji po 5–7 letih. <strong>Instrument:</strong> partnerstvo s Krko, Lekom, Pipistrelom, Cosylabom, Iskratelom. <strong>Strošek:</strong> v glavnem privatno; državna koordinacija ~2 mio € letno.</span><span data-lang-only="en"><strong>Function:</strong> systematic placement of Slovenian talent in top foreign companies with explicit return-option agreements after 5–7 years. <strong>Instrument:</strong> partnership with Krka, Lek, Pipistrel, Cosylab, Iskratel. <strong>Cost:</strong> mainly private; state coordination ~€2 m per year.</span></p>
+</div>
+<div class="proposal">
+<div class="pnum"><span data-lang-only="sl">Ukrep 03 · tujina</span><span data-lang-only="en">Measure 03 · abroad</span></div>
+<h4><span data-lang-only="sl">Diaspora Network 2.0 — digitalni register in mreža</span><span data-lang-only="en">Diaspora Network 2.0 — digital register and network</span></h4>
+<p><span data-lang-only="sl"><strong>Funkcija:</strong> mapiranje slovenske diaspore po domenah, sistematično vzdrževanje stikov, mentorstvo, vir za rekrutiranje. <strong>Instrument:</strong> AI-podprta platforma (javno-zasebno), letni dogodek "Slovenian Talent Summit" izmenično v LJ in tujini. <strong>Strošek:</strong> 3–5 mio € letno.</span><span data-lang-only="en"><strong>Function:</strong> mapping the Slovenian diaspora by domain, systematic contact maintenance, mentoring, recruitment source. <strong>Instrument:</strong> AI-supported platform (public-private), annual "Slovenian Talent Summit" alternating between LJ and abroad. <strong>Cost:</strong> €3–5 m per year.</span></p>
+</div>
+<div class="proposal">
+<div class="pnum"><span data-lang-only="sl">Ukrep 04 · tujina</span><span data-lang-only="en">Measure 04 · abroad</span></div>
+<h4><span data-lang-only="sl">Strateški raziskovalni vozli v 3 nišah</span><span data-lang-only="en">Strategic research hubs in 3 niches</span></h4>
+<p><span data-lang-only="sl"><strong>Funkcija:</strong> ustvariti svetovne raziskovalne enote v 3 nišah, kjer Slovenija ima izhodiščno prednost (npr. fotonika, napredna farmacevtika, kvantne tehnologije, robotika za starostnike). <strong>Instrument:</strong> sofinanciranje 50 % (po izraelskem modelu), partnerstvo z univerzami in podjetji. <strong>Strošek:</strong> 30–50 mio € v fazi 1 (5 let).</span><span data-lang-only="en"><strong>Function:</strong> create world-class research units in 3 niches where Slovenia has an initial advantage (e.g. photonics, advanced pharma, quantum technologies, robotics for elderly care). <strong>Instrument:</strong> 50% co-financing (Israeli model), partnership with universities and companies. <strong>Cost:</strong> €30–50 m in phase 1 (5 years).</span></p>
+</div>
+<div class="proposal">
+<div class="pnum"><span data-lang-only="sl">Ukrep 05 · vrnitev</span><span data-lang-only="en">Measure 05 · return</span></div>
+<h4><span data-lang-only="sl">Slovenian Returnee Package — davčni počitek 5–7 let</span><span data-lang-only="en">Slovenian Returnee Package — 5–7 year tax holiday</span></h4>
+<p><span data-lang-only="sl"><strong>Funkcija:</strong> odstraniti fiskalni stik kot oviro vrnitve. <strong>Instrument:</strong> status "vrnjeni rezident" za vsakogar z vsaj 3 leti tujih izkušenj in magistrsko izobrazbo navzgor. Prva 3 leta 0 % dohodnine na tuj kapital, postopno naraščanje do leta 7. <strong>Strošek:</strong> ocenjeno 20–40 mio € letno v 5. letu polne uveljavitve (po italijanskem modelu "rientro dei cervelli").</span><span data-lang-only="en"><strong>Function:</strong> remove fiscal contact as a return barrier. <strong>Instrument:</strong> "returning resident" status for anyone with at least 3 years of foreign experience and a master's degree or higher. First 3 years 0% income tax on foreign capital, gradual rise to year 7. <strong>Cost:</strong> estimated €20–40 m per year in year 5 of full deployment (Italian "rientro dei cervelli" model).</span></p>
+</div>
+<div class="proposal">
+<div class="pnum"><span data-lang-only="sl">Ukrep 06 · vrnitev</span><span data-lang-only="en">Measure 06 · return</span></div>
+<h4><span data-lang-only="sl">Dual-Career &amp; Družinski paket</span><span data-lang-only="en">Dual-Career &amp; Family package</span></h4>
+<p><span data-lang-only="sl"><strong>Funkcija:</strong> rešiti glavno bariero vrnitve — kariero partnerja in šolanje otrok. <strong>Instrument:</strong> namenska enota za hitro priznavanje tujih kvalifikacij partnerja, fast-track delovna dovoljenja za tuje partnerje, sofinanciranje šolnine v mednarodnih šolah v LJ in MB. <strong>Strošek:</strong> 5–10 mio € letno.</span><span data-lang-only="en"><strong>Function:</strong> resolve the main return barrier — partner's career and children's schooling. <strong>Instrument:</strong> dedicated unit for fast recognition of partner's foreign qualifications, fast-track work permits for foreign partners, tuition co-financing at international schools in LJ and MB. <strong>Cost:</strong> €5–10 m per year.</span></p>
+</div>
+<div class="proposal">
+<div class="pnum"><span data-lang-only="sl">Ukrep 07 · vrnitev</span><span data-lang-only="en">Measure 07 · return</span></div>
+<h4><span data-lang-only="sl">Equity Reintegration Fund</span><span data-lang-only="en">Equity Reintegration Fund</span></h4>
+<p><span data-lang-only="sl"><strong>Funkcija:</strong> omogočiti povratnikom vstop v slovenske startupe in raziskovalne skupine ne le z denarjem, ampak z deleži in možnostjo kasnejšega odkupa. <strong>Instrument:</strong> sklad ~50 mio € (50 % javnih, 50 % zasebnih) za semensko kapital in equity-based pakete za povratnike-ustanovitelje. <strong>Strošek:</strong> enkratna kapitalizacija + 3–5 mio € letnih operativnih stroškov.</span><span data-lang-only="en"><strong>Function:</strong> enable returnees to enter Slovenian startups and research groups not only with money but with shares and later buyback options. <strong>Instrument:</strong> a ~€50 m fund (50% public, 50% private) for seed capital and equity-based packages for returnee founders. <strong>Cost:</strong> one-off capitalization + €3–5 m annual operating cost.</span></p>
+</div>
+<div class="split">
+<section class="mini good"><div class="label"><span data-lang-only="sl">Skupna ocena</span><span data-lang-only="en">Combined estimate</span></div><div class="body"><span data-lang-only="sl">Letni stroškovni okvir paketa: 80–130 mio € v polni izvedbi. Pričakovan donos po 7–10 letih: 500–1.000 povratnikov letno z multiplikativnim učinkom na inovacijski ekosistem.</span><span data-lang-only="en">Annual cost envelope of the package: €80–130 m at full deployment. Expected yield after 7–10 years: 500–1,000 returnees annually with a multiplicative effect on the innovation ecosystem.</span></div></section>
+<section class="mini bad"><div class="label"><span data-lang-only="sl">Tveganje</span><span data-lang-only="en">Risk</span></div><div class="body"><span data-lang-only="sl">Zahteva dolgoročno politično zavezo (vsaj 10 let). Spremembe vlad lahko paket razbijejo na fragmente, kar bi izničilo signalni učinek za diasporo.</span><span data-lang-only="en">Requires a long-term political commitment (at least 10 years). Government changes can break the package into fragments, nullifying the signal effect for diaspora.</span></div></section>
+</div>
+<div class="pattern"><b><span data-lang-only="sl">Globlji vzorec:</span><span data-lang-only="en">Deep pattern:</span></b> <span data-lang-only="sl">Seme: paket, ki pokriva ves cikel toka. Most: koordinacija kot ena storitev. Test: ali povratnik dobi vse na enem mestu (po izraelskem vzorcu)? Rezultat: če da, postane Slovenija privlačna v 5–7 letih.</span><span data-lang-only="en">Seed: a package covering the entire flow cycle. Bridge: coordination as a single service. Test: does the returnee get everything in one place (Israeli pattern)? Result: if yes, Slovenia becomes attractive in 5–7 years.</span></div>
+<div class="bridge"><strong><span data-lang-only="sl">Most:</span><span data-lang-only="en">Bridge:</span></strong> <span data-lang-only="sl">Zadnja kartica naslavlja največje tveganje — "Nevidnih 90 %" kulturnih in institucionalnih ovir, ki jih noben zakon ne reši samodejno.</span><span data-lang-only="en">The final card addresses the biggest risk — the "Invisible 90%" of cultural and institutional obstacles that no act resolves automatically.</span></div>
+<div class="sources-inline"><span data-lang-only="sl">Sidra:</span><span data-lang-only="en">Anchors:</span> <a class="src-ref" href="#src-S09">S09</a><a class="src-ref" href="#src-S11">S11</a><a class="src-ref" href="#src-S12">S12</a></div>
+</article>
+<article class="a4-card" id="card-10">
+<div class="card-top">
+<div>
+<div class="card-num"><span data-lang-only="sl">Kartica 10 · Nevidnih 90 %</span><span data-lang-only="en">Card 10 · Invisible 90%</span></div>
+<div class="range"><span data-lang-only="sl">Implementacijska tveganja</span><span data-lang-only="en">Implementation risks</span></div>
+</div>
+<div class="confidence"><span data-lang-only="sl">Cross-domain z BD okvirjem</span><span data-lang-only="en">Cross-domain with BD framework</span></div>
+</div>
+<h2><span data-lang-only="sl">Nevidnih 90 %: kar zakon ne premakne</span><span data-lang-only="en">Invisible 90%: what the act does not move</span></h2>
+<p class="focus"><span data-lang-only="sl">Kultura, zaupanje in institucionalna kakovost so 60–90 % uspeha vsakega circulation paketa.</span><span data-lang-only="en">Culture, trust, and institutional quality are 60–90% of any circulation package's success.</span></p>
+<div class="state">
+<div data-lang-only="sl"><p>Princip Nevidnih 90 % iz BD okvirja (validiran skozi športno fiziko, šahovsko teorijo in trading psihologijo): v vsaki domeni je 10–40 % uspeha v vidnih, merljivih, fizičnih dejavnikih in 60–90 % v nevidnih — fokus, vztrajnost, kultura, smisel, zaupanje, kontekst. Apliciran na talentski tok: davčni počitek in dual-career sta vidnih ~10 %; zakaj se nekdo dejansko vrne, je v nevidnih ~90 %.</p></div>
+<div data-lang-only="en"><p>The Invisible 90% principle from the BD framework (validated through sports physics, chess theory, and trading psychology): in every domain, 10–40% of success lies in visible, measurable, physical factors, and 60–90% in invisible ones — focus, perseverance, culture, meaning, trust, context. Applied to talent flow: tax holiday and dual-career are visible ~10%; why someone actually returns lies in the invisible ~90%.</p></div>
+</div>
+<div class="story">
+<div data-lang-only="sl">
+<p>Pet kategorij nevidnih 90 %, ki jih noben zakon ne premakne neposredno:</p>
+<p><strong>1. Zaupanje v institucije.</strong> Povratnik se sprašuje: ali bo davčni počitek, ki mi je obljubljen za 7 let, dejansko izpolnjen, ali ga bo naslednja vlada razveljavila? V državah z visokim zaupanjem v institucije (Švica, Danska, Singapur) je signal kredibilen. V Sloveniji s pogostimi spremembami režima je signal šibkejši. To je največja sistemska ovira.</p>
+<p><strong>2. Meritokracija pri zaposlovanju.</strong> Povratnik prinaša mednarodno standardiziran CV. Če v Sloveniji še vedno odločajo zveze in koalicije ("kdo ga pozna"), je njegov CV razvrednoten. Meritokracija je kulturni standard, ki se ne uvede z zakonom — gradi se z navade desetletij.</p>
+<p><strong>3. Sprejemanje uspeha.</strong> Povratnik tipično prinaša višje plače, drugačno samozavest, mednarodne izkušnje. V kulturi, kjer je uspeh sumljiv ("kaj se gre", "kako si je to omislil"), je psihološka cena vrnitve visoka. Avstrija in Švica imata močnejšo kulturo sprejemanja vrhunskih dosežkov.</p>
+<p><strong>4. Hitrost odločanja.</strong> Mednarodno top kader je vajen, da odločitev (npr. o financiranju projekta) traja tedne. V slovenskih univerzah in raziskovalnih inštitucijah traja mesece do let. Ko se ta razlika kumulativno sešteje, povratnik odide nazaj.</p>
+<p><strong>5. Smisel onkraj denarja.</strong> Najvišji kader se vrača iz osebnih razlogov (otroci, starši, koreniček), ne iz davčnih. Davčni počitek je dovoljenje za vrnitev, ne razlog. Razlog je smisel — kar je natanko Ψ(I) v CCH okvirju (BD), parameter sklopitve, ki je odvisen od veselja, ne pritiska.</p>
+<p><strong>Strateški sklep.</strong> Sedem predlogov iz prejšnje kartice je nujen, a nezadosten pogoj. Brez vzporedne investicije v nevidnih 90 % bo paket dosegel le del učinka. Konkretno: predlagamo, da se ob zagonu paketa istočasno zažene <em>institucionalna kredibilnost</em> (10-letno politično pogodbo med vsemi parlamentarnimi strankami za nereverzibilnost vrnitvenih instrumentov) in <em>kulturni signal</em> (letni nacionalni dogodek slovesne sprejema povratnikov, javna kampanja, ki povratnike obravnava kot junake na enak način kot športne zvezdnike).</p>
+</div>
+<div data-lang-only="en">
+<p>Five categories of the invisible 90% that no act moves directly:</p>
+<p><strong>1. Trust in institutions.</strong> The returnee asks: will the tax holiday promised for 7 years actually be honored, or will the next government revoke it? In countries with high institutional trust (Switzerland, Denmark, Singapore), the signal is credible. In Slovenia, with frequent regime changes, the signal is weaker. This is the biggest systemic obstacle.</p>
+<p><strong>2. Meritocracy in hiring.</strong> The returnee brings an internationally standardized CV. If Slovenia still decides by connections and coalitions ("who knows him"), their CV is devalued. Meritocracy is a cultural standard not introduced by act — it is built by decades of habit.</p>
+<p><strong>3. Acceptance of success.</strong> The returnee typically brings higher salaries, a different self-confidence, international experience. In a culture where success is suspect ("what is he up to", "how did he arrange that"), the psychological cost of return is high. Austria and Switzerland have a stronger culture of accepting peak achievements.</p>
+<p><strong>4. Speed of decisions.</strong> Top international talent is used to decisions (e.g. on project funding) taking weeks. In Slovenian universities and research institutions, it takes months to years. When this difference accumulates, the returnee leaves again.</p>
+<p><strong>5. Meaning beyond money.</strong> The highest-level talent returns for personal reasons (children, parents, roots), not tax ones. A tax holiday is permission to return, not a reason. The reason is meaning — which is exactly Ψ(I) in the CCH framework (BD), the coupling parameter that depends on joy, not pressure.</p>
+<p><strong>Strategic conclusion.</strong> The seven proposals on the previous card are a necessary but insufficient condition. Without parallel investment in the invisible 90%, the package will achieve only part of its potential. Concretely: we propose that at the launch of the package, two things start simultaneously: <em>institutional credibility</em> (a 10-year political contract among all parliamentary parties for the irrevocability of return instruments) and <em>cultural signal</em> (an annual national event of ceremonial welcome for returnees, a public campaign treating returnees as heroes the same way sports stars are).</p>
+</div>
+</div>
+<div class="split">
+<section class="mini good"><div class="label"><span data-lang-only="sl">Dobro</span><span data-lang-only="en">Good</span></div><div class="body"><span data-lang-only="sl">Slovenija ima primer iz domačega športa, kjer nevidnih 90 % že deluje (sprejemanje, mediji, javna naklonjenost). Vzorec je prenosljiv.</span><span data-lang-only="en">Slovenia has a domestic sport example where the invisible 90% already works (acceptance, media, public support). The pattern is transferable.</span></div></section>
+<section class="mini bad"><div class="label"><span data-lang-only="sl">Slabo</span><span data-lang-only="en">Bad</span></div><div class="body"><span data-lang-only="sl">Gradnja nevidnih 90 % je delo desetletij, ne mandata. Vsak fragmentaren pristop (samo zakon, brez kulturnega in institucionalnega okvira) doseže manj kot polovico potenciala.</span><span data-lang-only="en">Building the invisible 90% is the work of decades, not a mandate. Any fragmented approach (just an act, without cultural and institutional frame) achieves less than half its potential.</span></div></section>
+</div>
+<div class="pattern"><b><span data-lang-only="sl">Globlji vzorec:</span><span data-lang-only="en">Deep pattern:</span></b> <span data-lang-only="sl">Seme: davčni paket. Most: institucionalna kredibilnost. Test: ali signal preživi tri vlade? Rezultat: če da, sistem začne avtomatsko privlačiti; če ne, ostane razdeljena ugodnost brez sistemskega učinka.</span><span data-lang-only="en">Seed: tax package. Bridge: institutional credibility. Test: does the signal survive three governments? Result: if yes, the system begins to attract automatically; if not, it remains divided benefit without systemic effect.</span></div>
+<div class="bridge"><strong><span data-lang-only="sl">Zaključek:</span><span data-lang-only="en">Conclusion:</span></strong> <span data-lang-only="sl">Interventni zakon 2026 je dober prvi korak. Naslednji korak — circulation paket s kulturno-institucionalnim okvirjem — je tisti, ki bi Slovenijo dejansko preselil iz potenciala v realizacijo.</span><span data-lang-only="en">The 2026 Intervention Act is a good first step. The next step — a circulation package with a cultural-institutional frame — is what would actually move Slovenia from potential to realization.</span></div>
+<div class="sources-inline"><span data-lang-only="sl">Sidra:</span><span data-lang-only="en">Anchors:</span> <a class="src-ref" href="#src-S07">S07</a><a class="src-ref" href="#src-S08">S08</a><a class="src-ref" href="#src-S18">S18</a></div>
+</article>
+</section>
+<section class="sources wrap" id="sources">
+<h2><span data-lang-only="sl">Viri in sidra dokazov</span><span data-lang-only="en">Sources and evidence anchors</span></h2>
+<div class="source-grid">
+<div class="source" id="src-S01"><div class="sid">S01</div>
+<a href="https://ec.europa.eu/eurostat" rel="noopener" target="_blank">Eurostat — Tertiary education and labor productivity, EU comparisons</a>
+<p><span data-lang-only="sl">Slovenija nadpovprečna v deležu STEM diplomantov; najvišja produktivnost dela v Vzhodni Evropi.</span><span data-lang-only="en">Slovenia above average in STEM graduate share; highest labor productivity in Eastern Europe.</span></p>
+</div>
+<div class="source" id="src-S02"><div class="sid">S02</div>
+<a href="https://www.stat.si/" rel="noopener" target="_blank">SURS — Selitveno gibanje prebivalstva 2024</a>
+<p><span data-lang-only="sl">Statistika selitev iz in v Slovenijo po stopnji izobrazbe.</span><span data-lang-only="en">Migration statistics in and out of Slovenia by education level.</span></p>
+</div>
+<div class="source" id="src-S03"><div class="sid">S03</div>
+<a href="https://www.oecd.org/sti/" rel="noopener" target="_blank">OECD — Science, Technology and Innovation Outlook</a>
+<p><span data-lang-only="sl">Mednarodne primerjave R&amp;D intenzitete, mobilnosti raziskovalcev.</span><span data-lang-only="en">International comparisons of R&amp;D intensity and researcher mobility.</span></p>
+</div>
+<div class="source" id="src-S04"><div class="sid">S04</div>
+<a href="https://hup.harvard.edu/books/9780674025677" rel="noopener" target="_blank">Saxenian, A. (2006). The New Argonauts. Harvard University Press.</a>
+<p><span data-lang-only="sl">Klasično delo o brain circulation. Tajvanci, Indijci, Izraelci v Silicijevi dolini.</span><span data-lang-only="en">Foundational work on brain circulation. Taiwanese, Indians, Israelis in Silicon Valley.</span></p>
+</div>
+<div class="source" id="src-S05"><div class="sid">S05</div>
+<a href="https://www.oecd.org/migration/" rel="noopener" target="_blank">OECD — International Migration Outlook (annual)</a>
+<p><span data-lang-only="sl">Letni pregled selitvenih tokov, vključno s povratniško mobilnostjo.</span><span data-lang-only="en">Annual review of migration flows, including return mobility.</span></p>
+</div>
+<div class="source" id="src-S06"><div class="sid">S06</div>
+<a href="https://gtcistudy.com/" rel="noopener" target="_blank">Global Talent Competitiveness Index (INSEAD)</a>
+<p><span data-lang-only="sl">Letna lestvica privlačnosti držav za talente.</span><span data-lang-only="en">Annual ranking of country attractiveness for talent.</span></p>
+</div>
+<div class="source" id="src-S07"><div class="sid">S07</div>
+<a href="https://www.tsmc.com/english" rel="noopener" target="_blank">TSMC corporate history</a>
+<p><span data-lang-only="sl">Ustanovitev 1987, Morris Chang, vloga povratnikov iz ZDA.</span><span data-lang-only="en">Founded 1987, Morris Chang, role of returnees from the US.</span></p>
+</div>
+<div class="source" id="src-S08"><div class="sid">S08</div>
+<a href="https://www.cyclingnews.com/" rel="noopener" target="_blank">Cyclingnews, NBA Stats, FIS Ski Jumping — career timelines</a>
+<p><span data-lang-only="sl">Javno dostopne karierne poti Pogačarja, Dončića, Prevca.</span><span data-lang-only="en">Publicly accessible career paths of Pogačar, Dončić, Prevc.</span></p>
+</div>
+<div class="source" id="src-S09"><div class="sid">S09</div>
+<a href="https://www.itri.org.tw/" rel="noopener" target="_blank">ITRI — Industrial Technology Research Institute, Taiwan</a>
+<p><span data-lang-only="sl">Vloga državne raziskovalne agencije pri Hsinchu modelu.</span><span data-lang-only="en">Role of the state research agency in the Hsinchu model.</span></p>
+</div>
+<div class="source" id="src-S10"><div class="sid">S10</div>
+<a href="https://www.semi.org/" rel="noopener" target="_blank">SEMI — Global semiconductor industry data</a>
+<p><span data-lang-only="sl">Tajvanski izvoz polprevodnikov, globalni delež.</span><span data-lang-only="en">Taiwanese semiconductor exports, global share.</span></p>
+</div>
+<div class="source" id="src-S11"><div class="sid">S11</div>
+<a href="https://www.gov.il/en/Departments/ministry_of_aliyah_and_integration" rel="noopener" target="_blank">Israel Ministry of Aliyah and Integration — Returning Home program</a>
+<p><span data-lang-only="sl">Davčni in nedavčni paket za vrnitev visoko kvalificiranih državljanov.</span><span data-lang-only="en">Tax and non-tax package for return of highly qualified citizens.</span></p>
+</div>
+<div class="source" id="src-S12"><div class="sid">S12</div>
+<a href="https://innovationisrael.org.il/en" rel="noopener" target="_blank">Israel Innovation Authority (IIA)</a>
+<p><span data-lang-only="sl">Sofinanciranje raziskovalnih skupin v deep tech, biomedicini, kvantnih tehnologijah.</span><span data-lang-only="en">Co-financing of research groups in deep tech, biomedicine, quantum technologies.</span></p>
+</div>
+<div class="source" id="src-S13"><div class="sid">S13</div>
+<a href="https://research.samsung.com/" rel="noopener" target="_blank">Samsung Research corporate page</a>
+<p><span data-lang-only="sl">Zgodovina raziskovalnega oddelka, vloga korejskih povratnikov iz ameriških univerz.</span><span data-lang-only="en">History of the research division, role of Korean returnees from US universities.</span></p>
+</div>
+<div class="source" id="src-S14"><div class="sid">S14</div>
+<a href="https://www.idaireland.com/" rel="noopener" target="_blank">IDA Ireland — Industrial Development Authority</a>
+<p><span data-lang-only="sl">Irska razvojna agencija, vloga pri privabljanju Ircev iz tujine v 1990–2010.</span><span data-lang-only="en">Irish development agency, role in attracting Irish from abroad 1990–2010.</span></p>
+</div>
+<div class="source" id="src-S15"><div class="sid">S15</div>
+<a href="https://www.uradni-list.si/" rel="noopener" target="_blank">Uradni list RS — ZIURS (Zakon o interventnih ukrepih za razvoj Slovenije)</a>
+<p><span data-lang-only="sl">Besedilo zakona, sprejet 11. 5. 2026.</span><span data-lang-only="en">Text of the act, adopted 11 May 2026.</span></p>
+</div>
+<div class="source" id="src-S16"><div class="sid">S16</div>
+<a href="https://siol.net/novice/slovenija/" rel="noopener" target="_blank">Siol / Delo / Forbes Slovenija / STA — poročanje o sprejetju zakona</a>
+<p><span data-lang-only="sl">Glasovanje 47 za, 35 proti; napoved zakonodajnega referenduma.</span><span data-lang-only="en">Vote 47 for, 35 against; announcement of legislative referendum.</span></p>
+</div>
+<div class="source" id="src-S17"><div class="sid">S17</div>
+<a href="https://www.oecd.org/migration/talent-attractiveness/" rel="noopener" target="_blank">OECD Indicators of Talent Attractiveness 2023</a>
+<p><span data-lang-only="sl">Empirični rang motivatorjev za migracijo top kadrov.</span><span data-lang-only="en">Empirical ranking of motivators for top-talent migration.</span></p>
+</div>
+<div class="source" id="src-S18"><div class="sid">S18</div>
+<a href="https://chessbest.org/bd/" rel="noopener" target="_blank">BD × AI Lab — Invisible 90% principle (sport, chess, trading validation)</a>
+<p><span data-lang-only="sl">Domači okvir, ki kvantificira razmerje vidnih in nevidnih dejavnikov uspeha.</span><span data-lang-only="en">Domestic framework quantifying the ratio of visible and invisible success factors.</span></p>
+</div>
+</div>
+</section>
+<section class="related wrap" id="related"><h2><span data-lang-only="sl">Sorodno branje</span><span data-lang-only="en">Related reading</span></h2><div class="related-grid">
+<a class="related-card" href="Interventni_zakon_2026.html"><div class="tag">/slo/ aktualno</div><h3><span data-lang-only="sl">Interventni zakon 2026</span><span data-lang-only="en">Intervention Act 2026</span></h3><p><span data-lang-only="sl">Aktualna analiza sprejetega paketa: kaj je dobro, kje so tveganja in kako ga popraviti.</span><span data-lang-only="en">Current analysis of the adopted package: what is good, where the risks are, and how to fix it.</span></p></a>
+<a class="related-card" href="/crp/humanity"><div class="tag">CRP</div><h3>Humanity+</h3><p><span data-lang-only="sl">Dobri razvoj ni samo BDP: je večja kakovost življenja, ustvarjanja, razumevanja in sodelovanja.</span><span data-lang-only="en">Good development is not only GDP: it is better life, creation, understanding, and cooperation.</span></p></a>
+<a class="related-card" href="/crp/goodandevil"><div class="tag">CRP</div><h3><span data-lang-only="sl">Dobro in zlo</span><span data-lang-only="en">Good and Evil</span></h3><p><span data-lang-only="sl">Opomnik, da tudi dobra ideja ne sme postati dovoljenje za slabo izvedbo.</span><span data-lang-only="en">A reminder that even a good idea must not become permission for bad execution.</span></p></a>
+</div></section><nav aria-label="Footer" class="footer-nav wrap">
+<a href="index.html"><span data-lang-only="sl">← /slo/ index</span><span data-lang-only="en">← /slo/ index</span></a>
+<a href="Interventni_zakon_2026.html"><span data-lang-only="sl">Interventni zakon →</span><span data-lang-only="en">Intervention Act →</span></a>
+<a href="/bd/"><span>BD portfolio</span></a>
+<a href="/crp/"><span>CRP dokumenti</span></a>
+<a href="#top"><span data-lang-only="sl">↑ Na vrh</span><span data-lang-only="en">↑ Top</span></a>
+</nav>
+</main>
+<a class="back-top" href="#top">↑</a>
+<div aria-label="Reader" class="reader-controls" role="group">
+<button aria-label="Decrease text size" data-reader-dec="" type="button">A−</button>
+<span class="reader-label" id="readerSizeLabel">M 100%</span>
+<button aria-label="Increase text size" data-reader-inc="" type="button">A+</button>
+</div>
+<script>
+(function(){
+  var LANG_KEY = 'bdLangPref';
+  function applyLang(lang){
+    lang = (lang === 'en') ? 'en' : 'sl';
+    document.documentElement.setAttribute('data-lang', lang);
+    document.documentElement.setAttribute('lang', lang);
+    try { localStorage.setItem(LANG_KEY, lang); } catch(e){}
+    document.querySelectorAll('[data-set-lang]').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-set-lang') === lang);
+    });
+  }
+  try {
+    var saved = localStorage.getItem(LANG_KEY);
+    if (saved === 'sl' || saved === 'en') applyLang(saved);
+    else applyLang('sl');
+  } catch(e){ applyLang('sl'); }
+  document.addEventListener('click', function(ev){
+    var btn = ev.target.closest && ev.target.closest('[data-set-lang]');
+    if (btn){ applyLang(btn.getAttribute('data-set-lang')); }
+  });
+})();
+
+(function(){
+  var bar = document.getElementById('progress');
+  if(!bar) return;
+  function update(){
+    var h = document.documentElement;
+    var max = (h.scrollHeight - h.clientHeight) || 1;
+    var p = Math.min(100, Math.max(0, (h.scrollTop / max) * 100));
+    bar.style.width = p + '%';
+  }
+  document.addEventListener('scroll', update, {passive: true});
+  update();
+})();
+
+(function(){
+  var KEY = 'bdReaderSize';
+  var levels = [90, 100, 112, 125, 140];
+  var labels = ['XS', 'M', 'L', 'XL', 'XXL'];
+  function get(){
+    try { var v = parseInt(localStorage.getItem(KEY), 10); return isNaN(v) ? 1 : Math.max(0, Math.min(levels.length-1, v)); }
+    catch(e){ return 1; }
+  }
+  function apply(i){
+    document.documentElement.style.fontSize = levels[i] + '%';
+    try { localStorage.setItem(KEY, String(i)); } catch(e){}
+    var lab = document.getElementById('readerSizeLabel');
+    if (lab) lab.textContent = labels[i] + ' ' + levels[i] + '%';
+  }
+  apply(get());
+  document.addEventListener('click', function(ev){
+    var dec = ev.target.closest && ev.target.closest('[data-reader-dec]');
+    var inc = ev.target.closest && ev.target.closest('[data-reader-inc]');
+    if (dec){ apply(Math.max(0, get()-1)); }
+    if (inc){ apply(Math.min(levels.length-1, get()+1)); }
+  });
+})();
+</script>
+</body></html>
