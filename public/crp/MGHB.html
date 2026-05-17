@@ -60,6 +60,7 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
     <a href="/crp/HTH.html">HTH</a>
     <a href="/crp/DGTE.html">DGTE</a>
     <a href="/crp/MDLxDCC.html">MDL×DCC</a>
+    <a href="/crp/MDLxDCC-Arena-DGTE.html">DGTE Arena</a>
     <a href="/bd/">Portfolio</a>
   </div>
 </div></div>
@@ -82,6 +83,7 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
 </div>
 
 <nav class="section-nav"><div class="wrap">
+  <a href="#arena-status">Arena</a>
   <a href="#abstract">Abstract</a>
   <a href="#architecture">Architecture</a>
   <a href="#physics">Physics</a>
@@ -90,7 +92,6 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
   <a href="#modes">Modes</a>
   <a href="#variants">Variants</a>
   <a href="#ship">Ship Charging</a>
-  <a href="#options">Options</a>
   <a href="#dcc">DCC</a>
   <a href="#risks">Kill Tests</a>
   <a href="#roadmap">Roadmap</a>
@@ -98,12 +99,20 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
 
 <div class="wrap">
 
+
+<section id="arena-status" class="hero-card">
+<h2>Current Arena Status · v0.7a</h2>
+<p><strong>MGHB / wave / breakwater keeps the highest infrastructure upside, but the arena says it must go through wave-tank validation first.</strong> The first MGHB build is a piston-only baseline before hybrid pneumatic complexity.</p>
+<div class="note gold"><strong>First MGHB test:</strong> wave tank cell measuring incoming/outgoing wave height, piston stroke, piston force, generator/load output, damping setting, water leakage/slam, wave period, and absorbed wave fraction.</div>
+<div class="note green"><strong>Pass path:</strong> if wave reduction and useful work both beat simple baselines, advance to a small outdoor mini-breakwater array. If power is weak but wave reduction is strong, salvage as smart breakwater infrastructure.</div>
+<p>Current bench planner: <a href="/crp/MDLxDCC-Arena-DGTE.html">MDLxDCC-Arena-DGTE.html</a>.</p>
+</section>
+
 <section id="abstract" class="hero-card">
 <h2>Abstract</h2>
 <p><strong>HTH-WGPB</strong> proposes a modular wave-energy breakwater that combines two mechanisms: a guided wave piston that converts vertical wave motion into controlled generator work, and an HTH/trompe layer that converts water motion and hydrostatic pressure into compressed air. The compressed air layer can smooth pulsed wave output, power an air turbine, and provide short-duration storage.</p>
 <p>The system is designed as infrastructure first and power plant second. Its strongest use case is not competing with utility solar or wind as a generic electricity source. Its strongest use case is <strong>harbor protection that also produces local electricity</strong>, especially during night, cloudy weather, or low local wind when incoming swell still carries energy.</p>
 <div class="note green"><strong>Core thesis:</strong> If a port must already spend money to remove destructive wave energy, a smart breakwater can capture part of that removed energy instead of wasting all of it as turbulence and heat.</div>
-<div class="note cyan"><strong>Extension:</strong> The same wave-piston / HTH kernel can branch into smaller marine auxiliary products: dock chargers, ship-at-anchor chargers, fish-farm power rings, canal modules, and passive compressed-air systems.</div>
 </section>
 
 <section class="hero-card">
@@ -358,57 +367,13 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
 </div>
 </section>
 
-<section id="options" class="ch">
-<div class="ch-head" onclick="toggle(this)"><span class="ch-num">8</span><span class="ch-title">Future Option Branches: Marine Auxiliary Energy Systems</span><span class="ch-arrow">▸</span></div>
-<div class="ch-body">
-<h3>8.1 Why These Are Options, Not the Main Claim</h3>
-<p>MGHB should remain the main architecture: a fixed smart breakwater that combines guided wave pistons, HTH/trompe pneumatic channels, compressed-air buffering, and harbor protection. The following ideas are not separate “miracle inventions.” They are daughter applications that reuse the same kernel in smaller or more specialized markets.</p>
-<div class="note cyan"><strong>Umbrella family:</strong> MAES — Marine Auxiliary Energy Systems. MGHB is the fixed coastal-infrastructure member. WPCS, HWCD, FFPR, and canal/river variants are deployable or smaller-market branches.</div>
-
-<h3>8.2 Option Branches</h3>
-<table>
-<tr><th>Option</th><th>Short Name</th><th>Concept</th><th>Best First Market</th><th>Why It Matters</th></tr>
-<tr><td>Harbor Wave Charging Dock</td><td class="mono">HWCD</td><td>Dock-edge wave/slosh modules that charge marina batteries and local loads.</td><td>Marinas, small ports, harbor sensors.</td><td>Smaller and easier than full breakwater MGHB.</td></tr>
-<tr><td>Fish-Farm Power Ring</td><td class="mono">FFPR</td><td>Wave-piston or pneumatic modules integrated around floating aquaculture cages.</td><td>Fish farms, offshore aquaculture.</td><td>Remote marine power need + existing floating structure.</td></tr>
-<tr><td>Ship-at-Anchor Charger</td><td class="mono">WPCS</td><td>Deployable piston/floats that charge batteries while vessels wait, anchor, or drift.</td><td>Research vessels, service ships, ships waiting offshore.</td><td>Useful without claiming main propulsion.</td></tr>
-<tr><td>Smart Canal / River Gate Module</td><td class="mono">SCGM</td><td>HTH-style pressure/air modules in canals, locks, sluices, or irrigation channels.</td><td>Water utilities, farms, canals.</td><td>Controlled flow, easier maintenance, lower marine chaos.</td></tr>
-<tr><td>Storm-Mode Energy Dissipater</td><td class="mono">SMED</td><td>Dynamic damping modules that prioritize protection during storms and harvest in normal seas.</td><td>Coastal defense, exposed marinas.</td><td>Protection-first product story.</td></tr>
-<tr><td>River Depth Compressor</td><td class="mono">RDC</td><td>Passive HTH variant focused on compressed air rather than electricity.</td><td>Aquaculture, aeration, water treatment.</td><td>Avoids generator complexity; sells useful compressed air.</td></tr>
-</table>
-
-<h3>8.3 Best Three Options to Keep Alive</h3>
-<div class="grid-3">
-  <div class="box"><h3>1 · HWCD</h3><p><strong>Harbor Wave Charging Dock:</strong> the most buildable MGHB-lite product. It can start as one dock cassette powering lights, sensors, cameras, or a small battery bank.</p></div>
-  <div class="box"><h3>2 · FFPR</h3><p><strong>Fish-Farm Power Ring:</strong> strong because offshore farms already need remote power and already have floating perimeter infrastructure.</p></div>
-  <div class="box"><h3>3 · WPCS</h3><p><strong>Wave Piston Charging System:</strong> already expanded in Section 7. Best framed as anchored charging and auxiliary diesel reduction.</p></div>
-</div>
-
-<h3>8.4 MDL Rule for Branch Selection</h3>
-<p>The goal is not to build every branch. The goal is to test which branch gives the strongest ratio of value to complexity. Each option should compete under the same scoring logic:</p>
-<div class="eq">BranchScore = UsefulEnergy + ProtectionOrServiceValue − CAPEX − O&amp;M − DeploymentRisk − ComplexityPenalty</div>
-<p>If a small dock module beats a full breakwater on time-to-proof, build the dock module first. If a fish-farm ring has the clearest customer, test that. If WPCS has the clearest fuel-saving story, make it the ship branch. MDL decides the next build, not attachment to any one form.</p>
-
-<h3>8.5 Suggested Development Order</h3>
-<table>
-<tr><th>Priority</th><th>Branch</th><th>Reason</th><th>Smallest Useful Test</th></tr>
-<tr><td>1</td><td>HWCD</td><td>Closest to MGHB but cheaper and easier to demo.</td><td>One dock-edge piston/OWC cassette charging a battery.</td></tr>
-<tr><td>2</td><td>WPCS</td><td>Clear auxiliary-power use case; avoids main-propulsion overclaim.</td><td>Floating platform with one deployable side piston and 24h logging.</td></tr>
-<tr><td>3</td><td>FFPR</td><td>Strong remote-power market if marine durability works.</td><td>Small ring segment around a floating test frame.</td></tr>
-<tr><td>4</td><td>SCGM / RDC</td><td>Lower chaos than ocean; good HTH proof branch.</td><td>Canal/stream Venturi compressor with pressure and flow logging.</td></tr>
-<tr><td>5</td><td>Full MGHB</td><td>Biggest infrastructure upside, but needs partners.</td><td>3–5 module wave-tank or harbor cassette array.</td></tr>
-</table>
-
-<div class="note green"><strong>Practical verdict:</strong> keep MGHB as the flagship, but use these option branches as smaller doors into the same technology family. The first market success may come from a daughter product, not from the full breakwater.</div>
-</div>
-</section>
-
 <section id="dcc" class="ch">
-<div class="ch-head" onclick="toggle(this)"><span class="ch-num">9</span><span class="ch-title">DCC / MDL Governance</span><span class="ch-arrow">▸</span></div>
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">8</span><span class="ch-title">DCC / MDL Governance</span><span class="ch-arrow">▸</span></div>
 <div class="ch-body">
-<h3>9.1 Why DCC Belongs Here</h3>
+<h3>8.1 Why DCC Belongs Here</h3>
 <p>The hybrid creates a real allocation problem. At each moment, incoming wave energy can be sent into mechanical piston generation, air compression, OWC turbine flow, bypass, or pure protection. Fixed rules will be suboptimal across sea states.</p>
 
-<h3>9.2 What the Controller Measures</h3>
+<h3>8.2 What the Controller Measures</h3>
 <table>
 <tr><th>Sensor</th><th>Meaning</th><th>Decision Use</th></tr>
 <tr><td>Incoming wave height/period</td><td>available resource</td><td>select damping/resonance target</td></tr>
@@ -419,7 +384,7 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
 <tr><td>Maintenance indicators</td><td>wear, fouling, friction</td><td>penalize high-output but high-wear modes</td></tr>
 </table>
 
-<h3>9.3 MDL Objective</h3>
+<h3>8.3 MDL Objective</h3>
 <p>The winner is not the most complicated cell. The winner is the smallest reliable architecture that produces the best combined score:</p>
 <div class="eq">Score = kWh + ProtectionValue + StorageValue − CAPEX − OPEX − WearPenalty − ComplexityPenalty</div>
 <div class="note cyan"><strong>Less describes more:</strong> if a passive HTH channel gives 80% of the benefit with 20% of the moving parts, MDL should choose it. If the piston gives much higher protection and output, MDL should choose the piston. The data decides.</div>
@@ -427,9 +392,9 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
 </section>
 
 <section id="risks" class="ch">
-<div class="ch-head" onclick="toggle(this)"><span class="ch-num">10</span><span class="ch-title">Kill Tests and Risks</span><span class="ch-arrow">▸</span></div>
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">9</span><span class="ch-title">Kill Tests and Risks</span><span class="ch-arrow">▸</span></div>
 <div class="ch-body">
-<h3>10.1 Fatal Kill Tests</h3>
+<h3>9.1 Fatal Kill Tests</h3>
 <table>
 <tr><th>Test</th><th>Failure Meaning</th><th>Minimum Experiment</th></tr>
 <tr><td>KT1 — Capture efficiency</td><td>Cell absorbs too little usable wave energy.</td><td>Wave tank: input wave energy vs. electrical/air output.</td></tr>
@@ -439,7 +404,7 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
 <tr><td>KT5 — Economics</td><td>Extra energy layer costs more than energy/protection value.</td><td>Incremental CAPEX + O&M model per meter.</td></tr>
 </table>
 
-<h3>10.2 Main Engineering Risks</h3>
+<h3>9.2 Main Engineering Risks</h3>
 <ul>
 <li><strong>Storm loads:</strong> survival mode must be designed before energy mode is optimized.</li>
 <li><strong>Corrosion and biofouling:</strong> every underwater moving interface is guilty until proven reliable.</li>
@@ -453,7 +418,7 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
 </section>
 
 <section id="roadmap" class="ch">
-<div class="ch-head" onclick="toggle(this)"><span class="ch-num">11</span><span class="ch-title">Prototype Roadmap</span><span class="ch-arrow">▸</span></div>
+<div class="ch-head" onclick="toggle(this)"><span class="ch-num">10</span><span class="ch-title">Prototype Roadmap</span><span class="ch-arrow">▸</span></div>
 <div class="ch-body">
 <h3>Phase 0 — Paper / HTML Concept</h3>
 <p>Define architecture, claims, open questions, and fatal kill tests. Avoid overclaiming novelty or economics.</p>
@@ -500,7 +465,7 @@ footer{text-align:center;padding:42px 0 28px;border-top:1px solid var(--border);
 <h2>Final Verdict</h2>
 <p><strong>HTH-WGPB is not a magic wave engine.</strong> It is a plausible smart-infrastructure architecture: a coastal protection system that tries to convert part of the wave energy it already has to absorb.</p>
 <p>The strongest version is not one huge ball in one huge pipe. The strongest version is a <strong>modular array of guided piston cassettes</strong>, with <strong>HTH pneumatic channels</strong> for additional capture and buffering, governed by a simple MDL/DCC controller that keeps only the channels that prove their value.</p>
-<div class="note green"><strong>Best positioning:</strong> energy-positive breakwater, not standalone miracle power plant. The daughter branches should be treated as market-entry options: smaller ways to prove the same kernel before a full harbor-scale deployment.</div>
+<div class="note green"><strong>Best positioning:</strong> energy-positive breakwater, not standalone miracle power plant.</div>
 </section>
 
 <footer>

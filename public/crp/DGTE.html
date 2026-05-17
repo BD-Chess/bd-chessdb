@@ -58,6 +58,20 @@ footer .quote{font-style:italic;color:var(--warm);font-size:14px;margin-bottom:1
 .crp-links a{font-family:'IBM Plex Mono',monospace;font-size:.65rem;text-decoration:none;padding:4px 9px;border-radius:999px;border:1px solid rgba(0,229,255,.14);color:rgba(226,232,244,.6)}
 .crp-links a:hover{border-color:rgba(0,229,255,.3);color:#4a9ede}
 
+
+.arena-card{padding:24px;background:linear-gradient(180deg,#101426,#0d1020);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:8px;margin:18px 0 8px}
+.arena-card h2{font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--gold);margin-bottom:12px;letter-spacing:1px;text-transform:uppercase}
+.arena-card p{font-size:14px;color:#bbb;line-height:1.8;margin:8px 0}
+.arena-card ul{padding-left:22px;margin:8px 0}
+.arena-card li{font-size:14px;color:#bbb;margin:6px 0}
+.arena-card .arena-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}
+.arena-card .arena-mini{background:#0a0e1d;border:1px solid var(--border);border-radius:7px;padding:11px 12px}
+.arena-card .arena-mini strong{color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:12px;display:block;margin-bottom:4px}
+.arena-card .arena-mini span{font-size:13px;color:#aaa;line-height:1.55}
+.arena-card .arena-link{display:inline-block;margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(232,200,64,.35);border-radius:999px;padding:6px 12px;text-decoration:none}
+.arena-card .arena-link:hover{border-color:var(--gold);background:#1a1510;text-decoration:none}
+@media(max-width:640px){.arena-card .arena-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -68,6 +82,7 @@ footer .quote{font-style:italic;color:var(--warm);font-size:14px;margin-bottom:1
 <a href="/crp/AI8_Reasoning.html">Method</a>
 <a href="/crp/MDLxDCC.html">MDL×DCC</a>
 <a href="/crp/DGTE.html">DGTE</a>
+<a href="/crp/MDLxDCC-Arena-DGTE.html">DGTE Arena</a>
 <a href="/crp/HTH.html">HTH</a>
 <a href="/bd/">Portfolio</a>
 </div>
@@ -79,7 +94,7 @@ footer .quote{font-style:italic;color:var(--warm);font-size:14px;margin-bottom:1
   <h1>DGTE</h1>
   <div class="tagline">Double-Gravity Thermoelectric Engine — Low-Grade Heat to DC</div>
   <div class="origin">
-    Gravity does all the work — twice. Hot capsules become lighter than the surrounding fluid: gravity pushes the fluid down, the capsule rises. Cold capsules become heavier: gravity pulls them down directly. One force, two strokes, continuous DC. A co-axial recuperator couples the columns with target effectiveness ε ≥ 0.90. No turbomachinery. No refrigerants. No moving seals in the thermal path.
+    DGTE uses gravity and buoyancy as the two motion-conversion strokes, while the real energy input must come from a heat or resource gradient. Hot capsules become lighter than the surrounding fluid and rise; cold capsules become heavier and descend. A co-axial recuperator couples the columns with target effectiveness ε ≥ 0.90. No turbomachinery. No refrigerants. No moving seals in the thermal path.
   </div>
   <div class="stats">
     <div><div class="stat-n">4–8%</div><div class="stat-l">Net Efficiency</div></div>
@@ -93,6 +108,7 @@ footer .quote{font-style:italic;color:var(--warm);font-size:14px;margin-bottom:1
 
 <nav><div class="inner">
   <a href="#abstract">Abstract</a>
+  <a href="#arena-status">Arena Status</a>
   <a href="#ch1">How It Works</a>
   <a href="#ch2">Variants</a>
   <a href="#ch3">Physics</a>
@@ -116,11 +132,31 @@ footer .quote{font-style:italic;color:var(--warm);font-size:14px;margin-bottom:1
 <p style="font-size:14px;color:var(--warm);line-height:1.8;margin:0">Conceived, designed, and authored by Bojan Dobrečevič with AI teamwork (ChatGPT, Claude, Gemini, DeepSeek). The recuperation architecture was seeded by a human insight — "capsules don't traverse the exchanger; fluid does" — and elaborated through multi-LLM iteration into the co-axial annular design adopted as baseline.</p>
 </div>
 
+
+<!-- ARENA STATUS -->
+<section id="arena-status" class="arena-card">
+<h2>Current Arena Status · DGTE v0.7a</h2>
+<p><strong>Pure DGTE remains alive but hard.</strong> The current bench planner says not to build the full machine first. The useful next move is to attack transfer, crossover, pressure balance, and thermal closure as separate bench tests.</p>
+<div class="arena-grid">
+  <div class="arena-mini"><strong>#1 Pure-DGTE test</strong><span>Rotary/starwheel crossover dye and carry-over rig.</span></div>
+  <div class="arena-mini"><strong>#2 Pure-DGTE test</strong><span>Hydraulic balanced-lock rig for equalization energy, leakage, valve loss, and J/transfer.</span></div>
+  <div class="arena-mini"><strong>#3 Pure-DGTE test</strong><span>Integrated thermal slice with measured hot/cold temperatures, thermal input, transfer losses, auxiliaries, and net electrical proxy.</span></div>
+  <div class="arena-mini"><strong>Experiment 0 helper</strong><span>Water-sealed bell / flooded-cup intake as a passive priming and anti-air helper only, not an energy source.</span></div>
+</div>
+<ul>
+<li><strong>Strict accounting:</strong> gravity, buoyancy, siphons, and wet seals are not energy sources; they can only reduce losses or convert motion.</li>
+<li><strong>Current priority:</strong> HTH/trompe is the first low-cost kill-test branch; MGHB/wave has high upside; DGTE needs crossover/lock/slice proof before scale-up.</li>
+<li><strong>Product gate:</strong> no product-readiness claim yet. The arena is a bench/prototype planner.</li>
+</ul>
+<p class="eq">P_net = min(P_thermal_gross, P_PTO_path) − transfer losses − auxiliaries</p>
+<p><a class="arena-link" href="/crp/MDLxDCC-Arena-DGTE.html">Open DGTE Bench Arena</a></p>
+</section>
+
 <!-- CH1 -->
 <div class="ch" id="ch1">
 <div class="ch-head" onclick="toggle(this)"><span class="ch-num">1</span><span class="ch-title">How It Works</span><span class="ch-arrow">▸</span></div>
 <div class="ch-body">
-<p>DGTE exploits gravity twice. A capsule heated in the HOT column becomes less dense than the bath fluid — the fluid sinks under gravity, and the capsule is displaced upward. At the top, it crosses to the COLD column, cools, becomes denser than the fluid — and gravity pulls it straight down. Both motions pass through segmented coils that generate electricity. Two strokes, one force. Gravity is both the piston and the return spring.</p>
+<p>DGTE uses gravity twice as a motion-conversion mechanism, not as a free energy source. A capsule heated in the HOT column becomes less dense than the bath fluid — the fluid sinks under gravity, and the capsule is displaced upward. At the top, it crosses to the COLD column, cools, becomes denser than the fluid — and gravity pulls it straight down. Both motions pass through segmented coils that generate electricity, but net output must be closed against real thermal input, transfer losses, and auxiliary loads.</p>
 <h3>The 12-Step Capsule Loop</h3>
 <ol>
 <li>Preheat loops to setpoints; baseline ε</li>

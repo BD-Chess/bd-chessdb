@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DGTE Arena v0.7a — Bench Planner · MDL×DCC</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+:root{
+  --bg:#060914;--panel:#0d1325;--panel2:#11192f;--line:#1b2748;--text:#e6ebf6;--dim:#9aa7c7;--muted:#6f7b98;
+  --cyan:#38c8ff;--teal:#3de0c4;--gold:#ffd34d;--green:#54d48a;--orange:#f0a249;--red:#ff6e88;--violet:#a68bff;
+  --shadow:0 18px 50px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{font-family:'IBM Plex Sans',sans-serif;color:var(--text);line-height:1.72;background:radial-gradient(circle at 12% 8%,rgba(56,200,255,.13),transparent 28%),radial-gradient(circle at 86% 12%,rgba(255,211,77,.10),transparent 24%),linear-gradient(180deg,#060914 0%,#05070f 100%)}a{color:var(--cyan)}.wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+.topbar{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(6,9,20,.9);border-bottom:1px solid rgba(56,200,255,.12)}.topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:10px 0}.brand{font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.22em;font-size:.7rem;color:var(--cyan);text-decoration:none}.links{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end}.links a{font-family:'IBM Plex Mono',monospace;font-size:.64rem;text-decoration:none;color:rgba(230,235,246,.68);padding:4px 10px;border:1px solid rgba(56,200,255,.14);border-radius:999px}.links a:hover{border-color:rgba(56,200,255,.36);color:var(--cyan)}
+.hero{padding:72px 0 34px;border-bottom:1px solid var(--line)}.kicker{display:inline-block;margin-bottom:18px;padding:6px 12px;font-family:'IBM Plex Mono',monospace;font-size:.67rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(255,211,77,.22);border-radius:999px;background:rgba(255,211,77,.06)}.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:24px;align-items:end}h1{font-family:'IBM Plex Mono',monospace;font-size:clamp(2rem,4vw,3.45rem);line-height:1.04;letter-spacing:.02em;color:var(--gold);margin-bottom:16px}h1 span{color:var(--text)}.subtitle{font-size:1.08rem;color:var(--dim);max-width:800px}.thesis{margin-top:22px;padding:18px 20px;background:linear-gradient(180deg,rgba(17,25,47,.95),rgba(13,19,37,.95));border:1px solid var(--line);border-left:3px solid var(--green);border-radius:14px;box-shadow:var(--shadow)}.thesis strong{color:var(--green)}.hero-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.stat{background:linear-gradient(180deg,rgba(17,25,47,.96),rgba(13,19,37,.96));border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}.stat .n{font-family:'IBM Plex Mono',monospace;font-size:1.55rem;color:var(--gold);font-weight:700}.stat .l{font-size:.73rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.nav2{position:sticky;top:49px;z-index:40;background:rgba(6,9,20,.92);border-bottom:1px solid var(--line)}.nav2 .wrap{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:12px 22px}.nav2 a{font-family:'IBM Plex Mono',monospace;font-size:.63rem;text-decoration:none;color:var(--dim);border:1px solid var(--line);padding:6px 11px;border-radius:999px}.nav2 a:hover{color:var(--gold);border-color:rgba(255,211,77,.35)}
+section{padding:52px 0 0}.section-kicker{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px}.section-title{font-family:'IBM Plex Mono',monospace;font-size:1.42rem;margin-bottom:10px}.section-title span{color:var(--gold)}.section-lead{max-width:900px;color:var(--dim)}p{color:var(--dim);margin:8px 0}strong{color:var(--text)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card,.panel,.experiment-card,.material-card{background:linear-gradient(180deg,rgba(17,25,47,.94),rgba(13,19,37,.96));border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)}.card h3,.panel h3,.experiment-card h3,.material-card h3{font-size:1.02rem;color:var(--text);margin-bottom:8px}.badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:999px;border:1px solid rgba(56,200,255,.25);color:var(--cyan);background:rgba(56,200,255,.06)}.badge.gold{border-color:rgba(255,211,77,.25);color:var(--gold);background:rgba(255,211,77,.07)}.badge.green{border-color:rgba(84,212,138,.25);color:var(--green);background:rgba(84,212,138,.07)}.badge.red{border-color:rgba(255,110,136,.25);color:var(--red);background:rgba(255,110,136,.07)}
+.note{padding:16px 18px;border-radius:14px;border-left:3px solid var(--line);font-size:.94rem;background:rgba(17,25,47,.75);color:var(--dim)}.note.gold{border-left-color:var(--gold)}.note.green{border-left-color:var(--green)}.note.red{border-left-color:var(--red)}.note.cyan{border-left-color:var(--cyan)}
+ul{padding-left:18px}li{color:var(--dim);margin:6px 0}.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}.mini-grid h4{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}.accounting{font-size:.88rem;border-top:1px solid var(--line);padding-top:12px;margin-top:12px}.scenario{color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.78rem}.exp-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}.exp-num{font-family:'IBM Plex Mono',monospace;font-size:1.6rem;color:var(--gold);font-weight:700}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:.88rem}th,td{padding:10px 11px;border:1px solid var(--line);vertical-align:top}th{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);background:#11182e;text-align:left}td{color:var(--dim);background:rgba(17,25,47,.72)}tr:nth-child(even) td{background:rgba(13,19,37,.84)}td span{font-size:.78rem;color:var(--muted)}
+.decision{font-family:'IBM Plex Mono',monospace;background:#08101f;border:1px solid var(--line);border-radius:14px;padding:18px;color:#cdd8ef;white-space:pre-wrap;overflow:auto;font-size:.82rem;line-height:1.65}footer{padding:58px 0 78px;border-top:1px solid var(--line);margin-top:58px;text-align:center}footer .quote{font-size:1.02rem;font-style:italic;color:var(--gold);margin-bottom:12px}footer p{color:var(--muted);font-size:.88rem}
+@media(max-width:980px){.hero-grid,.grid-2,.grid-3,.mini-grid{grid-template-columns:1fr}.hero-stats{grid-template-columns:repeat(2,1fr)}}@media(max-width:640px){.topbar-inner{align-items:flex-start;flex-direction:column}.nav2{top:77px}.card,.panel,.experiment-card,.material-card{padding:18px}table{font-size:.78rem}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="wrap topbar-inner"><a class="brand" href="/crp/">BD × AI Lab</a><div class="links"><a href="/crp/">All Papers</a><a href="/crp/DGTE.html">DGTE</a><a href="/crp/HTH.html">HTH</a><a href="/crp/MGHB.html">MGHB</a><a href="/crp/DGTE-HTH.html">DGTE×HTH</a><a href="/crp/MDLxDCC.html">MDL×DCC</a><a href="/bd/">Portfolio</a></div></div></div>
+<header class="hero"><div class="wrap"><div class="kicker">DGTE / HTH / MGHB · Arena v0.7a · Bench planner</div><div class="hero-grid"><div><h1>DGTE Arena <span>Bench Planner</span></h1><p class="subtitle">A public evidence page translating v0.6b/v0.7a arena signals into the smallest physical experiments that can kill, salvage, or advance DGTE, HTH, MGHB, and hybrid branches.</p><div class="thesis"><strong>Status:</strong> this is not a product-readiness claim. v0.7a generated <strong>42 bench plans</strong> from the latest v0.6b baseline (baseline_zip:DGTE_v06_MICRO_results_20260517_164121.zip; rows:2100). Product gate remains hard-failed by design. The next move is measurement.</div></div><div class="hero-stats"><div class="stat"><div class="n">42</div><div class="l">bench plans</div></div><div class="stat"><div class="n">7</div><div class="l">device families</div></div><div class="stat"><div class="n">6</div><div class="l">water-bell helpers</div></div><div class="stat"><div class="n">0</div><div class="l">product claims</div></div></div></div></div></header>
+<nav class="nav2"><div class="wrap"><a href="#verdict">Verdict</a><a href="#top-plan">First builds</a><a href="#leaderboard">Leaderboard</a><a href="#families">Families</a><a href="#bell">Water bell</a><a href="#materials">Materials</a><a href="#decision">Decision tree</a><a href="#links">Device links</a></div></nav>
+<main class="wrap">
+<section id="verdict"><div class="section-kicker">Current arena verdict</div><h2 class="section-title">What v0.7a says <span>right now</span></h2><p class="section-lead">The bench planner should be read as a ranked falsification map, not as a proof that any device is market-ready.</p><div class="grid-3" style="margin-top:18px"><div class="card"><span class="badge green">Build first</span><h3>HTH / trompe / pressure</h3><p>Strongest low-cost kill-test branch. First answer the clear-pipe entrainment and separator-pressure questions.</p></div><div class="card"><span class="badge gold">High upside</span><h3>MGHB / wave / breakwater</h3><p>Highest infrastructure upside, but it needs a wave tank to prove wave reduction plus useful work.</p></div><div class="card"><span class="badge">Alive but hard</span><h3>Pure DGTE core</h3><p>Do not build the full loop first. Attack rotary/starwheel crossover, hydraulic lock, and thermal slice separately.</p></div><div class="card"><span class="badge">Helper only</span><h3>Siphon / thermosiphon / bell</h3><p>Useful for priming, circulation, anti-air intake, or wet-lock assist. Never source credit.</p></div><div class="card"><span class="badge red">Strict comparator</span><h3>Solar DGTE</h3><p>Likely loses to PV/PV‑T unless it upgrades special waste heat or a site-specific thermal store.</p></div><div class="card"><span class="badge gold">Caution</span><h3>Hybrid value</h3><p>Modular tandem is safer than over-integrated claims until parent-only baselines are beaten after penalties.</p></div></div></section>
+<section id="top-plan"><div class="section-kicker">Build order</div><h2 class="section-title">Experiment 0 + first 5 <span>physical tests</span></h2><p class="section-lead">Experiment 0 is the cheap water-sealed bell side-bench. The first five are staged parent/kill-test builds before integrated hybrid claims.</p><div style="display:grid;gap:18px;margin-top:18px">
+    <article class="experiment-card">
+      <div class="exp-head"><span class="exp-num">0</span><span class="badge">raw rank 17 · score 67.9</span></div>
+      <h3>Water-sealed bell / siphon-primer bench</h3>
+      <p class="scenario">Experiment 0 / flooded-cup primer side-bench · Siphon helper · VERY_LOW (€50–€250) · ~1 days</p>
+      <p><strong>Question:</strong> Does an inverted water-filled cup/bell over a hose inlet reduce priming loss, prevent air ingestion, and improve shallow-water pickup versus a bare hose?</p>
+      <div class="mini-grid">
+        <div><h4>Measure</h4><ul><li>start success rate</li><li>time to prime</li><li>flow rate Q liters/min</li><li>outlet head Δh</li><li>minimum water depth before prime loss</li><li>air ingestion rate / visible bubbles</li><li>pressure drop / loss coefficient</li><li>remaining water depth after drain</li><li>debris clogging tendency</li></ul></div>
+        <div><h4>Kill criteria</h4><ul><li>loses prime easily</li><li>flow rate too low</li><li>adds more hydraulic loss than it saves</li><li>clogs or fouls too easily</li><li>requires too much manual setup</li><li>does not reduce pump-start energy or transfer J/cycle</li><li>only works in shallow demo conditions but fails under repeated cycling</li></ul></div>
+      </div>
+      <p class="accounting"><strong>Accounting:</strong> HELPER_ONLY: WATER_SEALED_BELL_INTAKE is a passive hydraulic helper; source_credit_kw=0; credit only saved loss/J after added loss and complexity. source_credit_kw=0: this primitive is never an energy source. | Credit only reduced priming loss, reduced pump-start energy, reduced air-ingestion loss, or reduced transfer J/cycle. | A candidate only benefits when net_helper_value = saved_loss_or_saved_J - added_loss - added_complexity_penalty is positive. | Do not let this primitive improve product gate by itself; repeated-cycle reliability must pass first.</p>
+    </article>
+
+    <article class="experiment-card">
+      <div class="exp-head"><span class="exp-num">1</span><span class="badge">raw rank 1 · score 85.1</span></div>
+      <h3>Transparent HTH / trompe channel</h3>
+      <p class="scenario">minimum clear-pipe velocity ramp · HTH / trompe · VERY_LOW (€50–€250) · ~2 days</p>
+      <p><strong>Question:</strong> What velocity/head first creates stable entrainment and positive separator pressure?</p>
+      <div class="mini-grid">
+        <div><h4>Measure</h4><ul><li>flow velocity</li><li>entrainment threshold</li><li>bubble survival distance</li><li>separator pressure</li><li>air flow rate</li><li>water head / depth</li><li>net pneumatic power</li><li>hydraulic/parasitic losses</li></ul></div>
+        <div><h4>Kill criteria</h4><ul><li>no stable entrainment below practical velocities</li><li>separator pressure too low for useful air output</li><li>parasitic losses exceed useful pneumatic output</li><li>bubble transport collapses before separator</li></ul></div>
+      </div>
+      <p class="accounting"><strong>Accounting:</strong> EXTERNAL_RESOURCE: river/current/depth head measured; no gravity/buoyancy free-source credit. External energy is river/current/depth head, not gravity as free source. | Report pneumatic output after water-flow and separator losses. | Do not credit downstream water flow twice if an air turbine is measured.</p>
+    </article>
+
+    <article class="experiment-card">
+      <div class="exp-head"><span class="exp-num">2</span><span class="badge">raw rank 6 · score 74.5</span></div>
+      <h3>MGHB wave tank cell</h3>
+      <p class="scenario">piston-only baseline · MGHB / wave · LOW (€250–€900) · ~5 days</p>
+      <p><strong>Question:</strong> What fraction of incoming wave energy can a guided piston convert without pneumatic hybrid complexity?</p>
+      <div class="mini-grid">
+        <div><h4>Measure</h4><ul><li>incoming wave height</li><li>outgoing wave height</li><li>piston stroke</li><li>piston force</li><li>generator/load output</li><li>damping setting</li><li>water leakage/slam</li><li>wave period</li><li>absorbed wave fraction</li></ul></div>
+        <div><h4>Kill criteria</h4><ul><li>wave reduction poor</li><li>useful work fraction too low</li><li>mechanical loads too high</li><li>hybrid complexity worse than piston-only or pneumatic-only</li><li>storm/surge mode cannot fail safe</li></ul></div>
+      </div>
+      <p class="accounting"><strong>Accounting:</strong> EXTERNAL_RESOURCE: incoming wave energy measured and normalized against wave reduction/output. External source is wave energy crossing the cell, not buoyancy alone. | Credit either piston output or OWC pneumatic output separately before hybrid sum. | Compare against passive breakwater wave reduction and piston-only baseline.</p>
+    </article>
+
+    <article class="experiment-card">
+      <div class="exp-head"><span class="exp-num">3</span><span class="badge">raw rank 5 · score 77.3</span></div>
+      <h3>Pure DGTE rotary/starwheel crossover rig</h3>
+      <p class="scenario">single pocket dye/carry-over test · Pure DGTE · VERY_LOW (€50–€250) · ~3 days</p>
+      <p><strong>Question:</strong> Can a wetted starwheel transfer capsules with low carry-over?</p>
+      <div class="mini-grid">
+        <div><h4>Measure</h4><ul><li>transfer J/cycle</li><li>carry-over fluid mass</li><li>leakage</li><li>torque/current per transfer</li><li>pressure balance stability</li><li>cycle rate</li><li>jam rate</li><li>seal friction</li></ul></div>
+        <div><h4>Kill criteria</h4><ul><li>transfer work exceeds expected stroke gain</li><li>carry-over too high</li><li>sealing friction too high</li><li>cycle rate too low</li><li>pressure-balanced pockets cannot stay repeatable</li></ul></div>
+      </div>
+      <p class="accounting"><strong>Accounting:</strong> THERMAL_CLOSURE: P_net=min(P_thermal_gross,P_PTO_path)-transfer-auxiliary. Crossover does not create energy; it must reduce losses enough for thermal stroke to matter. | Measured J/transfer must be compared against expected per-cycle stroke work. | Carry-over heat/fluid penalty must be included.</p>
+    </article>
+
+    <article class="experiment-card">
+      <div class="exp-head"><span class="exp-num">4</span><span class="badge">raw rank 11 · score 69.9</span></div>
+      <h3>Hydraulic balanced lock rig</h3>
+      <p class="scenario">empty lock equalization baseline · Pure DGTE · VERY_LOW (€50–€250) · ~3 days</p>
+      <p><strong>Question:</strong> What is the minimum pressure-equalization cost before capsules are added?</p>
+      <div class="mini-grid">
+        <div><h4>Measure</h4><ul><li>pressure equalization energy</li><li>lock leakage</li><li>valve losses</li><li>throughput</li><li>J/transfer</li><li>fouling sensitivity</li><li>timing jitter</li></ul></div>
+        <div><h4>Kill criteria</h4><ul><li>lock overhead kills net power</li><li>fouling or complexity too high</li><li>valve losses dominate</li><li>throughput too low for useful cycle rate</li></ul></div>
+      </div>
+      <p class="accounting"><strong>Accounting:</strong> THERMAL_CLOSURE: P_net=min(P_thermal_gross,P_PTO_path)-transfer-auxiliary. Pressure equalization is not free; count valve and timing losses. | Lock only survives if it reduces transfer loss below stroke-gain budget. | No product claim until fouling and repeatability are tested.</p>
+    </article>
+
+    <article class="experiment-card">
+      <div class="exp-head"><span class="exp-num">5</span><span class="badge">raw rank 27 · score 63.3</span></div>
+      <h3>Integrated DGTE thermal slice</h3>
+      <p class="scenario">controlled heater closure · Pure DGTE · MEDIUM (€900–€2800) · ~6 days</p>
+      <p><strong>Question:</strong> Can a DGTE slice close thermal-to-mechanical accounting with a known heat input?</p>
+      <div class="mini-grid">
+        <div><h4>Measure</h4><ul><li>hot/cold temperatures</li><li>thermal input</li><li>real ΔT</li><li>cycle work</li><li>transfer losses</li><li>auxiliary pumping</li><li>net electrical output</li><li>heat exchanger area</li><li>recuperator effectiveness</li></ul></div>
+        <div><h4>Kill criteria</h4><ul><li>thermal-to-mechanical closure fails</li><li>required heat exchanger area too large</li><li>low-grade waste heat insufficient</li><li>auxiliary pumping exceeds generated work</li><li>cycle rate too low</li></ul></div>
+      </div>
+      <p class="accounting"><strong>Accounting:</strong> THERMAL_CLOSURE: P_net=min(P_thermal_gross,P_PTO_path)-transfer-auxiliary. Use P_net = min(P_thermal_gross, P_mechanical_or_PTO_path_gross) - transfer losses - auxiliaries. | Waste heat must pay exergy/temperature limit. | Heat source and sink must be measured as a pair.</p>
+    </article></div></section>
+<section id="leaderboard"><div class="section-kicker">Bench priority</div><h2 class="section-title">Top 20 <span>ranked plans</span></h2><div class="table-wrap panel"><table><thead><tr><th>Rank</th><th>Experiment</th><th>Family</th><th>Score</th><th>Priority</th><th>Cost</th><th>Learn/€</th></tr></thead><tbody><tr><td>1</td><td><strong>Transparent HTH / trompe channel</strong><br><span>minimum clear-pipe velocity ramp</span></td><td>HTH / trompe</td><td>85.1</td><td>A_BUILD_FIRST</td><td>VERY_LOW<br><span>€50–€250</span></td><td>1.000</td></tr>
+<tr><td>2</td><td><strong>Transparent HTH / trompe channel</strong><br><span>separator pressure + loaded airflow</span></td><td>HTH / trompe</td><td>81.4</td><td>A_BUILD_FIRST</td><td>LOW<br><span>€250–€900</span></td><td>0.891</td></tr>
+<tr><td>3</td><td><strong>Transparent HTH / trompe channel</strong><br><span>deep-pool/polyline emulator</span></td><td>HTH / trompe</td><td>80.6</td><td>A_BUILD_FIRST</td><td>LOW<br><span>€250–€900</span></td><td>0.886</td></tr>
+<tr><td>4</td><td><strong>Transparent HTH / trompe channel</strong><br><span>debris/fouling ruggedness pass</span></td><td>HTH / trompe</td><td>80.2</td><td>A_BUILD_FIRST</td><td>LOW<br><span>€250–€900</span></td><td>0.872</td></tr>
+<tr><td>5</td><td><strong>Pure DGTE rotary/starwheel crossover rig</strong><br><span>single pocket dye/carry-over test</span></td><td>Pure DGTE</td><td>77.3</td><td>A_BUILD_FIRST</td><td>VERY_LOW<br><span>€50–€250</span></td><td>0.956</td></tr>
+<tr><td>6</td><td><strong>MGHB wave tank cell</strong><br><span>piston-only baseline</span></td><td>MGHB / wave</td><td>74.5</td><td>B_STRONG_BENCH</td><td>LOW<br><span>€250–€900</span></td><td>0.792</td></tr>
+<tr><td>7</td><td><strong>Pure DGTE rotary/starwheel crossover rig</strong><br><span>cycle-rate limit test</span></td><td>Pure DGTE</td><td>72.2</td><td>B_STRONG_BENCH</td><td>LOW<br><span>€250–€900</span></td><td>0.795</td></tr>
+<tr><td>8</td><td><strong>Pure DGTE rotary/starwheel crossover rig</strong><br><span>torque/current sweep</span></td><td>Pure DGTE</td><td>72.1</td><td>B_STRONG_BENCH</td><td>LOW<br><span>€250–€900</span></td><td>0.795</td></tr>
+<tr><td>9</td><td><strong>MGHB wave tank cell</strong><br><span>OWC/pneumatic-only baseline</span></td><td>MGHB / wave</td><td>70.4</td><td>B_STRONG_BENCH</td><td>MEDIUM<br><span>€900–€2800</span></td><td>0.687</td></tr>
+<tr><td>10</td><td><strong>Water-sealed bell / siphon-primer bench</strong><br><span>DGTE wet-crossover bell helper</span></td><td>Pure DGTE</td><td>70.0</td><td>B_STRONG_BENCH</td><td>VERY_LOW<br><span>€50–€250</span></td><td>0.963</td></tr>
+<tr><td>11</td><td><strong>Hydraulic balanced lock rig</strong><br><span>empty lock equalization baseline</span></td><td>Pure DGTE</td><td>69.9</td><td>B_STRONG_BENCH</td><td>VERY_LOW<br><span>€50–€250</span></td><td>0.878</td></tr>
+<tr><td>12</td><td><strong>Water-sealed bell / siphon-primer bench</strong><br><span>HTH flooded intake stabilizer</span></td><td>HTH / trompe</td><td>69.8</td><td>B_STRONG_BENCH</td><td>VERY_LOW<br><span>€50–€250</span></td><td>0.967</td></tr>
+<tr><td>13</td><td><strong>Water-sealed bell / siphon-primer bench</strong><br><span>MGHB water-filled coupling / anti-air seal</span></td><td>MGHB / wave</td><td>69.4</td><td>B_STRONG_BENCH</td><td>VERY_LOW<br><span>€50–€250</span></td><td>0.963</td></tr>
+<tr><td>14</td><td><strong>Water-sealed bell / siphon-primer bench</strong><br><span>DGTE-HTH passive wet-lock assist line</span></td><td>DGTE × HTH</td><td>69.3</td><td>B_STRONG_BENCH</td><td>VERY_LOW<br><span>€50–€250</span></td><td>0.958</td></tr>
+<tr><td>15</td><td><strong>MGHB wave tank cell</strong><br><span>slam/leak survival cycle</span></td><td>MGHB / wave</td><td>69.3</td><td>B_STRONG_BENCH</td><td>MEDIUM<br><span>€900–€2800</span></td><td>0.681</td></tr>
+<tr><td>16</td><td><strong>DGTE-HTH modular assist slice</strong><br><span>modular tandem decision pass</span></td><td>DGTE × HTH</td><td>68.5</td><td>B_STRONG_BENCH</td><td>MEDIUM<br><span>€900–€2800</span></td><td>0.665</td></tr>
+<tr><td>17</td><td><strong>Water-sealed bell / siphon-primer bench</strong><br><span>Experiment 0 / flooded-cup primer side-bench</span></td><td>Siphon helper</td><td>67.9</td><td>B_STRONG_BENCH</td><td>VERY_LOW<br><span>€50–€250</span></td><td>0.979</td></tr>
+<tr><td>18</td><td><strong>DGTE-HTH modular assist slice</strong><br><span>pressure buffer only</span></td><td>DGTE × HTH</td><td>67.8</td><td>B_STRONG_BENCH</td><td>MEDIUM<br><span>€900–€2800</span></td><td>0.665</td></tr>
+<tr><td>19</td><td><strong>Pure DGTE rotary/starwheel crossover rig</strong><br><span>double-rotary cassette comparison</span></td><td>Pure DGTE</td><td>67.4</td><td>B_STRONG_BENCH</td><td>MEDIUM<br><span>€900–€2800</span></td><td>0.676</td></tr>
+<tr><td>20</td><td><strong>DGTE-HTH modular assist slice</strong><br><span>degassing + pressure smoother</span></td><td>DGTE × HTH</td><td>67.2</td><td>B_STRONG_BENCH</td><td>MEDIUM<br><span>€900–€2800</span></td><td>0.654</td></tr></tbody></table></div></section>
+<section id="families"><div class="section-kicker">Device families</div><h2 class="section-title">Family-level <span>status</span></h2><div class="table-wrap panel"><table><thead><tr><th>Family</th><th>Plans</th><th>Best current experiment</th><th>Best score</th><th>Mean risk</th><th>Cost classes</th><th>Verdict</th></tr></thead><tbody><tr><td><strong>HTH / trompe</strong><br><span>Build first</span></td><td>5</td><td>Transparent HTH / trompe channel<br><span>minimum clear-pipe velocity ramp</span></td><td>85.1</td><td>0.294</td><td>VERY_LOW:2, LOW:3</td><td>Strongest low-cost kill-test branch: transparent channel, entrainment threshold, separator pressure, loaded airflow, and losses.</td></tr>
+<tr><td><strong>MGHB / wave</strong><br><span>High upside</span></td><td>6</td><td>MGHB wave tank cell<br><span>piston-only baseline</span></td><td>74.5</td><td>0.388</td><td>LOW:1, MEDIUM:2, VERY_LOW:2, HIGH:1</td><td>Best coastal/infrastructure upside, but needs wave-tank proof of wave reduction plus useful work.</td></tr>
+<tr><td><strong>Pure DGTE</strong><br><span>Alive but hard</span></td><td>13</td><td>Pure DGTE rotary/starwheel crossover rig<br><span>single pocket dye/carry-over test</span></td><td>77.3</td><td>0.462</td><td>VERY_LOW:3, LOW:5, MEDIUM:4, HIGH:1</td><td>Do not jump to a full machine. Attack crossover work, carry-over, leakage, cycle rate, and thermal closure separately.</td></tr>
+<tr><td><strong>DGTE × HTH</strong><br><span>Modular only</span></td><td>5</td><td>Water-sealed bell / siphon-primer bench<br><span>DGTE-HTH passive wet-lock assist line</span></td><td>69.3</td><td>0.448</td><td>VERY_LOW:1, MEDIUM:3, HIGH:1</td><td>Keep as modular tandem. Hybrid value must beat best parent modes after input and complexity penalty.</td></tr>
+<tr><td><strong>Siphon helper</strong><br><span>Helper only</span></td><td>5</td><td>Water-sealed bell / siphon-primer bench<br><span>Experiment 0 / flooded-cup primer side-bench</span></td><td>67.9</td><td>0.252</td><td>VERY_LOW:5</td><td>Cheap circulation/priming branch. It can reduce losses but cannot be counted as an energy source.</td></tr>
+<tr><td><strong>Solar/PV compare</strong><br><span>Comparator</span></td><td>4</td><td>Solar/PV-water comparison loop<br><span>PV counterfactual same-area test</span></td><td>54.9</td><td>0.360</td><td>LOW:1, MEDIUM:3</td><td>Solar DGTE survives only if it beats same-area PV/PV‑T or uniquely upgrades low-grade waste heat.</td></tr>
+<tr><td><strong>Frontier</strong><br><span>Seed bank</span></td><td>4</td><td>Frontier membrane/bubble-pod rig<br><span>single semi-sealed pod</span></td><td>37.1</td><td>0.795</td><td>VERY_LOW:1, LOW:3</td><td>Keep for isolated curiosity tests and salvage; do not let it outrank cleaner kill-tests without data.</td></tr></tbody></table></div></section>
+<section id="bell"><div class="section-kicker">v0.7a helper primitive</div><h2 class="section-title">Water-sealed bell / flooded-cup <span>primer</span></h2><div class="grid-2"><div class="panel"><span class="badge green">Passive helper</span><h3>What it is</h3><p>The flooded-cup trick becomes <strong>WATER_SEALED_BELL_INTAKE</strong>: an inverted water-filled cup/bell over a tube inlet that helps prime the tube, keeps air out, allows shallow-water pickup, and stabilizes intake flow.</p><p><strong>Best v0.7a rank:</strong> #10 — Water-sealed bell / siphon-primer bench, DGTE wet-crossover bell helper. Experiment 0 ranks #17.</p></div><div class="panel"><span class="badge red">Hard accounting rule</span><h3>What it is not</h3><p>It is not a generator and not an energy source. <strong>source_credit_kw = 0</strong>. It only receives credit if it reduces priming loss, pump-start loss, air ingestion, transfer J/cycle, crossover instability, or shallow-intake failure after added losses and complexity.</p><p>Best use: cheap side-bench, then attach only to HTH intake, siphon/thermosiphon, DGTE wet crossover, MGHB coupling, or DGTE‑HTH wet-lock tests if measured helper value is positive.</p></div></div></section>
+<section id="materials"><div class="section-kicker">Bench kit</div><h2 class="section-title">Materials and sensors <span>for first builds</span></h2><div class="grid-2" style="margin-top:18px">
+    <div class="material-card">
+      <h3>Water-sealed bell / siphon-primer bench</h3>
+      <p><strong>Materials:</strong> tub or tray with water | clear hose/tube | plastic cup, jar, or acrylic bell | outlet lower than water level | dye | measuring jug or scale | stopwatch | transparent debris mesh/filter | rotary/starwheel crossover mockup adapter</p>
+      <p><strong>Sensors:</strong> optional cheap flow meter | low-range differential pressure sensor or manometer | camera for visible bubbles | water-depth ruler | scale or measuring jug | priming timer</p>
+    </div>
+    <div class="material-card">
+      <h3>Transparent HTH / trompe channel</h3>
+      <p><strong>Materials:</strong> clear acrylic tube/channel | replaceable Venturi throat | HDPE/PVC adapters | small separator vessel | needle valves | water reservoir or stream/flume</p>
+      <p><strong>Sensors:</strong> flow meter or velocity probe | differential pressure sensor/manometer | air rotameter or mass-flow sensor | water head ruler | temperature probe | camera for bubble survival</p>
+    </div>
+    <div class="material-card">
+      <h3>MGHB wave tank cell</h3>
+      <p><strong>Materials:</strong> small wave tank or long tote/flume | guided float/piston | load cell or spring scale | linear potentiometer | adjustable damping/load | OWC side chamber</p>
+      <p><strong>Sensors:</strong> ultrasonic or ruler wave gauges | load cell | stroke encoder/potentiometer | DC voltage/current logger | camera | leak detector/visual dye</p>
+    </div>
+    <div class="material-card">
+      <h3>Pure DGTE rotary/starwheel crossover rig</h3>
+      <p><strong>Materials:</strong> 3D printed starwheel | acrylic side plates | O-rings/gaskets | dye tracer | small geared motor or hand crank | two water baths</p>
+      <p><strong>Sensors:</strong> torque proxy/current logger | scale for carry-over | pressure taps | cycle counter | camera | tachometer</p>
+    </div>
+    <div class="material-card">
+      <h3>Hydraulic balanced lock rig</h3>
+      <p><strong>Materials:</strong> two small pressure vessels | check/needle valves | transparent lock chamber | dye tracer | hand pump or syringe | capsule shuttle mockup</p>
+      <p><strong>Sensors:</strong> pressure sensors/manometers | flow meter | current logger if motorized | scale | camera | cycle timer</p>
+    </div>
+    <div class="material-card">
+      <h3>Integrated DGTE thermal slice</h3>
+      <p><strong>Materials:</strong> small hot tank | cold tank | insulation | heat exchanger coil | capsule lane | simple linear generator/coil or force proxy | rotary/lock crossover insert</p>
+      <p><strong>Sensors:</strong> thermocouples | wattmeter for heater | flow meter | pressure taps | current/voltage logger | cycle counter | scale | camera</p>
+    </div></div></section>
+<section id="decision"><div class="section-kicker">Decision discipline</div><h2 class="section-title">Current <span>decision tree</span></h2><div class="decision">START
+ |
+ |-- Cheapest high-learning test? → Transparent HTH / trompe channel.
+ |     If entrainment + pressure + loaded air output pass: advance HTH outdoor/deep-pool test.
+ |     If fail: salvage Venturi/degassing data and demote HTH power claim.
+ |
+ |-- Highest-upside coastal branch? → MGHB wave tank cell.
+ |     If wave reduction and useful work beat baselines: advance mini-breakwater array.
+ |     If power weak but wave reduction strong: salvage as smart breakwater.
+ |
+ |-- Pure DGTE viability? → Starwheel crossover and/or hydraulic balanced lock.
+ |     If transfer J/cycle, carry-over, or friction fail: pure DGTE waits.
+ |     If pass: integrate best crossover into thermal slice.
+ |
+ |-- Hybrid? → Modular assist slice only after parent measurements.
+ |     If assisted mode beats best parent after input + complexity penalty: hybrid branch survives.
+ |     If not: keep modular tandem, reject over-integrated claims.
+ |
+ |-- Water-sealed bell? → Experiment 0 side-bench.
+ |     If net_helper_value > 0 and repeated cycles survive: attach as helper.
+ |     Always source_credit_kw = 0. Never call it a generator.
+ |
+ |-- Solar? → Same-area PV/PV‑T comparison first.
+ |     If PV/PV‑T wins: solar DGTE becomes special-case top-up only.</div></section>
+<section id="links"><div class="section-kicker">Interlinked device pages</div><h2 class="section-title">Where this page <span>fits</span></h2><div class="grid-2"><div class="panel"><h3>Concept pages</h3><ul><li><a href="/crp/DGTE.html">DGTE.html</a> — pure/core DGTE concept page.</li><li><a href="/crp/HTH.html">HTH.html</a> — horizontal trompe / pressure concept.</li><li><a href="/crp/MGHB.html">MGHB.html</a> — wave / breakwater / piston concept.</li><li><a href="/crp/DGTE-HTH.html">DGTE-HTH.html</a> — modular hybrid synthesis.</li></ul></div><div class="panel"><h3>This page</h3><p><strong>MDLxDCC-Arena-DGTE.html</strong> is the empirical coordination layer: current bench priorities, kill criteria, materials/sensors, and next build decisions. The concept pages explain the devices; this page tells us what to measure next.</p></div></div></section>
+<footer><div class="quote">“Don’t debate the device into existence. Build the smallest rig that can kill or rescue it.”</div><p>DGTE Arena v0.7a · BD × AI Lab · MDL×DCC bench-planner page · May 2026</p><p>Bench/prototype status only. No product-readiness claim.</p></footer>
+</main>
+</body>
+</html>
