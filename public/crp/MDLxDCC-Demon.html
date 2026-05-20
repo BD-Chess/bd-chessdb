@@ -11,91 +11,173 @@
   --dim:#66758f;--cyan:#4ad7ff;--green:#2ecc94;--gold:#e8c840;--orange:#e8943a;--red:#e05f78;--violet:#a87cdf;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:radial-gradient(circle at 15% 10%,rgba(74,215,255,.12),transparent 32%),radial-gradient(circle at 85% 70%,rgba(46,204,148,.10),transparent 34%),var(--bg);color:var(--text);line-height:1.68;padding:0 16px 42px}
-a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.container{max-width:1080px;margin:0 auto}.topbar{position:sticky;top:0;z-index:20;background:rgba(7,9,20,.90);backdrop-filter:blur(12px);border-bottom:1px solid rgba(74,215,255,.12);margin:0 -16px 24px}.topbar-inner{max-width:1080px;margin:0 auto;padding:10px 18px;display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap}.brand{font-family:'IBM Plex Mono',monospace;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);font-size:.72rem}.nav{display:flex;gap:8px;flex-wrap:wrap}.nav a{font-family:'IBM Plex Mono',monospace;font-size:.68rem;border:1px solid rgba(74,215,255,.18);padding:5px 9px;border-radius:999px;color:#b9cce9}.hero{text-align:center;padding:28px 0 22px;border-bottom:1px solid var(--border);margin-bottom:24px}.kicker{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--gold);letter-spacing:.22em;text-transform:uppercase;margin-bottom:10px}.hero h1{font-family:'IBM Plex Mono',monospace;font-size:clamp(2rem,5vw,3.4rem);line-height:1.12;color:#f3f8ff;margin-bottom:12px}.subtitle{max-width:800px;margin:0 auto;color:#b9c6dc;font-size:1rem}.pillrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:18px}.pill{font-family:'IBM Plex Mono',monospace;font-size:.68rem;border:1px solid var(--border);border-radius:999px;padding:5px 9px;color:#b9cce9;background:rgba(255,255,255,.025)}.pill.green{border-color:rgba(46,204,148,.32);color:var(--green)}.pill.gold{border-color:rgba(232,200,64,.32);color:var(--gold)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:18px 0}.card{background:linear-gradient(180deg,rgba(16,20,33,.96),rgba(12,18,32,.96));border:1px solid var(--border);border-radius:14px;padding:18px}.card h2{font-family:'IBM Plex Mono',monospace;color:#f1f6ff;font-size:1.1rem;margin-bottom:10px}.card h3{font-family:'IBM Plex Mono',monospace;color:var(--gold);font-size:.88rem;margin:14px 0 8px}.card p{color:#c3cde0;font-size:.94rem;margin:8px 0}.metric{font-family:'IBM Plex Mono',monospace;font-size:1.65rem;color:var(--cyan);font-weight:700}.label{font-size:.78rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}.note{background:rgba(232,200,64,.08);border:1px solid rgba(232,200,64,.18);border-left:3px solid var(--gold);border-radius:10px;padding:14px 16px;margin:18px 0;color:#d8cfaa}pre{background:#060b14;border:1px solid var(--border);border-radius:10px;padding:13px 15px;overflow:auto;color:#bdd7ff;font-size:.82rem;line-height:1.55}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.status{border-left:3px solid var(--green)}.caution{border-left:3px solid var(--orange)}.bad{border-left:3px solid var(--red)}.toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin:18px 0}.toc a{display:block;background:rgba(74,215,255,.05);border:1px solid rgba(74,215,255,.12);border-radius:10px;padding:9px 11px;font-family:'IBM Plex Mono',monospace;font-size:.76rem;color:#cfe9ff}footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--border);color:var(--dim);font-size:.85rem}@media(max-width:760px){.two{grid-template-columns:1fr}.hero h1{font-size:2rem}}
+html{scroll-behavior:smooth}
+body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:
+  radial-gradient(circle at 15% 10%,rgba(74,215,255,.12),transparent 32%),
+  radial-gradient(circle at 88% 72%,rgba(232,200,64,.10),transparent 33%),
+  radial-gradient(circle at 78% 18%,rgba(46,204,148,.07),transparent 28%),
+  var(--bg);color:var(--text);line-height:1.68;padding:0 16px 42px}
+a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}
+.container{max-width:1080px;margin:0 auto}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(7,9,20,.90);backdrop-filter:blur(12px);border-bottom:1px solid rgba(74,215,255,.12);margin:0 -16px 24px}
+.topbar-inner{max-width:1080px;margin:0 auto;padding:10px 18px;display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.brand{font-family:'IBM Plex Mono',monospace;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);font-size:.72rem}
+.nav{display:flex;gap:8px;flex-wrap:wrap}.nav a{font-family:'IBM Plex Mono',monospace;font-size:.68rem;border:1px solid rgba(74,215,255,.18);padding:5px 9px;border-radius:999px;color:#b9cce9}
+.hero{text-align:center;padding:30px 0 24px;border-bottom:1px solid var(--border);margin-bottom:24px}.kicker{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--gold);letter-spacing:.22em;text-transform:uppercase;margin-bottom:10px}.hero h1{font-family:'IBM Plex Mono',monospace;font-size:clamp(2rem,5vw,3.4rem);line-height:1.12;color:#f3f8ff;margin-bottom:12px}.subtitle{max-width:850px;margin:0 auto;color:#b9c6dc;font-size:1rem}.pillrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:18px}.pill{font-family:'IBM Plex Mono',monospace;font-size:.68rem;border:1px solid var(--border);border-radius:999px;padding:5px 9px;color:#b9cce9;background:rgba(255,255,255,.025)}.pill.green{border-color:rgba(46,204,148,.32);color:var(--green)}.pill.gold{border-color:rgba(232,200,64,.32);color:var(--gold)}.pill.orange{border-color:rgba(232,148,58,.32);color:var(--orange)}.pill.violet{border-color:rgba(168,124,223,.34);color:var(--violet)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}.card{background:linear-gradient(180deg,rgba(16,20,33,.96),rgba(12,18,32,.96));border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 12px 38px rgba(0,0,0,.22)}.card h2{font-family:'IBM Plex Mono',monospace;font-size:1rem;color:var(--cyan);letter-spacing:.04em;margin-bottom:10px}.card h3{font-family:'IBM Plex Mono',monospace;font-size:.84rem;color:var(--gold);margin:12px 0 8px}.card p{color:#c4d1e6;margin:8px 0}.card ul{margin:10px 0 0 20px;color:#c4d1e6}.card li{margin:6px 0}.status{border-left:4px solid var(--green)}.caution{border-left:4px solid var(--orange)}.theory{border-left:4px solid var(--violet)}.quote{font-size:1.08rem;color:#f3f8ff;border-left:4px solid var(--gold);padding:12px 14px;background:rgba(232,200,64,.06);border-radius:0 10px 10px 0;margin:12px 0}.code{font-family:'IBM Plex Mono',monospace;background:#080c16;border:1px solid var(--border);border-radius:10px;padding:12px;color:#d8e9ff;white-space:pre-wrap;overflow:auto;font-size:.86rem;line-height:1.5}table{width:100%;border-collapse:collapse;margin-top:10px;font-size:.9rem}th,td{border-bottom:1px solid var(--border);padding:9px 8px;text-align:left;vertical-align:top}th{font-family:'IBM Plex Mono',monospace;color:var(--gold);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}td{color:#c4d1e6}.metric{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.metric div{border:1px solid var(--border);background:rgba(255,255,255,.025);border-radius:12px;padding:12px;text-align:center}.metric b{display:block;font-family:'IBM Plex Mono',monospace;color:var(--green);font-size:1.1rem}.metric span{font-size:.78rem;color:var(--muted)}.footer{margin-top:28px;border-top:1px solid var(--border);padding-top:16px;color:var(--dim);font-size:.86rem;text-align:center}@media(max-width:780px){.grid,.grid3,.metric{grid-template-columns:1fr}.topbar-inner{align-items:flex-start}.hero{text-align:left}.pillrow{justify-content:flex-start}}
 </style>
 </head>
 <body>
-<div class="topbar"><div class="topbar-inner"><a class="brand" href="MDLxDCC.html">MDL×DCC</a><div class="nav"><a href="MDLxDCC.html">Domain Map</a><a href="MDLxDCC-Arenas.html">Arenas</a><a href="BD-Sudoku.html">Sudoku</a><a href="MDLxDCC-Arena-RH.html">RH Arena</a></div></div></div>
+<div class="topbar"><div class="topbar-inner"><div class="brand">BD × AI Lab · MDL×DCC</div><div class="nav"><a href="index.html">CRP Index</a><a href="MDLxDCC.html">MDL×DCC</a><a href="BD-Sudoku.html">Sudoku</a><a href="MDLxDCC-Arenas.html">Arenas</a></div></div></div>
 <main class="container">
-<section class="hero">
-  <div class="kicker">8Z Demon · research branch</div>
-  <h1>MDL×DCC Demon</h1>
-  <p class="subtitle">A feedback-information layer for DCC: measure useful structure, test whether it predicts future progress, then let DCC gate cleaner, explore wider, or switch channels.</p>
-  <div class="pillrow"><span class="pill green">Sudoku-first signal: promising</span><span class="pill gold">Cross-domain status: pending</span><span class="pill">No physical overclaim</span></div>
-</section>
+  <section class="hero">
+    <div class="kicker">8Z Demon · feedback information engine</div>
+    <h1>MDL×DCC Demon</h1>
+    <p class="subtitle">A decision-quality layer for DCC: use MDL/LZ/process measurements, test which signals predict future progress, then let DCC gate cleaner, explore wider, or switch channels.</p>
+    <div class="pillrow"><span class="pill green">Sudoku v0.5 promotion candidates</span><span class="pill gold">DCC governor</span><span class="pill violet">Bekenstein/regime bridge</span><span class="pill orange">not a thermodynamic proof</span></div>
+  </section>
 
-<div class="toc"><a href="#simple">Simple meaning</a><a href="#evidence">Current evidence</a><a href="#mechanism">Mechanism</a><a href="#domains">Where it helps</a><a href="#next">Next tests</a><a href="#claims">Claim boundary</a></div>
+  <section class="card status" id="simple">
+    <h2>Simple meaning</h2>
+    <p><strong>Demon is not a replacement for DCC.</strong> DCC remains the controller. Demon is the decision-quality layer that tells DCC which MDL/LZ/process signals deserve trust.</p>
+    <p>The first Sudoku evidence says the useful pattern is not merely “lower ΔL is better.” It is closer to:</p>
+    <div class="quote">differentiate → cascade → compress</div>
+    <p>That is a stronger form of the older <em>compress → steer → compress</em> loop: sometimes a good move temporarily increases local structure so that a later cascade can collapse many degrees of freedom.</p>
+  </section>
 
-<section id="simple" class="card status">
-<h2>Simple meaning</h2>
-<p><strong>Demon is not a replacement for DCC.</strong> DCC remains the controller. Demon is the decision-quality layer that tells DCC which MDL/LZ/process signals deserve trust.</p>
-<pre>DCC = driver / controller
-MDL-LZ = measurement channel
-8Z Demon = diagnostic + gate/governor layer</pre>
-<p>The first Sudoku evidence says the useful pattern is not merely “lower ΔL is better.” It is closer to:</p>
-<pre>differentiate -> cascade -> compress</pre>
-</section>
+  <div class="grid">
+    <section class="card">
+      <h2>Roles in the architecture</h2>
+      <ul>
+        <li><strong>MDL/LZ</strong> measures structure, compression, and process change.</li>
+        <li><strong>DCC</strong> chooses, gates, promotes, rejects, or widens search.</li>
+        <li><strong>Demon</strong> audits which measured signal predicts later progress under fair controls.</li>
+      </ul>
+    </section>
+    <section class="card">
+      <h2>The key upgrade</h2>
+      <p>Plain MDL×DCC can ask: “does this look simpler now?”</p>
+      <p>Demon asks the sharper question: “did this kind of signal actually predict useful future gain against operator-matched random controls?”</p>
+    </section>
+  </div>
 
-<section id="evidence">
-<h2 style="font-family:'IBM Plex Mono',monospace;margin:24px 0 10px">Current Sudoku evidence</h2>
-<div class="grid">
-  <div class="card"><div class="metric">D</div><div class="label">v0.3h verdict</div><p>Feedback-information signal, not just a compression artifact.</p></div>
-  <div class="card"><div class="metric">5.85M</div><div class="label">candidate rows</div><p>Signal-full run scale from Sudoku v0.3h.</p></div>
-  <div class="card"><div class="metric">0.147</div><div class="label">process MI_pred h20</div><p>Process ΔL was the strongest useful channel.</p></div>
-  <div class="card"><div class="metric">0.067</div><div class="label">candidate MI_pred h20</div><p>Positive candidate ΔL predicted later future gain.</p></div>
-</div>
-<div class="card">
-<h3>Key signal</h3>
-<pre>run: demon_v03h_signal_full_s1022000_10w_20260519_112044
-runs: 2304
-chosen rows: 88,365
-candidate rows: 5,853,449
-primary finding: positive candidate ΔL predicts future gain at h=20
-process channel: strongest information carrier</pre>
-<p>The first result does not say “Demon solves Sudoku.” It says: Demon can help DCC select cleaner trajectories by using process-side differentiation and cascade potential.</p>
-</div>
-</section>
+  <section class="card" id="sudoku-evidence">
+    <h2>Current Sudoku evidence</h2>
+    <p><strong>Interpretation:</strong> repeated feedback-information / engineering signal, not just a compression artifact. v0.5 now adds fair upgrade-bench evidence with promotion candidates.</p>
+    <div class="metric">
+      <div><b>D</b><span>v0.3h feedback-information verdict</span></div>
+      <div><b>process &gt; candidate &gt; state</b><span>useful information ordering</span></div>
+      <div><b>positive ΔL</b><span>predicted later candidate gain</span></div>
+      <div><b>cleaner</b><span>fewer guesses/backtracks in best gates</span></div>
+    </div>
+    <h3>Key signal</h3>
+    <p>The first strong result does not say “Demon solves Sudoku.” It says Demon can help DCC select cleaner trajectories by using process-side differentiation and cascade potential. The main useful channel so far is not static board-state compression, but trajectory/process information.</p>
+  </section>
 
-<section id="mechanism" class="card">
-<h2>Mechanism</h2>
-<p>The original Maxwell-demon intuition was “sort rare useful fluctuations.” The computational version is narrower and testable:</p>
-<pre>1. generate candidate moves
-2. measure state/candidate/process ΔL
-3. compare chosen moves against operator-matched random controls
-4. test whether ΔL predicts future gain
-5. if signal is real, use it as a DCC gate/governor</pre>
-<p>In Sudoku, process-side ΔL and cascade depth appear more useful than raw board-state compression. That is why v0.4 adds a clean process-cascade gate and a separate event-scout mode.</p>
-</section>
+  <section class="card status" id="upgrade-v05">
+    <h2>Sudoku DCC Upgrade Bench v0.5 — compare result</h2>
+    <p><strong>Verdict:</strong> promotion candidates found. The v0.5 compare pass loaded four analysis artifacts, aggregated 6,156 run-summary rows across 29 gates, and found <strong>8 gates</strong> that beat their operator-matched controls strongly enough for promotion-candidate status.</p>
+    <div class="metric">
+      <div><b>8</b><span>promotion candidates</span></div>
+      <div><b>6,156</b><span>run-summary rows</span></div>
+      <div><b>29</b><span>gates compared</span></div>
+      <div><b>matched controls</b><span>required for promotion</span></div>
+    </div>
+    <h3>Most important result</h3>
+    <p>The new upgrade bench supports the practical claim: <strong>Demon-style and related information gates can help DCC choose cleaner trajectories</strong>. The strongest direct solver gate by overall ranking was <strong>empowerment_gate</strong>; the strongest Demon-continuity gate was <strong>dcc_demon_proc_cascade</strong>. Both beat matched controls while using fewer guesses/backtracks.</p>
+    <table>
+      <thead><tr><th>Gate</th><th>Matched control</th><th>Solve rate</th><th>Lift</th><th>Gate/control-only wins</th><th>Guess Δ</th><th>Backtrack Δ</th></tr></thead>
+      <tbody>
+        <tr><td>combo_all_v05</td><td>operator_matched_random_combo_all_v05</td><td>36.7% vs 30.3%</td><td>+6.4%</td><td>16 / 2</td><td>-3.98</td><td>-4.27</td></tr><tr><td>combo_cond_synergy</td><td>operator_matched_random_combo_cond_synergy</td><td>37.4% vs 32.4%</td><td>+5.0%</td><td>18 / 7</td><td>-3.66</td><td>-3.42</td></tr><tr><td>dcc_demon_proc_cascade</td><td>operator_matched_random_proc_cascade</td><td>46.6% vs 41.2%</td><td>+5.4%</td><td>16 / 4</td><td>-2.55</td><td>-2.33</td></tr><tr><td>dcc_demon_proc</td><td>operator_matched_random_proc</td><td>35.0% vs 31.7%</td><td>+3.3%</td><td>4 / 0</td><td>-6.10</td><td>-6.09</td></tr><tr><td>empowerment_gate</td><td>operator_matched_random_empowerment</td><td>48.4% vs 43.8%</td><td>+4.6%</td><td>17 / 7</td><td>-2.55</td><td>-2.12</td></tr><tr><td>combo_pred_empower</td><td>operator_matched_random_combo_pred_empower</td><td>35.8% vs 32.1%</td><td>+3.7%</td><td>16 / 8</td><td>-4.06</td><td>-4.06</td></tr><tr><td>conditional_proc_cascade_gate</td><td>operator_matched_random_conditional_proc</td><td>46.5% vs 42.9%</td><td>+3.7%</td><td>17 / 9</td><td>-4.80</td><td>-2.48</td></tr><tr><td>information_bottleneck_gate</td><td>operator_matched_random_info_bottleneck</td><td>36.2% vs 32.6%</td><td>+3.7%</td><td>15 / 7</td><td>-2.26</td><td>-2.43</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Interpretation:</strong> v0.5 does not prove a universal solver improvement yet, but it moves the branch from “interesting Demon signal” to a real <strong>DCC Upgrade Bench</strong>. The next promotion target is a lean v0.6 gate family built around empowerment + process-cascade + conditional normalization, then a transfer test in TSP.</p>
+  </section>
 
-<section id="domains">
-<h2 style="font-family:'IBM Plex Mono',monospace;margin:24px 0 10px">Where it helps</h2>
-<div class="grid">
-  <div class="card"><h2>Sudoku</h2><p>Move ranking, logic-vs-guess switching, cascade-aware DCC decisions, fewer blind guesses/backtracks.</p></div>
-  <div class="card"><h2>TSP</h2><p>Operator promotion, MSTD/TEP/HyperDim budget allocation, DCC strictness, process-signal transfer tests.</p></div>
-  <div class="card"><h2>Trading</h2><p>First as read-only overfitting/regime diagnostic: did structure appear before profit or only after cherry-picking?</p></div>
-  <div class="card"><h2>NAS / ARC / AMR / Crossword</h2><p>Test whether process-compression events predict future search progress before letting DCC trust them.</p></div>
-</div>
-</section>
+  <section class="card theory" id="regime">
+    <h2>Mass–information regime bridge</h2>
+    <p><strong>This section folds in the former separate Bekenstein bridge page.</strong> The companion theory frames the older <strong>i ≈ m·c⁴</strong> intuition as an atomic-scale special case of a broader Bekenstein-style mass–information coordinate map.</p>
+    <p>The useful point is not that <code>i = mc⁴</code> becomes a universal law. It does not. The useful point is that MDL×DCC’s empirical domains mostly use fixed-size informational tokens, and those domains may share the same information-regime geometry.</p>
+    <div class="grid3">
+      <div class="card"><h3>x = 1 · fixed-size tokens</h3><p>Atoms, Sudoku cells, TSP cities, chess pieces, DNA bases, trading bars, ARC grid cells, crossword cells.</p></div>
+      <div class="card"><h3>y ≈ 4 · atomic-scale bridge</h3><p>The regime where the old <code>i≈m·c⁴</code> intuition numerically matches Bekenstein-scale estimates.</p></div>
+      <div class="card"><h3>R* ≈ 3.13 Å</h3><p>The matching length scale where the Bekenstein-style bound lines up with the old two-step <code>m → E → i</code> intuition.</p></div>
+    </div>
+    <h3>Core relation</h3>
+    <div class="code">R(m) = a · m^α
+I ≈ mˣ · cʸ
+x = 1 + α
+y = 1 + log_c[2πa / (ℏ ln 2)]</div>
+    <p>The <code>(x,y)</code> coordinate is a bookkeeping map derived from standard information bounds. It helps ask what kind of information regime a domain belongs to before trying to transfer MDL×DCC into it.</p>
+    <h3>The two-step intuition</h3>
+    <div class="code">mass → energy → information
+E = m·c²
+old intuition: i ≈ E·c² ≈ m·c⁴
+modern status: atomic-scale numerical regime, not universal law</div>
+    <p>That matters for MDL×DCC because the practical arenas are not arbitrary continua. They are usually made of bounded local units: candidates, moves, cells, cities, bases, bars, operators, or training-curve tokens.</p>
+  </section>
 
-<section id="next" class="card status">
-<h2>Next tests</h2>
-<pre>1. Finish Sudoku v0.4 signal_focus / signal_full.
-2. If v0.4 confirms, freeze Sudoku Appendix A.
-3. Build TSP Demon diagnostic v0.1.
-4. Add Trading Demon read-only diagnostic.
-5. Only later promote Demon into a live governor.</pre>
-</section>
+  <section class="card theory" id="demon-bridge">
+    <h2>Demon bridge</h2>
+    <p>The original Maxwell-demon intuition was “sort rare useful fluctuations.” The computational version is narrower: <strong>measure trajectory information, test it against fair controls, and let DCC trust only signals that predict future gain.</strong></p>
+    <div class="quote">Feedback does not mean magic. It means measurement → selection → consequence.</div>
+    <p>The Sudoku evidence says trajectory/process information is more useful than static state information. That matters because feedback information engines do not work from state alone; they work from measurement records across a trajectory.</p>
+    <div class="code">Sudoku v0.3h/v0.5 signature:
+MI_pred(process ΔL → future gain) > MI_pred(candidate ΔL → future gain) >> MI_pred(state ΔL → future gain)</div>
+    <p>The current interpretation: DCC should not blindly chase immediate compression. In fixed-token search, progress may require temporary differentiation, followed by cascade, followed by compression.</p>
+  </section>
 
-<section id="claims" class="card caution">
-<h2>Claim boundary</h2>
-<p>8Z Demon does not claim physical thermodynamic proof, perpetual motion, or a literal Maxwell demon. It is a search-level feedback-information diagnostic inspired by stochastic thermodynamics.</p>
-<pre>Current status: Sudoku-first evidence promising.
-Cross-domain confirmation: pending.
-Best current use: DCC decision-quality layer.</pre>
-</section>
+  <section class="card" id="mechanism">
+    <h2>Mechanism</h2>
+    <p>The original Maxwell-demon intuition was “sort rare useful fluctuations.” The computational version is narrower and testable:</p>
+    <div class="code">1. measure candidate/state/process change
+2. compare active gate to operator-matched random control
+3. ask whether the signal predicts future gain
+4. let DCC trust only signals that survive the test</div>
+    <p>In Sudoku, process-side ΔL and cascade depth appear more useful than raw board-state compression. That is why v0.4/v0.5 add process-cascade gates, event-scout modes, and upgrade-bench comparisons.</p>
+  </section>
 
-<footer>BD × AI Lab · MDL×DCC Demon / 8Z Demon · draft public page · 2026-05-19</footer>
+  <section class="card" id="transfer">
+    <h2>Why transfer?</h2>
+    <table>
+      <thead><tr><th>Domain</th><th>Token type</th><th>Regime claim</th><th>Demon prediction</th></tr></thead>
+      <tbody>
+        <tr><td>Sudoku</td><td>cells / candidates</td><td>fixed token</td><td>process ΔL predicts cascade</td></tr>
+        <tr><td>TSP</td><td>cities / edges / operator sequences</td><td>fixed token</td><td>operator-sequence process ΔL predicts future tour gain</td></tr>
+        <tr><td>Chess</td><td>pieces / squares / variations</td><td>fixed token</td><td>variation process ΔL improves tiebreaks</td></tr>
+        <tr><td>Trading</td><td>bars / ticks / indicators</td><td>fixed token</td><td>read-only process signal must appear before profit</td></tr>
+        <tr><td>NAS</td><td>architecture cells / training curves</td><td>fixed token</td><td>training-trajectory process compression predicts validation</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="grid3" id="where-it-helps">
+    <div class="card"><h2>Sudoku</h2><p>Move ranking, logic-vs-guess switching, cascade-aware DCC decisions, fewer blind guesses/backtracks.</p></div>
+    <div class="card"><h2>TSP</h2><p>Operator promotion, MSTD/TEP/HyperDim budget allocation, DCC strictness, process-signal transfer tests.</p></div>
+    <div class="card"><h2>Trading</h2><p>First as read-only overfitting/regime diagnostic: did structure appear before profit or only after cherry-picking?</p></div>
+    <div class="card"><h2>NAS / ARC</h2><p>Test whether process-compression events predict final or downstream performance before giving them control power.</p></div>
+    <div class="card"><h2>AMR</h2><p>Use Demon as a non-actionable simulation governor: which abstract operator packages preserve future control?</p></div>
+    <div class="card"><h2>Crossword</h2><p>Use process-side signals and cascade/frozen-cell events to rank frontier choices and reduce dead-end fill paths.</p></div>
+  </section>
+
+  <section class="card status" id="next-tests">
+    <h2>Next tests</h2>
+    <ul>
+      <li><strong>Sudoku v0.6:</strong> compress v0.5 winners into a lean promotion build: empowerment + process-cascade + conditional normalization, then replicate on harder/longer seeds.</li>
+      <li><strong>TSP Demon v0.1:</strong> test whether process ΔL along operator sequences predicts future tour improvement better than state ΔL.</li>
+      <li><strong>Trading Demon read-only:</strong> verify that regime/process signals appear before profit, not after cherry-picking.</li>
+      <li><strong>NAS Demon:</strong> test whether training-trajectory compression predicts final validation beyond architecture-state features.</li>
+    </ul>
+  </section>
+
+  <section class="card caution" id="boundary">
+    <h2>Claim boundary</h2>
+    <p>8Z Demon does not claim physical thermodynamic proof, perpetual motion, or a literal Maxwell demon in Sudoku/TSP. It is a search-level feedback-information diagnostic inspired by stochastic thermodynamics.</p>
+    <p>The mass–information bridge does not make <code>i = m·c⁴</code> a universal law. It treats that intuition as an atomic-scale numerical regime and uses standard Bekenstein/Landauer ideas as the formal anchor.</p>
+    <p>The current public claim is deliberately limited: <strong>Sudoku has produced early evidence that process-side information can help DCC choose cleaner trajectories. Cross-domain confirmation is pending.</strong></p>
+  </section>
+
+  <div class="footer">MDL×DCC Demon · 8Z Research Program / AIM³ Lab · Public synthesis page, v0.5 + full bridge merge · 2026-05-20</div>
 </main>
 </body>
 </html>
