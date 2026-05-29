@@ -216,10 +216,10 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
 
 <!-- ===== COVER ===== -->
 <div class="cover">
-  <span class="cover-tag">RHPr v1.1 &middot; BD &times; AI Lab &middot; AIM&sup3; Institute</span>
+  <span class="cover-tag">RHPr v1.2 &middot; BD &times; AI Lab &middot; AIM&sup3; Institute</span>
   <h1>The <em>Resonance</em> Hybrid Prompting</h1>
   <p class="subtitle">The prompt that opens every drawer before thinking begins &mdash; then turns the best drawer into a bounded test.</p>
-  <p class="meta">March 2026 &middot; Bojan Dobre&ccedil;evi&ccedil; &middot; Synthesized from 14 AI models &middot; Cursor field patch v1.1 &middot; <a href="BD_AIM3_RHP.html">RHP Protocol &rarr;</a></p>
+  <p class="meta">March 2026 &middot; Bojan Dobre&ccedil;evi&ccedil; &middot; Synthesized from 14 AI models &middot; Cursor + usage patch v1.2 &middot; <a href="BD_AIM3_RHP.html">RHP Protocol &rarr;</a></p>
 
   <div class="stats-row" style="max-width:520px;margin:28px auto 0">
     <div class="stat"><div class="val cyan">3&ndash;5</div><div class="lbl">Prompts</div></div>
@@ -659,6 +659,33 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
   </div>
   <div class="ch-body"><div class="ch-inner">
 
+    <div class="callout cyan">
+      <div class="ct">Practical Use — Two-Session Flow</div>
+      <p><strong>RHPr is the prompt-builder.</strong> First describe the problem in your own words. Messy is fine. Then ask an LLM to improve your prompt using this protocol. Finally, paste the improved prompt into a fresh LLM session and ask for the answer.</p>
+    </div>
+
+    <div class="code-block">Step 1 — write the problem naturally:
+"I need help with ... Here is the context, constraints, files, and what a useful answer should contain."
+
+Step 2 — ask for a better prompt:
+"Improve this prompt using The Resonance Hybrid Prompting protocol:
+https://www.mdlxdcc.org/bd/bd_aim3_rhpr
+
+Keep my intent. Make assumptions explicit. Add missing context questions only if critical.
+Add constraints, output format, risks/blind spots, and a concrete test/fitness function.
+Return one improved prompt I can paste into a new LLM session."
+
+Step 3 — open a fresh LLM session and paste the improved prompt.
+
+Step 4 — if the problem needs wider brainstorming, add:
+"Answer this using the AIM³ Resonance Hybrid Protocol:
+https://www.mdlxdcc.org/bd/bd_aim3_rhp"</div>
+
+    <div class="callout gold">
+      <div class="ct">Simple Rule</div>
+      <p><strong>Use RHPr to make the prompt better. Use RHP to make the answer smarter.</strong> RHPr cleans and strengthens the request. RHP attacks the cleaned request from multiple agent perspectives.</p>
+    </div>
+
     <div class="qs-card" id="qsCard">
       <div class="qs-title">RHPr in 3 Minutes</div>
 
@@ -784,7 +811,7 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
     <div class="foot-grid">
       <div class="foot-col">
         <h4>Origin</h4>
-        <p>RHPr was designed by running the AIM&sup3; Resonance Hybrid Protocol across 14 AI models. Their proposals were synthesized by C into this specification. v1.1 adds Cursor AI field notes: boundary adapters, shared context graph, spec/plan delivery, fitness functions, and review loops. The protocol that designs prompts. The prompt that activates the protocol.</p>
+        <p>RHPr was designed by running the AIM&sup3; Resonance Hybrid Protocol across 14 AI models. Their proposals were synthesized by C into this specification. v1.2 adds practical usage flow on top of the Cursor AI field notes: draft the problem, improve the prompt with RHPr, then run the improved prompt in a fresh session; use RHP when wider multi-agent brainstorming is needed. The protocol that designs prompts. The prompt that activates the protocol.</p>
         <p style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">14 LLMs &middot; 5155 lines of feedback<br>Best ideas: Opus (architecture), ChatGPT (practicality),<br>Sonnet (visualization), Haiku (cost-normalization)</p>
       </div>
       <div class="foot-col">
@@ -834,7 +861,15 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
 // Copy quick-start
 function copyQS(e){
   e.stopPropagation();
-  var text=`RHPr — Resonance Hybrid Prompting — Quick-Start
+  var text=`RHPr — The Resonance Hybrid Prompting — Quick-Start
+
+TWO-SESSION USE:
+1. Write the problem naturally, in your own words.
+2. Ask an LLM: "Improve this prompt using The Resonance Hybrid Prompting protocol: https://www.mdlxdcc.org/bd/bd_aim3_rhpr. Keep my intent. Make assumptions explicit. Add constraints, output format, blind spots, and a test/fitness function. Return one improved prompt."
+3. Open a fresh LLM session and paste the improved prompt.
+4. If the task needs broader brainstorming, add: "Answer using the AIM³ Resonance Hybrid Protocol: https://www.mdlxdcc.org/bd/bd_aim3_rhp."
+
+CORE RHPr LOOP:
 
 PROMPT 1 (Census):
 "List 15–20 things you know about [X]. Not solutions — facts, tools, frameworks, representations, adjacent fields."
@@ -851,8 +886,8 @@ PROMPT 4 (Test):
 WILDCARD — The Child:
 "Forget everything. Stand inside this problem. What do you see/hear/touch?"
 
-That's it. 3–5 prompts. One model. Done.
-BD × AI Lab · AIM³ Institute · RHPr v1.1`;
+RHPr improves the prompt. RHP improves the answer.
+BD × AI Lab · AIM³ Institute · RHPr v1.2`;
   navigator.clipboard.writeText(text).then(function(){
     var btn=e.target;
     btn.textContent='Copied!';
