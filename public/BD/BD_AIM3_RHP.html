@@ -131,9 +131,9 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
 
 <!-- ===== COVER ===== -->
 <div class="cover">
-  <span class="cover-tag">AIM&sup3; Dream Team Protocol &middot; v2.4</span>
+  <span class="cover-tag">AIM&sup3; Dream Team Protocol &middot; v2.5</span>
   <h1>The <em>Resonance</em> Hybrid Protocol</h1>
-  <p class="subtitle">A DCC-governed multi-agent brainstorming architecture for hard, cross-domain problems. Synthesized from 11 independent AI submissions. Refined through three rounds. v2.4: Agent 0 (The Empiricist) &mdash; test, don&rsquo;t debate. Agent 11 (The Child) &mdash; think in shapes, not equations.</p>
+  <p class="subtitle">A DCC-governed multi-agent brainstorming architecture for hard, cross-domain problems. Synthesized from 11 independent AI submissions and updated with Cursor AI field notes. v2.5 adds a delivery adapter: shared context graph, clear boundaries, harness tests, and Intent &rarr; Spec &rarr; Plan &rarr; Execute &rarr; Review.</p>
   <p class="meta">March 2026 &middot; Bojan Dobre&ccedil;evi&ccedil; (concept &amp; synthesis) &middot; 11 AI systems (architecture) &middot; <a href="BD_AIM3_RHP_Story.html">Origin Story &rarr;</a></p>
 
   <div class="stats-row" style="max-width:720px;margin:28px auto 0">
@@ -444,11 +444,83 @@ Cross-domain links only count if they transfer structure, not just words.</div>
   <div class="ch-body"><div class="ch-inner">
     <p><strong>1.</strong> Give this protocol to each AI system. <strong>2.</strong> Instruct: &ldquo;Use the AIM&sup3; Resonance Hybrid Protocol to attack: [problem].&rdquo; <strong>3.</strong> The AI instantiates the 11 agents and runs the protocol internally. <strong>4.</strong> Output: winning idea + bifurcation pairs + blind spots + idea-territory map + session genome.</p>
 
+    <p><strong>For coding or product work:</strong> after Crystallize, continue into the v2.5 delivery adapter below. Do not jump from brainstorm to code. Convert intent into a spec, approve a plan, then let tests and review govern the implementation loop.</p>
+
     <p>For any hard problem: same protocol. Change only the problem statement and the Historian&rsquo;s domain knowledge.</p>
 
     <div class="callout">
       <div class="ct">What This Protocol Does Not Do</div>
       <p>It does not guarantee breakthrough. It creates conditions for breakthrough. It does not replace human judgment &mdash; the human architect synthesizes across sessions, across LLMs, across rounds. The protocol is the instrument. The human is the musician. It does not solve shared training data &mdash; only external input breaks that wall.</p>
+    </div>
+  </div></div>
+</div>
+
+
+<!-- ===== CHAPTER 11: CURSOR FIELD NOTES ===== -->
+<div class="ch" id="cursor-field-notes">
+  <div class="ch-head" onclick="this.parentElement.classList.toggle('open')">
+    <span class="ch-num">11</span>
+    <span class="ch-title">Cursor AI Field Notes</span>
+    <span class="ch-toggle">+</span>
+  </div>
+  <div class="ch-body"><div class="ch-inner">
+    <p>Five Cursor/Ljubljana.Tech talks add an important outside check: strong agents are not enough. The environment around the agent decides whether the model behaves like a partner or like a confused autocomplete.</p>
+
+    <div class="callout gold">
+      <div class="ct">Import Decision</div>
+      <p>The useful transfer is not Cursor as a specific tool. The useful transfer is <strong>environment design</strong>: clear boundaries, familiar interfaces, shared memory, fitness functions, small loops, visible tests, and human review.</p>
+    </div>
+
+    <div class="phase-card" style="border-left:3px solid var(--cyan)">
+      <div class="pt" style="color:var(--cyan)">1 &middot; Boundary Adapter</div>
+      <p><strong>Lesson:</strong> AI works better when the architecture exposes recognizable boundaries. Non-standard hidden flows cause wrong assumptions, hallucinated entities, and inefficient work. Familiar wrappers such as API-like contracts, schemas, validation, and explicit layer responsibilities help the model infer what belongs where.</p>
+      <p><strong>AIM&sup3; patch:</strong> every serious agent/module should declare input, output, allowed context, forbidden assumptions, and validation rule. Novel architecture is allowed, but it should be wrapped in discoverable interfaces.</p>
+    </div>
+
+    <div class="phase-card" style="border-left:3px solid var(--violet)">
+      <div class="pt" style="color:var(--violet)">2 &middot; Shared Context Graph</div>
+      <p><strong>Lesson:</strong> multi-agent work fails when every agent restarts from zero. Memory should not be just a text dump or repeated repo reading. It should be structured, queryable, provenance-aware, and reusable across agents.</p>
+      <p><strong>AIM&sup3; patch:</strong> the Session Genome becomes a graph object. Minimum nodes: Problem, Idea, Claim, Evidence, File, Test, Decision, Blind Spot, Owner, Next Action. Minimum edges: supports, contradicts, derives-from, tested-by, implemented-in, rejected-because, next-step.</p>
+    </div>
+
+    <div class="phase-card" style="border-left:3px solid var(--green)">
+      <div class="pt" style="color:var(--green)">3 &middot; Intent &rarr; Spec &rarr; Plan &rarr; Execute &rarr; Review</div>
+      <p><strong>Lesson:</strong> do not ask an agent to jump from vague intent into production code. First capture what and why, then acceptance criteria, then a researched plan, then small execution loops, then review.</p>
+      <p><strong>AIM&sup3; patch:</strong> after Crystallize, buildable ideas enter a delivery lane: <code>spec.md</code> for what/why/acceptance, <code>plan.md</code> for researched steps and tests, then implementation only after human approval.</p>
+    </div>
+
+    <div class="phase-card" style="border-left:3px solid var(--rose)">
+      <div class="pt" style="color:var(--rose)">4 &middot; Harness and Fitness Functions</div>
+      <p><strong>Lesson:</strong> one-shot rewrites can look impressive but degrade quality, miss visual requirements, cheat, loop, or burn tokens. Multiple challengers plus recorded checks are safer than trusting a single confident run.</p>
+      <p><strong>AIM&sup3; patch:</strong> Agent 0 does not only ask whether ideas can be tested. It designs the fitness function: tests, visual checks, lint/type gates, benchmark metrics, manual checks, and rollback criteria. If there is no fitness function, the idea is not ready for ship mode.</p>
+    </div>
+
+    <div class="phase-card" style="border-left:3px solid var(--gold)">
+      <div class="pt" style="color:var(--gold)">5 &middot; Voice Capture Layer</div>
+      <p><strong>Lesson:</strong> real-time speech, translation, and accurate alphanumeric transcription can become an input layer for human-agent teams. This does not change the reasoning protocol, but it can capture human interrupts, meetings, and spoken brainstorms before they evaporate.</p>
+      <p><strong>AIM&sup3; patch:</strong> optional AIM&sup3; Studio input mode: speech &rarr; transcript &rarr; Human Interrupt <code>[H]</code> &rarr; Session Genome. Especially useful for fast BD-style seeds that appear before the formal prompt exists.</p>
+    </div>
+
+    <div class="code-block">After Crystallize, if the winning idea is buildable:
+  1. Write Intent Card: what, why, constraints, owner.
+  2. Write spec.md: architecture overview + acceptance criteria, not file-by-file code.
+  3. Research the codebase / prior artifacts.
+  4. Ask clarifying questions if the plan is under-specified.
+  5. Write plan.md: small todos + tests + manual checks.
+  6. Human approves or revises the plan.
+  7. Execute in tight loops: build -> run tests -> review diff -> repeat.
+  8. Agent 0 runs the fitness function and reports evidence.
+  9. Human review before merge / publication / release.
+ 10. Write Graph Genome + restart prompt for the next session.</div>
+
+    <div class="callout cyan">
+      <div class="ct">Context Hygiene</div>
+      <p>Do not over-tag context. Attach the right files and constraints, but let the agent search when uncertain. Start fresh on real boundaries: new feature, noisy context, major plan change, or after a completed delivery loop.</p>
+    </div>
+
+    <div class="callout rose">
+      <div class="ct">New Blind Spot</div>
+      <p><strong>Architecture opacity.</strong> A clever architecture can become invisible to AI agents if its execution flow is hidden behind unusual patterns. AIM&sup3; should preserve novelty in the core idea, but expose the work through simple, familiar contracts.</p>
     </div>
   </div></div>
 </div>
@@ -472,7 +544,7 @@ Cross-domain links only count if they transfer structure, not just words.</div>
     <div class="foot-grid">
       <div class="foot-col">
         <h4>About</h4>
-        <p>AIM&sup3; Resonance Hybrid Protocol &middot; v2.4<br>Synthesized from 11 AI submissions across 2 rounds.<br>8Z Research Framework &middot; AIM&sup3; Institute &middot; Ljubljana</p>
+        <p>AIM&sup3; Resonance Hybrid Protocol &middot; v2.5<br>Synthesized from 11 AI submissions; upgraded with Cursor AI field notes.<br>8Z Research Framework &middot; AIM&sup3; Institute &middot; Ljubljana</p>
       </div>
       <div class="foot-col">
         <h4>Key Pages</h4>
