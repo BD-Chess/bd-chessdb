@@ -30,28 +30,43 @@ section{margin:58px 0} .section-head{margin-bottom:22px} .section-tag{font-famil
 .prompt-detail{margin:12px 0;overflow:hidden} .prompt-detail summary{cursor:pointer;list-style:none;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid transparent} .prompt-detail summary::-webkit-details-marker{display:none} .prompt-detail[open] summary{border-bottom-color:var(--border)} .prompt-detail summary span{font-family:'JetBrains Mono',monospace;color:#f4f8ff;font-size:13px} .prompt-detail summary em{font-style:normal;color:var(--muted);font-size:14px;text-align:right} pre{white-space:pre-wrap;word-break:break-word;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.58;color:#cbd8ea;background:rgba(0,0,0,.25);padding:18px;overflow:auto;max-height:720px} .report-box pre{max-height:560px}
 .footer{border-top:1px solid var(--border);margin-top:70px;padding-top:24px;color:var(--dim);font-size:14px;text-align:center}
 @media(max-width:720px){body{font-size:18px}.page{padding:0 16px 70px}.hero{padding-top:70px}.topbar-inner{padding:10px 14px}.prompt-detail summary{align-items:flex-start;flex-direction:column} table{min-width:680px}}
+
+.hero-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.hero-actions a{font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid var(--border2);border-radius:999px;padding:8px 12px;background:rgba(52,211,153,.08);color:#d6fff0;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.hero-actions a:hover{border-color:rgba(0,229,255,.45);background:rgba(0,229,255,.10);color:#e8fbff;text-decoration:none}
 </style>
 </head>
 <body>
 <div id="progress"></div>
-<nav class="topbar"><div class="topbar-inner"><a class="brand" href="/bd/">BD × AI Lab</a><div class="nav"><a href="BD_AIM3_RHPr.html">RHPr</a><a href="BD_AIM3_RHP.html">RHP</a><a href="https://www.mdlxdcc.org/crp/mdlxdcc">MDL×DCC</a></div></div></nav>
+<nav class="topbar"><div class="topbar-inner"><a class="brand" href="/bd/">BD × AI Lab</a><div class="nav"><a href="RouteSignal_Scout.html">RouteSignal Scout</a><a href="BD_AIM3_RHPr.html">RHPr</a><a href="BD_AIM3_RHP.html">RHP</a><a href="https://www.mdlxdcc.org/crp/mdlxdcc">MDL×DCC</a></div></div></nav>
 <main class="page">
 <header class="hero">
 <div class="kicker">RouteSignal Scout · Prompt + Code Method Study · 2026-05-31</div>
 <h1>Same seed. Five prompt paths. <em>Then code.</em></h1>
-<p class="subtitle">A practical comparison of direct prompting, Microsoft Copilot Prompt Coach, RHPr/RHP workflows, and the BD × GPT hybrid reference lineage for building RouteSignal Scout, a Python-first MDL×DCC internet-ops prototype.</p>
+<p class="subtitle">A practical comparison of direct prompting, Microsoft Copilot Prompt Coach, RHPr/RHP workflows, and the BD × GPT hybrid reference lineage for building RouteSignal Scout. This is the method case study; the companion Scout page explains the prototype's internet-ops purpose, current validation, and practical benefit.</p>
 <div class="badges"><span class="badge green">Prompt-level benchmark complete</span><span class="badge cyan">Code-output benchmark complete</span><span class="badge gold">E hybrid reference explained</span><span class="badge rose">Not a vendor benchmark</span></div>
+<div class="hero-actions"><a href="RouteSignal_Scout.html">Open main RouteSignal Scout page →</a><a href="#summary">Read method results ↓</a></div>
 </header>
 
+<section id="companion">
+<div class="section-head"><div class="section-tag">How to read this page</div><h2>Method study, not the main product page</h2><p>This page explains how different prompt-building workflows performed on the same RouteSignal task. It should be read together with the companion RouteSignal Scout page, which now carries the product/evidence framing: why the tool may matter for internet operations, where it fits next to existing BGP monitoring and AIOps tools, and what the current v0.2 validation is testing.</p></div>
+<div class="grid">
+  <div class="card"><h3>This page answers</h3><p>Which prompting path recovered the most implementation-critical structure for a hard coding-builder task: endpoint specificity, data-quality handling, offline replay, test discipline, no-overclaim safety, MDL×DCC scoring, and operator-review reporting?</p></div>
+  <div class="card"><h3>The Scout page answers</h3><p>What RouteSignal Scout is trying to do in the real world: turn noisy public routing data into a shorter, explainable review queue so a human operator or researcher can decide where to look first.</p></div>
+  <div class="card"><h3>Why they are linked</h3><p>The prompt-method result matters because the better prompts did not merely look cleaner; they produced stronger Python packages. The Scout page is the evolving internet-ops prototype. This page is the methodological audit trail behind how that prototype was prompted into existence.</p></div>
+</div>
+<div class="callout cyan"><h3>Companion page</h3><p>For the current RouteSignal purpose, evidence baseline, v0.2/v0.2.5 validation status, safety boundary, and practical operator-facing value, read <a href="RouteSignal_Scout.html">RouteSignal Scout →</a>. For the prompting evidence, A/B/C/D/E comparison, and raw prompt/report archive, stay on this page.</p></div>
+</section>
+
 <section id="summary">
-<div class="section-head"><div class="section-tag">Executive summary</div><h2>What the test showed</h2><p>The test used one rough RouteSignal Scout seed and compared multiple ways of turning it into a Python coding-builder prompt, then compared the resulting code packages. The task was intentionally difficult: public BGP/RPKI/IPv6-style signal analysis, RIPEstat-first data handling, deterministic offline/demo behavior, no production routing claims, and MDL×DCC-style multi-signal scoring.</p></div>
+<div class="section-head"><div class="section-tag">Executive summary</div><h2>What the test showed</h2><p>The test used one rough RouteSignal Scout seed and compared multiple ways of turning it into a Python coding-builder prompt, then compared the resulting code packages. The task was intentionally difficult: public BGP/RPKI/IPv6-style signal analysis, RIPEstat-first data handling, deterministic offline/demo behavior, no production routing claims, and MDL×DCC-style multi-signal scoring. For the real-world purpose and validation status of the prototype itself, use the companion Scout page.</p></div>
 <div class="grid">
 <div class="card"><h3>Phase 1</h3><p>Prompt-quality study. E-reference scored 96/100, D 94, C 91, A 89, and B / Prompt Coach 82.</p></div>
 <div class="card"><h3>Phase 2</h3><p>Code-output study. Fresh A/B/C/D builds ranked D 94, C 92, A 91, B 81. Reference lineage ranked E-v0.1 96 and E-v0.2 98.</p></div>
 <div class="card"><h3>Main finding</h3><p>Prompt Coach improved clarity and safety, but it stayed last in both the prompt-level and code-output evaluation for this hard coding-builder task.</p></div>
 <div class="card"><h3>Best method</h3><p>The BD × GPT hybrid reference lineage remains strongest because it combines direct build-first clarity with RHPr/RHP blind-spot, test, and scoring discipline.</p></div>
 </div>
-<div class="callout gold"><h3>Bottom line</h3><p>For this RouteSignal task, RHPr/RHP and the BD × GPT hybrid workflow recovered more implementation-critical structure: endpoint specificity, data-quality handling, fallback/offline behavior, tests, MDL×DCC scoring, and operator-review reporting. Prompt Coach was useful, but more generic.</p></div>
+<div class="callout gold"><h3>Bottom line</h3><p>For this RouteSignal task, RHPr/RHP and the BD × GPT hybrid workflow recovered more implementation-critical structure: endpoint specificity, data-quality handling, fallback/offline behavior, tests, MDL×DCC scoring, and operator-review reporting. Prompt Coach was useful, but more generic. The practical RouteSignal value proposition is maintained on the companion Scout page; this page preserves the prompt-method evidence trail.</p></div>
 </section>
 
 <section id="methods">
@@ -3370,11 +3385,12 @@ A fair public phrasing would be:
 <div class="grid">
 <div class="card"><h3>It does show</h3><p>For this RouteSignal task, Prompt Coach was weaker than direct MS Copilot, RHPr/RHP paths, and the BD × GPT hybrid reference, both at prompt level and code-output level.</p></div>
 <div class="card"><h3>It does not show</h3><p>That Prompt Coach is always bad, or that any single model/vendor is always superior. The Prompt Coach backing model/path was not exposed.</p></div>
+<div class="card"><h3>It also does not show</h3><p>That RouteSignal has already solved internet routing triage. This page evaluates prompt and code-output quality. Operational value, long-run tests, and v0.2/v0.2.5 validation belong on the companion RouteSignal Scout page.</p></div>
 <div class="card"><h3>Best use</h3><p>Treat Prompt Coach as a useful quick clarity layer. For hard build/research tasks, use RHPr/RHP or a hybrid process that forces tests, blind spots, boundary rules, and implementation artifacts.</p></div>
 </div>
 </section>
 
-<div class="footer">BD × AI Lab · AIM³ Institute · RouteSignal Scout prompt/code method study · Links: <a href="BD_AIM3_RHPr.html">RHPr</a> · <a href="BD_AIM3_RHP.html">RHP</a> · <a href="https://www.mdlxdcc.org/crp/mdlxdcc">MDL×DCC</a></div>
+<div class="footer">BD × AI Lab · AIM³ Institute · RouteSignal Scout prompt/code method study · Links: <a href="RouteSignal_Scout.html">RouteSignal Scout</a> · <a href="BD_AIM3_RHPr.html">RHPr</a> · <a href="BD_AIM3_RHP.html">RHP</a> · <a href="https://www.mdlxdcc.org/crp/mdlxdcc">MDL×DCC</a></div>
 </main>
 <script>(function(){var b=document.getElementById('progress');window.addEventListener('scroll',function(){var h=document.documentElement;var d=h.scrollHeight-h.clientHeight;b.style.width=(d>0?(h.scrollTop/d)*100:0)+'%';});})();</script>
 </body>
