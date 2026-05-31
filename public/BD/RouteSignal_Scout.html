@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html data-lang="en" lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>RouteSignal Scout — MDL×DCC Internet-Ops Prototype | BD × AI Lab</title>
+<style>
+:root{
+  --bg:#020409;--bg2:#060a14;--panel:rgba(15,23,41,.84);--panel2:rgba(20,30,51,.88);
+  --border:rgba(0,229,255,.14);--border2:rgba(0,229,255,.28);
+  --cyan:#00e5ff;--cyan2:#4ad7ff;--gold:#f59e0b;--green:#34d399;--rose:#ff6b8a;--violet:#a78bfa;
+  --text:#e2e8f4;--muted:#8ca2c9;--dim:#627396;--shadow:0 22px 70px rgba(0,0,0,.34);
+  --radius:18px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:Inter,Segoe UI,Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{
+  background:radial-gradient(circle at 18% 14%,rgba(0,229,255,.14),transparent 34%),
+             radial-gradient(circle at 82% 72%,rgba(245,158,11,.10),transparent 34%),
+             radial-gradient(circle at 55% 42%,rgba(52,211,153,.08),transparent 42%),
+             linear-gradient(180deg,#020409 0%,#050813 45%,#020409 100%);
+  color:var(--text);font-family:var(--sans);font-size:18px;line-height:1.72;overflow-x:hidden;
+}
+body::before,body::after{content:"";position:fixed;border-radius:50%;filter:blur(95px);opacity:.28;pointer-events:none;z-index:-1}
+body::before{width:46vw;height:46vw;left:-12vw;top:-12vh;background:radial-gradient(circle,rgba(0,229,255,.36),rgba(0,40,90,.15) 55%,transparent 75%);animation:floatA 26s ease-in-out infinite}
+body::after{width:42vw;height:42vw;right:-14vw;bottom:-16vh;background:radial-gradient(circle,rgba(245,158,11,.24),rgba(70,30,0,.12) 55%,transparent 75%);animation:floatB 31s ease-in-out infinite}
+@keyframes floatA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(5vw,6vh,0)}}@keyframes floatB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-6vw,-5vh,0)}}
+#progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--cyan),var(--gold));z-index:1000;box-shadow:0 0 18px rgba(0,229,255,.5)}
+.topbar{position:sticky;top:0;z-index:40;background:rgba(2,4,9,.78);backdrop-filter:blur(15px);border-bottom:1px solid var(--border)}
+.topbar-inner{max-width:1220px;margin:0 auto;padding:12px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.brand{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);text-decoration:none}.nav{display:flex;gap:8px;flex-wrap:wrap}.nav a,.lang button{border:1px solid rgba(0,229,255,.18);background:rgba(255,255,255,.03);color:var(--muted);border-radius:999px;padding:6px 11px;font-family:var(--mono);font-size:11px;text-decoration:none;cursor:pointer}.nav a:hover,.lang button:hover,.lang button.active{color:var(--cyan);border-color:rgba(0,229,255,.46);background:rgba(0,229,255,.08)}
+.page{max-width:1220px;margin:0 auto;padding:0 24px 110px}.hero{min-height:72vh;display:grid;align-items:center;padding:76px 0 44px}.hero-card{border:1px solid var(--border);background:linear-gradient(180deg,rgba(15,23,41,.74),rgba(10,16,30,.58));box-shadow:var(--shadow);border-radius:28px;padding:44px;position:relative;overflow:hidden}.hero-card::before{content:"";position:absolute;inset:-1px;background:radial-gradient(circle at 20% 0%,rgba(0,229,255,.16),transparent 40%),radial-gradient(circle at 85% 70%,rgba(245,158,11,.12),transparent 35%);pointer-events:none}.hero-content{position:relative}.eyebrow{font-family:var(--mono);letter-spacing:.25em;text-transform:uppercase;color:var(--gold);font-size:12px;margin-bottom:18px}.hero h1{font-size:clamp(2.45rem,7vw,5.5rem);line-height:.98;letter-spacing:-.05em;margin-bottom:18px}.subtitle{font-size:clamp(1.08rem,2.2vw,1.45rem);color:var(--muted);max-width:900px}.status-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}.pill{display:inline-block;font-family:var(--mono);font-size:12px;padding:8px 12px;border:1px solid rgba(0,229,255,.18);border-radius:999px;background:rgba(0,229,255,.06);color:#bdf7ff;text-decoration:none}.pill.gold{border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.08);color:#ffd79c}.pill.green{border-color:rgba(52,211,153,.25);background:rgba(52,211,153,.08);color:#b6f7db}a.pill{text-decoration:none}a.pill:hover{border-color:rgba(0,229,255,.55);background:rgba(0,229,255,.12);color:#fff;text-decoration:none}.grid{display:grid;gap:18px}.grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:880px){.grid.cols-2,.grid.cols-3{grid-template-columns:1fr}.hero-card{padding:28px}.page{padding:0 16px 90px}}
+section{padding:30px 0}.section-title{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:12px}.section-title h2{font-size:clamp(1.65rem,3.4vw,2.6rem);line-height:1.1;letter-spacing:-.03em}.section-title small{font-family:var(--mono);color:var(--dim);font-size:12px}.card{border:1px solid var(--border);background:var(--panel);box-shadow:0 12px 34px rgba(0,0,0,.24);border-radius:var(--radius);padding:22px}.card h3{font-size:1.22rem;margin-bottom:8px;color:#f0f7ff}.card p{color:var(--muted)}.callout{border-left:3px solid var(--cyan);background:rgba(0,229,255,.06);padding:18px;border-radius:14px;color:#cfefff}.impact-line{font-size:1.12rem;color:#dff8ff}.impact-line strong{color:#fff}.benefit-step{font-family:var(--mono);font-size:12px;color:#bdf7ff;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}.plain-big{font-size:1.22rem;line-height:1.72;color:#eaf8ff}.checklist{padding-left:1.15em;color:var(--muted)}.checklist li{margin:.48em 0}.warn{border-left-color:var(--gold);background:rgba(245,158,11,.08)}.good{border-left-color:var(--green);background:rgba(52,211,153,.08)}.bad{border-left-color:var(--rose);background:rgba(255,107,138,.08)}
+.metric{padding:20px;border:1px solid var(--border);background:rgba(255,255,255,.025);border-radius:16px}.metric .num{font-size:2rem;font-weight:800;color:var(--cyan);line-height:1.1}.metric .label{font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:8px}.metric .note{font-size:.92rem;color:var(--dim);margin-top:6px}.table-wrap{overflow:auto;border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.02)}table{border-collapse:collapse;width:100%;min-width:760px}th,td{text-align:left;padding:12px 14px;border-bottom:1px solid rgba(0,229,255,.08);vertical-align:top}th{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#aeefff;background:rgba(0,229,255,.06)}td{color:var(--muted);font-size:.96rem}.score{font-family:var(--mono);color:var(--gold);white-space:nowrap}.study-link{display:inline-flex;align-items:center;gap:8px;margin-top:12px;border:1px solid rgba(0,229,255,.28);border-radius:999px;padding:9px 13px;color:#bdf7ff;background:rgba(0,229,255,.07);font-family:var(--mono);font-size:12px;text-decoration:none}.study-link:hover{border-color:rgba(0,229,255,.55);background:rgba(0,229,255,.12);color:#fff;text-decoration:none}.mini-table{min-width:620px}.score-strong{color:#b6f7db;font-weight:800}.score-weak{color:#ffc0ce;font-weight:800}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;padding:3px 7px;border-radius:999px;border:1px solid rgba(0,229,255,.18);color:#bdf7ff;background:rgba(0,229,255,.06);margin:2px}.tag.green{border-color:rgba(52,211,153,.25);color:#b6f7db;background:rgba(52,211,153,.08)}.tag.gold{border-color:rgba(245,158,11,.25);color:#ffd79c;background:rgba(245,158,11,.08)}.tag.rose{border-color:rgba(255,107,138,.28);color:#ffc0ce;background:rgba(255,107,138,.08)}
+ul{padding-left:1.2em;color:var(--muted)}li{margin:.38em 0}code,pre{font-family:var(--mono)}pre{white-space:pre-wrap;background:rgba(0,0,0,.28);border:1px solid var(--border);border-radius:16px;padding:16px;overflow:auto;color:#dff8ff}.foot{margin-top:44px;color:var(--dim);font-size:.92rem;text-align:center}.sl{display:none}html[data-lang="sl"] .en{display:none}html[data-lang="sl"] .sl{display:block}html[data-lang="sl"] span.sl,html[data-lang="sl"] small.sl{display:inline}html[data-lang="sl"] tr.sl{display:table-row}html[data-lang="sl"] li.sl{display:list-item}html[data-lang="sl"] .en-inline{display:none}html[data-lang="en"] .sl-inline{display:none}.kicker{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase}.two-line{display:block;color:var(--text)}.study-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.study-actions a{font-family:var(--mono);font-size:12px;padding:9px 13px;border:1px solid rgba(0,229,255,.28);border-radius:999px;background:rgba(0,229,255,.08);color:#bdf7ff;text-decoration:none}.study-actions a:hover{border-color:rgba(0,229,255,.55);color:var(--cyan);background:rgba(0,229,255,.13)}.note-small{font-size:.92rem;color:var(--dim);margin-top:10px}.scoreline{font-family:var(--mono);color:#dff8ff;font-size:.95rem;line-height:1.9}
+.case-cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.btn-link{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(0,229,255,.34);background:rgba(0,229,255,.08);color:#dff8ff;border-radius:999px;padding:9px 14px;font-family:var(--mono);font-size:12px;text-decoration:none}.btn-link:hover{background:rgba(0,229,255,.14);border-color:rgba(0,229,255,.56)}.btn-link.gold{border-color:rgba(245,158,11,.34);background:rgba(245,158,11,.08);color:#ffe1b1}.scoreboard td:first-child{white-space:nowrap}.muted-note{color:var(--dim);font-size:.94rem;margin-top:10px}
+
+.collapsed-section{border:1px solid var(--border);background:linear-gradient(180deg,rgba(15,23,41,.84),rgba(9,14,27,.72));box-shadow:0 12px 34px rgba(0,0,0,.24);border-radius:var(--radius);overflow:hidden}.collapsed-section summary{cursor:pointer;list-style:none;padding:22px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;border-bottom:1px solid transparent;user-select:none}.collapsed-section summary::-webkit-details-marker{display:none}.collapsed-section[open] summary{border-bottom-color:var(--border)}.collapsed-section .summary-title h2{font-size:clamp(1.65rem,3.4vw,2.6rem);line-height:1.1;letter-spacing:-.03em;margin-bottom:6px}.collapsed-section .summary-title p{color:var(--muted);max-width:860px}.collapsed-section .summary-hint{font-family:var(--mono);color:var(--dim);font-size:12px;text-align:right;min-width:180px}.collapsed-section .chev{display:inline-block;margin-left:8px;color:var(--cyan);font-size:18px;transition:transform .2s}.collapsed-section[open] .chev{transform:rotate(45deg)}.collapsed-inner{padding:22px}.stack-card{border-left:3px solid var(--cyan)}.stack-card.good{border-left-color:var(--green)}.stack-card.warn{border-left-color:var(--gold)}
+
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="#top">RouteSignal Scout</a><nav class="nav"><a href="#purpose">Purpose</a><a href="#today-stack">Today's tools</a><a href="#summary">Summary</a><a href="#context">Context</a><a href="#v02">v0.2</a><a href="#method">Method</a><a href="#evidence">Evidence</a><a href="#findings">Findings</a><a href="#next">Next</a><a href="#case-study">Method appendix</a></nav><div class="lang"><button id="enBtn" class="active">EN</button><button id="slBtn">SL</button></div></div></header>
+<main id="top" class="page">
+  <section class="hero"><div class="hero-card"><div class="hero-content">
+    <div class="eyebrow">MDL×DCC / AIM³ / Internet operations</div>
+    <h1>RouteSignal Scout</h1>
+    <p class="subtitle en">A read-only internet-ops prototype that helps turn noisy public routing data into a short review queue: where should a human look first if routing starts behaving strangely? It does not claim to prove attacks, hijacks, outages, leaks, or misconfigurations.</p>
+    <p class="subtitle sl">Read-only internet-ops prototip, ki pomaga hrupne javne routing podatke pretvoriti v kratek seznam za pregled: kam naj človek najprej pogleda, če se routing začne obnašati čudno? Ne trdi, da dokazano zazna napade, hijacke, izpade, leak-e ali napačne konfiguracije.</p>
+    <div class="status-row"><span class="pill green">v0.2 active validation</span><span class="pill">v0.1e evidence baseline</span><span class="pill">RIPEstat + demo + replay</span><span class="pill gold">not production detection</span><a class="pill" href="#case-study">method appendix</a></div>
+  </div></div></section>
+
+  <section id="purpose"><div class="section-title"><h2><span class="en">What are we trying to achieve?</span><span class="sl">Kaj želimo doseči?</span></h2><small>purpose · who it helps · realistic value</small></div>
+    <div class="callout good"><p class="en"><strong>In one sentence:</strong> RouteSignal Scout tries to turn overwhelming public routing noise into a short, explainable list of ASN/prefix/time windows where an experienced human should look first.</p><p class="sl"><strong>V enem stavku:</strong> RouteSignal Scout poskuša iz velike količine javnega routing šuma narediti kratek, razložljiv seznam ASN/prefix/časovnih oken, kjer naj izkušen človek najprej pogleda.</p></div>
+
+    <div class="grid cols-3" style="margin-top:18px">
+      <div class="card"><h3 class="en">The problem</h3><h3 class="sl">Problem</h3><p class="en">Internet routing is mostly invisible to normal users. When traffic takes a worse path, a prefix flaps, visibility changes, or a routing policy behaves strangely, users may only notice slowness or reachability problems. Operators, meanwhile, may see too much noisy data to know where to start.</p><p class="sl">Internetni routing je za navadne uporabnike skoraj neviden. Ko gre promet po slabši poti, ko prefix flappa, ko se spremeni vidljivost ali ko routing policy deluje čudno, uporabnik pogosto vidi samo počasnost ali težave z dosegljivostjo. Operater pa lahko vidi toliko šuma, da ni jasno, kje začeti.</p></div>
+      <div class="card"><h3 class="en">The goal</h3><h3 class="sl">Cilj</h3><p class="en">The goal is not to replace network engineers or declare incidents. The goal is to reduce the search space: from millions of raw routing windows to a smaller review queue with reasons, evidence quality, repetition, and controls.</p><p class="sl">Cilj ni zamenjati omrežnih strokovnjakov ali razglašati incidentov. Cilj je zmanjšati prostor iskanja: iz milijonov surovih routing oken v manjšo review queue listo z razlogi, kakovostjo evidence-a, ponovitvami in kontrolami.</p></div>
+      <div class="card"><h3 class="en">The possible payoff</h3><h3 class="sl">Možen doprinos</h3><p class="en">If the signal validates, the payoff is faster triage, fewer duplicated alerts, better post-mortems, and less wasted senior-engineer time. For end users the benefit would be indirect: fewer or shorter unexplained slowdowns and reachability problems when operators find the right routing window sooner.</p><p class="sl">Če se signal potrdi, je doprinos hitrejša triaža, manj podvojenih alertov, boljši post-mortemi in manj izgubljenega časa dragih strokovnjakov. Za navadne uporabnike je korist posredna: manj ali krajše nepojasnjene upočasnitve in težave z dosegljivostjo, če operater prej najde pravo routing okno.</p></div>
+    </div>
+
+    <div class="grid cols-2" style="margin-top:18px">
+      <div class="card"><h3 class="en">For technical users</h3><h3 class="sl">Za tehnične uporabnike</h3><p class="en">RouteSignal is a read-only triage and audit layer. It ranks ASN/prefix/time windows using residual/complexity-style signals, parsed-update support, repeated-resource evidence, source quality, known-event/control lift, false-positive pressure, and a global event ledger that merges duplicate alerts into reviewable events.</p><p class="sl">RouteSignal je read-only triažni in audit sloj. ASN/prefix/časovna okna rangira z residual/complexity-style signali, parsed-update podporo, repeated-resource evidence-om, source quality, known-event/control liftom, false-positive pritiskom in global event ledgerjem, ki podvojene alerte združi v pregledne dogodke.</p></div>
+      <div class="card"><h3 class="en">For non-technical readers</h3><h3 class="sl">Za netehnične bralce</h3><p class="en">Think of it as a radar for places where internet routing may deserve attention. It does not speed up your connection by itself and it does not control routers. But if it helps operators look in the right place earlier, it could indirectly support a more stable, less frustrating internet experience.</p><p class="sl">Lahko si ga predstavljamo kot radar za mesta, kjer si internetni routing zasluži pozornost. Sam po sebi ne pospeši povezave in ne upravlja routerjev. Če pa operaterjem pomaga prej pogledati na pravo mesto, lahko posredno prispeva k bolj stabilni in manj frustrirajoči internetni izkušnji.</p></div>
+    </div>
+
+    <div class="callout warn" style="margin-top:18px"><p class="en"><strong>Boundary:</strong> RouteSignal is not a speed booster, not a router controller, and not a production incident detector. Its output is a review queue, not a verdict: “look here first, because this routing window is unusual and evidence-supported.”</p><p class="sl"><strong>Meja:</strong> RouteSignal ni pospeševalnik interneta, ni controller routerjev in ni production detektor incidentov. Njegov rezultat je review queue, ne razsodba: “najprej poglej sem, ker je to routing okno nenavadno in evidence-supported.”</p></div>
+  </section>
+
+  <section id="today-stack"><div class="section-title"><h2><span class="en">Where RouteSignal fits today</span><span class="sl">Kam RouteSignal sodi danes</span></h2><small>smart routers ≠ solved triage</small></div>
+    <div class="callout good">
+      <p class="en"><strong>Today’s networks are already smart — but triage is still hard.</strong> Operators already use smart routers, BGP monitoring, RPKI, telemetry, observability platforms, automation, and more AI/AIOps tooling. RouteSignal is not trying to replace those systems. It targets a narrower gap: when routing data is noisy, repeated, partial, and hard to interpret, it helps decide which ASN/prefix/time windows deserve human review first.</p>
+      <p class="sl"><strong>Današnja omrežja so že pametna — toda triaža je še vedno težka.</strong> Operaterji že uporabljajo pametne routerje, BGP monitoring, RPKI, telemetrijo, observability platforme, avtomatizacijo in vedno več AI/AIOps orodij. RouteSignal teh sistemov ne poskuša zamenjati. Cilja ožjo vrzel: ko so routing podatki šumni, ponavljajoči, delni in težki za interpretacijo, pomaga odločiti, katera ASN/prefix/časovna okna si zaslužijo človeški pregled najprej.</p>
+    </div>
+    <div class="grid cols-3" style="margin-top:18px">
+      <div class="card stack-card">
+        <h3 class="en">Not a smarter router</h3><h3 class="sl">Ni pametnejši router</h3>
+        <p class="en">Routers choose paths according to configured protocol rules and policy. RouteSignal sits outside that loop. It observes public routing evidence and produces a review queue, not routing decisions.</p>
+        <p class="sl">Routerji izbirajo poti po pravilih protokola in nastavljeni politiki. RouteSignal stoji zunaj te zanke. Opazuje javne routing dokaze in ustvari review queue, ne routing odločitev.</p>
+      </div>
+      <div class="card stack-card good">
+        <h3 class="en">Not “AI fixes the internet”</h3><h3 class="sl">Ni “AI popravi internet”</h3>
+        <p class="en">AI/AIOps can correlate alarms and logs, but routing mistakes are risky to automate blindly. RouteSignal’s safer niche is explainable prioritization: “look here first, and here is the evidence.”</p>
+        <p class="sl">AI/AIOps lahko korelira alarme in loge, routing napake pa je nevarno slepo avtomatsko popravljati. Varnejša niša RouteSignala je razložljivo prioritetiziranje: “najprej poglej tukaj, in to je evidence.”</p>
+      </div>
+      <div class="card stack-card warn">
+        <h3 class="en">Operator attention filter</h3><h3 class="sl">Filter pozornosti</h3>
+        <p class="en">The practical question is often not “do we have alerts?” but “where should a human look first?” RouteSignal reduces duplicated rows into candidate events, separates parsed-prefix evidence from weaker activity-only noise, and keeps an audit trail.</p>
+        <p class="sl">Praktično vprašanje pogosto ni “ali imamo alerte?”, ampak “kam naj človek pogleda najprej?” RouteSignal podvojene vrstice združi v kandidatne dogodke, loči parsed-prefix evidence od šibkejšega activity-only šuma in ohrani audit trail.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="summary"><div class="section-title"><h2><span class="en">What this is</span><span class="sl">Kaj je to</span></h2><small>seed → bridge → test → current state</small></div>
+    <div class="grid cols-3">
+      <div class="card"><h3>Seed</h3><p class="en">BGP update streams have structure. Stable routing should be comparatively compressible; flapping, churn, policy shifts, or visibility changes can create higher residual and higher complexity.</p><p class="sl">BGP update streami imajo strukturo. Stabilen routing bi moral biti relativno stisljiv; flapping, churn, policy spremembe ali spremembe vidljivosti lahko ustvarijo višji residual in višjo kompleksnost.</p></div>
+      <div class="card"><h3>Bridge</h3><p class="en">Use MDL-style residual/complexity metrics and DCC-style multi-signal gating over public RIPEstat data, with deterministic demo data, offline replay, source-quality warnings, and operator-facing reports.</p><p class="sl">Uporabi MDL-style residual/complexity metrike in DCC-style multi-signal gating nad javnimi RIPEstat podatki, z determinističnim demo načinom, offline replayem, source-quality opozorili in operaterskimi poročili.</p></div>
+      <div class="card"><h3>Current state</h3><p class="en">v0.1e proved the long-run evidence harness. v0.2 adds the analyzer/report layer: global event ledger, parsed-first operator report, known-event/control report, false-positive load summary, test bundles, and thinner review packaging.</p><p class="sl">v0.1e je dokazal long-run evidence harness. v0.2 doda analyzer/report sloj: global event ledger, parsed-first operator report, known-event/control report, false-positive load summary, test bundle in tanjše review pakiranje.</p></div>
+    </div>
+  </section>
+
+  <section id="v02"><div class="section-title"><h2><span class="en">v0.2.5 validation status</span><span class="sl">v0.2.5 validacijski status</span></h2><small>fresh package · smoke/standard passed · 8h deep-live in progress</small></div>
+    <div class="grid cols-2">
+      <div class="card"><h3 class="en">What is already good</h3><h3 class="sl">Kaj je že dobro</h3><div class="callout good"><p class="en">The fresh v0.2.5 run starts cleanly. Package verification, smoke, standard offline/replay, determinism checks, and the first standard live matrix are passing in the current CMD evidence. The old v0.2.2 thin-ZIP bloat problem has been patched by running deep sub-tests without per-subrun thin ZIP creation.</p><p class="sl">Svež v0.2.5 run se zažene čisto. Package verification, smoke, standard offline/replay, determinism preverjanje in prvi standard live matrix v trenutnem CMD evidence-u prehajajo s PASS. Stari v0.2.2 problem z napihovanjem thin ZIP-ov je popravljen tako, da deep sub-testi ne ustvarjajo več per-subrun thin ZIP-ov.</p></div></div>
+      <div class="card"><h3 class="en">What is still being tested</h3><h3 class="sl">Kaj se še testira</h3><div class="callout warn"><p class="en">The 8-hour deep-live run is still a validation run, not a final claim. The current page should therefore say “active validation,” not “proven production tool.” The next update should use the finished 8h/24h evidence bundle and thin extractor output.</p><p class="sl">8-urni deep-live run je še validacijski tek, ne končna trditev. Stran mora zato reči “aktivna validacija”, ne “dokazano production orodje”. Naslednja posodobitev naj uporabi dokončan 8h/24h evidence bundle in thin extractor output.</p></div></div>
+    </div>
+    <div class="grid cols-3" style="margin-top:18px">
+      <div class="metric"><div class="num">v0.2.5</div><div class="label en">Fresh active package</div><div class="label sl">Svež aktivni paket</div><div class="note en">Includes v0.2 wrapper, v0.1e core, master runner, live snapshot, collector, and v0.2 thin extractor.</div><div class="note sl">Vsebuje v0.2 wrapper, v0.1e core, master runner, live snapshot, collector in v0.2 thin extractor.</div></div>
+      <div class="metric"><div class="num">PASS</div><div class="label en">Smoke + standard</div><div class="label sl">Smoke + standard</div><div class="note en">Current CMD evidence shows clean startup, replay, determinism, and standard live matrix passing before the deep-live run.</div><div class="note sl">Trenutni CMD evidence kaže čist zagon, replay, determinizem in standard live matrix s PASS pred deep-live tekom.</div></div>
+      <div class="metric"><div class="num">8h</div><div class="label en">Deep-live underway</div><div class="label sl">Deep-live v teku</div><div class="note en">Long-run validation is in progress; final results should be reported from the generated analysis/thin bundles.</div><div class="note sl">Dolg validacijski tek je v teku; končni rezultati naj pridejo iz ustvarjenih analysis/thin bundle-ov.</div></div>
+      <div class="metric"><div class="num">179</div><div class="label en">Sample global ledger rows</div><div class="label sl">Sample global ledger vrstic</div><div class="note en">Earlier v0.2 sample analysis reduced 867 operator-queue rows into 179 global event-ledger rows.</div><div class="note sl">Prejšnja v0.2 sample analiza je 867 operator-queue vrstic zmanjšala v 179 global event-ledger vrstic.</div></div>
+      <div class="metric"><div class="num">79.35%</div><div class="label en">Queue reduction sample</div><div class="label sl">Sample zmanjšanja queue-a</div><div class="note en">Illustrative reduction from duplicated operator rows to global review events; final numbers wait for the current long run.</div><div class="note sl">Ilustrativno zmanjšanje iz podvojenih operator vrstic v globalne review dogodke; finalne številke čakajo trenutni dolg run.</div></div>
+      <div class="metric"><div class="num">No claim</div><div class="label en">Production boundary</div><div class="label sl">Production meja</div><div class="note en">Review candidates only: no attack/hijack/outage verdicts and no routing-change advice.</div><div class="note sl">Samo review kandidati: brez razsodb napad/hijack/izpad in brez routing-change nasvetov.</div></div>
+    </div>
+  </section>
+
+  <section id="case-study">
+    <details class="collapse-section">
+      <summary>
+        <div class="collapse-title">
+          <h2><span class="en">RouteSignal as a prompt-method case study</span><span class="sl">RouteSignal kot case study prompting metod</span></h2>
+          <small><span class="en">Secondary appendix: Direct vs Prompt Coach vs RHPr/RHP</span><span class="sl">Sekundarni dodatek: Direct vs Prompt Coach vs RHPr/RHP</span></small>
+        </div>
+        <div class="collapse-toggle"><span class="closed"><span class="en">Open details</span><span class="sl">Odpri podrobnosti</span></span><span class="open"><span class="en">Hide details</span><span class="sl">Skrij podrobnosti</span></span></div>
+      </summary>
+      <div class="collapse-inner">
+        <p class="secondary-note en">This case study is useful, but it is not the main point of the RouteSignal page. The main point is the internet-ops prototype above; the prompt-method evidence is kept here as a collapsible appendix.</p>
+        <p class="secondary-note sl">Ta case study je uporaben, vendar ni glavno bistvo RouteSignal strani. Glavno bistvo je internet-ops prototip zgoraj; evidence o prompting metodi je tukaj ohranjen kot zložljiv dodatek.</p>
+
+<div class="grid cols-2">
+      <div class="card">
+        <h3 class="en">Why this case study matters</h3><h3 class="sl">Zakaj je ta case study pomemben</h3>
+        <p class="en">RouteSignal became more than a routing prototype: it became a controlled prompt-method test. The same real task — build a Python read-only routing-signal scout — was given through several prompt-building paths, then judged first at prompt level and later by the actual Python packages those prompts produced.</p>
+        <p class="sl">RouteSignal je postal več kot routing prototip: postal je kontroliran test prompting metod. Ista realna naloga — zgraditi Python read-only routing-signal scout — je šla skozi več poti priprave prompta, nato pa je bila ocenjena najprej na ravni promptov in kasneje še po dejanskih Python paketih, ki so iz teh promptov nastali.</p>
+        <p class="en">This is intentionally a practical engineering case, not a universal benchmark. It asks a narrow but useful question: which workflow recovered the most implementation-critical structure for this difficult coding-builder task?</p>
+        <p class="sl">To je namerno praktičen inženirski primer, ne univerzalni benchmark. Vprašanje je ozko, a uporabno: kateri workflow je za to zahtevno coding-builder nalogo obnovil največ implementacijsko kritične strukture?</p>
+        <a class="study-link" href="RouteSignal_Prompt_Method_Study.html">Open the full prompt-method study →</a>
+      </div>
+      <div class="card">
+        <h3 class="en">Methods compared</h3><h3 class="sl">Primerjane metode</h3>
+        <ul class="en">
+          <li><b>A</b> — direct prompt in MS Copilot GPT-5.5 Deep Thinking.</li>
+          <li><b>B</b> — Microsoft Copilot Prompt Coach.</li>
+          <li><b>C</b> — MS Copilot GPT-5.5 Deep Thinking plus RHPr/RHP.</li>
+          <li><b>D</b> — fresh BD × GPT RHPr/RHP version.</li>
+          <li><b>E</b> — older BD × GPT hybrid reference prompt.</li>
+        </ul>
+        <ul class="sl">
+          <li><b>A</b> — direct prompt v MS Copilot GPT-5.5 Deep Thinking.</li>
+          <li><b>B</b> — Microsoft Copilot Prompt Coach.</li>
+          <li><b>C</b> — MS Copilot GPT-5.5 Deep Thinking plus RHPr/RHP.</li>
+          <li><b>D</b> — sveža BD × GPT RHPr/RHP verzija.</li>
+          <li><b>E</b> — starejši BD × GPT hibridni referenčni prompt.</li>
+        </ul>
+        <div class="callout warn"><p class="en"><b>Important:</b> E is not just another one-shot prompt. It was made in the BD × GPT-5.5 Pro workflow as a hybrid: one direct/builder path, one RHPr/RHP path, then the strongest parts of both were merged into a final builder prompt. For that reason, E is best treated as a reference/champion lineage, not as a same-condition one-shot peer to A/B/C/D.</p><p class="sl"><b>Pomembno:</b> E ni samo še en enkraten prompt. Nastal je v BD × GPT-5.5 Pro workflowu kot hibrid: ena direct/builder pot, ena RHPr/RHP pot, nato pa sta bila najboljša dela obeh združena v končni builder prompt. Zato je E najbolje razumeti kot referenčno/champion linijo, ne kot povsem enak enkraten peer A/B/C/D.</p></div>
+      </div>
+    </div>
+
+    <div class="grid cols-2" style="margin-top:18px">
+      <div class="card">
+        <h3 class="en">Phase 1 — prompt-level result</h3><h3 class="sl">Faza 1 — rezultat na ravni promptov</h3>
+        <p class="en">The first pass scored the builder prompts themselves: clarity, constraints, RIPEstat/API precision, offline/replay behavior, MDL×DCC fidelity, no-overclaim safety, acceptance tests, and usefulness for a coding LLM.</p>
+        <p class="sl">Prvi prehod je ocenjeval same builder prompt-e: jasnost, omejitve, RIPEstat/API natančnost, offline/replay obnašanje, MDL×DCC zvestobo, no-overclaim varnost, acceptance teste in uporabnost za coding LLM.</p>
+        <div class="table-wrap"><table class="mini-table"><thead><tr><th>Method</th><th>Prompt score</th><th>Short verdict</th></tr></thead><tbody>
+          <tr><td>E reference</td><td class="score-strong">96/100</td><td>Strongest hybrid reference.</td></tr>
+          <tr><td>D fresh GPT/RHPr/RHP</td><td>94/100</td><td>Best fresh result.</td></tr>
+          <tr><td>C MS Copilot + RHPr/RHP</td><td>91/100</td><td>Strong blind-spot recovery.</td></tr>
+          <tr><td>A direct baseline</td><td>89/100</td><td>Surprisingly good direct prompt.</td></tr>
+          <tr><td>B Prompt Coach</td><td class="score-weak">82/100</td><td>Useful, but most generic.</td></tr>
+        </tbody></table></div>
+      </div>
+      <div class="card">
+        <h3 class="en">Phase 2 — actual Python build result</h3><h3 class="sl">Faza 2 — rezultat dejanskih Python buildov</h3>
+        <p class="en">The stronger test was code output: A/B/C/D prompts were used in separate coding sessions, then the generated Python packages were scored. The Prompt Coach-derived build stayed last.</p>
+        <p class="sl">Močnejši test je bil rezultat kode: A/B/C/D prompti so bili uporabljeni v ločenih coding sejah, nato pa so bili ocenjeni ustvarjeni Python paketi. Prompt Coach-derived build je ostal zadnji.</p>
+        <div class="table-wrap"><table class="mini-table"><thead><tr><th>Build</th><th>Code score</th><th>Short verdict</th></tr></thead><tbody>
+          <tr><td>E-v0.2 latest</td><td class="score-strong">98/100</td><td>Current RouteSignal champion.</td></tr>
+          <tr><td>E-v0.1 reference</td><td class="score-strong">96/100</td><td>Best v0.1 reference lineage.</td></tr>
+          <tr><td>D fresh GPT/RHPr/RHP</td><td>94/100</td><td>Best fresh A/B/C/D build.</td></tr>
+          <tr><td>C MS Copilot + RHPr/RHP</td><td>92/100</td><td>Very strong artifact discipline.</td></tr>
+          <tr><td>A direct baseline</td><td>91/100</td><td>Clean and robust baseline.</td></tr>
+          <tr><td>B Prompt Coach</td><td class="score-weak">81/100</td><td>Weakest; generic and one demo-resource normalization bug.</td></tr>
+        </tbody></table></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h3 class="en">Bottom-line interpretation</h3><h3 class="sl">Glavna interpretacija</h3>
+      <div class="callout good"><p class="en">The study did not show that Prompt Coach is useless. It showed something more specific: on this difficult RouteSignal coding-builder task, Prompt Coach improved clarity and safety, but produced the weakest builder prompt and the weakest resulting Python package. RHPr/RHP and the BD × GPT hybrid workflow recovered more implementation-critical details: endpoint specificity, data-quality handling, offline fallback, test discipline, MDL×DCC scoring, and operator-review reporting.</p><p class="sl">Študija ni pokazala, da je Prompt Coach neuporaben. Pokazala je nekaj bolj specifičnega: pri tej zahtevni RouteSignal coding-builder nalogi je Prompt Coach izboljšal jasnost in varnost, vendar ustvaril najšibkejši builder prompt in najšibkejši nastali Python paket. RHPr/RHP in BD × GPT hibridni workflow sta bolje obnovila implementacijsko kritične podrobnosti: endpoint specifiko, data-quality handling, offline fallback, testno disciplino, MDL×DCC scoring in operator-review reporting.</p></div>
+      <p class="en">This is why RouteSignal is now useful both as an Internet-ops prototype and as a concrete demonstration of the RHPr/RHP workflow: the method advantage survived the move from prompt scoring to actual code output. <a href="RouteSignal_Prompt_Method_Study.html">Read the full case study.</a></p>
+      <p class="sl">Zato je RouteSignal zdaj uporaben tako kot Internet-ops prototip kot tudi kot konkreten prikaz RHPr/RHP workflowa: prednost metode je preživela prehod iz ocenjevanja promptov v dejanski rezultat kode. <a href="RouteSignal_Prompt_Method_Study.html">Preberi celoten case study.</a></p>
+    </div>
+      </div>
+    </details>
+  </section>
+
+  <section id="metrics"><div class="section-title"><h2><span class="en">Evidence baseline at a glance</span><span class="sl">Evidence baseline na kratko</span></h2><small>v0.1e thin evidence + v0.2 analyzer layer</small></div>
+    <div class="grid cols-3">
+      <div class="metric"><div class="num">93</div><div class="label en">v0.1e stages summarized</div><div class="label sl">v0.1e povzetih faz</div><div class="note en">2 demo, 89 real-data, 2 partial/missing.</div><div class="note sl">2 demo, 89 real-data, 2 partial/missing.</div></div>
+      <div class="metric"><div class="num">7.93M</div><div class="label en">Windows processed</div><div class="label sl">Obdelanih oken</div><div class="note en">Across ASN, prefix, wide, fine, long, event/control stages.</div><div class="note sl">Preko ASN, prefix, wide, fine, long ter event/control faz.</div></div>
+      <div class="metric"><div class="num">1,758</div><div class="label en">Candidate rows extracted</div><div class="label sl">Izvlečenih kandidatov</div><div class="note en">Thin bundle kept only analysis-relevant rows.</div><div class="note sl">Thin bundle je obdržal le analitično uporabne vrstice.</div></div>
+      <div class="metric"><div class="num">867 → 179</div><div class="label en">Queue to global ledger</div><div class="label sl">Queue v global ledger</div><div class="note en">v0.2 turns repeated operator-queue rows into a smaller global event-ledger layer.</div><div class="note sl">v0.2 ponavljajoče operator-queue vrstice pretvori v manjši global event-ledger sloj.</div></div>
+      <div class="metric"><div class="num">~29 MB</div><div class="label en">v0.1e thin evidence ZIP</div><div class="label sl">v0.1e thin evidence ZIP</div><div class="note en">Replaced 27 GB of bloated cumulative FOR_GPT snapshots.</div><div class="note sl">Nadomestil 27 GB napihnjenih kumulativnih FOR_GPT snapshotov.</div></div>
+      <div class="metric"><div class="num">393 KB</div><div class="label en">v0.2 sample thin ZIP</div><div class="label sl">v0.2 sample thin ZIP</div><div class="note en">Included v0.2 analyzer replay evidence; deep-live needs stricter collection limits.</div><div class="note sl">Vključen v0.2 analyzer replay evidence; deep-live potrebuje strožje collection limite.</div></div>
+    </div>
+  </section>
+  <section id="method"><div class="section-title"><h2><span class="en">Method</span><span class="sl">Metoda</span></h2><small>read-only, explainable, replayable</small></div>
+    <div class="grid cols-2">
+      <div class="card"><h3 class="en">What RouteSignal scores</h3><h3 class="sl">Kaj RouteSignal ocenjuje</h3><ul class="en"><li>Volume residual against the resource’s own baseline.</li><li>Symbolic complexity / diversity proxies.</li><li>Withdrawal and burst behavior.</li><li>Peer contrast when comparable peer resources exist.</li><li>Source-quality and data-quality warnings.</li></ul><ul class="sl"><li>Volume residual glede na lastni baseline resursa.</li><li>Symbolic complexity / diversity proxy signale.</li><li>Withdrawal in burst obnašanje.</li><li>Peer contrast, kadar obstajajo primerljivi peer resursi.</li><li>Source-quality in data-quality opozorila.</li></ul></div>
+      <div class="card"><h3 class="en">What it does not claim</h3><h3 class="sl">Česa ne trdi</h3><div class="callout warn"><p class="en">A high score means “routing-signal candidate worth operator review.” It does not mean proven incident, attack, hijack, route leak, outage, or misconfiguration.</p><p class="sl">Visok score pomeni “routing-signal kandidat vreden operaterskega pregleda.” Ne pomeni dokazan incident, napad, hijack, route leak, izpad ali napačna konfiguracija.</p></div></div>
+    </div>
+  </section>
+
+  <section id="evidence"><div class="section-title"><h2><span class="en">Evidence so far</span><span class="sl">Dosedanji dokazi</span></h2><small>v0.1e long run + v0.2 ledger sample</small></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Resource</th><th>Evidence type</th><th>Score / priority</th><th>Interpretation</th></tr></thead><tbody>
+        <tr><td><span class="tag green">2001:4860::/32</span></td><td>v0.2 global ledger · updates_parsed</td><td class="score">score 53.17 · priority 102.73</td><td>Top v0.2 sample ledger row; strong IPv6/prefix signal, but still an operator-review candidate rather than a causal diagnosis.</td></tr>
+        <tr><td><span class="tag green">2a00:1450::/32</span></td><td>v0.2 global ledger · updates_parsed</td><td class="score">score 53.12 · priority 101.59</td><td>Repeated high-priority IPv6/prefix candidate in the v0.2 sample analysis.</td></tr>
+        <tr><td><span class="tag green">193.2.0.0/16</span></td><td>v0.1e repeated parsed review</td><td class="score">max 46.36 · 96 rows</td><td>Relevant local/regional prefix signal; worth operator review, especially because it appears across many stages.</td></tr>
+        <tr><td><span class="tag green">8.8.8.0/24</span></td><td>v0.1e repeated parsed review</td><td class="score">max 44.83 · 101 rows</td><td>Repeated public-DNS prefix signal; useful control/reference candidate.</td></tr>
+        <tr><td><span class="tag green">9.9.9.0/24</span></td><td>v0.1e repeated parsed review</td><td class="score">max 45.39 · 94 rows</td><td>Repeated parsed public-DNS signal, useful as comparison against Google/Cloudflare/OpenDNS prefixes.</td></tr>
+        <tr><td><span class="tag gold">AS21283</span></td><td>v0.1e/v0.2 ASN candidate</td><td class="score">max ~41.99</td><td>Best local ASN-level parsed candidate so far; still less clean than prefix-level parsed evidence.</td></tr>
+      </tbody></table></div>
+    <div class="callout warn" style="margin-top:18px"><p class="en"><b>Boundary:</b> these are routing-signal candidates. RouteSignal is not yet claiming cause, attack class, leak class, operator fault, or production incident detection.</p><p class="sl"><b>Meja:</b> to so routing-signal kandidati. RouteSignal še ne trdi vzroka, razreda napada, razreda leaka, operaterske napake ali produkcijskega zaznavanja incidentov.</p></div>
+  </section>
+  <section id="findings"><div class="section-title"><h2><span class="en">Current findings</span><span class="sl">Trenutne ugotovitve</span></h2><small>honest status</small></div>
+    <div class="grid cols-2">
+      <div class="card"><h3 class="en">What looks promising</h3><h3 class="sl">Kaj izgleda obetavno</h3><div class="callout good"><p class="en">The strongest signal remains prefix-level <b>updates_parsed</b> evidence with repeated independent-signal agreement. v0.2 improves the situation by merging repeated stage/cycle hits into a global event ledger and by promoting parsed-first operator reports.</p><p class="sl">Najmočnejši signal ostaja prefix-level <b>updates_parsed</b> evidence s ponovljenim neodvisnim signalnim soglasjem. v0.2 izboljša sliko tako, da ponavljajoče stage/cycle zadetke združi v global event ledger in promovira parsed-first operator report.</p></div></div>
+      <div class="card"><h3 class="en">What is weak</h3><h3 class="sl">Kaj je šibko</h3><div class="callout bad"><p class="en">Known-event validation is still mixed: Cloudflare 1.1.1.1 shows weak activity-only lift, Facebook 2021 is unsuitable/missing in the RIPEstat path, and AS13335 2026 did not beat its control in the current evidence.</p><p class="sl">Known-event validacija je še vedno mešana: Cloudflare 1.1.1.1 pokaže šibek activity-only lift, Facebook 2021 je v RIPEstat poti neuporaben/missing, AS13335 2026 pa v trenutnih dokazih ni premagal kontrole.</p></div></div>
+      <div class="card"><h3 class="en">Main engineering issue</h3><h3 class="sl">Glavni inženirski problem</h3><p class="en">v0.2 solves the old global-ledger/reporting gap, but the deep-live collector still lets some per-stage artifacts grow far beyond the 50 MB target. That is now the main packaging bug.</p><p class="sl">v0.2 reši star global-ledger/reporting gap, vendar deep-live collector še vedno dovoli, da nekateri per-stage artifacti zrastejo daleč čez 50 MB target. To je zdaj glavni packaging bug.</p></div>
+      <div class="card"><h3 class="en">Main science issue</h3><h3 class="sl">Glavni raziskovalni problem</h3><p class="en">Some major-ASN runs are still activity-only dominated. That tells us the ASN path is weaker than the prefix path unless parsed evidence is available, and the ranking gate must enforce that more aggressively.</p><p class="sl">Nekateri major-ASN teki so še vedno activity-only dominirani. To pomeni, da je ASN pot šibkejša od prefix poti, razen kadar imamo parsed evidence, zato mora ranking gate to strožje uveljaviti.</p></div>
+    </div>
+  </section>
+  <section id="known"><div class="section-title"><h2><span class="en">Known-event checks</span><span class="sl">Known-event preverjanja</span></h2><small>still a validation bottleneck</small></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Test</th><th>Event score</th><th>Control score</th><th>Source</th><th>Verdict</th></tr></thead><tbody>
+        <tr><td>Cloudflare 1.1.1.0/24, 2024</td><td class="score">28.82</td><td class="score">23.04</td><td><span class="tag gold">activity_only</span></td><td>Small positive lift, useful as a weak sanity check, not strong validation.</td></tr>
+        <tr><td>Facebook / AS32934, 2021</td><td class="score">-1.15</td><td class="score">-1.15</td><td><span class="tag rose">missing</span></td><td>Not usable in the current RIPEstat path; keep only as a lesson about source limits.</td></tr>
+        <tr><td>AS13335 IPv6-labeled window, 2026</td><td class="score">14.89</td><td class="score">19.80</td><td><span class="tag gold">activity_only</span></td><td>Control stronger than event; do not use as evidence.</td></tr>
+      </tbody></table></div>
+    <div class="callout warn" style="margin-top:18px"><p class="en">v0.2 should keep these visible, but the public-facing story should not lean on them. The more useful present evidence is repeated parsed-prefix structure, not known-event victory.</p><p class="sl">v0.2 naj jih obdrži vidne, vendar se javna zgodba ne sme naslanjati nanje. Bolj uporaben trenutni dokaz je ponovljena parsed-prefix struktura, ne zmaga na known-event testih.</p></div>
+  </section>
+  <section id="next"><div class="section-title"><h2><span class="en">Recommended next move</span><span class="sl">Priporočen naslednji korak</span></h2><small>finish current run, then patch v0.2.3</small></div>
+    <div class="grid cols-2">
+      <div class="card"><h3 class="en">Operational next step</h3><h3 class="sl">Operativni naslednji korak</h3><p class="en">Let the current deep-live run finish or stop it only after the runner writes its final bundle. Then upload the compact v0.2 test-analysis bundle / thin extract, not the whole raw cache.</p><p class="sl">Pusti trenutni deep-live tek, da se konča, ali ga ustavi šele po tem, ko runner zapiše finalni bundle. Nato naloži kompaktni v0.2 test-analysis bundle / thin extract, ne celotnega raw cache-a.</p></div>
+      <div class="card"><h3 class="en">Patch target</h3><h3 class="sl">Patch cilj</h3><p class="en">Next code patch should be v0.2.3, not a new conceptual rewrite: hard-cap thin bundle contents, aggregate deep-live artifacts globally, demote activity-only ASN top-20 dominance, and preserve parsed-first prefix evidence.</p><p class="sl">Naslednji code patch naj bo v0.2.3, ne nov konceptualni rewrite: hard-cap thin bundle vsebino, globalno agregiraj deep-live artifacte, degradiraj activity-only ASN top-20 dominacijo in ohrani parsed-first prefix evidence.</p></div>
+    </div>
+    <div class="card" style="margin-top:18px"><pre>v0.2.3 should fix:
+1. hard cap per-stage thin ZIP output under target size
+2. global collection after deep-live, not cumulative per-stage bloat
+3. major-ASN ranking gate: activity_only cannot dominate top-20
+4. parsed-first / prefix-first Jan-facing report
+5. final compact bundle suitable for GPT review
+6. keep no-production-claims wording</pre></div>
+  </section>
+  <section id="jan"><div class="section-title"><h2><span class="en">Questions for operator critique</span><span class="sl">Vprašanja za operatersko kritiko</span></h2><small>5-minute review target</small></div>
+    <div class="grid cols-2">
+      <div class="card"><h3 class="en">Signal validity</h3><h3 class="sl">Veljavnost signala</h3><ul class="en"><li>Are volume/complexity/diversity/peer-contrast windows meaningful to BGP operators?</li><li>Which top prefix signals look expected vs surprising?</li><li>Which false positives are operationally harmless?</li></ul><ul class="sl"><li>So volume/complexity/diversity/peer-contrast okna smiselna za BGP operaterje?</li><li>Kateri top prefix signali izgledajo pričakovani in kateri presenetljivi?</li><li>Kateri false positive-i so operatersko neškodljivi?</li></ul></div>
+      <div class="card"><h3 class="en">v0.2 direction</h3><h3 class="sl">v0.2 smer</h3><ul class="en"><li>Should the wedge be IPv6/prefix health rather than generic BGP anomaly?</li><li>Which public datasets should replace or complement RIPEstat?</li><li>When should raw RIS/RouteViews MRT parsing become necessary?</li></ul><ul class="sl"><li>Naj bo wedge IPv6/prefix health namesto generičnega BGP anomaly?</li><li>Kateri javni dataseti naj nadomestijo ali dopolnijo RIPEstat?</li><li>Kdaj postane raw RIS/RouteViews MRT parsing nujen?</li></ul></div>
+    </div>
+  </section>
+  <div class="foot">BD × AI Lab · RouteSignal Scout · read-only research prototype · updated 2026-05-31 · includes practical-impact framing, v0.2 active-validation status, and Phase 1/2 prompt-method case study</div>
+</main>
+<script>
+const root=document.documentElement,en=document.getElementById('enBtn'),sl=document.getElementById('slBtn');
+function setLang(l){root.setAttribute('data-lang',l);en.classList.toggle('active',l==='en');sl.classList.toggle('active',l==='sl');}
+en.onclick=()=>setLang('en');sl.onclick=()=>setLang('sl');
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-innerHeight;document.getElementById('progress').style.width=((scrollY/Math.max(1,h))*100)+'%';});
+</script>
+</body></html>
