@@ -4,7 +4,9 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Wi‑Fi od bara do šotora · RP‑N12 + Raspberry Pi 2 + Alfa AWUS036AXML</title>
-<!-- BD checked fixes: title no podaljsek/produzetak; RP-N12 top box removed; equipment collapsed; 2026-06-01 -->
+<!-- v1.9 verified: requested title cleanup, RP-N12 top note removed, equipment details collapsed in #oprema. -->
+
+<!-- BD verified fixes v1.8: title has no podaljšek/produžetak; old RP-N12 top box removed; all three equipment descriptions are collapsed; 2026-06-01 -->
 
 <style>
 :root{
@@ -84,6 +86,66 @@ html[data-theme="light"] .lastovo-quicklinks{background:rgba(246,248,252,.92)}
 .lastovo-quicklinks strong{font-family:var(--font-mono);font-size:var(--reader-small);letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-right:4px;flex:0 0 auto}.lastovo-quicklinks a{font-family:var(--font-mono);font-size:var(--reader-small);font-weight:900;letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.035);color:var(--blue);padding:8px 10px}.lastovo-quicklinks a:hover{color:var(--gold);border-color:var(--line2);background:rgba(240,199,106,.08)}
 @media(max-width:760px){.lastovo-quicklinks-inner{justify-content:flex-start}.lastovo-quicklinks a{padding:7px 9px}}
 
+
+
+/* v2.0 aligned reader controls: A−/A+ are only in the bottom floating bar on both pages. */
+.reader-controls{
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:max(12px,env(safe-area-inset-bottom))!important;
+  transform:translateX(-50%)!important;
+  z-index:2147483000!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  padding:8px 9px!important;
+  border:1px solid rgba(240,199,106,.34)!important;
+  border-radius:999px!important;
+  background:rgba(7,12,22,.92)!important;
+  backdrop-filter:blur(16px)!important;
+  -webkit-backdrop-filter:blur(16px)!important;
+  box-shadow:0 18px 55px rgba(0,0,0,.42)!important;
+}
+html[data-theme="light"] .reader-controls{
+  background:rgba(255,255,255,.94)!important;
+  box-shadow:0 18px 48px rgba(22,36,58,.20)!important;
+}
+.reader-controls button{
+  min-width:46px!important;
+  min-height:46px!important;
+  border:1px solid rgba(240,199,106,.34)!important;
+  border-radius:999px!important;
+  background:rgba(240,199,106,.10)!important;
+  color:var(--gold)!important;
+  font:800 17px/1 var(--font-mono)!important;
+  cursor:pointer!important;
+  touch-action:manipulation!important;
+}
+.reader-controls button:hover,
+.reader-controls button:focus-visible{
+  outline:none!important;
+  background:rgba(240,199,106,.20)!important;
+  border-color:rgba(240,199,106,.70)!important;
+}
+.reader-label{
+  min-width:92px!important;
+  text-align:center!important;
+  color:var(--muted)!important;
+  font-family:var(--font-mono)!important;
+  font-size:12px!important;
+  letter-spacing:.08em!important;
+  text-transform:uppercase!important;
+  user-select:none!important;
+}
+@media(max-width:760px){
+  .reader-controls{bottom:max(10px,env(safe-area-inset-bottom))!important;padding:7px 8px!important;gap:7px!important;max-width:calc(100vw - 20px)!important;}
+  .reader-controls button{min-width:44px!important;min-height:44px!important;font-size:16px!important;}
+  .reader-label{min-width:86px!important;font-size:11px!important;}
+}
+@media print{.reader-controls{display:none!important;}}
+
 </style>
 </head>
 <body id="top">
@@ -123,7 +185,7 @@ html[data-theme="light"] .lastovo-quicklinks{background:rgba(246,248,252,.92)}
 
 <div class="page">
   <header class="hero">
-    <div class="eyebrow"><span class="lang-inline sl">mobilna offline stran · v1.8</span><span class="lang-inline hr">mobilna offline stranica · v1.8</span></div>
+    <div class="eyebrow"><span class="lang-inline sl">mobilna offline stran · v1.9</span><span class="lang-inline hr">mobilna offline stranica · v1.9</span></div>
     <h1><span class="lang-inline sl">Wi‑Fi od bara do šotora</span><span class="lang-inline hr">Wi‑Fi od bara do šatora</span></h1>
     <p class="subtitle"><span class="lang-inline sl">Najmanj dela v kampu: doma pripravi Raspberry Pi + Alfa hotspot in ga testiraj na domačem Wi‑Fi-ju. V kampu potem praviloma spremeniš samo Wi‑Fi mrežo/geslo v ASUS RP‑N12 in priklopiš kabel v Pi.</span><span class="lang-inline hr">Najmanje posla u kampu: kod kuće pripremi Raspberry Pi + Alfa hotspot i testiraj ga na kućnom Wi‑Fi-ju. U kampu onda u pravilu mijenjaš samo Wi‑Fi mrežu/lozinku u ASUS RP‑N12 i spojiš kabel u Pi.</span></p>
     <div class="badges">
@@ -504,7 +566,7 @@ ip link show wlan0</code></pre></div></div></details>
     </div>
 
     <footer class="footer">
-      <p><strong><span class="lang-inline sl">Opomba</span><span class="lang-inline hr">Napomena</span>:</strong> <span class="lang-inline sl">Stran je samostojna in deluje offline. Ukazi predpostavljajo Raspberry Pi OS Lite Bookworm / NetworkManager. Uporabljaj samo z dovoljenjem lastnika Wi‑Fi omrežja. Verzija v1.8 uporablja bar in ohranja pravilo: v kampu spremeni samo RP‑N12 vhodno Wi‑Fi mrežo.</span><span class="lang-inline hr">Stranica je samostalna i radi offline. Naredbe pretpostavljaju Raspberry Pi OS Lite Bookworm / NetworkManager. Koristi samo uz dozvolu vlasnika Wi‑Fi mreže. Verzija v1.8 koristi bar i zadržava pravilo: u kampu mijenjaš samo ulaznu Wi‑Fi mrežu na RP‑N12.</span></p>
+      <p><strong><span class="lang-inline sl">Opomba</span><span class="lang-inline hr">Napomena</span>:</strong> <span class="lang-inline sl">Stran je samostojna in deluje offline. Ukazi predpostavljajo Raspberry Pi OS Lite Bookworm / NetworkManager. Uporabljaj samo z dovoljenjem lastnika Wi‑Fi omrežja. Verzija v1.9 uporablja bar in ohranja pravilo: v kampu spremeni samo RP‑N12 vhodno Wi‑Fi mrežo.</span><span class="lang-inline hr">Stranica je samostalna i radi offline. Naredbe pretpostavljaju Raspberry Pi OS Lite Bookworm / NetworkManager. Koristi samo uz dozvolu vlasnika Wi‑Fi mreže. Verzija v1.9 koristi bar i zadržava pravilo: u kampu mijenjaš samo ulaznu Wi‑Fi mrežu na RP‑N12.</span></p>
     </footer>
   </main>
 </div>
@@ -512,7 +574,7 @@ ip link show wlan0</code></pre></div></div></details>
 <a href="#top" class="back-top">↑ Top</a>
 <div class="reader-controls" role="group" aria-label="Text size controls">
   <button type="button" data-reader-dec>A−</button>
-  <span class="reader-label" id="readerSizeLabel">Veliko 4/7</span>
+  <span class="reader-label" id="readerSizeLabel">Veliko 4/8</span>
   <button type="button" data-reader-inc>A+</button>
 </div>
 
@@ -520,10 +582,10 @@ ip link show wlan0</code></pre></div></div></details>
 (function(){
   const LANG_KEY='wifiCampLangV1', THEME_KEY='wifiCampThemeV1', SIZE_KEY='wifiCampReaderSizeV1', SET_KEY='wifiCampSettingsV1';
   const navMap={
-    sl:{title:'Wi‑Fi od bara do šotora · Pi 2 + Alfa',top:'↑ Vrh',themeLight:'☀ Svetlo',themeDark:'🌙 Temno',copy:'Kopiraj',copied:'Kopirano',reader:['Majhno','Normalno','Veliko','Zelo veliko','Kamp','Ogromno','Maks'],nav:{home:['Doma','#sl-doma'],camp:['Kamp','#sl-kamp'],tests:['Test','#sl-testi'],trouble:['Težave','#sl-tezave'],fallback:['Fallback','#sl-fallback'],lastovo:['Lastovo','lastovo.html#opis'],'lastovo-car':['Avto','lastovo.html#avto'],'lastovo-kayak':['Kajak','lastovo.html#kajak']}},
-    hr:{title:'Wi‑Fi od bara do šatora · Pi 2 + Alfa',top:'↑ Vrh',themeLight:'☀ Svijetlo',themeDark:'🌙 Tamno',copy:'Kopiraj',copied:'Kopirano',reader:['Malo','Normalno','Veliko','Vrlo veliko','Kamp','Ogromno','Maks'],nav:{home:['Kuća','#hr-kuca'],camp:['Kamp','#hr-kampu'],tests:['Test','#hr-testovi'],trouble:['Problemi','#hr-problemi'],fallback:['Fallback','#hr-fallback'],lastovo:['Lastovo','lastovo.html#opis'],'lastovo-car':['Auto','lastovo.html#avto'],'lastovo-kayak':['Kajak','lastovo.html#kajak']}}
+    sl:{title:'Wi‑Fi od bara do šotora · Pi 2 + Alfa',top:'↑ Vrh',themeLight:'☀ Svetlo',themeDark:'🌙 Temno',copy:'Kopiraj',copied:'Kopirano',reader:['Majhno','Udobno','Veliko','XL','Postelja','Ogromno','Velikan','Maks'],nav:{home:['Doma','#sl-doma'],camp:['Kamp','#sl-kamp'],tests:['Test','#sl-testi'],trouble:['Težave','#sl-tezave'],fallback:['Fallback','#sl-fallback'],lastovo:['Lastovo','lastovo.html#opis'],'lastovo-car':['Avto','lastovo.html#avto'],'lastovo-kayak':['Kajak','lastovo.html#kajak']}},
+    hr:{title:'Wi‑Fi od bara do šatora · Pi 2 + Alfa',top:'↑ Vrh',themeLight:'☀ Svijetlo',themeDark:'🌙 Tamno',copy:'Kopiraj',copied:'Kopirano',reader:['Malo','Udobno','Veliko','XL','Za čitanje','Ogromno','Div','Maks'],nav:{home:['Kuća','#hr-kuca'],camp:['Kamp','#hr-kampu'],tests:['Test','#hr-testovi'],trouble:['Problemi','#hr-problemi'],fallback:['Fallback','#hr-fallback'],lastovo:['Lastovo','lastovo.html#opis'],'lastovo-car':['Auto','lastovo.html#avto'],'lastovo-kayak':['Kajak','lastovo.html#kajak']}}
   };
-  function clamp(n){n=parseInt(n,10);return isNaN(n)?3:Math.max(0,Math.min(6,n));}
+  function clamp(n){n=parseInt(n,10);return isNaN(n)?3:Math.max(0,Math.min(7,n));}
   function getLang(){try{let v=localStorage.getItem(LANG_KEY);if(v==='sl'||v==='hr')return v;}catch(e){}return 'sl'}
   function getTheme(){try{let v=localStorage.getItem(THEME_KEY);if(v==='dark'||v==='light')return v;}catch(e){}return 'dark'}
   function getSize(){try{let v=localStorage.getItem(SIZE_KEY);if(v!==null)return clamp(v);}catch(e){}return clamp(document.documentElement.getAttribute('data-reader-size')||3)}
@@ -593,7 +655,7 @@ ip link show wlan0</code></pre></div></div></details>
     n=clamp(n); document.documentElement.setAttribute('data-reader-size',String(n));
     try{localStorage.setItem(SIZE_KEY,String(n))}catch(e){}
     const lang=document.documentElement.getAttribute('data-lang')||'sl'; const names=navMap[lang].reader;
-    const label=document.getElementById('readerSizeLabel'); if(label) label.textContent=names[n]+' '+(n+1)+'/7';
+    const label=document.getElementById('readerSizeLabel'); if(label) label.textContent=names[n]+' '+(n+1)+'/8';
   }
   async function copyFrom(btn){
     const box=btn.closest('.codebox'); if(!box)return;

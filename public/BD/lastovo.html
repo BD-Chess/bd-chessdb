@@ -56,7 +56,6 @@ html[data-theme="light"] .reader-controls{background:rgba(255,255,255,.94)!impor
 .reader-label{min-width:102px!important;text-align:center!important;color:var(--muted)!important;font-family:var(--font-mono)!important;font-size:var(--reader-small)!important;font-weight:900!important;letter-spacing:.08em!important;text-transform:uppercase!important;user-select:none!important;}
 .back-top{position:fixed;right:14px;bottom:86px;z-index:2147482000;border:1px solid var(--line2);border-radius:999px;background:rgba(5,7,12,.84);color:var(--gold);font-family:var(--font-mono);font-size:var(--reader-small);font-weight:900;padding:10px 12px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line2);}
 html[data-theme="light"] .back-top{background:rgba(255,255,255,.90)}
-@media(max-width:760px){.reader-controls{bottom:max(10px,env(safe-area-inset-bottom))!important;padding:7px!important}.reader-controls button{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important}.reader-label{min-width:90px!important}.top-controls [data-reader-dec],.top-controls [data-reader-inc]{min-width:50px!important;font-size:16px!important}}
 @media print{.topbar,.reader-controls,.back-top,#progress{display:none!important}body{background:white;color:black}.card,.callout,.place-card{box-shadow:none}.lang-panel{display:block}}
 
 
@@ -165,13 +164,11 @@ html[data-theme="light"] .reader-controls{background:rgba(246,248,252,.96)!impor
 .reader-controls button:hover,.reader-controls button:focus-visible{outline:none!important;background:rgba(240,199,106,.20)!important;border-color:rgba(240,199,106,.72)!important}
 .reader-label{min-width:96px!important;text-align:center!important;color:var(--text)!important;font-size:12px!important;letter-spacing:.08em!important;text-transform:uppercase!important;white-space:nowrap!important;user-select:none!important}
 html[data-theme="light"] .reader-label{color:#263142!important}
-.top-controls [data-reader-dec],.top-controls [data-reader-inc]{display:inline-grid!important;place-items:center!important;min-width:48px!important;min-height:38px!important;color:var(--gold)!important;background:rgba(240,199,106,.14)!important;border-color:rgba(240,199,106,.45)!important;font-weight:950!important}
 
 .top-menu{flex-direction:column;overflow-x:visible;white-space:normal;gap:7px}
 .nav{width:100%;display:flex;overflow-x:auto;white-space:nowrap;justify-content:center;scrollbar-width:none;padding-bottom:1px}
 .nav::-webkit-scrollbar{display:none}
 .top-controls{width:100%;justify-content:center;flex-wrap:wrap}
-.top-controls [data-reader-dec],.top-controls [data-reader-inc]{min-width:46px;font-size:15px;color:var(--gold);background:rgba(240,199,106,.10);border-color:var(--line2)}
 .more-info{margin:13px 0 12px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.028);overflow:hidden}
 .more-info summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;color:var(--gold);font-family:var(--font-mono);font-size:var(--reader-small);font-weight:900;letter-spacing:.07em;text-transform:uppercase;touch-action:manipulation}
 .more-info summary::-webkit-details-marker{display:none}
@@ -244,8 +241,6 @@ html[data-theme="light"] .reader-controls{
 
 /* v1.5 FINAL reader controls fix: AC-style visible A− / A+ controls. */
 html[data-reader-size="7"]{--reader-text:35px;--reader-small:18px;--reader-h1:clamp(3.25rem,10.8vw,7rem);--reader-h2:clamp(2.65rem,8.3vw,4.35rem);--reader-h3:clamp(2rem,6.2vw,3.05rem)}
-.top-controls [data-reader-dec],
-.top-controls [data-reader-inc]{
   display:inline-grid!important;
   place-items:center!important;
   min-width:48px!important;
@@ -300,10 +295,6 @@ html[data-theme="light"] .reader-controls{background:rgba(255,255,255,.94)!impor
 }
 .reader-controls button:hover,
 .reader-controls button:focus-visible,
-.top-controls [data-reader-dec]:hover,
-.top-controls [data-reader-inc]:hover,
-.top-controls [data-reader-dec]:focus-visible,
-.top-controls [data-reader-inc]:focus-visible{
   outline:none!important;
   background:rgba(240,199,106,.20)!important;
   border-color:rgba(240,199,106,.62)!important;
@@ -323,7 +314,6 @@ html[data-theme="light"] .reader-controls{background:rgba(255,255,255,.94)!impor
 }
 @media(max-width:760px){
   .top-controls{justify-content:center!important;gap:6px!important}
-  .top-controls [data-reader-dec],.top-controls [data-reader-inc]{min-width:46px!important;min-height:38px!important}
   .reader-controls{bottom:max(10px,env(safe-area-inset-bottom))!important;padding:7px!important;gap:7px!important}
   .reader-controls button{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important}
   .reader-label{min-width:88px!important;font-size:11px!important}
@@ -331,18 +321,14 @@ html[data-theme="light"] .reader-controls{background:rgba(255,255,255,.94)!impor
 
 
 
-/* v1.5 hard reader controls fix: AC-style visible A-/A+ with 8 steps. */
+/* v1.5 hard reader controls fix: AC-style visible A−/A+ with 8 steps. */
 html[data-reader-size="7"]{--reader-text:35px;--reader-small:18px;--reader-h1:clamp(3.35rem,11vw,7rem);--reader-h2:clamp(2.65rem,8.4vw,4.45rem);--reader-h3:clamp(2.05rem,6.4vw,3.15rem)}
 .top-controls{display:flex!important;gap:7px!important;align-items:center!important;justify-content:center!important;flex-wrap:wrap!important;width:100%!important;overflow:visible!important}
-.top-controls [data-reader-dec],.top-controls [data-reader-inc]{min-width:48px!important;min-height:38px!important;font-size:16px!important;color:var(--gold)!important;background:rgba(240,199,106,.12)!important;border-color:var(--line2)!important;font-weight:950!important}
-.top-reader-label{display:inline-flex;align-items:center;justify-content:center;min-width:92px;min-height:38px;padding:0 10px;border:1px solid var(--line2);border-radius:999px;background:rgba(125,180,255,.08);color:var(--text);font-family:var(--font-mono);font-size:var(--reader-small);font-weight:950;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
 .reader-controls{position:fixed!important;left:50%!important;right:auto!important;bottom:max(12px,env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;z-index:2147483000!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;padding:8px!important;border:1px solid var(--line2)!important;border-radius:999px!important;background:rgba(5,7,12,.94)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important;box-shadow:0 18px 55px rgba(0,0,0,.46)!important;color:var(--text)!important;pointer-events:auto!important}
 html[data-theme="light"] .reader-controls{background:rgba(246,248,252,.94)!important;box-shadow:0 18px 55px rgba(22,36,58,.22)!important}
 .reader-controls button{display:inline-grid!important;place-items:center!important;min-width:48px!important;min-height:48px!important;border:1px solid var(--line2)!important;border-radius:999px!important;background:rgba(240,199,106,.12)!important;color:var(--gold)!important;font-family:var(--font-mono)!important;font-size:18px!important;font-weight:950!important;line-height:1!important;cursor:pointer!important;touch-action:manipulation!important}
 .reader-controls button:focus-visible,.reader-controls button:hover{outline:none!important;background:rgba(240,199,106,.20)!important;border-color:var(--gold)!important}
 .reader-label{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:106px!important;color:var(--text)!important;font-family:var(--font-mono)!important;font-size:12px!important;font-weight:900!important;letter-spacing:.07em!important;text-transform:uppercase!important;white-space:nowrap!important;user-select:none!important}
-@media(max-width:760px){.topbar-inner{gap:7px!important}.top-controls{order:-1!important}.top-reader-label{min-width:86px;min-height:36px}.reader-controls{bottom:max(10px,env(safe-area-inset-bottom))!important;padding:7px!important;gap:7px!important}.reader-controls button{min-width:44px!important;min-height:44px!important}.reader-label{min-width:92px!important;font-size:11px!important}.page{padding-bottom:170px!important}}
-@media print{.reader-controls,.top-reader-label{display:none!important}}
 
 
 
@@ -443,7 +429,6 @@ html[data-theme="light"] .reader-controls{background:rgba(255,255,255,.94)!impor
 }
 .reader-controls button:hover,.reader-controls button:focus-visible{outline:none!important;background:rgba(240,199,106,.22)!important;border-color:rgba(240,199,106,.66)!important}
 .reader-label{display:inline-block!important;min-width:104px!important;text-align:center!important;color:var(--text)!important;font-family:var(--font-mono)!important;font-size:12px!important;font-weight:850!important;line-height:1.15!important;letter-spacing:.06em!important;text-transform:uppercase!important;white-space:nowrap!important;user-select:none!important}
-.top-controls [data-reader-dec],.top-controls [data-reader-inc]{min-width:48px!important;min-height:34px!important;color:var(--gold)!important;background:rgba(240,199,106,.13)!important;border-color:rgba(240,199,106,.42)!important;font-weight:950!important}
 @media(max-width:760px){
   .reader-controls{left:50%!important;right:auto!important;transform:translateX(-50%)!important;bottom:max(12px,env(safe-area-inset-bottom))!important;padding:7px!important;gap:7px!important}
   .reader-controls button{width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;font-size:17px!important}
@@ -451,11 +436,79 @@ html[data-theme="light"] .reader-controls{background:rgba(255,255,255,.94)!impor
   .page{padding-bottom:170px!important}
 }
 
+
+/* Final sync: topbar controls are language + theme only. Text-size controls live only at the bottom. */
+.top-menu{justify-content:center!important;}
+.top-controls{order:1!important;display:flex!important;gap:6px!important;align-items:center!important;flex:0 0 auto!important;}
+.nav{order:0!important;display:flex!important;gap:6px!important;}
+.reader-controls{left:50%!important;right:auto!important;transform:translateX(-50%)!important;}
+@media(max-width:760px){.top-menu{justify-content:flex-start!important}.top-controls{order:1!important}.nav{order:0!important}.page{padding-bottom:170px!important}}
+
+
+
+/* v2.0 aligned reader controls: A−/A+ are only in the bottom floating bar on both pages. */
+.reader-controls{
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:max(12px,env(safe-area-inset-bottom))!important;
+  transform:translateX(-50%)!important;
+  z-index:2147483000!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  padding:8px 9px!important;
+  border:1px solid rgba(240,199,106,.34)!important;
+  border-radius:999px!important;
+  background:rgba(7,12,22,.92)!important;
+  backdrop-filter:blur(16px)!important;
+  -webkit-backdrop-filter:blur(16px)!important;
+  box-shadow:0 18px 55px rgba(0,0,0,.42)!important;
+}
+html[data-theme="light"] .reader-controls{
+  background:rgba(255,255,255,.94)!important;
+  box-shadow:0 18px 48px rgba(22,36,58,.20)!important;
+}
+.reader-controls button{
+  min-width:46px!important;
+  min-height:46px!important;
+  border:1px solid rgba(240,199,106,.34)!important;
+  border-radius:999px!important;
+  background:rgba(240,199,106,.10)!important;
+  color:var(--gold)!important;
+  font:800 17px/1 var(--font-mono)!important;
+  cursor:pointer!important;
+  touch-action:manipulation!important;
+}
+.reader-controls button:hover,
+.reader-controls button:focus-visible{
+  outline:none!important;
+  background:rgba(240,199,106,.20)!important;
+  border-color:rgba(240,199,106,.70)!important;
+}
+.reader-label{
+  min-width:92px!important;
+  text-align:center!important;
+  color:var(--muted)!important;
+  font-family:var(--font-mono)!important;
+  font-size:12px!important;
+  letter-spacing:.08em!important;
+  text-transform:uppercase!important;
+  user-select:none!important;
+}
+@media(max-width:760px){
+  .reader-controls{bottom:max(10px,env(safe-area-inset-bottom))!important;padding:7px 8px!important;gap:7px!important;max-width:calc(100vw - 20px)!important;}
+  .reader-controls button{min-width:44px!important;min-height:44px!important;font-size:16px!important;}
+  .reader-label{min-width:86px!important;font-size:11px!important;}
+}
+@media print{.reader-controls{display:none!important;}}
+
 </style>
 </head>
 <body id="top">
 <div id="progress"></div>
-<div class="topbar"><div class="topbar-inner"><a class="top-title" href="#top"><span class="lang-inline sl">Lastovo · kamp Zaglav · avto + kajak</span><span class="lang-inline hr">Lastovo · kamp Zaglav · auto + kajak</span></a><div class="top-menu"><div class="top-controls" aria-label="Nastavitve branja: jezik, A−, A+ in tema"><button class="active" data-lang-btn="sl" type="button">SL</button><button data-lang-btn="hr" type="button">HR</button><button aria-label="Zmanjšaj tekst" data-reader-dec="" title="A-" type="button">A-</button><span class="top-reader-label" id="topReaderSizeLabel">Veliko 4/8</span><button aria-label="Povečaj tekst" data-reader-inc="" title="A+" type="button">A+</button><button data-theme-btn="" type="button"><span class="lang-inline sl">☀ Svetlo</span><span class="lang-inline hr">☀ Svijetlo</span></button></div><nav class="nav"><a href="#opis">Opis</a><a href="#avto"><span class="lang-inline sl">Avto</span><span class="lang-inline hr">Auto</span></a><a href="#restavracije"><span class="lang-inline sl">Hrana</span><span class="lang-inline hr">Hrana</span></a><a href="#kajak">Kajak</a><a href="#plan">Plan</a><a href="wifi.html">Wi‑Fi</a></nav></div></div></div>
+<div class="topbar"><div class="topbar-inner"><a class="top-title" href="#top"><span class="lang-inline sl">Lastovo · kamp Zaglav · avto + kajak</span><span class="lang-inline hr">Lastovo · kamp Zaglav · auto + kajak</span></a><div class="top-menu"><nav class="nav" aria-label="Navigation"><a href="#opis">Opis</a><a href="#avto"><span class="lang-inline sl">Avto</span><span class="lang-inline hr">Auto</span></a><a href="#restavracije"><span class="lang-inline sl">Hrana</span><span class="lang-inline hr">Hrana</span></a><a href="#kajak">Kajak</a><a href="#plan">Plan</a><a href="wifi.html">Wi‑Fi</a></nav><div class="top-controls" role="group" aria-label="Jezik in tema"><button class="active" data-lang-btn="sl" type="button">SL</button><button data-lang-btn="hr" type="button">HR</button><button data-theme-btn="" type="button"><span class="lang-inline sl">☀ Svetlo</span><span class="lang-inline hr">☀ Svijetlo</span></button></div></div></div></div>
 <div class="page">
 <header class="hero"><div class="eyebrow"><span class="lang-inline sl">mobilni kamp vodič · avgust · Lastovo</span><span class="lang-inline hr">mobilni kamp vodič · kolovoz · Lastovo</span></div><h1><span class="lang-inline sl">Lastovo iz kampa Zaglav</span><span class="lang-inline hr">Lastovo iz kampa Zaglav</span></h1><p class="subtitle"><span class="lang-inline sl">Praktičen vodič za tri tedne: kaj gledati z avtom, kam na dobro hrano, kje začeti s kajakom in kdaj raje ostati pri kopanju, senci in zvezdah.</span><span class="lang-inline hr">Praktičan vodič za tri tjedna: što obići autom, gdje na dobru hranu, gdje krenuti kajakom i kad je bolje ostati pri kupanju, hladu i zvijezdama.</span></p><div class="badges"><span class="badge good"><span class="lang-inline sl">kamp baza</span><span class="lang-inline hr">kamp baza</span></span><span class="badge bridge"><span class="lang-inline sl">avto + kajak</span><span class="lang-inline hr">auto + kajak</span></span><span class="badge warn"><span class="lang-inline sl">veter odloča</span><span class="lang-inline hr">vjetar odlučuje</span></span></div></header>
 <section class="pocket"><div class="card"><h3><span class="lang-inline sl">Najboljši pristop</span><span class="lang-inline hr">Najbolji pristup</span></h3><p><span class="lang-inline sl">Z avtom raziskuj zalive in vasi. S kajakom delaj kratke jutranje ali večerne ture iz zaščitenih zalivov. Ne sili v odprto morje, če se dviga maestral.</span><span class="lang-inline hr">Autom istražuj uvale i mjesta. Kajakom radi kratke jutarnje ili večernje ture iz zaštićenih uvala. Ne idi na otvoreno more ako se diže maestral.</span></p></div><div class="card"><h3><span class="lang-inline sl">Hitri zemljevidi</span><span class="lang-inline hr">Brze karte</span></h3><p><span class="lang-inline sl">Vsaka točka ima Google Maps in Apple Maps link. Na telefonu se bo odprla prava aplikacija oziroma spletni zemljevid.</span><span class="lang-inline hr">Svaka točka ima Google Maps i Apple Maps link. Na telefonu će se otvoriti prava aplikacija ili web karta.</span></p><p><span class="lang-inline sl"><strong>Razpirljivi opisi:</strong> pri zanimivih točkah klikni “Več o tej točki”, ko želiš dodatni opis brez gneče na zaslonu.</span><span class="lang-inline hr"><strong>Proširivi opisi:</strong> kod zanimljivih točaka klikni “Više o ovoj točki” kad želiš dodatni opis bez gužve na ekranu.</span></p><div class="map-buttons"><a href="https://www.google.com/maps/search/?api=1&amp;query=Lastovo+Croatia" rel="noopener" target="_blank">Google Maps</a><a href="https://maps.apple.com/?q=Lastovo%20Croatia" rel="noopener" target="_blank">Apple Maps</a></div></div><div class="card"><h3>Wi‑Fi</h3><p><span class="lang-inline sl">Za tehnično postavitev Wi‑Fi povezave od bara do šotora odpri povezano stran.</span><span class="lang-inline hr">Za tehničko postavljanje Wi‑Fi veze od bara do šatora otvori povezanu stranicu.</span></p><div class="map-buttons"><a href="wifi.html"><span class="lang-inline sl">Odpri wifi.html</span><span class="lang-inline hr">Otvori wifi.html</span></a></div></div></section>
@@ -598,8 +651,8 @@ html[data-theme="light"] .reader-controls{background:rgba(255,255,255,.94)!impor
 </article></div><div class="callout bridge"><p><span class="lang-inline sl"><strong>Sušac / Palagruža:</strong> naj ostaneta izlet z dobro barko, ne rekreativni kajak cilj. Sušac je približno 13 navtičnih milj od Lastova, Palagruža še precej dlje; to ni isti razred kot zalivska tura.</span><span class="lang-inline hr"><strong>Sušac / Palagruža:</strong> neka ostanu izlet dobrim brodom, ne rekreativni kajak cilj. Sušac je oko 13 nautičkih milja od Lastova, Palagruža još znatno dalje; to nije ista kategorija kao tura po uvali.</span></p></div></section>
 <section class="chapter" id="plan"><div class="tag"><span class="lang-inline sl">5 · kako razporediti 3 tedne</span><span class="lang-inline hr">5 · kako rasporediti 3 tjedna</span></div><h2><span class="lang-inline sl">Lep ritem za 3 tedne</span><span class="lang-inline hr">Lijep ritam za 3 tjedna</span></h2><div class="lang-panel sl"><div class="route-day"><div class="day-no">1</div><p><strong>Prvi dnevi:</strong> nič heroizma. Kamp, Ubli, prvi test kajaka, Lastovo vas, sončni zahod na Humu.</p></div><div class="route-day"><div class="day-no">2</div><p><strong>Prvi teden:</strong> Pasadur/Prežba, Zaklopatica večerja, Skrivena Luka + Porto Rosso, Barje.</p></div><div class="route-day"><div class="day-no">3</div><p><strong>Drugi teden:</strong> ponovi najboljše lokacije ob boljšem vremenu, dodaj daljše jutranje kajake in mogoče organiziran izlet na Saplun/Lastovnjake.</p></div><div class="route-day"><div class="day-no">4</div><p><strong>Tretji teden:</strong> ne lovi več vsega. Izberi top 3 zalive, top 2 konobi, top 2 kajak ruti in naredi “best of” brez hitenja.</p></div></div><div class="lang-panel hr"><div class="route-day"><div class="day-no">1</div><p><strong>Prvi dani:</strong> ništa herojsko. Kamp, Ubli, prvi test kajaka, mjesto Lastovo, zalazak na Humu.</p></div><div class="route-day"><div class="day-no">2</div><p><strong>Prvi tjedan:</strong> Pasadur/Prežba, večera u Zaklopatici, Skrivena Luka + Porto Rosso, Barje.</p></div><div class="route-day"><div class="day-no">3</div><p><strong>Drugi tjedan:</strong> ponovi najbolje lokacije uz bolje vrijeme, dodaj duže jutarnje kajake i možda organizirani izlet na Saplun/Lastovnjake.</p></div><div class="route-day"><div class="day-no">4</div><p><strong>Treći tjedan:</strong> ne lovi više sve. Odaberi top 3 uvale, top 2 konobe, top 2 kajak rute i napravi “best of” bez žurbe.</p></div></div></section>
 <section class="chapter" id="viri"><div class="tag"><span class="lang-inline sl">6 · viri</span><span class="lang-inline hr">6 · izvori</span></div><h2><span class="lang-inline sl">Viri in opombe</span><span class="lang-inline hr">Izvori i napomene</span></h2><div class="callout good"><p><span class="lang-inline sl"><strong>Opomba:</strong> to ni navtična karta ali varnostni načrt. Zemljevidi so za orientacijo; za plovbo preveri realno napoved, lokalne razmere in svojo opremo.</span><span class="lang-inline hr"><strong>Napomena:</strong> ovo nije nautička karta ni sigurnosni plan. Karte su za orijentaciju; za plovidbu provjeri stvarnu prognozu, lokalne uvjete i svoju opremu.</span></p></div><ul class="clean source-list"><li><a href="https://pp-lastovo.hr/opci-podaci/?lang=en" rel="noopener" target="_blank">Park prirode Lastovsko otočje · General information</a></li><li><a href="https://hrmzp.hr/hrmzpweb/en/about-us/members/pi-lastovo-islands-np" rel="noopener" target="_blank">PI Lastovo Islands Nature Park</a></li><li><a href="https://www.parkovihrvatske.hr/en/park-prirode-lastovsko-otocje-v2" rel="noopener" target="_blank">Parkovi Hrvatske · Lastovo Archipelago</a></li><li><a href="https://tz-lastovo.hr/en/guide/" rel="noopener" target="_blank">Tourist Board of Lastovo · History</a></li><li><a href="https://tz-lastovo.hr/en/guide/beaches-and-bays/" rel="noopener" target="_blank">Tourist Board of Lastovo · Beaches, Bays and Coves</a></li><li><a href="https://www.kampzaglav.hr/en/about-us" rel="noopener" target="_blank">Kamp Zaglav · About us</a></li><li><a href="https://tz-lastovo.hr/en/guide/gastronomy/taverns/" rel="noopener" target="_blank">Tourist Board of Lastovo · Taverns</a></li><li><a href="https://portorus.com/en" rel="noopener" target="_blank">Porto Rosso</a></li><li><a href="https://www.kampzaglav.hr/en/price-list" rel="noopener" target="_blank">Kamp Zaglav · Price list</a></li><li><a href="https://avtokampi.si/campsites/camping-zaglav" rel="noopener" target="_blank">Avtokampi · Camping Zaglav</a></li><li><a href="https://tz-lastovo.hr/en/useful-information/yellow-pages/rent-a/" rel="noopener" target="_blank">Tourist Board of Lastovo · Rent a</a></li><li><a href="https://visitdubrovnik.hr/destinations/lastovo/" rel="noopener" target="_blank">Visit Dubrovnik · Lastovo overview</a></li></ul></section>
-</main><footer class="footer"><p><span class="lang-inline sl">Lastovo kamp vodič · lokalna datoteka za telefon · verzija 1.6</span><span class="lang-inline hr">Lastovo kamp vodič · lokalna datoteka za telefon · verzija 1.6</span></p></footer></div>
-<a aria-label="Back to top" class="back-top" href="#top">↑</a><div class="reader-controls" aria-label="Velikost besedila" role="group"><button aria-label="Zmanjšaj velikost besedila" data-reader-dec="" type="button">A-</button><span class="reader-label" id="readerSizeLabel">Veliko 4/8</span><button aria-label="Povečaj velikost besedila" data-reader-inc="" type="button">A+</button></div>
+</main><footer class="footer"><p><span class="lang-inline sl">Lastovo kamp vodič · lokalna datoteka za telefon · verzija 2.2</span><span class="lang-inline hr">Lastovo kamp vodič · lokalna datoteka za telefon · verzija 2.2</span></p></footer></div>
+<a aria-label="Back to top" class="back-top" href="#top">↑</a><div class="reader-controls" aria-label="Velikost besedila" role="group"><button aria-label="Zmanjšaj velikost besedila" data-reader-dec="" type="button">A−</button><span class="reader-label" id="readerSizeLabel">Veliko 4/8</span><button aria-label="Povečaj velikost besedila" data-reader-inc="" type="button">A+</button></div>
 <script>
 (function(){
   var root=document.documentElement;
@@ -610,8 +663,9 @@ html[data-theme="light"] .reader-controls{background:rgba(255,255,255,.94)!impor
   function getLang(){try{var v=localStorage.getItem(LANG_KEY);return (v==='hr'||v==='sl')?v:'sl';}catch(e){return 'sl';}}
   function getTheme(){try{var v=localStorage.getItem(THEME_KEY);return (v==='light'||v==='dark')?v:'dark';}catch(e){return 'dark';}}
   function getSize(){try{var v=localStorage.getItem(SIZE_KEY);return v===null?def:clamp(v);}catch(e){return def;}}
-  function applyLang(l){l=(l==='hr')?'hr':'sl';root.setAttribute('lang',l);root.setAttribute('data-lang',l);try{localStorage.setItem(LANG_KEY,l)}catch(e){}document.querySelectorAll('[data-lang-btn]').forEach(function(b){var on=b.getAttribute('data-lang-btn')===l;b.classList.toggle('active',on);b.setAttribute('aria-pressed',on?'true':'false');});document.title=(l==='hr')?'Lastovo · kamp Zaglav · auto i kajak vodič':'Lastovo · kamp Zaglav · avto in kajak vodič';applySize(getSize());}
-  function applyTheme(t){t=(t==='light')?'light':'dark';root.setAttribute('data-theme',t);try{localStorage.setItem(THEME_KEY,t)}catch(e){}}
+  function lastovoThemeText(t,l){return t==='dark'?(l==='hr'?'☀ Svijetlo':'☀ Svetlo'):(l==='hr'?'🌙 Tamno':'🌙 Temno');}
+  function applyLang(l){l=(l==='hr')?'hr':'sl';root.setAttribute('lang',l);root.setAttribute('data-lang',l);try{localStorage.setItem(LANG_KEY,l)}catch(e){}document.querySelectorAll('[data-lang-btn]').forEach(function(b){var on=b.getAttribute('data-lang-btn')===l;b.classList.toggle('active',on);b.setAttribute('aria-pressed',on?'true':'false');});document.title=(l==='hr')?'Lastovo · kamp Zaglav · auto i kajak vodič':'Lastovo · kamp Zaglav · avto in kajak vodič';var tb=document.querySelector('[data-theme-btn]');if(tb)tb.textContent=lastovoThemeText(root.getAttribute('data-theme')||getTheme(),l);applySize(getSize());}
+  function applyTheme(t){t=(t==='light')?'light':'dark';root.setAttribute('data-theme',t);try{localStorage.setItem(THEME_KEY,t)}catch(e){}var tb=document.querySelector('[data-theme-btn]');if(tb)tb.textContent=lastovoThemeText(t,root.getAttribute('data-lang')||getLang());}
   function applySize(n){n=clamp(n);root.setAttribute('data-reader-size',String(n));try{localStorage.setItem(SIZE_KEY,String(n))}catch(e){}var l=root.getAttribute('data-lang')||'sl';var label=document.getElementById('readerSizeLabel');if(label)label.textContent=(names[l]||names.sl)[n]+' '+(n+1)+'/8';}
   document.addEventListener('click',function(e){var lb=e.target.closest&&e.target.closest('[data-lang-btn]');if(lb){applyLang(lb.getAttribute('data-lang-btn'));return;}var tb=e.target.closest&&e.target.closest('[data-theme-btn]');if(tb){applyTheme(root.getAttribute('data-theme')==='dark'?'light':'dark');return;}var inc=e.target.closest&&e.target.closest('[data-reader-inc]');if(inc){applySize(getSize()+1);return;}var dec=e.target.closest&&e.target.closest('[data-reader-dec]');if(dec){applySize(getSize()-1);return;}});
   applyTheme(getTheme());applySize(getSize());applyLang(getLang());
