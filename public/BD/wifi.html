@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="sl" data-lang="sl" data-theme="dark" data-reader-size="3">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Wi‑Fi kamp konfiguracija · RP‑N12 + Raspberry Pi 2 + Alfa AWUS036AXML</title>
+<style>
+:root{
+  --bg:#05070c;
+  --surface:#0d111a;
+  --surface2:#121826;
+  --surface3:rgba(17,24,38,.82);
+  --text:#eef2f8;
+  --muted:#a7b0c2;
+  --dim:#778195;
+  --line:rgba(130,160,210,.18);
+  --line2:rgba(130,160,210,.32);
+  --gold:#f0c76a;
+  --blue:#7db4ff;
+  --green:#72d6a3;
+  --rose:#ff8b8b;
+  --violet:#b59cff;
+  --code:#07101d;
+  --shadow:0 22px 70px rgba(0,0,0,.38);
+  --font-body:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --reader-text:21.5px;
+  --reader-small:12px;
+  --reader-h1:clamp(2.25rem, 8vw, 4.8rem);
+  --reader-h2:clamp(1.65rem, 5.7vw, 2.65rem);
+  --reader-h3:clamp(1.22rem, 4vw, 1.75rem);
+}
+html[data-theme="light"]{
+  --bg:#f6f8fc;
+  --surface:#ffffff;
+  --surface2:#eef3fb;
+  --surface3:rgba(255,255,255,.84);
+  --text:#101827;
+  --muted:#445066;
+  --dim:#6f7a91;
+  --line:rgba(38,72,115,.18);
+  --line2:rgba(38,72,115,.32);
+  --gold:#8b5e00;
+  --blue:#145fae;
+  --green:#19734d;
+  --rose:#a52b2b;
+  --violet:#6846b8;
+  --code:#f0f4fb;
+  --shadow:0 18px 55px rgba(22,36,58,.14);
+}
+html[data-reader-size="0"]{--reader-text:17px;--reader-small:10.5px;--reader-h1:clamp(2rem,7vw,3.65rem);--reader-h2:clamp(1.38rem,4.9vw,2.05rem);--reader-h3:clamp(1.08rem,3.4vw,1.38rem)}
+html[data-reader-size="1"]{--reader-text:18.5px;--reader-small:11px;--reader-h1:clamp(2.05rem,7.4vw,3.9rem);--reader-h2:clamp(1.46rem,5vw,2.18rem);--reader-h3:clamp(1.12rem,3.5vw,1.46rem)}
+html[data-reader-size="2"]{--reader-text:20px;--reader-small:11.5px;--reader-h1:clamp(2.15rem,7.7vw,4.2rem);--reader-h2:clamp(1.56rem,5.4vw,2.35rem);--reader-h3:clamp(1.18rem,3.8vw,1.58rem)}
+html[data-reader-size="3"]{--reader-text:21.5px;--reader-small:12px;--reader-h1:clamp(2.25rem,8vw,4.8rem);--reader-h2:clamp(1.65rem,5.7vw,2.65rem);--reader-h3:clamp(1.22rem,4vw,1.75rem)}
+html[data-reader-size="4"]{--reader-text:24px;--reader-small:13px;--reader-h1:clamp(2.45rem,8.8vw,5.25rem);--reader-h2:clamp(1.85rem,6.2vw,3rem);--reader-h3:clamp(1.38rem,4.5vw,2.02rem)}
+html[data-reader-size="5"]{--reader-text:27px;--reader-small:14.5px;--reader-h1:clamp(2.75rem,9.5vw,5.8rem);--reader-h2:clamp(2.1rem,7vw,3.45rem);--reader-h3:clamp(1.58rem,5vw,2.34rem)}
+html[data-reader-size="6"]{--reader-text:31px;--reader-small:16px;--reader-h1:clamp(3rem,10vw,6.4rem);--reader-h2:clamp(2.35rem,7.5vw,3.9rem);--reader-h3:clamp(1.8rem,5.7vw,2.75rem)}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;min-height:100vh;color:var(--text);font-family:var(--font-body);font-size:var(--reader-text);line-height:1.66;background:
+  radial-gradient(circle at 12% 8%, rgba(80,130,255,.26), transparent 34%),
+  radial-gradient(circle at 86% 24%, rgba(90,220,165,.18), transparent 28%),
+  radial-gradient(circle at 50% 105%, rgba(240,199,106,.16), transparent 38%),
+  linear-gradient(160deg,var(--bg),#070b12 62%,#05080d);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+html[data-theme="light"] body{background:radial-gradient(circle at 12% 8%, rgba(125,180,255,.28), transparent 34%),radial-gradient(circle at 86% 24%, rgba(114,214,163,.18), transparent 28%),linear-gradient(160deg,#f7f9fe,#eef4fb 62%,#f8fbff)}
+body:before,body:after{content:"";position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(90px);opacity:.32}body:before{width:54vw;height:54vw;left:-18vw;top:-18vh;background:rgba(80,130,255,.35)}body:after{width:52vw;height:52vw;right:-18vw;bottom:-20vh;background:rgba(114,214,163,.30)}
+a{color:var(--blue);text-decoration:none;border-bottom:1px dotted rgba(125,180,255,.45)}a:hover{color:var(--gold)}
+#progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:1000;background:linear-gradient(90deg,var(--green),var(--blue),var(--gold));box-shadow:0 0 18px rgba(125,180,255,.45)}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(5,7,12,.82);border-bottom:1px solid var(--line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+html[data-theme="light"] .topbar{background:rgba(246,248,252,.88)}
+.topbar-inner{max-width:1120px;margin:0 auto;padding:9px 12px;display:flex;flex-direction:column;align-items:center;gap:8px}.top-title{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--gold);font-weight:850;font-size:clamp(13px,2.3vw,18px);letter-spacing:-.02em;border-bottom:none}.top-menu{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;overflow-x:auto;white-space:nowrap;scrollbar-width:none}.top-menu::-webkit-scrollbar{display:none}.nav{display:flex;gap:6px}.nav a,.top-controls button{font-family:var(--font-mono);font-size:var(--reader-small);font-weight:800;letter-spacing:.05em;text-transform:uppercase;line-height:1;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:rgba(255,255,255,.035);padding:8px 10px;cursor:pointer;touch-action:manipulation}.nav a.active,.nav a:hover,.top-controls button.active,.top-controls button:hover{color:var(--gold);border-color:var(--line2);background:rgba(240,199,106,.08)}.top-controls{display:flex;gap:6px;align-items:center;flex:0 0 auto}
+.page{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:0 18px 120px}.hero{padding:54px 0 24px;text-align:center}.eyebrow,.mini-label,.card h3,.toc-title,.tag,.badge,.copy-btn,.reader-label,.step-no{font-family:var(--font-mono);font-size:var(--reader-small);letter-spacing:.12em;text-transform:uppercase}.eyebrow{color:var(--gold);opacity:.9;margin-bottom:12px}.hero h1{font-size:var(--reader-h1);line-height:1.04;margin:0 auto 16px;max-width:980px;letter-spacing:-.06em}.subtitle{color:var(--muted);max-width:860px;margin:0 auto;font-size:calc(var(--reader-text)*1.02);line-height:1.55}.badges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:22px auto 0}.badge{border:1px solid var(--line);border-radius:999px;padding:7px 10px;color:var(--muted);background:rgba(255,255,255,.03)}.badge.good{color:var(--green);border-color:rgba(114,214,163,.35);background:rgba(114,214,163,.09)}.badge.bridge{color:var(--blue);border-color:rgba(125,180,255,.35);background:rgba(125,180,255,.09)}.badge.warn{color:var(--rose);border-color:rgba(255,139,139,.35);background:rgba(255,139,139,.08)}
+.pocket{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0}.card,.callout,.codebox,.diagram,.settings,.table-wrap,details.box{background:linear-gradient(180deg,var(--surface3),var(--surface));border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}.card{padding:18px}.card h3{color:var(--gold);margin:0 0 10px}.card p,.card li{color:var(--muted);font-size:calc(var(--reader-text)*.93);line-height:1.55}.card p:last-child{margin-bottom:0}.main{display:block}.chapter{margin:46px 0 60px}.chapter h2{font-size:var(--reader-h2);line-height:1.12;margin:0 0 20px;padding-bottom:13px;border-bottom:1px solid var(--line);letter-spacing:-.04em}.chapter h3{font-size:var(--reader-h3);line-height:1.18;margin:28px 0 12px;letter-spacing:-.03em}.lead{font-size:calc(var(--reader-text)*1.06);color:var(--text);line-height:1.58}.tag{color:var(--gold);opacity:.85;margin-bottom:8px}.callout{padding:18px 20px;margin:20px 0;color:var(--muted)}.callout strong{color:var(--gold)}.callout.good{border-color:rgba(114,214,163,.32);background:linear-gradient(180deg,rgba(30,72,55,.46),var(--surface))}.callout.warn{border-color:rgba(255,139,139,.32);background:linear-gradient(180deg,rgba(95,35,35,.38),var(--surface))}.callout.bridge{border-color:rgba(125,180,255,.32);background:linear-gradient(180deg,rgba(35,60,100,.43),var(--surface))}.callout.violet{border-color:rgba(181,156,255,.32);background:linear-gradient(180deg,rgba(70,50,115,.38),var(--surface))}.callout p:last-child{margin-bottom:0}.diagram{padding:18px 20px;margin:20px 0;overflow:auto}.flow{display:grid;grid-template-columns:1fr;gap:10px;align-items:center}.flow .node{border:1px solid var(--line2);border-radius:16px;padding:14px;background:rgba(255,255,255,.035);text-align:center}.flow .arrow{text-align:center;color:var(--gold);font-weight:900}.flow .small{display:block;color:var(--muted);font-size:.86em;margin-top:4px}.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.step{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;margin:18px 0}.step-no{min-width:44px;height:44px;border-radius:999px;display:grid;place-items:center;color:#08121c;background:var(--gold);font-weight:950}.step-body{min-width:0}.step-body p,.step-body li{color:var(--muted)}ol.clean,ul.clean{padding-left:1.3em}ol.clean li,ul.clean li{margin:9px 0}.checklist{display:grid;gap:8px;margin:16px 0}.check{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.025);color:var(--muted)}.check input{margin-top:.35em;transform:scale(1.22);accent-color:var(--green)}.settings{padding:18px 20px;margin:20px 0}.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field label{display:block;color:var(--gold);font-family:var(--font-mono);font-size:var(--reader-small);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}.field input,.field select{width:100%;border:1px solid var(--line2);border-radius:13px;background:rgba(255,255,255,.06);color:var(--text);padding:12px;font:700 calc(var(--reader-text)*.88)/1.2 var(--font-body)}html[data-theme="light"] .field input,html[data-theme="light"] .field select{background:#fff}.hint{color:var(--dim);font-size:calc(var(--reader-text)*.82)}.codebox{position:relative;margin:18px 0;overflow:hidden}.code-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.035)}.code-title{font-family:var(--font-mono);font-size:var(--reader-small);letter-spacing:.10em;text-transform:uppercase;color:var(--gold);font-weight:900}.copy-btn{border:1px solid var(--line2);border-radius:999px;background:rgba(125,180,255,.09);color:var(--blue);padding:8px 10px;font-weight:900;cursor:pointer}.copy-btn:hover{color:var(--gold)}pre{margin:0;white-space:pre;overflow:auto;padding:16px;background:var(--code);color:var(--text);font-family:var(--font-mono);font-size:calc(var(--reader-text)*.72);line-height:1.58}code{font-family:var(--font-mono)}.inline-code{font-family:var(--font-mono);font-size:.9em;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.055);padding:2px 7px;color:var(--gold)}details.box{margin:18px 0;overflow:hidden}details.box>summary{list-style:none;cursor:pointer;padding:18px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;background:linear-gradient(90deg,rgba(125,180,255,.08),rgba(240,199,106,.05))}details.box>summary::-webkit-details-marker{display:none}.summary-title{display:block;font-weight:900;font-size:calc(var(--reader-text)*1.05);line-height:1.25}.summary-sub{display:block;color:var(--muted);font-size:calc(var(--reader-text)*.82);margin-top:4px}.chev{color:var(--gold);font-family:var(--font-mono);font-size:1.3em;transition:.22s transform}details[open] .chev{transform:rotate(90deg)}.box-inner{padding:4px 20px 20px}.table-wrap{overflow:auto;margin:18px 0}table{width:100%;border-collapse:collapse}th,td{padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}th{color:var(--gold);font-family:var(--font-mono);font-size:var(--reader-small);letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.035)}td{color:var(--muted)}tr:last-child td{border-bottom:none}.footer{margin:50px 0 0;padding-top:20px;border-top:1px solid var(--line);color:var(--dim);font-size:calc(var(--reader-text)*.86)}
+.lang-panel{display:none}html[data-lang="sl"] .lang-panel.sl{display:block}html[data-lang="hr"] .lang-panel.hr{display:block}.lang-inline{display:none}html[data-lang="sl"] .lang-inline.sl{display:inline}html[data-lang="hr"] .lang-inline.hr{display:inline}
+.reader-controls{position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--line2);border-radius:999px;background:rgba(5,7,12,.88);box-shadow:0 18px 55px rgba(0,0,0,.35);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}html[data-theme="light"] .reader-controls{background:rgba(255,255,255,.9)}.reader-controls button{width:46px;height:46px;border-radius:999px;border:1px solid var(--line2);background:rgba(240,199,106,.09);color:var(--gold);font:950 17px/1 var(--font-mono);cursor:pointer}.reader-label{min-width:100px;text-align:center;color:var(--muted);font-weight:900}.back-top{position:fixed;right:14px;bottom:84px;z-index:65;border:1px solid var(--line2);border-radius:999px;background:rgba(5,7,12,.82);color:var(--gold);font-family:var(--font-mono);font-size:var(--reader-small);font-weight:900;padding:10px 12px;backdrop-filter:blur(14px);border-bottom:1px solid var(--line2)}html[data-theme="light"] .back-top{background:rgba(255,255,255,.88)}
+@media(min-width:760px){.flow{grid-template-columns:1fr auto 1fr auto 1.15fr}.hero{padding-top:70px}.page{padding-left:24px;padding-right:24px}}
+@media(max-width:760px){.page{padding-left:14px;padding-right:14px}.hero{padding-top:42px}.pocket{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr}.settings-grid{grid-template-columns:1fr}.topbar-inner{align-items:stretch}.top-title{text-align:center}.top-menu{justify-content:flex-start}.nav a,.top-controls button{padding:7px 9px}.chapter{margin:38px 0 48px}.card,.callout,.settings,.diagram{border-radius:17px}.step{grid-template-columns:1fr}.step-no{width:42px}.back-top{display:none}pre{font-size:calc(var(--reader-text)*.66)}}
+@media print{.topbar,.reader-controls,.back-top,#progress,.copy-btn{display:none!important}body{background:white;color:black}.card,.callout,.codebox,.diagram,.settings,details.box{box-shadow:none}.lang-panel{display:block}}
+</style>
+</head>
+<body id="top">
+<div id="progress"></div>
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="top-title" href="#top" id="pageTitle">Wi‑Fi kamp konfiguracija · RP‑N12 + Pi 2 + Alfa</a>
+    <div class="top-menu">
+      <nav class="nav" aria-label="Navigation">
+        <a data-nav="home" href="#sl-doma">Doma</a>
+        <a data-nav="camp" href="#sl-kamp">Kamp</a>
+        <a data-nav="tests" href="#sl-testi">Test</a>
+        <a data-nav="trouble" href="#sl-tezave">Težave</a>
+        <a data-nav="fallback" href="#sl-fallback">Fallback</a>
+      </nav>
+      <div class="top-controls" role="group" aria-label="Controls">
+        <button type="button" data-lang-btn="sl" class="active">SL</button>
+        <button type="button" data-lang-btn="hr">HR</button>
+        <button type="button" data-theme-btn>☀ Svetlo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+  <header class="hero">
+    <div class="eyebrow"><span class="lang-inline sl">mobilna offline stran · v1.0</span><span class="lang-inline hr">mobilna offline stranica · v1.0</span></div>
+    <h1><span class="lang-inline sl">Wi‑Fi podaljšek od restavracije do šotora</span><span class="lang-inline hr">Wi‑Fi produžetak od restorana do šatora</span></h1>
+    <p class="subtitle"><span class="lang-inline sl">Najmanj dela v kampu: doma pripravi Raspberry Pi + Alfa hotspot, v kampu pa samo priklopi ASUS RP‑N12 na Wi‑Fi restavracije in kabel v Pi.</span><span class="lang-inline hr">Najmanje posla u kampu: kod kuće pripremi Raspberry Pi + Alfa hotspot, a u kampu samo spoji ASUS RP‑N12 na Wi‑Fi restorana i kabel u Pi.</span></p>
+    <div class="badges">
+      <span class="badge good"><span class="lang-inline sl">doma pripravi</span><span class="lang-inline hr">pripremi kod kuće</span></span>
+      <span class="badge bridge"><span class="lang-inline sl">v kampu minimalno</span><span class="lang-inline hr">u kampu minimalno</span></span>
+      <span class="badge warn"><span class="lang-inline sl">ima fallback</span><span class="lang-inline hr">ima fallback</span></span>
+    </div>
+  </header>
+
+  <section class="pocket">
+    <div class="card"><h3><span class="lang-inline sl">Glavna ideja</span><span class="lang-inline hr">Glavna ideja</span></h3><p><span class="lang-inline sl">RP‑N12 naj ujame Wi‑Fi restavracije. Pi po Ethernetu dobi internet. Alfa oddaja novo mrežo proti šotoru.</span><span class="lang-inline hr">RP‑N12 hvata Wi‑Fi restorana. Pi dobije internet preko Etherneta. Alfa emitira novu mrežu prema šatoru.</span></p></div>
+    <div class="card"><h3><span class="lang-inline sl">Najboljši pas</span><span class="lang-inline hr">Najbolji pojas</span></h3><p><span class="lang-inline sl">Za šotor uporabi 2.4 GHz. Ni najhitrejši, je pa najuporabnejši za razdaljo in ovire.</span><span class="lang-inline hr">Za šator koristi 2.4 GHz. Nije najbrži, ali je najbolji za udaljenost i prepreke.</span></p></div>
+    <div class="card"><h3><span class="lang-inline sl">Prvo pravilo</span><span class="lang-inline hr">Prvo pravilo</span></h3><p><span class="lang-inline sl">Najprej vprašaj restavracijo za dovoljenje, ime mreže, geslo in ali imajo login portal.</span><span class="lang-inline hr">Prvo pitaj restoran za dozvolu, ime mreže, lozinku i imaju li login portal.</span></p></div>
+  </section>
+
+  <div class="diagram">
+    <div class="flow">
+      <div class="node"><strong>Restavracija / restoran Wi‑Fi</strong><span class="small">internet source</span></div>
+      <div class="arrow">↓</div>
+      <div class="node"><strong>ASUS RP‑N12</strong><span class="small">Media Bridge → Ethernet</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><strong>Raspberry Pi 2 + Alfa AWUS036AXML</strong><span class="small">NAT hotspot → TentWiFi</span></div>
+    </div>
+  </div>
+
+  <div class="settings" id="settings">
+    <div class="mini-label" style="color:var(--gold);margin-bottom:10px"><span class="lang-inline sl">Moji podatki za ukaze</span><span class="lang-inline hr">Moji podaci za naredbe</span></div>
+    <div class="settings-grid">
+      <div class="field"><label><span class="lang-inline sl">SSID za šotor</span><span class="lang-inline hr">SSID za šator</span></label><input data-setting="tentSsid" value="TentWiFi-BD" autocomplete="off"></div>
+      <div class="field"><label><span class="lang-inline sl">Geslo za šotor</span><span class="lang-inline hr">Lozinka za šator</span></label><input data-setting="tentPass" value="ZAMENJAJ-MOCNO-GESLO" autocomplete="off"></div>
+      <div class="field"><label><span class="lang-inline sl">Alfa vmesnik</span><span class="lang-inline hr">Alfa sučelje</span></label><input data-setting="wifiIf" value="wlan0" autocomplete="off"></div>
+      <div class="field"><label><span class="lang-inline sl">Kanal 2.4 GHz</span><span class="lang-inline hr">Kanal 2.4 GHz</span></label><select data-setting="channel"><option>1</option><option selected>6</option><option>11</option></select></div>
+    </div>
+    <p class="hint"><span class="lang-inline sl">Če Alfa ni <span class="inline-code">wlan0</span>, najprej poglej z <span class="inline-code">nmcli dev status</span> in popravi polje “Alfa vmesnik”. Ukazi spodaj se samodejno osvežijo.</span><span class="lang-inline hr">Ako Alfa nije <span class="inline-code">wlan0</span>, prvo provjeri s <span class="inline-code">nmcli dev status</span> i promijeni polje “Alfa sučelje”. Naredbe ispod se automatski osvježe.</span></p>
+  </div>
+
+  <main class="main">
+    <div class="lang-panel sl">
+      <section class="chapter" id="sl-doma">
+        <div class="tag">1 · doma pripravi</div>
+        <h2>Da, razdelitev na “doma” in “kamp” je smiselna</h2>
+        <p class="lead">Doma pripravi vse, kar ne potrebuje restavracijskega Wi‑Fi-ja. V kampu potem ostane samo izbor Wi‑Fi mreže restavracije na RP‑N12, priklop kabla in test.</p>
+        <div class="callout good"><p><strong>Cilj doma:</strong> Raspberry Pi se po zagonu sam dvigne, Alfa samodejno oddaja tvojo mrežo <span class="inline-code">TentWiFi-BD</span>, Pi pa zna deliti internet iz <span class="inline-code">eth0</span> proti Wi‑Fi napravam.</p></div>
+        <h3>Domači checklist</h3>
+        <div class="checklist">
+          <label class="check"><input type="checkbox" data-check="sd"><span>Na microSD namesti Raspberry Pi OS Lite 32-bit, vklopi SSH in si zapiši uporabnika/geslo.</span></label>
+          <label class="check"><input type="checkbox" data-check="power"><span>Pripravi dober napajalnik za Pi. Če Alfa izginja, uporabi powered USB hub.</span></label>
+          <label class="check"><input type="checkbox" data-check="ethernet"><span>Pripravi kratek Ethernet kabel med RP‑N12 in Raspberry Pi.</span></label>
+          <label class="check"><input type="checkbox" data-check="home-test"><span>Doma testiraj: Pi priklopi z Ethernetom na domač router, telefon pa na TentWiFi.</span></label>
+          <label class="check"><input type="checkbox" data-check="pack"><span>Spakiraj RP‑N12, Pi, microSD, Alfa, anteni, napajalnike, Ethernet kabel in zaščito pred dežjem.</span></label>
+        </div>
+        <h3>1.1 Osnovna priprava Raspberry Pi</h3>
+        <div class="codebox"><div class="code-head"><span class="code-title">Pi update</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code>sudo apt update
+sudo apt full-upgrade -y
+sudo apt install -y network-manager iw usbutils
+sudo systemctl enable --now NetworkManager
+sudo raspi-config
+sudo reboot</code></pre></div>
+        <p>V <span class="inline-code">raspi-config</span> nastavi vsaj <strong>Localisation Options → WLAN Country → SI Slovenia</strong>. To je pomembno zaradi dovoljenih kanalov in moči oddajanja.</p>
+        <h3>1.2 Preveri, da Pi vidi Alfo</h3>
+        <div class="codebox"><div class="code-head"><span class="code-title">Preverjanje adapterja</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code>lsusb
+nmcli dev status
+ip link
+iw dev
+iw list | grep -A 20 "Supported interface modes"</code></pre></div>
+        <div class="callout bridge"><p>Išči vrstico <span class="inline-code">* AP</span>. Če je ni, trenutni driver/OS verjetno ne podpira AP načina za Alfo. Takrat uporabi fallback spodaj: RP‑N12 kot klasičen repeater.</p></div>
+        <h3>1.3 Ustvari Wi‑Fi hotspot za šotor</h3>
+        <p>Spodnji ukazni blok uporablja tvoje podatke iz zgornjega obrazca. Najbolje je, da to narediš doma in potem preveriš z mobilnim telefonom.</p>
+        <div class="codebox"><div class="code-head"><span class="code-title">Hotspot ukazi · NetworkManager</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code data-hotspot-code></code></pre></div>
+        <h3>1.4 Domači test</h3>
+        <div class="step"><div class="step-no">A</div><div class="step-body"><p>Raspberry Pi priklopi z Ethernet kablom na domači router. To simulira RP‑N12 v kampu.</p></div></div>
+        <div class="step"><div class="step-no">B</div><div class="step-body"><p>Telefon poveži na tvojo novo Wi‑Fi mrežo za šotor in odpri spletno stran.</p></div></div>
+        <div class="step"><div class="step-no">C</div><div class="step-body"><p>Pi ponovno zaženi. Po približno minuti mora hotspot spet delovati sam.</p></div></div>
+        <div class="codebox"><div class="code-head"><span class="code-title">Domači test ukazi</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code>nmcli dev status
+ip addr show eth0
+ip route
+ping -c 3 1.1.1.1
+ping -c 3 google.com
+sudo reboot</code></pre></div>
+      </section>
+
+      <section class="chapter" id="sl-kamp">
+        <div class="tag">2 · v kampu</div>
+        <h2>Minimalen postopek v kampu</h2>
+        <p class="lead">V kampu ne začenjaš od nič. Pi + Alfa naj bosta že pripravljena. Tam samo povežeš RP‑N12 na restavracijski Wi‑Fi in ga s kablom priklopiš v Pi.</p>
+        <div class="callout warn"><p><strong>Preden začneš:</strong> osebje vprašaj za dovoljenje, ime Wi‑Fi mreže, geslo, ali imajo captive portal/login stran, omejitev naprav ali MAC whitelist.</p></div>
+        <h3>2.1 Konfiguriraj ASUS RP‑N12 kot Media Bridge</h3>
+        <ol class="clean">
+          <li>RP‑N12 priklopi v elektriko blizu restavracije, kjer je signal močan.</li>
+          <li>S telefonom/laptopom se poveži na njegov začasni ASUS Wi‑Fi ali prek Ethernet kabla.</li>
+          <li>Odpri ASUS setup stran.</li>
+          <li>Izberi <strong>Operation Mode → Media Bridge</strong>.</li>
+          <li>Izberi Wi‑Fi mrežo restavracije in vpiši geslo.</li>
+          <li>IP pusti na <strong>Automatic / DHCP</strong>.</li>
+          <li>Shrani in počakaj, da se RP‑N12 ponovno zažene.</li>
+        </ol>
+        <div class="callout bridge"><p>V tem načinu RP‑N12 dela kot <strong>Wi‑Fi sprejemnik → Ethernet izhod</strong>. Ne rabi oddajati mreže za šotor; to dela Alfa na Pi-ju.</p></div>
+        <h3>2.2 Priklop</h3>
+        <div class="step"><div class="step-no">1</div><div class="step-body"><p>Ethernet kabel iz RP‑N12 priklopi v <span class="inline-code">eth0</span> na Raspberry Pi.</p></div></div>
+        <div class="step"><div class="step-no">2</div><div class="step-body"><p>V Raspberry Pi priklopi Alfo in napajanje.</p></div></div>
+        <div class="step"><div class="step-no">3</div><div class="step-body"><p>Počakaj 1–2 minuti, potem se s telefonom poveži na svoj <strong>TentWiFi</strong>.</p></div></div>
+        <h3>2.3 Postavitev za najboljši signal</h3>
+        <ul class="clean">
+          <li>RP‑N12 naj bo pri restavraciji ali na mestu, kjer še dobro lovi restavracijski Wi‑Fi.</li>
+          <li>Alfa naj bo čim višje, usmerjena proti šotoru, pod streho ali zaščitena pred dežjem.</li>
+          <li>Anteni na Alfi naj bosta približno navpično.</li>
+          <li>Za šotor začni s kanalom 6. Če je slabo, poskusi kanal 1 ali 11.</li>
+          <li>Ne zapiraj Pi-ja in Alfe v kovinsko škatlo ali za debelo steno.</li>
+        </ul>
+      </section>
+
+      <section class="chapter" id="sl-testi">
+        <div class="tag">3 · test in hitro preverjanje</div>
+        <h2>Kako veš, da vse dela</h2>
+        <div class="grid-2">
+          <div class="card"><h3>Na telefonu</h3><ul><li>Vidiš mrežo za šotor.</li><li>Povezava dobi IP naslov.</li><li>Spletna stran se odpre.</li><li>Signal v šotoru ni samo ena črtica.</li></ul></div>
+          <div class="card"><h3>Na Pi-ju</h3><ul><li><span class="inline-code">eth0</span> ima IP.</li><li><span class="inline-code">wlan0</span> oddaja AP.</li><li>Ping na IP deluje.</li><li>Ping na domeno deluje.</li></ul></div>
+        </div>
+        <div class="codebox"><div class="code-head"><span class="code-title">Diagnostika</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code>nmcli dev status
+ip addr show eth0
+ip addr show wlan0
+ip route
+ping -c 3 1.1.1.1
+ping -c 3 google.com
+journalctl -u NetworkManager --no-pager -n 80</code></pre></div>
+        <details class="box"><summary><span><span class="summary-title">Zamenjava kanala 2.4 GHz</span><span class="summary-sub">Uporabi, če je signal slab ali je kamp poln Wi‑Fi omrežij.</span></span><span class="chev">›</span></summary><div class="box-inner"><div class="codebox"><div class="code-head"><span class="code-title">Kanal 1 / 6 / 11</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code>sudo nmcli connection modify TentWiFi 802-11-wireless.channel 1
+sudo nmcli connection down TentWiFi
+sudo nmcli connection up TentWiFi
+
+# ali kanal 6
+sudo nmcli connection modify TentWiFi 802-11-wireless.channel 6
+sudo nmcli connection down TentWiFi
+sudo nmcli connection up TentWiFi
+
+# ali kanal 11
+sudo nmcli connection modify TentWiFi 802-11-wireless.channel 11
+sudo nmcli connection down TentWiFi
+sudo nmcli connection up TentWiFi</code></pre></div></div></details>
+      </section>
+
+      <section class="chapter" id="sl-tezave">
+        <div class="tag">4 · najpogostejše težave</div>
+        <h2>Če ne dela</h2>
+        <details class="box" open><summary><span><span class="summary-title">Pi ima internet, telefon pa ne</span><span class="summary-sub">Najpogosteje manjka NAT/shared nastavitev.</span></span><span class="chev">›</span></summary><div class="box-inner"><div class="codebox"><div class="code-head"><span class="code-title">Popravi shared mode</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code>sudo nmcli connection modify TentWiFi ipv4.method shared
+sudo nmcli connection modify TentWiFi ipv6.method ignore
+sudo nmcli connection down TentWiFi
+sudo nmcli connection up TentWiFi</code></pre></div></div></details>
+        <details class="box"><summary><span><span class="summary-title">Alfa izginja ali se Pi čudno obnaša</span><span class="summary-sub">To je zelo pogosto napajanje.</span></span><span class="chev">›</span></summary><div class="box-inner"><ul class="clean"><li>Uporabi boljši napajalnik za Raspberry Pi.</li><li>Poskusi powered USB hub za Alfo.</li><li>Uporabi krajši USB kabel.</li><li>Preveri, da Pi ni napajan iz slabega USB priključka.</li></ul></div></details>
+        <details class="box"><summary><span><span class="summary-title">Restavracija ima login portal</span><span class="summary-sub">Wi‑Fi geslo ni dovolj, ker zahteva spletni login.</span></span><span class="chev">›</span></summary><div class="box-inner"><ul class="clean"><li>Najprej se s telefonom poveži na TentWiFi in odpri navadno HTTP stran, da se prikaže portal.</li><li>Če ne deluje, priklopi laptop na Ethernet za RP‑N12/Pi in poskusi login.</li><li>Če portal veže dostop na MAC, vprašaj osebje za whitelist ali navaden WPA/WPA2 dostop.</li></ul><div class="codebox"><div class="code-head"><span class="code-title">MAC naslovi</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code>ip link show eth0
+ip link show wlan0</code></pre></div></div></details>
+        <details class="box"><summary><span><span class="summary-title">Alfa nima AP načina</span><span class="summary-sub">Če <span class="inline-code">iw list</span> ne pokaže <span class="inline-code">* AP</span>.</span></span><span class="chev">›</span></summary><div class="box-inner"><p>Najprej poskusi svež Raspberry Pi OS Lite Bookworm in posodobitve. Če še vedno ni AP načina, ne izgubljaj časa v kampu: uporabi fallback z RP‑N12 kot repeater.</p></div></details>
+      </section>
+
+      <section class="chapter" id="sl-fallback">
+        <div class="tag">5 · fallback</div>
+        <h2>Rezervni način, če Pi/Alfa ne dela</h2>
+        <p class="lead">Če se Linux/driver/napajanje zatakne, uporabi samo ASUS RP‑N12 kot klasičen repeater. To je šibkejše, ampak najhitrejše.</p>
+        <ol class="clean">
+          <li>Resetiraj RP‑N12.</li>
+          <li>Izberi <strong>Repeater Mode</strong>.</li>
+          <li>Izberi Wi‑Fi restavracije in vpiši geslo.</li>
+          <li>Extended SSID nastavi na nekaj jasnega, recimo <span class="inline-code">Restaurant_Tent</span>.</li>
+          <li>RP‑N12 postavi ne v šotor, ampak približno na vmesno mesto, kjer še dobro lovi restavracijski signal.</li>
+        </ol>
+        <div class="callout good"><p><strong>Moj vrstni red:</strong> najprej polna varianta RP‑N12 Media Bridge → Pi → Alfa AP. Če se zatakne, takoj fallback RP‑N12 Repeater, da imaš vsaj osnovni internet.</p></div>
+      </section>
+    </div>
+
+    <div class="lang-panel hr">
+      <section class="chapter" id="hr-kuca">
+        <div class="tag">1 · priprema kod kuće</div>
+        <h2>Da, podjela na “kod kuće” i “u kampu” ima smisla</h2>
+        <p class="lead">Kod kuće pripremi sve što ne treba Wi‑Fi restorana. U kampu onda ostaje samo odabir mreže restorana na RP‑N12, spajanje kabela i test.</p>
+        <div class="callout good"><p><strong>Cilj kod kuće:</strong> Raspberry Pi se nakon paljenja sam podigne, Alfa automatski emitira tvoju mrežu <span class="inline-code">TentWiFi-BD</span>, a Pi zna dijeliti internet iz <span class="inline-code">eth0</span> prema Wi‑Fi uređajima.</p></div>
+        <h3>Kućni checklist</h3>
+        <div class="checklist">
+          <label class="check"><input type="checkbox" data-check="sd"><span>Na microSD instaliraj Raspberry Pi OS Lite 32-bit, uključi SSH i zapiši korisnika/lozinku.</span></label>
+          <label class="check"><input type="checkbox" data-check="power"><span>Pripremi dobar adapter za Pi. Ako Alfa nestaje, koristi powered USB hub.</span></label>
+          <label class="check"><input type="checkbox" data-check="ethernet"><span>Pripremi kratak Ethernet kabel između RP‑N12 i Raspberry Pi.</span></label>
+          <label class="check"><input type="checkbox" data-check="home-test"><span>Kod kuće testiraj: Pi spoji Ethernetom na kućni router, telefon na TentWiFi.</span></label>
+          <label class="check"><input type="checkbox" data-check="pack"><span>Spakiraj RP‑N12, Pi, microSD, Alfu, antene, adaptere, Ethernet kabel i zaštitu od kiše.</span></label>
+        </div>
+        <h3>1.1 Osnovna priprema Raspberry Pi</h3>
+        <div class="codebox"><div class="code-head"><span class="code-title">Pi update</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code>sudo apt update
+sudo apt full-upgrade -y
+sudo apt install -y network-manager iw usbutils
+sudo systemctl enable --now NetworkManager
+sudo raspi-config
+sudo reboot</code></pre></div>
+        <p>U <span class="inline-code">raspi-config</span> postavi barem <strong>Localisation Options → WLAN Country</strong>. Ako si u Sloveniji izaberi SI, ako si u Hrvatskoj izaberi HR.</p>
+        <h3>1.2 Provjeri da Pi vidi Alfu</h3>
+        <div class="codebox"><div class="code-head"><span class="code-title">Provjera adaptera</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code>lsusb
+nmcli dev status
+ip link
+iw dev
+iw list | grep -A 20 "Supported interface modes"</code></pre></div>
+        <div class="callout bridge"><p>Traži liniju <span class="inline-code">* AP</span>. Ako je nema, trenutni driver/OS vjerojatno ne podržava AP način za Alfu. Tada koristi fallback ispod: RP‑N12 kao klasični repeater.</p></div>
+        <h3>1.3 Napravi Wi‑Fi hotspot za šator</h3>
+        <p>Naredbe ispod koriste podatke iz obrasca gore. Najbolje je to napraviti kod kuće i zatim provjeriti mobitelom.</p>
+        <div class="codebox"><div class="code-head"><span class="code-title">Hotspot naredbe · NetworkManager</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code data-hotspot-code></code></pre></div>
+        <h3>1.4 Kućni test</h3>
+        <div class="step"><div class="step-no">A</div><div class="step-body"><p>Raspberry Pi spoji Ethernet kabelom na kućni router. To simulira RP‑N12 u kampu.</p></div></div>
+        <div class="step"><div class="step-no">B</div><div class="step-body"><p>Telefon spoji na novu Wi‑Fi mrežu za šator i otvori web stranicu.</p></div></div>
+        <div class="step"><div class="step-no">C</div><div class="step-body"><p>Restartaj Pi. Nakon otprilike minute hotspot se mora sam ponovno pojaviti.</p></div></div>
+        <div class="codebox"><div class="code-head"><span class="code-title">Kućni test naredbe</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code>nmcli dev status
+ip addr show eth0
+ip route
+ping -c 3 1.1.1.1
+ping -c 3 google.com
+sudo reboot</code></pre></div>
+      </section>
+
+      <section class="chapter" id="hr-kampu">
+        <div class="tag">2 · u kampu</div>
+        <h2>Minimalni postupak u kampu</h2>
+        <p class="lead">U kampu ne krećeš od nule. Pi + Alfa neka budu već spremni. Tamo samo spojiš RP‑N12 na Wi‑Fi restorana i kablom ga povežeš s Pi-jem.</p>
+        <div class="callout warn"><p><strong>Prije početka:</strong> pitaj osoblje za dozvolu, ime Wi‑Fi mreže, lozinku, imaju li captive portal/login stranicu, ograničenje uređaja ili MAC whitelist.</p></div>
+        <h3>2.1 Konfiguriraj ASUS RP‑N12 kao Media Bridge</h3>
+        <ol class="clean">
+          <li>RP‑N12 uključi blizu restorana, gdje je signal jak.</li>
+          <li>Mobitelom/laptopom se spoji na privremeni ASUS Wi‑Fi ili preko Ethernet kabela.</li>
+          <li>Otvori ASUS setup stranicu.</li>
+          <li>Izaberi <strong>Operation Mode → Media Bridge</strong>.</li>
+          <li>Izaberi Wi‑Fi mrežu restorana i upiši lozinku.</li>
+          <li>IP ostavi na <strong>Automatic / DHCP</strong>.</li>
+          <li>Spremi i pričekaj da se RP‑N12 ponovno pokrene.</li>
+        </ol>
+        <div class="callout bridge"><p>U tom načinu RP‑N12 radi kao <strong>Wi‑Fi prijemnik → Ethernet izlaz</strong>. Ne mora emitirati mrežu za šator; to radi Alfa na Pi-ju.</p></div>
+        <h3>2.2 Spajanje</h3>
+        <div class="step"><div class="step-no">1</div><div class="step-body"><p>Ethernet kabel iz RP‑N12 spoji u <span class="inline-code">eth0</span> na Raspberry Pi.</p></div></div>
+        <div class="step"><div class="step-no">2</div><div class="step-body"><p>U Raspberry Pi spoji Alfu i napajanje.</p></div></div>
+        <div class="step"><div class="step-no">3</div><div class="step-body"><p>Pričekaj 1–2 minute, zatim se mobitelom spoji na svoj <strong>TentWiFi</strong>.</p></div></div>
+        <h3>2.3 Položaj za najbolji signal</h3>
+        <ul class="clean">
+          <li>RP‑N12 neka bude kod restorana ili na mjestu gdje još dobro hvata Wi‑Fi restorana.</li>
+          <li>Alfa neka bude što više, usmjerena prema šatoru, pod krovom ili zaštićena od kiše.</li>
+          <li>Antene na Alfi neka budu približno okomite.</li>
+          <li>Za šator kreni s kanalom 6. Ako je loše, probaj kanal 1 ili 11.</li>
+          <li>Ne zatvaraj Pi i Alfu u metalnu kutiju ili iza debelog zida.</li>
+        </ul>
+      </section>
+
+      <section class="chapter" id="hr-testovi">
+        <div class="tag">3 · test i brza provjera</div>
+        <h2>Kako znaš da sve radi</h2>
+        <div class="grid-2">
+          <div class="card"><h3>Na mobitelu</h3><ul><li>Vidiš mrežu za šator.</li><li>Veza dobije IP adresu.</li><li>Web stranica se otvara.</li><li>Signal u šatoru nije samo jedna crtica.</li></ul></div>
+          <div class="card"><h3>Na Pi-ju</h3><ul><li><span class="inline-code">eth0</span> ima IP.</li><li><span class="inline-code">wlan0</span> emitira AP.</li><li>Ping na IP radi.</li><li>Ping na domenu radi.</li></ul></div>
+        </div>
+        <div class="codebox"><div class="code-head"><span class="code-title">Dijagnostika</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code>nmcli dev status
+ip addr show eth0
+ip addr show wlan0
+ip route
+ping -c 3 1.1.1.1
+ping -c 3 google.com
+journalctl -u NetworkManager --no-pager -n 80</code></pre></div>
+        <details class="box"><summary><span><span class="summary-title">Promjena kanala 2.4 GHz</span><span class="summary-sub">Koristi ako je signal slab ili je kamp pun Wi‑Fi mreža.</span></span><span class="chev">›</span></summary><div class="box-inner"><div class="codebox"><div class="code-head"><span class="code-title">Kanal 1 / 6 / 11</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code>sudo nmcli connection modify TentWiFi 802-11-wireless.channel 1
+sudo nmcli connection down TentWiFi
+sudo nmcli connection up TentWiFi
+
+# ili kanal 6
+sudo nmcli connection modify TentWiFi 802-11-wireless.channel 6
+sudo nmcli connection down TentWiFi
+sudo nmcli connection up TentWiFi
+
+# ili kanal 11
+sudo nmcli connection modify TentWiFi 802-11-wireless.channel 11
+sudo nmcli connection down TentWiFi
+sudo nmcli connection up TentWiFi</code></pre></div></div></details>
+      </section>
+
+      <section class="chapter" id="hr-problemi">
+        <div class="tag">4 · najčešći problemi</div>
+        <h2>Ako ne radi</h2>
+        <details class="box" open><summary><span><span class="summary-title">Pi ima internet, mobitel nema</span><span class="summary-sub">Najčešće nedostaje NAT/shared postavka.</span></span><span class="chev">›</span></summary><div class="box-inner"><div class="codebox"><div class="code-head"><span class="code-title">Popravi shared mode</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code>sudo nmcli connection modify TentWiFi ipv4.method shared
+sudo nmcli connection modify TentWiFi ipv6.method ignore
+sudo nmcli connection down TentWiFi
+sudo nmcli connection up TentWiFi</code></pre></div></div></details>
+        <details class="box"><summary><span><span class="summary-title">Alfa nestaje ili se Pi čudno ponaša</span><span class="summary-sub">To je vrlo često napajanje.</span></span><span class="chev">›</span></summary><div class="box-inner"><ul class="clean"><li>Koristi bolji adapter za Raspberry Pi.</li><li>Probaj powered USB hub za Alfu.</li><li>Koristi kraći USB kabel.</li><li>Provjeri da Pi nije napajan iz slabog USB priključka.</li></ul></div></details>
+        <details class="box"><summary><span><span class="summary-title">Restoran ima login portal</span><span class="summary-sub">Wi‑Fi lozinka nije dovoljna jer traži web login.</span></span><span class="chev">›</span></summary><div class="box-inner"><ul class="clean"><li>Prvo se mobitelom spoji na TentWiFi i otvori običnu HTTP stranicu da se pojavi portal.</li><li>Ako ne radi, spoji laptop preko Etherneta iza RP‑N12/Pi i probaj login.</li><li>Ako portal veže pristup na MAC, pitaj osoblje za whitelist ili običan WPA/WPA2 pristup.</li></ul><div class="codebox"><div class="code-head"><span class="code-title">MAC adrese</span><button class="copy-btn" data-copy>Kopiraj</button></div><pre><code>ip link show eth0
+ip link show wlan0</code></pre></div></div></details>
+        <details class="box"><summary><span><span class="summary-title">Alfa nema AP način</span><span class="summary-sub">Ako <span class="inline-code">iw list</span> ne pokaže <span class="inline-code">* AP</span>.</span></span><span class="chev">›</span></summary><div class="box-inner"><p>Prvo probaj svježi Raspberry Pi OS Lite Bookworm i ažuriranja. Ako i dalje nema AP načina, ne gubi vrijeme u kampu: koristi fallback s RP‑N12 kao repeater.</p></div></details>
+      </section>
+
+      <section class="chapter" id="hr-fallback">
+        <div class="tag">5 · fallback</div>
+        <h2>Rezervni način ako Pi/Alfa ne radi</h2>
+        <p class="lead">Ako zapne Linux/driver/napajanje, koristi samo ASUS RP‑N12 kao klasični repeater. Slabije je, ali najbrže.</p>
+        <ol class="clean">
+          <li>Resetiraj RP‑N12.</li>
+          <li>Izaberi <strong>Repeater Mode</strong>.</li>
+          <li>Izaberi Wi‑Fi restorana i upiši lozinku.</li>
+          <li>Extended SSID postavi jasno, recimo <span class="inline-code">Restaurant_Tent</span>.</li>
+          <li>RP‑N12 postavi ne u šator, nego otprilike na sredinu, gdje još dobro hvata signal restorana.</li>
+        </ol>
+        <div class="callout good"><p><strong>Moj redoslijed:</strong> prvo puna varijanta RP‑N12 Media Bridge → Pi → Alfa AP. Ako zapne, odmah fallback RP‑N12 Repeater, da imaš barem osnovni internet.</p></div>
+      </section>
+    </div>
+
+    <footer class="footer">
+      <p><strong><span class="lang-inline sl">Opomba</span><span class="lang-inline hr">Napomena</span>:</strong> <span class="lang-inline sl">Stran je samostojna in deluje offline. Ukazi predpostavljajo Raspberry Pi OS Lite Bookworm / NetworkManager. Uporabljaj samo z dovoljenjem lastnika Wi‑Fi omrežja.</span><span class="lang-inline hr">Stranica je samostalna i radi offline. Naredbe pretpostavljaju Raspberry Pi OS Lite Bookworm / NetworkManager. Koristi samo uz dozvolu vlasnika Wi‑Fi mreže.</span></p>
+    </footer>
+  </main>
+</div>
+
+<a href="#top" class="back-top">↑ Top</a>
+<div class="reader-controls" role="group" aria-label="Text size controls">
+  <button type="button" data-reader-dec>A−</button>
+  <span class="reader-label" id="readerSizeLabel">Veliko 4/7</span>
+  <button type="button" data-reader-inc>A+</button>
+</div>
+
+<script>
+(function(){
+  const LANG_KEY='wifiCampLangV1', THEME_KEY='wifiCampThemeV1', SIZE_KEY='wifiCampReaderSizeV1', SET_KEY='wifiCampSettingsV1';
+  const navMap={
+    sl:{title:'Wi‑Fi kamp konfiguracija · RP‑N12 + Pi 2 + Alfa',top:'↑ Vrh',themeLight:'☀ Svetlo',themeDark:'🌙 Temno',copy:'Kopiraj',copied:'Kopirano',reader:['Majhno','Normalno','Veliko','Zelo veliko','Kamp','Ogromno','Maks'],nav:{home:['Doma','#sl-doma'],camp:['Kamp','#sl-kamp'],tests:['Test','#sl-testi'],trouble:['Težave','#sl-tezave'],fallback:['Fallback','#sl-fallback']}},
+    hr:{title:'Wi‑Fi kamp konfiguracija · RP‑N12 + Pi 2 + Alfa',top:'↑ Vrh',themeLight:'☀ Svijetlo',themeDark:'🌙 Tamno',copy:'Kopiraj',copied:'Kopirano',reader:['Malo','Normalno','Veliko','Vrlo veliko','Kamp','Ogromno','Maks'],nav:{home:['Kuća','#hr-kuca'],camp:['Kamp','#hr-kampu'],tests:['Test','#hr-testovi'],trouble:['Problemi','#hr-problemi'],fallback:['Fallback','#hr-fallback']}}
+  };
+  function clamp(n){n=parseInt(n,10);return isNaN(n)?3:Math.max(0,Math.min(6,n));}
+  function getLang(){try{let v=localStorage.getItem(LANG_KEY);if(v==='sl'||v==='hr')return v;}catch(e){}return 'sl'}
+  function getTheme(){try{let v=localStorage.getItem(THEME_KEY);if(v==='dark'||v==='light')return v;}catch(e){}return 'dark'}
+  function getSize(){try{let v=localStorage.getItem(SIZE_KEY);if(v!==null)return clamp(v);}catch(e){}return clamp(document.documentElement.getAttribute('data-reader-size')||3)}
+  function shellQuote(v){return "'"+String(v||'').replace(/'/g,"'\"'\"'")+"'"}
+  function getSettings(){
+    let defaults={tentSsid:'TentWiFi-BD',tentPass:'ZAMENJAJ-MOCNO-GESLO',wifiIf:'wlan0',channel:'6'};
+    try{let saved=JSON.parse(localStorage.getItem(SET_KEY)||'{}');return Object.assign(defaults,saved||{});}catch(e){return defaults}
+  }
+  function saveSettings(s){try{localStorage.setItem(SET_KEY,JSON.stringify(s));}catch(e){}}
+  function syncSettingsInputs(){
+    const s=getSettings();
+    document.querySelectorAll('[data-setting]').forEach(el=>{let k=el.getAttribute('data-setting'); if(document.activeElement!==el) el.value=s[k]||'';});
+    buildHotspotCode();
+  }
+  function buildHotspotCode(){
+    const s=getSettings();
+    const iface=s.wifiIf||'wlan0';
+    const ssid=s.tentSsid||'TentWiFi-BD';
+    const pass=s.tentPass||'ZAMENJAJ-MOCNO-GESLO';
+    const channel=s.channel||'6';
+    const code=[
+      '# Hotspot: eth0 = internet vhod, '+iface+' = Wi‑Fi za šotor',
+      'sudo nmcli radio wifi on',
+      'sudo nmcli connection delete TentWiFi 2>/dev/null || true',
+      'sudo nmcli connection add type wifi ifname '+shellQuote(iface)+' con-name TentWiFi autoconnect yes ssid '+shellQuote(ssid),
+      'sudo nmcli connection modify TentWiFi 802-11-wireless.mode ap',
+      'sudo nmcli connection modify TentWiFi 802-11-wireless.band bg',
+      'sudo nmcli connection modify TentWiFi 802-11-wireless.channel '+shellQuote(channel),
+      'sudo nmcli connection modify TentWiFi 802-11-wireless.powersave 2',
+      'sudo nmcli connection modify TentWiFi wifi-sec.key-mgmt wpa-psk',
+      'sudo nmcli connection modify TentWiFi wifi-sec.psk '+shellQuote(pass),
+      'sudo nmcli connection modify TentWiFi ipv4.method shared',
+      'sudo nmcli connection modify TentWiFi ipv6.method ignore',
+      'sudo nmcli connection modify TentWiFi connection.autoconnect yes',
+      'sudo nmcli connection modify TentWiFi connection.autoconnect-priority 100',
+      'sudo nmcli connection up TentWiFi',
+      'sudo iw dev '+shellQuote(iface)+' set power_save off 2>/dev/null || true',
+      '',
+      '# Preveri',
+      'nmcli dev status',
+      'ip route',
+      'ping -c 3 1.1.1.1'
+    ].join('\n');
+    document.querySelectorAll('[data-hotspot-code]').forEach(el=>{el.textContent=code;});
+  }
+  function applyLang(lang){
+    lang=(lang==='hr')?'hr':'sl';
+    const ui=navMap[lang];
+    document.documentElement.setAttribute('lang',lang);
+    document.documentElement.setAttribute('data-lang',lang);
+    try{localStorage.setItem(LANG_KEY,lang)}catch(e){}
+    document.title=ui.title; document.getElementById('pageTitle').textContent=ui.title;
+    document.querySelectorAll('[data-lang-btn]').forEach(b=>{const on=b.getAttribute('data-lang-btn')===lang;b.classList.toggle('active',on);b.setAttribute('aria-pressed',on?'true':'false')});
+    document.querySelectorAll('[data-nav]').forEach(a=>{let x=ui.nav[a.getAttribute('data-nav')]; if(x){a.textContent=x[0]; a.setAttribute('href',x[1]);}});
+    document.querySelectorAll('[data-copy]').forEach(b=>{b.textContent=ui.copy});
+    const back=document.querySelector('.back-top'); if(back) back.textContent=ui.top;
+    applyTheme(getTheme()); applySize(getSize());
+  }
+  function applyTheme(theme){
+    theme=(theme==='light')?'light':'dark';
+    document.documentElement.setAttribute('data-theme',theme);
+    try{localStorage.setItem(THEME_KEY,theme)}catch(e){}
+    const lang=document.documentElement.getAttribute('data-lang')||'sl'; const ui=navMap[lang];
+    const b=document.querySelector('[data-theme-btn]'); if(b) b.textContent=(theme==='dark')?ui.themeLight:ui.themeDark;
+  }
+  function applySize(n){
+    n=clamp(n); document.documentElement.setAttribute('data-reader-size',String(n));
+    try{localStorage.setItem(SIZE_KEY,String(n))}catch(e){}
+    const lang=document.documentElement.getAttribute('data-lang')||'sl'; const names=navMap[lang].reader;
+    const label=document.getElementById('readerSizeLabel'); if(label) label.textContent=names[n]+' '+(n+1)+'/7';
+  }
+  async function copyFrom(btn){
+    const box=btn.closest('.codebox'); if(!box)return;
+    const code=box.querySelector('code'); const text=code?code.textContent:'';
+    try{await navigator.clipboard.writeText(text);}catch(e){
+      const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+    }
+    const lang=document.documentElement.getAttribute('data-lang')||'sl'; const old=btn.textContent; btn.textContent=navMap[lang].copied; setTimeout(()=>{btn.textContent=old},1200);
+  }
+  document.addEventListener('click',e=>{
+    const lb=e.target.closest('[data-lang-btn]'); if(lb){applyLang(lb.getAttribute('data-lang-btn'));return;}
+    if(e.target.closest('[data-theme-btn]')){applyTheme(getTheme()==='dark'?'light':'dark');return;}
+    if(e.target.closest('[data-reader-inc]')){applySize(getSize()+1);return;}
+    if(e.target.closest('[data-reader-dec]')){applySize(getSize()-1);return;}
+    const cb=e.target.closest('[data-copy]'); if(cb){copyFrom(cb);return;}
+  });
+  document.addEventListener('input',e=>{
+    const el=e.target.closest('[data-setting]'); if(el){let s=getSettings();s[el.getAttribute('data-setting')]=el.value;saveSettings(s);syncSettingsInputs();}
+  });
+  document.addEventListener('change',e=>{
+    const ch=e.target.closest('[data-check]'); if(ch){try{localStorage.setItem('wifiCheck_'+ch.getAttribute('data-check'),ch.checked?'1':'0')}catch(e){}}
+  });
+  function restoreChecks(){document.querySelectorAll('[data-check]').forEach(ch=>{try{ch.checked=localStorage.getItem('wifiCheck_'+ch.getAttribute('data-check'))==='1'}catch(e){}})}
+  window.addEventListener('scroll',()=>{const h=document.documentElement; const max=h.scrollHeight-h.clientHeight; const pct=max>0?(h.scrollTop/max)*100:0; document.getElementById('progress').style.width=pct+'%';},{passive:true});
+  restoreChecks(); syncSettingsInputs(); applyTheme(getTheme()); applySize(getSize()); applyLang(getLang());
+})();
+</script>
+</body>
+</html>
