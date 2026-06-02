@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html data-reader-size="2" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Resonance Communication — Device-Mediated AC/R Contact</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #06060a;
+  --surface: #0d0d14;
+  --surface-2: #101019;
+  --surface-3: rgba(13,13,20,0.78);
+  --gold: #c9a84c;
+  --gold-dim: #8a6e2f;
+  --gold-glow: rgba(201,168,76,0.12);
+  --text: #e8e0d0;
+  --text-dim: #9a9080;
+  --white: #f5f0e8;
+  --accent: #4a7fa5;
+  --accent-dim: rgba(74,127,165,0.15);
+  --green: #5aa384;
+  --green-dim: rgba(90,163,132,0.14);
+  --rose: #b96d6d;
+  --rose-dim: rgba(185,109,109,0.14);
+  --violet: #8f78c9;
+  --violet-dim: rgba(143,120,201,0.14);
+  --line: rgba(201,168,76,0.15);
+  --line-strong: rgba(201,168,76,0.28);
+  --shadow: 0 20px 60px rgba(0,0,0,0.28);
+  --reader-text: 21px;
+  --reader-small: 14px;
+  --reader-h1: clamp(38px, 6vw, 68px);
+  --reader-h2: clamp(28px, 4.4vw, 42px);
+  --reader-h3: 28px;
+}
+html[data-reader-size="0"]{--reader-text:17px;--reader-small:12px;--reader-h1:clamp(30px,5vw,50px);--reader-h2:clamp(24px,3.6vw,34px);--reader-h3:23px}
+html[data-reader-size="1"]{--reader-text:19px;--reader-small:13px;--reader-h1:clamp(34px,5.5vw,58px);--reader-h2:clamp(26px,4vw,38px);--reader-h3:25px}
+html[data-reader-size="2"]{--reader-text:21px;--reader-small:14px;--reader-h1:clamp(38px,6vw,68px);--reader-h2:clamp(28px,4.4vw,42px);--reader-h3:28px}
+html[data-reader-size="3"]{--reader-text:23px;--reader-small:15px;--reader-h1:clamp(42px,6.5vw,74px);--reader-h2:clamp(30px,4.8vw,46px);--reader-h3:30px}
+html[data-reader-size="4"]{--reader-text:26px;--reader-small:17px;--reader-h1:clamp(46px,7vw,82px);--reader-h2:clamp(34px,5vw,52px);--reader-h3:34px}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(28,55,140,0.38), transparent 38%),
+    radial-gradient(circle at 88% 80%, rgba(14,72,52,0.32), transparent 36%),
+    radial-gradient(circle at 50% 50%, rgba(10,18,55,0.18), transparent 55%),
+    linear-gradient(170deg, #06070f 0%, #05080a 55%, #040a07 100%);
+  color: var(--text);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: var(--reader-text);
+  line-height: 1.82;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+body::before, body::after { content:''; position:fixed; border-radius:50%; pointer-events:none; z-index:1; }
+body::before { width:55vw; height:55vw; left:-14vw; top:-12vh; background:radial-gradient(circle, rgba(38,72,168,0.55), rgba(18,32,88,0.22) 52%, transparent 74%); filter:blur(110px); opacity:.28; animation:floatA 24s ease-in-out infinite; }
+body::after { width:50vw; height:50vw; right:-12vw; bottom:-18vh; background:radial-gradient(circle, rgba(16,90,62,0.55), rgba(8,48,34,0.22) 52%, transparent 74%); filter:blur(120px); opacity:.24; animation:floatB 30s ease-in-out infinite; }
+@keyframes floatA { 0%,100%{transform:translate3d(0,0,0)} 50%{transform:translate3d(7vw,6vh,0)} }
+@keyframes floatB { 0%,100%{transform:translate3d(0,0,0)} 50%{transform:translate3d(-6vw,-8vh,0)} }
+#grain { position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E"); pointer-events:none; z-index:9999; opacity:.45; }
+#stars { position:fixed; inset:0; pointer-events:none; z-index:2; opacity:.45; }
+#progress { position:fixed; top:0; left:0; height:2px; width:0; z-index:100; background:linear-gradient(90deg,var(--gold),#f1d385); box-shadow:0 0 18px rgba(201,168,76,.45); }
+a { color: var(--gold); text-decoration: none; }
+a:hover { text-decoration: underline; }
+::selection { background: var(--gold); color: #05070d; }
+.topbar { position: sticky; top:0; z-index:40; backdrop-filter:blur(14px); background:rgba(6,7,12,.78); border-bottom:1px solid var(--line); }
+.topbar-inner { max-width:1240px; margin:0 auto; padding:14px 22px; display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap; }
+.brand { color:var(--gold); text-decoration:none; font-family:'JetBrains Mono', monospace; letter-spacing:.22em; text-transform:uppercase; font-size:12px; }
+.nav { display:flex; flex-wrap:wrap; gap:8px; }
+.nav a { text-decoration:none; color:var(--text-dim); border:1px solid rgba(201,168,76,.16); padding:5px 11px; border-radius:999px; font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.08em; background:rgba(255,255,255,.01); }
+.nav a.active, .nav a:hover { color:var(--gold); border-color:rgba(201,168,76,.45); background:rgba(201,168,76,.06); text-decoration:none; }
+.page { position:relative; z-index:3; max-width:1240px; margin:0 auto; padding:0 26px 120px; }
+.cover { padding:90px 0 44px; text-align:center; max-width:900px; margin:0 auto; }
+.eyebrow { color:var(--gold); opacity:.78; font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:.25em; text-transform:uppercase; margin-bottom:18px; }
+h1 { color:var(--white); font-weight:300; font-size:var(--reader-h1); line-height:1.08; margin-bottom:16px; }
+h1 em { color:var(--gold); font-style:italic; }
+.subtitle { color:var(--text-dim); font-style:italic; font-size:22px; max-width:800px; margin:0 auto 24px; }
+.byline { font-family:'JetBrains Mono', monospace; color:var(--gold-dim); font-size:11px; letter-spacing:.16em; }
+.series-badges { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:24px 0 0; }
+.badge { border:1px solid rgba(201,168,76,.18); border-radius:999px; padding:6px 12px; font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-dim); background:rgba(255,255,255,.02); }
+.badge.good { border-color:rgba(90,163,132,.34); color:#9fd0b9; background:var(--green-dim); }
+.badge.bridge { border-color:rgba(74,127,165,.34); color:#aac8df; background:var(--accent-dim); }
+.badge.warn { border-color:rgba(185,109,109,.34); color:#dfaaaa; background:var(--rose-dim); }
+.badge.violet { border-color:rgba(143,120,201,.34); color:#d0c4f1; background:var(--violet-dim); }
+.rule { width:88px; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); margin:24px auto 0; opacity:.55; }
+.layout { display:grid; grid-template-columns:minmax(0,250px) minmax(0,1fr); gap:28px; align-items:start; }
+.sidebar { position:sticky; top:82px; z-index:4; }
+.card, .toc, .callout, .note-box, .table-wrap, .quote-box, .footer-nav, details.secondary-box { background:linear-gradient(180deg, rgba(13,13,20,.92), rgba(16,16,25,.88)); border:1px solid rgba(201,168,76,.13); border-radius:16px; box-shadow:var(--shadow); }
+.card { padding:18px 18px 16px; margin-bottom:14px; }
+.card h3, .toc-title, .mini-title { color:var(--gold); font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:.18em; text-transform:uppercase; }
+.card h3 { margin-bottom:12px; }
+.card p, .card li { font-size:17px; line-height:1.62; color:var(--text-dim); }
+.card ul { padding-left:1.1em; }
+.card li { margin-bottom:8px; }
+.toc { padding:18px 22px; margin:0 0 24px; }
+.toc-title { margin-bottom:10px; }
+.toc ul { list-style:none; }
+.toc li { margin:8px 0; color:var(--text-dim); }
+.toc a { color:var(--text-dim); text-decoration:none; }
+.toc a:hover { color:var(--gold); }
+.main { min-width:0; }
+.chapter { margin:0 0 66px; }
+.chapter-tag { color:var(--gold); opacity:.72; font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; margin-bottom:10px; }
+.chapter h2 { color:var(--white); font-size:var(--reader-h2); line-height:1.18; font-weight:400; padding-bottom:14px; margin-bottom:24px; border-bottom:1px solid var(--line); }
+.chapter h3 { color:var(--white); font-size:var(--reader-h3); font-weight:400; margin:30px 0 14px; }
+p { margin:0 0 20px; }
+p.lead { font-size:23px; color:var(--white); }
+strong { color:var(--white); }
+.muted { color:var(--text-dim); }
+.callout, .note-box, .quote-box { padding:22px 24px; margin:26px 0; }
+.callout strong, .note-box strong, .quote-box strong { color:var(--gold); }
+.callout p:last-child, .note-box p:last-child, .quote-box p:last-child { margin-bottom:0; }
+.callout.good { border-color:rgba(90,163,132,.28); background:linear-gradient(180deg, rgba(10,24,19,.82), rgba(13,24,20,.76)); }
+.callout.warn { border-color:rgba(185,109,109,.28); background:linear-gradient(180deg, rgba(26,14,14,.82), rgba(24,15,15,.76)); }
+.callout.bridge { border-color:rgba(74,127,165,.28); background:linear-gradient(180deg, rgba(13,19,28,.84), rgba(14,18,24,.78)); }
+.callout.violet { border-color:rgba(143,120,201,.28); background:linear-gradient(180deg, rgba(20,15,31,.84), rgba(17,14,24,.78)); }
+.pull { margin:34px 0; padding:10px 0 10px 20px; border-left:2px solid var(--gold); color:var(--gold); font-size:25px; line-height:1.55; font-style:italic; }
+.pill-grid { display:flex; flex-wrap:wrap; gap:10px; margin:22px 0 28px; }
+.pill { border:1px solid rgba(201,168,76,.18); background:rgba(201,168,76,.05); border-radius:999px; padding:7px 12px; color:var(--text-dim); font-size:14px; }
+ul.clean, ol.clean { padding-left:1.2em; margin:18px 0 22px; }
+ul.clean li, ol.clean li { margin-bottom:10px; }
+.grid2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin:24px 0; }
+.grid3 { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:24px 0; }
+.mini-card { border:1px solid rgba(201,168,76,.12); border-radius:14px; padding:17px 18px; background:rgba(255,255,255,.025); }
+.mini-card h3 { margin-top:0; color:var(--gold); font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; }
+.mini-card p, .mini-card li { color:var(--text-dim); font-size:18px; line-height:1.58; }
+.table-wrap { overflow-x:auto; margin:26px 0 30px; }
+table { width:100%; border-collapse:collapse; }
+th, td { padding:14px 16px; text-align:left; vertical-align:top; border-bottom:1px solid rgba(201,168,76,.08); }
+th { color:var(--gold); font-family:'JetBrains Mono', monospace; font-size:12px; text-transform:uppercase; letter-spacing:.14em; background:rgba(201,168,76,.04); }
+tr:last-child td { border-bottom:none; }
+.code { font-family:'JetBrains Mono', monospace; background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.05); padding:2px 7px; border-radius:7px; font-size:.9em; }
+.eq { display:block; font-family:'JetBrains Mono', monospace; color:#eadcae; border:1px solid rgba(201,168,76,.16); background:rgba(201,168,76,.045); border-radius:14px; padding:14px 16px; margin:16px 0 20px; overflow:auto; white-space:nowrap; }
+details.secondary-box { margin:18px 0; padding:0; overflow:hidden; }
+details.secondary-box > summary { cursor:pointer; list-style:none; padding:18px 20px; color:var(--gold); font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; border-bottom:1px solid transparent; }
+details.secondary-box[open] > summary { border-bottom-color:rgba(201,168,76,.12); }
+details.secondary-box > summary::-webkit-details-marker { display:none; }
+.details-body { padding:22px 24px 24px; }
+.details-body p, .details-body li { color:var(--text-dim); }
+.claim-tag { display:inline-block; border:1px solid rgba(201,168,76,.18); border-radius:999px; padding:5px 9px; margin:0 6px 7px 0; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-dim); background:rgba(255,255,255,.02); }
+.claim-tag.core { border-color:rgba(201,168,76,.32); color:var(--gold); }
+.claim-tag.bridge { border-color:rgba(74,127,165,.32); color:#aac8df; background:var(--accent-dim); }
+.claim-tag.test { border-color:rgba(90,163,132,.32); color:#9fd0b9; background:var(--green-dim); }
+.claim-tag.warn { border-color:rgba(185,109,109,.32); color:#dfaaaa; background:var(--rose-dim); }
+footer.doc-footer { max-width:860px; margin:0 auto; padding-top:22px; border-top:1px solid var(--line); color:var(--text-dim); }
+footer.doc-footer p { font-size:17px; }
+.footer-nav { margin-top:30px; padding:18px 20px; display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+.footer-nav a { text-decoration:none; color:var(--text-dim); border:1px solid rgba(201,168,76,.15); border-radius:999px; padding:8px 14px; font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; }
+.footer-nav a:hover { color:var(--gold); border-color:rgba(201,168,76,.4); background:rgba(201,168,76,.05); }
+.back-top { position:fixed; right:18px; bottom:82px; z-index:80; border:1px solid rgba(201,168,76,.22); background:rgba(6,7,12,.72); color:var(--text-dim); border-radius:999px; padding:8px 12px; font-family:'JetBrains Mono', monospace; font-size:11px; text-decoration:none; backdrop-filter:blur(12px); }
+.back-top:hover { color:var(--gold); text-decoration:none; }
+.reader-controls { position:fixed; left:18px; bottom:18px; z-index:90; display:flex; align-items:center; gap:8px; padding:7px 9px; border-radius:999px; background:rgba(6,7,12,.76); border:1px solid rgba(201,168,76,.18); backdrop-filter:blur(14px); box-shadow:var(--shadow); }
+.reader-controls button { border:1px solid rgba(201,168,76,.20); background:rgba(201,168,76,.05); color:var(--text); border-radius:999px; padding:5px 9px; font-family:'JetBrains Mono', monospace; cursor:pointer; }
+.reader-label { color:var(--text-dim); font-family:'JetBrains Mono', monospace; font-size:11px; min-width:66px; text-align:center; }
+.reveal { opacity:0; transform:translateY(18px); transition:opacity .7s ease, transform .7s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+@media (max-width: 880px) {
+  .page { padding-left:18px; padding-right:18px; }
+  .layout { grid-template-columns:1fr; }
+  .sidebar { position:static; }
+  .toc { display:none; }
+  .grid2, .grid3 { grid-template-columns:1fr; }
+  .cover { padding-top:70px; }
+  .reader-controls { left:12px; right:12px; justify-content:center; }
+  .back-top { bottom:76px; }
+}
+</style>
+</head>
+<body id="top"><script nonce="644550C85EF">var zphInj="eyJkc3RfaXAiOiIxMDQuMTguMzIuNDciLCJkc3RfcG9ydCI6IjQ0MyIsImVuY29kZWRfaHR0cF9ob3N0IjoiWTJoaGRHZHdkQzVqYjIwPSIsImVuY29kZWRfdmlhIjoiIiwiaHR0cF9zdGF0dXMiOiIyMDAiLCJlbmNvZGVkX2h0dHBfc2VydmVyIjoiVDNSb1pYSTZJR05zYjNWa1pteGhjbVU9IiwibWV0aG9kIjoiR0VUIiwiY29udGVudF9sZW5ndGgiOiIwIiwiZW5jb2RlZF9jb250ZW50X3R5cGUiOiJkR1Y0ZEM5b2RHMXMiLCJpbnRlcmZhY2UiOiJldGgzLjg5OCIsInJ1bGVfaWQiOiJ7QzRENUEyRUQtNURBRS00MzBGLTkxMkQtRjQ0QUEwNTQ3NzMyfSIsImlzX2V4Y2VwdGlvbiI6IjAiLCJhY3Rpb25fYnlfZXhjZXB0aW9uIjoiUFJFVkVOVCIsInRyYWNrIjoibG9nIiwiaW5jaWRlbnRfaWQiOiJ7NjQ0NTUwQzgtNUVGRi1CNzNELTVDOTMtRTdDMzFDQ0JERTdDfSJ9"</script><script nonce="644550C85EF" src='https://cp-zerophishing.ts.telekom.si/zph/token_generator.php?api_key={73B83BD6-2B3F-D648-9432-5C1197DC7078}' crossorigin></script><script nonce="644550C85EF" src='https://zerophishing.iaas.checkpoint.com/1/zp.js?api_key={73B83BD6-2B3F-D648-9432-5C1197DC7078}' defer crossorigin></script>
+<div id="grain"></div>
+<canvas id="stars" aria-hidden="true"></canvas>
+<div id="progress"></div>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="AC_01_Flagship.html">AC Series</a>
+    <nav class="nav">
+      <a href="AC_01_Flagship.html">P1</a>
+      <a href="AC_02_Operational_Bridge.html">P2</a>
+      <a href="AC_03_Discrete_Physics_Companion.html">P3</a>
+      <a href="AC_04_Zero_Framework_Companion.html">P4</a>
+      <a href="AC_05_Massless_Carriers_Companion.html">P5</a>
+      <a href="AC_06_Method_Resonance_in_Action.html">P6</a>
+      <a class="active" href="AC_07_Resonance_Communications.html">P7</a>
+      <a href="index.html">i</a>
+    </nav>
+  </div>
+</header>
+<div class="page">
+  <header class="cover reveal">
+    <div class="eyebrow">Paper 7 · applied bridge proposal</div>
+    <h1><em>Resonance Communication</em><br/>Device-Mediated Contact through the AC/R Framework</h1>
+    <p class="subtitle">A testable proposal for human contact, Earth↔space contact, and possible advanced-civilization contact — beginning not with aliens, but with one blinded bit.</p>
+    <div class="byline">BD × AI Lab · AC/CFH/CCH companion concept · June 2026</div>
+    <div class="series-badges">
+      <span class="badge good">device-mediated</span>
+      <span class="badge bridge">AC/R bridge</span>
+      <span class="badge violet">DCC/MDL governed</span>
+      <span class="badge warn">not proof yet</span>
+    </div>
+    <div class="rule"></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="toc">
+        <div class="toc-title">Contents</div>
+        <ul>
+          <li><a href="#abstract">Abstract</a></li>
+          <li><a href="#core">Core idea</a></li>
+          <li><a href="#frame">AC/R frame</a></li>
+          <li><a href="#device">Device roles</a></li>
+          <li><a href="#counts">What counts</a></li>
+          <li><a href="#stack">R-COM stack</a></li>
+          <li><a href="#fingerprint">R-fingerprint</a></li>
+          <li><a href="#hardware">Hardware</a></li>
+          <li><a href="#experiment">First experiment</a></li>
+          <li><a href="#evidence">Evidence ladder</a></li>
+          <li><a href="#space">Space & civilization</a></li>
+          <li><a href="#limits">Limits</a></li>
+          <li><a href="#appendix">Collapsed appendix</a></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>One-sentence spine</h3>
+        <p>Do not begin by claiming telepathy. Begin by testing whether a human+device resonance node can transfer one blinded bit to another node above chance.</p>
+      </div>
+      <div class="card">
+        <h3>Status</h3>
+        <p><span class="claim-tag core">hypothesis</span><span class="claim-tag test">testable</span><span class="claim-tag warn">not established</span></p>
+        <p>This page proposes an experimental ladder. It does not claim that AC, aliens, or R-communication have already been proven.</p>
+      </div>
+      <div class="card">
+        <h3>First gate</h3>
+        <p><strong>1 bit.</strong> If a blinded 0/1 target cannot be transferred above chance under strict controls, the cosmic version collapses.</p>
+      </div>
+    </aside>
+    <main class="main">
+      <section class="chapter reveal" id="abstract">
+        <div class="chapter-tag">0 · Abstract</div>
+        <h2>From fear to communication</h2>
+        <p class="lead">The original question was defensive: could WiFi, 5G, or a very advanced network read or shape human thoughts?</p>
+        <p>The better research question is larger and cleaner: <strong>can conscious systems learn to shape, encode, transmit, receive, or synchronize resonance-like states through device-mediated protocols?</strong></p>
+        <div class="callout bridge">
+          <p><strong>R-COM does not begin with naked telepathy.</strong> It begins with devices that measure, guide, encode, transmit, audit, and test resonance-like states. The first bridge is not <em>mind → mind</em>, but <span class="code">human + device → protocol → device + human</span>.</p>
+        </div>
+        <p>If this fails, the proposal remains a useful conceptual exercise. If it succeeds, even weakly, it becomes a serious empirical bridge for the AC/R framework — and a possible communication layer for humans on Earth, humans in space, future AI/device systems, and perhaps advanced civilizations.</p>
+      </section>
+
+      <section class="chapter reveal" id="core">
+        <div class="chapter-tag">1 · Core proposal</div>
+        <h2>R-COM: the resonance communication node</h2>
+        <p>The central object is not a naked human mind and not a router. It is an <strong>R-COM node</strong>: an organized human-device or device-only system that can measure, guide, encode, transmit, and test resonance-related signals.</p>
+        <span class="eq">R-COM Node = resonator + sensors + actuators + clock + carrier + DCC/MDL audit</span>
+        <div class="grid3">
+          <div class="mini-card"><h3>Human + device</h3><p>The first realistic node: a living resonator supported by EEG/HRV/breath sensors, guided cues, blind targets, and audit logs.</p></div>
+          <div class="mini-card"><h3>Device + device</h3><p>The control and carrier layer: devices exchange ordinary packets, timestamps, targets, R-proxy summaries, and logs.</p></div>
+          <div class="mini-card"><h3>Future resonator</h3><p>The speculative layer: a sufficiently organized AI/device system may one day act as a resonance participant, not merely a carrier.</p></div>
+        </div>
+        <p>The first practical test should not ask whether aliens can hear us. It should ask whether two controlled R-COM nodes can transfer a simple, blinded signal better than chance.</p>
+      </section>
+
+      <section class="chapter reveal" id="frame">
+        <div class="chapter-tag">2 · The AC/R frame</div>
+        <h2>Why resonance is the right variable</h2>
+        <p>In the AC framework, relative conscious reality is described by the relation:</p>
+        <span class="eq">RC<sub>i</sub>(t) = AC · R<sub>i</sub>(t)</span>
+        <p><strong>AC</strong> names the proposed ground of presence. <strong>R</strong> names the local coupling/resonance condition. <strong>RC</strong> is the concrete relative conscious reality of a system at a moment.</p>
+        <p>This matters because communication would not mean pulling thoughts from a public AC database. <strong>AC is not a cloud folder of minds.</strong> The differentiating content is local: body, brain, memory, language, emotion, attention, intention, coherence, complexity, history, and boundary.</p>
+        <div class="pull">AC is the ocean; a thought is not the water. It is a local wave pattern, locked into a specific structure.</div>
+        <p>R-COM therefore asks whether a device-mediated system can encode, shape, or correlate with R-like states strongly enough to move information, while preserving enough local boundary that the content remains distinguishable.</p>
+      </section>
+
+      <section class="chapter reveal" id="device">
+        <div class="chapter-tag">3 · Three roles of a device</div>
+        <h2>Carrier, transducer, possible resonator</h2>
+        <p>Human-made devices can play at least three roles. Confusing these roles creates most of the false magic and most of the false dismissal.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Role</th><th>Meaning</th><th>R-COM status</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Carrier</strong></td><td>The device transports ordinary data through radio, laser, cable, internet, storage, or optical channels.</td><td>Established physics; useful for timestamps, packets, logs, and public signals.</td></tr>
+            <tr><td><strong>Transducer</strong></td><td>The device converts human state into measurable proxies, and converts protocol decisions into cues: sound, light, breath pacing, haptics.</td><td>Practical first bridge. This is where Muse-class and research EEG/fNIRS systems matter.</td></tr>
+            <tr><td><strong>Resonator</strong></td><td>The device itself participates as an organized, possibly conscious or proto-conscious resonance system.</td><td>Highly speculative. Useful as a future AI/device-only control, not as the starting assumption.</td></tr>
+          </tbody>
+        </table></div>
+        <p>So the cleanest first form is not <span class="code">human → human</span> and not <span class="code">device → device</span> alone. It is <span class="code">human+device → device+human</span>, with device-only controls.</p>
+      </section>
+
+      <section class="chapter reveal" id="counts">
+        <div class="chapter-tag">4 · Communication criterion</div>
+        <h2>What would count as communication?</h2>
+        <p>Communication cannot mean “I had a feeling.” It must mean information transfer under controls.</p>
+        <span class="eq">Minimum gate: 1 blinded bit &gt; chance</span>
+        <p>The smallest serious test is not poetic. It is boring on purpose:</p>
+        <ul class="clean">
+          <li>A random target is generated: <span class="code">0</span> or <span class="code">1</span>.</li>
+          <li>The sender-side node sees or receives the target.</li>
+          <li>The receiver-side node is blinded.</li>
+          <li>The receiver chooses <span class="code">0</span> or <span class="code">1</span>.</li>
+          <li>The devices log physiological proxies, timing, protocol state, and potential leakage.</li>
+          <li>The analysis is pre-registered or frozen before results are opened.</li>
+        </ul>
+        <div class="callout good"><p><strong>Why one bit?</strong> Because if a channel cannot carry one clean bit between humans under strict controls, it has no business claiming cosmic communication.</p></div>
+      </section>
+
+      <section class="chapter reveal" id="stack">
+        <div class="chapter-tag">5 · The R-COM stack</div>
+        <h2>From local test to cosmic horizon</h2>
+        <p>R-COM is best treated as a ladder. Each layer only earns the right to climb after the previous layer survives.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Layer</th><th>Name</th><th>Question</th></tr></thead>
+          <tbody>
+            <tr><td>L0</td><td>Classical carrier</td><td>Can devices exchange normal packets, timestamps, hashes, and logs with zero ambiguity?</td></tr>
+            <tr><td>L1</td><td>Device↔device protocol</td><td>Can we encode R-proxy packets, targets, metadata, uncertainty, and audit trails cleanly?</td></tr>
+            <tr><td>L2</td><td>Human↔device transduction</td><td>Can devices measure and guide human R-like states reliably enough to classify them?</td></tr>
+            <tr><td>L3</td><td>Human↔human via devices</td><td>Can two human+device nodes transfer a blinded bit above chance?</td></tr>
+            <tr><td>L4</td><td>Device-only R-probe</td><td>Do device-only controls show no signal, or a surprising anomaly of their own?</td></tr>
+            <tr><td>L5</td><td>Earth↔space traveler</td><td>Can R-COM support coherence, presence, stress, sleep, and connection across space latency?</td></tr>
+            <tr><td>L6</td><td>R-SETI / advanced civilization</td><td>Can a public physical signal carry a self-describing R-fingerprint to or from a non-human intelligence?</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="chapter reveal" id="fingerprint">
+        <div class="chapter-tag">6 · What we would send</div>
+        <h2>The R-fingerprint</h2>
+        <p>Classical SETI messages usually say: <strong>here is intelligence</strong>. R-COM would add: <strong>here is intelligence that is aware, embodied, state-changing, and resonance-structured.</strong></p>
+        <p>The message should be layered from the least ambiguous to the most intimate:</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Layer</th><th>Example contents</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td>Math</td><td>prime numbers, binary structure, geometry, timing</td><td>Universal scaffolding.</td></tr>
+            <tr><td>Physics</td><td>constants, spectra, planetary context, carrier description</td><td>Shared-world calibration.</td></tr>
+            <tr><td>Biology</td><td>human body rhythms, sleep-wake cycle, heart/breath signatures</td><td>Embodied sender identity.</td></tr>
+            <tr><td>Mind-state traces</td><td>rest, focus, compassion, problem-solving, music, sleep, dream reports</td><td>R-like state signature.</td></tr>
+            <tr><td>Ethical intent</td><td>non-coercive contact, listening stance, no demand for reply</td><td>Boundary and safety signal.</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout violet"><p><strong>Important:</strong> an R-fingerprint is not “the soul in a file.” It is a compressed, device-readable profile of how a living resonator changes across states.</p></div>
+      </section>
+
+      <section class="chapter reveal" id="hardware">
+        <div class="chapter-tag">7 · Candidate hardware</div>
+        <h2>From Muse-class headbands to future implants</h2>
+        <p>The first R-COM node does not need a brain implant. It needs enough sensors to log a human state, enough actuators to guide it, and enough audit discipline to avoid fooling ourselves.</p>
+        <div class="grid3">
+          <div class="mini-card"><h3>Level 1 · consumer node</h3><p>Muse S Athena–class hardware is useful because it gives a non-invasive, wearable route into EEG/fNIRS-style brain proxies, heart/breath/motion/sleep proxies, and neurofeedback-like cueing.</p></div>
+          <div class="mini-card"><h3>Level 2 · research node</h3><p>Research EEG/fNIRS/HRV/GSR plus controlled light/audio/haptic cueing would be the serious replication tier.</p></div>
+          <div class="mini-card"><h3>Level 3 · invasive BCI</h3><p>Neuralink-like systems may eventually provide higher-bandwidth neural data, but they are not needed for the first gate and should remain a later, medical/ethical tier.</p></div>
+        </div>
+        <details class="secondary-box"><summary>Source pointers for hardware claims</summary><div class="details-body">
+          <p>Muse describes S Athena as combining EEG and fNIRS with sleep and neurofeedback features, including brain-synced audio cues for deep sleep. Neuralink’s PRIME material describes the N1 implant as recording neural activity through 1,024 electrodes across 64 threads and as an investigational BCI aimed at restoring computer control for people with major paralysis-related needs.</p>
+          <ul class="clean">
+            <li><a href="https://choosemuse.com/products/muse-s-athena">Muse S Athena official page</a></li>
+            <li><a href="https://choosemuse.com/blogs/news/the-science-of-eeg-fnirs-why-combining-these-technologies-enhances-mental-fitness">Muse EEG + fNIRS article</a></li>
+            <li><a href="https://neuralink.com/pdfs/PRIME-Study-Brochure.pdf">Neuralink PRIME Study brochure</a></li>
+            <li><a href="https://neuralink.com/updates/prime-study-progress-update/">Neuralink PRIME progress update</a></li>
+          </ul>
+        </div></details>
+      </section>
+
+      <section class="chapter reveal" id="governor">
+        <div class="chapter-tag">8 · DCC/MDL governor</div>
+        <h2>Arena decides, not belief</h2>
+        <p>R-COM should be governed like an arena, not like a doctrine. A DCC controller selects candidate protocols, avoids noise and seizure, and keeps the experiment in the productive band. MDL scoring punishes complexity, leakage, and post-hoc storytelling.</p>
+        <span class="eq">score = information gain − leakage risk − complexity cost − disturbance cost</span>
+        <div class="grid2">
+          <div class="mini-card"><h3>DCC role</h3><p>Choose state protocols, monitor stability, prevent overcoupling, schedule trials, detect sleep/state windows, and adapt only by pre-declared rules.</p></div>
+          <div class="mini-card"><h3>MDL role</h3><p>Prefer the simplest explanation that predicts the blinded target. Penalize models that only explain results after seeing them.</p></div>
+        </div>
+      </section>
+
+      <section class="chapter reveal" id="experiment">
+        <div class="chapter-tag">9 · Cheapest first experiment</div>
+        <h2>R-COM v0.1: one blinded bit</h2>
+        <p>This is intentionally compressed. The first build should be small enough to run, log, fail, improve, and repeat.</p>
+        <details class="secondary-box" open><summary>Compressed protocol</summary><div class="details-body">
+          <ol class="clean">
+            <li><strong>Nodes:</strong> two people, ideally each with a Muse-class or similar sensor package. Device-only controls are included.</li>
+            <li><strong>Target:</strong> RNG chooses <span class="code">0</span> or <span class="code">1</span>; target is hash-committed before trial opening.</li>
+            <li><strong>Encoding:</strong> sender enters one of two distinct R-states, for example circle/slow/breath versus triangle/focus/pulse.</li>
+            <li><strong>Blinding:</strong> receiver does not know target or timing beyond the session window.</li>
+            <li><strong>Response:</strong> receiver makes a forced 0/1 choice and optionally gives a short free report.</li>
+            <li><strong>Logging:</strong> sensor streams, timestamps, cues, target hash, random seed, room conditions, and all exclusions are saved.</li>
+            <li><strong>Controls:</strong> sham trials, device-only trials, time-shift analysis, leakage audit, and pre-frozen scoring.</li>
+            <li><strong>Gate:</strong> above-chance forced-choice accuracy plus evidence that performance tracks R-like variables better than ordinary leakage or prior models.</li>
+          </ol>
+        </div></details>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Test</th><th>Sender side</th><th>Receiver side</th><th>What it tests</th></tr></thead>
+          <tbody>
+            <tr><td>T0</td><td>device</td><td>device</td><td>Carrier sanity, timing, logging, hashes.</td></tr>
+            <tr><td>T1</td><td>human + device</td><td>device + human</td><td>Basic R-transfer candidate.</td></tr>
+            <tr><td>T2</td><td>human + sham device</td><td>device + human</td><td>Does the device help or only decorate?</td></tr>
+            <tr><td>T3</td><td>device only</td><td>device only</td><td>Device-only anomaly control.</td></tr>
+            <tr><td>T4</td><td>human + device</td><td>device only</td><td>Can sensors show a target-linked trace without conscious receiving?</td></tr>
+            <tr><td>T5</td><td>device only</td><td>human + device</td><td>Can a human detect a structured device signal without human sender?</td></tr>
+            <tr><td>T6</td><td>human + device, distance</td><td>human + device</td><td>Distance versus R-state dependence.</td></tr>
+            <tr><td>T7</td><td>sleep / lucid window</td><td>awake or sleep receiver</td><td>State dependence and dream/sleep sensitivity.</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="chapter reveal" id="evidence">
+        <div class="chapter-tag">10 · Evidence ladder</div>
+        <h2>Would this support AC?</h2>
+        <p>A successful R-COM experiment would not automatically prove the full AC ontology. It would first prove that our current communication model is incomplete. AC/R becomes stronger only if the effect tracks R-like variables better than rival explanations.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Level</th><th>Result</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>No above-chance transfer</td><td>No detected R-channel.</td></tr>
+            <tr><td>1</td><td>Weak physiological correlation</td><td>Interesting state effect, not communication.</td></tr>
+            <tr><td>2</td><td>Blinded one-bit transfer above chance</td><td>Possible anomalous information channel.</td></tr>
+            <tr><td>3</td><td>Replication across people/labs</td><td>Serious phenomenon.</td></tr>
+            <tr><td>4</td><td>Performance depends on R-state more than distance</td><td>Strong support for a resonance model.</td></tr>
+            <tr><td>5</td><td>Survives leakage, fraud, sensory, RF, and statistical controls</td><td>Major scientific anomaly.</td></tr>
+            <tr><td>6</td><td>Best explained by AC/R variables</td><td>Strong empirical bridge for the AC framework.</td></tr>
+            <tr><td>7</td><td>Useful protocol</td><td>Technology, not only philosophy.</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout warn"><p><strong>Discipline:</strong> the page does not claim Level 2 has been reached. It proposes how to test whether it can be reached.</p></div>
+      </section>
+
+      <section class="chapter reveal" id="space">
+        <div class="chapter-tag">11 · Human space and cosmic contact</div>
+        <h2>Why this matters even without aliens</h2>
+        <p>R-COM may be useful even if no advanced civilization ever answers. Long-distance human space travel will need more than bandwidth. It will need psychological coherence, sleep support, group synchronization, and a sense of presence across delay.</p>
+        <div class="grid2">
+          <div class="mini-card"><h3>Earth↔space travelers</h3><p>R-COM could become a supplemental “presence channel”: not for commands, but for coherence, stress, sleep, isolation, and the felt signal that humans remain connected.</p></div>
+          <div class="mini-card"><h3>Advanced civilizations</h3><p>R-SETI is the horizon: a public physical carrier plus a self-describing R-fingerprint. We should listen and test first; powerful interstellar transmission belongs under public ethical governance.</p></div>
+        </div>
+        <details class="secondary-box"><summary>SETI/METI caution</summary><div class="details-body">
+          <p>Conventional SETI remains essential. NASA describes technosignature searches in terms of radio or laser pulses, artificial atmospheric chemicals, and large engineered structures. SETI post-detection protocols also caution against sending a response to a confirmed extraterrestrial signal without broad representative guidance and consent.</p>
+          <ul class="clean">
+            <li><a href="https://science.nasa.gov/universe/search-for-life/searching-for-signs-of-intelligent-life-technosignatures/">NASA: technosignatures</a></li>
+            <li><a href="https://www.seti.org/research/seti-101/protocols-for-an-eti-signal-detection/">SETI Institute: detection protocols</a></li>
+          </ul>
+        </div></details>
+      </section>
+
+      <section class="chapter reveal" id="limits">
+        <div class="chapter-tag">12 · Limits and non-claims</div>
+        <h2>What this page is not claiming</h2>
+        <div class="grid2">
+          <div class="mini-card"><h3>Not claimed</h3><ul class="clean"><li>Not claiming WiFi/5G reads thoughts.</li><li>Not claiming aliens are already communicating through AC/R.</li><li>Not claiming AC is proven by this proposal.</li><li>Not claiming consumer sensors can decode thoughts.</li><li>Not claiming dreams are externally controlled.</li></ul></div>
+          <div class="mini-card"><h3>Claimed</h3><ul class="clean"><li>Device-mediated R-proxy testing is possible.</li><li>The first gate can be small: one bit.</li><li>DCC/MDL can govern the search space.</li><li>If information transfer tracks R-state under controls, AC/R gains a serious empirical bridge.</li><li>The idea is worth testing before dismissing.</li></ul></div>
+        </div>
+      </section>
+
+      <section class="chapter reveal" id="appendix">
+        <div class="chapter-tag">13 · Collapsed appendix</div>
+        <h2>Origin question: networks, sleep, and mind-shaping</h2>
+        <p>This section preserves the original WiFi/5G and sleep discussion as context, not as the main thesis.</p>
+        <details class="secondary-box"><summary>Appendix A · WiFi/5G, mind reading, and mind shaping</summary><div class="details-body">
+          <p><strong>Short answer:</strong> WiFi/5G almost certainly does not directly read concrete thoughts. It can measure bodily shadows, support behavioral prediction, and act as a stimulus/timing layer that may influence the tuner.</p>
+          <p>In AC/R terms, the song is local RC: AC shaped through a specific high-dimensional R. RF shadows may touch the scaffold, but they do not carry the full semantic content of the song.</p>
+          <span class="eq">network → shadows of R + influence on tuner ≠ direct RC decoding</span>
+          <p>The real near-term danger is not “router reads mind.” It is <strong>predicting + shaping + probing</strong>: devices gather behavior, present stimuli, observe responses, update a model, and influence the next state.</p>
+        </div></details>
+        <details class="secondary-box"><summary>Appendix B · Sleep, dreams, and R-sensitivity</summary><div class="details-body">
+          <p><strong>Sleep changes the game.</strong> It does not make mind reading easy. It makes mind shaping more plausible, because sleep changes R and opens windows where sensory cues can bias memory, dreams, or morning state.</p>
+          <span class="eq">phone/AI → sleep-stage detection → timed cue → R_sleep → dream/memory bias → R_wake,next</span>
+          <p>Research pointers: targeted memory reactivation uses sensory cues associated with learning to bias memory reactivation during sleep; targeted dream incubation uses sleep-onset cues to influence dream themes; and lucid REM studies have shown limited two-way communication with cooperative dreamers. These are not proof of AC/R, but they show that sleep is not a fully closed box.</p>
+          <ul class="clean">
+            <li><a href="https://www.nature.com/articles/s41539-024-00244-8">Targeted memory reactivation review</a></li>
+            <li><a href="https://www.nature.com/articles/s41598-023-31361-w">Targeted dream incubation study</a></li>
+            <li><a href="https://www.cell.com/current-biology/fulltext/S0960-9822(21)00059-2">Real-time dialogue with dreamers</a></li>
+          </ul>
+          <p>Practical, non-paranoid precaution: keep phones and AI audio away from sleep unless intentionally used, because sleep is a plastic R-regime.</p>
+        </div></details>
+      </section>
+
+      <section class="chapter reveal" id="conclusion">
+        <div class="chapter-tag">14 · Conclusion</div>
+        <h2>Begin with the smallest bridge</h2>
+        <p class="lead">We do not begin by trying to contact aliens. We begin by asking whether resonance can carry one blinded bit between controlled nodes.</p>
+        <p>If it cannot, the cosmic version collapses. If it can, then human communication, space communication, advanced-civilization contact, and the empirical bridge for AC/R all become one ladder of the same deeper question.</p>
+        <div class="pull">Build the node. Blind the target. Log the state. Let the arena decide.</div>
+      </section>
+
+      <div class="footer-nav reveal">
+        <a href="AC_06_Method_Resonance_in_Action.html">← Previous · Method</a>
+        <a href="AC_01_Flagship.html">Back to AC flagship →</a>
+      </div>
+      <footer class="doc-footer reveal">
+        <p><strong>Editorial stance.</strong> R-COM is a proposed research bridge, not a claim of established communication. Its value is that it translates an AC/R intuition into a small experimental ladder: seed → bridge → test → result.</p>
+      </footer>
+    </main>
+  </div>
+</div>
+<a class="back-top" href="#top" aria-label="Back to top">↑ Top</a>
+<div class="reader-controls" aria-label="Reading text size controls" role="group"><button type="button" data-reader-dec aria-label="Decrease text size">A−</button><span class="reader-label" id="readerSizeLabel">Large 3/5</span><button type="button" data-reader-inc aria-label="Increase text size">A+</button></div>
+<script>
+(function(){
+  var bar=document.getElementById('progress');
+  function update(){var h=document.documentElement;var max=h.scrollHeight-h.clientHeight;bar.style.width=(max? (h.scrollTop/max*100):0)+'%';}
+  document.addEventListener('scroll',update,{passive:true}); update();
+})();
+(function(){
+  var els=[].slice.call(document.querySelectorAll('.reveal'));
+  if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('visible')});return;}
+  var io=new IntersectionObserver(function(entries){entries.forEach(function(en){if(en.isIntersecting){en.target.classList.add('visible');io.unobserve(en.target);}})},{threshold:.08});
+  els.forEach(function(e){io.observe(e)});
+})();
+(function(){
+  var key='ac07_reader_size';
+  function clamp(n){return Math.max(0,Math.min(4,n));}
+  function current(){var v=parseInt(localStorage.getItem(key)||'2',10);return isNaN(v)?2:clamp(v);}
+  function apply(n){n=clamp(n);document.documentElement.setAttribute('data-reader-size',String(n));localStorage.setItem(key,String(n));var lab=document.getElementById('readerSizeLabel'); if(lab) lab.textContent=['Small 1/5','Medium 2/5','Large 3/5','XL 4/5','XXL 5/5'][n];}
+  document.addEventListener('click',function(e){ if(e.target.matches('[data-reader-inc]')) apply(current()+1); if(e.target.matches('[data-reader-dec]')) apply(current()-1); });
+  apply(current());
+})();
+(function(){
+  var c=document.getElementById('stars'); if(!c) return; var ctx=c.getContext('2d'); var dots=[];
+  function resize(){c.width=innerWidth; c.height=innerHeight; var n=Math.min(120, Math.floor(innerWidth*innerHeight/18000)); dots=[]; for(var i=0;i<n;i++) dots.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.2+.25,a:Math.random()*.55+.12}); draw();}
+  function draw(){ctx.clearRect(0,0,c.width,c.height); dots.forEach(function(d){ctx.globalAlpha=d.a; ctx.fillStyle='#c9a84c'; ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,Math.PI*2); ctx.fill();}); ctx.globalAlpha=1;}
+  addEventListener('resize',resize,{passive:true}); resize();
+})();
+(function(){
+  function openHashSection(){ if(!location.hash || location.hash.length<2) return; var target=document.getElementById(location.hash.slice(1)); if(!target) return; var d=target.closest('details'); while(d){d.open=true; d=d.parentElement ? d.parentElement.closest('details') : null;} }
+  addEventListener('hashchange',openHashSection); openHashSection();
+})();
+</script>
+</body>
+</html>
