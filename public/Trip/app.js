@@ -266,8 +266,7 @@
       if (!geocoder) geocoder = new google.maps.Geocoder();
       const result = await new Promise((resolve) => {
         geocoder.geocode({ address: p.name }, (results, status) => {
-          if (status === 'OK') resolve(results[0]);
-          else { console.warn('Geocode failed:', p.name, status); resolve(null); }
+          if (status === 'OK') resolve(results[0]); else resolve(null);
         });
       });
       if (result) { p.lat = result.geometry.location.lat(); p.lon = result.geometry.location.lng(); }
@@ -279,56 +278,54 @@
   function ensureMapsLoaded() {
     if (window.google && window.google.maps) return Promise.resolve();
     if (mapScriptLoadingPromise) return mapScriptLoadingPromise;
-
     mapScriptLoadingPromise = new Promise((resolve, reject) => {
-      let settled = false;
+      let finished = false;
       let timeoutId = null;
+      const btn = $('btnEnableMap');
 
-      function finish(ok, value) {
-        if (settled) return;
-        settled = true;
+      function fail(message, err) {
+        if (finished) return;
+        finished = true;
         if (timeoutId) clearTimeout(timeoutId);
-        if (ok) resolve(value);
-        else reject(value);
+        console.error('[8Z Trip] Google Maps load failed:', message, err || '');
+        setStatus(message, 'bad');
+        if (btn) { btn.textContent = 'Retry Map'; btn.disabled = false; }
+        mapScriptLoadingPromise = null;
+        reject(err || new Error(message));
       }
 
       window.gm_authFailure = function() {
-        finish(false, new Error('Google Maps authorization failed. Check API key referrers, API restrictions, and billing.'));
+        fail('Google Maps authorization failed. Open JavaScript Console for the exact Maps API error.');
       };
 
       window.initMap = function() {
-        try {
-          map = new google.maps.Map($('map'), { zoom:12, center:{lat:46.0569,lng:14.5058}, mapTypeId:'hybrid', styles:DARK_STYLE });
-          geocoder = new google.maps.Geocoder();
-          directionsService = new google.maps.DirectionsService();
-          infoWindow = new google.maps.InfoWindow();
-          const ph = $('mapPlaceholder'); if(ph) ph.style.display = 'none';
-          const btn = $('btnEnableMap'); if(btn) btn.textContent = "Map Loaded";
-          finish(true);
-        } catch (err) {
-          finish(false, err);
-        }
+        if (finished) return;
+        finished = true;
+        if (timeoutId) clearTimeout(timeoutId);
+        map = new google.maps.Map($('map'), { zoom:12, center:{lat:46.0569,lng:14.5058}, mapTypeId:'hybrid', styles:DARK_STYLE });
+        geocoder = new google.maps.Geocoder();
+        directionsService = new google.maps.DirectionsService();
+        infoWindow = new google.maps.InfoWindow();
+        const ph = $('mapPlaceholder'); if(ph) ph.style.display = 'none';
+        if (btn) btn.textContent = 'Map Loaded';
+        resolve();
       };
 
       const s = document.createElement('script');
-      s.async = true;
-      s.defer = true;
-      s.onerror = () => finish(false, new Error('Could not load Google Maps API script. Check network/adblock/CSP.'));
       s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&callback=initMap&loading=async&v=weekly`;
+      s.async = true;
+      s.onerror = function(e) {
+        fail('Google Maps script failed to load. Check network, blocker, or API-key restrictions.', e);
+      };
       document.body.appendChild(s);
+      if(btn) { btn.textContent = 'Loading API...'; btn.disabled = true; }
 
-      const btn = $('btnEnableMap'); if(btn) btn.textContent = "Loading API...";
       timeoutId = setTimeout(() => {
-        finish(false, new Error('Google Maps did not initialize. Most likely: key referrer/domain restriction, API restriction, or billing.'));
-      }, 15000);
-    }).catch((err) => {
-      console.error('Maps Load Error:', err);
-      setStatus(err.message || 'Google Maps failed to load.', 'bad');
-      const btn = $('btnEnableMap'); if(btn) btn.textContent = "Retry Map";
-      mapScriptLoadingPromise = null;
-      throw err;
+        if (!(window.google && window.google.maps)) {
+          fail('Google Maps did not finish loading. Check JavaScript Console for the exact Google Maps API error.');
+        }
+      }, 12000);
     });
-
     return mapScriptLoadingPromise;
   }
 
@@ -357,10 +354,7 @@
         const seg = path.slice(i, i+25);
         const r = new google.maps.DirectionsRenderer({ map:map, suppressMarkers:true, polylineOptions:{strokeColor:"#3b82f6", strokeWeight:5} });
         directionsRenderers.push(r);
-        directionsService.route({ origin: seg[0], destination: seg[seg.length-1], waypoints: seg.slice(1,-1).map(l => ({location:l, stopover:true})), travelMode: gMode }, (res, st) => {
-          if(st === "OK") r.setDirections(res);
-          else console.warn('Directions failed:', st);
-        });
+        directionsService.route({ origin: seg[0], destination: seg[seg.length-1], waypoints: seg.slice(1,-1).map(l => ({location:l, stopover:true})), travelMode: gMode }, (res, st) => { if(st === "OK") r.setDirections(res); });
       }
     }
     google.maps.event.trigger(map, 'resize');
@@ -570,27 +564,22 @@ async function initAI() {
       if (replaceMatch && replaceMatch[1].trim()) {
           $('input').value = replaceMatch[1].trim(); saveState(); setStatus('Trip updated.', 'ok');
           setTimeout(() => { renderSuggestions('bigChatHistory'); if (historyId === 'chatHistory') renderSuggestions('chatHistory'); }, 500);
-          processedText = processedText.replace(/```[a-zA-Z]*\s*\{REPLACE:[\s\S]*?\}\s*```/g, '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Check list above.</small></div>');
           processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Check list above.</small></div>');
       }
       const addMatches = [...processedText.matchAll(/\{ADD:\s*([\s\S]*?)\}/g)];
       if(addMatches.length) {
         let addedCount = 0;
         addMatches.forEach(match => {
-          const block = (match[1] || '').trim();
-          if (block && !$('input').value.includes(block)) {
-            $('input').value += ($('input').value.endsWith('\n') || $('input').value.trim() === '' ? '' : '\n') + block;
-            addedCount += block.split('\n').filter(line => line.trim() && !line.trim().startsWith('#')).length || 1;
+          const l = (match[1] || '').trim();
+          if(l && !$('input').value.includes(l)) {
+            $('input').value += ($('input').value.endsWith('\n') ? '' : '\n') + l;
+            addedCount++;
           }
         });
-        if(addedCount > 0) {
-          saveState();
-          setStatus(`AI added ${addedCount} stop(s).`, 'ok');
-          renderSuggestions('bigChatHistory');
-          if (historyId === 'chatHistory') renderSuggestions('chatHistory');
-        }
-        processedText = processedText.replace(/```[a-zA-Z]*\s*\{ADD:[\s\S]*?\}\s*```/g, '<div class="action-badge">➕ <strong>Stops Added</strong><small>Check list above.</small></div>');
-        processedText = processedText.replace(/\{ADD:[\s\S]*?\}/g, '<div class="action-badge">➕ <strong>Stops Added</strong><small>Check list above.</small></div>');
+        if(addedCount > 0) { saveState(); setStatus(`AI added ${addedCount} stop block(s).`, 'ok'); renderSuggestions('bigChatHistory'); }
+        processedText = processedText
+          .replace(/```(?:json)?\s*\{ADD:\s*[\s\S]*?\}\s*```/g, '<div class="action-badge">➕ <strong>Stops Added</strong><small>Check list above.</small></div>')
+          .replace(/\{ADD:\s*[\s\S]*?\}/g, '<div class="action-badge">➕ <strong>Stops Added</strong><small>Check list above.</small></div>');
       }
 
       h.innerHTML += `<div class="msg ai"><strong>Gemini:</strong> ${formatMarkdown(processedText)}</div>`;
@@ -606,42 +595,9 @@ async function callAI(txt) {
     let sysPrompt = "";
     
     if (currentTripData.length < 20) {
-        sysPrompt = `You are the 8Z Trip Architect. User has EMPTY itinerary. ${locationContext}
-Help create a clean Trip Editor list.
-
-STRICT UI COMMAND RULES:
-- To fill the Trip Editor, output exactly one command block:
-{REPLACE:
-Stop Name | latitude, longitude
-Stop Name | latitude, longitude
-}
-- Do not wrap command blocks in Markdown fences.
-- Do not say the Trip Editor was updated unless you include a command block.`;
+        sysPrompt = `You are the 8Z Trip Architect. User has EMPTY itinerary. ${locationContext} Help create a list. Use {REPLACE: \nStop 1\nStop 2...} to fill list.`;
     } else {
-        sysPrompt = `You are the 8Z Logistics Co-Pilot. ${locationContext}
-CURRENT STOPS:
-${currentTripData}
-
-RULES:
-1. Value for Money.
-2. Use Markdown tables for times/prices.
-3. If the user asks you to add or change stops, you MUST include a command block.
-4. Say "I have updated your Trip Editor above." only when you include a command block.
-
-STRICT UI COMMANDS:
-Append stops:
-{ADD:
-Stop Name | latitude, longitude
-Stop Name | latitude, longitude
-}
-
-Overwrite all stops:
-{REPLACE:
-Stop Name | latitude, longitude
-Stop Name | latitude, longitude
-}
-
-Do not wrap command blocks in Markdown fences.`;
+        sysPrompt = `You are the 8Z Logistics Co-Pilot. ${locationContext} CURRENT STOPS: ${currentTripData} RULES: 1. Value for Money. 2. Do not claim the Trip Editor was updated unless you include a valid command block. 3. Use Markdown tables for times/prices. COMMANDS: use {ADD:\nStop | lat, lon\n} to append. Use {REPLACE:\nfull trip text\n} to overwrite. Do not wrap command blocks in Markdown code fences.`;
     }
 
     // Merge history and system prompt for the proxy
@@ -707,9 +663,10 @@ Do not wrap command blocks in Markdown fences.`;
 
   async function run(profile) {
     setPlanningMode(false);
-    if (!window.google) {
+    if (!(window.google && window.google.maps)) {
       setStatus('Loading Map API...', 'ok');
-      try { await ensureMapsLoaded(); } catch (e) { return; }
+      try { await ensureMapsLoaded(); }
+      catch (e) { console.error('[8Z Trip] Cannot optimize with map/geocoder unavailable:', e); return; }
     }
     const raw = $('input').value;
     let { pts, startIdx } = parseStops(raw);
@@ -763,7 +720,7 @@ Do not wrap command blocks in Markdown fences.`;
     $('btnDeep').onclick = () => run('deep');
     $('btnDriving').onclick = () => setTravelMode('DRIVING');
     $('btnWalking').onclick = () => setTravelMode('WALKING');
-    $('btnEnableMap').onclick = () => ensureMapsLoaded();
+    $('btnEnableMap').onclick = () => ensureMapsLoaded().catch(e => console.error('[8Z Trip] Map load button failed:', e));
     $('btnSave').onclick = () => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([$('input').value],{type:'text/plain'})); a.download='trip.txt'; a.click(); };
     $('btnLoad').onclick = () => $('fileLoader').click();
     $('fileLoader').onchange = (e) => { const f=e.target.files[0]; if(f){const r=new FileReader();r.onload=(v)=>{$('input').value=v.target.result;saveState();};r.readAsText(f);} };
