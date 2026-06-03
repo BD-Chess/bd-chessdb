@@ -80,6 +80,7 @@ function initAll() {
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
   }
   const LICHESS_TOKEN_KEY   = 'chessBestLichessToken';
+  const LICHESS_PUBLIC_TOKEN_URL = 'Lichess-API.txt';
   const ANTHROPIC_TOKEN_KEY = 'chessBestAnthropicKey';
 
   const DEFAULT_BOTS_CONFIG = {
@@ -3191,8 +3192,71 @@ function enterActiveSession(mode, opts = {}) {
     return null;
   }
 
+  function unmaskLichessTokenText(text) {
+    const raw = String(text || '');
+    const match = raw.match(/8ZC-LICHESS-V1\s*:\s*([\s\S]*)/i);
+    if (!match) return '';
+    try {
+      const packed = match[1].replace(/[^A-Za-z0-9_-]/g, '');
+      if (!packed) return '';
+      let b64 = packed.split('').reverse().join('');
+      while (b64.length % 4) b64 += '=';
+      b64 = b64.replace(/-/g, '+').replace(/_/g, '/');
+      const bin = atob(b64);
+      const out = new Uint8Array(bin.length);
+      let seed = (0x4D444C58 ^ bin.length) >>> 0;
+      for (let i = 0; i < bin.length; i++) {
+        seed = (Math.imul(seed, 1664525) + 1013904223 + i * 97) >>> 0;
+        const k = ((seed >>> 16) & 255) ^ ((i * 73 + 41) & 255) ^ 0xA5;
+        out[i] = bin.charCodeAt(i) ^ k;
+      }
+      const decoded = new TextDecoder().decode(out).trim();
+      const prefix = 'LICHESS_TOKEN_V1:';
+      if (!decoded.startsWith(prefix)) return '';
+      return decoded.slice(prefix.length).trim();
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function cleanLichessTokenText(text) {
+    const masked = unmaskLichessTokenText(text);
+    if (masked) return masked;
+
+    // Backward-compatible fallback: a plain token file still works if needed.
+    const lines = String(text || '')
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(line => line && !line.startsWith('#') && !line.startsWith('//'));
+    if (!lines.length) return '';
+    let token = lines[0]
+      .replace(/^Bearer\s+/i, '')
+      .replace(/^token\s*[:=]\s*/i, '')
+      .trim();
+    return token;
+  }
+
+  async function fetchPublicLichessToken() {
+    try {
+      const url = new URL(LICHESS_PUBLIC_TOKEN_URL, window.location.href);
+      url.searchParams.set('_', String(Date.now()));
+      const res = await fetch(url.href, { cache: 'no-store' });
+      if (!res.ok) return '';
+      return cleanLichessTokenText(await res.text());
+    } catch (_) {
+      return '';
+    }
+  }
+
   async function ensureLichessToken() {
-    let token = localStorage.getItem(LICHESS_TOKEN_KEY) || '';
+    // First try the public site token file next to chess.html.
+    // Fallback keeps the older manual/localStorage mode working.
+    let token = await fetchPublicLichessToken();
+    if (token) {
+      try { localStorage.setItem(LICHESS_TOKEN_KEY, token); } catch (_) {}
+      return token;
+    }
+    token = localStorage.getItem(LICHESS_TOKEN_KEY) || '';
     if (!token) {
       token = prompt('Enter your Lichess API token.');
       if (token) localStorage.setItem(LICHESS_TOKEN_KEY, token.trim());
