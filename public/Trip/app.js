@@ -95,6 +95,154 @@
     return html;
   }
 
+  // --- 5b. TRIP TEXT NORMALIZER ---
+  // Canonical Trip Editor format used by Trip Library:
+  // # Optional title/comment
+  // Stop name | 45.1234, 14.5678 START
+  // Stop name | 45.2345, 14.6789
+  function compactCoord(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return String(value).trim();
+    return (Math.round(n * 1000000) / 1000000).toString();
+  }
+
+  function stopObjectToLine(obj) {
+    if (!obj || typeof obj !== 'object') return String(obj || '');
+    const name = obj.name || obj.title || obj.label || obj.place || obj.stop || 'Point';
+    const lat = obj.lat ?? obj.latitude;
+    const lon = obj.lon ?? obj.lng ?? obj.longitude;
+    const start = obj.start ? ' START' : '';
+    if (lat !== undefined && lon !== undefined) return `${name} | ${compactCoord(lat)}, ${compactCoord(lon)}${start}`;
+    return String(name);
+  }
+
+  function tryJsonParseLoose(raw) {
+    const s = String(raw || '').trim();
+    if (!s) return null;
+    try { return JSON.parse(s); } catch (_) {}
+    // Gemini sometimes returns two JSON strings without wrapping array brackets:
+    // "# Title\nStop | lat, lon", "# Title\nStop | lat, lon"
+    if (/^"[\s\S]*"\s*(,\s*"[\s\S]*"\s*)+$/.test(s)) {
+      try { return JSON.parse('[' + s + ']'); } catch (_) {}
+    }
+    return null;
+  }
+
+  function commandPayloadToText(payload) {
+    let text = String(payload || '').trim();
+    text = text.replace(/```(?:json|text|txt)?\s*/gi, '').replace(/```/g, '').trim();
+
+    const parsed = tryJsonParseLoose(text);
+    if (parsed !== null) {
+      if (Array.isArray(parsed)) {
+        text = parsed.map(x => typeof x === 'string' ? x : stopObjectToLine(x)).join('\n');
+      } else if (typeof parsed === 'string') {
+        text = parsed;
+      } else if (parsed && typeof parsed === 'object') {
+        if (parsed.ADD !== undefined) text = Array.isArray(parsed.ADD) ? parsed.ADD.map(x => typeof x === 'string' ? x : stopObjectToLine(x)).join('\n') : String(parsed.ADD);
+        else if (parsed.REPLACE !== undefined) text = Array.isArray(parsed.REPLACE) ? parsed.REPLACE.map(x => typeof x === 'string' ? x : stopObjectToLine(x)).join('\n') : String(parsed.REPLACE);
+        else if (Array.isArray(parsed.stops)) text = parsed.stops.map(stopObjectToLine).join('\n');
+        else text = Object.values(parsed).map(x => typeof x === 'string' ? x : stopObjectToLine(x)).join('\n');
+      }
+    }
+
+    return text
+      .replace(/\\r\\n/g, '\n')
+      .replace(/\\n/g, '\n')
+      .replace(/\\t/g, ' ')
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .trim();
+  }
+
+  function normalizeTripEditorText(rawText, opts = {}) {
+    const ensureStart = !!opts.ensureStart;
+    let text = commandPayloadToText(rawText);
+    if (!text) return '';
+
+    const coordRe = /(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)/;
+    const out = [];
+    const seen = new Set();
+
+    function pushLine(line) {
+      line = String(line || '')
+        .replace(/^\s*[-*•]\s+/, '')
+        .replace(/^\s*[,\[\]]+\s*/, '')
+        .replace(/\s*[,\[\]]+\s*$/, '')
+        .replace(/^['"]+|['"]+$/g, '')
+        .trim();
+      if (!line || line === '[' || line === ']') return;
+
+      // If a quoted title accidentally lands mid-line after a comma, split it out.
+      line = line.replace(/",\s*"#/g, '\n#');
+      if (line.includes('\n')) {
+        line.split(/\n+/).forEach(pushLine);
+        return;
+      }
+
+      if (line.startsWith('#')) {
+        const key = 'h:' + line.toLowerCase();
+        if (!seen.has(key)) { seen.add(key); out.push(line); }
+        return;
+      }
+
+      let isStart = /\bSTART\b/i.test(line);
+      line = line.replace(/\bSTART\b/i, '').trim();
+
+      let name = line;
+      let lat = null, lon = null;
+      if (line.includes('|')) {
+        const parts = line.split('|');
+        const left = (parts[0] || '').trim();
+        const right = parts.slice(1).join('|').trim();
+        const mRight = coordRe.exec(right);
+        const mLeft = coordRe.exec(left);
+        if (mRight) { name = left || 'Point'; lat = mRight[1]; lon = mRight[2]; }
+        else if (mLeft) { name = right || 'Point'; lat = mLeft[1]; lon = mLeft[2]; }
+      } else {
+        const m = coordRe.exec(line);
+        if (m) {
+          lat = m[1]; lon = m[2];
+          name = line.replace(m[0], '').replace(/[|,]+$/g, '').replace(/^,/, '').trim() || 'Point';
+        }
+      }
+
+      if (lat !== null && lon !== null) {
+        const latN = Number(lat), lonN = Number(lon);
+        if (Number.isFinite(latN) && Number.isFinite(lonN) && Math.abs(latN) <= 90 && Math.abs(lonN) <= 180) {
+          line = `${name} | ${compactCoord(latN)}, ${compactCoord(lonN)}${isStart ? ' START' : ''}`;
+        } else {
+          line = `${name} | ${lat}, ${lon}${isStart ? ' START' : ''}`;
+        }
+      } else if (isStart) {
+        line = `${line} START`;
+      }
+
+      const key = 's:' + line.toLowerCase();
+      if (!seen.has(key)) { seen.add(key); out.push(line); }
+    }
+
+    text.split(/\n+/).forEach(pushLine);
+
+    if (ensureStart && !out.some(l => /\bSTART\b/i.test(l))) {
+      const idx = out.findIndex(l => l && !l.startsWith('#'));
+      if (idx >= 0) out[idx] = out[idx] + ' START';
+    }
+    return out.join('\n').trim();
+  }
+
+  function appendTripEditorBlock(payload) {
+    const current = $('input').value || '';
+    const clean = normalizeTripEditorText(payload, { ensureStart: current.trim().length < 10 });
+    if (!clean) return 0;
+    const existingLines = new Set(current.split(/\r?\n/).map(x => x.trim().toLowerCase()).filter(Boolean));
+    const lines = clean.split(/\n+/).filter(line => !existingLines.has(line.trim().toLowerCase()));
+    if (!lines.length) return 0;
+    $('input').value = current + (current.trim() && !current.endsWith('\n') ? '\n' : '') + lines.join('\n');
+    return lines.filter(l => !l.trim().startsWith('#')).length || lines.length;
+  }
+
+
   // --- 6. PERSISTENCE ---
   function saveState() { 
     const state = {
@@ -252,7 +400,7 @@
         }
       }
       pts.push({ name, lat, lon, raw: raw });
-      if (isStart) startIdx = pts.length;
+      if (isStart) startIdx = pts.length - 1;
     }
     return { pts, startIdx };
   }
@@ -562,24 +710,23 @@ async function initAI() {
       let processedText = r;
       const replaceMatch = r.match(/\{REPLACE:\s*([\s\S]*?)\}/);
       if (replaceMatch && replaceMatch[1].trim()) {
-          $('input').value = replaceMatch[1].trim(); saveState(); setStatus('Trip updated.', 'ok');
-          setTimeout(() => { renderSuggestions('bigChatHistory'); if (historyId === 'chatHistory') renderSuggestions('chatHistory'); }, 500);
-          processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Check list above.</small></div>');
+          const cleanTrip = normalizeTripEditorText(replaceMatch[1], { ensureStart: true });
+          if (cleanTrip) {
+            $('input').value = cleanTrip;
+            saveState();
+            setStatus('Trip Editor updated in Trip Library format.', 'ok');
+            setTimeout(() => { renderSuggestions('bigChatHistory'); if (historyId === 'chatHistory') renderSuggestions('chatHistory'); }, 500);
+          }
+          processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Trip Library format applied.</small></div>');
       }
       const addMatches = [...processedText.matchAll(/\{ADD:\s*([\s\S]*?)\}/g)];
       if(addMatches.length) {
         let addedCount = 0;
-        addMatches.forEach(match => {
-          const l = (match[1] || '').trim();
-          if(l && !$('input').value.includes(l)) {
-            $('input').value += ($('input').value.endsWith('\n') ? '' : '\n') + l;
-            addedCount++;
-          }
-        });
-        if(addedCount > 0) { saveState(); setStatus(`AI added ${addedCount} stop block(s).`, 'ok'); renderSuggestions('bigChatHistory'); }
+        addMatches.forEach(match => { addedCount += appendTripEditorBlock(match[1]); });
+        if(addedCount > 0) { saveState(); setStatus(`AI added ${addedCount} Trip Editor line(s).`, 'ok'); renderSuggestions('bigChatHistory'); }
         processedText = processedText
-          .replace(/```(?:json)?\s*\{ADD:\s*[\s\S]*?\}\s*```/g, '<div class="action-badge">➕ <strong>Stops Added</strong><small>Check list above.</small></div>')
-          .replace(/\{ADD:\s*[\s\S]*?\}/g, '<div class="action-badge">➕ <strong>Stops Added</strong><small>Check list above.</small></div>');
+          .replace(/```(?:json|text|txt)?\s*\{ADD:\s*[\s\S]*?\}\s*```/g, '<div class="action-badge">➕ <strong>Stops Added</strong><small>Trip Library format applied.</small></div>')
+          .replace(/\{ADD:\s*[\s\S]*?\}/g, '<div class="action-badge">➕ <strong>Stops Added</strong><small>Trip Library format applied.</small></div>');
       }
 
       h.innerHTML += `<div class="msg ai"><strong>Gemini:</strong> ${formatMarkdown(processedText)}</div>`;
@@ -594,10 +741,32 @@ async function callAI(txt) {
     const locationContext = userRegion ? `USER LOCATION: ${userRegion}` : "";
     let sysPrompt = "";
     
+    const tripFormatRules = `
+TRIP EDITOR FORMAT - REQUIRED:
+Use the same format as Trip Library. The Trip Editor is plain text, not JSON.
+One line per stop. Comments/titles start with # and are ignored by the map.
+Stop line format: Stop Name | latitude, longitude
+The first real stop may end with START.
+For a real route, provide at least 2 stops; for a day trip, prefer 5-10 useful stops.
+Never output JSON arrays, quoted strings, commas between stop strings, escaped \\n, or Markdown code fences inside command blocks.
+Good example:
+{REPLACE:
+# 🇭🇷 Croatia: Rijeka One-Day Walking Trip
+Korzo, Rijeka | 45.3275, 14.4422 START
+City Tower, Rijeka | 45.3274, 14.4429
+St. Vitus Cathedral, Rijeka | 45.3268, 14.4438
+Trsat Castle, Rijeka | 45.3326, 14.4559
+Molo Longo, Rijeka | 45.3247, 14.4336
+}
+Bad example:
+["# Trip\\nRijeka | 45.3271, 14.4422"]
+Bad example:
+"# Trip\\nRijeka | 45.3271, 14.4422", "# Trip\\nRijeka | 45.3271, 14.4422"`;
+
     if (currentTripData.length < 20) {
-        sysPrompt = `You are the 8Z Trip Architect. User has EMPTY itinerary. ${locationContext} Help create a list. Use {REPLACE: \nStop 1\nStop 2...} to fill list.`;
+        sysPrompt = `You are the 8Z Trip Architect. User has EMPTY itinerary. ${locationContext}\n${tripFormatRules}\nWhen creating a new trip, use exactly one {REPLACE:\n...\n} command block with a title and multiple real stops. Do not say the editor was updated unless you include the command block.`;
     } else {
-        sysPrompt = `You are the 8Z Logistics Co-Pilot. ${locationContext} CURRENT STOPS: ${currentTripData} RULES: 1. Value for Money. 2. Do not claim the Trip Editor was updated unless you include a valid command block. 3. Use Markdown tables for times/prices. COMMANDS: use {ADD:\nStop | lat, lon\n} to append. Use {REPLACE:\nfull trip text\n} to overwrite. Do not wrap command blocks in Markdown code fences.`;
+        sysPrompt = `You are the 8Z Logistics Co-Pilot. ${locationContext}\nCURRENT STOPS:\n${currentTripData}\n${tripFormatRules}\nRULES: 1. Value for money. 2. Use Markdown tables for explanation only, never inside Trip Editor command blocks. 3. To append stops, use {ADD:\nStop | lat, lon\n}. To overwrite the whole itinerary, use {REPLACE:\nfull trip text\n}. 4. Do not claim the Trip Editor was updated unless you include a valid command block.`;
     }
 
     // Merge history and system prompt for the proxy
@@ -667,6 +836,12 @@ async function callAI(txt) {
       setStatus('Loading Map API...', 'ok');
       try { await ensureMapsLoaded(); }
       catch (e) { console.error('[8Z Trip] Cannot optimize with map/geocoder unavailable:', e); return; }
+    }
+    const repaired = normalizeTripEditorText($('input').value, { ensureStart: true });
+    if (repaired && repaired !== $('input').value.trim()) {
+      $('input').value = repaired;
+      saveState();
+      setStatus('Trip Editor text repaired to Trip Library format.', 'warn');
     }
     const raw = $('input').value;
     let { pts, startIdx } = parseStops(raw);
