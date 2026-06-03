@@ -266,7 +266,8 @@
       if (!geocoder) geocoder = new google.maps.Geocoder();
       const result = await new Promise((resolve) => {
         geocoder.geocode({ address: p.name }, (results, status) => {
-          if (status === 'OK') resolve(results[0]); else resolve(null);
+          if (status === 'OK') resolve(results[0]);
+          else { console.warn('Geocode failed:', p.name, status); resolve(null); }
         });
       });
       if (result) { p.lat = result.geometry.location.lat(); p.lon = result.geometry.location.lng(); }
@@ -278,20 +279,56 @@
   function ensureMapsLoaded() {
     if (window.google && window.google.maps) return Promise.resolve();
     if (mapScriptLoadingPromise) return mapScriptLoadingPromise;
-    mapScriptLoadingPromise = new Promise((resolve) => {
-      window.initMap = function() {
-        map = new google.maps.Map($('map'), { zoom:12, center:{lat:46.0569,lng:14.5058}, mapTypeId:'hybrid', styles:DARK_STYLE });
-        geocoder = new google.maps.Geocoder();
-        directionsService = new google.maps.DirectionsService();
-        infoWindow = new google.maps.InfoWindow();
-        const ph = $('mapPlaceholder'); if(ph) ph.style.display = 'none';
-        resolve();
+
+    mapScriptLoadingPromise = new Promise((resolve, reject) => {
+      let settled = false;
+      let timeoutId = null;
+
+      function finish(ok, value) {
+        if (settled) return;
+        settled = true;
+        if (timeoutId) clearTimeout(timeoutId);
+        if (ok) resolve(value);
+        else reject(value);
+      }
+
+      window.gm_authFailure = function() {
+        finish(false, new Error('Google Maps authorization failed. Check API key referrers, API restrictions, and billing.'));
       };
+
+      window.initMap = function() {
+        try {
+          map = new google.maps.Map($('map'), { zoom:12, center:{lat:46.0569,lng:14.5058}, mapTypeId:'hybrid', styles:DARK_STYLE });
+          geocoder = new google.maps.Geocoder();
+          directionsService = new google.maps.DirectionsService();
+          infoWindow = new google.maps.InfoWindow();
+          const ph = $('mapPlaceholder'); if(ph) ph.style.display = 'none';
+          const btn = $('btnEnableMap'); if(btn) btn.textContent = "Map Loaded";
+          finish(true);
+        } catch (err) {
+          finish(false, err);
+        }
+      };
+
       const s = document.createElement('script');
+      s.async = true;
+      s.defer = true;
+      s.onerror = () => finish(false, new Error('Could not load Google Maps API script. Check network/adblock/CSP.'));
       s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&callback=initMap&loading=async&v=weekly`;
       document.body.appendChild(s);
+
       const btn = $('btnEnableMap'); if(btn) btn.textContent = "Loading API...";
+      timeoutId = setTimeout(() => {
+        finish(false, new Error('Google Maps did not initialize. Most likely: key referrer/domain restriction, API restriction, or billing.'));
+      }, 15000);
+    }).catch((err) => {
+      console.error('Maps Load Error:', err);
+      setStatus(err.message || 'Google Maps failed to load.', 'bad');
+      const btn = $('btnEnableMap'); if(btn) btn.textContent = "Retry Map";
+      mapScriptLoadingPromise = null;
+      throw err;
     });
+
     return mapScriptLoadingPromise;
   }
 
@@ -320,7 +357,10 @@
         const seg = path.slice(i, i+25);
         const r = new google.maps.DirectionsRenderer({ map:map, suppressMarkers:true, polylineOptions:{strokeColor:"#3b82f6", strokeWeight:5} });
         directionsRenderers.push(r);
-        directionsService.route({ origin: seg[0], destination: seg[seg.length-1], waypoints: seg.slice(1,-1).map(l => ({location:l, stopover:true})), travelMode: gMode }, (res, st) => { if(st === "OK") r.setDirections(res); });
+        directionsService.route({ origin: seg[0], destination: seg[seg.length-1], waypoints: seg.slice(1,-1).map(l => ({location:l, stopover:true})), travelMode: gMode }, (res, st) => {
+          if(st === "OK") r.setDirections(res);
+          else console.warn('Directions failed:', st);
+        });
       }
     }
     google.maps.event.trigger(map, 'resize');
@@ -530,14 +570,27 @@ async function initAI() {
       if (replaceMatch && replaceMatch[1].trim()) {
           $('input').value = replaceMatch[1].trim(); saveState(); setStatus('Trip updated.', 'ok');
           setTimeout(() => { renderSuggestions('bigChatHistory'); if (historyId === 'chatHistory') renderSuggestions('chatHistory'); }, 500);
+          processedText = processedText.replace(/```[a-zA-Z]*\s*\{REPLACE:[\s\S]*?\}\s*```/g, '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Check list above.</small></div>');
           processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Check list above.</small></div>');
       }
-      const m = processedText.match(/\{ADD:\s*(.*?)\}/g); 
-      if(m) {
+      const addMatches = [...processedText.matchAll(/\{ADD:\s*([\s\S]*?)\}/g)];
+      if(addMatches.length) {
         let addedCount = 0;
-        m.forEach(x=>{ const l=x.replace(/\{ADD:\s*|\}/g,'').trim(); if(!$('input').value.includes(l)) { $('input').value += ($('input').value.endsWith('\n') ? '' : '\n') + l; addedCount++; } });
-        if(addedCount > 0) { saveState(); setStatus(`AI added ${addedCount} stops.`, 'ok'); renderSuggestions('bigChatHistory'); }
-        processedText = processedText.replace(/\{ADD:.*?\}/g, '<div class="action-badge">➕ <strong>Stops Added</strong><small>Check list above.</small></div>');
+        addMatches.forEach(match => {
+          const block = (match[1] || '').trim();
+          if (block && !$('input').value.includes(block)) {
+            $('input').value += ($('input').value.endsWith('\n') || $('input').value.trim() === '' ? '' : '\n') + block;
+            addedCount += block.split('\n').filter(line => line.trim() && !line.trim().startsWith('#')).length || 1;
+          }
+        });
+        if(addedCount > 0) {
+          saveState();
+          setStatus(`AI added ${addedCount} stop(s).`, 'ok');
+          renderSuggestions('bigChatHistory');
+          if (historyId === 'chatHistory') renderSuggestions('chatHistory');
+        }
+        processedText = processedText.replace(/```[a-zA-Z]*\s*\{ADD:[\s\S]*?\}\s*```/g, '<div class="action-badge">➕ <strong>Stops Added</strong><small>Check list above.</small></div>');
+        processedText = processedText.replace(/\{ADD:[\s\S]*?\}/g, '<div class="action-badge">➕ <strong>Stops Added</strong><small>Check list above.</small></div>');
       }
 
       h.innerHTML += `<div class="msg ai"><strong>Gemini:</strong> ${formatMarkdown(processedText)}</div>`;
@@ -553,9 +606,42 @@ async function callAI(txt) {
     let sysPrompt = "";
     
     if (currentTripData.length < 20) {
-        sysPrompt = `You are the 8Z Trip Architect. User has EMPTY itinerary. ${locationContext} Help create a list. Use {REPLACE: \nStop 1\nStop 2...} to fill list.`;
+        sysPrompt = `You are the 8Z Trip Architect. User has EMPTY itinerary. ${locationContext}
+Help create a clean Trip Editor list.
+
+STRICT UI COMMAND RULES:
+- To fill the Trip Editor, output exactly one command block:
+{REPLACE:
+Stop Name | latitude, longitude
+Stop Name | latitude, longitude
+}
+- Do not wrap command blocks in Markdown fences.
+- Do not say the Trip Editor was updated unless you include a command block.`;
     } else {
-        sysPrompt = `You are the 8Z Logistics Co-Pilot. ${locationContext} CURRENT STOPS: ${currentTripData} RULES: 1. Value for Money. 2. UI AWARENESS: Say "I have updated your Trip Editor above." 3. Use Markdown tables for times/prices. COMMANDS: {ADD: ...} to append. {REPLACE: ...} to overwrite.`;
+        sysPrompt = `You are the 8Z Logistics Co-Pilot. ${locationContext}
+CURRENT STOPS:
+${currentTripData}
+
+RULES:
+1. Value for Money.
+2. Use Markdown tables for times/prices.
+3. If the user asks you to add or change stops, you MUST include a command block.
+4. Say "I have updated your Trip Editor above." only when you include a command block.
+
+STRICT UI COMMANDS:
+Append stops:
+{ADD:
+Stop Name | latitude, longitude
+Stop Name | latitude, longitude
+}
+
+Overwrite all stops:
+{REPLACE:
+Stop Name | latitude, longitude
+Stop Name | latitude, longitude
+}
+
+Do not wrap command blocks in Markdown fences.`;
     }
 
     // Merge history and system prompt for the proxy
@@ -621,7 +707,10 @@ async function callAI(txt) {
 
   async function run(profile) {
     setPlanningMode(false);
-    if (!window.google) { setStatus('Loading Map API...', 'ok'); await ensureMapsLoaded(); }
+    if (!window.google) {
+      setStatus('Loading Map API...', 'ok');
+      try { await ensureMapsLoaded(); } catch (e) { return; }
+    }
     const raw = $('input').value;
     let { pts, startIdx } = parseStops(raw);
     try { pts = await geocodeMissingPoints(pts); } catch (e) { setStatus('Geocode Error', 'bad'); return; }
