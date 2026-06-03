@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PiX — laboratorij π‑zaporedij</title>
+<style>
+:root{
+  --bg:#070914; --bg2:#0b1020; --panel:#101624; --card:#121b2e; --card2:#0d1320;
+  --line:#24324e; --line2:#344767; --text:#e7edf8; --muted:#9fb0c8; --dim:#6d7d96;
+  --green:#2ef2a3; --blue:#58a6ff; --gold:#ffd76a; --red:#ff6b84; --violet:#bd93f9;
+  --cyan:#67e8f9; --orange:#ffb86c; --shadow:0 18px 50px rgba(0,0,0,.28);
+  --radius:16px; --mono:Consolas,"JetBrains Mono",Menlo,monospace; --sans:Inter,"Segoe UI",Arial,sans-serif;
+  --fs:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;font-size:var(--fs)}
+body{
+  margin:0; color:var(--text); font-family:var(--sans); line-height:1.62;
+  background:
+    radial-gradient(circle at 12% 0%,rgba(88,166,255,.18),transparent 30%),
+    radial-gradient(circle at 86% 8%,rgba(46,242,163,.10),transparent 28%),
+    radial-gradient(circle at 50% 100%,rgba(189,147,249,.10),transparent 34%),
+    linear-gradient(180deg,#060812 0%,#080b14 100%);
+}
+a{color:var(--cyan);text-decoration:none} a:hover{text-decoration:underline}
+.wrap{max-width:1220px;margin:0 auto;padding:28px 20px 96px}.hero{padding:38px 0 22px;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:var(--mono);color:var(--cyan);font-size:.75rem;text-transform:uppercase;letter-spacing:.18em;font-weight:900}
+h1{font-size:clamp(36px,5.7vw,76px);line-height:1.02;margin:12px 0;letter-spacing:-.05em}.subtitle{max-width:980px;color:var(--muted);font-size:1.12rem}.small{font-size:.84rem;color:var(--muted)}
+.nav{position:sticky;top:0;z-index:20;background:rgba(7,9,20,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);margin:0 -20px;padding:10px 20px;display:flex;gap:8px;overflow-x:auto}.nav a{white-space:nowrap;text-decoration:none;border:1px solid var(--line2);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:.82rem}.nav a:hover{color:var(--cyan);border-color:var(--cyan)}
+.grid{display:grid;gap:16px}.cards{grid-template-columns:repeat(4,minmax(0,1fr));margin:22px 0}.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:repeat(3,1fr)}
+.card,.table-card,.callout,.toolbox{background:linear-gradient(180deg,rgba(18,27,46,.96),rgba(12,18,31,.96));border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.card .label{color:var(--muted);font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.11em}.card .num{font-size:1.68rem;font-weight:900;margin-top:8px}.green{color:var(--green)!important}.gold{color:var(--gold)!important}.cyan{color:var(--cyan)!important}.red{color:var(--red)!important}.violet{color:var(--violet)!important}.orange{color:var(--orange)!important}.muted{color:var(--muted)}
+section{margin:42px 0}h2{font-size:2rem;margin:0 0 14px;letter-spacing:-.025em}h3{font-size:1.18rem;margin:0 0 8px;color:var(--gold)}p{margin:0 0 14px}.caption{color:var(--muted);font-size:.9rem;margin:0 0 12px}.note{background:rgba(255,215,106,.08);border:1px solid rgba(255,215,106,.24);border-radius:14px;padding:15px 17px;color:#ffe7a3}.danger{background:rgba(255,107,132,.08);border:1px solid rgba(255,107,132,.28);border-radius:14px;padding:15px 17px}.good{background:rgba(46,242,163,.08);border:1px solid rgba(46,242,163,.25);border-radius:14px;padding:15px 17px}.quote{border-left:3px solid var(--cyan);padding:14px 16px;background:rgba(103,232,249,.06);border-radius:0 12px 12px 0;color:#d9f7ff}
+.table-wrap{overflow:auto;border-radius:12px;border:1px solid rgba(255,255,255,.055)}table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:760px}th,td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top;text-align:right}th{position:sticky;top:0;background:#10182b;color:#cfe3ff;text-align:center;z-index:1;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}td:first-child,th:first-child{text-align:center}tr:hover td{background:rgba(88,166,255,.06)}td.num,code,.mono{font-family:var(--mono)}code{background:#0a1020;border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--cyan)}
+.controls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:14px 0}.field label{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}.field input,.field select{width:100%;background:#0a1020;border:1px solid var(--line2);border-radius:10px;color:var(--text);padding:9px 10px;font-family:var(--mono);font-size:.88rem}.field input:focus,.field select:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(103,232,249,.08)}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.btn{border:1px solid var(--line2);background:#0a1020;color:var(--text);border-radius:999px;padding:8px 12px;font-family:var(--mono);font-size:.78rem;cursor:pointer}.btn:hover{border-color:var(--cyan);color:var(--cyan)}.btn.primary{background:rgba(46,242,163,.10);border-color:rgba(46,242,163,.32);color:var(--green)}
+canvas{width:100%;height:260px;background:#0a1020;border:1px solid var(--line);border-radius:14px;display:block}.pillrow{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.pill{font-family:var(--mono);font-size:.72rem;border:1px solid var(--line2);border-radius:999px;padding:5px 9px;color:var(--muted);background:rgba(255,255,255,.025)}.pill.good{border-color:rgba(46,242,163,.34);color:var(--green)}.pill.gold{border-color:rgba(255,215,106,.34);color:var(--gold)}.pill.cyan{border-color:rgba(103,232,249,.34);color:var(--cyan)}.pill.red{border-color:rgba(255,107,132,.34);color:var(--red)}
+ul,ol{margin:10px 0 0 22px;color:var(--muted)}li{margin:7px 0}details{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:10px 0}summary{cursor:pointer;font-weight:800;color:var(--cyan)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.kpi div{border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(255,255,255,.025);text-align:center}.kpi b{display:block;font-family:var(--mono);font-size:1.12rem;color:var(--green)}.kpi span{font-size:.75rem;color:var(--muted)}
+.footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:var(--dim);font-size:.88rem;text-align:center}.access{position:fixed;right:14px;bottom:14px;z-index:40;display:flex;gap:6px}.access button{border:1px solid var(--line2);background:rgba(10,16,32,.92);color:var(--muted);border-radius:999px;padding:8px 10px;cursor:pointer}.access button:hover{color:var(--cyan);border-color:var(--cyan)}
+@media(max-width:980px){.cards,.two,.three,.controls,.kpi{grid-template-columns:1fr}h1{font-size:40px}.wrap{padding:18px 12px 70px}.nav{margin:0 -12px;padding:10px 12px}canvas{height:220px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hero" id="top">
+  <div class="eyebrow">PiX · π‑zaporedja · BD Research Lab</div>
+  <h1>PiX — laboratorij π‑zaporedij</h1>
+  <p class="subtitle">Hipoteza: če je <strong>φ</strong> naravni jezik rasti in samopodobnosti, je <strong>π</strong> naravni jezik ciklov, faz, krožnih razmerij in diskretnih nivojev. Ta stran ne trdi, da π magično napoveduje trge — pretvori idejo v <strong>orodje za generiranje, primerjavo in testiranje</strong>.</p>
+  <div class="pillrow">
+    <span class="pill cyan">π/2 = 1.570796</span>
+    <span class="pill gold">φ ≈ 1.618034</span>
+    <span class="pill good">2/π = 0.636620</span>
+    <span class="pill">1/π = 0.318310</span>
+    <span class="pill red">research only</span>
+  </div>
+  <p class="small">2. junij 2026 · izboljšana temna verzija · originalna ideja: π‑zaporedja kot diskretni partner Fibonacciju</p>
+</header>
+
+<nav class="nav">
+  <a href="#mnenje">Mnenje</a><a href="#jedro">Jedro ideje</a><a href="#lab">Generator</a><a href="#trading">Trgovalni nivoji</a><a href="#time">Časovne cone</a><a href="#test">Kako testirati</a><a href="#roadmap">Roadmap</a>
+</nav>
+
+<section id="mnenje">
+  <h2>Moje mnenje: ideja je vredna testiranja, ampak jo je treba pravilno zapakirati</h2>
+  <div class="grid three">
+    <div class="card"><div class="label">Najboljše jedro</div><div class="num cyan">π kot generator</div><p class="small">Ne prodajaj tega kot “π napoveduje trg”. Boljše: π generira nove družine razdalj, časovnih con in spacingov, ki jih lahko arena primerja proti Fibonacciju, random in kontrolam.</p></div>
+    <div class="card"><div class="label">Največja nevarnost</div><div class="num red">pattern trap</div><p class="small">Na grafih boš vedno našel nekaj, kar zadene. Zato je nujno šteti tudi zgrešene zadetke, kontrolne nivoje in out‑of‑sample rezultate.</p></div>
+    <div class="card"><div class="label">Najboljša uporaba</div><div class="num green">parameter grid</div><p class="small">PiX je uporaben kot pameten generator parametrov: add spacing, TP/SL cone, časovni cikli, level clustering in hibridni φ+π filtri.</p></div>
+  </div>
+  <div class="quote"><strong>Kratek verdict:</strong> ideja ni “dokazana”, je pa dovolj zanimiva, da si zasluži majhen, čist backtest. Najprej jo obravnavaj kot <em>iskalnik kandidatnih nivojev</em>, ne kot sveti zakon trga.</div>
+</section>
+
+<section id="jedro">
+  <h2>1. Jedro ideje: trije jeziki diskretne strukture</h2>
+  <div class="grid three">
+    <div class="callout"><h3>φ — rast in samopodobnost</h3><p>Fibonacci / φ dobro opisuje razmerja, kjer se struktura gradi iz prejšnjih stanj: rast, korekcije, razvejanost, organska geometrija.</p></div>
+    <div class="callout"><h3>π — cikel, faza, krog</h3><p>π je bolj naraven za cikle, valove, fazne zamike, rotacijo, periodičnost in krožne proporce. Zato je logično vprašanje: ali obstaja uporabna <strong>diskretna oblika π</strong>?</p></div>
+    <div class="callout"><h3>2ⁿ — binarna eksplozija</h3><p>Potence 2 so jezik diskretnega računalništva. PiX postane zanimiv ravno tam, kjer primerjaš <code>2ⁿ</code>, <code>Fib(n)</code> in <code>(π/k)^n</code>.</p></div>
+  </div>
+  <div class="note"><strong>Pomemben popravek:</strong> pri π‑tabelah mora biti formula strogo zapisana. Če uporabljaš <code>round((π/2)^(m+1))</code>, potem morajo vse vrstice uporabljati isti zamik. Mešanje <code>m</code> in <code>m+1</code> pri večjih m hitro ustvari napačne številke.</div>
+</section>
+
+<section id="lab">
+  <h2>2. PiX generator zaporedij</h2>
+  <p class="caption">Privzeto je nastavljeno na tvojo začetno idejo: eksponentno π/2 zaporedje z zamikom +1, da se pri <code>m=10</code> sreča s Fibonaccijem pri 144.</p>
+  <div class="toolbox">
+    <div class="controls">
+      <div class="field"><label>Družina</label><select id="family"><option value="exp">eksponentna: scale·(π/k)^(m+offset)</option><option value="linear">linearno: round(scale·m·π/k)</option><option value="add">aditivna: prejšnja + round((π/k)·prejšnja)</option></select></div>
+      <div class="field"><label>k</label><input id="kVal" type="number" step="0.01" value="2"></div>
+      <div class="field"><label>scale</label><input id="scaleVal" type="number" step="0.01" value="1"></div>
+      <div class="field"><label>offset</label><input id="offsetVal" type="number" step="1" value="1"></div>
+      <div class="field"><label>vrstice</label><input id="rowsVal" type="number" min="5" max="80" step="1" value="30"></div>
+      <div class="field"><label>zaokroži</label><select id="roundMode"><option value="round">nearest</option><option value="floor">floor</option><option value="ceil">ceil</option></select></div>
+    </div>
+    <div class="btnrow"><button class="btn primary" onclick="renderAll()">Izračunaj</button><button class="btn" onclick="copyCSV()">Kopiraj CSV</button><button class="btn" onclick="copyJSON()">Kopiraj JSON</button><button class="btn" onclick="resetPix()">Reset π/2</button><span id="copyMsg" class="small muted"></span></div>
+    <div class="grid two">
+      <div><canvas id="seqChart" width="900" height="300" aria-label="PiX chart"></canvas><p class="caption">Graf uporablja logaritemsko skalo, da se lahko primerjajo počasna in hitra zaporedja.</p></div>
+      <div>
+        <div class="kpi" id="kpiBox"></div>
+        <details open><summary>Kako brati stolpce</summary><p class="small">Stolpec <strong>PiX</strong> je izbrano π‑zaporedje. <strong>Fib</strong> je F(m+2), zamaknjen tako, da se primerjava začne pri 2. <strong>Δ Fib</strong> pokaže, ali je PiX pod ali nad Fibonaccijem. <strong>Ratio</strong> pokaže razmerje proti prejšnji PiX vrednosti.</p></details>
+      </div>
+    </div>
+    <div class="table-card" style="box-shadow:none;margin-top:14px"><div class="table-wrap"><table id="seqTable"><thead></thead><tbody></tbody></table></div></div>
+  </div>
+</section>
+
+<section id="trading">
+  <h2>3. Trgovalna uporaba: π‑nivoji kot testna mreža, ne kot prerokba</h2>
+  <p>Najbolj uporabna verzija PiX za trading je nivojski kalkulator. Vzameš swing low/high in generiraš retracement/extension nivoje. Potem jih testiraš proti Fibonacci, random in kontrolnim nivojem.</p>
+  <div class="grid two">
+    <div class="toolbox">
+      <h3>π‑swing kalkulator</h3>
+      <div class="controls" style="grid-template-columns:repeat(3,1fr)">
+        <div class="field"><label>Swing low</label><input id="lowPrice" type="number" step="0.0001" value="100"></div>
+        <div class="field"><label>Swing high</label><input id="highPrice" type="number" step="0.0001" value="200"></div>
+        <div class="field"><label>Smer</label><select id="swingDir"><option value="up">up swing: retracement navzdol</option><option value="down">down swing: retracement navzgor</option></select></div>
+      </div>
+      <div class="btnrow"><button class="btn primary" onclick="renderLevels()">Izračunaj nivoje</button><button class="btn" onclick="copyLevelsCSV()">Kopiraj nivoje CSV</button></div>
+      <div class="table-wrap"><table id="levelTable"><thead></thead><tbody></tbody></table></div>
+    </div>
+    <div class="callout">
+      <h3>Priporočena PiX raven za prvi test</h3>
+      <ul>
+        <li><strong>31.831%</strong> = <code>1/π</code> — plitek popravek.</li>
+        <li><strong>52.360%</strong> = <code>π/6</code> — radian/30° frakcija.</li>
+        <li><strong>63.662%</strong> = <code>2/π</code> — najbližja cona Fibonacciju 61.8%.</li>
+        <li><strong>78.540%</strong> = <code>π/4</code> — radian/45° frakcija, blizu Fib 78.6%.</li>
+        <li><strong>104.720%, 131.831%, 152.360%, 163.662%, 178.540%, 257.080%</strong> — razširitve.</li>
+      </ul>
+      <div class="danger" style="margin-top:14px"><strong>Strogo:</strong> zadetek nivoja sam po sebi ne šteje. Šteje samo, če izboljša odločanje: boljši TP, manjši MAE, boljši rescue, manj open-tail tveganja ali boljši profit/risk proti kontrolam.</div>
+    </div>
+  </div>
+</section>
+
+<section id="time">
+  <h2>4. Časovne cone: π kot ritem, ne samo cena</h2>
+  <div class="grid two">
+    <div class="toolbox">
+      <h3>Časovni generator</h3>
+      <div class="controls" style="grid-template-columns:repeat(4,1fr)">
+        <div class="field"><label>Anchor bar</label><input id="anchorBar" type="number" step="1" value="0"></div>
+        <div class="field"><label>Koraki</label><input id="timeRows" type="number" min="5" max="60" value="20"></div>
+        <div class="field"><label>Metoda</label><select id="timeMethod"><option value="linearPi">round(anchor + n·π)</option><option value="halfPiExp">round(anchor + (π/2)^(n+1))</option><option value="twoPi">round(anchor + n·2π)</option></select></div>
+        <div class="field"><label>Bar size</label><select id="barSize"><option value="1">1m</option><option value="5">5m</option><option value="15">15m</option><option value="60">1h</option><option value="1440">1D</option></select></div>
+      </div>
+      <div class="btnrow"><button class="btn primary" onclick="renderTimeZones()">Izračunaj čas</button><button class="btn" onclick="copyTimeCSV()">Kopiraj CSV</button></div>
+      <div class="table-wrap"><table id="timeTable"><thead></thead><tbody></tbody></table></div>
+    </div>
+    <div class="callout">
+      <h3>Kaj testirati</h3>
+      <p>Časovne cone niso “signal”. So <strong>okno povečane pozornosti</strong>. Test mora vprašati: ali se po π‑časovni coni statistično poveča verjetnost obrata, pospeška, range breaka ali rescue okna?</p>
+      <details><summary>Minimalni časovni test</summary><ol><li>Izberi objektivne anchorje: lokalni swing high/low, velik volume spike, liquidation wick.</li><li>Ustvari π‑cone in enako število random con.</li><li>Za vsako cono izmeri MFE/MAE, direction flip, volatilnost in volume spremembo v naslednjih N barih.</li><li>Primerjaj π proti random + Fibonacci časovnim conam.</li></ol></details>
+    </div>
+  </div>
+</section>
+
+<section id="test">
+  <h2>5. Kako to resno testirati v Trading Areni</h2>
+  <div class="grid three">
+    <div class="callout"><h3>Kontrole</h3><p>Vsak PiX nivo mora tekmovati proti Fibonacci nivojem, enakomernim nivojem, random nivojem in “no-level” kontroli. Brez tega je vse preveč lahko videti pametno.</p></div>
+    <div class="callout"><h3>Metrični izhod</h3><p>Ne glej samo win rate. Glej median MTM, realized PnL, open-tail risk, max open loss, add count, rescue success, MFE/MAE in profit/risk.</p></div>
+    <div class="callout"><h3>Sloti, ne ena strategija</h3><p>PiX naj najprej kandidira za <strong>decision slot</strong>: add spacing, TP ladder, runner hold, rescue window, veto cone. Ni nujno, da je samostojna strategija.</p></div>
+  </div>
+  <div class="table-card">
+    <h3>Najbolj smiselni prvi eksperimenti</h3>
+    <div class="table-wrap"><table><thead><tr><th>Eksperiment</th><th>PiX kandidat</th><th>Kontrola</th><th>Kaj bi pomenil uspeh</th></tr></thead><tbody>
+      <tr><td>Retracement TP/SL</td><td>31.8 / 52.4 / 63.7 / 78.5%</td><td>Fib + uniform + random</td><td>nižji MAE ali boljši profit/risk</td></tr>
+      <tr><td>Add spacing</td><td>π/2 eksponentna razdalja</td><td>fixed, Fib, geometric 1.5</td><td>manj slabih addov, manj max open loss</td></tr>
+      <tr><td>Time window</td><td>n·π ali (π/2)^n bari</td><td>random anchor offsets</td><td>več obratov/pospeškov po coni</td></tr>
+      <tr><td>Hybrid φ+π cluster</td><td>kjer se Fib in PiX nivo prekrivata</td><td>Fib-only, Pi-only</td><td>boljša selektivnost brez izgube profitabilnosti</td></tr>
+      <tr><td>MicroScalp rescue</td><td>π stopnje za delno zapiranje</td><td>fixed 100/200/400% ladder</td><td>hitrejše zmanjšanje pozicije ob manj open-tail tveganja</td></tr>
+    </tbody></table></div>
+  </div>
+</section>
+
+<section id="roadmap">
+  <h2>6. PiX roadmap</h2>
+  <div class="grid two">
+    <div class="good"><strong>PiX v1 — stran/orodje:</strong> generira zaporedja, nivoje, časovne cone, CSV/JSON export. To je narejeno tukaj.</div>
+    <div class="note"><strong>PiX v2 — arena adapter:</strong> Python modul ustvari strategije iz PiX nivojev in jih testira proti Fib/random kontrolam.</div>
+    <div class="callout"><h3>PiX v3 — hibridni sloti</h3><p>PiX ne odloča o celotni strategiji, ampak kandidira za točno določen slot: entry filter, add spacing, rescue, TP, runner, veto.</p></div>
+    <div class="callout"><h3>PiX v4 — javni research note</h3><p>Ko imaš rezultate, spremeni manifest v kratek javni članek: “π-levels as a falsifiable alternative to Fibonacci grids”.</p></div>
+  </div>
+  <div class="danger" style="margin-top:16px"><strong>Najbolj pošten stavek za javno verzijo:</strong> “PiX ne dokazuje, da trgi sledijo π. PiX predlaga disciplinirano družino nivojev, ki jo je mogoče testirati proti obstoječim Fibonacci in random mrežam.”</div>
+</section>
+
+<footer class="footer">
+  PiX · π‑sequence laboratory · BD × AI · research page only, not financial advice.<br>
+  Originalna ideja: diskretna uporabnost π kot partnerja Fibonacciju. Izboljšana verzija: temna tema, interaktivni generator, swing kalkulator, časovne cone in testni protokol.
+</footer>
+</div>
+
+<div class="access"><button onclick="fontStep(-1)">A−</button><button onclick="fontStep(1)">A+</button><button onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button></div>
+
+<script nonce="505860D6123">var zphInj="eyJkc3RfaXAiOiIxNzIuNjQuMTU1LjIwOSIsImRzdF9wb3J0IjoiNDQzIiwiZW5jb2RlZF9odHRwX2hvc3QiOiJZMmhoZEdkd2RDNWpiMjA9IiwiZW5jb2RlZF92aWEiOiIiLCJodHRwX3N0YXR1cyI6IjIwMCIsImVuY29kZWRfaHR0cF9zZXJ2ZXIiOiJUM1JvWlhJNklHTnNiM1ZrWm14aGNtVT0iLCJtZXRob2QiOiJHRVQiLCJjb250ZW50X2xlbmd0aCI6IjAiLCJlbmNvZGVkX2NvbnRlbnRfdHlwZSI6ImRHVjRkQzlvZEcxcyIsImludGVyZmFjZSI6ImV0aDMuODk4IiwicnVsZV9pZCI6IntDNEQ1QTJFRC01REFFLTQzMEYtOTEyRC1GNDRBQTA1NDc3MzJ9IiwiaXNfZXhjZXB0aW9uIjoiMCIsImFjdGlvbl9ieV9leGNlcHRpb24iOiJQUkVWRU5UIiwidHJhY2siOiJsb2ciLCJpbmNpZGVudF9pZCI6Ins1MDU4NjBENi0xMjNBLTA3RDItQkE4QS1FQ0IwRjVEODlBOTB9In0="</script><script nonce="505860D6123" src='https://cp-zerophishing.ts.telekom.si/zph/token_generator.php?api_key={73B83BD6-2B3F-D648-9432-5C1197DC7078}' crossorigin></script><script nonce="505860D6123" src='https://zerophishing.iaas.checkpoint.com/1/zp.js?api_key={73B83BD6-2B3F-D648-9432-5C1197DC7078}' defer crossorigin></script><script>
+const PI=Math.PI, PHI=(1+Math.sqrt(5))/2;
+let seqRows=[], levelRows=[], timeRowsData=[];
+function fmt(x,d=6){ if(!Number.isFinite(x)) return ''; const ax=Math.abs(x); if(ax>=1e7) return x.toExponential(4); if(ax>=1000) return x.toLocaleString('sl-SI',{maximumFractionDigits:0}); return x.toLocaleString('sl-SI',{maximumFractionDigits:d}); }
+function rnd(x){ const mode=document.getElementById('roundMode').value; if(mode==='floor') return Math.floor(x); if(mode==='ceil') return Math.ceil(x); return Math.round(x); }
+function fib(n){ let a=0,b=1; for(let i=0;i<n;i++){ [a,b]=[b,a+b]; } return a; }
+function pixValue(m){ const family=document.getElementById('family').value; const k=parseFloat(document.getElementById('kVal').value)||2; const scale=parseFloat(document.getElementById('scaleVal').value)||1; const offset=parseFloat(document.getElementById('offsetVal').value)||0; const base=PI/k; if(family==='exp') return rnd(scale*Math.pow(base,m+offset)); if(family==='linear') return rnd(scale*m*base); return null; }
+function buildSeq(){ const rows=parseInt(document.getElementById('rowsVal').value)||30; const family=document.getElementById('family').value; const k=parseFloat(document.getElementById('kVal').value)||2; const base=PI/k; seqRows=[]; let prev=null; for(let m=1;m<=rows;m++){ let val; if(family==='add'){ if(m===1) val=2; else val=prev + rnd(base*prev); } else val=pixValue(m); const f=fib(m+2); const pow2=Math.pow(2,m); const ratio=prev? val/prev : null; seqRows.push({m, pix:val, ratio, fib:f, diffFib:val-f, pow2, fibPlus:val+f}); prev=val; } }
+function renderSeqTable(){ const t=document.getElementById('seqTable'); t.querySelector('thead').innerHTML='<tr><th>m</th><th>PiX</th><th>Ratio</th><th>Fib F(m+2)</th><th>Δ Fib</th><th>2^m</th><th>Fib+PiX</th></tr>'; t.querySelector('tbody').innerHTML=seqRows.map(r=>`<tr><td>${r.m}</td><td class="num">${fmt(r.pix,0)}</td><td class="num">${r.ratio?fmt(r.ratio,4):'—'}</td><td class="num">${fmt(r.fib,0)}</td><td class="num ${r.diffFib===0?'green':r.diffFib<0?'red':'cyan'}">${fmt(r.diffFib,0)}</td><td class="num">${fmt(r.pow2,0)}</td><td class="num">${fmt(r.fibPlus,0)}</td></tr>`).join(''); }
+function renderKpis(){ const equal=seqRows.find(r=>r.diffFib===0); const last=seqRows[seqRows.length-1]; const k=parseFloat(document.getElementById('kVal').value)||2; const base=PI/k; document.getElementById('kpiBox').innerHTML=`<div><b>${fmt(base,6)}</b><span>π/k base</span></div><div><b>${fmt(PHI,6)}</b><span>φ reference</span></div><div><b>${equal?'m='+equal.m:'—'}</b><span>PiX = Fib</span></div><div><b>${fmt(last.pix,0)}</b><span>zadnji PiX</span></div><div><b>${fmt(last.diffFib,0)}</b><span>zadnji Δ Fib</span></div>`; }
+function drawChart(){ const c=document.getElementById('seqChart'), ctx=c.getContext('2d'), W=c.width,H=c.height; ctx.clearRect(0,0,W,H); ctx.fillStyle='#0a1020'; ctx.fillRect(0,0,W,H); const pad=42; const vals=[]; seqRows.forEach(r=>{ vals.push(r.pix,r.fib,r.pow2); }); const logs=vals.filter(v=>v>0).map(v=>Math.log10(v)); const min=Math.min(...logs), max=Math.max(...logs); function x(i){ return pad+(i/(seqRows.length-1))*(W-pad*1.5); } function y(v){ return H-pad-((Math.log10(Math.max(v,1))-min)/(max-min||1))*(H-pad*1.6); } function line(key,color){ ctx.strokeStyle=color; ctx.lineWidth=2; ctx.beginPath(); seqRows.forEach((r,i)=>{ const xx=x(i), yy=y(r[key]); if(i===0)ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }); ctx.stroke(); }
+  ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1; for(let i=0;i<5;i++){ const yy=pad+i*(H-pad*1.5)/4; ctx.beginPath(); ctx.moveTo(pad,yy); ctx.lineTo(W-pad*.5,yy); ctx.stroke(); }
+  line('pow2','#58a6ff'); line('fib','#ffd76a'); line('pix','#2ef2a3'); ctx.fillStyle='#9fb0c8'; ctx.font='14px Consolas'; ctx.fillText('PiX',pad,18); ctx.fillStyle='#ffd76a'; ctx.fillText('Fib',pad+48,18); ctx.fillStyle='#58a6ff'; ctx.fillText('2^m',pad+94,18); }
+function renderAll(){ buildSeq(); renderSeqTable(); renderKpis(); drawChart(); renderLevels(); renderTimeZones(); }
+function toCSV(rows,cols){ return [cols.join(','),...rows.map(r=>cols.map(c=>JSON.stringify(r[c]??'')).join(','))].join('\n'); }
+async function copyText(txt,msg='kopirano'){ try{ await navigator.clipboard.writeText(txt); document.getElementById('copyMsg').textContent=msg; setTimeout(()=>document.getElementById('copyMsg').textContent='',1800);}catch(e){ alert(txt); } }
+function copyCSV(){ copyText(toCSV(seqRows,['m','pix','ratio','fib','diffFib','pow2','fibPlus']),'CSV kopiran'); }
+function copyJSON(){ copyText(JSON.stringify(seqRows,null,2),'JSON kopiran'); }
+function resetPix(){ document.getElementById('family').value='exp'; document.getElementById('kVal').value=2; document.getElementById('scaleVal').value=1; document.getElementById('offsetVal').value=1; document.getElementById('rowsVal').value=30; document.getElementById('roundMode').value='round'; renderAll(); }
+const retr=[['1/π',1/PI],['π/6',PI/6],['2/π',2/PI],['π/4',PI/4],['π/3',PI/3]];
+const ext=[['π-2',PI-2],['1+1/π',1+1/PI],['1+π/6',1+PI/6],['1+2/π',1+2/PI],['1+π/4',1+PI/4],['1+π/3',1+PI/3],['1+π/2',1+PI/2]];
+function priceAt(frac,low,high,dir,type){ const range=high-low; if(type==='retr'){ return dir==='up' ? high-range*frac : low+range*frac; } return dir==='up' ? high+range*(frac-1) : low-range*(frac-1); }
+function renderLevels(){ const low=parseFloat(document.getElementById('lowPrice').value)||0, high=parseFloat(document.getElementById('highPrice').value)||0, dir=document.getElementById('swingDir').value; levelRows=[]; retr.forEach(([name,f])=>levelRows.push({type:'retracement',name,percent:f*100,price:priceAt(f,low,high,dir,'retr')})); ext.forEach(([name,f])=>levelRows.push({type:'extension',name,percent:f*100,price:priceAt(f,low,high,dir,'ext')})); const t=document.getElementById('levelTable'); t.querySelector('thead').innerHTML='<tr><th>Tip</th><th>Formula</th><th>%</th><th>Cena</th></tr>'; t.querySelector('tbody').innerHTML=levelRows.map(r=>`<tr><td>${r.type}</td><td>${r.name}</td><td class="num">${fmt(r.percent,3)}%</td><td class="num green">${fmt(r.price,6)}</td></tr>`).join(''); }
+function copyLevelsCSV(){ copyText(toCSV(levelRows,['type','name','percent','price']),'nivoji CSV kopirani'); }
+function renderTimeZones(){ const anchor=parseInt(document.getElementById('anchorBar').value)||0, rows=parseInt(document.getElementById('timeRows').value)||20, method=document.getElementById('timeMethod').value, bar=parseInt(document.getElementById('barSize').value)||1; timeRowsData=[]; let seen=new Set(); for(let n=1;n<=rows;n++){ let off=method==='linearPi'?Math.round(n*PI):method==='twoPi'?Math.round(n*2*PI):Math.round(Math.pow(PI/2,n+1)); if(seen.has(off)) continue; seen.add(off); timeRowsData.push({n,offsetBars:off,barIndex:anchor+off,approxMinutes:off*bar}); } const t=document.getElementById('timeTable'); t.querySelector('thead').innerHTML='<tr><th>n</th><th>Offset bari</th><th>Bar index</th><th>Približno minut</th></tr>'; t.querySelector('tbody').innerHTML=timeRowsData.map(r=>`<tr><td>${r.n}</td><td class="num">${r.offsetBars}</td><td class="num green">${r.barIndex}</td><td class="num">${fmt(r.approxMinutes,0)}</td></tr>`).join(''); }
+function copyTimeCSV(){ copyText(toCSV(timeRowsData,['n','offsetBars','barIndex','approxMinutes']),'čas CSV kopiran'); }
+function fontStep(d){ const root=document.documentElement; const cur=parseFloat(getComputedStyle(root).getPropertyValue('--fs'))||16; const next=Math.max(13,Math.min(22,cur+d)); root.style.setProperty('--fs',next+'px'); localStorage.setItem('pix_fs',next); }
+(function init(){ const fs=localStorage.getItem('pix_fs'); if(fs) document.documentElement.style.setProperty('--fs',fs+'px'); ['family','kVal','scaleVal','offsetVal','rowsVal','roundMode','lowPrice','highPrice','swingDir','anchorBar','timeRows','timeMethod','barSize'].forEach(id=>document.getElementById(id).addEventListener('change',renderAll)); renderAll(); })();
+</script>
+</body>
+</html>
