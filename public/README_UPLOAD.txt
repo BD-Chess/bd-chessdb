@@ -1,22 +1,8 @@
-# MDLxDCC Hub Index Reorganization Bundle
+Upload both files to the root of www.MDLxDCC.org
 
-Upload the contents of this ZIP into the GitHub/Netlify root of www.MDLxDCC.org.
-
-Folder layout inside this ZIP is already deploy-ready:
-
-- `index.html` → root homepage / complete public map
-- `i.html` → compatibility redirect to `/`
-- `bd/index.html` → BD portfolio hub
-- `crp/index.html` → Core Research Papers hub
-- `acp/index.html` → ACP / CCH papers hub
-- `index-bd.html`, `index-crp.html`, `index-acp.html`, `index-chess.html`, `index-main.html` → noindex compatibility redirects
-- `sitemap.xml`, `robots.txt`, `llms.txt`, `llms-full.txt` → crawler / LLM discovery files
-
-Design rule now used:
-
-- `/` = complete public map / crawler landing page
-- `/bd/` = BD portfolio, practical demos, achievements, AIM³, applied systems
-- `/crp/` = canonical Core Research Papers only
-- `/acp/` = canonical Absolute Consciousness / CCH papers
-
-This bundle does not include the chess JS/API-token patch. Keep that separate unless you want to merge it manually.
+Changes in v3:
+- visual mindmap dark themed
+- visual mindmap collapsed by default
+- structured expandable map collapsed by default
+- removed clutter links for i.html, index-chess.html, AC/index2.html, AC/index3.html, F4M/index2.html, F4M/index3.html, F4M/index4.html
+- build marker: bilingual-mindmap-v3-dark-collapsed
