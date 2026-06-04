@@ -54,3 +54,11 @@ v4.1 fix:
 - Restored top search/filter controls from the earlier root-page pattern.
 - Added EN/SL language toggle, with English as the default and Slovenian UI/intro/section text available by click.
 - Added expand/collapse/clear controls in the sticky top bar.
+
+
+V4.2 update — BD Idea Atlas + MAT/Hydrofoils
+- Root index reframed as BD Idea Atlas while preserving Trip-first demos, search/filter, EN/SL, classic collapsible index, and maps.
+- Added flagship cards, maturity labels, and a top physical engineering pillar.
+- Added /crp/Maglev_Assisted_Takeoff.html and /crp/Modular_Hydrofoils.html as canonical CRP physical pages.
+- Rebuilt /bd/index.html as a real lowercase BD portfolio hub instead of a redirect.
+- Updated /crp/index.html, sitemap.xml, llms.txt, and llms-full.txt.
