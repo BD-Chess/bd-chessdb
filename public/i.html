@@ -109,6 +109,48 @@ html[data-lang="sl"] .site-map-svg .t-sl{display:inline!important}
 .map-demo{left:6%;top:7%;}.map-portfolio{left:6%;top:35%;}.map-history{left:6%;bottom:7%;}.map-core{right:6%;top:7%;}.map-ac{right:6%;top:30%;}.map-trading{right:6%;top:53%;}.map-data{right:6%;bottom:6%;}.map-solver{left:50%;bottom:4%;transform:translateX(-50%);}
 @media(max-width:1100px){.dark-map-board{min-height:auto;display:grid;grid-template-columns:1fr;gap:1rem;padding:1rem}.dark-map-lines{display:none}.map-center,.map-card{position:relative;left:auto;right:auto;top:auto;bottom:auto;transform:none;width:auto;min-height:auto}.map-center{order:-1;width:auto}.map-solver{left:auto;bottom:auto;transform:none}}
 @media print{.dark-map-board{background:#fff!important;border:1px solid #d1d5db}.dark-map-lines{display:none}.map-center,.map-card{background:#fff!important;color:#0f172a!important;border:1px solid #d1d5db!important;box-shadow:none!important}.map-center strong,.map-card h3,.map-chips a{color:#0f172a!important}.map-card p,.map-center span,.map-center em{color:#334155!important}.map-chips a{background:#fff!important;border-color:#d1d5db!important}}
+</style><style>
+/* v3.5 mobile/fullscreen patch for visual mindmap */
+.map-shell-summary{position:relative}
+.map-fullscreen-btn{
+  appearance:none;border:1px solid rgba(141,211,255,.34);background:rgba(16,42,72,.78);color:#eaf4ff;
+  border-radius:999px;padding:.42rem .72rem;font:700 .82rem/1 system-ui,-apple-system,Segoe UI,Arial,sans-serif;
+  cursor:pointer;box-shadow:0 0 0 1px rgba(141,211,255,.08) inset;white-space:nowrap
+}
+.map-fullscreen-btn:hover{background:rgba(28,74,120,.94);border-color:rgba(141,211,255,.7)}
+.visual-shell .visual-head{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(260px,440px);gap:1rem;align-items:end}
+.visual-shell .visual-head .map-fullscreen-btn{align-self:end;margin-bottom:.15rem}
+.visual-shell .svg-wrap{padding:1.05rem;overflow:auto;max-width:100%}
+.visual-shell .site-map-svg{min-width:0;width:100%;height:auto;max-width:100%}
+.visual-shell.is-fullscreen{
+  position:fixed!important;inset:0!important;z-index:99999!important;margin:0!important;border-radius:0!important;
+  border:none!important;background:#050b16!important;overflow:auto!important;box-shadow:none!important
+}
+.visual-shell.is-fullscreen>.map-shell-summary{
+  position:sticky;top:0;z-index:2;border-radius:0;background:linear-gradient(180deg,rgba(8,14,25,.98),rgba(8,14,25,.92));
+  backdrop-filter:blur(12px);padding:1rem max(1rem,env(safe-area-inset-left)) 1rem max(1rem,env(safe-area-inset-left))
+}
+.visual-shell.is-fullscreen>section{min-height:calc(100vh - 64px);padding:0 1rem 1rem!important}
+.visual-shell.is-fullscreen .mindmap-head{padding:1.1rem 0 .9rem!important;grid-template-columns:minmax(0,1fr) auto minmax(260px,520px)}
+.visual-shell.is-fullscreen .svg-wrap{
+  height:calc(100vh - 190px);min-height:520px;width:100%;display:flex;align-items:center;justify-content:center;
+  overflow:auto;padding:1.25rem;border-radius:24px;background:radial-gradient(circle at 50% 40%,rgba(96,165,250,.13),transparent 35%),linear-gradient(180deg,#06101f,#081322)!important
+}
+.visual-shell.is-fullscreen .site-map-svg{
+  min-width:0!important;width:min(100%, calc((100vh - 190px) * 1.684));max-width:100%;height:auto;max-height:100%;
+}
+.visual-shell.is-fullscreen .map-fullscreen-btn{background:rgba(190,38,70,.82);border-color:rgba(255,120,150,.62)}
+body.map-fullscreen-lock{overflow:hidden!important}
+.mobile-visual-note{display:none;margin:1rem 0 1.5rem;padding:1rem;border:1px solid rgba(96,165,250,.20);border-radius:18px;background:rgba(15,23,41,.72);color:#c9d8ef}
+@media(max-width:820px){
+  #visualMapShell{display:none!important}
+  .mobile-visual-note{display:block}
+}
+@media(max-width:1100px){
+  .visual-shell .visual-head{grid-template-columns:1fr;gap:.7rem}
+  .visual-shell .visual-head .map-fullscreen-btn{justify-self:start;margin:0}
+}
+@media print{#visualMapShell,.mobile-visual-note{display:none!important}}
 </style></head><body><div class="progress" id="progress"></div><nav class="topbar"><div class="topbar-inner"><a class="brand" href="https://www.mdlxdcc.org/"><span>MDL×DCC</span> <span class="lang-en">Map</span><span class="lang-sl">Zemljevid</span></a><input class="top-search" data-placeholder-en="Search all pages…" data-placeholder-sl="Išči po vseh straneh…" id="topSearch" placeholder="Search all pages…" type="search"/><div aria-label="Language" class="lang-toggle" role="group"><button class="lang-btn active" data-lang-button="en" id="langEn" type="button">EN</button><button class="lang-btn" data-lang-button="sl" id="langSl" type="button">SL</button></div><div class="top-actions"><button id="expandAll" type="button"><span class="lang-en">Expand all</span><span class="lang-sl">Odpri vse</span></button><button id="collapseAll" type="button"><span class="lang-en">Collapse all</span><span class="lang-sl">Zapri vse</span></button><a href="https://www.mdlxdcc.org/i.pdf">PDF</a></div><button class="menu-toggle" id="menuToggle" type="button"><span class="lang-en">Menu</span><span class="lang-sl">Meni</span></button></div></nav><div class="mobile-panel" id="mobilePanel"><div class="mobile-lang"><span class="lang-caption"><span class="lang-en">Language</span><span class="lang-sl">Jezik</span></span><div aria-label="Language" class="lang-toggle" role="group"><button class="lang-btn active" data-lang-button="en" id="langEnMobile" type="button">EN</button><button class="lang-btn" data-lang-button="sl" id="langSlMobile" type="button">SL</button></div></div><input class="mobile-search" data-placeholder-en="Search pages…" data-placeholder-sl="Išči strani…" id="mobileSearch" placeholder="Search pages…" type="search"/><div class="mobile-actions"><button id="mExpand" type="button"><span class="lang-en">Expand all</span><span class="lang-sl">Odpri vse</span></button><button id="mCollapse" type="button"><span class="lang-en">Collapse all</span><span class="lang-sl">Zapri vse</span></button><button id="mClear" type="button"><span class="lang-en">Clear</span><span class="lang-sl">Počisti</span></button><a href="https://www.mdlxdcc.org/i.pdf">PDF</a></div></div><header class="hero wrap"><div class="eyebrow"><span class="lang-en">MDL×DCC.org · practical demos first · full site map below · v3</span><span class="lang-sl">MDL×DCC.org · najprej praktične demonstracije · spodaj celoten zemljevid strani · v3</span></div><h1><span class="lang-en">Practical tools first,<span> then the full research map.</span></span><span class="lang-sl">Najprej praktična orodja,<span> nato celoten raziskovalni zemljevid.</span></span></h1><p class="lead"><span class="lang-en"><strong>MDL×DCC / BD × AI Lab</strong> is a public research and engineering archive by Bojan Dobrečevič. The site documents a cross-domain architecture built around MDL×DCC: Minimum Description Length as a structure/quality sensor, and Directed/Dynamic Complexity Control as the governance layer for search, compression, reasoning, optimization, and system design.</span><span class="lang-sl"><strong>MDL×DCC / BD × AI Lab</strong> je javni raziskovalni in inženirski arhiv Bojana Dobrečeviča. Stran dokumentira medpodročno arhitekturo okoli MDL×DCC: Minimum Description Length kot senzor strukture/kakovosti ter Directed/Dynamic Complexity Control kot upravljalni sloj za iskanje, stiskanje, sklepanje, optimizacijo in načrtovanje sistemov.</span></p><p class="lead"><span class="lang-en">The four pages below are the most practical public demonstrations of the work: <strong>ChessBest</strong>, <strong>Flip 4 Magnetic</strong>, <strong>Sudoku</strong>, and <strong>Trip Optimizer</strong>. The complete crawlable index and visual map follow underneath, with <strong>262 public HTML pages</strong> organized into colored collapsed chapters.</span><span class="lang-sl">Spodnje štiri strani so najbolj praktične javne demonstracije dela: <strong>ChessBest</strong>, <strong>Flip 4 Magnetic</strong>, <strong>Sudoku</strong> in <strong>Trip Optimizer</strong>. Pod njimi sledita celoten prebrskljiv indeks in vizualni zemljevid, z <strong>262 javnimi HTML stranmi</strong>, urejenimi v barvna zložljiva poglavja.</span></p><div class="meta-row"><span class="meta-pill"><strong>262</strong> HTML pages</span><span class="meta-pill"><strong>10</strong> domains</span><span class="meta-pill"><strong>3</strong> quick links moved into Trading collapse</span><span class="meta-pill"><strong>2026-06-03</strong> generated</span></div><section class="demo-block" id="demos"><h2><span class="lang-en">Practical working demos</span><span class="lang-sl">Praktične delujoče demonstracije</span></h2><p><span class="lang-en">Three games first, then the trip optimizer underneath. These are the quickest working demonstrations before the deeper research archive begins.</span><span class="lang-sl">Najprej tri igre, pod njimi še optimizer poti. To so najhitrejše delujoče demonstracije pred globljim raziskovalnim arhivom.</span></p><div class="demo-grid three"><a class="start-card demo-card" href="https://www.mdlxdcc.org/chess.html"><span class="demo-label"><span class="lang-en">Game 1</span><span class="lang-sl">Igra 1</span></span><strong>ChessBest</strong><code>/chess.html</code></a><a class="start-card demo-card" href="https://www.mdlxdcc.org/F4M/F4M.html"><span class="demo-label"><span class="lang-en">Game 2</span><span class="lang-sl">Igra 2</span></span><strong>Flip 4 Magnetic</strong><code>/F4M/F4M.html</code></a><a class="start-card demo-card" href="https://www.mdlxdcc.org/S/index.html"><span class="demo-label"><span class="lang-en">Game 3</span><span class="lang-sl">Igra 3</span></span><strong>Sudoku</strong><code>/S/index.html</code></a></div><div class="demo-grid one"><a class="start-card demo-card demo-trip" href="https://www.mdlxdcc.org/Trip/index.html"><span class="demo-label"><span class="lang-en">Practical planner</span><span class="lang-sl">Praktični planer</span></span><strong>Trip Optimizer</strong><code>/Trip/index.html</code></a></div></section><section class="start"><h2><span class="lang-en">Research map quick entrances</span><span class="lang-sl">Hitri vhodi v raziskovalni zemljevid</span></h2><div class="start-grid"><a class="start-card" href="https://www.mdlxdcc.org/bd/index.html"><span>Portfolio, AIM³, protocols, prototypes, and reviews.</span><strong>BD × AI Lab</strong><code>/bd/index.html</code></a>
 <a class="start-card" href="https://www.mdlxdcc.org/bd/BD_AIM3_RHP.html"><span>Multi-agent brainstorming / resonance hybrid protocol.</span><strong>AIM³ RHP</strong><code>/bd/BD_AIM3_RHP.html</code></a>
 <a class="start-card" href="https://www.mdlxdcc.org/bd/BD_AIM3_RHPr.html"><span>Prompting and anti-lock retrieval protocol.</span><strong>AIM³ RHPr</strong><code>/bd/BD_AIM3_RHPr.html</code></a>
@@ -118,7 +160,7 @@ html[data-lang="sl"] .site-map-svg .t-sl{display:inline!important}
 <a class="start-card" href="https://www.mdlxdcc.org/8Z/8Z_compression.html"><span>Compression / data-system branch.</span><strong>8Z Compression</strong><code>/8Z/8Z_compression.html</code></a>
 <a class="start-card" href="https://www.mdlxdcc.org/8ZT/index.html"><span>Trading pages are here; WIP links are hidden lower in Trading.</span><strong>8ZT Trading Hub</strong><code>/8ZT/index.html</code></a>
 <a class="start-card" href="https://www.mdlxdcc.org/i.pdf"><span>White-background printable export.</span><strong>Printable PDF</strong><code>/i.pdf</code></a>
-<a class="start-card" href="https://www.mdlxdcc.org/"><span>Compatibility redirect / legacy index URL.</span><strong>Old Index URL</strong><code>/i.html</code></a></div></section></header><main class="wrap"><section aria-label="Search and filters" class="search-panel"><div class="search-row"><input class="search" data-placeholder-en="Search all pages: trading, AC_07, RouteSignal, Sudoku, RH, audio, history…" data-placeholder-sl="Išči po vseh straneh: trading, AC_07, RouteSignal, Sudoku, RH, audio, history…" id="search" placeholder="Search all pages: trading, AC_07, RouteSignal, Sudoku, RH, audio, history…" type="search"/><span class="shown-count"><b id="visibleCount">262</b> <span class="lang-en">shown</span><span class="lang-sl">prikazano</span></span></div><div class="chips"><a class="chip" href="#chess" style="--accent:#00e5ff">♟️ <b>11</b> Chess &amp; Site Tools</a><a class="chip" href="#aim" style="--accent:#a78bfa">🟣 <b>20</b> AIM³ / BD × AI Lab / Protocols</a><a class="chip" href="#core" style="--accent:#60a5fa">🔵 <b>40</b> MDL×DCC Core Research &amp; Arenas</a><a class="chip" href="#solver" style="--accent:#34d399">🟢 <b>31</b> Optimization, Games &amp; Solver Systems</a><a class="chip" href="#trading" style="--accent:#fb7185">💹 <b>33</b> Trading &amp; Market Systems</a><a class="chip" href="#consciousness" style="--accent:#f59e0b">🟡 <b>27</b> AC / CCH / Consciousness &amp; Resonance</a><a class="chip" href="#civilization" style="--accent:#fb923c">🟠 <b>30</b> Civilization, Ethics, Humanity &amp; History</a><a class="chip" href="#data" style="--accent:#2dd4bf">🧪 <b>29</b> Data, Compression, Codecs &amp; Infrastructure</a><a class="chip" href="#creative" style="--accent:#ff6b8a">🩷 <b>5</b> Creative, Personal Utilities &amp; Media</a><a class="chip" href="#archive" style="--accent:#9ca3af">⚙️ <b>39</b> Archive / Legacy / Variants / Protected</a></div></section><div class="no-results" id="noResults"><span class="lang-en">No matching pages. Try a shorter query or clear the search.</span><span class="lang-sl">Ni ujemajočih strani. Poskusi krajši pojem ali počisti iskanje.</span></div><details class="map-shell visual-shell" id="visualMapShell"><summary class="map-shell-summary"><span class="map-shell-kicker" data-i18n-key="visualEyebrow">True visual mindmap</span><strong data-i18n-key="visualHeading">Website overview mindmap</strong><em class="map-shell-hint lang-en">Click to expand</em><em class="map-shell-hint lang-sl">Klikni za razširitev</em></summary><section class="real-mindmap clean-dark-mindmap" id="visualMap">
+</div></section></header><main class="wrap"><section aria-label="Search and filters" class="search-panel"><div class="search-row"><input class="search" data-placeholder-en="Search all pages: trading, AC_07, RouteSignal, Sudoku, RH, audio, history…" data-placeholder-sl="Išči po vseh straneh: trading, AC_07, RouteSignal, Sudoku, RH, audio, history…" id="search" placeholder="Search all pages: trading, AC_07, RouteSignal, Sudoku, RH, audio, history…" type="search"/><span class="shown-count"><b id="visibleCount">262</b> <span class="lang-en">shown</span><span class="lang-sl">prikazano</span></span></div><div class="chips"><a class="chip" href="#chess" style="--accent:#00e5ff">♟️ <b>11</b> Chess &amp; Site Tools</a><a class="chip" href="#aim" style="--accent:#a78bfa">🟣 <b>20</b> AIM³ / BD × AI Lab / Protocols</a><a class="chip" href="#core" style="--accent:#60a5fa">🔵 <b>40</b> MDL×DCC Core Research &amp; Arenas</a><a class="chip" href="#solver" style="--accent:#34d399">🟢 <b>31</b> Optimization, Games &amp; Solver Systems</a><a class="chip" href="#trading" style="--accent:#fb7185">💹 <b>33</b> Trading &amp; Market Systems</a><a class="chip" href="#consciousness" style="--accent:#f59e0b">🟡 <b>27</b> AC / CCH / Consciousness &amp; Resonance</a><a class="chip" href="#civilization" style="--accent:#fb923c">🟠 <b>30</b> Civilization, Ethics, Humanity &amp; History</a><a class="chip" href="#data" style="--accent:#2dd4bf">🧪 <b>29</b> Data, Compression, Codecs &amp; Infrastructure</a><a class="chip" href="#creative" style="--accent:#ff6b8a">🩷 <b>5</b> Creative, Personal Utilities &amp; Media</a><a class="chip" href="#archive" style="--accent:#9ca3af">⚙️ <b>39</b> Archive / Legacy / Variants / Protected</a></div></section><div class="no-results" id="noResults"><span class="lang-en">No matching pages. Try a shorter query or clear the search.</span><span class="lang-sl">Ni ujemajočih strani. Poskusi krajši pojem ali počisti iskanje.</span></div><div class="mobile-visual-note" id="mobileVisualNote"><span class="lang-en">Visual mindmap is hidden on mobile because it becomes too cramped. Use search and the collapsible index below.</span><span class="lang-sl">Vizualni miselni zemljevid je na telefonu skrit, ker postane preveč stisnjen. Uporabi iskanje in zložljivi indeks spodaj.</span></div><details class="map-shell visual-shell" id="visualMapShell"><summary class="map-shell-summary"><span class="map-shell-kicker" data-i18n-key="visualEyebrow">True visual mindmap</span><strong data-i18n-key="visualHeading">Website overview mindmap</strong><button aria-pressed="false" class="map-fullscreen-btn summary-fullscreen" data-map-fullscreen="" type="button">Full screen</button><em class="map-shell-hint lang-en">Click to expand</em><em class="map-shell-hint lang-sl">Klikni za razširitev</em></summary><section class="real-mindmap clean-dark-mindmap" id="visualMap">
 <div class="mindmap-head visual-head">
 <div>
 <div class="eyebrow mini">
@@ -130,7 +172,7 @@ html[data-lang="sl"] .site-map-svg .t-sl{display:inline!important}
 <span class="lang-sl">Vizualni pregled spletnega mesta</span>
 </h2>
 </div>
-<p>
+<button aria-pressed="false" class="map-fullscreen-btn head-fullscreen" data-map-fullscreen="" type="button">Full screen</button><p>
 <span class="lang-en">Clean dark orientation map: main branches and flagship pages only. The full crawlable index stays below.</span>
 <span class="lang-sl">Čist temni orientacijski zemljevid: samo glavne veje in nosilne strani. Polni prebrskljiv indeks ostane spodaj.</span>
 </p>
@@ -718,4 +760,38 @@ html[data-lang="sl"] .site-map-svg .t-sl{display:inline!important}
   let saved='en'; try{ saved=localStorage.getItem('mdlxdcc-lang') || 'en'; }catch(e){}
   setLang(saved);
 })();
-</script><!-- build: bilingual-mindmap-v3.4-clean-dark-card-map --></body></html>
+</script><!-- build: bilingual-mindmap-v3.5-mobile-hide-fullscreen-map --><script>
+(function(){
+  const shell = document.getElementById('visualMapShell');
+  if(!shell) return;
+  const buttons = Array.from(document.querySelectorAll('[data-map-fullscreen]'));
+  const setLabels = (on) => {
+    buttons.forEach(btn => {
+      btn.textContent = on
+        ? (document.documentElement.dataset.lang === 'sl' ? 'Zapri celozaslonsko' : 'Exit full screen')
+        : (document.documentElement.dataset.lang === 'sl' ? 'Celozaslonsko' : 'Full screen');
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  };
+  const enter = () => {
+    shell.open = true;
+    shell.classList.add('is-fullscreen');
+    document.body.classList.add('map-fullscreen-lock');
+    setLabels(true);
+    try { if(shell.requestFullscreen && !document.fullscreenElement) shell.requestFullscreen().catch(()=>{}); } catch(e) {}
+  };
+  const exit = () => {
+    shell.classList.remove('is-fullscreen');
+    document.body.classList.remove('map-fullscreen-lock');
+    setLabels(false);
+    try { if(document.fullscreenElement) document.exitFullscreen().catch(()=>{}); } catch(e) {}
+  };
+  const toggle = (ev) => { if(ev){ ev.preventDefault(); ev.stopPropagation(); } shell.classList.contains('is-fullscreen') ? exit() : enter(); };
+  buttons.forEach(btn => btn.addEventListener('click', toggle));
+  document.addEventListener('keydown', ev => { if(ev.key === 'Escape' && shell.classList.contains('is-fullscreen')) exit(); });
+  document.addEventListener('fullscreenchange', () => { if(!document.fullscreenElement && shell.classList.contains('is-fullscreen')) { shell.classList.remove('is-fullscreen'); document.body.classList.remove('map-fullscreen-lock'); setLabels(false); } });
+  const langObserver = new MutationObserver(()=>setLabels(shell.classList.contains('is-fullscreen')));
+  langObserver.observe(document.documentElement,{attributes:true,attributeFilter:['data-lang']});
+  setLabels(false);
+})();
+</script></body></html>
