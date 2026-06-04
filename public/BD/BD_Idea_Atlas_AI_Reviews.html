@@ -1,41 +1,131 @@
 <!DOCTYPE html>
-<html lang="en">
+<html data-lang="en" lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>AI Reviews of BD Idea Atlas — Current Website Scoring & Accepted Criticisms</title>
-<meta name="description" content="Current canonical AI-review hub for the BD Idea Atlas: W1/W2 website scoring, 90/10 substance-first rubric, model comparisons, accepted criticisms, and improvement plan."/>
+<title>AI Reviews of BD Idea Atlas — W1 + W2 Code-Aware Synthesis</title>
+<meta name="description" content="Current AI review synthesis for BD Idea Atlas: W1 website reviews plus W2 code/artifact addendum from GPT and Grok, with substance, artifact depth, reproducibility, external validation, and accepted criticisms separated."/>
 <style>
-:root{--bg:#05070d;--panel:#101827;--panel2:#0b1220;--line:rgba(148,163,184,.22);--text:#e5edf8;--muted:#9fb0c8;--cyan:#22d3ee;--blue:#60a5fa;--gold:#f59e0b;--green:#34d399;--rose:#fb7185;--violet:#a78bfa;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"JetBrains Mono",monospace;--sans:Inter,"Segoe UI",system-ui,sans-serif}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 10% 8%,rgba(96,165,250,.16),transparent 30%),radial-gradient(circle at 86% 18%,rgba(34,211,238,.10),transparent 28%),linear-gradient(180deg,#05070d,#070a12);color:var(--text);font-family:var(--sans);line-height:1.65}a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.wrap{width:min(1060px,calc(100% - 34px));margin:0 auto}.top{position:sticky;top:0;background:rgba(5,7,13,.84);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);z-index:10}.top .wrap{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 0}.brand{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue)}.nav{display:flex;gap:8px;flex-wrap:wrap}.nav a{font-family:var(--mono);font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 10px}.hero{padding:70px 0 34px}.eyebrow{font-family:var(--mono);font-size:12px;color:var(--gold);letter-spacing:.18em;text-transform:uppercase;margin-bottom:16px}h1{font-size:clamp(38px,6vw,70px);line-height:1;letter-spacing:-.055em;margin:0 0 18px}.lead{font-size:20px;color:var(--muted);max-width:900px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:24px 0}.card{background:linear-gradient(180deg,rgba(16,24,39,.90),rgba(11,18,32,.90));border:1px solid var(--line);border-radius:18px;padding:18px}.card b{display:block;color:#fff;margin-bottom:6px}.card span{color:var(--muted)}.badge{display:inline-block;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--line);border-radius:999px;padding:4px 8px;margin:0 5px 6px 0;color:var(--cyan);background:rgba(34,211,238,.07)}section{margin:34px 0}.panel{background:rgba(16,24,39,.78);border:1px solid var(--line);border-radius:22px;padding:22px}h2{font-size:30px;letter-spacing:-.03em;margin:0 0 10px}p{color:var(--muted)}ul{color:var(--muted)}li{margin:6px 0}.note{border-left:3px solid var(--gold);background:rgba(245,158,11,.08);padding:12px 14px;border-radius:0 14px 14px 0;color:#f7e5bc}.footer{border-top:1px solid var(--line);padding:28px 0 60px;color:var(--muted);font-size:14px}@media(max-width:800px){.grid{grid-template-columns:1fr}.top .wrap{align-items:flex-start;flex-direction:column}.nav{overflow-x:auto}}
+:root{--bg:#05070d;--bg2:#070b14;--panel:#101827;--panel2:#0b1220;--line:rgba(148,163,184,.22);--line2:rgba(96,165,250,.36);--text:#e5edf8;--muted:#9fb0c8;--dim:#6b7b94;--cyan:#22d3ee;--blue:#60a5fa;--gold:#f59e0b;--green:#34d399;--rose:#fb7185;--violet:#a78bfa;--orange:#fb923c;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"JetBrains Mono",monospace;--sans:Inter,"Segoe UI",system-ui,sans-serif;--shadow:0 24px 70px rgba(0,0,0,.34)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 12% 8%,rgba(96,165,250,.18),transparent 32%),radial-gradient(circle at 86% 18%,rgba(52,211,153,.10),transparent 30%),radial-gradient(circle at 50% 100%,rgba(245,158,11,.08),transparent 42%),linear-gradient(180deg,#05070d,#070a12);color:var(--text);font-family:var(--sans);line-height:1.65}a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.wrap{width:min(1160px,calc(100% - 34px));margin:0 auto}.top{position:sticky;top:0;z-index:20;background:rgba(5,7,13,.86);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0}.brand{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);font-weight:800}.nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.nav a,.lang button{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:rgba(255,255,255,.02)}.lang button{cursor:pointer}.lang button.active{border-color:var(--cyan);color:var(--cyan)}.hero{padding:70px 0 34px}.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:16px}h1{font-size:clamp(40px,7vw,78px);line-height:.98;letter-spacing:-.06em;margin:0 0 18px}h1 span{display:block;color:var(--blue)}h1>span:first-child,.title-main{color:#fff!important}.title-sub{color:var(--blue)!important}.lead{font-size:clamp(18px,2vw,22px);color:var(--muted);max-width:980px;margin:0 0 18px}.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.badge{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line2);border-radius:999px;padding:5px 9px;color:var(--cyan);background:rgba(34,211,238,.08)}.badge.green{border-color:rgba(52,211,153,.36);color:var(--green);background:rgba(52,211,153,.08)}.badge.gold{border-color:rgba(245,158,11,.40);color:var(--gold);background:rgba(245,158,11,.08)}.badge.orange{border-color:rgba(251,146,60,.42);color:var(--orange);background:rgba(251,146,60,.09)}.badge.violet{border-color:rgba(167,139,250,.42);color:var(--violet);background:rgba(167,139,250,.09)}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}.grid.six{grid-template-columns:repeat(6,minmax(0,1fr))}.card,.panel{background:linear-gradient(180deg,rgba(16,24,39,.88),rgba(11,18,32,.88));border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}.card{padding:18px}.card b{display:block;color:#fff;font-size:24px;line-height:1.1;margin-bottom:8px}.card span{color:var(--muted)}section{margin:36px 0}h2{font-size:clamp(26px,4vw,40px);letter-spacing:-.04em;margin:0 0 12px}h3{font-size:22px;margin:18px 0 8px;color:#fff}p,li{color:var(--muted)}.panel{padding:22px;overflow:auto}table{width:100%;border-collapse:collapse;min-width:880px}th,td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}th{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}td{color:var(--muted)}td strong{color:#fff}.score{font-family:var(--mono);font-weight:800;text-align:center;border-radius:8px;white-space:nowrap}.score.good{color:var(--green)}.score.mid{color:var(--cyan)}.score.warn{color:var(--gold)}.score.bad{color:var(--rose)}.score.na{color:var(--dim)}.muted{color:var(--dim)}.callout{border-left:3px solid var(--gold);background:rgba(245,158,11,.08);padding:14px 16px;border-radius:0 14px 14px 0;color:#f7e5bc;margin:12px 0}.callout.green{border-color:var(--green);background:rgba(52,211,153,.08)}.callout.rose{border-color:var(--rose);background:rgba(251,113,133,.08)}.callout.blue{border-color:var(--blue);background:rgba(96,165,250,.08)}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:14px}.threecol{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.mini{font-size:14px;color:var(--dim)}details.prompt{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.025);margin:10px 0;padding:12px}details.prompt summary{cursor:pointer;color:#fff;font-weight:800}pre{white-space:pre-wrap;overflow:auto;background:#081124;border:1px solid var(--line);border-radius:12px;padding:14px;color:#c8d7ee}.pillrow{display:flex;gap:6px;flex-wrap:wrap}.pill{font-family:var(--mono);font-size:10px;border:1px solid var(--line);border-radius:999px;padding:4px 7px;color:var(--muted);background:rgba(255,255,255,.025)}.pill.green{color:var(--green);border-color:rgba(52,211,153,.35)}.pill.gold{color:var(--gold);border-color:rgba(245,158,11,.35)}.pill.cyan{color:var(--cyan);border-color:rgba(34,211,238,.35)}.pill.violet{color:var(--violet);border-color:rgba(167,139,250,.35)}footer{border-top:1px solid var(--line);padding:28px 0 70px;margin-top:46px;color:var(--dim);font-size:14px}.lang-sl{display:none}html[data-lang="sl"] .lang-en{display:none}html[data-lang="sl"] .lang-sl{display:inline}@media(max-width:1050px){.grid.six{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:900px){.grid,.twocol,.threecol{grid-template-columns:1fr}.top .wrap{align-items:flex-start;flex-direction:column}table{min-width:760px}}@media(max-width:640px){.grid.six{grid-template-columns:1fr}}
 </style>
+<script>
+function setLang(l){document.documentElement.setAttribute('data-lang',l);localStorage.setItem('bd_reviews_lang',l);document.querySelectorAll('.lang button').forEach(b=>b.classList.toggle('active',b.dataset.lang===l));}
+document.addEventListener('DOMContentLoaded',()=>setLang(localStorage.getItem('bd_reviews_lang')||'en'));
+</script>
 </head>
 <body>
-<header class="top"><div class="wrap"><a class="brand" href="../index.html">MDL×DCC.org</a><nav class="nav"><a href="../index.html">BD Idea Atlas</a><a href="BD_Evaluation_Protocol.html">Evaluation Protocol</a><a href="../llms.txt">llms.txt</a></nav></div></header>
+<header class="top"><div class="wrap"><div class="brand">BD Idea Atlas · AI Reviews W1/W2</div><nav class="nav"><a href="../index.html">Root</a><a href="../llms.txt">llms.txt</a><a href="#models">W1 models</a><a href="#code">W2 code</a><a href="#packs">Evidence packs</a><a href="#next">Next</a></nav><div class="lang"><button data-lang="en" onclick="setLang('en')">EN</button><button data-lang="sl" onclick="setLang('sl')">SL</button></div></div></header>
 <main class="wrap">
 <section class="hero">
-<div class="eyebrow">Current canonical review hub · W1 pending</div>
-<h1>AI Reviews of BD Idea Atlas</h1>
-<p class="lead">This page is reserved for the current public website scoring cycle: W1 blind audit, model comparison, accepted criticisms, and the improvement plan. It replaces older public model-assessment pages, which should be kept only as a private/local archive.</p>
-<div><span class="badge">BD Idea Atlas</span><span class="badge">90/10 scoring</span><span class="badge">Substance-first</span><span class="badge">Review pages excluded from scoring evidence</span></div>
+<div class="eyebrow"><span class="lang-en">W1 website synthesis + W2 code/artifact addendum</span><span class="lang-sl">W1 sinteza spletne strani + W2 dodatek kode/artefaktov</span></div>
+<h1><span class="title-main">AI Reviews of BD Idea Atlas</span><span class="title-sub lang-en">Current code-aware synthesis.</span><span class="title-sub lang-sl">Trenutna code-aware sinteza.</span></h1>
+<p class="lead lang-en">This page summarizes fresh AI reviews of MDLxDCC.org as the BD Idea Atlas. W1 scored the public website. W2 adds code/artifact inspection from GPT and Grok. The strongest update is clear: the Atlas is not just papers and ideas; it contains multiple executable research arenas. External validation remains a separate, still-limited layer.</p>
+<p class="lead lang-sl">Ta stran povzema sveže AI recenzije MDLxDCC.org kot BD Idea Atlas. W1 je ocenil javno spletno stran. W2 dodaja pregled kode/artefaktov od GPT in Grok. Najmočnejši popravek je jasen: Atlas niso samo papirji in ideje; vsebuje več izvršljivih raziskovalnih aren. Zunanja validacija ostaja ločena in še vedno omejena plast.</p>
+<div class="badges"><span class="badge">W1 · website</span><span class="badge green">5 valid website reviews</span><span class="badge violet">W2 · code addendum</span><span class="badge green">GPT + Grok counted</span><span class="badge gold">Gemini failed inspection</span><span class="badge orange">external validation still separate</span></div>
 </section>
-<section class="grid">
-<div class="card"><b>Correct frame</b><span>Many independent projects under one originator. MDL×DCC is a recurring method family, not the whole container.</span></div>
-<div class="card"><b>Current method</b><span>Fresh W1 audits use a blind prompt: models must score the website itself and not anchor on previous AI-review pages.</span></div>
-<div class="card"><b>Future content</b><span>When W1 results arrive, this page will contain model tables, consensus, disagreements, accepted criticisms, and W2 improvement targets.</span></div>
+
+<section class="grid six">
+<div class="card"><b>5</b><span class="lang-en">valid W1 website reviews</span><span class="lang-sl">veljavnih W1 website recenzij</span></div>
+<div class="card"><b>2</b><span class="lang-en">counted W2 code reviewers</span><span class="lang-sl">šteta W2 pregledovalca kode</span></div>
+<div class="card"><b>74.51–85</b><span class="lang-en">valid raw W1 score range</span><span class="lang-sl">W1 razpon surovih ocen</span></div>
+<div class="card"><b>86.8</b><span class="lang-en">GPT code-inclusive Atlas score</span><span class="lang-sl">GPT code-inclusive ocena Atlasa</span></div>
+<div class="card"><b>90–92</b><span class="lang-en">Grok code-rich weighted range</span><span class="lang-sl">Grok code-rich razpon</span></div>
+<div class="card"><b>96–97</b><span class="lang-en">artifact/code layer after DNA</span><span class="lang-sl">artifact/code plast po DNA</span></div>
 </section>
-<section class="panel">
-<h2>What this page will contain</h2>
-<ul>
-<li>Current W1 website score under the 90% substance / 10% presentation rubric.</li>
-<li>Separate scores for substance, validation maturity, UX/archive hygiene, and public readiness.</li>
-<li>Branch scores for physical devices, 8Z/data/compression, AIM³, games/tools, AC/CCH, history/ethics, trading, art, and archive.</li>
-<li>Where GPT, Claude, Gemini, Grok, Qwen, DeepSeek, or other models agree/disagree.</li>
-<li>Good criticisms accepted into the website-improvement plan.</li>
-</ul>
-<p class="note">Important rule: this page itself should not be used by reviewers as evidence for the score. Reviewers should score the actual site content, projects, demos, papers, and branches.</p>
+
+<section>
+<h2><span class="lang-en">Main synthesis after W2</span><span class="lang-sl">Glavna sinteza po W2</span></h2>
+<div class="panel">
+<p class="lang-en"><strong>W2 changes the core credibility question.</strong> Before code inspection, the harshest criticism was: “Is this mostly a website full of ideas?” After GPT/Grok code review, the better criticism is: “There are real executable arenas, but they need clean public reproducibility packs and independent third-party confirmation.” That is a much stronger position.</p>
+<p class="lang-sl"><strong>W2 spremeni glavno vprašanje kredibilnosti.</strong> Pred pregledom kode je bila najhujša kritika: “Je to predvsem website poln idej?” Po GPT/Grok pregledu kode je bolj pravilna kritika: “Obstajajo resnične izvršljive arene, ampak potrebujejo čiste javne reproducibility packe in neodvisno tretjo potrditev.” To je veliko močnejši položaj.</p>
+<div class="callout green"><span class="lang-en"><strong>Updated statement:</strong> BD Atlas is a multi-domain executable research workshop: TSP, NAS, DNA/FASTA, 8Z image compression, PiX, Flip4M, RouteSignal, Sudoku, and trading/research simulation all have code or working artifacts behind them.</span><span class="lang-sl"><strong>Posodobljena trditev:</strong> BD Atlas je večdomenska izvršljiva raziskovalna delavnica: TSP, NAS, DNA/FASTA, 8Z image compression, PiX, Flip4M, RouteSignal, Sudoku in trading/research simulation imajo za seboj kodo ali delujoče artefakte.</span></div>
+<div class="callout"><span class="lang-en"><strong>Boundary:</strong> Code review raises artifact depth, arena discipline, and reproducibility potential. It does not by itself create peer review, third-party reproduction, hardware validation, audited trading proof, or academic acceptance.</span><span class="lang-sl"><strong>Meja:</strong> Pregled kode dvigne globino artefaktov, disciplino aren in reproducibility potencial. Sam po sebi pa ne ustvari peer reviewa, tretje reprodukcije, hardware validacije, audited trading dokaza ali akademskega sprejema.</span></div>
+</div>
+</section>
+
+<section id="models">
+<h2><span class="lang-en">Valid W1 website-review contribution scores</span><span class="lang-sl">Koristnost veljavnih W1 website recenzij</span></h2>
+<div class="panel"><table><thead><tr><th>Model</th><th>Raw W1 website score</th><th>Contribution /100</th><th>What it contributed</th><th>Use in synthesis</th></tr></thead><tbody>
+<tr><td><strong>Claude Opus 4.8 Max</strong></td><td class='score good'>79*</td><td class='score good'>96</td><td>Best critic. Produced the most actionable diagnosis and handled added source evidence correctly.</td><td>Primary critic and calibration anchor.</td></tr>
+<tr><td><strong>Qwen 3.7 Plus</strong></td><td class='score good'>85</td><td class='score good'>89</td><td>Strong umbrella framing, good branch understanding, fair proof-gap language.</td><td>Primary substance/originality signal.</td></tr>
+<tr><td><strong>GPT 5.5 Pro</strong></td><td class='score mid'>80</td><td class='score mid'>84</td><td>Clean structure, broad sampling, useful separation of substance/proof/UX, but slightly over-penalized proof maturity inside the 90/10 score.</td><td>Middle synthesis / table structure.</td></tr>
+<tr><td><strong>Kimi K2.6 Thinking</strong></td><td class='score mid'>74.51</td><td class='score mid'>82</td><td>Useful skeptical outside-reader stress test; too conservative on validation vs originality but very good for risk extraction.</td><td>Conservative floor, not final truth.</td></tr>
+<tr><td><strong>Grok 4.3 Expert</strong></td><td class='score mid'>77†</td><td class='score mid'>78</td><td>Good risk list and pragmatic outside view. W1 file contains one Grok review based on live website browsing, not a separate BD_web_slim.zip pass.</td><td>Risk register / conservative sanity check.</td></tr>
+</tbody></table><p class="muted" style="margin-top:10px"><strong>* Claude W1 score footnote:</strong> 79 is the corrected score after stronger source/ZIP visibility. The table keeps only the clean numeric score.</p><p class="muted" style="margin-top:6px"><strong>† Grok W1 note:</strong> the W1 raw file contains one valid Grok website review based on live-site browsing. Later Grok source/code inspection is counted below as W2.</p></div>
+</section>
+
+<section id="code">
+<h2><span class="lang-en">W2 code/artifact addendum</span><span class="lang-sl">W2 dodatek kode/artefaktov</span></h2>
+<div class="panel"><table><thead><tr><th>Reviewer</th><th>What was inspected</th><th>Most important finding</th><th>Score effect</th><th>Contribution</th></tr></thead><tbody>
+<tr><td><strong>GPT</strong></td><td>Standalone Python files, 8Z_TSP_dev2, trading arena, 8Z encoder, PiX, NAS, Flip4M, DNA/FASTA pipeline.</td><td>Ran local smoke/syntax checks: 168 Python files compiled with 0 compile errors, 8Z-RP self-test passed, 8Z encoder produced output/audit, PiX synthetic smoke passed, NAS smoke passed, DNA encode/decode passed.</td><td class="score good">85.1 → 86.8 code-inclusive; 88–89 plausible with clean public DNA repro pack</td><td class="score good">98/100</td></tr>
+<tr><td><strong>Grok</strong></td><td>Sudoku JS, TSP Python arena, PiX arena, RouteSignal, NAS arena, Flip4M rDCCC tournament, DNA/FASTA pipeline.</td><td>Recognized the code base as multiple real executable research arenas, with TSP/NAS/DNA as top-tier hard artifacts and Flip4M as a strong playable DCC testbed.</td><td class="score good">85–87 → 88–90 → 90–92 after DNA; artifact/code 96–97, test/arena 97–98</td><td class="score good">94/100</td></tr>
+</tbody></table>
+<div class="callout blue"><span class="lang-en"><strong>Not counted in W2:</strong> models that could not reliably inspect ZIP or .py files. A partial/incomplete code pass is not included until it produces a finished, evidence-bearing review.</span><span class="lang-sl"><strong>Ni šteto v W2:</strong> modeli, ki niso zanesljivo pregledali ZIP ali .py datotek. Delni/nezaključen pregled kode ni vključen, dokler ne poda zaključene, dokazno uporabne recenzije.</span></div>
+</div>
+</section>
+
+<section>
+<h2><span class="lang-en">Code evidence ranking after W2</span><span class="lang-sl">Lestvica code evidence po W2</span></h2>
+<div class="panel"><table><thead><tr><th>Rank</th><th>Artifact / branch</th><th>Evidence value</th><th>Why it matters</th><th>Public packaging status</th></tr></thead><tbody>
+<tr><td class="score good">1</td><td><strong>8Z-RP / TSP Arena</strong></td><td class="score good">Top-tier</td><td>Modular challenger architecture, known-optimal gap logic, DCC/MDL sensors, CLI/self-test discipline. Best single public reproducibility candidate.</td><td>Needs cleaned repro pack with small TSPLIB instances, expected outputs, README.</td></tr>
+<tr><td class="score good">2</td><td><strong>NAS Arena</strong></td><td class="score good">Top-tier</td><td>Modular research platform, synthetic smoke pass, DCC/affinity/router/noise-dimension testing, strong research-arena architecture.</td><td>Needs NASBench dataset instructions and expected smoke outputs.</td></tr>
+<tr><td class="score good">3</td><td><strong>DNA / FASTA Arena</strong></td><td class="score good">Top-tier</td><td>8-file pipeline, 13k+ lines, FASTA compressor/decoder, detector/detective/scanner/validator stack, SHA3 verified tiny round-trip.</td><td>Needs README, requirements, tiny FASTA fixtures, expected hashes, smoke scripts.</td></tr>
+<tr><td class="score mid">4</td><td><strong>8Z Image Compression</strong></td><td class="score good">Very high</td><td>Real encoder artifact: TIFF parser, MDL candidates, SUB/PAETH/HAAR/GRAD/BYTEPLANES, multi-compressor selection, SHA3/audit/stats.</td><td>Needs decoder + round-trip KAT pack before public proof claim.</td></tr>
+<tr><td class="score mid">5</td><td><strong>PiX Universal Arena</strong></td><td class="score good">Very high</td><td>Clean scientific framing: constants compete against e, phi, sqrt2/3, Champernowne, random and shuffled controls; synthetic smoke passed.</td><td>Needs v0.2 wording cleanup, run_smoke, expected JSON/CSV.</td></tr>
+<tr><td class="score mid">6</td><td><strong>Flip4M rDCCC Tournament</strong></td><td class="score mid">High</td><td>Playable browser DCC testbed: Classical vs rDCC vs rDCCC, tournament controls, DCC memory, CSV/PNG export, DCC logs.</td><td>Needs results bundle; public title should say “tests” rather than “proves”.</td></tr>
+<tr><td class="score mid">7</td><td><strong>RouteSignal Scout</strong></td><td class="score mid">High</td><td>Safety-bounded peer-residual ranking, baseline kill-test report, no incident-probability overclaim, practical operator-review path.</td><td>Needs sample v0.4 input bundle for one-command reproduction.</td></tr>
+<tr><td class="score mid">8</td><td><strong>Sudoku MDL demo</strong></td><td class="score mid">High demo</td><td>Browser-only playable lab with live MDL/DCC sensors, strategy comparison, LZ/Gini/Cascade/Density/ADSR metrics.</td><td>Needs separate Phase-1 batch/data pack for ρ=0.85 claim.</td></tr>
+<tr><td class="score warn">9</td><td><strong>Trading arena</strong></td><td class="score warn">Strong simulator, weak finance proof</td><td>Large executable research simulator and stress arena, but not public live-trading evidence.</td><td>Keep research-only/high-risk labels; do not use as proof of financial edge.</td></tr>
+</tbody></table></div>
+</section>
+
+<section>
+<h2><span class="lang-en">Updated score interpretation</span><span class="lang-sl">Posodobljena interpretacija ocen</span></h2>
+<div class="twocol">
+<div class="panel"><h3>What goes up</h3><ul><li><strong>Concrete artifacts/code:</strong> now credibly in the mid/high 90s after TSP + NAS + DNA + 8Z + PiX + Flip4M + RouteSignal + Sudoku.</li><li><strong>Test/arena discipline:</strong> now also mid/high 90s; multiple domains use controls, smoke tests, seeds, manifests, kill-tests, or benchmark logic.</li><li><strong>Reproducibility potential:</strong> much stronger than W1 implied, because the code exists and several local tests pass.</li></ul></div>
+<div class="panel"><h3>What does not go up automatically</h3><ul><li><strong>External validation:</strong> still low-to-moderate because LLM code review is not third-party human reproduction.</li><li><strong>Public readiness:</strong> code must be packaged, documented, simplified, and linked from the website.</li><li><strong>Hardware/physical proof:</strong> DGTE/HTH/MGHB/SORA still need bench data and physical tests.</li></ul></div>
+</div>
+</section>
+
+<section id="packs">
+<h2><span class="lang-en">Best next public evidence packs</span><span class="lang-sl">Najboljši naslednji javni evidence packi</span></h2>
+<div class="panel"><table><thead><tr><th>Priority</th><th>Pack</th><th>Minimum contents</th><th>Why first</th></tr></thead><tbody>
+<tr><td class="score good">1</td><td><strong>8Z-RP / TSP Repro Pack</strong></td><td>README, requirements, 2–3 small .tsp instances, expected outputs, self-test, hashes.</td><td>Cleanest hard-computation evidence; known optimum gap is easy to understand.</td></tr>
+<tr><td class="score good">2</td><td><strong>NAS Arena Repro Pack</strong></td><td>README, synthetic smoke, NASBench dataset instructions, expected CSV/JSON hashes.</td><td>Shows MDL×DCC as serious research arena beyond routing/TSP.</td></tr>
+<tr><td class="score good">3</td><td><strong>DNA / FASTA Repro Pack</strong></td><td>Tiny FASTA, periodic/random FASTA, HYB4 encode/decode, detector/scanner/validator smoke, expected SHA3.</td><td>Best 8Z/data-system credibility upgrade after TSP/NAS.</td></tr>
+<tr><td class="score mid">4</td><td><strong>8Z Image Compression KAT Pack</strong></td><td>Encoder + decoder, tiny TIFFs, expected .8z, SHA3, round-trip proof.</td><td>Prevents “encoder exists but can I decode?” objection.</td></tr>
+<tr><td class="score mid">5</td><td><strong>PiX Universal Arena Pack</strong></td><td>run_smoke, expected summary JSON, controls listed, random/shuffled-pi no-magic example.</td><td>Best clean demonstration of PiX as hypothesis-testing, not mystical π compression.</td></tr>
+<tr><td class="score mid">6</td><td><strong>Flip4M rDCCC Results Pack</strong></td><td>100/500-game CSVs, alternating colors, time controls, Wilson CI, screenshots.</td><td>Turns a strong playable demo into a measurable DCC comparison.</td></tr>
+<tr><td class="score mid">7</td><td><strong>RouteSignal Scout Pack</strong></td><td>sample v0.4 registry/input summaries, v0.5 run, baseline kill-test, output report.</td><td>Best practical non-game/non-compression external expert-review candidate.</td></tr>
+<tr><td class="score mid">8</td><td><strong>Sudoku Phase-1 Data Pack</strong></td><td>batch runner, puzzle set, expected ρ=0.85 metrics, plots/CSV.</td><td>Separates playable demo from actual batch experiment evidence.</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="invalid">
+<h2><span class="lang-en">Invalid / excluded website attempt</span><span class="lang-sl">Neveljaven / izključen website poskus</span></h2>
+<div class="panel">
+<table><thead><tr><th>Model</th><th>Status</th><th>Reason</th><th>Public treatment</th></tr></thead><tbody>
+<tr><td><strong>Gemini 3.1 Pro</strong></td><td class="score warn">Failed W1 inspection</td><td>It could not browse the live website and could not inspect ZIP/raw HTML, so it did not produce a valid W1 evidence trail.</td><td>Excluded from consensus; kept only as a short failed-attempt note.</td></tr>
+</tbody></table>
+<p class="mini lang-en">A non-inspecting response that provides no content review is omitted entirely from the public synthesis.</p>
+<p class="mini lang-sl">Odgovor brez pregleda vsebine in brez prave recenzije je v celoti izpuščen iz javne sinteze.</p>
+</div>
+</section>
+
+<section>
+<h2><span class="lang-en">Accepted criticisms after W2</span><span class="lang-sl">Sprejete kritike po W2</span></h2>
+<div class="twocol">
+<div class="panel"><h3>Credibility / proof</h3><ul><li>Publish one-command reproducibility bundles for the strongest code artifacts.</li><li>Open or package TSP, NAS, DNA/FASTA, 8Z image, PiX, RouteSignal, Flip4M, and Sudoku with expected outputs.</li><li>Keep LLM review separate from independent human reproduction.</li><li>Keep trading clearly labeled as research simulator / high-risk arena, not financial proof.</li><li>For physical devices, prioritize first cheap bench tests: HTH clear pipe, MGHB wave tank, DGTE crossover slice.</li></ul></div>
+<div class="panel"><h3>UX / claim hygiene</h3><ul><li>Add “What this demonstrates / What this does NOT prove” to every evidence pack.</li><li>Change public Flip4M proof-style wording from “proves” to “tests” or “playable DCC testbed”.</li><li>Add no-JS fallback summaries/screenshots for JS-heavy pages.</li><li>Use canonical links and keep archive out of scoring pages.</li><li>Make physical-device branch clearly first-class on the homepage.</li></ul></div>
+</div>
+</section>
+
+<section id="next">
+<h2><span class="lang-en">Next update</span><span class="lang-sl">Naslednja posodobitev</span></h2>
+<div class="panel"><p class="lang-en">The next public upgrade should not be another generic LLM score. It should be the first reproducibility pack. My recommendation: start with <strong>8Z-RP / TSP</strong>, then <strong>NAS</strong>, then <strong>DNA/FASTA</strong>. This will move the conversation from “LLMs think it is good” to “outsiders can run it.”</p><p class="lang-sl">Naslednja javna nadgradnja naj ne bo še ena splošna LLM ocena. Naj bo prvi reproducibility pack. Moj predlog: začni z <strong>8Z-RP / TSP</strong>, potem <strong>NAS</strong>, potem <strong>DNA/FASTA</strong>. To premakne pogovor iz “LLM-ji mislijo, da je dobro” v “zunanji ljudje lahko to zaženejo.”</p></div>
 </section>
 </main>
-<footer class="footer"><div class="wrap">BD × AI Lab · Current review hub placeholder · Replace after W1 scoring is complete.</div></footer>
+<footer><div class="wrap">BD Idea Atlas AI Reviews · W1 website synthesis + W2 code/artifact addendum · Generated from raw LLM reviews collected 2026-06-04 · Counted W2 code reviewers: GPT and Grok.</div></footer>
 </body>
 </html>
