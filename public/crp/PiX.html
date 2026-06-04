@@ -1,9 +1,10 @@
-<!doctype html>
-<html lang="sl">
+<!DOCTYPE html>
+
+<html data-lang="en" lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PiX — laboratorij π‑zaporedij</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>PiX — Universal MDL Candidate Generator</title>
 <style>
 :root{
   --bg:#070914; --bg2:#0b1020; --panel:#101624; --card:#121b2e; --card2:#0d1320;
@@ -13,215 +14,564 @@
   --radius:16px; --mono:Consolas,"JetBrains Mono",Menlo,monospace; --sans:Inter,"Segoe UI",Arial,sans-serif;
   --fs:16px;
 }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth;font-size:var(--fs)}
-body{
-  margin:0; color:var(--text); font-family:var(--sans); line-height:1.62;
-  background:
-    radial-gradient(circle at 12% 0%,rgba(88,166,255,.18),transparent 30%),
-    radial-gradient(circle at 86% 8%,rgba(46,242,163,.10),transparent 28%),
-    radial-gradient(circle at 50% 100%,rgba(189,147,249,.10),transparent 34%),
-    linear-gradient(180deg,#060812 0%,#080b14 100%);
-}
-a{color:var(--cyan);text-decoration:none} a:hover{text-decoration:underline}
-.wrap{max-width:1220px;margin:0 auto;padding:28px 20px 96px}.hero{padding:38px 0 22px;border-bottom:1px solid var(--line)}
-.eyebrow{font-family:var(--mono);color:var(--cyan);font-size:.75rem;text-transform:uppercase;letter-spacing:.18em;font-weight:900}
-h1{font-size:clamp(36px,5.7vw,76px);line-height:1.02;margin:12px 0;letter-spacing:-.05em}.subtitle{max-width:980px;color:var(--muted);font-size:1.12rem}.small{font-size:.84rem;color:var(--muted)}
+*{box-sizing:border-box}html{scroll-behavior:smooth;font-size:var(--fs)}
+body{margin:0;color:var(--text);font-family:var(--sans);line-height:1.62;background:radial-gradient(circle at 12% 0%,rgba(88,166,255,.18),transparent 30%),radial-gradient(circle at 86% 8%,rgba(46,242,163,.10),transparent 28%),radial-gradient(circle at 50% 100%,rgba(189,147,249,.10),transparent 34%),linear-gradient(180deg,#060812 0%,#080b14 100%)}
+a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.wrap{max-width:1220px;margin:0 auto;padding:28px 20px 96px}.hero{padding:38px 0 22px;border-bottom:1px solid var(--line);position:relative}.eyebrow{font-family:var(--mono);color:var(--cyan);font-size:.75rem;text-transform:uppercase;letter-spacing:.18em;font-weight:900}h1{font-size:clamp(36px,5.7vw,76px);line-height:1.02;margin:12px 0;letter-spacing:-.05em}.subtitle{max-width:980px;color:var(--muted);font-size:1.12rem}.small{font-size:.84rem;color:var(--muted)}
+.langbar{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-bottom:18px;flex-wrap:wrap}.langlabel{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}.langbtn{border:1px solid var(--line2);background:#0a1020;color:var(--muted);border-radius:999px;padding:7px 11px;font-family:var(--mono);font-size:.76rem;cursor:pointer}.langbtn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(103,232,249,.08)}
 .nav{position:sticky;top:0;z-index:20;background:rgba(7,9,20,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);margin:0 -20px;padding:10px 20px;display:flex;gap:8px;overflow-x:auto}.nav a{white-space:nowrap;text-decoration:none;border:1px solid var(--line2);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:.82rem}.nav a:hover{color:var(--cyan);border-color:var(--cyan)}
-.grid{display:grid;gap:16px}.cards{grid-template-columns:repeat(4,minmax(0,1fr));margin:22px 0}.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:repeat(3,1fr)}
-.card,.table-card,.callout,.toolbox{background:linear-gradient(180deg,rgba(18,27,46,.96),rgba(12,18,31,.96));border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
-.card .label{color:var(--muted);font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.11em}.card .num{font-size:1.68rem;font-weight:900;margin-top:8px}.green{color:var(--green)!important}.gold{color:var(--gold)!important}.cyan{color:var(--cyan)!important}.red{color:var(--red)!important}.violet{color:var(--violet)!important}.orange{color:var(--orange)!important}.muted{color:var(--muted)}
-section{margin:42px 0}h2{font-size:2rem;margin:0 0 14px;letter-spacing:-.025em}h3{font-size:1.18rem;margin:0 0 8px;color:var(--gold)}p{margin:0 0 14px}.caption{color:var(--muted);font-size:.9rem;margin:0 0 12px}.note{background:rgba(255,215,106,.08);border:1px solid rgba(255,215,106,.24);border-radius:14px;padding:15px 17px;color:#ffe7a3}.danger{background:rgba(255,107,132,.08);border:1px solid rgba(255,107,132,.28);border-radius:14px;padding:15px 17px}.good{background:rgba(46,242,163,.08);border:1px solid rgba(46,242,163,.25);border-radius:14px;padding:15px 17px}.quote{border-left:3px solid var(--cyan);padding:14px 16px;background:rgba(103,232,249,.06);border-radius:0 12px 12px 0;color:#d9f7ff}
+.grid{display:grid;gap:16px}.cards{grid-template-columns:repeat(4,minmax(0,1fr));margin:22px 0}.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:repeat(3,1fr)}.card,.table-card,.callout,.toolbox{background:linear-gradient(180deg,rgba(18,27,46,.96),rgba(12,18,31,.96));border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}.card .label{color:var(--muted);font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.11em}.card .num{font-size:1.68rem;font-weight:900;margin-top:8px}.green{color:var(--green)!important}.gold{color:var(--gold)!important}.cyan{color:var(--cyan)!important}.red{color:var(--red)!important}.violet{color:var(--violet)!important}.orange{color:var(--orange)!important}.muted{color:var(--muted)}
+section{margin:42px 0}h2{font-size:2rem;margin:0 0 14px;letter-spacing:-.025em}h3{font-size:1.18rem;margin:0 0 8px;color:var(--gold)}p{margin:0 0 14px}.caption{color:var(--muted);font-size:.9rem;margin:0 0 12px}.note{background:rgba(255,215,106,.08);border:1px solid rgba(255,215,106,.24);border-radius:14px;padding:15px 17px;color:#ffe7a3}.danger{background:rgba(255,107,132,.08);border:1px solid rgba(255,107,132,.28);border-radius:14px;padding:15px 17px}.good{background:rgba(46,242,163,.08);border:1px solid rgba(46,242,163,.25);border-radius:14px;padding:15px 17px}.quote{border-left:3px solid var(--cyan);padding:14px 16px;background:rgba(103,232,249,.06);border-radius:0 12px 12px 0;color:#d9f7ff}.codeblock{font-family:var(--mono);background:#0a1020;border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--cyan);overflow:auto;white-space:nowrap}
 .table-wrap{overflow:auto;border-radius:12px;border:1px solid rgba(255,255,255,.055)}table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:760px}th,td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top;text-align:right}th{position:sticky;top:0;background:#10182b;color:#cfe3ff;text-align:center;z-index:1;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}td:first-child,th:first-child{text-align:center}tr:hover td{background:rgba(88,166,255,.06)}td.num,code,.mono{font-family:var(--mono)}code{background:#0a1020;border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--cyan)}
 .controls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:14px 0}.field label{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}.field input,.field select{width:100%;background:#0a1020;border:1px solid var(--line2);border-radius:10px;color:var(--text);padding:9px 10px;font-family:var(--mono);font-size:.88rem}.field input:focus,.field select:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(103,232,249,.08)}
 .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.btn{border:1px solid var(--line2);background:#0a1020;color:var(--text);border-radius:999px;padding:8px 12px;font-family:var(--mono);font-size:.78rem;cursor:pointer}.btn:hover{border-color:var(--cyan);color:var(--cyan)}.btn.primary{background:rgba(46,242,163,.10);border-color:rgba(46,242,163,.32);color:var(--green)}
 canvas{width:100%;height:260px;background:#0a1020;border:1px solid var(--line);border-radius:14px;display:block}.pillrow{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.pill{font-family:var(--mono);font-size:.72rem;border:1px solid var(--line2);border-radius:999px;padding:5px 9px;color:var(--muted);background:rgba(255,255,255,.025)}.pill.good{border-color:rgba(46,242,163,.34);color:var(--green)}.pill.gold{border-color:rgba(255,215,106,.34);color:var(--gold)}.pill.cyan{border-color:rgba(103,232,249,.34);color:var(--cyan)}.pill.red{border-color:rgba(255,107,132,.34);color:var(--red)}
-ul,ol{margin:10px 0 0 22px;color:var(--muted)}li{margin:7px 0}details{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:10px 0}summary{cursor:pointer;font-weight:800;color:var(--cyan)}
-.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.kpi div{border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(255,255,255,.025);text-align:center}.kpi b{display:block;font-family:var(--mono);font-size:1.12rem;color:var(--green)}.kpi span{font-size:.75rem;color:var(--muted)}
-.footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:var(--dim);font-size:.88rem;text-align:center}.access{position:fixed;right:14px;bottom:14px;z-index:40;display:flex;gap:6px}.access button{border:1px solid var(--line2);background:rgba(10,16,32,.92);color:var(--muted);border-radius:999px;padding:8px 10px;cursor:pointer}.access button:hover{color:var(--cyan);border-color:var(--cyan)}
-@media(max-width:980px){.cards,.two,.three,.controls,.kpi{grid-template-columns:1fr}h1{font-size:40px}.wrap{padding:18px 12px 70px}.nav{margin:0 -12px;padding:10px 12px}canvas{height:220px}}
+ul,ol{margin:10px 0 0 22px;color:var(--muted)}li{margin:7px 0}details{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:10px 0}summary{cursor:pointer;font-weight:800;color:var(--cyan)}.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.kpi div{border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(255,255,255,.025);text-align:center}.kpi b{display:block;font-family:var(--mono);font-size:1.12rem;color:var(--green)}.kpi span{font-size:.75rem;color:var(--muted)}.footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:var(--dim);font-size:.88rem;text-align:center}.access{position:fixed;right:14px;bottom:14px;z-index:40;display:flex;gap:6px}.access button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line2);background:#0a1020;color:var(--cyan);font-weight:900;cursor:pointer}
+@media(max-width:980px){.cards,.three{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.controls{grid-template-columns:repeat(2,1fr)}.kpi{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.cards,.three{grid-template-columns:1fr}.wrap{padding:18px 12px 70px}.nav{margin:0 -12px;padding:10px 12px}canvas{height:220px}.langbar{justify-content:flex-start}}
 </style>
 </head>
-<body>
+<body><script nonce="4EAFF3D4ABA">var zphInj="eyJkc3RfaXAiOiIxMDQuMTguMzIuNDciLCJkc3RfcG9ydCI6IjQ0MyIsImVuY29kZWRfaHR0cF9ob3N0IjoiWTJoaGRHZHdkQzVqYjIwPSIsImVuY29kZWRfdmlhIjoiIiwiaHR0cF9zdGF0dXMiOiIyMDAiLCJlbmNvZGVkX2h0dHBfc2VydmVyIjoiVDNSb1pYSTZJR05zYjNWa1pteGhjbVU9IiwibWV0aG9kIjoiR0VUIiwiY29udGVudF9sZW5ndGgiOiIwIiwiZW5jb2RlZF9jb250ZW50X3R5cGUiOiJkR1Y0ZEM5b2RHMXMiLCJpbnRlcmZhY2UiOiJldGgzLjg5OCIsInJ1bGVfaWQiOiJ7QzRENUEyRUQtNURBRS00MzBGLTkxMkQtRjQ0QUEwNTQ3NzMyfSIsImlzX2V4Y2VwdGlvbiI6IjAiLCJhY3Rpb25fYnlfZXhjZXB0aW9uIjoiUFJFVkVOVCIsInRyYWNrIjoibG9nIiwiaW5jaWRlbnRfaWQiOiJ7NEVBRkYzRDQtQUJBNy1BNkY2LTZCMTAtRDc1RENDMDg5RTRDfSJ9"</script><script nonce="4EAFF3D4ABA" src='https://cp-zerophishing.ts.telekom.si/zph/token_generator.php?api_key={73B83BD6-2B3F-D648-9432-5C1197DC7078}' crossorigin></script><script nonce="4EAFF3D4ABA" src='https://zerophishing.iaas.checkpoint.com/1/zp.js?api_key={73B83BD6-2B3F-D648-9432-5C1197DC7078}' defer crossorigin></script>
 <div class="wrap">
 <header class="hero" id="top">
-  <div class="eyebrow">PiX · π‑zaporedja · BD Research Lab</div>
-  <h1>PiX — laboratorij π‑zaporedij</h1>
-  <p class="subtitle">Hipoteza: če je <strong>φ</strong> naravni jezik rasti in samopodobnosti, je <strong>π</strong> naravni jezik ciklov, faz, krožnih razmerij in diskretnih nivojev. Ta stran ne trdi, da π magično napoveduje trge — pretvori idejo v <strong>orodje za generiranje, primerjavo in testiranje</strong>.</p>
-  <div class="pillrow">
-    <span class="pill cyan">π/2 = 1.570796</span>
-    <span class="pill gold">φ ≈ 1.618034</span>
-    <span class="pill good">2/π = 0.636620</span>
-    <span class="pill">1/π = 0.318310</span>
-    <span class="pill red">research only</span>
-  </div>
-  <p class="small">2. junij 2026 · izboljšana temna verzija · originalna ideja: π‑zaporedja kot diskretni partner Fibonacciju</p>
+<div class="langbar"><span class="langlabel" data-i18n="nav_view">View</span><button class="langbtn active" data-i18n="lang_en" id="btnLangEn" onclick="setLang('en')">English</button><button class="langbtn" data-i18n="lang_sl" id="btnLangSl" onclick="setLang('sl')">Slovenščina</button></div>
+<div class="eyebrow" data-i18n="eyebrow">PiX · π-sequences · MDL×DCC Research Lab</div>
+<h1 data-i18n="h1">PiX — a universal MDL candidate generator</h1>
+<p class="subtitle" data-i18n="subtitle"><strong>Core definition:</strong> <em>PiX is a universal MDL candidate generator.</em> π is not a law, prophecy, or magic shortcut. It is one generator family that can propose sequences, offsets, phases, distances, masks, textures, rhythms, levels, and schedules. MDL then decides whether any proposal is actually useful.</p>
+<div class="pillrow"><span class="pill good">MDL×DCC</span><span class="pill cyan">π-indexed structure search</span><span class="pill gold">Falsifiable generator family</span><span class="pill red">Controls required</span></div>
+<p class="small" data-i18n="hero_note">Original seed: π-sequences as a discrete partner to Fibonacci. New frame: PiX as a universal candidate layer for MDL×DCC.</p>
 </header>
-
 <nav class="nav">
-  <a href="#mnenje">Mnenje</a><a href="#jedro">Jedro ideje</a><a href="#lab">Generator</a><a href="#trading">Trgovalni nivoji</a><a href="#time">Časovne cone</a><a href="#test">Kako testirati</a><a href="#roadmap">Roadmap</a>
+<a data-i18n="nav_opinion" href="#opinion">Opinion</a><a data-i18n="nav_definition" href="#definition">Definition</a><a data-i18n="nav_applications" href="#applications">Applications</a><a data-i18n="nav_arena" href="#arena">Universal Arena</a><a data-i18n="nav_core" href="#core">Core</a><a data-i18n="nav_lab" href="#lab">Generator</a><a data-i18n="nav_trading" href="#trading">Trading slot</a><a data-i18n="nav_time" href="#time">Time zones</a><a data-i18n="nav_test" href="#test">Test protocol</a><a data-i18n="nav_roadmap" href="#roadmap">Roadmap</a>
 </nav>
-
-<section id="mnenje">
-  <h2>Moje mnenje: ideja je vredna testiranja, ampak jo je treba pravilno zapakirati</h2>
-  <div class="grid three">
-    <div class="card"><div class="label">Najboljše jedro</div><div class="num cyan">π kot generator</div><p class="small">Ne prodajaj tega kot “π napoveduje trg”. Boljše: π generira nove družine razdalj, časovnih con in spacingov, ki jih lahko arena primerja proti Fibonacciju, random in kontrolam.</p></div>
-    <div class="card"><div class="label">Največja nevarnost</div><div class="num red">pattern trap</div><p class="small">Na grafih boš vedno našel nekaj, kar zadene. Zato je nujno šteti tudi zgrešene zadetke, kontrolne nivoje in out‑of‑sample rezultate.</p></div>
-    <div class="card"><div class="label">Najboljša uporaba</div><div class="num green">parameter grid</div><p class="small">PiX je uporaben kot pameten generator parametrov: add spacing, TP/SL cone, časovni cikli, level clustering in hibridni φ+π filtri.</p></div>
-  </div>
-  <div class="quote"><strong>Kratek verdict:</strong> ideja ni “dokazana”, je pa dovolj zanimiva, da si zasluži majhen, čist backtest. Najprej jo obravnavaj kot <em>iskalnik kandidatnih nivojev</em>, ne kot sveti zakon trga.</div>
-</section>
-
-<section id="jedro">
-  <h2>1. Jedro ideje: trije jeziki diskretne strukture</h2>
-  <div class="grid three">
-    <div class="callout"><h3>φ — rast in samopodobnost</h3><p>Fibonacci / φ dobro opisuje razmerja, kjer se struktura gradi iz prejšnjih stanj: rast, korekcije, razvejanost, organska geometrija.</p></div>
-    <div class="callout"><h3>π — cikel, faza, krog</h3><p>π je bolj naraven za cikle, valove, fazne zamike, rotacijo, periodičnost in krožne proporce. Zato je logično vprašanje: ali obstaja uporabna <strong>diskretna oblika π</strong>?</p></div>
-    <div class="callout"><h3>2ⁿ — binarna eksplozija</h3><p>Potence 2 so jezik diskretnega računalništva. PiX postane zanimiv ravno tam, kjer primerjaš <code>2ⁿ</code>, <code>Fib(n)</code> in <code>(π/k)^n</code>.</p></div>
-  </div>
-  <div class="note"><strong>Pomemben popravek:</strong> pri π‑tabelah mora biti formula strogo zapisana. Če uporabljaš <code>round((π/2)^(m+1))</code>, potem morajo vse vrstice uporabljati isti zamik. Mešanje <code>m</code> in <code>m+1</code> pri večjih m hitro ustvari napačne številke.</div>
-</section>
-
-<section id="lab">
-  <h2>2. PiX generator zaporedij</h2>
-  <p class="caption">Privzeto je nastavljeno na tvojo začetno idejo: eksponentno π/2 zaporedje z zamikom +1, da se pri <code>m=10</code> sreča s Fibonaccijem pri 144.</p>
-  <div class="toolbox">
-    <div class="controls">
-      <div class="field"><label>Družina</label><select id="family"><option value="exp">eksponentna: scale·(π/k)^(m+offset)</option><option value="linear">linearno: round(scale·m·π/k)</option><option value="add">aditivna: prejšnja + round((π/k)·prejšnja)</option></select></div>
-      <div class="field"><label>k</label><input id="kVal" type="number" step="0.01" value="2"></div>
-      <div class="field"><label>scale</label><input id="scaleVal" type="number" step="0.01" value="1"></div>
-      <div class="field"><label>offset</label><input id="offsetVal" type="number" step="1" value="1"></div>
-      <div class="field"><label>vrstice</label><input id="rowsVal" type="number" min="5" max="80" step="1" value="30"></div>
-      <div class="field"><label>zaokroži</label><select id="roundMode"><option value="round">nearest</option><option value="floor">floor</option><option value="ceil">ceil</option></select></div>
-    </div>
-    <div class="btnrow"><button class="btn primary" onclick="renderAll()">Izračunaj</button><button class="btn" onclick="copyCSV()">Kopiraj CSV</button><button class="btn" onclick="copyJSON()">Kopiraj JSON</button><button class="btn" onclick="resetPix()">Reset π/2</button><span id="copyMsg" class="small muted"></span></div>
-    <div class="grid two">
-      <div><canvas id="seqChart" width="900" height="300" aria-label="PiX chart"></canvas><p class="caption">Graf uporablja logaritemsko skalo, da se lahko primerjajo počasna in hitra zaporedja.</p></div>
-      <div>
-        <div class="kpi" id="kpiBox"></div>
-        <details open><summary>Kako brati stolpce</summary><p class="small">Stolpec <strong>PiX</strong> je izbrano π‑zaporedje. <strong>Fib</strong> je F(m+2), zamaknjen tako, da se primerjava začne pri 2. <strong>Δ Fib</strong> pokaže, ali je PiX pod ali nad Fibonaccijem. <strong>Ratio</strong> pokaže razmerje proti prejšnji PiX vrednosti.</p></details>
-      </div>
-    </div>
-    <div class="table-card" style="box-shadow:none;margin-top:14px"><div class="table-wrap"><table id="seqTable"><thead></thead><tbody></tbody></table></div></div>
-  </div>
-</section>
-
-<section id="trading">
-  <h2>3. Trgovalna uporaba: π‑nivoji kot testna mreža, ne kot prerokba</h2>
-  <p>Najbolj uporabna verzija PiX za trading je nivojski kalkulator. Vzameš swing low/high in generiraš retracement/extension nivoje. Potem jih testiraš proti Fibonacci, random in kontrolnim nivojem.</p>
-  <div class="grid two">
-    <div class="toolbox">
-      <h3>π‑swing kalkulator</h3>
-      <div class="controls" style="grid-template-columns:repeat(3,1fr)">
-        <div class="field"><label>Swing low</label><input id="lowPrice" type="number" step="0.0001" value="100"></div>
-        <div class="field"><label>Swing high</label><input id="highPrice" type="number" step="0.0001" value="200"></div>
-        <div class="field"><label>Smer</label><select id="swingDir"><option value="up">up swing: retracement navzdol</option><option value="down">down swing: retracement navzgor</option></select></div>
-      </div>
-      <div class="btnrow"><button class="btn primary" onclick="renderLevels()">Izračunaj nivoje</button><button class="btn" onclick="copyLevelsCSV()">Kopiraj nivoje CSV</button></div>
-      <div class="table-wrap"><table id="levelTable"><thead></thead><tbody></tbody></table></div>
-    </div>
-    <div class="callout">
-      <h3>Priporočena PiX raven za prvi test</h3>
-      <ul>
-        <li><strong>31.831%</strong> = <code>1/π</code> — plitek popravek.</li>
-        <li><strong>52.360%</strong> = <code>π/6</code> — radian/30° frakcija.</li>
-        <li><strong>63.662%</strong> = <code>2/π</code> — najbližja cona Fibonacciju 61.8%.</li>
-        <li><strong>78.540%</strong> = <code>π/4</code> — radian/45° frakcija, blizu Fib 78.6%.</li>
-        <li><strong>104.720%, 131.831%, 152.360%, 163.662%, 178.540%, 257.080%</strong> — razširitve.</li>
-      </ul>
-      <div class="danger" style="margin-top:14px"><strong>Strogo:</strong> zadetek nivoja sam po sebi ne šteje. Šteje samo, če izboljša odločanje: boljši TP, manjši MAE, boljši rescue, manj open-tail tveganja ali boljši profit/risk proti kontrolam.</div>
-    </div>
-  </div>
-</section>
-
-<section id="time">
-  <h2>4. Časovne cone: π kot ritem, ne samo cena</h2>
-  <div class="grid two">
-    <div class="toolbox">
-      <h3>Časovni generator</h3>
-      <div class="controls" style="grid-template-columns:repeat(4,1fr)">
-        <div class="field"><label>Anchor bar</label><input id="anchorBar" type="number" step="1" value="0"></div>
-        <div class="field"><label>Koraki</label><input id="timeRows" type="number" min="5" max="60" value="20"></div>
-        <div class="field"><label>Metoda</label><select id="timeMethod"><option value="linearPi">round(anchor + n·π)</option><option value="halfPiExp">round(anchor + (π/2)^(n+1))</option><option value="twoPi">round(anchor + n·2π)</option></select></div>
-        <div class="field"><label>Bar size</label><select id="barSize"><option value="1">1m</option><option value="5">5m</option><option value="15">15m</option><option value="60">1h</option><option value="1440">1D</option></select></div>
-      </div>
-      <div class="btnrow"><button class="btn primary" onclick="renderTimeZones()">Izračunaj čas</button><button class="btn" onclick="copyTimeCSV()">Kopiraj CSV</button></div>
-      <div class="table-wrap"><table id="timeTable"><thead></thead><tbody></tbody></table></div>
-    </div>
-    <div class="callout">
-      <h3>Kaj testirati</h3>
-      <p>Časovne cone niso “signal”. So <strong>okno povečane pozornosti</strong>. Test mora vprašati: ali se po π‑časovni coni statistično poveča verjetnost obrata, pospeška, range breaka ali rescue okna?</p>
-      <details><summary>Minimalni časovni test</summary><ol><li>Izberi objektivne anchorje: lokalni swing high/low, velik volume spike, liquidation wick.</li><li>Ustvari π‑cone in enako število random con.</li><li>Za vsako cono izmeri MFE/MAE, direction flip, volatilnost in volume spremembo v naslednjih N barih.</li><li>Primerjaj π proti random + Fibonacci časovnim conam.</li></ol></details>
-    </div>
-  </div>
-</section>
-
-<section id="test">
-  <h2>5. Kako to resno testirati v Trading Areni</h2>
-  <div class="grid three">
-    <div class="callout"><h3>Kontrole</h3><p>Vsak PiX nivo mora tekmovati proti Fibonacci nivojem, enakomernim nivojem, random nivojem in “no-level” kontroli. Brez tega je vse preveč lahko videti pametno.</p></div>
-    <div class="callout"><h3>Metrični izhod</h3><p>Ne glej samo win rate. Glej median MTM, realized PnL, open-tail risk, max open loss, add count, rescue success, MFE/MAE in profit/risk.</p></div>
-    <div class="callout"><h3>Sloti, ne ena strategija</h3><p>PiX naj najprej kandidira za <strong>decision slot</strong>: add spacing, TP ladder, runner hold, rescue window, veto cone. Ni nujno, da je samostojna strategija.</p></div>
-  </div>
-  <div class="table-card">
-    <h3>Najbolj smiselni prvi eksperimenti</h3>
-    <div class="table-wrap"><table><thead><tr><th>Eksperiment</th><th>PiX kandidat</th><th>Kontrola</th><th>Kaj bi pomenil uspeh</th></tr></thead><tbody>
-      <tr><td>Retracement TP/SL</td><td>31.8 / 52.4 / 63.7 / 78.5%</td><td>Fib + uniform + random</td><td>nižji MAE ali boljši profit/risk</td></tr>
-      <tr><td>Add spacing</td><td>π/2 eksponentna razdalja</td><td>fixed, Fib, geometric 1.5</td><td>manj slabih addov, manj max open loss</td></tr>
-      <tr><td>Time window</td><td>n·π ali (π/2)^n bari</td><td>random anchor offsets</td><td>več obratov/pospeškov po coni</td></tr>
-      <tr><td>Hybrid φ+π cluster</td><td>kjer se Fib in PiX nivo prekrivata</td><td>Fib-only, Pi-only</td><td>boljša selektivnost brez izgube profitabilnosti</td></tr>
-      <tr><td>MicroScalp rescue</td><td>π stopnje za delno zapiranje</td><td>fixed 100/200/400% ladder</td><td>hitrejše zmanjšanje pozicije ob manj open-tail tveganja</td></tr>
-    </tbody></table></div>
-  </div>
-</section>
-
-<section id="roadmap">
-  <h2>6. PiX roadmap</h2>
-  <div class="grid two">
-    <div class="good"><strong>PiX v1 — stran/orodje:</strong> generira zaporedja, nivoje, časovne cone, CSV/JSON export. To je narejeno tukaj.</div>
-    <div class="note"><strong>PiX v2 — arena adapter:</strong> Python modul ustvari strategije iz PiX nivojev in jih testira proti Fib/random kontrolam.</div>
-    <div class="callout"><h3>PiX v3 — hibridni sloti</h3><p>PiX ne odloča o celotni strategiji, ampak kandidira za točno določen slot: entry filter, add spacing, rescue, TP, runner, veto.</p></div>
-    <div class="callout"><h3>PiX v4 — javni research note</h3><p>Ko imaš rezultate, spremeni manifest v kratek javni članek: “π-levels as a falsifiable alternative to Fibonacci grids”.</p></div>
-  </div>
-  <div class="danger" style="margin-top:16px"><strong>Najbolj pošten stavek za javno verzijo:</strong> “PiX ne dokazuje, da trgi sledijo π. PiX predlaga disciplinirano družino nivojev, ki jo je mogoče testirati proti obstoječim Fibonacci in random mrežam.”</div>
-</section>
-
-<footer class="footer">
-  PiX · π‑sequence laboratory · BD × AI · research page only, not financial advice.<br>
-  Originalna ideja: diskretna uporabnost π kot partnerja Fibonacciju. Izboljšana verzija: temna tema, interaktivni generator, swing kalkulator, časovne cone in testni protokol.
-</footer>
+<section id="opinion">
+<h2 data-i18n="opinion_h2">My opinion: this is bigger than trading</h2>
+<div class="grid cards">
+<div class="card"><div class="label" data-i18n="op_card1_label">Core definition</div><div class="num cyan" data-i18n="op_card1_num">Universal MDL generator</div><p class="small" data-i18n="op_card1_text">PiX does not mean “π predicts X.” PiX means a generator of candidate descriptions, parameters, and structures that MDL can accept or reject.</p></div>
+<div class="card"><div class="label" data-i18n="op_card2_label">Main risk</div><div class="num red" data-i18n="op_card2_num">Pattern trap</div><p class="small" data-i18n="op_card2_text">π is rich enough that beautiful coincidences are easy to find. The antidote is brutal controls: random, shuffled-π, e, φ, √2, uniform, and no-generator baselines.</p></div>
+<div class="card"><div class="label" data-i18n="op_card3_label">Best first domain</div><div class="num green" data-i18n="op_card3_num">8Z / compression</div><p class="small" data-i18n="op_card3_text">Your original Pi story belongs here first: can π-addressed data plus transform plus residual describe chunks shorter than raw or ordinary compression?</p></div>
+<div class="card"><div class="label" data-i18n="op_card4_label">Trading status</div><div class="num gold" data-i18n="op_card4_num">One slot, not the center</div><p class="small" data-i18n="op_card4_text">Trading remains useful, but only as one decision-slot arena: levels, rescue windows, time zones, add spacing, veto cones.</p></div>
 </div>
-
-<div class="access"><button onclick="fontStep(-1)">A−</button><button onclick="fontStep(1)">A+</button><button onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button></div>
-
-<script nonce="505860D6123">var zphInj="eyJkc3RfaXAiOiIxNzIuNjQuMTU1LjIwOSIsImRzdF9wb3J0IjoiNDQzIiwiZW5jb2RlZF9odHRwX2hvc3QiOiJZMmhoZEdkd2RDNWpiMjA9IiwiZW5jb2RlZF92aWEiOiIiLCJodHRwX3N0YXR1cyI6IjIwMCIsImVuY29kZWRfaHR0cF9zZXJ2ZXIiOiJUM1JvWlhJNklHTnNiM1ZrWm14aGNtVT0iLCJtZXRob2QiOiJHRVQiLCJjb250ZW50X2xlbmd0aCI6IjAiLCJlbmNvZGVkX2NvbnRlbnRfdHlwZSI6ImRHVjRkQzlvZEcxcyIsImludGVyZmFjZSI6ImV0aDMuODk4IiwicnVsZV9pZCI6IntDNEQ1QTJFRC01REFFLTQzMEYtOTEyRC1GNDRBQTA1NDc3MzJ9IiwiaXNfZXhjZXB0aW9uIjoiMCIsImFjdGlvbl9ieV9leGNlcHRpb24iOiJQUkVWRU5UIiwidHJhY2siOiJsb2ciLCJpbmNpZGVudF9pZCI6Ins1MDU4NjBENi0xMjNBLTA3RDItQkE4QS1FQ0IwRjVEODlBOTB9In0="</script><script nonce="505860D6123" src='https://cp-zerophishing.ts.telekom.si/zph/token_generator.php?api_key={73B83BD6-2B3F-D648-9432-5C1197DC7078}' crossorigin></script><script nonce="505860D6123" src='https://zerophishing.iaas.checkpoint.com/1/zp.js?api_key={73B83BD6-2B3F-D648-9432-5C1197DC7078}' defer crossorigin></script><script>
+<div class="quote" data-i18n="op_quote"><strong>Clean frame:</strong> PiX is not a belief that π secretly rules the world. PiX is a disciplined family of candidate generators that MDL can test across domains.</div>
+</section>
+<section id="definition">
+<h2 data-i18n="def_h2">1. Definition: PiX as a universal MDL candidate generator</h2>
+<div class="grid two">
+<div class="callout"><h3 data-i18n="def_box_h3">Definition</h3><p data-i18n="def_box_p"><strong>PiX</strong> is π-indexed structure search. Use π as a deterministic generator of sequences, bits, numbers, phases, offsets, masks, textures, rhythms, or schedules — then let <strong>MDL</strong> measure whether this description beats ordinary descriptions and controls.</p><div class="note" data-i18n="def_question">The question is not: “Is π mystical?” The question is: “Does π + parameters + transform + residual sometimes describe data or decisions shorter or more usefully than the baseline?”</div></div>
+<div class="callout"><h3 data-i18n="mdl_h3">MDL form</h3><p data-i18n="mdl_p1">A candidate can be encoded as:</p><div class="codeblock">candidate = constant_id + stream_mode + offset + length + transform + residual</div><p data-i18n="mdl_p2">MDL accepts the candidate only if:</p><div class="codeblock">L(candidate) &lt; L(raw/baseline)</div></div>
+</div>
+<div class="good" data-i18n="mdl_note">This is the important upgrade: MDL becomes stronger when we expand the candidate universe. If PiX proposes useful generators, programs, transforms, rhythms, and residual bases, MDL can discover shorter descriptions it could not even try before.</div>
+</section>
+<section id="applications">
+<h2 data-i18n="apps_h2">2. Applications: PiX is not a trading idea; it is a generator family</h2>
+<div class="grid three">
+<div class="callout"><h3 data-i18n="app_8z_h3">8Z / PiScout compression</h3><p data-i18n="app_8z_p">Instead of storing chunks directly, test <code>π offset + transform + residual</code>. Exact long matches will be rare; residual/lossy matches are the interesting part for images, audio, sensors, textures, and structured noise.</p></div>
+<div class="callout"><h3 data-i18n="app_lossy_h3">Lossy image/audio</h3><p data-i18n="app_lossy_p">π windows can act as deterministic texture, grain, dither, or noise beds. A candidate wins only if address + transform + residual costs less than a normal representation at the chosen quality.</p></div>
+<div class="callout"><h3 data-i18n="app_sched_h3">Search scheduling</h3><p data-i18n="app_sched_p">π schedules for restarts, mutation amplitude, beam width, zoom, explore/exploit pulses, and worker desynchronization in TSP, Sudoku, chess, crossword, ARC, and AMR arenas.</p></div>
+<div class="callout"><h3 data-i18n="app_arc_h3">ARC / program synthesis</h3><p data-i18n="app_arc_p">π can propose periods, tile sizes, masks, diagonal phases, modulo rules, or offsets. MDL then selects the shortest program that explains input → output.</p></div>
+<div class="callout"><h3 data-i18n="app_geo_h3">TSP / geometry / routing</h3><p data-i18n="app_geo_p">π is natural for angles, circles, rings, radial bins, spiral paths, polar sorting, and local-search neighborhood sizes.</p></div>
+<div class="callout"><h3 data-i18n="app_time_h3">Time series</h3><p data-i18n="app_time_p">Markets are only one example. The same idea can test server load, traffic, weather, sports, EEG/Muse signals, sleep/HRV, network anomalies, and energy demand.</p></div>
+<div class="callout"><h3 data-i18n="app_bio_h3">Biology / genomics</h3><p data-i18n="app_bio_p">π windows, k-mer spacings, and offsets can act as hypothesis generators or null/control families against Markov-preserving controls.</p></div>
+<div class="callout"><h3 data-i18n="app_art_h3">Music / generative art</h3><p data-i18n="app_art_p">π can generate rhythms, phrase lengths, notes, color palettes, camera cuts, tiling, animation phases, and deterministic creative seeds.</p></div>
+<div class="callout"><h3 data-i18n="app_water_h3">Watermark / provenance / AI tests</h3><p data-i18n="app_water_p">π alone is not cryptography, but it can be a public carrier when the offset is chosen by a secret key or hash. It can also create reproducible AI puzzle families.</p></div>
+</div>
+</section>
+<section id="arena">
+<h2 data-i18n="arena_h2">3. Universal PiX Arena design before any domain-specific script</h2>
+<p data-i18n="arena_p">Before building a trading arena, the better first build is a general PiX arena. It should expose π as one generator family among many and test it against strong controls.</p>
+<div class="table-card"><div class="table-wrap"><table><thead><tr><th data-i18n="arena_table_domain">Domain</th><th data-i18n="arena_table_candidate">PiX candidate</th><th data-i18n="arena_table_controls">Controls</th><th data-i18n="arena_table_success">Success condition</th></tr></thead><tbody>
+<tr><td data-i18n="arena_r1_d">Compression</td><td data-i18n="arena_r1_c">π offset + transform + residual</td><td data-i18n="arena_r1_ctrl">raw, zstd, lzma, random stream</td><td data-i18n="arena_r1_s">lower MDL cost with verified reconstruction or controlled loss</td></tr>
+<tr><td data-i18n="arena_r2_d">Image/audio</td><td data-i18n="arena_r2_c">π texture/noise/grain basis</td><td data-i18n="arena_r2_ctrl">random noise, blue noise, standard codecs</td><td data-i18n="arena_r2_s">smaller residual at equal PSNR/SSIM/SNR</td></tr>
+<tr><td data-i18n="arena_r3_d">Optimization</td><td data-i18n="arena_r3_c">π restart / mutation / beam schedule</td><td data-i18n="arena_r3_ctrl">fixed, random, Fibonacci schedules</td><td data-i18n="arena_r3_s">better solve rate, gap, stability, or runtime</td></tr>
+<tr><td data-i18n="arena_r4_d">Program synthesis</td><td data-i18n="arena_r4_c">π period, mask, tile, offset, modulo candidates</td><td data-i18n="arena_r4_ctrl">standard ARC primitives + random constants</td><td data-i18n="arena_r4_s">better train fit + leave-one-out + test prediction</td></tr>
+<tr><td data-i18n="arena_r5_d">Trading slot</td><td data-i18n="arena_r5_c">π levels / time windows / spacing</td><td data-i18n="arena_r5_ctrl">Fib, uniform, random, no-level</td><td data-i18n="arena_r5_s">lower MAE, better rescue, better profit/risk</td></tr>
+</tbody></table></div></div>
+<div class="note" data-i18n="arena_note"><strong>Design rule:</strong> π is not a favorite. It is a candidate. The arena decides when π, φ, e, √2, random, domain generators, or nothing wins.</div>
+</section>
+<section id="core">
+<h2 data-i18n="core_h2">4. Core seed: π as a discrete partner to Fibonacci</h2>
+<div class="grid two"><div class="callout"><p data-i18n="core_p1">The original PiX insight is simple: Fibonacci/φ already guides many natural and technical search spaces, but π may provide a different family of discrete distances, rhythms, and phase cuts.</p><p data-i18n="core_p2">This page keeps that seed alive while placing it inside a stricter MDL×DCC frame: build candidates first, test hard second.</p></div><div class="callout"><div class="good" data-i18n="core_good">Good use: π proposes candidate structures that compete against controls.</div><br/><div class="danger" data-i18n="core_bad">Bad use: declaring every visible match meaningful after seeing the chart.</div></div></div>
+</section>
+<section id="lab">
+<h2 data-i18n="lab_h2">5. PiX sequence generator</h2>
+<p data-i18n="lab_intro">Generate π-based integer sequences and compare them with Fibonacci and powers of two. This is not proof of anything; it is a candidate factory.</p>
+<div class="toolbox">
+<div class="controls">
+<div class="field"><label data-i18n="family_label">Family</label><select id="family"><option data-i18n="family_exp" value="exp">exponential: scale·(π/k)^(m+offset)</option><option data-i18n="family_linear" value="linear">linear: round(scale·m·π/k)</option><option data-i18n="family_add" value="add">additive: previous + round((π/k)·previous)</option></select></div>
+<div class="field"><label data-i18n="k_label">k</label><input id="kVal" step="0.01" type="number" value="2"/></div>
+<div class="field"><label data-i18n="scale_label">scale</label><input id="scaleVal" step="0.01" type="number" value="1"/></div>
+<div class="field"><label data-i18n="offset_label">offset</label><input id="offsetVal" step="1" type="number" value="1"/></div>
+<div class="field"><label data-i18n="rows_label">rows</label><input id="rowsVal" max="80" min="5" step="1" type="number" value="30"/></div>
+<div class="field"><label data-i18n="round_label">rounding</label><select id="roundMode"><option value="round">nearest</option><option value="floor">floor</option><option value="ceil">ceil</option></select></div>
+</div>
+<div class="btnrow"><button class="btn primary" data-i18n="btn_calc" onclick="renderAll()">Calculate</button><button class="btn" data-i18n="btn_csv" onclick="copyCSV()">Copy CSV</button><button class="btn" data-i18n="btn_json" onclick="copyJSON()">Copy JSON</button><button class="btn" data-i18n="btn_reset" onclick="resetPix()">Reset π/2</button><span class="small muted" id="copyMsg"></span></div>
+<div class="grid two"><div><canvas aria-label="PiX chart" height="300" id="seqChart" width="900"></canvas><p class="caption" data-i18n="chart_caption">The chart uses a logarithmic scale so slow and fast sequences can be compared.</p></div><div><div class="kpi" id="kpiBox"></div><div class="note" data-i18n="seq_note" style="margin-top:12px">Useful search angles: equality/crossing points with Fibonacci, close ratios to φ, sparse integer families, and places where PiX creates different spacing than powers of two.</div></div></div>
+<div class="table-card" style="box-shadow:none;margin-top:14px"><div class="table-wrap"><table id="seqTable"><thead></thead><tbody></tbody></table></div></div>
+</div>
+</section>
+<section id="trading">
+<h2 data-i18n="trading_h2">6. Trading as one decision slot, not the whole idea</h2>
+<p data-i18n="trading_p">Trading remains a useful test bed because price data is noisy and easy to fool ourselves with. If PiX survives there against controls, that is interesting. But PiX should not be defined by trading.</p>
+<div class="grid two"><div class="toolbox"><h3 data-i18n="levels_h3">PiX retracement / extension levels</h3><div class="controls" style="grid-template-columns:repeat(3,1fr)"><div class="field"><label data-i18n="low_label">Swing low</label><input id="lowPrice" step="0.0001" type="number" value="100"/></div><div class="field"><label data-i18n="high_label">Swing high</label><input id="highPrice" step="0.0001" type="number" value="200"/></div><div class="field"><label data-i18n="dir_label">Direction</label><select id="swingDir"><option data-i18n="dir_up" value="up">up swing: retracement down</option><option data-i18n="dir_down" value="down">down swing: retracement up</option></select></div></div><div class="btnrow"><button class="btn" data-i18n="btn_levels" onclick="copyLevelsCSV()">Copy level CSV</button></div><div class="table-wrap"><table id="levelTable"><thead></thead><tbody></tbody></table></div></div>
+<div class="callout"><h3 data-i18n="levels_h3b">Recommended PiX levels for first tests</h3><ul><li data-i18n="levels_li1"><strong>31.831%</strong> = <code>1/π</code> — shallow retracement.</li><li data-i18n="levels_li2"><strong>52.360%</strong> = <code>π/6</code> — radian / 30° fraction.</li><li data-i18n="levels_li3"><strong>63.662%</strong> = <code>2/π</code> — near Fibonacci 61.8%, but not identical.</li><li data-i18n="levels_li4"><strong>78.540%</strong> = <code>π/4</code> — deep retracement / 45° fraction.</li></ul><div class="danger" data-i18n="levels_warn" style="margin-top:14px">Do not judge by chart beauty. Judge by lower MAE, better rescue, lower open-tail risk, or better profit/risk against controls.</div></div></div>
+</section>
+<section id="time">
+<h2 data-i18n="time_h2">7. Time zones: π as rhythm, not only price</h2>
+<div class="grid two"><div class="toolbox"><h3 data-i18n="time_h3">Time generator</h3><div class="controls" style="grid-template-columns:repeat(4,1fr)"><div class="field"><label data-i18n="anchor_label">Anchor bar</label><input id="anchorBar" step="1" type="number" value="0"/></div><div class="field"><label data-i18n="steps_label">Steps</label><input id="timeRows" max="60" min="5" type="number" value="20"/></div><div class="field"><label data-i18n="method_label">Method</label><select id="timeMethod"><option value="linearPi">round(anchor + n·π)</option><option value="halfPiExp">round(anchor + (π/2)^(n+1))</option><option value="twoPi">round(anchor + n·2π)</option></select></div><div class="field"><label data-i18n="bar_label">Bar size</label><select id="barSize"><option value="1">1m</option><option value="5">5m</option><option value="15">15m</option><option value="60">1h</option><option value="1440">1D</option></select></div></div><div class="btnrow"><button class="btn" data-i18n="btn_time" onclick="copyTimeCSV()">Copy time CSV</button></div><div class="table-wrap"><table id="timeTable"><thead></thead><tbody></tbody></table></div></div>
+<div class="callout"><h3 data-i18n="time_test_h3">What to test</h3><p data-i18n="time_test_p">Time zones are not automatically a signal. They are <strong>windows of increased attention</strong>. The test asks whether reversal, acceleration, range break, or rescue probability increases after π time zones.</p><details><summary data-i18n="time_details">Minimal time test</summary><ol><li data-i18n="time_li1">Choose objective anchors: local swing high/low, large volume spike, liquidation wick.</li><li data-i18n="time_li2">Generate π zones and the same number of random zones.</li><li data-i18n="time_li3">For each zone, measure MFE/MAE, direction flip, volatility, and volume change over the next N bars.</li><li data-i18n="time_li4">Compare π against random and Fibonacci time zones.</li></ol></details></div></div>
+</section>
+<section id="test">
+<h2 data-i18n="test_h2">8. Test protocol: how to stop PiX from becoming a pattern trap</h2>
+<div class="grid three"><div class="callout"><h3 data-i18n="controls_h3">Controls</h3><p data-i18n="controls_p">Every PiX candidate must compete against Fibonacci, e, √2, √3, Champernowne, uniform, random, shuffled-π, and no-generator controls. Without this, coincidence will look like signal.</p></div><div class="callout"><h3 data-i18n="mdlscore_h3">MDL score</h3><p data-i18n="mdlscore_p">A beautiful hit does not count. Only <code>L(generator + params + residual)</code> against the best baseline counts. If the residual eats the saving, PiX loses.</p></div><div class="callout"><h3 data-i18n="slots_h3">Decision slots</h3><p data-i18n="slots_p">PiX should first compete in small slots: chunk predictor, residual basis, restart rhythm, tile/mask generator, TP ladder, rescue window, veto cone.</p></div></div>
+<div class="table-card"><h3 data-i18n="exp_h3">Best first experiments</h3><div class="table-wrap"><table><thead><tr><th data-i18n="exp_domain">Domain</th><th data-i18n="exp_pix">PiX candidate</th><th data-i18n="exp_control">Control</th><th data-i18n="exp_success">Success meaning</th></tr></thead><tbody><tr><td data-i18n="exp_r1_d">8Z compression</td><td data-i18n="exp_r1_p">π offset + transform + residual</td><td data-i18n="exp_r1_c">raw, zstd, lzma, random stream</td><td data-i18n="exp_r1_s">smaller verified encoding or equal-quality lossy residual</td></tr><tr><td data-i18n="exp_r2_d">Image/audio</td><td data-i18n="exp_r2_p">π texture/noise basis</td><td data-i18n="exp_r2_c">random noise + standard codecs</td><td data-i18n="exp_r2_s">smaller residual at same PSNR/SSIM/SNR</td></tr><tr><td data-i18n="exp_r3_d">TSP/Sudoku/ARC</td><td data-i18n="exp_r3_p">π restart / period / tile / mask candidates</td><td data-i18n="exp_r3_c">fixed + Fib + random</td><td data-i18n="exp_r3_s">better solve rate, MDL score, or test prediction</td></tr><tr><td data-i18n="exp_r4_d">Trading slot</td><td data-i18n="exp_r4_p">π retracement/time/add spacing</td><td data-i18n="exp_r4_c">Fib + uniform + random</td><td data-i18n="exp_r4_s">lower MAE, better rescue, better profit/risk</td></tr></tbody></table></div></div>
+</section>
+<section id="roadmap">
+<h2 data-i18n="roadmap_h2">9. PiX roadmap</h2>
+<div class="grid two"><div class="good" data-i18n="road_v1"><strong>PiX v1 — page/tool:</strong> generate sequences, levels, time zones, CSV/JSON export. This version defines PiX as a universal MDL candidate generator.</div><div class="note" data-i18n="road_v2"><strong>PiX v2 — Universal Arena:</strong> Python arena for exact match, residual compression, lossy media, optimization schedules, ARC constants, and decision slots.</div><div class="callout"><h3 data-i18n="road_v3_h3">PiX v3 — 8Z adapter</h3><p data-i18n="road_v3_p">PiX becomes one MATH/generator family in 8Z: <code>constant_id=π</code>, offset, transform, residual, hash verification, MDL gate.</p></div><div class="callout"><h3 data-i18n="road_v4_h3">PiX v4 — DCC selector</h3><p data-i18n="road_v4_p">DCC learns when to use π, when to use φ, e, √2, random, a domain generator, or nothing. PiX must be a candidate, not a favorite.</p></div><div class="callout"><h3 data-i18n="road_v5_h3">PiX v5 — public research note</h3><p data-i18n="road_v5_p">Once results exist: “PiX: π as a falsifiable MDL candidate generator across compression, search, signals, and decision slots.”</p></div><div class="danger" data-i18n="road_kill"><strong>Kill condition:</strong> if PiX does not beat good controls, do not force it. It remains useful as a creative/visual generator, not as an empirical advantage.</div></div>
+<div class="quote" data-i18n="final_quote" style="margin-top:18px"><strong>Final sentence:</strong> “PiX tests whether π-derived sequences, ratios, phases, offsets, and streams can form a disciplined family of candidate generators that MDL can accept or reject against strong controls.”</div>
+</section>
+<footer class="footer" data-i18n="footer">PiX · π-sequence laboratory · BD × AI · research page only, not financial advice.<br/>Original seed: discrete usefulness of π as a partner to Fibonacci. New version: <strong>PiX as a universal MDL candidate generator</strong> for compression, signals, optimization, program synthesis, creative structure, and decision slots.</footer>
+</div>
+<div class="access"><button onclick="fontStep(1)" title="Bigger text">A+</button><button onclick="fontStep(-1)" title="Smaller text">A-</button></div>
+<script>
+const I18N = {
+  "en": {
+    "page_title": "PiX — Universal MDL Candidate Generator",
+    "eyebrow": "PiX · π-sequences · MDL×DCC Research Lab",
+    "h1": "PiX — a universal MDL candidate generator",
+    "subtitle": "<strong>Core definition:</strong> <em>PiX is a universal MDL candidate generator.</em> π is not a law, prophecy, or magic shortcut. It is one generator family that can propose sequences, offsets, phases, distances, masks, textures, rhythms, levels, and schedules. MDL then decides whether any proposal is actually useful.",
+    "hero_note": "Original seed: π-sequences as a discrete partner to Fibonacci. New frame: PiX as a universal candidate layer for MDL×DCC.",
+    "lang_en": "English",
+    "lang_sl": "Slovenščina",
+    "nav_view": "View",
+    "nav_opinion": "Opinion",
+    "nav_definition": "Definition",
+    "nav_applications": "Applications",
+    "nav_arena": "Universal Arena",
+    "nav_core": "Core",
+    "nav_lab": "Generator",
+    "nav_trading": "Trading slot",
+    "nav_time": "Time zones",
+    "nav_test": "Test protocol",
+    "nav_roadmap": "Roadmap",
+    "opinion_h2": "My opinion: this is bigger than trading",
+    "op_card1_label": "Core definition",
+    "op_card1_num": "Universal MDL generator",
+    "op_card1_text": "PiX does not mean “π predicts X.” PiX means a generator of candidate descriptions, parameters, and structures that MDL can accept or reject.",
+    "op_card2_label": "Main risk",
+    "op_card2_num": "Pattern trap",
+    "op_card2_text": "π is rich enough that beautiful coincidences are easy to find. The antidote is brutal controls: random, shuffled-π, e, φ, √2, uniform, and no-generator baselines.",
+    "op_card3_label": "Best first domain",
+    "op_card3_num": "8Z / compression",
+    "op_card3_text": "Your original Pi story belongs here first: can π-addressed data plus transform plus residual describe chunks shorter than raw or ordinary compression?",
+    "op_card4_label": "Trading status",
+    "op_card4_num": "One slot, not the center",
+    "op_card4_text": "Trading remains useful, but only as one decision-slot arena: levels, rescue windows, time zones, add spacing, veto cones.",
+    "op_quote": "<strong>Clean frame:</strong> PiX is not a belief that π secretly rules the world. PiX is a disciplined family of candidate generators that MDL can test across domains.",
+    "def_h2": "1. Definition: PiX as a universal MDL candidate generator",
+    "def_box_h3": "Definition",
+    "def_box_p": "<strong>PiX</strong> is π-indexed structure search. Use π as a deterministic generator of sequences, bits, numbers, phases, offsets, masks, textures, rhythms, or schedules — then let <strong>MDL</strong> measure whether this description beats ordinary descriptions and controls.",
+    "def_question": "The question is not: “Is π mystical?” The question is: “Does π + parameters + transform + residual sometimes describe data or decisions shorter or more usefully than the baseline?”",
+    "mdl_h3": "MDL form",
+    "mdl_p1": "A candidate can be encoded as:",
+    "mdl_p2": "MDL accepts the candidate only if:",
+    "mdl_note": "This is the important upgrade: MDL becomes stronger when we expand the candidate universe. If PiX proposes useful generators, programs, transforms, rhythms, and residual bases, MDL can discover shorter descriptions it could not even try before.",
+    "apps_h2": "2. Applications: PiX is not a trading idea; it is a generator family",
+    "app_8z_h3": "8Z / PiScout compression",
+    "app_8z_p": "Instead of storing chunks directly, test <code>π offset + transform + residual</code>. Exact long matches will be rare; residual/lossy matches are the interesting part for images, audio, sensors, textures, and structured noise.",
+    "app_lossy_h3": "Lossy image/audio",
+    "app_lossy_p": "π windows can act as deterministic texture, grain, dither, or noise beds. A candidate wins only if address + transform + residual costs less than a normal representation at the chosen quality.",
+    "app_sched_h3": "Search scheduling",
+    "app_sched_p": "π schedules for restarts, mutation amplitude, beam width, zoom, explore/exploit pulses, and worker desynchronization in TSP, Sudoku, chess, crossword, ARC, and AMR arenas.",
+    "app_arc_h3": "ARC / program synthesis",
+    "app_arc_p": "π can propose periods, tile sizes, masks, diagonal phases, modulo rules, or offsets. MDL then selects the shortest program that explains input → output.",
+    "app_geo_h3": "TSP / geometry / routing",
+    "app_geo_p": "π is natural for angles, circles, rings, radial bins, spiral paths, polar sorting, and local-search neighborhood sizes.",
+    "app_time_h3": "Time series",
+    "app_time_p": "Markets are only one example. The same idea can test server load, traffic, weather, sports, EEG/Muse signals, sleep/HRV, network anomalies, and energy demand.",
+    "app_bio_h3": "Biology / genomics",
+    "app_bio_p": "π windows, k-mer spacings, and offsets can act as hypothesis generators or null/control families against Markov-preserving controls.",
+    "app_art_h3": "Music / generative art",
+    "app_art_p": "π can generate rhythms, phrase lengths, notes, color palettes, camera cuts, tiling, animation phases, and deterministic creative seeds.",
+    "app_water_h3": "Watermark / provenance / AI tests",
+    "app_water_p": "π alone is not cryptography, but it can be a public carrier when the offset is chosen by a secret key or hash. It can also create reproducible AI puzzle families.",
+    "arena_h2": "3. Universal PiX Arena design before any domain-specific script",
+    "arena_p": "Before building a trading arena, the better first build is a general PiX arena. It should expose π as one generator family among many and test it against strong controls.",
+    "arena_table_domain": "Domain",
+    "arena_table_candidate": "PiX candidate",
+    "arena_table_controls": "Controls",
+    "arena_table_success": "Success condition",
+    "arena_r1_d": "Compression",
+    "arena_r1_c": "π offset + transform + residual",
+    "arena_r1_ctrl": "raw, zstd, lzma, random stream",
+    "arena_r1_s": "lower MDL cost with verified reconstruction or controlled loss",
+    "arena_r2_d": "Image/audio",
+    "arena_r2_c": "π texture/noise/grain basis",
+    "arena_r2_ctrl": "random noise, blue noise, standard codecs",
+    "arena_r2_s": "smaller residual at equal PSNR/SSIM/SNR",
+    "arena_r3_d": "Optimization",
+    "arena_r3_c": "π restart / mutation / beam schedule",
+    "arena_r3_ctrl": "fixed, random, Fibonacci schedules",
+    "arena_r3_s": "better solve rate, gap, stability, or runtime",
+    "arena_r4_d": "Program synthesis",
+    "arena_r4_c": "π period, mask, tile, offset, modulo candidates",
+    "arena_r4_ctrl": "standard ARC primitives + random constants",
+    "arena_r4_s": "better train fit + leave-one-out + test prediction",
+    "arena_r5_d": "Trading slot",
+    "arena_r5_c": "π levels / time windows / spacing",
+    "arena_r5_ctrl": "Fib, uniform, random, no-level",
+    "arena_r5_s": "lower MAE, better rescue, better profit/risk",
+    "arena_note": "<strong>Design rule:</strong> π is not a favorite. It is a candidate. The arena decides when π, φ, e, √2, random, domain generators, or nothing wins.",
+    "core_h2": "4. Core seed: π as a discrete partner to Fibonacci",
+    "core_p1": "The original PiX insight is simple: Fibonacci/φ already guides many natural and technical search spaces, but π may provide a different family of discrete distances, rhythms, and phase cuts.",
+    "core_p2": "This page keeps that seed alive while placing it inside a stricter MDL×DCC frame: build candidates first, test hard second.",
+    "core_good": "Good use: π proposes candidate structures that compete against controls.",
+    "core_bad": "Bad use: declaring every visible match meaningful after seeing the chart.",
+    "lab_h2": "5. PiX sequence generator",
+    "lab_intro": "Generate π-based integer sequences and compare them with Fibonacci and powers of two. This is not proof of anything; it is a candidate factory.",
+    "family_label": "Family",
+    "family_exp": "exponential: scale·(π/k)^(m+offset)",
+    "family_linear": "linear: round(scale·m·π/k)",
+    "family_add": "additive: previous + round((π/k)·previous)",
+    "k_label": "k",
+    "scale_label": "scale",
+    "offset_label": "offset",
+    "rows_label": "rows",
+    "round_label": "rounding",
+    "btn_calc": "Calculate",
+    "btn_csv": "Copy CSV",
+    "btn_json": "Copy JSON",
+    "btn_reset": "Reset π/2",
+    "chart_caption": "The chart uses a logarithmic scale so slow and fast sequences can be compared.",
+    "seq_note": "Useful search angles: equality/crossing points with Fibonacci, close ratios to φ, sparse integer families, and places where PiX creates different spacing than powers of two.",
+    "trading_h2": "6. Trading as one decision slot, not the whole idea",
+    "trading_p": "Trading remains a useful test bed because price data is noisy and easy to fool ourselves with. If PiX survives there against controls, that is interesting. But PiX should not be defined by trading.",
+    "levels_h3": "PiX retracement / extension levels",
+    "low_label": "Swing low",
+    "high_label": "Swing high",
+    "dir_label": "Direction",
+    "dir_up": "up swing: retracement down",
+    "dir_down": "down swing: retracement up",
+    "btn_levels": "Copy level CSV",
+    "levels_h3b": "Recommended PiX levels for first tests",
+    "levels_li1": "<strong>31.831%</strong> = <code>1/π</code> — shallow retracement.",
+    "levels_li2": "<strong>52.360%</strong> = <code>π/6</code> — radian / 30° fraction.",
+    "levels_li3": "<strong>63.662%</strong> = <code>2/π</code> — near Fibonacci 61.8%, but not identical.",
+    "levels_li4": "<strong>78.540%</strong> = <code>π/4</code> — deep retracement / 45° fraction.",
+    "levels_warn": "Do not judge by chart beauty. Judge by lower MAE, better rescue, lower open-tail risk, or better profit/risk against controls.",
+    "time_h2": "7. Time zones: π as rhythm, not only price",
+    "time_h3": "Time generator",
+    "anchor_label": "Anchor bar",
+    "steps_label": "Steps",
+    "method_label": "Method",
+    "bar_label": "Bar size",
+    "btn_time": "Copy time CSV",
+    "time_test_h3": "What to test",
+    "time_test_p": "Time zones are not automatically a signal. They are <strong>windows of increased attention</strong>. The test asks whether reversal, acceleration, range break, or rescue probability increases after π time zones.",
+    "time_details": "Minimal time test",
+    "time_li1": "Choose objective anchors: local swing high/low, large volume spike, liquidation wick.",
+    "time_li2": "Generate π zones and the same number of random zones.",
+    "time_li3": "For each zone, measure MFE/MAE, direction flip, volatility, and volume change over the next N bars.",
+    "time_li4": "Compare π against random and Fibonacci time zones.",
+    "test_h2": "8. Test protocol: how to stop PiX from becoming a pattern trap",
+    "controls_h3": "Controls",
+    "controls_p": "Every PiX candidate must compete against Fibonacci, e, √2, √3, Champernowne, uniform, random, shuffled-π, and no-generator controls. Without this, coincidence will look like signal.",
+    "mdlscore_h3": "MDL score",
+    "mdlscore_p": "A beautiful hit does not count. Only <code>L(generator + params + residual)</code> against the best baseline counts. If the residual eats the saving, PiX loses.",
+    "slots_h3": "Decision slots",
+    "slots_p": "PiX should first compete in small slots: chunk predictor, residual basis, restart rhythm, tile/mask generator, TP ladder, rescue window, veto cone.",
+    "exp_h3": "Best first experiments",
+    "exp_domain": "Domain",
+    "exp_pix": "PiX candidate",
+    "exp_control": "Control",
+    "exp_success": "Success meaning",
+    "exp_r1_d": "8Z compression",
+    "exp_r1_p": "π offset + transform + residual",
+    "exp_r1_c": "raw, zstd, lzma, random stream",
+    "exp_r1_s": "smaller verified encoding or equal-quality lossy residual",
+    "exp_r2_d": "Image/audio",
+    "exp_r2_p": "π texture/noise basis",
+    "exp_r2_c": "random noise + standard codecs",
+    "exp_r2_s": "smaller residual at same PSNR/SSIM/SNR",
+    "exp_r3_d": "TSP/Sudoku/ARC",
+    "exp_r3_p": "π restart / period / tile / mask candidates",
+    "exp_r3_c": "fixed + Fib + random",
+    "exp_r3_s": "better solve rate, MDL score, or test prediction",
+    "exp_r4_d": "Trading slot",
+    "exp_r4_p": "π retracement/time/add spacing",
+    "exp_r4_c": "Fib + uniform + random",
+    "exp_r4_s": "lower MAE, better rescue, better profit/risk",
+    "roadmap_h2": "9. PiX roadmap",
+    "road_v1": "<strong>PiX v1 — page/tool:</strong> generate sequences, levels, time zones, CSV/JSON export. This version defines PiX as a universal MDL candidate generator.",
+    "road_v2": "<strong>PiX v2 — Universal Arena:</strong> Python arena for exact match, residual compression, lossy media, optimization schedules, ARC constants, and decision slots.",
+    "road_v3_h3": "PiX v3 — 8Z adapter",
+    "road_v3_p": "PiX becomes one MATH/generator family in 8Z: <code>constant_id=π</code>, offset, transform, residual, hash verification, MDL gate.",
+    "road_v4_h3": "PiX v4 — DCC selector",
+    "road_v4_p": "DCC learns when to use π, when to use φ, e, √2, random, a domain generator, or nothing. PiX must be a candidate, not a favorite.",
+    "road_v5_h3": "PiX v5 — public research note",
+    "road_v5_p": "Once results exist: “PiX: π as a falsifiable MDL candidate generator across compression, search, signals, and decision slots.”",
+    "road_kill": "<strong>Kill condition:</strong> if PiX does not beat good controls, do not force it. It remains useful as a creative/visual generator, not as an empirical advantage.",
+    "final_quote": "<strong>Final sentence:</strong> “PiX tests whether π-derived sequences, ratios, phases, offsets, and streams can form a disciplined family of candidate generators that MDL can accept or reject against strong controls.”",
+    "footer": "PiX · π-sequence laboratory · BD × AI · research page only, not financial advice.<br>Original seed: discrete usefulness of π as a partner to Fibonacci. New version: <strong>PiX as a universal MDL candidate generator</strong> for compression, signals, optimization, program synthesis, creative structure, and decision slots.",
+    "copy_seq_csv": "CSV copied",
+    "copy_seq_json": "JSON copied",
+    "copy_levels_csv": "level CSV copied",
+    "copy_time_csv": "time CSV copied",
+    "kpi_base": "π/k base",
+    "kpi_phi": "φ reference",
+    "kpi_equal": "PiX = Fib",
+    "kpi_last": "last PiX",
+    "kpi_delta": "last Δ Fib",
+    "th_m": "m",
+    "th_pix": "PiX",
+    "th_ratio": "Ratio",
+    "th_fib": "Fib F(m+2)",
+    "th_dfib": "Δ Fib",
+    "th_pow2": "2^m",
+    "th_fibpix": "Fib+PiX",
+    "level_type": "Type",
+    "level_formula": "Formula",
+    "level_percent": "%",
+    "level_price": "Price",
+    "retracement": "retracement",
+    "extension": "extension",
+    "time_n": "n",
+    "time_offset": "Offset bars",
+    "time_barindex": "Bar index",
+    "time_minutes": "Approx. minutes"
+  },
+  "sl": {
+    "page_title": "PiX — univerzalni MDL generator kandidatov",
+    "eyebrow": "PiX · π-zaporedja · MDL×DCC raziskovalni laboratorij",
+    "h1": "PiX — univerzalni MDL generator kandidatov",
+    "subtitle": "<strong>Jedrna definicija:</strong> <em>PiX is a universal MDL candidate generator.</em> π ni zakon, prerokba ali magična bližnjica. π je ena od generator-družin, ki lahko predlaga zaporedja, odmike, faze, razdalje, maske, teksture, ritme, nivoje in urnike. MDL potem odloči, ali je predlog dejansko uporaben.",
+    "hero_note": "Originalni seed: π-zaporedja kot diskretni partner Fibonacciju. Nova smer: PiX kot univerzalni kandidatni sloj za MDL×DCC.",
+    "lang_en": "English",
+    "lang_sl": "Slovenščina",
+    "nav_view": "Pogled",
+    "nav_opinion": "Mnenje",
+    "nav_definition": "Definicija",
+    "nav_applications": "Aplikacije",
+    "nav_arena": "Universal Arena",
+    "nav_core": "Jedro",
+    "nav_lab": "Generator",
+    "nav_trading": "Trading slot",
+    "nav_time": "Časovne cone",
+    "nav_test": "Testni protokol",
+    "nav_roadmap": "Roadmap",
+    "opinion_h2": "Moje mnenje: tole je večje od tradinga",
+    "op_card1_label": "Jedrna definicija",
+    "op_card1_num": "Universal MDL generator",
+    "op_card1_text": "PiX ne pomeni “π napoveduje X.” PiX pomeni generator kandidatnih opisov, parametrov in struktur, ki jih MDL lahko sprejme ali zavrne.",
+    "op_card2_label": "Glavno tveganje",
+    "op_card2_num": "Pattern trap",
+    "op_card2_text": "π je dovolj bogat, da je lepe slučajnosti lahko najti. Protiukrep so brutalne kontrole: random, shuffled-π, e, φ, √2, uniform in no-generator baseline.",
+    "op_card3_label": "Najboljša prva domena",
+    "op_card3_num": "8Z / compression",
+    "op_card3_text": "Tvoja originalna Pi zgodba najprej spada sem: ali lahko π-naslovljeni podatki + transform + residual opišejo chunke krajše kot raw ali običajna kompresija?",
+    "op_card4_label": "Trading status",
+    "op_card4_num": "En slot, ne center",
+    "op_card4_text": "Trading ostane uporaben, vendar samo kot ena decision-slot arena: nivoji, rescue okna, časovne cone, add spacing, veto cone.",
+    "op_quote": "<strong>Čist okvir:</strong> PiX ni vera, da π skrivno vlada svetu. PiX je disciplinirana družina kandidatnih generatorjev, ki jih MDL lahko testira čez domene.",
+    "def_h2": "1. Definicija: PiX kot univerzalni MDL generator kandidatov",
+    "def_box_h3": "Definicija",
+    "def_box_p": "<strong>PiX</strong> je π-indeksirano iskanje strukture. Uporabi π kot deterministični generator zaporedij, bitov, števil, faz, odmikov, mask, tekstur, ritmov ali urnikov — potem pa naj <strong>MDL</strong> izmeri, ali tak opis premaga običajne opise in kontrole.",
+    "def_question": "Vprašanje ni: “Ali je π mističen?” Vprašanje je: “Ali π + parametri + transform + residual včasih opišejo podatke ali odločitve krajše ali koristneje kot baseline?”",
+    "mdl_h3": "MDL oblika",
+    "mdl_p1": "Kandidat je lahko zapisan kot:",
+    "mdl_p2": "MDL sprejme kandidat samo, če:",
+    "mdl_note": "To je pomembna nadgradnja: MDL postane močnejši, ko razširimo vesolje kandidatov. Če PiX predlaga uporabne generatorje, programe, transformacije, ritme in residual baze, lahko MDL odkrije krajše opise, ki jih prej sploh ni mogel poskusiti.",
+    "apps_h2": "2. Aplikacije: PiX ni trading ideja, ampak generator družina",
+    "app_8z_h3": "8Z / PiScout kompresija",
+    "app_8z_p": "Namesto direktnega shranjevanja chunkov testiramo <code>π offset + transform + residual</code>. Dolgi exact matchi bodo redki; residual/lossy match je zanimiv za slike, audio, senzorje, teksture in strukturiran šum.",
+    "app_lossy_h3": "Lossy image/audio",
+    "app_lossy_p": "π okna lahko delujejo kot deterministična tekstura, grain, dither ali noise bed. Kandidat zmaga samo, če naslov + transform + residual stanejo manj kot normalen zapis pri izbrani kakovosti.",
+    "app_sched_h3": "Search scheduling",
+    "app_sched_p": "π urniki za restarte, mutation amplitude, beam width, zoom, explore/exploit pulze in worker desynchronization v TSP, Sudoku, chess, crossword, ARC in AMR arenah.",
+    "app_arc_h3": "ARC / program synthesis",
+    "app_arc_p": "π lahko predlaga periode, tile velikosti, maske, diagonalne faze, modulo pravila ali offsete. MDL nato izbere najkrajši program, ki razloži input → output.",
+    "app_geo_h3": "TSP / geometrija / routing",
+    "app_geo_p": "π je naraven za kote, kroge, ringe, radialne bine, spiralne poti, polar sorting in lokalne search-neighborhood velikosti.",
+    "app_time_h3": "Časovne serije",
+    "app_time_p": "Trgi so samo en primer. Enako lahko testiraš server load, promet, vreme, šport, EEG/Muse signale, sleep/HRV, network anomalies in porabo energije.",
+    "app_bio_h3": "Biologija / genomika",
+    "app_bio_p": "π okna, k-mer razdalje in offseti lahko delujejo kot generatorji hipotez ali null/control družine proti Markov-preserving kontrolam.",
+    "app_art_h3": "Music / generative art",
+    "app_art_p": "π lahko generira ritme, dolžine fraz, note, barvne palete, camera cuts, tiling, animacijske faze in deterministična kreativna semena.",
+    "app_water_h3": "Watermark / provenance / AI tests",
+    "app_water_p": "π sam ni kriptografija, lahko pa je javni nosilec, če offset izbere skrivni ključ ali hash. Lahko ustvari tudi reproducible AI puzzle družine.",
+    "arena_h2": "3. Universal PiX Arena dizajn pred katerokoli domeno",
+    "arena_p": "Pred trading areno je boljši prvi build splošna PiX arena. π naj bo ena generator-družina med mnogimi in naj tekmuje proti močnim kontrolam.",
+    "arena_table_domain": "Domena",
+    "arena_table_candidate": "PiX kandidat",
+    "arena_table_controls": "Kontrole",
+    "arena_table_success": "Pogoj uspeha",
+    "arena_r1_d": "Kompresija",
+    "arena_r1_c": "π offset + transform + residual",
+    "arena_r1_ctrl": "raw, zstd, lzma, random stream",
+    "arena_r1_s": "nižji MDL cost z verificirano rekonstrukcijo ali kontrolirano izgubo",
+    "arena_r2_d": "Slike/audio",
+    "arena_r2_c": "π texture/noise/grain basis",
+    "arena_r2_ctrl": "random noise, blue noise, standard codecs",
+    "arena_r2_s": "manjši residual pri enakem PSNR/SSIM/SNR",
+    "arena_r3_d": "Optimizacija",
+    "arena_r3_c": "π restart / mutation / beam schedule",
+    "arena_r3_ctrl": "fixed, random, Fibonacci schedules",
+    "arena_r3_s": "boljši solve rate, gap, stabilnost ali runtime",
+    "arena_r4_d": "Program synthesis",
+    "arena_r4_c": "π period, mask, tile, offset, modulo kandidati",
+    "arena_r4_ctrl": "standard ARC primitives + random constants",
+    "arena_r4_s": "boljši train fit + leave-one-out + test prediction",
+    "arena_r5_d": "Trading slot",
+    "arena_r5_c": "π levels / time windows / spacing",
+    "arena_r5_ctrl": "Fib, uniform, random, no-level",
+    "arena_r5_s": "nižji MAE, boljši rescue, boljši profit/risk",
+    "arena_note": "<strong>Pravilo dizajna:</strong> π ni favorit. Je kandidat. Arena odloči, kdaj zmaga π, φ, e, √2, random, domenski generator ali nič.",
+    "core_h2": "4. Jedrni seed: π kot diskretni partner Fibonacciju",
+    "core_p1": "Originalni PiX insight je preprost: Fibonacci/φ že vodi veliko naravnih in tehničnih search spaceov, ampak π lahko ponudi drugo družino diskretnih razdalj, ritmov in faznih rezov.",
+    "core_p2": "Ta stran ta seed ohrani, vendar ga postavi v strožji MDL×DCC okvir: najprej zgradi kandidate, potem jih trdo testiraj.",
+    "core_good": "Dobra raba: π predlaga kandidatne strukture, ki tekmujejo proti kontrolam.",
+    "core_bad": "Slaba raba: razglasiti vsak viden match za pomemben po tem, ko ga vidimo na grafu.",
+    "lab_h2": "5. PiX generator zaporedij",
+    "lab_intro": "Generiraj π-based cela zaporedja in jih primerjaj s Fibonaccijem in potencami števila 2. To ni dokaz ničesar; to je tovarna kandidatov.",
+    "family_label": "Družina",
+    "family_exp": "eksponentna: scale·(π/k)^(m+offset)",
+    "family_linear": "linearno: round(scale·m·π/k)",
+    "family_add": "aditivna: prejšnja + round((π/k)·prejšnja)",
+    "k_label": "k",
+    "scale_label": "scale",
+    "offset_label": "offset",
+    "rows_label": "vrstice",
+    "round_label": "zaokroži",
+    "btn_calc": "Izračunaj",
+    "btn_csv": "Kopiraj CSV",
+    "btn_json": "Kopiraj JSON",
+    "btn_reset": "Reset π/2",
+    "chart_caption": "Graf uporablja logaritemsko skalo, da se lahko primerjajo počasna in hitra zaporedja.",
+    "seq_note": "Uporabni search koti: equality/crossing točke s Fibonaccijem, bližnja razmerja do φ, redke integer družine in mesta, kjer PiX ustvari drugačen spacing kot potence števila 2.",
+    "trading_h2": "6. Trading kot en decision slot, ne cela ideja",
+    "trading_p": "Trading ostane uporaben testni teren, ker so price data šumni in se je z njimi lahko preslepiti. Če PiX tam preživi proti kontrolam, je zanimivo. Ampak PiX ne sme biti definiran s tradingom.",
+    "levels_h3": "PiX retracement / extension nivoji",
+    "low_label": "Swing low",
+    "high_label": "Swing high",
+    "dir_label": "Smer",
+    "dir_up": "up swing: retracement navzdol",
+    "dir_down": "down swing: retracement navzgor",
+    "btn_levels": "Kopiraj level CSV",
+    "levels_h3b": "Priporočeni PiX nivoji za prve teste",
+    "levels_li1": "<strong>31.831%</strong> = <code>1/π</code> — plitek popravek.",
+    "levels_li2": "<strong>52.360%</strong> = <code>π/6</code> — radian / 30° frakcija.",
+    "levels_li3": "<strong>63.662%</strong> = <code>2/π</code> — blizu Fibonacciju 61.8%, vendar ne identično.",
+    "levels_li4": "<strong>78.540%</strong> = <code>π/4</code> — globok popravek / 45° frakcija.",
+    "levels_warn": "Ne sodi po lepoti grafa. Sodi po nižjem MAE, boljšem rescue, manjšem open-tail tveganju ali boljšem profit/risk proti kontrolam.",
+    "time_h2": "7. Časovne cone: π kot ritem, ne samo cena",
+    "time_h3": "Časovni generator",
+    "anchor_label": "Anchor bar",
+    "steps_label": "Koraki",
+    "method_label": "Metoda",
+    "bar_label": "Bar size",
+    "btn_time": "Kopiraj time CSV",
+    "time_test_h3": "Kaj testirati",
+    "time_test_p": "Časovne cone niso samodejno signal. So <strong>okna povečane pozornosti</strong>. Test vpraša, ali se po π časovnih conah poveča verjetnost obrata, pospeška, range breaka ali rescue okna.",
+    "time_details": "Minimalni časovni test",
+    "time_li1": "Izberi objektivne anchorje: lokalni swing high/low, velik volume spike, liquidation wick.",
+    "time_li2": "Ustvari π cone in enako število random con.",
+    "time_li3": "Za vsako cono izmeri MFE/MAE, direction flip, volatilnost in volume spremembo v naslednjih N barih.",
+    "time_li4": "Primerjaj π proti random in Fibonacci časovnim conam.",
+    "test_h2": "8. Testni protokol: kako preprečiti, da PiX postane pattern trap",
+    "controls_h3": "Kontrole",
+    "controls_p": "Vsak PiX kandidat mora tekmovati proti Fibonacci, e, √2, √3, Champernowne, uniform, random, shuffled-π in no-generator kontrolam. Brez tega bo slučajnost videti kot signal.",
+    "mdlscore_h3": "MDL score",
+    "mdlscore_p": "Lep zadetek ne šteje. Šteje samo <code>L(generator + params + residual)</code> proti najboljšemu baselineu. Če residual poje prihranek, PiX izgubi.",
+    "slots_h3": "Decision slots",
+    "slots_p": "PiX naj najprej tekmuje v majhnih slotih: chunk predictor, residual basis, restart rhythm, tile/mask generator, TP ladder, rescue window, veto cone.",
+    "exp_h3": "Najbolj smiselni prvi eksperimenti",
+    "exp_domain": "Domena",
+    "exp_pix": "PiX kandidat",
+    "exp_control": "Kontrola",
+    "exp_success": "Kaj pomeni uspeh",
+    "exp_r1_d": "8Z compression",
+    "exp_r1_p": "π offset + transform + residual",
+    "exp_r1_c": "raw, zstd, lzma, random stream",
+    "exp_r1_s": "manjši verificiran zapis ali equal-quality lossy residual",
+    "exp_r2_d": "Slike/audio",
+    "exp_r2_p": "π texture/noise basis",
+    "exp_r2_c": "random noise + standard codecs",
+    "exp_r2_s": "manjši residual pri istem PSNR/SSIM/SNR",
+    "exp_r3_d": "TSP/Sudoku/ARC",
+    "exp_r3_p": "π restart / period / tile / mask kandidati",
+    "exp_r3_c": "fixed + Fib + random",
+    "exp_r3_s": "boljši solve rate, MDL score ali test prediction",
+    "exp_r4_d": "Trading slot",
+    "exp_r4_p": "π retracement/time/add spacing",
+    "exp_r4_c": "Fib + uniform + random",
+    "exp_r4_s": "nižji MAE, boljši rescue, boljši profit/risk",
+    "roadmap_h2": "9. PiX roadmap",
+    "road_v1": "<strong>PiX v1 — stran/orodje:</strong> generira zaporedja, nivoje, časovne cone, CSV/JSON export. Ta verzija definira PiX kot univerzalni MDL generator kandidatov.",
+    "road_v2": "<strong>PiX v2 — Universal Arena:</strong> Python arena za exact match, residual compression, lossy media, optimization schedules, ARC constants in decision slots.",
+    "road_v3_h3": "PiX v3 — 8Z adapter",
+    "road_v3_p": "PiX postane ena od MATH/generator družin v 8Z: <code>constant_id=π</code>, offset, transform, residual, hash verification, MDL gate.",
+    "road_v4_h3": "PiX v4 — DCC selector",
+    "road_v4_p": "DCC se nauči, kdaj uporabiti π, kdaj φ, e, √2, random, domenski generator ali nič. PiX mora biti kandidat, ne favorit.",
+    "road_v5_h3": "PiX v5 — public research note",
+    "road_v5_p": "Ko obstajajo rezultati: “PiX: π as a falsifiable MDL candidate generator across compression, search, signals, and decision slots.”",
+    "road_kill": "<strong>Kill condition:</strong> če PiX ne premaga dobrih kontrol, ga ne silimo. Ostane uporaben kot kreativni/vizualni generator, ne kot empirična prednost.",
+    "final_quote": "<strong>Zaključni stavek:</strong> “PiX tests whether π-derived sequences, ratios, phases, offsets, and streams can form a disciplined family of candidate generators that MDL can accept or reject against strong controls.”",
+    "footer": "PiX · π-sequence laboratory · BD × AI · research page only, not financial advice.<br>Originalna ideja: diskretna uporabnost π kot partnerja Fibonacciju. Nova verzija: <strong>PiX kot univerzalni MDL candidate generator</strong> za kompresijo, signale, optimizacijo, program synthesis, kreativne strukture in decision slots.",
+    "copy_seq_csv": "CSV kopiran",
+    "copy_seq_json": "JSON kopiran",
+    "copy_levels_csv": "level CSV kopiran",
+    "copy_time_csv": "time CSV kopiran",
+    "kpi_base": "π/k baza",
+    "kpi_phi": "φ referenca",
+    "kpi_equal": "PiX = Fib",
+    "kpi_last": "zadnji PiX",
+    "kpi_delta": "zadnji Δ Fib",
+    "th_m": "m",
+    "th_pix": "PiX",
+    "th_ratio": "Ratio",
+    "th_fib": "Fib F(m+2)",
+    "th_dfib": "Δ Fib",
+    "th_pow2": "2^m",
+    "th_fibpix": "Fib+PiX",
+    "level_type": "Tip",
+    "level_formula": "Formula",
+    "level_percent": "%",
+    "level_price": "Cena",
+    "retracement": "retracement",
+    "extension": "extension",
+    "time_n": "n",
+    "time_offset": "Offset bari",
+    "time_barindex": "Bar index",
+    "time_minutes": "Približno minut"
+  }
+};
+let currentLang='en';
 const PI=Math.PI, PHI=(1+Math.sqrt(5))/2;
 let seqRows=[], levelRows=[], timeRowsData=[];
-function fmt(x,d=6){ if(!Number.isFinite(x)) return ''; const ax=Math.abs(x); if(ax>=1e7) return x.toExponential(4); if(ax>=1000) return x.toLocaleString('sl-SI',{maximumFractionDigits:0}); return x.toLocaleString('sl-SI',{maximumFractionDigits:d}); }
+function tr(key){ return (I18N[currentLang]&&I18N[currentLang][key]) || I18N.en[key] || key; }
+function setLang(lang){ currentLang = lang === 'sl' ? 'sl' : 'en'; document.documentElement.lang = currentLang; document.documentElement.dataset.lang = currentLang; document.title = tr('page_title'); document.querySelectorAll('[data-i18n]').forEach(el=>{ const key=el.dataset.i18n; if(tr(key)!==undefined) el.innerHTML=tr(key); }); document.getElementById('btnLangEn').classList.toggle('active', currentLang==='en'); document.getElementById('btnLangSl').classList.toggle('active', currentLang==='sl'); renderAll(); }
+function fmt(x,d=6){ if(!Number.isFinite(x)) return ''; const ax=Math.abs(x); const locale=currentLang==='sl'?'sl-SI':'en-US'; if(ax>=1e7) return x.toExponential(4); if(ax>=1000) return x.toLocaleString(locale,{maximumFractionDigits:0}); return x.toLocaleString(locale,{maximumFractionDigits:d}); }
 function rnd(x){ const mode=document.getElementById('roundMode').value; if(mode==='floor') return Math.floor(x); if(mode==='ceil') return Math.ceil(x); return Math.round(x); }
 function fib(n){ let a=0,b=1; for(let i=0;i<n;i++){ [a,b]=[b,a+b]; } return a; }
 function pixValue(m){ const family=document.getElementById('family').value; const k=parseFloat(document.getElementById('kVal').value)||2; const scale=parseFloat(document.getElementById('scaleVal').value)||1; const offset=parseFloat(document.getElementById('offsetVal').value)||0; const base=PI/k; if(family==='exp') return rnd(scale*Math.pow(base,m+offset)); if(family==='linear') return rnd(scale*m*base); return null; }
 function buildSeq(){ const rows=parseInt(document.getElementById('rowsVal').value)||30; const family=document.getElementById('family').value; const k=parseFloat(document.getElementById('kVal').value)||2; const base=PI/k; seqRows=[]; let prev=null; for(let m=1;m<=rows;m++){ let val; if(family==='add'){ if(m===1) val=2; else val=prev + rnd(base*prev); } else val=pixValue(m); const f=fib(m+2); const pow2=Math.pow(2,m); const ratio=prev? val/prev : null; seqRows.push({m, pix:val, ratio, fib:f, diffFib:val-f, pow2, fibPlus:val+f}); prev=val; } }
-function renderSeqTable(){ const t=document.getElementById('seqTable'); t.querySelector('thead').innerHTML='<tr><th>m</th><th>PiX</th><th>Ratio</th><th>Fib F(m+2)</th><th>Δ Fib</th><th>2^m</th><th>Fib+PiX</th></tr>'; t.querySelector('tbody').innerHTML=seqRows.map(r=>`<tr><td>${r.m}</td><td class="num">${fmt(r.pix,0)}</td><td class="num">${r.ratio?fmt(r.ratio,4):'—'}</td><td class="num">${fmt(r.fib,0)}</td><td class="num ${r.diffFib===0?'green':r.diffFib<0?'red':'cyan'}">${fmt(r.diffFib,0)}</td><td class="num">${fmt(r.pow2,0)}</td><td class="num">${fmt(r.fibPlus,0)}</td></tr>`).join(''); }
-function renderKpis(){ const equal=seqRows.find(r=>r.diffFib===0); const last=seqRows[seqRows.length-1]; const k=parseFloat(document.getElementById('kVal').value)||2; const base=PI/k; document.getElementById('kpiBox').innerHTML=`<div><b>${fmt(base,6)}</b><span>π/k base</span></div><div><b>${fmt(PHI,6)}</b><span>φ reference</span></div><div><b>${equal?'m='+equal.m:'—'}</b><span>PiX = Fib</span></div><div><b>${fmt(last.pix,0)}</b><span>zadnji PiX</span></div><div><b>${fmt(last.diffFib,0)}</b><span>zadnji Δ Fib</span></div>`; }
-function drawChart(){ const c=document.getElementById('seqChart'), ctx=c.getContext('2d'), W=c.width,H=c.height; ctx.clearRect(0,0,W,H); ctx.fillStyle='#0a1020'; ctx.fillRect(0,0,W,H); const pad=42; const vals=[]; seqRows.forEach(r=>{ vals.push(r.pix,r.fib,r.pow2); }); const logs=vals.filter(v=>v>0).map(v=>Math.log10(v)); const min=Math.min(...logs), max=Math.max(...logs); function x(i){ return pad+(i/(seqRows.length-1))*(W-pad*1.5); } function y(v){ return H-pad-((Math.log10(Math.max(v,1))-min)/(max-min||1))*(H-pad*1.6); } function line(key,color){ ctx.strokeStyle=color; ctx.lineWidth=2; ctx.beginPath(); seqRows.forEach((r,i)=>{ const xx=x(i), yy=y(r[key]); if(i===0)ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }); ctx.stroke(); }
-  ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1; for(let i=0;i<5;i++){ const yy=pad+i*(H-pad*1.5)/4; ctx.beginPath(); ctx.moveTo(pad,yy); ctx.lineTo(W-pad*.5,yy); ctx.stroke(); }
-  line('pow2','#58a6ff'); line('fib','#ffd76a'); line('pix','#2ef2a3'); ctx.fillStyle='#9fb0c8'; ctx.font='14px Consolas'; ctx.fillText('PiX',pad,18); ctx.fillStyle='#ffd76a'; ctx.fillText('Fib',pad+48,18); ctx.fillStyle='#58a6ff'; ctx.fillText('2^m',pad+94,18); }
+function renderSeqTable(){ const t=document.getElementById('seqTable'); t.querySelector('thead').innerHTML=`<tr><th>${tr('th_m')}</th><th>${tr('th_pix')}</th><th>${tr('th_ratio')}</th><th>${tr('th_fib')}</th><th>${tr('th_dfib')}</th><th>${tr('th_pow2')}</th><th>${tr('th_fibpix')}</th></tr>`; t.querySelector('tbody').innerHTML=seqRows.map(r=>`<tr><td>${r.m}</td><td class="num">${fmt(r.pix,0)}</td><td class="num">${r.ratio?fmt(r.ratio,4):'—'}</td><td class="num">${fmt(r.fib,0)}</td><td class="num ${r.diffFib===0?'green':r.diffFib<0?'red':'cyan'}">${fmt(r.diffFib,0)}</td><td class="num">${fmt(r.pow2,0)}</td><td class="num">${fmt(r.fibPlus,0)}</td></tr>`).join(''); }
+function renderKpis(){ const equal=seqRows.find(r=>r.diffFib===0); const last=seqRows[seqRows.length-1]; const k=parseFloat(document.getElementById('kVal').value)||2; const base=PI/k; document.getElementById('kpiBox').innerHTML=`<div><b>${fmt(base,6)}</b><span>${tr('kpi_base')}</span></div><div><b>${fmt(PHI,6)}</b><span>${tr('kpi_phi')}</span></div><div><b>${equal?'m='+equal.m:'—'}</b><span>${tr('kpi_equal')}</span></div><div><b>${fmt(last.pix,0)}</b><span>${tr('kpi_last')}</span></div><div><b>${fmt(last.diffFib,0)}</b><span>${tr('kpi_delta')}</span></div>`; }
+function drawChart(){ const c=document.getElementById('seqChart'), ctx=c.getContext('2d'), W=c.width,H=c.height; ctx.clearRect(0,0,W,H); ctx.fillStyle='#0a1020'; ctx.fillRect(0,0,W,H); const pad=42; const vals=[]; seqRows.forEach(r=>{ vals.push(r.pix,r.fib,r.pow2); }); const logs=vals.filter(v=>v>0).map(v=>Math.log10(v)); const min=Math.min(...logs), max=Math.max(...logs); function x(i){ return pad+(i/(seqRows.length-1))*(W-pad*1.5); } function y(v){ return H-pad-((Math.log10(Math.max(v,1))-min)/(max-min||1))*(H-pad*1.6); } function line(key,color){ ctx.strokeStyle=color; ctx.lineWidth=2; ctx.beginPath(); seqRows.forEach((r,i)=>{ const xx=x(i), yy=y(r[key]); if(i===0)ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }); ctx.stroke(); } ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1; for(let i=0;i<5;i++){ const yy=pad+i*(H-pad*1.5)/4; ctx.beginPath(); ctx.moveTo(pad,yy); ctx.lineTo(W-pad*.5,yy); ctx.stroke(); } line('pow2','#58a6ff'); line('fib','#ffd76a'); line('pix','#2ef2a3'); ctx.fillStyle='#9fb0c8'; ctx.font='14px Consolas'; ctx.fillText('PiX',pad,18); ctx.fillStyle='#ffd76a'; ctx.fillText('Fib',pad+48,18); ctx.fillStyle='#58a6ff'; ctx.fillText('2^m',pad+94,18); }
 function renderAll(){ buildSeq(); renderSeqTable(); renderKpis(); drawChart(); renderLevels(); renderTimeZones(); }
 function toCSV(rows,cols){ return [cols.join(','),...rows.map(r=>cols.map(c=>JSON.stringify(r[c]??'')).join(','))].join('\n'); }
-async function copyText(txt,msg='kopirano'){ try{ await navigator.clipboard.writeText(txt); document.getElementById('copyMsg').textContent=msg; setTimeout(()=>document.getElementById('copyMsg').textContent='',1800);}catch(e){ alert(txt); } }
-function copyCSV(){ copyText(toCSV(seqRows,['m','pix','ratio','fib','diffFib','pow2','fibPlus']),'CSV kopiran'); }
-function copyJSON(){ copyText(JSON.stringify(seqRows,null,2),'JSON kopiran'); }
+async function copyText(txt,msgKey='copy_seq_csv'){ try{ await navigator.clipboard.writeText(txt); document.getElementById('copyMsg').textContent=tr(msgKey); setTimeout(()=>document.getElementById('copyMsg').textContent='',1800);}catch(e){ alert(txt); } }
+function copyCSV(){ copyText(toCSV(seqRows,['m','pix','ratio','fib','diffFib','pow2','fibPlus']),'copy_seq_csv'); }
+function copyJSON(){ copyText(JSON.stringify(seqRows,null,2),'copy_seq_json'); }
 function resetPix(){ document.getElementById('family').value='exp'; document.getElementById('kVal').value=2; document.getElementById('scaleVal').value=1; document.getElementById('offsetVal').value=1; document.getElementById('rowsVal').value=30; document.getElementById('roundMode').value='round'; renderAll(); }
 const retr=[['1/π',1/PI],['π/6',PI/6],['2/π',2/PI],['π/4',PI/4],['π/3',PI/3]];
 const ext=[['π-2',PI-2],['1+1/π',1+1/PI],['1+π/6',1+PI/6],['1+2/π',1+2/PI],['1+π/4',1+PI/4],['1+π/3',1+PI/3],['1+π/2',1+PI/2]];
 function priceAt(frac,low,high,dir,type){ const range=high-low; if(type==='retr'){ return dir==='up' ? high-range*frac : low+range*frac; } return dir==='up' ? high+range*(frac-1) : low-range*(frac-1); }
-function renderLevels(){ const low=parseFloat(document.getElementById('lowPrice').value)||0, high=parseFloat(document.getElementById('highPrice').value)||0, dir=document.getElementById('swingDir').value; levelRows=[]; retr.forEach(([name,f])=>levelRows.push({type:'retracement',name,percent:f*100,price:priceAt(f,low,high,dir,'retr')})); ext.forEach(([name,f])=>levelRows.push({type:'extension',name,percent:f*100,price:priceAt(f,low,high,dir,'ext')})); const t=document.getElementById('levelTable'); t.querySelector('thead').innerHTML='<tr><th>Tip</th><th>Formula</th><th>%</th><th>Cena</th></tr>'; t.querySelector('tbody').innerHTML=levelRows.map(r=>`<tr><td>${r.type}</td><td>${r.name}</td><td class="num">${fmt(r.percent,3)}%</td><td class="num green">${fmt(r.price,6)}</td></tr>`).join(''); }
-function copyLevelsCSV(){ copyText(toCSV(levelRows,['type','name','percent','price']),'nivoji CSV kopirani'); }
-function renderTimeZones(){ const anchor=parseInt(document.getElementById('anchorBar').value)||0, rows=parseInt(document.getElementById('timeRows').value)||20, method=document.getElementById('timeMethod').value, bar=parseInt(document.getElementById('barSize').value)||1; timeRowsData=[]; let seen=new Set(); for(let n=1;n<=rows;n++){ let off=method==='linearPi'?Math.round(n*PI):method==='twoPi'?Math.round(n*2*PI):Math.round(Math.pow(PI/2,n+1)); if(seen.has(off)) continue; seen.add(off); timeRowsData.push({n,offsetBars:off,barIndex:anchor+off,approxMinutes:off*bar}); } const t=document.getElementById('timeTable'); t.querySelector('thead').innerHTML='<tr><th>n</th><th>Offset bari</th><th>Bar index</th><th>Približno minut</th></tr>'; t.querySelector('tbody').innerHTML=timeRowsData.map(r=>`<tr><td>${r.n}</td><td class="num">${r.offsetBars}</td><td class="num green">${r.barIndex}</td><td class="num">${fmt(r.approxMinutes,0)}</td></tr>`).join(''); }
-function copyTimeCSV(){ copyText(toCSV(timeRowsData,['n','offsetBars','barIndex','approxMinutes']),'čas CSV kopiran'); }
+function renderLevels(){ const low=parseFloat(document.getElementById('lowPrice').value)||0, high=parseFloat(document.getElementById('highPrice').value)||0, dir=document.getElementById('swingDir').value; levelRows=[]; retr.forEach(([name,f])=>levelRows.push({type:tr('retracement'),name,percent:f*100,price:priceAt(f,low,high,dir,'retr')})); ext.forEach(([name,f])=>levelRows.push({type:tr('extension'),name,percent:f*100,price:priceAt(f,low,high,dir,'ext')})); const t=document.getElementById('levelTable'); t.querySelector('thead').innerHTML=`<tr><th>${tr('level_type')}</th><th>${tr('level_formula')}</th><th>${tr('level_percent')}</th><th>${tr('level_price')}</th></tr>`; t.querySelector('tbody').innerHTML=levelRows.map(r=>`<tr><td>${r.type}</td><td>${r.name}</td><td class="num">${fmt(r.percent,3)}%</td><td class="num green">${fmt(r.price,6)}</td></tr>`).join(''); }
+function copyLevelsCSV(){ copyText(toCSV(levelRows,['type','name','percent','price']),'copy_levels_csv'); }
+function renderTimeZones(){ const anchor=parseInt(document.getElementById('anchorBar').value)||0, rows=parseInt(document.getElementById('timeRows').value)||20, method=document.getElementById('timeMethod').value, bar=parseInt(document.getElementById('barSize').value)||1; timeRowsData=[]; let seen=new Set(); for(let n=1;n<=rows;n++){ let off=method==='linearPi'?Math.round(n*PI):method==='twoPi'?Math.round(n*2*PI):Math.round(Math.pow(PI/2,n+1)); if(seen.has(off)) continue; seen.add(off); timeRowsData.push({n,offsetBars:off,barIndex:anchor+off,approxMinutes:off*bar}); } const t=document.getElementById('timeTable'); t.querySelector('thead').innerHTML=`<tr><th>${tr('time_n')}</th><th>${tr('time_offset')}</th><th>${tr('time_barindex')}</th><th>${tr('time_minutes')}</th></tr>`; t.querySelector('tbody').innerHTML=timeRowsData.map(r=>`<tr><td>${r.n}</td><td class="num">${r.offsetBars}</td><td class="num green">${r.barIndex}</td><td class="num">${fmt(r.approxMinutes,0)}</td></tr>`).join(''); }
+function copyTimeCSV(){ copyText(toCSV(timeRowsData,['n','offsetBars','barIndex','approxMinutes']),'copy_time_csv'); }
 function fontStep(d){ const root=document.documentElement; const cur=parseFloat(getComputedStyle(root).getPropertyValue('--fs'))||16; const next=Math.max(13,Math.min(22,cur+d)); root.style.setProperty('--fs',next+'px'); localStorage.setItem('pix_fs',next); }
-(function init(){ const fs=localStorage.getItem('pix_fs'); if(fs) document.documentElement.style.setProperty('--fs',fs+'px'); ['family','kVal','scaleVal','offsetVal','rowsVal','roundMode','lowPrice','highPrice','swingDir','anchorBar','timeRows','timeMethod','barSize'].forEach(id=>document.getElementById(id).addEventListener('change',renderAll)); renderAll(); })();
+(function init(){ const fs=localStorage.getItem('pix_fs'); if(fs) document.documentElement.style.setProperty('--fs',fs+'px'); ['family','kVal','scaleVal','offsetVal','rowsVal','roundMode','lowPrice','highPrice','swingDir','anchorBar','timeRows','timeMethod','barSize'].forEach(id=>document.getElementById(id).addEventListener('change',renderAll)); setLang('en'); })();
 </script>
 </body>
 </html>
