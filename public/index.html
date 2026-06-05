@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
-<!-- build: mdlxdcc-index-v4.2-bd-idea-atlas-mat-hydrofoils -->
-<html data-lang="en" lang="en">
+<!-- build: mdlxdcc-index-v4.3-mobile-compact-bd-idea-atlas -->
+<html data-reader-size="3" data-lang="en" lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
@@ -58,8 +58,53 @@ footer{border-top:1px solid var(--line);padding:28px 0 70px;color:var(--muted);f
   .top-search{min-height:38px!important;padding:7px 11px!important}
 }
 
+
+
+/* v4.3 mobile topbar: exactly three visible rows; secondary filters stay behind Menu */
+@media(max-width:760px){
+  .topbar-inner{gap:6px!important;padding:7px 0!important}
+  .topbar-main{display:grid!important;grid-template-columns:1fr!important;gap:6px!important;align-items:stretch!important}
+  .brand{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px!important;line-height:1.1!important}
+  .top-search{padding:8px 12px!important;font-size:16px!important;min-height:40px!important}
+  .mobile-control-row{width:100%;display:flex!important;align-items:center;justify-content:flex-start!important;gap:4px!important;flex-wrap:nowrap!important;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:1px!important}
+  .top-actions,.lang-toggle{display:flex!important;flex-wrap:nowrap!important;gap:4px!important;flex-shrink:0!important}
+  .top-actions button,.lang-btn,.mobile-menu-btn{font-size:10px!important;padding:6px 7px!important;white-space:nowrap!important;min-height:32px!important;line-height:1!important}
+  .mobile-menu-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex-shrink:0!important}
+  .mobile-nav-panel{display:none!important;border-top:1px solid var(--line);margin-top:2px;padding-top:7px}
+  .mobile-nav-panel.open{display:block!important}
+  .mobile-nav-panel .filter-row{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch;padding:0 0 7px!important}
+  .mobile-nav-panel .topnav{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch;justify-content:flex-start!important;padding:0 0 3px!important}
+  .mobile-nav-panel .filter-label,.mobile-nav-panel .filter-btn,.mobile-nav-panel .topnav a{white-space:nowrap!important;flex-shrink:0!important}
+  .hero{padding-top:30px!important}
+}
+
+
+
+/* Reader font-size controls: A− / A+ floating toolbar */
+html[data-reader-size="0"]{--reader-text:15.5px;--reader-small:10.5px;--reader-h1:clamp(34px,6.1vw,66px);--reader-h2:clamp(24px,3.4vw,34px);--reader-h3:20px}
+html[data-reader-size="1"]{--reader-text:16.5px;--reader-small:11px;--reader-h1:clamp(36px,6.4vw,72px);--reader-h2:clamp(25px,3.6vw,37px);--reader-h3:21px}
+html[data-reader-size="2"]{--reader-text:17.5px;--reader-small:11.5px;--reader-h1:clamp(38px,6.7vw,78px);--reader-h2:clamp(26px,3.8vw,40px);--reader-h3:22px}
+html[data-reader-size="3"]{--reader-text:18.5px;--reader-small:12px;--reader-h1:clamp(40px,7vw,84px);--reader-h2:clamp(28px,4vw,44px);--reader-h3:23px}
+html[data-reader-size="4"]{--reader-text:20px;--reader-small:13px;--reader-h1:clamp(43px,7.4vw,92px);--reader-h2:clamp(30px,4.3vw,48px);--reader-h3:25px}
+html[data-reader-size="5"]{--reader-text:22px;--reader-small:14px;--reader-h1:clamp(46px,7.8vw,100px);--reader-h2:clamp(32px,4.6vw,52px);--reader-h3:27px}
+html[data-reader-size="6"]{--reader-text:25px;--reader-small:16px;--reader-h1:clamp(50px,8.5vw,110px);--reader-h2:clamp(35px,5vw,58px);--reader-h3:30px}
+html[data-reader-size="7"]{--reader-text:29px;--reader-small:18px;--reader-h1:clamp(55px,9.4vw,124px);--reader-h2:clamp(39px,5.6vw,66px);--reader-h3:34px}
+body{font-size:var(--reader-text)}
+h1{font-size:var(--reader-h1)!important}
+h2,.section-title h2{font-size:var(--reader-h2)!important}
+h3{font-size:var(--reader-h3)!important}
+.hero p,.lead,.rank-note,.section-title p,.tool-card p,.quick-card span,.link-item small,.chapter summary em,.structured li,.map-panel,.panel p,.panel li,.card span,td,footer{font-size:calc(var(--reader-text)*.90)!important}
+.link-title,.chapter summary strong,.subgroup summary{font-size:calc(var(--reader-text)*1.02)!important}
+.brand,.topnav a,.nav a,.filter-btn,.top-actions button,.lang-btn,.lang button,.mobile-menu-btn,.review-menu-btn,.badge,.pill,.link-path,th,.mini{font-size:var(--reader-small)!important}
+.reader-controls{position:fixed;right:14px;bottom:14px;z-index:999;display:flex;align-items:center;gap:8px;padding:8px;border:1px solid rgba(34,211,238,.30);border-radius:999px;background:rgba(5,7,13,.92);backdrop-filter:blur(16px);box-shadow:0 18px 55px rgba(0,0,0,.42);font-family:var(--mono,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace)}
+.reader-controls button{min-width:44px;min-height:44px;border:1px solid rgba(34,211,238,.32);border-radius:999px;background:rgba(34,211,238,.08);color:var(--cyan,#22d3ee);font:800 18px/1 var(--mono,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace);cursor:pointer}
+.reader-controls button:hover{border-color:var(--cyan,#22d3ee);background:rgba(34,211,238,.16)}
+.reader-label{min-width:92px;text-align:center;color:rgba(231,234,242,.84);font-size:12px!important;letter-spacing:.08em;text-transform:uppercase;user-select:none}
+@media(max-width:860px){.reader-controls{left:50%;right:auto;transform:translateX(-50%);bottom:12px}.reader-controls button{min-width:42px;min-height:42px}.reader-label{min-width:88px}}
+@media print{.reader-controls{display:none!important}}
+
 </style>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "ItemList", "name": "MDLxDCC.org public site map", "itemListElement": [{"@type": "ListItem", "position": 1, "url": "https://www.mdlxdcc.org/bd/", "name": "BD × AI Lab / extra pages"}, {"@type": "ListItem", "position": 2, "url": "https://www.mdlxdcc.org/crp/", "name": "Core Research Papers"}, {"@type": "ListItem", "position": 3, "url": "https://www.mdlxdcc.org/acp/", "name": "ACP / CCH"}, {"@type": "ListItem", "position": 4, "url": "https://www.mdlxdcc.org/8Z/", "name": "8Z Compression"}, {"@type": "ListItem", "position": 5, "url": "https://www.mdlxdcc.org/8ZT/", "name": "Trading"}, {"@type": "ListItem", "position": 6, "url": "https://www.mdlxdcc.org/history/", "name": "History"}, {"@type": "ListItem", "position": 7, "url": "https://www.mdlxdcc.org/Art/", "name": "Art"}, {"@type": "ListItem", "position": 8, "url": "https://www.mdlxdcc.org/Trip/", "name": "Trip Optimizer"}, {"@type": "ListItem", "position": 9, "url": "https://www.mdlxdcc.org/chess.html", "name": "ChessBest"}, {"@type": "ListItem", "position": 10, "url": "https://www.mdlxdcc.org/F4M/F4M.html", "name": "Flip 4 Magnetic"}, {"@type": "ListItem", "position": 11, "url": "https://www.mdlxdcc.org/S/", "name": "Sudoku"}, {"@type": "ListItem", "position": 12, "url": "https://www.mdlxdcc.org/CW/", "name": "Crosswords"}, {"@type": "ListItem", "position": 13, "url": "https://www.mdlxdcc.org/crp/Maglev_Assisted_Takeoff.html", "name": "Maglev-Assisted Takeoff (MAT)"}, {"@type": "ListItem", "position": 14, "url": "https://www.mdlxdcc.org/crp/Modular_Hydrofoils.html", "name": "Modular Hydrofoils for Boats"}, {"@type": "ListItem", "position": 15, "url": "https://www.mdlxdcc.org/BD/BD_Idea_Atlas_AI_Reviews.html", "name": "AI Reviews of BD Idea Atlas"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "ItemList", "name": "MDLxDCC.org public site map", "itemListElement": [{"@type": "ListItem", "position": 1, "url": "https://www.mdlxdcc.org/BD/", "name": "BD × AI Lab / extra pages"}, {"@type": "ListItem", "position": 2, "url": "https://www.mdlxdcc.org/crp/", "name": "Core Research Papers"}, {"@type": "ListItem", "position": 3, "url": "https://www.mdlxdcc.org/acp/", "name": "ACP / CCH"}, {"@type": "ListItem", "position": 4, "url": "https://www.mdlxdcc.org/8Z/", "name": "8Z Compression"}, {"@type": "ListItem", "position": 5, "url": "https://www.mdlxdcc.org/8ZT/", "name": "Trading"}, {"@type": "ListItem", "position": 6, "url": "https://www.mdlxdcc.org/history/", "name": "History"}, {"@type": "ListItem", "position": 7, "url": "https://www.mdlxdcc.org/Art/", "name": "Art"}, {"@type": "ListItem", "position": 8, "url": "https://www.mdlxdcc.org/Trip/", "name": "Trip Optimizer"}, {"@type": "ListItem", "position": 9, "url": "https://www.mdlxdcc.org/chess.html", "name": "ChessBest"}, {"@type": "ListItem", "position": 10, "url": "https://www.mdlxdcc.org/F4M/F4M.html", "name": "Flip 4 Magnetic"}, {"@type": "ListItem", "position": 11, "url": "https://www.mdlxdcc.org/S/", "name": "Sudoku"}, {"@type": "ListItem", "position": 12, "url": "https://www.mdlxdcc.org/CW/", "name": "Crosswords"}, {"@type": "ListItem", "position": 13, "url": "https://www.mdlxdcc.org/crp/Maglev_Assisted_Takeoff.html", "name": "Maglev-Assisted Takeoff (MAT)"}, {"@type": "ListItem", "position": 14, "url": "https://www.mdlxdcc.org/crp/Modular_Hydrofoils.html", "name": "Modular Hydrofoils for Boats"}, {"@type": "ListItem", "position": 15, "url": "https://www.mdlxdcc.org/BD/BD_Idea_Atlas_AI_Reviews.html", "name": "AI Reviews of BD Idea Atlas"}]}</script>
 </head>
 <body>
 <header class="topbar"><div class="wrap topbar-inner">
@@ -97,7 +142,7 @@ footer{border-top:1px solid var(--line);padding:28px 0 70px;color:var(--muted);f
 <section class="hero">
 <div class="eyebrow"><span class="lang-en">BD × AI Lab · Complete public map</span><span class="lang-sl">BD × AI Lab · Celoten javni zemljevid</span></div>
 <h1><span class="lang-en"><span class="blue">BD Idea Atlas</span><span class="white">Practical demos + full research map.</span></span><span class="lang-sl"><span class="blue">BD Idea Atlas</span><span class="white">Praktični demosi + celoten raziskovalni zemljevid.</span></span></h1>
-<p><span class="lang-en">A public workshop by Bojan Dobrečevič: independent inventions, tools, papers, physical devices, games, AI protocols, compression systems, consciousness hypotheses, ethics, history, art, and practical demos. Built across roughly one year in spare time, with the last half-year especially active. Some are working tools, some are benchmarks, some are engineering concepts, some are hypotheses, and some are archive traces.</span><span class="lang-sl">Javna delavnica Bojana Dobrečeviča: neodvisni izumi, orodja, članki, fizične naprave, igre, AI protokoli, sistemi stiskanja podatkov, hipoteze o zavesti, etika, zgodovina, umetnost in praktični demosi. Nastajala je približno eno leto v prostem času, pri čemer je bilo zadnje polletje posebej aktivno. Nekaj je delujočih orodij, nekaj benchmarkov, nekaj inženirskih konceptov, nekaj hipotez in nekaj arhivskih sledi.</span></p>
+<p><span class="lang-en">A public workshop by Bojan Dobrečevič: independent inventions, tools, papers, physical devices, games, AI protocols, compression systems, consciousness hypotheses, ethics, history, art, and practical demos. Built as a spare-time AI-accelerated atlas over roughly one year, with the last half-year especially active. Some are working tools, some are benchmarks, some are engineering concepts, some are hypotheses, and some are archive traces.</span><span class="lang-sl">Javna delavnica Bojana Dobrečeviča: neodvisni izumi, orodja, članki, fizične naprave, igre, AI protokoli, sistemi stiskanja podatkov, hipoteze o zavesti, etika, zgodovina, umetnost in praktični demosi. Zgrajeno kot spare-time AI-pospešen atlas v približno enem letu, pri čemer je bilo zadnje polletje posebej aktivno. Nekaj je delujočih orodij, nekaj benchmarkov, nekaj inženirskih konceptov, nekaj hipotez in nekaj arhivskih sledi.</span></p>
 <p class="hero-note"><span class="lang-en">This root page is the crawler-friendly static map for humans, Google/Bing, and future LLM crawlers. Navigation below uses direct <code>&lt;a href&gt;</code> links, not JS-only routing.</span><span class="lang-sl">Ta začetna stran je statični zemljevid za ljudi, Google/Bing in prihodnje LLM bralnike. Navigacija spodaj uporablja neposredne <code>&lt;a href&gt;</code> povezave, ne samo JavaScript usmerjanja.</span></p>
 <div class="search-status" id="searchStatus"></div>
 </section>
@@ -145,7 +190,7 @@ footer{border-top:1px solid var(--line);padding:28px 0 70px;color:var(--muted);f
 </section>
 
 <section id="quick"><div class="section-title"><h2><span class="lang-en">Choose your path</span><span class="lang-sl">Izberi svojo pot</span></h2><p><span class="lang-en">Engineer, AI researcher, skeptic, reader, crawler — enter through the right door.</span><span class="lang-sl">Inženir, AI raziskovalec, skeptik, bralec, pajek — vstopi skozi prava vrata.</span></p></div><div class="quick-grid">
-<a class="quick-card" href="bd/"><b><span class="lang-en">BD × AI Lab / extra pages</span><span class="lang-sl">BD × AI Lab / dodatne strani</span></b><span>Supplementary BD layer: personal context, AIM³ details, prompts, notes, and pages not repeated on the main atlas.</span></a><a class="quick-card" href="crp/"><b><span class="lang-en">Core Research Papers</span><span class="lang-sl">Jedrni raziskovalni članki</span></b><span>Only the research paper layer: MDL×DCC, PiX, arenas, physical concepts, ethics, and method.</span></a><a class="quick-card" href="acp/"><b><span class="lang-en">ACP / CCH</span><span class="lang-sl">ACP / CCH</span></b><span>Absolute Consciousness / CCH paper series and resonance bridge pages.</span></a><a class="quick-card" href="8Z/"><b><span class="lang-en">8Z Compression</span><span class="lang-sl">8Z stiskanje</span></b><span>Compression, codecs, data systems, 8Z papers, and project manager pages.</span></a><a class="quick-card" href="8ZT/"><b><span class="lang-en">Trading</span><span class="lang-sl">Trgovanje</span></b><span>Trading systems, hedge/PiX arena, DCC/SM/ZZ traders, book, reviews, and governance.</span></a><a class="quick-card" href="history/"><b><span class="lang-en">History</span><span class="lang-sl">Zgodovina</span></b><span>Humanity History atlas and chronology.</span></a><a class="quick-card" href="Art/"><b><span class="lang-en">Art</span><span class="lang-sl">Umetnost</span></b><span>BD Art Gallery: AI-assisted images and visual experiments.</span></a>
+<a class="quick-card" href="BD/"><b><span class="lang-en">BD × AI Lab / extra pages</span><span class="lang-sl">BD × AI Lab / dodatne strani</span></b><span>BD × AI companion hub: news, active work, AIM³ protocols, prompts, reviews, and extra material not repeated on the root atlas.</span></a><a class="quick-card" href="crp/"><b><span class="lang-en">Core Research Papers</span><span class="lang-sl">Jedrni raziskovalni članki</span></b><span>Only the research paper layer: MDL×DCC, PiX, arenas, physical concepts, ethics, and method.</span></a><a class="quick-card" href="acp/"><b><span class="lang-en">ACP / CCH</span><span class="lang-sl">ACP / CCH</span></b><span>Absolute Consciousness / CCH paper series and resonance bridge pages.</span></a><a class="quick-card" href="8Z/"><b><span class="lang-en">8Z Compression</span><span class="lang-sl">8Z stiskanje</span></b><span>Compression, codecs, data systems, 8Z papers, and project manager pages.</span></a><a class="quick-card" href="8ZT/"><b><span class="lang-en">Trading</span><span class="lang-sl">Trgovanje</span></b><span>Trading systems, hedge/PiX arena, DCC/SM/ZZ traders, book, reviews, and governance.</span></a><a class="quick-card" href="history/"><b><span class="lang-en">History</span><span class="lang-sl">Zgodovina</span></b><span>Humanity History atlas and chronology.</span></a><a class="quick-card" href="Art/"><b><span class="lang-en">Art</span><span class="lang-sl">Umetnost</span></b><span>BD Art Gallery: AI-assisted images and visual experiments.</span></a>
 </div></section>
 <section class="classic" id="classic-index"><div class="section-title"><h2><span class="lang-en">Classic collapsible index</span><span class="lang-sl">Klasični zložljivi indeks</span></h2><p><span class="lang-en">257 organized visible links</span><span class="lang-sl">257 urejenih vidnih povezav</span></p></div><p class="rank-note"><span class="lang-en">Grouped by meaning and practical importance first, with file-size/content/inbound-link scoring only as support. Backup mirrors, old root indexes, and private/protected/vault-looking pages are omitted or pushed into the final archive section.</span><span class="lang-sl">Skupine so urejene najprej po pomenu in praktični pomembnosti; velikost datoteke, količina vsebine in vhodne povezave so le pomožni signal. Backup kopije, stari root indeksi in zasebno/protected/vault strani so izpuščene ali potisnjene v zadnji arhivski razdelek.</span></p>
 <details class="chapter" data-filter-group="practical-tools-games-demonstrators" id="practical-tools-games-demonstrators" style="--accent:#34d399">
@@ -206,7 +251,7 @@ footer{border-top:1px solid var(--line);padding:28px 0 70px;color:var(--muted);f
 <li class="link-item" data-path="crp/MDLxDCC-Arena-DGTE.html"><a href="crp/MDLxDCC-Arena-DGTE.html"><span class="link-title">DGTE Arena v0.7a — Bench Planner · MDL×DCC</span><span class="link-path">/crp/MDLxDCC-Arena-DGTE.html</span></a></li></ul></details></div>
 </details><details class="chapter" data-filter-group="aim-bd-ai-lab-protocols" id="aim-bd-ai-lab-protocols" style="--accent:#a78bfa">
 <summary><span class="chapter-emoji">🟣</span><span><strong><span class="lang-en">AIM³ / BD × AI Lab / Protocols</span><span class="lang-sl">AIM³ / BD × AI Lab / protokoli</span></strong><em><span class="lang-en">AIM³, reasoning protocols, current AI reviews, and supplementary BD pages not repeated on the main atlas.</span><span class="lang-sl">AIM³, protokoli sklepanja, aktualne AI ocene in dodatne BD strani, ki se ne ponavljajo na glavni strani.</span></em></span><b><span class="lang-en">41 pages</span><span class="lang-sl">41 strani</span></b></summary>
-<div class="chapter-body"><details class="subgroup"><summary><span>BD extras and AIM³ core</span><b>4</b></summary><ul class="link-list"><li class="link-item" data-path="bd/index.html"><a href="bd/"><span class="link-title">BD × AI Lab / Extra Pages</span><span class="link-path">/bd/</span><small>Supplementary BD entrance: personal context, AIM³ details, prompts, notes, and pages not repeated on the main atlas.</small></a></li>
+<div class="chapter-body"><details class="subgroup"><summary><span>BD extras and AIM³ core</span><b>4</b></summary><ul class="link-list"><li class="link-item" data-path="BD/index.html"><a href="BD/"><span class="link-title">BD × AI Lab / Extra Pages</span><span class="link-path">/BD/</span><small>Companion hub for news, active work, AIM³ protocols, reviews, prompts, and extra BD-context pages not repeated on the root atlas.</small></a></li>
 <li class="link-item" data-path="BD/index.html"><a href="BD/"><span class="link-title">BD × AI Lab Side Hub</span><span class="link-path">/BD/</span><small>Uppercase mirror/entry for BD-specific context and additional lab pages. The root index remains the main public map; this hub should avoid duplicating it.</small></a></li>
 <li class="link-item" data-path="BD/BD_AIM3.html"><a href="BD/BD_AIM3.html"><span class="link-title">AIM³ — AI Management of Mind &amp; Memory</span><span class="link-path">/BD/BD_AIM3.html</span></a></li>
 <li class="link-item" data-path="BD/BD_portfolio.html"><a href="BD/BD_portfolio.html"><span class="link-title">BD × AI Lab — 30 Years of Ideas, 1 Year of AI-Assisted Build</span><span class="link-path">/BD/BD_portfolio.html</span></a></li></ul></details><details class="subgroup"><summary><span>AIM³ / resonance protocols</span><b>5</b></summary><ul class="link-list"><li class="link-item" data-path="BD/BD_AIM3_RHP.html"><a href="BD/BD_AIM3_RHP.html"><span class="link-title">AIM³ Resonance Hybrid Protocol</span><span class="link-path">/BD/BD_AIM3_RHP.html</span></a></li>
@@ -474,5 +519,26 @@ footer{border-top:1px solid var(--line);padding:28px 0 70px;color:var(--muted);f
   setLang(localStorage.getItem('mdlxdcc-lang') || 'en');
 })();
 </script>
+
+<div aria-label="Reading text size controls" class="reader-controls" role="group">
+  <button aria-label="Decrease text size" data-reader-dec type="button">A−</button>
+  <span class="reader-label" id="readerSizeLabel">XL 4/8</span>
+  <button aria-label="Increase text size" data-reader-inc type="button">A+</button>
+</div>
+
+<script>
+(function(){
+  const KEY='bd_reader_size_v2';
+  const names=['Small','Comfort','Large','XL','Bed','Huge','Giant','Max'];
+  const DEFAULT=3, MAX=7;
+  const root=document.documentElement;
+  function clamp(n){n=parseInt(n,10);return isNaN(n)?DEFAULT:Math.max(0,Math.min(MAX,n));}
+  function current(){try{const saved=localStorage.getItem(KEY);if(saved!==null)return clamp(saved);}catch(e){}return clamp(root.getAttribute('data-reader-size')||DEFAULT);}
+  function apply(n){n=clamp(n);root.setAttribute('data-reader-size',String(n));try{localStorage.setItem(KEY,String(n));}catch(e){}const label=document.getElementById('readerSizeLabel');if(label)label.textContent=names[n]+' '+(n+1)+'/8';}
+  document.addEventListener('click',function(e){if(e.target&&e.target.matches('[data-reader-inc]')){apply(current()+1);}else if(e.target&&e.target.matches('[data-reader-dec]')){apply(current()-1);}});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>apply(current()));else apply(current());
+})();
+</script>
+
 </body>
 </html>
