@@ -61,8 +61,8 @@ Please inspect the homepage and a representative sample across branches. At mini
 ### Main hubs
 
 - https://www.mdlxdcc.org/
-- https://www.mdlxdcc.org/bd/  
-  If lowercase `/bd/` fails, try `/BD/`.
+- https://www.mdlxdcc.org/BD/  
+  If lowercase `/BD/` fails, try `/BD/`.
 - https://www.mdlxdcc.org/crp/
 - https://www.mdlxdcc.org/acp/
 - https://www.mdlxdcc.org/8Z/
@@ -84,7 +84,7 @@ Please inspect the homepage and a representative sample across branches. At mini
 
 - Core Research hub: https://www.mdlxdcc.org/crp/
 - PiX: https://www.mdlxdcc.org/crp/PiX.html
-- MDL×DCC / Demon / Arenas / RouteSignal pages if linked from root, `/bd/`, or `/crp/`.
+- MDL×DCC / Demon / Arenas / RouteSignal pages if linked from root, `/BD/`, or `/crp/`.
 
 ### Physical devices / engineering concepts
 
@@ -98,7 +98,7 @@ Please inspect the homepage and a representative sample across branches. At mini
 
 ### AIM³ / RHP / RHPr / AI-collaboration protocols
 
-- BD / AIM³ hub pages from `/bd/` or `/BD/`.
+- BD / AIM³ hub pages from `/BD/` or `/BD/`.
 - RHP: https://www.mdlxdcc.org/BD/BD_AIM3_RHP.html
 - RHPr: https://www.mdlxdcc.org/BD/BD_AIM3_RHPr.html
 

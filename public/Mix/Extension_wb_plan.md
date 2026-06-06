@@ -17,11 +17,11 @@ V `Web-slim.zip` nisem našel prave Nara / Illuminara strani. Obstajajo neke pos
 
 Predlog strani:
 
-`/bd/Nara_Illuminara.html`
+`/BD/Nara_Illuminara.html`
 ali
 `/stories/Nara_Illuminara.html`
 
-Jaz bi dal pod `/bd/`, ker je to BD portfolio/creative-IP dosežek, ne core research paper.
+Jaz bi dal pod `/BD/`, ker je to BD portfolio/creative-IP dosežek, ne core research paper.
 
 ---
 
@@ -33,7 +33,7 @@ To ni isto kot Nara, ampak je soroden ustvarjalno-filozofski branch.
 
 Predlog:
 
-`/bd/Digital_Free_Will.html`
+`/BD/Digital_Free_Will.html`
 
 Vsebina bi lahko bila predstavljena kot:
 
@@ -51,7 +51,7 @@ To je po mojem **močna javna esejistična stran**, ker ni samo tehnična. Razš
 
 Predlog:
 
-`/bd/Visibility_Paradox.html`
+`/BD/Visibility_Paradox.html`
 
 To bi lahko bila ena tvojih boljših “human-readable” strani za ljudi, ki ne bodo najprej brali 8Z, DGTE ali AC.
 
@@ -65,7 +65,7 @@ Predlog:
 
 `/tools/Pi_Rotated_Polygons.html`
 ali
-`/bd/Pi_Rotated_Polygons.html`
+`/BD/Pi_Rotated_Polygons.html`
 
 Če imamo ali lahko sestavimo p5.js sketch, bi to lahko bila majhna “working demo” stran. Ni tako pomembna kot PiX, ampak lepo paše v tvojo “Pi / geometry / MDL curiosity” linijo.
 
@@ -77,8 +77,8 @@ AIM³ strani že obstajajo, posebej `BD_AIM3_RHP.html` in `BD_AIM3_RHPr.html`. A
 
 Ne bi ju dal kar raw na web. Bolje bi bilo narediti **čisto referenčno stran**:
 
-`/bd/AIM_Protocol.html`
-`/bd/AIT_Protocol.html`
+`/BD/AIM_Protocol.html`
+`/BD/AIT_Protocol.html`
 
 Ampak tukaj bi bil pazljiv: javna verzija naj bo “human-readable reference”, ne dump notranjih navodil.
 
@@ -92,7 +92,7 @@ To je lahko zelo dobra javna stran, ker pove zgodbo, ne samo našteva projekte.
 
 Predlog:
 
-`/bd/Ten_Projects_One_Human_AI_Team.html`
+`/BD/Ten_Projects_One_Human_AI_Team.html`
 
 To bi lahko postalo “case study” stran: kako si dejansko uporabljal LLM-je za realne projekte.
 
@@ -108,7 +108,7 @@ Pokrito je skozi `BD_CCH_Consciousness_Field.html`, `BD_CCH_Science.html`, ACP s
 
 Jedro je vključeno v CFH/CCH strani. Ampak če želiš bolj osebno/literarno stran, bi lahko kasneje naredili:
 
-`/bd/Soul_Voyage.html`
+`/BD/Soul_Voyage.html`
 
 Ni pa to nujnejše kot Nara/Digital Free Will/Visibility Paradox.
 
@@ -116,7 +116,7 @@ Ni pa to nujnejše kot Nara/Digital Free Will/Visibility Paradox.
 
 Vsebinsko so delno že v AC/CFH/CCH svetu, ampak niso kot samostojni eseji. Kasneje bi jih lahko združili v eno stran:
 
-`/bd/Foundational_Essays.html`
+`/BD/Foundational_Essays.html`
 
 ali
 
@@ -162,7 +162,7 @@ To ne bi ponovno delal:
 
 ## Ena tehnična opomba
 
-V tem `Web-slim.zip` vidim `BD/index.html`, ne pa lowercase `bd/index.html`. Mi smo prej že naredili `/bd/index.html` v v4.2 paketu, ampak v tem konkretnem `Web-slim.zip` ga ne vidim. Če je Netlify case-sensitive, potem je treba paziti, da se lowercase `/bd/` res deploya.
+V tem `Web-slim.zip` vidim `BD/index.html`, ne pa lowercase `bd/index.html`. Mi smo prej že naredili `/BD/index.html` v v4.2 paketu, ampak v tem konkretnem `Web-slim.zip` ga ne vidim. Če je Netlify case-sensitive, potem je treba paziti, da se lowercase `/BD/` res deploya.
 
 ## Moj predlagani vrstni red
 

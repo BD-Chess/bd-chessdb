@@ -1,6 +1,6 @@
 Humanity History — v0.16.7
 
-Install: extract this ZIP inside your /bd/ folder so it creates /bd/history/. Open /bd/history/index.html.
+Install: extract this ZIP inside your /BD/ folder so it creates /BD/history/. Open /BD/history/index.html.
 
 v0.16 base adds / changes:
 - Part 02 rebalanced from 5 cards to 10 cards (1,000 years per card)
