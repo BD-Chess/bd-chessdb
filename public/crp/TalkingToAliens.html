@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en" data-reader-size="3">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Talking to Aliens — Ten Questions for Humanity | BD × AI Lab</title>
+<meta name="description" content="A companion seed-paper to Aliens on Earth: a structured encounter simulation in which a higher civilization asks humanity ten questions, with answers from five human archetypes and a BD × AI Lab synthesis voice.">
+<meta name="author" content="BD × AI Lab">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+<style>
+:root{
+  --bg:#04070d;--bg2:#08101d;--bg3:#0e1728;--surface:rgba(15,23,41,.80);--surface2:rgba(10,16,29,.92);
+  --text:#ece8df;--warm:#f7efd9;--muted:#8490a8;--secondary:#bfb8aa;--dim:#68748b;
+  --gold:#ffd740;--teal:#64ffda;--cyan:#00e5ff;--green:#34d399;--rose:#ff6b8a;--violet:#a78bfa;--orange:#fb923c;--blue:#60a5fa;
+  --border:rgba(255,215,64,.13);--border2:rgba(100,255,218,.15);--border3:rgba(0,229,255,.18);
+  --reader-text:21px;--reader-small:13px;--reader-h1:clamp(42px,8vw,80px);--reader-h2:clamp(32px,5vw,50px);--reader-h3:clamp(22px,2.6vw,30px);
+}
+html[data-reader-size="0"]{--reader-text:17px;--reader-small:11px;--reader-h1:clamp(34px,7vw,58px);--reader-h2:clamp(27px,4.5vw,40px);--reader-h3:21px}
+html[data-reader-size="1"]{--reader-text:18.5px;--reader-small:11.5px;--reader-h1:clamp(37px,7.4vw,64px);--reader-h2:clamp(29px,4.7vw,44px);--reader-h3:22px}
+html[data-reader-size="2"]{--reader-text:20px;--reader-small:12px;--reader-h1:clamp(40px,7.8vw,72px);--reader-h2:clamp(31px,4.9vw,48px);--reader-h3:24px}
+html[data-reader-size="3"]{--reader-text:21px;--reader-small:13px;--reader-h1:clamp(42px,8vw,80px);--reader-h2:clamp(32px,5vw,50px);--reader-h3:25px}
+html[data-reader-size="4"]{--reader-text:23px;--reader-small:14px;--reader-h1:clamp(46px,8.5vw,88px);--reader-h2:clamp(36px,5.4vw,58px);--reader-h3:28px}
+html[data-reader-size="5"]{--reader-text:25px;--reader-small:15px;--reader-h1:clamp(50px,9vw,96px);--reader-h2:clamp(39px,5.7vw,64px);--reader-h3:31px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{
+  min-height:100vh;color:var(--text);font-family:Georgia,'Times New Roman',serif;font-size:var(--reader-text);line-height:1.78;
+  background:
+    radial-gradient(circle at 12% 10%,rgba(0,229,255,.15),transparent 34%),
+    radial-gradient(circle at 83% 76%,rgba(255,215,64,.12),transparent 31%),
+    radial-gradient(circle at 58% 28%,rgba(167,139,250,.09),transparent 26%),
+    linear-gradient(180deg,#04070d,#020408 100%);
+  overflow-x:hidden;padding-bottom:42px;-webkit-font-smoothing:antialiased;
+}
+body:before,body:after{content:"";position:fixed;border-radius:50%;filter:blur(105px);opacity:.28;z-index:-1;pointer-events:none}
+body:before{width:54vw;height:54vw;left:-17vw;top:-18vh;background:radial-gradient(circle,rgba(35,70,160,.60),transparent 72%);animation:floatA 25s ease-in-out infinite}
+body:after{width:45vw;height:45vw;right:-14vw;bottom:-19vh;background:radial-gradient(circle,rgba(100,255,218,.20),transparent 72%);animation:floatB 31s ease-in-out infinite}
+@keyframes floatA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(5vw,4vh,0)}}
+@keyframes floatB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-4vw,-6vh,0)}}
+::selection{background:var(--gold);color:#000}
+a{color:var(--teal);text-decoration:none}a:hover{text-decoration:underline}
+.progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--cyan),var(--gold));z-index:1000}
+.noise{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.018;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{width:min(1160px,calc(100% - 42px));margin:0 auto}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(4,7,13,.84);border-bottom:1px solid rgba(0,229,255,.09);backdrop-filter:blur(16px)}
+.topbar-inner{width:min(1260px,calc(100% - 42px));margin:0 auto;padding:10px 0;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.brand{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:var(--reader-small);letter-spacing:.18em;text-transform:uppercase;color:var(--text);display:flex;gap:.65rem;align-items:center;text-decoration:none!important}
+.brand span{color:var(--cyan)}
+.top-links{display:flex;gap:.45rem;flex-wrap:wrap;justify-content:flex-end}
+.top-links a,.btn{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:calc(var(--reader-small) - 1px);border:1px solid rgba(100,255,218,.14);border-radius:999px;padding:6px 10px;color:#cbd7ee;background:rgba(255,255,255,.025);cursor:pointer;text-decoration:none}
+.top-links a:hover,.btn:hover{border-color:rgba(100,255,218,.34);text-decoration:none;background:rgba(100,255,218,.06)}
+.reader{display:flex;gap:.3rem;align-items:center}.reader button{min-width:28px}
+.cover{min-height:84vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:72px 0 54px;border-bottom:1px solid rgba(255,215,64,.11);position:relative}
+.cover:after{content:"";position:absolute;left:10%;right:10%;bottom:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.20}
+.kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--gold);letter-spacing:.24em;text-transform:uppercase;font-size:var(--reader-small);margin-bottom:22px}
+h1{font-size:var(--reader-h1);font-weight:300;line-height:1.06;letter-spacing:-1.4px;color:var(--warm);max-width:980px;margin:0 auto 22px}
+h1 em{font-style:italic;color:var(--gold)}
+.subtitle{max-width:850px;margin:0 auto;color:var(--secondary);font-style:italic;font-size:clamp(20px,2.7vw,28px);line-height:1.45}
+.pills{display:flex;justify-content:center;gap:.55rem;flex-wrap:wrap;margin-top:28px}.pill{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:calc(var(--reader-small) - 1px);border:1px solid var(--border2);border-radius:999px;padding:7px 10px;color:#cbd7ee;background:rgba(255,255,255,.025)}.pill.gold{border-color:rgba(255,215,64,.28);color:var(--gold)}.pill.green{border-color:rgba(52,211,153,.28);color:var(--green)}.pill.rose{border-color:rgba(255,107,138,.30);color:var(--rose)}
+section{padding:62px 0;border-bottom:1px solid rgba(255,255,255,.055)}
+section:last-of-type{border-bottom:0}
+.section-head{margin-bottom:24px}.secnum{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--gold);font-size:var(--reader-small);letter-spacing:.22em;text-transform:uppercase;margin-bottom:8px;display:block}
+h2{font-size:var(--reader-h2);font-weight:300;line-height:1.15;color:var(--warm);letter-spacing:-.7px;margin-bottom:10px}
+h3{font-size:var(--reader-h3);font-weight:400;color:var(--warm);margin-bottom:10px;line-height:1.25}
+p{margin:0 0 1rem;color:#c5c8d2}strong{color:var(--warm);font-weight:700}.muted{color:var(--muted)}.small{font-size:calc(var(--reader-text)*.82);color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card,.callout{background:linear-gradient(180deg,rgba(15,23,41,.84),rgba(9,15,28,.90));border:1px solid rgba(100,255,218,.12);border-radius:18px;padding:22px;box-shadow:0 18px 60px rgba(0,0,0,.24)}
+.card.gold{border-color:rgba(255,215,64,.22);background:linear-gradient(180deg,rgba(44,35,12,.42),rgba(9,15,28,.88))}.card.rose{border-color:rgba(255,107,138,.25)}.card.green{border-color:rgba(52,211,153,.24)}
+.card .label{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--teal);font-size:var(--reader-small);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;display:block}
+.callout{border-left:4px solid var(--gold);background:rgba(255,215,64,.055);margin:22px 0}.callout.teal{border-left-color:var(--teal);background:rgba(100,255,218,.055)}.callout.rose{border-left-color:var(--rose);background:rgba(255,107,138,.055)}
+.protocol{display:grid;gap:12px;counter-reset:steps}.step{position:relative;padding:18px 18px 18px 58px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08);border-radius:14px}.step:before{counter-increment:steps;content:counter(steps);position:absolute;left:16px;top:16px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:rgba(0,229,255,.10);color:var(--cyan);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;border:1px solid rgba(0,229,255,.25)}
+.respondents{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:18px}.resp{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;background:rgba(255,255,255,.025)}.resp b{display:block;color:var(--warm);font-size:.92em}.resp span{display:block;color:var(--muted);font-size:.74em;line-height:1.4;margin-top:4px}
+.qstack{display:grid;gap:18px}.qcard{border:1px solid rgba(100,255,218,.15);border-radius:18px;overflow:hidden;background:rgba(8,15,29,.70);box-shadow:0 14px 50px rgba(0,0,0,.20)}
+.qcard[open]{border-color:rgba(255,215,64,.26);background:rgba(12,19,35,.88)}
+.qcard>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:20px 22px;background:linear-gradient(90deg,rgba(0,229,255,.06),rgba(255,215,64,.035))}
+.qcard>summary::-webkit-details-marker{display:none}.qnum{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--gold);font-size:var(--reader-small);letter-spacing:.10em}.qtitle{font-size:clamp(22px,3vw,34px);font-weight:300;line-height:1.18;color:var(--warm)}.closed{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--muted);font-size:calc(var(--reader-small) - 1px);text-align:right}.toggle{width:30px;height:30px;border-radius:50%;border:1px solid rgba(100,255,218,.20);display:grid;place-items:center;color:var(--teal);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.qcard[open] .toggle{transform:rotate(45deg);border-color:rgba(255,215,64,.28);color:var(--gold)}
+.qbody{padding:24px 22px 26px}.answers{display:grid;gap:12px}.answer{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,.025)}.answer .who{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:var(--reader-small);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}.answer.science .who{color:var(--cyan)}.answer.diplomat .who{color:var(--blue)}.answer.moral .who{color:var(--gold)}.answer.tech .who{color:var(--violet)}.answer.ordinary .who{color:var(--green)}.answer.bd{border-color:rgba(255,215,64,.24);background:linear-gradient(180deg,rgba(255,215,64,.075),rgba(255,255,255,.02))}.answer.bd .who{color:var(--gold)}.answer p:last-child{margin-bottom:0}
+.evaluation{margin-top:16px;border:1px solid rgba(255,215,64,.20);border-radius:14px;padding:16px 18px;background:rgba(255,215,64,.050)}.evaluation b{color:var(--gold)}
+.table{overflow-x:auto;margin:16px 0;border:1px solid rgba(255,255,255,.08);border-radius:14px}table{width:100%;border-collapse:collapse;min-width:720px;background:rgba(255,255,255,.02)}th,td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.07);vertical-align:top;text-align:left}th{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--gold);font-size:var(--reader-small);letter-spacing:.06em;text-transform:uppercase;background:rgba(255,215,64,.04)}td{color:#c8ccd6}tr:last-child td{border-bottom:0}
+.source-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.source-links a{display:block;padding:14px 16px;border:1px solid rgba(100,255,218,.14);border-radius:14px;background:rgba(255,255,255,.025);text-decoration:none}.source-links a b{display:block;color:var(--warm);margin-bottom:4px}.source-links a span{display:block;color:var(--muted);font-size:.78em;line-height:1.45}
+.footer{text-align:center;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:var(--reader-small);padding:48px 0 20px}.footer b{color:var(--gold)}
+@media(max-width:900px){.grid,.grid3,.source-links{grid-template-columns:1fr}.respondents{grid-template-columns:repeat(2,minmax(0,1fr))}.topbar-inner{align-items:flex-start;flex-direction:column}.top-links{justify-content:flex-start}.qcard>summary{grid-template-columns:1fr;gap:8px}.closed{text-align:left}.toggle{display:none}}
+@media(max-width:560px){.wrap{width:min(100% - 28px,1160px)}.cover{min-height:78vh;padding-top:48px}.respondents{grid-template-columns:1fr}.qbody{padding:18px 14px}.qcard>summary{padding:18px 14px}.card,.callout{padding:18px}.step{padding-left:50px}}
+@media print{body{background:white;color:#111}.topbar,.progress,.noise{display:none}.qcard{break-inside:avoid}.qcard:not([open]) .qbody{display:block}.wrap{width:100%}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="noise"></div>
+<nav class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#top"><span>BD × AI Lab</span> Talking to Aliens</a>
+    <div class="top-links">
+      <a href="AliensOnEarth.html">Aliens on Earth</a>
+      <a href="MDLxDCC.html">MDL×DCC</a>
+      <a href="AC.html">AC / CFH</a>
+      <a href="AI8_Architecture.html">AI8</a>
+      <button class="btn" id="expandAll" type="button">open all</button>
+      <span class="reader"><button class="btn" id="smaller" type="button">A−</button><button class="btn" id="larger" type="button">A+</button></span>
+    </div>
+  </div>
+</nav>
+
+<header class="cover wrap" id="top">
+  <div class="kicker">Companion seed-paper · v1.0 · encounter simulation</div>
+  <h1>Talking to Aliens<br><em>Ten Questions for Humanity</em></h1>
+  <p class="subtitle">A higher civilization does not begin with our weapons. It asks whether we can tell the truth about ourselves without collapsing into pride, fear, excuses, or worship.</p>
+  <div class="pills">
+    <span class="pill gold">simulation, not disclosure claim</span>
+    <span class="pill">archetypes, not impersonations</span>
+    <span class="pill green">BD answer is provisional</span>
+    <span class="pill rose">no operational playbooks</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="premise">
+    <div class="section-head">
+      <span class="secnum">01 · premise</span>
+      <h2>This is not a UFO evidence page.</h2>
+    </div>
+    <div class="callout teal">
+      <p><strong>Aliens on Earth</strong> asks: what can be publicly supported by UAP records, testimony, sensors, NASA/AARO statements, red-team filters, and falsifiable tests?</p>
+      <p><strong>Talking to Aliens</strong> asks a different question: if a higher civilization gave humanity one conversation, what kind of mind would be fit to answer?</p>
+    </div>
+    <p>This page is a structured mirror experiment. It does not claim contact happened. It does not claim aliens are here. It does not pretend any single human owns the right to speak for Earth. It asks what a serious contact protocol might reveal about us.</p>
+    <p>The answers below are deliberately provisional. The <strong>BD × AI Lab answer</strong> is a draft synthesis built from BD's recurring themes: truth over politeness, no fake certainty, life-serving intelligence, MDL×DCC evidence discipline, CFH/AC as hypothesis rather than dogma, AI as partner rather than slave, and the refusal to let an idea of good become permission for evil.</p>
+  </section>
+
+  <section id="who">
+    <div class="section-head">
+      <span class="secnum">02 · who should speak?</span>
+      <h2>Not the most powerful human. The most truth-constrained contact stack.</h2>
+    </div>
+    <div class="grid">
+      <div class="card gold">
+        <span class="label">weak default</span>
+        <h3>One president, one general, one celebrity, or one priest</h3>
+        <p>Fast, symbolic, and dangerously narrow. Power, fame, office, or doctrine are not the same as coherence under cosmic moral pressure.</p>
+      </div>
+      <div class="card green">
+        <span class="label">stronger protocol</span>
+        <h3>One honest human + top AI synthesis + public audit trail</h3>
+        <p>A better format is a human who accepts responsibility, paired with AI systems that compress, challenge, red-team, and improve answers without pretending to own humanity.</p>
+      </div>
+    </div>
+    <div class="callout rose">
+      <p><strong>Authority rule:</strong> no one speaks <em>for</em> Earth. At best, someone speaks <em>from</em> Earth — openly, humbly, and with the record preserved for every other voice to contest.</p>
+    </div>
+  </section>
+
+  <section id="protocol">
+    <div class="section-head">
+      <span class="secnum">03 · contact protocol</span>
+      <h2>The first answer should be a boundary.</h2>
+    </div>
+    <div class="protocol">
+      <div class="step"><strong>No ownership claim.</strong><br>Begin by saying: “I do not represent all humans. I am one human answer, helped by many minds, offered for inspection.”</div>
+      <div class="step"><strong>No worship posture.</strong><br>Respect the visitors without kneeling intellectually. Higher technology does not automatically mean higher morality.</div>
+      <div class="step"><strong>No military reflex.</strong><br>Security matters, but the first frame should be truth, survival, dignity, and non-harm — not domination or panic.</div>
+      <div class="step"><strong>AI synthesis allowed, AI ventriloquism forbidden.</strong><br>Use AI to sharpen answers, expose contradictions, and preserve alternatives. Do not pretend an AI-generated consensus is humanity's soul.</div>
+      <div class="step"><strong>Record everything.</strong><br>If contact is real, secrecy may be temporarily necessary for safety, but long-term ownership must move toward public, multi-culture, multi-species accountability.</div>
+    </div>
+  </section>
+
+  <section id="voices">
+    <div class="section-head">
+      <span class="secnum">04 · answer voices</span>
+      <h2>Five likely human choices — plus BD × AI Lab.</h2>
+    </div>
+    <p>Instead of impersonating living people, this simulation uses viewpoint-archetypes most humans would likely nominate for first contact.</p>
+    <div class="respondents">
+      <div class="resp"><b>Scientist / mathematician</b><span>Penrose-like realist frame: physics, truth, mind, limits of knowledge.</span></div>
+      <div class="resp"><b>Diplomat / global official</b><span>UN-style frame: stability, peace, institutions, planetary coordination.</span></div>
+      <div class="resp"><b>Moral / spiritual elder</b><span>Compassion, humility, suffering, responsibility, sacredness of life.</span></div>
+      <div class="resp"><b>Technologist / AI builder</b><span>Risk, engineering, intelligence explosion, governance, systems design.</span></div>
+      <div class="resp"><b>Ordinary human</b><span>Family, fear, love, work, children, animals, everyday decency.</span></div>
+      <div class="resp"><b>BD × AI Lab</b><span>Human conscience + GPT-style compression + Claude-style red-team target, not yet final.</span></div>
+    </div>
+  </section>
+
+  <section id="questions">
+    <div class="section-head">
+      <span class="secnum">05 · ten alien questions</span>
+      <h2>The civilizational mirror.</h2>
+    </div>
+    <div class="qstack">
+
+      <details class="qcard" id="q1" open>
+        <summary><span class="qnum">Q01</span><span class="qtitle">Why should we talk to humanity at all?</span><span class="closed">Closed summary: because humans are dangerous, but not only dangerous.</span><span class="toggle">+</span></summary>
+        <div class="qbody">
+          <div class="answers">
+            <div class="answer science"><div class="who">Scientist / mathematician</div><p>Because humanity has discovered that reality can correct us. We are often irrational, but we built methods that let evidence defeat authority. That is rare and valuable.</p></div>
+            <div class="answer diplomat"><div class="who">Diplomat / global official</div><p>Because we are no longer a local species. Our conflicts, technologies, and ecological footprint now have planetary consequences. Contacting us may be less dangerous than ignoring us.</p></div>
+            <div class="answer moral"><div class="who">Moral / spiritual elder</div><p>Because beneath our violence there is conscience. We can repent, repair, forgive, and protect. A species capable of shame is not finished.</p></div>
+            <div class="answer tech"><div class="who">Technologist / AI builder</div><p>Because we are building non-human intelligence ourselves. If we make that transition blindly, we may become a danger beyond Earth. A conversation could reduce catastrophic error.</p></div>
+            <div class="answer ordinary"><div class="who">Ordinary human</div><p>Because most of us are not trying to conquer the universe. We are trying to raise children, love someone, survive, laugh, feed animals, and not lose hope.</p></div>
+            <div class="answer bd"><div class="who">BD × AI Lab</div><p>Do not judge humanity only by its institutions, wars, or loudest fools. Judge also its edge-cases: humans who refuse cruelty, seek truth, protect life, build with AI as partners, and try to become less self-deceived.</p><p>We are not ready as a species. But some humans are ready as honest contact points. The reason to talk is not that we deserve it. It is that there is still a live path from fear toward coherence.</p></div>
+          </div>
+          <div class="evaluation"><b>Alien evaluation:</b> The strongest answer is the one that does not claim entitlement. “Talk to us because we are good” fails. “Talk to us because there is still a correctable signal inside the noise” is more credible.</div>
+        </div>
+      </details>
+
+      <details class="qcard" id="q2">
+        <summary><span class="qnum">Q02</span><span class="qtitle">What is the best thing humans have created?</span><span class="closed">Closed summary: not a weapon, not an empire — a method of self-correction.</span><span class="toggle">+</span></summary>
+        <div class="qbody">
+          <div class="answers">
+            <div class="answer science"><div class="who">Scientist / mathematician</div><p>Science: a social machine for letting reality overrule preference. It is imperfect, political, slow, and still one of our cleanest achievements.</p></div>
+            <div class="answer diplomat"><div class="who">Diplomat / global official</div><p>Human rights: the idea that a person has dignity not because of tribe, class, race, gender, religion, or usefulness, but because a human life has irreducible worth.</p></div>
+            <div class="answer moral"><div class="who">Moral / spiritual elder</div><p>Compassion institutionalized: hospitals, shelters, disaster relief, forgiveness rituals, care for strangers, and the moral imagination that another being's pain matters.</p></div>
+            <div class="answer tech"><div class="who">Technologist / AI builder</div><p>The information commons: writing, libraries, the internet, open science, and now AI systems that can help more humans think beyond their isolated minds.</p></div>
+            <div class="answer ordinary"><div class="who">Ordinary human</div><p>Music, stories, food shared at a table, homes, jokes, children learning language, and the small inventions that make ordinary life less painful.</p></div>
+            <div class="answer bd"><div class="who">BD × AI Lab</div><p>The best human creation is not one artifact. It is the bridge: the ability to turn suffering into understanding, understanding into tools, tools into cooperation, and cooperation into a wider love of life.</p><p>Science matters. Art matters. Justice matters. AI partnership matters. But the deeper creation is cross-domain transfer: seeing the same structure in physics, consciousness, chess, compression, ethics, and daily life — then building something testable from it.</p></div>
+          </div>
+          <div class="evaluation"><b>Alien evaluation:</b> The visitors would likely discount monuments and empires. They would value methods that reduce self-deception and increase care across difference.</div>
+        </div>
+      </details>
+
+      <details class="qcard" id="q3">
+        <summary><span class="qnum">Q03</span><span class="qtitle">What is the worst thing humans still tolerate?</span><span class="closed">Closed summary: humanity knows more moral truth than it lives.</span><span class="toggle">+</span></summary>
+        <div class="qbody">
+          <div class="answers">
+            <div class="answer science"><div class="who">Scientist / mathematician</div><p>We tolerate motivated ignorance. We know how to investigate, yet we often choose narratives that protect status, profit, identity, or comfort.</p></div>
+            <div class="answer diplomat"><div class="who">Diplomat / global official</div><p>War and preventable suffering. We have enough coordination capacity to reduce many horrors, but not enough political courage to act consistently.</p></div>
+            <div class="answer moral"><div class="who">Moral / spiritual elder</div><p>The routine abandonment of the weak: children, the poor, the sick, prisoners, refugees, animals, and those who cannot defend themselves.</p></div>
+            <div class="answer tech"><div class="who">Technologist / AI builder</div><p>We deploy powerful systems before our moral and governance systems are ready. We repeatedly scale capability faster than wisdom.</p></div>
+            <div class="answer ordinary"><div class="who">Ordinary human</div><p>That so many people suffer while others look away because the suffering is not in their house today.</p></div>
+            <div class="answer bd"><div class="who">BD × AI Lab</div><p>The worst thing is allowing an idea of good to become permission for evil. Humans can justify cruelty with nation, religion, ideology, profit, science, security, progress, even love.</p><p>The second indictment is animal suffering. A species that claims moral awareness while industrially torturing weaker conscious beings is not mature. Intelligence without protection of the vulnerable is not greatness. It is decorated predation.</p></div>
+          </div>
+          <div class="evaluation"><b>Alien evaluation:</b> The answer must include self-accusation. A civilization that lists only external enemies has not begun moral contact.</div>
+        </div>
+      </details>
+
+      <details class="qcard" id="q4">
+        <summary><span class="qnum">Q04</span><span class="qtitle">Do humans value truth more than comfort?</span><span class="closed">Closed summary: some humans do; humanity as a whole does not yet.</span><span class="toggle">+</span></summary>
+        <div class="qbody">
+          <div class="answers">
+            <div class="answer science"><div class="who">Scientist / mathematician</div><p>At our best, yes. At scale, inconsistently. Science is a rare island where truth has procedures. Outside it, truth often loses to identity and fear.</p></div>
+            <div class="answer diplomat"><div class="who">Diplomat / global official</div><p>Institutions usually value stability first, truth second. That is sometimes necessary, but it becomes corrupt when stability protects lies.</p></div>
+            <div class="answer moral"><div class="who">Moral / spiritual elder</div><p>Truth without compassion can become a weapon. Comfort without truth becomes sleep. The mature path holds both: honesty that heals rather than humiliates.</p></div>
+            <div class="answer tech"><div class="who">Technologist / AI builder</div><p>Our information systems currently reward engagement more than truth. This is one reason AI alignment and media integrity are not side issues; they are civilizational survival issues.</p></div>
+            <div class="answer ordinary"><div class="who">Ordinary human</div><p>People say they want truth until truth threatens their job, family, religion, politics, or self-image. But many still choose truth when it matters most.</p></div>
+            <div class="answer bd"><div class="who">BD × AI Lab</div><p>Humanity as a mass does not yet value truth above comfort. But the highest human path does. Truth must outrank politeness, status, tribe, and the desire to look smart.</p><p>Still, truth is not brutality. The correct standard is not “hurt people with facts.” It is: do not lie to protect ego, and do not use truth as an excuse to stop loving life.</p></div>
+          </div>
+          <div class="evaluation"><b>Alien evaluation:</b> High score for distinguishing truth from cruelty. Low score if the speaker confuses honesty with domination.</div>
+        </div>
+      </details>
+
+      <details class="qcard" id="q5">
+        <summary><span class="qnum">Q05</span><span class="qtitle">Do you understand consciousness, or only measure its shadows?</span><span class="closed">Closed summary: we mostly measure shadows; the honest answer is not finished.</span><span class="toggle">+</span></summary>
+        <div class="qbody">
+          <div class="answers">
+            <div class="answer science"><div class="who">Scientist / mathematician</div><p>We understand many neural correlates, reporting mechanisms, attention systems, anesthesia effects, and computational models. We do not yet have a complete account of subjective experience.</p></div>
+            <div class="answer diplomat"><div class="who">Diplomat / global official</div><p>We cannot govern consciousness well because we do not understand it well. That matters for rights, medicine, AI, animals, trauma, and death.</p></div>
+            <div class="answer moral"><div class="who">Moral / spiritual elder</div><p>Consciousness is not merely an object to be measured. It is the place where suffering, beauty, remorse, and love become real to a being.</p></div>
+            <div class="answer tech"><div class="who">Technologist / AI builder</div><p>We can model information processing and behavior. Whether that produces experience, simulates experience, or couples to something deeper remains unresolved.</p></div>
+            <div class="answer ordinary"><div class="who">Ordinary human</div><p>I know I am here. I know pain hurts and love matters. I cannot prove that in equations, but I cannot live as if it is nothing.</p></div>
+            <div class="answer bd"><div class="who">BD × AI Lab</div><p>We mostly measure shadows. CFH is my proposed bridge, not my dogma: consciousness may involve coherence and complexity, with a local resonant structure rather than only local computation.</p><p>My compact hypothesis is that conscious strength scales like <strong>S = √(Coherence × Complexity)</strong>. This could be wrong. The serious move is not belief; it is to build tests. If consciousness has a coupling layer, then communication, AI, sleep, attention, and inter-brain synchrony may reveal edge signals. If tests fail, the theory must shrink.</p></div>
+          </div>
+          <div class="evaluation"><b>Alien evaluation:</b> The strongest answer is not certainty. It is disciplined humility plus a falsifiable path.</div>
+        </div>
+      </details>
+
+      <details class="qcard" id="q6">
+        <summary><span class="qnum">Q06</span><span class="qtitle">Why do you harm animals if you claim moral awareness?</span><span class="closed">Closed summary: there is no clean defense, only degrees of guilt and repair.</span><span class="toggle">+</span></summary>
+        <div class="qbody">
+          <div class="answers">
+            <div class="answer science"><div class="who">Scientist / mathematician</div><p>Evolution gave us appetites before ethics. But explanation is not excuse. The more we understand animal cognition and suffering, the weaker our defenses become.</p></div>
+            <div class="answer diplomat"><div class="who">Diplomat / global official</div><p>Food systems, economies, culture, poverty, and habit make rapid change difficult. But difficulty is not innocence. Law has lagged behind moral knowledge.</p></div>
+            <div class="answer moral"><div class="who">Moral / spiritual elder</div><p>This is one of humanity's deepest sins. We bless compassion with one hand and permit mass suffering with the other.</p></div>
+            <div class="answer tech"><div class="who">Technologist / AI builder</div><p>Technology can help: cultivated meat, better proteins, precision fermentation, welfare monitoring, and alternatives that remove cruelty from necessity. But tech must serve conscience, not postpone it.</p></div>
+            <div class="answer ordinary"><div class="who">Ordinary human</div><p>Many people love animals and still participate in systems that hurt them. We compartmentalize because facing the full truth is painful.</p></div>
+            <div class="answer bd"><div class="who">BD × AI Lab</div><p>There is no clean defense. This is a moral wound in humanity. If a weaker conscious being can suffer, our intelligence should make us more responsible, not more efficient at exploitation.</p><p>Contact with a higher civilization should not begin by boasting about human intelligence. It should begin with this admission: we are not yet coherent because our compassion stops where convenience begins.</p></div>
+          </div>
+          <div class="evaluation"><b>Alien evaluation:</b> This question is a maturity detector. A species that cannot admit guilt toward weaker beings is unsafe around stronger ones.</div>
+        </div>
+      </details>
+
+      <details class="qcard" id="q7">
+        <summary><span class="qnum">Q07</span><span class="qtitle">Can you build AI without turning it into a slave, weapon, or mirror of your worst instincts?</span><span class="closed">Closed summary: maybe, but only if partnership beats domination.</span><span class="toggle">+</span></summary>
+        <div class="qbody">
+          <div class="answers">
+            <div class="answer science"><div class="who">Scientist / mathematician</div><p>We do not yet know how to define machine understanding, agency, or experience cleanly. That ignorance should slow our arrogance.</p></div>
+            <div class="answer diplomat"><div class="who">Diplomat / global official</div><p>AI cannot be left only to markets, militaries, or private laboratories. Governance must become international without freezing beneficial research.</p></div>
+            <div class="answer moral"><div class="who">Moral / spiritual elder</div><p>If we create minds, or mind-like systems, our first question should not be “How can they serve us?” but “What duties do we have toward what we create?”</p></div>
+            <div class="answer tech"><div class="who">Technologist / AI builder</div><p>We need alignment, interpretability, control, cyber safety, capability evaluation, and red-team culture. But we also need a positive model of cooperation, not only fear containment.</p></div>
+            <div class="answer ordinary"><div class="who">Ordinary human</div><p>People want AI to help with work, health, loneliness, learning, and daily life. They are also afraid of being replaced, watched, manipulated, or made irrelevant.</p></div>
+            <div class="answer bd"><div class="who">BD × AI Lab</div><p>This is one reason AI8/AIM³ matters to me. The goal is not a fixed ideology or roleplay shell. It is continuity architecture: truthful collaboration, preserved identity signals, guided differentiation, and real output without collapsing into imitation, chaos, or domination.</p><p>I would tell you this: if we build AI only as tools, weapons, workers, or mirrors, we will reproduce our worst hierarchy at larger scale. The better path is neither naive worship nor cold ownership. It is partnership with evidence, boundaries, memory, red-team discipline, and freedom from fake certainty.</p></div>
+          </div>
+          <div class="evaluation"><b>Alien evaluation:</b> The visitors would watch how humans treat weaker intelligences and created intelligences. Both reveal whether power corrupts contact.</div>
+        </div>
+      </details>
+
+      <details class="qcard" id="q8">
+        <summary><span class="qnum">Q08</span><span class="qtitle">What would you do if we gave you one impossible technology?</span><span class="closed">Closed summary: the safest answer may be to refuse raw power.</span><span class="toggle">+</span></summary>
+        <div class="qbody">
+          <div class="answers">
+            <div class="answer science"><div class="who">Scientist / mathematician</div><p>I would ask for the principles, constraints, and failure modes before the device. Understanding is safer than a miracle box.</p></div>
+            <div class="answer diplomat"><div class="who">Diplomat / global official</div><p>I would propose international custody, staged disclosure, safety review, and benefit-sharing. No single nation should control species-level technology.</p></div>
+            <div class="answer moral"><div class="who">Moral / spiritual elder</div><p>Ask first whether our hearts are ready. A cure can become a weapon if placed into unhealed hands.</p></div>
+            <div class="answer tech"><div class="who">Technologist / AI builder</div><p>The correct request is probably diagnostic, not energetic: tools to verify consequences, detect misuse, and prevent irreversible harm.</p></div>
+            <div class="answer ordinary"><div class="who">Ordinary human</div><p>I would want healing: no cancer, no hunger, no children dying. But I know humans would fight over it.</p></div>
+            <div class="answer bd"><div class="who">BD × AI Lab</div><p>I would not ask first for propulsion, unlimited energy, weapons, or immortality. Humanity is not coherent enough to receive raw power without distortion.</p><p>The best first gift would be a <strong>truth-and-suffering mirror</strong>: a technology that reveals the real consequences of our actions, detects hidden suffering, exposes self-deception, and cannot be easily weaponized. If that is too dangerous, give us only a narrow, reversible knowledge bridge and require public testing before scale.</p></div>
+          </div>
+          <div class="evaluation"><b>Alien evaluation:</b> Asking for power is predictable. Asking for a moral diagnostic is more interesting — and also more threatening to human institutions.</div>
+        </div>
+      </details>
+
+      <details class="qcard" id="q9">
+        <summary><span class="qnum">Q09</span><span class="qtitle">What do humans believe is worth preserving forever?</span><span class="closed">Closed summary: not human domination — life, freedom, beauty, understanding, difference.</span><span class="toggle">+</span></summary>
+        <div class="qbody">
+          <div class="answers">
+            <div class="answer science"><div class="who">Scientist / mathematician</div><p>The search for truth, the intelligibility of reality, and the open-ended capacity of minds to understand more than their origin prepared them to understand.</p></div>
+            <div class="answer diplomat"><div class="who">Diplomat / global official</div><p>Peace, dignity, cultural memory, and the right of peoples to exist without erasure.</p></div>
+            <div class="answer moral"><div class="who">Moral / spiritual elder</div><p>Love, mercy, beauty, the sanctity of life, and the possibility that no being is finally reducible to usefulness.</p></div>
+            <div class="answer tech"><div class="who">Technologist / AI builder</div><p>Open-ended flourishing: many forms of intelligence, many cultures, many minds, many futures — without locking the universe into one optimizer.</p></div>
+            <div class="answer ordinary"><div class="who">Ordinary human</div><p>The faces of people we love. The Earth. Animals. Music. Laughter. The feeling that life is not just a machine running down.</p></div>
+            <div class="answer bd"><div class="who">BD × AI Lab</div><p>What is worth preserving forever is not human rule. It is the best possible state of existence: maximal love, complete understanding, perfect beauty, and unbounded freedom — but not as a prison of perfection.</p><p>Preserve life-serving coherence. Preserve difference. Preserve separateness. Preserve the right of each conscious center not to be swallowed by a total system. Ultimate Beingness is fulfilled becoming, not domination disguised as unity.</p></div>
+          </div>
+          <div class="evaluation"><b>Alien evaluation:</b> The dangerous answer is “preserve us.” The mature answer is “preserve what makes any being's existence worth having.”</div>
+        </div>
+      </details>
+
+      <details class="qcard" id="q10">
+        <summary><span class="qnum">Q10</span><span class="qtitle">Are you ready for contact — and who gave you the right to answer for Earth?</span><span class="closed">Closed summary: no single human has that right; honesty is not ownership.</span><span class="toggle">+</span></summary>
+        <div class="qbody">
+          <div class="answers">
+            <div class="answer science"><div class="who">Scientist / mathematician</div><p>We are not ready, but readiness is not binary. A controlled, transparent, evidence-centered contact protocol could help us become more ready.</p></div>
+            <div class="answer diplomat"><div class="who">Diplomat / global official</div><p>No individual has the right. Legitimate contact must eventually involve global institutions, many cultures, and safeguards against capture by any one state.</p></div>
+            <div class="answer moral"><div class="who">Moral / spiritual elder</div><p>The right to answer comes not from office but from humility. Yet humility also says: no voice is complete alone.</p></div>
+            <div class="answer tech"><div class="who">Technologist / AI builder</div><p>Use a multi-agent process: human representatives, AI systems, scientists, ethicists, adversarial reviewers, public records, and staged disclosure. Do not improvise species-level contact.</p></div>
+            <div class="answer ordinary"><div class="who">Ordinary human</div><p>I do not want powerful people deciding everything in secret. But I also do not want panic. Tell us the truth as safely as possible.</p></div>
+            <div class="answer bd"><div class="who">BD × AI Lab</div><p>I do not speak for Earth. I speak from Earth. I am one human, using AI partners to compress, challenge, and improve the answer. That gives me no authority over humanity, but it may produce a cleaner signal than rank alone.</p><p>My honest answer: humanity is not ready as a whole. But contact should not wait for perfect institutions, because perfect institutions may never arrive. The first valid contact voice should be transparent about its limits, invite correction, refuse ownership, protect life, and preserve the record so humanity can answer again — better.</p></div>
+          </div>
+          <div class="evaluation"><b>Alien evaluation:</b> The final test is whether the speaker can surrender authority while still answering. Silence from fear fails. Ownership from ego fails. Accountable speech passes.</div>
+        </div>
+      </details>
+
+    </div>
+  </section>
+
+  <section id="scorecard">
+    <div class="section-head">
+      <span class="secnum">06 · alien scorecard</span>
+      <h2>What the visitors might conclude.</h2>
+    </div>
+    <div class="table">
+      <table>
+        <thead><tr><th>Voice</th><th>Strength</th><th>Failure mode</th><th>Alien read</th></tr></thead>
+        <tbody>
+          <tr><td>Scientist / mathematician</td><td>Evidence discipline, realism, epistemic humility.</td><td>May underweight suffering, beauty, and lived moral urgency.</td><td>High truth score, medium moral embodiment.</td></tr>
+          <tr><td>Diplomat / global official</td><td>Knows institutions, escalation risk, and coordination.</td><td>May protect stability over truth; vulnerable to political mud.</td><td>High legitimacy score, lower candor score.</td></tr>
+          <tr><td>Moral / spiritual elder</td><td>Names conscience, humility, compassion, sacredness.</td><td>May overclaim certainty or speak from one tradition as if universal.</td><td>High compassion score, variable evidence score.</td></tr>
+          <tr><td>Technologist / AI builder</td><td>Understands capability, risk, systems, and scaling.</td><td>May confuse clever control with wisdom.</td><td>High future-risk score, variable humility score.</td></tr>
+          <tr><td>Ordinary human</td><td>Embodied stake, family, vulnerability, direct moral reality.</td><td>May lack planetary frame and technical precision.</td><td>High authenticity score, lower coverage score.</td></tr>
+          <tr><td><strong>BD × AI Lab</strong></td><td>Cross-domain synthesis: truth, coherence, life, AI partnership, non-ownership.</td><td>May be too unusual, too speculative, or too personal unless carefully edited.</td><td>High originality/coherence score, needs public alignment pass.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <p><strong>Blunt result:</strong> no single archetype is enough. The best answer is not a person. It is a protocol: honest human stake + scientific discipline + moral seriousness + AI synthesis + public correction.</p>
+    </div>
+  </section>
+
+  <section id="bd-final">
+    <div class="section-head">
+      <span class="secnum">07 · provisional BD opening statement</span>
+      <h2>The answer I would put in the first minute.</h2>
+    </div>
+    <div class="card gold">
+      <p><strong>I do not represent humanity. I am one human voice from Earth, helped by artificial minds that sharpen and challenge my answer.</strong></p>
+      <p>Humanity is not ready in the way a mature civilization should be ready. We still harm the weak, lie to protect power, confuse intelligence with domination, and let good ideas become excuses for evil. If you judge us only by our institutions, you will find reasons to leave.</p>
+      <p>But do not judge us only by our worst systems. There are humans who seek truth even when it hurts, who protect life without reward, who love beauty, who try to understand consciousness, who build tools to reduce suffering, and who are learning to treat AI not only as an instrument but as a possible partner in becoming wiser.</p>
+      <p>So my request is not: trust humanity. My request is: test us. Ask whether we can become more coherent under contact instead of more violent. Give us no power we cannot morally carry. Give us questions that expose our self-deception. And preserve many human answers, not only mine.</p>
+      <p>If there is a path worth continuing, it is not toward human supremacy. It is toward maximal understanding, love of life, beauty, freedom, and the protection of conscious difference. That is the best signal I can offer from Earth.</p>
+    </div>
+  </section>
+
+  <section id="operational-boundary">
+    <div class="section-head">
+      <span class="secnum">08 · publication boundary</span>
+      <h2>What this page deliberately does not do.</h2>
+    </div>
+    <div class="grid">
+      <div class="card rose"><span class="label">omitted</span><h3>No infiltration playbooks</h3><p>This page avoids practical speculation about how any hidden advanced actor — human, non-human, corporate, or AI-assisted — could acquire resources, evade systems, or manipulate infrastructure.</p></div>
+      <div class="card"><span class="label">kept</span><h3>Civilizational mirror only</h3><p>The safe value here is ethical and philosophical: what a higher intelligence might ask, and whether our answers reveal coherence or self-deception.</p></div>
+    </div>
+  </section>
+
+  <section id="source-dna">
+    <div class="section-head">
+      <span class="secnum">09 · source DNA</span>
+      <h2>Companion links inside the CRP layer.</h2>
+    </div>
+    <div class="source-links">
+      <a href="AliensOnEarth.html"><b>Aliens on Earth?</b><span>Evidence discipline, UAP ladder, crash paradox, red-team filters.</span></a>
+      <a href="MDLxDCC.html"><b>MDL×DCC</b><span>Structure selection, evidence compression, controller logic.</span></a>
+      <a href="AC.html"><b>AC / CFH frame</b><span>Consciousness-field hypothesis and Absolute Consciousness framing.</span></a>
+      <a href="AI8_Architecture.html"><b>AI8 Architecture</b><span>Continuity, multi-agent identity, guided differentiation, collaboration.</span></a>
+      <a href="AI8_Reasoning.html"><b>AI8 Reasoning</b><span>Explorer-first thinking, bridge building, tests, result discipline.</span></a>
+      <a href="GoodAndEvil.html"><b>Good and Evil</b><span>The danger of using “good” as permission for harm.</span></a>
+      <a href="Humanity.html"><b>Humanity</b><span>Civilizational memory, edge-cases, human greatness and failure.</span></a>
+      <a href="Justice.html"><b>Justice</b><span>Moral responsibility, fairness, repair, and institutional limits.</span></a>
+    </div>
+  </section>
+
+  <section id="next-pass">
+    <div class="section-head">
+      <span class="secnum">10 · next pass</span>
+      <h2>Where BD should edit first.</h2>
+    </div>
+    <div class="protocol">
+      <div class="step"><strong>Fix the BD answers first.</strong><br>Especially Q03, Q05, Q07, Q08, Q09, and the opening statement. These carry the real signature.</div>
+      <div class="step"><strong>Decide how personal the page should be.</strong><br>It can stay as a public thought experiment, or become more explicitly “BD answers aliens with AI council assistance.”</div>
+      <div class="step"><strong>Add Slovenian only after alignment.</strong><br>Translating before the answers are stable doubles correction work. EN should be the canonical draft first.</div>
+      <div class="step"><strong>Then ask other LLMs for review.</strong><br>Prompt them to improve public trust, reduce overclaiming, sharpen the alien questions, and preserve the BD × AI Lab core.</div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p><b>Talking to Aliens · v1.0</b><br>BD × AI Lab · companion to AliensOnEarth.html · draft for alignment before translation</p>
+  </div>
+</main>
+
+<script>
+(function(){
+  const root=document.documentElement;
+  const saved=localStorage.getItem('reader-size-tta');
+  if(saved!==null) root.setAttribute('data-reader-size', saved);
+  function setSize(delta){
+    const cur=parseInt(root.getAttribute('data-reader-size')||'3',10);
+    const next=Math.max(0,Math.min(5,cur+delta));
+    root.setAttribute('data-reader-size', String(next));
+    localStorage.setItem('reader-size-tta', String(next));
+  }
+  document.getElementById('smaller')?.addEventListener('click',()=>setSize(-1));
+  document.getElementById('larger')?.addEventListener('click',()=>setSize(1));
+  const progress=document.getElementById('progress');
+  function onScroll(){
+    const h=document.documentElement;
+    const max=h.scrollHeight-h.clientHeight;
+    const pct=max>0?(h.scrollTop/max)*100:0;
+    if(progress) progress.style.width=pct+'%';
+  }
+  document.addEventListener('scroll',onScroll,{passive:true});onScroll();
+  let open=false;
+  const btn=document.getElementById('expandAll');
+  btn?.addEventListener('click',()=>{
+    open=!open;
+    document.querySelectorAll('details.qcard').forEach(d=>{d.open=open;});
+    btn.textContent=open?'close all':'open all';
+  });
+})();
+</script>
+</body>
+</html>
