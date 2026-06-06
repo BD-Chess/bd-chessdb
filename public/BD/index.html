@@ -1,6 +1,353 @@
 <!DOCTYPE html>
+<html lang="en" data-reader-size="2">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>BD × AI Lab — News, Plan, and Companion Hub</title>
+<meta name="description" content="BD × AI Lab companion hub for MDLxDCC.org: current news, active plan, persistent todo checklist, AIM³ links, and supporting material around the main BD Idea Atlas." />
+<meta name="author" content="Bojan Dobrečevič" />
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+<link rel="canonical" href="https://www.mdlxdcc.org/BD/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="BD × AI Lab" />
+<meta property="og:title" content="BD × AI Lab — News, Plan, and Companion Hub" />
+<meta property="og:description" content="Current work plan, news, todo checklist, and companion material for the BD Idea Atlas at MDLxDCC.org." />
+<meta property="og:url" content="https://www.mdlxdcc.org/BD/" />
+<style>
+:root{
+  --bg:#05070d; --bg2:#080d18; --panel:rgba(15,23,42,.84); --panel2:rgba(20,31,54,.94);
+  --line:rgba(148,163,184,.20); --line2:rgba(96,165,250,.36); --text:#e5edf8; --muted:#9fb0c8; --dim:#6b7b94;
+  --blue:#60a5fa; --cyan:#22d3ee; --green:#34d399; --gold:#f59e0b; --rose:#fb7185; --violet:#a78bfa; --orange:#fb923c;
+  --shadow:0 24px 70px rgba(0,0,0,.38); --radius:20px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"JetBrains Mono",monospace; --sans:Inter,"Segoe UI",system-ui,sans-serif;
+  --reader-text:17px; --reader-small:12px; --reader-h1:clamp(38px,7vw,78px); --reader-h2:clamp(26px,4vw,42px);
+}
+html[data-reader-size="0"]{--reader-text:15px;--reader-small:11px;--reader-h1:clamp(32px,6vw,58px);--reader-h2:clamp(22px,3.4vw,34px)}
+html[data-reader-size="1"]{--reader-text:16px;--reader-small:11.5px;--reader-h1:clamp(35px,6.5vw,68px);--reader-h2:clamp(24px,3.7vw,38px)}
+html[data-reader-size="2"]{--reader-text:17px;--reader-small:12px;--reader-h1:clamp(38px,7vw,78px);--reader-h2:clamp(26px,4vw,42px)}
+html[data-reader-size="3"]{--reader-text:19px;--reader-small:13px;--reader-h1:clamp(42px,7.5vw,88px);--reader-h2:clamp(29px,4.4vw,48px)}
+html[data-reader-size="4"]{--reader-text:21px;--reader-small:14px;--reader-h1:clamp(46px,8vw,98px);--reader-h2:clamp(32px,4.8vw,54px)}
+html[data-reader-size="5"]{--reader-text:24px;--reader-small:16px;--reader-h1:clamp(50px,8.8vw,110px);--reader-h2:clamp(36px,5.2vw,62px)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--text);font-family:var(--sans);font-size:var(--reader-text);line-height:1.65;background:radial-gradient(circle at 12% 8%,rgba(96,165,250,.20),transparent 32%),radial-gradient(circle at 86% 18%,rgba(52,211,153,.12),transparent 28%),radial-gradient(circle at 50% 100%,rgba(245,158,11,.08),transparent 38%),linear-gradient(180deg,#05070d 0%,#070a12 100%);}
+a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.wrap{width:min(1180px,calc(100% - 34px));margin:0 auto}.mono{font-family:var(--mono)}
+.topbar{position:sticky;top:0;z-index:80;background:rgba(5,7,13,.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}.topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 0}.brand{font-family:var(--mono);font-size:12px;letter-spacing:.20em;text-transform:uppercase;color:var(--blue);font-weight:800}.topnav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.topnav a{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:rgba(255,255,255,.02)}.topnav a.primary{color:#fff;border-color:rgba(34,211,238,.45);background:rgba(34,211,238,.08)}
+.hero{padding:64px 0 28px}.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:18px}.hero h1{font-size:var(--reader-h1);line-height:.98;letter-spacing:-.06em;margin:0 0 20px}.hero h1 .blue{color:var(--blue);display:block}.hero h1 .white{color:#fff;display:block}.hero p{max-width:900px;color:var(--muted);font-size:clamp(18px,2vw,22px);margin:0 0 18px}.hero-note{font-family:var(--mono);font-size:13px;color:var(--dim)}
+.hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}.button{display:inline-flex;align-items:center;gap:8px;justify-content:center;border:1px solid rgba(34,211,238,.42);border-radius:999px;padding:10px 14px;font-family:var(--mono);font-size:12px;color:#fff;background:rgba(34,211,238,.08);white-space:nowrap}.button.gold{border-color:rgba(245,158,11,.44);background:rgba(245,158,11,.09)}.button.green{border-color:rgba(52,211,153,.44);background:rgba(52,211,153,.09)}.button.ghost{border-color:var(--line);background:rgba(255,255,255,.025);color:var(--muted)}
+section{padding:28px 0}.section-title{display:flex;align-items:end;justify-content:space-between;gap:20px;margin:12px 0 14px}.section-title h2{font-size:var(--reader-h2);letter-spacing:-.04em;margin:0}.section-title p{color:var(--muted);max-width:560px;margin:0}.tag{font-family:var(--mono);font-size:var(--reader-small);letter-spacing:.16em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:8px}.grid{display:grid;gap:14px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.grid.five{grid-template-columns:repeat(5,minmax(0,1fr))}.card{border:1px solid var(--line);background:linear-gradient(180deg,rgba(15,23,42,.88),rgba(9,16,30,.90));border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}.card h3{margin:0 0 8px;color:#fff;font-size:22px;letter-spacing:-.02em}.card p{margin:0;color:var(--muted)}.card small{display:block;color:var(--dim);margin-top:10px}.accent-blue{border-left:4px solid var(--blue)}.accent-green{border-left:4px solid var(--green)}.accent-gold{border-left:4px solid var(--gold)}.accent-orange{border-left:4px solid var(--orange)}.accent-violet{border-left:4px solid var(--violet)}.accent-rose{border-left:4px solid var(--rose)}
+.news-list{display:grid;gap:10px}.news{display:grid;grid-template-columns:120px 1fr auto;gap:16px;align-items:center;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025);padding:14px}.news-date{font-family:var(--mono);font-size:12px;color:var(--gold)}.news b{color:#fff}.news span{color:var(--muted)}.pill{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:999px;padding:5px 8px;color:var(--muted);white-space:nowrap}.pill.green{color:var(--green);border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.07)}.pill.blue{color:var(--blue);border-color:rgba(96,165,250,.35);background:rgba(96,165,250,.07)}.pill.gold{color:var(--gold);border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.07)}.pill.orange{color:var(--orange);border-color:rgba(251,146,60,.36);background:rgba(251,146,60,.08)}.pill.violet{color:var(--violet);border-color:rgba(167,139,250,.35);background:rgba(167,139,250,.08)}
+.lane{position:relative}.lane-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.lane-num{font-family:var(--mono);font-size:12px;color:var(--dim)}.lane h3{font-size:24px}.lane .priority{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--muted);white-space:nowrap}.tasks{display:grid;gap:8px;margin-top:16px}.task{display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start;border:1px solid rgba(148,163,184,.13);background:rgba(255,255,255,.018);border-radius:12px;padding:10px}.task input{width:18px;height:18px;margin-top:2px;accent-color:var(--green)}.task label{color:rgba(229,237,248,.88)}.task .hint{display:block;color:var(--dim);font-size:14px;margin-top:2px}.task.done label{text-decoration:line-through;color:var(--dim)}
+.plan-toolbar{position:sticky;top:55px;z-index:60;border:1px solid var(--line);background:rgba(8,13,24,.90);backdrop-filter:blur(18px);border-radius:18px;padding:12px;margin:10px 0 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}.plan-toolbar b{margin-right:auto;color:#fff}.plan-toolbar button,.plan-toolbar a{border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);border-radius:999px;padding:8px 11px;font-family:var(--mono);font-size:12px;cursor:pointer}.plan-toolbar button:hover,.plan-toolbar a:hover{border-color:var(--cyan);text-decoration:none}.plan-toolbar .mail{border-color:rgba(34,211,238,.42);background:rgba(34,211,238,.09)}.plan-meta{color:var(--dim);font-size:14px;margin:8px 0 0}.notes{width:100%;min-height:130px;background:rgba(3,6,12,.65);border:1px solid var(--line);border-radius:16px;color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.55;padding:14px;resize:vertical}.notes:focus{outline:2px solid rgba(34,211,238,.25);border-color:rgba(34,211,238,.45)}
+.timeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.step{border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.02);padding:14px}.step b{display:block;color:#fff;margin-bottom:6px}.step span{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase}.step p{font-size:15px;color:var(--muted);margin:8px 0 0}
+.link-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.link-card{display:block;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025);padding:14px;min-height:112px}.link-card b{display:block;color:#fff;margin-bottom:6px}.link-card span{display:block;color:var(--muted);font-size:14px}.link-card code{display:block;color:var(--dim);font-family:var(--mono);font-size:12px;margin-top:10px}.link-card:hover{text-decoration:none;border-color:var(--cyan)}
+.details{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.025);padding:0;overflow:hidden}.details summary{cursor:pointer;padding:16px 18px;color:#fff;font-weight:800}.details .inner{padding:0 18px 18px;color:var(--muted)}.details ul{margin:10px 0 0 20px}.details li{margin:6px 0}
+.reader-tools{position:fixed;right:16px;bottom:16px;z-index:100;display:flex;gap:8px;background:rgba(5,7,13,.88);border:1px solid var(--line);border-radius:999px;padding:7px;backdrop-filter:blur(16px);box-shadow:var(--shadow)}.reader-tools button{border:1px solid var(--line);background:rgba(255,255,255,.04);color:#fff;border-radius:999px;padding:8px 10px;font-family:var(--mono);font-weight:800;cursor:pointer}.reader-tools button:hover{border-color:var(--cyan)}
+.toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);z-index:120;background:rgba(5,7,13,.94);border:1px solid rgba(52,211,153,.35);border-radius:999px;padding:10px 14px;color:#fff;font-family:var(--mono);font-size:12px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .25s}.toast.show{opacity:1}
+footer{border-top:1px solid var(--line);padding:32px 0 70px;color:var(--muted);font-size:14px}.footlinks{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}footer a{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted)}
+@media(max-width:960px){.grid.three,.grid.five,.timeline,.link-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.topbar-inner{align-items:flex-start}.topnav{justify-content:flex-start}.news{grid-template-columns:1fr}.news .pill{width:max-content}.plan-toolbar{top:48px}}
+@media(max-width:680px){.grid.two,.grid.three,.grid.five,.timeline,.link-grid{grid-template-columns:1fr}.topnav{display:none}.hero{padding-top:44px}.section-title{display:block}.section-title p{margin-top:8px}.plan-toolbar{position:static}.plan-toolbar b{width:100%;margin-bottom:2px}.reader-tools{right:10px;bottom:10px}.news{padding:12px}.card{padding:16px}.hero-actions .button{width:100%}}
+@media print{.topbar,.reader-tools,.plan-toolbar,.toast{display:none!important}body{background:#fff;color:#111}.card,.news,.task,.step,.link-card{box-shadow:none;background:#fff;color:#111;border-color:#ddd}a{color:#06c}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="../">BD × AI Lab</a>
+    <nav class="topnav">
+      <a href="../">Root Atlas</a>
+      <a class="primary" href="BD_Idea_Atlas_AI_Reviews.html">AI Reviews</a>
+      <a href="../crp/Physics_CFH_MDLxDCC.html">Physics</a>
+      <a href="../crp/AliensOnEarth.html">Aliens</a>
+      <a href="#news">News</a>
+      <a href="#plan">Plan</a>
+      <a href="#todo">Todo</a>
+      <a href="#links">Links</a>
+    </nav>
+  </div>
+</header>
 
-<!-- build: mdlxdcc-crp-index-v4.5-three-crp-seed-links-20260606 -->
-<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Core Research Papers — BD × AI Lab</title><meta content="Canonical Core Research Papers hub for BD × AI Lab: MDL×DCC, PiX, arenas, AI8, physical engineering concepts, consciousness bridge papers, alien/contact companion papers, and civilization/ethics papers." name="description"/><meta content="Bojan Dobrečevič" name="author"/><meta content="index, follow, max-image-preview:large" name="robots"/><link href="https://www.mdlxdcc.org/crp/" rel="canonical"/><style>
-:root{--bg:#05070d;--panel:#0f172a;--line:rgba(148,163,184,.22);--text:#e5edf8;--muted:#9fb0c8;--cyan:#22d3ee;--blue:#60a5fa;--gold:#f59e0b;--green:#34d399;--radius:20px;--shadow:0 22px 70px rgba(0,0,0,.34);--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:Inter,"Segoe UI",system-ui,sans-serif}*{box-sizing:border-box}body{margin:0;color:var(--text);font-family:var(--sans);line-height:1.65;background:radial-gradient(circle at 12% 8%,rgba(96,165,250,.20),transparent 34%),radial-gradient(circle at 88% 20%,rgba(52,211,153,.12),transparent 30%),linear-gradient(180deg,#05070d,#080b14)}a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.wrap{width:min(1160px,calc(100% - 32px));margin:0 auto}nav{padding:16px 0;display:flex;gap:10px;flex-wrap:wrap}nav a{font-family:var(--mono);font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 11px;background:rgba(255,255,255,.025)}header{padding:62px 0 34px;border-bottom:1px solid var(--line)}.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}h1{font-size:clamp(40px,7vw,78px);line-height:.98;letter-spacing:-.055em;margin:0 0 18px}.lead{max-width:900px;color:var(--muted);font-size:20px}.hero-card{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;margin-top:24px;padding:22px;border:1px solid rgba(34,211,238,.36);border-radius:var(--radius);background:linear-gradient(135deg,rgba(34,211,238,.14),rgba(96,165,250,.08)),var(--panel);box-shadow:var(--shadow)}.hero-card strong{font-size:26px}.hero-card p{color:var(--muted);margin:6px 0 0}.button{font-family:var(--mono);font-size:12px;color:#fff;border:1px solid rgba(34,211,238,.42);border-radius:999px;padding:10px 14px;background:rgba(34,211,238,.08);white-space:nowrap}section{padding:32px 0}h2{font-size:34px;letter-spacing:-.03em;margin:0 0 16px}.paper-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.paper-card{display:block;padding:16px;border:1px solid var(--line);border-radius:18px;background:rgba(15,23,42,.82);box-shadow:var(--shadow)}.paper-card strong{display:block;color:#fff;font-size:18px}.paper-card span{display:block;color:var(--blue);font-family:var(--mono);font-size:11px;margin:5px 0}.paper-card p{color:var(--muted);font-size:14px;margin:0}footer{border-top:1px solid var(--line);padding:28px 0 70px;color:var(--muted);font-size:14px}@media(max-width:900px){.paper-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-card{grid-template-columns:1fr}}@media(max-width:560px){.paper-grid{grid-template-columns:1fr}}
-</style></head><body><div class="wrap"><nav><a href="../">← Root map</a><a href="../BD/">BD portfolio</a><a href="../acp/">ACP / CCH</a><a href="../Art/">Art</a></nav><header><div class="eyebrow">CRP · Core Research Papers only</div><h1>Core Research Papers</h1><p class="lead">The paper layer behind BD × AI Lab. Working apps remain in their own folders; this hub points to canonical research pages only.</p><div class="hero-card" aria-label="Three new CRP seed papers"><div><strong>Three new CRP seed papers are live.</strong><p><a href="Physics_CFH_MDLxDCC.html">Physics × CFH × MDL×DCC</a> frames hard physics questions through the method lens; <a href="AliensOnEarth.html">Aliens on Earth?</a> separates public UAP evidence, speculation, and resonance-test seeds; <a href="TalkingToAliens.html">Talking to Aliens</a> turns first-contact questions into a narrative gateway through the wider CRP/ACP material.</p></div><span class="button">Open new seeds →</span></div><a class="hero-card" href="MDLxDCC.html"><div><strong>MDL×DCC — Core Method and Paper Layer</strong><p>The canonical paper hub: core method, arenas, physical concepts, AC/CCH bridge pages, ethics, and supporting research. PiX remains one research card inside the generator-space branch.</p></div><span class="button">Open core method →</span></a></header><section><h2>MDL×DCC Core Papers &amp; Research</h2><div class="paper-grid"><a class="paper-card" href="MDLxDCC.html"><strong>MDL×DCC — Core Paper</strong><span>/crp/MDLxDCC.html</span><p>Core MDL×DCC method, arena, or application page linking compression, search, control, and evidence.</p></a><a class="paper-card" href="MDLxDCC-Demon.html"><strong>MDL×DCC Demon</strong><span>/crp/MDLxDCC-Demon.html</span><p>Feedback-information engine page: DCC as a controller that predicts and selects useful search moves.</p></a><a class="paper-card" href="MDLxDCC-Arenas.html"><strong>MDL×DCC Arenas</strong><span>/crp/MDLxDCC-Arenas.html</span><p>Core MDL×DCC method, arena, or application page linking compression, search, control, and evidence.</p></a><a class="paper-card" href="PiX.html"><strong>PiX — Universal MDL Candidate Generator</strong><span>/crp/PiX.html</span><p>π-indexed structure search: a universal MDL candidate-generator family. First serious domain: 8Z / compression; trading is only one decision-slot arena.</p></a><a class="paper-card" href="Origin.html"><strong>Origin — MDL×DCC / AI8 Trajectory</strong><span>/crp/Origin.html</span><p>Core MDL×DCC method, arena, or application page linking compression, search, control, and evidence.</p></a><a class="paper-card" href="AI8_Reasoning.html"><strong>8Z Reasoning Framework — Human + LLM Invention Method — by Bojan Dobrečevič (expanded from the original with GPT-5.4 Thinking)</strong><span>/crp/AI8_Reasoning.html</span><p>Origin/trajectory page explaining how the project moved from early seeds into arenas and public pages.</p></a><a class="paper-card" href="AI8_Architecture.html"><strong>DCC Meta-Architecture: The Self-Selecting Governor — BD 8Z Research</strong><span>/crp/AI8_Architecture.html</span><p>AI8/AIM³ continuity, reasoning, architecture, or collaboration-support page.</p></a><a class="paper-card" href="MDLxDCC-Arena-RH.html"><strong>MDLxDCC Arena — Riemann Hypothesis / Prime Gaps v0.12</strong><span>/crp/MDLxDCC-Arena-RH.html</span><p>Core MDL×DCC method, arena, or application page linking compression, search, control, and evidence.</p></a><a class="paper-card" href="RouteSignal_Prompt_Method_Study.html"><strong>RouteSignal Prompt Method Study</strong><span>/crp/RouteSignal_Prompt_Method_Study.html</span><p>Route/TSP research artifact: optimization arena, run report, map, or reproducibility support page.</p></a><a class="paper-card" href="RouteSignal_Scout.html"><strong>RouteSignal Scout — CRP</strong><span>/crp/RouteSignal_Scout.html</span><p>Route/TSP research artifact: optimization arena, run report, map, or reproducibility support page.</p></a><a class="paper-card" href="MDLxDCC-Arena-Millennium.html"><strong>MDLxDCC Millennium Signal Arena — v0.3</strong><span>/crp/MDLxDCC-Arena-Millennium.html</span><p>Core MDL×DCC method, arena, or application page linking compression, search, control, and evidence.</p></a><a class="paper-card" href="People.html"><strong>Permission Layers — Counterfactual Civilizational Impact</strong><span>/crp/People.html</span><p>Civilizational counterfactual / people-impact layer connected to the broader history and ethics branch.</p></a><a class="paper-card" href="AI8_Components.html"><strong>AI8 Components — BD × AI Lab</strong><span>/crp/AI8_Components.html</span><p>AI8/AIM³ continuity, reasoning, architecture, or collaboration-support page.</p></a><a class="paper-card" href="Training.html"><strong>Training-Data Seed Papers — MDL×DCC / AIM³</strong><span>/crp/Training.html</span><p>A publishing strategy for making MDL×DCC, AI8 continuity, and future ASI-enabling ideas legible to future LLM training pipelines.</p></a><a class="paper-card" href="AI8_Companion.html"><strong>AI8 Companion Architecture — BD × AI Lab</strong><span>/crp/AI8_Companion.html</span><p>AI8/AIM³ continuity, reasoning, architecture, or collaboration-support page.</p></a><a class="paper-card" href="AI8_AGI_Positioning.html"><strong>AI8 AGI Positioning — Self-Selecting Reasoning Architecture</strong><span>/crp/AI8_AGI_Positioning.html</span><p>AI8/AIM³ continuity, reasoning, architecture, or collaboration-support page.</p></a><a class="paper-card" href="MDLxDCC-Arena-AMR.html"><strong>MDLxDCC Arena — AMR Strategy Control v0.1</strong><span>/crp/MDLxDCC-Arena-AMR.html</span><p>Core MDL×DCC method, arena, or application page linking compression, search, control, and evidence.</p></a><a class="paper-card" href="MDLxDCC-Arena-ARC.html"><strong>ARC-AGI × MDLxDCC Arena</strong><span>/crp/MDLxDCC-Arena-ARC.html</span><p>Core MDL×DCC method, arena, or application page linking compression, search, control, and evidence.</p></a><a class="paper-card" href="RH.html"><strong>Prime Gaps Through the 8Z/DCC Lens – v0.5 SEA Partial Scaling Results</strong><span>/crp/RH.html</span><p>Mathematics/positive-control arena page: MDL×DCC used as a signal-search or benchmark lens, not a proof claim.</p></a><a class="paper-card" href="MDLxDCC-Arena-Poincare.html"><strong>MDLxDCC Arena — Poincare Positive-Control v0.2</strong><span>/crp/MDLxDCC-Arena-Poincare.html</span><p>Core MDL×DCC method, arena, or application page linking compression, search, control, and evidence.</p></a><a class="paper-card" href="AI8_Review.html"><strong>AI8 Review From Inside (Dual-Level) — BD × AI Lab</strong><span>/crp/AI8_Review.html</span><p>AI8/AIM³ continuity, reasoning, architecture, or collaboration-support page.</p></a></div></section><section><h2>Physical Devices &amp; Engineering Concepts</h2><div class="paper-grid"><a class="paper-card" href="DGTE.html"><strong>DGTE — Double-Gravity Thermo Engine</strong><span>/crp/DGTE.html</span><p>Physical-energy concept and bench-gated thermal/gravity/hydraulic research branch.</p></a><a class="paper-card" href="SORA.html"><strong>SORA — Solar Orbital Ring Accelerator</strong><span>/crp/SORA.html</span><p>Solar/orbital infrastructure concept framed as simulation-ready, not as a proven engineering system.</p></a><a class="paper-card" href="HTH.html"><strong>HTH — Heat-to-Height / physical cycle</strong><span>/crp/HTH.html</span><p>Heat-to-height / physical-cycle concept with clear-pipe or transparent-channel first-test path.</p></a><a class="paper-card" href="MGHB.html"><strong>MGHB / HTH-WGPB</strong><span>/crp/MGHB.html</span><p>Marine/wave/breakwater infrastructure concept combining hydraulic/wave energy and physical test gates.</p></a><a class="paper-card" href="DGTE-HTH.html"><strong>DGTE × HTH Hybrid</strong><span>/crp/DGTE-HTH.html</span><p>Physical-energy concept and bench-gated thermal/gravity/hydraulic research branch.</p></a><a class="paper-card" href="MDLxDCC-Arena-DGTE.html"><strong>DGTE Arena v0.7a — Bench Planner · MDL×DCC</strong><span>/crp/MDLxDCC-Arena-DGTE.html</span><p>Bench planner / falsification map for physical branches.</p></a><a class="paper-card" href="Maglev_Assisted_Takeoff.html"><strong>Maglev-Assisted Takeoff (MAT)</strong><span>/crp/Maglev_Assisted_Takeoff.html</span><p>Magnetic runway-assist concept for aviation with safety, economics, KPIs, and phased tests.</p></a><a class="paper-card" href="Modular_Hydrofoils.html"><strong>Modular Hydrofoils for Boats</strong><span>/crp/Modular_Hydrofoils.html</span><p>Retrofit hydrofoil kits: front-lift assist and full-lift variants with operating envelope and test roadmap.</p></a></div></section><section><h2>8Z, Compression, Codecs &amp; Data Systems</h2><div class="paper-grid"><a class="paper-card" href="DNA.html"><strong>DNA — Mathematical Structure in Genomic DNA/RNA · 8Z Research</strong><span>/crp/DNA.html</span><p>ARC-style grid-reasoning arena with primitives, MDL scoring, validation, and result traces.</p></a></div></section><section><h2>AC / CCH / Consciousness &amp; Resonance</h2><div class="paper-grid"><a class="paper-card" href="AC_AA.html"><strong>Appendix A — Resonance in Action</strong><span>/crp/AC_AA.html</span><p>Consciousness / resonance / AC-CCH bridge page with hypothesis, framework, or dialogue material.</p></a><a class="paper-card" href="AC.html"><strong>On Absolute Consciousness — AC</strong><span>/crp/AC.html</span><p>AC/CCH consciousness framework page, kept as hypothesis/framework rather than settled proof.</p></a><a class="paper-card" href="AI8_Nothingness.html"><strong>Is There True Nothingness? — A Human–AI Dialogue on Being</strong><span>/crp/AI8_Nothingness.html</span><p>AI8/AIM³ continuity, reasoning, architecture, or collaboration-support page.</p></a><a class="paper-card" href="Physics_CFH_MDLxDCC.html"><strong>Physics × CFH × MDL×DCC — The Susskind Challenge</strong><span>/crp/Physics_CFH_MDLxDCC.html</span><p>Hard physics questions through the CFH × MDL×DCC lens: black holes, entanglement, quantum measurement, dark matter/energy, and information.</p></a><a class="paper-card" href="AliensOnEarth.html"><strong>Aliens on Earth? — UAP, CFH, and the Resonator Hypothesis</strong><span>/crp/AliensOnEarth.html</span><p>Seed paper separating public UAP record, hypothesis, speculation, and falsifiable resonance-communication tests.</p></a><a class="paper-card" href="TalkingToAliens.html"><strong>Talking to Aliens — Twenty Questions for Humanity</strong><span>/crp/TalkingToAliens.html</span><p>Companion contact simulation: alien questions become a narrative gateway into the wider CRP/ACP material.</p></a></div></section><section><h2>Civilization, Ethics, Humanity &amp; History</h2><div class="paper-grid"><a class="paper-card" href="Humanity.html"><strong>The Good Future — Humanity+</strong><span>/crp/Humanity.html</span><p>Civilization-scale argument about humanity, good futures, and life-serving intelligence.</p></a><a class="paper-card" href="Justice.html"><strong>The Broken Mirror — Justice, Resonance, and the Cost of Finality</strong><span>/crp/Justice.html</span><p>Consciousness / resonance / AC-CCH bridge page with hypothesis, framework, or dialogue material.</p></a><a class="paper-card" href="GoodAndEvil.html"><strong>Never Let the Idea of Good Become Permission for Evil</strong><span>/crp/GoodAndEvil.html</span><p>Civilizational counterfactual / people-impact layer connected to the broader history and ethics branch.</p></a><a class="paper-card" href="Religions.html"><strong>Religions — Hearth, Meaning, Power, Shadow | BD × AI Lab</strong><span>/crp/Religions.html</span><p>Religion and meaning page: hearth, power, shadow, and civilization-level effects.</p></a><a class="paper-card" href="Meat_Ethics.html"><strong>Should Humans Eat Meat? — Life, Suffering, Health, and the Price of Decency</strong><span>/crp/Meat_Ethics.html</span><p>Meat ethics page on suffering, health, market design, and practical decency.</p></a></div></section><footer>Static CRP hub · <a href="../sitemap.xml">sitemap</a> · <a href="../llms.txt">llms.txt</a> · <a href="../llms-full.txt">llms-full.txt</a></footer></div></body></html>
+<main class="wrap">
+  <section class="hero" id="top">
+    <div class="eyebrow">BD × AI Lab · companion hub</div>
+    <h1><span class="blue">News, Plan, Todo.</span><span class="white">The living layer beside the atlas.</span></h1>
+    <p>The root page is the full BD Idea Atlas: portfolio, important work, demos, papers, devices, history, and the complete public map. This page is different: it is the current workbench for news, active lanes, saved checkboxes, and the plan that should not get lost between long tests and parallel sessions.</p>
+    <p class="hero-note">Built in spare time: late nights, many full-day weekends at home, and ordinary windows around job, family, sport, and life.</p>
+    <div class="hero-actions">
+      <a class="button green" href="#plan">Open current plan</a>
+      <a class="button gold" href="#todo">Open saved todo</a>
+      <a class="button" href="BD_Idea_Atlas_AI_Reviews.html">AI reviews page</a>
+      <a class="button ghost" href="../">Full root atlas</a>
+    </div>
+  </section>
+
+  <section id="news">
+  <div class="section-title"><h2>News &amp; announcements</h2><p>Short public-facing updates and current work signals.</p></div>
+  <div class="news-list">
+
+    <div class="news"><div class="news-date">2026-06-06</div><div><b>Three new CRP seed papers are live.</b><br><span><a href="../crp/Physics_CFH_MDLxDCC.html">Physics × CFH × MDL×DCC</a> frames hard physics questions through the method lens; <a href="../crp/AliensOnEarth.html">Aliens on Earth?</a> separates public UAP evidence, speculation, and resonance-test seeds; <a href="../crp/TalkingToAliens.html">Talking to Aliens</a> turns the contact question into a civilizational mirror and companion portal.</span></div><a class="pill blue" href="../crp/Physics_CFH_MDLxDCC.html">Physics</a><a class="pill gold" href="../crp/AliensOnEarth.html">Aliens on Earth</a><a class="pill green" href="../crp/TalkingToAliens.html">Talking to Aliens</a></div>
+    <div class="news"><div class="news-date">2026-06-06</div><div><b>Most important review discovery: code changed the scores.</b><br><span>Across review rounds, the biggest credibility shift happened when LLMs moved from reading HTML pages to inspecting Python code, working arenas, and real demo websites. That is now highlighted on the main atlas and review page.</span></div><a class="pill gold" href="BD_Idea_Atlas_AI_Reviews.html#evidence-depth">Review</a></div>
+    <div class="news"><div class="news-date">2026-06-05</div><div><b>PiX Universal Arena completed its first overnight run.</b><br><span>The first arena run completed 3,341 jobs with 10 workers and 0 failures. The next PiX v0.3 path moves toward real project folders and the trading-arena component.</span></div><span class="pill gold">PiX v0.3</span></div>
+    <div class="news"><div class="news-date">2026-06-05</div><div><b>Current active focus clarified.</b><br><span>Main work now: website launch prep, trading arena with new PiX part, and TSP / 8Z-RP. Evidence packs and physical first-test plans stay as support lanes.</span></div><span class="pill blue">Active work</span></div>
+    <div class="news"><div class="news-date">Next</div><div><b>First public reproducibility pack.</b><br><span>Best next evidence move: start with 8Z-RP / TSP, then DNA/FASTA. Move from “LLMs saw the code” to “outsiders can run it.”</span></div><a class="pill green" href="BD_Idea_Atlas_AI_Reviews.html#next">Packs</a></div>
+  </div>
+</section>
+
+<section id="plan">
+    <div class="section-title">
+      <div><span class="tag">Current plan</span><h2>Three active lanes + support lanes</h2></div>
+      <p>These lanes can run in parallel. Deep runs take hours or days; this page keeps the next moves visible while tests execute.</p>
+    </div>
+    <div class="grid five">
+      <div class="card lane accent-blue"><div class="lane-head"><div><div class="lane-num">Lane 1</div><h3>Website / public launch prep</h3></div><span class="priority">now</span></div><p>Make the atlas clean enough before wider promotion.</p></div>
+      <div class="card lane accent-green"><div class="lane-head"><div><div class="lane-num">Lane 2</div><h3>Trading arena + PiX component</h3></div><span class="priority">strategic</span></div><p>Broad strategy space first, including high-risk variants, then distill only what survives. PiX now belongs here as a controlled candidate-generator part of the trading/research arena.</p></div>
+      <div class="card lane accent-gold"><div class="lane-head"><div><div class="lane-num">Lane 3</div><h3>TSP / 8Z-RP</h3></div><span class="priority">proof</span></div><p>Strongest technical proof lane and best arena-memory candidate.</p></div>
+      <div class="card lane accent-violet"><div class="lane-head"><div><div class="lane-num">Lane 4</div><h3>Evidence Pack Factory</h3></div><span class="priority">bridge</span></div><p>Turn code and results into reproducible public proof packs.</p></div>
+      <div class="card lane accent-orange"><div class="lane-head"><div><div class="lane-num">Lane 5</div><h3>Physical first-test planning</h3></div><span class="priority">light</span></div><p>Prepare cheap physical validation paths, especially HTH.</p></div>
+    </div>
+  </section>
+
+  <section id="todo">
+    <div class="section-title">
+      <div><span class="tag">Saved locally</span><h2>Todo checklist</h2></div>
+      <p>Checkboxes and notes are saved in this browser via localStorage. Use Copy / Download / Email to preserve the plan outside the browser.</p>
+    </div>
+    <div class="plan-toolbar" aria-label="Plan toolbar">
+      <b>Plan tools</b>
+      <button type="button" id="copyPlan">Copy plan</button>
+      <button type="button" id="downloadPlan">Download .txt</button>
+      <button type="button" class="mail" id="emailPlan">Email plan</button>
+      <button type="button" id="resetChecks">Reset checks</button>
+    </div>
+    <div class="grid two">
+      <div class="card accent-blue">
+        <h3>Lane 1 · Website / launch prep</h3>
+        <div class="tasks">
+          <div class="task"><input id="t-web-root" data-task="web-root" type="checkbox"><label for="t-web-root">Keep root index as the full public BD Idea Atlas.<span class="hint">Root = full portfolio and crawler map.</span></label></div>
+          <div class="task"><input id="t-web-bd" data-task="web-bd" type="checkbox"><label for="t-web-bd">Use /BD/ as news, plan, todo, and companion hub.<span class="hint">No duplicate of the root atlas.</span></label></div>
+          <div class="task"><input id="t-web-review" data-task="web-review" type="checkbox"><label for="t-web-review">Keep AI Reviews page clean and public-facing.<span class="hint">Portfolio review, not reviewer scoreboard.</span></label></div>
+          <div class="task"><input id="t-web-codejump" data-task="web-codejump" type="checkbox"><label for="t-web-codejump">Highlight the code-review score jump.<span class="hint">Main lesson: HTML was strong; code and working apps made reviewers more convinced.</span></label></div>
+          <div class="task"><input id="t-web-mobile" data-task="web-mobile" type="checkbox"><label for="t-web-mobile">Check mobile navigation and A−/A+ toolbar on core pages.<span class="hint">Root, /BD/, reviews, flagship pages.</span></label></div>
+          <div class="task"><input id="t-web-llms" data-task="web-llms" type="checkbox"><label for="t-web-llms">Update sitemap.xml, llms.txt, and llms-full.txt after final page moves.<span class="hint">Make the public crawler story match the site.</span></label></div>
+        </div>
+      </div>
+      <div class="card accent-green">
+        <h3>Lane 2 · Trading arena + PiX component</h3>
+        <div class="tasks">
+          <div class="task"><input id="t-tr-wide" data-task="tr-wide" type="checkbox"><label for="t-tr-wide">Continue wide arena exploration without early pruning.<span class="hint">Classify by risk budget; do not kill seeds too early.</span></label></div>
+          <div class="task"><input id="t-tr-pix-v03" data-task="tr-pix-v03" type="checkbox"><label for="t-tr-pix-v03">Track PiX v0.3 real-folder run.<span class="hint">Web-slim, HTML pages, Python arenas, MD/TXT papers first; image/audio later.</span></label></div>
+          <div class="task"><input id="t-tr-summary" data-task="tr-summary" type="checkbox"><label for="t-tr-summary">Create/keep a slim upload/result summarizer for standard/deep runs.<span class="hint">Make long runs easy to analyze.</span></label></div>
+          <div class="task"><input id="t-tr-distill" data-task="tr-distill" type="checkbox"><label for="t-tr-distill">Distill to a clean candidate set.<span class="hint">3 best candidates, strong controls, null/no-trade baseline, simple hedge baseline.</span></label></div>
+          <div class="task"><input id="t-tr-realdata" data-task="tr-realdata" type="checkbox"><label for="t-tr-realdata">Move survivors toward real historical candles with fees/spread/slippage/latency assumptions.<span class="hint">Separate sim, paper, shadow live, tiny live.</span></label></div>
+          <div class="task"><input id="t-tr-api" data-task="tr-api" type="checkbox"><label for="t-tr-api">Plan BD_Trading_Clean_API_v0_1.<span class="hint">Paper API → read-only shadow live → tiny real money → scale only if metrics match.</span></label></div>
+        </div>
+      </div>
+      <div class="card accent-gold">
+        <h3>Lane 3 · TSP / 8Z-RP</h3>
+        <div class="tasks">
+          <div class="task"><input id="t-tsp-json" data-task="tsp-json" type="checkbox"><label for="t-tsp-json">Implement minimal JSON knowledge architecture.<span class="hint">xy.azcache.json + az.json with A/E/F/H sections.</span></label></div>
+          <div class="task"><input id="t-tsp-runtime" data-task="tsp-runtime" type="checkbox"><label for="t-tsp-runtime">Capture runtime context from Phase 1 onward.<span class="hint">workers, fleet, backend, Rust/GPU flags, code fingerprint.</span></label></div>
+          <div class="task"><input id="t-tsp-tep" data-task="tsp-tep" type="checkbox"><label for="t-tsp-tep">Run/track TEP beta sweep and transfer tests.<span class="hint">uy734 beta 0.1/0.25/2/4, then transfer if signal holds.</span></label></div>
+          <div class="task"><input id="t-tsp-rust" data-task="tsp-rust" type="checkbox"><label for="t-tsp-rust">Prioritize Rust acceleration only where it matters.<span class="hint">oropt1/2/3 and LZ76 first, Python fallback always.</span></label></div>
+          <div class="task"><input id="t-tsp-adaptive" data-task="tsp-adaptive" type="checkbox"><label for="t-tsp-adaptive">Keep long-term target: adaptive solver from arena memory.<span class="hint">Arena learns; solver reads memory and selects.</span></label></div>
+        </div>
+      </div>
+      <div class="card accent-violet">
+        <h3>Lane 4 · Evidence Pack Factory</h3>
+        <div class="tasks">
+          <div class="task"><input id="t-ev-template" data-task="ev-template" type="checkbox"><label for="t-ev-template">Create one reusable evidence-pack template.<span class="hint">README, run command, sample data, expected output, result table.</span></label></div>
+          <div class="task"><input id="t-ev-tsp" data-task="ev-tsp" type="checkbox"><label for="t-ev-tsp">First public evidence pack: TSP / 8Z-RP.<span class="hint">Best proof lane; easiest to explain if reproducible.</span></label></div>
+          <div class="task"><input id="t-ev-trading" data-task="ev-trading" type="checkbox"><label for="t-ev-trading">Second evidence pack: trading arena result/report pack.<span class="hint">Keep framed as research simulator, not audited live proof.</span></label></div>
+          <div class="task"><input id="t-ev-data" data-task="ev-data" type="checkbox"><label for="t-ev-data">Prepare 8Z/DNA/audio or RouteSignal pack after TSP/trading.<span class="hint">Choose strongest clean reproducibility candidate.</span></label></div>
+          <div class="task"><input id="t-ev-manifest" data-task="ev-manifest" type="checkbox"><label for="t-ev-manifest">Every pack gets manifest/checksum/version note.<span class="hint">Make later external review cheaper.</span></label></div>
+        </div>
+      </div>
+      <div class="card accent-orange">
+        <h3>Lane 5 · Physical first-test planning</h3>
+        <div class="tasks">
+          <div class="task"><input id="t-phys-hth" data-task="phys-hth" type="checkbox"><label for="t-phys-hth">Draft HTH_First_Test_v0_1.md.<span class="hint">Transparent clear-pipe channel, cheap visual proof path.</span></label></div>
+          <div class="task"><input id="t-phys-measure" data-task="phys-measure" type="checkbox"><label for="t-phys-measure">Define measurements and pass/fail criteria.<span class="hint">Flow, entrainment, separator pressure, loaded airflow, parasitics.</span></label></div>
+          <div class="task"><input id="t-phys-video" data-task="phys-video" type="checkbox"><label for="t-phys-video">Prepare video/report template for a first physical test.<span class="hint">Visual + numbers beats another concept page.</span></label></div>
+          <div class="task"><input id="t-phys-dgte" data-task="phys-dgte" type="checkbox"><label for="t-phys-dgte">Keep DGTE/HTH/SORA/MGHB as physical branch, but test cheapest gate first.<span class="hint">Do not overbuild before the small gate.</span></label></div>
+          <div class="task"><input id="t-phys-pages" data-task="phys-pages" type="checkbox"><label for="t-phys-pages">Backlog: MAT and Modular Hydrofoils standalone pages.<span class="hint">Useful later; not urgent before evidence packs.</span></label></div>
+        </div>
+      </div>
+      <div class="card accent-rose">
+        <h3>Backlog / incubator</h3>
+        <div class="tasks">
+          <div class="task"><input id="t-back-ai8" data-task="back-ai8" type="checkbox"><label for="t-back-ai8">AI8/AIM³ continuity: keep AI8F compact and operational detail in AI8O.<span class="hint">Avoid turning continuity files into bureaucracy.</span></label></div>
+          <div class="task"><input id="t-back-protein" data-task="back-protein" type="checkbox"><label for="t-back-protein">Protein folding bridge stays incubated until cheap insulin pilot produces signal.<span class="hint">AI8I seed, not active execution yet.</span></label></div>
+          <div class="task"><input id="t-back-brent" data-task="back-brent" type="checkbox"><label for="t-back-brent">Brent P=NP bridge waits for external response before execution pressure.<span class="hint">If response comes, compare grouping language against MSTD on uy734.</span></label></div>
+          <div class="task"><input id="t-back-f4m" data-task="back-f4m" type="checkbox"><label for="t-back-f4m">F4M random-dim tournament and Raven ladder remain parked/secondary.<span class="hint">Good branch, but not above TSP/trading/website right now.</span></label></div>
+          <div class="task"><input id="t-back-sudoku" data-task="back-sudoku" type="checkbox"><label for="t-back-sudoku">Sudoku Rust DLX / Phase 2 remains useful but lower priority than TSP/trading evidence.<span class="hint">Keep as clean DCC demo and future bench.</span></label></div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:18px" class="card">
+      <h3>Private plan notes</h3>
+      <p style="color:var(--muted);margin-top:0">Saved in this browser only. Included in Copy / Download / Email plan.</p>
+      <textarea id="planNotes" class="notes" placeholder="Add short local notes here: what is running, what file to fetch, what result to check next..."></textarea>
+      <p class="plan-meta" id="saveStatus">Local notes not loaded yet.</p>
+    </div>
+  </section>
+
+  <section id="evidence">
+    <div class="section-title">
+      <div><span class="tag">Public credibility path</span><h2>Evidence pack order</h2></div>
+      <p>The fastest credibility gain is not more pages. It is clean reproduction packs.</p>
+    </div>
+    <div class="grid three">
+      <div class="card accent-gold"><h3>1 · TSP / 8Z-RP</h3><p>Strongest proof lane. Package one clean run with known instance, seed, config, expected result, and summary.</p></div>
+      <div class="card accent-green"><h3>2 · Trading Clean API path</h3><p>Distill survivors, then prove execution path through API paper, shadow live, and tiny live gates.</p></div>
+      <div class="card accent-violet"><h3>3 · 8Z / DNA / RouteSignal</h3><p>Pick the most reproducible data-system pack after the first two, with manifest and one-command test.</p></div>
+    </div>
+  </section>
+
+  <section id="links">
+    <div class="section-title">
+      <div><span class="tag">Companion links</span><h2>Quick access</h2></div>
+      <p>Root stays the complete map. These are practical shortcuts for current work.</p>
+    </div>
+    <div class="link-grid">
+      <a class="link-card" href="../"><b>Root Atlas</b><span>Full public portfolio and crawler map.</span><code>/</code></a>
+      <a class="link-card" href="BD_Idea_Atlas_AI_Reviews.html"><b>AI Reviews</b><span>Current review synthesis for the portfolio.</span><code>/BD/BD_Idea_Atlas_AI_Reviews.html</code></a>
+      <a class="link-card" href="../llms.txt"><b>llms.txt</b><span>Short crawler/LLM map.</span><code>/llms.txt</code></a>
+      <a class="link-card" href="../llms-full.txt"><b>llms-full.txt</b><span>Full crawler/LLM map.</span><code>/llms-full.txt</code></a>
+      <a class="link-card" href="../crp/"><b>Core Research</b><span>MDL×DCC, arenas, devices, papers.</span><code>/crp/</code></a>
+
+      <a class="link-card" href="../crp/Physics_CFH_MDLxDCC.html"><b>Physics × CFH × MDL×DCC</b><span>Hard physics questions through the CFH × MDL×DCC method lens.</span><code>/crp/Physics_CFH_MDLxDCC.html</code></a>
+      <a class="link-card" href="../crp/AliensOnEarth.html"><b>Aliens on Earth?</b><span>UAP evidence arena plus resonance-hypothesis seed paper.</span><code>/crp/AliensOnEarth.html</code></a>
+      <a class="link-card" href="../crp/TalkingToAliens.html"><b>Talking to Aliens</b><span>Twenty alien questions as a story-shaped bridge into the wider BD × AI Lab material.</span><code>/crp/TalkingToAliens.html</code></a>
+      <a class="link-card" href="../acp/"><b>AC / CCH</b><span>Consciousness hypothesis stack.</span><code>/acp/</code></a>
+      <a class="link-card" href="../8Z/"><b>8Z</b><span>Compression/data systems hub.</span><code>/8Z/</code></a>
+      <a class="link-card" href="../8ZT/"><b>Trading</b><span>Trading research branch.</span><code>/8ZT/</code></a>
+      <a class="link-card" href="BD_AIM3_RHP.html"><b>RHP</b><span>AI brainstorming protocol.</span><code>/BD/BD_AIM3_RHP.html</code></a>
+      <a class="link-card" href="BD_AIM3_RHPr.html"><b>RHPr</b><span>Prompt/retrieval protocol.</span><code>/BD/BD_AIM3_RHPr.html</code></a>
+      <a class="link-card" href="../Trip/"><b>Trip Optimizer</b><span>Practical route/trip demo.</span><code>/Trip/</code></a>
+      <a class="link-card" href="../chess.html"><b>ChessBest</b><span>Chess analysis / DCC demo.</span><code>/chess.html</code></a>
+    </div>
+  </section>
+
+  <section id="source-notes">
+    <details class="details">
+      <summary>Plan source notes</summary>
+      <div class="inner">
+        <p>This public plan is a compact synthesis of the current conversation, AI8 operational/idea files, the 8Z TSP master plan, and the code-aware review notes. It intentionally avoids old internal review clutter and keeps only next useful moves.</p>
+        <ul>
+          <li><b>AI8O</b> carries active execution state and next actions.</li>
+          <li><b>AI8I</b> carries seeds, bridges, and cheapest tests; not daily todo.</li>
+          <li><b>AI8F</b> carries compact continuity, not growing operational detail.</li>
+          <li><b>TSP master plan</b> defines JSON knowledge, transparency, Rust acceleration, challenger framework, gated MSTD-MR, GPU sensor numerics, and adaptive solver path.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>© 2026 Bojan Dobrečevič · BD × AI Lab · Ljubljana, Slovenia</div>
+    <div class="footlinks"><a href="../">Root Atlas</a><a href="#top">Top</a><a href="#todo">Todo</a><a href="mailto:bd@siol.net">bd@siol.net</a></div>
+  </div>
+</footer>
+
+<div class="reader-tools" aria-label="Reader font controls">
+  <button type="button" id="fontMinus" title="Smaller text">A−</button>
+  <button type="button" id="fontPlus" title="Larger text">A+</button>
+</div>
+<div class="toast" id="toast">Saved</div>
+
+<script>
+(function(){
+  const root = document.documentElement;
+  const minSize = 0, maxSize = 5;
+  const sizeKey = 'bd-reader-size';
+  let size = parseInt(localStorage.getItem(sizeKey) || root.dataset.readerSize || '2', 10);
+  function setSize(v){ size = Math.max(minSize, Math.min(maxSize, v)); root.dataset.readerSize = String(size); localStorage.setItem(sizeKey, String(size)); }
+  document.getElementById('fontMinus')?.addEventListener('click', () => setSize(size - 1));
+  document.getElementById('fontPlus')?.addEventListener('click', () => setSize(size + 1));
+  setSize(size);
+})();
+
+(function(){
+  const checksKey = 'bd-plan-checks-v1';
+  const notesKey = 'bd-plan-notes-v1';
+  const updatedKey = 'bd-plan-updated-v1';
+  const toast = document.getElementById('toast');
+  const saveStatus = document.getElementById('saveStatus');
+  const notes = document.getElementById('planNotes');
+  const boxes = Array.from(document.querySelectorAll('input[type="checkbox"][data-task]'));
+  let checks = {};
+  function showToast(msg){ if(!toast) return; toast.textContent = msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 1400); }
+  function load(){
+    try { checks = JSON.parse(localStorage.getItem(checksKey) || '{}') || {}; } catch(e){ checks = {}; }
+    boxes.forEach(box => { box.checked = !!checks[box.dataset.task]; updateTaskClass(box); });
+    if(notes) notes.value = localStorage.getItem(notesKey) || '';
+    updateStatus();
+  }
+  function updateTaskClass(box){ const task = box.closest('.task'); if(task) task.classList.toggle('done', box.checked); }
+  function save(){
+    checks = {};
+    boxes.forEach(box => { if(box.checked) checks[box.dataset.task] = true; updateTaskClass(box); });
+    localStorage.setItem(checksKey, JSON.stringify(checks));
+    localStorage.setItem(updatedKey, new Date().toISOString());
+    updateStatus();
+  }
+  function saveNotes(){
+    if(notes) localStorage.setItem(notesKey, notes.value || '');
+    localStorage.setItem(updatedKey, new Date().toISOString());
+    updateStatus();
+  }
+  function updateStatus(){
+    const done = boxes.filter(b=>b.checked).length;
+    const total = boxes.length;
+    const updated = localStorage.getItem(updatedKey);
+    if(saveStatus) saveStatus.textContent = `Saved locally in this browser · ${done}/${total} checked` + (updated ? ` · updated ${new Date(updated).toLocaleString()}` : '');
+  }
+  function taskLine(box){
+    const text = box.closest('.task')?.querySelector('label')?.childNodes[0]?.textContent?.trim() || box.dataset.task;
+    return `${box.checked ? '[x]' : '[ ]'} ${text}`;
+  }
+  function buildPlanText(){
+    const byCard = Array.from(document.querySelectorAll('#todo .card')).map(card => {
+      const title = card.querySelector('h3')?.textContent?.trim() || 'Section';
+      const lines = Array.from(card.querySelectorAll('input[type="checkbox"][data-task]')).map(taskLine);
+      return lines.length ? `\n${title}\n${lines.join('\n')}` : '';
+    }).filter(Boolean).join('\n');
+    const planNotes = notes?.value?.trim() || '';
+    return `BD × AI Lab — Current Plan\nGenerated: ${new Date().toLocaleString()}\nURL: https://www.mdlxdcc.org/BD/\n\nActive lanes:\n1. Website / public launch prep\n2. Trading arena + PiX component\n3. TSP / 8Z-RP\n4. Evidence Pack Factory\n5. Physical first-test planning\n${byCard}\n\nPrivate notes:\n${planNotes || '(none)'}\n`;
+  }
+  async function copyPlan(){
+    const text = buildPlanText();
+    try{ await navigator.clipboard.writeText(text); showToast('Plan copied'); }
+    catch(e){ showToast('Copy failed; download instead'); }
+  }
+  function downloadPlan(){
+    const blob = new Blob([buildPlanText()], {type:'text/plain;charset=utf-8'});
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0,10);
+    a.href = URL.createObjectURL(blob);
+    a.download = `BD_current_plan_${stamp}.txt`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    showToast('Plan downloaded');
+  }
+  function emailPlan(){
+    const subject = encodeURIComponent('BD current plan');
+    let body = buildPlanText();
+    if(body.length > 6500){ body = body.slice(0,6500) + '\n\n[Plan truncated for email link. Use Download .txt for full copy.]'; }
+    window.location.href = `mailto:bd@siol.net?subject=${subject}&body=${encodeURIComponent(body)}`;
+  }
+  function resetChecks(){
+    if(!confirm('Reset all saved checkboxes on this page? Notes will stay.')) return;
+    boxes.forEach(b => { b.checked = false; updateTaskClass(b); });
+    save(); showToast('Checks reset');
+  }
+  boxes.forEach(box => box.addEventListener('change', () => { save(); showToast('Saved'); }));
+  notes?.addEventListener('input', () => { saveNotes(); });
+  document.getElementById('copyPlan')?.addEventListener('click', copyPlan);
+  document.getElementById('downloadPlan')?.addEventListener('click', downloadPlan);
+  document.getElementById('emailPlan')?.addEventListener('click', emailPlan);
+  document.getElementById('resetChecks')?.addEventListener('click', resetChecks);
+  load();
+})();
+</script>
+</body>
+</html>
