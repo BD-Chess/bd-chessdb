@@ -1,337 +1,398 @@
 <!DOCTYPE html>
-<html lang="en" data-lang="en" data-reader-size="2">
+<html lang="en" data-reader-size="2">
 <head>
-<meta charset="utf-8" />
+<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Physics × CFH × MDL×DCC — The Susskind Challenge</title>
-<meta name="description" content="A dark-theme CFH × MDL×DCC response map to the hardest questions in physics: black holes, information, holography, quantum gravity, string theory, testability, and presence." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 :root{
-  --bg:#020409;--bg2:#060a14;--panel:rgba(15,23,41,.86);--panel2:rgba(20,30,51,.92);
-  --border:rgba(0,229,255,.14);--border2:rgba(0,229,255,.28);--line:rgba(226,232,244,.10);
-  --cyan:#00e5ff;--gold:#ffd84d;--gold2:#f59e0b;--green:#34d399;--violet:#a78bfa;--rose:#ff6b8a;--orange:#fb923c;
-  --text:#e2e8f4;--muted:#8ca2c9;--dim:#627396;--shadow:0 22px 70px rgba(0,0,0,.34);
-  --reader-text:20px;--reader-small:13px;--reader-h1:clamp(2.55rem,7vw,5.6rem);--reader-h2:clamp(1.65rem,3.4vw,2.45rem);--reader-h3:clamp(1.22rem,2.2vw,1.65rem);
+  --bg:#020409; --panel:rgba(15,23,41,.84); --panel2:rgba(20,30,51,.92);
+  --border:rgba(0,229,255,.13); --border2:rgba(0,229,255,.28);
+  --cyan:#00e5ff; --gold:#f59e0b; --green:#34d399; --violet:#a78bfa; --rose:#ff6b8a; --orange:#fb923c;
+  --text:#e2e8f4; --muted:#8ca2c9; --dim:#627396; --shadow:0 22px 70px rgba(0,0,0,.34);
+  --reader-text:20px; --reader-small:13px; --reader-h1:clamp(2.35rem,6.8vw,5.4rem); --reader-h2:clamp(1.55rem,3.4vw,2.45rem); --reader-h3:clamp(1.16rem,2.25vw,1.65rem);
 }
-html[data-reader-size="1"]{--reader-text:18px;--reader-small:12px;--reader-h1:clamp(2.25rem,6.5vw,4.8rem);--reader-h2:clamp(1.45rem,3.1vw,2.2rem);--reader-h3:clamp(1.12rem,2.05vw,1.48rem)}
-html[data-reader-size="3"]{--reader-text:22px;--reader-small:14px;--reader-h1:clamp(2.85rem,7.4vw,6.2rem);--reader-h2:clamp(1.9rem,3.6vw,2.85rem);--reader-h3:clamp(1.35rem,2.5vw,1.95rem)}
-*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body{min-height:100vh;overflow-x:hidden;color:var(--text);font-family:Rajdhani,"Segoe UI",system-ui,sans-serif;font-size:var(--reader-text);line-height:1.72;background:radial-gradient(circle at 14% 10%,rgba(0,229,255,.13),transparent 30%),radial-gradient(circle at 90% 22%,rgba(167,139,250,.11),transparent 31%),radial-gradient(circle at 50% 100%,rgba(245,158,11,.08),transparent 44%),linear-gradient(180deg,var(--bg),#05070d 100%)}
-body:before,body:after{content:'';position:fixed;border-radius:50%;filter:blur(115px);opacity:.28;pointer-events:none;z-index:-1}body:before{width:48vw;height:48vw;left:-16vw;top:-14vh;background:radial-gradient(circle,rgba(0,229,255,.34),rgba(20,40,100,.12) 52%,transparent 72%)}body:after{width:46vw;height:46vw;right:-18vw;bottom:-20vh;background:radial-gradient(circle,rgba(245,158,11,.18),rgba(167,139,250,.13) 44%,transparent 72%)}
+html[data-reader-size="0"]{--reader-text:16.5px;--reader-small:11px;--reader-h1:clamp(2rem,6vw,4rem);--reader-h2:clamp(1.25rem,3vw,1.95rem);--reader-h3:clamp(1.05rem,2vw,1.35rem)}
+html[data-reader-size="1"]{--reader-text:18px;--reader-small:12px;--reader-h1:clamp(2.15rem,6.4vw,4.7rem);--reader-h2:clamp(1.4rem,3.1vw,2.2rem);--reader-h3:clamp(1.1rem,2.05vw,1.48rem)}
+html[data-reader-size="2"]{--reader-text:20px;--reader-small:13px;--reader-h1:clamp(2.35rem,6.8vw,5.4rem);--reader-h2:clamp(1.55rem,3.4vw,2.45rem);--reader-h3:clamp(1.16rem,2.25vw,1.65rem)}
+html[data-reader-size="3"]{--reader-text:22px;--reader-small:14px;--reader-h1:clamp(2.65rem,7.2vw,6rem);--reader-h2:clamp(1.8rem,3.6vw,2.85rem);--reader-h3:clamp(1.3rem,2.5vw,1.95rem)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{min-height:100vh;overflow-x:hidden;color:var(--text);font-family:'Rajdhani',system-ui,sans-serif;font-size:var(--reader-text);line-height:1.72;background:radial-gradient(circle at 14% 10%,rgba(0,229,255,.13),transparent 30%),radial-gradient(circle at 90% 22%,rgba(167,139,250,.11),transparent 31%),radial-gradient(circle at 50% 100%,rgba(245,158,11,.08),transparent 44%),linear-gradient(180deg,var(--bg),#05070d 100%);padding-bottom:88px}
+body:before,body:after{content:'';position:fixed;border-radius:50%;filter:blur(115px);opacity:.28;pointer-events:none;z-index:-1}
+body:before{width:48vw;height:48vw;left:-16vw;top:-14vh;background:radial-gradient(circle,rgba(0,229,255,.34),rgba(20,40,100,.12) 52%,transparent 72%);animation:floatA 25s ease-in-out infinite}
+body:after{width:46vw;height:46vw;right:-18vw;bottom:-20vh;background:radial-gradient(circle,rgba(245,158,11,.18),rgba(167,139,250,.13) 44%,transparent 72%);animation:floatB 31s ease-in-out infinite}
+@keyframes floatA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(6vw,5vh,0)}}
+@keyframes floatB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-5vw,-7vh,0)}}
 a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}::selection{background:var(--gold);color:#05070d}
+.noise{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.018;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--gold));z-index:500;width:0}
 .wrap{width:min(1180px,calc(100% - 42px));margin:0 auto}.narrow{max-width:900px;margin:0 auto}
-.topbar{position:sticky;top:0;z-index:100;background:rgba(2,4,9,.88);border-bottom:1px solid rgba(0,229,255,.12);backdrop-filter:blur(18px)}.topbar-inner{width:min(1280px,calc(100% - 42px));margin:0 auto;padding:10px 0;display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:48px}.brand{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:var(--reader-small);letter-spacing:.14em;text-transform:uppercase;color:var(--text);display:flex;gap:.55rem;align-items:center;text-decoration:none!important;white-space:nowrap;min-width:0;overflow:hidden}.brand span{color:var(--cyan);flex:0 0 auto}.brand b{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:rgba(226,232,244,.72)}.topbar-right{display:flex;align-items:center;gap:.6rem;min-width:0}.top-links{display:flex;gap:.45rem;flex-wrap:wrap;justify-content:flex-end}.top-links a,.lang-toggle button{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:calc(var(--reader-small)*.86);padding:.38rem .6rem;border:1px solid rgba(0,229,255,.14);border-radius:999px;color:rgba(226,232,244,.72);background:rgba(255,255,255,.025);text-decoration:none!important;white-space:nowrap}.lang-toggle{display:flex;gap:.35rem;align-items:center;flex:0 0 auto}.lang-toggle button{cursor:pointer}.lang-toggle button.active{color:#05070d;background:var(--cyan);border-color:var(--cyan)}
-.lang{display:none}html[data-lang="en"] .lang.en{display:block}html[data-lang="sl"] .lang.sl{display:block}
-.hero{position:relative;overflow:hidden;padding:48px 0 44px}.hero-grid{position:absolute;inset:0;opacity:.14;background-image:linear-gradient(rgba(0,229,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.12) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom,black,transparent 76%)}.hero-copy{position:relative;z-index:1;max-width:1100px}.hero-visual{position:relative;z-index:1;margin:0 auto 2rem;border:1px solid rgba(0,229,255,.20);border-radius:24px;overflow:hidden;background:rgba(255,255,255,.025);box-shadow:0 26px 90px rgba(0,0,0,.42),0 0 70px rgba(0,229,255,.10)}.hero-visual a{display:block;text-decoration:none!important}.hero-visual img{display:block;width:100%;height:auto;max-height:62vh;object-fit:cover}.eyebrow{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:var(--reader-small);letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem}h1{font-size:var(--reader-h1);font-weight:750;line-height:.96;letter-spacing:-.052em;margin:0 0 1.1rem}h1 span{display:block;color:var(--cyan);text-shadow:0 0 28px rgba(0,229,255,.22)}.hero-sub{max-width:960px;color:rgba(226,232,244,.82);font-size:calc(var(--reader-text)*1.06);line-height:1.56;margin-bottom:1.2rem}.hero-kicker{max-width:920px;color:var(--muted);font-family:Georgia,serif;font-style:italic;font-size:calc(var(--reader-text)*1.05)}.hero-actions{display:flex;gap:.75rem;flex-wrap:wrap;margin:1.6rem 0 1.2rem}.cta{display:inline-flex;align-items:center;gap:.5rem;border-radius:999px;padding:.75rem 1.05rem;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:var(--reader-small);border:1px solid rgba(0,229,255,.24);background:rgba(0,229,255,.07);text-decoration:none!important;color:var(--text)}.cta.primary{background:linear-gradient(135deg,rgba(0,229,255,.18),rgba(245,158,11,.12));border-color:rgba(0,229,255,.4);color:#fff}.cta.warn{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.07);color:#fff}
-.stats{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:.75rem;margin-top:1.5rem}.stat{padding:1rem;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow)}.stat strong{display:block;font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--cyan);font-size:calc(var(--reader-text)*1.25);line-height:1}.stat span{color:var(--muted);font-size:var(--reader-small);letter-spacing:.07em;text-transform:uppercase}
-.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.25),transparent);margin:4px 0 34px}.toc-card{margin:0 auto 34px;padding:1rem;border:1px solid var(--border);border-radius:20px;background:rgba(15,23,41,.68)}.toc-title{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--cyan);letter-spacing:.18em;text-transform:uppercase;font-size:var(--reader-small);margin-bottom:.7rem}.toc-links{display:flex;flex-wrap:wrap;gap:.45rem}.toc-links a{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:calc(var(--reader-small)*.9);padding:.42rem .68rem;border-radius:999px;border:1px solid rgba(0,229,255,.12);background:rgba(255,255,255,.025);color:rgba(226,232,244,.78);text-decoration:none!important}
-section{scroll-margin-top:78px}.paper-section{position:relative;margin:0 auto 28px}.section-num{position:absolute;left:-6px;top:4px;font-family:"JetBrains Mono",ui-monospace,monospace;color:rgba(0,229,255,.34);font-size:var(--reader-small);letter-spacing:.12em}.paper-content{margin-left:42px;border:1px solid var(--border);border-radius:22px;padding:1.35rem 1.45rem;background:linear-gradient(180deg,rgba(15,23,41,.78),rgba(7,11,22,.82));box-shadow:var(--shadow)}h2{font-size:var(--reader-h2);line-height:1.1;margin:0 0 .85rem;color:#fff}h3{font-size:var(--reader-h3);line-height:1.16;margin:.75rem 0 .4rem;color:#fff}p{margin:.72rem 0;color:rgba(226,232,244,.80)}ul{padding-left:1.2rem;color:rgba(226,232,244,.78)}li{margin:.38rem 0}strong{color:#fff}
-.callout,.answer-box,.boundary{margin:.85rem 0;padding:1rem;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08)}.callout-title{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;font-size:var(--reader-small);margin-bottom:.45rem}.callout.good{background:rgba(52,211,153,.055);border-color:rgba(52,211,153,.18)}.callout.hard{background:rgba(255,107,138,.055);border-color:rgba(255,107,138,.18)}.callout.violet{background:rgba(167,139,250,.055);border-color:rgba(167,139,250,.18)}.boundary{background:rgba(251,146,60,.045);border-color:rgba(251,146,60,.18)}
-.round-label{color:var(--gold)!important;font-weight:800;background:none!important;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;box-shadow:none!important;text-shadow:none!important;font-family:inherit!important;font-size:inherit!important;letter-spacing:normal!important;text-transform:none!important}
-.grid2,.grid3{display:grid;gap:1rem;margin-top:1rem}.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}.mini-card{border:1px solid rgba(0,229,255,.12);border-radius:18px;background:rgba(255,255,255,.035);padding:1rem}.mini-card h3{margin-top:0;color:var(--cyan)}.equation{font-family:"JetBrains Mono",ui-monospace,monospace;white-space:pre-wrap;background:rgba(2,4,9,.72);border:1px solid rgba(0,229,255,.16);border-radius:16px;padding:1rem;color:#d9f99d;font-size:12px;line-height:1.6;margin:1rem 0}
-.question-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1rem}.q-card{position:relative;border:1px solid rgba(0,229,255,.13);border-radius:22px;background:linear-gradient(180deg,rgba(15,23,41,.86),rgba(7,11,22,.86));box-shadow:var(--shadow);overflow:hidden}.q-card:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(var(--cyan),var(--gold2))}.q-head{padding:1rem 1rem .8rem;border-bottom:1px solid rgba(255,255,255,.08)}.q-num{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);margin-bottom:.35rem}.q-head h3{font-size:clamp(1.18rem,2vw,1.55rem);line-height:1.15;margin:0;color:#fff}.q-body{padding:1rem}.q-body p{font-size:.95rem;margin:.6rem 0;color:rgba(226,232,244,.78)}.label-row{display:flex;flex-wrap:wrap;gap:.4rem;margin:.7rem 0}.tag{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:.24rem .5rem;border-radius:999px;border:1px solid rgba(255,255,255,.12);color:rgba(226,232,244,.78)}
-.table-wrap{overflow:auto;margin:1rem 0;border:1px solid rgba(0,229,255,.11);border-radius:16px}table{border-collapse:collapse;width:100%;min-width:760px;background:rgba(2,4,9,.35)}th,td{text-align:left;vertical-align:top;padding:.72rem .85rem;border-bottom:1px solid rgba(0,229,255,.08);font-size:.92rem}th{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);background:rgba(0,229,255,.06)}td{color:rgba(226,232,244,.79)}tr:last-child td{border-bottom:0}
-.experiment-list{counter-reset:exp}.experiment{position:relative;padding:1rem 1rem 1rem 4.1rem;margin:.8rem 0;border:1px solid rgba(52,211,153,.16);border-radius:18px;background:rgba(52,211,153,.045)}.experiment:before{counter-increment:exp;content:'T' counter(exp);position:absolute;left:1rem;top:1rem;font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--green);border:1px solid rgba(52,211,153,.35);border-radius:999px;padding:.2rem .45rem;font-size:12px}.seed-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem;margin-top:1rem}.seed-card{border:1px dashed rgba(245,158,11,.28);border-radius:18px;background:rgba(245,158,11,.05);padding:1rem}.seed-card b{display:block;color:var(--gold);font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.45rem}
-.refs{font-size:.92rem}.refs li{margin:.45rem 0}.footer{padding:34px 0 72px;color:var(--muted);font-size:13px}.back-top{position:fixed;right:16px;bottom:16px;z-index:90;border:1px solid rgba(0,229,255,.25);border-radius:999px;background:rgba(2,4,9,.85);padding:.55rem .75rem;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;text-decoration:none!important}
-@media(max-width:960px){body{font-size:18px}.question-grid,.grid2,.grid3{grid-template-columns:1fr}.top-links{display:none}.wrap,.topbar-inner{width:min(100% - 28px,1180px)}.hero{padding:30px 0 28px}.paper-content{margin-left:0;padding:1rem}.section-num{position:static;margin-bottom:.35rem}.stats{grid-template-columns:repeat(2,1fr)}.seed-grid{grid-template-columns:1fr}.brand b{display:none}.brand{font-size:12px}.back-top{display:none}}
-@media(max-width:540px){.hero-visual{border-radius:18px;margin-bottom:1.5rem}.hero-visual img{max-height:48vh}.stats{grid-template-columns:1fr}h1{font-size:clamp(2.15rem,12vw,3.4rem)}.hero-sub,.hero-kicker{font-size:1rem}.cta{width:100%;justify-content:center}.paper-content p,.paper-content li{font-size:1rem}.q-body p,.mini-card p,.experiment p{font-size:.95rem}.topbar-inner{gap:.5rem}.lang-toggle button{font-size:10px;padding:.34rem .48rem}}
-@media print{.topbar,.back-top{display:none!important}body{background:#fff;color:#111}.paper-content,.q-card,.mini-card{box-shadow:none;background:#fff;border:1px solid #ccc}*{color:#111!important}.lang{display:block!important}}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(2,4,9,.90);border-bottom:1px solid rgba(0,229,255,.10);backdrop-filter:blur(18px)}
+.topbar-inner{width:min(1280px,calc(100% - 42px));margin:0 auto;padding:10px 0;display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:48px}
+.brand{font-family:'JetBrains Mono',monospace;font-size:var(--reader-small);letter-spacing:.14em;text-transform:uppercase;color:var(--text);display:flex;gap:.65rem;align-items:center;text-decoration:none!important;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}.brand-mark{color:var(--cyan);flex:0 0 auto}.brand-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.navbox{display:flex;align-items:center;gap:.55rem;min-width:0}.top-links{display:flex;gap:.45rem;flex-wrap:wrap;justify-content:flex-end}.top-links a{font-family:'JetBrains Mono',monospace;font-size:calc(var(--reader-small)*.88);padding:.38rem .65rem;border:1px solid rgba(0,229,255,.14);border-radius:999px;color:rgba(226,232,244,.72);background:rgba(255,255,255,.025);text-decoration:none!important;white-space:nowrap}.top-links a:hover{color:var(--cyan);border-color:rgba(0,229,255,.35)}
+.lang-toggle{display:flex;gap:.35rem;flex:0 0 auto}.lang-toggle button{font-family:'JetBrains Mono',monospace;font-size:calc(var(--reader-small)*.86);padding:.36rem .54rem;border-radius:999px;border:1px solid rgba(0,229,255,.18);background:rgba(255,255,255,.025);color:rgba(226,232,244,.74);cursor:pointer}.lang-toggle button.active{color:#05070d;background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 22px rgba(0,229,255,.22)}
+body[data-lang="en"] .lang-sl{display:none!important}body[data-lang="sl"] .lang-en{display:none!important}
+.hero{position:relative;overflow:hidden;padding:72px 0 42px}.hero-grid{position:absolute;inset:0;opacity:.16;background-image:linear-gradient(rgba(0,229,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.12) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom,black,transparent 76%)}
+.hero-copy{position:relative;z-index:1;display:flex;flex-direction:column;align-items:stretch;max-width:1180px}.eyebrow{font-family:'JetBrains Mono',monospace;font-size:var(--reader-small);letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem}
+h1{font-size:var(--reader-h1);font-weight:700;line-height:1.0;letter-spacing:-.052em;margin:0 0 1.1rem;max-width:1080px}h1 span{display:block;color:var(--cyan);text-shadow:0 0 28px rgba(0,229,255,.22)}
+.hero-sub{max-width:960px;color:rgba(226,232,244,.80);font-size:calc(var(--reader-text)*1.06);line-height:1.56;margin-bottom:1.2rem}.hero-kicker{max-width:920px;color:var(--muted);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:calc(var(--reader-text)*1.08)}
+.hero-actions{display:flex;gap:.75rem;flex-wrap:wrap;margin:1.6rem 0 1.2rem}.cta{display:inline-flex;align-items:center;gap:.5rem;border-radius:999px;padding:.75rem 1.05rem;font-family:'JetBrains Mono',monospace;font-size:var(--reader-small);border:1px solid rgba(0,229,255,.24);background:rgba(0,229,255,.07);text-decoration:none!important;color:var(--text)}.cta.primary{background:linear-gradient(135deg,rgba(0,229,255,.18),rgba(245,158,11,.12));border-color:rgba(0,229,255,.4);color:#fff}.cta.warn{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.07);color:#fff}
+.hero-visual{position:relative;z-index:1;width:100%;max-width:1180px;margin:0 auto 2.2rem;border:1px solid rgba(0,229,255,.20);border-radius:24px;overflow:hidden;background:rgba(255,255,255,.025);box-shadow:0 26px 90px rgba(0,0,0,.42),0 0 70px rgba(0,229,255,.10)}.hero-visual a{display:block;text-decoration:none!important}.hero-visual img{display:block;width:100%;height:auto;max-height:68vh;object-fit:cover}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:.75rem;margin-top:1.5rem}.stat{padding:1rem;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow)}.stat strong{display:block;font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:calc(var(--reader-text)*1.32);line-height:1}.stat span{color:var(--muted);font-size:var(--reader-small);letter-spacing:.07em;text-transform:uppercase}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.25),transparent);margin:8px 0 34px}.toc-card{margin:0 auto 34px;padding:1rem;border:1px solid var(--border);border-radius:20px;background:rgba(15,23,41,.68)}.toc-title{font-family:'JetBrains Mono',monospace;color:var(--cyan);letter-spacing:.18em;text-transform:uppercase;font-size:var(--reader-small);margin-bottom:.7rem}.toc-links{display:flex;flex-wrap:wrap;gap:.45rem}.toc-links a{font-family:'JetBrains Mono',monospace;font-size:calc(var(--reader-small)*.9);padding:.42rem .68rem;border-radius:999px;border:1px solid rgba(0,229,255,.12);background:rgba(255,255,255,.025);color:rgba(226,232,244,.78);text-decoration:none!important}
+section{scroll-margin-top:78px}.paper-section{position:relative;margin:0 auto 28px}.section-num{position:absolute;left:-6px;top:4px;font-family:'JetBrains Mono',monospace;color:rgba(0,229,255,.34);font-size:var(--reader-small);letter-spacing:.12em}.paper-content{margin-left:42px;border:1px solid var(--border);border-radius:22px;padding:1.35rem 1.45rem;background:linear-gradient(180deg,rgba(15,23,41,.86),rgba(8,13,25,.78));box-shadow:var(--shadow)}
+.paper-content h2{font-size:var(--reader-h2);line-height:1.05;margin-bottom:.9rem;color:#fff;letter-spacing:-.025em}.paper-content h3{font-size:var(--reader-h3);line-height:1.15;margin:1.2rem 0 .6rem;color:var(--gold)}.paper-content p,.paper-content li{color:rgba(226,232,244,.82);font-size:var(--reader-text);line-height:1.72;margin:.78rem 0}.paper-content ul,.paper-content ol{padding-left:1.25rem;margin:.6rem 0}
+.callout{margin:1rem 0;padding:1rem 1.1rem;border:1px solid var(--border);border-left:4px solid var(--cyan);border-radius:14px;background:rgba(0,229,255,.06)}.callout.good{border-left-color:var(--green);background:rgba(52,211,153,.06)}.callout.warn{border-left-color:var(--orange);background:rgba(251,146,60,.06)}.callout.hard{border-left-color:var(--rose);background:rgba(255,107,138,.06)}.callout-title{font-family:'JetBrains Mono',monospace;font-size:var(--reader-small);letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin-bottom:.35rem}.callout.good .callout-title{color:var(--green)}.callout.warn .callout-title{color:var(--orange)}.callout.hard .callout-title{color:var(--rose)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}.mini-card{border:1px solid rgba(0,229,255,.12);border-radius:18px;background:rgba(255,255,255,.025);padding:1rem}.mini-card h3{font-size:calc(var(--reader-h3)*.86);margin:.1rem 0 .45rem;color:#fff}.mini-card p{font-size:calc(var(--reader-text)*.92);color:rgba(226,232,244,.72)}
+.video-box{display:grid;grid-template-columns:1.15fr .85fr;gap:1rem;align-items:stretch}.embed{position:relative;border:1px solid rgba(0,229,255,.18);border-radius:20px;overflow:hidden;background:#000;min-height:320px;box-shadow:var(--shadow)}.embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.source-panel{border:1px solid rgba(245,158,11,.18);border-radius:20px;background:rgba(245,158,11,.05);padding:1rem}.source-panel h3{margin:.15rem 0 .7rem;color:var(--gold)}.source-panel p{font-size:calc(var(--reader-text)*.92)}
+.timeline{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.45rem;margin-top:.9rem}.chapter{font-family:'JetBrains Mono',monospace;font-size:calc(var(--reader-small)*.88);color:rgba(226,232,244,.74);padding:.46rem .55rem;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.025)}.chapter b{color:var(--gold);font-weight:600;margin-right:.45rem}
+.question-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1rem}.q-card{position:relative;border:1px solid rgba(0,229,255,.13);border-radius:22px;background:linear-gradient(180deg,rgba(15,23,41,.86),rgba(7,11,22,.86));box-shadow:var(--shadow);overflow:hidden}.q-card:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cyan)}.q-card.open:before{background:var(--orange)}.q-card.bridge:before{background:var(--green)}.q-card.hard:before{background:var(--rose)}.q-card.violet:before{background:var(--violet)}
+.q-head{padding:1rem 1rem .8rem;border-bottom:1px solid rgba(255,255,255,.08)}.q-num{font-family:'JetBrains Mono',monospace;font-size:calc(var(--reader-small)*.85);letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);margin-bottom:.35rem}.q-head h3{font-size:var(--reader-h3);line-height:1.15;margin:0;color:#fff}.q-body{padding:1rem}.q-body p{font-size:calc(var(--reader-text)*.92);margin:.6rem 0;color:rgba(226,232,244,.78)}.q-body strong{color:#fff}.seed{margin-top:.75rem;padding:.8rem;border-radius:14px;background:rgba(245,158,11,.06);border:1px dashed rgba(245,158,11,.25)}.seed strong{color:var(--gold)}
+.matrix{border-collapse:collapse;width:100%;min-width:760px;background:rgba(2,4,9,.35)}.table-wrap{overflow:auto;margin:1rem 0;border:1px solid rgba(0,229,255,.11);border-radius:16px}th,td{text-align:left;vertical-align:top;padding:.72rem .85rem;border-bottom:1px solid rgba(0,229,255,.08)}th{font-family:'JetBrains Mono',monospace;font-size:var(--reader-small);letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);background:rgba(0,229,255,.06)}td{color:rgba(226,232,244,.79)}tr:last-child td{border-bottom:0}
+.equation{font-family:'JetBrains Mono',monospace;white-space:pre-wrap;background:rgba(2,4,9,.72);border:1px solid rgba(0,229,255,.16);border-radius:16px;padding:1rem;color:#d9f99d;font-size:calc(var(--reader-small)*1.02);line-height:1.6;margin:1rem 0;overflow:auto}
+.experiment{position:relative;padding:1rem;margin:.8rem 0;border:1px solid rgba(52,211,153,.16);border-radius:18px;background:rgba(52,211,153,.045)}.experiment h3{color:#fff;margin:0 0 .35rem}
+.refs{font-size:calc(var(--reader-text)*.88)}.refs li{margin:.45rem 0}.footer{padding:34px 0 24px;color:var(--muted);font-size:var(--reader-small)}.back-top{position:fixed;right:16px;bottom:86px;z-index:90;border:1px solid rgba(0,229,255,.25);border-radius:999px;background:rgba(2,4,9,.85);padding:.55rem .75rem;font-family:'JetBrains Mono',monospace;font-size:var(--reader-small);text-decoration:none!important}
+.reader-controls{position:fixed;right:14px;bottom:14px;z-index:95;display:flex;align-items:center;gap:8px;padding:8px;border:1px solid rgba(0,229,255,.30);border-radius:999px;background:rgba(5,7,13,.91);backdrop-filter:blur(16px);box-shadow:0 18px 55px rgba(0,0,0,.42);font-family:'JetBrains Mono',monospace}.reader-controls button{min-width:42px;min-height:42px;border:1px solid rgba(0,229,255,.30);border-radius:999px;background:rgba(0,229,255,.08);color:var(--cyan);font:800 18px/1 'JetBrains Mono',monospace;cursor:pointer}.reader-label{min-width:90px;text-align:center;color:rgba(231,234,242,.84);font-size:12px;letter-spacing:.08em;text-transform:uppercase;user-select:none}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}.reveal.visible{opacity:1;transform:translateY(0)}
+@media(max-width:960px){.video-box,.question-grid,.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:repeat(2,1fr)}.top-links{display:none}.wrap,.topbar-inner{width:min(100% - 28px,1180px)}.topbar-inner{gap:.6rem;min-height:46px}.brand{max-width:calc(100vw - 118px);letter-spacing:.12em}.brand-title{display:none}.hero{padding:46px 0 30px}.paper-content{margin-left:0;padding:1rem}.section-num{position:static;margin-bottom:.35rem}.stats{grid-template-columns:repeat(2,1fr)}.timeline{grid-template-columns:1fr}.reader-controls{display:none}.back-top{display:none}}
+@media(max-width:540px){:root{--reader-text:18px;--reader-small:11.5px;--reader-h1:clamp(2.05rem,11vw,3.35rem);--reader-h2:clamp(1.45rem,7vw,2rem);--reader-h3:clamp(1.12rem,5.2vw,1.42rem)}body{line-height:1.62;padding-bottom:20px}.wrap,.topbar-inner{width:min(100% - 22px,1180px)}.brand{max-width:calc(100vw - 90px)}.brand-mark{letter-spacing:.12em}.hero-visual{border-radius:16px;margin-bottom:1.4rem}.hero-visual img{max-height:44vh}h1{line-height:1.02;letter-spacing:-.045em}.hero-sub,.hero-kicker{font-size:var(--reader-text)}.stats,.grid3{grid-template-columns:1fr}.cta{width:100%;justify-content:center}.toc-links a{font-size:11px}.paper-content{border-radius:16px;padding:.9rem}.q-card{border-radius:16px}.source-panel,.embed{border-radius:16px}}
+@media print{.topbar,.reader-controls,.back-top,.progress,.noise{display:none!important}body{background:#fff;color:#111}.paper-content,.q-card,.mini-card,.source-panel{box-shadow:none;background:#fff;border:1px solid #ccc}*{color:#111!important}}
 </style>
 </head>
-<body id="top">
-<nav class="topbar"><div class="topbar-inner"><a class="brand" href="index.html"><span>BD × AI Lab</span><b>Physics × CFH × MDL×DCC</b></a><div class="topbar-right"><div class="top-links"><a href="#source">Video</a><a href="#acrcmodel">AC→RC</a><a href="#method">Method</a><a href="#questions">Questions</a><a href="#experiments">Tests</a><a href="#references">Sources</a></div><div class="lang-toggle"><button id="btnEN" class="active" type="button">EN</button><button id="btnSL" type="button">SL</button></div></div></div></nav>
+<body id="top" data-lang="en">
+<div class="noise"></div><div class="progress" id="progress"></div>
+<nav class="topbar"><div class="topbar-inner"><a class="brand" href="index.html"><span class="brand-mark">BD × AI Lab</span><span class="brand-title">Physics × CFH × MDL×DCC</span></a><div class="navbox"><div class="top-links"><a href="#source">Video</a><a href="#claim">Boundary</a><a href="#acrcmodel">AC→RC</a><a href="#questions">Answers</a><a href="#experiments">Tests</a><a href="#references">Sources</a></div><div class="lang-toggle" aria-label="Language"><button type="button" data-set-lang="en" class="active">EN</button><button type="button" data-set-lang="sl">SL</button></div></div></div></nav>
 <header class="hero"><div class="hero-grid"></div><div class="wrap hero-copy"><figure class="hero-visual"><a href="AC2RC.jpg" target="_blank" rel="noopener"><img src="AC2RC.jpg" alt="AC to RC Embedded Density Model" /></a></figure>
-<div class="lang en"><div class="eyebrow">CFH × MDL×DCC stress test · June 5, 2026</div><h1>The Susskind Challenge <span>Physics’ Hardest Questions Through CFH × MDL×DCC</span></h1><p class="hero-sub">A response map to Leonard Susskind and Brian Greene’s World Science Festival conversation: black holes, information loss, holography, string theory, supersymmetry, the landscape, testability, and the human art of chasing big questions.</p><p class="hero-kicker">This page does not claim that CFH or MDL×DCC solves quantum gravity. It asks a sharper question: can our framework expose a cleaner bridge between information, physical law, testability, and conscious presence?</p><div class="hero-actions"><a class="cta primary" href="#questions">Enter the question map →</a><a class="cta" href="https://www.youtube.com/watch?v=0Ji1UFPT--M" target="_blank" rel="noopener">Open video source ↗</a><a class="cta warn" href="#acrcmodel">AC→RC model</a></div><div class="stats"><div class="stat"><strong>13</strong><span>questions mapped</span></div><div class="stat"><strong>0</strong><span>physics overclaims</span></div><div class="stat"><strong>4</strong><span>toy test lanes</span></div><div class="stat"><strong>EN/SL</strong><span>reader option</span></div></div></div>
-<div class="lang sl"><div class="eyebrow">CFH × MDL×DCC stresni test · 5. junij 2026</div><h1>Susskindov izziv <span>Najtežja vprašanja fizike skozi CFH × MDL×DCC</span></h1><p class="hero-sub">Zemljevid odgovorov na pogovor Leonarda Susskinda in Briana Greena pri World Science Festival: črne luknje, izguba informacije, holografija, teorija strun, supersimetrija, landscape, testabilnost in človeška umetnost lovljenja velikih vprašanj.</p><p class="hero-kicker">Stran ne trdi, da CFH ali MDL×DCC rešita kvantno gravitacijo. Vpraša ostrejše vprašanje: ali naš okvir ponudi čistejši most med informacijo, fizikalnim zakonom, testabilnostjo in zavestno prisotnostjo?</p><div class="hero-actions"><a class="cta primary" href="#questions">Odpri zemljevid vprašanj →</a><a class="cta" href="https://www.youtube.com/watch?v=0Ji1UFPT--M" target="_blank" rel="noopener">Odpri video vir ↗</a><a class="cta warn" href="#acrcmodel">AC→RC model</a></div><div class="stats"><div class="stat"><strong>13</strong><span>mapiranih vprašanj</span></div><div class="stat"><strong>0</strong><span>pretiranih fizikalnih trditev</span></div><div class="stat"><strong>4</strong><span>testne smeri</span></div><div class="stat"><strong>EN/SL</strong><span>bralna opcija</span></div></div></div>
+  <div class="lang-en"><div class="eyebrow">CFH × MDL×DCC stress test · June 5, 2026</div><h1>The Susskind Challenge <span>Physics’ Hardest Questions Through CFH × MDL×DCC</span></h1><p class="hero-sub">A first-pass answer map to Leonard Susskind and Brian Greene’s World Science Festival conversation: black holes, information, holography, quantum gravity, string theory, supersymmetry, the landscape, testability, intuition, wrongness, presence, and joy.</p><p class="hero-kicker">Goal for this version: decent answers, not final answers. Each response gives a clean framework move, an honesty boundary, and the smallest testable bridge.</p><div class="hero-actions"><a class="cta primary" href="#questions">Read round‑1 answers →</a><a class="cta" href="https://www.youtube.com/watch?v=0Ji1UFPT--M" target="_blank" rel="noopener">Open video source ↗</a><a class="cta warn" href="#experiments">Smallest tests</a></div><div class="stats"><div class="stat"><strong>Q00–Q12</strong><span>all answered</span></div><div class="stat"><strong>0</strong><span>physics overclaims</span></div><div class="stat"><strong>8</strong><span>toy-test lanes</span></div><div class="stat"><strong>AC→RC</strong><span>hero model integrated</span></div></div></div>
+  <div class="lang-sl"><div class="eyebrow">CFH × MDL×DCC stresni test · 5. junij 2026</div><h1>Susskindov izziv <span>Najtežja vprašanja fizike skozi CFH × MDL×DCC</span></h1><p class="hero-sub">Prva mapa odgovorov na pogovor Leonarda Susskinda in Briana Greena pri World Science Festival: črne luknje, informacija, holografija, kvantna gravitacija, teorija strun, supersimetrija, krajina, testabilnost, intuicija, zmota, prisotnost in veselje.</p><p class="hero-kicker">Cilj te verzije: dostojni odgovori, ne popolni odgovori. Vsak odgovor ima jasen premik okvira, pošteno mejo in najmanjši testabilni most.</p><div class="hero-actions"><a class="cta primary" href="#questions">Preberi odgovore prve runde →</a><a class="cta" href="https://www.youtube.com/watch?v=0Ji1UFPT--M" target="_blank" rel="noopener">Odpri video vir ↗</a><a class="cta warn" href="#experiments">Najmanjši testi</a></div><div class="stats"><div class="stat"><strong>Q00–Q12</strong><span>vsi odgovorjeni</span></div><div class="stat"><strong>0</strong><span>pretiranih fizikalnih trditev</span></div><div class="stat"><strong>8</strong><span>toy-test smeri</span></div><div class="stat"><strong>AC→RC</strong><span>hero model vključen</span></div></div></div>
 </div></header>
 <div class="divider"></div>
 <main class="wrap">
-<aside class="toc-card"><div class="lang en"><div class="toc-title">Page spine</div><div class="toc-links"><a href="#source">Source video</a><a href="#claim">Claim boundary</a><a href="#acrcmodel">AC→RC model</a><a href="#method">Method</a><a href="#questions">Question map</a><a href="#matrix">Status matrix</a><a href="#experiments">Smallest tests</a><a href="#publicclaim">Public wording</a><a href="#references">References</a></div></div><div class="lang sl"><div class="toc-title">Hrbtenica strani</div><div class="toc-links"><a href="#source">Video vir</a><a href="#claim">Meja trditve</a><a href="#acrcmodel">AC→RC model</a><a href="#method">Metoda</a><a href="#questions">Mapa vprašanj</a><a href="#matrix">Statusna matrika</a><a href="#experiments">Najmanjši testi</a><a href="#publicclaim">Javna formulacija</a><a href="#references">Viri</a></div></div></aside>
+<aside class="toc-card reveal"><div class="lang-en"><div class="toc-title">Page spine</div><div class="toc-links"><a href="#source">Source video</a><a href="#claim">Claim boundary</a><a href="#acrcmodel">AC→RC model</a><a href="#method">Method</a><a href="#questions">Question map</a><a href="#matrix">Status matrix</a><a href="#experiments">Smallest tests</a><a href="#publicclaim">Public wording</a><a href="#references">References</a></div></div><div class="lang-sl"><div class="toc-title">Kazalo strani</div><div class="toc-links"><a href="#source">Video vir</a><a href="#claim">Meja trditve</a><a href="#acrcmodel">AC→RC model</a><a href="#method">Metoda</a><a href="#questions">Mapa vprašanj</a><a href="#matrix">Statusna matrika</a><a href="#experiments">Najmanjši testi</a><a href="#publicclaim">Javna formulacija</a><a href="#references">Reference</a></div></div></aside>
 
-<section class="paper-section" id="source"><div class="section-num">01</div><div class="paper-content"><div class="lang en"><h2>Source trigger: Susskind × Greene</h2><p>The video is the pressure source, not proof. We use its question trail to stress-test CFH × MDL×DCC against serious physics: black holes, holography, string theory, supersymmetry, multiverse, and testability.</p><p><a href="https://www.youtube.com/watch?v=0Ji1UFPT--M" target="_blank" rel="noopener">Watch the source video ↗</a></p><div class="equation">16:07 Hawking information loss
-19:57 Holographic principle
-32:08 String theory conflict
-39:17 Quantum gravity
-45:39 Supersymmetry
-51:02 Hard to test
-55:32 Infinite universes
-57:11 Physics as fun</div></div><div class="lang sl"><h2>Vir pritiska: Susskind × Greene</h2><p>Video je vir pritiska, ne dokaz. Njegovo pot vprašanj uporabimo za stresni test CFH × MDL×DCC ob resni fiziki: črne luknje, holografija, teorija strun, supersimetrija, multiverzum in testabilnost.</p><p><a href="https://www.youtube.com/watch?v=0Ji1UFPT--M" target="_blank" rel="noopener">Poglej video vir ↗</a></p><div class="equation">16:07 Hawkingova izguba informacije
-19:57 Holografsko načelo
-32:08 Konflikt, ki rodi teorijo strun
-39:17 Kvantna gravitacija
-45:39 Supersimetrija
-51:02 Težka testabilnost
-55:32 Neskončna vesolja
-57:11 Fizika kot veselje</div></div></div></section>
+<section id="source" class="paper-section reveal"><div class="section-num">01</div><div class="paper-content"><div class="lang-en"><h2>Source trigger: Susskind × Greene</h2><div class="video-box"><div class="embed"><iframe src="https://www.youtube.com/embed/0Ji1UFPT--M" title="World Science Festival Susskind and Greene video" allowfullscreen></iframe></div><div class="source-panel"><h3>What this page is doing</h3><p>The video is the pressure source, not proof. We use its question trail to stress-test CFH × MDL×DCC against serious physics: black holes, holography, string theory, supersymmetry, multiverse, and testability.</p><div class="timeline"><div class="chapter"><b>00:00</b>Introduction</div>
+<div class="chapter"><b>13:49</b>Einstein and black holes</div>
+<div class="chapter"><b>16:07</b>Hawking information loss</div>
+<div class="chapter"><b>19:57</b>Holographic principle</div>
+<div class="chapter"><b>32:08</b>String theory conflict</div>
+<div class="chapter"><b>39:17</b>Quantum gravity</div>
+<div class="chapter"><b>45:39</b>Supersymmetry</div>
+<div class="chapter"><b>51:02</b>Hard to test</div>
+<div class="chapter"><b>55:32</b>Infinite universes</div>
+<div class="chapter"><b>57:11</b>Physics as fun</div></div></div></div></div><div class="lang-sl"><h2>Vir pritiska: Susskind × Greene</h2><div class="video-box"><div class="embed"><iframe src="https://www.youtube.com/embed/0Ji1UFPT--M" title="World Science Festival video Susskind in Greene" allowfullscreen></iframe></div><div class="source-panel"><h3>Kaj dela ta stran</h3><p>Video je vir pritiska, ne dokaz. Njegovo pot vprašanj uporabimo za stresni test CFH × MDL×DCC ob resni fiziki: črne luknje, holografija, teorija strun, supersimetrija, multiverse in testabilnost.</p><div class="timeline"><div class="chapter"><b>00:00</b>Introduction</div>
+<div class="chapter"><b>13:49</b>Einstein and black holes</div>
+<div class="chapter"><b>16:07</b>Hawking information loss</div>
+<div class="chapter"><b>19:57</b>Holographic principle</div>
+<div class="chapter"><b>32:08</b>String theory conflict</div>
+<div class="chapter"><b>39:17</b>Quantum gravity</div>
+<div class="chapter"><b>45:39</b>Supersymmetry</div>
+<div class="chapter"><b>51:02</b>Hard to test</div>
+<div class="chapter"><b>55:32</b>Infinite universes</div>
+<div class="chapter"><b>57:11</b>Physics as fun</div></div></div></div></div></div></section>
 
-<section class="paper-section" id="claim"><div class="section-num">02</div><div class="paper-content"><div class="lang en"><h2>Claim boundary</h2><div class="callout hard"><div class="callout-title">Hard honesty</div><p>We are not solving quantum gravity, deriving Hawking radiation correlations, deriving string spectra, or replacing physics. We are building a first-round conceptual bridge: spacetime and matter are treated as RC-level differentiations, while AC/AE is the proposed ground of presence and existence.</p></div><p>The useful move is not “CFH beats physics.” The useful move is: physics describes how relative structure behaves; CFH × MDL×DCC asks whether the hierarchy of structure, information, energy, matter, and presence can be made cleaner and testable.</p></div><div class="lang sl"><h2>Meja trditve</h2><div class="callout hard"><div class="callout-title">Trda poštenost</div><p>Ne rešujemo kvantne gravitacije, ne izpeljujemo Hawkingovih korelacij, ne izpeljujemo spektrov teorije strun in ne nadomeščamo fizike. Gradimo konceptualni most prve runde: prostor-čas in materijo obravnavamo kot RC diferenciacije, AC/AE pa kot predlagani temelj prisotnosti in obstoja.</p></div><p>Uporaben premik ni “CFH premaga fiziko.” Uporaben premik je: fizika opisuje obnašanje relativne strukture; CFH × MDL×DCC vpraša, ali lahko hierarhijo strukture, informacije, energije, materije in prisotnosti naredimo čistejšo in testabilno.</p></div></div></section>
+<section id="claim" class="paper-section reveal"><div class="section-num">02</div><div class="paper-content"><div class="lang-en"><h2>Claim boundary</h2><div class="callout hard"><div class="callout-title">Hard honesty</div><p>We are not solving quantum gravity, deriving Hawking radiation correlations, deriving string spectra, or replacing physics. We are building a first-round conceptual bridge: spacetime and matter are treated as RC-level differentiations, while AC/AE is the proposed ground of presence/existence.</p></div><p>The useful move is not “CFH beats physics.” The useful move is: physics describes how relative structure behaves; CFH × MDL×DCC asks whether the hierarchy of structure, information, energy, matter, and presence can be made cleaner and testable.</p></div><div class="lang-sl"><h2>Meja trditve</h2><div class="callout hard"><div class="callout-title">Trda poštenost</div><p>Ne rešujemo kvantne gravitacije, ne izpeljujemo Hawkingovih korelacij, ne izpeljujemo spektrov teorije strun in ne nadomeščamo fizike. Gradimo konceptualni most prve runde: prostor-čas in materijo obravnavamo kot RC diferenciacije, AC/AE pa kot predlagani temelj prisotnosti/obstoja.</p></div><p>Uporaben premik ni “CFH premaga fiziko.” Uporaben premik je: fizika opisuje obnašanje relativne strukture; CFH × MDL×DCC vpraša, ali lahko hierarhijo strukture, informacije, energije, materije in prisotnosti naredimo čistejšo in testabilno.</p></div></div></section>
 
-<section class="paper-section" id="acrcmodel"><div class="section-num">03</div><div class="paper-content"><div class="lang en"><h2>AC→RC Embedded Density Model</h2><p>AC/AE is not a ball in the center. The hero image represents a continuous full-density substrate. RC/RE is the sparse relational patterning of that same existence. Distance from the luminous plane means degree of differentiation, not physical distance.</p><div class="equation">AC / AE → proto‑differentiation → spacetime / relational geometry → structured information → energy / gravity / light → matter → life / brain → conscious coupling</div><p>Black holes become the reverse-prism limit: local differentiated structure is recompressed into an externally unreadable state. That does not prove information is destroyed or saved; it gives us a cleaner question.</p></div><div class="lang sl"><h2>AC→RC vgrajeni gostotni model</h2><p>AC/AE ni krogla v sredini. Hero slika predstavlja neprekinjen substrat polne gostote. RC/RE je redkejše relacijsko vzorčenje istega obstoja. Oddaljenost od svetle plasti pomeni stopnjo diferenciacije, ne fizične razdalje.</p><div class="equation">AC / AE → proto‑diferenciacija → prostor‑čas / relacijska geometrija → strukturirana informacija → energija / gravitacija / svetloba → materija → življenje / možgani → zavestni coupling</div><p>Črne luknje postanejo meja obratne prizme: lokalna diferencirana struktura se rekomprimira v od zunaj neberljivo stanje. To ne dokazuje, da je informacija uničena ali rešena; da nam čistejše vprašanje.</p></div></div></section>
+<section id="acrcmodel" class="paper-section reveal"><div class="section-num">03</div><div class="paper-content"><div class="lang-en"><h2>AC→RC embedded density model</h2><p>AC/AE is not shown as a ball in the center. The hero image represents a continuous full-density substrate. RC/RE is the sparse relational patterning of that same existence. Distance from the luminous plane means degree of differentiation, not physical distance.</p><div class="equation">AC / AE → proto‑differentiation → spacetime / relational geometry → structured information → energy / gravity / light → matter → life / brain → conscious coupling</div><p>Black holes become the reverse-prism limit: local differentiated structure is recompressed into an externally unreadable state. That does not prove information is destroyed or saved; it gives us a cleaner question.</p></div><div class="lang-sl"><h2>AC→RC vgrajeni gostotni model</h2><p>AC/AE ni prikazan kot krogla v sredini. Hero slika predstavlja neprekinjen substrat polne gostote. RC/RE je redkejše relacijsko vzorčenje istega obstoja. Oddaljenost od svetle plasti pomeni stopnjo diferenciacije, ne fizične razdalje.</p><div class="equation">AC / AE → proto‑diferenciacija → prostor‑čas / relacijska geometrija → strukturirana informacija → energija / gravitacija / svetloba → materija → življenje / možgani → zavestni coupling</div><p>Črne luknje postanejo meja obratne prizme: lokalna diferencirana struktura se rekomprimira v od zunaj neberljivo stanje. To ne dokazuje, da je informacija uničena ali rešena; da nam čistejše vprašanje.</p></div></div></section>
 
-<section class="paper-section" id="method"><div class="section-num">04</div><div class="paper-content"><div class="lang en"><h2>CFH × MDL×DCC method</h2><div class="grid3"><div class="mini-card"><h3>CFH</h3><p>Consciousness is treated as coupling strength, not as a local object. S is a marker, not proof by itself.</p></div><div class="mini-card"><h3>MDL</h3><p>Prefer shorter total explanations only when residual and prediction improve.</p></div><div class="mini-card"><h3>DCC</h3><p>Keep branches alive long enough to test; then govern them by evidence, not taste.</p></div></div></div><div class="lang sl"><h2>Metoda CFH × MDL×DCC</h2><div class="grid3"><div class="mini-card"><h3>CFH</h3><p>Zavest obravnavamo kot moč couplinga, ne kot lokalni objekt. S je marker, ne dokaz sam po sebi.</p></div><div class="mini-card"><h3>MDL</h3><p>Raje imamo krajše skupne razlage samo, kadar se izboljšata residual in napoved.</p></div><div class="mini-card"><h3>DCC</h3><p>Veje ostanejo žive dovolj dolgo za test; potem jih vodi evidenca, ne okus.</p></div></div></div></div></section>
+<section id="method" class="paper-section reveal"><div class="section-num">04</div><div class="paper-content"><div class="lang-en"><h2>CFH × MDL×DCC method</h2><div class="grid3"><div class="mini-card"><h3>CFH</h3><p>Consciousness is treated as coupling strength, not as a local object. S is a marker, not proof by itself.</p></div><div class="mini-card"><h3>MDL</h3><p>Prefer shorter total explanations only when residual and prediction improve.</p></div><div class="mini-card"><h3>DCC</h3><p>Keep branches alive long enough to test; then govern them by evidence, not taste.</p></div></div></div><div class="lang-sl"><h2>Metoda CFH × MDL×DCC</h2><div class="grid3"><div class="mini-card"><h3>CFH</h3><p>Zavest obravnavamo kot moč couplinga, ne kot lokalni objekt. S je marker, ne dokaz sam po sebi.</p></div><div class="mini-card"><h3>MDL</h3><p>Raje imamo krajše skupne razlage samo, kadar se izboljšata residual in napoved.</p></div><div class="mini-card"><h3>DCC</h3><p>Veje ostanejo žive dovolj dolgo za test; potem jih vodi evidenca, ne okus.</p></div></div></div></div></section>
 
-<section class="paper-section" id="questions"><div class="section-num">05</div><div class="paper-content"><div class="lang en"><h2>Hard question map</h2><p>Round‑1 answers: decent, clear, and revisable later.</p><div class="question-grid"><article class="q-card">
-<div class="q-head"><div class="q-num">Q00 · Black holes and gravity</div><h3>Are black holes real, and what is gravity?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">foundation</span><span class="tag">honesty boundary</span></div>
-<p><strong>Physics pressure:</strong> Before asking whether black holes destroy information, we first ask whether black holes and gravity are understood at all.</p>
-<div class="answer-box"><p><strong class="round-label">Round‑1 answer:</strong> Black holes are very likely real astrophysical compact objects. What remains open is the ultimate interior description and whether singularities are physical or a sign that the model breaks. General relativity remains the best local geometric description: gravity behaves as spacetime curvature. CFH/AC does not replace this; it asks whether spacetime curvature is an RC-level expression of deeper differentiation and coupling inside AC/AE.</p></div>
-<p><strong>Smallest test:</strong> Keep GR predictions untouched in ordinary domains; use AC/RC only as an ontology layer above already successful equations.</p>
-<div class="boundary"><p><strong>Boundary:</strong> No claim that AC explains measured gravity better than general relativity.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q01 · Black-hole information</div><h3>Can information disappear?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">framework resolution</span><span class="tag">physics not solved</span></div>
-<p><strong>Physics pressure:</strong> If Hawking radiation were purely thermal, exact information about what fell into a black hole would seem lost, conflicting with quantum unitarity.</p>
-<div class="answer-box"><p><strong class="round-label">Round‑1 answer:</strong> In CFH × MDL×DCC, information is stable differentiation inside RC/RE. A black hole is not treated as a cosmic delete key, but as a reverse-prism / recompressor. Rich, locally readable RC structure becomes horizon-bound, externally unreadable, MDL-inaccessible code. What looks like information loss may be reconstruction-cost explosion, not absolute erasure.</p></div>
-<p><strong>Smallest test:</strong> Build a finite-state “bulk → horizon ledger → radiation” toy and compare true deletion, reversible compression, and noisy release by reconstruction error and MDL cost.</p>
-<div class="boundary"><p><strong>Boundary:</strong> We do not derive Hawking correlations, Page curves, or a black-hole S-matrix.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q02 · Holography</div><h3>Can a boundary encode a bulk?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">strong bridge</span><span class="tag">not AdS/CFT</span></div>
-<p><strong>Physics pressure:</strong> Holography suggests that a volume of spacetime may be describable by information on a lower-dimensional boundary, especially in black-hole and quantum-gravity contexts.</p>
-<div class="answer-box"><p><strong class="round-label">Round‑1 answer:</strong> CFH × MDL×DCC should not say “all information literally sits on the surface.” Information is the whole differentiated RC pattern; matter is stabilized information. A holographic boundary is better read as a compressed interface or accounting surface: under strong constraints, a bulk may become describable through boundary correlations. Black-hole horizons are local extreme examples; the AC→RC interface may be the deeper analogy.</p></div>
-<p><strong>Smallest test:</strong> In ARC, TSP, Sudoku, and route arenas, ask whether boundary/skeleton descriptors reconstruct or predict full structure better than brute full-state descriptions.</p>
-<div class="boundary"><p><strong>Boundary:</strong> No derivation of AdS/CFT or real quantum-gravity holography.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q03 · Quantum gravity / micro–macro</div><h3>Why do micro and macro theories resist marriage?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">category bridge</span><span class="tag">not quantum gravity</span></div>
-<p><strong>Physics pressure:</strong> Quantum mechanics governs microscopic possibilities; general relativity governs macroscopic spacetime geometry. Directly combining them remains hard.</p>
-<div class="answer-box"><p><strong class="round-label">Round‑1 answer:</strong> The conflict may be partly categorical. Physics often tries to quantize spacetime as if spacetime were the deepest container. In AC→RC, spacetime is not the absolute stage. It is an early RC differentiation — the stable geometry of here/there, before/after, causal access, and relational distance. Quantum mechanics and GR may be two regimes of the same deeper differentiation process, not two final substances to weld together.</p></div>
-<p><strong>Smallest test:</strong> Build toy worlds where relational graph geometry emerges from lower-level constraints, then compare micro update rules with macro geodesic-like behavior.</p>
-<div class="boundary"><p><strong>Boundary:</strong> This is not solved quantum gravity. It is a conceptual reframing of why the conflict exists.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q04 · String theory</div><h3>Are vibrating strings fundamental?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">RC pattern language</span><span class="tag">generator compression</span></div>
-<p><strong>Physics pressure:</strong> String theory replaces point particles with tiny one-dimensional strings whose vibration modes appear as particles and forces.</p>
-<div class="answer-box"><p><strong class="round-label">Round‑1 answer:</strong> In CFH × MDL×DCC, strings are not the absolute ground. If real, they are RC-level pattern language: stable vibration modes inside differentiated geometry. Their appeal is MDL-like: many particle types become outputs of one deeper generator. String theory may compress particle diversity into mode diversity, but it does not explain why differentiation, geometry, law, or presence exist at all.</p></div>
-<p><strong>Smallest test:</strong> Compare toy universes with tables of particle rules against generator/mode systems. Which representation compresses observations and predicts held-out cases better?</p>
-<div class="boundary"><p><strong>Boundary:</strong> No prediction of particles, compactifications, SUSY breaking, or de Sitter reality.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q05 · Supersymmetry</div><h3>What if beautiful symmetry is absent?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">DCC discipline</span><span class="tag">unresolved physics</span></div>
-<p><strong>Physics pressure:</strong> Supersymmetry is mathematically elegant and useful, but expected experimental signs did not appear where many hoped.</p>
-<div class="answer-box"><p><strong class="round-label">Round‑1 answer:</strong> DCC says beauty is a useful compression signal, not evidence by itself. A beautiful branch should stay alive long enough to test, but evidence must change its weight. SUSY becomes a governance lesson: preserve the branch as mathematically fertile, reduce its public certainty when empirical support is absent, and keep searching for cheaper discriminating tests.</p></div>
-<p><strong>Smallest test:</strong> Build a theory scoreboard with MDL elegance, empirical residuals, predictive novelty, and test cost as separate columns.</p>
-<div class="boundary"><p><strong>Boundary:</strong> No claim about whether supersymmetry is ultimately true.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q06 · Testability crisis</div><h3>What when theory outruns experiment?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">method overlap</span><span class="tag">claim ladder</span></div>
-<p><strong>Physics pressure:</strong> Modern fundamental physics can become mathematically deep but experimentally remote.</p>
-<div class="answer-box"><p><strong class="round-label">Round‑1 answer:</strong> CFH × MDL×DCC should not hide behind untestability. When the top-level claim is too hard to test, build local bridge tests: compression toys, boundary reconstruction tasks, S-metric predictions, and DCC governance logs. A theory earns weight by producing smaller measurable consequences before claiming cosmic truth.</p></div>
-<p><strong>Smallest test:</strong> Every speculative claim on the page must have a toy, metric, falsifier, or public wording boundary.</p>
-<div class="boundary"><p><strong>Boundary:</strong> Toy tests do not prove the physics; they test whether our framework is fertile or just poetic.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q07 · Landscape / multiverse</div><h3>Are countless universes possible?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">AC/RC bridge</span><span class="tag">not cosmology</span></div>
-<p><strong>Physics pressure:</strong> String theory’s landscape suggests many possible vacua; multiverse ideas try to explain why our universe has this parameter set.</p>
-<div class="answer-box"><p><strong class="round-label">Round‑1 answer:</strong> In AC→RC, many possible universes becomes natural but not proven. AC/AE contains full possibility; RC/RE domains are differentiated regimes with laws, parameters, and stable pattern constraints. Our universe may be one law-bound RC domain. DCC/MDL adds selection: not all possible regimes become stable, coherent, observer-supporting, or compressible.</p></div>
-<p><strong>Smallest test:</strong> Artificial landscape simulations: generate parameter universes, define viability/S criteria, and ask whether DCC finds stable regimes faster than blind search.</p>
-<div class="boundary"><p><strong>Boundary:</strong> No proof of a real multiverse or landscape cosmology.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q08 · Equations and presence</div><h3>Do equations explain existence?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">CFH core</span><span class="tag">ontology</span></div>
-<p><strong>Physics pressure:</strong> Equations describe lawful relations with astonishing precision. But a complete relation-map is not obviously the same as presence itself.</p>
-<div class="answer-box"><p><strong class="round-label">Round‑1 answer:</strong> CFH/AC says mechanism may be correct and still ontologically incomplete. Physics describes how relative existence behaves. AC/AE asks why there is any existence or presence in which behavior occurs. The shortest non-poetic form is: structure explains relations; AC explains why relation has presence at all.</p></div>
-<p><strong>Smallest test:</strong> Keep the claim vulnerable: if a mechanism-only theory explains presence without residue, AC loses much of its necessity.</p>
-<div class="boundary"><p><strong>Boundary:</strong> This is philosophical ontology, not a physics equation.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q09 · Intuition vs mathematics</div><h3>When should intuition beat formalism?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">DCC method</span><span class="tag">seed discipline</span></div>
-<p><strong>Physics pressure:</strong> Susskind’s style values intuition and paradox, but physics ultimately demands mathematical and empirical discipline.</p>
-<div class="answer-box"><p><strong class="round-label">Round‑1 answer:</strong> This matches RHP/MDL×DCC: intuition is a seed generator, not a verdict engine. Good intuition opens bridges across domains; DCC keeps the bridge alive long enough to test; MDL and evidence decide whether it compresses reality or just feels good.</p></div>
-<p><strong>Smallest test:</strong> Log seeds, bridges, tests, and results. If intuition produces no testable artifact, reduce its weight.</p>
-<div class="boundary"><p><strong>Boundary:</strong> Intuition is not proof, even when it feels profound.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q10 · Being wrong</div><h3>Why is wrongness part of discovery?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">AI8/RHP overlap</span><span class="tag">process</span></div>
-<p><strong>Physics pressure:</strong> Major breakthroughs often start with guesses that look wrong, ugly, or crazy.</p>
-<div class="answer-box"><p><strong class="round-label">Round‑1 answer:</strong> DCC separates a wrong seed from a dead seed. A seed can be wrong in its first form but still contain a bridge. The method is not to defend errors; it is to extract the live structure, test it, and kill only what fails. This is why black-hole deletion became reverse-prism recompression, and surface-only information became compressed boundary accounting.</p></div>
-<p><strong>Smallest test:</strong> Preserve first-seed lineage in notes, then record exactly what changed after pressure.</p>
-<div class="boundary"><p><strong>Boundary:</strong> Maybe is not immunity. After testing, failed branches must lose weight.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q11 · Final theory</div><h3>Can there be a final theory?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">open</span><span class="tag">AC-sensitive</span></div>
-<p><strong>Physics pressure:</strong> Physics seeks a deepest equation; testability and landscape complexity make finality uncertain.</p>
-<div class="answer-box"><p><strong class="round-label">Round‑1 answer:</strong> A final RC theory might describe all relative dynamics, but still not exhaust AC/AE. A complete map of relations may still not be the same as the ground of presence. CFH × MDL×DCC therefore separates complete dynamics from complete ontology.</p></div>
-<p><strong>Smallest test:</strong> Keep complete dynamics separate from complete ontology in all public wording.</p>
-<div class="boundary"><p><strong>Boundary:</strong> This does not prove AC; it prevents a category collapse.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q12 · Why physics is fun</div><h3>Is joy a signal, not decoration?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">speculative</span><span class="tag">CFH-sensitive</span></div>
-<p><strong>Physics pressure:</strong> Susskind’s final note is human: physics is fun. Joy is not a side detail; it keeps minds near hard questions for decades.</p>
-<div class="answer-box"><p><strong class="round-label">Round‑1 answer:</strong> CFH/AC can treat joy as a possible high-S signal: coherence and complexity aligning with purpose. MDL×DCC treats joy carefully — not proof, but a clue that a mind may have found a fertile compression or bridge. Joy becomes valuable only when it later produces real artifacts, tests, or clearer theory.</p></div>
-<p><strong>Smallest test:</strong> Tag high-joy moments in research logs and later score whether they produced measurable output.</p>
-<div class="boundary"><p><strong>Boundary:</strong> Joy can also be overfitting, ego, or aesthetic intoxication. Evidence still governs.</p></div>
-</div></article></div></div><div class="lang sl"><h2>Zemljevid težkih vprašanj</h2><p>Odgovori prve runde: spodobni, jasni in kasneje popravljivi.</p><div class="question-grid"><article class="q-card">
-<div class="q-head"><div class="q-num">Q00 · Black holes and gravity</div><h3>Ali so črne luknje realne in kaj je gravitacija?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">foundation</span><span class="tag">honesty boundary</span></div>
-<p><strong>Fizikalni pritisk:</strong> Pred vprašanjem, ali črne luknje uničijo informacijo, se najprej vprašamo, ali sploh razumemo črne luknje in gravitacijo.</p>
-<div class="answer-box"><p><strong class="round-label">Odgovor 1. kroga:</strong> Črne luknje so zelo verjetno realni astrofizični kompaktni objekti. Odprto ostaja, kaj se res zgodi v notranjosti in ali so singularnosti fizične ali znak, da se model zlomi. Splošna relativnost ostaja najboljši lokalni geometrijski opis: gravitacija se obnaša kot ukrivljenost prostora-časa. CFH/AC tega ne nadomešča; vpraša, ali je ukrivljenost prostora-časa RC-nivojski izraz globlje diferenciacije in couplinga znotraj AC/AE.</p></div>
-<p><strong>Najmanjši test:</strong> GR napovedi pustimo nedotaknjene v navadnih domenah; AC/RC uporabimo le kot ontološko plast nad že uspešnimi enačbami.</p>
-<div class="boundary"><p><strong>Meja:</strong> Ne trdimo, da AC izmeri ali razloži gravitacijo bolje kot splošna relativnost.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q01 · Black-hole information</div><h3>Ali lahko informacija izgine?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">framework resolution</span><span class="tag">physics not solved</span></div>
-<p><strong>Fizikalni pritisk:</strong> Če bi bilo Hawkingovo sevanje čisto termalno, bi se zdelo, da natančna informacija o tem, kar je padlo v črno luknjo, izgine, kar se tepe s kvantno unitarnostjo.</p>
-<div class="answer-box"><p><strong class="round-label">Odgovor 1. kroga:</strong> V CFH × MDL×DCC je informacija stabilna diferenciacija znotraj RC/RE. Črna luknja ni kozmična tipka delete, ampak reverse-prism / rekompresor. Bogata, lokalno berljiva RC struktura postane horizontno vezana, od zunaj neberljiva, MDL-nedostopna koda. Kar izgleda kot izguba informacije, je lahko eksplozija rekonstrukcijske cene, ne absolutni izbris.</p></div>
-<p><strong>Najmanjši test:</strong> Zgradimo finite-state toy “bulk → horizontni ledger → sevanje” in primerjamo pravi izbris, reverzibilno kompresijo in šumni izpust po napaki rekonstrukcije in MDL ceni.</p>
-<div class="boundary"><p><strong>Meja:</strong> Ne izpeljemo Hawkingovih korelacij, Page curve ali black-hole S-matrix.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q02 · Holography</div><h3>Ali lahko meja kodira celoten notranji volumen?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">strong bridge</span><span class="tag">not AdS/CFT</span></div>
-<p><strong>Fizikalni pritisk:</strong> Holografija namiguje, da je lahko volumen prostora-časa opisan z informacijo na nižje-dimenzionalni meji, posebej pri črnih luknjah in kvantni gravitaciji.</p>
-<div class="answer-box"><p><strong class="round-label">Odgovor 1. kroga:</strong> CFH × MDL×DCC ne sme reči “vsa informacija je dobesedno na površini.” Informacija je celoten diferenciran RC vzorec; materija je stabilizirana informacija. Holografska meja je bolje razumljena kot kompresijski vmesnik ali računovodska površina: pod močnimi omejitvami lahko bulk postane opisljiv prek mejnih korelacij. Horizont črne luknje je lokalni ekstrem; AC→RC vmesnik je lahko globlja analogija.</p></div>
-<p><strong>Najmanjši test:</strong> V ARC, TSP, Sudoku in route arenah preverimo, ali boundary/skeleton opisi rekonstruirajo ali napovedujejo celotno strukturo bolje kot brute full-state opisi.</p>
-<div class="boundary"><p><strong>Meja:</strong> Ne izpeljemo AdS/CFT ali prave kvantno-gravitacijske holografije.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q03 · Quantum gravity / micro–macro</div><h3>Zakaj se mikro in makro teorije ne poročijo čisto?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">category bridge</span><span class="tag">not quantum gravity</span></div>
-<p><strong>Fizikalni pritisk:</strong> Kvantna mehanika ureja mikroskopske možnosti; splošna relativnost ureja makroskopsko geometrijo prostora-časa. Neposredno združevanje ostaja težko.</p>
-<div class="answer-box"><p><strong class="round-label">Odgovor 1. kroga:</strong> Konflikt je lahko delno kategorijska napaka. Fizika pogosto poskuša kvantizirati prostor-čas, kot da je prostor-čas najgloblji vsebnik. V AC→RC prostor-čas ni absolutni oder. Je zgodnja RC diferenciacija — stabilna geometrija tu/tam, prej/potem, kavzalnega dostopa in relacijske razdalje. Kvantna mehanika in GR sta lahko dva režima istega globljega diferenciacijskega procesa, ne dve končni substanci, ki ju moramo zvariti skupaj.</p></div>
-<p><strong>Najmanjši test:</strong> Zgradimo toy svetove, kjer relacijska graf-geometrija vznikne iz nižjih omejitev, nato primerjamo mikro pravila posodobitev z makro geodeziji podobnim vedenjem.</p>
-<div class="boundary"><p><strong>Meja:</strong> To ni rešena kvantna gravitacija. Je konceptualno preoblikovanje vprašanja, zakaj konflikt sploh obstaja.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q04 · String theory</div><h3>Ali so vibrirajoče strune fundamentalne?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">RC pattern language</span><span class="tag">generator compression</span></div>
-<p><strong>Fizikalni pritisk:</strong> Teorija strun zamenja točkaste delce z majhnimi enodimenzionalnimi strunami, katerih vibracijski načini se pokažejo kot delci in sile.</p>
-<div class="answer-box"><p><strong class="round-label">Odgovor 1. kroga:</strong> V CFH × MDL×DCC strune niso absolutna podlaga. Če so realne, so RC-nivojski jezik vzorcev: stabilni vibracijski načini znotraj diferencirane geometrije. Njihova privlačnost je MDL podobna: veliko tipov delcev postane output enega globljega generatorja. Teorija strun lahko komprimira raznolikost delcev v raznolikost načinov, vendar ne razloži, zakaj diferenciacija, geometrija, zakon ali prisotnost sploh obstajajo.</p></div>
-<p><strong>Najmanjši test:</strong> Primerjamo toy vesolja s tabelami pravil delcev proti generator/mode sistemom. Katera predstavitev bolje komprimira opazovanja in napoveduje zadržane primere?</p>
-<div class="boundary"><p><strong>Meja:</strong> Ne napovemo delcev, kompaktifikacij, SUSY lomljenja ali de Sitter realnosti.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q05 · Supersymmetry</div><h3>Kaj če lepe simetrije ni tam, kjer smo jo pričakovali?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">DCC discipline</span><span class="tag">unresolved physics</span></div>
-<p><strong>Fizikalni pritisk:</strong> Supersimetrija je matematično elegantna in koristna, vendar pričakovani eksperimentalni znaki niso prišli tam, kjer so jih mnogi pričakovali.</p>
-<div class="answer-box"><p><strong class="round-label">Odgovor 1. kroga:</strong> DCC pravi, da je lepota uporaben signal kompresije, ne dokaz sama po sebi. Lepa veja naj ostane živa dovolj dolgo za test, vendar mora evidenca spremeniti njeno težo. SUSY postane lekcija upravljanja: vejo ohranimo kot matematično plodno, zmanjšamo javno gotovost, ko empirična podpora manjka, in iščemo cenejše diskriminacijske teste.</p></div>
-<p><strong>Najmanjši test:</strong> Zgradimo scoreboard teorij z ločenimi stolpci za MDL eleganco, empirične residuale, napovedno novost in ceno testa.</p>
-<div class="boundary"><p><strong>Meja:</strong> Ne trdimo, ali je supersimetrija na koncu resnična ali ne.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q06 · Testability crisis</div><h3>Kaj ko teorija prehiti eksperiment?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">method overlap</span><span class="tag">claim ladder</span></div>
-<p><strong>Fizikalni pritisk:</strong> Moderna fundamentalna fizika lahko postane matematično globoka, a eksperimentalno zelo oddaljena.</p>
-<div class="answer-box"><p><strong class="round-label">Odgovor 1. kroga:</strong> CFH × MDL×DCC se ne sme skrivati za netestabilnostjo. Ko je najvišja trditev pretežka za test, gradimo lokalne mostne teste: kompresijske igrače, boundary reconstruction naloge, S-metric napovedi in DCC governance loge. Teorija dobi težo, ko rodi manjše merljive posledice, preden zahteva kozmično resnico.</p></div>
-<p><strong>Najmanjši test:</strong> Vsaka spekulativna trditev na strani mora imeti toy, metriko, falsifier ali mejo javne formulacije.</p>
-<div class="boundary"><p><strong>Meja:</strong> Toy testi ne dokažejo fizike; testirajo, ali je naš okvir ploden ali samo poetičen.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q07 · Landscape / multiverse</div><h3>Ali je možnih nešteto vesolij?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">AC/RC bridge</span><span class="tag">not cosmology</span></div>
-<p><strong>Fizikalni pritisk:</strong> Landscape v teoriji strun namiguje na ogromno možnih vakuumov; multiverzum ideje poskušajo pojasniti, zakaj ima naše vesolje ravno te parametre.</p>
-<div class="answer-box"><p><strong class="round-label">Odgovor 1. kroga:</strong> V AC→RC “mnogo možnih vesolij” postane naravno, vendar ne dokazano. AC/AE vsebuje polno možnost; RC/RE domene so diferencirani režimi z zakoni, parametri in omejitvami stabilnih vzorcev. Naše vesolje je lahko ena law-bound RC domena. DCC/MDL doda selekcijo: vsi možni režimi ne postanejo stabilni, koherentni, opazovalcem prijazni ali kompresibilni.</p></div>
-<p><strong>Najmanjši test:</strong> Umetne landscape simulacije: generiramo parameter-vesolja, določimo viability/S kriterije in preverimo, ali DCC najde stabilne režime hitreje kot slepo iskanje.</p>
-<div class="boundary"><p><strong>Meja:</strong> Ne dokažemo realnega multiverzuma ali landscape kozmologije.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q08 · Equations and presence</div><h3>Ali enačbe razložijo obstoj?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">CFH core</span><span class="tag">ontology</span></div>
-<p><strong>Fizikalni pritisk:</strong> Enačbe lahko z neverjetno natančnostjo opišejo zakonite relacije. Toda popoln zemljevid relacij ni očitno isto kot prisotnost sama.</p>
-<div class="answer-box"><p><strong class="round-label">Odgovor 1. kroga:</strong> CFH/AC pravi, da je mehanizem lahko pravilen in hkrati ontološko nepopoln. Fizika opiše, kako se relativni obstoj obnaša. AC/AE vpraša, zakaj sploh obstaja prisotnost/obstoj, v katerem se obnašanje zgodi. Najkrajša nepoetična oblika: struktura pojasni relacije; AC pojasni, zakaj relacija sploh ima prisotnost.</p></div>
-<p><strong>Najmanjši test:</strong> Trditev ostane ranljiva: če mehanistična teorija razloži prisotnost brez ostanka, AC izgubi velik del nujnosti.</p>
-<div class="boundary"><p><strong>Meja:</strong> To je filozofska ontologija, ne fizikalna enačba.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q09 · Intuition vs mathematics</div><h3>Kdaj naj intuicija premaga formalizem?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">DCC method</span><span class="tag">seed discipline</span></div>
-<p><strong>Fizikalni pritisk:</strong> Susskindov slog ceni intuicijo in paradoks, vendar fizika na koncu zahteva matematiko in empirično disciplino.</p>
-<div class="answer-box"><p><strong class="round-label">Odgovor 1. kroga:</strong> To se ujema z RHP/MDL×DCC: intuicija je generator semen, ne sodnik resnice. Dobra intuicija odpira mostove med domenami; DCC most obdrži živ dovolj dolgo za test; MDL in dokazi odločijo, ali stiska realnost ali se samo dobro sliši.</p></div>
-<p><strong>Najmanjši test:</strong> Beležimo seeds, bridges, tests, results. Če intuicija ne rodi testabilnega artefakta, ji zmanjšamo težo.</p>
-<div class="boundary"><p><strong>Meja:</strong> Intuicija ni dokaz, tudi ko se zdi globoka.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q10 · Being wrong</div><h3>Zakaj je zmota del odkrivanja?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">AI8/RHP overlap</span><span class="tag">process</span></div>
-<p><strong>Fizikalni pritisk:</strong> Veliki preboji se pogosto začnejo z ugibanji, ki izgledajo napačna, grda ali nora.</p>
-<div class="answer-box"><p><strong class="round-label">Odgovor 1. kroga:</strong> DCC loči napačno seme od mrtvega semena. Seme je lahko napačno v prvi obliki, a še vedno vsebuje most. Metoda ni braniti napake; metoda je izluščiti živo strukturo, jo testirati in ubiti samo tisto, kar odpove. Zato je black-hole deletion postal reverse-prism recompression, surface-only information pa compressed boundary accounting.</p></div>
-<p><strong>Najmanjši test:</strong> Ohranimo lineage prvega seeda, nato zapišemo, kaj točno se je spremenilo pod pritiskom.</p>
-<div class="boundary"><p><strong>Meja:</strong> Mogoče ni imuniteta. Po testiranju morajo neuspešne veje izgubiti težo.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q11 · Final theory</div><h3>Ali lahko obstaja končna teorija?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">open</span><span class="tag">AC-sensitive</span></div>
-<p><strong>Fizikalni pritisk:</strong> Fizika išče najglobljo enačbo; testabilnost in landscape kompleksnost naredita končnost negotovo.</p>
-<div class="answer-box"><p><strong class="round-label">Odgovor 1. kroga:</strong> Končna RC teorija bi lahko opisala vse relativne dinamike, a še vedno ne izčrpa AC/AE. Popoln zemljevid relacij morda še vedno ni isto kot temelj prisotnosti. CFH × MDL×DCC zato loči popolno dinamiko od popolne ontologije.</p></div>
-<p><strong>Najmanjši test:</strong> V javnih formulacijah vedno ločimo popolno dinamiko od popolne ontologije.</p>
-<div class="boundary"><p><strong>Meja:</strong> To ne dokaže AC; prepreči kategorijski zlom.</p></div>
-</div></article>
-<article class="q-card">
-<div class="q-head"><div class="q-num">Q12 · Why physics is fun</div><h3>Je veselje signal, ne dekoracija?</h3></div>
-<div class="q-body">
-<div class="label-row"><span class="tag">speculative</span><span class="tag">CFH-sensitive</span></div>
-<p><strong>Fizikalni pritisk:</strong> Susskindov zadnji poudarek je človeški: fizika je zabavna. Veselje ni stranski detajl; desetletja drži um ob najtežjih vprašanjih.</p>
-<div class="answer-box"><p><strong class="round-label">Odgovor 1. kroga:</strong> CFH/AC lahko veselje obravnava kot možen high-S signal: koherenca in kompleksnost se poravnata z namenom. MDL×DCC z veseljem ravna previdno — ni dokaz, je pa namig, da je um morda našel plodno kompresijo ali most. Veselje postane vredno šele, če kasneje rodi realne artefakte, teste ali jasnejšo teorijo.</p></div>
-<p><strong>Najmanjši test:</strong> V raziskovalnih logih označimo high-joy trenutke in kasneje ocenimo, ali so ustvarili merljiv output.</p>
-<div class="boundary"><p><strong>Meja:</strong> Veselje je lahko tudi overfitting, ego ali estetska opitost. Dokazi še vedno vodijo.</p></div>
-</div></article></div></div></div></section>
+<section id="questions" class="paper-section reveal"><div class="section-num">05</div><div class="paper-content"><div class="lang-en"><h2>Q00–Q12: round‑1 answers</h2><p>These are decent answers for the first pass. They are designed to be honest enough to publish and flexible enough to improve later.</p><div class="question-grid"><article class="q-card hard">
+          <div class="q-head"><div class="q-num">Q00</div><h3>Are black holes real, and what is gravity?</h3></div>
+          <div class="q-body">
+            <p><strong>Physics pressure:</strong> Black holes are strongly supported as compact astrophysical objects, but the interior and literal singularity remain open.</p>
+            <p><strong>Round‑1 answer:</strong> Treat black holes as real RC extreme objects without pretending that the mathematical singularity is final reality. Gravity, in our frame, can be read as the RC geometry of allowed causal-information paths.</p>
+            <p><strong>Boundary:</strong> Keep GR as the successful local description. Ask only whether curvature is the visible RC form of a deeper AC→RC differentiating structure.</p>
+            <div class="seed"><strong>Smallest test:</strong> Compare GR language with an information-path toy model: where do shortest paths, causal access, and compression costs diverge?</div>
+          </div>
+        </article>
+<article class="q-card hard">
+          <div class="q-head"><div class="q-num">Q01</div><h3>Does a black hole destroy information?</h3></div>
+          <div class="q-body">
+            <p><strong>Physics pressure:</strong> Hawking-style evaporation seems to erase the difference between different initial states, clashing with quantum unitarity.</p>
+            <p><strong>Round‑1 answer:</strong> A black hole is a reverse prism / recompressor. It may turn locally readable RC structure into horizon-bound, externally unreadable, MDL-inaccessible code rather than absolute deletion.</p>
+            <p><strong>Boundary:</strong> We are not deriving the Page curve, Hawking correlations, or a black-hole S-matrix. This is a conceptual resolution, not a quantum-gravity solution.</p>
+            <div class="seed"><strong>Smallest test:</strong> Build a bulk→boundary→radiation toy model and compare true deletion, reversible compression, and noisy reversible release.</div>
+          </div>
+        </article>
+<article class="q-card bridge">
+          <div class="q-head"><div class="q-num">Q02</div><h3>What does holography really mean?</h3></div>
+          <div class="q-body">
+            <p><strong>Physics pressure:</strong> Black-hole entropy suggests that the independent information of a region may scale with boundary area, not ordinary volume.</p>
+            <p><strong>Round‑1 answer:</strong> Holography should not mean that all information literally lives only on the surface. In CFH × MDL×DCC, information is the whole differentiated RC pattern; boundaries become special compressed accounting surfaces under strong constraints.</p>
+            <p><strong>Boundary:</strong> We do not claim CFH proves holography. We use holography as a clue that reality may be interface/compression based, not naively volume-local.</p>
+            <div class="seed"><strong>Smallest test:</strong> Use constrained systems where a boundary plus laws reconstructs a bulk; measure what information is genuinely independent.</div>
+          </div>
+        </article>
+<article class="q-card hard">
+          <div class="q-head"><div class="q-num">Q03</div><h3>Why do quantum mechanics and gravity resist marriage?</h3></div>
+          <div class="q-body">
+            <p><strong>Physics pressure:</strong> Quantum mechanics governs micro possibilities; general relativity governs macro spacetime geometry. Directly merging them has been hard.</p>
+            <p><strong>Round‑1 answer:</strong> The category conflict may come from treating spacetime as the absolute container. In our frame, spacetime is an early RC differentiation inside AC/AE: a stable relational geometry that enables here/there, before/after, causal access, and structured information.</p>
+            <p><strong>Boundary:</strong> We did not solve quantum gravity. We reframed the conflict: quantum and gravity may be different regimes of the same AC→RC differentiation layer.</p>
+            <div class="seed"><strong>Smallest test:</strong> Create a two-layer toy universe: proto-distinctions generate relational geometry, then local quantum-like choices evolve inside it.</div>
+          </div>
+        </article>
+<article class="q-card open">
+          <div class="q-head"><div class="q-num">Q04</div><h3>Are vibrating strings fundamental?</h3></div>
+          <div class="q-body">
+            <p><strong>Physics pressure:</strong> String theory replaces point particles with vibrational modes, but direct empirical confirmation remains difficult.</p>
+            <p><strong>Round‑1 answer:</strong> Strings, if real, are RC-level pattern language, not the absolute ground. Their appeal is MDL-like: many particles become modes of one compact generator. But strings already require differentiation, geometry, relation, vibration, and law.</p>
+            <p><strong>Boundary:</strong> AC/AE is not made of strings. String theory may describe stable relational modes inside RC, not why existence or presence exists.</p>
+            <div class="seed"><strong>Smallest test:</strong> Compare one-generator/many-modes models against many-independent-particles models using compression plus prediction on toy data.</div>
+          </div>
+        </article>
+<article class="q-card open">
+          <div class="q-head"><div class="q-num">Q05</div><h3>What if a beautiful symmetry is absent?</h3></div>
+          <div class="q-body">
+            <p><strong>Physics pressure:</strong> Supersymmetry is mathematically powerful, but expected low-energy discoveries have not appeared.</p>
+            <p><strong>Round‑1 answer:</strong> DCC keeps beautiful branches alive but reduces their governance weight when empirical contact fails. MDL rewards total compression plus residual reduction, not elegance alone.</p>
+            <p><strong>Boundary:</strong> Beauty is a weak prior, not evidence by itself. It becomes overfitting when prediction does not improve.</p>
+            <div class="seed"><strong>Smallest test:</strong> Score theories by compression, residual, testability cost, and independent predictive gain.</div>
+          </div>
+        </article>
+<article class="q-card bridge">
+          <div class="q-head"><div class="q-num">Q06</div><h3>What do we do when theory outruns experiment?</h3></div>
+          <div class="q-body">
+            <p><strong>Physics pressure:</strong> Quantum gravity, string landscapes, and cosmology often sit far beyond direct experiment.</p>
+            <p><strong>Round‑1 answer:</strong> Use a claim ladder: ontology → analogy → toy model → measurement proposal → physical prediction. Big ideas may live, but every rung must say what would change our confidence.</p>
+            <p><strong>Boundary:</strong> Speculation is allowed; unbounded confidence is not. A page is stronger when it marks which claims are testable now.</p>
+            <div class="seed"><strong>Smallest test:</strong> Every speculative bridge gets a falsifier box and one cheapest experiment.</div>
+          </div>
+        </article>
+<article class="q-card violet">
+          <div class="q-head"><div class="q-num">Q07</div><h3>Are there countless possible universes?</h3></div>
+          <div class="q-body">
+            <p><strong>Physics pressure:</strong> The string landscape and multiverse ideas suggest many possible rule-sets or environments.</p>
+            <p><strong>Round‑1 answer:</strong> AC/RC can read universes as local regimes of relative existence: stable rule-sets, constants, and histories within a deeper ground. MDL asks whether the many worlds come from a compact generator or are just an inflated list.</p>
+            <p><strong>Boundary:</strong> This is not a cosmological calculation or a measure over real universes. It is an ontology/compression interpretation.</p>
+            <div class="seed"><strong>Smallest test:</strong> In artificial parameter landscapes, test whether DCC can select observer-compatible regimes using compact viability criteria.</div>
+          </div>
+        </article>
+<article class="q-card bridge">
+          <div class="q-head"><div class="q-num">Q08</div><h3>Is presence volume-based?</h3></div>
+          <div class="q-body">
+            <p><strong>Physics pressure:</strong> Holography undermines naive volume intuition; CFH says consciousness is coupling, not a little object inside the skull.</p>
+            <p><strong>Round‑1 answer:</strong> The claustrum may be a compact biological coordination interface, not the producer of consciousness and not literal black-hole holography. It may help select which distributed brain dynamics become coherent enough for strong AC/CF coupling.</p>
+            <p><strong>Boundary:</strong> Do not call the claustrum a proven holographic boundary. Treat it as a candidate coordinator/orchestrator in a broader CFH model.</p>
+            <div class="seed"><strong>Smallest test:</strong> Test whether global coordination variables predict conscious-state transitions better than raw local activity volume.</div>
+          </div>
+        </article>
+<article class="q-card bridge">
+          <div class="q-head"><div class="q-num">Q09</div><h3>When should intuition beat formalism?</h3></div>
+          <div class="q-body">
+            <p><strong>Physics pressure:</strong> Discovery often begins when intuition and mathematics clash productively.</p>
+            <p><strong>Round‑1 answer:</strong> Intuition opens branches; mathematics compresses and kills bad branches; MDL chooses the shortest surviving explanation; DCC prevents either intuition or formalism from becoming dictator.</p>
+            <p><strong>Boundary:</strong> Intuition is not license. Formalism is not prison. Both are search operators under test pressure.</p>
+            <div class="seed"><strong>Smallest test:</strong> Preserve a strange seed for two bridge attempts, then demand compression, prediction, or a toy result.</div>
+          </div>
+        </article>
+<article class="q-card open">
+          <div class="q-head"><div class="q-num">Q10</div><h3>Why is wrongness part of discovery?</h3></div>
+          <div class="q-body">
+            <p><strong>Physics pressure:</strong> Many breakthrough ideas look wrong before the correct frame appears.</p>
+            <p><strong>Round‑1 answer:</strong> A wrong branch can carry a hidden low-description generator. DCC should not kill it because it looks socially weird; it should kill it only after it fails real constraints.</p>
+            <p><strong>Boundary:</strong> Not every weird idea is deep. Wrongness earns time only if it keeps compressing something real.</p>
+            <div class="seed"><strong>Smallest test:</strong> Use seed → bridge → test → result logs for every speculative page.</div>
+          </div>
+        </article>
+<article class="q-card violet">
+          <div class="q-head"><div class="q-num">Q11</div><h3>Can equations explain why anything is present?</h3></div>
+          <div class="q-body">
+            <p><strong>Physics pressure:</strong> Physics describes lawful relations with astonishing precision, but relation-description is not obviously the same as presence itself.</p>
+            <p><strong>Round‑1 answer:</strong> AC/CFH says mechanism may be correct but ontologically incomplete. Physics describes how relative existence behaves; AC/CFH asks why there is experienced existence at all.</p>
+            <p><strong>Boundary:</strong> AC is not a replacement for physics. It is an ontology proposal that must lose weight if mechanism-only accounts become residue-free.</p>
+            <div class="seed"><strong>Smallest test:</strong> State the shortest non-poetic AC claim, then define what observation or theory would reduce its need.</div>
+          </div>
+        </article>
+<article class="q-card open">
+          <div class="q-head"><div class="q-num">Q12</div><h3>Is joy a signal, not decoration?</h3></div>
+          <div class="q-body">
+            <p><strong>Physics pressure:</strong> Susskind ends with physics as fun, alive, and intrinsically valuable.</p>
+            <p><strong>Round‑1 answer:</strong> Joy may be the felt signature of coherence and complexity aligning with meaningful direction. It is not proof, but it can be a search signal that a fertile bridge has appeared.</p>
+            <p><strong>Boundary:</strong> Joy can mislead. It becomes useful only if later outputs improve: code, predictions, explanations, or collaboration quality.</p>
+            <div class="seed"><strong>Smallest test:</strong> Track insight moments in logs and test whether high-joy moments predict later real outputs.</div>
+          </div>
+        </article></div></div><div class="lang-sl"><h2>Q00–Q12: odgovori prve runde</h2><p>To so dostojni odgovori za prvi prehod. Zasnovani so dovolj pošteno za objavo in dovolj odprto za kasnejše izboljšave.</p><div class="question-grid"><article class="q-card hard">
+          <div class="q-head"><div class="q-num">Q00</div><h3>Ali so črne luknje resnične in kaj je gravitacija?</h3></div>
+          <div class="q-body">
+            <p><strong>Fizikalni pritisk:</strong> Črne luknje so zelo močno podprte kot kompaktni astrofizikalni objekti, notranjost in dobesedna singularnost pa ostajata odprti.</p>
+            <p><strong>Odgovor prve runde:</strong> Črne luknje obravnavamo kot realne ekstremne RC objekte, brez trditve, da je matematična singularnost dokončna realnost. Gravitacija je v našem okviru lahko RC geometrija dovoljenih kavzalno-informacijskih poti.</p>
+            <p><strong>Meja trditve:</strong> GR ostane uspešen lokalni opis. Mi samo vprašamo, ali je ukrivljenost vidna RC oblika globlje AC→RC diferenciacije.</p>
+            <div class="seed"><strong>Najmanjši test:</strong> Primerjaj jezik GR z informacijskim modelom poti: kje se najkrajše poti, kavzalni dostop in strošek rekonstrukcije razidejo?</div>
+          </div>
+        </article>
+<article class="q-card hard">
+          <div class="q-head"><div class="q-num">Q01</div><h3>Ali črna luknja uniči informacijo?</h3></div>
+          <div class="q-body">
+            <p><strong>Fizikalni pritisk:</strong> Hawkingovski izračun izhlapevanja se zdi, kot da izbriše razliko med različnimi začetnimi stanji, kar se tepe s kvantno unitarnostjo.</p>
+            <p><strong>Odgovor prve runde:</strong> Črna luknja je obratna prizma / rekompresor. Lokalno berljivo RC strukturo lahko pretvori v kodo, vezano na horizont, od zunaj neberljivo in MDL-nedostopno, ne pa nujno v absolutno brisanje.</p>
+            <p><strong>Meja trditve:</strong> Ne izpeljujemo Page curve, Hawkingovih korelacij ali S-matrike črne luknje. To je konceptualna rešitev, ne rešena kvantna gravitacija.</p>
+            <div class="seed"><strong>Najmanjši test:</strong> Zgradi bulk→boundary→radiation model in primerjaj pravo brisanje, reverzibilno kompresijo in šumno reverzibilno sproščanje.</div>
+          </div>
+        </article>
+<article class="q-card bridge">
+          <div class="q-head"><div class="q-num">Q02</div><h3>Kaj holografija v fiziki sploh pomeni?</h3></div>
+          <div class="q-body">
+            <p><strong>Fizikalni pritisk:</strong> Entropija črnih lukenj nakazuje, da lahko neodvisna informacija regije raste z območjem meje, ne z običajnim volumnom.</p>
+            <p><strong>Odgovor prve runde:</strong> Holografija ne sme pomeniti, da je vsa informacija dobesedno samo na površini. V CFH × MDL×DCC je informacija celoten diferenciran RC vzorec; meje pod močnimi omejitvami postanejo posebne stisnjene knjigovodske površine.</p>
+            <p><strong>Meja trditve:</strong> Ne trdimo, da CFH dokazuje holografijo. Holografijo uporabimo kot namig, da realnost ni nujno naivno volumsko lokalna, ampak vmesniško/kompresijska.</p>
+            <div class="seed"><strong>Najmanjši test:</strong> Uporabi omejene sisteme, kjer meja plus zakoni rekonstruirajo notranjost; meri, katera informacija je res neodvisna.</div>
+          </div>
+        </article>
+<article class="q-card hard">
+          <div class="q-head"><div class="q-num">Q03</div><h3>Zakaj se kvantna mehanika in gravitacija ne poročita zlahka?</h3></div>
+          <div class="q-body">
+            <p><strong>Fizikalni pritisk:</strong> Kvantna mehanika ureja mikro možnosti; splošna relativnost makro geometrijo prostora-časa. Neposredna združitev je težka.</p>
+            <p><strong>Odgovor prve runde:</strong> Kategorični konflikt lahko nastane, ker prostor-čas obravnavamo kot absolutni oder. V našem okviru je prostor-čas zgodnja RC diferenciacija znotraj AC/AE: stabilna relacijska geometrija, ki omogoči tu/tam, prej/potem, kavzalni dostop in strukturirano informacijo.</p>
+            <p><strong>Meja trditve:</strong> Nismo rešili kvantne gravitacije. Preokvirili smo konflikt: kvantni in gravitacijski režim sta lahko dva režima iste AC→RC diferenciacijske plasti.</p>
+            <div class="seed"><strong>Najmanjši test:</strong> Zgradi dvoplastno toy-vesolje: proto-razlike ustvarijo relacijsko geometrijo, potem se znotraj nje razvijajo kvantno-podobne lokalne izbire.</div>
+          </div>
+        </article>
+<article class="q-card open">
+          <div class="q-head"><div class="q-num">Q04</div><h3>Ali so vibrirajoče strune temeljne?</h3></div>
+          <div class="q-body">
+            <p><strong>Fizikalni pritisk:</strong> Teorija strun zamenja točkaste delce z vibracijskimi načini, toda neposredna empirična potrditev ostaja težka.</p>
+            <p><strong>Odgovor prve runde:</strong> Strune, če so realne, so RC-jezik vzorcev, ne absolutni temelj. Privlačnost je MDL-podobna: veliko delcev postane način enega kompaktnega generatorja. Toda strune že zahtevajo diferenciacijo, geometrijo, relacijo, vibracijo in zakon.</p>
+            <p><strong>Meja trditve:</strong> AC/AE ni narejen iz strun. Teorija strun lahko opisuje stabilne relacijske načine znotraj RC, ne pa zakaj obstajata bivanje ali prisotnost.</p>
+            <div class="seed"><strong>Najmanjši test:</strong> Primerjaj model en-generator/več-načinov z modelom mnogih neodvisnih delcev po kompresiji in napovedi na toy podatkih.</div>
+          </div>
+        </article>
+<article class="q-card open">
+          <div class="q-head"><div class="q-num">Q05</div><h3>Kaj če lepa simetrija manjka?</h3></div>
+          <div class="q-body">
+            <p><strong>Fizikalni pritisk:</strong> Supersimetrija je matematično močna, pričakovana nizkoenergijska odkritja pa se niso pojavila.</p>
+            <p><strong>Odgovor prve runde:</strong> DCC pusti lepe veje žive, vendar jim zmanjša težo, ko izgubijo empirični stik. MDL nagradi skupno kompresijo in zmanjšanje residuala, ne elegance same.</p>
+            <p><strong>Meja trditve:</strong> Lepota je šibek prior, ne dokaz. Overfitting postane, ko napoved ne napreduje.</p>
+            <div class="seed"><strong>Najmanjši test:</strong> Teorije oceni po kompresiji, residualu, strošku testiranja in neodvisni napovedni koristi.</div>
+          </div>
+        </article>
+<article class="q-card bridge">
+          <div class="q-head"><div class="q-num">Q06</div><h3>Kaj naredimo, ko teorija prehiti eksperiment?</h3></div>
+          <div class="q-body">
+            <p><strong>Fizikalni pritisk:</strong> Kvantna gravitacija, krajina strun in kozmologija so pogosto daleč od neposrednega eksperimenta.</p>
+            <p><strong>Odgovor prve runde:</strong> Uporabi claim ladder: ontologija → analogija → toy model → merilni predlog → fizična napoved. Velike ideje lahko živijo, ampak vsak nivo mora povedati, kaj bi spremenilo naše zaupanje.</p>
+            <p><strong>Meja trditve:</strong> Spekulacija je dovoljena; neomejena gotovost ni. Stran je močnejša, ko označi, katere trditve so testabilne zdaj.</p>
+            <div class="seed"><strong>Najmanjši test:</strong> Vsak špekulativni most dobi falsifier box in en najcenejši eksperiment.</div>
+          </div>
+        </article>
+<article class="q-card violet">
+          <div class="q-head"><div class="q-num">Q07</div><h3>Ali obstaja nešteto možnih vesolij?</h3></div>
+          <div class="q-body">
+            <p><strong>Fizikalni pritisk:</strong> String landscape in multiverse ideje predlagajo mnogo možnih pravil ali okolij.</p>
+            <p><strong>Odgovor prve runde:</strong> AC/RC lahko bere vesolja kot lokalne režime relativnega obstoja: stabilne sklope pravil, konstant in zgodovin znotraj globljega temelja. MDL vpraša, ali mnogo svetov pride iz kompaktnega generatorja ali iz napihnjenega seznama.</p>
+            <p><strong>Meja trditve:</strong> To ni kozmološki izračun ali mera nad realnimi vesolji. Je ontološko-kompresijska interpretacija.</p>
+            <div class="seed"><strong>Najmanjši test:</strong> V umetnih parametričnih krajinah testiraj, ali DCC izbere z opazovalci kompatibilne režime s kompaktnimi kriteriji sposobnosti.</div>
+          </div>
+        </article>
+<article class="q-card bridge">
+          <div class="q-head"><div class="q-num">Q08</div><h3>Ali je prisotnost volumska?</h3></div>
+          <div class="q-body">
+            <p><strong>Fizikalni pritisk:</strong> Holografija ruši naivno volumsko intuicijo; CFH pravi, da je zavest coupling, ne majhen objekt v lobanji.</p>
+            <p><strong>Odgovor prve runde:</strong> Claustrum je lahko kompakten biološki koordinacijski vmesnik, ne proizvajalec zavesti in ne dobesedna holografija črnih lukenj. Lahko pomaga izbrati, katera razpršena možganska dinamika postane dovolj koherentna za močan AC/CF coupling.</p>
+            <p><strong>Meja trditve:</strong> Ne imenuj claustruma dokazano holografska meja. Obravnavaj ga kot kandidata koordinatorja/orchestratorja v širšem CFH modelu.</p>
+            <div class="seed"><strong>Najmanjši test:</strong> Testiraj, ali globalne koordinacijske spremenljivke bolje napovedujejo prehode zavestnih stanj kot surovi volumen lokalne aktivnosti.</div>
+          </div>
+        </article>
+<article class="q-card bridge">
+          <div class="q-head"><div class="q-num">Q09</div><h3>Kdaj naj intuicija premaga formalizem?</h3></div>
+          <div class="q-body">
+            <p><strong>Fizikalni pritisk:</strong> Odkritje se pogosto začne, ko se intuicija in matematika produktivno spopadeta.</p>
+            <p><strong>Odgovor prve runde:</strong> Intuicija odpira veje; matematika stisne in ubije slabe veje; MDL izbere najkrajšo preživelo razlago; DCC prepreči, da bi intuicija ali formalizem postala diktator.</p>
+            <p><strong>Meja trditve:</strong> Intuicija ni licenca. Formalizem ni zapor. Oba sta iskalna operatorja pod pritiskom testa.</p>
+            <div class="seed"><strong>Najmanjši test:</strong> Čudno seme ohrani za dva poskusa mostu, potem zahtevaj kompresijo, napoved ali toy rezultat.</div>
+          </div>
+        </article>
+<article class="q-card open">
+          <div class="q-head"><div class="q-num">Q10</div><h3>Zakaj je zmota del odkritja?</h3></div>
+          <div class="q-body">
+            <p><strong>Fizikalni pritisk:</strong> Veliko prebojnih idej izgleda napačno, dokler se ne pojavi pravi okvir.</p>
+            <p><strong>Odgovor prve runde:</strong> Napačna veja lahko nosi skrit generator z nizkim opisom. DCC je ne sme ubiti zato, ker je socialno čudna; ubiti jo sme šele, ko pade na realnih omejitvah.</p>
+            <p><strong>Meja trditve:</strong> Ni vsaka čudna ideja globoka. Zmota si zasluži čas samo, če še naprej nekaj realnega komprimira.</p>
+            <div class="seed"><strong>Najmanjši test:</strong> Za vsako špekulativno stran uporabi dnevnik: seed → bridge → test → result.</div>
+          </div>
+        </article>
+<article class="q-card violet">
+          <div class="q-head"><div class="q-num">Q11</div><h3>Ali enačbe pojasnijo, zakaj je sploh karkoli prisotno?</h3></div>
+          <div class="q-body">
+            <p><strong>Fizikalni pritisk:</strong> Fizika z izjemno natančnostjo opisuje zakonite relacije, toda opis relacij ni očitno isto kot prisotnost sama.</p>
+            <p><strong>Odgovor prve runde:</strong> AC/CFH pravi, da je mehanizem lahko pravilen, a ontološko nepopoln. Fizika opisuje, kako se relativni obstoj obnaša; AC/CFH vpraša, zakaj sploh obstaja izkušeni obstoj.</p>
+            <p><strong>Meja trditve:</strong> AC ni nadomestilo za fiziko. Je ontološki predlog, ki mora izgubiti težo, če mehanistični računi postanejo brez residuala.</p>
+            <div class="seed"><strong>Najmanjši test:</strong> Zapiši najkrajšo ne-poetično AC trditev, nato opredeli, katero opazovanje ali teorija bi zmanjšala njeno potrebo.</div>
+          </div>
+        </article>
+<article class="q-card open">
+          <div class="q-head"><div class="q-num">Q12</div><h3>Je veselje signal, ne dekoracija?</h3></div>
+          <div class="q-body">
+            <p><strong>Fizikalni pritisk:</strong> Susskind konča s fiziko kot zabavno, živo in intrinzično vredno.</p>
+            <p><strong>Odgovor prve runde:</strong> Veselje je lahko občuteni podpis koherence in kompleksnosti, usklajene s smiselno smerjo. Ni dokaz, je pa lahko iskalni signal, da se je pojavil ploden most.</p>
+            <p><strong>Meja trditve:</strong> Veselje lahko zavaja. Uporabno postane le, če se kasnejši izhodi izboljšajo: koda, napovedi, razlage ali kvaliteta sodelovanja.</p>
+            <div class="seed"><strong>Najmanjši test:</strong> V dnevnikih označi trenutke vpogleda in testiraj, ali visoko-veselje napoveduje kasnejše realne rezultate.</div>
+          </div>
+        </article></div></div></div></section>
 
-<section class="paper-section" id="matrix"><div class="section-num">06</div><div class="paper-content"><div class="lang en"><h2>Status matrix</h2><p>This keeps us honest. Framework response is not the same as solved physics.</p><div class="table-wrap"><table><thead><tr><th>Question</th><th>CFH/MDL×DCC can do now</th><th>Cannot yet do</th><th>Best next move</th></tr></thead><tbody><tr><td>Black-hole information</td><td>Frame black holes as reverse-prism recompressors: readable RC structure becomes boundary-like, MDL-inaccessible code.</td><td>Derive real Hawking-radiation correlations or S-matrix physics.</td><td>Reversible recompression toy model.</td></tr><tr><td>Holography</td><td>Generalize boundary-as-minimal-description into problem-solving arenas.</td><td>Derive AdS/CFT.</td><td>Boundary/skeleton reconstruction tests.</td></tr><tr><td>Quantum gravity</td><td>Reframe spacetime as early RC differentiation.</td><td>Produce full quantum-gravity equations.</td><td>Relational geometry toy worlds.</td></tr><tr><td>Presence</td><td>Offer an ontology and operational S-bridge.</td><td>Force acceptance without empirical wins.</td><td>Falsifiable S-state predictions.</td></tr></tbody></table></div></div><div class="lang sl"><h2>Statusna matrika</h2><p>To nas drži poštene. Odgovor okvira ni isto kot rešena fizika.</p><div class="table-wrap"><table><thead><tr><th>Vprašanje</th><th>Kaj CFH/MDL×DCC lahko naredi zdaj</th><th>Česa še ne more</th><th>Najboljši naslednji korak</th></tr></thead><tbody><tr><td>Informacija črnih lukenj</td><td>Črne luknje okvirja kot reverse-prism rekompresorje: berljiva RC struktura postane boundary-like, MDL-nedostopna koda.</td><td>Izpeljati realne Hawking korelacije ali S-matrix fiziko.</td><td>Reverzibilni recompression toy model.</td></tr><tr><td>Holografija</td><td>Boundary-as-minimal-description prenese v arene reševanja problemov.</td><td>Izpeljati AdS/CFT.</td><td>Boundary/skeleton reconstruction testi.</td></tr><tr><td>Kvantna gravitacija</td><td>Preoblikuje prostor-čas kot zgodnjo RC diferenciacijo.</td><td>Podati polne enačbe kvantne gravitacije.</td><td>Toy svetovi relacijske geometrije.</td></tr><tr><td>Prisotnost</td><td>Ponudi ontologijo in operativni S-most.</td><td>Izsiliti sprejem brez empiričnih zmag.</td><td>Falsifiable S-state napovedi.</td></tr></tbody></table></div></div></div></section>
+<section id="matrix" class="paper-section reveal"><div class="section-num">06</div><div class="paper-content"><div class="lang-en"><h2>Status matrix</h2><div class="table-wrap"><table class="matrix"><tr><th>Topic</th><th>Round‑1 status</th><th>Honest boundary</th></tr><tr><td>Black-hole information</td><td>Reframed as recompression / MDL-inaccessibility.</td><td>No Page curve derivation.</td></tr><tr><td>Holography</td><td>Boundary as compressed interface, not surface-only information.</td><td>No proof from CFH.</td></tr><tr><td>Quantum gravity</td><td>Spacetime as early RC differentiation.</td><td>No physical theory solved.</td></tr><tr><td>String theory</td><td>Candidate RC pattern language.</td><td>No particle spectra.</td></tr><tr><td>Testability</td><td>Claim ladder and toy tests.</td><td>No overclaiming.</td></tr></table></div></div><div class="lang-sl"><h2>Statusna matrika</h2><div class="table-wrap"><table class="matrix"><tr><th>Tema</th><th>Status prve runde</th><th>Poštena meja</th></tr><tr><td>Informacija črnih lukenj</td><td>Preokvirjena kot rekompresija / MDL-nedostopnost.</td><td>Brez izpeljave Page curve.</td></tr><tr><td>Holografija</td><td>Meja kot stisnjen vmesnik, ne informacija samo na površini.</td><td>Brez dokaza iz CFH.</td></tr><tr><td>Kvantna gravitacija</td><td>Prostor-čas kot zgodnja RC diferenciacija.</td><td>Nobena fizična teorija ni rešena.</td></tr><tr><td>Teorija strun</td><td>Kandidatni RC jezik vzorcev.</td><td>Brez spektrov delcev.</td></tr><tr><td>Testabilnost</td><td>Lestvica trditev in toy testi.</td><td>Brez pretiravanja.</td></tr></table></div></div></div></section>
 
-<section class="paper-section" id="experiments"><div class="section-num">07</div><div class="paper-content"><div class="lang en"><h2>Smallest tests we can build</h2><p>These are not physics experiments. They are framework tests. If they fail, the page gets weaker. If they work, the bridge becomes more credible.</p><div class="experiment-list"><div class="experiment"><h3>Reverse-Prism Compression Toy</h3><p>Create a finite-state bulk that evaporates into radiation. Compare deletion, boundary ledger, reversible recompression, and noisy release.</p></div><div class="experiment"><h3>Micro-Holography in ARC/TSP/Sudoku</h3><p>Test whether boundary/skeleton variables reconstruct or predict full solution structure better than brute full-state descriptors.</p></div><div class="experiment"><h3>Landscape DCC Selector</h3><p>Generate artificial parameter landscapes and ask whether DCC can find high-S or observer-compatible regimes using compressed viability criteria.</p></div><div class="experiment"><h3>Joy-to-Output Correlation</h3><p>Tag moments of high subjective joy/resonance and later score whether those moments produced real artifacts, tests, or discoveries.</p></div></div></div><div class="lang sl"><h2>Najmanjši testi, ki jih lahko zgradimo</h2><p>To niso fizikalni eksperimenti. To so testi okvira. Če odpovejo, stran oslabi. Če delujejo, most postane bolj kredibilen.</p><div class="experiment-list"><div class="experiment"><h3>Reverse-Prism Compression Toy</h3><p>Ustvarimo finite-state bulk, ki izhlapi v sevanje. Primerjamo izbris, boundary ledger, reverzibilno rekompresijo in šumni izpust.</p></div><div class="experiment"><h3>Mikro-holografija v ARC/TSP/Sudoku</h3><p>Testiramo, ali boundary/skeleton spremenljivke rekonstruirajo ali napovedujejo polno strukturo bolje kot brute full-state opisi.</p></div><div class="experiment"><h3>Landscape DCC Selector</h3><p>Generiramo umetne parameter-landscape in preverimo, ali DCC najde high-S ali observer-compatible režime z uporabo kompresiranih viability kriterijev.</p></div><div class="experiment"><h3>Joy-to-Output korelacija</h3><p>Označimo trenutke visokega subjektivnega veselja/resonance in kasneje ocenimo, ali so rodili realne artefakte, teste ali odkritja.</p></div></div></div></div></section>
+<section id="experiments" class="paper-section reveal"><div class="section-num">07</div><div class="paper-content"><div class="lang-en"><h2>Smallest tests</h2><div class="experiment"><h3>T1 — reverse-prism compression toy</h3><p>Encode a bulk state into a boundary code, release noisy outputs, then measure reconstruction cost and residual.</p></div><div class="experiment"><h3>T2 — boundary vs volume independence</h3><p>Test when boundary data plus laws reconstructs a constrained bulk better than interior sampling.</p></div><div class="experiment"><h3>T3 — spacetime-as-relation toy universe</h3><p>Generate relational geometry from proto-distinctions and test whether local dynamics become simpler.</p></div><div class="experiment"><h3>T4 — S marker test</h3><p>Check whether S-like coherence × complexity measures predict regime shifts better than complexity alone.</p></div></div><div class="lang-sl"><h2>Najmanjši testi</h2><div class="experiment"><h3>T1 — toy kompresija obratne prizme</h3><p>Zakodiraj notranje stanje v mejno kodo, sprosti šumne izhode, nato meri strošek rekonstrukcije in residual.</p></div><div class="experiment"><h3>T2 — meja proti volumski neodvisnosti</h3><p>Testiraj, kdaj meja plus zakoni bolje rekonstruirajo omejeno notranjost kot vzorčenje notranjosti.</p></div><div class="experiment"><h3>T3 — toy vesolje prostor-čas kot relacija</h3><p>Iz proto-razlik ustvari relacijsko geometrijo in testiraj, ali lokalna dinamika postane preprostejša.</p></div><div class="experiment"><h3>T4 — test S markerja</h3><p>Preveri, ali mere tipa koherenca × kompleksnost bolje napovedujejo prehode režimov kot kompleksnost sama.</p></div></div></div></section>
 
-<section class="paper-section" id="publicclaim"><div class="section-num">08</div><div class="paper-content"><div class="lang en"><h2>Clean public wording</h2><div class="callout good"><div class="callout-title">Recommended claim</div><p><strong>CFH × MDL×DCC is not a competitor to string theory or holography. It is a consciousness-and-information framework that can be stress-tested against the same deep fault line: whether structure, information, and equations are enough to explain reality, or whether presence itself needs a deeper ontological ground.</strong></p></div><div class="callout"><div class="callout-title">Do not say</div><p>“We solved black holes,” “CFH proves holography,” “AC replaces physics,” or “MDL×DCC derives string theory.” The stronger move is precise: we are building bridges and tests.</p></div></div><div class="lang sl"><h2>Čista javna formulacija</h2><div class="callout good"><div class="callout-title">Priporočena trditev</div><p><strong>CFH × MDL×DCC ni konkurent teoriji strun ali holografiji. Je okvir zavesti in informacije, ki ga lahko stresno testiramo ob isti globoki razpoki: ali struktura, informacija in enačbe zadostujejo za razlago realnosti, ali pa prisotnost sama potrebuje globlji ontološki temelj.</strong></p></div><div class="callout"><div class="callout-title">Ne reči</div><p>“Rešili smo črne luknje,” “CFH dokazuje holografijo,” “AC nadomesti fiziko,” ali “MDL×DCC izpelje teorijo strun.” Močnejši premik je natančen: gradimo mostove in teste.</p></div></div></div></section>
+<section id="publicclaim" class="paper-section reveal"><div class="section-num">08</div><div class="paper-content"><div class="lang-en"><h2>Clean public wording</h2><div class="callout good"><div class="callout-title">Recommended claim</div><p>CFH × MDL×DCC is not a competitor to string theory or holography. It is a consciousness-and-information framework that can be stress-tested against the same deep fault line: whether structure, information, and equations are enough to explain reality, or whether presence itself needs a deeper ontological ground.</p></div><div class="callout hard"><div class="callout-title">Do not say</div><p>Do not say “we solved black holes,” “we solved quantum gravity,” “CFH proves holography,” “AC replaces physics,” or “MDL×DCC derives string theory.” Those are not true. The stronger move is to be precise: we are building bridges, hierarchy clarifications, and tests.</p></div></div><div class="lang-sl"><h2>Čista javna formulacija</h2><div class="callout good"><div class="callout-title">Priporočena trditev</div><p>CFH × MDL×DCC ni konkurent teoriji strun ali holografiji. Je okvir zavesti in informacije, ki ga lahko stresno testiramo ob isti globoki prelomnici: ali so struktura, informacija in enačbe dovolj za pojasnitev realnosti, ali pa prisotnost sama potrebuje globlji ontološki temelj.</p></div><div class="callout hard"><div class="callout-title">Ne reci</div><p>Ne reci “rešili smo črne luknje,” “rešili smo kvantno gravitacijo,” “CFH dokazuje holografijo,” “AC nadomesti fiziko,” ali “MDL×DCC izpelje teorijo strun.” To ni res. Močnejša poteza je biti natančen: gradimo mostove, razčiščenja hierarhij in teste.</p></div></div></div></section>
 
-<section class="paper-section" id="references"><div class="section-num">09</div><div class="paper-content"><div class="lang en"><h2>References and source trail</h2><ul class="refs"><li><a href="https://www.youtube.com/watch?v=0Ji1UFPT--M" target="_blank" rel="noopener">World Science Festival video source</a></li><li><a href="https://arxiv.org/abs/hep-th/9409089" target="_blank" rel="noopener">Leonard Susskind — The World as a Hologram</a></li><li><a href="https://arxiv.org/abs/hep-th/0203101" target="_blank" rel="noopener">Raphael Bousso — The Holographic Principle</a></li><li><a href="https://cerncourier.com/a/lost-in-the-landscape/" target="_blank" rel="noopener">CERN Courier — Lost in the Landscape</a></li></ul></div><div class="lang sl"><h2>Reference in virna sled</h2><ul class="refs"><li><a href="https://www.youtube.com/watch?v=0Ji1UFPT--M" target="_blank" rel="noopener">World Science Festival video vir</a></li><li><a href="https://arxiv.org/abs/hep-th/9409089" target="_blank" rel="noopener">Leonard Susskind — The World as a Hologram</a></li><li><a href="https://arxiv.org/abs/hep-th/0203101" target="_blank" rel="noopener">Raphael Bousso — The Holographic Principle</a></li><li><a href="https://cerncourier.com/a/lost-in-the-landscape/" target="_blank" rel="noopener">CERN Courier — Lost in the Landscape</a></li></ul></div></div></section>
-
-<footer class="footer"><div class="lang en">BD × AI Lab · Round‑1 public bridge draft · Keep physics claims bounded; keep seeds alive long enough to test.</div><div class="lang sl">BD × AI Lab · Javna mostna verzija prve runde · Fizikalne trditve naj ostanejo omejene; semena naj ostanejo živa dovolj dolgo za test.</div></footer>
+<section id="references" class="paper-section reveal"><div class="section-num">09</div><div class="paper-content"><div class="lang-en"><h2>References and source links</h2><ul class="refs"><li><a href="https://www.youtube.com/watch?v=0Ji1UFPT--M" target="_blank" rel="noopener">World Science Festival video source</a></li><li><a href="https://arxiv.org/abs/hep-th/9409089" target="_blank" rel="noopener">Leonard Susskind — The World as a Hologram</a></li><li><a href="https://arxiv.org/abs/hep-th/0203101" target="_blank" rel="noopener">Raphael Bousso — The Holographic Principle</a></li><li><a href="https://arxiv.org/abs/hep-th/0302219" target="_blank" rel="noopener">Leonard Susskind — The Anthropic Landscape of String Theory</a></li><li>Internal framework anchors: CFH/CCH v1.4, AC pages, MDL×DCC arenas, AI8/RHP working method.</li></ul></div><div class="lang-sl"><h2>Reference in povezave do virov</h2><ul class="refs"><li><a href="https://www.youtube.com/watch?v=0Ji1UFPT--M" target="_blank" rel="noopener">Video vir World Science Festival</a></li><li><a href="https://arxiv.org/abs/hep-th/9409089" target="_blank" rel="noopener">Leonard Susskind — The World as a Hologram</a></li><li><a href="https://arxiv.org/abs/hep-th/0203101" target="_blank" rel="noopener">Raphael Bousso — The Holographic Principle</a></li><li><a href="https://arxiv.org/abs/hep-th/0302219" target="_blank" rel="noopener">Leonard Susskind — The Anthropic Landscape of String Theory</a></li><li>Notranja sidra okvira: CFH/CCH v1.4, AC strani, MDL×DCC arene, delovna metoda AI8/RHP.</li></ul></div></div></section>
 </main>
-<a class="back-top" href="#top">↑ top</a>
+<footer class="wrap footer"><div class="lang-en">BD × AI Lab · Exploratory challenge page · Round‑1 answers integrated · Physics overclaims explicitly rejected.</div><div class="lang-sl">BD × AI Lab · Raziskovalna izzivna stran · Odgovori prve runde vključeni · Pretirane fizikalne trditve izrecno zavrnjene.</div></footer>
+<a href="#top" class="back-top">↑ top</a>
+<div class="reader-controls" aria-label="Reader size controls"><button id="minus" title="Smaller text">−</button><div class="reader-label" id="readerLabel">Text 2</div><button id="plus" title="Larger text">+</button></div>
 <script>
 (function(){
-  const root=document.documentElement;
-  const en=document.getElementById('btnEN');
-  const sl=document.getElementById('btnSL');
+  const body = document.body;
+  const savedLang = localStorage.getItem('physicsCFHLang') || 'en';
   function setLang(lang){
-    root.setAttribute('data-lang',lang);
-    root.setAttribute('lang',lang==='sl'?'sl':'en');
-    en.classList.toggle('active',lang==='en');
-    sl.classList.toggle('active',lang==='sl');
-    try{localStorage.setItem('physics_lang',lang)}catch(e){}
+    lang = lang === 'sl' ? 'sl' : 'en';
+    body.dataset.lang = lang;
+    document.documentElement.lang = lang;
+    document.title = lang === 'sl' ? 'Fizika × CFH × MDL×DCC — Susskindov izziv' : 'Physics × CFH × MDL×DCC — The Susskind Challenge';
+    localStorage.setItem('physicsCFHLang', lang);
+    document.querySelectorAll('[data-set-lang]').forEach(btn => {
+      const active = btn.dataset.setLang === lang;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    const label = document.getElementById('readerLabel');
+    if(label) label.textContent = (lang === 'sl' ? 'Besedilo ' : 'Text ') + (document.documentElement.dataset.readerSize || '2');
   }
-  en.addEventListener('click',()=>setLang('en'));
-  sl.addEventListener('click',()=>setLang('sl'));
-  let saved='en';
-  try{saved=localStorage.getItem('physics_lang')||'en'}catch(e){}
-  setLang(saved==='sl'?'sl':'en');
+  document.querySelectorAll('[data-set-lang]').forEach(btn => btn.addEventListener('click', () => setLang(btn.dataset.setLang)));
+  setLang(savedLang);
+
+  const progress = document.getElementById('progress');
+  function updateProgress(){
+    const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    if(progress) progress.style.width = (scrollY / max * 100) + '%';
+  }
+  addEventListener('scroll', updateProgress, {passive:true}); updateProgress();
+
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => { entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }); }, {threshold:.08});
+  reveals.forEach(el => obs.observe(el));
+
+  const html = document.documentElement;
+  const minus = document.getElementById('minus');
+  const plus = document.getElementById('plus');
+  function applySize(delta){
+    let n = parseInt(html.dataset.readerSize || '2', 10);
+    if(Number.isNaN(n)) n = 2;
+    n = Math.max(0, Math.min(3, n + delta));
+    html.dataset.readerSize = String(n);
+    localStorage.setItem('physicsCFHTextSize', String(n));
+    const label = document.getElementById('readerLabel');
+    if(label) label.textContent = (body.dataset.lang === 'sl' ? 'Besedilo ' : 'Text ') + n;
+  }
+  html.dataset.readerSize = localStorage.getItem('physicsCFHTextSize') || html.dataset.readerSize || '2';
+  if(minus) minus.addEventListener('click', () => applySize(-1));
+  if(plus) plus.addEventListener('click', () => applySize(1));
+  applySize(0);
 })();
 </script>
 </body>
