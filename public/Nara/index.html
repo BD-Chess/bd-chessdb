@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- draft: nara-placeholder-v0.1 · not linked from main MDLxDCC.org index yet -->
+<!-- draft: nara-placeholder-v0.2 · not linked from main MDLxDCC.org index yet -->
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -14,68 +14,92 @@
   --line:rgba(148,163,184,.22);--line2:rgba(34,211,238,.30);--text:#e5edf8;--muted:#9fb0c8;--dim:#71819a;
   --cyan:#22d3ee;--blue:#60a5fa;--gold:#f59e0b;--green:#34d399;--rose:#fb7185;--violet:#a78bfa;
   --shadow:0 24px 70px rgba(0,0,0,.38);--radius:22px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"JetBrains Mono",monospace;--sans:Inter,"Segoe UI",system-ui,sans-serif;
+  --reader-scale:1;--body-copy:16.5px;--lead-copy:20px;--story-copy:18.5px;--small-copy:14px;
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;color:var(--text);font-family:var(--sans);line-height:1.72;background:radial-gradient(circle at 12% 8%,rgba(34,211,238,.17),transparent 32%),radial-gradient(circle at 88% 12%,rgba(245,158,11,.14),transparent 28%),radial-gradient(circle at 50% 82%,rgba(167,139,250,.11),transparent 36%),linear-gradient(180deg,#05070d,#08111f 42%,#05070d);}
-a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}
-.wrap{width:min(1160px,calc(100% - 32px));margin:0 auto}
-.top{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);border-bottom:1px solid var(--line);background:rgba(5,7,13,.78)}
-.top-inner{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:12px 0}
-.navlinks{display:flex;gap:8px;flex-wrap:wrap}
+html{scroll-behavior:smooth;text-size-adjust:100%;-webkit-text-size-adjust:100%}
+body{margin:0;color:var(--text);font-family:var(--sans);font-size:calc(var(--body-copy) * var(--reader-scale));line-height:1.72;background:radial-gradient(circle at 12% 8%,rgba(34,211,238,.17),transparent 32%),radial-gradient(circle at 88% 12%,rgba(245,158,11,.14),transparent 28%),radial-gradient(circle at 50% 82%,rgba(167,139,250,.11),transparent 36%),linear-gradient(180deg,#05070d,#08111f 42%,#05070d);}
+a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.wrap{width:min(1160px,calc(100% - 32px));margin:0 auto}.narrow{width:min(940px,calc(100% - 34px));margin:0 auto}
+.top{position:sticky;top:0;z-index:30;backdrop-filter:blur(14px);border-bottom:1px solid var(--line);background:rgba(5,7,13,.82)}
+.top-inner{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:12px 0}.navlinks{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .pill,.navlinks a{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:999px;padding:7px 11px;color:var(--muted);background:rgba(255,255,255,.03)}
-.pill.gold{color:#fde68a;border-color:rgba(245,158,11,.32);background:rgba(245,158,11,.10)}
-.pill.green{color:#b7f7d8;border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.08)}
-.hero{padding:54px 0 30px}
-.hero-grid{display:grid;grid-template-columns:1.06fr .94fr;gap:24px;align-items:stretch}
-.hero-card{border:1px solid var(--line);border-radius:calc(var(--radius) + 10px);background:linear-gradient(145deg,rgba(15,23,42,.88),rgba(5,7,13,.74));box-shadow:var(--shadow);overflow:hidden}
-.hero-copy{padding:34px}
-.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:16px}
-h1{font-size:clamp(44px,7vw,84px);line-height:.94;letter-spacing:-.06em;margin:0 0 18px}
-.lead{font-size:20px;color:var(--muted);max-width:850px;margin:0 0 20px}
-.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
-.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(96,165,250,.35);background:rgba(96,165,250,.10);color:#d9ecff;border-radius:999px;padding:10px 14px;font-family:var(--mono);font-size:12px}
-.btn.gold{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.10);color:#fde68a}
-.hero-img{min-height:420px;background:#07101c;position:relative}
-.hero-img img{width:100%;height:100%;min-height:420px;object-fit:cover;display:block;filter:saturate(1.05) contrast(1.03)}
-.hero-img:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,7,13,.02),rgba(5,7,13,.50));pointer-events:none}
-.caption{position:absolute;left:18px;right:18px;bottom:16px;z-index:2;color:rgba(229,237,248,.84);font-family:var(--mono);font-size:12px;background:rgba(5,7,13,.54);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:10px 12px}
-.grid{display:grid;gap:16px}
-.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
-.card{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);box-shadow:0 16px 50px rgba(0,0,0,.22);padding:20px}
-.card h2,.card h3{margin:0 0 10px;line-height:1.15;letter-spacing:-.025em}
-.card p{margin:0;color:var(--muted)}
-.kicker{font-family:var(--mono);font-size:12px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
-.section{padding:24px 0}
-.section-title{display:flex;justify-content:space-between;gap:12px;align-items:end;flex-wrap:wrap;margin-bottom:14px}
-.section-title h2{font-size:clamp(28px,4vw,46px);letter-spacing:-.04em;line-height:1;margin:0}
-.section-title p{max-width:780px;color:var(--muted);margin:0}
-.story-shell{border:1px solid var(--line);border-radius:calc(var(--radius) + 8px);background:linear-gradient(180deg,rgba(15,23,42,.90),rgba(8,13,24,.96));box-shadow:var(--shadow);overflow:hidden}
-.story-head{padding:34px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 20% 10%,rgba(245,158,11,.13),transparent 32%),rgba(255,255,255,.015)}
-.story-head h2{font-size:clamp(34px,5vw,62px);letter-spacing:-.05em;line-height:.98;margin:0 0 12px}
-.story-head p{color:var(--muted);font-size:18px;max-width:800px;margin:0}
-.story-body{padding:24px 0}
-.story-block{padding:18px 34px 8px;max-width:890px;margin:0 auto}
-.story-block h2{font-size:clamp(25px,3vw,36px);line-height:1.08;letter-spacing:-.035em;margin:0 0 12px;color:#fff}
-.story-block p{font-size:18px;color:rgba(229,237,248,.92);margin:0 0 16px}
-.callout{max-width:960px;margin:22px auto;border:1px solid rgba(34,211,238,.25);border-radius:var(--radius);background:rgba(34,211,238,.06);padding:20px 22px}
-.callout h3{margin:0 0 8px;color:#b8f4ff}
-.callout ul{margin:8px 0 0 20px;color:var(--muted)}
-.gallery{display:grid;grid-template-columns:1.2fr .9fr .9fr;gap:14px}
-figure{margin:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:rgba(15,23,42,.82)}
-figure img{display:block;width:100%;height:100%;object-fit:cover;aspect-ratio:4/3}
-figure:first-child img{aspect-ratio:16/9}
-figcaption{padding:11px 13px;color:var(--muted);font-family:var(--mono);font-size:12px}
-details{border:1px solid var(--line);border-radius:var(--radius);background:rgba(15,23,42,.72);padding:14px 16px}
-summary{cursor:pointer;color:#dcecff;font-weight:700}
-details p, details li{color:var(--muted)}
-footer{border-top:1px solid var(--line);padding:30px 0 70px;color:var(--muted);font-size:14px;margin-top:30px}
+.pill.gold{color:#fde68a;border-color:rgba(245,158,11,.32);background:rgba(245,158,11,.10)}.pill.green{color:#b7f7d8;border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.08)}
+.reader-tools{display:flex;gap:7px;align-items:center;justify-content:flex-end;flex-wrap:wrap;margin-left:auto}.reader-tools-label{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}.font-btn{border:1px solid rgba(96,165,250,.35);border-radius:999px;background:rgba(96,165,250,.10);color:#d9ecff;font-family:var(--mono);font-weight:900;font-size:12px;line-height:1;padding:9px 12px;min-width:42px;min-height:34px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.18)}.font-btn:hover{transform:translateY(-1px);border-color:rgba(34,211,238,.55);background:rgba(34,211,238,.13)}.font-btn.reset{font-weight:700;color:var(--muted);min-width:auto;padding-inline:11px}.font-scale-label{font-family:var(--mono);font-size:11px;color:var(--muted);min-width:44px;text-align:center}
+.hero{padding:54px 0 30px}.hero-grid{display:grid;grid-template-columns:1.06fr .94fr;gap:24px;align-items:stretch}.hero-card{border:1px solid var(--line);border-radius:calc(var(--radius) + 10px);background:linear-gradient(145deg,rgba(15,23,42,.88),rgba(5,7,13,.74));box-shadow:var(--shadow);overflow:hidden}.hero-copy{padding:34px}.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:16px}h1{font-size:clamp(44px,7vw,84px);line-height:.94;letter-spacing:-.06em;margin:0 0 18px}.lead{font-size:calc(var(--lead-copy) * var(--reader-scale));color:var(--muted);max-width:850px;margin:0 0 20px}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(96,165,250,.35);background:rgba(96,165,250,.10);color:#d9ecff;border-radius:999px;padding:10px 14px;font-family:var(--mono);font-size:12px}.btn.gold{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.10);color:#fde68a}.hero-img{min-height:420px;background:#07101c;position:relative}.hero-img img{width:100%;height:100%;min-height:420px;object-fit:cover;display:block;filter:saturate(1.05) contrast(1.03)}.hero-img:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,7,13,.02),rgba(5,7,13,.50));pointer-events:none}.caption{position:absolute;left:18px;right:18px;bottom:16px;z-index:2;color:rgba(229,237,248,.84);font-family:var(--mono);font-size:12px;background:rgba(5,7,13,.54);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:10px 12px}.grid{display:grid;gap:16px}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.card{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);box-shadow:0 16px 50px rgba(0,0,0,.22);padding:20px}.card h2,.card h3{margin:0 0 10px;line-height:1.15;letter-spacing:-.025em}.card p{margin:0;color:var(--muted);font-size:calc(var(--body-copy) * var(--reader-scale))}.kicker{font-family:var(--mono);font-size:12px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}.section{padding:24px 0}.section-title{display:flex;justify-content:space-between;gap:12px;align-items:end;flex-wrap:wrap;margin-bottom:14px}.section-title h2{font-size:clamp(28px,4vw,46px);letter-spacing:-.04em;line-height:1;margin:0}.section-title p{max-width:780px;color:var(--muted);margin:0;font-size:calc(var(--body-copy) * var(--reader-scale))}
+.story-shell{border:1px solid var(--line);border-radius:calc(var(--radius) + 8px);background:linear-gradient(180deg,rgba(15,23,42,.90),rgba(8,13,24,.96));box-shadow:var(--shadow);overflow:hidden}.story-head{padding:34px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 20% 10%,rgba(245,158,11,.13),transparent 32%),rgba(255,255,255,.015)}.story-head h2{font-size:clamp(34px,5vw,62px);letter-spacing:-.05em;line-height:.98;margin:0 0 12px}.story-head p{color:var(--muted);font-size:calc(18px * var(--reader-scale));max-width:800px;margin:0}.story-body{padding:24px 0}.story-block{padding:18px 34px 8px;max-width:890px;margin:0 auto}.story-block h2{font-size:clamp(25px,3vw,36px);line-height:1.08;letter-spacing:-.035em;margin:0 0 12px;color:#fff}.story-block p,.story p{font-size:calc(var(--story-copy) * var(--reader-scale));color:rgba(229,237,248,.92);margin:0 0 1.02em;line-height:1.78}.story-block .beat,.story .beat{color:#fff;font-weight:700;letter-spacing:.01em}.story-block .line-note,.story .line-note{font-family:var(--mono);color:#d8f7ff;background:rgba(34,211,238,.055);border:1px solid rgba(34,211,238,.14);border-radius:12px;padding:.34em .55em;width:max-content;max-width:100%}.callout{max-width:960px;margin:22px auto;border:1px solid rgba(34,211,238,.25);border-radius:var(--radius);background:rgba(34,211,238,.06);padding:20px 22px;font-size:calc(var(--body-copy) * var(--reader-scale))}.callout h3{margin:0 0 8px;color:#b8f4ff}.callout ul{margin:8px 0 0 20px;color:var(--muted)}.callout li{margin:.35em 0}.gallery{display:grid;grid-template-columns:1.2fr .9fr .9fr;gap:14px}figure{margin:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:rgba(15,23,42,.82)}figure img{display:block;width:100%;height:100%;object-fit:cover;aspect-ratio:4/3}figure:first-child img{aspect-ratio:16/9}figcaption{padding:11px 13px;color:var(--muted);font-family:var(--mono);font-size:12px}details{border:1px solid var(--line);border-radius:var(--radius);background:rgba(15,23,42,.72);padding:14px 16px}summary{cursor:pointer;color:#dcecff;font-weight:700}details p,details li{color:var(--muted);font-size:calc(var(--body-copy) * var(--reader-scale))}.note,.endnote{font-family:var(--mono);font-size:calc(var(--small-copy) * var(--reader-scale));color:var(--dim)}footer{border-top:1px solid var(--line);padding:30px 0 70px;color:var(--muted);font-size:calc(14px * var(--reader-scale));margin-top:30px}.draft{display:inline-flex;border:1px solid rgba(251,113,133,.42);color:#fecdd3;border-radius:999px;padding:3px 8px;background:rgba(251,113,133,.08)}.blue{color:var(--blue);display:block}.white{color:#fff;display:block}
 @media(max-width:960px){.hero-grid,.grid.three,.gallery{grid-template-columns:1fr}.hero-img,.hero-img img{min-height:300px}.story-block{padding-left:22px;padding-right:22px}.story-head{padding:26px 22px}}
-@media(max-width:560px){.wrap{width:min(100% - 22px,1160px)}.hero{padding-top:30px}.hero-copy{padding:24px}.lead,.story-block p{font-size:17px}}
+@media(max-width:700px){:root{--body-copy:17.5px;--lead-copy:20.5px;--story-copy:20px;--small-copy:15px}.wrap{width:min(100% - 22px,1160px)}.narrow{width:min(100% - 22px,940px)}.top-inner{align-items:flex-start}.reader-tools{width:100%;justify-content:flex-start;margin-left:0;gap:8px}.reader-tools-label{width:100%;font-size:10px}.font-btn{font-size:15px;min-height:44px;min-width:52px;padding:10px 14px}.font-scale-label{font-size:12px}.hero{padding-top:30px}.hero-copy{padding:24px}h1{font-size:clamp(44px,14vw,72px)}.lead{line-height:1.62}.story-block p,.story p{line-height:1.82}.navlinks a,.pill{font-size:11px}.caption{font-size:11px}}
+
+
+/* ===== Reader font controls: A− / A+ ===== */
+:root{--reader-scale:1;}
+body{font-size:calc(16px * var(--reader-scale));padding-bottom:92px;}
+.lead{font-size:calc(20px * var(--reader-scale));line-height:1.64;}
+.story-head p{font-size:calc(18px * var(--reader-scale));line-height:1.62;}
+.story-block p{font-size:calc(18px * var(--reader-scale));line-height:1.82;}
+.card p,
+.section-title p,
+details p,
+details li,
+.callout li,
+.callout p{font-size:calc(16px * var(--reader-scale));line-height:1.75;}
+.caption,
+figcaption,
+footer{font-size:calc(14px * var(--reader-scale));}
+.btn,
+.pill,
+.navlinks a,
+.kicker,
+.eyebrow{font-size:calc(12px * var(--reader-scale));}
+.reader-toolbar{
+  position:fixed;
+  right:18px;
+  bottom:calc(18px + env(safe-area-inset-bottom));
+  z-index:80;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 10px;
+  border:1px solid rgba(148,163,184,.28);
+  border-radius:999px;
+  background:rgba(5,7,13,.84);
+  backdrop-filter:blur(16px);
+  box-shadow:0 18px 55px rgba(0,0,0,.42);
+}
+.reader-toolbar button{
+  appearance:none;
+  border:1px solid rgba(96,165,250,.38);
+  background:rgba(96,165,250,.12);
+  color:#eaf6ff;
+  border-radius:999px;
+  min-width:46px;
+  min-height:42px;
+  padding:0 12px;
+  font-family:var(--mono);
+  font-weight:900;
+  font-size:15px;
+  cursor:pointer;
+  line-height:1;
+  touch-action:manipulation;
+}
+.reader-toolbar button:hover,
+.reader-toolbar button:focus-visible{outline:none;border-color:rgba(34,211,238,.70);box-shadow:0 0 0 3px rgba(34,211,238,.18);}
+.reader-toolbar button:disabled{opacity:.45;cursor:not-allowed;}
+.reader-toolbar .reader-size-label{min-width:50px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px;letter-spacing:.04em;user-select:none;}
+.reader-toolbar .reader-reset{min-width:58px;color:#fde68a;border-color:rgba(245,158,11,.36);background:rgba(245,158,11,.10);}
+@media(max-width:640px){
+  :root{--reader-scale:1.18;}
+  body{line-height:1.78;padding-bottom:112px;}
+  .story-block p{margin-bottom:18px;}
+  .reader-toolbar{left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));justify-content:center;border-radius:22px;padding:10px 12px;}
+  .reader-toolbar button{min-width:56px;min-height:48px;font-size:16px;}
+  .reader-toolbar .reader-size-label{min-width:54px;font-size:13px;}
+}
+
 </style>
 </head>
 <body>
-<div class="top"><div class="wrap top-inner"><div class="navlinks"><a href="../">← MDLxDCC.org</a><a href="../Art/">Art, Images, Music &amp; Storytelling</a></div><span class="pill gold">Draft placeholder · noindex</span></div></div>
+<div class="top"><div class="wrap top-inner"><div class="navlinks"><a href="../">← MDLxDCC.org</a><a href="../Art/">Art, Images, Music &amp; Storytelling</a><a href="episode-01-ordinary-light.html">Episode 01</a></div><div class="reader-tools" aria-label="Reader text-size controls"><span class="reader-tools-label">Text size</span><button class="font-btn" type="button" data-font-dec aria-label="Decrease text size">A−</button><button class="font-btn" type="button" data-font-inc aria-label="Increase text size">A+</button><button class="font-btn reset" type="button" data-font-reset aria-label="Reset text size">Reset</button><span class="font-scale-label" data-font-label aria-live="polite">100%</span></div><span class="pill gold">Draft placeholder · noindex</span></div></div>
 <main>
 <section class="hero"><div class="wrap hero-grid">
   <div class="hero-card hero-copy">
@@ -96,17 +120,17 @@ footer{border-top:1px solid var(--line);padding:30px 0 70px;color:var(--muted);f
 <section class="section" id="method"><div class="wrap">
   <div class="section-title"><h2>Canon method</h2><p>This placeholder uses the existing Nara rules but keeps the public branch original-IP only. Fan-crossover material can stay separate later.</p></div>
   <div class="grid three">
-    <details open><summary>Breach → Quiet → Bridge</summary><p><strong>Breach:</strong> the rupture where violence becomes likely. <strong>Quiet:</strong> a short bought window where choice can return. <strong>Bridge:</strong> a concrete reversible step that preserves dignity without pretending trust already exists.</p></details>
-    <details open><summary>Notice → Mirror → Offer → Wait</summary><p>Nara names what is already visible, mirrors each side without flattery, offers the smallest true alternative, then waits. The waiting matters. Pushing would break the work.</p></details>
-    <details open><summary>S = √(Coherence × Complexity)</summary><p>In public story pages this stays mostly implicit. Coherence means clear seeing. Complexity means enough perspective and options. When both rise together, harm can self-interrupt.</p></details>
+    <details open><summary>Breach → Quiet → Bridge</summary><p><strong>Breach:</strong> the rupture where violence becomes likely. <strong>Quiet:</strong> a bought pause. <strong>Bridge:</strong> one concrete, reversible step that preserves the aim while changing the method.</p></details>
+    <details open><summary>Notice → Mirror → Offer → Wait</summary><p>She notices one true detail, mirrors without flattery, offers one smallest true alternative, and then waits. She does not push the choice into someone.</p></details>
+    <details open><summary>S = √(Coherence × Complexity)</summary><p>Coherence means clear seeing. Complexity means more possible options felt as real. Nara's power rises when both rise together, but it collapses under coercion.</p></details>
   </div>
 </div></section>
 
 <section class="section" id="episode-01"><div class="wrap story-shell">
-  <header class="story-head"><div class="kicker">Episode 01</div><h2>Ordinary Light</h2><p>Episode 01 · A blackout, a yellow boot, and the first law of Nara’s power.</p></header>
-  <div class="story-body">
-    <section class="story-block">
-<p>The first thing Nara saved was not a city.</p>
+  <div class="story-head"><div class="eyebrow">Episode 01 · Origin</div><h2>Ordinary Light</h2><p>A blackout, one yellow boot, and the first time Nara discovers that the smallest non-harm act can change the whole room.</p><div class="hero-actions"><a class="btn gold" href="episode-01-ordinary-light.html">Open story-only page</a></div></div>
+  <div class="story-body"><section class="story-block story" aria-label="Ordinary Light full story">
+  <h2>Ordinary Light</h2>
+  <p>The first thing Nara saved was not a city.</p>
 <p>It was one yellow rain boot.</p>
 <p>It lay sideways on the station floor, bright as a warning flare in the dark, while two hundred people forgot they were two hundred people and became one frightened body pushing toward the stairs.</p>
 <p>The power had failed between announcements. The public-address voice said, “Due to severe weather, all passengers should—” and then the station went black so completely that every phone screen became a small, accusing moon.</p>
@@ -229,10 +253,10 @@ footer{border-top:1px solid var(--line);padding:30px 0 70px;color:var(--muted);f
 <p>The city roared back into detail.</p>
 <p>Tomas laughing too hard because he was about to cry. Mina’s father calling someone and saying, “We’re out, we’re out,” as if repetition could build a second exit. The guard telling dispatch, “No casualties,” then pausing before he said, “Civilian assistance.” The woman in red writing names on the back of an old receipt.</p>
 <p>Nara closed her eyes.</p>
-<p>Three things.</p>
-<p>The brick is cold.</p>
-<p>The rain smells like iron.</p>
-<p>My hand is shaking, but it is my hand.</p>
+<p class="beat">Three things.</p>
+<p class="line-note">The brick is cold.</p>
+<p class="line-note">The rain smells like iron.</p>
+<p class="line-note">My hand is shaking, but it is my hand.</p>
 <p>The sentence helped. Not because it was magic. Because it belonged to her.</p>
 <p>After a while, the guard appeared at the edge of her vision. He did not step too close.</p>
 <p>Good, she thought. He learns.</p>
@@ -268,19 +292,19 @@ footer{border-top:1px solid var(--line);padding:30px 0 70px;color:var(--muted);f
 <p>There was no voice.</p>
 <p>Still, a sentence arrived.</p>
 <p>Not heard. Known.</p>
-<p>Invite, never override.</p>
+<p class="line-note">Invite, never override.</p>
 <p>Nara laughed once, then cried so suddenly she had to grip the rail.</p>
 <p>The crying was not sadness. Not happiness either. It was the body’s answer to being given a law larger than fear and small enough to practice.</p>
 <p>She sat on the wet bridge, ruined eggs beside her, and took out the small notebook she used for lists she mostly ignored.</p>
 <p>Her hand shook so badly the first arrow came out crooked.</p>
-<p>Notice → Mirror → Offer → Wait.</p>
+<p class="line-note">Notice → Mirror → Offer → Wait.</p>
 <p>She stared at the words.</p>
 <p>They looked like nothing.</p>
 <p>They felt like a key.</p>
 <p>On the next line she wrote:</p>
-<p>Keep the aim. Change the method.</p>
+<p class="line-note">Keep the aim. Change the method.</p>
 <p>Then, after a longer pause:</p>
-<p>Cost is real. Pay it honestly.</p>
+<p class="line-note">Cost is real. Pay it honestly.</p>
 <p>A cyclist slowed as he passed her.</p>
 <p>“You okay?”</p>
 <p>Nara wiped her face with the sleeve of her coat and looked up at him through the rain.</p>
@@ -293,15 +317,15 @@ footer{border-top:1px solid var(--line);padding:30px 0 70px;color:var(--muted);f
 <p>She was not glowing.</p>
 <p>No one would have mistaken her for a miracle.</p>
 <p>But the next time the world narrowed toward harm, she knew what she would try first.</p>
-<p>Not power.</p>
-<p>Presence.</p>
-<p>Not command.</p>
-<p>Invitation.</p>
+<p class="beat">Not power.</p>
+<p class="beat">Presence.</p>
+<p class="beat">Not command.</p>
+<p class="beat">Invitation.</p>
 <p>Not the kind of light that blinds.</p>
-<p>The ordinary kind.</p>
+<p class="beat">The ordinary kind.</p>
 <p>The kind people can choose to follow.</p>
-</section>
-    <div class="callout"><h3>Field note for readers</h3><ul><li><strong>First Non-Harm Act:</strong> Nara turns one lost yellow boot into a human anchor, restoring the crowd’s attention to the child inside the panic.</li><li><strong>Consent gate:</strong> she asks the guard for ten seconds before the siren and accepts only the pause he freely gives.</li><li><strong>Bridge:</strong> the maintenance door opens with witnesses, shared responsibility, and a safer route out.</li><li><strong>Cost:</strong> tremor, sensory overload, borrowed fear, and deliberate grounding after the crisis.</li></ul></div>
+  </section>
+  <div class="callout"><h3>Field note for readers</h3><ul><li><strong>First Non-Harm Act:</strong> Nara turns one lost yellow boot into a human anchor, restoring the crowd’s attention to the child inside the panic.</li><li><strong>Consent gate:</strong> she asks the guard for ten seconds before the siren and accepts only the pause he freely gives.</li><li><strong>Bridge:</strong> the maintenance door opens with witnesses, shared responsibility, and a safer route out.</li><li><strong>Cost:</strong> tremor, sensory overload, borrowed fear, and deliberate grounding after the crisis.</li></ul></div>
   </div>
 </div></section>
 
@@ -315,5 +339,39 @@ footer{border-top:1px solid var(--line);padding:30px 0 70px;color:var(--muted);f
 </div></section>
 </main>
 <footer><div class="wrap">Draft page for a future <code>/Nara/</code> GitHub folder. Not linked from the main index yet. Original Nara/Illuminara concept © BD × AI Lab. Page generated as a placeholder for review.</div></footer>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'nara_reader_scale_v2';
+  const MIN = 0.86;
+  const MAX = 1.48;
+  const STEP = 0.08;
+  const root = document.documentElement;
+  function clamp(v){ return Math.min(MAX, Math.max(MIN, v)); }
+  function readScale(){
+    try{
+      const saved = localStorage.getItem(STORAGE_KEY);
+      const parsed = saved === null ? NaN : parseFloat(saved);
+      return Number.isFinite(parsed) ? clamp(parsed) : 1.00;
+    }catch(e){ return 1.00; }
+  }
+  let scale = readScale();
+  function apply(){
+    root.style.setProperty('--reader-scale', scale.toFixed(2));
+    document.querySelectorAll('[data-font-label]').forEach(el => { el.textContent = Math.round(scale * 100) + '%'; });
+  }
+  function save(){ try{ localStorage.setItem(STORAGE_KEY, scale.toFixed(2)); }catch(e){} }
+  function change(delta){ scale = clamp(Math.round((scale + delta) * 100) / 100); save(); apply(); }
+  function reset(){ scale = 1.00; try{ localStorage.removeItem(STORAGE_KEY); }catch(e){} apply(); }
+  apply();
+  document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('[data-font-dec]').forEach(btn => btn.addEventListener('click', () => change(-STEP)));
+    document.querySelectorAll('[data-font-inc]').forEach(btn => btn.addEventListener('click', () => change(STEP)));
+    document.querySelectorAll('[data-font-reset]').forEach(btn => btn.addEventListener('click', reset));
+    apply();
+  });
+})();
+</script>
+
 </body>
 </html>
