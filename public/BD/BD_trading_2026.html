@@ -17,6 +17,7 @@
 section{margin:38px 0} h2{font-size:30px;margin:0 0 14px;letter-spacing:-.02em} h3{font-size:19px;margin:0 0 8px;color:var(--gold)} .caption{color:var(--muted);font-size:14px;margin:0 0 12px} .note{background:rgba(255,215,106,.08);border:1px solid rgba(255,215,106,.24);border-radius:14px;padding:15px 17px;color:#ffe7a3} .danger{background:rgba(255,107,132,.08);border:1px solid rgba(255,107,132,.28);border-radius:14px;padding:15px 17px} .good{background:rgba(46,242,163,.08);border:1px solid rgba(46,242,163,.25);border-radius:14px;padding:15px 17px}
 .table-wrap{overflow:auto;border-radius:12px;border:1px solid rgba(255,255,255,.05)} table{border-collapse:collapse;width:100%;font-size:13px;min-width:980px} th,td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.055);vertical-align:top} th{position:sticky;top:0;background:#10182b;color:#cfe3ff;text-align:left;z-index:1;font-size:12px;text-transform:uppercase;letter-spacing:.05em} tr:hover td{background:rgba(88,166,255,.06)} td:nth-child(n+6){font-family:Consolas,Menlo,monospace} .tag{display:inline-block;border:1px solid var(--line2);border-radius:999px;padding:2px 8px;font-size:12px;color:var(--muted)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px} .three{display:grid;grid-template-columns:repeat(3,1fr);gap:16px} code{background:#0a1020;border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--cyan)}
+.manual-note details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.025);padding:12px 14px;margin:12px 0}.manual-note summary{cursor:pointer;font-weight:900;color:var(--cyan)}
 @media(max-width:1000px){.cards,.two,.three{grid-template-columns:1fr} h1{font-size:38px} .wrap{padding:18px 12px 60px}}
 </style>
 </head>
@@ -28,7 +29,7 @@ section{margin:38px 0} h2{font-size:30px;margin:0 0 14px;letter-spacing:-.02em} 
   <p class="small">Generated from project bundles: v0.6.4 weekend, v0.7c newseed promoter, accepted v0.8 smoke/standard/deep, completed v0.9 STANDARD all-s240, and the current resume-safe v0.9 weekend package. Data note: SOLUSDT daily 2026 YTD is the real daily source; 1-minute candles are synthetic/replay candles constrained by that daily OHLC, not real exchange 1m data.</p>
 </header>
 <nav class="nav">
-  <a href="#answer">Answer</a><a href="#hsr-pix">HSR PiX page</a><a href="#profit-lenses">Profit lenses</a><a href="#leaderboards">Current leaderboards</a><a href="#old-profit">Older high-profit evidence</a><a href="#v08">v0.8 evidence</a><a href="#v07c">v0.7c</a><a href="#v09-standard">v0.9 STANDARD</a><a href="#v09">v0.9 package</a><a href="#weekend">Weekend run</a><a href="#actions">Actions</a>
+  <a href="#answer">Answer</a><a href="#hsr-pix">HSR PiX page</a><a href="#manual-hsr-note">Manual protocol</a><a href="#profit-lenses">Profit lenses</a><a href="#leaderboards">Current leaderboards</a><a href="#old-profit">Older high-profit evidence</a><a href="#v08">v0.8 evidence</a><a href="#v07c">v0.7c</a><a href="#v09-standard">v0.9 STANDARD</a><a href="#v09">v0.9 package</a><a href="#weekend">Weekend run</a><a href="#actions">Actions</a>
 </nav>
 
 <section id="answer">
@@ -52,6 +53,14 @@ section{margin:38px 0} h2{font-size:30px;margin:0 0 14px;letter-spacing:-.02em} 
 <section id="hsr-pix">
   <h2>New standalone recipe page: BD Hedge Separation PiX Strategy</h2>
   <p class="caption">This dashboard remains the main v0.9 evidence page. The new HSR PiX work is intentionally separate: one focused trading recipe, tested in its own standalone arena so the signal is not mixed with the larger v0.9 strategy bank.</p>
+
+  <div class="manual-note" id="manual-hsr-note">
+    <details>
+      <summary>Manual SOL protocol snapshot added to the HSR/PiX explainer</summary>
+      <p class="caption">The full collapsed table now lives in <a href="BD_Hedge_Separation_PiX_Strategy_Explainer.html#manual-protocol">BD_Hedge_Separation_PiX_Strategy_Explainer.html#manual-protocol</a>. This dashboard keeps only the pointer because its job is broad evidence comparison, not manual execution notes.</p>
+      <p class="caption">Current working manual sketch: LONG 1 SOL + SHORT 1 SOL, add +1 SOL to the profitable side near +300% ROE, rescue the losing side by staged doubling only when cushion/margin are sufficient, and reduce excess aggressively near average entry / +2% to +10% ROE.</p>
+    </details>
+  </div>
 
   <div class="grid cards">
     <div class="card"><div class="label">New page</div><div class="num warn">HSR PiX</div><div class="small"><a href="BD_Hedge_Separation_PiX_Strategy_Explainer.html">Open BD_Hedge_Separation_PiX_Strategy_Explainer.html</a></div></div>
@@ -275,5 +284,5 @@ python collect_v09_run_for_gpt.py --out outputs_v09_WEEKEND_FRESH_all_s1680_CORR
 </section>
 
 
-<footer class="small" style="border-top:1px solid var(--line);padding-top:18px;margin-top:40px">Generated locally from project artifacts. This is a research simulator report, not financial advice and not a live trading claim. Updated with v0.9 STANDARD all-s240 evidence, resume-safe weekend package verification, and a link to the standalone HSR PiX strategy explainer.</footer>
+<footer class="small" style="border-top:1px solid var(--line);padding-top:18px;margin-top:40px">Generated locally from project artifacts. This is a research simulator report, not financial advice and not a live trading claim. Updated with v0.9 STANDARD all-s240 evidence, resume-safe weekend package verification, and a link to the standalone HSR PiX strategy explainer/manual protocol.</footer>
 </div></body></html>

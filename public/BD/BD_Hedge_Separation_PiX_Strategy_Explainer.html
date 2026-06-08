@@ -69,11 +69,11 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
 <header class="hero" id="top">
   <div class="eyebrow">BD Trading Research · Standalone Hedge-Rescue Recipe · PiX / Fib / Controls</div>
   <h1>BD Hedge Separation PiX Strategy</h1>
-  <p class="subtitle">A detailed explanation of the constant long+short hedge method: adverse-side rescue adds, dynamic loss ladders, sequence-based add sizing, core-keep after recovery, and 100%-reserve profit trailing. The page describes the strategy, the standalone arena that should test it, and the first compact side-run evidence found so far.</p>
-  <p class="small">Version: explainer v1.1 · Date: 3 June 2026 · Status: research specification + compact side-run evidence — not a live bot, not financial advice.</p>
+  <p class="subtitle">A detailed explanation of the constant long+short hedge method: adverse-side rescue adds, profit-side cushion adds, dynamic loss ladders, sequence-based add sizing, core-keep after recovery, near-average rescue exits, and 100%-reserve profit trailing. The page describes the strategy, the standalone arena that should test it, and the first compact side-run evidence found so far.</p>
+  <p class="small">Version: explainer v1.2 · Date: 8 June 2026 · Status: research specification + v0.7.3 manual working protocol table — not a live bot, not financial advice.</p>
 </header>
 <nav class="nav" aria-label="Page navigation">
-  <a href="#answer">Answer</a><a href="#side-run">Side-run results</a><a href="#intuition">Intuition</a><a href="#setup">Setup</a><a href="#state">State machine</a><a href="#ladders">Ladders</a><a href="#adds">Add sizing</a><a href="#exits">Exits</a><a href="#pix">PiX role</a><a href="#arena">Arena tests</a><a href="#risk">Risk</a><a href="#pseudo">Pseudo-code</a><a href="#success">Success criteria</a>
+  <a href="#answer">Answer</a><a href="#side-run">Side-run results</a><a href="#intuition">Intuition</a><a href="#setup">Setup</a><a href="#state">State machine</a><a href="#ladders">Ladders</a><a href="#adds">Add sizing</a><a href="#exits">Exits</a><a href="#manual-protocol">Manual table</a><a href="#pix">PiX role</a><a href="#arena">Arena tests</a><a href="#risk">Risk</a><a href="#pseudo">Pseudo-code</a><a href="#success">Success criteria</a>
 </nav>
 
 <section id="answer">
@@ -295,8 +295,57 @@ margin_required ≈ abs(qty_sol) × current_price / leverage
   </div>
 </section>
 
+
+<section id="manual-protocol">
+  <h2>9. Collapsed manual SOL working table</h2>
+  <div class="note"><strong>Purpose:</strong> this is a practical translation of the current v0.7.3 Standard live-extract signal into a manual SOL test protocol. It is not the final formula and not a live-trading recommendation. The arena must still validate whether these levels survive controls, scale checks, and real exchange data.</div>
+  <details>
+    <summary>Open manual SOL hedge-rescue table — LONG 1 SOL + SHORT 1 SOL, 300× cross</summary>
+    <p class="caption">Read all percentages below as <strong>ROE % shown on the position</strong>, not SOL price movement. At 300×, 100% ROE is roughly 0.33% price movement before fees/slippage/funding/liquidation details.</p>
+    <div class="table-card" style="margin-top:14px">
+      <h3>Manual working protocol — current best human-readable version</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Phase</th><th>Condition</th><th>Action</th><th>Example with 1 SOL core</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Start</strong></td><td>Beginning of cycle</td><td>Open LONG + SHORT</td><td>LONG 1 SOL + SHORT 1 SOL</td><td>Always keep both directions alive.</td></tr>
+          <tr><td><strong>Profit side — first add</strong></td><td>One side reaches <strong>+300% ROE</strong></td><td>Add to the profitable side</td><td>If LONG is +300%, add +1 SOL LONG → LONG 2 SOL</td><td>Build a profit cushion that can help absorb the other side.</td></tr>
+          <tr><td><strong>Profit side — trail</strong></td><td>Profit add starts losing momentum</td><td>Trail the added part tightly</td><td>Protect the added 1 SOL LONG</td><td>The profit add is a cushion/accelerator, not a permanent burden.</td></tr>
+          <tr><td><strong>Profit side — close add</strong></td><td>Momentum fades or profit falls back</td><td>Close the added profit leg; keep core</td><td>LONG 2 SOL → close added 1 SOL, keep LONG core 1 SOL</td><td>Lock cushion before it turns into a new problem.</td></tr>
+          <tr><td><strong>Losing side — rescue 1</strong></td><td>Losing side around <strong>−100% ROE</strong></td><td>Add 1× current losing side</td><td>SHORT 1 SOL → add 1 SOL → SHORT 2 SOL</td><td>First average-entry compression.</td></tr>
+          <tr><td><strong>Losing side — rescue 2</strong></td><td>Losing side around <strong>−200% ROE</strong></td><td>Double the losing side again</td><td>SHORT 2 SOL → add 2 SOL → SHORT 4 SOL</td><td>Stronger rescue if move continues.</td></tr>
+          <tr><td><strong>Losing side — rescue 3</strong></td><td>Losing side around <strong>−300% ROE</strong></td><td>Double only if profit-side cushion is strong enough</td><td>SHORT 4 SOL → add 4 SOL → SHORT 8 SOL</td><td>Aggressive rescue; use only with enough cross-margin cushion.</td></tr>
+          <tr><td><strong>Losing side — extreme rescue</strong></td><td>Losing side around <strong>−500% ROE</strong></td><td>Add only with very strong cushion and margin buffer</td><td>SHORT 8 SOL → add 8 SOL → SHORT 16 SOL</td><td>Very aggressive; not for a first manual test without reserve.</td></tr>
+          <tr><td><strong>Near-entry zone</strong></td><td>Rescue side returns to <strong>−50% to 0% ROE</strong>, but fails to break profit after 2–3 candles</td><td>Close 33–50% of excess even with a small loss</td><td>SHORT total 4 SOL, core 1, excess 3 → close about 1–1.5 SOL</td><td>Reduce danger before price runs away again.</td></tr>
+          <tr><td><strong>Rescue first profit exit</strong></td><td>Rescue side reaches <strong>+2% ROE</strong></td><td>Close about 50% of excess</td><td>SHORT 4 SOL, core 1, excess 3 → close 1.5 SOL</td><td>Main goal is to shrink oversized rescue exposure.</td></tr>
+          <tr><td><strong>Rescue clean exit</strong></td><td>Rescue side reaches <strong>+5% to +10% ROE</strong></td><td>Close almost all excess</td><td>SHORT 2.5 SOL → close 1.5 SOL → keep SHORT 1 SOL core</td><td>Return to safer base hedge state.</td></tr>
+          <tr><td><strong>Reset</strong></td><td>Both sides are back near core</td><td>Keep LONG 1 SOL + SHORT 1 SOL</td><td>LONG 1 + SHORT 1</td><td>Cycle can begin again.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="table-card" style="margin-top:14px">
+      <h3>Mini example — price goes up first</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Step</th><th>State</th><th>Manual action</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Open LONG 1 + SHORT 1</td><td>No action yet.</td></tr>
+          <tr><td>2</td><td>Price rises; LONG +300%, SHORT negative</td><td>Add +1 SOL LONG → LONG 2, SHORT 1.</td></tr>
+          <tr><td>3</td><td>SHORT keeps worsening but LONG is now a cushion</td><td>Do not panic-add; wait for rescue trigger and some pause/absorption.</td></tr>
+          <tr><td>4</td><td>SHORT hits a rescue level</td><td>Add SHORT by the table: 1→2, then 2→4 only if needed.</td></tr>
+          <tr><td>5</td><td>Price comes back toward SHORT average entry</td><td>Prepare to reduce excess, not to hold oversized rescue size forever.</td></tr>
+          <tr><td>6</td><td>SHORT stalls between −50% and 0% ROE</td><td>Close part of excess even with a small loss.</td></tr>
+          <tr><td>7</td><td>SHORT reaches +2% ROE</td><td>Close about half of excess.</td></tr>
+          <tr><td>8</td><td>SHORT reaches +5% to +10% ROE</td><td>Close almost all excess; keep 1 SOL core.</td></tr>
+          <tr><td>9</td><td>Added LONG loses momentum</td><td>Close added LONG 1 SOL; keep LONG core.</td></tr>
+          <tr><td>10</td><td>Back to LONG 1 + SHORT 1</td><td>Cycle reset.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="danger" style="margin-top:14px"><strong>Hard warning:</strong> this table assumes cross/hedge-margin style logic. It is not side-isolated safe by default. The next arena versions must prove which parts survive controls, margin stress, and real exchange microstructure.</div>
+  </details>
+</section>
+
 <section id="pix">
-  <h2>9. What PiX is doing here</h2>
+  <h2>10. What PiX is doing here</h2>
   <div class="good"><strong>Correct framing:</strong> PiX does not claim that markets magically follow π. PiX is a disciplined generator of candidate sequences. The arena then tests those sequences against Fibonacci, fixed/geometric, uniform, random, and no-add/no-trail controls.</div>
   <div class="grid three" style="margin-top:16px">
     <div class="card"><div class="label">π/2 base</div><div class="num cyan">1.570796</div><p class="small">A smoother growth factor than 2×, close to but distinct from φ ≈ 1.618.</p></div>
@@ -311,7 +360,7 @@ margin_required ≈ abs(qty_sol) × current_price / leverage
 </section>
 
 <section id="arena">
-  <h2>10. Standalone arena design</h2>
+  <h2>11. Standalone arena design</h2>
   <p>This should be a separate Python arena for this one recipe. The big v0.9 arena can be used for infrastructure ideas — resume, workers, reporting — but this strategy should not be tangled into the broad arena yet.</p>
   <div class="grid two">
     <div class="callout">
@@ -340,7 +389,7 @@ margin_required ≈ abs(qty_sol) × current_price / leverage
 </section>
 
 <section id="multi">
-  <h2>11. Multi-universe anti-overfit rule</h2>
+  <h2>12. Multi-universe anti-overfit rule</h2>
   <div class="note"><strong>Newest critical requirement:</strong> one generated 1-minute dataset is not enough. The arena must generate many different 1m universes inside the same real daily SOLUSDT candles and search for parameters that survive across those universes.</div>
   <div class="flow" style="margin-top:16px">
     <div class="flow-row">
@@ -366,7 +415,7 @@ margin_required ≈ abs(qty_sol) × current_price / leverage
 </section>
 
 <section id="risk">
-  <h2>12. Risk model and audit requirements</h2>
+  <h2>13. Risk model and audit requirements</h2>
   <div class="grid two">
     <div class="callout"><h3>Cross-hedge margin</h3><p>Optimistic / venue-dependent model. The long and short books share wallet equity, and the winning side may help absorb the losing side.</p></div>
     <div class="callout"><h3>Side-isolated strict</h3><p>Conservative audit model. Each side can fail on its own if its loss exceeds its side margin. A config that only works under cross margin must be labeled venue-dependent.</p></div>
@@ -386,7 +435,7 @@ margin_required ≈ abs(qty_sol) × current_price / leverage
 </section>
 
 <section id="pseudo">
-  <h2>13. Strategy pseudo-code</h2>
+  <h2>14. Strategy pseudo-code</h2>
   <pre>for each scenario_universe:
     generate 1m paths constrained to real SOL daily OHLC
     audit daily reconstruction == exact
@@ -424,7 +473,7 @@ for each config:
 </section>
 
 <section id="success">
-  <h2>14. What success would look like</h2>
+  <h2>15. What success would look like</h2>
   <div class="grid two">
     <div class="good"><h3>Promising result</h3>
       <ul class="list">
@@ -449,7 +498,7 @@ for each config:
 </section>
 
 <section id="checklist">
-  <h2>15. Builder checklist for the later Python arena</h2>
+  <h2>16. Builder checklist for the later Python arena</h2>
   <div class="table-card">
     <div class="table-wrap"><table>
       <thead><tr><th>Component</th><th>Must exist</th></tr></thead>
@@ -468,7 +517,7 @@ for each config:
 
 <div class="footer">
   BD Hedge Separation PiX Strategy Explainer · dark mobile-first research page · offline replay only · not financial advice.<br>
-  Built for the standalone BD Hedge Separation PiX Arena v0.4 concept; updated with compact side-run evidence.
+  Built for the standalone BD Hedge Separation PiX Arena lineage; updated with v0.7.3 manual working protocol and v0.8 PiX-proof direction.
 </div>
 </div>
 <script>
