@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html data-lang="en" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>PiC — π / Constants Compression</title>
+<meta name="description" content="PiC: using π and other mathematical constants as deterministic MDL compression generators for files, images, audio, and structured data."/>
+<style>
+:root{
+  --bg:#070914; --bg2:#0b1020; --panel:#101624; --card:#121b2e; --card2:#0d1320;
+  --line:#24324e; --line2:#344767; --text:#e7edf8; --muted:#9fb0c8; --dim:#6d7d96;
+  --green:#2ef2a3; --blue:#58a6ff; --gold:#ffd76a; --red:#ff6b84; --violet:#bd93f9;
+  --cyan:#67e8f9; --orange:#ffb86c; --shadow:0 18px 50px rgba(0,0,0,.28);
+  --radius:16px; --mono:Consolas,"JetBrains Mono",Menlo,monospace; --sans:Inter,"Segoe UI",Arial,sans-serif;
+  --fs:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;font-size:var(--fs)}
+body{
+  margin:0;color:var(--text);font-family:var(--sans);line-height:1.62;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(255,215,106,.16),transparent 28%),
+    radial-gradient(circle at 86% 8%,rgba(103,232,249,.14),transparent 28%),
+    radial-gradient(circle at 48% 100%,rgba(189,147,249,.11),transparent 34%),
+    linear-gradient(180deg,#060812 0%,#080b14 100%);
+}
+a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}
+code,kbd{font-family:var(--mono);font-size:.93em;color:#d7faff;background:rgba(103,232,249,.08);border:1px solid rgba(103,232,249,.15);border-radius:6px;padding:.05rem .28rem}
+pre{margin:0;white-space:pre-wrap;word-break:break-word;font-family:var(--mono);font-size:.86rem;line-height:1.5;color:#d9edff;background:#08101d;border:1px solid var(--line);border-radius:12px;padding:14px;overflow:auto}
+.wrap{max-width:1220px;margin:0 auto;padding:28px 20px 96px}
+.scroll-progress{position:fixed;left:0;top:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--cyan));width:0;z-index:1000;box-shadow:0 0 18px rgba(103,232,249,.35)}
+.hero{padding:38px 0 22px;border-bottom:1px solid var(--line);position:relative}
+.eyebrow{font-family:var(--mono);color:var(--cyan);font-size:.75rem;text-transform:uppercase;letter-spacing:.18em;font-weight:900}
+h1{font-size:clamp(36px,5.7vw,76px);line-height:1.02;margin:12px 0;letter-spacing:-.05em}
+h1 .accent{color:var(--gold)}
+.subtitle{max-width:1000px;color:var(--muted);font-size:1.12rem}.small{font-size:.84rem;color:var(--muted)}
+.langbar{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-bottom:18px;flex-wrap:wrap}.langlabel{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}.langbtn{border:1px solid var(--line2);background:#0a1020;color:var(--muted);border-radius:999px;padding:7px 11px;font-family:var(--mono);font-size:.76rem;cursor:pointer}.langbtn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(103,232,249,.08)}
+.nav{position:sticky;top:0;z-index:20;background:rgba(7,9,20,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);margin:0 -20px;padding:10px 20px;display:flex;gap:8px;overflow-x:auto}.nav a{white-space:nowrap;text-decoration:none;border:1px solid var(--line2);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:.82rem}.nav a:hover{color:var(--cyan);border-color:var(--cyan)}
+.grid{display:grid;gap:16px}.cards{grid-template-columns:repeat(4,minmax(0,1fr));margin:22px 0}.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:repeat(3,1fr)}.card,.table-card,.callout,.toolbox{background:linear-gradient(180deg,rgba(18,27,46,.96),rgba(12,18,31,.96));border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}.card .label{color:var(--muted);font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.13em}.num{font-size:1.52rem;font-weight:900;margin:6px 0 8px}.green{color:var(--green)}.blue{color:var(--blue)}.gold{color:var(--gold)}.red{color:var(--red)}.violet{color:var(--violet)}.cyan{color:var(--cyan)}.orange{color:var(--orange)}
+section{padding:34px 0;border-bottom:1px solid rgba(36,50,78,.58)}h2{font-size:clamp(25px,3vw,40px);line-height:1.12;margin:0 0 14px;letter-spacing:-.035em}h3{font-size:1.08rem;margin:0 0 10px}.lead{font-size:1.05rem;color:var(--muted);max-width:960px}.note{background:rgba(88,166,255,.08);border:1px solid rgba(88,166,255,.22);border-radius:14px;padding:14px}.good{background:rgba(46,242,163,.08);border:1px solid rgba(46,242,163,.24);border-radius:14px;padding:14px}.danger{background:rgba(255,107,132,.08);border:1px solid rgba(255,107,132,.24);border-radius:14px;padding:14px}.warn{background:rgba(255,215,106,.08);border:1px solid rgba(255,215,106,.24);border-radius:14px;padding:14px}.mini{font-family:var(--mono);font-size:.8rem;color:var(--dim);text-transform:uppercase;letter-spacing:.13em}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:.92rem}th,td{border-bottom:1px solid var(--line);padding:11px 10px;text-align:left;vertical-align:top}th{color:var(--cyan);font-family:var(--mono);font-size:.76rem;text-transform:uppercase;letter-spacing:.09em}td{color:#d9e6f8}td:first-child{color:#fff;font-weight:700}.pillrow{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.pill{border:1px solid var(--line2);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:.83rem;background:#0a1020}.pill.goodpill{border-color:rgba(46,242,163,.35);color:var(--green);background:rgba(46,242,163,.07)}.pill.warnpill{border-color:rgba(255,215,106,.35);color:var(--gold);background:rgba(255,215,106,.07)}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0}.step{background:#0b1221;border:1px solid var(--line);border-radius:14px;padding:13px;position:relative}.step b{display:block;color:#fff;margin-bottom:6px}.step span{font-size:.86rem;color:var(--muted)}.step:not(:last-child)::after{content:"→";position:absolute;right:-14px;top:40%;color:var(--cyan);font-family:var(--mono);font-weight:900}
+.linkgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}.linkcard{display:block;text-decoration:none;background:#0b1221;border:1px solid var(--line);border-radius:14px;padding:14px;min-height:108px}.linkcard:hover{border-color:var(--cyan);text-decoration:none;transform:translateY(-1px)}.linkcard b{display:block;color:#fff;margin-bottom:6px}.linkcard span{color:var(--muted);font-size:.88rem}
+.calc{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}.calc label{display:block;font-size:.72rem;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em}.calc input{width:100%;border:1px solid var(--line2);border-radius:10px;background:#08101d;color:var(--text);padding:10px;font-family:var(--mono)}.resultbox{margin-top:12px;border-radius:12px;border:1px solid var(--line);background:#08101d;padding:14px;font-family:var(--mono);color:#d9edff}.footer{padding:30px 0;color:var(--muted);font-size:.9rem;text-align:center}.kbdrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.toggle{cursor:pointer;user-select:none}.hidden{display:none!important}.dim{color:var(--dim)}
+@media(max-width:900px){.cards,.two,.three,.linkgrid,.flow,.calc{grid-template-columns:1fr}.step:not(:last-child)::after{content:"↓";right:16px;top:auto;bottom:-18px}.nav{top:0}.hero{padding-top:20px}}
+@media(print){body{background:#fff;color:#000}.nav,.langbar,.scroll-progress{display:none}.card,.table-card,.callout,.toolbox,.note,.good,.danger,.warn,.step,.linkcard{box-shadow:none;background:#fff;color:#000;border-color:#ccc}a{color:#0645ad}}
+</style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProgress"></div>
+<div class="wrap">
+  <div class="langbar" aria-label="Language switcher">
+    <span class="langlabel">Language</span>
+    <button class="langbtn active" data-set-lang="en">EN</button>
+    <button class="langbtn" data-set-lang="sl">SL</button>
+  </div>
+
+  <header class="hero" id="top">
+    <div class="eyebrow" data-i18n="eyebrow">PiC · π / constants compression · BD × AI Lab</div>
+    <h1 data-i18n="title">PiC — <span class="accent">constants as compression generators</span></h1>
+    <p class="subtitle" data-i18n="subtitle">The original seed was simple: if a file contains bits that can be described as digits or bits of π, why store those bits directly? PiC turns that seed into a strict MDL experiment: use π, e, φ, √2 and other deterministic streams only when a pointer, transform and residual are cheaper than ordinary storage or compression.</p>
+    <p class="small" data-i18n="hero_note">Short name: <strong>PiC</strong> = Pi Compression / Constants Compression. It is the compression sibling of <a href="PiX.html">PiX</a>.</p>
+  </header>
+
+  <nav class="nav" aria-label="Page navigation">
+    <a href="#seed" data-i18n="nav_seed">Seed</a>
+    <a href="#idea" data-i18n="nav_idea">Core idea</a>
+    <a href="#streams" data-i18n="nav_streams">Streams</a>
+    <a href="#lossless" data-i18n="nav_lossless">Lossless</a>
+    <a href="#lossy" data-i18n="nav_lossy">Lossy</a>
+    <a href="#mdl" data-i18n="nav_mdl">MDL gate</a>
+    <a href="#pihunter" data-i18n="nav_pihunter">Pi Hunter</a>
+    <a href="#scout" data-i18n="nav_scout">PiC Scout</a>
+    <a href="#related" data-i18n="nav_related">Related</a>
+  </nav>
+
+  <section id="seed">
+    <h2 data-i18n="seed_h2">Seed → bridge → test → result</h2>
+    <p class="lead" data-i18n="seed_lead">PiC preserves the original intuition without turning it into a magical claim. The idea is allowed to live, but only behind a hard accounting gate.</p>
+    <div class="grid cards">
+      <div class="card"><div class="label" data-i18n="seed_card1_label">Seed</div><div class="num gold" data-i18n="seed_card1_num">π coordinates</div><p class="small" data-i18n="seed_card1_text">Can data in a file be replaced by coordinates inside π?</p></div>
+      <div class="card"><div class="label" data-i18n="seed_card2_label">Bridge</div><div class="num cyan" data-i18n="seed_card2_num">generator tokens</div><p class="small" data-i18n="seed_card2_text">Store constant ID, offset, length, transform and residual instead of raw bits.</p></div>
+      <div class="card"><div class="label" data-i18n="seed_card3_label">Test</div><div class="num green" data-i18n="seed_card3_num">MDL battle</div><p class="small" data-i18n="seed_card3_text">Accept only if the whole description is shorter than RAW, zstd, PNG/FLAC, or other baselines.</p></div>
+      <div class="card"><div class="label" data-i18n="seed_card4_label">Result</div><div class="num red" data-i18n="seed_card4_num">not claimed yet</div><p class="small" data-i18n="seed_card4_text">PiC is a falsifiable experiment, not a statement that π compresses ordinary files.</p></div>
+    </div>
+    <div class="good" data-i18n="seed_good"><strong>Clean formulation:</strong> a file chunk may be encoded as <code>constant_stream[offset:length] + transform + residual</code>, but only if this is cheaper and reconstructs exactly, or meets a declared lossy quality target.</div>
+  </section>
+
+  <section id="idea">
+    <h2 data-i18n="idea_h2">Core idea: the file and the constant are both streams</h2>
+    <p class="lead" data-i18n="idea_lead">A file is not naturally decimal text. It is a byte stream and therefore also a bit stream. π is a decimal digit stream, but it can be converted into several binary or symbolic streams. PiC searches for useful alignments between them.</p>
+    <div class="grid two">
+      <div class="callout">
+        <h3 data-i18n="idea_data_h3">File side</h3>
+        <pre>file bytes: 137 080 078 071 ...
+file bits:  10001001 01010000 01001110 01000111 ...
+chunk:      b[i : i+n]</pre>
+      </div>
+      <div class="callout">
+        <h3 data-i18n="idea_pi_h3">Constant side</h3>
+        <pre>π digits:   314159265358979323846...
+π as BCD:   0011 0001 0100 0001 0101 1001 ...
+π as bytes: 24 3F 6A 88 ...  (hex/binary stream)</pre>
+      </div>
+    </div>
+    <div class="flow" aria-label="PiC encoding flow">
+      <div class="step"><b data-i18n="flow1_b">1. Chunk</b><span data-i18n="flow1_s">Take a file region: bytes, bits, pixels, samples, or symbols.</span></div>
+      <div class="step"><b data-i18n="flow2_b">2. Generate</b><span data-i18n="flow2_s">Create π/e/φ/√2 streams under several encodings.</span></div>
+      <div class="step"><b data-i18n="flow3_b">3. Align</b><span data-i18n="flow3_s">Try offset, length, stride, mapping, transform.</span></div>
+      <div class="step"><b data-i18n="flow4_b">4. Residual</b><span data-i18n="flow4_s">Store only the difference if the match is not exact.</span></div>
+      <div class="step"><b data-i18n="flow5_b">5. Gate</b><span data-i18n="flow5_s">MDL accepts or rejects the candidate.</span></div>
+    </div>
+  </section>
+
+  <section id="toy">
+    <h2 data-i18n="toy_h2">Tiny toy example</h2>
+    <p class="lead" data-i18n="toy_lead">This is the simple version you were imagining: a file bit segment equals π digits converted to bits. The encoder stores the π pointer instead of the literal segment.</p>
+    <div class="grid two">
+      <div class="callout">
+        <h3 data-i18n="toy_before_h3">Literal file segment</h3>
+        <pre>file bits around segment:
+11001010 0011000101000001010110010010 01101100
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+         28 bits to replace</pre>
+      </div>
+      <div class="callout">
+        <h3 data-i18n="toy_after_h3">π pointer</h3>
+        <pre>π digits: 3 1 4 1 5 9 2
+BCD:      0011 0001 0100 0001 0101 1001 0010
+
+store:
+mode      = PI_BCD
+offset    = 0
+len_digits= 7</pre>
+      </div>
+    </div>
+    <div class="warn" data-i18n="toy_warn"><strong>The catch:</strong> the pointer has its own cost. If the token costs 60 bits, replacing a 28-bit segment loses. PiC only becomes real compression when the saved segment plus residual beats the token cost and the ordinary codec baseline.</div>
+  </section>
+
+  <section id="streams">
+    <h2 data-i18n="streams_h2">Constant stream modes</h2>
+    <p class="lead" data-i18n="streams_lead">PiC should not treat π as the only source. π is one deterministic tape in a family of tapes. The claim only becomes interesting if a constant beats random controls and other constants under the same budget.</p>
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th data-i18n="tbl_mode">Mode</th><th data-i18n="tbl_desc">Meaning</th><th data-i18n="tbl_use">Best use</th><th data-i18n="tbl_risk">Risk</th></tr></thead>
+          <tbody>
+            <tr><td>PI_BCD</td><td data-i18n="m_bcd_d">Decimal digits encoded as 4-bit nibbles.</td><td data-i18n="m_bcd_u">Your direct “π digits to bits” idea.</td><td data-i18n="m_bcd_r">Wasteful: only 10 of 16 nibble values used.</td></tr>
+            <tr><td>PI_ASCII</td><td data-i18n="m_ascii_d">Digits stored as ASCII bytes: “3”, “1”, “4”…</td><td data-i18n="m_ascii_u">Text-like or symbolic files.</td><td data-i18n="m_ascii_r">Usually bad for binary files.</td></tr>
+            <tr><td>PI_DEC3</td><td data-i18n="m_dec3_d">File bytes written as decimal triples 000–255, then searched in π.</td><td data-i18n="m_dec3_u">Human-readable bridge from bytes to decimal digits.</td><td data-i18n="m_dec3_r">Triples above 255 are invalid unless remapped.</td></tr>
+            <tr><td>PI_HEX / PI_BIN</td><td data-i18n="m_bin_d">Use hexadecimal/binary expansion of constants as true bytes/bits.</td><td data-i18n="m_bin_u">Cleanest raw byte-level PiC mode.</td><td data-i18n="m_bin_r">Exact matches should be rare in normal data.</td></tr>
+            <tr><td>CONST_XOR</td><td data-i18n="m_xor_d">Encode chunk as constant stream XOR residual.</td><td data-i18n="m_xor_u">Near-matches and sparse differences.</td><td data-i18n="m_xor_r">Residual may cost as much as original.</td></tr>
+            <tr><td>CONST_CA</td><td data-i18n="m_ca_d">Seed a cellular automaton from π/e/φ/√2 and compare generated texture.</td><td data-i18n="m_ca_u">Images, masks, grids, synthetic textures.</td><td data-i18n="m_ca_r">Easy to overfit without controls.</td></tr>
+            <tr><td>CONST_LOSSY</td><td data-i18n="m_lossy_d">Use constants as texture/noise/basis for controlled lossy coding.</td><td data-i18n="m_lossy_u">Image/audio/sensor residual shaping.</td><td data-i18n="m_lossy_r">Must beat normal lossy codecs at same quality.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="pillrow" aria-label="Candidate constants">
+      <span class="pill goodpill">π</span><span class="pill">e</span><span class="pill">φ</span><span class="pill">√2</span><span class="pill">log 2</span><span class="pill">ζ(3)</span><span class="pill">Champernowne</span><span class="pill warnpill" data-i18n="random_control">RNG control</span>
+    </div>
+  </section>
+
+  <section id="lossless">
+    <h2 data-i18n="lossless_h2">Lossless PiC: exact reconstruction or reject</h2>
+    <p class="lead" data-i18n="lossless_lead">The strict version must reconstruct the exact original bytes. It is the right first test because it cannot hide behind visual similarity.</p>
+    <div class="grid three">
+      <div class="good"><h3 data-i18n="lossless_good_h3">Accepted chunk</h3><p data-i18n="lossless_good_p">A PiC token is kept only if <code>token + residual + checksum</code> is smaller than the best ordinary candidate.</p></div>
+      <div class="note"><h3 data-i18n="lossless_verify_h3">Verification</h3><p data-i18n="lossless_verify_p">Decoder regenerates the constant stream, applies transform/residual, then verifies SHA3 or another strong hash of the reconstructed chunk.</p></div>
+      <div class="danger"><h3 data-i18n="lossless_reject_h3">Rejected chunk</h3><p data-i18n="lossless_reject_p">If the pointer cost or residual cost loses, the encoder stores RAW, zstd, lzma, PNG, FLAC, or the normal 8Z winner.</p></div>
+    </div>
+    <div class="callout">
+      <h3 data-i18n="lossless_token_h3">Possible token shape</h3>
+      <pre>PiCChunk {
+  mode:        PI_BIN | PI_BCD | PI_DEC3 | CONST_XOR | CONST_CA
+  constant_id: PI | E | PHI | SQRT2 | RNG_CONTROL
+  offset:      unsigned integer
+  length:      unsigned integer
+  stride:      optional integer
+  transform:   optional transform ID + params
+  residual:    compressed residual bytes
+  hash:        reconstructed chunk hash
+}</pre>
+    </div>
+  </section>
+
+  <section id="lossy">
+    <h2 data-i18n="lossy_h2">Lossy PiC: more hits, stricter controls</h2>
+    <p class="lead" data-i18n="lossy_lead">Yes: if lossy compression is allowed, π and other constants will be “found” much more often. That is powerful, but dangerous. Approximate matches are easy; meaningful wins are hard.</p>
+    <div class="grid two">
+      <div class="callout">
+        <h3 data-i18n="lossy_img_h3">Image / texture direction</h3>
+        <p data-i18n="lossy_img_p">Constants can act as deterministic grain, masks, phase fields, tile orderings, or residual bases. Test at equal PSNR/SSIM or a fixed perceptual error budget.</p>
+      </div>
+      <div class="callout">
+        <h3 data-i18n="lossy_audio_h3">Audio / sensor direction</h3>
+        <p data-i18n="lossy_audio_p">Constants can act as deterministic dither/noise/residual scaffolds. Test at equal SNR, spectral error, or perceptual score against normal codecs.</p>
+      </div>
+    </div>
+    <div class="warn" data-i18n="lossy_rule"><strong>Lossy rule:</strong> PiC must not ask “can π approximate this?” It must ask “does π/e/φ/√2 plus residual achieve better bitrate–distortion than random streams and standard codecs?”</div>
+  </section>
+
+  <section id="mdl">
+    <h2 data-i18n="mdl_h2">The MDL gate: the part that keeps PiC honest</h2>
+    <p class="lead" data-i18n="mdl_lead">The core formula is simple. PiC is not accepted because it is beautiful. It is accepted only when the total description is cheaper.</p>
+    <div class="grid two">
+      <div class="callout">
+        <h3 data-i18n="mdl_lossless_h3">Lossless objective</h3>
+        <pre>L_total = L_token + L_transform + L_residual + L_hash
+accept if:
+L_total &lt; min(L_RAW, L_zstd, L_lzma, L_png, L_8Z)</pre>
+      </div>
+      <div class="callout">
+        <h3 data-i18n="mdl_lossy_h3">Lossy objective</h3>
+        <pre>L_total = L_token + L_transform + L_residual + λD
+accept if:
+rate is lower at equal declared distortion D</pre>
+      </div>
+    </div>
+    <div class="toolbox" id="calculator">
+      <h3 data-i18n="calc_h3">Pointer economy toy calculator</h3>
+      <p class="small" data-i18n="calc_p">Use this to feel the central obstacle. Small matches lose because the pointer is bigger than the data it replaces.</p>
+      <div class="calc">
+        <div><label for="matchBits" data-i18n="calc_match">Matched bits</label><input id="matchBits" type="number" value="512" min="0" step="1"/></div>
+        <div><label for="offsetBits" data-i18n="calc_offset">Offset bits</label><input id="offsetBits" type="number" value="40" min="0" step="1"/></div>
+        <div><label for="overheadBits" data-i18n="calc_overhead">Mode/length overhead</label><input id="overheadBits" type="number" value="24" min="0" step="1"/></div>
+        <div><label for="residualBits" data-i18n="calc_residual">Residual bits</label><input id="residualBits" type="number" value="80" min="0" step="1"/></div>
+      </div>
+      <div class="resultbox" id="calcOut">...</div>
+    </div>
+  </section>
+
+  <section id="controls">
+    <h2 data-i18n="controls_h2">Controls and kill tests</h2>
+    <p class="lead" data-i18n="controls_lead">PiC becomes real only if it survives boring controls. The goal is not to protect π. The goal is to discover whether constants give any useful generator family at all.</p>
+    <div class="grid three">
+      <div class="good"><h3 data-i18n="controls_good_h3">Good control</h3><p data-i18n="controls_good_p">Compare π against e, φ, √2, a cryptographic-quality deterministic random stream, shuffled π, and standard codecs.</p></div>
+      <div class="warn"><h3 data-i18n="controls_watch_h3">Watch-out</h3><p data-i18n="controls_watch_p">If random wins equally often, the signal is not π. It may still be useful as generator search, but not as a special π claim.</p></div>
+      <div class="danger"><h3 data-i18n="controls_kill_h3">Kill condition</h3><p data-i18n="controls_kill_p">If PiC cannot beat controls after fair tuning, keep it as a creative/scouting branch, not as a compression claim.</p></div>
+    </div>
+  </section>
+
+  <section id="pihunter">
+    <h2 data-i18n="pihunter_h2">Pi Hunter vs PiC</h2>
+    <p class="lead" data-i18n="pihunter_lead">Pi Hunter was an important precursor, but it was not yet this raw-file compressor. It searched symbolic image textures against π/CA streams. PiC is the sharper file-compression formulation.</p>
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th data-i18n="ph_tbl_col1">System</th><th data-i18n="ph_tbl_col2">What it reads</th><th data-i18n="ph_tbl_col3">What it searches</th><th data-i18n="ph_tbl_col4">Status</th></tr></thead>
+          <tbody>
+            <tr><td>Pi Hunter v2.3</td><td data-i18n="ph_r1_c2">Image resized/quantized into a symbolic grid.</td><td data-i18n="ph_r1_c3">π digit streams, π-seeded CA rules, spatial mappings, residual scoring.</td><td data-i18n="ph_r1_c4">Scout / texture testbed, not a full codec.</td></tr>
+            <tr><td>PiX</td><td data-i18n="ph_r2_c2">Sequences, levels, rhythms, schedules, decision candidates.</td><td data-i18n="ph_r2_c3">π as universal MDL candidate generator across domains.</td><td data-i18n="ph_r2_c4">Umbrella page and sequence laboratory.</td></tr>
+            <tr><td>PiC</td><td data-i18n="ph_r3_c2">Raw bytes/bits/samples/pixels/chunks.</td><td data-i18n="ph_r3_c3">Constant pointer + transform + residual under MDL.</td><td data-i18n="ph_r3_c4">This page: clean spec seed for the next experiment.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="scout">
+    <h2 data-i18n="scout_h2">Next build: PiC Scout</h2>
+    <p class="lead" data-i18n="scout_lead">The smallest useful program is not a full 8Z integration. It is a scout that directly tests your original idea on chunks and reports honest wins/losses.</p>
+    <div class="grid two">
+      <div class="callout">
+        <h3 data-i18n="scout_modes_h3">Minimum modes</h3>
+        <pre>1. PI_BCD exact
+2. PI_BIN exact
+3. PI_DEC3 byte triples
+4. CONST_XOR residual
+5. CONST_CA symbolic texture
+6. RNG/e/φ/√2 controls</pre>
+      </div>
+      <div class="callout">
+        <h3 data-i18n="scout_inputs_h3">Best first inputs</h3>
+        <pre>raw BMP / TIFF / PGM
+raw WAV / PCM
+FASTA / CSV / plain text
+synthetic planted controls
+already-compressed PNG/JPEG/MP3 as negative controls</pre>
+      </div>
+    </div>
+    <div class="good" data-i18n="scout_accept"><strong>Acceptance criterion:</strong> at least one real corpus class shows statistically repeatable savings against best ordinary baseline and random/control streams, with exact reconstruction for lossless mode or equal declared distortion for lossy mode.</div>
+  </section>
+
+  <section id="eightz">
+    <h2 data-i18n="eightz_h2">8Z integration idea</h2>
+    <p class="lead" data-i18n="eightz_lead">PiC should eventually become one optional generator family inside 8Z, not a replacement for normal compression. DCC chooses when to try it; MDL decides whether it survives.</p>
+    <div class="grid two">
+      <div class="callout">
+        <h3 data-i18n="eightz_encoder_h3">Encoder role</h3>
+        <p data-i18n="eightz_encoder_p">Try PiC candidates only on chunks where cheap scouts suggest possible structure. Record timing, false positives, residual size, and final MDL decision.</p>
+      </div>
+      <div class="callout">
+        <h3 data-i18n="eightz_decoder_h3">Decoder role</h3>
+        <p data-i18n="eightz_decoder_p">No search. The decoder only regenerates the declared constant stream, applies declared transform/residual, and verifies the hash.</p>
+      </div>
+    </div>
+    <div class="note" data-i18n="eightz_note"><strong>Important:</strong> decoder simplicity is sacred. All expensive hunting belongs to the encoder/scout side.</div>
+  </section>
+
+  <section id="related">
+    <h2 data-i18n="related_h2">Related pages</h2>
+    <p class="lead" data-i18n="related_lead">PiC should sit beside PiX, not inside it. PiX is the broader sequence/candidate-generator page; PiC is the compression-specific page.</p>
+    <div class="linkgrid">
+      <a class="linkcard" href="PiX.html"><b>PiX.html</b><span data-i18n="rel_pix">The broader π-sequence and universal MDL candidate generator page.</span></a>
+      <a class="linkcard" href="Origin.html"><b>Origin.html</b><span data-i18n="rel_origin">The historical origin seed: replacing data with coordinates inside π.</span></a>
+      <a class="linkcard" href="MDLxDCC.html"><b>MDLxDCC.html</b><span data-i18n="rel_mdl">The governing method: generate candidates, then let MDL and DCC decide.</span></a>
+      <a class="linkcard" href="../8Z/8Z_compression.html"><b>8Z_compression.html</b><span data-i18n="rel_8zcomp">The main practical compression branch where PiC can eventually plug in.</span></a>
+      <a class="linkcard" href="../8Z/index.html"><b>8Z/index.html</b><span data-i18n="rel_8z">8Z project home and broader compression ecosystem.</span></a>
+      <a class="linkcard" href="MDLxDCC-Arenas.html"><b>MDLxDCC-Arenas.html</b><span data-i18n="rel_arenas">Arena mindset: broad search, fair controls, reproducible evidence.</span></a>
+      <a class="linkcard" href="CodeCapsules.html"><b>CodeCapsules.html</b><span data-i18n="rel_capsules">The compact-code direction: data as a short executable description when it wins.</span></a>
+      <a class="linkcard" href="SeedBank.html"><b>SeedBank.html</b><span data-i18n="rel_seedbank">Seed preservation: keep early ideas alive until cheap tests judge them.</span></a>
+      <a class="linkcard" href="BD_Idea_Atlas_AI_Reviews.html"><b>BD_Idea_Atlas_AI_Reviews.html</b><span data-i18n="rel_reviews">External-model review context for the wider BD × AI Lab work.</span></a>
+    </div>
+  </section>
+
+  <footer class="footer" data-i18n="footer">PiC · π / constants compression · BD × AI Lab · research page only.<br/>Core stance: explore first, then let MDL, controls, and reproducibility decide.</footer>
+</div>
+
+<script>
+const I18N = {
+  en: {
+    eyebrow:"PiC · π / constants compression · BD × AI Lab",
+    title:"PiC — <span class=\"accent\">constants as compression generators</span>",
+    subtitle:"The original seed was simple: if a file contains bits that can be described as digits or bits of π, why store those bits directly? PiC turns that seed into a strict MDL experiment: use π, e, φ, √2 and other deterministic streams only when a pointer, transform and residual are cheaper than ordinary storage or compression.",
+    hero_note:"Short name: <strong>PiC</strong> = Pi Compression / Constants Compression. It is the compression sibling of <a href=\"PiX.html\">PiX</a>.",
+    nav_seed:"Seed",nav_idea:"Core idea",nav_streams:"Streams",nav_lossless:"Lossless",nav_lossy:"Lossy",nav_mdl:"MDL gate",nav_pihunter:"Pi Hunter",nav_scout:"PiC Scout",nav_related:"Related",
+    seed_h2:"Seed → bridge → test → result",seed_lead:"PiC preserves the original intuition without turning it into a magical claim. The idea is allowed to live, but only behind a hard accounting gate.",
+    seed_card1_label:"Seed",seed_card1_num:"π coordinates",seed_card1_text:"Can data in a file be replaced by coordinates inside π?",
+    seed_card2_label:"Bridge",seed_card2_num:"generator tokens",seed_card2_text:"Store constant ID, offset, length, transform and residual instead of raw bits.",
+    seed_card3_label:"Test",seed_card3_num:"MDL battle",seed_card3_text:"Accept only if the whole description is shorter than RAW, zstd, PNG/FLAC, or other baselines.",
+    seed_card4_label:"Result",seed_card4_num:"not claimed yet",seed_card4_text:"PiC is a falsifiable experiment, not a statement that π compresses ordinary files.",
+    seed_good:"<strong>Clean formulation:</strong> a file chunk may be encoded as <code>constant_stream[offset:length] + transform + residual</code>, but only if this is cheaper and reconstructs exactly, or meets a declared lossy quality target.",
+    idea_h2:"Core idea: the file and the constant are both streams",idea_lead:"A file is not naturally decimal text. It is a byte stream and therefore also a bit stream. π is a decimal digit stream, but it can be converted into several binary or symbolic streams. PiC searches for useful alignments between them.",idea_data_h3:"File side",idea_pi_h3:"Constant side",
+    flow1_b:"1. Chunk",flow1_s:"Take a file region: bytes, bits, pixels, samples, or symbols.",flow2_b:"2. Generate",flow2_s:"Create π/e/φ/√2 streams under several encodings.",flow3_b:"3. Align",flow3_s:"Try offset, length, stride, mapping, transform.",flow4_b:"4. Residual",flow4_s:"Store only the difference if the match is not exact.",flow5_b:"5. Gate",flow5_s:"MDL accepts or rejects the candidate.",
+    toy_h2:"Tiny toy example",toy_lead:"This is the simple version you were imagining: a file bit segment equals π digits converted to bits. The encoder stores the π pointer instead of the literal segment.",toy_before_h3:"Literal file segment",toy_after_h3:"π pointer",toy_warn:"<strong>The catch:</strong> the pointer has its own cost. If the token costs 60 bits, replacing a 28-bit segment loses. PiC only becomes real compression when the saved segment plus residual beats the token cost and the ordinary codec baseline.",
+    streams_h2:"Constant stream modes",streams_lead:"PiC should not treat π as the only source. π is one deterministic tape in a family of tapes. The claim only becomes interesting if a constant beats random controls and other constants under the same budget.",tbl_mode:"Mode",tbl_desc:"Meaning",tbl_use:"Best use",tbl_risk:"Risk",
+    m_bcd_d:"Decimal digits encoded as 4-bit nibbles.",m_bcd_u:"Your direct “π digits to bits” idea.",m_bcd_r:"Wasteful: only 10 of 16 nibble values used.",m_ascii_d:"Digits stored as ASCII bytes: “3”, “1”, “4”…",m_ascii_u:"Text-like or symbolic files.",m_ascii_r:"Usually bad for binary files.",m_dec3_d:"File bytes written as decimal triples 000–255, then searched in π.",m_dec3_u:"Human-readable bridge from bytes to decimal digits.",m_dec3_r:"Triples above 255 are invalid unless remapped.",m_bin_d:"Use hexadecimal/binary expansion of constants as true bytes/bits.",m_bin_u:"Cleanest raw byte-level PiC mode.",m_bin_r:"Exact matches should be rare in normal data.",m_xor_d:"Encode chunk as constant stream XOR residual.",m_xor_u:"Near-matches and sparse differences.",m_xor_r:"Residual may cost as much as original.",m_ca_d:"Seed a cellular automaton from π/e/φ/√2 and compare generated texture.",m_ca_u:"Images, masks, grids, synthetic textures.",m_ca_r:"Easy to overfit without controls.",m_lossy_d:"Use constants as texture/noise/basis for controlled lossy coding.",m_lossy_u:"Image/audio/sensor residual shaping.",m_lossy_r:"Must beat normal lossy codecs at same quality.",random_control:"RNG control",
+    lossless_h2:"Lossless PiC: exact reconstruction or reject",lossless_lead:"The strict version must reconstruct the exact original bytes. It is the right first test because it cannot hide behind visual similarity.",lossless_good_h3:"Accepted chunk",lossless_good_p:"A PiC token is kept only if <code>token + residual + checksum</code> is smaller than the best ordinary candidate.",lossless_verify_h3:"Verification",lossless_verify_p:"Decoder regenerates the constant stream, applies transform/residual, then verifies SHA3 or another strong hash of the reconstructed chunk.",lossless_reject_h3:"Rejected chunk",lossless_reject_p:"If the pointer cost or residual cost loses, the encoder stores RAW, zstd, lzma, PNG, FLAC, or the normal 8Z winner.",lossless_token_h3:"Possible token shape",
+    lossy_h2:"Lossy PiC: more hits, stricter controls",lossy_lead:"Yes: if lossy compression is allowed, π and other constants will be “found” much more often. That is powerful, but dangerous. Approximate matches are easy; meaningful wins are hard.",lossy_img_h3:"Image / texture direction",lossy_img_p:"Constants can act as deterministic grain, masks, phase fields, tile orderings, or residual bases. Test at equal PSNR/SSIM or a fixed perceptual error budget.",lossy_audio_h3:"Audio / sensor direction",lossy_audio_p:"Constants can act as deterministic dither/noise/residual scaffolds. Test at equal SNR, spectral error, or perceptual score against normal codecs.",lossy_rule:"<strong>Lossy rule:</strong> PiC must not ask “can π approximate this?” It must ask “does π/e/φ/√2 plus residual achieve better bitrate–distortion than random streams and standard codecs?”",
+    mdl_h2:"The MDL gate: the part that keeps PiC honest",mdl_lead:"The core formula is simple. PiC is not accepted because it is beautiful. It is accepted only when the total description is cheaper.",mdl_lossless_h3:"Lossless objective",mdl_lossy_h3:"Lossy objective",calc_h3:"Pointer economy toy calculator",calc_p:"Use this to feel the central obstacle. Small matches lose because the pointer is bigger than the data it replaces.",calc_match:"Matched bits",calc_offset:"Offset bits",calc_overhead:"Mode/length overhead",calc_residual:"Residual bits",
+    controls_h2:"Controls and kill tests",controls_lead:"PiC becomes real only if it survives boring controls. The goal is not to protect π. The goal is to discover whether constants give any useful generator family at all.",controls_good_h3:"Good control",controls_good_p:"Compare π against e, φ, √2, a cryptographic-quality deterministic random stream, shuffled π, and standard codecs.",controls_watch_h3:"Watch-out",controls_watch_p:"If random wins equally often, the signal is not π. It may still be useful as generator search, but not as a special π claim.",controls_kill_h3:"Kill condition",controls_kill_p:"If PiC cannot beat controls after fair tuning, keep it as a creative/scouting branch, not as a compression claim.",
+    pihunter_h2:"Pi Hunter vs PiC",pihunter_lead:"Pi Hunter was an important precursor, but it was not yet this raw-file compressor. It searched symbolic image textures against π/CA streams. PiC is the sharper file-compression formulation.",ph_tbl_col1:"System",ph_tbl_col2:"What it reads",ph_tbl_col3:"What it searches",ph_tbl_col4:"Status",ph_r1_c2:"Image resized/quantized into a symbolic grid.",ph_r1_c3:"π digit streams, π-seeded CA rules, spatial mappings, residual scoring.",ph_r1_c4:"Scout / texture testbed, not a full codec.",ph_r2_c2:"Sequences, levels, rhythms, schedules, decision candidates.",ph_r2_c3:"π as universal MDL candidate generator across domains.",ph_r2_c4:"Umbrella page and sequence laboratory.",ph_r3_c2:"Raw bytes/bits/samples/pixels/chunks.",ph_r3_c3:"Constant pointer + transform + residual under MDL.",ph_r3_c4:"This page: clean spec seed for the next experiment.",
+    scout_h2:"Next build: PiC Scout",scout_lead:"The smallest useful program is not a full 8Z integration. It is a scout that directly tests your original idea on chunks and reports honest wins/losses.",scout_modes_h3:"Minimum modes",scout_inputs_h3:"Best first inputs",scout_accept:"<strong>Acceptance criterion:</strong> at least one real corpus class shows statistically repeatable savings against best ordinary baseline and random/control streams, with exact reconstruction for lossless mode or equal declared distortion for lossy mode.",
+    eightz_h2:"8Z integration idea",eightz_lead:"PiC should eventually become one optional generator family inside 8Z, not a replacement for normal compression. DCC chooses when to try it; MDL decides whether it survives.",eightz_encoder_h3:"Encoder role",eightz_encoder_p:"Try PiC candidates only on chunks where cheap scouts suggest possible structure. Record timing, false positives, residual size, and final MDL decision.",eightz_decoder_h3:"Decoder role",eightz_decoder_p:"No search. The decoder only regenerates the declared constant stream, applies declared transform/residual, and verifies the hash.",eightz_note:"<strong>Important:</strong> decoder simplicity is sacred. All expensive hunting belongs to the encoder/scout side.",
+    related_h2:"Related pages",related_lead:"PiC should sit beside PiX, not inside it. PiX is the broader sequence/candidate-generator page; PiC is the compression-specific page.",rel_pix:"The broader π-sequence and universal MDL candidate generator page.",rel_origin:"The historical origin seed: replacing data with coordinates inside π.",rel_mdl:"The governing method: generate candidates, then let MDL and DCC decide.",rel_8zcomp:"The main practical compression branch where PiC can eventually plug in.",rel_8z:"8Z project home and broader compression ecosystem.",rel_arenas:"Arena mindset: broad search, fair controls, reproducible evidence.",rel_capsules:"The compact-code direction: data as a short executable description when it wins.",rel_seedbank:"Seed preservation: keep early ideas alive until cheap tests judge them.",rel_reviews:"External-model review context for the wider BD × AI Lab work.",footer:"PiC · π / constants compression · BD × AI Lab · research page only.<br/>Core stance: explore first, then let MDL, controls, and reproducibility decide."
+  },
+  sl: {
+    eyebrow:"PiC · π / konstante kompresija · BD × AI Lab",
+    title:"PiC — <span class=\"accent\">konstante kot kompresijski generatorji</span>",
+    subtitle:"Originalni seed je bil preprost: če datoteka vsebuje bite, ki jih lahko opišemo kot števke ali bite π, zakaj bi te bite shranjevali neposredno? PiC ta seed spremeni v strog MDL eksperiment: π, e, φ, √2 in druge deterministične tokove uporabimo samo takrat, ko so pointer, transform in residual cenejši od običajnega shranjevanja ali kompresije.",
+    hero_note:"Kratko ime: <strong>PiC</strong> = Pi Compression / Constants Compression. To je kompresijski sorodnik strani <a href=\"PiX.html\">PiX</a>.",
+    nav_seed:"Seed",nav_idea:"Jedro",nav_streams:"Tokovi",nav_lossless:"Lossless",nav_lossy:"Lossy",nav_mdl:"MDL gate",nav_pihunter:"Pi Hunter",nav_scout:"PiC Scout",nav_related:"Sorodno",
+    seed_h2:"Seed → most → test → rezultat",seed_lead:"PiC ohrani originalno intuicijo, ne da bi jo spremenil v magično trditev. Ideja sme živeti, vendar samo za trdim računovodskim pragom.",
+    seed_card1_label:"Seed",seed_card1_num:"π koordinate",seed_card1_text:"Ali lahko podatke v datoteki nadomestimo s koordinatami znotraj π?",
+    seed_card2_label:"Most",seed_card2_num:"generator tokeni",seed_card2_text:"Namesto raw bitov shrani constant ID, offset, dolžino, transform in residual.",
+    seed_card3_label:"Test",seed_card3_num:"MDL bitka",seed_card3_text:"Sprejmi samo, če je celoten opis krajši od RAW, zstd, PNG/FLAC ali drugih baselineov.",
+    seed_card4_label:"Rezultat",seed_card4_num:"še ni trditve",seed_card4_text:"PiC je falsifikabilen eksperiment, ne trditev, da π kompresira običajne datoteke.",
+    seed_good:"<strong>Čista formulacija:</strong> chunk datoteke je lahko kodiran kot <code>constant_stream[offset:length] + transform + residual</code>, vendar samo, če je to ceneje in rekonstruira točno, ali doseže deklariran lossy quality target.",
+    idea_h2:"Jedro: datoteka in konstanta sta oba tokova",idea_lead:"Datoteka po naravi ni decimalni tekst. Je byte stream in zato tudi bit stream. π je decimalni tok števk, lahko pa ga pretvorimo v več binarnih ali simbolnih tokov. PiC išče uporabne poravnave med njimi.",idea_data_h3:"Stran datoteke",idea_pi_h3:"Stran konstante",
+    flow1_b:"1. Chunk",flow1_s:"Vzemi regijo datoteke: byte, bit, pixel, sample ali symbol.",flow2_b:"2. Generate",flow2_s:"Ustvari π/e/φ/√2 tokove pod več encodings.",flow3_b:"3. Align",flow3_s:"Poskusi offset, dolžino, stride, mapping, transform.",flow4_b:"4. Residual",flow4_s:"Shrani samo razliko, če match ni točen.",flow5_b:"5. Gate",flow5_s:"MDL sprejme ali zavrne kandidata.",
+    toy_h2:"Mini primer",toy_lead:"To je preprosta verzija, ki si jo imel v mislih: bitni segment datoteke je enak π števkam, pretvorjenim v bite. Encoder shrani π pointer namesto literalnega segmenta.",toy_before_h3:"Literalni segment datoteke",toy_after_h3:"π pointer",toy_warn:"<strong>Ulov:</strong> pointer ima svojo ceno. Če token stane 60 bitov, zamenjava 28-bitnega segmenta izgubi. PiC postane prava kompresija šele, ko shranjeni segment plus residual premaga ceno tokena in običajni codec baseline.",
+    streams_h2:"Načini konstantnih tokov",streams_lead:"PiC ne sme obravnavati π kot edinega vira. π je en deterministični trak v družini trakov. Trditev postane zanimiva šele, če konstanta premaga random kontrole in druge konstante pod istim budgetom.",tbl_mode:"Način",tbl_desc:"Pomen",tbl_use:"Najboljša raba",tbl_risk:"Tveganje",
+    m_bcd_d:"Decimalne števke kodirane kot 4-bitni nibbli.",m_bcd_u:"Tvoja direktna ideja “π števke v bite”.",m_bcd_r:"Potratno: uporabljenih je samo 10 od 16 vrednosti.",m_ascii_d:"Števke kot ASCII byte-i: “3”, “1”, “4”…",m_ascii_u:"Tekstovne ali simbolne datoteke.",m_ascii_r:"Navadno slabo za binarne datoteke.",m_dec3_d:"Byte-i datoteke zapisani kot decimalni trojčki 000–255, nato iskani v π.",m_dec3_u:"Človeško berljiv most iz byte-ov v decimalne števke.",m_dec3_r:"Trojčki nad 255 so neveljavni, razen če jih remapamo.",m_bin_d:"Uporabi hex/binarni razvoj konstant kot prave byte/bite.",m_bin_u:"Najčistejši raw byte-level PiC način.",m_bin_r:"Točni matchi naj bi bili redki v normalnih podatkih.",m_xor_d:"Kodiraj chunk kot constant stream XOR residual.",m_xor_u:"Near-matchi in redke razlike.",m_xor_r:"Residual lahko stane toliko kot original.",m_ca_d:"Seedaj cellular automaton iz π/e/φ/√2 in primerjaj ustvarjeno teksturo.",m_ca_u:"Slike, maske, gridi, sintetične teksture.",m_ca_r:"Brez kontrol zelo lahko overfitta.",m_lossy_d:"Uporabi konstante kot teksturo/šum/bazo za kontrolirano lossy kodiranje.",m_lossy_u:"Image/audio/sensor residual shaping.",m_lossy_r:"Mora premagati normalne lossy codece pri isti kvaliteti.",random_control:"RNG kontrola",
+    lossless_h2:"Lossless PiC: točna rekonstrukcija ali reject",lossless_lead:"Stroga verzija mora rekonstruirati točne originalne byte-e. To je pravi prvi test, ker se ne more skriti za vizualno podobnostjo.",lossless_good_h3:"Sprejet chunk",lossless_good_p:"PiC token ostane samo, če je <code>token + residual + checksum</code> manjši od najboljšega običajnega kandidata.",lossless_verify_h3:"Verifikacija",lossless_verify_p:"Decoder regenerira konstantni tok, uporabi transform/residual in nato preveri SHA3 ali drug močan hash rekonstruiranega chunka.",lossless_reject_h3:"Zavrnjen chunk",lossless_reject_p:"Če pointer cost ali residual cost izgubi, encoder shrani RAW, zstd, lzma, PNG, FLAC ali normalnega 8Z zmagovalca.",lossless_token_h3:"Možna oblika tokena",
+    lossy_h2:"Lossy PiC: več hitov, strožje kontrole",lossy_lead:"Da: če dovolimo lossy kompresijo, bo π in druge konstante veliko lažje “najti”. To je močno, ampak nevarno. Približni matchi so lahki; smiselne zmage so težke.",lossy_img_h3:"Image / texture smer",lossy_img_p:"Konstante lahko delujejo kot deterministični grain, maske, phase fields, tile orderings ali residual baze. Test pri enakem PSNR/SSIM ali fiksnem perceptual error budgetu.",lossy_audio_h3:"Audio / sensor smer",lossy_audio_p:"Konstante lahko delujejo kot deterministični dither/šum/residual scaffold. Test pri enakem SNR, spectral error ali perceptual score proti normalnim codecom.",lossy_rule:"<strong>Lossy pravilo:</strong> PiC ne sme vprašati “ali lahko π to približno opiše?” Vprašati mora “ali π/e/φ/√2 plus residual doseže boljši bitrate–distortion kot random tokovi in standardni codeci?”",
+    mdl_h2:"MDL gate: del, ki PiC ohrani pošten",mdl_lead:"Osnovna formula je preprosta. PiC ni sprejet zato, ker je lep. Sprejet je samo takrat, ko je celoten opis cenejši.",mdl_lossless_h3:"Lossless cilj",mdl_lossy_h3:"Lossy cilj",calc_h3:"Toy kalkulator pointer ekonomije",calc_p:"S tem občutiš glavno oviro. Majhni matchi izgubijo, ker je pointer večji od podatkov, ki jih zamenja.",calc_match:"Matched bits",calc_offset:"Offset bits",calc_overhead:"Mode/length overhead",calc_residual:"Residual bits",
+    controls_h2:"Kontrole in kill testi",controls_lead:"PiC postane realen samo, če preživi dolgočasne kontrole. Cilj ni zaščititi π. Cilj je ugotoviti, ali konstante sploh dajejo uporabno generatorsko družino.",controls_good_h3:"Dobra kontrola",controls_good_p:"Primerjaj π proti e, φ, √2, kriptografsko kvalitetnemu determinističnemu random toku, shuffled π in standardnim codecom.",controls_watch_h3:"Watch-out",controls_watch_p:"Če random zmaguje enako pogosto, signal ni π. Še vedno je lahko uporaben kot generator search, ne pa kot posebna π trditev.",controls_kill_h3:"Kill condition",controls_kill_p:"Če PiC po fair tuningu ne premaga kontrol, ostane kreativna/scout veja, ne kompresijska trditev.",
+    pihunter_h2:"Pi Hunter vs PiC",pihunter_lead:"Pi Hunter je bil pomemben predhodnik, ampak še ni bil ta raw-file compressor. Iskal je simbolne image teksture proti π/CA tokovom. PiC je ostrejša file-compression formulacija.",ph_tbl_col1:"Sistem",ph_tbl_col2:"Kaj bere",ph_tbl_col3:"Kaj išče",ph_tbl_col4:"Status",ph_r1_c2:"Sliko pomanjša/kvantizira v simbolni grid.",ph_r1_c3:"π digit tokove, π-seedane CA rule, spatial mappings, residual scoring.",ph_r1_c4:"Scout / texture testbed, ne poln codec.",ph_r2_c2:"Zaporedja, leveli, ritmi, urniki, decision kandidati.",ph_r2_c3:"π kot univerzalni MDL candidate generator čez domene.",ph_r2_c4:"Umbrella stran in sequence laboratory.",ph_r3_c2:"Raw byte/biti/sample-i/pixli/chunki.",ph_r3_c3:"Constant pointer + transform + residual pod MDL.",ph_r3_c4:"Ta stran: čist spec seed za naslednji eksperiment.",
+    scout_h2:"Naslednji build: PiC Scout",scout_lead:"Najmanjši uporaben program ni polna 8Z integracija. Je scout, ki direktno testira tvojo originalno idejo na chunkih in pošteno poroča win/loss.",scout_modes_h3:"Minimalni načini",scout_inputs_h3:"Najboljši prvi inputi",scout_accept:"<strong>Acceptance criterion:</strong> vsaj en realen corpus class pokaže statistično ponovljive prihranke proti najboljšemu ordinary baselineu in random/control tokovom, z exact reconstruction za lossless mode ali enako deklarirano distorzijo za lossy mode.",
+    eightz_h2:"8Z integracijska ideja",eightz_lead:"PiC naj sčasoma postane ena opcijska generatorska družina znotraj 8Z, ne zamenjava za normalno kompresijo. DCC izbere, kdaj jo poskusiti; MDL odloči, ali preživi.",eightz_encoder_h3:"Vloga encoderja",eightz_encoder_p:"Poskusi PiC kandidate samo na chunkih, kjer poceni scouti nakažejo možno strukturo. Zabeleži timing, false positive, residual size in končno MDL odločitev.",eightz_decoder_h3:"Vloga decoderja",eightz_decoder_p:"Brez searcha. Decoder samo regenerira deklariran konstantni tok, uporabi deklariran transform/residual in preveri hash.",eightz_note:"<strong>Pomembno:</strong> decoderjeva preprostost je sveta. Vse drago hunting delo spada na encoder/scout stran.",
+    related_h2:"Sorodne strani",related_lead:"PiC naj stoji ob PiX, ne znotraj njega. PiX je širša sequence/candidate-generator stran; PiC je kompresijsko specifična stran.",rel_pix:"Širša π-sequence in univerzalna MDL candidate generator stran.",rel_origin:"Zgodovinski origin seed: zamenjava podatkov s koordinatami znotraj π.",rel_mdl:"Vodilna metoda: generiraj kandidate, potem naj MDL in DCC odločita.",rel_8zcomp:"Glavna praktična kompresijska veja, kamor se PiC lahko kasneje priključi.",rel_8z:"8Z project home in širši kompresijski ekosistem.",rel_arenas:"Arena mindset: širok search, fair kontrole, reproducibilni dokazi.",rel_capsules:"Compact-code smer: podatki kot kratek izvršljiv opis, kadar zmaga.",rel_seedbank:"Ohranjanje seedov: zgodnje ideje pustimo živeti, dokler jih poceni testi ne presodijo.",rel_reviews:"Kontekst zunanjih model-reviewov za širše BD × AI Lab delo.",footer:"PiC · π / konstante kompresija · BD × AI Lab · research page only.<br/>Osnovna drža: najprej raziskuj, potem naj odločijo MDL, kontrole in reproducibilnost."
+  }
+};
+
+function setLang(lang){
+  if(!I18N[lang]) lang='en';
+  document.documentElement.lang=lang;
+  document.documentElement.dataset.lang=lang;
+  localStorage.setItem('pic_lang',lang);
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key=el.getAttribute('data-i18n');
+    if(I18N[lang][key]!==undefined) el.innerHTML=I18N[lang][key];
+  });
+  document.querySelectorAll('[data-set-lang]').forEach(btn=>btn.classList.toggle('active',btn.getAttribute('data-set-lang')===lang));
+  updateCalc();
+}
+
+document.querySelectorAll('[data-set-lang]').forEach(btn=>btn.addEventListener('click',()=>setLang(btn.getAttribute('data-set-lang'))));
+
+function updateProgress(){
+  const h=document.documentElement;
+  const max=h.scrollHeight-h.clientHeight;
+  const pct=max>0 ? (h.scrollTop/max)*100 : 0;
+  document.getElementById('scrollProgress').style.width=pct+'%';
+}
+window.addEventListener('scroll',updateProgress,{passive:true});
+
+function num(id){return Number(document.getElementById(id).value||0)}
+function updateCalc(){
+  const lang=document.documentElement.dataset.lang||'en';
+  const matched=num('matchBits'), offset=num('offsetBits'), overhead=num('overheadBits'), residual=num('residualBits');
+  const cost=offset+overhead+residual;
+  const saved=matched-cost;
+  const out=document.getElementById('calcOut');
+  const win=saved>0;
+  if(lang==='sl'){
+    out.innerHTML = `literal = ${matched} bitov<br>PiC token = offset ${offset} + overhead ${overhead} + residual ${residual} = ${cost} bitov<br><strong style="color:${win?'var(--green)':'var(--red)'}">${win?'WIN':'LOSS'}: ${Math.abs(saved)} bitov ${win?'prihranka':'izgube'}</strong>`;
+  } else {
+    out.innerHTML = `literal = ${matched} bits<br>PiC token = offset ${offset} + overhead ${overhead} + residual ${residual} = ${cost} bits<br><strong style="color:${win?'var(--green)':'var(--red)'}">${win?'WIN':'LOSS'}: ${Math.abs(saved)} bits ${win?'saved':'lost'}</strong>`;
+  }
+}
+['matchBits','offsetBits','overheadBits','residualBits'].forEach(id=>document.getElementById(id).addEventListener('input',updateCalc));
+setLang(localStorage.getItem('pic_lang') || 'en');
+updateProgress();
+</script>
+</body>
+</html>
