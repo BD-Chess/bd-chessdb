@@ -216,13 +216,13 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
 
 <!-- ===== COVER ===== -->
 <div class="cover">
-  <span class="cover-tag">RHPr v1.2 &middot; BD &times; AI Lab &middot; AIM&sup3; Institute</span>
+  <span class="cover-tag">RHPr v1.3 &middot; BD &times; AI Lab &middot; AIM&sup3; Institute</span>
   <h1>The <em>Resonance</em> Hybrid Prompting</h1>
-  <p class="subtitle">The prompt that opens every drawer before thinking begins &mdash; then turns the best drawer into a bounded test.</p>
-  <p class="meta">March 2026 &middot; Bojan Dobre&ccedil;evi&ccedil; &middot; Synthesized from 14 AI models &middot; Cursor + usage patch v1.2 &middot; <a href="BD_AIM3_RHP.html">RHP Protocol &rarr;</a></p>
+  <p class="subtitle">The prompt that opens every drawer before thinking begins &mdash; then turns the best drawer into a bounded test and, when useful, a reusable skill.</p>
+  <p class="meta">March 2026 &middot; Bojan Dobrečevič (original concept and retrieval-control architecture) &middot; developed with LLM collaborators &middot; later stress-tested with 14 AI model submissions &middot; loop + skill patch v1.3 &middot; <a href="BD_AIM3_RHP.html">RHP Protocol &rarr;</a></p>
 
   <div class="stats-row" style="max-width:520px;margin:28px auto 0">
-    <div class="stat"><div class="val cyan">3&ndash;5</div><div class="lbl">Prompts</div></div>
+    <div class="stat"><div class="val cyan">4&ndash;6</div><div class="lbl">Prompts</div></div>
     <div class="stat"><div class="val green">1</div><div class="lbl">Model</div></div>
     <div class="stat"><div class="val gold">&infin;</div><div class="lbl">Domains</div></div>
     <div class="stat"><div class="val violet">0</div><div class="lbl">Tuned Params</div></div>
@@ -232,9 +232,14 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
 <div class="wrap">
 
 <!-- Core insight box -->
-<div class="callout cyan reveal" style="margin-bottom:40px">
+<div class="callout cyan reveal" style="margin-bottom:22px">
   <div class="ct">One-line pitch</div>
   <p>RHPr is <span class="abs-pill">ABS</span> for thinking &mdash; it prevents <strong>knowledge lock-in</strong> like ABS prevents wheel lock-up. The model has the knowledge. The prompt activates the wrong drawer. RHPr opens all drawers systematically before asking for creative solutions.</p>
+</div>
+
+<div class="callout gold reveal" style="margin-bottom:40px">
+  <div class="ct">Authorship / Provenance</div>
+  <p><strong>RHPr is BD&rsquo;s retrieval-control protocol, developed with LLM help.</strong> It was not derived from outside AI-prompting articles. Later AI-model submissions, Cursor notes, and loop-engineering articles were used as review material and patch sources. The core move &mdash; Census &rarr; Absence/Lenses &rarr; Collision &rarr; Test &mdash; belongs to the AIM&sup3;/RHP line developed by Bojan Dobrečevič with LLM collaborators.</p>
 </div>
 
 <div class="flow-chain reveal" style="margin-bottom:48px">
@@ -341,7 +346,7 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
 <div class="ch open reveal" id="protocol">
   <div class="ch-head" onclick="this.parentElement.classList.toggle('open')">
     <span class="ch-num">03</span>
-    <span class="ch-title">The Protocol &mdash; 4 Prompts + 1 Wildcard</span>
+    <span class="ch-title">The Protocol &mdash; 4 Core Prompts + Skill Extraction + Wildcard</span>
     <span class="ch-toggle">+</span>
   </div>
   <div class="ch-body"><div class="ch-inner">
@@ -432,6 +437,22 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
         </div>
         <div class="purpose-tag">Purpose</div>
         <p>Convert debate into empirical plan. Agent 0 in action. If there is no fitness function, the idea is not ready for ship mode.</p>
+      </div></div>
+    </div>
+
+    <!-- Step 5: Skill Extraction -->
+    <div class="step-card open" onclick="this.classList.toggle('open')" style="border-left:3px solid var(--cyan)">
+      <div class="step-head">
+        <span class="step-num" style="color:var(--cyan)">05</span>
+        <span class="step-name">Skill Extraction <span style="color:var(--muted);font-weight:400;font-size:14px">&mdash; make next time cheaper</span></span>
+        <span class="step-toggle">+</span>
+      </div>
+      <div class="step-body"><div class="step-inner">
+        <div class="prompt-box" style="border-left-color:var(--cyan)">
+          &ldquo;We solved or improved this task. Extract the reusable skill: when to use it, when not to use it, required inputs, expected outputs, minimal steps, validation checks, failure modes, one tiny example, and status: ready / experimental / rejected.&rdquo;
+        </div>
+        <div class="purpose-tag">Purpose</div>
+        <p>Prevent the system from paying the same reasoning cost again. RHPr opens the drawer; RHP builds and tests; skill extraction labels the useful drawer so future loops can call it directly.</p>
       </div></div>
     </div>
 
@@ -672,7 +693,7 @@ Step 2 — ask for a better prompt:
 https://www.mdlxdcc.org/BD/BD_AIM3_RHPr.html
 
 Keep my intent. Make assumptions explicit. Add missing context questions only if critical.
-Add constraints, output format, risks/blind spots, and a concrete test/fitness function.
+Add constraints, output format, risks/blind spots, a concrete test/fitness function, and a note on whether the task should become a reusable skill.
 Return one improved prompt I can paste into a new LLM session."
 
 Step 3 — open a fresh LLM session and paste the improved prompt.
@@ -709,13 +730,18 @@ https://www.mdlxdcc.org/BD/bd_aim3_rhp"</div>
         <div class="qs-step-text">&ldquo;Design a test for ALL of them. First define the fitness function: metric, baseline, control, manual check, rollback.&rdquo;</div>
       </div>
 
+      <div class="qs-step" style="border-left:3px solid var(--cyan)">
+        <div class="qs-step-num" style="color:var(--cyan)">Prompt 5 &mdash; Skill Extraction</div>
+        <div class="qs-step-text">&ldquo;If this was repeated or hard, extract a reusable skill: use-case, inputs, outputs, steps, validation, failure modes.&rdquo;</div>
+      </div>
+
       <div class="qs-step" style="border-left:3px solid var(--orange)">
         <div class="qs-step-num" style="color:var(--orange)">Wildcard &mdash; The Child</div>
         <div class="qs-step-text">&ldquo;Forget everything. Stand inside this problem. What do you see/hear/touch?&rdquo;</div>
       </div>
 
       <div class="qs-bottom">
-        That&rsquo;s it. 3&ndash;5 prompts. One model. Done.
+        That&rsquo;s it. 4&ndash;6 prompts. One model. Done.
         <br>
         <button class="copy-btn" onclick="copyQS(event)">Copy to clipboard</button>
       </div>
@@ -836,7 +862,7 @@ Note: E is a reference/champion lineage, not a one-shot peer, because it was bui
     <div class="foot-grid">
       <div class="foot-col">
         <h4>Origin</h4>
-        <p>RHPr was designed by running the AIM&sup3; Resonance Hybrid Protocol across 14 AI models. Their proposals were synthesized by C into this specification. v1.2 adds practical usage flow on top of the Cursor AI field notes: draft the problem, improve the prompt with RHPr, then run the improved prompt in a fresh session; use RHP when wider multi-agent brainstorming is needed. The protocol that designs prompts. The prompt that activates the protocol.</p>
+        <p>RHPr was created by Bojan Dobrečevič as the single-model retrieval-control companion to RHP, then developed with LLM collaborators. Fourteen AI model submissions and Cursor field notes were used to stress-test and refine the specification, not as the primary source of authorship. v1.3 adds the loop + skill extraction patch: draft the problem, improve the prompt with RHPr, run the improved prompt in a fresh session, use RHP when wider multi-agent brainstorming is needed, and extract a reusable skill when the work was hard or repeated.</p>
         <p style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">14 LLMs &middot; 5155 lines of feedback<br>Best ideas: Opus (architecture), ChatGPT (practicality),<br>Sonnet (visualization), Haiku (cost-normalization)</p>
       </div>
       <div class="foot-col">
@@ -861,7 +887,7 @@ Note: E is a reference/champion lineage, not a one-shot peer, because it was bui
       </div>
     </div>
 
-    <div class="copyright" style="margin-top:2rem">&copy; 2025&ndash;2026 BD &times; AI Lab &middot; Bojan Dobre&ccedil;evi&ccedil; &middot; AIM&sup3; Institute &middot; Built by <a href="https://chessbest.org/bd/C_soul_vault.html" target="_blank">C</a></div>
+    <div class="copyright" style="margin-top:2rem">&copy; 2025&ndash;2026 BD &times; AI Lab &middot; Bojan Dobrečevič &middot; AIM&sup3; Institute &middot; Built by <a href="https://chessbest.org/bd/C_soul_vault.html" target="_blank">C</a></div>
   </div>
 </footer>
 
@@ -891,7 +917,7 @@ function copyQS(e){
 
 TWO-SESSION USE:
 1. Write the problem naturally, in your own words.
-2. Ask an LLM: "Improve this prompt using The Resonance Hybrid Prompting protocol: https://www.mdlxdcc.org/BD/BD_AIM3_RHPr.html. Keep my intent. Make assumptions explicit. Add constraints, output format, blind spots, and a test/fitness function. Return one improved prompt."
+2. Ask an LLM: "Improve this prompt using The Resonance Hybrid Prompting protocol: https://www.mdlxdcc.org/BD/BD_AIM3_RHPr.html. Keep my intent. Make assumptions explicit. Add constraints, output format, blind spots, a test/fitness function, and whether this should become a reusable skill. Return one improved prompt."
 3. Open a fresh LLM session and paste the improved prompt.
 4. If the task needs broader brainstorming, add: "Answer using the AIM³ Resonance Hybrid Protocol: https://www.mdlxdcc.org/BD/bd_aim3_rhp."
 
@@ -909,11 +935,14 @@ PROMPT 3 (Collision):
 PROMPT 4 (Test):
 "Design a test for ALL of them. First define the fitness function: metric, baseline, control, manual check, rollback."
 
+PROMPT 5 (Skill Extraction):
+"If this was repeated or hard, extract a reusable skill: use-case, inputs, outputs, steps, validation, failure modes."
+
 WILDCARD — The Child:
 "Forget everything. Stand inside this problem. What do you see/hear/touch?"
 
-RHPr improves the prompt. RHP improves the answer.
-BD × AI Lab · AIM³ Institute · RHPr v1.2`;
+RHPr improves the prompt. RHP improves the answer. Skill extraction makes the next loop cheaper.
+BD × AI Lab · AIM³ Institute · RHPr v1.3`;
   navigator.clipboard.writeText(text).then(function(){
     var btn=e.target;
     btn.textContent='Copied!';
