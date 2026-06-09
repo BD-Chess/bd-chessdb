@@ -63,7 +63,7 @@ p{margin-bottom:16px;color:var(--soft)}strong{color:var(--text)}em{color:var(--a
 </nav>
 <div class="toolbar"><button onclick="fontDelta(-1)">A−</button><button onclick="fontDelta(1)">A+</button><button onclick="expandAll()">Open</button><button onclick="collapseAll()">Close</button></div>
 <header class="cover">
-  <span class="tag">RHPm v0.1 · AIM³ Prompt Builder · practical entry point</span>
+  <span class="tag">RHPm v0.2 · AIM³ Prompt Builder · practical entry point</span>
   <h1>RHPm — From <em>Rough Prompt</em><br>to Strong AI Session Prompt</h1>
   <p class="subtitle">A compact AIM³/RHPr/RHP-inspired builder that turns a simple human request into a precise prompt for a fresh LLM session — for code, documents, web pages, reviews, research, or long-running arenas.</p>
   <p class="meta"><strong>Authorship:</strong> original AIM³/RHP/RHPr concepts and architecture by BD, developed with multiple LLMs as collaborators, builders, critics, and reviewers. External articles and loop-engineering ideas are later patches, not the origin.</p>
@@ -150,6 +150,7 @@ p{margin-bottom:16px;color:var(--soft)}strong{color:var(--text)}em{color:var(--a
   <section class="section" id="protocol">
     <h2>The compact RHPm protocol</h2>
     <div class="steps">
+      <div class="step"><div class="num">00</div><div><h3>Protocol choice</h3><p>Use RHPm by default. For complex prompting, retrieval-bias, or hidden-drawer problems, recommend full RHPr. For complex brainstorming, architecture, research, or multi-perspective synthesis, recommend full RHP. Ask one short question only if the choice materially changes the final prompt.</p></div></div>
       <div class="step"><div class="num">01</div><div><h3>Intent split</h3><p>Restate the explicit request, the implied goal, the real deliverable, and what would make the result useful.</p></div></div>
       <div class="step"><div class="num">02</div><div><h3>Mini lens pass</h3><p>Use five practical lenses: <span class="pill">Builder</span><span class="pill">Skeptic</span><span class="pill">Simple Human</span><span class="pill">Mapmaker</span><span class="pill">Empiricist</span>. Each lens must add non-duplicate value.</p></div></div>
       <div class="step"><div class="num">03</div><div><h3>Anti-lock retrieval</h3><p>List active knowledge drawers, missing drawers, dangerous assumptions, and 2–3 forced lenses that should be included in the final prompt.</p></div></div>
@@ -161,12 +162,13 @@ p{margin-bottom:16px;color:var(--soft)}strong{color:var(--text)}em{color:var(--a
 
   <section class="section" id="master">
     <h2>Copy-paste master prompt</h2>
+    <p>Use this when you want the simple master version. Fill the two fields, then copy one combined prompt block for a fresh LLM session.</p>
+    <div class="callout violet"><div class="ct">Escalation gate</div><p>The copied prompt asks the next model to choose the smallest adequate protocol: stay with <strong>RHPm</strong> by default, recommend <strong>full RHPr</strong> for complex prompting/retrieval-bias work, or recommend <strong>full RHP</strong> for complex brainstorming and multi-perspective architecture.</p></div>
     <div class="buttons" aria-label="Master prompt actions top">
       <button class="btn cyan" onclick="copyMasterPrompt()">Copy prompt</button>
       <button class="btn gold" onclick="pasteMasterPrompt()" title="Paste clipboard into the focused field, or into the human request field by default.">Paste</button>
       <button class="btn rose" onclick="emptyMasterPrompt()">Empty</button>
     </div>
-    <p>Use this when you want the simple master version. Fill the two fields, then copy one combined prompt block for a fresh LLM session.</p>
     <div class="grid2">
       <div class="field">
         <label for="masterHumanRequest">Paste human request here</label>
@@ -177,7 +179,10 @@ p{margin-bottom:16px;color:var(--soft)}strong{color:var(--text)}em{color:var(--a
         <textarea id="masterContext" spellcheck="true" placeholder=""></textarea>
       </div>
     </div>
-    <div class="code output" id="masterPromptPreview" aria-live="polite"></div>
+    <div class="field">
+      <label for="masterPromptPreview">Combined prompt preview</label>
+      <div class="code output" id="masterPromptPreview" aria-live="polite"></div>
+    </div>
     <div class="buttons" aria-label="Master prompt actions bottom">
       <button class="btn cyan" onclick="copyMasterPrompt()">Copy prompt</button>
       <button class="btn gold" onclick="pasteMasterPrompt()" title="Paste clipboard into the focused field, or into the human request field by default.">Paste</button>
@@ -197,43 +202,14 @@ p{margin-bottom:16px;color:var(--soft)}strong{color:var(--text)}em{color:var(--a
 
   <section class="section" id="positioning">
     <h2>What RHPm is — and is not</h2>
-    <div class="callout cyan"><div class="ct">Is</div><p>RHPm is the light public doorway into AIM³. It helps a human prepare a strong prompt for a new session without manually running full RHP/RHPr ceremony.</p></div>
+    <div class="callout cyan"><div class="ct">Is</div><p>RHPm is the light public doorway into AIM³. It helps a human prepare a strong prompt for a new session without manually running full RHP/RHPr ceremony, while still recommending full RHPr or full RHP when the task clearly needs them.</p></div>
     <div class="callout rose"><div class="ct">Is not</div><p>RHPm is not a replacement for full RHP, not an autonomous agent runtime, and not proof that a result is correct. It is a prompt-shaping tool. Tests still decide.</p></div>
     <div class="quote">Prompts ask. Loops repeat. Skills compound. RHPm’s job is to make the first prompt strong enough that the next loop starts in the right place.</div>
   </section>
 
-  <section class="section" id="next-round">
-    <h2>Self-improvement prompt for the next round</h2>
-    <p>Use this when you want a fresh session to improve this page. That second pass can run full RHP or a multi-model review.</p>
-    <div class="code" id="selfImprovePrompt">Read BD_AIM3_RHPm.html and the related AIM³/RHP/RHPr pages.
-
-Goal: improve BD_AIM3_RHPm.html as a practical prompt-builder page.
-
-Use a rigorous multi-perspective review, but do not bloat the page.
-Preserve this positioning:
-- AIM³ = umbrella operating system for human–AI collaboration
-- RHPr = anti-lock retrieval / drawer opener
-- RHP = full multi-perspective architecture
-- RHPm = practical mini prompt builder for real users
-
-Check especially:
-1. Is the page immediately useful to a human visitor?
-2. Is the interactive prompt builder clear and safe?
-3. Are the generated prompts strong for Python, HTML, documents, reviews, and research?
-4. Does it preserve authorship/provenance without sounding defensive?
-5. Does it avoid adding extra theory or extra pages?
-6. Does it include tests/acceptance criteria and skill extraction where useful?
-
-Return:
-A. top 10 concrete improvements
-B. exact edited HTML patches or full improved file
-C. short explanation of what changed
-D. anything you deliberately refused to add because it would bloat the page</div>
-    <button class="btn cyan" onclick="copyText(document.getElementById('selfImprovePrompt').innerText)">Copy self-improvement prompt</button>
-  </section>
 </main>
 <footer class="footer"><div class="inner">
-  <p><strong>RHPm v0.1</strong> · First practical draft. Built as a compact bridge from rough human request to strong AI session prompt. This page is intentionally smaller than full RHP/RHPr.</p>
+  <p><strong>RHPm v0.2</strong> · Practical draft. Built as a compact bridge from rough human request to strong AI session prompt. It stays smaller than full RHP/RHPr and recommends escalation only when useful.</p>
   <p>Related: <a href="BD_AIM3.html">AIM³</a> · <a href="BD_AIM3_RHPr.html">RHPr</a> · <a href="BD_AIM3_RHP.html">RHP</a> · <a href="BD_AIM3_RHP_Story.html">Origin Story</a></p>
 </div></footer>
 <script>
@@ -247,8 +223,8 @@ function copyById(id){copyText(qs(id).value || qs(id).innerText || '')}
 function flash(msg){let el=document.createElement('div');el.textContent=msg;el.style.cssText='position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:#0f1729;border:1px solid rgba(0,229,255,.35);color:#00e5ff;padding:10px 16px;border-radius:999px;font-family:JetBrains Mono,monospace;font-size:12px;z-index:10001;box-shadow:0 12px 40px rgba(0,0,0,.4)';document.body.appendChild(el);setTimeout(()=>el.remove(),1300)}
 
 function buildMasterPrompt(){
-  const rough=(qs('masterHumanRequest')?.value || '').trim();
-  const ctx=(qs('masterContext')?.value || '').trim();
+  const rough=(qs('masterHumanRequest')?.value || '').trim() || '[paste the rough human request here]';
+  const ctx=(qs('masterContext')?.value || '').trim() || '[optional: paste files, context, links, constraints, baseline versions, or what must not change]';
   return `You are running RHPm — AIM³ Prompt Builder.
 
 Your job is NOT to answer my rough request directly.
@@ -261,6 +237,15 @@ OPTIONAL CONTEXT / FILES / CONSTRAINTS:
 ${ctx}
 
 Run this compact protocol:
+
+0. PROTOCOL INTENSITY / ESCALATION
+Inspect the rough request and context. Choose one path:
+- RHPm only: normal prompt building.
+- Full RHPr recommended: complex prompting, retrieval-bias, stuck/messy context, or hidden knowledge-drawer problem. Reference: https://www.mdlxdcc.org/bd/bd_aim3_rhpr
+- Full RHP recommended: complex brainstorming, architecture, research, cross-domain synthesis, or high-stakes multi-perspective ideation. Reference: https://www.mdlxdcc.org/bd/bd_aim3_rhp
+- RHPr + RHP: use both if the task needs retrieval repair and multi-perspective synthesis.
+
+If the choice materially changes the output and cannot be safely inferred, ask the user one concise question before producing the final prompt. Otherwise decide yourself and include “Protocol choice: ...” in the final prompt. Do not force full RHPr/RHP for simple tasks.
 
 1. INTENT SPLIT
 Restate:
@@ -316,7 +301,8 @@ name, when_to_use, inputs, outputs, steps, validation, failure_modes, version.
 Return only:
 A. Final improved prompt for the new session
 B. Short explanation of what you changed
-C. Optional Skill Card`;
+C. Protocol choice: RHPm only / full RHPr recommended / full RHP recommended / RHPr + RHP recommended
+D. Optional Skill Card`;
 }
 function updateMasterPromptPreview(){
   const out=qs('masterPromptPreview');
@@ -326,6 +312,13 @@ function copyMasterPrompt(){
   updateMasterPromptPreview();
   copyText(buildMasterPrompt());
 }
+function insertAtCursor(el, txt){
+  const start=el.selectionStart ?? el.value.length;
+  const end=el.selectionEnd ?? el.value.length;
+  el.value=el.value.slice(0,start) + txt + el.value.slice(end);
+  const pos=start+txt.length;
+  el.focus(); el.setSelectionRange(pos,pos);
+}
 async function pasteMasterPrompt(){
   try{
     const text=await navigator.clipboard.readText();
@@ -334,8 +327,7 @@ async function pasteMasterPrompt(){
     if(!target){
       target=(qs('masterHumanRequest').value.trim() && !qs('masterContext').value.trim()) ? qs('masterContext') : qs('masterHumanRequest');
     }
-    target.value=text;
-    target.focus();
+    insertAtCursor(target, text);
     updateMasterPromptPreview();
     flash('Pasted.');
   }catch(e){
@@ -384,7 +376,61 @@ function generatePrompt(){
     research:'For research: require assumptions, hypotheses, mechanisms, counterarguments, cheap tests, and clear speculative vs supported claims.',
     arena:'For arenas/benchmarks: require scenario space, workers, seeds, autosave, resume, metrics, controls, summary files, and reproducibility notes.'
   }[type];
-  const prompt=`You are running RHPm — AIM³ Prompt Builder.\n\nYour job is NOT to answer my rough request directly. Your job is to convert it into the strongest possible prompt for a fresh LLM session.\n\nTASK TYPE: ${type}\nCEREMONY LEVEL: ${ceremony}\n\nROUGH REQUEST:\n${rough}\n\nCONTEXT / FILES / CONSTRAINTS:\n${ctx}\n\nHARD REQUIREMENTS:\n${opts.map(x=>'- '+x).join('\n')}\n- ${taskAdd}\n\nRun this compact protocol before writing the final prompt:\n\n1. INTENT SPLIT\nSeparate the explicit request, implied goal, real deliverable, audience/user, and missing context.\n\n2. MINI LENS PASS\nUse five lenses, each adding non-duplicate value:\n- Builder: deliverable, implementation path, files/tools needed\n- Skeptic: ambiguity, failure modes, hidden risks\n- Simple Human: simplest meaning and obvious thing experts may miss\n- Mapmaker: relevant domains, missing lenses, adjacent useful knowledge\n- Empiricist: acceptance criteria, tests, evidence, rollback\n\n3. ANTI-LOCK RETRIEVAL PASS\nList activated knowledge drawers, likely missing drawers, 2–3 forced lenses, and one negative lens: what common framing should be temporarily forbidden?\n\n4. PROMPT SYNTHESIS\nWrite the final prompt for a new LLM session. Include role, goal, project context, files to inspect first, constraints, deliverables, workflow, checks, output format, stop conditions, and what not to do.\n\n5. AGENT 0 CHECK\nCheck that the final prompt is testable, bounded, recoverable, honest about provenance, and not bloated.\n\n6. OPTIONAL SKILL EXTRACTION\nIf the task is hard or repeated, add a compact Skill Card: name, when_to_use, inputs, outputs, steps, validation, failure_modes, version.\n\nReturn only:\nA. Final improved prompt for the new session\nB. Short explanation of what you changed\nC. Optional Skill Card`;
+  const prompt=`You are running RHPm — AIM³ Prompt Builder.
+
+Your job is NOT to answer my rough request directly. Your job is to convert it into the strongest possible prompt for a fresh LLM session.
+
+TASK TYPE: ${type}
+CEREMONY LEVEL: ${ceremony}
+
+ROUGH REQUEST:
+${rough}
+
+CONTEXT / FILES / CONSTRAINTS:
+${ctx}
+
+HARD REQUIREMENTS:
+${opts.map(x=>'- '+x).join('\n')}
+- ${taskAdd}
+
+Run this compact protocol before writing the final prompt:
+
+0. PROTOCOL INTENSITY / ESCALATION
+Inspect the rough request and context. Choose one path:
+- RHPm only: normal prompt building.
+- Full RHPr recommended: complex prompting, retrieval-bias, stuck/messy context, or hidden knowledge-drawer problem. Reference: https://www.mdlxdcc.org/bd/bd_aim3_rhpr
+- Full RHP recommended: complex brainstorming, architecture, research, cross-domain synthesis, or high-stakes multi-perspective ideation. Reference: https://www.mdlxdcc.org/bd/bd_aim3_rhp
+- RHPr + RHP: use both if the task needs retrieval repair and multi-perspective synthesis.
+If the choice materially changes the output and cannot be safely inferred, ask the user one concise question before producing the final prompt. Otherwise decide yourself and include “Protocol choice: ...” in the final prompt. Do not force full RHPr/RHP for simple tasks.
+
+1. INTENT SPLIT
+Separate the explicit request, implied goal, real deliverable, audience/user, and missing context.
+
+2. MINI LENS PASS
+Use five lenses, each adding non-duplicate value:
+- Builder: deliverable, implementation path, files/tools needed
+- Skeptic: ambiguity, failure modes, hidden risks
+- Simple Human: simplest meaning and obvious thing experts may miss
+- Mapmaker: relevant domains, missing lenses, adjacent useful knowledge
+- Empiricist: acceptance criteria, tests, evidence, rollback
+
+3. ANTI-LOCK RETRIEVAL PASS
+List activated knowledge drawers, likely missing drawers, 2–3 forced lenses, and one negative lens: what common framing should be temporarily forbidden?
+
+4. PROMPT SYNTHESIS
+Write the final prompt for a new LLM session. Include role, goal, project context, files to inspect first, constraints, deliverables, workflow, checks, output format, stop conditions, and what not to do.
+
+5. AGENT 0 CHECK
+Check that the final prompt is testable, bounded, recoverable, honest about provenance, and not bloated.
+
+6. OPTIONAL SKILL EXTRACTION
+If the task is hard or repeated, add a compact Skill Card: name, when_to_use, inputs, outputs, steps, validation, failure_modes, version.
+
+Return only:
+A. Final improved prompt for the new session
+B. Short explanation of what you changed
+C. Protocol choice: RHPm only / full RHPr recommended / full RHP recommended / RHPr + RHP recommended
+D. Optional Skill Card`;
   qs('promptOut').value=prompt;
 }
 
