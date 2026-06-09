@@ -129,13 +129,15 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
   <a href="#">RHP</a>
   <span class="sep">/</span>
   <a href="/BD/BD_AIM3_RHPr.html">RHPr</a>
+  <span class="sep">/</span>
+  <a href="/BD/BD_AIM3_RHPm.html">RHPm</a>
 </nav>
 
 <!-- ===== COVER ===== -->
 <div class="cover">
-  <span class="cover-tag">AIM&sup3; Dream Team Protocol &middot; v2.7</span>
+  <span class="cover-tag">AIM&sup3; Dream Team Protocol &middot; v2.8</span>
   <h1>The <em>Resonance</em> Hybrid Protocol</h1>
-  <p class="subtitle">A DCC-governed multi-agent brainstorming architecture for hard, cross-domain problems. Created by Bojan Dobrečevič from his own DCC / claustrum / resonance concepts, developed with LLM collaborators, then stress-tested and expanded with independent AI reviews, Cursor AI field notes, and the 2026 loop + skill layer.</p>
+  <p class="subtitle">A DCC-governed multi-agent brainstorming architecture for hard, cross-domain problems. Created by Bojan Dobrečevič from his own DCC / claustrum / resonance concepts, developed with LLM collaborators, then stress-tested and expanded with independent AI reviews, Cursor AI field notes, the 2026 loop + skill layer, and the compact RHPm prompt-builder front door.</p>
   <p class="meta">March 2026 &middot; Bojan Dobrečevič (original concept, architecture, DCC / claustrum / resonance frame) &middot; developed with LLM collaborators &middot; later reviewed by 11 AI systems &middot; <a href="BD_AIM3_RHP_Story.html">Origin Story &rarr;</a></p>
 
   <div class="stats-row" style="max-width:720px;margin:28px auto 0">
@@ -145,6 +147,7 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
     <div class="stat"><div class="val cyan">90%</div><div class="lbl">Resonance</div></div>
     <div class="stat"><div class="val rose">10</div><div class="lbl">Blind Spots</div></div>
     <div class="stat"><div class="val violet">0</div><div class="lbl">Tuned Params</div></div>
+    <div class="stat"><div class="val cyan">m</div><div class="lbl">Mini Mode</div></div>
   </div>
 </div>
 
@@ -449,30 +452,32 @@ Cross-domain links only count if they transfer structure, not just words.</div>
     <span class="ch-toggle">+</span>
   </div>
   <div class="ch-body"><div class="ch-inner">
-    <p><strong>RHP is the answer/brainstorming protocol.</strong> Use it after the problem prompt is already reasonably clear. If the prompt is messy, first improve it with <a href="BD_AIM3_RHPr.html">The Resonance Hybrid Prompting</a>, then bring the improved prompt here.</p>
+    <p><strong>RHP is the answer/brainstorming protocol.</strong> Use it after the problem prompt is already reasonably clear. If the prompt is just a rough human request, first use <a href="BD_AIM3_RHPm.html">RHPm</a> to forge a strong session prompt. If the model is stuck in the wrong knowledge basin, use <a href="BD_AIM3_RHPr.html">RHPr</a> before running the heavier RHP scaffold.</p>
 
     <div class="callout cyan">
       <div class="ct">Recommended Two-Session Flow</div>
-      <p><strong>1.</strong> Write the problem in your own words. <strong>2.</strong> Ask an LLM to improve that prompt with RHPr. <strong>3.</strong> Open a fresh LLM session. <strong>4.</strong> Paste the improved prompt and instruct the model to answer using this RHP protocol. <strong>5.</strong> Ask for synthesis, blind spots, tests, and concrete next actions.</p>
+      <p><strong>1.</strong> Write the problem in your own words. <strong>2.</strong> Use RHPm to turn it into a strong session prompt. <strong>3.</strong> If retrieval bias is likely, run RHPr on that prompt. <strong>4.</strong> Open a fresh LLM session and instruct the model to answer using the appropriate RHP mode. <strong>5.</strong> Ask for synthesis, blind spots, tests, and concrete next actions.</p>
     </div>
 
     <div class="code-block">Copy-paste instruction for the answer session:
 
-"Use the AIM³ Resonance Hybrid Protocol to attack the prompt below:
+Use the AIM³ Resonance Hybrid Protocol to attack the prompt below. Use compact RHP-Resonance mode unless the problem clearly requires the full 11-agent scaffold.
+
+Protocol page:
 https://www.mdlxdcc.org/BD/bd_aim3_rhp
 
-Think with multiple agent perspectives. Do not only give one linear answer.
 Return:
 1. short understanding of the problem
 2. key perspectives / lenses
 3. contradictions, missing assumptions, and blind spots
 4. best synthesis / recommended direction
 5. tests, controls, or fitness functions
-6. concrete next actions"
+6. concrete next actions
+7. skill candidate if this is hard or repeated
 
 [PASTE THE IMPROVED PROMPT HERE]</div>
 
-    <p><strong>For coding or product work:</strong> after Crystallize, continue into the v2.7 delivery adapter below. Do not jump from brainstorm to code. Convert intent into a spec, approve a plan, then let tests and review govern the implementation loop.</p>
+    <p><strong>For coding or product work:</strong> after Crystallize, continue into the v2.8 delivery adapter below. Do not jump from brainstorm to code. Convert intent into a spec, approve a plan, then let tests and review govern the implementation loop.</p>
 
     <p>For any hard problem: same protocol. Change only the problem statement and the Historian&rsquo;s domain knowledge.</p>
 
@@ -484,10 +489,67 @@ Return:
 </div>
 
 
-<!-- ===== CHAPTER 11: CURSOR FIELD NOTES ===== -->
-<div class="ch" id="cursor-field-notes">
+
+
+<!-- ===== CHAPTER 11: MODE SELECTOR + RHP RESONANCE MODE ===== -->
+<div class="ch" id="mode-selector">
   <div class="ch-head" onclick="this.parentElement.classList.toggle('open')">
     <span class="ch-num">11</span>
+    <span class="ch-title">Mode Selector &mdash; Mini, Resonance, Full</span>
+    <span class="ch-toggle">+</span>
+  </div>
+  <div class="ch-body"><div class="ch-inner">
+    <p><strong>Do not run the whole cathedral for every nail.</strong> The second review round converged on a simple correction: RHP is strongest when it is treated as a scalable scaffold. Use the smallest mode that can still catch the blind spots.</p>
+
+    <div class="phase-card" style="border-left:3px solid var(--green)">
+      <div class="pt" style="color:var(--green)">RHPm &middot; Prompt Builder</div>
+      <p><strong>Use when:</strong> the human prompt is rough and the next session needs a precise builder/reviewer/writer prompt. RHPm shapes the session before the real work begins.</p>
+      <p><a href="BD_AIM3_RHPm.html">Open RHPm &rarr;</a></p>
+    </div>
+
+    <div class="phase-card" style="border-left:3px solid var(--cyan)">
+      <div class="pt" style="color:var(--cyan)">RHP-Resonance &middot; Daily Multi-Lens Mode</div>
+      <p><strong>Use when:</strong> the task needs perspective diversity but not 11 full agent monologues. Ask for seven compact lenses: formal/math, physical/geometric, biological/ecological, engineering, adversarial/falsifier, child/embodied intuition, and cartographer/map.</p>
+      <div class="code-block">RHP-Resonance Mode:
+Give 7 compact perspectives:
+1. Formal / mathematical
+2. Physical / geometric
+3. Biological / ecological
+4. Engineering / implementation
+5. Adversarial / falsifier
+6. Child / embodied intuition
+7. Cartographer / idea-space map
+
+Each lens must add something non-derivative.
+Then synthesize:
+- strongest shared mechanism
+- best contradiction or bifurcation pair
+- cheapest empirical test
+- skill candidate if reusable</div>
+    </div>
+
+    <div class="phase-card" style="border-left:3px solid var(--gold)">
+      <div class="pt" style="color:var(--gold)">RHP-Full &middot; Heavy Machinery</div>
+      <p><strong>Use when:</strong> the problem is high-stakes, cross-domain, expensive to get wrong, or when simpler modes fail. Full RHP is a research scaffold, not the default everyday prompt.</p>
+    </div>
+
+    <div class="callout rose">
+      <div class="ct">Manual scaffold vs automated controller</div>
+      <p>In manual use, the Claustrum/LZ/Joy language is a governance checklist: notice repetition, widen when useful, crystallize only near convergence, and test instead of arguing. It becomes a true live controller only when implemented with external state, measurable signals, routing logic, budgets, and validation loops.</p>
+    </div>
+
+    <div class="callout cyan">
+      <div class="ct">Metrics are diagnostics</div>
+      <p>Drawer Count, Diversity, R-score, LZ-like complexity, and Joy signals help detect collapse, repetition, and recovery. They are not proof. Agent 0 still demands an external test, a baseline, a control, or a manual sanity check before a claim is treated as real.</p>
+    </div>
+  </div></div>
+</div>
+
+
+<!-- ===== CHAPTER 12: CURSOR FIELD NOTES ===== -->
+<div class="ch" id="cursor-field-notes">
+  <div class="ch-head" onclick="this.parentElement.classList.toggle('open')">
+    <span class="ch-num">12</span>
     <span class="ch-title">Cursor AI Field Notes</span>
     <span class="ch-toggle">+</span>
   </div>
@@ -555,10 +617,10 @@ Return:
 
 
 
-<!-- ===== CHAPTER 12: ROUTESIGNAL PROMPT METHOD STUDY ===== -->
+<!-- ===== CHAPTER 13: ROUTESIGNAL PROMPT METHOD STUDY ===== -->
 <div class="ch" id="routesignal-prompt-study">
   <div class="ch-head" onclick="this.parentElement.classList.toggle('open')">
-    <span class="ch-num">12</span>
+    <span class="ch-num">13</span>
     <span class="ch-title">Concrete Case Study &mdash; RouteSignal Prompt + Code Method Test</span>
     <span class="ch-toggle">+</span>
   </div>
@@ -582,10 +644,10 @@ Return:
 </div>
 
 
-<!-- ===== CHAPTER 12: LOOP + SKILL LAYER ===== -->
+<!-- ===== CHAPTER 14: LOOP + SKILL LAYER ===== -->
 <div class="ch" id="loop-skill-layer">
   <div class="ch-head" onclick="this.parentElement.classList.toggle('open')">
-    <span class="ch-num">12</span>
+    <span class="ch-num">14</span>
     <span class="ch-title">Loop + Skill Layer</span>
     <span class="ch-toggle">+</span>
   </div>
@@ -654,6 +716,8 @@ last_tested:</div>
   <span style="display:inline-block;width:16px"></span>
   <a href="BD_AIM3_RHP_Story.html" style="font-family:'JetBrains Mono',monospace;font-size:13px;padding:12px 28px;border:1px solid var(--gold);border-radius:var(--radius);display:inline-block;transition:background .3s;background:var(--gold-dim);color:var(--gold)">Origin Story &rarr;</a>
   <span style="display:inline-block;width:16px"></span>
+  <a href="BD_AIM3_RHPm.html" style="font-family:'JetBrains Mono',monospace;font-size:13px;padding:12px 28px;border:1px solid var(--cyan);border-radius:var(--radius);display:inline-block;transition:background .3s;background:var(--cyan-dim);color:var(--cyan)">RHPm Prompt Builder &rarr;</a>
+  <span style="display:inline-block;width:16px"></span>
   <a href="BD_AIM3.html" style="font-family:'JetBrains Mono',monospace;font-size:13px;padding:12px 28px;border:1px solid var(--violet);border-radius:var(--radius);display:inline-block;transition:background .3s;background:var(--violet-dim);color:var(--violet)">AIM&sup3; Protocol &rarr;</a>
 </div>
 
@@ -665,13 +729,14 @@ last_tested:</div>
     <div class="foot-grid">
       <div class="foot-col">
         <h4>About</h4>
-        <p>AIM&sup3; Resonance Hybrid Protocol &middot; v2.7<br>Original architecture by Bojan Dobrečevič; developed with LLM collaborators; refined through 11 AI review submissions, Cursor AI field notes, and the loop + skill update.<br>8Z Research Framework &middot; AIM&sup3; Institute &middot; Ljubljana</p>
+        <p>AIM&sup3; Resonance Hybrid Protocol &middot; v2.8<br>Original architecture by Bojan Dobrečevič; developed with LLM collaborators; refined through 11 AI review submissions, Cursor AI field notes, and the RHPm, mode-selector, and loop + skill update.<br>8Z Research Framework &middot; AIM&sup3; Institute &middot; Ljubljana</p>
       </div>
       <div class="foot-col">
         <h4>Key Pages</h4>
         <ul class="foot-links">
           <li><a href="/BD/">Portfolio</a></li>
           <li><a href="BD_AIM3.html">AIM&sup3; Protocol</a></li>
+          <li><a href="BD_AIM3_RHPm.html">RHPm — AIM³ Prompt Builder</a></li>
           <li><a href="BD_AIM3_RHPr.html">RHPr — Resonance Hybrid Prompting</a></li>
           <li><a href="BD_AIM3_RHP_Story.html">Protocol Origin Story</a></li>
           <li><a href="BD_8Z_Reasoning.html">Reasoning Framework</a></li>
