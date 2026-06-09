@@ -211,18 +211,20 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
   <span class="sep">/</span>
   <a href="/BD/BD_AIM3_RHP.html">RHP</a>
   <span class="sep">/</span>
+  <a href="/BD/BD_AIM3_RHPm.html">RHPm</a>
+  <span class="sep">/</span>
   <a href="#">RHPr</a>
 </nav>
 
 <!-- ===== COVER ===== -->
 <div class="cover">
-  <span class="cover-tag">RHPr v1.3 &middot; BD &times; AI Lab &middot; AIM&sup3; Institute</span>
+  <span class="cover-tag">RHPr v1.4 &middot; BD &times; AI Lab &middot; AIM&sup3; Institute</span>
   <h1>The <em>Resonance</em> Hybrid Prompting</h1>
-  <p class="subtitle">The prompt that opens every drawer before thinking begins &mdash; then turns the best drawer into a bounded test and, when useful, a reusable skill.</p>
-  <p class="meta">March 2026 &middot; Bojan Dobrečevič (original concept and retrieval-control architecture) &middot; developed with LLM collaborators &middot; later stress-tested with 14 AI model submissions &middot; loop + skill patch v1.3 &middot; <a href="BD_AIM3_RHP.html">RHP Protocol &rarr;</a></p>
+  <p class="subtitle">The retrieval-control protocol that opens missing drawers before thinking hard &mdash; now with a one-prompt Lite mode, adaptive lenses, validation roadmap, and skill artifact rule.</p>
+  <p class="meta">March 2026 &middot; Bojan Dobrečevič (original concept and retrieval-control architecture) &middot; developed with LLM collaborators &middot; later stress-tested with 14 AI model submissions &middot; compact-mode + validation patch v1.4 &middot; <a href="BD_AIM3_RHP.html">RHP Protocol &rarr;</a></p>
 
   <div class="stats-row" style="max-width:520px;margin:28px auto 0">
-    <div class="stat"><div class="val cyan">4&ndash;6</div><div class="lbl">Prompts</div></div>
+    <div class="stat"><div class="val cyan">1&ndash;6</div><div class="lbl">Prompts</div></div>
     <div class="stat"><div class="val green">1</div><div class="lbl">Model</div></div>
     <div class="stat"><div class="val gold">&infin;</div><div class="lbl">Domains</div></div>
     <div class="stat"><div class="val violet">0</div><div class="lbl">Tuned Params</div></div>
@@ -671,10 +673,59 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
 </div>
 
 
-<!-- ===== SECTION 9: QUICK-START CARD ===== -->
-<div class="ch open reveal" id="quickstart">
+<!-- ===== SECTION 10: QUICK-START CARD ===== -->
+
+
+<div class="ch reveal" id="rhpr-lite">
   <div class="ch-head" onclick="this.parentElement.classList.toggle('open')">
     <span class="ch-num">09</span>
+    <span class="ch-title">RHPr-Lite &mdash; One-Prompt Practical Mode</span>
+    <span class="ch-toggle">+</span>
+  </div>
+  <div class="ch-body"><div class="ch-inner">
+    <p><strong>Use RHPr-Lite when the task is hard enough to need better retrieval but not important enough for the full 4&ndash;6 prompt sequence.</strong> It is the practical 80/20 version: inventory, missing lenses, forced switches, recombination, test, and skill candidate.</p>
+
+    <div class="prompt-box">Run RHPr-Lite on [problem]:
+
+1. Census: list 20 relevant facts, tools, representations, assumptions, and adjacent domains.
+2. Absence: identify the 3 most important missing lenses.
+3. Forced lenses: re-answer the problem strictly through each missing lens.
+4. Collision: merge the original and forced-lens results into 3 novel approaches with mechanisms.
+5. Test: define metric, baseline, control, cheapest experiment, manual sanity check, and rollback.
+6. Skill: if this task is hard or repeated, output a reusable Skill Card in JSON.</div>
+
+    <div class="callout cyan">
+      <div class="ct">Adaptive Lens Rule</div>
+      <p>After Census, choose only the 2&ndash;3 missing lenses with the highest expected value. Add more lenses only if first-pass ideas are too similar, the stakes are high, or Agent 0 cannot define a good test yet.</p>
+    </div>
+
+    <div class="callout rose">
+      <div class="ct">Negative Lens</div>
+      <p>Ask not only what lens is missing, but which lens should be temporarily forbidden. If every answer is trapped in abstraction, forbid abstraction. If every answer is engineering-first, forbid implementation and force geometry, biology, market behavior, or embodied intuition.</p>
+    </div>
+
+    <div class="callout gold">
+      <div class="ct">Metrics are diagnostics</div>
+      <p>Drawer Count, Diversity, R-score, and Synthesis scores help notice retrieval collapse. They are not objective proof. Do not optimize for recovered-idea count alone; optimize for usefulness, novelty, testability, and survival under controls.</p>
+    </div>
+
+    <div class="code-block">Validation roadmap:
+1. RHPr-Lite vs plain prompt on 20 hard problems.
+2. Blind scoring by usefulness, novelty, testability, and domain diversity.
+3. Compare RHPr-Lite, RHPr-Full, RHP-Resonance, and RHP-Full.
+4. Track failures and over-generation, not only wins.
+5. Publish examples where RHPr adds nothing.</div>
+
+    <div class="callout green">
+      <div class="ct">Skill artifact rule</div>
+      <p>Skill extraction is complete only when it becomes an artifact: <code>/skills/name.json</code>, version, inputs, outputs, steps, validation, failure modes, last tested, and examples. Text in a chat is a draft; a skill file is reusable infrastructure.</p>
+    </div>
+  </div></div>
+</div>
+
+<div class="ch open reveal" id="quickstart">
+  <div class="ch-head" onclick="this.parentElement.classList.toggle('open')">
+    <span class="ch-num">10</span>
     <span class="ch-title">Quick-Start Card</span>
     <span class="ch-toggle">+</span>
   </div>
@@ -682,7 +733,7 @@ footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem;margin-top:60px}
 
     <div class="callout cyan">
       <div class="ct">Practical Use — Two-Session Flow</div>
-      <p><strong>RHPr is the prompt-builder.</strong> First describe the problem in your own words. Messy is fine. Then ask an LLM to improve your prompt using this protocol. Finally, paste the improved prompt into a fresh LLM session and ask for the answer.</p>
+      <p><strong>RHPr is the anti-lock prompt improver.</strong> For a rough starting request, use <a href="BD_AIM3_RHPm.html">RHPm</a> first. Use RHPr when the model is likely to be trapped in the wrong frame or when a stronger prompt needs missing lenses, controls, and tests before the answer session.</p>
     </div>
 
     <div class="code-block">Step 1 — write the problem naturally:
@@ -704,7 +755,7 @@ https://www.mdlxdcc.org/BD/bd_aim3_rhp"</div>
 
     <div class="callout gold">
       <div class="ct">Simple Rule</div>
-      <p><strong>Use RHPr to make the prompt better. Use RHP to make the answer smarter.</strong> RHPr cleans and strengthens the request. RHP attacks the cleaned request from multiple agent perspectives.</p>
+      <p><strong>Use RHPm to forge the session prompt. Use RHPr to open missing drawers. Use RHP to make the answer smarter when the problem deserves multi-perspective synthesis.</strong> RHPr cleans and strengthens the request. RHP attacks the cleaned request from multiple agent perspectives.</p>
     </div>
 
     <div class="qs-card" id="qsCard">
@@ -818,7 +869,7 @@ https://www.mdlxdcc.org/BD/bd_aim3_rhp"</div>
 <!-- ===== SECTION 12: ROUTESIGNAL PROMPT METHOD STUDY ===== -->
 <div class="ch reveal" id="routesignal-prompt-study">
   <div class="ch-head" onclick="this.parentElement.classList.toggle('open')">
-    <span class="ch-num">12</span>
+    <span class="ch-num">13</span>
     <span class="ch-title">Concrete Case Study &mdash; RouteSignal Prompt + Code Method Test</span>
     <span class="ch-toggle">+</span>
   </div>
@@ -841,6 +892,7 @@ Note: E is a reference/champion lineage, not a one-shot peer, because it was bui
 
 <!-- ===== LINKS ===== -->
 <div class="links-row reveal">
+  <a href="BD_AIM3_RHPm.html" class="link-btn">RHPm Prompt Builder &rarr;</a>
   <a href="BD_AIM3_RHP.html" class="link-btn">RHP Protocol &rarr;</a>
   <a href="BD_AIM3_RHP_Story.html" class="link-btn gold">RHP Origin Story &rarr;</a>
   <a href="/BD/" class="link-btn violet">Portfolio &rarr;</a>
@@ -862,7 +914,7 @@ Note: E is a reference/champion lineage, not a one-shot peer, because it was bui
     <div class="foot-grid">
       <div class="foot-col">
         <h4>Origin</h4>
-        <p>RHPr was created by Bojan Dobrečevič as the single-model retrieval-control companion to RHP, then developed with LLM collaborators. Fourteen AI model submissions and Cursor field notes were used to stress-test and refine the specification, not as the primary source of authorship. v1.3 adds the loop + skill extraction patch: draft the problem, improve the prompt with RHPr, run the improved prompt in a fresh session, use RHP when wider multi-agent brainstorming is needed, and extract a reusable skill when the work was hard or repeated.</p>
+        <p>RHPr was created by Bojan Dobrečevič as the single-model retrieval-control companion to RHP, then developed with LLM collaborators. Fourteen AI model submissions and Cursor field notes were used to stress-test and refine the specification, not as the primary source of authorship. v1.4 adds the compact practical layer: use RHPm for rough human prompts, RHPr-Lite for one-prompt anti-lock retrieval, full RHPr when deeper lens recovery is needed, RHP when wider multi-perspective brainstorming is needed, and skill artifacts when the work was hard or repeated.</p>
         <p style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">14 LLMs &middot; 5155 lines of feedback<br>Best ideas: Opus (architecture), ChatGPT (practicality),<br>Sonnet (visualization), Haiku (cost-normalization)</p>
       </div>
       <div class="foot-col">
@@ -870,6 +922,7 @@ Note: E is a reference/champion lineage, not a one-shot peer, because it was bui
         <ul class="foot-links">
           <li><a href="/BD/">Portfolio</a></li>
           <li><a href="BD_AIM3.html">AIM&sup3; Protocol</a></li>
+          <li><a href="BD_AIM3_RHPm.html">RHPm — AIM³ Prompt Builder</a></li>
           <li><a href="BD_AIM3_RHP.html">Resonance Hybrid Protocol</a></li>
           <li><a href="BD_AIM3_RHP_Story.html">RHP Origin Story</a></li>
           <li><a href="BD_8Z_DCC7_Testbed.html">DCC-7 Testbed</a></li>
@@ -942,7 +995,7 @@ WILDCARD — The Child:
 "Forget everything. Stand inside this problem. What do you see/hear/touch?"
 
 RHPr improves the prompt. RHP improves the answer. Skill extraction makes the next loop cheaper.
-BD × AI Lab · AIM³ Institute · RHPr v1.3`;
+BD × AI Lab · AIM³ Institute · RHPr v1.4`;
   navigator.clipboard.writeText(text).then(function(){
     var btn=e.target;
     btn.textContent='Copied!';
