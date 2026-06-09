@@ -161,76 +161,28 @@ p{margin-bottom:16px;color:var(--soft)}strong{color:var(--text)}em{color:var(--a
 
   <section class="section" id="master">
     <h2>Copy-paste master prompt</h2>
-    <p>This is the static version. Use it when you do not need the interactive builder above.</p>
-    <div class="code" id="masterPrompt">You are running RHPm — AIM³ Prompt Builder.
-
-Your job is NOT to answer my rough request directly.
-Your job is to convert it into the strongest possible prompt for a fresh LLM session.
-
-ROUGH REQUEST:
-[PASTE HUMAN REQUEST HERE]
-
-OPTIONAL CONTEXT / FILES / CONSTRAINTS:
-[PASTE CONTEXT HERE]
-
-Run this compact protocol:
-
-1. INTENT SPLIT
-Restate:
-- explicit request
-- implied goal
-- real deliverable
-- audience/user
-- likely missing context
-
-2. MINI LENS PASS
-Use five lenses, each adding non-duplicate value:
-- Builder: deliverable, implementation path, files/tools needed
-- Skeptic: ambiguity, failure modes, hidden risks
-- Simple Human: simplest meaning and obvious thing experts may miss
-- Mapmaker: relevant domains, missing lenses, adjacent useful knowledge
-- Empiricist: acceptance criteria, tests, evidence, rollback
-
-3. ANTI-LOCK RETRIEVAL PASS
-List:
-- activated knowledge drawers
-- likely missing drawers
-- 2–3 forced lenses worth adding
-- assumptions that must not be silently inherited
-- one negative lens: what common framing should be temporarily forbidden?
-
-4. PROMPT SYNTHESIS
-Write the final prompt for a new LLM session. Include:
-- role
-- goal
-- project context
-- files/folders to inspect first
-- constraints
-- exact deliverables
-- preferred workflow
-- tests/checks
-- output format
-- stop conditions
-- what not to do
-
-5. AGENT 0 CHECK
-Before finalizing, check:
-- Is the deliverable testable?
-- Are acceptance criteria clear?
-- Is there a resume/recovery plan if coding or long-running work is involved?
-- Are risks handled without blocking exploration?
-- Is authorship/provenance clear if public material is involved?
-- Is the prompt compact enough, or is it bloated?
-
-6. OPTIONAL SKILL EXTRACTION
-If this task is repeated or hard, output a small Skill Card:
-name, when_to_use, inputs, outputs, steps, validation, failure_modes, version.
-
-Return only:
-A. Final improved prompt for the new session
-B. Short explanation of what you changed
-C. Optional Skill Card</div>
-    <button class="btn cyan" onclick="copyText(document.getElementById('masterPrompt').innerText)">Copy master prompt</button>
+    <div class="buttons" aria-label="Master prompt actions top">
+      <button class="btn cyan" onclick="copyMasterPrompt()">Copy prompt</button>
+      <button class="btn gold" onclick="pasteMasterPrompt()" title="Paste clipboard into the focused field, or into the human request field by default.">Paste</button>
+      <button class="btn rose" onclick="emptyMasterPrompt()">Empty</button>
+    </div>
+    <p>Use this when you want the simple master version. Fill the two fields, then copy one combined prompt block for a fresh LLM session.</p>
+    <div class="grid2">
+      <div class="field">
+        <label for="masterHumanRequest">Paste human request here</label>
+        <textarea id="masterHumanRequest" spellcheck="true" placeholder=""></textarea>
+      </div>
+      <div class="field">
+        <label for="masterContext">Paste context here</label>
+        <textarea id="masterContext" spellcheck="true" placeholder=""></textarea>
+      </div>
+    </div>
+    <div class="code output" id="masterPromptPreview" aria-live="polite"></div>
+    <div class="buttons" aria-label="Master prompt actions bottom">
+      <button class="btn cyan" onclick="copyMasterPrompt()">Copy prompt</button>
+      <button class="btn gold" onclick="pasteMasterPrompt()" title="Paste clipboard into the focused field, or into the human request field by default.">Paste</button>
+      <button class="btn rose" onclick="emptyMasterPrompt()">Empty</button>
+    </div>
   </section>
 
   <section class="section" id="templates">
@@ -293,6 +245,110 @@ function fontDelta(d){fs=Math.max(15,Math.min(24,fs+d));document.documentElement
 function copyText(t){navigator.clipboard.writeText(t).then(()=>flash('Copied.')).catch(()=>alert('Copy failed. Select text manually.'))}
 function copyById(id){copyText(qs(id).value || qs(id).innerText || '')}
 function flash(msg){let el=document.createElement('div');el.textContent=msg;el.style.cssText='position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:#0f1729;border:1px solid rgba(0,229,255,.35);color:#00e5ff;padding:10px 16px;border-radius:999px;font-family:JetBrains Mono,monospace;font-size:12px;z-index:10001;box-shadow:0 12px 40px rgba(0,0,0,.4)';document.body.appendChild(el);setTimeout(()=>el.remove(),1300)}
+
+function buildMasterPrompt(){
+  const rough=(qs('masterHumanRequest')?.value || '').trim();
+  const ctx=(qs('masterContext')?.value || '').trim();
+  return `You are running RHPm — AIM³ Prompt Builder.
+
+Your job is NOT to answer my rough request directly.
+Your job is to convert it into the strongest possible prompt for a fresh LLM session.
+
+ROUGH REQUEST:
+${rough}
+
+OPTIONAL CONTEXT / FILES / CONSTRAINTS:
+${ctx}
+
+Run this compact protocol:
+
+1. INTENT SPLIT
+Restate:
+- explicit request
+- implied goal
+- real deliverable
+- audience/user
+- likely missing context
+
+2. MINI LENS PASS
+Use five lenses, each adding non-duplicate value:
+- Builder: deliverable, implementation path, files/tools needed
+- Skeptic: ambiguity, failure modes, hidden risks
+- Simple Human: simplest meaning and obvious thing experts may miss
+- Mapmaker: relevant domains, missing lenses, adjacent useful knowledge
+- Empiricist: acceptance criteria, tests, evidence, rollback
+
+3. ANTI-LOCK RETRIEVAL PASS
+List:
+- activated knowledge drawers
+- likely missing drawers
+- 2–3 forced lenses worth adding
+- assumptions that must not be silently inherited
+- one negative lens: what common framing should be temporarily forbidden?
+
+4. PROMPT SYNTHESIS
+Write the final prompt for a new LLM session. Include:
+- role
+- goal
+- project context
+- files/folders to inspect first
+- constraints
+- exact deliverables
+- preferred workflow
+- tests/checks
+- output format
+- stop conditions
+- what not to do
+
+5. AGENT 0 CHECK
+Before finalizing, check:
+- Is the deliverable testable?
+- Are acceptance criteria clear?
+- Is there a resume/recovery plan if coding or long-running work is involved?
+- Are risks handled without blocking exploration?
+- Is authorship/provenance clear if public material is involved?
+- Is the prompt compact enough, or is it bloated?
+
+6. OPTIONAL SKILL EXTRACTION
+If this task is repeated or hard, output a small Skill Card:
+name, when_to_use, inputs, outputs, steps, validation, failure_modes, version.
+
+Return only:
+A. Final improved prompt for the new session
+B. Short explanation of what you changed
+C. Optional Skill Card`;
+}
+function updateMasterPromptPreview(){
+  const out=qs('masterPromptPreview');
+  if(out) out.textContent=buildMasterPrompt();
+}
+function copyMasterPrompt(){
+  updateMasterPromptPreview();
+  copyText(buildMasterPrompt());
+}
+async function pasteMasterPrompt(){
+  try{
+    const text=await navigator.clipboard.readText();
+    const active=document.activeElement;
+    let target=(active && (active.id==='masterHumanRequest' || active.id==='masterContext')) ? active : null;
+    if(!target){
+      target=(qs('masterHumanRequest').value.trim() && !qs('masterContext').value.trim()) ? qs('masterContext') : qs('masterHumanRequest');
+    }
+    target.value=text;
+    target.focus();
+    updateMasterPromptPreview();
+    flash('Pasted.');
+  }catch(e){
+    alert('Paste failed. Browser may require manual paste with Ctrl+V.');
+  }
+}
+function emptyMasterPrompt(){
+  ['masterHumanRequest','masterContext'].forEach(id=>{const el=qs(id); if(el) el.value=''});
+  updateMasterPromptPreview();
+  qs('masterHumanRequest')?.focus();
+  flash('Emptied.');
+}
+
 function expandAll(){document.querySelectorAll('details').forEach(d=>d.open=true)}
 function collapseAll(){document.querySelectorAll('details').forEach(d=>d.open=false)}
 function loadExample(kind){
@@ -331,6 +387,9 @@ function generatePrompt(){
   const prompt=`You are running RHPm — AIM³ Prompt Builder.\n\nYour job is NOT to answer my rough request directly. Your job is to convert it into the strongest possible prompt for a fresh LLM session.\n\nTASK TYPE: ${type}\nCEREMONY LEVEL: ${ceremony}\n\nROUGH REQUEST:\n${rough}\n\nCONTEXT / FILES / CONSTRAINTS:\n${ctx}\n\nHARD REQUIREMENTS:\n${opts.map(x=>'- '+x).join('\n')}\n- ${taskAdd}\n\nRun this compact protocol before writing the final prompt:\n\n1. INTENT SPLIT\nSeparate the explicit request, implied goal, real deliverable, audience/user, and missing context.\n\n2. MINI LENS PASS\nUse five lenses, each adding non-duplicate value:\n- Builder: deliverable, implementation path, files/tools needed\n- Skeptic: ambiguity, failure modes, hidden risks\n- Simple Human: simplest meaning and obvious thing experts may miss\n- Mapmaker: relevant domains, missing lenses, adjacent useful knowledge\n- Empiricist: acceptance criteria, tests, evidence, rollback\n\n3. ANTI-LOCK RETRIEVAL PASS\nList activated knowledge drawers, likely missing drawers, 2–3 forced lenses, and one negative lens: what common framing should be temporarily forbidden?\n\n4. PROMPT SYNTHESIS\nWrite the final prompt for a new LLM session. Include role, goal, project context, files to inspect first, constraints, deliverables, workflow, checks, output format, stop conditions, and what not to do.\n\n5. AGENT 0 CHECK\nCheck that the final prompt is testable, bounded, recoverable, honest about provenance, and not bloated.\n\n6. OPTIONAL SKILL EXTRACTION\nIf the task is hard or repeated, add a compact Skill Card: name, when_to_use, inputs, outputs, steps, validation, failure_modes, version.\n\nReturn only:\nA. Final improved prompt for the new session\nB. Short explanation of what you changed\nC. Optional Skill Card`;
   qs('promptOut').value=prompt;
 }
+
+['masterHumanRequest','masterContext'].forEach(id=>{const el=qs(id); if(el) el.addEventListener('input',updateMasterPromptPreview)});
+updateMasterPromptPreview();
 </script>
 </body>
 </html>
