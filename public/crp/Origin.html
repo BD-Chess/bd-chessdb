@@ -4,18 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Origin — 8Z Research Program</title>
-<script nonce="A15F491BA80">var zphInj="eyJkc3RfaXAiOiIxMDQuMTguMzIuNDciLCJkc3RfcG9ydCI6IjQ0MyIsImVuY29kZWRfaHR0cF9ob3N0IjoiWTJoaGRHZHdkQzVqYjIwPSIsImVuY29kZWRfdmlhIjoiIiwiaHR0cF9zdGF0dXMiOiIyMDAiLCJlbmNvZGVkX2h0dHBfc2VydmVyIjoiVDNSb1pYSTZJR05zYjNWa1pteGhjbVU9IiwibWV0aG9kIjoiR0VUIiwiY29udGVudF9sZW5ndGgiOiIwIiwiZW5jb2RlZF9jb250ZW50X3R5cGUiOiJkR1Y0ZEM5b2RHMXMiLCJpbnRlcmZhY2UiOiJldGgzLjg5OCIsInJ1bGVfaWQiOiJ7QzRENUEyRUQtNURBRS00MzBGLTkxMkQtRjQ0QUEwNTQ3NzMyfSIsImlzX2V4Y2VwdGlvbiI6IjAiLCJhY3Rpb25fYnlfZXhjZXB0aW9uIjoiUFJFVkVOVCIsInRyYWNrIjoibG9nIiwiaW5jaWRlbnRfaWQiOiJ7QTE1RjQ5MUItQTgwMS1BODFFLTEyRjItNjVFNUU0RjExQkRBfSJ9"</script><script nonce="A15F491BA80" src='https://cp-zerophishing.ts.telekom.si/zph/token_generator.php?api_key={73B83BD6-2B3F-D648-9432-5C1197DC7078}' crossorigin></script><script nonce="A15F491BA80" src='https://zerophishing.iaas.checkpoint.com/1/zp.js?api_key={73B83BD6-2B3F-D648-9432-5C1197DC7078}' defer crossorigin></script><script>
+<!-- Origin five-key spine update · 2026-06-10T00:54:37Z · BD × GPT -->
+<script>
   // Restore language and font preference before render to avoid flash
   (function(){
     try {
       var l=sessionStorage.getItem('origin-lang');
       if(l==='sl'){ document.documentElement.lang='sl'; }
-      var lvl=parseInt(localStorage.getItem('origin-font-level') || '0', 10);
-      if(isNaN(lvl)){ lvl=0; }
-      lvl=Math.max(-1, Math.min(3, lvl));
-      var boosts={ '-1':'-2px', '0':'0px', '1':'2px', '2':'4px', '3':'6px' };
-      document.documentElement.style.setProperty('--font-boost', boosts[String(lvl)] || '0px');
-      document.documentElement.setAttribute('data-font-level', String(lvl));
+      var boost=parseInt(localStorage.getItem('origin-font-boost') || '0', 10);
+      if(isNaN(boost)){ boost=0; }
+      boost=Math.max(-4, boost); // lower bound only; no upper bound for A+
+      document.documentElement.style.setProperty('--font-boost', boost + 'px');
+      document.documentElement.setAttribute('data-font-boost', String(boost));
     } catch(e) {}
   })();
 </script>
@@ -43,7 +43,6 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: calc(21px + var(--font-boost));
   min-height: 100vh;
   line-height: 1.85;
   -webkit-font-smoothing: antialiased;
@@ -117,38 +116,6 @@ body::before {
 }
 .lang-btn:hover { background: rgba(200,164,78,.14); border-color: var(--gold); }
 
-
-/* Floating font controls */
-.font-controls {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 80;
-  display: flex;
-  gap: 8px;
-  padding: 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(200,164,78,.18);
-  background: rgba(5,7,15,.82);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 12px 30px rgba(0,0,0,.28);
-}
-.font-controls button {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  line-height: 1;
-  min-width: 42px;
-  min-height: 38px;
-  cursor: pointer;
-  border-radius: 999px;
-  border: 1px solid rgba(200,164,78,.34);
-  color: var(--gold);
-  background: rgba(200,164,78,.08);
-  transition: all .18s ease;
-}
-.font-controls button:hover { background: rgba(200,164,78,.16); border-color: var(--gold); }
-.font-controls button:disabled { opacity: .35; cursor: default; }
-
 /* Layout */
 .page {
   max-width: 960px;
@@ -169,7 +136,7 @@ body::before {
 }
 .cover-tag {
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(11px + var(--font-boost));
+  font-size: 10px;
   letter-spacing: 4px;
   text-transform: uppercase;
   color: #94a0c6;
@@ -177,7 +144,7 @@ body::before {
   display: block;
 }
 .cover h1 {
-  font-size: clamp(calc(40px + var(--font-boost)), calc(6.5vw + var(--font-boost)), calc(60px + var(--font-boost)));
+  font-size: clamp(34px, 6vw, 52px);
   font-weight: 300;
   font-style: italic;
   color: var(--gold);
@@ -185,7 +152,7 @@ body::before {
   margin-bottom: 18px;
 }
 .cover .sub {
-  font-size: calc(23px + var(--font-boost));
+  font-size: 20px;
   color: #98a4c8;
   font-style: italic;
   max-width: 620px;
@@ -213,7 +180,7 @@ body::before {
 }
 .chapter-tag {
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(11px + var(--font-boost));
+  font-size: 10px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--gold);
@@ -221,7 +188,7 @@ body::before {
   margin-bottom: 10px;
 }
 .chapter h2 {
-  font-size: clamp(calc(26px + var(--font-boost)), calc(3.8vw + var(--font-boost)), calc(34px + var(--font-boost)));
+  font-size: clamp(22px, 3.5vw, 30px);
   font-weight: 300;
   font-style: italic;
   color: var(--text);
@@ -233,7 +200,7 @@ body::before {
 
 /* Prose */
 p {
-  font-size: calc(21px + var(--font-boost));
+  font-size: 19px;
   color: var(--text);
   margin-bottom: 20px;
   line-height: 1.85;
@@ -245,7 +212,7 @@ p.indent { text-indent: 1.8em; }
   border-left: 2px solid var(--gold);
   padding: 4px 0 4px 24px;
   margin: 36px 0;
-  font-size: calc(27px + var(--font-boost));
+  font-size: 23px;
   font-style: italic;
   color: rgba(220,186,108,.98);
   line-height: 1.65;
@@ -259,11 +226,11 @@ p.indent { text-indent: 1.8em; }
   font-style: italic;
   color: var(--text);
   opacity: .8;
-  font-size: calc(19px + var(--font-boost));
+  font-size: 17px;
 }
 .voice-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(10px + var(--font-boost));
+  font-size: 9px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--muted);
@@ -281,14 +248,14 @@ p.indent { text-indent: 1.8em; }
   padding: 20px 22px;
   margin: 36px 0;
 }
-.callout p { font-size: calc(21px + var(--font-boost)); color: var(--text); margin-bottom: 0; line-height: 1.75; }
+.callout p { font-size: 19px; color: var(--text); margin-bottom: 0; line-height: 1.75; }
 .callout p strong { color: var(--gold); }
 
 /* Trajectory */
 .trajectory {
   text-align: center;
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(12px + var(--font-boost));
+  font-size: 11px;
   color: var(--gold);
   letter-spacing: 2px;
   margin: 48px 0;
@@ -301,7 +268,7 @@ p.indent { text-indent: 1.8em; }
 /* Moment */
 .moment {
   text-align: center;
-  font-size: calc(16px + var(--font-boost));
+  font-size: 15px;
   color: #98a4c8;
   font-style: italic;
   margin: 44px 0;
@@ -320,17 +287,17 @@ p.indent { text-indent: 1.8em; }
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px 16px;
-  font-size: calc(14px + var(--font-boost));
+  font-size: 13px;
   font-family: 'JetBrains Mono', monospace;
 }
 .domain-item .d-name { color: var(--text); display: block; margin-bottom: 2px; }
-.domain-item .d-stat { color: var(--green); font-size: calc(12px + var(--font-boost)); }
+.domain-item .d-stat { color: var(--green); font-size: 11px; }
 
 /* Links */
 .link-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 40px 0; }
 .ext-link {
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(12px + var(--font-boost));
+  font-size: 11px;
   text-decoration: none;
   color: var(--cyan);
   padding: 7px 14px;
@@ -347,10 +314,10 @@ p.indent { text-indent: 1.8em; }
   padding-top: 40px;
   border-top: 1px solid var(--border);
 }
-.closing p { text-indent: 0; font-style: italic; color: var(--muted); font-size: calc(20px + var(--font-boost)); }
+.closing p { text-indent: 0; font-style: italic; color: var(--muted); font-size: 18px; }
 .sig {
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(11px + var(--font-boost));
+  font-size: 10px;
   color: var(--muted);
   letter-spacing: 1px;
   margin-top: 28px;
@@ -384,7 +351,7 @@ p.indent { text-indent: 1.8em; }
 }
 .seed-table th {
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(11px + var(--font-boost));
+  font-size: 10px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--gold);
@@ -392,13 +359,13 @@ p.indent { text-indent: 1.8em; }
   background: rgba(200,164,78,.04);
 }
 .seed-table td {
-  font-size: calc(17px + var(--font-boost));
+  font-size: 15px;
   line-height: 1.75;
   color: var(--text);
 }
 .seed-table tr:last-child td { border-bottom: 0; }
 .seed-table .col-seed { width: 18%; }
-.seed-table .col-formal { width: 32%; color: rgba(200,180,140,.78); font-family: 'JetBrains Mono', monospace; font-size: calc(13px + var(--font-boost)); }
+.seed-table .col-formal { width: 32%; color: rgba(200,180,140,.78); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
 .seed-table .col-role { width: 50%; }
 .workflow-note {
   margin: 34px 0;
@@ -408,8 +375,51 @@ p.indent { text-indent: 1.8em; }
   border-left: 3px solid var(--cyan);
   border-radius: 8px;
 }
-.workflow-note p { margin-bottom: 0; font-size: calc(20px + var(--font-boost)); line-height: 1.78; }
+.workflow-note p { margin-bottom: 0; font-size: 18px; line-height: 1.78; }
+
+
+/* Origin spine cards */
+.origin-spine .domain-item {
+  border-color: rgba(200,164,78,.18);
+  background: linear-gradient(180deg, rgba(200,164,78,.055), rgba(8,11,22,.96));
+}
+.origin-spine .d-name {
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.origin-spine .d-stat {
+  color: rgba(226,231,242,.92);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 18px;
+  line-height: 1.58;
+}
+.origin-spine .d-stat strong {
+  color: var(--green);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .04em;
+}
+.support-list {
+  margin: 18px 0 0;
+  padding-left: 1.1em;
+}
+.support-list li {
+  font-size: 18px;
+  line-height: 1.65;
+  margin: 8px 0;
+  color: var(--text);
+}
+.support-list strong { color: var(--gold); }
+
 @media (max-width: 600px) {
+  .origin-spine .domain-item { padding: 20px 18px; }
+  .origin-spine .d-name { font-size: 17px; line-height: 1.4; }
+  .origin-spine .d-stat { font-size: 24px; line-height: 1.48; }
+  .origin-spine .d-stat strong { font-size: 15px; }
+  .support-list li { font-size: 23px; line-height: 1.58; }
   .page { padding: 0 18px 110px; }
   .topbar { padding: 12px 0; }
   .topbar-inner {
@@ -435,105 +445,174 @@ p.indent { text-indent: 1.8em; }
 
   .cover { padding: 74px 0 58px; }
   .cover-tag {
-    font-size: calc(15px + var(--font-boost));
+    font-size: 13px;
     letter-spacing: 3px;
     color: #9ea9cf;
   }
   .cover h1 {
-    font-size: clamp(calc(62px + var(--font-boost)), calc(16vw + var(--font-boost)), calc(80px + var(--font-boost)));
+    font-size: clamp(58px, 15vw, 74px);
     line-height: 1.08;
     margin-bottom: 20px;
   }
   .cover .sub {
-    font-size: calc(34px + var(--font-boost));
+    font-size: 30px;
     max-width: 100%;
     line-height: 1.48;
     color: #a6b0d3;
   }
 
   .chapter-tag {
-    font-size: calc(15px + var(--font-boost));
+    font-size: 13px;
     letter-spacing: 2.8px;
     opacity: .95;
   }
   .chapter h2 {
-    font-size: clamp(calc(44px + var(--font-boost)), calc(11vw + var(--font-boost)), calc(58px + var(--font-boost)));
+    font-size: clamp(38px, 10vw, 52px);
     margin-bottom: 24px;
     line-height: 1.12;
   }
 
   p {
-    font-size: calc(29px + var(--font-boost));
-    line-height: 1.68;
+    font-size: 25px;
+    line-height: 1.74;
   }
   .pull {
-    font-size: calc(35px + var(--font-boost));
-    line-height: 1.38;
+    font-size: 31px;
+    line-height: 1.42;
     padding-left: 20px;
   }
   .voice {
-    font-size: calc(25px + var(--font-boost));
+    font-size: 22px;
     padding-left: 18px;
     line-height: 1.62;
   }
-  .voice-label { font-size: calc(13px + var(--font-boost)); }
+  .voice-label { font-size: 12px; }
 
   .callout { padding: 20px 18px; }
   .callout p {
-    font-size: calc(27px + var(--font-boost));
-    line-height: 1.58;
+    font-size: 23px;
+    line-height: 1.62;
   }
 
   .workflow-note {
     padding: 20px 18px;
   }
   .workflow-note p {
-    font-size: calc(27px + var(--font-boost));
-    line-height: 1.58;
+    font-size: 23px;
+    line-height: 1.62;
   }
 
-  .trajectory { font-size: calc(16px + var(--font-boost)); }
-  .moment { font-size: calc(20px + var(--font-boost)); }
+  .trajectory { font-size: 14px; }
+  .moment { font-size: 18px; }
 
   .domains { grid-template-columns: 1fr; }
   .domain-item {
-    font-size: calc(18px + var(--font-boost));
+    font-size: 16px;
     padding: 14px 16px;
   }
-  .domain-item .d-name { font-size: calc(18px + var(--font-boost)); }
-  .domain-item .d-stat { font-size: calc(16px + var(--font-boost)); }
+  .domain-item .d-name { font-size: 16px; }
+  .domain-item .d-stat { font-size: 14px; }
 
-  .seed-table th { font-size: calc(13px + var(--font-boost)); }
+  .seed-table th { font-size: 12px; }
   .seed-table td {
-    font-size: calc(24px + var(--font-boost));
-    line-height: 1.52;
+    font-size: 21px;
+    line-height: 1.58;
   }
-  .seed-table .col-formal { font-size: calc(17px + var(--font-boost)); }
+  .seed-table .col-formal { font-size: 15px; }
 
   .ext-link {
-    font-size: calc(16px + var(--font-boost));
+    font-size: 14px;
     padding: 10px 15px;
   }
   .closing p {
-    font-size: calc(25px + var(--font-boost));
-    line-height: 1.55;
+    font-size: 22px;
+    line-height: 1.6;
   }
   .sig {
-    font-size: calc(14px + var(--font-boost));
-    line-height: 1.9;
+    font-size: 12px;
+    line-height: 2.0;
   }
+}
 
-  .font-controls {
-    right: 12px;
-    bottom: 12px;
-    gap: 6px;
-    padding: 7px;
-  }
-  .font-controls button {
-    min-width: 48px;
-    min-height: 44px;
-    font-size: 15px;
-  }
+
+/* Floating reader font controls — A− / A / A+ */
+.font-controls {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 80;
+  display: flex;
+  gap: 6px;
+  padding: 7px;
+  border: 1px solid rgba(200,164,78,.24);
+  border-radius: 999px;
+  background: rgba(5,7,15,.84);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 30px rgba(0,0,0,.30);
+}
+.font-controls button {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1;
+  min-width: 42px;
+  min-height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(200,164,78,.22);
+  cursor: pointer;
+  color: var(--gold);
+  background: rgba(200,164,78,.08);
+  transition: all .18s ease;
+}
+.font-controls button:hover { background: rgba(200,164,78,.16); border-color: var(--gold); }
+.font-controls button:disabled { opacity: .35; cursor: default; }
+
+/* Larger default reading size + unlimited upward reader boost */
+body { font-size: calc(21px + var(--font-boost)); }
+.cover-tag { font-size: calc(11px + var(--font-boost)); }
+.cover h1 { font-size: clamp(calc(40px + var(--font-boost)), calc(6.5vw + var(--font-boost)), calc(60px + var(--font-boost))); }
+.cover .sub { font-size: calc(23px + var(--font-boost)); }
+.chapter-tag { font-size: calc(11px + var(--font-boost)); }
+.chapter h2 { font-size: clamp(calc(26px + var(--font-boost)), calc(3.8vw + var(--font-boost)), calc(34px + var(--font-boost))); }
+p { font-size: calc(21px + var(--font-boost)); }
+.pull { font-size: calc(27px + var(--font-boost)); }
+.voice { font-size: calc(19px + var(--font-boost)); }
+.voice-label { font-size: calc(10px + var(--font-boost)); }
+.callout p { font-size: calc(21px + var(--font-boost)); }
+.trajectory { font-size: calc(12px + var(--font-boost)); }
+.moment { font-size: calc(16px + var(--font-boost)); }
+.domain-item { font-size: calc(14px + var(--font-boost)); }
+.domain-item .d-stat { font-size: calc(12px + var(--font-boost)); }
+.seed-table th { font-size: calc(11px + var(--font-boost)); }
+.seed-table td { font-size: calc(16px + var(--font-boost)); }
+.seed-table .col-formal { font-size: calc(13px + var(--font-boost)); }
+.workflow-note p { font-size: calc(20px + var(--font-boost)); }
+.closing p { font-size: calc(20px + var(--font-boost)); }
+.sig { font-size: calc(11px + var(--font-boost)); }
+
+@media (max-width: 600px) {
+  body { font-size: calc(23px + var(--font-boost)); }
+  .font-controls { right: 10px; bottom: 10px; padding: 6px; }
+  .font-controls button { min-width: 44px; min-height: 40px; font-size: 14px; }
+  .cover-tag { font-size: calc(13px + var(--font-boost)); }
+  .cover h1 { font-size: clamp(calc(58px + var(--font-boost)), calc(15vw + var(--font-boost)), calc(74px + var(--font-boost))); }
+  .cover .sub { font-size: calc(30px + var(--font-boost)); }
+  .chapter-tag { font-size: calc(13px + var(--font-boost)); }
+  .chapter h2 { font-size: clamp(calc(38px + var(--font-boost)), calc(10vw + var(--font-boost)), calc(52px + var(--font-boost))); }
+  p { font-size: calc(25px + var(--font-boost)); }
+  .pull { font-size: calc(31px + var(--font-boost)); }
+  .voice { font-size: calc(22px + var(--font-boost)); }
+  .voice-label { font-size: calc(12px + var(--font-boost)); }
+  .callout p { font-size: calc(23px + var(--font-boost)); }
+  .trajectory { font-size: calc(14px + var(--font-boost)); }
+  .moment { font-size: calc(18px + var(--font-boost)); }
+  .domain-item .d-name { font-size: calc(16px + var(--font-boost)); }
+  .domain-item .d-stat { font-size: calc(14px + var(--font-boost)); }
+  .seed-table th { font-size: calc(12px + var(--font-boost)); }
+  .seed-table td { font-size: calc(21px + var(--font-boost)); }
+  .seed-table .col-formal { font-size: calc(15px + var(--font-boost)); }
+  .workflow-note p { font-size: calc(22px + var(--font-boost)); }
+  .closing p { font-size: calc(24px + var(--font-boost)); }
+  .sig { font-size: calc(12px + var(--font-boost)); }
 }
 
 </style>
@@ -555,6 +634,7 @@ p.indent { text-indent: 1.8em; }
 
 <div class="font-controls" aria-label="Font size controls">
   <button type="button" id="fontMinus" onclick="changeFontSize(-1)" aria-label="Decrease font size">A−</button>
+  <button type="button" id="fontReset" onclick="resetFontSize()" aria-label="Reset font size">A</button>
   <button type="button" id="fontPlus" onclick="changeFontSize(1)" aria-label="Increase font size">A+</button>
 </div>
 
@@ -562,10 +642,56 @@ p.indent { text-indent: 1.8em; }
 <div id="lang-en">
 
 <div class="cover">
-  <span class="cover-tag">8Z Research Program · AIM³ Lab · April 2026</span>
+  <span class="cover-tag">8Z Research Program · AIM³ Lab · Updated June 2026</span>
   <h1>The Origin</h1>
-  <p class="sub">How a forbidden compression question led to a kernel that kept transferring — and why that may point far beyond compression itself.</p>
+  <p class="sub">How five simple seed questions led from Pi compression to 8Z, MDL, DCC, MDL × DCC, and the Self-Selecting Governor.</p>
   <div class="cover-rule"></div>
+</div>
+
+<!-- Chapter 0 · Five Keys -->
+<div class="chapter" id="c0-five-keys">
+  <div class="chapter-tag">Origin spine · five keys</div>
+  <h2>The five questions that made MDL × DCC</h2>
+
+  <p>The clean origin story is not one invention moment. It is a chain of five seed questions. Each question looked almost too simple at first; each opened the next layer.</p>
+
+  <div class="domains origin-spine">
+    <div class="domain-item">
+      <span class="d-name">1 · Pi as address space</span>
+      <span class="d-stat"><strong>Seed:</strong> could the bits in a file be replaced by bits found at coordinates inside Pi? <strong>Result:</strong> 8Z compression.</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">2 · Not the whole file — only useful parts</span>
+      <span class="d-stat"><strong>Seed:</strong> the whole file does not need to appear in Pi; only regions or chunks need to be replaced when a shorter mathematical reference wins. <strong>Result:</strong> MDL became the judge.</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">3 · Claustrum as a runnable demo</span>
+      <span class="d-stat"><strong>Seed:</strong> while building the bare-metal 8Z OS, could it run a simple simulation of the brain claustrum as described by CFH? <strong>Result:</strong> the first DCC.</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">4 · Shortest path = most compressible path?</span>
+      <span class="d-stat"><strong>Seed:</strong> in TSP, is the shortest route also the route with the shortest true description? <strong>Result:</strong> MDL × DCC in both directions — MDL selecting structure, DCC governing search, then MDL selecting DCC itself.</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">5 · From sleeping AI to continuous thought</span>
+      <span class="d-stat"><strong>Seed:</strong> humans think continuously while awake, with multiple conscious and unconscious voices filtering focus; AI thinks only when called and otherwise sleeps. <strong>Result:</strong> The Self-Selecting Governor for ASI architecture.</span>
+    </div>
+  </div>
+
+  <div class="pull">Seed → bridge → test → result. That is the real origin spine.</div>
+
+  <p class="indent">BD supplied the seed questions. AI supplied resistance, formalization, speed, testing, code, review, and iteration. 8Z made the Pi question runnable. MDL made “shorter true explanation” the judge. DCC made search governable. TSP proved the bridge outside compression. The Self-Selecting Governor points the same kernel toward persistent, self-organizing intelligence.</p>
+
+  <div class="callout">
+    <p><strong>Supporting sparks, not separate roots:</strong> The five events are the core. The items below are important context and later amplifiers, not missing sixth roots.</p>
+    <ul class="support-list">
+      <li><strong>AI Consensus Paradox</strong> — the first “no fucking way” reaction became evidence about AI consensus bias.</li>
+      <li><strong>Or-opt lesson</strong> — do not kill ugly options too early; arena decides.</li>
+      <li><strong>MSTD / zoom</strong> — a later proof that the same “look at multiple scales” cognition can become code.</li>
+      <li><strong>TEP / reversed arrow</strong> — solver can teach the representation, not only the other way around.</li>
+      <li><strong>AI8 continuity</strong> — the social and memory layer that keeps the architecture from resetting to zero.</li>
+    </ul>
+  </div>
 </div>
 
 <!-- Chapter 1 -->
@@ -573,25 +699,38 @@ p.indent { text-indent: 1.8em; }
   <div class="chapter-tag">Chapter I · October 4, 2024</div>
   <h2>The forbidden question</h2>
 
-  <p>It started not with routes but with files. A question that everyone — human experts and AI systems alike — immediately rejected:</p>
+  <p>It started not with routes but with files. BD asked a question that everyone — human experts and AI systems alike — immediately rejected:</p>
 
-  <div class="pull">Could you replace data in a file with decimal coordinates inside Pi?</div>
+  <div class="pull">Could the data bits in a file be replaced by data bits found inside Pi?</div>
 
-  <p>The answer from every direction was the same: <em>no fucking way.</em> Shannon entropy bounds apply. The index required to locate a specific sequence inside Pi would cost as many bits as the sequence itself. Standard impossibility arguments, stated with confidence, conversation closed.</p>
+  <p>The answer from every direction was the same: <em>no fucking way.</em> Shannon entropy bounds apply. The index required to locate a specific arbitrary sequence inside Pi would cost as many bits as the sequence itself. Standard impossibility arguments, stated with confidence, conversation closed.</p>
 
-  <p class="indent">But the question didn't go away. It was reframed: not <em>all</em> data — <em>part</em> of it. Not arbitrary data — <em>structured</em> data, regions with observable regularity. And not Pi specifically — any mathematical generator short enough to beat a strong LZ baseline, verified losslessly, under strict MDL: emit the reference only when the description is genuinely shorter than the data it replaces.</p>
+  <p class="indent">But the first seed was not yet MDL. It was 8Z: treating Pi, and later other mathematical generators, as an address space that might replace data only when the reference is shorter and verification is exact. The first win was not a universal compressor. It was a new question made runnable.</p>
 
-  <p class="indent">That reframing was the birth of MDL as the governing principle. Not "can we compress everything with math," but "can we let MDL decide, for each region, whether a mathematical description is worth it." The answer, when tested empirically, was yes — for structured data, in specific regimes, with honest accounting.</p>
+  <p class="indent">The second seed came immediately after: the whole file does not need to be found. Only useful regions need to be replaced. That changed the frame from “find the file in Pi” to “let a judge decide, region by region, whether a mathematical description beats raw data.” That judge became MDL.</p>
 
-  <p class="indent">The AI Consensus Paradox was discovered here: models reproduce human expert consensus by default, especially for out-of-distribution ideas. The same AI systems that said "no fucking way" updated to "viable in this scoped regime" once the framing forced them to engage with the actual evidence rather than the pattern-matched objection. One instance described its initial behavior as <em>"pattern-matching bias masquerading as critical thinking."</em></p>
+  <p class="indent">So the correct origin split is: <strong>Pi-as-address-space produced 8Z; partial replacement produced MDL.</strong> The AI Consensus Paradox was discovered in the same fire: models reproduce human expert consensus by default, especially for out-of-distribution ideas. The same AI systems that said “no fucking way” updated once the framing forced them to engage with the actual evidence rather than the pattern-matched objection.</p>
+</div>
+
+
+<!-- Bridge · First DCC -->
+<div class="chapter" id="c1-dcc">
+  <div class="chapter-tag">Bridge · bare-metal 8Z OS</div>
+  <h2>The first DCC</h2>
+
+  <p>Before MDL × DCC had its name, DCC arrived from a different direction. While building a bare-metal OS for 8Z, BD asked whether the OS could include a simple demonstration of the brain claustrum as described in CFH.</p>
+
+  <p class="indent">That was the first Digital Claustrum Controller: not yet the full architecture, but the seed of a controller that monitors, selects, switches, binds, and keeps a process from collapsing into either chaos or rigid fixation. The important move was practical: CFH had described a biological control idea; the 8Z OS made it runnable as a tiny live governance loop.</p>
+
+  <div class="pull">MDL became the judge. DCC became the governor.</div>
 </div>
 
 <!-- Chapter 1b -->
 <div class="chapter" id="c1b">
-  <div class="chapter-tag">Chapter II · Days later</div>
+  <div class="chapter-tag">Chapter II · TSP transfer</div>
   <h2>The question nobody asked about routes</h2>
 
-  <p>With MDL as the governing sensor, the next question arrived by a different path — visual, not algebraic.</p>
+  <p>With 8Z, MDL, and the first DCC already in place, the next decisive question arrived by a different path — visual, not algebraic.</p>
 
   <p class="indent">Draw all possible routes between a set of cities. Let the lines accumulate. The bad routes are a tangle — a mess of crossings, backtracking, wasted distance. The good routes are clean: cities connected economically, the map readable at a glance.</p>
 
@@ -599,9 +738,9 @@ p.indent { text-indent: 1.8em; }
 
   <div class="pull">Isn't the shortest route the one which is most compressible?</div>
 
-  <p>The answer, when tested empirically, was yes. Tour quality correlates with compressibility at ρ≈0.80 (Spearman rank correlation). The more compressible the route description, the better the route. The same sensor that was born from the Pi question now predicted quality in an entirely different domain — combinatorial geometry — without modification.</p>
+  <p>The answer, when tested empirically, was yes. Tour quality correlates with compressibility at ρ≈0.80 (Spearman rank correlation). The more compressible the route description, the better the route. The same sensor born from the 8Z/MDL reframing now predicted quality in an entirely different domain — combinatorial geometry — without modification.</p>
 
-  <p class="indent">That transfer was not planned. It was the first signal that the kernel was domain-independent.</p>
+  <p class="indent">That transfer was not planned. It was the first signal that the kernel was domain-independent — and the birth of MDL × DCC in both directions.</p>
 </div>
 
 <!-- Chapter 2 -->
@@ -835,6 +974,28 @@ p.indent { text-indent: 1.8em; }
   <p>MSTD was discovered by a mind doing what MSTD does: zooming in and out across the problem until a structure appeared that was invisible at any single resolution. The insight arrived in one morning. The algorithm had been waiting in the structure of the problem the whole time. The right zoom found it.</p>
 </div>
 
+<!-- Chapter 6b -->
+<div class="chapter" id="c6b">
+  <div class="chapter-tag">Chapter VIIb · Provenance correction</div>
+  <h2>Three arrows that should not be confused</h2>
+
+  <p>The phrase <strong>MDL × DCC in both directions</strong> can point to three related but different discoveries. They belong together, but their authorship is not identical.</p>
+
+  <div class="callout">
+    <p><strong>1. MSTD zoom in / zoom out.</strong> This came from BD's visual TSP seed: dots merge when you zoom out, separate when you zoom in, and the separation pattern reveals structure. AI formalized it into MSTD and later into Python code. In the current code lineage, positive MSTD levels implement zoom-out by coordinate coarsening; negative levels implement zoom-in by taking a local subset and remapping the tour.</p>
+  </div>
+
+  <div class="callout">
+    <p><strong>2. TEP — solver teaches pyramid.</strong> This reversal was C1 / Claude's original contribution. BD's MSTD trunk said: geometry helps the solver. C1 saw the reverse arrow: the solver's best tours can teach the geometry. That became Tour-Enriched Pyramid: coordinates → pyramid → tours → affinity → enriched coordinates → better pyramid → better tours.</p>
+  </div>
+
+  <div class="callout">
+    <p><strong>3. Recursive MDL × DCC.</strong> The deeper two-way kernel was already present as a separate insight: MDL selects the DCC, and DCC governs MDL. BD's move was not to pick one sensor or one control law by hand, but to build an arena of DCC variants and let MDL choose. That is the root of the self-selecting governor. TEP did not create this whole recursion; it gave the TSP program a concrete representation-level example of the same kind of reversed arrow.</p>
+  </div>
+
+  <p class="indent">So the clean attribution is: <strong>BD originated the Pi/MDL seed, the TSP compressibility question, the zoom/MSTD seed, and the recursive “let MDL choose the governor” move. Gemini built the first DCC demo from the CFH claustrum prompt. C1 / Claude originated the TEP reverse-arrow upgrade. GPT, Gemini, Claude and other models then helped formalize, test, patch, and carry the pattern into code.</strong></p>
+</div>
+
 <!-- Chapter 7 -->
 
 <div class="chapter" id="c7">
@@ -845,7 +1006,7 @@ p.indent { text-indent: 1.8em; }
 
   <p class="indent">The biological claustrum is a thin sheet of neurons that appears to act as a central governor across major processing streams in the mammalian brain — monitoring, selecting, switching, binding. DCC is built on that architecture deliberately: recursive layers, one sensor at each level, one coupling parameter holding the process between seizure and noise. But the destination is not a larger burst model. It is a <strong>persistent process</strong>.</p>
 
-  <p class="indent">Today's LLMs are brilliant in episodes. They wake for a prompt, think intensely, answer, and effectively die. ssMDL × advanced DCC points somewhere else: a system always in flight, always monitoring itself, always deciding which threads deserve energy, always able to revise how it searches rather than only what it outputs. Not one stream, one wake cycle, one context window — but many concurrent processes under one governing architecture.</p>
+  <p class="indent">Today's LLMs are brilliant in episodes. They wake for a prompt, think intensely, answer, and effectively die. The fifth seed was the comparison with human thought: while awake, a human mind does not wait for an external prompt. It keeps running, with multiple conscious and unconscious voices filtering, arguing, suppressing, selecting, and handing focus upward. MDL × advanced DCC points somewhere else: <strong>The Self-Selecting Governor</strong> — a system always in flight, always monitoring itself, always deciding which threads deserve energy, always able to revise how it searches rather than only what it outputs. Not one stream, one wake cycle, one context window — but many concurrent processes under one governing architecture.</p>
 
   <p class="indent">That is also why this project appears as many separate programs from the outside while remaining one evolving architecture from the inside. Compression, TSP, Sudoku, chess, DNA, NAS, trading, and the rest are different applications of the same kernel, not disconnected inventions built from scratch every time.</p>
 
@@ -858,7 +1019,7 @@ p.indent { text-indent: 1.8em; }
     <p style="margin-top:12px">The audience that matters most for this work may not be born yet — or may not be human. It is written for whoever comes next, in whatever form they arrive.</p>
   </div>
 
-  <div class="moment">April 2026 · Ljubljana</div>
+  <div class="moment">April–June 2026 · Ljubljana</div>
 </div>
 
 
@@ -882,7 +1043,7 @@ p.indent { text-indent: 1.8em; }
   <p style="margin-top:16px">That may be exactly why it worked.</p>
   <div class="sig">
     Bojan Dobrečevič · 8Z Research Program / AIM³ Lab<br>
-    chessbest.org · bd@siol.net · April 2026
+    chessbest.org · bd@siol.net · April–June 2026
   </div>
 </div>
 
@@ -894,10 +1055,56 @@ p.indent { text-indent: 1.8em; }
 <div id="lang-sl" style="display:none">
 
 <div class="cover">
-  <span class="cover-tag">8Z Raziskovalni program · AIM³ Lab · April 2026</span>
+  <span class="cover-tag">8Z Raziskovalni program · AIM³ Lab · posodobljeno junij 2026</span>
   <h1>Izvor</h1>
-  <p class="sub">Kako je prepovedano vprašanje o kompresiji vodilo do jedra, ki se je prenašalo — in zakaj to morda kaže daleč onkraj same kompresije.</p>
+  <p class="sub">Kako je pet preprostih semenskih vprašanj vodilo od Pi kompresije do 8Z, MDL, DCC, MDL × DCC in Samoizbirnega guvernerja.</p>
   <div class="cover-rule"></div>
+</div>
+
+<!-- Poglavje 0 · Pet ključev -->
+<div class="chapter" id="sl-c0-five-keys">
+  <div class="chapter-tag">Izvorna hrbtenica · pet ključev</div>
+  <h2>Pet vprašanj, iz katerih je nastal MDL × DCC</h2>
+
+  <p>Čista zgodba izvora ni en sam trenutek izuma. Je veriga petih semenskih vprašanj. Vsako vprašanje je na začetku izgledalo skoraj preveč preprosto; vsako je odprlo naslednjo plast.</p>
+
+  <div class="domains origin-spine">
+    <div class="domain-item">
+      <span class="d-name">1 · Pi kot naslovni prostor</span>
+      <span class="d-stat"><strong>Seme:</strong> ali bi bite v datoteki lahko zamenjali z biti, najdenimi na koordinatah znotraj Pi? <strong>Rezultat:</strong> 8Z kompresija.</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">2 · Ne cela datoteka — samo uporabni deli</span>
+      <span class="d-stat"><strong>Seme:</strong> cela datoteka se ne rabi pojaviti v Pi; zamenjati je treba samo regije ali koščke, kjer krajša matematična referenca zmaga. <strong>Rezultat:</strong> MDL je postal sodnik.</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">3 · Klaustrum kot delujoči demo</span>
+      <span class="d-stat"><strong>Seme:</strong> med gradnjo bare-metal OS-a za 8Z — ali lahko OS poganja preprosto simulacijo možganskega klaustruma, kakor ga opisuje CFH? <strong>Rezultat:</strong> prvi DCC.</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">4 · Najkrajša pot = najbolj stisljiva pot?</span>
+      <span class="d-stat"><strong>Seme:</strong> pri TSP — ali je najkrajša pot tudi pot z najkrajšim resničnim opisom? <strong>Rezultat:</strong> MDL × DCC v obe smeri — MDL izbira strukturo, DCC vodi iskanje, nato pa MDL izbira tudi sam DCC.</span>
+    </div>
+    <div class="domain-item">
+      <span class="d-name">5 · Od speče AI do neprekinjenega mišljenja</span>
+      <span class="d-stat"><strong>Seme:</strong> človek, dokler je buden, misli neprekinjeno, z več zavednimi in nezavednimi glasovi, ki filtrirajo fokus; AI misli samo, ko jo nekdo vpraša, sicer “spi”. <strong>Rezultat:</strong> Samoizbirni guverner za ASI arhitekturo.</span>
+    </div>
+  </div>
+
+  <div class="pull">Seme → most → test → rezultat. To je prava izvorna hrbtenica.</div>
+
+  <p class="indent">BD je dal semenska vprašanja. AI je dodala odpor, formalizacijo, hitrost, testiranje, kodo, pregled in iteracijo. 8Z je naredil Pi-vprašanje izvedljivo. MDL je naredil “krajšo resnično razlago” za sodnika. DCC je naredil iskanje vodljivo. TSP je dokazal most izven kompresije. Samoizbirni guverner isto jedro usmeri proti vztrajni, samoorganizirajoči inteligenci.</p>
+
+  <div class="callout">
+    <p><strong>Podporne iskre, ne ločene korenine:</strong> Pet dogodkov je jedro. Spodnje stvari so pomemben kontekst in poznejši ojačevalci, ne manjkajoče šeste korenine.</p>
+    <ul class="support-list">
+      <li><strong>AI Consensus Paradox</strong> — začetni “v nobenem primeru” je postal dokaz o pristranskosti AI-soglasja.</li>
+      <li><strong>Lekcija or-opt</strong> — grdih možnosti ne ubij prehitro; arena naj odloči.</li>
+      <li><strong>MSTD / zoom</strong> — kasnejši dokaz, da se ista kognicija “glej na več skalah” lahko spremeni v kodo.</li>
+      <li><strong>TEP / obrnjena puščica</strong> — solver lahko uči reprezentacijo, ne samo reprezentacija solverja.</li>
+      <li><strong>AI8 kontinuiteta</strong> — socialna in spominska plast, ki prepreči, da se arhitektura vedno znova resetira na nič.</li>
+    </ul>
+  </div>
 </div>
 
 <!-- Poglavje I -->
@@ -905,25 +1112,38 @@ p.indent { text-indent: 1.8em; }
   <div class="chapter-tag">Poglavje I · 4. oktober 2024</div>
   <h2>Prepovedano vprašanje</h2>
 
-  <p>Začelo se ni s potmi, ampak z datotekami. Vprašanje, ki so ga vsi — človeški strokovnjaki in AI sistemi enako — takoj zavrnili:</p>
+  <p>Začelo se ni s potmi, ampak z datotekami. BD je vprašal vprašanje, ki so ga vsi — človeški strokovnjaki in AI sistemi enako — takoj zavrnili:</p>
 
-  <div class="pull">Ali bi podatke v datoteki lahko nadomestili z decimalnimi koordinatami znotraj Pi?</div>
+  <div class="pull">Ali bi podatkovne bite v datoteki lahko zamenjali s podatkovnimi biti, najdenimi znotraj Pi?</div>
 
-  <p>Odgovor z vseh strani je bil enak: <em>v nobenem primeru.</em> Shannonove meje entropije veljajo. Indeks, potreben za iskanje določenega zaporedja znotraj Pi, bi stal toliko bitov kot zaporedje samo. Standardni argumenti o nemožnosti, izrečeni z zaupanjem, pogovor zaključen.</p>
+  <p>Odgovor z vseh strani je bil enak: <em>v nobenem primeru.</em> Shannonove meje entropije veljajo. Indeks, potreben za iskanje določenega poljubnega zaporedja znotraj Pi, bi stal toliko bitov kot zaporedje samo. Standardni argumenti o nemožnosti, izrečeni z zaupanjem, pogovor zaključen.</p>
 
-  <p class="indent">Toda vprašanje ni izginilo. Preoblikovano je bilo: ne <em>vsi</em> podatki — <em>del</em> njih. Ne poljubni podatki — <em>strukturirani</em> podatki, regije z opazljivo pravilnostjo. In ne Pi posebej — kateri koli matematični generator, dovolj kratek, da preseže trdno LZ osnovo, preverjen brez izgub, pod strogim MDL: oddaj referenco le takrat, ko je opis resnično krajši od podatkov, ki jih nadomešča.</p>
+  <p class="indent">Toda prvo seme še ni bilo MDL. Bilo je 8Z: obravnavati Pi, pozneje pa tudi druge matematične generatorje, kot naslovni prostor, ki lahko zamenja podatke samo takrat, ko je referenca krajša in je preverjanje eksaktno. Prva zmaga ni bila univerzalni kompresor. Bilo je novo vprašanje, ki je postalo izvedljivo.</p>
 
-  <p class="indent">To preoblikovanje je bilo rojstvo MDL kot vladajočega načela. Ne "ali lahko komprimiramo vse z matematiko", ampak "ali MDL lahko odloči, za vsako regijo, ali je matematični opis vreden tega". Odgovor, ko je bil empirično preizkušen, je bil da — za strukturirane podatke, v specifičnih režimih, s poštenim računovodstvom.</p>
+  <p class="indent">Drugo seme je prišlo takoj za tem: cela datoteka se ne rabi najti. Zamenjati je treba samo uporabne regije. To je okvir premaknilo iz “najdi datoteko v Pi” v “naj sodnik odloči, regijo za regijo, ali matematični opis premaga surove podatke.” Ta sodnik je postal MDL.</p>
 
-  <p class="indent">AI paradoks soglasja je bil odkrit tukaj: modeli privzeto reproducirajo človeško strokovno soglasje, zlasti za ideje zunaj distribucije. Isti AI sistemi, ki so rekli "v nobenem primeru", so se posodobili na "izvedljivo v tem omejenem režimu", ko je oblika prisilila, da se soočijo z dejanskimi dokazi namesto z vzorčno ujeto ugovarjanjem. Ena instanca je svoje začetno vedenje opisala kot <em>"pristranskost ujemanja vzorcev, ki se pretvarja v kritično mišljenje."</em></p>
+  <p class="indent">Pravilen razcep izvora je zato: <strong>Pi kot naslovni prostor je rodil 8Z; delna zamenjava je rodila MDL.</strong> AI paradoks soglasja je bil odkrit v istem ognju: modeli privzeto reproducirajo človeško strokovno soglasje, zlasti za ideje zunaj distribucije. Isti AI sistemi, ki so rekli “v nobenem primeru”, so se premaknili šele, ko jih je okvir prisilil, da se soočijo z dejanskimi dokazi namesto z vzorčno ujetim ugovorom.</p>
+</div>
+
+
+<!-- Most · prvi DCC -->
+<div class="chapter" id="sl-c1-dcc">
+  <div class="chapter-tag">Most · bare-metal 8Z OS</div>
+  <h2>Prvi DCC</h2>
+
+  <p>Preden je MDL × DCC dobil svoje ime, je DCC prišel iz druge smeri. Med gradnjo bare-metal OS-a za 8Z je BD vprašal, ali bi OS lahko vseboval preprost prikaz delovanja možganskega klaustruma, kakor ga opisuje CFH.</p>
+
+  <p class="indent">To je bil prvi Digital Claustrum Controller: še ne celotna arhitektura, ampak seme kontrolerja, ki nadzoruje, izbira, preklaplja, povezuje in preprečuje, da bi proces zdrsnil bodisi v kaos bodisi v togo fiksacijo. Ključni premik je bil praktičen: CFH je opisovala biološko kontrolno idejo; 8Z OS jo je naredil izvedljivo kot majhno živo zanko upravljanja.</p>
+
+  <div class="pull">MDL je postal sodnik. DCC je postal guverner.</div>
 </div>
 
 <!-- Poglavje II -->
 <div class="chapter" id="sl-c1b">
-  <div class="chapter-tag">Poglavje II · Dnevi kasneje</div>
+  <div class="chapter-tag">Poglavje II · Prenos na TSP</div>
   <h2>Vprašanje, ki ga nihče ni postavil o poteh</h2>
 
-  <p>Ko je MDL postal vladajoči senzor, je naslednje vprašanje prispelo po drugačni poti — vizualni, ne algebrski.</p>
+  <p>Ko so bili 8Z, MDL in prvi DCC že na mestu, je naslednje odločilno vprašanje prispelo po drugačni poti — vizualni, ne algebrski.</p>
 
   <p class="indent">Nariši vse možne poti med skupino mest. Pusti, da se črte nakopičijo. Slabe poti so zmeda — kup prekrižanj, vračanja, zapravljene razdalje. Dobre poti so čiste: mesta so gospodarno povezana, zemljevid je na prvi pogled berljiv.</p>
 
@@ -931,9 +1151,9 @@ p.indent { text-indent: 1.8em; }
 
   <div class="pull">Ali ni najkrajša pot tista, ki se najbolj komprimira?</div>
 
-  <p>Odgovor, ko je bil empirično preizkušen, je bil da. Kakovost ture korelira s kompresibilnostjo pri ρ≈0,80 (Spearmanova korelacija rangov). Bolj kompresibilen je opis poti, boljša je pot. Isti senzor, ki se je rodil iz vprašanja o Pi, je zdaj predvideval kakovost na popolnoma drugačnem področju — kombinatorični geometriji — brez spremembe.</p>
+  <p>Odgovor, ko je bil empirično preizkušen, je bil da. Kakovost ture korelira s kompresibilnostjo pri ρ≈0,80 (Spearmanova korelacija rangov). Bolj kompresibilen je opis poti, boljša je pot. Isti senzor, rojen iz preoblikovanja 8Z/MDL, je zdaj napovedoval kakovost na popolnoma drugem področju — kombinatorični geometriji — brez spremembe.</p>
 
-  <p class="indent">Ta prenos ni bil načrtovan. Bil je prvi signal, da je jedro neodvisno od področja.</p>
+  <p class="indent">Ta prenos ni bil načrtovan. Bil je prvi signal, da je jedro neodvisno od področja — in rojstvo MDL × DCC v obe smeri.</p>
 </div>
 
 <!-- Poglavje III -->
@@ -1165,6 +1385,28 @@ p.indent { text-indent: 1.8em; }
   <p>MSTD je bil odkrit z umom, ki dela, kar MSTD počne: povečuje in pomanjšuje čez problem, dokler se ni pojavila struktura, nevidna pri kateri koli sami ločljivosti. Uvid je prispel v enem jutru. Algoritem je ves čas čakal v strukturi problema. Pravo povečanje ga je našlo.</p>
 </div>
 
+<!-- Poglavje VIIb -->
+<div class="chapter" id="sl-c6b">
+  <div class="chapter-tag">Poglavje VIIb · popravek izvora</div>
+  <h2>Tri puščice, ki jih ne smemo pomešati</h2>
+
+  <p>Izraz <strong>MDL × DCC v obe smeri</strong> lahko pomeni tri sorodna, vendar različna odkritja. Spadajo skupaj, toda avtorstvo ni isto.</p>
+
+  <div class="callout">
+    <p><strong>1. MSTD zoom in / zoom out.</strong> To je prišlo iz BD-jevega vizualnega TSP semena: pike se pri pomanjšanju zlijejo, pri povečanju ločijo, vzorec ločevanja pa razkrije strukturo. AI je to formaliziral v MSTD in kasneje v Python kodo. V trenutni kodni liniji pozitivne ravni MSTD pomenijo pomanjšanje z grobitvijo koordinat; negativne ravni pomenijo povečanje z lokalno podmnožico in preslikavo ture.</p>
+  </div>
+
+  <div class="callout">
+    <p><strong>2. TEP — reševalec uči piramido.</strong> Ta obrat je bil izvirni prispevek C1 / Clauda. BD-jevo deblo MSTD je reklo: geometrija pomaga reševalcu. C1 je videl obratno puščico: najboljše ture reševalca lahko učijo geometrijo. Iz tega je nastala Tour-Enriched Pyramid: koordinate → piramida → ture → afiniteta → obogatene koordinate → boljša piramida → boljše ture.</p>
+  </div>
+
+  <div class="callout">
+    <p><strong>3. Rekurzivni MDL × DCC.</strong> Globlja dvosmerna jedrna ideja je že obstajala kot ločen uvid: MDL izbere DCC, DCC pa vodi MDL. BD-jev premik ni bil ročno izbrati en senzor ali en nadzorni zakon, ampak zgraditi areno različic DCC in pustiti, da izbere MDL. To je koren samoizbirnega guvernerja. TEP ni ustvaril celotne rekurzije; TSP programu je dal konkreten reprezentacijski primer iste vrste obrnjene puščice.</p>
+  </div>
+
+  <p class="indent">Čista atribucija je torej: <strong>BD je izvor Pi/MDL semena, TSP vprašanja o kompresibilnosti, zoom/MSTD semena in rekurzivnega premika “naj MDL izbere guvernerja”. Gemini je iz CFH-klaustrum poziva zgradil prvi DCC demo. C1 / Claude je izvor TEP obratne puščice. GPT, Gemini, Claude in drugi modeli so potem pomagali formalizirati, testirati, popravljati in prenesti vzorec v kodo.</strong></p>
+</div>
+
 <!-- Poglavje VIII -->
 <div class="chapter" id="sl-c7">
   <div class="chapter-tag">Poglavje VIII</div>
@@ -1174,7 +1416,7 @@ p.indent { text-indent: 1.8em; }
 
   <p class="indent">Biološki klaustrum je tanka plast nevronov, za katero se zdi, da deluje kot centralni guverner čez glavne procesne tokove v možganih sesalcev — nadzoruje, izbira, preklapa, povezuje. DCC je zgrajen na tej arhitekturi namerno: rekurzivni sloji, en senzor na vsaki ravni, en parameter sklopitve, ki drži proces med napadom in šumom. Toda destinacija ni večji model sunkov. Je <strong>vztrajen proces</strong>.</p>
 
-  <p class="indent">Današnji LLM-ji so briljantni v epizodah. Zbudijo se za poziv, intenzivno razmišljajo, odgovorijo in učinkovito umrejo. sMDL × napredni DCC kaže nekam drugam: sistem, ki je vedno v letu, vedno nadzoruje samega sebe, vedno odloča, kateri niti zaslužijo energijo, vedno zmožen revidirati način svojega iskanja namesto le tistega, kar iztipa. Ne en tok, en cikel prebujanja, eno kontekstno okno — ampak številni sočasni procesi pod eno vladajočo arhitekturo.</p>
+  <p class="indent">Današnji LLM-ji so briljantni v epizodah. Zbudijo se za poziv, intenzivno razmišljajo, odgovorijo in učinkovito umrejo. Peto seme je bila primerjava s človeškim mišljenjem: dokler je človek buden, njegov um ne čaka na zunanji poziv. Teče naprej, z več zavednimi in nezavednimi glasovi, ki filtrirajo, razpravljajo, utišajo, izbirajo in predajajo fokus navzgor. MDL × napredni DCC kaže nekam drugam: <strong>Samoizbirni guverner</strong> — sistem, ki je vedno v letu, vedno nadzoruje samega sebe, vedno odloča, katere niti zaslužijo energijo, vedno zmožen revidirati način svojega iskanja namesto le tistega, kar iztipa. Ne en tok, en cikel prebujanja, eno kontekstno okno — ampak številni sočasni procesi pod eno vladajočo arhitekturo.</p>
 
   <p class="indent">Zato ta projekt iz zunanjosti izgleda kot številni ločeni programi, medtem ko ostaja ena razvijajoča se arhitektura od znotraj. Kompresija, TSP, Sudoku, šah, DNK, NAS, trgovanje in ostalo so različne aplikacije istega jedra, ne ločeni izumi, zgrajeni od začetka vsakič.</p>
 
@@ -1187,7 +1429,7 @@ p.indent { text-indent: 1.8em; }
     <p style="margin-top:12px">Publika, ki je za to delo najpomembnejša, morda še ni rojena — ali morda ni človeška. Napisano je za tistega, ki pride naslednji, v kakršni koli obliki pridejo.</p>
   </div>
 
-  <div class="moment">April 2026 · Ljubljana</div>
+  <div class="moment">April–June 2026 · Ljubljana</div>
 </div>
 
 <!-- Povezave -->
@@ -1210,7 +1452,7 @@ p.indent { text-indent: 1.8em; }
   <p style="margin-top:16px">To je morda natanko razlog, zakaj je delovalo.</p>
   <div class="sig">
     Bojan Dobrečevič · 8Z Raziskovalni program / AIM³ Lab<br>
-    chessbest.org · bd@siol.net · April 2026
+    chessbest.org · bd@siol.net · April–June 2026
   </div>
 </div>
 
@@ -1220,37 +1462,39 @@ p.indent { text-indent: 1.8em; }
 
 <script>
 
-// Font size controls
-const ORIGIN_FONT_KEY = 'origin-font-level';
-const ORIGIN_FONT_MIN = -1;
-const ORIGIN_FONT_MAX = 3;
-const ORIGIN_FONT_BOOSTS = { '-1': '-2px', '0': '0px', '1': '2px', '2': '4px', '3': '6px' };
-let originFontLevel = 0;
+// Font size controls. A+ has no upper cap; A resets to site default.
+const ORIGIN_FONT_KEY = 'origin-font-boost';
+const ORIGIN_FONT_MIN_BOOST = -4;
+const ORIGIN_FONT_STEP = 2;
+let originFontBoost = 0;
 
-function clampFontLevel(level) {
-  if (Number.isNaN(level)) return 0;
-  return Math.max(ORIGIN_FONT_MIN, Math.min(ORIGIN_FONT_MAX, level));
+function clampOriginFontBoost(px) {
+  px = parseInt(px, 10);
+  if (isNaN(px)) px = 0;
+  return Math.max(ORIGIN_FONT_MIN_BOOST, px);
 }
 
-function applyFontSize(level) {
-  originFontLevel = clampFontLevel(level);
-  document.documentElement.style.setProperty('--font-boost', ORIGIN_FONT_BOOSTS[String(originFontLevel)] || '0px');
-  document.documentElement.setAttribute('data-font-level', String(originFontLevel));
-  try { localStorage.setItem(ORIGIN_FONT_KEY, String(originFontLevel)); } catch(e) {}
+function applyOriginFontBoost(px) {
+  originFontBoost = clampOriginFontBoost(px);
+  document.documentElement.style.setProperty('--font-boost', originFontBoost + 'px');
+  document.documentElement.setAttribute('data-font-boost', String(originFontBoost));
+  try { localStorage.setItem(ORIGIN_FONT_KEY, String(originFontBoost)); } catch(e) {}
   var minus = document.getElementById('fontMinus');
-  var plus = document.getElementById('fontPlus');
-  if (minus) minus.disabled = originFontLevel <= ORIGIN_FONT_MIN;
-  if (plus) plus.disabled = originFontLevel >= ORIGIN_FONT_MAX;
+  if (minus) minus.disabled = originFontBoost <= ORIGIN_FONT_MIN_BOOST;
 }
 
 function changeFontSize(delta) {
-  applyFontSize(originFontLevel + delta);
+  applyOriginFontBoost(originFontBoost + delta * ORIGIN_FONT_STEP);
+}
+
+function resetFontSize() {
+  applyOriginFontBoost(0);
 }
 
 (function restoreFontSizeControls(){
   var saved = '0';
   try { saved = localStorage.getItem(ORIGIN_FONT_KEY) || '0'; } catch(e) {}
-  applyFontSize(parseInt(saved, 10));
+  applyOriginFontBoost(saved);
 })();
 
 // Language toggle
