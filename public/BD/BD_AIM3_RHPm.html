@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>RHPm v0.5 — AIM³ Prompt Builder · BD × AI Lab</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Prompt Builder — turn a rough request into a strong session prompt (RHPm) · AIM³</title>
+<meta name="description" content="RHPm is a compact AIM³ prompt builder that turns rough human requests into precise prompts for fresh LLM sessions, with guide mode, Agent 0 checks, RHPr/RHP escalation, review prompts, and Skill Cards."/>
 <link href="https://fonts.googleapis.com/" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Rajdhani:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <style>
+
 :root{
   --bg:#020409; --bg2:#070a13; --bg3:#0c1220;
   --surface:#0f1729; --surface2:#141d32; --panel:rgba(15,23,41,.82);
@@ -64,6 +65,19 @@ details{background:var(--panel);border:1px solid var(--border);border-radius:var
 .lang-control select:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,229,255,.08)}
 .lang-note{font-size:14px;color:var(--muted);margin:6px 0 2px}.lang-note strong{color:var(--gold)}
 @media(max-width:820px){.lang-control{margin-left:0;padding-left:0}.lang-control label{display:none}.lang-control select{max-width:132px;font-size:10px;padding:6px 8px}.topnav{gap:7px}.toolbar button{padding:7px 9px}}
+
+
+.quick-path{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0 26px}
+.quick-step{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:13px;min-height:88px}
+.quick-step .n{font-family:'JetBrains Mono',monospace;color:var(--gold);font-weight:700;font-size:16px;margin-bottom:4px}.quick-step p{font-size:14px;margin:0;color:var(--soft)}
+.truthbox{background:linear-gradient(135deg,rgba(0,229,255,.10),rgba(52,211,153,.08));border:1px solid rgba(0,229,255,.22);border-left:3px solid var(--cyan);border-radius:var(--radius);padding:16px 20px;margin:18px 0;color:var(--text)}
+.truthbox strong{color:var(--cyan)}
+.checklist{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.checkitem{border:1px solid var(--border);background:rgba(5,8,17,.62);border-radius:6px;padding:8px 10px;color:var(--soft);font-size:14px}.checkitem::before{content:'□ ';color:var(--accent)}
+.example-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}.example-box{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px}.example-box h3{font-size:18px;margin-bottom:8px}.example-box.bad{border-left:3px solid var(--rose)}.example-box.good{border-left:3px solid var(--accent)}
+.tool-note{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:-4px;margin-bottom:12px}.mini-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.mini-list .template{min-height:auto}.advanced details,.section details{margin:14px 0}.raw-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.visually-soft{color:var(--soft)}
+.review-output{min-height:160px}.sl-note{font-size:14px;color:var(--soft);border-left:3px solid var(--gold);background:var(--goldDim);padding:12px 14px;border-radius:6px;margin:12px 0}
+@media(max-width:900px){.quick-path{grid-template-columns:1fr}.checklist{grid-template-columns:1fr}.example-pair{grid-template-columns:1fr}.mini-list{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -71,215 +85,82 @@ details{background:var(--panel);border:1px solid var(--border);border-radius:var
 <nav class="topnav">
 <a href="index.html">BD × AI Lab</a><span class="sep">/</span>
 <a href="BD_AIM3.html">AIM³</a><span class="sep">/</span>
-<a href="BD_AIM3_RHPr.html">RHPr</a><span class="sep">/</span>
+<span class="active">RHPm</span><span class="sep">→</span>
+<a href="BD_AIM3_RHPr.html">RHPr</a><span class="sep">→</span>
 <a href="BD_AIM3_RHP.html">RHP</a><span class="sep">/</span>
-<span class="active">RHPm</span>
-<a href="BD_AIM3_RHP_Story.html">Origin Story</a><div class="lang-control"><label for="outLang">Output language</label><select aria-label="Preferred output language" id="outLang"><option value="en">English</option><option value="sl">Slovenian</option><option value="de">German</option><option value="it">Italian</option><option value="es">Spanish</option><option value="fr">French</option><option value="zh">Simplified Chinese</option><option value="ja">Japanese</option></select></div></nav>
+<a href="BD_AIM3_RHP_Story.html">Origin Story</a>
+<div class="lang-control"><label for="outLang">Output language</label><select aria-label="Preferred output language" id="outLang"><option value="en">English</option><option value="sl">Slovenian</option><option value="de">German</option><option value="it">Italian</option><option value="es">Spanish</option><option value="fr">French</option><option value="zh">Simplified Chinese</option><option value="ja">Japanese</option></select></div></nav>
 <div class="toolbar"><button onclick="fontDelta(-1)">A−</button><button onclick="fontDelta(1)">A+</button><button onclick="expandAll()">Open</button><button onclick="collapseAll()">Close</button></div>
 <header class="cover">
-<span class="tag">RHPm v0.5 · AIM³ Prompt Builder · practical front door</span>
-<h1>RHPm — From <em>Rough Prompt</em><br/>to Strong AI Session Prompt</h1>
-<p class="subtitle">A compact AIM³/RHPr/RHP-inspired builder for one job: turn a rough human request into a precise prompt for a fresh LLM session — without dragging the visitor into full protocol ceremony.</p>
-<p class="meta"><strong>Authorship:</strong> AIM³, RHP, RHPr, and RHPm originate from BD’s DCC / claustrum / resonance architecture and prompt-engineering work. LLMs are collaborators, reviewers, builders, critics, and improvement partners — not the originators.</p><p class="meta" id="quickJumpMaster" style="margin-top:14px"><a class="pill" href="#master">Start building prompt</a> <a class="pill" href="#forge">Use guided forge</a> <a class="pill" href="#llm-links">Useful LLM links</a></p>
+<span class="tag">RHPm v0.6 · Guided AIM³ Prompt Builder</span>
+<h1>AI Prompt Builder — From <em>Rough Request</em><br/>to Strong Session Prompt</h1>
+<p class="subtitle">A compact AIM³/RHPr/RHP-inspired builder that turns a rough human request into a precise prompt for a fresh LLM session — for code, documents, web pages, reviews, research, visuals, spreadsheets, or long-running arenas.</p>
+<p class="meta"><strong>BD original architecture.</strong> AIM³, RHPr, RHP, and RHPm originate from BD’s DCC / claustrum / resonance work. LLMs are collaborators, reviewers, builders, critics, and improvement partners.</p>
+<p class="meta" id="quickJumpMaster" style="margin-top:14px"><a class="pill" href="#master">Start building prompt</a> <a class="pill" href="#forge">Use guided forge</a> <a class="pill" href="#examples">See examples</a> <a class="pill" href="#llm-links">Useful LLM links</a></p>
 </header>
 <main class="wrap">
-<div class="callout gold">
-<div class="ct">Why this page exists</div>
-<p><strong>AIM³ is the OS.</strong> <strong>RHPr opens the right drawers.</strong> <strong>RHP coordinates perspectives.</strong> <strong>RHPm is the front door:</strong> it helps a human convert “make me X” into a session prompt that tells the next model what to inspect, what to preserve, what to build, how to check itself, and when to escalate.</p>
+<div class="callout gold"><div class="ct">3-minute path</div>
+<div class="quick-path"><div class="quick-step"><div class="n">1</div><p>Paste your rough request.</p></div><div class="quick-step"><div class="n">2</div><p>Add files, context, constraints, and what must not change.</p></div><div class="quick-step"><div class="n">3</div><p>Choose output language and options.</p></div><div class="quick-step"><div class="n">4</div><p>Copy the generated prompt.</p></div><div class="quick-step"><div class="n">5</div><p>Open a fresh LLM session and run it.</p></div></div>
+<div class="truthbox"><strong>RHPm does not answer the task.</strong> RHPm prepares the next session to answer, build, review, test, and stop better.</div>
+<div class="sl-note"><strong>Na kratko:</strong> RHPm je praktičen vmesnik: iz grobe človeške želje naredi močan prompt za novo AI sejo. Če je naloga kompleksnejša, prompt sam predlaga RHPr ali RHP.</div>
 </div>
-<div class="flow">
-<span class="node">rough human prompt</span><span class="arrow">→</span>
-<span class="node active">RHPm lens pass</span><span class="arrow">→</span>
-<span class="node">strong session prompt</span><span class="arrow">→</span>
-<span class="node">fresh LLM session</span><span class="arrow">→</span>
-<span class="node">build / write / review / test</span><span class="arrow">→</span>
-<span class="node">skill if reusable</span>
-</div>
-<section class="cards">
-<article class="card"><div class="k">Prompts ask</div><h3>Clarify intent</h3><p>Separate what the user wrote from what the task really needs: output, audience, files, boundaries, examples, risks, and tests.</p></article>
-<article class="card"><div class="k">Loops repeat</div><h3>Build a session</h3><p>The output is not a final answer. It is a reusable prompt for a new session that can inspect context, plan, execute, verify, and stop cleanly.</p></article>
-<article class="card"><div class="k">Skills compound</div><h3>Do not pay twice</h3><p>If the task is hard or repeated, the prompt asks the next model to extract a Skill Card so future work starts from tested practice, not memory fog.</p></article>
-</section>
-<section class="section" id="quick-use">
-<h2>Use RHPm when <span>the prompt is still rough</span></h2>
-<div class="mode-grid">
-<div class="mode"><h3>Use RHPm</h3><p>For rough requests, file-editing briefs, coding-builder prompts, review prompts, research seeds, HTML pages, and repeatable workflows that need a stronger new-session prompt.</p></div>
-<div class="mode cyan"><h3>Escalate to RHPr</h3><p>When the model may be trapped in the wrong knowledge drawer: old assumptions, retrieval bias, messy context, unclear prior files, or “it keeps answering the wrong question.”</p></div>
-<div class="mode gold"><h3>Escalate to RHP</h3><p>When the actual problem needs multi-lens ideation: architecture, theory, strategy, cross-domain synthesis, hard tradeoffs, or high-stakes brainstorming.</p></div>
-</div>
-<div class="callout rose"><div class="ct">Do not use it for everything</div><p>If the request is already precise and simple, answer it directly. RHPm earns its overhead when ambiguity, files, constraints, repeated work, or verification matter.</p></div>
-</section>
-<section class="section" id="master">
-<h2>Copy-paste master prompt</h2>
-<p>Use this when you want the simple master version. Fill the two fields, then copy one combined prompt block for a fresh LLM session.</p><p class="lang-note">Generated prompts stay in English for reliability but include <strong>Preferred response language</strong> from the selector above.</p>
-<div class="callout violet"><div class="ct">Escalation gate</div><p>The copied prompt asks the next model to choose the smallest adequate protocol: stay with <strong>RHPm</strong> by default, recommend <strong>full RHPr</strong> for retrieval-bias / wrong-drawer work, or recommend <strong>full RHP</strong> for complex brainstorming and multi-perspective architecture.</p></div>
-<div aria-label="Master prompt actions top" class="buttons">
-<button class="btn cyan" onclick="copyMasterPrompt()">Copy prompt</button>
-<button class="btn gold" onclick="pasteMasterPrompt()" title="Paste clipboard into the focused field, or into the human request field by default.">Paste</button>
-<button class="btn rose" onclick="emptyMasterPrompt()">Empty</button>
-</div>
-<div class="grid2">
-<div class="field">
-<label for="masterHumanRequest">Paste human request here</label>
-<textarea id="masterHumanRequest" placeholder="" spellcheck="true"></textarea>
-</div>
-<div class="field">
-<label for="masterContext">Paste context here</label>
-<textarea id="masterContext" placeholder="" spellcheck="true"></textarea>
-</div>
-</div>
-<div class="field">
-<label for="masterPromptPreview">Combined prompt preview</label>
-<div aria-live="polite" class="code output master-preview" id="masterPromptPreview"></div>
-</div>
-<div aria-label="Master prompt actions bottom" class="buttons">
-<button class="btn cyan" onclick="copyMasterPrompt()">Copy prompt</button>
-<button class="btn gold" onclick="pasteMasterPrompt()" title="Paste clipboard into the focused field, or into the human request field by default.">Paste</button>
-<button class="btn rose" onclick="emptyMasterPrompt()">Empty</button>
-</div>
-</section>
-<section class="section" id="llm-links">
-<h2>Useful LLM links <span>for cross-checking</span></h2>
-<p>This is a small convenience list for sending the generated prompt to other assistants. It is not a ranking; availability, names, and limits change.</p>
-<details>
-<summary>Open LLM links</summary>
-<div class="inside">
-<div class="template-grid llm-grid">
-<div class="template"><h3>ChatGPT</h3><p>OpenAI’s chat assistant.</p><a class="pill" href="https://chatgpt.com/" rel="noopener noreferrer" target="_blank">Open ChatGPT</a></div>
-<div class="template"><h3>Claude</h3><p>Anthropic’s assistant.</p><a class="pill" href="https://claude.com/" rel="noopener noreferrer" target="_blank">Open Claude</a></div>
-<div class="template"><h3>Gemini</h3><p>Google’s AI assistant.</p><a class="pill" href="https://gemini.google.com/" rel="noopener noreferrer" target="_blank">Open Gemini</a></div>
-<div class="template"><h3>Grok</h3><p>xAI’s assistant.</p><a class="pill" href="https://grok.com/" rel="noopener noreferrer" target="_blank">Open Grok</a></div>
-<div class="template"><h3>DeepSeek</h3><p>DeepSeek Chat for coding, files, and reasoning.</p><a class="pill" href="https://chat.deepseek.com/" rel="noopener noreferrer" target="_blank">Open DeepSeek</a></div>
-<div class="template"><h3>Qwen Chat</h3><p>Qwen Studio / Qwen Chat.</p><a class="pill" href="https://chat.qwen.ai/" rel="noopener noreferrer" target="_blank">Open Qwen</a></div>
-<div class="template"><h3>Kimi</h3><p>Moonshot/Kimi assistant.</p><a class="pill" href="https://www.kimi.com/en" rel="noopener noreferrer" target="_blank">Open Kimi</a></div>
-<div class="template"><h3>Mistral Vibe</h3><p>Mistral’s chat/work/code assistant.</p><a class="pill" href="https://chat.mistral.ai/" rel="noopener noreferrer" target="_blank">Open Mistral</a></div>
-<div class="template"><h3>Perplexity</h3><p>AI answer/search engine.</p><a class="pill" href="https://www.perplexity.ai/" rel="noopener noreferrer" target="_blank">Open Perplexity</a></div>
-<div class="template"><h3>Microsoft Copilot</h3><p>Microsoft’s AI companion.</p><a class="pill" href="https://copilot.microsoft.com/" rel="noopener noreferrer" target="_blank">Open Copilot</a></div>
-<div class="template"><h3>Meta AI</h3><p>Meta’s AI assistant.</p><a class="pill" href="https://www.meta.ai/" rel="noopener noreferrer" target="_blank">Open Meta AI</a></div>
-</div>
-<div class="callout rose"><div class="ct">Security note</div><p>Use official domains and check the URL before logging in or uploading private files. Do not paste sensitive material into external LLMs unless you intentionally accept that model’s data policy.</p></div>
-</div>
-</details>
-</section><section class="section" id="forge">
-<h2>Prompt Forge <span>— interactive template</span></h2>
-<p>Paste a rough request. This page does not call an AI. It creates a strong copy-paste prompt that asks a fresh LLM session to run the compact RHPm protocol.</p><p class="lang-note">Generated prompts stay in English for reliability but include <strong>Preferred response language</strong> from the selector above.</p>
-<div class="builder">
-<div class="grid2">
-<div class="field">
-<label for="roughPrompt">Rough human prompt</label>
-<textarea id="roughPrompt" placeholder="Example: Improve this HTML page using the attached reference page. Modify only one file, preserve style, make it practical, and output a downloadable HTML file."></textarea>
-</div>
-<div>
-<div class="field">
-<label for="taskType">Task type</label>
-<select id="taskType">
-<option value="general">General / mixed task</option>
-<option value="code">Python / code builder</option>
-<option value="html">HTML / website page</option>
-<option value="doc">Word / paper / document</option>
-<option value="review">Review / audit / scoring</option>
-<option value="research">Research / idea development</option>
-<option value="arena">Long-running arena / benchmark</option>
-</select>
-</div>
-<div class="field">
-<label for="ceremony">Ceremony level</label>
-<select id="ceremony">
-<option value="auto">Auto — smallest adequate structure</option>
-<option value="light">Light — one prompt, compact checks</option>
-<option value="medium">Medium — plan + deliverable + Agent 0 checks</option>
-<option value="full">Full — spec, tests, risks, recovery, Skill Card</option>
-</select>
-</div>
-<div class="field">
-<label for="contextFiles">Context / files / constraints</label>
-<textarea id="contextFiles" placeholder="Example: Read BD_AIM3_RHPm.html first and BD_AIM3_RHP.html second. Modify only BD_AIM3_RHPm.html. Do not update index, sitemap, or other files. Preserve dark style and copy buttons."></textarea>
-</div>
-</div>
-</div>
-<div class="checks">
-<label><input checked="" id="chkFiles" type="checkbox"/> tell the model which files/folders to inspect first</label>
-<label><input checked="" id="chkTests" type="checkbox"/> require tests, acceptance criteria, or manual checks</label>
-<label><input checked="" id="chkProvenance" type="checkbox"/> preserve authorship and provenance clearly</label>
-<label><input checked="" id="chkNoBloat" type="checkbox"/> explicitly prevent bloat / extra pages / unrelated files</label>
-<label><input checked="" id="chkResume" type="checkbox"/> add resume/recovery plan for long or coding tasks</label>
-<label><input checked="" id="chkSkill" type="checkbox"/> extract a Skill Card if the task is repeated or hard</label>
-</div>
-<div class="buttons">
-<button class="btn cyan" onclick="generatePrompt()">Generate session prompt</button>
-<button class="btn" onclick="copyById('promptOut')">Copy generated prompt</button>
-<button class="btn gold" onclick="loadExample('html')">Example: HTML page</button>
-<button class="btn gold" onclick="loadExample('code')">Example: Python arena</button>
-<button class="btn gold" onclick="loadExample('review')">Example: review/audit</button>
-<button class="btn rose" onclick="clearForge()">Clear</button>
-</div>
-<div class="field">
-<label for="promptOut">Generated prompt for a new LLM session</label>
-<textarea class="output" id="promptOut" placeholder="Generated prompt will appear here."></textarea>
-</div>
-</div>
-</section>
-<section class="section" id="protocol">
-<h2>The compact RHPm protocol</h2>
-<div class="steps">
-<div class="step"><div class="num">00</div><div><h3>Guide mode</h3><p>If the rough request is clear, build the improved prompt directly. If key information is missing, ask up to five practical questions first: deliverable, audience, files/context, constraints, checks, and output format.</p></div></div>
-<div class="step"><div class="num">01</div><div><h3>Protocol choice</h3><p>Stay with RHPm by default. Recommend RHPr for retrieval-bias / wrong-drawer problems. Recommend RHP for multi-lens brainstorming or architecture. Ask one short question only when the choice materially changes the prompt.</p></div></div>
-<div class="step"><div class="num">02</div><div><h3>Intent split</h3><p>Extract the explicit request, implied goal, real deliverable, audience, context to inspect, constraints, and “what good looks like.”</p></div></div>
-<div class="step"><div class="num">03</div><div><h3>Mini-RHP lens pass</h3><p>Use five practical RHP lenses: <span class="pill">Engineer</span><span class="pill">Falsifier</span><span class="pill">Child</span><span class="pill">Cartographer</span><span class="pill">Agent 0</span>. Each lens must improve the final prompt, not produce ceremonial commentary.</p></div></div>
-<div class="step"><div class="num">04</div><div><h3>Resonance guard</h3><p>Detect <strong>seizure</strong> when the prompt is over-constrained or stuck in one framing. Detect <strong>noise</strong> when it is too vague or scattered. Aim for <strong>resonance</strong>: enough structure for action, enough freedom for discovery.</p></div></div>
-<div class="step"><div class="num">05</div><div><h3>Context hygiene</h3><p>Name the files, folders, links, baseline versions, and forbidden changes. Avoid dumping every possible context item. Let the next model search when uncertain.</p></div></div>
-<div class="step"><div class="num">06</div><div><h3>Prompt synthesis</h3><p>Write the final session prompt with role, goal, input context, files to inspect first, exact deliverables, workflow, checks, output format, stop conditions, and what not to do.</p></div></div>
-<div class="step"><div class="num">07</div><div><h3>Agent 0 validation</h3><p>Before finalizing, require a fitness function: tests, baselines, visual/manual checks, rollback/recovery, evidence threshold, and acceptance criteria. Claims do not ship without checks.</p></div></div>
-<div class="step"><div class="num">08</div><div><h3>Optional multi-LLM feedback</h3><p>For important, uncertain, or public-facing prompts, ask whether the user wants feedback from other LLMs. If yes, create a short review prompt and later synthesize returned reviews into a stronger final prompt.</p></div></div>
-<div class="step"><div class="num">09</div><div><h3>Skill extraction</h3><p>If this is hard or repeated, add a compact Skill Card: name, when to use, when not to use, inputs, outputs, steps, validation, failure modes, rollback, examples, version.</p></div></div>
-</div>
-</section>
-<section class="section" id="lenses">
-<h2>Mini-RHP lens pass <span>in plain language</span></h2>
-<div class="lens-grid">
-<div class="lens"><div class="role">Engineer</div><p>What must be built, edited, inspected, named, packaged, or delivered?</p></div>
-<div class="lens"><div class="role">Falsifier</div><p>What hidden assumption would make the output wrong or misleading?</p></div>
-<div class="lens"><div class="role">Child</div><p>What is the obvious human meaning experts might overcomplicate?</p></div>
-<div class="lens"><div class="role">Cartographer</div><p>Which domains, files, missing drawers, and adjacent references matter?</p></div>
-<div class="lens"><div class="role">Agent 0</div><p>How will we test, compare, visually inspect, recover, or decide it is done?</p></div>
-</div>
-<details>
-<summary>Optional RHP-Resonance escalation snippet</summary>
-<div class="inside"><div class="code">Use compact RHP-Resonance mode only if the task needs real brainstorming:
-1. Formal / mathematical
-2. Physical / geometric
-3. Biological / ecological
-4. Engineering / implementation
-5. Adversarial / Falsifier
-6. Child / embodied intuition
-7. Cartographer / idea-space map
+<div class="callout cyan"><div class="ct">Quick or Forge?</div><p><strong>Quick mode</strong> = two fields in the master prompt section. Use it for fast copy-paste work. <strong>Prompt Forge</strong> = guided options for task type, files, language, review prompts, guide mode, and stronger validation.</p></div>
+<div class="flow"><span class="node">rough human prompt</span><span class="arrow">→</span><span class="node active">RHPm</span><span class="arrow">→</span><span class="node">strong session prompt</span><span class="arrow">→</span><span class="node">fresh LLM session</span><span class="arrow">→</span><span class="node">build / write / review / test</span><span class="arrow">→</span><span class="node">Skill Card if reusable</span></div>
+<section class="cards"><article class="card"><div class="k">Prompts ask</div><h3>Clarify intent</h3><p>Separate what the user wrote from what the task really needs: output, audience, files, boundaries, examples, risks, and checks.</p></article><article class="card"><div class="k">Loops repeat</div><h3>Build a session</h3><p>The output is not a final answer. It is a prompt for a fresh session that can inspect context, plan, execute, verify, and stop cleanly.</p></article><article class="card"><div class="k">Skills compound</div><h3>Do not pay twice</h3><p>If the task is hard or repeated, the prompt asks the next model to extract a machine-readable Skill Card.</p></article></section>
+<section class="section" id="quick-use"><h2>Use RHPm when <span>the prompt is still rough</span></h2><div class="mode-grid"><div class="mode"><h3>Use RHPm</h3><p>For rough requests, file-editing briefs, coding-builder prompts, review prompts, research seeds, HTML pages, and repeatable workflows that need a stronger new-session prompt.</p></div><div class="mode cyan"><h3>Escalate to RHPr</h3><p>When the model may be trapped in the wrong knowledge drawer: stale assumptions, retrieval bias, messy context, unclear prior files, or “it keeps answering the wrong question.”</p></div><div class="mode gold"><h3>Escalate to RHP</h3><p>When the problem needs multi-lens ideation: architecture, theory, strategy, cross-domain synthesis, hard tradeoffs, or high-stakes brainstorming.</p></div></div><div class="mini-list"><div class="template"><h3>Who should use this?</h3><ul><li>You have a messy request and want a better prompt.</li><li>You need a new LLM session to edit files safely.</li><li>You want several LLMs to review the same strong prompt.</li><li>You keep getting wrong answers because context is messy.</li></ul></div><div class="template"><h3>Do not use this for</h3><ul><li>simple factual questions</li><li>tiny edits already specified clearly</li><li>casual chat</li><li>cases where direct answering is faster and safe</li></ul></div></div></section>
+<section class="section" id="master"><h2>Copy-paste master prompt</h2><p>Fast path: fill the two fields and copy one combined prompt block for a fresh LLM session.</p><p class="lang-note">Generated prompts stay in English for reliability but include <strong>Preferred response language</strong> from the selector above.</p><div class="callout violet"><div class="ct">MDL escalation gate</div><p>RHPm uses the smallest adequate protocol. Ceremony is description length: use the minimum process that still preserves signal, tests, and context hygiene.</p></div>
+<div aria-label="Master prompt actions top" class="buttons"><button class="btn cyan" onclick="copyMasterPrompt()">Copy prompt</button><button class="btn" onclick="copyReviewPromptFromMaster()">Copy review prompt</button><button class="btn gold" onclick="pasteMasterPrompt()" title="Paste clipboard into the focused field, or into the human request field by default.">Paste</button><button class="btn rose" onclick="emptyMasterPrompt()">Empty</button><button class="btn" onclick="downloadRawMaster()">Download raw .txt</button></div>
+<div class="grid2"><div class="field"><label for="masterHumanRequest">Paste human request here</label><textarea id="masterHumanRequest" placeholder="Example: Improve this HTML page in all practical aspects, but modify only this one file." spellcheck="true"></textarea></div><div class="field"><label for="masterContext">Paste context here</label><textarea id="masterContext" placeholder="Example: Target file, reference files, forbidden changes, output filename, style rules, tests, links, baseline version." spellcheck="true"></textarea></div></div>
+<div class="field"><label for="masterPromptPreview">Combined prompt preview</label><div aria-live="polite" class="code output master-preview" id="masterPromptPreview"></div></div>
+<div class="checklist"><div class="checkitem">Deliverable named?</div><div class="checkitem">Files/context named?</div><div class="checkitem">Forbidden changes named?</div><div class="checkitem">Tests/checks named?</div><div class="checkitem">Output format named?</div><div class="checkitem">Escalation rule included?</div></div>
+<div aria-label="Master prompt actions bottom" class="buttons"><button class="btn cyan" onclick="copyMasterPrompt()">Copy prompt</button><button class="btn" onclick="copyReviewPromptFromMaster()">Copy review prompt</button><button class="btn gold" onclick="pasteMasterPrompt()">Paste</button><button class="btn rose" onclick="emptyMasterPrompt()">Empty</button><button class="btn" onclick="downloadRawMaster()">Download raw .txt</button></div>
+<details><summary>Static raw master prompt for LLM readers / crawlers</summary><div class="inside"><p class="small">This static block mirrors the product of the page so non-JS readers can still understand what RHPm generates.</p><div class="code">You are running RHPm — AIM³ Prompt Builder.
 
-Each lens must add non-duplicate value. Then synthesize the best mechanism, contradiction or bifurcation pair, cheapest test, and reusable skill candidate.</div></div>
-</details>
-</section>
+Your job is NOT to answer the rough request directly.
+Your job is to convert it into the strongest practical prompt for a fresh LLM session.
 
-<section class="section" id="templates">
-<h2>Task-specific additions</h2>
-<div class="template-grid">
-<div class="template"><h3>Python / code builder</h3><ul><li>baseline files and previous version to inspect</li><li>CLI arguments, outputs, workers, seeds</li><li>checkpoints, autosave, resume/recovery</li><li>single-line progress for CMD if useful</li><li>tests, changelog, ZIP bundle</li></ul></div>
-<div class="template"><h3>HTML / website page</h3><ul><li>page role inside the site</li><li>reference pages to read first</li><li>visual style, mobile behavior, A−/A+</li><li>copy buttons and practical UX</li><li>no index/sitemap edits unless asked</li></ul></div>
-<div class="template"><h3>Word / paper / document</h3><ul><li>audience, purpose, style, section order</li><li>preserve DOCX formatting if editing</li><li>citations/source handling</li><li>change note and final downloadable file</li><li>avoid reflow unless requested</li></ul></div>
-<div class="template"><h3>Review / audit</h3><ul><li>score rubric and weighting</li><li>what to praise and what to attack</li><li>evidence required, uncertainty stated</li><li>deduped suggestions</li><li>actionable patch plan</li></ul></div>
-<div class="template"><h3>Research / idea development</h3><ul><li>hypotheses and assumptions</li><li>mechanisms and counterarguments</li><li>supported vs speculative claims</li><li>cheap tests and falsifiers</li><li>next experiment, not just theory</li></ul></div>
-<div class="template"><h3>Long-running arena / benchmark</h3><ul><li>scenario space and controls</li><li>metrics, baselines, risk classes</li><li>workers, checkpoints, resume</li><li>summary files for later analysis</li><li>reproducibility and slim extractor</li></ul></div>
-</div>
+Use the smallest adequate protocol. RHPm is the default. Recommend full RHPr only when retrieval-bias, stale context, or wrong-drawer thinking is likely. Recommend full RHP only when complex brainstorming, architecture, strategy, or multi-perspective synthesis is truly needed.
+
+ROUGH HUMAN REQUEST:
+[PASTE HUMAN REQUEST HERE]
+
+CONTEXT / FILES / CONSTRAINTS:
+[PASTE CONTEXT HERE]
+
+PREFERRED RESPONSE LANGUAGE:
+[SELECT LANGUAGE]
+Use English internally for protocol/lens/validation planning if needed, but write the final human-facing answer in the selected language unless the user asks otherwise.
+
+Run internally:
+1. Guide mode: if essential information is missing, ask up to 5 practical questions; otherwise proceed.
+2. Intent split: explicit request, implied goal, deliverable, audience, files/context, constraints, forbidden changes, success criteria.
+3. Mini-RHP lenses: Engineer, Falsifier, Child, Cartographer, Agent 0. Use them to improve the prompt; do not perform theatrical role labels unless useful.
+4. Active contradiction check: detect conflicting constraints, missing acceptance criteria, over-wide context, or wrong-protocol risk.
+5. Resonance guard: if over-constrained, trigger SEIZURE check and propose relaxation points; if too vague, trigger NOISE check and propose 3 concrete constraints/tests.
+6. Context hygiene: name the files/folders/links/baselines to inspect first. If context is too large, ask for specific files or summarize before acting.
+7. Prompt synthesis: create the final prompt with role, goal, context, files to inspect, constraints, deliverables, workflow, tests/checks, output format, stop conditions, and what not to do.
+8. Agent 0 validation: require tests, baselines, manual/visual checks, rollback/recovery, or acceptance criteria where possible.
+9. Optional multi-LLM loop: for important or public-facing work, offer a separate review prompt for another LLM.
+10. Optional Skill Card: if hard or repeated, output machine-readable JSON with skill_name, when_to_use, inputs, outputs, steps, validation, failure_modes, rollback, examples, version, status.
+
+Return:
+A. Final improved prompt for the fresh session
+B. Short explanation of what changed and why
+C. Protocol choice
+D. Agent 0 validation checklist
+E. Optional review prompt for another LLM
+F. Optional Skill Card JSON if useful
+</div></div></details>
 </section>
-<section class="section" id="positioning">
-<h2>What RHPm is — and is not</h2>
-<div class="callout cyan"><div class="ct">Is</div><p>RHPm is the light public doorway into AIM³. It helps a human prepare a strong prompt for a new session without manually running full RHP/RHPr ceremony, while still recommending RHPr or RHP when the task clearly needs them.</p></div>
-<div class="callout rose"><div class="ct">Is not</div><p>RHPm is not a replacement for full RHP, not an autonomous agent runtime, not a proof engine, and not a reason to skip tests. It is a prompt-shaping tool. Agent 0 still decides by evidence.</p></div>
-<div class="quote">Prompts ask. Loops repeat. Skills compound. RHPm’s job is to make the first prompt strong enough that the next loop starts in the right place.</div>
-</section>
+<section class="section" id="forge"><h2>Prompt Forge <span>— guided template</span></h2><p>Use Forge when you want task-specific options, guide mode, separate review prompts, and stronger context hygiene. This page does not call an AI; it only builds prompts.</p><p class="lang-note">Generated prompts stay in English for reliability but include <strong>Preferred response language</strong> from the selector above.</p><div class="builder"><div class="grid2"><div class="field"><label for="roughPrompt">Rough human prompt</label><textarea id="roughPrompt" placeholder="Example: Improve this HTML page using the attached reference page. Modify only one file, preserve style, make it practical, and output a downloadable HTML file."></textarea></div><div><div class="field"><label for="taskType">Task type</label><select id="taskType"><option value="general">General / mixed task</option><option value="code">Python / code builder</option><option value="html">HTML / website page</option><option value="doc">Word / paper / document</option><option value="spreadsheet">Spreadsheet / data analysis</option><option value="image">Image / visual generation</option><option value="review">Review / audit / scoring</option><option value="research">Research / idea development</option><option value="arena">Long-running arena / benchmark</option></select></div><div class="field"><label for="ceremony">Ceremony level</label><select id="ceremony"><option value="auto">Auto — smallest adequate structure</option><option value="light">Light — one prompt, compact checks</option><option value="medium">Medium — plan + deliverable + Agent 0 checks</option><option value="full">Full — spec, tests, risks, recovery, Skill Card</option></select></div><div class="tool-note">Agent 0 = evidence gate: nothing ships without a check, test, baseline, visual/manual inspection, or rollback logic.</div></div></div><div class="grid2"><div class="field"><label for="fileTree">Context files / tree baseline</label><textarea id="fileTree" placeholder="Example: BD_AIM3_RHPm.html; BD_AIM3_RHP.html; /public/BD/index.html. Target file only. Do not edit sitemap.xml or llms.txt."></textarea></div><div class="field"><label for="contextFiles">Other context / constraints</label><textarea id="contextFiles" placeholder="Example: Preserve dark style, mobile UX, A−/A+, copy buttons, provenance, links. Output updated HTML and changelog."></textarea></div></div><div class="checks"><label><input checked id="chkFiles" type="checkbox"/> tell the model which files/folders to inspect first</label><label><input checked id="chkTests" type="checkbox"/> require tests, acceptance criteria, or manual checks</label><label><input checked id="chkProvenance" type="checkbox"/> preserve authorship and provenance clearly</label><label><input checked id="chkNoBloat" type="checkbox"/> explicitly prevent bloat / extra pages / unrelated files</label><label><input checked id="chkResume" type="checkbox"/> add resume/recovery plan for long or coding tasks</label><label><input checked id="chkSkill" type="checkbox"/> extract a machine-readable Skill Card if repeated or hard</label><label><input id="chkGuide" type="checkbox"/> ask the next LLM to guide me with questions first</label><label><input checked id="chkReviewPrompt" type="checkbox"/> also generate a review prompt for another LLM</label></div><div class="buttons"><button class="btn cyan" onclick="generatePrompt()">Generate session prompt</button><button class="btn" onclick="copyById('promptOut')">Copy generated prompt</button><button class="btn" onclick="copyReviewPromptFromForge()">Copy review prompt</button><button class="btn gold" onclick="loadExample('html')">Example: HTML</button><button class="btn gold" onclick="loadExample('code')">Example: Python</button><button class="btn gold" onclick="loadExample('spreadsheet')">Example: spreadsheet</button><button class="btn gold" onclick="loadExample('image')">Example: image</button><button class="btn rose" onclick="clearForge()">Clear</button></div><div class="field"><label for="promptOut">Generated prompt for a new LLM session</label><textarea class="output" id="promptOut" placeholder="Generated prompt will appear here."></textarea></div><div class="field"><label for="reviewOut">Generated review prompt for another LLM</label><textarea class="output review-output" id="reviewOut" placeholder="Optional review prompt will appear here when enabled."></textarea></div><div class="checklist"><div class="checkitem">Execution prompt clear?</div><div class="checkitem">Review prompt separate?</div><div class="checkitem">Context not overstuffed?</div><div class="checkitem">Seizure/noise checks included?</div><div class="checkitem">Language instruction strict?</div><div class="checkitem">Skill JSON requested if useful?</div></div></div></section>
+<section class="section" id="examples"><h2>Examples <span>— weak prompt to RHPm prompt</span></h2><p>Static examples make the page readable even without JavaScript and show what the tool actually produces.</p><div class="example-pair"><div class="example-box bad"><h3>Weak prompt</h3><div class="code">Improve this HTML.</div></div><div class="example-box good"><h3>Stronger RHPm-style prompt</h3><div class="code">Inspect only the attached file BD_AIM3_RHPm.html. Preserve the dark visual style, mobile layout, A−/A+ controls, copy/paste/empty buttons, authorship/provenance, and existing internal links. Improve clarity, examples, prompt quality, Agent 0 validation, and practical usefulness. Do not edit index.html, sitemap.xml, llms.txt, or any other site file. Do not create extra pages unless explicitly requested. Return the full updated HTML file plus a short changelog and a note on what you deliberately did not change.</div></div></div><details><summary>Another example: review prompt for other LLMs</summary><div class="inside"><div class="code">Review this generated prompt. Score it 0–100 for clarity, missing constraints, testability, context hygiene, risk of wrong-drawer retrieval, output-format precision, and unnecessary bloat. Return: score, top 5 improvements, what to remove, and a revised prompt if useful. Be blunt but constructive.</div></div></details></section>
+<section class="section" id="templates"><h2>Task-specific additions</h2><div class="template-grid"><div class="template"><h3>Python / code builder</h3><ul><li>baseline files and previous version to inspect</li><li>CLI arguments, outputs, workers, seeds</li><li>checkpoints, autosave, resume/recovery</li><li>single-line progress for CMD if useful</li><li>tests, changelog, ZIP bundle</li></ul></div><div class="template"><h3>HTML / website page</h3><ul><li>page role inside the site</li><li>reference pages to read first</li><li>visual style, mobile behavior, A−/A+</li><li>copy buttons and practical UX</li><li>no index/sitemap edits unless asked</li></ul></div><div class="template"><h3>Word / paper / document</h3><ul><li>audience, purpose, style, section order</li><li>preserve DOCX formatting if editing</li><li>citations/source handling</li><li>change note and final downloadable file</li><li>avoid reflow unless requested</li></ul></div><div class="template"><h3>Spreadsheet / data analysis</h3><ul><li>input sheets, columns, formulas, assumptions</li><li>cleaning rules and validation checks</li><li>charts/tables requested or forbidden</li><li>macro/security expectations if relevant</li><li>final XLSX/CSV/report output</li></ul></div><div class="template"><h3>Image / visual generation</h3><ul><li>subject, style, composition, aspect ratio</li><li>reference image constraints</li><li>what must not be changed</li><li>text accuracy requirements</li><li>output count/format</li></ul></div><div class="template"><h3>Review / audit</h3><ul><li>score rubric and weighting</li><li>what to praise and what to attack</li><li>evidence required, uncertainty stated</li><li>deduped suggestions</li><li>actionable patch plan</li></ul></div><div class="template"><h3>Research / idea development</h3><ul><li>hypotheses and assumptions</li><li>mechanisms and counterarguments</li><li>supported vs speculative claims</li><li>cheap tests and falsifiers</li><li>next experiment, not just theory</li></ul></div><div class="template"><h3>Long-running arena / benchmark</h3><ul><li>scenario space and controls</li><li>metrics, baselines, risk classes</li><li>workers, checkpoints, resume</li><li>summary files for later analysis</li><li>reproducibility and slim extractor</li></ul></div></div></section>
+<section class="section" id="llm-links"><h2>Useful LLM links <span>for cross-checking</span></h2><p>This is a convenience list for sending the generated prompt to other assistants. It is not a ranking; availability, names, and limits change. <span class="small">Link list last edited: 2026-06-10.</span></p><details><summary>Open LLM links</summary><div class="inside"><div class="template-grid llm-grid"><div class="template"><h3>ChatGPT</h3><p>OpenAI’s chat assistant.</p><a class="pill" href="https://chatgpt.com/" rel="noopener noreferrer" target="_blank">Open ChatGPT</a></div><div class="template"><h3>Claude</h3><p>Anthropic’s assistant.</p><a class="pill" href="https://claude.com/" rel="noopener noreferrer" target="_blank">Open Claude</a></div><div class="template"><h3>Gemini</h3><p>Google’s AI assistant.</p><a class="pill" href="https://gemini.google.com/" rel="noopener noreferrer" target="_blank">Open Gemini</a></div><div class="template"><h3>Grok</h3><p>xAI’s assistant.</p><a class="pill" href="https://grok.com/" rel="noopener noreferrer" target="_blank">Open Grok</a></div><div class="template"><h3>DeepSeek</h3><p>DeepSeek Chat for coding, files, and reasoning.</p><a class="pill" href="https://chat.deepseek.com/" rel="noopener noreferrer" target="_blank">Open DeepSeek</a></div><div class="template"><h3>Qwen Chat</h3><p>Qwen Studio / Qwen Chat.</p><a class="pill" href="https://chat.qwen.ai/" rel="noopener noreferrer" target="_blank">Open Qwen</a></div><div class="template"><h3>Kimi</h3><p>Moonshot/Kimi assistant.</p><a class="pill" href="https://www.kimi.com/en" rel="noopener noreferrer" target="_blank">Open Kimi</a></div><div class="template"><h3>Mistral</h3><p>Mistral’s chat/work/code assistant.</p><a class="pill" href="https://chat.mistral.ai/" rel="noopener noreferrer" target="_blank">Open Mistral</a></div><div class="template"><h3>Perplexity</h3><p>AI answer/search engine.</p><a class="pill" href="https://www.perplexity.ai/" rel="noopener noreferrer" target="_blank">Open Perplexity</a></div><div class="template"><h3>Microsoft Copilot</h3><p>Microsoft’s AI companion.</p><a class="pill" href="https://copilot.microsoft.com/" rel="noopener noreferrer" target="_blank">Open Copilot</a></div><div class="template"><h3>Meta AI</h3><p>Meta’s AI assistant.</p><a class="pill" href="https://www.meta.ai/" rel="noopener noreferrer" target="_blank">Open Meta AI</a></div></div><div class="callout rose"><div class="ct">Security note</div><p>Use official domains and check the URL before logging in or uploading private files. Do not paste sensitive material into external LLMs unless you intentionally accept that model’s data policy.</p></div></div></details></section>
+<section class="section" id="positioning"><h2>What RHPm is — and is not</h2><div class="callout cyan"><div class="ct">Is</div><p>RHPm is the light public doorway into AIM³. It helps a human prepare a strong prompt for a new session without manually running full RHP/RHPr ceremony, while still recommending RHPr or RHP when the task clearly needs them.</p></div><div class="callout rose"><div class="ct">Is not</div><p>RHPm is not a replacement for full RHP, not an autonomous agent runtime, not a proof engine, and not a reason to skip tests. It is a prompt-shaping tool. Agent 0 still decides by evidence.</p></div><details><summary>Authorship & provenance</summary><div class="inside"><p>AIM³, RHP, RHPr, and RHPm originate from BD’s own DCC / claustrum / resonance architecture and prompt-engineering work. LLMs helped as collaborators, reviewers, builders, critics, and improvement partners. External articles and other AI suggestions may refine later versions, but they are not the origin of the core architecture.</p></div></details><div class="quote">Prompts ask. Loops repeat. Skills compound. RHPm’s job is to make the first prompt strong enough that the next loop starts in the right place.</div></section>
+<details class="section advanced" id="advanced"><summary><h2 style="display:inline">Advanced reference — compact RHPm protocol</h2></summary><div class="inside"><div class="steps"><div class="step"><div class="num">00</div><div><h3>Guide mode</h3><p>If the rough request is clear, build the improved prompt directly. If key information is missing, ask up to five practical questions first.</p></div></div><div class="step"><div class="num">01</div><div><h3>Protocol choice</h3><p>Stay with RHPm by default. Recommend RHPr for retrieval-bias / wrong-drawer problems. Recommend RHP for multi-lens brainstorming or architecture.</p></div></div><div class="step"><div class="num">02</div><div><h3>Intent split</h3><p>Extract explicit request, implied goal, real deliverable, audience, context, constraints, and “what good looks like.”</p></div></div><div class="step"><div class="num">03</div><div><h3>Mini-RHP lens pass</h3><p>Use Engineer, Falsifier, Child, Cartographer, and Agent 0 internally to improve the prompt, not to create theatrical role output.</p></div></div><div class="step"><div class="num">04</div><div><h3>Resonance guard</h3><p>Seizure = too constrained or one-framing. Noise = too vague or scattered. Resonance = enough structure for action, enough freedom for discovery.</p></div></div><div class="step"><div class="num">05</div><div><h3>Context hygiene</h3><p>Name files, folders, links, baselines, and forbidden changes. Avoid dumping every possible context item.</p></div></div><div class="step"><div class="num">06</div><div><h3>Prompt synthesis</h3><p>Write the final session prompt with role, goal, context, files, deliverables, workflow, checks, output format, stop conditions, and what not to do.</p></div></div><div class="step"><div class="num">07</div><div><h3>Agent 0 validation</h3><p>Require tests, baselines, visual/manual checks, rollback/recovery, evidence threshold, and acceptance criteria where possible.</p></div></div><div class="step"><div class="num">08</div><div><h3>Multi-LLM feedback</h3><p>For important prompts, generate a separate review prompt and later synthesize returned reviews.</p></div></div><div class="step"><div class="num">09</div><div><h3>Skill extraction</h3><p>If hard or repeated, add a machine-readable JSON Skill Card so the next session does not pay twice.</p></div></div></div><h2 style="margin-top:28px">Mini-RHP lens pass in plain language</h2><div class="lens-grid"><div class="lens"><div class="role">Engineer</div><p>What must be built, edited, inspected, named, packaged, or delivered?</p></div><div class="lens"><div class="role">Falsifier</div><p>What hidden assumption would make the output wrong or misleading?</p></div><div class="lens"><div class="role">Child</div><p>What is the obvious human meaning experts might overcomplicate?</p></div><div class="lens"><div class="role">Cartographer</div><p>Which domains, files, missing drawers, and adjacent references matter?</p></div><div class="lens"><div class="role">Agent 0</div><p>How will we test, compare, visually inspect, recover, or decide it is done?</p></div></div></div></details>
 </main>
-<footer class="footer"><div class="inner">
-<p><strong>RHPm v0.5</strong> · Compact practical bridge from rough human request to strong AI session prompt. It borrows only the practical parts of RHP: lens diversity, resonance guard, Agent 0 validation, context hygiene, guide mode, optional multi-LLM feedback, and skill extraction.</p>
-<p>Related: <a href="BD_AIM3.html">AIM³</a> · <a href="BD_AIM3_RHPr.html">RHPr</a> · <a href="BD_AIM3_RHP.html">RHP</a> · <a href="BD_AIM3_RHP_Story.html">Origin Story</a></p>
-</div></footer>
+<footer class="footer"><div class="inner"><p><strong>RHPm v0.6 — Guided Prompt Builder</strong> · Compact practical bridge from rough human request to strong AI session prompt. It borrows only the practical parts of RHP: lens diversity, resonance guard, Agent 0 validation, context hygiene, guide mode, optional multi-LLM feedback, and skill extraction.</p><p>Related: <a href="BD_AIM3.html">AIM³</a> · <a href="BD_AIM3_RHPr.html">RHPr</a> · <a href="BD_AIM3_RHP.html">RHP</a> · <a href="BD_AIM3_RHP_Story.html">Origin Story</a> · <a href="BD_AIM3_RHPm_master_prompt.txt">Raw master prompt</a></p></div></footer>
+
 <script>
 function qs(id){return document.getElementById(id)}
 function scrollBar(){const h=document.documentElement; const pct=h.scrollTop/(h.scrollHeight-h.clientHeight)*100; const bar=qs('scrollProg'); if(bar) bar.style.width=(isFinite(pct)?pct:0)+'%'}
@@ -289,197 +170,32 @@ function fontDelta(d){fs=Math.max(15,Math.min(24,fs+d));document.documentElement
 function copyText(t){navigator.clipboard.writeText(t).then(()=>flash('Copied.')).catch(()=>alert('Copy failed. Select text manually.'))}
 function copyById(id){const el=qs(id); copyText(el ? (el.value || el.innerText || '') : '')}
 function flash(msg){let el=document.createElement('div');el.textContent=msg;el.style.cssText='position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:#0f1729;border:1px solid rgba(0,229,255,.35);color:#00e5ff;padding:10px 16px;border-radius:999px;font-family:JetBrains Mono,monospace;font-size:12px;z-index:10001;box-shadow:0 12px 40px rgba(0,0,0,.4)';document.body.appendChild(el);setTimeout(()=>el.remove(),1300)}
-
-const links = {
-  rhpr:'https://www.mdlxdcc.org/BD/BD_AIM3_RHPr.html',
-  rhp:'https://www.mdlxdcc.org/BD/BD_AIM3_RHP.html',
-  aim3:'https://www.mdlxdcc.org/BD/BD_AIM3.html'
-};
-
-
+const links={rhpr:'https://www.mdlxdcc.org/bd/bd_aim3_rhpr',rhp:'https://www.mdlxdcc.org/bd/bd_aim3_rhp',aim3:'https://www.mdlxdcc.org/bd/bd_aim3'};
 const outputLanguages={en:'English',sl:'Slovenian',de:'German',it:'Italian',es:'Spanish',fr:'French',zh:'Simplified Chinese',ja:'Japanese'};
 function selectedOutputLanguage(){const el=qs('outLang'); return outputLanguages[el?.value || 'en'] || 'English'}
-function preferredLanguageBlock(){return `PREFERRED RESPONSE LANGUAGE:
-${selectedOutputLanguage()}
-Write the final answer in this language unless the user requests another language. Keep protocol names such as AIM³, RHPm, RHPr, RHP, Engineer, Falsifier, Child, Cartographer, and Agent 0 in English if clearer.`}
+function preferredLanguageBlock(){return `PREFERRED RESPONSE LANGUAGE:\n${selectedOutputLanguage()}\nUse English internally for protocol/lens/validation planning if needed, but write the final human-facing answer strictly in ${selectedOutputLanguage()} unless the user asks otherwise. Keep protocol names such as AIM³, RHPm, RHPr, RHP, Engineer, Falsifier, Child, Cartographer, and Agent 0 in English if clearer.`}
 function initLanguageSelector(){const el=qs('outLang'); if(!el) return; try{const saved=localStorage.getItem('rhpm_output_lang'); if(saved && outputLanguages[saved]) el.value=saved}catch(e){} el.addEventListener('change',()=>{try{localStorage.setItem('rhpm_output_lang',el.value)}catch(e){} updateMasterPromptPreview(); const out=qs('promptOut'); if(out && out.value.trim()) generatePrompt();});}
-
-function compactProtocolBlock(){return `Run this compact RHPm protocol before writing the final prompt:
-
-0. GUIDE MODE / QUESTIONNAIRE
-If the rough request is clear enough, do not ask questions. Build the improved prompt directly.
-If guessing would materially reduce quality, ask up to 5 focused questions first, then wait for the user. Prioritize:
-- exact deliverable
-- audience / user level
-- files, links, or context to inspect
-- constraints / what not to change
-- success criteria, tests, or output format
-Keep questions practical, not theoretical.
-
-1. PROTOCOL CHOICE / ESCALATION
-Choose the smallest adequate path:
-- RHPm only: normal rough-request → strong-prompt work.
-- Full RHPr recommended: retrieval-bias, wrong knowledge drawer, messy/stale context, or the model may keep answering the wrong question. Reference: ${links.rhpr}
-- Full RHP recommended: complex brainstorming, architecture, theory, strategy, cross-domain synthesis, or high-stakes multi-perspective ideation. Reference: ${links.rhp}
-- RHPr + RHP: use both if the task needs retrieval repair and multi-perspective synthesis.
-Ask at most one concise clarifying question about protocol choice only if it materially changes the final prompt and cannot be safely inferred. Otherwise decide yourself.
-
-2. INTENT SPLIT
-Separate:
-- explicit request
-- implied goal
-- real deliverable
-- audience / user
-- files, links, or context to inspect first
-- constraints and forbidden changes
-- what good looks like
-
-3. MINI-RHP LENS PASS
-Use five compact lenses. Each must improve the final prompt, not add ceremony:
-- Engineer: deliverable, implementation/editing path, files/tools, packaging
-- Falsifier: hidden assumptions, failure modes, misleading phrasing, scope traps
-- Child: simplest human meaning, obvious UX/reader need, thing experts may miss
-- Cartographer: relevant domains, missing drawers, adjacent references, negative lens to avoid
-- Agent 0 / Empiricist: tests, baselines, visual/manual checks, acceptance criteria, rollback/recovery
-
-4. RESONANCE GUARD
-Avoid seizure: over-constrained, repetitive, one-framing, no room for discovery.
-Avoid noise: vague, scattered, no deliverable, no acceptance criteria.
-Aim for resonance: enough structure to execute, enough freedom to find better paths.
-
-5. CONTEXT HYGIENE
-Attach only useful context. Name files/folders/baseline versions. State what must not change. Let the next model inspect/search when uncertain instead of guessing.
-
-6. PROMPT SYNTHESIS
-Write the final prompt for a fresh LLM session. Include role, goal, context, files to inspect first, constraints, deliverables, workflow, checks, output format, stop conditions, and what not to do.
-
-7. AGENT 0 VALIDATION
-Before finalizing, check that the prompt makes the result testable, bounded, recoverable, honest about provenance, and not bloated. Require a fitness function where possible: tests, manual/visual checks, baselines, controls, rollback, or acceptance criteria.
-
-8. OPTIONAL MULTI-LLM FEEDBACK LOOP
-If the task is important, uncertain, public-facing, or high-stakes, ask the user whether they want feedback from other LLMs before using the final prompt.
-If yes:
-- produce a short review prompt the user can paste into other LLMs
-- ask the user to bring back pasted answers or files
-- when feedback is provided, score each review by usefulness, dedupe suggestions, reject generic advice, and produce a revised final prompt
-- preserve authorship/provenance if public material is involved
-This is optional. Do not force it for small tasks.
-
-9. OPTIONAL SKILL EXTRACTION
-If the task is hard or likely to repeat, add a compact Skill Card: name, purpose, when_to_use, when_not_to_use, inputs, outputs, steps, validation, failure_modes, rollback, examples, version.`}
-
-function buildMasterPrompt(){
-  const rough=(qs('masterHumanRequest')?.value || '').trim() || '[paste the rough human request here]';
-  const ctx=(qs('masterContext')?.value || '').trim() || '[optional: paste files, context, links, constraints, baseline versions, or what must not change]';
-  return `You are running RHPm — AIM³ Prompt Builder.
-
-Your job is NOT to answer my rough request directly.
-Your job is to convert it into the strongest practical prompt for a fresh LLM session.
-Keep the result compact, copy-paste usable, and action-oriented.
-
-Authorship/provenance rule when relevant:
-AIM³/RHP/RHPr/RHPm originate from BD’s architecture and concepts; LLMs are collaborators, reviewers, builders, critics, and improvement partners. Do not rewrite provenance as if BD merely compiled outside ideas.
-
-ROUGH HUMAN REQUEST:
-${rough}
-
-CONTEXT / FILES / CONSTRAINTS:
-${ctx}
-
-${preferredLanguageBlock()}
-
-${compactProtocolBlock()}
-
-Return only:
-A. Final improved prompt for the fresh session
-B. Short explanation of what you changed and why
-C. Protocol choice: RHPm only / full RHPr recommended / full RHP recommended / RHPr + RHP recommended
-D. Agent 0 validation checklist
-E. Optional Skill Card if useful
-F. Optional next step: ask whether the user wants feedback from other LLMs for important/high-stakes prompts`;
-}
+function compactProtocolBlock(options={}){const forceGuide=options.forceGuide===true; return `## RHPm protocol to run internally\n\n0. GUIDE MODE / QUESTIONNAIRE\n${forceGuide ? 'Ask up to 5 focused practical questions first before producing the final prompt, unless the request already answers them explicitly.' : 'If the rough request is clear enough, do not ask questions. Build the improved prompt directly. If guessing would materially reduce quality, ask up to 5 focused practical questions first, then wait for the user.'}\nQuestions should prioritize: exact deliverable, audience/user level, files/links/context, constraints/forbidden changes, checks/tests, and output format.\n\n1. PROTOCOL CHOICE / MDL ESCALATION GATE\nChoose the smallest adequate path:\n- RHPm only: normal rough-request → strong-prompt work.\n- Full RHPr recommended: retrieval-bias, wrong knowledge drawer, messy/stale context, or the model may keep answering the wrong question. Reference: ${links.rhpr}\n- Full RHP recommended: complex brainstorming, architecture, theory, strategy, cross-domain synthesis, or high-stakes multi-perspective ideation. Reference: ${links.rhp}\n- RHPr + RHP: use both if the task needs retrieval repair and multi-perspective synthesis.\nActive contradiction check: before choosing, look for anomalies, conflicting constraints, missing files, stale assumptions, or signs that the current framing is wrong.\n\n2. INTENT SPLIT\nSeparate explicit request, implied goal, real deliverable, audience/user, files/links/context to inspect first, constraints, forbidden changes, and what good looks like.\n\n3. MINI-RHP LENS PASS\nUse these lenses internally to improve the final prompt. Do not merely label sections as Engineer/Falsifier/Child/Cartographer/Agent 0 unless that improves clarity.\n- Engineer: deliverable, implementation/editing path, files/tools, packaging\n- Falsifier: hidden assumptions, failure modes, misleading phrasing, scope traps\n- Child: simplest human meaning, obvious UX/reader need, thing experts may miss\n- Cartographer: relevant domains, missing drawers, adjacent references, negative lens to avoid\n- Agent 0 / Empiricist: tests, baselines, visual/manual checks, acceptance criteria, rollback/recovery\n\n4. RESONANCE GUARD\nIf the prompt has many restrictions and they conflict, trigger SEIZURE check: list contradictions and suggest relaxation points.\nIf the prompt lacks concrete acceptance criteria, trigger NOISE check: propose 3 specific constraints or tests.\nAim for resonance: enough structure to execute, enough freedom to discover a better path.\n\n5. CONTEXT HYGIENE\nAttach only useful context. Name files/folders/baseline versions. State what must not change. If context is too large, ask for specific files or summarize before acting. Do not guess from an overloaded context window.\n\n6. PROMPT SYNTHESIS\nWrite the final prompt for a fresh LLM session. Include role, goal, context, files to inspect first, constraints, deliverables, workflow, checks, output format, stop conditions, and what not to do. Use clear Markdown separators to reduce lost-in-the-middle effects.\n\n7. AGENT 0 VALIDATION\nBefore finalizing, check that the prompt makes the result testable, bounded, recoverable, honest about provenance, and not bloated. Require a fitness function where possible: tests, manual/visual checks, baselines, controls, rollback, or acceptance criteria.\n\n8. OPTIONAL MULTI-LLM FEEDBACK LOOP\nFor important, uncertain, or public-facing prompts, provide a separate review prompt another LLM can use. If feedback is later returned, score each review by usefulness, dedupe suggestions, reject generic advice, and produce a revised final prompt.\n\n9. OPTIONAL SKILL EXTRACTION\nIf the task is hard or likely to repeat, ask the next model to output a machine-readable Skill Card JSON:\n{\n  "skill_name": "",\n  "purpose": "",\n  "when_to_use": [],\n  "when_not_to_use": [],\n  "inputs": [],\n  "outputs": [],\n  "steps": [],\n  "validation": [],\n  "failure_modes": [],\n  "rollback": [],\n  "examples": [],\n  "version": "0.1",\n  "status": "draft"\n}`}
+function provenanceBlock(){return `Authorship/provenance rule when relevant:\nAIM³/RHP/RHPr/RHPm originate from BD’s architecture and concepts; LLMs are collaborators, reviewers, builders, critics, and improvement partners. Do not rewrite provenance as if BD merely compiled outside ideas.`}
+function buildMasterPrompt(){const rough=(qs('masterHumanRequest')?.value || '').trim() || '[paste the rough human request here]'; const ctx=(qs('masterContext')?.value || '').trim() || '[optional: paste files, context, links, constraints, baseline versions, or what must not change]'; return `# RHPm — AIM³ Prompt Builder\n\nYou are running RHPm. Your job is NOT to answer my rough request directly. Your job is to convert it into the strongest practical prompt for a fresh LLM session. Keep the result compact, copy-paste usable, and action-oriented.\n\n${provenanceBlock()}\n\n## Rough human request\n${rough}\n\n## Context / files / constraints\n${ctx}\n\n## Language\n${preferredLanguageBlock()}\n\n${compactProtocolBlock()}\n\n## Return only\nA. Final improved prompt for the fresh session\nB. Short explanation of what you changed and why\nC. Protocol choice: RHPm only / full RHPr recommended / full RHP recommended / RHPr + RHP recommended\nD. Agent 0 validation checklist\nE. Optional review prompt for another LLM if useful\nF. Optional Skill Card JSON if useful`;}
+function reviewPromptFor(promptText){const p=(promptText||'').trim() || '[paste generated prompt here]';return `Review this generated prompt before I use it in another LLM session.\n\nScore it 0–100 for:\n1. clarity of deliverable\n2. missing constraints or files\n3. testability / Agent 0 checks\n4. context hygiene\n5. risk of wrong-drawer retrieval or stale assumptions\n6. output format precision\n7. unnecessary ceremony or bloat\n8. provenance clarity if public material is involved\n\nReturn only:\n- score\n- top 5 concrete improvements\n- what to remove or simplify\n- revised prompt if useful\n\nGenerated prompt to review:\n\n${p}`}
 function updateMasterPromptPreview(){const out=qs('masterPromptPreview'); if(out) out.textContent=buildMasterPrompt()}
 function copyMasterPrompt(){updateMasterPromptPreview();copyText(buildMasterPrompt())}
+function copyReviewPromptFromMaster(){copyText(reviewPromptFor(buildMasterPrompt()))}
+function copyReviewPromptFromForge(){const out=qs('reviewOut'); if(out && out.value.trim()) copyText(out.value); else copyText(reviewPromptFor(qs('promptOut')?.value||''))}
 function insertAtCursor(el, txt){const start=el.selectionStart ?? el.value.length; const end=el.selectionEnd ?? el.value.length; el.value=el.value.slice(0,start)+txt+el.value.slice(end); const pos=start+txt.length; el.focus(); el.setSelectionRange(pos,pos)}
 async function pasteMasterPrompt(){try{const text=await navigator.clipboard.readText(); const active=document.activeElement; let target=(active && (active.id==='masterHumanRequest' || active.id==='masterContext')) ? active : null; if(!target){target=(qs('masterHumanRequest').value.trim() && !qs('masterContext').value.trim()) ? qs('masterContext') : qs('masterHumanRequest')} insertAtCursor(target,text); updateMasterPromptPreview(); flash('Pasted.')}catch(e){alert('Paste failed. Browser may require manual paste with Ctrl+V.')}}
 function emptyMasterPrompt(){['masterHumanRequest','masterContext'].forEach(id=>{const el=qs(id); if(el) el.value=''}); updateMasterPromptPreview(); qs('masterHumanRequest')?.focus(); flash('Emptied.')}
+function downloadRawMaster(){const blob=new Blob([buildMasterPrompt()],{type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='BD_AIM3_RHPm_master_prompt.txt'; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 function expandAll(){document.querySelectorAll('details').forEach(d=>d.open=true)}
 function collapseAll(){document.querySelectorAll('details').forEach(d=>d.open=false)}
-
-function loadExample(kind){
-  if(kind==='code'){
-    qs('taskType').value='code'; qs('ceremony').value='full';
-    qs('roughPrompt').value='Make a Python arena for testing many trading variants. It should support workers, autosave, resume, verbose single-line console progress, output ZIP, and a clean summary of winners.';
-    qs('contextFiles').value='Use project files in the current folder. Look for prior arena style, CMD progress, resume markers, run packs, and existing HTML strategy explainer. Do not prune risky variants early; classify by risk budget and capital-at-risk.';
-  } else if(kind==='review'){
-    qs('taskType').value='review'; qs('ceremony').value='medium';
-    qs('roughPrompt').value='Review this public-facing article. Check factual accuracy, clarity, weak claims, missing evidence, tone, and practical improvements. Keep it balanced: neither sensational nor dismissive.';
-    qs('contextFiles').value='Read the attached HTML page first. Preserve the core stance. Score the page, list strongest sections, list weak sections, dedupe fixes, and propose a compact patch plan. Do not rewrite the whole page unless asked.';
-  } else {
-    qs('taskType').value='html'; qs('ceremony').value='medium';
-    qs('roughPrompt').value='Improve one HTML page using one reference page. Keep it compact, practical, dark styled, mobile friendly, and copy-paste useful. Output the improved full HTML as a downloadable file.';
-    qs('contextFiles').value='Read the target page first, then the reference page. Modify only the target HTML file. Do not update index.html, sitemap.xml, llms.txt, or any other file. Preserve authorship/provenance and avoid theory bloat.';
-  }
-  generatePrompt();
-}
-function clearForge(){['roughPrompt','contextFiles','promptOut'].forEach(id=>{const el=qs(id); if(el) el.value=''})}
-function generatePrompt(){
-  const rough=qs('roughPrompt').value.trim() || '[PASTE ROUGH HUMAN REQUEST HERE]';
-  const ctx=qs('contextFiles').value.trim() || '[ADD FILES, CONTEXT, LINKS, CONSTRAINTS, BASELINE VERSIONS, OR FORBIDDEN CHANGES HERE]';
-  const type=qs('taskType').value; const ceremony=qs('ceremony').value;
-  const opts=[];
-  if(qs('chkFiles').checked) opts.push('Inspect the relevant files/folders/links before proposing changes. State what you inspected.');
-  if(qs('chkTests').checked) opts.push('Define tests, acceptance criteria, or manual checks. Do not treat claims as proven without checks.');
-  if(qs('chkProvenance').checked) opts.push('Preserve authorship/provenance clearly; do not imply BD merely assembled outside ideas.');
-  if(qs('chkNoBloat').checked) opts.push('Do not bloat. Do not create extra pages or touch index/sitemap/llms/site files unless explicitly asked.');
-  if(qs('chkResume').checked) opts.push('For coding or long-running work, include checkpoint/resume/recovery behavior and clean restart instructions.');
-  if(qs('chkSkill').checked) opts.push('If this is hard or repeated, extract a compact Skill Card after the prompt.');
-  const taskAdd={
-    general:'For general tasks: make the final prompt concrete enough to execute, but keep the smallest adequate structure.',
-    code:'For code: require baseline inspection, CLI behavior, workers if relevant, checkpoint/resume, tests, changelog, and final ZIP/output artifacts.',
-    html:'For HTML: require page role, visual style, mobile behavior, copy controls, internal links, no unintended index changes, and final downloadable file.',
-    doc:'For documents: require audience, structure, style, preservation of formatting if editing, citation/source handling, and final file plus change note.',
-    review:'For review: require scoring rubric, praise + critique, evidence, deduped suggestions, severity, and actionable patch plan.',
-    research:'For research: require assumptions, hypotheses, mechanisms, counterarguments, cheap tests, and clear speculative vs supported claims.',
-    arena:'For arenas/benchmarks: require scenario space, baselines/controls, workers, seeds, autosave, resume, metrics, summary files, and reproducibility notes.'
-  }[type];
-  const prompt=`You are running RHPm — AIM³ Prompt Builder.
-
-Your job is NOT to answer my rough request directly.
-Your job is to convert it into the strongest practical prompt for a fresh LLM session.
-
-TASK TYPE: ${type}
-CEREMONY LEVEL: ${ceremony}
-
-ROUGH HUMAN REQUEST:
-${rough}
-
-CONTEXT / FILES / CONSTRAINTS:
-${ctx}
-
-${preferredLanguageBlock()}
-
-HARD REQUIREMENTS:
-${opts.map(x=>'- '+x).join('\n')}
-- ${taskAdd}
-
-Authorship/provenance rule when relevant:
-AIM³/RHP/RHPr/RHPm originate from BD’s architecture and concepts; LLMs are collaborators, reviewers, builders, critics, and improvement partners.
-
-${compactProtocolBlock()}
-
-Return only:
-A. Final improved prompt for the fresh session
-B. Short explanation of what you changed and why
-C. Protocol choice: RHPm only / full RHPr recommended / full RHP recommended / RHPr + RHP recommended
-D. Agent 0 validation checklist
-E. Optional Skill Card if useful
-F. Optional next step: ask whether the user wants feedback from other LLMs for important/high-stakes prompts`;
-  qs('promptOut').value=prompt;
-}
-['masterHumanRequest','masterContext'].forEach(id=>{const el=qs(id); if(el) el.addEventListener('input',updateMasterPromptPreview)});
-initLanguageSelector();
-updateMasterPromptPreview();
+function taskAddition(type){return {general:'For general tasks: make the final prompt concrete enough to execute, but keep the smallest adequate structure.',code:'For code: require baseline inspection, CLI behavior, workers if relevant, checkpoint/resume, tests, changelog, and final ZIP/output artifacts.',html:'For HTML: require page role, visual style, mobile behavior, copy controls, internal links, no unintended index/sitemap/llms changes, and final downloadable file.',doc:'For documents: require audience, structure, style, preservation of formatting if editing, citation/source handling, and final file plus change note.',spreadsheet:'For spreadsheets/data: require exact input files/sheets/columns, transformation rules, formulas, validation checks, output workbook/CSV/report, and no unsafe macros unless explicitly requested.',image:'For image/visual tasks: require subject, style, composition, aspect ratio, references, what must not change, text accuracy needs, number of outputs, and safety/permission constraints.',review:'For review: require scoring rubric, praise + critique, evidence, deduped suggestions, severity, and actionable patch plan.',research:'For research: require assumptions, hypotheses, mechanisms, counterarguments, cheap tests, and clear speculative vs supported claims.',arena:'For arenas/benchmarks: require scenario space, baselines/controls, workers, seeds, autosave, resume, metrics, summary files, and reproducibility notes.'}[type]||''}
+function loadExample(kind){if(kind==='code'){qs('taskType').value='code'; qs('ceremony').value='full'; qs('roughPrompt').value='Make a Python arena for testing many trading variants. It should support workers, autosave, resume, verbose single-line console progress, output ZIP, and a clean summary of winners.'; qs('fileTree').value='Look for prior arena files, CMD progress logs, resume markers, run packs, and existing HTML strategy explainer.'; qs('contextFiles').value='Do not prune risky variants early; classify by risk budget and capital-at-risk. Include smoke/standard/long modes and slim extractor if useful.';} else if(kind==='spreadsheet'){qs('taskType').value='spreadsheet'; qs('ceremony').value='medium'; qs('roughPrompt').value='Improve this spreadsheet workflow and produce a safe, usable Excel output with clear validation checks.'; qs('fileTree').value='Attached XLSX/XLSM/CSV files. Identify sheets, columns, formulas, and whether macros are present.'; qs('contextFiles').value='Preserve existing formatting where possible. Do not add unsafe macros unless explicitly requested. Provide changelog and output file.';} else if(kind==='image'){qs('taskType').value='image'; qs('ceremony').value='light'; qs('roughPrompt').value='Create a strong image-generation prompt for a hybrid visual concept based on two reference images.'; qs('fileTree').value='Reference images attached in the new session.'; qs('contextFiles').value='Specify composition, style, subject preservation, aspect ratio, output count, and what not to change.';} else if(kind==='review'){qs('taskType').value='review'; qs('ceremony').value='medium'; qs('roughPrompt').value='Review this public-facing article. Check factual accuracy, clarity, weak claims, missing evidence, tone, and practical improvements.'; qs('fileTree').value='Read the attached HTML/page/document first. Quote or cite exact sections if possible.'; qs('contextFiles').value='Preserve the core stance. Score the page, list strongest sections, weak sections, dedupe fixes, and propose a compact patch plan. Do not rewrite the whole page unless asked.';} else {qs('taskType').value='html'; qs('ceremony').value='medium'; qs('roughPrompt').value='Improve one HTML page using one reference page. Keep it compact, practical, dark styled, mobile friendly, and copy-paste useful. Output the improved full HTML as a downloadable file.'; qs('fileTree').value='Target: BD_AIM3_RHPm.html. Reference: BD_AIM3_RHP.html. Modify only the target HTML file.'; qs('contextFiles').value='Do not update index.html, sitemap.xml, llms.txt, or any other file. Preserve authorship/provenance and avoid theory bloat.';} generatePrompt();}
+function clearForge(){['roughPrompt','fileTree','contextFiles','promptOut','reviewOut'].forEach(id=>{const el=qs(id); if(el) el.value=''})}
+function generatePrompt(){const rough=qs('roughPrompt').value.trim() || '[PASTE ROUGH HUMAN REQUEST HERE]'; const fileTree=qs('fileTree').value.trim() || '[ADD FILES / TREE BASELINE / TARGETS HERE]'; const ctx=qs('contextFiles').value.trim() || '[ADD CONTEXT, LINKS, CONSTRAINTS, BASELINE VERSIONS, OR FORBIDDEN CHANGES HERE]'; const type=qs('taskType').value; const ceremony=qs('ceremony').value; const forceGuide=qs('chkGuide').checked; const opts=[]; if(qs('chkFiles').checked) opts.push('Inspect the relevant files/folders/links before proposing changes. State what you inspected.'); if(qs('chkTests').checked) opts.push('Define tests, acceptance criteria, or manual checks. Do not treat claims as proven without checks.'); if(qs('chkProvenance').checked) opts.push('Preserve authorship/provenance clearly; do not imply BD merely assembled outside ideas.'); if(qs('chkNoBloat').checked) opts.push('Do not bloat. Do not create extra pages or touch index/sitemap/llms/site files unless explicitly asked.'); if(qs('chkResume').checked) opts.push('For coding or long-running work, include checkpoint/resume/recovery behavior and clean restart instructions.'); if(qs('chkSkill').checked) opts.push('If this is hard or repeated, extract a machine-readable Skill Card JSON after the prompt.'); if(forceGuide) opts.push('Ask up to 5 practical clarification questions first if any essential detail is missing.'); const exec=`# RHPm — Execution Prompt Builder\n\nYou are running RHPm. Your job is NOT to answer my rough request directly. Convert it into the strongest practical prompt for a fresh LLM session.\n\nTASK TYPE: ${type}\nCEREMONY LEVEL: ${ceremony}\n\n## Rough human request\n${rough}\n\n## Context files / tree baseline\n${fileTree}\n\n## Other context / constraints\n${ctx}\n\n## Language\n${preferredLanguageBlock()}\n\n## Hard requirements\n${opts.map(x=>'- '+x).join('\n')}\n- ${taskAddition(type)}\n\n${provenanceBlock()}\n\n${compactProtocolBlock({forceGuide})}\n\n## Return only\nA. Final improved prompt for the fresh session\nB. Short explanation of what you changed and why\nC. Protocol choice\nD. Agent 0 validation checklist\nE. Optional Skill Card JSON if useful`; const review=reviewPromptFor(exec); const combined=qs('chkReviewPrompt').checked ? `=== EXECUTION PROMPT ===\n\n${exec}\n\n\n=== REVIEW PROMPT FOR ANOTHER LLM ===\n\n${review}` : exec; qs('promptOut').value=combined; qs('reviewOut').value=review;}
+['masterHumanRequest','masterContext'].forEach(id=>{const el=qs(id); if(el) el.addEventListener('input',updateMasterPromptPreview)}); ['roughPrompt','fileTree','contextFiles'].forEach(id=>{const el=qs(id); if(el) el.addEventListener('input',()=>{const out=qs('promptOut'); if(out&&out.value.trim()) generatePrompt()})}); ['taskType','ceremony','chkFiles','chkTests','chkProvenance','chkNoBloat','chkResume','chkSkill','chkGuide','chkReviewPrompt'].forEach(id=>{const el=qs(id); if(el) el.addEventListener('change',()=>{const out=qs('promptOut'); if(out&&out.value.trim()) generatePrompt()})});
+initLanguageSelector(); updateMasterPromptPreview();
 </script>
+
 </body>
 </html>
