@@ -157,11 +157,16 @@
 
 <section class="section" id="api-prompting">
   <details class="advanced api-details">
-    <summary><strong data-i18n="apiTitle">Prompting LLM assistants via API</strong><br/><span class="small" data-i18n="apiSafetyText">This public HTML page does not store API keys and does not send paid API requests from the browser. It generates local terminal/API snippets that use environment variables. For direct one-click sending, use a private backend proxy or a local helper app.</span></summary>
+    <summary><strong data-i18n="apiTitle">Prompting LLM assistants via API</strong><p class="small" data-i18n="apiSafetyText">This public HTML page does not store API keys and does not send paid API requests from the browser. It generates local terminal/API snippets that use environment variables. For direct one-click sending, use a private backend proxy or a local helper app.</p></summary>
     <div class="inside">
 <div class="callout gold">
     <div class="ct" data-i18n="apiSafetyTitle">Public-safe design</div>
     <p data-i18n="apiSafetyText">This public HTML page does not store API keys and does not send paid API requests from the browser. It generates local terminal/API snippets that use environment variables. For direct one-click sending, use a private backend proxy or a local helper app.</p>
+  </div>
+  <div class="callout violet">
+    <div class="ct" data-i18n="apiLiveTitle">Why no live browser chat here</div>
+    <p data-i18n="apiLiveText">A direct fetch() call from a public static page can work technically, but it cannot protect a paid API key. A prompt() key or editable JavaScript variable is still exposed inside the browser session and can be copied from DevTools, logs, browser extensions, or a modified page.</p>
+    <p class="small" data-i18n="apiLiveSafe">Safe live pattern: browser → your private backend/serverless function/local helper → DeepSeek. Store the key outside the page as DEEPSEEK_API_KEY. RHPm therefore keeps this public section as snippet generation, not live sending.</p>
   </div>
   <p data-i18n="apiIntro">Use this when you want to run the same RHPm-generated prompt through API providers such as DeepSeek or OpenAI-compatible services. Generate the prompt above, choose a provider, then copy the snippet into your local terminal or Python environment.</p>
   <div class="builder api-builder">
@@ -215,7 +220,7 @@ const I18N = {
     "navRelated": "Related",
     "pageLanguage": "Page language",
     "answerLanguage": "Answer language",
-    "tag": "RHPm · AIM³ Prompt Builder · practical hybrid v1.4",
+    "tag": "RHPm · AIM³ Prompt Builder · practical hybrid v1.4.1",
     "title": "Rough request → strong session prompt",
     "titleEm": "strong session prompt",
     "subtitle": "A compact front door for turning a messy human request into a clear, testable prompt for a fresh LLM session. Now the page language and the answer language are separate, so the UI and generated prompt instructions no longer fight each other.",
@@ -403,6 +408,9 @@ const I18N = {
     "apiTitle": "Prompting LLM assistants via API",
     "apiSafetyTitle": "Public-safe design",
     "apiSafetyText": "This public HTML page does not store API keys and does not send paid API requests from the browser. It generates local terminal/API snippets that use environment variables. For direct one-click sending, use a private backend proxy or a local helper app.",
+    "apiLiveTitle": "Why no live browser chat here",
+    "apiLiveText": "A direct fetch() call from a public static page can work technically, but it cannot protect a paid API key. A prompt() key or editable JavaScript variable is still exposed inside the browser session and can be copied from DevTools, logs, browser extensions, or a modified page.",
+    "apiLiveSafe": "Safe live pattern: browser → your private backend/serverless function/local helper → DeepSeek. Store the key outside the page as DEEPSEEK_API_KEY. RHPm therefore keeps this public section as snippet generation, not live sending.",
     "apiIntro": "Use this when you want to run the same RHPm-generated prompt through API providers such as DeepSeek or OpenAI-compatible services. Generate the prompt above, choose a provider, then copy the snippet into your local terminal or Python environment.",
     "apiProvider": "API provider",
     "apiModel": "Model",
@@ -613,6 +621,9 @@ const I18N = {
     "apiTitle": "Promptanje LLM asistentov prek API-ja",
     "apiSafetyTitle": "Javno varna zasnova",
     "apiSafetyText": "Ta javna HTML stran ne shranjuje API ključev in iz brskalnika ne pošilja plačljivih API zahtevkov. Ustvari lokalne terminal/API izseke, ki uporabljajo okoljske spremenljivke. Za direktno pošiljanje z enim klikom uporabi zasebni backend proxy ali lokalno helper aplikacijo.",
+    "apiLiveTitle": "Zakaj tukaj ni live browser chata",
+    "apiLiveText": "Direkten fetch() klic iz javne statične strani tehnično lahko deluje, vendar ne more zaščititi plačljivega API ključa. Ključ v prompt(), ali v JavaScript spremenljivki, je še vedno izpostavljen v brskalniški seji in ga je mogoče kopirati iz DevTools, logov, razširitev ali spremenjene strani.",
+    "apiLiveSafe": "Varna live shema: brskalnik → tvoj zasebni backend/serverless funkcija/lokalni helper → DeepSeek. Ključ shrani zunaj strani kot DEEPSEEK_API_KEY. Zato RHPm v javni sekciji ostane pri generiranju izsekov, ne pri live pošiljanju.",
     "apiIntro": "Uporabi to, ko želiš isti RHPm-generirani prompt pognati prek API ponudnikov, kot sta DeepSeek ali OpenAI-kompatibilne storitve. Najprej zgoraj generiraj prompt, izberi ponudnika, nato izsek kopiraj v lokalni terminal ali Python okolje.",
     "apiProvider": "API ponudnik",
     "apiModel": "Model",
@@ -824,6 +835,9 @@ const I18N = {
     "apiTitle": "LLM-Assistenten per API prompten",
     "apiSafetyTitle": "Öffentlich sichere Gestaltung",
     "apiSafetyText": "Diese öffentliche HTML-Seite speichert keine API-Schlüssel und sendet keine kostenpflichtigen API-Anfragen aus dem Browser. Sie erzeugt lokale Terminal/API-Snippets mit Umgebungsvariablen. Für direktes Senden per Klick nutze einen privaten Backend-Proxy oder eine lokale Hilfs-App.",
+    "apiLiveTitle": "Warum hier kein Live-Browser-Chat ist",
+    "apiLiveText": "Ein direkter fetch()-Aufruf aus einer öffentlichen statischen Seite kann technisch funktionieren, schützt aber keinen bezahlten API-Schlüssel. Ein prompt()-Schlüssel oder eine editierbare JavaScript-Variable bleibt in der Browser-Sitzung sichtbar und kann über DevTools, Logs, Erweiterungen oder eine veränderte Seite kopiert werden.",
+    "apiLiveSafe": "Sicheres Live-Muster: Browser → privater Backend-/Serverless-Endpunkt/lokale Hilfs-App → DeepSeek. Schlüssel außerhalb der Seite als DEEPSEEK_API_KEY speichern. RHPm hält diese öffentliche Sektion daher bei Snippet-Erzeugung, nicht Live-Senden.",
     "apiIntro": "Nutze dies, um denselben RHPm-Prompt über API-Anbieter wie DeepSeek oder OpenAI-kompatible Dienste auszuführen. Prompt oben erzeugen, Anbieter wählen, Snippet lokal im Terminal oder in Python ausführen.",
     "apiProvider": "API-Anbieter",
     "apiModel": "Modell",
@@ -1033,6 +1047,9 @@ const I18N = {
     "apiTitle": "Promptare assistenti LLM via API",
     "apiSafetyTitle": "Design sicuro per pagina pubblica",
     "apiSafetyText": "Questa pagina HTML pubblica non salva chiavi API e non invia richieste API a pagamento dal browser. Genera snippet locali per terminale/API usando variabili d’ambiente. Per invio diretto usa un backend proxy privato o una app locale.",
+    "apiLiveTitle": "Perché qui non c’è una chat live nel browser",
+    "apiLiveText": "Una chiamata fetch() diretta da una pagina statica pubblica può funzionare tecnicamente, ma non può proteggere una chiave API a pagamento. Una chiave inserita via prompt() o in una variabile JavaScript modificabile resta esposta nella sessione del browser e può essere copiata da DevTools, log, estensioni o pagina modificata.",
+    "apiLiveSafe": "Schema live sicuro: browser → tuo backend privato/funzione serverless/helper locale → DeepSeek. Conserva la chiave fuori dalla pagina come DEEPSEEK_API_KEY. Per questo RHPm mantiene questa sezione pubblica come generatore di snippet, non invio live.",
     "apiIntro": "Usalo per eseguire lo stesso prompt RHPm tramite provider API come DeepSeek o servizi compatibili OpenAI. Genera il prompt sopra, scegli il provider e copia lo snippet nel terminale locale o in Python.",
     "apiProvider": "Provider API",
     "apiModel": "Modello",
@@ -1242,6 +1259,9 @@ const I18N = {
     "apiTitle": "Usar asistentes LLM vía API",
     "apiSafetyTitle": "Diseño seguro para página pública",
     "apiSafetyText": "Esta página HTML pública no guarda claves API ni envía solicitudes API pagadas desde el navegador. Genera fragmentos locales de terminal/API que usan variables de entorno. Para envío directo usa un backend proxy privado o una app local.",
+    "apiLiveTitle": "Por qué aquí no hay chat live en el navegador",
+    "apiLiveText": "Una llamada fetch() directa desde una página estática pública puede funcionar técnicamente, pero no puede proteger una clave API pagada. Una clave en prompt() o en una variable JavaScript editable sigue expuesta dentro de la sesión del navegador y puede copiarse desde DevTools, logs, extensiones o una página modificada.",
+    "apiLiveSafe": "Patrón live seguro: navegador → tu backend privado/función serverless/helper local → DeepSeek. Guarda la clave fuera de la página como DEEPSEEK_API_KEY. Por eso RHPm mantiene esta sección pública como generación de snippets, no envío live.",
     "apiIntro": "Úsalo para ejecutar el mismo prompt RHPm mediante proveedores API como DeepSeek o servicios compatibles con OpenAI. Genera el prompt arriba, elige proveedor y copia el fragmento en tu terminal local o Python.",
     "apiProvider": "Proveedor API",
     "apiModel": "Modelo",
@@ -1451,6 +1471,9 @@ const I18N = {
     "apiTitle": "Prompter des assistants LLM via API",
     "apiSafetyTitle": "Conception sûre pour page publique",
     "apiSafetyText": "Cette page HTML publique ne stocke pas de clés API et n’envoie pas de requêtes API payantes depuis le navigateur. Elle génère des snippets locaux terminal/API avec variables d’environnement. Pour un envoi direct, utilise un proxy backend privé ou une application locale.",
+    "apiLiveTitle": "Pourquoi il n’y a pas de chat live navigateur ici",
+    "apiLiveText": "Un appel fetch() direct depuis une page statique publique peut fonctionner techniquement, mais il ne peut pas protéger une clé API payante. Une clé saisie via prompt() ou dans une variable JavaScript modifiable reste exposée dans la session du navigateur et peut être copiée depuis DevTools, les logs, les extensions ou une page modifiée.",
+    "apiLiveSafe": "Schéma live sûr : navigateur → ton backend privé/fonction serverless/helper local → DeepSeek. Stocke la clé hors de la page comme DEEPSEEK_API_KEY. RHPm garde donc cette section publique comme génération de snippets, pas envoi live.",
     "apiIntro": "Utilise ceci pour exécuter le même prompt RHPm via des fournisseurs API comme DeepSeek ou des services compatibles OpenAI. Génère le prompt ci-dessus, choisis le fournisseur, puis copie le snippet dans ton terminal local ou Python.",
     "apiProvider": "Fournisseur API",
     "apiModel": "Modèle",
@@ -1660,6 +1683,9 @@ const I18N = {
     "apiTitle": "通过 API 提示 LLM 助手",
     "apiSafetyTitle": "公开页面安全设计",
     "apiSafetyText": "这个公开 HTML 页面不保存 API 密钥，也不从浏览器发送付费 API 请求。它只生成使用环境变量的本地终端/API 片段。如需一键直接发送，请使用私有后端代理或本地辅助应用。",
+    "apiLiveTitle": "为什么这里不做浏览器实时聊天",
+    "apiLiveText": "公共静态页面中的直接 fetch() 调用在技术上可能可行，但无法保护付费 API 密钥。通过 prompt() 输入的密钥或可编辑的 JavaScript 变量仍暴露在浏览器会话中，可能被 DevTools、日志、扩展或被修改的页面复制。",
+    "apiLiveSafe": "安全的实时模式：浏览器 → 你的私有后端/serverless 函数/本地助手 → DeepSeek。把密钥存放在页面之外，例如 DEEPSEEK_API_KEY。因此 RHPm 在公开页面中只生成片段，不直接发送。",
     "apiIntro": "当你想把同一个 RHPm 生成提示词通过 DeepSeek 或 OpenAI 兼容服务运行时使用。先在上方生成提示词，选择提供商，然后把片段复制到本地终端或 Python 环境。",
     "apiProvider": "API 提供商",
     "apiModel": "模型",
@@ -1869,6 +1895,9 @@ const I18N = {
     "apiTitle": "API 経由で LLM アシスタントにプロンプトする",
     "apiSafetyTitle": "公開ページとして安全な設計",
     "apiSafetyText": "この公開 HTML ページは API キーを保存せず、ブラウザから有料 API リクエストも送信しません。環境変数を使うローカル端末/API スニペットを生成します。ワンクリック送信には、非公開バックエンドプロキシまたはローカル補助アプリを使ってください。",
+    "apiLiveTitle": "ここでブラウザ内ライブチャットを行わない理由",
+    "apiLiveText": "公開された静的ページから直接 fetch() することは技術的には可能ですが、有料 API キーを保護できません。prompt() で入力したキーや編集可能な JavaScript 変数はブラウザセッション内で露出し、DevTools、ログ、拡張機能、改変されたページからコピーされ得ます。",
+    "apiLiveSafe": "安全なライブ構成: ブラウザ → 非公開バックエンド/serverless 関数/ローカル補助アプリ → DeepSeek。キーはページ外で DEEPSEEK_API_KEY として保存します。そのため RHPm の公開セクションはライブ送信ではなくスニペット生成に留めます。",
     "apiIntro": "DeepSeek や OpenAI 互換サービスなどの API で同じ RHPm 生成プロンプトを実行したい場合に使います。上でプロンプトを生成し、プロバイダを選び、スニペットをローカル端末または Python 環境にコピーします。",
     "apiProvider": "API プロバイダ",
     "apiModel": "モデル",
@@ -2132,7 +2161,7 @@ function setPageLang(code){qs('pageLang').value=code;localStorage.setItem('rhpm_
 function selectedAnswerLanguageEnglish(){return answerLangEnglish[qs('answerLang')?.value||'en']||'English'}
 function preferredLanguageBlock(){const lang=selectedAnswerLanguageEnglish();return `PREFERRED RESPONSE LANGUAGE:
 ${lang}
-Use English internally for planning and validation if needed, but write the final human-facing answer strictly in ${lang} unless the user asks otherwise.`}
+Use English internally for planning and validation if needed, but write the final human-facing answer strictly in ${lang} unless the user asks otherwise. Keep protocol names such as AIM³, RHPm, RHPr, RHP, Engineer, Falsifier, Child, Cartographer, and Agent 0 in English if clearer.`}
 function provenanceBlock(){return `Authorship/provenance rule when relevant:
 AIM³/RHP/RHPr/RHPm originate from BD’s architecture and concepts; LLMs are collaborators, reviewers, builders, critics, and improvement partners. Do not rewrite provenance as if BD merely compiled outside ideas.`}
 function taskTextForProvenance(d){return [d?.rough,d?.files,d?.ctx].filter(Boolean).join('\n').toLowerCase()}
