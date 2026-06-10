@@ -4,26 +4,35 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>RHPm — AIM³ Prompt Builder · Language-fixed Hybrid v0.8</title>
-<meta content="RHPm v0.8 language-fixed hybrid — multilingual AIM³ prompt builder with separate page language and answer language controls." name="description"/>
+<title>RHPm — AIM³ Prompt Builder · Practical Hybrid v0.9</title>
+<meta content="RHPm v0.9 practical hybrid — multilingual AIM³ prompt builder with Prompt Forge jump link, LLM quick links, and a real-world prompt benchmark." name="description"/>
 <link href="https://fonts.googleapis.com/" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&amp;family=JetBrains+Mono:wght@400;600;700&amp;family=Rajdhani:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <style>
 :root{--bg:#020409;--surface:#0f1729;--surface2:#141d32;--panel:rgba(15,23,41,.84);--border:rgba(52,211,153,.14);--border2:rgba(52,211,153,.28);--text:#e2e8f4;--muted:#6f83a5;--soft:rgba(226,232,244,.72);--accent:#34d399;--accentDim:rgba(52,211,153,.10);--cyan:#00e5ff;--cyanDim:rgba(0,229,255,.10);--gold:#f59e0b;--goldDim:rgba(245,158,11,.13);--rose:#ff6b8a;--roseDim:rgba(255,107,138,.10);--violet:#a78bfa;--violetDim:rgba(167,139,250,.10);--radius:8px;--shadow:0 12px 40px rgba(0,0,0,.35);--baseFont:17px}
 *{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{background:radial-gradient(circle at 20% 12%,rgba(52,211,153,.16),transparent 34%),radial-gradient(circle at 80% 70%,rgba(0,229,255,.08),transparent 30%),linear-gradient(180deg,#020409 0%,#05070d 100%);color:var(--text);font-family:'Rajdhani',system-ui,sans-serif;font-size:var(--baseFont);line-height:1.72;overflow-x:hidden}body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.018;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}.scroll-progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--cyan));z-index:10000;width:0}.topnav{position:fixed;top:0;left:0;right:0;min-height:54px;background:rgba(2,4,9,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);z-index:999;display:flex;align-items:center;gap:10px;padding:7px 5vw;white-space:nowrap;overflow-x:auto}.topnav a,.topnav span,.topnav label{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;color:var(--muted);text-decoration:none}.topnav a:hover{color:var(--accent)}.topnav .brand{color:var(--cyan);font-weight:700}.topnav .spacer{flex:1}.lang-control{display:flex;align-items:center;gap:6px}select{background:#050811;border:1px solid var(--border);color:var(--text);border-radius:999px;padding:6px 9px;font-family:'JetBrains Mono',monospace;font-size:12px}.toolbar{position:fixed;right:18px;bottom:18px;z-index:1000;display:flex;gap:6px;background:rgba(2,4,9,.72);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:999px;padding:6px;box-shadow:var(--shadow)}.toolbar button{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;border-radius:999px;padding:7px 10px;cursor:pointer}.toolbar button:hover{border-color:var(--cyan);color:var(--cyan)}.cover{padding:126px 7vw 58px;text-align:center;border-bottom:1px solid var(--border);position:relative;overflow:hidden}.cover::before{content:'';position:absolute;inset:-20%;background:radial-gradient(ellipse at 30% 20%,rgba(52,211,153,.06),transparent 48%),radial-gradient(ellipse at 70% 80%,rgba(0,229,255,.05),transparent 48%);pointer-events:none}.cover>*{position:relative}.tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:4px;text-transform:uppercase;display:block;margin-bottom:18px}.cover h1{font-family:'Cormorant Garamond',serif;font-size:clamp(34px,6vw,60px);font-weight:600;line-height:1.08;margin-bottom:16px}.cover h1 em{font-style:italic;color:var(--accent)}.subtitle{max-width:840px;margin:0 auto 24px;color:var(--soft);font-size:19px}.meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);max-width:900px;margin-left:auto;margin-right:auto}.wrap{max-width:980px;margin:0 auto;padding:48px 7vw 60px}@media(min-width:1120px){.wrap{padding-left:0;padding-right:0}}p{margin-bottom:16px;color:var(--soft)}strong{color:var(--text)}em{color:var(--accent);font-style:normal}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}.callout{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius);padding:18px 22px;margin:18px 0;box-shadow:0 6px 24px rgba(0,0,0,.16)}.callout.cyan{border-left-color:var(--cyan)}.callout.gold{border-left-color:var(--gold)}.callout.violet{border-left-color:var(--violet)}.ct{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:7px}.callout.cyan .ct{color:var(--cyan)}.callout.gold .ct{color:var(--gold)}.callout.violet .ct{color:var(--violet)}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0 34px}.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;min-height:132px}.card .k{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--cyan);margin-bottom:8px}.card h3{font-family:'Cormorant Garamond',serif;font-size:24px;line-height:1.15;margin-bottom:8px}.card p{font-size:15px;margin:0;color:var(--soft)}.quick-path{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:24px 0}.quick-step{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}.quick-step .n{font-family:'JetBrains Mono',monospace;color:var(--gold);font-weight:700;font-size:18px}.quick-step p{font-size:14px;margin:6px 0 0}.section{margin:38px 0}.section h2{font-family:'Cormorant Garamond',serif;font-size:32px;line-height:1.15;margin-bottom:14px}.section h2 span{color:var(--accent)}.small{font-size:14px;color:var(--muted)}.builder{background:rgba(15,23,41,.82);border:1px solid var(--border2);border-radius:12px;box-shadow:var(--shadow);padding:22px;margin:22px 0}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{margin-bottom:14px}.field label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--cyan);margin-bottom:6px}.field textarea,.field input,.field select{width:100%;background:#050811;border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.55;padding:12px;outline:none}.field textarea{min-height:112px;resize:vertical}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,229,255,.08)}.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin:10px 0 4px}.checks label{display:flex;gap:8px;align-items:flex-start;color:var(--soft);font-size:14px}.checks input{margin-top:5px;accent-color:var(--accent)}.buttons{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.btn{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;border:1px solid var(--border2);background:var(--accentDim);color:var(--accent);border-radius:6px;padding:10px 14px;cursor:pointer}.btn:hover{background:rgba(52,211,153,.18);text-decoration:none}.btn.cyan{background:var(--cyanDim);color:var(--cyan);border-color:rgba(0,229,255,.25)}.btn.gold{background:var(--goldDim);color:var(--gold);border-color:rgba(245,158,11,.25)}.btn.rose{background:var(--roseDim);color:var(--rose);border-color:rgba(255,107,138,.25)}.output{min-height:260px;white-space:pre-wrap}.master-preview{max-height:540px;overflow:auto}.code{background:#050811;border:1px solid var(--border);border-left:3px solid var(--cyan);border-radius:var(--radius);padding:16px 18px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;color:var(--soft);white-space:pre-wrap;overflow:auto}.steps{counter-reset:step}.step{display:grid;grid-template-columns:54px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid rgba(52,211,153,.08)}.step:last-child{border-bottom:none}.num{font-family:'JetBrains Mono',monospace;color:var(--gold);font-weight:700;font-size:22px;text-align:center;padding-top:2px}.step h3{font-size:20px;margin-bottom:4px}.step p{margin-bottom:0;font-size:15px}.example-grid{display:grid;grid-template-columns:1fr;gap:12px}.example{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px}.example .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.mini-label{font-family:'JetBrains Mono',monospace;color:var(--gold);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px}.lens-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0}.lens{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px}.lens .role{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.6px;color:var(--cyan);margin-bottom:6px}.lens p{font-size:14px;margin:0;color:var(--soft)}.checklist{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.checkitem{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:7px 10px;text-align:center}details.advanced{border:1px solid var(--border);border-radius:12px;background:rgba(15,23,41,.45);padding:0}details.advanced summary{cursor:pointer;padding:18px 22px;list-style:none}details.advanced summary::-webkit-details-marker{display:none}details.advanced .inside{padding:0 22px 22px}.footer{border-top:1px solid var(--border);padding:28px 7vw 70px;background:rgba(2,4,9,.45)}.footer .inner{max-width:980px;margin:0 auto}.footer p{font-size:14px;color:var(--muted)}@media(max-width:860px){.cards,.grid2,.quick-path,.lens-grid,.checklist{grid-template-columns:1fr}.checks{grid-template-columns:1fr}.example .cols{grid-template-columns:1fr}.topnav{padding-left:12px;padding-right:12px}.cover{padding-top:148px}}@media(max-width:560px){:root{--baseFont:18px}.topnav{gap:8px}.topnav a{display:none}.lang-control label{display:none}.cover{padding-left:20px;padding-right:20px}.wrap{padding-left:20px;padding-right:20px}.toolbar{right:10px;bottom:10px}}
+
+.topnav a.nav-cta{display:inline-flex;align-items:center;border:1px solid rgba(0,229,255,.26);border-radius:999px;padding:6px 10px;color:var(--cyan);background:rgba(0,229,255,.08)}
+.topnav a.nav-cta:hover{background:rgba(0,229,255,.16);text-decoration:none}.jumpbar{max-width:980px;margin:0 auto;padding:18px 7vw 0;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.jump-pill{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;border:1px solid var(--border2);border-radius:999px;padding:10px 14px;background:rgba(15,23,41,.72);color:var(--soft);text-decoration:none}.jump-pill.primary{color:var(--cyan);border-color:rgba(0,229,255,.32);background:rgba(0,229,255,.10)}.jump-pill:hover{text-decoration:none;border-color:var(--cyan);color:var(--cyan)}@media(min-width:1120px){.jumpbar{padding-left:0;padding-right:0}}.table-wrap{overflow-x:auto;margin:14px 0 18px}.score-table{width:100%;border-collapse:collapse;background:#050811;border:1px solid var(--border);border-radius:8px;overflow:hidden}.score-table th,.score-table td{border-bottom:1px solid rgba(52,211,153,.10);padding:10px 12px;text-align:left;vertical-align:top;font-size:13px}.score-table th{font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:10px;text-transform:uppercase;letter-spacing:1.4px;background:rgba(0,229,255,.06)}.score-table tr:last-child td{border-bottom:none}.case-notes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.case-note{background:rgba(5,8,17,.72);border:1px solid var(--border);border-radius:8px;padding:14px}.case-note strong{display:block;color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}.case-note p{font-size:14px;margin:0}.llm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.llm-grid a{font-family:'JetBrains Mono',monospace;font-size:12px;text-align:center;border:1px solid var(--border2);border-radius:8px;padding:11px 10px;background:rgba(5,8,17,.7);color:var(--text)}.llm-grid a:hover{border-color:var(--cyan);color:var(--cyan);text-decoration:none}@media(max-width:860px){.case-notes{grid-template-columns:1fr}.llm-grid{grid-template-columns:1fr 1fr}.jumpbar{padding-left:20px;padding-right:20px}}@media(max-width:560px){.topnav a.nav-cta{display:inline-flex!important}.jump-pill{width:100%;text-align:center}.llm-grid{grid-template-columns:1fr}.score-table th,.score-table td{font-size:12px;padding:9px}}
+
 </style>
 </head>
 <body>
 <div class="scroll-progress" id="scrollProg"></div>
 <nav class="topnav">
 <span class="brand">RHPm</span>
+<a class="nav-cta" data-i18n="navJumpForge" href="#forge">Prompt Forge ↓</a>
 <a data-i18n="navMaster" href="#master">Master</a><a data-i18n="navForge" href="#forge">Forge</a><a data-i18n="navExamples" href="#examples">Examples</a><a data-i18n="navProtocol" href="#protocol">Protocol</a><a data-i18n="navRelated" href="#related">Related</a>
 <span class="spacer"></span>
 <div class="lang-control"><label data-i18n="pageLanguage" for="pageLang">Page language</label><select aria-label="Page language" id="pageLang"></select></div>
 <div class="lang-control"><label data-i18n="answerLanguage" for="answerLang">Answer language</label><select aria-label="Answer language" id="answerLang"></select></div>
 </nav>
-<div class="toolbar"><button onclick="fontDelta(-1)">A−</button><button onclick="fontDelta(1)">A+</button><button data-i18n="useSame" onclick="setAnswerSameAsPage()">Use same as page</button></div>
+<div class="toolbar"><button onclick="fontDelta(-1)">A−</button><button onclick="fontDelta(1)">A+</button></div>
 <header class="cover"><span class="tag" data-i18n="tag">RHPm · AIM³ Prompt Builder</span><h1><span id="titleMain">Rough request → strong session prompt</span></h1><p class="subtitle" data-i18n="subtitle"></p><p class="meta" data-i18n="meta"></p></header>
+<div class="jumpbar" aria-label="Quick jumps">
+  <a class="jump-pill primary" data-i18n="jumpForge" href="#forge">Go to Prompt Forge — guided template</a>
+  <a class="jump-pill" data-i18n="jumpCase" href="#promptBenchmark">See real prompt benchmark</a>
+</div>
 <main class="wrap">
 <div class="quick-path"><div class="quick-step"><div class="n">1</div><p data-i18n="step1"></p></div><div class="quick-step"><div class="n">2</div><p data-i18n="step2"></p></div><div class="quick-step"><div class="n">3</div><p data-i18n="step3"></p></div><div class="quick-step"><div class="n">4</div><p data-i18n="step4"></p></div><div class="quick-step"><div class="n">5</div><p data-i18n="step5"></p></div></div>
 <div class="callout cyan"><div class="ct" data-i18n="whatTitle"></div><p data-i18n="whatText"></p></div>
@@ -34,6 +43,94 @@
 <section class="section" id="forge"><h2 data-i18n="forgeTitle"></h2><p data-i18n="forgeIntro"></p><div class="builder"><div class="grid2"><div class="field"><label data-i18n="roughLabel" for="roughPrompt"></label><textarea data-placeholder="roughPh" id="roughPrompt"></textarea></div><div><div class="field"><label data-i18n="taskType" for="taskType"></label><select id="taskType"><option data-i18n="taskGeneral" value="general"></option><option data-i18n="taskCode" value="code"></option><option data-i18n="taskHtml" value="html"></option><option data-i18n="taskDoc" value="doc"></option><option data-i18n="taskSpreadsheet" value="spreadsheet"></option><option data-i18n="taskImage" value="image"></option><option data-i18n="taskReview" value="review"></option><option data-i18n="taskResearch" value="research"></option><option data-i18n="taskArena" value="arena"></option></select></div><div class="field"><label data-i18n="ceremony" for="ceremony"></label><select id="ceremony"><option data-i18n="ceremonyAuto" value="auto"></option><option data-i18n="ceremonyLight" value="light"></option><option data-i18n="ceremonyMedium" value="medium"></option><option data-i18n="ceremonyFull" value="full"></option></select></div><p class="small" data-i18n="agentNote"></p></div></div><div class="grid2"><div class="field"><label data-i18n="filesLabel" for="fileTree"></label><textarea data-placeholder="filesPh" id="fileTree"></textarea></div><div class="field"><label data-i18n="otherContext" for="contextFiles"></label><textarea data-placeholder="otherPh" id="contextFiles"></textarea></div></div><div class="checks"><label><input checked="" id="chkFiles" type="checkbox"/><span data-i18n="chkFiles"></span></label><label><input checked="" id="chkTests" type="checkbox"/><span data-i18n="chkTests"></span></label><label><input checked="" id="chkProvenance" type="checkbox"/><span data-i18n="chkProvenance"></span></label><label><input checked="" id="chkNoBloat" type="checkbox"/><span data-i18n="chkNoBloat"></span></label><label><input checked="" id="chkResume" type="checkbox"/><span data-i18n="chkResume"></span></label><label><input checked="" id="chkSkill" type="checkbox"/><span data-i18n="chkSkill"></span></label><label><input id="chkGuide" type="checkbox"/><span data-i18n="chkGuide"></span></label><label><input checked="" id="chkReviewPrompt" type="checkbox"/><span data-i18n="chkReview"></span></label></div><div class="buttons"><button class="btn cyan" data-i18n="generate" onclick="generatePrompt()"></button><button class="btn" data-i18n="copyGenerated" onclick="copyById('promptOut')"></button><button class="btn" data-i18n="copyReview" onclick="copyReviewPromptFromForge()"></button><button class="btn gold" data-i18n="downloadGenerated" onclick="downloadGeneratedPrompt()"></button><button class="btn gold" data-i18n="exHtml" onclick="loadExample('html')"></button><button class="btn gold" data-i18n="exCode" onclick="loadExample('code')"></button><button class="btn gold" data-i18n="exSpreadsheet" onclick="loadExample('spreadsheet')"></button><button class="btn gold" data-i18n="exImage" onclick="loadExample('image')"></button><button class="btn rose" data-i18n="clearForge" onclick="clearForge()"></button></div><div class="field"><label data-i18n="promptOut" for="promptOut"></label><textarea class="output" data-placeholder="promptOutPh" id="promptOut"></textarea></div><div class="field"><label data-i18n="reviewOut" for="reviewOut"></label><textarea class="output" data-placeholder="reviewOutPh" id="reviewOut"></textarea></div><div class="checklist"><div class="checkitem" data-i18n="check1"></div><div class="checkitem" data-i18n="check2"></div><div class="checkitem" data-i18n="check3"></div><div class="checkitem" data-i18n="check4"></div><div class="checkitem" data-i18n="check5"></div><div class="checkitem" data-i18n="check6"></div></div></div></section>
 <section class="section" id="examples"><h2 data-i18n="examplesTitle"></h2><p data-i18n="examplesIntro"></p><div class="example-grid"><div class="example"><div class="cols"><div><div class="mini-label" data-i18n="weak"></div><p data-i18n="ex1Weak"></p></div><div><div class="mini-label" data-i18n="strong"></div><p data-i18n="ex1Strong"></p></div></div></div><div class="example"><div class="cols"><div><div class="mini-label" data-i18n="weak"></div><p data-i18n="ex2Weak"></p></div><div><div class="mini-label" data-i18n="strong"></div><p data-i18n="ex2Strong"></p></div></div></div><div class="example"><div class="cols"><div><div class="mini-label" data-i18n="weak"></div><p data-i18n="ex3Weak"></p></div><div><div class="mini-label" data-i18n="strong"></div><p data-i18n="ex3Strong"></p></div></div></div></div></section>
 <details class="section advanced" id="protocol" open=""><summary><h2 data-i18n="protocolTitle" style="display:inline"></h2></summary><div class="inside"><p data-i18n="protocolIntro"></p><div class="steps"><div class="step"><div class="num">00</div><div><h3 data-i18n="p0"></h3><p data-i18n="p0t"></p></div></div><div class="step"><div class="num">01</div><div><h3 data-i18n="p1"></h3><p data-i18n="p1t"></p></div></div><div class="step"><div class="num">02</div><div><h3 data-i18n="p2"></h3><p data-i18n="p2t"></p></div></div><div class="step"><div class="num">03</div><div><h3 data-i18n="p3"></h3><p data-i18n="p3t"></p></div></div><div class="step"><div class="num">04</div><div><h3 data-i18n="p4"></h3><p data-i18n="p4t"></p></div></div><div class="step"><div class="num">05</div><div><h3 data-i18n="p5"></h3><p data-i18n="p5t"></p></div></div><div class="step"><div class="num">06</div><div><h3 data-i18n="p6"></h3><p data-i18n="p6t"></p></div></div><div class="step"><div class="num">07</div><div><h3 data-i18n="p7"></h3><p data-i18n="p7t"></p></div></div><div class="step"><div class="num">08</div><div><h3 data-i18n="p8"></h3><p data-i18n="p8t"></p></div></div><div class="step"><div class="num">09</div><div><h3 data-i18n="p9"></h3><p data-i18n="p9t"></p></div></div></div><h2 data-i18n="lensTitle" style="margin-top:28px"></h2><div class="lens-grid"><div class="lens"><div class="role" data-i18n="lensEng"></div><p data-i18n="lensEngT"></p></div><div class="lens"><div class="role" data-i18n="lensFal"></div><p data-i18n="lensFalT"></p></div><div class="lens"><div class="role" data-i18n="lensChild"></div><p data-i18n="lensChildT"></p></div><div class="lens"><div class="role" data-i18n="lensCart"></div><p data-i18n="lensCartT"></p></div><div class="lens"><div class="role" data-i18n="lensA0"></div><p data-i18n="lensA0T"></p></div></div></div></details>
+
+<section class="section case-study" id="promptBenchmark">
+  <h2 data-i18n="caseTitle">Real-world prompt benchmark</h2>
+  <div class="callout gold">
+    <div class="ct" data-i18n="caseVisibleTitle">Visible result</div>
+    <p data-i18n="caseVisibleText">Same rough request, different prompt substrate. Warm project context can rescue a weak prompt; RHPm makes the missing method explicit and portable; cold weak prompts drift generic.</p>
+  </div>
+  <div class="callout cyan">
+    <div class="ct" data-i18n="caseBestTitle">What this proves</div>
+    <p data-i18n="caseBestText">RHPm did not add intelligence to the model. It transferred the working discipline into the prompt: read the target first, do not answer from memory, use sources, separate correct / simplified / misleading / wrong claims, give a calibrated percentage, and produce a reusable verdict.</p>
+  </div>
+  <details class="advanced case-details">
+    <summary><h2 data-i18n="caseFullTitle" style="display:inline">Full comparison: prompt quality, answer quality, and scores</h2></summary>
+    <div class="inside">
+      <p class="small" data-i18n="caseMeta">The source file contains three answered paths plus one RHPm-generated prompt. So this scores four artefacts in the test chain, not four equal answers.</p>
+      <div class="table-wrap">
+        <table class="score-table">
+          <thead>
+            <tr>
+              <th data-i18n="caseThPath">Path</th>
+              <th data-i18n="caseThPrompt">Prompt score</th>
+              <th data-i18n="caseThAnswer">Answer score</th>
+              <th data-i18n="caseThMeaning">Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td data-i18n="casePathA">A — simple prompt inside warm AI8/GPT context</td>
+              <td>40/100 standalone · 60/100 warm-context</td>
+              <td>87/100</td>
+              <td data-i18n="caseMeaningA">Weak prompt, strong answer because the existing project context already carried BD’s audit style.</td>
+            </tr>
+            <tr>
+              <td data-i18n="casePathB">B — RHPm-generated audit prompt</td>
+              <td>95/100</td>
+              <td>94/100 as prompt-builder output</td>
+              <td data-i18n="caseMeaningB">Excellent portable prompt: it forces reading, sources, claim grouping, severity, percentage range, and reusable verdict.</td>
+            </tr>
+            <tr>
+              <td data-i18n="casePathC">C — fresh GPT session using the RHPm prompt</td>
+              <td>95/100</td>
+              <td>92/100</td>
+              <td data-i18n="caseMeaningC">Best practical result. The method survived the move into a fresh session without relying on personal memory.</td>
+            </tr>
+            <tr>
+              <td data-i18n="casePathD">D — same simple prompt inside a cold GPT account</td>
+              <td>35/100</td>
+              <td>52/100</td>
+              <td data-i18n="caseMeaningD">Useful generic intuition, but weak audit behavior: too broad, under-sourced, and it drifts away from the exact article.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="case-notes">
+        <div class="case-note"><strong data-i18n="casePromptTitleA">Warm simple prompt</strong><p data-i18n="casePromptA">Short Slovenian request: “read this and tell me how true it is in percent.” It works only because the surrounding AI8 context already teaches the model how BD expects audits.</p></div>
+        <div class="case-note"><strong data-i18n="casePromptTitleB">RHPm prompt</strong><p data-i18n="casePromptB">The generated prompt explicitly says: do not answer from memory; open/read the article first; cite reliable sources; classify claims; give a non-fake-precise score.</p></div>
+        <div class="case-note"><strong data-i18n="casePromptTitleC">Fresh-session result</strong><p data-i18n="casePromptC">The fresh session returns a stronger structured audit: overall 84–88%, higher for transformer core, lower for modern end-to-end assistant systems.</p></div>
+        <div class="case-note"><strong data-i18n="casePromptTitleD">Cold simple result</strong><p data-i18n="casePromptD">The cold account gives a broad next-token discussion and then effectively admits it would need the article pasted for precise analysis.</p></div>
+      </div>
+      <div class="callout violet">
+        <div class="ct" data-i18n="caseConclusionTitle">Conclusion</div>
+        <p data-i18n="caseConclusionText">The practical gain is not mystical. RHPm packages the missing working method so another LLM session can reproduce the quality without already knowing BD, AI8, or the collaboration style.</p>
+      </div>
+    </div>
+  </details>
+</section>
+
+<details class="section advanced link-bank" id="llm-links">
+  <summary><h2 data-i18n="llmLinksTitle" style="display:inline">Collapsed quick links to major LLM assistants</h2></summary>
+  <div class="inside">
+    <p data-i18n="llmLinksIntro">Handy user links for testing RHPm prompts across different model families. This is a convenience list, not a live ranking.</p>
+    <div class="llm-grid">
+      <a href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPT</a>
+      <a href="https://claude.ai/" target="_blank" rel="noopener">Claude</a>
+      <a href="https://gemini.google.com/" target="_blank" rel="noopener">Gemini</a>
+      <a href="https://grok.com/" target="_blank" rel="noopener">Grok</a>
+      <a href="https://www.perplexity.ai/" target="_blank" rel="noopener">Perplexity</a>
+      <a href="https://chat.deepseek.com/" target="_blank" rel="noopener">DeepSeek</a>
+      <a href="https://chat.mistral.ai/" target="_blank" rel="noopener">Mistral Vibe / Le Chat</a>
+      <a href="https://copilot.microsoft.com/" target="_blank" rel="noopener">Microsoft Copilot</a>
+      <a href="https://www.meta.ai/" target="_blank" rel="noopener">Meta AI</a>
+      <a href="https://chat.qwen.ai/" target="_blank" rel="noopener">Qwen</a>
+      <a href="https://openrouter.ai/" target="_blank" rel="noopener">OpenRouter</a>
+    </div>
+    <p class="small" data-i18n="llmLinksNote">Use the same RHPm-generated prompt in several assistants, then compare whether the output stays concrete, sourced, bounded, and testable.</p>
+  </div>
+</details>
+
 </main>
 <footer class="footer" id="related"><div class="inner"><p data-i18n="footer1"></p><p><strong data-i18n="related"></strong>: <a href="BD_AIM3.html">AIM³</a> · <a href="BD_AIM3_RHPr.html">RHPr</a> · <a href="BD_AIM3_RHP.html">RHP</a> · <a href="BD_AIM3_RHP_Story.html">Origin Story</a> · <a href="BD_AIM3_RHPm_master_prompt.txt">Raw master prompt</a></p></div></footer>
 <script>
@@ -46,7 +143,7 @@ const I18N = {
     "navRelated": "Related",
     "pageLanguage": "Page language",
     "answerLanguage": "Answer language",
-    "tag": "RHPm · AIM³ Prompt Builder · language-fixed v0.8",
+    "tag": "RHPm · AIM³ Prompt Builder · practical hybrid v0.9",
     "title": "Rough request → strong session prompt",
     "titleEm": "strong session prompt",
     "subtitle": "A compact front door for turning a messy human request into a clear, testable prompt for a fresh LLM session. Now the page language and the answer language are separate, so the UI and generated prompt instructions no longer fight each other.",
@@ -173,7 +270,7 @@ const I18N = {
     "lensCartT": "Which domains, files, missing drawers, and adjacent references matter?",
     "lensA0": "Agent 0",
     "lensA0T": "How will we test, compare, visually inspect, recover, or decide it is done?",
-    "footer1": "RHPm v0.8 language-fixed hybrid — Guided Prompt Builder. Built from the practical UX of G and the ecosystem/reasoning layer of C. Compact bridge from rough human request to strong AI session prompt; includes lens diversity, resonance guard, Agent 0 validation, context hygiene, 8Z reasoning mode, optional multi-LLM feedback, and Skill extraction.",
+    "footer1": "RHPm v0.9 language-fixed hybrid — Guided Prompt Builder. Built from the practical UX of G and the ecosystem/reasoning layer of C. Compact bridge from rough human request to strong AI session prompt; includes lens diversity, resonance guard, Agent 0 validation, context hygiene, 8Z reasoning mode, optional multi-LLM feedback, and Skill extraction.",
     "related": "Related",
     "copied": "Copied.",
     "copyFail": "Copy failed. Select text manually.",
@@ -182,7 +279,41 @@ const I18N = {
     "reviewCopied": "Review prompt copied.",
     "generated": "Generated.",
     "cleared": "Cleared.",
-    "useSame": "Use same as page"
+    "navJumpForge": "Prompt Forge ↓",
+    "jumpForge": "Go to Prompt Forge — guided template",
+    "jumpCase": "See real prompt benchmark",
+    "caseTitle": "Real-world prompt benchmark",
+    "caseVisibleTitle": "Visible result",
+    "caseVisibleText": "Same rough request, different prompt substrate. Warm project context can rescue a weak prompt; RHPm makes the missing method explicit and portable; cold weak prompts drift generic.",
+    "caseBestTitle": "What this proves",
+    "caseBestText": "RHPm did not add intelligence to the model. It transferred the working discipline into the prompt: read the target first, do not answer from memory, use sources, separate correct / simplified / misleading / wrong claims, give a calibrated percentage, and produce a reusable verdict.",
+    "caseFullTitle": "Full comparison: prompt quality, answer quality, and scores",
+    "caseMeta": "The source file contains three answered paths plus one RHPm-generated prompt. So this scores four artefacts in the test chain, not four equal answers.",
+    "caseThPath": "Path",
+    "caseThPrompt": "Prompt score",
+    "caseThAnswer": "Answer score",
+    "caseThMeaning": "Meaning",
+    "casePathA": "A — simple prompt inside warm AI8/GPT context",
+    "caseMeaningA": "Weak prompt, strong answer because the existing project context already carried BD’s audit style.",
+    "casePathB": "B — RHPm-generated audit prompt",
+    "caseMeaningB": "Excellent portable prompt: it forces reading, sources, claim grouping, severity, percentage range, and reusable verdict.",
+    "casePathC": "C — fresh GPT session using the RHPm prompt",
+    "caseMeaningC": "Best practical result. The method survived the move into a fresh session without relying on personal memory.",
+    "casePathD": "D — same simple prompt inside a cold GPT account",
+    "caseMeaningD": "Useful generic intuition, but weak audit behavior: too broad, under-sourced, and it drifts away from the exact article.",
+    "casePromptTitleA": "Warm simple prompt",
+    "casePromptA": "Short Slovenian request: “read this and tell me how true it is in percent.” It works only because the surrounding AI8 context already teaches the model how BD expects audits.",
+    "casePromptTitleB": "RHPm prompt",
+    "casePromptB": "The generated prompt explicitly says: do not answer from memory; open/read the article first; cite reliable sources; classify claims; give a non-fake-precise score.",
+    "casePromptTitleC": "Fresh-session result",
+    "casePromptC": "The fresh session returns a stronger structured audit: overall 84–88%, higher for transformer core, lower for modern end-to-end assistant systems.",
+    "casePromptTitleD": "Cold simple result",
+    "casePromptD": "The cold account gives a broad next-token discussion and then effectively admits it would need the article pasted for precise analysis.",
+    "caseConclusionTitle": "Conclusion",
+    "caseConclusionText": "The practical gain is not mystical. RHPm packages the missing working method so another LLM session can reproduce the quality without already knowing BD, AI8, or the collaboration style.",
+    "llmLinksTitle": "Collapsed quick links to major LLM assistants",
+    "llmLinksIntro": "Handy user links for testing RHPm prompts across different model families. This is a convenience list, not a live ranking.",
+    "llmLinksNote": "Use the same RHPm-generated prompt in several assistants, then compare whether the output stays concrete, sourced, bounded, and testable."
   },
   "sl": {
     "navMaster": "Master",
@@ -192,7 +323,7 @@ const I18N = {
     "navRelated": "Povezave",
     "pageLanguage": "Jezik strani",
     "answerLanguage": "Jezik odgovora",
-    "tag": "RHPm · AIM³ Prompt Builder · popravljeni jeziki v0.8",
+    "tag": "RHPm · AIM³ Prompt Builder · praktični hibrid v0.9",
     "title": "Groba zahteva → močan prompt za novo sejo",
     "titleEm": "močan prompt za novo sejo",
     "subtitle": "Kompakten vhod za pretvorbo neurejene človeške zahteve v jasen, preverljiv prompt za novo LLM sejo. Zdaj sta jezik strani in jezik odgovora ločena, zato se UI in navodila v promptu ne tepeta več.",
@@ -319,7 +450,7 @@ const I18N = {
     "lensCartT": "Katere domene, datoteke, manjkajoči predali in sosednje reference so pomembni?",
     "lensA0": "Agent 0",
     "lensA0T": "Kako bomo testirali, primerjali, vizualno pregledali, obnovili ali odločili, da je končano?",
-    "footer1": "RHPm v0.8 language-fixed hybrid — Guided Prompt Builder. Zgrajen iz praktičnega UX-ja G in ekosistemsko/razmišljalske plasti C. Kompakten most iz grobe človeške zahteve v močan AI session prompt; vključuje več leč, resonančno varovalo, Agent 0 validacijo, higieno konteksta, 8Z reasoning mode, opcijski multi-LLM feedback in Skill extraction.",
+    "footer1": "RHPm v0.9 language-fixed hybrid — Guided Prompt Builder. Zgrajen iz praktičnega UX-ja G in ekosistemsko/razmišljalske plasti C. Kompakten most iz grobe človeške zahteve v močan AI session prompt; vključuje več leč, resonančno varovalo, Agent 0 validacijo, higieno konteksta, 8Z reasoning mode, opcijski multi-LLM feedback in Skill extraction.",
     "related": "Povezano",
     "copied": "Kopirano.",
     "copyFail": "Kopiranje ni uspelo. Označi besedilo ročno.",
@@ -328,7 +459,41 @@ const I18N = {
     "reviewCopied": "Review prompt kopiran.",
     "generated": "Ustvarjeno.",
     "cleared": "Počiščeno.",
-    "useSame": "Enako kot stran"
+    "navJumpForge": "Prompt Forge ↓",
+    "jumpForge": "Skoči na Prompt Forge — vodena predloga",
+    "jumpCase": "Poglej pravi prompt benchmark",
+    "caseTitle": "Praktični prompt benchmark",
+    "caseVisibleTitle": "Vidni rezultat",
+    "caseVisibleText": "Ista groba zahteva, drugačna promptna podlaga. Topel projektni kontekst lahko reši šibek prompt; RHPm manjkajočo metodo naredi eksplicitno in prenosljivo; hladen šibek prompt zdrsne v generičnost.",
+    "caseBestTitle": "Kaj to dokazuje",
+    "caseBestText": "RHPm modelu ne doda inteligence. V prompt prenese delovno disciplino: najprej preberi cilj, ne odgovarjaj iz spomina, uporabi vire, loči pravilne / poenostavljene / zavajajoče / napačne trditve, podaj umerjen odstotek in uporaben kratek verdict.",
+    "caseFullTitle": "Celotna primerjava: kakovost prompta, kakovost odgovora in ocene",
+    "caseMeta": "Izvorna datoteka vsebuje tri odgovorjene poti in en RHPm-generiran prompt. Zato tukaj ocenjujemo štiri artefakte v testni verigi, ne štirih enakovrednih odgovorov.",
+    "caseThPath": "Pot",
+    "caseThPrompt": "Ocena prompta",
+    "caseThAnswer": "Ocena odgovora",
+    "caseThMeaning": "Pomen",
+    "casePathA": "A — preprost prompt v toplem AI8/GPT kontekstu",
+    "caseMeaningA": "Šibek prompt, močan odgovor, ker obstoječi projektni kontekst že nosi BD-jev audit stil.",
+    "casePathB": "B — RHPm-generiran audit prompt",
+    "caseMeaningB": "Odličen prenosljiv prompt: zahteva branje, vire, skupine trditev, resnost napak, razpon odstotka in uporaben verdict.",
+    "casePathC": "C — sveža GPT seja z RHPm promptom",
+    "caseMeaningC": "Najboljši praktični rezultat. Metoda preživi prenos v novo sejo brez osebnega spomina.",
+    "casePathD": "D — isti preprost prompt v hladnem GPT accountu",
+    "caseMeaningD": "Uporabna splošna intuicija, ampak šibek audit: preširoko, premalo virov in zdrs stran od točnega članka.",
+    "casePromptTitleA": "Topel preprost prompt",
+    "casePromptA": "Kratka slovenska zahteva: “preberi to in povej v %, koliko drži.” Deluje samo zato, ker okoliški AI8 kontekst model že nauči, kakšne audite BD pričakuje.",
+    "casePromptTitleB": "RHPm prompt",
+    "casePromptB": "Generirani prompt izrecno zahteva: ne odgovarjaj iz spomina; najprej odpri/preberi članek; citiraj zanesljive vire; razvrsti trditve; ne delaj lažno natančne ocene.",
+    "casePromptTitleC": "Rezultat sveže seje",
+    "casePromptC": "Sveža seja vrne močnejši strukturiran audit: skupaj 84–88%, višje za transformer jedro, nižje za moderne end-to-end assistant sisteme.",
+    "casePromptTitleD": "Hladen preprost rezultat",
+    "casePromptD": "Hladen account poda široko razpravo o next-token ideji in potem praktično prizna, da bi za natančno analizo potreboval prilepljen članek.",
+    "caseConclusionTitle": "Zaključek",
+    "caseConclusionText": "Praktična korist ni mistična. RHPm zapakira manjkajočo metodo dela, da lahko druga LLM seja ponovi kakovost, ne da bi že poznala BD, AI8 ali stil sodelovanja.",
+    "llmLinksTitle": "Kolapsirani hitri linki do glavnih LLM asistentov",
+    "llmLinksIntro": "Uporabni linki za testiranje RHPm promptov v različnih modelnih družinah. To je priročen seznam, ne živa lestvica.",
+    "llmLinksNote": "Isti RHPm-generirani prompt uporabi v več asistentih, nato primerjaj, ali odgovor ostane konkreten, citiran, omejen in preverljiv."
   },
   "de": {
     "navMaster": "Master",
@@ -338,7 +503,7 @@ const I18N = {
     "navRelated": "Links",
     "pageLanguage": "Seitensprache",
     "answerLanguage": "Antwortsprache",
-    "tag": "RHPm · AIM³ Prompt Builder · sprachkorrigiert v0.8",
+    "tag": "RHPm · AIM³ Prompt Builder · sprachkorrigiert v0.9",
     "title": "Rohwunsch → starker Prompt für eine neue Sitzung",
     "titleEm": "starker Prompt für eine neue Sitzung",
     "subtitle": "Eine kompakte Startseite, die aus einer unsauberen menschlichen Anfrage einen klaren, prüfbaren Prompt für eine neue LLM-Sitzung macht. Seitensprache und Antwortsprache sind jetzt getrennt, damit UI und Prompt-Anweisungen sich nicht mehr gegenseitig stören.",
@@ -465,7 +630,7 @@ const I18N = {
     "lensCartT": "Welche Domänen, Dateien, fehlenden Wissensfächer und angrenzenden Referenzen zählen?",
     "lensA0": "Agent 0",
     "lensA0T": "Wie testen, vergleichen, visuell prüfen, wiederherstellen oder entscheiden wir, dass es fertig ist?",
-    "footer1": "RHPm v0.8 sprachkorrigierter Hybrid — Guided Prompt Builder. Gebaut aus der praktischen UX von G und der Ökosystem-/Denkschicht von C. Kompakte Brücke vom Rohwunsch zum starken AI-Session-Prompt; mit Linsenvielfalt, Resonanzschutz, Agent-0-Validierung, Kontexthygiene, 8Z Reasoning Mode, optionalem Multi-LLM-Feedback und Skill-Extraktion.",
+    "footer1": "RHPm v0.9 sprachkorrigierter Hybrid — Guided Prompt Builder. Gebaut aus der praktischen UX von G und der Ökosystem-/Denkschicht von C. Kompakte Brücke vom Rohwunsch zum starken AI-Session-Prompt; mit Linsenvielfalt, Resonanzschutz, Agent-0-Validierung, Kontexthygiene, 8Z Reasoning Mode, optionalem Multi-LLM-Feedback und Skill-Extraktion.",
     "related": "Verwandt",
     "copied": "Kopiert.",
     "copyFail": "Kopieren fehlgeschlagen. Text manuell markieren.",
@@ -474,7 +639,41 @@ const I18N = {
     "reviewCopied": "Review-Prompt kopiert.",
     "generated": "Erzeugt.",
     "cleared": "Geleert.",
-    "useSame": "Wie Seitensprache"
+    "navJumpForge": "Prompt Forge ↓",
+    "jumpForge": "Zum Prompt Forge — geführte Vorlage",
+    "jumpCase": "Echten Prompt-Benchmark ansehen",
+    "caseTitle": "Praxisnaher Prompt-Benchmark",
+    "caseVisibleTitle": "Sichtbares Ergebnis",
+    "caseVisibleText": "Gleiche Rohfrage, anderer Prompt-Unterbau. Warmer Projektkontext kann einen schwachen Prompt retten; RHPm macht die fehlende Methode explizit und übertragbar; kalte schwache Prompts werden generisch.",
+    "caseBestTitle": "Was das zeigt",
+    "caseBestText": "RHPm fügt dem Modell keine Intelligenz hinzu. Es überträgt die Arbeitsdisziplin in den Prompt: Ziel zuerst lesen, nicht aus dem Gedächtnis antworten, Quellen nutzen, richtige / vereinfachte / irreführende / falsche Aussagen trennen, einen kalibrierten Prozentwert geben und ein wiederverwendbares Urteil liefern.",
+    "caseFullTitle": "Vollständiger Vergleich: Prompt-Qualität, Antwort-Qualität und Scores",
+    "caseMeta": "Die Quelldatei enthält drei beantwortete Pfade plus einen von RHPm erzeugten Prompt. Bewertet werden also vier Artefakte der Testkette, nicht vier gleichartige Antworten.",
+    "caseThPath": "Pfad",
+    "caseThPrompt": "Prompt-Score",
+    "caseThAnswer": "Antwort-Score",
+    "caseThMeaning": "Bedeutung",
+    "casePathA": "A — einfacher Prompt im warmen AI8/GPT-Kontext",
+    "caseMeaningA": "Schwacher Prompt, starke Antwort, weil der Projektkontext BD’s Audit-Stil bereits trägt.",
+    "casePathB": "B — von RHPm erzeugter Audit-Prompt",
+    "caseMeaningB": "Sehr guter übertragbarer Prompt: Lesen, Quellen, Claim-Gruppen, Schweregrad, Prozentbereich und wiederverwendbares Urteil werden erzwungen.",
+    "casePathC": "C — frische GPT-Sitzung mit RHPm-Prompt",
+    "caseMeaningC": "Bestes praktisches Ergebnis. Die Methode überlebt den Wechsel in eine frische Sitzung ohne persönliche Erinnerung.",
+    "casePathD": "D — derselbe einfache Prompt in einem kalten GPT-Konto",
+    "caseMeaningD": "Nützliche generische Intuition, aber schwaches Audit-Verhalten: zu breit, zu wenig belegt und vom konkreten Artikel wegdriftend.",
+    "casePromptTitleA": "Warmer einfacher Prompt",
+    "casePromptA": "Kurze slowenische Anfrage: „lies das und sag mir in Prozent, wie wahr es ist.“ Das funktioniert nur, weil der AI8-Kontext dem Modell BD’s Audit-Erwartung bereits beibringt.",
+    "casePromptTitleB": "RHPm-Prompt",
+    "casePromptB": "Der erzeugte Prompt sagt explizit: nicht aus dem Gedächtnis antworten; Artikel zuerst öffnen/lesen; zuverlässige Quellen zitieren; Claims klassifizieren; keine Scheingenauigkeit.",
+    "casePromptTitleC": "Ergebnis der frischen Sitzung",
+    "casePromptC": "Die frische Sitzung liefert ein stärker strukturiertes Audit: insgesamt 84–88%, höher für den Transformer-Kern, niedriger für moderne End-to-End-Assistentensysteme.",
+    "casePromptTitleD": "Kaltes einfaches Ergebnis",
+    "casePromptD": "Das kalte Konto liefert eine breite Next-Token-Diskussion und gibt praktisch zu, dass es für eine genaue Analyse den Artikel eingefügt bräuchte.",
+    "caseConclusionTitle": "Fazit",
+    "caseConclusionText": "Der praktische Gewinn ist nicht mystisch. RHPm verpackt die fehlende Arbeitsmethode, damit eine andere LLM-Sitzung Qualität reproduzieren kann, ohne BD, AI8 oder den Kollaborationsstil bereits zu kennen.",
+    "llmLinksTitle": "Eingeklappte Schnelllinks zu wichtigen LLM-Assistenten",
+    "llmLinksIntro": "Praktische Links, um RHPm-Prompts über verschiedene Modellfamilien zu testen. Dies ist eine Komfortliste, kein Live-Ranking.",
+    "llmLinksNote": "Nutze denselben RHPm-Prompt in mehreren Assistenten und vergleiche, ob die Ausgabe konkret, belegt, begrenzt und testbar bleibt."
   },
   "it": {
     "navMaster": "Master",
@@ -484,7 +683,7 @@ const I18N = {
     "navRelated": "Collegamenti",
     "pageLanguage": "Lingua pagina",
     "answerLanguage": "Lingua risposta",
-    "tag": "RHPm · AIM³ Prompt Builder · lingue corrette v0.8",
+    "tag": "RHPm · AIM³ Prompt Builder · lingue corrette v0.9",
     "title": "Richiesta grezza → prompt forte per una nuova sessione",
     "titleEm": "prompt forte per una nuova sessione",
     "subtitle": "Una porta d’ingresso compatta che trasforma una richiesta umana disordinata in un prompt chiaro e verificabile per una nuova sessione LLM. Lingua della pagina e lingua della risposta sono ora separate, così UI e istruzioni non si scontrano più.",
@@ -611,7 +810,7 @@ const I18N = {
     "lensCartT": "Quali domini, file, cassetti mancanti e riferimenti adiacenti contano?",
     "lensA0": "Agent 0",
     "lensA0T": "Come testeremo, confronteremo, ispezioneremo visivamente, recupereremo o decideremo che è finito?",
-    "footer1": "RHPm v0.8 ibrido con lingue corrette — Guided Prompt Builder. Costruito dall’UX pratica di G e dallo strato ecosistema/ragionamento di C. Ponte compatto da richiesta grezza a forte AI session prompt; include diversità di lenti, guardrail di risonanza, validazione Agent 0, igiene del contesto, 8Z reasoning mode, feedback multi-LLM opzionale e Skill extraction.",
+    "footer1": "RHPm v0.9 ibrido con lingue corrette — Guided Prompt Builder. Costruito dall’UX pratica di G e dallo strato ecosistema/ragionamento di C. Ponte compatto da richiesta grezza a forte AI session prompt; include diversità di lenti, guardrail di risonanza, validazione Agent 0, igiene del contesto, 8Z reasoning mode, feedback multi-LLM opzionale e Skill extraction.",
     "related": "Collegati",
     "copied": "Copiato.",
     "copyFail": "Copia non riuscita. Seleziona il testo manualmente.",
@@ -620,7 +819,41 @@ const I18N = {
     "reviewCopied": "Review prompt copiato.",
     "generated": "Generato.",
     "cleared": "Cancellato.",
-    "useSame": "Come pagina"
+    "navJumpForge": "Prompt Forge ↓",
+    "jumpForge": "Vai a Prompt Forge — modello guidato",
+    "jumpCase": "Vedi benchmark reale dei prompt",
+    "caseTitle": "Benchmark pratico dei prompt",
+    "caseVisibleTitle": "Risultato visibile",
+    "caseVisibleText": "Stessa richiesta grezza, base del prompt diversa. Il contesto caldo del progetto può salvare un prompt debole; RHPm rende il metodo mancante esplicito e portabile; un prompt debole a freddo scivola nel generico.",
+    "caseBestTitle": "Cosa dimostra",
+    "caseBestText": "RHPm non aggiunge intelligenza al modello. Trasferisce disciplina di lavoro nel prompt: leggere prima il target, non rispondere a memoria, usare fonti, separare affermazioni corrette / semplificate / fuorvianti / errate, dare una percentuale calibrata e un verdetto riutilizzabile.",
+    "caseFullTitle": "Confronto completo: qualità del prompt, qualità della risposta e punteggi",
+    "caseMeta": "Il file sorgente contiene tre percorsi con risposta più un prompt generato da RHPm. Quindi vengono valutati quattro artefatti della catena di test, non quattro risposte equivalenti.",
+    "caseThPath": "Percorso",
+    "caseThPrompt": "Punteggio prompt",
+    "caseThAnswer": "Punteggio risposta",
+    "caseThMeaning": "Significato",
+    "casePathA": "A — prompt semplice nel contesto caldo AI8/GPT",
+    "caseMeaningA": "Prompt debole, risposta forte perché il contesto del progetto portava già lo stile di audit di BD.",
+    "casePathB": "B — prompt di audit generato da RHPm",
+    "caseMeaningB": "Ottimo prompt portabile: forza lettura, fonti, gruppi di claim, severità, range percentuale e verdetto riutilizzabile.",
+    "casePathC": "C — nuova sessione GPT con prompt RHPm",
+    "caseMeaningC": "Miglior risultato pratico. Il metodo sopravvive al passaggio in una nuova sessione senza memoria personale.",
+    "casePathD": "D — stesso prompt semplice in un account GPT freddo",
+    "caseMeaningD": "Intuizione generica utile, ma audit debole: troppo ampio, poco fontato e lontano dall’articolo specifico.",
+    "casePromptTitleA": "Prompt semplice caldo",
+    "casePromptA": "Breve richiesta slovena: “leggi questo e dimmi in percentuale quanto è vero.” Funziona solo perché il contesto AI8 insegna già al modello che tipo di audit si aspetta BD.",
+    "casePromptTitleB": "Prompt RHPm",
+    "casePromptB": "Il prompt generato dice esplicitamente: non rispondere a memoria; apri/leggi prima l’articolo; cita fonti affidabili; classifica i claim; evita falsa precisione.",
+    "casePromptTitleC": "Risultato della sessione fresca",
+    "casePromptC": "La sessione fresca produce un audit più strutturato: 84–88% complessivo, più alto per il nucleo transformer, più basso per sistemi assistant end-to-end moderni.",
+    "casePromptTitleD": "Risultato semplice a freddo",
+    "casePromptD": "L’account freddo dà una discussione ampia sul next-token e poi ammette di fatto che per un’analisi precisa avrebbe bisogno dell’articolo incollato.",
+    "caseConclusionTitle": "Conclusione",
+    "caseConclusionText": "Il guadagno pratico non è mistico. RHPm impacchetta il metodo di lavoro mancante affinché un’altra sessione LLM possa riprodurre qualità senza conoscere già BD, AI8 o lo stile di collaborazione.",
+    "llmLinksTitle": "Link rapidi compressi ai principali assistenti LLM",
+    "llmLinksIntro": "Link comodi per testare prompt RHPm su diverse famiglie di modelli. È una lista pratica, non una classifica live.",
+    "llmLinksNote": "Usa lo stesso prompt RHPm in più assistenti e confronta se l’output resta concreto, con fonti, delimitato e testabile."
   },
   "es": {
     "navMaster": "Master",
@@ -630,7 +863,7 @@ const I18N = {
     "navRelated": "Enlaces",
     "pageLanguage": "Idioma de página",
     "answerLanguage": "Idioma de respuesta",
-    "tag": "RHPm · AIM³ Prompt Builder · idiomas corregidos v0.8",
+    "tag": "RHPm · AIM³ Prompt Builder · idiomas corregidos v0.9",
     "title": "Solicitud básica → prompt fuerte para nueva sesión",
     "titleEm": "prompt fuerte para nueva sesión",
     "subtitle": "Una entrada compacta para convertir una petición humana desordenada en un prompt claro y comprobable para una nueva sesión LLM. El idioma de la página y el idioma de respuesta ahora están separados, para que la interfaz y las instrucciones no se peleen.",
@@ -757,7 +990,7 @@ const I18N = {
     "lensCartT": "¿Qué dominios, archivos, cajones faltantes y referencias cercanas importan?",
     "lensA0": "Agent 0",
     "lensA0T": "¿Cómo probaremos, compararemos, inspeccionaremos visualmente, recuperaremos o decidiremos que está terminado?",
-    "footer1": "RHPm v0.8 híbrido con idiomas corregidos — Guided Prompt Builder. Construido desde la UX práctica de G y la capa de ecosistema/razonamiento de C. Puente compacto de solicitud humana básica a fuerte AI session prompt; incluye diversidad de lentes, guardia de resonancia, validación Agent 0, higiene de contexto, 8Z reasoning mode, feedback multi-LLM opcional y Skill extraction.",
+    "footer1": "RHPm v0.9 híbrido con idiomas corregidos — Guided Prompt Builder. Construido desde la UX práctica de G y la capa de ecosistema/razonamiento de C. Puente compacto de solicitud humana básica a fuerte AI session prompt; incluye diversidad de lentes, guardia de resonancia, validación Agent 0, higiene de contexto, 8Z reasoning mode, feedback multi-LLM opcional y Skill extraction.",
     "related": "Relacionado",
     "copied": "Copiado.",
     "copyFail": "No se pudo copiar. Selecciona el texto manualmente.",
@@ -766,7 +999,41 @@ const I18N = {
     "reviewCopied": "Prompt de revisión copiado.",
     "generated": "Generado.",
     "cleared": "Limpiado.",
-    "useSame": "Igual que la página"
+    "navJumpForge": "Prompt Forge ↓",
+    "jumpForge": "Ir a Prompt Forge — plantilla guiada",
+    "jumpCase": "Ver benchmark real de prompts",
+    "caseTitle": "Benchmark práctico de prompts",
+    "caseVisibleTitle": "Resultado visible",
+    "caseVisibleText": "Misma petición básica, distinto sustrato de prompt. El contexto cálido del proyecto puede rescatar un prompt débil; RHPm hace explícito y portable el método que faltaba; un prompt débil en frío deriva hacia lo genérico.",
+    "caseBestTitle": "Qué demuestra",
+    "caseBestText": "RHPm no añade inteligencia al modelo. Transfiere disciplina de trabajo al prompt: leer primero el objetivo, no responder de memoria, usar fuentes, separar afirmaciones correctas / simplificadas / engañosas / erróneas, dar un porcentaje calibrado y producir un veredicto reutilizable.",
+    "caseFullTitle": "Comparación completa: calidad del prompt, calidad de la respuesta y puntuaciones",
+    "caseMeta": "El archivo fuente contiene tres rutas respondidas más un prompt generado por RHPm. Por eso se puntúan cuatro artefactos de la cadena de prueba, no cuatro respuestas equivalentes.",
+    "caseThPath": "Ruta",
+    "caseThPrompt": "Puntuación del prompt",
+    "caseThAnswer": "Puntuación de respuesta",
+    "caseThMeaning": "Significado",
+    "casePathA": "A — prompt simple dentro del contexto cálido AI8/GPT",
+    "caseMeaningA": "Prompt débil, respuesta fuerte porque el contexto del proyecto ya llevaba el estilo de auditoría de BD.",
+    "casePathB": "B — prompt de auditoría generado por RHPm",
+    "caseMeaningB": "Excelente prompt portable: fuerza lectura, fuentes, agrupación de claims, severidad, rango porcentual y veredicto reutilizable.",
+    "casePathC": "C — sesión GPT nueva usando el prompt RHPm",
+    "caseMeaningC": "Mejor resultado práctico. El método sobrevivió al traslado a una sesión nueva sin depender de memoria personal.",
+    "casePathD": "D — el mismo prompt simple en una cuenta GPT fría",
+    "caseMeaningD": "Intuición genérica útil, pero auditoría débil: demasiado amplia, pocas fuentes y deriva fuera del artículo exacto.",
+    "casePromptTitleA": "Prompt simple cálido",
+    "casePromptA": "Breve petición eslovena: “lee esto y dime en porcentaje cuánto es cierto.” Funciona solo porque el contexto AI8 ya enseña al modelo qué tipo de auditoría espera BD.",
+    "casePromptTitleB": "Prompt RHPm",
+    "casePromptB": "El prompt generado dice explícitamente: no respondas de memoria; abre/lee primero el artículo; cita fuentes fiables; clasifica claims; evita precisión falsa.",
+    "casePromptTitleC": "Resultado de sesión nueva",
+    "casePromptC": "La sesión nueva devuelve una auditoría más estructurada: 84–88% general, más alto para el núcleo transformer, más bajo para sistemas assistant end-to-end modernos.",
+    "casePromptTitleD": "Resultado simple en frío",
+    "casePromptD": "La cuenta fría da una discusión amplia sobre next-token y luego prácticamente admite que necesitaría el artículo pegado para un análisis preciso.",
+    "caseConclusionTitle": "Conclusión",
+    "caseConclusionText": "La ganancia práctica no es mística. RHPm empaqueta el método de trabajo que faltaba para que otra sesión LLM pueda reproducir calidad sin conocer ya a BD, AI8 o el estilo de colaboración.",
+    "llmLinksTitle": "Enlaces rápidos plegados a asistentes LLM principales",
+    "llmLinksIntro": "Enlaces útiles para probar prompts RHPm en distintas familias de modelos. Es una lista práctica, no un ranking en vivo.",
+    "llmLinksNote": "Usa el mismo prompt generado por RHPm en varios asistentes y compara si la salida sigue siendo concreta, con fuentes, acotada y comprobable."
   },
   "fr": {
     "navMaster": "Master",
@@ -776,7 +1043,7 @@ const I18N = {
     "navRelated": "Liens",
     "pageLanguage": "Langue de la page",
     "answerLanguage": "Langue de réponse",
-    "tag": "RHPm · AIM³ Prompt Builder · langues corrigées v0.8",
+    "tag": "RHPm · AIM³ Prompt Builder · langues corrigées v0.9",
     "title": "Demande brute → prompt fort pour nouvelle session",
     "titleEm": "prompt fort pour nouvelle session",
     "subtitle": "Une porte d’entrée compacte pour transformer une demande humaine confuse en prompt clair et testable pour une nouvelle session LLM. La langue de la page et la langue de réponse sont maintenant séparées, afin que l’interface et les instructions ne se contredisent plus.",
@@ -903,7 +1170,7 @@ const I18N = {
     "lensCartT": "Quels domaines, fichiers, tiroirs manquants et références adjacentes comptent ?",
     "lensA0": "Agent 0",
     "lensA0T": "Comment tester, comparer, inspecter visuellement, récupérer ou décider que c’est terminé ?",
-    "footer1": "RHPm v0.8 hybride avec langues corrigées — Guided Prompt Builder. Construit depuis l’UX pratique de G et la couche écosystème/raisonnement de C. Pont compact de la demande brute au prompt fort de session AI; inclut diversité de lentilles, garde de résonance, validation Agent 0, hygiène du contexte, 8Z reasoning mode, feedback multi-LLM optionnel et Skill extraction.",
+    "footer1": "RHPm v0.9 hybride avec langues corrigées — Guided Prompt Builder. Construit depuis l’UX pratique de G et la couche écosystème/raisonnement de C. Pont compact de la demande brute au prompt fort de session AI; inclut diversité de lentilles, garde de résonance, validation Agent 0, hygiène du contexte, 8Z reasoning mode, feedback multi-LLM optionnel et Skill extraction.",
     "related": "Liés",
     "copied": "Copié.",
     "copyFail": "Copie échouée. Sélectionnez le texte manuellement.",
@@ -912,7 +1179,41 @@ const I18N = {
     "reviewCopied": "Prompt de revue copié.",
     "generated": "Généré.",
     "cleared": "Effacé.",
-    "useSame": "Comme la page"
+    "navJumpForge": "Prompt Forge ↓",
+    "jumpForge": "Aller à Prompt Forge — modèle guidé",
+    "jumpCase": "Voir le benchmark réel de prompts",
+    "caseTitle": "Benchmark pratique de prompts",
+    "caseVisibleTitle": "Résultat visible",
+    "caseVisibleText": "Même demande brute, substrat de prompt différent. Un contexte projet chaud peut sauver un prompt faible ; RHPm rend la méthode manquante explicite et portable ; un prompt faible à froid dérive vers le générique.",
+    "caseBestTitle": "Ce que cela prouve",
+    "caseBestText": "RHPm n’ajoute pas d’intelligence au modèle. Il transfère une discipline de travail dans le prompt : lire d’abord la cible, ne pas répondre de mémoire, utiliser des sources, séparer les affirmations correctes / simplifiées / trompeuses / fausses, donner un pourcentage calibré et produire un verdict réutilisable.",
+    "caseFullTitle": "Comparaison complète : qualité du prompt, qualité de la réponse et scores",
+    "caseMeta": "Le fichier source contient trois chemins avec réponse plus un prompt généré par RHPm. On note donc quatre artefacts de la chaîne de test, pas quatre réponses équivalentes.",
+    "caseThPath": "Chemin",
+    "caseThPrompt": "Score du prompt",
+    "caseThAnswer": "Score de réponse",
+    "caseThMeaning": "Signification",
+    "casePathA": "A — prompt simple dans un contexte AI8/GPT chaud",
+    "caseMeaningA": "Prompt faible, réponse forte parce que le contexte projet portait déjà le style d’audit de BD.",
+    "casePathB": "B — prompt d’audit généré par RHPm",
+    "caseMeaningB": "Excellent prompt portable : il impose lecture, sources, groupes de claims, sévérité, plage de pourcentage et verdict réutilisable.",
+    "casePathC": "C — nouvelle session GPT avec le prompt RHPm",
+    "caseMeaningC": "Meilleur résultat pratique. La méthode survit au passage dans une nouvelle session sans mémoire personnelle.",
+    "casePathD": "D — même prompt simple dans un compte GPT froid",
+    "caseMeaningD": "Intuition générique utile, mais audit faible : trop large, trop peu sourcé et éloigné de l’article exact.",
+    "casePromptTitleA": "Prompt simple chaud",
+    "casePromptA": "Courte demande slovène : « lis ceci et dis-moi en pourcentage à quel point c’est vrai ». Cela fonctionne seulement parce que le contexte AI8 enseigne déjà au modèle le type d’audit attendu par BD.",
+    "casePromptTitleB": "Prompt RHPm",
+    "casePromptB": "Le prompt généré dit explicitement : ne pas répondre de mémoire ; ouvrir/lire l’article d’abord ; citer des sources fiables ; classifier les claims ; éviter la fausse précision.",
+    "casePromptTitleC": "Résultat de session fraîche",
+    "casePromptC": "La session fraîche donne un audit mieux structuré : 84–88% global, plus haut pour le cœur transformer, plus bas pour les systèmes assistant end-to-end modernes.",
+    "casePromptTitleD": "Résultat simple à froid",
+    "casePromptD": "Le compte froid donne une large discussion next-token puis admet pratiquement qu’il faudrait coller l’article pour une analyse précise.",
+    "caseConclusionTitle": "Conclusion",
+    "caseConclusionText": "Le gain pratique n’est pas mystique. RHPm empaquette la méthode de travail manquante pour qu’une autre session LLM puisse reproduire la qualité sans déjà connaître BD, AI8 ou le style de collaboration.",
+    "llmLinksTitle": "Liens rapides repliés vers les grands assistants LLM",
+    "llmLinksIntro": "Liens pratiques pour tester les prompts RHPm sur différentes familles de modèles. C’est une liste de commodité, pas un classement en direct.",
+    "llmLinksNote": "Utilise le même prompt généré par RHPm dans plusieurs assistants, puis compare si la sortie reste concrète, sourcée, bornée et testable."
   },
   "zh": {
     "navMaster": "Master",
@@ -922,7 +1223,7 @@ const I18N = {
     "navRelated": "相关链接",
     "pageLanguage": "页面语言",
     "answerLanguage": "回答语言",
-    "tag": "RHPm · AIM³ Prompt Builder · 语言修复 v0.8",
+    "tag": "RHPm · AIM³ Prompt Builder · 语言修复 v0.9",
     "title": "粗略请求 → 强会话提示词",
     "titleEm": "强会话提示词",
     "subtitle": "一个紧凑入口，把混乱的人类请求变成清晰、可验证的全新 LLM 会话提示词。页面语言和回答语言现在分开控制，因此界面与提示词指令不再互相冲突。",
@@ -1049,7 +1350,7 @@ const I18N = {
     "lensCartT": "哪些领域、文件、缺失知识抽屉和相邻引用重要？",
     "lensA0": "Agent 0",
     "lensA0T": "我们如何测试、比较、视觉检查、恢复，或判断它已完成？",
-    "footer1": "RHPm v0.8 语言修复混合版 — Guided Prompt Builder。结合 G 的实用 UX 与 C 的生态/推理层。把粗略人类请求桥接到强 AI session prompt；包含多视角、共振保护、Agent 0 验证、上下文卫生、8Z reasoning mode、可选 multi-LLM feedback 和 Skill extraction。",
+    "footer1": "RHPm v0.9 语言修复混合版 — Guided Prompt Builder。结合 G 的实用 UX 与 C 的生态/推理层。把粗略人类请求桥接到强 AI session prompt；包含多视角、共振保护、Agent 0 验证、上下文卫生、8Z reasoning mode、可选 multi-LLM feedback 和 Skill extraction。",
     "related": "相关",
     "copied": "已复制。",
     "copyFail": "复制失败。请手动选择文本。",
@@ -1058,7 +1359,41 @@ const I18N = {
     "reviewCopied": "评审提示词已复制。",
     "generated": "已生成。",
     "cleared": "已清空。",
-    "useSame": "同页面语言"
+    "navJumpForge": "Prompt Forge ↓",
+    "jumpForge": "跳到 Prompt Forge — 引导模板",
+    "jumpCase": "查看真实提示词基准",
+    "caseTitle": "真实场景提示词基准",
+    "caseVisibleTitle": "可见结果",
+    "caseVisibleText": "同一个粗略请求，不同的提示词基础。温热的项目上下文可以拯救弱提示词；RHPm 把缺失的方法显式化并可迁移；冷启动弱提示词容易滑向泛泛而谈。",
+    "caseBestTitle": "这证明了什么",
+    "caseBestText": "RHPm 不是给模型增加智能。它把工作纪律转移到提示词中：先读目标，不凭记忆回答，使用来源，区分正确 / 简化 / 误导 / 错误的说法，给出校准过的百分比，并产出可复用的结论。",
+    "caseFullTitle": "完整比较：提示词质量、回答质量和评分",
+    "caseMeta": "源文件包含三条已回答路径和一个 RHPm 生成的提示词。因此这里评分的是测试链中的四个 artefact，而不是四个等价回答。",
+    "caseThPath": "路径",
+    "caseThPrompt": "提示词评分",
+    "caseThAnswer": "回答评分",
+    "caseThMeaning": "意义",
+    "casePathA": "A — 在温热 AI8/GPT 上下文中的简单提示词",
+    "caseMeaningA": "提示词弱，但回答强，因为项目上下文已经带有 BD 的审查风格。",
+    "casePathB": "B — RHPm 生成的审查提示词",
+    "caseMeaningB": "优秀的可迁移提示词：强制阅读、来源、claim 分组、严重性、百分比范围和可复用结论。",
+    "casePathC": "C — 新 GPT 会话使用 RHPm 提示词",
+    "caseMeaningC": "最佳实用结果。方法在没有个人记忆的新会话中仍然成立。",
+    "casePathD": "D — 冷 GPT 账号中同样的简单提示词",
+    "caseMeaningD": "有一些有用的通用直觉，但审查行为弱：太宽泛、来源不足，并偏离具体文章。",
+    "casePromptTitleA": "温热简单提示词",
+    "casePromptA": "简短的斯洛文尼亚语请求：“读这个，并用百分比告诉我它有多真。”它能工作，只是因为 AI8 上下文已经教会模型 BD 期待的审查方式。",
+    "casePromptTitleB": "RHPm 提示词",
+    "casePromptB": "生成的提示词明确要求：不要凭记忆回答；先打开/阅读文章；引用可靠来源；分类 claims；避免虚假精确。",
+    "casePromptTitleC": "新会话结果",
+    "casePromptC": "新会话给出更强的结构化审查：总体 84–88%，transformer 核心更高，现代端到端助手系统更低。",
+    "casePromptTitleD": "冷启动简单结果",
+    "casePromptD": "冷账号给出宽泛的 next-token 讨论，然后实际上承认若要精确分析需要用户粘贴文章。",
+    "caseConclusionTitle": "结论",
+    "caseConclusionText": "实际收益并不神秘。RHPm 把缺失的工作方法打包起来，让另一个 LLM 会话即使不了解 BD、AI8 或协作风格，也能复现质量。",
+    "llmLinksTitle": "折叠的主要 LLM 助手快捷链接",
+    "llmLinksIntro": "用于在不同模型家族中测试 RHPm 提示词的便捷链接。这是便利列表，不是实时排名。",
+    "llmLinksNote": "在多个助手中使用同一个 RHPm 生成提示词，然后比较输出是否仍然具体、有来源、有边界、可测试。"
   },
   "ja": {
     "navMaster": "Master",
@@ -1068,7 +1403,7 @@ const I18N = {
     "navRelated": "関連リンク",
     "pageLanguage": "ページ言語",
     "answerLanguage": "回答言語",
-    "tag": "RHPm · AIM³ Prompt Builder · 言語修正版 v0.8",
+    "tag": "RHPm · AIM³ Prompt Builder · 言語修正版 v0.9",
     "title": "粗い依頼 → 強いセッション用プロンプト",
     "titleEm": "強いセッション用プロンプト",
     "subtitle": "整理されていない人間の依頼を、新しい LLM セッション用の明確で検証可能なプロンプトに変える小さな入口です。ページ言語と回答言語を分離したので、UI と生成プロンプトの指示が衝突しません。",
@@ -1195,7 +1530,7 @@ const I18N = {
     "lensCartT": "どの領域、ファイル、欠けた知識引き出し、隣接参照が重要か？",
     "lensA0": "Agent 0",
     "lensA0T": "どうテスト、比較、視覚確認、復旧し、完了と判断するか？",
-    "footer1": "RHPm v0.8 言語修正版ハイブリッド — Guided Prompt Builder。G の実用 UX と C のエコシステム/推論レイヤーから構築。粗い人間の依頼を強い AI session prompt へつなぐ小さな橋。レンズ多様性、共鳴ガード、Agent 0 検証、コンテキスト衛生、8Z reasoning mode、任意の multi-LLM feedback、Skill extraction を含む。",
+    "footer1": "RHPm v0.9 言語修正版ハイブリッド — Guided Prompt Builder。G の実用 UX と C のエコシステム/推論レイヤーから構築。粗い人間の依頼を強い AI session prompt へつなぐ小さな橋。レンズ多様性、共鳴ガード、Agent 0 検証、コンテキスト衛生、8Z reasoning mode、任意の multi-LLM feedback、Skill extraction を含む。",
     "related": "関連",
     "copied": "コピーしました。",
     "copyFail": "コピーに失敗しました。手動でテキストを選択してください。",
@@ -1204,7 +1539,41 @@ const I18N = {
     "reviewCopied": "レビュープロンプトをコピーしました。",
     "generated": "生成しました。",
     "cleared": "クリアしました。",
-    "useSame": "ページと同じ"
+    "navJumpForge": "Prompt Forge ↓",
+    "jumpForge": "Prompt Forge — ガイド付きテンプレートへ",
+    "jumpCase": "実例プロンプトベンチマークを見る",
+    "caseTitle": "実運用プロンプト・ベンチマーク",
+    "caseVisibleTitle": "見える結果",
+    "caseVisibleText": "同じ粗い依頼でも、プロンプトの土台が違うと結果が変わる。温かいプロジェクト文脈は弱いプロンプトを救える。RHPm は欠けている方法を明示し、持ち運べる形にする。冷たい弱プロンプトは汎用論へ流れやすい。",
+    "caseBestTitle": "これが示すこと",
+    "caseBestText": "RHPm はモデルに知能を追加するものではない。作業規律をプロンプトへ移す。対象を先に読む、記憶だけで答えない、出典を使う、正しい / 簡略化 / 誤解を招く / 誤った主張を分ける、調整された割合を出す、再利用できる結論を作る。",
+    "caseFullTitle": "完全比較：プロンプト品質、回答品質、スコア",
+    "caseMeta": "元ファイルには、3つの回答済み経路と1つの RHPm 生成プロンプトが含まれる。ここでは4つの同等な回答ではなく、テストチェーン内の4つの artefact を評価している。",
+    "caseThPath": "経路",
+    "caseThPrompt": "プロンプト点",
+    "caseThAnswer": "回答点",
+    "caseThMeaning": "意味",
+    "casePathA": "A — 温かい AI8/GPT 文脈内の単純プロンプト",
+    "caseMeaningA": "プロンプトは弱いが回答は強い。既存のプロジェクト文脈が BD の監査スタイルをすでに運んでいたから。",
+    "casePathB": "B — RHPm が生成した監査プロンプト",
+    "caseMeaningB": "優れた可搬プロンプト。読むこと、出典、claim 分類、重要度、割合レンジ、再利用可能な結論を強制する。",
+    "casePathC": "C — RHPm プロンプトを使った新しい GPT セッション",
+    "caseMeaningC": "最も実用的な結果。方法が個人記憶に頼らず、新しいセッションへ移っても生き残った。",
+    "casePathD": "D — 冷たい GPT アカウントで同じ単純プロンプト",
+    "caseMeaningD": "有用な一般的直感はあるが監査としては弱い。広すぎ、出典が弱く、対象記事からずれる。",
+    "casePromptTitleA": "温かい単純プロンプト",
+    "casePromptA": "短いスロベニア語の依頼：「これを読んで、何％くらい正しいか教えて」。AI8 文脈が BD の監査期待をすでに教えているから機能する。",
+    "casePromptTitleB": "RHPm プロンプト",
+    "casePromptB": "生成プロンプトは明示する：記憶で答えない、まず記事を開いて読む、信頼できる出典を引用する、claim を分類する、偽の精密さを避ける。",
+    "casePromptTitleC": "新セッション結果",
+    "casePromptC": "新しいセッションはより強い構造化監査を返す。全体 84–88%、transformer 核心は高め、現代の end-to-end assistant システムは低め。",
+    "casePromptTitleD": "冷たい単純結果",
+    "casePromptD": "冷たいアカウントは next-token について広く論じ、正確な分析には記事本文の貼り付けが必要だと実質的に認める。",
+    "caseConclusionTitle": "結論",
+    "caseConclusionText": "実用上の利得は神秘ではない。RHPm は欠けていた作業方法をパッケージ化し、別の LLM セッションが BD、AI8、協働スタイルを知らなくても品質を再現できるようにする。",
+    "llmLinksTitle": "主要 LLM アシスタントへの折りたたみクイックリンク",
+    "llmLinksIntro": "RHPm プロンプトを異なるモデル系列で試すための便利リンク。これは利便性のためのリストで、ライブランキングではない。",
+    "llmLinksNote": "同じ RHPm 生成プロンプトを複数のアシスタントで使い、出力が具体的で、出典があり、範囲が絞られ、検証可能かを比較する。"
   }
 };
 const LANG_NAMES = {
@@ -1451,7 +1820,6 @@ function populateLangSelects(){const page=qs('pageLang'), ans=qs('answerLang');c
 function applyTranslations(){const l=qs('pageLang')?.value||'en';document.documentElement.lang=l;document.querySelectorAll('[data-i18n]').forEach(el=>{const key=el.getAttribute('data-i18n');el.textContent=tr(key)});document.querySelectorAll('[data-placeholder]').forEach(el=>{const key=el.getAttribute('data-placeholder');el.placeholder=tr(key)});const title=qs('titleMain');if(title)title.textContent=tr('title');populateAnswerLabelsOnly();updateMasterPromptPreview()}
 function populateAnswerLabelsOnly(){const ans=qs('answerLang');if(!ans)return;const val=ans.value||'en';const pageLang=qs('pageLang')?.value||'en';ans.innerHTML='';for(const code of langCodes){const o=document.createElement('option');o.value=code;o.textContent=(LANG_NAMES[pageLang]&&LANG_NAMES[pageLang][code])||answerLangEnglish[code];ans.appendChild(o)}ans.value=val}
 function setPageLang(code){qs('pageLang').value=code;localStorage.setItem('rhpm_page_lang',code);applyTranslations()}
-function setAnswerSameAsPage(){const p=qs('pageLang')?.value||'en';qs('answerLang').value=p;localStorage.setItem('rhpm_answer_lang',p);updateMasterPromptPreview();const out=qs('promptOut');if(out&&out.value.trim())generatePrompt()}
 function selectedAnswerLanguageEnglish(){return answerLangEnglish[qs('answerLang')?.value||'en']||'English'}
 function preferredLanguageBlock(){const lang=selectedAnswerLanguageEnglish();return `PREFERRED RESPONSE LANGUAGE:
 ${lang}
