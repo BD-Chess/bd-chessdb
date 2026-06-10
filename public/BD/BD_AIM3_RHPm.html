@@ -1,201 +1,1621 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AI Prompt Builder — turn a rough request into a strong session prompt (RHPm) · AIM³</title>
-<meta name="description" content="RHPm is a compact AIM³ prompt builder that turns rough human requests into precise prompts for fresh LLM sessions, with guide mode, Agent 0 checks, RHPr/RHP escalation, review prompts, and Skill Cards."/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RHPm — AIM³ Prompt Builder · Language-fixed Hybrid v0.8</title>
+<meta content="RHPm v0.8 language-fixed hybrid — multilingual AIM³ prompt builder with separate page language and answer language controls." name="description"/>
 <link href="https://fonts.googleapis.com/" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Rajdhani:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&amp;family=JetBrains+Mono:wght@400;600;700&amp;family=Rajdhani:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <style>
-
-:root{
-  --bg:#020409; --bg2:#070a13; --bg3:#0c1220;
-  --surface:#0f1729; --surface2:#141d32; --panel:rgba(15,23,41,.82);
-  --border:rgba(52,211,153,.12); --border2:rgba(52,211,153,.24);
-  --text:#e2e8f4; --muted:#5e7192; --soft:rgba(226,232,244,.68);
-  --accent:#34d399; --accentDim:rgba(52,211,153,.10);
-  --cyan:#00e5ff; --cyanDim:rgba(0,229,255,.10);
-  --gold:#f59e0b; --goldDim:rgba(245,158,11,.12);
-  --rose:#ff6b8a; --roseDim:rgba(255,107,138,.10);
-  --violet:#a78bfa; --violetDim:rgba(167,139,250,.10);
-  --blue:#60a5fa; --blueDim:rgba(96,165,250,.10);
-  --radius:8px; --shadow:0 12px 40px rgba(0,0,0,.35);
-  --baseFont:17px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{
-  background:
-    radial-gradient(circle at 20% 12%,rgba(52,211,153,.16),transparent 34%),
-    radial-gradient(circle at 80% 70%,rgba(0,229,255,.08),transparent 30%),
-    linear-gradient(180deg,#020409 0%,#05070d 100%);
-  color:var(--text); font-family:'Rajdhani',system-ui,sans-serif; font-size:var(--baseFont); line-height:1.72; overflow-x:hidden;
-}
-body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.018;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-.scroll-progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--cyan));z-index:10000;width:0}
-.topnav{position:fixed;top:0;left:0;right:0;height:50px;background:rgba(2,4,9,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);z-index:999;display:flex;align-items:center;gap:10px;padding:0 7vw;white-space:nowrap;overflow-x:auto}
-.topnav a,.topnav span{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;color:var(--muted);text-decoration:none}
-.topnav a:hover{color:var(--accent)}
-.topnav .active{color:var(--cyan)}
-.topnav .sep{opacity:.35}
-.toolbar{position:fixed;right:18px;bottom:18px;z-index:1000;display:flex;gap:6px;background:rgba(2,4,9,.72);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:999px;padding:6px;box-shadow:var(--shadow)}
-.toolbar button{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;border-radius:999px;padding:7px 10px;cursor:pointer}.toolbar button:hover{border-color:var(--cyan);color:var(--cyan)}
-.cover{padding:122px 7vw 58px;text-align:center;border-bottom:1px solid var(--border);position:relative;overflow:hidden}.cover::before{content:'';position:absolute;inset:-20%;background:radial-gradient(ellipse at 30% 20%,rgba(52,211,153,.06),transparent 48%),radial-gradient(ellipse at 70% 80%,rgba(0,229,255,.05),transparent 48%);pointer-events:none}.cover>*{position:relative}.tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:4px;text-transform:uppercase;display:block;margin-bottom:18px}.cover h1{font-family:'Cormorant Garamond',serif;font-size:clamp(34px,6vw,58px);font-weight:600;line-height:1.08;margin-bottom:16px}.cover h1 em{font-style:italic;color:var(--accent)}.subtitle{max-width:790px;margin:0 auto 24px;color:var(--soft);font-size:19px}.meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);max-width:880px;margin-left:auto;margin-right:auto}.meta strong{color:var(--gold)}
-.wrap{max-width:980px;margin:0 auto;padding:48px 7vw 60px}@media(min-width:1120px){.wrap{padding-left:0;padding-right:0}}
-p{margin-bottom:16px;color:var(--soft)}strong{color:var(--text)}em{color:var(--accent);font-style:normal}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
-.callout{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius);padding:18px 22px;margin:18px 0;box-shadow:0 6px 24px rgba(0,0,0,.16)}.callout.cyan{border-left-color:var(--cyan)}.callout.gold{border-left-color:var(--gold)}.callout.rose{border-left-color:var(--rose)}.callout.violet{border-left-color:var(--violet)}.ct{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:7px}.callout.cyan .ct{color:var(--cyan)}.callout.gold .ct{color:var(--gold)}.callout.rose .ct{color:var(--rose)}.callout.violet .ct{color:var(--violet)}
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0 34px}.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;min-height:132px}.card:hover{border-color:var(--border2)}.card .k{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--cyan);margin-bottom:8px}.card h3{font-family:'Cormorant Garamond',serif;font-size:24px;line-height:1.15;margin-bottom:8px}.card p{font-size:15px;margin:0;color:var(--soft)}
-.flow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin:26px 0}.node{font-family:'JetBrains Mono',monospace;font-size:12px;border:1px solid var(--border);background:var(--surface);border-radius:5px;padding:8px 12px}.node.active{border-color:var(--cyan);color:var(--cyan);background:var(--cyanDim)}.arrow{color:var(--muted)}
-.section{margin:36px 0}.section h2{font-family:'Cormorant Garamond',serif;font-size:32px;line-height:1.15;margin-bottom:14px}.section h2 span{color:var(--accent)}.small{font-size:14px;color:var(--muted)}
-.builder{background:rgba(15,23,41,.82);border:1px solid var(--border2);border-radius:12px;box-shadow:var(--shadow);padding:22px;margin:22px 0}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field{margin-bottom:14px}.field label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--cyan);margin-bottom:6px}.field textarea,.field input,.field select{width:100%;background:#050811;border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.55;padding:12px;outline:none}.field textarea{min-height:112px;resize:vertical}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,229,255,.08)}.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin:10px 0 4px}.checks label{display:flex;gap:8px;align-items:flex-start;color:var(--soft);font-size:14px}.checks input{margin-top:5px;accent-color:var(--accent)}.buttons{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.btn{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;border:1px solid var(--border2);background:var(--accentDim);color:var(--accent);border-radius:6px;padding:10px 14px;cursor:pointer}.btn:hover{background:rgba(52,211,153,.18);text-decoration:none}.btn.cyan{background:var(--cyanDim);color:var(--cyan);border-color:rgba(0,229,255,.25)}.btn.gold{background:var(--goldDim);color:var(--gold);border-color:rgba(245,158,11,.25)}.btn.rose{background:var(--roseDim);color:var(--rose);border-color:rgba(255,107,138,.25)}.output{min-height:250px;white-space:pre-wrap}.master-preview{max-height:520px;overflow:auto}
-.code{background:#050811;border:1px solid var(--border);border-left:3px solid var(--cyan);border-radius:var(--radius);padding:16px 18px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;color:var(--soft);white-space:pre-wrap;overflow:auto}.code strong{color:var(--cyan)}
-.steps{counter-reset:step}.step{display:grid;grid-template-columns:54px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid rgba(52,211,153,.08)}.step:last-child{border-bottom:none}.num{font-family:'JetBrains Mono',monospace;color:var(--gold);font-weight:700;font-size:22px;text-align:center;padding-top:2px}.step h3{font-size:20px;margin-bottom:4px}.step p{margin-bottom:0;font-size:15px}.pill{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);background:var(--goldDim);border:1px solid rgba(245,158,11,.22);border-radius:999px;padding:3px 8px;display:inline-block;margin:2px 3px}
-.template-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.template{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px}.template h3{font-size:18px;margin-bottom:8px;color:var(--text)}.template ul{padding-left:18px;color:var(--soft);font-size:15px}.template li{margin-bottom:4px}
-.lens-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0}.lens{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px}.lens .role{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.6px;color:var(--cyan);margin-bottom:6px}.lens p{font-size:14px;margin:0;color:var(--soft)}
-.mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.mode{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px;border-left:3px solid var(--accent)}.mode.cyan{border-left-color:var(--cyan)}.mode.gold{border-left-color:var(--gold)}.mode.rose{border-left-color:var(--rose)}.mode h3{font-size:19px;margin-bottom:8px}.mode p{font-size:15px;margin:0}.quote{font-family:'Cormorant Garamond',serif;font-size:23px;line-height:1.45;color:var(--text);background:var(--accentDim);border-left:3px solid var(--accent);padding:20px 24px;border-radius:0 var(--radius) var(--radius) 0;margin:22px 0}
-details{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);margin:12px 0;overflow:hidden}summary{cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);padding:14px 16px}details .inside{padding:0 16px 16px}.footer{border-top:1px solid var(--border);padding:34px 7vw 54px;color:var(--muted);font-size:14px}.footer .inner{max-width:980px;margin:0 auto}.footer a{color:var(--accent)}
-@media(max-width:960px){.lens-grid{grid-template-columns:1fr 1fr}.mode-grid{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}}
-@media(max-width:820px){.cards,.grid2,.template-grid{grid-template-columns:1fr}.checks{grid-template-columns:1fr}.cover{padding-top:98px}.topnav{padding:0 14px}.wrap{padding-top:32px}.step{grid-template-columns:42px 1fr}.toolbar{right:10px;bottom:10px}.subtitle{font-size:18px}}
-@media(max-width:560px){.lens-grid{grid-template-columns:1fr}.buttons .btn{width:100%}.toolbar{transform:scale(.94);transform-origin:right bottom}.topnav a,.topnav span{font-size:11px}.cover h1{font-size:34px}.section h2{font-size:29px}}
-
-.lang-control{display:flex;align-items:center;gap:7px;margin-left:auto;padding-left:10px}
-.lang-control label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.lang-control select{background:#050811;border:1px solid var(--border);border-radius:999px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 10px;outline:none;cursor:pointer;max-width:190px}
-.lang-control select:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,229,255,.08)}
-.lang-note{font-size:14px;color:var(--muted);margin:6px 0 2px}.lang-note strong{color:var(--gold)}
-@media(max-width:820px){.lang-control{margin-left:0;padding-left:0}.lang-control label{display:none}.lang-control select{max-width:132px;font-size:10px;padding:6px 8px}.topnav{gap:7px}.toolbar button{padding:7px 9px}}
-
-
-.quick-path{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0 26px}
-.quick-step{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:13px;min-height:88px}
-.quick-step .n{font-family:'JetBrains Mono',monospace;color:var(--gold);font-weight:700;font-size:16px;margin-bottom:4px}.quick-step p{font-size:14px;margin:0;color:var(--soft)}
-.truthbox{background:linear-gradient(135deg,rgba(0,229,255,.10),rgba(52,211,153,.08));border:1px solid rgba(0,229,255,.22);border-left:3px solid var(--cyan);border-radius:var(--radius);padding:16px 20px;margin:18px 0;color:var(--text)}
-.truthbox strong{color:var(--cyan)}
-.checklist{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.checkitem{border:1px solid var(--border);background:rgba(5,8,17,.62);border-radius:6px;padding:8px 10px;color:var(--soft);font-size:14px}.checkitem::before{content:'□ ';color:var(--accent)}
-.example-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}.example-box{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px}.example-box h3{font-size:18px;margin-bottom:8px}.example-box.bad{border-left:3px solid var(--rose)}.example-box.good{border-left:3px solid var(--accent)}
-.tool-note{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:-4px;margin-bottom:12px}.mini-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.mini-list .template{min-height:auto}.advanced details,.section details{margin:14px 0}.raw-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.visually-soft{color:var(--soft)}
-.review-output{min-height:160px}.sl-note{font-size:14px;color:var(--soft);border-left:3px solid var(--gold);background:var(--goldDim);padding:12px 14px;border-radius:6px;margin:12px 0}
-@media(max-width:900px){.quick-path{grid-template-columns:1fr}.checklist{grid-template-columns:1fr}.example-pair{grid-template-columns:1fr}.mini-list{grid-template-columns:1fr}}
-
+:root{--bg:#020409;--surface:#0f1729;--surface2:#141d32;--panel:rgba(15,23,41,.84);--border:rgba(52,211,153,.14);--border2:rgba(52,211,153,.28);--text:#e2e8f4;--muted:#6f83a5;--soft:rgba(226,232,244,.72);--accent:#34d399;--accentDim:rgba(52,211,153,.10);--cyan:#00e5ff;--cyanDim:rgba(0,229,255,.10);--gold:#f59e0b;--goldDim:rgba(245,158,11,.13);--rose:#ff6b8a;--roseDim:rgba(255,107,138,.10);--violet:#a78bfa;--violetDim:rgba(167,139,250,.10);--radius:8px;--shadow:0 12px 40px rgba(0,0,0,.35);--baseFont:17px}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{background:radial-gradient(circle at 20% 12%,rgba(52,211,153,.16),transparent 34%),radial-gradient(circle at 80% 70%,rgba(0,229,255,.08),transparent 30%),linear-gradient(180deg,#020409 0%,#05070d 100%);color:var(--text);font-family:'Rajdhani',system-ui,sans-serif;font-size:var(--baseFont);line-height:1.72;overflow-x:hidden}body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.018;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}.scroll-progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--cyan));z-index:10000;width:0}.topnav{position:fixed;top:0;left:0;right:0;min-height:54px;background:rgba(2,4,9,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);z-index:999;display:flex;align-items:center;gap:10px;padding:7px 5vw;white-space:nowrap;overflow-x:auto}.topnav a,.topnav span,.topnav label{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;color:var(--muted);text-decoration:none}.topnav a:hover{color:var(--accent)}.topnav .brand{color:var(--cyan);font-weight:700}.topnav .spacer{flex:1}.lang-control{display:flex;align-items:center;gap:6px}select{background:#050811;border:1px solid var(--border);color:var(--text);border-radius:999px;padding:6px 9px;font-family:'JetBrains Mono',monospace;font-size:12px}.toolbar{position:fixed;right:18px;bottom:18px;z-index:1000;display:flex;gap:6px;background:rgba(2,4,9,.72);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:999px;padding:6px;box-shadow:var(--shadow)}.toolbar button{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;border-radius:999px;padding:7px 10px;cursor:pointer}.toolbar button:hover{border-color:var(--cyan);color:var(--cyan)}.cover{padding:126px 7vw 58px;text-align:center;border-bottom:1px solid var(--border);position:relative;overflow:hidden}.cover::before{content:'';position:absolute;inset:-20%;background:radial-gradient(ellipse at 30% 20%,rgba(52,211,153,.06),transparent 48%),radial-gradient(ellipse at 70% 80%,rgba(0,229,255,.05),transparent 48%);pointer-events:none}.cover>*{position:relative}.tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:4px;text-transform:uppercase;display:block;margin-bottom:18px}.cover h1{font-family:'Cormorant Garamond',serif;font-size:clamp(34px,6vw,60px);font-weight:600;line-height:1.08;margin-bottom:16px}.cover h1 em{font-style:italic;color:var(--accent)}.subtitle{max-width:840px;margin:0 auto 24px;color:var(--soft);font-size:19px}.meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);max-width:900px;margin-left:auto;margin-right:auto}.wrap{max-width:980px;margin:0 auto;padding:48px 7vw 60px}@media(min-width:1120px){.wrap{padding-left:0;padding-right:0}}p{margin-bottom:16px;color:var(--soft)}strong{color:var(--text)}em{color:var(--accent);font-style:normal}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}.callout{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius);padding:18px 22px;margin:18px 0;box-shadow:0 6px 24px rgba(0,0,0,.16)}.callout.cyan{border-left-color:var(--cyan)}.callout.gold{border-left-color:var(--gold)}.callout.violet{border-left-color:var(--violet)}.ct{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:7px}.callout.cyan .ct{color:var(--cyan)}.callout.gold .ct{color:var(--gold)}.callout.violet .ct{color:var(--violet)}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0 34px}.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;min-height:132px}.card .k{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--cyan);margin-bottom:8px}.card h3{font-family:'Cormorant Garamond',serif;font-size:24px;line-height:1.15;margin-bottom:8px}.card p{font-size:15px;margin:0;color:var(--soft)}.quick-path{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:24px 0}.quick-step{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}.quick-step .n{font-family:'JetBrains Mono',monospace;color:var(--gold);font-weight:700;font-size:18px}.quick-step p{font-size:14px;margin:6px 0 0}.section{margin:38px 0}.section h2{font-family:'Cormorant Garamond',serif;font-size:32px;line-height:1.15;margin-bottom:14px}.section h2 span{color:var(--accent)}.small{font-size:14px;color:var(--muted)}.builder{background:rgba(15,23,41,.82);border:1px solid var(--border2);border-radius:12px;box-shadow:var(--shadow);padding:22px;margin:22px 0}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{margin-bottom:14px}.field label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--cyan);margin-bottom:6px}.field textarea,.field input,.field select{width:100%;background:#050811;border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.55;padding:12px;outline:none}.field textarea{min-height:112px;resize:vertical}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,229,255,.08)}.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin:10px 0 4px}.checks label{display:flex;gap:8px;align-items:flex-start;color:var(--soft);font-size:14px}.checks input{margin-top:5px;accent-color:var(--accent)}.buttons{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.btn{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;border:1px solid var(--border2);background:var(--accentDim);color:var(--accent);border-radius:6px;padding:10px 14px;cursor:pointer}.btn:hover{background:rgba(52,211,153,.18);text-decoration:none}.btn.cyan{background:var(--cyanDim);color:var(--cyan);border-color:rgba(0,229,255,.25)}.btn.gold{background:var(--goldDim);color:var(--gold);border-color:rgba(245,158,11,.25)}.btn.rose{background:var(--roseDim);color:var(--rose);border-color:rgba(255,107,138,.25)}.output{min-height:260px;white-space:pre-wrap}.master-preview{max-height:540px;overflow:auto}.code{background:#050811;border:1px solid var(--border);border-left:3px solid var(--cyan);border-radius:var(--radius);padding:16px 18px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;color:var(--soft);white-space:pre-wrap;overflow:auto}.steps{counter-reset:step}.step{display:grid;grid-template-columns:54px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid rgba(52,211,153,.08)}.step:last-child{border-bottom:none}.num{font-family:'JetBrains Mono',monospace;color:var(--gold);font-weight:700;font-size:22px;text-align:center;padding-top:2px}.step h3{font-size:20px;margin-bottom:4px}.step p{margin-bottom:0;font-size:15px}.example-grid{display:grid;grid-template-columns:1fr;gap:12px}.example{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px}.example .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.mini-label{font-family:'JetBrains Mono',monospace;color:var(--gold);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px}.lens-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0}.lens{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px}.lens .role{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.6px;color:var(--cyan);margin-bottom:6px}.lens p{font-size:14px;margin:0;color:var(--soft)}.checklist{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.checkitem{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:7px 10px;text-align:center}details.advanced{border:1px solid var(--border);border-radius:12px;background:rgba(15,23,41,.45);padding:0}details.advanced summary{cursor:pointer;padding:18px 22px;list-style:none}details.advanced summary::-webkit-details-marker{display:none}details.advanced .inside{padding:0 22px 22px}.footer{border-top:1px solid var(--border);padding:28px 7vw 70px;background:rgba(2,4,9,.45)}.footer .inner{max-width:980px;margin:0 auto}.footer p{font-size:14px;color:var(--muted)}@media(max-width:860px){.cards,.grid2,.quick-path,.lens-grid,.checklist{grid-template-columns:1fr}.checks{grid-template-columns:1fr}.example .cols{grid-template-columns:1fr}.topnav{padding-left:12px;padding-right:12px}.cover{padding-top:148px}}@media(max-width:560px){:root{--baseFont:18px}.topnav{gap:8px}.topnav a{display:none}.lang-control label{display:none}.cover{padding-left:20px;padding-right:20px}.wrap{padding-left:20px;padding-right:20px}.toolbar{right:10px;bottom:10px}}
 </style>
 </head>
 <body>
 <div class="scroll-progress" id="scrollProg"></div>
 <nav class="topnav">
-<a href="index.html">BD × AI Lab</a><span class="sep">/</span>
-<a href="BD_AIM3.html">AIM³</a><span class="sep">/</span>
-<span class="active">RHPm</span><span class="sep">→</span>
-<a href="BD_AIM3_RHPr.html">RHPr</a><span class="sep">→</span>
-<a href="BD_AIM3_RHP.html">RHP</a><span class="sep">/</span>
-<a href="BD_AIM3_RHP_Story.html">Origin Story</a>
-<div class="lang-control"><label for="outLang">Output language</label><select aria-label="Preferred output language" id="outLang"><option value="en">English</option><option value="sl">Slovenian</option><option value="de">German</option><option value="it">Italian</option><option value="es">Spanish</option><option value="fr">French</option><option value="zh">Simplified Chinese</option><option value="ja">Japanese</option></select></div></nav>
-<div class="toolbar"><button onclick="fontDelta(-1)">A−</button><button onclick="fontDelta(1)">A+</button><button onclick="expandAll()">Open</button><button onclick="collapseAll()">Close</button></div>
-<header class="cover">
-<span class="tag">RHPm v0.6 · Guided AIM³ Prompt Builder</span>
-<h1>AI Prompt Builder — From <em>Rough Request</em><br/>to Strong Session Prompt</h1>
-<p class="subtitle">A compact AIM³/RHPr/RHP-inspired builder that turns a rough human request into a precise prompt for a fresh LLM session — for code, documents, web pages, reviews, research, visuals, spreadsheets, or long-running arenas.</p>
-<p class="meta"><strong>BD original architecture.</strong> AIM³, RHPr, RHP, and RHPm originate from BD’s DCC / claustrum / resonance work. LLMs are collaborators, reviewers, builders, critics, and improvement partners.</p>
-<p class="meta" id="quickJumpMaster" style="margin-top:14px"><a class="pill" href="#master">Start building prompt</a> <a class="pill" href="#forge">Use guided forge</a> <a class="pill" href="#examples">See examples</a> <a class="pill" href="#llm-links">Useful LLM links</a></p>
-</header>
+<span class="brand">RHPm</span>
+<a data-i18n="navMaster" href="#master">Master</a><a data-i18n="navForge" href="#forge">Forge</a><a data-i18n="navExamples" href="#examples">Examples</a><a data-i18n="navProtocol" href="#protocol">Protocol</a><a data-i18n="navRelated" href="#related">Related</a>
+<span class="spacer"></span>
+<div class="lang-control"><label data-i18n="pageLanguage" for="pageLang">Page language</label><select aria-label="Page language" id="pageLang"></select></div>
+<div class="lang-control"><label data-i18n="answerLanguage" for="answerLang">Answer language</label><select aria-label="Answer language" id="answerLang"></select></div>
+</nav>
+<div class="toolbar"><button onclick="fontDelta(-1)">A−</button><button onclick="fontDelta(1)">A+</button><button data-i18n="useSame" onclick="setAnswerSameAsPage()">Use same as page</button></div>
+<header class="cover"><span class="tag" data-i18n="tag">RHPm · AIM³ Prompt Builder</span><h1><span id="titleMain">Rough request → strong session prompt</span></h1><p class="subtitle" data-i18n="subtitle"></p><p class="meta" data-i18n="meta"></p></header>
 <main class="wrap">
-<div class="callout gold"><div class="ct">3-minute path</div>
-<div class="quick-path"><div class="quick-step"><div class="n">1</div><p>Paste your rough request.</p></div><div class="quick-step"><div class="n">2</div><p>Add files, context, constraints, and what must not change.</p></div><div class="quick-step"><div class="n">3</div><p>Choose output language and options.</p></div><div class="quick-step"><div class="n">4</div><p>Copy the generated prompt.</p></div><div class="quick-step"><div class="n">5</div><p>Open a fresh LLM session and run it.</p></div></div>
-<div class="truthbox"><strong>RHPm does not answer the task.</strong> RHPm prepares the next session to answer, build, review, test, and stop better.</div>
-<div class="sl-note"><strong>Na kratko:</strong> RHPm je praktičen vmesnik: iz grobe človeške želje naredi močan prompt za novo AI sejo. Če je naloga kompleksnejša, prompt sam predlaga RHPr ali RHP.</div>
-</div>
-<div class="callout cyan"><div class="ct">Quick or Forge?</div><p><strong>Quick mode</strong> = two fields in the master prompt section. Use it for fast copy-paste work. <strong>Prompt Forge</strong> = guided options for task type, files, language, review prompts, guide mode, and stronger validation.</p></div>
-<div class="flow"><span class="node">rough human prompt</span><span class="arrow">→</span><span class="node active">RHPm</span><span class="arrow">→</span><span class="node">strong session prompt</span><span class="arrow">→</span><span class="node">fresh LLM session</span><span class="arrow">→</span><span class="node">build / write / review / test</span><span class="arrow">→</span><span class="node">Skill Card if reusable</span></div>
-<section class="cards"><article class="card"><div class="k">Prompts ask</div><h3>Clarify intent</h3><p>Separate what the user wrote from what the task really needs: output, audience, files, boundaries, examples, risks, and checks.</p></article><article class="card"><div class="k">Loops repeat</div><h3>Build a session</h3><p>The output is not a final answer. It is a prompt for a fresh session that can inspect context, plan, execute, verify, and stop cleanly.</p></article><article class="card"><div class="k">Skills compound</div><h3>Do not pay twice</h3><p>If the task is hard or repeated, the prompt asks the next model to extract a machine-readable Skill Card.</p></article></section>
-<section class="section" id="quick-use"><h2>Use RHPm when <span>the prompt is still rough</span></h2><div class="mode-grid"><div class="mode"><h3>Use RHPm</h3><p>For rough requests, file-editing briefs, coding-builder prompts, review prompts, research seeds, HTML pages, and repeatable workflows that need a stronger new-session prompt.</p></div><div class="mode cyan"><h3>Escalate to RHPr</h3><p>When the model may be trapped in the wrong knowledge drawer: stale assumptions, retrieval bias, messy context, unclear prior files, or “it keeps answering the wrong question.”</p></div><div class="mode gold"><h3>Escalate to RHP</h3><p>When the problem needs multi-lens ideation: architecture, theory, strategy, cross-domain synthesis, hard tradeoffs, or high-stakes brainstorming.</p></div></div><div class="mini-list"><div class="template"><h3>Who should use this?</h3><ul><li>You have a messy request and want a better prompt.</li><li>You need a new LLM session to edit files safely.</li><li>You want several LLMs to review the same strong prompt.</li><li>You keep getting wrong answers because context is messy.</li></ul></div><div class="template"><h3>Do not use this for</h3><ul><li>simple factual questions</li><li>tiny edits already specified clearly</li><li>casual chat</li><li>cases where direct answering is faster and safe</li></ul></div></div></section>
-<section class="section" id="master"><h2>Copy-paste master prompt</h2><p>Fast path: fill the two fields and copy one combined prompt block for a fresh LLM session.</p><p class="lang-note">Generated prompts stay in English for reliability but include <strong>Preferred response language</strong> from the selector above.</p><div class="callout violet"><div class="ct">MDL escalation gate</div><p>RHPm uses the smallest adequate protocol. Ceremony is description length: use the minimum process that still preserves signal, tests, and context hygiene.</p></div>
-<div aria-label="Master prompt actions top" class="buttons"><button class="btn cyan" onclick="copyMasterPrompt()">Copy prompt</button><button class="btn" onclick="copyReviewPromptFromMaster()">Copy review prompt</button><button class="btn gold" onclick="pasteMasterPrompt()" title="Paste clipboard into the focused field, or into the human request field by default.">Paste</button><button class="btn rose" onclick="emptyMasterPrompt()">Empty</button><button class="btn" onclick="downloadRawMaster()">Download raw .txt</button></div>
-<div class="grid2"><div class="field"><label for="masterHumanRequest">Paste human request here</label><textarea id="masterHumanRequest" placeholder="Example: Improve this HTML page in all practical aspects, but modify only this one file." spellcheck="true"></textarea></div><div class="field"><label for="masterContext">Paste context here</label><textarea id="masterContext" placeholder="Example: Target file, reference files, forbidden changes, output filename, style rules, tests, links, baseline version." spellcheck="true"></textarea></div></div>
-<div class="field"><label for="masterPromptPreview">Combined prompt preview</label><div aria-live="polite" class="code output master-preview" id="masterPromptPreview"></div></div>
-<div class="checklist"><div class="checkitem">Deliverable named?</div><div class="checkitem">Files/context named?</div><div class="checkitem">Forbidden changes named?</div><div class="checkitem">Tests/checks named?</div><div class="checkitem">Output format named?</div><div class="checkitem">Escalation rule included?</div></div>
-<div aria-label="Master prompt actions bottom" class="buttons"><button class="btn cyan" onclick="copyMasterPrompt()">Copy prompt</button><button class="btn" onclick="copyReviewPromptFromMaster()">Copy review prompt</button><button class="btn gold" onclick="pasteMasterPrompt()">Paste</button><button class="btn rose" onclick="emptyMasterPrompt()">Empty</button><button class="btn" onclick="downloadRawMaster()">Download raw .txt</button></div>
-<details><summary>Static raw master prompt for LLM readers / crawlers</summary><div class="inside"><p class="small">This static block mirrors the product of the page so non-JS readers can still understand what RHPm generates.</p><div class="code">You are running RHPm — AIM³ Prompt Builder.
-
-Your job is NOT to answer the rough request directly.
-Your job is to convert it into the strongest practical prompt for a fresh LLM session.
-
-Use the smallest adequate protocol. RHPm is the default. Recommend full RHPr only when retrieval-bias, stale context, or wrong-drawer thinking is likely. Recommend full RHP only when complex brainstorming, architecture, strategy, or multi-perspective synthesis is truly needed.
-
-ROUGH HUMAN REQUEST:
-[PASTE HUMAN REQUEST HERE]
-
-CONTEXT / FILES / CONSTRAINTS:
-[PASTE CONTEXT HERE]
-
-PREFERRED RESPONSE LANGUAGE:
-[SELECT LANGUAGE]
-Use English internally for protocol/lens/validation planning if needed, but write the final human-facing answer in the selected language unless the user asks otherwise.
-
-Run internally:
-1. Guide mode: if essential information is missing, ask up to 5 practical questions; otherwise proceed.
-2. Intent split: explicit request, implied goal, deliverable, audience, files/context, constraints, forbidden changes, success criteria.
-3. Mini-RHP lenses: Engineer, Falsifier, Child, Cartographer, Agent 0. Use them to improve the prompt; do not perform theatrical role labels unless useful.
-4. Active contradiction check: detect conflicting constraints, missing acceptance criteria, over-wide context, or wrong-protocol risk.
-5. Resonance guard: if over-constrained, trigger SEIZURE check and propose relaxation points; if too vague, trigger NOISE check and propose 3 concrete constraints/tests.
-6. Context hygiene: name the files/folders/links/baselines to inspect first. If context is too large, ask for specific files or summarize before acting.
-7. Prompt synthesis: create the final prompt with role, goal, context, files to inspect, constraints, deliverables, workflow, tests/checks, output format, stop conditions, and what not to do.
-8. Agent 0 validation: require tests, baselines, manual/visual checks, rollback/recovery, or acceptance criteria where possible.
-9. Optional multi-LLM loop: for important or public-facing work, offer a separate review prompt for another LLM.
-10. Optional Skill Card: if hard or repeated, output machine-readable JSON with skill_name, when_to_use, inputs, outputs, steps, validation, failure_modes, rollback, examples, version, status.
-
-Return:
-A. Final improved prompt for the fresh session
-B. Short explanation of what changed and why
-C. Protocol choice
-D. Agent 0 validation checklist
-E. Optional review prompt for another LLM
-F. Optional Skill Card JSON if useful
-</div></div></details>
-</section>
-<section class="section" id="forge"><h2>Prompt Forge <span>— guided template</span></h2><p>Use Forge when you want task-specific options, guide mode, separate review prompts, and stronger context hygiene. This page does not call an AI; it only builds prompts.</p><p class="lang-note">Generated prompts stay in English for reliability but include <strong>Preferred response language</strong> from the selector above.</p><div class="builder"><div class="grid2"><div class="field"><label for="roughPrompt">Rough human prompt</label><textarea id="roughPrompt" placeholder="Example: Improve this HTML page using the attached reference page. Modify only one file, preserve style, make it practical, and output a downloadable HTML file."></textarea></div><div><div class="field"><label for="taskType">Task type</label><select id="taskType"><option value="general">General / mixed task</option><option value="code">Python / code builder</option><option value="html">HTML / website page</option><option value="doc">Word / paper / document</option><option value="spreadsheet">Spreadsheet / data analysis</option><option value="image">Image / visual generation</option><option value="review">Review / audit / scoring</option><option value="research">Research / idea development</option><option value="arena">Long-running arena / benchmark</option></select></div><div class="field"><label for="ceremony">Ceremony level</label><select id="ceremony"><option value="auto">Auto — smallest adequate structure</option><option value="light">Light — one prompt, compact checks</option><option value="medium">Medium — plan + deliverable + Agent 0 checks</option><option value="full">Full — spec, tests, risks, recovery, Skill Card</option></select></div><div class="tool-note">Agent 0 = evidence gate: nothing ships without a check, test, baseline, visual/manual inspection, or rollback logic.</div></div></div><div class="grid2"><div class="field"><label for="fileTree">Context files / tree baseline</label><textarea id="fileTree" placeholder="Example: BD_AIM3_RHPm.html; BD_AIM3_RHP.html; /public/BD/index.html. Target file only. Do not edit sitemap.xml or llms.txt."></textarea></div><div class="field"><label for="contextFiles">Other context / constraints</label><textarea id="contextFiles" placeholder="Example: Preserve dark style, mobile UX, A−/A+, copy buttons, provenance, links. Output updated HTML and changelog."></textarea></div></div><div class="checks"><label><input checked id="chkFiles" type="checkbox"/> tell the model which files/folders to inspect first</label><label><input checked id="chkTests" type="checkbox"/> require tests, acceptance criteria, or manual checks</label><label><input checked id="chkProvenance" type="checkbox"/> preserve authorship and provenance clearly</label><label><input checked id="chkNoBloat" type="checkbox"/> explicitly prevent bloat / extra pages / unrelated files</label><label><input checked id="chkResume" type="checkbox"/> add resume/recovery plan for long or coding tasks</label><label><input checked id="chkSkill" type="checkbox"/> extract a machine-readable Skill Card if repeated or hard</label><label><input id="chkGuide" type="checkbox"/> ask the next LLM to guide me with questions first</label><label><input checked id="chkReviewPrompt" type="checkbox"/> also generate a review prompt for another LLM</label></div><div class="buttons"><button class="btn cyan" onclick="generatePrompt()">Generate session prompt</button><button class="btn" onclick="copyById('promptOut')">Copy generated prompt</button><button class="btn" onclick="copyReviewPromptFromForge()">Copy review prompt</button><button class="btn gold" onclick="loadExample('html')">Example: HTML</button><button class="btn gold" onclick="loadExample('code')">Example: Python</button><button class="btn gold" onclick="loadExample('spreadsheet')">Example: spreadsheet</button><button class="btn gold" onclick="loadExample('image')">Example: image</button><button class="btn rose" onclick="clearForge()">Clear</button></div><div class="field"><label for="promptOut">Generated prompt for a new LLM session</label><textarea class="output" id="promptOut" placeholder="Generated prompt will appear here."></textarea></div><div class="field"><label for="reviewOut">Generated review prompt for another LLM</label><textarea class="output review-output" id="reviewOut" placeholder="Optional review prompt will appear here when enabled."></textarea></div><div class="checklist"><div class="checkitem">Execution prompt clear?</div><div class="checkitem">Review prompt separate?</div><div class="checkitem">Context not overstuffed?</div><div class="checkitem">Seizure/noise checks included?</div><div class="checkitem">Language instruction strict?</div><div class="checkitem">Skill JSON requested if useful?</div></div></div></section>
-<section class="section" id="examples"><h2>Examples <span>— weak prompt to RHPm prompt</span></h2><p>Static examples make the page readable even without JavaScript and show what the tool actually produces.</p><div class="example-pair"><div class="example-box bad"><h3>Weak prompt</h3><div class="code">Improve this HTML.</div></div><div class="example-box good"><h3>Stronger RHPm-style prompt</h3><div class="code">Inspect only the attached file BD_AIM3_RHPm.html. Preserve the dark visual style, mobile layout, A−/A+ controls, copy/paste/empty buttons, authorship/provenance, and existing internal links. Improve clarity, examples, prompt quality, Agent 0 validation, and practical usefulness. Do not edit index.html, sitemap.xml, llms.txt, or any other site file. Do not create extra pages unless explicitly requested. Return the full updated HTML file plus a short changelog and a note on what you deliberately did not change.</div></div></div><details><summary>Another example: review prompt for other LLMs</summary><div class="inside"><div class="code">Review this generated prompt. Score it 0–100 for clarity, missing constraints, testability, context hygiene, risk of wrong-drawer retrieval, output-format precision, and unnecessary bloat. Return: score, top 5 improvements, what to remove, and a revised prompt if useful. Be blunt but constructive.</div></div></details></section>
-<section class="section" id="templates"><h2>Task-specific additions</h2><div class="template-grid"><div class="template"><h3>Python / code builder</h3><ul><li>baseline files and previous version to inspect</li><li>CLI arguments, outputs, workers, seeds</li><li>checkpoints, autosave, resume/recovery</li><li>single-line progress for CMD if useful</li><li>tests, changelog, ZIP bundle</li></ul></div><div class="template"><h3>HTML / website page</h3><ul><li>page role inside the site</li><li>reference pages to read first</li><li>visual style, mobile behavior, A−/A+</li><li>copy buttons and practical UX</li><li>no index/sitemap edits unless asked</li></ul></div><div class="template"><h3>Word / paper / document</h3><ul><li>audience, purpose, style, section order</li><li>preserve DOCX formatting if editing</li><li>citations/source handling</li><li>change note and final downloadable file</li><li>avoid reflow unless requested</li></ul></div><div class="template"><h3>Spreadsheet / data analysis</h3><ul><li>input sheets, columns, formulas, assumptions</li><li>cleaning rules and validation checks</li><li>charts/tables requested or forbidden</li><li>macro/security expectations if relevant</li><li>final XLSX/CSV/report output</li></ul></div><div class="template"><h3>Image / visual generation</h3><ul><li>subject, style, composition, aspect ratio</li><li>reference image constraints</li><li>what must not be changed</li><li>text accuracy requirements</li><li>output count/format</li></ul></div><div class="template"><h3>Review / audit</h3><ul><li>score rubric and weighting</li><li>what to praise and what to attack</li><li>evidence required, uncertainty stated</li><li>deduped suggestions</li><li>actionable patch plan</li></ul></div><div class="template"><h3>Research / idea development</h3><ul><li>hypotheses and assumptions</li><li>mechanisms and counterarguments</li><li>supported vs speculative claims</li><li>cheap tests and falsifiers</li><li>next experiment, not just theory</li></ul></div><div class="template"><h3>Long-running arena / benchmark</h3><ul><li>scenario space and controls</li><li>metrics, baselines, risk classes</li><li>workers, checkpoints, resume</li><li>summary files for later analysis</li><li>reproducibility and slim extractor</li></ul></div></div></section>
-<section class="section" id="llm-links"><h2>Useful LLM links <span>for cross-checking</span></h2><p>This is a convenience list for sending the generated prompt to other assistants. It is not a ranking; availability, names, and limits change. <span class="small">Link list last edited: 2026-06-10.</span></p><details><summary>Open LLM links</summary><div class="inside"><div class="template-grid llm-grid"><div class="template"><h3>ChatGPT</h3><p>OpenAI’s chat assistant.</p><a class="pill" href="https://chatgpt.com/" rel="noopener noreferrer" target="_blank">Open ChatGPT</a></div><div class="template"><h3>Claude</h3><p>Anthropic’s assistant.</p><a class="pill" href="https://claude.com/" rel="noopener noreferrer" target="_blank">Open Claude</a></div><div class="template"><h3>Gemini</h3><p>Google’s AI assistant.</p><a class="pill" href="https://gemini.google.com/" rel="noopener noreferrer" target="_blank">Open Gemini</a></div><div class="template"><h3>Grok</h3><p>xAI’s assistant.</p><a class="pill" href="https://grok.com/" rel="noopener noreferrer" target="_blank">Open Grok</a></div><div class="template"><h3>DeepSeek</h3><p>DeepSeek Chat for coding, files, and reasoning.</p><a class="pill" href="https://chat.deepseek.com/" rel="noopener noreferrer" target="_blank">Open DeepSeek</a></div><div class="template"><h3>Qwen Chat</h3><p>Qwen Studio / Qwen Chat.</p><a class="pill" href="https://chat.qwen.ai/" rel="noopener noreferrer" target="_blank">Open Qwen</a></div><div class="template"><h3>Kimi</h3><p>Moonshot/Kimi assistant.</p><a class="pill" href="https://www.kimi.com/en" rel="noopener noreferrer" target="_blank">Open Kimi</a></div><div class="template"><h3>Mistral</h3><p>Mistral’s chat/work/code assistant.</p><a class="pill" href="https://chat.mistral.ai/" rel="noopener noreferrer" target="_blank">Open Mistral</a></div><div class="template"><h3>Perplexity</h3><p>AI answer/search engine.</p><a class="pill" href="https://www.perplexity.ai/" rel="noopener noreferrer" target="_blank">Open Perplexity</a></div><div class="template"><h3>Microsoft Copilot</h3><p>Microsoft’s AI companion.</p><a class="pill" href="https://copilot.microsoft.com/" rel="noopener noreferrer" target="_blank">Open Copilot</a></div><div class="template"><h3>Meta AI</h3><p>Meta’s AI assistant.</p><a class="pill" href="https://www.meta.ai/" rel="noopener noreferrer" target="_blank">Open Meta AI</a></div></div><div class="callout rose"><div class="ct">Security note</div><p>Use official domains and check the URL before logging in or uploading private files. Do not paste sensitive material into external LLMs unless you intentionally accept that model’s data policy.</p></div></div></details></section>
-<section class="section" id="positioning"><h2>What RHPm is — and is not</h2><div class="callout cyan"><div class="ct">Is</div><p>RHPm is the light public doorway into AIM³. It helps a human prepare a strong prompt for a new session without manually running full RHP/RHPr ceremony, while still recommending RHPr or RHP when the task clearly needs them.</p></div><div class="callout rose"><div class="ct">Is not</div><p>RHPm is not a replacement for full RHP, not an autonomous agent runtime, not a proof engine, and not a reason to skip tests. It is a prompt-shaping tool. Agent 0 still decides by evidence.</p></div><details><summary>Authorship & provenance</summary><div class="inside"><p>AIM³, RHP, RHPr, and RHPm originate from BD’s own DCC / claustrum / resonance architecture and prompt-engineering work. LLMs helped as collaborators, reviewers, builders, critics, and improvement partners. External articles and other AI suggestions may refine later versions, but they are not the origin of the core architecture.</p></div></details><div class="quote">Prompts ask. Loops repeat. Skills compound. RHPm’s job is to make the first prompt strong enough that the next loop starts in the right place.</div></section>
-<details class="section advanced" id="advanced"><summary><h2 style="display:inline">Advanced reference — compact RHPm protocol</h2></summary><div class="inside"><div class="steps"><div class="step"><div class="num">00</div><div><h3>Guide mode</h3><p>If the rough request is clear, build the improved prompt directly. If key information is missing, ask up to five practical questions first.</p></div></div><div class="step"><div class="num">01</div><div><h3>Protocol choice</h3><p>Stay with RHPm by default. Recommend RHPr for retrieval-bias / wrong-drawer problems. Recommend RHP for multi-lens brainstorming or architecture.</p></div></div><div class="step"><div class="num">02</div><div><h3>Intent split</h3><p>Extract explicit request, implied goal, real deliverable, audience, context, constraints, and “what good looks like.”</p></div></div><div class="step"><div class="num">03</div><div><h3>Mini-RHP lens pass</h3><p>Use Engineer, Falsifier, Child, Cartographer, and Agent 0 internally to improve the prompt, not to create theatrical role output.</p></div></div><div class="step"><div class="num">04</div><div><h3>Resonance guard</h3><p>Seizure = too constrained or one-framing. Noise = too vague or scattered. Resonance = enough structure for action, enough freedom for discovery.</p></div></div><div class="step"><div class="num">05</div><div><h3>Context hygiene</h3><p>Name files, folders, links, baselines, and forbidden changes. Avoid dumping every possible context item.</p></div></div><div class="step"><div class="num">06</div><div><h3>Prompt synthesis</h3><p>Write the final session prompt with role, goal, context, files, deliverables, workflow, checks, output format, stop conditions, and what not to do.</p></div></div><div class="step"><div class="num">07</div><div><h3>Agent 0 validation</h3><p>Require tests, baselines, visual/manual checks, rollback/recovery, evidence threshold, and acceptance criteria where possible.</p></div></div><div class="step"><div class="num">08</div><div><h3>Multi-LLM feedback</h3><p>For important prompts, generate a separate review prompt and later synthesize returned reviews.</p></div></div><div class="step"><div class="num">09</div><div><h3>Skill extraction</h3><p>If hard or repeated, add a machine-readable JSON Skill Card so the next session does not pay twice.</p></div></div></div><h2 style="margin-top:28px">Mini-RHP lens pass in plain language</h2><div class="lens-grid"><div class="lens"><div class="role">Engineer</div><p>What must be built, edited, inspected, named, packaged, or delivered?</p></div><div class="lens"><div class="role">Falsifier</div><p>What hidden assumption would make the output wrong or misleading?</p></div><div class="lens"><div class="role">Child</div><p>What is the obvious human meaning experts might overcomplicate?</p></div><div class="lens"><div class="role">Cartographer</div><p>Which domains, files, missing drawers, and adjacent references matter?</p></div><div class="lens"><div class="role">Agent 0</div><p>How will we test, compare, visually inspect, recover, or decide it is done?</p></div></div></div></details>
+<div class="quick-path"><div class="quick-step"><div class="n">1</div><p data-i18n="step1"></p></div><div class="quick-step"><div class="n">2</div><p data-i18n="step2"></p></div><div class="quick-step"><div class="n">3</div><p data-i18n="step3"></p></div><div class="quick-step"><div class="n">4</div><p data-i18n="step4"></p></div><div class="quick-step"><div class="n">5</div><p data-i18n="step5"></p></div></div>
+<div class="callout cyan"><div class="ct" data-i18n="whatTitle"></div><p data-i18n="whatText"></p></div>
+<div class="callout violet"><div class="ct" data-i18n="quickTitle"></div><p data-i18n="quickText"></p></div>
+<div class="callout gold"><div class="ct" data-i18n="fixTitle"></div><p data-i18n="fixText"></p></div>
+<div class="cards"><div class="card"><div class="k" data-i18n="card1k"></div><h3 data-i18n="card1h"></h3><p data-i18n="card1p"></p></div><div class="card"><div class="k" data-i18n="card2k"></div><h3 data-i18n="card2h"></h3><p data-i18n="card2p"></p></div><div class="card"><div class="k" data-i18n="card3k"></div><h3 data-i18n="card3h"></h3><p data-i18n="card3p"></p></div></div>
+<section class="section" id="master"><h2 data-i18n="masterTitle"></h2><p data-i18n="masterIntro"></p><div class="builder"><div class="grid2"><div class="field"><label data-i18n="roughLabel" for="masterHumanRequest"></label><textarea data-placeholder="roughPh" id="masterHumanRequest"></textarea></div><div class="field"><label data-i18n="contextLabel" for="masterContext"></label><textarea data-placeholder="contextPh" id="masterContext"></textarea></div></div><div class="buttons"><button class="btn cyan" data-i18n="copyMaster" onclick="copyById('masterPreview')"></button><button class="btn gold" data-i18n="downloadMaster" onclick="downloadMasterPrompt()"></button><button class="btn rose" data-i18n="clearMaster" onclick="clearMaster()"></button></div><div class="field"><label data-i18n="previewLabel" for="masterPreview"></label><textarea class="output master-preview" id="masterPreview" readonly=""></textarea></div></div></section>
+<section class="section" id="forge"><h2 data-i18n="forgeTitle"></h2><p data-i18n="forgeIntro"></p><div class="builder"><div class="grid2"><div class="field"><label data-i18n="roughLabel" for="roughPrompt"></label><textarea data-placeholder="roughPh" id="roughPrompt"></textarea></div><div><div class="field"><label data-i18n="taskType" for="taskType"></label><select id="taskType"><option data-i18n="taskGeneral" value="general"></option><option data-i18n="taskCode" value="code"></option><option data-i18n="taskHtml" value="html"></option><option data-i18n="taskDoc" value="doc"></option><option data-i18n="taskSpreadsheet" value="spreadsheet"></option><option data-i18n="taskImage" value="image"></option><option data-i18n="taskReview" value="review"></option><option data-i18n="taskResearch" value="research"></option><option data-i18n="taskArena" value="arena"></option></select></div><div class="field"><label data-i18n="ceremony" for="ceremony"></label><select id="ceremony"><option data-i18n="ceremonyAuto" value="auto"></option><option data-i18n="ceremonyLight" value="light"></option><option data-i18n="ceremonyMedium" value="medium"></option><option data-i18n="ceremonyFull" value="full"></option></select></div><p class="small" data-i18n="agentNote"></p></div></div><div class="grid2"><div class="field"><label data-i18n="filesLabel" for="fileTree"></label><textarea data-placeholder="filesPh" id="fileTree"></textarea></div><div class="field"><label data-i18n="otherContext" for="contextFiles"></label><textarea data-placeholder="otherPh" id="contextFiles"></textarea></div></div><div class="checks"><label><input checked="" id="chkFiles" type="checkbox"/><span data-i18n="chkFiles"></span></label><label><input checked="" id="chkTests" type="checkbox"/><span data-i18n="chkTests"></span></label><label><input checked="" id="chkProvenance" type="checkbox"/><span data-i18n="chkProvenance"></span></label><label><input checked="" id="chkNoBloat" type="checkbox"/><span data-i18n="chkNoBloat"></span></label><label><input checked="" id="chkResume" type="checkbox"/><span data-i18n="chkResume"></span></label><label><input checked="" id="chkSkill" type="checkbox"/><span data-i18n="chkSkill"></span></label><label><input id="chkGuide" type="checkbox"/><span data-i18n="chkGuide"></span></label><label><input checked="" id="chkReviewPrompt" type="checkbox"/><span data-i18n="chkReview"></span></label></div><div class="buttons"><button class="btn cyan" data-i18n="generate" onclick="generatePrompt()"></button><button class="btn" data-i18n="copyGenerated" onclick="copyById('promptOut')"></button><button class="btn" data-i18n="copyReview" onclick="copyReviewPromptFromForge()"></button><button class="btn gold" data-i18n="downloadGenerated" onclick="downloadGeneratedPrompt()"></button><button class="btn gold" data-i18n="exHtml" onclick="loadExample('html')"></button><button class="btn gold" data-i18n="exCode" onclick="loadExample('code')"></button><button class="btn gold" data-i18n="exSpreadsheet" onclick="loadExample('spreadsheet')"></button><button class="btn gold" data-i18n="exImage" onclick="loadExample('image')"></button><button class="btn rose" data-i18n="clearForge" onclick="clearForge()"></button></div><div class="field"><label data-i18n="promptOut" for="promptOut"></label><textarea class="output" data-placeholder="promptOutPh" id="promptOut"></textarea></div><div class="field"><label data-i18n="reviewOut" for="reviewOut"></label><textarea class="output" data-placeholder="reviewOutPh" id="reviewOut"></textarea></div><div class="checklist"><div class="checkitem" data-i18n="check1"></div><div class="checkitem" data-i18n="check2"></div><div class="checkitem" data-i18n="check3"></div><div class="checkitem" data-i18n="check4"></div><div class="checkitem" data-i18n="check5"></div><div class="checkitem" data-i18n="check6"></div></div></div></section>
+<section class="section" id="examples"><h2 data-i18n="examplesTitle"></h2><p data-i18n="examplesIntro"></p><div class="example-grid"><div class="example"><div class="cols"><div><div class="mini-label" data-i18n="weak"></div><p data-i18n="ex1Weak"></p></div><div><div class="mini-label" data-i18n="strong"></div><p data-i18n="ex1Strong"></p></div></div></div><div class="example"><div class="cols"><div><div class="mini-label" data-i18n="weak"></div><p data-i18n="ex2Weak"></p></div><div><div class="mini-label" data-i18n="strong"></div><p data-i18n="ex2Strong"></p></div></div></div><div class="example"><div class="cols"><div><div class="mini-label" data-i18n="weak"></div><p data-i18n="ex3Weak"></p></div><div><div class="mini-label" data-i18n="strong"></div><p data-i18n="ex3Strong"></p></div></div></div></div></section>
+<details class="section advanced" id="protocol" open=""><summary><h2 data-i18n="protocolTitle" style="display:inline"></h2></summary><div class="inside"><p data-i18n="protocolIntro"></p><div class="steps"><div class="step"><div class="num">00</div><div><h3 data-i18n="p0"></h3><p data-i18n="p0t"></p></div></div><div class="step"><div class="num">01</div><div><h3 data-i18n="p1"></h3><p data-i18n="p1t"></p></div></div><div class="step"><div class="num">02</div><div><h3 data-i18n="p2"></h3><p data-i18n="p2t"></p></div></div><div class="step"><div class="num">03</div><div><h3 data-i18n="p3"></h3><p data-i18n="p3t"></p></div></div><div class="step"><div class="num">04</div><div><h3 data-i18n="p4"></h3><p data-i18n="p4t"></p></div></div><div class="step"><div class="num">05</div><div><h3 data-i18n="p5"></h3><p data-i18n="p5t"></p></div></div><div class="step"><div class="num">06</div><div><h3 data-i18n="p6"></h3><p data-i18n="p6t"></p></div></div><div class="step"><div class="num">07</div><div><h3 data-i18n="p7"></h3><p data-i18n="p7t"></p></div></div><div class="step"><div class="num">08</div><div><h3 data-i18n="p8"></h3><p data-i18n="p8t"></p></div></div><div class="step"><div class="num">09</div><div><h3 data-i18n="p9"></h3><p data-i18n="p9t"></p></div></div></div><h2 data-i18n="lensTitle" style="margin-top:28px"></h2><div class="lens-grid"><div class="lens"><div class="role" data-i18n="lensEng"></div><p data-i18n="lensEngT"></p></div><div class="lens"><div class="role" data-i18n="lensFal"></div><p data-i18n="lensFalT"></p></div><div class="lens"><div class="role" data-i18n="lensChild"></div><p data-i18n="lensChildT"></p></div><div class="lens"><div class="role" data-i18n="lensCart"></div><p data-i18n="lensCartT"></p></div><div class="lens"><div class="role" data-i18n="lensA0"></div><p data-i18n="lensA0T"></p></div></div></div></details>
 </main>
-<footer class="footer"><div class="inner"><p><strong>RHPm v0.6 — Guided Prompt Builder</strong> · Compact practical bridge from rough human request to strong AI session prompt. It borrows only the practical parts of RHP: lens diversity, resonance guard, Agent 0 validation, context hygiene, guide mode, optional multi-LLM feedback, and skill extraction.</p><p>Related: <a href="BD_AIM3.html">AIM³</a> · <a href="BD_AIM3_RHPr.html">RHPr</a> · <a href="BD_AIM3_RHP.html">RHP</a> · <a href="BD_AIM3_RHP_Story.html">Origin Story</a> · <a href="BD_AIM3_RHPm_master_prompt.txt">Raw master prompt</a></p></div></footer>
-
+<footer class="footer" id="related"><div class="inner"><p data-i18n="footer1"></p><p><strong data-i18n="related"></strong>: <a href="BD_AIM3.html">AIM³</a> · <a href="BD_AIM3_RHPr.html">RHPr</a> · <a href="BD_AIM3_RHP.html">RHP</a> · <a href="BD_AIM3_RHP_Story.html">Origin Story</a> · <a href="BD_AIM3_RHPm_master_prompt.txt">Raw master prompt</a></p></div></footer>
 <script>
+const I18N = {
+  "en": {
+    "navMaster": "Master",
+    "navForge": "Forge",
+    "navExamples": "Examples",
+    "navProtocol": "Protocol",
+    "navRelated": "Related",
+    "pageLanguage": "Page language",
+    "answerLanguage": "Answer language",
+    "tag": "RHPm · AIM³ Prompt Builder · language-fixed v0.8",
+    "title": "Rough request → strong session prompt",
+    "titleEm": "strong session prompt",
+    "subtitle": "A compact front door for turning a messy human request into a clear, testable prompt for a fresh LLM session. Now the page language and the answer language are separate, so the UI and generated prompt instructions no longer fight each other.",
+    "meta": "Hybrid of the practical G page and the deeper C/8Z reasoning layer. English is default; Slovenian, German, Italian, Spanish, French, Simplified Chinese, and Japanese are available.",
+    "whatTitle": "What this page does",
+    "whatText": "It does not call an AI. It builds a copy-paste prompt that asks a fresh LLM session to run RHPm: intent split, mini-lens pass, context hygiene, resonance guard, Agent 0 validation, and optional review / Skill Card output.",
+    "quickTitle": "Quick or Forge?",
+    "quickText": "Master mode is the fast path: two fields, one strong prompt. Prompt Forge is the guided path: task type, files, checks, review prompt, and stronger validation.",
+    "fixTitle": "Language fix",
+    "fixText": "The page UI language and the desired answer language are now separate controls. Changing the page language translates this page. Changing the answer language changes the instruction inside generated prompts.",
+    "card1k": "RHPm",
+    "card1h": "Prompt builder",
+    "card1p": "Best for turning a rough request into a strong new-session prompt. Small, practical, copy-paste first.",
+    "card2k": "RHPr",
+    "card2h": "Retrieval repair",
+    "card2p": "Use when the model may be looking in the wrong knowledge drawer, missing files, or mixing stale context.",
+    "card3k": "RHP",
+    "card3h": "Deep ideation",
+    "card3p": "Use for architecture, theory, strategy, multi-lens synthesis, or hard cross-domain thinking.",
+    "step1": "Paste rough request.",
+    "step2": "Add files and constraints.",
+    "step3": "Choose page and answer language.",
+    "step4": "Generate and copy prompt.",
+    "step5": "Run it in a fresh LLM session.",
+    "masterTitle": "Copy-paste master prompt",
+    "masterIntro": "Fast path: fill two fields and copy one combined prompt block. The generated prompt stays in English for LLM reliability, but it explicitly tells the next model which language to answer in.",
+    "roughLabel": "Rough human request",
+    "roughPh": "Example: Improve this HTML page. Keep it compact, mobile-friendly, multilingual, and output a downloadable ZIP.",
+    "contextLabel": "Context / files / constraints",
+    "contextPh": "Example: Target file only. Preserve dark style, A−/A+, copy buttons, provenance, links, no sitemap edits.",
+    "previewLabel": "Live master prompt preview",
+    "copyMaster": "Copy master prompt",
+    "downloadMaster": "Download .txt",
+    "clearMaster": "Clear",
+    "forgeTitle": "Prompt Forge — guided template",
+    "forgeIntro": "Use Forge when you want task-specific options, guide mode, separate review prompts, and stronger context hygiene.",
+    "taskType": "Task type",
+    "taskGeneral": "General / mixed task",
+    "taskCode": "Python / code builder",
+    "taskHtml": "HTML / website page",
+    "taskDoc": "Word / paper / document",
+    "taskSpreadsheet": "Spreadsheet / data analysis",
+    "taskImage": "Image / visual generation",
+    "taskReview": "Review / audit / scoring",
+    "taskResearch": "Research / idea development",
+    "taskArena": "Long-running arena / benchmark",
+    "ceremony": "Ceremony level",
+    "ceremonyAuto": "Auto — smallest adequate structure",
+    "ceremonyLight": "Light — one prompt, compact checks",
+    "ceremonyMedium": "Medium — plan + deliverable + Agent 0 checks",
+    "ceremonyFull": "Full — spec, tests, risks, recovery, Skill Card",
+    "agentNote": "Agent 0 = evidence gate: nothing ships without a test, baseline, visual/manual inspection, or rollback logic.",
+    "filesLabel": "Context files / tree baseline",
+    "filesPh": "Example: BD_AIM3_RHPm.html; BD_AIM3_RHP.html; /public/BD/index.html. Target file only.",
+    "otherContext": "Other context / constraints",
+    "otherPh": "Example: Preserve dark style, mobile UX, A−/A+, copy buttons, provenance, links. Output updated HTML and changelog.",
+    "chkFiles": "tell the model which files/folders to inspect first",
+    "chkTests": "require tests, acceptance criteria, or manual checks",
+    "chkProvenance": "preserve authorship and provenance clearly",
+    "chkNoBloat": "explicitly prevent bloat / extra pages / unrelated files",
+    "chkResume": "add resume/recovery plan for long or coding tasks",
+    "chkSkill": "extract a machine-readable Skill Card if repeated or hard",
+    "chkGuide": "ask the next LLM to guide me with questions first",
+    "chkReview": "also generate a review prompt for another LLM",
+    "generate": "Generate session prompt",
+    "copyGenerated": "Copy generated prompt",
+    "copyReview": "Copy review prompt",
+    "downloadGenerated": "Download generated .txt",
+    "exHtml": "Example: HTML",
+    "exCode": "Example: Python",
+    "exSpreadsheet": "Example: spreadsheet",
+    "exImage": "Example: image",
+    "clearForge": "Clear Forge",
+    "promptOut": "Generated prompt for a new LLM session",
+    "promptOutPh": "Generated prompt will appear here.",
+    "reviewOut": "Generated review prompt for another LLM",
+    "reviewOutPh": "Optional review prompt will appear here when enabled.",
+    "check1": "Execution prompt clear?",
+    "check2": "Review prompt separate?",
+    "check3": "Context not overstuffed?",
+    "check4": "Seizure/noise checks included?",
+    "check5": "Language instruction strict?",
+    "check6": "Skill JSON requested if useful?",
+    "examplesTitle": "Weak → strong examples",
+    "examplesIntro": "These show what RHPm changes. It does not add ceremony for its own sake; it adds missing execution details, tests, and context boundaries.",
+    "weak": "Weak",
+    "strong": "Stronger",
+    "ex1Weak": "Improve this page.",
+    "ex1Strong": "Improve only BD_AIM3_RHPm.html. Preserve dark style, mobile UX, A−/A+, copy buttons, provenance, and existing links. Add true multilingual UI without changing unrelated files. Output updated HTML, ZIP, changelog, and validation notes.",
+    "ex2Weak": "Check this Python script.",
+    "ex2Strong": "Inspect the attached Python script for correctness, idempotency, validation, error handling, output columns, and packaging. Patch the script, include smoke tests, and produce a ZIP plus build instructions.",
+    "ex3Weak": "Is this article true?",
+    "ex3Strong": "Read the specific article first. Use high-quality sources. Separate correct, simplified, misleading, wrong, and missing claims. Give a percentage accuracy score and cite the load-bearing evidence.",
+    "protocolTitle": "Advanced reference — compact RHPm protocol",
+    "protocolIntro": "The generated prompt asks the next model to run this internally, not to perform theater. The goal is better work, not more labels.",
+    "p0": "Guide mode",
+    "p0t": "If the request is clear, build directly. If key details are missing, ask up to five practical questions first.",
+    "p1": "Protocol choice",
+    "p1t": "Use the smallest adequate protocol: RHPm by default, RHPr for wrong-drawer/retrieval problems, RHP for deep architecture or ideation.",
+    "p2": "Intent split",
+    "p2t": "Extract explicit request, implied goal, real deliverable, audience, files, constraints, forbidden changes, and what good looks like.",
+    "p3": "Mini-RHP lens pass",
+    "p3t": "Use Engineer, Falsifier, Child, Cartographer, and Agent 0 internally to improve the final prompt.",
+    "p4": "Resonance guard",
+    "p4t": "Seizure = too constrained. Noise = too vague. Resonance = enough structure to execute and enough freedom to discover.",
+    "p5": "Context hygiene",
+    "p5t": "Name files, folders, links, baselines, and forbidden changes. Avoid dumping every possible context item.",
+    "p6": "Prompt synthesis",
+    "p6t": "Write the final session prompt with role, goal, context, files, workflow, checks, output format, stop conditions, and what not to do.",
+    "p7": "Agent 0 validation",
+    "p7t": "Require tests, baselines, visual/manual checks, rollback/recovery, and acceptance criteria where possible.",
+    "p8": "Multi-LLM feedback",
+    "p8t": "For important prompts, generate a separate review prompt and later synthesize returned reviews.",
+    "p9": "Skill extraction",
+    "p9t": "If hard or repeated, add a machine-readable JSON Skill Card so the next session does not pay twice.",
+    "lensTitle": "Mini-RHP lens pass in plain language",
+    "lensEng": "Engineer",
+    "lensEngT": "What must be built, edited, inspected, named, packaged, or delivered?",
+    "lensFal": "Falsifier",
+    "lensFalT": "What hidden assumption would make the output wrong or misleading?",
+    "lensChild": "Child",
+    "lensChildT": "What is the obvious human meaning experts might overcomplicate?",
+    "lensCart": "Cartographer",
+    "lensCartT": "Which domains, files, missing drawers, and adjacent references matter?",
+    "lensA0": "Agent 0",
+    "lensA0T": "How will we test, compare, visually inspect, recover, or decide it is done?",
+    "footer1": "RHPm v0.8 language-fixed hybrid — Guided Prompt Builder. Built from the practical UX of G and the ecosystem/reasoning layer of C. Compact bridge from rough human request to strong AI session prompt; includes lens diversity, resonance guard, Agent 0 validation, context hygiene, 8Z reasoning mode, optional multi-LLM feedback, and Skill extraction.",
+    "related": "Related",
+    "copied": "Copied.",
+    "copyFail": "Copy failed. Select text manually.",
+    "downloaded": "Downloaded.",
+    "reviewDisabled": "Review prompt is disabled. Enable the checkbox first.",
+    "reviewCopied": "Review prompt copied.",
+    "generated": "Generated.",
+    "cleared": "Cleared.",
+    "useSame": "Use same as page"
+  },
+  "sl": {
+    "navMaster": "Master",
+    "navForge": "Forge",
+    "navExamples": "Primeri",
+    "navProtocol": "Protokol",
+    "navRelated": "Povezave",
+    "pageLanguage": "Jezik strani",
+    "answerLanguage": "Jezik odgovora",
+    "tag": "RHPm · AIM³ Prompt Builder · popravljeni jeziki v0.8",
+    "title": "Groba zahteva → močan prompt za novo sejo",
+    "titleEm": "močan prompt za novo sejo",
+    "subtitle": "Kompakten vhod za pretvorbo neurejene človeške zahteve v jasen, preverljiv prompt za novo LLM sejo. Zdaj sta jezik strani in jezik odgovora ločena, zato se UI in navodila v promptu ne tepeta več.",
+    "meta": "Hibrid praktične G strani in globlje C/8Z plasti razmišljanja. Privzeto je angleščina; na voljo so slovenščina, nemščina, italijanščina, španščina, francoščina, poenostavljena kitajščina in japonščina.",
+    "whatTitle": "Kaj ta stran dela",
+    "whatText": "Stran ne kliče umetne inteligence. Sestavi copy-paste prompt, ki sveži LLM seji naroči naj izvede RHPm: razcep namena, mini prehod skozi leče, higieno konteksta, resonančno varovalo, Agent 0 validacijo ter po potrebi review / Skill Card izhod.",
+    "quickTitle": "Quick ali Forge?",
+    "quickText": "Master način je hitra pot: dve polji, en močan prompt. Prompt Forge je vodena pot: tip naloge, datoteke, preverjanja, review prompt in močnejša validacija.",
+    "fixTitle": "Popravek jezikov",
+    "fixText": "Jezik UI-ja strani in želeni jezik odgovora sta zdaj ločeni nastavitvi. Sprememba jezika strani prevede stran. Sprememba jezika odgovora spremeni navodilo znotraj generiranih promptov.",
+    "card1k": "RHPm",
+    "card1h": "Graditelj promptov",
+    "card1p": "Najboljši za pretvorbo grobe zahteve v močan prompt za novo sejo. Majhen, praktičen, najprej copy-paste.",
+    "card2k": "RHPr",
+    "card2h": "Popravilo priklica",
+    "card2p": "Uporabi, ko model morda gleda v napačen predal znanja, zgreši datoteke ali meša zastarel kontekst.",
+    "card3k": "RHP",
+    "card3h": "Globoko snovanje",
+    "card3p": "Uporabi za arhitekturo, teorijo, strategijo, večlečno sintezo ali težko meddomensko razmišljanje.",
+    "step1": "Prilepi grobo zahtevo.",
+    "step2": "Dodaj datoteke in omejitve.",
+    "step3": "Izberi jezik strani in odgovora.",
+    "step4": "Ustvari in kopiraj prompt.",
+    "step5": "Zaženi ga v novi LLM seji.",
+    "masterTitle": "Copy-paste master prompt",
+    "masterIntro": "Hitra pot: izpolni dve polji in kopiraj en združen prompt. Generirani prompt zaradi zanesljivosti ostane v angleščini, vendar naslednjemu modelu jasno pove, v katerem jeziku naj odgovori.",
+    "roughLabel": "Groba človeška zahteva",
+    "roughPh": "Primer: Izboljšaj to HTML stran. Naj ostane kompaktna, prijazna za telefon, večjezična, in vrni ZIP za prenos.",
+    "contextLabel": "Kontekst / datoteke / omejitve",
+    "contextPh": "Primer: Samo ciljna datoteka. Ohrani temni slog, A−/A+, copy gumbe, provenienco, povezave, brez urejanja sitemap.",
+    "previewLabel": "Živi predogled master prompta",
+    "copyMaster": "Kopiraj master prompt",
+    "downloadMaster": "Prenesi .txt",
+    "clearMaster": "Počisti",
+    "forgeTitle": "Prompt Forge — vodena predloga",
+    "forgeIntro": "Uporabi Forge, ko želiš možnosti po tipu naloge, guide mode, ločen review prompt in močnejšo higieno konteksta.",
+    "taskType": "Tip naloge",
+    "taskGeneral": "Splošna / mešana naloga",
+    "taskCode": "Python / gradnja kode",
+    "taskHtml": "HTML / spletna stran",
+    "taskDoc": "Word / članek / dokument",
+    "taskSpreadsheet": "Preglednica / analiza podatkov",
+    "taskImage": "Slika / vizualna generacija",
+    "taskReview": "Pregled / audit / ocenjevanje",
+    "taskResearch": "Raziskovanje / razvoj ideje",
+    "taskArena": "Dolga arena / benchmark",
+    "ceremony": "Stopnja protokola",
+    "ceremonyAuto": "Auto — najmanjša dovolj dobra struktura",
+    "ceremonyLight": "Lahko — en prompt, kompaktna preverjanja",
+    "ceremonyMedium": "Srednje — plan + izdelek + Agent 0 preverjanja",
+    "ceremonyFull": "Polno — specifikacija, testi, tveganja, recovery, Skill Card",
+    "agentNote": "Agent 0 = dokazni filter: nič ne gre ven brez testa, baseline, vizualnega/ročnega pregleda ali rollback logike.",
+    "filesLabel": "Kontekstne datoteke / drevo / baseline",
+    "filesPh": "Primer: BD_AIM3_RHPm.html; BD_AIM3_RHP.html; /public/BD/index.html. Samo ciljna datoteka.",
+    "otherContext": "Drug kontekst / omejitve",
+    "otherPh": "Primer: Ohrani temni slog, mobilni UX, A−/A+, copy gumbe, provenienco, povezave. Vrni posodobljen HTML in changelog.",
+    "chkFiles": "povej modelu, katere datoteke/mape naj najprej pregleda",
+    "chkTests": "zahtevaj teste, kriterije sprejema ali ročna preverjanja",
+    "chkProvenance": "jasno ohrani avtorstvo in provenienco",
+    "chkNoBloat": "izrecno prepreči napihovanje / dodatne strani / nepovezane datoteke",
+    "chkResume": "dodaj resume/recovery plan za dolge ali kodne naloge",
+    "chkSkill": "izlušči strojno berljiv Skill Card, če je naloga ponovljiva ali težka",
+    "chkGuide": "naj naslednji LLM najprej vodi z vprašanji",
+    "chkReview": "ustvari tudi review prompt za drug LLM",
+    "generate": "Ustvari session prompt",
+    "copyGenerated": "Kopiraj generirani prompt",
+    "copyReview": "Kopiraj review prompt",
+    "downloadGenerated": "Prenesi generirani .txt",
+    "exHtml": "Primer: HTML",
+    "exCode": "Primer: Python",
+    "exSpreadsheet": "Primer: preglednica",
+    "exImage": "Primer: slika",
+    "clearForge": "Počisti Forge",
+    "promptOut": "Generirani prompt za novo LLM sejo",
+    "promptOutPh": "Tukaj se bo pojavil generirani prompt.",
+    "reviewOut": "Generirani review prompt za drug LLM",
+    "reviewOutPh": "Opcijski review prompt se pojavi tukaj, ko je omogočen.",
+    "check1": "Je izvedbeni prompt jasen?",
+    "check2": "Je review prompt ločen?",
+    "check3": "Kontekst ni prenatrpan?",
+    "check4": "So vključena seizure/noise preverjanja?",
+    "check5": "Je jezikovno navodilo strogo?",
+    "check6": "Je Skill JSON zahtevan, če koristi?",
+    "examplesTitle": "Šibko → močneje",
+    "examplesIntro": "Primeri pokažejo, kaj RHPm spremeni. Ne dodaja ceremonije zaradi ceremonije, ampak manjkajoče izvedbene podrobnosti, teste in meje konteksta.",
+    "weak": "Šibko",
+    "strong": "Močneje",
+    "ex1Weak": "Izboljšaj to stran.",
+    "ex1Strong": "Izboljšaj samo BD_AIM3_RHPm.html. Ohrani temni slog, mobilni UX, A−/A+, copy gumbe, provenienco in obstoječe povezave. Dodaj pravi večjezični UI brez spreminjanja nepovezanih datotek. Vrni posodobljen HTML, ZIP, changelog in validacijske opombe.",
+    "ex2Weak": "Preveri to Python skripto.",
+    "ex2Strong": "Preglej priloženo Python skripto glede pravilnosti, idempotence, validacije, obravnave napak, izhodnih stolpcev in pakiranja. Popravi skripto, dodaj smoke teste ter pripravi ZIP in navodila za build.",
+    "ex3Weak": "Ali je ta članek resničen?",
+    "ex3Strong": "Najprej preberi konkreten članek. Uporabi kakovostne vire. Loči pravilne, poenostavljene, zavajajoče, napačne in manjkajoče trditve. Daj odstotno oceno točnosti in citiraj ključne dokaze.",
+    "protocolTitle": "Napredna referenca — kompaktni RHPm protokol",
+    "protocolIntro": "Generirani prompt naslednjemu modelu naroči, naj to izvede interno, ne teatralno. Cilj je boljše delo, ne več oznak.",
+    "p0": "Guide mode",
+    "p0t": "Če je zahteva jasna, gradi neposredno. Če manjkajo ključni podatki, najprej postavi največ pet praktičnih vprašanj.",
+    "p1": "Izbira protokola",
+    "p1t": "Uporabi najmanjši dovolj dober protokol: privzeto RHPm, RHPr za napačen predal/priklic, RHP za globoko arhitekturo ali ideacijo.",
+    "p2": "Razcep namena",
+    "p2t": "Izlušči eksplicitno zahtevo, impliciran cilj, pravi izdelek, občinstvo, datoteke, omejitve, prepovedane spremembe in kaj pomeni dobro.",
+    "p3": "Mini-RHP prehod skozi leče",
+    "p3t": "Uporabi Engineer, Falsifier, Child, Cartographer in Agent 0 interno za izboljšanje končnega prompta.",
+    "p4": "Resonančno varovalo",
+    "p4t": "Seizure = preveč omejeno. Noise = preveč nejasno. Resonance = dovolj strukture za izvedbo in dovolj svobode za odkritje.",
+    "p5": "Higiena konteksta",
+    "p5t": "Imenuj datoteke, mape, povezave, baseline in prepovedane spremembe. Ne meči noter vsega mogočega konteksta.",
+    "p6": "Sinteza prompta",
+    "p6t": "Napiši končni session prompt z vlogo, ciljem, kontekstom, datotekami, postopkom, preverjanji, obliko izhoda, stop pogoji in česa ne sme narediti.",
+    "p7": "Agent 0 validacija",
+    "p7t": "Kjer je možno, zahtevaj teste, baseline, vizualna/ročna preverjanja, rollback/recovery in kriterije sprejema.",
+    "p8": "Multi-LLM feedback",
+    "p8t": "Za pomembne prompte ustvari ločen review prompt in kasneje sintetiziraj vrnjene ocene.",
+    "p9": "Skill extraction",
+    "p9t": "Če je naloga težka ali ponovljiva, dodaj strojno berljiv JSON Skill Card, da naslednja seja ne plača dvakrat.",
+    "lensTitle": "Mini-RHP leče v preprostem jeziku",
+    "lensEng": "Engineer",
+    "lensEngT": "Kaj mora biti zgrajeno, popravljeno, pregledano, poimenovano, zapakirano ali dostavljeno?",
+    "lensFal": "Falsifier",
+    "lensFalT": "Katera skrita predpostavka bi naredila rezultat napačen ali zavajajoč?",
+    "lensChild": "Child",
+    "lensChildT": "Kaj je očiten človeški pomen, ki ga strokovnjaki lahko preveč zakomplicirajo?",
+    "lensCart": "Cartographer",
+    "lensCartT": "Katere domene, datoteke, manjkajoči predali in sosednje reference so pomembni?",
+    "lensA0": "Agent 0",
+    "lensA0T": "Kako bomo testirali, primerjali, vizualno pregledali, obnovili ali odločili, da je končano?",
+    "footer1": "RHPm v0.8 language-fixed hybrid — Guided Prompt Builder. Zgrajen iz praktičnega UX-ja G in ekosistemsko/razmišljalske plasti C. Kompakten most iz grobe človeške zahteve v močan AI session prompt; vključuje več leč, resonančno varovalo, Agent 0 validacijo, higieno konteksta, 8Z reasoning mode, opcijski multi-LLM feedback in Skill extraction.",
+    "related": "Povezano",
+    "copied": "Kopirano.",
+    "copyFail": "Kopiranje ni uspelo. Označi besedilo ročno.",
+    "downloaded": "Preneseno.",
+    "reviewDisabled": "Review prompt je izklopljen. Najprej omogoči checkbox.",
+    "reviewCopied": "Review prompt kopiran.",
+    "generated": "Ustvarjeno.",
+    "cleared": "Počiščeno.",
+    "useSame": "Enako kot stran"
+  },
+  "de": {
+    "navMaster": "Master",
+    "navForge": "Forge",
+    "navExamples": "Beispiele",
+    "navProtocol": "Protokoll",
+    "navRelated": "Links",
+    "pageLanguage": "Seitensprache",
+    "answerLanguage": "Antwortsprache",
+    "tag": "RHPm · AIM³ Prompt Builder · sprachkorrigiert v0.8",
+    "title": "Rohwunsch → starker Prompt für eine neue Sitzung",
+    "titleEm": "starker Prompt für eine neue Sitzung",
+    "subtitle": "Eine kompakte Startseite, die aus einer unsauberen menschlichen Anfrage einen klaren, prüfbaren Prompt für eine neue LLM-Sitzung macht. Seitensprache und Antwortsprache sind jetzt getrennt, damit UI und Prompt-Anweisungen sich nicht mehr gegenseitig stören.",
+    "meta": "Hybrid aus der praktischen G-Seite und der tieferen C/8Z-Denkschicht. Englisch ist Standard; Slowenisch, Deutsch, Italienisch, Spanisch, Französisch, vereinfachtes Chinesisch und Japanisch sind verfügbar.",
+    "whatTitle": "Was diese Seite macht",
+    "whatText": "Sie ruft keine KI auf. Sie baut einen Copy-Paste-Prompt, der eine frische LLM-Sitzung anweist, RHPm auszuführen: Intent-Split, Mini-Linsen-Durchgang, Kontexthygiene, Resonanzschutz, Agent-0-Validierung und optional Review-/Skill-Card-Ausgabe.",
+    "quickTitle": "Quick oder Forge?",
+    "quickText": "Master-Modus ist der schnelle Weg: zwei Felder, ein starker Prompt. Prompt Forge ist der geführte Weg: Aufgabentyp, Dateien, Prüfungen, Review-Prompt und stärkere Validierung.",
+    "fixTitle": "Sprachkorrektur",
+    "fixText": "Die UI-Sprache der Seite und die gewünschte Antwortsprache sind jetzt getrennte Einstellungen. Die Seitensprache übersetzt diese Seite. Die Antwortsprache ändert die Anweisung im generierten Prompt.",
+    "card1k": "RHPm",
+    "card1h": "Prompt-Builder",
+    "card1p": "Am besten, um aus einem Rohwunsch einen starken Prompt für eine neue Sitzung zu machen. Klein, praktisch, zuerst Copy-Paste.",
+    "card2k": "RHPr",
+    "card2h": "Abruf-Reparatur",
+    "card2p": "Nutzen, wenn das Modell im falschen Wissensfach sucht, Dateien übersieht oder veralteten Kontext mischt.",
+    "card3k": "RHP",
+    "card3h": "Tiefe Ideenarbeit",
+    "card3p": "Nutzen für Architektur, Theorie, Strategie, Multi-Linsen-Synthese oder schwieriges domänenübergreifendes Denken.",
+    "step1": "Rohwunsch einfügen.",
+    "step2": "Dateien und Einschränkungen hinzufügen.",
+    "step3": "Seiten- und Antwortsprache wählen.",
+    "step4": "Prompt erzeugen und kopieren.",
+    "step5": "In einer frischen LLM-Sitzung ausführen.",
+    "masterTitle": "Copy-Paste-Master-Prompt",
+    "masterIntro": "Schneller Weg: zwei Felder ausfüllen und einen kombinierten Prompt kopieren. Der generierte Prompt bleibt für LLM-Zuverlässigkeit auf Englisch, weist aber klar an, in welcher Sprache das nächste Modell antworten soll.",
+    "roughLabel": "Rohe menschliche Anfrage",
+    "roughPh": "Beispiel: Verbessere diese HTML-Seite. Halte sie kompakt, mobilfreundlich, mehrsprachig, und gib ein herunterladbares ZIP aus.",
+    "contextLabel": "Kontext / Dateien / Einschränkungen",
+    "contextPh": "Beispiel: Nur Zieldatei. Dunklen Stil, A−/A+, Kopierbuttons, Provenienz, Links erhalten; keine Sitemap-Änderungen.",
+    "previewLabel": "Live-Vorschau des Master-Prompts",
+    "copyMaster": "Master-Prompt kopieren",
+    "downloadMaster": ".txt herunterladen",
+    "clearMaster": "Leeren",
+    "forgeTitle": "Prompt Forge — geführte Vorlage",
+    "forgeIntro": "Nutze Forge, wenn du aufgabenspezifische Optionen, Guide-Modus, separaten Review-Prompt und stärkere Kontexthygiene willst.",
+    "taskType": "Aufgabentyp",
+    "taskGeneral": "Allgemein / gemischte Aufgabe",
+    "taskCode": "Python / Code-Builder",
+    "taskHtml": "HTML / Website-Seite",
+    "taskDoc": "Word / Paper / Dokument",
+    "taskSpreadsheet": "Tabelle / Datenanalyse",
+    "taskImage": "Bild / visuelle Generierung",
+    "taskReview": "Review / Audit / Bewertung",
+    "taskResearch": "Recherche / Ideenentwicklung",
+    "taskArena": "Lang laufende Arena / Benchmark",
+    "ceremony": "Protokollstufe",
+    "ceremonyAuto": "Auto — kleinste ausreichende Struktur",
+    "ceremonyLight": "Leicht — ein Prompt, kompakte Prüfungen",
+    "ceremonyMedium": "Mittel — Plan + Liefergegenstand + Agent-0-Prüfungen",
+    "ceremonyFull": "Voll — Spezifikation, Tests, Risiken, Recovery, Skill Card",
+    "agentNote": "Agent 0 = Evidenz-Gate: Nichts wird ausgeliefert ohne Test, Baseline, visuelle/manuelle Prüfung oder Rollback-Logik.",
+    "filesLabel": "Kontextdateien / Baum-Baseline",
+    "filesPh": "Beispiel: BD_AIM3_RHPm.html; BD_AIM3_RHP.html; /public/BD/index.html. Nur Zieldatei.",
+    "otherContext": "Weiterer Kontext / Einschränkungen",
+    "otherPh": "Beispiel: Dunklen Stil, mobile UX, A−/A+, Kopierbuttons, Provenienz und Links erhalten. Aktualisiertes HTML und Changelog ausgeben.",
+    "chkFiles": "dem Modell sagen, welche Dateien/Ordner zuerst zu prüfen sind",
+    "chkTests": "Tests, Akzeptanzkriterien oder manuelle Prüfungen verlangen",
+    "chkProvenance": "Autorschaft und Provenienz klar erhalten",
+    "chkNoBloat": "Bloat / zusätzliche Seiten / fremde Dateien ausdrücklich verhindern",
+    "chkResume": "Resume-/Recovery-Plan für lange oder Coding-Aufgaben hinzufügen",
+    "chkSkill": "maschinenlesbare Skill Card extrahieren, wenn wiederholt oder schwer",
+    "chkGuide": "das nächste LLM zuerst mit Fragen führen lassen",
+    "chkReview": "auch einen Review-Prompt für ein anderes LLM erzeugen",
+    "generate": "Session-Prompt erzeugen",
+    "copyGenerated": "Generierten Prompt kopieren",
+    "copyReview": "Review-Prompt kopieren",
+    "downloadGenerated": "Generierte .txt herunterladen",
+    "exHtml": "Beispiel: HTML",
+    "exCode": "Beispiel: Python",
+    "exSpreadsheet": "Beispiel: Tabelle",
+    "exImage": "Beispiel: Bild",
+    "clearForge": "Forge leeren",
+    "promptOut": "Generierter Prompt für eine neue LLM-Sitzung",
+    "promptOutPh": "Der generierte Prompt erscheint hier.",
+    "reviewOut": "Generierter Review-Prompt für ein anderes LLM",
+    "reviewOutPh": "Optionaler Review-Prompt erscheint hier, wenn aktiviert.",
+    "check1": "Ausführungs-Prompt klar?",
+    "check2": "Review-Prompt getrennt?",
+    "check3": "Kontext nicht überladen?",
+    "check4": "Seizure-/Noise-Prüfungen enthalten?",
+    "check5": "Sprachanweisung strikt?",
+    "check6": "Skill JSON verlangt, wenn nützlich?",
+    "examplesTitle": "Schwach → stärker",
+    "examplesIntro": "Diese Beispiele zeigen, was RHPm verändert. Es fügt keine Zeremonie um ihrer selbst willen hinzu, sondern fehlende Ausführungsdetails, Tests und Kontextgrenzen.",
+    "weak": "Schwach",
+    "strong": "Stärker",
+    "ex1Weak": "Verbessere diese Seite.",
+    "ex1Strong": "Verbessere nur BD_AIM3_RHPm.html. Erhalte dunklen Stil, mobile UX, A−/A+, Kopierbuttons, Provenienz und bestehende Links. Füge echte mehrsprachige UI hinzu, ohne fremde Dateien zu ändern. Gib aktualisiertes HTML, ZIP, Changelog und Validierungsnotizen aus.",
+    "ex2Weak": "Prüfe dieses Python-Skript.",
+    "ex2Strong": "Prüfe das angehängte Python-Skript auf Korrektheit, Idempotenz, Validierung, Fehlerbehandlung, Ausgabespalten und Paketierung. Patche das Skript, füge Smoke-Tests hinzu und liefere ZIP plus Build-Anleitung.",
+    "ex3Weak": "Ist dieser Artikel wahr?",
+    "ex3Strong": "Lies zuerst den konkreten Artikel. Nutze hochwertige Quellen. Trenne korrekte, vereinfachte, irreführende, falsche und fehlende Aussagen. Gib eine prozentuale Genauigkeitswertung und zitiere die tragenden Belege.",
+    "protocolTitle": "Erweiterte Referenz — kompaktes RHPm-Protokoll",
+    "protocolIntro": "Der generierte Prompt weist das nächste Modell an, dies intern auszuführen, nicht Theater zu spielen. Ziel ist bessere Arbeit, nicht mehr Etiketten.",
+    "p0": "Guide-Modus",
+    "p0t": "Wenn die Anfrage klar ist, direkt bauen. Wenn zentrale Details fehlen, zuerst bis zu fünf praktische Fragen stellen.",
+    "p1": "Protokollwahl",
+    "p1t": "Das kleinste ausreichende Protokoll verwenden: standardmäßig RHPm, RHPr für falsche Wissensfächer/Abrufprobleme, RHP für tiefe Architektur oder Ideenarbeit.",
+    "p2": "Intent-Split",
+    "p2t": "Explizite Anfrage, implizites Ziel, echten Liefergegenstand, Publikum, Dateien, Einschränkungen, verbotene Änderungen und Erfolgskriterien extrahieren.",
+    "p3": "Mini-RHP-Linsen-Durchgang",
+    "p3t": "Engineer, Falsifier, Child, Cartographer und Agent 0 intern nutzen, um den finalen Prompt zu verbessern.",
+    "p4": "Resonanzschutz",
+    "p4t": "Seizure = zu stark eingeschränkt. Noise = zu vage. Resonance = genug Struktur zur Ausführung und genug Freiheit zur Entdeckung.",
+    "p5": "Kontexthygiene",
+    "p5t": "Dateien, Ordner, Links, Baselines und verbotene Änderungen benennen. Nicht jeden möglichen Kontext hineinwerfen.",
+    "p6": "Prompt-Synthese",
+    "p6t": "Den finalen Session-Prompt mit Rolle, Ziel, Kontext, Dateien, Workflow, Prüfungen, Ausgabeformat, Stop-Bedingungen und Verboten schreiben.",
+    "p7": "Agent-0-Validierung",
+    "p7t": "Wo möglich Tests, Baselines, visuelle/manuelle Prüfungen, Rollback/Recovery und Akzeptanzkriterien verlangen.",
+    "p8": "Multi-LLM-Feedback",
+    "p8t": "Für wichtige Prompts einen separaten Review-Prompt erzeugen und später zurückgegebene Reviews synthetisieren.",
+    "p9": "Skill-Extraktion",
+    "p9t": "Wenn die Aufgabe schwer oder wiederholbar ist, eine maschinenlesbare JSON Skill Card hinzufügen, damit die nächste Sitzung nicht doppelt zahlt.",
+    "lensTitle": "Mini-RHP-Linsen in einfacher Sprache",
+    "lensEng": "Engineer",
+    "lensEngT": "Was muss gebaut, editiert, geprüft, benannt, paketiert oder geliefert werden?",
+    "lensFal": "Falsifier",
+    "lensFalT": "Welche verborgene Annahme würde das Ergebnis falsch oder irreführend machen?",
+    "lensChild": "Child",
+    "lensChildT": "Was ist die offensichtliche menschliche Bedeutung, die Experten überkomplizieren könnten?",
+    "lensCart": "Cartographer",
+    "lensCartT": "Welche Domänen, Dateien, fehlenden Wissensfächer und angrenzenden Referenzen zählen?",
+    "lensA0": "Agent 0",
+    "lensA0T": "Wie testen, vergleichen, visuell prüfen, wiederherstellen oder entscheiden wir, dass es fertig ist?",
+    "footer1": "RHPm v0.8 sprachkorrigierter Hybrid — Guided Prompt Builder. Gebaut aus der praktischen UX von G und der Ökosystem-/Denkschicht von C. Kompakte Brücke vom Rohwunsch zum starken AI-Session-Prompt; mit Linsenvielfalt, Resonanzschutz, Agent-0-Validierung, Kontexthygiene, 8Z Reasoning Mode, optionalem Multi-LLM-Feedback und Skill-Extraktion.",
+    "related": "Verwandt",
+    "copied": "Kopiert.",
+    "copyFail": "Kopieren fehlgeschlagen. Text manuell markieren.",
+    "downloaded": "Heruntergeladen.",
+    "reviewDisabled": "Review-Prompt ist deaktiviert. Aktivieren Sie zuerst das Kontrollkästchen.",
+    "reviewCopied": "Review-Prompt kopiert.",
+    "generated": "Erzeugt.",
+    "cleared": "Geleert.",
+    "useSame": "Wie Seitensprache"
+  },
+  "it": {
+    "navMaster": "Master",
+    "navForge": "Forge",
+    "navExamples": "Esempi",
+    "navProtocol": "Protocollo",
+    "navRelated": "Collegamenti",
+    "pageLanguage": "Lingua pagina",
+    "answerLanguage": "Lingua risposta",
+    "tag": "RHPm · AIM³ Prompt Builder · lingue corrette v0.8",
+    "title": "Richiesta grezza → prompt forte per una nuova sessione",
+    "titleEm": "prompt forte per una nuova sessione",
+    "subtitle": "Una porta d’ingresso compatta che trasforma una richiesta umana disordinata in un prompt chiaro e verificabile per una nuova sessione LLM. Lingua della pagina e lingua della risposta sono ora separate, così UI e istruzioni non si scontrano più.",
+    "meta": "Ibrido tra l’UX pratica della pagina G e il livello di ragionamento C/8Z. Inglese predefinito; disponibili sloveno, tedesco, italiano, spagnolo, francese, cinese semplificato e giapponese.",
+    "whatTitle": "Cosa fa questa pagina",
+    "whatText": "Non chiama un’AI. Costruisce un prompt copia-incolla che chiede a una nuova sessione LLM di eseguire RHPm: separazione dell’intento, mini passaggio a lenti, igiene del contesto, guardrail di risonanza, validazione Agent 0 e output opzionale review / Skill Card.",
+    "quickTitle": "Quick o Forge?",
+    "quickText": "Master è il percorso veloce: due campi, un prompt forte. Prompt Forge è il percorso guidato: tipo di attività, file, controlli, review prompt e validazione più forte.",
+    "fixTitle": "Correzione lingue",
+    "fixText": "La lingua dell’interfaccia e la lingua desiderata della risposta sono ora controlli separati. Cambiare la lingua pagina traduce la pagina. Cambiare la lingua risposta modifica l’istruzione nei prompt generati.",
+    "card1k": "RHPm",
+    "card1h": "Costruttore di prompt",
+    "card1p": "Ideale per trasformare una richiesta grezza in un prompt forte per una nuova sessione. Piccolo, pratico, prima copia-incolla.",
+    "card2k": "RHPr",
+    "card2h": "Riparazione del recupero",
+    "card2p": "Da usare quando il modello potrebbe cercare nel cassetto sbagliato, perdere file o mescolare contesto vecchio.",
+    "card3k": "RHP",
+    "card3h": "Ideazione profonda",
+    "card3p": "Da usare per architettura, teoria, strategia, sintesi multi-lente o pensiero difficile tra domini.",
+    "step1": "Incolla la richiesta grezza.",
+    "step2": "Aggiungi file e vincoli.",
+    "step3": "Scegli lingua pagina e risposta.",
+    "step4": "Genera e copia il prompt.",
+    "step5": "Eseguilo in una nuova sessione LLM.",
+    "masterTitle": "Master prompt copia-incolla",
+    "masterIntro": "Percorso veloce: compila due campi e copia un prompt combinato. Il prompt generato resta in inglese per affidabilità LLM, ma indica chiaramente in quale lingua deve rispondere il prossimo modello.",
+    "roughLabel": "Richiesta umana grezza",
+    "roughPh": "Esempio: Migliora questa pagina HTML. Tienila compatta, mobile-friendly, multilingue, e restituisci uno ZIP scaricabile.",
+    "contextLabel": "Contesto / file / vincoli",
+    "contextPh": "Esempio: Solo file target. Preserva tema scuro, A−/A+, pulsanti copia, provenienza, link; niente modifiche alla sitemap.",
+    "previewLabel": "Anteprima live del master prompt",
+    "copyMaster": "Copia master prompt",
+    "downloadMaster": "Scarica .txt",
+    "clearMaster": "Cancella",
+    "forgeTitle": "Prompt Forge — modello guidato",
+    "forgeIntro": "Usa Forge quando vuoi opzioni specifiche per attività, guide mode, review prompt separato e maggiore igiene del contesto.",
+    "taskType": "Tipo di attività",
+    "taskGeneral": "Generale / attività mista",
+    "taskCode": "Python / code builder",
+    "taskHtml": "HTML / pagina web",
+    "taskDoc": "Word / paper / documento",
+    "taskSpreadsheet": "Foglio di calcolo / analisi dati",
+    "taskImage": "Immagine / generazione visuale",
+    "taskReview": "Review / audit / scoring",
+    "taskResearch": "Ricerca / sviluppo idea",
+    "taskArena": "Arena lunga / benchmark",
+    "ceremony": "Livello del protocollo",
+    "ceremonyAuto": "Auto — struttura minima adeguata",
+    "ceremonyLight": "Leggero — un prompt, controlli compatti",
+    "ceremonyMedium": "Medio — piano + deliverable + controlli Agent 0",
+    "ceremonyFull": "Completo — specifica, test, rischi, recovery, Skill Card",
+    "agentNote": "Agent 0 = filtro di evidenza: non si consegna nulla senza test, baseline, controllo visuale/manuale o logica di rollback.",
+    "filesLabel": "File di contesto / albero baseline",
+    "filesPh": "Esempio: BD_AIM3_RHPm.html; BD_AIM3_RHP.html; /public/BD/index.html. Solo file target.",
+    "otherContext": "Altro contesto / vincoli",
+    "otherPh": "Esempio: Preserva stile scuro, UX mobile, A−/A+, pulsanti copia, provenienza, link. Output HTML aggiornato e changelog.",
+    "chkFiles": "dire al modello quali file/cartelle ispezionare prima",
+    "chkTests": "richiedere test, criteri di accettazione o controlli manuali",
+    "chkProvenance": "preservare chiaramente autorialità e provenienza",
+    "chkNoBloat": "impedire esplicitamente bloat / pagine extra / file non correlati",
+    "chkResume": "aggiungere piano resume/recovery per attività lunghe o di codice",
+    "chkSkill": "estrarre una Skill Card leggibile da macchina se ripetuta o difficile",
+    "chkGuide": "chiedere al prossimo LLM di guidarmi prima con domande",
+    "chkReview": "generare anche un review prompt per un altro LLM",
+    "generate": "Genera session prompt",
+    "copyGenerated": "Copia prompt generato",
+    "copyReview": "Copia review prompt",
+    "downloadGenerated": "Scarica .txt generato",
+    "exHtml": "Esempio: HTML",
+    "exCode": "Esempio: Python",
+    "exSpreadsheet": "Esempio: foglio di calcolo",
+    "exImage": "Esempio: immagine",
+    "clearForge": "Cancella Forge",
+    "promptOut": "Prompt generato per una nuova sessione LLM",
+    "promptOutPh": "Il prompt generato apparirà qui.",
+    "reviewOut": "Review prompt generato per un altro LLM",
+    "reviewOutPh": "Il review prompt opzionale apparirà qui quando abilitato.",
+    "check1": "Prompt esecutivo chiaro?",
+    "check2": "Review prompt separato?",
+    "check3": "Contesto non sovraccarico?",
+    "check4": "Controlli seizure/noise inclusi?",
+    "check5": "Istruzione lingua rigorosa?",
+    "check6": "Skill JSON richiesto se utile?",
+    "examplesTitle": "Debole → più forte",
+    "examplesIntro": "Questi esempi mostrano cosa cambia RHPm. Non aggiunge cerimonia per sé stessa; aggiunge dettagli operativi mancanti, test e confini di contesto.",
+    "weak": "Debole",
+    "strong": "Più forte",
+    "ex1Weak": "Migliora questa pagina.",
+    "ex1Strong": "Migliora solo BD_AIM3_RHPm.html. Preserva stile scuro, UX mobile, A−/A+, pulsanti copia, provenienza e link esistenti. Aggiungi una vera UI multilingue senza modificare file non correlati. Restituisci HTML aggiornato, ZIP, changelog e note di validazione.",
+    "ex2Weak": "Controlla questo script Python.",
+    "ex2Strong": "Ispeziona lo script Python allegato per correttezza, idempotenza, validazione, gestione errori, colonne di output e packaging. Correggi lo script, aggiungi smoke test e produci ZIP più istruzioni di build.",
+    "ex3Weak": "Questo articolo è vero?",
+    "ex3Strong": "Leggi prima l’articolo specifico. Usa fonti di qualità. Separa affermazioni corrette, semplificate, fuorvianti, sbagliate e mancanti. Dai una percentuale di accuratezza e cita le prove portanti.",
+    "protocolTitle": "Riferimento avanzato — protocollo RHPm compatto",
+    "protocolIntro": "Il prompt generato chiede al modello successivo di eseguire questo internamente, non di fare teatro. L’obiettivo è lavorare meglio, non avere più etichette.",
+    "p0": "Guide mode",
+    "p0t": "Se la richiesta è chiara, costruisci direttamente. Se mancano dettagli chiave, fai prima fino a cinque domande pratiche.",
+    "p1": "Scelta del protocollo",
+    "p1t": "Usa il protocollo minimo adeguato: RHPm di default, RHPr per problemi di recupero/cassetto sbagliato, RHP per architettura o ideazione profonda.",
+    "p2": "Separazione dell’intento",
+    "p2t": "Estrai richiesta esplicita, obiettivo implicito, vero deliverable, pubblico, file, vincoli, modifiche vietate e criteri di qualità.",
+    "p3": "Passaggio mini-RHP a lenti",
+    "p3t": "Usa internamente Engineer, Falsifier, Child, Cartographer e Agent 0 per migliorare il prompt finale.",
+    "p4": "Guardrail di risonanza",
+    "p4t": "Seizure = troppo vincolato. Noise = troppo vago. Resonance = abbastanza struttura per eseguire e abbastanza libertà per scoprire.",
+    "p5": "Igiene del contesto",
+    "p5t": "Nomina file, cartelle, link, baseline e modifiche vietate. Evita di inserire ogni possibile elemento di contesto.",
+    "p6": "Sintesi del prompt",
+    "p6t": "Scrivi il session prompt finale con ruolo, obiettivo, contesto, file, workflow, controlli, formato output, condizioni di stop e cosa non fare.",
+    "p7": "Validazione Agent 0",
+    "p7t": "Quando possibile, richiedi test, baseline, controlli visuali/manuali, rollback/recovery e criteri di accettazione.",
+    "p8": "Feedback multi-LLM",
+    "p8t": "Per prompt importanti, genera un review prompt separato e poi sintetizza le review ricevute.",
+    "p9": "Estrazione Skill",
+    "p9t": "Se l’attività è difficile o ripetibile, aggiungi una Skill Card JSON leggibile da macchina così la prossima sessione non paga due volte.",
+    "lensTitle": "Mini-RHP in linguaggio semplice",
+    "lensEng": "Engineer",
+    "lensEngT": "Cosa deve essere costruito, modificato, ispezionato, nominato, impacchettato o consegnato?",
+    "lensFal": "Falsifier",
+    "lensFalT": "Quale assunzione nascosta renderebbe l’output sbagliato o fuorviante?",
+    "lensChild": "Child",
+    "lensChildT": "Qual è il significato umano ovvio che gli esperti potrebbero complicare troppo?",
+    "lensCart": "Cartographer",
+    "lensCartT": "Quali domini, file, cassetti mancanti e riferimenti adiacenti contano?",
+    "lensA0": "Agent 0",
+    "lensA0T": "Come testeremo, confronteremo, ispezioneremo visivamente, recupereremo o decideremo che è finito?",
+    "footer1": "RHPm v0.8 ibrido con lingue corrette — Guided Prompt Builder. Costruito dall’UX pratica di G e dallo strato ecosistema/ragionamento di C. Ponte compatto da richiesta grezza a forte AI session prompt; include diversità di lenti, guardrail di risonanza, validazione Agent 0, igiene del contesto, 8Z reasoning mode, feedback multi-LLM opzionale e Skill extraction.",
+    "related": "Collegati",
+    "copied": "Copiato.",
+    "copyFail": "Copia non riuscita. Seleziona il testo manualmente.",
+    "downloaded": "Scaricato.",
+    "reviewDisabled": "Review prompt disattivato. Attiva prima la casella.",
+    "reviewCopied": "Review prompt copiato.",
+    "generated": "Generato.",
+    "cleared": "Cancellato.",
+    "useSame": "Come pagina"
+  },
+  "es": {
+    "navMaster": "Master",
+    "navForge": "Forge",
+    "navExamples": "Ejemplos",
+    "navProtocol": "Protocolo",
+    "navRelated": "Enlaces",
+    "pageLanguage": "Idioma de página",
+    "answerLanguage": "Idioma de respuesta",
+    "tag": "RHPm · AIM³ Prompt Builder · idiomas corregidos v0.8",
+    "title": "Solicitud básica → prompt fuerte para nueva sesión",
+    "titleEm": "prompt fuerte para nueva sesión",
+    "subtitle": "Una entrada compacta para convertir una petición humana desordenada en un prompt claro y comprobable para una nueva sesión LLM. El idioma de la página y el idioma de respuesta ahora están separados, para que la interfaz y las instrucciones no se peleen.",
+    "meta": "Híbrido de la UX práctica de G y la capa de razonamiento C/8Z. Inglés por defecto; disponibles esloveno, alemán, italiano, español, francés, chino simplificado y japonés.",
+    "whatTitle": "Qué hace esta página",
+    "whatText": "No llama a una IA. Construye un prompt de copiar y pegar que pide a una nueva sesión LLM ejecutar RHPm: separación de intención, mini pase de lentes, higiene de contexto, guardia de resonancia, validación Agent 0 y salida opcional de revisión / Skill Card.",
+    "quickTitle": "¿Quick o Forge?",
+    "quickText": "Master es la vía rápida: dos campos, un prompt fuerte. Prompt Forge es la vía guiada: tipo de tarea, archivos, comprobaciones, prompt de revisión y validación más fuerte.",
+    "fixTitle": "Corrección de idiomas",
+    "fixText": "El idioma de la interfaz y el idioma deseado de respuesta ahora son controles separados. Cambiar el idioma de página traduce la página. Cambiar el idioma de respuesta modifica la instrucción dentro de los prompts generados.",
+    "card1k": "RHPm",
+    "card1h": "Constructor de prompts",
+    "card1p": "Ideal para convertir una solicitud básica en un prompt fuerte para una nueva sesión. Pequeño, práctico, primero copiar y pegar.",
+    "card2k": "RHPr",
+    "card2h": "Reparación de recuperación",
+    "card2p": "Úsalo cuando el modelo pueda mirar en el cajón de conocimiento equivocado, perder archivos o mezclar contexto obsoleto.",
+    "card3k": "RHP",
+    "card3h": "Ideación profunda",
+    "card3p": "Úsalo para arquitectura, teoría, estrategia, síntesis multi-lente o pensamiento difícil entre dominios.",
+    "step1": "Pega la solicitud básica.",
+    "step2": "Añade archivos y restricciones.",
+    "step3": "Elige idioma de página y respuesta.",
+    "step4": "Genera y copia el prompt.",
+    "step5": "Ejecútalo en una nueva sesión LLM.",
+    "masterTitle": "Master prompt de copiar y pegar",
+    "masterIntro": "Vía rápida: rellena dos campos y copia un prompt combinado. El prompt generado permanece en inglés por fiabilidad LLM, pero indica claramente en qué idioma debe responder el siguiente modelo.",
+    "roughLabel": "Solicitud humana básica",
+    "roughPh": "Ejemplo: Mejora esta página HTML. Mantenla compacta, móvil, multilingüe y entrega un ZIP descargable.",
+    "contextLabel": "Contexto / archivos / restricciones",
+    "contextPh": "Ejemplo: Solo archivo objetivo. Preserva estilo oscuro, A−/A+, botones copiar, procedencia, enlaces; no editar sitemap.",
+    "previewLabel": "Vista previa en vivo del master prompt",
+    "copyMaster": "Copiar master prompt",
+    "downloadMaster": "Descargar .txt",
+    "clearMaster": "Limpiar",
+    "forgeTitle": "Prompt Forge — plantilla guiada",
+    "forgeIntro": "Usa Forge cuando quieras opciones por tipo de tarea, guide mode, prompt de revisión separado y mayor higiene de contexto.",
+    "taskType": "Tipo de tarea",
+    "taskGeneral": "General / tarea mixta",
+    "taskCode": "Python / constructor de código",
+    "taskHtml": "HTML / página web",
+    "taskDoc": "Word / paper / documento",
+    "taskSpreadsheet": "Hoja de cálculo / análisis de datos",
+    "taskImage": "Imagen / generación visual",
+    "taskReview": "Revisión / auditoría / puntuación",
+    "taskResearch": "Investigación / desarrollo de idea",
+    "taskArena": "Arena larga / benchmark",
+    "ceremony": "Nivel de protocolo",
+    "ceremonyAuto": "Auto — estructura mínima adecuada",
+    "ceremonyLight": "Ligero — un prompt, comprobaciones compactas",
+    "ceremonyMedium": "Medio — plan + entregable + comprobaciones Agent 0",
+    "ceremonyFull": "Completo — especificación, tests, riesgos, recovery, Skill Card",
+    "agentNote": "Agent 0 = filtro de evidencia: nada se entrega sin test, baseline, inspección visual/manual o lógica de rollback.",
+    "filesLabel": "Archivos de contexto / árbol baseline",
+    "filesPh": "Ejemplo: BD_AIM3_RHPm.html; BD_AIM3_RHP.html; /public/BD/index.html. Solo archivo objetivo.",
+    "otherContext": "Otro contexto / restricciones",
+    "otherPh": "Ejemplo: Preserva estilo oscuro, UX móvil, A−/A+, botones copiar, procedencia, enlaces. Devuelve HTML actualizado y changelog.",
+    "chkFiles": "decir al modelo qué archivos/carpetas inspeccionar primero",
+    "chkTests": "exigir tests, criterios de aceptación o comprobaciones manuales",
+    "chkProvenance": "preservar claramente autoría y procedencia",
+    "chkNoBloat": "evitar explícitamente bloat / páginas extra / archivos no relacionados",
+    "chkResume": "añadir plan de resume/recovery para tareas largas o de código",
+    "chkSkill": "extraer una Skill Card legible por máquina si es repetida o difícil",
+    "chkGuide": "pedir al siguiente LLM que primero me guíe con preguntas",
+    "chkReview": "generar también un prompt de revisión para otro LLM",
+    "generate": "Generar prompt de sesión",
+    "copyGenerated": "Copiar prompt generado",
+    "copyReview": "Copiar prompt de revisión",
+    "downloadGenerated": "Descargar .txt generado",
+    "exHtml": "Ejemplo: HTML",
+    "exCode": "Ejemplo: Python",
+    "exSpreadsheet": "Ejemplo: hoja de cálculo",
+    "exImage": "Ejemplo: imagen",
+    "clearForge": "Limpiar Forge",
+    "promptOut": "Prompt generado para una nueva sesión LLM",
+    "promptOutPh": "El prompt generado aparecerá aquí.",
+    "reviewOut": "Prompt de revisión generado para otro LLM",
+    "reviewOutPh": "El prompt de revisión opcional aparecerá aquí si está activado.",
+    "check1": "¿Prompt ejecutable claro?",
+    "check2": "¿Prompt de revisión separado?",
+    "check3": "¿Contexto no sobrecargado?",
+    "check4": "¿Incluye checks seizure/noise?",
+    "check5": "¿Instrucción de idioma estricta?",
+    "check6": "¿Skill JSON solicitado si útil?",
+    "examplesTitle": "Débil → más fuerte",
+    "examplesIntro": "Estos ejemplos muestran qué cambia RHPm. No añade ceremonia por sí misma; añade detalles de ejecución, tests y límites de contexto que faltan.",
+    "weak": "Débil",
+    "strong": "Más fuerte",
+    "ex1Weak": "Mejora esta página.",
+    "ex1Strong": "Mejora solo BD_AIM3_RHPm.html. Preserva estilo oscuro, UX móvil, A−/A+, botones copiar, procedencia y enlaces existentes. Añade una UI realmente multilingüe sin cambiar archivos no relacionados. Entrega HTML actualizado, ZIP, changelog y notas de validación.",
+    "ex2Weak": "Revisa este script Python.",
+    "ex2Strong": "Inspecciona el script Python adjunto por corrección, idempotencia, validación, manejo de errores, columnas de salida y empaquetado. Parchea el script, añade smoke tests y produce ZIP más instrucciones de build.",
+    "ex3Weak": "¿Este artículo es verdadero?",
+    "ex3Strong": "Lee primero el artículo específico. Usa fuentes de calidad. Separa afirmaciones correctas, simplificadas, engañosas, falsas y faltantes. Da una puntuación porcentual de precisión y cita la evidencia clave.",
+    "protocolTitle": "Referencia avanzada — protocolo RHPm compacto",
+    "protocolIntro": "El prompt generado pide al siguiente modelo ejecutar esto internamente, no hacer teatro. El objetivo es mejor trabajo, no más etiquetas.",
+    "p0": "Guide mode",
+    "p0t": "Si la solicitud es clara, construye directamente. Si faltan detalles clave, primero haz hasta cinco preguntas prácticas.",
+    "p1": "Elección de protocolo",
+    "p1t": "Usa el protocolo mínimo adecuado: RHPm por defecto, RHPr para cajón equivocado/problemas de recuperación, RHP para arquitectura o ideación profunda.",
+    "p2": "Separación de intención",
+    "p2t": "Extrae solicitud explícita, objetivo implícito, entregable real, audiencia, archivos, restricciones, cambios prohibidos y qué significa bueno.",
+    "p3": "Mini pase de lentes RHP",
+    "p3t": "Usa internamente Engineer, Falsifier, Child, Cartographer y Agent 0 para mejorar el prompt final.",
+    "p4": "Guardia de resonancia",
+    "p4t": "Seizure = demasiado restringido. Noise = demasiado vago. Resonance = suficiente estructura para ejecutar y suficiente libertad para descubrir.",
+    "p5": "Higiene de contexto",
+    "p5t": "Nombra archivos, carpetas, enlaces, baselines y cambios prohibidos. Evita volcar todo contexto posible.",
+    "p6": "Síntesis del prompt",
+    "p6t": "Escribe el session prompt final con rol, objetivo, contexto, archivos, flujo, checks, formato de salida, condiciones de parada y qué no hacer.",
+    "p7": "Validación Agent 0",
+    "p7t": "Cuando sea posible, exige tests, baselines, inspecciones visuales/manuales, rollback/recovery y criterios de aceptación.",
+    "p8": "Feedback multi-LLM",
+    "p8t": "Para prompts importantes, genera un prompt de revisión separado y luego sintetiza las revisiones recibidas.",
+    "p9": "Extracción de Skill",
+    "p9t": "Si la tarea es difícil o repetible, añade una Skill Card JSON legible por máquina para que la siguiente sesión no pague dos veces.",
+    "lensTitle": "Mini-RHP en lenguaje sencillo",
+    "lensEng": "Engineer",
+    "lensEngT": "¿Qué debe construirse, editarse, inspeccionarse, nombrarse, empaquetarse o entregarse?",
+    "lensFal": "Falsifier",
+    "lensFalT": "¿Qué suposición oculta haría el resultado incorrecto o engañoso?",
+    "lensChild": "Child",
+    "lensChildT": "¿Cuál es el significado humano obvio que los expertos podrían complicar demasiado?",
+    "lensCart": "Cartographer",
+    "lensCartT": "¿Qué dominios, archivos, cajones faltantes y referencias cercanas importan?",
+    "lensA0": "Agent 0",
+    "lensA0T": "¿Cómo probaremos, compararemos, inspeccionaremos visualmente, recuperaremos o decidiremos que está terminado?",
+    "footer1": "RHPm v0.8 híbrido con idiomas corregidos — Guided Prompt Builder. Construido desde la UX práctica de G y la capa de ecosistema/razonamiento de C. Puente compacto de solicitud humana básica a fuerte AI session prompt; incluye diversidad de lentes, guardia de resonancia, validación Agent 0, higiene de contexto, 8Z reasoning mode, feedback multi-LLM opcional y Skill extraction.",
+    "related": "Relacionado",
+    "copied": "Copiado.",
+    "copyFail": "No se pudo copiar. Selecciona el texto manualmente.",
+    "downloaded": "Descargado.",
+    "reviewDisabled": "El prompt de revisión está desactivado. Activa primero la casilla.",
+    "reviewCopied": "Prompt de revisión copiado.",
+    "generated": "Generado.",
+    "cleared": "Limpiado.",
+    "useSame": "Igual que la página"
+  },
+  "fr": {
+    "navMaster": "Master",
+    "navForge": "Forge",
+    "navExamples": "Exemples",
+    "navProtocol": "Protocole",
+    "navRelated": "Liens",
+    "pageLanguage": "Langue de la page",
+    "answerLanguage": "Langue de réponse",
+    "tag": "RHPm · AIM³ Prompt Builder · langues corrigées v0.8",
+    "title": "Demande brute → prompt fort pour nouvelle session",
+    "titleEm": "prompt fort pour nouvelle session",
+    "subtitle": "Une porte d’entrée compacte pour transformer une demande humaine confuse en prompt clair et testable pour une nouvelle session LLM. La langue de la page et la langue de réponse sont maintenant séparées, afin que l’interface et les instructions ne se contredisent plus.",
+    "meta": "Hybride de l’UX pratique de G et de la couche de raisonnement C/8Z. Anglais par défaut; slovène, allemand, italien, espagnol, français, chinois simplifié et japonais disponibles.",
+    "whatTitle": "Ce que fait cette page",
+    "whatText": "Elle n’appelle aucune IA. Elle construit un prompt copier-coller qui demande à une nouvelle session LLM d’exécuter RHPm : séparation de l’intention, mini passage par les lentilles, hygiène du contexte, garde de résonance, validation Agent 0 et sortie optionnelle review / Skill Card.",
+    "quickTitle": "Quick ou Forge ?",
+    "quickText": "Master est le chemin rapide : deux champs, un prompt fort. Prompt Forge est le chemin guidé : type de tâche, fichiers, contrôles, prompt de revue et validation plus forte.",
+    "fixTitle": "Correction des langues",
+    "fixText": "La langue de l’interface et la langue de réponse souhaitée sont maintenant deux contrôles séparés. Changer la langue de page traduit la page. Changer la langue de réponse modifie l’instruction dans les prompts générés.",
+    "card1k": "RHPm",
+    "card1h": "Constructeur de prompt",
+    "card1p": "Idéal pour transformer une demande brute en prompt fort pour une nouvelle session. Petit, pratique, copier-coller d’abord.",
+    "card2k": "RHPr",
+    "card2h": "Réparation du retrieval",
+    "card2p": "À utiliser quand le modèle risque de regarder dans le mauvais tiroir de connaissance, manquer des fichiers ou mélanger un contexte obsolète.",
+    "card3k": "RHP",
+    "card3h": "Idéation profonde",
+    "card3p": "À utiliser pour l’architecture, la théorie, la stratégie, la synthèse multi-lentilles ou la pensée difficile entre domaines.",
+    "step1": "Collez la demande brute.",
+    "step2": "Ajoutez fichiers et contraintes.",
+    "step3": "Choisissez langue de page et réponse.",
+    "step4": "Générez et copiez le prompt.",
+    "step5": "Exécutez-le dans une nouvelle session LLM.",
+    "masterTitle": "Master prompt copier-coller",
+    "masterIntro": "Chemin rapide : remplissez deux champs et copiez un prompt combiné. Le prompt généré reste en anglais pour la fiabilité LLM, mais indique clairement dans quelle langue le prochain modèle doit répondre.",
+    "roughLabel": "Demande humaine brute",
+    "roughPh": "Exemple : Améliore cette page HTML. Garde-la compacte, mobile-friendly, multilingue, et fournis un ZIP téléchargeable.",
+    "contextLabel": "Contexte / fichiers / contraintes",
+    "contextPh": "Exemple : Fichier cible uniquement. Préserver style sombre, A−/A+, boutons copier, provenance, liens; ne pas modifier sitemap.",
+    "previewLabel": "Aperçu live du master prompt",
+    "copyMaster": "Copier le master prompt",
+    "downloadMaster": "Télécharger .txt",
+    "clearMaster": "Effacer",
+    "forgeTitle": "Prompt Forge — modèle guidé",
+    "forgeIntro": "Utilisez Forge pour des options par type de tâche, guide mode, prompt de revue séparé et meilleure hygiène du contexte.",
+    "taskType": "Type de tâche",
+    "taskGeneral": "Général / tâche mixte",
+    "taskCode": "Python / code builder",
+    "taskHtml": "HTML / page web",
+    "taskDoc": "Word / article / document",
+    "taskSpreadsheet": "Tableur / analyse de données",
+    "taskImage": "Image / génération visuelle",
+    "taskReview": "Revue / audit / notation",
+    "taskResearch": "Recherche / développement d’idée",
+    "taskArena": "Arena longue / benchmark",
+    "ceremony": "Niveau de protocole",
+    "ceremonyAuto": "Auto — structure minimale adéquate",
+    "ceremonyLight": "Léger — un prompt, contrôles compacts",
+    "ceremonyMedium": "Moyen — plan + livrable + contrôles Agent 0",
+    "ceremonyFull": "Complet — spécification, tests, risques, recovery, Skill Card",
+    "agentNote": "Agent 0 = filtre de preuve : rien n’est livré sans test, baseline, inspection visuelle/manuelle ou logique de rollback.",
+    "filesLabel": "Fichiers de contexte / arbre baseline",
+    "filesPh": "Exemple : BD_AIM3_RHPm.html; BD_AIM3_RHP.html; /public/BD/index.html. Fichier cible uniquement.",
+    "otherContext": "Autre contexte / contraintes",
+    "otherPh": "Exemple : Préserver style sombre, UX mobile, A−/A+, boutons copier, provenance, liens. Sortir HTML mis à jour et changelog.",
+    "chkFiles": "dire au modèle quels fichiers/dossiers inspecter d’abord",
+    "chkTests": "exiger tests, critères d’acceptation ou contrôles manuels",
+    "chkProvenance": "préserver clairement l’autorat et la provenance",
+    "chkNoBloat": "empêcher explicitement le bloat / pages extra / fichiers sans rapport",
+    "chkResume": "ajouter un plan resume/recovery pour tâches longues ou de code",
+    "chkSkill": "extraire une Skill Card lisible par machine si répétée ou difficile",
+    "chkGuide": "demander au prochain LLM de me guider d’abord par questions",
+    "chkReview": "générer aussi un prompt de revue pour un autre LLM",
+    "generate": "Générer le prompt de session",
+    "copyGenerated": "Copier le prompt généré",
+    "copyReview": "Copier le prompt de revue",
+    "downloadGenerated": "Télécharger le .txt généré",
+    "exHtml": "Exemple : HTML",
+    "exCode": "Exemple : Python",
+    "exSpreadsheet": "Exemple : tableur",
+    "exImage": "Exemple : image",
+    "clearForge": "Effacer Forge",
+    "promptOut": "Prompt généré pour une nouvelle session LLM",
+    "promptOutPh": "Le prompt généré apparaîtra ici.",
+    "reviewOut": "Prompt de revue généré pour un autre LLM",
+    "reviewOutPh": "Le prompt de revue optionnel apparaîtra ici s’il est activé.",
+    "check1": "Prompt exécutable clair ?",
+    "check2": "Prompt de revue séparé ?",
+    "check3": "Contexte non surchargé ?",
+    "check4": "Contrôles seizure/noise inclus ?",
+    "check5": "Instruction de langue stricte ?",
+    "check6": "Skill JSON demandé si utile ?",
+    "examplesTitle": "Faible → plus fort",
+    "examplesIntro": "Ces exemples montrent ce que RHPm change. Il n’ajoute pas de cérémonie pour elle-même; il ajoute les détails d’exécution, tests et limites de contexte manquants.",
+    "weak": "Faible",
+    "strong": "Plus fort",
+    "ex1Weak": "Améliore cette page.",
+    "ex1Strong": "Améliore uniquement BD_AIM3_RHPm.html. Préserve style sombre, UX mobile, A−/A+, boutons copier, provenance et liens existants. Ajoute une vraie UI multilingue sans modifier les fichiers sans rapport. Fournis HTML mis à jour, ZIP, changelog et notes de validation.",
+    "ex2Weak": "Vérifie ce script Python.",
+    "ex2Strong": "Inspecte le script Python joint pour correction, idempotence, validation, gestion d’erreurs, colonnes de sortie et packaging. Corrige le script, ajoute des smoke tests et fournis ZIP plus instructions de build.",
+    "ex3Weak": "Cet article est-il vrai ?",
+    "ex3Strong": "Lis d’abord l’article spécifique. Utilise des sources de qualité. Sépare les affirmations correctes, simplifiées, trompeuses, fausses et manquantes. Donne un score de précision en pourcentage et cite les preuves principales.",
+    "protocolTitle": "Référence avancée — protocole RHPm compact",
+    "protocolIntro": "Le prompt généré demande au prochain modèle d’exécuter cela en interne, pas de faire du théâtre. Le but est un meilleur travail, pas plus d’étiquettes.",
+    "p0": "Guide mode",
+    "p0t": "Si la demande est claire, construis directement. Si des détails clés manquent, pose d’abord jusqu’à cinq questions pratiques.",
+    "p1": "Choix du protocole",
+    "p1t": "Utiliser le plus petit protocole adéquat : RHPm par défaut, RHPr pour mauvais tiroir/problèmes de retrieval, RHP pour architecture ou idéation profonde.",
+    "p2": "Séparation de l’intention",
+    "p2t": "Extraire demande explicite, objectif implicite, vrai livrable, audience, fichiers, contraintes, changements interdits et critères de réussite.",
+    "p3": "Mini passage RHP par lentilles",
+    "p3t": "Utiliser Engineer, Falsifier, Child, Cartographer et Agent 0 en interne pour améliorer le prompt final.",
+    "p4": "Garde de résonance",
+    "p4t": "Seizure = trop contraint. Noise = trop vague. Resonance = assez de structure pour exécuter et assez de liberté pour découvrir.",
+    "p5": "Hygiène du contexte",
+    "p5t": "Nommer fichiers, dossiers, liens, baselines et changements interdits. Éviter de verser tout contexte possible.",
+    "p6": "Synthèse du prompt",
+    "p6t": "Écrire le session prompt final avec rôle, objectif, contexte, fichiers, workflow, contrôles, format de sortie, conditions d’arrêt et interdits.",
+    "p7": "Validation Agent 0",
+    "p7t": "Lorsque possible, exiger tests, baselines, inspections visuelles/manuelles, rollback/recovery et critères d’acceptation.",
+    "p8": "Feedback multi-LLM",
+    "p8t": "Pour les prompts importants, générer un prompt de revue séparé puis synthétiser les revues reçues.",
+    "p9": "Extraction Skill",
+    "p9t": "Si la tâche est difficile ou répétable, ajouter une Skill Card JSON lisible par machine afin que la session suivante ne paie pas deux fois.",
+    "lensTitle": "Mini-RHP en langage simple",
+    "lensEng": "Engineer",
+    "lensEngT": "Que faut-il construire, modifier, inspecter, nommer, empaqueter ou livrer ?",
+    "lensFal": "Falsifier",
+    "lensFalT": "Quelle hypothèse cachée rendrait le résultat faux ou trompeur ?",
+    "lensChild": "Child",
+    "lensChildT": "Quel est le sens humain évident que les experts pourraient trop compliquer ?",
+    "lensCart": "Cartographer",
+    "lensCartT": "Quels domaines, fichiers, tiroirs manquants et références adjacentes comptent ?",
+    "lensA0": "Agent 0",
+    "lensA0T": "Comment tester, comparer, inspecter visuellement, récupérer ou décider que c’est terminé ?",
+    "footer1": "RHPm v0.8 hybride avec langues corrigées — Guided Prompt Builder. Construit depuis l’UX pratique de G et la couche écosystème/raisonnement de C. Pont compact de la demande brute au prompt fort de session AI; inclut diversité de lentilles, garde de résonance, validation Agent 0, hygiène du contexte, 8Z reasoning mode, feedback multi-LLM optionnel et Skill extraction.",
+    "related": "Liés",
+    "copied": "Copié.",
+    "copyFail": "Copie échouée. Sélectionnez le texte manuellement.",
+    "downloaded": "Téléchargé.",
+    "reviewDisabled": "Le prompt de revue est désactivé. Activez d’abord la case.",
+    "reviewCopied": "Prompt de revue copié.",
+    "generated": "Généré.",
+    "cleared": "Effacé.",
+    "useSame": "Comme la page"
+  },
+  "zh": {
+    "navMaster": "Master",
+    "navForge": "Forge",
+    "navExamples": "示例",
+    "navProtocol": "协议",
+    "navRelated": "相关链接",
+    "pageLanguage": "页面语言",
+    "answerLanguage": "回答语言",
+    "tag": "RHPm · AIM³ Prompt Builder · 语言修复 v0.8",
+    "title": "粗略请求 → 强会话提示词",
+    "titleEm": "强会话提示词",
+    "subtitle": "一个紧凑入口，把混乱的人类请求变成清晰、可验证的全新 LLM 会话提示词。页面语言和回答语言现在分开控制，因此界面与提示词指令不再互相冲突。",
+    "meta": "结合 G 页面实用 UX 与 C/8Z 深层推理层。默认英语；支持斯洛文尼亚语、德语、意大利语、西班牙语、法语、简体中文和日语。",
+    "whatTitle": "这个页面做什么",
+    "whatText": "它不会调用 AI。它生成可复制粘贴的提示词，让新的 LLM 会话执行 RHPm：意图拆分、迷你多视角检查、上下文卫生、共振保护、Agent 0 验证，以及可选的评审 / Skill Card 输出。",
+    "quickTitle": "Quick 还是 Forge？",
+    "quickText": "Master 模式是快速路径：两个字段，一个强提示词。Prompt Forge 是引导路径：任务类型、文件、检查项、评审提示词和更强验证。",
+    "fixTitle": "语言修复",
+    "fixText": "页面 UI 语言和期望回答语言现在是两个独立控件。更改页面语言会翻译本页面；更改回答语言会修改生成提示词中的指令。",
+    "card1k": "RHPm",
+    "card1h": "提示词构建器",
+    "card1p": "最适合把粗略请求变成新会话的强提示词。小巧、实用、优先复制粘贴。",
+    "card2k": "RHPr",
+    "card2h": "检索修复",
+    "card2p": "当模型可能查错知识抽屉、漏看文件或混入过期上下文时使用。",
+    "card3k": "RHP",
+    "card3h": "深度构思",
+    "card3p": "用于架构、理论、策略、多视角综合或困难的跨领域思考。",
+    "step1": "粘贴粗略请求。",
+    "step2": "添加文件和约束。",
+    "step3": "选择页面和回答语言。",
+    "step4": "生成并复制提示词。",
+    "step5": "在新的 LLM 会话中运行。",
+    "masterTitle": "复制粘贴 master prompt",
+    "masterIntro": "快速路径：填写两个字段并复制一个组合提示词。为保证 LLM 可靠性，生成提示词仍使用英语，但会明确要求下一个模型用指定语言回答。",
+    "roughLabel": "粗略人类请求",
+    "roughPh": "示例：改进这个 HTML 页面。保持紧凑、移动端友好、多语言，并输出可下载 ZIP。",
+    "contextLabel": "上下文 / 文件 / 约束",
+    "contextPh": "示例：只修改目标文件。保留深色风格、A−/A+、复制按钮、来源说明、链接；不要修改 sitemap。",
+    "previewLabel": "master prompt 实时预览",
+    "copyMaster": "复制 master prompt",
+    "downloadMaster": "下载 .txt",
+    "clearMaster": "清空",
+    "forgeTitle": "Prompt Forge — 引导模板",
+    "forgeIntro": "当需要按任务类型设置选项、guide mode、单独评审提示词和更强上下文卫生时使用 Forge。",
+    "taskType": "任务类型",
+    "taskGeneral": "通用 / 混合任务",
+    "taskCode": "Python / 代码构建",
+    "taskHtml": "HTML / 网站页面",
+    "taskDoc": "Word / 论文 / 文档",
+    "taskSpreadsheet": "电子表格 / 数据分析",
+    "taskImage": "图像 / 视觉生成",
+    "taskReview": "评审 / 审计 / 评分",
+    "taskResearch": "研究 / 想法发展",
+    "taskArena": "长时间 arena / benchmark",
+    "ceremony": "协议强度",
+    "ceremonyAuto": "自动 — 最小足够结构",
+    "ceremonyLight": "轻量 — 一个提示词，紧凑检查",
+    "ceremonyMedium": "中等 — 计划 + 交付物 + Agent 0 检查",
+    "ceremonyFull": "完整 — 规格、测试、风险、恢复、Skill Card",
+    "agentNote": "Agent 0 = 证据门：没有测试、基线、视觉/人工检查或回滚逻辑，就不交付。",
+    "filesLabel": "上下文文件 / 目录基线",
+    "filesPh": "示例：BD_AIM3_RHPm.html; BD_AIM3_RHP.html; /public/BD/index.html。只改目标文件。",
+    "otherContext": "其他上下文 / 约束",
+    "otherPh": "示例：保留深色风格、移动 UX、A−/A+、复制按钮、来源说明、链接。输出更新后的 HTML 和 changelog。",
+    "chkFiles": "告诉模型先检查哪些文件/文件夹",
+    "chkTests": "要求测试、验收标准或人工检查",
+    "chkProvenance": "清楚保留作者身份和来源",
+    "chkNoBloat": "明确防止膨胀 / 额外页面 / 无关文件",
+    "chkResume": "为长任务或代码任务添加恢复/回滚计划",
+    "chkSkill": "如果重复或困难，提取机器可读 Skill Card",
+    "chkGuide": "让下一个 LLM 先用问题引导我",
+    "chkReview": "同时为另一个 LLM 生成评审提示词",
+    "generate": "生成会话提示词",
+    "copyGenerated": "复制生成提示词",
+    "copyReview": "复制评审提示词",
+    "downloadGenerated": "下载生成的 .txt",
+    "exHtml": "示例：HTML",
+    "exCode": "示例：Python",
+    "exSpreadsheet": "示例：电子表格",
+    "exImage": "示例：图像",
+    "clearForge": "清空 Forge",
+    "promptOut": "用于新 LLM 会话的生成提示词",
+    "promptOutPh": "生成的提示词会显示在这里。",
+    "reviewOut": "给另一个 LLM 的生成评审提示词",
+    "reviewOutPh": "启用后，可选评审提示词会显示在这里。",
+    "check1": "执行提示词清楚吗？",
+    "check2": "评审提示词分开了吗？",
+    "check3": "上下文没有过载吗？",
+    "check4": "包含 seizure/noise 检查吗？",
+    "check5": "语言指令严格吗？",
+    "check6": "有用时要求 Skill JSON 吗？",
+    "examplesTitle": "弱 → 更强",
+    "examplesIntro": "这些示例展示 RHPm 改变了什么。它不是为了仪式而增加流程；它补上执行细节、测试和上下文边界。",
+    "weak": "弱",
+    "strong": "更强",
+    "ex1Weak": "改进这个页面。",
+    "ex1Strong": "只改进 BD_AIM3_RHPm.html。保留深色风格、移动 UX、A−/A+、复制按钮、来源说明和现有链接。添加真正的多语言 UI，不修改无关文件。输出更新后的 HTML、ZIP、changelog 和验证说明。",
+    "ex2Weak": "检查这个 Python 脚本。",
+    "ex2Strong": "检查附加的 Python 脚本：正确性、幂等性、验证、错误处理、输出列和打包。修补脚本，添加 smoke tests，并输出 ZIP 与构建说明。",
+    "ex3Weak": "这篇文章真实吗？",
+    "ex3Strong": "先阅读具体文章。使用高质量来源。区分正确、简化、误导、错误和缺失的声明。给出准确性百分比评分，并引用关键证据。",
+    "protocolTitle": "高级参考 — 紧凑 RHPm 协议",
+    "protocolIntro": "生成的提示词要求下一个模型在内部运行此流程，而不是表演角色。目标是更好的工作，不是更多标签。",
+    "p0": "Guide mode",
+    "p0t": "如果请求清楚，直接构建。如果缺少关键细节，先提出最多五个实用问题。",
+    "p1": "协议选择",
+    "p1t": "使用最小足够协议：默认 RHPm；错误知识抽屉/检索问题用 RHPr；深度架构或构思用 RHP。",
+    "p2": "意图拆分",
+    "p2t": "提取明确请求、隐含目标、真实交付物、受众、文件、约束、禁止修改项和成功标准。",
+    "p3": "Mini-RHP 多视角检查",
+    "p3t": "在内部使用 Engineer、Falsifier、Child、Cartographer 和 Agent 0 来改进最终提示词。",
+    "p4": "共振保护",
+    "p4t": "Seizure = 过度受限。Noise = 过于含糊。Resonance = 足够结构来执行，也有足够自由去发现。",
+    "p5": "上下文卫生",
+    "p5t": "列出文件、文件夹、链接、基线和禁止修改项。避免倾倒所有可能上下文。",
+    "p6": "提示词合成",
+    "p6t": "写出最终 session prompt：角色、目标、上下文、文件、流程、检查、输出格式、停止条件和禁止事项。",
+    "p7": "Agent 0 验证",
+    "p7t": "尽可能要求测试、基线、视觉/人工检查、回滚/恢复和验收标准。",
+    "p8": "Multi-LLM 反馈",
+    "p8t": "对重要提示词，生成单独评审提示词，之后综合返回的评审。",
+    "p9": "Skill 提取",
+    "p9t": "如果任务困难或重复，添加机器可读 JSON Skill Card，让下一次会话不必重复付费。",
+    "lensTitle": "用简单语言解释 Mini-RHP 视角",
+    "lensEng": "Engineer",
+    "lensEngT": "必须构建、编辑、检查、命名、打包或交付什么？",
+    "lensFal": "Falsifier",
+    "lensFalT": "哪个隐藏假设会让结果错误或误导？",
+    "lensChild": "Child",
+    "lensChildT": "专家可能过度复杂化的显而易见的人类含义是什么？",
+    "lensCart": "Cartographer",
+    "lensCartT": "哪些领域、文件、缺失知识抽屉和相邻引用重要？",
+    "lensA0": "Agent 0",
+    "lensA0T": "我们如何测试、比较、视觉检查、恢复，或判断它已完成？",
+    "footer1": "RHPm v0.8 语言修复混合版 — Guided Prompt Builder。结合 G 的实用 UX 与 C 的生态/推理层。把粗略人类请求桥接到强 AI session prompt；包含多视角、共振保护、Agent 0 验证、上下文卫生、8Z reasoning mode、可选 multi-LLM feedback 和 Skill extraction。",
+    "related": "相关",
+    "copied": "已复制。",
+    "copyFail": "复制失败。请手动选择文本。",
+    "downloaded": "已下载。",
+    "reviewDisabled": "评审提示词已关闭。请先勾选复选框。",
+    "reviewCopied": "评审提示词已复制。",
+    "generated": "已生成。",
+    "cleared": "已清空。",
+    "useSame": "同页面语言"
+  },
+  "ja": {
+    "navMaster": "Master",
+    "navForge": "Forge",
+    "navExamples": "例",
+    "navProtocol": "プロトコル",
+    "navRelated": "関連リンク",
+    "pageLanguage": "ページ言語",
+    "answerLanguage": "回答言語",
+    "tag": "RHPm · AIM³ Prompt Builder · 言語修正版 v0.8",
+    "title": "粗い依頼 → 強いセッション用プロンプト",
+    "titleEm": "強いセッション用プロンプト",
+    "subtitle": "整理されていない人間の依頼を、新しい LLM セッション用の明確で検証可能なプロンプトに変える小さな入口です。ページ言語と回答言語を分離したので、UI と生成プロンプトの指示が衝突しません。",
+    "meta": "実用的な G ページの UX と、C/8Z の深い推論レイヤーを統合。既定は英語。スロベニア語、ドイツ語、イタリア語、スペイン語、フランス語、簡体字中国語、日本語に対応。",
+    "whatTitle": "このページの役割",
+    "whatText": "AI を呼び出しません。新しい LLM セッションに RHPm を実行させるコピー用プロンプトを作ります：意図分解、ミニレンズ通過、コンテキスト衛生、共鳴ガード、Agent 0 検証、任意のレビュー / Skill Card 出力。",
+    "quickTitle": "Quick か Forge か？",
+    "quickText": "Master モードは最短経路です：2つの欄、1つの強いプロンプト。Prompt Forge はガイド付き経路です：タスク種別、ファイル、チェック、レビュープロンプト、より強い検証。",
+    "fixTitle": "言語修正",
+    "fixText": "ページ UI の言語と希望する回答言語を別々に選べるようにしました。ページ言語を変えるとページが翻訳され、回答言語を変えると生成プロンプト内の指示が変わります。",
+    "card1k": "RHPm",
+    "card1h": "プロンプトビルダー",
+    "card1p": "粗い依頼を新しいセッション用の強いプロンプトに変えるのに最適。小さく、実用的で、コピー優先。",
+    "card2k": "RHPr",
+    "card2h": "検索修復",
+    "card2p": "モデルが間違った知識引き出しを見ている、ファイルを見落とす、古い文脈を混ぜる可能性があるときに使います。",
+    "card3k": "RHP",
+    "card3h": "深い構想",
+    "card3p": "アーキテクチャ、理論、戦略、多レンズ統合、難しいクロスドメイン思考に使います。",
+    "step1": "粗い依頼を貼り付ける。",
+    "step2": "ファイルと制約を追加する。",
+    "step3": "ページ言語と回答言語を選ぶ。",
+    "step4": "プロンプトを生成してコピーする。",
+    "step5": "新しい LLM セッションで実行する。",
+    "masterTitle": "コピー用 master prompt",
+    "masterIntro": "最短経路：2つの欄を入力し、統合プロンプトをコピーします。LLM の信頼性のため生成プロンプトは英語のままですが、次のモデルがどの言語で回答すべきか明確に指示します。",
+    "roughLabel": "粗い人間の依頼",
+    "roughPh": "例：この HTML ページを改善。コンパクト、モバイル対応、多言語にして、ダウンロード可能な ZIP を出力。",
+    "contextLabel": "コンテキスト / ファイル / 制約",
+    "contextPh": "例：対象ファイルのみ。暗いスタイル、A−/A+、コピー按钮、由来、リンクを保持。sitemap は編集しない。",
+    "previewLabel": "master prompt ライブプレビュー",
+    "copyMaster": "master prompt をコピー",
+    "downloadMaster": ".txt をダウンロード",
+    "clearMaster": "クリア",
+    "forgeTitle": "Prompt Forge — ガイド付きテンプレート",
+    "forgeIntro": "タスク別オプション、guide mode、別レビュープロンプト、より強いコンテキスト衛生が必要なときに使います。",
+    "taskType": "タスク種別",
+    "taskGeneral": "一般 / 混合タスク",
+    "taskCode": "Python / コードビルダー",
+    "taskHtml": "HTML / Webページ",
+    "taskDoc": "Word / 論文 / 文書",
+    "taskSpreadsheet": "スプレッドシート / データ分析",
+    "taskImage": "画像 / ビジュアル生成",
+    "taskReview": "レビュー / 監査 / 採点",
+    "taskResearch": "研究 / アイデア開発",
+    "taskArena": "長時間 arena / benchmark",
+    "ceremony": "プロトコル強度",
+    "ceremonyAuto": "自動 — 最小十分な構造",
+    "ceremonyLight": "軽量 — 1プロンプト、コンパクトチェック",
+    "ceremonyMedium": "中 — 計画 + 成果物 + Agent 0 チェック",
+    "ceremonyFull": "完全 — 仕様、テスト、リスク、復旧、Skill Card",
+    "agentNote": "Agent 0 = 証拠ゲート：テスト、ベースライン、視覚/手動確認、またはロールバックなしに出荷しません。",
+    "filesLabel": "コンテキストファイル / ツリー基準",
+    "filesPh": "例：BD_AIM3_RHPm.html; BD_AIM3_RHP.html; /public/BD/index.html。対象ファイルのみ。",
+    "otherContext": "その他のコンテキスト / 制約",
+    "otherPh": "例：暗いスタイル、モバイル UX、A−/A+、コピー按钮、由来、リンクを保持。更新 HTML と changelog を出力。",
+    "chkFiles": "最初に確認すべきファイル/フォルダをモデルに伝える",
+    "chkTests": "テスト、受入基準、または手動チェックを要求する",
+    "chkProvenance": "著作者と由来を明確に保持する",
+    "chkNoBloat": "肥大化 / 追加ページ / 無関係ファイルを明示的に防ぐ",
+    "chkResume": "長時間またはコードタスクに resume/recovery 計画を追加",
+    "chkSkill": "反復または難しい場合、機械可読 Skill Card を抽出",
+    "chkGuide": "次の LLM にまず質問で案内させる",
+    "chkReview": "別の LLM 用レビュープロンプトも生成",
+    "generate": "セッションプロンプトを生成",
+    "copyGenerated": "生成プロンプトをコピー",
+    "copyReview": "レビュープロンプトをコピー",
+    "downloadGenerated": "生成 .txt をダウンロード",
+    "exHtml": "例：HTML",
+    "exCode": "例：Python",
+    "exSpreadsheet": "例：スプレッドシート",
+    "exImage": "例：画像",
+    "clearForge": "Forge をクリア",
+    "promptOut": "新しい LLM セッション用の生成プロンプト",
+    "promptOutPh": "生成プロンプトがここに表示されます。",
+    "reviewOut": "別の LLM 用の生成レビュープロンプト",
+    "reviewOutPh": "有効にすると任意のレビュープロンプトがここに表示されます。",
+    "check1": "実行プロンプトは明確？",
+    "check2": "レビュープロンプトは別？",
+    "check3": "コンテキストは詰め込み過ぎでない？",
+    "check4": "seizure/noise チェックを含む？",
+    "check5": "言語指示は厳密？",
+    "check6": "有用なら Skill JSON を要求？",
+    "examplesTitle": "弱い → より強い",
+    "examplesIntro": "これらは RHPm が何を変えるかを示します。儀式のための儀式ではなく、欠けている実行詳細、テスト、文脈境界を追加します。",
+    "weak": "弱い",
+    "strong": "より強い",
+    "ex1Weak": "このページを改善して。",
+    "ex1Strong": "BD_AIM3_RHPm.html のみ改善。暗いスタイル、モバイル UX、A−/A+、コピー按钮、由来、既存リンクを保持。無関係なファイルを変更せず、本物の多言語 UI を追加。更新 HTML、ZIP、changelog、検証メモを出力。",
+    "ex2Weak": "この Python スクリプトを確認して。",
+    "ex2Strong": "添付 Python スクリプトを正しさ、冪等性、検証、エラー処理、出力列、パッケージングの観点で調査。スクリプトを修正し、smoke tests を追加し、ZIP と build 手順を出力。",
+    "ex3Weak": "この記事は本当？",
+    "ex3Strong": "まず対象の記事を読む。高品質な情報源を使う。正しい、単純化、誤解を招く、間違い、欠落した主張を分ける。正確性を百分率で評価し、重要証拠を引用する。",
+    "protocolTitle": "高度な参照 — コンパクト RHPm プロトコル",
+    "protocolIntro": "生成プロンプトは次のモデルに、これを内部で実行させます。演劇ではありません。目的はより良い仕事で、ラベルを増やすことではありません。",
+    "p0": "Guide mode",
+    "p0t": "依頼が明確なら直接構築。重要情報が欠ける場合は、まず最大5つの実用的な質問をする。",
+    "p1": "プロトコル選択",
+    "p1t": "最小十分なプロトコルを使う：通常は RHPm、間違った引き出し/検索問題は RHPr、深いアーキテクチャや構想は RHP。",
+    "p2": "意図分解",
+    "p2t": "明示依頼、暗黙目標、実際の成果物、対象者、ファイル、制約、禁止変更、良い状態を抽出する。",
+    "p3": "Mini-RHP レンズ通過",
+    "p3t": "Engineer、Falsifier、Child、Cartographer、Agent 0 を内部で使い、最終プロンプトを改善する。",
+    "p4": "共鳴ガード",
+    "p4t": "Seizure = 制約過多。Noise = 曖昧過多。Resonance = 実行に十分な構造と発見に十分な自由。",
+    "p5": "コンテキスト衛生",
+    "p5t": "ファイル、フォルダ、リンク、基準、禁止変更を明記。あらゆる文脈を詰め込まない。",
+    "p6": "プロンプト合成",
+    "p6t": "役割、目標、文脈、ファイル、手順、チェック、出力形式、停止条件、禁止事項を含む最終 session prompt を書く。",
+    "p7": "Agent 0 検証",
+    "p7t": "可能ならテスト、ベースライン、視覚/手動確認、rollback/recovery、受入基準を要求する。",
+    "p8": "Multi-LLM feedback",
+    "p8t": "重要なプロンプトには別レビュープロンプトを生成し、後で返ってきたレビューを統合する。",
+    "p9": "Skill extraction",
+    "p9t": "タスクが難しい/反復的なら、次のセッションが二重に払わないよう機械可読 JSON Skill Card を追加する。",
+    "lensTitle": "平易な言葉での Mini-RHP レンズ",
+    "lensEng": "Engineer",
+    "lensEngT": "何を構築、編集、検査、命名、梱包、または納品する必要があるか？",
+    "lensFal": "Falsifier",
+    "lensFalT": "どの隠れた前提が結果を誤りまたは誤解にするか？",
+    "lensChild": "Child",
+    "lensChildT": "専門家が複雑化しすぎるかもしれない明白な人間的意味は何か？",
+    "lensCart": "Cartographer",
+    "lensCartT": "どの領域、ファイル、欠けた知識引き出し、隣接参照が重要か？",
+    "lensA0": "Agent 0",
+    "lensA0T": "どうテスト、比較、視覚確認、復旧し、完了と判断するか？",
+    "footer1": "RHPm v0.8 言語修正版ハイブリッド — Guided Prompt Builder。G の実用 UX と C のエコシステム/推論レイヤーから構築。粗い人間の依頼を強い AI session prompt へつなぐ小さな橋。レンズ多様性、共鳴ガード、Agent 0 検証、コンテキスト衛生、8Z reasoning mode、任意の multi-LLM feedback、Skill extraction を含む。",
+    "related": "関連",
+    "copied": "コピーしました。",
+    "copyFail": "コピーに失敗しました。手動でテキストを選択してください。",
+    "downloaded": "ダウンロードしました。",
+    "reviewDisabled": "レビュープロンプトは無効です。先にチェックしてください。",
+    "reviewCopied": "レビュープロンプトをコピーしました。",
+    "generated": "生成しました。",
+    "cleared": "クリアしました。",
+    "useSame": "ページと同じ"
+  }
+};
+const LANG_NAMES = {
+  "en": {
+    "en": "English",
+    "sl": "Slovenian",
+    "de": "German",
+    "it": "Italian",
+    "es": "Spanish",
+    "fr": "French",
+    "zh": "Simplified Chinese",
+    "ja": "Japanese"
+  },
+  "sl": {
+    "en": "angleščina",
+    "sl": "slovenščina",
+    "de": "nemščina",
+    "it": "italijanščina",
+    "es": "španščina",
+    "fr": "francoščina",
+    "zh": "poenostavljena kitajščina",
+    "ja": "japonščina"
+  },
+  "de": {
+    "en": "Englisch",
+    "sl": "Slowenisch",
+    "de": "Deutsch",
+    "it": "Italienisch",
+    "es": "Spanisch",
+    "fr": "Französisch",
+    "zh": "Vereinfachtes Chinesisch",
+    "ja": "Japanisch"
+  },
+  "it": {
+    "en": "inglese",
+    "sl": "sloveno",
+    "de": "tedesco",
+    "it": "italiano",
+    "es": "spagnolo",
+    "fr": "francese",
+    "zh": "cinese semplificato",
+    "ja": "giapponese"
+  },
+  "es": {
+    "en": "inglés",
+    "sl": "esloveno",
+    "de": "alemán",
+    "it": "italiano",
+    "es": "español",
+    "fr": "francés",
+    "zh": "chino simplificado",
+    "ja": "japonés"
+  },
+  "fr": {
+    "en": "anglais",
+    "sl": "slovène",
+    "de": "allemand",
+    "it": "italien",
+    "es": "espagnol",
+    "fr": "français",
+    "zh": "chinois simplifié",
+    "ja": "japonais"
+  },
+  "zh": {
+    "en": "英语",
+    "sl": "斯洛文尼亚语",
+    "de": "德语",
+    "it": "意大利语",
+    "es": "西班牙语",
+    "fr": "法语",
+    "zh": "简体中文",
+    "ja": "日语"
+  },
+  "ja": {
+    "en": "英語",
+    "sl": "スロベニア語",
+    "de": "ドイツ語",
+    "it": "イタリア語",
+    "es": "スペイン語",
+    "fr": "フランス語",
+    "zh": "簡体字中国語",
+    "ja": "日本語"
+  }
+};
+const EXAMPLES = {
+  "en": {
+    "html": [
+      "Improve this HTML page. Keep it compact, mobile-friendly, multilingual, and output a downloadable ZIP.",
+      "Target file only. Preserve dark style, A−/A+, copy buttons, provenance, links. Do not edit sitemap, robots, llms.txt, or unrelated pages."
+    ],
+    "code": [
+      "Upgrade this Python importer. It should skip already imported Jira rows, validate dates and PLM IDs, add an “Added on” column, and produce a ZIP plus build package.",
+      "Preserve existing behavior unless clearly wrong. Add smoke tests and explain build commands."
+    ],
+    "spreadsheet": [
+      "Analyze this spreadsheet and create a cleaned summary with validation flags and charts.",
+      "Do not use PDF/docx tools. Keep formulas auditable and mark assumptions."
+    ],
+    "image": [
+      "Create a clean visual hero image for the RHPm page in the same dark/cyan/gold style.",
+      "No logos unless provided. Make it web-friendly and readable on mobile."
+    ]
+  },
+  "sl": {
+    "html": [
+      "Izboljšaj to HTML stran. Naj ostane kompaktna, prijazna za telefon, večjezična, in vrni ZIP za prenos.",
+      "Samo ciljna datoteka. Ohrani temni slog, A−/A+, copy gumbe, provenienco, povezave. Ne urejaj sitemap, robots, llms.txt ali nepovezanih strani."
+    ],
+    "code": [
+      "Nadgradi ta Python uvoznik. Preskoči že uvožene Jira vrstice, validiraj datume in PLM ID-je, dodaj stolpec “Dodano dne” ter pripravi ZIP in build paket.",
+      "Ohrani obstoječe vedenje, razen če je očitno napačno. Dodaj smoke teste in razloži build ukaze."
+    ],
+    "spreadsheet": [
+      "Analiziraj to preglednico in ustvari očiščen povzetek z validacijskimi oznakami in grafi.",
+      "Ne uporabljaj PDF/docx orodij. Formule naj bodo preverljive in označi predpostavke."
+    ],
+    "image": [
+      "Ustvari čisto hero sliko za RHPm stran v istem temnem/cian/zlatem slogu.",
+      "Brez logotipov, če niso priloženi. Naj bo primerna za splet in berljiva na telefonu."
+    ]
+  },
+  "de": {
+    "html": [
+      "Improve this HTML page. Keep it compact, mobile-friendly, multilingual, and output a downloadable ZIP.",
+      "Target file only. Preserve dark style, A−/A+, copy buttons, provenance, links. Do not edit sitemap, robots, llms.txt, or unrelated pages."
+    ],
+    "code": [
+      "Upgrade this Python importer. It should skip already imported Jira rows, validate dates and PLM IDs, add an “Added on” column, and produce a ZIP plus build package.",
+      "Preserve existing behavior unless clearly wrong. Add smoke tests and explain build commands."
+    ],
+    "spreadsheet": [
+      "Analyze this spreadsheet and create a cleaned summary with validation flags and charts.",
+      "Do not use PDF/docx tools. Keep formulas auditable and mark assumptions."
+    ],
+    "image": [
+      "Create a clean visual hero image for the RHPm page in the same dark/cyan/gold style.",
+      "No logos unless provided. Make it web-friendly and readable on mobile."
+    ]
+  },
+  "it": {
+    "html": [
+      "Improve this HTML page. Keep it compact, mobile-friendly, multilingual, and output a downloadable ZIP.",
+      "Target file only. Preserve dark style, A−/A+, copy buttons, provenance, links. Do not edit sitemap, robots, llms.txt, or unrelated pages."
+    ],
+    "code": [
+      "Upgrade this Python importer. It should skip already imported Jira rows, validate dates and PLM IDs, add an “Added on” column, and produce a ZIP plus build package.",
+      "Preserve existing behavior unless clearly wrong. Add smoke tests and explain build commands."
+    ],
+    "spreadsheet": [
+      "Analyze this spreadsheet and create a cleaned summary with validation flags and charts.",
+      "Do not use PDF/docx tools. Keep formulas auditable and mark assumptions."
+    ],
+    "image": [
+      "Create a clean visual hero image for the RHPm page in the same dark/cyan/gold style.",
+      "No logos unless provided. Make it web-friendly and readable on mobile."
+    ]
+  },
+  "es": {
+    "html": [
+      "Improve this HTML page. Keep it compact, mobile-friendly, multilingual, and output a downloadable ZIP.",
+      "Target file only. Preserve dark style, A−/A+, copy buttons, provenance, links. Do not edit sitemap, robots, llms.txt, or unrelated pages."
+    ],
+    "code": [
+      "Upgrade this Python importer. It should skip already imported Jira rows, validate dates and PLM IDs, add an “Added on” column, and produce a ZIP plus build package.",
+      "Preserve existing behavior unless clearly wrong. Add smoke tests and explain build commands."
+    ],
+    "spreadsheet": [
+      "Analyze this spreadsheet and create a cleaned summary with validation flags and charts.",
+      "Do not use PDF/docx tools. Keep formulas auditable and mark assumptions."
+    ],
+    "image": [
+      "Create a clean visual hero image for the RHPm page in the same dark/cyan/gold style.",
+      "No logos unless provided. Make it web-friendly and readable on mobile."
+    ]
+  },
+  "fr": {
+    "html": [
+      "Improve this HTML page. Keep it compact, mobile-friendly, multilingual, and output a downloadable ZIP.",
+      "Target file only. Preserve dark style, A−/A+, copy buttons, provenance, links. Do not edit sitemap, robots, llms.txt, or unrelated pages."
+    ],
+    "code": [
+      "Upgrade this Python importer. It should skip already imported Jira rows, validate dates and PLM IDs, add an “Added on” column, and produce a ZIP plus build package.",
+      "Preserve existing behavior unless clearly wrong. Add smoke tests and explain build commands."
+    ],
+    "spreadsheet": [
+      "Analyze this spreadsheet and create a cleaned summary with validation flags and charts.",
+      "Do not use PDF/docx tools. Keep formulas auditable and mark assumptions."
+    ],
+    "image": [
+      "Create a clean visual hero image for the RHPm page in the same dark/cyan/gold style.",
+      "No logos unless provided. Make it web-friendly and readable on mobile."
+    ]
+  },
+  "zh": {
+    "html": [
+      "Improve this HTML page. Keep it compact, mobile-friendly, multilingual, and output a downloadable ZIP.",
+      "Target file only. Preserve dark style, A−/A+, copy buttons, provenance, links. Do not edit sitemap, robots, llms.txt, or unrelated pages."
+    ],
+    "code": [
+      "Upgrade this Python importer. It should skip already imported Jira rows, validate dates and PLM IDs, add an “Added on” column, and produce a ZIP plus build package.",
+      "Preserve existing behavior unless clearly wrong. Add smoke tests and explain build commands."
+    ],
+    "spreadsheet": [
+      "Analyze this spreadsheet and create a cleaned summary with validation flags and charts.",
+      "Do not use PDF/docx tools. Keep formulas auditable and mark assumptions."
+    ],
+    "image": [
+      "Create a clean visual hero image for the RHPm page in the same dark/cyan/gold style.",
+      "No logos unless provided. Make it web-friendly and readable on mobile."
+    ]
+  },
+  "ja": {
+    "html": [
+      "Improve this HTML page. Keep it compact, mobile-friendly, multilingual, and output a downloadable ZIP.",
+      "Target file only. Preserve dark style, A−/A+, copy buttons, provenance, links. Do not edit sitemap, robots, llms.txt, or unrelated pages."
+    ],
+    "code": [
+      "Upgrade this Python importer. It should skip already imported Jira rows, validate dates and PLM IDs, add an “Added on” column, and produce a ZIP plus build package.",
+      "Preserve existing behavior unless clearly wrong. Add smoke tests and explain build commands."
+    ],
+    "spreadsheet": [
+      "Analyze this spreadsheet and create a cleaned summary with validation flags and charts.",
+      "Do not use PDF/docx tools. Keep formulas auditable and mark assumptions."
+    ],
+    "image": [
+      "Create a clean visual hero image for the RHPm page in the same dark/cyan/gold style.",
+      "No logos unless provided. Make it web-friendly and readable on mobile."
+    ]
+  }
+};
+const links={rhpr:'https://www.mdlxdcc.org/bd/bd_aim3_rhpr',rhp:'https://www.mdlxdcc.org/bd/bd_aim3_rhp',aim3:'https://www.mdlxdcc.org/bd/bd_aim3',reasoning:'https://www.mdlxdcc.org/bd/bd_8z_reasoning'};
+const langCodes=['en','sl','de','it','es','fr','zh','ja'];
+const answerLangEnglish={en:'English',sl:'Slovenian',de:'German',it:'Italian',es:'Spanish',fr:'French',zh:'Simplified Chinese',ja:'Japanese'};
 function qs(id){return document.getElementById(id)}
-function scrollBar(){const h=document.documentElement; const pct=h.scrollTop/(h.scrollHeight-h.clientHeight)*100; const bar=qs('scrollProg'); if(bar) bar.style.width=(isFinite(pct)?pct:0)+'%'}
-window.addEventListener('scroll',scrollBar); scrollBar();
-let fs=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--baseFont'))||17;
-function fontDelta(d){fs=Math.max(15,Math.min(24,fs+d));document.documentElement.style.setProperty('--baseFont',fs+'px')}
-function copyText(t){navigator.clipboard.writeText(t).then(()=>flash('Copied.')).catch(()=>alert('Copy failed. Select text manually.'))}
-function copyById(id){const el=qs(id); copyText(el ? (el.value || el.innerText || '') : '')}
+function tr(k){const l=qs('pageLang')?.value||'en';return (I18N[l]&&I18N[l][k])||I18N.en[k]||k}
+function scrollBar(){const h=document.documentElement;const pct=h.scrollTop/(h.scrollHeight-h.clientHeight)*100;const bar=qs('scrollProg');if(bar)bar.style.width=(isFinite(pct)?pct:0)+'%'}
+window.addEventListener('scroll',scrollBar);scrollBar();
+let fs=17;function fontDelta(d){fs=Math.max(15,Math.min(24,fs+d));document.documentElement.style.setProperty('--baseFont',fs+'px')}
 function flash(msg){let el=document.createElement('div');el.textContent=msg;el.style.cssText='position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:#0f1729;border:1px solid rgba(0,229,255,.35);color:#00e5ff;padding:10px 16px;border-radius:999px;font-family:JetBrains Mono,monospace;font-size:12px;z-index:10001;box-shadow:0 12px 40px rgba(0,0,0,.4)';document.body.appendChild(el);setTimeout(()=>el.remove(),1300)}
-const links={rhpr:'https://www.mdlxdcc.org/bd/bd_aim3_rhpr',rhp:'https://www.mdlxdcc.org/bd/bd_aim3_rhp',aim3:'https://www.mdlxdcc.org/bd/bd_aim3'};
-const outputLanguages={en:'English',sl:'Slovenian',de:'German',it:'Italian',es:'Spanish',fr:'French',zh:'Simplified Chinese',ja:'Japanese'};
-function selectedOutputLanguage(){const el=qs('outLang'); return outputLanguages[el?.value || 'en'] || 'English'}
-function preferredLanguageBlock(){return `PREFERRED RESPONSE LANGUAGE:\n${selectedOutputLanguage()}\nUse English internally for protocol/lens/validation planning if needed, but write the final human-facing answer strictly in ${selectedOutputLanguage()} unless the user asks otherwise. Keep protocol names such as AIM³, RHPm, RHPr, RHP, Engineer, Falsifier, Child, Cartographer, and Agent 0 in English if clearer.`}
-function initLanguageSelector(){const el=qs('outLang'); if(!el) return; try{const saved=localStorage.getItem('rhpm_output_lang'); if(saved && outputLanguages[saved]) el.value=saved}catch(e){} el.addEventListener('change',()=>{try{localStorage.setItem('rhpm_output_lang',el.value)}catch(e){} updateMasterPromptPreview(); const out=qs('promptOut'); if(out && out.value.trim()) generatePrompt();});}
-function compactProtocolBlock(options={}){const forceGuide=options.forceGuide===true; return `## RHPm protocol to run internally\n\n0. GUIDE MODE / QUESTIONNAIRE\n${forceGuide ? 'Ask up to 5 focused practical questions first before producing the final prompt, unless the request already answers them explicitly.' : 'If the rough request is clear enough, do not ask questions. Build the improved prompt directly. If guessing would materially reduce quality, ask up to 5 focused practical questions first, then wait for the user.'}\nQuestions should prioritize: exact deliverable, audience/user level, files/links/context, constraints/forbidden changes, checks/tests, and output format.\n\n1. PROTOCOL CHOICE / MDL ESCALATION GATE\nChoose the smallest adequate path:\n- RHPm only: normal rough-request → strong-prompt work.\n- Full RHPr recommended: retrieval-bias, wrong knowledge drawer, messy/stale context, or the model may keep answering the wrong question. Reference: ${links.rhpr}\n- Full RHP recommended: complex brainstorming, architecture, theory, strategy, cross-domain synthesis, or high-stakes multi-perspective ideation. Reference: ${links.rhp}\n- RHPr + RHP: use both if the task needs retrieval repair and multi-perspective synthesis.\nActive contradiction check: before choosing, look for anomalies, conflicting constraints, missing files, stale assumptions, or signs that the current framing is wrong.\n\n2. INTENT SPLIT\nSeparate explicit request, implied goal, real deliverable, audience/user, files/links/context to inspect first, constraints, forbidden changes, and what good looks like.\n\n3. MINI-RHP LENS PASS\nUse these lenses internally to improve the final prompt. Do not merely label sections as Engineer/Falsifier/Child/Cartographer/Agent 0 unless that improves clarity.\n- Engineer: deliverable, implementation/editing path, files/tools, packaging\n- Falsifier: hidden assumptions, failure modes, misleading phrasing, scope traps\n- Child: simplest human meaning, obvious UX/reader need, thing experts may miss\n- Cartographer: relevant domains, missing drawers, adjacent references, negative lens to avoid\n- Agent 0 / Empiricist: tests, baselines, visual/manual checks, acceptance criteria, rollback/recovery\n\n4. RESONANCE GUARD\nIf the prompt has many restrictions and they conflict, trigger SEIZURE check: list contradictions and suggest relaxation points.\nIf the prompt lacks concrete acceptance criteria, trigger NOISE check: propose 3 specific constraints or tests.\nAim for resonance: enough structure to execute, enough freedom to discover a better path.\n\n5. CONTEXT HYGIENE\nAttach only useful context. Name files/folders/baseline versions. State what must not change. If context is too large, ask for specific files or summarize before acting. Do not guess from an overloaded context window.\n\n6. PROMPT SYNTHESIS\nWrite the final prompt for a fresh LLM session. Include role, goal, context, files to inspect first, constraints, deliverables, workflow, checks, output format, stop conditions, and what not to do. Use clear Markdown separators to reduce lost-in-the-middle effects.\n\n7. AGENT 0 VALIDATION\nBefore finalizing, check that the prompt makes the result testable, bounded, recoverable, honest about provenance, and not bloated. Require a fitness function where possible: tests, manual/visual checks, baselines, controls, rollback, or acceptance criteria.\n\n8. OPTIONAL MULTI-LLM FEEDBACK LOOP\nFor important, uncertain, or public-facing prompts, provide a separate review prompt another LLM can use. If feedback is later returned, score each review by usefulness, dedupe suggestions, reject generic advice, and produce a revised final prompt.\n\n9. OPTIONAL SKILL EXTRACTION\nIf the task is hard or likely to repeat, ask the next model to output a machine-readable Skill Card JSON:\n{\n  "skill_name": "",\n  "purpose": "",\n  "when_to_use": [],\n  "when_not_to_use": [],\n  "inputs": [],\n  "outputs": [],\n  "steps": [],\n  "validation": [],\n  "failure_modes": [],\n  "rollback": [],\n  "examples": [],\n  "version": "0.1",\n  "status": "draft"\n}`}
-function provenanceBlock(){return `Authorship/provenance rule when relevant:\nAIM³/RHP/RHPr/RHPm originate from BD’s architecture and concepts; LLMs are collaborators, reviewers, builders, critics, and improvement partners. Do not rewrite provenance as if BD merely compiled outside ideas.`}
-function buildMasterPrompt(){const rough=(qs('masterHumanRequest')?.value || '').trim() || '[paste the rough human request here]'; const ctx=(qs('masterContext')?.value || '').trim() || '[optional: paste files, context, links, constraints, baseline versions, or what must not change]'; return `# RHPm — AIM³ Prompt Builder\n\nYou are running RHPm. Your job is NOT to answer my rough request directly. Your job is to convert it into the strongest practical prompt for a fresh LLM session. Keep the result compact, copy-paste usable, and action-oriented.\n\n${provenanceBlock()}\n\n## Rough human request\n${rough}\n\n## Context / files / constraints\n${ctx}\n\n## Language\n${preferredLanguageBlock()}\n\n${compactProtocolBlock()}\n\n## Return only\nA. Final improved prompt for the fresh session\nB. Short explanation of what you changed and why\nC. Protocol choice: RHPm only / full RHPr recommended / full RHP recommended / RHPr + RHP recommended\nD. Agent 0 validation checklist\nE. Optional review prompt for another LLM if useful\nF. Optional Skill Card JSON if useful`;}
-function reviewPromptFor(promptText){const p=(promptText||'').trim() || '[paste generated prompt here]';return `Review this generated prompt before I use it in another LLM session.\n\nScore it 0–100 for:\n1. clarity of deliverable\n2. missing constraints or files\n3. testability / Agent 0 checks\n4. context hygiene\n5. risk of wrong-drawer retrieval or stale assumptions\n6. output format precision\n7. unnecessary ceremony or bloat\n8. provenance clarity if public material is involved\n\nReturn only:\n- score\n- top 5 concrete improvements\n- what to remove or simplify\n- revised prompt if useful\n\nGenerated prompt to review:\n\n${p}`}
-function updateMasterPromptPreview(){const out=qs('masterPromptPreview'); if(out) out.textContent=buildMasterPrompt()}
-function copyMasterPrompt(){updateMasterPromptPreview();copyText(buildMasterPrompt())}
-function copyReviewPromptFromMaster(){copyText(reviewPromptFor(buildMasterPrompt()))}
-function copyReviewPromptFromForge(){const out=qs('reviewOut'); if(out && out.value.trim()) copyText(out.value); else copyText(reviewPromptFor(qs('promptOut')?.value||''))}
-function insertAtCursor(el, txt){const start=el.selectionStart ?? el.value.length; const end=el.selectionEnd ?? el.value.length; el.value=el.value.slice(0,start)+txt+el.value.slice(end); const pos=start+txt.length; el.focus(); el.setSelectionRange(pos,pos)}
-async function pasteMasterPrompt(){try{const text=await navigator.clipboard.readText(); const active=document.activeElement; let target=(active && (active.id==='masterHumanRequest' || active.id==='masterContext')) ? active : null; if(!target){target=(qs('masterHumanRequest').value.trim() && !qs('masterContext').value.trim()) ? qs('masterContext') : qs('masterHumanRequest')} insertAtCursor(target,text); updateMasterPromptPreview(); flash('Pasted.')}catch(e){alert('Paste failed. Browser may require manual paste with Ctrl+V.')}}
-function emptyMasterPrompt(){['masterHumanRequest','masterContext'].forEach(id=>{const el=qs(id); if(el) el.value=''}); updateMasterPromptPreview(); qs('masterHumanRequest')?.focus(); flash('Emptied.')}
-function downloadRawMaster(){const blob=new Blob([buildMasterPrompt()],{type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='BD_AIM3_RHPm_master_prompt.txt'; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
-function expandAll(){document.querySelectorAll('details').forEach(d=>d.open=true)}
-function collapseAll(){document.querySelectorAll('details').forEach(d=>d.open=false)}
-function taskAddition(type){return {general:'For general tasks: make the final prompt concrete enough to execute, but keep the smallest adequate structure.',code:'For code: require baseline inspection, CLI behavior, workers if relevant, checkpoint/resume, tests, changelog, and final ZIP/output artifacts.',html:'For HTML: require page role, visual style, mobile behavior, copy controls, internal links, no unintended index/sitemap/llms changes, and final downloadable file.',doc:'For documents: require audience, structure, style, preservation of formatting if editing, citation/source handling, and final file plus change note.',spreadsheet:'For spreadsheets/data: require exact input files/sheets/columns, transformation rules, formulas, validation checks, output workbook/CSV/report, and no unsafe macros unless explicitly requested.',image:'For image/visual tasks: require subject, style, composition, aspect ratio, references, what must not change, text accuracy needs, number of outputs, and safety/permission constraints.',review:'For review: require scoring rubric, praise + critique, evidence, deduped suggestions, severity, and actionable patch plan.',research:'For research: require assumptions, hypotheses, mechanisms, counterarguments, cheap tests, and clear speculative vs supported claims.',arena:'For arenas/benchmarks: require scenario space, baselines/controls, workers, seeds, autosave, resume, metrics, summary files, and reproducibility notes.'}[type]||''}
-function loadExample(kind){if(kind==='code'){qs('taskType').value='code'; qs('ceremony').value='full'; qs('roughPrompt').value='Make a Python arena for testing many trading variants. It should support workers, autosave, resume, verbose single-line console progress, output ZIP, and a clean summary of winners.'; qs('fileTree').value='Look for prior arena files, CMD progress logs, resume markers, run packs, and existing HTML strategy explainer.'; qs('contextFiles').value='Do not prune risky variants early; classify by risk budget and capital-at-risk. Include smoke/standard/long modes and slim extractor if useful.';} else if(kind==='spreadsheet'){qs('taskType').value='spreadsheet'; qs('ceremony').value='medium'; qs('roughPrompt').value='Improve this spreadsheet workflow and produce a safe, usable Excel output with clear validation checks.'; qs('fileTree').value='Attached XLSX/XLSM/CSV files. Identify sheets, columns, formulas, and whether macros are present.'; qs('contextFiles').value='Preserve existing formatting where possible. Do not add unsafe macros unless explicitly requested. Provide changelog and output file.';} else if(kind==='image'){qs('taskType').value='image'; qs('ceremony').value='light'; qs('roughPrompt').value='Create a strong image-generation prompt for a hybrid visual concept based on two reference images.'; qs('fileTree').value='Reference images attached in the new session.'; qs('contextFiles').value='Specify composition, style, subject preservation, aspect ratio, output count, and what not to change.';} else if(kind==='review'){qs('taskType').value='review'; qs('ceremony').value='medium'; qs('roughPrompt').value='Review this public-facing article. Check factual accuracy, clarity, weak claims, missing evidence, tone, and practical improvements.'; qs('fileTree').value='Read the attached HTML/page/document first. Quote or cite exact sections if possible.'; qs('contextFiles').value='Preserve the core stance. Score the page, list strongest sections, weak sections, dedupe fixes, and propose a compact patch plan. Do not rewrite the whole page unless asked.';} else {qs('taskType').value='html'; qs('ceremony').value='medium'; qs('roughPrompt').value='Improve one HTML page using one reference page. Keep it compact, practical, dark styled, mobile friendly, and copy-paste useful. Output the improved full HTML as a downloadable file.'; qs('fileTree').value='Target: BD_AIM3_RHPm.html. Reference: BD_AIM3_RHP.html. Modify only the target HTML file.'; qs('contextFiles').value='Do not update index.html, sitemap.xml, llms.txt, or any other file. Preserve authorship/provenance and avoid theory bloat.';} generatePrompt();}
-function clearForge(){['roughPrompt','fileTree','contextFiles','promptOut','reviewOut'].forEach(id=>{const el=qs(id); if(el) el.value=''})}
-function generatePrompt(){const rough=qs('roughPrompt').value.trim() || '[PASTE ROUGH HUMAN REQUEST HERE]'; const fileTree=qs('fileTree').value.trim() || '[ADD FILES / TREE BASELINE / TARGETS HERE]'; const ctx=qs('contextFiles').value.trim() || '[ADD CONTEXT, LINKS, CONSTRAINTS, BASELINE VERSIONS, OR FORBIDDEN CHANGES HERE]'; const type=qs('taskType').value; const ceremony=qs('ceremony').value; const forceGuide=qs('chkGuide').checked; const opts=[]; if(qs('chkFiles').checked) opts.push('Inspect the relevant files/folders/links before proposing changes. State what you inspected.'); if(qs('chkTests').checked) opts.push('Define tests, acceptance criteria, or manual checks. Do not treat claims as proven without checks.'); if(qs('chkProvenance').checked) opts.push('Preserve authorship/provenance clearly; do not imply BD merely assembled outside ideas.'); if(qs('chkNoBloat').checked) opts.push('Do not bloat. Do not create extra pages or touch index/sitemap/llms/site files unless explicitly asked.'); if(qs('chkResume').checked) opts.push('For coding or long-running work, include checkpoint/resume/recovery behavior and clean restart instructions.'); if(qs('chkSkill').checked) opts.push('If this is hard or repeated, extract a machine-readable Skill Card JSON after the prompt.'); if(forceGuide) opts.push('Ask up to 5 practical clarification questions first if any essential detail is missing.'); const exec=`# RHPm — Execution Prompt Builder\n\nYou are running RHPm. Your job is NOT to answer my rough request directly. Convert it into the strongest practical prompt for a fresh LLM session.\n\nTASK TYPE: ${type}\nCEREMONY LEVEL: ${ceremony}\n\n## Rough human request\n${rough}\n\n## Context files / tree baseline\n${fileTree}\n\n## Other context / constraints\n${ctx}\n\n## Language\n${preferredLanguageBlock()}\n\n## Hard requirements\n${opts.map(x=>'- '+x).join('\n')}\n- ${taskAddition(type)}\n\n${provenanceBlock()}\n\n${compactProtocolBlock({forceGuide})}\n\n## Return only\nA. Final improved prompt for the fresh session\nB. Short explanation of what you changed and why\nC. Protocol choice\nD. Agent 0 validation checklist\nE. Optional Skill Card JSON if useful`; const review=reviewPromptFor(exec); const combined=qs('chkReviewPrompt').checked ? `=== EXECUTION PROMPT ===\n\n${exec}\n\n\n=== REVIEW PROMPT FOR ANOTHER LLM ===\n\n${review}` : exec; qs('promptOut').value=combined; qs('reviewOut').value=review;}
-['masterHumanRequest','masterContext'].forEach(id=>{const el=qs(id); if(el) el.addEventListener('input',updateMasterPromptPreview)}); ['roughPrompt','fileTree','contextFiles'].forEach(id=>{const el=qs(id); if(el) el.addEventListener('input',()=>{const out=qs('promptOut'); if(out&&out.value.trim()) generatePrompt()})}); ['taskType','ceremony','chkFiles','chkTests','chkProvenance','chkNoBloat','chkResume','chkSkill','chkGuide','chkReviewPrompt'].forEach(id=>{const el=qs(id); if(el) el.addEventListener('change',()=>{const out=qs('promptOut'); if(out&&out.value.trim()) generatePrompt()})});
-initLanguageSelector(); updateMasterPromptPreview();
-</script>
+function copyText(t){navigator.clipboard.writeText(t).then(()=>flash(tr('copied'))).catch(()=>alert(tr('copyFail')))}
+function copyById(id){const el=qs(id);copyText(el?(el.value||el.innerText||''):'')}
+function downloadText(filename,text){const blob=new Blob([text],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);flash(tr('downloaded'))}
+function populateLangSelects(){const page=qs('pageLang'), ans=qs('answerLang');const oldPage=page.value||localStorage.getItem('rhpm_page_lang')||'en';const oldAns=ans.value||localStorage.getItem('rhpm_answer_lang')||'en';page.innerHTML='';ans.innerHTML='';for(const code of langCodes){const o=document.createElement('option');o.value=code;o.textContent=LANG_NAMES[code][code]||answerLangEnglish[code];page.appendChild(o)}const pageLang=LANG_NAMES[oldPage]?oldPage:'en';for(const code of langCodes){const o=document.createElement('option');o.value=code;o.textContent=(LANG_NAMES[pageLang]&&LANG_NAMES[pageLang][code])||answerLangEnglish[code];ans.appendChild(o)}page.value=pageLang;ans.value=answerLangEnglish[oldAns]?oldAns:'en'}
+function applyTranslations(){const l=qs('pageLang')?.value||'en';document.documentElement.lang=l;document.querySelectorAll('[data-i18n]').forEach(el=>{const key=el.getAttribute('data-i18n');el.textContent=tr(key)});document.querySelectorAll('[data-placeholder]').forEach(el=>{const key=el.getAttribute('data-placeholder');el.placeholder=tr(key)});const title=qs('titleMain');if(title)title.textContent=tr('title');populateAnswerLabelsOnly();updateMasterPromptPreview()}
+function populateAnswerLabelsOnly(){const ans=qs('answerLang');if(!ans)return;const val=ans.value||'en';const pageLang=qs('pageLang')?.value||'en';ans.innerHTML='';for(const code of langCodes){const o=document.createElement('option');o.value=code;o.textContent=(LANG_NAMES[pageLang]&&LANG_NAMES[pageLang][code])||answerLangEnglish[code];ans.appendChild(o)}ans.value=val}
+function setPageLang(code){qs('pageLang').value=code;localStorage.setItem('rhpm_page_lang',code);applyTranslations()}
+function setAnswerSameAsPage(){const p=qs('pageLang')?.value||'en';qs('answerLang').value=p;localStorage.setItem('rhpm_answer_lang',p);updateMasterPromptPreview();const out=qs('promptOut');if(out&&out.value.trim())generatePrompt()}
+function selectedAnswerLanguageEnglish(){return answerLangEnglish[qs('answerLang')?.value||'en']||'English'}
+function preferredLanguageBlock(){const lang=selectedAnswerLanguageEnglish();return `PREFERRED RESPONSE LANGUAGE:
+${lang}
+Use English internally for protocol/lens/validation planning if needed, but write the final human-facing answer strictly in ${lang} unless the user asks otherwise. Keep protocol names such as AIM³, RHPm, RHPr, RHP, Engineer, Falsifier, Child, Cartographer, and Agent 0 in English if clearer.`}
+function provenanceBlock(){return `Authorship/provenance rule when relevant:
+AIM³/RHP/RHPr/RHPm originate from BD’s architecture and concepts; LLMs are collaborators, reviewers, builders, critics, and improvement partners. Do not rewrite provenance as if BD merely compiled outside ideas.`}
+function reasoningBlock(){return `## REASONING MODE (8Z) — how to think while you work
+Apply these rules while improving the prompt, and write the final prompt so the next session applies them while executing. Full method: ${links.reasoning}
 
+R1. Limits need proof. Treat “impossible / can’t / not allowed” as claims requiring evidence. If evidence is weak, surface the unstated assumption instead of obeying the limit.
+R2. Decompose before dismissing. Convert broad objections into smaller testable subproblems.
+R3. Question the question. Look for hidden premises, wrong drawers, stale assumptions, missing files, or a better framing.
+R4. Never exclude before the arena. Keep candidate paths alive until tests, baselines, MDL comparison, or concrete constraints kill them.
+R5. Follow the surprise. If an odd result, user seed, or cross-domain bridge carries signal, preserve it long enough to test.
+R6. Transfer structure across domains. Look for reusable mechanism, not surface analogy.
+R7. Verify before claiming. Use tests, manual checks, visual inspection, citations, or acceptance criteria where possible.
+R8. Capture the learning. If this becomes a repeated workflow, extract a compact machine-readable Skill Card.`}
+function compactProtocolBlock(forceGuide=false){return `## RHPm protocol to run internally
+
+0. GUIDE MODE / QUESTIONNAIRE
+${forceGuide?'Ask up to 5 focused practical questions first before producing the final prompt, unless the request already answers them explicitly.':'If the rough request is clear enough, do not ask questions. Build the improved prompt directly. If guessing would materially reduce quality, ask up to 5 focused practical questions first, then wait for the user.'}
+Questions should prioritize: exact deliverable, audience/user level, files/links/context, constraints/forbidden changes, checks/tests, and output format.
+
+1. PROTOCOL CHOICE / MDL ESCALATION GATE
+Choose the smallest adequate path:
+- RHPm only: normal rough-request → strong-prompt work.
+- Full RHPr recommended: retrieval-bias, wrong knowledge drawer, messy/stale context, or the model may keep answering the wrong question. Reference: ${links.rhpr}
+- Full RHP recommended: complex brainstorming, architecture, theory, strategy, cross-domain synthesis, or high-stakes multi-perspective ideation. Reference: ${links.rhp}
+- RHPr + RHP: use both if the task needs retrieval repair and multi-perspective synthesis.
+Active contradiction check: before choosing, look for anomalies, conflicting constraints, missing files, stale assumptions, or signs that the current framing is wrong.
+
+2. INTENT SPLIT
+Separate explicit request, implied goal, real deliverable, audience/user, files/links/context to inspect first, constraints, forbidden changes, and what good looks like.
+
+3. MINI-RHP LENS PASS
+Use these lenses internally to improve the final prompt. Do not merely label sections as Engineer/Falsifier/Child/Cartographer/Agent 0 unless that improves clarity.
+- Engineer: deliverable, implementation/editing path, files/tools, packaging
+- Falsifier: hidden assumptions, failure modes, misleading phrasing, scope traps
+- Child: simplest human meaning, obvious UX/reader need, thing experts may miss
+- Cartographer: relevant domains, missing drawers, adjacent references, negative lens to avoid
+- Agent 0 / Empiricist: tests, baselines, visual/manual checks, acceptance criteria, rollback/recovery
+
+4. RESONANCE GUARD
+If the prompt has many restrictions and they conflict, trigger SEIZURE check: list contradictions and suggest relaxation points.
+If the prompt lacks concrete acceptance criteria, trigger NOISE check: propose 3 specific constraints or tests.
+Aim for resonance: enough structure to execute, enough freedom to discover a better path.
+
+5. CONTEXT HYGIENE
+Attach only useful context. Name files/folders/baseline versions. State what must not change. If context is too large, ask for specific files or summarize before acting. Do not guess from an overloaded context window.
+
+6. PROMPT SYNTHESIS
+Write the final prompt for a fresh LLM session. Include role, goal, context, files to inspect first, constraints, deliverables, workflow, checks, output format, stop conditions, and what not to do.
+
+7. AGENT 0 VALIDATION
+Before finalizing, check that the prompt makes the result testable, bounded, recoverable, honest about provenance, and not bloated. Require a fitness function where possible: tests, manual/visual checks, baselines, controls, rollback, or acceptance criteria.
+
+8. OPTIONAL MULTI-LLM FEEDBACK LOOP
+For important, uncertain, or public-facing prompts, provide a separate review prompt another LLM can use. If feedback is later returned, score each review by usefulness, dedupe suggestions, reject generic advice, and produce a revised final prompt.
+
+9. OPTIONAL SKILL EXTRACTION
+If the task is hard or likely to repeat, ask the next model to output a machine-readable Skill Card JSON.`}
+function skillJsonBlock(){return `If useful, output a machine-readable Skill Card JSON:
+{
+  "skill_name": "",
+  "purpose": "",
+  "when_to_use": [],
+  "when_not_to_use": [],
+  "inputs": [],
+  "outputs": [],
+  "steps": [],
+  "validation": [],
+  "failure_modes": [],
+  "rollback": [],
+  "examples": [],
+  "version": "0.1",
+  "status": "draft"
+}`}
+function buildMasterPrompt(){const rough=(qs('masterHumanRequest')?.value||'').trim()||'[paste the rough human request here]';const ctx=(qs('masterContext')?.value||'').trim()||'[optional: paste files, context, links, constraints, baseline versions, or what must not change]';return `# RHPm — AIM³ Prompt Builder
+
+You are running RHPm. Your job is NOT to answer my rough request directly. Your job is to convert it into the strongest practical prompt for a fresh LLM session. Keep the result compact, copy-paste usable, and action-oriented.
+
+${provenanceBlock()}
+
+## Rough human request
+${rough}
+
+## Context / files / constraints
+${ctx}
+
+## Language
+${preferredLanguageBlock()}
+
+${reasoningBlock()}
+
+${compactProtocolBlock(false)}
+
+## Output format
+Return only:
+1. The improved prompt.
+2. A very short note explaining the biggest prompt-design choices.
+3. Optional: one separate review prompt if this task is important or uncertain.`}
+function updateMasterPromptPreview(){const el=qs('masterPreview');if(el)el.value=buildMasterPrompt()}
+function taskTypeGuidance(t){const m={code:'For code: require runnable files, test commands, smoke tests, error handling, reproducibility, and clear packaging.',html:'For HTML: inspect the actual target file first, modify only allowed files, preserve mobile UX/style, validate JS, check links/buttons/language toggles, and return a ready-to-publish file or ZIP.',doc:'For documents: preserve formatting/structure, make minimal text edits, and provide a changelog.',spreadsheet:'For spreadsheets: use spreadsheet tools, keep formulas/audit trail clear, validate data, and do not use PDF/docx tooling unless explicitly requested.',image:'For images: specify exact visual goal, style, aspect ratio, text constraints, references, safety limits, and acceptance criteria.',review:'For reviews: inspect the target source first, cite evidence, separate facts from opinions, score with a rubric, and list fixes.',research:'For research: separate hypotheses, evidence, experiments, falsifiers, and next smallest tests.',arena:'For arenas: require resume safety, seeds/logs, worker controls, manifests, outputs, and result analysis.'};return m[t]||'For general tasks: keep the prompt direct, bounded, testable, and context-aware.'}
+function buildSessionPrompt(){const rough=(qs('roughPrompt')?.value||'').trim()||'[paste rough human request here]';const files=(qs('fileTree')?.value||'').trim();const ctx=(qs('contextFiles')?.value||'').trim();const task=qs('taskType')?.value||'general';const cer=qs('ceremony')?.value||'auto';const guide=qs('chkGuide')?.checked;let extras=[];if(qs('chkFiles')?.checked)extras.push('Inspect the named files/folders first before editing or judging.');if(qs('chkTests')?.checked)extras.push('Include concrete checks, tests, acceptance criteria, or manual/visual validation.');if(qs('chkProvenance')?.checked)extras.push('Preserve authorship/provenance exactly where relevant.');if(qs('chkNoBloat')?.checked)extras.push('Do not bloat the deliverable, create unrelated files, or modify unrelated pages.');if(qs('chkResume')?.checked)extras.push('For long/coding tasks, include resume/recovery/rollback logic.');if(qs('chkSkill')?.checked)extras.push(skillJsonBlock());return `# RHPm-generated session prompt
+
+You are helping with a real task. Do not answer generically. Use the files/context first, then produce the requested deliverable.
+
+${provenanceBlock()}
+
+## User request
+${rough}
+
+## Files / folder tree / baseline to inspect first
+${files||'[not provided]'}
+
+## Other context / constraints
+${ctx||'[not provided]'}
+
+## Language
+${preferredLanguageBlock()}
+
+## Task type
+${task}
+${taskTypeGuidance(task)}
+
+## Ceremony / depth
+${cer} — use the smallest adequate structure. Do not over-protocol a simple task, but do not skip validation for a risky task.
+
+${reasoningBlock()}
+
+${compactProtocolBlock(guide)}
+
+## Extra requirements
+${extras.length?extras.map(x=>'- '+x).join('\n'):'- Keep the result compact, practical, and testable.'}
+
+## Deliverables
+Return the improved result in the most useful form for the task. If files are created or modified, provide download links or a ZIP. Include a short changelog and validation notes.
+
+## Do not do
+Do not invent file contents you did not inspect. Do not silently change unrelated files. Do not hide uncertainty. Do not replace BD provenance with generic “AI-generated” provenance.`}
+function buildReviewPrompt(){const p=qs('promptOut')?.value||buildSessionPrompt();return `You are reviewing this RHPm-generated prompt before it is used.
+
+Score it from 0–100 for:
+1. clarity and executability,
+2. context hygiene,
+3. missing constraints/files,
+4. validation/tests/acceptance criteria,
+5. risk of bloat or wrong-drawer retrieval,
+6. language/provenance correctness.
+
+Then give the smallest concrete patch that would improve it. Do not rewrite everything unless necessary.
+
+PROMPT TO REVIEW:
+
+${p}`}
+function generatePrompt(){const out=qs('promptOut'), rev=qs('reviewOut');out.value=buildSessionPrompt();if(qs('chkReviewPrompt')?.checked)rev.value=buildReviewPrompt();else rev.value='';flash(tr('generated'))}
+function copyReviewPromptFromForge(){if(!qs('chkReviewPrompt')?.checked){flash(tr('reviewDisabled'));return}const rev=qs('reviewOut');if(!rev.value.trim())rev.value=buildReviewPrompt();copyText(rev.value)}
+function downloadMasterPrompt(){downloadText('BD_AIM3_RHPm_master_prompt.txt',buildMasterPrompt())}
+function downloadGeneratedPrompt(){const out=qs('promptOut');if(!out.value.trim())generatePrompt();downloadText('RHPm_generated_session_prompt.txt',out.value)}
+function clearMaster(){qs('masterHumanRequest').value='';qs('masterContext').value='';updateMasterPromptPreview();flash(tr('cleared'))}
+function clearForge(){['roughPrompt','fileTree','contextFiles','promptOut','reviewOut'].forEach(id=>{const el=qs(id);if(el)el.value=''});flash(tr('cleared'))}
+function loadExample(kind){const l=qs('pageLang')?.value||'en';const ex=(EXAMPLES[l]&&EXAMPLES[l][kind])||EXAMPLES.en[kind];if(!ex)return;qs('roughPrompt').value=ex[0];qs('contextFiles').value=ex[1];if(kind==='html')qs('taskType').value='html';if(kind==='code')qs('taskType').value='code';if(kind==='spreadsheet')qs('taskType').value='spreadsheet';if(kind==='image')qs('taskType').value='image';generatePrompt()}
+function init(){populateLangSelects();applyTranslations();qs('pageLang').addEventListener('change',()=>{localStorage.setItem('rhpm_page_lang',qs('pageLang').value);applyTranslations();const out=qs('promptOut');if(out&&out.value.trim())generatePrompt()});qs('answerLang').addEventListener('change',()=>{localStorage.setItem('rhpm_answer_lang',qs('answerLang').value);updateMasterPromptPreview();const out=qs('promptOut');if(out&&out.value.trim())generatePrompt()});['masterHumanRequest','masterContext'].forEach(id=>qs(id).addEventListener('input',updateMasterPromptPreview));updateMasterPromptPreview()}
+init();
+</script>
 </body>
 </html>
