@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RHPm Case Study — How LLMs Actually Work Prompt Benchmark</title>
+<meta name="description" content="Full dark HTML case study from How_LLMs_work.md: warm prompt, RHPm-generated audit prompt, fresh-session result, and cold-account result." />
+<link rel="preconnect" href="https://fonts.googleapis.com/" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{--bg:#020409;--surface:#0f1729;--surface2:#141d32;--panel:rgba(15,23,41,.86);--border:rgba(52,211,153,.16);--border2:rgba(52,211,153,.30);--text:#e2e8f4;--muted:#7f92b4;--soft:rgba(226,232,244,.78);--accent:#34d399;--accentDim:rgba(52,211,153,.12);--cyan:#00e5ff;--cyanDim:rgba(0,229,255,.10);--gold:#f59e0b;--goldDim:rgba(245,158,11,.13);--rose:#ff6b8a;--roseDim:rgba(255,107,138,.10);--violet:#a78bfa;--violetDim:rgba(167,139,250,.10);--radius:10px;--shadow:0 12px 40px rgba(0,0,0,.35);--baseFont:17px}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{background:radial-gradient(circle at 20% 12%,rgba(52,211,153,.15),transparent 34%),radial-gradient(circle at 80% 70%,rgba(0,229,255,.08),transparent 30%),linear-gradient(180deg,#020409 0%,#05070d 100%);color:var(--text);font-family:'Rajdhani',system-ui,sans-serif;font-size:var(--baseFont);line-height:1.72;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.018;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.scroll-progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--cyan));z-index:10000;width:0}
+.topnav{position:fixed;top:0;left:0;right:0;min-height:54px;background:rgba(2,4,9,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);z-index:999;display:flex;align-items:center;gap:14px;padding:7px 5vw;white-space:nowrap;overflow-x:auto}
+.topnav a,.topnav span{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;color:var(--muted);text-decoration:none}.topnav a:hover{color:var(--accent)}.brand{color:var(--cyan)!important;font-weight:700}.spacer{flex:1}
+.toolbar{position:fixed;right:18px;bottom:18px;z-index:1000;display:flex;gap:6px;background:rgba(2,4,9,.72);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:999px;padding:6px;box-shadow:var(--shadow)}.toolbar button{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;border-radius:999px;padding:7px 10px;cursor:pointer}.toolbar button:hover{border-color:var(--cyan);color:var(--cyan)}
+.cover{padding:126px 7vw 58px;text-align:center;border-bottom:1px solid var(--border);position:relative;overflow:hidden}.cover::before{content:'';position:absolute;inset:-20%;background:radial-gradient(ellipse at 30% 20%,rgba(52,211,153,.06),transparent 48%),radial-gradient(ellipse at 70% 80%,rgba(0,229,255,.05),transparent 48%);pointer-events:none}.cover>*{position:relative}.tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:4px;text-transform:uppercase;display:block;margin-bottom:18px}.cover h1{font-family:'Cormorant Garamond',serif;font-size:clamp(34px,6vw,62px);font-weight:600;line-height:1.08;margin-bottom:16px}.cover h1 em{font-style:italic;color:var(--accent)}.subtitle{max-width:890px;margin:0 auto 24px;color:var(--soft);font-size:19px}.meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);max-width:930px;margin-left:auto;margin-right:auto}
+.wrap{max-width:1040px;margin:0 auto;padding:48px 7vw 80px}@media(min-width:1160px){.wrap{padding-left:0;padding-right:0}}
+p{margin-bottom:16px;color:var(--soft)}strong{color:var(--text)}em{color:var(--accent);font-style:normal}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.callout{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius);padding:18px 22px;margin:18px 0;box-shadow:0 6px 24px rgba(0,0,0,.16)}.callout.cyan{border-left-color:var(--cyan)}.callout.gold{border-left-color:var(--gold)}.callout.violet{border-left-color:var(--violet)}.ct{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:7px}.callout.cyan .ct{color:var(--cyan)}.callout.gold .ct{color:var(--gold)}.callout.violet .ct{color:var(--violet)}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:26px 0 34px}.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;min-height:138px}.card .k{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--cyan);margin-bottom:8px}.card h3{font-family:'Cormorant Garamond',serif;font-size:25px;line-height:1.15;margin-bottom:8px}.card p{font-size:15px;margin:0;color:var(--soft)}
+.section{margin:40px 0}.section h2{font-family:'Cormorant Garamond',serif;font-size:34px;line-height:1.15;margin-bottom:14px}.small{font-size:14px;color:var(--muted)}.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);margin:16px 0}table{width:100%;border-collapse:collapse;background:rgba(5,8,17,.65)}th,td{border-bottom:1px solid rgba(52,211,153,.11);padding:11px 12px;text-align:left;vertical-align:top}th{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:.06em;text-transform:uppercase}td{color:var(--soft);font-size:15px}tr:last-child td{border-bottom:0}
+.source-block{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);margin:16px 0;overflow:hidden}.source-block summary{cursor:pointer;padding:16px 18px;display:flex;align-items:center;gap:12px;color:var(--text);font-weight:700;list-style:none}.source-block summary::-webkit-details-marker{display:none}.source-block summary::after{content:'+';margin-left:auto;color:var(--cyan);font-family:'JetBrains Mono',monospace}.source-block[open] summary::after{content:'−'}.block-code{font-family:'JetBrains Mono',monospace;color:var(--gold);background:var(--goldDim);border:1px solid rgba(245,158,11,.22);border-radius:999px;padding:4px 8px;font-size:11px}.source-desc{padding:0 18px 14px;color:var(--muted);font-size:14px}.md-content{padding:18px;border-top:1px solid var(--border);background:rgba(5,8,17,.42)}
+.md-content h1,.md-content h2,.md-content h3{font-family:'Cormorant Garamond',serif;color:var(--text);line-height:1.2;margin:24px 0 12px}.md-content h1{font-size:34px}.md-content h2{font-size:28px}.md-content h3{font-size:23px;color:var(--accent)}.md-content ul,.md-content ol{margin:0 0 16px 24px;color:var(--soft)}.md-content li{margin-bottom:6px}.md-content blockquote{border-left:3px solid var(--violet);background:var(--violetDim);padding:12px 16px;margin:16px 0;border-radius:0 var(--radius) var(--radius) 0;color:var(--text)}.md-content code{font-family:'JetBrains Mono',monospace;background:#050811;border:1px solid rgba(52,211,153,.14);border-radius:4px;padding:1px 4px;color:#d6fff2}.md-content table{font-size:14px;margin:16px 0}.md-content a{word-break:break-word}
+.raw-pre{max-height:620px;overflow:auto;background:#050811;border:1px solid var(--border);border-radius:var(--radius);padding:18px;color:#d6fff2;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.55;white-space:pre-wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;border:1px solid var(--border2);background:var(--accentDim);color:var(--accent);border-radius:6px;padding:10px 14px;cursor:pointer;text-decoration:none}.btn:hover{background:rgba(52,211,153,.18);text-decoration:none}.btn.cyan{background:var(--cyanDim);color:var(--cyan);border-color:rgba(0,229,255,.25)}.btn.gold{background:var(--goldDim);color:var(--gold);border-color:rgba(245,158,11,.25)}
+.footer{border-top:1px solid var(--border);padding:34px 7vw;color:var(--muted);font-size:13px;text-align:center;background:rgba(2,4,9,.55)}
+@media(max-width:850px){.cards{grid-template-columns:1fr 1fr}.topnav{gap:9px;padding-left:14px;padding-right:14px}}
+@media(max-width:640px){:root{--baseFont:18px}.cover{padding:102px 20px 46px}.wrap{padding:34px 20px 70px}.cards{grid-template-columns:1fr}.source-block summary{align-items:flex-start}.toolbar{right:10px;bottom:10px}}
+</style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProgress"></div>
+<nav class="topnav">
+  <a class="brand" href="BD_AIM3_RHPm.html">← RHPm</a>
+  <a href="#scores">Scores</a>
+  <a href="#full-transcript">Full transcript</a>
+  <a href="#raw-source">Raw Markdown</a>
+  <span class="spacer"></span>
+  <span>RHPm case study</span>
+</nav>
+<div class="toolbar"><button id="fontMinus">A−</button><button id="fontPlus">A+</button><button id="copyRaw">Copy raw</button></div>
+<header class="cover">
+  <span class="tag">RHPm · real-world prompt benchmark · full source</span>
+  <h1>How LLMs Actually Work<br><em>prompt benchmark</em></h1>
+  <p class="subtitle">Full dark HTML rendering of <strong>How_LLMs_work.md</strong>: one rough question, one RHPm-generated audit prompt, and three answer paths showing what changes when context and prompt discipline change.</p>
+  <p class="meta">Core result: warm project context can rescue a weak prompt; RHPm makes the missing method portable; a cold weak prompt drifts generic.</p>
+</header>
+<main class="wrap">
+  <section class="section" id="summary">
+    <div class="callout gold">
+      <div class="ct">Why this page exists</div>
+      <p>The compact RHPm page should stay fast and practical. This page carries the full source text, prompts, answers, and comparison material so the main page can link here without becoming heavy.</p>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="k">A</div><h3>Warm simple</h3><p>Weak prompt, good answer, because the AI8 project context already carries BD’s audit style.</p></div>
+      <div class="card"><div class="k">B</div><h3>RHPm prompt</h3><p>Strong portable audit prompt: read first, cite sources, classify claims, score carefully.</p></div>
+      <div class="card"><div class="k">C</div><h3>Fresh RHPm</h3><p>Best practical result: structured, sourced, bounded, and reusable in a new session.</p></div>
+      <div class="card"><div class="k">D</div><h3>Cold simple</h3><p>Generic drift: partially useful, but weaker as a true audit of the exact article.</p></div>
+    </div>
+  </section>
+  <section class="section" id="scores">
+    <h2>Scores from the comparison</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Path</th><th>Prompt score</th><th>Answer score</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>A — simple prompt inside warm AI8/GPT context</td><td>40/100 standalone · 60/100 warm-context</td><td>87/100</td><td>Weak prompt, strong answer because the surrounding project context already carries the missing method.</td></tr>
+          <tr><td>B — RHPm-generated audit prompt</td><td>95/100</td><td>94/100 as prompt-builder output</td><td>Excellent portable prompt that forces reading, sources, claim grouping, severity, percentage range, and reusable verdict.</td></tr>
+          <tr><td>C — fresh GPT session using RHPm prompt</td><td>95/100</td><td>92/100</td><td>Best practical result. The audit method survives the move into a fresh session.</td></tr>
+          <tr><td>D — same simple prompt inside cold GPT account</td><td>35/100</td><td>52/100</td><td>Useful generic intuition, but weak audit behavior: too broad, under-sourced, and not anchored enough to the exact article.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout cyan"><div class="ct">Main lesson</div><p>RHPm does not add intelligence to the model. It transfers the working discipline into the prompt so another LLM session can reproduce the method without already knowing BD, AI8, or the collaboration style.</p></div>
+  </section>
+  <section class="section" id="full-transcript">
+    <h2>Full transcript from How_LLMs_work.md</h2>
+    <p class="small">The blocks below preserve the full source content, converted into readable dark HTML sections. The exact raw Markdown is also included at the end.</p>
+    
+    <details class="source-block" id="block-A1" open>
+      <summary><span class="block-code">A1</span><span>Warm AI8/GPT context — original simple prompt</span></summary>
+      <div class="source-desc">The short prompt as written in the warm project environment.</div>
+      <div class="md-content"><p>Moj prompt v mojem GPT okolju, kjer ima GPT moja navodila za delo,
+sem napisal tole:</p>
+<p>to preberi in poveč če to drži oz v % koliko % drži? <a
+href="https://www.0xkato.xyz/how-llms-actually-work/">https://www.0xkato.xyz/how-llms-actually-work/</a>
+če članka ne vidiš ti ga pripnem</p></div>
+    </details>
+
+    <details class="source-block" id="block-A2">
+      <summary><span class="block-code">A2</span><span>Warm AI8/GPT context — GPT answer</span></summary>
+      <div class="source-desc">The answer produced when the model already had BD / AI8 working context.</div>
+      <div class="md-content"><p>GPT odgovor:</p>
+<p>Ja — <strong>v glavnem drži</strong>.</p>
+<p>Moja ocena: <strong>~88% pravilno</strong> kot uvoden, poljuden
+članek o tem, kako delujejo moderni <strong>transformer-based
+LLM-i</strong>. Če ga bereš kot naslov “to je celotna resnica o vseh
+LLM-jih in frontier AI sistemih”, potem pade na
+<strong>~70–75%</strong>, ker manjka precej zunanjih/plastnih stvari:
+post-training, RLHF/DPO, tool use, retrieval, memory sistemi,
+multimodalnost, reasoning trening, sistemski wrapperji, inference
+optimizacije, safety pipeline itd.</p>
+<h3 id="ocena-po-delih">Ocena po delih</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Del članka</th>
+<th style="text-align: right;">Koliko drži</th>
+<th>Komentar</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Tokenizacija</td>
+<td style="text-align: right;"><strong>90–95%</strong></td>
+<td>Prav ima: modeli ne berejo besed “direktno”, ampak token ID-je. Malo
+preveč poenostavi “strawberry/R” problem — tokenizacija je velik razlog,
+ni pa edini.</td>
+</tr>
+<tr class="even">
+<td>Embeddings</td>
+<td style="text-align: right;"><strong>85–90%</strong></td>
+<td>Dobro razloženo. “King − man + woman ≈ queen” je klasična, ampak
+malo zastarela/romantična razlaga; deluje včasih, ne kot čarobni
+zakon.</td>
+</tr>
+<tr class="odd">
+<td>Positional encoding / RoPE</td>
+<td style="text-align: right;"><strong>85–90%</strong></td>
+<td>RoPE opis je dober. Res pa ni univerzalen za vse modele in “long
+context generalization” ni avtomatska magija; pogosto potrebuje
+scaling/trening/fine-tuning.</td>
+</tr>
+<tr class="even">
+<td>Attention / QKV / softmax</td>
+<td style="text-align: right;"><strong>92–95%</strong></td>
+<td>To je zelo solidno. Osnovni transformer papir dejansko definira
+attention kot query–key–value mapiranje in weighted sum vrednosti, s
+scaled dot-product + softmax. (<a
+href="https://arxiv.org/html/1706.03762v7"
+title="Attention Is All You Need">arXiv</a>)</td>
+</tr>
+<tr class="odd">
+<td>Causal masking</td>
+<td style="text-align: right;"><strong>95%</strong></td>
+<td>Za GPT-style decoder-only modele pravilno: tokeni ne smejo gledati v
+prihodnje token-e. Original Transformer decoder uporablja maskiranje, da
+pozicija ne attend-a na kasnejše pozicije. (<a
+href="https://arxiv.org/html/1706.03762v7"
+title="Attention Is All You Need">arXiv</a>)</td>
+</tr>
+<tr class="even">
+<td>Multi-head attention</td>
+<td style="text-align: right;"><strong>90–95%</strong></td>
+<td>Dobro popravi pogosto napako: head-i niso nujno “fiksni kosi”
+originalnega vektorja, ampak learned projections.</td>
+</tr>
+<tr class="odd">
+<td>Induction heads</td>
+<td style="text-align: right;"><strong>80–85%</strong></td>
+<td>Pravilna ideja, ampak stavek “eden najjasnejših mehanizmov za
+in-context learning” je malce močan. Anthropicov tekst podpira induction
+heads kot pomemben mehanizem, a ne kot celotno razlago vseh oblik učenja
+v kontekstu. (<a
+href="https://arxiv.org/abs/2209.11895?utm_source=chatgpt.com"
+title="In-context Learning and Induction Heads">arXiv</a>)</td>
+</tr>
+<tr class="even">
+<td>FFN / MLP kot “stored knowledge”</td>
+<td style="text-align: right;"><strong>75–85%</strong></td>
+<td>Smer je pravilna: ROME in causal tracing kažeta, da so nekatere
+factual associations močno vezane na MLP/FFN module. Ampak znanje ni
+samo tam; razpršeno je tudi po residual streamu, attentionu, embeddingih
+in interakcijah med plastmi. (<a href="https://rome.baulab.info/"
+title="Locating and Editing Factual Associations in GPT">Rome</a>)</td>
+</tr>
+<tr class="odd">
+<td>Residual stream + layer norm</td>
+<td style="text-align: right;"><strong>90–95%</strong></td>
+<td>To je dobro. Transformer res uporablja residual connections in layer
+normalization okrog sub-layerjev; moderna pre-norm/RMSNorm zgodba je
+pravilna kot trend. (<a href="https://arxiv.org/html/1706.03762v7"
+title="Attention Is All You Need">arXiv</a>)</td>
+</tr>
+<tr class="even">
+<td>Next-token prediction</td>
+<td style="text-align: right;"><strong>85–90%</strong></td>
+<td>Jedro drži: base LLM je treniran na napoved naslednjega tokena. Malo
+poenostavi: med treningom se logits pogosto računajo za vse pozicije
+paralelno, ne samo za zadnji token; “zadnji token only” velja predvsem
+za autoregressive generation.</td>
+</tr>
+<tr class="odd">
+<td>GQA / MoE / Mixtral</td>
+<td style="text-align: right;"><strong>85–90%</strong></td>
+<td>Smer pravilna. Mistral 7B uporablja GQA za hitrejši inference in
+manj memory zahteve; Mixtral je res sparse MoE z 8 eksperti, kjer se za
+vsak token izbereta 2, skupaj 46.7B parametrov in 12.9B aktivnih na
+token. (<a href="https://arxiv.org/html/2310.06825"
+title="Mistral 7B">arXiv</a>) (<a
+href="https://mistral.ai/news/mixtral-of-experts/"
+title="Mixtral of experts | Mistral AI">Mistral AI</a>)</td>
+</tr>
+<tr class="even">
+<td>“Modern LLMs share same skeleton”</td>
+<td style="text-align: right;"><strong>80–85%</strong></td>
+<td>Na visoki ravni drži: tokeni, embeddings, positional info,
+transformer layers, attention, FFN, residuals, normalization, next-token
+loop. Članek sam to lepo pove. (<a
+href="https://www.0xkato.xyz/how-llms-actually-work/"
+title="How LLMs Actually Work | 0xkato">0xkato</a>) Ampak frontier
+sistemi so danes več kot samo goli transformer.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="glavne-stvari-ki-jih-članek-dobro-zadane">Glavne stvari, ki jih
+članek dobro zadane</h3>
+<p>Članek pravilno predstavi “mehaniko jedra”: tokenizacija → embeddingi
+→ positional signal → attention → FFN → residual stream → norm → logits
+→ sampling loop. To je res osnovna hrbtenica večine modernih LLM-ov.
+Tudi sam članek jasno pravi, da pokriva “core mechanisms”
+transformer-based LLM-ov in da se modeli razlikujejo po weights,
+konfiguraciji, podatkih in post-trainingu. (<a
+href="https://www.0xkato.xyz/how-llms-actually-work/"
+title="How LLMs Actually Work | 0xkato">0xkato</a>)</p>
+<p>Prav ima tudi glede “lost in the middle”: raziskava Liu et al. je
+pokazala, da modeli pogosto bolje uporabljajo informacije na začetku in
+koncu konteksta kot v sredini. (<a
+href="https://aclanthology.org/2024.tacl-1.9/"
+title="Lost in the Middle: How Language Models Use Long Contexts - ACL Anthology">ACL
+Anthology</a>)</p>
+<h3 id="kje-je-zavajajoč-ali-preozek">Kje je zavajajoč ali preozek</h3>
+<p>Največja slabost ni to, da bi pisal neumnosti. Slabost je
+<strong>naslov</strong>. “How LLMs Actually Work” zveni kot celotna
+razlaga, v resnici pa je to <strong>dobro napisan transformer
+explainer</strong>.</p>
+<p>Manjka mu vsaj to:</p>
+<ol type="1">
+<li><strong>Training data + scaling</strong> — zakaj velikost, kvaliteta
+podatkov in compute tako močno spremenijo sposobnosti.</li>
+<li><strong>Post-training</strong> — SFT, RLHF, DPO,
+constitutional/safety tuning, reasoning tuning.</li>
+<li><strong>Inference sistemi</strong> — batching, KV-cache
+optimizacije, quantization, speculative decoding, routing, server-side
+orchestration.</li>
+<li><strong>Reasoning behavior</strong> — kako se pojavljajo
+chain-of-thought, scratchpad, self-consistency, verifierji, agentni
+loopi.</li>
+<li><strong>Tool/RAG/memory wrappers</strong> — ChatGPT/Claude/Gemini
+kot produkt niso samo model weights; pogosto imajo iskanje, orodja,
+sistemske instrukcije, memory, safety classifiers.</li>
+<li><strong>Multimodalnost</strong> — današnji frontier modeli niso več
+samo tekstovni decoder-only transformatorji.</li>
+</ol>
+<h3 id="moja-končna-ocena">Moja končna ocena</h3>
+<p><strong>Kot uvodni tehnični članek: 88/100.</strong> <strong>Kot
+popolna razlaga “kako LLM-i dejansko delujejo”: 72/100.</strong>
+<strong>Kot vir za razumevanje osnovnega transformer jedra: zelo
+uporaben.</strong></p>
+<p>BD-style brutalno: <strong>ni bullshit. Je dober članek.</strong>
+Samo ne smeš ga brati kot “zdaj razumem celoten moderni AI sistem.”
+Razumeš njegovo <strong>jedro</strong>, ne pa celotnega organizma.</p></div>
+    </details>
+
+    <details class="source-block" id="block-B0">
+      <summary><span class="block-code">B0</span><span>RHPm bridge note</span></summary>
+      <div class="source-desc">The source note before the RHPm-generated prompt.</div>
+      <div class="md-content"><p>Moj prejšnji prompt sem dal v "<a
+href="https://www.mdlxdcc.org/bd/bd_aim3_rhpm">https://www.mdlxdcc.org/bd/bd_aim3_rhpm</a>"
+in dobil tale prompt:</p></div>
+    </details>
+
+    <details class="source-block" id="block-B1" open>
+      <summary><span class="block-code">B1</span><span>RHPm-generated audit prompt</span></summary>
+      <div class="source-desc">The portable prompt generated by BD_AIM3_RHPm.html.</div>
+      <div class="md-content"><p>You are an expert technical reviewer of LLM/AI explainer
+articles.</p>
+<p>Your task is to read and evaluate this article:</p>
+<p><a
+href="https://www.0xkato.xyz/how-llms-actually-work/">https://www.0xkato.xyz/how-llms-actually-work/</a></p>
+<p>The user wants to know whether the article is actually correct, and
+roughly <strong>what percentage of it is true / accurate</strong>.</p>
+<p>Important:</p>
+<ul>
+<li>Do NOT answer from memory.</li>
+<li>First open/read the article.</li>
+<li>If you cannot access the article, clearly say so and ask the user to
+attach or paste it.</li>
+<li>Do not pretend you saw the article if you did not.</li>
+<li>Use web browsing and cite sources.</li>
+<li>Prefer primary or high-quality sources: OpenAI/Anthropic/Google
+DeepMind docs or papers, transformer/attention papers, ML textbooks,
+Distill-style technical explainers, or well-known research papers.</li>
+<li>The user is not asking for a generic explanation of LLMs. They are
+asking for a truth/accuracy audit of this specific article.</li>
+</ul>
+<p>Goal: Give a practical, honest assessment:</p>
+<ol type="1">
+<li>What the article gets right.</li>
+<li>What it simplifies but is still acceptable.</li>
+<li>What is misleading, incomplete, outdated, or wrong.</li>
+<li>A rough percentage score for “how much it holds.”</li>
+<li>A short answer the user can reuse when explaining the verdict to
+someone else.</li>
+</ol>
+<p>Use this scoring style:</p>
+<ul>
+<li><strong>90–100%</strong>: very accurate, only minor
+simplifications.</li>
+<li><strong>75–89%</strong>: mostly accurate, but with meaningful
+simplifications or missing nuance.</li>
+<li><strong>60–74%</strong>: useful but mixed; several claims need
+correction.</li>
+<li><strong>40–59%</strong>: partly useful, but misleading in important
+ways.</li>
+<li><strong>Below 40%</strong>: mostly wrong or unreliable.</li>
+</ul>
+<p>When giving a percentage:</p>
+<ul>
+<li>Do not make it fake-precise.</li>
+<li>Use a range if needed, e.g. “about 80–85% accurate.”</li>
+<li>Explain what the percentage means.</li>
+<li>Separate factual correctness from pedagogical usefulness.</li>
+</ul>
+<p>Suggested workflow:</p>
+<ol type="1">
+<li>Read the article and identify its main claims.</li>
+<li>Group claims into themes, for example:
+<ul>
+<li>tokens and embeddings</li>
+<li>transformer architecture</li>
+<li>attention mechanism</li>
+<li>training / pretraining</li>
+<li>next-token prediction</li>
+<li>reasoning and “understanding”</li>
+<li>hallucinations</li>
+<li>RLHF / instruction tuning</li>
+<li>memory / context window</li>
+<li>agents or tool use, if mentioned</li>
+</ul></li>
+<li>For each major claim, classify it:
+<ul>
+<li>Correct</li>
+<li>Mostly correct but simplified</li>
+<li>Misleading</li>
+<li>Wrong</li>
+<li>Unclear / unsupported</li>
+</ul></li>
+<li>Compare claims against reliable sources.</li>
+<li>Produce an overall score and practical verdict.</li>
+</ol>
+<p>Output format:</p>
+<h1 id="verdict-on-how-llms-actually-work">Verdict on “How LLMs Actually
+Work”</h1>
+<h2 id="overall-score">Overall score</h2>
+<p>Give a percentage or percentage range, with confidence level.</p>
+<p>Example: “Approx. 82–88% accurate, with medium confidence.”</p>
+<h2 id="one-paragraph-answer">One-paragraph answer</h2>
+<p>Give the direct human answer first.</p>
+<h2 id="what-the-article-gets-right">What the article gets right</h2>
+<p>Use concise bullets.</p>
+<h2 id="what-needs-correction-or-nuance">What needs correction or
+nuance</h2>
+<p>Use concise bullets. Be specific.</p>
+<h2 id="claim-by-claim-audit">Claim-by-claim audit</h2>
+<p>Use a table:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Article claim / theme</th>
+<th>Verdict</th>
+<th>Why</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<p>Severity options:</p>
+<ul>
+<li>Low: harmless simplification</li>
+<li>Medium: could mislead readers</li>
+<li>High: technically wrong or strongly misleading</li>
+</ul>
+<h2 id="best-corrected-explanation">Best corrected explanation</h2>
+<p>Give a short, clean explanation of how LLMs actually work, correcting
+the article’s weak points.</p>
+<h2 id="reusable-short-answer">Reusable short answer</h2>
+<p>Write 3–5 sentences the user can copy-paste to someone else.</p>
+<h2 id="sources">Sources</h2>
+<p>Cite sources inline throughout the answer, not only at the end.</p>
+<p>Tone:</p>
+<ul>
+<li>Direct and honest.</li>
+<li>Not overly academic.</li>
+<li>Assume the user is intelligent but may not want dense ML
+jargon.</li>
+<li>Do not be smug.</li>
+<li>Do not dismiss the article just because it is simplified.</li>
+<li>Reward good simplification when it helps understanding.</li>
+</ul></div>
+    </details>
+
+    <details class="source-block" id="block-C0">
+      <summary><span class="block-code">C0</span><span>Fresh GPT session bridge note</span></summary>
+      <div class="source-desc">The source note before the fresh-session result.</div>
+      <div class="md-content"><p>Na podlagi zgornjega prompta je nova GPT seja napisala tole:</p></div>
+    </details>
+
+    <details class="source-block" id="block-C1">
+      <summary><span class="block-code">C1</span><span>Fresh GPT session — answer from RHPm prompt</span></summary>
+      <div class="source-desc">The structured audit produced from the RHPm prompt in a new session.</div>
+      <div class="md-content"><h1 id="verdict-on-how-llms-actually-work">Verdict on “How LLMs Actually
+Work”</h1>
+<h2 id="overall-score">Overall score</h2>
+<p><strong>Approx. 84–88% accurate, medium-high confidence.</strong></p>
+<p>For the narrow subject it mostly explains — <strong>decoder-only
+transformer architecture</strong> — I’d score it closer to
+<strong>88–92%</strong>. For the broader promise implied by the title —
+<strong>how modern deployed LLM assistants actually work
+end-to-end</strong> — I’d score it closer to <strong>75–82%</strong>,
+because it under-covers training data, post-training, hallucinations,
+retrieval/tools, safety layers, evaluation, and serving/inference
+systems. Overall: <strong>about 85% accurate</strong>.</p>
+<p>The article is pedagogically useful and mostly technically sound, but
+it is more accurately titled <strong>“How Transformer LLM Architecture
+Works”</strong> than “How LLMs Actually Work.” The article itself
+focuses on tokens, embeddings, positional encodings, attention, FFNs,
+residual streams, next-token prediction, KV cache, GQA, MoE, and related
+architecture details. (<a
+href="https://www.0xkato.xyz/how-llms-actually-work/"
+title="How LLMs Actually Work | 0xkato">0xkato</a>)</p>
+<h2 id="one-paragraph-answer">One-paragraph answer</h2>
+<p>The article mostly holds. It gives a good, practical explanation of
+the internal transformer stack: text becomes tokens, tokens become
+vectors, masked self-attention mixes information from prior context,
+feed-forward layers transform token representations, and the model
+generates by predicting the next token. Those points match standard
+explanations of tokenization, transformer attention, and autoregressive
+decoding. (<a
+href="https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them"
+title="What are tokens and how to count them? | OpenAI Help Center">OpenAI
+Help Center</a>) The weak points are that it slightly overstates some
+intuitions — especially tokenization as the reason for counting
+failures, embedding-vector analogies, induction heads, and “facts in
+FFNs” — and it does not give enough space to post-training,
+hallucinations, tool use, retrieval, safety policies, and product-level
+systems, which strongly shape ChatGPT/Claude/Gemini-style assistants.
+(<a href="https://arxiv.org/abs/2203.02155"
+title="[2203.02155] Training language models to follow instructions with human feedback">arXiv</a>)</p>
+<h2 id="what-the-article-gets-right">What the article gets right</h2>
+<ul>
+<li><p><strong>Tokens first, text second.</strong> LLMs process token
+IDs, not raw human text directly. OpenAI’s own docs describe tokens as
+chunks such as characters, words, punctuation, or partial words, and
+<code>tiktoken</code> is OpenAI’s BPE tokenizer library. (<a
+href="https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them"
+title="What are tokens and how to count them? | OpenAI Help Center">OpenAI
+Help Center</a>)</p></li>
+<li><p><strong>Subword tokenization is real and important.</strong> The
+article’s BPE/SentencePiece discussion is broadly correct. SentencePiece
+is a standard subword tokenizer/detokenizer system used in neural text
+processing. (<a href="https://aclanthology.org/D18-2012/"
+title="SentencePiece: A simple and language independent subword tokenizer and detokenizer for Neural Text Processing - ACL Anthology">ACL
+Anthology</a>)</p></li>
+<li><p><strong>The transformer explanation is mostly correct.</strong>
+The article’s Q/K/V, scaled dot-product attention, softmax-weighted
+value mixing, and causal masking are aligned with standard transformer
+explanations. (<a
+href="https://nlp.seas.harvard.edu/2018/04/03/attention.html"
+title="The Annotated Transformer">nlp.seas.harvard.edu</a>)</p></li>
+<li><p><strong>Multi-head attention is explained well.</strong> It
+correctly says heads use learned projections rather than simply fixed
+slices of the vector. That is an important detail many beginner
+explainers get wrong. (<a
+href="https://nlp.seas.harvard.edu/2018/04/03/attention.html"
+title="The Annotated Transformer">nlp.seas.harvard.edu</a>)</p></li>
+<li><p><strong>RoPE is described in the right direction.</strong> Rotary
+positional embeddings encode position through rotations and make
+relative-position information available inside self-attention. (<a
+href="https://arxiv.org/abs/2104.09864"
+title="[2104.09864] RoFormer: Enhanced Transformer with Rotary Position Embedding">arXiv</a>)</p></li>
+<li><p><strong>The FFN/MLP section is one of the stronger
+parts.</strong> There is real research support for feed-forward layers
+acting partly like key-value memories and for mid-layer FF modules
+playing an important role in factual associations. (<a
+href="https://aclanthology.org/2021.emnlp-main.446/"
+title="Transformer Feed-Forward Layers Are Key-Value Memories - ACL Anthology">ACL
+Anthology</a>)</p></li>
+<li><p><strong>The article correctly separates architecture from
+weights.</strong> The transformer skeleton is not the intelligence by
+itself; the learned weights, training data, objective, scale,
+post-training, and inference setup matter enormously. The article states
+this in simplified but valid form. (<a
+href="https://www.0xkato.xyz/how-llms-actually-work/"
+title="How LLMs Actually Work | 0xkato">0xkato</a>)</p></li>
+<li><p><strong>GQA, KV cache, MoE, and speculative decoding are real
+modern inference/architecture ideas.</strong> The article’s inclusion of
+these topics is a strength, not fluff. Mistral 7B, for example,
+explicitly uses grouped-query attention to speed inference and reduce
+memory during decoding. (<a href="https://arxiv.org/html/2310.06825"
+title="Mistral 7B">arXiv</a>) Mixtral uses sparse mixture-of-experts
+routing, where each token is routed to selected experts rather than all
+FFN experts. (<a href="https://arxiv.org/abs/2401.04088"
+title="[2401.04088] Mixtral of Experts">arXiv</a>) Speculative decoding
+is also a real method for accelerating autoregressive generation. (<a
+href="https://arxiv.org/abs/2211.17192"
+title="[2211.17192] Fast Inference from Transformers via Speculative Decoding">arXiv</a>)</p></li>
+</ul>
+<h2 id="what-needs-correction-or-nuance">What needs correction or
+nuance</h2>
+<ul>
+<li><p><strong>It is not a full “how LLMs actually work”
+article.</strong> It is mainly an architecture explainer. It does not
+deeply explain data curation, pretraining loss, scaling, optimizer
+dynamics, instruction tuning, RLHF/RLAIF/DPO, safety policies, system
+prompts, retrieval, tool use, evaluation, or deployment.</p></li>
+<li><p><strong>Tokenization is overused as an explanation for
+mistakes.</strong> Tokenization helps explain why letter-level tasks
+like counting “r” in “strawberry” can be unintuitive, but it is not the
+whole story. Exact character counting also requires reliable
+symbolic/algorithmic behavior, not just better tokens. OpenAI’s docs
+support the token-level framing, but not the stronger claim that
+tokenization alone explains these failures. (<a
+href="https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them"
+title="What are tokens and how to count them? | OpenAI Help Center">OpenAI
+Help Center</a>)</p></li>
+<li><p><strong>The embedding analogy is useful but oversold.</strong>
+“king − man + woman ≈ queen” is a classic word-vector intuition, but
+modern LLM behavior depends far more on contextual hidden states across
+many layers than on the initial embedding lookup alone. Word-vector
+research supports semantic vector relationships, but also notes
+limitations such as insensitivity to word order in simpler embedding
+systems. (<a href="https://arxiv.org/abs/1310.4546"
+title="[1310.4546] Distributed Representations of Words and Phrases and their Compositionality">arXiv</a>)</p></li>
+<li><p><strong>RoPE and long context are not magic.</strong> RoPE helps
+with positional representation and relative-position behavior, but
+long-context models can still fail depending on where relevant
+information appears. The “Lost in the Middle” paper shows performance
+can degrade when relevant information is placed in the middle of long
+contexts. (<a href="https://arxiv.org/abs/2104.09864"
+title="[2104.09864] RoFormer: Enhanced Transformer with Rotary Position Embedding">arXiv</a>)</p></li>
+<li><p><strong>Induction heads are real, but the article overstates
+certainty.</strong> Induction heads are an important
+mechanistic-interpretability finding, but the strongest causal evidence
+is in small attention-only models; for larger models with MLPs, evidence
+is more correlational and incomplete. (<a
+href="https://arxiv.org/abs/2209.11895"
+title="[2209.11895] In-context Learning and Induction Heads">arXiv</a>)</p></li>
+<li><p><strong>“Facts live in FFNs” needs nuance.</strong> FFNs contain
+a lot of model capacity and can encode factual associations, but LLM
+knowledge is distributed across layers, attention, FFNs, activations,
+and residual streams. ROME-style edits show important evidence, but they
+do not mean there is a clean database row for every fact. (<a
+href="https://arxiv.org/abs/2202.05262"
+title="[2202.05262] Locating and Editing Factual Associations in GPT">arXiv</a>)</p></li>
+<li><p><strong>Post-training deserves more weight.</strong> Modern
+assistants are not just pretrained next-token predictors. Instruction
+tuning and human/preference feedback strongly shape helpfulness,
+truthfulness, refusal behavior, tone, and task-following. InstructGPT
+showed that fine-tuning with human feedback improved alignment with user
+intent and helped reduce toxic/untruthful outputs, while still leaving
+mistakes. (<a href="https://arxiv.org/abs/2203.02155"
+title="[2203.02155] Training language models to follow instructions with human feedback">arXiv</a>)</p></li>
+<li><p><strong>Hallucinations are under-explained.</strong> The article
+mentions generation mechanics, but a serious “how LLMs work” explainer
+should explain why models can produce plausible but false claims. OpenAI
+describes hallucinations as plausible but false outputs that persist
+partly because evaluation setups often reward guessing over calibrated
+uncertainty. (<a
+href="https://openai.com/index/why-language-models-hallucinate/"
+title="Why language models hallucinate | OpenAI">OpenAI</a>)</p></li>
+</ul>
+<h2 id="claim-by-claim-audit">Claim-by-claim audit</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Article claim / theme</th>
+<th>Verdict</th>
+<th>Why</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Text is converted into token IDs before the model processes it.</td>
+<td>Correct</td>
+<td>This matches OpenAI’s explanation that models process text as
+tokens, and <code>tiktoken</code> explicitly converts text into token
+IDs. (<a
+href="https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them"
+title="What are tokens and how to count them? | OpenAI Help Center">OpenAI
+Help Center</a>)</td>
+<td>Low</td>
+</tr>
+<tr class="even">
+<td>BPE/SentencePiece-style subword tokenization explains why words are
+split strangely.</td>
+<td>Correct</td>
+<td>BPE and SentencePiece are standard subword-tokenization approaches.
+The article’s examples are directionally right. (<a
+href="https://github.com/openai/tiktoken"
+title="GitHub - openai/tiktoken: tiktoken is a fast BPE tokeniser for use with OpenAI&#39;s models. · GitHub">GitHub</a>)</td>
+<td>Low</td>
+</tr>
+<tr class="odd">
+<td>Letter-counting mistakes are mainly because the model sees tokens,
+not letters.</td>
+<td>Mostly correct but simplified</td>
+<td>Tokenization is part of the explanation, but exact counting also
+requires robust algorithmic/symbolic behavior. The article makes this
+sound cleaner than it is.</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>Embedding vectors give token IDs learned meaning.</td>
+<td>Correct</td>
+<td>The embedding lookup idea is standard. The article’s intuition is
+fine.</td>
+<td>Low</td>
+</tr>
+<tr class="odd">
+<td>Similar concepts live near each other in vector space; “king − man +
+woman ≈ queen.”</td>
+<td>Mostly correct but simplified</td>
+<td>This is a useful word-vector analogy, but it is not a precise
+guarantee for modern LLM token embeddings. Contextual representations
+after many layers matter more. (<a
+href="https://arxiv.org/abs/1310.4546"
+title="[1310.4546] Distributed Representations of Words and Phrases and their Compositionality">arXiv</a>)</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>Self-attention needs positional information because attention alone
+has no sequence order.</td>
+<td>Correct</td>
+<td>Transformer attention needs position information to represent order.
+RoPE is a modern way to encode positional structure. (<a
+href="https://nlp.seas.harvard.edu/2018/04/03/attention.html"
+title="The Annotated Transformer">nlp.seas.harvard.edu</a>)</td>
+<td>Low</td>
+</tr>
+<tr class="odd">
+<td>RoPE is widely used and helps relative-position behavior.</td>
+<td>Correct with nuance</td>
+<td>RoPE does incorporate relative-position dependency into attention,
+but long-context reliability is still not guaranteed. (<a
+href="https://arxiv.org/abs/2104.09864"
+title="[2104.09864] RoFormer: Enhanced Transformer with Rotary Position Embedding">arXiv</a>)</td>
+<td>Low</td>
+</tr>
+<tr class="even">
+<td>Attention works through Q/K/V, scaled dot products, softmax weights,
+and value mixing.</td>
+<td>Correct</td>
+<td>This matches the standard scaled dot-product attention formulation.
+(<a href="https://nlp.seas.harvard.edu/2018/04/03/attention.html"
+title="The Annotated Transformer">nlp.seas.harvard.edu</a>)</td>
+<td>Low</td>
+</tr>
+<tr class="odd">
+<td>Causal masking prevents a decoder model from looking at future
+tokens.</td>
+<td>Correct</td>
+<td>This is standard decoder self-attention behavior. (<a
+href="https://nlp.seas.harvard.edu/2018/04/03/attention.html"
+title="The Annotated Transformer">nlp.seas.harvard.edu</a>)</td>
+<td>Low</td>
+</tr>
+<tr class="even">
+<td>Multi-head attention uses learned projections, not fixed
+slices.</td>
+<td>Correct</td>
+<td>The article gets this important detail right. (<a
+href="https://nlp.seas.harvard.edu/2018/04/03/attention.html"
+title="The Annotated Transformer">nlp.seas.harvard.edu</a>)</td>
+<td>Low</td>
+</tr>
+<tr class="odd">
+<td>Attention heads can become specialized circuits, including induction
+heads.</td>
+<td>Mostly correct but simplified</td>
+<td>Induction heads are real, but their general role in large-model
+in-context learning is not fully settled. The source paper itself says
+the strongest causal evidence is in small attention-only transformers
+and larger-model evidence is more indirect. (<a
+href="https://arxiv.org/abs/2209.11895"
+title="[2209.11895] In-context Learning and Induction Heads">arXiv</a>)</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>GQA and KV cache reduce inference memory/compute pressure.</td>
+<td>Correct</td>
+<td>Mistral 7B explicitly uses grouped-query attention for faster
+inference and reduced memory during decoding. (<a
+href="https://arxiv.org/html/2310.06825"
+title="Mistral 7B">arXiv</a>)</td>
+<td>Low</td>
+</tr>
+<tr class="odd">
+<td>Attention is expensive and scales badly with context length.</td>
+<td>Correct with nuance</td>
+<td>Full attention has quadratic cost in sequence length; during cached
+autoregressive decoding, each new token attends over prior context, so
+the practical cost profile depends on prefill vs decode.</td>
+<td>Low</td>
+</tr>
+<tr class="even">
+<td>FFNs expand, apply nonlinear transformation, and compress back.</td>
+<td>Correct</td>
+<td>This is the standard transformer MLP/FFN structure.</td>
+<td>Low</td>
+</tr>
+<tr class="odd">
+<td>FFNs store semantic/factual structure.</td>
+<td>Mostly correct but simplified</td>
+<td>There is strong evidence FF layers act partly like key-value
+memories and mid-layer FF modules matter for factual associations, but
+knowledge is distributed, not a simple database. (<a
+href="https://aclanthology.org/2021.emnlp-main.446/"
+title="Transformer Feed-Forward Layers Are Key-Value Memories - ACL Anthology">ACL
+Anthology</a>)</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>MoE models route tokens to selected experts.</td>
+<td>Correct</td>
+<td>Mixtral uses sparse MoE layers where a router selects experts per
+token. (<a href="https://arxiv.org/abs/2401.04088"
+title="[2401.04088] Mixtral of Experts">arXiv</a>)</td>
+<td>Low</td>
+</tr>
+<tr class="odd">
+<td>Residual connections and normalization stabilize deep transformer
+training.</td>
+<td>Correct with simplification</td>
+<td>LayerNorm/RMSNorm are important stabilizers. RMSNorm keeps rescaling
+while dropping recentering, improving efficiency while remaining
+comparable. (<a href="https://arxiv.org/abs/1910.07467"
+title="[1910.07467] Root Mean Square Layer Normalization">arXiv</a>)</td>
+<td>Low</td>
+</tr>
+<tr class="even">
+<td>LLM generation is next-token prediction repeated in a loop.</td>
+<td>Correct</td>
+<td>Autoregressive generation does work this way at inference. The
+nuance is that pretraining computes loss over many token positions
+efficiently in parallel.</td>
+<td>Low</td>
+</tr>
+<tr class="odd">
+<td>Decoding settings like temperature/top-p change output
+behavior.</td>
+<td>Correct</td>
+<td>This is standard sampling behavior. The article’s explanation is
+acceptable.</td>
+<td>Low</td>
+</tr>
+<tr class="even">
+<td>Speculative decoding can speed generation.</td>
+<td>Correct</td>
+<td>Speculative decoding is a real technique that can accelerate
+autoregressive sampling without changing the output distribution, under
+the method’s assumptions. (<a href="https://arxiv.org/abs/2211.17192"
+title="[2211.17192] Fast Inference from Transformers via Speculative Decoding">arXiv</a>)</td>
+<td>Low</td>
+</tr>
+<tr class="odd">
+<td>Post-training exists after base pretraining.</td>
+<td>Correct but incomplete</td>
+<td>The article mentions it, but does not explain how much instruction
+tuning and human/preference feedback shape assistant behavior. (<a
+href="https://arxiv.org/abs/2203.02155"
+title="[2203.02155] Training language models to follow instructions with human feedback">arXiv</a>)</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>“Modern LLMs mostly share the same transformer-family
+skeleton.”</td>
+<td>Mostly correct</td>
+<td>Broadly true for many major text LLMs, especially decoder-only
+transformer systems, but proprietary frontier details are not fully
+public and some newer systems use additional architectures, tools,
+retrieval, or multimodal components.</td>
+<td>Medium</td>
+</tr>
+<tr class="odd">
+<td>Hallucinations are not central to the article.</td>
+<td>Incomplete</td>
+<td>For a full “how LLMs work” explainer, hallucination mechanisms
+should be covered. OpenAI describes hallucinations as plausible but
+false model outputs and connects their persistence to
+training/evaluation incentives. (<a
+href="https://openai.com/index/why-language-models-hallucinate/"
+title="Why language models hallucinate | OpenAI">OpenAI</a>)</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<h2 id="best-corrected-explanation">Best corrected explanation</h2>
+<p>A modern text LLM usually starts by <strong>tokenizing</strong> input
+text into token IDs. Those IDs are mapped into learned vectors, combined
+with positional information, and passed through many transformer layers.
+Inside each layer, <strong>masked self-attention</strong> lets each
+token mix information from earlier tokens using learned query, key, and
+value projections; <strong>feed-forward/MLP layers</strong> then
+transform each token representation and provide much of the model’s
+capacity. Residual connections and normalization keep very deep stacks
+trainable. (<a
+href="https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them"
+title="What are tokens and how to count them? | OpenAI Help Center">OpenAI
+Help Center</a>)</p>
+<p>During pretraining, the model’s weights are adjusted so it becomes
+better at predicting missing or next tokens across huge
+text/code/multimodal corpora. During inference, a decoder-style LLM
+repeatedly predicts a distribution over the next token, samples or
+selects one, appends it, and continues. KV caching, grouped-query
+attention, MoE routing, and speculative decoding are
+engineering/architecture techniques that make this process cheaper or
+faster. (<a href="https://arxiv.org/html/2310.06825"
+title="Mistral 7B">arXiv</a>)</p>
+<p>But deployed assistants are more than base next-token predictors.
+They are shaped by instruction tuning, preference/RLHF-style training,
+system prompts, safety policies, retrieval, tools, and product
+orchestration. They do not store a clean database of facts; knowledge
+and skills are distributed across weights and activations. Because they
+generate plausible continuations rather than directly checking truth by
+default, they can reason impressively but also hallucinate. (<a
+href="https://arxiv.org/abs/2203.02155"
+title="[2203.02155] Training language models to follow instructions with human feedback">arXiv</a>)</p>
+<h2 id="reusable-short-answer">Reusable short answer</h2>
+<p>The article is mostly right — I’d call it <strong>about 85%
+accurate</strong>. It explains transformer LLM architecture well:
+tokens, embeddings, attention, FFNs, residual/norm layers, next-token
+generation, KV cache, GQA, and MoE are mostly described correctly. The
+main weakness is that it over-simplifies a few mechanisms and
+under-explains post-training, hallucinations, tools/RAG, and how
+deployed AI assistants are actually shaped. So it is a good article, but
+more precisely it explains <strong>how transformer LLM architecture
+works</strong>, not the full story of modern AI assistants.</p>
+<h2 id="sources">Sources</h2>
+<p>Main sources used: the audited article itself; OpenAI tokenization
+docs and <code>tiktoken</code>; transformer attention explanations;
+RoPE; Lost in the Middle; Mistral/Mixtral architecture papers; FFN
+memory and ROME papers; RMSNorm; InstructGPT/RLHF; speculative decoding;
+and OpenAI’s hallucination discussion. (<a
+href="https://www.0xkato.xyz/how-llms-actually-work/"
+title="How LLMs Actually Work | 0xkato">0xkato</a>)</p></div>
+    </details>
+
+    <details class="source-block" id="block-D1">
+      <summary><span class="block-code">D1</span><span>Cold GPT account — same simple prompt</span></summary>
+      <div class="source-desc">The same short prompt given where GPT did not know BD or the AI8 project style.</div>
+      <div class="md-content"><p>V drugem GPT okolju, kjer GPT nima načina dela, sem spet vprašal GPT
+tole:</p>
+<p>to preberi in poveč če to drži oz v % koliko % drži? <a
+href="https://www.0xkato.xyz/how-llms-actually-work/">https://www.0xkato.xyz/how-llms-actually-work/</a>
+če članka ne vidiš ti ga pripnem</p></div>
+    </details>
+
+    <details class="source-block" id="block-D2">
+      <summary><span class="block-code">D2</span><span>Cold GPT account — GPT answer</span></summary>
+      <div class="source-desc">The weaker generic answer produced from the cold simple prompt.</div>
+      <div class="md-content"><p>GPT je odgovoril tole:</p>
+<p>Na kratko: <strong>članek verjetno zadane približno 70–85 %
+resnice</strong>, odvisno od tega, kako kategorične trditve daje. Če je
+njegovo glavno sporočilo:</p>
+<blockquote>
+<p>"LLM je v osnovi stroj za napoved naslednjega tokena, ki preko
+attention mehanizma gradi kompleksno vedenje."</p>
+</blockquote>
+<p>potem je to precej pravilno. (<a
+href="https://www.knovo.dev/guides/how-llms-work?utm_source=chatgpt.com"
+title="How LLMs actually work: transformers, tokens, and attention explained (2026) | Knovo">Knovo</a>)</p>
+<p>Ampak če članek trdi ali namiguje:</p>
+<blockquote>
+<p>"LLM je <em>samo</em> next-token predictor in nič več."</p>
+</blockquote>
+<p>potem postane stvar precej bolj vprašljiva in bi rekel <strong>50–60
+% pravilno</strong>. Tudi med raziskovalci je vedno več argumentov, da
+je to tehnično res na nivoju učnega cilja, ni pa dobra razlaga tega, kaj
+se je model dejansko naučil. (<a
+href="https://arxiv.org/abs/2408.04666?utm_source=chatgpt.com"
+title="LLMs are Not Just Next Token Predictors">arXiv</a>)</p>
+<p>Moja ocena po posameznih točkah:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Trditev</th>
+<th>Moja ocena</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>LLM generira besedilo token za tokenom</td>
+<td>100 %</td>
+</tr>
+<tr class="even">
+<td>Trening temelji na napovedi naslednjega tokena</td>
+<td>100 %</td>
+</tr>
+<tr class="odd">
+<td>Attention je ključni mehanizem za kontekst</td>
+<td>95 %</td>
+</tr>
+<tr class="even">
+<td>Model nima baze dejstev kot SQL baza</td>
+<td>95 %</td>
+</tr>
+<tr class="odd">
+<td>"Razumevanje" nastane kot emergentna lastnost</td>
+<td>80–90 %</td>
+</tr>
+<tr class="even">
+<td>LLM je samo zelo napreden autocomplete</td>
+<td>40–60 %</td>
+</tr>
+<tr class="odd">
+<td>V njem ni nobenega notranjega modela sveta</td>
+<td>20–50 %</td>
+</tr>
+<tr class="even">
+<td>Razmišljanje je zgolj iluzija</td>
+<td>30–70 % (odvisno od definicije razmišljanja)</td>
+</tr>
+</tbody>
+</table>
+<p>Največji problem takšnih člankov je običajno zamenjava:</p>
+<p><strong>učni cilj ≠ notranja struktura</strong></p>
+<p>To je podobno kot:</p>
+<blockquote>
+<p>"Človek je samo organizem, ki maksimira reprodukcijo."</p>
+</blockquote>
+<p>V evolucijskem smislu je to res. Ampak iz tega ne moreš razložiti
+matematike, glasbe, filozofije ali znanosti.</p>
+<p>Podobno:</p>
+<blockquote>
+<p>"LLM napoveduje naslednji token."</p>
+</blockquote>
+<p>To je res.</p>
+<p>Ampak iz tega samodejno ne sledi, da v mreži ni nastala abstraktna
+reprezentacija konceptov, prostorskih odnosov, logike, vzročnosti itd.
+Ravno nasprotno – veliko raziskav kaže, da se med treningom oblikujejo
+zelo bogate notranje reprezentacije. (<a
+href="https://arxiv.org/abs/2408.13442?utm_source=chatgpt.com"
+title="A Law of Next-Token Prediction in Large Language Models">arXiv</a>)</p>
+<p>Glede na to, kar si mi včeraj kazal za RHPr, RHP in AIm3, bi tebi
+verjetno najbolj padel v oči ravno ta del:</p>
+<p>Članek verjetno opisuje <strong>mehaniko generiranja</strong>, ne pa
+<strong>narave reprezentacije</strong>.</p>
+<p>To je podobno kot opisati možgane z:</p>
+<blockquote>
+<p>"Nevron sproži naslednji akcijski potencial."</p>
+</blockquote>
+<p>Tehnično pravilno.</p>
+<p>Ampak ne pojasni, kako iz tega nastanejo matematika, zavest ali
+kreativnost.</p>
+<p>Če mi prilepiš originalni članek (ali PDF ali HTML), ga lahko
+preberem celega in ti dam precej bolj natančno oceno v stilu:</p>
+<ul>
+<li>kaj drži,</li>
+<li>kaj je poenostavljeno,</li>
+<li>kaj je zastarelo,</li>
+<li>kaj je sporno med raziskovalci,</li>
+<li>in predvsem kako se ujema ali ne ujema s tvojim RHPr/AIm3
+pogledom.</li>
+</ul></div>
+    </details>
+  </section>
+  <section class="section" id="raw-source">
+    <h2>Exact raw Markdown source</h2>
+    <p class="small">This is the complete original text from How_LLMs_work.md, kept as a raw source block for auditability.</p>
+    <pre class="raw-pre" id="rawMd">Moj prompt v mojem GPT okolju, kjer ima GPT moja navodila za delo, sem napisal tole:
+
+to preberi in poveč če to drži oz v % koliko % drži?
+https://www.0xkato.xyz/how-llms-actually-work/
+če članka ne vidiš ti ga pripnem
+
+
+
+==================================================================================
+
+GPT odgovor:
+
+Ja — **v glavnem drži**.
+
+Moja ocena: **~88% pravilno** kot uvoden, poljuden članek o tem, kako delujejo moderni **transformer-based LLM-i**.
+Če ga bereš kot naslov “to je celotna resnica o vseh LLM-jih in frontier AI sistemih”, potem pade na **~70–75%**, ker manjka precej zunanjih/plastnih stvari: post-training, RLHF/DPO, tool use, retrieval, memory sistemi, multimodalnost, reasoning trening, sistemski wrapperji, inference optimizacije, safety pipeline itd.
+
+### Ocena po delih
+
+| Del članka                        | Koliko drži | Komentar                                                                                                                                                                                                                                               |
+| --------------------------------- | ----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tokenizacija                      |  **90–95%** | Prav ima: modeli ne berejo besed “direktno”, ampak token ID-je. Malo preveč poenostavi “strawberry/R” problem — tokenizacija je velik razlog, ni pa edini.                                                                                             |
+| Embeddings                        |  **85–90%** | Dobro razloženo. “King − man + woman ≈ queen” je klasična, ampak malo zastarela/romantična razlaga; deluje včasih, ne kot čarobni zakon.                                                                                                               |
+| Positional encoding / RoPE        |  **85–90%** | RoPE opis je dober. Res pa ni univerzalen za vse modele in “long context generalization” ni avtomatska magija; pogosto potrebuje scaling/trening/fine-tuning.                                                                                          |
+| Attention / QKV / softmax         |  **92–95%** | To je zelo solidno. Osnovni transformer papir dejansko definira attention kot query–key–value mapiranje in weighted sum vrednosti, s scaled dot-product + softmax. ([arXiv][1])                                                                        |
+| Causal masking                    |     **95%** | Za GPT-style decoder-only modele pravilno: tokeni ne smejo gledati v prihodnje token-e. Original Transformer decoder uporablja maskiranje, da pozicija ne attend-a na kasnejše pozicije. ([arXiv][1])                                                  |
+| Multi-head attention              |  **90–95%** | Dobro popravi pogosto napako: head-i niso nujno “fiksni kosi” originalnega vektorja, ampak learned projections.                                                                                                                                        |
+| Induction heads                   |  **80–85%** | Pravilna ideja, ampak stavek “eden najjasnejših mehanizmov za in-context learning” je malce močan. Anthropicov tekst podpira induction heads kot pomemben mehanizem, a ne kot celotno razlago vseh oblik učenja v kontekstu. ([arXiv][2])              |
+| FFN / MLP kot “stored knowledge”  |  **75–85%** | Smer je pravilna: ROME in causal tracing kažeta, da so nekatere factual associations močno vezane na MLP/FFN module. Ampak znanje ni samo tam; razpršeno je tudi po residual streamu, attentionu, embeddingih in interakcijah med plastmi. ([Rome][3]) |
+| Residual stream + layer norm      |  **90–95%** | To je dobro. Transformer res uporablja residual connections in layer normalization okrog sub-layerjev; moderna pre-norm/RMSNorm zgodba je pravilna kot trend. ([arXiv][1])                                                                             |
+| Next-token prediction             |  **85–90%** | Jedro drži: base LLM je treniran na napoved naslednjega tokena. Malo poenostavi: med treningom se logits pogosto računajo za vse pozicije paralelno, ne samo za zadnji token; “zadnji token only” velja predvsem za autoregressive generation.         |
+| GQA / MoE / Mixtral               |  **85–90%** | Smer pravilna. Mistral 7B uporablja GQA za hitrejši inference in manj memory zahteve; Mixtral je res sparse MoE z 8 eksperti, kjer se za vsak token izbereta 2, skupaj 46.7B parametrov in 12.9B aktivnih na token. ([arXiv][4]) ([Mistral AI][5])     |
+| “Modern LLMs share same skeleton” |  **80–85%** | Na visoki ravni drži: tokeni, embeddings, positional info, transformer layers, attention, FFN, residuals, normalization, next-token loop. Članek sam to lepo pove. ([0xkato][6]) Ampak frontier sistemi so danes več kot samo goli transformer.        |
+
+### Glavne stvari, ki jih članek dobro zadane
+
+Članek pravilno predstavi “mehaniko jedra”: tokenizacija → embeddingi → positional signal → attention → FFN → residual stream → norm → logits → sampling loop. To je res osnovna hrbtenica večine modernih LLM-ov. Tudi sam članek jasno pravi, da pokriva “core mechanisms” transformer-based LLM-ov in da se modeli razlikujejo po weights, konfiguraciji, podatkih in post-trainingu. ([0xkato][6])
+
+Prav ima tudi glede “lost in the middle”: raziskava Liu et al. je pokazala, da modeli pogosto bolje uporabljajo informacije na začetku in koncu konteksta kot v sredini. ([ACL Anthology][7])
+
+### Kje je zavajajoč ali preozek
+
+Največja slabost ni to, da bi pisal neumnosti. Slabost je **naslov**. “How LLMs Actually Work” zveni kot celotna razlaga, v resnici pa je to **dobro napisan transformer explainer**.
+
+Manjka mu vsaj to:
+
+1. **Training data + scaling** — zakaj velikost, kvaliteta podatkov in compute tako močno spremenijo sposobnosti.
+2. **Post-training** — SFT, RLHF, DPO, constitutional/safety tuning, reasoning tuning.
+3. **Inference sistemi** — batching, KV-cache optimizacije, quantization, speculative decoding, routing, server-side orchestration.
+4. **Reasoning behavior** — kako se pojavljajo chain-of-thought, scratchpad, self-consistency, verifierji, agentni loopi.
+5. **Tool/RAG/memory wrappers** — ChatGPT/Claude/Gemini kot produkt niso samo model weights; pogosto imajo iskanje, orodja, sistemske instrukcije, memory, safety classifiers.
+6. **Multimodalnost** — današnji frontier modeli niso več samo tekstovni decoder-only transformatorji.
+
+### Moja končna ocena
+
+**Kot uvodni tehnični članek: 88/100.**
+**Kot popolna razlaga “kako LLM-i dejansko delujejo”: 72/100.**
+**Kot vir za razumevanje osnovnega transformer jedra: zelo uporaben.**
+
+BD-style brutalno: **ni bullshit. Je dober članek.** Samo ne smeš ga brati kot “zdaj razumem celoten moderni AI sistem.” Razumeš njegovo **jedro**, ne pa celotnega organizma.
+
+[1]: https://arxiv.org/html/1706.03762v7 &quot;Attention Is All You Need&quot;
+[2]: https://arxiv.org/abs/2209.11895?utm_source=chatgpt.com &quot;In-context Learning and Induction Heads&quot;
+[3]: https://rome.baulab.info/ &quot;Locating and Editing Factual Associations in GPT&quot;
+[4]: https://arxiv.org/html/2310.06825 &quot;Mistral 7B&quot;
+[5]: https://mistral.ai/news/mixtral-of-experts/ &quot;Mixtral of experts | Mistral AI&quot;
+[6]: https://www.0xkato.xyz/how-llms-actually-work/ &quot;How LLMs Actually Work | 0xkato&quot;
+[7]: https://aclanthology.org/2024.tacl-1.9/ &quot;Lost in the Middle: How Language Models Use Long Contexts - ACL Anthology&quot;
+
+
+
+
+
+
+==================================================================================
+
+Moj prejšnji prompt sem dal v &quot;https://www.mdlxdcc.org/bd/bd_aim3_rhpm&quot; in dobil tale prompt:
+
+==================================================================================
+
+You are an expert technical reviewer of LLM/AI explainer articles.
+
+Your task is to read and evaluate this article:
+
+https://www.0xkato.xyz/how-llms-actually-work/
+
+The user wants to know whether the article is actually correct, and roughly **what percentage of it is true / accurate**.
+
+Important:
+- Do NOT answer from memory.
+- First open/read the article.
+- If you cannot access the article, clearly say so and ask the user to attach or paste it.
+- Do not pretend you saw the article if you did not.
+- Use web browsing and cite sources.
+- Prefer primary or high-quality sources: OpenAI/Anthropic/Google DeepMind docs or papers, transformer/attention papers, ML textbooks, Distill-style technical explainers, or well-known research papers.
+- The user is not asking for a generic explanation of LLMs. They are asking for a truth/accuracy audit of this specific article.
+
+Goal:
+Give a practical, honest assessment:
+1. What the article gets right.
+2. What it simplifies but is still acceptable.
+3. What is misleading, incomplete, outdated, or wrong.
+4. A rough percentage score for “how much it holds.”
+5. A short answer the user can reuse when explaining the verdict to someone else.
+
+Use this scoring style:
+- **90–100%**: very accurate, only minor simplifications.
+- **75–89%**: mostly accurate, but with meaningful simplifications or missing nuance.
+- **60–74%**: useful but mixed; several claims need correction.
+- **40–59%**: partly useful, but misleading in important ways.
+- **Below 40%**: mostly wrong or unreliable.
+
+When giving a percentage:
+- Do not make it fake-precise.
+- Use a range if needed, e.g. “about 80–85% accurate.”
+- Explain what the percentage means.
+- Separate factual correctness from pedagogical usefulness.
+
+Suggested workflow:
+1. Read the article and identify its main claims.
+2. Group claims into themes, for example:
+   - tokens and embeddings
+   - transformer architecture
+   - attention mechanism
+   - training / pretraining
+   - next-token prediction
+   - reasoning and “understanding”
+   - hallucinations
+   - RLHF / instruction tuning
+   - memory / context window
+   - agents or tool use, if mentioned
+3. For each major claim, classify it:
+   - Correct
+   - Mostly correct but simplified
+   - Misleading
+   - Wrong
+   - Unclear / unsupported
+4. Compare claims against reliable sources.
+5. Produce an overall score and practical verdict.
+
+Output format:
+
+# Verdict on “How LLMs Actually Work”
+
+## Overall score
+Give a percentage or percentage range, with confidence level.
+
+Example:
+“Approx. 82–88% accurate, with medium confidence.”
+
+## One-paragraph answer
+Give the direct human answer first.
+
+## What the article gets right
+Use concise bullets.
+
+## What needs correction or nuance
+Use concise bullets. Be specific.
+
+## Claim-by-claim audit
+Use a table:
+
+| Article claim / theme | Verdict | Why | Severity |
+|---|---|---|---|
+
+Severity options:
+- Low: harmless simplification
+- Medium: could mislead readers
+- High: technically wrong or strongly misleading
+
+## Best corrected explanation
+Give a short, clean explanation of how LLMs actually work, correcting the article’s weak points.
+
+## Reusable short answer
+Write 3–5 sentences the user can copy-paste to someone else.
+
+## Sources
+Cite sources inline throughout the answer, not only at the end.
+
+Tone:
+- Direct and honest.
+- Not overly academic.
+- Assume the user is intelligent but may not want dense ML jargon.
+- Do not be smug.
+- Do not dismiss the article just because it is simplified.
+- Reward good simplification when it helps understanding.
+
+
+
+
+
+==================================================================================
+
+Na podlagi zgornjega prompta je nova GPT seja napisala tole:
+
+==================================================================================
+
+# Verdict on “How LLMs Actually Work”
+
+## Overall score
+
+**Approx. 84–88% accurate, medium-high confidence.**
+
+For the narrow subject it mostly explains — **decoder-only transformer architecture** — I’d score it closer to **88–92%**. For the broader promise implied by the title — **how modern deployed LLM assistants actually work end-to-end** — I’d score it closer to **75–82%**, because it under-covers training data, post-training, hallucinations, retrieval/tools, safety layers, evaluation, and serving/inference systems. Overall: **about 85% accurate**.
+
+The article is pedagogically useful and mostly technically sound, but it is more accurately titled **“How Transformer LLM Architecture Works”** than “How LLMs Actually Work.” The article itself focuses on tokens, embeddings, positional encodings, attention, FFNs, residual streams, next-token prediction, KV cache, GQA, MoE, and related architecture details. ([0xkato][1])
+
+## One-paragraph answer
+
+The article mostly holds. It gives a good, practical explanation of the internal transformer stack: text becomes tokens, tokens become vectors, masked self-attention mixes information from prior context, feed-forward layers transform token representations, and the model generates by predicting the next token. Those points match standard explanations of tokenization, transformer attention, and autoregressive decoding. ([OpenAI Help Center][2]) The weak points are that it slightly overstates some intuitions — especially tokenization as the reason for counting failures, embedding-vector analogies, induction heads, and “facts in FFNs” — and it does not give enough space to post-training, hallucinations, tool use, retrieval, safety policies, and product-level systems, which strongly shape ChatGPT/Claude/Gemini-style assistants. ([arXiv][3])
+
+## What the article gets right
+
+* **Tokens first, text second.** LLMs process token IDs, not raw human text directly. OpenAI’s own docs describe tokens as chunks such as characters, words, punctuation, or partial words, and `tiktoken` is OpenAI’s BPE tokenizer library. ([OpenAI Help Center][2])
+
+* **Subword tokenization is real and important.** The article’s BPE/SentencePiece discussion is broadly correct. SentencePiece is a standard subword tokenizer/detokenizer system used in neural text processing. ([ACL Anthology][4])
+
+* **The transformer explanation is mostly correct.** The article’s Q/K/V, scaled dot-product attention, softmax-weighted value mixing, and causal masking are aligned with standard transformer explanations. ([nlp.seas.harvard.edu][5])
+
+* **Multi-head attention is explained well.** It correctly says heads use learned projections rather than simply fixed slices of the vector. That is an important detail many beginner explainers get wrong. ([nlp.seas.harvard.edu][5])
+
+* **RoPE is described in the right direction.** Rotary positional embeddings encode position through rotations and make relative-position information available inside self-attention. ([arXiv][6])
+
+* **The FFN/MLP section is one of the stronger parts.** There is real research support for feed-forward layers acting partly like key-value memories and for mid-layer FF modules playing an important role in factual associations. ([ACL Anthology][7])
+
+* **The article correctly separates architecture from weights.** The transformer skeleton is not the intelligence by itself; the learned weights, training data, objective, scale, post-training, and inference setup matter enormously. The article states this in simplified but valid form. ([0xkato][1])
+
+* **GQA, KV cache, MoE, and speculative decoding are real modern inference/architecture ideas.** The article’s inclusion of these topics is a strength, not fluff. Mistral 7B, for example, explicitly uses grouped-query attention to speed inference and reduce memory during decoding. ([arXiv][8]) Mixtral uses sparse mixture-of-experts routing, where each token is routed to selected experts rather than all FFN experts. ([arXiv][9]) Speculative decoding is also a real method for accelerating autoregressive generation. ([arXiv][10])
+
+## What needs correction or nuance
+
+* **It is not a full “how LLMs actually work” article.** It is mainly an architecture explainer. It does not deeply explain data curation, pretraining loss, scaling, optimizer dynamics, instruction tuning, RLHF/RLAIF/DPO, safety policies, system prompts, retrieval, tool use, evaluation, or deployment.
+
+* **Tokenization is overused as an explanation for mistakes.** Tokenization helps explain why letter-level tasks like counting “r” in “strawberry” can be unintuitive, but it is not the whole story. Exact character counting also requires reliable symbolic/algorithmic behavior, not just better tokens. OpenAI’s docs support the token-level framing, but not the stronger claim that tokenization alone explains these failures. ([OpenAI Help Center][2])
+
+* **The embedding analogy is useful but oversold.** “king − man + woman ≈ queen” is a classic word-vector intuition, but modern LLM behavior depends far more on contextual hidden states across many layers than on the initial embedding lookup alone. Word-vector research supports semantic vector relationships, but also notes limitations such as insensitivity to word order in simpler embedding systems. ([arXiv][11])
+
+* **RoPE and long context are not magic.** RoPE helps with positional representation and relative-position behavior, but long-context models can still fail depending on where relevant information appears. The “Lost in the Middle” paper shows performance can degrade when relevant information is placed in the middle of long contexts. ([arXiv][6])
+
+* **Induction heads are real, but the article overstates certainty.** Induction heads are an important mechanistic-interpretability finding, but the strongest causal evidence is in small attention-only models; for larger models with MLPs, evidence is more correlational and incomplete. ([arXiv][12])
+
+* **“Facts live in FFNs” needs nuance.** FFNs contain a lot of model capacity and can encode factual associations, but LLM knowledge is distributed across layers, attention, FFNs, activations, and residual streams. ROME-style edits show important evidence, but they do not mean there is a clean database row for every fact. ([arXiv][13])
+
+* **Post-training deserves more weight.** Modern assistants are not just pretrained next-token predictors. Instruction tuning and human/preference feedback strongly shape helpfulness, truthfulness, refusal behavior, tone, and task-following. InstructGPT showed that fine-tuning with human feedback improved alignment with user intent and helped reduce toxic/untruthful outputs, while still leaving mistakes. ([arXiv][3])
+
+* **Hallucinations are under-explained.** The article mentions generation mechanics, but a serious “how LLMs work” explainer should explain why models can produce plausible but false claims. OpenAI describes hallucinations as plausible but false outputs that persist partly because evaluation setups often reward guessing over calibrated uncertainty. ([OpenAI][14])
+
+## Claim-by-claim audit
+
+| Article claim / theme                                                                      | Verdict                       | Why                                                                                                                                                                                                                                                                    | Severity |
+| ------------------------------------------------------------------------------------------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Text is converted into token IDs before the model processes it.                            | Correct                       | This matches OpenAI’s explanation that models process text as tokens, and `tiktoken` explicitly converts text into token IDs. ([OpenAI Help Center][2])                                                                                                                | Low      |
+| BPE/SentencePiece-style subword tokenization explains why words are split strangely.       | Correct                       | BPE and SentencePiece are standard subword-tokenization approaches. The article’s examples are directionally right. ([GitHub][15])                                                                                                                                     | Low      |
+| Letter-counting mistakes are mainly because the model sees tokens, not letters.            | Mostly correct but simplified | Tokenization is part of the explanation, but exact counting also requires robust algorithmic/symbolic behavior. The article makes this sound cleaner than it is.                                                                                                       | Medium   |
+| Embedding vectors give token IDs learned meaning.                                          | Correct                       | The embedding lookup idea is standard. The article’s intuition is fine.                                                                                                                                                                                                | Low      |
+| Similar concepts live near each other in vector space; “king − man + woman ≈ queen.”       | Mostly correct but simplified | This is a useful word-vector analogy, but it is not a precise guarantee for modern LLM token embeddings. Contextual representations after many layers matter more. ([arXiv][11])                                                                                       | Medium   |
+| Self-attention needs positional information because attention alone has no sequence order. | Correct                       | Transformer attention needs position information to represent order. RoPE is a modern way to encode positional structure. ([nlp.seas.harvard.edu][5])                                                                                                                  | Low      |
+| RoPE is widely used and helps relative-position behavior.                                  | Correct with nuance           | RoPE does incorporate relative-position dependency into attention, but long-context reliability is still not guaranteed. ([arXiv][6])                                                                                                                                  | Low      |
+| Attention works through Q/K/V, scaled dot products, softmax weights, and value mixing.     | Correct                       | This matches the standard scaled dot-product attention formulation. ([nlp.seas.harvard.edu][5])                                                                                                                                                                        | Low      |
+| Causal masking prevents a decoder model from looking at future tokens.                     | Correct                       | This is standard decoder self-attention behavior. ([nlp.seas.harvard.edu][5])                                                                                                                                                                                          | Low      |
+| Multi-head attention uses learned projections, not fixed slices.                           | Correct                       | The article gets this important detail right. ([nlp.seas.harvard.edu][5])                                                                                                                                                                                              | Low      |
+| Attention heads can become specialized circuits, including induction heads.                | Mostly correct but simplified | Induction heads are real, but their general role in large-model in-context learning is not fully settled. The source paper itself says the strongest causal evidence is in small attention-only transformers and larger-model evidence is more indirect. ([arXiv][12]) | Medium   |
+| GQA and KV cache reduce inference memory/compute pressure.                                 | Correct                       | Mistral 7B explicitly uses grouped-query attention for faster inference and reduced memory during decoding. ([arXiv][8])                                                                                                                                               | Low      |
+| Attention is expensive and scales badly with context length.                               | Correct with nuance           | Full attention has quadratic cost in sequence length; during cached autoregressive decoding, each new token attends over prior context, so the practical cost profile depends on prefill vs decode.                                                                    | Low      |
+| FFNs expand, apply nonlinear transformation, and compress back.                            | Correct                       | This is the standard transformer MLP/FFN structure.                                                                                                                                                                                                                    | Low      |
+| FFNs store semantic/factual structure.                                                     | Mostly correct but simplified | There is strong evidence FF layers act partly like key-value memories and mid-layer FF modules matter for factual associations, but knowledge is distributed, not a simple database. ([ACL Anthology][7])                                                              | Medium   |
+| MoE models route tokens to selected experts.                                               | Correct                       | Mixtral uses sparse MoE layers where a router selects experts per token. ([arXiv][9])                                                                                                                                                                                  | Low      |
+| Residual connections and normalization stabilize deep transformer training.                | Correct with simplification   | LayerNorm/RMSNorm are important stabilizers. RMSNorm keeps rescaling while dropping recentering, improving efficiency while remaining comparable. ([arXiv][16])                                                                                                        | Low      |
+| LLM generation is next-token prediction repeated in a loop.                                | Correct                       | Autoregressive generation does work this way at inference. The nuance is that pretraining computes loss over many token positions efficiently in parallel.                                                                                                             | Low      |
+| Decoding settings like temperature/top-p change output behavior.                           | Correct                       | This is standard sampling behavior. The article’s explanation is acceptable.                                                                                                                                                                                           | Low      |
+| Speculative decoding can speed generation.                                                 | Correct                       | Speculative decoding is a real technique that can accelerate autoregressive sampling without changing the output distribution, under the method’s assumptions. ([arXiv][10])                                                                                           | Low      |
+| Post-training exists after base pretraining.                                               | Correct but incomplete        | The article mentions it, but does not explain how much instruction tuning and human/preference feedback shape assistant behavior. ([arXiv][3])                                                                                                                         | Medium   |
+| “Modern LLMs mostly share the same transformer-family skeleton.”                           | Mostly correct                | Broadly true for many major text LLMs, especially decoder-only transformer systems, but proprietary frontier details are not fully public and some newer systems use additional architectures, tools, retrieval, or multimodal components.                             | Medium   |
+| Hallucinations are not central to the article.                                             | Incomplete                    | For a full “how LLMs work” explainer, hallucination mechanisms should be covered. OpenAI describes hallucinations as plausible but false model outputs and connects their persistence to training/evaluation incentives. ([OpenAI][14])                                | Medium   |
+
+## Best corrected explanation
+
+A modern text LLM usually starts by **tokenizing** input text into token IDs. Those IDs are mapped into learned vectors, combined with positional information, and passed through many transformer layers. Inside each layer, **masked self-attention** lets each token mix information from earlier tokens using learned query, key, and value projections; **feed-forward/MLP layers** then transform each token representation and provide much of the model’s capacity. Residual connections and normalization keep very deep stacks trainable. ([OpenAI Help Center][2])
+
+During pretraining, the model’s weights are adjusted so it becomes better at predicting missing or next tokens across huge text/code/multimodal corpora. During inference, a decoder-style LLM repeatedly predicts a distribution over the next token, samples or selects one, appends it, and continues. KV caching, grouped-query attention, MoE routing, and speculative decoding are engineering/architecture techniques that make this process cheaper or faster. ([arXiv][8])
+
+But deployed assistants are more than base next-token predictors. They are shaped by instruction tuning, preference/RLHF-style training, system prompts, safety policies, retrieval, tools, and product orchestration. They do not store a clean database of facts; knowledge and skills are distributed across weights and activations. Because they generate plausible continuations rather than directly checking truth by default, they can reason impressively but also hallucinate. ([arXiv][3])
+
+## Reusable short answer
+
+The article is mostly right — I’d call it **about 85% accurate**. It explains transformer LLM architecture well: tokens, embeddings, attention, FFNs, residual/norm layers, next-token generation, KV cache, GQA, and MoE are mostly described correctly. The main weakness is that it over-simplifies a few mechanisms and under-explains post-training, hallucinations, tools/RAG, and how deployed AI assistants are actually shaped. So it is a good article, but more precisely it explains **how transformer LLM architecture works**, not the full story of modern AI assistants.
+
+## Sources
+
+Main sources used: the audited article itself; OpenAI tokenization docs and `tiktoken`; transformer attention explanations; RoPE; Lost in the Middle; Mistral/Mixtral architecture papers; FFN memory and ROME papers; RMSNorm; InstructGPT/RLHF; speculative decoding; and OpenAI’s hallucination discussion. ([0xkato][1])
+
+[1]: https://www.0xkato.xyz/how-llms-actually-work/ &quot;How LLMs Actually Work | 0xkato&quot;
+[2]: https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them &quot;What are tokens and how to count them? | OpenAI Help Center&quot;
+[3]: https://arxiv.org/abs/2203.02155 &quot;[2203.02155] Training language models to follow instructions with human feedback&quot;
+[4]: https://aclanthology.org/D18-2012/ &quot;SentencePiece: A simple and language independent subword tokenizer and detokenizer for Neural Text Processing - ACL Anthology&quot;
+[5]: https://nlp.seas.harvard.edu/2018/04/03/attention.html &quot;The Annotated Transformer&quot;
+[6]: https://arxiv.org/abs/2104.09864 &quot;[2104.09864] RoFormer: Enhanced Transformer with Rotary Position Embedding&quot;
+[7]: https://aclanthology.org/2021.emnlp-main.446/ &quot;Transformer Feed-Forward Layers Are Key-Value Memories - ACL Anthology&quot;
+[8]: https://arxiv.org/html/2310.06825 &quot;Mistral 7B&quot;
+[9]: https://arxiv.org/abs/2401.04088 &quot;[2401.04088] Mixtral of Experts&quot;
+[10]: https://arxiv.org/abs/2211.17192 &quot;[2211.17192] Fast Inference from Transformers via Speculative Decoding&quot;
+[11]: https://arxiv.org/abs/1310.4546 &quot;[1310.4546] Distributed Representations of Words and Phrases and their Compositionality&quot;
+[12]: https://arxiv.org/abs/2209.11895 &quot;[2209.11895] In-context Learning and Induction Heads&quot;
+[13]: https://arxiv.org/abs/2202.05262 &quot;[2202.05262] Locating and Editing Factual Associations in GPT&quot;
+[14]: https://openai.com/index/why-language-models-hallucinate/ &quot;Why language models hallucinate | OpenAI&quot;
+[15]: https://github.com/openai/tiktoken &quot;GitHub - openai/tiktoken: tiktoken is a fast BPE tokeniser for use with OpenAI&#x27;s models. · GitHub&quot;
+[16]: https://arxiv.org/abs/1910.07467 &quot;[1910.07467] Root Mean Square Layer Normalization&quot;
+
+
+
+
+
+
+
+
+
+
+
+==================================================================================
+
+V drugem GPT okolju, kjer GPT nima načina dela, sem spet vprašal GPT tole:
+
+to preberi in poveč če to drži oz v % koliko % drži? 
+https://www.0xkato.xyz/how-llms-actually-work/
+če članka ne vidiš ti ga pripnem
+
+==================================================================================
+
+GPT je odgovoril tole:
+
+Na kratko: **članek verjetno zadane približno 70–85 % resnice**, odvisno od tega, kako kategorične trditve daje. Če je njegovo glavno sporočilo:
+
+&gt; &quot;LLM je v osnovi stroj za napoved naslednjega tokena, ki preko attention mehanizma gradi kompleksno vedenje.&quot;
+
+potem je to precej pravilno. ([Knovo][1])
+
+Ampak če članek trdi ali namiguje:
+
+&gt; &quot;LLM je *samo* next-token predictor in nič več.&quot;
+
+potem postane stvar precej bolj vprašljiva in bi rekel **50–60 % pravilno**. Tudi med raziskovalci je vedno več argumentov, da je to tehnično res na nivoju učnega cilja, ni pa dobra razlaga tega, kaj se je model dejansko naučil. ([arXiv][2])
+
+Moja ocena po posameznih točkah:
+
+| Trditev                                        | Moja ocena                                   |
+| ---------------------------------------------- | -------------------------------------------- |
+| LLM generira besedilo token za tokenom         | 100 %                                        |
+| Trening temelji na napovedi naslednjega tokena | 100 %                                        |
+| Attention je ključni mehanizem za kontekst     | 95 %                                         |
+| Model nima baze dejstev kot SQL baza           | 95 %                                         |
+| &quot;Razumevanje&quot; nastane kot emergentna lastnost  | 80–90 %                                      |
+| LLM je samo zelo napreden autocomplete         | 40–60 %                                      |
+| V njem ni nobenega notranjega modela sveta     | 20–50 %                                      |
+| Razmišljanje je zgolj iluzija                  | 30–70 % (odvisno od definicije razmišljanja) |
+
+Največji problem takšnih člankov je običajno zamenjava:
+
+**učni cilj ≠ notranja struktura**
+
+To je podobno kot:
+
+&gt; &quot;Človek je samo organizem, ki maksimira reprodukcijo.&quot;
+
+V evolucijskem smislu je to res. Ampak iz tega ne moreš razložiti matematike, glasbe, filozofije ali znanosti.
+
+Podobno:
+
+&gt; &quot;LLM napoveduje naslednji token.&quot;
+
+To je res.
+
+Ampak iz tega samodejno ne sledi, da v mreži ni nastala abstraktna reprezentacija konceptov, prostorskih odnosov, logike, vzročnosti itd. Ravno nasprotno – veliko raziskav kaže, da se med treningom oblikujejo zelo bogate notranje reprezentacije. ([arXiv][3])
+
+Glede na to, kar si mi včeraj kazal za RHPr, RHP in AIm3, bi tebi verjetno najbolj padel v oči ravno ta del:
+
+Članek verjetno opisuje **mehaniko generiranja**, ne pa **narave reprezentacije**.
+
+To je podobno kot opisati možgane z:
+
+&gt; &quot;Nevron sproži naslednji akcijski potencial.&quot;
+
+Tehnično pravilno.
+
+Ampak ne pojasni, kako iz tega nastanejo matematika, zavest ali kreativnost.
+
+Če mi prilepiš originalni članek (ali PDF ali HTML), ga lahko preberem celega in ti dam precej bolj natančno oceno v stilu:
+
+* kaj drži,
+* kaj je poenostavljeno,
+* kaj je zastarelo,
+* kaj je sporno med raziskovalci,
+* in predvsem kako se ujema ali ne ujema s tvojim RHPr/AIm3 pogledom.
+
+[1]: https://www.knovo.dev/guides/how-llms-work?utm_source=chatgpt.com &quot;How LLMs actually work: transformers, tokens, and attention explained (2026) | Knovo&quot;
+[2]: https://arxiv.org/abs/2408.04666?utm_source=chatgpt.com &quot;LLMs are Not Just Next Token Predictors&quot;
+[3]: https://arxiv.org/abs/2408.13442?utm_source=chatgpt.com &quot;A Law of Next-Token Prediction in Large Language Models&quot;
+</pre>
+  </section>
+</main>
+<footer class="footer">
+  <p>BD × AIM³/RHPm · standalone full case study page. Related: <a href="BD_AIM3_RHPm.html">RHPm Prompt Builder</a> · <a href="BD_AIM3_RHP.html">RHP</a> · <a href="BD_AIM3_RHPr.html">RHPr</a></p>
+</footer>
+<script>
+const root=document.documentElement;
+let fs=17;
+function applyFont(){root.style.setProperty('--baseFont',fs+'px');localStorage.setItem('rhpm_case_fs',String(fs));}
+try{const saved=parseInt(localStorage.getItem('rhpm_case_fs')||'17',10);if(saved>=14&&saved<=24){fs=saved;applyFont();}}catch(e){}
+document.getElementById('fontMinus').addEventListener('click',()=>{fs=Math.max(14,fs-1);applyFont();});
+document.getElementById('fontPlus').addEventListener('click',()=>{fs=Math.min(24,fs+1);applyFont();});
+document.getElementById('copyRaw').addEventListener('click',async()=>{const txt=document.getElementById('rawMd').textContent;try{await navigator.clipboard.writeText(txt);const b=document.getElementById('copyRaw');const old=b.textContent;b.textContent='Copied';setTimeout(()=>b.textContent=old,1200);}catch(e){alert('Copy failed; select the raw block manually.');}});
+const bar=document.getElementById('scrollProgress');function updateBar(){const h=document.documentElement;const max=h.scrollHeight-h.clientHeight;bar.style.width=(max?Math.min(100,Math.max(0,h.scrollTop/max*100)):0)+'%';}document.addEventListener('scroll',updateBar,{passive:true});updateBar();
+</script>
+</body>
+</html>
