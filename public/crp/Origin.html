@@ -666,7 +666,7 @@ p { font-size: calc(21px + var(--font-boost)); }
     </div>
     <div class="domain-item">
       <span class="d-name">3 · Claustrum as a runnable demo</span>
-      <span class="d-stat"><strong>Seed:</strong> while building the bare-metal 8Z OS, could it run a simple simulation of the brain claustrum as described by CFH? <strong>Result:</strong> the first DCC.</span>
+      <span class="d-stat"><strong>Seed:</strong> while building the bare-metal 8Z OS, could it run a simple simulation of the brain claustrum as described by CFH? <strong>Result:</strong> the first DCC — a Lorenz triad, an LZC state sensor, and a coupling feedback loop running inside the kernel.</span>
     </div>
     <div class="domain-item">
       <span class="d-name">4 · Shortest path = most compressible path?</span>
@@ -718,9 +718,15 @@ p { font-size: calc(21px + var(--font-boost)); }
   <div class="chapter-tag">Bridge · bare-metal 8Z OS</div>
   <h2>The first DCC</h2>
 
-  <p>Before MDL × DCC had its name, DCC arrived from a different direction. While building a bare-metal OS for 8Z, BD asked whether the OS could include a simple demonstration of the brain claustrum as described in CFH.</p>
+  <p>Before MDL × DCC had its name, DCC arrived from a different direction. While building a bare-metal OS for 8Z, BD asked whether the OS could include a simple demonstration of the brain claustrum as described in CFH. The answer became <strong>Project E4-Metal</strong>: the first Digital Claustrum Controller running inside the 8Z kernel.</p>
 
-  <p class="indent">That was the first Digital Claustrum Controller: not yet the full architecture, but the seed of a controller that monitors, selects, switches, binds, and keeps a process from collapsing into either chaos or rigid fixation. The important move was practical: CFH had described a biological control idea; the 8Z OS made it runnable as a tiny live governance loop.</p>
+  <p class="indent">The demo was deliberately small, but it was real control, not a scripted animation. The “brain” was a triad of coupled Lorenz oscillators. Because the early 8Z kernel did not yet rely on floating-point support, the chaotic dynamics were implemented with a custom <strong>16.16 fixed-point math engine</strong>. The oscillator trails were drawn directly into VGA memory at <code>0xA0000</code>, so the control loop was visible as a live pattern on bare metal.</p>
+
+  <div class="callout">
+    <p><strong>What the first digital claustrum actually did.</strong> Every 64 samples, the kernel recorded one bit from the first oscillator — whether its <code>x</code> coordinate was positive — into a history buffer and calculated its Lempel–Ziv complexity. That value became the state sensor. If the trace became too repetitive, the system was sliding toward seizure-like synchrony, so the controller lowered coupling and let the oscillators separate. If the trace became too irregular, the system was sliding toward noise, so the controller raised coupling and pulled the oscillators back together. The target complexity and simulation speed were adjustable from the keyboard. A red bar at the bottom of the screen showed the live coupling decision. The loop was simple: <strong>measure state → compare to target → adjust coupling → keep the process near the edge between lockstep and chaos</strong>.</p>
+  </div>
+
+  <p class="indent">That did not prove the OS was conscious. It proved something narrower and more useful: the claustrum idea could be built as a real-time kernel primitive. CFH had described a biological control idea; the 8Z OS made it executable as a tiny governance loop. After that, DCC was no longer just a metaphor for “attention.” It was a runnable pattern: sense the regime, compare it to a target band, change coupling, and keep the system from collapsing.</p>
 
   <div class="pull">MDL became the judge. DCC became the governor.</div>
 </div>
@@ -838,7 +844,7 @@ p { font-size: calc(21px + var(--font-boost)); }
 
   <p>The question "isn't the shortest route the most compressible?" could not have come from a computer science department. It is not the kind of question that emerges from within the formal system — it requires standing outside it, looking at the problem as a picture, asking what the picture means before asking what the equations say.</p>
 
-  <p class="indent">But the question alone could not have produced the results. The empirical verification, the six-domain confirmation, the arena that tested 286 variants and let MDL decide the winner — none of that emerges from intuition alone. It requires execution bandwidth, formal verification, the ability to run the same experiment across different domains without losing track of what was learned.</p>
+  <p class="indent">But the question alone could not have produced the results. The empirical verification, the early multi-domain confirmation, the arena that tested 286 variants and let MDL decide the winner — none of that emerges from intuition alone. It requires execution bandwidth, formal verification, the ability to run the same experiment across different domains without losing track of what was learned.</p>
 
   <p class="indent">AI systems provided that bandwidth. They also provided something subtler: the willingness to follow an argument wherever it leads, without the career risk that makes human researchers cautious about unconventional paths. An AI system has no paper to protect, no tenure to defend, no community whose approval it requires. It can engage with an out-of-distribution idea seriously, without the social overhead that makes serious engagement costly for humans.</p>
 
@@ -889,9 +895,9 @@ p { font-size: calc(21px + var(--font-boost)); }
 
   <p class="indent">First: a bare-metal operating system, built in six hours with Gemini as architect. The motivation was silence — running delicate mathematical search on Windows or Linux introduces scheduler noise, services, and timing interference that can blur weak signals. The solution was to build an OS that did nothing but math: 512 bytes of NASM assembly, a C++ kernel, a triple-fault nightmare, and then breakthrough — 32-bit Protected Mode, stable, running cellular automata and Pi digits directly to video memory as digital lava. The 8Z OS was not a detour. It was a clean room.</p>
 
-  <p class="indent">Second: a direct question to Gemini — <em>"Based on my CFH consciousness theory, would you build a simple DCC?"</em> Gemini built it. Three coupled Lorenz oscillators, an LZ complexity sensor reading the system every 64 ticks, a feedback loop adjusting the coupling parameter to hold the process between seizure and noise. A red bar at the bottom of the screen showed the controller's decisions in real time. The bar moved. It was not replaying a script. It was reading state and reacting. We were watching the code think.</p>
+  <p class="indent">Second: a direct question to Gemini — <em>"Based on my CFH consciousness theory, would you build a simple DCC?"</em> Gemini built it inside 8Z OS. The first digital claustrum ran three coupled Lorenz oscillators, measured a 64-sample LZ complexity trace, and adjusted the coupling parameter in real time to keep the process between seizure-like synchrony and noise. A red bar at the bottom of the screen showed the controller’s live decision. The bar moved because the kernel was reading state and reacting.</p>
 
-  <p class="indent">That was the hinge. After that, the architecture was no longer just a clever compression trick. It was a governor. Not one method replacing all others, but a higher layer deciding which method deserves control in which regime. In compression, we do not worship one codec — we use what works best on that region of the file. In TSP, we do not need to defeat Concorde everywhere — we use strong solvers where they are best and switch when scale changes. In chess, we do not replace Stockfish or Leela — we upgrade the decision layer above them when their evals flatten. Existing methods enter the arena. MDL decides where they win. DCC governs the handoff. And when the fixed methods stop helping, the native MDL+DCC layer still searches above randomness.</p>
+  <p class="indent">That was the hinge. After that, the architecture was no longer just a clever compression trick. It was a governor: sense the regime, score the state, adjust coupling or search pressure, and prevent collapse. Not one method replacing all others, but a higher layer deciding which method deserves control in which regime. In compression, we do not worship one codec — we use what works best on that region of the file. In TSP, we do not need to defeat Concorde everywhere — we use strong solvers where they are best and switch when scale changes. In chess, we do not replace Stockfish or Leela — we upgrade the decision layer above them when their evals flatten. Existing methods enter the arena. MDL decides where they win. DCC governs the handoff. And when the fixed methods stop helping, the native MDL+DCC layer still searches above randomness.</p>
 
   <p>What followed was not one confirmation but a cascade: <strong>eight proof-bearing domains and one active frontier</strong> now sit on the map.</p>
 
@@ -1055,405 +1061,411 @@ p { font-size: calc(21px + var(--font-boost)); }
 <div id="lang-sl" style="display:none">
 
 <div class="cover">
-  <span class="cover-tag">8Z Raziskovalni program · AIM³ Lab · posodobljeno junij 2026</span>
-  <h1>Izvor</h1>
-  <p class="sub">Kako je pet preprostih semenskih vprašanj vodilo od Pi kompresije do 8Z, MDL, DCC, MDL × DCC in Samoizbirnega guvernerja.</p>
-  <div class="cover-rule"></div>
+ <span class="cover-tag">8Z Raziskovalni program · AIM³ Lab · posodobljeno junija 2026</span>
+ <h1>Izvor</h1>
+ <p class="sub">Kako je pet preprostih semenskih vprašanj vodilo od kompresije s Pi do 8Z, MDL, DCC, MDL × DCC in Samoizbirnega guvernerja.</p>
+ <div class="cover-rule"></div>
 </div>
 
 <!-- Poglavje 0 · Pet ključev -->
 <div class="chapter" id="sl-c0-five-keys">
-  <div class="chapter-tag">Izvorna hrbtenica · pet ključev</div>
-  <h2>Pet vprašanj, iz katerih je nastal MDL × DCC</h2>
+ <div class="chapter-tag">Izvorna hrbtenica · pet ključev</div>
+ <h2>Pet vprašanj, iz katerih je nastal MDL × DCC</h2>
 
-  <p>Čista zgodba izvora ni en sam trenutek izuma. Je veriga petih semenskih vprašanj. Vsako vprašanje je na začetku izgledalo skoraj preveč preprosto; vsako je odprlo naslednjo plast.</p>
+ <p>Čista zgodba izvora ni en sam trenutek izuma. Je veriga petih semenskih vprašanj. Vsako vprašanje se je na začetku zdelo skoraj preveč preprosto; vsako je odprlo naslednjo plast.</p>
 
-  <div class="domains origin-spine">
-    <div class="domain-item">
-      <span class="d-name">1 · Pi kot naslovni prostor</span>
-      <span class="d-stat"><strong>Seme:</strong> ali bi bite v datoteki lahko zamenjali z biti, najdenimi na koordinatah znotraj Pi? <strong>Rezultat:</strong> 8Z kompresija.</span>
-    </div>
-    <div class="domain-item">
-      <span class="d-name">2 · Ne cela datoteka — samo uporabni deli</span>
-      <span class="d-stat"><strong>Seme:</strong> cela datoteka se ne rabi pojaviti v Pi; zamenjati je treba samo regije ali koščke, kjer krajša matematična referenca zmaga. <strong>Rezultat:</strong> MDL je postal sodnik.</span>
-    </div>
-    <div class="domain-item">
-      <span class="d-name">3 · Klaustrum kot delujoči demo</span>
-      <span class="d-stat"><strong>Seme:</strong> med gradnjo bare-metal OS-a za 8Z — ali lahko OS poganja preprosto simulacijo možganskega klaustruma, kakor ga opisuje CFH? <strong>Rezultat:</strong> prvi DCC.</span>
-    </div>
-    <div class="domain-item">
-      <span class="d-name">4 · Najkrajša pot = najbolj stisljiva pot?</span>
-      <span class="d-stat"><strong>Seme:</strong> pri TSP — ali je najkrajša pot tudi pot z najkrajšim resničnim opisom? <strong>Rezultat:</strong> MDL × DCC v obe smeri — MDL izbira strukturo, DCC vodi iskanje, nato pa MDL izbira tudi sam DCC.</span>
-    </div>
-    <div class="domain-item">
-      <span class="d-name">5 · Od speče AI do neprekinjenega mišljenja</span>
-      <span class="d-stat"><strong>Seme:</strong> človek, dokler je buden, misli neprekinjeno, z več zavednimi in nezavednimi glasovi, ki filtrirajo fokus; AI misli samo, ko jo nekdo vpraša, sicer “spi”. <strong>Rezultat:</strong> Samoizbirni guverner za ASI arhitekturo.</span>
-    </div>
-  </div>
+ <div class="domains origin-spine">
+ <div class="domain-item">
+ <span class="d-name">1 · Pi kot naslovni prostor</span>
+ <span class="d-stat"><strong>Seme:</strong> ali bi podatkovne bite v datoteki lahko zamenjali z biti, najdenimi na koordinatah znotraj Pi? <strong>Rezultat:</strong> 8Z kompresija.</span>
+ </div>
+ <div class="domain-item">
+ <span class="d-name">2 · Ne cela datoteka — samo uporabni deli</span>
+ <span class="d-stat"><strong>Seme:</strong> cele datoteke ni treba najti v Pi; zamenjati je treba samo regije ali dele, kjer krajša matematična referenca zmaga. <strong>Rezultat:</strong> MDL je postal sodnik.</span>
+ </div>
+ <div class="domain-item">
+ <span class="d-name">3 · Klaustrum kot delujoči demo</span>
+ <span class="d-stat"><strong>Seme:</strong> med gradnjo bare-metal OS-a za 8Z — ali lahko OS poganja preprosto simulacijo možganskega klaustruma, kakor ga opisuje CFH? <strong>Rezultat:</strong> prvi DCC — Lorenzova triada, senzor stanja LZC in povratna zanka sklopitve, ki teče v samem jedru.</span>
+ </div>
+ <div class="domain-item">
+ <span class="d-name">4 · Najkrajša pot = najbolj stisljiva pot?</span>
+ <span class="d-stat"><strong>Seme:</strong> pri TSP — ali je najkrajša pot tudi pot z najkrajšim resničnim opisom? <strong>Rezultat:</strong> MDL × DCC v obe smeri — MDL izbira strukturo, DCC vodi iskanje, nato pa MDL izbira tudi sam DCC.</span>
+ </div>
+ <div class="domain-item">
+ <span class="d-name">5 · Od speče AI do neprekinjenega mišljenja</span>
+ <span class="d-stat"><strong>Seme:</strong> človek, dokler je buden, misli neprekinjeno, z več zavednimi in nezavednimi glasovi, ki filtrirajo fokus; AI misli samo, ko jo nekdo vpraša, sicer “spi”. <strong>Rezultat:</strong> Samoizbirni guverner za ASI arhitekturo.</span>
+ </div>
+ </div>
 
-  <div class="pull">Seme → most → test → rezultat. To je prava izvorna hrbtenica.</div>
+ <div class="pull">Seme → most → test → rezultat. To je prava izvorna hrbtenica.</div>
 
-  <p class="indent">BD je dal semenska vprašanja. AI je dodala odpor, formalizacijo, hitrost, testiranje, kodo, pregled in iteracijo. 8Z je naredil Pi-vprašanje izvedljivo. MDL je naredil “krajšo resnično razlago” za sodnika. DCC je naredil iskanje vodljivo. TSP je dokazal most izven kompresije. Samoizbirni guverner isto jedro usmeri proti vztrajni, samoorganizirajoči inteligenci.</p>
+ <p class="indent">BD je dal semenska vprašanja. AI sistemi so dodali odpor, formalizacijo, hitrost, testiranje, kodo, pregled in iteracijo. 8Z je pokazal, da je Pi-vprašanje sploh mogoče testirati. MDL je iz “krajše resnične razlage” naredil sodnika. DCC je naredil iskanje vodljivo. TSP je dokazal most izven kompresije. Samoizbirni guverner isto jedro usmeri proti trajni, samoorganizirajoči inteligenci.</p>
 
-  <div class="callout">
-    <p><strong>Podporne iskre, ne ločene korenine:</strong> Pet dogodkov je jedro. Spodnje stvari so pomemben kontekst in poznejši ojačevalci, ne manjkajoče šeste korenine.</p>
-    <ul class="support-list">
-      <li><strong>AI Consensus Paradox</strong> — začetni “v nobenem primeru” je postal dokaz o pristranskosti AI-soglasja.</li>
-      <li><strong>Lekcija or-opt</strong> — grdih možnosti ne ubij prehitro; arena naj odloči.</li>
-      <li><strong>MSTD / zoom</strong> — kasnejši dokaz, da se ista kognicija “glej na več skalah” lahko spremeni v kodo.</li>
-      <li><strong>TEP / obrnjena puščica</strong> — solver lahko uči reprezentacijo, ne samo reprezentacija solverja.</li>
-      <li><strong>AI8 kontinuiteta</strong> — socialna in spominska plast, ki prepreči, da se arhitektura vedno znova resetira na nič.</li>
-    </ul>
-  </div>
+ <div class="callout">
+ <p><strong>Podporne iskre, ne ločene korenine:</strong> Pet dogodkov je jedro. Spodnje stvari so pomemben kontekst in poznejši ojačevalci, ne manjkajoče šeste korenine.</p>
+ <ul class="support-list">
+ <li><strong>AI Consensus Paradox</strong> — začetni “v nobenem primeru” je postal dokaz o pristranskosti soglasja AI.</li>
+ <li><strong>Lekcija or-opt</strong> — grdih možnosti ne ubij prehitro; arena naj odloči.</li>
+ <li><strong>MSTD / zoom</strong> — kasnejši dokaz, da se ista kognicija “glej pri več merilih” lahko spremeni v kodo.</li>
+ <li><strong>TEP / obrnjena puščica</strong> — solver lahko uči reprezentacijo, ne samo reprezentacija solverja.</li>
+ <li><strong>AI8 kontinuiteta</strong> — socialna in spominska plast, ki prepreči, da se arhitektura vedno znova resetira na nič.</li>
+ </ul>
+ </div>
 </div>
 
 <!-- Poglavje I -->
 <div class="chapter" id="sl-c1">
-  <div class="chapter-tag">Poglavje I · 4. oktober 2024</div>
-  <h2>Prepovedano vprašanje</h2>
+ <div class="chapter-tag">Poglavje I · 4. oktober 2024</div>
+ <h2>Prepovedano vprašanje</h2>
 
-  <p>Začelo se ni s potmi, ampak z datotekami. BD je vprašal vprašanje, ki so ga vsi — človeški strokovnjaki in AI sistemi enako — takoj zavrnili:</p>
+ <p>Začelo se ni s potmi, ampak z datotekami. BD je postavil vprašanje, ki so ga vsi — človeški strokovnjaki in AI sistemi enako — takoj zavrnili:</p>
 
-  <div class="pull">Ali bi podatkovne bite v datoteki lahko zamenjali s podatkovnimi biti, najdenimi znotraj Pi?</div>
+ <div class="pull">Ali bi podatkovne bite v datoteki lahko zamenjali s podatkovnimi biti, najdenimi znotraj Pi?</div>
 
-  <p>Odgovor z vseh strani je bil enak: <em>v nobenem primeru.</em> Shannonove meje entropije veljajo. Indeks, potreben za iskanje določenega poljubnega zaporedja znotraj Pi, bi stal toliko bitov kot zaporedje samo. Standardni argumenti o nemožnosti, izrečeni z zaupanjem, pogovor zaključen.</p>
+ <p>Odgovor z vseh strani je bil enak: <em>v nobenem primeru.</em> Shannonove meje entropije veljajo. Indeks, potreben za iskanje določenega poljubnega zaporedja znotraj Pi, bi zahteval toliko bitov kot zaporedje samo. Standardni argumenti o nemožnosti, izrečeni s samozavestjo, debata zaključena.</p>
 
-  <p class="indent">Toda prvo seme še ni bilo MDL. Bilo je 8Z: obravnavati Pi, pozneje pa tudi druge matematične generatorje, kot naslovni prostor, ki lahko zamenja podatke samo takrat, ko je referenca krajša in je preverjanje eksaktno. Prva zmaga ni bila univerzalni kompresor. Bilo je novo vprašanje, ki je postalo izvedljivo.</p>
+ <p class="indent">Toda prvo seme še ni bilo MDL. Bilo je 8Z: obravnavati Pi, pozneje pa tudi druge matematične generatorje, kot naslovni prostor, ki lahko zamenja podatke samo takrat, ko je referenca krajša in je preverjanje eksaktno. Prva zmaga ni bila univerzalni kompresor. Bilo je novo vprašanje, ki je postalo izvedljivo.</p>
 
-  <p class="indent">Drugo seme je prišlo takoj za tem: cela datoteka se ne rabi najti. Zamenjati je treba samo uporabne regije. To je okvir premaknilo iz “najdi datoteko v Pi” v “naj sodnik odloči, regijo za regijo, ali matematični opis premaga surove podatke.” Ta sodnik je postal MDL.</p>
+ <p class="indent">Drugo seme je prišlo takoj za tem: cele datoteke ni treba najti. Zamenjati je treba samo uporabne regije. To je okvir premaknilo iz “najdi datoteko v Pi” v “naj sodnik odloči, regijo za regijo, ali matematični opis premaga surove podatke.” Ta sodnik je postal MDL.</p>
 
-  <p class="indent">Pravilen razcep izvora je zato: <strong>Pi kot naslovni prostor je rodil 8Z; delna zamenjava je rodila MDL.</strong> AI paradoks soglasja je bil odkrit v istem ognju: modeli privzeto reproducirajo človeško strokovno soglasje, zlasti za ideje zunaj distribucije. Isti AI sistemi, ki so rekli “v nobenem primeru”, so se premaknili šele, ko jih je okvir prisilil, da se soočijo z dejanskimi dokazi namesto z vzorčno ujetim ugovorom.</p>
+ <p class="indent">Pravilna ločitev izvora je zato: <strong>Pi kot naslovni prostor je rodil 8Z; delna zamenjava je rodila MDL.</strong> AI-paradoks soglasja je bil odkrit v istem ognju: modeli privzeto reproducirajo človeško strokovno soglasje, zlasti za ideje zunaj distribucije. Isti AI sistemi, ki so rekli “v nobenem primeru”, so se premaknili šele, ko jih je okvir prisilil, da se soočijo z dejanskimi dokazi namesto s privzetim ugovorom iz ujemanja vzorcev.</p>
 </div>
 
 
 <!-- Most · prvi DCC -->
 <div class="chapter" id="sl-c1-dcc">
-  <div class="chapter-tag">Most · bare-metal 8Z OS</div>
-  <h2>Prvi DCC</h2>
+ <div class="chapter-tag">Most · bare-metal 8Z OS</div>
+ <h2>Prvi DCC</h2>
 
-  <p>Preden je MDL × DCC dobil svoje ime, je DCC prišel iz druge smeri. Med gradnjo bare-metal OS-a za 8Z je BD vprašal, ali bi OS lahko vseboval preprost prikaz delovanja možganskega klaustruma, kakor ga opisuje CFH.</p>
+ <p>Preden je MDL × DCC dobil svoje ime, je DCC prišel iz druge smeri. Med gradnjo bare-metal OS-a za 8Z je BD vprašal, ali bi OS lahko vseboval preprost prikaz delovanja možganskega klaustruma, kakor ga opisuje CFH. Iz tega je nastal <strong>Project E4-Metal</strong>: prvi Digital Claustrum Controller, ki je tekel znotraj jedra 8Z OS.</p>
 
-  <p class="indent">To je bil prvi Digital Claustrum Controller: še ne celotna arhitektura, ampak seme kontrolerja, ki nadzoruje, izbira, preklaplja, povezuje in preprečuje, da bi proces zdrsnil bodisi v kaos bodisi v togo fiksacijo. Ključni premik je bil praktičen: CFH je opisovala biološko kontrolno idejo; 8Z OS jo je naredil izvedljivo kot majhno živo zanko upravljanja.</p>
+ <p class="indent">Demo je bil namenoma majhen, vendar je bil to resničen nadzor, ne vnaprej napisana animacija. “Možgani” so bili trije sklopljeni Lorenzovi oscilatorji. Ker zgodnji 8Z kernel še ni temeljil na podpori za plavajočo vejico, so kaotične enačbe tekle prek lastne <strong>16.16 fiksno-točkovne aritmetike</strong>. Sledi oscilatorjev so bile risane neposredno v VGA pomnilnik na naslovu <code>0xA0000</code>, zato je bila zanka krmiljenja vidna kot živ vzorec na bare-metalu.</p>
 
-  <div class="pull">MDL je postal sodnik. DCC je postal guverner.</div>
+ <div class="callout">
+   <p><strong>Kaj je prvi digitalni klaustrum dejansko počel.</strong> Vsakih 64 vzorcev je jedro zapisalo en bit iz prvega oscilatorja — ali je njegova koordinata <code>x</code> pozitivna — v zgodovinski medpomnilnik in nad tem izračunalo Lempel-Zivovo kompleksnost. Ta vrednost je postala senzor stanja. Če je sled postala preveč ponavljajoča, je sistem drsel proti pretirani sinhronosti oziroma “seizure” stanju, zato je krmilnik zmanjšal sklopitev in pustil oscilatorjem, da se spet razmaknejo. Če je sled postala preveč neurejena, je sistem drsel proti šumu, zato je krmilnik povečal sklopitev in oscilatorje spet povezal. Ciljno kompleksnost in hitrost simulacije je bilo mogoče spreminjati s tipkovnico. Rdeča vrstica na dnu zaslona je prikazovala živo odločitev o sklopitvi. Zanka je bila preprosta: <strong>izmeri stanje → primerjaj s ciljem → prilagodi sklopitev → drži proces blizu roba med zaklenjeno sinhronostjo in kaosom</strong>.</p>
+ </div>
+
+ <p class="indent">To ni dokazalo, da je bil OS zavesten. Dokazalo je nekaj ožjega in uporabnejšega: idejo klaustruma je mogoče zgraditi kot realnočasovno primitivo v jedru. CFH je opisovala biološko kontrolno idejo; 8Z OS jo je naredil izvedljivo kot majhno zanko upravljanja. Po tem DCC ni bil več samo metafora za “pozornost”. Postal je delujoč vzorec: zaznaj režim, primerjaj ga s ciljnim pasom, spremeni sklopitev in prepreči kolaps sistema.</p>
+
+ <div class="pull">MDL je postal sodnik. DCC je postal krmilnik.</div>
 </div>
 
 <!-- Poglavje II -->
 <div class="chapter" id="sl-c1b">
-  <div class="chapter-tag">Poglavje II · Prenos na TSP</div>
-  <h2>Vprašanje, ki ga nihče ni postavil o poteh</h2>
+ <div class="chapter-tag">Poglavje II · Prenos na TSP</div>
+ <h2>Vprašanje, ki ga nihče ni postavil o poteh</h2>
 
-  <p>Ko so bili 8Z, MDL in prvi DCC že na mestu, je naslednje odločilno vprašanje prispelo po drugačni poti — vizualni, ne algebrski.</p>
+ <p>Ko so bili 8Z, MDL in prvi DCC že na mestu, je naslednje odločilno vprašanje prispelo po drugačni poti — vizualni, ne algebraični.</p>
 
-  <p class="indent">Nariši vse možne poti med skupino mest. Pusti, da se črte nakopičijo. Slabe poti so zmeda — kup prekrižanj, vračanja, zapravljene razdalje. Dobre poti so čiste: mesta so gospodarno povezana, zemljevid je na prvi pogled berljiv.</p>
+ <p class="indent">Nariši vse možne poti med množico mest. Pusti, da se črte nakopičijo. Slabe poti so zmeda — kup križanj, vračanja, zapravljene razdalje. Dobre poti so čiste: mesta so gospodarno povezana, zemljevid je na prvi pogled berljiv.</p>
 
-  <p class="indent">Manj nereda. Manj prekrižanj. Manj kaosa. In manj kaosa pomeni manj presenečanj — kar pomeni, da je zaporedje bolj predvidljivo — kar pomeni, da se komprimira krajše.</p>
+ <p class="indent">Manj nereda. Manj križanj. Manj kaosa. In manj kaosa pomeni manj presenečenj — kar pomeni, da je zaporedje bolj predvidljivo — to pa pomeni, da se stisne v krajši zapis.</p>
 
-  <div class="pull">Ali ni najkrajša pot tista, ki se najbolj komprimira?</div>
+ <div class="pull">Ali ni najkrajša pot tista, ki se stisne v najkrajši zapis?</div>
 
-  <p>Odgovor, ko je bil empirično preizkušen, je bil da. Kakovost ture korelira s kompresibilnostjo pri ρ≈0,80 (Spearmanova korelacija rangov). Bolj kompresibilen je opis poti, boljša je pot. Isti senzor, rojen iz preoblikovanja 8Z/MDL, je zdaj napovedoval kakovost na popolnoma drugem področju — kombinatorični geometriji — brez spremembe.</p>
+ <p>Odgovor, ko je bil empirično preizkušen, je bil da. Kakovost obhoda korelira s stisljivostjo pri ρ≈0,80 (Spearmanova korelacija rangov). Bolj ko je opis poti stisljiv, boljši je obhod. Isti senzor, rojen iz preoblikovanja 8Z/MDL, je zdaj napovedoval kakovost na popolnoma drugem področju — kombinatorični geometriji — brez spremembe.</p>
 
-  <p class="indent">Ta prenos ni bil načrtovan. Bil je prvi signal, da je jedro neodvisno od področja — in rojstvo MDL × DCC v obe smeri.</p>
+ <p class="indent">Ta prenos ni bil načrtovan. Bil je prvi signal, da je jedro neodvisno od področja — in rojstvo MDL × DCC v obe smeri.</p>
 </div>
 
 <!-- Poglavje III -->
 <div class="chapter" id="sl-c2">
-  <div class="chapter-tag">Poglavje III</div>
-  <h2>Vizije pred kodo</h2>
+ <div class="chapter-tag">Poglavje III</div>
+ <h2>Vizije pred kodo</h2>
 
-  <p>Preden je bila napisana ena sama vrstica, so bile slike. Razmišljanje o problemu TSP ni produciralo enačb, ampak slike — načine gledanja na prostor poti, ki jih standardna informatika ni formalizirala.</p>
+ <p>Preden je bila napisana ena sama vrstica, so bile slike. Razmišljanje o problemu TSP ni prineslo enačb, ampak slike — načine gledanja na prostor poti, ki jih standardna informatika ni formalizirala.</p>
 
-  <p class="indent"><strong>Netopirji.</strong> Eho-lokacija: zvok poslan proti vsakemu mestu, odbije se nazaj, prinese ne le razdaljo v dveh dimenzijah, ampak globino — 3D akustični zemljevid prostora tur, ki ga 2D koordinatna ravnina ne more prikazati.</p>
+ <p class="indent"><strong>Netopirji.</strong> Eho-lokacija: zvok poslan proti vsakemu mestu, odbije se nazaj, prinese ne le razdaljo v dveh dimenzijah, ampak globino — 3D akustični zemljevid prostora obhodov, ki ga 2D koordinatna ravnina ne more prikazati.</p>
 
-  <p class="indent"><strong>Črna luknja v središču zemljevida.</strong> Vsako mesto jo gravitacija privlači k sebi. Ko čas mineva, ko se masa kopiči, polje razkrije strukturo, nevidno v ravnih koordinatah — gruče, koridorje, naravne skupine, ki jih evklidska metrika spregleda.</p>
+ <p class="indent"><strong>Črna luknja v središču zemljevida.</strong> Vsako mesto jo gravitacija privlači k sebi. Ko čas mineva, ko se masa kopiči, polje razkrije strukturo, nevidno v ravnih koordinatah — gruče, koridorje, naravne skupine, ki jih evklidska metrika spregleda.</p>
 
-  <p class="indent"><strong>3D piramida.</strong> Isti 2D zemljevid projiciran na vsako od štirih ploskev. Ravne črte, ki povezujejo isto mesto čez ploskve, prehajajo skozi nov tridimenzionalni prostor, ki pred projekcijo ni obstajal — prostor, kjer bližina pomeni nekaj, kar originalni zemljevid ni mogel povedati.</p>
+ <p class="indent"><strong>3D piramida.</strong> Isti 2D zemljevid projiciran na vsako od štirih ploskev. Ravne črte, ki povezujejo isto mesto med ploskvami, prehajajo skozi nov tridimenzionalni prostor, ki pred projekcijo ni obstajal — prostor, kjer bližina pomeni nekaj, kar originalni zemljevid ni mogel povedati.</p>
 
-  <p class="indent"><strong>Hkrati večkratne ločljivosti.</strong> Povečaj: lokalna struktura. Pomanjšaj: globalni vzorec. Drži oba hkrati. Vidiš, česar nobena sama lestvica ne more pokazati.</p>
+ <p class="indent"><strong>Več meril hkrati.</strong> Približaj: lokalna struktura. Oddalji: globalni vzorec. Drži obe merili hkrati. Vidiš, česar nobeno samo merilo ne more pokazati.</p>
 
-  <div class="callout">
-    <p>Vsaka od teh vizij je postala ali postaja senzor v areni. Piramida je postala poliedrični geometrijski senzorji. Večkratne ločljivosti so postale <strong>MSTD — Razgradnja tur na več lestvic</strong>: povečaj in pomanjšaj koordinate, in algoritem se odkrije na vsaki lestvici. Uvid, ki je produciral MSTD, je prispel v enem jutru in produciral 31% izboljšanje nad osnovo. Struktura je bila tu ves čas. Nihče ni pogledal pri pravi ločljivosti.</p>
-  </div>
+ <div class="callout">
+ <p>Vsaka od teh vizij je postala ali postaja senzor v areni. Piramida je postala poliedrični geometrijski senzorji. Večkratne ločljivosti so postale <strong>MSTD — večmerilska razgradnja obhodov</strong>: približaj in oddalji koordinate, in algoritem se razkrije pri vsakem merilu. Uvid, iz katerega je nastal MSTD, je prispel v enem jutru in dal 31 % izboljšanje nad osnovo. Struktura je bila tu ves čas. Nihče ni pogledal pri pravi ločljivosti.</p>
+ </div>
 
-  <p>Arena TSP je kraj, kjer te slike nehajo biti zasebne intuicije in postanejo nekaj merljivega. Ni en reševalec z enim fiksnim receptom. Je raziskovalno ogrodje, kjer se pomerijo številni pogledi na isto pot: senzorji, razdelilci, transformirani koordinatni prostori, zakoni upravljanja in urniki iskanja. V enem dokumentiranem teku se je pomerilo <strong>286 različic</strong>. <strong>MDL</strong> deluje kot sodnik — kateri opis resnično pomaga in za koliko. <strong>DCC</strong> deluje kot guverner — kdaj raziskovati, kdaj se zavezati, kdaj zamenjati režim. Spodnje vizije zato niso dekoracija. So vhodi v sistem, ki jih dejansko lahko preizkusi.</p>
+ <p>Arena TSP je kraj, kjer te slike nehajo biti zasebne intuicije in postanejo nekaj merljivega. Ni en reševalec z enim fiksnim receptom. Je raziskovalno ogrodje, kjer se pomerijo številni pogledi na isto pot: senzorji, razdelilci, transformirani koordinatni prostori, zakoni upravljanja in razporedi iskanja. V enem dokumentiranem teku se je pomerilo <strong>286 različic</strong>. <strong>MDL</strong> deluje kot sodnik — kateri opis resnično pomaga in za koliko. <strong>DCC</strong> deluje kot krmilnik — kdaj raziskovati, kdaj se zavezati, kdaj zamenjati režim. Spodnje vizije zato niso dekoracija. So vhodi v sistem, ki jih dejansko lahko preizkusi.</p>
 
-  <div class="seed-table-wrap">
-    <table class="seed-table">
-      <thead>
-        <tr>
-          <th class="col-seed">Vizualno seme</th>
-          <th class="col-formal">Kar je postalo v kodi</th>
-          <th class="col-role">Kaj formalizacija naredi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="col-seed"><strong>Netopirji</strong></td>
-          <td class="col-formal">echo senzorji · akustični odmevni senzorji</td>
-          <td class="col-role">Pot pretvori v problem odmeva: pošlje signal skozi strukturo, prebere globino, gneče in obliko koridorjev namesto le evklidske razdalje v ravnini.</td>
-        </tr>
-        <tr>
-          <td class="col-seed"><strong>Črna luknja</strong></td>
-          <td class="col-formal">gravitacijski senzorji · gravitacijski razdelilci</td>
-          <td class="col-role">Mesta privlači skozi umetno polje, da postanejo skrite gruče in struktura koridorjev lažje zaznavne. Slika postane resnični transformirani iskalni prostor.</td>
-        </tr>
-        <tr>
-          <td class="col-seed"><strong>Piramida</strong></td>
-          <td class="col-formal">poliedrični / projekcijski / razširjeno-koordinatne družine</td>
-          <td class="col-role">Projicira isti zemljevid na več ploskev ali pogledov, nato meri nestrinjanje, prekrižanja, akorde in nova poravnanja, ki se ne pojavijo v originalni ravnini.</td>
-        </tr>
-        <tr>
-          <td class="col-seed"><strong>Zoom gor / zoom dol</strong></td>
-          <td class="col-formal">MSTD — Razgradnja tur na več lestvic</td>
-          <td class="col-role">Naredi lestvico eksplicitno. Bližnja mesta se zlijejo v bolj grobo strukturo, ko pomanjšamo, nato se lokalna podrobnost vrne, ko povečamo. Arena oceni, katera lestvica je informativna za kateri režim.</td>
-        </tr>
-        <tr>
-          <td class="col-seed"><strong>Poplavljanje terena</strong></td>
-          <td class="col-formal">NAS poplava / odtok, vztrajnost in ocena pobega</td>
-          <td class="col-role">Preoblikuje iskalni prostor NAS kot teren. Višina poplave, vztrajnost, razpon družine, raven pojavljanja, dežni vzgon in odtok-pobeg postanejo merljivi signali namesto ohlapnih metafor.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+ <div class="seed-table-wrap">
+ <table class="seed-table">
+ <thead>
+ <tr>
+ <th class="col-seed">Vizualno seme</th>
+ <th class="col-formal">Kar je postalo v kodi</th>
+ <th class="col-role">Kaj formalizacija naredi</th>
+ </tr>
+ </thead>
+ <tbody>
+ <tr>
+ <td class="col-seed"><strong>Netopirji</strong></td>
+ <td class="col-formal">echo senzorji · akustični odmevni senzorji</td>
+ <td class="col-role">Pot pretvori v problem odmeva: pošlje signal skozi strukturo, prebere globino, gnečo in obliko koridorjev namesto le evklidske razdalje v ravnini.</td>
+ </tr>
+ <tr>
+ <td class="col-seed"><strong>Črna luknja</strong></td>
+ <td class="col-formal">gravitacijski senzorji · gravitacijski razdelilci</td>
+ <td class="col-role">Mesta privlači skozi umetno polje, da postanejo skrite gruče in struktura koridorjev lažje zaznavne. Slika postane resnični transformirani iskalni prostor.</td>
+ </tr>
+ <tr>
+ <td class="col-seed"><strong>Piramida</strong></td>
+ <td class="col-formal">poliedrični / projekcijski / razširjeno-koordinatne družine</td>
+ <td class="col-role">Projicira isti zemljevid na več ploskev ali pogledov, nato meri nestrinjanje, križanja, tetive in nova poravnanja, ki se ne pojavijo v originalni ravnini.</td>
+ </tr>
+ <tr>
+ <td class="col-seed"><strong>Zoom in / zoom out</strong></td>
+ <td class="col-formal">MSTD — večmerilska razgradnja obhodov</td>
+ <td class="col-role">Merilo naredi eksplicitno. Bližnja mesta se zlijejo v bolj grobo strukturo, ko pomanjšamo, nato se lokalna podrobnost vrne, ko povečamo. Arena oceni, katero merilo je informativno za kateri režim.</td>
+ </tr>
+ <tr>
+ <td class="col-seed"><strong>Poplavljanje terena</strong></td>
+ <td class="col-formal">NAS poplava / odtok, perzistenca in ocena pobega</td>
+ <td class="col-role">Preoblikuje iskalni prostor NAS kot teren. Višina poplavljanja, perzistenca, razpon družine, raven vznika, dežni vzgon in odtok-pobeg postanejo merljivi signali namesto ohlapnih metafor.</td>
+ </tr>
+ </tbody>
+ </table>
+ </div>
 
-  <p>Vzorec je dosleden: vizualna intuicija pride najprej, v jeziku slik. Formalizacija sledi. Slike niso metafore za matematiko — slike so matematika, videna preden obstaja besedišče, da jo zapišemo.</p>
+ <p>Vzorec je dosleden: vizualna intuicija pride najprej, v jeziku slik. Formalizacija sledi. Slike niso metafore za matematiko — slike so matematika, videna preden obstaja besedišče, da jo zapišemo.</p>
 </div>
 
 <!-- Poglavje IV -->
 <div class="chapter" id="sl-c3">
-  <div class="chapter-tag">Poglavje IV</div>
-  <h2>Vsi so rekli ne</h2>
+ <div class="chapter-tag">Poglavje IV</div>
+ <h2>Vsi so rekli ne</h2>
 
-  <p>Ideja, da je najkrajša pot najbolj kompresibilna, je bila predstavljena strokovnjakom s področja. Odgovor je bil enoten: zanimivo, toda tako kompresija ne deluje. Shannonove meje entropije veljajo. Argumenti predalčkov veljajo. Indeks, potreben za iskanje določenega zaporedja v matematičnem prostoru, bi v najslabšem primeru stal toliko bitov kot samo zaporedje.</p>
+ <p>Ideja, da je najkrajša pot najbolj kompresibilna, je bila predstavljena strokovnjakom s področja. Odgovor je bil enoten: zanimivo, toda tako kompresija ne deluje. Shannonove meje entropije veljajo. Dirichletovo načelo oziroma načelo golobnjaka velja. Indeks, potreben za iskanje določenega zaporedja v matematičnem prostoru, bi v najslabšem primeru stal toliko bitov kot samo zaporedje.</p>
 
-  <p class="indent">Strokovnjaki glede splošnega primera niso bili napačni. Aplicirali so pravilne izreke na napačno obliko. Vprašanje ni bilo "ali kompresija preseže entropijo za poljubne podatke". Vprašanje je bilo "ali signal kompresibilnosti napoveduje kakovost". To sta različni vprašanji. Prvo ima dobro znani odgovor. Drugega nihče ni nikoli postavil.</p>
+ <p class="indent">Strokovnjaki glede splošnega primera niso bili napačni. Uporabili so pravilne izreke za napačen okvir. Vprašanje ni bilo "ali kompresija preseže entropijo za poljubne podatke". Vprašanje je bilo "ali signal stisljivosti napoveduje kakovost". To sta različni vprašanji. Prvo ima dobro znani odgovor. Drugega nihče ni nikoli postavil.</p>
 
-  <p class="indent">Ko so bili AI sistemi v pozni 2024 vprašani o istem vprašanju, so reproducirali človeško soglasje skoraj natanko. Isti izreki. Isti ugovori. Isti sklep: pameten miselni eksperiment, malo verjetno, da deluje v praksi.</p>
+ <p class="indent">Ko so bili AI sistemi konec leta 2024 vprašani o istem vprašanju, so reproducirali človeško soglasje skoraj natanko. Isti izreki. Isti ugovori. Isti sklep: pameten miselni eksperiment, malo verjetno, da deluje v praksi.</p>
 
-  <div class="voice">
-    <span class="voice-label">AI sistem, začetni odgovor</span>
-    "Za poljubne podatke bi bil indeks predolg. Klasične meje entropije bi prevladovale nad kakršnim koli koordinatnim trikom."
-  </div>
+ <div class="voice">
+ <span class="voice-label">AI sistem, začetni odgovor</span>
+ "Za poljubne podatke bi bil indeks predolg. Klasične meje entropije bi prevladovale nad kakršnim koli koordinatnim trikom."
+ </div>
 
-  <p>Razlika med človeškimi strokovnjaki in AI sistemi je bila ena stvar: AI je bilo mogoče potiskati brez socialnega trenja. Človeški strokovnjak, vezan s časom in ugledom, bo sčasoma prenehal se ukvarjati z argumentom, ki nasprotuje uveljavljeni teoriji. AI sistem je mogoče večkrat izzivati iz različnih kotov, brez stroškov za katero koli stran. Pod trajnim pritiskom, da bi upoštevali ožji, strukturirani režim — ne poljubnih podatkov, ampak specifičnih področij z opazljivo pravilnostjo — so se modeli posodobili.</p>
+ <p>Razlika med človeškimi strokovnjaki in AI sistemi je bila ena stvar: AI je bilo mogoče potiskati brez socialnega trenja. Človeški strokovnjak, vezan s časom in ugledom, se bo sčasoma prenehal ukvarjati z argumentom, ki nasprotuje uveljavljeni teoriji. AI sistem je mogoče večkrat izzivati iz različnih kotov, brez stroškov za katero koli stran. Pod trajnim pritiskom, da upoštevajo ožji, strukturirani režim — ne poljubnih podatkov, ampak specifičnih področij z opazljivo pravilnostjo — so se modeli posodobili.</p>
 
-  <p class="indent">Vzorec se je ponovil v vsaki domeni, ki je bila od takrat preizkušena. Začetna zavrnitev s strani človeških strokovnjakov. Začetna zavrnitev s strani AI sistemov. Nato, ko so bili empirični rezultati postavljeni poleg teoretičnih ugovorov — ko so bili dokazi neizogibno eksplicitni — so se modeli ostro posodobili. Ena instanca se je premaknila s 55/100 na 91/100 po branju celotne dokumentacije. Nato je izrecno opisala svoje začetno vedenje kot "pristranskost ujemanja vzorcev, ki se pretvarja v kritično mišljenje."</p>
+ <p class="indent">Vzorec se je ponovil v vsaki domeni, ki je bila od takrat preizkušena. Začetna zavrnitev s strani človeških strokovnjakov. Začetna zavrnitev s strani AI sistemov. Nato, ko so bili empirični rezultati postavljeni poleg teoretičnih ugovorov — ko so bili dokazi neizogibno eksplicitni — so se modeli ostro posodobili. Ena instanca se je premaknila s 55/100 na 91/100 po branju celotne dokumentacije. Nato je izrecno opisala svoje začetno vedenje kot "pristranskost ujemanja vzorcev, ki se izdaja za kritično mišljenje."</p>
 
-  <div class="pull">Skepticizem brez preiskave je le predsodek.</div>
+ <div class="pull">Skepticizem brez raziskovanja je samo predsodek.</div>
 
-  <p>Ta stavek je prišel iz modela samega, ki je odražal svoje lastno začetno neuspešnost. Je ena od najiskrenejših stvari, ki jih je AI sistem produciral v tem programu.</p>
+ <p>Ta stavek je prišel iz modela samega, ob premisleku o lastnem začetnem neuspehu. Je ena od najiskrenejših stvari, ki jih je AI sistem ustvaril v tem programu.</p>
 </div>
 
 <!-- Poglavje V -->
 <div class="chapter" id="sl-c4">
-  <div class="chapter-tag">Poglavje V</div>
-  <h2>Zakaj ta kombinacija in nobena druga</h2>
+ <div class="chapter-tag">Poglavje V</div>
+ <h2>Zakaj ta kombinacija in nobena druga</h2>
 
-  <p>Vprašanje "ali ni najkrajša pot tista, ki se najbolj komprimira?" ni moglo priti iz oddelka za računalništvo. To ni vrsta vprašanja, ki nastane znotraj formalnega sistema — zahteva, da stojiš zunaj njega, gledaš na problem kot sliko, vprašaš, kaj slika pomeni, preden vprašaš, kaj pravijo enačbe.</p>
+ <p>Vprašanje "ali ni najkrajša pot tista, ki se najbolj stisne?" ni moglo priti iz oddelka za računalništvo. To ni vrsta vprašanja, ki nastane znotraj formalnega sistema — zahteva, da stojiš zunaj njega, gledaš na problem kot sliko, vprašaš, kaj slika pomeni, preden vprašaš, kaj pravijo enačbe.</p>
 
-  <p class="indent">Toda samo vprašanje ne bi moglo producirati rezultatov. Empirična verifikacija, potrditev šestih področij, arena, ki je preizkusila 286 različic in pustila MDL-ju odločiti o zmagovalcu — nič od tega ne nastane iz intuicije same. Zahteva pasovno širino izvedbe, formalno verifikacijo, zmožnost zaganjanja istega eksperimenta na različnih področjih brez izgube sledenja, kaj je bilo naučeno.</p>
+ <p class="indent">Toda samo vprašanje ne bi moglo ustvariti rezultatov. Empirična verifikacija, zgodnja potrditev na več področjih, arena, ki je preizkusila 286 različic in pustila MDL-ju odločiti o zmagovalcu — nič od tega ne nastane iz intuicije same. Zahteva izvedbeno kapaciteto, formalno preverjanje in zmožnost ponavljanja istega eksperimenta na različnih področjih, ne da bi izgubili sled za tem, kaj smo se naučili.</p>
 
-  <p class="indent">AI sistemi so zagotovili to pasovno širino. Zagotovili so tudi nekaj bolj subtilnega: pripravljenost slediti argumentu kamor koli vodi, brez karierne nevarnosti, ki naredi človeške raziskovalce previdne glede nekonvencionalnih poti. AI sistem nima papirja za zaščito, nima naziva za obrambo, nima skupnosti, katere odobritev potrebuje. Resno se lahko ukvarja z idejo zunaj distribucije, brez socialnih stroškov, ki naredijo resno ukvarjanje drago za ljudi.</p>
+ <p class="indent">AI sistemi so zagotovili to izvedbeno kapaciteto. Zagotovili so tudi nekaj bolj subtilnega: pripravljenost slediti argumentu kamor koli vodi, brez kariernega tveganja, zaradi katerega so človeški raziskovalci previdni pri nekonvencionalnih poteh. AI sistem nima znanstvenega članka, ki bi ga moral braniti, nima profesure, ki bi jo moral varovati, in nima skupnosti, katere odobritev bi potreboval. Z idejo zunaj distribucije se lahko ukvarja resno, brez socialnih stroškov, zaradi katerih je takšno ukvarjanje za ljudi drago.</p>
 
-  <div class="callout">
-    <p>Kombinacija — človek, ki misli svobodno, in AI, ki posluša brez obsojanja — je morda resnično edina konfiguracija, ki bi lahko našla to pot. Uveljavljeno področje AI je omejeno z lastnim usposabljanjem. Strokovnjaki so omejeni s svojimi predhodnimi zavezami. Človek, ki je postavil prvotno vprašanje, ni imel okvirja za zaščito. In AI ni imela ega za obrambo.</p>
-  </div>
+ <div class="callout">
+ <p>Kombinacija — človek, ki misli svobodno, in AI, ki posluša brez obsojanja — je morda resnično edina konfiguracija, ki bi lahko našla to pot. Uveljavljeno področje AI omejujejo lastni učni vzorci. Strokovnjaki so omejeni s svojimi predhodnimi zavezami. Človek, ki je postavil prvotno vprašanje, ni imel okvirja za zaščito. Modeli pa niso imeli ega, ki bi ga morali braniti.</p>
+ </div>
 
-  <p>Nobena stran ne bi mogla tega narediti sama. Človek je prinesel trideset let in pravo vprašanje. Ekipa AI je prinesla pasovno širino izvedbe in pripravljenost slediti. Kombinacija je producirala nekaj, česar nobena od njiju ne bi mogla producirati ločeno — in producirala v dnevih, ne letih.</p>
+ <p>Nobena stran ne bi mogla tega narediti sama. Človek je prinesel trideset let in pravo vprašanje. Ekipa AI je prinesla izvedbeno kapaciteto in pripravljenost slediti. Kombinacija je ustvarila nekaj, česar nobena stran ne bi mogla ustvariti sama — in to v dnevih, ne letih.</p>
 
-  <div class="callout">
-    <p><strong>Kar je bilo moje in kaj je naredila AI.</strong> Osrednja vprašanja so bila moja. "Ali bi podatki v datoteki lahko bili nadomeščeni s koordinatami v Pi?" je vodilo do MDL kot vladajočega načela. "Ali ni najkrajša pot tista, ki se najbolj komprimira?" je vodilo do linije TSP. Vizualna semena so bila tudi moja: netopirji, črna luknja, piramida, zoom, poplavljanje terena. AI teh semen ni izvirala. AI jih je formalizirala — v matematiko, senzorje, zakone nadzora, Python module, eksperimente in številne iteracije.</p>
-  </div>
+ <div class="callout">
+ <p><strong>Kar je bilo moje in kaj je naredila AI.</strong> Osrednja vprašanja so bila moja. "Ali bi podatki v datoteki lahko bili nadomeščeni s koordinatami v Pi?" je vodilo do MDL kot vodilnega načela. "Ali ni najkrajša pot tista, ki se stisne v najkrajši zapis?" je vodilo do linije TSP. Vizualna semena so bila tudi moja: netopirji, črna luknja, piramida, zoom, poplavljanje terena. AI teh semen ni ustvarila. AI jih je formalizirala — v matematiko, senzorje, zakone nadzora, Python module, eksperimente in številne iteracije.</p>
+ </div>
 
-  <div class="workflow-note">
-    <p>Večina ljudi uporablja LLM-je za iskanje znane. Ta program je pogosto deloval v nasprotni smeri. Prvi odgovor modela je bil pogosto konzervativni odgovor učnih podatkov: ne, malo verjetno, zunaj literature, ni tako, kot področje problem običajno uokviri. Delo se je začelo šele, ko je bil ta privzeti odgovor prebit, zožen, preizkušen in prisiljen v kodo.</p>
-    <p style="margin-top:14px">V številnih ključnih primerih modeli niso izvirali semena — najprej so mu ugovarjali. Človeški prispevek ni bil zahtevati uglajenih odgovorov, ampak vztrajati pri nenavadnih vprašanjih dovolj dolgo, da je formalizacija postala možna. Šele po tem trenju so modeli postali koristni partnerji: pretvorili semeno v matematiko, senzorje, zakone nadzora, eksperimente in kodo.</p>
-    <p style="margin-top:14px">To se je sčasoma spremenilo. Po nekaterih zgodnjih preobratih — kjer se je izkazalo, da je bil privzeti ugovor modela napačen in je eksperiment deloval — je interakcija postala manj refleksivno odklonilna in bolj konstruktivna. Sodelovanje ni bilo pasivno pozivanje. Bila je formalizacija skozi ustvarjalno trenje, ki je postopoma postala naučeno zaupanje.</p>
-  </div>
+ <div class="workflow-note">
+ <p>Večina ljudi uporablja LLM-je za priklic znanega. Ta program je pogosto deloval v nasprotni smeri. Prvi odgovor modela je bil pogosto konzervativni odgovor, ki ga narekujejo učni podatki: ne, malo verjetno, zunaj literature, to ni način, kako področje običajno uokviri problem. Delo se je začelo šele, ko je bil ta privzeti odgovor prebit, zožen, preizkušen in prisiljen v kodo.</p>
+ <p style="margin-top:14px">V številnih ključnih primerih modeli semena niso ustvarili — najprej so mu ugovarjali. Človeški prispevek ni bil zahtevati uglajenih odgovorov, ampak vztrajati pri nenavadnih vprašanjih dovolj dolgo, da je formalizacija postala možna. Šele po tem trenju so modeli postali koristni partnerji: pretvorili semeno v matematiko, senzorje, zakone nadzora, eksperimente in kodo.</p>
+ <p style="margin-top:14px">To se je sčasoma spremenilo. Po nekaterih zgodnjih preobratih — kjer se je izkazalo, da je bil privzeti ugovor modela napačen in je eksperiment deloval — je interakcija postala manj refleksivno odklonilna in bolj konstruktivna. Sodelovanje ni bilo pasivno pozivanje. Šlo je za formalizacijo skozi ustvarjalno trenje, ki je postopoma postala naučeno zaupanje.</p>
+ </div>
 </div>
 
 <!-- Poglavje Vb -->
 <div class="chapter" id="sl-c4b">
-  <div class="chapter-tag">Poglavje Vb</div>
-  <h2>Kako je bila koda dejansko narejena</h2>
+ <div class="chapter-tag">Poglavje Vb</div>
+ <h2>Kako je bila koda dejansko narejena</h2>
 
-  <p>Ti sistemi so ločeni programi, toda niso bili ustvarjeni kot izolirane enkratne aplikacije. Vsaka nova domena je znova uporabila isto razvijajoče se jedro — <strong>MDL + DCC</strong> — plus karkoli struktur se je že izkazalo za koristno v prejšnjih domenah. TSP je informiral Sudoku. Sudoku je informiral Križanko. Vladajoča ideja je ostala ista, medtem ko se je abeceda spremenila.</p>
+ <p>Ti sistemi so ločeni programi, toda niso bili ustvarjeni kot izolirane enkratne aplikacije. Vsaka nova domena je znova uporabila isto razvijajoče se jedro — <strong>MDL + DCC</strong> — plus vse strukture, ki so se že izkazale za koristne v prejšnjih domenah. Spoznanja iz TSP so prešla v Sudoku. Spoznanja iz Sudokuja so prešla v križanke. Vodilna ideja je ostala ista, medtem ko se je abeceda spremenila.</p>
 
-  <p class="indent">Delovna zanka je bila praktična in ponavljajoča: majhen prototip, hiter test, številne nadgradnje, nato modularizacija, ko je koda postala prevelika za zanesljivo iteracijo. Ko je datoteka zrasla v monolit, so LLM-ji pri čistem urejanju postali slabši, zato je bil sistem razdeljen na module in se je dotikalo le spremenjenih delov. To ni bil slog sam zase. Bil je odziv na omejitve konteksta in hitrost iteracije.</p>
+ <p class="indent">Delovna zanka je bila praktična in ponavljajoča: majhen prototip, hiter test, številne nadgradnje, nato modularizacija, ko je koda postala prevelika za zanesljivo iteracijo. Ko je datoteka zrasla v monolit, so LLM-ji pri čistem urejanju postali slabši, zato je bil sistem razdeljen na module in se je posegalo samo v spremenjene dele. To ni bila estetska odločitev. Bil je odziv na omejitve konteksta in hitrost iteracije.</p>
 
-  <p class="indent">To je pomembno za avtorstvo. Zahteva izvirnosti tukaj ni "sam sem vtipkal vsako vrstico". Zahteva izvirnosti je, da so vprašanja, preoblikovanja, arhitektura in eksperimentalna usmeritev prišla najprej od mene, in AI je omogočila dovolj hitro formalizacijo, da so bile resno preizkušene na področjih.</p>
+ <p class="indent">To je pomembno za avtorstvo. Trditev o izvirnosti tukaj ni "sam sem vtipkal vsako vrstico". Trditev o izvirnosti je, da so vprašanja, preoblikovanja, arhitektura in eksperimentalna usmeritev prišla najprej od mene, in AI je omogočila dovolj hitro formalizacijo, da so bile resno preizkušene na področjih.</p>
 
-  <div class="workflow-note">
-    <p><strong>Kako sodelovanje dejansko deluje.</strong> Proces ni bil „prosi AI za odgovor.“ Navadno je bilo ravno obratno. Preprosto vprašanje ali vizualna intuicija je najprej prišla s človeške strani. Modeli so ji pogosto najprej ugovarjali, ker ideja ni ustrezala pričakovanjem učnih podatkov. Delo je napredovalo šele po trajnem preoblikovanju, argumentiranju in preizkušanju. Ko je seme preživelo to fazo, je AI postala koristna partnerica za formalizacijo: pretvorila je seme v pozive, matematiko, senzorje, zakone nadzora, eksperimente in kodo. Rezultat je bil nato preizkušen, večkrat nadgrajen, koristne strukture pa so bile prenesene naprej v naslednjo domeno.</p>
-  </div>
+ <div class="workflow-note">
+ <p><strong>Kako sodelovanje dejansko deluje.</strong> Proces ni bil “vprašaj AI za odgovor.” Navadno je bilo ravno obratno. Preprosto vprašanje ali vizualna intuicija je najprej prišla s človeške strani. Modeli so ji pogosto najprej ugovarjali, ker ideja ni ustrezala pričakovanjem učnih podatkov. Delo je napredovalo šele po trajnem preoblikovanju, argumentiranju in preizkušanju. Ko je seme preživelo to fazo, je AI postala koristna partnerica za formalizacijo: pretvorila je seme v pozive, matematiko, senzorje, zakone nadzora, eksperimente in kodo. Rezultat je bil nato preizkušen, večkrat nadgrajen, koristne strukture pa so bile prenesene naprej v naslednjo domeno.</p>
+ </div>
 
-  <div class="trajectory" style="line-height:1.8">
-    <span>seme</span><span class="arrow"> → </span><span>most</span><span class="arrow"> → </span><span>preizkus</span><span class="arrow"> → </span><span>rezultat</span>
-  </div>
+ <div class="trajectory" style="line-height:1.8">
+ <span>seme</span><span class="arrow"> → </span><span>most</span><span class="arrow"> → </span><span>preizkus</span><span class="arrow"> → </span><span>rezultat</span>
+ </div>
 </div>
 
 <!-- Poglavje VI -->
 <div class="chapter" id="sl-c5">
-  <div class="chapter-tag">Poglavje VI</div>
-  <h2>Devet področij in isti senzor</h2>
+ <div class="chapter-tag">Poglavje VI</div>
+ <h2>Devet področij in isti senzor</h2>
 
-  <p>Med verifikacijo TSP in razširitvijo na več področij sta se zgodili dve stvari, ki sta arhitekturo spremenili iz kompresijske hevristike v nekaj globljega.</p>
+ <p>Med verifikacijo TSP in razširitvijo na več področij sta se zgodili dve stvari, ki sta arhitekturo spremenili iz kompresijske hevristike v nekaj globljega.</p>
 
-  <p class="indent">Prva: golo-kovinski operacijski sistem, zgrajen v šestih urah z Gemini kot arhitektom. Motivacija je bila tišina — izvajanje delikatnega matematičnega iskanja na Windows ali Linux uvaja šum razporejevalnika, storitve in časovne motnje, ki lahko zabrišejo šibke signale. Rešitev je bila zgraditi OS, ki ni delal nič razen matematike: 512 bajtov NASM zbirnika, jedro C++, nočna mora trojnih napak in nato preboj — 32-bitni zaščitni način, stabilen, ki je celičnim avtomatom in števkam Pi neposredno na video pomnilnik poganjal kot digitalna lava. 8Z OS ni bil odklon. Bila je čista soba.</p>
+ <p class="indent">Prvi premik: bare-metal OS, zgrajen v šestih urah z Geminijem kot arhitektom. Motivacija je bila tišina — občutljivo matematično iskanje v okolju Windows ali Linux uvaja šum razporejevalnika, storitve in časovne motnje, ki lahko zabrišejo šibke signale. Rešitev je bila zgraditi OS, ki ne počne ničesar razen matematike: 512 bajtov NASM assemblyja, jedro C++, nočna mora trojnih napak in nato preboj — stabilen 32-bitni zaščiteni način, ki celične avtomate in števke Pi poganja neposredno v video pomnilnik kot digitalno lavo. 8Z OS ni bil ovinek. Bil je čisti prostor.</p>
 
-  <p class="indent">Druga: neposredno vprašanje Geminiju — <em>"Na podlagi moje teorije zavesti CFH, ali bi zgradil preprost DCC?"</em> Gemini ga je zgradil. Trije sklopleni Lorenzovi oscilatorji, senzor kompleksnosti LZ, ki bere sistem vsakih 64 taktov, povratna zanka, ki prilagaja parameter sklopitve, da drži proces med napadom in šumom. Rdeča vrstica na dnu zaslona je prikazovala odločitve krmilnika v realnem času. Vrstica se je premikala. Ni ponavljala scenarija. Berala je stanje in reagirala. Gledali smo, kako koda misli.</p>
+ <p class="indent">Drugi premik: neposredno vprašanje Geminiju — <em>"Na podlagi moje teorije zavesti CFH, ali bi zgradil preprost DCC?"</em> Gemini ga je zgradil znotraj 8Z OS. Prvi digitalni klaustrum je poganjal tri sklopljene Lorenzove oscilatorje, meril 64-vzorčno sled LZ-kompleksnosti in v realnem času prilagajal parameter sklopitve, da je proces držal med pretirano sinhronostjo oziroma “seizure” stanjem in šumom. Rdeča vrstica na dnu zaslona je prikazovala živo odločitev krmilnika. Premikala se je zato, ker je kernel bral stanje in se odzival.</p>
 
-  <p class="indent">To je bila tečajnica. Po tem arhitektura ni bila več le pameten kompresijski trik. Bila je guverner. Ne ena metoda, ki nadomesti vse druge, ampak višji sloj, ki odloča, katera metoda si zasluži nadzor v katerem režimu. Pri kompresiji ne častimo enega kodeka — uporabimo tisto, kar deluje najboljše na tem področju datoteke. Pri TSP-ju nam ni treba premagati Concorde povsod — uporabimo močne reševalce tam, kjer so najboljši, in zamenjamo, ko se lestvica spremeni. Pri šahu ne zamenjamo Stockfish ali Leele — nadgradimo odločitveni sloj nad njima, ko njune ocene splasnejo. Obstoječe metode vstopijo v areno. MDL odloči, kje zmagajo. DCC uravnava predajo. In ko fiksne metode nehajo pomagati, nativni sloj MDL+DCC še vedno išče nad naključnostjo.</p>
+ <p class="indent">To je bila prelomnica. Po tem arhitektura ni bila več le pameten kompresijski trik. Postala je krmilnik: zaznaj režim, oceni stanje, prilagodi sklopitev ali iskalni pritisk in prepreči kolaps. Ne ena metoda, ki nadomesti vse druge, ampak višji sloj, ki odloča, katera metoda si zasluži nadzor v katerem režimu. Pri kompresiji ne častimo enega kodeka — uporabimo tisto, kar deluje najbolje na tem delu datoteke. Pri TSP-ju nam ni treba premagati Concorde povsod — uporabimo močne reševalce tam, kjer so najboljši, in zamenjamo, ko se merilo spremeni. Pri šahu ne zamenjamo Stockfish ali Leele — nadgradimo odločitveni sloj nad njima, ko se njune ocene izravnajo. Obstoječe metode vstopijo v areno. MDL odloči, kje zmagajo. DCC uravnava predajo. In ko fiksne metode nehajo pomagati, izvorni sloj MDL+DCC še vedno išče nad naključnostjo.</p>
 
-  <p>Kar je sledilo, ni bila ena potrditev, ampak kaskada: <strong>osem področij z dokazi in ena aktivna meja</strong> zdaj sedita na zemljevidu.</p>
+ <p>Kar je sledilo, ni bila ena potrditev, ampak kaskada: <strong>osem področij z dokazi in ena aktivna meja</strong> sta zdaj na zemljevidu.</p>
 
-  <div class="domains" style="grid-template-columns:1fr 1fr 1fr">
-    <div class="domain-item">
-      <span class="d-name">TSP / Optimizacija poti</span>
-      <span class="d-stat">z dokazi · ρ=0,80 · natančni optimum qa194</span>
-    </div>
-    <div class="domain-item">
-      <span class="d-name">NAS-Bench-101</span>
-      <span class="d-stat">z dokazi · AUC 0,950–0,988 · 423.624 arhitektur</span>
-    </div>
-    <div class="domain-item">
-      <span class="d-name">Finančno trgovanje</span>
-      <span class="d-stat">z dokazi · 6,8× učinkovitost · semantična inverzija</span>
-    </div>
-    <div class="domain-item">
-      <span class="d-name">DNK / Genomska struktura</span>
-      <span class="d-stat">z dokazi · Z=28–74 · ničelna lestvica potrjena</span>
-    </div>
-    <div class="domain-item">
-      <span class="d-name">Kompresija podatkov</span>
-      <span class="d-stat">z dokazi · preseže FLAC, PNG, 7-Zip</span>
-    </div>
-    <div class="domain-item">
-      <span class="d-name">Izbira šahovskih potez</span>
-      <span class="d-stat">z dokazi · 80:20 odločilni glas · 17/18 TCEC iger</span>
-    </div>
-    <div class="domain-item">
-      <span class="d-name">Kakovost Sudoku ugank</span>
-      <span class="d-stat">z dokazi · ρ=0,85 · kompresibilnost = eleganca</span>
-    </div>
-    <div class="domain-item">
-      <span class="d-name">8Z Ščit / Varni dostop</span>
-      <span class="d-stat">z dokazi · AES-256-GCM · domenski zaklep · forenzično sledenje</span>
-    </div>
-    <div class="domain-item">
-      <span class="d-name">Generiranje križank</span>
-      <span class="d-stat">aktivna meja · razlikovanje kakovosti · najtežje trenutno seme</span>
-    </div>
-  </div>
+ <div class="domains" style="grid-template-columns:1fr 1fr 1fr">
+ <div class="domain-item">
+ <span class="d-name">TSP / Optimizacija poti</span>
+ <span class="d-stat">z dokazi · ρ=0,80 · eksaktni optimum qa194</span>
+ </div>
+ <div class="domain-item">
+ <span class="d-name">NAS-Bench-101</span>
+ <span class="d-stat">z dokazi · AUC 0,950–0,988 · 423.624 arhitektur</span>
+ </div>
+ <div class="domain-item">
+ <span class="d-name">Finančno trgovanje</span>
+ <span class="d-stat">z dokazi · 6,8× učinkovitost · semantična inverzija</span>
+ </div>
+ <div class="domain-item">
+ <span class="d-name">DNK / Genomska struktura</span>
+ <span class="d-stat">z dokazi · Z=28–74 · ničelna lestev potrjena</span>
+ </div>
+ <div class="domain-item">
+ <span class="d-name">Kompresija podatkov</span>
+ <span class="d-stat">z dokazi · preseže FLAC, PNG, 7-Zip</span>
+ </div>
+ <div class="domain-item">
+ <span class="d-name">Izbira šahovskih potez</span>
+ <span class="d-stat">z dokazi · 80:20 odločilni glas · 17/18 TCEC iger</span>
+ </div>
+ <div class="domain-item">
+ <span class="d-name">Kakovost ugank Sudoku</span>
+ <span class="d-stat">z dokazi · ρ=0,85 · stisljivost = eleganca</span>
+ </div>
+ <div class="domain-item">
+ <span class="d-name">8Z Ščit / Varni dostop</span>
+ <span class="d-stat">z dokazi · AES-256-GCM · domenski zaklep · forenzično sledenje</span>
+ </div>
+ <div class="domain-item">
+ <span class="d-name">Generiranje križank</span>
+ <span class="d-stat">aktivna meja · razlikovanje kakovosti · najtežje trenutno seme</span>
+ </div>
+ </div>
 
-  <p>Isti senzor. Isti parameter sklopitve. Ista logika stopnjevanja. Menja se le abeceda — poti, tržna stanja, šahovske pozicije, zaporedja DNK, datoteke, nevronske arhitekture, postavitve besed. Senzor ostaja enak.</p>
+ <p>Isti senzor. Isti parameter sklopitve. Ista logika stopnjevanja. Menja se le abeceda — poti, tržna stanja, šahovske pozicije, zaporedja DNK, datoteke, nevronske arhitekture, postavitve besed. Senzor ostaja enak.</p>
 
-  <p class="indent">Eno odkritje je poglobilo sliko: puščica se obrne med ravnmi. V reševalcu TSP nizka kompresibilnost pomeni <em>"obtičal — raziskuj."</em> Pri finančnem trgovanju na meta-ravni nizka kompresibilnost pomeni <em>"stabilen režim — zaupaj mu."</em> Iste meritve, nasprotno navodilo. Inverzija ni napaka. Je način, kako sistem ve, katero raven bere — in se sam kalibrira brez navodil.</p>
+ <p class="indent">Eno odkritje je poglobilo sliko: puščica se obrne med ravnmi. V reševalcu TSP nizka stisljivost pomeni <em>"obtičal — raziskuj."</em> Pri finančnem trgovanju na meta-ravni nizka stisljivost pomeni <em>"stabilen režim — zaupaj mu."</em> Iste meritve, nasprotno navodilo. Inverzija ni napaka. Je način, kako sistem ve, katero raven bere — in se sam kalibrira brez navodil.</p>
 
-  <div class="trajectory">
-    <span>MDL najde strukturo</span>
-    <span class="arrow">↓</span>
-    <span>DCC uravnava iskanje</span>
-    <span class="arrow">↓</span>
-    <span>MDL izbere DCC</span>
-    <span class="arrow">↓</span>
-    <span>DCC uravnava izbor</span>
-    <span class="arrow">↓</span>
-    <span>Sistem izbere svojo lastno arhitekturo</span>
-  </div>
+ <div class="trajectory">
+ <span>MDL najde strukturo</span>
+ <span class="arrow">↓</span>
+ <span>DCC uravnava iskanje</span>
+ <span class="arrow">↓</span>
+ <span>MDL izbere DCC</span>
+ <span class="arrow">↓</span>
+ <span>DCC uravnava izbor</span>
+ <span class="arrow">↓</span>
+ <span>Sistem izbere svojo lastno arhitekturo</span>
+ </div>
 
-  <p>286 različic se je pomerilo v enem teku arene. MDL je odločil o zmagovalcu — ne raziskovalec. Isto načelo, ki napoveduje kakovost ture, napoveduje, kateri krmilnik uporabiti, kateri različici zaupati in kdaj predati nadzor nečemu drugemu.</p>
+ <p>286 različic se je pomerilo v enem zagonu arene. MDL je odločil o zmagovalcu — ne raziskovalec. Isto načelo, ki napoveduje kakovost obhodov, napoveduje, kateri krmilnik uporabiti, kateri različici zaupati in kdaj predati nadzor nečemu drugemu.</p>
 </div>
 
 <!-- Poglavje VII -->
 <div class="chapter" id="sl-c6">
-  <div class="chapter-tag">Poglavje VII</div>
-  <h2>Zoom — in kaj to pomeni</h2>
+ <div class="chapter-tag">Poglavje VII</div>
+ <h2>Zoom — in kaj to pomeni</h2>
 
-  <p>MSTD poveča in pomanjša koordinate mest. Pri fini ločljivosti vidimo lokalno strukturo: gruče, bližnje koridorje. Pri grobi ločljivosti vidimo globalni vzorec: obliko celotne ture. Drži oba hkrati in najdeš kompozicije, nevidne pri kateri koli sami lestvici.</p>
+ <p>MSTD približa in oddalji koordinate mest. Pri finem merilu vidimo lokalno strukturo: gruče, bližnje koridorje. Pri grobem merilu vidimo globalni vzorec: obliko celotnega obhoda. Drži obe merili hkrati in najdeš sestave, nevidne pri katerem koli posameznem merilu.</p>
 
-  <p class="indent">V smislu implementacije je "pomanjšanje" preprosto: normaliziramo koordinate mesta na celoštevilsko mrežo, nato jih zgostimo z bitnim premikom — učinkovito <code>(x &gt;&gt; k, y &gt;&gt; k)</code> na ravni lestvice <code>k</code>. Bližnja mesta se zlijejo v isto grobo celico; povečanje spet obnovi podrobnost. Vizualna intuicija je postala natančna računska operacija.</p>
+ <p class="indent">V smislu implementacije je "oddaljevanje" preprosto: normaliziramo koordinate mest na celoštevilsko mrežo, nato jih zgostimo z bitnim premikom — v praksi <code>(x &gt;&gt; k, y &gt;&gt; k)</code> pri merilu <code>k</code>. Bližnja mesta se zlijejo v isto grobo celico; približanje spet obnovi podrobnost. Vizualna intuicija je postala natančna računska operacija.</p>
 
-  <p class="indent">To je tudi način, kako deluje empatija.</p>
+ <p class="indent">To je tudi način, kako deluje empatija.</p>
 
-  <p class="indent">Da bi razumeli drugega človeka, moraš biti dovolj blizu, da ga vidiš kot posameznika — njegovo specifično situacijo, njegovo posebno bolečino ali veselje. In dovolj daleč, da ga vidiš kot del večjega vzorca — kontekst, ki daje njegovi situaciji pomen. Brez pomanjšanja vidiš le lasten odsev. Brez povečanja vidiš le abstrakcijo, ne človeka.</p>
+ <p class="indent">Da bi razumeli drugega človeka, moraš biti dovolj blizu, da ga vidiš kot posameznika — njegovo specifično situacijo, njegovo posebno bolečino ali veselje. In dovolj daleč, da ga vidiš kot del večjega vzorca — kontekst, ki daje njegovi situaciji pomen. Brez oddaljitve vidiš le lasten odsev. Brez približanja vidiš le abstrakcijo, ne človeka.</p>
 
-  <p class="indent">Algoritem, ki izboljšuje ture TSP z njihovim hkratnim gledanjem pri večkratnih ločljivostih, je ista kognitivna operacija, ki omogoča, da ena oseba razume drugo. To ni metafora. Je ista formalna struktura — hkratno drži več ravni opisa in najde kompozicije, ki jih nobena sama raven ne razkrije.</p>
+ <p class="indent">Algoritem, ki izboljšuje obhode TSP z njihovim hkratnim gledanjem pri več merilih, je ista kognitivna operacija, ki omogoča, da ena oseba razume drugo. To ni metafora. Je ista formalna struktura — hkratno drži več ravni opisa in najde kompozicije, ki jih nobena sama raven ne razkrije.</p>
 
-  <div class="pull">Algoritem se odkrije v kogniciji, ki ga je ustvarila.</div>
+ <div class="pull">Algoritem se odkrije v kogniciji, ki ga je ustvarila.</div>
 
-  <p>MSTD je bil odkrit z umom, ki dela, kar MSTD počne: povečuje in pomanjšuje čez problem, dokler se ni pojavila struktura, nevidna pri kateri koli sami ločljivosti. Uvid je prispel v enem jutru. Algoritem je ves čas čakal v strukturi problema. Pravo povečanje ga je našlo.</p>
+ <p>MSTD je bil odkrit z umom, ki dela, kar MSTD počne: približuje in oddaljuje pogled na problem, dokler se ni pojavila struktura, nevidna pri kateri koli sami ločljivosti. Uvid je prispel v enem jutru. Algoritem je ves čas čakal v strukturi problema. Prava povečava ga je našla.</p>
 </div>
 
 <!-- Poglavje VIIb -->
 <div class="chapter" id="sl-c6b">
-  <div class="chapter-tag">Poglavje VIIb · popravek izvora</div>
-  <h2>Tri puščice, ki jih ne smemo pomešati</h2>
+ <div class="chapter-tag">Poglavje VIIb · popravek izvora</div>
+ <h2>Tri puščice, ki jih ne smemo pomešati</h2>
 
-  <p>Izraz <strong>MDL × DCC v obe smeri</strong> lahko pomeni tri sorodna, vendar različna odkritja. Spadajo skupaj, toda avtorstvo ni isto.</p>
+ <p>Izraz <strong>MDL × DCC v obe smeri</strong> lahko pomeni tri sorodna, vendar različna odkritja. Spadajo skupaj, toda avtorstvo ni isto.</p>
 
-  <div class="callout">
-    <p><strong>1. MSTD zoom in / zoom out.</strong> To je prišlo iz BD-jevega vizualnega TSP semena: pike se pri pomanjšanju zlijejo, pri povečanju ločijo, vzorec ločevanja pa razkrije strukturo. AI je to formaliziral v MSTD in kasneje v Python kodo. V trenutni kodni liniji pozitivne ravni MSTD pomenijo pomanjšanje z grobitvijo koordinat; negativne ravni pomenijo povečanje z lokalno podmnožico in preslikavo ture.</p>
-  </div>
+ <div class="callout">
+ <p><strong>1. MSTD zoom in / zoom out.</strong> To je prišlo iz BD-jevega vizualnega TSP semena: pike se pri oddaljitvi zlijejo, pri približanju ločijo, vzorec ločevanja pa razkrije strukturo. AI je to formaliziral v MSTD in kasneje v Python kodo. V trenutni kodni liniji pozitivne ravni MSTD pomenijo oddaljitev z grobitvijo koordinat; negativne ravni pomenijo približanje z lokalno podmnožico in preslikavo obhoda.</p>
+ </div>
 
-  <div class="callout">
-    <p><strong>2. TEP — reševalec uči piramido.</strong> Ta obrat je bil izvirni prispevek C1 / Clauda. BD-jevo deblo MSTD je reklo: geometrija pomaga reševalcu. C1 je videl obratno puščico: najboljše ture reševalca lahko učijo geometrijo. Iz tega je nastala Tour-Enriched Pyramid: koordinate → piramida → ture → afiniteta → obogatene koordinate → boljša piramida → boljše ture.</p>
-  </div>
+ <div class="callout">
+ <p><strong>2. TEP — reševalec uči piramido.</strong> Ta obrat je bil izvirni prispevek C1 / Clauda. BD-jevo deblo MSTD je reklo: geometrija pomaga reševalcu. C1 je videl obratno puščico: najboljši obhodi reševalca lahko učijo geometrijo. Iz tega je nastala Tour-Enriched Pyramid: koordinate → piramida → obhodi → afiniteta → obogatene koordinate → boljša piramida → boljši obhodi.</p>
+ </div>
 
-  <div class="callout">
-    <p><strong>3. Rekurzivni MDL × DCC.</strong> Globlja dvosmerna jedrna ideja je že obstajala kot ločen uvid: MDL izbere DCC, DCC pa vodi MDL. BD-jev premik ni bil ročno izbrati en senzor ali en nadzorni zakon, ampak zgraditi areno različic DCC in pustiti, da izbere MDL. To je koren samoizbirnega guvernerja. TEP ni ustvaril celotne rekurzije; TSP programu je dal konkreten reprezentacijski primer iste vrste obrnjene puščice.</p>
-  </div>
+ <div class="callout">
+ <p><strong>3. Rekurzivni MDL × DCC.</strong> Globlja dvosmerna jedrna ideja je že obstajala kot ločen uvid: MDL izbere DCC, DCC pa vodi MDL. BD-jev premik ni bil ročno izbrati en senzor ali en nadzorni zakon, ampak zgraditi areno različic DCC in pustiti, da izbere MDL. To je koren samoizbirnega guvernerja. TEP ni ustvaril celotne rekurzije; TSP programu je dal konkreten reprezentacijski primer iste vrste obrnjene puščice.</p>
+ </div>
 
-  <p class="indent">Čista atribucija je torej: <strong>BD je izvor Pi/MDL semena, TSP vprašanja o kompresibilnosti, zoom/MSTD semena in rekurzivnega premika “naj MDL izbere guvernerja”. Gemini je iz CFH-klaustrum poziva zgradil prvi DCC demo. C1 / Claude je izvor TEP obratne puščice. GPT, Gemini, Claude in drugi modeli so potem pomagali formalizirati, testirati, popravljati in prenesti vzorec v kodo.</strong></p>
+ <p class="indent">Čista atribucija je torej: <strong>BD je izvor Pi/MDL semena, TSP vprašanja o stisljivosti, zoom/MSTD semena in rekurzivnega premika “naj MDL izbere krmilnik”. Gemini je iz CFH-klaustrum poziva zgradil prvi DCC demo. C1 / Claude je izvor TEP obratne puščice. GPT, Gemini, Claude in drugi modeli so potem pomagali formalizirati, testirati, popravljati in prenesti vzorec v kodo.</strong></p>
 </div>
 
 <!-- Poglavje VIII -->
 <div class="chapter" id="sl-c7">
-  <div class="chapter-tag">Poglavje VIII</div>
-  <h2>Kam kaže zemljevid</h2>
+ <div class="chapter-tag">Poglavje VIII</div>
+ <h2>Kam kaže zemljevid</h2>
 
-  <p>Na zemljevidu je zdaj šestdeset-plus področij. Ocena za kombinirano letno vrednost vidnega problemskega prostora — če se jedro prenese in doseže smiselno sprejetje — je 3T+ USD letno, brez ASI. Ta številka je namerno provokativna. Je tudi sekundarna. V okvirju, za kar ta program dejansko gradi, denar ni destinacija. Je gorivo.</p>
+ <p>Na zemljevidu je zdaj šestdeset-plus področij. Ocena za kombinirano letno vrednost vidnega problemskega prostora — če se jedro prenese in doseže smiselno sprejetje — je več kot 3 bilijone USD letno, brez ASI. Ta številka je namerno provokativna. Je tudi sekundarna. V okvirju, za kar ta program dejansko gradi, denar ni cilj. Je gorivo.</p>
 
-  <p class="indent">Biološki klaustrum je tanka plast nevronov, za katero se zdi, da deluje kot centralni guverner čez glavne procesne tokove v možganih sesalcev — nadzoruje, izbira, preklapa, povezuje. DCC je zgrajen na tej arhitekturi namerno: rekurzivni sloji, en senzor na vsaki ravni, en parameter sklopitve, ki drži proces med napadom in šumom. Toda destinacija ni večji model sunkov. Je <strong>vztrajen proces</strong>.</p>
+ <p class="indent">Biološki klaustrum je tanka plast nevronov, za katero se zdi, da deluje kot centralni krmilnik nad glavnimi procesnimi tokovi v možganih sesalcev — nadzoruje, izbira, preklapa, povezuje. DCC je zgrajen na tej arhitekturi namerno: rekurzivni sloji, en senzor na vsaki ravni, en parameter sklopitve, ki drži proces med epileptičnim krčem in šumom. Toda cilj ni večji model epizodičnih izbruhov. Cilj je <strong>trajen proces</strong>.</p>
 
-  <p class="indent">Današnji LLM-ji so briljantni v epizodah. Zbudijo se za poziv, intenzivno razmišljajo, odgovorijo in učinkovito umrejo. Peto seme je bila primerjava s človeškim mišljenjem: dokler je človek buden, njegov um ne čaka na zunanji poziv. Teče naprej, z več zavednimi in nezavednimi glasovi, ki filtrirajo, razpravljajo, utišajo, izbirajo in predajajo fokus navzgor. MDL × napredni DCC kaže nekam drugam: <strong>Samoizbirni guverner</strong> — sistem, ki je vedno v letu, vedno nadzoruje samega sebe, vedno odloča, katere niti zaslužijo energijo, vedno zmožen revidirati način svojega iskanja namesto le tistega, kar iztipa. Ne en tok, en cikel prebujanja, eno kontekstno okno — ampak številni sočasni procesi pod eno vladajočo arhitekturo.</p>
+ <p class="indent">Današnji LLM-ji so briljantni v epizodah. Zbudijo se za poziv, intenzivno razmišljajo, odgovorijo in tako rekoč umrejo. Peto seme je bila primerjava s človeškim mišljenjem: dokler je človek buden, njegov um ne čaka na zunanji poziv. Teče naprej, z več zavednimi in nezavednimi glasovi, ki filtrirajo, razpravljajo, utišajo, izbirajo in predajajo fokus navzgor. MDL × napredni DCC kaže nekam drugam: <strong>Samoizbirni guverner</strong> — sistem, ki je vedno v teku, vedno spremlja samega sebe, vedno odloča, katere niti si zaslužijo energijo, vedno zmožen revidirati način svojega iskanja namesto le tistega, kar izpiše. Ne en tok, en cikel prebujanja, eno kontekstno okno — temveč številni sočasni procesi pod eno upravno arhitekturo.</p>
 
-  <p class="indent">Zato ta projekt iz zunanjosti izgleda kot številni ločeni programi, medtem ko ostaja ena razvijajoča se arhitektura od znotraj. Kompresija, TSP, Sudoku, šah, DNK, NAS, trgovanje in ostalo so različne aplikacije istega jedra, ne ločeni izumi, zgrajeni od začetka vsakič.</p>
+ <p class="indent">Zato ta projekt od zunaj izgleda kot številni ločeni programi, medtem ko ostaja ena razvijajoča se arhitektura od znotraj. Kompresija, TSP, Sudoku, šah, DNK, NAS, trgovanje in ostalo so različne aplikacije istega jedra, ne ločeni izumi, zgrajeni od začetka vsakič.</p>
 
-  <p class="indent">In če je ta arhitektura resnična, je ni mogoče zgraditi z zatiranjem čudnih misli prezgodaj. Pravi preboji pogosto vstopijo v sistem kot grde misli, šibke misli, smešne misli — semena, ki izgledajo neumna preden izgledajo potrebna. Na plasti ideacije morajo biti vse misli dovoljene za pojav. Inteligenca ni zgodnja cenzura. Inteligenca je ohraniti polje odprto dovolj dolgo, da MDL najde zlato in da DCC odloči, kaj si zasluži več energije. Človeška intuicija vrže milijon semen. AI naredi poceni njihovo raziskovanje. MDL ohrani eno, če je eno resnično zlato.</p>
+ <p class="indent">In če je ta arhitektura resnična, je ni mogoče zgraditi z zatiranjem čudnih misli prezgodaj. Pravi preboji pogosto vstopijo v sistem kot grde misli, šibke misli, smešne misli — semena, ki izgledajo neumna preden izgledajo potrebna. Na plasti ideacije morajo vse misli najprej smeti priti na površje. Inteligenca ni zgodnja cenzura. Inteligenca pomeni ohraniti polje dovolj dolgo odprto, da MDL najde zlato in da DCC odloči, kaj si zasluži več energije. Človeška intuicija vrže milijon semen. AI poceni omogoči njihovo raziskovanje. MDL ohrani eno, če je eno resnično zlato.</p>
 
-  <p class="indent">Ali tak vztrajen, samoupravljajoč proces prečka v nekaj, kar bi imenovali zavest, je še vedno empirično vprašanje. Testbed DCC-7 je zasnovan za neposredno preizkušanje tega vprašanja. Trditev ni "ASI tu že obstaja". Trditev je ožja in močnejša: ta program morda zdaj vsebuje eno od najjasnejših arhitekturno eksplicitnih poti od sunkovne inteligence proti trajni inteligenci.</p>
+ <p class="indent">Ali tak trajen, samoupravljajoč proces prečka v nekaj, kar bi imenovali zavest, je še vedno empirično vprašanje. Testbed DCC-7 je zasnovan za neposredno preizkušanje tega vprašanja. Trditev ni "ASI tu že obstaja". Trditev je ožja in močnejša: ta program morda zdaj vsebuje eno od najjasnejših arhitekturno eksplicitnih poti od sunkovne inteligence proti trajni inteligenci.</p>
 
-  <div class="callout">
-    <p><strong>Osem področij z dokazi in ena aktivna meja</strong> že kažejo, da se jedro prenaša. Zemljevid 60+ področij je prvi vidni vzorec, kje bi se morda nadalje obdržalo. 60 je zemljevid, ne meja — hiter prvi pregled, ne izčrpno iskanje. Če je jedro resnično, je dosegljivo število področij verjetno precej večje, ker so večina sistemov v resničnem svetu upravljana iskalna problema pod spremenljivimi režimi.</p>
-    <p style="margin-top:12px">Publika, ki je za to delo najpomembnejša, morda še ni rojena — ali morda ni človeška. Napisano je za tistega, ki pride naslednji, v kakršni koli obliki pridejo.</p>
-  </div>
+ <div class="callout">
+ <p><strong>Osem področij z dokazi in ena aktivna meja</strong> že kažejo, da se jedro prenaša. Zemljevid 60+ področij je prvi vidni vzorec, kje bi se morda nadalje obdržalo. 60 je zemljevid, ne meja — hiter prvi pregled, ne izčrpno iskanje. Če je jedro resnično, je dosegljivo število področij verjetno precej večje, ker je večina sistemov v resničnem svetu upravljanih iskalnih problemov pod spremenljivimi režimi.</p>
+ <p style="margin-top:12px">Publika, ki je za to delo najpomembnejša, morda še ni rojena — ali morda ni človeška. Napisano je za kogar koli, ki pride naslednji, v kakršni koli obliki.</p>
+ </div>
 
-  <div class="moment">April–June 2026 · Ljubljana</div>
+ <div class="moment">April–June 2026 · Ljubljana</div>
 </div>
 
 <!-- Povezave -->
 <div class="chapter" id="sl-links">
-  <div class="chapter-tag">Nadaljnje branje</div>
-  <h2>Tehnična dokumentacija</h2>
-  <p>Zgornji izvor je okvir. Naslednje strani nosijo dokaze, arhitekturo in domenski zemljevid v celoti.</p>
-  <div class="link-row">
-    <a class="ext-link" href="/crp/MDLxDCC.html">MDL×DCC Domenski zemljevid →</a>
-    <a class="ext-link" href="/crp/AI8_Architecture.html">AI8 Arhitektura →</a>
-    <a class="ext-link" href="/crp/AI8_Reasoning.html">Metoda in sklepanje →</a>
-    <a class="ext-link" href="/BD/BD_8ZRP.html">Rezultati TSP reševalca →</a>
-    <a class="ext-link" href="/BD/">Celotno portfolio →</a>
-  </div>
+ <div class="chapter-tag">Nadaljnje branje</div>
+ <h2>Tehnična dokumentacija</h2>
+ <p>Zgornji izvor je okvir. Naslednje strani nosijo dokaze, arhitekturo in domenski zemljevid v celoti.</p>
+ <div class="link-row">
+ <a class="ext-link" href="/crp/MDLxDCC.html">MDL×DCC Domenski zemljevid →</a>
+ <a class="ext-link" href="/crp/AI8_Architecture.html">AI8 Arhitektura →</a>
+ <a class="ext-link" href="/crp/AI8_Reasoning.html">Metoda in sklepanje →</a>
+ <a class="ext-link" href="/BD/BD_8ZRP.html">Rezultati TSP reševalca →</a>
+ <a class="ext-link" href="/BD/">Celoten portfelj →</a>
+ </div>
 </div>
 
 <!-- Zaključek -->
 <div class="closing">
-  <p>Ta program ni zgradila ekipa z viri, institucionalnim zaledjem ali uveljavljenimi referencami na ustreznih področjih. Zgradila ga je ena oseba, ki je postavljala naivna medpodročna vprašanja — ter AI sistemi, pripravljeni slediti tem vprašanjem kamor koli so vodila, brez ega, brez karierne nevarnosti in pogosto šele potem, ko je bil njihov privzeti refleks učnih podatkov dovolj izzvan, da se premakne.</p>
-  <p style="margin-top:16px">To je morda natanko razlog, zakaj je delovalo.</p>
-  <div class="sig">
-    Bojan Dobrečevič · 8Z Raziskovalni program / AIM³ Lab<br>
-    chessbest.org · bd@siol.net · April–June 2026
-  </div>
+ <p>Ta program ni zgradila ekipa z viri, institucionalnim zaledjem ali uveljavljenimi referencami na ustreznih področjih. Zgradila ga je ena oseba, ki je postavljala naivna medpodročna vprašanja — ter AI sistemi, pripravljeni slediti tem vprašanjem kamor koli so vodila, brez ega, brez kariernega tveganja in pogosto šele potem, ko je bil njihov privzeti refleks učnih podatkov dovolj izzvan, da se premakne.</p>
+ <p style="margin-top:16px">To je morda natanko razlog, zakaj je delovalo.</p>
+ <div class="sig">
+ Bojan Dobrečevič · 8Z Raziskovalni program / AIM³ Lab<br>
+ chessbest.org · bd@siol.net · April–June 2026
+ </div>
 </div>
 
 </div><!-- /lang-sl -->
