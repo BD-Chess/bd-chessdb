@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BD Hedge Separation PiX Strategy — Constant-Hedge Rescue Explainer</title>
+<title>BD Hedge Separation PiX Strategy — Profiled Re-anchor + Mega Rescue Explainer</title>
 <style>
 :root{
   --bg:#070914; --bg2:#0b1020; --panel:#101624; --card:#121b2e; --card2:#0d1320;
@@ -67,17 +67,17 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
 </div>
 <div class="wrap">
 <header class="hero" id="top">
-  <div class="eyebrow">BD Trading Research · Standalone Hedge-Rescue Recipe · PiX / Fib / Controls</div>
+  <div class="eyebrow">BD Trading Research · HSR PiX v1.1 · Profiled Re-anchor / Mega Rescue / Controls</div>
   <h1>BD Hedge Separation PiX Strategy</h1>
-  <p class="subtitle">A detailed explanation of the constant long+short hedge method: adverse-side rescue adds, profit-side cushion adds, dynamic loss ladders, sequence-based add sizing, core-keep after recovery, near-average rescue exits, and 100%-reserve profit trailing. The page describes the strategy, the standalone arena that should test it, and the first compact side-run evidence found so far.</p>
-  <p class="small">Version: explainer v1.2 · Date: 8 June 2026 · Status: research specification + v0.7.3 manual working protocol table — not a live bot, not financial advice.</p>
+  <p class="subtitle">A detailed explanation of the constant long+short hedge method, now updated with the v1.0 mega snap-average finding and the v1.1 profiled re-anchor-before-rescue arena. The core idea is no longer just “add to the loser”; it is: optionally re-anchor the losing leg, build entry separation, then allow a profile-bounded huge rescue add, close excess quickly, and keep a survivor core.</p>
+  <p class="small">Version: explainer v1.4 · Date: 11 June 2026 · Status: research specification + v1.0 extract interpretation + v1.1 profiled re-anchor test plan — not a live bot, not financial advice.</p>
 </header>
 <nav class="nav" aria-label="Page navigation">
-  <a href="#answer">Answer</a><a href="#side-run">Side-run results</a><a href="#intuition">Intuition</a><a href="#setup">Setup</a><a href="#state">State machine</a><a href="#ladders">Ladders</a><a href="#adds">Add sizing</a><a href="#exits">Exits</a><a href="#manual-protocol">Manual table</a><a href="#pix">PiX role</a><a href="#arena">Arena tests</a><a href="#risk">Risk</a><a href="#pseudo">Pseudo-code</a><a href="#success">Success criteria</a>
+  <a href="#answer">Answer</a><a href="#side-run">Old side-run</a><a href="#v10-mega">v1.0 Mega</a><a href="#reanchor">Re-anchor</a><a href="#risk-profiles">Risk profiles</a><a href="#cinch">Cinch numbers</a><a href="#intuition">Intuition</a><a href="#setup">Setup</a><a href="#state">State machine</a><a href="#ladders">Ladders</a><a href="#adds">Add sizing</a><a href="#exits">Exits</a><a href="#manual-protocol">Manual table</a><a href="#pix">PiX role</a><a href="#arena">Arena tests</a><a href="#risk">Risk</a><a href="#pseudo">Pseudo-code</a><a href="#success">Success criteria</a>
 </nav>
 
 <section id="answer">
-  <h2>Direct answer: what this strategy is</h2>
+  <h2>Direct answer: what this strategy is now</h2>
   <div class="grid cards">
     <div class="card"><div class="label">Mode</div><div class="num cyan">Constant hedge</div><p class="small">Open LONG and SHORT at the same time, then manage each book independently.</p></div>
     <div class="card"><div class="label">Core mechanism</div><div class="num gold">Rescue adds</div><p class="small">When one side suffers enough adverse ROE, add to that losing side by a tested sizing rule.</p></div>
@@ -120,6 +120,81 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
   </div>
 
   <div class="callout" style="margin-top:16px"><h3>Current verdict</h3><p><b>Exciting enough to run the full standalone arena.</b> Not safe, not live, not promoted. The next proof step is a standard/deep multi-worker run with more parameter coverage, more fresh universes, stricter margin/liquidation checks, and matched controls against fixed, geometric, Fibonacci, PiX, random, and no-add baselines.</p></div>
+</section>
+
+
+<section id="v10-mega">
+  <h2>Newest v1.0 finding: direct mega snap-average works, but only by risk profile</h2>
+  <p class="muted">The v1.0 arena tested the direct version of the idea: wait for an adverse move and stabilization, snap-average the losing side to a much larger total size, close the excess near small price profit, and leave a smaller survivor core.</p>
+  <div class="grid cards">
+    <div class="card"><div class="label">Safer branch</div><div class="num green">10×</div><p class="small">Best current survival-style branch. Lower upside, cleaner risk.</p></div>
+    <div class="card"><div class="label">Middle branch</div><div class="num gold">15×</div><p class="small">More profit pressure than 10×, but higher open-loss and margin demand.</p></div>
+    <div class="card"><div class="label">Moonshot branch</div><div class="num red">20×</div><p class="small">Strong in Deep/Fresh, but Long/Longer showed a ruin branch. Must be tiny-wallet / moonshot-labelled.</p></div>
+    <div class="card"><div class="label">Arena verdict</div><div class="num cyan">v1.1</div><p class="small">Add re-anchor first and rank by explicit risk budget.</p></div>
+  </div>
+  <div class="table-card">
+    <h3>What v1.0 changed in the strategy story</h3>
+    <div class="table-wrap"><table><thead><tr><th>Old framing</th><th>New framing after v1.0</th><th>Why it matters</th></tr></thead><tbody>
+      <tr><td>“Should we add big?”</td><td>“Which add size belongs to which wallet/risk profile?”</td><td>10×, 15×, and 20× are not one strategy. They are different risk products.</td></tr>
+      <tr><td>“20× makes more money.”</td><td>“20× can also be an account-killer branch.”</td><td>It may be valid for a tiny wallet where loss is intentional risk capital, not for survival mode.</td></tr>
+      <tr><td>“Close winner, rescue loser.”</td><td>“Use winner cushion, wait for stabilization, snap-average, close excess, keep core.”</td><td>The engine must track realized PnL, ending unrealized PnL, max open loss, margin, and ruin.</td></tr>
+    </tbody></table></div>
+  </div>
+</section>
+
+<section id="reanchor">
+  <h2>New manual method: re-anchor before rescue</h2>
+  <p>This is the important BD manual move that was not fully present in v1.0. When one leg becomes the bad leg, do not always start adding immediately. Sometimes close the bad leg, reopen it closer to current price, and repeat until enough long/short entry separation exists. Only then decide whether a huge add is justified.</p>
+  <div class="flow">
+    <div class="flow-row">
+      <div class="node long">LONG 1 SOL<small>keeps old profitable anchor</small></div><div class="arrow">+</div>
+      <div class="node short">SHORT 1 SOL<small>bad leg in up-move</small></div><div class="arrow">→</div>
+      <div class="node short">close bad leg<small>realize small/known damage</small></div><div class="arrow">→</div>
+      <div class="node short">reopen higher<small>new short closer to price</small></div><div class="arrow">→</div>
+      <div class="node core">separation<small>target 300/500/700% ROE</small></div><div class="arrow">→</div>
+      <div class="node pix">huge add only if profile allows<small>10× / 15× / 20× / more</small></div>
+    </div>
+  </div>
+  <div class="grid two" style="margin-top:16px">
+    <div class="good"><h3>Why this may improve survivability</h3><p>Re-anchoring can move the losing leg's average entry closer to current price before any huge add happens. That may reduce the size needed for snap-average rescue and may allow a larger initial position under the same wallet stress.</p></div>
+    <div class="danger"><h3>Why it can fail</h3><p>If re-anchor happens just before reversal, the method pays realized loss and then reopens into a new losing position. The arena must measure whipsaw tax, not hide it.</p></div>
+  </div>
+</section>
+
+<section id="risk-profiles">
+  <h2>Risk profiles — the arena must choose numbers separately</h2>
+  <p class="muted">This is the corrected design principle. BD may sometimes prefer max risk with a tiny wallet, and sometimes prefer maximum survivability. The arena must not collapse those into one “best” setting.</p>
+  <div class="table-card">
+    <div class="table-wrap"><table>
+      <thead><tr><th>Profile</th><th>Plain-language meaning</th><th>What counts as good</th><th>What must be reported</th></tr></thead>
+      <tbody>
+        <tr><td><code>P0_SURVIVAL_MAX</code></td><td>Maximum survivability, minimum risk.</td><td>Low ruin, low DD, low open tail, modest but repeatable MTM.</td><td>Worst loss, liquidation buffer, side-isolated survival.</td></tr>
+        <tr><td><code>P1_CONSERVATIVE</code></td><td>Still safe, accepts a bit more action.</td><td>Stable positive median, few/no rescue blowups.</td><td>Re-anchor count, realized re-anchor loss, max gross SOL.</td></tr>
+        <tr><td><code>P2_BALANCED</code></td><td>Middle survivability / middle risk.</td><td>Best risk-adjusted MTM, stable region not one lucky tuple.</td><td>Profit/DD ratio, positive rate, controls comparison.</td></tr>
+        <tr><td><code>P3_AGGRESSIVE</code></td><td>Higher risk for faster earning.</td><td>Higher MTM without uncontrolled ruin.</td><td>Wallet DD, silo DD, worst case, re-anchor whipsaws.</td></tr>
+        <tr><td><code>P4_MOONSHOT</code></td><td>Very high risk / high upside.</td><td>Big upside, but honestly labelled as moonshot.</td><td>Ruin rate and account-killer probability must be explicit.</td></tr>
+        <tr><td><code>P5_TINY_WALLET_BLAST</code></td><td>Small wallet where full loss is acceptable experiment capital.</td><td>Fast upside under known max-loss budget.</td><td>Expected loss, chance of wipeout, and best-case payout.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="cinch">
+  <h2>What v1.1 must cinch — variables the arena should search</h2>
+  <div class="table-card">
+    <div class="table-wrap"><table>
+      <thead><tr><th>Variable family</th><th>Examples</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td>Initial size</td><td><code>base_sol</code> grid by profile</td><td>The whole point is to see whether re-anchor + huge add allows larger starting position without unacceptable ruin.</td></tr>
+        <tr><td>Re-anchor trigger</td><td>-200%, -300%, -500%, -700%, -1000% ROE</td><td>Too early may overpay whipsaw tax; too late may need dangerous huge add.</td></tr>
+        <tr><td>Separation target</td><td>300%, 500%, 700%, 1000% ROE</td><td>Controls when to stop re-anchoring and start rescue/add logic.</td></tr>
+        <tr><td>Re-anchor mechanics</td><td>max events, reopen delay, trend gate, flat gate</td><td>Prevents random churn and tests BD's manual “price goes right / stabilizes” condition.</td></tr>
+        <tr><td>Huge add</td><td>5×, 8×, 10×, 12×, 15×, 20×, 25×, 30×</td><td>Finds profile-specific snap-average size instead of hand-picking one multiplier.</td></tr>
+        <tr><td>Exit</td><td>close excess at +0.5%, +1%, +1.5%, +2% price profit; keep 1×/2×/3× core</td><td>Determines whether rescue actually converts into realized profit or leaves dangerous open tail.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="note" style="margin-top:16px"><strong>Current next command:</strong> run <code>RUN_08C_REANCHOR_PROFILE_STRESS_w10.bat 10</code> or full <code>RUN_00_MASTER_ALL_BATCHES_NO_PAUSE.bat 10</code>. After the first v1.1 live extract, decide whether v1.2 needs wider grids, tighter controls, real 1m import, or different wallet/silo budgets.</div>
 </section>
 
 <section id="intuition">
@@ -509,6 +584,8 @@ for each config:
         <tr><td>Exits</td><td>Escape-to-core plus profit-tranche trailing with 100% ROE reserve.</td></tr>
         <tr><td>Validation</td><td>Train/validation/fresh seed universes; no promotion from single synthetic 1m path.</td></tr>
         <tr><td>Risk</td><td>Cross-hedge and side-isolated margin audits, liquidation buffer, max gross size, open-tail report.</td></tr>
+        <tr><td>Re-anchor</td><td>Close/reopen losing leg, separation target, reopen delay, trend gate, whipsaw-tax metrics.</td></tr>
+        <tr><td>Risk profiles</td><td>P0 survival through P5 tiny-wallet blast, with separate leaderboards and profile-specific winners.</td></tr>
         <tr><td>Infrastructure</td><td>Multi-worker, resume-safe JSONL, progress JSON, compact bundle, no zero-row fake success.</td></tr>
       </tbody>
     </table></div>
@@ -517,7 +594,7 @@ for each config:
 
 <div class="footer">
   BD Hedge Separation PiX Strategy Explainer · dark mobile-first research page · offline replay only · not financial advice.<br>
-  Built for the standalone BD Hedge Separation PiX Arena lineage; updated with v0.7.3 manual working protocol and v0.8 PiX-proof direction.
+  Updated with v1.0 mega snap-average findings and v1.1 profiled re-anchor-before-rescue test design.
 </div>
 </div>
 <script>
