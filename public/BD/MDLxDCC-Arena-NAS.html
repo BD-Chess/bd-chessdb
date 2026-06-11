@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDLxDCC Arena — NAS / Neural Architecture Search</title>
+<style>
+:root{--bg:#070912;--panel:#11172a;--panel2:#0d1324;--text:#d8dceb;--dim:#9da4bd;--muted:#69708b;--line:#242842;--blue:#4a9ede;--green:#2ecc94;--gold:#e8c840;--red:#e05070;--purple:#a87cdf;--teal:#3ecdc4;--pink:#e868a0}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 18% 8%,rgba(74,158,222,.15),transparent 28%),radial-gradient(circle at 86% 74%,rgba(168,124,223,.12),transparent 32%),var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:18px;line-height:1.72;overflow-x:hidden}a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}.wrap{max-width:1120px;margin:0 auto;padding:0 18px 64px}.topbar{position:sticky;top:0;z-index:20;background:rgba(7,9,18,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);margin:0 -18px 24px;padding:10px 18px}.topbar .inner{max-width:1120px;margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.brand{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.76rem;letter-spacing:.18em;text-transform:uppercase;color:var(--green)}.nav{display:flex;gap:8px;flex-wrap:wrap}.nav a{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.70rem;border:1px solid var(--line);border-radius:999px;padding:5px 10px;color:var(--dim)}.nav a:hover{border-color:var(--blue);color:var(--blue);text-decoration:none;background:rgba(74,158,222,.08)}header{padding:44px 0 28px;border-bottom:1px solid var(--line);margin-bottom:24px}.kicker{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--green);letter-spacing:.22em;text-transform:uppercase;font-size:.78rem;margin-bottom:12px}h1{font-size:clamp(2.2rem,5.4vw,4.4rem);line-height:1.03;margin:0 0 14px;color:#fff;letter-spacing:-.04em;max-width:960px}.subtitle{max-width:920px;color:var(--dim);font-size:1.08rem}.meta{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.79rem;color:var(--muted);margin-top:16px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.72rem;color:var(--dim)}.pill.green{border-color:rgba(46,204,148,.35);color:var(--green);background:rgba(46,204,148,.08)}.pill.gold{border-color:rgba(232,200,64,.35);color:var(--gold);background:rgba(232,200,64,.08)}.pill.purple{border-color:rgba(168,124,223,.35);color:var(--purple);background:rgba(168,124,223,.08)}.pill.red{border-color:rgba(224,80,112,.35);color:var(--red);background:rgba(224,80,112,.08)}.callout{background:linear-gradient(135deg,rgba(74,158,222,.10),rgba(46,204,148,.07));border:1px solid rgba(74,158,222,.30);border-left:4px solid var(--blue);border-radius:14px;padding:17px 20px;margin:20px 0;color:#dce7ff}.callout strong{color:#fff}.warn{background:rgba(224,80,112,.08);border-color:rgba(224,80,112,.35);border-left-color:var(--red)}.good{background:rgba(46,204,148,.08);border-color:rgba(46,204,148,.32);border-left-color:var(--green)}.gold{background:rgba(232,200,64,.08);border-color:rgba(232,200,64,.30);border-left-color:var(--gold)}.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:20px 0 28px}.metric{background:linear-gradient(180deg,rgba(17,23,42,.94),rgba(13,19,36,.80));border:1px solid var(--line);border-radius:15px;padding:16px 18px}.metric .label{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);font-size:.66rem;margin-bottom:8px}.metric .value{font-size:1.65rem;font-weight:760;color:#fff;line-height:1.15}.metric .value.green{color:var(--green)}.metric .value.gold{color:var(--gold)}.metric .value.purple{color:var(--purple)}.metric .value.red{color:var(--red)}.metric .note{color:var(--dim);font-size:.9rem;margin-top:6px;line-height:1.45}.toc{background:rgba(13,19,36,.82);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:24px 0}.toc h2{margin:0 0 10px;border:0;padding:0;font-size:1.35rem}.toc ul{margin:.3em 0;padding-left:20px}.toc a{color:#dfcf7a}.paper{background:rgba(10,12,24,.46);border:1px solid rgba(36,40,66,.70);border-radius:18px;padding:8px 0 0}.paper>h2,.paper>h3,.paper>p,.paper>ul,.paper>ol,.paper>pre,.paper>.callout{margin-left:24px;margin-right:24px}.paper h2{font-size:1.72rem;color:#fff;margin-top:2em;margin-bottom:.65em;border-bottom:1px solid var(--line);padding-bottom:.38em}.paper h3{font-size:1.18rem;color:#fff;margin-top:1.45em;margin-bottom:.45em}.paper p{margin:.78em 0;color:var(--text)}.paper ul,.paper ol{padding-left:1.35em}.paper li{margin:.35em 0}.paper code{background:rgba(74,158,222,.10);border:1px solid rgba(74,158,222,.18);border-radius:5px;padding:.08em .32em;color:#f2f6ff}.paper pre{background:#080d18;border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow:auto;color:#dce8ff;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.86rem;line-height:1.55}.paper table{width:calc(100% - 48px);border-collapse:separate;border-spacing:0;margin:18px 24px;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:.91rem}.paper th,.paper td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}.paper th{background:#171b2f;color:#fff}.paper td{background:#0f1220;color:#d0d6e8}.paper tr:last-child td{border-bottom:none}.goodtxt{color:var(--green);font-weight:700}.badtxt{color:var(--red);font-weight:700}.muted{color:var(--muted)}.section-anchor{font-size:.72em;color:var(--muted);margin-left:.35em}.download{display:inline-block;margin:6px 24px 20px;border:1px solid rgba(46,204,148,.45);background:rgba(46,204,148,.10);color:var(--green);border-radius:999px;padding:9px 14px;font-weight:700}.download:hover{text-decoration:none;background:rgba(46,204,148,.16)}.footer{border-top:1px solid var(--line);margin-top:36px;padding:18px 0;color:var(--muted);font-size:.9rem}@media(max-width:760px){body{font-size:19px;line-height:1.78}.wrap{padding:0 12px 48px}.topbar{margin:0 -12px 18px;padding:9px 12px}h1{font-size:2.35rem}.paper>h2,.paper>h3,.paper>p,.paper>ul,.paper>ol,.paper>pre,.paper>.callout{margin-left:14px;margin-right:14px}.paper table{display:block;width:calc(100% - 28px);margin:16px 14px;overflow-x:auto;white-space:nowrap;font-size:.88rem}.metrics{grid-template-columns:1fr}.nav a{font-size:.66rem;padding:5px 8px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="topbar"><div class="inner"><div class="brand">BD × AI · MDLxDCC</div><nav class="nav"><a href="MDLxDCC.html">Kernel</a><a href="MDLxDCC-Arenas.html">Arenas</a><a href="MDLxDCC-Arena-ARC.html">ARC</a><a href="MDLxDCC-Arena-AMR.html">AMR</a><a href="#code">Code</a><a href="#next">Next</a></nav></div></div>
+<header id="top">
+  <div class="kicker">Benchmark arena · architecture-search control</div>
+  <h1>NAS / Neural Architecture Search Arena</h1>
+  <div class="subtitle">A runnable MDLxDCC arena for testing whether architecture search spaces become steerable when their traces expose compressible structure. It combines NAS-Bench adapters, affinity and router sensors, DCC-style search laws, drain/fovea navigation, null controls, and a controlled noise-dimension stress test.</div>
+  <div class="meta">Version v19 modular · code capsule extracted from <code>8z NAS arena.zip</code> · status: active prototype / reproducibility candidate</div>
+  <div class="pills"><span class="pill green">7,452 Python LOC</span><span class="pill gold">10 modules</span><span class="pill purple">Phase A + Phase B</span><span class="pill red">claims require run logs</span></div>
+</header>
+
+<div class="callout good"><strong>Short verdict.</strong> Yes — NAS deserves its own page. Until now it was only mentioned as a small card in the arena hub. This page gives it the missing role: a dedicated code-capsule page for architecture-search as a MDLxDCC evidence lane.</div>
+
+<div class="metrics">
+  <div class="metric"><div class="label">Search spaces</div><div class="value green">3</div><div class="note">Synthetic, NATS-Bench-201 style, and NAS-Bench-101 adapter.</div></div>
+  <div class="metric"><div class="label">Sensor classes</div><div class="value gold">49</div><div class="note">LZ, affinity, family/router, physics, flood, rain, drain, transform and poly sensors.</div></div>
+  <div class="metric"><div class="label">Law classes</div><div class="value purple">26</div><div class="note">Random/greedy baselines, DCC, routers, allocators, drain navigation, and fovea laws.</div></div>
+  <div class="metric"><div class="label">Noise test</div><div class="value red">5^k</div><div class="note">NB101 can be wrapped with irrelevant dimensions to test curse-of-dimensionality resilience.</div></div>
+</div>
+
+<nav class="toc"><h2>Contents</h2><ul>
+<li><a href="#abstract">Abstract</a></li>
+<li><a href="#why">1. Why this page exists</a></li>
+<li><a href="#arena">2. Arena design</a></li>
+<li><a href="#phases">3. Phase A / Phase B workflow</a></li>
+<li><a href="#noise">4. Noise-dimension scalability test</a></li>
+<li><a href="#code">5. Code capsule</a></li>
+<li><a href="#limits">6. Honest limits</a></li>
+<li><a href="#next">7. Next reproducibility move</a></li>
+</ul></nav>
+
+<article class="paper">
+<h2 id="abstract">Abstract<a class="section-anchor" href="#abstract">#</a></h2>
+<p>Neural Architecture Search is a natural MDLxDCC arena. A NAS search space is not just a set of candidates; it is a structured landscape. If winning architectures share motifs, families, edge patterns, local corridors, or “avoid these losers” signatures, an MDLxDCC controller should be able to detect those signals and spend less budget on blind mutation.</p>
+<p>The uploaded NAS arena is not a final benchmark-result paper yet. Its current public value is better framed as a <strong>runnable architecture-search laboratory</strong>: Phase A detects structure and builds routing assets; Phase B tests whether governance laws, drain/fovea navigation, and MDL-ranked selectors can beat simple baselines under fixed budgets.</p>
+
+<h2 id="why">1. Why this page exists<a class="section-anchor" href="#why">#</a></h2>
+<p>The existing arena hub already mentioned “NAS / Architecture Search,” but only as a short card. That under-represents the work. The attached ZIP contains a full modular Python arena with benchmark adapters, sensors, laws, diagnostics, checkpointing, CSV/JSON exports, and a controlled scalability wrapper.</p>
+<div class="callout gold"><strong>Positioning:</strong> NAS is the bridge between abstract P-vs-NP-style tractability, practical AutoML, and 8Z/MDL search governance. It deserves a page as a <em>code capsule first</em>, then a result page after the next clean run bundle.</div>
+
+<h2 id="arena">2. Arena design<a class="section-anchor" href="#arena">#</a></h2>
+<table>
+<tr><th>Layer</th><th>What the code does</th><th>Why it matters</th></tr>
+<tr><td>Search spaces</td><td><code>nas_space.py</code> defines NATS-Bench-201 style operations and a NAS-Bench-101 canonical adapter.</td><td>Separates the arena method from one benchmark substrate.</td></tr>
+<tr><td>Benchmark adapters</td><td><code>nas_bench.py</code> supports synthetic runs, NATS/NAS-Bench-201 APIs, and NAS-Bench-101 tables.</td><td>Allows smoke tests without external data and stronger tests when benchmark data exists.</td></tr>
+<tr><td>Sensors</td><td><code>nas_sensors.py</code> contains LZ76, entropy, affinity, signed-affinity, family/router, physics, flood/rain/drain, and transform-persistence sensors.</td><td>Turns search traces and architecture structure into selectable control signals.</td></tr>
+<tr><td>Laws</td><td><code>nas_laws.py</code> includes random/greedy/local/evo baselines plus DCC, staged routing, physics allocators, drain navigation, fovea laws, and poly-greedy variants.</td><td>Lets MDL compare simple policies against richer governance policies.</td></tr>
+<tr><td>Diagnostics</td><td><code>nas_diag.py</code> adds holdout tests, permutation nulls, family split, macro reverse-engineering, drain-vs-greedy, tiebreak, and trajectory-stability diagnostics.</td><td>Prevents the arena from turning every apparent signal into a claim.</td></tr>
+</table>
+
+<h2 id="phases">3. Phase A / Phase B workflow<a class="section-anchor" href="#phases">#</a></h2>
+<h3>Phase A — structure discovery</h3>
+<p>Phase A asks whether the architecture space contains reusable signal before spending heavily on governance search. It scans affinity sensors, compares top-vs-random controls, runs holdouts, checks loser-avoidance via negativa, computes signed affinity, tests family splits, and prepares poly/router assets.</p>
+<pre>python nas_arena.py --synthetic --phase-a --budget 20 --count 5 --workers 1</pre>
+<h3>Phase B — governed search arena</h3>
+<p>Phase B tests the actual arena question: under a fixed evaluation budget, which sensor × law pairs find better architectures, with better MDL, than simple baselines? It supports broad category filters such as <code>baseline</code>, <code>governance</code>, <code>poly</code>, <code>drain</code>, and <code>transform</code>.</p>
+<pre>python nas_arena.py --synthetic --phase-a --phase-b --cat drain,baseline --budget 30 --count 5 --workers 1 --resume</pre>
+<table>
+<tr><th>Output</th><th>Purpose</th></tr>
+<tr><td><code>nas_phase1_phase_a_v19_modular.csv/json</code></td><td>Phase A rows, signal summary, null checks, and router/poly metadata.</td></tr>
+<tr><td><code>nas_phase1_phase_b_v19_modular.csv/json/txt</code></td><td>Phase B leaderboard, best baseline, best governance, budget sweep, and diagnostics.</td></tr>
+<tr><td>checkpoint files</td><td>Resume support for longer searches.</td></tr>
+</table>
+
+<h2 id="noise">4. Noise-dimension scalability test<a class="section-anchor" href="#noise">#</a></h2>
+<p>The strongest built-in stress test is <code>nas_arena_nb101_noise.py</code>. It wraps NAS-Bench-101 with irrelevant dimensions. Accuracy still depends only on the original architecture dimensions, but the mutation/search surface grows by <code>5^k</code>.</p>
+<table>
+<tr><th>Noise dimensions</th><th>Effective expansion</th><th>Interpretation</th></tr>
+<tr><td><code>k=3</code></td><td>423k × 125 ≈ 52.9 million</td><td>Small controlled curse-of-dimensionality test.</td></tr>
+<tr><td><code>k=4</code></td><td>423k × 625 ≈ 264.8 million</td><td>Good first public stress level.</td></tr>
+<tr><td><code>k=6</code></td><td>423k × 15,625 ≈ 6.6 billion</td><td>Large scale-up without changing the real signal.</td></tr>
+<tr><td><code>k=8</code></td><td>423k × 390,625 ≈ 165.4 billion</td><td>Extreme controlled noise arena.</td></tr>
+</table>
+<div class="callout"><strong>Clean hypothesis:</strong> if MDL governance really finds structure, it should learn that noise dimensions carry zero useful information and avoid wasting budget there better than naive mutation.</div>
+
+<h2 id="code">5. Code capsule<a class="section-anchor" href="#code">#</a></h2>
+<p>This page ships with a cleaned public code capsule: Python source files plus README, without <code>__pycache__</code>. Publish run outputs separately before making performance claims.</p>
+<a class="download" href="assets/8z_NAS_arena_v19_modular_code_capsule.zip">Download code capsule →</a>
+<table>
+<tr><th>Module</th><th>Role</th></tr>
+<tr><td><code>nas_arena.py</code></td><td>entry point</td></tr>
+<tr><td><code>nas_phase.py</code></td><td>Phase A / Phase B orchestration</td></tr>
+<tr><td><code>nas_space.py</code></td><td>NATS/NB101 search-space definitions</td></tr>
+<tr><td><code>nas_bench.py</code></td><td>synthetic, NATS-Bench-201, and NAS-Bench-101 benchmark adapters</td></tr>
+<tr><td><code>nas_sensors.py</code></td><td>sensor catalog</td></tr>
+<tr><td><code>nas_laws.py</code></td><td>law / controller catalog</td></tr>
+<tr><td><code>nas_diag.py</code></td><td>diagnostics and null tests</td></tr>
+<tr><td><code>nas_runner.py</code></td><td>variant execution, checkpointing, scoring helpers</td></tr>
+<tr><td><code>nas_arena_nb101_noise.py</code></td><td>NB101 irrelevant-noise-dimension wrapper</td></tr>
+</table>
+
+<h2 id="limits">6. Honest limits<a class="section-anchor" href="#limits">#</a></h2>
+<ul>
+  <li>This is currently a code-capsule page, not a final benchmark-results paper.</li>
+  <li>External NAS benchmark data is not included in this page package.</li>
+  <li>Any “beats baseline” statement should be tied to exact seed, budget, workers, benchmark version, search metric, final metric, and full CSV/JSON outputs.</li>
+  <li>The noise-dimension wrapper is a controlled scalability test, not proof that the same behavior holds on every native large NAS space.</li>
+</ul>
+
+<h2 id="next">7. Next reproducibility move<a class="section-anchor" href="#next">#</a></h2>
+<p>The best next move is a small, clean, public run pack:</p>
+<ol>
+  <li>Run synthetic Phase A + Phase B as a zero-dependency smoke test.</li>
+  <li>Run one NATS-Bench-201 / NAS-Bench-101 benchmark if local data is available.</li>
+  <li>Run one NB101 + <code>k=4</code> noise-dimension stress test.</li>
+  <li>Publish the exact command, CSV/JSON outputs, top leaderboard rows, baseline-vs-governance delta, budget sweep, and failure notes.</li>
+</ol>
+<p>If the noise test survives, NAS becomes a strong public example of the MDLxDCC claim: <strong>search improves when the controller learns what structure matters and what dimensions are only noise.</strong></p>
+<hr style="border:0;border-top:1px solid var(--line);margin:24px">
+<p class="muted">Version v0.1 page · June 11, 2026 · NAS arena page added as a code-capsule evidence lane. Performance claims intentionally deferred until a clean public run bundle is attached.</p>
+</article>
+<footer class="footer"><p><strong>Status:</strong> active prototype / code capsule. This page complements the general <a href="MDLxDCC-Arenas.html">MDLxDCC Arenas hub</a>.</p></footer>
+</div>
+</body>
+</html>
