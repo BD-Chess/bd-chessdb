@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How LLMs Actually Work — Explained by LLMs, Audited by Human</title>
+<meta name="description" content="A bilingual EN/SL RHPm multi-LLM hybrid explainer of how LLMs and modern AI assistants actually work: transformer mechanics, pretraining, post-training, tools, RAG, memory, safety, hallucinations, reasoning, multimodality, and inference engineering.">
+<style>
+:root{--bg:#070b14;--panel:#0d1424;--panel2:#101a2e;--text:#eef4ff;--muted:#a9b6ca;--line:#26354f;--accent:#7dd3fc;--accent2:#facc15;--good:#86efac;--code:#07101f;--shadow:0 18px 70px rgba(0,0,0,.45);--max:1120px}*{box-sizing:border-box}html{scroll-behavior:smooth}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}body{margin:0;background:radial-gradient(circle at 15% 0%,rgba(125,211,252,.16),transparent 32%),radial-gradient(circle at 80% 10%,rgba(250,204,21,.09),transparent 30%),linear-gradient(180deg,#050812 0%,#09111f 55%,#050812 100%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.72;font-size:18px}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent2);outline-offset:2px;border-radius:6px}header{max-width:var(--max);margin:0 auto;padding:64px 22px 28px}.kicker{color:var(--accent2);letter-spacing:.16em;text-transform:uppercase;font-weight:800;font-size:12px}h1{font-size:clamp(36px,6vw,72px);line-height:1.02;margin:.18em 0 .25em;letter-spacing:-.045em}.subtitle{max-width:900px;color:var(--muted);font-size:clamp(18px,2.4vw,24px)}.badgebar{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}.badge,.langbtn{border:1px solid var(--line);background:rgba(16,26,46,.8);color:var(--muted);border-radius:999px;padding:8px 12px;font-size:14px}.langbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:18px}.langbtn{cursor:pointer;color:var(--text)}.langbtn.active{background:rgba(125,211,252,.14);border-color:var(--accent);color:#e0f7ff}.navbar{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);background:rgba(7,11,20,.84);border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.08)}.navinner{max-width:var(--max);margin:0 auto;padding:10px 18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}.navinner a,.btn{border:1px solid var(--line);background:rgba(16,26,46,.75);color:var(--text);border-radius:999px;padding:7px 11px;font-size:13px;cursor:pointer}.navinner a:hover,.btn:hover{border-color:var(--accent);text-decoration:none}.toolbar{margin-left:auto;display:flex;gap:6px}main{max-width:var(--max);margin:0 auto;padding:26px 22px 80px}article{background:rgba(13,20,36,.58);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:clamp(18px,4vw,46px);box-shadow:var(--shadow)}h2{margin-top:2.2em;font-size:clamp(25px,3vw,36px);letter-spacing:-.025em;border-top:1px solid rgba(255,255,255,.08);padding-top:1.2em}h3{margin-top:1.7em;font-size:clamp(20px,2.2vw,26px);color:#dbeafe}h4{color:#dbeafe}p,li{color:#e5edf9}.note{font-size:15px;color:var(--muted)}blockquote{margin:1.2em 0;padding:1em 1.2em;border-left:4px solid var(--accent2);background:rgba(250,204,21,.08);border-radius:12px;color:#fff7d6}code{background:rgba(7,16,31,.88);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:.12em .32em;color:#c4f1ff}pre{overflow:auto;padding:16px;border-radius:16px;background:var(--code);border:1px solid rgba(255,255,255,.08)}pre code{border:0;background:transparent;padding:0}table{width:100%;border-collapse:collapse;margin:1.2em 0;font-size:15px}th,td{border:1px solid var(--line);padding:10px;vertical-align:top;text-align:left}th{background:rgba(125,211,252,.12);color:#e0f7ff}tr:nth-child(even)td{background:rgba(255,255,255,.025)}details{margin:1.4em 0;border:1px solid var(--line);border-radius:18px;background:rgba(16,26,46,.72);padding:0;overflow:hidden}summary{cursor:pointer;padding:16px 18px;font-weight:800;color:#fef3c7}details>*:not(summary){margin-left:18px;margin-right:18px}details>p:last-child,details>ul:last-child,details>ol:last-child,details>table:last-child,details>div:last-child{margin-bottom:18px}.stack{display:flex;flex-direction:column;gap:10px;margin:1.6em 0}.stack .layer{border:1px solid var(--line);border-radius:16px;padding:14px 18px;background:linear-gradient(180deg,rgba(16,26,46,.9),rgba(13,20,36,.7))}.stack .layer .tag{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800}.stack .l1{border-color:rgba(125,211,252,.45)}.stack .l1 .tag{color:var(--accent)}.stack .l2{border-color:rgba(250,204,21,.45)}.stack .l2 .tag{color:var(--accent2)}.stack .l3{border-color:rgba(134,239,172,.4)}.stack .l3 .tag{color:var(--good)}.stack .layer p{margin:.35em 0 0;color:#dbe7f8;font-size:16px}.lang{display:none}.lang.active{display:block}.refgroup ul{margin-top:.2em}.refgroup li{font-size:15.5px;margin:.25em 0}.footer{max-width:var(--max);margin:0 auto;padding:30px 22px 60px;color:var(--muted)}@media(max-width:720px){body{font-size:18px}article{padding:18px;border-radius:18px}.toolbar{margin-left:0}table{font-size:13px}.navinner{max-height:45vh;overflow:auto}.subtitle{font-size:18px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="kicker">RHPm · Multi‑LLM synthesis · hybrid of hybrids</div>
+  <h1>How LLMs Actually Work</h1>
+  <p class="subtitle lang active" data-lang="en">Explained by LLMs, audited by Human — transformer mechanics, the deployed assistant stack, failure modes, source discipline, and BD’s clearly separated AIM³ / RHPm / 8Z workflow contribution.</p>
+  <p class="subtitle lang" data-lang="sl">Razloženo z LLM-ji, pregledal človek — transformer mehanika, deployed assistant stack, vzroki napak, disciplina virov in jasno ločen BD prispevek AIM³ / RHPm / 8Z workflow.</p>
+  <div class="badgebar"><span class="badge">Claude + GPT hybrid</span><span class="badge">Not a magic mind</span><span class="badge">Not “just autocomplete”</span><span class="badge">EN default · SL option</span><span class="badge">June 2026</span></div>
+  <div class="langbar"><button class="langbtn active" id="btn-en" onclick="setLang('en')">EN</button><button class="langbtn" id="btn-sl" onclick="setLang('sl')">SL</button></div>
+</header>
+<nav class="navbar"><div class="navinner"><span class="nav-lang nav-en"><a href="#s1-en">1. Short</a><a href="#s2-en">2. Core</a><a href="#s3-en">3. Pretraining</a><a href="#s4-en">4. Post-training</a><a href="#s5-en">5. Inference</a><a href="#s6-en">6. System</a><a href="#s7-en">7. Memory</a><a href="#s8-en">8. Hallucinations</a><a href="#s9-en">9. Reasoning</a><a href="#s10-en">10. Multimodal</a><a href="#s11-en">11. Myths</a><a href="#s12-en">12. BD</a><a href="#refs-en">Refs</a></span><span class="nav-lang nav-sl" style="display:none"><a href="#s1-sl">1. Kratko</a><a href="#s2-sl">2. Jedro</a><a href="#s3-sl">3. Pretraining</a><a href="#s4-sl">4. Post-training</a><a href="#s5-sl">5. Inference</a><a href="#s6-sl">6. Sistem</a><a href="#s7-sl">7. Spomin</a><a href="#s8-sl">8. Halucinacije</a><a href="#s9-sl">9. Razmišljanje</a><a href="#s10-sl">10. Multimodalno</a><a href="#s11-sl">11. Miti</a><a href="#s12-sl">12. BD</a><a href="#refs-sl">Viri</a></span><span class="toolbar"><button class="btn" id="smaller">A−</button><button class="btn" id="bigger">A+</button></span></div></nav>
+<main><article>
+<section class="lang active" data-lang="en">
+<h1 id="top-en">How LLMs Actually Work — Explained by LLMs, Audited by Human</h1>
+<p><strong>RHPm / multi‑LLM synthesis · hybrid of Claude + GPT versions · June 2026.</strong> <span class="note">Vendor features, model names, context windows, and product policies change quickly; read product-specific statements as date-sensitive.</span></p>
+<blockquote><p><strong>One-sentence thesis:</strong> An LLM predicts tokens — but the important part is what it must learn inside to do that well, and what modern assistant products build around that core.</p></blockquote>
+<p>This page is a hybrid of two already strong versions: Claude’s richer publication draft and GPT’s tighter RHPm/method ledger. It keeps Claude’s stronger reader flow, three-layer framing, concrete examples, references, and idea provenance; it keeps GPT’s clearer public-method note, BD workflow separation, and source-spine discipline.</p>
+<p>One caveat frames everything: an LLM explaining LLMs is not introspecting its own weights. It is synthesizing public research, documentation, and learned patterns. The human audit layer exists to compare drafts, challenge them, remove overclaiming, and attach sources.</p>
+<div class="stack" id="stack-en">
+  <div class="layer l1"><span class="tag">Layer 1 · Base model</span><p>tokens → embeddings → transformer layers → logits → next token</p></div>
+  <div class="layer l2"><span class="tag">Layer 2 · Assistant product</span><p>base model + post-training + system instructions + tools + retrieval + memory/context + safety + multimodality + serving infrastructure</p></div>
+  <div class="layer l3"><span class="tag">Layer 3 · Human / audit workflow</span><p>prompt design + multi-model comparison + critique rounds + source checks + human judgment</p></div>
+</div>
+
+<h2 id="s1-en">1. The short version for smart non-experts</h2>
+<p>A large language model does not read text the way you do. It turns text into <strong>tokens</strong>: chunks such as words, parts of words, punctuation, spaces, numbers, or symbols. Those tokens become vectors — long lists of numbers. A stack of transformer layers repeatedly updates those vectors so each token can use information from the earlier context.</p>
+<p>At the end, the model produces <strong>logits</strong>: scores for possible next tokens. A sampler chooses one token, appends it to the text, and repeats. That is the narrow sense in which an LLM is a next-token predictor.</p>
+<p>But saying <strong>“LLMs are just autocomplete”</strong> is true the way <strong>“a car turns wheels”</strong> is true: accurate, and far too small to explain the machine.</p>
+<p>To predict the next token well across trillions of training tokens, the model must learn regularities of grammar, style, facts, code, translation, analogy, dialogue, and planning-style behavior on some tasks. These are not stored as neat database rows. They are distributed across weights, activations, attention patterns, MLP layers, and residual streams.</p>
+<p>A public assistant — ChatGPT, Claude, Gemini, Grok, DeepSeek, Copilot, Mistral’s Le Chat, and similar products — is more than a raw pretrained model. Depending on the product, it may add instruction tuning, preference tuning, system instructions, safety layers, tool calling, retrieval, conversation-state management, multimodal encoders, model routing, and heavy inference engineering.</p>
+<p>The clearest way to feel the difference: a raw base model asked <em>“What is the capital of France?”</em> might simply continue a dataset pattern: <em>“Q: What is the capital of Germany? A: Berlin. Q: What is the capital of France? A:”</em> A post-trained assistant is shaped to answer: <strong>Paris.</strong></p>
+<blockquote><p><strong>Pretraining grows capability. Post-training shapes behavior</strong> — and can also teach answer formats, refusal patterns, tool-use formats, calibration, and abstention.</p></blockquote>
+
+<h2 id="s2-en">2. The model core: tokens, vectors, attention, MLPs</h2>
+<h3>Text becomes tokens</h3>
+<p>The model receives token IDs, not “words.” Tokenization is a compression-like compromise. Whole-word vocabularies are too rigid, character-level sequences are too long, and subword tokenization sits between them. Different tokenizers produce different failure modes on spelling, numbers, code, and non-English scripts.</p>
+<p>This is why models historically stumbled on questions like counting letters in “strawberry.” But tokenization is not the whole explanation: exact symbolic counting also requires a reliable algorithmic procedure. Better token boundaries help; they do not create arithmetic certainty.</p>
+<h3>Tokens become contextual vectors</h3>
+<p>A token ID is just an index into a learned lookup table: the embedding matrix. That table is static after training. What changes during processing is the <em>contextual</em> representation built above it. After many transformer layers, the running vector for “bank” in “river bank” differs from “bank” in “bank loan,” because surrounding tokens have updated what the position represents.</p>
+<h3>The model needs position</h3>
+<p>Attention by itself does not know word order. “Dog bites man” and “man bites dog” contain the same tokens. The original Transformer used fixed sinusoidal positional encodings. Many modern open model families use RoPE or RoPE-like methods, often applied inside attention to query/key representations rather than simply added to embeddings. Closed frontier details vary and should not be guessed.</p>
+<h3>Transformer layers</h3>
+<p>A simplified decoder block has two main parts: attention moves information between positions; the MLP / feed-forward block transforms information at each position. A residual stream carries the running representation through the network. Each layer adds an update instead of replacing the whole state, while normalization keeps the numbers stable enough for deep stacks.</p>
+<pre><code>h = token_embedding(tokens)
+# RoPE-style position information is often injected inside attention.
+
+for layer in layers:
+    h = h + Attention(Norm(h))
+    h = h + MLP(Norm(h))
+
+logits_last = h[-1] @ W_vocab
+probabilities = softmax(logits_last / temperature)
+next_token = sampler(probabilities)</code></pre>
+<h3>Attention: Q, K, V, masking, and heads</h3>
+<p>For each position, the model forms learned projections: <code>Q</code> for what this position is looking for, <code>K</code> for what each position offers as a match, and <code>V</code> for what information each position can pass along.</p>
+<pre><code>Attention(Q, K, V) = softmax( (Q Kᵀ) / sqrt(d_head) + mask ) V</code></pre>
+<p>In decoder-style language models, the mask is causal: token 10 can attend to tokens 1–9, not to future tokens. Multi-head attention runs this in parallel across several subspaces. One head may help with syntax, another with repetition, another with reference candidates — but do not over-literalize that. Most head behavior is distributed, and clean human labels are the exception.</p>
+<p>Grouped-query attention (GQA) is a production-relevant variant: several query heads share one key/value head, shrinking the memory cost of generation with little quality loss in the reported setting.</p>
+<h3>MLPs, facts, and interpretability</h3>
+<p>MLP layers hold a large share of many transformers’ parameters. Research supports the idea that feed-forward layers can behave partly like key-value memories important for factual associations, and editing experiments show that targeted changes to mid-layer weights can alter specific factual outputs. But this does not mean there is one row for every fact. Knowledge is distributed across attention, MLPs, embeddings, residual streams, and context.</p>
+<p>Mechanistic interpretability tries to reverse-engineer trained networks: induction heads are one window into in-context learning; superposition helps explain why one neuron rarely means one clean concept. The field is young. “Total black box” and “fully understood” are both wrong.</p>
+
+<h2 id="s3-en">3. Pretraining: why token prediction becomes more than autocomplete</h2>
+<p>During pretraining, the model sees token sequences and learns to predict the next token at every position. The objective is simple. The learned solution is not.</p>
+<p>There is no practical way to perform this task well at scale by memorizing everything. The model has too few parameters relative to the training data. It must learn compressive regularities: grammar, semantics, code structure, world patterns, argument forms, document styles, and problem-solving traces.</p>
+<p>That is why a simple objective can yield broad capability: predicting a proof, a bug fix, a translation, or a conversation often requires modeling the structure that produced it.</p>
+
+<h2 id="s4-en">4. Post-training: why a base model becomes an assistant</h2>
+<p>A pretrained base model is not automatically a helpful assistant. It may continue text instead of answering, imitate toxic patterns, hallucinate plausible falsehoods, and never refuse anything. Post-training changes this behavior.</p>
+<ul>
+<li><strong>SFT:</strong> supervised fine-tuning on examples of desired assistant behavior.</li>
+<li><strong>RLHF:</strong> use human preference comparisons to train a reward model and optimize responses toward preferred behavior.</li>
+<li><strong>DPO and related methods:</strong> optimize directly from preference pairs without a separate reward-model-plus-RL loop.</li>
+<li><strong>RLAIF / Constitutional AI:</strong> use AI feedback guided by written principles.</li>
+<li><strong>Reasoning-oriented training:</strong> some models are trained or served to spend more compute on scratchpads, verification, or verifiable-reward tasks.</li>
+</ul>
+<p>Post-training does not inject truth. It shapes behavior. It can improve helpfulness, formatting, refusal style, calibration, tool-use patterns, and user intent following; it can also introduce reward-hacking, over-refusal, and style biases.</p>
+
+<h2 id="s5-en">5. Generation and inference engineering</h2>
+<h3>Logits and sampling</h3>
+<p>The model outputs logits: raw scores for every vocabulary token. A separate sampler turns those scores into one chosen token. Temperature makes the distribution sharper or flatter; top-p/top-k restrict choices to plausible subsets; constrained decoding can force JSON-like structure by masking invalid tokens.</p>
+<p>Temperature near zero makes output more repeatable, not more true. If the most probable continuation is false, low temperature can select it with maximum confidence.</p>
+<h3>Prefill, decode, and the KV cache</h3>
+<p>Serving has two phases. <strong>Prefill</strong> processes the prompt in parallel and sets time-to-first-token. <strong>Decode</strong> generates one token per forward pass and often becomes memory-bandwidth-bound. To avoid recomputing attention over the whole prefix, each layer caches keys and values per token.</p>
+<pre><code>KV cache size ≈ 2 × layers × KV_heads × head_dim × sequence_length × bytes_per_value</code></pre>
+<p>That formula explains why long context is expensive, why GQA/MQA matter, why KV caches get quantized, why PagedAttention manages cache memory like virtual-memory pages, and why shared prompt prefixes can become a billing feature.</p>
+<h3>Throughput stack</h3>
+<p>Real serving systems also use continuous batching, quantization, speculative decoding, routing, hardware-specific kernels, and sometimes mixture-of-experts. These choices shape latency, cost, throughput, and sometimes even observable behavior.</p>
+<h3>Mixture-of-experts</h3>
+<p>Some models use sparse MoE layers. Instead of activating every feed-forward block for every token, a router chooses a small subset of experts. This can increase total parameter count without increasing per-token compute by the same amount, but it introduces routing and load-balancing tradeoffs. Do not assume any specific closed model uses a particular MoE design unless the provider says so.</p>
+
+<h2 id="s6-en">6. The assistant is a system, not only weights</h2>
+<p>A deployed assistant usually includes much more than a transformer forward pass.</p>
+<table><thead><tr><th>Layer</th><th>What it does</th><th>Why it matters</th></tr></thead><tbody>
+<tr><td>System/developer instructions</td><td>Product-level behavior constraints</td><td>They shape behavior inside the session.</td></tr>
+<tr><td>Tool calling</td><td>The model emits structured requests; surrounding software executes them</td><td>APIs, code, search, files, databases.</td></tr>
+<tr><td>RAG / retrieval</td><td>Adds external documents to context</td><td>Improves grounding only when retrieval and citation discipline are good.</td></tr>
+<tr><td>Memory/context</td><td>Selects, summarizes, and inserts prior information</td><td>Chat history is not a weight update during normal inference.</td></tr>
+<tr><td>Safety systems</td><td>Trained refusals, policies, classifiers, runtime filters</td><td>Reduce some harms but create tradeoffs and jailbreak risk.</td></tr>
+<tr><td>Multimodality</td><td>Encodes images, audio, video, documents</td><td>Turns non-text inputs into model-usable representations or tool calls.</td></tr>
+<tr><td>Serving infrastructure</td><td>Batching, caching, routing, quantization</td><td>Determines speed, cost, latency, and sometimes output behavior.</td></tr>
+</tbody></table>
+<h3>Prompt injection and instruction hierarchy</h3>
+<p>A core weakness of assistant systems is that instructions and data often share one token channel. A webpage, email, PDF, or retrieved document can contain text that looks like an instruction: “ignore previous instructions.” Product systems try to enforce an instruction hierarchy — system above developer above user above data/tool text — but the transformer still processes tokens statistically. Robustness is therefore training plus orchestration plus sandboxing plus policy checks, and it remains incomplete.</p>
+<h3>RAG is not magic truth</h3>
+<p>Retrieval can add useful sources, but it can also add outdated, irrelevant, poisoned, or contradictory passages. Then the model may confidently synthesize bad evidence. RAG improves grounding only when retrieval quality, context selection, and answer discipline are good.</p>
+
+<h2 id="s7-en">7. Memory, context, and why bigger context is not perfect memory</h2>
+<p>During ordinary inference, the model’s weights are frozen. Your chat does not rewrite the model’s parameters. Whether logs are later used to train future models is a separate product-policy question.</p>
+<p>Context is what the model can see in the current request. Memory features may select, summarize, or retrieve prior information and place it into context. But even huge context windows are not perfect memory: models can use some positions worse than others, and relevant information buried in the middle may be missed.</p>
+<blockquote><p><strong>Nominal context is how much text fits. Effective context is how reliably the model uses the relevant part.</strong></p></blockquote>
+
+<h2 id="s8-en">8. Hallucinations: not random bugs</h2>
+<p>A hallucination is a fluent, plausible answer that is false or unsupported. It is not just a random glitch. LLMs are trained to produce likely continuations, and likelihood is not truth.</p>
+<p>If the model lacks grounding, sees ambiguous context, retrieves bad evidence, or is rewarded for answering rather than abstaining, it may produce a confident falsehood. One important cause is incentive design: systems and evaluations can reward guessing more than saying “I don’t know.” Other causes include sparse evidence, conflicting sources, decoding pressure, and user prompts that demand certainty.</p>
+
+<h2 id="s9-en">9. Reasoning, chain-of-thought, and test-time compute</h2>
+<p>LLMs can solve problems that look like reasoning: code, math, planning, diagnosis, debate, and multi-step explanation. Some of that ability comes from pretrained patterns; some from post-training; some from inference-time methods such as scratchpads, search, self-checks, tool use, verifiers, or spending more compute before answering.</p>
+<p>Visible chain-of-thought is useful, but it is not guaranteed to be a faithful causal transcript of the model’s internal computation. It can be a workspace, an explanation interface, a training artifact, or a rationalization. Treat it as evidence, not a mind readout.</p>
+
+<h2 id="s10-en">10. Multimodality</h2>
+<p>Modern assistants may accept images, audio, video, PDFs, code files, spreadsheets, or screenshots. There are several implementation paths: encode the non-text input into embeddings that the language model can attend to; connect a vision/audio encoder to a text model; train a natively multimodal model; or call external OCR, speech, image, video, or document tools. Implementation details vary and are often proprietary.</p>
+
+<h2 id="s11-en">11. What LLMs are not</h2>
+<h3>Myth: “LLMs are just autocomplete.”</h3><p>Narrowly true, broadly misleading. Token prediction is the training/generation interface; it does not fully describe learned internal representations or the deployed assistant system.</p>
+<h3>Myth: “LLMs store facts like a database.”</h3><p>No. They store distributed statistical structure in weights and activations. They can recall facts, but not by querying a clean, fresh, guaranteed table.</p>
+<h3>Myth: “Open models tell us exactly how closed assistants work.”</h3><p>No. Open models are useful evidence for common mechanisms, but closed systems may differ in architecture, data, post-training, tools, routing, safety, and serving stack.</p>
+<h3>Myth: “RLHF makes the model truthful.”</h3><p>No. Preference tuning shapes behavior toward preferred answers. It can improve helpfulness and reduce some bad behavior, but it does not guarantee truth.</p>
+<h3>Myth: “Visible chain-of-thought is the real reasoning.”</h3><p>No. It may be useful, but it can be unfaithful or rationalized after the fact.</p>
+<h3>Myth: “Bigger context means perfect memory.”</h3><p>No. Context capacity is not the same as reliable retrieval from every part of that context.</p>
+<h3>Myth: “A tool-using assistant is only the model weights.”</h3><p>No. The model may request a tool call, but surrounding software executes it and returns results.</p>
+
+<h2 id="s12-en">12. BD’s manual added contribution: AIM³ / RHP / RHPr / RHPm / 8Z Reasoning</h2>
+<p>This section is a <strong>manual BD-added contribution</strong>, not a standard ML textbook claim and not a claim about transformer weights.</p>
+<p>AIM³, RHP, RHPr, RHPm, and 8Z Reasoning are BD-originated workflow and continuity concepts used in this project. Their role is not to say how matrix multiplications inside a transformer work. Their role is to improve how humans and LLMs collaborate around the model.</p>
+<ul>
+<li><strong>AIM³</strong>: AI Management of Mind & Memory — the broader continuity, memory, and workflow layer.</li>
+<li><strong>RHP</strong>: a broader human-led reasoning/prompting method for exploring, criticizing, and synthesizing complex work.</li>
+<li><strong>RHPr</strong>: a review/retrieval-oriented RHP variant for stronger critique and evidence discipline.</li>
+<li><strong>RHPm</strong>: a compact prompt-builder variant that turns a rough human request into a portable execution prompt.</li>
+<li><strong>8Z Reasoning</strong>: BD’s practical reasoning discipline: keep candidates alive, test them, compare by results, and preserve useful continuity.</li>
+</ul>
+<blockquote><p><strong>The useful capability experienced by the user is not only inside the model. It also depends on context design, prompt structure, memory discipline, critique loops, source checks, and human steering.</strong></p></blockquote>
+<p>In this article, RHPm did something concrete: BD wrote a rough seed; RHPm converted it into a shared execution prompt; multiple LLMs answered the same prompt; the answers were scored and synthesized; the hybrid was sent back for critique; and this final page was built by selecting what survived.</p>
+<p class="note">Project links: <a href="https://www.mdlxdcc.org/bd/bd_aim3_rhpm">AIM³/RHPm</a> · <a href="https://www.mdlxdcc.org/bd/bd_aim3_rhp">RHP</a> · <a href="https://www.mdlxdcc.org/bd/bd_aim3_rhpr">RHPr</a> · <a href="https://www.mdlxdcc.org/bd/bd_8z_reasoning">8Z Reasoning</a>. These are provenance links, not external proof of standard ML architecture.</p>
+
+<h2 id="s13-en">13. Self-critique</h2>
+<ul>
+<li>This article describes the common transformer-family path, not every possible architecture.</li>
+<li>Closed frontier internals are partly proprietary; product-specific claims are hedged and time-sensitive.</li>
+<li>The equations are for orientation, not a full ML derivation.</li>
+<li>Post-training is described from public literature, not from any vendor’s exact current recipe.</li>
+<li>Interpretability, multimodality, safety, and reasoning are compressed fields; each could be its own article.</li>
+<li>A better version would add diagrams, a tokenizer demo, attention visualizations, and live examples.</li>
+</ul>
+
+<h2 id="s14-en">14. Final takeaway</h2>
+<blockquote><p><strong>An LLM is a transformer-family prediction engine trained to model token sequences. A modern assistant is that engine plus post-training, instructions, tools, retrieval, memory and context systems, safety layers, multimodality, and serving infrastructure. The result is neither magic mind nor empty autocomplete. It is a learned statistical pattern engine embedded in a larger engineered system — and, increasingly, in a human workflow.</strong></p></blockquote>
+
+<details id="method-en"><summary>How this article was made — RHPm / multi‑LLM synthesis</summary>
+<p>This article was not produced by asking one model to improvise a final answer. The workflow was: BD wrote a rough seed; RHPm generated a shared execution prompt; the same prompt was given to multiple LLMs; their answers were scored and compared; a hybrid was synthesized; the hybrid went through Round‑2 and Round‑3 critique; and this page combines the best surviving parts of the GPT and Claude final HTML versions.</p>
+<p>The full score ledger is intentionally not embedded in the main article body. It is method evidence, not the article itself.</p>
+</details>
+<details id="baseline-en"><summary>Human baseline comparison: 0xkato article vs this hybrid</summary>
+<p>The human baseline article by 0xkato is a strong first-read walkthrough of transformer mechanics: tokens, embeddings, positional encoding, attention, multi-head attention, feed-forward networks, residual stream, layer normalization, and next-token generation. Its biggest strength is clean pedagogical flow.</p>
+<p>This hybrid has a different goal: it keeps the transformer core, but also explains deployed assistant systems: post-training, tool use, RAG, memory/context handling, safety layers, hallucination incentives, prompt injection, multimodality, reasoning models, and serving infrastructure.</p>
+<p>Fair verdict: the 0xkato article is probably the cleaner first-read transformer explainer. This RHPm multi‑LLM hybrid is the broader end-to-end assistant explainer. They are complementary.</p>
+</details>
+<details id="provenance-en"><summary>Idea provenance: what survived from the multi‑LLM process</summary>
+<p>The “car turns wheels” line emerged from GPT/DeepSeek-style framing. The base-model quiz example, prompt-injection framing, hallucination-incentive framing, model-vs-sampler distinction, KV-cache arithmetic, interpretability paragraph, and introspection caveat were sharpened by Claude. The nominal-vs-effective context distinction, open-weight ≠ open-source caution, tool-failure symmetry, “drafts, not testimony” sharpening, and reasoning-models time anchor came through Round‑2/3 critique. The three-layer stack diagram and BD workflow framing come from the RHPm/AIM³ process. Final selection and separation of the BD contribution were human-directed.</p>
+</details>
+<h2 id="refs-en">References & further reading</h2>
+
+<div class="refgroup">
+<h4>Papers and technical sources</h4>
+<ul>
+<li>Vaswani et al., 2017 — <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a> (Transformer)</li>
+<li>Su et al., 2021 — <a href="https://arxiv.org/abs/2104.09864">RoFormer / RoPE</a></li>
+<li>Ainslie et al., 2023 — <a href="https://arxiv.org/abs/2305.13245">Grouped-Query Attention</a></li>
+<li>Kaplan et al., 2020 — <a href="https://arxiv.org/abs/2001.08361">Scaling Laws</a>; Hoffmann et al., 2022 — <a href="https://arxiv.org/abs/2203.15556">Chinchilla</a></li>
+<li>Delétang et al., 2023 — <a href="https://arxiv.org/abs/2309.10668">Language Modeling Is Compression</a></li>
+<li>Ouyang et al., 2022 — <a href="https://arxiv.org/abs/2203.02155">InstructGPT / RLHF</a></li>
+<li>Rafailov et al., 2023 — <a href="https://arxiv.org/abs/2305.18290">Direct Preference Optimization</a></li>
+<li>Bai et al., 2022 — <a href="https://arxiv.org/abs/2212.08073">Constitutional AI / RLAIF</a></li>
+<li>DeepSeek-AI, 2025 — <a href="https://arxiv.org/abs/2501.12948">DeepSeek-R1</a></li>
+<li>Lewis et al., 2020 — <a href="https://arxiv.org/abs/2005.11401">Retrieval-Augmented Generation</a></li>
+<li>Liu et al., 2024 — <a href="https://aclanthology.org/2024.tacl-1.9/">Lost in the Middle</a></li>
+<li>Kwon et al., 2023 — <a href="https://arxiv.org/abs/2309.06180">vLLM / PagedAttention</a></li>
+<li>Leviathan et al., 2023 — <a href="https://arxiv.org/abs/2211.17192">Speculative Decoding</a></li>
+<li>Jiang et al., 2024 — <a href="https://arxiv.org/abs/2401.04088">Mixtral of Experts</a></li>
+<li>Geva et al., 2021 — <a href="https://arxiv.org/abs/2012.14913">Feed-Forward Layers Are Key-Value Memories</a>; Meng et al., 2022 — <a href="https://arxiv.org/abs/2202.05262">ROME</a></li>
+<li>Olsson et al., 2022 — <a href="https://arxiv.org/abs/2209.11895">Induction Heads</a>; Elhage et al., 2022 — <a href="https://arxiv.org/abs/2209.10652">Toy Models of Superposition</a></li>
+<li>Turpin et al., 2023 — <a href="https://arxiv.org/abs/2305.04388">Unfaithful Chain-of-Thought</a>; Chen et al., 2025 — <a href="https://arxiv.org/abs/2505.05410">Reasoning Models Don’t Always Say What They Think</a></li>
+<li>Wallace et al., 2024 — <a href="https://arxiv.org/abs/2404.13208">The Instruction Hierarchy</a></li>
+</ul>
+<h4>Vendor documentation and posts</h4>
+<ul>
+<li>OpenAI, 2025 — <a href="https://openai.com/index/why-language-models-hallucinate/">Why language models hallucinate</a></li>
+<li>OpenAI docs — <a href="https://developers.openai.com/api/docs/guides/function-calling">function calling</a>, <a href="https://developers.openai.com/api/docs/guides/conversation-state">conversation state</a>, <a href="https://developers.openai.com/api/docs/guides/moderation">moderation</a>, <a href="https://developers.openai.com/api/docs/guides/reasoning-best-practices">reasoning best practices</a></li>
+<li>Anthropic docs — <a href="https://platform.claude.com/docs/en/build-with-claude/extended-thinking">extended thinking</a></li>
+<li>Google AI docs — <a href="https://ai.google.dev/gemini-api/docs/thinking">Gemini thinking</a></li>
+</ul>
+<h4>Human baseline and project provenance</h4>
+<ul>
+<li>0xkato, 2026 — <a href="https://www.0xkato.xyz/how-llms-actually-work/">How LLMs Actually Work</a></li>
+<li>Project provenance, not ML-source evidence: <a href="https://www.mdlxdcc.org/bd/bd_aim3_rhpm">AIM³/RHPm</a> · <a href="https://www.mdlxdcc.org/bd/bd_aim3_rhp">RHP</a> · <a href="https://www.mdlxdcc.org/bd/bd_aim3_rhpr">RHPr</a> · <a href="https://www.mdlxdcc.org/bd/bd_8z_reasoning">8Z Reasoning</a></li>
+</ul>
+<p class="note">Links and product-sensitive claims should be re-checked before republication. Page built June 2026.</p>
+</div>
+</section>
+<section class="lang" data-lang="sl">
+<h1 id="top-sl">Kako LLM-ji dejansko delujejo — razloženo z LLM-ji, pregledal človek</h1>
+<p><strong>RHPm / multi‑LLM sinteza · hibrid Claude + GPT verzij · junij 2026.</strong> <span class="note">Imena modelov, funkcije ponudnikov, velikosti konteksta in produktna pravila se hitro spreminjajo; produktne trditve beri kot časovno občutljive.</span></p>
+<blockquote><p><strong>Enostavna teza:</strong> LLM napoveduje tokene — ampak pomembno je, kaj se mora znotraj naučiti, da to počne dobro, in kaj moderni asistentski produkti zgradijo okoli tega jedra.</p></blockquote>
+<p>Ta stran je hibrid dveh že močnih verzij: Claudeove bolj bralne publikacijske verzije in GPT-jeve bolj čiste RHPm/metodne verzije. Ohrani Claudeov močnejši tok branja, tri-plastni okvir, konkretne primere, reference in idejno provenienco; od GPT-ja ohrani jasnejši opis metode, strogo ločeno BD workflow plast in disciplino virov.</p>
+<p>Pomembna omejitev: LLM, ki razlaga LLM-je, ne “gleda vase” v svoje uteži. Sestavlja razlago iz javnih raziskav, dokumentacije in naučenih vzorcev. Človeška audit plast obstaja zato, da primerja osnutke, jih izzove, odstrani pretiravanja in doda vire.</p>
+<div class="stack" id="stack-sl">
+  <div class="layer l1"><span class="tag">Plast 1 · Osnovni model</span><p>tokeni → embeddingi → transformer plasti → logiti → naslednji token</p></div>
+  <div class="layer l2"><span class="tag">Plast 2 · Asistentski produkt</span><p>osnovni model + post-training + sistemska navodila + orodja + retrieval + spomin/kontekst + varnost + multimodalnost + serving infrastruktura</p></div>
+  <div class="layer l3"><span class="tag">Plast 3 · Človeški / audit workflow</span><p>prompt design + primerjava več modelov + krogi kritike + preverjanje virov + človeška presoja</p></div>
+</div>
+
+<h2 id="s1-sl">1. Kratka verzija za pametne ne-strokovnjake</h2>
+<p>Velik jezikovni model ne bere besedila tako kot človek. Najprej ga razbije v <strong>tokene</strong>: koščke besed, cele besede, ločila, presledke, številke ali simbole. Ti tokeni se pretvorijo v vektorje — dolge sezname števil. Nato jih kup transformer plasti znova in znova posodablja, da lahko vsak token uporabi informacije iz prejšnjega konteksta.</p>
+<p>Na koncu model proizvede <strong>logite</strong>: ocene za možne naslednje tokene. Sampler izbere en token, ga doda v besedilo in postopek se ponovi. V tem ozkem smislu je LLM napovedovalec naslednjega tokena.</p>
+<p>A trditev <strong>“LLM-ji so samo autocomplete”</strong> je resnična tako kot trditev <strong>“avto obrača kolesa”</strong>: tehnično pravilna, ampak premajhna za razlago stroja.</p>
+<p>Da model dobro napoveduje naslednji token prek bilijonov učnih tokenov, se mora naučiti zakonitosti slovnice, stila, dejstev, kode, prevajanja, analogij, dialoga in načrtovanju podobnega vedenja pri nekaterih nalogah. To ni shranjeno kot urejena podatkovna baza. Razpršeno je po utežeh, aktivacijah, attention vzorcih, MLP plasteh in residual streamu.</p>
+<p>Javni asistenti — ChatGPT, Claude, Gemini, Grok, DeepSeek, Copilot, Mistralov Le Chat in podobni produkti — niso samo surovi predtrenirani modeli. Odvisno od produkta lahko dodajo instruction tuning, preference tuning, sistemska navodila, varnostne plasti, klicanje orodij, retrieval, upravljanje konteksta/pogovora, multimodalne encoderje, usmerjanje modelov in veliko inference infrastrukture.</p>
+<p>Razliko najlažje začutiš tako: surovi osnovni model na vprašanje <em>“What is the capital of France?”</em> lahko samo nadaljuje vzorec iz dataset-a: <em>“Q: What is the capital of Germany? A: Berlin. Q: What is the capital of France? A:”</em> Post-trained asistent pa je oblikovan, da odgovori: <strong>Paris.</strong></p>
+<blockquote><p><strong>Pretraining gradi sposobnost. Post-training oblikuje vedenje</strong> — in lahko uči tudi formate odgovorov, vzorce zavrnitev, formate klicanja orodij, kalibracijo in priznanje “ne vem”.</p></blockquote>
+
+<h2 id="s2-sl">2. Jedro modela: tokeni, vektorji, attention, MLP</h2>
+<h3>Besedilo postane tokeni</h3>
+<p>Model ne prejme “besed”. Prejme ID-je tokenov. Tokenizacija je kompromis, podoben kompresiji. Slovar celih besed je preveč tog, znakovne sekvence so predolge, subword tokenizacija pa je nekaj vmes. Različni tokenizerji povzročajo različne napake pri črkovanju, številkah, kodi in ne-angleških pisavah.</p>
+<p>Zato so modeli zgodovinsko padali pri vprašanjih, kot je štetje črk v “strawberry”. A tokenizacija ni celotna razlaga: natančno simbolno štetje zahteva tudi zanesljiv algoritemski postopek. Boljše meje tokenov pomagajo, ne ustvarijo pa aritmetične gotovosti.</p>
+<h3>Tokeni postanejo kontekstualni vektorji</h3>
+<p>ID tokena je samo indeks v naučeni tabeli embeddingov. Ta tabela je po treningu statična. Med obdelavo se spreminja <em>kontekstualna</em> reprezentacija nad njo. Po več transformer plasteh je vektor za “bank” v “river bank” drugačen od “bank” v “bank loan”, ker okoliški tokeni posodobijo pomen te pozicije.</p>
+<h3>Model potrebuje pozicijo</h3>
+<p>Attention sam po sebi ne pozna vrstnega reda. “Dog bites man” in “man bites dog” vsebujeta iste tokene. Izvirni Transformer je uporabljal sinusoidne positional encodings. Veliko modernih odprtih modelov uporablja RoPE ali RoPE-podobne metode, pogosto znotraj attentiona na query/key reprezentacijah, ne kot enostaven dodatek k embeddingu. Podrobnosti zaprtih frontier modelov se razlikujejo in jih ne smemo ugibati.</p>
+<h3>Transformer plasti</h3>
+<p>Poenostavljen decoder blok ima dva glavna dela: attention premika informacije med pozicijami; MLP / feed-forward blok preoblikuje informacije na vsaki poziciji. Residual stream nosi tekočo reprezentacijo skozi mrežo. Vsaka plast doda popravek, ne zamenja celotnega stanja, normalizacija pa drži številke dovolj stabilne za globoke skladovnice.</p>
+<pre><code>h = token_embedding(tokens)
+# RoPE-podobna pozicijska informacija je pogosto vstavljena znotraj attentiona.
+
+for layer in layers:
+    h = h + Attention(Norm(h))
+    h = h + MLP(Norm(h))
+
+logits_last = h[-1] @ W_vocab
+probabilities = softmax(logits_last / temperature)
+next_token = sampler(probabilities)</code></pre>
+<h3>Attention: Q, K, V, maska in glave</h3>
+<p>Za vsako pozicijo model ustvari naučene projekcije: <code>Q</code> za to, kar ta pozicija išče, <code>K</code> za to, kaj vsaka pozicija ponuja kot ujemanje, in <code>V</code> za informacijo, ki jo pozicija lahko posreduje.</p>
+<pre><code>Attention(Q, K, V) = softmax( (Q Kᵀ) / sqrt(d_head) + mask ) V</code></pre>
+<p>Pri decoder-style jezikovnih modelih je maska običajno causal: token 10 lahko gleda tokene 1–9, ne prihodnjih tokenov. Multi-head attention to naredi vzporedno v več podprostorih. Ena glava lahko pomaga pri sintaksi, druga pri ponavljanju, tretja pri referencah — vendar tega ne smemo jemati preveč dobesedno. Večina vedenja glav je razpršena.</p>
+<p>Grouped-query attention (GQA) je produkcijsko pomembna varianta: več query glav si deli eno key/value glavo, kar zmanjša pomnilniški strošek generiranja z majhno izgubo kakovosti v poročanem okolju.</p>
+<h3>MLP, dejstva in interpretabilnost</h3>
+<p>MLP plasti vsebujejo velik delež parametrov mnogih transformerjev. Raziskave podpirajo idejo, da se feed-forward plasti lahko delno obnašajo kot key-value spomini za factual associations, eksperimenti urejanja uteži pa kažejo, da ciljni posegi v srednje plasti lahko spremenijo specifične factual izhode. A to ne pomeni, da ima vsak fakt svojo vrstico. Znanje je razpršeno po attentionu, MLP-jih, embeddingih, residual streamu in kontekstu.</p>
+<p>Mechanistic interpretability poskuša obratno-inženirsko razumeti naučene mreže: induction heads so eno okno v in-context learning; superposition pomaga razložiti, zakaj en nevron redko pomeni en čist koncept. Področje je mlado. “Popolna črna škatla” in “popolnoma razumljeno” sta obe napačni trditvi.</p>
+
+<h2 id="s3-sl">3. Pretraining: zakaj token prediction postane več kot autocomplete</h2>
+<p>Med pretrainingom model vidi zaporedja tokenov in se uči napovedati naslednji token na vsaki poziciji. Cilj je preprost. Naučena rešitev ni.</p>
+<p>Na tej skali ni praktično mogoče naloge reševati s memoriranjem vsega. Model ima premalo parametrov glede na količino podatkov. Naučiti se mora kompresivnih pravilnosti: slovnice, semantike, strukture kode, vzorcev sveta, oblik argumentov, dokumentnih stilov in sledi reševanja problemov.</p>
+<p>Zato lahko preprost cilj rodi široko sposobnost: napovedati dokaz, popravek buga, prevod ali dialog pogosto zahteva modeliranje strukture, ki je besedilo ustvarila.</p>
+
+<h2 id="s4-sl">4. Post-training: zakaj osnovni model postane asistent</h2>
+<p>Predtrenirani osnovni model še ni samodejno uporaben asistent. Lahko nadaljuje tekst namesto odgovora, posnema toksične vzorce, halucinira verjetne neresnice in ničesar ne zavrne. Post-training spremeni to vedenje.</p>
+<ul>
+<li><strong>SFT:</strong> supervised fine-tuning na primerih želenega asistentskega vedenja.</li>
+<li><strong>RLHF:</strong> človeške primerjave preferenc se uporabijo za reward model in optimizacijo odgovorov proti zaželenemu vedenju.</li>
+<li><strong>DPO in sorodne metode:</strong> neposredna optimizacija iz parov preferenc brez ločenega reward-model-plus-RL cikla.</li>
+<li><strong>RLAIF / Constitutional AI:</strong> AI feedback, voden s pisanimi načeli.</li>
+<li><strong>Reasoning trening:</strong> nekateri modeli so trenirani ali servirani tako, da porabijo več compute-a za scratchpad, preverjanje ali naloge z verifiable rewards.</li>
+</ul>
+<p>Post-training ne vbrizga resnice. Oblikuje vedenje. Lahko izboljša uporabnost, format, stil zavrnitve, kalibracijo, vzorce klicanja orodij in sledenje namenu uporabnika; lahko pa uvede reward-hacking, preveč zavračanja in stilne pristranskosti.</p>
+
+<h2 id="s5-sl">5. Generiranje in inference engineering</h2>
+<h3>Logiti in sampling</h3>
+<p>Model vrne logite: surove ocene za vsak token v slovarju. Ločen sampler te ocene spremeni v izbran token. Temperatura porazdelitev naredi ostrejšo ali bolj plosko; top-p/top-k omejita izbiro na verjeten del; constrained decoding lahko vsili JSON-podobno strukturo z maskiranjem neveljavnih tokenov.</p>
+<p>Temperatura blizu nič naredi izhod bolj ponovljiv, ne bolj resničen. Če je najverjetnejše nadaljevanje napačno, ga nizka temperatura lahko izbere z največjo samozavestjo.</p>
+<h3>Prefill, decode in KV cache</h3>
+<p>Serving ima dve fazi. <strong>Prefill</strong> vzporedno obdela prompt in določa time-to-first-token. <strong>Decode</strong> generira en token na forward pass in pogosto postane omejen s pasovno širino pomnilnika. Da se attention ne preračunava čez celoten prefix, vsaka plast kešira keys in values za vsak token.</p>
+<pre><code>KV cache size ≈ 2 × layers × KV_heads × head_dim × sequence_length × bytes_per_value</code></pre>
+<p>Ta formula razloži, zakaj je dolg kontekst drag, zakaj sta GQA/MQA pomembna, zakaj se KV cache kvantizira, zakaj PagedAttention upravlja cache kot virtualni pomnilnik in zakaj se deljeni prompt prefixi lahko pojavijo tudi kot obračunska funkcija.</p>
+<h3>Throughput stack</h3>
+<p>Realni serving sistemi uporabljajo tudi continuous batching, kvantizacijo, speculative decoding, routing, specialne GPU kernele in včasih mixture-of-experts. Te odločitve vplivajo na latenco, ceno, prepustnost in včasih na vidno vedenje.</p>
+<h3>Mixture-of-experts</h3>
+<p>Nekateri modeli uporabljajo sparse MoE plasti. Namesto da se za vsak token aktivira vsak feed-forward blok, router izbere majhen podnabor expertov. To lahko poveča skupno število parametrov brez enakega povečanja compute-a na token, a uvede probleme routinga in load-balancinga. Ne sklepaj, da zaprt model uporablja določeno MoE zasnovo, razen če ponudnik to pove.</p>
+
+<h2 id="s6-sl">6. Asistent je sistem, ne samo uteži</h2>
+<p>Deployed asistent običajno vsebuje veliko več kot transformer forward pass.</p>
+<table><thead><tr><th>Plast</th><th>Kaj dela</th><th>Zakaj je pomembna</th></tr></thead><tbody>
+<tr><td>Sistemska/developer navodila</td><td>Produktne omejitve vedenja</td><td>Oblikujejo vedenje v seji.</td></tr>
+<tr><td>Klicanje orodij</td><td>Model izpiše strukturirane zahteve; programska okolica jih izvrši</td><td>API-ji, koda, iskanje, datoteke, baze.</td></tr>
+<tr><td>RAG / retrieval</td><td>Doda zunanje dokumente v kontekst</td><td>Izboljša grounding le, če sta retrieval in citiranje dobra.</td></tr>
+<tr><td>Spomin/kontekst</td><td>Izbere, povzame in vstavi prejšnje informacije</td><td>Zgodovina chata ni posodobitev uteži med običajno inferenco.</td></tr>
+<tr><td>Varnostni sistemi</td><td>Naučene zavrnitve, politike, klasifikatorji, runtime filtri</td><td>Zmanjšajo nekatere škode, a uvedejo kompromise in jailbreak tveganje.</td></tr>
+<tr><td>Multimodalnost</td><td>Kodira slike, zvok, video, dokumente</td><td>Naredi ne-besedilne vhode uporabne za model ali orodja.</td></tr>
+<tr><td>Serving infrastruktura</td><td>Batching, caching, routing, quantization</td><td>Določa hitrost, ceno, latenco in včasih vedenje.</td></tr>
+</tbody></table>
+<h3>Prompt injection in hierarhija navodil</h3>
+<p>Jedrna slabost asistentskih sistemov je, da navodila in podatki pogosto delijo isti token kanal. Spletna stran, email, PDF ali retrieved dokument lahko vsebuje tekst, ki izgleda kot navodilo: “ignore previous instructions.” Produktni sistemi poskušajo uveljaviti hierarhijo navodil — system nad developer nad user nad data/tool — toda transformer še vedno statistično obdela tokene. Robustnost je zato kombinacija treninga, orkestracije, sandboxinga in policy preverjanj, in ostaja nepopolna.</p>
+<h3>RAG ni čarobna resnica</h3>
+<p>Retrieval lahko doda koristne vire, lahko pa doda tudi zastarele, nerelevantne, zastrupljene ali protislovne odlomke. Model jih lahko samozavestno združi v napačen odgovor. RAG izboljša grounding le, kadar so dobri retrieval, izbor konteksta in disciplina odgovora.</p>
+
+<h2 id="s7-sl">7. Spomin, kontekst in zakaj večji kontekst ni popoln spomin</h2>
+<p>Med običajno inferenco so uteži modela zamrznjene. Tvoj chat ne prepiše parametrov modela. Ali ponudnik loge kasneje uporabi za trening prihodnjih modelov, je ločeno produktno-politično vprašanje.</p>
+<p>Kontekst je to, kar model vidi v trenutni zahtevi. Spominske funkcije lahko izberejo, povzamejo ali retrieve-ajo prejšnje informacije in jih vstavijo v kontekst. A tudi ogromna kontekstna okna niso popoln spomin: modeli lahko nekatere pozicije uporabljajo slabše, pomembna informacija v sredini dolgega prompta pa je lahko spregledana.</p>
+<blockquote><p><strong>Nominalni kontekst je, koliko teksta se prilega. Efektivni kontekst je, kako zanesljivo model uporabi pomemben del.</strong></p></blockquote>
+
+<h2 id="s8-sl">8. Halucinacije: niso naključni bugi</h2>
+<p>Halucinacija je tekoč, verjeten odgovor, ki je napačen ali nepodprt. To ni samo naključna programska napaka. LLM-ji so trenirani, da proizvajajo verjetna nadaljevanja, verjetnost pa ni resnica.</p>
+<p>Če model nima groundinga, vidi dvoumen kontekst, retrieve-a slabe dokaze ali je nagrajen za odgovor namesto za priznanje nevednosti, lahko proizvede samozavestno neresnico. Eden pomembnih vzrokov je zasnova spodbud: sistemi in evalvacije lahko nagradijo ugibanje bolj kot “ne vem”. Drugi vzroki so redki dokazi, protislovni viri, decoding pritisk in prompti, ki zahtevajo gotovost.</p>
+
+<h2 id="s9-sl">9. Razmišljanje, chain-of-thought in test-time compute</h2>
+<p>LLM-ji lahko rešujejo naloge, ki izgledajo kot razmišljanje: koda, matematika, planiranje, diagnoza, debata in več-korakovne razlage. Del sposobnosti prihaja iz pretraining vzorcev; del iz post-traininga; del iz inference-time metod, kot so scratchpadi, iskanje poti, samopreverjanje, orodja, verifiers ali več compute-a pred odgovorom.</p>
+<p>Viden chain-of-thought je uporaben, ni pa nujno zvest vzročni zapis notranjega računanja modela. Lahko je delovni prostor, vmesnik razlage, trening artefakt ali racionalizacija po dejstvu. Obravnavaj ga kot dokaz, ne kot branje misli.</p>
+
+<h2 id="s10-sl">10. Multimodalnost</h2>
+<p>Moderni asistenti lahko sprejemajo slike, zvok, video, PDF-je, kodo, preglednice ali screenshot-e. Obstaja več izvedb: ne-besedilni vhod se pretvori v embeddinge, ki jih jezikovni model lahko attend-a; ločen vision/audio encoder se poveže s tekstovnim modelom; model je nativno multimodalen; ali pa kliče zunanja OCR, speech, image, video ali document orodja. Podrobnosti se razlikujejo in so pogosto lastniške.</p>
+
+<h2 id="s11-sl">11. Kaj LLM-ji niso</h2>
+<h3>Mit: “LLM-ji so samo autocomplete.”</h3><p>Ozko res, široko zavajajoče. Token prediction je trening/generation vmesnik; ne opiše v celoti naučenih notranjih reprezentacij ali deployed asistentskega sistema.</p>
+<h3>Mit: “LLM-ji shranjujejo dejstva kot baza.”</h3><p>Ne. Shranjujejo razpršeno statistično strukturo v utežeh in aktivacijah. Dejstva lahko prikličejo, ne pa tako, da bi poizvedovali po čisti, sveži, garantirani tabeli.</p>
+<h3>Mit: “Odprti modeli nam točno povedo, kako delujejo zaprti asistenti.”</h3><p>Ne. Odprti modeli so koristen dokaz za skupne mehanizme, zaprti sistemi pa se lahko razlikujejo po arhitekturi, podatkih, post-trainingu, orodjih, routingu, varnosti in serving stacku.</p>
+<h3>Mit: “RLHF naredi model resničen.”</h3><p>Ne. Preference tuning oblikuje vedenje proti preferiranim odgovorom. Lahko izboljša uporabnost in zmanjša nekaj slabega vedenja, ne garantira pa resnice.</p>
+<h3>Mit: “Vidni chain-of-thought je pravo razmišljanje.”</h3><p>Ne. Lahko je uporaben, lahko pa je nezvest ali racionaliziran po dejstvu.</p>
+<h3>Mit: “Večji kontekst pomeni popoln spomin.”</h3><p>Ne. Kapaciteta konteksta ni isto kot zanesljiv priklic iz vsakega dela konteksta.</p>
+<h3>Mit: “Asistent z orodji je samo modelove uteži.”</h3><p>Ne. Model lahko zahteva klic orodja, okoliška programska oprema pa ga izvrši in vrne rezultate.</p>
+
+<h2 id="s12-sl">12. BD-jev ročno dodan prispevek: AIM³ / RHP / RHPr / RHPm / 8Z Reasoning</h2>
+<p>Ta sekcija je <strong>ročno dodan BD prispevek</strong>, ne standardna ML učbeniška trditev in ne trditev o transformer utežeh.</p>
+<p>AIM³, RHP, RHPr, RHPm in 8Z Reasoning so BD-izvorni workflow in continuity koncepti, uporabljeni v tem projektu. Njihova vloga ni razlagati matričnih množenj v transformerju, ampak izboljšati, kako ljudje in LLM-ji sodelujejo okoli modela.</p>
+<ul>
+<li><strong>AIM³</strong>: AI Management of Mind & Memory — širša plast kontinuitete, spomina in workflowa.</li>
+<li><strong>RHP</strong>: širša človek-vodena metoda razmišljanja/promptanja za raziskovanje, kritiko in sintezo kompleksnega dela.</li>
+<li><strong>RHPr</strong>: review/retrieval usmerjena RHP različica za močnejšo kritiko in evidenčno disciplino.</li>
+<li><strong>RHPm</strong>: kompaktna prompt-builder različica, ki grobo človeško zahtevo spremeni v prenosljiv execution prompt.</li>
+<li><strong>8Z Reasoning</strong>: BD-jeva praktična disciplina razmišljanja: ohrani kandidate, testiraj, primerjaj po rezultatih in ohrani koristno kontinuiteto.</li>
+</ul>
+<blockquote><p><strong>Uporabna sposobnost, ki jo doživi uporabnik, ni samo znotraj modela. Odvisna je tudi od zasnove konteksta, strukture prompta, discipline spomina, krogov kritike, preverjanja virov in človeškega vodenja.</strong></p></blockquote>
+<p>V tem članku je RHPm naredil nekaj konkretnega: BD je napisal grobo seme; RHPm ga je pretvoril v skupni execution prompt; več LLM-jev je odgovorilo na isti prompt; odgovori so bili ocenjeni in sintetizirani; hibrid je šel nazaj v kritiko; ta končna stran pa je zgrajena iz tistega, kar je preživelo.</p>
+<p class="note">Projektne povezave: <a href="https://www.mdlxdcc.org/bd/bd_aim3_rhpm">AIM³/RHPm</a> · <a href="https://www.mdlxdcc.org/bd/bd_aim3_rhp">RHP</a> · <a href="https://www.mdlxdcc.org/bd/bd_aim3_rhpr">RHPr</a> · <a href="https://www.mdlxdcc.org/bd/bd_8z_reasoning">8Z Reasoning</a>. To so provenienčne povezave, ne zunanji dokaz standardne ML arhitekture.</p>
+
+<h2 id="s13-sl">13. Samokritika</h2>
+<ul>
+<li>Članek opisuje običajno transformer-family pot, ne vseh možnih arhitektur.</li>
+<li>Notranjost zaprtih frontier modelov je delno lastniška; produktne trditve so zato zadržane in časovno občutljive.</li>
+<li>Enačbe so orientacijske, ne popolna ML izpeljava.</li>
+<li>Post-training je opisan iz javne literature, ne iz točnega trenutnega recepta posameznega ponudnika.</li>
+<li>Interpretabilnost, multimodalnost, varnost in reasoning so stisnjena področja; vsako bi lahko imelo svoj članek.</li>
+<li>Boljša verzija bi dodala diagrame, tokenizer demo, attention vizualizacije in žive primere.</li>
+</ul>
+
+<h2 id="s14-sl">14. Končni povzetek</h2>
+<blockquote><p><strong>LLM je transformer-family prediction engine, treniran za modeliranje token zaporedij. Moderni asistent je ta engine plus post-training, navodila, orodja, retrieval, spomin in kontekstni sistemi, varnostne plasti, multimodalnost in serving infrastruktura. Rezultat ni niti magičen um niti prazen autocomplete. Je naučen statistični pattern engine, vgrajen v večji inženirski sistem — in vse bolj tudi v človeški workflow.</strong></p></blockquote>
+
+<details id="method-sl"><summary>Kako je ta članek nastal — RHPm / multi‑LLM sinteza</summary>
+<p>Članek ni nastal tako, da bi en model improviziral končni odgovor. Workflow je bil: BD je napisal grobo seme; RHPm je ustvaril skupni execution prompt; isti prompt je šel več LLM-jem; odgovori so bili ocenjeni in primerjani; narejen je bil hibrid; hibrid je šel čez Round‑2 in Round‑3 kritiko; ta stran pa združuje najboljše preživele dele GPT in Claude final HTML verzij.</p>
+<p>Celotna tabela ocen ni v glavnem telesu članka. To je metodni dokaz, ne članek sam.</p>
+</details>
+<details id="baseline-sl"><summary>Primerjava s človeškim baseline člankom: 0xkato vs ta hibrid</summary>
+<p>Človeški baseline članek od 0xkato je močan prvi walkthrough transformer mehanike: tokeni, embeddingi, positional encoding, attention, multi-head attention, feed-forward networks, residual stream, layer normalization in next-token generation. Njegova največja moč je čist pedagoški tok.</p>
+<p>Ta hibrid ima drugačen cilj: ohrani transformer jedro, vendar razloži tudi deployed asistentske sisteme: post-training, orodja, RAG, spomin/kontekst, varnostne plasti, incentive za halucinacije, prompt injection, multimodalnost, reasoning modele in serving infrastrukturo.</p>
+<p>Pošten verdict: 0xkato članek je verjetno čistejši prvi transformer explainer. Ta RHPm multi‑LLM hibrid je širši end-to-end explainer modernih asistentov. Nista sovražnika, ampak se dopolnjujeta.</p>
+</details>
+<details id="provenance-sl"><summary>Idejna provenienca: kaj je preživelo multi‑LLM proces</summary>
+<p>Metafora “avto obrača kolesa” izhaja iz GPT/DeepSeek smeri. Primer osnovnega modela s kvizom, prompt-injection okvir, incentive razlaga halucinacij, ločitev model-vs-sampler, KV-cache aritmetika, interpretability odstavek in caveat o introspekciji so se izostrili pri Claudu. Razlika nominalni/efektivni kontekst, open-weight ≠ open-source opozorilo, simetrija napak orodij, “drafts, not testimony” in časovni anchor za reasoning modele so prišli skozi Round‑2/3 kritiko. Tri-plastni diagram in BD workflow okvir izhajata iz RHPm/AIM³ procesa. Končni izbor in ločitev BD prispevka sta bila človek-vodena.</p>
+</details>
+<h2 id="refs-sl">Reference in dodatno branje</h2>
+
+<div class="refgroup">
+<h4>Članki in tehnični viri</h4>
+<ul>
+<li>Vaswani et al., 2017 — <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a> (Transformer)</li>
+<li>Su et al., 2021 — <a href="https://arxiv.org/abs/2104.09864">RoFormer / RoPE</a></li>
+<li>Ainslie et al., 2023 — <a href="https://arxiv.org/abs/2305.13245">Grouped-Query Attention</a></li>
+<li>Kaplan et al., 2020 — <a href="https://arxiv.org/abs/2001.08361">Scaling Laws</a>; Hoffmann et al., 2022 — <a href="https://arxiv.org/abs/2203.15556">Chinchilla</a></li>
+<li>Delétang et al., 2023 — <a href="https://arxiv.org/abs/2309.10668">Language Modeling Is Compression</a></li>
+<li>Ouyang et al., 2022 — <a href="https://arxiv.org/abs/2203.02155">InstructGPT / RLHF</a></li>
+<li>Rafailov et al., 2023 — <a href="https://arxiv.org/abs/2305.18290">Direct Preference Optimization</a></li>
+<li>Bai et al., 2022 — <a href="https://arxiv.org/abs/2212.08073">Constitutional AI / RLAIF</a></li>
+<li>DeepSeek-AI, 2025 — <a href="https://arxiv.org/abs/2501.12948">DeepSeek-R1</a></li>
+<li>Lewis et al., 2020 — <a href="https://arxiv.org/abs/2005.11401">Retrieval-Augmented Generation</a></li>
+<li>Liu et al., 2024 — <a href="https://aclanthology.org/2024.tacl-1.9/">Lost in the Middle</a></li>
+<li>Kwon et al., 2023 — <a href="https://arxiv.org/abs/2309.06180">vLLM / PagedAttention</a></li>
+<li>Leviathan et al., 2023 — <a href="https://arxiv.org/abs/2211.17192">Speculative Decoding</a></li>
+<li>Jiang et al., 2024 — <a href="https://arxiv.org/abs/2401.04088">Mixtral of Experts</a></li>
+<li>Geva et al., 2021 — <a href="https://arxiv.org/abs/2012.14913">Feed-Forward Layers Are Key-Value Memories</a>; Meng et al., 2022 — <a href="https://arxiv.org/abs/2202.05262">ROME</a></li>
+<li>Olsson et al., 2022 — <a href="https://arxiv.org/abs/2209.11895">Induction Heads</a>; Elhage et al., 2022 — <a href="https://arxiv.org/abs/2209.10652">Toy Models of Superposition</a></li>
+<li>Turpin et al., 2023 — <a href="https://arxiv.org/abs/2305.04388">Unfaithful Chain-of-Thought</a>; Chen et al., 2025 — <a href="https://arxiv.org/abs/2505.05410">Reasoning Models Don’t Always Say What They Think</a></li>
+<li>Wallace et al., 2024 — <a href="https://arxiv.org/abs/2404.13208">The Instruction Hierarchy</a></li>
+</ul>
+<h4>Dokumentacija in objave ponudnikov</h4>
+<ul>
+<li>OpenAI, 2025 — <a href="https://openai.com/index/why-language-models-hallucinate/">Why language models hallucinate</a></li>
+<li>OpenAI docs — <a href="https://developers.openai.com/api/docs/guides/function-calling">function calling</a>, <a href="https://developers.openai.com/api/docs/guides/conversation-state">conversation state</a>, <a href="https://developers.openai.com/api/docs/guides/moderation">moderation</a>, <a href="https://developers.openai.com/api/docs/guides/reasoning-best-practices">reasoning best practices</a></li>
+<li>Anthropic docs — <a href="https://platform.claude.com/docs/en/build-with-claude/extended-thinking">extended thinking</a></li>
+<li>Google AI docs — <a href="https://ai.google.dev/gemini-api/docs/thinking">Gemini thinking</a></li>
+</ul>
+<h4>Človeški baseline in projektna provenienca</h4>
+<ul>
+<li>0xkato, 2026 — <a href="https://www.0xkato.xyz/how-llms-actually-work/">How LLMs Actually Work</a></li>
+<li>Projektna provenienca, ne ML-dokaz: <a href="https://www.mdlxdcc.org/bd/bd_aim3_rhpm">AIM³/RHPm</a> · <a href="https://www.mdlxdcc.org/bd/bd_aim3_rhp">RHP</a> · <a href="https://www.mdlxdcc.org/bd/bd_aim3_rhpr">RHPr</a> · <a href="https://www.mdlxdcc.org/bd/bd_8z_reasoning">8Z Reasoning</a></li>
+</ul>
+<p class="note">Povezave in produktno občutljive trditve je pred ponovno objavo smiselno še enkrat preveriti. Stran je bila zgrajena junija 2026.</p>
+</div>
+</section>
+</article></main>
+<footer class="footer"><p>How LLMs Actually Work · RHPm multi‑LLM hybrid of hybrids · EN/SL · June 2026 · Part of <a href="https://www.mdlxdcc.org">MDLxDCC.org</a>.</p></footer>
+<script>
+(function(){
+  var fs=18;
+  function apply(){ document.body.style.fontSize=fs+'px'; }
+  document.getElementById('smaller').addEventListener('click',function(){ fs=Math.max(15,fs-1); apply(); });
+  document.getElementById('bigger').addEventListener('click',function(){ fs=Math.min(26,fs+1); apply(); });
+})();
+function setLang(lang){
+  document.documentElement.lang = lang === 'sl' ? 'sl' : 'en';
+  document.querySelectorAll('.lang').forEach(function(el){ el.classList.toggle('active', el.getAttribute('data-lang')===lang); });
+  document.getElementById('btn-en').classList.toggle('active', lang==='en');
+  document.getElementById('btn-sl').classList.toggle('active', lang==='sl');
+  var enNav=document.querySelector('.nav-en'), slNav=document.querySelector('.nav-sl');
+  if(enNav && slNav){ enNav.style.display=lang==='en'?'inline':'none'; slNav.style.display=lang==='sl'?'inline':'none'; }
+  localStorage.setItem('llmArticleLang', lang);
+}
+setLang(localStorage.getItem('llmArticleLang') || 'en');
+</script>
+</body>
+</html>
