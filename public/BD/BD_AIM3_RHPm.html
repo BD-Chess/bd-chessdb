@@ -4,8 +4,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>RHPm — AIM³ Prompt Builder · Practical Hybrid v1.5.3</title>
-<meta content="RHPm v1.5.3 adaptive Prompting Type hybrid — multilingual AIM³ prompt builder with specialized prompt templates, visible LLM quick links, API snippets plus optional local DeepSeek chat, Prompt Forge jump link, and a real-world prompt benchmark." name="description"/>
+<title>RHPm — AIM³ Prompt Builder · Practical Hybrid v1.6</title>
+<meta content="RHPm v1.6 adaptive Prompting Type hybrid — multilingual AIM³ prompt builder with specialized prompt templates, visible LLM quick links, API snippets plus optional local DeepSeek chat, Prompt Forge jump link, and a real-world prompt benchmark, CVC review loop, and Protocol Harvest." name="description"/>
 <link href="https://fonts.googleapis.com/" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&amp;family=JetBrains+Mono:wght@400;600;700&amp;family=Rajdhani:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <style>
@@ -40,9 +40,30 @@
 <div class="callout gold"><div class="ct" data-i18n="fixTitle"></div><p data-i18n="fixText"></p></div>
 <div class="cards"><div class="card"><div class="k" data-i18n="card1k"></div><h3 data-i18n="card1h"></h3><p data-i18n="card1p"></p></div><div class="card"><div class="k" data-i18n="card2k"></div><h3 data-i18n="card2h"></h3><p data-i18n="card2p"></p></div><div class="card"><div class="k" data-i18n="card3k"></div><h3 data-i18n="card3h"></h3><p data-i18n="card3p"></p></div></div>
 <section class="section" id="master"><h2 data-i18n="masterTitle"></h2><p data-i18n="masterIntro"></p><div class="builder"><div class="grid2"><div class="field"><label data-i18n="roughLabel" for="masterHumanRequest"></label><textarea data-placeholder="roughPh" id="masterHumanRequest"></textarea></div><div class="field"><label data-i18n="contextLabel" for="masterContext"></label><textarea data-placeholder="contextPh" id="masterContext"></textarea></div></div><div class="buttons"><button class="btn cyan" data-i18n="copyMaster" onclick="copyById('masterPreview')"></button><button class="btn gold" data-i18n="downloadMaster" onclick="downloadMasterPrompt()"></button><button class="btn rose" data-i18n="clearMaster" onclick="clearMaster()"></button></div><div class="field"><label data-i18n="previewLabel" for="masterPreview"></label><textarea class="output master-preview" id="masterPreview" readonly=""></textarea></div></div></section>
-<section class="section" id="forge"><h2 data-i18n="forgeTitle"></h2><p data-i18n="forgeIntro"></p><div class="builder"><div class="grid2"><div class="field"><label data-i18n="roughLabel" for="roughPrompt"></label><textarea data-placeholder="roughPh" id="roughPrompt"></textarea></div><div><div class="field"><label data-i18n="taskType" for="taskType"></label><select id="taskType"><option data-i18n="taskAuto" value="auto"></option><option data-i18n="taskGeneral" value="general"></option><option data-i18n="taskArticle" value="article"></option><option data-i18n="taskCode" value="code"></option><option data-i18n="taskHtml" value="html"></option><option data-i18n="taskDoc" value="doc"></option><option data-i18n="taskSpreadsheet" value="spreadsheet"></option><option data-i18n="taskImage" value="image"></option><option data-i18n="taskMusic" value="music"></option><option data-i18n="taskReview" value="review"></option><option data-i18n="taskResearch" value="research"></option><option data-i18n="taskSynthesis" value="synthesis"></option><option data-i18n="taskArena" value="arena"></option></select><p class="small" id="detectedTypeNote"></p></div><div class="field"><label data-i18n="outputMode" for="outputMode"></label><select id="outputMode"><option data-i18n="outputExecution" value="execution"></option><option data-i18n="outputReview" value="review"></option><option data-i18n="outputSynthesis" value="synthesis"></option><option data-i18n="outputBuilder" value="builder"></option></select></div><div class="field"><label data-i18n="ceremony" for="ceremony"></label><select id="ceremony"><option data-i18n="ceremonyAuto" value="auto"></option><option data-i18n="ceremonyLight" value="light"></option><option data-i18n="ceremonyMedium" value="medium"></option><option data-i18n="ceremonyFull" value="full"></option></select></div><p class="small" data-i18n="agentNote"></p><p class="small" data-i18n="modeNote"></p></div></div><div class="grid2"><div class="field"><label data-i18n="filesLabel" for="fileTree"></label><textarea data-placeholder="filesPh" id="fileTree"></textarea></div><div class="field"><label data-i18n="otherContext" for="contextFiles"></label><textarea data-placeholder="otherPh" id="contextFiles"></textarea></div></div><div class="checks"><label><input checked="" id="chkFiles" type="checkbox"/><span data-i18n="chkFiles"></span></label><label><input checked="" id="chkTests" type="checkbox"/><span data-i18n="chkTests"></span></label><label><input checked="" id="chkProvenance" type="checkbox"/><span data-i18n="chkProvenance"></span></label><label><input checked="" id="chkNoBloat" type="checkbox"/><span data-i18n="chkNoBloat"></span></label><label><input id="chkResume" type="checkbox"/><span data-i18n="chkResume"></span></label><label><input id="chkSkill" type="checkbox"/><span data-i18n="chkSkill"></span></label><label><input id="chkGuide" type="checkbox"/><span data-i18n="chkGuide"></span></label><label><input checked="" id="chkReviewPrompt" type="checkbox"/><span data-i18n="chkReview"></span></label></div><div class="buttons"><button class="btn cyan" data-i18n="generate" onclick="generatePrompt()"></button><button class="btn" data-i18n="copyGenerated" onclick="copyById('promptOut')"></button><button class="btn" data-i18n="copyReview" onclick="copyReviewPromptFromForge()"></button><button class="btn gold" data-i18n="downloadGenerated" onclick="downloadGeneratedPrompt()"></button><button class="btn gold" data-i18n="exHtml" onclick="loadExample('html')"></button><button class="btn gold" data-i18n="exCode" onclick="loadExample('code')"></button><button class="btn gold" data-i18n="exSpreadsheet" onclick="loadExample('spreadsheet')"></button><button class="btn gold" data-i18n="exImage" onclick="loadExample('image')"></button><button class="btn rose" data-i18n="clearForge" onclick="clearForge()"></button></div><div class="field"><label data-i18n="promptOut" for="promptOut"></label><textarea class="output" data-placeholder="promptOutPh" id="promptOut"></textarea></div><div class="field"><label data-i18n="reviewOut" for="reviewOut"></label><textarea class="output" data-placeholder="reviewOutPh" id="reviewOut"></textarea></div><div class="checklist"><div class="checkitem" data-i18n="check1"></div><div class="checkitem" data-i18n="check2"></div><div class="checkitem" data-i18n="check3"></div><div class="checkitem" data-i18n="check4"></div><div class="checkitem" data-i18n="check5"></div><div class="checkitem" data-i18n="check6"></div></div></div></section>
+<section class="section" id="forge"><h2 data-i18n="forgeTitle"></h2><p data-i18n="forgeIntro"></p><div class="builder"><div class="grid2"><div class="field"><label data-i18n="roughLabel" for="roughPrompt"></label><textarea data-placeholder="roughPh" id="roughPrompt"></textarea></div><div><div class="field"><label data-i18n="taskType" for="taskType"></label><select id="taskType"><option data-i18n="taskAuto" value="auto"></option><option data-i18n="taskGeneral" value="general"></option><option data-i18n="taskArticle" value="article"></option><option data-i18n="taskCode" value="code"></option><option data-i18n="taskHtml" value="html"></option><option data-i18n="taskDoc" value="doc"></option><option data-i18n="taskSpreadsheet" value="spreadsheet"></option><option data-i18n="taskImage" value="image"></option><option data-i18n="taskMusic" value="music"></option><option data-i18n="taskReview" value="review"></option><option data-i18n="taskResearch" value="research"></option><option data-i18n="taskSynthesis" value="synthesis"></option><option data-i18n="taskArena" value="arena"></option></select><p class="small" id="detectedTypeNote"></p></div><div class="field"><label data-i18n="outputMode" for="outputMode"></label><select id="outputMode"><option data-i18n="outputExecution" value="execution"></option><option data-i18n="outputReview" value="review"></option><option data-i18n="outputSynthesis" value="synthesis"></option><option data-i18n="outputBuilder" value="builder"></option></select></div><div class="field"><label data-i18n="ceremony" for="ceremony"></label><select id="ceremony"><option data-i18n="ceremonyAuto" value="auto"></option><option data-i18n="ceremonyLight" value="light"></option><option data-i18n="ceremonyMedium" value="medium"></option><option data-i18n="ceremonyFull" value="full"></option></select></div><div class="field"><label data-i18n="auditStyle" for="auditStyle"></label><select id="auditStyle"><option data-i18n="auditAuto" value="auto"></option><option data-i18n="auditOff" value="off"></option><option data-i18n="auditCvc" value="cvc"></option><option data-i18n="auditClaim" value="claim"></option><option data-i18n="auditDeep" value="deep"></option></select><p class="small" data-i18n="auditStyleNote"></p></div><p class="small" data-i18n="agentNote"></p><p class="small" data-i18n="modeNote"></p></div></div><div class="grid2"><div class="field"><label data-i18n="filesLabel" for="fileTree"></label><textarea data-placeholder="filesPh" id="fileTree"></textarea></div><div class="field"><label data-i18n="otherContext" for="contextFiles"></label><textarea data-placeholder="otherPh" id="contextFiles"></textarea></div></div><div class="checks"><label><input checked="" id="chkFiles" type="checkbox"/><span data-i18n="chkFiles"></span></label><label><input checked="" id="chkTests" type="checkbox"/><span data-i18n="chkTests"></span></label><label><input checked="" id="chkProvenance" type="checkbox"/><span data-i18n="chkProvenance"></span></label><label><input checked="" id="chkNoBloat" type="checkbox"/><span data-i18n="chkNoBloat"></span></label><label><input id="chkResume" type="checkbox"/><span data-i18n="chkResume"></span></label><label><input id="chkSkill" type="checkbox"/><span data-i18n="chkSkill"></span></label><label><input id="chkGuide" type="checkbox"/><span data-i18n="chkGuide"></span></label><label><input checked="" id="chkReviewPrompt" type="checkbox"/><span data-i18n="chkReview"></span></label></div><div class="buttons"><button class="btn cyan" data-i18n="generate" onclick="generatePrompt()"></button><button class="btn" data-i18n="copyGenerated" onclick="copyById('promptOut')"></button><button class="btn" data-i18n="copyReview" onclick="copyReviewPromptFromForge()"></button><button class="btn gold" data-i18n="downloadGenerated" onclick="downloadGeneratedPrompt()"></button><button class="btn gold" data-i18n="exHtml" onclick="loadExample('html')"></button><button class="btn gold" data-i18n="exCode" onclick="loadExample('code')"></button><button class="btn gold" data-i18n="exSpreadsheet" onclick="loadExample('spreadsheet')"></button><button class="btn gold" data-i18n="exImage" onclick="loadExample('image')"></button><button class="btn rose" data-i18n="clearForge" onclick="clearForge()"></button></div><div class="field"><label data-i18n="promptOut" for="promptOut"></label><textarea class="output" data-placeholder="promptOutPh" id="promptOut"></textarea></div><div class="field"><label data-i18n="reviewOut" for="reviewOut"></label><textarea class="output" data-placeholder="reviewOutPh" id="reviewOut"></textarea></div><div class="checklist"><div class="checkitem" data-i18n="check1"></div><div class="checkitem" data-i18n="check2"></div><div class="checkitem" data-i18n="check3"></div><div class="checkitem" data-i18n="check4"></div><div class="checkitem" data-i18n="check5"></div><div class="checkitem" data-i18n="check6"></div></div></div></section>
 <section class="section" id="examples"><h2 data-i18n="examplesTitle"></h2><p data-i18n="examplesIntro"></p><div class="example-grid"><div class="example"><div class="cols"><div><div class="mini-label" data-i18n="weak"></div><p data-i18n="ex1Weak"></p></div><div><div class="mini-label" data-i18n="strong"></div><p data-i18n="ex1Strong"></p></div></div></div><div class="example"><div class="cols"><div><div class="mini-label" data-i18n="weak"></div><p data-i18n="ex2Weak"></p></div><div><div class="mini-label" data-i18n="strong"></div><p data-i18n="ex2Strong"></p></div></div></div><div class="example"><div class="cols"><div><div class="mini-label" data-i18n="weak"></div><p data-i18n="ex3Weak"></p></div><div><div class="mini-label" data-i18n="strong"></div><p data-i18n="ex3Strong"></p></div></div></div></div></section>
 <details class="section advanced" id="protocol" open=""><summary><h2 data-i18n="protocolTitle" style="display:inline"></h2></summary><div class="inside"><p data-i18n="protocolIntro"></p><div class="steps"><div class="step"><div class="num">00</div><div><h3 data-i18n="p0"></h3><p data-i18n="p0t"></p></div></div><div class="step"><div class="num">01</div><div><h3 data-i18n="p1"></h3><p data-i18n="p1t"></p></div></div><div class="step"><div class="num">02</div><div><h3 data-i18n="p2"></h3><p data-i18n="p2t"></p></div></div><div class="step"><div class="num">03</div><div><h3 data-i18n="p3"></h3><p data-i18n="p3t"></p></div></div><div class="step"><div class="num">04</div><div><h3 data-i18n="p4"></h3><p data-i18n="p4t"></p></div></div><div class="step"><div class="num">05</div><div><h3 data-i18n="p5"></h3><p data-i18n="p5t"></p></div></div><div class="step"><div class="num">06</div><div><h3 data-i18n="p6"></h3><p data-i18n="p6t"></p></div></div><div class="step"><div class="num">07</div><div><h3 data-i18n="p7"></h3><p data-i18n="p7t"></p></div></div><div class="step"><div class="num">08</div><div><h3 data-i18n="p8"></h3><p data-i18n="p8t"></p></div></div><div class="step"><div class="num">09</div><div><h3 data-i18n="p9"></h3><p data-i18n="p9t"></p></div></div></div><h2 data-i18n="lensTitle" style="margin-top:28px"></h2><div class="lens-grid"><div class="lens"><div class="role" data-i18n="lensEng"></div><p data-i18n="lensEngT"></p></div><div class="lens"><div class="role" data-i18n="lensFal"></div><p data-i18n="lensFalT"></p></div><div class="lens"><div class="role" data-i18n="lensChild"></div><p data-i18n="lensChildT"></p></div><div class="lens"><div class="role" data-i18n="lensCart"></div><p data-i18n="lensCartT"></p></div><div class="lens"><div class="role" data-i18n="lensA0"></div><p data-i18n="lensA0T"></p></div></div></div></details>
+
+<details class="section advanced" id="protocolHarvest">
+  <summary><h2 data-i18n="harvestTitle" style="display:inline">Protocol Harvest + CVC review loop</h2></summary>
+  <div class="inside">
+    <div class="callout cyan">
+      <div class="ct" data-i18n="harvestWhyTitle">Why this was added</div>
+      <p data-i18n="harvestWhyText">RHPm now learns from useful outside prompts. When a review prompt contains a reusable reasoning move, RHPm can extract it as a pattern instead of merely comparing outputs.</p>
+    </div>
+    <div class="grid2">
+      <div class="callout gold">
+        <div class="ct" data-i18n="cvcTitle">Clear Verdict / Confidence / Caveats loop</div>
+        <p data-i18n="cvcText">For audits and score-style tasks, RHPm can now ask for a clear answer, claim decomposition, confidence tied to evidence quality, verification, weighted synthesis, caveats, and one targeted retry if confidence is low.</p>
+      </div>
+      <div class="callout violet">
+        <div class="ct" data-i18n="harvestPatternTitle">Protocol Harvest</div>
+        <p data-i18n="harvestPatternText">For reviews, research, synthesis, and protocol work, RHPm can extract reusable patterns: name, when to use, when not to use, prompt fragment, risk, and where it belongs in RHPm/RHPr/RHP.</p>
+      </div>
+    </div>
+    <p class="small" data-i18n="harvestScopeText">This is strongest for review/audit/scoring, research, synthesis, public articles, and protocol improvement. It is kept optional so simple writing or coding prompts do not become over-protocolled.</p>
+  </div>
+</details>
 
 <section class="section case-study" id="promptBenchmark">
   <h2 data-i18n="caseTitle">Real-world prompt benchmark</h2>
@@ -259,7 +280,7 @@ const I18N = {
     "navRelated": "Related",
     "pageLanguage": "Page language",
     "answerLanguage": "Answer language",
-    "tag": "RHPm · AIM³ Prompt Builder · practical hybrid v1.4.1",
+    "tag": "RHPm · AIM³ Prompt Builder · practical hybrid v1.6",
     "title": "Rough request → strong session prompt",
     "titleEm": "strong session prompt",
     "subtitle": "A compact front door for turning a messy human request into a clear, testable prompt for a fresh LLM session. Now the page language and the answer language are separate, so the UI and generated prompt instructions no longer fight each other.",
@@ -398,7 +419,7 @@ const I18N = {
     "lensCartT": "Which domains, files, missing drawers, and adjacent references matter?",
     "lensA0": "Agent 0",
     "lensA0T": "How will we test, compare, visually inspect, recover, or decide it is done?",
-    "footer1": "RHPm v1.5.3 adaptive Prompting Type hybrid — Guided Prompt Builder. Built from the practical UX of G and the ecosystem/reasoning layer of C. Compact bridge from rough human request to strong AI session prompt; includes lens diversity, resonance guard, Agent 0 validation, context hygiene, 8Z reasoning mode, optional multi-LLM feedback, and Skill extraction.",
+    "footer1": "RHPm v1.6 adaptive Prompting Type hybrid — Guided Prompt Builder. Built from the practical UX of G and the ecosystem/reasoning layer of C. Compact bridge from rough human request to strong AI session prompt; includes lens diversity, resonance guard, Agent 0 validation, context hygiene, 8Z reasoning mode, optional multi-LLM feedback, and Skill extraction.",
     "related": "Related",
     "copied": "Copied.",
     "copyFail": "Copy failed. Select text manually.",
@@ -642,7 +663,7 @@ const I18N = {
     "lensCartT": "Katere domene, datoteke, manjkajoči predali in sosednje reference so pomembni?",
     "lensA0": "Agent 0",
     "lensA0T": "Kako bomo testirali, primerjali, vizualno pregledali, obnovili ali odločili, da je končano?",
-    "footer1": "RHPm v1.5.3 adaptive Prompting Type hybrid — Guided Prompt Builder. Zgrajen iz praktičnega UX-ja G in ekosistemsko/razmišljalske plasti C. Kompakten most iz grobe človeške zahteve v močan AI session prompt; vključuje več leč, resonančno varovalo, Agent 0 validacijo, higieno konteksta, 8Z reasoning mode, opcijski multi-LLM feedback in Skill extraction.",
+    "footer1": "RHPm v1.6 adaptive Prompting Type hybrid — Guided Prompt Builder. Zgrajen iz praktičnega UX-ja G in ekosistemsko/razmišljalske plasti C. Kompakten most iz grobe človeške zahteve v močan AI session prompt; vključuje več leč, resonančno varovalo, Agent 0 validacijo, higieno konteksta, 8Z reasoning mode, opcijski multi-LLM feedback in Skill extraction.",
     "related": "Povezano",
     "copied": "Kopirano.",
     "copyFail": "Kopiranje ni uspelo. Označi besedilo ročno.",
@@ -886,7 +907,7 @@ const I18N = {
     "lensCartT": "Welche Domänen, Dateien, fehlenden Wissensfächer und angrenzenden Referenzen zählen?",
     "lensA0": "Agent 0",
     "lensA0T": "Wie testen, vergleichen, visuell prüfen, wiederherstellen oder entscheiden wir, dass es fertig ist?",
-    "footer1": "RHPm v1.5.3 adaptiver Prompting-Type-Hybrid — Guided Prompt Builder. Gebaut aus der praktischen UX von G und der Ökosystem-/Denkschicht von C. Kompakte Brücke vom Rohwunsch zum starken AI-Session-Prompt; mit Linsenvielfalt, Resonanzschutz, Agent-0-Validierung, Kontexthygiene, 8Z Reasoning Mode, optionalem Multi-LLM-Feedback und Skill-Extraktion.",
+    "footer1": "RHPm v1.6 adaptiver Prompting-Type-Hybrid — Guided Prompt Builder. Gebaut aus der praktischen UX von G und der Ökosystem-/Denkschicht von C. Kompakte Brücke vom Rohwunsch zum starken AI-Session-Prompt; mit Linsenvielfalt, Resonanzschutz, Agent-0-Validierung, Kontexthygiene, 8Z Reasoning Mode, optionalem Multi-LLM-Feedback und Skill-Extraktion.",
     "related": "Verwandt",
     "copied": "Kopiert.",
     "copyFail": "Kopieren fehlgeschlagen. Text manuell markieren.",
@@ -1122,7 +1143,7 @@ const I18N = {
     "lensCartT": "Quali domini, file, cassetti mancanti e riferimenti adiacenti contano?",
     "lensA0": "Agent 0",
     "lensA0T": "Come testeremo, confronteremo, ispezioneremo visivamente, recupereremo o decideremo che è finito?",
-    "footer1": "RHPm v1.5.3 ibrido con Prompting Type adattivo — Guided Prompt Builder. Costruito dall’UX pratica di G e dallo strato ecosistema/ragionamento di C. Ponte compatto da richiesta grezza a forte AI session prompt; include diversità di lenti, guardrail di risonanza, validazione Agent 0, igiene del contesto, 8Z reasoning mode, feedback multi-LLM opzionale e Skill extraction.",
+    "footer1": "RHPm v1.6 ibrido con Prompting Type adattivo — Guided Prompt Builder. Costruito dall’UX pratica di G e dallo strato ecosistema/ragionamento di C. Ponte compatto da richiesta grezza a forte AI session prompt; include diversità di lenti, guardrail di risonanza, validazione Agent 0, igiene del contesto, 8Z reasoning mode, feedback multi-LLM opzionale e Skill extraction.",
     "related": "Collegati",
     "copied": "Copiato.",
     "copyFail": "Copia non riuscita. Seleziona il testo manualmente.",
@@ -1358,7 +1379,7 @@ const I18N = {
     "lensCartT": "¿Qué dominios, archivos, cajones faltantes y referencias cercanas importan?",
     "lensA0": "Agent 0",
     "lensA0T": "¿Cómo probaremos, compararemos, inspeccionaremos visualmente, recuperaremos o decidiremos que está terminado?",
-    "footer1": "RHPm v1.5.3 híbrido con Prompting Type adaptativo — Guided Prompt Builder. Construido desde la UX práctica de G y la capa de ecosistema/razonamiento de C. Puente compacto de solicitud humana básica a fuerte AI session prompt; incluye diversidad de lentes, guardia de resonancia, validación Agent 0, higiene de contexto, 8Z reasoning mode, feedback multi-LLM opcional y Skill extraction.",
+    "footer1": "RHPm v1.6 híbrido con Prompting Type adaptativo — Guided Prompt Builder. Construido desde la UX práctica de G y la capa de ecosistema/razonamiento de C. Puente compacto de solicitud humana básica a fuerte AI session prompt; incluye diversidad de lentes, guardia de resonancia, validación Agent 0, higiene de contexto, 8Z reasoning mode, feedback multi-LLM opcional y Skill extraction.",
     "related": "Relacionado",
     "copied": "Copiado.",
     "copyFail": "No se pudo copiar. Selecciona el texto manualmente.",
@@ -1594,7 +1615,7 @@ const I18N = {
     "lensCartT": "Quels domaines, fichiers, tiroirs manquants et références adjacentes comptent ?",
     "lensA0": "Agent 0",
     "lensA0T": "Comment tester, comparer, inspecter visuellement, récupérer ou décider que c’est terminé ?",
-    "footer1": "RHPm v1.5.3 hybride avec Prompting Type adaptatif — Guided Prompt Builder. Construit depuis l’UX pratique de G et la couche écosystème/raisonnement de C. Pont compact de la demande brute au prompt fort de session AI; inclut diversité de lentilles, garde de résonance, validation Agent 0, hygiène du contexte, 8Z reasoning mode, feedback multi-LLM optionnel et Skill extraction.",
+    "footer1": "RHPm v1.6 hybride avec Prompting Type adaptatif — Guided Prompt Builder. Construit depuis l’UX pratique de G et la couche écosystème/raisonnement de C. Pont compact de la demande brute au prompt fort de session AI; inclut diversité de lentilles, garde de résonance, validation Agent 0, hygiène du contexte, 8Z reasoning mode, feedback multi-LLM optionnel et Skill extraction.",
     "related": "Liés",
     "copied": "Copié.",
     "copyFail": "Copie échouée. Sélectionnez le texte manuellement.",
@@ -1830,7 +1851,7 @@ const I18N = {
     "lensCartT": "哪些领域、文件、缺失知识抽屉和相邻引用重要？",
     "lensA0": "Agent 0",
     "lensA0T": "我们如何测试、比较、视觉检查、恢复，或判断它已完成？",
-    "footer1": "RHPm v1.5.3 自适应 Prompting Type 混合版 — Guided Prompt Builder。结合 G 的实用 UX 与 C 的生态/推理层。把粗略人类请求桥接到强 AI session prompt；包含多视角、共振保护、Agent 0 验证、上下文卫生、8Z reasoning mode、可选 multi-LLM feedback 和 Skill extraction。",
+    "footer1": "RHPm v1.6 自适应 Prompting Type 混合版 — Guided Prompt Builder。结合 G 的实用 UX 与 C 的生态/推理层。把粗略人类请求桥接到强 AI session prompt；包含多视角、共振保护、Agent 0 验证、上下文卫生、8Z reasoning mode、可选 multi-LLM feedback 和 Skill extraction。",
     "related": "相关",
     "copied": "已复制。",
     "copyFail": "复制失败。请手动选择文本。",
@@ -2066,7 +2087,7 @@ const I18N = {
     "lensCartT": "どの領域、ファイル、欠けた知識引き出し、隣接参照が重要か？",
     "lensA0": "Agent 0",
     "lensA0T": "どうテスト、比較、視覚確認、復旧し、完了と判断するか？",
-    "footer1": "RHPm v1.5.3 適応 Prompting Type ハイブリッド — Guided Prompt Builder。G の実用 UX と C のエコシステム/推論レイヤーから構築。粗い人間の依頼を強い AI session prompt へつなぐ小さな橋。レンズ多様性、共鳴ガード、Agent 0 検証、コンテキスト衛生、8Z reasoning mode、任意の multi-LLM feedback、Skill extraction を含む。",
+    "footer1": "RHPm v1.6 適応 Prompting Type ハイブリッド — Guided Prompt Builder。G の実用 UX と C のエコシステム/推論レイヤーから構築。粗い人間の依頼を強い AI session prompt へつなぐ小さな橋。レンズ多様性、共鳴ガード、Agent 0 検証、コンテキスト衛生、8Z reasoning mode、任意の multi-LLM feedback、Skill extraction を含む。",
     "related": "関連",
     "copied": "コピーしました。",
     "copyFail": "コピーに失敗しました。手動でテキストを選択してください。",
@@ -2240,6 +2261,48 @@ const LANG_NAMES = {
     "ja": "日本語"
   }
 };
+
+const EXTRA_I18N = {
+  en: {
+    auditStyle: "Audit / confidence style",
+    auditAuto: "Auto — match the task",
+    auditOff: "Off — no CVC loop",
+    auditCvc: "Clear verdict + confidence + caveats",
+    auditClaim: "Claim-by-claim audit",
+    auditDeep: "Deep verification + retry if confidence < 0.8",
+    auditStyleNote: "Auto adds CVC to review/research/synthesis and a light confidence check to public articles.",
+    harvestTitle: "Protocol Harvest + CVC review loop",
+    harvestWhyTitle: "Why this was added",
+    harvestWhyText: "RHPm now learns from useful outside prompts. When a review prompt contains a reusable reasoning move, RHPm can extract it as a pattern instead of merely comparing outputs.",
+    cvcTitle: "Clear Verdict / Confidence / Caveats loop",
+    cvcText: "For audits and score-style tasks, RHPm can now ask for a clear answer, claim decomposition, confidence tied to evidence quality, verification, weighted synthesis, caveats, and one targeted retry if confidence is low.",
+    harvestPatternTitle: "Protocol Harvest",
+    harvestPatternText: "For reviews, research, synthesis, and protocol work, RHPm can extract reusable patterns: name, when to use, when not to use, prompt fragment, risk, and where it belongs in RHPm/RHPr/RHP.",
+    harvestScopeText: "This is strongest for review/audit/scoring, research, synthesis, public articles, and protocol improvement. It is kept optional so simple writing or coding prompts do not become over-protocolled."
+  },
+  sl: {
+    auditStyle: "Audit / confidence način",
+    auditAuto: "Auto — prilagodi nalogi",
+    auditOff: "Izklopljeno — brez CVC zanke",
+    auditCvc: "Jasen verdict + confidence + caveats",
+    auditClaim: "Claim-by-claim audit",
+    auditDeep: "Globoka verifikacija + retry, če je confidence < 0.8",
+    auditStyleNote: "Auto doda CVC pri review/research/synthesis in lahek confidence check pri javnih člankih.",
+    harvestTitle: "Protocol Harvest + CVC review zanka",
+    harvestWhyTitle: "Zakaj je to dodano",
+    harvestWhyText: "RHPm se zdaj uči iz uporabnih zunanjih promptov. Ko review prompt vsebuje ponovno uporaben miselni premik, ga RHPm izlušči kot vzorec, namesto da samo primerja rezultate.",
+    cvcTitle: "Clear Verdict / Confidence / Caveats zanka",
+    cvcText: "Za audit in score naloge lahko RHPm zdaj zahteva jasen odgovor, razčlenitev trditev, confidence vezan na kakovost dokazov, preverjanje, uteženo sintezo, caveate in en ciljan retry, če je confidence nizek.",
+    harvestPatternTitle: "Protocol Harvest",
+    harvestPatternText: "Za review, research, synthesis in protokolno delo lahko RHPm izlušči ponovno uporabne vzorce: ime, kdaj uporabiti, kdaj ne, prompt fragment, tveganje in kam vzorec spada v RHPm/RHPr/RHP.",
+    harvestScopeText: "Najmočnejše je pri review/audit/scoring, raziskovanju, sintezi, javnih člankih in izboljšavi protokolov. Ostaja opcijsko, da preprosti writing ali coding prompti ne postanejo preveč protokolirani."
+  }
+};
+for (const code of ['en','sl','de','it','es','fr','zh','ja']) {
+  if (!I18N[code]) I18N[code] = {};
+  Object.assign(I18N[code], EXTRA_I18N.en, EXTRA_I18N[code] || {});
+}
+
 const EXAMPLES = {
   "en": {
     "html": [
@@ -2441,7 +2504,7 @@ function skillJsonBlock(){return `If useful, output a machine-readable Skill Car
 }`}
 function buildMasterPrompt(){const rough=(qs('masterHumanRequest')?.value||'').trim()||'[No rough request provided — paste the actual task here before using this prompt.]';const ctx=(qs('masterContext')?.value||'').trim();const d={rough,files:'',ctx,relocated:false};const profile=resolvePromptingType(rough,'auto');return buildExecutionPromptByType(d,profile,'auto',false)}
 function updateMasterPromptPreview(){const el=qs('masterPreview');if(el)el.value=buildMasterPrompt()}
-function taskTypeGuidance(t){const m={auto:`Auto-detect: RHPm infers the focus from the rough request and chooses a specialized template.`,general:`Generic/mixed: keep the prompt direct, bounded, testable, and context-aware.`,article:`Writing/articles: produce a reader-ready draft, separate simple explanation from deeper detail when useful, include source/check needs, self-critique, and synthesis notes.`,code:`Code/app builder: require runnable code, file layout, tests, commands, error handling, packaging, and edge cases.`,html:`HTML/website: inspect target files, preserve UX/style/mobile behavior, validate JS/links/language toggles, and return ready-to-publish files only when requested.`,doc:`Document/paper: preserve formatting/structure, improve text, track changes conceptually, and avoid layout damage.`,spreadsheet:`Data/spreadsheet: validate inputs, keep formulas/audit trail clear, summarize findings, and mark assumptions.`,image:`Image/visual: define scene, style, composition, aspect ratio, text constraints, references, and acceptance criteria.`,music:`Music/lyrics: define style, genre, mood, tempo, structure, instrumentation, lyrical intent, vocal direction, and production constraints.`,review:`Review/audit: inspect the target source, cite evidence where possible, score with a rubric, separate facts/opinions, and list fixes.`,research:`Research/idea: separate hypothesis, evidence, falsifiers, experiments, risks, and next smallest test.`,synthesis:`Synthesis/comparison: score inputs, extract best parts, deduplicate, merge only what survives, and preserve contribution ledger.`,arena:`Arena/benchmark: require seeds, workers, resume safety, manifests, logs, outputs, and result analysis.`};return m[t]||m.general}
+function taskTypeGuidance(t){const m={auto:`Auto-detect: RHPm infers the focus from the rough request and chooses a specialized template.`,general:`Generic/mixed: keep the prompt direct, bounded, testable, and context-aware.`,article:`Writing/articles: produce a reader-ready draft, separate simple explanation from deeper detail when useful, include source/check needs, self-critique, and synthesis notes.`,code:`Code/app builder: require runnable code, file layout, tests, commands, error handling, packaging, and edge cases.`,html:`HTML/website: inspect target files, preserve UX/style/mobile behavior, validate JS/links/language toggles, and return ready-to-publish files only when requested.`,doc:`Document/paper: preserve formatting/structure, improve text, track changes conceptually, and avoid layout damage.`,spreadsheet:`Data/spreadsheet: validate inputs, keep formulas/audit trail clear, summarize findings, and mark assumptions.`,image:`Image/visual: define scene, style, composition, aspect ratio, text constraints, references, and acceptance criteria.`,music:`Music/lyrics: define style, genre, mood, tempo, structure, instrumentation, lyrical intent, vocal direction, and production constraints.`,review:`Review/audit: inspect the target source, cite evidence where possible, score with a rubric, use CVC when useful, separate facts/opinions, and list fixes.`,research:`Research/idea: separate hypothesis, evidence, falsifiers, experiments, risks, next smallest test, and reusable protocol patterns.`,synthesis:`Synthesis/comparison: score inputs, extract best parts, deduplicate, merge only what survives, preserve contribution ledger, and harvest reusable methods.`,arena:`Arena/benchmark: require seeds, workers, resume safety, manifests, logs, outputs, and result analysis.`};return m[t]||m.general}
 function looksLikeRequestText(text){
   const t=(text||'').trim().toLowerCase();
   if(t.length<60)return false;
@@ -2466,10 +2529,57 @@ function compact8zWorkBlock(){return `## RHPm / 8Z working discipline
 - Keep candidate paths alive until tests, sources, baselines, or concrete constraints kill them.
 - Prefer the smallest useful structure, but include checks where mistakes would matter.
 - Verify before claiming: cite, test, inspect, compare, or clearly mark uncertainty.
-- Capture reusable learning when this becomes a repeated workflow.`}
+- Capture reusable learning when this becomes a repeated workflow.
+- Protocol Harvest: if an outside prompt, review, critique, or result contains a reusable reasoning move, extract it instead of only comparing outputs.`}
 function extraRequirementsBlock(d){let extras=[];if(qs('chkFiles')?.checked)extras.push('Inspect named files/folders/links first before editing or judging. If none are provided, say so briefly and proceed from the supplied request.');if(qs('chkTests')?.checked)extras.push('Include concrete checks, tests, acceptance criteria, or manual/visual validation appropriate to the task.');if(shouldIncludeProvenance(d))extras.push('Preserve authorship/provenance exactly where relevant: AIM³/RHP/RHPr/RHPm originate from BD’s architecture and concepts; LLMs are collaborators, reviewers, builders, critics, and improvement partners.');if(qs('chkNoBloat')?.checked)extras.push('Do not bloat the deliverable, create unrelated files, or modify unrelated pages.');if(qs('chkResume')?.checked)extras.push('For long/coding/benchmark tasks, include resume/recovery/rollback logic.');if(qs('chkSkill')?.checked)extras.push(skillJsonBlock());return extras.length?extras.map(x=>'- '+x).join('\n'):'- Keep the result compact, practical, and testable.'}
 function promptTypeKey(type){const m={auto:'taskAuto',general:'taskGeneral',article:'taskArticle',writing:'taskArticle',code:'taskCode',html:'taskHtml',doc:'taskDoc',spreadsheet:'taskSpreadsheet',data:'taskSpreadsheet',image:'taskImage',music:'taskMusic',review:'taskReview',research:'taskResearch',synthesis:'taskSynthesis',arena:'taskArena'};return m[type]||'taskGeneral'}
 function promptTypeLabel(type){return tr(promptTypeKey(type))}
+function selectedAuditStyle(){return qs('auditStyle')?.value||'auto'}
+function auditStyleResolved(profile,d){
+  const s=selectedAuditStyle();
+  if(s!=='auto')return s;
+  const t=taskTextForProvenance(d||{});
+  if(profile==='article'||profile==='doc')return 'light';
+  if(profile==='review'||/(koliko\s*drži|v\s*%|percent|percentage|accuracy|correctness|score|audit|review|fact-check|verify|confidence|oceni|drži)/.test(t))return 'claim';
+  if(profile==='synthesis'||profile==='research')return 'cvc';
+  return 'off';
+}
+function confidenceCaveatsBlock(profile,d){
+  const style=auditStyleResolved(profile,d);
+  if(style==='off')return '';
+  if(style==='light')return `## Lightweight confidence / caveat check
+Before finalizing, add a compact note on:
+- your confidence level for the main result,
+- the main caveats or source-needed claims,
+- what would most improve reliability before publication.
+Do not fake precision. Confidence is not proof; tie it to evidence quality, source access, and direct inspection.`;
+  const claimMode=style==='claim'||style==='deep';
+  const retry=style==='deep'?'- If overall confidence is below 0.8, run one targeted retry/check on the weakest claim or missing-source area only; do not restart the whole answer.':'';
+  return `## Clear Verdict / Confidence / Caveats loop (CVC)
+Use this audit discipline where it helps:
+1. Clear answer / verdict first.
+2. ${claimMode?'Decompose the main claims and evaluate each important claim.':'Decompose the problem into the few claims that matter most.'}
+3. Give confidence from 0.0–1.0, but tie it to evidence quality, source access, and direct inspection.
+4. Verify logic, facts, completeness, missing context, and likely bias.
+5. Synthesize a final weighted verdict or score.
+6. List key caveats and what would change the judgment.
+${retry}
+Important: confidence is not proof. Do not use false precision; use ranges when evidence is thin.`;
+}
+function protocolHarvestBlock(profile,d){
+  const t=taskTextForProvenance(d||{});
+  const relevant=['review','synthesis','research'].includes(profile)||/(prompt|protocol|workflow|method|template|rhpm|rhpr|\brhp\b|aim³|aim3|compare|critique|audit|feedback|lesson|pattern)/.test(t);
+  if(!relevant)return '';
+  return `## Protocol Harvest
+After completing the task, check whether any prompt, answer, critique, workflow, or review contains a reusable reasoning move. If yes, extract it as:
+- Pattern name.
+- When to use.
+- When not to use.
+- Exact prompt fragment.
+- Risk / caveat.
+- Where it belongs: RHPm, RHPr, full RHP, or project-specific workflow.
+If there is no reusable pattern, say so briefly and do not force one.`;
+}
 function inferPromptingType(text){
   const t=(text||'').toLowerCase();
   const scores={article:0,code:0,html:0,doc:0,spreadsheet:0,image:0,music:0,review:0,research:0,synthesis:0,arena:0};
@@ -2481,7 +2591,7 @@ function inferPromptingType(text){
   add('spreadsheet',['spreadsheet','xlsx','excel','csv','table','worksheet','formula','chart','pivot','data validation','openpyxl'],2);
   add('image',['image','picture','visual','draw','illustration','logo','poster','hero image','render','generate an image','style transfer','aspect ratio'],2);
   add('music',['music','song','lyrics','melody','chords','midi','vocal','band','guitar','producer.ai','chorus','verse','tempo','bpm'],2);
-  add('review',['review','audit','score','evaluate','fact-check','accuracy','correctness','compare','which is better','verdict','rubric'],2);
+  add('review',['review','audit','score','evaluate','fact-check','accuracy','correctness','compare','which is better','verdict','rubric','confidence','caveat','caveats','koliko drži','v %','percent correct','how accurate'],2);
   add('research',['research','hypothesis','theory','idea','explore','experiment','falsify','proposal','roadmap','cross-domain','seed'],1.5);
   add('arena',['arena','benchmark','workers','resume','checkpoint','seeds','overnight','logs','manifest','campaign','scenarios'],2);
   add('doc',['docx','document','paper formatting','appendix','word file','preserve formatting'],2);
@@ -2496,14 +2606,138 @@ function isLLMArticleTopic(text){const t=(text||'').toLowerCase();return ['llm',
 function articleTopicCoverageBlock(text){if(isLLMArticleTopic(text))return `## Topic coverage required\nBecause this article is about LLMs, cover at least:\n- tokenization\n- embeddings\n- positional information / RoPE or similar methods\n- transformer layers\n- attention, Q/K/V, causal masking, and multi-head attention\n- MLP / feed-forward layers\n- residual stream and normalization\n- logits and next-token generation\n- pretraining\n- post-training: instruction tuning, RLHF/RLAIF/DPO or preference tuning where relevant\n- system prompts/product policies\n- tools/function calling\n- RAG/retrieval\n- memory/context management\n- safety systems\n- multimodality\n- inference engineering such as KV cache, batching, quantization, speculative decoding, routing, and MoE where relevant`;return `## Topic coverage required\nCover the core mechanism, the practical system around it, common misconceptions, limits/unknowns, and the pieces a reader must understand to avoid a shallow mental model.`;}
 function articleExtraRequirementsBlock(d){let extras=[];if(qs('chkTests')?.checked)extras.push('List claims that need sources, checking, or citation before publication. If browsing/citations are not available, clearly mark source-needed claims instead of inventing citations.');if(shouldIncludeProvenance(d))extras.push('Preserve authorship/provenance where relevant. If AIM³/RHP/RHPr/RHPm are mentioned, treat them as BD-originated architecture/concepts and LLMs as collaborators/reviewers/builders.');if(qs('chkNoBloat')?.checked)extras.push('Avoid filler, generic hype, and ceremonial labels that do not improve the article.');if(qs('chkSkill')?.checked)extras.push(skillJsonBlock());return extras.length?`## Extra requirements\n${extras.map(x=>'- '+x).join('\n')}`:'';}
 function languageAndClarifyBlock(guide,deliverableWord='deliverable'){return `## Language\n${preferredLanguageBlock()}\n\n## Clarifying-question rule\n${guide?`Ask up to 5 focused practical questions first only if they materially improve the ${deliverableWord}. Otherwise proceed.`:`Do not ask clarifying questions by default. If details are missing, make reasonable assumptions, state them briefly, and produce the best useful ${deliverableWord}.`}`}
-function buildArticleExecutionPromptFrom(d,task,cer,guide){const src=optionalSourceMaterialBlock(d);const exp=samePromptExperimentBlock(d.rough);const extra=articleExtraRequirementsBlock(d);return `# RHPm-generated ${promptTypeLabel('article')} execution prompt\n\nYou are helping write a public-facing article. Do the task now. Do not create another prompt unless the user explicitly asks for a prompt.\n\n${conditionalProvenanceBlock(d)}\n\n## User request\n${d.rough}\n\n${src?src+'\n\n':''}${languageAndClarifyBlock(guide,'article draft')}\n\n${exp?exp+'\n\n':''}${articleTopicCoverageBlock(d.rough)}\n\n## Required response structure\n1. Short simple version for laypeople\n   Explain the core idea clearly without dumbing it down.\n\n2. Main article draft\n   Write a polished, readable draft suitable as raw material for a public website article.\n\n3. More technical version for readers who understand computers\n   Go deeper into mechanisms, system layers, implementation-dependent parts, and limits.\n\n4. Myth-busting\n   Correct common misconceptions and explain why the tempting shortcut explanation is incomplete.\n\n5. What needs sources/checking\n   List important claims that should be cited, verified, or softened before final publication.\n\n6. Self-critique\n   Briefly identify weak, simplified, uncertain, implementation-dependent, or possibly outdated parts of your answer.\n\n7. What may be useful for final synthesis\n   List the strongest explanations, analogies, corrections, distinctions, or sections from your answer that may be worth carrying into a final hybrid article.\n\n## Style\n- Clear headings.\n- Direct, readable, not smug.\n- Technical but not academic sludge.\n- Avoid hype.\n- Avoid reductionist explanations when they erase important system details.\n- Avoid anthropomorphic claims unless clearly framed as metaphor.\n- Do not invent proprietary details you cannot know.\n- Do not create files, HTML, ZIPs, or changelog notes in this round unless the user explicitly asked for files.\n\n${extra?extra+'\n\n':''}## Do not do\n- Do not leave unresolved placeholders in the final answer.\n- Do not answer with a generic shallow explainer.\n- Do not hide uncertainty.\n${provenanceDoNotDoLine(d)}`}
+function buildArticleExecutionPromptFrom(d,task,cer,guide){const src=optionalSourceMaterialBlock(d);const exp=samePromptExperimentBlock(d.rough);const extra=articleExtraRequirementsBlock(d);const audit=confidenceCaveatsBlock('article',d);const harvest=protocolHarvestBlock('article',d);return `# RHPm-generated ${promptTypeLabel('article')} execution prompt
+
+You are helping write a public-facing article or explainer. Do the task now. Do not create another prompt unless the user explicitly asks for a prompt.
+
+${conditionalProvenanceBlock(d)}
+
+## User request
+${d.rough}
+
+${src?src+'\n\n':''}${languageAndClarifyBlock(guide,'article draft')}
+
+${exp?exp+'\n\n':''}${articleTopicCoverageBlock(d.rough)}
+
+## Required response structure
+1. Short simple version for laypeople
+   Explain the core idea clearly without dumbing it down.
+
+2. Main article draft
+   Write a polished, readable draft suitable as raw material for a public website article.
+
+3. More technical version for readers who understand computers
+   Go deeper into mechanisms, system layers, implementation-dependent parts, and limits.
+
+4. Myth-busting
+   Correct common misconceptions and explain why the tempting shortcut explanation is incomplete.
+
+5. What needs sources/checking
+   List important claims that should be cited, verified, or softened before final publication.
+
+6. Self-critique
+   Briefly identify weak, simplified, uncertain, implementation-dependent, or possibly outdated parts of your answer.
+
+7. What may be useful for final synthesis
+   List the strongest explanations, analogies, corrections, distinctions, or sections from your answer that may be worth carrying into a final hybrid article.
+
+${audit?audit+'\n\n':''}${harvest?harvest+'\n\n':''}## Style
+- Clear headings.
+- Direct, readable, not smug.
+- Technical but not academic sludge.
+- Avoid hype.
+- Avoid reductionist explanations when they erase important system details.
+- Avoid anthropomorphic claims unless clearly framed as metaphor.
+- Do not invent proprietary details you cannot know.
+- Do not create files, HTML, ZIPs, or changelog notes in this round unless the user explicitly asked for files.
+
+${extra?extra+'\n\n':''}## Do not do
+- Do not leave unresolved placeholders in the final answer.
+- Do not answer with a generic shallow explainer.
+- Do not hide uncertainty.
+${provenanceDoNotDoLine(d)}`}
 function buildCodeExecutionPromptFrom(d,task,cer,guide){const src=optionalSourceMaterialBlock(d);return `# RHPm-generated ${promptTypeLabel('code')} execution prompt\n\nYou are helping build, fix, or upgrade code. Do the task now.\n\n${conditionalProvenanceBlock(d)}\n\n## User request\n${d.rough}\n\n${src?src+'\n\n':''}${languageAndClarifyBlock(guide,'code result')}\n\n## Required response structure\n1. Goal and assumptions\n2. Implementation plan\n3. Code or patch\n4. Test/smoke-test commands\n5. Run/build instructions\n6. Edge cases, failure modes, and rollback/recovery\n7. Short changelog if code/files changed\n\n## Code rules\n- Prefer runnable, minimal, well-named files.\n- Preserve existing behavior unless the request clearly changes it.\n- Add validation and error handling where mistakes are likely.\n- Do not invent unseen file contents. If files are referenced but not provided, say what you need or proceed with explicit assumptions.\n- If producing files, include exact filenames and packaging instructions.`}
 function buildHtmlExecutionPromptFrom(d,task,cer,guide){const src=optionalSourceMaterialBlock(d);return `# RHPm-generated ${promptTypeLabel('html')} execution prompt\n\nYou are helping edit or create an HTML/website page. Do the task now.\n\n${conditionalProvenanceBlock(d)}\n\n## User request\n${d.rough}\n\n${src?src+'\n\n':''}${languageAndClarifyBlock(guide,'HTML result')}\n\n## Required response structure\n1. Target files/pages and allowed changes\n2. UX/content/style plan\n3. Actual HTML/CSS/JS changes or final file content\n4. Mobile checks\n5. Link/button/language-toggle checks\n6. JavaScript validation notes\n7. Packaging notes if files are produced\n\n## HTML rules\n- Preserve the requested style, layout, mobile behavior, language toggles, copy buttons, and existing useful links.\n- Do not update unrelated pages such as sitemap, robots, llms.txt, or index unless explicitly asked.\n- Avoid dead controls. Every visible button/link must work or be removed.\n- If files are modified, return ready-to-publish files and a compact changelog.`}
 function buildImageExecutionPromptFrom(d,task,cer,guide){const src=optionalSourceMaterialBlock(d);return `# RHPm-generated ${promptTypeLabel('image')} execution prompt\n\nYou are helping create a strong visual/image prompt or image concept. Do the task now.\n\n${conditionalProvenanceBlock(d)}\n\n## User request\n${d.rough}\n\n${src?src+'\n\n':''}${languageAndClarifyBlock(guide,'visual prompt')}\n\n## Required response structure\n1. Final image prompt\n2. Visual intent and mood\n3. Subject, scene, composition, camera/framing\n4. Style, lighting, color palette, materials/textures\n5. Aspect ratio / format / resolution guidance\n6. Text/logos/symbols constraints\n7. Negative constraints: what to avoid\n8. Variants if useful\n\n## Image rules\n- Be precise enough for an image model or designer.\n- Avoid vague “make it beautiful” language unless paired with concrete visual choices.\n- Do not request copyrighted logo/style replication unless the user has provided permission or references that make it appropriate.\n- If the user wants a real person included, ask for a reference image when needed.`}
 function buildMusicExecutionPromptFrom(d,task,cer,guide){const src=optionalSourceMaterialBlock(d);return `# RHPm-generated ${promptTypeLabel('music')} execution prompt\n\nYou are helping create a music, lyrics, arrangement, or production prompt. Do the task now.\n\n${conditionalProvenanceBlock(d)}\n\n## User request\n${d.rough}\n\n${src?src+'\n\n':''}${languageAndClarifyBlock(guide,'music result')}\n\n## Required response structure\n1. Final music/lyrics prompt\n2. Genre and reference direction without copying artists\n3. Mood, story, emotional arc\n4. Tempo/BPM, key or harmonic feel if useful\n5. Structure: intro, verse, pre-chorus, chorus, bridge, outro\n6. Instrumentation and production notes\n7. Vocal direction and lyrical style\n8. Optional lyrics or hook ideas if requested\n9. What to avoid\n\n## Music rules\n- Keep the result usable in a music generator, DAW workflow, or songwriter session.\n- Do not imitate a living artist’s exact style; describe musical properties instead.\n- Separate lyrics, arrangement, and production when useful.`}
-function buildReviewExecutionPromptFrom(d,task,cer,guide){const src=optionalSourceMaterialBlock(d);return `# RHPm-generated ${promptTypeLabel('review')} execution prompt\n\nYou are reviewing, auditing, or scoring something. Do the task now.\n\n${conditionalProvenanceBlock(d)}\n\n## User request\n${d.rough}\n\n${src?src+'\n\n':''}${languageAndClarifyBlock(guide,'review')}\n\n## Required response structure\n1. Verdict\n2. Score from 0–100 with short justification\n3. What is correct/strong\n4. What is weak, misleading, missing, or wrong\n5. Evidence, citations, or direct references where available\n6. Concrete fixes in priority order\n7. Final recommendation\n\n## Review rules\n- Do not answer from memory if the target source is available. Inspect it first.\n- Separate facts, interpretations, taste, and uncertainty.\n- Do not fake precision; use ranges when appropriate.`}
-function buildResearchExecutionPromptFrom(d,task,cer,guide){const src=optionalSourceMaterialBlock(d);return `# RHPm-generated ${promptTypeLabel('research')} execution prompt\n\nYou are helping develop or test an idea. Explore first, then identify checks.\n\n${conditionalProvenanceBlock(d)}\n\n## User request\n${d.rough}\n\n${src?src+'\n\n':''}${languageAndClarifyBlock(guide,'research result')}\n\n## Required response structure\n1. Seed: what the idea is really proposing\n2. Bridge: useful cross-domain analogies or mechanisms\n3. Test: fastest falsifiers, controls, and sanity checks\n4. Result: what we can conclude now versus what remains speculative\n5. Next smallest experiment\n6. Risks and failure modes\n\n## Research rules\n- Do not kill seeds early.\n- Separate known facts, plausible extensions, and speculation.\n- Prefer small experiments over abstract barrier lists.`}
-function buildSynthesisExecutionPromptFrom(d,task,cer,guide){const src=optionalSourceMaterialBlock(d);return `# RHPm-generated ${promptTypeLabel('synthesis')} execution prompt\n\nYou are synthesizing multiple answers, drafts, reviews, or model outputs into a stronger result.\n\n${conditionalProvenanceBlock(d)}\n\n## User request\n${d.rough}\n\n${src?src+'\n\n':''}${languageAndClarifyBlock(guide,'synthesis')}\n\n## Required response structure\n1. Input inventory\n2. Score table for each input\n3. Best-part extraction\n4. Contradictions and duplicates\n5. Final hybrid/synthesized output\n6. Contribution ledger: what came from where\n7. Remaining claims needing verification\n8. Next review prompt if another round is useful\n\n## Synthesis rules\n- Do not average everything together. Select only what survives.\n- Keep source-specific contributions visible.\n- Clearly mark any manual BD/AIM³/RHP/Reasoning contribution as separate from standard domain knowledge.`}
+function buildReviewExecutionPromptFrom(d,task,cer,guide){const src=optionalSourceMaterialBlock(d);const audit=confidenceCaveatsBlock('review',d);const harvest=protocolHarvestBlock('review',d);return `# RHPm-generated ${promptTypeLabel('review')} execution prompt
+
+You are reviewing, auditing, fact-checking, or scoring something. Do the task now.
+
+${conditionalProvenanceBlock(d)}
+
+## User request
+${d.rough}
+
+${src?src+'\n\n':''}${languageAndClarifyBlock(guide,'review')}
+
+${audit?audit+'\n\n':''}${harvest?harvest+'\n\n':''}## Required response structure
+1. Clear answer / verdict
+2. Score from 0–100 with short justification
+3. Claim-by-claim or section-by-section audit when the target is complex
+4. What is correct/strong
+5. What is weak, misleading, missing, unsupported, or wrong
+6. Evidence, citations, direct references, or source-needed notes where available
+7. Concrete fixes in priority order
+8. Final recommendation
+
+## Review rules
+- Do not answer from memory if the target source is available. Inspect it first.
+- Separate facts, interpretations, taste, and uncertainty.
+- Do not fake precision; use ranges when appropriate.
+- Confidence values must be tied to evidence quality, not model feeling.`}
+function buildResearchExecutionPromptFrom(d,task,cer,guide){const src=optionalSourceMaterialBlock(d);const audit=confidenceCaveatsBlock('research',d);const harvest=protocolHarvestBlock('research',d);return `# RHPm-generated ${promptTypeLabel('research')} execution prompt
+
+You are helping develop or test an idea. Explore first, then identify checks.
+
+${conditionalProvenanceBlock(d)}
+
+## User request
+${d.rough}
+
+${src?src+'\n\n':''}${languageAndClarifyBlock(guide,'research result')}
+
+${audit?audit+'\n\n':''}${harvest?harvest+'\n\n':''}## Required response structure
+1. Seed: what the idea is really proposing
+2. Bridge: useful cross-domain analogies or mechanisms
+3. Test: fastest falsifiers, controls, and sanity checks
+4. Result: what we can conclude now versus what remains speculative
+5. Next smallest experiment
+6. Confidence, caveats, and what would change the judgment
+7. Reusable protocol/workflow patterns, if any
+
+## Research rules
+- Do not kill seeds early.
+- Separate known facts, plausible extensions, and speculation.
+- Prefer small experiments over abstract barrier lists.
+- If an external prompt/review contains a reusable move, harvest it explicitly.`}
+function buildSynthesisExecutionPromptFrom(d,task,cer,guide){const src=optionalSourceMaterialBlock(d);const audit=confidenceCaveatsBlock('synthesis',d);const harvest=protocolHarvestBlock('synthesis',d);return `# RHPm-generated ${promptTypeLabel('synthesis')} execution prompt
+
+You are synthesizing multiple answers, drafts, reviews, or model outputs into a stronger result.
+
+${conditionalProvenanceBlock(d)}
+
+## User request
+${d.rough}
+
+${src?src+'\n\n':''}${languageAndClarifyBlock(guide,'synthesis')}
+
+${audit?audit+'\n\n':''}${harvest?harvest+'\n\n':''}## Required response structure
+1. Input inventory
+2. Score table for each input
+3. Best-part extraction
+4. Contradictions and duplicates
+5. Final hybrid/synthesized output
+6. Contribution ledger: what came from where
+7. Reusable protocol patterns harvested from inputs, if any
+8. Remaining claims needing verification
+9. Next review prompt if another round is useful
+
+## Synthesis rules
+- Do not average everything together. Select only what survives.
+- Keep source-specific contributions visible.
+- Clearly mark any manual BD/AIM³/RHP/Reasoning contribution as separate from standard domain knowledge.
+- If a critique reveals a reusable workflow improvement, extract it instead of only fixing the current output.`}
 function buildSpreadsheetExecutionPromptFrom(d,task,cer,guide){const src=optionalSourceMaterialBlock(d);return `# RHPm-generated ${promptTypeLabel('spreadsheet')} execution prompt\n\nYou are helping analyze, clean, validate, or build a spreadsheet/data result.\n\n${conditionalProvenanceBlock(d)}\n\n## User request\n${d.rough}\n\n${src?src+'\n\n':''}${languageAndClarifyBlock(guide,'data result')}\n\n## Required response structure\n1. Data/source assumptions\n2. Validation rules\n3. Cleaning/transformation plan\n4. Summary tables or formulas\n5. Charts/visuals if useful\n6. Flags/anomalies\n7. Reproducibility notes\n\n## Data rules\n- Preserve auditability.\n- Mark assumptions and invalid rows.\n- Keep formulas understandable.\n- Do not use document/PDF workflows for spreadsheet work unless explicitly requested.`}
 function buildArenaExecutionPromptFrom(d,task,cer,guide){const src=optionalSourceMaterialBlock(d);return `# RHPm-generated ${promptTypeLabel('arena')} execution prompt\n\nYou are helping build, run, or analyze a long-running arena/benchmark.\n\n${conditionalProvenanceBlock(d)}\n\n## User request\n${d.rough}\n\n${src?src+'\n\n':''}${languageAndClarifyBlock(guide,'arena result')}\n\n## Required response structure\n1. Goal and scope\n2. Run plan / campaign shape\n3. Seeds, workers, budgets, checkpoints, and resume safety\n4. Logging/manifest/output files\n5. Controls/baselines\n6. Result analysis plan\n7. Stop/resume/recovery instructions\n\n## Arena rules\n- Prefer reproducible runs over pretty claims.\n- Capture configuration and outputs.\n- Keep wide candidate space alive until tests kill paths.`}
 function buildGenericExecutionPromptFrom(d,task,cer,guide){return `# RHPm-generated ${promptTypeLabel(task)} execution prompt
@@ -2536,7 +2770,7 @@ ${guide?'Ask up to 5 focused practical questions first only if they materially i
 
 ${compact8zWorkBlock()}
 
-## Extra requirements
+${confidenceCaveatsBlock(task,d)?confidenceCaveatsBlock(task,d)+'\n\n':''}${protocolHarvestBlock(task,d)?protocolHarvestBlock(task,d)+'\n\n':''}## Extra requirements
 ${extraRequirementsBlock(d)}
 
 ## Deliverables
@@ -2602,6 +2836,10 @@ ${preferredLanguageBlock()}
 
 ${compact8zWorkBlock()}
 
+${confidenceCaveatsBlock('synthesis',d)}
+
+${protocolHarvestBlock('synthesis',d)}
+
 ## Workflow
 1. Score each source answer for correctness, clarity, completeness, source discipline, originality, and usefulness.
 2. Extract only the strongest parts; do not merge filler.
@@ -2633,6 +2871,10 @@ ${d.ctx||'[not provided]'}
 
 ## Language
 ${preferredLanguageBlock()}
+
+${confidenceCaveatsBlock('review',d)}
+
+${protocolHarvestBlock('review',d)}
 
 ## Review duties
 1. Score the result from 0–100.
@@ -2791,7 +3033,7 @@ async function sendDeepSeekLive(){
   }
 }
 
-function init(){populateLangSelects();applyTranslations();qs('pageLang').addEventListener('change',()=>{localStorage.setItem('rhpm_page_lang',qs('pageLang').value);applyTranslations();const out=qs('promptOut');if(out&&out.value.trim())generatePrompt()});qs('answerLang').addEventListener('change',()=>{localStorage.setItem('rhpm_answer_lang',qs('answerLang').value);updateMasterPromptPreview();const out=qs('promptOut');if(out&&out.value.trim())generatePrompt()});['masterHumanRequest','masterContext'].forEach(id=>qs(id).addEventListener('input',updateMasterPromptPreview));['roughPrompt','fileTree','contextFiles'].forEach(id=>{const el=qs(id);if(el)el.addEventListener('input',()=>{updateDetectedTypeNote();const out=qs('promptOut');if(out&&out.value.trim())generatePrompt()})});const tt=qs('taskType');if(tt)tt.addEventListener('change',()=>{updateDetectedTypeNote();const out=qs('promptOut');if(out&&out.value.trim())generatePrompt()});const ap=qs('apiProvider');if(ap)ap.addEventListener('change',apiProviderChanged);const kf=qs('apiKeyFile');if(kf)kf.addEventListener('change',handleApiKeyFile);apiProviderChanged();updateMasterPromptPreview();updateDetectedTypeNote()}
+function init(){populateLangSelects();applyTranslations();qs('pageLang').addEventListener('change',()=>{localStorage.setItem('rhpm_page_lang',qs('pageLang').value);applyTranslations();const out=qs('promptOut');if(out&&out.value.trim())generatePrompt()});qs('answerLang').addEventListener('change',()=>{localStorage.setItem('rhpm_answer_lang',qs('answerLang').value);updateMasterPromptPreview();const out=qs('promptOut');if(out&&out.value.trim())generatePrompt()});['masterHumanRequest','masterContext'].forEach(id=>qs(id).addEventListener('input',updateMasterPromptPreview));['roughPrompt','fileTree','contextFiles'].forEach(id=>{const el=qs(id);if(el)el.addEventListener('input',()=>{updateDetectedTypeNote();const out=qs('promptOut');if(out&&out.value.trim())generatePrompt()})});const tt=qs('taskType');if(tt)tt.addEventListener('change',()=>{updateDetectedTypeNote();const out=qs('promptOut');if(out&&out.value.trim())generatePrompt()});const auditSel=qs('auditStyle');if(auditSel)auditSel.addEventListener('change',()=>{const out=qs('promptOut');if(out&&out.value.trim())generatePrompt()});const ap=qs('apiProvider');if(ap)ap.addEventListener('change',apiProviderChanged);const kf=qs('apiKeyFile');if(kf)kf.addEventListener('change',handleApiKeyFile);apiProviderChanged();updateMasterPromptPreview();updateDetectedTypeNote()}
 init();
 </script>
 </body>
