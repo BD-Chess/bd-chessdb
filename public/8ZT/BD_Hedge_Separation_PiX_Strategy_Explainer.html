@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BD Hedge Separation PiX Strategy — Profiled Re-anchor + Mega Rescue Explainer</title>
+<title>BD Hedge Separation PiX Strategy — Re-anchor Validation Caveat + Mega Rescue Explainer</title>
 <style>
 :root{
   --bg:#070914; --bg2:#0b1020; --panel:#101624; --card:#121b2e; --card2:#0d1320;
@@ -67,13 +67,13 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
 </div>
 <div class="wrap">
 <header class="hero" id="top">
-  <div class="eyebrow">BD Trading Research · HSR PiX v1.1 · Profiled Re-anchor / Mega Rescue / Controls</div>
+  <div class="eyebrow">BD Trading Research · HSR PiX v1.1 · Profiled Re-anchor / Feed-forward Caveat / Controls</div>
   <h1>BD Hedge Separation PiX Strategy</h1>
-  <p class="subtitle">A detailed explanation of the constant long+short hedge method, now updated with the v1.0 mega snap-average finding and the v1.1 profiled re-anchor-before-rescue arena. The core idea is no longer just “add to the loser”; it is: optionally re-anchor the losing leg, build entry separation, then allow a profile-bounded huge rescue add, close excess quickly, and keep a survivor core.</p>
-  <p class="small">Version: explainer v1.4 · Date: 11 June 2026 · Status: research specification + v1.0 extract interpretation + v1.1 profiled re-anchor test plan — not a live bot, not financial advice.</p>
+  <p class="subtitle">A detailed explanation of the constant long+short hedge method, now updated with the v1.0 mega snap-average finding and the v1.1 profiled re-anchor-before-rescue live extract caveat. The core idea is no longer just “add to the loser”; it is: optionally re-anchor the losing leg, build entry separation, then allow a profile-bounded huge rescue add, close excess quickly, and keep a survivor core — but the current promoted-chain evidence must preserve actual event flags before it can be called proof.</p>
+  <p class="small">Version: explainer v1.5 · Date: 12 June 2026 · Status: research specification + v1.0 extract interpretation + v1.1 live-extract caveat + v1.2 patch requirements — not a live bot, not financial advice.</p>
 </header>
 <nav class="nav" aria-label="Page navigation">
-  <a href="#answer">Answer</a><a href="#side-run">Old side-run</a><a href="#v10-mega">v1.0 Mega</a><a href="#reanchor">Re-anchor</a><a href="#risk-profiles">Risk profiles</a><a href="#cinch">Cinch numbers</a><a href="#intuition">Intuition</a><a href="#setup">Setup</a><a href="#state">State machine</a><a href="#ladders">Ladders</a><a href="#adds">Add sizing</a><a href="#exits">Exits</a><a href="#manual-protocol">Manual table</a><a href="#pix">PiX role</a><a href="#arena">Arena tests</a><a href="#risk">Risk</a><a href="#pseudo">Pseudo-code</a><a href="#success">Success criteria</a>
+  <a href="#answer">Answer</a><a href="#side-run">Old side-run</a><a href="#v10-mega">v1.0 Mega</a><a href="#reanchor">Re-anchor</a><a href="#risk-profiles">Risk profiles</a><a href="#v11-caveat">v1.1 caveat</a><a href="#cinch">Cinch numbers</a><a href="#intuition">Intuition</a><a href="#setup">Setup</a><a href="#state">State machine</a><a href="#ladders">Ladders</a><a href="#adds">Add sizing</a><a href="#exits">Exits</a><a href="#manual-protocol">Manual table</a><a href="#pix">PiX role</a><a href="#arena">Arena tests</a><a href="#risk">Risk</a><a href="#pseudo">Pseudo-code</a><a href="#success">Success criteria</a>
 </nav>
 
 <section id="answer">
@@ -84,7 +84,7 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
     <div class="card"><div class="label">Goal</div><div class="num green">Entry separation</div><p class="small">Over time, improve the average entry of both books and harvest recovery/trailing profit.</p></div>
     <div class="card"><div class="label">Truth standard</div><div class="num red">Final MTM</div><p class="small">Realized profit alone is not enough; open tail risk must be counted.</p></div>
   </div>
-  <div class="danger"><strong>Important:</strong> this is a high-leverage derivatives research idea. It must be tested offline first. No live API, no exchange keys, no real orders. A strategy that looks profitable only because it hides open loss is not profitable.</div>
+  <div class="danger"><strong>Important:</strong> this is a high-leverage derivatives research idea. It must be tested offline first. No live API, no exchange keys, no real orders. A strategy that looks profitable only because it hides open loss — or because a promoted config silently disabled the events being tested — is not profitable.</div>
 </section>
 
 <section id="side-run">
@@ -179,6 +179,48 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
   </div>
 </section>
 
+
+<section id="v11-caveat">
+  <h2>v1.1 live extract caveat — the arena found both a signal and a measurement bug</h2>
+  <p class="muted">The June 12 partial live extract is useful because it did not only rank strategies; it also caught a truth problem in the validation chain. That is a win for the arena discipline, but it means the public interpretation must stay careful.</p>
+  <div class="grid cards">
+    <div class="card"><div class="label">Extract health</div><div class="num green">OK</div><p class="small">9 roots, 537 files, approx. 18,993 rows, warnings=0, OHLC max diff=0.0.</p></div>
+    <div class="card"><div class="label">Broad Scout</div><div class="num green">Signal</div><p class="small">Real re-anchor behavior fired: 543 re-anchor events and 162.5 mega events in leaderboard rows.</p></div>
+    <div class="card"><div class="label">Feed-forward</div><div class="num red">Bug</div><p class="small">Promoted policy names kept “re-anchor”, but actual <code>reanchor_enabled</code> / <code>mega_rescue_enabled</code> behavior was lost after Broad.</p></div>
+    <div class="card"><div class="label">Key stage</div><div class="num gold">Pending</div><p class="small"><code>REANCHOR_PROFILE_STRESS</code> was running at 4015 / 12600 and needs its own extract.</p></div>
+  </div>
+
+  <div class="table-card">
+    <h3>What can and cannot be claimed now</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Claim</th><th>Status</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>“Re-anchor is worth testing.”</td><td class="num green">Yes</td><td>Broad Scout produced real profile-specific re-anchor + mega events across P0–P5.</td></tr>
+        <tr><td>“Wallet Stress proved re-anchor.”</td><td class="num red">No</td><td>In Wallet Stress the promoted rows had zero actual re-anchor events and zero mega rescue events.</td></tr>
+        <tr><td>“The risk-profile idea is correct.”</td><td class="num green">Yes</td><td>The early winners differ by profile; 10×/12×/15×/30×/40×/50× belong to different risk budgets.</td></tr>
+        <tr><td>“v1.1 is final proof.”</td><td class="num red">No</td><td>Feed-forward reconstruction must be patched, and Reanchor Profile Stress must be triaged first-class.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="table-card">
+    <h3>Broad Scout profile winners — promising, not final</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Profile</th><th>Discovery winner</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>P0_SURVIVAL_MAX</code></td><td><code>t300_sep500_m10_flat5</code></td><td>Early 10× survival branch; low wallet drawdown, modest base size.</td></tr>
+        <tr><td><code>P1_CONSERVATIVE</code></td><td><code>t500_sep500_m12_flat3</code></td><td>Conservative branch with slightly larger add and stable early numbers.</td></tr>
+        <tr><td><code>P2_BALANCED</code></td><td><code>t300_sep700_m15_same5</code></td><td>Balanced branch; 15× after larger separation target.</td></tr>
+        <tr><td><code>P3_AGGRESSIVE</code></td><td><code>t500_sep500_m30_none</code></td><td>Aggressive branch; high add multiplier, higher open-loss pressure.</td></tr>
+        <tr><td><code>P4_MOONSHOT</code></td><td><code>t1300_sep1000_m40_none</code></td><td>Moonshot branch; must be explicit high-risk capital.</td></tr>
+        <tr><td><code>P5_TINY_WALLET_BLAST</code></td><td><code>t1000_sep1500_m50_same3</code></td><td>Tiny-wallet blast branch; only acceptable when full loss is budgeted.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="danger"><strong>New success rule:</strong> a promoted re-anchor policy is not accepted unless each promoted stage reports <code>uses_reanchor=true</code>, <code>uses_mega_rescue=true</code>, <code>reanchor_events &gt; 0</code> when conditions occur, and <code>mega_rescue_events &gt; 0</code> for the snap-average branch. Names and labels are not enough.</div>
+</section>
+
 <section id="cinch">
   <h2>What v1.1 must cinch — variables the arena should search</h2>
   <div class="table-card">
@@ -194,7 +236,7 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
       </tbody>
     </table></div>
   </div>
-  <div class="note" style="margin-top:16px"><strong>Current next command:</strong> run <code>RUN_08C_REANCHOR_PROFILE_STRESS_w10.bat 10</code> or full <code>RUN_00_MASTER_ALL_BATCHES_NO_PAUSE.bat 10</code>. After the first v1.1 live extract, decide whether v1.2 needs wider grids, tighter controls, real 1m import, or different wallet/silo budgets.</div>
+  <div class="note" style="margin-top:16px"><strong>Current next command:</strong> let <code>REANCHOR_PROFILE_STRESS</code> finish, then run <code>RUN_11_LIVE_EXTRACT_FOR_GPT.bat 15</code>. For the next official validation, v1.2/v1.1b should patch feed-forward preservation, add event-preservation selftests, include <code>REANCHOR_PROFILE_STRESS</code> in final triage, and only then decide whether wider grids, real 1m import, or different wallet/silo budgets are needed.</div>
 </section>
 
 <section id="intuition">
@@ -525,7 +567,18 @@ for each config:
         for side in [LONG, SHORT]:
             update avg_entry, qty, ROE, unrealized, margin, liq_buffer
 
-            if side is adverse and next_loss_trigger_hit:
+            if side is adverse and reanchor_trigger_hit:
+                if profile_allows_reanchor and trend_or_flat_gate_passes:
+                    close losing leg and record realized reanchor loss
+                    reopen after configured delay closer to current price
+                    update entry separation and whipsaw metrics
+
+            if entry_separation_target_hit and huge_add_trigger_hit:
+                add_qty = profile_bounded_huge_add(side, target_total_mult)
+                add only if wallet/silo/risk caps allow
+                update avg_entry, rescue level, and mega_rescue_events
+
+            if side is adverse and next_loss_trigger_hit and not in reanchor branch:
                 add_qty = add_sizing_rule(side, level, sequence_family)
                 add only if risk caps allow
                 update avg_entry and rescue level
@@ -555,7 +608,8 @@ for each config:
         <li>Positive median final MTM across validation/fresh universes.</li>
         <li>Low or zero account ruin rate.</li>
         <li>Open tail not eating realized rescue profit.</li>
-        <li>PiX or Fib variant beats matched controls fairly.</li>
+        <li>PiX, Fib, direct mega, or re-anchor variant beats matched controls fairly.</li>
+        <li>Promoted re-anchor rows preserve real <code>reanchor_enabled</code> / <code>mega_rescue_enabled</code> behavior, not only labels.</li>
         <li>Parameter region is stable, not one lucky config.</li>
       </ul>
     </div>
@@ -566,10 +620,11 @@ for each config:
         <li>Works only under favorable-first intrabar sequencing.</li>
         <li>Requires impossible side-isolated liquidation survival.</li>
         <li>Add sizing explodes gross SOL or margin.</li>
+        <li>Promoted policy name says re-anchor, but event counts show <code>reanchor_events=0</code> and <code>mega_rescue_events=0</code>.</li>
       </ul>
     </div>
   </div>
-  <div class="callout" style="margin-top:16px"><h3>Bottom line</h3><p>This is not a “trust it because the idea sounds smart” strategy. The compact side-run found enough positive evidence to justify a full standalone truth-machine arena, but not enough to promote it. The arena must decide whether hedge separation + rescue adds + PiX/Fib ladders create a real robust edge or just move risk into open tail.</p></div>
+  <div class="callout" style="margin-top:16px"><h3>Bottom line</h3><p>This is not a “trust it because the idea sounds smart” strategy. The compact side-run and v1.1 Broad Scout found enough positive evidence to justify a full standalone truth-machine arena, but not enough to promote it. The arena must decide whether hedge separation + re-anchor + profile-bounded huge rescue adds + PiX/Fib/direct controls create a real robust edge or just move risk into open tail — and the event-preservation bug must be fixed before final proof.</p></div>
 </section>
 
 <section id="checklist">
@@ -584,9 +639,9 @@ for each config:
         <tr><td>Exits</td><td>Escape-to-core plus profit-tranche trailing with 100% ROE reserve.</td></tr>
         <tr><td>Validation</td><td>Train/validation/fresh seed universes; no promotion from single synthetic 1m path.</td></tr>
         <tr><td>Risk</td><td>Cross-hedge and side-isolated margin audits, liquidation buffer, max gross size, open-tail report.</td></tr>
-        <tr><td>Re-anchor</td><td>Close/reopen losing leg, separation target, reopen delay, trend gate, whipsaw-tax metrics.</td></tr>
+        <tr><td>Re-anchor</td><td>Close/reopen losing leg, separation target, reopen delay, trend gate, whipsaw-tax metrics, and event-preservation checks.</td></tr>
         <tr><td>Risk profiles</td><td>P0 survival through P5 tiny-wallet blast, with separate leaderboards and profile-specific winners.</td></tr>
-        <tr><td>Infrastructure</td><td>Multi-worker, resume-safe JSONL, progress JSON, compact bundle, no zero-row fake success.</td></tr>
+        <tr><td>Infrastructure</td><td>Multi-worker, resume-safe JSONL, progress JSON, compact bundle, no zero-row fake success, no silent feed-forward flag loss.</td></tr>
       </tbody>
     </table></div>
   </div>
@@ -594,7 +649,7 @@ for each config:
 
 <div class="footer">
   BD Hedge Separation PiX Strategy Explainer · dark mobile-first research page · offline replay only · not financial advice.<br>
-  Updated with v1.0 mega snap-average findings and v1.1 profiled re-anchor-before-rescue test design.
+  Updated with v1.0 mega snap-average findings, v1.1 profiled re-anchor-before-rescue test design, and the 12 June 2026 live-extract caveat / v1.2 patch requirements.
 </div>
 </div>
 <script>
