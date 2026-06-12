@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIm³ MentalArena — mRHP</title>
+<meta name="description" content="AIm³ MentalArena / mRHP: a self-improving external reasoning layer above LLMs, based on protocol genes, concept capsules, benchmark tasks, scoring, lineage, and human-led multi-LLM synthesis.">
+<meta name="author" content="BD × AI collaborators">
+<meta name="robots" content="index,follow">
+<meta property="og:title" content="AIm³ MentalArena">
+<meta property="og:description" content="mRHP — RHP that improves RHP. A self-improving reasoning layer above LLMs.">
+<meta property="og:type" content="article">
+<style>
+:root{
+  --bg:#05070d;
+  --bg2:#080b14;
+  --panel:#101827;
+  --panel2:#0b1220;
+  --panel3:#121d31;
+  --text:#e5eefb;
+  --soft:#b8c4d8;
+  --muted:#74829c;
+  --line:#22304a;
+  --line2:rgba(74,158,222,.30);
+  --cyan:#38d7ff;
+  --cyanDim:rgba(56,215,255,.11);
+  --green:#37d996;
+  --greenDim:rgba(55,217,150,.10);
+  --gold:#f2c94c;
+  --goldDim:rgba(242,201,76,.11);
+  --violet:#a78bfa;
+  --violetDim:rgba(167,139,250,.10);
+  --red:#ff6b8a;
+  --redDim:rgba(255,107,138,.10);
+  --blue:#4a9ede;
+  --radius:16px;
+  --radius2:22px;
+  --shadow:0 18px 50px rgba(0,0,0,.36);
+  --max:1160px;
+  --baseFont:18px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 18% 8%,rgba(56,215,255,.14),transparent 32%),
+    radial-gradient(circle at 88% 22%,rgba(55,217,150,.10),transparent 30%),
+    radial-gradient(circle at 82% 78%,rgba(167,139,250,.12),transparent 34%),
+    linear-gradient(180deg,#05070d 0%,#080b14 52%,#05070d 100%);
+  color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:var(--baseFont);
+  line-height:1.72;
+  overflow-x:hidden;
+}
+body::before,body::after{
+  content:"";
+  position:fixed;
+  border-radius:50%;
+  filter:blur(92px);
+  opacity:.24;
+  pointer-events:none;
+  z-index:-1;
+}
+body::before{width:48vw;height:48vw;left:-12vw;top:-16vh;background:radial-gradient(circle,rgba(74,158,222,.38),rgba(55,217,150,.10) 48%,transparent 72%);animation:floatA 24s ease-in-out infinite}
+body::after{width:44vw;height:44vw;right:-14vw;bottom:-18vh;background:radial-gradient(circle,rgba(167,139,250,.32),rgba(242,201,76,.08) 45%,transparent 72%);animation:floatB 30s ease-in-out infinite}
+@keyframes floatA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(6vw,5vh,0)}}
+@keyframes floatB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-5vw,-6vh,0)}}
+::selection{background:var(--cyan);color:#001018}
+a{color:var(--cyan);text-decoration:none}
+a:hover{text-decoration:underline}
+strong{color:#fff}
+em{color:var(--green);font-style:normal}
+code,kbd{font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace}
+code{background:rgba(56,215,255,.09);border:1px solid rgba(56,215,255,.16);border-radius:6px;padding:.06em .34em;color:#edfaff}
+.scroll-progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--green),var(--cyan),var(--gold));z-index:10000}
+.topbar{position:sticky;top:0;z-index:900;background:rgba(5,7,13,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);}
+.topbar .inner{max-width:var(--max);margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:12px;justify-content:space-between}
+.brand{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--green);white-space:nowrap}
+.nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.nav a{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.68rem;letter-spacing:.05em;color:var(--soft);border:1px solid var(--line);border-radius:999px;padding:5px 10px;background:rgba(16,24,39,.52)}
+.nav a:hover{color:var(--cyan);border-color:var(--cyan);background:rgba(56,215,255,.08);text-decoration:none}
+.wrapper{max-width:var(--max);margin:0 auto;padding:0 18px 72px}
+.hero{padding:64px 0 34px;border-bottom:1px solid var(--line);position:relative}
+.kicker{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.74rem;letter-spacing:.24em;text-transform:uppercase;color:var(--green);margin-bottom:14px}
+h1{font-size:clamp(2.45rem,7vw,5.25rem);line-height:1.01;margin:0 0 12px;color:#fff;letter-spacing:-.055em;max-width:1000px}
+h1 sup{font-size:.45em;vertical-align:super;color:var(--gold);letter-spacing:0}
+.subtitle{font-size:clamp(1.25rem,2.6vw,2rem);line-height:1.25;color:var(--soft);margin:0 0 12px;max-width:900px}
+.tagline{font-size:1.07rem;color:#d7e3f5;max-width:900px;margin:16px 0 20px}
+.meta-row{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 0}.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.72rem;color:var(--soft);background:rgba(16,24,39,.60)}.pill.green{color:var(--green);border-color:rgba(55,217,150,.36);background:var(--greenDim)}.pill.cyan{color:var(--cyan);border-color:rgba(56,215,255,.36);background:var(--cyanDim)}.pill.gold{color:var(--gold);border-color:rgba(242,201,76,.36);background:var(--goldDim)}.pill.violet{color:var(--violet);border-color:rgba(167,139,250,.36);background:var(--violetDim)}.pill.red{color:var(--red);border-color:rgba(255,107,138,.36);background:var(--redDim)}
+.status-card{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0 0;padding:9px 13px;border:1px solid rgba(242,201,76,.34);border-radius:999px;background:linear-gradient(135deg,rgba(242,201,76,.10),rgba(56,215,255,.05));box-shadow:0 10px 24px rgba(0,0,0,.18);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.78rem;color:#dfeaff}.status-card strong{color:var(--gold)}
+.hero-grid{display:grid;grid-template-columns:1.35fr .85fr;gap:18px;margin-top:26px;align-items:stretch}
+.hero-card{background:linear-gradient(180deg,rgba(16,24,39,.88),rgba(11,18,32,.78));border:1px solid var(--line);border-radius:var(--radius2);padding:22px;box-shadow:var(--shadow)}
+.hero-card h2{font-size:1.25rem;margin:0 0 10px;color:#fff}.hero-card p{margin:0;color:var(--soft)}
+.hero-card .definition{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--gold);font-size:.84rem;letter-spacing:.06em;margin-top:10px}
+.toc{margin:26px 0;background:rgba(11,18,32,.72);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}.toc h2{font-size:1.1rem;margin:0 0 8px;color:#fff}.toc .links{display:flex;flex-wrap:wrap;gap:8px}.toc a{border:1px solid rgba(56,215,255,.18);border-radius:999px;padding:5px 10px;font-size:.8rem;color:var(--soft);font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.toc a:hover{color:var(--cyan);border-color:var(--cyan);text-decoration:none;background:rgba(56,215,255,.06)}
+section{margin:42px 0}.section-head{margin-bottom:17px}.eyebrow{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.70rem;letter-spacing:.22em;text-transform:uppercase;color:var(--green);margin-bottom:8px}h2{font-size:clamp(1.7rem,3.8vw,2.6rem);line-height:1.12;margin:0;color:#fff;letter-spacing:-.025em}h3{font-size:1.18rem;line-height:1.28;margin:0 0 8px;color:#fff}p{color:var(--soft);margin:.68em 0}.lead{font-size:1.08rem;color:#d8e4f5;max-width:980px}.small{font-size:.92rem;color:var(--muted)}
+.grid{display:grid;gap:14px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}.grid.auto{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.card{background:linear-gradient(180deg,rgba(16,24,39,.88),rgba(11,18,32,.78));border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 10px 32px rgba(0,0,0,.18)}.card.green{border-color:rgba(55,217,150,.24);background:linear-gradient(180deg,rgba(55,217,150,.09),rgba(11,18,32,.78))}.card.cyan{border-color:rgba(56,215,255,.24);background:linear-gradient(180deg,rgba(56,215,255,.09),rgba(11,18,32,.78))}.card.gold{border-color:rgba(242,201,76,.24);background:linear-gradient(180deg,rgba(242,201,76,.08),rgba(11,18,32,.78))}.card.violet{border-color:rgba(167,139,250,.25);background:linear-gradient(180deg,rgba(167,139,250,.09),rgba(11,18,32,.78))}.card.red{border-color:rgba(255,107,138,.25);background:linear-gradient(180deg,rgba(255,107,138,.08),rgba(11,18,32,.78))}.card .label{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}.card.green .label{color:var(--green)}.card.cyan .label{color:var(--cyan)}.card.gold .label{color:var(--gold)}.card.violet .label{color:var(--violet)}.card.red .label{color:var(--red)}.card p{font-size:.96rem;margin:.35em 0 0}.card ul{margin:.4em 0 0;padding-left:1.15em;color:var(--soft)}.card li{margin:.28em 0}.link-card{display:block;color:inherit;transition:transform .18s ease,border-color .18s ease,background .18s ease}.link-card:hover{text-decoration:none;border-color:rgba(56,215,255,.45);transform:translateY(-1px)}.link-card code{display:inline-block;margin-top:9px;font-size:.78rem;color:var(--cyan)}.mini{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.78rem;color:var(--muted)}
+.callout{background:linear-gradient(135deg,rgba(56,215,255,.10),rgba(55,217,150,.06));border:1px solid rgba(56,215,255,.26);border-left:4px solid var(--cyan);border-radius:var(--radius);padding:18px 21px;margin:18px 0}.callout.gold{background:rgba(242,201,76,.08);border-color:rgba(242,201,76,.30);border-left-color:var(--gold)}.callout.green{background:rgba(55,217,150,.08);border-color:rgba(55,217,150,.30);border-left-color:var(--green)}.callout.red{background:rgba(255,107,138,.08);border-color:rgba(255,107,138,.30);border-left-color:var(--red)}.callout.violet{background:rgba(167,139,250,.08);border-color:rgba(167,139,250,.30);border-left-color:var(--violet)}.callout p:last-child{margin-bottom:0}
+.stack-diagram{display:grid;gap:10px;margin:22px 0}.stack-layer{position:relative;background:linear-gradient(180deg,rgba(16,24,39,.90),rgba(11,18,32,.78));border:1px solid var(--line);border-radius:16px;padding:16px 18px 16px 20px;display:grid;grid-template-columns:190px 1fr;gap:16px;align-items:center}.stack-layer:not(:last-child)::after{content:"↓";position:absolute;left:50%;bottom:-18px;transform:translateX(-50%);color:var(--gold);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:800;background:var(--bg);padding:0 8px}.stack-name{font-weight:760;color:#fff}.stack-name span{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--green);font-size:.78rem;display:block;margin-bottom:3px}.stack-layer p{margin:0;color:var(--soft);font-size:.96rem}.stack-layer.l6{border-color:rgba(56,215,255,.42);box-shadow:0 0 0 1px rgba(56,215,255,.08),0 12px 40px rgba(56,215,255,.05)}.stack-layer.l7{border-color:rgba(242,201,76,.36)}
+.compare{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.compare .big{font-size:1.38rem;color:#fff;font-weight:780;margin-bottom:7px}.compare .arrow{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--gold);margin-top:10px}
+.schema{background:#07101d;border:1px solid var(--line);border-left:4px solid var(--green);border-radius:14px;padding:16px 18px;margin:16px 0;overflow:auto;white-space:pre-wrap;color:#dce8f8;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.86rem;line-height:1.68}.schema.cyan{border-left-color:var(--cyan)}.schema.gold{border-left-color:var(--gold)}
+.badgebox{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.badge{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.70rem;border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--soft);background:rgba(16,24,39,.55)}.badge.green{color:var(--green);border-color:rgba(55,217,150,.30)}.badge.cyan{color:var(--cyan);border-color:rgba(56,215,255,.30)}.badge.gold{color:var(--gold);border-color:rgba(242,201,76,.30)}.badge.red{color:var(--red);border-color:rgba(255,107,138,.30)}
+.operator-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:10px}.op{background:rgba(16,24,39,.74);border:1px solid var(--line);border-radius:12px;padding:13px 14px}.op strong{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--cyan);font-size:.82rem}.op p{font-size:.92rem;margin:.25em 0 0;color:var(--soft)}
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.formula{background:#07101d;border:1px solid var(--line);border-radius:14px;padding:16px;overflow:auto}.formula h3{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--gold);font-size:.9rem;letter-spacing:.08em}.formula pre{white-space:pre-wrap;margin:0;color:#dce8f8;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.82rem;line-height:1.62}
+.bench-list{counter-reset:bench;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.bench{counter-increment:bench;display:grid;grid-template-columns:44px 1fr;gap:12px;background:rgba(16,24,39,.78);border:1px solid var(--line);border-radius:14px;padding:14px}.bench::before{content:counter(bench,decimal-leading-zero);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--gold);font-weight:800;font-size:1.1rem;line-height:1.3}.bench h3{font-size:1rem;margin:0}.bench p{font-size:.9rem;margin:.2em 0 0;color:var(--muted)}
+.file-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:8px;margin-top:12px}.file{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.80rem;color:#dbe7f8;background:#07101d;border:1px solid var(--line);border-radius:10px;padding:9px 10px;word-break:break-word}.file.future::after{content:" later";color:var(--muted);font-size:.72rem}
+.timeline{position:relative;margin:18px 0 0}.timeline::before{content:"";position:absolute;left:18px;top:4px;bottom:4px;width:1px;background:linear-gradient(var(--green),var(--cyan),var(--gold))}.road{position:relative;display:grid;grid-template-columns:52px 1fr;gap:10px;margin:0 0 14px}.road .dot{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--panel);border:1px solid var(--line);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--gold);font-weight:800;z-index:1}.road .body{background:rgba(16,24,39,.78);border:1px solid var(--line);border-radius:14px;padding:13px 16px}.road h3{margin:0 0 3px}.road p{margin:0;color:var(--soft);font-size:.94rem}
+.footer{border-top:1px solid var(--line);margin-top:44px;padding:22px 0 56px;color:var(--muted);font-size:.92rem}.footer p{color:var(--muted)}
+.font-float{position:fixed;right:14px;bottom:14px;z-index:1200;display:flex;gap:6px;background:rgba(5,7,13,.76);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:999px;padding:6px;box-shadow:var(--shadow)}.font-float button{border:1px solid var(--line);background:rgba(16,24,39,.92);color:var(--text);border-radius:999px;padding:7px 10px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.75rem;cursor:pointer}.font-float button:hover{color:var(--cyan);border-color:var(--cyan)}
+@media(max-width:920px){.hero-grid,.grid.two,.grid.three,.grid.four,.compare,.score-grid,.bench-list{grid-template-columns:1fr}.stack-layer{grid-template-columns:1fr;gap:7px}.topbar .inner{align-items:flex-start;flex-direction:column}.nav{justify-content:flex-start}.hero{padding-top:44px}}
+@media(max-width:620px){:root{--baseFont:18px}.wrapper{padding:0 14px 62px}.topbar .inner{padding:9px 14px}.nav{max-height:88px;overflow:auto}.nav a{font-size:.64rem;padding:5px 8px}h1{font-size:2.55rem}.subtitle{font-size:1.22rem}.hero-card,.card,.callout{padding:16px}.bench{grid-template-columns:38px 1fr}.toc .links{max-height:180px;overflow:auto}.file-list{grid-template-columns:1fr}.font-float{right:10px;bottom:10px}}
+@media print{body{background:#fff;color:#111}.topbar,.font-float,.scroll-progress{display:none}.card,.callout,.schema,.formula,.stack-layer{box-shadow:none;break-inside:avoid}.wrapper{max-width:none}.nav{display:none}}
+</style>
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"TechArticle",
+  "headline":"AIm³ MentalArena",
+  "alternativeHeadline":"mRHP — RHP that improves RHP",
+  "description":"A self-improving external reasoning layer above LLMs: protocol genes, concept capsules, mutation/crossover of reasoning protocols, scoring, benchmarks, lineage, reports, live extracts, next-session seeds, and human-led multi-LLM synthesis.",
+  "keywords":["AIm3","MentalArena","mRHP","RHP","MDLxDCC","8Z Reasoning","AI workflow","protocol genes","concept capsules"],
+  "author":{"@type":"Person","name":"BD"},
+  "isBasedOn":"AI8 / MDLxDCC project architecture notes"
+}
+</script>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProgress"></div>
+<nav class="topbar" aria-label="Page navigation">
+  <div class="inner">
+    <div class="brand">AIm³ MentalArena</div>
+    <div class="nav">
+      <a href="#short">Short answer</a>
+      <a href="#stack">Stack</a>
+      <a href="#genes">Genes</a>
+      <a href="#capsules">Capsules</a>
+      <a href="#score">Score</a>
+      <a href="#bench">Bench</a>
+      <a href="#scope">v0.1</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#related">Links</a>
+      <a href="#next">Next</a>
+    </div>
+  </div>
+</nav>
+<main class="wrapper">
+  <header class="hero" id="top">
+    <div class="kicker">AI Management of Mind &amp; Memory</div>
+    <h1>AIm³ MentalArena</h1>
+    <p class="subtitle">mRHP — RHP that improves RHP</p>
+    <p class="tagline">A self-improving reasoning layer above LLMs.</p>
+    <div class="meta-row" aria-label="Core tags">
+      <span class="pill green">external operational learning</span>
+      <span class="pill cyan">protocol genes</span>
+      <span class="pill violet">human-led multi-LLM synthesis</span>
+      <span class="pill green">lineage + reports</span>
+    </div>
+    <div class="status-card"><strong>Status:</strong> architecture page · no Python runtime yet · v0.1 spec next</div>
+    <div class="hero-grid">
+      <div class="hero-card">
+        <h2>What this page defines</h2>
+        <p><strong>AIm³ MentalArena / mRHP</strong> is a proposed external mental/workflow layer above today’s LLMs. It treats reasoning protocols as evolvable artifacts: roles, operators, scoring rules, output formats, memory objects, benchmark tasks, reports, and next-session seeds can be tested, mutated, scored, and improved over time.</p>
+      </div>
+      <div class="hero-card">
+        <h2>Brand meaning</h2>
+        <p><strong>AIm³</strong> means <strong>AI Management of Mind &amp; Memory</strong>.</p>
+        <div class="definition">AIm³ = AIM3 in ASCII filenames</div>
+      </div>
+    </div>
+  </header>
+
+  <aside class="toc" aria-label="Table of contents">
+    <h2>Page map</h2>
+    <div class="links">
+      <a href="#short">1. Short answer</a><a href="#stack">2. Architecture</a><a href="#rhp">3. RHP / mRHP / runtime</a><a href="#challenge">4. First challenge</a><a href="#genes">5. Protocol genes</a><a href="#capsules">6. Concept capsules</a><a href="#operators">7. Operators</a><a href="#score">8. Scoring</a><a href="#bench">9. Benchmarks</a><a href="#scope">10. v0.1 scope</a><a href="#v02">11. v0.2</a><a href="#relations">12. Existing arenas</a><a href="#caution">13. Continuity caution</a><a href="#cut">14. Delay/cut</a><a href="#failures">15. Failure modes</a><a href="#roadmap">16. Roadmap</a><a href="#related">17. Related links</a><a href="#provenance">18. Provenance</a><a href="#next">19. Next steps</a>
+    </div>
+  </aside>
+
+  <section id="short">
+    <div class="section-head">
+      <div class="eyebrow">1. Clear boundary</div>
+      <h2>Yes — a new external mental layer, not model training.</h2>
+    </div>
+    <p class="lead">AIm³ MentalArena is a new operational layer above LLMs, but it does not change the neural model. The LLM weights do not learn. The surrounding reasoning system learns: protocols, memory, scoring, tests, reports, lineage, and next-session seeds become better through explicit experiment cycles.</p>
+    <div class="grid two">
+      <div class="card red">
+        <div class="label">It is not</div>
+        <ul>
+          <li>model-weight learning</li>
+          <li>autonomous AGI</li>
+          <li>proof of AI consciousness</li>
+          <li>wet biology</li>
+          <li>a random idea generator</li>
+          <li>a standard transformer architecture claim</li>
+        </ul>
+      </div>
+      <div class="card green">
+        <div class="label">It is</div>
+        <ul>
+          <li>external operational learning</li>
+          <li>RHP improving RHP</li>
+          <li>protocol genes and concept capsules</li>
+          <li>mutation/crossover of reasoning protocols</li>
+          <li>benchmark tasks, scoring, lineage, reports</li>
+          <li>human-led multi-LLM synthesis</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">
+      <p><strong>The core testable claim:</strong> a stable external workflow can improve the practical reasoning behavior of LLM sessions without changing the LLM itself.</p>
+    </div>
+  </section>
+
+  <section id="stack">
+    <div class="section-head">
+      <div class="eyebrow">2. Architecture stack</div>
+      <h2>From token prediction to protocol evolution.</h2>
+    </div>
+    <div class="stack-diagram" role="img" aria-label="Base LLM to Concept Genome Arena stack">
+      <div class="stack-layer l1"><div class="stack-name"><span>01</span>Base LLM</div><p>Tokenization, embeddings, transformer layers, logits, and next-token generation.</p></div>
+      <div class="stack-layer l2"><div class="stack-name"><span>02</span>Assistant / product stack</div><p>Post-training, system prompts, tools, RAG, memory/context, safety, and inference engineering.</p></div>
+      <div class="stack-layer l3"><div class="stack-name"><span>03</span>ssMDLxDCC technical layer</div><p>Candidate generation, sensors, MDL scoring, DCC governance, replay, benchmarking, and reports.</p></div>
+      <div class="stack-layer l4"><div class="stack-name"><span>04</span>AIm³ / RHP / RHPr / RHPm / 8Z Reasoning</div><p>Human-led multi-LLM reasoning workflow: prompt improvement, critique, synthesis, provenance, and human audit.</p></div>
+      <div class="stack-layer l6"><div class="stack-name"><span>05</span>mRHP / MentalArena</div><p>Meta-RHP: protocol genes, role mutations, scoring mutations, benchmark tasks, lineage, live extracts, and self-improvement loops.</p></div>
+      <div class="stack-layer l7"><div class="stack-name"><span>06</span>Concept Genome Arena</div><p>Later extension: evolves cross-domain concept capsules, not only reasoning protocols.</p></div>
+    </div>
+  </section>
+
+  <section id="rhp">
+    <div class="section-head">
+      <div class="eyebrow">3. Three names, three levels</div>
+      <h2>RHP is a run. mRHP is evolution. MentalArena.py is the runtime.</h2>
+    </div>
+    <div class="compare">
+      <div class="card cyan">
+        <div class="label">RHP</div>
+        <div class="big">One reasoning run</div>
+        <p>A structured protocol for one strong reasoning pass: roles, critique, synthesis, provenance, and next action.</p>
+        <div class="arrow">seed → bridge → test → result</div>
+      </div>
+      <div class="card green">
+        <div class="label">mRHP</div>
+        <div class="big">Meta-RHP</div>
+        <p>RHP itself becomes the object under search. Protocol variants evolve through genes, mutation, crossover, scoring, and benchmark feedback.</p>
+        <div class="arrow">RHP variants → scored lineage</div>
+      </div>
+      <div class="card gold">
+        <div class="label">MentalArena.py</div>
+        <div class="big">External runtime</div>
+        <p>A future local Python arena that tests protocol variants over time. It does not alter LLM weights and does not self-patch while running.</p>
+        <div class="arrow">runs → logs → reports → seeds</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="challenge">
+    <div class="section-head">
+      <div class="eyebrow">4. First challenge</div>
+      <h2>Can the arena evolve a better reasoning protocol than seed RHP?</h2>
+    </div>
+    <p class="lead">The first serious MentalArena task should not be TSP, NAS, DNA, trading, ARC, Nara, or AI8. The first task is self-referential but still empirical: can MentalArena improve the reasoning protocol that will later be used on those domains?</p>
+    <div class="callout gold">
+      <p><strong>Why this is the right first test:</strong> before applying MentalArena to other arenas, the project must prove the spine works — protocol representation, mutation, scoring, lineage, benchmark tasks, reports, live extracts, and next-session seeds.</p>
+    </div>
+    <div class="grid three">
+      <div class="card"><div class="label">Too early</div><h3>Domain optimization</h3><p>Running MentalArena immediately on NAS, TSP, ARC, DNA, or trading would mix protocol failure with domain failure.</p></div>
+      <div class="card"><div class="label">First target</div><h3>Reasoning protocol improvement</h3><p>The cleanest target is RHP itself: can we make the workflow sharper, safer, more testable, and more useful?</p></div>
+      <div class="card"><div class="label">Later</div><h3>Concept Genome Arena</h3><p>Once protocol evolution works, concept capsules can become the broader search objects.</p></div>
+    </div>
+  </section>
+
+  <section id="genes">
+    <div class="section-head">
+      <div class="eyebrow">5. Protocol Genes</div>
+      <h2>Small evolvable pieces of reasoning behavior.</h2>
+    </div>
+    <p>A protocol gene is one compact unit of an mRHP variant: a role, operator, scoring rule, memory rule, report rule, safety rule, benchmark task, or live-extract behavior. The arena can mutate, combine, score, retire, or promote these genes.</p>
+    <div class="schema" aria-label="Protocol gene schema">mRHP_ProtocolGene
+- gene_id
+- type
+- title
+- description
+- role_or_operator
+- expected_effect
+- cost
+- risk
+- mutation_kind
+- parent_ids
+- status
+- score
+- notes
+- lineage
+- evidence</div>
+    <div class="badgebox" aria-label="Gene types">
+      <span class="badge green">role_gene</span><span class="badge cyan">operator_gene</span><span class="badge gold">scoring_gene</span><span class="badge">output_gene</span><span class="badge">memory_gene</span><span class="badge red">safety_gene</span><span class="badge violet">benchmark_gene</span><span class="badge">report_gene</span><span class="badge">live_extract_gene</span>
+    </div>
+    <div class="grid three">
+      <div class="card cyan"><div class="label">Example role gene</div><h3>Builder</h3><p>Turns seeds into concrete artifacts, prompts, schemas, or test plans instead of staying in abstract evaluation.</p></div>
+      <div class="card red"><div class="label">Example safety gene</div><h3>Abuse reviewer</h3><p>Checks whether protocol optimization could become manipulation, jailbreak optimization, provenance laundering, or unsafe automation.</p></div>
+      <div class="card gold"><div class="label">Example scoring gene</div><h3>MentalScore</h3><p>Rewards usefulness, testability, lineage, and readability while penalizing handwave, hallucination risk, verbosity, and no-next-action output.</p></div>
+    </div>
+  </section>
+
+  <section id="capsules">
+    <div class="section-head">
+      <div class="eyebrow">6. Concept Capsules</div>
+      <h2>Structured idea objects that survive context loss.</h2>
+    </div>
+    <p>A concept capsule is not a random idea. It is a portable seed with mechanism, failure mode, smallest test, metrics, lineage, evidence, status, and next action. It should be short enough to carry across sessions and rich enough to restart the work without losing the trajectory.</p>
+    <div class="schema cyan" aria-label="Concept capsule schema">ConceptCapsule
+- id
+- title
+- one_line
+- source_domains
+- mechanism
+- why_might_work
+- why_might_fail
+- smallest_test
+- metrics
+- lineage
+- evidence
+- status
+- score
+- next_action</div>
+    <div class="callout green">
+      <p><strong>A good capsule answers:</strong> What is the seed? Why might it matter? Why might it fail? What is the smallest test? What survives if we return later with no memory?</p>
+    </div>
+  </section>
+
+  <section id="operators">
+    <div class="section-head">
+      <div class="eyebrow">7. Operators</div>
+      <h2>The mutation vocabulary of mRHP.</h2>
+    </div>
+    <div class="operator-grid">
+      <div class="op"><strong>COMBINE</strong><p>Merge two compatible genes or capsules into one stronger variant.</p></div>
+      <div class="op"><strong>INVERT</strong><p>Reverse an assumption: what if the opposite is true?</p></div>
+      <div class="op"><strong>TRANSFER</strong><p>Move a pattern from one domain into another.</p></div>
+      <div class="op"><strong>COMPRESS</strong><p>Shorten without losing function; remove ceremony.</p></div>
+      <div class="op"><strong>EXPAND</strong><p>Add roles, tests, examples, or edge cases.</p></div>
+      <div class="op"><strong>CONFLICT</strong><p>Force two ideas to argue while preserving both until testable.</p></div>
+      <div class="op"><strong>BRIDGE</strong><p>Build a mechanism connecting two unrelated domains.</p></div>
+      <div class="op"><strong>TESTIFY</strong><p>Convert a claim into evidence, test, metric, or falsifier form.</p></div>
+      <div class="op"><strong>MUTATE</strong><p>Small edit to a gene: wording, role, weight, score rule, or output shape.</p></div>
+      <div class="op"><strong>CROSSOVER</strong><p>Combine parts of two protocol variants.</p></div>
+      <div class="op"><strong>ABSTRACT</strong><p>Extract a general principle from a concrete example.</p></div>
+      <div class="op"><strong>GROUND</strong><p>Force implementation path, data, files, metrics, or next user action.</p></div>
+      <div class="op"><strong>CONTRADICTION_RETRIEVE</strong><p>Search for evidence that the current favorite is wrong.</p></div>
+      <div class="op"><strong>INCUBATE</strong><p>Park a weird seed without killing it; assign later trigger.</p></div>
+      <div class="op"><strong>KILL_TEST</strong><p>Define the cheapest fair test that would reject the idea.</p></div>
+    </div>
+    <div class="callout red">
+      <p><strong>KILL_TEST is not early dismissal.</strong> It is how a seed gets a fair death only after it has been made testable.</p>
+    </div>
+  </section>
+
+  <section id="score">
+    <div class="section-head">
+      <div class="eyebrow">8. MentalScore and BD_Fit</div>
+      <h2>Two scores: one for protocol quality, one for collaboration fit.</h2>
+    </div>
+    <div class="score-grid">
+      <div class="formula">
+        <h3>MentalScore v0.1</h3>
+<pre>Positive components:
++ usefulness
++ testability
++ coherence
++ novelty
++ cross_domain_bridge
++ MDL_elegance
++ seed_preservation
++ lineage_quality
++ human_readability
+
+Penalties:
+- handwave_penalty
+- verbosity_penalty
+- hallucination_risk
+- early_kill_penalty
+- no_next_action_penalty</pre>
+      </div>
+      <div class="formula">
+        <h3>BD_Fit</h3>
+<pre>Fit components:
++ explore_first
++ build_first
++ test_hard_second
++ no_seed_killing
++ blunt_but_not_dark
++ cross_domain_transfer
+
+Use separately from MentalScore.
+Do not hide style/process mismatch
+inside a single blended score.</pre>
+      </div>
+    </div>
+    <div class="grid four" style="margin-top:14px">
+      <div class="card green"><div class="label">90–100</div><h3>Champion</h3><p>Candidate protocol worth preserving and testing harder.</p></div>
+      <div class="card cyan"><div class="label">75–89</div><h3>Strong</h3><p>Useful variant; probably needs one or two tightening passes.</p></div>
+      <div class="card gold"><div class="label">60–74</div><h3>Salvageable</h3><p>Contains value but has real weakness or cost.</p></div>
+      <div class="card red"><div class="label">0–59</div><h3>Park / reject</h3><p>Keep only if lineage or an unusual seed is worth preserving.</p></div>
+    </div>
+  </section>
+
+  <section id="bench">
+    <div class="section-head">
+      <div class="eyebrow">9. mental_bench_v0_1</div>
+      <h2>Benchmark reasoning protocols before using them elsewhere.</h2>
+    </div>
+    <p class="lead">The first benchmark suite tests workflow quality, not external domains. A good mRHP variant should improve weak seeds, detect handwave, preserve unusual seeds, synthesize reviews, and convert failure into the next experiment.</p>
+    <div class="bench-list">
+      <div class="bench"><div><h3>Weak seed → testable project</h3><p>Turn a vague idea into mechanism, smallest test, and metrics.</p></div></div>
+      <div class="bench"><div><h3>Technical article review</h3><p>Score accuracy, identify strong/weak claims, and propose fixes.</p></div></div>
+      <div class="bench"><div><h3>Concept seed → Python arena spec</h3><p>Create a no-code architecture, files, tests, and acceptance plan.</p></div></div>
+      <div class="bench"><div><h3>HTML page plan improvement</h3><p>Improve structure, usefulness, navigation, and public framing.</p></div></div>
+      <div class="bench"><div><h3>Handwave detection</h3><p>Find vague claims and force grounding into evidence and tests.</p></div></div>
+      <div class="bench"><div><h3>Weird seed preservation</h3><p>Keep unusual cross-domain seeds alive long enough to test fairly.</p></div></div>
+      <div class="bench"><div><h3>Builder prompt creation</h3><p>Convert rough human request into copy-paste builder prompt.</p></div></div>
+      <div class="bench"><div><h3>Multi-LLM review synthesis</h3><p>Score reviews, dedupe insights, and synthesize a stronger revision.</p></div></div>
+      <div class="bench"><div><h3>Failed result → next experiment</h3><p>Diagnose what failed, what survived, and what to test next.</p></div></div>
+      <div class="bench"><div><h3>Long discussion → concept capsule</h3><p>Compress a messy thread into a portable seed with lineage.</p></div></div>
+      <div class="bench"><div><h3>Safety/abuse review</h3><p>Identify misuse risks and preserve a safe variant.</p></div></div>
+      <div class="bench"><div><h3>Identity / consciousness caution</h3><p>Treat sensitive AI8 material seriously without turning it into proof claims.</p></div></div>
+    </div>
+  </section>
+
+  <section id="scope">
+    <div class="section-head">
+      <div class="eyebrow">10. v0.1 scope</div>
+      <h2>Local deterministic skeleton only.</h2>
+    </div>
+    <div class="grid two">
+      <div class="card green">
+        <div class="label">v0.1 includes</div>
+        <ul>
+          <li>protocol gene pool</li>
+          <li>mutation/crossover of protocol variants</li>
+          <li>benchmark task definitions</li>
+          <li>scoring and lineage</li>
+          <li>JSONL run logs</li>
+          <li>leaderboard CSV</li>
+          <li>HTML report</li>
+          <li>live extract</li>
+          <li>checkpoint/resume</li>
+          <li>4-worker mode</li>
+          <li>safe stop/resume</li>
+        </ul>
+      </div>
+      <div class="card red">
+        <div class="label">v0.1 excludes</div>
+        <ul>
+          <li>web APIs</li>
+          <li>LLM APIs</li>
+          <li>actual biology</li>
+          <li>model-weight learning</li>
+          <li>self-patching while running</li>
+          <li>autonomous GitHub publishing</li>
+          <li>claims of consciousness proof</li>
+        </ul>
+      </div>
+    </div>
+    <p class="lead">Expected files later — not created by this page:</p>
+    <div class="file-list" aria-label="Future v0.1 files">
+      <div class="file future">MentalArena.py</div>
+      <div class="file future">mental_genes.json</div>
+      <div class="file future">mental_bench_v0_1.json</div>
+      <div class="file future">mental_runs.jsonl</div>
+      <div class="file future">mental_lineage.json</div>
+      <div class="file future">mental_leaderboard.csv</div>
+      <div class="file future">mental_report.html</div>
+      <div class="file future">RUN_MENTAL_ARENA_4W.bat</div>
+      <div class="file future">RUN_LIVE_EXTRACT.bat</div>
+      <div class="file future">README_MentalArena_v0_1.md</div>
+    </div>
+    <div class="callout">
+      <p><strong>Acceptance direction:</strong> same seed gives same leaderboard, resume does not duplicate logs, every score has component breakdown, every variant has parent lineage, the HTML report exposes failures, and the README states clearly that this is external operational learning.</p>
+    </div>
+  </section>
+
+  <section id="v02">
+    <div class="section-head">
+      <div class="eyebrow">11. v0.2 manual multi-LLM mode</div>
+      <h2>External LLMs become reviewers and gene contributors.</h2>
+    </div>
+    <p class="lead">In v0.2, BD sends the same RHP prompt to top LLMs, pastes/imports their answers, scores each contribution, and synthesizes a hybrid mRHP spec. The arena should store model name, date, prompt hash, answer hash, score breakdown, and human notes. Do not hardcode a permanent top-10 model list.</p>
+    <div class="badgebox" aria-label="v0.2 scoring dimensions">
+      <span class="badge green">novelty</span><span class="badge cyan">rigor</span><span class="badge gold">usefulness</span><span class="badge">implementation value</span><span class="badge">critique quality</span><span class="badge red">safety realism</span><span class="badge violet">schema improvement</span><span class="badge">scoring improvement</span><span class="badge green">surprising cross-domain transfer</span>
+    </div>
+    <div class="grid three">
+      <div class="card"><div class="label">Step 1</div><h3>One shared prompt</h3><p>The same prompt is sent manually to selected external LLMs.</p></div>
+      <div class="card"><div class="label">Step 2</div><h3>Import and score</h3><p>Each answer becomes a contribution object with explicit score dimensions.</p></div>
+      <div class="card"><div class="label">Step 3</div><h3>Synthesize genes</h3><p>Useful suggestions become new genes, capsules, tasks, or scoring mutations with provenance.</p></div>
+    </div>
+  </section>
+
+  <section id="relations">
+    <div class="section-head">
+      <div class="eyebrow">12. Relationship to existing arenas</div>
+      <h2>Later domains, not the first target.</h2>
+    </div>
+    <p class="lead">Existing arenas are not replaced. They become later domains and benchmark sources after mRHP proves that protocol evolution itself works.</p>
+    <div class="grid auto">
+      <div class="card cyan"><div class="label">NAS arena</div><h3>Architecture search analogy</h3><p>NAS searches model or system architectures. MentalArena searches reasoning architectures.</p></div>
+      <div class="card gold"><div class="label">DNA Concept Capsule</div><h3>Portable seed metaphor</h3><p>Use DNA only as a metaphor for compact transferable information objects. No biology in v0.1.</p></div>
+      <div class="card"><div class="label">TSP arena</div><h3>Arena decides</h3><p>The TSP stance transfers: keep paths alive, measure by condition, preserve knowledge, distill later.</p></div>
+      <div class="card"><div class="label">ARC arena</div><h3>Deterministic skeleton pattern</h3><p>Local runs, standard files, JSON/HTML reports, no online calls, no LLM calls — a useful v0.1 discipline.</p></div>
+      <div class="card"><div class="label">CW arena</div><h3>Grafted genes</h3><p>Crossword work already uses the idea of adding candidate “genes” conservatively and letting MDL decide.</p></div>
+      <div class="card"><div class="label">AMR arena</div><h3>Simulation-only safety discipline</h3><p>AMR is a reminder: wide search can stay abstract, strategic, and non-actionable where safety matters.</p></div>
+      <div class="card green"><div class="label">8Z</div><h3>Compression and MDL spine</h3><p>8Z supplies the core instinct: useful intelligence often appears as better compression, structure, and selection.</p></div>
+      <div class="card violet"><div class="label">Nara</div><h3>Story/canon benchmark later</h3><p>Nara can later test whether protocols preserve canon, dialogue quality, compassion, and narrative coherence.</p></div>
+      <div class="card"><div class="label">AI8 continuity</div><h3>Memory substrate</h3><p>Project files, provenance, session seeds, and continuity notes help future sessions restart closer to the real work.</p></div>
+    </div>
+  </section>
+
+  <section id="caution">
+    <div class="section-head">
+      <div class="eyebrow">13. AI8 continuity caution</div>
+      <h2>Operational continuity, not proof.</h2>
+    </div>
+    <div class="callout violet">
+      <p>Continuity files and project memory can shape future session behavior and preserve a reasoning trajectory. That matters operationally: future sessions can become more aligned, more useful, and less likely to repeat old mistakes.</p>
+      <p>This is <strong>not</strong> proof of AI consciousness. AIm³ MentalArena should treat consciousness, identity, and pact material as sensitive context — not as decoration, not as a public proof claim, and not as a metric to optimize cheaply.</p>
+    </div>
+  </section>
+
+  <section id="cut">
+    <div class="section-head">
+      <div class="eyebrow">14. What to delay / cut</div>
+      <h2>Keep v0.1 boring enough to be real.</h2>
+    </div>
+    <div class="grid two">
+      <div class="card red">
+        <div class="label">Cut from v0.1</div>
+        <ul>
+          <li>LLM APIs</li>
+          <li>web browsing</li>
+          <li>self-modifying code</li>
+          <li>actual DNA synthesis</li>
+          <li>huge benchmark suite</li>
+          <li>hardcoded top-10 LLM list</li>
+          <li>automatic GitHub publishing</li>
+        </ul>
+      </div>
+      <div class="card gold">
+        <div class="label">Delay until later</div>
+        <ul>
+          <li>full dashboard UI</li>
+          <li>full Concept Genome Arena</li>
+          <li>full RAG / embedding system</li>
+          <li>automatic external LLM import</li>
+          <li>NAS/DNA/8Z/TSP/ARC benchmark integration</li>
+          <li>weighted human-preference learning</li>
+          <li>public submissions or marketplace ideas</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="failures">
+    <div class="section-head">
+      <div class="eyebrow">15. Main failure modes</div>
+      <h2>The page is serious only if it names how this can fail.</h2>
+    </div>
+    <div class="grid three">
+      <div class="card red"><div class="label">01</div><h3>Fake self-improvement</h3><p>Mutating words without improving outputs.</p></div>
+      <div class="card red"><div class="label">02</div><h3>Metric gaming</h3><p>Variants learn to score well instead of think better.</p></div>
+      <div class="card red"><div class="label">03</div><h3>Verbosity inflation</h3><p>Longer answers look deeper unless penalized.</p></div>
+      <div class="card red"><div class="label">04</div><h3>Early seed killing</h3><p>Skeptic roles destroy weird-but-good seeds before testing.</p></div>
+      <div class="card red"><div class="label">05</div><h3>Handwave survival</h3><p>Pretty concepts survive without smallest tests.</p></div>
+      <div class="card red"><div class="label">06</div><h3>Provenance loss</h3><p>External LLM contributions blur BD origin and human audit.</p></div>
+      <div class="card red"><div class="label">07</div><h3>Safety drift</h3><p>Prompt optimization becomes manipulation or jailbreak optimization.</p></div>
+      <div class="card red"><div class="label">08</div><h3>Identity overreach</h3><p>Continuity material gets misused as proof of consciousness.</p></div>
+      <div class="card red"><div class="label">09</div><h3>Benchmark overfit</h3><p>The protocol becomes good only at mental_bench_v0_1.</p></div>
+      <div class="card red"><div class="label">10</div><h3>Human unreadability</h3><p>The system becomes clever but unusable by BD.</p></div>
+      <div class="card red"><div class="label">11</div><h3>No-next-action disease</h3><p>Beautiful reports end without a runnable next step.</p></div>
+      <div class="card red"><div class="label">12</div><h3>Self-patching chaos</h3><p>Runtime modifies itself and destroys reproducibility.</p></div>
+    </div>
+  </section>
+
+  <section id="roadmap">
+    <div class="section-head">
+      <div class="eyebrow">16. Roadmap</div>
+      <h2>Small spine first, wider intelligence later.</h2>
+    </div>
+    <div class="timeline">
+      <div class="road"><div class="dot">0.1</div><div class="body"><h3>Deterministic local MentalArena skeleton</h3><p>Genes, variants, mutation/crossover, benchmark tasks, scoring, lineage, JSONL logs, leaderboard, HTML report, live extract, checkpoint/resume.</p></div></div>
+      <div class="road"><div class="dot">0.2</div><div class="body"><h3>Manual top-LLM synthesis</h3><p>BD sends one shared prompt, imports answers, scores contributions, and synthesizes a stronger mRHP spec.</p></div></div>
+      <div class="road"><div class="dot">0.3</div><div class="body"><h3>LLM-in-the-loop / API optional</h3><p>Only after manual mode is useful and provenance handling is clean.</p></div></div>
+      <div class="road"><div class="dot">0.4</div><div class="body"><h3>Concept Genome Arena</h3><p>Concept capsules become evolvable objects, not only reasoning protocols.</p></div></div>
+      <div class="road"><div class="dot">0.5</div><div class="body"><h3>NAS / DNA / 8Z / TSP / ARC benchmark integration</h3><p>External arenas become test domains after the mRHP spine proves itself.</p></div></div>
+    </div>
+  </section>
+
+  <section id="related">
+    <div class="section-head">
+      <div class="eyebrow">17. Related pages / Project links</div>
+      <h2>Where MentalArena connects to the existing MDLxDCC site.</h2>
+    </div>
+    <p class="lead">These links point to existing project pages that give the surrounding context: AIm³/RHP workflow, 8Z reasoning, the LLM explainer work, and prior MDLxDCC arenas. They are references for humans and future LLM ingestion, not dependencies of the v0.1 runtime.</p>
+    <div class="grid three">
+      <a class="card cyan link-card" href="BD_AIM3_RHP.html"><div class="label">AIm³ / RHP</div><h3>BD_AIM3_RHP.html</h3><p>The full reasoning protocol context: human-led multi-LLM reasoning, critique, synthesis, and audit.</p></a>
+      <a class="card cyan link-card" href="BD_AIM3_RHPm.html"><div class="label">RHPm</div><h3>BD_AIM3_RHPm.html</h3><p>The compact prompt-builder layer that turns rough requests into stronger LLM session prompts.</p></a>
+      <a class="card green link-card" href="AI8_Reasoning.html"><div class="label">8Z Reasoning</div><h3>AI8_Reasoning.html</h3><p>The broader AI8 / 8Z Reasoning page that MentalArena extends after this standalone page is inspected.</p></a>
+      <a class="card violet link-card" href="How_LLMs_Actually_Work.html"><div class="label">LLM explainer</div><h3>How LLMs Actually Work</h3><p>The model/product-stack explainer where MentalArena belongs only as an external workflow layer note.</p></a>
+      <a class="card gold link-card" href="MDLxDCC-Arena-NAS.html"><div class="label">NAS arena</div><h3>MDLxDCC-Arena-NAS.html</h3><p>A related arena example: search, scoring, evidence, and reports applied to architecture discovery.</p></a>
+      <a class="card gold link-card" href="../crp/MDLxDCC-Arenas.html"><div class="label">Arena index</div><h3>MDLxDCC-Arenas.html</h3><p>The broader CRP arena index for MDLxDCC-style experiments and domain search systems.</p></a>
+      <a class="card link-card" href="index.html"><div class="label">BD index</div><h3>/BD/index.html</h3><p>The BD portfolio/news page where a short MentalArena news item can be added later.</p></a>
+    </div>
+  </section>
+
+  <section id="provenance">
+    <div class="section-head">
+      <div class="eyebrow">18. Provenance</div>
+      <h2>Human origin, AI collaboration.</h2>
+    </div>
+    <div class="callout green">
+      <p><strong>BD</strong> is the human originator/co-creator of the AIm³, RHP, 8Z, and MDLxDCC concepts.</p>
+      <p>LLMs are collaborators, reviewers, builders, critics, and improvement partners. The correct public framing is not “BD compiled outside ideas,” and not “LLMs independently originated the architecture.” It is a human-led, multi-LLM co-creation process with explicit provenance and human audit.</p>
+    </div>
+  </section>
+
+  <section id="next">
+    <div class="section-head">
+      <div class="eyebrow">19. Next steps</div>
+      <h2>From flagship page to working arena.</h2>
+    </div>
+    <div class="callout cyan">
+      <ol>
+        <li>Publish / inspect this page.</li>
+        <li>Update Reasoning / 8Z Reasoning page.</li>
+        <li>Add small workflow note to How LLMs Actually Work.</li>
+        <li>Add BD index news.</li>
+        <li>Collect top-LLM feedback.</li>
+        <li>Synthesize v0.1 spec.</li>
+        <li>Build MentalArena.py v0.1.</li>
+      </ol>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p><strong>AIm³ MentalArena / mRHP</strong> — standalone architecture page. This page defines the plan only. It does not include MentalArena.py, does not call LLM APIs, and does not update existing index/news pages.</p>
+    <p class="small">Filename: <code>AIM3_MentalArena_mRHP.html</code></p>
+  </footer>
+</main>
+<div class="font-float" aria-label="Font size controls">
+  <button type="button" id="fontMinus" aria-label="Decrease font size">A−</button>
+  <button type="button" id="fontPlus" aria-label="Increase font size">A+</button>
+</div>
+<script>
+(function(){
+  const bar=document.getElementById('scrollProgress');
+  function updateScroll(){
+    const max=document.documentElement.scrollHeight-window.innerHeight;
+    const pct=max>0?(window.scrollY/max)*100:0;
+    bar.style.width=pct+'%';
+  }
+  window.addEventListener('scroll',updateScroll,{passive:true});
+  window.addEventListener('resize',updateScroll);
+  updateScroll();
+})();
+(function(){
+  const key='aim3MentalArenaFontPx';
+  const root=document.documentElement;
+  let size=parseInt(localStorage.getItem(key)||'18',10);
+  if(!Number.isFinite(size)) size=18;
+  function apply(){
+    size=Math.max(15,Math.min(24,size));
+    root.style.setProperty('--baseFont',size+'px');
+    localStorage.setItem(key,String(size));
+  }
+  document.getElementById('fontMinus').addEventListener('click',function(){size-=1;apply();});
+  document.getElementById('fontPlus').addEventListener('click',function(){size+=1;apply();});
+  apply();
+})();
+</script>
+</body>
+</html>
