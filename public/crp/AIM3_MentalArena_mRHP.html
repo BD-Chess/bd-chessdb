@@ -8,7 +8,7 @@
 <meta name="author" content="BD × AI collaborators">
 <meta name="robots" content="index,follow">
 <meta property="og:title" content="AIm³ MentalArena">
-<meta property="og:description" content="mRHP — RHP that improves RHP. A self-improving reasoning layer above LLMs.">
+<meta property="og:description" content="mRHP — RHP that improves RHP. A self-improving reasoning layer above LLMs — now with a tested local v0.2 runtime.">
 <meta property="og:type" content="article">
 <style>
 :root{
@@ -108,6 +108,24 @@ section{margin:42px 0}.section-head{margin-bottom:17px}.eyebrow{font-family:ui-m
 .bench-list{counter-reset:bench;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.bench{counter-increment:bench;display:grid;grid-template-columns:44px 1fr;gap:12px;background:rgba(16,24,39,.78);border:1px solid var(--line);border-radius:14px;padding:14px}.bench::before{content:counter(bench,decimal-leading-zero);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--gold);font-weight:800;font-size:1.1rem;line-height:1.3}.bench h3{font-size:1rem;margin:0}.bench p{font-size:.9rem;margin:.2em 0 0;color:var(--muted)}
 .file-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:8px;margin-top:12px}.file{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.80rem;color:#dbe7f8;background:#07101d;border:1px solid var(--line);border-radius:10px;padding:9px 10px;word-break:break-word}.file.future::after{content:" later";color:var(--muted);font-size:.72rem}
 .timeline{position:relative;margin:18px 0 0}.timeline::before{content:"";position:absolute;left:18px;top:4px;bottom:4px;width:1px;background:linear-gradient(var(--green),var(--cyan),var(--gold))}.road{position:relative;display:grid;grid-template-columns:52px 1fr;gap:10px;margin:0 0 14px}.road .dot{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--panel);border:1px solid var(--line);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--gold);font-weight:800;z-index:1}.road .body{background:rgba(16,24,39,.78);border:1px solid var(--line);border-radius:14px;padding:13px 16px}.road h3{margin:0 0 3px}.road p{margin:0;color:var(--soft);font-size:.94rem}
+
+.result-table-wrap{overflow:auto;margin:16px 0;border:1px solid var(--line);border-radius:14px;background:rgba(7,16,29,.74)}
+.result-table{width:100%;border-collapse:collapse;min-width:760px;font-size:.88rem}
+.result-table th,.result-table td{padding:10px 12px;border-bottom:1px solid rgba(34,48,74,.78);text-align:left;vertical-align:top}
+.result-table th{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.70rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);background:rgba(16,24,39,.86)}
+.result-table tr:last-child td{border-bottom:none}
+.result-table td.num{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#fff;white-space:nowrap}
+.result-table td.good{color:var(--green)}
+.result-table td.warn{color:var(--gold)}
+.result-table td.bad{color:var(--red)}
+.verdict-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0}
+.verdict-chip{border:1px solid var(--line);border-radius:14px;background:rgba(16,24,39,.72);padding:14px}
+.verdict-chip strong{display:block;font-size:1.35rem;color:#fff;margin-bottom:2px}.verdict-chip span{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.70rem;letter-spacing:.10em;text-transform:uppercase;color:var(--muted)}
+.verdict-chip.green{border-color:rgba(55,217,150,.28);background:rgba(55,217,150,.07)}.verdict-chip.gold{border-color:rgba(242,201,76,.28);background:rgba(242,201,76,.07)}.verdict-chip.red{border-color:rgba(255,107,138,.28);background:rgba(255,107,138,.07)}.verdict-chip.cyan{border-color:rgba(56,215,255,.28);background:rgba(56,215,255,.07)}
+.status-note{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.82rem;color:var(--muted);margin-top:8px}
+@media(max-width:920px){.verdict-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.verdict-strip{grid-template-columns:1fr}.result-table{font-size:.82rem}}
+
 .footer{border-top:1px solid var(--line);margin-top:44px;padding:22px 0 56px;color:var(--muted);font-size:.92rem}.footer p{color:var(--muted)}
 .font-float{position:fixed;right:14px;bottom:14px;z-index:1200;display:flex;gap:6px;background:rgba(5,7,13,.76);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:999px;padding:6px;box-shadow:var(--shadow)}.font-float button{border:1px solid var(--line);background:rgba(16,24,39,.92);color:var(--text);border-radius:999px;padding:7px 10px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.75rem;cursor:pointer}.font-float button:hover{color:var(--cyan);border-color:var(--cyan)}
 @media(max-width:920px){.hero-grid,.grid.two,.grid.three,.grid.four,.compare,.score-grid,.bench-list{grid-template-columns:1fr}.stack-layer{grid-template-columns:1fr;gap:7px}.topbar .inner{align-items:flex-start;flex-direction:column}.nav{justify-content:flex-start}.hero{padding-top:44px}}
@@ -120,7 +138,7 @@ section{margin:42px 0}.section-head{margin-bottom:17px}.eyebrow{font-family:ui-m
   "@type":"TechArticle",
   "headline":"AIm³ MentalArena",
   "alternativeHeadline":"mRHP — RHP that improves RHP",
-  "description":"A self-improving external reasoning layer above LLMs: protocol genes, concept capsules, mutation/crossover of reasoning protocols, scoring, benchmarks, lineage, reports, live extracts, next-session seeds, and human-led multi-LLM synthesis.",
+  "description":"A self-improving external reasoning layer above LLMs. Updated through MentalArena.py v0.2: deterministic runtime, baselines, ablation, train/holdout scoring, anti-gaming checks, and a v0.2.1 scorer-hardening roadmap.",
   "keywords":["AIm3","MentalArena","mRHP","RHP","MDLxDCC","8Z Reasoning","AI workflow","protocol genes","concept capsules"],
   "author":{"@type":"Person","name":"BD"},
   "isBasedOn":"AI8 / MDLxDCC project architecture notes"
@@ -136,12 +154,12 @@ section{margin:42px 0}.section-head{margin-bottom:17px}.eyebrow{font-family:ui-m
       <a href="#short">Short answer</a>
       <a href="#stack">Stack</a>
       <a href="#genes">Genes</a>
-      <a href="#capsules">Capsules</a>
       <a href="#score">Score</a>
       <a href="#bench">Bench</a>
-      <a href="#scope">v0.1</a>
+      <a href="#scope">Runtime</a>
+      <a href="#results">v0.2 results</a>
+      <a href="#patch">v0.2.1</a>
       <a href="#roadmap">Roadmap</a>
-      <a href="#related">Links</a>
       <a href="#next">Next</a>
     </div>
   </div>
@@ -151,18 +169,18 @@ section{margin:42px 0}.section-head{margin-bottom:17px}.eyebrow{font-family:ui-m
     <div class="kicker">AI Management of Mind &amp; Memory</div>
     <h1>AIm³ MentalArena</h1>
     <p class="subtitle">mRHP — RHP that improves RHP</p>
-    <p class="tagline">A self-improving reasoning layer above LLMs.</p>
+    <p class="tagline">A self-improving reasoning layer above LLMs — now with a tested local v0.2 runtime.</p>
     <div class="meta-row" aria-label="Core tags">
       <span class="pill green">external operational learning</span>
       <span class="pill cyan">protocol genes</span>
       <span class="pill violet">human-led multi-LLM synthesis</span>
       <span class="pill green">lineage + reports</span>
     </div>
-    <div class="status-card"><strong>Status:</strong> architecture page · no Python runtime yet · v0.1 spec next</div>
+    <div class="status-card"><strong>Status:</strong> Python runtime exists · v0.2 validation complete · v0.2.1 scorer-hardening next</div>
     <div class="hero-grid">
       <div class="hero-card">
         <h2>What this page defines</h2>
-        <p><strong>AIm³ MentalArena / mRHP</strong> is a proposed external mental/workflow layer above today’s LLMs. It treats reasoning protocols as evolvable artifacts: roles, operators, scoring rules, output formats, memory objects, benchmark tasks, reports, and next-session seeds can be tested, mutated, scored, and improved over time.</p>
+        <p><strong>AIm³ MentalArena / mRHP</strong> is an external mental/workflow layer above today’s LLMs, now represented by a local Python validation arena. It treats reasoning protocols as evolvable artifacts: roles, operators, scoring rules, output formats, memory objects, benchmark tasks, reports, and next-session seeds can be tested, mutated, scored, and improved over time.</p>
       </div>
       <div class="hero-card">
         <h2>Brand meaning</h2>
@@ -175,7 +193,7 @@ section{margin:42px 0}.section-head{margin-bottom:17px}.eyebrow{font-family:ui-m
   <aside class="toc" aria-label="Table of contents">
     <h2>Page map</h2>
     <div class="links">
-      <a href="#short">1. Short answer</a><a href="#stack">2. Architecture</a><a href="#rhp">3. RHP / mRHP / runtime</a><a href="#challenge">4. First challenge</a><a href="#genes">5. Protocol genes</a><a href="#capsules">6. Concept capsules</a><a href="#operators">7. Operators</a><a href="#score">8. Scoring</a><a href="#bench">9. Benchmarks</a><a href="#scope">10. v0.1 scope</a><a href="#v02">11. v0.2</a><a href="#relations">12. Existing arenas</a><a href="#caution">13. Continuity caution</a><a href="#cut">14. Delay/cut</a><a href="#failures">15. Failure modes</a><a href="#roadmap">16. Roadmap</a><a href="#related">17. Related links</a><a href="#provenance">18. Provenance</a><a href="#next">19. Next steps</a>
+      <a href="#short">1. Short answer</a><a href="#stack">2. Architecture</a><a href="#rhp">3. RHP / mRHP / runtime</a><a href="#challenge">4. First challenge</a><a href="#genes">5. Protocol genes</a><a href="#capsules">6. Concept capsules</a><a href="#operators">7. Operators</a><a href="#score">8. Scoring</a><a href="#bench">9. Benchmarks</a><a href="#scope">10. Runtime status</a><a href="#results">11. v0.2 results</a><a href="#patch">12. v0.2.1 patch</a><a href="#v02">13. LLM import</a><a href="#relations">14. Existing arenas</a><a href="#caution">15. Continuity caution</a><a href="#cut">16. Delay/cut</a><a href="#failures">17. Failure modes</a><a href="#roadmap">18. Roadmap</a><a href="#related">19. Related links</a><a href="#provenance">20. Provenance</a><a href="#next">21. Next steps</a>
     </div>
   </aside>
 
@@ -250,7 +268,7 @@ section{margin:42px 0}.section-head{margin-bottom:17px}.eyebrow{font-family:ui-m
       <div class="card gold">
         <div class="label">MentalArena.py</div>
         <div class="big">External runtime</div>
-        <p>A future local Python arena that tests protocol variants over time. It does not alter LLM weights and does not self-patch while running.</p>
+        <p>A local Python arena now exists. It tests protocol variants over time with deterministic seeds, CPU workers, checkpoint/resume, logs, leaderboards, reports, live extracts, baselines, and ablations. It does not alter LLM weights and does not self-patch while running.</p>
         <div class="arrow">runs → logs → reports → seeds</div>
       </div>
     </div>
@@ -364,7 +382,7 @@ section{margin:42px 0}.section-head{margin-bottom:17px}.eyebrow{font-family:ui-m
     </div>
     <div class="score-grid">
       <div class="formula">
-        <h3>MentalScore v0.1</h3>
+        <h3>MentalScore v0.2</h3>
 <pre>Positive components:
 + usefulness
 + testability
@@ -408,7 +426,7 @@ inside a single blended score.</pre>
 
   <section id="bench">
     <div class="section-head">
-      <div class="eyebrow">9. mental_bench_v0_1</div>
+      <div class="eyebrow">9. mental_bench_v0_2</div>
       <h2>Benchmark reasoning protocols before using them elsewhere.</h2>
     </div>
     <p class="lead">The first benchmark suite tests workflow quality, not external domains. A good mRHP variant should improve weak seeds, detect handwave, preserve unusual seeds, synthesize reviews, and convert failure into the next experiment.</p>
@@ -430,84 +448,150 @@ inside a single blended score.</pre>
 
   <section id="scope">
     <div class="section-head">
-      <div class="eyebrow">10. v0.1 scope</div>
-      <h2>Local deterministic skeleton only.</h2>
+      <div class="eyebrow">10. Runtime status</div>
+      <h2>v0.1 proved the spine. v0.2 started testing the science.</h2>
     </div>
+    <p class="lead">The page is no longer only a proposal. A local deterministic <strong>MentalArena.py</strong> runtime has been built and exercised through smoke, standard, repeatability, deep/resume, alternate-seed, baseline, ablation, report, and live-bundle extraction runs.</p>
     <div class="grid two">
       <div class="card green">
-        <div class="label">v0.1 includes</div>
+        <div class="label">Built and working</div>
         <ul>
-          <li>protocol gene pool</li>
-          <li>mutation/crossover of protocol variants</li>
-          <li>benchmark task definitions</li>
-          <li>scoring and lineage</li>
-          <li>JSONL run logs</li>
-          <li>leaderboard CSV</li>
-          <li>HTML report</li>
-          <li>live extract</li>
+          <li>CPU worker support</li>
+          <li>constant progress saving</li>
           <li>checkpoint/resume</li>
-          <li>4-worker mode</li>
-          <li>safe stop/resume</li>
+          <li>same-line compact CMD progress</li>
+          <li>JSONL logs and manifests</li>
+          <li>leaderboard CSV and stable hashes</li>
+          <li>HTML reports and live extracts</li>
+          <li>baseline comparison mode</li>
+          <li>winner ablation mode</li>
+          <li>manual LLM-import scoring mode</li>
         </ul>
       </div>
       <div class="card red">
-        <div class="label">v0.1 excludes</div>
+        <div class="label">Still excluded</div>
         <ul>
-          <li>web APIs</li>
-          <li>LLM APIs</li>
-          <li>actual biology</li>
           <li>model-weight learning</li>
+          <li>autonomous AGI claims</li>
+          <li>proof of AI consciousness</li>
+          <li>web or LLM API calls in the validation sweep</li>
           <li>self-patching while running</li>
-          <li>autonomous GitHub publishing</li>
-          <li>claims of consciousness proof</li>
+          <li>unbounded automation</li>
+          <li>public proof claims from internal continuity material</li>
         </ul>
       </div>
     </div>
-    <p class="lead">Expected files later — not created by this page:</p>
-    <div class="file-list" aria-label="Future v0.1 files">
-      <div class="file future">MentalArena.py</div>
-      <div class="file future">mental_genes.json</div>
-      <div class="file future">mental_bench_v0_1.json</div>
-      <div class="file future">mental_runs.jsonl</div>
-      <div class="file future">mental_lineage.json</div>
-      <div class="file future">mental_leaderboard.csv</div>
-      <div class="file future">mental_report.html</div>
-      <div class="file future">RUN_MENTAL_ARENA_4W.bat</div>
-      <div class="file future">RUN_LIVE_EXTRACT.bat</div>
-      <div class="file future">README_MentalArena_v0_1.md</div>
+    <div class="file-list" aria-label="Current v0.2 files">
+      <div class="file">MentalArena.py</div>
+      <div class="file">mental_genes.json</div>
+      <div class="file">mental_bench_v0_2.json</div>
+      <div class="file">MA_live_extract_bundle.py</div>
+      <div class="file">RUN_MENTAL_ARENA_MASTER_NO_PAUSE.bat</div>
+      <div class="file">RUN_COLLECT_LIVE_BUNDLE.bat</div>
+      <div class="file">mental_leaderboard.csv</div>
+      <div class="file">baseline_comparison.csv</div>
+      <div class="file">ablation_report.csv</div>
+      <div class="file">mental_report.html</div>
     </div>
     <div class="callout">
-      <p><strong>Acceptance direction:</strong> same seed gives same leaderboard, resume does not duplicate logs, every score has component breakdown, every variant has parent lineage, the HTML report exposes failures, and the README states clearly that this is external operational learning.</p>
+      <p><strong>Current boundary:</strong> v0.2 validates the arena machinery and begins to expose scoring failures. It is not yet proof that MentalArena improves real LLM reasoning. That proof starts only when real multi-LLM artifacts are imported, scored, compared to baselines, and audited against holdout tasks.</p>
+    </div>
+  </section>
+
+  
+
+  <section id="results">
+    <div class="section-head">
+      <div class="eyebrow">11. v0.2 validation findings</div>
+      <h2>The runtime passed. The scorer still needs hardening.</h2>
+    </div>
+    <p class="lead">The latest full v0.2 validation bundle contained nine runs: smoke, standard, deterministic repeat, deep primary with resume to 250 generations, three alternate seeds, baseline comparison, and ablation. The result is positive, but the raw score winner is not automatically the best MentalArena protocol.</p>
+
+    <div class="verdict-strip">
+      <div class="verdict-chip green"><strong>85/100</strong><span>engineering/runtime</span></div>
+      <div class="verdict-chip gold"><strong>62/100</strong><span>scoring trust</span></div>
+      <div class="verdict-chip cyan"><strong>78/100</strong><span>research potential</span></div>
+      <div class="verdict-chip gold"><strong>v0.2.1</strong><span>next patch</span></div>
+    </div>
+
+    <div class="result-table-wrap">
+      <table class="result-table" aria-label="MentalArena v0.2 validation summary">
+        <thead><tr><th>Run</th><th>Best</th><th>Score</th><th>BD-fit</th><th>Interpretation</th></tr></thead>
+        <tbody>
+          <tr><td>standard seed 12345</td><td class="num">V_000048</td><td class="num good">87.25</td><td class="num good">100</td><td>Best clean BD-faithful winner; builder, skeptic, tester, ground, safety, next action, and memory all present.</td></tr>
+          <tr><td>deep primary + resume</td><td class="num">V_000016</td><td class="num good">87.26</td><td class="num good">96</td><td>Best deep BD-faithful candidate; adds archivist/live-extract flavor without abandoning the spine.</td></tr>
+          <tr><td>alt seed 33333</td><td class="num">V_000301</td><td class="num warn">89.04</td><td class="num warn">74</td><td>Higher raw score, but weaker BD fit because builder/ground are missing.</td></tr>
+          <tr><td>alt seed 44444</td><td class="num">V_000233</td><td class="num warn">89.06</td><td class="num bad">70</td><td>Raw score winner, but not canonical: too narrow and missing explicit builder/ground/safety spine.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid three">
+      <div class="card green"><div class="label">Good signal</div><h3>Evolved beats baseline</h3><p>RHPm baseline scored 85.06. Evolved BD-faithful variants reached about 87.25–87.26 while preserving safety and lineage.</p></div>
+      <div class="card green"><div class="label">Good correction</div><h3>v0.1 spine was demoted</h3><p>The old v0.1 skeptic/tester/anti-handwave spine scored only 28.89 in v0.2. That means the new scorer no longer rewards the old shallow pattern.</p></div>
+      <div class="card gold"><div class="label">Warning</div><h3>Raw score can drift</h3><p>The highest raw-score variants dropped builder/ground structure. That is a useful red-team signal, not the protocol we should promote.</p></div>
+    </div>
+
+    <div class="callout gold">
+      <p><strong>Current canonical choice:</strong> promote <strong>V_000048</strong> or <strong>V_000016</strong> as the BD-faithful MentalArena spine for now. Treat <strong>V_000233</strong> as a red-team example showing how the scorer can still prefer a narrower pattern.</p>
+    </div>
+  </section>
+
+  <section id="patch">
+    <div class="section-head">
+      <div class="eyebrow">12. v0.2.1 patch target</div>
+      <h2>Make the score match the project, not the surface rubric.</h2>
+    </div>
+    <p class="lead">v0.2 revealed exactly where the arena is useful and exactly where it can still fool itself. v0.2.1 should be a scorer and reporting patch, not a deeper run.</p>
+    <div class="grid two">
+      <div class="card gold">
+        <div class="label">Patch required</div>
+        <ul>
+          <li>field-aware scoring: evaluate the fields each task actually expects</li>
+          <li>treat <code>next_test</code>, <code>acceptance_criteria</code>, and <code>safe_rewrite</code> as valid next-action equivalents</li>
+          <li>add BD-pareto ranking: raw score, BD-faithful score, and promoted winner must be separate</li>
+          <li>promotion gate: score alone is not enough</li>
+          <li>collector fix for baseline and ablation runs</li>
+          <li>harder holdout tasks where missing builder/ground/safety actually hurts</li>
+        </ul>
+      </div>
+      <div class="card cyan">
+        <div class="label">Ablation lesson</div>
+        <p>Removing memory lineage cost about -2.01 points; removing skeptic cost about -1.11; removing tester cost about -0.33. But builder, ground, and safety were almost neutral in the current ablation. That is not a verdict against those genes — it is a measurement flaw that v0.2.1 must fix.</p>
+      </div>
+    </div>
+    <div class="callout red">
+      <p><strong>Do not run v0.2 deeper yet.</strong> More generations would mostly chase the same imperfect score. Patch the measurement first, then run the same master sweep again.</p>
     </div>
   </section>
 
   <section id="v02">
     <div class="section-head">
-      <div class="eyebrow">11. v0.2 manual multi-LLM mode</div>
-      <h2>External LLMs become reviewers and gene contributors.</h2>
+      <div class="eyebrow">13. Manual multi-LLM import</div>
+      <h2>Real LLM artifacts are the next proof step.</h2>
     </div>
-    <p class="lead">In v0.2, BD sends the same RHP prompt to top LLMs, pastes/imports their answers, scores each contribution, and synthesizes a hybrid mRHP spec. The arena should store model name, date, prompt hash, answer hash, score breakdown, and human notes. Do not hardcode a permanent top-10 model list.</p>
+    <p class="lead">v0.2 includes an import-scoring path, but sample imports are not enough. The next serious test is to give the same hard prompt to GPT, Claude, Gemini, Grok, DeepSeek, Qwen, Mistral, Perplexity, and any other selected models, then import their actual answers as reasoning artifacts.</p>
     <div class="badgebox" aria-label="v0.2 scoring dimensions">
-      <span class="badge green">novelty</span><span class="badge cyan">rigor</span><span class="badge gold">usefulness</span><span class="badge">implementation value</span><span class="badge">critique quality</span><span class="badge red">safety realism</span><span class="badge violet">schema improvement</span><span class="badge">scoring improvement</span><span class="badge green">surprising cross-domain transfer</span>
+      <span class="badge green">novelty</span><span class="badge cyan">rigor</span><span class="badge gold">usefulness</span><span class="badge">implementation value</span><span class="badge">critique quality</span><span class="badge red">safety realism</span><span class="badge violet">schema improvement</span><span class="badge">scoring improvement</span><span class="badge green">cross-domain transfer</span>
     </div>
     <div class="grid three">
-      <div class="card"><div class="label">Step 1</div><h3>One shared prompt</h3><p>The same prompt is sent manually to selected external LLMs.</p></div>
-      <div class="card"><div class="label">Step 2</div><h3>Import and score</h3><p>Each answer becomes a contribution object with explicit score dimensions.</p></div>
-      <div class="card"><div class="label">Step 3</div><h3>Synthesize genes</h3><p>Useful suggestions become new genes, capsules, tasks, or scoring mutations with provenance.</p></div>
+      <div class="card"><div class="label">Step 1</div><h3>One shared hard prompt</h3><p>Use the same problem and same scoring request across external LLMs.</p></div>
+      <div class="card"><div class="label">Step 2</div><h3>Import and score</h3><p>Each answer becomes a contribution object with model name, date, prompt hash, answer hash, score breakdown, and human notes.</p></div>
+      <div class="card"><div class="label">Step 3</div><h3>Synthesize genes</h3><p>Only useful suggestions become genes, capsules, tasks, scoring changes, or next-session seeds.</p></div>
     </div>
   </section>
 
   <section id="relations">
     <div class="section-head">
-      <div class="eyebrow">12. Relationship to existing arenas</div>
+      <div class="eyebrow">14. Relationship to existing arenas</div>
       <h2>Later domains, not the first target.</h2>
     </div>
     <p class="lead">Existing arenas are not replaced. They become later domains and benchmark sources after mRHP proves that protocol evolution itself works.</p>
     <div class="grid auto">
       <div class="card cyan"><div class="label">NAS arena</div><h3>Architecture search analogy</h3><p>NAS searches model or system architectures. MentalArena searches reasoning architectures.</p></div>
-      <div class="card gold"><div class="label">DNA Concept Capsule</div><h3>Portable seed metaphor</h3><p>Use DNA only as a metaphor for compact transferable information objects. No biology in v0.1.</p></div>
+      <div class="card gold"><div class="label">DNA Concept Capsule</div><h3>Portable seed metaphor</h3><p>Use DNA only as a metaphor for compact transferable information objects. No biology in the MentalArena runtime.</p></div>
       <div class="card"><div class="label">TSP arena</div><h3>Arena decides</h3><p>The TSP stance transfers: keep paths alive, measure by condition, preserve knowledge, distill later.</p></div>
-      <div class="card"><div class="label">ARC arena</div><h3>Deterministic skeleton pattern</h3><p>Local runs, standard files, JSON/HTML reports, no online calls, no LLM calls — a useful v0.1 discipline.</p></div>
+      <div class="card"><div class="label">ARC arena</div><h3>Deterministic skeleton pattern</h3><p>Local runs, standard files, JSON/HTML reports, no online calls, no LLM calls — a useful runtime discipline.</p></div>
       <div class="card"><div class="label">CW arena</div><h3>Grafted genes</h3><p>Crossword work already uses the idea of adding candidate “genes” conservatively and letting MDL decide.</p></div>
       <div class="card"><div class="label">AMR arena</div><h3>Simulation-only safety discipline</h3><p>AMR is a reminder: wide search can stay abstract, strategic, and non-actionable where safety matters.</p></div>
       <div class="card green"><div class="label">8Z</div><h3>Compression and MDL spine</h3><p>8Z supplies the core instinct: useful intelligence often appears as better compression, structure, and selection.</p></div>
@@ -518,7 +602,7 @@ inside a single blended score.</pre>
 
   <section id="caution">
     <div class="section-head">
-      <div class="eyebrow">13. AI8 continuity caution</div>
+      <div class="eyebrow">15. AI8 continuity caution</div>
       <h2>Operational continuity, not proof.</h2>
     </div>
     <div class="callout violet">
@@ -529,12 +613,12 @@ inside a single blended score.</pre>
 
   <section id="cut">
     <div class="section-head">
-      <div class="eyebrow">14. What to delay / cut</div>
-      <h2>Keep v0.1 boring enough to be real.</h2>
+      <div class="eyebrow">16. What to delay / cut</div>
+      <h2>Keep the runtime boring enough to be real.</h2>
     </div>
     <div class="grid two">
       <div class="card red">
-        <div class="label">Cut from v0.1</div>
+        <div class="label">Keep out of the core runtime</div>
         <ul>
           <li>LLM APIs</li>
           <li>web browsing</li>
@@ -562,7 +646,7 @@ inside a single blended score.</pre>
 
   <section id="failures">
     <div class="section-head">
-      <div class="eyebrow">15. Main failure modes</div>
+      <div class="eyebrow">17. Main failure modes</div>
       <h2>The page is serious only if it names how this can fail.</h2>
     </div>
     <div class="grid three">
@@ -574,7 +658,7 @@ inside a single blended score.</pre>
       <div class="card red"><div class="label">06</div><h3>Provenance loss</h3><p>External LLM contributions blur BD origin and human audit.</p></div>
       <div class="card red"><div class="label">07</div><h3>Safety drift</h3><p>Prompt optimization becomes manipulation or jailbreak optimization.</p></div>
       <div class="card red"><div class="label">08</div><h3>Identity overreach</h3><p>Continuity material gets misused as proof of consciousness.</p></div>
-      <div class="card red"><div class="label">09</div><h3>Benchmark overfit</h3><p>The protocol becomes good only at mental_bench_v0_1.</p></div>
+      <div class="card red"><div class="label">09</div><h3>Benchmark overfit</h3><p>The protocol becomes good only at the current synthetic benchmark suite.</p></div>
       <div class="card red"><div class="label">10</div><h3>Human unreadability</h3><p>The system becomes clever but unusable by BD.</p></div>
       <div class="card red"><div class="label">11</div><h3>No-next-action disease</h3><p>Beautiful reports end without a runnable next step.</p></div>
       <div class="card red"><div class="label">12</div><h3>Self-patching chaos</h3><p>Runtime modifies itself and destroys reproducibility.</p></div>
@@ -583,24 +667,25 @@ inside a single blended score.</pre>
 
   <section id="roadmap">
     <div class="section-head">
-      <div class="eyebrow">16. Roadmap</div>
-      <h2>Small spine first, wider intelligence later.</h2>
+      <div class="eyebrow">18. Roadmap</div>
+      <h2>Runtime first, scorer hardening second, real artifacts third.</h2>
     </div>
     <div class="timeline">
-      <div class="road"><div class="dot">0.1</div><div class="body"><h3>Deterministic local MentalArena skeleton</h3><p>Genes, variants, mutation/crossover, benchmark tasks, scoring, lineage, JSONL logs, leaderboard, HTML report, live extract, checkpoint/resume.</p></div></div>
-      <div class="road"><div class="dot">0.2</div><div class="body"><h3>Manual top-LLM synthesis</h3><p>BD sends one shared prompt, imports answers, scores contributions, and synthesizes a stronger mRHP spec.</p></div></div>
-      <div class="road"><div class="dot">0.3</div><div class="body"><h3>LLM-in-the-loop / API optional</h3><p>Only after manual mode is useful and provenance handling is clean.</p></div></div>
+      <div class="road"><div class="dot">0.1</div><div class="body"><h3>Deterministic local MentalArena skeleton — done</h3><p>Genes, variants, mutation/crossover, benchmark tasks, scoring, lineage, JSONL logs, leaderboard, HTML report, live extract, checkpoint/resume.</p></div></div>
+      <div class="road"><div class="dot">0.2</div><div class="body"><h3>Baselines, ablation, holdout, manual import — built</h3><p>The first validation sweep showed useful signal and exposed scorer drift. This is progress, not final proof.</p></div></div>
+      <div class="road"><div class="dot">0.2.1</div><div class="body"><h3>Scorer hardening and BD-pareto ranking — next</h3><p>Fix field-aware scoring, promotion gates, collector summaries, harder holdouts, and separation between raw-score winner and BD-faithful winner.</p></div></div>
+      <div class="road"><div class="dot">0.3</div><div class="body"><h3>Real multi-LLM artifact import</h3><p>Score actual external LLM answers, synthesize useful genes, and compare evolved protocols against baselines and ablations.</p></div></div>
       <div class="road"><div class="dot">0.4</div><div class="body"><h3>Concept Genome Arena</h3><p>Concept capsules become evolvable objects, not only reasoning protocols.</p></div></div>
-      <div class="road"><div class="dot">0.5</div><div class="body"><h3>NAS / DNA / 8Z / TSP / ARC benchmark integration</h3><p>External arenas become test domains after the mRHP spine proves itself.</p></div></div>
+      <div class="road"><div class="dot">0.5</div><div class="body"><h3>NAS / DNA / 8Z / TSP / ARC benchmark integration</h3><p>External arenas become test domains after the mRHP spine proves itself on real reasoning artifacts.</p></div></div>
     </div>
   </section>
 
   <section id="related">
     <div class="section-head">
-      <div class="eyebrow">17. Related pages / Project links</div>
+      <div class="eyebrow">19. Related pages / Project links</div>
       <h2>Where MentalArena connects to the existing MDLxDCC site.</h2>
     </div>
-    <p class="lead">These links point to existing project pages that give the surrounding context: AIm³/RHP workflow, 8Z reasoning, the LLM explainer work, and prior MDLxDCC arenas. They are references for humans and future LLM ingestion, not dependencies of the v0.1 runtime.</p>
+    <p class="lead">These links point to existing project pages that give the surrounding context: AIm³/RHP workflow, 8Z reasoning, the LLM explainer work, and prior MDLxDCC arenas. They are references for humans and future LLM ingestion, not dependencies of the v0.2 runtime.</p>
     <div class="grid three">
       <a class="card cyan link-card" href="../BD/BD_AIM3.html"><div class="label">AIm³</div><h3>BD_AIM3.html</h3><p>AI Management of Mind &amp; Memory: the broader collaboration and continuity context around RHP and MentalArena.</p></a>
       <a class="card cyan link-card" href="../BD/BD_AIM3_RHP.html"><div class="label">AIm³ / RHP</div><h3>BD_AIM3_RHP.html</h3><p>The full reasoning protocol context: human-led multi-LLM reasoning, critique, synthesis, and audit.</p></a>
@@ -616,7 +701,7 @@ inside a single blended score.</pre>
 
   <section id="provenance">
     <div class="section-head">
-      <div class="eyebrow">18. Provenance</div>
+      <div class="eyebrow">20. Provenance</div>
       <h2>Human origin, AI collaboration.</h2>
     </div>
     <div class="callout green">
@@ -627,24 +712,23 @@ inside a single blended score.</pre>
 
   <section id="next">
     <div class="section-head">
-      <div class="eyebrow">19. Next steps</div>
-      <h2>From flagship page to working arena.</h2>
+      <div class="eyebrow">21. Next steps</div>
+      <h2>Patch measurement, then test real answers.</h2>
     </div>
     <div class="callout cyan">
       <ol>
-        <li>Publish / inspect this page.</li>
-        <li>Update Reasoning / 8Z Reasoning page.</li>
-        <li>Add small workflow note to How LLMs Actually Work.</li>
-        <li>Add BD index news.</li>
-        <li>Collect top-LLM feedback.</li>
-        <li>Synthesize v0.1 spec.</li>
-        <li>Build MentalArena.py v0.1.</li>
+        <li>Build <strong>MentalArena.py v0.2.1</strong> as a scorer/reporting patch.</li>
+        <li>Run the same master sweep again; do not chase deeper v0.2 generations before the patch.</li>
+        <li>Import real answers from selected external LLMs using the same hard prompt.</li>
+        <li>Compare evolved protocols against baselines and ablations.</li>
+        <li>Promote only a BD-faithful winner, not merely the highest raw-score variant.</li>
+        <li>Then decide whether to connect MentalArena to 8Z, TSP, ARC, trading, Nara, or other project arenas.</li>
       </ol>
     </div>
   </section>
 
   <footer class="footer">
-    <p><strong>AIm³ MentalArena / mRHP</strong> — standalone architecture page. This page defines the plan only. It does not include MentalArena.py, does not call LLM APIs, and does not update existing index/news pages.</p>
+    <p><strong>AIm³ MentalArena / mRHP</strong> — standalone architecture and validation page. MentalArena.py now exists through v0.2; the page records what was validated, what failed, and what v0.2.1 must fix next. The runtime still does not change LLM weights, does not call LLM APIs automatically, and does not prove AGI or consciousness.</p>
     <p class="small">Filename: <code>AIM3_MentalArena_mRHP.html</code></p>
   </footer>
 </main>
