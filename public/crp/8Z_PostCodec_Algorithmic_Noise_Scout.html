@@ -1,336 +1,99 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-reader-size="2">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>8Z Post-Codec Algorithmic Noise Scout</title>
-<meta name="description" content="8Z Post-Codec Algorithmic Noise Scout: first Python arena evidence, synthetic-generator recovery, clean controls, strict MDL gates, and next tests toward real post-codec residual layers.">
-<meta name="author" content="BD × GPT-5.5 Pro × multi-LLM RHP review">
-<meta name="robots" content="index,follow">
-<link rel="canonical" href="https://www.mdlxdcc.org/crp/8Z_PostCodec_Algorithmic_Noise_Scout.html">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>8Z Post‑Codec Algorithmic Noise Scout</title>
+<meta name="description" content="8Z Post‑Codec Algorithmic Noise Scout: a wide-open arena for testing deterministic algorithmic structure across raw, identity-final, true-codec-final, codec-internal, residual, and 8Z representation layers with strict MDL gates and clean controls." />
+<meta name="author" content="BD × GPT-5.5 Pro × multi-LLM RHP review" />
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large" />
+<link rel="canonical" href="https://www.mdlxdcc.org/crp/8Z_PostCodec_Algorithmic_Noise_Scout.html" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="8Z Post‑Codec Algorithmic Noise Scout" />
+<meta property="og:description" content="A falsification-first, wide-search arena for testing algorithmic structure across final bytes, codec-internal layers, and 8Z residual/token representations." />
+<meta property="og:url" content="https://www.mdlxdcc.org/crp/8Z_PostCodec_Algorithmic_Noise_Scout.html" />
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"8Z Post‑Codec Algorithmic Noise Scout","description":"Wide research arena for deterministic algorithmic-noise descriptions across raw, identity-final, true-codec-final, codec-internal and 8Z-internal layers under strict MDL, controls and exact reconstruction.","keywords":["8Z","compression","MDL","algorithmic noise","post-codec","codec-internal","cellular automata","PRNG"],"author":{"@type":"Person","name":"BD"},"dateModified":"2026-06-14"}</script>
 <style>
-:root{
-  --bg:#05070d;--bg2:#080b14;--panel:#101827;--panel2:#0b1220;--text:#e5eefb;--soft:#b8c4d8;--muted:#74829c;--line:#22304a;
-  --cyan:#38d7ff;--green:#37d996;--gold:#f2c94c;--violet:#a78bfa;--red:#ff6b8a;
-  --cyanDim:rgba(56,215,255,.10);--greenDim:rgba(55,217,150,.10);--goldDim:rgba(242,201,76,.10);--violetDim:rgba(167,139,250,.10);--redDim:rgba(255,107,138,.10);
-  --radius:16px;--shadow:0 18px 50px rgba(0,0,0,.36);--max:1180px;--baseFont:18px;
-}
-*{box-sizing:border-box}html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}body{margin:0;background:radial-gradient(circle at 18% 8%,rgba(56,215,255,.14),transparent 32%),radial-gradient(circle at 88% 22%,rgba(55,217,150,.10),transparent 30%),radial-gradient(circle at 82% 78%,rgba(167,139,250,.12),transparent 34%),linear-gradient(180deg,#05070d 0%,#080b14 54%,#05070d 100%);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:var(--baseFont);line-height:1.72;overflow-x:hidden}
+:root{--bg:#05070d;--bg2:#080b14;--panel:#101827;--panel2:#0b1220;--text:#e5eefb;--soft:#b8c4d8;--muted:#74829c;--line:#22304a;--cyan:#38d7ff;--green:#37d996;--gold:#f2c94c;--violet:#a78bfa;--red:#ff6b8a;--orange:#fb923c;--cyanDim:rgba(56,215,255,.10);--greenDim:rgba(55,217,150,.10);--goldDim:rgba(242,201,76,.10);--violetDim:rgba(167,139,250,.10);--redDim:rgba(255,107,138,.10);--orangeDim:rgba(251,146,60,.10);--radius:17px;--shadow:0 18px 50px rgba(0,0,0,.36);--max:1180px;--baseFont:18px;--mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;--sans:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+html[data-reader-size="0"]{--baseFont:15px}html[data-reader-size="1"]{--baseFont:16px}html[data-reader-size="2"]{--baseFont:18px}html[data-reader-size="3"]{--baseFont:20px}html[data-reader-size="4"]{--baseFont:22px}html[data-reader-size="5"]{--baseFont:24px}
+*{box-sizing:border-box}html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}body{margin:0;background:radial-gradient(circle at 18% 8%,rgba(56,215,255,.16),transparent 31%),radial-gradient(circle at 88% 22%,rgba(55,217,150,.10),transparent 30%),radial-gradient(circle at 82% 78%,rgba(167,139,250,.13),transparent 34%),linear-gradient(180deg,#05070d 0%,#080b14 54%,#05070d 100%);color:var(--text);font-family:var(--sans);font-size:var(--baseFont);line-height:1.72;overflow-x:hidden}
 body:before,body:after{content:"";position:fixed;border-radius:50%;filter:blur(92px);opacity:.23;pointer-events:none;z-index:-1}body:before{width:48vw;height:48vw;left:-12vw;top:-16vh;background:radial-gradient(circle,rgba(74,158,222,.38),rgba(55,217,150,.10) 48%,transparent 72%);animation:floatA 24s ease-in-out infinite}body:after{width:44vw;height:44vw;right:-14vw;bottom:-18vh;background:radial-gradient(circle,rgba(167,139,250,.32),rgba(242,201,76,.08) 45%,transparent 72%);animation:floatB 30s ease-in-out infinite}@keyframes floatA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(6vw,5vh,0)}}@keyframes floatB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-5vw,-6vh,0)}}
-::selection{background:var(--cyan);color:#001018}a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}strong{color:#fff}em{color:var(--green);font-style:normal}code,kbd{font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace}code{background:rgba(56,215,255,.09);border:1px solid rgba(56,215,255,.16);border-radius:6px;padding:.06em .34em;color:#edfaff}
-.scroll-progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--green),var(--cyan),var(--gold));z-index:10000}
-.topbar{position:sticky;top:0;z-index:900;background:rgba(5,7,13,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}.topbar .inner{max-width:var(--max);margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:12px;justify-content:space-between}.brand{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--green);white-space:nowrap}.nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.nav a,.nav button{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.68rem;letter-spacing:.05em;color:var(--soft);border:1px solid var(--line);border-radius:999px;padding:5px 10px;background:rgba(16,24,39,.52);cursor:pointer}.nav a:hover,.nav button:hover{color:var(--cyan);border-color:var(--cyan);background:rgba(56,215,255,.08);text-decoration:none}
-.wrapper{max-width:var(--max);margin:0 auto;padding:0 18px 76px}.hero{padding:64px 0 34px;border-bottom:1px solid var(--line)}.kicker,.eyebrow{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.74rem;letter-spacing:.24em;text-transform:uppercase;color:var(--green);margin-bottom:14px}h1{font-size:clamp(2.45rem,7vw,5.2rem);line-height:1.01;margin:0 0 12px;color:#fff;letter-spacing:-.055em;max-width:1060px}h2{font-size:clamp(1.7rem,3.8vw,2.6rem);line-height:1.12;margin:0 0 14px;color:#fff;letter-spacing:-.025em}h3{font-size:1.15rem;line-height:1.28;margin:0 0 8px;color:#fff}p{color:var(--soft);margin:.68em 0}.subtitle{font-size:clamp(1.15rem,2.4vw,1.9rem);line-height:1.28;color:var(--soft);margin:0 0 12px;max-width:940px}.tagline,.lead{font-size:1.08rem;color:#d8e4f5;max-width:980px}.small{font-size:.92rem;color:var(--muted)}.meta-row{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 0}.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.72rem;color:var(--soft);background:rgba(16,24,39,.60)}.pill.green{color:var(--green);border-color:rgba(55,217,150,.36);background:var(--greenDim)}.pill.cyan{color:var(--cyan);border-color:rgba(56,215,255,.36);background:var(--cyanDim)}.pill.gold{color:var(--gold);border-color:rgba(242,201,76,.36);background:var(--goldDim)}.pill.violet{color:var(--violet);border-color:rgba(167,139,250,.36);background:var(--violetDim)}.pill.red{color:var(--red);border-color:rgba(255,107,138,.36);background:var(--redDim)}
-.grid{display:grid;gap:14px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.grid.auto{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}.hero-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;margin-top:26px}.card,.hero-card{background:linear-gradient(180deg,rgba(16,24,39,.88),rgba(11,18,32,.78));border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}.card.green{border-color:rgba(55,217,150,.24);background:linear-gradient(180deg,rgba(55,217,150,.09),rgba(11,18,32,.78))}.card.cyan{border-color:rgba(56,215,255,.24);background:linear-gradient(180deg,rgba(56,215,255,.09),rgba(11,18,32,.78))}.card.gold{border-color:rgba(242,201,76,.24);background:linear-gradient(180deg,rgba(242,201,76,.08),rgba(11,18,32,.78))}.card.violet{border-color:rgba(167,139,250,.25);background:linear-gradient(180deg,rgba(167,139,250,.09),rgba(11,18,32,.78))}.card.red{border-color:rgba(255,107,138,.25);background:linear-gradient(180deg,rgba(255,107,138,.08),rgba(11,18,32,.78))}.label{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}.green .label{color:var(--green)}.cyan .label{color:var(--cyan)}.gold .label{color:var(--gold)}.violet .label{color:var(--violet)}.red .label{color:var(--red)}
-.toc{margin:26px 0;background:rgba(11,18,32,.72);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}.toc h2{font-size:1.1rem;margin:0 0 8px}.toc .links{display:flex;flex-wrap:wrap;gap:8px}.toc a{border:1px solid rgba(56,215,255,.18);border-radius:999px;padding:5px 10px;font-size:.8rem;color:var(--soft);font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.toc a:hover{color:var(--cyan);border-color:var(--cyan);text-decoration:none;background:rgba(56,215,255,.06)}section{margin:42px 0}ul{color:var(--soft);padding-left:1.25em}li{margin:.28em 0}.callout{background:linear-gradient(135deg,rgba(56,215,255,.10),rgba(55,217,150,.06));border:1px solid rgba(56,215,255,.26);border-left:4px solid var(--cyan);border-radius:var(--radius);padding:18px 21px;margin:18px 0}.callout.gold{background:rgba(242,201,76,.08);border-color:rgba(242,201,76,.30);border-left-color:var(--gold)}.callout.red{background:rgba(255,107,138,.08);border-color:rgba(255,107,138,.30);border-left-color:var(--red)}
-.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:rgba(7,16,29,.72);box-shadow:0 10px 32px rgba(0,0,0,.18)}table{border-collapse:collapse;width:100%;min-width:760px}th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}th{color:#fff;background:rgba(56,215,255,.08);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.76rem}td{color:var(--soft);font-size:.92rem}tr:last-child td{border-bottom:0}.score,.num{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#fff}.score{color:var(--gold)}
-pre{white-space:pre-wrap;overflow:auto;background:#07101d;border:1px solid var(--line);border-radius:14px;padding:16px;color:#dce8f8;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.82rem;line-height:1.62}details{border:1px solid var(--line);border-radius:14px;background:rgba(11,18,32,.68);margin:14px 0;overflow:hidden}summary{cursor:pointer;padding:14px 17px;color:#fff;font-weight:700;list-style:none}summary::-webkit-details-marker{display:none}summary:before{content:"+";display:inline-grid;place-items:center;width:22px;height:22px;margin-right:9px;border:1px solid var(--line);border-radius:50%;color:var(--cyan);font-family:ui-monospace,SFMono-Regular,Consolas,monospace}details[open] summary:before{content:"–"}.details-body{padding:0 17px 17px;border-top:1px solid var(--line)}
-.footer{border-top:1px solid var(--line);margin-top:44px;padding:22px 0 56px;color:var(--muted);font-size:.92rem}.font-float{position:fixed;right:14px;bottom:14px;z-index:1200;display:flex;gap:6px;background:rgba(5,7,13,.76);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:999px;padding:6px;box-shadow:var(--shadow)}.font-float button{border:1px solid var(--line);background:rgba(16,24,39,.92);color:var(--text);border-radius:999px;padding:7px 10px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.75rem;cursor:pointer}.font-float button:hover{color:var(--cyan);border-color:var(--cyan)}
-@media(max-width:920px){.hero-grid,.grid.two,.grid.three{grid-template-columns:1fr}.topbar .inner{align-items:flex-start;flex-direction:column}.nav{justify-content:flex-start}}@media(max-width:620px){:root{--baseFont:17px}.wrapper{padding-left:14px;padding-right:14px}.hero{padding-top:38px}.card,.hero-card{padding:17px}table{min-width:680px}}
+::selection{background:var(--cyan);color:#001018}a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}strong{color:#fff}em{color:var(--green);font-style:normal}code,kbd{font-family:var(--mono)}code{background:rgba(56,215,255,.09);border:1px solid rgba(56,215,255,.16);border-radius:6px;padding:.06em .34em;color:#edfaff}.scroll-progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--green),var(--cyan),var(--gold));z-index:10000}
+.topbar{position:sticky;top:0;z-index:900;background:rgba(5,7,13,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}.topbar .inner{max-width:var(--max);margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:12px;justify-content:space-between}.brand{font-family:var(--mono);font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--green);white-space:nowrap}.nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.nav a{font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--soft);border:1px solid var(--line);border-radius:999px;padding:5px 10px;background:rgba(16,24,39,.52)}.nav a:hover{color:var(--cyan);border-color:var(--cyan);background:rgba(56,215,255,.08);text-decoration:none}
+.wrapper{max-width:var(--max);margin:0 auto;padding:0 18px 76px}.hero{padding:64px 0 34px;border-bottom:1px solid var(--line)}.kicker{font-family:var(--mono);font-size:.74rem;letter-spacing:.24em;text-transform:uppercase;color:var(--green);margin-bottom:14px}h1{font-size:clamp(2.45rem,7vw,5.2rem);line-height:1.01;margin:0 0 12px;color:#fff;letter-spacing:-.055em;max-width:1080px}.subtitle{font-size:clamp(1.15rem,2.4vw,1.9rem);line-height:1.28;color:var(--soft);margin:0 0 12px;max-width:980px}.tagline{font-size:1.05rem;color:#d7e3f5;max-width:980px;margin:16px 0 20px}.meta-row{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 0}.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-family:var(--mono);font-size:.72rem;color:var(--soft);background:rgba(16,24,39,.60)}.pill.green{color:var(--green);border-color:rgba(55,217,150,.36);background:var(--greenDim)}.pill.cyan{color:var(--cyan);border-color:rgba(56,215,255,.36);background:var(--cyanDim)}.pill.gold{color:var(--gold);border-color:rgba(242,201,76,.36);background:var(--goldDim)}.pill.violet{color:var(--violet);border-color:rgba(167,139,250,.36);background:var(--violetDim)}.pill.red{color:var(--red);border-color:rgba(255,107,138,.36);background:var(--redDim)}.pill.orange{color:var(--orange);border-color:rgba(251,146,60,.36);background:var(--orangeDim)}
+.hero-grid{display:grid;grid-template-columns:1.32fr .88fr;gap:18px;margin-top:26px}.hero-card,.card{background:linear-gradient(180deg,rgba(16,24,39,.88),rgba(11,18,32,.78));border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}.hero-card h2,.card h3{font-size:1.23rem;margin:0 0 10px;color:#fff}.hero-card p,.card p{margin:.35em 0;color:var(--soft)}
+.toc{margin:26px 0;background:rgba(11,18,32,.72);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}.toc h2{font-size:1.1rem;margin:0 0 8px}.toc .links{display:flex;flex-wrap:wrap;gap:8px}.toc a{border:1px solid rgba(56,215,255,.18);border-radius:999px;padding:5px 10px;font-size:.8rem;color:var(--soft);font-family:var(--mono)}.toc a:hover{color:var(--cyan);border-color:var(--cyan);text-decoration:none;background:rgba(56,215,255,.06)}
+section{margin:42px 0}.eyebrow{font-family:var(--mono);font-size:.70rem;letter-spacing:.22em;text-transform:uppercase;color:var(--green);margin-bottom:8px}h2{font-size:clamp(1.7rem,3.8vw,2.6rem);line-height:1.12;margin:0 0 14px;color:#fff;letter-spacing:-.025em}h3{font-size:1.15rem;line-height:1.28;margin:0 0 8px;color:#fff}p{color:var(--soft);margin:.68em 0}.lead{font-size:1.08rem;color:#d8e4f5;max-width:1000px}.small{font-size:.92rem;color:var(--muted)}.grid{display:grid;gap:14px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}.grid.auto{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.card.green{border-color:rgba(55,217,150,.24);background:linear-gradient(180deg,rgba(55,217,150,.09),rgba(11,18,32,.78))}.card.cyan{border-color:rgba(56,215,255,.24);background:linear-gradient(180deg,rgba(56,215,255,.09),rgba(11,18,32,.78))}.card.gold{border-color:rgba(242,201,76,.24);background:linear-gradient(180deg,rgba(242,201,76,.08),rgba(11,18,32,.78))}.card.violet{border-color:rgba(167,139,250,.25);background:linear-gradient(180deg,rgba(167,139,250,.09),rgba(11,18,32,.78))}.card.red{border-color:rgba(255,107,138,.25);background:linear-gradient(180deg,rgba(255,107,138,.08),rgba(11,18,32,.78))}.card.orange{border-color:rgba(251,146,60,.25);background:linear-gradient(180deg,rgba(251,146,60,.08),rgba(11,18,32,.78))}.label{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}.green .label{color:var(--green)}.cyan .label{color:var(--cyan)}.gold .label{color:var(--gold)}.violet .label{color:var(--violet)}.red .label{color:var(--red)}.orange .label{color:var(--orange)}
+ul{color:var(--soft);padding-left:1.25em}li{margin:.28em 0}.callout{background:linear-gradient(135deg,rgba(56,215,255,.10),rgba(55,217,150,.06));border:1px solid rgba(56,215,255,.26);border-left:4px solid var(--cyan);border-radius:var(--radius);padding:18px 21px;margin:18px 0}.callout.gold{background:rgba(242,201,76,.08);border-color:rgba(242,201,76,.30);border-left-color:var(--gold)}.callout.red{background:rgba(255,107,138,.08);border-color:rgba(255,107,138,.30);border-left-color:var(--red)}.callout.green{background:rgba(55,217,150,.08);border-color:rgba(55,217,150,.30);border-left-color:var(--green)}
+pre{white-space:pre-wrap;overflow:auto;background:#07101d;border:1px solid var(--line);border-radius:14px;padding:16px;color:#dce8f8;font-family:var(--mono);font-size:.82rem;line-height:1.62}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:rgba(7,16,29,.72);box-shadow:0 10px 32px rgba(0,0,0,.18)}table{border-collapse:collapse;width:100%;min-width:780px}th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}th{color:#fff;background:rgba(56,215,255,.08);font-family:var(--mono);font-size:.76rem}td{color:var(--soft);font-size:.92rem}tr:last-child td{border-bottom:0}.score{font-family:var(--mono);color:var(--gold)}.num{font-family:var(--mono);color:#fff}.status-ok{color:var(--green);font-weight:800}.status-open{color:var(--gold);font-weight:800}.status-no{color:var(--red);font-weight:800}
+.metric{background:rgba(16,24,39,.72);border:1px solid var(--line);border-radius:14px;padding:13px 15px}.metric .big{font-family:var(--mono);font-size:1.35rem;color:#fff;font-weight:900}.metric .cap{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono)}
+details.evidence{border:1px solid var(--line);border-radius:14px;background:rgba(7,16,29,.58);padding:12px 15px;margin:14px 0}details.evidence summary{cursor:pointer;color:#fff;font-weight:800;font-family:var(--mono);font-size:.82rem;letter-spacing:.04em}details.evidence[open]{background:rgba(16,24,39,.72)}.footer{border-top:1px solid var(--line);margin-top:44px;padding:22px 0 56px;color:var(--muted);font-size:.92rem}.font-float{position:fixed;right:14px;bottom:14px;z-index:1200;display:flex;gap:6px;background:rgba(5,7,13,.76);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:999px;padding:6px;box-shadow:var(--shadow)}.font-float button{border:1px solid var(--line);background:rgba(16,24,39,.92);color:var(--text);border-radius:999px;padding:7px 10px;font-family:var(--mono);cursor:pointer}.font-float button:hover{border-color:var(--cyan);color:var(--cyan)}
+@media(max-width:820px){.hero-grid,.grid.two,.grid.three,.grid.four{grid-template-columns:1fr}.topbar .inner{align-items:flex-start;flex-direction:column}.nav{justify-content:flex-start}.hero{padding-top:42px}.wrapper{padding-left:16px;padding-right:16px}table{min-width:700px}}
 </style>
 </head>
 <body>
 <div class="scroll-progress" id="scrollProgress"></div>
-<header class="topbar">
-  <div class="inner">
-    <div class="brand">8Z · Post-Codec Noise Scout</div>
-    <nav class="nav" aria-label="Page controls">
-      <a href="./">CRP index</a><a href="../BD/">BD Hub</a><a href="#status">Status</a><a href="#evidence">Evidence</a><a href="#model">Model</a><a href="#gates">Gates</a><a href="#next">Next</a>
-      <button type="button" onclick="toggleDetails(true)">Expand data</button><button type="button" onclick="toggleDetails(false)">Collapse data</button>
-    </nav>
-  </div>
-</header>
+<nav class="topbar"><div class="inner"><div class="brand">8Z · Noise Scout · wide arena</div><div class="nav"><a href="../BD/">BD hub</a><a href="./index.html">CRP index</a><a href="#short">Verdict</a><a href="#evidence">Evidence</a><a href="#wide">Wide arena</a><a href="#layers">Layers</a><a href="#next">Next</a></div></div></nav>
 <main class="wrapper">
-  <section class="hero" id="top">
-    <div class="kicker">CRP research page · single canonical HTML</div>
-    <h1>8Z Post-Codec Algorithmic Noise Scout</h1>
-    <p class="subtitle">A falsification-first arena for testing whether deterministic algorithmic-noise generators can reduce residual cost on selected codec and 8Z representation layers.</p>
-    <p class="tagline">The useful claim is narrow: not “all compressed files get smaller,” but “some structured residual layers may still contain recoverable algorithmic signal.”</p>
-    <div class="meta-row">
-      <span class="pill green">Python arena v0.1.1 complete</span>
-      <span class="pill cyan">Selftest + smoke + standard + deep done</span>
-      <span class="pill gold">115,600-candidate deep panel</span>
-      <span class="pill violet">Strict MDL + exact verify</span>
-      <span class="pill red">No real post-codec claim yet</span>
-    </div>
-    <div class="hero-grid">
-      <div class="hero-card">
-        <h2>Strong version</h2>
-        <p>Search for <strong>deterministic generator + residual</strong> descriptions that beat strong baselines under MDL, ablation, same-budget nulls, and exact reconstruction.</p>
-        <p>The first complete arena result is exactly what a scout should show: known synthetic CA/PRNG structure is recoverable, controls stay clean, and compressed synthetic variants do not get promoted by accident.</p>
-      </div>
-      <div class="hero-card">
-        <h2>Weak version rejected</h2>
-        <p>Do not claim arbitrary ZIP, 7Z, PNG, FLAC, JPG, or MP3 final bytes can already be compressed another 5–15%; this run did not test ordinary real final containers.</p>
-        <p>Final bytes are still the stress test, not the main expected win layer. v0.1.1 found no ordinary compressed-file proof. The first final-byte positives are synthetic known-generator recoveries, not ordinary ZIP/PNG/FLAC/JPEG/MP3 evidence.</p>
-      </div>
-    </div>
-  </section>
+<section class="hero">
+  <div class="kicker">Post-codec · codec-internal · final-byte stress tests · strict MDL</div>
+  <h1>8Z Post‑Codec Algorithmic Noise Scout</h1>
+  <p class="subtitle">A wide arena for testing whether deterministic mathematical structure can describe raw, identity-final, true-codec-final, codec-internal, and 8Z-internal streams as generator + residual.</p>
+  <p class="tagline">Status after the first master sweep and the v0.2 patch: the harness is alive, controls are clean, synthetic/procedural structure is recoverable, codec-internal probes show early signal, and true final compressed streams are still unproven. The arena should not be narrowed early; it should keep searching all layers and let evidence sort them.</p>
+  <div class="meta-row"><span class="pill green">wide arena stays open</span><span class="pill cyan">v0.1.1 master completed</span><span class="pill gold">v0.2 layer split built</span><span class="pill violet">workers + resume + live bundle</span><span class="pill red">not a production compression claim</span></div>
+  <div class="hero-grid"><div class="hero-card"><h2>Strong version</h2><p>Search broadly across layers. Promote only candidates that beat fair baselines, survive controls/ablations, include search cost and overhead, and reconstruct exactly.</p></div><div class="hero-card"><h2>Wrong shortcut rejected</h2><p>Do not pre-decide that final compressed bytes are dead, and do not pre-decide that they contain magic. Keep them in the arena, but report their evidence separately from raw and codec-internal layers.</p></div></div>
+</section>
+<div class="toc"><h2>Jump</h2><div class="links"><a href="#short">Verdict</a><a href="#evidence">Current evidence</a><a href="#wide">Wide-open policy</a><a href="#layers">Layer map</a><a href="#model">Core model</a><a href="#gates">Gates</a><a href="#forecast">Forecast ledger</a><a href="#ops">Ops artifacts</a><a href="#next">Next action</a></div></div>
+<section id="short"><div class="eyebrow">1. Clear verdict</div><h2>Potential remains. Do not narrow the arena too early.</h2><p class="lead">The first master run does <strong>not</strong> prove that ordinary finished ZIP, 7Z, PNG, FLAC, JPG, or MP3 files can already be compressed 5–15% further. But it also does <strong>not</strong> kill the branch. The right conclusion is stricter and more useful: the scout should keep searching broadly across final bytes, selected weak final files, codec-internal streams, raw/procedural positives, and 8Z-internal residual layers — while reporting each layer separately.</p><div class="callout"><p><strong>BD correction accepted:</strong> do not shrink the search space just because the earliest clean signal appears before the final entropy layer. Let the arena search everything, even if the longer runs take time. Evidence may still appear in rare final-byte cases, weak encoders, bad settings, metadata/tile/block artifacts, dictionaries, or specific procedural payloads.</p></div></section>
+<section id="evidence"><div class="eyebrow">2. Current arena evidence</div><h2>v0.1.1 proved the scout is alive; v0.2 fixed the semantics.</h2><p class="lead">The current evidence is good for a Phase‑0/Phase‑1 scout: the harness finds known structure, keeps random controls clean, supports workers/resume/live extraction, and now separates <code>raw</code>, <code>identity-final</code>, <code>true-codec-final</code>, and <code>codec-internal</code> layers.</p><div class="grid auto"><div class="metric"><div class="cap">v0.1.1 deep candidates</div><div class="big">115,600</div><p class="small">Deep 4-worker sweep over 18 targets.</p></div><div class="metric"><div class="cap">v0.1.1 controls</div><div class="big">0 fail</div><p class="small">Random false-positive rate reported as <code>0.0</code>.</p></div><div class="metric"><div class="cap">v0.1.1 promoted positives</div><div class="big">54</div><p class="small">Mostly synthetic/procedural recoveries; review required.</p></div><div class="metric"><div class="cap">v0.2 true-codec-final</div><div class="big">0</div><p class="small">Validation did not yet prove final compressed-file shrinking.</p></div></div><div class="table-wrap"><table><thead><tr><th>Evidence point</th><th>Result</th><th>Meaning</th></tr></thead><tbody><tr><td>Selftest + smoke</td><td><span class="status-ok">PASS</span></td><td>Basic harness behavior works.</td></tr><tr><td>Synthetic CA / PRNG recovery</td><td><span class="status-ok">Strong positive</span></td><td>The arena can recover structure when structure really exists.</td></tr><tr><td>Random / shuffled / control targets</td><td><span class="status-ok">Clean so far</span></td><td>No immediate coincidence-miner failure.</td></tr><tr><td>v0.1.1 “final-bytes” hits</td><td><span class="status-open">Review required</span></td><td>The label was too broad because identity/as-is synthetic streams were mixed with true codec-final streams.</td></tr><tr><td>v0.2 layer split</td><td><span class="status-ok">Accepted</span></td><td>Results can now be reported as raw, identity-final, true-codec-final, or codec-internal.</td></tr><tr><td>True final compressed streams</td><td><span class="status-open">Open / not proven yet</span></td><td>Still searchable, but no public compression claim yet.</td></tr></tbody></table></div><details class="evidence"><summary>Open compact raw evidence from current runs</summary><pre>v0.1.1 master bundle: NOISESCOUT_MASTER_LIVE_EXTRACT_FOR_GPT_20260614_001528.zip
+selftest/run: targets 2/2, candidates 41, positives 1, controls 4/0 fail, FPR 0.0, verdict SYNTHETIC_RECOVERY_ONLY
+smoke: targets 3/3, candidates 33, positives 1, controls 6/0 fail, FPR 0.0, verdict SYNTHETIC_RECOVERY_ONLY
+standard_4w: targets 18/18, candidates 24,800, positives 28, controls 30/0 fail, FPR 0.0, verdict FINAL_BYTE_STRUCTURED_SIGNAL_FOUND_REVIEW_REQUIRED
+deep_4w: targets 18/18, candidates 115,600, positives 54, controls 30/0 fail, FPR 0.0, verdict FINAL_BYTE_STRUCTURED_SIGNAL_FOUND_REVIEW_REQUIRED
 
-  <aside class="toc" aria-label="Page map">
-    <h2>Page map</h2>
-    <div class="links">
-      <a href="#status">Current status</a><a href="#evidence">Arena results</a><a href="#model">Core model</a><a href="#layers">Target layers</a><a href="#gates">Acceptance gates</a><a href="#reviews">R1 review synthesis</a><a href="#forecast">Forecast ledger</a><a href="#ops">Artifact policy</a><a href="#risks">Risks</a><a href="#next">Next action</a>
-    </div>
-  </aside>
-
-  <section id="status">
-    <div class="eyebrow">1. Current status</div>
-    <h2>Master v0.1.1 sweep completed. The result is useful, but narrower than the optimistic seed.</h2>
-    <div class="grid three">
-      <div class="card green"><div class="label">Validated</div><h3>Harness works</h3><p>Selftest and smoke both passed. The arena recovered known raw synthetic CA structure and kept random controls clean.</p></div>
-      <div class="card cyan"><div class="label">Completed</div><h3>Standard + deep panels finished</h3><p>Both 4-worker panels completed all 18 target layers. The live bundle included summaries, CSV/JSON evidence, checkpoints, and per-target partial state.</p></div>
-      <div class="card red"><div class="label">Not proven</div><h3>No true post-codec win yet</h3><p>The compressed CA→zlib and CA→lzma target files produced zero promoted structured hits. The broad “compressed files get smaller” claim remains unproven.</p></div>
-    </div>
-    <div class="callout gold"><strong>Important correction:</strong> the arena verdict string <code>FINAL_BYTE_STRUCTURED_SIGNAL_FOUND_REVIEW_REQUIRED</code> is technically over-broad in v0.1.1. Some <code>final-bytes</code> layers were effectively <code>as_is</code> duplicates when the classical codec did not improve the file. For public interpretation, count this as <strong>synthetic raw/as-is recovery</strong>, not as proof of post-codec compression.</div>
-  </section>
-  <section id="evidence">
-    <div class="eyebrow">2. Arena results · 2026-06-14 live bundle</div>
-    <h2>Clean Phase-0 result: synthetic structure recovered; compressed final bytes still resisted.</h2>
-    <p class="lead">The live bundle supports a strong engineering conclusion: the scout can find real known generator structure under exact reconstruction and controls. It does <strong>not</strong> yet support the public claim that ordinary ZIP/7Z/PNG/FLAC/JPG/MP3-style final bytes can be reduced after compression.</p>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Stage</th><th>Scope</th><th>Candidate trials</th><th>Promoted positives</th><th>Controls / FPR</th><th>Interpretation</th></tr></thead>
-        <tbody>
-          <tr><td><strong>Selftest</strong></td><td>2 raw targets</td><td class="num">41</td><td class="num">1</td><td>4 controls · FPR <span class="score">0.0</span></td><td>PASS. Raw CA Rule 90 recovered; random stayed negative.</td></tr>
-          <tr><td><strong>Smoke</strong></td><td>3 raw targets</td><td class="num">33</td><td class="num">1</td><td>6 controls · FPR <span class="score">0.0</span></td><td>PASS. Raw CA Rule 90 recovered; CA→zlib was not promoted.</td></tr>
-          <tr><td><strong>Standard 4W</strong></td><td>9 files × raw/final layers = 18 targets</td><td class="num">24,800</td><td class="num">28</td><td>30 controls · FPR <span class="score">0.0</span></td><td>Recovered synthetic raw/as-is CA/PRNG structure. No promoted compressed-file hit.</td></tr>
-          <tr><td><strong>Deep 4W</strong></td><td>same 18 targets, larger candidate budget</td><td class="num">115,600</td><td class="num">54</td><td>30 controls · FPR <span class="score">0.0</span></td><td>Same conclusion with stronger search: more synthetic positives, still zero zlib/lzma post-codec wins.</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="grid three" style="margin-top:14px">
-      <div class="card green"><div class="label">Real win</div><h3>Known raw generators recovered</h3><p>Best deep hits: SplitMix64 <span class="score">99.707%</span>, CA Rule 90 <span class="score">99.701%</span>, and CA Rule 110 <span class="score">99.509%</span> savings on appropriate synthetic raw/as-is layers, with exact reconstruction.</p></div>
-      <div class="card gold"><div class="label">Needs tightening</div><h3>Wrong-family small hits appeared</h3><p>Some PRNG targets also produced small CA-family promotions around <span class="score">0.39–1.78%</span>. These should be demoted to weak/incidental unless they survive a stricter family-consistency and search-cost gate.</p></div>
-      <div class="card red"><div class="label">Negative result</div><h3>Compressed targets stayed negative</h3><p><code>synthetic_ca_rule90_then_zlib.bin</code> and <code>synthetic_ca_rule110_then_lzma.bin</code> produced <span class="score">0</span> structured positives in standard and deep. This is the key anti-hype result.</p></div>
-    </div>
-    <details>
-      <summary>Show compact live-bundle evidence summary</summary>
-      <div class="details-body"><pre>Bundle: NOISESCOUT_MASTER_LIVE_EXTRACT_FOR_GPT_20260614_001528.zip
-Extractor: v0.1.1
-Runs included: 4
-
-run/selftest-like panel:
-  verdict=SYNTHETIC_RECOVERY_ONLY
-  progress=2/2 · candidates=41 · controls=4 · positives=1 · FPR=0.0
-
-smoke:
-  verdict=SYNTHETIC_RECOVERY_ONLY
-  progress=3/3 · candidates=33 · controls=6 · positives=1 · FPR=0.0
-
-standard_4w:
-  verdict=FINAL_BYTE_STRUCTURED_SIGNAL_FOUND_REVIEW_REQUIRED
-  progress=18/18 · candidates=24,800 · controls=30 · positives=28 · FPR=0.0
-  public interpretation: synthetic raw/as-is generator recovery; no compressed-file promoted hit
-
-deep_4w:
-  verdict=FINAL_BYTE_STRUCTURED_SIGNAL_FOUND_REVIEW_REQUIRED
-  progress=18/18 · candidates=115,600 · controls=30 · positives=54 · FPR=0.0
-  public interpretation: stronger synthetic recovery; no zlib/lzma final-byte win
-
-Compressed-file check:
-  synthetic_ca_rule90_then_zlib.bin: 0 promoted structured positives
-  synthetic_ca_rule110_then_lzma.bin: 0 promoted structured positives
-
-Control-file check:
-  random_control / shuffle_control / classical_pattern_control / degenerate_control: 0 promoted structured positives
-  control_failures: 0</pre></div>
-    </details>
-    <details>
-      <summary>Show target-level interpretation table</summary>
-      <div class="details-body">
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Target family</th><th>Result</th><th>Meaning</th></tr></thead>
-            <tbody>
-              <tr><td>Random 64 KiB raw/final</td><td>No promoted structure</td><td>Good negative control.</td></tr>
-              <tr><td>Shuffled CA Rule 90 raw/final</td><td>No promoted structure</td><td>Good shuffle control: same bytes, broken generator order.</td></tr>
-              <tr><td>Pattern text / zeros controls</td><td>No Noise Scout promotions</td><td>Good: ordinary classical compressibility did not get mislabeled as algorithmic-noise success.</td></tr>
-              <tr><td>Raw CA Rule 90 / Rule 110</td><td>Promoted structured positives</td><td>Positive-control success: known CA sources are recoverable.</td></tr>
-              <tr><td>Raw/as-is SplitMix64 PRNG</td><td>Promoted structured positives</td><td>Positive-control success for PRNG generator, but wrong-family CA micro-hits need stricter demotion.</td></tr>
-              <tr><td>CA Rule 90 → zlib final bytes</td><td><span class="pill red">0 promoted hits</span></td><td>No current evidence that final zlib bytes retain useful recoverable generator signal.</td></tr>
-              <tr><td>CA Rule 110 → lzma final bytes</td><td><span class="pill red">0 promoted hits</span></td><td>No current evidence that final lzma bytes retain useful recoverable generator signal.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </details>
-  </section>
-  <section id="model">
-    <div class="eyebrow">3. Core model</div>
-    <h2>Generator + residual, not magic compression.</h2>
-    <div class="grid two">
-      <div class="card cyan">
-        <div class="label">Description</div>
-        <pre>X = original file
-B = codec_or_representation_layer(X)
-G = deterministic_noise_generator(theta, len(B))
+v0.2 validation:
+selftest: PASS
+smoke: PASS
+2-worker panel: PASS
+resume/live bundle: PASS
+raw positives: yes
+identity-final positives: yes
+codec-internal positives: yes
+true-codec-final positives: 0 in validation
+random FPR: 0.0</pre></details></section>
+<section id="wide"><div class="eyebrow">3. Wide-arena policy</div><h2>Do not kill paths early. Search all; classify hard.</h2><p class="lead">The arena should remain broad even if it runs for days. The narrowing happens only in the <em>public interpretation</em>, not in the search space.</p><div class="grid two"><div class="card green"><div class="label">Keep alive</div><ul><li>ordinary final compressed files</li><li>selected weak/structured final files</li><li>codec-internal streams</li><li>raw and identity-final controls</li><li>8Z residual/token layers</li><li>formula, CA, PRNG, LFSR/GF, geometry, later PySR candidates</li></ul></div><div class="card gold"><div class="label">Classify separately</div><ul><li><code>TRUE_FINAL_WIN</code>: actual post-codec final-stream MDL win</li><li><code>CODEC_INTERNAL_WIN</code>: structure before/inside codec entropy layer</li><li><code>RAW_SYNTHETIC_RECOVERY</code>: positive-control result</li><li><code>IDENTITY_FINAL_RECOVERY</code>: as-is duplicate / not a true codec win</li><li><code>WEAK_HINT</code>: interesting but not promotion-grade</li><li><code>NULL_CLEAN</code>: useful negative/control outcome</li></ul></div></div><div class="callout"><strong>Rule:</strong> wide search is allowed; wide claims are not. A long run may search everything, but the report must not mix synthetic raw recovery with true final compressed-file compression.</div></section>
+<section id="layers"><div class="eyebrow">4. Target layers</div><h2>All target layers remain in the arena.</h2><div class="table-wrap"><table><thead><tr><th>Layer</th><th>Why keep it alive?</th><th>Status after current evidence</th><th>Promotion rule</th></tr></thead><tbody><tr><td><strong>True final compressed bytes</strong></td><td>Hardest but highest-impact target. This is the original bold seed.</td><td><span class="status-open">Open / negative so far</span></td><td>Must beat fair baseline after all overhead and exact reconstruction. Report separately as <code>TRUE_FINAL_WIN</code>.</td></tr><tr><td><strong>Selected weak/structured final files</strong></td><td>Weak encoders, metadata-heavy files, procedural streams, and pathological cases may still have exploitable structure.</td><td><span class="status-open">Open</span></td><td>Must beat recompress/strip/strong-codec baselines, not just original file size.</td></tr><tr><td><strong>Codec-internal layers</strong></td><td>Structure often exists before entropy whitening: PNG filters, DEFLATE literals/tokens, FLAC LPC residuals, JPEG coefficients.</td><td><span class="status-ok">Early synthetic signal</span></td><td>Promote as codec-internal, not final-byte compression.</td></tr><tr><td><strong>8Z residual/token layers</strong></td><td>Most controllable layer; 8Z can expose and choose representations before final packing.</td><td><span class="status-open">High-priority open</span></td><td>Needs strict MDL against the current 8Z baseline plus exact decode.</td></tr><tr><td><strong>Raw / synthetic procedural streams</strong></td><td>Positive controls prove the generator search and reconstruction path work.</td><td><span class="status-ok">Validated</span></td><td>Do not count as final compression; use as harness proof and regression test.</td></tr><tr><td><strong>Random / shuffled controls</strong></td><td>Essential nulls. Without clean controls, every “win” is suspect.</td><td><span class="status-ok">Clean so far</span></td><td>Any false-positive drift forces stronger gates.</td></tr></tbody></table></div></section>
+<section id="model"><div class="eyebrow">5. Core model</div><h2>Generator + residual + fair cost accounting.</h2><pre>X = source bytes or selected representation layer
+B = target layer bytes  // raw, true-codec-final, codec-internal, 8Z residual, ...
+G = deterministic generator(theta, len(B))
 R = residual_transform(B, G)
 
 Accept iff:
 L(generator_family + theta + transform + residual_codec(R)
-  + overhead + phi_cost + search_budget_cost)
-beats fair baselines and controls.</pre>
-      </div>
-      <div class="card green">
-        <div class="label">Generator families</div>
-        <ul>
-          <li>Constants and no-op ablations.</li>
-          <li>Small PRNGs and seed sweeps.</li>
-          <li>Cellular automata: rules 30, 90, 110, 184.</li>
-          <li>Later: LFSR/GF, symbolic formulas, learned formula synthesis.</li>
-        </ul>
-      </div>
-    </div>
-  </section>
+  + metadata + search_budget_cost + phi_cost)
+< L_fair_baseline(B) - safety_margin
 
-  <section id="layers">
-    <div class="eyebrow">4. Target layers</div>
-    <h2>Final compressed bytes are the hardest layer — v0.1.1 reinforced that.</h2>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Priority</th><th>Layer</th><th>R1-adjusted stance after v0.1.1</th></tr></thead>
-        <tbody>
-          <tr><td>1</td><td><strong>8Z-internal residual/token layers</strong></td><td>Best practical target because 8Z controls the representation before final entropy whitening.</td></tr>
-          <tr><td>2</td><td><strong>Codec-internal residual/token layers</strong></td><td>Best next external-codec target: PNG filters, FLAC LPC residuals, DEFLATE literals/tokens, LZ token streams, JPEG/MP3 coefficient domains.</td></tr>
-          <tr><td>3</td><td><strong>Synthetic / procedural streams</strong></td><td>Confirmed useful as positive controls and harness calibration. Do not confuse this with real-world compression proof.</td></tr>
-          <tr><td>4</td><td><strong>Selected weak/structured final files</strong></td><td>Still possible, but must beat strong-codec baselines and empirical nulls.</td></tr>
-          <tr><td>5</td><td><strong>Ordinary final compressed bytes</strong></td><td>Stress test and likely negative-control layer. v0.1.1 found no promoted zlib/lzma final-stream win.</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+And:
+exact_reconstruction(B) == true
+controls_clean == true
+same_budget_null_beaten == true</pre></section>
+<section id="gates"><div class="eyebrow">6. Evaluation gates</div><h2>Broad search needs harder gates, not smaller imagination.</h2><div class="grid two"><div class="card red"><div class="label">Reject / demote</div><ul><li>tiny chunk lucky wins</li><li>wrong-family micro-hits</li><li>identity-final hits counted as final-codec wins</li><li>wins that vanish under same-budget nulls</li><li>wins that lose to stronger baseline recompression</li></ul></div><div class="card green"><div class="label">Promote</div><ul><li>strict MDL win including overhead</li><li>fair baseline beaten</li><li>generator ablation beaten</li><li>empirical null beaten</li><li>exact reconstruction verified</li><li>repeatable across seeds/chunks/files where claimed</li></ul></div></div></section>
+<section id="forecast"><div class="eyebrow">7. Forecast ledger</div><h2>Do not erase the bold forecast; tag it as open.</h2><p class="lead">BD’s original forecast is still a useful exploration seed. The page should not pretend it is already proven, and it also should not prematurely kill it.</p><div class="table-wrap"><table><thead><tr><th>Target</th><th>Original seed</th><th>Status now</th><th>How to test next</th></tr></thead><tbody><tr><td>T1 ordinary final compressed files</td><td>Maybe 5–15% on many files; small chance of 50% outliers.</td><td><span class="status-open">Open but unsupported so far</span></td><td>Run broad real corpus; require true-codec-final labels and fair recompression baselines.</td></tr><tr><td>T2 selected final compressed files</td><td>Implicitly included in T1.</td><td><span class="status-open">Still plausible for special cases</span></td><td>Search weak encoders, procedural payloads, metadata-heavy files, and synthetic-to-codec stress cases.</td></tr><tr><td>T3 codec-internal token/residual layers</td><td>Not separated in the first seed.</td><td><span class="status-ok">Early synthetic signal</span></td><td>Build extractors and test PNG/DEFLATE/FLAC/JPEG/8Z layers.</td></tr><tr><td>T4 8Z-internal residual/token layers</td><td>Not separated in the first seed.</td><td><span class="status-open">Best controllable bridge</span></td><td>Feed actual 8Z residual/payload outputs into Noise Scout.</td></tr><tr><td>T5 synthetic/procedural hero files</td><td>High explorer prior.</td><td><span class="status-ok">Validated as positive controls</span></td><td>Keep as regression tests, not as public compression claims.</td></tr></tbody></table></div></section>
+<section id="r1"><div class="eyebrow">8. R1 LLM review synthesis</div><h2>Reviewers hardened the idea; they did not kill it.</h2><p class="lead">The strongest review correction remains valid after the arena builds: descriptor cost and <code>phi_cost</code> are not enough. Same-budget controls, generator ablation, fair baselines, exact reconstruction, and layer labels are mandatory.</p><details class="evidence"><summary>Open compact R1 contribution table</summary><div class="table-wrap"><table><thead><tr><th>Rank</th><th>LLM</th><th>Paper score</th><th>Contribution</th><th>Best contribution</th></tr></thead><tbody><tr><td>1</td><td>Claude Opus 4.8</td><td class="score">84</td><td class="score">94</td><td>Required empirical null + generator ablation.</td></tr><tr><td>2</td><td>ChatGPT 5.5 Pro</td><td class="score">87</td><td class="score">90</td><td>Built synthesis, v0.1 falsification harness, and forecast split.</td></tr><tr><td>3</td><td>Gemini 3.1 Pro</td><td class="score">88</td><td class="score">89</td><td>Engineering guardrails: chunk floors, strict seeds, search charge.</td></tr><tr><td>4</td><td>MiniMax M3 Thinking</td><td class="score">78</td><td class="score">88</td><td>Same-codec trap, evaluated trial count, layer costs.</td></tr><tr><td>5</td><td>Qwen 3.7 Plus</td><td class="score">88</td><td class="score">86</td><td>Approve-with-gates and build sequencing.</td></tr><tr><td>6–10</td><td>Grok, Kimi, MetaAI, GLM, DeepSeek</td><td class="score">72–81</td><td class="score">76–84</td><td>Final-byte caution, codec-internal emphasis, phi calibration, module split, and anti-hype guardrails.</td></tr></tbody></table></div></details></section>
+<section id="ops"><div class="eyebrow">9. Operational artifact policy</div><h2>One public page; many local diagnostics.</h2><div class="grid three"><div class="card green"><div class="label">public</div><h3>This HTML page</h3><p><code>8Z_PostCodec_Algorithmic_Noise_Scout.html</code> is the single canonical CRP/web artifact.</p></div><div class="card cyan"><div class="label">diagnostic</div><h3>noise_scout_report.html</h3><p>Local per-run report only. Useful for debugging, not for publishing as separate website pages.</p></div><div class="card gold"><div class="label">analysis bundle</div><h3>Live extractor ZIP</h3><p>The ZIP bundle is for GPT/human review of finished and ongoing runs.</p></div></div></section>
+<section id="risks"><div class="eyebrow">10. Failure modes</div><h2>The scout must not become a coincidence miner.</h2><div class="grid auto"><div class="card red"><div class="label">Premature narrowing</div><p>Seeing early signal in one layer does not justify killing the other layers before long runs and real corpora.</p></div><div class="card red"><div class="label">False positives</div><p>Huge generator/rule/transform searches can find lucky local wins if search cost is undercharged.</p></div><div class="card red"><div class="label">Layer confusion</div><p>Identity/as-is synthetic bytes must not be reported as true final compressed-byte evidence.</p></div><div class="card red"><div class="label">Weak baseline trap</div><p>If a stronger classical codec alone wins, do not credit math.</p></div><div class="card red"><div class="label">Tiny chunk overfit</div><p>Small chunks can create fake victories. Report them as debug until replicated.</p></div></div></section>
+<section id="next"><div class="eyebrow">11. Next action</div><h2>Run v0.2 broadly, but keep every lane alive.</h2><p class="lead">The next move is a full v0.2 master run with broad layer labels. Do not remove true final compressed bytes. Add better real corpora and codec-internal extractors, collect the live bundle, then update this same page with the finished evidence.</p><pre>Seed → bridge → test → result
 
-  <section id="gates">
-    <div class="eyebrow">5. Acceptance gates</div>
-    <h2>v0.6+ rule: MDL win is necessary, not sufficient.</h2>
-    <div class="grid two">
-      <div class="card red"><div class="label">Rejected gate</div><h3>Strict MDL win OR survives same-budget controls</h3><p>This is too weak. It lets lucky search survive.</p></div>
-      <div class="card green"><div class="label">Current gate</div><h3>Strict MDL win AND fair baseline AND ablation AND null AND exact verify</h3><p>This is the minimum gate before any hit becomes a promoted structured positive.</p></div>
-    </div>
-    <details>
-      <summary>Show the full gate checklist</summary>
-      <div class="details-body">
-        <ul>
-          <li>Beat <code>min(len(B), strong_codec(B), strong_codec(layer))</code>, not just the source container size.</li>
-          <li>Include generator descriptor cost, transform descriptor cost, residual-codec cost, <code>phi_cost</code>, and search-budget cost.</li>
-          <li>Beat no-op and generator-ablation baselines.</li>
-          <li>Beat same-budget empirical nulls with locked seeds and comparable search volume.</li>
-          <li>Verify exact reconstruction by SHA3 or equivalent byte-exact hash.</li>
-          <li>Repeat across seeds / chunks before upgrading from debug hit to promoted hit.</li>
-        </ul>
-      </div>
-    </details>
-  </section>
-
-  <section id="reviews">
-    <div class="eyebrow">6. R1 LLM review synthesis</div>
-    <h2>Ten reviewers did not kill the idea. They hardened it.</h2>
-    <p class="lead">The strongest correction from R1: descriptor cost and <code>phi_cost</code> are not enough. Same-budget nulls and generator-ablation controls must be mandatory.</p>
-    <details>
-      <summary>Show reviewer contribution table</summary>
-      <div class="details-body">
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Rank</th><th>LLM</th><th>Paper score</th><th>Contribution</th><th>Best contribution</th></tr></thead>
-            <tbody>
-              <tr><td>1</td><td>Claude Opus 4.8</td><td>84</td><td>94</td><td>Found the key evaluation flaw; required empirical null + generator ablation.</td></tr>
-              <tr><td>2</td><td>ChatGPT 5.5 Pro</td><td>87</td><td>90</td><td>Broad synthesis, v0.1 falsification harness, T1–T5 forecast split.</td></tr>
-              <tr><td>3</td><td>Gemini 3.1 Pro</td><td>88</td><td>89</td><td>Engineering guardrails: chunk floors, strict seeds, log2 search charge.</td></tr>
-              <tr><td>4</td><td>MiniMax M3 Thinking</td><td>78</td><td>88</td><td>Same-codec trap, evaluated trial count, chunk-map and layer costs.</td></tr>
-              <tr><td>5</td><td>Qwen 3.7 Plus</td><td>88</td><td>86</td><td>Approve-with-gates and build sequencing.</td></tr>
-              <tr><td>6</td><td>Grok 4.3 Expert</td><td>81</td><td>84</td><td>Final bytes as stress/negative target.</td></tr>
-              <tr><td>7</td><td>Kimi 2.6 Thinking</td><td>78</td><td>84</td><td>Build-less discipline and codec-internal emphasis.</td></tr>
-              <tr><td>8</td><td>MetaAI Thinking</td><td>76</td><td>80</td><td>Lock constants, hard search caps, phi calibration.</td></tr>
-              <tr><td>9</td><td>GLM 4.7 DeepThink</td><td>75</td><td>78</td><td>Clean module split and search-budget cost framing.</td></tr>
-              <tr><td>10</td><td>DeepSeek V4 DeepThink</td><td>72</td><td>76</td><td>Caution on over-optimism and naming/tightening.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </details>
-  </section>
-
-  <section id="forecast">
-    <div class="eyebrow">7. Forecast ledger</div>
-    <h2>After v0.1.1, the forecast tightens again.</h2>
-    <div class="grid two">
-      <div class="card gold"><div class="label">BD seed</div><h3>Maybe 5–15% on many compressed files?</h3><p>Still a useful explorer seed, but v0.1.1 gives no support for applying it broadly to final compressed bytes.</p></div>
-      <div class="card cyan"><div class="label">Current stance</div><h3>Move probability mass to internal layers</h3><p>Highest chance is now clearly on 8Z-internal and codec-internal residual/token layers. Final bytes are a stress target.</p></div>
-    </div>
-    <details>
-      <summary>Show target-by-target forecast table</summary>
-      <div class="details-body">
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Target</th><th>BD forecast</th><th>Current stance after v0.1.1</th></tr></thead>
-            <tbody>
-              <tr><td>T1 ordinary final compressed files</td><td>80% for 5–15%; 5% for 50%</td><td>Too high for broad average wins. No supporting result yet.</td></tr>
-              <tr><td>T2 selected final compressed files</td><td>Implicitly included</td><td>Possible isolated wins on weak/structured files, but not established.</td></tr>
-              <tr><td>T3 codec-internal token/residual layers</td><td>Not separated in original seed</td><td>Best next external-codec experiment; build parsers/extractors before judging.</td></tr>
-              <tr><td>T4 8Z-internal residual/token layers</td><td>Not separated in original seed</td><td>Strongest practical 8Z target.</td></tr>
-              <tr><td>T5 synthetic/procedural hero files</td><td>High explorer prior</td><td>Confirmed as a positive-control class; not enough for public compression claims.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </details>
-  </section>
-
-  <section id="ops">
-    <div class="eyebrow">8. Artifact policy</div>
-    <h2>The website needs one clean story page.</h2>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Artifact</th><th>Public?</th><th>Purpose</th></tr></thead>
-        <tbody>
-          <tr><td><strong>8Z_PostCodec_Algorithmic_Noise_Scout.html</strong></td><td><span class="pill green">YES</span></td><td>Canonical human/LLM-facing paper page. Updated only with summarized evidence.</td></tr>
-          <tr><td><code>live_extract.md</code></td><td><span class="pill gold">NO</span></td><td>Compact analysis extract for GPT/human review.</td></tr>
-          <tr><td><code>NOISESCOUT_LIVE_EXTRACT_FOR_GPT_*.zip</code></td><td><span class="pill gold">NO</span></td><td>Full evidence bundle for analysis, including finished and ongoing data.</td></tr>
-          <tr><td><code>noise_scout_report.html</code></td><td><span class="pill red">NO</span></td><td>Deprecated as a public artifact. At most local diagnostic; do not upload as a site page.</td></tr>
-          <tr><td>CSV / JSON / partial checkpoints</td><td><span class="pill gold">NO</span></td><td>Evidence and reproducibility layer. Keep local or inside analysis bundles.</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <section id="risks">
-    <div class="eyebrow">9. Failure modes</div>
-    <h2>The scout must not become a coincidence miner.</h2>
-    <div class="grid auto">
-      <div class="card red"><div class="label">False positives</div><p>Huge offset/rule/transform searches can find lucky local wins. Charge search cost and compare same-budget nulls.</p></div>
-      <div class="card red"><div class="label">Weak baseline trap</div><p>If a stronger codec alone wins, do not credit math.</p></div>
-      <div class="card gold"><div class="label">Tiny chunk overfit</div><p>Small chunks can create fake victories. Keep them as debug unless repeated and costed.</p></div>
-      <div class="card violet"><div class="label">Magic-generator drift</div><p>π, CA, PRNG, geometry, and formulas are fuel, not proof. Arena decides.</p></div>
-      <div class="card gold"><div class="label">Final-byte accounting</div><p>Do not count <code>as_is</code> raw-equivalent final layers as true post-codec wins. Report <code>true_final_compressed_positive</code> separately.</p></div>
-    </div>
-  </section>
-
-  <section id="next">
-    <div class="eyebrow">10. Next action</div>
-    <h2>Patch v0.2 before bigger runs.</h2>
-    <div class="callout">
-      <strong>Next concrete move:</strong> build <code>Noise Scout v0.2</code> with stricter layer semantics and stricter promotion gates, then rerun standard/deep. Do not scale to real ZIP/PNG/FLAC/JPG/MP3-style files until the verdict language cannot overstate what happened.
-    </div>
-    <div class="grid two">
-      <div class="card cyan"><div class="label">v0.2 patch list</div><ul><li>Split <code>final-bytes</code> into <code>as_is_final</code>, <code>classical_final</code>, and later <code>codec_internal</code>.</li><li>Only trigger a public final-byte verdict when the layer is actually compressed/entropy-coded.</li><li>Demote wrong-family micro-hits unless they exceed a stronger savings threshold and survive family-consistency controls.</li><li>Report unique target wins separately from duplicate transform/chunk hits.</li></ul></div>
-      <div class="card green"><div class="label">Experiment ladder</div><ul><li>Rerun synthetic v0.2 standard/deep to confirm the corrected verdicts.</li><li>Add a small real-compressed corpus: ZIP/7Z/PNG/FLAC/JPG/MP3, but treat it as a likely negative-control stage.</li><li>Move inward to codec-internal residual/token layers where the probability of useful signal is higher.</li><li>Only update this public page with stable summarized evidence.</li></ul></div>
-    </div>
-  </section>
-  <footer class="footer">
-    <p>BD × GPT-5.5 Pro × multi-LLM RHP review · Updated 2026‑06‑14 after v0.1.1 master live-bundle analysis: synthetic recovery confirmed, controls clean, real post-codec claim still open.</p>
-  </footer>
+Seed: compressed and near-compressed streams may still contain exploitable structure in rare final streams or earlier representation layers.
+Bridge: wide Noise Scout across raw, identity-final, true-codec-final, codec-internal, and 8Z-internal targets.
+Test: strict MDL + fair baseline + ablation + empirical null + exact verify + layer label.
+Result: promote only reproducible STRUCTURED_POSITIVE hits; keep negatives as useful map data.</pre><div class="callout green"><p><strong>Next engineering target:</strong> v0.3 should add real corpus ingestion and extractors for PNG scanlines/IDAT, DEFLATE inflated/token views, FLAC residuals, JPEG coefficient streams, and 8Z residual payloads — while still keeping final-byte search alive.</p></div></section>
+<footer class="footer"><p>8Z Post‑Codec Algorithmic Noise Scout · BD × GPT‑5.5 Pro × multi‑LLM RHP review · Updated 2026‑06‑14.</p><p class="small">Status: research arena / falsification harness. Current evidence supports synthetic recovery and clean controls; broad real final-compressed-file gains remain open.</p></footer>
 </main>
-<div class="font-float" aria-label="Font size controls"><button type="button" onclick="setFont(-1)">A−</button><button type="button" onclick="setFont(1)">A+</button></div>
+<div class="font-float"><button onclick="setFont(-1)">A−</button><button onclick="setFont(1)">A+</button></div>
 <script>
-const root=document.documentElement;
-let base=parseInt(localStorage.getItem('fontBase')||'18',10);
-root.style.setProperty('--baseFont',base+'px');
-function setFont(delta){base=Math.max(15,Math.min(23,base+delta));root.style.setProperty('--baseFont',base+'px');localStorage.setItem('fontBase',String(base));}
-function toggleDetails(open){document.querySelectorAll('details').forEach(d=>d.open=open);}
-const bar=document.getElementById('scrollProgress');
-function onScroll(){const h=document.documentElement;const max=h.scrollHeight-h.clientHeight;bar.style.width=(max?((h.scrollTop/max)*100):0)+'%';}
-document.addEventListener('scroll',onScroll,{passive:true});onScroll();
+const root=document.documentElement;let rs=Number(root.dataset.readerSize||2);function setFont(d){rs=Math.max(0,Math.min(5,rs+d));root.dataset.readerSize=String(rs)}const bar=document.getElementById('scrollProgress');function prog(){const h=document.documentElement;const y=h.scrollTop||document.body.scrollTop;const m=h.scrollHeight-h.clientHeight;bar.style.width=(m?y/m*100:0)+'%'}document.addEventListener('scroll',prog,{passive:true});prog();
 </script>
 </body>
 </html>

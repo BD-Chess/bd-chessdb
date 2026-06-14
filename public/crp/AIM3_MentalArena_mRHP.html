@@ -8,7 +8,7 @@
 <meta name="author" content="BD × AI collaborators">
 <meta name="robots" content="index,follow">
 <meta property="og:title" content="AIm³ MentalArena">
-<meta property="og:description" content="mRHP — RHP that improves RHP. A self-improving reasoning layer above LLMs — now with a tested local v0.2 runtime.">
+<meta property="og:description" content="mRHP — RHP that improves RHP. A self-improving reasoning layer above LLMs — now with a tested local v0.2 runtime and an optional local DeepSeek API import panel with local TXT logging.">
 <meta property="og:type" content="article">
 <style>
 :root{
@@ -130,6 +130,34 @@ section{margin:42px 0}.section-head{margin-bottom:17px}.eyebrow{font-family:ui-m
 .font-float{position:fixed;right:14px;bottom:14px;z-index:1200;display:flex;gap:6px;background:rgba(5,7,13,.76);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:999px;padding:6px;box-shadow:var(--shadow)}.font-float button{border:1px solid var(--line);background:rgba(16,24,39,.92);color:var(--text);border-radius:999px;padding:7px 10px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.75rem;cursor:pointer}.font-float button:hover{color:var(--cyan);border-color:var(--cyan)}
 @media(max-width:920px){.hero-grid,.grid.two,.grid.three,.grid.four,.compare,.score-grid,.bench-list{grid-template-columns:1fr}.stack-layer{grid-template-columns:1fr;gap:7px}.topbar .inner{align-items:flex-start;flex-direction:column}.nav{justify-content:flex-start}.hero{padding-top:44px}}
 @media(max-width:620px){:root{--baseFont:18px}.wrapper{padding:0 14px 62px}.topbar .inner{padding:9px 14px}.nav{max-height:88px;overflow:auto}.nav a{font-size:.64rem;padding:5px 8px}h1{font-size:2.55rem}.subtitle{font-size:1.22rem}.hero-card,.card,.callout{padding:16px}.bench{grid-template-columns:38px 1fr}.toc .links{max-height:180px;overflow:auto}.file-list{grid-template-columns:1fr}.font-float{right:10px;bottom:10px}}
+
+
+/* === Local DeepSeek API import panel === */
+
+.api-log-table {width:100%; border-collapse:collapse; margin:14px 0; font-size:.92rem;}
+.api-log-table th,.api-log-table td{border:1px solid rgba(255,255,255,.10); padding:8px 10px; text-align:left; vertical-align:top;}
+.api-log-table th{color:var(--gold); background:rgba(255,255,255,.04);}
+.log-note{font-size:.9rem;color:var(--muted);line-height:1.55;margin-top:8px;}
+.checkbox-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 14px;}
+.checkbox-row input{width:auto;}
+
+.api-panel{background:linear-gradient(180deg,rgba(16,24,39,.90),rgba(7,16,29,.82));border:1px solid rgba(56,215,255,.28);border-radius:var(--radius2);padding:18px;box-shadow:var(--shadow);margin-top:18px}
+.api-panel .field{display:flex;flex-direction:column;gap:6px;margin:0 0 12px}
+.api-panel label{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.70rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan)}
+.api-panel input,.api-panel textarea,.api-panel select{width:100%;background:#07101d;border:1px solid var(--line);border-radius:12px;color:var(--text);padding:10px 12px;font:inherit;font-size:.92rem;line-height:1.5;outline:none}
+.api-panel textarea{min-height:170px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.84rem;line-height:1.58}
+.api-panel input:focus,.api-panel textarea:focus,.api-panel select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(56,215,255,.10)}
+.api-panel .buttons{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+.btn{border:1px solid var(--line);background:rgba(16,24,39,.92);color:var(--text);border-radius:999px;padding:8px 12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.74rem;cursor:pointer;letter-spacing:.04em}
+.btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(56,215,255,.08)}
+.btn.cyan{border-color:rgba(56,215,255,.42);background:rgba(56,215,255,.10);color:var(--cyan)}
+.btn.gold{border-color:rgba(242,201,76,.42);background:rgba(242,201,76,.10);color:var(--gold)}
+.btn.green{border-color:rgba(55,217,150,.42);background:rgba(55,217,150,.10);color:var(--green)}
+.btn.red{border-color:rgba(255,107,138,.42);background:rgba(255,107,138,.10);color:var(--red)}
+.api-output{min-height:220px;white-space:pre-wrap;word-break:break-word;background:#07101d;border:1px solid var(--line);border-radius:14px;padding:14px;color:#dce8f8;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.84rem;line-height:1.6;overflow:auto}
+.api-status{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.80rem;color:var(--muted);margin:8px 0 0}.api-status.ok{color:var(--green)}.api-status.warn{color:var(--gold)}.api-status.bad{color:var(--red)}
+.key-health{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:5px 9px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.72rem;color:var(--muted);background:rgba(16,24,39,.55);margin:4px 0 10px}.key-health.ok{color:var(--green);border-color:rgba(55,217,150,.35);background:rgba(55,217,150,.08)}.key-health.bad{color:var(--red);border-color:rgba(255,107,138,.35);background:rgba(255,107,138,.08)}
+
 @media print{body{background:#fff;color:#111}.topbar,.font-float,.scroll-progress{display:none}.card,.callout,.schema,.formula,.stack-layer{box-shadow:none;break-inside:avoid}.wrapper{max-width:none}.nav{display:none}}
 </style>
 <script type="application/ld+json">
@@ -159,6 +187,7 @@ section{margin:42px 0}.section-head{margin-bottom:17px}.eyebrow{font-family:ui-m
       <a href="#scope">Runtime</a>
       <a href="#results">v0.2 results</a>
       <a href="#patch">v0.2.1</a>
+      <a href="#deepseek-api">DeepSeek</a>
       <a href="#roadmap">Roadmap</a>
       <a href="#next">Next</a>
     </div>
@@ -169,14 +198,15 @@ section{margin:42px 0}.section-head{margin-bottom:17px}.eyebrow{font-family:ui-m
     <div class="kicker">AI Management of Mind &amp; Memory</div>
     <h1>AIm³ MentalArena</h1>
     <p class="subtitle">mRHP — RHP that improves RHP</p>
-    <p class="tagline">A self-improving reasoning layer above LLMs — now with a tested local v0.2 runtime.</p>
+    <p class="tagline">A self-improving reasoning layer above LLMs — now with a tested local v0.2 runtime and optional local DeepSeek import + local TXT logs.</p>
     <div class="meta-row" aria-label="Core tags">
       <span class="pill green">external operational learning</span>
       <span class="pill cyan">protocol genes</span>
       <span class="pill violet">human-led multi-LLM synthesis</span>
       <span class="pill green">lineage + reports</span>
+      <span class="pill gold">local DeepSeek import</span>
     </div>
-    <div class="status-card"><strong>Status:</strong> Python runtime exists · v0.2 validation complete · v0.2.1 scorer-hardening next</div>
+    <div class="status-card"><strong>Status:</strong> Python runtime exists · v0.2 validation complete · local DeepSeek API panel + TXT logs added · v0.2.1 scorer-hardening next</div>
     <div class="hero-grid">
       <div class="hero-card">
         <h2>What this page defines</h2>
@@ -193,7 +223,7 @@ section{margin:42px 0}.section-head{margin-bottom:17px}.eyebrow{font-family:ui-m
   <aside class="toc" aria-label="Table of contents">
     <h2>Page map</h2>
     <div class="links">
-      <a href="#short">1. Short answer</a><a href="#stack">2. Architecture</a><a href="#rhp">3. RHP / mRHP / runtime</a><a href="#challenge">4. First challenge</a><a href="#genes">5. Protocol genes</a><a href="#capsules">6. Concept capsules</a><a href="#operators">7. Operators</a><a href="#score">8. Scoring</a><a href="#bench">9. Benchmarks</a><a href="#scope">10. Runtime status</a><a href="#results">11. v0.2 results</a><a href="#patch">12. v0.2.1 patch</a><a href="#v02">13. LLM import</a><a href="#relations">14. Existing arenas</a><a href="#caution">15. Continuity caution</a><a href="#cut">16. Delay/cut</a><a href="#failures">17. Failure modes</a><a href="#roadmap">18. Roadmap</a><a href="#related">19. Related links</a><a href="#provenance">20. Provenance</a><a href="#next">21. Next steps</a>
+      <a href="#short">1. Short answer</a><a href="#stack">2. Architecture</a><a href="#rhp">3. RHP / mRHP / runtime</a><a href="#challenge">4. First challenge</a><a href="#genes">5. Protocol genes</a><a href="#capsules">6. Concept capsules</a><a href="#operators">7. Operators</a><a href="#score">8. Scoring</a><a href="#bench">9. Benchmarks</a><a href="#scope">10. Runtime status</a><a href="#results">11. v0.2 results</a><a href="#patch">12. v0.2.1 patch</a><a href="#v02">13. LLM import</a><a href="#deepseek-api">14. DeepSeek API</a><a href="#relations">15. Existing arenas</a><a href="#caution">16. Continuity caution</a><a href="#cut">17. Delay/cut</a><a href="#failures">18. Failure modes</a><a href="#roadmap">19. Roadmap</a><a href="#related">20. Related links</a><a href="#provenance">21. Provenance</a><a href="#next">22. Next steps</a>
     </div>
   </aside>
 
@@ -581,9 +611,79 @@ inside a single blended score.</pre>
     </div>
   </section>
 
+  <section id="deepseek-api">
+    <div class="section-head">
+      <div class="eyebrow">14. Local DeepSeek API import</div>
+      <h2>First live LLM connector: DeepSeek only.</h2>
+    </div>
+    <p class="lead">This panel is for local/private testing. It sends one MentalArena review prompt to the DeepSeek chat-completions API, then formats the reply as a MentalArena import artifact. Other LLM providers should be added later only after this one path is stable.</p>
+    <div class="callout red">
+      <p><strong>Local key rule:</strong> the API key is not embedded in this HTML. Put your DeepSeek key in a local text file named <code>BD-DS.txt</code> next to the HTML file, or use the file picker. Do <strong>not</strong> upload <code>BD-DS.txt</code> to GitHub, Netlify, or any public server.</p>
+      <p class="small">Best local path: run <code>RUN_LOCAL_MENTALARENA_DEEPSEEK_LOGGER.bat</code>. The helper serves this page, reads <code>BD-DS.txt</code>, calls DeepSeek, and appends TXT logs automatically. Direct <code>file://</code> opening cannot silently write local log files; it can only download log snapshots.</p>
+    </div>
+    <div class="callout green">
+      <p><strong>Local TXT log structure:</strong></p>
+      <table class="api-log-table">
+        <tr><th>File</th><th>Purpose</th></tr>
+        <tr><td><code>DeepSeek-API.txt</code></td><td>DeepSeek provider config: endpoint, model, and pointer to <code>BD-DS.txt</code>. Keep local only.</td></tr>
+        <tr><td><code>DeepSeek-Stats.txt</code></td><td>One compact stats line per DeepSeek call: latency, chars/tokens, hashes, status.</td></tr>
+        <tr><td><code>DeepSeek-Chat.txt</code></td><td>Full DeepSeek prompt + answer transcript blocks for later MentalArena import.</td></tr>
+        <tr><td><code>LLMs-Stats.txt</code></td><td>Overall cross-LLM stats table. Today it has DeepSeek only; other LLMs can be added later.</td></tr>
+      </table>
+      <p class="log-note">The ZIP includes blank/template versions under <code>llm_logs/</code>. Do not publish real logs or API files if they contain private prompts, answers, usage, or keys.</p>
+    </div>
+
+    <div class="api-panel" aria-label="DeepSeek local API connector">
+      <div class="grid two">
+        <div class="field">
+          <label for="dsModel">DeepSeek model</label>
+          <input id="dsModel" value="deepseek-v4-pro" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="dsEndpoint">Endpoint</label>
+          <input id="dsEndpoint" value="https://api.deepseek.com/chat/completions" autocomplete="off">
+        </div>
+      </div>
+      <div class="grid two">
+        <div class="field">
+          <label for="dsKeyFileName">Local key file name</label>
+          <input id="dsKeyFileName" value="BD-DS.txt" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="dsKeyFileInput">Fallback key file picker</label>
+          <input id="dsKeyFileInput" type="file" accept=".txt,.env,.key">
+        </div>
+      </div>
+      <div id="dsKeyHealth" class="key-health bad">DeepSeek key not loaded</div>
+      <div class="checkbox-row">
+        <label><input id="dsUseLocalLogger" type="checkbox" checked> Use localhost logger/API helper when available</label>
+        <span class="small">Writes <code>DeepSeek-Stats.txt</code>, <code>DeepSeek-Chat.txt</code>, and <code>LLMs-Stats.txt</code>.</span>
+      </div>
+      <div class="buttons">
+        <button class="btn gold" type="button" onclick="loadDeepSeekKeyFromDefaultFile()">Load BD-DS.txt</button>
+        <button class="btn" type="button" onclick="checkMentalArenaLocalLogger()">Check logger</button>
+        <button class="btn" type="button" onclick="useDefaultMentalArenaPrompt()">Use default v0.2.1 review prompt</button>
+        <button class="btn cyan" type="button" onclick="sendMentalArenaToDeepSeek()">Send to DeepSeek</button>
+        <button class="btn" type="button" onclick="copyDeepSeekAnswer()">Copy answer</button>
+        <button class="btn green" type="button" onclick="copyMentalArenaImportBlock()">Copy import block</button>
+        <button class="btn" type="button" onclick="downloadMentalArenaImportBlock()">Download .md</button>
+        <button class="btn" type="button" onclick="downloadBrowserLogSnapshot()">Download browser log snapshot</button>
+      </div>
+      <div class="field">
+        <label for="dsPrompt">Prompt to send</label>
+        <textarea id="dsPrompt" spellcheck="false"></textarea>
+      </div>
+      <div class="field">
+        <label for="dsOut">DeepSeek reply / status</label>
+        <div class="api-output" id="dsOut" role="status" aria-live="polite">No DeepSeek call yet.</div>
+      </div>
+      <div id="dsStatus" class="api-status">Ready. Load <code>BD-DS.txt</code>, then send.</div>
+    </div>
+  </section>
+
   <section id="relations">
     <div class="section-head">
-      <div class="eyebrow">14. Relationship to existing arenas</div>
+      <div class="eyebrow">15. Relationship to existing arenas</div>
       <h2>Later domains, not the first target.</h2>
     </div>
     <p class="lead">Existing arenas are not replaced. They become later domains and benchmark sources after mRHP proves that protocol evolution itself works.</p>
@@ -602,7 +702,7 @@ inside a single blended score.</pre>
 
   <section id="caution">
     <div class="section-head">
-      <div class="eyebrow">15. AI8 continuity caution</div>
+      <div class="eyebrow">16. AI8 continuity caution</div>
       <h2>Operational continuity, not proof.</h2>
     </div>
     <div class="callout violet">
@@ -667,7 +767,7 @@ inside a single blended score.</pre>
 
   <section id="roadmap">
     <div class="section-head">
-      <div class="eyebrow">18. Roadmap</div>
+      <div class="eyebrow">19. Roadmap</div>
       <h2>Runtime first, scorer hardening second, real artifacts third.</h2>
     </div>
     <div class="timeline">
@@ -701,7 +801,7 @@ inside a single blended score.</pre>
 
   <section id="provenance">
     <div class="section-head">
-      <div class="eyebrow">20. Provenance</div>
+      <div class="eyebrow">21. Provenance</div>
       <h2>Human origin, AI collaboration.</h2>
     </div>
     <div class="callout green">
@@ -728,7 +828,7 @@ inside a single blended score.</pre>
   </section>
 
   <footer class="footer">
-    <p><strong>AIm³ MentalArena / mRHP</strong> — standalone architecture and validation page. MentalArena.py now exists through v0.2; the page records what was validated, what failed, and what v0.2.1 must fix next. The runtime still does not change LLM weights, does not call LLM APIs automatically, and does not prove AGI or consciousness.</p>
+    <p><strong>AIm³ MentalArena / mRHP</strong> — standalone architecture and validation page. MentalArena.py now exists through v0.2; the page records what was validated, what failed, and what v0.2.1 must fix next. The runtime still does not change LLM weights and does not prove AGI or consciousness. The page now includes an optional local-only DeepSeek API connector with DeepSeek-Stats/Chat and LLMs-Stats TXT logging for manual artifact import.</p>
     <p class="small">Filename: <code>AIM3_MentalArena_mRHP.html</code></p>
   </footer>
 </main>
@@ -763,5 +863,272 @@ inside a single blended score.</pre>
   apply();
 })();
 </script>
+
+<script>
+(function(){
+  const DEFAULT_PROMPT = `You are reviewing AIm³ MentalArena v0.2 as a strict but constructive reasoning-systems reviewer.
+
+Context:
+- MentalArena.py v0.2 exists as a local deterministic validation arena.
+- It supports train/holdout scoring, baselines, ablation, anti-gaming fields, and manual LLM artifact import.
+- v0.2 results showed that raw-score winners can drop builder/ground/safety genes while BD-faithful winners remain more aligned with the project.
+- The next patch target is v0.2.1: field-aware scoring, next-action equivalence, BD-pareto ranking, better promotion gates, collector fixes, harder holdout tasks, and stronger ablation comparison.
+
+Task:
+1. State whether v0.2 shows real potential or mainly rubric-gaming.
+2. Identify the top 5 scorer or benchmark bugs to fix in v0.2.1.
+3. Propose concrete acceptance criteria for v0.2.1.
+4. Propose one minimal real-LLM import experiment using DeepSeek first.
+5. Give a blunt verdict: continue, pivot, or stop.
+
+Output format:
+- Verdict
+- What survived
+- What is still weak
+- v0.2.1 patch list
+- Minimal DeepSeek import test
+- Promotion criteria
+- One-sentence final judgment`;
+
+  let deepSeekApiKey = '';
+  let lastDeepSeekAnswer = '';
+  let lastDeepSeekPrompt = '';
+  let lastDeepSeekMeta = null;
+
+  function $(id){return document.getElementById(id)}
+  function setStatus(msg,kind=''){
+    const el=$('dsStatus'); if(!el)return;
+    el.textContent=msg; el.className='api-status '+kind;
+  }
+  function setKeyHealth(ok,msg){
+    const el=$('dsKeyHealth'); if(!el)return;
+    el.textContent=msg; el.className='key-health '+(ok?'ok':'bad');
+  }
+  function parseKeyText(txt){
+    const lines=String(txt||'').split(/\r?\n/).map(x=>x.trim()).filter(x=>x && !x.startsWith('#'));
+    for(const line of lines){
+      const m=line.match(/(?:DEEPSEEK_API_KEY\s*=\s*)?["']?([^"'\s]+)["']?/i);
+      if(m && m[1]) return m[1].trim();
+    }
+    return '';
+  }
+  async function sha256Text(text){
+    try{
+      const bytes=new TextEncoder().encode(text||'');
+      const digest=await crypto.subtle.digest('SHA-256',bytes);
+      return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }catch(_){
+      let h=0; for(let i=0;i<String(text||'').length;i++) h=(Math.imul(31,h)+String(text||'').charCodeAt(i))|0;
+      return 'fallback-'+(h>>>0).toString(16);
+    }
+  }
+  function payload(prompt){
+    return {
+      model:($('dsModel')?.value||'deepseek-v4-pro').trim()||'deepseek-v4-pro',
+      messages:[
+        {role:'system',content:'You are a strict, constructive reviewer for AIm³ MentalArena / mRHP. Be concrete, skeptical, and useful. Do not make consciousness or AGI proof claims.'},
+        {role:'user',content:prompt}
+      ],
+      thinking:{type:'enabled'},
+      reasoning_effort:'high',
+      stream:false
+    };
+  }
+  async function buildImportBlock(){
+    const prompt=lastDeepSeekPrompt || ($('dsPrompt')?.value||'').trim();
+    const answer=lastDeepSeekAnswer || '';
+    const model=lastDeepSeekMeta?.model || (($('dsModel')?.value||'deepseek-v4-pro').trim()||'deepseek-v4-pro');
+    const endpoint=lastDeepSeekMeta?.endpoint || (($('dsEndpoint')?.value||'https://api.deepseek.com/chat/completions').trim());
+    const date=lastDeepSeekMeta?.date || new Date().toISOString();
+    const ph=await sha256Text(prompt);
+    const ah=await sha256Text(answer);
+    return `# MentalArena LLM Import — DeepSeek\n\nmodel: ${model}\nprovider: DeepSeek\ndate_utc: ${date}\nendpoint: ${endpoint}\nprompt_hash_sha256: ${ph}\nanswer_hash_sha256: ${ah}\nsource_page: AIM3_MentalArena_mRHP.html\nkey_file_used: BD-DS.txt (local, not included)\n\n## Prompt\n\n${prompt}\n\n## Answer\n\n${answer}\n`;
+  }
+
+  window.useDefaultMentalArenaPrompt = function(){
+    const el=$('dsPrompt'); if(el) el.value=DEFAULT_PROMPT;
+    setStatus('Default MentalArena v0.2.1 review prompt inserted.','ok');
+  };
+  window.loadDeepSeekKeyFromDefaultFile = async function(){
+    const fileName=($('dsKeyFileName')?.value||'BD-DS.txt').trim()||'BD-DS.txt';
+    const candidates=[fileName,'./'+fileName,'../'+fileName];
+    let lastErr='';
+    for(const path of [...new Set(candidates)]){
+      try{
+        const res=await fetch(path+'?t='+Date.now(),{cache:'no-store'});
+        if(!res.ok){lastErr=path+' -> HTTP '+res.status; continue;}
+        const txt=await res.text();
+        const key=parseKeyText(txt);
+        if(!key){lastErr=path+' -> no key found'; continue;}
+        deepSeekApiKey=key;
+        setKeyHealth(true,'DeepSeek key loaded from '+path);
+        setStatus('Key loaded. Ready to send to DeepSeek.','ok');
+        return;
+      }catch(err){lastErr=path+' -> '+(err?.message||String(err));}
+    }
+    setKeyHealth(false,'DeepSeek key not loaded');
+    setStatus('Could not load '+fileName+'. Use local HTTP server or the file picker. Last error: '+lastErr,'warn');
+  };
+  function useLocalLogger(){
+    const el=$('dsUseLocalLogger');
+    return !!(el && el.checked);
+  }
+  function estimateWords(text){
+    return String(text||'').trim()?String(text||'').trim().split(/\s+/).length:0;
+  }
+  async function postToLocalLogger(prompt, endpoint){
+    const model=payload(prompt).model;
+    const res=await fetch('/api/deepseek',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt,model,endpoint,source_page:'AIM3_MentalArena_mRHP.html'})});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok || !data.ok){
+      const detail=data.error || data.message || (res.status+' '+res.statusText);
+      throw new Error(detail);
+    }
+    return data;
+  }
+  let browserLogStats = [];
+  let browserLogChats = [];
+  async function rememberBrowserLog(provider, model, endpoint, prompt, answer, status, detail){
+    const date=new Date().toISOString();
+    const ph=await sha256Text(prompt||'');
+    const ah=await sha256Text(answer||'');
+    const row={date_utc:date,provider,model,endpoint,status,detail:detail||'',prompt_chars:(prompt||'').length,answer_chars:(answer||'').length,prompt_words:estimateWords(prompt),answer_words:estimateWords(answer),prompt_sha256:ph,answer_sha256:ah};
+    browserLogStats.push(row);
+    browserLogChats.push({date_utc:date,provider,model,endpoint,status,prompt,answer,detail:detail||'',prompt_sha256:ph,answer_sha256:ah});
+  }
+  function statsRowsToText(rows){
+    const header='date_utc\tprovider\tmodel\tstatus\tprompt_chars\tanswer_chars\tprompt_words\tanswer_words\tprompt_sha256\tanswer_sha256\tdetail';
+    const lines=rows.map(r=>[r.date_utc,r.provider,r.model,r.status,r.prompt_chars,r.answer_chars,r.prompt_words,r.answer_words,r.prompt_sha256,r.answer_sha256,String(r.detail||'').replace(/\s+/g,' ').slice(0,240)].join('\t'));
+    return '# Browser fallback stats snapshot — download and merge into LLMs-Stats.txt if localhost logger was not used.\n'+header+'\n'+lines.join('\n')+'\n';
+  }
+  function chatsToText(rows){
+    let out='# Browser fallback chat snapshot — download and merge into DeepSeek-Chat.txt if localhost logger was not used.\n\n';
+    for(const r of rows){
+      out+='===== '+r.provider+' chat '+r.date_utc+' =====\n';
+      out+='provider: '+r.provider+'\nmodel: '+r.model+'\nendpoint: '+r.endpoint+'\nstatus: '+r.status+'\nprompt_sha256: '+r.prompt_sha256+'\nanswer_sha256: '+r.answer_sha256+'\n';
+      if(r.detail) out+='detail: '+r.detail+'\n';
+      out+='\n--- PROMPT ---\n'+(r.prompt||'')+'\n\n--- ANSWER ---\n'+(r.answer||'')+'\n\n';
+    }
+    return out;
+  }
+  function downloadTextFile(name,text,type='text/plain;charset=utf-8'){
+    const blob=new Blob([text],{type});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  }
+  window.downloadBrowserLogSnapshot = function(){
+    const stamp=new Date().toISOString().replace(/[:.]/g,'-');
+    downloadTextFile('LLMs-Stats.browser-snapshot-'+stamp+'.txt', statsRowsToText(browserLogStats));
+    downloadTextFile('DeepSeek-Chat.browser-snapshot-'+stamp+'.txt', chatsToText(browserLogChats));
+    setStatus('Browser fallback log snapshots downloaded. Use localhost logger for automatic appending.','ok');
+  };
+  window.checkMentalArenaLocalLogger = async function(){
+    try{
+      const res=await fetch('/api/health?t='+Date.now(),{cache:'no-store'});
+      const data=await res.json();
+      if(!res.ok || !data.ok) throw new Error(data.error || res.status+' '+res.statusText);
+      setStatus('Local logger OK. log_dir='+data.log_dir+' provider='+data.providers.join(', '),'ok');
+    }catch(err){
+      setStatus('Local logger not available. Run RUN_LOCAL_MENTALARENA_DEEPSEEK_LOGGER.bat, or use direct browser mode/download snapshots. '+(err?.message||String(err)),'warn');
+    }
+  };
+  window.sendMentalArenaToDeepSeek = async function(){
+    const prompt=($('dsPrompt')?.value||'').trim() || DEFAULT_PROMPT;
+    if($('dsPrompt') && !$('dsPrompt').value.trim()) $('dsPrompt').value=prompt;
+    const endpoint=($('dsEndpoint')?.value||'https://api.deepseek.com/chat/completions').trim();
+    const out=$('dsOut');
+    if(out) out.textContent='Sending to DeepSeek...';
+    if(useLocalLogger()){
+      setStatus('Sending through localhost logger/API helper...','warn');
+      try{
+        const data=await postToLocalLogger(prompt, endpoint);
+        const answer=data.answer || '';
+        lastDeepSeekPrompt=prompt;
+        lastDeepSeekAnswer=answer;
+        lastDeepSeekMeta={model:data.model || payload(prompt).model, endpoint:data.endpoint || endpoint, date:data.date_utc || new Date().toISOString(), request_id:data.request_id || ''};
+        if(out) out.textContent=answer || JSON.stringify(data,null,2);
+        await rememberBrowserLog('DeepSeek', lastDeepSeekMeta.model, lastDeepSeekMeta.endpoint, prompt, answer, 'ok-local-logged', data.request_id||'');
+        setStatus('DeepSeek reply received and TXT logs appended by localhost helper. request_id='+(data.request_id||'n/a'),'ok');
+        return;
+      }catch(err){
+        setStatus('Local logger failed: '+(err?.message||String(err))+' — falling back to direct browser API mode.','warn');
+        if(out) out.textContent='Local logger failed; trying direct browser API mode...';
+      }
+    }
+    if(!deepSeekApiKey){
+      setStatus('No key loaded. Click “Load BD-DS.txt” or select the file manually, or run the localhost logger.','warn');
+      return;
+    }
+    setStatus('Sending request to DeepSeek directly from browser...','warn');
+    try{
+      const res=await fetch(endpoint,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+deepSeekApiKey},
+        body:JSON.stringify(payload(prompt))
+      });
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok){
+        const detail=data?.error?.message || data?.message || (res.status+' '+res.statusText);
+        throw new Error(detail);
+      }
+      const answer=data?.choices?.[0]?.message?.content || JSON.stringify(data,null,2);
+      lastDeepSeekPrompt=prompt;
+      lastDeepSeekAnswer=answer;
+      lastDeepSeekMeta={model:payload(prompt).model, endpoint, date:new Date().toISOString()};
+      if(out) out.textContent=answer;
+      await rememberBrowserLog('DeepSeek', lastDeepSeekMeta.model, endpoint, prompt, answer, 'ok-browser-direct', 'not auto-written; use snapshot download');
+      setStatus('DeepSeek reply received. Browser mode cannot auto-append TXT logs; use “Download browser log snapshot” or run localhost logger.','ok');
+    }catch(err){
+      if(out) out.textContent='Error: '+(err?.message||String(err));
+      await rememberBrowserLog('DeepSeek', payload(prompt).model, endpoint, prompt, '', 'error', err?.message||String(err));
+      setStatus('DeepSeek request failed: '+(err?.message||String(err)),'bad');
+    }
+  };
+  window.copyDeepSeekAnswer = async function(){
+    const txt=lastDeepSeekAnswer || ($('dsOut')?.textContent||'');
+    await navigator.clipboard.writeText(txt);
+    setStatus('Answer copied.','ok');
+  };
+  window.copyMentalArenaImportBlock = async function(){
+    const block=await buildImportBlock();
+    await navigator.clipboard.writeText(block);
+    setStatus('MentalArena import block copied.','ok');
+  };
+  window.downloadMentalArenaImportBlock = async function(){
+    const block=await buildImportBlock();
+    const blob=new Blob([block],{type:'text/markdown;charset=utf-8'});
+    const a=document.createElement('a');
+    const stamp=new Date().toISOString().replace(/[:.]/g,'-');
+    a.href=URL.createObjectURL(blob);
+    a.download='MentalArena_DeepSeek_Import_'+stamp+'.md';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    setStatus('Import block downloaded.','ok');
+  };
+
+  const fileInput=$('dsKeyFileInput');
+  if(fileInput){
+    fileInput.addEventListener('change',evt=>{
+      const f=evt.target.files && evt.target.files[0];
+      if(!f)return;
+      const reader=new FileReader();
+      reader.onload=()=>{
+        const key=parseKeyText(String(reader.result||''));
+        if(!key){setStatus('No DeepSeek key found in selected file.','bad');return;}
+        deepSeekApiKey=key;
+        setKeyHealth(true,'DeepSeek key loaded from selected file');
+        setStatus('Key loaded from file picker. Ready to send.','ok');
+      };
+      reader.onerror=()=>setStatus('Could not read selected key file.','bad');
+      reader.readAsText(f);
+    });
+  }
+  if($('dsPrompt') && !$('dsPrompt').value.trim()) $('dsPrompt').value=DEFAULT_PROMPT;
+})();
+</script>
+
 </body>
 </html>
