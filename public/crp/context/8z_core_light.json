@@ -1,0 +1,60 @@
+{
+  "schema": "AIM3_CONTEXT_PACK_V0_1",
+  "pack_id": "8Z_CORE_LIGHT",
+  "title": "8Z Compression / MDL Core Context — Light",
+  "version": "0.1",
+  "updated": "2026-06-14",
+  "target_tokens_light": 1600,
+  "purpose": "Compact 8Z coding/codec context for MDL, audit, exactness, and multi-candidate decision patterns.",
+  "when_to_use": [
+    "8Z",
+    "compression",
+    "codec",
+    "MDL",
+    "8Z encoder",
+    "audit",
+    "compression arena"
+  ],
+  "source_manifest": [
+    {
+      "id": "SRC-8Z-ENCODER",
+      "path": "8Z_encoder_v2.1.py",
+      "sha256": "0b101032e3ec8e353a2e8c3f3df66df1f1ca3aa09c7d273fc15cf93563fd0651",
+      "available_in_build": true
+    },
+    {
+      "id": "SRC-8Z-PAPERS",
+      "path": "8Z_Ecosystem_Papers_Part_I.zip",
+      "sha256": "66e4e875e1c0c02389b4eb532e9e56d0cc2a7d31c8a33b96e61dda30ccea8acf",
+      "available_in_build": true
+    }
+  ],
+  "blocks": [
+    {
+      "id": "CTX-8Z-001",
+      "level": "light",
+      "title": "MDL selection pattern",
+      "text": "8Z code organizes compression candidates as MDLCandidate objects with payload length, file length, family, method, and payload. The system tests alternatives and lets measured MDL/cost decide."
+    },
+    {
+      "id": "CTX-8Z-002",
+      "level": "light",
+      "title": "Audit trail",
+      "text": "MDLAuditLog records decision id, scope, candidate sizes/times, winner method, winner payload bytes, and total timing. MentalArena should mirror this: every LLM/stage decision should be auditable."
+    },
+    {
+      "id": "CTX-8Z-003",
+      "level": "light",
+      "title": "Exactness and manifests",
+      "text": "8Z style values exact round-trip, hashes, manifests, deterministic decoding, clear versioning, and conservative file/container semantics. Claims should be backed by reproducible artifacts."
+    },
+    {
+      "id": "CTX-8Z-004",
+      "level": "standard",
+      "title": "Hybrid audit stance",
+      "text": "The 8Z encoder was explicitly framed as a hybrid audit with BD concepts and AI architect/reviewer roles. MentalArena should preserve author/contributor lineage and separate architects, coders, reviewers, and final human decisions."
+    }
+  ],
+  "usage_instruction": "Use only what is relevant. Cite CTX ids when relying on this context. If context is insufficient or conflicts with the task, say so explicitly.",
+  "file": "8z_core_light.json"
+}

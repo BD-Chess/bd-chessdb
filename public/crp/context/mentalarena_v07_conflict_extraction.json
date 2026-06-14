@@ -1,0 +1,64 @@
+{
+  "schema": "AIM3_CONTEXT_PACK_V0_1",
+  "pack_id": "MENTALARENA_V07_CONFLICT_EXTRACTION",
+  "title": "MentalArena v0.7 Conflict Extraction Diagnostic",
+  "version": "0.1",
+  "updated": "2026-06-14",
+  "target_tokens_light": 1500,
+  "purpose": "Narrow diagnostic pack for testing whether conflict extraction is worth building further.",
+  "when_to_use": [
+    "v0.7",
+    "conflict extraction",
+    "diagnostic test",
+    "A/B test",
+    "manual baseline"
+  ],
+  "source_manifest": [
+    {
+      "id": "SRC-META-SYNTHESIS-2",
+      "path": "10_FINAL_MULTI_SYNTHESIS_ChatGPT2.md",
+      "sha256": "f9fc7d03b294a3b111aee97834390e770ee4100ab6d4d7ea407da005945788bc",
+      "available_in_build": true
+    },
+    {
+      "id": "SRC-META-SYNTHESIS-1",
+      "path": "10_FINAL_MULTI_SYNTHESIS_ChatGPT1.md",
+      "sha256": "1679aa25d10fb4146b8fa9c68e08cbfb08f5d0aa1cb6b76185d041c37d496322",
+      "available_in_build": true
+    }
+  ],
+  "blocks": [
+    {
+      "id": "CTX-V07-001",
+      "level": "light",
+      "title": "Core product",
+      "text": "Conflict extraction is the core product. Parallel dispatch and logging are useful but not differentiating. Judge panels, memory, and multi-round loops are architecture perfume unless conflict extraction proves itself first."
+    },
+    {
+      "id": "CTX-V07-002",
+      "level": "light",
+      "title": "Minimal workflow",
+      "text": "Minimal v0.7 workflow: seed.md → 3 to 5 answer models → raw responses → conflict_extraction.md with up to 5 conflicts → BD selects 0 to 3 conflicts → optional targeted critique → final_report.md → metrics.json and lineage.json."
+    },
+    {
+      "id": "CTX-V07-003",
+      "level": "light",
+      "title": "Baseline comparisons",
+      "text": "Compare against BD manual workflow and against a strong single-model reflection baseline. Do not allow MentalArena to win only against a weak comparison."
+    },
+    {
+      "id": "CTX-V07-004",
+      "level": "light",
+      "title": "Kill criteria",
+      "text": "Pause or pivot if conflict maps are mostly wording differences, BD still must read all raw outputs, final synthesis is bland consensus, best raw answer beats synthesis, or cost/time exceed value."
+    },
+    {
+      "id": "CTX-V07-005",
+      "level": "standard",
+      "title": "Semantic bleaching risk",
+      "text": "Repeated critique/synthesis can flatten sharp contrarian insight into safe consensus. MentalArena should preserve useful disagreement, not just average models."
+    }
+  ],
+  "usage_instruction": "Use only what is relevant. Cite CTX ids when relying on this context. If context is insufficient or conflicts with the task, say so explicitly.",
+  "file": "mentalarena_v07_conflict_extraction.json"
+}

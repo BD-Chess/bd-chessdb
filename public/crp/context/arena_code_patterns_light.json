@@ -1,0 +1,74 @@
+{
+  "schema": "AIM3_CONTEXT_PACK_V0_1",
+  "pack_id": "ARENA_CODE_PATTERNS_LIGHT",
+  "title": "BD Arena Code Patterns — Light",
+  "version": "0.1",
+  "updated": "2026-06-14",
+  "target_tokens_light": 1800,
+  "purpose": "Cross-project code motifs common to BD arenas: MDL decides, DCC orchestration, workers, manifests, conservative grafting, reproducibility.",
+  "when_to_use": [
+    "arena",
+    "DCC",
+    "MDL",
+    "crossword",
+    "AMR",
+    "ARC",
+    "solver",
+    "code patterns",
+    "workers"
+  ],
+  "source_manifest": [
+    {
+      "id": "SRC-CROSSWORD-ARENA",
+      "path": "8z_CW_arena.py",
+      "sha256": "6669421f7ff3c34f402f1c9eb792910284f0005429cd2e08b4f59b8005b3034b",
+      "available_in_build": true
+    },
+    {
+      "id": "SRC-AMR-ARENA",
+      "path": "amr_arena.py",
+      "sha256": "796e001c4c2aa96e087152a8cc3503a389ff0f716ddb2643eaafb789111ac915",
+      "available_in_build": true
+    },
+    {
+      "id": "SRC-ARC-ARENA",
+      "path": "arc_mdlxdcc_arena_v0_4.py",
+      "sha256": "6a4cfc34dba625580a2b414f6d40379f39567ae9b128abad831d1e15278769c3",
+      "available_in_build": true
+    }
+  ],
+  "blocks": [
+    {
+      "id": "CTX-ARENA-001",
+      "level": "light",
+      "title": "Captain/graft rule",
+      "text": "Crossword arena pattern: keep the proven captain/base; graft only selected promising extras; extras are conservative by default and arena-zerorable; let MDL decide which grafted genes survive."
+    },
+    {
+      "id": "CTX-ARENA-002",
+      "level": "light",
+      "title": "Wide search-space rule",
+      "text": "AMR arena pattern: continue from a real code path, not toy rewrite; keep wide search-space, workers, resume/checkpoint, DCC modes, and reproducibility intact."
+    },
+    {
+      "id": "CTX-ARENA-003",
+      "level": "light",
+      "title": "ARC solver pattern",
+      "text": "ARC arena pattern: pipeline from input features to primitive candidates to MDL score to DCC trace to train-fit/leave-one-validation/test prediction, with outputs including results, summary, failures, candidates, report, manifest."
+    },
+    {
+      "id": "CTX-ARENA-004",
+      "level": "light",
+      "title": "No online/no hidden calls pattern",
+      "text": "Several BD arenas explicitly avoid online calls and LLM calls during benchmark execution. When a system uses LLM/API calls, this must be explicit in logs, costs, and claims."
+    },
+    {
+      "id": "CTX-ARENA-005",
+      "level": "standard",
+      "title": "DCC-like orchestration",
+      "text": "Across projects, DCC means coordinating multiple signals/operators rather than trusting one monolithic heuristic. MentalArena should be DCC-like: orchestrate roles, conflicts, context, and tests, but keep BD in control."
+    }
+  ],
+  "usage_instruction": "Use only what is relevant. Cite CTX ids when relying on this context. If context is insufficient or conflicts with the task, say so explicitly.",
+  "file": "arena_code_patterns_light.json"
+}

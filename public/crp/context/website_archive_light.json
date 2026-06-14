@@ -1,0 +1,59 @@
+{
+  "schema": "AIM3_CONTEXT_PACK_V0_1",
+  "pack_id": "WEBSITE_ARCHIVE_LIGHT",
+  "title": "MDLxDCC.org Website Archive Context — Light",
+  "version": "0.1",
+  "updated": "2026-06-14",
+  "target_tokens_light": 1200,
+  "purpose": "How to use www.MDLxDCC.org and /context as machine-readable project archive for LLMs.",
+  "when_to_use": [
+    "website",
+    "MDLxDCC.org",
+    "context",
+    "public archive",
+    "machine-readable context",
+    "web ingestion"
+  ],
+  "source_manifest": [
+    {
+      "id": "SRC-WEBSITE-SLIM",
+      "path": "BD_web_slim.zip",
+      "sha256": "dcf646267869cbfffa087ac69cb853062264acfe0da6d7f0aae8c4899b801904",
+      "available_in_build": true
+    },
+    {
+      "id": "SRC-MA-PUBLIC-PAGE",
+      "path": "AIM3_MentalArena_mRHP.html",
+      "sha256": "a6e7ae0a07932d768f9955a96b4ad98dad00dbcae5f75a46838894c365ba382c",
+      "available_in_build": true
+    }
+  ],
+  "blocks": [
+    {
+      "id": "CTX-WEB-001",
+      "level": "light",
+      "title": "Website as archive",
+      "text": "www.MDLxDCC.org is a public archive of BD work. It contains many papers/pages, though not all Python code. It can serve humans and future LLM ingestion."
+    },
+    {
+      "id": "CTX-WEB-002",
+      "level": "light",
+      "title": "Context folder proposal",
+      "text": "Create /context/ with compact machine-readable .json/.md/.txt packs. These are not normal browsing pages; they are compressed context sources for MentalArena and LLMs."
+    },
+    {
+      "id": "CTX-WEB-003",
+      "level": "light",
+      "title": "URL vs token caveat",
+      "text": "Giving a URL is not automatically token-free. The Lab should fetch/cache/condense context itself when possible, and only use provider-native web/URL tools intentionally."
+    },
+    {
+      "id": "CTX-WEB-004",
+      "level": "light",
+      "title": "Best practice",
+      "text": "ZIP is archive/export. JSON/MD context pack is model-readable compressed knowledge. Local cache avoids re-fetching. Provider file/search/cache is optional optimization. Do not rely blindly on every API model browsing URLs correctly."
+    }
+  ],
+  "usage_instruction": "Use only what is relevant. Cite CTX ids when relying on this context. If context is insufficient or conflicts with the task, say so explicitly.",
+  "file": "website_archive_light.json"
+}

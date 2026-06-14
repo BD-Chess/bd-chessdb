@@ -1,0 +1,91 @@
+{
+  "schema": "AIM3_CONTEXT_PACK_V0_1",
+  "pack_id": "MENTALARENA_CORE_LIGHT",
+  "title": "AIm3 MentalArena Core Context — Light",
+  "version": "0.1",
+  "updated": "2026-06-14",
+  "target_tokens_light": 1500,
+  "purpose": "Minimal project brain for MentalArena itself: what it is, what has been tested, and what v0.7 should prove.",
+  "when_to_use": [
+    "MentalArena",
+    "AIM3",
+    "AIm3",
+    "mRHP",
+    "RHPm",
+    "multi-LLM council",
+    "conflict extraction",
+    "reasoning protocol"
+  ],
+  "source_manifest": [
+    {
+      "id": "SRC-MA-ABOUT",
+      "path": "MentalArena_about.txt",
+      "sha256": "d402a63061036b965955033d2b4451e074a2ed46cfdfc3372c4325338cca9da1",
+      "available_in_build": true
+    },
+    {
+      "id": "SRC-MA-META-55PRO",
+      "path": "10_FINAL_MULTI_SYNTHESIS_ChatGPT2.md",
+      "sha256": "f9fc7d03b294a3b111aee97834390e770ee4100ab6d4d7ea407da005945788bc",
+      "available_in_build": true
+    },
+    {
+      "id": "SRC-MA-META-54HIGH",
+      "path": "10_FINAL_MULTI_SYNTHESIS_ChatGPT1.md",
+      "sha256": "1679aa25d10fb4146b8fa9c68e08cbfb08f5d0aa1cb6b76185d041c37d496322",
+      "available_in_build": true
+    },
+    {
+      "id": "SRC-MA-PUBLIC-HTML",
+      "path": "AIM3_MentalArena_mRHP.html",
+      "sha256": "a6e7ae0a07932d768f9955a96b4ad98dad00dbcae5f75a46838894c365ba382c",
+      "available_in_build": true
+    }
+  ],
+  "blocks": [
+    {
+      "id": "CTX-MA-001",
+      "level": "light",
+      "title": "Definition",
+      "text": "MentalArena is an external reasoning/workflow layer above LLMs. It does not train model weights. It improves the protocol around LLMs: seed prompts, RHP/RHPr/RHPm prompting, multi-LLM answers, conflict extraction, targeted critique, judge/synthesis prompts, logs, lineage, and final human override."
+    },
+    {
+      "id": "CTX-MA-002",
+      "level": "light",
+      "title": "Correct architecture split",
+      "text": "The merged architecture is: Council Engine = heart of the system; Protocol Fitness Harness = measurement/CI/anti-bullshit layer; Public page = architecture explanation; Local Lab = private real work with API keys/logs."
+    },
+    {
+      "id": "CTX-MA-003",
+      "level": "light",
+      "title": "Current strongest v0.7 thesis",
+      "text": "The next proof target is narrow: conflict extraction. If MentalArena cannot extract substantive, decision-relevant disagreements better and faster than BD reading raw answers, it has no reason to become a larger council OS."
+    },
+    {
+      "id": "CTX-MA-004",
+      "level": "light",
+      "title": "Manual workflow being automated",
+      "text": "BD manual workflow: write seed → GPT/RHPr expands prompt → several top LLMs answer → answers collected into one file → GPT synthesizes → revised prompt goes back to LLMs → GPT/Claude build hybrid syntheses → final document. MentalArena should automate this without hiding human control."
+    },
+    {
+      "id": "CTX-MA-005",
+      "level": "light",
+      "title": "Design stance",
+      "text": "Treat BD as equal thinking partner; explore first; do not kill seeds early; build first, test hard second; no fake certainty; preserve minority useful ideas; prefer smallest decisive experiments over grand architecture."
+    },
+    {
+      "id": "CTX-MA-006",
+      "level": "light",
+      "title": "v0.7 success gates",
+      "text": "Conflict precision >= 60%; BD human reading time <= 60% of manual workflow; final output quality >= 90% of manual baseline; synthesis should beat or at least complement the best raw answer; cost must stay bounded; no semantic bleaching of useful disagreement."
+    },
+    {
+      "id": "CTX-MA-007",
+      "level": "standard",
+      "title": "Context-pack lesson",
+      "text": "API MentalArena is weaker than project-folder GPT/Claude sessions unless models receive project materials. Add compact Project Context Packs so each LLM gets the same distilled input from papers, code, specs, and prior results."
+    }
+  ],
+  "usage_instruction": "Use only what is relevant. Cite CTX ids when relying on this context. If context is insufficient or conflicts with the task, say so explicitly.",
+  "file": "mentalarena_core_light.json"
+}
