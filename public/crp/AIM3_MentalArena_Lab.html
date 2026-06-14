@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIm³ MentalArena Local Lab v0.6.16</title>
+<style>
+:root{--bg:#05070d;--panel:#101827;--panel2:#0b1220;--text:#e5eefb;--soft:#b8c4d8;--muted:#74829c;--line:#22304a;--cyan:#38d7ff;--green:#37d996;--gold:#f2c94c;--red:#ff6b8a;--violet:#a78bfa;--radius:16px}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 8%,rgba(56,215,255,.12),transparent 30%),radial-gradient(circle at 80% 12%,rgba(55,217,150,.09),transparent 28%),linear-gradient(180deg,#05070d,#080b14 55%,#05070d);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:16px;line-height:1.55}.wrap{max-width:1280px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}.brand{font-family:ui-monospace,Consolas,monospace;color:var(--green);letter-spacing:.14em;text-transform:uppercase;font-size:.8rem}h1{margin:.2em 0;font-size:clamp(2rem,5vw,4rem);letter-spacing:-.04em;line-height:1}.sub{color:var(--soft);max-width:980px}.workflow{display:flex;flex-direction:column;gap:16px}.card{background:linear-gradient(180deg,rgba(16,24,39,.92),rgba(11,18,32,.90));border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:0 14px 42px rgba(0,0,0,.25)}.card.step{border-color:rgba(56,215,255,.22)}.stephead{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}.stepnum{flex:0 0 auto;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(56,215,255,.13);border:1px solid rgba(56,215,255,.35);color:var(--cyan);font-weight:900}.stephead h2{margin:0;color:#fff}.stephead p{margin:.15rem 0 0;color:var(--muted)}.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}@media(max-width:900px){.two,.three{grid-template-columns:1fr}.top{display:block}}h2,h3{margin-top:0;color:#fff}label{display:block;margin:10px 0 5px;color:var(--soft);font-weight:650}input,select,textarea{width:100%;background:#07101e;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}textarea{min-height:130px;font-family:ui-monospace,Consolas,monospace;font-size:.9rem}button{cursor:pointer;border:1px solid rgba(56,215,255,.35);background:rgba(56,215,255,.10);color:#e8fbff;border-radius:999px;padding:9px 13px;margin:4px 4px 4px 0;font-weight:700}button:hover{border-color:var(--cyan);background:rgba(56,215,255,.18)}button.green{border-color:rgba(55,217,150,.38);background:rgba(55,217,150,.10)}button.gold{border-color:rgba(242,201,76,.38);background:rgba(242,201,76,.10)}button.red{border-color:rgba(255,107,138,.38);background:rgba(255,107,138,.10)}.pill{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:4px 9px;font-family:ui-monospace,Consolas,monospace;font-size:.72rem;color:var(--soft);margin:2px}.ok{color:var(--green);border-color:rgba(55,217,150,.35);background:rgba(55,217,150,.09)}.warn{color:var(--gold);border-color:rgba(242,201,76,.35);background:rgba(242,201,76,.09)}.bad{color:var(--red);border-color:rgba(255,107,138,.35);background:rgba(255,107,138,.09)}pre{white-space:pre-wrap;word-break:break-word;background:#07101e;border:1px solid var(--line);border-radius:12px;padding:12px;max-height:520px;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:.86rem}details{border:1px solid var(--line);border-radius:12px;background:rgba(7,16,30,.55);margin:10px 0}summary{cursor:pointer;padding:10px 12px;color:#fff;font-weight:800}details>div{padding:0 12px 12px;color:var(--soft)}.muted{color:var(--muted)}.statusline{font-family:ui-monospace,Consolas,monospace;color:var(--soft);font-size:.82rem}.artifacts{max-height:240px;overflow:auto}.artifact{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid rgba(255,255,255,.05);padding:4px 0;color:var(--soft);font-family:ui-monospace,Consolas,monospace;font-size:.8rem}.small{font-size:.86rem;color:var(--muted)}.responsebox{border-color:rgba(55,217,150,.38);box-shadow:0 0 0 1px rgba(55,217,150,.08),0 14px 42px rgba(0,0,0,.25)}.responsebox h2{color:var(--green)}.metaout{max-height:180px;font-size:.78rem;color:var(--soft)}.answerout{max-height:560px;min-height:120px;border-color:rgba(55,217,150,.30)}.callhint{border-left:3px solid var(--gold);padding-left:10px;color:var(--soft)}.councilbox{border:1px solid rgba(55,217,150,.25);background:rgba(55,217,150,.06);border-radius:14px;padding:12px}.debugbox{border:1px dashed rgba(242,201,76,.35);background:rgba(242,201,76,.04);border-radius:14px;padding:12px}.buttonbar{display:flex;flex-wrap:wrap;gap:4px}.topstatus{text-align:right}@media(max-width:900px){.topstatus{text-align:left;margin-top:10px}}
+.flowcheck{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:999;width:250px;background:rgba(5,7,13,.92);backdrop-filter:blur(14px);border:1px solid rgba(56,215,255,.25);border-radius:16px;padding:12px;box-shadow:0 18px 60px rgba(0,0,0,.45)}
+.flowcheck h3{margin:0 0 8px;font-size:.95rem;color:#fff}.flowcheck .checkrow{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.055);font-size:.78rem;color:var(--soft)}.flowcheck .checkrow:last-child{border-bottom:none}.flowcheck input{width:auto;accent-color:var(--green)}.flowcheck .active{color:var(--cyan);font-weight:800}.flowcheck .done{color:var(--green)}.flowcheck .small{font-size:.72rem;color:var(--muted);margin-top:8px}.stagebanner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid rgba(56,215,255,.25);border-radius:12px;background:rgba(56,215,255,.065);margin:8px 0 12px}.stagebanner strong{color:var(--cyan)}.readonly{opacity:.92}.hiddenCompat{display:none}.advancedStage{margin-top:8px}.flowtools{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.flowtools button{font-size:.72rem;padding:5px 8px}@media(max-width:1180px){.flowcheck{position:static;transform:none;width:auto;margin:12px 20px 0}.wrap{padding-top:12px}}
+
+</style>
+</head>
+<body>
+
+<aside class="flowcheck" id="flowChecklist">
+  <h3>Run checklist</h3>
+  <label class="checkrow" data-flow="start"><input type="checkbox" disabled> <span>1. Start run</span></label>
+  <label class="checkrow" data-flow="round1"><input type="checkbox" disabled> <span>2. Round 1 sent</span></label>
+  <label class="checkrow" data-flow="conflict"><input type="checkbox" disabled> <span>3. Conflict map built</span></label>
+  <label class="checkrow" data-flow="round2"><input type="checkbox" disabled> <span>4. Round 2 sent</span></label>
+  <label class="checkrow" data-flow="judge"><input type="checkbox" disabled> <span>5. Judge panel sent</span></label>
+  <label class="checkrow" data-flow="final"><input type="checkbox" disabled> <span>6. Final synthesis sent</span></label>
+  <label class="checkrow" data-flow="export"><input type="checkbox" disabled> <span>7. Export ZIP</span></label>
+  <div class="small" id="flowHint">Current stage: Round 1</div>
+  <div class="flowtools"><button onclick="resetChecklist(false)">Reset checklist</button><button onclick="scrollToCurrentStage()">Go to active stage</button></div>
+</aside>
+
+<div class="wrap">
+<header class="top">
+  <div>
+    <div class="brand">Private Local Lab · v0.6.16</div>
+    <h1>AIm³ MentalArena Lab</h1>
+    <p class="sub">Local council console for BD’s multi‑LLM RHP/RHPr/RHPm workflow. Default mode is now <strong>Top‑5 Council</strong>: ChatGPT, Claude, DeepSeek, Gemini, Grok. Single-provider calls are only a debug/smoke-test tool.</p>
+  </div>
+  <div class="topstatus"><span id="healthPill" class="pill warn">not checked</span><br><span id="runPill" class="pill">no run</span></div>
+</header>
+
+<div class="workflow">
+  <section class="card step" id="step1">
+    <div class="stephead"><div class="stepnum">1</div><div><h2>Task seed</h2><p>Define the problem once. MentalArena expands it into the working prompt.</p></div></div>
+    <div class="two">
+      <div>
+        <label>Title</label><input id="title" value="MentalArena council test">
+        <label>BD seed / problem</label><textarea id="seed">Build the next MentalArena step: split public architecture page from private local lab, then add a council engine that automates BD's manual multi-LLM RHP/RHPr/RHPm workflow.</textarea>
+      </div>
+      <div>
+        <div class="two">
+          <div><label>Protocol profile</label><select id="profile"><option>MentalArena-Council</option><option>RHPm</option><option>RHPr</option><option>RHP</option><option>Plain</option></select></div>
+          <div><label>Output type</label><select id="outputType"><option>analysis_report</option><option>builder_prompt</option><option>paper_upgrade</option><option>code_spec</option><option>html_update</option><option>experiment_plan</option><option>decision_memo</option></select></div>
+        </div>
+        <div class="buttonbar"><button class="green" onclick="startRun()">Start council run</button><button onclick="listRuns()">List runs</button><button onclick="checkHealth()">Check health</button></div>
+        <p class="small">Start here. After a run starts, the expanded prompt appears in Step 2.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card step" id="step2">
+    <div class="stephead"><div class="stepnum">2</div><div><h2>Default Council: Top 5 LLMs</h2><p>This is the main path. It sends the same prompt to GPT, Claude, DeepSeek, Gemini and Grok.</p></div></div>
+    <div class="councilbox">
+      <div id="top5Status"><span class="pill warn">loading provider status…</span></div>
+      <p id="councilStatus" class="statusline">Provider status not checked yet.</p>
+      <div class="two">
+        <div><label>Council target group</label><select id="targetGroup"><option value="top5" selected>Default Top 5: ChatGPT + Claude + DeepSeek + Gemini + Grok</option><option value="top10">All loaded Top 10 providers</option><option value="single">Selected single provider only</option></select></div>
+        <div><label>Active stage (auto)</label><input id="activeStageDisplay" class="readonly" value="Round 1" readonly><select id="batchStage" class="hiddenCompat"><option value="round1">round1</option><option value="round2">round2</option><option value="judge">judge</option><option value="final_synthesis">final_synthesis</option><option value="direct">direct</option></select><p class="small">You no longer need to change Batch stage manually. Buttons below switch it automatically.</p></div>
+      </div>
+      <div class="stagebanner"><div>Current send target: <strong id="sendStageLabel">Round 1</strong></div><span class="pill warn" id="stageGuardPill">stage guard on</span></div>
+      <label>Round prompt / editable prompt</label><textarea id="promptBox" style="min-height:240px" placeholder="Expanded prompt appears after Start council run."></textarea>
+      <div class="buttonbar"><button id="sendTop5Btn" class="green" onclick="sendTop5Council()">Send Round 1 prompt to default Top 5 Council</button><button id="sendSelectedBtn" class="gold" onclick="sendSelectedCouncil()">Send Round 1 prompt to selected target group</button><button onclick="copyPrompt()">Copy prompt</button></div>
+      <details class="advancedStage"><summary>Advanced: manual stage override</summary><div><p class="small">Only use this for recovery/debug. Main workflow changes stage automatically.</p><label>Manual stage</label><select id="manualStageOverride" onchange="setStage(this.value, true)"><option value="round1">round1</option><option value="round2">round2</option><option value="judge">judge</option><option value="final_synthesis">final_synthesis</option><option value="direct">direct</option></select></div></details>
+      <pre id="batchOutput">Batch results will appear here after a council send.</pre>
+    </div>
+    <details>
+      <summary>Single-provider debug / smoke test</summary>
+      <div class="debugbox">
+        <p class="small">Use this only to test one API key/model at a time. It is not the main MentalArena workflow.</p>
+        <div class="three"><div><label>Provider</label><select id="provider" onchange="syncProviderDefaults()"></select></div><div><label>Model</label><input id="model"></div><div><label>Endpoint</label><input id="endpoint"></div></div>
+        <label class="small"><input type="checkbox" id="allowModelOverride"> Allow manual model/endpoint override for this debug call. Leave off unless you intentionally want a custom model.</label>
+        <label>Direct prompt</label><textarea id="directPrompt" placeholder="Optional direct prompt to selected provider."></textarea>
+        <div class="buttonbar"><button class="green" onclick="directCall()">Send direct prompt</button><button onclick="fillSmokePrompt()">Fill route-smoke prompt</button><button onclick="listGeminiModels()">Gemini: list available models</button></div>
+      </div>
+    </details>
+  </section>
+
+  <section class="card step" id="step3">
+    <div class="stephead"><div class="stepnum">3</div><div><h2>Results, conflict map, critique, judge, synthesis</h2><p>After Round 1 answers exist, build the next MentalArena layers.</p></div></div>
+    <div class="buttonbar"><button class="gold" onclick="buildConflicts()">Build conflict map</button><button onclick="buildRound2Prompt()">Build Round 2 critique prompt</button><button onclick="buildJudgePrompt()">Build judge panel prompt</button><button class="green" onclick="buildFinalPrompt()">Build final synthesis prompt</button><button onclick="exportRun()">Export run ZIP</button><button onclick="copyOutput()">Copy output</button></div>
+    <p class="statusline" id="status">Ready.</p>
+    <div class="two">
+      <div><h3>Output</h3><pre id="output">Use Step 1 to start a run. Then use Step 2 to send the prompt to the default Top‑5 Council.</pre></div>
+      <div><h3>Artifacts</h3><div id="artifacts" class="artifacts muted">No artifacts yet.</div></div>
+    </div>
+  </section>
+
+  <section class="card responsebox" id="directResponseCard">
+    <h2>Direct result <span id="directStatusPill" class="pill">no call</span></h2>
+    <p class="small">Only for single-provider debug. Smoke tests verify the API route with a nonce. Provider/model identity comes from API metadata below, not from the model’s self-report. Provider-API.txt is secret-only; Provider-Config.txt stores model/endpoint/settings. API key files are never overwritten by patches. Use <strong>Copy result</strong>; no manual selection needed. Route-smoke verifies the API path by echo token; model identity comes from API metadata, not self-report.</p>
+    <div class="buttonbar"><button onclick="copyDirectResult()">Copy result</button><button onclick="copyDirectAnswer()">Copy answer only</button><button onclick="copyDirectError()">Copy error</button><button onclick="copyDirectImportBlock()">Copy import block</button></div>
+    <pre id="directOutput" class="answerout">No direct call yet.</pre>
+    <h3>Direct call metadata / log files</h3><pre id="directMeta" class="metaout">No direct call metadata yet.</pre>
+  </section>
+
+  <section class="card">
+    <h2>Manual import</h2>
+    <div class="two"><div><label>Provider/name</label><input id="manualProvider" value="GPT-manual"></div><div><label>Paste answer</label><textarea id="manualAnswer" placeholder="Paste GPT/Claude/Gemini answer here if API not connected yet."></textarea></div></div>
+    <button onclick="manualImport()">Save manual answer</button>
+  </section>
+
+  <details class="card" open><summary>What this lab does</summary><div><p>This lab automates the manual workflow: seed → prompt expansion → LLM answers → conflict extraction → targeted critique → judge prompt → final synthesis prompt. Python keeps the ledger; LLMs do semantic judgement; BD keeps final override.</p><p><strong>Main change in v0.6.16:</strong> guided workflow stage control was added. The Lab now auto-selects Round 1 / Round 2 / Judge / Final stages, prevents silent overwrites, and shows a floating checklist. Route-smoke remains available under debug.</p></div></details>
+  <details class="card"><summary>All provider status</summary><div id="allProviderStatus"><span class="pill warn">loading…</span></div></details>
+  <details class="card"><summary>Security</summary><div><p>Do not put real API key files into GitHub/Netlify. For production later, use Netlify Functions + environment secrets. This local lab is for localhost use.</p></div></details>
+</div>
+</div>
+
+<script>
+const DEFAULT_PROVIDERS = [
+  {
+    "name": "ChatGPT",
+    "api_type": "openai_chat",
+    "endpoint": "https://api.openai.com/v1/chat/completions",
+    "model": "gpt-5.1",
+    "setup_group": "active_key",
+    "model_prefixes": [
+      "gpt-",
+      "o"
+    ]
+  },
+  {
+    "name": "Claude",
+    "api_type": "anthropic_messages",
+    "endpoint": "https://api.anthropic.com/v1/messages",
+    "model": "claude-sonnet-4-5",
+    "setup_group": "active_key",
+    "model_prefixes": [
+      "claude-"
+    ]
+  },
+  {
+    "name": "DeepSeek",
+    "api_type": "openai_chat",
+    "endpoint": "https://api.deepseek.com/chat/completions",
+    "model": "deepseek-v4-pro",
+    "setup_group": "active_key",
+    "model_prefixes": [
+      "deepseek-"
+    ]
+  },
+  {
+    "name": "Gemini",
+    "api_type": "gemini_generate",
+    "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+    "model": "gemini-3.5-flash",
+    "setup_group": "active_key",
+    "model_prefixes": [
+      "gemini-",
+      "models/gemini-"
+    ],
+    "model_fallbacks": [
+      "gemini-3.5-flash",
+      "gemini-3.1-pro-preview",
+      "gemini-3.1-pro",
+      "gemini-2.5-pro",
+      "gemini-2.5-flash",
+      "gemini-flash-latest"
+    ]
+  },
+  {
+    "name": "Grok",
+    "api_type": "openai_chat",
+    "endpoint": "https://api.x.ai/v1/chat/completions",
+    "model": "grok-4.3",
+    "setup_group": "active_key",
+    "model_prefixes": [
+      "grok-"
+    ]
+  },
+  {
+    "name": "GLM",
+    "api_type": "openai_chat",
+    "endpoint": "https://api.z.ai/api/paas/v4/chat/completions",
+    "model": "glm-4.6",
+    "setup_group": "active_key",
+    "model_prefixes": [
+      "glm-"
+    ]
+  },
+  {
+    "name": "MiniMax",
+    "api_type": "openai_chat",
+    "endpoint": "https://api.minimax.io/v1/chat/completions",
+    "model": "MiniMax-M3",
+    "setup_group": "active_key",
+    "model_prefixes": [
+      "minimax",
+      "MiniMax",
+      "abab"
+    ]
+  },
+  {
+    "name": "Mistral",
+    "api_type": "openai_chat",
+    "endpoint": "https://api.mistral.ai/v1/chat/completions",
+    "model": "mistral-large-latest",
+    "setup_group": "active_key",
+    "model_prefixes": [
+      "mistral-",
+      "codestral-"
+    ]
+  },
+  {
+    "name": "Kimi",
+    "api_type": "openai_chat",
+    "endpoint": "https://api.moonshot.ai/v1/chat/completions",
+    "model": "kimi-k2",
+    "setup_group": "active_key",
+    "model_prefixes": [
+      "kimi-",
+      "moonshot-"
+    ]
+  },
+  {
+    "name": "Qwen",
+    "api_type": "openai_chat",
+    "endpoint": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions",
+    "model": "qwen-plus",
+    "setup_group": "active_key",
+    "model_prefixes": [
+      "qwen-"
+    ]
+  }
+];
+const ACTIVE_TOP5 = ['ChatGPT','Claude','DeepSeek','Gemini','Grok'];
+const ACTIVE_TOP10 = DEFAULT_PROVIDERS.map(p => p.name);
+let providers = DEFAULT_PROVIDERS.slice();
+let providerStatus = {};
+let currentRun = '';
+let lastDirectResponse = null;
+let lastSmokeExpected = '';
+const $ = id => document.getElementById(id);
+const STAGE_LABELS = {round1:'Round 1', round2:'Round 2 targeted critique', judge:'Judge panel', final_synthesis:'Final synthesis', direct:'Direct debug'};
+const STAGE_TO_FLOW = {round1:'round1', round2:'round2', judge:'judge', final_synthesis:'final'};
+let currentStage = 'round1';
+let flowDone = {};
+function normStage(s){ s=String(s||'round1').replace(/-/g,'_'); if(s==='final') return 'final_synthesis'; if(s==='critique') return 'round2'; if(s==='judge_panel') return 'judge'; return STAGE_LABELS[s] ? s : 'round1'; }
+function stageLabel(s){ return STAGE_LABELS[normStage(s)] || String(s||'round1'); }
+function setStage(stage, manual=false){
+  currentStage = normStage(stage);
+  if($('batchStage')) $('batchStage').value=currentStage;
+  if($('manualStageOverride')) $('manualStageOverride').value=currentStage;
+  if($('activeStageDisplay')) $('activeStageDisplay').value=stageLabel(currentStage);
+  if($('sendStageLabel')) $('sendStageLabel').textContent=stageLabel(currentStage);
+  const suffix = currentStage === 'round1' ? 'Round 1 prompt' : currentStage === 'round2' ? 'Round 2 critique prompt' : currentStage === 'judge' ? 'Judge panel prompt' : currentStage === 'final_synthesis' ? 'Final synthesis prompt' : 'Direct prompt';
+  if($('sendTop5Btn')) $('sendTop5Btn').textContent='Send '+suffix+' to default Top 5 Council';
+  if($('sendSelectedBtn')) $('sendSelectedBtn').textContent='Send '+suffix+' to selected target group';
+  if($('stageGuardPill')) { $('stageGuardPill').className='pill '+(manual?'warn':'ok'); $('stageGuardPill').textContent=manual?'manual override':'stage guard on'; }
+  if($('flowHint')) $('flowHint').textContent='Current stage: '+stageLabel(currentStage);
+  updateChecklist();
+}
+function markDone(key, val=true){ flowDone[key]=!!val; updateChecklist(); }
+function resetChecklist(clearRun=true){ flowDone={}; if(clearRun){ currentRun=''; if($('runPill')){$('runPill').className='pill'; $('runPill').textContent='no run';} } setStage('round1'); updateChecklist(); }
+function updateChecklist(){
+  document.querySelectorAll('#flowChecklist .checkrow').forEach(row=>{
+    const key=row.dataset.flow; const input=row.querySelector('input'); const span=row.querySelector('span');
+    const done=!!flowDone[key]; if(input) input.checked=done;
+    row.classList.toggle('done', done);
+    row.classList.remove('active');
+  });
+  const active = currentStage==='round1' ? (flowDone.round1?'conflict':'round1') : (currentStage==='round2'?'round2':(currentStage==='judge'?'judge':(currentStage==='final_synthesis'?'final':'')));
+  const row = active ? document.querySelector(`#flowChecklist .checkrow[data-flow="${active}"]`) : null;
+  if(row && !flowDone[active]) row.classList.add('active');
+}
+function scrollToCurrentStage(){ const el = currentStage==='round1' ? $('step2') : $('step3'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); }
+function setStatus(s, cls){ const el=$('status'); if(el){ el.textContent=s; if(cls){ el.className=cls; } } }
+function setOut(x){ const el=$('output'); if(el){ el.textContent=typeof x==='string'?x:JSON.stringify(x,null,2); } }
+async function post(url,obj){
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj||{})});
+  const t=await r.text(); let j;
+  try{j=JSON.parse(t)}catch(e){j={ok:false,error:t}}
+  if(!r.ok && !j.error) j.error='HTTP '+r.status;
+  j.http_status = j.http_status || r.status;
+  return j;
+}
+function providerByName(name){ return (providers||[]).find(x=>x.name===name) || DEFAULT_PROVIDERS.find(x=>x.name===name) || {}; }
+
+function modelLooksWrongForProvider(name, model){
+  const m=String(model||'').trim();
+  if(!m) return false;
+  const ml=m.toLowerCase();
+  const markers={
+    ChatGPT:['claude','deepseek','gemini','grok','glm','minimax','mistral','kimi','qwen'],
+    Claude:['gpt','deepseek','gemini','grok','glm','minimax','mistral','kimi','qwen'],
+    DeepSeek:['gpt','claude','gemini','grok','glm','minimax','mistral','kimi','qwen'],
+    Gemini:['gpt','claude','deepseek','grok','glm','minimax','mistral','kimi','qwen'],
+    Grok:['gpt','claude','deepseek','gemini','glm','minimax','mistral','kimi','qwen'],
+    GLM:['gpt','claude','deepseek','gemini','grok','minimax','mistral','kimi','qwen'],
+    MiniMax:['gpt','claude','deepseek','gemini','grok','glm','mistral','kimi','qwen'],
+    Mistral:['gpt','claude','deepseek','gemini','grok','glm','minimax','kimi','qwen'],
+    Kimi:['gpt','claude','deepseek','gemini','grok','glm','minimax','mistral','qwen'],
+    Qwen:['gpt','claude','deepseek','gemini','grok','glm','minimax','mistral','kimi']
+  };
+  return (markers[name]||[]).some(x=>ml.includes(x));
+}
+function uiModelForProvider(name){
+  const p=providerByName(name);
+  const st=providerStatus[name]||{};
+  let m=st.model || p.model || '';
+  if(modelLooksWrongForProvider(name,m)) m=p.model||'';
+  return m;
+}
+function uiEndpointForProvider(name){
+  const p=providerByName(name);
+  const st=providerStatus[name]||{};
+  return st.endpoint || p.endpoint || '';
+}
+
+function populateProviders(){
+  const sel=$('provider'); if(!sel) return;
+  const old=sel.value || 'DeepSeek';
+  const list=(providers&&providers.length?providers:DEFAULT_PROVIDERS);
+  sel.innerHTML='';
+  list.forEach(p=>{
+    const st=providerStatus[p.name]||{};
+    const o=document.createElement('option');
+    o.value=p.name;
+    const mark=st.key_loaded?'✓':'·';
+    const suffix=st.key_loaded?' active':(p.setup_group==='setup_later'?' later':(p.setup_group==='waitlist'?' waitlist':''));
+    o.textContent=`${mark} ${p.name}${suffix}`;
+    sel.appendChild(o);
+  });
+  sel.value=[...sel.options].some(o=>o.value===old)?old:'DeepSeek';
+  syncProviderDefaults();
+}
+function syncProviderDefaults(){
+  const sel=$('provider');
+  const name=sel ? sel.value : 'DeepSeek';
+  const p=providerByName(name);
+  const model=uiModelForProvider(name);
+  const endpoint=uiEndpointForProvider(name);
+  if($('model')) $('model').value=model;
+  if($('endpoint')) $('endpoint').value=endpoint;
+  const st=providerStatus[name]||{};
+  setStatus(`Selected ${name} · model ${model || 'missing'}${st.config_warnings ? ' · config warning' : ''}`);
+}
+
+function providerChip(name){
+  const st=providerStatus[name] || {};
+  const cls=st.key_loaded ? 'ok' : 'warn';
+  const mark=st.key_loaded ? '✓' : '·';
+  const model=uiModelForProvider(name) || ''; const warn=st.config_warnings ? ' ⚠' : '';
+  return `<span class="pill ${cls}" title="${model}${warn ? ' · ' + st.config_warnings : ''}">${mark} ${name}${warn}</span>`;
+}
+function renderCouncilTargets(){
+  const top5=$('top5Status');
+  if(top5) top5.innerHTML = ACTIVE_TOP5.map(providerChip).join(' ');
+  const all=$('allProviderStatus');
+  if(all) all.innerHTML = ACTIVE_TOP10.map(providerChip).join(' ');
+  const loadedTop5 = ACTIVE_TOP5.filter(n => providerStatus[n] && providerStatus[n].key_loaded).length;
+  const loadedTop10 = ACTIVE_TOP10.filter(n => providerStatus[n] && providerStatus[n].key_loaded).length;
+  const c=$('councilStatus');
+  if(c) c.textContent = `Top 5 loaded ${loadedTop5}/5 · All providers loaded ${loadedTop10}/10`;
+}
+function getTargets(group){
+  const g = group || (($('targetGroup') && $('targetGroup').value) || 'top5');
+  let names = g === 'top10' ? ACTIVE_TOP10.slice() : (g === 'single' ? [($('provider') && $('provider').value) || 'DeepSeek'] : ACTIVE_TOP5.slice());
+  return names.filter(name => providerStatus[name] && providerStatus[name].key_loaded);
+}
+async function checkHealth(){
+  setStatus('Checking health...');
+  try{
+    const r=await fetch('/api/health?t='+Date.now(),{cache:'no-store'});
+    const j=await r.json();
+    providers=(j.providers&&j.providers.length)?j.providers:DEFAULT_PROVIDERS.slice();
+    providerStatus={};
+    (j.provider_status||[]).forEach(p=>providerStatus[p.provider]=p);
+    populateProviders();
+    renderCouncilTargets();
+    const loaded=Number.isFinite(j.keys_loaded)?j.keys_loaded:(j.provider_status||[]).filter(p=>p.key_loaded).length;
+    $('healthPill').className='pill '+(loaded?'ok':'warn');
+    $('healthPill').textContent='helper ok · '+loaded+' keys loaded'+(j.log_dir?' · log '+j.log_dir:'');
+    setOut(j);
+    if(!loaded){setStatus('0 keys loaded. Provider list is visible, but helper did not detect real Provider-API.txt files. Check JSON output for key_search_dirs/config_search_dirs.','warn');}
+    else {setStatus('Health loaded: '+loaded+' key files found.');}
+    return j;
+  } catch(e){
+    providers=DEFAULT_PROVIDERS.slice();
+    populateProviders();
+    renderCouncilTargets();
+    $('healthPill').className='pill bad';
+    $('healthPill').textContent='helper not reachable';
+    setOut({ok:false,error:String(e),fallback_providers:DEFAULT_PROVIDERS.map(p=>p.name)});
+    setStatus('Provider list loaded from HTML fallback. Start RUN_LOCAL_MENTALARENA_LAB.bat to enable API calls.','warn');
+    return {ok:false,error:String(e)};
+  }
+}
+function payloadBase(){return {run_id:currentRun, provider:$('provider').value, model:$('model').value, endpoint:$('endpoint').value, allow_model_override: !!($('allowModelOverride') && $('allowModelOverride').checked)};}
+function renderArtifacts(list){
+  if(!list||!list.length){$('artifacts').textContent='No artifacts.';return}
+  $('artifacts').innerHTML=list.map(a=>`<div class="artifact"><span>${a.name}</span><span>${a.bytes} B</span></div>`).join('');
+}
+async function startRun(){
+  const seed=$('seed').value.trim(); if(!seed){alert('Seed missing');return}
+  setStatus('Starting run...');
+  const j=await post('/api/council/start',{seed,title:$('title').value,profile:$('profile').value,output_type:$('outputType').value});
+  if(j.ok){
+    currentRun=j.run_id;
+    flowDone={}; markDone('start', true); setStage('round1');
+    $('runPill').className='pill ok'; $('runPill').textContent=currentRun;
+    $('promptBox').value=j.expanded_prompt||''; renderArtifacts(j.artifacts); setOut(j.expanded_prompt||j);
+    const step2=$('step2'); if(step2) step2.scrollIntoView({behavior:'smooth', block:'start'});
+  } else setOut(j);
+  setStatus(j.ok?'Run started. Current stage is Round 1.':'Error.');
+}
+async function sendRound1(){
+  if(!currentRun){alert('Start a run first');return}
+  const prompt=$('promptBox').value.trim(); if(!prompt){alert('Prompt missing');return}
+  setStatus('Sending Round 1 to '+$('provider').value+'...');
+  const j=await post('/api/llm',{...payloadBase(),prompt,stage:'round1'});
+  if(j.ok){setOut(j.answer); await refreshConfArtifacts();} else setOut(j);
+  setStatus(j.ok?'Round 1 answer saved.':'Call failed.');
+}
+
+async function sendRound1ActiveTop10(){ return sendCouncilBatch('round1', 'top10'); }
+async function sendTop5Council(){ return sendCouncilBatch(currentStage, 'top5'); }
+async function sendSelectedCouncil(){ return sendCouncilBatch(currentStage, (($('targetGroup') && $('targetGroup').value) || 'top5')); }
+function markStageSent(stage){
+  stage=normStage(stage);
+  const key=STAGE_TO_FLOW[stage]; if(key) markDone(key,true);
+}
+async function sendCouncilBatch(stageOverride, groupOverride){
+  if(!currentRun){alert('Start a council run first.');return}
+  const prompt=$('promptBox').value.trim(); if(!prompt){alert('Prompt missing');return}
+  if(!Object.keys(providerStatus).length){await checkHealth()}
+  const stage=normStage(stageOverride || currentStage || 'round1');
+  setStage(stage);
+  const group=groupOverride || (($('targetGroup')&&$('targetGroup').value)||'top5');
+  const targets=getTargets(group);
+  if(!targets.length){
+    alert('No loaded API keys for target group: '+group+'. Run Check health and verify Provider-API.txt files.');
+    return;
+  }
+  const label = group === 'top5' ? 'Default Top 5 Council' : (group === 'top10' ? 'All loaded Top 10' : 'Selected single provider');
+  const stLabel = stageLabel(stage);
+  if(!confirm(`Send current prompt as ${stLabel} to ${targets.length} providers in ${label}?
+${targets.join(', ')}`)) return;
+  const results=[];
+  const batchOut=$('batchOutput');
+  if(batchOut) batchOut.textContent='Starting '+label+' batch for '+stLabel+'...';
+  for(const name of targets){
+    const p=providerByName(name); const st=providerStatus[name]||{};
+    setStatus(`${stLabel} · ${name} (${results.length+1}/${targets.length})...`);
+    const j=await post('/api/llm',{run_id:currentRun,provider:name,model:p.model||st.model||'',endpoint:p.endpoint||st.endpoint||'',prompt,stage});
+    results.push({provider:name,stage,ok:!!j.ok,status:j.status||'',http_status:j.http_status||'',model:j.model||p.model||st.model||'',latency_ms:j.latency_ms||'',answer_chars:(j.answer||'').length,saved_artifact:j.saved_artifact||'',error:j.error||''});
+    const text=JSON.stringify(results,null,2);
+    setOut(results);
+    if(batchOut) batchOut.textContent=text;
+  }
+  markStageSent(stage);
+  await refreshConfArtifacts();
+  setStatus(`${label} ${stLabel} batch done: `+results.filter(r=>r.ok).length+'/'+results.length+' ok.');
+}
+function shortError(j){
+  if(!j) return 'No response object.';
+  const provider = j.provider || 'provider';
+  const http = j.http_status ? `HTTP ${j.http_status}` : 'error';
+  const model = j.model || '';
+  let msg = j.error || j.message || JSON.stringify(j, null, 2);
+  let hint = '';
+  if(String(j.http_status)==='401' || /authentication|invalid api key|api key.*invalid/i.test(msg)){
+    hint = `\n\nDiagnosis: ${provider} rejected authentication. The local helper reached the ${provider} endpoint, but the key used for this provider was not accepted. Check ${provider}-API.txt, recreate/copy the API key, and make sure it is an API key for this exact provider, not a web-chat session token.`;
+  } else if(String(j.http_status)==='402' || /balance|credit|payment|quota/i.test(msg)){
+    hint = `\n\nDiagnosis: authentication probably worked, but billing/credits/quota may be missing for ${provider}.`;
+  } else if(String(j.http_status)==='404' || /model/i.test(msg)){
+    hint = `\n\nDiagnosis: endpoint was reached, but the model name may be wrong or unavailable for this account. For Gemini, click 'Gemini: list available models' or try gemini-3.5-flash / gemini-3.1-pro-preview.`;
+  }
+  return `FAILED | provider=${provider} | model=${model} | ${http}\n\n${msg}${hint}`;
+}
+
+function extractSmokeNonce(text){
+  const m = String(text || '').match(/nonce=([A-Za-z0-9_-]+)/);
+  return m ? m[1] : '';
+}
+function isSmokePrompt(text){
+  return /MENTALARENA_SMOKE_OK\s*\|\s*nonce=/i.test(String(text || ''));
+}
+function smokeVerdict(prompt, answer){
+  const nonce = extractSmokeNonce(prompt);
+  if(!nonce) return '';
+  const ok = String(answer || '').includes(nonce);
+  return ok
+    ? 'SMOKE_VERDICT=PASS | nonce echoed | route metadata below is the source of truth for provider/model.'
+    : 'SMOKE_VERDICT=CHECK | nonce not echoed exactly | inspect answer and route metadata.';
+}
+function renderDirectResult(j){
+  lastDirectResponse = j || null;
+  const out=$('directOutput');
+  const meta=$('directMeta');
+  const pill=$('directStatusPill');
+  if(pill){
+    if(j && j.ok){ pill.className='pill ok'; pill.textContent=(j.provider||'provider')+' ok'; }
+    else if(j && j.status==='calling'){ pill.className='pill warn'; pill.textContent=(j.provider||'provider')+' calling'; }
+    else if(j){ pill.className='pill bad'; pill.textContent=(j.provider||'provider')+' failed'; }
+    else { pill.className='pill'; pill.textContent='no call'; }
+  }
+  if(out){
+    if(j && j.ok){
+      const smokePass = lastSmokeExpected ? String((j.answer || '').trim() === lastSmokeExpected) : 'not_a_route_smoke';
+      const route = [
+        '--- TRUSTED API ROUTE METADATA ---',
+        'provider=' + (j.provider || ''),
+        'requested_model=' + (j.model || ''),
+        'api_returned_model=' + (j.api_returned_model || 'unknown'),
+        'latency_ms=' + (j.latency_ms || ''),
+        'request_id=' + (j.request_id || ''),
+        'smoke_expected=' + (lastSmokeExpected || ''),
+        'smoke_echo_pass=' + smokePass,
+        'model_source=' + (j.model_source || ''),
+        'config_warnings=' + (j.config_warnings || ''),
+        'note=LLM self-identification can hallucinate; this metadata is the source of truth.'
+      ].join('\n');
+      out.textContent = (j.answer || '(empty answer)') + '\n\n' + route;
+    }
+    else if(j && j.status==='calling'){ out.textContent = 'Calling '+(j.provider||'provider')+'...'; }
+    else { out.textContent = shortError(j || {ok:false,error:'No response'}); }
+  }
+  if(meta){
+    const metaObj = {
+      ok: !!(j && j.ok),
+      provider: j && j.provider,
+      requested_model: j && j.model,
+      api_returned_model: j && j.api_returned_model,
+      model_source: j && j.model_source,
+      config_warnings: j && j.config_warnings,
+      smoke_expected: lastSmokeExpected || '',
+      smoke_echo_pass: (lastSmokeExpected && j && j.answer) ? ((j.answer || '').trim() === lastSmokeExpected) : '',
+      stage: j && j.stage,
+      status: j && j.status,
+      http_status: j && j.http_status,
+      latency_ms: j && j.latency_ms,
+      request_id: j && j.request_id,
+      smoke_nonce: extractSmokeNonce((j && j.prompt) || (($('directPrompt')&&$('directPrompt').value)||'')),
+      prompt_chars: j && j.prompt_chars,
+      answer_chars: j && j.answer_chars,
+      endpoint: j && j.endpoint,
+      api_type: j && j.api_type,
+      chat_file: (j && (j.chat_file || j.provider_chat_log)),
+      stats_file: (j && (j.stats_file || j.provider_stats_log)),
+      global_stats_file: (j && (j.global_stats_file || j.overall_stats_log)),
+      import_blocks_log: j && j.import_blocks_log,
+      error: j && j.error
+    };
+    meta.textContent = JSON.stringify(metaObj, null, 2);
+  }
+}
+async function listGeminiModels(){
+  setStatus('Listing Gemini models from Google API...');
+  const out=$('directOutput'); if(out) out.textContent='Calling Gemini ListModels...';
+  try{
+    const r=await fetch('/api/provider-models?provider=Gemini');
+    const j=await r.json();
+    setOut(j);
+    if(j.ok){
+      const names=(j.models||[]).map(m=>m.name);
+      if(out) out.textContent='Gemini generateContent models available to this key:\n\n'+names.join('\n')+'\n\nRecommended smoke default: gemini-3.5-flash. Gemini calls now use x-goog-api-key header per Google quickstart. For stronger reasoning, try gemini-3.1-pro-preview if present in this list.';
+      const current=$('provider')&&$('provider').value;
+      if(current==='Gemini' && names.includes('gemini-3.5-flash')) $('model').value='gemini-3.5-flash';
+      setStatus('Gemini model list loaded: '+names.length+' generateContent models.');
+    } else {
+      if(out) out.textContent='Gemini ListModels failed:\n'+JSON.stringify(j,null,2);
+      setStatus('Gemini model list failed.');
+    }
+  }catch(e){
+    if(out) out.textContent='Gemini ListModels failed: '+String(e);
+    setStatus('Gemini model list failed.');
+  }
+}
+async function directCall(){
+  const prompt=$('directPrompt').value.trim(); if(!prompt){alert('Prompt missing');return}
+  const prov=$('provider').value;
+  setStatus('Direct call to '+prov+'... answer will appear in Direct result.');
+  renderDirectResult({ok:false,status:'calling',provider:prov,message:'Waiting for provider response...'});
+  const card=$('directResponseCard'); if(card) card.scrollIntoView({behavior:'smooth', block:'center'});
+  const j=await post('/api/llm',{...payloadBase(),prompt,stage:'direct'});
+  renderDirectResult(j);
+  setOut(j.ok?j.answer:j);
+  setStatus(j.ok?('Direct answer received from '+prov+'. Saved to '+(j.chat_file||j.provider_chat_log||'provider chat log')+'.'):(prov+' failed. See Direct result; use Copy error if you want to send it to GPT.'));
+}
+function fillSmokePrompt(){
+  const nonce = 'MA' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,7).toUpperCase();
+  lastSmokeExpected = 'MENTALARENA_SMOKE_OK | nonce=' + nonce;
+  $('directPrompt').value = `Reply exactly in one line:
+${lastSmokeExpected}
+
+No explanation. Do not mention your model name. Do not mention provider. Do not add extra text.`;
+}
+function copyText(txt){ return navigator.clipboard.writeText(txt || ''); }
+function copyDirectResult(){ copyText(($('directOutput')&&$('directOutput').textContent)||''); }
+function copyDirectAnswer(){ copyText((lastDirectResponse&&lastDirectResponse.answer)||''); }
+function copyDirectError(){ copyText((lastDirectResponse&&lastDirectResponse.error)||(($('directOutput')&&$('directOutput').textContent)||'')); }
+function copyDirectImportBlock(){ copyText((lastDirectResponse&&lastDirectResponse.import_block)||''); }
+async function manualImport(){if(!currentRun){alert('Start a run first');return} const answer=$('manualAnswer').value.trim(); if(!answer){alert('Answer missing');return} const j=await post('/api/council/manual-import',{run_id:currentRun,provider:$('manualProvider').value,answer,prompt:$('promptBox').value,stage:'manual-import'}); setOut(j); if(j.ok) renderArtifacts(j.artifacts); setStatus(j.ok?'Manual import saved.':'Manual import failed.');}
+async function buildConflicts(){if(!currentRun){alert('Start a run first');return} setStatus('Building conflict map from Round 1 / Round 2 answer artifacts...'); const j=await post('/api/council/conflicts',{run_id:currentRun}); setOut(j.conflict_text||j); if(j.ok){markDone('conflict', true); setStage('round2'); renderArtifacts(j.artifacts);} setStatus(j.ok?'Conflict map created. Current stage changed to Round 2.':'Conflict map failed.');}
+async function buildRound2Prompt(){if(!currentRun){alert('Start a run first');return} const j=await post('/api/council/round2-prompt',{run_id:currentRun}); setOut(j.prompt||j); if(j.ok){$('promptBox').value=j.prompt; setStage('round2'); renderArtifacts(j.artifacts)} setStatus(j.ok?'Round 2 prompt ready. Send it to the council next.':'Failed.');}
+async function buildJudgePrompt(){if(!currentRun){alert('Start a run first');return} const j=await post('/api/council/judge-prompt',{run_id:currentRun}); setOut(j.prompt||j); if(j.ok){$('promptBox').value=j.prompt; setStage('judge'); renderArtifacts(j.artifacts)} setStatus(j.ok?'Judge panel prompt ready. Send it to judge models next.':'Failed.');}
+async function buildFinalPrompt(){if(!currentRun){alert('Start a run first');return} const j=await post('/api/council/final-synthesis-prompt',{run_id:currentRun}); setOut(j.prompt||j); if(j.ok){$('promptBox').value=j.prompt; setStage('final_synthesis'); renderArtifacts(j.artifacts)} setStatus(j.ok?'Final synthesis prompt ready. Send it to synthesis models next.':'Failed.');}
+async function exportRun(){if(!currentRun){alert('Start a run first');return} const j=await post('/api/council/export',{run_id:currentRun}); setOut(j); if(j.ok) markDone('export', true); setStatus(j.ok?'Export ZIP created locally: '+j.zip_name:'Export failed.');}
+async function listRuns(){const r=await fetch('/api/council/list'); const j=await r.json(); setOut(j); setStatus('Listed runs.');}
+async function refreshConfArtifacts(){if(!currentRun)return; const j=await post('/api/council/conflicts',{run_id:currentRun}); if(j.ok) renderArtifacts(j.artifacts);}
+function copyOutput(){navigator.clipboard.writeText($('output').textContent||'');}
+function copyPrompt(){navigator.clipboard.writeText($('promptBox').value||'');}
+window.addEventListener('DOMContentLoaded',()=>{populateProviders(); renderCouncilTargets(); setStage('round1'); updateChecklist(); checkHealth();});
+</script>
+</body>
+</html>
