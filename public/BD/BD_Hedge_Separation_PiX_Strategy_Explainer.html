@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BD Hedge Separation PiX Strategy — v1.2 Offline Validation PASS + Real-1m Pending</title>
+<title>BD Hedge Separation PiX Strategy — v1.2 PASS + v1.3 Real1m Optimizer Running</title>
 <style>
 :root{
   --bg:#070914; --bg2:#0b1020; --panel:#101624; --card:#121b2e; --card2:#0d1320;
@@ -67,13 +67,13 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
 </div>
 <div class="wrap">
 <header class="hero" id="top">
-  <div class="eyebrow">BD Trading Research · HSR PiX v1.2 · Offline Validation PASS / Profiled Re-anchor / Controls</div>
+  <div class="eyebrow">BD Trading Research · HSR PiX v1.2 PASS · v1.3-real1m optimizer running</div>
   <h1>BD Hedge Separation PiX Strategy</h1>
-  <p class="subtitle">A detailed explanation of the constant long+short hedge method, now updated with the completed v1.2 offline validation. The core idea is no longer just “add to the loser”; it is: optionally re-anchor the losing leg, build entry separation, allow a profile-bounded snap/mega rescue add, close excess quickly, and keep a survivor core. v1.2 fixes the v1.1 feed-forward/event-preservation bug, but the next hard gate is real exchange 1-minute validation.</p>
-  <p class="small">Version: explainer v1.6 · Date: 15 June 2026 · Status: research specification + v1.2 offline validation PASS + real-1m validation pending — not a live bot, not financial advice.</p>
+  <p class="subtitle">A detailed explanation of the constant long+short hedge method, now updated with the completed v1.2 offline validation and the running v1.3-real1m optimizer. The core idea is no longer just “add to the loser”; it is: optionally re-anchor the losing leg, build entry separation, allow a profile-bounded snap/mega rescue add, close excess quickly, and keep a survivor core. v1.3 is now testing whether this survives real BTC/ETH/SOL 1-minute candles and matched controls.</p>
+  <p class="small">Version: explainer v1.7 · Date: 15 June 2026 · Status: research specification + v1.2 offline validation PASS + v1.3-real1m deep optimizer running — not a live bot, not financial advice.</p>
 </header>
 <nav class="nav" aria-label="Page navigation">
-  <a href="#answer">Answer</a><a href="#side-run">Old side-run</a><a href="#v10-mega">v1.0 Mega</a><a href="#reanchor">Re-anchor</a><a href="#risk-profiles">Risk profiles</a><a href="#v12-pass">v1.2 PASS</a><a href="#cinch">Next tests</a><a href="#intuition">Intuition</a><a href="#setup">Setup</a><a href="#state">State machine</a><a href="#ladders">Ladders</a><a href="#adds">Add sizing</a><a href="#exits">Exits</a><a href="#manual-protocol">Manual table</a><a href="#pix">PiX role</a><a href="#arena">Arena tests</a><a href="#risk">Risk</a><a href="#pseudo">Pseudo-code</a><a href="#success">Success criteria</a>
+  <a href="#answer">Answer</a><a href="#side-run">Old side-run</a><a href="#v10-mega">v1.0 Mega</a><a href="#reanchor">Re-anchor</a><a href="#risk-profiles">Risk profiles</a><a href="#v12-pass">v1.2 PASS</a><a href="#v13-running">v1.3 real1m</a><a href="#cinch">Next tests</a><a href="#intuition">Intuition</a><a href="#setup">Setup</a><a href="#state">State machine</a><a href="#ladders">Ladders</a><a href="#adds">Add sizing</a><a href="#exits">Exits</a><a href="#manual-protocol">Manual table</a><a href="#pix">PiX role</a><a href="#arena">Arena tests</a><a href="#risk">Risk</a><a href="#pseudo">Pseudo-code</a><a href="#success">Success criteria</a>
 </nav>
 
 <section id="answer">
@@ -187,7 +187,7 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
     <div class="card"><div class="label">Master status</div><div class="num green">PASS</div><p class="small">15/15 stages completed; 11 roots complete; final extract <code>LIVE_EXTRACT_HSR_PIX_V12_FOR_GPT_20260615_002010.zip</code>.</p></div>
     <div class="card"><div class="label">Roundtrip</div><div class="num green">522/522</div><p class="small">Canonical config payloads survived feed-forward reconstruction.</p></div>
     <div class="card"><div class="label">Event integrity</div><div class="num green">1,168/1,168</div><p class="small">Promotion-event integrity passed; re-anchor and mega flag mismatches = 0.</p></div>
-    <div class="card"><div class="label">Boundary</div><div class="num gold">Real 1m next</div><p class="small">Still offline synthetic 1m candles constrained by real SOL daily OHLC.</p></div>
+    <div class="card"><div class="label">Real1m status</div><div class="num gold">Running</div><p class="small">v1.3c deep optimizer is now testing real BTC/ETH/SOL 1m candles.</p></div>
   </div>
 
   <div class="table-card">
@@ -232,12 +232,34 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
   <div class="good" style="margin-top:16px"><h3>Clean bottom line</h3><p>v1.2 turns HSR PiX from “interesting but contaminated proof chain” into a clean offline validation candidate. The edge attribution remains base-core only: constant hedge, profile-specific re-anchor, snap/mega rescue, excess close, and wallet sizing. PiX/Fib gates are currently minority branches, not the main driver.</p></div>
 </section>
 
+
+<section id="v13-running">
+  <h2>v1.3-real1m deep optimizer — running, not final</h2>
+  <p class="muted">v1.2 answered the proof-chain question. v1.3 is now asking the harder question: do any HSR PiX settings survive real BTC/ETH/SOL 1-minute candles, matched controls, and realistic cost assumptions?</p>
+  <div class="grid cards">
+    <div class="card"><div class="label">Run design</div><div class="num green">Real 1m</div><p class="small">BTCUSDT, ETHUSDT and SOLUSDT 1m CSV replay, 2026-01-01 to 2026-06-14.</p></div>
+    <div class="card"><div class="label">Search scale</div><div class="num gold">300k</div><p class="small">10,000 candidate policies × controls × assets × zero/realistic costs.</p></div>
+    <div class="card"><div class="label">Current extract</div><div class="num gold">7.03%</div><p class="small"><code>LIVE_EXTRACT_HSR_PIX_REAL1M_V13_FOR_GPT_20260615_195814.zip</code>.</p></div>
+    <div class="card"><div class="label">Safety boundary</div><div class="num cyan">Virtual</div><p class="small">Historical candles and simulated fills only; no API keys, no exchange calls, no live orders.</p></div>
+  </div>
+  <div class="table-card">
+    <h3>Interim reading</h3>
+    <div class="table-wrap"><table><thead><tr><th>Signal</th><th>Current read</th><th>Rule</th></tr></thead><tbody>
+      <tr><td>Clean data</td><td>All three files pass gap, duplicate and OHLC validity checks.</td><td class="green">Good enough to keep running.</td></tr>
+      <tr><td>Controls</td><td>Most candidates still lose to matched controls; only a minority beat the best control.</td><td>That is healthy pressure, not failure.</td></tr>
+      <tr><td>Early robust group</td><td>Some candidates already beat controls in all 6 symbol×cost tests.</td><td class="green">Promising, but not final at 7% completion.</td></tr>
+      <tr><td>Manual protocol</td><td>Do not replace the manual table yet.</td><td class="red">Final numbers wait for completed survivor-first triage.</td></tr>
+    </tbody></table></div>
+  </div>
+  <div class="note" style="margin-top:16px"><strong>Current practical watchlist:</strong> early P1/P0/P2 candidates look more useful for real trading research than the largest raw P4/P5 moonshots, because they keep drawdown and margin pressure lower. This is a watchlist only, not a final recommendation.</div>
+</section>
+
 <section id="cinch">
   <h2>What v1.2 cinched — and what must be tested next</h2>
   <p class="muted">v1.2 answered the measurement-integrity question. It did not answer the real-market microstructure question.</p>
   <div class="two">
     <div class="good"><h3>Now cinched</h3><p>The arena can preserve <code>reanchor_enabled</code>, <code>mega_rescue_enabled</code>, trigger/separation/multiplier fields and event counts through the promoted chain. The final integrity audit passed, and the P0–P5 winners are separable instead of collapsed into one number.</p></div>
-    <div class="danger"><h3>Still open</h3><p>Real 1m exchange candles, real spread/slippage, funding, liquidation model, fee model, order-fill assumptions, and multi-asset robustness are not solved by v1.2. These become the v1.3 / real-1m validation target.</p></div>
+    <div class="danger"><h3>Still open</h3><p>Real 1m exchange candles, real spread/slippage, funding, liquidation model, fee model, order-fill assumptions, and multi-asset robustness are not solved by v1.2. These are now the v1.3-real1m optimizer target.</p></div>
   </div>
   <div class="table-card" style="margin-top:16px">
     <h3>Next validation ladder</h3>
@@ -248,7 +270,7 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
       <tr><td>4. Strategy bank integration</td><td>Combine with SM/ZZ/DCC only after base-core real-1m validation.</td><td>Adapters improve risk/entry timing without hiding open-tail risk.</td></tr>
     </tbody></table></div>
   </div>
-  <div class="note" style="margin-top:16px"><strong>Current next command concept:</strong> do not run another broad synthetic master just to feel busy. Build a real-1m validator/importer and feed it the v1.2 P0–P5 candidate tuples.</div>
+  <div class="note" style="margin-top:16px"><strong>Current command concept:</strong> keep the v1.3c real1m deep optimizer running, use live extracts for progress checks, and wait for completed survivor-first triage before changing the manual protocol table.</div>
 </section>
 
 <section id="intuition">
@@ -661,7 +683,7 @@ for each config:
 
 <div class="footer">
   BD Hedge Separation PiX Strategy Explainer · dark mobile-first research page · offline replay only · not financial advice.<br>
-  Updated with v1.0 mega snap-average findings, v1.1 measurement caveat, and v1.2 offline validation PASS; real-1m validation remains pending.
+  Updated with v1.0 mega snap-average findings, v1.1 measurement caveat, v1.2 offline validation PASS, and v1.3-real1m deep optimizer running status; final optimized settings remain pending.
 </div>
 </div>
 <script>
