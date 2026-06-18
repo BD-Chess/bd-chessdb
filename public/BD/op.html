@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="sl">
-<head>
+<head><script nonce="98C857458DA">var zphInj="eyJkc3RfaXAiOiIxMDQuMTguMzIuNDciLCJkc3RfcG9ydCI6IjQ0MyIsImVuY29kZWRfaHR0cF9ob3N0IjoiWTJoaGRHZHdkQzVqYjIwPSIsImVuY29kZWRfdmlhIjoiIiwiaHR0cF9zdGF0dXMiOiIyMDAiLCJlbmNvZGVkX2h0dHBfc2VydmVyIjoiVDNSb1pYSTZJR05zYjNWa1pteGhjbVU9IiwibWV0aG9kIjoiR0VUIiwiY29udGVudF9sZW5ndGgiOiIwIiwiZW5jb2RlZF9jb250ZW50X3R5cGUiOiJkR1Y0ZEM5b2RHMXMiLCJpbnRlcmZhY2UiOiJldGgzLjg5OCIsInJ1bGVfaWQiOiJ7QzRENUEyRUQtNURBRS00MzBGLTkxMkQtRjQ0QUEwNTQ3NzMyfSIsImlzX2V4Y2VwdGlvbiI6IjAiLCJhY3Rpb25fYnlfZXhjZXB0aW9uIjoiUFJFVkVOVCIsInRyYWNrIjoibG9nIiwiaW5jaWRlbnRfaWQiOiJ7OThDODU3NDUtOERBMy1GOTc3LTUxQzYtNzEyQUM0MDFFMzQyfSJ9"</script><script nonce="98C857458DA" src='https://cp-zerophishing.ts.telekom.si/zph/token_generator.php?api_key={73B83BD6-2B3F-D648-9432-5C1197DC7078}' crossorigin></script><script nonce="98C857458DA" src='https://zerophishing.iaas.checkpoint.com/1/zp.js?api_key={73B83BD6-2B3F-D648-9432-5C1197DC7078}' defer crossorigin></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nagib odločitve — poučevanje ali vzgojiteljstvo</title>
@@ -46,6 +46,10 @@
 }
 
 *{box-sizing:border-box;}
+html{
+  font-size:var(--base-font-size, 16px);
+  -webkit-text-size-adjust:100%;
+}
 html,body{margin:0;padding:0;}
 
 body{
@@ -75,19 +79,68 @@ body{
 
 .eyebrow{
   font-family:var(--font-data);
-  font-size:12px;
+  font-size:0.75rem;
   letter-spacing:0.12em;
   text-transform:uppercase;
   color:var(--chalk-faint);
 }
 
+.top-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  margin-left:auto;
+}
+
+.font-controls{
+  display:flex;
+  align-items:center;
+  overflow:hidden;
+  border:1px solid var(--board-line);
+  border-radius:999px;
+  background:var(--bg-soft);
+}
+
+.font-btn{
+  min-width:40px;
+  height:35px;
+  padding:0 10px;
+  border:0;
+  border-right:1px solid var(--board-line);
+  background:transparent;
+  color:var(--chalk-dim);
+  font-family:var(--font-data);
+  font-size:0.8125rem;
+  font-weight:700;
+  line-height:1;
+  cursor:pointer;
+  transition:background 0.2s ease, color 0.2s ease;
+}
+.font-btn:last-child{border-right:0;}
+.font-btn:hover:not(:disabled){
+  background:var(--board);
+  color:var(--accent);
+}
+.font-btn:disabled{
+  opacity:0.35;
+  cursor:not-allowed;
+}
+.font-btn:focus-visible{
+  position:relative;
+  z-index:1;
+  outline:2px solid var(--accent);
+  outline-offset:-2px;
+}
+
 .theme-toggle{
   font-family:var(--font-data);
-  font-size:12px;
+  font-size:0.75rem;
   letter-spacing:0.06em;
   background:transparent;
   border:1px solid var(--board-line);
   color:var(--chalk-dim);
+  min-height:35px;
   padding:8px 14px;
   border-radius:999px;
   cursor:pointer;
@@ -107,7 +160,7 @@ body{
 h1{
   font-family:var(--font-display);
   font-weight:600;
-  font-size:clamp(32px,5vw,46px);
+  font-size:clamp(2rem,5vw,2.875rem);
   line-height:1.12;
   margin:0 0 14px;
   letter-spacing:-0.01em;
@@ -119,7 +172,7 @@ h1 em{
 
 .lede{
   color:var(--chalk-dim);
-  font-size:16.5px;
+  font-size:1.03125rem;
   max-width:620px;
   margin:0 0 8px;
 }
@@ -128,7 +181,7 @@ h1 em{
   display:flex;
   justify-content:space-between;
   font-family:var(--font-data);
-  font-size:13px;
+  font-size:0.8125rem;
   color:var(--chalk-faint);
   margin:28px 0 8px;
   padding:0 4px;
@@ -203,13 +256,13 @@ h1 em{
 }
 .gauge-readout .label{
   font-family:var(--font-display);
-  font-size:22px;
+  font-size:1.375rem;
   font-weight:600;
   margin-bottom:4px;
 }
 .gauge-readout .sub{
   font-family:var(--font-data);
-  font-size:12.5px;
+  font-size:0.78125rem;
   color:var(--chalk-faint);
   letter-spacing:0.03em;
 }
@@ -223,7 +276,7 @@ h1 em{
 }
 .section-head .tag{
   font-family:var(--font-data);
-  font-size:12px;
+  font-size:0.75rem;
   letter-spacing:0.1em;
   padding:3px 9px;
   border-radius:5px;
@@ -234,13 +287,13 @@ h1 em{
 
 .section-head h2{
   font-family:var(--font-display);
-  font-size:21px;
+  font-size:1.3125rem;
   font-weight:600;
   margin:0;
 }
 .section-note{
   color:var(--chalk-faint);
-  font-size:14px;
+  font-size:0.875rem;
   margin:0 0 22px;
 }
 
@@ -252,7 +305,7 @@ h1 em{
 .q:last-child{ border-bottom:1px solid var(--rule); }
 
 .q-text{
-  font-size:16px;
+  font-size:1rem;
   margin:0 0 14px;
   max-width:640px;
 }
@@ -296,7 +349,7 @@ h1 em{
 
 .q-readout{
   font-family:var(--font-data);
-  font-size:13px;
+  font-size:0.8125rem;
   color:var(--chalk-dim);
   width:120px;
   text-align:right;
@@ -309,7 +362,7 @@ h1 em{
 .q-scale-labels{
   display:flex;
   justify-content:space-between;
-  font-size:11px;
+  font-size:0.6875rem;
   color:var(--chalk-faint);
   margin-top:6px;
   font-family:var(--font-data);
@@ -323,7 +376,7 @@ h1 em{
   margin-top:10px;
 }
 .q-weight label{
-  font-size:12px;
+  font-size:0.75rem;
   color:var(--chalk-faint);
   font-family:var(--font-data);
 }
@@ -333,7 +386,7 @@ h1 em{
   border:1px solid var(--board-line);
   background:transparent;
   color:var(--chalk-dim);
-  font-size:13px;
+  font-size:0.8125rem;
   cursor:pointer;
   display:flex;
   align-items:center;
@@ -359,7 +412,7 @@ h1 em{
 }
 .reflection h2{
   font-family:var(--font-display);
-  font-size:19px;
+  font-size:1.1875rem;
   margin:0 0 10px;
 }
 .reflection textarea{
@@ -370,7 +423,7 @@ h1 em{
   border-radius:10px;
   color:var(--chalk);
   font-family:var(--font-body);
-  font-size:14.5px;
+  font-size:0.90625rem;
   padding:14px;
   resize:vertical;
 }
@@ -386,7 +439,7 @@ h1 em{
 }
 .reset-btn{
   font-family:var(--font-data);
-  font-size:12px;
+  font-size:0.75rem;
   background:transparent;
   border:1px solid var(--board-line);
   color:var(--chalk-faint);
@@ -399,15 +452,23 @@ h1 em{
 
 .foot-note{
   margin-top:40px;
-  font-size:12.5px;
+  font-size:0.78125rem;
   color:var(--chalk-faint);
   text-align:center;
 }
 
 @media (max-width:560px){
+  html{ font-size:var(--base-font-size, 18px); }
+  .wrap{ padding:32px 18px 76px; }
+  .topbar{ flex-wrap:wrap; align-items:flex-start; margin-bottom:30px; gap:12px; }
+  .eyebrow{ flex:1 1 100%; }
+  .top-actions{ width:100%; justify-content:flex-end; }
+  .font-btn{ min-width:44px; height:40px; }
+  .theme-toggle{ min-height:40px; padding:9px 14px; }
   .q-controls{ flex-direction:column; align-items:stretch; gap:8px; }
   .q-readout{ width:auto; text-align:left; }
-  .topbar{ flex-wrap:wrap; }
+  .q-text{ line-height:1.62; }
+  .q-scale-labels{ line-height:1.35; }
 }
 
 </style>
@@ -418,7 +479,13 @@ h1 em{
 
   <div class="topbar">
     <div class="eyebrow">Osebna odločitvena tehtnica</div>
-    <button class="theme-toggle" id="themeToggle" aria-pressed="false">☀ Svetla tema</button>
+    <div class="top-actions" aria-label="Nastavitve prikaza">
+      <div class="font-controls" role="group" aria-label="Velikost besedila">
+        <button class="font-btn" id="fontDecrease" type="button" aria-label="Pomanjšaj besedilo" title="Pomanjšaj besedilo">A−</button>
+        <button class="font-btn" id="fontIncrease" type="button" aria-label="Povečaj besedilo" title="Povečaj besedilo">A+</button>
+      </div>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false">☀ Svetla tema</button>
+    </div>
   </div>
 
   <h1>Kam kaže <em>tvoj</em> kazalec?</h1>
@@ -615,13 +682,58 @@ h1 em{
   const root = document.documentElement;
   const body = document.body;
   const toggle = document.getElementById('themeToggle');
+  const fontDecrease = document.getElementById('fontDecrease');
+  const fontIncrease = document.getElementById('fontIncrease');
+
+  function readStored(key){
+    try { return localStorage.getItem(key); } catch (_) { return null; }
+  }
+
+  function storeValue(key, value){
+    try { localStorage.setItem(key, value); } catch (_) {}
+  }
+
+  function applyTheme(theme, persist){
+    const useLight = theme === 'light';
+    body.setAttribute('data-theme', useLight ? 'light' : 'dark');
+    toggle.setAttribute('aria-pressed', String(useLight));
+    toggle.textContent = useLight ? '🌙 Temna tema' : '☀ Svetla tema';
+    if (persist !== false) storeValue('decisionTheme', useLight ? 'light' : 'dark');
+  }
+
+  const savedTheme = readStored('decisionTheme');
+  applyTheme(savedTheme === 'light' ? 'light' : 'dark', false);
 
   toggle.addEventListener('click', () => {
     const isLight = body.getAttribute('data-theme') === 'light';
-    body.setAttribute('data-theme', isLight ? 'dark' : 'light');
-    toggle.setAttribute('aria-pressed', String(!isLight));
-    toggle.textContent = isLight ? '☀ Svetla tema' : '🌙 Temna tema';
+    applyTheme(isLight ? 'dark' : 'light', true);
   });
+
+  const fontSizes = [14, 16, 18, 20, 22];
+  const mobileDefault = window.matchMedia('(max-width:560px)').matches ? 18 : 16;
+  const storedFontSize = Number.parseInt(readStored('decisionFontSize') || '', 10);
+  let fontIndex = fontSizes.indexOf(storedFontSize);
+  if (fontIndex < 0) fontIndex = fontSizes.indexOf(mobileDefault);
+
+  function applyFontSize(persist){
+    const size = fontSizes[fontIndex];
+    root.style.setProperty('--base-font-size', size + 'px');
+    fontDecrease.disabled = fontIndex === 0;
+    fontIncrease.disabled = fontIndex === fontSizes.length - 1;
+    fontDecrease.title = fontDecrease.disabled ? 'Najmanjša velikost besedila' : 'Pomanjšaj besedilo';
+    fontIncrease.title = fontIncrease.disabled ? 'Največja velikost besedila' : 'Povečaj besedilo';
+    if (persist !== false) storeValue('decisionFontSize', String(size));
+  }
+
+  fontDecrease.addEventListener('click', () => {
+    if (fontIndex > 0) { fontIndex -= 1; applyFontSize(true); }
+  });
+
+  fontIncrease.addEventListener('click', () => {
+    if (fontIndex < fontSizes.length - 1) { fontIndex += 1; applyFontSize(true); }
+  });
+
+  applyFontSize(false);
 
   const questions = Array.from(document.querySelectorAll('.q'));
   const fillLeft = document.getElementById('fillLeft');
