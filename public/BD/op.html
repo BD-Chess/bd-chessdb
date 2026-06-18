@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nagib odločitve — poučevanje ali vzgojiteljstvo</title>
+<style>
+
+:root{
+  --bg: #14181c;
+  --bg-soft: #1b2128;
+  --board: #1e2530;
+  --board-line: #2c3540;
+  --chalk: #eef1ec;
+  --chalk-dim: #aab4ba;
+  --chalk-faint: #6d7780;
+  --accent: #e8a33d;
+  --accent-dim: #8a6326;
+  --left: #6fb6c1;
+  --left-dim: #2b454a;
+  --right: #d97a5f;
+  --right-dim: #4a2f27;
+  --rule: rgba(238,241,236,0.10);
+  --shadow: rgba(0,0,0,0.45);
+  --font-display: 'Fraunces', 'Iowan Old Style', serif;
+  --font-body: 'Atkinson Hyperlegible', 'Segoe UI', sans-serif;
+  --font-data: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+[data-theme="light"]{
+  --bg: #f3efe6;
+  --bg-soft: #ece5d6;
+  --board: #fbf8f0;
+  --board-line: #ddd2b8;
+  --chalk: #2a241c;
+  --chalk-dim: #5c5346;
+  --chalk-faint: #9a8f7a;
+  --accent: #b3471f;
+  --accent-dim: #e3c2a8;
+  --left: #2f6b74;
+  --left-dim: #d8e8e8;
+  --right: #a83f24;
+  --right-dim: #f0dcd0;
+  --rule: rgba(42,36,28,0.14);
+  --shadow: rgba(120,100,60,0.18);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+
+body{
+  background:var(--bg);
+  color:var(--chalk);
+  font-family:var(--font-body);
+  line-height:1.55;
+  min-height:100vh;
+  transition:background 0.4s ease, color 0.4s ease;
+  -webkit-font-smoothing:antialiased;
+}
+
+.wrap{
+  max-width:880px;
+  margin:0 auto;
+  padding:48px 24px 96px;
+}
+
+/* ---------- top bar ---------- */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:36px;
+  gap:16px;
+}
+
+.eyebrow{
+  font-family:var(--font-data);
+  font-size:12px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--chalk-faint);
+}
+
+.theme-toggle{
+  font-family:var(--font-data);
+  font-size:12px;
+  letter-spacing:0.06em;
+  background:transparent;
+  border:1px solid var(--board-line);
+  color:var(--chalk-dim);
+  padding:8px 14px;
+  border-radius:999px;
+  cursor:pointer;
+  transition:all 0.2s ease;
+  white-space:nowrap;
+}
+.theme-toggle:hover{
+  border-color:var(--accent);
+  color:var(--accent);
+}
+.theme-toggle:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+
+/* ---------- hero ---------- */
+h1{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:clamp(32px,5vw,46px);
+  line-height:1.12;
+  margin:0 0 14px;
+  letter-spacing:-0.01em;
+}
+h1 em{
+  font-style:italic;
+  color:var(--accent);
+}
+
+.lede{
+  color:var(--chalk-dim);
+  font-size:16.5px;
+  max-width:620px;
+  margin:0 0 8px;
+}
+
+.poles{
+  display:flex;
+  justify-content:space-between;
+  font-family:var(--font-data);
+  font-size:13px;
+  color:var(--chalk-faint);
+  margin:28px 0 8px;
+  padding:0 4px;
+}
+.poles span:first-child{color:var(--left);}
+.poles span:last-child{color:var(--right);}
+
+/* ---------- the gauge (signature element) ---------- */
+.gauge-shell{
+  position:relative;
+  background:var(--board);
+  border:1px solid var(--board-line);
+  border-radius:18px;
+  padding:34px 28px 26px;
+  margin-bottom:40px;
+  box-shadow:0 18px 40px var(--shadow);
+}
+
+.gauge-track{
+  position:relative;
+  height:14px;
+  border-radius:999px;
+  background:linear-gradient(90deg, var(--left-dim), var(--board-line) 48%, var(--board-line) 52%, var(--right-dim));
+  overflow:visible;
+  margin:0 6px 18px;
+}
+
+.gauge-fill-left{
+  position:absolute;
+  top:0; bottom:0; right:50%;
+  background:var(--left);
+  border-radius:999px 0 0 999px;
+  transition:right 0.5s cubic-bezier(.2,.8,.2,1), left 0.5s cubic-bezier(.2,.8,.2,1);
+  opacity:0.85;
+}
+.gauge-fill-right{
+  position:absolute;
+  top:0; bottom:0; left:50%;
+  background:var(--right);
+  border-radius:0 999px 999px 0;
+  transition:left 0.5s cubic-bezier(.2,.8,.2,1), right 0.5s cubic-bezier(.2,.8,.2,1);
+  opacity:0.85;
+}
+
+.gauge-needle{
+  position:absolute;
+  top:-13px;
+  width:3px;
+  height:40px;
+  background:var(--accent);
+  left:50%;
+  transform:translateX(-50%);
+  transition:left 0.5s cubic-bezier(.2,.8,.2,1);
+  border-radius:2px;
+}
+.gauge-needle::before{
+  content:'';
+  position:absolute;
+  top:-6px;
+  left:50%;
+  transform:translateX(-50%);
+  width:11px;
+  height:11px;
+  border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 0 4px var(--bg-soft), 0 0 14px var(--accent);
+}
+
+.gauge-readout{
+  text-align:center;
+  margin-top:10px;
+}
+.gauge-readout .label{
+  font-family:var(--font-display);
+  font-size:22px;
+  font-weight:600;
+  margin-bottom:4px;
+}
+.gauge-readout .sub{
+  font-family:var(--font-data);
+  font-size:12.5px;
+  color:var(--chalk-faint);
+  letter-spacing:0.03em;
+}
+
+/* ---------- sections ---------- */
+.section-head{
+  display:flex;
+  align-items:baseline;
+  gap:12px;
+  margin:48px 0 6px;
+}
+.section-head .tag{
+  font-family:var(--font-data);
+  font-size:12px;
+  letter-spacing:0.1em;
+  padding:3px 9px;
+  border-radius:5px;
+  text-transform:uppercase;
+}
+.tag.left{ background:var(--left-dim); color:var(--left); }
+.tag.right{ background:var(--right-dim); color:var(--right); }
+
+.section-head h2{
+  font-family:var(--font-display);
+  font-size:21px;
+  font-weight:600;
+  margin:0;
+}
+.section-note{
+  color:var(--chalk-faint);
+  font-size:14px;
+  margin:0 0 22px;
+}
+
+/* ---------- question card ---------- */
+.q{
+  border-top:1px solid var(--rule);
+  padding:22px 0;
+}
+.q:last-child{ border-bottom:1px solid var(--rule); }
+
+.q-text{
+  font-size:16px;
+  margin:0 0 14px;
+  max-width:640px;
+}
+
+.q-controls{
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+
+.q-slider{
+  flex:1;
+  -webkit-appearance:none;
+  appearance:none;
+  height:6px;
+  border-radius:999px;
+  background:var(--board-line);
+  cursor:pointer;
+  outline:none;
+}
+.q-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:20px; height:20px;
+  border-radius:50%;
+  background:var(--accent);
+  border:3px solid var(--bg);
+  box-shadow:0 0 0 1px var(--board-line);
+  cursor:pointer;
+}
+.q-slider::-moz-range-thumb{
+  width:20px; height:20px;
+  border-radius:50%;
+  background:var(--accent);
+  border:3px solid var(--bg);
+  cursor:pointer;
+}
+.q-slider:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:4px;
+}
+
+.q-readout{
+  font-family:var(--font-data);
+  font-size:13px;
+  color:var(--chalk-dim);
+  width:120px;
+  text-align:right;
+  flex-shrink:0;
+}
+.q-readout .side-left{ color:var(--left); }
+.q-readout .side-right{ color:var(--right); }
+.q-readout .side-neutral{ color:var(--chalk-faint); }
+
+.q-scale-labels{
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  color:var(--chalk-faint);
+  margin-top:6px;
+  font-family:var(--font-data);
+}
+
+/* ---------- weight control ---------- */
+.q-weight{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:10px;
+}
+.q-weight label{
+  font-size:12px;
+  color:var(--chalk-faint);
+  font-family:var(--font-data);
+}
+.weight-btn{
+  width:26px; height:26px;
+  border-radius:6px;
+  border:1px solid var(--board-line);
+  background:transparent;
+  color:var(--chalk-dim);
+  font-size:13px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all 0.15s ease;
+}
+.weight-btn:hover{ border-color:var(--accent); color:var(--accent); }
+.weight-btn.active{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:var(--bg);
+}
+.weight-btn:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+
+/* ---------- footer / reflection ---------- */
+.reflection{
+  margin-top:56px;
+  padding-top:28px;
+  border-top:1px solid var(--rule);
+}
+.reflection h2{
+  font-family:var(--font-display);
+  font-size:19px;
+  margin:0 0 10px;
+}
+.reflection textarea{
+  width:100%;
+  min-height:90px;
+  background:var(--bg-soft);
+  border:1px solid var(--board-line);
+  border-radius:10px;
+  color:var(--chalk);
+  font-family:var(--font-body);
+  font-size:14.5px;
+  padding:14px;
+  resize:vertical;
+}
+.reflection textarea:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+
+.reset-row{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:32px;
+}
+.reset-btn{
+  font-family:var(--font-data);
+  font-size:12px;
+  background:transparent;
+  border:1px solid var(--board-line);
+  color:var(--chalk-faint);
+  padding:9px 16px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+.reset-btn:hover{ border-color:var(--right); color:var(--right); }
+
+.foot-note{
+  margin-top:40px;
+  font-size:12.5px;
+  color:var(--chalk-faint);
+  text-align:center;
+}
+
+@media (max-width:560px){
+  .q-controls{ flex-direction:column; align-items:stretch; gap:8px; }
+  .q-readout{ width:auto; text-align:left; }
+  .topbar{ flex-wrap:wrap; }
+}
+
+</style>
+</head>
+<body data-theme="dark">
+
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="eyebrow">Osebna odločitvena tehtnica</div>
+    <button class="theme-toggle" id="themeToggle" aria-pressed="false">☀ Svetla tema</button>
+  </div>
+
+  <h1>Kam kaže <em>tvoj</em> kazalec?</h1>
+  <p class="lede">Ne gre za to, kaj je "objektivno boljše". Gre za to, kaj tehta zate. Premikaj drsnike glede na to, kako resnično čutiš vsako stvar — in določi, katera vprašanja štejejo dvojno.</p>
+
+  <div class="poles">
+    <span>← Poučevanje (sedanje delo)</span>
+    <span>Vzgojiteljica v študentskem domu →</span>
+  </div>
+
+  <div class="gauge-shell">
+    <div class="gauge-track" id="gaugeTrack">
+      <div class="gauge-fill-left" id="fillLeft"></div>
+      <div class="gauge-fill-right" id="fillRight"></div>
+      <div class="gauge-needle" id="needle"></div>
+    </div>
+    <div class="gauge-readout">
+      <div class="label" id="readoutLabel">Tehtnica je uravnotežena</div>
+      <div class="sub" id="readoutSub">Odgovori na vprašanja spodaj, da se kazalec premakne</div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: Vsakdan in obremenitev -->
+  <div class="section-head">
+    <span class="tag left">Vsakdan</span>
+    <h2>Kako izgleda tvoj dan</h2>
+  </div>
+  <p class="section-note">Ne kako bi moralo biti — kako dejansko je, zadnje mesece.</p>
+
+  <div class="q" data-id="stres-disciplina">
+    <p class="q-text">Koliko energije te dnevno izčrpa nediscipliniranost dijakov ali konflikti s sodelavkami?</p>
+    <div class="q-controls">
+      <input type="range" class="q-slider" min="-2" max="2" value="0" step="1" data-direction="right">
+      <span class="q-readout">—</span>
+    </div>
+    <div class="q-scale-labels"><span>Skoraj nič</span><span>Izčrpa me popolnoma</span></div>
+    <div class="q-weight">
+      <label>Teža vprašanja:</label>
+      <button class="weight-btn" data-weight="1">1×</button>
+      <button class="weight-btn active" data-weight="2">2×</button>
+      <button class="weight-btn" data-weight="3">3×</button>
+    </div>
+  </div>
+
+  <div class="q" data-id="vecer-druzina">
+    <p class="q-text">Kako pomembni so ti prosti večeri — za partnerja, družino, počitek, hobije?</p>
+    <div class="q-controls">
+      <input type="range" class="q-slider" min="-2" max="2" value="0" step="1" data-direction="left">
+      <span class="q-readout">—</span>
+    </div>
+    <div class="q-scale-labels"><span>Niso ključni</span><span>So mi sveti</span></div>
+    <div class="q-weight">
+      <label>Teža vprašanja:</label>
+      <button class="weight-btn" data-weight="1">1×</button>
+      <button class="weight-btn active" data-weight="2">2×</button>
+      <button class="weight-btn" data-weight="3">3×</button>
+    </div>
+  </div>
+
+  <div class="q" data-id="dopold-urnik">
+    <p class="q-text">Kako pomemben ti je dopoldanski urnik sam po sebi — zjutraj svež um, popoldan zate?</p>
+    <div class="q-controls">
+      <input type="range" class="q-slider" min="-2" max="2" value="0" step="1" data-direction="left">
+      <span class="q-readout">—</span>
+    </div>
+    <div class="q-scale-labels"><span>Vseeno mi je</span><span>Zelo pomembno</span></div>
+    <div class="q-weight">
+      <label>Teža vprašanja:</label>
+      <button class="weight-btn" data-weight="1">1×</button>
+      <button class="weight-btn active" data-weight="2">2×</button>
+      <button class="weight-btn" data-weight="3">3×</button>
+    </div>
+  </div>
+
+  <!-- SECTION 2: Smisel in vsebina dela -->
+  <div class="section-head">
+    <span class="tag left">Smisel</span>
+    <h2>Kaj ji delo dejansko pomeni</h2>
+  </div>
+  <p class="section-note">Ne "manj stresa kot", ampak "veseli me, ker".</p>
+
+  <div class="q" data-id="veselje-poucevanje">
+    <p class="q-text">Koliko je v poučevanju nemščine samem (ne v okoliščinah okrog) še veselje in smisel po 30+ letih?</p>
+    <div class="q-controls">
+      <input type="range" class="q-slider" min="-2" max="2" value="0" step="1" data-direction="left">
+      <span class="q-readout">—</span>
+    </div>
+    <div class="q-scale-labels"><span>Izgorelo</span><span>Še vedno me veseli</span></div>
+    <div class="q-weight">
+      <label>Teža vprašanja:</label>
+      <button class="weight-btn" data-weight="1">1×</button>
+      <button class="weight-btn active" data-weight="2">2×</button>
+      <button class="weight-btn" data-weight="3">3×</button>
+    </div>
+  </div>
+
+  <div class="q" data-id="zanimanje-vzgoja">
+    <p class="q-text">Koliko jo dejansko zanima delo z mladimi v drugačnem, manj akademskem kontekstu — ne le kot "pobeg", ampak kot novo področje samo po sebi?</p>
+    <div class="q-controls">
+      <input type="range" class="q-slider" min="-2" max="2" value="0" step="1" data-direction="right">
+      <span class="q-readout">—</span>
+    </div>
+    <div class="q-scale-labels"><span>Le bežim od stresa</span><span>Resnično me vleče</span></div>
+    <div class="q-weight">
+      <label>Teža vprašanja:</label>
+      <button class="weight-btn" data-weight="1">1×</button>
+      <button class="weight-btn active" data-weight="2">2×</button>
+      <button class="weight-btn" data-weight="3">3×</button>
+    </div>
+  </div>
+
+  <div class="q" data-id="strokovna-identiteta">
+    <p class="q-text">Koliko njene identitete in samospoštovanja je vezano na vlogo profesorice nemščine?</p>
+    <div class="q-controls">
+      <input type="range" class="q-slider" min="-2" max="2" value="0" step="1" data-direction="left">
+      <span class="q-readout">—</span>
+    </div>
+    <div class="q-scale-labels"><span>Ni vezano</span><span>Zelo vezano</span></div>
+    <div class="q-weight">
+      <label>Teža vprašanja:</label>
+      <button class="weight-btn" data-weight="1">1×</button>
+      <button class="weight-btn active" data-weight="2">2×</button>
+      <button class="weight-btn" data-weight="3">3×</button>
+    </div>
+  </div>
+
+  <!-- SECTION 3: Praktične okoliščine -->
+  <div class="section-head">
+    <span class="tag right">Praktično</span>
+    <h2>Trdna dejstva ob spremembi</h2>
+  </div>
+  <p class="section-note">Stvari, ki jih ne odloča razpoloženje, ampak koledar in plačilna lista.</p>
+
+  <div class="q" data-id="leta-do-upokojitve">
+    <p class="q-text">Koliko let ima do upokojitve oz. do smiselnega zaključka kariere?</p>
+    <div class="q-controls">
+      <input type="range" class="q-slider" min="-2" max="2" value="0" step="1" data-direction="left">
+      <span class="q-readout">—</span>
+    </div>
+    <div class="q-scale-labels"><span>Še veliko let</span><span>Malo let, blizu konca</span></div>
+    <div class="q-weight">
+      <label>Teža vprašanja:</label>
+      <button class="weight-btn" data-weight="1">1×</button>
+      <button class="weight-btn active" data-weight="2">2×</button>
+      <button class="weight-btn" data-weight="3">3×</button>
+    </div>
+  </div>
+
+  <div class="q" data-id="financni-vidik">
+    <p class="q-text">Kako velika je razlika v plači/stažu/pokojninski osnovi med vlogama?</p>
+    <div class="q-controls">
+      <input type="range" class="q-slider" min="-2" max="2" value="0" step="1" data-direction="left">
+      <span class="q-readout">—</span>
+    </div>
+    <div class="q-scale-labels"><span>Razlika ni pomembna</span><span>Razlika je velika</span></div>
+    <div class="q-weight">
+      <label>Teža vprašanja:</label>
+      <button class="weight-btn" data-weight="1">1×</button>
+      <button class="weight-btn active" data-weight="2">2×</button>
+      <button class="weight-btn" data-weight="3">3×</button>
+    </div>
+  </div>
+
+  <div class="q" data-id="poskusno-obdobje">
+    <p class="q-text">Ali obstaja možnost preizkusa (nadomeščanje, krajši dogovor, pogovor s trenutno vzgojiteljico) preden se dokončno odloči?</p>
+    <div class="q-controls">
+      <input type="range" class="q-slider" min="-2" max="2" value="0" step="1" data-direction="right">
+      <span class="q-readout">—</span>
+    </div>
+    <div class="q-scale-labels"><span>Ni možnosti</span><span>Možnost obstaja</span></div>
+    <div class="q-weight">
+      <label>Teža vprašanja:</label>
+      <button class="weight-btn" data-weight="1">1×</button>
+      <button class="weight-btn active" data-weight="2">2×</button>
+      <button class="weight-btn" data-weight="3">3×</button>
+    </div>
+  </div>
+
+  <div class="reflection">
+    <h2>Kar tehtnica ne vidi</h2>
+    <textarea placeholder="Sem zapiše karkoli, česar drsniki ne ujamejo — vtis, strah, upanje, stavek, ki se vrača..."></textarea>
+  </div>
+
+  <div class="reset-row">
+    <button class="reset-btn" id="resetBtn">↺ Ponastavi vse drsnike</button>
+  </div>
+
+  <p class="foot-note">Tehtnica ne odloča namesto tebe — samo pokaže, kam že nagibaš, ko vsemu daš pravo težo.</p>
+
+</div>
+
+<script>
+(function(){
+  const root = document.documentElement;
+  const body = document.body;
+  const toggle = document.getElementById('themeToggle');
+
+  toggle.addEventListener('click', () => {
+    const isLight = body.getAttribute('data-theme') === 'light';
+    body.setAttribute('data-theme', isLight ? 'dark' : 'light');
+    toggle.setAttribute('aria-pressed', String(!isLight));
+    toggle.textContent = isLight ? '☀ Svetla tema' : '🌙 Temna tema';
+  });
+
+  const questions = Array.from(document.querySelectorAll('.q'));
+  const fillLeft = document.getElementById('fillLeft');
+  const fillRight = document.getElementById('fillRight');
+  const needle = document.getElementById('needle');
+  const readoutLabel = document.getElementById('readoutLabel');
+  const readoutSub = document.getElementById('readoutSub');
+
+  const state = {};
+
+  questions.forEach(q => {
+    const id = q.dataset.id;
+    const slider = q.querySelector('.q-slider');
+    const readout = q.querySelector('.q-readout');
+    const weightBtns = q.querySelectorAll('.weight-btn');
+    const direction = slider.dataset.direction; // 'left' or 'right' = which side a HIGH slider value favors
+
+    state[id] = { value: 0, weight: 2, direction: direction };
+
+    function updateReadout(){
+      const v = parseInt(slider.value, 10);
+      state[id].value = v;
+      let text, cls;
+      if (v === 0){ text = 'nevtralno'; cls = 'side-neutral'; }
+      else {
+        const favors = (direction === 'right') ? (v > 0 ? 'right' : 'left') : (v > 0 ? 'left' : 'right');
+        const strength = Math.abs(v) === 2 ? 'močno' : 'rahlo';
+        text = strength + ' → ' + (favors === 'left' ? 'poučevanje' : 'vzgojit.');
+        cls = favors === 'left' ? 'side-left' : 'side-right';
+      }
+      readout.innerHTML = '<span class="' + cls + '">' + text + '</span>';
+    }
+
+    slider.addEventListener('input', () => { updateReadout(); recalc(); });
+    updateReadout();
+
+    weightBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        weightBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state[id].weight = parseInt(btn.dataset.weight, 10);
+        recalc();
+      });
+    });
+  });
+
+  function recalc(){
+    let score = 0; // negative = favors poučevanje (left), positive = favors vzgojiteljica (right)
+    let maxAbs = 0;
+    Object.values(state).forEach(s => {
+      const signed = (s.direction === 'right') ? s.value : -s.value;
+      score += signed * s.weight;
+      maxAbs += 2 * s.weight;
+    });
+
+    const pct = maxAbs === 0 ? 0 : (score / maxAbs); // -1..1
+    const posPercent = 50 + (pct * 50); // 0..100, 50 = center
+
+    if (pct < 0) {
+      fillLeft.style.right = (50 - Math.abs(pct)*50) + '%';
+      fillRight.style.left = '50%';
+      fillRight.style.right = '50%';
+    } else {
+      fillRight.style.left = (50 - Math.abs(pct)*50) + '%';
+      fillLeft.style.right = '50%';
+      fillLeft.style.left = '50%';
+    }
+    needle.style.left = posPercent + '%';
+
+    const abs = Math.abs(pct);
+    let label, sub;
+    if (abs < 0.05){
+      label = 'Tehtnica je uravnotežena';
+      sub = 'Za zdaj ni jasnega nagiba — morda je čas za pogovor, ne za številke';
+    } else {
+      const side = pct < 0 ? 'poučevanje' : 'vzgojiteljica v študentskem domu';
+      let strength;
+      if (abs < 0.2) strength = 'rahlo nagiba k';
+      else if (abs < 0.45) strength = 'nagiba k';
+      else if (abs < 0.7) strength = 'precej jasno nagiba k';
+      else strength = 'zelo izrazito nagiba k';
+      label = 'Kazalec ' + strength + ': ' + side;
+      sub = side === 'poučevanje'
+        ? 'Trenutno vlogo še vedno nosijo razlogi, ki tehtajo več'
+        : 'Razlogi za spremembo trenutno tehtajo več kot razlogi za ostanek';
+    }
+    readoutLabel.textContent = label;
+    readoutSub.textContent = sub;
+  }
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    questions.forEach(q => {
+      const slider = q.querySelector('.q-slider');
+      slider.value = 0;
+      slider.dispatchEvent(new Event('input'));
+      const weightBtns = q.querySelectorAll('.weight-btn');
+      weightBtns.forEach(b => b.classList.remove('active'));
+      q.querySelector('[data-weight="2"]').classList.add('active');
+      state[q.dataset.id].weight = 2;
+    });
+    recalc();
+  });
+
+  recalc();
+})();
+</script>
+
+</body>
+</html>
