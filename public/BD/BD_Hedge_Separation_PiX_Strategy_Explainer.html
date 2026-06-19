@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BD Hedge Separation PiX Strategy — v1.2 PASS + v1.3 Real1m Optimizer Running</title>
+<title>BD Hedge Separation PiX Strategy — v1.2 PASS + v1.3 Real1m Optimizer 63.6%</title>
 <style>
 :root{
   --bg:#070914; --bg2:#0b1020; --panel:#101624; --card:#121b2e; --card2:#0d1320;
@@ -70,7 +70,7 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
   <div class="eyebrow">BD Trading Research · HSR PiX v1.2 PASS · v1.3-real1m optimizer running</div>
   <h1>BD Hedge Separation PiX Strategy</h1>
   <p class="subtitle">A detailed explanation of the constant long+short hedge method, now updated with the completed v1.2 offline validation and the running v1.3-real1m optimizer. The core idea is no longer just “add to the loser”; it is: optionally re-anchor the losing leg, build entry separation, allow a profile-bounded snap/mega rescue add, close excess quickly, and keep a survivor core. v1.3 is now testing whether this survives real BTC/ETH/SOL 1-minute candles and matched controls.</p>
-  <p class="small">Version: explainer v1.7 · Date: 15 June 2026 · Status: research specification + v1.2 offline validation PASS + v1.3-real1m deep optimizer running — not a live bot, not financial advice.</p>
+  <p class="small">Version: explainer v1.9 · Date: 19 June 2026 · Status: research specification + v1.2 offline validation PASS + v1.3-real1m deep optimizer 63.6% mid-run + wallet-neutral correction — not a live bot, not financial advice.</p>
 </header>
 <nav class="nav" aria-label="Page navigation">
   <a href="#answer">Answer</a><a href="#side-run">Old side-run</a><a href="#v10-mega">v1.0 Mega</a><a href="#reanchor">Re-anchor</a><a href="#risk-profiles">Risk profiles</a><a href="#v12-pass">v1.2 PASS</a><a href="#v13-running">v1.3 real1m</a><a href="#cinch">Next tests</a><a href="#intuition">Intuition</a><a href="#setup">Setup</a><a href="#state">State machine</a><a href="#ladders">Ladders</a><a href="#adds">Add sizing</a><a href="#exits">Exits</a><a href="#manual-protocol">Manual table</a><a href="#pix">PiX role</a><a href="#arena">Arena tests</a><a href="#risk">Risk</a><a href="#pseudo">Pseudo-code</a><a href="#success">Success criteria</a>
@@ -163,7 +163,7 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
 
 <section id="risk-profiles">
   <h2>Risk profiles — the arena must choose numbers separately</h2>
-  <p class="muted">This is the corrected design principle. BD may sometimes prefer max risk with a tiny wallet, and sometimes prefer maximum survivability. The arena must not collapse those into one “best” setting.</p>
+  <p class="muted">This is the corrected design principle. BD may sometimes prefer maximum survivability, and sometimes deliberately risk a small deployment wallet for maximum short-horizon upside. The arena must not collapse those into one “best” setting, and wallet size must never decide whether a valid strategy is retained.</p>
   <div class="table-card">
     <div class="table-wrap"><table>
       <thead><tr><th>Profile</th><th>Plain-language meaning</th><th>What counts as good</th><th>What must be reported</th></tr></thead>
@@ -171,12 +171,13 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
         <tr><td><code>P0_SURVIVAL_MAX</code></td><td>Maximum survivability, minimum risk.</td><td>Low ruin, low DD, low open tail, modest but repeatable MTM.</td><td>Worst loss, liquidation buffer, side-isolated survival.</td></tr>
         <tr><td><code>P1_CONSERVATIVE</code></td><td>Still safe, accepts a bit more action.</td><td>Stable positive median, few/no rescue blowups.</td><td>Re-anchor count, realized re-anchor loss, max gross SOL.</td></tr>
         <tr><td><code>P2_BALANCED</code></td><td>Middle survivability / middle risk.</td><td>Best risk-adjusted MTM, stable region not one lucky tuple.</td><td>Profit/DD ratio, positive rate, controls comparison.</td></tr>
-        <tr><td><code>P3_AGGRESSIVE</code></td><td>Higher risk for faster earning.</td><td>Higher MTM without uncontrolled ruin.</td><td>Wallet DD, silo DD, worst case, re-anchor whipsaws.</td></tr>
-        <tr><td><code>P4_MOONSHOT</code></td><td>Very high risk / high upside.</td><td>Big upside, but honestly labelled as moonshot.</td><td>Ruin rate and account-killer probability must be explicit.</td></tr>
-        <tr><td><code>P5_TINY_WALLET_BLAST</code></td><td>Small wallet where full loss is acceptable experiment capital.</td><td>Fast upside under known max-loss budget.</td><td>Expected loss, chance of wipeout, and best-case payout.</td></tr>
+        <tr><td><code>P3_AGGRESSIVE</code></td><td>Higher risk for faster earning.</td><td>Higher MTM with explicitly measured loss probability and capital need.</td><td>Wallet DD, minimum tested wallet, worst horizon, re-anchor whipsaws.</td></tr>
+        <tr><td><code>P4_MOONSHOT</code></td><td>Very high risk / high upside.</td><td>Big upside remains ranked even when a small wallet fails.</td><td>Full-loss probability, recommended minimum wallet, time horizon and best-case payout.</td></tr>
+        <tr><td><code>P5_TINY_WALLET_BLAST</code></td><td>Intentional all-risk deployment where full loss of the chosen stake is acceptable.</td><td>Maximum short-horizon PnL, doubling probability and extreme upside.</td><td>Expected loss, full-loss probability by horizon, chance/time to 2× or 5×, and capital required for longer survival.</td></tr>
       </tbody>
     </table></div>
   </div>
+  <div class="good" style="margin-top:16px"><strong>Wallet-neutral rule:</strong> every valid strategy stays in the master result set. A $500 failure is a result for the $500 lane, not a universal rejection. The arena should recommend the wallet required for tested-path survival while still ranking the same strategy in high-PnL and intentional all-risk lanes.</div>
 </section>
 
 
@@ -233,25 +234,30 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
 </section>
 
 
+
 <section id="v13-running">
-  <h2>v1.3-real1m deep optimizer — running, not final</h2>
-  <p class="muted">v1.2 answered the proof-chain question. v1.3 is now asking the harder question: do any HSR PiX settings survive real BTC/ETH/SOL 1-minute candles, matched controls, and realistic cost assumptions?</p>
+  <h2>v1.3-real1m deep optimizer — 63.6% evidence</h2>
+  <p class="muted">v1.3c has now completed 190,803 of 300,000 tasks while testing 10,000 configurations against matched controls on real BTC/ETH/SOL 1-minute candles under zero and realistic cost assumptions.</p>
   <div class="grid cards">
-    <div class="card"><div class="label">Run design</div><div class="num green">Real 1m</div><p class="small">BTCUSDT, ETHUSDT and SOLUSDT 1m CSV replay, 2026-01-01 to 2026-06-14.</p></div>
-    <div class="card"><div class="label">Search scale</div><div class="num gold">300k</div><p class="small">10,000 candidate policies × controls × assets × zero/realistic costs.</p></div>
-    <div class="card"><div class="label">Current extract</div><div class="num gold">7.03%</div><p class="small"><code>LIVE_EXTRACT_HSR_PIX_REAL1M_V13_FOR_GPT_20260615_195814.zip</code>.</p></div>
-    <div class="card"><div class="label">Safety boundary</div><div class="num cyan">Virtual</div><p class="small">Historical candles and simulated fills only; no API keys, no exchange calls, no live orders.</p></div>
+    <div class="card"><div class="label">Current extract</div><div class="num gold">63.60%</div><p class="small"><code>190,803 / 300,000</code> tasks in <code>LIVE_EXTRACT_HSR_PIX_REAL1M_V13_FOR_GPT_20260619_080858.zip</code>.</p></div>
+    <div class="card"><div class="label">Control pressure</div><div class="num green">7.97%</div><p class="small">3,041 of 38,162 candidate asset×cost rows beat the best matched control; the rate remains close to 8% across the run.</p></div>
+    <div class="card"><div class="label">Full 6/6 group</div><div class="num green">73</div><p class="small">73 of 6,361 evaluated candidate keys beat controls on all 3 assets × both cost modes; all previous 58 remain.</p></div>
+    <div class="card"><div class="label">Wallet interpretation</div><div class="num gold">Output, not gate</div><p class="small">The current $500 wallet is a baseline stress condition. It must not delete P4/P5 or any other valid strategy.</p></div>
   </div>
   <div class="table-card">
     <h3>Interim reading</h3>
     <div class="table-wrap"><table><thead><tr><th>Signal</th><th>Current read</th><th>Rule</th></tr></thead><tbody>
-      <tr><td>Clean data</td><td>All three files pass gap, duplicate and OHLC validity checks.</td><td class="green">Good enough to keep running.</td></tr>
-      <tr><td>Controls</td><td>Most candidates still lose to matched controls; only a minority beat the best control.</td><td>That is healthy pressure, not failure.</td></tr>
-      <tr><td>Early robust group</td><td>Some candidates already beat controls in all 6 symbol×cost tests.</td><td class="green">Promising, but not final at 7% completion.</td></tr>
-      <tr><td>Manual protocol</td><td>Do not replace the manual table yet.</td><td class="red">Final numbers wait for completed survivor-first triage.</td></tr>
+      <tr><td>Data integrity</td><td>236,161 rows per symbol; no gaps &gt;1.5m, duplicates, invalid OHLC or non-positive prices.</td><td class="green">Real-data foundation remains clean.</td></tr>
+      <tr><td>Persistence</td><td>All nine early 7% candidates and all 58 candidates from 48% remain complete 6/6 control beaters; 15 new candidates joined them.</td><td class="green">The cross-market signal is broadening without losing prior winners.</td></tr>
+      <tr><td>New lower-risk-labelled watch</td><td><code>P1 t2000 · sep2000 · m40 · b1.0125 · flat3</code>: minimum score lift +84.39, minimum MTM +$147.60 and minimum realized +$113.44 across the six visible runs.</td><td>Strong new research seed; label and actual capital/risk must be recalculated in v1.3d.</td></tr>
+      <tr><td>Persistent aggressive watch</td><td><code>P3 t1600 · sep700 · m50 · b1.5525 · none</code>: minimum score lift +379.24 and minimum MTM +$399.48.</td><td>Exceptional cross-asset/cost edge candidate; keep in the aggressive lane.</td></tr>
+      <tr><td>New moonshot watch</td><td><code>P4 t2000 · sep700 · m50 · b2.43 · same3</code>: 6/6, minimum score lift +241.67, minimum MTM +$248.43 and minimum realized +$34.52.</td><td class="green">High-risk branches are producing real control-beating candidates and must not be filtered away.</td></tr>
+      <tr><td>Current raw leader</td><td>ETH P5 score 2372.76; realistic-cost MTM +$1,736.20 and realized +$1,434.52 while passing the current fixed-$500 test.</td><td>Strong high-risk evidence, not a universal safe setting.</td></tr>
+      <tr><td>Fixed-wallet correction</td><td>The high-PnL P4 SOL row fails the $500 profile stop but remains strongly profitable at that stop point.</td><td class="gold">Retain it; v1.3d must calculate required wallet and full-path behavior rather than reject it.</td></tr>
     </tbody></table></div>
   </div>
-  <div class="note" style="margin-top:16px"><strong>Current practical watchlist:</strong> early P1/P0/P2 candidates look more useful for real trading research than the largest raw P4/P5 moonshots, because they keep drawdown and margin pressure lower. This is a watchlist only, not a final recommendation.</div>
+  <div class="good" style="margin-top:16px"><strong>Correct conclusion:</strong> there is credible and persistent evidence of a small cross-asset/cost control-beating surface across several risk profiles. The arena should expose a Pareto spectrum—safe, balanced, aggressive, moonshot and intentional all-risk—not one safety-biased winner.</div>
+  <div class="note" style="margin-top:16px"><strong>Next version:</strong> v1.3c remains the fixed-$500 baseline and should finish unchanged. v1.3d belongs in a separate folder and must add full-path replay, minimum recommended wallet, wallet tiers, rolling horizons, forced-close accounting, phenotype deduplication and PiT-informed controls while preserving every strategy.</div>
 </section>
 
 <section id="cinch">
@@ -259,18 +265,19 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
   <p class="muted">v1.2 answered the measurement-integrity question. It did not answer the real-market microstructure question.</p>
   <div class="two">
     <div class="good"><h3>Now cinched</h3><p>The arena can preserve <code>reanchor_enabled</code>, <code>mega_rescue_enabled</code>, trigger/separation/multiplier fields and event counts through the promoted chain. The final integrity audit passed, and the P0–P5 winners are separable instead of collapsed into one number.</p></div>
-    <div class="danger"><h3>Still open</h3><p>Real 1m exchange candles, real spread/slippage, funding, liquidation model, fee model, order-fill assumptions, and multi-asset robustness are not solved by v1.2. These are now the v1.3-real1m optimizer target.</p></div>
+    <div class="danger"><h3>Still open</h3><p>v1.3c is already testing real BTC/ETH/SOL 1m candles, matched controls and basic zero/realistic costs. Still open are optimizer completion, wallet-neutral full-path capital truth, rolling-window endpoint bias, richer liquidation/funding/fill realism and paper/shadow confirmation.</p></div>
   </div>
   <div class="table-card" style="margin-top:16px">
     <h3>Next validation ladder</h3>
     <div class="table-wrap"><table><thead><tr><th>Step</th><th>Goal</th><th>Pass condition</th></tr></thead><tbody>
-      <tr><td>1. Real SOLUSDT 1m replay</td><td>Replay the v1.2 profile winners on true exchange 1m OHLCV.</td><td>Same P0–P5 branches stay positive after fees/slippage/funding assumptions.</td></tr>
-      <tr><td>2. BTC/ETH cross-check</td><td>Check whether the mechanism is SOL-specific or broader.</td><td>At least some profiles survive without retuning into overfit.</td></tr>
-      <tr><td>3. Paper/shadow run</td><td>Observe live market formation without orders or with paper-only execution.</td><td>Fill assumptions and drawdown behavior match replay closely enough to continue.</td></tr>
-      <tr><td>4. Strategy bank integration</td><td>Combine with SM/ZZ/DCC only after base-core real-1m validation.</td><td>Adapters improve risk/entry timing without hiding open-tail risk.</td></tr>
+      <tr><td>1. Complete v1.3c</td><td>Finish the 300,000-task fixed-$500 baseline unchanged.</td><td>All reports complete, resume state clean, and final risk-profile/PnL spectrum exported.</td></tr>
+      <tr><td>2. Build v1.3d wallet-neutral</td><td>Replay full paths without deleting strategies at one wallet threshold.</td><td>Minimum tested wallet, wallet tiers and capital-efficiency reports for every valid strategy.</td></tr>
+      <tr><td>3. Rolling horizon / endpoint tests</td><td>Test many starts, ends and 1h–90d deployment windows with forced-close accounting.</td><td>Best, median and worst windows plus full-loss and 2×/5× probabilities.</td></tr>
+      <tr><td>4. Paper/shadow run</td><td>Observe live market formation without real orders.</td><td>Fill, funding, drawdown and event behavior remain close enough to replay.</td></tr>
+      <tr><td>5. Strategy bank integration</td><td>Combine with SM/ZZ/DCC only after base-core capital truth.</td><td>Adapters improve timing without hiding open-tail or wallet requirements.</td></tr>
     </tbody></table></div>
   </div>
-  <div class="note" style="margin-top:16px"><strong>Current command concept:</strong> keep the v1.3c real1m deep optimizer running, use live extracts for progress checks, and wait for completed survivor-first triage before changing the manual protocol table.</div>
+  <div class="note" style="margin-top:16px"><strong>Current command concept:</strong> keep v1.3c running to 100% in its existing folder. Build v1.3d separately, import v1.3c results as seeds/regression evidence, and rank all valid strategies across wallet-neutral risk/PnL lanes rather than filtering by one wallet.</div>
 </section>
 
 <section id="intuition">
@@ -683,7 +690,7 @@ for each config:
 
 <div class="footer">
   BD Hedge Separation PiX Strategy Explainer · dark mobile-first research page · offline replay only · not financial advice.<br>
-  Updated with v1.0 mega snap-average findings, v1.1 measurement caveat, v1.2 offline validation PASS, and v1.3-real1m deep optimizer running status; final optimized settings remain pending.
+  Updated with v1.0 mega snap-average findings, v1.1 measurement caveat, v1.2 offline validation PASS, the v1.3-real1m 63.6% milestone, and the wallet-neutral rule that capital need is measured rather than used to erase high-risk strategies.
 </div>
 </div>
 <script>
