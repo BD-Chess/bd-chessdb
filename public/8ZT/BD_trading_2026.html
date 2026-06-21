@@ -54,10 +54,14 @@ section{margin:38px 0} h2{font-size:30px;margin:0 0 14px;letter-spacing:-.02em} 
 <h2>New standalone recipe page: BD Hedge Separation PiX Strategy</h2>
 <p class="caption">This dashboard remains the main v0.9 evidence page. The new HSR PiX work is intentionally separate: one focused trading recipe, tested in its own standalone arena so the signal is not mixed with the larger v0.9 strategy bank.</p>
 <div class="manual-note" id="manual-hsr-note">
-<details>
-<summary>Manual SOL protocol snapshot added to the HSR/PiX explainer</summary>
-<p class="caption">The full collapsed table now lives in <a href="BD_Hedge_Separation_PiX_Strategy_Explainer.html#manual-protocol">BD_Hedge_Separation_PiX_Strategy_Explainer.html#manual-protocol</a>. This dashboard keeps only the pointer because its job is broad evidence comparison, not manual execution notes.</p>
-<p class="caption">Current working manual sketch: LONG 1 SOL + SHORT 1 SOL, add +1 SOL to the profitable side near +300% ROE, rescue the losing side by staged doubling only when cushion/margin are sufficient, and reduce excess aggressively near average entry / +2% to +10% ROE.</p>
+<details open="">
+<summary>Two v1.3c-informed manual SOL protocols added to the HSR/PiX explainer</summary>
+<p class="caption">The old manual sketch was retired because it mixed untested winner-side pyramiding with the tested rescue engine. The refreshed explainer now separates:</p>
+<ul>
+<li><a href="BD_Hedge_Separation_PiX_Strategy_Explainer.html#manual-balanced-sol"><strong>Balanced SOL:</strong></a> robust P2 6/6 seed — $172.50 notional per side, −500% ROE <code>same3</code> re-anchor, one 50× rescue, +0.75% excess close, 2× residual. SOL zero-cost result: +$156.68 MTM, 8.43% max drawdown.</li>
+<li><a href="BD_Hedge_Separation_PiX_Strategy_Explainer.html#manual-max-risk-sol"><strong>Max-Risk SOL:</strong></a> full-path P5 seed — $486 notional per side, −1300% ROE <code>same3</code> re-anchor, up to two 50× rescues, +3% excess close, 3× residual. SOL zero-cost result: +$1,673.27 MTM and +$1,386.71 realized.</li>
+</ul>
+<p class="caption">Both sections explicitly state that v1.3c did not add to the profitable side, did not trail it, did not execute <code>close_winner_on_mega</code>, and did not enforce the named separation field.</p>
 </details>
 </div>
 <div class="grid cards">
