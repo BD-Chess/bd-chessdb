@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a1019">
+<title>AC–WFP v0.8 — Whole-First Co-Emergent Physicalization</title>
+<style>
+:root {
+    --bg-0: #070b11;
+    --bg-1: #0a111b;
+    --bg-2: #101a28;
+    --panel: rgba(15, 24, 37, 0.94);
+    --panel-soft: rgba(21, 32, 48, 0.78);
+    --text: #e8eef7;
+    --muted: #aab8ca;
+    --faint: #74839a;
+    --accent: #83c8ff;
+    --accent-2: #b7a2ff;
+    --accent-soft: rgba(131, 200, 255, 0.14);
+    --border: rgba(169, 196, 224, 0.17);
+    --shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+    --radius: 22px;
+}
+
+* { box-sizing: border-box; }
+
+html {
+    font-size: 18px;
+    scroll-behavior: smooth;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--text);
+    background:
+        radial-gradient(circle at 12% 0%, rgba(74, 120, 179, 0.20), transparent 36rem),
+        radial-gradient(circle at 92% 20%, rgba(125, 93, 190, 0.13), transparent 30rem),
+        linear-gradient(145deg, var(--bg-0), var(--bg-1) 46%, #080d14);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+                 "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    line-height: 1.72;
+    overflow-wrap: anywhere;
+}
+
+.page-shell {
+    width: min(100% - 32px, 980px);
+    margin: 0 auto;
+    padding: 48px 0 110px;
+}
+
+.source-label {
+    margin: 0 8px 12px;
+    color: var(--faint);
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.reader {
+    position: relative;
+    padding: clamp(30px, 6vw, 72px);
+    background: linear-gradient(180deg, rgba(18, 28, 43, 0.96), var(--panel));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(14px);
+}
+
+.reader > :first-child { margin-top: 0; }
+.reader > :last-child { margin-bottom: 0; }
+
+h1, h2, h3, h4, h5, h6 {
+    color: #f7faff;
+    line-height: 1.2;
+    letter-spacing: -0.018em;
+    text-wrap: balance;
+    scroll-margin-top: 1rem;
+}
+
+h1 {
+    margin: 0 0 1.1em;
+    font-size: clamp(2rem, 5.2vw, 3.35rem);
+    line-height: 1.05;
+    background: linear-gradient(115deg, #ffffff 8%, var(--accent) 58%, var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+h2 {
+    margin: 2.2em 0 0.75em;
+    padding-bottom: 0.34em;
+    font-size: clamp(1.5rem, 3.4vw, 2.15rem);
+    border-bottom: 1px solid var(--border);
+}
+
+h3 { margin: 1.85em 0 0.65em; font-size: 1.35rem; color: #dcecff; }
+h4 { margin: 1.6em 0 0.55em; font-size: 1.15rem; color: #d8e5f5; }
+h5, h6 { margin: 1.4em 0 0.5em; color: var(--muted); }
+
+p { margin: 0 0 1.05em; }
+strong { color: #ffffff; font-weight: 750; }
+em { color: #d9e5f4; }
+del { color: var(--faint); }
+
+mark {
+    color: #fff4c7;
+    background: rgba(255, 205, 86, 0.20);
+    border-radius: 0.25em;
+    padding: 0.04em 0.22em;
+}
+
+a {
+    color: var(--accent);
+    text-decoration-color: rgba(131, 200, 255, 0.46);
+    text-underline-offset: 0.18em;
+}
+a:hover { color: #b8e1ff; text-decoration-color: currentColor; }
+a:focus-visible, button:focus-visible {
+    outline: 3px solid rgba(131, 200, 255, 0.72);
+    outline-offset: 3px;
+}
+
+ul, ol {
+    margin: 0 0 1.1em;
+    padding-left: 1.45em;
+}
+li { margin: 0.28em 0; padding-left: 0.18em; }
+li::marker { color: var(--accent); font-weight: 700; }
+
+blockquote {
+    margin: 1.55em 0;
+    padding: 1.05em 1.2em 1.05em 1.35em;
+    color: #d9e5f2;
+    background: linear-gradient(90deg, var(--accent-soft), rgba(131, 200, 255, 0.035));
+    border-left: 4px solid var(--accent);
+    border-radius: 0 14px 14px 0;
+}
+blockquote > :last-child { margin-bottom: 0; }
+
+hr {
+    height: 1px;
+    margin: 2.5em 0;
+    border: 0;
+    background: linear-gradient(90deg, transparent, rgba(131, 200, 255, 0.55), transparent);
+}
+
+code, kbd, samp {
+    font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+:not(pre) > code {
+    padding: 0.13em 0.38em;
+    color: #d6efff;
+    background: rgba(4, 10, 17, 0.62);
+    border: 1px solid var(--border);
+    border-radius: 0.38em;
+    font-size: 0.91em;
+}
+
+pre {
+    max-width: 100%;
+    margin: 1.45em 0;
+    padding: 1.1em 1.2em;
+    overflow: auto;
+    color: #dce8f7;
+    background: #060a10;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.025);
+    tab-size: 4;
+}
+pre code { font-size: 0.86rem; line-height: 1.58; }
+
+.table-wrap {
+    max-width: 100%;
+    margin: 1.5em 0;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+}
+
+table {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+    background: rgba(5, 10, 16, 0.34);
+}
+th, td {
+    padding: 0.72em 0.85em;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    vertical-align: top;
+}
+th:last-child, td:last-child { border-right: 0; }
+tr:last-child td { border-bottom: 0; }
+th {
+    color: #f6f9ff;
+    background: rgba(131, 200, 255, 0.10);
+    text-align: left;
+}
+tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.018); }
+
+img, video, svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 1.4em auto;
+    border-radius: 14px;
+}
+
+.task-list-item { list-style: none; margin-left: -1.2em; }
+input[type="checkbox"] {
+    width: 1em;
+    height: 1em;
+    margin: 0 0.45em 0 0;
+    accent-color: var(--accent);
+}
+
+.footnotes {
+    margin-top: 3em;
+    padding-top: 1.2em;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+
+.font-controls {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 1000;
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(7, 12, 19, 0.90);
+    border: 1px solid rgba(169, 196, 224, 0.26);
+    border-radius: 16px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.48);
+    backdrop-filter: blur(14px);
+}
+
+.font-controls button {
+    min-width: 52px;
+    min-height: 48px;
+    padding: 0 13px;
+    color: #f6f9ff;
+    background: linear-gradient(180deg, #1c2a3e, #121c2b);
+    border: 1px solid rgba(169, 196, 224, 0.20);
+    border-radius: 11px;
+    font: 800 0.98rem/1 system-ui, sans-serif;
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+}
+.font-controls button:hover { background: linear-gradient(180deg, #263a54, #19283b); }
+.font-controls button:active { transform: translateY(1px); }
+
+@media (max-width: 700px) {
+    html { font-size: 21px; }
+    body { line-height: 1.68; }
+    .page-shell {
+        width: min(100% - 16px, 980px);
+        padding: 12px 0 104px;
+    }
+    .source-label { margin: 0 7px 8px; font-size: 0.64rem; }
+    .reader {
+        padding: 24px 18px 32px;
+        border-radius: 16px;
+    }
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.48rem; margin-top: 1.9em; }
+    h3 { font-size: 1.24rem; }
+    blockquote { margin-left: 0; margin-right: 0; padding: 0.9em 0.9em 0.9em 1em; }
+    pre { margin-left: -6px; margin-right: -6px; padding: 0.9em; }
+    .font-controls button { min-width: 56px; min-height: 52px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+
+@media print {
+    html { font-size: 11pt !important; }
+    body { color: #111; background: #fff; }
+    .page-shell { width: 100%; padding: 0; }
+    .source-label, .font-controls { display: none !important; }
+    .reader { padding: 0; background: #fff; border: 0; border-radius: 0; box-shadow: none; }
+    h1, h2, h3, h4, h5, h6, strong, a { color: #000 !important; background: none !important; }
+    blockquote, pre, table { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<main class="page-shell">
+    <div class="source-label">AC_Whole_First_CoEmergent_Physicalization_Hypothesis_v0_8.md</div>
+    <article class="reader" id="reader"><h1>AC–WFP v0.8 — Whole-First Co-Emergent Physicalization</h1>
+<h2>Predictive–Reconstructive Closure, a matched Modular–Spectral challenger, and a staged route toward QM, SR, GR, matter and embodied RC</h2>
+<p><strong>Status:</strong> best-current hybrid research paper; formal seed and executable programme, not an established physical theory <strong>Date:</strong> 2026-06-21 <strong>Authors:</strong> BD × AI <strong>Method:</strong> editorial hybrid synthesis of AC–WFP v0.6, the v0.7 Simple paper, the v0.7 MAL1 dossiers, the v0.7 MAL2 technical paper, the audited prior MentalArena export, and the five-thinker Witten–Maldacena–Rovelli–Penrose–Connes discovery/collision round <strong>Supersedes:</strong> AC–WFP v0.6 and all provisional v0.7 candidate drafts as the current main paper <strong>Companion work:</strong> the full v0.6 and v0.7 documents remain technical archives; executable evidence must come from the proposed Python arena</p>
+<hr>
+<h2>Abstract</h2>
+<p>AC–WFP begins with a reversal of the usual parts-first ontology:</p>
+<blockquote><p><strong>The physical Whole is not assembled from independently existing local pieces. Effective parts are stable, mutually compatible, predictive and reconstructible restrictions of a deeper relational actuality.</strong></p></blockquote>
+<p>The ontological interpretation calls the ultimate actuality <strong>AC — Absolute Consciousness</strong>. The neutral scientific placeholder is <strong>Ω</strong>, so the mathematical and physical programme can be tested without assuming consciousness. Version 0.8 keeps that separation strict: a successful Ω theory would support whole-first physics, but would not by itself establish that Ω is conscious.</p>
+<p>The paper is organized as a staged research architecture rather than a pre-time production story. Before physical time is recovered, arrows mean dependence, admissibility, reconstruction or fixed-point consistency, not chronological succession. The central dependency graph is</p>
+<pre><code class="language-text">AC / Ω_actual
+  ↓
+[distinction ↔ relation ↔ proto-information I₀]
+  ↓
+[Ω_compat: compatible perspective-indexed facts and completions]
+  ↓
+[Stage I: operational reconstruction of quantum structure]
+  ↓
+[Stage II: representation family of algebra–state–spectral kernels]
+  ↓
+[predictive–reconstructive physicalization]
+  ↓
+[effective parts ↔ causal order ↔ distance ↔ flow ↔ records]
+  ↓
+[physical information ↔ spacetime ↔ energy–momentum ↔ fields/matter]
+  ↓
+[complex self-maintaining centres]
+  ↓
+[embodied RC candidate]</code></pre>
+<p>Version 0.8 adopts a <strong>two-layer representation-resistant kernel</strong>. A concrete Stage-II presentation is</p>
+<p>\[ K_\alpha = (\mathcal M_\alpha,\omega_\alpha,D_\alpha; J_\alpha,\Gamma_\alpha,\mathcal C_\alpha), \]</p>
+<p>while the scientific kernel is the family of admissible presentations, exact equivalences and declared invariants,</p>
+<p>\[ \boxed{ K_\Omega = (\mathsf{Pres}<em>\Omega,\mathfrak D</em>\Omega,\operatorname{Inv}) . } \]</p>
+<p>No one wavefunction, algebra, bulk geometry, boundary theory, graph or spectral triple is identified automatically with the Whole.</p>
+<p>The primary candidate physicalization mechanism is <strong>Minimal Predictive–Reconstructive Closure (MPRC)</strong>. It searches for overlapping effective algebras whose intrinsic projected dynamics are compressible and predictive, whose content can be recovered where the claim requires it, and whose discovery is invariant under exact changes of presentation. Its update is</p>
+<p>\[ \boxed{ \mathcal P_{n+1} = F_{\rm MPRC,\alpha} (\mathcal P_n\mid K_\alpha), \qquad \mathcal P_\alpha^<em> = F_{\rm MPRC,\alpha} (\mathcal P_\alpha^</em>\mid K_\alpha). } \]</p>
+<p>MPRC is the primary mechanism because its objective is general predictive and reconstructive closure, not a direct reward for spacetime, Lorentz symmetry, Einstein gravity, the Standard Model, life or consciousness.</p>
+<p>The paper does <strong>not</strong> blend every attractive mechanism into MPRC. <strong>Modular–Spectral Recovery (MSR)</strong> is retained as a matched, explicit challenger based on the intrinsic channel</p>
+<p>\[ \boxed{ \Phi_{\eta,s}^{\omega,D} = \exp(\eta\mathcal G_D)\circ\sigma_s^\omega, \qquad \mathcal G_D(A)=-\tfrac12[D,[D,A]]. } \]</p>
+<p>MPRC and MSR use the same inputs, model-cost accounting, naturality tests, controls and held-out evaluation. MPRC asks which parts best compress and predict intrinsic relational data; MSR asks which algebras are most recoverable and persistent under a declared modular–spectral channel. Their separation is deliberate: if they are merged by default, their common assumptions can hide circularity and the information already stored in <code>D</code>.</p>
+<p>Physics is evaluated <strong>after</strong> discovery. Candidate fixed points are tested for independent distance reconstruction, operational influence, a quasi-local modular causal cone, one low-energy cone across protected sectors, Lorentz recovery, dimensional stability, geometry–matter response, stable matter sectors, chirality and anomaly cancellation. The Modular Causal Cone Condition remains a downstream phase criterion, not the fundamental law.</p>
+<p>The current result is an improved theory architecture and an executable experiment specification, not yet a derivation of nature. The first unearned step after the Stage-II representation is the generic emergence of nontrivial stable effective parts. If MPRC or MSR passes that gate, the next decisive unearned step is the emergence of a robust finite quasi-local cone. AC remains at <strong>AC0</strong>: an ontological interpretation that changes no earned physical equation. The next result must come from matched computation or theorem, not from another unrestricted layer of prose.</p>
+<hr>
+<h2>Plain-language statement</h2>
+<ol><li>Reality may be whole-first rather than made from independently existing local objects inside pre-existing space.</li><li>“Whole” does not mean physically gigantic. It means that local descriptions are constrained by a more complete actuality.</li><li>An undivided Whole cannot be mathematically featureless if it is to support distinctions, transformations or modes.</li><li>Quantum structure must be earned in Stage I; operator algebras and Hilbert-space machinery are not allowed to appear at the first line and then be called derived.</li><li>Once quantum structure is justified, a useful representation consists of an observable algebra, a state and a relational/spectral operator.</li><li>MPRC searches for effective parts by prediction, compression, recovery, stability and presentation invariance—not by asking the search to manufacture known physics.</li><li>MSR is a serious matched competitor, not an ingredient silently fused into MPRC.</li><li>Spacetime is promoted only if discovered parts independently support distance, finite influence, a common cone, stable clocks and a Lorentzian low-energy regime.</li><li>Matter, geometry and physical information may become jointly well-defined as one stable physicalization phase.</li><li>AC says that ultimate actuality is not devoid of presence. RC remains conditional on sufficiently organized local relation/resonance; a stone is AC-grounded but is not thereby an embodied conscious centre.</li></ol>
+<hr>
+<h1>Part I — Claim discipline and the central reversal</h1>
+<h2>0. Claim-status vocabulary</h2>
+<p>Every load-bearing statement should carry one of the following statuses.</p>
+<table><thead><tr>
+<th style="text-align:left">Status</th>
+<th style="text-align:left">Meaning</th>
+</tr></thead><tbody>
+<tr>
+<td style="text-align:left"><strong>Established</strong></td>
+<td style="text-align:left">Standard theorem, formal construction or experimentally supported result in a stated domain</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Reconstruction result</strong></td>
+<td style="text-align:left">Known formalism follows from an explicit axiom package</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Adapted</strong></td>
+<td style="text-align:left">Established mathematics is assigned a new role, with the adaptation declared</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Conjectured</strong></td>
+<td style="text-align:left">New mechanism or bridge proposed in AC–WFP</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Conditional recovery</strong></td>
+<td style="text-align:left">Desired physics follows if listed assumptions and earlier gates pass</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Interpretive</strong></td>
+<td style="text-align:left">AC/RC meaning assigned to neutral mathematics</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Open</strong></td>
+<td style="text-align:left">Required step with no adequate derivation yet</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Rejected / demoted</strong></td>
+<td style="text-align:left">A stronger earlier claim no longer survives the evidence discipline</td>
+</tr>
+</tbody></table>
+<p>No philosophical interpretation repairs a failed neutral model. No famous thinker counts as evidence. No equation counts as progress unless its types, assumptions, inputs, domain, model cost and failure conditions are stated.</p>
+<h2>0.1 Scientific and AC ladders</h2>
+<p>The scientific ladder is</p>
+<pre><code class="language-text">L0  coherent whole-first question
+L1  explicit neutral mathematical kernel
+L2  executable nontrivial mechanism
+L3  stable generic relational structures on held-out systems
+L4  controlled recovery of a known physical regime
+L5  new discriminator or prediction surviving external tests</code></pre>
+<p>The AC ladder is separate:</p>
+<pre><code class="language-text">AC0  AC is an ontological interpretation of Ω; no changed physics
+AC1  AC selects admissible factorizations, centres or phases
+AC2  AC changes dynamics, probabilities or physicalization
+AC3  an AC-specific discriminator survives experiment</code></pre>
+<p>A theory may reach high scientific value while remaining at AC0. AC receives no promotion merely because the whole-first picture is compatible with it.</p>
+<h2>1. The core proposition</h2>
+<p>The parts-first picture assumes local constituents and attempts to build the universe from them. AC–WFP tests the inverse explanatory order:</p>
+<blockquote><p><strong>Locality, particles, fields and spacetime may be stable effective structures generated within a globally constrained Whole.</strong></p></blockquote>
+<p>This is not the claim that large spatial objects create smaller spatial objects. If spacetime is emergent, the Whole is not larger in metres. It is more inclusive and ontologically prior to any particular factorization into local pieces.</p>
+<p>The strongest neutral statement is:</p>
+<blockquote><p>A physical world is a stable relational regime in which compatible restrictions of Ω acquire predictive closure, recoverable records, causal reach, geometry, energy–momentum and persistent modes.</p></blockquote>
+<p>The AC interpretation adds:</p>
+<blockquote><p>Ultimate actuality is not wholly devoid of presence. Physical organization localizes, stabilizes and enriches bounded relative consciousness rather than creating phenomenal presence from absolute non-presence.</p></blockquote>
+<h2>2. Undivided is not featureless</h2>
+<p>In an algebraic Stage-II representation, a trivial algebra cannot generate nontrivial internal structure:</p>
+<p>\[ \mathcal M=\mathbb C\mathbf1 \quad\Longrightarrow\quad \operatorname{Der}(\mathcal M)=0, \qquad \operatorname{Aut}(\mathcal M)=\{\mathrm{id}\}, \qquad \operatorname{Proj}(\mathcal M)=\{0,1\}. \]</p>
+<p>Therefore</p>
+<p>\[ \boxed{ \text{undivided Whole} \neq \text{featureless mathematical object}. } \]</p>
+<p>This is a representation-level no-go, not a proof that operator algebra is the final ontology. It says that a generative representation must possess at least constrained latent relational capacity.</p>
+<p>The open foundational question is sharper in v0.8:</p>
+<blockquote><p>What is the least structure sufficient for differentiation, while still too weak to encode our observed world by hand?</p></blockquote>
+<h2>3. Four typed uses of Ω</h2>
+<p>V0.8 forbids one symbol from sliding between ontology, compatibility and representation.</p>
+<table><thead><tr>
+<th style="text-align:left">Symbol</th>
+<th style="text-align:left">Type</th>
+<th style="text-align:left">Meaning</th>
+</tr></thead><tbody>
+<tr>
+<td style="text-align:left"><code>Ω_actual</code></td>
+<td style="text-align:left">ontological placeholder</td>
+<td style="text-align:left">complete actuality relative to the hypothesis</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Ω_compat</code></td>
+<td style="text-align:left">scientific compatibility structure</td>
+<td style="text-align:left">admissibility and gluing relations among perspective-indexed facts and candidate completions</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Ω_repr[α]</code></td>
+<td style="text-align:left">mathematical presentation</td>
+<td style="text-align:left">a concrete representation in language or presentation <code>α</code></td>
+</tr>
+<tr>
+<td style="text-align:left"><code>KΩ</code></td>
+<td style="text-align:left">representation-resistant research kernel</td>
+<td style="text-align:left">the category of presentations, exact equivalences and declared invariants</td>
+</tr>
+</tbody></table>
+<p>The AC interpretation attaches to <code>Ω_actual</code>. Neutral science is performed through <code>Ω_compat</code>, <code>Ω_repr[α]</code> and <code>KΩ</code>.</p>
+<p>No chosen global wavefunction is automatically <code>Ω_actual</code>. No boundary theory is automatically more real than its gravitational dual. No spectral triple is automatically AC. No relation-only presentation is automatically complete merely because it uses fewer objects.</p>
+<h2>4. Three global-structure branches</h2>
+<p>The paper keeps three branches alive.</p>
+<table><thead><tr>
+<th style="text-align:left">Branch</th>
+<th style="text-align:left">Claim</th>
+<th style="text-align:left">Main strength</th>
+<th style="text-align:left">Main burden</th>
+</tr></thead><tbody>
+<tr>
+<td style="text-align:left"><strong>G1 — strong global state</strong></td>
+<td style="text-align:left">one physically privileged global state exists</td>
+<td style="text-align:left">complete global dynamics and natural purification picture</td>
+<td style="text-align:left">risks a privileged view from nowhere and must explain relative facts</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>G2 — compatibility Whole</strong></td>
+<td style="text-align:left">local facts belong to compatibility classes; one or more completions may exist</td>
+<td style="text-align:left">whole-first without privileging one representation</td>
+<td style="text-align:left">must prove completion-invariant operational predictions</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>G3 — relation only</strong></td>
+<td style="text-align:left">only interaction-indexed facts and relations are fundamental</td>
+<td style="text-align:left">lowest ontological commitment</td>
+<td style="text-align:left">must recover global consistency, Born weighting and cosmological closure</td>
+</tr>
+</tbody></table>
+<p>V0.8 uses <strong>G2 as the provisional neutral default</strong>, allows G1 as a calculational realization where justified, and keeps G3 as the lower-ontology challenger.</p>
+<p>For perspective-indexed facts <code>F={f_{i|j}}</code>, define admissible completions</p>
+<p>\[ \operatorname{Comp}(F) = \left\{ \Omega_{\rm repr}^{(a)}: \mathcal R_{i|j}(\Omega_{\rm repr}^{(a)})\simeq f_{i|j} \right\}. \]</p>
+<p>Nonuniqueness is acceptable only if accessible predictions are completion-invariant:</p>
+<p>\[ \epsilon_{\rm comp} = \sup_{a,b} \sup_{e\in\mathcal E_{\rm access}} \left| p(e\mid\Omega_{\rm repr}^{(a)}) - p(e\mid\Omega_{\rm repr}^{(b)}) \right| \le \varepsilon_{\rm inv}. \]</p>
+<p>If this fails, an independently justified selector is required.</p>
+<h2>5. Dependency graph and co-emergence</h2>
+<p>The early arrows are not an unseen cosmic clock. They mean logical, reconstructive or fixed-point dependence.</p>
+<pre><code class="language-text">Ω_actual / AC
+  ↓
+[distinction ↔ relation ↔ proto-information I₀]
+  ↓
+[compatible local facts / Ω_compat]
+  ↓
+[pre-geometric modes, transformations and candidate order]
+  ↓
+[quantum-relational representation, if Stage I succeeds]
+  ↓
+[predictive–reconstructive fixed points]
+  ↓
+┌────────────────────────────────────────────────────────────┐
+│ physical information ↔ causal order ↔ spacetime geometry │
+│        ↕                  ↕                               │
+│ energy–momentum ↔ fields, stable modes and matter         │
+└────────────────────────────────────────────────────────────┘
+  ↓
+[self-maintaining embodied centres]
+  ↓
+[embodied RC candidate]</code></pre>
+<p>The physical cluster is <strong>co-emergent</strong> if parts, order, distance, flow, records and stable modes are not inserted as independent targets, yet a common update produces a stable package in which they mutually constrain and predict one another.</p>
+<p>This is a fixed-point claim, not a claim that everything literally appears at the same instant. Before physical time exists, “simultaneous” is not the correct primitive. “Mutually constitutive” is.</p>
+<h2>5.1 Proto-information and physical information</h2>
+<ul><li><code>I₀</code> is structured distinguishability among related alternatives before physical encoding.</li><li><code>Iphys</code> is distinguishability embodied in causally accessible physical states.</li></ul>
+<p>The first is nearly definitional once distinction and relation exist. The second requires a physical state space, operations, causal accessibility and calibration.</p>
+<p>Information is not one scalar. Shannon information, von Neumann entropy, channel capacity, algorithmic description length, quantum speed limits, thermodynamic erasure cost and semantic significance must not be interchanged.</p>
+<hr>
+<h1>Part II — Stage I and Stage II</h1>
+<h2>6. Stage I: whole-first reconstruction of quantum structure</h2>
+<p>AC–WFP may not begin with Hilbert space and then declare quantum mechanics derived. Stage I begins with a causal operational framework containing:</p>
+<ul><li>states;</li><li>effects;</li><li>transformations;</li><li>composition rules;</li><li>probabilities;</li><li>no primitive spacetime geometry.</li></ul>
+<p>The current whole-first principles are:</p>
+<h3>W1 — compatible local facts admit a Whole</h3>
+<p>Every jointly admissible family of perspective-indexed local facts belongs to at least one compatibility class.</p>
+<h3>W2 — whole-first purification</h3>
+<p>Every mixed local state has a pure completion, essentially unique up to reversible transformations on the complement, under the assumptions of the reconstruction theorem used.</p>
+<h3>W3 — no privileged classical distinction</h3>
+<p>Pure alternatives of the same operational type are reversibly connected unless an independently stated conserved structure distinguishes them.</p>
+<h3>W4 — causal composition</h3>
+<p>Present outcome probabilities cannot depend on later freely chosen operations.</p>
+<h3>W5 — local distinguishability or an explicit replacement</h3>
+<p>Global relational states must be operationally reconstructible from an adequate family of local tests, or the theory must state precisely why a weaker composition rule is used.</p>
+<p>Known operational reconstructions show that quantum theory can follow from suitable informational principles, with purification playing a central role [1,2]. AC–WFP has not yet derived the complete axiom package from one smaller Whole-first postulate.</p>
+<p><strong>Stage-I status:</strong> a disciplined reconstruction programme, not a completed derivation of QM.</p>
+<h2>7. Stage II: typed quantum-relational presentations</h2>
+<p>After Stage I earns ordinary quantum structure, a concrete presentation is</p>
+<p>\[ K_\alpha = (\mathcal M_\alpha,\omega_\alpha,D_\alpha; J_\alpha,\Gamma_\alpha,\mathcal C_\alpha). \]</p>
+<p>Only <code>(𝓜α,ωα,Dα)</code> is mandatory for the minimal modular–spectral lane.</p>
+<ul><li><code>𝓜α</code>: C* or von Neumann algebra, or a controlled finite analogue;</li><li><code>ωα</code>: normal state, faithful on the support required by modular theory;</li><li><code>Dα</code>: self-adjoint relational, incidence or Dirac-like operator, or a compact generator of one;</li><li><code>Jα</code>: real or matter–antimatter structure where justified;</li><li><code>Γα</code>: grading/chirality where justified;</li><li><code>𝓒α</code>: domain, calibration, approximation and consistency metadata.</li></ul>
+<p>These structures are scientifically fertile but already quantum/operator-theoretic. They belong only after the Stage-I firewall.</p>
+<h2>8. Presentation category and duality-invariant content</h2>
+<p>Define a typed category <code>PresΩ</code> whose objects are admissible presentations. Morphisms must be classified:</p>
+<pre><code class="language-text">EXACT_EQUIVALENCE          invertible and prediction preserving
+STATE_PRESERVING_EMBEDDING injective map with a stated state relation
+CONTROLLED_CODE_RECOVERY   recovery map with a declared error budget
+EFFECTIVE_RG_MAP           noninvertible coarse-graining/effective map
+CROSSOVER_DICTIONARY       proposed quantitative map between formalisms
+ANALOGY_ONLY               conceptual resemblance; no transported equation</code></pre>
+<p>Only exact invertible equivalences belong to the subgroupoid <code>𝔇Ω</code>.</p>
+<p>The representation-resistant kernel is</p>
+<p>\[ \boxed{ K_\Omega = (\mathsf{Pres}<em>\Omega,\mathfrak D</em>\Omega,\operatorname{Inv}). } \]</p>
+<p>Every proposed invariant must declare:</p>
+<pre><code class="language-text">invariant ID
+mathematical domain
+allowed map types
+transport dictionary
+error norm
+expected error scaling
+failure meaning</code></pre>
+<p>Candidate invariants may include mapped expectation values, operational causal order, relative entropy in controlled code domains, protected index data, calibrated cone parameters and record/recovery relations. A raw spectrum, dimension or modular flow is not invariant across every possible duality by decree.</p>
+<h2>8.1 Naturality of physicalization</h2>
+<p>Each presentation carries a candidate map</p>
+<p>\[ F_\alpha:\mathcal X_\alpha\to\mathcal X_\alpha. \]</p>
+<p>For a valid presentation map <code>Uαβ</code> with induced transport <code>Uαβ^X</code>, define</p>
+<p>\[ E_{\rm nat}^{\alpha\beta}(X) = d_\beta\!\left( U_{\alpha\beta}^{X}F_\alpha(X), F_\beta U_{\alpha\beta}^{X}(X) \right). \]</p>
+<p>Exact-equivalence target:</p>
+<p>\[ E_{\rm nat}^{\alpha\beta}=0 \]</p>
+<p>up to numerical error. Approximate maps require a predeclared error budget. Analogy-only maps cannot support a naturality claim.</p>
+<p>Naturality itself can be overfit. V0.8 therefore requires held-out composition: construct or tune with maps <code>Uab</code> and <code>Ubc</code>, then test the unseen direct/composite relation <code>Uac</code> without adjustment.</p>
+<hr>
+<h1>Part III — The v0.8 physicalization mechanisms</h1>
+<h2>9. Primary mechanism: Minimal Predictive–Reconstructive Closure</h2>
+<p>V0.6 named a fixed-point map but left it underdefined. V0.7 Simple supplied the strongest lean mechanism. V0.8 promotes it as the <strong>primary candidate</strong>, while tightening its coding, naturality and held-out rules.</p>
+<h3>9.1 Candidate effective cover</h3>
+<p>Let</p>
+<p>\[ \mathcal P = \{(\mathcal A_i,E_i)\}_{i=1}^{m} \]</p>
+<p>be an overlapping cover of candidate subalgebras <code>𝓐i⊂𝓜</code>. <code>Ei:𝓜→𝓐i</code> is a conditional expectation, restriction or controlled finite approximation.</p>
+<p>Overlaps are allowed because physical parts need not be disjoint tensor factors. Holographic/code-like locality, gauge constraints and perspective-indexed facts can require overlapping algebras.</p>
+<p>Candidate moves come from a predeclared low-complexity library:</p>
+<ul><li>add or remove a generator;</li><li>merge or split candidate algebras;</li><li>add or remove an overlap;</li><li>add or remove a declared recovery relation;</li><li>rotate only within a declared degenerate invariant sector;</li><li>change a model class only through a coded, auditable move.</li></ul>
+<p>The move library, thresholds and search policy are charged to model description length.</p>
+<h3>9.2 Intrinsic relational data</h3>
+<p>MPRC may use only predeclared relational data generated from the Stage-II presentation:</p>
+<p>\[ \mathscr D_{\rm rel}(K_\alpha) = \{ \text{operator correlations}, \text{projected intrinsic evolution}, \text{intervention responses}, \text{restriction/recovery data}, \text{perturbation responses} \}. \]</p>
+<p>It may not use target coordinates, target dimension, a known light cone, Einstein’s equation, Standard Model labels, observer viability, life, AC or RC rewards.</p>
+<h3>9.3 Projected intrinsic dynamics</h3>
+<p>For a suitable algebra/state pair, Tomita–Takesaki modular theory supplies the state-relative flow [3]</p>
+<p>\[ \sigma_s^\omega(A) = \Delta_\omega^{is}A\Delta_\omega^{-is}. \]</p>
+<p>In a finite matrix factor with faithful density matrix <code>ρ</code>,</p>
+<p>\[ \sigma_s^\omega(A)=\rho^{is}A\rho^{-is}. \]</p>
+<p>For candidate part <code>i</code>, define projected evolution</p>
+<p>\[ T_{i,s} = E_i\circ\sigma_s^\omega\circ\iota_i, \]</p>
+<p>where <code>ιi</code> embeds <code>𝓐i</code> into <code>𝓜</code>.</p>
+<p>A candidate part earns predictive closure when <code>T_{i,s}</code> is represented compactly by a local completely positive unital map <code>Φi,s</code> on held-out operators and modular intervals:</p>
+<p>\[ \epsilon_{\rm pred}(i) = \sum_{s\in S_{\rm test}} \sum_{A\in\mathcal B_i^{\rm test}} \left\| T_{i,s}(A)-\Phi_{i,s}(A) \right\|<em>\omega^2, \qquad \|X\|</em>\omega^2=\omega(X^\dagger X). \]</p>
+<p>The modular parameter <code>s</code> is not yet physical time. It is intrinsic relational evolution data.</p>
+<p>Alternative intrinsic dynamics—declared physical channels, automorphism flows or causal-history updates—must be tested as matched challengers rather than silently merged.</p>
+<h3>9.4 Reconstructibility</h3>
+<p>For an authorized domain <code>B</code>, a recovery channel <code>\mathcal R_{B\to i}</code> attempts to reconstruct the logical content of <code>𝓐i</code>:</p>
+<p>\[ \epsilon_{\rm rec}(i\leftarrow B) = \min_{\mathcal R_{B\to i}} \left\| \mathcal R_{B\to i}\circ E_B-E_i \right\|_\omega. \]</p>
+<p>Recovery is claim-relative. Redundant recovery is mandatory for a holographic or distributed-encoding claim, not for every ordinary subsystem.</p>
+<p>The recovery map itself is charged. An arbitrarily powerful optimizer that hides the desired answer inside <code>\mathcal R</code> is model bloat, not explanation.</p>
+<h3>9.5 Predictive description length</h3>
+<p>The discovery objective is a two-part, preferably prequential code:</p>
+<p>\[ \boxed{ \mathcal L_{\rm MPRC}(\mathcal P) = L(\mathcal P,\{E_i\},\{\Phi_i\},\{\mathcal R_i\}\mid K_\alpha) + L_{\rm preq}(\mathscr D_{\rm rel}\mid \mathcal P,\{\Phi_i\},\{\mathcal R_i\}). } \]</p>
+<p>The first term encodes the model. The second encodes held-out or sequential residuals. If practical weights are used, they must come from the declared residual/noise code rather than post-hoc preference.</p>
+<p>The full cost includes the kernel and search machinery whenever models with different kernels are compared:</p>
+<p>\[ L_{\rm total} = L(\mathcal M)+L(\omega)+L(D)+L(F) +L(\mathcal P,E,\Phi,\mathcal R) +L(\text{calibration}) +L(\text{residuals}). \]</p>
+<h3>9.6 Deterministic update</h3>
+<p>Let <code>𝒩(𝒫)</code> be the finite neighborhood of allowed coded modifications. Define</p>
+<p>\[ \mathcal Q_{\min} = \operatorname*{argmin}<em>{\mathcal Q\in\mathcal N(\mathcal P)} \mathcal L</em>{\rm MPRC}(\mathcal Q), \]</p>
+<p>with a canonical deterministic tie-breaker. Then</p>
+<p>\[ \boxed{ F_{\rm MPRC,\alpha}(\mathcal P) = \begin{cases} \mathcal Q_{\min}, &amp;\mathcal L(\mathcal Q_{\min})&lt;\mathcal L(\mathcal P),\\[4pt] \mathcal P,&amp;\text{otherwise.} \end{cases} } \]</p>
+<p>A local fixed point satisfies</p>
+<p>\[ \boxed{ \mathcal P_\alpha^<em> = F_{\rm MPRC,\alpha}(\mathcal P_\alpha^</em>). } \]</p>
+<p>In a finite candidate space with discrete code lengths, strict monotone descent terminates. This earns finite termination only. It does not prove physicality, uniqueness, global optimality or relevance to our universe.</p>
+<h3>9.7 Genericity and basin structure</h3>
+<p>One hand-built success is insufficient. Report:</p>
+<ul><li>fixed-point residual;</li><li>number and structure of attractors;</li><li>basin size across randomized initial covers;</li><li>sensitivity to search order and tie-breaking;</li><li>held-out generalization across seeds, perturbations and sizes;</li><li>model cost of the move library;</li><li>whether trivial full-algebra or singleton covers dominate.</li></ul>
+<p>A physically interesting mechanism should produce nontrivial fixed points in a broad, non-fine-tuned region, not only after a curated initialization.</p>
+<h3>9.8 Naturality of MPRC</h3>
+<p>For an exact state/spectrum-preserving isomorphism <code>U</code>, the target is</p>
+<p>\[ \boxed{ F_{UK}(U\mathcal P) = U F_K(\mathcal P) } \]</p>
+<p>up to canonical relabeling. At fixed points,</p>
+<p>\[ E_{\rm fp\text{-}dual}^{\alpha\beta} = d_\beta\! \left(U_{\alpha\beta}^{\mathcal P}(\mathcal P_\alpha^<em>), \mathcal P_\beta^</em>\right). \]</p>
+<p>A mechanism that finds different physical parts after a harmless basis change fails immediately.</p>
+<h2>10. Matched challenger: Modular–Spectral Recovery</h2>
+<p>V0.7 MAL2 supplied the strongest explicit alternative. V0.8 keeps MSR separate and compares it at matched complexity.</p>
+<h3>10.1 Intrinsic MSR channel</h3>
+<p>For faithful <code>ρ</code> and self-adjoint <code>D</code>,</p>
+<p>\[ \sigma_s^\omega(A) =\rho^{is}A\rho^{-is}, \]</p>
+<p>\[ \mathcal G_D(A) =DAD-\tfrac12(D^2A+AD^2) =-\tfrac12[D,[D,A]], \]</p>
+<p>\[ \mathcal N_{\eta,D} =e^{\eta\mathcal G_D}, \qquad \boxed{ \Phi_{\eta,s}^{\omega,D} =\mathcal N_{\eta,D}\circ\sigma_s^\omega. } \]</p>
+<p><code>σω</code> supplies reversible state-relative flow. <code>Nη,D</code> supplies dephasing or coarse-graining relative to <code>D</code>. Neither contains a target dimension or Einstein tensor, but <code>D</code> may still contain substantial geometric information.</p>
+<h3>10.2 Recoverable-algebra objective</h3>
+<p>For candidate <code>𝓐i</code>, restriction <code>Ei</code> and recovery <code>Ri</code>,</p>
+<p>\[ \epsilon_{\rm MSR}(i;\eta,s) = \sup_{A\in\mathcal A_i,\|A\|\le1} \|R_iE_i\Phi_{\eta,s}^{\omega,D}(A)-A\|. \]</p>
+<p>MSR selects a nontrivial Pareto or MDL set minimizing:</p>
+<ul><li>recovery error;</li><li>persistence/leakage error;</li><li>perturbation sensitivity;</li><li>full description length of channel, algebra, restriction and recovery.</li></ul>
+<p>For a fair arena, convert this to a comparable coded objective:</p>
+<p>\[ \mathcal L_{\rm MSR} = L(\eta,s,\mathcal A,E,R,D) + L_{\rm preq}(\text{recovery and persistence residuals}). \]</p>
+<h3>10.3 Why MPRC and MSR are not merged by default</h3>
+<p>MPRC is a broad discovery principle. MSR is a specific channel hypothesis. A default fusion would risk:</p>
+<ol><li>rewarding the same modular structure twice;</li><li>hiding physical content already encoded in <code>D</code>;</li><li>making failure uninterpretable;</li><li>converting a matched challenger into an unablated internal component.</li></ol>
+<p>The arena may include <code>MPRC+MSR</code> as a <strong>separate ablation arm</strong>, but it is not the v0.8 baseline.</p>
+<h3>10.4 The D-debt</h3>
+<p>Both mechanisms are vulnerable if <code>D</code> encodes the answer. Mandatory controls:</p>
+<ul><li>preserve the spectrum and randomize eigenvectors;</li><li>preserve eigenvectors and perturb the spectrum;</li><li>replace <code>D</code> with matched graph/Laplacian operators;</li><li>remove <code>D</code>;</li><li>compare compactly generated <code>D</code> with hand-designed <code>D</code>;</li><li>charge the generator and representation of <code>D</code> in full.</li></ul>
+<p>A model that reconstructs geometry only because geometry was inserted into <code>D</code> has decoded, not explained.</p>
+<h2>11. Effective parts: five core gates plus one conditional gate</h2>
+<p>A mathematical subalgebra is promoted to an effective part only if it passes the gates relevant to the claim.</p>
+<h3>Gate 1 — restriction</h3>
+<p>There is a well-defined <code>Ei:𝓜→𝓐i</code>, with assumptions stated.</p>
+<h3>Gate 2 — predictive persistence</h3>
+<p>The part supports compact prediction of its projected intrinsic dynamics over held-out intervals and survives a nontrivial perturbation range.</p>
+<h3>Gate 3 — recovery or justified autonomy</h3>
+<p>There is an explicit recovery map with a declared domain and error, or a justified local-autonomy criterion when recovery is not part of the claim.</p>
+<h3>Gate 4 — robustness and nontriviality</h3>
+<p>The part survives perturbations, coarse-graining and unseen sizes, and beats full-algebra, scalar, singleton, frozen and arbitrary-factor baselines.</p>
+<h3>Gate 5 — covariance</h3>
+<p>Under every declared exact-equivalence map, the part and its restriction/prediction/recovery data transport consistently.</p>
+<h3>Conditional Gate 6 — redundancy</h3>
+<p>If the claim is holographic or redundantly encoded locality, more than one authorized domain must recover overlapping logical content. This is not imposed on every physical subsystem.</p>
+<p>The residual vector is reported without hiding mandatory failures in a weighted average:</p>
+<p>\[ \mathbf E_{\rm part}(i) = (E_{\rm restrict},E_{\rm predict},E_{\rm recover}, E_{\rm robust},E_{\rm cov};E_{\rm redundant}). \]</p>
+<hr>
+<h1>Part IV — Physics gates after discovery</h1>
+<h2>12. Six notions of time</h2>
+<p>Time is type-diverse.</p>
+<table><thead><tr>
+<th style="text-align:left">ID</th>
+<th style="text-align:left">Type</th>
+<th style="text-align:left">Meaning</th>
+<th style="text-align:left">Current status</th>
+</tr></thead><tbody>
+<tr>
+<td style="text-align:left"><code>T1</code></td>
+<td style="text-align:left">causal/event order</td>
+<td style="text-align:left">intervention or precedence relation</td>
+<td style="text-align:left">candidate invariant compatibility structure</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>T2</code></td>
+<td style="text-align:left">state-relative modular flow</td>
+<td style="text-align:left"><code>σω_s</code> from an algebra/state pair</td>
+<td style="text-align:left">theorem-backed mathematical flow</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>T3</code></td>
+<td style="text-align:left">physical clock reading</td>
+<td style="text-align:left">value of a stable clock observable</td>
+<td style="text-align:left">device and trajectory relative</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>T4</code></td>
+<td style="text-align:left">relativistic proper time</td>
+<td style="text-align:left">calibrated interval along emergent worldline</td>
+<td style="text-align:left">conditional on Lorentzian geometry</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>T5</code></td>
+<td style="text-align:left">thermodynamic arrow</td>
+<td style="text-align:left">orientation associated with entropy production/coarse-graining</td>
+<td style="text-align:left">state and coarse-graining dependent</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>T6</code></td>
+<td style="text-align:left">experienced temporal flow</td>
+<td style="text-align:left">memory-integrated temporal organization of embodied RC</td>
+<td style="text-align:left">centre dependent; not derived here</td>
+</tr>
+</tbody></table>
+<p>Coordinate time is a representation or gauge label, not an additional physical substance.</p>
+<p>For finite matrix factors, modular flow is inner and the outer automorphism group is trivial. Therefore finite arenas can test state-relative modular dynamics, recovery, naturality, leakage and scaling, but cannot demonstrate nontrivial canonical outer modular time or a type-III QFT limit.</p>
+<h2>12.1 Compatibility across local clocks</h2>
+<p>For overlapping candidate algebras <code>𝓐X</code> and <code>𝓐Y</code>, a compatibility-time candidate requires a monotone reparameterization <code>fXY</code> such that</p>
+<p>\[ E_{\rm time}^{XY}(S) = \sup_{|s|\le S} \sup_{A\in\mathcal A_{XY},\|A\|\le1} \left\| \sigma_s^{\omega_X}(A) - \sigma_{f_{XY}(s)}^{\omega_Y}(A) \right\| \]</p>
+<p>is small in a declared regime and composes consistently on triple overlaps.</p>
+<p>The target is universal causal compatibility, not a universal master clock.</p>
+<h2>13. Independent distance and causal influence</h2>
+<p>Where a spectral triple or finite analogue is justified, Connes distance is [4]</p>
+<p>\[ d_D(\varphi,\psi) = \sup_a \left\{ |\varphi(a)-\psi(a)|:\|[D,a]\|\le1 \right\}. \]</p>
+<p>The arena also computes diffusion, information-geometric, correlation and causal distances. Agreement over a scale window is evidence. Choosing whichever distance makes the desired cone appear is failure.</p>
+<p>Operational influence between candidate parts can be measured by</p>
+<p>\[ \mathcal I_{i\to j}(s) = \sup_{\substack{A_i\in\mathcal A_i,B_j\in\mathcal A_j\\ \|A_i\|,\|B_j\|\le1}} \left\| [\sigma_s^\omega(A_i),B_j] \right\|. \]</p>
+<p>Distance must be reconstructed independently of the commutator-spreading profile used to score a cone.</p>
+<h2>14. Modular Causal Cone Condition</h2>
+<p>At a candidate fixed point, test</p>
+<p>\[ \boxed{ \|[\sigma_s^\omega(A_i),B_j]\| \le C\|A_i\|\|B_j\| \exp[-\mu(d(i,j)-v|s|)]. } \]</p>
+<p>MCCC is not implied by modular theory and is not a primitive law. It is a downstream order parameter for a quasi-local phase.</p>
+<p>A serious pass requires:</p>
+<ul><li>positive decay <code>μ</code> over a nontrivial scale window;</li><li>stable finite <code>v</code>;</li><li>low held-out residual;</li><li>survival under state and <code>D</code> perturbations;</li><li>shrinking finite-size error;</li><li>one cone across protected low-energy sectors;</li><li>agreement across exact-equivalent presentations;</li><li>no reuse of influence data to define the distance being tested.</li></ul>
+<p>Calibration requires stable rods and clocks:</p>
+<p>\[ t=\tau_<em>s, \qquad x=\ell_</em>d, \qquad c_<em>=\frac{\ell_</em>}{\tau_*}v. \]</p>
+<p>The observed SI value of <code>c</code> may not be inserted into the search.</p>
+<h2>15. Special-relativity derivation ledger</h2>
+<table><thead><tr>
+<th style="text-align:left">Step</th>
+<th style="text-align:left">Required statement</th>
+<th style="text-align:left">v0.8 status</th>
+</tr></thead><tbody>
+<tr>
+<td style="text-align:left">S0</td>
+<td style="text-align:left">typed neutral Stage-II presentations</td>
+<td style="text-align:left"><strong>defined/assumed after Stage I</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">S1</td>
+<td style="text-align:left">nontrivial stable effective parts</td>
+<td style="text-align:left"><strong>conjectured; MPRC/MSR test</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">S2</td>
+<td style="text-align:left">intrinsic state/channel flow</td>
+<td style="text-align:left"><strong>defined; physical interpretation open</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">S3</td>
+<td style="text-align:left">independent relational distance</td>
+<td style="text-align:left"><strong>adapted from spectral/information structures</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">S4</td>
+<td style="text-align:left">finite quasi-local influence bound</td>
+<td style="text-align:left"><strong>open; MCCC test</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">S5</td>
+<td style="text-align:left">stable clocks, rods and calibration</td>
+<td style="text-align:left"><strong>open</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">S6</td>
+<td style="text-align:left">one universal cone across protected sectors</td>
+<td style="text-align:left"><strong>open</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">S7</td>
+<td style="text-align:left">no preferred inertial centre</td>
+<td style="text-align:left"><strong>open</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">S8</td>
+<td style="text-align:left">homogeneity, isotropy and reciprocity in the regime</td>
+<td style="text-align:left"><strong>open or conditional assumption</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">S9</td>
+<td style="text-align:left">Lorentz transformations and Minkowski interval</td>
+<td style="text-align:left"><strong>theorem-backed conditional on S5–S8</strong></td>
+</tr>
+</tbody></table>
+<p>Two stopping points must not be confused:</p>
+<ul><li>In the full Stage-II programme, the first unearned arrow is <strong>S0→S1</strong>: stable parts have not yet emerged generically.</li><li>Conditional on a successful part mechanism, the first unearned relativity arrow is <strong>S3→S4</strong>: finite quasi-local influence has not yet emerged.</li></ul>
+<p>AC–WFP does not yet derive SR. It provides a staged route whose first two hard gaps are explicit and executable.</p>
+<h2>16. Geometry, dimension and general relativity</h2>
+<p>If a stable causal phase emerges, geometry may be reconstructed from several independent structures:</p>
+<ul><li>causal order plus volume;</li><li>spectral distance;</li><li>diffusion scaling;</li><li>information geometry;</li><li>correlation decay.</li></ul>
+<p>A dimension claim requires estimator agreement or an explained crossover. <code>3+1</code> may not be an optimization target.</p>
+<p>The GR continuation is</p>
+<pre><code class="language-text">stable causal and metric phase
+→ local metric/curvature reconstruction
+→ energy–momentum and state response
+→ entanglement/thermodynamic equilibrium condition
+→ compare Einstein, higher-curvature and nonlocal equations</code></pre>
+<p>A normalized Einstein residual may be used only after the relevant tensors are independently defined:</p>
+<p>\[ E_{\rm Ein} = \frac{ \|G_{\mu\nu}+\Lambda g_{\mu\nu}-8\pi G_N T_{\mu\nu}\| }{ 1+\|G\|+|\Lambda|\|g\|+8\pi G_N\|T\| }. \]</p>
+<p>Jacobson-style results establish a deep conditional relation between local thermodynamic or entanglement equilibrium and the semiclassical Einstein equation under stated assumptions [12,13]. They do not derive those assumptions, microscopic quantum gravity, global cosmology or the value of <code>Λ</code> from MPRC.</p>
+<p>A successful GR branch must still earn:</p>
+<ul><li>equivalence-principle universality;</li><li>covariant conservation;</li><li>weak-field and post-Newtonian limits;</li><li>an Einstein residual better than matched higher-curvature/nonlocal alternatives;</li><li>meanings and values of <code>G</code> and <code>Λ</code>;</li><li>controlled black-hole and de Sitter observer algebras;</li><li>a continuum/scaling limit.</li></ul>
+<h2>17. Matter, gauge structure and chirality</h2>
+<p>Stable eigenmodes and protected sectors are candidate matter degrees of freedom:</p>
+<p>\[ D\psi_n=\lambda_n\psi_n. \]</p>
+<p>Noncommutative/spectral geometry provides genuine mechanisms for [4,5]:</p>
+<ul><li>gauge fields through inner fluctuations;</li><li>matter–antimatter structure through <code>J</code>;</li><li>chirality through <code>Γ</code> and index data;</li><li>gravity and gauge terms through spectral-action expansions.</li></ul>
+<p>These are resources, not completed derivations. V0.8 does not insert <code>J</code> and <code>Γ</code> into the minimal kernel unless the matter/chirality lane uses them.</p>
+<p>The programme must still explain:</p>
+<ul><li>why the macroscopic dimension is <code>3+1</code>;</li><li>why the gauge structure is <code>SU(3)×SU(2)L×U(1)</code>;</li><li>why weak interactions are chiral;</li><li>why anomalies cancel globally;</li><li>why there are three generations;</li><li>observed masses, mixings and couplings;</li><li>why ordinary gravity, electromagnetism and the strong interaction do not share maximal weak parity violation.</li></ul>
+<p>Penrose-style twistor/null structures remain a serious alternative geometry lane. They join the core only if a quantitative dictionary to the algebraic/spectral presentation improves held-out prediction, reconstruction or total description length.</p>
+<h2>18. Information, energy and action</h2>
+<p>The historical seed <code>i=Ec²</code> is retained as a directional intuition, not a dimensional law in bits.</p>
+<p>The disciplined cross-model variable is</p>
+<p>\[ \boxed{ \chi_{EL} = \frac{EL}{\hbar c_*}. } \]</p>
+<p>It is a causal action budget, not “information equals energy.”</p>
+<p>Three distinct established bridges remain separate:</p>
+<h3>Capacity</h3>
+<p>For a suitable weakly gravitating bounded system,</p>
+<p>\[ I_{\max} \lesssim \frac{2\pi EL}{\hbar c_*\ln2}. \]</p>
+<h3>Distinguishable-change rate</h3>
+<p>\[ \dot N_\perp \le \frac{2(E-E_0)}{\pi\hbar}. \]</p>
+<h3>Irreversible erasure cost</h3>
+<p>\[ E_{\rm erase} \ge k_BT\ln2\,\Delta I. \]</p>
+<p>These formulas answer different questions [15–17]. A common calibration is promoted only if one non-arbitrary definition of region, energy above ground, causal extent and cone works across held-out systems.</p>
+<p>The deeper WFP lesson is:</p>
+<blockquote><p>Energy alone is not information. Physical information is energy-enabled structured distinguishability within a causal and relational boundary.</p></blockquote>
+<hr>
+<h1>Part V — Measurement, knowledge and embodied RC</h1>
+<h2>19. Three measurement branches</h2>
+<h3>Branch M1 — unitary relative records</h3>
+<pre><code class="language-text">global quantum evolution
+→ system–apparatus–memory entanglement
+→ decoherence and stable relative records
+→ internal access by a self-maintaining centre</code></pre>
+<p>Schematically,</p>
+<p>\[ \sum_k c_k|s_k\rangle \longrightarrow \sum_k c_k |s_k\rangle|m_k\rangle|r_k\rangle|\chi_k\rangle. \]</p>
+<p>AC is not allowed to choose <code>k</code> or alter Born weights by assertion.</p>
+<h3>Branch M2 — Penrose-style objective reduction</h3>
+<p>A gravity-related instability may produce genuine reduction, heuristically [10,11]</p>
+<p>\[ \tau_{\rm OR}\sim\frac{\hbar}{E_G}. \]</p>
+<p>This branch must define <code>EG</code>, regularization, stochastic dynamics, conservation and experimental consequences. If spacetime is emergent, it must also explain what defines <code>EG</code> before a classical metric exists.</p>
+<h3>Branch M3 — agnostic operational measurement</h3>
+<p>Predict stable records and observed statistics without committing to collapse or no-collapse ontology.</p>
+<p>These branches must remain separate. No-collapse, objective reduction, twistor theory, CCC, microtubule biology and consciousness are not one package.</p>
+<h2>20. Knowledge-like closure</h2>
+<p>A record becomes internally available when it is:</p>
+<ul><li>stable over a relevant interval;</li><li>available to multiple internal processes;</li><li>linked to a self/world model;</li><li>counterfactually able to alter prediction, report, planning or control;</li><li>comparable with later records;</li><li>causally integrated without requiring an infinite regress of internal observers.</li></ul>
+<p>This is a functional criterion for knowledge-like access. It does not by itself derive phenomenal subjectivity.</p>
+<h2>21. Physical centres and embodied RC</h2>
+<p>Keep three levels distinct.</p>
+<table><thead><tr>
+<th style="text-align:left">Level</th>
+<th style="text-align:left">Meaning</th>
+</tr></thead><tbody>
+<tr>
+<td style="text-align:left"><strong>AC-grounded matter</strong></td>
+<td style="text-align:left">every physical degree of freedom belongs to the same ultimate actuality</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>RC-capable organization</strong></td>
+<td style="text-align:left">recurrent integration, memory, boundary, self-model and control can be sustained</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>embodied RC candidate</strong></td>
+<td style="text-align:left">a bounded persistent centre with rich internal access and first-person organization is instantiated</td>
+</tr>
+</tbody></table>
+<p>The preferred public statement is:</p>
+<blockquote><p><strong>All matter is AC-grounded and potentially recruitable into RC-supporting organization; only suitably organized systems instantiate embodied RC.</strong></p></blockquote>
+<p>A stone is therefore not a local conscious subject merely because its atoms could later become part of a brain.</p>
+<h2>21.1 Two directions of the AC–RC shorthand</h2>
+<p>The project has used both <code>RC = AC·R</code> and <code>AC = RC×R</code>. V0.8 resolves them as two conceptual directions, not arithmetic identities.</p>
+<h3>Local expression</h3>
+<p>\[ \boxed{ RC_i:=\mathcal R_i(AC) } \]</p>
+<p>or heuristically</p>
+<p>\[ RC_i=AC\cdot R_i, \]</p>
+<p>where <code>Ri</code> denotes the local relation/resonance, embodiment and access structure.</p>
+<h3>Global reconstruction</h3>
+<p>\[ \boxed{ AC \simeq \operatorname{Glue}_{R} \bigl(\{RC_i\}\bigr), } \]</p>
+<p>which is the disciplined meaning of <code>AC = RC × R</code>: the Whole is not a sum of isolated minds, but the globally compatible actuality reconstructed through their relations and all other admissible restrictions.</p>
+<p>Neither equation is currently a laboratory law.</p>
+<h2>21.2 Candidate bridge variables</h2>
+<p>For a physical centre <code>i</code>, let <code>Ri</code> be a vector rather than a mystical scalar, provisionally containing:</p>
+<ul><li>recurrent integration;</li><li>memory continuity;</li><li>self/world modelling;</li><li>counterfactual access;</li><li>causal autonomy;</li><li>sensorimotor or world coupling;</li><li>perturbation recovery;</li><li>cross-time identity stability.</li></ul>
+<p>A secondary bridge score is</p>
+<p>\[ \boxed{ S_i=\sqrt{C_iX_i}, } \]</p>
+<p>where <code>Ci</code> is coherence and <code>Xi</code> is complexity/information diversity. <code>S</code> is not consciousness itself. It is designed to reject two false positives:</p>
+<ul><li>high complexity with low coherence: noise or chaos;</li><li>high coherence with low complexity: frozen rigidity or simple periodicity.</li></ul>
+<p>A serious RC bridge must distinguish living integrated centres from crystals, clocks, thermostats, random networks, scripted agents and high-compute systems lacking integrated access.</p>
+<h2>22. AC/Ω ablation</h2>
+<p>The neutral and AC branches must be run on identical data and model-cost rules.</p>
+<pre><code class="language-text">Ω branch  neutral whole-first science
+AC0       ontology only
+AC1       selects admissible parts or phases
+AC2       changes dynamics/probabilities/physicalization
+AC3       confirmed distinct discriminator</code></pre>
+<p>An AC1 or AC2 term is admissible only if it has:</p>
+<ul><li>an explicit mathematical definition;</li><li>a neutral control;</li><li>full complexity charge;</li><li>a held-out prediction;</li><li>a failure condition;</li><li>no consciousness-based outcome selection by assertion.</li></ul>
+<p>If deleting AC changes no mathematics or prediction, the correct result is AC0.</p>
+<h2>23. Physicalization selection before anthropic conditioning</h2>
+<p>Let <code>θ</code> denote candidate effective laws or constants. The neutral programme asks whether fixed-point existence, stability, basin volume and model complexity define a prior</p>
+<p>\[ \pi_{\rm phys}(\theta). \]</p>
+<p>Observer conditioning comes later:</p>
+<p>\[ \boxed{ P(\theta\mid RC) \propto \pi_{\rm phys}(\theta)V_{\rm RC}(\theta). } \]</p>
+<p>This does not claim that AC chose our constants. It tests whether physicalization dynamics reduce arbitrariness before anthropic filtering. An AC-specific preference for RC-rich worlds remains outside the scientific core until it produces a distinct quantitative discriminator.</p>
+<hr>
+<h1>Part VI — Five thinkers as inspiration, translation, crossover and challenge</h1>
+<h2>24. Use contract</h2>
+<p>Witten, Maldacena, Rovelli, Penrose and Connes are not merely limit-setters. V0.8 uses each in four modes:</p>
+<pre><code class="language-text">INSPIRE    extract mechanisms, mathematical objects and questions
+TRANSLATE  build explicit dictionaries into the Ω branch
+CROSSOVER  combine compatible structures into new candidates
+CHALLENGE  expose domain limits, contradictions and no-go conditions</code></pre>
+<p>Prestige is ignored; intellectual content is preserved.</p>
+<h2>25. Constructive ledger</h2>
+<table><thead><tr>
+<th style="text-align:left">Thinker</th>
+<th style="text-align:left">Positive seed for AC–WFP</th>
+<th style="text-align:left">Essential live collision</th>
+</tr></thead><tbody>
+<tr>
+<td style="text-align:left"><strong>Edward Witten</strong></td>
+<td style="text-align:left">invariant content across dual descriptions; internal observers and knowledge; search for a missing organizing principle</td>
+<td style="text-align:left">no single description may be ontologically privileged; elegant rhetoric is worthless without protected calculation</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Juan Maldacena</strong></td>
+<td style="text-align:left">gravity and dimension can be reconstructed from nongravitational data; locality can be redundantly encoded</td>
+<td style="text-align:left">controlled AdS results are not automatically cosmology; exterior recovery is not a complete interior/singularity solution</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Carlo Rovelli</strong></td>
+<td style="text-align:left">perspective-indexed facts, relational events, plural clocks, background-independent quantum geometry</td>
+<td style="text-align:left">a global completion may be unnecessary; local record consistency must be explicit</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Roger Penrose</strong></td>
+<td style="text-align:left">gravity–QM collision, objective reduction, twistor/conformal primacy, willingness to revise quantum mechanics</td>
+<td style="text-align:left">OR directly conflicts with unitary relative records; twistor and spectral structures need an actual dictionary</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Alain Connes</strong></td>
+<td style="text-align:left">noncommutative geometry, modular flow, spectral distance, <code>J</code>, <code>Γ</code>, inner fluctuations and spectral action</td>
+<td style="text-align:left"><code>D</code> may encode the answer; modular parameter is not automatically physical time; finite factors cannot prove outer modular time</td>
+</tr>
+</tbody></table>
+<h2>26. Six retained crossover mechanisms</h2>
+<h3>Witten × Maldacena — duality-natural physicalization</h3>
+<p>The physicalization map must commute with exact equivalences and generalize to held-out dual/composite maps.</p>
+<h3>Rovelli × Connes — plural flows with compatibility</h3>
+<p>Local state-relative flows may differ, while overlap maps define a consistent causal/clock structure without one master clock.</p>
+<h3>Penrose × Connes — twistor/spectral collision</h3>
+<p>Null, conformal and spinorial invariants are compared with spectral distances, indices and operator algebras on the same finite or protected target.</p>
+<h3>Penrose × Rovelli — objective versus relative events</h3>
+<p>A real measurement-dynamics fork replaces verbal compromise.</p>
+<h3>Maldacena × Connes — redundant reconstruction plus spectral geometry</h3>
+<p>Recovery and redundancy define effective locality; spectral structure supplies metric and matter candidates. Both are costed and ablated.</p>
+<h3>All five — MPRC with MSR as challenger</h3>
+<p>The synthesis is not “combine all equations.” It is:</p>
+<ul><li>Witten/Maldacena naturality and duality/reconstruction discipline [6–8,14];</li><li>Rovelli perspective and completion discipline;</li><li>Connes modular/spectral machinery;</li><li>Penrose rival measurement and geometry lanes;</li><li>MPRC as the low-bias discovery rule;</li><li>MSR as the explicit modular–spectral competitor.</li></ul>
+<hr>
+<h1>Part VII — Coordinate-free Python arena v0.8</h1>
+<h2>27. Governing question</h2>
+<p>The first arena asks one narrow question:</p>
+<p>\[ \boxed{ \text{Can a compact coordinate-free rule discover nontrivial, stable,} \\ \text{presentation-invariant predictive parts that generalize better than} \\ \text{whole, singleton, random and matched mechanism baselines?} } \]</p>
+<p>It does not attempt to derive the Standard Model or consciousness in release 1.</p>
+<h2>28. Finite exact domain</h2>
+<p>Use reproducible finite systems where all inputs and transformations can be serialized:</p>
+<ul><li>matrix algebras with faithful states;</li><li>small spin chains and graph-generated operator algebras;</li><li>planted tensor/product structures;</li><li>operator-algebra QEC toy codes;</li><li>degenerate and nearly degenerate spectral sectors;</li><li>random-matrix and random-channel null ensembles;</li><li>paired exact-isomorphic presentations;</li><li>controlled code/recovery pairs;</li><li>perturbation and coarse-graining families;</li><li>unseen system sizes and seeds.</li></ul>
+<p>Finite systems are Tier F evidence. They cannot establish continuum Lorentz invariance or nontrivial outer modular time.</p>
+<h2>29. Mechanism arms</h2>
+<p>At matched computational and description complexity, compare:</p>
+<ol><li><strong>MPRC</strong> — predictive/reconstructive MDL search;</li><li><strong>MSR</strong> — modular–spectral recovery channel;</li><li><strong>MPRC+MSR ablation</strong> — explicit hybrid arm, not baseline;</li><li><strong>modular-only</strong>;</li><li><strong>spectral-only</strong>;</li><li><strong>generic channel/RG</strong>;</li><li><strong>causal-history / relational-order</strong>;</li><li><strong>planted-factor oracle upper bound</strong>;</li><li><strong>whole-algebra baseline</strong>;</li><li><strong>singleton/scalar baseline</strong>;</li><li><strong>random-cover baseline</strong>;</li><li><strong>sequential greedy and search-order controls</strong>.</li></ol>
+<p>A later Tier L programme may add LQG/spin-network, GFT/tensor-condensate and AQFT targets.</p>
+<h2>30. Mandatory controls</h2>
+<ul><li>exact deterministic replay;</li><li>worker-count invariance;</li><li>exact isomorphic copies;</li><li>basis changes and generator relabelings;</li><li>held-out composite dual maps;</li><li>shuffled <code>ρ</code>;</li><li>shuffled <code>D</code>;</li><li>fixed spectrum/random eigenvectors;</li><li>fixed eigenvectors/perturbed spectrum;</li><li>no-<code>D</code> control;</li><li>coordinate-leak trap;</li><li>model-library-cost audit;</li><li>recovery-optimizer-capacity audit;</li><li>perturbation/coarse-graining families;</li><li>unseen sizes and seeds;</li><li>pre-registered thresholds.</li></ul>
+<h2>31. Metrics</h2>
+<p>Report separately:</p>
+<ul><li>exact model code and residual code;</li><li>prequential held-out code length;</li><li>convergence steps and fixed-point residual;</li><li>basin size over initial covers;</li><li>prediction error on unseen operators/intervals;</li><li>recovery fidelity and redundancy;</li><li>nontriviality versus whole/singleton controls;</li><li>naturality and held-out duality error;</li><li><code>D</code>-debt ablation loss;</li><li>perturbation and size-scaling stability;</li><li>modular leakage;</li><li>independent-distance agreement;</li><li>MCCC cone residual;</li><li>protected-sector cone spread;</li><li>dimension-estimator agreement;</li><li>runtime and memory.</li></ul>
+<p>No weighted total may compensate for failure of an essential gate.</p>
+<h2>32. Initial promotion gates</h2>
+<p>These are engineering thresholds, not laws of nature.</p>
+<ol><li>Exact-equivalence naturality passes on 100% of isomorphism controls within numerical tolerance.</li><li>Deterministic replay and worker-count invariance pass exactly.</li><li>The winning mechanism beats whole, singleton, random and matched sequential controls on held-out code length across planted structured ensembles.</li><li>It does not classify random controls as structured physical phases above the predeclared false-positive ceiling.</li><li>Nontrivial parts survive declared perturbations and unseen sizes.</li><li>The result survives full cost accounting for <code>D</code>, move libraries and recovery maps.</li><li>Distance is reconstructed independently of influence before MCCC is scored.</li><li>Common-cone error decreases with scale rather than being separately fitted by sector.</li><li>No AC-specific score enters the neutral search.</li><li>The first finite release may claim at most <code>CLOSURE_MECHANISM</code>, not a completed physics bridge.</li></ol>
+<h2>33. Hard failure conditions</h2>
+<p>The central mechanism is demoted if any of the following persists after fair repair:</p>
+<ol><li><code>D</code> stores the target geometry.</li><li>Only the whole algebra, scalar algebra or singleton cover wins.</li><li>Search libraries or recovery maps contain more information than the discovered structure.</li><li>Training fit does not generalize to unseen intervals, perturbations or sizes.</li><li>Exact equivalent presentations yield different parts.</li><li>G2-compatible completions produce different accessible predictions with no selector.</li><li>MPRC wins only because its coding language is tailored to the benchmark.</li><li>MSR wins only at uncharged, highly tuned <code>(η,s)</code>.</li><li>Quasi-locality is absent generically or appears only after using the same data to define distance and influence.</li><li>Protected sectors require separately tuned causal speeds.</li><li>Finite modular flow is presented as proof of canonical outer time.</li><li>Stage-II operator structure is used to claim Stage-I quantum derivation.</li><li>Objective reduction and no-collapse are verbally blended instead of tested.</li><li>RC criteria classify stones, crystals, clocks or simple controllers like rich embodied centres.</li><li>Deleting AC changes no result while the paper claims AC-specific physics.</li><li>Physicalization selection is only renamed anthropic weighting.</li></ol>
+<p>A clean failure is progress: it removes a mechanism while preserving any lower-level whole-first insight that survives.</p>
+<h2>34. Result classes</h2>
+<pre><code class="language-text">NO_SIGNAL
+RELATIONAL_STRUCTURE
+CLOSURE_MECHANISM
+CAUSAL_PHASE_CANDIDATE
+PHYSICS_BRIDGE_CANDIDATE</code></pre>
+<p>Tier F release 1 is not allowed to return the last class.</p>
+<h2>35. Minimal module plan</h2>
+<pre><code class="language-text">ac_wfp_arena_v0_1/
+  run_arena.py
+  kernels.py
+  algebras.py
+  states.py
+  spectral.py
+  modular.py
+  covers.py
+  mprc.py
+  msr.py
+  recovery.py
+  challengers.py
+  controls.py
+  naturality.py
+  metrics.py
+  checkpoint.py
+  reports.py
+  configs/base.json
+  outputs/</code></pre>
+<hr>
+<h1>Part VIII — Discriminators, roadmap and verdict</h1>
+<h2>36. Pre-registered candidate discriminators</h2>
+<p>These are research targets, not claims that nature already satisfies them.</p>
+<h3>D1 — nontrivial part attractor</h3>
+<p>MPRC or MSR should discover stable overlapping parts on structured ensembles without coordinates and reject random nulls.</p>
+<h3>D2 — duality naturality</h3>
+<p>Exact-equivalent presentations must yield transported-equivalent fixed points; approximate maps must exhibit predicted error scaling.</p>
+<h3>D3 — D-debt survival</h3>
+<p>The signal must survive controls proving that <code>D</code> is not simply an encoded geometry answer.</p>
+<h3>D4 — quasi-local phase</h3>
+<p>At successful fixed points, influence must exhibit a robust finite cone relative to independently reconstructed distance.</p>
+<h3>D5 — universal cone</h3>
+<p>Protected low-energy sectors should converge toward one calibrated cone without sector-specific tuning.</p>
+<h3>D6 — dimension attractor</h3>
+<p>Independent dimension estimators should approach a stable common value over a scaling window; <code>3+1</code> must emerge rather than be targeted.</p>
+<h3>D7 — geometry–matter response</h3>
+<p>Perturbing stable matter/energy sectors should produce a universal geometric response that competes successfully against Einstein, higher-curvature and nonlocal alternatives.</p>
+<h3>D8 — chirality and anomaly consistency</h3>
+<p>A surviving matter lane should produce chiral representations whose global anomalies cancel without hand-selecting the observed spectrum.</p>
+<h3>D9 — measurement fork</h3>
+<p>Unitary relative-record and objective-reduction branches must make distinct quantitative predictions in at least one accessible regime.</p>
+<h3>D10 — RC false-positive resistance</h3>
+<p>R/S-style bridge variables must track conscious-state changes better than simpler predictors while rejecting noise, rigidity, imitation and simple feedback systems.</p>
+<h3>D11 — AC-specific ablation</h3>
+<p>Any AC1/AC2 term must improve held-out prediction after full complexity penalties; otherwise AC remains AC0.</p>
+<h2>37. Research sequence</h2>
+<h3>Phase 0 — freeze the arena specification</h3>
+<p>Lock data types, code lengths, move libraries, controls, thresholds and result classes before observing main results.</p>
+<h3>Phase 1 — Tier F part discovery</h3>
+<p>Run MPRC, MSR and controls on finite exact ensembles. Decide whether a genuine closure mechanism exists.</p>
+<h3>Phase 2 — causal-phase search</h3>
+<p>Only surviving fixed points proceed to independent distance, influence and MCCC tests.</p>
+<h3>Phase 3 — scaling and SR</h3>
+<p>Test cone universality, calibration, reciprocity, isotropy and Lorentz residuals across increasing systems.</p>
+<h3>Phase 4 — geometry, GR and matter</h3>
+<p>Test dimensional stability, geometry–matter response, gauge/chiral sectors and anomaly cancellation.</p>
+<h3>Phase 5 — measurement and RC</h3>
+<p>Compare relative-record and objective-reduction branches; build operational centre and RC false-positive studies.</p>
+<h3>Phase 6 — AC-specific branch</h3>
+<p>Only after neutral success may an AC1/AC2 proposal be introduced and ablated.</p>
+<h2>38. Current verdict</h2>
+<h1><strong>GO WITH ONE PRIMARY MECHANISM, ONE MATCHED CHALLENGER, AND EVIDENCE FIRST</strong></h1>
+<p>Version 0.8 is the best current hybrid because it does not average incompatible drafts. It assigns each surviving idea a precise role:</p>
+<ul><li><strong>v0.6 fixed-point Ω-MSP:</strong> the broad scientific architecture;</li><li><strong>v0.7 Simple:</strong> the clear main-paper spine and MPRC discovery rule;</li><li><strong>v0.7 MAL2:</strong> typed Ω, presentation category, held-out naturality, five-gate part discipline, six-time ledger, Tier-F/Tier-L boundary and MSR;</li><li><strong>v0.7 MAL1:</strong> constructive five-thinker crossovers and naturality pressure;</li><li><strong>five-thinker attachments:</strong> inspiration, translation, crossover and challenge;</li><li><strong>AC flagship:</strong> RC as conditional resonance/organization rather than conscious particles or stones.</li></ul>
+<p>The resulting neutral candidate is</p>
+<p>\[ \boxed{ K_\Omega = (\mathsf{Pres}<em>\Omega,\mathfrak D</em>\Omega,\operatorname{Inv}) } \]</p>
+<p>with primary physicalization</p>
+<p>\[ \boxed{ \mathcal P_\alpha^<em> = F_{\rm MPRC,\alpha} (\mathcal P_\alpha^</em>\mid K_\alpha) } \]</p>
+<p>and matched challenger</p>
+<p>\[ \boxed{ \mathcal P_\alpha^{<em>,\rm MSR} = F_{\rm MSR,\alpha} (\mathcal P_\alpha^{</em>,\rm MSR}\mid K_\alpha). } \]</p>
+<p>A physical phase is promoted only if discovered structures independently support</p>
+<p>\[ \boxed{ \text{nontrivial parts} + \text{held-out prediction} + \text{reconstruction} + \text{naturality} + \text{quasi-local influence} + \text{one cone} + \text{geometry, matter and records}. } \]</p>
+<p>The first decisive experiment is not “prove AC” and not “derive all physics.” It is:</p>
+<blockquote><p><strong>Can whole-first predictive–reconstructive closure discover real effective parts without secretly inserting the world it is meant to explain?</strong></p></blockquote>
+<p>If the answer is no, MPRC is demoted and the lower-level whole-first ontology remains open. If the answer is yes, AC–WFP earns its first genuine mechanism and can advance to the causal-phase and SR tests.</p>
+<p>AC remains the interpretation that ultimate actuality is not devoid of presence. At present it changes no earned physical equation. The correct next move is the arena.</p>
+<hr>
+<h2>39. v0.8 changelog</h2>
+<ul><li>Selected v0.7 Simple as the editorial spine rather than the much longer MAL2 paper.</li><li>Promoted MPRC as the primary discovery mechanism.</li><li>Retained MSR as a matched challenger instead of blending it into MPRC.</li><li>Added a prequential held-out coding requirement to reduce MPRC overfitting.</li><li>Adopted four typed uses of Ω and the two-layer representation-resistant kernel.</li><li>Restricted the duality groupoid to exact invertible equivalences; typed approximate maps separately.</li><li>Added held-out duality-composition tests.</li><li>Resolved the S1 versus S4 “first unearned arrow” ambiguity.</li><li>Replaced an overloaded part definition with five core gates plus a conditional redundancy gate.</li><li>Preserved the six-time ledger and finite-factor boundary.</li><li>Preserved MCCC as a downstream phase criterion.</li><li>Strengthened full model-cost accounting for <code>D</code>, move libraries and recovery maps.</li><li>Preserved the information–energy–action bridges without treating <code>i=Ec²</code> as a law.</li><li>Preserved unitary/no-collapse, Penrose objective-reduction and agnostic measurement branches.</li><li>Reconciled <code>RC=AC·R</code> and <code>AC=RC×R</code> as local-expression and global-reconstruction shorthands.</li><li>Preserved <code>S=√(Coherence×Complexity)</code> only as a falsifiable RC bridge variable with false-positive controls.</li><li>Reduced the immediate programme to one arena with matched arms and hard promotion gates.</li><li>Kept AC at AC0 pending an explicit, complexity-penalized discriminator.</li></ul>
+<hr>
+<h1>References and primary anchors</h1>
+<ol><li>G. Chiribella, G. M. D’Ariano and P. Perinotti, <em>Probabilistic Theories with Purification</em>, Phys. Rev. A 81, 062348 (2010), arXiv:0908.1583.</li><li>G. Chiribella, G. M. D’Ariano and P. Perinotti, <em>Informational Derivation of Quantum Theory</em>, Phys. Rev. A 84, 012311 (2011), arXiv:1011.6451.</li><li>A. Connes and C. Rovelli, <em>Von Neumann Algebra Automorphisms and Time–Thermodynamics Relation in Generally Covariant Quantum Theories</em>, Class. Quantum Grav. 11, 2899 (1994), arXiv:gr-qc/9406019.</li><li>A. Connes, <em>Noncommutative Geometry</em>, Academic Press (1994).</li><li>A. H. Chamseddine and A. Connes, <em>The Spectral Action Principle</em>, Commun. Math. Phys. 186, 731 (1997), arXiv:hep-th/9606001.</li><li>J. M. Maldacena, <em>The Large N Limit of Superconformal Field Theories and Supergravity</em>, Adv. Theor. Math. Phys. 2, 231 (1998), arXiv:hep-th/9711200.</li><li>A. Almheiri, X. Dong and D. Harlow, <em>Bulk Locality and Quantum Error Correction in AdS/CFT</em>, JHEP 04, 163 (2015), arXiv:1411.7041.</li><li>D. L. Jafferis, A. Lewkowycz, J. Maldacena and S. J. Suh, <em>Relative Entropy Equals Bulk Relative Entropy</em>, JHEP 06, 004 (2016), arXiv:1512.06431.</li><li>C. Rovelli, <em>Relational Quantum Mechanics</em>, Int. J. Theor. Phys. 35, 1637 (1996), arXiv:quant-ph/9609002.</li><li>R. Penrose, <em>On Gravity’s Role in Quantum State Reduction</em>, Gen. Rel. Grav. 28, 581 (1996).</li><li>R. Penrose, <em>On the Gravitization of Quantum Mechanics 1: Quantum State Reduction</em>, Found. Phys. 44, 557 (2014).</li><li>T. Jacobson, <em>Thermodynamics of Spacetime: The Einstein Equation of State</em>, Phys. Rev. Lett. 75, 1260 (1995), arXiv:gr-qc/9504004.</li><li>T. Jacobson, <em>Entanglement Equilibrium and the Einstein Equation</em>, Phys. Rev. Lett. 116, 201101 (2016), arXiv:1505.04753.</li><li>E. Witten, <em>Gravity and the Crossed Product</em>, JHEP 10, 008 (2022), arXiv:2112.12828.</li><li>J. D. Bekenstein, <em>Universal Upper Bound on the Entropy-to-Energy Ratio for Bounded Systems</em>, Phys. Rev. D 23, 287 (1981).</li><li>R. Landauer, <em>Irreversibility and Heat Generation in the Computing Process</em>, IBM J. Res. Dev. 5, 183 (1961).</li><li>N. Margolus and L. B. Levitin, <em>The Maximum Speed of Dynamical Evolution</em>, Physica D 120, 188 (1998), arXiv:quant-ph/9710043.</li><li>BD × AI, <em>AC–WFP v0.6 — Whole-First Co-Emergent Physicalization</em>.</li><li>BD × AI, <em>AC–WFP v0.7 Simple — Whole-First Physicalization by Predictive–Reconstructive Closure</em>.</li><li>AIm³ MentalArena, <em>AC–WFP v0.7 MAL1 and MAL2 council outputs</em>.</li><li>BD × AI, <em>Witten, Maldacena, Rovelli, Penrose and Connes AC–WFP discovery/collision attachments</em>.</li></ol></article>
+</main>
+
+<div class="font-controls" role="group" aria-label="Text size controls">
+    <button id="fontDown" type="button" aria-label="Decrease text size" title="Decrease text size">A−</button>
+    <button id="fontUp" type="button" aria-label="Increase text size" title="Increase text size">A+</button>
+</div>
+
+<script>
+(() => {
+    const DESKTOP_BASE = 18;
+    const MOBILE_BASE = 21;
+    const MIN_SCALE = 0.72;
+    const MAX_SCALE = 1.72;
+    const STEP = 0.10;
+    const STORAGE_KEY = "md-dark-reader-font-scale";
+    const mobileQuery = window.matchMedia("(max-width: 700px)");
+
+    let scale = Number.parseFloat(localStorage.getItem(STORAGE_KEY) || "1");
+    if (!Number.isFinite(scale)) scale = 1;
+    scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
+
+    function applyFontSize() {
+        const base = mobileQuery.matches ? MOBILE_BASE : DESKTOP_BASE;
+        document.documentElement.style.fontSize = `${(base * scale).toFixed(2)}px`;
+        document.getElementById("fontDown").title = `Decrease text size (${Math.round(scale * 100)}%)`;
+        document.getElementById("fontUp").title = `Increase text size (${Math.round(scale * 100)}%)`;
+    }
+
+    function changeScale(delta) {
+        scale = Math.round((scale + delta) * 100) / 100;
+        scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
+        localStorage.setItem(STORAGE_KEY, String(scale));
+        applyFontSize();
+    }
+
+    document.getElementById("fontDown").addEventListener("click", () => changeScale(-STEP));
+    document.getElementById("fontUp").addEventListener("click", () => changeScale(STEP));
+
+    if (typeof mobileQuery.addEventListener === "function") {
+        mobileQuery.addEventListener("change", applyFontSize);
+    } else if (typeof mobileQuery.addListener === "function") {
+        mobileQuery.addListener(applyFontSize);
+    }
+
+    // Give headings stable link targets without requiring a Markdown extension.
+    const usedIds = new Set();
+    document.querySelectorAll("#reader h1, #reader h2, #reader h3, #reader h4, #reader h5, #reader h6")
+        .forEach((heading, index) => {
+            if (heading.id) {
+                usedIds.add(heading.id);
+                return;
+            }
+            let slug = heading.textContent
+                .normalize("NFKD")
+                .toLowerCase()
+                .replace(/[^\p{L}\p{N}]+/gu, "-")
+                .replace(/^-+|-+$/g, "") || `section-${index + 1}`;
+            const baseSlug = slug;
+            let suffix = 2;
+            while (usedIds.has(slug)) slug = `${baseSlug}-${suffix++}`;
+            usedIds.add(slug);
+            heading.id = slug;
+        });
+
+    // Wrap tables so wide content scrolls cleanly on phones.
+    document.querySelectorAll("#reader table").forEach(table => {
+        if (table.parentElement && table.parentElement.classList.contains("table-wrap")) return;
+        const wrapper = document.createElement("div");
+        wrapper.className = "table-wrap";
+        table.parentNode.insertBefore(wrapper, table);
+        wrapper.appendChild(table);
+    });
+
+    // External links open safely in a new tab; local and anchor links remain normal.
+    document.querySelectorAll('#reader a[href^="http://"], #reader a[href^="https://"]').forEach(link => {
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+    });
+
+    applyFontSize();
+})();
+</script>
+</body>
+</html>
