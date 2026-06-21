@@ -7,7 +7,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>BD Hedge Separation PiX Strategy — v1.3c Real1m Final 300k</title>
+<title>BD Hedge Separation PiX Strategy — v1.3c Final + SOL Manual Protocols</title>
 <style>
 :root{
   --bg:#070914; --bg2:#0b1020; --panel:#101624; --card:#121b2e; --card2:#0d1320;
@@ -74,10 +74,10 @@ details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,
 <div class="eyebrow">BD Trading Research · HSR PiX v1.2 PASS · v1.3c real1m optimizer COMPLETE</div>
 <h1>BD Hedge Separation PiX Strategy</h1>
 <p class="subtitle">A detailed explanation of the constant long+short hedge method, updated with the completed v1.3c real-1m optimizer. The search found persistent score-robust re-anchor/mega-rescue seeds across BTC, ETH and SOL, but also exposed the need for wallet-neutral full-path replay, active separation logic and explicit winner-side profit management in v1.4.</p>
-<p class="small">Version: explainer v2.0 · Date: 21 June 2026 · Status: research specification + v1.2 offline validation PASS + completed v1.3c real-1m 300,000-task baseline + wallet-neutral v1.4 requirements — not a live bot, not financial advice.</p>
+<p class="small">Version: explainer v2.1 · Date: 21 June 2026 · Status: research specification + v1.2 offline validation PASS + completed v1.3c real-1m 300,000-task baseline + wallet-neutral v1.4 requirements — not a live bot, not financial advice.</p>
 </header>
 <nav aria-label="Page navigation" class="nav">
-<a href="#answer">Answer</a><a href="#side-run">Old side-run</a><a href="#v10-mega">v1.0 Mega</a><a href="#reanchor">Re-anchor</a><a href="#risk-profiles">Risk profiles</a><a href="#v12-pass">v1.2 PASS</a><a href="#v13-final">v1.3 final</a><a href="#cinch">Next tests</a><a href="#intuition">Intuition</a><a href="#setup">Setup</a><a href="#state">State machine</a><a href="#ladders">Ladders</a><a href="#adds">Add sizing</a><a href="#exits">Exits</a><a href="#manual-protocol">Manual table</a><a href="#pix">PiX role</a><a href="#arena">Arena tests</a><a href="#risk">Risk</a><a href="#pseudo">Pseudo-code</a><a href="#success">Success criteria</a>
+<a href="#answer">Answer</a><a href="#side-run">Old side-run</a><a href="#v10-mega">v1.0 Mega</a><a href="#reanchor">Re-anchor</a><a href="#risk-profiles">Risk profiles</a><a href="#v12-pass">v1.2 PASS</a><a href="#v13-final">v1.3 final</a><a href="#cinch">Next tests</a><a href="#intuition">Intuition</a><a href="#setup">Setup</a><a href="#state">State machine</a><a href="#ladders">Ladders</a><a href="#adds">Add sizing</a><a href="#exits">Exits</a><a href="#manual-protocol">Manual truth</a><a href="#manual-balanced-sol">Balanced SOL</a><a href="#manual-max-risk-sol">Max-risk SOL</a><a href="#pix">PiX role</a><a href="#arena">Arena tests</a><a href="#risk">Risk</a><a href="#pseudo">Pseudo-code</a><a href="#success">Success criteria</a>
 </nav>
 <section id="answer">
 <h2>Direct answer: what this strategy is now</h2>
@@ -428,53 +428,111 @@ margin_required ≈ abs(qty_sol) × current_price / leverage
 </table></div>
 </div>
 </section>
+
 <section id="manual-protocol">
-<h2>9. Collapsed manual SOL working table</h2>
-<div class="note"><strong>Purpose:</strong> this is a practical translation of the current v0.7.3 Standard live-extract signal into a manual SOL test protocol. It is not the final formula and not a live-trading recommendation. The arena must still validate whether these levels survive controls, scale checks, and real exchange data.</div>
-<details>
-<summary>Open manual SOL hedge-rescue table — LONG 1 SOL + SHORT 1 SOL, 300× cross</summary>
-<p class="caption">Read all percentages below as <strong>ROE % shown on the position</strong>, not SOL price movement. At 300×, 100% ROE is roughly 0.33% price movement before fees/slippage/funding/liquidation details.</p>
-<div class="table-card" style="margin-top:14px">
-<h3>Manual working protocol — current best human-readable version</h3>
+<h2>9. SOL manual protocols — refreshed from the completed v1.3c run</h2>
+<div class="good"><strong>Yes — this replaces the old manual table.</strong> The previous “current best human-readable version” was not refreshed with the final v1.3c evidence. It mixed older manual ideas — winner-side adding near +300% ROE, staged loser doubling and multi-step winner exits — with mechanisms that the completed real-1m arena did not actually execute. The two sections below translate only behavior that was genuinely replayed.</div>
+<div class="grid two" style="margin-top:16px">
+  <div class="card"><div class="label">Balanced SOL seed</div><div class="num green">P2 · 6/6</div><p class="small">A robust candidate that beat matched controls on BTC, ETH and SOL under zero and realistic cost models. On SOL zero-cost it produced +$156.68 MTM with 8.43% max drawdown.</p></div>
+  <div class="card"><div class="label">Max-risk SOL seed</div><div class="num red">P5 · +$1.67K</div><p class="small">A full-path, fixed-$500 high-risk candidate. On SOL zero-cost it produced +$1,673.27 MTM and +$1,386.71 realized with 68.79% max drawdown.</p></div>
+</div>
+<div class="danger" style="margin-top:16px"><strong>Truth boundary:</strong> “zero-cost” in v1.3c means fee = 0, slippage = 0 and funding = 0. A venue may offer zero trading fees while funding and execution slippage still exist. Also, the <code>sep...</code> field in the policy name was stored but not enforced, and <code>close_winner_on_mega</code> was not executed. Neither is used as an operational rule below.</div>
+<div class="note" style="margin-top:16px"><strong>What is intentionally absent:</strong> no adding to the profitable side, no +300% winner pyramid, no staged winner scale-out and no trailing winner. Those remain valid v1.4 experiments, but they are not presented here as v1.3c-tested behavior.</div>
+</section>
+
+<section id="manual-balanced-sol">
+<h2>9A. Balanced SOL trading approach — robust P2 seed</h2>
+<p class="muted">Candidate: <code>deep_p2_t500_sep1500_m50_b1p15_same3_e55b312a</code>. This seed is used instead of the highest single SOL P2 row because it achieved a complete 6/6 control win across BTC, ETH and SOL under both zero and realistic costs, while still producing positive realized PnL on SOL.</p>
+<div class="grid cards">
+  <div class="card"><div class="label">SOL MTM PnL</div><div class="num green">+$156.68</div><p class="small">Final virtual equity: $656.68 from the fixed $500 baseline.</p></div>
+  <div class="card"><div class="label">Realized PnL</div><div class="num green">+$60.39</div><p class="small">Another +$96.29 remained unrealized in the ending hedge.</p></div>
+  <div class="card"><div class="label">Max drawdown</div><div class="num cyan">8.43%</div><p class="small">Measured against the fixed $500 wallet during the Jan–Jun 2026 path.</p></div>
+  <div class="card"><div class="label">Max margin</div><div class="num cyan">6.19%</div><p class="small">Arena model at 300× leverage; not a venue liquidation guarantee.</p></div>
+</div>
+<div class="table-card" style="margin-top:16px">
+<h3>Balanced SOL settings actually replayed</h3>
 <div class="table-wrap"><table>
-<thead><tr><th>Phase</th><th>Condition</th><th>Action</th><th>Example with 1 SOL core</th><th>Purpose</th></tr></thead>
+<thead><tr><th>Setting</th><th>v1.3c value</th><th>Manual meaning</th></tr></thead>
 <tbody>
-<tr><td><strong>Start</strong></td><td>Beginning of cycle</td><td>Open LONG + SHORT</td><td>LONG 1 SOL + SHORT 1 SOL</td><td>Always keep both directions alive.</td></tr>
-<tr><td><strong>Profit side — first add</strong></td><td>One side reaches <strong>+300% ROE</strong></td><td>Add to the profitable side</td><td>If LONG is +300%, add +1 SOL LONG → LONG 2 SOL</td><td>Build a profit cushion that can help absorb the other side.</td></tr>
-<tr><td><strong>Profit side — trail</strong></td><td>Profit add starts losing momentum</td><td>Trail the added part tightly</td><td>Protect the added 1 SOL LONG</td><td>The profit add is a cushion/accelerator, not a permanent burden.</td></tr>
-<tr><td><strong>Profit side — close add</strong></td><td>Momentum fades or profit falls back</td><td>Close the added profit leg; keep core</td><td>LONG 2 SOL → close added 1 SOL, keep LONG core 1 SOL</td><td>Lock cushion before it turns into a new problem.</td></tr>
-<tr><td><strong>Losing side — rescue 1</strong></td><td>Losing side around <strong>−100% ROE</strong></td><td>Add 1× current losing side</td><td>SHORT 1 SOL → add 1 SOL → SHORT 2 SOL</td><td>First average-entry compression.</td></tr>
-<tr><td><strong>Losing side — rescue 2</strong></td><td>Losing side around <strong>−200% ROE</strong></td><td>Double the losing side again</td><td>SHORT 2 SOL → add 2 SOL → SHORT 4 SOL</td><td>Stronger rescue if move continues.</td></tr>
-<tr><td><strong>Losing side — rescue 3</strong></td><td>Losing side around <strong>−300% ROE</strong></td><td>Double only if profit-side cushion is strong enough</td><td>SHORT 4 SOL → add 4 SOL → SHORT 8 SOL</td><td>Aggressive rescue; use only with enough cross-margin cushion.</td></tr>
-<tr><td><strong>Losing side — extreme rescue</strong></td><td>Losing side around <strong>−500% ROE</strong></td><td>Add only with very strong cushion and margin buffer</td><td>SHORT 8 SOL → add 8 SOL → SHORT 16 SOL</td><td>Very aggressive; not for a first manual test without reserve.</td></tr>
-<tr><td><strong>Near-entry zone</strong></td><td>Rescue side returns to <strong>−50% to 0% ROE</strong>, but fails to break profit after 2–3 candles</td><td>Close 33–50% of excess even with a small loss</td><td>SHORT total 4 SOL, core 1, excess 3 → close about 1–1.5 SOL</td><td>Reduce danger before price runs away again.</td></tr>
-<tr><td><strong>Rescue first profit exit</strong></td><td>Rescue side reaches <strong>+2% ROE</strong></td><td>Close about 50% of excess</td><td>SHORT 4 SOL, core 1, excess 3 → close 1.5 SOL</td><td>Main goal is to shrink oversized rescue exposure.</td></tr>
-<tr><td><strong>Rescue clean exit</strong></td><td>Rescue side reaches <strong>+5% to +10% ROE</strong></td><td>Close almost all excess</td><td>SHORT 2.5 SOL → close 1.5 SOL → keep SHORT 1 SOL core</td><td>Return to safer base hedge state.</td></tr>
-<tr><td><strong>Reset</strong></td><td>Both sides are back near core</td><td>Keep LONG 1 SOL + SHORT 1 SOL</td><td>LONG 1 + SHORT 1</td><td>Cycle can begin again.</td></tr>
+<tr><td>Market / period</td><td>SOLUSDT real 1m · 1 Jan–14 Jun 2026</td><td>One historical interval, not universal proof.</td></tr>
+<tr><td>Cost row</td><td>Fee 0 · slippage 0 · funding 0</td><td>Matches the requested zero-fee SOL view; live funding/slippage remain separate.</td></tr>
+<tr><td>Wallet baseline</td><td>$500 virtual · 300× cross</td><td>Wallet is a measurement context, not a universal eligibility gate.</td></tr>
+<tr><td>Initial hedge</td><td>$172.50 notional per side</td><td>At the test’s $124.62 first close: about <strong>1.3842 SOL LONG + 1.3842 SOL SHORT</strong>. At another entry price use $172.50 ÷ SOL price.</td></tr>
+<tr><td>Re-anchor trigger</td><td>−500% ROE + positive winner + <code>same3</code></td><td>At 300×, −500% ROE is roughly a 1.67% adverse price move before execution details. The last three closes must move monotonically in one direction.</td></tr>
+<tr><td>Re-anchor action</td><td>Close bad side; reopen after 3 bars at 1× base</td><td>Maximum two re-anchors. The profitable side remains open and unchanged.</td></tr>
+<tr><td>Mega rescue</td><td>One event to 50× base total</td><td>After at least one re-anchor, if the bad side again reaches −500% ROE, increase it to about <strong>69.2104 SOL total</strong> at the test’s starting base.</td></tr>
+<tr><td>Profit taking</td><td>+0.75% price from rescued-side average</td><td>Close the excess in one action and retain 2× base, about <strong>2.7684 SOL</strong>. This is not a staged TP ladder.</td></tr>
+<tr><td>Winner management</td><td>No winner add; no trailing; no forced winner close</td><td>Winner-side pyramiding was not part of this result.</td></tr>
+<tr><td>Observed events</td><td>2 re-anchors · 1 mega rescue · 1 excess close · 9 trades</td><td>The full historical path completed without the fixed-$500 stop.</td></tr>
 </tbody>
 </table></div>
 </div>
-<div class="table-card" style="margin-top:14px">
-<h3>Mini example — price goes up first</h3>
+<div class="table-card" style="margin-top:16px">
+<h3>Balanced manual sequence</h3>
 <div class="table-wrap"><table>
-<thead><tr><th>Step</th><th>State</th><th>Manual action</th></tr></thead>
+<thead><tr><th>Step</th><th>Condition</th><th>Action</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>Open LONG 1 + SHORT 1</td><td>No action yet.</td></tr>
-<tr><td>2</td><td>Price rises; LONG +300%, SHORT negative</td><td>Add +1 SOL LONG → LONG 2, SHORT 1.</td></tr>
-<tr><td>3</td><td>SHORT keeps worsening but LONG is now a cushion</td><td>Do not panic-add; wait for rescue trigger and some pause/absorption.</td></tr>
-<tr><td>4</td><td>SHORT hits a rescue level</td><td>Add SHORT by the table: 1→2, then 2→4 only if needed.</td></tr>
-<tr><td>5</td><td>Price comes back toward SHORT average entry</td><td>Prepare to reduce excess, not to hold oversized rescue size forever.</td></tr>
-<tr><td>6</td><td>SHORT stalls between −50% and 0% ROE</td><td>Close part of excess even with a small loss.</td></tr>
-<tr><td>7</td><td>SHORT reaches +2% ROE</td><td>Close about half of excess.</td></tr>
-<tr><td>8</td><td>SHORT reaches +5% to +10% ROE</td><td>Close almost all excess; keep 1 SOL core.</td></tr>
-<tr><td>9</td><td>Added LONG loses momentum</td><td>Close added LONG 1 SOL; keep LONG core.</td></tr>
-<tr><td>10</td><td>Back to LONG 1 + SHORT 1</td><td>Cycle reset.</td></tr>
+<tr><td>1</td><td>Start a new SOL cycle</td><td>Open equal LONG and SHORT with $172.50 notional on each side.</td></tr>
+<tr><td>2</td><td>One side reaches −500% ROE, the other is positive, and the last 3 closes form a one-direction sequence</td><td>Close the losing side. Do not add to the winner.</td></tr>
+<tr><td>3</td><td>Three completed 1m bars later</td><td>Reopen the losing direction at the original 1× base quantity. Allow at most two re-anchors.</td></tr>
+<tr><td>4</td><td>After a re-anchor, the same side again reaches −500% ROE</td><td>Use the single mega rescue and lift that side to 50× base total.</td></tr>
+<tr><td>5</td><td>The rescued side trades 0.75% beyond its weighted average entry in the profitable direction</td><td>Close all excess above 2× base in one order; keep the 2× residual.</td></tr>
+<tr><td>6</td><td>After the rescue exit</td><td>Keep the remaining hedge. The tested policy has no second mega event and no winner-side profit ladder.</td></tr>
 </tbody>
 </table></div>
 </div>
-<div class="danger" style="margin-top:14px"><strong>Hard warning:</strong> this table assumes cross/hedge-margin style logic. It is not side-isolated safe by default. The next arena versions must prove which parts survive controls, margin stress, and real exchange microstructure.</div>
+<div class="good" style="margin-top:16px"><strong>Why this is called balanced despite a 50× rescue:</strong> the starting base was small, only one mega event was allowed, and the measured SOL path produced 8.43% max drawdown and 6.19% max margin. “Balanced” describes the observed risk path and profile objective, not a small rescue multiplier.</div>
+</section>
+
+<section id="manual-max-risk-sol">
+<h2>9B. Max-risk SOL trading approach — full-path P5 seed</h2>
+<p class="muted">Candidate: <code>deep_p5_t1300_sep2000_m50_b3p24_same3_b478159a</code>. This is the strongest completed SOL P5 zero-cost result in the final extract. It is intentionally a high-PnL / high-drawdown branch, not a safe universal setting.</p>
+<div class="grid cards">
+  <div class="card"><div class="label">SOL MTM PnL</div><div class="num green">+$1,673.27</div><p class="small">Final virtual equity: $2,173.27 from the fixed $500 baseline, about 4.35× ending equity.</p></div>
+  <div class="card"><div class="label">Realized PnL</div><div class="num green">+$1,386.71</div><p class="small">Another +$286.56 remained unrealized in the ending hedge.</p></div>
+  <div class="card"><div class="label">Max drawdown</div><div class="num red">68.79%</div><p class="small">Large enough that this belongs only in an explicit all-risk capital lane.</p></div>
+  <div class="card"><div class="label">Max margin</div><div class="num red">18.97%</div><p class="small">Arena-model margin at 300×; actual liquidation mechanics can differ materially.</p></div>
+</div>
+<div class="table-card" style="margin-top:16px">
+<h3>Max-risk SOL settings actually replayed</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Setting</th><th>v1.3c value</th><th>Manual meaning</th></tr></thead>
+<tbody>
+<tr><td>Market / period</td><td>SOLUSDT real 1m · 1 Jan–14 Jun 2026</td><td>Full tested interval completed under the fixed-$500 baseline.</td></tr>
+<tr><td>Cost row</td><td>Fee 0 · slippage 0 · funding 0</td><td>Zero-cost research row; real funding and execution remain external risks.</td></tr>
+<tr><td>Initial hedge</td><td>$486 notional per side</td><td>At $124.62: about <strong>3.8999 SOL LONG + 3.8999 SOL SHORT</strong>. At another entry price use $486 ÷ SOL price.</td></tr>
+<tr><td>Re-anchor trigger</td><td>−1300% ROE + positive winner + <code>same3</code></td><td>Approximately a 4.33% adverse price move at 300× before execution details.</td></tr>
+<tr><td>Re-anchor action</td><td>Close bad side; reopen 2 bars later at 3× base</td><td>Reopen at about <strong>11.6996 SOL</strong>; maximum two re-anchor events.</td></tr>
+<tr><td>Mega rescue</td><td>Up to two events to 50× base total</td><td>Increase the losing side to about <strong>194.9928 SOL total</strong>. Hard configuration ceiling: 60× base, about 233.9913 SOL.</td></tr>
+<tr><td>Profit taking</td><td>+3.0% price from rescued-side average</td><td>Close all excess in one action and retain 3× base, about <strong>11.6996 SOL</strong>. Up to two rescue/exit cycles.</td></tr>
+<tr><td>Winner management</td><td>No winner add; no trailing; winner not force-closed</td><td>The large profit came from rescuing and harvesting the formerly losing side.</td></tr>
+<tr><td>Observed events</td><td>2 re-anchors · 2 mega rescues · 2 excess closes · 12 trades</td><td>Zero-cost realized PnL +$1,386.71; final MTM +$1,673.27.</td></tr>
+</tbody>
+</table></div>
+</div>
+<div class="table-card" style="margin-top:16px">
+<h3>Max-risk manual sequence</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Step</th><th>Condition</th><th>Action</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Start a dedicated all-risk SOL cycle</td><td>Open equal LONG and SHORT with $486 notional on each side.</td></tr>
+<tr><td>2</td><td>A side reaches −1300% ROE, the opposite side is positive, and <code>same3</code> passes</td><td>Close the losing side completely.</td></tr>
+<tr><td>3</td><td>Two completed 1m bars later</td><td>Reopen the losing direction at 3× base. Allow at most two re-anchors.</td></tr>
+<tr><td>4</td><td>After re-anchoring, that side again reaches −1300% ROE</td><td>Increase it to 50× base total. Do not add to the profitable side.</td></tr>
+<tr><td>5</td><td>The rescued side trades 3.0% beyond its weighted average in the profitable direction</td><td>Close everything above 3× base in one order and retain the 3× residual.</td></tr>
+<tr><td>6</td><td>A later second valid cycle appears</td><td>The policy permits one more re-anchor, mega rescue and excess close.</td></tr>
+<tr><td>7</td><td>After two cycles</td><td>Keep the residual hedge; no further mega event is allowed by this seed.</td></tr>
+</tbody>
+</table></div>
+</div>
+<div class="danger" style="margin-top:16px"><strong>Scale warning:</strong> 50× refers to total quantity relative to the initial base. The test’s mega position was about 195 SOL on one side. At 300×, displayed margin can look modest while liquidation, funding, mark-price and execution risks remain extreme. This is a deliberate max-risk lane, not a “balanced” recommendation.</div>
+<details style="margin-top:16px">
+<summary>Even more extreme SOL watchlist — raw P4 PnL leader</summary>
+<p>The candidate <code>deep_p4_t1000_sep300_m30_b5p4_same5_37ae672d</code> reached <strong>+$2,233.19 MTM</strong> and <strong>+$873.42 realized</strong> in the zero-cost SOL test by 6 February 2026. Its configuration used $810 notional per side, one −1000% <code>same5</code> re-anchor, reopening at 3× base, up to two 30× mega rescues, a +2% excess close and a 5× residual.</p>
+<p>It was stopped by the fixed-$500 profile drawdown rule, not by negative final equity. Because the path was truncated, it is preserved as an extreme v1.4 capital-truth seed rather than promoted as a complete manual protocol. A larger virtual wallet may have carried it, but only full-path wallet-neutral replay can determine how much capital was actually required.</p>
 </details>
 </section>
+
 <section id="pix">
 <h2>10. What PiX is doing here</h2>
 <div class="good"><strong>Correct framing:</strong> PiX does not claim that markets magically follow π. PiX is a disciplined generator of candidate sequences. The arena then tests those sequences against Fibonacci, fixed/geometric, uniform, random, and no-add/no-trail controls.</div>
@@ -650,7 +708,7 @@ for each config:
 <tr><td>Infrastructure</td><td>New v1.4 output roots/task IDs, multi-worker resume, atomic checkpoints, same-line progress, live extracts and no API/live-order path.</td></tr>
 </tbody></table></div></div>
 </section>
-<div class="footer">BD Hedge Separation PiX Strategy Explainer · dark mobile-first research page · offline replay only · not financial advice.<br/>Updated with v1.2 validation PASS and the completed v1.3c 300,000-task real-1m baseline: 119 full 6/6 score-robust configurations, wallet-neutral capital truth and complete profit-side logic assigned to v1.4.</div>
+<div class="footer">BD Hedge Separation PiX Strategy Explainer · dark mobile-first research page · offline replay only · not financial advice.<br/>Updated with v1.2 validation PASS, the completed v1.3c 300,000-task real-1m baseline, and two v1.3c-informed SOL manual sections: Balanced P2 and Max-Risk P5. Wallet-neutral capital truth and complete winner-side logic remain assigned to v1.4.</div>
 </div>
 <script>
 function fontStep(delta){
