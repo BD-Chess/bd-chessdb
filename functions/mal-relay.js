@@ -1,4 +1,4 @@
-// AIm³ MentalArena MALm v1.3.1 — stateless provider relay.
+// AIm³ MentalArena MALm v1.3.2 — stateless provider relay.
 // Workflow, prompts, API keys, runs, and artifacts remain in the unlocked browser page.
 const ALLOWED_HOSTS = new Set([
   'api.openai.com','api.anthropic.com','api.deepseek.com','generativelanguage.googleapis.com',
