@@ -1,740 +1,195 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
-
-<!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>BD Hedge Separation PiX Strategy — v1.3c Final + SOL Manual Protocols</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>BD Hedge Separation PiX Strategy — Current v1.3c Explainer</title>
 <style>
 :root{
-  --bg:#070914; --bg2:#0b1020; --panel:#101624; --card:#121b2e; --card2:#0d1320;
-  --line:#24324e; --line2:#344767; --text:#e7edf8; --muted:#9fb0c8; --dim:#6d7d96;
-  --green:#2ef2a3; --blue:#58a6ff; --gold:#ffd76a; --red:#ff6b84; --violet:#bd93f9;
-  --cyan:#67e8f9; --orange:#ffb86c; --pink:#ff8bd4; --shadow:0 18px 60px rgba(0,0,0,.34);
-  --baseFont:18px; --fontScale:1; --radius:18px;
+  --bg:#070914;--bg2:#0b1020;--panel:#101624;--card:#121b2e;--line:#24324e;--line2:#344767;
+  --text:#e7edf8;--muted:#9fb0c8;--dim:#6d7d96;--green:#2ef2a3;--blue:#58a6ff;--gold:#ffd76a;
+  --red:#ff6b84;--violet:#bd93f9;--cyan:#67e8f9;--orange:#ffb86c;--shadow:0 18px 60px rgba(0,0,0,.34);
+  --baseFont:18px;--fontScale:1;--radius:18px
 }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0;
-  background:
-    radial-gradient(circle at 12% 0%,rgba(88,166,255,.18),transparent 31%),
-    radial-gradient(circle at 88% 12%,rgba(46,242,163,.10),transparent 30%),
-    radial-gradient(circle at 50% 100%,rgba(189,147,249,.10),transparent 35%),
-    linear-gradient(180deg,#060812 0%,#080b14 100%);
-  color:var(--text);
-  font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;
-  font-size:calc(var(--baseFont) * var(--fontScale));
-  line-height:1.62;
-  -webkit-font-smoothing:antialiased;
-}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.55),transparent 75%);z-index:-1}
-a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}
-::selection{background:rgba(103,232,249,.35)}
-.wrap{max-width:1480px;margin:0 auto;padding:28px 20px 90px}
-.hero{padding:38px 0 20px;border-bottom:1px solid var(--line)}
-.eyebrow{color:var(--cyan);font-size:.72em;text-transform:uppercase;letter-spacing:.18em;font-weight:900}
-h1{font-size:clamp(2.25rem,6vw,5rem);line-height:.98;margin:14px 0 14px;letter-spacing:-.055em}
-.subtitle{color:var(--muted);max-width:1120px;font-size:1.08em;line-height:1.55}.small{font-size:.78em;color:var(--muted)}
-.nav{position:sticky;top:0;z-index:40;background:rgba(7,9,20,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);margin:0 -20px;padding:10px 20px;display:flex;gap:8px;overflow-x:auto;white-space:nowrap}
-.nav a{border:1px solid var(--line2);border-radius:999px;padding:7px 12px;color:var(--muted);font-size:.78em;font-weight:800}.nav a:hover{color:var(--cyan);border-color:var(--cyan);text-decoration:none}
-.fontbar{position:fixed;right:14px;bottom:14px;z-index:60;display:flex;gap:8px;background:rgba(7,9,20,.82);border:1px solid var(--line2);border-radius:999px;padding:8px;box-shadow:var(--shadow);backdrop-filter:blur(12px)}
-.fontbar button,.btn{appearance:none;border:1px solid var(--line2);background:#0d1425;color:var(--text);border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer}.fontbar button:hover,.btn:hover{border-color:var(--cyan);color:var(--cyan)}
-.grid{display:grid;gap:16px}.cards{grid-template-columns:repeat(4,minmax(0,1fr));margin:24px 0}.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:repeat(3,1fr)}
-.card,.callout,.table-card,.formula,.flow,.note,.danger,.good{background:linear-gradient(180deg,rgba(18,27,46,.96),rgba(12,18,31,.96));border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
-.card .label{color:var(--muted);font-size:.72em;text-transform:uppercase;letter-spacing:.12em;font-weight:900}.card .num{font-size:1.62em;font-weight:950;line-height:1.05;margin:8px 0;color:var(--text)}
-.good{background:rgba(46,242,163,.08);border-color:rgba(46,242,163,.30)}.danger{background:rgba(255,107,132,.09);border-color:rgba(255,107,132,.34)}.note{background:rgba(255,215,106,.08);border-color:rgba(255,215,106,.28)}
-section{margin:44px 0}h2{font-size:1.85em;line-height:1.13;margin:0 0 14px;letter-spacing:-.025em}h3{font-size:1.14em;margin:0 0 9px;color:var(--gold)}
-p{margin:0 0 13px}.muted{color:var(--muted)}.dim{color:var(--dim)}.green{color:var(--green)}.red{color:var(--red)}.gold{color:var(--gold)}.cyan{color:var(--cyan)}.violet{color:var(--violet)}.orange{color:var(--orange)}
-code,kbd{font-family:Consolas,Menlo,ui-monospace,monospace;background:#0a1020;border:1px solid var(--line);border-radius:7px;padding:2px 6px;color:var(--cyan)}
-pre{overflow:auto;background:#081020;border:1px solid var(--line);border-radius:14px;padding:14px;color:#dbeafe;font-size:.82em;line-height:1.45}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 12% 0%,rgba(88,166,255,.18),transparent 31%),radial-gradient(circle at 88% 12%,rgba(46,242,163,.10),transparent 30%),radial-gradient(circle at 50% 100%,rgba(189,147,249,.10),transparent 35%),linear-gradient(180deg,#060812,#080b14);color:var(--text);font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;font-size:calc(var(--baseFont)*var(--fontScale));line-height:1.62;-webkit-font-smoothing:antialiased}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.55),transparent 75%);z-index:-1}
+a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.wrap{max-width:1480px;margin:0 auto;padding:28px 20px 90px}.hero{padding:38px 0 20px;border-bottom:1px solid var(--line)}.eyebrow{color:var(--cyan);font-size:.72em;text-transform:uppercase;letter-spacing:.18em;font-weight:900}h1{font-size:clamp(2.25rem,6vw,5rem);line-height:.98;margin:14px 0;letter-spacing:-.055em}.subtitle{color:var(--muted);max-width:1120px;font-size:1.08em}.small{font-size:.78em;color:var(--muted)}
+.nav{position:sticky;top:0;z-index:40;background:rgba(7,9,20,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);margin:0 -20px;padding:10px 20px;display:flex;gap:8px;overflow-x:auto;white-space:nowrap}.nav a{border:1px solid var(--line2);border-radius:999px;padding:7px 12px;color:var(--muted);font-size:.78em;font-weight:800}.nav a:hover{color:var(--cyan);border-color:var(--cyan);text-decoration:none}
+.fontbar{position:fixed;right:14px;bottom:14px;z-index:60;display:flex;gap:8px;background:rgba(7,9,20,.82);border:1px solid var(--line2);border-radius:999px;padding:8px;box-shadow:var(--shadow);backdrop-filter:blur(12px)}.fontbar button{border:1px solid var(--line2);background:#0d1425;color:var(--text);border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer}.fontbar button:hover{border-color:var(--cyan);color:var(--cyan)}
+.grid{display:grid;gap:16px}.cards{grid-template-columns:repeat(4,minmax(0,1fr));margin:24px 0}.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:repeat(3,1fr)}.six{grid-template-columns:repeat(6,1fr)}
+.card,.callout,.table-card,.formula,.flow,.note,.danger,.good{background:linear-gradient(180deg,rgba(18,27,46,.96),rgba(12,18,31,.96));border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}.card .label{color:var(--muted);font-size:.72em;text-transform:uppercase;letter-spacing:.12em;font-weight:900}.card .num{font-size:1.62em;font-weight:950;line-height:1.05;margin:8px 0}.good{background:rgba(46,242,163,.08);border-color:rgba(46,242,163,.30)}.danger{background:rgba(255,107,132,.09);border-color:rgba(255,107,132,.34)}.note{background:rgba(255,215,106,.08);border-color:rgba(255,215,106,.28)}
+section{margin:44px 0}h2{font-size:1.85em;line-height:1.13;margin:0 0 14px;letter-spacing:-.025em}h3{font-size:1.14em;margin:0 0 9px;color:var(--gold)}p{margin:0 0 13px}.muted{color:var(--muted)}.green{color:var(--green)}.red{color:var(--red)}.gold{color:var(--gold)}.cyan{color:var(--cyan)}.violet{color:var(--violet)}.orange{color:var(--orange)}
+code{font-family:Consolas,Menlo,monospace;background:#0a1020;border:1px solid var(--line);border-radius:7px;padding:2px 6px;color:var(--cyan)}pre{overflow:auto;background:#081020;border:1px solid var(--line);border-radius:14px;padding:14px;color:#dbeafe;font-size:.82em;line-height:1.45}
 .table-wrap{overflow:auto;border-radius:14px;border:1px solid rgba(255,255,255,.06)}table{border-collapse:collapse;width:100%;min-width:780px;font-size:.82em}th,td{padding:10px 11px;border-bottom:1px solid rgba(255,255,255,.065);vertical-align:top}th{position:sticky;top:0;background:#10182b;color:#cfe3ff;text-align:left;text-transform:uppercase;letter-spacing:.055em;font-size:.78em}tr:hover td{background:rgba(88,166,255,.055)}td.num{font-family:Consolas,Menlo,monospace;text-align:right}.tag{display:inline-block;border:1px solid var(--line2);border-radius:999px;padding:3px 9px;font-size:.72em;color:var(--muted);font-weight:800}.tag.green{border-color:rgba(46,242,163,.35);color:var(--green)}.tag.gold{border-color:rgba(255,215,106,.35);color:var(--gold)}.tag.red{border-color:rgba(255,107,132,.35);color:var(--red)}.tag.cyan{border-color:rgba(103,232,249,.35);color:var(--cyan)}
-.flow{padding:22px}.flow-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0}.node{border:1px solid var(--line2);background:#0d1425;border-radius:14px;padding:12px 14px;min-width:130px;text-align:center;font-weight:950}.node small{display:block;color:var(--muted);font-weight:700;font-size:.70em;margin-top:3px}.arrow{color:var(--dim);font-weight:900}.node.long{border-color:rgba(46,242,163,.45);color:var(--green)}.node.short{border-color:rgba(255,107,132,.45);color:var(--red)}.node.pix{border-color:rgba(103,232,249,.45);color:var(--cyan)}.node.core{border-color:rgba(255,215,106,.45);color:var(--gold)}
-.formula{font-family:Consolas,Menlo,monospace;color:#dbeafe}.formula .title{font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--gold);font-weight:900;margin-bottom:8px}
-.steps{counter-reset:step}.step{counter-increment:step;position:relative;padding-left:58px;margin:13px 0}.step::before{content:counter(step);position:absolute;left:0;top:0;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(103,232,249,.12);border:1px solid rgba(103,232,249,.38);color:var(--cyan);font-weight:950}
-details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.025);padding:12px 14px;margin:10px 0}summary{cursor:pointer;font-weight:950;color:var(--cyan)}details p, details ul{margin-top:12px}.list{padding-left:22px;margin:8px 0}.list li{margin:7px 0}
-.calc{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:end}.field label{display:block;font-size:.72em;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}.field input{width:100%;background:#0a1020;border:1px solid var(--line2);border-radius:10px;color:var(--text);padding:10px;font-size:1em}.output{font-family:Consolas,Menlo,monospace;font-weight:950;color:var(--green);font-size:1.22em}.caption{color:var(--muted);font-size:.82em;margin-top:8px}.mini{font-size:.84em}
-.footer{margin-top:70px;padding:26px 0;border-top:1px solid var(--line);color:var(--muted);text-align:center;font-size:.82em}
-@media(max-width:1000px){:root{--baseFont:20px}.wrap{padding:18px 12px 78px}.nav{margin:0 -12px;padding:9px 12px}.cards,.two,.three,.calc{grid-template-columns:1fr}h1{font-size:clamp(2.1rem,12vw,3.8rem)}.card,.callout,.table-card,.formula,.flow,.note,.danger,.good{padding:16px}.node{flex:1 1 145px}.arrow{display:none}table{min-width:720px}.fontbar{right:10px;bottom:10px}.fontbar button{padding:9px 12px}}
-@media(max-width:560px){:root{--baseFont:21px}.subtitle{font-size:1em}.card .num{font-size:1.35em}.nav a{font-size:.72em;padding:7px 10px}.step{padding-left:48px}.step::before{width:32px;height:32px}.hero{padding-top:26px}}
-@media print{.nav,.fontbar{display:none}.wrap{max-width:none}.card,.callout,.table-card,.formula,.flow,.note,.danger,.good{box-shadow:none}body{background:#fff;color:#111}a{color:#0645ad}}
+.flow{padding:22px}.flow-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0}.node{border:1px solid var(--line2);background:#0d1425;border-radius:14px;padding:12px 14px;min-width:130px;text-align:center;font-weight:950}.node small{display:block;color:var(--muted);font-weight:700;font-size:.70em;margin-top:3px}.arrow{color:var(--dim);font-weight:900}.node.long{border-color:rgba(46,242,163,.45);color:var(--green)}.node.short{border-color:rgba(255,107,132,.45);color:var(--red)}.node.core{border-color:rgba(255,215,106,.45);color:var(--gold)}.node.pix{border-color:rgba(103,232,249,.45);color:var(--cyan)}
+.steps{counter-reset:step}.step{counter-increment:step;position:relative;padding-left:58px;margin:13px 0}.step:before{content:counter(step);position:absolute;left:0;top:0;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(103,232,249,.12);border:1px solid rgba(103,232,249,.38);color:var(--cyan);font-weight:950}.list{padding-left:22px;margin:8px 0}.list li{margin:7px 0}.formula{font-family:Consolas,Menlo,monospace;color:#dbeafe}.formula .title{font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--gold);font-weight:900;margin-bottom:8px}
+.calc{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:end}.field label{display:block;font-size:.72em;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}.field input{width:100%;background:#0a1020;border:1px solid var(--line2);border-radius:10px;color:var(--text);padding:10px;font-size:1em}.output{font-family:Consolas,Menlo,monospace;font-weight:950;color:var(--green);font-size:1.1em}.footer{margin-top:70px;padding:26px 0;border-top:1px solid var(--line);color:var(--muted);text-align:center;font-size:.82em}
+@media(max-width:1100px){.six{grid-template-columns:repeat(3,1fr)}}@media(max-width:1000px){:root{--baseFont:20px}.wrap{padding:18px 12px 78px}.nav{margin:0 -12px;padding:9px 12px}.cards,.two,.three,.six,.calc{grid-template-columns:1fr}h1{font-size:clamp(2.1rem,12vw,3.8rem)}.node{flex:1 1 145px}.arrow{display:none}table{min-width:720px}.fontbar{right:10px;bottom:10px}}@media print{.nav,.fontbar{display:none}.wrap{max-width:none}.card,.callout,.table-card,.formula,.flow,.note,.danger,.good{box-shadow:none}body{background:#fff;color:#111}}
 </style>
 </head>
 <body>
-<div aria-label="Font size controls" class="fontbar">
-<button onclick="fontStep(-0.08)" title="Smaller font">A−</button>
-<button onclick="fontReset()" title="Reset font">A</button>
-<button onclick="fontStep(0.08)" title="Larger font">A+</button>
-</div>
+<div class="fontbar" aria-label="Font size controls"><button onclick="fontStep(-0.08)">A−</button><button onclick="fontReset()">A</button><button onclick="fontStep(0.08)">A+</button></div>
+
 <div class="wrap">
 <header class="hero" id="top">
-<div class="eyebrow">BD Trading Research · HSR PiX v1.2 PASS · v1.3c real1m optimizer COMPLETE</div>
+<div class="eyebrow">Current strategy authority · v1.3c completed · SOL manual protocols refreshed</div>
 <h1>BD Hedge Separation PiX Strategy</h1>
-<p class="subtitle">A detailed explanation of the constant long+short hedge method, updated with the completed v1.3c real-1m optimizer. The search found persistent score-robust re-anchor/mega-rescue seeds across BTC, ETH and SOL, but also exposed the need for wallet-neutral full-path replay, active separation logic and explicit winner-side profit management in v1.4.</p>
-<p class="small">Version: explainer v2.1 · Date: 21 June 2026 · Status: research specification + v1.2 offline validation PASS + completed v1.3c real-1m 300,000-task baseline + wallet-neutral v1.4 requirements — not a live bot, not financial advice.</p>
+<p class="subtitle">The current explanation of the tested engine: begin with an equal long+short hedge, re-anchor a deeply losing side, use a bounded mega-rescue to move its weighted entry, harvest the rescued excess, and retain a residual hedge. This page contains only the completed v1.3c evidence and the short v1.4 outlook.</p>
+<p class="small">Real BTC/ETH/SOL 1m replay, 1 January–14 June 2026, virtual fills only. No live-order path.</p>
 </header>
-<nav aria-label="Page navigation" class="nav">
-<a href="#answer">Answer</a><a href="#side-run">Old side-run</a><a href="#v10-mega">v1.0 Mega</a><a href="#reanchor">Re-anchor</a><a href="#risk-profiles">Risk profiles</a><a href="#v12-pass">v1.2 PASS</a><a href="#v13-final">v1.3 final</a><a href="#cinch">Next tests</a><a href="#intuition">Intuition</a><a href="#setup">Setup</a><a href="#state">State machine</a><a href="#ladders">Ladders</a><a href="#adds">Add sizing</a><a href="#exits">Exits</a><a href="#manual-protocol">Manual truth</a><a href="#manual-balanced-sol">Balanced SOL</a><a href="#manual-max-risk-sol">Max-risk SOL</a><a href="#pix">PiX role</a><a href="#arena">Arena tests</a><a href="#risk">Risk</a><a href="#pseudo">Pseudo-code</a><a href="#success">Success criteria</a>
-</nav>
-<section id="answer">
-<h2>Direct answer: what this strategy is now</h2>
+<nav class="nav"><a href="#strategy">Strategy</a><a href="#flow">Tested flow</a><a href="#profit">Profit taking</a><a href="#evidence">Evidence</a><a href="#lanes">Risk lanes</a><a href="#manual-balanced-sol">Balanced SOL</a><a href="#manual-max-risk-sol">Max-risk SOL</a><a href="#capital">Capital truth</a><a href="#limits">Limits</a><a href="#v14">v1.4</a></nav>
+
+<section id="strategy">
+<h2>What the v1.3c strategy actually was</h2>
 <div class="grid cards">
-<div class="card"><div class="label">Mode</div><div class="num cyan">Constant hedge</div><p class="small">Open LONG and SHORT at the same time, then manage each book independently.</p></div>
-<div class="card"><div class="label">Core mechanism</div><div class="num gold">Rescue adds</div><p class="small">When one side suffers enough adverse ROE, add to that losing side by a tested sizing rule.</p></div>
-<div class="card"><div class="label">Goal</div><div class="num green">Entry separation</div><p class="small">Over time, improve the average entry of both books and harvest recovery/trailing profit.</p></div>
-<div class="card"><div class="label">Truth standard</div><div class="num red">Final MTM</div><p class="small">Realized profit alone is not enough; open tail risk must be counted.</p></div>
+<div class="card"><div class="label">Initial state</div><div class="num cyan">Equal hedge</div><p class="small">Open LONG and SHORT at the same notional.</p></div>
+<div class="card"><div class="label">Loss response</div><div class="num gold">Re-anchor</div><p class="small">Close and reopen the deeply losing side when its trigger and trend gate pass.</p></div>
+<div class="card"><div class="label">Recovery engine</div><div class="num red">Mega rescue</div><p class="small">Increase the re-anchored losing side to a bounded multiple of the original base.</p></div>
+<div class="card"><div class="label">Profit realization</div><div class="num green">Excess close</div><p class="small">When the rescued side recovers beyond its weighted entry, close the excess and keep a residual.</p></div>
 </div>
-<div class="danger"><strong>Important:</strong> this is a high-leverage derivatives research idea. It must be tested offline first. No live API, no exchange keys, no real orders. A strategy that looks profitable only because it hides open loss — or because a promoted config silently disabled the events being tested — is not profitable.</div>
+<div class="danger"><strong>Not tested in v1.3c:</strong> adding to the profitable side, staged winner exits, winner trailing, or force-closing the winner when mega rescue fires. Older manual text implying those behaviors has been removed.</div>
 </section>
-<section id="side-run">
-<h2>Compact side-run evidence — exciting, but not promoted yet</h2>
-<p class="caption">This section summarizes the first local compact side-run performed on 3 June 2026. It is useful because it tested the idea across multiple regenerated synthetic 1m universes, but it is still a small research pass, not a full standard/deep validation.</p>
-<div class="grid cards">
-<div class="card"><div class="label">Data basis</div><div class="num cyan">131 days</div><p class="small">Real SOLUSDT 2026 YTD daily candles. Synthetic 1m candles were constrained exactly to each daily OHLC.</p></div>
-<div class="card"><div class="label">First pass</div><div class="num gold">120 configs</div><p class="small">Compact parameter sweep across base size, loss ladder, add sizing, core keep, and exit style.</p></div>
-<div class="card"><div class="label">Fresh recheck</div><div class="num green">30 universes</div><p class="small">Top 20 candidates were rechecked on unseen fresh seed universes 401–430.</p></div>
-<div class="card"><div class="label">Warning</div><div class="num red">0.00 iso</div><p class="small">Strict isolated-side survival was 0.00 for top candidates. Results are cross-margin / venue-model dependent.</p></div>
-</div>
-<div class="good"><h3>Headline read</h3><p>The compact run did find a real positive signal: several candidates survived all fresh30 universes and kept positive median MTM. The most useful signal is not “Pi predicts price.” The useful signal is the combination of <b>hedge separation + rescue spacing + controlled add sizing + trailing reduction + multi-universe robustness</b>.</p></div>
-<div class="table-card" style="margin-top:16px">
-<h3>Fresh30 top candidates</h3>
-<p class="caption">Wallet model: 1,000 USDT, 300× leverage, zero fees, simplified cross-margin replay. MTM = realized PnL + ending unrealized PnL.</p>
-<div class="table-wrap"><table>
-<thead><tr><th>Rank</th><th>Candidate</th><th>Why it matters</th><th>Survival</th><th>Median MTM</th><th>Worst seed MTM</th><th>Median realized</th><th>Median unrealized</th><th>Max gross p90</th></tr></thead>
-<tbody>
-<tr><td>1</td><td><code>b1.0 · fixed 200 linear · add 2× current · keep geometric · TP2 close-to-core</code></td><td>Strongest raw MTM, but dirty because most gain is final unrealized separation.</td><td class="num green">100%</td><td class="num green">+$5,170.95</td><td class="num green">+$5,140.93</td><td class="num">+$16.53</td><td class="num gold">+$5,150.65</td><td class="num red">560 SOL</td></tr>
-<tr><td>3</td><td><code>b5.0 · geometric 2× loss · target-total PiX · keep base · trail100 close-to-core</code></td><td>Cleaner: most of the gain is realized, with lower gross exposure than the raw winner.</td><td class="num green">100%</td><td class="num green">+$1,912.86</td><td class="num green">+$717.29</td><td class="num green">+$1,651.11</td><td class="num">+$309.41</td><td class="num gold">97.5 SOL</td></tr>
-<tr><td>4</td><td><code>b2.0 · Fib loss · base-multiple PiX · keep base · trail100 close-to-core</code></td><td>Best clean Fib/PiX-style candidate from the first read: high realized PnL and modest gross size.</td><td class="num green">100%</td><td class="num green">+$1,843.46</td><td class="num green">+$900.58</td><td class="num green">+$1,702.71</td><td class="num">+$148.37</td><td class="num gold">62 SOL</td></tr>
-<tr><td>5</td><td><code>b2.0 · PiX π/2 loss · base-multiple PiX · keep PiX · trail100 close-to-core</code></td><td>Most PiX-heavy candidate: very strong worst-seed MTM, but more profit remains unrealized.</td><td class="num green">100%</td><td class="num green">+$1,744.16</td><td class="num green">+$1,458.99</td><td class="num">+$445.79</td><td class="num gold">+$1,264.67</td><td class="num gold">119 SOL</td></tr>
-</tbody>
-</table></div>
-</div>
-<div class="grid two" style="margin-top:16px">
-<div class="note"><h3>What is exciting</h3><ul class="list"><li>Positive MTM persisted across unseen generated 1m universes.</li><li>Some cleaner candidates produced mostly realized profit, not only open separation.</li><li>Fib and PiX appeared in viable loss/add/core combinations, not only as decorative sequences.</li><li>The multi-universe rule already helped avoid trusting one lucky generated minute path.</li></ul></div>
-<div class="danger"><h3>What still blocks promotion</h3><ul class="list"><li>Strict isolated-side survival was 0.00 for top candidates.</li><li>Raw winner relies on large open unrealized separation and high gross SOL exposure.</li><li>Intrabar/liquidation modeling still needs a stricter audit.</li><li>The run was compact: 120 configs + fresh30 recheck, not the full standard/deep arena.</li></ul></div>
-</div>
-<div class="callout" style="margin-top:16px"><h3>Current verdict</h3><p><b>Exciting enough to run the full standalone arena.</b> Not safe, not live, not promoted. The next proof step is a standard/deep multi-worker run with more parameter coverage, more fresh universes, stricter margin/liquidation checks, and matched controls against fixed, geometric, Fibonacci, PiX, random, and no-add baselines.</p></div>
-</section>
-<section id="v10-mega">
-<h2>Newest v1.0 finding: direct mega snap-average works, but only by risk profile</h2>
-<p class="muted">The v1.0 arena tested the direct version of the idea: wait for an adverse move and stabilization, snap-average the losing side to a much larger total size, close the excess near small price profit, and leave a smaller survivor core.</p>
-<div class="grid cards">
-<div class="card"><div class="label">Safer branch</div><div class="num green">10×</div><p class="small">Best current survival-style branch. Lower upside, cleaner risk.</p></div>
-<div class="card"><div class="label">Middle branch</div><div class="num gold">15×</div><p class="small">More profit pressure than 10×, but higher open-loss and margin demand.</p></div>
-<div class="card"><div class="label">Moonshot branch</div><div class="num red">20×</div><p class="small">Strong in Deep/Fresh, but Long/Longer showed a ruin branch. Must be tiny-wallet / moonshot-labelled.</p></div>
-<div class="card"><div class="label">Arena verdict</div><div class="num green">v1.2 PASS</div><p class="small">Feed-forward/event integrity is now clean; rank by explicit risk budget.</p></div>
-</div>
-<div class="table-card">
-<h3>What v1.0 changed in the strategy story</h3>
-<div class="table-wrap"><table><thead><tr><th>Old framing</th><th>New framing after v1.0</th><th>Why it matters</th></tr></thead><tbody>
-<tr><td>“Should we add big?”</td><td>“Which add size belongs to which wallet/risk profile?”</td><td>10×, 15×, and 20× are not one strategy. They are different risk products.</td></tr>
-<tr><td>“20× makes more money.”</td><td>“20× can also be an account-killer branch.”</td><td>It may be valid for a tiny wallet where loss is intentional risk capital, not for survival mode.</td></tr>
-<tr><td>“Close winner, rescue loser.”</td><td>“Use winner cushion, wait for stabilization, snap-average, close excess, keep core.”</td><td>The engine must track realized PnL, ending unrealized PnL, max open loss, margin, and ruin.</td></tr>
-</tbody></table></div>
-</div>
-</section>
-<section id="reanchor">
-<h2>New manual method: re-anchor before rescue</h2>
-<p>This is the important BD manual move that was not fully present in v1.0. When one leg becomes the bad leg, do not always start adding immediately. Sometimes close the bad leg, reopen it closer to current price, and repeat until enough long/short entry separation exists. Only then decide whether a huge add is justified.</p>
-<div class="flow">
-<div class="flow-row">
-<div class="node long">LONG 1 SOL<small>keeps old profitable anchor</small></div><div class="arrow">+</div>
-<div class="node short">SHORT 1 SOL<small>bad leg in up-move</small></div><div class="arrow">→</div>
-<div class="node short">close bad leg<small>realize small/known damage</small></div><div class="arrow">→</div>
-<div class="node short">reopen higher<small>new short closer to price</small></div><div class="arrow">→</div>
-<div class="node core">separation<small>target 300/500/700% ROE</small></div><div class="arrow">→</div>
-<div class="node pix">huge add only if profile allows<small>10× / 15× / 20× / more</small></div>
-</div>
-</div>
-<div class="grid two" style="margin-top:16px">
-<div class="good"><h3>Why this may improve survivability</h3><p>Re-anchoring can move the losing leg's average entry closer to current price before any huge add happens. That may reduce the size needed for snap-average rescue and may allow a larger initial position under the same wallet stress.</p></div>
-<div class="danger"><h3>Why it can fail</h3><p>If re-anchor happens just before reversal, the method pays realized loss and then reopens into a new losing position. The arena must measure whipsaw tax, not hide it.</p></div>
-</div>
-</section>
-<section id="risk-profiles">
-<h2>Risk profiles — the arena must choose numbers separately</h2>
-<p class="muted">This is the corrected design principle. BD may sometimes prefer maximum survivability, and sometimes deliberately risk a small deployment wallet for maximum short-horizon upside. The arena must not collapse those into one “best” setting, and wallet size must never decide whether a valid strategy is retained.</p>
-<div class="table-card">
-<div class="table-wrap"><table>
-<thead><tr><th>Profile</th><th>Plain-language meaning</th><th>What counts as good</th><th>What must be reported</th></tr></thead>
-<tbody>
-<tr><td><code>P0_SURVIVAL_MAX</code></td><td>Maximum survivability, minimum risk.</td><td>Low ruin, low DD, low open tail, modest but repeatable MTM.</td><td>Worst loss, liquidation buffer, side-isolated survival.</td></tr>
-<tr><td><code>P1_CONSERVATIVE</code></td><td>Still safe, accepts a bit more action.</td><td>Stable positive median, few/no rescue blowups.</td><td>Re-anchor count, realized re-anchor loss, max gross SOL.</td></tr>
-<tr><td><code>P2_BALANCED</code></td><td>Middle survivability / middle risk.</td><td>Best risk-adjusted MTM, stable region not one lucky tuple.</td><td>Profit/DD ratio, positive rate, controls comparison.</td></tr>
-<tr><td><code>P3_AGGRESSIVE</code></td><td>Higher risk for faster earning.</td><td>Higher MTM with explicitly measured loss probability and capital need.</td><td>Wallet DD, minimum tested wallet, worst horizon, re-anchor whipsaws.</td></tr>
-<tr><td><code>P4_MOONSHOT</code></td><td>Very high risk / high upside.</td><td>Big upside remains ranked even when a small wallet fails.</td><td>Full-loss probability, recommended minimum wallet, time horizon and best-case payout.</td></tr>
-<tr><td><code>P5_TINY_WALLET_BLAST</code></td><td>Intentional all-risk deployment where full loss of the chosen stake is acceptable.</td><td>Maximum short-horizon PnL, doubling probability and extreme upside.</td><td>Expected loss, full-loss probability by horizon, chance/time to 2× or 5×, and capital required for longer survival.</td></tr>
-</tbody>
-</table></div>
-</div>
-<div class="good" style="margin-top:16px"><strong>Wallet-neutral rule:</strong> every valid strategy stays in the master result set. A $500 failure is a result for the $500 lane, not a universal rejection. The arena should recommend the wallet required for tested-path survival while still ranking the same strategy in high-PnL and intentional all-risk lanes.</div>
-</section>
-<section id="v12-pass">
-<h2>v1.2 validation pass — the arena fixed the proof chain</h2>
-<p class="muted">v1.1 was useful because it found both a real signal and a measurement bug. v1.2 is the corrected run: the master completed, the feed-forward/event-preservation audit passed, and re-anchor/mega-rescue flags no longer disappear after promotion.</p>
-<div class="grid cards">
-<div class="card"><div class="label">Master status</div><div class="num green">PASS</div><p class="small">15/15 stages completed; 11 roots complete; final extract <code>LIVE_EXTRACT_HSR_PIX_V12_FOR_GPT_20260615_002010.zip</code>.</p></div>
-<div class="card"><div class="label">Roundtrip</div><div class="num green">522/522</div><p class="small">Canonical config payloads survived feed-forward reconstruction.</p></div>
-<div class="card"><div class="label">Event integrity</div><div class="num green">1,168/1,168</div><p class="small">Promotion-event integrity passed; re-anchor and mega flag mismatches = 0.</p></div>
-<div class="card"><div class="label">Real1m status</div><div class="num green">COMPLETE</div><p class="small">v1.3c completed 300,000 real BTC/ETH/SOL 1m replay tasks; wallet-neutral v1.4 is next.</p></div>
-</div>
-<div class="table-card">
-<h3>What can and cannot be claimed now</h3>
-<div class="table-wrap"><table>
-<thead><tr><th>Claim</th><th>Status</th><th>Reason</th></tr></thead>
-<tbody>
-<tr><td>“The v1.1 feed-forward bug is fixed in v1.2 evidence.”</td><td class="num green">Yes</td><td>Roundtrip audit and promotion-event integrity both pass with zero re-anchor/mega flag mismatches.</td></tr>
-<tr><td>“Profiled re-anchor + snap/mega rescue is worth promoting to real-data validation.”</td><td class="num green">Yes</td><td>Wallet Stress and Mega Rescue Stress produced real P0–P5 winners and non-zero event counts.</td></tr>
-<tr><td>“Re-anchor is always better than no-reanchor.”</td><td class="num gold">No</td><td>Mega Rescue Stress P1 still preferred a matched no-reanchor control, so the method is profile-specific.</td></tr>
-<tr><td>“This is live-trading proof.”</td><td class="num red">No</td><td>The run is still offline synthetic-1m replay. Real exchange 1m data, fees, slippage and execution are pending.</td></tr>
-</tbody>
-</table></div>
-</div>
-<div class="table-card" style="margin-top:16px">
-<h3>Wallet Stress winners — current manual/bot-rule candidates</h3>
-<div class="table-wrap"><table><thead><tr><th>Profile</th><th>Best tuple</th><th>MTM PnL</th><th>Realized PnL</th><th>Wallet DD</th><th>Survival</th><th>Meaning</th></tr></thead><tbody>
-<tr><td><code>P0_SURVIVAL_MAX</code></td><td><code>t300 · sep500 · m10 · flat5</code></td><td class="pos">+$9.31</td><td class="pos">+$1.20</td><td>1.25%</td><td>100%</td><td>survival-first real re-anchor</td></tr>
-<tr><td><code>P1_CONSERVATIVE</code></td><td><code>t500 · sep500 · m12 · flat3</code></td><td class="pos">+$14.65</td><td class="pos">+$2.61</td><td>1.02%</td><td>100%</td><td>conservative real re-anchor</td></tr>
-<tr><td><code>P2_BALANCED</code></td><td><code>t300 · sep700 · m15 · same5</code></td><td class="pos">+$28.17</td><td class="pos">+$5.01</td><td>2.43%</td><td>100%</td><td>balanced real re-anchor</td></tr>
-<tr><td><code>P3_AGGRESSIVE</code></td><td><code>t500 · sep500 · m30 · none</code></td><td class="pos">+$44.51</td><td class="pos">+$12.12</td><td>4.30%</td><td>100%</td><td>aggressive real re-anchor</td></tr>
-<tr><td><code>P4_MOONSHOT</code></td><td><code>t1300 · sep1300 · m20 · same3</code></td><td class="pos">+$37.94</td><td>≈$0.00</td><td>1.22%</td><td>100%</td><td>moonshot real re-anchor, mostly MTM</td></tr>
-<tr><td><code>P5_TINY_WALLET_BLAST</code></td><td><code>t1000 · sep1500 · m50 · same3</code></td><td class="pos">+$109.59</td><td class="pos">+$86.59</td><td>0.70%</td><td>100%</td><td>tiny-wallet all-risk branch</td></tr>
-</tbody></table></div>
-</div>
-<div class="table-card" style="margin-top:16px">
-<h3>Mega Rescue Stress winners — upside stress candidates</h3>
-<div class="table-wrap"><table><thead><tr><th>Profile</th><th>Best tuple</th><th>MTM PnL</th><th>Realized PnL</th><th>Wallet DD</th><th>Survival</th><th>Meaning</th></tr></thead><tbody>
-<tr><td><code>P0_SURVIVAL_MAX</code></td><td><code>t300 · sep500 · m10 · flat5</code></td><td class="pos">+$37.02</td><td class="pos">+$0.49</td><td>3.90%</td><td>100%</td><td>real re-anchor</td></tr>
-<tr><td><code>P1_CONSERVATIVE</code></td><td><code>t300 · sep300 · no-reanchor control</code></td><td class="pos">+$34.49</td><td class="pos">+$13.12</td><td>1.41%</td><td>100%</td><td>matched control wins this profile</td></tr>
-<tr><td><code>P2_BALANCED</code></td><td><code>t500 · sep700 · m12 · same3</code></td><td class="pos">+$113.28</td><td class="pos">+$6.96</td><td>8.17%</td><td>100%</td><td>real re-anchor</td></tr>
-<tr><td><code>P3_AGGRESSIVE</code></td><td><code>t1000 · sep500 · m20 · none</code></td><td class="pos">+$163.29</td><td class="pos">+$17.62</td><td>8.95%</td><td>100%</td><td>real re-anchor</td></tr>
-<tr><td><code>P4_MOONSHOT</code></td><td><code>t500 · sep1300 · m20 · same3</code></td><td class="pos">+$133.14</td><td class="pos">+$3.16</td><td>10.36%</td><td>100%</td><td>real re-anchor</td></tr>
-<tr><td><code>P5_TINY_WALLET_BLAST</code></td><td><code>t1000 · sep1500 · m50 · same3</code></td><td class="pos">+$461.62</td><td class="pos">+$364.51</td><td>0.92%</td><td>100%</td><td>largest upside branch</td></tr>
-</tbody></table></div>
-</div>
-<div class="good" style="margin-top:16px"><h3>Clean bottom line</h3><p>v1.2 turns HSR PiX from “interesting but contaminated proof chain” into a clean offline validation candidate. The edge attribution remains base-core only: constant hedge, profile-specific re-anchor, snap/mega rescue, excess close, and wallet sizing. PiX/Fib gates are currently minority branches, not the main driver.</p></div>
-</section>
-<section id="v13-final">
-<h2>v1.3c-real1m deep optimizer — final evidence</h2>
-<p class="muted">The fixed-$500 baseline completed all 300,000 tests: 10,000 configurations, four matched controls per configuration, BTC/ETH/SOL and zero/realistic costs.</p>
-<div class="grid cards">
-<div class="card"><div class="label">Completion</div><div class="num green">100%</div><p class="small"><code>300,000 / 300,000</code>; final extract <code>LIVE_EXTRACT_HSR_PIX_REAL1M_V13_FOR_GPT_20260621_061652.zip</code>.</p></div>
-<div class="card"><div class="label">Candidate score wins</div><div class="num green">4,785</div><p class="small">7.98% of 60,000 candidate asset×cost rows beat the strongest matched control by profile score.</p></div>
-<div class="card"><div class="label">Full 6/6 group</div><div class="num green">119</div><p class="small">119 configurations beat controls by score on all three assets under both cost assumptions.</p></div>
-<div class="card"><div class="label">Next truth gate</div><div class="num gold">v1.4</div><p class="small">Wallet-neutral full-path and rolling-window validation, in a separate folder.</p></div>
-</div>
-<div class="table-card"><h3>What the completed run says</h3><div class="table-wrap"><table><thead><tr><th>Finding</th><th>Final evidence</th><th>Correct reading</th></tr></thead><tbody>
-<tr><td>Data integrity</td><td>236,161 real 1m candles per asset; no detected gaps, duplicates, invalid OHLC or non-positive prices.</td><td class="green">Clean historical input for this interval.</td></tr>
-<tr><td>Edge rarity</td><td>4,785 / 60,000 candidate rows beat controls by score; 119 / 10,000 configurations reached 6/6.</td><td>Most mutations fail. A small robust surface exists.</td></tr>
-<tr><td>Profile diversity</td><td>P0 13 · P1 21 · P2 22 · P3 23 · P4 26 · P5 14.</td><td class="green">The signal is not confined to one risk style.</td></tr>
-<tr><td>Raw ETH leader</td><td>P5 realistic MTM +$1,736.20, realized +$1,434.52 from a $500 baseline; max DD 67.75%.</td><td>Excellent high-risk simulated result, not a universal safe policy.</td></tr>
-<tr><td>Cross-asset P5 seed</td><td><code>t2000 · m60 · base 2.76 · flat5</code>: realistic MTM BTC +$626.96, ETH +$905.02, SOL +$887.82.</td><td class="green">Strong six-test high-risk warm-start seed.</td></tr>
-<tr><td>Wallet correction</td><td>A SOL P4 row showed +$2,175.88 realistic MTM while breaching the fixed-$500 profile stop.</td><td class="gold">Preserve it; calculate required capital instead of rejecting it.</td></tr>
-</tbody></table></div></div>
-<div class="table-card" style="margin-top:16px"><h3>Score-robust 6/6 seeds by lane</h3><div class="table-wrap"><table><thead><tr><th>Lane</th><th>Seed</th><th>Min score lift</th><th>Min candidate MTM</th></tr></thead><tbody>
-<tr><td>P0</td><td><code>t500 · m50 · base 1.1 · same3</code></td><td class="num green">+76.68</td><td class="num green">+$166.04</td></tr>
-<tr><td>P1</td><td><code>t2000 · m40 · base 1.0125 · flat3</code></td><td class="num green">+84.39</td><td class="num green">+$147.60</td></tr>
-<tr><td>P2</td><td><code>t2000 · m50 · base 1.15 · none</code></td><td class="num green">+26.12</td><td class="num green">+$201.91</td></tr>
-<tr><td>P3</td><td><code>t1600 · m50 · base 1.5525 · none</code></td><td class="num green">+379.24</td><td class="num green">+$399.48</td></tr>
-<tr><td>P4</td><td><code>t2000 · m60 · base 3.6 · none</code></td><td class="num green">+21.06</td><td class="num green">+$772.98</td></tr>
-<tr><td>P5</td><td><code>t2000 · m60 · base 2.76 · flat5</code></td><td class="num green">+465.72</td><td class="num green">+$626.96</td></tr>
-</tbody></table></div></div>
-<div class="danger" style="margin-top:16px"><strong>Do not confuse score robustness with raw-PnL dominance:</strong> 6/6 means the candidate's profile-specific score exceeded the best matched control in six tests. The score includes MTM, realized PnL, drawdown, margin and a stop penalty. A candidate may therefore win by score even when one control has higher raw MTM.</div>
-<div class="danger" style="margin-top:16px"><strong>Implementation debt exposed by v1.3c:</strong> the named separation target was not enforced; close-winner-on-mega was not executed; reopen delay 0 is effectively next-bar execution; winner-side pyramiding and staged winner exits were absent; fixed-wallet stops truncated paths. These are v1.4 requirements, not footnotes.</div>
-<div class="good" style="margin-top:16px"><strong>Final conclusion:</strong> v1.3c produced valuable real-data seeds in every risk lane. v1.4 should preserve all valid strategies, calculate capital needs and horizon-dependent loss/profit distributions, deduplicate behavioral phenotypes and test the missing profit-side logic rather than filtering to one safety-biased winner.</div>
-</section>
-<section id="cinch">
-<h2>What v1.3c cinched — and what v1.4 must test</h2>
-<p class="muted">v1.3c answered the large real-data search question for one fixed-wallet interval. It did not answer universal capital sufficiency, endpoint robustness or live execution.</p>
-<div class="two">
-<div class="good"><h3>Now cinched</h3><p>The optimizer can run 300,000 resume-safe real-1m tests with strong matched controls and realistic-cost stress. It found 119 score-robust 6/6 configurations distributed across P0–P5, and the signal remained stable from early checkpoints to completion.</p></div>
-<div class="danger"><h3>Still open</h3><p>Full-path wallet-neutral capital truth, rolling starts/ends and short deployment horizons, maintenance-margin/liquidation realism, active separation-target semantics, winner-side pyramiding and staged profit-taking, behavioral phenotype deduplication, fresh holdout data and paper/shadow confirmation.</p></div>
-</div>
-<div class="table-card" style="margin-top:16px"><h3>Next validation ladder</h3><div class="table-wrap"><table><thead><tr><th>Step</th><th>Goal</th><th>Pass condition</th></tr></thead><tbody>
-<tr><td>1. Preserve v1.3c</td><td>Create the verified <code>V14_WARM_START_FROM_V13.zip</code>.</td><td>Full result ledger, reports, source, config and final extract preserved.</td></tr>
-<tr><td>2. Build v1.4 separately</td><td>New semantics and new task IDs in <code>D:\8Z\8z\BDH\v1.4</code>.</td><td>No mixing of v1.3c fixed-$500 outputs with v1.4 wallet-neutral outputs.</td></tr>
-<tr><td>3. Full-path capital truth</td><td>Never stop merely because one wallet tier fails.</td><td>Minimum tested wallet, equity trace and survival probability reported for every strategy.</td></tr>
-<tr><td>4. Rolling horizons</td><td>Test many starts, ends and 1h–90d blast/hold windows with forced-close accounting.</td><td>Best, median, worst, full-loss, 2× and 5× probabilities.</td></tr>
-<tr><td>5. Complete strategy logic</td><td>Enforce separation target and add winner-side pyramiding, tranches and trailing.</td><td>Every named parameter changes behavior or is removed; action/outcome hashes prove phenotype uniqueness.</td></tr>
-<tr><td>6. Paper/shadow</td><td>Observe live market formation without real orders.</td><td>Fill, funding, margin, drawdown and event behavior remain acceptably close to replay.</td></tr>
-</tbody></table></div></div>
-<div class="note" style="margin-top:16px"><strong>Folder rule:</strong> clean and archive v1.3, then install v1.4 in a new sibling folder. Import v1.3c as seed/regression evidence; do not resume its task IDs under changed semantics.</div>
-</section>
-<section id="intuition">
-<h2>1. Core intuition</h2>
-<div class="flow">
-<div class="flow-row">
-<div class="node long">LONG book<small>profits if SOL rises</small></div>
-<div class="arrow">+</div>
-<div class="node short">SHORT book<small>profits if SOL falls</small></div>
-<div class="arrow">→</div>
-<div class="node core">Hedge pair<small>always present</small></div>
-</div>
-<div class="flow-row">
-<div class="node short">Adverse side<small>price moves against it</small></div>
-<div class="arrow">→</div>
-<div class="node pix">Loss ladder<small>fixed / 2× / Fib / π÷2</small></div>
-<div class="arrow">→</div>
-<div class="node long">Rescue add<small>improve avg entry</small></div>
-<div class="arrow">→</div>
-<div class="node core">Reduce to core<small>when recovery/TP hits</small></div>
-</div>
-</div>
-<p>The strategy does not try to predict direction at the start. It starts neutral: long and short are both open. The edge, if it exists, must come from <strong>position management</strong>: how the losing side is rescued, how much size is added, when excess size is closed, and how the winning side is trailed.</p>
-<div class="note"><strong>Plain-language version:</strong> when SOL runs up, the short book gets a better chance to average higher. When SOL later falls, the short book can close excess in profit. When SOL runs down, the long book gets the same chance in mirror image.</div>
-</section>
-<section id="setup">
-<h2>2. Market and testing assumptions</h2>
-<div class="grid two">
-<div class="callout">
-<h3>Default strategy assumptions</h3>
-<ul class="list">
-<li><strong>Symbol:</strong> SOLUSDT.</li>
-<li><strong>Chart:</strong> 1-minute replay candles.</li>
-<li><strong>Fees:</strong> 0 by default, with fee/slippage stress tests later.</li>
-<li><strong>Leverage:</strong> 300× headline default.</li>
-<li><strong>Hedge mode:</strong> simultaneous LONG and SHORT books.</li>
-<li><strong>Base size:</strong> dynamic search from <code>0.2</code> to <code>20</code> SOL.</li>
-</ul>
-</div>
-<div class="callout">
-<h3>Data assumption</h3>
-<p>Daily SOLUSDT candles are treated as the real source. The 1-minute candles are generated as many possible intraday universes constrained to the same daily OHLC. That is useful for testing many path shapes, but it is not proof on real exchange 1-minute microstructure.</p>
-<p class="small">The correct label is: <code>daily real</code> + <code>minute synthetic/replay</code>.</p>
-</div>
-</div>
-<div class="table-card" style="margin-top:16px">
-<h3>300× leverage translation</h3>
-<p class="caption">ROE numbers look huge, but at 300× they correspond to tiny underlying price moves.</p>
-<div class="calc">
-<div class="field"><label>Leverage</label><input id="lev" min="1" oninput="calcRoe()" step="1" type="number" value="300"/></div>
-<div class="field"><label>Loss trigger ROE %</label><input id="lossRoe" oninput="calcRoe()" step="1" type="number" value="200"/></div>
-<div class="field"><label>Profit/lock ROE %</label><input id="profitRoe" oninput="calcRoe()" step="1" type="number" value="2"/></div>
-<div><div class="output" id="roeOut">—</div><div class="caption">underlying move equivalents</div></div>
-</div>
-</div>
-</section>
-<section id="state">
-<h2>3. Full state machine</h2>
+
+<section id="flow">
+<h2>The tested state machine</h2>
+<div class="flow"><div class="flow-row"><div class="node long">LONG base<small>equal notional</small></div><div class="node short">SHORT base<small>equal notional</small></div><span class="arrow">→</span><div class="node pix">Trigger + gate<small>losing side only</small></div><span class="arrow">→</span><div class="node">Re-anchor<small>close + delayed reopen</small></div><span class="arrow">→</span><div class="node short">Mega rescue<small>target total multiple</small></div><span class="arrow">→</span><div class="node core">Excess close<small>retain residual hedge</small></div></div></div>
 <div class="steps">
-<div class="step"><strong>Open both books.</strong> At the first price <code>P0</code>, open <code>LONG base_qty_sol</code> and <code>SHORT base_qty_sol</code>.</div>
-<div class="step"><strong>Track each side separately.</strong> Each side has its own quantity, average entry, realized PnL, unrealized PnL, ROE, rescue level, trailing locks, and risk state.</div>
-<div class="step"><strong>Detect adverse movement.</strong> If price rises, the SHORT book suffers. If price falls, the LONG book suffers. The losing side is checked against its next loss-trigger level.</div>
-<div class="step"><strong>Add only when the next ladder level is reached.</strong> The ladder can be fixed, geometric, Fibonacci, PiX π/2, or matched random/uniform control.</div>
-<div class="step"><strong>Choose add size by a separate rule.</strong> Add sizing is not the same as loss spacing. It can be 2× current, total-double, fixed SOL, Fib, PiX, target-total, current-multiple, or risk-budget capped.</div>
-<div class="step"><strong>When the rescued side recovers, close excess size.</strong> The close target can be base core, geometric core, PiX core, or full flatten.</div>
-<div class="step"><strong>Trail the profitable side.</strong> When a side reaches large positive ROE, lock part of the profit using a 100% ROE reserve: for example +200% activation → +100% stop.</div>
-<div class="step"><strong>Rank only by final truth.</strong> Final MTM = realized PnL + ending unrealized PnL. Do not let realized rescue profit hide open tail loss.</div>
+<div class="step"><strong>Open both sides.</strong> The base size is expressed as fixed notional derived from <code>base_sol × $150</code>, then converted to asset quantity at the first close.</div>
+<div class="step"><strong>Identify the losing side.</strong> Re-anchor is eligible when its ROE crosses the configured negative trigger, the opposite side is positive, and the trend gate passes.</div>
+<div class="step"><strong>Close and reopen the loser.</strong> Reopen after the configured number of completed 1m bars and at the configured base multiple.</div>
+<div class="step"><strong>Allow mega rescue after re-anchor.</strong> If the same side again crosses the trigger, add until the configured total multiple is reached, capped by <code>max_total_side_multiplier</code>.</div>
+<div class="step"><strong>Harvest the rescue.</strong> When that rescued side moves the configured percentage beyond its weighted average in the profitable direction, close everything above the residual keep multiple.</div>
+<div class="step"><strong>Respect event caps.</strong> Each policy limits re-anchor and mega-rescue counts; the ending residual hedge remains open unless the replay stop ends the path.</div>
 </div>
-</section>
-<section id="formulas">
-<h2>4. Accounting formulas</h2>
-<div class="grid two">
-<div class="formula"><div class="title">LONG book</div>
-price_move_pct = (price - avg_entry) / avg_entry × 100<br/>
-roe_pct        = price_move_pct × leverage<br/>
-unrealized     = qty_sol × (price - avg_entry)
-    </div>
-<div class="formula"><div class="title">SHORT book</div>
-price_move_pct = (avg_entry - price) / avg_entry × 100<br/>
-roe_pct        = price_move_pct × leverage<br/>
-unrealized     = qty_sol × (avg_entry - price)
-    </div>
-</div>
-<div class="formula" style="margin-top:16px"><div class="title">Final truth metric</div>
-final_mtm_usdt = realized_pnl_usdt + ending_unrealized_pnl_usdt<br/>
-margin_required ≈ abs(qty_sol) × current_price / leverage
-  </div>
-</section>
-<section id="ladders">
-<h2>5. Loss-trigger ladders — when to add</h2>
-<p>The loss ladder answers only one question: <strong>when</strong> should the losing side be allowed to add?</p>
-<div class="table-card">
-<div class="table-wrap"><table>
-<thead><tr><th>Family</th><th>Formula</th><th>Example with base loss 200% ROE</th><th>Meaning</th></tr></thead>
-<tbody>
-<tr><td><span class="tag">Fixed linear</span></td><td><code>-200 × level</code></td><td>-200, -400, -600, -800…</td><td>Simple control. Adds at equal ROE intervals.</td></tr>
-<tr><td><span class="tag gold">Geometric 2×</span></td><td><code>-200 × 2^(level-1)</code></td><td>-200, -400, -800, -1600…</td><td>Your corrected idea: deeper adds become increasingly rarer.</td></tr>
-<tr><td><span class="tag cyan">PiX π/2 float</span></td><td><code>-200 × (π/2)^(level-1)</code></td><td>-200, -314, -493.5, -775.2…</td><td>π/2 sits between fixed and hard 2× expansion.</td></tr>
-<tr><td><span class="tag green">Fibonacci</span></td><td><code>-200 × [1,2,3,5,8,13…]</code></td><td>-200, -400, -600, -1000, -1600…</td><td>Classical organic spacing control.</td></tr>
-<tr><td><span class="tag red">Random / uniform</span></td><td>matched range and count</td><td>same min/max/count as tested family</td><td>Anti-pattern-trap control. PiX must beat this fairly.</td></tr>
-</tbody>
-</table></div>
-</div>
-</section>
-<section id="adds">
-<h2>6. Add sizing — how much to add</h2>
-<p>This is one of the most important distinctions. The arena must test PiX and Fibonacci not only for <em>where</em> loss triggers happen, but also for <em>how much</em> size is added or targeted.</p>
-<div class="note"><strong>Key separation:</strong> <code>loss_ladder_mode</code> = when to add. <code>add_sizing_mode</code> = how much new quantity to add. <code>target_total_mode</code> = what total quantity should exist after the add. <code>core_keep_mode</code> = what quantity remains after recovery.</div>
-<div class="table-card" style="margin-top:16px">
-<div class="table-wrap"><table>
-<thead><tr><th>Add mode</th><th>Rule</th><th>Example from 2 SOL</th><th>Risk profile</th></tr></thead>
-<tbody>
-<tr><td><span class="tag red">add_2x_current</span></td><td><code>add_qty = 2 × current_qty</code></td><td>2 → add 4 → 6; 6 → add 12 → 18; 18 → add 36 → 54</td><td>Very explosive. Must be capped and audited.</td></tr>
-<tr><td><span class="tag gold">total_double</span></td><td><code>add_qty = current_qty</code></td><td>2 → 4 → 8 → 16</td><td>Cleaner geometric control.</td></tr>
-<tr><td><span class="tag">fixed_sol_add</span></td><td><code>add_qty = fixed X SOL</code></td><td>2 → 4 → 6 → 8 if X=2</td><td>Simple and interpretable.</td></tr>
-<tr><td><span class="tag green">base_multiple_fib</span></td><td><code>add = base × Fib(level)</code></td><td>add 2, 4, 6, 10, 16… if base=2</td><td>Tests Fib as add-size sequence.</td></tr>
-<tr><td><span class="tag cyan">base_multiple_pix</span></td><td><code>add = base × (π/2)^(level-1)</code></td><td>add 2, 3.14, 4.93, 7.75… if base=2</td><td>Tests PiX as add-size sequence.</td></tr>
-<tr><td><span class="tag green">target_total_fib</span></td><td><code>total = base × FibTarget(level)</code></td><td>target 4, 6, 10, 16…</td><td>Safer than compounding from current size.</td></tr>
-<tr><td><span class="tag cyan">target_total_pix</span></td><td><code>total = base × PiXTarget(level)</code></td><td>target by π/2 sequence</td><td>Controlled PiX total-size ladder.</td></tr>
-<tr><td><span class="tag red">current_multiple_pix/fib</span></td><td><code>add = current × sequence(level)</code></td><td>grows from current book size</td><td>Potentially extreme; must obey hard caps.</td></tr>
-<tr><td><span class="tag green">risk_budget_add</span></td><td>largest add allowed by risk caps</td><td>depends on wallet, silo, margin, liquidation buffer</td><td>Governed/safety variant.</td></tr>
-</tbody>
-</table></div>
-</div>
-</section>
-<section id="core">
-<h2>7. Core keep — what remains after rescue</h2>
-<p>After a rescued side reaches its escape trigger, it closes excess size. The key question is: how much should remain?</p>
-<div class="grid three">
-<div class="callout"><h3>Fixed base keep</h3><p>Always return to the original base, for example 2 SOL. This is the simplest control.</p><pre>core_keep = base_qty</pre></div>
-<div class="callout"><h3>BD geometric keep</h3><p>After deeper rescue, keep a larger core. With base 2 SOL: level 1 keeps 2, level 2 keeps 4, level 3 keeps 8.</p><pre>core_keep = base × 2^(L-1)</pre></div>
-<div class="callout"><h3>PiX core keep</h3><p>Use the PiX sequence to decide the remaining core. This tests whether π/2 gives a smoother middle path than hard doubling.</p><pre>core_keep = base × PiX(L)</pre></div>
-</div>
-<details><summary>Why core keep matters</summary><p>If the strategy always flattens back to 2 SOL, it may harvest rescue profit but lose the long-term entry separation effect. If it keeps too much, it may carry dangerous open tail. This must be measured, not guessed.</p></details>
-</section>
-<section id="exits">
-<h2>8. Profit exits and trailing logic</h2>
-<div class="grid two">
-<div class="callout">
-<h3>A. Rescue escape close</h3>
-<p>When the rescued side comes back into profit, close excess size down to the configured core.</p>
-<pre>if rescued_side_roe &gt;= escape_tp_roe:
-    close_qty = current_qty - core_keep_qty</pre>
-<p>Legacy default starts with <code>escape_tp_roe = +2%</code>, but the arena should test larger values because +2% ROE at 300× is only about 0.0067% underlying price movement.</p>
-</div>
-<div class="callout">
-<h3>B. Profit-tranche trailing</h3>
-<p>When a side becomes strongly profitable, protect part of the profit with a 100% ROE reserve.</p>
-<pre>+200% ROE activation → stop/lock at +100%
-+400% ROE activation → stop/lock at +300%
-+500% ROE activation → stop/lock at +400%</pre>
-<p>The stop closes a tranche: for example half of current quantity or half of excess above core.</p>
-</div>
-</div>
-<div class="table-card" style="margin-top:16px">
-<h3>Default manual profit ladder</h3>
-<div class="table-wrap"><table>
-<thead><tr><th>Activation</th><th>Lock / trailing stop</th><th>Default action</th><th>What to test</th></tr></thead>
-<tbody>
-<tr><td class="num">+200% ROE</td><td class="num">+100% ROE</td><td>Close/protect about half of position or excess.</td><td>Current vs excess tranche sizing.</td></tr>
-<tr><td class="num">+400% ROE</td><td class="num">+300% ROE</td><td>Raise lock and/or close another tranche.</td><td>Protect core true/false.</td></tr>
-<tr><td class="num">+500% ROE</td><td class="num">+400% ROE</td><td>Continue locking favorable move with 100% reserve.</td><td>Linear, geometric, PiX, Fib profit ladders.</td></tr>
-<tr><td class="num">+600% and beyond</td><td class="num">activation − 100%</td><td>Continue by configured ladder.</td><td>Which ladder reduces tail without killing runners?</td></tr>
-</tbody>
-</table></div>
+<div class="grid two" style="margin-top:16px">
+<div class="formula"><div class="title">ROE approximation</div>price move % ≈ |ROE %| ÷ leverage</div>
+<div class="calc"><div class="field"><label for="lev">Leverage</label><input id="lev" type="number" value="300" oninput="calcRoe()"/></div><div class="field"><label for="roe">ROE trigger</label><input id="roe" type="number" value="500" oninput="calcRoe()"/></div><div class="output" id="roeOut"></div></div>
 </div>
 </section>
 
-<section id="manual-protocol">
-<h2>9. SOL manual protocols — refreshed from the completed v1.3c run</h2>
-<div class="good"><strong>Yes — this replaces the old manual table.</strong> The previous “current best human-readable version” was not refreshed with the final v1.3c evidence. It mixed older manual ideas — winner-side adding near +300% ROE, staged loser doubling and multi-step winner exits — with mechanisms that the completed real-1m arena did not actually execute. The two sections below translate only behavior that was genuinely replayed.</div>
-<div class="grid two" style="margin-top:16px">
-  <div class="card"><div class="label">Balanced SOL seed</div><div class="num green">P2 · 6/6</div><p class="small">A robust candidate that beat matched controls on BTC, ETH and SOL under zero and realistic cost models. On SOL zero-cost it produced +$156.68 MTM with 8.43% max drawdown.</p></div>
-  <div class="card"><div class="label">Max-risk SOL seed</div><div class="num red">P5 · +$1.67K</div><p class="small">A full-path, fixed-$500 high-risk candidate. On SOL zero-cost it produced +$1,673.27 MTM and +$1,386.71 realized with 68.79% max drawdown.</p></div>
+<section id="profit">
+<h2>How profit taking worked</h2>
+<div class="grid two">
+<div class="good"><h3>What happened</h3><ul class="list"><li>The enlarged formerly losing side recovered past its weighted average entry.</li><li>The engine closed the excess quantity in one event.</li><li>A configured 1×, 2×, 3× or 5× base residual remained.</li><li>Realized rescue profit and ending unrealized hedge PnL were both counted in final MTM.</li></ul></div>
+<div class="note"><h3>What did not happen</h3><ul class="list"><li>No adding to the already profitable side.</li><li>No +200%/+400% winner ladder.</li><li>No multi-stage winner scale-out.</li><li>No trailing winner stop.</li><li>No execution of the stored <code>close_winner_on_mega</code> flag.</li></ul></div>
 </div>
-<div class="danger" style="margin-top:16px"><strong>Truth boundary:</strong> “zero-cost” in v1.3c means fee = 0, slippage = 0 and funding = 0. A venue may offer zero trading fees while funding and execution slippage still exist. Also, the <code>sep...</code> field in the policy name was stored but not enforced, and <code>close_winner_on_mega</code> was not executed. Neither is used as an operational rule below.</div>
-<div class="note" style="margin-top:16px"><strong>What is intentionally absent:</strong> no adding to the profitable side, no +300% winner pyramid, no staged winner scale-out and no trailing winner. Those remain valid v1.4 experiments, but they are not presented here as v1.3c-tested behavior.</div>
+</section>
+
+<section id="evidence">
+<h2>Completed evidence</h2>
+<div class="grid cards"><div class="card"><div class="label">Tasks</div><div class="num green">300,000</div><p class="small">complete</p></div><div class="card"><div class="label">Candidates</div><div class="num cyan">10,000</div><p class="small">wide deterministic sample</p></div><div class="card"><div class="label">Control-beating rows</div><div class="num violet">4,785</div><p class="small">7.98% of candidate rows</p></div><div class="card"><div class="label">Full 6/6</div><div class="num gold">119</div><p class="small">1.19% of configurations</p></div></div>
+<div class="good"><strong>Why this matters:</strong> the result was selective. Roughly 92% of candidate tests did not beat their best matched control, yet a persistent frontier survived all six asset×cost comparisons.</div>
+<div class="grid six" style="margin-top:16px"><div class="card"><div class="label">P0 Survival Max</div><div class="num cyan">13</div><p class="small">full 6/6 configurations</p></div><div class="card"><div class="label">P1 Conservative</div><div class="num cyan">21</div><p class="small">full 6/6 configurations</p></div><div class="card"><div class="label">P2 Balanced</div><div class="num cyan">22</div><p class="small">full 6/6 configurations</p></div><div class="card"><div class="label">P3 Aggressive</div><div class="num cyan">23</div><p class="small">full 6/6 configurations</p></div><div class="card"><div class="label">P4 Moonshot</div><div class="num cyan">26</div><p class="small">full 6/6 configurations</p></div><div class="card"><div class="label">P5 Tiny-Wallet Blast</div><div class="num cyan">14</div><p class="small">full 6/6 configurations</p></div></div>
+</section>
+
+<section id="lanes">
+<h2>Risk lanes and representative robust seeds</h2>
+<p class="muted">These are not one universal ranking. Each profile has a different utility function. High PnL and high risk remain visible rather than being deleted by a single wallet preference.</p>
+<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Lane</th><th>Representative 6/6 seed</th><th>Avg MTM</th><th>Worst MTM</th><th>Avg score lift</th><th>Worst score lift</th></tr></thead><tbody><tr>
+<td>P0 Survival Max</td>
+<td><code>deep_p0_t500_sep300_m50_b1p1_same3_83dc7823</code></td>
+<td class="num">$220.69</td>
+<td class="num">$166.04</td>
+<td class="num">+127.49</td>
+<td class="num">+76.68</td>
+</tr><tr>
+<td>P1 Conservative</td>
+<td><code>deep_p1_t2000_sep2000_m40_b1p0125_flat3_ce1751a4</code></td>
+<td class="num">$202.12</td>
+<td class="num">$147.60</td>
+<td class="num">+120.72</td>
+<td class="num">+84.39</td>
+</tr><tr>
+<td>P2 Balanced</td>
+<td><code>deep_p2_t2000_sep1100_m50_b1p15_none_9cb5d2d0</code></td>
+<td class="num">$240.14</td>
+<td class="num">$201.91</td>
+<td class="num">+168.55</td>
+<td class="num">+26.12</td>
+</tr><tr>
+<td>P3 Aggressive</td>
+<td><code>deep_p3_t1600_sep700_m50_b1p5525_none_71657874</code></td>
+<td class="num">$468.31</td>
+<td class="num">$399.48</td>
+<td class="num">+436.67</td>
+<td class="num">+379.24</td>
+</tr><tr>
+<td>P4 Moonshot</td>
+<td><code>deep_p4_t2000_sep1100_m60_b3p6_none_4d8476d0</code></td>
+<td class="num">$922.13</td>
+<td class="num">$772.98</td>
+<td class="num">+451.52</td>
+<td class="num">+21.06</td>
+</tr><tr>
+<td>P5 Tiny-Wallet Blast</td>
+<td><code>deep_p5_t2000_sep500_m60_b2p76_flat5_68e39a6f</code></td>
+<td class="num">$853.98</td>
+<td class="num">$626.96</td>
+<td class="num">+582.30</td>
+<td class="num">+465.72</td>
+</tr></tbody></table></div></div>
 </section>
 
 <section id="manual-balanced-sol">
-<h2>9A. Balanced SOL trading approach — robust P2 seed</h2>
-<p class="muted">Candidate: <code>deep_p2_t500_sep1500_m50_b1p15_same3_e55b312a</code>. This seed is used instead of the highest single SOL P2 row because it achieved a complete 6/6 control win across BTC, ETH and SOL under both zero and realistic costs, while still producing positive realized PnL on SOL.</p>
-<div class="grid cards">
-  <div class="card"><div class="label">SOL MTM PnL</div><div class="num green">+$156.68</div><p class="small">Final virtual equity: $656.68 from the fixed $500 baseline.</p></div>
-  <div class="card"><div class="label">Realized PnL</div><div class="num green">+$60.39</div><p class="small">Another +$96.29 remained unrealized in the ending hedge.</p></div>
-  <div class="card"><div class="label">Max drawdown</div><div class="num cyan">8.43%</div><p class="small">Measured against the fixed $500 wallet during the Jan–Jun 2026 path.</p></div>
-  <div class="card"><div class="label">Max margin</div><div class="num cyan">6.19%</div><p class="small">Arena model at 300× leverage; not a venue liquidation guarantee.</p></div>
-</div>
-<div class="table-card" style="margin-top:16px">
-<h3>Balanced SOL settings actually replayed</h3>
-<div class="table-wrap"><table>
-<thead><tr><th>Setting</th><th>v1.3c value</th><th>Manual meaning</th></tr></thead>
-<tbody>
-<tr><td>Market / period</td><td>SOLUSDT real 1m · 1 Jan–14 Jun 2026</td><td>One historical interval, not universal proof.</td></tr>
-<tr><td>Cost row</td><td>Fee 0 · slippage 0 · funding 0</td><td>Matches the requested zero-fee SOL view; live funding/slippage remain separate.</td></tr>
-<tr><td>Wallet baseline</td><td>$500 virtual · 300× cross</td><td>Wallet is a measurement context, not a universal eligibility gate.</td></tr>
-<tr><td>Initial hedge</td><td>$172.50 notional per side</td><td>At the test’s $124.62 first close: about <strong>1.3842 SOL LONG + 1.3842 SOL SHORT</strong>. At another entry price use $172.50 ÷ SOL price.</td></tr>
-<tr><td>Re-anchor trigger</td><td>−500% ROE + positive winner + <code>same3</code></td><td>At 300×, −500% ROE is roughly a 1.67% adverse price move before execution details. The last three closes must move monotonically in one direction.</td></tr>
-<tr><td>Re-anchor action</td><td>Close bad side; reopen after 3 bars at 1× base</td><td>Maximum two re-anchors. The profitable side remains open and unchanged.</td></tr>
-<tr><td>Mega rescue</td><td>One event to 50× base total</td><td>After at least one re-anchor, if the bad side again reaches −500% ROE, increase it to about <strong>69.2104 SOL total</strong> at the test’s starting base.</td></tr>
-<tr><td>Profit taking</td><td>+0.75% price from rescued-side average</td><td>Close the excess in one action and retain 2× base, about <strong>2.7684 SOL</strong>. This is not a staged TP ladder.</td></tr>
-<tr><td>Winner management</td><td>No winner add; no trailing; no forced winner close</td><td>Winner-side pyramiding was not part of this result.</td></tr>
-<tr><td>Observed events</td><td>2 re-anchors · 1 mega rescue · 1 excess close · 9 trades</td><td>The full historical path completed without the fixed-$500 stop.</td></tr>
-</tbody>
-</table></div>
-</div>
-<div class="table-card" style="margin-top:16px">
-<h3>Balanced manual sequence</h3>
-<div class="table-wrap"><table>
-<thead><tr><th>Step</th><th>Condition</th><th>Action</th></tr></thead>
-<tbody>
-<tr><td>1</td><td>Start a new SOL cycle</td><td>Open equal LONG and SHORT with $172.50 notional on each side.</td></tr>
-<tr><td>2</td><td>One side reaches −500% ROE, the other is positive, and the last 3 closes form a one-direction sequence</td><td>Close the losing side. Do not add to the winner.</td></tr>
-<tr><td>3</td><td>Three completed 1m bars later</td><td>Reopen the losing direction at the original 1× base quantity. Allow at most two re-anchors.</td></tr>
-<tr><td>4</td><td>After a re-anchor, the same side again reaches −500% ROE</td><td>Use the single mega rescue and lift that side to 50× base total.</td></tr>
-<tr><td>5</td><td>The rescued side trades 0.75% beyond its weighted average entry in the profitable direction</td><td>Close all excess above 2× base in one order; keep the 2× residual.</td></tr>
-<tr><td>6</td><td>After the rescue exit</td><td>Keep the remaining hedge. The tested policy has no second mega event and no winner-side profit ladder.</td></tr>
-</tbody>
-</table></div>
-</div>
-<div class="good" style="margin-top:16px"><strong>Why this is called balanced despite a 50× rescue:</strong> the starting base was small, only one mega event was allowed, and the measured SOL path produced 8.43% max drawdown and 6.19% max margin. “Balanced” describes the observed risk path and profile objective, not a small rescue multiplier.</div>
+<h2>Balanced SOL approach — robust P2 seed</h2>
+<p><code>deep_p2_t500_sep1500_m50_b1p15_same3_e55b312a</code></p>
+<div class="grid cards"><div class="card"><div class="label">Zero-cost SOL MTM</div><div class="num green">+$156.68</div></div><div class="card"><div class="label">Realized</div><div class="num green">+$60.39</div></div><div class="card"><div class="label">Max drawdown</div><div class="num cyan">8.43%</div></div><div class="card"><div class="label">Cross-asset status</div><div class="num gold">6/6</div></div></div>
+<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Element</th><th>Tested setting</th><th>Human-readable action</th></tr></thead><tbody>
+<tr><td>Initial hedge</td><td>$172.50 notional per side</td><td>At another entry price, quantity = $172.50 ÷ SOL price for both LONG and SHORT.</td></tr>
+<tr><td>Re-anchor</td><td>−500% ROE · <code>same3</code> · max 2</td><td>If the loser crosses the trigger while the winner is positive and the last three closes move in one direction, close the loser.</td></tr>
+<tr><td>Reopen</td><td>After 3 bars · 1× base</td><td>Reopen the losing direction at the original base quantity.</td></tr>
+<tr><td>Mega rescue</td><td>One event · target 50× base</td><td>After a re-anchor, if the side again reaches −500% ROE, lift it to 50× the original base.</td></tr>
+<tr><td>Profit taking</td><td>+0.75% from rescued average</td><td>Close all quantity above 2× base in one event; keep the 2× residual.</td></tr>
+<tr><td>Winner side</td><td>No add · no trail · no force-close</td><td>Leave it unchanged in the tested engine.</td></tr>
+</tbody></table></div></div>
+<div class="note"><strong>The <code>sep1500</code> name field was not enforced.</strong> It is deliberately not used as an instruction here.</div>
 </section>
 
 <section id="manual-max-risk-sol">
-<h2>9B. Max-risk SOL trading approach — full-path P5 seed</h2>
-<p class="muted">Candidate: <code>deep_p5_t1300_sep2000_m50_b3p24_same3_b478159a</code>. This is the strongest completed SOL P5 zero-cost result in the final extract. It is intentionally a high-PnL / high-drawdown branch, not a safe universal setting.</p>
-<div class="grid cards">
-  <div class="card"><div class="label">SOL MTM PnL</div><div class="num green">+$1,673.27</div><p class="small">Final virtual equity: $2,173.27 from the fixed $500 baseline, about 4.35× ending equity.</p></div>
-  <div class="card"><div class="label">Realized PnL</div><div class="num green">+$1,386.71</div><p class="small">Another +$286.56 remained unrealized in the ending hedge.</p></div>
-  <div class="card"><div class="label">Max drawdown</div><div class="num red">68.79%</div><p class="small">Large enough that this belongs only in an explicit all-risk capital lane.</p></div>
-  <div class="card"><div class="label">Max margin</div><div class="num red">18.97%</div><p class="small">Arena-model margin at 300×; actual liquidation mechanics can differ materially.</p></div>
-</div>
-<div class="table-card" style="margin-top:16px">
-<h3>Max-risk SOL settings actually replayed</h3>
-<div class="table-wrap"><table>
-<thead><tr><th>Setting</th><th>v1.3c value</th><th>Manual meaning</th></tr></thead>
-<tbody>
-<tr><td>Market / period</td><td>SOLUSDT real 1m · 1 Jan–14 Jun 2026</td><td>Full tested interval completed under the fixed-$500 baseline.</td></tr>
-<tr><td>Cost row</td><td>Fee 0 · slippage 0 · funding 0</td><td>Zero-cost research row; real funding and execution remain external risks.</td></tr>
-<tr><td>Initial hedge</td><td>$486 notional per side</td><td>At $124.62: about <strong>3.8999 SOL LONG + 3.8999 SOL SHORT</strong>. At another entry price use $486 ÷ SOL price.</td></tr>
-<tr><td>Re-anchor trigger</td><td>−1300% ROE + positive winner + <code>same3</code></td><td>Approximately a 4.33% adverse price move at 300× before execution details.</td></tr>
-<tr><td>Re-anchor action</td><td>Close bad side; reopen 2 bars later at 3× base</td><td>Reopen at about <strong>11.6996 SOL</strong>; maximum two re-anchor events.</td></tr>
-<tr><td>Mega rescue</td><td>Up to two events to 50× base total</td><td>Increase the losing side to about <strong>194.9928 SOL total</strong>. Hard configuration ceiling: 60× base, about 233.9913 SOL.</td></tr>
-<tr><td>Profit taking</td><td>+3.0% price from rescued-side average</td><td>Close all excess in one action and retain 3× base, about <strong>11.6996 SOL</strong>. Up to two rescue/exit cycles.</td></tr>
-<tr><td>Winner management</td><td>No winner add; no trailing; winner not force-closed</td><td>The large profit came from rescuing and harvesting the formerly losing side.</td></tr>
-<tr><td>Observed events</td><td>2 re-anchors · 2 mega rescues · 2 excess closes · 12 trades</td><td>Zero-cost realized PnL +$1,386.71; final MTM +$1,673.27.</td></tr>
-</tbody>
-</table></div>
-</div>
-<div class="table-card" style="margin-top:16px">
-<h3>Max-risk manual sequence</h3>
-<div class="table-wrap"><table>
-<thead><tr><th>Step</th><th>Condition</th><th>Action</th></tr></thead>
-<tbody>
-<tr><td>1</td><td>Start a dedicated all-risk SOL cycle</td><td>Open equal LONG and SHORT with $486 notional on each side.</td></tr>
-<tr><td>2</td><td>A side reaches −1300% ROE, the opposite side is positive, and <code>same3</code> passes</td><td>Close the losing side completely.</td></tr>
-<tr><td>3</td><td>Two completed 1m bars later</td><td>Reopen the losing direction at 3× base. Allow at most two re-anchors.</td></tr>
-<tr><td>4</td><td>After re-anchoring, that side again reaches −1300% ROE</td><td>Increase it to 50× base total. Do not add to the profitable side.</td></tr>
-<tr><td>5</td><td>The rescued side trades 3.0% beyond its weighted average in the profitable direction</td><td>Close everything above 3× base in one order and retain the 3× residual.</td></tr>
-<tr><td>6</td><td>A later second valid cycle appears</td><td>The policy permits one more re-anchor, mega rescue and excess close.</td></tr>
-<tr><td>7</td><td>After two cycles</td><td>Keep the residual hedge; no further mega event is allowed by this seed.</td></tr>
-</tbody>
-</table></div>
-</div>
-<div class="danger" style="margin-top:16px"><strong>Scale warning:</strong> 50× refers to total quantity relative to the initial base. The test’s mega position was about 195 SOL on one side. At 300×, displayed margin can look modest while liquidation, funding, mark-price and execution risks remain extreme. This is a deliberate max-risk lane, not a “balanced” recommendation.</div>
-<details style="margin-top:16px">
-<summary>Even more extreme SOL watchlist — raw P4 PnL leader</summary>
-<p>The candidate <code>deep_p4_t1000_sep300_m30_b5p4_same5_37ae672d</code> reached <strong>+$2,233.19 MTM</strong> and <strong>+$873.42 realized</strong> in the zero-cost SOL test by 6 February 2026. Its configuration used $810 notional per side, one −1000% <code>same5</code> re-anchor, reopening at 3× base, up to two 30× mega rescues, a +2% excess close and a 5× residual.</p>
-<p>It was stopped by the fixed-$500 profile drawdown rule, not by negative final equity. Because the path was truncated, it is preserved as an extreme v1.4 capital-truth seed rather than promoted as a complete manual protocol. A larger virtual wallet may have carried it, but only full-path wallet-neutral replay can determine how much capital was actually required.</p>
-</details>
-</section>
-
-<section id="pix">
-<h2>10. What PiX is doing here</h2>
-<div class="good"><strong>Correct framing:</strong> PiX does not claim that markets magically follow π. PiX is a disciplined generator of candidate sequences. The arena then tests those sequences against Fibonacci, fixed/geometric, uniform, random, and no-add/no-trail controls.</div>
-<div class="grid three" style="margin-top:16px">
-<div class="card"><div class="label">π/2 base</div><div class="num cyan">1.570796</div><p class="small">A smoother growth factor than 2×, close to but distinct from φ ≈ 1.618.</p></div>
-<div class="card"><div class="label">Trading slots</div><div class="num green">5+</div><p class="small">Loss spacing, add sizing, target total, core keep, profit ladder, time windows.</p></div>
-<div class="card"><div class="label">Control requirement</div><div class="num gold">Matched</div><p class="small">PiX must beat matched alternatives under the same scenario universes.</p></div>
-</div>
-<details open=""><summary>PiX sequence examples</summary>
-<p>Float π/2 loss ladder from base 200% ROE:</p>
-<pre>-200, -314.16, -493.48, -775.16, -1217.61, -1912.43...</pre>
-<p>Rounded unique PiX variants should also be tested because a live parameter grid often needs discrete levels.</p>
-</details>
-</section>
-<section id="arena">
-<h2>11. Standalone arena design</h2>
-<p>This should be a separate Python arena for this one recipe. The big v0.9 arena can be used for infrastructure ideas — resume, workers, reporting — but this strategy should not be tangled into the broad arena yet.</p>
-<div class="grid two">
-<div class="callout">
-<h3>Infrastructure to reuse conceptually</h3>
-<ul class="list">
-<li>Multi-worker execution.</li>
-<li>Resume-safe task results JSONL.</li>
-<li>Deterministic task IDs and config IDs.</li>
-<li>Progress state JSON.</li>
-<li>Compact bundle collector.</li>
-<li>Exact OHLC reconstruction checks.</li>
-<li>Realized vs unrealized vs final MTM separation.</li>
-</ul>
-</div>
-<div class="callout">
-<h3>What not to do</h3>
-<ul class="list">
-<li>Do not build a live bot.</li>
-<li>Do not use exchange APIs or keys.</li>
-<li>Do not rank by realized PnL alone.</li>
-<li>Do not promote a parameter set from one lucky 1m path.</li>
-<li>Do not let optimistic intrabar order create fake wins.</li>
-</ul>
-</div>
-</div>
-</section>
-<section id="multi">
-<h2>12. Multi-universe anti-overfit rule</h2>
-<div class="note"><strong>Newest critical requirement:</strong> one generated 1-minute dataset is not enough. The arena must generate many different 1m universes inside the same real daily SOLUSDT candles and search for parameters that survive across those universes.</div>
-<div class="flow" style="margin-top:16px">
-<div class="flow-row">
-<div class="node core">Real daily SOL candles<small>fixed source</small></div><div class="arrow">→</div>
-<div class="node pix">Universe A<small>synthetic 1m path</small></div><div class="node pix">Universe B<small>synthetic 1m path</small></div><div class="node pix">Universe C<small>synthetic 1m path</small></div>
-</div>
-<div class="flow-row">
-<div class="node long">Train<small>discover candidates</small></div><div class="arrow">→</div>
-<div class="node short">Validation<small>select robust configs</small></div><div class="arrow">→</div>
-<div class="node core">Fresh<small>final unseen check</small></div>
-</div>
-</div>
-<div class="table-card" style="margin-top:16px">
-<div class="table-wrap"><table>
-<thead><tr><th>Truth level</th><th>Meaning</th><th>Promotion allowed?</th></tr></thead>
-<tbody>
-<tr><td><span class="tag red">single_universe_result</span></td><td>One generated 1m path. Useful for debug only.</td><td>No.</td></tr>
-<tr><td><span class="tag gold">cross_universe_result</span></td><td>Same parameters across multiple generated 1m paths.</td><td>Maybe, if risk is acceptable.</td></tr>
-<tr><td><span class="tag green">robust_parameter_region</span></td><td>A stable neighborhood of parameters works, not one exact lucky tuple.</td><td>Yes, if controls and risk gates pass.</td></tr>
-</tbody>
-</table></div>
-</div>
-</section>
-<section id="risk">
-<h2>13. Risk model and audit requirements</h2>
-<div class="grid two">
-<div class="callout"><h3>Cross-hedge margin</h3><p>Optimistic / venue-dependent model. The long and short books share wallet equity, and the winning side may help absorb the losing side.</p></div>
-<div class="callout"><h3>Side-isolated strict</h3><p>Conservative audit model. Each side can fail on its own if its loss exceeds its side margin. A config that only works under cross margin must be labeled venue-dependent.</p></div>
-</div>
-<div class="danger" style="margin-top:16px"><strong>Big risk:</strong> at 300×, the distance to liquidation can be very small. Any strategy using adverse adds must report liquidation buffer, margin use, max gross SOL, open tail, account ruin, and side-isolated failure flags.</div>
-<details><summary>Core metrics that matter</summary>
-<ul class="list">
-<li><code>final_mtm_usdt</code>, not just realized PnL.</li>
-<li><code>ending_unrealized_pnl_usdt</code>.</li>
-<li><code>open_tail_risk_usdt</code>.</li>
-<li><code>max_margin_required_usdt</code>.</li>
-<li><code>min_liquidation_buffer_pct</code>.</li>
-<li><code>survival_rate</code> and <code>account_ruin_rate</code>.</li>
-<li><code>pix_lift_vs_fib</code>, <code>pix_lift_vs_random</code>, <code>pix_lift_vs_uniform</code>.</li>
-</ul>
-</details>
-</section>
-<section id="pseudo">
-<h2>14. Strategy pseudo-code</h2>
-<pre>for each scenario_universe:
-    generate 1m paths constrained to real SOL daily OHLC
-    audit daily reconstruction == exact
-
-for each config:
-    open LONG base_qty at P0
-    open SHORT base_qty at P0
-
-    for each 1m bar:
-        choose conservative intrabar path
-
-        for side in [LONG, SHORT]:
-            update avg_entry, qty, ROE, unrealized, margin, liq_buffer
-
-            if side is adverse and reanchor_trigger_hit:
-                if profile_allows_reanchor and trend_or_flat_gate_passes:
-                    close losing leg and record realized reanchor loss
-                    reopen after configured delay closer to current price
-                    update entry separation and whipsaw metrics
-
-            if entry_separation_target_hit and huge_add_trigger_hit:
-                add_qty = profile_bounded_huge_add(side, target_total_mult)
-                add only if wallet/silo/risk caps allow
-                update avg_entry, rescue level, and mega_rescue_events
-
-            if side is adverse and next_loss_trigger_hit and not in reanchor branch:
-                add_qty = add_sizing_rule(side, level, sequence_family)
-                add only if risk caps allow
-                update avg_entry and rescue level
-
-            if side is rescued and escape_trigger_hit:
-                core = core_keep_rule(deepest_rescue_level)
-                close excess qty down to core
-                record realized PnL
-
-            if side is strongly profitable:
-                update profit_peak
-                create/update tranche trailing locks
-
-            if trailing lock hit:
-                close configured tranche
-                protect core unless testing protect_core=false
-
-    final_mtm = realized_pnl + ending_unrealized_pnl
-    write row with risk, rescue, margin, and control metrics</pre>
-</section>
-<section id="success">
-<h2>15. What success would look like</h2>
-<div class="grid two">
-<div class="good"><h3>Promising result</h3>
-<ul class="list">
-<li>Positive median final MTM across validation/fresh universes.</li>
-<li>Low or zero account ruin rate.</li>
-<li>Open tail not eating realized rescue profit.</li>
-<li>PiX, Fib, direct mega, or re-anchor variant beats matched controls fairly.</li>
-<li>Promoted re-anchor rows preserve real <code>reanchor_enabled</code> / <code>mega_rescue_enabled</code> behavior, not only labels.</li>
-<li>Parameter region is stable, not one lucky config.</li>
-</ul>
-</div>
-<div class="danger"><h3>False win / rejection pattern</h3>
-<ul class="list">
-<li>High realized PnL but negative final MTM.</li>
-<li>Works only on one generated minute universe.</li>
-<li>Works only under favorable-first intrabar sequencing.</li>
-<li>Requires impossible side-isolated liquidation survival.</li>
-<li>Add sizing explodes gross SOL or margin.</li>
-<li>Promoted policy name says re-anchor, but event counts show <code>reanchor_events=0</code> and <code>mega_rescue_events=0</code>.</li>
-</ul>
-</div>
-</div>
-<div class="callout" style="margin-top:16px"><h3>Bottom line</h3><p>This is not a “trust it because the idea sounds smart” strategy. The compact side-run and v1.1 Broad Scout found enough positive evidence to justify the full standalone truth-machine arena, and v1.2 now passes the event-preservation proof inside offline replay. The next question is harder: whether hedge separation + profile-specific re-anchor + bounded huge rescue + excess-close harvesting survives real exchange 1m microstructure, fees, slippage, and latency.</p></div>
-</section>
-<section id="checklist">
-<h2>16. Builder checklist — wallet-neutral v1.4</h2>
-<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Component</th><th>Must exist</th></tr></thead><tbody>
-<tr><td>Preservation</td><td>Import every v1.3c candidate and control as seed/regression evidence; never discard a strategy solely for failing one wallet.</td></tr>
-<tr><td>Capital truth</td><td>Full-path equity trace, minimum tested wallet for 100% survival on each tested path, wallet tiers from $100 to $1,000,000 and explicit full-loss probability.</td></tr>
-<tr><td>Risk/PnL lanes</td><td>Separate P0–P5 and Pareto frontiers for safety, capital efficiency, absolute PnL, short-horizon blast and high-risk moonshot.</td></tr>
-<tr><td>Rolling validation</td><td>Multiple starts/ends, walk-forward train/validation/holdout, 1h–90d windows and forced-close realized/MTM accounting.</td></tr>
-<tr><td>Controls</td><td>Matched by symbol, base policy, actual notional/base scale, leverage, costs, horizon, wallet and risk regime; simple ladder and no-reanchor remain candidate families too.</td></tr>
-<tr><td>Phenotypes</td><td><code>action_sequence_hash</code>, <code>outcome_hash</code> and <code>phenotype_hash</code>; alias/lineage reports for different labels producing identical behavior.</td></tr>
-<tr><td>Re-anchor semantics</td><td>Actually enforce target separation, define delay 0/1 behavior, verify all named fields with selftests and report whipsaw tax.</td></tr>
-<tr><td>Profit side</td><td>Winner-side additions, multi-stage scale-out, trailing, residual core, close-winner-on-mega and direct comparison with loser-rescue-only logic.</td></tr>
-<tr><td>Execution realism</td><td>Intrabar high/low margin stress, maintenance margin, funding, fee/slippage multipliers, fill latency and cross-vs-isolated accounting.</td></tr>
-<tr><td>Infrastructure</td><td>New v1.4 output roots/task IDs, multi-worker resume, atomic checkpoints, same-line progress, live extracts and no API/live-order path.</td></tr>
+<h2>Max-risk SOL approach — full-path P5 seed</h2>
+<p><code>deep_p5_t1300_sep2000_m50_b3p24_same3_b478159a</code></p>
+<div class="grid cards"><div class="card"><div class="label">Zero-cost SOL MTM</div><div class="num green">+$1,673.27</div></div><div class="card"><div class="label">Realized</div><div class="num green">+$1,386.71</div></div><div class="card"><div class="label">Max drawdown</div><div class="num red">68.79%</div></div><div class="card"><div class="label">Max margin</div><div class="num red">18.97%</div></div></div>
+<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Element</th><th>Tested setting</th><th>Human-readable action</th></tr></thead><tbody>
+<tr><td>Initial hedge</td><td>$486 notional per side</td><td>At the test start this was about 3.8999 SOL LONG and 3.8999 SOL SHORT.</td></tr>
+<tr><td>Re-anchor</td><td>−1300% ROE · <code>same3</code> · max 2</td><td>Close the loser when the trigger and gate pass.</td></tr>
+<tr><td>Reopen</td><td>After 2 bars · 3× base</td><td>Reopen the losing direction at approximately 11.6996 SOL at the test’s starting base.</td></tr>
+<tr><td>Mega rescue</td><td>Up to 2 events · target 50× base</td><td>Lift the losing side to approximately 194.9928 SOL total, capped at 60× base.</td></tr>
+<tr><td>Profit taking</td><td>+3.0% from rescued average</td><td>Close everything above 3× base in one event; retain the 3× residual.</td></tr>
+<tr><td>Observed path</td><td>2 re-anchors · 2 mega rescues · 2 excess closes · 12 trades</td><td>The full Jan–Jun test path completed under the fixed-$500 baseline.</td></tr>
 </tbody></table></div></div>
+<div class="danger"><strong>This is an explicit all-risk lane.</strong> The 50× target was about 195 SOL on one side. A 68.79% historical drawdown and 300× leverage make this unsuitable as a default safe setting.</div>
 </section>
-<div class="footer">BD Hedge Separation PiX Strategy Explainer · dark mobile-first research page · offline replay only · not financial advice.<br/>Updated with v1.2 validation PASS, the completed v1.3c 300,000-task real-1m baseline, and two v1.3c-informed SOL manual sections: Balanced P2 and Max-Risk P5. Wallet-neutral capital truth and complete winner-side logic remain assigned to v1.4.</div>
+
+<section id="capital">
+<h2>Wallet size is an output, not a strategy gate</h2>
+<div class="good"><p>v1.3c used a fixed virtual $500 wallet. That baseline is useful for comparison, but it must not decide whether a strategy exists. A trader may intentionally allocate $100, $1,000, $10,000 or much more to different risk lanes.</p><p>v1.4 must report the minimum tested wallet for full-path survival, probability of total loss, PnL by horizon and capital efficiency—while retaining even strategies that fail a chosen wallet.</p></div>
+<div class="danger"><h3>Extreme P4 watchlist</h3><p><code>deep_p4_t1000_sep300_m30_b5p4_same5_37ae672d</code> reached +$2,233.19 MTM zero-cost and +$2,175.88 realistic-cost on SOL before the fixed-$500 drawdown rule stopped the replay on 6 February. Positive equity remained. Only wallet-neutral full-path replay can determine the required capital and final outcome.</p></div>
+</section>
+
+<section id="limits">
+<h2>Known limits of the current evidence</h2>
+<div class="grid two"><div class="callout"><h3>Engine semantics</h3><ul class="list"><li><code>reanchor_target_separation_roe</code> was named and stored but never checked in the replay.</li><li><code>mega_rescue_close_winner_on_trigger</code> was stored but never executed.</li><li>Winner-side pyramiding and trailing were absent.</li><li>The fixed-$500 drawdown stop truncated some high-PnL paths.</li></ul></div><div class="callout"><h3>Validation scope</h3><ul class="list"><li>One historical Jan–Jun 2026 interval.</li><li>Virtual fills, not exchange execution.</li><li>Cross-margin and liquidation mechanics remain simplified.</li><li>6/6 is a profile-score win against controls, not guaranteed raw-PnL dominance.</li><li>Zero-cost is a diagnostic scenario, not a universal live-cost assumption.</li></ul></div></div>
+</section>
+
+<section id="v14">
+<h2>Short v1.4 outlook</h2>
+<div class="grid three"><div class="callout"><h3>Capital truth</h3><p>Full-path replay, wallet tiers, minimum tested wallet, no strategy deletion by wallet size.</p></div><div class="callout"><h3>Temporal truth</h3><p>Rolling starts and ends, forced-close accounting, walk-forward validation and short-horizon blast statistics.</p></div><div class="callout"><h3>Strategy completeness</h3><p>Active separation, winner-side adds, staged exits, trailing, phenotype deduplication and stronger cost/liquidation stress.</p></div></div>
+<pre>v1.3c output → immutable warm-start corpus
+                 ↓
+v1.4 full-path wallet-neutral replay
+                 ↓
+separate P0–P5 and Pareto frontiers
+                 ↓
+manual / paper / shadow candidates</pre>
+</section>
+<div class="footer">BD Hedge Separation PiX Strategy · current v1.3c explainer · offline historical research only · not financial advice.</div>
 </div>
+
 <script>
-function fontStep(delta){
-  const root=document.documentElement;
-  const cur=parseFloat(getComputedStyle(root).getPropertyValue('--fontScale'))||1;
-  const next=Math.max(.78,Math.min(1.6,cur+delta));
-  root.style.setProperty('--fontScale',next.toFixed(2));
-  localStorage.setItem('bd_hsr_fontScale',next.toFixed(2));
-}
-function fontReset(){
-  document.documentElement.style.setProperty('--fontScale','1');
-  localStorage.setItem('bd_hsr_fontScale','1');
-}
-function calcRoe(){
-  const lev=parseFloat(document.getElementById('lev').value)||300;
-  const loss=Math.abs(parseFloat(document.getElementById('lossRoe').value)||200);
-  const prof=Math.abs(parseFloat(document.getElementById('profitRoe').value)||2);
-  const lossMove=loss/lev;
-  const profMove=prof/lev;
-  document.getElementById('roeOut').innerHTML = loss.toFixed(0)+'% ROE ≈ '+lossMove.toFixed(4)+'% price<br>'+prof.toFixed(0)+'% ROE ≈ '+profMove.toFixed(4)+'% price';
-}
-(function init(){
-  const s=localStorage.getItem('bd_hsr_fontScale');
-  if(s) document.documentElement.style.setProperty('--fontScale',s);
-  calcRoe();
-})();
+function fontStep(delta){const root=document.documentElement;const cur=parseFloat(getComputedStyle(root).getPropertyValue('--fontScale'))||1;const next=Math.max(.78,Math.min(1.6,cur+delta));root.style.setProperty('--fontScale',next.toFixed(2));localStorage.setItem('bd_hsr_fontScale',next.toFixed(2));}
+function fontReset(){document.documentElement.style.setProperty('--fontScale','1');localStorage.setItem('bd_hsr_fontScale','1');}
+function calcRoe(){const lev=parseFloat(document.getElementById('lev')?.value)||300;const roe=Math.abs(parseFloat(document.getElementById('roe')?.value)||500);const move=roe/lev;const out=document.getElementById('roeOut');if(out)out.textContent=roe.toFixed(0)+'% ROE ≈ '+move.toFixed(3)+'% price move before costs/execution';}
+(function(){const s=localStorage.getItem('bd_hsr_fontScale');if(s)document.documentElement.style.setProperty('--fontScale',s);calcRoe();})();
 </script>
 </body>
 </html>
