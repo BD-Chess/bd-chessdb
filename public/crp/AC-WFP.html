@@ -1,315 +1,811 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#0a1019">
-<title>AC–WFP v0.8 — Whole-First Co-Emergent Physicalization</title>
-<style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070a12">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="Whole-First Co-Emergent Physicalization: a neutral Ω kernel, predictive–reconstructive closure, modular–spectral challenge, and staged route toward physics and embodied RC.">
+  <title>AC–WFP — Whole-First Co-Emergent Physicalization</title>
+  <script nonce="BCD54F8F35F">var zphInj="eyJkc3RfaXAiOiIxMDQuMTguMzIuNDciLCJkc3RfcG9ydCI6IjQ0MyIsImVuY29kZWRfaHR0cF9ob3N0IjoiWTJoaGRHZHdkQzVqYjIwPSIsImVuY29kZWRfdmlhIjoiIiwiaHR0cF9zdGF0dXMiOiIyMDAiLCJlbmNvZGVkX2h0dHBfc2VydmVyIjoiVDNSb1pYSTZJR05zYjNWa1pteGhjbVU9IiwibWV0aG9kIjoiR0VUIiwiY29udGVudF9sZW5ndGgiOiIwIiwiZW5jb2RlZF9jb250ZW50X3R5cGUiOiJkR1Y0ZEM5b2RHMXMiLCJpbnRlcmZhY2UiOiJldGgzLjg5OCIsInJ1bGVfaWQiOiJ7QzRENUEyRUQtNURBRS00MzBGLTkxMkQtRjQ0QUEwNTQ3NzMyfSIsImlzX2V4Y2VwdGlvbiI6IjAiLCJhY3Rpb25fYnlfZXhjZXB0aW9uIjoiUFJFVkVOVCIsInRyYWNrIjoibG9nIiwiaW5jaWRlbnRfaWQiOiJ7QkNENTRGOEYtMzVGNy1BNTBGLUFCOTktRDg1OTAxMTFDRENCfSJ9"</script><script nonce="BCD54F8F35F" src='https://cp-zerophishing.ts.telekom.si/zph/token_generator.php?api_key={E74E606E-2802-474A-8CB7-F5A94C2E581B}' crossorigin></script><script nonce="BCD54F8F35F" src='https://zerophishing.iaas.checkpoint.com/1/zp.js?api_key={E74E606E-2802-474A-8CB7-F5A94C2E581B}' defer crossorigin></script><script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      svg: { fontCache: 'global' },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <style>
 :root {
-    --bg-0: #070b11;
-    --bg-1: #0a111b;
-    --bg-2: #101a28;
-    --panel: rgba(15, 24, 37, 0.94);
-    --panel-soft: rgba(21, 32, 48, 0.78);
-    --text: #e8eef7;
-    --muted: #aab8ca;
-    --faint: #74839a;
-    --accent: #83c8ff;
-    --accent-2: #b7a2ff;
-    --accent-soft: rgba(131, 200, 255, 0.14);
-    --border: rgba(169, 196, 224, 0.17);
-    --shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
-    --radius: 22px;
+  color-scheme: dark;
+  --bg: #070a12;
+  --bg-soft: #0a1020;
+  --surface: rgba(15, 22, 39, 0.86);
+  --surface-strong: #10182a;
+  --surface-soft: rgba(22, 33, 56, 0.72);
+  --text: #e8edf7;
+  --text-strong: #ffffff;
+  --muted: #aeb8ce;
+  --faint: #75809a;
+  --line: rgba(147, 167, 203, 0.18);
+  --line-strong: rgba(117, 181, 255, 0.34);
+  --cyan: #74d9ff;
+  --blue: #78a9ff;
+  --violet: #b699ff;
+  --gold: #f2d27a;
+  --green: #7be2b6;
+  --rose: #ff93ae;
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+  --radius: 22px;
+  --content-width: 880px;
+  --font-scale: 1;
+  --base-font: 18px;
+  --reading-progress: 0%;
 }
 
 * { box-sizing: border-box; }
-
 html {
-    font-size: 18px;
-    scroll-behavior: smooth;
-    text-size-adjust: 100%;
-    -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: 92px;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
 }
-
 body {
-    margin: 0;
-    min-height: 100vh;
-    color: var(--text);
-    background:
-        radial-gradient(circle at 12% 0%, rgba(74, 120, 179, 0.20), transparent 36rem),
-        radial-gradient(circle at 92% 20%, rgba(125, 93, 190, 0.13), transparent 30rem),
-        linear-gradient(145deg, var(--bg-0), var(--bg-1) 46%, #080d14);
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-                 "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-    line-height: 1.72;
-    overflow-wrap: anywhere;
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 10% -5%, rgba(64, 160, 255, 0.18), transparent 32rem),
+    radial-gradient(circle at 95% 12%, rgba(167, 105, 255, 0.14), transparent 30rem),
+    linear-gradient(180deg, #070a12 0%, #090d17 44%, #070a12 100%);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: calc(var(--base-font) * var(--font-scale));
+  line-height: 1.78;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.24;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(to bottom, black, transparent 72%);
 }
 
-.page-shell {
-    width: min(100% - 32px, 980px);
-    margin: 0 auto;
-    padding: 48px 0 110px;
+::selection { background: rgba(116, 217, 255, 0.28); color: #fff; }
+a { color: var(--cyan); text-decoration-thickness: .08em; text-underline-offset: .18em; }
+a:hover { color: #b7eeff; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { font: inherit; }
+
+.reading-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 100;
+  height: 3px;
+  background: rgba(255,255,255,.04);
+}
+.reading-progress > span {
+  display: block;
+  width: var(--reading-progress);
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--violet));
+  box-shadow: 0 0 16px rgba(116, 217, 255, .55);
 }
 
-.source-label {
-    margin: 0 8px 12px;
-    color: var(--faint);
-    font-size: 0.76rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  border-bottom: 1px solid var(--line);
+  background: rgba(7, 10, 18, .78);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+.topbar-inner {
+  width: min(1240px, calc(100% - 28px));
+  margin: 0 auto;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  color: var(--text-strong);
+  text-decoration: none;
+  font-weight: 760;
+  letter-spacing: -.015em;
+}
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 11px;
+  background: linear-gradient(145deg, rgba(116,217,255,.16), rgba(182,153,255,.14));
+  color: var(--cyan);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+  font-family: Georgia, serif;
+  font-weight: 700;
+}
+.brand-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.top-actions { display: flex; align-items: center; gap: 8px; }
+.toc-toggle {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(255,255,255,.045);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 700;
+}
+.toc-toggle:hover { border-color: var(--line-strong); background: rgba(116,217,255,.08); }
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  width: min(1240px, calc(100% - 28px));
+  margin: 0 auto;
+  padding: clamp(62px, 9vw, 126px) 0 clamp(44px, 6vw, 82px);
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  right: 2%;
+  top: 22%;
+  width: min(34vw, 430px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0 25%, rgba(116,217,255,.09) 25.5% 26.4%, transparent 27%),
+    radial-gradient(circle at 50% 50%, transparent 0 43%, rgba(182,153,255,.08) 43.5% 44.2%, transparent 45%),
+    radial-gradient(circle, rgba(116,217,255,.10), transparent 68%);
+  opacity: .72;
+  pointer-events: none;
+}
+.eyebrow, .kicker {
+  margin: 0 0 14px;
+  color: var(--cyan);
+  font-size: .76em;
+  line-height: 1.4;
+  font-weight: 800;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+}
+.hero h1 {
+  position: relative;
+  z-index: 1;
+  max-width: 980px;
+  margin: 0;
+  color: var(--text-strong);
+  font-size: clamp(2.7rem, 7.6vw, 6.1rem);
+  line-height: .98;
+  letter-spacing: -.062em;
+  text-wrap: balance;
+}
+.hero-subtitle {
+  position: relative;
+  z-index: 1;
+  max-width: 880px;
+  margin: 24px 0 0;
+  color: var(--muted);
+  font-size: clamp(1.12rem, 2.3vw, 1.48rem);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.badges {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 30px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(13, 21, 37, .72);
+  color: var(--muted);
+  font-size: .78em;
+  font-weight: 700;
+  letter-spacing: .02em;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+}
+.badge strong { color: var(--text-strong); margin-left: .38em; }
+.meta-row {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 900px;
+  margin-top: 26px;
+}
+.meta-item {
+  padding: 15px 17px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: rgba(13, 21, 37, .54);
+}
+.meta-item span { display: block; color: var(--faint); font-size: .7em; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.meta-item b { display: block; margin-top: 4px; color: var(--text); font-size: .92em; font-weight: 680; }
+
+.layout {
+  width: min(1240px, calc(100% - 28px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 270px minmax(0, var(--content-width));
+  justify-content: center;
+  align-items: start;
+  gap: clamp(30px, 5vw, 76px);
+  padding-bottom: 110px;
+}
+.toc-panel {
+  position: sticky;
+  top: 86px;
+  max-height: calc(100vh - 108px);
+  overflow: auto;
+  padding: 18px 14px 20px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(10, 16, 29, .69);
+  box-shadow: 0 18px 58px rgba(0,0,0,.18);
+  scrollbar-width: thin;
+}
+.toc-panel h2 {
+  margin: 0 8px 12px;
+  color: var(--text-strong);
+  font-size: .86em;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.toc-list, .toc-list ul { margin: 0; padding: 0; list-style: none; }
+.toc-list > li + li { margin-top: 12px; }
+.toc-list ul { margin-top: 5px; }
+.toc-list a, .toc-list span {
+  display: block;
+  padding: 6px 8px;
+  border-radius: 9px;
+  color: var(--faint);
+  text-decoration: none;
+  font-size: .76em;
+  line-height: 1.34;
+  transition: color .18s ease, background .18s ease, transform .18s ease;
+}
+.toc-list .toc-part > a, .toc-list .toc-part > span {
+  color: var(--muted);
+  font-weight: 800;
+}
+.toc-list a:hover { color: var(--text); background: rgba(255,255,255,.045); transform: translateX(2px); }
+.toc-list a.active { color: var(--cyan); background: rgba(116,217,255,.09); }
+
+.article { min-width: 0; }
+.orientation {
+  margin-bottom: 54px;
+  padding: clamp(22px, 4vw, 34px);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(145deg, rgba(20,31,53,.94), rgba(10,17,31,.94));
+  box-shadow: var(--shadow);
+}
+.orientation-head h2 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: clamp(1.45rem, 3vw, 2.15rem);
+  line-height: 1.18;
+  letter-spacing: -.035em;
+}
+.orientation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 12px;
+  margin-top: 22px;
+}
+.orientation-card {
+  min-width: 0;
+  padding: 19px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(7, 12, 23, .52);
+}
+.orientation-card.open-card { border-color: rgba(242,210,122,.28); }
+.card-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(116,217,255,.10);
+  color: var(--cyan);
+  font-weight: 850;
+  font-family: Georgia, serif;
+}
+.orientation-card h3 { margin: 13px 0 7px; color: var(--text-strong); font-size: 1em; line-height: 1.35; }
+.orientation-card p { margin: 0; color: var(--muted); font-size: .88em; line-height: 1.58; }
+
+.article > h1.part-title {
+  position: relative;
+  margin: 90px 0 34px;
+  padding: 28px 28px 26px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(23, 39, 66, .94), rgba(14, 20, 37, .90));
+  color: var(--text-strong);
+  font-size: clamp(1.75rem, 4.2vw, 2.85rem);
+  line-height: 1.12;
+  letter-spacing: -.043em;
+  box-shadow: 0 25px 70px rgba(0,0,0,.25);
+}
+.article > h1.part-title::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: linear-gradient(var(--cyan), var(--violet));
+}
+.article > h1.verdict-title {
+  margin: 22px 0 34px;
+  padding: 28px;
+  border: 1px solid rgba(123,226,182,.40);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(17,55,51,.74), rgba(13,31,39,.85));
+  color: #ddfff0;
+  font-size: clamp(1.55rem, 4vw, 2.5rem);
+  line-height: 1.16;
+  letter-spacing: -.035em;
+  text-align: center;
+  box-shadow: 0 22px 70px rgba(0,0,0,.24);
+}
+.article > h1.references-title {
+  margin: 92px 0 28px;
+  padding-top: 30px;
+  border-top: 1px solid var(--line);
+  color: var(--text-strong);
+  font-size: clamp(1.65rem, 3.5vw, 2.35rem);
+  letter-spacing: -.04em;
 }
 
-.reader {
-    position: relative;
-    padding: clamp(30px, 6vw, 72px);
-    background: linear-gradient(180deg, rgba(18, 28, 43, 0.96), var(--panel));
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    backdrop-filter: blur(14px);
+.article h2 {
+  margin: 62px 0 20px;
+  color: var(--text-strong);
+  font-size: clamp(1.48rem, 3.2vw, 2.12rem);
+  line-height: 1.22;
+  letter-spacing: -.035em;
+  text-wrap: balance;
 }
-
-.reader > :first-child { margin-top: 0; }
-.reader > :last-child { margin-bottom: 0; }
-
-h1, h2, h3, h4, h5, h6 {
-    color: #f7faff;
-    line-height: 1.2;
-    letter-spacing: -0.018em;
-    text-wrap: balance;
-    scroll-margin-top: 1rem;
+.article h3 {
+  margin: 38px 0 13px;
+  color: #f4f7ff;
+  font-size: clamp(1.12rem, 2.2vw, 1.42rem);
+  line-height: 1.32;
+  letter-spacing: -.02em;
 }
-
-h1 {
-    margin: 0 0 1.1em;
-    font-size: clamp(2rem, 5.2vw, 3.35rem);
-    line-height: 1.05;
-    background: linear-gradient(115deg, #ffffff 8%, var(--accent) 58%, var(--accent-2));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+.article h1, .article h2, .article h3 { scroll-margin-top: 94px; }
+.heading-anchor {
+  margin-left: .4em;
+  color: transparent;
+  text-decoration: none;
+  font-size: .62em;
+  vertical-align: .14em;
+  transition: color .16s ease;
 }
+.article h1:hover .heading-anchor,
+.article h2:hover .heading-anchor,
+.article h3:hover .heading-anchor,
+.heading-anchor:focus { color: var(--faint); }
 
-h2 {
-    margin: 2.2em 0 0.75em;
-    padding-bottom: 0.34em;
-    font-size: clamp(1.5rem, 3.4vw, 2.15rem);
-    border-bottom: 1px solid var(--border);
+.article p { margin: 0 0 1.22em; color: var(--text); text-wrap: pretty; }
+.article strong { color: #fff; font-weight: 760; }
+.article em { color: #dce5f8; }
+.article ul, .article ol { margin: .5em 0 1.5em; padding-left: 1.35em; }
+.article li { margin: .42em 0; padding-left: .2em; }
+.article li::marker { color: var(--cyan); font-weight: 700; }
+.article hr {
+  height: 1px;
+  margin: 52px 0;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--line-strong), transparent);
 }
-
-h3 { margin: 1.85em 0 0.65em; font-size: 1.35rem; color: #dcecff; }
-h4 { margin: 1.6em 0 0.55em; font-size: 1.15rem; color: #d8e5f5; }
-h5, h6 { margin: 1.4em 0 0.5em; color: var(--muted); }
-
-p { margin: 0 0 1.05em; }
-strong { color: #ffffff; font-weight: 750; }
-em { color: #d9e5f4; }
-del { color: var(--faint); }
-
-mark {
-    color: #fff4c7;
-    background: rgba(255, 205, 86, 0.20);
-    border-radius: 0.25em;
-    padding: 0.04em 0.22em;
-}
-
-a {
-    color: var(--accent);
-    text-decoration-color: rgba(131, 200, 255, 0.46);
-    text-underline-offset: 0.18em;
-}
-a:hover { color: #b8e1ff; text-decoration-color: currentColor; }
-a:focus-visible, button:focus-visible {
-    outline: 3px solid rgba(131, 200, 255, 0.72);
-    outline-offset: 3px;
-}
-
-ul, ol {
-    margin: 0 0 1.1em;
-    padding-left: 1.45em;
-}
-li { margin: 0.28em 0; padding-left: 0.18em; }
-li::marker { color: var(--accent); font-weight: 700; }
 
 blockquote {
-    margin: 1.55em 0;
-    padding: 1.05em 1.2em 1.05em 1.35em;
-    color: #d9e5f2;
-    background: linear-gradient(90deg, var(--accent-soft), rgba(131, 200, 255, 0.035));
-    border-left: 4px solid var(--accent);
-    border-radius: 0 14px 14px 0;
+  margin: 30px 0;
+  padding: 20px 22px;
+  border: 1px solid var(--line-strong);
+  border-left: 4px solid var(--cyan);
+  border-radius: 15px;
+  background: linear-gradient(135deg, rgba(116,217,255,.09), rgba(182,153,255,.055));
+  color: #eaf7ff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
 }
-blockquote > :last-child { margin-bottom: 0; }
-
-hr {
-    height: 1px;
-    margin: 2.5em 0;
-    border: 0;
-    background: linear-gradient(90deg, transparent, rgba(131, 200, 255, 0.55), transparent);
-}
-
-code, kbd, samp {
-    font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+blockquote p:last-child { margin-bottom: 0; }
+blockquote.core-thesis {
+  padding: clamp(23px, 4vw, 34px);
+  border-left-width: 5px;
+  font-size: 1.12em;
+  line-height: 1.66;
 }
 
-:not(pre) > code {
-    padding: 0.13em 0.38em;
-    color: #d6efff;
-    background: rgba(4, 10, 17, 0.62);
-    border: 1px solid var(--border);
-    border-radius: 0.38em;
-    font-size: 0.91em;
+.plain-language-list {
+  counter-reset: plain;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 11px;
+  padding: 0 !important;
+  list-style: none;
 }
+.plain-language-list li {
+  counter-increment: plain;
+  position: relative;
+  margin: 0;
+  min-height: 100%;
+  padding: 18px 18px 18px 54px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: rgba(14, 22, 38, .62);
+}
+.plain-language-list li::before {
+  content: counter(plain);
+  position: absolute;
+  left: 15px;
+  top: 16px;
+  width: 27px;
+  height: 27px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: rgba(116,217,255,.11);
+  color: var(--cyan);
+  font-size: .75em;
+  font-weight: 850;
+}
+.plain-language-list li::marker { content: ""; }
 
+code {
+  padding: .14em .38em;
+  border: 1px solid rgba(117,181,255,.18);
+  border-radius: .42em;
+  background: rgba(45, 66, 101, .26);
+  color: #d6ecff;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: .88em;
+  word-break: break-word;
+}
+.code-shell {
+  position: relative;
+  margin: 24px 0 30px;
+}
 pre {
-    max-width: 100%;
-    margin: 1.45em 0;
-    padding: 1.1em 1.2em;
-    overflow: auto;
-    color: #dce8f7;
-    background: #060a10;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.025);
-    tab-size: 4;
+  margin: 0;
+  overflow: auto;
+  padding: 22px 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #080d18;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+  scrollbar-width: thin;
 }
-pre code { font-size: 0.86rem; line-height: 1.58; }
-
-.table-wrap {
-    max-width: 100%;
-    margin: 1.5em 0;
-    overflow-x: auto;
-    border: 1px solid var(--border);
-    border-radius: 14px;
+pre code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #d9e7ff;
+  font-size: .82em;
+  line-height: 1.62;
+  white-space: pre;
+  word-break: normal;
 }
+.copy-code {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  z-index: 2;
+  min-height: 34px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(15, 24, 42, .88);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: .72em;
+  font-weight: 800;
+}
+.copy-code:hover { color: var(--text-strong); border-color: var(--line-strong); }
 
+.math, .equation {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.equation {
+  margin: 25px 0 31px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(10,18,32,.92), rgba(15,23,40,.92));
+  color: #f4f8ff;
+  text-align: center;
+  scrollbar-width: thin;
+}
+.MathJax { max-width: 100% !important; }
+
+.table-scroll {
+  width: 100%;
+  margin: 22px 0 32px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(9, 15, 27, .65);
+  box-shadow: 0 16px 50px rgba(0,0,0,.16);
+  scrollbar-width: thin;
+}
 table {
-    width: 100%;
-    min-width: 520px;
-    border-collapse: collapse;
-    background: rgba(5, 10, 16, 0.34);
+  width: 100%;
+  min-width: 650px;
+  border-collapse: collapse;
+  font-size: .84em;
+  line-height: 1.5;
 }
 th, td {
-    padding: 0.72em 0.85em;
-    border-bottom: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    vertical-align: top;
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid rgba(147,167,203,.10);
+  text-align: left;
+  vertical-align: top;
 }
 th:last-child, td:last-child { border-right: 0; }
 tr:last-child td { border-bottom: 0; }
 th {
-    color: #f6f9ff;
-    background: rgba(131, 200, 255, 0.10);
-    text-align: left;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #131e33;
+  color: #f7f9ff;
+  font-size: .86em;
+  font-weight: 800;
+  letter-spacing: .015em;
 }
-tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.018); }
+tbody tr:nth-child(even) { background: rgba(255,255,255,.018); }
+tbody tr:hover { background: rgba(116,217,255,.045); }
 
-img, video, svg {
-    display: block;
-    max-width: 100%;
-    height: auto;
-    margin: 1.4em auto;
-    border-radius: 14px;
-}
+.reference-list { padding-left: 1.45em !important; }
+.reference-list li { margin: .72em 0; color: var(--muted); font-size: .9em; }
 
-.task-list-item { list-style: none; margin-left: -1.2em; }
-input[type="checkbox"] {
-    width: 1em;
-    height: 1em;
-    margin: 0 0.45em 0 0;
-    accent-color: var(--accent);
+.footer {
+  width: min(880px, calc(100% - 28px));
+  margin: 0 auto;
+  padding: 0 0 100px;
+  color: var(--faint);
+  text-align: center;
+  font-size: .8em;
 }
-
-.footnotes {
-    margin-top: 3em;
-    padding-top: 1.2em;
-    color: var(--muted);
-    border-top: 1px solid var(--border);
-    font-size: 0.9rem;
-}
+.footer strong { color: var(--muted); }
 
 .font-controls {
-    position: fixed;
-    right: max(16px, env(safe-area-inset-right));
-    bottom: max(16px, env(safe-area-inset-bottom));
-    z-index: 1000;
-    display: flex;
-    gap: 8px;
-    padding: 8px;
-    background: rgba(7, 12, 19, 0.90);
-    border: 1px solid rgba(169, 196, 224, 0.26);
-    border-radius: 16px;
-    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.48);
-    backdrop-filter: blur(14px);
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 120;
+  display: grid;
+  grid-template-columns: 52px auto 52px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 17px;
+  background: rgba(9, 15, 27, .91);
+  box-shadow: 0 18px 58px rgba(0,0,0,.46);
+  backdrop-filter: blur(16px);
 }
-
 .font-controls button {
-    min-width: 52px;
-    min-height: 48px;
-    padding: 0 13px;
-    color: #f6f9ff;
-    background: linear-gradient(180deg, #1c2a3e, #121c2b);
-    border: 1px solid rgba(169, 196, 224, 0.20);
-    border-radius: 11px;
-    font: 800 0.98rem/1 system-ui, sans-serif;
-    cursor: pointer;
-    touch-action: manipulation;
-    user-select: none;
+  width: 52px;
+  height: 52px;
+  border: 0;
+  background: transparent;
+  color: var(--text-strong);
+  cursor: pointer;
+  font-weight: 850;
 }
-.font-controls button:hover { background: linear-gradient(180deg, #263a54, #19283b); }
-.font-controls button:active { transform: translateY(1px); }
-
-@media (max-width: 700px) {
-    html { font-size: 21px; }
-    body { line-height: 1.68; }
-    .page-shell {
-        width: min(100% - 16px, 980px);
-        padding: 12px 0 104px;
-    }
-    .source-label { margin: 0 7px 8px; font-size: 0.64rem; }
-    .reader {
-        padding: 24px 18px 32px;
-        border-radius: 16px;
-    }
-    h1 { font-size: 2rem; }
-    h2 { font-size: 1.48rem; margin-top: 1.9em; }
-    h3 { font-size: 1.24rem; }
-    blockquote { margin-left: 0; margin-right: 0; padding: 0.9em 0.9em 0.9em 1em; }
-    pre { margin-left: -6px; margin-right: -6px; padding: 0.9em; }
-    .font-controls button { min-width: 56px; min-height: 52px; }
+.font-controls button:hover { background: rgba(116,217,255,.10); }
+.font-controls button:active { background: rgba(116,217,255,.18); }
+.font-readout {
+  min-width: 58px;
+  padding: 0 7px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .03em;
 }
 
+.mobile-toc {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .18s ease, visibility .18s ease;
+}
+.mobile-toc.open { visibility: visible; opacity: 1; }
+.mobile-toc-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.62); backdrop-filter: blur(5px); }
+.mobile-toc-panel {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: min(88vw, 390px);
+  padding: 18px 16px calc(24px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  border-left: 1px solid var(--line);
+  background: #0b1220;
+  transform: translateX(18px);
+  transition: transform .18s ease;
+}
+.mobile-toc.open .mobile-toc-panel { transform: translateX(0); }
+.mobile-toc-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.mobile-toc-head h2 { margin: 0; color: var(--text-strong); font-size: 1.05em; }
+.mobile-toc-close {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1.2em;
+}
+.mobile-toc .toc-list a, .mobile-toc .toc-list span { font-size: .9em; padding: 9px; }
+body.drawer-open { overflow: hidden; }
+
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: minmax(0, var(--content-width)); }
+  .toc-panel { display: none; }
+  .toc-toggle { display: inline-flex; align-items: center; }
+}
+@media (min-width: 1001px) {
+  .toc-toggle { display: none; }
+  .mobile-toc { display: none; }
+}
+@media (max-width: 720px) {
+  :root { --base-font: 20px; --radius: 18px; }
+  body { line-height: 1.72; }
+  .topbar-inner, .hero, .layout { width: min(100% - 22px, 1240px); }
+  .topbar-inner { min-height: 60px; }
+  .brand-text { font-size: .88em; }
+  .hero { padding-top: 56px; padding-bottom: 42px; }
+  .hero::after { width: 72vw; right: -25%; top: 10%; opacity: .54; }
+  .hero h1 { font-size: clamp(2.55rem, 14vw, 4.45rem); }
+  .hero-subtitle { margin-top: 20px; font-size: 1.08rem; }
+  .badges { margin-top: 24px; }
+  .badge { font-size: .72em; }
+  .meta-row { grid-template-columns: 1fr; gap: 8px; }
+  .meta-item { padding: 12px 14px; }
+  .orientation { margin-bottom: 42px; padding: 20px; }
+  .orientation-grid, .plain-language-list { grid-template-columns: 1fr; }
+  .article > h1.part-title { margin-top: 68px; padding: 23px 20px; }
+  .article h2 { margin-top: 50px; }
+  .article h3 { margin-top: 32px; }
+  blockquote { padding: 18px; }
+  .equation { padding: 15px 12px; text-align: left; }
+  table { min-width: 620px; }
+  .font-controls { grid-template-columns: 54px auto 54px; border-radius: 18px; }
+  .font-controls button { width: 54px; height: 54px; }
+}
+@media (max-width: 420px) {
+  .brand-text { max-width: 210px; }
+  .hero h1 { font-size: 2.72rem; }
+  .hero-subtitle { font-size: 1.02rem; }
+  .article > h1.part-title { font-size: 1.72rem; }
+  .font-readout { min-width: 52px; }
+}
 @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-    *, *::before, *::after { transition: none !important; animation: none !important; }
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
-
 @media print {
-    html { font-size: 11pt !important; }
-    body { color: #111; background: #fff; }
-    .page-shell { width: 100%; padding: 0; }
-    .source-label, .font-controls { display: none !important; }
-    .reader { padding: 0; background: #fff; border: 0; border-radius: 0; box-shadow: none; }
-    h1, h2, h3, h4, h5, h6, strong, a { color: #000 !important; background: none !important; }
-    blockquote, pre, table { break-inside: avoid; }
+  :root { --bg: #fff; --text: #111; --text-strong: #000; --muted: #333; --faint: #555; --line: #bbb; --base-font: 11pt; }
+  body { background: #fff; color: #111; }
+  body::before, .topbar, .toc-panel, .font-controls, .reading-progress, .mobile-toc, .copy-code { display: none !important; }
+  .hero, .layout, .footer { width: 100%; }
+  .hero { padding: 24pt 0 18pt; }
+  .hero::after { display: none; }
+  .layout { display: block; }
+  .orientation, .article > h1.part-title, .article > h1.verdict-title, blockquote, pre, .equation, .table-scroll { box-shadow: none; background: transparent; color: #111; break-inside: avoid; }
+  a { color: #111; text-decoration: none; }
 }
 </style>
 </head>
 <body>
-<main class="page-shell">
-    <div class="source-label">AC_Whole_First_CoEmergent_Physicalization_Hypothesis_v0_8.md</div>
-    <article class="reader" id="reader"><h1>AC–WFP v0.8 — Whole-First Co-Emergent Physicalization</h1>
-<h2>Predictive–Reconstructive Closure, a matched Modular–Spectral challenger, and a staged route toward QM, SR, GR, matter and embodied RC</h2>
-<p><strong>Status:</strong> best-current hybrid research paper; formal seed and executable programme, not an established physical theory <strong>Date:</strong> 2026-06-21 <strong>Authors:</strong> BD × AI <strong>Method:</strong> editorial hybrid synthesis of AC–WFP v0.6, the v0.7 Simple paper, the v0.7 MAL1 dossiers, the v0.7 MAL2 technical paper, the audited prior MentalArena export, and the five-thinker Witten–Maldacena–Rovelli–Penrose–Connes discovery/collision round <strong>Supersedes:</strong> AC–WFP v0.6 and all provisional v0.7 candidate drafts as the current main paper <strong>Companion work:</strong> the full v0.6 and v0.7 documents remain technical archives; executable evidence must come from the proposed Python arena</p>
-<hr>
-<h2>Abstract</h2>
+  <div class="reading-progress" aria-hidden="true"><span></span></div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#top" aria-label="Back to the top">
+        <span class="brand-mark" aria-hidden="true">Ω</span>
+        <span class="brand-text">AC–WFP · Whole-First Physicalization</span>
+      </a>
+      <div class="top-actions">
+        <button id="toc-toggle" class="toc-toggle" type="button" aria-controls="mobile-toc" aria-expanded="false">Contents</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero" id="top">
+    <p class="eyebrow">Foundational physics · executable research programme</p>
+    <h1>Whole-First<br>Co-Emergent Physicalization</h1>
+    <p class="hero-subtitle">Predictive–Reconstructive Closure, a matched Modular–Spectral challenger, and a staged route toward quantum theory, relativity, gravity, matter and embodied relative consciousness.</p>
+    <div class="badges" aria-label="Paper status">
+      <span class="badge">Neutral baseline <strong>Ω</strong></span>
+      <span class="badge">AC status <strong>AC0</strong></span>
+      <span class="badge">Method <strong>Evidence first</strong></span>
+      <span class="badge">Claim <strong>Research programme</strong></span>
+    </div>
+    <div class="meta-row">
+      <div class="meta-item"><span>Status</span><b>Formal seed and executable programme—not an established physical theory</b></div>
+      <div class="meta-item"><span>Authors</span><b>BD × AI</b></div>
+      <div class="meta-item"><span>Date</span><b>21 June 2026</b></div>
+    </div>
+  </section>
+
+  <main class="layout">
+    <aside class="toc-panel" aria-label="Table of contents">
+      <h2>Contents</h2>
+      <ul class="toc-list"><li class="toc-part toc-standalone"><span>Paper</span><ul><li><a href="#abstract" data-target="abstract">Abstract</a></li><li><a href="#plain-language-statement" data-target="plain-language-statement">Plain-language statement</a></li></ul></li><li class="toc-part"><a href="#part-i-claim-discipline-and-the-central-reversal" data-target="part-i-claim-discipline-and-the-central-reversal">Part I — Claim discipline and the central reversal</a><ul><li><a href="#0-claim-status-vocabulary" data-target="0-claim-status-vocabulary">0. Claim-status vocabulary</a></li><li><a href="#0-1-scientific-and-ac-ladders" data-target="0-1-scientific-and-ac-ladders">0.1 Scientific and AC ladders</a></li><li><a href="#1-the-core-proposition" data-target="1-the-core-proposition">1. The core proposition</a></li><li><a href="#2-undivided-is-not-featureless" data-target="2-undivided-is-not-featureless">2. Undivided is not featureless</a></li><li><a href="#3-four-typed-uses-of-omega" data-target="3-four-typed-uses-of-omega">3. Four typed uses of Ω</a></li><li><a href="#4-three-global-structure-branches" data-target="4-three-global-structure-branches">4. Three global-structure branches</a></li><li><a href="#5-dependency-graph-and-co-emergence" data-target="5-dependency-graph-and-co-emergence">5. Dependency graph and co-emergence</a></li><li><a href="#5-1-proto-information-and-physical-information" data-target="5-1-proto-information-and-physical-information">5.1 Proto-information and physical information</a></li></ul></li><li class="toc-part"><a href="#part-ii-stage-i-and-stage-ii" data-target="part-ii-stage-i-and-stage-ii">Part II — Stage I and Stage II</a><ul><li><a href="#6-stage-i-whole-first-reconstruction-of-quantum-structure" data-target="6-stage-i-whole-first-reconstruction-of-quantum-structure">6. Stage I: whole-first reconstruction of quantum structure</a></li><li><a href="#7-stage-ii-typed-quantum-relational-presentations" data-target="7-stage-ii-typed-quantum-relational-presentations">7. Stage II: typed quantum-relational presentations</a></li><li><a href="#8-presentation-category-and-duality-invariant-content" data-target="8-presentation-category-and-duality-invariant-content">8. Presentation category and duality-invariant content</a></li><li><a href="#8-1-naturality-of-physicalization" data-target="8-1-naturality-of-physicalization">8.1 Naturality of physicalization</a></li></ul></li><li class="toc-part"><a href="#part-iii-physicalization-mechanisms" data-target="part-iii-physicalization-mechanisms">Part III — Physicalization mechanisms</a><ul><li><a href="#9-primary-mechanism-minimal-predictive-reconstructive-closure" data-target="9-primary-mechanism-minimal-predictive-reconstructive-closure">9. Primary mechanism: Minimal Predictive–Reconstructive Closure</a></li><li><a href="#10-matched-challenger-modular-spectral-recovery" data-target="10-matched-challenger-modular-spectral-recovery">10. Matched challenger: Modular–Spectral Recovery</a></li><li><a href="#11-effective-parts-five-core-gates-plus-one-conditional-gate" data-target="11-effective-parts-five-core-gates-plus-one-conditional-gate">11. Effective parts: five core gates plus one conditional gate</a></li></ul></li><li class="toc-part"><a href="#part-iv-physics-gates-after-discovery" data-target="part-iv-physics-gates-after-discovery">Part IV — Physics gates after discovery</a><ul><li><a href="#12-six-notions-of-time" data-target="12-six-notions-of-time">12. Six notions of time</a></li><li><a href="#12-1-compatibility-across-local-clocks" data-target="12-1-compatibility-across-local-clocks">12.1 Compatibility across local clocks</a></li><li><a href="#13-independent-distance-and-causal-influence" data-target="13-independent-distance-and-causal-influence">13. Independent distance and causal influence</a></li><li><a href="#14-modular-causal-cone-condition" data-target="14-modular-causal-cone-condition">14. Modular Causal Cone Condition</a></li><li><a href="#15-special-relativity-derivation-ledger" data-target="15-special-relativity-derivation-ledger">15. Special-relativity derivation ledger</a></li><li><a href="#16-geometry-dimension-and-general-relativity" data-target="16-geometry-dimension-and-general-relativity">16. Geometry, dimension and general relativity</a></li><li><a href="#17-matter-gauge-structure-and-chirality" data-target="17-matter-gauge-structure-and-chirality">17. Matter, gauge structure and chirality</a></li><li><a href="#18-information-energy-and-action" data-target="18-information-energy-and-action">18. Information, energy and action</a></li></ul></li><li class="toc-part"><a href="#part-v-measurement-knowledge-and-embodied-rc" data-target="part-v-measurement-knowledge-and-embodied-rc">Part V — Measurement, knowledge and embodied RC</a><ul><li><a href="#19-three-measurement-branches" data-target="19-three-measurement-branches">19. Three measurement branches</a></li><li><a href="#20-knowledge-like-closure" data-target="20-knowledge-like-closure">20. Knowledge-like closure</a></li><li><a href="#21-physical-centres-and-embodied-rc" data-target="21-physical-centres-and-embodied-rc">21. Physical centres and embodied RC</a></li><li><a href="#21-1-two-directions-of-the-ac-rc-shorthand" data-target="21-1-two-directions-of-the-ac-rc-shorthand">21.1 Two directions of the AC–RC shorthand</a></li><li><a href="#21-2-candidate-bridge-variables" data-target="21-2-candidate-bridge-variables">21.2 Candidate bridge variables</a></li><li><a href="#22-ac-omega-ablation" data-target="22-ac-omega-ablation">22. AC/Ω ablation</a></li><li><a href="#23-physicalization-selection-before-anthropic-conditioning" data-target="23-physicalization-selection-before-anthropic-conditioning">23. Physicalization selection before anthropic conditioning</a></li></ul></li><li class="toc-part"><a href="#part-vi-five-thinkers-as-inspiration-translation-crossover-and-challenge" data-target="part-vi-five-thinkers-as-inspiration-translation-crossover-and-challenge">Part VI — Five thinkers as inspiration, translation, crossover and challenge</a><ul><li><a href="#24-use-contract" data-target="24-use-contract">24. Use contract</a></li><li><a href="#25-constructive-ledger" data-target="25-constructive-ledger">25. Constructive ledger</a></li><li><a href="#26-six-retained-crossover-mechanisms" data-target="26-six-retained-crossover-mechanisms">26. Six retained crossover mechanisms</a></li></ul></li><li class="toc-part"><a href="#part-vii-coordinate-free-python-arena" data-target="part-vii-coordinate-free-python-arena">Part VII — Coordinate-free Python arena</a><ul><li><a href="#27-governing-question" data-target="27-governing-question">27. Governing question</a></li><li><a href="#28-finite-exact-domain" data-target="28-finite-exact-domain">28. Finite exact domain</a></li><li><a href="#29-mechanism-arms" data-target="29-mechanism-arms">29. Mechanism arms</a></li><li><a href="#30-mandatory-controls" data-target="30-mandatory-controls">30. Mandatory controls</a></li><li><a href="#31-metrics" data-target="31-metrics">31. Metrics</a></li><li><a href="#32-initial-promotion-gates" data-target="32-initial-promotion-gates">32. Initial promotion gates</a></li><li><a href="#33-hard-failure-conditions" data-target="33-hard-failure-conditions">33. Hard failure conditions</a></li><li><a href="#34-result-classes" data-target="34-result-classes">34. Result classes</a></li><li><a href="#35-minimal-module-plan" data-target="35-minimal-module-plan">35. Minimal module plan</a></li></ul></li><li class="toc-part"><a href="#part-viii-discriminators-roadmap-and-verdict" data-target="part-viii-discriminators-roadmap-and-verdict">Part VIII — Discriminators, roadmap and verdict</a><ul><li><a href="#36-pre-registered-candidate-discriminators" data-target="36-pre-registered-candidate-discriminators">36. Pre-registered candidate discriminators</a></li><li><a href="#37-research-sequence" data-target="37-research-sequence">37. Research sequence</a></li><li><a href="#38-current-verdict" data-target="38-current-verdict">38. Current verdict</a></li></ul></li><li class="toc-part"><a href="#go-with-one-primary-mechanism-one-matched-challenger-and-evidence-first" data-target="go-with-one-primary-mechanism-one-matched-challenger-and-evidence-first">GO WITH ONE PRIMARY MECHANISM, ONE MATCHED CHALLENGER, AND EVIDENCE FIRST</a><ul></ul></li><li class="toc-part"><a href="#references-and-primary-anchors" data-target="references-and-primary-anchors">References and primary anchors</a><ul></ul></li></ul>
+    </aside>
+    <article class="article">
+      
+<section class="orientation" aria-labelledby="orientation-title">
+  <div class="orientation-head">
+    <p class="kicker">Research orientation</p>
+    <h2 id="orientation-title">What this paper claims—and what it does not</h2>
+  </div>
+  <div class="orientation-grid">
+    <article class="orientation-card">
+      <span class="card-icon" aria-hidden="true">Ω</span>
+      <h3>Neutral scientific baseline</h3>
+      <p>The mathematical programme is evaluated through Ω. A successful whole-first model would not, by itself, establish Absolute Consciousness.</p>
+    </article>
+    <article class="orientation-card">
+      <span class="card-icon" aria-hidden="true">↔</span>
+      <h3>Primary mechanism</h3>
+      <p>MPRC searches for effective parts through prediction, compression, recovery, robustness and invariance across exact changes of presentation.</p>
+    </article>
+    <article class="orientation-card">
+      <span class="card-icon" aria-hidden="true">Δ</span>
+      <h3>Matched challenger</h3>
+      <p>MSR remains separate so modular–spectral assumptions can be tested and ablated rather than hidden inside the primary mechanism.</p>
+    </article>
+    <article class="orientation-card open-card">
+      <span class="card-icon" aria-hidden="true">?</span>
+      <h3>Open scientific gates</h3>
+      <p>Generic stable parts, a robust finite causal cone, 3+1 dimensions, realistic matter and any AC-specific physical effect remain unearned.</p>
+    </article>
+  </div>
+</section>
+
+      <h2 class="heading-2" id="abstract">Abstract<a aria-label="Link to Abstract" class="heading-anchor" href="#abstract">#</a></h2>
 <p>AC–WFP begins with a reversal of the usual parts-first ontology:</p>
-<blockquote><p><strong>The physical Whole is not assembled from independently existing local pieces. Effective parts are stable, mutually compatible, predictive and reconstructible restrictions of a deeper relational actuality.</strong></p></blockquote>
-<p>The ontological interpretation calls the ultimate actuality <strong>AC — Absolute Consciousness</strong>. The neutral scientific placeholder is <strong>Ω</strong>, so the mathematical and physical programme can be tested without assuming consciousness. Version 0.8 keeps that separation strict: a successful Ω theory would support whole-first physics, but would not by itself establish that Ω is conscious.</p>
+<blockquote class="core-thesis">
+<p><strong>The physical Whole is not assembled from independently existing local pieces. Effective parts are stable, mutually compatible, predictive and reconstructible restrictions of a deeper relational actuality.</strong></p>
+</blockquote>
+<p>The ontological interpretation calls the ultimate actuality <strong>AC — Absolute Consciousness</strong>. The neutral scientific placeholder is <strong>Ω</strong>, so the mathematical and physical programme can be tested without assuming consciousness. This paper keeps that separation strict: a successful Ω theory would support whole-first physics, but would not by itself establish that Ω is conscious.</p>
 <p>The paper is organized as a staged research architecture rather than a pre-time production story. Before physical time is recovered, arrows mean dependence, admissibility, reconstruction or fixed-point consistency, not chronological succession. The central dependency graph is</p>
-<pre><code class="language-text">AC / Ω_actual
+<div class="code-shell"><button aria-label="Copy block to clipboard" class="copy-code" type="button">Copy</button><pre><code class="language-text">AC / Ω_actual
   ↓
 [distinction ↔ relation ↔ proto-information I₀]
   ↓
@@ -327,161 +823,261 @@ input[type="checkbox"] {
   ↓
 [complex self-maintaining centres]
   ↓
-[embodied RC candidate]</code></pre>
-<p>Version 0.8 adopts a <strong>two-layer representation-resistant kernel</strong>. A concrete Stage-II presentation is</p>
-<p>\[ K_\alpha = (\mathcal M_\alpha,\omega_\alpha,D_\alpha; J_\alpha,\Gamma_\alpha,\mathcal C_\alpha), \]</p>
+[embodied RC candidate]
+</code></pre></div>
+<p>The framework adopts a <strong>two-layer representation-resistant kernel</strong>. A concrete Stage-II presentation is</p>
+<div class="math equation">$$
+K_\alpha
+=
+(\mathcal M_\alpha,\omega_\alpha,D_\alpha;
+J_\alpha,\Gamma_\alpha,\mathcal C_\alpha),
+$$</div>
 <p>while the scientific kernel is the family of admissible presentations, exact equivalences and declared invariants,</p>
-<p>\[ \boxed{ K_\Omega = (\mathsf{Pres}<em>\Omega,\mathfrak D</em>\Omega,\operatorname{Inv}) . } \]</p>
+<div class="math equation">$$
+\boxed{
+K_\Omega
+=
+(\mathsf{Pres}_\Omega,\mathfrak D_\Omega,\operatorname{Inv}) .
+}
+$$</div>
 <p>No one wavefunction, algebra, bulk geometry, boundary theory, graph or spectral triple is identified automatically with the Whole.</p>
 <p>The primary candidate physicalization mechanism is <strong>Minimal Predictive–Reconstructive Closure (MPRC)</strong>. It searches for overlapping effective algebras whose intrinsic projected dynamics are compressible and predictive, whose content can be recovered where the claim requires it, and whose discovery is invariant under exact changes of presentation. Its update is</p>
-<p>\[ \boxed{ \mathcal P_{n+1} = F_{\rm MPRC,\alpha} (\mathcal P_n\mid K_\alpha), \qquad \mathcal P_\alpha^<em> = F_{\rm MPRC,\alpha} (\mathcal P_\alpha^</em>\mid K_\alpha). } \]</p>
+<div class="math equation">$$
+\boxed{
+\mathcal P_{n+1}
+=
+F_{\rm MPRC,\alpha}
+(\mathcal P_n\mid K_\alpha),
+\qquad
+\mathcal P_\alpha^*
+=
+F_{\rm MPRC,\alpha}
+(\mathcal P_\alpha^*\mid K_\alpha).
+}
+$$</div>
 <p>MPRC is the primary mechanism because its objective is general predictive and reconstructive closure, not a direct reward for spacetime, Lorentz symmetry, Einstein gravity, the Standard Model, life or consciousness.</p>
 <p>The paper does <strong>not</strong> blend every attractive mechanism into MPRC. <strong>Modular–Spectral Recovery (MSR)</strong> is retained as a matched, explicit challenger based on the intrinsic channel</p>
-<p>\[ \boxed{ \Phi_{\eta,s}^{\omega,D} = \exp(\eta\mathcal G_D)\circ\sigma_s^\omega, \qquad \mathcal G_D(A)=-\tfrac12[D,[D,A]]. } \]</p>
+<div class="math equation">$$
+\boxed{
+\Phi_{\eta,s}^{\omega,D}
+=
+\exp(\eta\mathcal G_D)\circ\sigma_s^\omega,
+\qquad
+\mathcal G_D(A)=-\tfrac12[D,[D,A]].
+}
+$$</div>
 <p>MPRC and MSR use the same inputs, model-cost accounting, naturality tests, controls and held-out evaluation. MPRC asks which parts best compress and predict intrinsic relational data; MSR asks which algebras are most recoverable and persistent under a declared modular–spectral channel. Their separation is deliberate: if they are merged by default, their common assumptions can hide circularity and the information already stored in <code>D</code>.</p>
 <p>Physics is evaluated <strong>after</strong> discovery. Candidate fixed points are tested for independent distance reconstruction, operational influence, a quasi-local modular causal cone, one low-energy cone across protected sectors, Lorentz recovery, dimensional stability, geometry–matter response, stable matter sectors, chirality and anomaly cancellation. The Modular Causal Cone Condition remains a downstream phase criterion, not the fundamental law.</p>
-<p>The current result is an improved theory architecture and an executable experiment specification, not yet a derivation of nature. The first unearned step after the Stage-II representation is the generic emergence of nontrivial stable effective parts. If MPRC or MSR passes that gate, the next decisive unearned step is the emergence of a robust finite quasi-local cone. AC remains at <strong>AC0</strong>: an ontological interpretation that changes no earned physical equation. The next result must come from matched computation or theorem, not from another unrestricted layer of prose.</p>
-<hr>
-<h2>Plain-language statement</h2>
-<ol><li>Reality may be whole-first rather than made from independently existing local objects inside pre-existing space.</li><li>“Whole” does not mean physically gigantic. It means that local descriptions are constrained by a more complete actuality.</li><li>An undivided Whole cannot be mathematically featureless if it is to support distinctions, transformations or modes.</li><li>Quantum structure must be earned in Stage I; operator algebras and Hilbert-space machinery are not allowed to appear at the first line and then be called derived.</li><li>Once quantum structure is justified, a useful representation consists of an observable algebra, a state and a relational/spectral operator.</li><li>MPRC searches for effective parts by prediction, compression, recovery, stability and presentation invariance—not by asking the search to manufacture known physics.</li><li>MSR is a serious matched competitor, not an ingredient silently fused into MPRC.</li><li>Spacetime is promoted only if discovered parts independently support distance, finite influence, a common cone, stable clocks and a Lorentzian low-energy regime.</li><li>Matter, geometry and physical information may become jointly well-defined as one stable physicalization phase.</li><li>AC says that ultimate actuality is not devoid of presence. RC remains conditional on sufficiently organized local relation/resonance; a stone is AC-grounded but is not thereby an embodied conscious centre.</li></ol>
-<hr>
-<h1>Part I — Claim discipline and the central reversal</h1>
-<h2>0. Claim-status vocabulary</h2>
+<p>The result presented here is an improved theory architecture and an executable experiment specification, not yet a derivation of nature. The first unearned step after the Stage-II representation is the generic emergence of nontrivial stable effective parts. If MPRC or MSR passes that gate, the next decisive unearned step is the emergence of a robust finite quasi-local cone. AC remains at <strong>AC0</strong>: an ontological interpretation that changes no earned physical equation. The next result must come from matched computation or theorem, not from another unrestricted layer of prose.</p>
+<hr/>
+<h2 class="heading-2" id="plain-language-statement">Plain-language statement<a aria-label="Link to Plain-language statement" class="heading-anchor" href="#plain-language-statement">#</a></h2>
+<ol class="plain-language-list">
+<li>Reality may be whole-first rather than made from independently existing local objects inside pre-existing space.</li>
+<li>“Whole” does not mean physically gigantic. It means that local descriptions are constrained by a more complete actuality.</li>
+<li>An undivided Whole cannot be mathematically featureless if it is to support distinctions, transformations or modes.</li>
+<li>Quantum structure must be earned in Stage I; operator algebras and Hilbert-space machinery are not allowed to appear at the first line and then be called derived.</li>
+<li>Once quantum structure is justified, a useful representation consists of an observable algebra, a state and a relational/spectral operator.</li>
+<li>MPRC searches for effective parts by prediction, compression, recovery, stability and presentation invariance—not by asking the search to manufacture known physics.</li>
+<li>MSR is a serious matched competitor, not an ingredient silently fused into MPRC.</li>
+<li>Spacetime is promoted only if discovered parts independently support distance, finite influence, a common cone, stable clocks and a Lorentzian low-energy regime.</li>
+<li>Matter, geometry and physical information may become jointly well-defined as one stable physicalization phase.</li>
+<li>AC says that ultimate actuality is not devoid of presence. RC remains conditional on sufficiently organized local relation/resonance; a stone is AC-grounded but is not thereby an embodied conscious centre.</li>
+</ol>
+<hr/>
+<h1 class="part-title" id="part-i-claim-discipline-and-the-central-reversal">Part I — Claim discipline and the central reversal<a aria-label="Link to Part I — Claim discipline and the central reversal" class="heading-anchor" href="#part-i-claim-discipline-and-the-central-reversal">#</a></h1>
+<h2 class="heading-2" id="0-claim-status-vocabulary">0. Claim-status vocabulary<a aria-label="Link to 0. Claim-status vocabulary" class="heading-anchor" href="#0-claim-status-vocabulary">#</a></h2>
 <p>Every load-bearing statement should carry one of the following statuses.</p>
-<table><thead><tr>
-<th style="text-align:left">Status</th>
-<th style="text-align:left">Meaning</th>
-</tr></thead><tbody>
+<div aria-label="Scrollable table" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
 <tr>
-<td style="text-align:left"><strong>Established</strong></td>
-<td style="text-align:left">Standard theorem, formal construction or experimentally supported result in a stated domain</td>
+<th>Status</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Established</strong></td>
+<td>Standard theorem, formal construction or experimentally supported result in a stated domain</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>Reconstruction result</strong></td>
-<td style="text-align:left">Known formalism follows from an explicit axiom package</td>
+<td><strong>Reconstruction result</strong></td>
+<td>Known formalism follows from an explicit axiom package</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>Adapted</strong></td>
-<td style="text-align:left">Established mathematics is assigned a new role, with the adaptation declared</td>
+<td><strong>Adapted</strong></td>
+<td>Established mathematics is assigned a new role, with the adaptation declared</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>Conjectured</strong></td>
-<td style="text-align:left">New mechanism or bridge proposed in AC–WFP</td>
+<td><strong>Conjectured</strong></td>
+<td>New mechanism or bridge proposed in AC–WFP</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>Conditional recovery</strong></td>
-<td style="text-align:left">Desired physics follows if listed assumptions and earlier gates pass</td>
+<td><strong>Conditional recovery</strong></td>
+<td>Desired physics follows if listed assumptions and earlier gates pass</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>Interpretive</strong></td>
-<td style="text-align:left">AC/RC meaning assigned to neutral mathematics</td>
+<td><strong>Interpretive</strong></td>
+<td>AC/RC meaning assigned to neutral mathematics</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>Open</strong></td>
-<td style="text-align:left">Required step with no adequate derivation yet</td>
+<td><strong>Open</strong></td>
+<td>Required step with no adequate derivation yet</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>Rejected / demoted</strong></td>
-<td style="text-align:left">A stronger earlier claim no longer survives the evidence discipline</td>
+<td><strong>Rejected / demoted</strong></td>
+<td>A stronger earlier claim no longer survives the evidence discipline</td>
 </tr>
-</tbody></table>
+</tbody>
+</table></div>
 <p>No philosophical interpretation repairs a failed neutral model. No famous thinker counts as evidence. No equation counts as progress unless its types, assumptions, inputs, domain, model cost and failure conditions are stated.</p>
-<h2>0.1 Scientific and AC ladders</h2>
+<h2 class="heading-2" id="0-1-scientific-and-ac-ladders">0.1 Scientific and AC ladders<a aria-label="Link to 0.1 Scientific and AC ladders" class="heading-anchor" href="#0-1-scientific-and-ac-ladders">#</a></h2>
 <p>The scientific ladder is</p>
-<pre><code class="language-text">L0  coherent whole-first question
+<div class="code-shell"><button aria-label="Copy block to clipboard" class="copy-code" type="button">Copy</button><pre><code class="language-text">L0  coherent whole-first question
 L1  explicit neutral mathematical kernel
 L2  executable nontrivial mechanism
 L3  stable generic relational structures on held-out systems
 L4  controlled recovery of a known physical regime
-L5  new discriminator or prediction surviving external tests</code></pre>
+L5  new discriminator or prediction surviving external tests
+</code></pre></div>
 <p>The AC ladder is separate:</p>
-<pre><code class="language-text">AC0  AC is an ontological interpretation of Ω; no changed physics
+<div class="code-shell"><button aria-label="Copy block to clipboard" class="copy-code" type="button">Copy</button><pre><code class="language-text">AC0  AC is an ontological interpretation of Ω; no changed physics
 AC1  AC selects admissible factorizations, centres or phases
 AC2  AC changes dynamics, probabilities or physicalization
-AC3  an AC-specific discriminator survives experiment</code></pre>
+AC3  an AC-specific discriminator survives experiment
+</code></pre></div>
 <p>A theory may reach high scientific value while remaining at AC0. AC receives no promotion merely because the whole-first picture is compatible with it.</p>
-<h2>1. The core proposition</h2>
+<h2 class="heading-2" id="1-the-core-proposition">1. The core proposition<a aria-label="Link to 1. The core proposition" class="heading-anchor" href="#1-the-core-proposition">#</a></h2>
 <p>The parts-first picture assumes local constituents and attempts to build the universe from them. AC–WFP tests the inverse explanatory order:</p>
-<blockquote><p><strong>Locality, particles, fields and spacetime may be stable effective structures generated within a globally constrained Whole.</strong></p></blockquote>
+<blockquote>
+<p><strong>Locality, particles, fields and spacetime may be stable effective structures generated within a globally constrained Whole.</strong></p>
+</blockquote>
 <p>This is not the claim that large spatial objects create smaller spatial objects. If spacetime is emergent, the Whole is not larger in metres. It is more inclusive and ontologically prior to any particular factorization into local pieces.</p>
 <p>The strongest neutral statement is:</p>
-<blockquote><p>A physical world is a stable relational regime in which compatible restrictions of Ω acquire predictive closure, recoverable records, causal reach, geometry, energy–momentum and persistent modes.</p></blockquote>
+<blockquote>
+<p>A physical world is a stable relational regime in which compatible restrictions of Ω acquire predictive closure, recoverable records, causal reach, geometry, energy–momentum and persistent modes.</p>
+</blockquote>
 <p>The AC interpretation adds:</p>
-<blockquote><p>Ultimate actuality is not wholly devoid of presence. Physical organization localizes, stabilizes and enriches bounded relative consciousness rather than creating phenomenal presence from absolute non-presence.</p></blockquote>
-<h2>2. Undivided is not featureless</h2>
+<blockquote>
+<p>Ultimate actuality is not wholly devoid of presence. Physical organization localizes, stabilizes and enriches bounded relative consciousness rather than creating phenomenal presence from absolute non-presence.</p>
+</blockquote>
+<h2 class="heading-2" id="2-undivided-is-not-featureless">2. Undivided is not featureless<a aria-label="Link to 2. Undivided is not featureless" class="heading-anchor" href="#2-undivided-is-not-featureless">#</a></h2>
 <p>In an algebraic Stage-II representation, a trivial algebra cannot generate nontrivial internal structure:</p>
-<p>\[ \mathcal M=\mathbb C\mathbf1 \quad\Longrightarrow\quad \operatorname{Der}(\mathcal M)=0, \qquad \operatorname{Aut}(\mathcal M)=\{\mathrm{id}\}, \qquad \operatorname{Proj}(\mathcal M)=\{0,1\}. \]</p>
+<div class="math equation">$$
+\mathcal M=\mathbb C\mathbf1
+\quad\Longrightarrow\quad
+\operatorname{Der}(\mathcal M)=0,
+\qquad
+\operatorname{Aut}(\mathcal M)=\{\mathrm{id}\},
+\qquad
+\operatorname{Proj}(\mathcal M)=\{0,1\}.
+$$</div>
 <p>Therefore</p>
-<p>\[ \boxed{ \text{undivided Whole} \neq \text{featureless mathematical object}. } \]</p>
+<div class="math equation">$$
+\boxed{
+\text{undivided Whole}
+\neq
+\text{featureless mathematical object}.
+}
+$$</div>
 <p>This is a representation-level no-go, not a proof that operator algebra is the final ontology. It says that a generative representation must possess at least constrained latent relational capacity.</p>
-<p>The open foundational question is sharper in v0.8:</p>
-<blockquote><p>What is the least structure sufficient for differentiation, while still too weak to encode our observed world by hand?</p></blockquote>
-<h2>3. Four typed uses of Ω</h2>
-<p>V0.8 forbids one symbol from sliding between ontology, compatibility and representation.</p>
-<table><thead><tr>
-<th style="text-align:left">Symbol</th>
-<th style="text-align:left">Type</th>
-<th style="text-align:left">Meaning</th>
-</tr></thead><tbody>
+<p>The open foundational question is:</p>
+<blockquote>
+<p>What is the least structure sufficient for differentiation, while still too weak to encode our observed world by hand?</p>
+</blockquote>
+<h2 class="heading-2" id="3-four-typed-uses-of-omega">3. Four typed uses of Ω<a aria-label="Link to 3. Four typed uses of Ω" class="heading-anchor" href="#3-four-typed-uses-of-omega">#</a></h2>
+<p>This paper forbids one symbol from sliding between ontology, compatibility and representation.</p>
+<div aria-label="Scrollable table" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
 <tr>
-<td style="text-align:left"><code>Ω_actual</code></td>
-<td style="text-align:left">ontological placeholder</td>
-<td style="text-align:left">complete actuality relative to the hypothesis</td>
+<th>Symbol</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ω_actual</code></td>
+<td>ontological placeholder</td>
+<td>complete actuality relative to the hypothesis</td>
 </tr>
 <tr>
-<td style="text-align:left"><code>Ω_compat</code></td>
-<td style="text-align:left">scientific compatibility structure</td>
-<td style="text-align:left">admissibility and gluing relations among perspective-indexed facts and candidate completions</td>
+<td><code>Ω_compat</code></td>
+<td>scientific compatibility structure</td>
+<td>admissibility and gluing relations among perspective-indexed facts and candidate completions</td>
 </tr>
 <tr>
-<td style="text-align:left"><code>Ω_repr[α]</code></td>
-<td style="text-align:left">mathematical presentation</td>
-<td style="text-align:left">a concrete representation in language or presentation <code>α</code></td>
+<td><code>Ω_repr[α]</code></td>
+<td>mathematical presentation</td>
+<td>a concrete representation in language or presentation <code>α</code></td>
 </tr>
 <tr>
-<td style="text-align:left"><code>KΩ</code></td>
-<td style="text-align:left">representation-resistant research kernel</td>
-<td style="text-align:left">the category of presentations, exact equivalences and declared invariants</td>
+<td><code>KΩ</code></td>
+<td>representation-resistant research kernel</td>
+<td>the category of presentations, exact equivalences and declared invariants</td>
 </tr>
-</tbody></table>
+</tbody>
+</table></div>
 <p>The AC interpretation attaches to <code>Ω_actual</code>. Neutral science is performed through <code>Ω_compat</code>, <code>Ω_repr[α]</code> and <code>KΩ</code>.</p>
 <p>No chosen global wavefunction is automatically <code>Ω_actual</code>. No boundary theory is automatically more real than its gravitational dual. No spectral triple is automatically AC. No relation-only presentation is automatically complete merely because it uses fewer objects.</p>
-<h2>4. Three global-structure branches</h2>
+<h2 class="heading-2" id="4-three-global-structure-branches">4. Three global-structure branches<a aria-label="Link to 4. Three global-structure branches" class="heading-anchor" href="#4-three-global-structure-branches">#</a></h2>
 <p>The paper keeps three branches alive.</p>
-<table><thead><tr>
-<th style="text-align:left">Branch</th>
-<th style="text-align:left">Claim</th>
-<th style="text-align:left">Main strength</th>
-<th style="text-align:left">Main burden</th>
-</tr></thead><tbody>
+<div aria-label="Scrollable table" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
 <tr>
-<td style="text-align:left"><strong>G1 — strong global state</strong></td>
-<td style="text-align:left">one physically privileged global state exists</td>
-<td style="text-align:left">complete global dynamics and natural purification picture</td>
-<td style="text-align:left">risks a privileged view from nowhere and must explain relative facts</td>
+<th>Branch</th>
+<th>Claim</th>
+<th>Main strength</th>
+<th>Main burden</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>G1 — strong global state</strong></td>
+<td>one physically privileged global state exists</td>
+<td>complete global dynamics and natural purification picture</td>
+<td>risks a privileged view from nowhere and must explain relative facts</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>G2 — compatibility Whole</strong></td>
-<td style="text-align:left">local facts belong to compatibility classes; one or more completions may exist</td>
-<td style="text-align:left">whole-first without privileging one representation</td>
-<td style="text-align:left">must prove completion-invariant operational predictions</td>
+<td><strong>G2 — compatibility Whole</strong></td>
+<td>local facts belong to compatibility classes; one or more completions may exist</td>
+<td>whole-first without privileging one representation</td>
+<td>must prove completion-invariant operational predictions</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>G3 — relation only</strong></td>
-<td style="text-align:left">only interaction-indexed facts and relations are fundamental</td>
-<td style="text-align:left">lowest ontological commitment</td>
-<td style="text-align:left">must recover global consistency, Born weighting and cosmological closure</td>
+<td><strong>G3 — relation only</strong></td>
+<td>only interaction-indexed facts and relations are fundamental</td>
+<td>lowest ontological commitment</td>
+<td>must recover global consistency, Born weighting and cosmological closure</td>
 </tr>
-</tbody></table>
-<p>V0.8 uses <strong>G2 as the provisional neutral default</strong>, allows G1 as a calculational realization where justified, and keeps G3 as the lower-ontology challenger.</p>
+</tbody>
+</table></div>
+<p>The framework uses <strong>G2 as the provisional neutral default</strong>, allows G1 as a calculational realization where justified, and keeps G3 as the lower-ontology challenger.</p>
 <p>For perspective-indexed facts <code>F={f_{i|j}}</code>, define admissible completions</p>
-<p>\[ \operatorname{Comp}(F) = \left\{ \Omega_{\rm repr}^{(a)}: \mathcal R_{i|j}(\Omega_{\rm repr}^{(a)})\simeq f_{i|j} \right\}. \]</p>
+<div class="math equation">$$
+\operatorname{Comp}(F)
+=
+\left\{
+\Omega_{\rm repr}^{(a)}:
+\mathcal R_{i|j}(\Omega_{\rm repr}^{(a)})\simeq f_{i|j}
+\right\}.
+$$</div>
 <p>Nonuniqueness is acceptable only if accessible predictions are completion-invariant:</p>
-<p>\[ \epsilon_{\rm comp} = \sup_{a,b} \sup_{e\in\mathcal E_{\rm access}} \left| p(e\mid\Omega_{\rm repr}^{(a)}) - p(e\mid\Omega_{\rm repr}^{(b)}) \right| \le \varepsilon_{\rm inv}. \]</p>
+<div class="math equation">$$
+\epsilon_{\rm comp}
+=
+\sup_{a,b}
+\sup_{e\in\mathcal E_{\rm access}}
+\left|
+ p(e\mid\Omega_{\rm repr}^{(a)})
+-
+ p(e\mid\Omega_{\rm repr}^{(b)})
+\right|
+\le \varepsilon_{\rm inv}.
+$$</div>
 <p>If this fails, an independently justified selector is required.</p>
-<h2>5. Dependency graph and co-emergence</h2>
+<h2 class="heading-2" id="5-dependency-graph-and-co-emergence">5. Dependency graph and co-emergence<a aria-label="Link to 5. Dependency graph and co-emergence" class="heading-anchor" href="#5-dependency-graph-and-co-emergence">#</a></h2>
 <p>The early arrows are not an unseen cosmic clock. They mean logical, reconstructive or fixed-point dependence.</p>
-<pre><code class="language-text">Ω_actual / AC
+<div class="code-shell"><button aria-label="Copy block to clipboard" class="copy-code" type="button">Copy</button><pre><code class="language-text">Ω_actual / AC
   ↓
 [distinction ↔ relation ↔ proto-information I₀]
   ↓
@@ -501,502 +1097,990 @@ AC3  an AC-specific discriminator survives experiment</code></pre>
   ↓
 [self-maintaining embodied centres]
   ↓
-[embodied RC candidate]</code></pre>
+[embodied RC candidate]
+</code></pre></div>
 <p>The physical cluster is <strong>co-emergent</strong> if parts, order, distance, flow, records and stable modes are not inserted as independent targets, yet a common update produces a stable package in which they mutually constrain and predict one another.</p>
 <p>This is a fixed-point claim, not a claim that everything literally appears at the same instant. Before physical time exists, “simultaneous” is not the correct primitive. “Mutually constitutive” is.</p>
-<h2>5.1 Proto-information and physical information</h2>
-<ul><li><code>I₀</code> is structured distinguishability among related alternatives before physical encoding.</li><li><code>Iphys</code> is distinguishability embodied in causally accessible physical states.</li></ul>
+<h2 class="heading-2" id="5-1-proto-information-and-physical-information">5.1 Proto-information and physical information<a aria-label="Link to 5.1 Proto-information and physical information" class="heading-anchor" href="#5-1-proto-information-and-physical-information">#</a></h2>
+<ul>
+<li><code>I₀</code> is structured distinguishability among related alternatives before physical encoding.</li>
+<li><code>Iphys</code> is distinguishability embodied in causally accessible physical states.</li>
+</ul>
 <p>The first is nearly definitional once distinction and relation exist. The second requires a physical state space, operations, causal accessibility and calibration.</p>
 <p>Information is not one scalar. Shannon information, von Neumann entropy, channel capacity, algorithmic description length, quantum speed limits, thermodynamic erasure cost and semantic significance must not be interchanged.</p>
-<hr>
-<h1>Part II — Stage I and Stage II</h1>
-<h2>6. Stage I: whole-first reconstruction of quantum structure</h2>
+<hr/>
+<h1 class="part-title" id="part-ii-stage-i-and-stage-ii">Part II — Stage I and Stage II<a aria-label="Link to Part II — Stage I and Stage II" class="heading-anchor" href="#part-ii-stage-i-and-stage-ii">#</a></h1>
+<h2 class="heading-2" id="6-stage-i-whole-first-reconstruction-of-quantum-structure">6. Stage I: whole-first reconstruction of quantum structure<a aria-label="Link to 6. Stage I: whole-first reconstruction of quantum structure" class="heading-anchor" href="#6-stage-i-whole-first-reconstruction-of-quantum-structure">#</a></h2>
 <p>AC–WFP may not begin with Hilbert space and then declare quantum mechanics derived. Stage I begins with a causal operational framework containing:</p>
-<ul><li>states;</li><li>effects;</li><li>transformations;</li><li>composition rules;</li><li>probabilities;</li><li>no primitive spacetime geometry.</li></ul>
+<ul>
+<li>states;</li>
+<li>effects;</li>
+<li>transformations;</li>
+<li>composition rules;</li>
+<li>probabilities;</li>
+<li>no primitive spacetime geometry.</li>
+</ul>
 <p>The current whole-first principles are:</p>
-<h3>W1 — compatible local facts admit a Whole</h3>
+<h3 class="heading-3" id="w1-compatible-local-facts-admit-a-whole">W1 — compatible local facts admit a Whole<a aria-label="Link to W1 — compatible local facts admit a Whole" class="heading-anchor" href="#w1-compatible-local-facts-admit-a-whole">#</a></h3>
 <p>Every jointly admissible family of perspective-indexed local facts belongs to at least one compatibility class.</p>
-<h3>W2 — whole-first purification</h3>
+<h3 class="heading-3" id="w2-whole-first-purification">W2 — whole-first purification<a aria-label="Link to W2 — whole-first purification" class="heading-anchor" href="#w2-whole-first-purification">#</a></h3>
 <p>Every mixed local state has a pure completion, essentially unique up to reversible transformations on the complement, under the assumptions of the reconstruction theorem used.</p>
-<h3>W3 — no privileged classical distinction</h3>
+<h3 class="heading-3" id="w3-no-privileged-classical-distinction">W3 — no privileged classical distinction<a aria-label="Link to W3 — no privileged classical distinction" class="heading-anchor" href="#w3-no-privileged-classical-distinction">#</a></h3>
 <p>Pure alternatives of the same operational type are reversibly connected unless an independently stated conserved structure distinguishes them.</p>
-<h3>W4 — causal composition</h3>
+<h3 class="heading-3" id="w4-causal-composition">W4 — causal composition<a aria-label="Link to W4 — causal composition" class="heading-anchor" href="#w4-causal-composition">#</a></h3>
 <p>Present outcome probabilities cannot depend on later freely chosen operations.</p>
-<h3>W5 — local distinguishability or an explicit replacement</h3>
+<h3 class="heading-3" id="w5-local-distinguishability-or-an-explicit-replacement">W5 — local distinguishability or an explicit replacement<a aria-label="Link to W5 — local distinguishability or an explicit replacement" class="heading-anchor" href="#w5-local-distinguishability-or-an-explicit-replacement">#</a></h3>
 <p>Global relational states must be operationally reconstructible from an adequate family of local tests, or the theory must state precisely why a weaker composition rule is used.</p>
 <p>Known operational reconstructions show that quantum theory can follow from suitable informational principles, with purification playing a central role [1,2]. AC–WFP has not yet derived the complete axiom package from one smaller Whole-first postulate.</p>
 <p><strong>Stage-I status:</strong> a disciplined reconstruction programme, not a completed derivation of QM.</p>
-<h2>7. Stage II: typed quantum-relational presentations</h2>
+<h2 class="heading-2" id="7-stage-ii-typed-quantum-relational-presentations">7. Stage II: typed quantum-relational presentations<a aria-label="Link to 7. Stage II: typed quantum-relational presentations" class="heading-anchor" href="#7-stage-ii-typed-quantum-relational-presentations">#</a></h2>
 <p>After Stage I earns ordinary quantum structure, a concrete presentation is</p>
-<p>\[ K_\alpha = (\mathcal M_\alpha,\omega_\alpha,D_\alpha; J_\alpha,\Gamma_\alpha,\mathcal C_\alpha). \]</p>
+<div class="math equation">$$
+K_\alpha
+=
+(\mathcal M_\alpha,\omega_\alpha,D_\alpha;
+J_\alpha,\Gamma_\alpha,\mathcal C_\alpha).
+$$</div>
 <p>Only <code>(𝓜α,ωα,Dα)</code> is mandatory for the minimal modular–spectral lane.</p>
-<ul><li><code>𝓜α</code>: C* or von Neumann algebra, or a controlled finite analogue;</li><li><code>ωα</code>: normal state, faithful on the support required by modular theory;</li><li><code>Dα</code>: self-adjoint relational, incidence or Dirac-like operator, or a compact generator of one;</li><li><code>Jα</code>: real or matter–antimatter structure where justified;</li><li><code>Γα</code>: grading/chirality where justified;</li><li><code>𝓒α</code>: domain, calibration, approximation and consistency metadata.</li></ul>
+<ul>
+<li><code>𝓜α</code>: C* or von Neumann algebra, or a controlled finite analogue;</li>
+<li><code>ωα</code>: normal state, faithful on the support required by modular theory;</li>
+<li><code>Dα</code>: self-adjoint relational, incidence or Dirac-like operator, or a compact generator of one;</li>
+<li><code>Jα</code>: real or matter–antimatter structure where justified;</li>
+<li><code>Γα</code>: grading/chirality where justified;</li>
+<li><code>𝓒α</code>: domain, calibration, approximation and consistency metadata.</li>
+</ul>
 <p>These structures are scientifically fertile but already quantum/operator-theoretic. They belong only after the Stage-I firewall.</p>
-<h2>8. Presentation category and duality-invariant content</h2>
+<h2 class="heading-2" id="8-presentation-category-and-duality-invariant-content">8. Presentation category and duality-invariant content<a aria-label="Link to 8. Presentation category and duality-invariant content" class="heading-anchor" href="#8-presentation-category-and-duality-invariant-content">#</a></h2>
 <p>Define a typed category <code>PresΩ</code> whose objects are admissible presentations. Morphisms must be classified:</p>
-<pre><code class="language-text">EXACT_EQUIVALENCE          invertible and prediction preserving
+<div class="code-shell"><button aria-label="Copy block to clipboard" class="copy-code" type="button">Copy</button><pre><code class="language-text">EXACT_EQUIVALENCE          invertible and prediction preserving
 STATE_PRESERVING_EMBEDDING injective map with a stated state relation
 CONTROLLED_CODE_RECOVERY   recovery map with a declared error budget
 EFFECTIVE_RG_MAP           noninvertible coarse-graining/effective map
 CROSSOVER_DICTIONARY       proposed quantitative map between formalisms
-ANALOGY_ONLY               conceptual resemblance; no transported equation</code></pre>
+ANALOGY_ONLY               conceptual resemblance; no transported equation
+</code></pre></div>
 <p>Only exact invertible equivalences belong to the subgroupoid <code>𝔇Ω</code>.</p>
 <p>The representation-resistant kernel is</p>
-<p>\[ \boxed{ K_\Omega = (\mathsf{Pres}<em>\Omega,\mathfrak D</em>\Omega,\operatorname{Inv}). } \]</p>
+<div class="math equation">$$
+\boxed{
+K_\Omega
+=
+(\mathsf{Pres}_\Omega,\mathfrak D_\Omega,\operatorname{Inv}).
+}
+$$</div>
 <p>Every proposed invariant must declare:</p>
-<pre><code class="language-text">invariant ID
+<div class="code-shell"><button aria-label="Copy block to clipboard" class="copy-code" type="button">Copy</button><pre><code class="language-text">invariant ID
 mathematical domain
 allowed map types
 transport dictionary
 error norm
 expected error scaling
-failure meaning</code></pre>
+failure meaning
+</code></pre></div>
 <p>Candidate invariants may include mapped expectation values, operational causal order, relative entropy in controlled code domains, protected index data, calibrated cone parameters and record/recovery relations. A raw spectrum, dimension or modular flow is not invariant across every possible duality by decree.</p>
-<h2>8.1 Naturality of physicalization</h2>
+<h2 class="heading-2" id="8-1-naturality-of-physicalization">8.1 Naturality of physicalization<a aria-label="Link to 8.1 Naturality of physicalization" class="heading-anchor" href="#8-1-naturality-of-physicalization">#</a></h2>
 <p>Each presentation carries a candidate map</p>
-<p>\[ F_\alpha:\mathcal X_\alpha\to\mathcal X_\alpha. \]</p>
+<div class="math equation">$$
+F_\alpha:\mathcal X_\alpha\to\mathcal X_\alpha.
+$$</div>
 <p>For a valid presentation map <code>Uαβ</code> with induced transport <code>Uαβ^X</code>, define</p>
-<p>\[ E_{\rm nat}^{\alpha\beta}(X) = d_\beta\!\left( U_{\alpha\beta}^{X}F_\alpha(X), F_\beta U_{\alpha\beta}^{X}(X) \right). \]</p>
+<div class="math equation">$$
+E_{\rm nat}^{\alpha\beta}(X)
+=
+ d_\beta\!\left(
+ U_{\alpha\beta}^{X}F_\alpha(X),
+ F_\beta U_{\alpha\beta}^{X}(X)
+ \right).
+$$</div>
 <p>Exact-equivalence target:</p>
-<p>\[ E_{\rm nat}^{\alpha\beta}=0 \]</p>
+<div class="math equation">$$
+E_{\rm nat}^{\alpha\beta}=0
+$$</div>
 <p>up to numerical error. Approximate maps require a predeclared error budget. Analogy-only maps cannot support a naturality claim.</p>
-<p>Naturality itself can be overfit. V0.8 therefore requires held-out composition: construct or tune with maps <code>Uab</code> and <code>Ubc</code>, then test the unseen direct/composite relation <code>Uac</code> without adjustment.</p>
-<hr>
-<h1>Part III — The v0.8 physicalization mechanisms</h1>
-<h2>9. Primary mechanism: Minimal Predictive–Reconstructive Closure</h2>
-<p>V0.6 named a fixed-point map but left it underdefined. V0.7 Simple supplied the strongest lean mechanism. V0.8 promotes it as the <strong>primary candidate</strong>, while tightening its coding, naturality and held-out rules.</p>
-<h3>9.1 Candidate effective cover</h3>
+<p>Naturality itself can be overfit. The framework therefore requires held-out composition: construct or tune with maps <code>Uab</code> and <code>Ubc</code>, then test the unseen direct/composite relation <code>Uac</code> without adjustment.</p>
+<hr/>
+<h1 class="part-title" id="part-iii-physicalization-mechanisms">Part III — Physicalization mechanisms<a aria-label="Link to Part III — Physicalization mechanisms" class="heading-anchor" href="#part-iii-physicalization-mechanisms">#</a></h1>
+<h2 class="heading-2" id="9-primary-mechanism-minimal-predictive-reconstructive-closure">9. Primary mechanism: Minimal Predictive–Reconstructive Closure<a aria-label="Link to 9. Primary mechanism: Minimal Predictive–Reconstructive Closure" class="heading-anchor" href="#9-primary-mechanism-minimal-predictive-reconstructive-closure">#</a></h2>
+<p>The broad fixed-point architecture requires an explicit, auditable update rule. MPRC is adopted as the <strong>primary candidate</strong> because it is lean, testable and comparatively low-bias, with explicit coding, naturality and held-out rules.</p>
+<h3 class="heading-3" id="9-1-candidate-effective-cover">9.1 Candidate effective cover<a aria-label="Link to 9.1 Candidate effective cover" class="heading-anchor" href="#9-1-candidate-effective-cover">#</a></h3>
 <p>Let</p>
-<p>\[ \mathcal P = \{(\mathcal A_i,E_i)\}_{i=1}^{m} \]</p>
+<div class="math equation">$$
+\mathcal P
+=
+\{(\mathcal A_i,E_i)\}_{i=1}^{m}
+$$</div>
 <p>be an overlapping cover of candidate subalgebras <code>𝓐i⊂𝓜</code>. <code>Ei:𝓜→𝓐i</code> is a conditional expectation, restriction or controlled finite approximation.</p>
 <p>Overlaps are allowed because physical parts need not be disjoint tensor factors. Holographic/code-like locality, gauge constraints and perspective-indexed facts can require overlapping algebras.</p>
 <p>Candidate moves come from a predeclared low-complexity library:</p>
-<ul><li>add or remove a generator;</li><li>merge or split candidate algebras;</li><li>add or remove an overlap;</li><li>add or remove a declared recovery relation;</li><li>rotate only within a declared degenerate invariant sector;</li><li>change a model class only through a coded, auditable move.</li></ul>
+<ul>
+<li>add or remove a generator;</li>
+<li>merge or split candidate algebras;</li>
+<li>add or remove an overlap;</li>
+<li>add or remove a declared recovery relation;</li>
+<li>rotate only within a declared degenerate invariant sector;</li>
+<li>change a model class only through a coded, auditable move.</li>
+</ul>
 <p>The move library, thresholds and search policy are charged to model description length.</p>
-<h3>9.2 Intrinsic relational data</h3>
+<h3 class="heading-3" id="9-2-intrinsic-relational-data">9.2 Intrinsic relational data<a aria-label="Link to 9.2 Intrinsic relational data" class="heading-anchor" href="#9-2-intrinsic-relational-data">#</a></h3>
 <p>MPRC may use only predeclared relational data generated from the Stage-II presentation:</p>
-<p>\[ \mathscr D_{\rm rel}(K_\alpha) = \{ \text{operator correlations}, \text{projected intrinsic evolution}, \text{intervention responses}, \text{restriction/recovery data}, \text{perturbation responses} \}. \]</p>
+<div class="math equation">$$
+\mathscr D_{\rm rel}(K_\alpha)
+=
+\{
+\text{operator correlations},
+\text{projected intrinsic evolution},
+\text{intervention responses},
+\text{restriction/recovery data},
+\text{perturbation responses}
+\}.
+$$</div>
 <p>It may not use target coordinates, target dimension, a known light cone, Einstein’s equation, Standard Model labels, observer viability, life, AC or RC rewards.</p>
-<h3>9.3 Projected intrinsic dynamics</h3>
+<h3 class="heading-3" id="9-3-projected-intrinsic-dynamics">9.3 Projected intrinsic dynamics<a aria-label="Link to 9.3 Projected intrinsic dynamics" class="heading-anchor" href="#9-3-projected-intrinsic-dynamics">#</a></h3>
 <p>For a suitable algebra/state pair, Tomita–Takesaki modular theory supplies the state-relative flow [3]</p>
-<p>\[ \sigma_s^\omega(A) = \Delta_\omega^{is}A\Delta_\omega^{-is}. \]</p>
+<div class="math equation">$$
+\sigma_s^\omega(A)
+=
+\Delta_\omega^{is}A\Delta_\omega^{-is}.
+$$</div>
 <p>In a finite matrix factor with faithful density matrix <code>ρ</code>,</p>
-<p>\[ \sigma_s^\omega(A)=\rho^{is}A\rho^{-is}. \]</p>
+<div class="math equation">$$
+\sigma_s^\omega(A)=\rho^{is}A\rho^{-is}.
+$$</div>
 <p>For candidate part <code>i</code>, define projected evolution</p>
-<p>\[ T_{i,s} = E_i\circ\sigma_s^\omega\circ\iota_i, \]</p>
+<div class="math equation">$$
+T_{i,s}
+=
+E_i\circ\sigma_s^\omega\circ\iota_i,
+$$</div>
 <p>where <code>ιi</code> embeds <code>𝓐i</code> into <code>𝓜</code>.</p>
 <p>A candidate part earns predictive closure when <code>T_{i,s}</code> is represented compactly by a local completely positive unital map <code>Φi,s</code> on held-out operators and modular intervals:</p>
-<p>\[ \epsilon_{\rm pred}(i) = \sum_{s\in S_{\rm test}} \sum_{A\in\mathcal B_i^{\rm test}} \left\| T_{i,s}(A)-\Phi_{i,s}(A) \right\|<em>\omega^2, \qquad \|X\|</em>\omega^2=\omega(X^\dagger X). \]</p>
+<div class="math equation">$$
+\epsilon_{\rm pred}(i)
+=
+\sum_{s\in S_{\rm test}}
+\sum_{A\in\mathcal B_i^{\rm test}}
+\left\|
+T_{i,s}(A)-\Phi_{i,s}(A)
+\right\|_\omega^2,
+\qquad
+\|X\|_\omega^2=\omega(X^\dagger X).
+$$</div>
 <p>The modular parameter <code>s</code> is not yet physical time. It is intrinsic relational evolution data.</p>
 <p>Alternative intrinsic dynamics—declared physical channels, automorphism flows or causal-history updates—must be tested as matched challengers rather than silently merged.</p>
-<h3>9.4 Reconstructibility</h3>
+<h3 class="heading-3" id="9-4-reconstructibility">9.4 Reconstructibility<a aria-label="Link to 9.4 Reconstructibility" class="heading-anchor" href="#9-4-reconstructibility">#</a></h3>
 <p>For an authorized domain <code>B</code>, a recovery channel <code>\mathcal R_{B\to i}</code> attempts to reconstruct the logical content of <code>𝓐i</code>:</p>
-<p>\[ \epsilon_{\rm rec}(i\leftarrow B) = \min_{\mathcal R_{B\to i}} \left\| \mathcal R_{B\to i}\circ E_B-E_i \right\|_\omega. \]</p>
+<div class="math equation">$$
+\epsilon_{\rm rec}(i\leftarrow B)
+=
+\min_{\mathcal R_{B\to i}}
+\left\|
+\mathcal R_{B\to i}\circ E_B-E_i
+\right\|_\omega.
+$$</div>
 <p>Recovery is claim-relative. Redundant recovery is mandatory for a holographic or distributed-encoding claim, not for every ordinary subsystem.</p>
 <p>The recovery map itself is charged. An arbitrarily powerful optimizer that hides the desired answer inside <code>\mathcal R</code> is model bloat, not explanation.</p>
-<h3>9.5 Predictive description length</h3>
+<h3 class="heading-3" id="9-5-predictive-description-length">9.5 Predictive description length<a aria-label="Link to 9.5 Predictive description length" class="heading-anchor" href="#9-5-predictive-description-length">#</a></h3>
 <p>The discovery objective is a two-part, preferably prequential code:</p>
-<p>\[ \boxed{ \mathcal L_{\rm MPRC}(\mathcal P) = L(\mathcal P,\{E_i\},\{\Phi_i\},\{\mathcal R_i\}\mid K_\alpha) + L_{\rm preq}(\mathscr D_{\rm rel}\mid \mathcal P,\{\Phi_i\},\{\mathcal R_i\}). } \]</p>
+<div class="math equation">$$
+\boxed{
+\mathcal L_{\rm MPRC}(\mathcal P)
+=
+L(\mathcal P,\{E_i\},\{\Phi_i\},\{\mathcal R_i\}\mid K_\alpha)
++
+L_{\rm preq}(\mathscr D_{\rm rel}\mid
+\mathcal P,\{\Phi_i\},\{\mathcal R_i\}).
+}
+$$</div>
 <p>The first term encodes the model. The second encodes held-out or sequential residuals. If practical weights are used, they must come from the declared residual/noise code rather than post-hoc preference.</p>
 <p>The full cost includes the kernel and search machinery whenever models with different kernels are compared:</p>
-<p>\[ L_{\rm total} = L(\mathcal M)+L(\omega)+L(D)+L(F) +L(\mathcal P,E,\Phi,\mathcal R) +L(\text{calibration}) +L(\text{residuals}). \]</p>
-<h3>9.6 Deterministic update</h3>
+<div class="math equation">$$
+L_{\rm total}
+=
+L(\mathcal M)+L(\omega)+L(D)+L(F)
++L(\mathcal P,E,\Phi,\mathcal R)
++L(\text{calibration})
++L(\text{residuals}).
+$$</div>
+<h3 class="heading-3" id="9-6-deterministic-update">9.6 Deterministic update<a aria-label="Link to 9.6 Deterministic update" class="heading-anchor" href="#9-6-deterministic-update">#</a></h3>
 <p>Let <code>𝒩(𝒫)</code> be the finite neighborhood of allowed coded modifications. Define</p>
-<p>\[ \mathcal Q_{\min} = \operatorname*{argmin}<em>{\mathcal Q\in\mathcal N(\mathcal P)} \mathcal L</em>{\rm MPRC}(\mathcal Q), \]</p>
+<div class="math equation">$$
+\mathcal Q_{\min}
+=
+\operatorname*{argmin}_{\mathcal Q\in\mathcal N(\mathcal P)}
+\mathcal L_{\rm MPRC}(\mathcal Q),
+$$</div>
 <p>with a canonical deterministic tie-breaker. Then</p>
-<p>\[ \boxed{ F_{\rm MPRC,\alpha}(\mathcal P) = \begin{cases} \mathcal Q_{\min}, &amp;\mathcal L(\mathcal Q_{\min})&lt;\mathcal L(\mathcal P),\\[4pt] \mathcal P,&amp;\text{otherwise.} \end{cases} } \]</p>
+<div class="math equation">$$
+\boxed{
+F_{\rm MPRC,\alpha}(\mathcal P)
+=
+\begin{cases}
+\mathcal Q_{\min},
+&amp;\mathcal L(\mathcal Q_{\min})&lt;\mathcal L(\mathcal P),\\[4pt]
+\mathcal P,&amp;\text{otherwise.}
+\end{cases}
+}
+$$</div>
 <p>A local fixed point satisfies</p>
-<p>\[ \boxed{ \mathcal P_\alpha^<em> = F_{\rm MPRC,\alpha}(\mathcal P_\alpha^</em>). } \]</p>
+<div class="math equation">$$
+\boxed{
+\mathcal P_\alpha^*
+=
+F_{\rm MPRC,\alpha}(\mathcal P_\alpha^*).
+}
+$$</div>
 <p>In a finite candidate space with discrete code lengths, strict monotone descent terminates. This earns finite termination only. It does not prove physicality, uniqueness, global optimality or relevance to our universe.</p>
-<h3>9.7 Genericity and basin structure</h3>
+<h3 class="heading-3" id="9-7-genericity-and-basin-structure">9.7 Genericity and basin structure<a aria-label="Link to 9.7 Genericity and basin structure" class="heading-anchor" href="#9-7-genericity-and-basin-structure">#</a></h3>
 <p>One hand-built success is insufficient. Report:</p>
-<ul><li>fixed-point residual;</li><li>number and structure of attractors;</li><li>basin size across randomized initial covers;</li><li>sensitivity to search order and tie-breaking;</li><li>held-out generalization across seeds, perturbations and sizes;</li><li>model cost of the move library;</li><li>whether trivial full-algebra or singleton covers dominate.</li></ul>
+<ul>
+<li>fixed-point residual;</li>
+<li>number and structure of attractors;</li>
+<li>basin size across randomized initial covers;</li>
+<li>sensitivity to search order and tie-breaking;</li>
+<li>held-out generalization across seeds, perturbations and sizes;</li>
+<li>model cost of the move library;</li>
+<li>whether trivial full-algebra or singleton covers dominate.</li>
+</ul>
 <p>A physically interesting mechanism should produce nontrivial fixed points in a broad, non-fine-tuned region, not only after a curated initialization.</p>
-<h3>9.8 Naturality of MPRC</h3>
+<h3 class="heading-3" id="9-8-naturality-of-mprc">9.8 Naturality of MPRC<a aria-label="Link to 9.8 Naturality of MPRC" class="heading-anchor" href="#9-8-naturality-of-mprc">#</a></h3>
 <p>For an exact state/spectrum-preserving isomorphism <code>U</code>, the target is</p>
-<p>\[ \boxed{ F_{UK}(U\mathcal P) = U F_K(\mathcal P) } \]</p>
+<div class="math equation">$$
+\boxed{
+F_{UK}(U\mathcal P)
+=
+U F_K(\mathcal P)
+}
+$$</div>
 <p>up to canonical relabeling. At fixed points,</p>
-<p>\[ E_{\rm fp\text{-}dual}^{\alpha\beta} = d_\beta\! \left(U_{\alpha\beta}^{\mathcal P}(\mathcal P_\alpha^<em>), \mathcal P_\beta^</em>\right). \]</p>
+<div class="math equation">$$
+E_{\rm fp\text{-}dual}^{\alpha\beta}
+=
+ d_\beta\!
+\left(U_{\alpha\beta}^{\mathcal P}(\mathcal P_\alpha^*),
+\mathcal P_\beta^*\right).
+$$</div>
 <p>A mechanism that finds different physical parts after a harmless basis change fails immediately.</p>
-<h2>10. Matched challenger: Modular–Spectral Recovery</h2>
-<p>V0.7 MAL2 supplied the strongest explicit alternative. V0.8 keeps MSR separate and compares it at matched complexity.</p>
-<h3>10.1 Intrinsic MSR channel</h3>
+<h2 class="heading-2" id="10-matched-challenger-modular-spectral-recovery">10. Matched challenger: Modular–Spectral Recovery<a aria-label="Link to 10. Matched challenger: Modular–Spectral Recovery" class="heading-anchor" href="#10-matched-challenger-modular-spectral-recovery">#</a></h2>
+<p>The strongest explicit alternative is Modular–Spectral Recovery. MSR is kept separate and compared at matched complexity.</p>
+<h3 class="heading-3" id="10-1-intrinsic-msr-channel">10.1 Intrinsic MSR channel<a aria-label="Link to 10.1 Intrinsic MSR channel" class="heading-anchor" href="#10-1-intrinsic-msr-channel">#</a></h3>
 <p>For faithful <code>ρ</code> and self-adjoint <code>D</code>,</p>
-<p>\[ \sigma_s^\omega(A) =\rho^{is}A\rho^{-is}, \]</p>
-<p>\[ \mathcal G_D(A) =DAD-\tfrac12(D^2A+AD^2) =-\tfrac12[D,[D,A]], \]</p>
-<p>\[ \mathcal N_{\eta,D} =e^{\eta\mathcal G_D}, \qquad \boxed{ \Phi_{\eta,s}^{\omega,D} =\mathcal N_{\eta,D}\circ\sigma_s^\omega. } \]</p>
+<div class="math equation">$$
+\sigma_s^\omega(A)
+=\rho^{is}A\rho^{-is},
+$$</div>
+<div class="math equation">$$
+\mathcal G_D(A)
+=DAD-\tfrac12(D^2A+AD^2)
+=-\tfrac12[D,[D,A]],
+$$</div>
+<div class="math equation">$$
+\mathcal N_{\eta,D}
+=e^{\eta\mathcal G_D},
+\qquad
+\boxed{
+\Phi_{\eta,s}^{\omega,D}
+=\mathcal N_{\eta,D}\circ\sigma_s^\omega.
+}
+$$</div>
 <p><code>σω</code> supplies reversible state-relative flow. <code>Nη,D</code> supplies dephasing or coarse-graining relative to <code>D</code>. Neither contains a target dimension or Einstein tensor, but <code>D</code> may still contain substantial geometric information.</p>
-<h3>10.2 Recoverable-algebra objective</h3>
+<h3 class="heading-3" id="10-2-recoverable-algebra-objective">10.2 Recoverable-algebra objective<a aria-label="Link to 10.2 Recoverable-algebra objective" class="heading-anchor" href="#10-2-recoverable-algebra-objective">#</a></h3>
 <p>For candidate <code>𝓐i</code>, restriction <code>Ei</code> and recovery <code>Ri</code>,</p>
-<p>\[ \epsilon_{\rm MSR}(i;\eta,s) = \sup_{A\in\mathcal A_i,\|A\|\le1} \|R_iE_i\Phi_{\eta,s}^{\omega,D}(A)-A\|. \]</p>
+<div class="math equation">$$
+\epsilon_{\rm MSR}(i;\eta,s)
+=
+\sup_{A\in\mathcal A_i,\|A\|\le1}
+\|R_iE_i\Phi_{\eta,s}^{\omega,D}(A)-A\|.
+$$</div>
 <p>MSR selects a nontrivial Pareto or MDL set minimizing:</p>
-<ul><li>recovery error;</li><li>persistence/leakage error;</li><li>perturbation sensitivity;</li><li>full description length of channel, algebra, restriction and recovery.</li></ul>
+<ul>
+<li>recovery error;</li>
+<li>persistence/leakage error;</li>
+<li>perturbation sensitivity;</li>
+<li>full description length of channel, algebra, restriction and recovery.</li>
+</ul>
 <p>For a fair arena, convert this to a comparable coded objective:</p>
-<p>\[ \mathcal L_{\rm MSR} = L(\eta,s,\mathcal A,E,R,D) + L_{\rm preq}(\text{recovery and persistence residuals}). \]</p>
-<h3>10.3 Why MPRC and MSR are not merged by default</h3>
+<div class="math equation">$$
+\mathcal L_{\rm MSR}
+=
+L(\eta,s,\mathcal A,E,R,D)
++
+L_{\rm preq}(\text{recovery and persistence residuals}).
+$$</div>
+<h3 class="heading-3" id="10-3-why-mprc-and-msr-are-not-merged-by-default">10.3 Why MPRC and MSR are not merged by default<a aria-label="Link to 10.3 Why MPRC and MSR are not merged by default" class="heading-anchor" href="#10-3-why-mprc-and-msr-are-not-merged-by-default">#</a></h3>
 <p>MPRC is a broad discovery principle. MSR is a specific channel hypothesis. A default fusion would risk:</p>
-<ol><li>rewarding the same modular structure twice;</li><li>hiding physical content already encoded in <code>D</code>;</li><li>making failure uninterpretable;</li><li>converting a matched challenger into an unablated internal component.</li></ol>
-<p>The arena may include <code>MPRC+MSR</code> as a <strong>separate ablation arm</strong>, but it is not the v0.8 baseline.</p>
-<h3>10.4 The D-debt</h3>
+<ol>
+<li>rewarding the same modular structure twice;</li>
+<li>hiding physical content already encoded in <code>D</code>;</li>
+<li>making failure uninterpretable;</li>
+<li>converting a matched challenger into an unablated internal component.</li>
+</ol>
+<p>The arena may include <code>MPRC+MSR</code> as a <strong>separate ablation arm</strong>, but it is not the baseline.</p>
+<h3 class="heading-3" id="10-4-the-d-debt">10.4 The D-debt<a aria-label="Link to 10.4 The D-debt" class="heading-anchor" href="#10-4-the-d-debt">#</a></h3>
 <p>Both mechanisms are vulnerable if <code>D</code> encodes the answer. Mandatory controls:</p>
-<ul><li>preserve the spectrum and randomize eigenvectors;</li><li>preserve eigenvectors and perturb the spectrum;</li><li>replace <code>D</code> with matched graph/Laplacian operators;</li><li>remove <code>D</code>;</li><li>compare compactly generated <code>D</code> with hand-designed <code>D</code>;</li><li>charge the generator and representation of <code>D</code> in full.</li></ul>
+<ul>
+<li>preserve the spectrum and randomize eigenvectors;</li>
+<li>preserve eigenvectors and perturb the spectrum;</li>
+<li>replace <code>D</code> with matched graph/Laplacian operators;</li>
+<li>remove <code>D</code>;</li>
+<li>compare compactly generated <code>D</code> with hand-designed <code>D</code>;</li>
+<li>charge the generator and representation of <code>D</code> in full.</li>
+</ul>
 <p>A model that reconstructs geometry only because geometry was inserted into <code>D</code> has decoded, not explained.</p>
-<h2>11. Effective parts: five core gates plus one conditional gate</h2>
+<h2 class="heading-2" id="11-effective-parts-five-core-gates-plus-one-conditional-gate">11. Effective parts: five core gates plus one conditional gate<a aria-label="Link to 11. Effective parts: five core gates plus one conditional gate" class="heading-anchor" href="#11-effective-parts-five-core-gates-plus-one-conditional-gate">#</a></h2>
 <p>A mathematical subalgebra is promoted to an effective part only if it passes the gates relevant to the claim.</p>
-<h3>Gate 1 — restriction</h3>
+<h3 class="heading-3" id="gate-1-restriction">Gate 1 — restriction<a aria-label="Link to Gate 1 — restriction" class="heading-anchor" href="#gate-1-restriction">#</a></h3>
 <p>There is a well-defined <code>Ei:𝓜→𝓐i</code>, with assumptions stated.</p>
-<h3>Gate 2 — predictive persistence</h3>
+<h3 class="heading-3" id="gate-2-predictive-persistence">Gate 2 — predictive persistence<a aria-label="Link to Gate 2 — predictive persistence" class="heading-anchor" href="#gate-2-predictive-persistence">#</a></h3>
 <p>The part supports compact prediction of its projected intrinsic dynamics over held-out intervals and survives a nontrivial perturbation range.</p>
-<h3>Gate 3 — recovery or justified autonomy</h3>
+<h3 class="heading-3" id="gate-3-recovery-or-justified-autonomy">Gate 3 — recovery or justified autonomy<a aria-label="Link to Gate 3 — recovery or justified autonomy" class="heading-anchor" href="#gate-3-recovery-or-justified-autonomy">#</a></h3>
 <p>There is an explicit recovery map with a declared domain and error, or a justified local-autonomy criterion when recovery is not part of the claim.</p>
-<h3>Gate 4 — robustness and nontriviality</h3>
+<h3 class="heading-3" id="gate-4-robustness-and-nontriviality">Gate 4 — robustness and nontriviality<a aria-label="Link to Gate 4 — robustness and nontriviality" class="heading-anchor" href="#gate-4-robustness-and-nontriviality">#</a></h3>
 <p>The part survives perturbations, coarse-graining and unseen sizes, and beats full-algebra, scalar, singleton, frozen and arbitrary-factor baselines.</p>
-<h3>Gate 5 — covariance</h3>
+<h3 class="heading-3" id="gate-5-covariance">Gate 5 — covariance<a aria-label="Link to Gate 5 — covariance" class="heading-anchor" href="#gate-5-covariance">#</a></h3>
 <p>Under every declared exact-equivalence map, the part and its restriction/prediction/recovery data transport consistently.</p>
-<h3>Conditional Gate 6 — redundancy</h3>
+<h3 class="heading-3" id="conditional-gate-6-redundancy">Conditional Gate 6 — redundancy<a aria-label="Link to Conditional Gate 6 — redundancy" class="heading-anchor" href="#conditional-gate-6-redundancy">#</a></h3>
 <p>If the claim is holographic or redundantly encoded locality, more than one authorized domain must recover overlapping logical content. This is not imposed on every physical subsystem.</p>
 <p>The residual vector is reported without hiding mandatory failures in a weighted average:</p>
-<p>\[ \mathbf E_{\rm part}(i) = (E_{\rm restrict},E_{\rm predict},E_{\rm recover}, E_{\rm robust},E_{\rm cov};E_{\rm redundant}). \]</p>
-<hr>
-<h1>Part IV — Physics gates after discovery</h1>
-<h2>12. Six notions of time</h2>
+<div class="math equation">$$
+\mathbf E_{\rm part}(i)
+=
+(E_{\rm restrict},E_{\rm predict},E_{\rm recover},
+E_{\rm robust},E_{\rm cov};E_{\rm redundant}).
+$$</div>
+<hr/>
+<h1 class="part-title" id="part-iv-physics-gates-after-discovery">Part IV — Physics gates after discovery<a aria-label="Link to Part IV — Physics gates after discovery" class="heading-anchor" href="#part-iv-physics-gates-after-discovery">#</a></h1>
+<h2 class="heading-2" id="12-six-notions-of-time">12. Six notions of time<a aria-label="Link to 12. Six notions of time" class="heading-anchor" href="#12-six-notions-of-time">#</a></h2>
 <p>Time is type-diverse.</p>
-<table><thead><tr>
-<th style="text-align:left">ID</th>
-<th style="text-align:left">Type</th>
-<th style="text-align:left">Meaning</th>
-<th style="text-align:left">Current status</th>
-</tr></thead><tbody>
+<div aria-label="Scrollable table" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
 <tr>
-<td style="text-align:left"><code>T1</code></td>
-<td style="text-align:left">causal/event order</td>
-<td style="text-align:left">intervention or precedence relation</td>
-<td style="text-align:left">candidate invariant compatibility structure</td>
+<th>ID</th>
+<th>Type</th>
+<th>Meaning</th>
+<th>Current status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>T1</code></td>
+<td>causal/event order</td>
+<td>intervention or precedence relation</td>
+<td>candidate invariant compatibility structure</td>
 </tr>
 <tr>
-<td style="text-align:left"><code>T2</code></td>
-<td style="text-align:left">state-relative modular flow</td>
-<td style="text-align:left"><code>σω_s</code> from an algebra/state pair</td>
-<td style="text-align:left">theorem-backed mathematical flow</td>
+<td><code>T2</code></td>
+<td>state-relative modular flow</td>
+<td><code>σω_s</code> from an algebra/state pair</td>
+<td>theorem-backed mathematical flow</td>
 </tr>
 <tr>
-<td style="text-align:left"><code>T3</code></td>
-<td style="text-align:left">physical clock reading</td>
-<td style="text-align:left">value of a stable clock observable</td>
-<td style="text-align:left">device and trajectory relative</td>
+<td><code>T3</code></td>
+<td>physical clock reading</td>
+<td>value of a stable clock observable</td>
+<td>device and trajectory relative</td>
 </tr>
 <tr>
-<td style="text-align:left"><code>T4</code></td>
-<td style="text-align:left">relativistic proper time</td>
-<td style="text-align:left">calibrated interval along emergent worldline</td>
-<td style="text-align:left">conditional on Lorentzian geometry</td>
+<td><code>T4</code></td>
+<td>relativistic proper time</td>
+<td>calibrated interval along emergent worldline</td>
+<td>conditional on Lorentzian geometry</td>
 </tr>
 <tr>
-<td style="text-align:left"><code>T5</code></td>
-<td style="text-align:left">thermodynamic arrow</td>
-<td style="text-align:left">orientation associated with entropy production/coarse-graining</td>
-<td style="text-align:left">state and coarse-graining dependent</td>
+<td><code>T5</code></td>
+<td>thermodynamic arrow</td>
+<td>orientation associated with entropy production/coarse-graining</td>
+<td>state and coarse-graining dependent</td>
 </tr>
 <tr>
-<td style="text-align:left"><code>T6</code></td>
-<td style="text-align:left">experienced temporal flow</td>
-<td style="text-align:left">memory-integrated temporal organization of embodied RC</td>
-<td style="text-align:left">centre dependent; not derived here</td>
+<td><code>T6</code></td>
+<td>experienced temporal flow</td>
+<td>memory-integrated temporal organization of embodied RC</td>
+<td>centre dependent; not derived here</td>
 </tr>
-</tbody></table>
+</tbody>
+</table></div>
 <p>Coordinate time is a representation or gauge label, not an additional physical substance.</p>
 <p>For finite matrix factors, modular flow is inner and the outer automorphism group is trivial. Therefore finite arenas can test state-relative modular dynamics, recovery, naturality, leakage and scaling, but cannot demonstrate nontrivial canonical outer modular time or a type-III QFT limit.</p>
-<h2>12.1 Compatibility across local clocks</h2>
+<h2 class="heading-2" id="12-1-compatibility-across-local-clocks">12.1 Compatibility across local clocks<a aria-label="Link to 12.1 Compatibility across local clocks" class="heading-anchor" href="#12-1-compatibility-across-local-clocks">#</a></h2>
 <p>For overlapping candidate algebras <code>𝓐X</code> and <code>𝓐Y</code>, a compatibility-time candidate requires a monotone reparameterization <code>fXY</code> such that</p>
-<p>\[ E_{\rm time}^{XY}(S) = \sup_{|s|\le S} \sup_{A\in\mathcal A_{XY},\|A\|\le1} \left\| \sigma_s^{\omega_X}(A) - \sigma_{f_{XY}(s)}^{\omega_Y}(A) \right\| \]</p>
+<div class="math equation">$$
+E_{\rm time}^{XY}(S)
+=
+\sup_{|s|\le S}
+\sup_{A\in\mathcal A_{XY},\|A\|\le1}
+\left\|
+\sigma_s^{\omega_X}(A)
+-
+\sigma_{f_{XY}(s)}^{\omega_Y}(A)
+\right\|
+$$</div>
 <p>is small in a declared regime and composes consistently on triple overlaps.</p>
 <p>The target is universal causal compatibility, not a universal master clock.</p>
-<h2>13. Independent distance and causal influence</h2>
+<h2 class="heading-2" id="13-independent-distance-and-causal-influence">13. Independent distance and causal influence<a aria-label="Link to 13. Independent distance and causal influence" class="heading-anchor" href="#13-independent-distance-and-causal-influence">#</a></h2>
 <p>Where a spectral triple or finite analogue is justified, Connes distance is [4]</p>
-<p>\[ d_D(\varphi,\psi) = \sup_a \left\{ |\varphi(a)-\psi(a)|:\|[D,a]\|\le1 \right\}. \]</p>
+<div class="math equation">$$
+ d_D(\varphi,\psi)
+=
+\sup_a
+\left\{
+|\varphi(a)-\psi(a)|:\|[D,a]\|\le1
+\right\}.
+$$</div>
 <p>The arena also computes diffusion, information-geometric, correlation and causal distances. Agreement over a scale window is evidence. Choosing whichever distance makes the desired cone appear is failure.</p>
 <p>Operational influence between candidate parts can be measured by</p>
-<p>\[ \mathcal I_{i\to j}(s) = \sup_{\substack{A_i\in\mathcal A_i,B_j\in\mathcal A_j\\ \|A_i\|,\|B_j\|\le1}} \left\| [\sigma_s^\omega(A_i),B_j] \right\|. \]</p>
+<div class="math equation">$$
+\mathcal I_{i\to j}(s)
+=
+\sup_{\substack{A_i\in\mathcal A_i,B_j\in\mathcal A_j\\
+\|A_i\|,\|B_j\|\le1}}
+\left\|
+[\sigma_s^\omega(A_i),B_j]
+\right\|.
+$$</div>
 <p>Distance must be reconstructed independently of the commutator-spreading profile used to score a cone.</p>
-<h2>14. Modular Causal Cone Condition</h2>
+<h2 class="heading-2" id="14-modular-causal-cone-condition">14. Modular Causal Cone Condition<a aria-label="Link to 14. Modular Causal Cone Condition" class="heading-anchor" href="#14-modular-causal-cone-condition">#</a></h2>
 <p>At a candidate fixed point, test</p>
-<p>\[ \boxed{ \|[\sigma_s^\omega(A_i),B_j]\| \le C\|A_i\|\|B_j\| \exp[-\mu(d(i,j)-v|s|)]. } \]</p>
+<div class="math equation">$$
+\boxed{
+\|[\sigma_s^\omega(A_i),B_j]\|
+\le
+C\|A_i\|\|B_j\|
+\exp[-\mu(d(i,j)-v|s|)].
+}
+$$</div>
 <p>MCCC is not implied by modular theory and is not a primitive law. It is a downstream order parameter for a quasi-local phase.</p>
 <p>A serious pass requires:</p>
-<ul><li>positive decay <code>μ</code> over a nontrivial scale window;</li><li>stable finite <code>v</code>;</li><li>low held-out residual;</li><li>survival under state and <code>D</code> perturbations;</li><li>shrinking finite-size error;</li><li>one cone across protected low-energy sectors;</li><li>agreement across exact-equivalent presentations;</li><li>no reuse of influence data to define the distance being tested.</li></ul>
+<ul>
+<li>positive decay <code>μ</code> over a nontrivial scale window;</li>
+<li>stable finite <code>v</code>;</li>
+<li>low held-out residual;</li>
+<li>survival under state and <code>D</code> perturbations;</li>
+<li>shrinking finite-size error;</li>
+<li>one cone across protected low-energy sectors;</li>
+<li>agreement across exact-equivalent presentations;</li>
+<li>no reuse of influence data to define the distance being tested.</li>
+</ul>
 <p>Calibration requires stable rods and clocks:</p>
-<p>\[ t=\tau_<em>s, \qquad x=\ell_</em>d, \qquad c_<em>=\frac{\ell_</em>}{\tau_*}v. \]</p>
+<div class="math equation">$$
+ t=\tau_*s,
+\qquad
+ x=\ell_*d,
+\qquad
+ c_*=\frac{\ell_*}{\tau_*}v.
+$$</div>
 <p>The observed SI value of <code>c</code> may not be inserted into the search.</p>
-<h2>15. Special-relativity derivation ledger</h2>
-<table><thead><tr>
-<th style="text-align:left">Step</th>
-<th style="text-align:left">Required statement</th>
-<th style="text-align:left">v0.8 status</th>
-</tr></thead><tbody>
+<h2 class="heading-2" id="15-special-relativity-derivation-ledger">15. Special-relativity derivation ledger<a aria-label="Link to 15. Special-relativity derivation ledger" class="heading-anchor" href="#15-special-relativity-derivation-ledger">#</a></h2>
+<div aria-label="Scrollable table" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
 <tr>
-<td style="text-align:left">S0</td>
-<td style="text-align:left">typed neutral Stage-II presentations</td>
-<td style="text-align:left"><strong>defined/assumed after Stage I</strong></td>
+<th>Step</th>
+<th>Required statement</th>
+<th>Current status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S0</td>
+<td>typed neutral Stage-II presentations</td>
+<td><strong>defined/assumed after Stage I</strong></td>
 </tr>
 <tr>
-<td style="text-align:left">S1</td>
-<td style="text-align:left">nontrivial stable effective parts</td>
-<td style="text-align:left"><strong>conjectured; MPRC/MSR test</strong></td>
+<td>S1</td>
+<td>nontrivial stable effective parts</td>
+<td><strong>conjectured; MPRC/MSR test</strong></td>
 </tr>
 <tr>
-<td style="text-align:left">S2</td>
-<td style="text-align:left">intrinsic state/channel flow</td>
-<td style="text-align:left"><strong>defined; physical interpretation open</strong></td>
+<td>S2</td>
+<td>intrinsic state/channel flow</td>
+<td><strong>defined; physical interpretation open</strong></td>
 </tr>
 <tr>
-<td style="text-align:left">S3</td>
-<td style="text-align:left">independent relational distance</td>
-<td style="text-align:left"><strong>adapted from spectral/information structures</strong></td>
+<td>S3</td>
+<td>independent relational distance</td>
+<td><strong>adapted from spectral/information structures</strong></td>
 </tr>
 <tr>
-<td style="text-align:left">S4</td>
-<td style="text-align:left">finite quasi-local influence bound</td>
-<td style="text-align:left"><strong>open; MCCC test</strong></td>
+<td>S4</td>
+<td>finite quasi-local influence bound</td>
+<td><strong>open; MCCC test</strong></td>
 </tr>
 <tr>
-<td style="text-align:left">S5</td>
-<td style="text-align:left">stable clocks, rods and calibration</td>
-<td style="text-align:left"><strong>open</strong></td>
+<td>S5</td>
+<td>stable clocks, rods and calibration</td>
+<td><strong>open</strong></td>
 </tr>
 <tr>
-<td style="text-align:left">S6</td>
-<td style="text-align:left">one universal cone across protected sectors</td>
-<td style="text-align:left"><strong>open</strong></td>
+<td>S6</td>
+<td>one universal cone across protected sectors</td>
+<td><strong>open</strong></td>
 </tr>
 <tr>
-<td style="text-align:left">S7</td>
-<td style="text-align:left">no preferred inertial centre</td>
-<td style="text-align:left"><strong>open</strong></td>
+<td>S7</td>
+<td>no preferred inertial centre</td>
+<td><strong>open</strong></td>
 </tr>
 <tr>
-<td style="text-align:left">S8</td>
-<td style="text-align:left">homogeneity, isotropy and reciprocity in the regime</td>
-<td style="text-align:left"><strong>open or conditional assumption</strong></td>
+<td>S8</td>
+<td>homogeneity, isotropy and reciprocity in the regime</td>
+<td><strong>open or conditional assumption</strong></td>
 </tr>
 <tr>
-<td style="text-align:left">S9</td>
-<td style="text-align:left">Lorentz transformations and Minkowski interval</td>
-<td style="text-align:left"><strong>theorem-backed conditional on S5–S8</strong></td>
+<td>S9</td>
+<td>Lorentz transformations and Minkowski interval</td>
+<td><strong>theorem-backed conditional on S5–S8</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table></div>
 <p>Two stopping points must not be confused:</p>
-<ul><li>In the full Stage-II programme, the first unearned arrow is <strong>S0→S1</strong>: stable parts have not yet emerged generically.</li><li>Conditional on a successful part mechanism, the first unearned relativity arrow is <strong>S3→S4</strong>: finite quasi-local influence has not yet emerged.</li></ul>
+<ul>
+<li>In the full Stage-II programme, the first unearned arrow is <strong>S0→S1</strong>: stable parts have not yet emerged generically.</li>
+<li>Conditional on a successful part mechanism, the first unearned relativity arrow is <strong>S3→S4</strong>: finite quasi-local influence has not yet emerged.</li>
+</ul>
 <p>AC–WFP does not yet derive SR. It provides a staged route whose first two hard gaps are explicit and executable.</p>
-<h2>16. Geometry, dimension and general relativity</h2>
+<h2 class="heading-2" id="16-geometry-dimension-and-general-relativity">16. Geometry, dimension and general relativity<a aria-label="Link to 16. Geometry, dimension and general relativity" class="heading-anchor" href="#16-geometry-dimension-and-general-relativity">#</a></h2>
 <p>If a stable causal phase emerges, geometry may be reconstructed from several independent structures:</p>
-<ul><li>causal order plus volume;</li><li>spectral distance;</li><li>diffusion scaling;</li><li>information geometry;</li><li>correlation decay.</li></ul>
+<ul>
+<li>causal order plus volume;</li>
+<li>spectral distance;</li>
+<li>diffusion scaling;</li>
+<li>information geometry;</li>
+<li>correlation decay.</li>
+</ul>
 <p>A dimension claim requires estimator agreement or an explained crossover. <code>3+1</code> may not be an optimization target.</p>
 <p>The GR continuation is</p>
-<pre><code class="language-text">stable causal and metric phase
+<div class="code-shell"><button aria-label="Copy block to clipboard" class="copy-code" type="button">Copy</button><pre><code class="language-text">stable causal and metric phase
 → local metric/curvature reconstruction
 → energy–momentum and state response
 → entanglement/thermodynamic equilibrium condition
-→ compare Einstein, higher-curvature and nonlocal equations</code></pre>
+→ compare Einstein, higher-curvature and nonlocal equations
+</code></pre></div>
 <p>A normalized Einstein residual may be used only after the relevant tensors are independently defined:</p>
-<p>\[ E_{\rm Ein} = \frac{ \|G_{\mu\nu}+\Lambda g_{\mu\nu}-8\pi G_N T_{\mu\nu}\| }{ 1+\|G\|+|\Lambda|\|g\|+8\pi G_N\|T\| }. \]</p>
+<div class="math equation">$$
+E_{\rm Ein}
+=
+\frac{
+\|G_{\mu\nu}+\Lambda g_{\mu\nu}-8\pi G_N T_{\mu\nu}\|
+}{
+1+\|G\|+|\Lambda|\|g\|+8\pi G_N\|T\|
+}.
+$$</div>
 <p>Jacobson-style results establish a deep conditional relation between local thermodynamic or entanglement equilibrium and the semiclassical Einstein equation under stated assumptions [12,13]. They do not derive those assumptions, microscopic quantum gravity, global cosmology or the value of <code>Λ</code> from MPRC.</p>
 <p>A successful GR branch must still earn:</p>
-<ul><li>equivalence-principle universality;</li><li>covariant conservation;</li><li>weak-field and post-Newtonian limits;</li><li>an Einstein residual better than matched higher-curvature/nonlocal alternatives;</li><li>meanings and values of <code>G</code> and <code>Λ</code>;</li><li>controlled black-hole and de Sitter observer algebras;</li><li>a continuum/scaling limit.</li></ul>
-<h2>17. Matter, gauge structure and chirality</h2>
+<ul>
+<li>equivalence-principle universality;</li>
+<li>covariant conservation;</li>
+<li>weak-field and post-Newtonian limits;</li>
+<li>an Einstein residual better than matched higher-curvature/nonlocal alternatives;</li>
+<li>meanings and values of <code>G</code> and <code>Λ</code>;</li>
+<li>controlled black-hole and de Sitter observer algebras;</li>
+<li>a continuum/scaling limit.</li>
+</ul>
+<h2 class="heading-2" id="17-matter-gauge-structure-and-chirality">17. Matter, gauge structure and chirality<a aria-label="Link to 17. Matter, gauge structure and chirality" class="heading-anchor" href="#17-matter-gauge-structure-and-chirality">#</a></h2>
 <p>Stable eigenmodes and protected sectors are candidate matter degrees of freedom:</p>
-<p>\[ D\psi_n=\lambda_n\psi_n. \]</p>
+<div class="math equation">$$
+D\psi_n=\lambda_n\psi_n.
+$$</div>
 <p>Noncommutative/spectral geometry provides genuine mechanisms for [4,5]:</p>
-<ul><li>gauge fields through inner fluctuations;</li><li>matter–antimatter structure through <code>J</code>;</li><li>chirality through <code>Γ</code> and index data;</li><li>gravity and gauge terms through spectral-action expansions.</li></ul>
-<p>These are resources, not completed derivations. V0.8 does not insert <code>J</code> and <code>Γ</code> into the minimal kernel unless the matter/chirality lane uses them.</p>
+<ul>
+<li>gauge fields through inner fluctuations;</li>
+<li>matter–antimatter structure through <code>J</code>;</li>
+<li>chirality through <code>Γ</code> and index data;</li>
+<li>gravity and gauge terms through spectral-action expansions.</li>
+</ul>
+<p>These are resources, not completed derivations. This paper does not insert <code>J</code> and <code>Γ</code> into the minimal kernel unless the matter/chirality lane uses them.</p>
 <p>The programme must still explain:</p>
-<ul><li>why the macroscopic dimension is <code>3+1</code>;</li><li>why the gauge structure is <code>SU(3)×SU(2)L×U(1)</code>;</li><li>why weak interactions are chiral;</li><li>why anomalies cancel globally;</li><li>why there are three generations;</li><li>observed masses, mixings and couplings;</li><li>why ordinary gravity, electromagnetism and the strong interaction do not share maximal weak parity violation.</li></ul>
+<ul>
+<li>why the macroscopic dimension is <code>3+1</code>;</li>
+<li>why the gauge structure is <code>SU(3)×SU(2)L×U(1)</code>;</li>
+<li>why weak interactions are chiral;</li>
+<li>why anomalies cancel globally;</li>
+<li>why there are three generations;</li>
+<li>observed masses, mixings and couplings;</li>
+<li>why ordinary gravity, electromagnetism and the strong interaction do not share maximal weak parity violation.</li>
+</ul>
 <p>Penrose-style twistor/null structures remain a serious alternative geometry lane. They join the core only if a quantitative dictionary to the algebraic/spectral presentation improves held-out prediction, reconstruction or total description length.</p>
-<h2>18. Information, energy and action</h2>
+<h2 class="heading-2" id="18-information-energy-and-action">18. Information, energy and action<a aria-label="Link to 18. Information, energy and action" class="heading-anchor" href="#18-information-energy-and-action">#</a></h2>
 <p>The historical seed <code>i=Ec²</code> is retained as a directional intuition, not a dimensional law in bits.</p>
 <p>The disciplined cross-model variable is</p>
-<p>\[ \boxed{ \chi_{EL} = \frac{EL}{\hbar c_*}. } \]</p>
+<div class="math equation">$$
+\boxed{
+\chi_{EL}
+=
+\frac{EL}{\hbar c_*}.
+}
+$$</div>
 <p>It is a causal action budget, not “information equals energy.”</p>
 <p>Three distinct established bridges remain separate:</p>
-<h3>Capacity</h3>
+<h3 class="heading-3" id="capacity">Capacity<a aria-label="Link to Capacity" class="heading-anchor" href="#capacity">#</a></h3>
 <p>For a suitable weakly gravitating bounded system,</p>
-<p>\[ I_{\max} \lesssim \frac{2\pi EL}{\hbar c_*\ln2}. \]</p>
-<h3>Distinguishable-change rate</h3>
-<p>\[ \dot N_\perp \le \frac{2(E-E_0)}{\pi\hbar}. \]</p>
-<h3>Irreversible erasure cost</h3>
-<p>\[ E_{\rm erase} \ge k_BT\ln2\,\Delta I. \]</p>
+<div class="math equation">$$
+I_{\max}
+\lesssim
+\frac{2\pi EL}{\hbar c_*\ln2}.
+$$</div>
+<h3 class="heading-3" id="distinguishable-change-rate">Distinguishable-change rate<a aria-label="Link to Distinguishable-change rate" class="heading-anchor" href="#distinguishable-change-rate">#</a></h3>
+<div class="math equation">$$
+\dot N_\perp
+\le
+\frac{2(E-E_0)}{\pi\hbar}.
+$$</div>
+<h3 class="heading-3" id="irreversible-erasure-cost">Irreversible erasure cost<a aria-label="Link to Irreversible erasure cost" class="heading-anchor" href="#irreversible-erasure-cost">#</a></h3>
+<div class="math equation">$$
+E_{\rm erase}
+\ge
+k_BT\ln2\,\Delta I.
+$$</div>
 <p>These formulas answer different questions [15–17]. A common calibration is promoted only if one non-arbitrary definition of region, energy above ground, causal extent and cone works across held-out systems.</p>
 <p>The deeper WFP lesson is:</p>
-<blockquote><p>Energy alone is not information. Physical information is energy-enabled structured distinguishability within a causal and relational boundary.</p></blockquote>
-<hr>
-<h1>Part V — Measurement, knowledge and embodied RC</h1>
-<h2>19. Three measurement branches</h2>
-<h3>Branch M1 — unitary relative records</h3>
-<pre><code class="language-text">global quantum evolution
+<blockquote>
+<p>Energy alone is not information. Physical information is energy-enabled structured distinguishability within a causal and relational boundary.</p>
+</blockquote>
+<hr/>
+<h1 class="part-title" id="part-v-measurement-knowledge-and-embodied-rc">Part V — Measurement, knowledge and embodied RC<a aria-label="Link to Part V — Measurement, knowledge and embodied RC" class="heading-anchor" href="#part-v-measurement-knowledge-and-embodied-rc">#</a></h1>
+<h2 class="heading-2" id="19-three-measurement-branches">19. Three measurement branches<a aria-label="Link to 19. Three measurement branches" class="heading-anchor" href="#19-three-measurement-branches">#</a></h2>
+<h3 class="heading-3" id="branch-m1-unitary-relative-records">Branch M1 — unitary relative records<a aria-label="Link to Branch M1 — unitary relative records" class="heading-anchor" href="#branch-m1-unitary-relative-records">#</a></h3>
+<div class="code-shell"><button aria-label="Copy block to clipboard" class="copy-code" type="button">Copy</button><pre><code class="language-text">global quantum evolution
 → system–apparatus–memory entanglement
 → decoherence and stable relative records
-→ internal access by a self-maintaining centre</code></pre>
+→ internal access by a self-maintaining centre
+</code></pre></div>
 <p>Schematically,</p>
-<p>\[ \sum_k c_k|s_k\rangle \longrightarrow \sum_k c_k |s_k\rangle|m_k\rangle|r_k\rangle|\chi_k\rangle. \]</p>
+<div class="math equation">$$
+\sum_k c_k|s_k\rangle
+\longrightarrow
+\sum_k c_k
+|s_k\rangle|m_k\rangle|r_k\rangle|\chi_k\rangle.
+$$</div>
 <p>AC is not allowed to choose <code>k</code> or alter Born weights by assertion.</p>
-<h3>Branch M2 — Penrose-style objective reduction</h3>
+<h3 class="heading-3" id="branch-m2-penrose-style-objective-reduction">Branch M2 — Penrose-style objective reduction<a aria-label="Link to Branch M2 — Penrose-style objective reduction" class="heading-anchor" href="#branch-m2-penrose-style-objective-reduction">#</a></h3>
 <p>A gravity-related instability may produce genuine reduction, heuristically [10,11]</p>
-<p>\[ \tau_{\rm OR}\sim\frac{\hbar}{E_G}. \]</p>
+<div class="math equation">$$
+\tau_{\rm OR}\sim\frac{\hbar}{E_G}.
+$$</div>
 <p>This branch must define <code>EG</code>, regularization, stochastic dynamics, conservation and experimental consequences. If spacetime is emergent, it must also explain what defines <code>EG</code> before a classical metric exists.</p>
-<h3>Branch M3 — agnostic operational measurement</h3>
+<h3 class="heading-3" id="branch-m3-agnostic-operational-measurement">Branch M3 — agnostic operational measurement<a aria-label="Link to Branch M3 — agnostic operational measurement" class="heading-anchor" href="#branch-m3-agnostic-operational-measurement">#</a></h3>
 <p>Predict stable records and observed statistics without committing to collapse or no-collapse ontology.</p>
 <p>These branches must remain separate. No-collapse, objective reduction, twistor theory, CCC, microtubule biology and consciousness are not one package.</p>
-<h2>20. Knowledge-like closure</h2>
+<h2 class="heading-2" id="20-knowledge-like-closure">20. Knowledge-like closure<a aria-label="Link to 20. Knowledge-like closure" class="heading-anchor" href="#20-knowledge-like-closure">#</a></h2>
 <p>A record becomes internally available when it is:</p>
-<ul><li>stable over a relevant interval;</li><li>available to multiple internal processes;</li><li>linked to a self/world model;</li><li>counterfactually able to alter prediction, report, planning or control;</li><li>comparable with later records;</li><li>causally integrated without requiring an infinite regress of internal observers.</li></ul>
+<ul>
+<li>stable over a relevant interval;</li>
+<li>available to multiple internal processes;</li>
+<li>linked to a self/world model;</li>
+<li>counterfactually able to alter prediction, report, planning or control;</li>
+<li>comparable with later records;</li>
+<li>causally integrated without requiring an infinite regress of internal observers.</li>
+</ul>
 <p>This is a functional criterion for knowledge-like access. It does not by itself derive phenomenal subjectivity.</p>
-<h2>21. Physical centres and embodied RC</h2>
+<h2 class="heading-2" id="21-physical-centres-and-embodied-rc">21. Physical centres and embodied RC<a aria-label="Link to 21. Physical centres and embodied RC" class="heading-anchor" href="#21-physical-centres-and-embodied-rc">#</a></h2>
 <p>Keep three levels distinct.</p>
-<table><thead><tr>
-<th style="text-align:left">Level</th>
-<th style="text-align:left">Meaning</th>
-</tr></thead><tbody>
+<div aria-label="Scrollable table" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
 <tr>
-<td style="text-align:left"><strong>AC-grounded matter</strong></td>
-<td style="text-align:left">every physical degree of freedom belongs to the same ultimate actuality</td>
+<th>Level</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>AC-grounded matter</strong></td>
+<td>every physical degree of freedom belongs to the same ultimate actuality</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>RC-capable organization</strong></td>
-<td style="text-align:left">recurrent integration, memory, boundary, self-model and control can be sustained</td>
+<td><strong>RC-capable organization</strong></td>
+<td>recurrent integration, memory, boundary, self-model and control can be sustained</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>embodied RC candidate</strong></td>
-<td style="text-align:left">a bounded persistent centre with rich internal access and first-person organization is instantiated</td>
+<td><strong>embodied RC candidate</strong></td>
+<td>a bounded persistent centre with rich internal access and first-person organization is instantiated</td>
 </tr>
-</tbody></table>
+</tbody>
+</table></div>
 <p>The preferred public statement is:</p>
-<blockquote><p><strong>All matter is AC-grounded and potentially recruitable into RC-supporting organization; only suitably organized systems instantiate embodied RC.</strong></p></blockquote>
+<blockquote>
+<p><strong>All matter is AC-grounded and potentially recruitable into RC-supporting organization; only suitably organized systems instantiate embodied RC.</strong></p>
+</blockquote>
 <p>A stone is therefore not a local conscious subject merely because its atoms could later become part of a brain.</p>
-<h2>21.1 Two directions of the AC–RC shorthand</h2>
-<p>The project has used both <code>RC = AC·R</code> and <code>AC = RC×R</code>. V0.8 resolves them as two conceptual directions, not arithmetic identities.</p>
-<h3>Local expression</h3>
-<p>\[ \boxed{ RC_i:=\mathcal R_i(AC) } \]</p>
+<h2 class="heading-2" id="21-1-two-directions-of-the-ac-rc-shorthand">21.1 Two directions of the AC–RC shorthand<a aria-label="Link to 21.1 Two directions of the AC–RC shorthand" class="heading-anchor" href="#21-1-two-directions-of-the-ac-rc-shorthand">#</a></h2>
+<p>The framework uses both <code>RC = AC·R</code> and <code>AC = RC×R</code> as two conceptual directions, not arithmetic identities.</p>
+<h3 class="heading-3" id="local-expression">Local expression<a aria-label="Link to Local expression" class="heading-anchor" href="#local-expression">#</a></h3>
+<div class="math equation">$$
+\boxed{
+RC_i:=\mathcal R_i(AC)
+}
+$$</div>
 <p>or heuristically</p>
-<p>\[ RC_i=AC\cdot R_i, \]</p>
+<div class="math equation">$$
+RC_i=AC\cdot R_i,
+$$</div>
 <p>where <code>Ri</code> denotes the local relation/resonance, embodiment and access structure.</p>
-<h3>Global reconstruction</h3>
-<p>\[ \boxed{ AC \simeq \operatorname{Glue}_{R} \bigl(\{RC_i\}\bigr), } \]</p>
+<h3 class="heading-3" id="global-reconstruction">Global reconstruction<a aria-label="Link to Global reconstruction" class="heading-anchor" href="#global-reconstruction">#</a></h3>
+<div class="math equation">$$
+\boxed{
+AC
+\simeq
+\operatorname{Glue}_{R}
+\bigl(\{RC_i\}\bigr),
+}
+$$</div>
 <p>which is the disciplined meaning of <code>AC = RC × R</code>: the Whole is not a sum of isolated minds, but the globally compatible actuality reconstructed through their relations and all other admissible restrictions.</p>
 <p>Neither equation is currently a laboratory law.</p>
-<h2>21.2 Candidate bridge variables</h2>
+<h2 class="heading-2" id="21-2-candidate-bridge-variables">21.2 Candidate bridge variables<a aria-label="Link to 21.2 Candidate bridge variables" class="heading-anchor" href="#21-2-candidate-bridge-variables">#</a></h2>
 <p>For a physical centre <code>i</code>, let <code>Ri</code> be a vector rather than a mystical scalar, provisionally containing:</p>
-<ul><li>recurrent integration;</li><li>memory continuity;</li><li>self/world modelling;</li><li>counterfactual access;</li><li>causal autonomy;</li><li>sensorimotor or world coupling;</li><li>perturbation recovery;</li><li>cross-time identity stability.</li></ul>
+<ul>
+<li>recurrent integration;</li>
+<li>memory continuity;</li>
+<li>self/world modelling;</li>
+<li>counterfactual access;</li>
+<li>causal autonomy;</li>
+<li>sensorimotor or world coupling;</li>
+<li>perturbation recovery;</li>
+<li>cross-time identity stability.</li>
+</ul>
 <p>A secondary bridge score is</p>
-<p>\[ \boxed{ S_i=\sqrt{C_iX_i}, } \]</p>
+<div class="math equation">$$
+\boxed{
+S_i=\sqrt{C_iX_i},
+}
+$$</div>
 <p>where <code>Ci</code> is coherence and <code>Xi</code> is complexity/information diversity. <code>S</code> is not consciousness itself. It is designed to reject two false positives:</p>
-<ul><li>high complexity with low coherence: noise or chaos;</li><li>high coherence with low complexity: frozen rigidity or simple periodicity.</li></ul>
+<ul>
+<li>high complexity with low coherence: noise or chaos;</li>
+<li>high coherence with low complexity: frozen rigidity or simple periodicity.</li>
+</ul>
 <p>A serious RC bridge must distinguish living integrated centres from crystals, clocks, thermostats, random networks, scripted agents and high-compute systems lacking integrated access.</p>
-<h2>22. AC/Ω ablation</h2>
+<h2 class="heading-2" id="22-ac-omega-ablation">22. AC/Ω ablation<a aria-label="Link to 22. AC/Ω ablation" class="heading-anchor" href="#22-ac-omega-ablation">#</a></h2>
 <p>The neutral and AC branches must be run on identical data and model-cost rules.</p>
-<pre><code class="language-text">Ω branch  neutral whole-first science
+<div class="code-shell"><button aria-label="Copy block to clipboard" class="copy-code" type="button">Copy</button><pre><code class="language-text">Ω branch  neutral whole-first science
 AC0       ontology only
 AC1       selects admissible parts or phases
 AC2       changes dynamics/probabilities/physicalization
-AC3       confirmed distinct discriminator</code></pre>
+AC3       confirmed distinct discriminator
+</code></pre></div>
 <p>An AC1 or AC2 term is admissible only if it has:</p>
-<ul><li>an explicit mathematical definition;</li><li>a neutral control;</li><li>full complexity charge;</li><li>a held-out prediction;</li><li>a failure condition;</li><li>no consciousness-based outcome selection by assertion.</li></ul>
+<ul>
+<li>an explicit mathematical definition;</li>
+<li>a neutral control;</li>
+<li>full complexity charge;</li>
+<li>a held-out prediction;</li>
+<li>a failure condition;</li>
+<li>no consciousness-based outcome selection by assertion.</li>
+</ul>
 <p>If deleting AC changes no mathematics or prediction, the correct result is AC0.</p>
-<h2>23. Physicalization selection before anthropic conditioning</h2>
+<h2 class="heading-2" id="23-physicalization-selection-before-anthropic-conditioning">23. Physicalization selection before anthropic conditioning<a aria-label="Link to 23. Physicalization selection before anthropic conditioning" class="heading-anchor" href="#23-physicalization-selection-before-anthropic-conditioning">#</a></h2>
 <p>Let <code>θ</code> denote candidate effective laws or constants. The neutral programme asks whether fixed-point existence, stability, basin volume and model complexity define a prior</p>
-<p>\[ \pi_{\rm phys}(\theta). \]</p>
+<div class="math equation">$$
+\pi_{\rm phys}(\theta).
+$$</div>
 <p>Observer conditioning comes later:</p>
-<p>\[ \boxed{ P(\theta\mid RC) \propto \pi_{\rm phys}(\theta)V_{\rm RC}(\theta). } \]</p>
+<div class="math equation">$$
+\boxed{
+P(\theta\mid RC)
+\propto
+\pi_{\rm phys}(\theta)V_{\rm RC}(\theta).
+}
+$$</div>
 <p>This does not claim that AC chose our constants. It tests whether physicalization dynamics reduce arbitrariness before anthropic filtering. An AC-specific preference for RC-rich worlds remains outside the scientific core until it produces a distinct quantitative discriminator.</p>
-<hr>
-<h1>Part VI — Five thinkers as inspiration, translation, crossover and challenge</h1>
-<h2>24. Use contract</h2>
-<p>Witten, Maldacena, Rovelli, Penrose and Connes are not merely limit-setters. V0.8 uses each in four modes:</p>
-<pre><code class="language-text">INSPIRE    extract mechanisms, mathematical objects and questions
+<hr/>
+<h1 class="part-title" id="part-vi-five-thinkers-as-inspiration-translation-crossover-and-challenge">Part VI — Five thinkers as inspiration, translation, crossover and challenge<a aria-label="Link to Part VI — Five thinkers as inspiration, translation, crossover and challenge" class="heading-anchor" href="#part-vi-five-thinkers-as-inspiration-translation-crossover-and-challenge">#</a></h1>
+<h2 class="heading-2" id="24-use-contract">24. Use contract<a aria-label="Link to 24. Use contract" class="heading-anchor" href="#24-use-contract">#</a></h2>
+<p>Witten, Maldacena, Rovelli, Penrose and Connes are not merely limit-setters. This paper uses each in four modes:</p>
+<div class="code-shell"><button aria-label="Copy block to clipboard" class="copy-code" type="button">Copy</button><pre><code class="language-text">INSPIRE    extract mechanisms, mathematical objects and questions
 TRANSLATE  build explicit dictionaries into the Ω branch
 CROSSOVER  combine compatible structures into new candidates
-CHALLENGE  expose domain limits, contradictions and no-go conditions</code></pre>
+CHALLENGE  expose domain limits, contradictions and no-go conditions
+</code></pre></div>
 <p>Prestige is ignored; intellectual content is preserved.</p>
-<h2>25. Constructive ledger</h2>
-<table><thead><tr>
-<th style="text-align:left">Thinker</th>
-<th style="text-align:left">Positive seed for AC–WFP</th>
-<th style="text-align:left">Essential live collision</th>
-</tr></thead><tbody>
+<h2 class="heading-2" id="25-constructive-ledger">25. Constructive ledger<a aria-label="Link to 25. Constructive ledger" class="heading-anchor" href="#25-constructive-ledger">#</a></h2>
+<div aria-label="Scrollable table" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
 <tr>
-<td style="text-align:left"><strong>Edward Witten</strong></td>
-<td style="text-align:left">invariant content across dual descriptions; internal observers and knowledge; search for a missing organizing principle</td>
-<td style="text-align:left">no single description may be ontologically privileged; elegant rhetoric is worthless without protected calculation</td>
+<th>Thinker</th>
+<th>Positive seed for AC–WFP</th>
+<th>Essential live collision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Edward Witten</strong></td>
+<td>invariant content across dual descriptions; internal observers and knowledge; search for a missing organizing principle</td>
+<td>no single description may be ontologically privileged; elegant rhetoric is worthless without protected calculation</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>Juan Maldacena</strong></td>
-<td style="text-align:left">gravity and dimension can be reconstructed from nongravitational data; locality can be redundantly encoded</td>
-<td style="text-align:left">controlled AdS results are not automatically cosmology; exterior recovery is not a complete interior/singularity solution</td>
+<td><strong>Juan Maldacena</strong></td>
+<td>gravity and dimension can be reconstructed from nongravitational data; locality can be redundantly encoded</td>
+<td>controlled AdS results are not automatically cosmology; exterior recovery is not a complete interior/singularity solution</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>Carlo Rovelli</strong></td>
-<td style="text-align:left">perspective-indexed facts, relational events, plural clocks, background-independent quantum geometry</td>
-<td style="text-align:left">a global completion may be unnecessary; local record consistency must be explicit</td>
+<td><strong>Carlo Rovelli</strong></td>
+<td>perspective-indexed facts, relational events, plural clocks, background-independent quantum geometry</td>
+<td>a global completion may be unnecessary; local record consistency must be explicit</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>Roger Penrose</strong></td>
-<td style="text-align:left">gravity–QM collision, objective reduction, twistor/conformal primacy, willingness to revise quantum mechanics</td>
-<td style="text-align:left">OR directly conflicts with unitary relative records; twistor and spectral structures need an actual dictionary</td>
+<td><strong>Roger Penrose</strong></td>
+<td>gravity–QM collision, objective reduction, twistor/conformal primacy, willingness to revise quantum mechanics</td>
+<td>OR directly conflicts with unitary relative records; twistor and spectral structures need an actual dictionary</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>Alain Connes</strong></td>
-<td style="text-align:left">noncommutative geometry, modular flow, spectral distance, <code>J</code>, <code>Γ</code>, inner fluctuations and spectral action</td>
-<td style="text-align:left"><code>D</code> may encode the answer; modular parameter is not automatically physical time; finite factors cannot prove outer modular time</td>
+<td><strong>Alain Connes</strong></td>
+<td>noncommutative geometry, modular flow, spectral distance, <code>J</code>, <code>Γ</code>, inner fluctuations and spectral action</td>
+<td><code>D</code> may encode the answer; modular parameter is not automatically physical time; finite factors cannot prove outer modular time</td>
 </tr>
-</tbody></table>
-<h2>26. Six retained crossover mechanisms</h2>
-<h3>Witten × Maldacena — duality-natural physicalization</h3>
+</tbody>
+</table></div>
+<h2 class="heading-2" id="26-six-retained-crossover-mechanisms">26. Six retained crossover mechanisms<a aria-label="Link to 26. Six retained crossover mechanisms" class="heading-anchor" href="#26-six-retained-crossover-mechanisms">#</a></h2>
+<h3 class="heading-3" id="witten-maldacena-duality-natural-physicalization">Witten × Maldacena — duality-natural physicalization<a aria-label="Link to Witten × Maldacena — duality-natural physicalization" class="heading-anchor" href="#witten-maldacena-duality-natural-physicalization">#</a></h3>
 <p>The physicalization map must commute with exact equivalences and generalize to held-out dual/composite maps.</p>
-<h3>Rovelli × Connes — plural flows with compatibility</h3>
+<h3 class="heading-3" id="rovelli-connes-plural-flows-with-compatibility">Rovelli × Connes — plural flows with compatibility<a aria-label="Link to Rovelli × Connes — plural flows with compatibility" class="heading-anchor" href="#rovelli-connes-plural-flows-with-compatibility">#</a></h3>
 <p>Local state-relative flows may differ, while overlap maps define a consistent causal/clock structure without one master clock.</p>
-<h3>Penrose × Connes — twistor/spectral collision</h3>
+<h3 class="heading-3" id="penrose-connes-twistor-spectral-collision">Penrose × Connes — twistor/spectral collision<a aria-label="Link to Penrose × Connes — twistor/spectral collision" class="heading-anchor" href="#penrose-connes-twistor-spectral-collision">#</a></h3>
 <p>Null, conformal and spinorial invariants are compared with spectral distances, indices and operator algebras on the same finite or protected target.</p>
-<h3>Penrose × Rovelli — objective versus relative events</h3>
+<h3 class="heading-3" id="penrose-rovelli-objective-versus-relative-events">Penrose × Rovelli — objective versus relative events<a aria-label="Link to Penrose × Rovelli — objective versus relative events" class="heading-anchor" href="#penrose-rovelli-objective-versus-relative-events">#</a></h3>
 <p>A real measurement-dynamics fork replaces verbal compromise.</p>
-<h3>Maldacena × Connes — redundant reconstruction plus spectral geometry</h3>
+<h3 class="heading-3" id="maldacena-connes-redundant-reconstruction-plus-spectral-geometry">Maldacena × Connes — redundant reconstruction plus spectral geometry<a aria-label="Link to Maldacena × Connes — redundant reconstruction plus spectral geometry" class="heading-anchor" href="#maldacena-connes-redundant-reconstruction-plus-spectral-geometry">#</a></h3>
 <p>Recovery and redundancy define effective locality; spectral structure supplies metric and matter candidates. Both are costed and ablated.</p>
-<h3>All five — MPRC with MSR as challenger</h3>
+<h3 class="heading-3" id="all-five-mprc-with-msr-as-challenger">All five — MPRC with MSR as challenger<a aria-label="Link to All five — MPRC with MSR as challenger" class="heading-anchor" href="#all-five-mprc-with-msr-as-challenger">#</a></h3>
 <p>The synthesis is not “combine all equations.” It is:</p>
-<ul><li>Witten/Maldacena naturality and duality/reconstruction discipline [6–8,14];</li><li>Rovelli perspective and completion discipline;</li><li>Connes modular/spectral machinery;</li><li>Penrose rival measurement and geometry lanes;</li><li>MPRC as the low-bias discovery rule;</li><li>MSR as the explicit modular–spectral competitor.</li></ul>
-<hr>
-<h1>Part VII — Coordinate-free Python arena v0.8</h1>
-<h2>27. Governing question</h2>
+<ul>
+<li>Witten/Maldacena naturality and duality/reconstruction discipline [6–8,14];</li>
+<li>Rovelli perspective and completion discipline;</li>
+<li>Connes modular/spectral machinery;</li>
+<li>Penrose rival measurement and geometry lanes;</li>
+<li>MPRC as the low-bias discovery rule;</li>
+<li>MSR as the explicit modular–spectral competitor.</li>
+</ul>
+<hr/>
+<h1 class="part-title" id="part-vii-coordinate-free-python-arena">Part VII — Coordinate-free Python arena<a aria-label="Link to Part VII — Coordinate-free Python arena" class="heading-anchor" href="#part-vii-coordinate-free-python-arena">#</a></h1>
+<h2 class="heading-2" id="27-governing-question">27. Governing question<a aria-label="Link to 27. Governing question" class="heading-anchor" href="#27-governing-question">#</a></h2>
 <p>The first arena asks one narrow question:</p>
-<p>\[ \boxed{ \text{Can a compact coordinate-free rule discover nontrivial, stable,} \\ \text{presentation-invariant predictive parts that generalize better than} \\ \text{whole, singleton, random and matched mechanism baselines?} } \]</p>
+<div class="math equation">$$
+\boxed{
+\text{Can a compact coordinate-free rule discover nontrivial, stable,}
+\\
+\text{presentation-invariant predictive parts that generalize better than}
+\\
+\text{whole, singleton, random and matched mechanism baselines?}
+}
+$$</div>
 <p>It does not attempt to derive the Standard Model or consciousness in release 1.</p>
-<h2>28. Finite exact domain</h2>
+<h2 class="heading-2" id="28-finite-exact-domain">28. Finite exact domain<a aria-label="Link to 28. Finite exact domain" class="heading-anchor" href="#28-finite-exact-domain">#</a></h2>
 <p>Use reproducible finite systems where all inputs and transformations can be serialized:</p>
-<ul><li>matrix algebras with faithful states;</li><li>small spin chains and graph-generated operator algebras;</li><li>planted tensor/product structures;</li><li>operator-algebra QEC toy codes;</li><li>degenerate and nearly degenerate spectral sectors;</li><li>random-matrix and random-channel null ensembles;</li><li>paired exact-isomorphic presentations;</li><li>controlled code/recovery pairs;</li><li>perturbation and coarse-graining families;</li><li>unseen system sizes and seeds.</li></ul>
+<ul>
+<li>matrix algebras with faithful states;</li>
+<li>small spin chains and graph-generated operator algebras;</li>
+<li>planted tensor/product structures;</li>
+<li>operator-algebra QEC toy codes;</li>
+<li>degenerate and nearly degenerate spectral sectors;</li>
+<li>random-matrix and random-channel null ensembles;</li>
+<li>paired exact-isomorphic presentations;</li>
+<li>controlled code/recovery pairs;</li>
+<li>perturbation and coarse-graining families;</li>
+<li>unseen system sizes and seeds.</li>
+</ul>
 <p>Finite systems are Tier F evidence. They cannot establish continuum Lorentz invariance or nontrivial outer modular time.</p>
-<h2>29. Mechanism arms</h2>
+<h2 class="heading-2" id="29-mechanism-arms">29. Mechanism arms<a aria-label="Link to 29. Mechanism arms" class="heading-anchor" href="#29-mechanism-arms">#</a></h2>
 <p>At matched computational and description complexity, compare:</p>
-<ol><li><strong>MPRC</strong> — predictive/reconstructive MDL search;</li><li><strong>MSR</strong> — modular–spectral recovery channel;</li><li><strong>MPRC+MSR ablation</strong> — explicit hybrid arm, not baseline;</li><li><strong>modular-only</strong>;</li><li><strong>spectral-only</strong>;</li><li><strong>generic channel/RG</strong>;</li><li><strong>causal-history / relational-order</strong>;</li><li><strong>planted-factor oracle upper bound</strong>;</li><li><strong>whole-algebra baseline</strong>;</li><li><strong>singleton/scalar baseline</strong>;</li><li><strong>random-cover baseline</strong>;</li><li><strong>sequential greedy and search-order controls</strong>.</li></ol>
+<ol>
+<li><strong>MPRC</strong> — predictive/reconstructive MDL search;</li>
+<li><strong>MSR</strong> — modular–spectral recovery channel;</li>
+<li><strong>MPRC+MSR ablation</strong> — explicit hybrid arm, not baseline;</li>
+<li><strong>modular-only</strong>;</li>
+<li><strong>spectral-only</strong>;</li>
+<li><strong>generic channel/RG</strong>;</li>
+<li><strong>causal-history / relational-order</strong>;</li>
+<li><strong>planted-factor oracle upper bound</strong>;</li>
+<li><strong>whole-algebra baseline</strong>;</li>
+<li><strong>singleton/scalar baseline</strong>;</li>
+<li><strong>random-cover baseline</strong>;</li>
+<li><strong>sequential greedy and search-order controls</strong>.</li>
+</ol>
 <p>A later Tier L programme may add LQG/spin-network, GFT/tensor-condensate and AQFT targets.</p>
-<h2>30. Mandatory controls</h2>
-<ul><li>exact deterministic replay;</li><li>worker-count invariance;</li><li>exact isomorphic copies;</li><li>basis changes and generator relabelings;</li><li>held-out composite dual maps;</li><li>shuffled <code>ρ</code>;</li><li>shuffled <code>D</code>;</li><li>fixed spectrum/random eigenvectors;</li><li>fixed eigenvectors/perturbed spectrum;</li><li>no-<code>D</code> control;</li><li>coordinate-leak trap;</li><li>model-library-cost audit;</li><li>recovery-optimizer-capacity audit;</li><li>perturbation/coarse-graining families;</li><li>unseen sizes and seeds;</li><li>pre-registered thresholds.</li></ul>
-<h2>31. Metrics</h2>
+<h2 class="heading-2" id="30-mandatory-controls">30. Mandatory controls<a aria-label="Link to 30. Mandatory controls" class="heading-anchor" href="#30-mandatory-controls">#</a></h2>
+<ul>
+<li>exact deterministic replay;</li>
+<li>worker-count invariance;</li>
+<li>exact isomorphic copies;</li>
+<li>basis changes and generator relabelings;</li>
+<li>held-out composite dual maps;</li>
+<li>shuffled <code>ρ</code>;</li>
+<li>shuffled <code>D</code>;</li>
+<li>fixed spectrum/random eigenvectors;</li>
+<li>fixed eigenvectors/perturbed spectrum;</li>
+<li>no-<code>D</code> control;</li>
+<li>coordinate-leak trap;</li>
+<li>model-library-cost audit;</li>
+<li>recovery-optimizer-capacity audit;</li>
+<li>perturbation/coarse-graining families;</li>
+<li>unseen sizes and seeds;</li>
+<li>pre-registered thresholds.</li>
+</ul>
+<h2 class="heading-2" id="31-metrics">31. Metrics<a aria-label="Link to 31. Metrics" class="heading-anchor" href="#31-metrics">#</a></h2>
 <p>Report separately:</p>
-<ul><li>exact model code and residual code;</li><li>prequential held-out code length;</li><li>convergence steps and fixed-point residual;</li><li>basin size over initial covers;</li><li>prediction error on unseen operators/intervals;</li><li>recovery fidelity and redundancy;</li><li>nontriviality versus whole/singleton controls;</li><li>naturality and held-out duality error;</li><li><code>D</code>-debt ablation loss;</li><li>perturbation and size-scaling stability;</li><li>modular leakage;</li><li>independent-distance agreement;</li><li>MCCC cone residual;</li><li>protected-sector cone spread;</li><li>dimension-estimator agreement;</li><li>runtime and memory.</li></ul>
+<ul>
+<li>exact model code and residual code;</li>
+<li>prequential held-out code length;</li>
+<li>convergence steps and fixed-point residual;</li>
+<li>basin size over initial covers;</li>
+<li>prediction error on unseen operators/intervals;</li>
+<li>recovery fidelity and redundancy;</li>
+<li>nontriviality versus whole/singleton controls;</li>
+<li>naturality and held-out duality error;</li>
+<li><code>D</code>-debt ablation loss;</li>
+<li>perturbation and size-scaling stability;</li>
+<li>modular leakage;</li>
+<li>independent-distance agreement;</li>
+<li>MCCC cone residual;</li>
+<li>protected-sector cone spread;</li>
+<li>dimension-estimator agreement;</li>
+<li>runtime and memory.</li>
+</ul>
 <p>No weighted total may compensate for failure of an essential gate.</p>
-<h2>32. Initial promotion gates</h2>
+<h2 class="heading-2" id="32-initial-promotion-gates">32. Initial promotion gates<a aria-label="Link to 32. Initial promotion gates" class="heading-anchor" href="#32-initial-promotion-gates">#</a></h2>
 <p>These are engineering thresholds, not laws of nature.</p>
-<ol><li>Exact-equivalence naturality passes on 100% of isomorphism controls within numerical tolerance.</li><li>Deterministic replay and worker-count invariance pass exactly.</li><li>The winning mechanism beats whole, singleton, random and matched sequential controls on held-out code length across planted structured ensembles.</li><li>It does not classify random controls as structured physical phases above the predeclared false-positive ceiling.</li><li>Nontrivial parts survive declared perturbations and unseen sizes.</li><li>The result survives full cost accounting for <code>D</code>, move libraries and recovery maps.</li><li>Distance is reconstructed independently of influence before MCCC is scored.</li><li>Common-cone error decreases with scale rather than being separately fitted by sector.</li><li>No AC-specific score enters the neutral search.</li><li>The first finite release may claim at most <code>CLOSURE_MECHANISM</code>, not a completed physics bridge.</li></ol>
-<h2>33. Hard failure conditions</h2>
+<ol>
+<li>Exact-equivalence naturality passes on 100% of isomorphism controls within numerical tolerance.</li>
+<li>Deterministic replay and worker-count invariance pass exactly.</li>
+<li>The winning mechanism beats whole, singleton, random and matched sequential controls on held-out code length across planted structured ensembles.</li>
+<li>It does not classify random controls as structured physical phases above the predeclared false-positive ceiling.</li>
+<li>Nontrivial parts survive declared perturbations and unseen sizes.</li>
+<li>The result survives full cost accounting for <code>D</code>, move libraries and recovery maps.</li>
+<li>Distance is reconstructed independently of influence before MCCC is scored.</li>
+<li>Common-cone error decreases with scale rather than being separately fitted by sector.</li>
+<li>No AC-specific score enters the neutral search.</li>
+<li>The first finite release may claim at most <code>CLOSURE_MECHANISM</code>, not a completed physics bridge.</li>
+</ol>
+<h2 class="heading-2" id="33-hard-failure-conditions">33. Hard failure conditions<a aria-label="Link to 33. Hard failure conditions" class="heading-anchor" href="#33-hard-failure-conditions">#</a></h2>
 <p>The central mechanism is demoted if any of the following persists after fair repair:</p>
-<ol><li><code>D</code> stores the target geometry.</li><li>Only the whole algebra, scalar algebra or singleton cover wins.</li><li>Search libraries or recovery maps contain more information than the discovered structure.</li><li>Training fit does not generalize to unseen intervals, perturbations or sizes.</li><li>Exact equivalent presentations yield different parts.</li><li>G2-compatible completions produce different accessible predictions with no selector.</li><li>MPRC wins only because its coding language is tailored to the benchmark.</li><li>MSR wins only at uncharged, highly tuned <code>(η,s)</code>.</li><li>Quasi-locality is absent generically or appears only after using the same data to define distance and influence.</li><li>Protected sectors require separately tuned causal speeds.</li><li>Finite modular flow is presented as proof of canonical outer time.</li><li>Stage-II operator structure is used to claim Stage-I quantum derivation.</li><li>Objective reduction and no-collapse are verbally blended instead of tested.</li><li>RC criteria classify stones, crystals, clocks or simple controllers like rich embodied centres.</li><li>Deleting AC changes no result while the paper claims AC-specific physics.</li><li>Physicalization selection is only renamed anthropic weighting.</li></ol>
+<ol>
+<li><code>D</code> stores the target geometry.</li>
+<li>Only the whole algebra, scalar algebra or singleton cover wins.</li>
+<li>Search libraries or recovery maps contain more information than the discovered structure.</li>
+<li>Training fit does not generalize to unseen intervals, perturbations or sizes.</li>
+<li>Exact equivalent presentations yield different parts.</li>
+<li>G2-compatible completions produce different accessible predictions with no selector.</li>
+<li>MPRC wins only because its coding language is tailored to the benchmark.</li>
+<li>MSR wins only at uncharged, highly tuned <code>(η,s)</code>.</li>
+<li>Quasi-locality is absent generically or appears only after using the same data to define distance and influence.</li>
+<li>Protected sectors require separately tuned causal speeds.</li>
+<li>Finite modular flow is presented as proof of canonical outer time.</li>
+<li>Stage-II operator structure is used to claim Stage-I quantum derivation.</li>
+<li>Objective reduction and no-collapse are verbally blended instead of tested.</li>
+<li>RC criteria classify stones, crystals, clocks or simple controllers like rich embodied centres.</li>
+<li>Deleting AC changes no result while the paper claims AC-specific physics.</li>
+<li>Physicalization selection is only renamed anthropic weighting.</li>
+</ol>
 <p>A clean failure is progress: it removes a mechanism while preserving any lower-level whole-first insight that survives.</p>
-<h2>34. Result classes</h2>
-<pre><code class="language-text">NO_SIGNAL
+<h2 class="heading-2" id="34-result-classes">34. Result classes<a aria-label="Link to 34. Result classes" class="heading-anchor" href="#34-result-classes">#</a></h2>
+<div class="code-shell"><button aria-label="Copy block to clipboard" class="copy-code" type="button">Copy</button><pre><code class="language-text">NO_SIGNAL
 RELATIONAL_STRUCTURE
 CLOSURE_MECHANISM
 CAUSAL_PHASE_CANDIDATE
-PHYSICS_BRIDGE_CANDIDATE</code></pre>
+PHYSICS_BRIDGE_CANDIDATE
+</code></pre></div>
 <p>Tier F release 1 is not allowed to return the last class.</p>
-<h2>35. Minimal module plan</h2>
-<pre><code class="language-text">ac_wfp_arena_v0_1/
+<h2 class="heading-2" id="35-minimal-module-plan">35. Minimal module plan<a aria-label="Link to 35. Minimal module plan" class="heading-anchor" href="#35-minimal-module-plan">#</a></h2>
+<div class="code-shell"><button aria-label="Copy block to clipboard" class="copy-code" type="button">Copy</button><pre><code class="language-text">ac_wfp_arena_v0_1/
   run_arena.py
   kernels.py
   algebras.py
@@ -1014,150 +2098,247 @@ PHYSICS_BRIDGE_CANDIDATE</code></pre>
   checkpoint.py
   reports.py
   configs/base.json
-  outputs/</code></pre>
-<hr>
-<h1>Part VIII — Discriminators, roadmap and verdict</h1>
-<h2>36. Pre-registered candidate discriminators</h2>
+  outputs/
+</code></pre></div>
+<hr/>
+<h1 class="part-title" id="part-viii-discriminators-roadmap-and-verdict">Part VIII — Discriminators, roadmap and verdict<a aria-label="Link to Part VIII — Discriminators, roadmap and verdict" class="heading-anchor" href="#part-viii-discriminators-roadmap-and-verdict">#</a></h1>
+<h2 class="heading-2" id="36-pre-registered-candidate-discriminators">36. Pre-registered candidate discriminators<a aria-label="Link to 36. Pre-registered candidate discriminators" class="heading-anchor" href="#36-pre-registered-candidate-discriminators">#</a></h2>
 <p>These are research targets, not claims that nature already satisfies them.</p>
-<h3>D1 — nontrivial part attractor</h3>
+<h3 class="heading-3" id="d1-nontrivial-part-attractor">D1 — nontrivial part attractor<a aria-label="Link to D1 — nontrivial part attractor" class="heading-anchor" href="#d1-nontrivial-part-attractor">#</a></h3>
 <p>MPRC or MSR should discover stable overlapping parts on structured ensembles without coordinates and reject random nulls.</p>
-<h3>D2 — duality naturality</h3>
+<h3 class="heading-3" id="d2-duality-naturality">D2 — duality naturality<a aria-label="Link to D2 — duality naturality" class="heading-anchor" href="#d2-duality-naturality">#</a></h3>
 <p>Exact-equivalent presentations must yield transported-equivalent fixed points; approximate maps must exhibit predicted error scaling.</p>
-<h3>D3 — D-debt survival</h3>
+<h3 class="heading-3" id="d3-d-debt-survival">D3 — D-debt survival<a aria-label="Link to D3 — D-debt survival" class="heading-anchor" href="#d3-d-debt-survival">#</a></h3>
 <p>The signal must survive controls proving that <code>D</code> is not simply an encoded geometry answer.</p>
-<h3>D4 — quasi-local phase</h3>
+<h3 class="heading-3" id="d4-quasi-local-phase">D4 — quasi-local phase<a aria-label="Link to D4 — quasi-local phase" class="heading-anchor" href="#d4-quasi-local-phase">#</a></h3>
 <p>At successful fixed points, influence must exhibit a robust finite cone relative to independently reconstructed distance.</p>
-<h3>D5 — universal cone</h3>
+<h3 class="heading-3" id="d5-universal-cone">D5 — universal cone<a aria-label="Link to D5 — universal cone" class="heading-anchor" href="#d5-universal-cone">#</a></h3>
 <p>Protected low-energy sectors should converge toward one calibrated cone without sector-specific tuning.</p>
-<h3>D6 — dimension attractor</h3>
+<h3 class="heading-3" id="d6-dimension-attractor">D6 — dimension attractor<a aria-label="Link to D6 — dimension attractor" class="heading-anchor" href="#d6-dimension-attractor">#</a></h3>
 <p>Independent dimension estimators should approach a stable common value over a scaling window; <code>3+1</code> must emerge rather than be targeted.</p>
-<h3>D7 — geometry–matter response</h3>
+<h3 class="heading-3" id="d7-geometry-matter-response">D7 — geometry–matter response<a aria-label="Link to D7 — geometry–matter response" class="heading-anchor" href="#d7-geometry-matter-response">#</a></h3>
 <p>Perturbing stable matter/energy sectors should produce a universal geometric response that competes successfully against Einstein, higher-curvature and nonlocal alternatives.</p>
-<h3>D8 — chirality and anomaly consistency</h3>
+<h3 class="heading-3" id="d8-chirality-and-anomaly-consistency">D8 — chirality and anomaly consistency<a aria-label="Link to D8 — chirality and anomaly consistency" class="heading-anchor" href="#d8-chirality-and-anomaly-consistency">#</a></h3>
 <p>A surviving matter lane should produce chiral representations whose global anomalies cancel without hand-selecting the observed spectrum.</p>
-<h3>D9 — measurement fork</h3>
+<h3 class="heading-3" id="d9-measurement-fork">D9 — measurement fork<a aria-label="Link to D9 — measurement fork" class="heading-anchor" href="#d9-measurement-fork">#</a></h3>
 <p>Unitary relative-record and objective-reduction branches must make distinct quantitative predictions in at least one accessible regime.</p>
-<h3>D10 — RC false-positive resistance</h3>
+<h3 class="heading-3" id="d10-rc-false-positive-resistance">D10 — RC false-positive resistance<a aria-label="Link to D10 — RC false-positive resistance" class="heading-anchor" href="#d10-rc-false-positive-resistance">#</a></h3>
 <p>R/S-style bridge variables must track conscious-state changes better than simpler predictors while rejecting noise, rigidity, imitation and simple feedback systems.</p>
-<h3>D11 — AC-specific ablation</h3>
+<h3 class="heading-3" id="d11-ac-specific-ablation">D11 — AC-specific ablation<a aria-label="Link to D11 — AC-specific ablation" class="heading-anchor" href="#d11-ac-specific-ablation">#</a></h3>
 <p>Any AC1/AC2 term must improve held-out prediction after full complexity penalties; otherwise AC remains AC0.</p>
-<h2>37. Research sequence</h2>
-<h3>Phase 0 — freeze the arena specification</h3>
+<h2 class="heading-2" id="37-research-sequence">37. Research sequence<a aria-label="Link to 37. Research sequence" class="heading-anchor" href="#37-research-sequence">#</a></h2>
+<h3 class="heading-3" id="phase-0-freeze-the-arena-specification">Phase 0 — freeze the arena specification<a aria-label="Link to Phase 0 — freeze the arena specification" class="heading-anchor" href="#phase-0-freeze-the-arena-specification">#</a></h3>
 <p>Lock data types, code lengths, move libraries, controls, thresholds and result classes before observing main results.</p>
-<h3>Phase 1 — Tier F part discovery</h3>
+<h3 class="heading-3" id="phase-1-tier-f-part-discovery">Phase 1 — Tier F part discovery<a aria-label="Link to Phase 1 — Tier F part discovery" class="heading-anchor" href="#phase-1-tier-f-part-discovery">#</a></h3>
 <p>Run MPRC, MSR and controls on finite exact ensembles. Decide whether a genuine closure mechanism exists.</p>
-<h3>Phase 2 — causal-phase search</h3>
+<h3 class="heading-3" id="phase-2-causal-phase-search">Phase 2 — causal-phase search<a aria-label="Link to Phase 2 — causal-phase search" class="heading-anchor" href="#phase-2-causal-phase-search">#</a></h3>
 <p>Only surviving fixed points proceed to independent distance, influence and MCCC tests.</p>
-<h3>Phase 3 — scaling and SR</h3>
+<h3 class="heading-3" id="phase-3-scaling-and-sr">Phase 3 — scaling and SR<a aria-label="Link to Phase 3 — scaling and SR" class="heading-anchor" href="#phase-3-scaling-and-sr">#</a></h3>
 <p>Test cone universality, calibration, reciprocity, isotropy and Lorentz residuals across increasing systems.</p>
-<h3>Phase 4 — geometry, GR and matter</h3>
+<h3 class="heading-3" id="phase-4-geometry-gr-and-matter">Phase 4 — geometry, GR and matter<a aria-label="Link to Phase 4 — geometry, GR and matter" class="heading-anchor" href="#phase-4-geometry-gr-and-matter">#</a></h3>
 <p>Test dimensional stability, geometry–matter response, gauge/chiral sectors and anomaly cancellation.</p>
-<h3>Phase 5 — measurement and RC</h3>
+<h3 class="heading-3" id="phase-5-measurement-and-rc">Phase 5 — measurement and RC<a aria-label="Link to Phase 5 — measurement and RC" class="heading-anchor" href="#phase-5-measurement-and-rc">#</a></h3>
 <p>Compare relative-record and objective-reduction branches; build operational centre and RC false-positive studies.</p>
-<h3>Phase 6 — AC-specific branch</h3>
+<h3 class="heading-3" id="phase-6-ac-specific-branch">Phase 6 — AC-specific branch<a aria-label="Link to Phase 6 — AC-specific branch" class="heading-anchor" href="#phase-6-ac-specific-branch">#</a></h3>
 <p>Only after neutral success may an AC1/AC2 proposal be introduced and ablated.</p>
-<h2>38. Current verdict</h2>
-<h1><strong>GO WITH ONE PRIMARY MECHANISM, ONE MATCHED CHALLENGER, AND EVIDENCE FIRST</strong></h1>
-<p>Version 0.8 is the best current hybrid because it does not average incompatible drafts. It assigns each surviving idea a precise role:</p>
-<ul><li><strong>v0.6 fixed-point Ω-MSP:</strong> the broad scientific architecture;</li><li><strong>v0.7 Simple:</strong> the clear main-paper spine and MPRC discovery rule;</li><li><strong>v0.7 MAL2:</strong> typed Ω, presentation category, held-out naturality, five-gate part discipline, six-time ledger, Tier-F/Tier-L boundary and MSR;</li><li><strong>v0.7 MAL1:</strong> constructive five-thinker crossovers and naturality pressure;</li><li><strong>five-thinker attachments:</strong> inspiration, translation, crossover and challenge;</li><li><strong>AC flagship:</strong> RC as conditional resonance/organization rather than conscious particles or stones.</li></ul>
+<h2 class="heading-2" id="38-current-verdict">38. Current verdict<a aria-label="Link to 38. Current verdict" class="heading-anchor" href="#38-current-verdict">#</a></h2>
+<h1 class="verdict-title" id="go-with-one-primary-mechanism-one-matched-challenger-and-evidence-first"><strong>GO WITH ONE PRIMARY MECHANISM, ONE MATCHED CHALLENGER, AND EVIDENCE FIRST</strong><a aria-label="Link to GO WITH ONE PRIMARY MECHANISM, ONE MATCHED CHALLENGER, AND EVIDENCE FIRST" class="heading-anchor" href="#go-with-one-primary-mechanism-one-matched-challenger-and-evidence-first">#</a></h1>
+<p>The framework does not average incompatible ideas. It assigns each surviving component a precise role:</p>
+<ul>
+<li><strong>representation-resistant Ω kernel:</strong> the neutral scientific foundation;</li>
+<li><strong>MPRC:</strong> the primary discovery rule for predictive and reconstructible effective parts;</li>
+<li><strong>MSR:</strong> the matched modular–spectral challenger;</li>
+<li><strong>cross-programme physics:</strong> inspiration, translation, crossover and adversarial testing;</li>
+<li><strong>AC and embodied RC:</strong> a separate interpretive and organizational branch that receives no physical credit without a distinct discriminator.</li>
+</ul>
 <p>The resulting neutral candidate is</p>
-<p>\[ \boxed{ K_\Omega = (\mathsf{Pres}<em>\Omega,\mathfrak D</em>\Omega,\operatorname{Inv}) } \]</p>
+<div class="math equation">$$
+\boxed{
+K_\Omega
+=
+(\mathsf{Pres}_\Omega,\mathfrak D_\Omega,\operatorname{Inv})
+}
+$$</div>
 <p>with primary physicalization</p>
-<p>\[ \boxed{ \mathcal P_\alpha^<em> = F_{\rm MPRC,\alpha} (\mathcal P_\alpha^</em>\mid K_\alpha) } \]</p>
+<div class="math equation">$$
+\boxed{
+\mathcal P_\alpha^*
+=
+F_{\rm MPRC,\alpha}
+(\mathcal P_\alpha^*\mid K_\alpha)
+}
+$$</div>
 <p>and matched challenger</p>
-<p>\[ \boxed{ \mathcal P_\alpha^{<em>,\rm MSR} = F_{\rm MSR,\alpha} (\mathcal P_\alpha^{</em>,\rm MSR}\mid K_\alpha). } \]</p>
+<div class="math equation">$$
+\boxed{
+\mathcal P_\alpha^{*,\rm MSR}
+=
+F_{\rm MSR,\alpha}
+(\mathcal P_\alpha^{*,\rm MSR}\mid K_\alpha).
+}
+$$</div>
 <p>A physical phase is promoted only if discovered structures independently support</p>
-<p>\[ \boxed{ \text{nontrivial parts} + \text{held-out prediction} + \text{reconstruction} + \text{naturality} + \text{quasi-local influence} + \text{one cone} + \text{geometry, matter and records}. } \]</p>
+<div class="math equation">$$
+\boxed{
+\text{nontrivial parts}
++
+\text{held-out prediction}
++
+\text{reconstruction}
++
+\text{naturality}
++
+\text{quasi-local influence}
++
+\text{one cone}
++
+\text{geometry, matter and records}.
+}
+$$</div>
 <p>The first decisive experiment is not “prove AC” and not “derive all physics.” It is:</p>
-<blockquote><p><strong>Can whole-first predictive–reconstructive closure discover real effective parts without secretly inserting the world it is meant to explain?</strong></p></blockquote>
+<blockquote>
+<p><strong>Can whole-first predictive–reconstructive closure discover real effective parts without secretly inserting the world it is meant to explain?</strong></p>
+</blockquote>
 <p>If the answer is no, MPRC is demoted and the lower-level whole-first ontology remains open. If the answer is yes, AC–WFP earns its first genuine mechanism and can advance to the causal-phase and SR tests.</p>
 <p>AC remains the interpretation that ultimate actuality is not devoid of presence. At present it changes no earned physical equation. The correct next move is the arena.</p>
-<hr>
-<h2>39. v0.8 changelog</h2>
-<ul><li>Selected v0.7 Simple as the editorial spine rather than the much longer MAL2 paper.</li><li>Promoted MPRC as the primary discovery mechanism.</li><li>Retained MSR as a matched challenger instead of blending it into MPRC.</li><li>Added a prequential held-out coding requirement to reduce MPRC overfitting.</li><li>Adopted four typed uses of Ω and the two-layer representation-resistant kernel.</li><li>Restricted the duality groupoid to exact invertible equivalences; typed approximate maps separately.</li><li>Added held-out duality-composition tests.</li><li>Resolved the S1 versus S4 “first unearned arrow” ambiguity.</li><li>Replaced an overloaded part definition with five core gates plus a conditional redundancy gate.</li><li>Preserved the six-time ledger and finite-factor boundary.</li><li>Preserved MCCC as a downstream phase criterion.</li><li>Strengthened full model-cost accounting for <code>D</code>, move libraries and recovery maps.</li><li>Preserved the information–energy–action bridges without treating <code>i=Ec²</code> as a law.</li><li>Preserved unitary/no-collapse, Penrose objective-reduction and agnostic measurement branches.</li><li>Reconciled <code>RC=AC·R</code> and <code>AC=RC×R</code> as local-expression and global-reconstruction shorthands.</li><li>Preserved <code>S=√(Coherence×Complexity)</code> only as a falsifiable RC bridge variable with false-positive controls.</li><li>Reduced the immediate programme to one arena with matched arms and hard promotion gates.</li><li>Kept AC at AC0 pending an explicit, complexity-penalized discriminator.</li></ul>
-<hr>
-<h1>References and primary anchors</h1>
-<ol><li>G. Chiribella, G. M. D’Ariano and P. Perinotti, <em>Probabilistic Theories with Purification</em>, Phys. Rev. A 81, 062348 (2010), arXiv:0908.1583.</li><li>G. Chiribella, G. M. D’Ariano and P. Perinotti, <em>Informational Derivation of Quantum Theory</em>, Phys. Rev. A 84, 012311 (2011), arXiv:1011.6451.</li><li>A. Connes and C. Rovelli, <em>Von Neumann Algebra Automorphisms and Time–Thermodynamics Relation in Generally Covariant Quantum Theories</em>, Class. Quantum Grav. 11, 2899 (1994), arXiv:gr-qc/9406019.</li><li>A. Connes, <em>Noncommutative Geometry</em>, Academic Press (1994).</li><li>A. H. Chamseddine and A. Connes, <em>The Spectral Action Principle</em>, Commun. Math. Phys. 186, 731 (1997), arXiv:hep-th/9606001.</li><li>J. M. Maldacena, <em>The Large N Limit of Superconformal Field Theories and Supergravity</em>, Adv. Theor. Math. Phys. 2, 231 (1998), arXiv:hep-th/9711200.</li><li>A. Almheiri, X. Dong and D. Harlow, <em>Bulk Locality and Quantum Error Correction in AdS/CFT</em>, JHEP 04, 163 (2015), arXiv:1411.7041.</li><li>D. L. Jafferis, A. Lewkowycz, J. Maldacena and S. J. Suh, <em>Relative Entropy Equals Bulk Relative Entropy</em>, JHEP 06, 004 (2016), arXiv:1512.06431.</li><li>C. Rovelli, <em>Relational Quantum Mechanics</em>, Int. J. Theor. Phys. 35, 1637 (1996), arXiv:quant-ph/9609002.</li><li>R. Penrose, <em>On Gravity’s Role in Quantum State Reduction</em>, Gen. Rel. Grav. 28, 581 (1996).</li><li>R. Penrose, <em>On the Gravitization of Quantum Mechanics 1: Quantum State Reduction</em>, Found. Phys. 44, 557 (2014).</li><li>T. Jacobson, <em>Thermodynamics of Spacetime: The Einstein Equation of State</em>, Phys. Rev. Lett. 75, 1260 (1995), arXiv:gr-qc/9504004.</li><li>T. Jacobson, <em>Entanglement Equilibrium and the Einstein Equation</em>, Phys. Rev. Lett. 116, 201101 (2016), arXiv:1505.04753.</li><li>E. Witten, <em>Gravity and the Crossed Product</em>, JHEP 10, 008 (2022), arXiv:2112.12828.</li><li>J. D. Bekenstein, <em>Universal Upper Bound on the Entropy-to-Energy Ratio for Bounded Systems</em>, Phys. Rev. D 23, 287 (1981).</li><li>R. Landauer, <em>Irreversibility and Heat Generation in the Computing Process</em>, IBM J. Res. Dev. 5, 183 (1961).</li><li>N. Margolus and L. B. Levitin, <em>The Maximum Speed of Dynamical Evolution</em>, Physica D 120, 188 (1998), arXiv:quant-ph/9710043.</li><li>BD × AI, <em>AC–WFP v0.6 — Whole-First Co-Emergent Physicalization</em>.</li><li>BD × AI, <em>AC–WFP v0.7 Simple — Whole-First Physicalization by Predictive–Reconstructive Closure</em>.</li><li>AIm³ MentalArena, <em>AC–WFP v0.7 MAL1 and MAL2 council outputs</em>.</li><li>BD × AI, <em>Witten, Maldacena, Rovelli, Penrose and Connes AC–WFP discovery/collision attachments</em>.</li></ol></article>
-</main>
+<hr/>
+<h1 class="references-title" id="references-and-primary-anchors">References and primary anchors<a aria-label="Link to References and primary anchors" class="heading-anchor" href="#references-and-primary-anchors">#</a></h1>
+<ol class="reference-list">
+<li>G. Chiribella, G. M. D’Ariano and P. Perinotti, <em>Probabilistic Theories with Purification</em>, Phys. Rev. A 81, 062348 (2010), arXiv:0908.1583.</li>
+<li>G. Chiribella, G. M. D’Ariano and P. Perinotti, <em>Informational Derivation of Quantum Theory</em>, Phys. Rev. A 84, 012311 (2011), arXiv:1011.6451.</li>
+<li>A. Connes and C. Rovelli, <em>Von Neumann Algebra Automorphisms and Time–Thermodynamics Relation in Generally Covariant Quantum Theories</em>, Class. Quantum Grav. 11, 2899 (1994), arXiv:gr-qc/9406019.</li>
+<li>A. Connes, <em>Noncommutative Geometry</em>, Academic Press (1994).</li>
+<li>A. H. Chamseddine and A. Connes, <em>The Spectral Action Principle</em>, Commun. Math. Phys. 186, 731 (1997), arXiv:hep-th/9606001.</li>
+<li>J. M. Maldacena, <em>The Large N Limit of Superconformal Field Theories and Supergravity</em>, Adv. Theor. Math. Phys. 2, 231 (1998), arXiv:hep-th/9711200.</li>
+<li>A. Almheiri, X. Dong and D. Harlow, <em>Bulk Locality and Quantum Error Correction in AdS/CFT</em>, JHEP 04, 163 (2015), arXiv:1411.7041.</li>
+<li>D. L. Jafferis, A. Lewkowycz, J. Maldacena and S. J. Suh, <em>Relative Entropy Equals Bulk Relative Entropy</em>, JHEP 06, 004 (2016), arXiv:1512.06431.</li>
+<li>C. Rovelli, <em>Relational Quantum Mechanics</em>, Int. J. Theor. Phys. 35, 1637 (1996), arXiv:quant-ph/9609002.</li>
+<li>R. Penrose, <em>On Gravity’s Role in Quantum State Reduction</em>, Gen. Rel. Grav. 28, 581 (1996).</li>
+<li>R. Penrose, <em>On the Gravitization of Quantum Mechanics 1: Quantum State Reduction</em>, Found. Phys. 44, 557 (2014).</li>
+<li>T. Jacobson, <em>Thermodynamics of Spacetime: The Einstein Equation of State</em>, Phys. Rev. Lett. 75, 1260 (1995), arXiv:gr-qc/9504004.</li>
+<li>T. Jacobson, <em>Entanglement Equilibrium and the Einstein Equation</em>, Phys. Rev. Lett. 116, 201101 (2016), arXiv:1505.04753.</li>
+<li>E. Witten, <em>Gravity and the Crossed Product</em>, JHEP 10, 008 (2022), arXiv:2112.12828.</li>
+<li>J. D. Bekenstein, <em>Universal Upper Bound on the Entropy-to-Energy Ratio for Bounded Systems</em>, Phys. Rev. D 23, 287 (1981).</li>
+<li>R. Landauer, <em>Irreversibility and Heat Generation in the Computing Process</em>, IBM J. Res. Dev. 5, 183 (1961).</li>
+<li>N. Margolus and L. B. Levitin, <em>The Maximum Speed of Dynamical Evolution</em>, Physica D 120, 188 (1998), arXiv:quant-ph/9710043.</li>
+</ol>
 
-<div class="font-controls" role="group" aria-label="Text size controls">
-    <button id="fontDown" type="button" aria-label="Decrease text size" title="Decrease text size">A−</button>
-    <button id="fontUp" type="button" aria-label="Increase text size" title="Increase text size">A+</button>
-</div>
+    </article>
+  </main>
 
-<script>
+  <footer class="footer">
+    <p><strong>AC–WFP</strong> · Whole-First Co-Emergent Physicalization</p>
+    <p>Scientific claims remain provisional until they survive matched computation, theorem or experiment.</p>
+  </footer>
+
+  <div class="font-controls" role="group" aria-label="Text size controls">
+    <button id="font-minus" type="button" aria-label="Decrease text size">A−</button>
+    <span id="font-readout" class="font-readout" aria-live="polite">100%</span>
+    <button id="font-plus" type="button" aria-label="Increase text size">A+</button>
+  </div>
+
+  <div id="mobile-toc" class="mobile-toc" aria-hidden="true">
+    <div class="mobile-toc-backdrop"></div>
+    <nav class="mobile-toc-panel" aria-label="Mobile table of contents">
+      <div class="mobile-toc-head">
+        <h2>Contents</h2>
+        <button id="toc-close" class="mobile-toc-close" type="button" aria-label="Close contents">×</button>
+      </div>
+      <ul class="toc-list"><li class="toc-part toc-standalone"><span>Paper</span><ul><li><a href="#abstract" data-target="abstract">Abstract</a></li><li><a href="#plain-language-statement" data-target="plain-language-statement">Plain-language statement</a></li></ul></li><li class="toc-part"><a href="#part-i-claim-discipline-and-the-central-reversal" data-target="part-i-claim-discipline-and-the-central-reversal">Part I — Claim discipline and the central reversal</a><ul><li><a href="#0-claim-status-vocabulary" data-target="0-claim-status-vocabulary">0. Claim-status vocabulary</a></li><li><a href="#0-1-scientific-and-ac-ladders" data-target="0-1-scientific-and-ac-ladders">0.1 Scientific and AC ladders</a></li><li><a href="#1-the-core-proposition" data-target="1-the-core-proposition">1. The core proposition</a></li><li><a href="#2-undivided-is-not-featureless" data-target="2-undivided-is-not-featureless">2. Undivided is not featureless</a></li><li><a href="#3-four-typed-uses-of-omega" data-target="3-four-typed-uses-of-omega">3. Four typed uses of Ω</a></li><li><a href="#4-three-global-structure-branches" data-target="4-three-global-structure-branches">4. Three global-structure branches</a></li><li><a href="#5-dependency-graph-and-co-emergence" data-target="5-dependency-graph-and-co-emergence">5. Dependency graph and co-emergence</a></li><li><a href="#5-1-proto-information-and-physical-information" data-target="5-1-proto-information-and-physical-information">5.1 Proto-information and physical information</a></li></ul></li><li class="toc-part"><a href="#part-ii-stage-i-and-stage-ii" data-target="part-ii-stage-i-and-stage-ii">Part II — Stage I and Stage II</a><ul><li><a href="#6-stage-i-whole-first-reconstruction-of-quantum-structure" data-target="6-stage-i-whole-first-reconstruction-of-quantum-structure">6. Stage I: whole-first reconstruction of quantum structure</a></li><li><a href="#7-stage-ii-typed-quantum-relational-presentations" data-target="7-stage-ii-typed-quantum-relational-presentations">7. Stage II: typed quantum-relational presentations</a></li><li><a href="#8-presentation-category-and-duality-invariant-content" data-target="8-presentation-category-and-duality-invariant-content">8. Presentation category and duality-invariant content</a></li><li><a href="#8-1-naturality-of-physicalization" data-target="8-1-naturality-of-physicalization">8.1 Naturality of physicalization</a></li></ul></li><li class="toc-part"><a href="#part-iii-physicalization-mechanisms" data-target="part-iii-physicalization-mechanisms">Part III — Physicalization mechanisms</a><ul><li><a href="#9-primary-mechanism-minimal-predictive-reconstructive-closure" data-target="9-primary-mechanism-minimal-predictive-reconstructive-closure">9. Primary mechanism: Minimal Predictive–Reconstructive Closure</a></li><li><a href="#10-matched-challenger-modular-spectral-recovery" data-target="10-matched-challenger-modular-spectral-recovery">10. Matched challenger: Modular–Spectral Recovery</a></li><li><a href="#11-effective-parts-five-core-gates-plus-one-conditional-gate" data-target="11-effective-parts-five-core-gates-plus-one-conditional-gate">11. Effective parts: five core gates plus one conditional gate</a></li></ul></li><li class="toc-part"><a href="#part-iv-physics-gates-after-discovery" data-target="part-iv-physics-gates-after-discovery">Part IV — Physics gates after discovery</a><ul><li><a href="#12-six-notions-of-time" data-target="12-six-notions-of-time">12. Six notions of time</a></li><li><a href="#12-1-compatibility-across-local-clocks" data-target="12-1-compatibility-across-local-clocks">12.1 Compatibility across local clocks</a></li><li><a href="#13-independent-distance-and-causal-influence" data-target="13-independent-distance-and-causal-influence">13. Independent distance and causal influence</a></li><li><a href="#14-modular-causal-cone-condition" data-target="14-modular-causal-cone-condition">14. Modular Causal Cone Condition</a></li><li><a href="#15-special-relativity-derivation-ledger" data-target="15-special-relativity-derivation-ledger">15. Special-relativity derivation ledger</a></li><li><a href="#16-geometry-dimension-and-general-relativity" data-target="16-geometry-dimension-and-general-relativity">16. Geometry, dimension and general relativity</a></li><li><a href="#17-matter-gauge-structure-and-chirality" data-target="17-matter-gauge-structure-and-chirality">17. Matter, gauge structure and chirality</a></li><li><a href="#18-information-energy-and-action" data-target="18-information-energy-and-action">18. Information, energy and action</a></li></ul></li><li class="toc-part"><a href="#part-v-measurement-knowledge-and-embodied-rc" data-target="part-v-measurement-knowledge-and-embodied-rc">Part V — Measurement, knowledge and embodied RC</a><ul><li><a href="#19-three-measurement-branches" data-target="19-three-measurement-branches">19. Three measurement branches</a></li><li><a href="#20-knowledge-like-closure" data-target="20-knowledge-like-closure">20. Knowledge-like closure</a></li><li><a href="#21-physical-centres-and-embodied-rc" data-target="21-physical-centres-and-embodied-rc">21. Physical centres and embodied RC</a></li><li><a href="#21-1-two-directions-of-the-ac-rc-shorthand" data-target="21-1-two-directions-of-the-ac-rc-shorthand">21.1 Two directions of the AC–RC shorthand</a></li><li><a href="#21-2-candidate-bridge-variables" data-target="21-2-candidate-bridge-variables">21.2 Candidate bridge variables</a></li><li><a href="#22-ac-omega-ablation" data-target="22-ac-omega-ablation">22. AC/Ω ablation</a></li><li><a href="#23-physicalization-selection-before-anthropic-conditioning" data-target="23-physicalization-selection-before-anthropic-conditioning">23. Physicalization selection before anthropic conditioning</a></li></ul></li><li class="toc-part"><a href="#part-vi-five-thinkers-as-inspiration-translation-crossover-and-challenge" data-target="part-vi-five-thinkers-as-inspiration-translation-crossover-and-challenge">Part VI — Five thinkers as inspiration, translation, crossover and challenge</a><ul><li><a href="#24-use-contract" data-target="24-use-contract">24. Use contract</a></li><li><a href="#25-constructive-ledger" data-target="25-constructive-ledger">25. Constructive ledger</a></li><li><a href="#26-six-retained-crossover-mechanisms" data-target="26-six-retained-crossover-mechanisms">26. Six retained crossover mechanisms</a></li></ul></li><li class="toc-part"><a href="#part-vii-coordinate-free-python-arena" data-target="part-vii-coordinate-free-python-arena">Part VII — Coordinate-free Python arena</a><ul><li><a href="#27-governing-question" data-target="27-governing-question">27. Governing question</a></li><li><a href="#28-finite-exact-domain" data-target="28-finite-exact-domain">28. Finite exact domain</a></li><li><a href="#29-mechanism-arms" data-target="29-mechanism-arms">29. Mechanism arms</a></li><li><a href="#30-mandatory-controls" data-target="30-mandatory-controls">30. Mandatory controls</a></li><li><a href="#31-metrics" data-target="31-metrics">31. Metrics</a></li><li><a href="#32-initial-promotion-gates" data-target="32-initial-promotion-gates">32. Initial promotion gates</a></li><li><a href="#33-hard-failure-conditions" data-target="33-hard-failure-conditions">33. Hard failure conditions</a></li><li><a href="#34-result-classes" data-target="34-result-classes">34. Result classes</a></li><li><a href="#35-minimal-module-plan" data-target="35-minimal-module-plan">35. Minimal module plan</a></li></ul></li><li class="toc-part"><a href="#part-viii-discriminators-roadmap-and-verdict" data-target="part-viii-discriminators-roadmap-and-verdict">Part VIII — Discriminators, roadmap and verdict</a><ul><li><a href="#36-pre-registered-candidate-discriminators" data-target="36-pre-registered-candidate-discriminators">36. Pre-registered candidate discriminators</a></li><li><a href="#37-research-sequence" data-target="37-research-sequence">37. Research sequence</a></li><li><a href="#38-current-verdict" data-target="38-current-verdict">38. Current verdict</a></li></ul></li><li class="toc-part"><a href="#go-with-one-primary-mechanism-one-matched-challenger-and-evidence-first" data-target="go-with-one-primary-mechanism-one-matched-challenger-and-evidence-first">GO WITH ONE PRIMARY MECHANISM, ONE MATCHED CHALLENGER, AND EVIDENCE FIRST</a><ul></ul></li><li class="toc-part"><a href="#references-and-primary-anchors" data-target="references-and-primary-anchors">References and primary anchors</a><ul></ul></li></ul>
+    </nav>
+  </div>
+
+  <script>
 (() => {
-    const DESKTOP_BASE = 18;
-    const MOBILE_BASE = 21;
-    const MIN_SCALE = 0.72;
-    const MAX_SCALE = 1.72;
-    const STEP = 0.10;
-    const STORAGE_KEY = "md-dark-reader-font-scale";
-    const mobileQuery = window.matchMedia("(max-width: 700px)");
+  const root = document.documentElement;
+  const minus = document.getElementById('font-minus');
+  const plus = document.getElementById('font-plus');
+  const readout = document.getElementById('font-readout');
+  const key = 'ac-wfp-font-scale';
+  const min = 0.8;
+  const max = 1.5;
+  const step = 0.1;
+  let storedScale = '1';
+  try { storedScale = localStorage.getItem(key) || '1'; } catch (_) { /* persistence unavailable */ }
+  let scale = Number.parseFloat(storedScale);
+  if (!Number.isFinite(scale)) scale = 1;
 
-    let scale = Number.parseFloat(localStorage.getItem(STORAGE_KEY) || "1");
-    if (!Number.isFinite(scale)) scale = 1;
-    scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
+  const applyScale = (value) => {
+    scale = Math.max(min, Math.min(max, Math.round(value * 10) / 10));
+    root.style.setProperty('--font-scale', String(scale));
+    readout.textContent = `${Math.round(scale * 100)}%`;
+    try { localStorage.setItem(key, String(scale)); } catch (_) { /* controls still work without persistence */ }
+    minus.disabled = scale <= min;
+    plus.disabled = scale >= max;
+  };
+  minus.addEventListener('click', () => applyScale(scale - step));
+  plus.addEventListener('click', () => applyScale(scale + step));
+  applyScale(scale);
 
-    function applyFontSize() {
-        const base = mobileQuery.matches ? MOBILE_BASE : DESKTOP_BASE;
-        document.documentElement.style.fontSize = `${(base * scale).toFixed(2)}px`;
-        document.getElementById("fontDown").title = `Decrease text size (${Math.round(scale * 100)}%)`;
-        document.getElementById("fontUp").title = `Increase text size (${Math.round(scale * 100)}%)`;
-    }
+  const updateProgress = () => {
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = maxScroll > 0 ? Math.min(100, Math.max(0, (window.scrollY / maxScroll) * 100)) : 0;
+    root.style.setProperty('--reading-progress', `${pct}%`);
+  };
+  updateProgress();
+  window.addEventListener('scroll', updateProgress, {passive: true});
+  window.addEventListener('resize', updateProgress, {passive: true});
 
-    function changeScale(delta) {
-        scale = Math.round((scale + delta) * 100) / 100;
-        scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
-        localStorage.setItem(STORAGE_KEY, String(scale));
-        applyFontSize();
-    }
+  const drawer = document.getElementById('mobile-toc');
+  const openButton = document.getElementById('toc-toggle');
+  const closeButton = document.getElementById('toc-close');
+  const closeDrawer = () => {
+    drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('drawer-open');
+    openButton.setAttribute('aria-expanded', 'false');
+  };
+  const openDrawer = () => {
+    drawer.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('drawer-open');
+    openButton.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  };
+  openButton.addEventListener('click', openDrawer);
+  closeButton.addEventListener('click', closeDrawer);
+  drawer.querySelector('.mobile-toc-backdrop').addEventListener('click', closeDrawer);
+  drawer.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', closeDrawer));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && drawer.classList.contains('open')) closeDrawer();
+  });
 
-    document.getElementById("fontDown").addEventListener("click", () => changeScale(-STEP));
-    document.getElementById("fontUp").addEventListener("click", () => changeScale(STEP));
+  const tocLinks = Array.from(document.querySelectorAll('.toc-list a[data-target]'));
+  const headingMap = new Map();
+  tocLinks.forEach(link => {
+    const id = link.dataset.target;
+    if (!headingMap.has(id)) headingMap.set(id, []);
+    headingMap.get(id).push(link);
+  });
+  const headings = Array.from(headingMap.keys()).map(id => document.getElementById(id)).filter(Boolean);
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter(e => e.isIntersecting).sort((a,b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (!visible.length) return;
+      tocLinks.forEach(link => link.classList.remove('active'));
+      (headingMap.get(visible[0].target.id) || []).forEach(link => link.classList.add('active'));
+    }, {rootMargin: '-15% 0px -72% 0px', threshold: [0, 1]});
+    headings.forEach(h => observer.observe(h));
+  }
 
-    if (typeof mobileQuery.addEventListener === "function") {
-        mobileQuery.addEventListener("change", applyFontSize);
-    } else if (typeof mobileQuery.addListener === "function") {
-        mobileQuery.addListener(applyFontSize);
-    }
-
-    // Give headings stable link targets without requiring a Markdown extension.
-    const usedIds = new Set();
-    document.querySelectorAll("#reader h1, #reader h2, #reader h3, #reader h4, #reader h5, #reader h6")
-        .forEach((heading, index) => {
-            if (heading.id) {
-                usedIds.add(heading.id);
-                return;
-            }
-            let slug = heading.textContent
-                .normalize("NFKD")
-                .toLowerCase()
-                .replace(/[^\p{L}\p{N}]+/gu, "-")
-                .replace(/^-+|-+$/g, "") || `section-${index + 1}`;
-            const baseSlug = slug;
-            let suffix = 2;
-            while (usedIds.has(slug)) slug = `${baseSlug}-${suffix++}`;
-            usedIds.add(slug);
-            heading.id = slug;
-        });
-
-    // Wrap tables so wide content scrolls cleanly on phones.
-    document.querySelectorAll("#reader table").forEach(table => {
-        if (table.parentElement && table.parentElement.classList.contains("table-wrap")) return;
-        const wrapper = document.createElement("div");
-        wrapper.className = "table-wrap";
-        table.parentNode.insertBefore(wrapper, table);
-        wrapper.appendChild(table);
+  document.querySelectorAll('.copy-code').forEach(button => {
+    button.addEventListener('click', async () => {
+      const code = button.parentElement.querySelector('pre')?.innerText || '';
+      try {
+        await navigator.clipboard.writeText(code);
+        const old = button.textContent;
+        button.textContent = 'Copied';
+        setTimeout(() => { button.textContent = old; }, 1200);
+      } catch {
+        button.textContent = 'Select text';
+      }
     });
-
-    // External links open safely in a new tab; local and anchor links remain normal.
-    document.querySelectorAll('#reader a[href^="http://"], #reader a[href^="https://"]').forEach(link => {
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-    });
-
-    applyFontSize();
+  });
 })();
 </script>
 </body>
