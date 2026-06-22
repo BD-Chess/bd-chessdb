@@ -1,9 +1,10 @@
-// AIm³ MentalArena MALm v1.3.2 — stateless provider relay.
+// AIm³ MentalArena MALm v1.3.4 — stateless provider relay.
 // Workflow, prompts, API keys, runs, and artifacts remain in the unlocked browser page.
 const ALLOWED_HOSTS = new Set([
   'api.openai.com','api.anthropic.com','api.deepseek.com','generativelanguage.googleapis.com',
-  'api.x.ai','api.z.ai','api.minimax.io','api.mistral.ai','api.moonshot.ai','dashscope-intl.aliyuncs.com'
+  'api.x.ai','api.z.ai','api.minimax.io','api.mistral.ai','api.moonshot.ai','ws-w0wh18jpdbeyf7d7.ap-southeast-1.maas.aliyuncs.com','dashscope-intl.aliyuncs.com'
 ]);
+const SYNC_RELAY_BUDGET_MS = 55000;
 
 function headers(origin='') {
   return {
@@ -27,7 +28,10 @@ exports.handler = async (event) => {
   if (u.protocol !== 'https:' || !ALLOWED_HOSTS.has(u.hostname)) return reply(403,{ok:false,error:'Provider hostname is not allowed'},origin);
   const method = String(req.method || 'POST').toUpperCase();
   if (!['GET','POST'].includes(method)) return reply(405,{ok:false,error:'Only GET and POST are allowed'},origin);
-  const timeoutMs = Math.max(30000, Math.min(14_400_000, Number(req.timeout_ms || 1_800_000)));
+  // Netlify's synchronous function path has a finite wall-clock budget. Abort slightly
+  // earlier so MALm receives a useful diagnosis instead of an opaque platform timeout.
+  const requestedTimeoutMs = Math.max(30000, Number(req.timeout_ms || 1800000));
+  const timeoutMs = Math.min(SYNC_RELAY_BUDGET_MS, requestedTimeoutMs);
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), timeoutMs);
   try {
@@ -42,9 +46,11 @@ exports.handler = async (event) => {
     let data;
     try { data = JSON.parse(text); } catch { data = {raw:text}; }
     if (!r.ok) return reply(r.status,{ok:false,status:r.status,error:`Provider HTTP ${r.status}`,data},origin);
-    return reply(200,{ok:true,status:r.status,data},origin);
+    return reply(200,{ok:true,status:r.status,data,transport:'netlify-sync-relay'},origin);
   } catch (e) {
-    const msg = e?.name === 'AbortError' ? `Provider relay timeout after ${timeoutMs} ms` : String(e?.message || e);
-    return reply(502,{ok:false,error:msg},origin);
+    const msg = e?.name === 'AbortError'
+      ? `Synchronous relay budget exceeded after ${timeoutMs} ms. MALm attempted direct browser transport first; inspect the reported direct error and retry the missing provider.`
+      : String(e?.message || e);
+    return reply(502,{ok:false,error:msg,requested_timeout_ms:requestedTimeoutMs,relay_budget_ms:timeoutMs},origin);
   } finally { clearTimeout(timer); }
 };
