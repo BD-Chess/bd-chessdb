@@ -1,7 +1,25 @@
-[build]
-  publish = "public"
-  functions = "functions"
+[functions]
+  directory = "netlify/functions"
 
-[dev]
-  # if you use `netlify dev` locally:
-  functions = "functions"
+# Stable protected MALm page may be deployed at the site root or under the
+# existing AIm3/aim3 public folder. Keep all variants uncached after upgrades.
+[[headers]]
+  for = "/IM3_MentalArena_MALm.html"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate"
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+    Referrer-Policy = "no-referrer"
+
+[[headers]]
+  for = "/AIm3/IM3_MentalArena_MALm.html"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate"
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+    Referrer-Policy = "no-referrer"
+
+[[headers]]
+  for = "/aim3/IM3_MentalArena_MALm.html"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate"
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+    Referrer-Policy = "no-referrer"
