@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>BD Trading 2026 — Current v1.3c Evidence</title>
+<title>BD Trading 2026 — Current Manual Method + Arena Evidence</title>
 <style>
 :root{
   --bg:#070914;--bg2:#0b1020;--panel:#101624;--card:#121b2e;--line:#24324e;--line2:#344767;
@@ -32,12 +32,12 @@ code{font-family:Consolas,Menlo,monospace;background:#0a1020;border:1px solid va
 
 <div class="wrap">
 <header class="hero" id="top">
-<div class="eyebrow">Current authority · completed v1.3c real-1m optimizer · 21 June 2026</div>
-<h1>BD Trading 2026 — Current Evidence</h1>
-<p class="subtitle">A cleaned current-state dashboard for the HSR PiX research line. Historical status logs, superseded leaderboards and old package notes have been removed. This page now reports only the completed v1.3c real-1m baseline, the current SOL manual interpretations and the next v1.4 research gate.</p>
-<p class="small">Evidence source: <code>LIVE_EXTRACT_HSR_PIX_REAL1M_V13_FOR_GPT_20260621_061652.zip</code>. Offline historical replay with virtual fills; no live orders.</p>
+<div class="eyebrow">Current manual method + completed v1.3c baseline + v1.5.3b RHP live run · 25 June 2026</div>
+<h1>BD Trading 2026 — Current Method and Evidence</h1>
+<p class="subtitle">A current-state dashboard separating the live human method, the completed v1.3c real-1m evidence and the in-progress v1.5.3b RHP stage-atomic research run.</p>
+<p class="small">Evidence sources: completed v1.3c extract and <code>LIVE_EXTRACT_BDTA_V153B_RHP_SLIM_FOR_GPT_20260625_131601.zip</code>. Offline historical replay with virtual fills; no live orders.</p>
 </header>
-<nav class="nav"><a href="#current">Current result</a><a href="#design">Test design</a><a href="#robust">Robust families</a><a href="#candidates">Key candidates</a><a href="#sol">SOL protocols</a><a href="#meaning">Interpretation</a><a href="#v14">v1.4</a></nav>
+<nav class="nav"><a href="#sol">Current manual</a><a href="#current">v1.3c result</a><a href="#design">Test design</a><a href="#robust">Robust families</a><a href="#candidates">Key candidates</a><a href="#meaning">Interpretation</a><a href="#v153b">v1.5.3b live</a><a href="#v14">Next gate</a></nav>
 
 <section id="current">
 <h2>Completed v1.3c result</h2>
@@ -127,33 +127,76 @@ code{font-family:Consolas,Menlo,monospace;background:#0a1020;border:1px solid va
 </section>
 
 <section id="sol">
-<h2>Current human-readable SOL approaches</h2>
-<div class="grid two">
-<div class="card"><div class="label">Balanced SOL</div><div class="num cyan">P2 · 6/6</div><p><code>deep_p2_t500_sep1500_m50_b1p15_same3_e55b312a</code></p><p>Zero-cost SOL result: <strong>+$156.68 MTM</strong>, <strong>+$60.39 realized</strong>, approximately <strong>8.43% max drawdown</strong>.</p><p><a href="BD_Hedge_Separation_PiX_Strategy_Explainer.html#manual-balanced-sol">Open the complete balanced protocol →</a></p></div>
-<div class="card"><div class="label">Max-risk SOL</div><div class="num red">P5 · high PnL</div><p><code>deep_p5_t1300_sep2000_m50_b3p24_same3_b478159a</code></p><p>Zero-cost SOL result: <strong>+$1,673.27 MTM</strong>, <strong>+$1,386.71 realized</strong>, approximately <strong>68.79% max drawdown</strong>.</p><p><a href="BD_Hedge_Separation_PiX_Strategy_Explainer.html#manual-max-risk-sol">Open the complete max-risk protocol →</a></p></div>
+<h2>Current BD manual hedge-separation method</h2>
+<p class="muted">The manual method is now shown separately from the old v1.3c optimizer seeds and from the in-progress v1.5.3b arena. The quantities below are rounded cross-asset base clips.</p>
+<div class="grid cards">
+<div class="card"><div class="label">SOL base per leg</div><div class="num cyan">1 SOL</div><p class="small">LONG + SHORT</p></div>
+<div class="card"><div class="label">BTC base per leg</div><div class="num cyan">0.001 BTC</div><p class="small">LONG + SHORT</p></div>
+<div class="card"><div class="label">ETH base per leg</div><div class="num cyan">0.04 ETH</div><p class="small">LONG + SHORT</p></div>
+<div class="card"><div class="label">Working context</div><div class="num red">300×</div><p class="small">small clips, cross-margin / wallet-silo logic</p></div>
 </div>
-<div class="note"><strong>Zero-cost means exactly zero fee, zero slippage and zero funding in the replay.</strong> A fee-free SOL venue can still have funding and execution slippage.</div>
+<div class="grid two">
+<div class="good"><h3>Core operating cycle</h3><ul class="list"><li>Open equal rounded base quantities LONG and SHORT.</li><li>Manage the profitable and losing books independently.</li><li>First losing-side add is commonly considered near −200% ROE; later thresholds and sizes may roughly double.</li><li>Close rescue excess around +2% on that added clip and keep the intended core.</li><li>Re-anchor a badly displaced loser and use a large rescue only after stabilization.</li></ul></div>
+<div class="note"><h3>Winner and large-rescue handling</h3><ul class="list"><li>Progressively protect/realize the winner around +200%, +400% and +500% ROE.</li><li>On a rapid confirmed continuation, add roughly 2–3× to the winning leg; retained cores may grow through cycles, for example 2 → 4 → 8 SOL.</li><li>A stabilized SOL rescue may add 10–20 SOL, then close most at +1–2% and retain about 2 SOL.</li><li>Delayed-add is an experimental risk governor, not yet promoted as alpha.</li><li>Funding, spread, slippage and liquidation risk remain even on zero-fee pairs.</li></ul></div>
+</div>
+<p><a href="BD_Hedge_Separation_PiX_Strategy_Explainer.html#manual-current">Open the complete current manual method →</a></p>
+<div class="table-card" style="margin-top:16px"><h3>Historical v1.3c references</h3><div class="table-wrap"><table><thead><tr><th>Reference</th><th>Role</th><th>Why it remains</th></tr></thead><tbody>
+<tr><td><a href="BD_Hedge_Separation_PiX_Strategy_Explainer.html#manual-balanced-sol">P2 seed</a></td><td>Completed narrower v1.3c engine</td><td>Robust 6/6 evidence, but not the current manual protocol.</td></tr>
+<tr><td><a href="BD_Hedge_Separation_PiX_Strategy_Explainer.html#manual-max-risk-sol">P5 seed</a></td><td>Historical all-risk surface</td><td>Shows high PnL together with extreme drawdown and capital-at-risk.</td></tr>
+</tbody></table></div></div>
 </section>
 
+
 <section id="meaning">
-<h2>How to read the result correctly</h2>
-<div class="grid two">
-<div class="good"><h3>What v1.3c established</h3><ul class="list"><li>The real-1m replay path, matched controls, resume and extraction pipeline work.</li><li>A small robust frontier persisted across BTC, ETH and SOL under both cost models.</li><li>Re-anchor + mega-rescue + excess-close behavior can produce large simulated PnL.</li><li>Different risk lanes genuinely need different settings.</li></ul></div>
-<div class="danger"><h3>What it did not establish</h3><ul class="list"><li>Future or live profitability.</li><li>The minimum wallet required for every full path.</li><li>Rolling-window or endpoint robustness.</li><li>Real exchange liquidation, latency and fill behavior.</li><li>Winner-side pyramiding, staged exits or trailing.</li></ul></div>
+<h2>How to read the three layers correctly</h2>
+<div class="grid three">
+<div class="good"><h3>Manual authority</h3><ul class="list"><li>Current rounded bases: 1 SOL, 0.001 BTC, 0.04 ETH per side.</li><li>Includes adverse ladder, 2–3× winner adds, staged winner protection, re-anchor and large rescue.</li><li>Some actions remain structure-dependent human decisions.</li></ul></div>
+<div class="callout"><h3>v1.3c authority</h3><ul class="list"><li>Completed 300,000-task real-1m replay.</li><li>Tested narrower fixed re-anchor + rescue + excess-close semantics.</li><li>Did not execute the full current winner-side or discretionary rescue method.</li></ul></div>
+<div class="note"><h3>v1.5.3b authority</h3><ul class="list"><li>Corrected sizing and stage-specific barscope.</li><li>Stage-atomic retry/resume and matched-control research.</li><li>Still awaiting completion of Daily, Weekly, Walkforward and Locked Holdout.</li></ul></div>
 </div>
-<div class="note"><strong>Two inactive fields matter:</strong> the named <code>sep...</code> value was stored but not enforced by the v1.3c replay, and <code>close_winner_on_mega</code> was stored but not executed. They must not be presented as tested operational rules.</div>
+<div class="danger" style="margin-top:16px"><strong>No cross-layer overclaim:</strong> a manual rule is not arena-proven until encoded causally and tested against controls; a discovery leader is not a final winner before locked holdout; a historical v1.3c seed is not automatically the current manual protocol.</div>
+</section>
+
+
+<section id="v153b">
+<h2>v1.5.3b RHP live extract — stage-atomic run</h2>
+<p class="muted">Latest live checkpoint: <code>LIVE_EXTRACT_BDTA_V153B_RHP_SLIM_FOR_GPT_20260625_131601.zip</code>. This is still an in-progress research run, not a final winner report.</p>
+<div class="grid cards">
+<div class="card"><div class="label">Current stage</div><div class="num cyan">Daily24h</div><p class="small">08_DAILY24H_DISCOVERY running</p></div>
+<div class="card"><div class="label">Completed tasks</div><div class="num green">74,728</div><p class="small">0 task-attempt errors in extract</p></div>
+<div class="card"><div class="label">Daily active time</div><div class="num gold">6.75h</div><p class="small">28.1% of 24h target observed</p></div>
+<div class="card"><div class="label">Sizing contract</div><div class="num violet">1 / .001 / .04</div><p class="small">SOL / BTC / ETH asset-parity lane</p></div>
+</div>
+<div class="good"><strong>What is better now:</strong> v1.5.3b fixes the v1.5.3a stage-skip/MemoryError problem in this extract. Smoke, Standard, Strict Controls and Deep6h are complete; Daily24h is running; no retry error is visible.</div>
+<div class="grid two" style="margin-top:16px">
+<div class="table-card"><h3>Stage progress</h3><div class="table-wrap"><table><thead><tr><th>Stage</th><th>Status</th><th>PASS tasks</th><th>Active time</th></tr></thead><tbody><tr><td>04_SMOKE_DISCOVERY</td><td>complete</td><td class="num">5,112</td><td class="num">0.08h</td></tr><tr><td>05_STANDARD_DISCOVERY</td><td>complete</td><td class="num">43,092</td><td class="num">5.47h</td></tr><tr><td>06_STRICT_CONTROLS</td><td>complete</td><td class="num">4,104</td><td class="num">1.80h</td></tr><tr><td>07_DEEP6H_DISCOVERY</td><td>complete</td><td class="num">10,414</td><td class="num">6.00h</td></tr><tr><td>08_DAILY24H_DISCOVERY</td><td>running</td><td class="num">12,006</td><td class="num">6.75h</td></tr></tbody></table></div></div>
+<div class="table-card"><h3>Corrected test contract</h3><div class="table-wrap"><table><tbody>
+<tr><th>Smoke</th><td>6,000-bar scope</td></tr>
+<tr><th>Standard</th><td>50,000-bar scope</td></tr>
+<tr><th>Strict controls</th><td>full 236,161-row scope</td></tr>
+<tr><th>Deep/Daily</th><td>180,000-bar scope</td></tr>
+<tr><th>Primary ranking</th><td>fixed-notional 100 USDT per leg</td></tr>
+<tr><th>Asset-parity diagnostic</th><td>1 SOL, 0.001 BTC, 0.04 ETH</td></tr>
+</tbody></table></div></div>
+</div>
+<div class="note" style="margin-top:16px"><strong>Control caution:</strong> the root <code>candidate_vs_matched_controls.csv</code> in this extract reflects the latest completed Deep6h discovery report and uses global v1.4.2a controls. Candidate-specific controls are present in the strict-control stage, but final promotion should wait for the locked holdout/control-aware verdict.</div>
+<div class="grid two" style="margin-top:16px">
+<div class="table-card"><h3>Daily24h partial watch-list</h3><div class="table-wrap"><table><thead><tr><th>Family</th><th>Program</th><th>Rows</th><th>Median PnL</th><th>Worst PnL</th><th>Survived</th></tr></thead><tbody><tr><td>clock_phase_control</td><td><code>AI15-CLOCK_PHASE_CONTRO-1405551790</code></td><td class="num">17</td><td class="num">$1,189.03</td><td class="num">$-112.99</td><td class="num">76%</td></tr><tr><td>volatility_budgeted_rescue</td><td><code>AI15-VOLATILITY_BUDGETE-80befdc946</code></td><td class="num">17</td><td class="num">$508.83</td><td class="num">$236.26</td><td class="num">47%</td></tr><tr><td>clock_phase_control</td><td><code>AI15-CLOCK_PHASE_CONTRO-e1e4f05a0b</code></td><td class="num">17</td><td class="num">$180.63</td><td class="num">$-321.37</td><td class="num">65%</td></tr><tr><td>volatility_budgeted_rescue</td><td><code>AI15-VOLATILITY_BUDGETE-1d417ab897</code></td><td class="num">17</td><td class="num">$86.47</td><td class="num">$-115.61</td><td class="num">100%</td></tr><tr><td>fractal_coherence_switch</td><td><code>AI15-FRACTAL_COHERENCE_-5060b177af</code></td><td class="num">17</td><td class="num">$41.49</td><td class="num">$-89.02</td><td class="num">88%</td></tr></tbody></table></div></div>
+<div class="table-card"><h3>Deep6h robust-score leaders</h3><div class="table-wrap"><table><thead><tr><th>Family</th><th>Program</th><th>Score</th><th>Median FC</th><th>Worst FC</th></tr></thead><tbody><tr><td>trend_exhaustion_handoff</td><td><code>AI15-TREND_EXHAUSTION_H-db9986c439</code></td><td class="num">169.66</td><td class="num">$804.78</td><td class="num">$45.54</td></tr><tr><td>multi_horizon_pressure</td><td><code>AI15-MULTI_HORIZON_PRES-330ab0df2a</code></td><td class="num">152.96</td><td class="num">$128.75</td><td class="num">$1.61</td></tr><tr><td>multi_horizon_pressure</td><td><code>AI15-MULTI_HORIZON_PRES-9c24860cb1</code></td><td class="num">132.32</td><td class="num">$30.88</td><td class="num">$1.50</td></tr><tr><td>pi_phase_gate</td><td><code>AI15-PI_PHASE_GATE-15987285bb</code></td><td class="num">109.43</td><td class="num">$903.28</td><td class="num">$28.47</td></tr><tr><td>inventory_corridor_rescue</td><td><code>AI15-INVENTORY_CORRIDOR-f7371b8ba5</code></td><td class="num">105.69</td><td class="num">$308.00</td><td class="num">$-51.16</td></tr></tbody></table></div></div>
+</div>
+<div class="danger" style="margin-top:16px"><strong>Do not overclaim yet:</strong> high force-close PnL remains a hypothesis until Daily24h, Weekly168h, Walkforward and Locked Holdout finish. Treat these rows as seed candidates, not proven live edges.</div>
 </section>
 
 <section id="v14">
-<h2>v1.4 — the next research version</h2>
+<h2>Next research gate after v1.5.3b</h2>
 <div class="grid three">
-<div class="callout"><h3>Wallet-neutral capital truth</h3><p>Run every valid strategy to the end, report the minimum tested wallet for full-path survival, and retain high-risk strategies instead of deleting them.</p></div>
-<div class="callout"><h3>Rolling and walk-forward evidence</h3><p>Multiple starts, ends and horizons; forced-close accounting; train, validation and holdout windows; short-horizon blast statistics.</p></div>
-<div class="callout"><h3>Complete strategy semantics</h3><p>Activate separation logic, winner-side additions, staged profit-taking, trailing, close-winner-on-mega, phenotype deduplication and stronger execution stress.</p></div>
+<div class="callout"><h3>Finish v1.5.3b</h3><p>Complete Daily24h, Weekly168h, Walkforward and Locked Holdout before final candidate promotion.</p></div>
+<div class="callout"><h3>Encode manual parity</h3><p>Translate the −200% ladder, 2–3× winner adds, staged protection, re-anchor and bounded 10–20 SOL rescue into causal programs.</p></div>
+<div class="callout"><h3>Capital and control truth</h3><p>Require candidate-specific controls and report minimum surviving wallet, notional, drawdown, liquidation buffer and open-tail dependency.</p></div>
 </div>
-<p class="small">v1.3c remains the immutable fixed-$500 baseline and warm-start corpus. v1.4 should use new task IDs and output roots.</p>
+<p class="small">v1.3c remains an immutable historical baseline; v1.5.3b is the active research lineage. Manual-method parity should be additive and use new program identities.</p>
 </section>
-<div class="footer">BD Trading 2026 · current-state evidence page · completed v1.3c real-1m baseline · offline research only · not financial advice.</div>
+<div class="footer">BD Trading 2026 · current manual method + v1.3c evidence + v1.5.3b research · offline research only · not financial advice.</div>
 </div>
 
 <script>
