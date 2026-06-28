@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en" data-reader-size="2">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>APSV — Active Pressure-Skin Vehicle · BD × AI Lab</title>
+<meta name="description" content="APSV — Active Pressure-Skin Vehicle: a BD × AI Lab research seed and Python-arena program exploring active fluid skins for air, water, underwater vehicles, and future momentum-skin extensions.">
+<meta name="author" content="Bojan Dobrečevič × GPT × Claude × AIM³ / MAL">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<link rel="canonical" href="https://www.mdlxdcc.org/crp/APSV.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="BD × AI Lab">
+<meta property="og:title" content="APSV — Active Pressure-Skin Vehicle">
+<meta property="og:description" content="An active-skin vehicle research program: pressure, flow-control, drag reduction, control, propulsion, arenas, and live extract evidence.">
+<meta property="og:url" content="https://www.mdlxdcc.org/crp/APSV.html">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{
+  --bg:#05070d; --bg2:#080d18; --panel:rgba(15,23,42,.84); --panel2:rgba(20,31,54,.94);
+  --line:rgba(148,163,184,.20); --line2:rgba(96,165,250,.36); --text:#e5edf8; --muted:#9fb0c8; --dim:#6b7b94;
+  --blue:#60a5fa; --cyan:#22d3ee; --green:#34d399; --gold:#f59e0b; --rose:#fb7185; --violet:#a78bfa; --orange:#fb923c;
+  --shadow:0 24px 70px rgba(0,0,0,.38); --radius:22px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"JetBrains Mono",monospace;
+  --sans:Inter,"Segoe UI",system-ui,sans-serif; --reader-text:18px; --reader-small:12px; --reader-h1:clamp(42px,8vw,86px); --reader-h2:clamp(27px,4vw,44px);
+}
+html[data-reader-size="0"]{--reader-text:15px;--reader-small:11px;--reader-h1:clamp(32px,6vw,58px);--reader-h2:clamp(22px,3.4vw,34px)}
+html[data-reader-size="1"]{--reader-text:16px;--reader-small:11.5px;--reader-h1:clamp(35px,6.5vw,68px);--reader-h2:clamp(24px,3.7vw,38px)}
+html[data-reader-size="2"]{--reader-text:18px;--reader-small:12px;--reader-h1:clamp(42px,8vw,86px);--reader-h2:clamp(27px,4vw,44px)}
+html[data-reader-size="3"]{--reader-text:20px;--reader-small:13px;--reader-h1:clamp(46px,8.5vw,96px);--reader-h2:clamp(31px,4.6vw,52px)}
+html[data-reader-size="4"]{--reader-text:22px;--reader-small:14px;--reader-h1:clamp(50px,9vw,108px);--reader-h2:clamp(35px,5vw,60px)}
+html[data-reader-size="5"]{--reader-text:25px;--reader-small:16px;--reader-h1:clamp(56px,9.8vw,120px);--reader-h2:clamp(39px,5.5vw,68px)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--text);font-family:var(--sans);font-size:var(--reader-text);line-height:1.72;background:radial-gradient(circle at 12% 8%,rgba(96,165,250,.20),transparent 32%),radial-gradient(circle at 86% 18%,rgba(52,211,153,.13),transparent 28%),radial-gradient(circle at 50% 100%,rgba(245,158,11,.09),transparent 38%),linear-gradient(180deg,#05070d 0%,#070a12 100%);overflow-x:hidden}
+body:before,body:after{content:"";position:fixed;border-radius:50%;filter:blur(105px);opacity:.22;pointer-events:none;z-index:-1}body:before{width:46vw;height:46vw;left:-14vw;top:-15vh;background:radial-gradient(circle,rgba(34,211,238,.30),transparent 68%)}body:after{width:42vw;height:42vw;right:-16vw;bottom:-18vh;background:radial-gradient(circle,rgba(52,211,153,.22),transparent 70%)}
+a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}strong{color:#fff}.wrap{width:min(1180px,calc(100% - 34px));margin:0 auto}.mono,code,kbd{font-family:var(--mono)}code{background:rgba(34,211,238,.09);border:1px solid rgba(34,211,238,.18);border-radius:7px;padding:.08em .36em;color:#edfaff}.topbar{position:sticky;top:0;z-index:80;background:rgba(5,7,13,.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}.topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 0}.brand{font-family:var(--mono);font-size:12px;letter-spacing:.20em;text-transform:uppercase;color:var(--blue);font-weight:800}.topnav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.topnav a,.lang-btn,.reader-tools button{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:rgba(255,255,255,.025);cursor:pointer}.topnav a:hover,.lang-btn:hover,.lang-btn.active,.reader-tools button:hover{text-decoration:none;border-color:var(--cyan);color:var(--cyan);background:rgba(34,211,238,.08)}.lang-sl{display:none!important}html[data-lang="sl"] .lang-en{display:none!important}html[data-lang="sl"] .lang-sl{display:inline!important}.hero{padding:72px 0 36px}.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:18px}.hero h1{font-size:var(--reader-h1);line-height:.96;letter-spacing:-.065em;margin:0 0 20px}.hero h1 .blue{color:var(--blue);display:block}.hero h1 .white{color:#fff;display:block}.hero p{max-width:980px;color:var(--muted);font-size:clamp(19px,2.1vw,24px);margin:0 0 18px}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.button{display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(34,211,238,.42);border-radius:999px;padding:10px 14px;font-family:var(--mono);font-size:12px;color:#fff;background:rgba(34,211,238,.08);white-space:nowrap}.button.gold{border-color:rgba(245,158,11,.42);background:rgba(245,158,11,.08)}.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}.pill{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:999px;padding:7px 10px;color:var(--muted);background:rgba(255,255,255,.025)}.pill.green{color:var(--green);border-color:rgba(52,211,153,.34);background:rgba(52,211,153,.07)}.pill.gold{color:var(--gold);border-color:rgba(245,158,11,.32);background:rgba(245,158,11,.07)}.pill.rose{color:var(--rose);border-color:rgba(251,113,133,.34);background:rgba(251,113,133,.07)}.section{padding:26px 0}.section-title{display:flex;align-items:end;justify-content:space-between;gap:20px;margin:28px 0 16px}.section-title h2{margin:0;font-size:var(--reader-h2);line-height:1.08;letter-spacing:-.04em}.section-title p{margin:0;color:var(--muted);max-width:640px}.grid{display:grid;gap:16px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}.card,.callout,.metric,.roadmap,.source{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow)}.card{padding:22px}.card h3{margin:0 0 10px;font-size:24px;line-height:1.2}.card p{color:var(--muted);margin:8px 0 0}.card ul{margin:10px 0 0 20px;color:var(--muted)}.card li{margin:7px 0}.metric{padding:18px}.metric b{display:block;font-family:var(--mono);font-size:26px;color:#fff}.metric span{display:block;font-family:var(--mono);font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.12em;margin-top:4px}.metric p{margin:10px 0 0;color:var(--muted);font-size:.95em}.callout{padding:22px;background:linear-gradient(135deg,rgba(96,165,250,.10),rgba(52,211,153,.05)),var(--panel)}.callout.warn{background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(96,165,250,.04)),var(--panel);border-color:rgba(245,158,11,.30)}.callout h3{margin:0 0 8px}.callout p{color:var(--muted);margin:8px 0}.split{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}.rank-list{counter-reset:item;list-style:none;margin:0;padding:0}.rank-list li{counter-increment:item;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025);padding:14px 14px 14px 48px;margin:10px 0;position:relative;color:var(--muted)}.rank-list li:before{content:counter(item);position:absolute;left:14px;top:14px;width:22px;height:22px;border-radius:999px;display:grid;place-items:center;background:rgba(34,211,238,.10);border:1px solid rgba(34,211,238,.25);font-family:var(--mono);font-size:12px;color:var(--cyan)}.rank-list b{color:#fff}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:rgba(5,7,13,.48)}table{width:100%;border-collapse:collapse;min-width:720px}th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}th{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.025)}td{color:var(--muted)}td strong{color:#fff}.roadmap{padding:20px}.roadmap h3{margin:0 0 12px}.step{display:grid;grid-template-columns:100px 1fr;gap:12px;padding:13px 0;border-top:1px solid var(--line)}.step:first-of-type{border-top:0}.step b{font-family:var(--mono);font-size:12px;color:var(--gold)}.step span{color:var(--muted)}.source{padding:18px;color:var(--muted)}.source code{display:inline-block;margin:3px 4px 3px 0}.footer{border-top:1px solid var(--line);margin-top:42px;padding:28px 0 70px;color:var(--dim);font-size:14px}.reader-tools{position:fixed;right:16px;bottom:16px;z-index:100;display:flex;gap:8px;background:rgba(5,7,13,.88);border:1px solid var(--line);border-radius:999px;padding:7px;backdrop-filter:blur(16px);box-shadow:var(--shadow)}.reader-tools button{color:#fff;font-weight:800}.sticky-note{position:relative;overflow:hidden}.sticky-note:before{content:"";position:absolute;inset:auto -60px -90px auto;width:190px;height:190px;border-radius:50%;background:rgba(34,211,238,.10);filter:blur(20px)}@media(max-width:900px){.grid.two,.grid.three,.grid.four,.split{grid-template-columns:1fr}.section-title{display:block}.section-title p{margin-top:8px}.topbar-inner{align-items:flex-start;flex-direction:column}.topnav{justify-content:flex-start}.hero{padding-top:44px}}@media(max-width:620px){.topnav{display:flex;overflow-x:auto;flex-wrap:nowrap;width:100%;padding-bottom:2px}.hero h1{font-size:clamp(38px,14vw,72px)}.step{grid-template-columns:1fr}.reader-tools{right:10px;bottom:10px}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="wrap topbar-inner"><a class="brand" href="../">MDLxDCC.org</a><nav class="topnav" aria-label="APSV navigation"><a href="../">Root</a><a href="../BD/">BD</a><a href="index.html">CRP</a><a href="#what">What</a><a href="#findings">Findings</a><a href="#plans">Plan</a><a href="#space">APSV-S</a><a href="#results-log">Results</a></nav><div class="lang-toggle"><button class="lang-btn active" data-lang="en" type="button">EN</button><button class="lang-btn" data-lang="sl" type="button">SL</button></div></div></div>
+<header class="hero wrap">
+  <div class="eyebrow"><span class="lang-en">BD × AI Lab · Physical engineering arena</span><span class="lang-sl">BD × AI Lab · Fizična inženirska arena</span></div>
+  <h1><span class="blue">APSV</span><span class="white"><span class="lang-en">Active Pressure-Skin Vehicle.</span><span class="lang-sl">Aktivno tlačno-kožno vozilo.</span></span></h1>
+  <p><span class="lang-en">A research seed and Python-arena program exploring whether a vehicle can use its surface as an active fluid-processing skin: moving air or water along the body, shaping pressure, reducing drag, improving control, and sometimes producing thrust through explicit momentum exchange.</span><span class="lang-sl">Raziskovalno seme in Python-arena program, ki preverja, ali lahko vozilo uporablja svojo površino kot aktivno fluidno kožo: vodi zrak ali vodo po trupu, oblikuje tlak, zmanjšuje upor, izboljša krmiljenje in včasih ustvari potisk z izrecno izmenjavo momenta.</span></p>
+  <div class="pill-row"><span class="pill green">research seed</span><span class="pill gold">arena decides</span><span class="pill">air · water · underwater</span><span class="pill rose">not proof / not CFD</span><span class="pill">v0.2-HYB long-run active</span></div>
+  <div class="hero-actions"><a class="button" href="#findings"><span class="lang-en">Current findings →</span><span class="lang-sl">Trenutne ugotovitve →</span></a><a class="button gold" href="#plans"><span class="lang-en">Next plan →</span><span class="lang-sl">Nadaljnji plan →</span></a></div>
+</header>
+<main class="wrap">
+<section class="section" id="what">
+  <div class="section-title"><h2><span class="lang-en">What APSV is</span><span class="lang-sl">Kaj je APSV</span></h2><p><span class="lang-en">Not a claim that a flying submarine already exists. It is a structured way to keep many propulsion and flow-control ideas alive long enough to measure them.</span><span class="lang-sl">Ni trditev, da leteča podmornica že obstaja. Je strukturiran način, da veliko pogonskih in flow-control idej ostane živih dovolj dolgo, da jih izmerimo.</span></p></div>
+  <div class="split">
+    <div class="callout sticky-note"><h3><span class="lang-en">Core idea</span><span class="lang-sl">Jedrna ideja</span></h3><p><span class="lang-en">Instead of treating the vehicle hull as passive, APSV treats it as an active organ: suction slots, tangential sheet jets, Coandă caps, cilia-like skins, MHD/plasma branches, traveling waves, and recirculating surface loops compete in an arena.</span><span class="lang-sl">Namesto da je trup pasiven, ga APSV obravnava kot aktiven organ: sesalne reže, tangencialni ploskovni izpihi, Coandă kapice, ciliarne/dlakaste kože, MHD/plazemske veje, potujoči valovi in recirkulacijske površinske zanke tekmujejo v areni.</span></p><p><strong><span class="lang-en">Rule:</span><span class="lang-sl">Pravilo:</span></strong> <span class="lang-en">nothing is deleted early; every seed is ranked, tagged, and tested against its mission.</span><span class="lang-sl">nič se ne izbriše prezgodaj; vsako seme se rangira, označi in testira glede na misijo.</span></p></div>
+    <div class="card"><h3><span class="lang-en">Name</span><span class="lang-sl">Ime</span></h3><p><strong>APSV</strong> = <strong>Active Pressure-Skin Vehicle</strong>.</p><p><span class="lang-en">For air/water it means pressure and flow-control skin. For the future space branch, APSV-S shifts the interpretation toward an active momentum-skin interacting with photons, plasma, solar wind, or artificial beams.</span><span class="lang-sl">Za zrak/vodo pomeni tlačno in flow-control kožo. Za prihodnjo vesoljsko vejo APSV-S pomen razširi v aktivno momentum-kožo, ki deluje s fotoni, plazmo, sončnim vetrom ali umetnimi žarki.</span></p></div>
+  </div>
+</section>
+
+<section class="section" id="mechanisms">
+  <div class="section-title"><h2><span class="lang-en">Mechanism families</span><span class="lang-sl">Družine mehanizmov</span></h2><p><span class="lang-en">The arena separates pressure, thrust, drag reduction, control, energy, and warnings instead of merging everything into one magical score.</span><span class="lang-sl">Arena loči tlak, potisk, zmanjšanje upora, kontrolo, energijo in opozorila, namesto da vse zlepi v eno magično oceno.</span></p></div>
+  <div class="grid three">
+    <div class="card"><h3>Slot-sheet + Coandă</h3><p><span class="lang-en">Thin tangential sheet jets over curved or capped surfaces; currently the strongest clean underwater signal.</span><span class="lang-sl">Tanki tangencialni ploskovni curki po ukrivljenih površinah; trenutno najmočnejši čist podvodni signal.</span></p></div>
+    <div class="card"><h3>M13 Surface Jet Loop</h3><p><span class="lang-en">Bojan seed: slot injector → surface wall-jet → collector/suction slot → flat duct recirculation, with optional rear bleed for net thrust.</span><span class="lang-sl">Bojanovo seme: režni vpih → površinski wall-jet → zajem/sesalna reža → ploski recirkulacijski kanal, z opcijskim zadnjim bleed potiskom.</span></p></div>
+    <div class="card"><h3>M1 / traveling-wave skin</h3><p><span class="lang-en">A frontier water branch inspired by active undulation and biological locomotion. Strong raw signal, still under audit.</span><span class="lang-sl">Frontier vodna veja, navdihnjena z aktivnim valovanjem in biološkim gibanjem. Močan raw signal, še pod auditom.</span></p></div>
+    <div class="card"><h3>Cilia / hair skin</h3><p><span class="lang-en">Dense active fibers or cilia-like motion; more plausible in water than in air and useful for fine flow-control.</span><span class="lang-sl">Gosta aktivna vlakna ali ciliarno gibanje; bolj verjetno v vodi kot v zraku in koristno za fin flow-control.</span></p></div>
+    <div class="card"><h3>MHD / EHD / plasma</h3><p><span class="lang-en">Electromagnetic branches: MHD for conductive water, EHD/plasma/ion wind for air. Real relatives exist, but scale and efficiency matter.</span><span class="lang-sl">Elektromagnetne veje: MHD za prevodno vodo, EHD/plazma/ionski veter za zrak. Sorodne tehnologije obstajajo, a merilo in izkoristek sta ključna.</span></p></div>
+    <div class="card"><h3>Conventional baselines</h3><p><span class="lang-en">Rotor, ducted fan, marine screw and pump-jet are not executioners. They are measuring sticks and mission-specific references.</span><span class="lang-sl">Rotor, ducted fan, ladijski propeler in pump-jet niso rablji. So merilni trakovi in misijsko odvisne reference.</span></p></div>
+  </div>
+</section>
+
+<section class="section" id="findings">
+  <div class="section-title"><h2><span class="lang-en">What we have found so far</span><span class="lang-sl">Kaj smo do zdaj ugotovili</span></h2><p><span class="lang-en">Early v0.2-HYB results are promising, but the long run is not finished. Treat this as a map of signals, not as an engineering proof.</span><span class="lang-sl">Zgodnji v0.2-HYB rezultati so obetavni, a long-run še ni končan. To je zemljevid signalov, ne inženirski dokaz.</span></p></div>
+  <div class="grid four">
+    <div class="metric"><b>50k</b><span>gate standard</span><p>Pass-1 gate completed with zero errors.</p></div>
+    <div class="metric"><b>50k</b><span>standard</span><p>Pass-2 standard completed with zero errors.</p></div>
+    <div class="metric"><b>300k+</b><span>deep checkpoint</span><p>Deep live extract reviewed while the run was still active.</p></div>
+    <div class="metric"><b>true</b><span>ranking shift</span><p>The conservation/baseline gate materially changed ranking.</p></div>
+  </div>
+  <div class="grid two" style="margin-top:16px">
+    <div class="card"><h3><span class="lang-en">Strongest clean domain</span><span class="lang-sl">Najmočnejše čisto področje</span></h3><p><strong>water / underwater / inspection / silent-ish operation</strong></p><p><span class="lang-en">The clearest signal is not a flying car. It is underwater and inspection-oriented: active surfaces on teardrop/capsule/pod geometries.</span><span class="lang-sl">Najčistejši signal ni leteči avto. Je podvodna in inspection smer: aktivne površine na teardrop/kapsula/pod geometrijah.</span></p></div>
+    <div class="card"><h3><span class="lang-en">Still unresolved</span><span class="lang-sl">Še nerešeno</span></h3><p><strong>universal air+water vehicle</strong></p><p><span class="lang-en">Universal rescue/luxury air+water remains a bottleneck lane. It may need hybrid subsystems: conventional/distributed fan lift in air, APSV skin in water, and a morphing capsule body.</span><span class="lang-sl">Univerzalno rescue/luxury zrak+voda vozilo ostaja bottleneck veja. Verjetno bo rabilo hibridne podsisteme: klasičen/porazdeljen fan lift v zraku, APSV kožo v vodi in morphing kapsulni trup.</span></p></div>
+  </div>
+  <div class="table-wrap" style="margin-top:16px"><table><thead><tr><th>Signal</th><th>Current interpretation</th><th>Status</th></tr></thead><tbody>
+    <tr><td><strong>Slot-sheet + Coandā</strong></td><td>Best clean underwater family so far; shows up with teardrop/front-cap/capsule shapes.</td><td>Build on it</td></tr>
+    <tr><td><strong>M13 semi-closed loop</strong></td><td>Alive and useful; current matched comparison gives a small efficiency/control advantage, not yet a breakthrough.</td><td>Keep active</td></tr>
+    <tr><td><strong>M1 traveling-wave</strong></td><td>Strongest raw/anomaly frontier branch; must be audited with 1D/CFD or improved modeling.</td><td>Stage-2 candidate</td></tr>
+    <tr><td><strong>Air hover</strong></td><td>Current clean signal favors fan/rotor baselines. This does not kill APSV; it redirects APSV air role toward hybrid flow-control, safety, redundancy, and distributed fans.</td><td>Reframe</td></tr>
+    <tr><td><strong>Baseline</strong></td><td>Baseline is a reference, not a guillotine. Multi-medium vehicles must be scored by mission value, not only single-medium efficiency.</td><td>Policy fixed</td></tr>
+  </tbody></table></div>
+</section>
+
+<section class="section" id="why-matters">
+  <div class="section-title"><h2><span class="lang-en">Why it matters even if parts already exist</span><span class="lang-sl">Zakaj je pomembno, tudi če deli že obstajajo</span></h2><p><span class="lang-en">APSV is not a novelty claim about every component. It is an integration and arena program.</span><span class="lang-sl">APSV ni trditev, da je vsak del nov. Je integracijski in arenski program.</span></p></div>
+  <div class="callout warn"><h3><span class="lang-en">The useful novelty question</span><span class="lang-sl">Koristno vprašanje novosti</span></h3><p><span class="lang-en">Boundary-layer suction, Coandă blowing, pump jets, synthetic jets, MHD and active skins have relatives in the real world. The APSV question is different: which <strong>combination</strong>, in which <strong>mission</strong>, with which <strong>energy, control, safety and multi-medium tradeoff</strong>, survives measurable arena testing?</span><span class="lang-sl">Sesanje mejne plasti, Coandă vpih, pump-jeti, synthetic jeti, MHD in aktivne kože imajo sorodnike v realnem svetu. APSV vprašanje je drugo: katera <strong>kombinacija</strong>, v kateri <strong>misiji</strong>, s kakšnim <strong>energetskim, kontrolnim, varnostnim in multi-medium kompromisom</strong>, preživi merljivo arensko testiranje?</span></p></div>
+</section>
+
+<section class="section" id="plans">
+  <div class="section-title"><h2><span class="lang-en">Current plan</span><span class="lang-sl">Trenutni plan</span></h2><p><span class="lang-en">Test first, then dream again with data.</span><span class="lang-sl">Najprej test, potem ponovno sanjanje s podatki.</span></p></div>
+  <div class="roadmap">
+    <h3>v0.2 → v0.3</h3>
+    <div class="step"><b>Now</b><span>Continue the v0.2-HYB long run with daily live extracts. Do not change the arena mid-run.</span></div>
+    <div class="step"><b>After Deep</b><span>Review clean/anomaly/baseline/backlog leaderboards, M1/M13 matched tables, underwater signal, and universal bottlenecks.</span></div>
+    <div class="step"><b>After long-run</b><span>Write a final evidence report: what is clean, what is anomaly, what is baseline, what belongs to Stage-2 modeling.</span></div>
+    <div class="step"><b>Then</b><span>Run MAL / multi-AI idea generation for better seeds and v0.3 extensions, using the data as context.</span></div>
+    <div class="step"><b>v0.3</b><span>Add low-memory disk-first long-run mode, distributed micro-fan / fan-skin branches, better universal mission scoring, prior-art checks, and stronger 1D/CFD bridge.</span></div>
+  </div>
+</section>
+
+<section class="section" id="air">
+  <div class="section-title"><h2><span class="lang-en">Air and universal vehicles</span><span class="lang-sl">Zrak in univerzalna vozila</span></h2><p><span class="lang-en">A universal vehicle should not be killed for failing to beat a helicopter in pure hover or a boat in pure water. Baselines are references, not judges.</span><span class="lang-sl">Univerzalnega vozila ne smemo ubiti, ker v čistem hoverju ne premaga helikopterja ali v vodi čolna. Baseline je referenca, ne sodnik.</span></p></div>
+  <div class="grid two">
+    <div class="card"><h3><span class="lang-en">Likely air architecture</span><span class="lang-sl">Verjetna zračna arhitektura</span></h3><p><span class="lang-en">For air, APSV probably begins as a hybrid: distributed ducted fans / many protected small fans for lift, plus active surface flow-control for stability, safety, drag reduction, and transition behavior.</span><span class="lang-sl">Za zrak APSV verjetno začne kot hibrid: porazdeljeni ducted fani / veliko zaščitenih malih ventilatorjev za vzgon, plus aktivna površinska kontrola toka za stabilnost, varnost, manjši upor in prehode.</span></p></div>
+    <div class="card"><h3>M14 candidate</h3><p><strong>distributed micro-fan / fan-skin array</strong></p><p><span class="lang-en">A future v0.3 branch should explicitly test 20–100+ small sealed fans, not just a generic multirotor baseline.</span><span class="lang-sl">Prihodnja v0.3 veja mora eksplicitno testirati 20–100+ malih zaprtih fanov, ne le generičnega multirotor baseline-a.</span></p></div>
+  </div>
+</section>
+
+<section class="section" id="space">
+  <div class="section-title"><h2>APSV-S / Space backlog</h2><p><span class="lang-en">A future extension: active momentum-skin in photon, plasma, solar-wind, exhaust-plume, or artificial beam flows.</span><span class="lang-sl">Prihodnja razširitev: aktivna momentum-koža v tokovih fotonov, plazme, sončnega vetra, raketnega izpuha ali umetnega žarka.</span></p></div>
+  <div class="grid three">
+    <div class="card"><h3>Near-Sun probe</h3><p><span class="lang-en">A probe near the Sun could interact with stronger photon pressure and solar-wind/plasma streams. This belongs to APSV-S, not the current air/water scoring.</span><span class="lang-sl">Sonda blizu Sonca bi lahko delovala z močnejšim fotonskim pritiskom in tokovi sončnega vetra/plazme. To spada v APSV-S, ne v trenutni zrak/voda scoring.</span></p></div>
+    <div class="card"><h3>Plume / beam rider</h3><p><span class="lang-en">A trailer/pod could interact with a directed plasma or ion beam, but never reactionlessly: momentum and energy must still close.</span><span class="lang-sl">Prikolica/pod bi lahko deloval z usmerjenim plazemskim ali ionskim žarkom, a nikoli brez reakcije: moment in energija morata ostati zaprta.</span></p></div>
+    <div class="card"><h3>Backlog only</h3><p><span class="lang-en">APSV-S is recorded as frontier seed-bank material for later papers/arenas, after air/water v0.2-HYB results are understood.</span><span class="lang-sl">APSV-S je za zdaj zabeležen kot frontier seed-bank za kasnejše članke/arene, po razumevanju rezultatov air/water v0.2-HYB.</span></p></div>
+  </div>
+</section>
+
+
+<section class="section" id="results-log">
+  <div class="section-title"><h2><span class="lang-en">Current test results snapshot</span><span class="lang-sl">Trenutni posnetek testnih rezultatov</span></h2><p><span class="lang-en">Collapsed by default: this is a working live-extract snapshot, not a final verdict.</span><span class="lang-sl">Privzeto zaprto: to je delovni live-extract posnetek, ne končni verdict.</span></p></div>
+  <details class="source">
+    <summary style="cursor:pointer;font-family:var(--mono);color:var(--cyan);font-weight:800;margin-bottom:10px"><span class="lang-en">Open early HYB v0.2 live-extract results · 2026-06-28</span><span class="lang-sl">Odpri zgodnje HYB v0.2 live-extract rezultate · 2026-06-28</span></summary>
+    <div class="table-wrap" style="margin-top:14px"><table><thead><tr><th>Run</th><th>Status</th><th>Meaning</th></tr></thead><tbody>
+      <tr><td><strong>Gate Standard</strong></td><td>50,000 / 50,000 · errors 0</td><td>Pass-1 gate completed cleanly. Ranking changed materially, supporting rigor-first evaluation.</td></tr>
+      <tr><td><strong>Standard</strong></td><td>50,000 / 50,000 · errors 0</td><td>Full pass completed cleanly with seeds and baselines active.</td></tr>
+      <tr><td><strong>Deep</strong></td><td>300,544 / 500,000 at extract · errors 0 · workers 5</td><td>Deep was still running. Marathon and the 168h target-hours phase had not yet started.</td></tr>
+    </tbody></table></div>
+    <div class="grid two" style="margin-top:16px">
+      <div class="card"><h3>Clean signal</h3><p>The strongest clean signal is still water / underwater / inspection. The leading family is <strong>tangential slot-sheet + Coandă</strong> on teardrop / capsule-like underwater pods.</p></div>
+      <div class="card"><h3>Frontier signal</h3><p><strong>M1 traveling-wave water scout</strong> is the strongest raw/anomaly branch and needs deeper audit. It is promising, but not yet a clean final winner.</p></div>
+      <div class="card"><h3>M13 status</h3><p><strong>M13 recirculating slot-suction loop</strong> is alive. Closed-loop is only slightly better than open slot in current matched tests; semi-closed M13 shows a more interesting small advantage.</p></div>
+      <div class="card"><h3>Air / universal status</h3><p>Air hover and universal air+water have no clean winner yet. Baselines are references, not guillotines: future scoring must include mission value, safety, redundancy, and multi-medium capability.</p></div>
+    </div>
+    <p style="margin-top:16px"><span class="lang-en"><strong>Action:</strong> keep the HYB long-run running, review live extracts daily, and only after the long-run run MAL idea generation for v0.3 seeds.</span><span class="lang-sl"><strong>Akcija:</strong> HYB long-run naj teče naprej, live extracte pregledamo dnevno, šele po long-runu pa poženemo MAL za v0.3 seede.</span></p>
+  </details>
+</section>
+
+<section class="section" id="sources">
+  <div class="section-title"><h2><span class="lang-en">Source trail</span><span class="lang-sl">Sled virov</span></h2><p><span class="lang-en">This page is a compact public synthesis of the working APSV materials.</span><span class="lang-sl">Ta stran je kompakten javni povzetek delovnih APSV materialov.</span></p></div>
+  <div class="source"><p><span class="lang-en">Internal source artifacts used for this page:</span><span class="lang-sl">Interni artefakti, uporabljeni za to stran:</span></p><p><code>8Z_Active_Pressure_Skin_Vehicle_Paper_Spec_v0_2.md</code> <code>APSV_v0_2_HYB_DEEP_LIVE_EXTRACT_REVIEW_20260628.md</code> <code>APSV_CONTINUATION_PLAN_WITH_APSV_S_20260627.md</code> <code>APSV_GENERATIVE_SEED_BANK_FROM_C_v2.md</code> <code>APSV_ARENA_V0_2_MAL_GPT_UPGRADED_BUILDER_PROMPT.md</code></p><p><span class="lang-en">Public status: research seed / parametric arena. Not a product claim, not a patent claim, not CFD proof.</span><span class="lang-sl">Javni status: raziskovalno seme / parametrična arena. Ni produktna trditev, ni patentna trditev, ni CFD dokaz.</span></p></div>
+</section>
+</main>
+<footer class="footer"><div class="wrap">© 2026 Bojan Dobrečevič · BD × AI Lab · APSV research seed · <a href="../">Root Atlas</a> · <a href="../BD/">BD Hub</a></div></footer>
+<div class="reader-tools" aria-label="Reader controls"><button type="button" id="fontMinus">A−</button><button type="button" id="fontPlus">A+</button></div>
+<script>
+(function(){
+  const root=document.documentElement;
+  const langKey='bd-lang';
+  const sizeKey='bd-reader-size';
+  function setLang(lang){root.dataset.lang=lang;root.lang=lang==='sl'?'sl':'en';document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));try{localStorage.setItem(langKey,lang)}catch(e){}}
+  document.querySelectorAll('.lang-btn').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+  let lang='en';try{lang=localStorage.getItem(langKey)||root.dataset.lang||'en'}catch(e){}
+  setLang(lang);
+  const min=0,max=5;let size=2;try{size=parseInt(localStorage.getItem(sizeKey)||root.dataset.readerSize||'2',10)}catch(e){}
+  function setSize(v){size=Math.max(min,Math.min(max,v));root.dataset.readerSize=String(size);try{localStorage.setItem(sizeKey,String(size))}catch(e){}}
+  document.getElementById('fontMinus')?.addEventListener('click',()=>setSize(size-1));
+  document.getElementById('fontPlus')?.addEventListener('click',()=>setSize(size+1));
+  setSize(size);
+})();
+</script>
+</body>
+</html>
