@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="sl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <title>BD — Svit kolonoskopija checklist</title>
+  <style>
+    :root{
+      --font-size: 21px;
+      --bg:#090d12;
+      --panel:#111923;
+      --panel2:#162231;
+      --text:#edf5ff;
+      --muted:#a9b8c8;
+      --soft:#7f91a6;
+      --line:#26374b;
+      --accent:#6de0ff;
+      --accent2:#a7f3d0;
+      --warn:#ffd27a;
+      --danger:#ff9aa2;
+      --ok:#93f5b2;
+      --shadow: 0 18px 60px rgba(0,0,0,.42);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html{font-size:var(--font-size); scroll-behavior:smooth;}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+      background:
+        radial-gradient(1200px 720px at 20% -10%, rgba(109,224,255,.18), transparent 55%),
+        radial-gradient(900px 500px at 110% 5%, rgba(167,243,208,.12), transparent 52%),
+        var(--bg);
+      color:var(--text);
+      line-height:1.45;
+      padding: env(safe-area-inset-top) 0 calc(98px + env(safe-area-inset-bottom));
+    }
+    main{width:min(980px, 100%); margin:0 auto; padding:18px 14px 30px;}
+    .hero{
+      padding:24px 18px;
+      border:1px solid rgba(109,224,255,.26);
+      border-radius:calc(var(--radius) + 8px);
+      background:linear-gradient(180deg, rgba(22,34,49,.92), rgba(12,17,24,.95));
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+    .hero:after{
+      content:""; position:absolute; inset:-120px -100px auto auto; width:260px; height:260px;
+      background:radial-gradient(circle, rgba(109,224,255,.18), transparent 68%);
+      pointer-events:none;
+    }
+    h1{font-size:1.65rem; line-height:1.05; margin:0 0 10px; letter-spacing:-.03em;}
+    h2{font-size:1.18rem; margin:28px 0 12px; letter-spacing:-.015em;}
+    h3{font-size:1.02rem; margin:0 0 8px;}
+    p{margin:8px 0;}
+    .muted{color:var(--muted)}
+    .small{font-size:.82rem; color:var(--muted)}
+    .pillrow{display:flex; flex-wrap:wrap; gap:10px; margin-top:14px;}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:9px 12px; border-radius:999px;
+      background:rgba(109,224,255,.10); border:1px solid rgba(109,224,255,.22);
+      color:#dff9ff; font-weight:700;
+    }
+    .grid{display:grid; gap:12px;}
+    @media (min-width:740px){.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:repeat(3,1fr)}}
+    .card{
+      background:linear-gradient(180deg, rgba(17,25,35,.98), rgba(12,18,26,.98));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.22);
+    }
+    .notice{
+      border-color:rgba(255,210,122,.42);
+      background:linear-gradient(180deg, rgba(255,210,122,.12), rgba(17,25,35,.96));
+    }
+    .good{
+      border-color:rgba(147,245,178,.36);
+      background:linear-gradient(180deg, rgba(147,245,178,.10), rgba(17,25,35,.96));
+    }
+    .dangerish{
+      border-color:rgba(255,154,162,.35);
+      background:linear-gradient(180deg, rgba(255,154,162,.10), rgba(17,25,35,.96));
+    }
+    .bigtime{font-size:1.55rem; font-weight:900; letter-spacing:-.03em; color:var(--accent);}
+    .date{font-weight:900; color:#fff;}
+    .timeline{display:grid; gap:10px; margin-top:10px;}
+    .slot{
+      display:grid; grid-template-columns:minmax(94px, 132px) 1fr; gap:12px; align-items:start;
+      padding:14px; border:1px solid var(--line); border-radius:18px; background:rgba(255,255,255,.035);
+    }
+    .slot .t{font-weight:900; color:var(--accent2); line-height:1.1;}
+    .slot .desc{font-weight:650;}
+    .slot .sub{font-size:.82rem; color:var(--muted); margin-top:4px; font-weight:500;}
+    .checklist{display:grid; gap:10px;}
+    label.check{
+      display:grid; grid-template-columns:34px 1fr; gap:12px; align-items:start;
+      padding:14px; border:1px solid var(--line); border-radius:18px;
+      background:rgba(255,255,255,.035);
+      cursor:pointer; user-select:none;
+    }
+    label.check:active{transform:translateY(1px)}
+    input[type="checkbox"]{
+      width:28px; height:28px; margin:1px 0 0;
+      accent-color:#38d990;
+    }
+    .check .main{font-weight:750;}
+    .check .note{display:block; color:var(--muted); font-size:.82rem; font-weight:450; margin-top:3px;}
+    .done .main{text-decoration:line-through; color:var(--soft)}
+    .progressWrap{margin-top:16px;}
+    .bar{height:16px; background:#0b121b; border:1px solid var(--line); border-radius:999px; overflow:hidden;}
+    .bar > div{height:100%; width:0%; background:linear-gradient(90deg, #6de0ff, #93f5b2); transition:width .25s ease;}
+    .progressText{font-weight:800; margin-top:7px; color:var(--muted)}
+    details{border:1px solid var(--line); border-radius:18px; background:rgba(255,255,255,.035); padding:0; overflow:hidden;}
+    summary{padding:15px; cursor:pointer; font-weight:850; color:#fff;}
+    details > div{padding:0 15px 15px; color:var(--muted)}
+    .quote{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space:pre-wrap; font-size:.78rem; background:#071018; border:1px solid #223447; padding:13px; border-radius:16px; overflow:auto;}
+    a{color:var(--accent)}
+    .bottomControls{
+      position:fixed; left:0; right:0; bottom:0; z-index:50;
+      background:rgba(8,12,18,.88); backdrop-filter:blur(16px);
+      border-top:1px solid rgba(109,224,255,.22);
+      padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+      display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap;
+    }
+    button{
+      border:1px solid rgba(109,224,255,.35); background:#132235; color:var(--text);
+      border-radius:999px; padding:12px 18px; font-size:1rem; font-weight:900;
+      min-height:48px; cursor:pointer;
+    }
+    button.primary{background:linear-gradient(180deg, #1d5b77, #164055);}
+    button.warn{border-color:rgba(255,210,122,.35); background:#332818;}
+    .miniStatus{font-size:.78rem; color:var(--muted); font-weight:700;}
+    .topnav{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 4px}
+    .topnav a{padding:9px 11px; border:1px solid var(--line); border-radius:999px; text-decoration:none; background:rgba(255,255,255,.035); color:#e7f5ff; font-weight:800; font-size:.8rem}
+    .red{color:var(--danger)} .yellow{color:var(--warn)} .green{color:var(--ok)}
+    ul{margin:8px 0 0; padding-left:1.1em}
+    li{margin:7px 0}
+    .footer{margin-top:28px; color:var(--muted); font-size:.75rem; border-top:1px solid var(--line); padding-top:16px;}
+    @media (max-width:420px){
+      main{padding-left:10px; padding-right:10px}
+      .slot{grid-template-columns:88px 1fr; padding:12px; gap:10px}
+      .hero{padding:20px 14px}
+      label.check{grid-template-columns:32px 1fr; padding:13px 12px}
+      button{padding:11px 15px}
+    }
+    @media print{
+      body{background:white; color:black; padding:0}
+      .bottomControls,.topnav{display:none}
+      .card,.hero,label.check,.slot,details{box-shadow:none; background:white; color:black; border-color:#999}
+      .muted,.small,.check .note,.slot .sub{color:#333}
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero" id="top">
+      <h1>Svit kolonoskopija — osebni checklist</h1>
+      <p class="muted">Termin: <b class="date">ponedeljek, 13. 7. 2026 ob 16:15</b></p>
+      <div class="pillrow">
+        <span class="pill">MoviPrep</span>
+        <span class="pill">popoldanski termin</span>
+        <span class="pill">cilj: čisto črevo</span>
+      </div>
+      <div class="progressWrap">
+        <div class="bar"><div id="barFill"></div></div>
+        <div class="progressText" id="progressText">0 / 0 narejeno</div>
+      </div>
+      <div class="topnav">
+        <a href="#pomen">Pomen izvida</a>
+        <a href="#urnik">Točen urnik</a>
+        <a href="#checklist">Checklist</a>
+        <a href="#torba">Kaj vzeti</a>
+        <a href="#vprasanja">Vprašanja</a>
+      </div>
+    </section>
+
+    <section class="grid two" id="pomen" style="margin-top:14px">
+      <div class="card notice">
+        <h2 style="margin-top:0">Kaj pomeni pozitiven Svit</h2>
+        <p><b>Pozitiven test pomeni, da je bila v blatu zaznana prikrita kri.</b></p>
+        <p>To <b>še ne pomeni raka</b>. Pomeni pa, da je treba vzrok krvavitve preveriti s kolonoskopijo.</p>
+      </div>
+      <div class="card good">
+        <h2 style="margin-top:0">Tvoj rezultat</h2>
+        <p><b>Vzorec I:</b> 55,2 µg/g — pozitiven</p>
+        <p><b>Vzorec II:</b> 0,5 µg/g — v meji</p>
+        <p class="small">Ker je en vzorec pozitiven, se testa ne ponavlja “za vsak slučaj”; naslednji korak je kolonoskopija.</p>
+      </div>
+    </section>
+
+    <section class="card" id="urnik" style="margin-top:14px">
+      <h2 style="margin-top:0">Točen okvirni urnik za 13. 7. 2026 ob 16:15</h2>
+      <p class="small">Če ti izvajalec da drugačno navodilo, ima prednost navodilo izvajalca.</p>
+      <div class="timeline">
+        <div class="slot"><div class="t">06.07.<br>pon</div><div><div class="desc">7 dni prej: začni nežno prehransko pripravo</div><div class="sub">Prevzemi MoviPrep. Brez drobnopečkatega sadja in polnozrnatega kruha.</div></div></div>
+        <div class="slot"><div class="t">10.07.<br>pet</div><div><div class="desc">3 dni prej: brez surove zelenjave/sadja/semen</div><div class="sub">Bela moka, bel kruh, olupljen krompir, pusto meso/ribe, kuhana olupljena zelenjava.</div></div></div>
+        <div class="slot"><div class="t">12.07.<br>16:15</div><div><div class="desc">Zadnji obrok goste hrane</div><div class="sub">Po tem samo bistre tekočine. Brez alkohola, mleka, mlečnih izdelkov in gostih sokov.</div></div></div>
+        <div class="slot"><div class="t">13.07.<br>07:15</div><div><div class="desc">Običajna zdravila z najmanj vode</div><div class="sub">Exforge HCT: upoštevaj potrjeno navodilo zdravnika/izvajalca, ker vsebuje tudi diuretik.</div></div></div>
+        <div class="slot"><div class="t bigtime">08:15</div><div><div class="desc">1. liter MoviPrep</div><div class="sub">2,5 dl vsakih 15 minut. V eni uri popij cel liter.</div></div></div>
+        <div class="slot"><div class="t">09:15+</div><div><div class="desc">Po prvem litru še 0,5 l bistre tekočine</div><div class="sub">WC faza bo verjetno približno 2 uri.</div></div></div>
+        <div class="slot"><div class="t bigtime">11:15</div><div><div class="desc">2. liter MoviPrep</div><div class="sub">Spet 2,5 dl vsakih 15 minut. Nato še 0,5 l bistre tekočine.</div></div></div>
+        <div class="slot"><div class="t">12:15–14:15</div><div><div class="desc">Druga WC faza</div><div class="sub">Cilj je skoraj bistra, lahko rumenkasta tekočina brez večjih primesi blata.</div></div></div>
+        <div class="slot"><div class="t bigtime red">14:15</div><div><div class="desc">STOP — nič več piti ali jesti</div><div class="sub">Dve uri pred kolonoskopijo ne zaužiješ ničesar več.</div></div></div>
+        <div class="slot"><div class="t bigtime green">16:15</div><div><div class="desc">Kolonoskopija</div><div class="sub">Vzemi dokumente, vprašalnik in zdravstveno kartico.</div></div></div>
+      </div>
+    </section>
+
+    <section id="checklist">
+      <h2>Checklist</h2>
+      <div class="grid two">
+        <div class="card">
+          <h3>Do 7 dni prej</h3>
+          <div class="checklist">
+            <label class="check"><input type="checkbox" data-id="c01"><span><span class="main">MoviPrep prevzet v lekarni</span><span class="note">Škatla za eno pripravo.</span></span></label>
+            <label class="check"><input type="checkbox" data-id="c02"><span><span class="main">Vprašalnik izpolnjen</span><span class="note">Zdravnica je napisala, da ga lahko izpolniš sam.</span></span></label>
+            <label class="check"><input type="checkbox" data-id="c03"><span><span class="main">Preverjeno navodilo za Exforge HCT</span><span class="note">Vprašaj Svit/izvajalca ali zdravnico: dan priprave + dan posega.</span></span></label>
+            <label class="check"><input type="checkbox" data-id="c04"><span><span class="main">Urejeno spremstvo / prevoz domov</span><span class="note">Posebej, če bo sedacija ali pomirjevalo.</span></span></label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Prehrana pred posegom</h3>
+          <div class="checklist">
+            <label class="check"><input type="checkbox" data-id="c05"><span><span class="main">Od 6.7. brez pečk in polnozrnatega</span><span class="note">Grozdje, kivi, paradižnik, semena, polnozrnati kruh — ne.</span></span></label>
+            <label class="check"><input type="checkbox" data-id="c06"><span><span class="main">Od 10.7. brez surove zelenjave/sadja</span><span class="note">Tudi brez koruze, suhih sadežev in semen.</span></span></label>
+            <label class="check"><input type="checkbox" data-id="c07"><span><span class="main">12.7. do 16:15 zadnji obrok</span><span class="note">Po tem nič več goste hrane.</span></span></label>
+            <label class="check"><input type="checkbox" data-id="c08"><span><span class="main">Po zadnjem obroku samo bistre tekočine</span><span class="note">Voda, čaj brez mleka, bistri sokovi brez rdečih barvil, čista juha. Brez alkohola.</span></span></label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Dan posega — 13.7.</h3>
+          <div class="checklist">
+            <label class="check"><input type="checkbox" data-id="c09"><span><span class="main">07:15 zdravila po potrjenem navodilu</span><span class="note">Najmanjša možna količina vode.</span></span></label>
+            <label class="check"><input type="checkbox" data-id="c10"><span><span class="main">08:15 popit 1. liter MoviPrep</span><span class="note">2,5 dl vsakih 15 minut.</span></span></label>
+            <label class="check"><input type="checkbox" data-id="c11"><span><span class="main">Po 1. litru popito še 0,5 l bistre tekočine</span><span class="note">Ostani blizu WC.</span></span></label>
+            <label class="check"><input type="checkbox" data-id="c12"><span><span class="main">11:15 popit 2. liter MoviPrep</span><span class="note">Isti tempo kot prvi liter.</span></span></label>
+            <label class="check"><input type="checkbox" data-id="c13"><span><span class="main">Po 2. litru popito še 0,5 l bistre tekočine</span><span class="note">Cilj: skoraj bistra rumenkasta tekočina.</span></span></label>
+            <label class="check"><input type="checkbox" data-id="c14"><span><span class="main">14:15 stop — nič več piti/jesti</span><span class="note">Do konca preiskave ničesar več.</span></span></label>
+          </div>
+        </div>
+
+        <div class="card" id="torba">
+          <h3>Kaj vzeti s seboj</h3>
+          <div class="checklist">
+            <label class="check"><input type="checkbox" data-id="c15"><span><span class="main">Kartica zdravstvenega zavarovanja</span></span></label>
+            <label class="check"><input type="checkbox" data-id="c16"><span><span class="main">eNapotnica / potrdilo o eNapotnici</span></span></label>
+            <label class="check"><input type="checkbox" data-id="c17"><span><span class="main">Izpolnjen Svit vprašalnik</span></span></label>
+            <label class="check"><input type="checkbox" data-id="c18"><span><span class="main">Seznam zdravil</span><span class="note">Exforge HCT 5/160/12,5 + Claritine po potrebi.</span></span></label>
+            <label class="check"><input type="checkbox" data-id="c19"><span><span class="main">Telefon + očala, če jih rabiš</span></span></label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="vprasanja" style="margin-top:16px">
+      <h2 style="margin-top:0">Vprašanja za ambulanto</h2>
+      <div class="checklist">
+        <label class="check"><input type="checkbox" data-id="q01"><span><span class="main">Ali je možna sedacija / pomirjevalo?</span><span class="note">Če da: potrdi, da ne voziš domov.</span></span></label>
+        <label class="check"><input type="checkbox" data-id="q02"><span><span class="main">Kako ravnati z Exforge HCT?</span><span class="note">Zdravilo za pritisk vsebuje tudi diuretik — naj potrdi strokovna oseba.</span></span></label>
+        <label class="check"><input type="checkbox" data-id="q03"><span><span class="main">Kdaj dobim izvid, če odstranijo polip ali vzamejo vzorec?</span></span></label>
+      </div>
+    </section>
+
+    <section class="grid two" style="margin-top:16px">
+      <details>
+        <summary>Kako pripraviti MoviPrep</summary>
+        <div>
+          <p>V škatli sta dva kompleta. Vsak odmerek pripraviš iz vrečke A + vrečke B v 1 litru vode.</p>
+          <p>Oba litra lahko pripraviš vnaprej, ločeno označiš “1” in “2” ter shraniš v hladilnik. Ohlajen je lažje pitje. Pomaga tudi slamica.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Če mi postane slabo</summary>
+        <div>
+          <p>Uradna navodila dopuščajo, da naslednji odmerek popiješ čez približno pol ure. Vmes hodi po stanovanju; hoja pomaga čiščenju.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Kdaj je čiščenje dobro?</summary>
+        <div>
+          <p>Po drugem odmerku naj bi odvajal skoraj bistro tekočino, lahko rumenkasto, brez večjih primesi blata.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Kratek tekst, če moraš klicati</summary>
+        <div class="quote">Naročen sem 13.7.2026 ob 16:15 na Svit kolonoskopijo. Predpisan imam MoviPrep. Jemljem Exforge HCT 5/160/12,5. Prosim za potrditev, kako naj vzamem zdravilo za pritisk na dan priprave in na dan preiskave.</div>
+      </details>
+    </section>
+
+    <section class="card dangerish" style="margin-top:16px">
+      <h2 style="margin-top:0">Pomembno</h2>
+      <p><b>Če se navodila ambulante razlikujejo od te strani, upoštevaj navodila ambulante.</b></p>
+      <p class="small">Ta stran je osebni organizacijski checklist, ne zamenjava za navodila zdravnika ali Programa Svit.</p>
+    </section>
+
+    <section class="footer">
+      <p><b>Viri za vsebino:</b> Program Svit — Navodila za čiščenje črevesa pred kolonoskopijo, popoldanski čas, MoviPrep/Plenvu, 2025; eNapotnica z dne 26.06.2026; OCR povzetek BDK_2026.pdf.</p>
+      <p>Stran ne pošilja podatkov nikamor. Checklist se shrani samo lokalno v brskalniku te naprave.</p>
+    </section>
+  </main>
+
+  <nav class="bottomControls" aria-label="Kontrole">
+    <button id="minus" title="Manjše črke">A−</button>
+    <button id="plus" class="primary" title="Večje črke">A+</button>
+    <button id="reset" class="warn" title="Počisti checklist">Reset</button>
+    <span class="miniStatus" id="fontStatus">21px</span>
+  </nav>
+
+  <script>
+    (function(){
+      const KEY_PREFIX = 'bd_svit_20260713_';
+      const FONT_KEY = KEY_PREFIX + 'fontSize';
+      const root = document.documentElement;
+      const fontStatus = document.getElementById('fontStatus');
+      function clamp(n,min,max){return Math.max(min, Math.min(max,n));}
+      function setFont(px){
+        px = clamp(px, 17, 30);
+        root.style.setProperty('--font-size', px + 'px');
+        localStorage.setItem(FONT_KEY, String(px));
+        fontStatus.textContent = px + 'px';
+      }
+      setFont(parseInt(localStorage.getItem(FONT_KEY) || '21', 10));
+      document.getElementById('minus').addEventListener('click', () => setFont(parseInt(localStorage.getItem(FONT_KEY) || '21',10)-2));
+      document.getElementById('plus').addEventListener('click', () => setFont(parseInt(localStorage.getItem(FONT_KEY) || '21',10)+2));
+
+      const boxes = [...document.querySelectorAll('input[type="checkbox"][data-id]')];
+      const barFill = document.getElementById('barFill');
+      const progressText = document.getElementById('progressText');
+      function update(){
+        let done = 0;
+        boxes.forEach(b => {
+          const label = b.closest('label');
+          if(b.checked){done++; label.classList.add('done')} else label.classList.remove('done');
+        });
+        const pct = boxes.length ? Math.round(done / boxes.length * 100) : 0;
+        barFill.style.width = pct + '%';
+        progressText.textContent = done + ' / ' + boxes.length + ' narejeno (' + pct + '%)';
+      }
+      boxes.forEach(b => {
+        b.checked = localStorage.getItem(KEY_PREFIX + b.dataset.id) === '1';
+        b.addEventListener('change', () => {
+          localStorage.setItem(KEY_PREFIX + b.dataset.id, b.checked ? '1' : '0');
+          update();
+        });
+      });
+      update();
+      document.getElementById('reset').addEventListener('click', () => {
+        if(confirm('Počistim vse kljukice?')){
+          boxes.forEach(b => { b.checked = false; localStorage.removeItem(KEY_PREFIX + b.dataset.id); });
+          update();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
