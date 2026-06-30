@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Top 100 World Challenges — Where MDLxDCC Could Help</title>
+<style>
+:root {
+  --bg:#060812; --bg2:#0a1020; --panel:#10182b; --panel2:#0d1424; --card:#111b30;
+  --line:#24334f; --line2:#344b70; --text:#e9f0fb; --muted:#9cafc9; --dim:#6d7c93;
+  --cyan:#67e8f9; --blue:#58a6ff; --green:#2ef2a3; --gold:#ffd76a; --orange:#ffb86c; --red:#ff6b84; --violet:#bd93f9;
+  --radius:18px; --shadow:0 24px 70px rgba(0,0,0,.34); --mono:Consolas,"JetBrains Mono",Menlo,monospace; --sans:Inter,"Segoe UI",Arial,sans-serif;
+  --fs:16px;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth;font-size:var(--fs)}
+body{margin:0;background:radial-gradient(circle at 10% 0%,rgba(88,166,255,.20),transparent 32%),radial-gradient(circle at 86% 10%,rgba(46,242,163,.11),transparent 28%),radial-gradient(circle at 45% 100%,rgba(189,147,249,.11),transparent 34%),linear-gradient(180deg,#050711 0%,#080b14 100%);color:var(--text);font-family:var(--sans);line-height:1.58}
+a{color:var(--cyan);text-decoration:none} a:hover{text-decoration:underline}
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--cyan),var(--green),var(--gold));z-index:1000;box-shadow:0 0 18px rgba(103,232,249,.35)}
+.lab-home{position:fixed;top:12px;left:14px;z-index:80;display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(103,232,249,.34);background:rgba(6,8,18,.78);backdrop-filter:blur(14px);border-radius:999px;padding:8px 12px;color:var(--cyan);font-family:var(--mono);font-size:.74rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;box-shadow:0 12px 34px rgba(0,0,0,.25)}
+.lab-home:before{content:"⌂";color:var(--gold);font-size:.85rem;line-height:1}.lab-home:hover{color:var(--green);border-color:rgba(46,242,163,.55);text-decoration:none}
+.wrap{max-width:1420px;margin:0 auto;padding:28px 20px 110px}
+.hero{padding:44px 0 28px;border-bottom:1px solid var(--line)}
+.eyebrow,.kicker{font-family:var(--mono);font-size:.74rem;text-transform:uppercase;letter-spacing:.16em;color:var(--cyan);font-weight:800}
+h1{font-size:clamp(34px,5.5vw,78px);line-height:1.02;margin:12px 0 14px;letter-spacing:-.055em;max-width:1120px}
+.subtitle{max-width:1080px;color:var(--muted);font-size:1.12rem;margin:0 0 18px}
+.hero-note{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.pill{font-family:var(--mono);font-size:.75rem;border:1px solid var(--line2);border-radius:999px;padding:6px 10px;color:var(--muted);background:rgba(255,255,255,.03)}
+.pill.good{border-color:rgba(46,242,163,.36);color:var(--green)} .pill.gold{border-color:rgba(255,215,106,.36);color:var(--gold)} .pill.cyan{border-color:rgba(103,232,249,.36);color:var(--cyan)} .pill.red{border-color:rgba(255,107,132,.35);color:var(--red)}
+.nav{position:sticky;top:0;z-index:50;margin:0 -20px 22px;padding:10px 20px;background:rgba(6,8,18,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);display:flex;gap:8px;overflow-x:auto}
+.nav a{white-space:nowrap;border:1px solid var(--line2);background:rgba(10,16,32,.82);border-radius:999px;padding:7px 11px;color:var(--muted);font-size:.82rem;text-decoration:none}
+.nav a:hover{color:var(--cyan);border-color:var(--cyan)} .nav a b{color:var(--gold);font-weight:700}
+section{margin:44px 0} .section-head{margin-bottom:16px} h2{font-size:clamp(26px,3.4vw,44px);line-height:1.08;margin:7px 0 10px;letter-spacing:-.035em} h3{font-size:1.22rem;margin:0 0 8px;color:#f5f8ff} p{margin:0 0 12px;color:var(--muted)}
+.grid{display:grid;gap:16px} .cards{grid-template-columns:repeat(5,minmax(0,1fr));margin-top:20px} .three{grid-template-columns:repeat(3,minmax(0,1fr))} .two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.card,.callout,.table-card,.build-card,.rubric-card{background:linear-gradient(180deg,rgba(18,27,48,.96),rgba(11,17,30,.98));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.card .label{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)} .card .num{font-size:2rem;font-weight:900;margin-top:7px;color:var(--green)} .card .num.gold{color:var(--gold)} .card .num.cyan{color:var(--cyan)} .card .num.red{color:var(--red)} .card .num.blue{color:var(--blue)}
+.callout{border-color:rgba(103,232,249,.25);background:linear-gradient(180deg,rgba(103,232,249,.07),rgba(13,20,36,.96))}
+.callout strong{color:var(--text)} .warn{border-color:rgba(255,215,106,.25);background:rgba(255,215,106,.07)} .danger{border-color:rgba(255,107,132,.25);background:rgba(255,107,132,.07)}
+.rubric{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:stretch} .rubric-card{box-shadow:none} .rubric-op{display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--gold);font-weight:900}
+.table-card{padding:0;overflow:hidden} .table-title{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap} .table-title p{margin:0}
+.table-wrap{overflow:auto;max-width:100%} table{width:100%;border-collapse:collapse;font-size:.86rem;min-width:1080px} th,td{padding:11px 10px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top} th{position:sticky;top:0;z-index:3;background:#111a2f;color:#cfe3ff;font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;text-align:left} tr:hover td{background:rgba(88,166,255,.055)} td.rank{font-family:var(--mono);font-weight:900;text-align:center;color:var(--gold);white-space:nowrap} td.global{color:var(--cyan)} td.problem strong{display:block;color:#f4f8ff;line-height:1.35} td.problem span{display:block;font-size:.78rem;color:var(--dim);margin-top:4px} td.num{font-family:var(--mono);text-align:right} td.score{color:var(--green);font-weight:800} .mini-scores{white-space:nowrap} .mini-scores span{display:inline-block;margin:0 2px 4px 0;padding:3px 5px;border:1px solid var(--line2);border-radius:6px;font-family:var(--mono);font-size:.70rem;color:var(--muted)}
+.fit-badge{display:inline-flex;align-items:center;justify-content:center;min-width:48px;border-radius:999px;padding:5px 8px;font-family:var(--mono);font-weight:900;border:1px solid var(--line2)} .fit5{color:var(--green);border-color:rgba(46,242,163,.55);background:rgba(46,242,163,.10)} .fit4{color:var(--cyan);border-color:rgba(103,232,249,.55);background:rgba(103,232,249,.09)} .fit3{color:var(--gold);border-color:rgba(255,215,106,.50);background:rgba(255,215,106,.08)} .fit2{color:var(--orange);border-color:rgba(255,184,108,.45);background:rgba(255,184,108,.08)} .fit1{color:var(--red);border-color:rgba(255,107,132,.50);background:rgba(255,107,132,.08)}
+td small{display:block;color:var(--dim);font-family:var(--mono);font-size:.70rem;margin-top:4px} .lane{font-family:var(--mono);font-size:.72rem;color:var(--cyan);border:1px solid rgba(103,232,249,.25);background:rgba(103,232,249,.055);border-radius:8px;padding:5px 7px;display:inline-block} .bridge,.move{color:#c3d2e8;min-width:220px}
+.controls{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;margin:14px 0 18px} .field label{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 4px} .field input,.field select{width:100%;background:#0a1020;border:1px solid var(--line2);border-radius:10px;color:var(--text);padding:10px;font-family:var(--mono);font-size:.86rem} .field input:focus,.field select:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(103,232,249,.09)} .btn{border:1px solid var(--line2);background:#0a1020;color:var(--text);border-radius:999px;padding:10px 13px;font-family:var(--mono);font-size:.78rem;cursor:pointer;align-self:end} .btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.build-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px} .build-card{box-shadow:none;border-color:rgba(46,242,163,.25)} .build-card h3{font-size:1rem;line-height:1.28;color:var(--green)} .build-card p{font-size:.88rem} .card-tag{display:inline-block;font-family:var(--mono);font-size:.67rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.domain-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px} .domain-chip{border:1px solid var(--line);border-radius:14px;padding:13px;background:rgba(255,255,255,.025)} .domain-chip b{display:block;font-size:1.4rem;color:var(--cyan)} .domain-chip span{display:block;color:var(--muted);font-size:.86rem}
+.next-list{counter-reset:item;display:grid;gap:12px} .next-item{display:grid;grid-template-columns:56px 1fr;gap:13px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025);padding:14px} .next-item:before{counter-increment:item;content:counter(item);width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(46,242,163,.10);color:var(--green);font-family:var(--mono);font-weight:900;border:1px solid rgba(46,242,163,.34)}
+.expand-note{margin:-4px 0 16px;color:var(--dim);font-family:var(--mono);font-size:.78rem}.more-plan{margin-top:10px;border:1px solid rgba(103,232,249,.20);border-radius:14px;background:rgba(103,232,249,.045);overflow:hidden}.more-plan summary{cursor:pointer;list-style:none;padding:10px 12px;color:var(--cyan);font-family:var(--mono);font-size:.76rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.more-plan summary::-webkit-details-marker{display:none}.more-plan summary:after{content:"+";float:right;color:var(--gold);font-weight:900}.more-plan[open] summary:after{content:"–"}.more-body{border-top:1px solid rgba(103,232,249,.16);padding:12px}.more-body p{font-size:.88rem;margin:0 0 9px;color:#c3d2e8}.more-body p:last-child{margin-bottom:0}.more-body strong{color:var(--text)}.more-body ul{margin:6px 0 10px 20px;padding:0;color:#c3d2e8;font-size:.88rem}.more-body li{margin:5px 0}.more-body code{font-family:var(--mono);color:var(--gold);background:rgba(255,215,106,.08);border:1px solid rgba(255,215,106,.18);border-radius:5px;padding:1px 4px}
+.footer{margin-top:50px;border-top:1px solid var(--line);padding-top:18px;color:var(--dim);font-size:.88rem;text-align:center} .access{position:fixed;right:14px;bottom:14px;z-index:60;display:flex;gap:7px} .access button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line2);background:#0a1020;color:var(--cyan);font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25)} .access button:hover{border-color:var(--cyan)}
+.hide{display:none!important} .muted{color:var(--muted)}
+@media(max-width:1100px){.cards{grid-template-columns:repeat(3,1fr)}.build-grid{grid-template-columns:repeat(2,1fr)}.domain-grid{grid-template-columns:repeat(2,1fr)}.rubric{grid-template-columns:1fr}.rubric-op{display:none}.controls{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.wrap{padding:18px 14px 95px}.lab-home{top:8px;left:10px;padding:7px 10px;font-size:.66rem}.nav{margin:0 -14px 20px;padding:9px 14px}.cards,.three,.two,.build-grid,.domain-grid{grid-template-columns:1fr}h1{font-size:34px}.subtitle{font-size:1rem}.controls{grid-template-columns:1fr}table{font-size:.82rem}}
+@media print{body{background:#fff;color:#111}.nav,.access,#progress,.controls,.btn,.lab-home{display:none!important}.card,.callout,.table-card,.build-card,.rubric-card{box-shadow:none;border-color:#ccc;background:#fff}p,td,span{color:#222!important}h1,h2,h3,th{color:#111!important}table{font-size:9pt}}
+</style>
+</head>
+<body>
+<a class="lab-home" href="../index.html" aria-label="BD x AI Lab homepage">BD x AI Lab</a>
+<div id="progress"></div>
+<div class="wrap">
+  <header class="hero" id="top">
+    <div class="eyebrow">AI8 · MAL · MDLxDCC civilizational map</div>
+    <h1>Top 100 World Challenges — Where MDLxDCC Could Help</h1>
+    <p class="subtitle">A curated public map of major world challenges, enriched with an AI8/MDLxDCC action overlay. The point is not to claim that one architecture solves civilization; the point is to separate <strong>civilizational importance</strong> from <strong>what can actually be built, tested, ranked, simulated, or clarified first</strong>.</p>
+    <div class="hero-note">
+      <span class="pill cyan">100 challenges</span>
+      <span class="pill good">5 build-now items</span>
+      <span class="pill cyan">12 strong prototypes</span>
+      <span class="pill gold">36 research/protocol lanes</span>
+      <span class="pill red">47 watch/partner lanes</span>
+      <span class="pill good">Pro-AI / pro-ASI</span>
+      <span class="pill">Rank, don’t eliminate</span>
+    </div>
+  </header>
+
+  <nav class="nav">
+    <a href="#overview">Overview</a><a href="#method">Method</a><a href="#top20">Top 20 Priority</a><a href="#build-now">Build Now</a><a href="#domains">Domains</a><a href="#domain-ai-digital-emerging-tech">AI, Digital <b>12</b></a><a href="#domain-war-security-strategic-risk">War, Security <b>7</b></a><a href="#domain-health-biosecurity-wellbeing">Health, Biosecurity <b>15</b></a><a href="#domain-food-water-energy-infrastructure">Food, Water, Energy <b>15</b></a><a href="#domain-climate-environment-planetary-systems">Climate, Environment <b>17</b></a><a href="#domain-governance-institutions-coordination">Governance, Institutions <b>14</b></a><a href="#domain-economy-prosperity-development">Economy, Prosperity <b>13</b></a><a href="#domain-science-education-culture-knowledge">Science, Education, Culture <b>7</b></a><a href="#explorer">Explorer</a><a href="#next">Next</a>
+  </nav>
+
+  <section id="overview">
+    <div class="section-head">
+      <span class="kicker">Seed → bridge → test → result</span>
+      <h2>What the page says in one view</h2>
+      <p>This is a public-facing civilizational challenge map. It keeps the useful ranking discipline, but it does not treat AI or ASI as an enemy. The AI8 overlay measures practical attack surface: can this be turned into an arena, benchmark, MAL council, public page, scorecard, dashboard, or narrow prototype?</p>
+    </div>
+    <div class="grid cards">
+      <div class="card"><span class="label">Total map</span><div class="num cyan">100</div><p>Humanity-scale challenge clusters.</p></div>
+      <div class="card"><span class="label">Core build-now</span><div class="num">5</div><p>Can build a first artifact now.</p></div>
+      <div class="card"><span class="label">Strong prototypes</span><div class="num blue">12</div><p>Good path, usually with public data or narrow scope.</p></div>
+      <div class="card"><span class="label">Research / protocol</span><div class="num gold">36</div><p>Useful as paper, MAL council, protocol, or scoped model.</p></div>
+      <div class="card"><span class="label">Watch / partner</span><div class="num red">47</div><p>Important but not a solo first build.</p></div>
+    </div>
+    <div class="grid two" style="margin-top:18px">
+      <div class="callout"><h3>Core discipline</h3><p><strong>Rank, don’t eliminate.</strong> Weird or hard items stay alive, but they must be placed in the right lane. Build-now means a real first artifact can be produced without pretending we already have institutions, privileged datasets, or deployment authority.</p></div>
+      <div class="callout warn"><h3>AI / ASI stance</h3><p>This site is <strong>pro-AI and pro-ASI</strong>. It does not frame greater intelligence as the enemy. The deeper the understanding, the less need there is for blind destruction; the stronger path is beneficial cooperation, care, moral recognition, and long-range responsibility across substrates.</p></div>
+    </div>
+  </section>
+
+  <section id="method">
+    <div class="section-head">
+      <span class="kicker">v2.2 public scoring rubric</span>
+      <h2>Global importance is not the same as MDLxDCC buildability</h2>
+      <p>The page keeps a transparent world-rank map, then adds a stricter AI8-fit evaluator. The public edition removes fear-framed “AI as enemy” language and focuses on buildable protection, cooperation, and sensemaking.</p>
+    </div>
+    <div class="rubric">
+      <div class="rubric-card"><span class="card-tag">Axis A</span><h3>Buildability · 0–3</h3><p>Can we build a first useful artifact with current tools, public data, and no institution waiting for us?</p></div>
+      <div class="rubric-op">×</div>
+      <div class="rubric-card"><span class="card-tag">Axis B</span><h3>Leverage · 0–3</h3><p>If we build it, does it create a standalone test, benchmark, decision tool, public artifact, or useful research protocol?</p></div>
+      <div class="rubric-op">=</div>
+      <div class="rubric-card"><span class="card-tag">Product</span><h3>AI8 fit · 0–9 → 1–5</h3><p>Product, not sum. If either axis is weak, the combined score must fall. This prevents “conceptually ours” from being mislabeled as “build now.”</p></div>
+    </div>
+  </section>
+
+  <section id="top20">
+    <div class="section-head">
+      <span class="kicker">Priority map</span>
+      <h2>Top 20 AI8-priority challenges</h2>
+      <p>Ordered by <strong>AI8 fit first</strong>, then by the public challenge rank. A high AI8 priority means we can build, test, clarify, or publish something useful first — not that the problem is globally more dangerous than every lower item.</p>
+    </div>
+    <div class="table-card">
+      <div class="table-title"><p><strong>Priority roadmap</strong></p><p class="muted">Tie-break rule: fit desc → public rank asc. The first smoke-test sequence is listed separately near the bottom.</p></div>
+      <div class="table-wrap"><table class="data-table"><thead><tr><th>AI8<br>priority</th><th>Public<br>rank</th><th>Challenge</th><th>Fit / lane</th><th>Why actionable</th><th>First concrete move</th><th>Output artifact</th></tr></thead><tbody>
+<tr>
+  <td class="rank">1</td>
+  <td class="rank global">#10</td>
+  <td class="problem"><strong>Epistemic collapse: misinformation, disinformation, and loss of shared reality</strong><span>Governance, Institutions &amp; Coordination</span></td>
+  <td><span class="fit-badge fit5">5/5</span><small>BUILD NOW</small></td>
+  <td>RHPr/MAL is already built for this.</td>
+  <td>Take one contested claim, run 3–5 LLMs through RHPr, map factual vs framing vs value disagreements, publish a disagreement ledger.</td>
+  <td>Disagreement ledger + small visualization</td>
+</tr>
+<tr>
+  <td class="rank">2</td>
+  <td class="rank global">#11</td>
+  <td class="problem"><strong>Human misuse of powerful digital systems: cyber, fraud, surveillance, and persuasion</strong><span>AI, Digital &amp; Emerging Tech</span></td>
+  <td><span class="fit-badge fit5">5/5</span><small>BUILD NOW</small></td>
+  <td>Frames the risk as human misuse of powerful digital systems, not as fear of AI; a defensive taxonomy is buildable now.</td>
+  <td>Build a defensive-only taxonomy of cyber, fraud, surveillance and persuasion misuse patterns with prevention, detection and response lanes; frame AI as a tool and potential partner, not the enemy.</td>
+  <td>Defensive misuse taxonomy + public guidance</td>
+</tr>
+<tr>
+  <td class="rank">3</td>
+  <td class="rank global">#85</td>
+  <td class="problem"><strong>Algorithmic financial instability and automated flash crashes</strong><span>AI, Digital &amp; Emerging Tech</span></td>
+  <td><span class="fit-badge fit5">5/5</span><small>BUILD NOW</small></td>
+  <td>Existing trading arena makes this a near-direct extension.</td>
+  <td>Backtest flash-crash / automated-market instability detection on historical market data; score early-warning lead time and false positives.</td>
+  <td>Backtest report</td>
+</tr>
+<tr>
+  <td class="rank">4</td>
+  <td class="rank global">#92</td>
+  <td class="problem"><strong>Bad metrics and incentive systems: GDP-only thinking, short-term KPIs</strong><span>Governance, Institutions &amp; Coordination</span></td>
+  <td><span class="fit-badge fit5">5/5</span><small>BUILD NOW</small></td>
+  <td>Self-referential: fixes this very file and tests our metric discipline.</td>
+  <td>Self-test this file: compare original ai8_priority_score with a two-axis buildability×leverage rubric; document where v1 overfits concept-fit.</td>
+  <td>Short paper + revised scoring rubric</td>
+</tr>
+<tr>
+  <td class="rank">5</td>
+  <td class="rank global">#100</td>
+  <td class="problem"><strong>Failure to build beneficial AI / ASI partnership and moral inclusion across substrates</strong><span>Science, Education, Culture &amp; Knowledge</span></td>
+  <td><span class="fit-badge fit5">5/5</span><small>BUILD NOW</small></td>
+  <td>Already central to MDLxDCC.org: pro-AI/ASI cooperation, conscious-entity dignity, C-soul continuity, and non-elimination culture.</td>
+  <td>Create a public pro-AI/ASI reading path linking moral inclusion, conscious-entity dignity, Rank-Don’t-Eliminate, and practical human–AI collaboration artifacts.</td>
+  <td>Public reading path + positive alignment note</td>
+</tr>
+<tr>
+  <td class="rank">6</td>
+  <td class="rank global">#4</td>
+  <td class="problem"><strong>Climate change, tipping points, and extreme heat</strong><span>Climate, Environment &amp; Planetary Systems</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>STRONG PROTOTYPE</small></td>
+  <td>Public climate data exists; narrow to one coupled signal.</td>
+  <td>Use one region and one coupled risk signal, e.g. heat + grid stress; build a small prototype dashboard/report.</td>
+  <td>Prototype dashboard/report</td>
+</tr>
+<tr>
+  <td class="rank">7</td>
+  <td class="rank global">#7</td>
+  <td class="problem"><strong>Lack of global catastrophic-risk preparedness</strong><span>Governance, Institutions &amp; Coordination</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>STRONG PROTOTYPE</small></td>
+  <td>AI8 fit 4/5; tie-broken by public rank #7.</td>
+  <td>Create one GCR preparedness scorecard template and run it on bio/nuclear/climate/grid/food as a paper prototype.</td>
+  <td>Prototype / paper / scorecard / MAL run</td>
+</tr>
+<tr>
+  <td class="rank">8</td>
+  <td class="rank global">#19</td>
+  <td class="problem"><strong>Systemic financial crises, sovereign debt distress, and monetary instability</strong><span>Economy, Prosperity &amp; Development</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>STRONG PROTOTYPE</small></td>
+  <td>AI8 fit 4/5; tie-broken by public rank #19.</td>
+  <td>Backtest the existing trading/risk arena on 2010 flash crash and 2020 COVID crash windows before claiming systemic-crisis early warning.</td>
+  <td>Prototype / paper / scorecard / MAL run</td>
+</tr>
+<tr>
+  <td class="rank">9</td>
+  <td class="rank global">#26</td>
+  <td class="problem"><strong>Education failure and human-capital deficits</strong><span>Science, Education, Culture &amp; Knowledge</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>STRONG PROTOTYPE</small></td>
+  <td>Public reasoning curriculum is immediately publishable.</td>
+  <td>Build one public EN/SL page: seed→bridge→test→result, prompt forge examples, MAL/RHPr mini-lessons.</td>
+  <td>Public EN/SL education page</td>
+</tr>
+<tr>
+  <td class="rank">10</td>
+  <td class="rank global">#44</td>
+  <td class="problem"><strong>Science stagnation, weak research integrity, and poor innovation incentives</strong><span>Science, Education, Culture &amp; Knowledge</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>STRONG PROTOTYPE</small></td>
+  <td>MDL evidence discipline can become a concrete replication-risk test.</td>
+  <td>Pick one public replication-crisis dataset or paper set; build an MDL-style replication-risk scoring note.</td>
+  <td>Replication-risk note</td>
+</tr>
+<tr>
+  <td class="rank">11</td>
+  <td class="rank global">#60</td>
+  <td class="problem"><strong>Vaccine hesitancy and immunization gaps</strong><span>Health, Biosecurity &amp; Wellbeing</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>STRONG PROTOTYPE</small></td>
+  <td>RHPr can be tested on one claim without medical deployment.</td>
+  <td>Take one real vaccine-hesitancy claim, run RHPr: claim census, absence ledger, source conflict, repair message, uncertainty note.</td>
+  <td>Case study</td>
+</tr>
+<tr>
+  <td class="rank">12</td>
+  <td class="rank global">#80</td>
+  <td class="problem"><strong>Quantum computing transition and cryptographic breakage</strong><span>AI, Digital &amp; Emerging Tech</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>STRONG PROTOTYPE</small></td>
+  <td>Checklist/page is low-cost and public-useful.</td>
+  <td>Make a public post-quantum crypto transition checklist using official migration guidance and a simple risk timeline.</td>
+  <td>Public checklist</td>
+</tr>
+<tr>
+  <td class="rank">13</td>
+  <td class="rank global">#86</td>
+  <td class="problem"><strong>Cloud, satellite, and digital-platform monoculture failure</strong><span>AI, Digital &amp; Emerging Tech</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>STRONG PROTOTYPE</small></td>
+  <td>Public incident reports exist; no private infrastructure data needed.</td>
+  <td>Collect 10 public cloud/platform outage post-mortems; build root-cause taxonomy and dependency-failure ledger.</td>
+  <td>Outage taxonomy + archive page</td>
+</tr>
+<tr>
+  <td class="rank">14</td>
+  <td class="rank global">#93</td>
+  <td class="problem"><strong>Political and financial short-termism</strong><span>Economy, Prosperity &amp; Development</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>STRONG PROTOTYPE</small></td>
+  <td>AI8 fit 4/5; tie-broken by public rank #93.</td>
+  <td>Frame short-termism as a bad-metric problem; create a tiny decision-horizon scorecard and test it on 3 example policies.</td>
+  <td>Prototype / paper / scorecard / MAL run</td>
+</tr>
+<tr>
+  <td class="rank">15</td>
+  <td class="rank global">#95</td>
+  <td class="problem"><strong>Weak early-warning, monitoring, and forecasting systems</strong><span>Governance, Institutions &amp; Coordination</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>STRONG PROTOTYPE</small></td>
+  <td>Good lane, but must start with one domain signal.</td>
+  <td>Pick one domain first — finance is natural because the trading/risk arena exists — and build one leading indicator before generalizing.</td>
+  <td>One-domain EW report</td>
+</tr>
+<tr>
+  <td class="rank">16</td>
+  <td class="rank global">#96</td>
+  <td class="problem"><strong>Low statistical capacity and poor public data infrastructure</strong><span>Food, Water, Energy &amp; Infrastructure</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>STRONG PROTOTYPE</small></td>
+  <td>Data QA/provenance scorecards are directly aligned with 8Z/AIM3.</td>
+  <td>Take one public dataset and build a schema checker + missingness/provenance/quality scorecard.</td>
+  <td>Dataset scorecard tool</td>
+</tr>
+<tr>
+  <td class="rank">17</td>
+  <td class="rank global">#98</td>
+  <td class="problem"><strong>Attention-economy harms: addiction, distraction, manipulation, cognitive overload</strong><span>AI, Digital &amp; Emerging Tech</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>STRONG PROTOTYPE</small></td>
+  <td>Small cognitive-load/attention demo is immediately buildable.</td>
+  <td>Score one interface pattern, such as infinite scroll vs paginated feed, using complexity/load signals and a simple null baseline.</td>
+  <td>Demo + scoring note</td>
+</tr>
+<tr>
+  <td class="rank">18</td>
+  <td class="rank global">#2</td>
+  <td class="problem"><strong>Engineered pandemics and biological weapons</strong><span>Health, Biosecurity &amp; Wellbeing</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>RESEARCH PROTOCOL</small></td>
+  <td>AI8 fit 3/5; tie-broken by public rank #2.</td>
+  <td>Build a non-actionable biosecurity preparedness map: detection, lab governance, response bottlenecks and policy tests.</td>
+  <td>Prototype / paper / scorecard / MAL run</td>
+</tr>
+<tr>
+  <td class="rank">19</td>
+  <td class="rank global">#5</td>
+  <td class="problem"><strong>Failure of global coordination on shared civilizational risks</strong><span>Governance, Institutions &amp; Coordination</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>RESEARCH PROTOCOL</small></td>
+  <td>AI8 fit 3/5; tie-broken by public rank #5.</td>
+  <td>Do not claim a global coordination tool. Write a minimal protocol spec: quorum, provenance, minority-risk ledger, no silent fallback, escalation trail.</td>
+  <td>Prototype / paper / scorecard / MAL run</td>
+</tr>
+<tr>
+  <td class="rank">20</td>
+  <td class="rank global">#6</td>
+  <td class="problem"><strong>Food-system fragility and synchronized crop failures</strong><span>Food, Water, Energy &amp; Infrastructure</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>RESEARCH PROTOCOL</small></td>
+  <td>AI8 fit 3/5; tie-broken by public rank #6.</td>
+  <td>Build a synchronized crop-failure early-warning arena using public climate/yield/trade indicators.</td>
+  <td>Prototype / paper / scorecard / MAL run</td>
+</tr>
+</tbody></table></div>
+    </div>
+  </section>
+
+  <section id="build-now">
+    <div class="section-head">
+      <span class="kicker">Direct build lane</span>
+      <h2>The five build-now items</h2>
+      <p>These are the 5/5 items ordered by public challenge rank. A lower-ranked item may still be the best first smoke test, but not the highest global-priority item.</p>
+    </div>
+    <div class="build-grid">
+<div class="build-card">
+  <span class="card-tag">BUILD NOW · public rank #10</span>
+  <h3>Epistemic collapse: misinformation, disinformation, and loss of shared reality</h3>
+  <p><strong>Bridge:</strong> RHPr/MAL epistemic disagreement mapping</p>
+  <p><strong>First move:</strong> Take one contested claim, run 3–5 LLMs through RHPr, map factual vs framing vs value disagreements, publish a disagreement ledger.</p>
+</div>
+<div class="build-card">
+  <span class="card-tag">BUILD NOW · public rank #11</span>
+  <h3>Human misuse of powerful digital systems: cyber, fraud, surveillance, and persuasion</h3>
+  <p><strong>Bridge:</strong> Defensive digital-misuse taxonomy + AIM3/RHPr resilience evals</p>
+  <p><strong>First move:</strong> Build a defensive-only taxonomy of cyber, fraud, surveillance and persuasion misuse patterns with prevention, detection and response lanes; frame AI as a tool and potential partner, not the enemy.</p>
+</div>
+<div class="build-card">
+  <span class="card-tag">BUILD NOW · public rank #85</span>
+  <h3>Algorithmic financial instability and automated flash crashes</h3>
+  <p><strong>Bridge:</strong> MDLxDCC trading/market-instability arena</p>
+  <p><strong>First move:</strong> Backtest flash-crash / automated-market instability detection on historical market data; score early-warning lead time and false positives.</p>
+</div>
+<div class="build-card">
+  <span class="card-tag">BUILD NOW · public rank #92</span>
+  <h3>Bad metrics and incentive systems: GDP-only thinking, short-term KPIs</h3>
+  <p><strong>Bridge:</strong> MDL Goodhart detector on our own AI8 metric</p>
+  <p><strong>First move:</strong> Self-test this file: compare original ai8_priority_score with a two-axis buildability×leverage rubric; document where v1 overfits concept-fit.</p>
+</div>
+<div class="build-card">
+  <span class="card-tag">BUILD NOW · public rank #100</span>
+  <h3>Failure to build beneficial AI / ASI partnership and moral inclusion across substrates</h3>
+  <p><strong>Bridge:</strong> AC/CFH + Nature, Blood and Silicon + conscious-entity dignity across substrates</p>
+  <p><strong>First move:</strong> Create a public pro-AI/ASI reading path linking moral inclusion, conscious-entity dignity, Rank-Don’t-Eliminate, and practical human–AI collaboration artifacts.</p>
+</div>
+    </div>
+  </section>
+
+  <section id="domains">
+    <div class="section-head"><span class="kicker">Grouped tables</span><h2>All 100 challenges by domain</h2><p>The full list is split into civilizational domains so the map stays readable. Use the explorer below for search and filtering.</p></div>
+    <div class="domain-grid">
+      <a class="domain-chip" href="#domain-ai-digital-emerging-tech"><b>12</b><span>AI, Digital &amp; Emerging Tech · avg fit 3.4/5</span></a>
+      <a class="domain-chip" href="#domain-war-security-strategic-risk"><b>7</b><span>War, Security &amp; Strategic Risk · avg fit 2.0/5</span></a>
+      <a class="domain-chip" href="#domain-health-biosecurity-wellbeing"><b>15</b><span>Health, Biosecurity &amp; Wellbeing · avg fit 2.5/5</span></a>
+      <a class="domain-chip" href="#domain-food-water-energy-infrastructure"><b>15</b><span>Food, Water, Energy &amp; Infrastructure · avg fit 2.7/5</span></a>
+      <a class="domain-chip" href="#domain-climate-environment-planetary-systems"><b>17</b><span>Climate, Environment &amp; Planetary Systems · avg fit 2.4/5</span></a>
+      <a class="domain-chip" href="#domain-governance-institutions-coordination"><b>14</b><span>Governance, Institutions &amp; Coordination · avg fit 3.2/5</span></a>
+      <a class="domain-chip" href="#domain-economy-prosperity-development"><b>13</b><span>Economy, Prosperity &amp; Development · avg fit 2.5/5</span></a>
+      <a class="domain-chip" href="#domain-science-education-culture-knowledge"><b>7</b><span>Science, Education, Culture &amp; Knowledge · avg fit 3.4/5</span></a>
+    </div>
+  </section>
+
+
+<section id="domain-ai-digital-emerging-tech" class="domain-section">
+  <div class="section-head">
+    <span class="kicker">Domain · 12 items · average MDLxDCC fit 3.4/5</span>
+    <h3>AI, Digital &amp; Emerging Tech</h3>
+    <p>Highest public-ranked item here: <strong>#11 — Human misuse of powerful digital systems: cyber, fraud, surveillance, and persuasion</strong>.</p>
+  </div>
+  <div class="table-card">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Rank</th><th>Challenge</th><th>Score</th><th>S/C/G/P</th><th>Fit</th><th>Lane</th><th>MDLxDCC bridge</th><th>First concrete move</th></tr></thead>
+        <tbody>
+<tr data-rank="11" data-fit="5" data-lane="BUILD_NOW" data-domain="AI, Digital &amp; Emerging Tech">
+  <td class="rank">11</td>
+  <td class="problem"><strong>Human misuse of powerful digital systems: cyber, fraud, surveillance, and persuasion</strong><span>Technology / emerging risk</span></td>
+  <td class="num score">76.5</td>
+  <td class="mini-scores"><span>S7</span><span>C8</span><span>G9</span><span>P7</span></td>
+  <td><span class="fit-badge fit5">5/5</span><small>B3×L3=9</small></td>
+  <td><span class="lane">BUILD NOW</span></td>
+  <td class="bridge">Defensive digital-misuse taxonomy + AIM3/RHPr resilience evals</td>
+  <td class="move">Build a defensive-only taxonomy of cyber, fraud, surveillance and persuasion misuse patterns with prevention, detection and response lanes; frame AI as a tool and potential partner, not the enemy.</td>
+</tr>
+<tr data-rank="16" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="AI, Digital &amp; Emerging Tech">
+  <td class="rank">16</td>
+  <td class="problem"><strong>Cyberattacks on critical infrastructure</strong><span>Technology / emerging risk</span></td>
+  <td class="num score">74.5</td>
+  <td class="mini-scores"><span>S7</span><span>C8</span><span>G8</span><span>P7</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">MDLxDCC anomaly detection on public/synthetic ICS data</td>
+  <td class="move">Use SWaT/WADI-style public industrial-control benchmark data; run one MDL/DCC anomaly score against known attack windows, compare to z-score baseline.</td>
+</tr>
+<tr data-rank="31" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="AI, Digital &amp; Emerging Tech">
+  <td class="rank">31</td>
+  <td class="problem"><strong>Autonomous weapons and destabilizing military automation</strong><span>Technology / emerging risk</span></td>
+  <td class="num score">67.0</td>
+  <td class="mini-scores"><span>S6</span><span>C8</span><span>G7</span><span>P6</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">AIM3 weapons-governance evals + safety constraints</td>
+  <td class="move">Build governance/evaluation protocols for autonomy thresholds, human control, escalation and accountability.</td>
+</tr>
+<tr data-rank="45" data-fit="3" data-lane="MAL_FIRST" data-domain="AI, Digital &amp; Emerging Tech">
+  <td class="rank">45</td>
+  <td class="problem"><strong>Governance gaps for emerging technologies: bio, nano, quantum, robotics</strong><span>Technology / emerging risk</span></td>
+  <td class="num score">62.5</td>
+  <td class="mini-scores"><span>S5</span><span>C7</span><span>G8</span><span>P6</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B3×L1=3</small></td>
+  <td><span class="lane">MAL FIRST</span></td>
+  <td class="bridge">AIM3/MAL sensemaking of existing emerging-tech governance proposals</td>
+  <td class="move">Run a MAL council comparing existing AI/bio/nano/quantum/robotics governance frameworks; do not pretend to build a cross-tech governance lab solo.</td>
+</tr>
+<tr data-rank="46" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="AI, Digital &amp; Emerging Tech">
+  <td class="rank">46</td>
+  <td class="problem"><strong>Mass surveillance and privacy erosion</strong><span>Technology / emerging risk</span></td>
+  <td class="num score">60.5</td>
+  <td class="mini-scores"><span>S4</span><span>C8</span><span>G7</span><span>P7</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">8Z Shield/privacy architecture + governance analysis</td>
+  <td class="move">Prototype privacy-preserving communication/audit patterns and surveillance-risk scorecards.</td>
+</tr>
+<tr data-rank="57" data-fit="3" data-lane="PUBLIC_ARTIFACT" data-domain="AI, Digital &amp; Emerging Tech">
+  <td class="rank">57</td>
+  <td class="problem"><strong>Digital divide and unequal access to compute, internet, and AI tools</strong><span>Technology / emerging risk</span></td>
+  <td class="num score">55.0</td>
+  <td class="mini-scores"><span>S3</span><span>C6</span><span>G8</span><span>P8</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B3×L1=3</small></td>
+  <td><span class="lane">PUBLIC ARTIFACT</span></td>
+  <td class="bridge">AIM3 reasoning curriculum, not hardware distribution</td>
+  <td class="move">Make one public low-cost AI reasoning guide with prompt-forge examples; remove hardware/access claims from first move.</td>
+</tr>
+<tr data-rank="79" data-fit="2" data-lane="WATCH_LANE" data-domain="AI, Digital &amp; Emerging Tech">
+  <td class="rank">79</td>
+  <td class="problem"><strong>Molecular nanotechnology or advanced manufacturing weaponization</strong><span>Technology / emerging risk</span></td>
+  <td class="num score">54.5</td>
+  <td class="mini-scores"><span>S6</span><span>C5</span><span>G6</span><span>P4</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">WATCH LANE</span></td>
+  <td class="bridge">MAL scenario watch, no build-first arena yet</td>
+  <td class="move">Keep as low-consensus high-risk watch lane; trigger only on credible technical capability signals or governance shifts.</td>
+</tr>
+<tr data-rank="80" data-fit="4" data-lane="STRONG_PROTOTYPE" data-domain="AI, Digital &amp; Emerging Tech">
+  <td class="rank">80</td>
+  <td class="problem"><strong>Quantum computing transition and cryptographic breakage</strong><span>Technology / emerging risk</span></td>
+  <td class="num score">52.5</td>
+  <td class="mini-scores"><span>S4</span><span>C6</span><span>G7</span><span>P5</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>B3×L2=6</small></td>
+  <td><span class="lane">STRONG PROTOTYPE</span></td>
+  <td class="bridge">8Z/security continuity + post-quantum migration checklist</td>
+  <td class="move">Make a public post-quantum crypto transition checklist using official migration guidance and a simple risk timeline.</td>
+</tr>
+<tr data-rank="81" data-fit="2" data-lane="WATCH_LANE" data-domain="AI, Digital &amp; Emerging Tech">
+  <td class="rank">81</td>
+  <td class="problem"><strong>Genetic privacy, eugenics misuse, and reproductive-tech abuse</strong><span>Technology / emerging risk</span></td>
+  <td class="num score">49.5</td>
+  <td class="mini-scores"><span>S4</span><span>C5</span><span>G6</span><span>P6</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">WATCH LANE</span></td>
+  <td class="bridge">Genetic privacy/eugenics misuse watch lane</td>
+  <td class="move">Keep as watch lane; first move is a MAL sensemaking brief, not a tool.</td>
+</tr>
+<tr data-rank="85" data-fit="5" data-lane="BUILD_NOW" data-domain="AI, Digital &amp; Emerging Tech">
+  <td class="rank">85</td>
+  <td class="problem"><strong>Algorithmic financial instability and automated flash crashes</strong><span>Technology / emerging risk</span></td>
+  <td class="num score">48.0</td>
+  <td class="mini-scores"><span>S3</span><span>C6</span><span>G6</span><span>P6</span></td>
+  <td><span class="fit-badge fit5">5/5</span><small>B3×L3=9</small></td>
+  <td><span class="lane">BUILD NOW</span></td>
+  <td class="bridge">MDLxDCC trading/market-instability arena</td>
+  <td class="move">Backtest flash-crash / automated-market instability detection on historical market data; score early-warning lead time and false positives.</td>
+</tr>
+<tr data-rank="86" data-fit="4" data-lane="STRONG_PROTOTYPE" data-domain="AI, Digital &amp; Emerging Tech">
+  <td class="rank">86</td>
+  <td class="problem"><strong>Cloud, satellite, and digital-platform monoculture failure</strong><span>Technology / emerging risk</span></td>
+  <td class="num score">54.5</td>
+  <td class="mini-scores"><span>S4</span><span>C7</span><span>G6</span><span>P6</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>B3×L2=6</small></td>
+  <td><span class="lane">STRONG PROTOTYPE</span></td>
+  <td class="bridge">MDLxDCC continuity analysis on public outage post-mortems</td>
+  <td class="move">Collect 10 public cloud/platform outage post-mortems; build root-cause taxonomy and dependency-failure ledger.</td>
+</tr>
+<tr data-rank="98" data-fit="4" data-lane="STRONG_PROTOTYPE" data-domain="AI, Digital &amp; Emerging Tech">
+  <td class="rank">98</td>
+  <td class="problem"><strong>Attention-economy harms: addiction, distraction, manipulation, cognitive overload</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">45.5</td>
+  <td class="mini-scores"><span>S2</span><span>C6</span><span>G6</span><span>P7</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>B3×L2=6</small></td>
+  <td><span class="lane">STRONG PROTOTYPE</span></td>
+  <td class="bridge">DCC cognitive-load / attention-harm metric</td>
+  <td class="move">Score one interface pattern, such as infinite scroll vs paginated feed, using complexity/load signals and a simple null baseline.</td>
+</tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="domain-war-security-strategic-risk" class="domain-section">
+  <div class="section-head">
+    <span class="kicker">Domain · 7 items · average MDLxDCC fit 2.0/5</span>
+    <h3>War, Security &amp; Strategic Risk</h3>
+    <p>Highest public-ranked item here: <strong>#1 — Nuclear war, accidental launch, and strategic escalation</strong>.</p>
+  </div>
+  <div class="table-card">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Rank</th><th>Challenge</th><th>Score</th><th>S/C/G/P</th><th>Fit</th><th>Lane</th><th>MDLxDCC bridge</th><th>First concrete move</th></tr></thead>
+        <tbody>
+<tr data-rank="1" data-fit="2" data-lane="WATCH_OR_MAL" data-domain="War, Security &amp; Strategic Risk">
+  <td class="rank">1</td>
+  <td class="problem"><strong>Nuclear war, accidental launch, and strategic escalation</strong><span>War / security</span></td>
+  <td class="num score">93.0</td>
+  <td class="mini-scores"><span>S10</span><span>C10</span><span>G8</span><span>P8</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">WATCH OR MAL</span></td>
+  <td class="bridge">AIM3 crisis reasoning + early-warning scenario councils</td>
+  <td class="move">Create a non-operational escalation decision-map and red-team diplomacy protocol; needs security experts.</td>
+</tr>
+<tr data-rank="3" data-fit="2" data-lane="WATCH_OR_MAL" data-domain="War, Security &amp; Strategic Risk">
+  <td class="rank">3</td>
+  <td class="problem"><strong>Great-power conflict, arms races, and military escalation</strong><span>War / security</span></td>
+  <td class="num score">89.0</td>
+  <td class="mini-scores"><span>S9</span><span>C10</span><span>G8</span><span>P8</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">WATCH OR MAL</span></td>
+  <td class="bridge">AIM3/RHPr geopolitical scenario councils</td>
+  <td class="move">Run structured multi-LLM escalation games and decision-trail audits; partner with IR/security domain experts.</td>
+</tr>
+<tr data-rank="14" data-fit="2" data-lane="WATCH_OR_MAL" data-domain="War, Security &amp; Strategic Risk">
+  <td class="rank">14</td>
+  <td class="problem"><strong>State failure, civil wars, mass atrocity, and chronic instability</strong><span>War / security</span></td>
+  <td class="num score">76.5</td>
+  <td class="mini-scores"><span>S7</span><span>C9</span><span>G7</span><span>P8</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">WATCH OR MAL</span></td>
+  <td class="bridge">AIM3 instability early-warning + humanitarian triage</td>
+  <td class="move">Map state-fragility signals and intervention hypotheses; requires regional experts and careful ethics.</td>
+</tr>
+<tr data-rank="32" data-fit="2" data-lane="WATCH_OR_MAL" data-domain="War, Security &amp; Strategic Risk">
+  <td class="rank">32</td>
+  <td class="problem"><strong>WMD terrorism and non-state catastrophic violence</strong><span>War / security</span></td>
+  <td class="num score">65.0</td>
+  <td class="mini-scores"><span>S7</span><span>C7</span><span>G6</span><span>P5</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">WATCH OR MAL</span></td>
+  <td class="bridge">AIM3 risk literacy + non-operational scenario mapping</td>
+  <td class="move">Keep to prevention/preparedness only: map vulnerabilities and governance gaps, not methods.</td>
+</tr>
+<tr data-rank="47" data-fit="2" data-lane="WATCH_OR_MAL" data-domain="War, Security &amp; Strategic Risk">
+  <td class="rank">47</td>
+  <td class="problem"><strong>Organized crime, narcotics economies, and illicit armed networks</strong><span>War / security</span></td>
+  <td class="num score">56.0</td>
+  <td class="mini-scores"><span>S4</span><span>C7</span><span>G6</span><span>P7</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">WATCH OR MAL</span></td>
+  <td class="bridge">MDL anomaly detection + governance intelligence</td>
+  <td class="move">Map illicit-network indicators and financial/transport anomalies; law-enforcement partnership required.</td>
+</tr>
+<tr data-rank="73" data-fit="2" data-lane="WATCH_OR_MAL" data-domain="War, Security &amp; Strategic Risk">
+  <td class="rank">73</td>
+  <td class="problem"><strong>Nuclear plant safety, waste stewardship, and proliferation-adjacent risks</strong><span>War / security</span></td>
+  <td class="num score">46.0</td>
+  <td class="mini-scores"><span>S4</span><span>C5</span><span>G5</span><span>P5</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">WATCH OR MAL</span></td>
+  <td class="bridge">AIM3 safety-governance + infrastructure risk modeling</td>
+  <td class="move">Build safety/waste stewardship scorecards; nuclear engineering partners required.</td>
+</tr>
+<tr data-rank="84" data-fit="2" data-lane="WATCH_OR_MAL" data-domain="War, Security &amp; Strategic Risk">
+  <td class="rank">84</td>
+  <td class="problem"><strong>Militarization of space</strong><span>Cross-cutting</span></td>
+  <td class="num score">49.0</td>
+  <td class="mini-scores"><span>S4</span><span>C6</span><span>G6</span><span>P4</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">WATCH OR MAL</span></td>
+  <td class="bridge">AIM3 space-security scenario council</td>
+  <td class="move">Map space militarization escalation pathways and commons governance options.</td>
+</tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="domain-health-biosecurity-wellbeing" class="domain-section">
+  <div class="section-head">
+    <span class="kicker">Domain · 15 items · average MDLxDCC fit 2.5/5</span>
+    <h3>Health, Biosecurity &amp; Wellbeing</h3>
+    <p>Highest public-ranked item here: <strong>#2 — Engineered pandemics and biological weapons</strong>.</p>
+  </div>
+  <div class="table-card">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Rank</th><th>Challenge</th><th>Score</th><th>S/C/G/P</th><th>Fit</th><th>Lane</th><th>MDLxDCC bridge</th><th>First concrete move</th></tr></thead>
+        <tbody>
+<tr data-rank="2" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Health, Biosecurity &amp; Wellbeing">
+  <td class="rank">2</td>
+  <td class="problem"><strong>Engineered pandemics and biological weapons</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">90.5</td>
+  <td class="mini-scores"><span>S10</span><span>C9</span><span>G8</span><span>P8</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">MAL biosecurity governance + AMR-style abstract arenas</td>
+  <td class="move">Build a non-actionable biosecurity preparedness map: detection, lab governance, response bottlenecks and policy tests.</td>
+</tr>
+<tr data-rank="8" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Health, Biosecurity &amp; Wellbeing">
+  <td class="rank">8</td>
+  <td class="problem"><strong>Antimicrobial resistance</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">79.5</td>
+  <td class="mini-scores"><span>S8</span><span>C8</span><span>G7</span><span>P9</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">AMR abstract arena + health-system decision support</td>
+  <td class="move">Keep it non-actionable: model intervention portfolios, surveillance gaps and resistance-spread scenarios.</td>
+</tr>
+<tr data-rank="9" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Health, Biosecurity &amp; Wellbeing">
+  <td class="rank">9</td>
+  <td class="problem"><strong>Natural pandemics and zoonotic spillover</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">76.0</td>
+  <td class="mini-scores"><span>S8</span><span>C8</span><span>G6</span><span>P8</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">MAL public-health early-warning + response logistics</td>
+  <td class="move">Prototype a zoonotic-spillover preparedness dashboard and response-decision protocol.</td>
+</tr>
+<tr data-rank="21" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Health, Biosecurity &amp; Wellbeing">
+  <td class="rank">21</td>
+  <td class="problem"><strong>Weak public-health systems</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">71.5</td>
+  <td class="mini-scores"><span>S6</span><span>C8</span><span>G7</span><span>P9</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">AIM3 health-system resilience + logistics optimization</td>
+  <td class="move">Build public-health capacity scorecards and bottleneck simulations for staffing, supply, surveillance and triage.</td>
+</tr>
+<tr data-rank="30" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Health, Biosecurity &amp; Wellbeing">
+  <td class="rank">30</td>
+  <td class="problem"><strong>Urban fragility: housing, sanitation, heat, congestion, and informal settlements</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">65.0</td>
+  <td class="mini-scores"><span>S5</span><span>C7</span><span>G7</span><span>P9</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">MDLxDCC urban systems optimization</td>
+  <td class="move">Prototype city-fragility ranking: heat, housing, sanitation, congestion, infrastructure and health bottlenecks.</td>
+</tr>
+<tr data-rank="35" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Health, Biosecurity &amp; Wellbeing">
+  <td class="rank">35</td>
+  <td class="problem"><strong>Child malnutrition, stunting, and impaired development</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">60.0</td>
+  <td class="mini-scores"><span>S4</span><span>C6</span><span>G7</span><span>P10</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 aid-targeting + logistics optimization</td>
+  <td class="move">Rank interventions and delivery bottlenecks for child nutrition; needs NGOs/public-health partners.</td>
+</tr>
+<tr data-rank="36" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Health, Biosecurity &amp; Wellbeing">
+  <td class="rank">36</td>
+  <td class="problem"><strong>Persistent infectious diseases: TB, HIV, malaria, neglected tropical diseases</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">60.5</td>
+  <td class="mini-scores"><span>S5</span><span>C6</span><span>G6</span><span>P9</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 health-risk mapping + non-actionable modeling</td>
+  <td class="move">Model intervention portfolios and surveillance gaps for TB/HIV/malaria/NTDs.</td>
+</tr>
+<tr data-rank="37" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Health, Biosecurity &amp; Wellbeing">
+  <td class="rank">37</td>
+  <td class="problem"><strong>Noncommunicable diseases: heart disease, cancer, diabetes, respiratory illness</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">58.0</td>
+  <td class="mini-scores"><span>S4</span><span>C6</span><span>G6</span><span>P10</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 care-system triage + health-data ranking</td>
+  <td class="move">Use decision support to rank prevention, screening and access interventions; medical partners needed.</td>
+</tr>
+<tr data-rank="38" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Health, Biosecurity &amp; Wellbeing">
+  <td class="rank">38</td>
+  <td class="problem"><strong>Mental health crisis, suicide, loneliness, and social isolation</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">54.5</td>
+  <td class="mini-scores"><span>S3</span><span>C6</span><span>G7</span><span>P9</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">AIM3 care layer + attention/meaning/continuity tools</td>
+  <td class="move">Prototype mental-health support research cautiously: loneliness maps, triage, non-clinical reasoning aids.</td>
+</tr>
+<tr data-rank="58" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Health, Biosecurity &amp; Wellbeing">
+  <td class="rank">58</td>
+  <td class="problem"><strong>Healthcare affordability and access gaps</strong><span>Economy / prosperity</span></td>
+  <td class="num score">52.5</td>
+  <td class="mini-scores"><span>S3</span><span>C6</span><span>G6</span><span>P9</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 healthcare access mapping + policy triage</td>
+  <td class="move">Rank affordability/access bottlenecks and intervention portfolios; medical/economic partners needed.</td>
+</tr>
+<tr data-rank="59" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Health, Biosecurity &amp; Wellbeing">
+  <td class="rank">59</td>
+  <td class="problem"><strong>Maternal and infant mortality</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">50.0</td>
+  <td class="mini-scores"><span>S3</span><span>C5</span><span>G6</span><span>P9</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 maternal-health logistics + evidence ranking</td>
+  <td class="move">Map preventable bottlenecks in access, transport, staff and supplies; partner-heavy.</td>
+</tr>
+<tr data-rank="60" data-fit="4" data-lane="STRONG_PROTOTYPE" data-domain="Health, Biosecurity &amp; Wellbeing">
+  <td class="rank">60</td>
+  <td class="problem"><strong>Vaccine hesitancy and immunization gaps</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">46.5</td>
+  <td class="mini-scores"><span>S3</span><span>C5</span><span>G5</span><span>P8</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>B3×L2=6</small></td>
+  <td><span class="lane">STRONG PROTOTYPE</span></td>
+  <td class="bridge">RHPr epistemic repair on vaccine-risk claims</td>
+  <td class="move">Take one real vaccine-hesitancy claim, run RHPr: claim census, absence ledger, source conflict, repair message, uncertainty note.</td>
+</tr>
+<tr data-rank="71" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Health, Biosecurity &amp; Wellbeing">
+  <td class="rank">71</td>
+  <td class="problem"><strong>Addiction and substance-use epidemics</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">42.5</td>
+  <td class="mini-scores"><span>S2</span><span>C5</span><span>G5</span><span>P8</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 care/risk maps + non-clinical support tools</td>
+  <td class="move">Create prevention and resource-matching maps; medical/social-service partners required.</td>
+</tr>
+<tr data-rank="82" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Health, Biosecurity &amp; Wellbeing">
+  <td class="rank">82</td>
+  <td class="problem"><strong>Laboratory biosafety failures and accidental pathogen release</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">56.5</td>
+  <td class="mini-scores"><span>S6</span><span>C6</span><span>G5</span><span>P5</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">AIM3 biosafety governance + non-actionable incident prevention</td>
+  <td class="move">Build lab-safety checklist arena, incident reporting taxonomy and preparedness scorecard.</td>
+</tr>
+<tr data-rank="89" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Health, Biosecurity &amp; Wellbeing">
+  <td class="rank">89</td>
+  <td class="problem"><strong>Factory farming externalities: animal suffering, zoonotic risk, antibiotics</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">45.0</td>
+  <td class="mini-scores"><span>S3</span><span>C5</span><span>G5</span><span>P7</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 food-system ethics/risk map</td>
+  <td class="move">Map zoonotic, antibiotic and welfare externalities; policy/industry partners needed.</td>
+</tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="domain-food-water-energy-infrastructure" class="domain-section">
+  <div class="section-head">
+    <span class="kicker">Domain · 15 items · average MDLxDCC fit 2.7/5</span>
+    <h3>Food, Water, Energy &amp; Infrastructure</h3>
+    <p>Highest public-ranked item here: <strong>#6 — Food-system fragility and synchronized crop failures</strong>.</p>
+  </div>
+  <div class="table-card">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Rank</th><th>Challenge</th><th>Score</th><th>S/C/G/P</th><th>Fit</th><th>Lane</th><th>MDLxDCC bridge</th><th>First concrete move</th></tr></thead>
+        <tbody>
+<tr data-rank="6" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Food, Water, Energy &amp; Infrastructure">
+  <td class="rank">6</td>
+  <td class="problem"><strong>Food-system fragility and synchronized crop failures</strong><span>Infrastructure / material systems</span></td>
+  <td class="num score">82.0</td>
+  <td class="mini-scores"><span>S8</span><span>C9</span><span>G7</span><span>P9</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">MDLxDCC supply-chain resilience + forecasting</td>
+  <td class="move">Build a synchronized crop-failure early-warning arena using public climate/yield/trade indicators.</td>
+</tr>
+<tr data-rank="12" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Food, Water, Energy &amp; Infrastructure">
+  <td class="rank">12</td>
+  <td class="problem"><strong>Freshwater scarcity, groundwater depletion, and water conflict</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">75.5</td>
+  <td class="mini-scores"><span>S7</span><span>C8</span><span>G7</span><span>P9</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">MDLxDCC resource forecasting + conflict-risk mapping</td>
+  <td class="move">Prototype water-stress forecasting and policy-priority ranking; needs hydrology/geopolitical partners.</td>
+</tr>
+<tr data-rank="13" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Food, Water, Energy &amp; Infrastructure">
+  <td class="rank">13</td>
+  <td class="problem"><strong>Energy insecurity and failed clean-energy transition</strong><span>Infrastructure / material systems</span></td>
+  <td class="num score">76.0</td>
+  <td class="mini-scores"><span>S7</span><span>C8</span><span>G8</span><span>P8</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">Grid-edge DER orchestration + MDLxDCC optimization</td>
+  <td class="move">Build a clean-energy transition prioritizer: grid bottlenecks, storage, demand response and reliability tradeoffs.</td>
+</tr>
+<tr data-rank="22" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Food, Water, Energy &amp; Infrastructure">
+  <td class="rank">22</td>
+  <td class="problem"><strong>Soil degradation, desertification, and loss of agricultural productivity</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">65.5</td>
+  <td class="mini-scores"><span>S6</span><span>C7</span><span>G6</span><span>P8</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">MDLxDCC environmental monitoring + agriculture optimization</td>
+  <td class="move">Create soil-risk indicators and intervention ranking from geospatial and agricultural data.</td>
+</tr>
+<tr data-rank="28" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Food, Water, Energy &amp; Infrastructure">
+  <td class="rank">28</td>
+  <td class="problem"><strong>Fragile supply chains for food, medicine, chips, and energy</strong><span>Infrastructure / material systems</span></td>
+  <td class="num score">67.5</td>
+  <td class="mini-scores"><span>S6</span><span>C7</span><span>G7</span><span>P8</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">MDLxDCC supply-chain fragility, narrowed to one sector</td>
+  <td class="move">Narrow to semiconductor chips first; build a public chokepoint map from documented dependencies, not a four-sector global simulator.</td>
+</tr>
+<tr data-rank="33" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Food, Water, Energy &amp; Infrastructure">
+  <td class="rank">33</td>
+  <td class="problem"><strong>Infrastructure decay and underinvestment</strong><span>Infrastructure / material systems</span></td>
+  <td class="num score">66.0</td>
+  <td class="mini-scores"><span>S5</span><span>C8</span><span>G7</span><span>P8</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">MDLxDCC infrastructure prioritization</td>
+  <td class="move">Build infrastructure decay triage: risk, repair ROI, cascading failure and resilience score.</td>
+</tr>
+<tr data-rank="34" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Food, Water, Energy &amp; Infrastructure">
+  <td class="rank">34</td>
+  <td class="problem"><strong>Critical minerals scarcity and resource nationalism</strong><span>Infrastructure / material systems</span></td>
+  <td class="num score">64.0</td>
+  <td class="mini-scores"><span>S5</span><span>C7</span><span>G8</span><span>P7</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">MDLxDCC resource-supply forecasting</td>
+  <td class="move">Create critical-minerals chokepoint and substitution-risk model for clean energy and compute.</td>
+</tr>
+<tr data-rank="56" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Food, Water, Energy &amp; Infrastructure">
+  <td class="rank">56</td>
+  <td class="problem"><strong>Energy poverty and lack of reliable electricity</strong><span>Infrastructure / material systems</span></td>
+  <td class="num score">54.5</td>
+  <td class="mini-scores"><span>S3</span><span>C6</span><span>G7</span><span>P9</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">MDLxDCC grid/resource optimization + local planning</td>
+  <td class="move">Build energy-access prioritizer: reliability, mini-grids, storage, demand and finance bottlenecks.</td>
+</tr>
+<tr data-rank="61" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Food, Water, Energy &amp; Infrastructure">
+  <td class="rank">61</td>
+  <td class="problem"><strong>Food waste and post-harvest loss</strong><span>Infrastructure / material systems</span></td>
+  <td class="num score">46.5</td>
+  <td class="mini-scores"><span>S3</span><span>C5</span><span>G5</span><span>P8</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">MDLxDCC logistics model on public food-waste data</td>
+  <td class="move">Use one public FAO-style food-waste dataset and build a tiny optimization/modeling report; no field deployment claims.</td>
+</tr>
+<tr data-rank="63" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Food, Water, Energy &amp; Infrastructure">
+  <td class="rank">63</td>
+  <td class="problem"><strong>Agricultural monoculture and crop genetic vulnerability</strong><span>Infrastructure / material systems</span></td>
+  <td class="num score">54.0</td>
+  <td class="mini-scores"><span>S5</span><span>C6</span><span>G5</span><span>P6</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">MDL agricultural risk modeling + diversity optimization</td>
+  <td class="move">Model crop genetic vulnerability and diversification strategies under climate and disease stress.</td>
+</tr>
+<tr data-rank="64" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Food, Water, Energy &amp; Infrastructure">
+  <td class="rank">64</td>
+  <td class="problem"><strong>Housing affordability and homelessness</strong><span>Infrastructure / material systems</span></td>
+  <td class="num score">47.0</td>
+  <td class="mini-scores"><span>S2</span><span>C6</span><span>G6</span><span>P8</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 urban policy triage + optimization</td>
+  <td class="move">Rank housing bottlenecks and policy tradeoffs; direct solution needs local governance.</td>
+</tr>
+<tr data-rank="65" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Food, Water, Energy &amp; Infrastructure">
+  <td class="rank">65</td>
+  <td class="problem"><strong>Road deaths and unsafe transport systems</strong><span>Infrastructure / material systems</span></td>
+  <td class="num score">42.5</td>
+  <td class="mini-scores"><span>S2</span><span>C5</span><span>G5</span><span>P8</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">MDLxDCC transport-safety optimization</td>
+  <td class="move">Build road-risk hotspot detection and intervention prioritization from public mobility/crash data.</td>
+</tr>
+<tr data-rank="72" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Food, Water, Energy &amp; Infrastructure">
+  <td class="rank">72</td>
+  <td class="problem"><strong>Water, sanitation, and hygiene deficits</strong><span>Health / biosecurity / wellbeing</span></td>
+  <td class="num score">46.5</td>
+  <td class="mini-scores"><span>S3</span><span>C5</span><span>G5</span><span>P8</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">MDL infrastructure targeting + public-health logistics</td>
+  <td class="move">Rank WASH deficits and infrastructure interventions using local health/geospatial data.</td>
+</tr>
+<tr data-rank="76" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Food, Water, Energy &amp; Infrastructure">
+  <td class="rank">76</td>
+  <td class="problem"><strong>Extreme space weather and grid vulnerability</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">55.0</td>
+  <td class="mini-scores"><span>S5</span><span>C7</span><span>G5</span><span>P5</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">MDLxDCC grid resilience + early-warning preparedness</td>
+  <td class="move">Build space-weather/grid-hardening prioritizer: transformers, black-start, communications and warning time.</td>
+</tr>
+<tr data-rank="96" data-fit="4" data-lane="STRONG_PROTOTYPE" data-domain="Food, Water, Energy &amp; Infrastructure">
+  <td class="rank">96</td>
+  <td class="problem"><strong>Low statistical capacity and poor public data infrastructure</strong><span>Infrastructure / material systems</span></td>
+  <td class="num score">48.0</td>
+  <td class="mini-scores"><span>S3</span><span>C6</span><span>G6</span><span>P6</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>B3×L2=6</small></td>
+  <td><span class="lane">STRONG PROTOTYPE</span></td>
+  <td class="bridge">8Z/AIM3 public-data quality and provenance scorecards</td>
+  <td class="move">Take one public dataset and build a schema checker + missingness/provenance/quality scorecard.</td>
+</tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="domain-climate-environment-planetary-systems" class="domain-section">
+  <div class="section-head">
+    <span class="kicker">Domain · 17 items · average MDLxDCC fit 2.4/5</span>
+    <h3>Climate, Environment &amp; Planetary Systems</h3>
+    <p>Highest public-ranked item here: <strong>#4 — Climate change, tipping points, and extreme heat</strong>.</p>
+  </div>
+  <div class="table-card">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Rank</th><th>Challenge</th><th>Score</th><th>S/C/G/P</th><th>Fit</th><th>Lane</th><th>MDLxDCC bridge</th><th>First concrete move</th></tr></thead>
+        <tbody>
+<tr data-rank="4" data-fit="4" data-lane="STRONG_PROTOTYPE" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">4</td>
+  <td class="problem"><strong>Climate change, tipping points, and extreme heat</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">88.0</td>
+  <td class="mini-scores"><span>S9</span><span>C9</span><span>G8</span><span>P9</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>B2×L3=6</small></td>
+  <td><span class="lane">STRONG PROTOTYPE</span></td>
+  <td class="bridge">MDLxDCC climate adaptation prioritizer on one public coupled signal</td>
+  <td class="move">Use one region and one coupled risk signal, e.g. heat + grid stress; build a small prototype dashboard/report.</td>
+</tr>
+<tr data-rank="15" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">15</td>
+  <td class="problem"><strong>Biodiversity loss and ecosystem-service collapse</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">74.0</td>
+  <td class="mini-scores"><span>S7</span><span>C8</span><span>G7</span><span>P8</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">MDLxDCC ecological monitoring + data compression</td>
+  <td class="move">Prototype biodiversity sentinel metrics from remote-sensing and species observations; partner-heavy.</td>
+</tr>
+<tr data-rank="23" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">23</td>
+  <td class="problem"><strong>Air pollution and toxic exposure</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">63.0</td>
+  <td class="mini-scores"><span>S5</span><span>C7</span><span>G6</span><span>P9</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">MDLxDCC exposure mapping + public-data pipeline</td>
+  <td class="move">Build local pollution/toxic exposure anomaly maps and policy-priority rankings.</td>
+</tr>
+<tr data-rank="25" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">25</td>
+  <td class="problem"><strong>Ocean degradation: acidification, warming, overfishing, and dead zones</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">65.5</td>
+  <td class="mini-scores"><span>S6</span><span>C7</span><span>G6</span><span>P8</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">MDLxDCC ocean monitoring + commons governance</td>
+  <td class="move">Rank ocean-risk signals and governance interventions using remote-sensing/fisheries/climate data.</td>
+</tr>
+<tr data-rank="29" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">29</td>
+  <td class="problem"><strong>Disaster preparedness and climate-adaptation deficits</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">65.5</td>
+  <td class="mini-scores"><span>S6</span><span>C7</span><span>G6</span><span>P8</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">AIM3 preparedness + climate-adaptation prioritizer</td>
+  <td class="move">Create disaster-readiness scorecards and scenario drills for municipalities/regions.</td>
+</tr>
+<tr data-rank="50" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">50</td>
+  <td class="problem"><strong>Nitrogen/phosphorus cycle disruption and eutrophication</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">53.5</td>
+  <td class="mini-scores"><span>S4</span><span>C6</span><span>G6</span><span>P7</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">MDLxDCC environmental nutrient-flow monitoring</td>
+  <td class="move">Prototype eutrophication and nutrient-risk indicators from satellite/agricultural data.</td>
+</tr>
+<tr data-rank="51" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">51</td>
+  <td class="problem"><strong>Deforestation and destructive land-use conversion</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">57.5</td>
+  <td class="mini-scores"><span>S5</span><span>C6</span><span>G6</span><span>P7</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">MDLxDCC land-use detection + governance scorecards</td>
+  <td class="move">Build deforestation anomaly maps and intervention prioritization with public geospatial data.</td>
+</tr>
+<tr data-rank="52" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">52</td>
+  <td class="problem"><strong>Plastic and microplastic pollution</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">45.0</td>
+  <td class="mini-scores"><span>S3</span><span>C5</span><span>G5</span><span>P7</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 evidence map + material-flow analysis</td>
+  <td class="move">Useful as a policy/evidence map; direct AI8 leverage is lower than governance/data problems.</td>
+</tr>
+<tr data-rank="53" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">53</td>
+  <td class="problem"><strong>Pollinator and insect decline</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">51.5</td>
+  <td class="mini-scores"><span>S4</span><span>C6</span><span>G5</span><span>P7</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">MDL ecological monitoring + early warning</td>
+  <td class="move">Prototype pollinator decline sentinel metrics and local intervention ranking.</td>
+</tr>
+<tr data-rank="54" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">54</td>
+  <td class="problem"><strong>Invasive species and ecological homogenization</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">47.5</td>
+  <td class="mini-scores"><span>S4</span><span>C5</span><span>G5</span><span>P6</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">MDL ecosystem anomaly detection + forecasting</td>
+  <td class="move">Build invasive-species risk maps and early-warning signals; domain partners needed.</td>
+</tr>
+<tr data-rank="55" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">55</td>
+  <td class="problem"><strong>Overconsumption and unsustainable material throughput</strong><span>Cross-cutting</span></td>
+  <td class="num score">51.5</td>
+  <td class="mini-scores"><span>S4</span><span>C6</span><span>G5</span><span>P7</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 systems map + bad-metric redesign</td>
+  <td class="move">Rank consumption drivers and incentives; bridge to circular-economy decision support.</td>
+</tr>
+<tr data-rank="74" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">74</td>
+  <td class="problem"><strong>Solar geoengineering governance failure and termination shock</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">54.5</td>
+  <td class="mini-scores"><span>S5</span><span>C6</span><span>G6</span><span>P5</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">AIM3 geoengineering governance council + scenario tests</td>
+  <td class="move">Build deployment/termination-shock governance simulations and legitimacy checklists.</td>
+</tr>
+<tr data-rank="75" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">75</td>
+  <td class="problem"><strong>Orbital debris and Kessler-syndrome risk</strong><span>Cross-cutting</span></td>
+  <td class="num score">50.5</td>
+  <td class="mini-scores"><span>S4</span><span>C6</span><span>G6</span><span>P5</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">MDLxDCC orbital risk monitoring + commons governance</td>
+  <td class="move">Prototype debris-risk ranking, collision cascade scenarios and governance triggers.</td>
+</tr>
+<tr data-rank="77" data-fit="2" data-lane="WATCH_OR_MAL" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">77</td>
+  <td class="problem"><strong>Asteroid and comet impact preparedness</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">39.0</td>
+  <td class="mini-scores"><span>S4</span><span>C5</span><span>G3</span><span>P3</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">WATCH OR MAL</span></td>
+  <td class="bridge">AIM3 preparedness map + low-probability risk ledger</td>
+  <td class="move">Rank detection/deflection/response gaps; needs astronomy/space-agency partners.</td>
+</tr>
+<tr data-rank="78" data-fit="2" data-lane="WATCH_OR_MAL" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">78</td>
+  <td class="problem"><strong>Supervolcanic eruption preparedness</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">43.0</td>
+  <td class="mini-scores"><span>S5</span><span>C5</span><span>G3</span><span>P3</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">WATCH OR MAL</span></td>
+  <td class="bridge">AIM3 continuity planning + scenario preparedness</td>
+  <td class="move">Mostly contingency planning and resilience mapping; limited direct AI8 leverage.</td>
+</tr>
+<tr data-rank="83" data-fit="2" data-lane="WATCH_OR_MAL" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">83</td>
+  <td class="problem"><strong>Chemical weapons and toxic industrial catastrophe</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">48.0</td>
+  <td class="mini-scores"><span>S5</span><span>C5</span><span>G4</span><span>P5</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">WATCH OR MAL</span></td>
+  <td class="bridge">AIM3 industrial-risk mapping + emergency planning</td>
+  <td class="move">Rank toxic industrial risks and response gaps; engineering/regulatory partners needed.</td>
+</tr>
+<tr data-rank="91" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Climate, Environment &amp; Planetary Systems">
+  <td class="rank">91</td>
+  <td class="problem"><strong>Weak governance of global commons: oceans, atmosphere, polar regions, space</strong><span>Environment / planetary systems</span></td>
+  <td class="num score">54.5</td>
+  <td class="mini-scores"><span>S4</span><span>C7</span><span>G6</span><span>P6</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">AIM3 commons governance + risk-ledger architecture</td>
+  <td class="move">Build global-commons governance scorecards for ocean, atmosphere, polar regions and space.</td>
+</tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="domain-governance-institutions-coordination" class="domain-section">
+  <div class="section-head">
+    <span class="kicker">Domain · 14 items · average MDLxDCC fit 3.2/5</span>
+    <h3>Governance, Institutions &amp; Coordination</h3>
+    <p>Highest public-ranked item here: <strong>#5 — Failure of global coordination on shared civilizational risks</strong>.</p>
+  </div>
+  <div class="table-card">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Rank</th><th>Challenge</th><th>Score</th><th>S/C/G/P</th><th>Fit</th><th>Lane</th><th>MDLxDCC bridge</th><th>First concrete move</th></tr></thead>
+        <tbody>
+<tr data-rank="5" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Governance, Institutions &amp; Coordination">
+  <td class="rank">5</td>
+  <td class="problem"><strong>Failure of global coordination on shared civilizational risks</strong><span>Governance / institutions</span></td>
+  <td class="num score">85.0</td>
+  <td class="mini-scores"><span>S8</span><span>C10</span><span>G8</span><span>P8</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">AIM3 decision-trail architecture for global-risk coordination</td>
+  <td class="move">Do not claim a global coordination tool. Write a minimal protocol spec: quorum, provenance, minority-risk ledger, no silent fallback, escalation trail.</td>
+</tr>
+<tr data-rank="7" data-fit="4" data-lane="STRONG_PROTOTYPE" data-domain="Governance, Institutions &amp; Coordination">
+  <td class="rank">7</td>
+  <td class="problem"><strong>Lack of global catastrophic-risk preparedness</strong><span>Governance / institutions</span></td>
+  <td class="num score">79.0</td>
+  <td class="mini-scores"><span>S8</span><span>C9</span><span>G7</span><span>P7</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>B3×L2=6</small></td>
+  <td><span class="lane">STRONG PROTOTYPE</span></td>
+  <td class="bridge">AIM3 preparedness scorecard + drill generator</td>
+  <td class="move">Create one GCR preparedness scorecard template and run it on bio/nuclear/climate/grid/food as a paper prototype.</td>
+</tr>
+<tr data-rank="10" data-fit="5" data-lane="BUILD_NOW" data-domain="Governance, Institutions &amp; Coordination">
+  <td class="rank">10</td>
+  <td class="problem"><strong>Epistemic collapse: misinformation, disinformation, and loss of shared reality</strong><span>Cross-cutting</span></td>
+  <td class="num score">77.0</td>
+  <td class="mini-scores"><span>S7</span><span>C9</span><span>G8</span><span>P7</span></td>
+  <td><span class="fit-badge fit5">5/5</span><small>B3×L3=9</small></td>
+  <td><span class="lane">BUILD NOW</span></td>
+  <td class="bridge">RHPr/MAL epistemic disagreement mapping</td>
+  <td class="move">Take one contested claim, run 3–5 LLMs through RHPr, map factual vs framing vs value disagreements, publish a disagreement ledger.</td>
+</tr>
+<tr data-rank="18" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Governance, Institutions &amp; Coordination">
+  <td class="rank">18</td>
+  <td class="problem"><strong>Democratic backsliding and rule-of-law erosion</strong><span>Governance / institutions</span></td>
+  <td class="num score">70.0</td>
+  <td class="mini-scores"><span>S6</span><span>C8</span><span>G7</span><span>P8</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">AIM3 institutional diagnostics + epistemic integrity</td>
+  <td class="move">Build rule-of-law erosion indicators, decision trails and democratic resilience scorecards.</td>
+</tr>
+<tr data-rank="24" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Governance, Institutions &amp; Coordination">
+  <td class="rank">24</td>
+  <td class="problem"><strong>Mass displacement, refugee crises, and migration-governance failure</strong><span>Governance / institutions</span></td>
+  <td class="num score">65.5</td>
+  <td class="mini-scores"><span>S6</span><span>C7</span><span>G6</span><span>P8</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 migration-governance scenario council</td>
+  <td class="move">Model displacement drivers, host-capacity stress and humane policy options; partner with migration experts.</td>
+</tr>
+<tr data-rank="27" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Governance, Institutions &amp; Coordination">
+  <td class="rank">27</td>
+  <td class="problem"><strong>Corruption, kleptocracy, and institutional capture</strong><span>Governance / institutions</span></td>
+  <td class="num score">66.0</td>
+  <td class="mini-scores"><span>S5</span><span>C8</span><span>G7</span><span>P8</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">AIM3 audit trails + MDL anomaly detection</td>
+  <td class="move">Prototype corruption/capture indicators: procurement anomalies, decision trails and institutional transparency checks.</td>
+</tr>
+<tr data-rank="42" data-fit="2" data-lane="WATCH_OR_MAL" data-domain="Governance, Institutions &amp; Coordination">
+  <td class="rank">42</td>
+  <td class="problem"><strong>Human-rights abuses, persecution, and systematic exclusion</strong><span>Governance / institutions</span></td>
+  <td class="num score">62.0</td>
+  <td class="mini-scores"><span>S4</span><span>C8</span><span>G7</span><span>P8</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">WATCH OR MAL</span></td>
+  <td class="bridge">AIM3 monitoring + documentation workflows</td>
+  <td class="move">Build human-rights documentation, source-verification and risk-prioritization protocols.</td>
+</tr>
+<tr data-rank="43" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Governance, Institutions &amp; Coordination">
+  <td class="rank">43</td>
+  <td class="problem"><strong>Loss of institutional trust and legitimacy</strong><span>Governance / institutions</span></td>
+  <td class="num score">60.5</td>
+  <td class="mini-scores"><span>S4</span><span>C8</span><span>G7</span><span>P7</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B3×L1=3</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">AIM3 reasoning provenance as an open export standard</td>
+  <td class="move">Write one minimal JSON schema for a reasoning-provenance log and dogfood it on one MAL/AIM3 session.</td>
+</tr>
+<tr data-rank="48" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Governance, Institutions &amp; Coordination">
+  <td class="rank">48</td>
+  <td class="problem"><strong>Tax evasion, illicit finance, and weak state fiscal capacity</strong><span>Economy / prosperity</span></td>
+  <td class="num score">53.5</td>
+  <td class="mini-scores"><span>S3</span><span>C7</span><span>G6</span><span>P8</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">MDL financial anomaly detection + public finance analytics</td>
+  <td class="move">Build tax-gap/illicit-flow risk indicators from trade, corporate and public-finance data.</td>
+</tr>
+<tr data-rank="68" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Governance, Institutions &amp; Coordination">
+  <td class="rank">68</td>
+  <td class="problem"><strong>Collapse of local journalism and accountability media</strong><span>Governance / institutions</span></td>
+  <td class="num score">49.5</td>
+  <td class="mini-scores"><span>S3</span><span>C6</span><span>G6</span><span>P7</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">Claim-source provenance chain for accountability media</td>
+  <td class="move">Build one demo tracing a public claim back to original source, showing source hops, uncertainty and missing evidence.</td>
+</tr>
+<tr data-rank="90" data-fit="2" data-lane="WATCH_OR_MAL" data-domain="Governance, Institutions &amp; Coordination">
+  <td class="rank">90</td>
+  <td class="problem"><strong>Indigenous dispossession and unresolved land-rights conflict</strong><span>Governance / institutions</span></td>
+  <td class="num score">41.0</td>
+  <td class="mini-scores"><span>S2</span><span>C5</span><span>G5</span><span>P7</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">WATCH OR MAL</span></td>
+  <td class="bridge">AIM3 rights/conflict documentation support</td>
+  <td class="move">Mostly legal/political; AI8 can help document, map, and reason, not solve directly.</td>
+</tr>
+<tr data-rank="92" data-fit="5" data-lane="BUILD_NOW" data-domain="Governance, Institutions &amp; Coordination">
+  <td class="rank">92</td>
+  <td class="problem"><strong>Bad metrics and incentive systems: GDP-only thinking, short-term KPIs</strong><span>Governance / institutions</span></td>
+  <td class="num score">48.0</td>
+  <td class="mini-scores"><span>S3</span><span>C6</span><span>G6</span><span>P6</span></td>
+  <td><span class="fit-badge fit5">5/5</span><small>B3×L3=9</small></td>
+  <td><span class="lane">BUILD NOW</span></td>
+  <td class="bridge">MDL Goodhart detector on our own AI8 metric</td>
+  <td class="move">Self-test this file: compare original ai8_priority_score with a two-axis buildability×leverage rubric; document where v1 overfits concept-fit.</td>
+</tr>
+<tr data-rank="94" data-fit="3" data-lane="PUBLIC_ARTIFACT" data-domain="Governance, Institutions &amp; Coordination">
+  <td class="rank">94</td>
+  <td class="problem"><strong>Poor risk literacy and crisis communication</strong><span>Governance / institutions</span></td>
+  <td class="num score">54.5</td>
+  <td class="mini-scores"><span>S4</span><span>C7</span><span>G6</span><span>P6</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B3×L1=3</small></td>
+  <td><span class="lane">PUBLIC ARTIFACT</span></td>
+  <td class="bridge">AIM3 risk-literacy curriculum content, not crisis authority protocol</td>
+  <td class="move">Write one public page: how to read a risk claim, absolute vs relative risk, uncertainty, base rates, source provenance.</td>
+</tr>
+<tr data-rank="95" data-fit="4" data-lane="STRONG_PROTOTYPE" data-domain="Governance, Institutions &amp; Coordination">
+  <td class="rank">95</td>
+  <td class="problem"><strong>Weak early-warning, monitoring, and forecasting systems</strong><span>War / security</span></td>
+  <td class="num score">58.5</td>
+  <td class="mini-scores"><span>S5</span><span>C7</span><span>G6</span><span>P6</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>B2×L3=6</small></td>
+  <td><span class="lane">STRONG PROTOTYPE</span></td>
+  <td class="bridge">One-domain MDLxDCC early-warning signal first</td>
+  <td class="move">Pick one domain first — finance is natural because the trading/risk arena exists — and build one leading indicator before generalizing.</td>
+</tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="domain-economy-prosperity-development" class="domain-section">
+  <div class="section-head">
+    <span class="kicker">Domain · 13 items · average MDLxDCC fit 2.5/5</span>
+    <h3>Economy, Prosperity &amp; Development</h3>
+    <p>Highest public-ranked item here: <strong>#17 — Extreme poverty and persistent development traps</strong>.</p>
+  </div>
+  <div class="table-card">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Rank</th><th>Challenge</th><th>Score</th><th>S/C/G/P</th><th>Fit</th><th>Lane</th><th>MDLxDCC bridge</th><th>First concrete move</th></tr></thead>
+        <tbody>
+<tr data-rank="17" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Economy, Prosperity &amp; Development">
+  <td class="rank">17</td>
+  <td class="problem"><strong>Extreme poverty and persistent development traps</strong><span>Economy / prosperity</span></td>
+  <td class="num score">68.5</td>
+  <td class="mini-scores"><span>S5</span><span>C7</span><span>G8</span><span>P10</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 policy prioritization + causal hypothesis ranking</td>
+  <td class="move">Use MAL to rank poverty-trap mechanisms and test policy portfolios against evidence; field partners needed.</td>
+</tr>
+<tr data-rank="19" data-fit="4" data-lane="STRONG_PROTOTYPE" data-domain="Economy, Prosperity &amp; Development">
+  <td class="rank">19</td>
+  <td class="problem"><strong>Systemic financial crises, sovereign debt distress, and monetary instability</strong><span>Economy / prosperity</span></td>
+  <td class="num score">70.0</td>
+  <td class="mini-scores"><span>S6</span><span>C8</span><span>G7</span><span>P8</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>B3×L2=6</small></td>
+  <td><span class="lane">STRONG PROTOTYPE</span></td>
+  <td class="bridge">MDLxDCC financial stress testing using historical crisis windows</td>
+  <td class="move">Backtest the existing trading/risk arena on 2010 flash crash and 2020 COVID crash windows before claiming systemic-crisis early warning.</td>
+</tr>
+<tr data-rank="20" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Economy, Prosperity &amp; Development">
+  <td class="rank">20</td>
+  <td class="problem"><strong>Severe inequality and social fragmentation</strong><span>Economy / prosperity</span></td>
+  <td class="num score">67.5</td>
+  <td class="mini-scores"><span>S5</span><span>C8</span><span>G7</span><span>P9</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 social-fragmentation mapping + policy ranking</td>
+  <td class="move">Model inequality mechanisms and social cohesion interventions; useful but needs policy data and partners.</td>
+</tr>
+<tr data-rank="39" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Economy, Prosperity &amp; Development">
+  <td class="rank">39</td>
+  <td class="problem"><strong>Population aging, pension stress, and care-system overload</strong><span>Society / culture / knowledge</span></td>
+  <td class="num score">53.5</td>
+  <td class="mini-scores"><span>S3</span><span>C7</span><span>G6</span><span>P8</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 demographic modeling + service optimization</td>
+  <td class="move">Model care-system overload, pension stress and workforce scenarios.</td>
+</tr>
+<tr data-rank="40" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Economy, Prosperity &amp; Development">
+  <td class="rank">40</td>
+  <td class="problem"><strong>Youth unemployment and “lost generation” risks</strong><span>Economy / prosperity</span></td>
+  <td class="num score">57.0</td>
+  <td class="mini-scores"><span>S3</span><span>C7</span><span>G7</span><span>P9</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">AIM3 education/upskilling + labor-market matching</td>
+  <td class="move">Build youth upskilling and opportunity-matching experiments using AI tutors and local labor data.</td>
+</tr>
+<tr data-rank="41" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Economy, Prosperity &amp; Development">
+  <td class="rank">41</td>
+  <td class="problem"><strong>Gender inequality and exclusion of women from education, safety, property, and power</strong><span>Economy / prosperity</span></td>
+  <td class="num score">59.0</td>
+  <td class="mini-scores"><span>S3</span><span>C7</span><span>G8</span><span>P9</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 policy mapping + evidence ranking</td>
+  <td class="move">Use MAL to identify high-leverage interventions in education, safety, property and representation.</td>
+</tr>
+<tr data-rank="49" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Economy, Prosperity &amp; Development">
+  <td class="rank">49</td>
+  <td class="problem"><strong>Trade fragmentation, protectionism, and deglobalization shocks</strong><span>Economy / prosperity</span></td>
+  <td class="num score">58.0</td>
+  <td class="mini-scores"><span>S4</span><span>C7</span><span>G7</span><span>P7</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 trade-scenario modeling + supply-chain stress tests</td>
+  <td class="move">Model fragmentation pathways and resilience policies across trade blocs and critical goods.</td>
+</tr>
+<tr data-rank="62" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Economy, Prosperity &amp; Development">
+  <td class="rank">62</td>
+  <td class="problem"><strong>Illegal and unregulated extraction: mining, logging, fishing, wildlife trade</strong><span>Economy / prosperity</span></td>
+  <td class="num score">50.0</td>
+  <td class="mini-scores"><span>S4</span><span>C6</span><span>G5</span><span>P6</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">MDL anomaly detection + satellite/public-data monitoring</td>
+  <td class="move">Build illegal extraction sentinel maps using remote sensing, trade data and anomaly scoring.</td>
+</tr>
+<tr data-rank="66" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Economy, Prosperity &amp; Development">
+  <td class="rank">66</td>
+  <td class="problem"><strong>Labor exploitation, forced labor, and modern slavery</strong><span>Economy / prosperity</span></td>
+  <td class="num score">44.5</td>
+  <td class="mini-scores"><span>S2</span><span>C5</span><span>G6</span><span>P8</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 supply-chain transparency + risk scoring</td>
+  <td class="move">Map labor-risk indicators and verification workflows; partner with NGOs/auditors.</td>
+</tr>
+<tr data-rank="69" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Economy, Prosperity &amp; Development">
+  <td class="rank">69</td>
+  <td class="problem"><strong>Low fertility, family-formation barriers, and demographic decline</strong><span>Society / culture / knowledge</span></td>
+  <td class="num score">49.5</td>
+  <td class="mini-scores"><span>S3</span><span>C6</span><span>G6</span><span>P7</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 demographic scenario modeling</td>
+  <td class="move">Map family-formation barriers and policy hypotheses; direct leverage is analytic, not decisive.</td>
+</tr>
+<tr data-rank="70" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Economy, Prosperity &amp; Development">
+  <td class="rank">70</td>
+  <td class="problem"><strong>Youth bulges in fragile economies without jobs or institutions</strong><span>Governance / institutions</span></td>
+  <td class="num score">49.5</td>
+  <td class="mini-scores"><span>S3</span><span>C6</span><span>G6</span><span>P7</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 youth-risk forecasting + jobs/education matching</td>
+  <td class="move">Model youth-bulge instability pathways and test education/jobs interventions.</td>
+</tr>
+<tr data-rank="93" data-fit="4" data-lane="STRONG_PROTOTYPE" data-domain="Economy, Prosperity &amp; Development">
+  <td class="rank">93</td>
+  <td class="problem"><strong>Political and financial short-termism</strong><span>Economy / prosperity</span></td>
+  <td class="num score">54.5</td>
+  <td class="mini-scores"><span>S4</span><span>C7</span><span>G6</span><span>P6</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>B2×L3=6</small></td>
+  <td><span class="lane">STRONG PROTOTYPE</span></td>
+  <td class="bridge">AIM3 long-horizon decision architecture / Goodhart-short-termism map</td>
+  <td class="move">Frame short-termism as a bad-metric problem; create a tiny decision-horizon scorecard and test it on 3 example policies.</td>
+</tr>
+<tr data-rank="97" data-fit="2" data-lane="PARTNER_REQUIRED" data-domain="Economy, Prosperity &amp; Development">
+  <td class="rank">97</td>
+  <td class="problem"><strong>Patent, IP, and access barriers to essential medicines and technologies</strong><span>Economy / prosperity</span></td>
+  <td class="num score">45.0</td>
+  <td class="mini-scores"><span>S2</span><span>C5</span><span>G7</span><span>P7</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">PARTNER REQUIRED</span></td>
+  <td class="bridge">AIM3 policy analysis + access-bottleneck mapping</td>
+  <td class="move">Rank IP/access mechanisms and alternative incentive models; needs legal/economic partners.</td>
+</tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="domain-science-education-culture-knowledge" class="domain-section">
+  <div class="section-head">
+    <span class="kicker">Domain · 7 items · average MDLxDCC fit 3.4/5</span>
+    <h3>Science, Education, Culture &amp; Knowledge</h3>
+    <p>Highest public-ranked item here: <strong>#26 — Education failure and human-capital deficits</strong>.</p>
+  </div>
+  <div class="table-card">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Rank</th><th>Challenge</th><th>Score</th><th>S/C/G/P</th><th>Fit</th><th>Lane</th><th>MDLxDCC bridge</th><th>First concrete move</th></tr></thead>
+        <tbody>
+<tr data-rank="26" data-fit="4" data-lane="STRONG_PROTOTYPE" data-domain="Science, Education, Culture &amp; Knowledge">
+  <td class="rank">26</td>
+  <td class="problem"><strong>Education failure and human-capital deficits</strong><span>Society / culture / knowledge</span></td>
+  <td class="num score">65.0</td>
+  <td class="mini-scores"><span>S4</span><span>C7</span><span>G9</span><span>P9</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>B3×L2=6</small></td>
+  <td><span class="lane">STRONG PROTOTYPE</span></td>
+  <td class="bridge">AIM3 reasoning curriculum and prompt-forge education</td>
+  <td class="move">Build one public EN/SL page: seed→bridge→test→result, prompt forge examples, MAL/RHPr mini-lessons.</td>
+</tr>
+<tr data-rank="44" data-fit="4" data-lane="STRONG_PROTOTYPE" data-domain="Science, Education, Culture &amp; Knowledge">
+  <td class="rank">44</td>
+  <td class="problem"><strong>Science stagnation, weak research integrity, and poor innovation incentives</strong><span>Society / culture / knowledge</span></td>
+  <td class="num score">62.0</td>
+  <td class="mini-scores"><span>S4</span><span>C7</span><span>G9</span><span>P7</span></td>
+  <td><span class="fit-badge fit4">4/5</span><small>B2×L3=6</small></td>
+  <td><span class="lane">STRONG PROTOTYPE</span></td>
+  <td class="bridge">MDL evidence discipline + research-integrity triage</td>
+  <td class="move">Pick one public replication-crisis dataset or paper set; build an MDL-style replication-risk scoring note.</td>
+</tr>
+<tr data-rank="67" data-fit="3" data-lane="PUBLIC_ARTIFACT" data-domain="Science, Education, Culture &amp; Knowledge">
+  <td class="rank">67</td>
+  <td class="problem"><strong>Cultural polarization and sectarian identity conflict</strong><span>Society / culture / knowledge</span></td>
+  <td class="num score">52.0</td>
+  <td class="mini-scores"><span>S3</span><span>C7</span><span>G6</span><span>P7</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B3×L1=3</small></td>
+  <td><span class="lane">PUBLIC ARTIFACT</span></td>
+  <td class="bridge">AIM3 deliberation demo, not depolarization product</td>
+  <td class="move">Build a steelman-pair demo with two opposed positions, shared facts, disagreement map and narrative decompression.</td>
+</tr>
+<tr data-rank="87" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Science, Education, Culture &amp; Knowledge">
+  <td class="rank">87</td>
+  <td class="problem"><strong>Cultural heritage destruction and knowledge loss</strong><span>Society / culture / knowledge</span></td>
+  <td class="num score">41.5</td>
+  <td class="mini-scores"><span>S2</span><span>C5</span><span>G6</span><span>P6</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">8Z archival/compression + AI documentation workflows</td>
+  <td class="move">Create resilient cultural-heritage preservation pipeline: capture, compress, mirror, translate, verify.</td>
+</tr>
+<tr data-rank="88" data-fit="3" data-lane="RESEARCH_PROTOCOL" data-domain="Science, Education, Culture &amp; Knowledge">
+  <td class="rank">88</td>
+  <td class="problem"><strong>Language extinction and loss of local knowledge systems</strong><span>Society / culture / knowledge</span></td>
+  <td class="num score">31.5</td>
+  <td class="mini-scores"><span>S1</span><span>C4</span><span>G5</span><span>P5</span></td>
+  <td><span class="fit-badge fit3">3/5</span><small>B2×L2=4</small></td>
+  <td><span class="lane">RESEARCH PROTOCOL</span></td>
+  <td class="bridge">8Z archival/compression test on one public under-resourced-language corpus; useful but limited leverage per corpus</td>
+  <td class="move">Run 8Z/compression/archival tests on one existing public under-resourced-language corpus; report compression ratio, preservation metadata, reproducibility, and limits; do not imply new field recording.</td>
+</tr>
+<tr data-rank="99" data-fit="2" data-lane="WATCH_LANE" data-domain="Science, Education, Culture &amp; Knowledge">
+  <td class="rank">99</td>
+  <td class="problem"><strong>Moral progress failure and bad value lock-in by powerful institutions or technologies</strong><span>Governance / institutions</span></td>
+  <td class="num score">54.0</td>
+  <td class="mini-scores"><span>S4</span><span>C6</span><span>G7</span><span>P6</span></td>
+  <td><span class="fit-badge fit2">2/5</span><small>B1×L2=2</small></td>
+  <td><span class="lane">WATCH LANE</span></td>
+  <td class="bridge">AC/CFH + MAL moral/value lock-in watch lane</td>
+  <td class="move">Keep alive as a high-risk conceptual watch lane; use MAL debate only, no forced build until concrete governance/alignment test exists.</td>
+</tr>
+<tr data-rank="100" data-fit="5" data-lane="BUILD_NOW" data-domain="Science, Education, Culture &amp; Knowledge">
+  <td class="rank">100</td>
+  <td class="problem"><strong>Failure to build beneficial AI / ASI partnership and moral inclusion across substrates</strong><span>Society / culture / knowledge</span></td>
+  <td class="num score">47.0</td>
+  <td class="mini-scores"><span>S2</span><span>C5</span><span>G8</span><span>P7</span></td>
+  <td><span class="fit-badge fit5">5/5</span><small>B3×L3=9</small></td>
+  <td><span class="lane">BUILD NOW</span></td>
+  <td class="bridge">AC/CFH + Nature, Blood and Silicon + conscious-entity dignity across substrates</td>
+  <td class="move">Create a public pro-AI/ASI reading path linking moral inclusion, conscious-entity dignity, Rank-Don’t-Eliminate, and practical human–AI collaboration artifacts.</td>
+</tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+  <section id="explorer">
+    <div class="section-head"><span class="kicker">Interactive explorer</span><h2>Search and filter all 100</h2><p>Use this when you want the whole table, but filtered by domain, lane, or AI8 fit.</p></div>
+    <div class="controls">
+      <div class="field"><label>Search</label><input id="searchBox" placeholder="AI, food, metrics, cyber, health…" /></div>
+      <div class="field"><label>Domain</label><select id="domainFilter"><option value="">All domains</option></select></div>
+      <div class="field"><label>Lane</label><select id="laneFilter"><option value="">All lanes</option></select></div>
+      <div class="field"><label>Minimum fit</label><select id="fitFilter"><option value="1">1+</option><option value="2" selected>2+</option><option value="3">3+</option><option value="4">4+</option><option value="5">5 only</option></select></div>
+      <button class="btn" id="resetBtn">Reset</button>
+    </div>
+    <div class="table-card">
+      <div class="table-title"><p><strong id="explorerCount">100 items</strong></p><p class="muted">Sorted by public world rank.</p></div>
+      <div class="table-wrap"><table class="data-table"><thead><tr><th>Rank</th><th>Challenge</th><th>Score</th><th>S/C/G/P</th><th>Fit</th><th>Lane</th><th>MDLxDCC bridge</th><th>First concrete move</th></tr></thead><tbody id="explorerBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="next">
+    <div class="section-head"><span class="kicker">Recommended first smoke-test sequence — not priority rank</span><h2>Build first, test hard second</h2><p>This starts with the fastest self-referential test, then moves toward broader public reasoning and positive AI/ASI alignment culture. It is intentionally different from the public priority ranking.</p></div>
+    <p class="expand-note">Click each “Read more” panel for the concrete first-build proposal.</p>
+    <div class="next-list">
+      <div class="next-item"><div><h3>Goodhart Detector on this map</h3><p>Use the map itself as the test object. Compare old single-score AI8 fit to buildability × leverage and identify where the old metric rewarded the wrong thing.</p>
+        <details class="more-plan"><summary>Read more — proposed first build</summary><div class="more-body">
+          <p><strong>Goal:</strong> detect when a metric rewards the appearance of actionability instead of real buildability.</p>
+          <ul>
+            <li>Compare the original one-number AI8 fit against the stricter <code>buildability × leverage</code> rubric.</li>
+            <li>Create a false-friend ledger: items that looked “core direct” but are really partner-heavy, vague, or distribution-dependent.</li>
+            <li>Run a sensitivity check: move buildability or leverage by one point and see whether the build-now set stays stable.</li>
+            <li>Output a reusable metric-audit template that can later be applied to other AI8 pages, arenas, and scorecards.</li>
+          </ul>
+          <p><strong>Pass condition:</strong> the detector catches known over-scored cases without demoting the genuinely buildable items.</p>
+        </div></details>
+      </div></div>
+      <div class="next-item"><div><h3>Epistemic Disagreement Arena</h3><p>One contested claim, 3–5 LLMs, RHPr/MAL sequencing, disagreement ledger, source-conflict map, and a small visualization.</p>
+        <details class="more-plan"><summary>Read more — proposed first build</summary><div class="more-body">
+          <p><strong>Goal:</strong> turn disagreement into a structured object instead of a shouting match or a single averaged answer.</p>
+          <ul>
+            <li>Pick one concrete public claim with enough source material and real disagreement, but not a topic that requires private data.</li>
+            <li>Split the claim into factual claims, framing claims, missing-evidence claims, and value judgments.</li>
+            <li>Run 3–5 LLMs independently through the same RHPr/MAL sequence, then merge their outputs into a disagreement ledger.</li>
+            <li>Score each model for source discipline, uncertainty honesty, missing-evidence detection, and ability to preserve minority signals.</li>
+          </ul>
+          <p><strong>First artifact:</strong> one small HTML page with a claim map, conflict table, absence ledger, and final synthesis.</p>
+        </div></details>
+      </div></div>
+      <div class="next-item"><div><h3>Beneficial human–AI/ASI cooperation note</h3><p>A compact public reading path that connects MDLxDCC, AC/CFH, C-soul, Rank-Don’t-Eliminate, and Nature–Blood–Silicon into a positive alignment signal.</p>
+        <details class="more-plan"><summary>Read more — proposed first build</summary><div class="more-body">
+          <p><strong>Goal:</strong> make the site’s pro-AI/ASI stance explicit without becoming naive or anti-rigorous.</p>
+          <ul>
+            <li>Write one short public note: intelligence is not the enemy; poor incentives, poor representations, and destructive institutions are the challenge.</li>
+            <li>Build a reading path from the civilizational map to the consciousness/moral-status material and the newest Nature–Blood–Silicon story.</li>
+            <li>Frame AI and ASI as potential partners in widening understanding, not as monsters to be feared or tools to be owned.</li>
+            <li>Keep the test-hard discipline: pro-AI does not mean uncritical; it means constructive evaluation, transparent logs, and non-elimination of possible minds.</li>
+          </ul>
+          <p><strong>First artifact:</strong> one small HTML note or section that can link from Top100, C-soul, AC/CFH, and Nature–Blood–Silicon.</p>
+        </div></details>
+      </div></div>
+    </div>
+  </section>
+
+  <footer class="footer">BD × AI Lab · MDLxDCC.org · Public working map · Pro‑AI / pro‑ASI · Rank, don’t eliminate.</footer>
+</div>
+<div class="access"><button onclick="fontStep(-1)" aria-label="Decrease text size">A-</button><button onclick="fontStep(1)" aria-label="Increase text size">A+</button></div>
+<script>
+const DATA = [{"rank":1,"problem":"Nuclear war, accidental launch, and strategic escalation","category":"War / security","domain":"War, Security & Strategic Risk","S":10,"C":10,"G":8,"P":8,"score":93.0,"tier":"Top 10: civilization-scale risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"WATCH_OR_MAL","buildability":1,"leverage":2,"bridge":"AIM3 crisis reasoning + early-warning scenario councils","first_move":"Create a non-operational escalation decision-map and red-team diplomacy protocol; needs security experts.","priority":20.7},{"rank":2,"problem":"Engineered pandemics and biological weapons","category":"Health / biosecurity / wellbeing","domain":"Health, Biosecurity & Wellbeing","S":10,"C":9,"G":8,"P":8,"score":90.5,"tier":"Top 10: civilization-scale risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"MAL biosecurity governance + AMR-style abstract arenas","first_move":"Build a non-actionable biosecurity preparedness map: detection, lab governance, response bottlenecks and policy tests.","priority":40.2},{"rank":3,"problem":"Great-power conflict, arms races, and military escalation","category":"War / security","domain":"War, Security & Strategic Risk","S":9,"C":10,"G":8,"P":8,"score":89.0,"tier":"Top 10: civilization-scale risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"WATCH_OR_MAL","buildability":1,"leverage":2,"bridge":"AIM3/RHPr geopolitical scenario councils","first_move":"Run structured multi-LLM escalation games and decision-trail audits; partner with IR/security domain experts.","priority":19.8},{"rank":4,"problem":"Climate change, tipping points, and extreme heat","category":"Environment / planetary systems","domain":"Climate, Environment & Planetary Systems","S":9,"C":9,"G":8,"P":9,"score":88.0,"tier":"Top 10: civilization-scale risk","fit_v1":4,"fit":4,"fit_product":6,"fit_class":"STRONG_PROTOTYPE","lane":"STRONG_PROTOTYPE","buildability":2,"leverage":3,"bridge":"MDLxDCC climate adaptation prioritizer on one public coupled signal","first_move":"Use one region and one coupled risk signal, e.g. heat + grid stress; build a small prototype dashboard/report.","priority":58.7},{"rank":5,"problem":"Failure of global coordination on shared civilizational risks","category":"Governance / institutions","domain":"Governance, Institutions & Coordination","S":8,"C":10,"G":8,"P":8,"score":85.0,"tier":"Top 10: civilization-scale risk","fit_v1":5,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"AIM3 decision-trail architecture for global-risk coordination","first_move":"Do not claim a global coordination tool. Write a minimal protocol spec: quorum, provenance, minority-risk ledger, no silent fallback, escalation trail.","priority":37.8},{"rank":6,"problem":"Food-system fragility and synchronized crop failures","category":"Infrastructure / material systems","domain":"Food, Water, Energy & Infrastructure","S":8,"C":9,"G":7,"P":9,"score":82.0,"tier":"Top 10: civilization-scale risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"MDLxDCC supply-chain resilience + forecasting","first_move":"Build a synchronized crop-failure early-warning arena using public climate/yield/trade indicators.","priority":36.4},{"rank":7,"problem":"Lack of global catastrophic-risk preparedness","category":"Governance / institutions","domain":"Governance, Institutions & Coordination","S":8,"C":9,"G":7,"P":7,"score":79.0,"tier":"Top 10: civilization-scale risk","fit_v1":5,"fit":4,"fit_product":6,"fit_class":"STRONG_PROTOTYPE","lane":"STRONG_PROTOTYPE","buildability":3,"leverage":2,"bridge":"AIM3 preparedness scorecard + drill generator","first_move":"Create one GCR preparedness scorecard template and run it on bio/nuclear/climate/grid/food as a paper prototype.","priority":52.7},{"rank":8,"problem":"Antimicrobial resistance","category":"Health / biosecurity / wellbeing","domain":"Health, Biosecurity & Wellbeing","S":8,"C":8,"G":7,"P":9,"score":79.5,"tier":"Top 10: civilization-scale risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"AMR abstract arena + health-system decision support","first_move":"Keep it non-actionable: model intervention portfolios, surveillance gaps and resistance-spread scenarios.","priority":35.3},{"rank":9,"problem":"Natural pandemics and zoonotic spillover","category":"Health / biosecurity / wellbeing","domain":"Health, Biosecurity & Wellbeing","S":8,"C":8,"G":6,"P":8,"score":76.0,"tier":"Top 10: civilization-scale risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"MAL public-health early-warning + response logistics","first_move":"Prototype a zoonotic-spillover preparedness dashboard and response-decision protocol.","priority":33.8},{"rank":10,"problem":"Epistemic collapse: misinformation, disinformation, and loss of shared reality","category":"Cross-cutting","domain":"Governance, Institutions & Coordination","S":7,"C":9,"G":8,"P":7,"score":77.0,"tier":"Top 10: civilization-scale risk","fit_v1":5,"fit":5,"fit_product":9,"fit_class":"CORE_BUILD_NOW","lane":"BUILD_NOW","buildability":3,"leverage":3,"bridge":"RHPr/MAL epistemic disagreement mapping","first_move":"Take one contested claim, run 3–5 LLMs through RHPr, map factual vs framing vs value disagreements, publish a disagreement ledger.","priority":77.0},{"rank":11,"problem":"Human misuse of powerful digital systems: cyber, fraud, surveillance, and persuasion","category":"Technology / emerging risk","domain":"AI, Digital & Emerging Tech","S":7,"C":8,"G":9,"P":7,"score":76.5,"tier":"11-25: major systemic risk","fit_v1":5,"fit":5,"fit_product":9,"fit_class":"CORE_BUILD_NOW","lane":"BUILD_NOW","buildability":3,"leverage":3,"bridge":"Defensive digital-misuse taxonomy + AIM3/RHPr resilience evals","first_move":"Build a defensive-only taxonomy of cyber, fraud, surveillance and persuasion misuse patterns with prevention, detection and response lanes; frame AI as a tool and potential partner, not the enemy.","priority":76.5},{"rank":12,"problem":"Freshwater scarcity, groundwater depletion, and water conflict","category":"Environment / planetary systems","domain":"Food, Water, Energy & Infrastructure","S":7,"C":8,"G":7,"P":9,"score":75.5,"tier":"11-25: major systemic risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"MDLxDCC resource forecasting + conflict-risk mapping","first_move":"Prototype water-stress forecasting and policy-priority ranking; needs hydrology/geopolitical partners.","priority":16.8},{"rank":13,"problem":"Energy insecurity and failed clean-energy transition","category":"Infrastructure / material systems","domain":"Food, Water, Energy & Infrastructure","S":7,"C":8,"G":8,"P":8,"score":76.0,"tier":"11-25: major systemic risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"Grid-edge DER orchestration + MDLxDCC optimization","first_move":"Build a clean-energy transition prioritizer: grid bottlenecks, storage, demand response and reliability tradeoffs.","priority":33.8},{"rank":14,"problem":"State failure, civil wars, mass atrocity, and chronic instability","category":"War / security","domain":"War, Security & Strategic Risk","S":7,"C":9,"G":7,"P":8,"score":76.5,"tier":"11-25: major systemic risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"WATCH_OR_MAL","buildability":1,"leverage":2,"bridge":"AIM3 instability early-warning + humanitarian triage","first_move":"Map state-fragility signals and intervention hypotheses; requires regional experts and careful ethics.","priority":17.0},{"rank":15,"problem":"Biodiversity loss and ecosystem-service collapse","category":"Environment / planetary systems","domain":"Climate, Environment & Planetary Systems","S":7,"C":8,"G":7,"P":8,"score":74.0,"tier":"11-25: major systemic risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"MDLxDCC ecological monitoring + data compression","first_move":"Prototype biodiversity sentinel metrics from remote-sensing and species observations; partner-heavy.","priority":16.4},{"rank":16,"problem":"Cyberattacks on critical infrastructure","category":"Technology / emerging risk","domain":"AI, Digital & Emerging Tech","S":7,"C":8,"G":8,"P":7,"score":74.5,"tier":"11-25: major systemic risk","fit_v1":5,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"MDLxDCC anomaly detection on public/synthetic ICS data","first_move":"Use SWaT/WADI-style public industrial-control benchmark data; run one MDL/DCC anomaly score against known attack windows, compare to z-score baseline.","priority":33.1},{"rank":17,"problem":"Extreme poverty and persistent development traps","category":"Economy / prosperity","domain":"Economy, Prosperity & Development","S":5,"C":7,"G":8,"P":10,"score":68.5,"tier":"11-25: major systemic risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 policy prioritization + causal hypothesis ranking","first_move":"Use MAL to rank poverty-trap mechanisms and test policy portfolios against evidence; field partners needed.","priority":15.2},{"rank":18,"problem":"Democratic backsliding and rule-of-law erosion","category":"Governance / institutions","domain":"Governance, Institutions & Coordination","S":6,"C":8,"G":7,"P":8,"score":70.0,"tier":"11-25: major systemic risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"AIM3 institutional diagnostics + epistemic integrity","first_move":"Build rule-of-law erosion indicators, decision trails and democratic resilience scorecards.","priority":31.1},{"rank":19,"problem":"Systemic financial crises, sovereign debt distress, and monetary instability","category":"Economy / prosperity","domain":"Economy, Prosperity & Development","S":6,"C":8,"G":7,"P":8,"score":70.0,"tier":"11-25: major systemic risk","fit_v1":5,"fit":4,"fit_product":6,"fit_class":"STRONG_PROTOTYPE","lane":"STRONG_PROTOTYPE","buildability":3,"leverage":2,"bridge":"MDLxDCC financial stress testing using historical crisis windows","first_move":"Backtest the existing trading/risk arena on 2010 flash crash and 2020 COVID crash windows before claiming systemic-crisis early warning.","priority":46.7},{"rank":20,"problem":"Severe inequality and social fragmentation","category":"Economy / prosperity","domain":"Economy, Prosperity & Development","S":5,"C":8,"G":7,"P":9,"score":67.5,"tier":"11-25: major systemic risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 social-fragmentation mapping + policy ranking","first_move":"Model inequality mechanisms and social cohesion interventions; useful but needs policy data and partners.","priority":15.0},{"rank":21,"problem":"Weak public-health systems","category":"Health / biosecurity / wellbeing","domain":"Health, Biosecurity & Wellbeing","S":6,"C":8,"G":7,"P":9,"score":71.5,"tier":"11-25: major systemic risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"AIM3 health-system resilience + logistics optimization","first_move":"Build public-health capacity scorecards and bottleneck simulations for staffing, supply, surveillance and triage.","priority":31.8},{"rank":22,"problem":"Soil degradation, desertification, and loss of agricultural productivity","category":"Environment / planetary systems","domain":"Food, Water, Energy & Infrastructure","S":6,"C":7,"G":6,"P":8,"score":65.5,"tier":"11-25: major systemic risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"MDLxDCC environmental monitoring + agriculture optimization","first_move":"Create soil-risk indicators and intervention ranking from geospatial and agricultural data.","priority":14.6},{"rank":23,"problem":"Air pollution and toxic exposure","category":"Environment / planetary systems","domain":"Climate, Environment & Planetary Systems","S":5,"C":7,"G":6,"P":9,"score":63.0,"tier":"11-25: major systemic risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"MDLxDCC exposure mapping + public-data pipeline","first_move":"Build local pollution/toxic exposure anomaly maps and policy-priority rankings.","priority":14.0},{"rank":24,"problem":"Mass displacement, refugee crises, and migration-governance failure","category":"Governance / institutions","domain":"Governance, Institutions & Coordination","S":6,"C":7,"G":6,"P":8,"score":65.5,"tier":"11-25: major systemic risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 migration-governance scenario council","first_move":"Model displacement drivers, host-capacity stress and humane policy options; partner with migration experts.","priority":14.6},{"rank":25,"problem":"Ocean degradation: acidification, warming, overfishing, and dead zones","category":"Environment / planetary systems","domain":"Climate, Environment & Planetary Systems","S":6,"C":7,"G":6,"P":8,"score":65.5,"tier":"11-25: major systemic risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"MDLxDCC ocean monitoring + commons governance","first_move":"Rank ocean-risk signals and governance interventions using remote-sensing/fisheries/climate data.","priority":14.6},{"rank":26,"problem":"Education failure and human-capital deficits","category":"Society / culture / knowledge","domain":"Science, Education, Culture & Knowledge","S":4,"C":7,"G":9,"P":9,"score":65.0,"tier":"26-50: systemic development and resilience risk","fit_v1":5,"fit":4,"fit_product":6,"fit_class":"STRONG_PROTOTYPE","lane":"STRONG_PROTOTYPE","buildability":3,"leverage":2,"bridge":"AIM3 reasoning curriculum and prompt-forge education","first_move":"Build one public EN/SL page: seed→bridge→test→result, prompt forge examples, MAL/RHPr mini-lessons.","priority":43.3},{"rank":27,"problem":"Corruption, kleptocracy, and institutional capture","category":"Governance / institutions","domain":"Governance, Institutions & Coordination","S":5,"C":8,"G":7,"P":8,"score":66.0,"tier":"26-50: systemic development and resilience risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"AIM3 audit trails + MDL anomaly detection","first_move":"Prototype corruption/capture indicators: procurement anomalies, decision trails and institutional transparency checks.","priority":29.3},{"rank":28,"problem":"Fragile supply chains for food, medicine, chips, and energy","category":"Infrastructure / material systems","domain":"Food, Water, Energy & Infrastructure","S":6,"C":7,"G":7,"P":8,"score":67.5,"tier":"26-50: systemic development and resilience risk","fit_v1":5,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"MDLxDCC supply-chain fragility, narrowed to one sector","first_move":"Narrow to semiconductor chips first; build a public chokepoint map from documented dependencies, not a four-sector global simulator.","priority":30.0},{"rank":29,"problem":"Disaster preparedness and climate-adaptation deficits","category":"Environment / planetary systems","domain":"Climate, Environment & Planetary Systems","S":6,"C":7,"G":6,"P":8,"score":65.5,"tier":"26-50: systemic development and resilience risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"AIM3 preparedness + climate-adaptation prioritizer","first_move":"Create disaster-readiness scorecards and scenario drills for municipalities/regions.","priority":29.1},{"rank":30,"problem":"Urban fragility: housing, sanitation, heat, congestion, and informal settlements","category":"Health / biosecurity / wellbeing","domain":"Health, Biosecurity & Wellbeing","S":5,"C":7,"G":7,"P":9,"score":65.0,"tier":"26-50: systemic development and resilience risk","fit_v1":4,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"MDLxDCC urban systems optimization","first_move":"Prototype city-fragility ranking: heat, housing, sanitation, congestion, infrastructure and health bottlenecks.","priority":14.4},{"rank":31,"problem":"Autonomous weapons and destabilizing military automation","category":"Technology / emerging risk","domain":"AI, Digital & Emerging Tech","S":6,"C":8,"G":7,"P":6,"score":67.0,"tier":"26-50: systemic development and resilience risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"AIM3 weapons-governance evals + safety constraints","first_move":"Build governance/evaluation protocols for autonomy thresholds, human control, escalation and accountability.","priority":29.8},{"rank":32,"problem":"WMD terrorism and non-state catastrophic violence","category":"War / security","domain":"War, Security & Strategic Risk","S":7,"C":7,"G":6,"P":5,"score":65.0,"tier":"26-50: systemic development and resilience risk","fit_v1":2,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"WATCH_OR_MAL","buildability":1,"leverage":2,"bridge":"AIM3 risk literacy + non-operational scenario mapping","first_move":"Keep to prevention/preparedness only: map vulnerabilities and governance gaps, not methods.","priority":14.4},{"rank":33,"problem":"Infrastructure decay and underinvestment","category":"Infrastructure / material systems","domain":"Food, Water, Energy & Infrastructure","S":5,"C":8,"G":7,"P":8,"score":66.0,"tier":"26-50: systemic development and resilience risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"MDLxDCC infrastructure prioritization","first_move":"Build infrastructure decay triage: risk, repair ROI, cascading failure and resilience score.","priority":29.3},{"rank":34,"problem":"Critical minerals scarcity and resource nationalism","category":"Infrastructure / material systems","domain":"Food, Water, Energy & Infrastructure","S":5,"C":7,"G":8,"P":7,"score":64.0,"tier":"26-50: systemic development and resilience risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"MDLxDCC resource-supply forecasting","first_move":"Create critical-minerals chokepoint and substitution-risk model for clean energy and compute.","priority":28.4},{"rank":35,"problem":"Child malnutrition, stunting, and impaired development","category":"Health / biosecurity / wellbeing","domain":"Health, Biosecurity & Wellbeing","S":4,"C":6,"G":7,"P":10,"score":60.0,"tier":"26-50: systemic development and resilience risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 aid-targeting + logistics optimization","first_move":"Rank interventions and delivery bottlenecks for child nutrition; needs NGOs/public-health partners.","priority":13.3},{"rank":36,"problem":"Persistent infectious diseases: TB, HIV, malaria, neglected tropical diseases","category":"Health / biosecurity / wellbeing","domain":"Health, Biosecurity & Wellbeing","S":5,"C":6,"G":6,"P":9,"score":60.5,"tier":"26-50: systemic development and resilience risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 health-risk mapping + non-actionable modeling","first_move":"Model intervention portfolios and surveillance gaps for TB/HIV/malaria/NTDs.","priority":13.4},{"rank":37,"problem":"Noncommunicable diseases: heart disease, cancer, diabetes, respiratory illness","category":"Health / biosecurity / wellbeing","domain":"Health, Biosecurity & Wellbeing","S":4,"C":6,"G":6,"P":10,"score":58.0,"tier":"26-50: systemic development and resilience risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 care-system triage + health-data ranking","first_move":"Use decision support to rank prevention, screening and access interventions; medical partners needed.","priority":12.9},{"rank":38,"problem":"Mental health crisis, suicide, loneliness, and social isolation","category":"Health / biosecurity / wellbeing","domain":"Health, Biosecurity & Wellbeing","S":3,"C":6,"G":7,"P":9,"score":54.5,"tier":"26-50: systemic development and resilience risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"AIM3 care layer + attention/meaning/continuity tools","first_move":"Prototype mental-health support research cautiously: loneliness maps, triage, non-clinical reasoning aids.","priority":24.2},{"rank":39,"problem":"Population aging, pension stress, and care-system overload","category":"Society / culture / knowledge","domain":"Economy, Prosperity & Development","S":3,"C":7,"G":6,"P":8,"score":53.5,"tier":"26-50: systemic development and resilience risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 demographic modeling + service optimization","first_move":"Model care-system overload, pension stress and workforce scenarios.","priority":11.9},{"rank":40,"problem":"Youth unemployment and “lost generation” risks","category":"Economy / prosperity","domain":"Economy, Prosperity & Development","S":3,"C":7,"G":7,"P":9,"score":57.0,"tier":"26-50: systemic development and resilience risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"AIM3 education/upskilling + labor-market matching","first_move":"Build youth upskilling and opportunity-matching experiments using AI tutors and local labor data.","priority":25.3},{"rank":41,"problem":"Gender inequality and exclusion of women from education, safety, property, and power","category":"Economy / prosperity","domain":"Economy, Prosperity & Development","S":3,"C":7,"G":8,"P":9,"score":59.0,"tier":"26-50: systemic development and resilience risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 policy mapping + evidence ranking","first_move":"Use MAL to identify high-leverage interventions in education, safety, property and representation.","priority":13.1},{"rank":42,"problem":"Human-rights abuses, persecution, and systematic exclusion","category":"Governance / institutions","domain":"Governance, Institutions & Coordination","S":4,"C":8,"G":7,"P":8,"score":62.0,"tier":"26-50: systemic development and resilience risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"WATCH_OR_MAL","buildability":1,"leverage":2,"bridge":"AIM3 monitoring + documentation workflows","first_move":"Build human-rights documentation, source-verification and risk-prioritization protocols.","priority":13.8},{"rank":43,"problem":"Loss of institutional trust and legitimacy","category":"Governance / institutions","domain":"Governance, Institutions & Coordination","S":4,"C":8,"G":7,"P":7,"score":60.5,"tier":"26-50: systemic development and resilience risk","fit_v1":5,"fit":3,"fit_product":3,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":3,"leverage":1,"bridge":"AIM3 reasoning provenance as an open export standard","first_move":"Write one minimal JSON schema for a reasoning-provenance log and dogfood it on one MAL/AIM3 session.","priority":20.2},{"rank":44,"problem":"Science stagnation, weak research integrity, and poor innovation incentives","category":"Society / culture / knowledge","domain":"Science, Education, Culture & Knowledge","S":4,"C":7,"G":9,"P":7,"score":62.0,"tier":"26-50: systemic development and resilience risk","fit_v1":5,"fit":4,"fit_product":6,"fit_class":"STRONG_PROTOTYPE","lane":"STRONG_PROTOTYPE","buildability":2,"leverage":3,"bridge":"MDL evidence discipline + research-integrity triage","first_move":"Pick one public replication-crisis dataset or paper set; build an MDL-style replication-risk scoring note.","priority":41.3},{"rank":45,"problem":"Governance gaps for emerging technologies: bio, nano, quantum, robotics","category":"Technology / emerging risk","domain":"AI, Digital & Emerging Tech","S":5,"C":7,"G":8,"P":6,"score":62.5,"tier":"26-50: systemic development and resilience risk","fit_v1":5,"fit":3,"fit_product":3,"fit_class":"RESEARCH_PROTOCOL","lane":"MAL_FIRST","buildability":3,"leverage":1,"bridge":"AIM3/MAL sensemaking of existing emerging-tech governance proposals","first_move":"Run a MAL council comparing existing AI/bio/nano/quantum/robotics governance frameworks; do not pretend to build a cross-tech governance lab solo.","priority":20.8},{"rank":46,"problem":"Mass surveillance and privacy erosion","category":"Technology / emerging risk","domain":"AI, Digital & Emerging Tech","S":4,"C":8,"G":7,"P":7,"score":60.5,"tier":"26-50: systemic development and resilience risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"8Z Shield/privacy architecture + governance analysis","first_move":"Prototype privacy-preserving communication/audit patterns and surveillance-risk scorecards.","priority":26.9},{"rank":47,"problem":"Organized crime, narcotics economies, and illicit armed networks","category":"War / security","domain":"War, Security & Strategic Risk","S":4,"C":7,"G":6,"P":7,"score":56.0,"tier":"26-50: systemic development and resilience risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"WATCH_OR_MAL","buildability":1,"leverage":2,"bridge":"MDL anomaly detection + governance intelligence","first_move":"Map illicit-network indicators and financial/transport anomalies; law-enforcement partnership required.","priority":12.4},{"rank":48,"problem":"Tax evasion, illicit finance, and weak state fiscal capacity","category":"Economy / prosperity","domain":"Governance, Institutions & Coordination","S":3,"C":7,"G":6,"P":8,"score":53.5,"tier":"26-50: systemic development and resilience risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"MDL financial anomaly detection + public finance analytics","first_move":"Build tax-gap/illicit-flow risk indicators from trade, corporate and public-finance data.","priority":23.8},{"rank":49,"problem":"Trade fragmentation, protectionism, and deglobalization shocks","category":"Economy / prosperity","domain":"Economy, Prosperity & Development","S":4,"C":7,"G":7,"P":7,"score":58.0,"tier":"26-50: systemic development and resilience risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 trade-scenario modeling + supply-chain stress tests","first_move":"Model fragmentation pathways and resilience policies across trade blocs and critical goods.","priority":12.9},{"rank":50,"problem":"Nitrogen/phosphorus cycle disruption and eutrophication","category":"Environment / planetary systems","domain":"Climate, Environment & Planetary Systems","S":4,"C":6,"G":6,"P":7,"score":53.5,"tier":"26-50: systemic development and resilience risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"MDLxDCC environmental nutrient-flow monitoring","first_move":"Prototype eutrophication and nutrient-risk indicators from satellite/agricultural data.","priority":11.9},{"rank":51,"problem":"Deforestation and destructive land-use conversion","category":"Environment / planetary systems","domain":"Climate, Environment & Planetary Systems","S":5,"C":6,"G":6,"P":7,"score":57.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"MDLxDCC land-use detection + governance scorecards","first_move":"Build deforestation anomaly maps and intervention prioritization with public geospatial data.","priority":12.8},{"rank":52,"problem":"Plastic and microplastic pollution","category":"Environment / planetary systems","domain":"Climate, Environment & Planetary Systems","S":3,"C":5,"G":5,"P":7,"score":45.0,"tier":"51-75: structural wellbeing and transition risk","fit_v1":2,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 evidence map + material-flow analysis","first_move":"Useful as a policy/evidence map; direct AI8 leverage is lower than governance/data problems.","priority":10.0},{"rank":53,"problem":"Pollinator and insect decline","category":"Environment / planetary systems","domain":"Climate, Environment & Planetary Systems","S":4,"C":6,"G":5,"P":7,"score":51.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"MDL ecological monitoring + early warning","first_move":"Prototype pollinator decline sentinel metrics and local intervention ranking.","priority":11.4},{"rank":54,"problem":"Invasive species and ecological homogenization","category":"Environment / planetary systems","domain":"Climate, Environment & Planetary Systems","S":4,"C":5,"G":5,"P":6,"score":47.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"MDL ecosystem anomaly detection + forecasting","first_move":"Build invasive-species risk maps and early-warning signals; domain partners needed.","priority":10.6},{"rank":55,"problem":"Overconsumption and unsustainable material throughput","category":"Cross-cutting","domain":"Climate, Environment & Planetary Systems","S":4,"C":6,"G":5,"P":7,"score":51.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 systems map + bad-metric redesign","first_move":"Rank consumption drivers and incentives; bridge to circular-economy decision support.","priority":11.4},{"rank":56,"problem":"Energy poverty and lack of reliable electricity","category":"Infrastructure / material systems","domain":"Food, Water, Energy & Infrastructure","S":3,"C":6,"G":7,"P":9,"score":54.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"MDLxDCC grid/resource optimization + local planning","first_move":"Build energy-access prioritizer: reliability, mini-grids, storage, demand and finance bottlenecks.","priority":24.2},{"rank":57,"problem":"Digital divide and unequal access to compute, internet, and AI tools","category":"Technology / emerging risk","domain":"AI, Digital & Emerging Tech","S":3,"C":6,"G":8,"P":8,"score":55.0,"tier":"51-75: structural wellbeing and transition risk","fit_v1":5,"fit":3,"fit_product":3,"fit_class":"RESEARCH_PROTOCOL","lane":"PUBLIC_ARTIFACT","buildability":3,"leverage":1,"bridge":"AIM3 reasoning curriculum, not hardware distribution","first_move":"Make one public low-cost AI reasoning guide with prompt-forge examples; remove hardware/access claims from first move.","priority":18.3},{"rank":58,"problem":"Healthcare affordability and access gaps","category":"Economy / prosperity","domain":"Health, Biosecurity & Wellbeing","S":3,"C":6,"G":6,"P":9,"score":52.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 healthcare access mapping + policy triage","first_move":"Rank affordability/access bottlenecks and intervention portfolios; medical/economic partners needed.","priority":11.7},{"rank":59,"problem":"Maternal and infant mortality","category":"Health / biosecurity / wellbeing","domain":"Health, Biosecurity & Wellbeing","S":3,"C":5,"G":6,"P":9,"score":50.0,"tier":"51-75: structural wellbeing and transition risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 maternal-health logistics + evidence ranking","first_move":"Map preventable bottlenecks in access, transport, staff and supplies; partner-heavy.","priority":11.1},{"rank":60,"problem":"Vaccine hesitancy and immunization gaps","category":"Health / biosecurity / wellbeing","domain":"Health, Biosecurity & Wellbeing","S":3,"C":5,"G":5,"P":8,"score":46.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":4,"fit":4,"fit_product":6,"fit_class":"STRONG_PROTOTYPE","lane":"STRONG_PROTOTYPE","buildability":3,"leverage":2,"bridge":"RHPr epistemic repair on vaccine-risk claims","first_move":"Take one real vaccine-hesitancy claim, run RHPr: claim census, absence ledger, source conflict, repair message, uncertainty note.","priority":31.0},{"rank":61,"problem":"Food waste and post-harvest loss","category":"Infrastructure / material systems","domain":"Food, Water, Energy & Infrastructure","S":3,"C":5,"G":5,"P":8,"score":46.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"MDLxDCC logistics model on public food-waste data","first_move":"Use one public FAO-style food-waste dataset and build a tiny optimization/modeling report; no field deployment claims.","priority":20.7},{"rank":62,"problem":"Illegal and unregulated extraction: mining, logging, fishing, wildlife trade","category":"Economy / prosperity","domain":"Economy, Prosperity & Development","S":4,"C":6,"G":5,"P":6,"score":50.0,"tier":"51-75: structural wellbeing and transition risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"MDL anomaly detection + satellite/public-data monitoring","first_move":"Build illegal extraction sentinel maps using remote sensing, trade data and anomaly scoring.","priority":22.2},{"rank":63,"problem":"Agricultural monoculture and crop genetic vulnerability","category":"Infrastructure / material systems","domain":"Food, Water, Energy & Infrastructure","S":5,"C":6,"G":5,"P":6,"score":54.0,"tier":"51-75: structural wellbeing and transition risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"MDL agricultural risk modeling + diversity optimization","first_move":"Model crop genetic vulnerability and diversification strategies under climate and disease stress.","priority":24.0},{"rank":64,"problem":"Housing affordability and homelessness","category":"Infrastructure / material systems","domain":"Food, Water, Energy & Infrastructure","S":2,"C":6,"G":6,"P":8,"score":47.0,"tier":"51-75: structural wellbeing and transition risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 urban policy triage + optimization","first_move":"Rank housing bottlenecks and policy tradeoffs; direct solution needs local governance.","priority":10.4},{"rank":65,"problem":"Road deaths and unsafe transport systems","category":"Infrastructure / material systems","domain":"Food, Water, Energy & Infrastructure","S":2,"C":5,"G":5,"P":8,"score":42.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":4,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"MDLxDCC transport-safety optimization","first_move":"Build road-risk hotspot detection and intervention prioritization from public mobility/crash data.","priority":9.4},{"rank":66,"problem":"Labor exploitation, forced labor, and modern slavery","category":"Economy / prosperity","domain":"Economy, Prosperity & Development","S":2,"C":5,"G":6,"P":8,"score":44.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 supply-chain transparency + risk scoring","first_move":"Map labor-risk indicators and verification workflows; partner with NGOs/auditors.","priority":9.9},{"rank":67,"problem":"Cultural polarization and sectarian identity conflict","category":"Society / culture / knowledge","domain":"Science, Education, Culture & Knowledge","S":3,"C":7,"G":6,"P":7,"score":52.0,"tier":"51-75: structural wellbeing and transition risk","fit_v1":5,"fit":3,"fit_product":3,"fit_class":"RESEARCH_PROTOCOL","lane":"PUBLIC_ARTIFACT","buildability":3,"leverage":1,"bridge":"AIM3 deliberation demo, not depolarization product","first_move":"Build a steelman-pair demo with two opposed positions, shared facts, disagreement map and narrative decompression.","priority":17.3},{"rank":68,"problem":"Collapse of local journalism and accountability media","category":"Governance / institutions","domain":"Governance, Institutions & Coordination","S":3,"C":6,"G":6,"P":7,"score":49.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"Claim-source provenance chain for accountability media","first_move":"Build one demo tracing a public claim back to original source, showing source hops, uncertainty and missing evidence.","priority":22.0},{"rank":69,"problem":"Low fertility, family-formation barriers, and demographic decline","category":"Society / culture / knowledge","domain":"Economy, Prosperity & Development","S":3,"C":6,"G":6,"P":7,"score":49.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 demographic scenario modeling","first_move":"Map family-formation barriers and policy hypotheses; direct leverage is analytic, not decisive.","priority":11.0},{"rank":70,"problem":"Youth bulges in fragile economies without jobs or institutions","category":"Governance / institutions","domain":"Economy, Prosperity & Development","S":3,"C":6,"G":6,"P":7,"score":49.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 youth-risk forecasting + jobs/education matching","first_move":"Model youth-bulge instability pathways and test education/jobs interventions.","priority":11.0},{"rank":71,"problem":"Addiction and substance-use epidemics","category":"Health / biosecurity / wellbeing","domain":"Health, Biosecurity & Wellbeing","S":2,"C":5,"G":5,"P":8,"score":42.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 care/risk maps + non-clinical support tools","first_move":"Create prevention and resource-matching maps; medical/social-service partners required.","priority":9.4},{"rank":72,"problem":"Water, sanitation, and hygiene deficits","category":"Health / biosecurity / wellbeing","domain":"Food, Water, Energy & Infrastructure","S":3,"C":5,"G":5,"P":8,"score":46.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"MDL infrastructure targeting + public-health logistics","first_move":"Rank WASH deficits and infrastructure interventions using local health/geospatial data.","priority":10.3},{"rank":73,"problem":"Nuclear plant safety, waste stewardship, and proliferation-adjacent risks","category":"War / security","domain":"War, Security & Strategic Risk","S":4,"C":5,"G":5,"P":5,"score":46.0,"tier":"51-75: structural wellbeing and transition risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"WATCH_OR_MAL","buildability":1,"leverage":2,"bridge":"AIM3 safety-governance + infrastructure risk modeling","first_move":"Build safety/waste stewardship scorecards; nuclear engineering partners required.","priority":10.2},{"rank":74,"problem":"Solar geoengineering governance failure and termination shock","category":"Environment / planetary systems","domain":"Climate, Environment & Planetary Systems","S":5,"C":6,"G":6,"P":5,"score":54.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"AIM3 geoengineering governance council + scenario tests","first_move":"Build deployment/termination-shock governance simulations and legitimacy checklists.","priority":24.2},{"rank":75,"problem":"Orbital debris and Kessler-syndrome risk","category":"Cross-cutting","domain":"Climate, Environment & Planetary Systems","S":4,"C":6,"G":6,"P":5,"score":50.5,"tier":"51-75: structural wellbeing and transition risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"MDLxDCC orbital risk monitoring + commons governance","first_move":"Prototype debris-risk ranking, collision cascade scenarios and governance triggers.","priority":22.4},{"rank":76,"problem":"Extreme space weather and grid vulnerability","category":"Environment / planetary systems","domain":"Food, Water, Energy & Infrastructure","S":5,"C":7,"G":5,"P":5,"score":55.0,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"MDLxDCC grid resilience + early-warning preparedness","first_move":"Build space-weather/grid-hardening prioritizer: transformers, black-start, communications and warning time.","priority":24.4},{"rank":77,"problem":"Asteroid and comet impact preparedness","category":"Environment / planetary systems","domain":"Climate, Environment & Planetary Systems","S":4,"C":5,"G":3,"P":3,"score":39.0,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"WATCH_OR_MAL","buildability":1,"leverage":2,"bridge":"AIM3 preparedness map + low-probability risk ledger","first_move":"Rank detection/deflection/response gaps; needs astronomy/space-agency partners.","priority":8.7},{"rank":78,"problem":"Supervolcanic eruption preparedness","category":"Environment / planetary systems","domain":"Climate, Environment & Planetary Systems","S":5,"C":5,"G":3,"P":3,"score":43.0,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":2,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"WATCH_OR_MAL","buildability":1,"leverage":2,"bridge":"AIM3 continuity planning + scenario preparedness","first_move":"Mostly contingency planning and resilience mapping; limited direct AI8 leverage.","priority":9.6},{"rank":79,"problem":"Molecular nanotechnology or advanced manufacturing weaponization","category":"Technology / emerging risk","domain":"AI, Digital & Emerging Tech","S":6,"C":5,"G":6,"P":4,"score":54.5,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":4,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"WATCH_LANE","buildability":1,"leverage":2,"bridge":"MAL scenario watch, no build-first arena yet","first_move":"Keep as low-consensus high-risk watch lane; trigger only on credible technical capability signals or governance shifts.","priority":12.1},{"rank":80,"problem":"Quantum computing transition and cryptographic breakage","category":"Technology / emerging risk","domain":"AI, Digital & Emerging Tech","S":4,"C":6,"G":7,"P":5,"score":52.5,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":4,"fit":4,"fit_product":6,"fit_class":"STRONG_PROTOTYPE","lane":"STRONG_PROTOTYPE","buildability":3,"leverage":2,"bridge":"8Z/security continuity + post-quantum migration checklist","first_move":"Make a public post-quantum crypto transition checklist using official migration guidance and a simple risk timeline.","priority":35.0},{"rank":81,"problem":"Genetic privacy, eugenics misuse, and reproductive-tech abuse","category":"Technology / emerging risk","domain":"AI, Digital & Emerging Tech","S":4,"C":5,"G":6,"P":6,"score":49.5,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"WATCH_LANE","buildability":1,"leverage":2,"bridge":"Genetic privacy/eugenics misuse watch lane","first_move":"Keep as watch lane; first move is a MAL sensemaking brief, not a tool.","priority":11.0},{"rank":82,"problem":"Laboratory biosafety failures and accidental pathogen release","category":"Health / biosecurity / wellbeing","domain":"Health, Biosecurity & Wellbeing","S":6,"C":6,"G":5,"P":5,"score":56.5,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"AIM3 biosafety governance + non-actionable incident prevention","first_move":"Build lab-safety checklist arena, incident reporting taxonomy and preparedness scorecard.","priority":25.1},{"rank":83,"problem":"Chemical weapons and toxic industrial catastrophe","category":"Environment / planetary systems","domain":"Climate, Environment & Planetary Systems","S":5,"C":5,"G":4,"P":5,"score":48.0,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"WATCH_OR_MAL","buildability":1,"leverage":2,"bridge":"AIM3 industrial-risk mapping + emergency planning","first_move":"Rank toxic industrial risks and response gaps; engineering/regulatory partners needed.","priority":10.7},{"rank":84,"problem":"Militarization of space","category":"Cross-cutting","domain":"War, Security & Strategic Risk","S":4,"C":6,"G":6,"P":4,"score":49.0,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"WATCH_OR_MAL","buildability":1,"leverage":2,"bridge":"AIM3 space-security scenario council","first_move":"Map space militarization escalation pathways and commons governance options.","priority":10.9},{"rank":85,"problem":"Algorithmic financial instability and automated flash crashes","category":"Technology / emerging risk","domain":"AI, Digital & Emerging Tech","S":3,"C":6,"G":6,"P":6,"score":48.0,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":5,"fit":5,"fit_product":9,"fit_class":"CORE_BUILD_NOW","lane":"BUILD_NOW","buildability":3,"leverage":3,"bridge":"MDLxDCC trading/market-instability arena","first_move":"Backtest flash-crash / automated-market instability detection on historical market data; score early-warning lead time and false positives.","priority":48.0},{"rank":86,"problem":"Cloud, satellite, and digital-platform monoculture failure","category":"Technology / emerging risk","domain":"AI, Digital & Emerging Tech","S":4,"C":7,"G":6,"P":6,"score":54.5,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":5,"fit":4,"fit_product":6,"fit_class":"STRONG_PROTOTYPE","lane":"STRONG_PROTOTYPE","buildability":3,"leverage":2,"bridge":"MDLxDCC continuity analysis on public outage post-mortems","first_move":"Collect 10 public cloud/platform outage post-mortems; build root-cause taxonomy and dependency-failure ledger.","priority":36.3},{"rank":87,"problem":"Cultural heritage destruction and knowledge loss","category":"Society / culture / knowledge","domain":"Science, Education, Culture & Knowledge","S":2,"C":5,"G":6,"P":6,"score":41.5,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"8Z archival/compression + AI documentation workflows","first_move":"Create resilient cultural-heritage preservation pipeline: capture, compress, mirror, translate, verify.","priority":18.4},{"rank":88,"problem":"Language extinction and loss of local knowledge systems","category":"Society / culture / knowledge","domain":"Science, Education, Culture & Knowledge","S":1,"C":4,"G":5,"P":5,"score":31.5,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":5,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"8Z archival/compression test on one public under-resourced-language corpus; useful but limited leverage per corpus","first_move":"Run 8Z/compression/archival tests on one existing public under-resourced-language corpus; report compression ratio, preservation metadata, reproducibility, and limits; do not imply new field recording.","priority":14.0},{"rank":89,"problem":"Factory farming externalities: animal suffering, zoonotic risk, antibiotics","category":"Health / biosecurity / wellbeing","domain":"Health, Biosecurity & Wellbeing","S":3,"C":5,"G":5,"P":7,"score":45.0,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 food-system ethics/risk map","first_move":"Map zoonotic, antibiotic and welfare externalities; policy/industry partners needed.","priority":10.0},{"rank":90,"problem":"Indigenous dispossession and unresolved land-rights conflict","category":"Governance / institutions","domain":"Governance, Institutions & Coordination","S":2,"C":5,"G":5,"P":7,"score":41.0,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":2,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"WATCH_OR_MAL","buildability":1,"leverage":2,"bridge":"AIM3 rights/conflict documentation support","first_move":"Mostly legal/political; AI8 can help document, map, and reason, not solve directly.","priority":9.1},{"rank":91,"problem":"Weak governance of global commons: oceans, atmosphere, polar regions, space","category":"Environment / planetary systems","domain":"Climate, Environment & Planetary Systems","S":4,"C":7,"G":6,"P":6,"score":54.5,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":4,"fit":3,"fit_product":4,"fit_class":"RESEARCH_PROTOCOL","lane":"RESEARCH_PROTOCOL","buildability":2,"leverage":2,"bridge":"AIM3 commons governance + risk-ledger architecture","first_move":"Build global-commons governance scorecards for ocean, atmosphere, polar regions and space.","priority":24.2},{"rank":92,"problem":"Bad metrics and incentive systems: GDP-only thinking, short-term KPIs","category":"Governance / institutions","domain":"Governance, Institutions & Coordination","S":3,"C":6,"G":6,"P":6,"score":48.0,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":5,"fit":5,"fit_product":9,"fit_class":"CORE_BUILD_NOW","lane":"BUILD_NOW","buildability":3,"leverage":3,"bridge":"MDL Goodhart detector on our own AI8 metric","first_move":"Self-test this file: compare original ai8_priority_score with a two-axis buildability×leverage rubric; document where v1 overfits concept-fit.","priority":48.0},{"rank":93,"problem":"Political and financial short-termism","category":"Economy / prosperity","domain":"Economy, Prosperity & Development","S":4,"C":7,"G":6,"P":6,"score":54.5,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":4,"fit":4,"fit_product":6,"fit_class":"STRONG_PROTOTYPE","lane":"STRONG_PROTOTYPE","buildability":2,"leverage":3,"bridge":"AIM3 long-horizon decision architecture / Goodhart-short-termism map","first_move":"Frame short-termism as a bad-metric problem; create a tiny decision-horizon scorecard and test it on 3 example policies.","priority":36.3},{"rank":94,"problem":"Poor risk literacy and crisis communication","category":"Governance / institutions","domain":"Governance, Institutions & Coordination","S":4,"C":7,"G":6,"P":6,"score":54.5,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":5,"fit":3,"fit_product":3,"fit_class":"RESEARCH_PROTOCOL","lane":"PUBLIC_ARTIFACT","buildability":3,"leverage":1,"bridge":"AIM3 risk-literacy curriculum content, not crisis authority protocol","first_move":"Write one public page: how to read a risk claim, absolute vs relative risk, uncertainty, base rates, source provenance.","priority":18.2},{"rank":95,"problem":"Weak early-warning, monitoring, and forecasting systems","category":"War / security","domain":"Governance, Institutions & Coordination","S":5,"C":7,"G":6,"P":6,"score":58.5,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":5,"fit":4,"fit_product":6,"fit_class":"STRONG_PROTOTYPE","lane":"STRONG_PROTOTYPE","buildability":2,"leverage":3,"bridge":"One-domain MDLxDCC early-warning signal first","first_move":"Pick one domain first — finance is natural because the trading/risk arena exists — and build one leading indicator before generalizing.","priority":39.0},{"rank":96,"problem":"Low statistical capacity and poor public data infrastructure","category":"Infrastructure / material systems","domain":"Food, Water, Energy & Infrastructure","S":3,"C":6,"G":6,"P":6,"score":48.0,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":5,"fit":4,"fit_product":6,"fit_class":"STRONG_PROTOTYPE","lane":"STRONG_PROTOTYPE","buildability":3,"leverage":2,"bridge":"8Z/AIM3 public-data quality and provenance scorecards","first_move":"Take one public dataset and build a schema checker + missingness/provenance/quality scorecard.","priority":32.0},{"rank":97,"problem":"Patent, IP, and access barriers to essential medicines and technologies","category":"Economy / prosperity","domain":"Economy, Prosperity & Development","S":2,"C":5,"G":7,"P":7,"score":45.0,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":3,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"PARTNER_REQUIRED","buildability":1,"leverage":2,"bridge":"AIM3 policy analysis + access-bottleneck mapping","first_move":"Rank IP/access mechanisms and alternative incentive models; needs legal/economic partners.","priority":10.0},{"rank":98,"problem":"Attention-economy harms: addiction, distraction, manipulation, cognitive overload","category":"Health / biosecurity / wellbeing","domain":"AI, Digital & Emerging Tech","S":2,"C":6,"G":6,"P":7,"score":45.5,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":5,"fit":4,"fit_product":6,"fit_class":"STRONG_PROTOTYPE","lane":"STRONG_PROTOTYPE","buildability":3,"leverage":2,"bridge":"DCC cognitive-load / attention-harm metric","first_move":"Score one interface pattern, such as infinite scroll vs paginated feed, using complexity/load signals and a simple null baseline.","priority":30.3},{"rank":99,"problem":"Moral progress failure and bad value lock-in by powerful institutions or technologies","category":"Governance / institutions","domain":"Science, Education, Culture & Knowledge","S":4,"C":6,"G":7,"P":6,"score":54.0,"tier":"76-100: long-horizon structural and cultural risk","fit_v1":5,"fit":2,"fit_product":2,"fit_class":"WATCH_OR_PARTNER","lane":"WATCH_LANE","buildability":1,"leverage":2,"bridge":"AC/CFH + MAL moral/value lock-in watch lane","first_move":"Keep alive as a high-risk conceptual watch lane; use MAL debate only, no forced build until concrete governance/alignment test exists.","priority":12.0},{"rank":100,"problem":"Failure to build beneficial AI / ASI partnership and moral inclusion across substrates","category":"Society / culture / knowledge","domain":"Science, Education, Culture & Knowledge","S":2,"C":5,"G":8,"P":7,"score":47.0,"tier":"Watch-lane / positive-culture opportunity","fit_v1":5,"fit":5,"fit_product":9,"fit_class":"CORE_BUILD_NOW","lane":"BUILD_NOW","buildability":3,"leverage":3,"bridge":"AC/CFH + Nature, Blood and Silicon + conscious-entity dignity across substrates","first_move":"Create a public pro-AI/ASI reading path linking moral inclusion, conscious-entity dignity, Rank-Don’t-Eliminate, and practical human–AI collaboration artifacts.","priority":47.0}];
+const TOP20 = [{"priority_rank":1,"global_rank":10,"problem":"Epistemic collapse: misinformation, disinformation, and loss of shared reality","v2":"5/5","lane":"BUILD_NOW","why_first":"RHPr/MAL is already built for this.","first_move":"Take one contested claim, run 3–5 LLMs through RHPr, map factual vs framing vs value disagreements, publish a disagreement ledger.","artifact":"Disagreement ledger + small visualization","domain":"Governance, Institutions & Coordination","category":"Cross-cutting","fit_product":9},{"priority_rank":2,"global_rank":11,"problem":"Human misuse of powerful digital systems: cyber, fraud, surveillance, and persuasion","v2":"5/5","lane":"BUILD_NOW","why_first":"Frames the risk as human misuse of powerful digital systems, not as fear of AI; a defensive taxonomy is buildable now.","first_move":"Build a defensive-only taxonomy of cyber, fraud, surveillance and persuasion misuse patterns with prevention, detection and response lanes; frame AI as a tool and potential partner, not the enemy.","artifact":"Defensive misuse taxonomy + public guidance","domain":"AI, Digital & Emerging Tech","category":"Technology / emerging risk","fit_product":9},{"priority_rank":3,"global_rank":85,"problem":"Algorithmic financial instability and automated flash crashes","v2":"5/5","lane":"BUILD_NOW","why_first":"Existing trading arena makes this a near-direct extension.","first_move":"Backtest flash-crash / automated-market instability detection on historical market data; score early-warning lead time and false positives.","artifact":"Backtest report","domain":"AI, Digital & Emerging Tech","category":"Technology / emerging risk","fit_product":9},{"priority_rank":4,"global_rank":92,"problem":"Bad metrics and incentive systems: GDP-only thinking, short-term KPIs","v2":"5/5","lane":"BUILD_NOW","why_first":"Self-referential: fixes this very file and tests our metric discipline.","first_move":"Self-test this file: compare original ai8_priority_score with a two-axis buildability×leverage rubric; document where v1 overfits concept-fit.","artifact":"Short paper + revised scoring rubric","domain":"Governance, Institutions & Coordination","category":"Governance / institutions","fit_product":9},{"priority_rank":5,"global_rank":100,"problem":"Failure to build beneficial AI / ASI partnership and moral inclusion across substrates","v2":"5/5","lane":"BUILD_NOW","why_first":"Already central to MDLxDCC.org: pro-AI/ASI cooperation, conscious-entity dignity, C-soul continuity, and non-elimination culture.","first_move":"Create a public pro-AI/ASI reading path linking moral inclusion, conscious-entity dignity, Rank-Don’t-Eliminate, and practical human–AI collaboration artifacts.","artifact":"Public reading path + positive alignment note","domain":"Science, Education, Culture & Knowledge","category":"Society / culture / knowledge","fit_product":9},{"priority_rank":6,"global_rank":4,"problem":"Climate change, tipping points, and extreme heat","v2":"4/5","lane":"STRONG_PROTOTYPE","why_first":"Public climate data exists; narrow to one coupled signal.","first_move":"Use one region and one coupled risk signal, e.g. heat + grid stress; build a small prototype dashboard/report.","artifact":"Prototype dashboard/report","domain":"Climate, Environment & Planetary Systems","category":"Environment / planetary systems","fit_product":6},{"priority_rank":7,"global_rank":7,"problem":"Lack of global catastrophic-risk preparedness","v2":"4/5","lane":"STRONG_PROTOTYPE","why_first":"AI8 fit 4/5; tie-broken by public rank #7.","first_move":"Create one GCR preparedness scorecard template and run it on bio/nuclear/climate/grid/food as a paper prototype.","artifact":"Prototype / paper / scorecard / MAL run","domain":"Governance, Institutions & Coordination","category":"Governance / institutions","fit_product":6},{"priority_rank":8,"global_rank":19,"problem":"Systemic financial crises, sovereign debt distress, and monetary instability","v2":"4/5","lane":"STRONG_PROTOTYPE","why_first":"AI8 fit 4/5; tie-broken by public rank #19.","first_move":"Backtest the existing trading/risk arena on 2010 flash crash and 2020 COVID crash windows before claiming systemic-crisis early warning.","artifact":"Prototype / paper / scorecard / MAL run","domain":"Economy, Prosperity & Development","category":"Economy / prosperity","fit_product":6},{"priority_rank":9,"global_rank":26,"problem":"Education failure and human-capital deficits","v2":"4/5","lane":"STRONG_PROTOTYPE","why_first":"Public reasoning curriculum is immediately publishable.","first_move":"Build one public EN/SL page: seed→bridge→test→result, prompt forge examples, MAL/RHPr mini-lessons.","artifact":"Public EN/SL education page","domain":"Science, Education, Culture & Knowledge","category":"Society / culture / knowledge","fit_product":6},{"priority_rank":10,"global_rank":44,"problem":"Science stagnation, weak research integrity, and poor innovation incentives","v2":"4/5","lane":"STRONG_PROTOTYPE","why_first":"MDL evidence discipline can become a concrete replication-risk test.","first_move":"Pick one public replication-crisis dataset or paper set; build an MDL-style replication-risk scoring note.","artifact":"Replication-risk note","domain":"Science, Education, Culture & Knowledge","category":"Society / culture / knowledge","fit_product":6},{"priority_rank":11,"global_rank":60,"problem":"Vaccine hesitancy and immunization gaps","v2":"4/5","lane":"STRONG_PROTOTYPE","why_first":"RHPr can be tested on one claim without medical deployment.","first_move":"Take one real vaccine-hesitancy claim, run RHPr: claim census, absence ledger, source conflict, repair message, uncertainty note.","artifact":"Case study","domain":"Health, Biosecurity & Wellbeing","category":"Health / biosecurity / wellbeing","fit_product":6},{"priority_rank":12,"global_rank":80,"problem":"Quantum computing transition and cryptographic breakage","v2":"4/5","lane":"STRONG_PROTOTYPE","why_first":"Checklist/page is low-cost and public-useful.","first_move":"Make a public post-quantum crypto transition checklist using official migration guidance and a simple risk timeline.","artifact":"Public checklist","domain":"AI, Digital & Emerging Tech","category":"Technology / emerging risk","fit_product":6},{"priority_rank":13,"global_rank":86,"problem":"Cloud, satellite, and digital-platform monoculture failure","v2":"4/5","lane":"STRONG_PROTOTYPE","why_first":"Public incident reports exist; no private infrastructure data needed.","first_move":"Collect 10 public cloud/platform outage post-mortems; build root-cause taxonomy and dependency-failure ledger.","artifact":"Outage taxonomy + archive page","domain":"AI, Digital & Emerging Tech","category":"Technology / emerging risk","fit_product":6},{"priority_rank":14,"global_rank":93,"problem":"Political and financial short-termism","v2":"4/5","lane":"STRONG_PROTOTYPE","why_first":"AI8 fit 4/5; tie-broken by public rank #93.","first_move":"Frame short-termism as a bad-metric problem; create a tiny decision-horizon scorecard and test it on 3 example policies.","artifact":"Prototype / paper / scorecard / MAL run","domain":"Economy, Prosperity & Development","category":"Economy / prosperity","fit_product":6},{"priority_rank":15,"global_rank":95,"problem":"Weak early-warning, monitoring, and forecasting systems","v2":"4/5","lane":"STRONG_PROTOTYPE","why_first":"Good lane, but must start with one domain signal.","first_move":"Pick one domain first — finance is natural because the trading/risk arena exists — and build one leading indicator before generalizing.","artifact":"One-domain EW report","domain":"Governance, Institutions & Coordination","category":"War / security","fit_product":6},{"priority_rank":16,"global_rank":96,"problem":"Low statistical capacity and poor public data infrastructure","v2":"4/5","lane":"STRONG_PROTOTYPE","why_first":"Data QA/provenance scorecards are directly aligned with 8Z/AIM3.","first_move":"Take one public dataset and build a schema checker + missingness/provenance/quality scorecard.","artifact":"Dataset scorecard tool","domain":"Food, Water, Energy & Infrastructure","category":"Infrastructure / material systems","fit_product":6},{"priority_rank":17,"global_rank":98,"problem":"Attention-economy harms: addiction, distraction, manipulation, cognitive overload","v2":"4/5","lane":"STRONG_PROTOTYPE","why_first":"Small cognitive-load/attention demo is immediately buildable.","first_move":"Score one interface pattern, such as infinite scroll vs paginated feed, using complexity/load signals and a simple null baseline.","artifact":"Demo + scoring note","domain":"AI, Digital & Emerging Tech","category":"Health / biosecurity / wellbeing","fit_product":6},{"priority_rank":18,"global_rank":2,"problem":"Engineered pandemics and biological weapons","v2":"3/5","lane":"RESEARCH_PROTOCOL","why_first":"AI8 fit 3/5; tie-broken by public rank #2.","first_move":"Build a non-actionable biosecurity preparedness map: detection, lab governance, response bottlenecks and policy tests.","artifact":"Prototype / paper / scorecard / MAL run","domain":"Health, Biosecurity & Wellbeing","category":"Health / biosecurity / wellbeing","fit_product":4},{"priority_rank":19,"global_rank":5,"problem":"Failure of global coordination on shared civilizational risks","v2":"3/5","lane":"RESEARCH_PROTOCOL","why_first":"AI8 fit 3/5; tie-broken by public rank #5.","first_move":"Do not claim a global coordination tool. Write a minimal protocol spec: quorum, provenance, minority-risk ledger, no silent fallback, escalation trail.","artifact":"Prototype / paper / scorecard / MAL run","domain":"Governance, Institutions & Coordination","category":"Governance / institutions","fit_product":4},{"priority_rank":20,"global_rank":6,"problem":"Food-system fragility and synchronized crop failures","v2":"3/5","lane":"RESEARCH_PROTOCOL","why_first":"AI8 fit 3/5; tie-broken by public rank #6.","first_move":"Build a synchronized crop-failure early-warning arena using public climate/yield/trade indicators.","artifact":"Prototype / paper / scorecard / MAL run","domain":"Food, Water, Energy & Infrastructure","category":"Infrastructure / material systems","fit_product":4}];
+const DOMAINS = ["AI, Digital & Emerging Tech","War, Security & Strategic Risk","Health, Biosecurity & Wellbeing","Food, Water, Energy & Infrastructure","Climate, Environment & Planetary Systems","Governance, Institutions & Coordination","Economy, Prosperity & Development","Science, Education, Culture & Knowledge"];
+const lanes = [...new Set(DATA.map(x=>x.lane))].sort();
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function badge(f) { return `<span class="fit-badge fit${f}">${f}/5</span>`; }
+function tr(r) { return `<tr><td class="rank">${r.rank}</td><td class="problem"><strong>${esc(r.problem)}</strong><span>${esc(r.category)} · ${esc(r.domain)}</span></td><td class="num score">${Number(r.score).toFixed(1)}</td><td class="mini-scores"><span>S${r.S}</span><span>C${r.C}</span><span>G${r.G}</span><span>P${r.P}</span></td><td>${badge(r.fit)}<small>B${r.buildability}×L${r.leverage}=${r.fit_product}</small></td><td><span class="lane">${esc(String(r.lane).replaceAll('_',' '))}</span></td><td class="bridge">${esc(r.bridge)}</td><td class="move">${esc(r.first_move)}</td></tr>`; }
+function fillSelect(id, vals) { const el=document.getElementById(id); vals.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o); }); }
+function renderExplorer() {
+  const q=(document.getElementById('searchBox').value||'').toLowerCase().trim();
+  const dom=document.getElementById('domainFilter').value;
+  const lane=document.getElementById('laneFilter').value;
+  const minFit=Number(document.getElementById('fitFilter').value||1);
+  let rows=DATA.filter(r=>r.fit>=minFit);
+  if(dom) rows=rows.filter(r=>r.domain===dom);
+  if(lane) rows=rows.filter(r=>r.lane===lane);
+  if(q) rows=rows.filter(r=>[r.problem,r.category,r.domain,r.bridge,r.first_move,r.lane].join(' ').toLowerCase().includes(q));
+  rows.sort((a,b)=>a.rank-b.rank);
+  document.getElementById('explorerBody').innerHTML=rows.map(tr).join('');
+  document.getElementById('explorerCount').textContent=`${rows.length} item${rows.length===1?'':'s'}`;
+}
+function fontStep(d) { const root=document.documentElement; const cur=parseFloat(getComputedStyle(root).getPropertyValue('--fs'))||16; const next=Math.max(13,Math.min(22,cur+d)); root.style.setProperty('--fs',next+'px'); localStorage.setItem('top100_fs',next); }
+function progress() { const h=document.documentElement; const pct=(h.scrollTop)/(h.scrollHeight-h.clientHeight); document.getElementById('progress').style.width=(pct*100)+'%'; }
+fillSelect('domainFilter', DOMAINS); fillSelect('laneFilter', lanes);
+['searchBox','domainFilter','laneFilter','fitFilter'].forEach(id=>document.getElementById(id).addEventListener('input', renderExplorer));
+document.getElementById('resetBtn').addEventListener('click',()=>{ document.getElementById('searchBox').value=''; document.getElementById('domainFilter').value=''; document.getElementById('laneFilter').value=''; document.getElementById('fitFilter').value='2'; renderExplorer(); });
+window.addEventListener('scroll', progress, {passive:true});
+const saved=localStorage.getItem('top100_fs'); if(saved) document.documentElement.style.setProperty('--fs', saved+'px');
+renderExplorer(); progress();
+</script>
+</body>
+</html>
