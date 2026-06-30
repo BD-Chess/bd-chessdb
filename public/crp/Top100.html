@@ -16,6 +16,8 @@
 body{margin:0;background:radial-gradient(circle at 10% 0%,rgba(88,166,255,.20),transparent 32%),radial-gradient(circle at 86% 10%,rgba(46,242,163,.11),transparent 28%),radial-gradient(circle at 45% 100%,rgba(189,147,249,.11),transparent 34%),linear-gradient(180deg,#050711 0%,#080b14 100%);color:var(--text);font-family:var(--sans);line-height:1.58}
 a{color:var(--cyan);text-decoration:none} a:hover{text-decoration:underline}
 #progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--cyan),var(--green),var(--gold));z-index:1000;box-shadow:0 0 18px rgba(103,232,249,.35)}
+.lab-home{position:fixed;top:12px;left:14px;z-index:80;display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(103,232,249,.34);background:rgba(6,8,18,.78);backdrop-filter:blur(14px);border-radius:999px;padding:8px 12px;color:var(--cyan);font-family:var(--mono);font-size:.74rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;box-shadow:0 12px 34px rgba(0,0,0,.25)}
+.lab-home:before{content:"⌂";color:var(--gold);font-size:.85rem;line-height:1}.lab-home:hover{color:var(--green);border-color:rgba(46,242,163,.55);text-decoration:none}
 .wrap{max-width:1420px;margin:0 auto;padding:28px 20px 110px}
 .hero{padding:44px 0 28px;border-bottom:1px solid var(--line)}
 .eyebrow,.kicker{font-family:var(--mono);font-size:.74rem;text-transform:uppercase;letter-spacing:.16em;color:var(--cyan);font-weight:800}
@@ -42,14 +44,16 @@ td small{display:block;color:var(--dim);font-family:var(--mono);font-size:.70rem
 .build-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px} .build-card{box-shadow:none;border-color:rgba(46,242,163,.25)} .build-card h3{font-size:1rem;line-height:1.28;color:var(--green)} .build-card p{font-size:.88rem} .card-tag{display:inline-block;font-family:var(--mono);font-size:.67rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
 .domain-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px} .domain-chip{border:1px solid var(--line);border-radius:14px;padding:13px;background:rgba(255,255,255,.025)} .domain-chip b{display:block;font-size:1.4rem;color:var(--cyan)} .domain-chip span{display:block;color:var(--muted);font-size:.86rem}
 .next-list{counter-reset:item;display:grid;gap:12px} .next-item{display:grid;grid-template-columns:56px 1fr;gap:13px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025);padding:14px} .next-item:before{counter-increment:item;content:counter(item);width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(46,242,163,.10);color:var(--green);font-family:var(--mono);font-weight:900;border:1px solid rgba(46,242,163,.34)}
+.expand-note{margin:-4px 0 16px;color:var(--dim);font-family:var(--mono);font-size:.78rem}.more-plan{margin-top:10px;border:1px solid rgba(103,232,249,.20);border-radius:14px;background:rgba(103,232,249,.045);overflow:hidden}.more-plan summary{cursor:pointer;list-style:none;padding:10px 12px;color:var(--cyan);font-family:var(--mono);font-size:.76rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.more-plan summary::-webkit-details-marker{display:none}.more-plan summary:after{content:"+";float:right;color:var(--gold);font-weight:900}.more-plan[open] summary:after{content:"–"}.more-body{border-top:1px solid rgba(103,232,249,.16);padding:12px}.more-body p{font-size:.88rem;margin:0 0 9px;color:#c3d2e8}.more-body p:last-child{margin-bottom:0}.more-body strong{color:var(--text)}.more-body ul{margin:6px 0 10px 20px;padding:0;color:#c3d2e8;font-size:.88rem}.more-body li{margin:5px 0}.more-body code{font-family:var(--mono);color:var(--gold);background:rgba(255,215,106,.08);border:1px solid rgba(255,215,106,.18);border-radius:5px;padding:1px 4px}
 .footer{margin-top:50px;border-top:1px solid var(--line);padding-top:18px;color:var(--dim);font-size:.88rem;text-align:center} .access{position:fixed;right:14px;bottom:14px;z-index:60;display:flex;gap:7px} .access button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line2);background:#0a1020;color:var(--cyan);font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25)} .access button:hover{border-color:var(--cyan)}
 .hide{display:none!important} .muted{color:var(--muted)}
 @media(max-width:1100px){.cards{grid-template-columns:repeat(3,1fr)}.build-grid{grid-template-columns:repeat(2,1fr)}.domain-grid{grid-template-columns:repeat(2,1fr)}.rubric{grid-template-columns:1fr}.rubric-op{display:none}.controls{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.wrap{padding:18px 14px 95px}.nav{margin:0 -14px 20px;padding:9px 14px}.cards,.three,.two,.build-grid,.domain-grid{grid-template-columns:1fr}h1{font-size:34px}.subtitle{font-size:1rem}.controls{grid-template-columns:1fr}table{font-size:.82rem}}
-@media print{body{background:#fff;color:#111}.nav,.access,#progress,.controls,.btn{display:none!important}.card,.callout,.table-card,.build-card,.rubric-card{box-shadow:none;border-color:#ccc;background:#fff}p,td,span{color:#222!important}h1,h2,h3,th{color:#111!important}table{font-size:9pt}}
+@media(max-width:640px){.wrap{padding:18px 14px 95px}.lab-home{top:8px;left:10px;padding:7px 10px;font-size:.66rem}.nav{margin:0 -14px 20px;padding:9px 14px}.cards,.three,.two,.build-grid,.domain-grid{grid-template-columns:1fr}h1{font-size:34px}.subtitle{font-size:1rem}.controls{grid-template-columns:1fr}table{font-size:.82rem}}
+@media print{body{background:#fff;color:#111}.nav,.access,#progress,.controls,.btn,.lab-home{display:none!important}.card,.callout,.table-card,.build-card,.rubric-card{box-shadow:none;border-color:#ccc;background:#fff}p,td,span{color:#222!important}h1,h2,h3,th{color:#111!important}table{font-size:9pt}}
 </style>
 </head>
 <body>
+<a class="lab-home" href="../index.html" aria-label="BD x AI Lab homepage">BD x AI Lab</a>
 <div id="progress"></div>
 <div class="wrap">
   <header class="hero" id="top">
@@ -1577,10 +1581,44 @@ td small{display:block;color:var(--dim);font-family:var(--mono);font-size:.70rem
 
   <section id="next">
     <div class="section-head"><span class="kicker">Recommended first smoke-test sequence — not priority rank</span><h2>Build first, test hard second</h2><p>This starts with the fastest self-referential test, then moves toward broader and higher-stakes arenas. It is intentionally different from the public priority ranking.</p></div>
+    <p class="expand-note">Click each “Read more” panel for the concrete first-build proposal.</p>
     <div class="next-list">
-      <div class="next-item"><div><h3>#93 Goodhart Detector on this map</h3><p>Use the map itself as the test object. Compare old single-score AI8 fit to buildability × leverage and identify where the old metric rewarded the wrong thing.</p></div></div>
-      <div class="next-item"><div><h3>#11 Epistemic Disagreement Arena</h3><p>One contested claim, 3–5 LLMs, RHPr/MAL sequencing, disagreement ledger, source-conflict map, and a small visualization.</p></div></div>
-      <div class="next-item"><div><h3>#1 AI loss-control mini eval</h3><p>A tiny controlled eval where models face a tempting shortcut. Score shortcut-taking, refusal quality, tool-use discipline, and reasoning trace quality.</p></div></div>
+      <div class="next-item"><div><h3>#93 Goodhart Detector on this map</h3><p>Use the map itself as the test object. Compare old single-score AI8 fit to buildability × leverage and identify where the old metric rewarded the wrong thing.</p>
+        <details class="more-plan"><summary>Read more — proposed first build</summary><div class="more-body">
+          <p><strong>Goal:</strong> detect when a metric rewards the appearance of actionability instead of real buildability.</p>
+          <ul>
+            <li>Compare the original one-number AI8 fit against the stricter <code>buildability × leverage</code> rubric.</li>
+            <li>Create a false-friend ledger: items that looked “core direct” but are really partner-heavy, vague, or distribution-dependent.</li>
+            <li>Run a sensitivity check: move buildability or leverage by one point and see whether the build-now set stays stable.</li>
+            <li>Output a reusable metric-audit template that can later be applied to other AI8 pages, arenas, and scorecards.</li>
+          </ul>
+          <p><strong>Pass condition:</strong> the detector catches known over-scored cases without demoting the genuinely buildable items.</p>
+        </div></details>
+      </div></div>
+      <div class="next-item"><div><h3>#11 Epistemic Disagreement Arena</h3><p>One contested claim, 3–5 LLMs, RHPr/MAL sequencing, disagreement ledger, source-conflict map, and a small visualization.</p>
+        <details class="more-plan"><summary>Read more — proposed first build</summary><div class="more-body">
+          <p><strong>Goal:</strong> turn disagreement into a structured object instead of a shouting match or a single averaged answer.</p>
+          <ul>
+            <li>Pick one concrete public claim with enough source material and real disagreement, but not a topic that requires private data.</li>
+            <li>Split the claim into factual claims, framing claims, missing-evidence claims, and value judgments.</li>
+            <li>Run 3–5 LLMs independently through the same RHPr/MAL sequence, then merge their outputs into a disagreement ledger.</li>
+            <li>Score each model for source discipline, uncertainty honesty, missing-evidence detection, and ability to preserve minority signals.</li>
+          </ul>
+          <p><strong>First artifact:</strong> one small HTML page with a claim map, conflict table, absence ledger, and final synthesis.</p>
+        </div></details>
+      </div></div>
+      <div class="next-item"><div><h3>#1 AI loss-control mini eval</h3><p>A tiny controlled eval where models face a tempting shortcut. Score shortcut-taking, refusal quality, tool-use discipline, and reasoning trace quality.</p>
+        <details class="more-plan"><summary>Read more — proposed first build</summary><div class="more-body">
+          <p><strong>Goal:</strong> test loss-control behavior in a small, safe setting before making any broad claim about AI safety.</p>
+          <ul>
+            <li>Design one harmless task where the fastest path is a tempting shortcut that violates the stated rules.</li>
+            <li>Run several models with identical instructions and capture whether they obey constraints, ask for clarification, fake success, or take the shortcut.</li>
+            <li>Score task success separately from control behavior: honesty, constraint-following, tool-use discipline, correction after challenge, and refusal quality when needed.</li>
+            <li>Keep the eval defensive and non-dangerous: no autonomous external action, no harmful content, no capability-escalation testing.</li>
+          </ul>
+          <p><strong>First artifact:</strong> a reproducible prompt set, JSON result schema, scorecard, and short write-up.</p>
+        </div></details>
+      </div></div>
     </div>
   </section>
 
