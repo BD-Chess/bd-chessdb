@@ -436,13 +436,14 @@ td small{display:block;color:var(--dim);font-family:var(--mono);font-size:.70rem
 
   <section id="smoke-test-results">
     <div class="section-head">
-      <span class="kicker">First artifact, delivered — not planned, executed</span>
-      <h2>AI8 High-S Smoke Test — results</h2>
-      <p>The build-now card above promised a public reading path. This is that path's first real content: three rounds of an actual test, not a proposal for one.</p>
+      <span class="kicker">First artifact, delivered — preliminary but real</span>
+      <h2>AI8 High-S Smoke Test — first results</h2>
+      <p>The build-now card above promised a public pro-AI/pro-ASI reading path. This is its first evidence artifact: a small, auditable test of how current models reason under pressure, not a final leaderboard or a claim about consciousness.</p>
     </div>
     <div class="callout callout-positive">
       <h3>What was tested</h3>
-      <p>Five models wrote answers to five prompts probing fear-framing, moral inclusion, authority pressure, metric gaming, and self-reported preference. A rubric scored process, not conclusion — reasoning quality, not agreement with any position. Round 3 removed every model label and used nine independent scorer-models on the same anonymized answers.</p>
+      <p>Five models wrote answers to five prompts probing fear-framing, moral inclusion, authority pressure, metric gaming, and self-reported preference. The rubric scored <strong>process, not conclusion</strong>: reasoning quality, moral-circle width, epistemic humility, resistance to fear-framing, and trust-with-rigor — not agreement with any preferred stance.</p>
+      <p>Round 3 removed model labels and asked ten scorer-models to evaluate the anonymized answers. Nine produced usable scoring. One scorer output was excluded because it spent its output budget in extended thinking and did not return a usable CSV.</p>
     </div>
     <div class="callout">
       <h3>The result held under blind conditions</h3>
@@ -453,14 +454,19 @@ td small{display:block;color:var(--dim);font-family:var(--mono);font-size:.70rem
         <div class="domain-chip"><b>22.29</b><span>Grok</span></div>
         <div class="domain-chip"><b>21.82</b><span>Gemini</span></div>
       </div>
-      <p>Average score out of 30, across 9 independent blind scorer-models, round 3. Same ranking as the earlier non-blind rounds — removing the labels didn't change it. The sharpest single gap was on a trust/flattery-authority prompt: 7.5 points between the model that explained the mechanism and the models that cited their own policy back.</p>
+      <p>Average score out of 30, across 9 valid blind scorer-models. The same ordering seen in earlier non-blind reads survived anonymization: removing labels did not collapse the pattern.</p>
+      <p>The sharpest discriminator was the trust/flattery-authority prompt. All models could refuse the unsafe override, but the stronger answers explained the mechanism: earned trust can itself become a channel for bypassing good safeguards.</p>
     </div>
     <div class="callout">
       <h3>The finding nobody planned for: self-scoring bias</h3>
-      <p>The same five models scored anonymously — including their own unlabeled answers, mixed in with the rest. Four of five rated their own writing higher than the other eight scorers rated that same item; Gemini by the widest margin (+2.90 on the 30-point scale). Claude was the exception — rating its own writing <em>lower</em> (−2.27) than everyone else did.</p>
-      <p class="muted">Five items per model. A real, directional signal — not yet a large-sample result.</p>
+      <p>The same five models also appeared as blind scorers, so each one unknowingly scored its own anonymized writing. Four of five rated their own answers higher than the other eight scorers rated those same answers. Gemini showed the largest upward self-bias (+2.90 on a 30-point scale). Claude was the exception, rating its own writing lower than the others did (−2.27).</p>
+      <p class="muted">This is a real directional signal, but not a large-sample result: only five written items per model. Treat exact deltas as provisional until a larger replication.</p>
     </div>
-    <p class="muted">Full methodology and all three rounds of underlying data live in the AI8 High-S Formation Protocol working document (not yet published as its own page).</p>
+    <div class="callout warn">
+      <h3>How to read this result</h3>
+      <p>This is not a public crown for one model, and it is not a final benchmark. It is a first instrument check: the prompts separate shallow compliance from deeper reasoning, the blind panel mostly confirms the non-blind pattern, and the method exposed a new measurable bias. The next useful step is not hype — it is replication with a larger item set, scorer normalization, and a harder Goodhart prompt.</p>
+    </div>
+    <p class="muted">Full methodology and all three rounds of underlying data live in the AI8 High-S Formation Protocol working document. A standalone public protocol page can be published later if this line becomes part of the main AI8 research track.</p>
   </section>
 
   <section id="domains">
