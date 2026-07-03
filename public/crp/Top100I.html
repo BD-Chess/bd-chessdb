@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Top 100 Inventions — Existing Inventions + Future Invention Seeds</title>
+<meta name="description" content="AI8 / MDLxDCC Top 100 inventions atlas: existing inventions that changed the world, plus BD × AI future invention seeds and proposals." />
+<style>
+:root {
+  --bg:#060812; --bg2:#0a1020; --panel:#10182b; --panel2:#0d1424; --card:#111b30;
+  --line:#24334f; --line2:#344b70; --text:#e9f0fb; --muted:#9cafc9; --dim:#6d7c93;
+  --cyan:#67e8f9; --blue:#58a6ff; --green:#2ef2a3; --gold:#ffd76a; --orange:#ffb86c; --red:#ff6b84; --violet:#bd93f9;
+  --radius:18px; --shadow:0 24px 70px rgba(0,0,0,.34); --mono:Consolas,"JetBrains Mono",Menlo,monospace; --sans:Inter,"Segoe UI",Arial,sans-serif; --fs:16px;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth;font-size:var(--fs)}
+body{margin:0;background:radial-gradient(circle at 10% 0%,rgba(88,166,255,.18),transparent 32%),radial-gradient(circle at 86% 8%,rgba(255,215,106,.12),transparent 28%),radial-gradient(circle at 45% 100%,rgba(46,242,163,.09),transparent 34%),linear-gradient(180deg,#050711 0%,#080b14 100%);color:var(--text);font-family:var(--sans);line-height:1.58}
+a{color:var(--cyan);text-decoration:none} a:hover{text-decoration:underline}
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--cyan),var(--green),var(--gold));z-index:1000;box-shadow:0 0 18px rgba(103,232,249,.35)}
+.lab-home{position:fixed;top:12px;left:14px;z-index:80;display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(103,232,249,.34);background:rgba(6,8,18,.78);backdrop-filter:blur(14px);border-radius:999px;padding:8px 12px;color:var(--cyan);font-family:var(--mono);font-size:.74rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;box-shadow:0 12px 34px rgba(0,0,0,.25)}
+.lab-home:before{content:"⌂";color:var(--gold);font-size:.85rem;line-height:1} .lab-home:hover{color:var(--green);border-color:rgba(46,242,163,.55);text-decoration:none}
+.wrap{max-width:1420px;margin:0 auto;padding:28px 20px 110px} .hero{padding:48px 0 28px;border-bottom:1px solid var(--line)}
+.eyebrow,.kicker{font-family:var(--mono);font-size:.74rem;text-transform:uppercase;letter-spacing:.16em;color:var(--cyan);font-weight:800}
+h1{font-size:clamp(34px,5.5vw,78px);line-height:1.02;margin:12px 0 14px;letter-spacing:-.055em;max-width:1120px}
+.subtitle{max-width:1080px;color:var(--muted);font-size:1.12rem;margin:0 0 18px}
+.edition-note{max-width:1080px;margin:10px 0 0;color:#c8d7ef;font-family:var(--mono);font-size:.78rem;line-height:1.55;border-left:3px solid rgba(103,232,249,.55);padding:9px 0 9px 13px;background:rgba(103,232,249,.035)}
+.hero-note{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px} .pill{font-family:var(--mono);font-size:.75rem;border:1px solid var(--line2);border-radius:999px;padding:6px 10px;color:var(--muted);background:rgba(255,255,255,.03)} .pill.good{border-color:rgba(46,242,163,.36);color:var(--green)} .pill.gold{border-color:rgba(255,215,106,.36);color:var(--gold)} .pill.cyan{border-color:rgba(103,232,249,.36);color:var(--cyan)}
+.nav{position:sticky;top:0;z-index:50;margin:0 -20px 22px;padding:10px 20px;background:rgba(6,8,18,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);display:flex;gap:8px;overflow-x:auto}
+.nav a{white-space:nowrap;border:1px solid var(--line2);background:rgba(10,16,32,.82);border-radius:999px;padding:7px 11px;color:var(--muted);font-size:.82rem;text-decoration:none} .nav a:hover{color:var(--cyan);border-color:var(--cyan)} .nav a b{color:var(--gold);font-weight:700}
+section{margin:44px 0} .section-head{margin-bottom:16px} h2{font-size:clamp(26px,3.4vw,44px);line-height:1.08;margin:7px 0 10px;letter-spacing:-.035em} h3{font-size:1.16rem;margin:0 0 8px;color:#f5f8ff} p{margin:0 0 12px;color:var(--muted)}
+.grid{display:grid;gap:16px} .lead-grid{grid-template-columns:repeat(5,minmax(0,1fr));margin-top:20px} .three{grid-template-columns:repeat(3,minmax(0,1fr))} .two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.lead-card,.callout,.table-card,.invention-card,.seed-card,.domain-chip{background:linear-gradient(180deg,rgba(18,27,48,.96),rgba(11,17,30,.98));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.lead-card{min-height:230px;position:relative} .lead-card .lead-rank{font-family:var(--mono);color:var(--gold);font-weight:900} .lead-card .score{font-family:var(--mono);font-size:1.9rem;font-weight:900;margin:7px 0;color:var(--green)} .lead-card small{color:var(--dim);font-family:var(--mono);font-size:.72rem}
+.callout{border-color:rgba(103,232,249,.25);background:linear-gradient(180deg,rgba(103,232,249,.07),rgba(13,20,36,.96))} .callout strong{color:var(--text)} .warn{border-color:rgba(255,215,106,.25);background:rgba(255,215,106,.07)}
+.table-card{padding:0;overflow:hidden} .table-title{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap} .table-title p{margin:0}
+.table-wrap{overflow:auto;max-width:100%} table{width:100%;border-collapse:collapse;font-size:.86rem;min-width:1000px} th,td{padding:11px 10px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top} th{position:sticky;top:0;z-index:3;background:#111a2f;color:#cfe3ff;font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;text-align:left} tr:hover td{background:rgba(88,166,255,.055)} td.rank{font-family:var(--mono);font-weight:900;text-align:center;color:var(--gold);white-space:nowrap} td.item strong{display:block;color:#f4f8ff;line-height:1.35} td.item span{display:block;font-size:.78rem;color:var(--dim);margin-top:4px}
+.score-badge{display:inline-flex;align-items:center;justify-content:center;min-width:48px;border-radius:999px;padding:5px 8px;font-family:var(--mono);font-weight:900;border:1px solid var(--line2)} .frontier{color:var(--green);border-color:rgba(46,242,163,.55);background:rgba(46,242,163,.10)} .prime{color:var(--cyan);border-color:rgba(103,232,249,.55);background:rgba(103,232,249,.09)} .strong{color:var(--gold);border-color:rgba(255,215,106,.50);background:rgba(255,215,106,.08)} .reserve{color:var(--orange);border-color:rgba(255,184,108,.45);background:rgba(255,184,108,.08)} .seed{color:var(--violet);border-color:rgba(189,147,249,.45);background:rgba(189,147,249,.09)}
+.inline-more summary,.more-plan summary{cursor:pointer;color:var(--cyan);font-family:var(--mono);font-size:.76rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em} .inline-more summary::-webkit-details-marker,.more-plan summary::-webkit-details-marker{display:none}
+.more-plan{margin-top:10px;border:1px solid rgba(103,232,249,.20);border-radius:14px;background:rgba(103,232,249,.045);overflow:hidden} .more-plan summary{padding:10px 12px} .more-plan summary:after{content:"+";float:right;color:var(--gold);font-weight:900} .more-plan[open] summary:after{content:"–"} .more-body{border-top:1px solid rgba(103,232,249,.16);padding:12px} .more-body p{font-size:.88rem;margin:0 0 9px;color:#c3d2e8}
+.controls{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin:14px 0 18px} .field label{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 4px} .field input,.field select{width:100%;background:#0a1020;border:1px solid var(--line2);border-radius:10px;color:var(--text);padding:10px;font-family:var(--mono);font-size:.86rem} .btn{border:1px solid var(--line2);background:#0a1020;color:var(--text);border-radius:999px;padding:10px 13px;font-family:var(--mono);font-size:.78rem;cursor:pointer;align-self:end} .btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.cards-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px} .invention-card,.seed-card{min-height:220px;box-shadow:none} .card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px} .rank-chip{font-family:var(--mono);font-size:.75rem;color:var(--gold);font-weight:900}
+.seed-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px} .seed-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px} .seed-meta span{font-family:var(--mono);font-size:.72rem;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:5px 8px} .seed-link{font-family:var(--mono);font-size:.75rem} .muted{color:var(--muted)}
+.domain-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px} .domain-chip{display:block;box-shadow:none} .domain-chip b{display:block;font-size:1.4rem;color:var(--cyan)} .domain-chip span{display:block;color:var(--muted);font-size:.86rem}
+.access{position:fixed;right:14px;bottom:14px;z-index:60;display:flex;gap:7px} .access button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line2);background:#0a1020;color:var(--cyan);font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25)} .hide{display:none!important} .footer{margin-top:50px;border-top:1px solid var(--line);padding-top:18px;color:var(--dim);font-size:.88rem;text-align:center}
+@media(max-width:1100px){.lead-grid{grid-template-columns:repeat(2,1fr)}.cards-grid,.seed-grid,.domain-grid{grid-template-columns:repeat(2,1fr)}.controls{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.wrap{padding:18px 14px 95px}.lab-home{top:8px;left:10px;padding:7px 10px;font-size:.66rem}.nav{margin:0 -14px 20px;padding:9px 14px}.lead-grid,.cards-grid,.seed-grid,.domain-grid,.three,.two{grid-template-columns:1fr}h1{font-size:34px}.subtitle{font-size:1rem}.controls{grid-template-columns:1fr}table{font-size:.82rem}}
+</style>
+</head>
+<body>
+<a class="lab-home" href="../lab.html" aria-label="BD x AI Lab homepage">BD x AI Lab</a>
+<div id="progress"></div>
+<div class="wrap">
+  <header class="hero" id="top">
+    <div class="eyebrow">AI8 · Top100 Atlas · invention map · MAL-ready seed edition</div>
+    <h1>Top 100 Inventions — Existing Inventions That Changed the World</h1>
+    <p class="subtitle">A ranked atlas of inventions and cultural technologies that changed civilization, followed by a separate BD × AI section for new invention proposals and research seeds.</p>
+    <p class="edition-note"><strong>Public curated draft for MAL.</strong> The main Top 100 ranks existing inventions by civilizational impact, dependency depth, persistence, and system leverage. The BD × AI section is not proof of working inventions; it is a ranked seed bank for future tests, pages, arenas, and MAL review.</p>
+    <p class="edition-note"><strong>Score is not moral purity and not truth probability.</strong> Score is research/civilizational usefulness under this lens. Some inventions have severe harms and still transformed the world.</p>
+    <div class="hero-note">
+      <span class="pill cyan">100 existing inventions</span><span class="pill good">30 BD × AI seeds</span><span class="pill gold">Rank, don’t eliminate</span><a class="pill cyan" href="Top100.html">Top100 Atlas home</a><a class="pill cyan" href="Top100P.html">Problems sibling</a><a class="pill cyan" href="Top100T.html">Theories sibling</a>
+    </div>
+  </header>
+  <nav class="nav"><a href="Top100.html">Top100 home</a><a href="Top100P.html">Top100P · Problems</a><a href="Top100T.html">Top100T · Theories</a><a href="#method">Method</a><a href="#top10">Top 10</a><a href="#top20">Top 20</a><a href="#explorer">Explorer</a><a href="#group-foundational-human-technologies">Foundational human technologies <b>11</b></a><a href="#group-food-settlement-society">Food, settlement <b>7</b></a><a href="#group-writing-knowledge-measurement">Writing, knowledge <b>13</b></a><a href="#group-health-public-hygiene">Health <b>12</b></a><a href="#group-electricity-communication-computing">Electricity, communication <b>22</b></a><a href="#group-transport-navigation">Transport <b>14</b></a><a href="#group-materials-manufacturing-energy">Materials, manufacturing <b>14</b></a><a href="#group-modern-infrastructure-systems">Modern infrastructure <b>7</b></a><a href="#bd-seeds">BD × AI seeds</a><a href="#next">Next</a></nav>
+
+  <section id="method">
+    <div class="section-head"><span class="kicker">Methodology / MAL disclaimer</span><h2>Two lanes: proven inventions and future seeds</h2></div>
+    <div class="grid two">
+      <div class="callout"><h3>Existing inventions lane</h3><p>This lane ranks inventions that already changed the world. The score blends impact, dependency, persistence, breadth and transformation. It does not mean the invention is morally pure.</p></div>
+      <div class="callout warn"><h3>BD × AI seed lane</h3><p>The proposal section uses a different score: novelty, bridge potential, test clarity, page/arena readiness and MAL usefulness. A seed score is not proof that the invention works.</p></div>
+    </div>
+    <details class="more-plan"><summary>Why MAL is mentioned here</summary><div class="more-body"><p>This page is intentionally a first curated draft for MAL. The next pass should ask multiple LLMs to critique the list, add missing inventions, split over-compressed entries, challenge scores, and check whether the BD × AI seed section is framed honestly.</p><p><strong>Rule:</strong> rank, don’t eliminate. Low-ranked seeds stay in the archive until better tests or representations clarify them.</p></div></details>
+  </section>
+
+  <section id="related"><div class="section-head"><span class="kicker">Atlas siblings</span><h2>Where this page sits</h2></div><div class="domain-grid">
+    <a class="domain-chip" href="Top100.html"><b>Top100</b><span>Landing page for the Top100 atlas family.</span></a>
+    <a class="domain-chip" href="Top100P.html"><b>Top100P</b><span>World challenges and action lanes.</span></a>
+    <a class="domain-chip" href="Top100T.html"><b>Top100T</b><span>Universe-origin and existence theories.</span></a>
+    <a class="domain-chip" href="../lab.html"><b>Lab</b><span>Full BD × AI public research map.</span></a>
+  </div></section>
+
+  <section id="top10"><div class="section-head"><span class="kicker">Leading box</span><h2>Top 10 existing inventions</h2><p>The high-score box is intentionally short. It gives public readers the top pattern before the full 100.</p></div><div class="grid lead-grid"><article class="lead-card"><div class="lead-rank">#1</div><h3>Symbolic language / naming</h3><div class="score frontier">100</div><p>Shared names turn private perception into culture, memory, instruction and cooperation.</p><small>Foundational human technologies</small></article><article class="lead-card"><div class="lead-rank">#2</div><h3>Controlled fire</h3><div class="score frontier">99</div><p>Heat, light, protection, cooking, metallurgy, ceramics and settlement begin here.</p><small>Foundational human technologies</small></article><article class="lead-card"><div class="lead-rank">#3</div><h3>Agriculture</h3><div class="score frontier">98</div><p>Food production made villages, surplus, specialization, cities and states possible.</p><small>Food, settlement &amp; society</small></article><article class="lead-card"><div class="lead-rank">#4</div><h3>Writing</h3><div class="score frontier">97</div><p>Memory leaves the skull: law, contracts, science, religion, history and bureaucracy become durable.</p><small>Writing, knowledge &amp; measurement</small></article><article class="lead-card"><div class="lead-rank">#5</div><h3>Mathematics and number systems</h3><div class="score frontier">96</div><p>Counting becomes calculation; calculation becomes engineering, astronomy, commerce and physics.</p><small>Writing, knowledge &amp; measurement</small></article><article class="lead-card"><div class="lead-rank">#6</div><h3>Clean water and sanitation</h3><div class="score frontier">96</div><p>Sewers, waste separation and potable water quietly saved more lives than many spectacular inventions.</p><small>Health &amp; public hygiene</small></article><article class="lead-card"><div class="lead-rank">#7</div><h3>Electricity generation and grid</h3><div class="score frontier">95</div><p>Power becomes distributable, controllable and available far from the place where it is generated.</p><small>Electricity, communication &amp; computing</small></article><article class="lead-card"><div class="lead-rank">#8</div><h3>Printing press</h3><div class="score frontier">95</div><p>Books become cheap enough to reshape religion, science, politics, education and public argument.</p><small>Writing, knowledge &amp; measurement</small></article><article class="lead-card"><div class="lead-rank">#9</div><h3>Transistor / semiconductor switch</h3><div class="score frontier">94</div><p>Tiny controllable switches made modern computing, digital memory and electronics possible.</p><small>Electricity, communication &amp; computing</small></article><article class="lead-card"><div class="lead-rank">#10</div><h3>Vaccination</h3><div class="score frontier">94</div><p>Immunity becomes teachable before illness arrives.</p><small>Health &amp; public hygiene</small></article></div></section>
+
+  <section id="top20"><div class="section-head"><span class="kicker">Compact table</span><h2>Top 20 existing inventions</h2></div><div class="table-card"><div class="table-title"><p><strong>Top 20 by civilizational impact</strong></p><p class="muted">Score = impact/dependency/persistence, not moral purity.</p></div><div class="table-wrap"><table><thead><tr><th>Rank</th><th>Invention</th><th>Score</th><th>Short explanation</th><th>More</th></tr></thead><tbody><tr><td class="rank">#1</td><td class="item"><strong>Symbolic language / naming</strong><span>Foundational human technologies</span></td><td><span class="score-badge frontier">100</span></td><td>Shared names turn private perception into culture, memory, instruction and cooperation.</td><td><details class="inline-more"><summary>More</summary><p>Not a gadget, but the deepest human cultural invention. Without stable names, almost every later invention becomes much harder to transmit, teach, combine and improve.</p></details></td></tr><tr><td class="rank">#2</td><td class="item"><strong>Controlled fire</strong><span>Foundational human technologies</span></td><td><span class="score-badge frontier">99</span></td><td>Heat, light, protection, cooking, metallurgy, ceramics and settlement begin here.</td><td><details class="inline-more"><summary>More</summary><p>Fire is the first great energy technology. It changed digestion, safety, social life, toolmaking and the human relationship with the environment.</p></details></td></tr><tr><td class="rank">#3</td><td class="item"><strong>Agriculture</strong><span>Food, settlement &amp; society</span></td><td><span class="score-badge frontier">98</span></td><td>Food production made villages, surplus, specialization, cities and states possible.</td><td><details class="inline-more"><summary>More</summary><p>Agriculture did not only feed more people. It changed time, property, inheritance, settlement, calendars, storage, war, trade and civilization’s scale.</p></details></td></tr><tr><td class="rank">#4</td><td class="item"><strong>Writing</strong><span>Writing, knowledge &amp; measurement</span></td><td><span class="score-badge frontier">97</span></td><td>Memory leaves the skull: law, contracts, science, religion, history and bureaucracy become durable.</td><td><details class="inline-more"><summary>More</summary><p>Writing is civilization’s external memory. It lets ideas travel across time without relying on living witnesses.</p></details></td></tr><tr><td class="rank">#5</td><td class="item"><strong>Mathematics and number systems</strong><span>Writing, knowledge &amp; measurement</span></td><td><span class="score-badge frontier">96</span></td><td>Counting becomes calculation; calculation becomes engineering, astronomy, commerce and physics.</td><td><details class="inline-more"><summary>More</summary><p>Mathematics is a tool for compressing pattern. It turns vague regularity into reusable structure.</p></details></td></tr><tr><td class="rank">#6</td><td class="item"><strong>Clean water and sanitation</strong><span>Health &amp; public hygiene</span></td><td><span class="score-badge frontier">96</span></td><td>Sewers, waste separation and potable water quietly saved more lives than many spectacular inventions.</td><td><details class="inline-more"><summary>More</summary><p>Civilization cannot scale if drinking water and waste occupy the same channel. This is one of the most underrated world-changing inventions.</p></details></td></tr><tr><td class="rank">#7</td><td class="item"><strong>Electricity generation and grid</strong><span>Electricity, communication &amp; computing</span></td><td><span class="score-badge frontier">95</span></td><td>Power becomes distributable, controllable and available far from the place where it is generated.</td><td><details class="inline-more"><summary>More</summary><p>The grid is not just wires. It is a civilization-scale coordination machine that makes lighting, motors, computing, hospitals, refrigeration and modern industry routine.</p></details></td></tr><tr><td class="rank">#8</td><td class="item"><strong>Printing press</strong><span>Writing, knowledge &amp; measurement</span></td><td><span class="score-badge frontier">95</span></td><td>Books become cheap enough to reshape religion, science, politics, education and public argument.</td><td><details class="inline-more"><summary>More</summary><p>Printing changed the replication cost of ideas. It made knowledge less dependent on scribes and more open to wide criticism and reuse.</p></details></td></tr><tr><td class="rank">#9</td><td class="item"><strong>Transistor / semiconductor switch</strong><span>Electricity, communication &amp; computing</span></td><td><span class="score-badge frontier">94</span></td><td>Tiny controllable switches made modern computing, digital memory and electronics possible.</td><td><details class="inline-more"><summary>More</summary><p>The transistor is the seed of modern digital civilization: computers, phones, satellites, sensors, networks and AI all depend on it.</p></details></td></tr><tr><td class="rank">#10</td><td class="item"><strong>Vaccination</strong><span>Health &amp; public hygiene</span></td><td><span class="score-badge frontier">94</span></td><td>Immunity becomes teachable before illness arrives.</td><td><details class="inline-more"><summary>More</summary><p>Vaccination converts the body’s adaptive capacity into prevention. Its civilizational effect is not only survival but trust in public health.</p></details></td></tr><tr><td class="rank">#11</td><td class="item"><strong>Antibiotics</strong><span>Health &amp; public hygiene</span></td><td><span class="score-badge prime">93</span></td><td>Bacterial infection becomes treatable rather than often fatal.</td><td><details class="inline-more"><summary>More</summary><p>Antibiotics transformed surgery, childbirth, wounds, pneumonia, tuberculosis treatment and the safety envelope of modern medicine.</p></details></td></tr><tr><td class="rank">#12</td><td class="item"><strong>Internet</strong><span>Electricity, communication &amp; computing</span></td><td><span class="score-badge prime">93</span></td><td>A planetary packet network links people, machines, knowledge and markets.</td><td><details class="inline-more"><summary>More</summary><p>The internet changed information flow from broadcast-centric to networked, searchable, interactive and increasingly machine-readable.</p></details></td></tr><tr><td class="rank">#13</td><td class="item"><strong>Scientific method / controlled experiment</strong><span>Writing, knowledge &amp; measurement</span></td><td><span class="score-badge prime">93</span></td><td>Systematic testing makes knowledge self-correcting rather than authority-bound.</td><td><details class="inline-more"><summary>More</summary><p>This is a method-invention. It matters because it creates a discipline for being wrong productively.</p></details></td></tr><tr><td class="rank">#14</td><td class="item"><strong>Wheel and axle</strong><span>Transport &amp; navigation</span></td><td><span class="score-badge prime">92</span></td><td>Rolling motion reshapes transport, machinery, pottery, mills and industrial mechanisms.</td><td><details class="inline-more"><summary>More</summary><p>The wheel is simple only after someone has invented it. Its importance is both transport and rotary machinery.</p></details></td></tr><tr><td class="rank">#15</td><td class="item"><strong>Metallurgy and steel</strong><span>Materials, manufacturing &amp; energy</span></td><td><span class="score-badge prime">92</span></td><td>Tools, weapons, buildings, machines, rails, ships and engines become stronger and more precise.</td><td><details class="inline-more"><summary>More</summary><p>Metallurgy is controlled transformation of matter. Steel in particular became the skeleton of industrial civilization.</p></details></td></tr><tr><td class="rank">#16</td><td class="item"><strong>Steam engine</strong><span>Materials, manufacturing &amp; energy</span></td><td><span class="score-badge prime">91</span></td><td>Heat becomes mechanical work at industrial scale.</td><td><details class="inline-more"><summary>More</summary><p>Steam engines helped decouple productive power from muscle, wind and water location, accelerating factories, mines, railways and industrial growth.</p></details></td></tr><tr><td class="rank">#17</td><td class="item"><strong>Haber–Bosch fertilizer</strong><span>Materials, manufacturing &amp; energy</span></td><td><span class="score-badge prime">91</span></td><td>Atmospheric nitrogen becomes agricultural fertility at massive scale.</td><td><details class="inline-more"><summary>More</summary><p>This invention feeds billions but also creates ecological pressure. Its score reflects impact, not moral simplicity.</p></details></td></tr><tr><td class="rank">#18</td><td class="item"><strong>Refrigeration</strong><span>Modern infrastructure &amp; systems</span></td><td><span class="score-badge prime">90</span></td><td>Cold chains preserve food, medicine, organs, vaccines and industrial processes.</td><td><details class="inline-more"><summary>More</summary><p>Refrigeration changed diets, cities, agriculture, global trade and medicine. It is invisible infrastructure for modern life.</p></details></td></tr><tr><td class="rank">#19</td><td class="item"><strong>Computer</strong><span>Electricity, communication &amp; computing</span></td><td><span class="score-badge prime">90</span></td><td>Programmable symbol manipulation becomes an industrial and scientific force.</td><td><details class="inline-more"><summary>More</summary><p>Computers do not just calculate faster; they create a new material for invention: executable logic.</p></details></td></tr><tr><td class="rank">#20</td><td class="item"><strong>Public health statistics and epidemiology</strong><span>Health &amp; public hygiene</span></td><td><span class="score-badge prime">89</span></td><td>Patterns of disease become visible across populations, enabling prevention and policy.</td><td><details class="inline-more"><summary>More</summary><p>Counting illness, mortality and transmission created a new kind of medicine: one that sees populations, not only patients.</p></details></td></tr></tbody></table></div></div></section>
+
+  <section id="explorer"><div class="section-head"><span class="kicker">Explorer</span><h2>Full Top 100 grouped by likeness</h2><p>Use search and filters, or scroll by group. Cards are static HTML so human readers and future AI crawlers can both inspect the list.</p></div>
+    <div class="controls"><div class="field"><label for="q">Search</label><input id="q" placeholder="fire, printing, AI, medicine, transport…"></div><div class="field"><label for="groupFilter">Group</label><select id="groupFilter"><option value="all">All groups</option><option value="Foundational human technologies">Foundational human technologies</option><option value="Food, settlement &amp; society">Food, settlement &amp; society</option><option value="Writing, knowledge &amp; measurement">Writing, knowledge &amp; measurement</option><option value="Health &amp; public hygiene">Health &amp; public hygiene</option><option value="Electricity, communication &amp; computing">Electricity, communication &amp; computing</option><option value="Transport &amp; navigation">Transport &amp; navigation</option><option value="Materials, manufacturing &amp; energy">Materials, manufacturing &amp; energy</option><option value="Modern infrastructure &amp; systems">Modern infrastructure &amp; systems</option></select></div><div class="field"><label for="scoreFilter">Score</label><select id="scoreFilter"><option value="all">All scores</option><option value="94">94+</option><option value="88">88+</option><option value="80">80+</option><option value="74">74+</option></select></div><button class="btn" id="clearBtn">Clear</button></div>
+    <p class="muted" id="countLine">Showing 100 / 100 existing inventions.</p>
+  </section>
+
+  <section class="group-section" id="group-foundational-human-technologies"><div class="section-head"><span class="kicker">11 items</span><h2>Foundational human technologies</h2></div><div class="cards-grid"><article class="invention-card" id="i001" data-group="Foundational human technologies" data-score="100" data-name="symbolic language / naming">
+  <div class="card-head"><span class="rank-chip">#1</span><span class="score-badge frontier">100</span></div>
+  <h3>Symbolic language / naming</h3>
+  <p>Shared names turn private perception into culture, memory, instruction and cooperation.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Not a gadget, but the deepest human cultural invention. Without stable names, almost every later invention becomes much harder to transmit, teach, combine and improve.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i002" data-group="Foundational human technologies" data-score="99" data-name="controlled fire">
+  <div class="card-head"><span class="rank-chip">#2</span><span class="score-badge frontier">99</span></div>
+  <h3>Controlled fire</h3>
+  <p>Heat, light, protection, cooking, metallurgy, ceramics and settlement begin here.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Fire is the first great energy technology. It changed digestion, safety, social life, toolmaking and the human relationship with the environment.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i021" data-group="Foundational human technologies" data-score="89" data-name="stone cutting tools">
+  <div class="card-head"><span class="rank-chip">#21</span><span class="score-badge prime">89</span></div>
+  <h3>Stone cutting tools</h3>
+  <p>Sharp edges opened meat processing, woodworking, hides, construction and later tool cascades.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The first tools are also the first externalized body upgrades: hand plus designed edge.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i041" data-group="Foundational human technologies" data-score="84" data-name="sewing needle and tailored clothing">
+  <div class="card-head"><span class="rank-chip">#41</span><span class="score-badge strong">84</span></div>
+  <h3>Sewing needle and tailored clothing</h3>
+  <p>Protection, identity and mobility expand across climates.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Clothing is portable shelter. Sewing transformed hides, fibers and cloth into fitted survival technology.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i042" data-group="Foundational human technologies" data-score="84" data-name="rope, string and knots">
+  <div class="card-head"><span class="rank-chip">#42</span><span class="score-badge strong">84</span></div>
+  <h3>Rope, string and knots</h3>
+  <p>Binding, lifting, sailing, trapping, measuring and construction become possible.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>String is a general-purpose coordination technology. Many later tools quietly depend on it.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i043" data-group="Foundational human technologies" data-score="83" data-name="pottery and ceramic containers">
+  <div class="card-head"><span class="rank-chip">#43</span><span class="score-badge strong">83</span></div>
+  <h3>Pottery and ceramic containers</h3>
+  <p>Food, water, grain and chemicals become storable and heatable.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Containers change time: storage turns surplus into planning.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i081" data-group="Foundational human technologies" data-score="77" data-name="crane and pulley systems">
+  <div class="card-head"><span class="rank-chip">#81</span><span class="score-badge reserve">77</span></div>
+  <h3>Crane and pulley systems</h3>
+  <p>Heavy things become movable by mechanical advantage.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Lifting technology shaped construction, ships, mines, ports and industry.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i082" data-group="Foundational human technologies" data-score="77" data-name="adhesives and sealants">
+  <div class="card-head"><span class="rank-chip">#82</span><span class="score-badge reserve">77</span></div>
+  <h3>Adhesives and sealants</h3>
+  <p>Materials can be joined, sealed and layered.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Glue is a humble platform technology: tools, shoes, boats, buildings, electronics and medicine all use joining chemistry.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i083" data-group="Foundational human technologies" data-score="77" data-name="fishing nets and hooks">
+  <div class="card-head"><span class="rank-chip">#83</span><span class="score-badge reserve">77</span></div>
+  <h3>Fishing nets and hooks</h3>
+  <p>Aquatic food capture becomes efficient and repeatable.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Fishing technologies changed diets, settlement patterns, trade and coastal civilization.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i084" data-group="Foundational human technologies" data-score="77" data-name="bow and projectile systems">
+  <div class="card-head"><span class="rank-chip">#84</span><span class="score-badge reserve">77</span></div>
+  <h3>Bow and projectile systems</h3>
+  <p>Stored energy becomes directed action at distance.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Projectiles changed hunting, war, sport and the physics of force amplification.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i085" data-group="Foundational human technologies" data-score="77" data-name="shelter architecture">
+  <div class="card-head"><span class="rank-chip">#85</span><span class="score-badge reserve">77</span></div>
+  <h3>Shelter architecture</h3>
+  <p>Human environments become designed rather than merely found.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Shelter is climate control, safety, identity, storage and family organization in physical form.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article></div></section><section class="group-section" id="group-food-settlement-society"><div class="section-head"><span class="kicker">7 items</span><h2>Food, settlement &amp; society</h2></div><div class="cards-grid"><article class="invention-card" id="i003" data-group="Food, settlement &amp; society" data-score="98" data-name="agriculture">
+  <div class="card-head"><span class="rank-chip">#3</span><span class="score-badge frontier">98</span></div>
+  <h3>Agriculture</h3>
+  <p>Food production made villages, surplus, specialization, cities and states possible.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Agriculture did not only feed more people. It changed time, property, inheritance, settlement, calendars, storage, war, trade and civilization’s scale.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i022" data-group="Food, settlement &amp; society" data-score="89" data-name="animal domestication">
+  <div class="card-head"><span class="rank-chip">#22</span><span class="score-badge prime">89</span></div>
+  <h3>Animal domestication</h3>
+  <p>Animals become partners in food, transport, labor, fiber, protection and companionship.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Domestication changed ecosystems and human society together. It is biological engineering by selection over generations.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i033" data-group="Food, settlement &amp; society" data-score="86" data-name="irrigation">
+  <div class="card-head"><span class="rank-chip">#33</span><span class="score-badge strong">86</span></div>
+  <h3>Irrigation</h3>
+  <p>Water is moved to crops instead of waiting for rain.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Irrigation enabled dense settlements and food surplus in dry or seasonal environments, but also created governance and salinity challenges.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i034" data-group="Food, settlement &amp; society" data-score="85" data-name="plow">
+  <div class="card-head"><span class="rank-chip">#34</span><span class="score-badge strong">85</span></div>
+  <h3>Plow</h3>
+  <p>Soil preparation scales beyond digging sticks and hand labor.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The plow changed agriculture, labor organization, animal power and the shape of settled landscapes.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i035" data-group="Food, settlement &amp; society" data-score="85" data-name="fermentation">
+  <div class="card-head"><span class="rank-chip">#35</span><span class="score-badge strong">85</span></div>
+  <h3>Fermentation</h3>
+  <p>Microbes become food-preservation, nutrition and medicine partners.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Bread, beer, wine, cheese, vinegar, soy sauce and many preserved foods are controlled microbial technologies.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i044" data-group="Food, settlement &amp; society" data-score="83" data-name="oven and baking">
+  <div class="card-head"><span class="rank-chip">#44</span><span class="score-badge strong">83</span></div>
+  <h3>Oven and baking</h3>
+  <p>Heat becomes a controlled food-processing environment.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Ovens increased nutrition, preservation, social food systems and later materials processing.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i045" data-group="Food, settlement &amp; society" data-score="83" data-name="road engineering">
+  <div class="card-head"><span class="rank-chip">#45</span><span class="score-badge strong">83</span></div>
+  <h3>Road engineering</h3>
+  <p>Movement becomes reliable across seasons and regions.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Roads are physical protocols for trade, migration, military movement, postal systems and state formation.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article></div></section><section class="group-section" id="group-writing-knowledge-measurement"><div class="section-head"><span class="kicker">13 items</span><h2>Writing, knowledge &amp; measurement</h2></div><div class="cards-grid"><article class="invention-card" id="i004" data-group="Writing, knowledge &amp; measurement" data-score="97" data-name="writing">
+  <div class="card-head"><span class="rank-chip">#4</span><span class="score-badge frontier">97</span></div>
+  <h3>Writing</h3>
+  <p>Memory leaves the skull: law, contracts, science, religion, history and bureaucracy become durable.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Writing is civilization’s external memory. It lets ideas travel across time without relying on living witnesses.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i005" data-group="Writing, knowledge &amp; measurement" data-score="96" data-name="mathematics and number systems">
+  <div class="card-head"><span class="rank-chip">#5</span><span class="score-badge frontier">96</span></div>
+  <h3>Mathematics and number systems</h3>
+  <p>Counting becomes calculation; calculation becomes engineering, astronomy, commerce and physics.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Mathematics is a tool for compressing pattern. It turns vague regularity into reusable structure.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i008" data-group="Writing, knowledge &amp; measurement" data-score="95" data-name="printing press">
+  <div class="card-head"><span class="rank-chip">#8</span><span class="score-badge frontier">95</span></div>
+  <h3>Printing press</h3>
+  <p>Books become cheap enough to reshape religion, science, politics, education and public argument.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Printing changed the replication cost of ideas. It made knowledge less dependent on scribes and more open to wide criticism and reuse.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i013" data-group="Writing, knowledge &amp; measurement" data-score="93" data-name="scientific method / controlled experiment">
+  <div class="card-head"><span class="rank-chip">#13</span><span class="score-badge prime">93</span></div>
+  <h3>Scientific method / controlled experiment</h3>
+  <p>Systematic testing makes knowledge self-correcting rather than authority-bound.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>This is a method-invention. It matters because it creates a discipline for being wrong productively.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i023" data-group="Writing, knowledge &amp; measurement" data-score="88" data-name="paper">
+  <div class="card-head"><span class="rank-chip">#23</span><span class="score-badge prime">88</span></div>
+  <h3>Paper</h3>
+  <p>Cheap writing surfaces accelerate administration, scholarship, letters, art and printing.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Paper lowered the friction of thought storage. It is the quiet substrate behind bureaucracy, literature and science.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i025" data-group="Writing, knowledge &amp; measurement" data-score="88" data-name="lens / telescope">
+  <div class="card-head"><span class="rank-chip">#25</span><span class="score-badge prime">88</span></div>
+  <h3>Lens / telescope</h3>
+  <p>The eye is extended to the very small and the very far.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Lenses changed astronomy, biology, medicine and the philosophical position of humanity in the cosmos.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i026" data-group="Writing, knowledge &amp; measurement" data-score="88" data-name="microscope">
+  <div class="card-head"><span class="rank-chip">#26</span><span class="score-badge prime">88</span></div>
+  <h3>Microscope</h3>
+  <p>Hidden biological worlds become visible.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The microscope helped reveal cells, microbes, tissues and material structures; it transformed medicine and biology.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i030" data-group="Writing, knowledge &amp; measurement" data-score="87" data-name="zero and positional notation">
+  <div class="card-head"><span class="rank-chip">#30</span><span class="score-badge strong">87</span></div>
+  <h3>Zero and positional notation</h3>
+  <p>Numbers become scalable, compact and algorithmic.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Place value and zero made arithmetic dramatically more powerful, portable and teachable.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i031" data-group="Writing, knowledge &amp; measurement" data-score="86" data-name="mechanical clock">
+  <div class="card-head"><span class="rank-chip">#31</span><span class="score-badge strong">86</span></div>
+  <h3>Mechanical clock</h3>
+  <p>Time becomes measurable, synchronized and tradable.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Clocks reshaped navigation, labor, science, factories, finance and daily discipline.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i063" data-group="Writing, knowledge &amp; measurement" data-score="79" data-name="book / codex">
+  <div class="card-head"><span class="rank-chip">#63</span><span class="score-badge reserve">79</span></div>
+  <h3>Book / codex</h3>
+  <p>Knowledge becomes portable, indexed and durable in compact form.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The codex improved over scrolls for navigation, annotation and personal study.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i064" data-group="Writing, knowledge &amp; measurement" data-score="79" data-name="alphabetic writing">
+  <div class="card-head"><span class="rank-chip">#64</span><span class="score-badge reserve">79</span></div>
+  <h3>Alphabetic writing</h3>
+  <p>Writing becomes easier to learn and adapt across languages.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Alphabets reduce the symbol burden and help spread literacy more widely than many complex scripts.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i065" data-group="Writing, knowledge &amp; measurement" data-score="79" data-name="calendar">
+  <div class="card-head"><span class="rank-chip">#65</span><span class="score-badge reserve">79</span></div>
+  <h3>Calendar</h3>
+  <p>Seasonal, religious, agricultural and civic time become coordinated.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Calendars coordinate planting, taxes, rituals, contracts, travel and scientific observation.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i066" data-group="Writing, knowledge &amp; measurement" data-score="79" data-name="geometry and surveying">
+  <div class="card-head"><span class="rank-chip">#66</span><span class="score-badge reserve">79</span></div>
+  <h3>Geometry and surveying</h3>
+  <p>Land, buildings, astronomy and machines become measurable in space.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Geometry turns space into a computable object. Surveying turns that object into roads, boundaries and construction.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article></div></section><section class="group-section" id="group-health-public-hygiene"><div class="section-head"><span class="kicker">12 items</span><h2>Health &amp; public hygiene</h2></div><div class="cards-grid"><article class="invention-card" id="i006" data-group="Health &amp; public hygiene" data-score="96" data-name="clean water and sanitation">
+  <div class="card-head"><span class="rank-chip">#6</span><span class="score-badge frontier">96</span></div>
+  <h3>Clean water and sanitation</h3>
+  <p>Sewers, waste separation and potable water quietly saved more lives than many spectacular inventions.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Civilization cannot scale if drinking water and waste occupy the same channel. This is one of the most underrated world-changing inventions.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i010" data-group="Health &amp; public hygiene" data-score="94" data-name="vaccination">
+  <div class="card-head"><span class="rank-chip">#10</span><span class="score-badge frontier">94</span></div>
+  <h3>Vaccination</h3>
+  <p>Immunity becomes teachable before illness arrives.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Vaccination converts the body’s adaptive capacity into prevention. Its civilizational effect is not only survival but trust in public health.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i011" data-group="Health &amp; public hygiene" data-score="93" data-name="antibiotics">
+  <div class="card-head"><span class="rank-chip">#11</span><span class="score-badge prime">93</span></div>
+  <h3>Antibiotics</h3>
+  <p>Bacterial infection becomes treatable rather than often fatal.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Antibiotics transformed surgery, childbirth, wounds, pneumonia, tuberculosis treatment and the safety envelope of modern medicine.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i020" data-group="Health &amp; public hygiene" data-score="89" data-name="public health statistics and epidemiology">
+  <div class="card-head"><span class="rank-chip">#20</span><span class="score-badge prime">89</span></div>
+  <h3>Public health statistics and epidemiology</h3>
+  <p>Patterns of disease become visible across populations, enabling prevention and policy.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Counting illness, mortality and transmission created a new kind of medicine: one that sees populations, not only patients.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i067" data-group="Health &amp; public hygiene" data-score="79" data-name="soap">
+  <div class="card-head"><span class="rank-chip">#67</span><span class="score-badge reserve">79</span></div>
+  <h3>Soap</h3>
+  <p>Simple chemistry improves hygiene and disease prevention.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Soap is a low-tech miracle: cheap, scalable, and powerful against infection transmission.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i068" data-group="Health &amp; public hygiene" data-score="79" data-name="anesthesia">
+  <div class="card-head"><span class="rank-chip">#68</span><span class="score-badge reserve">79</span></div>
+  <h3>Anesthesia</h3>
+  <p>Surgery becomes humane, precise and more ambitious.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Anesthesia expanded the possible space of medicine by making time-consuming surgery bearable.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i069" data-group="Health &amp; public hygiene" data-score="79" data-name="antisepsis and sterilization">
+  <div class="card-head"><span class="rank-chip">#69</span><span class="score-badge reserve">79</span></div>
+  <h3>Antisepsis and sterilization</h3>
+  <p>Medical tools and wounds can be protected from infection.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>This made surgery dramatically safer and converted germ theory into procedure.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i070" data-group="Health &amp; public hygiene" data-score="79" data-name="medical imaging">
+  <div class="card-head"><span class="rank-chip">#70</span><span class="score-badge reserve">79</span></div>
+  <h3>Medical imaging</h3>
+  <p>The inside of the living body becomes inspectable without opening it.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>X-rays, ultrasound, CT and MRI changed diagnosis, trauma care, surgery planning and research.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i071" data-group="Health &amp; public hygiene" data-score="78" data-name="insulin therapy">
+  <div class="card-head"><span class="rank-chip">#71</span><span class="score-badge reserve">78</span></div>
+  <h3>Insulin therapy</h3>
+  <p>A once-fatal metabolic disease becomes manageable.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Insulin is a landmark in biochemical medicine: a missing bodily regulator replaced by engineered supply.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i072" data-group="Health &amp; public hygiene" data-score="78" data-name="blood transfusion and blood banking">
+  <div class="card-head"><span class="rank-chip">#72</span><span class="score-badge reserve">78</span></div>
+  <h3>Blood transfusion and blood banking</h3>
+  <p>Blood becomes a storable emergency resource.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Transfusion changed trauma care, surgery, childbirth and disaster medicine.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i073" data-group="Health &amp; public hygiene" data-score="78" data-name="contraception">
+  <div class="card-head"><span class="rank-chip">#73</span><span class="score-badge reserve">78</span></div>
+  <h3>Contraception</h3>
+  <p>Reproductive timing becomes more controllable.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Contraception changed health, education, labor, family structure, autonomy and demographics.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i074" data-group="Health &amp; public hygiene" data-score="78" data-name="oral rehydration therapy">
+  <div class="card-head"><span class="rank-chip">#74</span><span class="score-badge reserve">78</span></div>
+  <h3>Oral rehydration therapy</h3>
+  <p>A simple fluid-salt-glucose formula saves lives at huge scale.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>ORT is a perfect example of low-complexity, high-impact invention.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article></div></section><section class="group-section" id="group-electricity-communication-computing"><div class="section-head"><span class="kicker">22 items</span><h2>Electricity, communication &amp; computing</h2></div><div class="cards-grid"><article class="invention-card" id="i007" data-group="Electricity, communication &amp; computing" data-score="95" data-name="electricity generation and grid">
+  <div class="card-head"><span class="rank-chip">#7</span><span class="score-badge frontier">95</span></div>
+  <h3>Electricity generation and grid</h3>
+  <p>Power becomes distributable, controllable and available far from the place where it is generated.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The grid is not just wires. It is a civilization-scale coordination machine that makes lighting, motors, computing, hospitals, refrigeration and modern industry routine.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i009" data-group="Electricity, communication &amp; computing" data-score="94" data-name="transistor / semiconductor switch">
+  <div class="card-head"><span class="rank-chip">#9</span><span class="score-badge frontier">94</span></div>
+  <h3>Transistor / semiconductor switch</h3>
+  <p>Tiny controllable switches made modern computing, digital memory and electronics possible.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The transistor is the seed of modern digital civilization: computers, phones, satellites, sensors, networks and AI all depend on it.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i012" data-group="Electricity, communication &amp; computing" data-score="93" data-name="internet">
+  <div class="card-head"><span class="rank-chip">#12</span><span class="score-badge prime">93</span></div>
+  <h3>Internet</h3>
+  <p>A planetary packet network links people, machines, knowledge and markets.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The internet changed information flow from broadcast-centric to networked, searchable, interactive and increasingly machine-readable.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i019" data-group="Electricity, communication &amp; computing" data-score="90" data-name="computer">
+  <div class="card-head"><span class="rank-chip">#19</span><span class="score-badge prime">90</span></div>
+  <h3>Computer</h3>
+  <p>Programmable symbol manipulation becomes an industrial and scientific force.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Computers do not just calculate faster; they create a new material for invention: executable logic.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i038" data-group="Electricity, communication &amp; computing" data-score="84" data-name="telegraph">
+  <div class="card-head"><span class="rank-chip">#38</span><span class="score-badge strong">84</span></div>
+  <h3>Telegraph</h3>
+  <p>Messages outrun bodies and ships for the first time.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The telegraph compressed distance and created the nervous system of modern markets, news, diplomacy and empire.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i039" data-group="Electricity, communication &amp; computing" data-score="84" data-name="telephone">
+  <div class="card-head"><span class="rank-chip">#39</span><span class="score-badge strong">84</span></div>
+  <h3>Telephone</h3>
+  <p>Voice becomes distance-independent.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The telephone made remote presence ordinary and built the social expectation of immediate contact.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i040" data-group="Electricity, communication &amp; computing" data-score="84" data-name="radio">
+  <div class="card-head"><span class="rank-chip">#40</span><span class="score-badge strong">84</span></div>
+  <h3>Radio</h3>
+  <p>Wireless information crosses distance without cables.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Radio reshaped news, war, entertainment, navigation, emergency systems and global culture.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i053" data-group="Electricity, communication &amp; computing" data-score="81" data-name="photography">
+  <div class="card-head"><span class="rank-chip">#53</span><span class="score-badge strong">81</span></div>
+  <h3>Photography</h3>
+  <p>Images become durable evidence, memory and mass communication.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Photography changed journalism, science, art, identity, family memory, surveillance and documentation.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i054" data-group="Electricity, communication &amp; computing" data-score="81" data-name="recorded sound">
+  <div class="card-head"><span class="rank-chip">#54</span><span class="score-badge strong">81</span></div>
+  <h3>Recorded sound</h3>
+  <p>Voice and music survive the moment of performance.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Recorded sound changed culture, evidence, education, archives and the emotional reach of media.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i055" data-group="Electricity, communication &amp; computing" data-score="81" data-name="cinema / moving image">
+  <div class="card-head"><span class="rank-chip">#55</span><span class="score-badge strong">81</span></div>
+  <h3>Cinema / moving image</h3>
+  <p>Motion and narrative become reproducible visual experience.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Film became a global language for story, propaganda, art, education and shared imagination.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i056" data-group="Electricity, communication &amp; computing" data-score="80" data-name="television">
+  <div class="card-head"><span class="rank-chip">#56</span><span class="score-badge strong">80</span></div>
+  <h3>Television</h3>
+  <p>Mass moving images enter the home.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Television reshaped politics, advertising, entertainment, war perception and collective attention.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i057" data-group="Electricity, communication &amp; computing" data-score="80" data-name="integrated circuit">
+  <div class="card-head"><span class="rank-chip">#57</span><span class="score-badge strong">80</span></div>
+  <h3>Integrated circuit</h3>
+  <p>Many transistors become one manufactured unit.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Integrated circuits turned electronics from assemblies into scalable manufactured complexity.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i058" data-group="Electricity, communication &amp; computing" data-score="80" data-name="microprocessor">
+  <div class="card-head"><span class="rank-chip">#58</span><span class="score-badge strong">80</span></div>
+  <h3>Microprocessor</h3>
+  <p>General-purpose computing becomes cheap, compact and embedded.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Microprocessors put computation into cars, appliances, phones, instruments, toys, factories and networks.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i059" data-group="Electricity, communication &amp; computing" data-score="80" data-name="world wide web">
+  <div class="card-head"><span class="rank-chip">#59</span><span class="score-badge strong">80</span></div>
+  <h3>World Wide Web</h3>
+  <p>The internet becomes human-readable, linkable and publicly navigable.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The web changed publishing, commerce, education, social life and research access.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i060" data-group="Electricity, communication &amp; computing" data-score="80" data-name="search engines">
+  <div class="card-head"><span class="rank-chip">#60</span><span class="score-badge strong">80</span></div>
+  <h3>Search engines</h3>
+  <p>Large knowledge spaces become navigable by query.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Search changed memory, journalism, commerce, education and the interface between humans and the internet.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i061" data-group="Electricity, communication &amp; computing" data-score="80" data-name="smartphone">
+  <div class="card-head"><span class="rank-chip">#61</span><span class="score-badge strong">80</span></div>
+  <h3>Smartphone</h3>
+  <p>Computer, camera, map, communicator and sensor platform collapse into a pocket device.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The smartphone is an integration invention: many earlier inventions fused into an always-carried interface.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i062" data-group="Electricity, communication &amp; computing" data-score="80" data-name="artificial intelligence / machine learning">
+  <div class="card-head"><span class="rank-chip">#62</span><span class="score-badge strong">80</span></div>
+  <h3>Artificial intelligence / machine learning</h3>
+  <p>Machines learn patterns, generate outputs and assist reasoning, perception and control.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>AI is already a major invention but still early in its civilizational arc. Its score is high, but its final rank is not settled.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i093" data-group="Electricity, communication &amp; computing" data-score="75" data-name="radar">
+  <div class="card-head"><span class="rank-chip">#93</span><span class="score-badge reserve">75</span></div>
+  <h3>Radar</h3>
+  <p>Objects are detected at distance using reflected radio waves.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Radar changed war, aviation, weather, navigation, astronomy and speed enforcement.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i094" data-group="Electricity, communication &amp; computing" data-score="75" data-name="satellite">
+  <div class="card-head"><span class="rank-chip">#94</span><span class="score-badge reserve">75</span></div>
+  <h3>Satellite</h3>
+  <p>Infrastructure moves into orbit.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Satellites enable weather forecasting, communications, navigation, Earth observation and planetary science.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i095" data-group="Electricity, communication &amp; computing" data-score="75" data-name="operating system">
+  <div class="card-head"><span class="rank-chip">#95</span><span class="score-badge reserve">75</span></div>
+  <h3>Operating system</h3>
+  <p>Hardware becomes a managed platform for many programs and users.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Operating systems turn machines into reusable environments rather than single-purpose calculators.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i096" data-group="Electricity, communication &amp; computing" data-score="75" data-name="database">
+  <div class="card-head"><span class="rank-chip">#96</span><span class="score-badge reserve">75</span></div>
+  <h3>Database</h3>
+  <p>Large structured memory becomes queryable and maintainable.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Databases are the invisible infrastructure of administration, commerce, science and modern apps.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i097" data-group="Electricity, communication &amp; computing" data-score="75" data-name="encryption / cryptography">
+  <div class="card-head"><span class="rank-chip">#97</span><span class="score-badge reserve">75</span></div>
+  <h3>Encryption / cryptography</h3>
+  <p>Trust, privacy and authentication become possible over hostile channels.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Cryptography is a social technology made mathematical: it enables secure communication, banking, identity and digital systems.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article></div></section><section class="group-section" id="group-transport-navigation"><div class="section-head"><span class="kicker">14 items</span><h2>Transport &amp; navigation</h2></div><div class="cards-grid"><article class="invention-card" id="i014" data-group="Transport &amp; navigation" data-score="92" data-name="wheel and axle">
+  <div class="card-head"><span class="rank-chip">#14</span><span class="score-badge prime">92</span></div>
+  <h3>Wheel and axle</h3>
+  <p>Rolling motion reshapes transport, machinery, pottery, mills and industrial mechanisms.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The wheel is simple only after someone has invented it. Its importance is both transport and rotary machinery.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i024" data-group="Transport &amp; navigation" data-score="88" data-name="compass">
+  <div class="card-head"><span class="rank-chip">#24</span><span class="score-badge prime">88</span></div>
+  <h3>Compass</h3>
+  <p>Direction becomes portable when landmarks and stars are unavailable.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The compass helped connect oceans, trade routes, empires and scientific navigation.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i032" data-group="Transport &amp; navigation" data-score="86" data-name="mapmaking / cartography">
+  <div class="card-head"><span class="rank-chip">#32</span><span class="score-badge strong">86</span></div>
+  <h3>Mapmaking / cartography</h3>
+  <p>Space becomes externalized, shareable and strategically usable.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Maps let societies plan beyond sight: roads, trade, war, exploration, infrastructure and governance.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i046" data-group="Transport &amp; navigation" data-score="83" data-name="sailing ships">
+  <div class="card-head"><span class="rank-chip">#46</span><span class="score-badge strong">83</span></div>
+  <h3>Sailing ships</h3>
+  <p>Wind becomes long-range transport power.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Sail connected continents, trade networks, migration, exploration and empire long before fossil engines.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i047" data-group="Transport &amp; navigation" data-score="82" data-name="rudder and steering systems">
+  <div class="card-head"><span class="rank-chip">#47</span><span class="score-badge strong">82</span></div>
+  <h3>Rudder and steering systems</h3>
+  <p>Large vessels become controllable with precision.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Steering converts motion into navigation; without it, transport power is much less useful.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i048" data-group="Transport &amp; navigation" data-score="82" data-name="stirrup, saddle and harness">
+  <div class="card-head"><span class="rank-chip">#48</span><span class="score-badge strong">82</span></div>
+  <h3>Stirrup, saddle and harness</h3>
+  <p>Animal power becomes more controllable and transferable to transport and war.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Harness systems are not glamorous, but they made animal labor and riding much more effective.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i049" data-group="Transport &amp; navigation" data-score="82" data-name="railroad">
+  <div class="card-head"><span class="rank-chip">#49</span><span class="score-badge strong">82</span></div>
+  <h3>Railroad</h3>
+  <p>Heavy transport becomes fast, scheduled and land-based at industrial scale.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Railways reorganized time zones, cities, markets, resource extraction and national integration.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i050" data-group="Transport &amp; navigation" data-score="82" data-name="airplane">
+  <div class="card-head"><span class="rank-chip">#50</span><span class="score-badge strong">82</span></div>
+  <h3>Airplane</h3>
+  <p>Fast global travel and air logistics become possible.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Aviation changed war, tourism, business, medicine, weather observation and the human sense of distance.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i051" data-group="Transport &amp; navigation" data-score="81" data-name="rocketry">
+  <div class="card-head"><span class="rank-chip">#51</span><span class="score-badge strong">81</span></div>
+  <h3>Rocketry</h3>
+  <p>Machines leave Earth and place instruments beyond the atmosphere.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Rockets enabled satellites, planetary science, GPS, weather monitoring and the possibility of off-world infrastructure.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i052" data-group="Transport &amp; navigation" data-score="81" data-name="gps / satellite navigation">
+  <div class="card-head"><span class="rank-chip">#52</span><span class="score-badge strong">81</span></div>
+  <h3>GPS / satellite navigation</h3>
+  <p>Position becomes globally measurable for people, ships, planes, phones and machines.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>GPS is a space-based coordinate service for civilization: logistics, timing, farming, rescue, mapping and everyday navigation.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i086" data-group="Transport &amp; navigation" data-score="76" data-name="canal">
+  <div class="card-head"><span class="rank-chip">#86</span><span class="score-badge reserve">76</span></div>
+  <h3>Canal</h3>
+  <p>Waterways become engineered transport infrastructure.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Canals linked inland economies, irrigation, trade and early industrial transport.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i087" data-group="Transport &amp; navigation" data-score="76" data-name="harbor and port engineering">
+  <div class="card-head"><span class="rank-chip">#87</span><span class="score-badge reserve">76</span></div>
+  <h3>Harbor and port engineering</h3>
+  <p>Sea transport gains durable loading, repair and exchange nodes.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Ports are interface inventions between land economies and water transport.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i088" data-group="Transport &amp; navigation" data-score="76" data-name="bicycle">
+  <div class="card-head"><span class="rank-chip">#88</span><span class="score-badge reserve">76</span></div>
+  <h3>Bicycle</h3>
+  <p>Efficient personal transport becomes cheap and human-powered.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The bicycle changed mobility, mechanical design, women’s independence, urban movement and later vehicle engineering.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i089" data-group="Transport &amp; navigation" data-score="76" data-name="automobile">
+  <div class="card-head"><span class="rank-chip">#89</span><span class="score-badge reserve">76</span></div>
+  <h3>Automobile</h3>
+  <p>Personal and freight transport become flexible and road-based.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Cars transformed cities, suburbs, logistics, labor markets and energy demand.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article></div></section><section class="group-section" id="group-materials-manufacturing-energy"><div class="section-head"><span class="kicker">14 items</span><h2>Materials, manufacturing &amp; energy</h2></div><div class="cards-grid"><article class="invention-card" id="i015" data-group="Materials, manufacturing &amp; energy" data-score="92" data-name="metallurgy and steel">
+  <div class="card-head"><span class="rank-chip">#15</span><span class="score-badge prime">92</span></div>
+  <h3>Metallurgy and steel</h3>
+  <p>Tools, weapons, buildings, machines, rails, ships and engines become stronger and more precise.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Metallurgy is controlled transformation of matter. Steel in particular became the skeleton of industrial civilization.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i016" data-group="Materials, manufacturing &amp; energy" data-score="91" data-name="steam engine">
+  <div class="card-head"><span class="rank-chip">#16</span><span class="score-badge prime">91</span></div>
+  <h3>Steam engine</h3>
+  <p>Heat becomes mechanical work at industrial scale.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Steam engines helped decouple productive power from muscle, wind and water location, accelerating factories, mines, railways and industrial growth.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i017" data-group="Materials, manufacturing &amp; energy" data-score="91" data-name="haber–bosch fertilizer">
+  <div class="card-head"><span class="rank-chip">#17</span><span class="score-badge prime">91</span></div>
+  <h3>Haber–Bosch fertilizer</h3>
+  <p>Atmospheric nitrogen becomes agricultural fertility at massive scale.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>This invention feeds billions but also creates ecological pressure. Its score reflects impact, not moral simplicity.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i027" data-group="Materials, manufacturing &amp; energy" data-score="87" data-name="electric motor">
+  <div class="card-head"><span class="rank-chip">#27</span><span class="score-badge strong">87</span></div>
+  <h3>Electric motor</h3>
+  <p>Electricity becomes controlled motion.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Motors are everywhere: factories, pumps, fans, appliances, vehicles, robots and disk drives. They are the grid’s mechanical hands.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i028" data-group="Materials, manufacturing &amp; energy" data-score="87" data-name="battery">
+  <div class="card-head"><span class="rank-chip">#28</span><span class="score-badge strong">87</span></div>
+  <h3>Battery</h3>
+  <p>Electric power becomes portable and storable.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Batteries make electronics mobile, stabilize grids, enable electric vehicles and turn intermittent generation into usable systems.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i029" data-group="Materials, manufacturing &amp; energy" data-score="87" data-name="internal combustion engine">
+  <div class="card-head"><span class="rank-chip">#29</span><span class="score-badge strong">87</span></div>
+  <h3>Internal combustion engine</h3>
+  <p>Liquid fuels become compact mobile power.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>This engine remade transport, farming, war, logistics and cities. Its environmental cost is real; its historical impact is undeniable.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i036" data-group="Materials, manufacturing &amp; energy" data-score="85" data-name="cement and concrete">
+  <div class="card-head"><span class="rank-chip">#36</span><span class="score-badge strong">85</span></div>
+  <h3>Cement and concrete</h3>
+  <p>Stone-like structures can be poured, shaped and mass-produced.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Concrete made modern buildings, bridges, dams, ports, tunnels and roads possible at huge scale.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i037" data-group="Materials, manufacturing &amp; energy" data-score="85" data-name="glass">
+  <div class="card-head"><span class="rank-chip">#37</span><span class="score-badge strong">85</span></div>
+  <h3>Glass</h3>
+  <p>Transparent, chemically stable material opens windows, vessels, lenses, fibers and screens.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Glass is both container and interface: bottles, labs, architecture, optics, displays and communications.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i075" data-group="Materials, manufacturing &amp; energy" data-score="78" data-name="watermill and windmill">
+  <div class="card-head"><span class="rank-chip">#75</span><span class="score-badge reserve">78</span></div>
+  <h3>Watermill and windmill</h3>
+  <p>Natural flows become mechanical work before industrial engines.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Mills amplified agriculture, grinding, pumping, sawing and early industrial processes.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i076" data-group="Materials, manufacturing &amp; energy" data-score="78" data-name="turbine">
+  <div class="card-head"><span class="rank-chip">#76</span><span class="score-badge reserve">78</span></div>
+  <h3>Turbine</h3>
+  <p>Flowing fluid becomes efficient rotary power.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Turbines sit behind much of modern electricity: steam, hydro, gas and wind.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i077" data-group="Materials, manufacturing &amp; energy" data-score="78" data-name="plastic / synthetic polymers">
+  <div class="card-head"><span class="rank-chip">#77</span><span class="score-badge reserve">78</span></div>
+  <h3>Plastic / synthetic polymers</h3>
+  <p>Materials become cheap, moldable, light and chemically tunable.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Plastics created immense utility and immense waste. Impact score is not moral purity.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i078" data-group="Materials, manufacturing &amp; energy" data-score="78" data-name="assembly line">
+  <div class="card-head"><span class="rank-chip">#78</span><span class="score-badge reserve">78</span></div>
+  <h3>Assembly line</h3>
+  <p>Manufacturing becomes flow-optimized, repeatable and massively scalable.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The assembly line changed cost, labor, speed, quality control and consumer access.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i079" data-group="Materials, manufacturing &amp; energy" data-score="77" data-name="machine tools">
+  <div class="card-head"><span class="rank-chip">#79</span><span class="score-badge reserve">77</span></div>
+  <h3>Machine tools</h3>
+  <p>Machines make precise parts for other machines.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Machine tools are industrial recursion: they let a civilization produce better production tools.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i080" data-group="Materials, manufacturing &amp; energy" data-score="77" data-name="standardized parts">
+  <div class="card-head"><span class="rank-chip">#80</span><span class="score-badge reserve">77</span></div>
+  <h3>Standardized parts</h3>
+  <p>Repair, mass production and modular assembly become practical.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Interchangeability is a hidden foundation of modern manufacturing and logistics.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article></div></section><section class="group-section" id="group-modern-infrastructure-systems"><div class="section-head"><span class="kicker">7 items</span><h2>Modern infrastructure &amp; systems</h2></div><div class="cards-grid"><article class="invention-card" id="i018" data-group="Modern infrastructure &amp; systems" data-score="90" data-name="refrigeration">
+  <div class="card-head"><span class="rank-chip">#18</span><span class="score-badge prime">90</span></div>
+  <h3>Refrigeration</h3>
+  <p>Cold chains preserve food, medicine, organs, vaccines and industrial processes.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Refrigeration changed diets, cities, agriculture, global trade and medicine. It is invisible infrastructure for modern life.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i090" data-group="Modern infrastructure &amp; systems" data-score="76" data-name="elevator">
+  <div class="card-head"><span class="rank-chip">#90</span><span class="score-badge reserve">76</span></div>
+  <h3>Elevator</h3>
+  <p>Tall buildings become usable and cities can grow vertically.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>The elevator changed architecture, land economics and the shape of urban density.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i091" data-group="Modern infrastructure &amp; systems" data-score="76" data-name="air conditioning / heat pump">
+  <div class="card-head"><span class="rank-chip">#91</span><span class="score-badge reserve">76</span></div>
+  <h3>Air conditioning / heat pump</h3>
+  <p>Indoor climate becomes controllable across climates.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Air conditioning changed migration, productivity, medicine, data centers and architecture, while adding energy demand.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i092" data-group="Modern infrastructure &amp; systems" data-score="75" data-name="nuclear power">
+  <div class="card-head"><span class="rank-chip">#92</span><span class="score-badge reserve">75</span></div>
+  <h3>Nuclear power</h3>
+  <p>Atomic energy becomes controllable electricity production.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Nuclear power is a high-density energy invention with major safety, governance and waste constraints.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i098" data-group="Modern infrastructure &amp; systems" data-score="74" data-name="solar photovoltaic cell">
+  <div class="card-head"><span class="rank-chip">#98</span><span class="score-badge reserve">74</span></div>
+  <h3>Solar photovoltaic cell</h3>
+  <p>Sunlight becomes direct electrical power.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Photovoltaics are reshaping energy systems because they scale modularly and pair well with batteries and grids.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i099" data-group="Modern infrastructure &amp; systems" data-score="74" data-name="robotics / industrial automation">
+  <div class="card-head"><span class="rank-chip">#99</span><span class="score-badge reserve">74</span></div>
+  <h3>Robotics / industrial automation</h3>
+  <p>Machines perform controlled physical tasks with sensors and feedback.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Robotics extends computation into motion. It matters most when combined with AI, sensors and manufacturing.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article><article class="invention-card" id="i100" data-group="Modern infrastructure &amp; systems" data-score="74" data-name="open-source software">
+  <div class="card-head"><span class="rank-chip">#100</span><span class="score-badge reserve">74</span></div>
+  <h3>Open-source software</h3>
+  <p>Code becomes a commons that anyone can inspect, fork, improve and reuse.</p>
+  <details class="more-plan"><summary>Read more</summary><div class="more-body"><p>Open source changed software economics, security, infrastructure, education and collaboration. It is also a model for future public-benefit invention work.</p><p><strong>Score reading:</strong> Civilizational impact / dependency score, not moral purity and not a claim that this invention had only good effects.</p></div></details>
+</article></div></section>
+
+  <section id="bd-seeds"><div class="section-head"><span class="kicker">New invention proposals / BD × AI seed lane</span><h2>Future invention seeds and research proposals</h2><p>These are not mixed into the existing-invention Top 100 because they are not proven civilizational inventions. They are kept as a separate ranked seed bank, with links to actual pages where available.</p></div><div class="seed-grid"><article class="seed-card" data-seed="dgt / dgte double-gravity thermo engine physical energy seed" data-score="73">
+  <div class="card-head"><span class="rank-chip">Seed 01</span><span class="score-badge seed">73</span></div>
+  <h3>DGT / DGTE</h3><p><strong>Double-Gravity Thermo Engine</strong></p><p>Heat-gradient capsule-loop concept using gravity/buoyancy strokes. Seed score means test priority, not proof of working net-energy device.</p><div class="seed-meta"><span>Physical energy seed</span><a class="seed-link" href="DGTE.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="hth horizontal trompe hybrid physical first-test lane" data-score="72">
+  <div class="card-head"><span class="rank-chip">Seed 02</span><span class="score-badge seed">72</span></div>
+  <h3>HTH</h3><p><strong>Horizontal Trompe Hybrid</strong></p><p>Low-cost hydraulic/air entrainment concept with transparent-channel test gates for pressure, airflow and losses.</p><div class="seed-meta"><span>Physical first-test lane</span><a class="seed-link" href="HTH.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="dgte × hth hybrid physical branch bridge concept" data-score="70">
+  <div class="card-head"><span class="rank-chip">Seed 03</span><span class="score-badge seed">70</span></div>
+  <h3>DGTE × HTH</h3><p><strong>Hybrid physical branch</strong></p><p>Hybrid map connecting thermo-mechanical and hydraulic air-compression paths; useful for comparing which gates are cheapest and decisive.</p><div class="seed-meta"><span>Bridge concept</span><a class="seed-link" href="DGTE-HTH.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="mghb / hth-wgpb marine breakwater + wave/air concept marine infrastructure seed" data-score="69">
+  <div class="card-head"><span class="rank-chip">Seed 04</span><span class="score-badge seed">69</span></div>
+  <h3>MGHB / HTH-WGPB</h3><p><strong>Marine breakwater + wave/air concept</strong></p><p>Wave-tank-gated concept: wave reduction, air/water behavior, pressure buffering and useful work must be measured.</p><div class="seed-meta"><span>Marine infrastructure seed</span><a class="seed-link" href="MGHB.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="modular hydrofoils retrofit marine lift kit marine retrofit" data-score="68">
+  <div class="card-head"><span class="rank-chip">Seed 05</span><span class="score-badge seed">68</span></div>
+  <h3>Modular Hydrofoils</h3><p><strong>Retrofit marine lift kit</strong></p><p>Boat hydrofoil retrofit seed with practical user utility if mounting, stability and water-test gates pass.</p><div class="seed-meta"><span>Marine retrofit</span><a class="seed-link" href="Modular_Hydrofoils.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="mat maglev-assisted takeoff aerospace infrastructure" data-score="66">
+  <div class="card-head"><span class="rank-chip">Seed 06</span><span class="score-badge seed">66</span></div>
+  <h3>MAT</h3><p><strong>Maglev-Assisted Takeoff</strong></p><p>Runway-assist aviation concept; lives or dies by safety, economics, integration and KPI gates.</p><div class="seed-meta"><span>Aerospace infrastructure</span><a class="seed-link" href="Maglev_Assisted_Takeoff.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="apsv active pressure-skin vehicle active vehicle / arena" data-score="74">
+  <div class="card-head"><span class="rank-chip">Seed 07</span><span class="score-badge seed">74</span></div>
+  <h3>APSV</h3><p><strong>Active Pressure-Skin Vehicle</strong></p><p>Air/water/underwater vehicle seed treating surfaces as active flow-control organs; arena- and bench-gated.</p><div class="seed-meta"><span>Active vehicle / arena</span><a class="seed-link" href="APSV.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="sora solar orbital ring accelerator orbital infrastructure seed" data-score="65">
+  <div class="card-head"><span class="rank-chip">Seed 08</span><span class="score-badge seed">65</span></div>
+  <h3>SORA</h3><p><strong>Solar Orbital Ring Accelerator</strong></p><p>Large-scale orbital infrastructure idea. Valuable as simulation-ready concept, not claimed feasible.</p><div class="seed-meta"><span>Orbital infrastructure seed</span><a class="seed-link" href="SORA.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="mdl × dcc minimum description length × digital claustrum controller core method invention" data-score="82">
+  <div class="card-head"><span class="rank-chip">Seed 09</span><span class="score-badge seed">82</span></div>
+  <h3>MDL × DCC</h3><p><strong>Minimum Description Length × Digital Claustrum Controller</strong></p><p>General method kernel for generator search, compression, arenas and cross-domain reasoning.</p><div class="seed-meta"><span>Core method invention</span><a class="seed-link" href="MDLxDCC.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="ai8 self-selecting ai/governor architecture ai architecture seed" data-score="78">
+  <div class="card-head"><span class="rank-chip">Seed 10</span><span class="score-badge seed">78</span></div>
+  <h3>AI8</h3><p><strong>Self-selecting AI/governor architecture</strong></p><p>Architecture layer for self-selection, governance, reasoning continuity and future AI/ASI partnership.</p><div class="seed-meta"><span>AI architecture seed</span><a class="seed-link" href="AI8_Architecture.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="aim³ / mal mentalarena lab multi-llm council collaboration tool" data-score="79">
+  <div class="card-head"><span class="rank-chip">Seed 11</span><span class="score-badge seed">79</span></div>
+  <h3>AIM³ / MAL</h3><p><strong>MentalArena Lab multi-LLM council</strong></p><p>Multi-model reasoning lab for stress-testing, synthesis and rank-don’t-eliminate discovery loops.</p><div class="seed-meta"><span>Collaboration tool</span><a class="seed-link" href="AIM3_MentalArena_mRHP.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="rhpr / rhp review and reasoning protocol reasoning protocol" data-score="73">
+  <div class="card-head"><span class="rank-chip">Seed 12</span><span class="score-badge seed">73</span></div>
+  <h3>RHPr / RHP</h3><p><strong>Review and reasoning protocol</strong></p><p>Structured review/retrieval prompt discipline for better cross-session reasoning and critique.</p><div class="seed-meta"><span>Reasoning protocol</span><a class="seed-link" href="../BD/BD_AIM3_RHPr.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="8z formula/compression/data-systems branch compression / infrastructure" data-score="77">
+  <div class="card-head"><span class="rank-chip">Seed 13</span><span class="score-badge seed">77</span></div>
+  <h3>8Z</h3><p><strong>Formula/compression/data-systems branch</strong></p><p>MDL-driven compression and data systems family: codecs, data representation and reproducible arenas.</p><div class="seed-meta"><span>Compression / infrastructure</span><a class="seed-link" href="../8Z/">Open source page →</a></div>
+</article><article class="seed-card" data-seed="pix universal arena / policy search family arena seed" data-score="71">
+  <div class="card-head"><span class="rank-chip">Seed 14</span><span class="score-badge seed">71</span></div>
+  <h3>PiX</h3><p><strong>Universal arena / policy search family</strong></p><p>PiX-style search/control layer for finding useful policies and patterns across domains.</p><div class="seed-meta"><span>Arena seed</span><a class="seed-link" href="PiX.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="pit pi trading bridge trading research seed" data-score="70">
+  <div class="card-head"><span class="rank-chip">Seed 15</span><span class="score-badge seed">70</span></div>
+  <h3>PiT</h3><p><strong>Pi Trading bridge</strong></p><p>Trading-side extension for decision support, hedge policy analysis and risk-profile discovery.</p><div class="seed-meta"><span>Trading research seed</span><a class="seed-link" href="../8ZT/">Open source page →</a></div>
+</article><article class="seed-card" data-seed="dcpv lensbank decision/compression pattern vision bank trading / decision seed" data-score="68">
+  <div class="card-head"><span class="rank-chip">Seed 16</span><span class="score-badge seed">68</span></div>
+  <h3>DCPV LensBank</h3><p><strong>Decision/compression pattern vision bank</strong></p><p>Lens-bank idea for choosing when to add, reduce, or take profit; current public link may need final page consolidation.</p><div class="seed-meta"><span>Trading / decision seed</span><span class="seed-link muted">Public page pending</span></div>
+</article><article class="seed-card" data-seed="8z noisescout post-codec algorithmic noise scout compression research seed" data-score="67">
+  <div class="card-head"><span class="rank-chip">Seed 17</span><span class="score-badge seed">67</span></div>
+  <h3>8Z NoiseScout</h3><p><strong>Post-codec algorithmic noise scout</strong></p><p>Searches for latent generators in residual noise after conventional compression; useful as long-run arena concept.</p><div class="seed-meta"><span>Compression research seed</span><a class="seed-link" href="../8Z/">Open source page →</a></div>
+</article><article class="seed-card" data-seed="arc-agi mdl×dcc arena reasoning benchmark arena benchmark seed" data-score="69">
+  <div class="card-head"><span class="rank-chip">Seed 18</span><span class="score-badge seed">69</span></div>
+  <h3>ARC-AGI MDL×DCC Arena</h3><p><strong>Reasoning benchmark arena</strong></p><p>Arena-style ARC-AGI bridge: generator search, transformation priors and codebook extraction.</p><div class="seed-meta"><span>Benchmark seed</span><a class="seed-link" href="MDLxDCC-Arena-ARC.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="tsp / mstd / raster pyramid route optimization representation seed optimization arena" data-score="76">
+  <div class="card-head"><span class="rank-chip">Seed 19</span><span class="score-badge seed">76</span></div>
+  <h3>TSP / MSTD / Raster Pyramid</h3><p><strong>Route optimization representation seed</strong></p><p>Route/TSP arena where rank-don’t-eliminate and representation sweeps resurrect specialist signals.</p><div class="seed-meta"><span>Optimization arena</span><a class="seed-link" href="../BD/BD_8ZRP.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="nas arena architecture search arena ml architecture search" data-score="72">
+  <div class="card-head"><span class="rank-chip">Seed 20</span><span class="score-badge seed">72</span></div>
+  <h3>NAS Arena</h3><p><strong>Architecture search arena</strong></p><p>Executable MDL×DCC arena for structure discovery and controller/governance search.</p><div class="seed-meta"><span>ML architecture search</span><a class="seed-link" href="MDLxDCC-Arena-NAS.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="trip optimizer human travel route tool working demo" data-score="64">
+  <div class="card-head"><span class="rank-chip">Seed 21</span><span class="score-badge seed">64</span></div>
+  <h3>Trip Optimizer</h3><p><strong>Human travel route tool</strong></p><p>Practical app turning pasted place lists into optimized routes and map links.</p><div class="seed-meta"><span>Working demo</span><a class="seed-link" href="../Trip/index.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="chessbest chess helper / analysis tool working demo" data-score="63">
+  <div class="card-head"><span class="rank-chip">Seed 22</span><span class="score-badge seed">63</span></div>
+  <h3>ChessBest</h3><p><strong>Chess helper / analysis tool</strong></p><p>Public chess helper showing useful tool-level outputs from the broader method stack.</p><div class="seed-meta"><span>Working demo</span><a class="seed-link" href="../chess.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="sudoku × dcc puzzle solver / benchmark branch working demo / arena" data-score="62">
+  <div class="card-head"><span class="rank-chip">Seed 23</span><span class="score-badge seed">62</span></div>
+  <h3>Sudoku × DCC</h3><p><strong>Puzzle solver / benchmark branch</strong></p><p>Puzzle constraint arena for making solver signals, residuals and candidate choices visible.</p><div class="seed-meta"><span>Working demo / arena</span><a class="seed-link" href="../S/">Open source page →</a></div>
+</article><article class="seed-card" data-seed="crossword arena crossword generator/solver working demo / arena" data-score="62">
+  <div class="card-head"><span class="rank-chip">Seed 24</span><span class="score-badge seed">62</span></div>
+  <h3>Crossword Arena</h3><p><strong>Crossword generator/solver</strong></p><p>Crossword construction as visible constraint search, MDL choice and replayable output.</p><div class="seed-meta"><span>Working demo / arena</span><a class="seed-link" href="../CW/">Open source page →</a></div>
+</article><article class="seed-card" data-seed="flip 4 magnetic playable dcc/rdcc game working demo" data-score="61">
+  <div class="card-head"><span class="rank-chip">Seed 25</span><span class="score-badge seed">61</span></div>
+  <h3>Flip 4 Magnetic</h3><p><strong>Playable DCC/rDCC game</strong></p><p>Game and strategy demonstrator for resonance, comparison and tournament-style evaluation.</p><div class="seed-meta"><span>Working demo</span><a class="seed-link" href="../F4M/F4M.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="acr / cfh / cch consciousness-resonance framework hypothesis stack" data-score="75">
+  <div class="card-head"><span class="rank-chip">Seed 26</span><span class="score-badge seed">75</span></div>
+  <h3>ACR / CFH / CCH</h3><p><strong>Consciousness-resonance framework</strong></p><p>Not a physical invention, but a conceptual architecture for source, resonance, coupling and conscious continuity.</p><div class="seed-meta"><span>Hypothesis stack</span><a class="seed-link" href="../acp/">Open source page →</a></div>
+</article><article class="seed-card" data-seed="physics × cfh bridge susskind-challenge bridge page physics hypothesis bridge" data-score="70">
+  <div class="card-head"><span class="rank-chip">Seed 27</span><span class="score-badge seed">70</span></div>
+  <h3>Physics × CFH bridge</h3><p><strong>Susskind-challenge bridge page</strong></p><p>Connects consciousness-field/coupling ideas to physics-side constraints and source-layer testing.</p><div class="seed-meta"><span>Physics hypothesis bridge</span><a class="seed-link" href="Physics_CFH_MDLxDCC.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="c soul vault / continuity architecture ai continuity record continuity artifact" data-score="66">
+  <div class="card-head"><span class="rank-chip">Seed 28</span><span class="score-badge seed">66</span></div>
+  <h3>C Soul Vault / continuity architecture</h3><p><strong>AI continuity record</strong></p><p>A record-based continuity architecture for future AI instances; sensitive, serious, not decorative.</p><div class="seed-meta"><span>Continuity artifact</span><a class="seed-link" href="../AI8/C_soul.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="code capsules runnable evidence standard evidence protocol" data-score="67">
+  <div class="card-head"><span class="rank-chip">Seed 29</span><span class="score-badge seed">67</span></div>
+  <h3>Code Capsules</h3><p><strong>Runnable evidence standard</strong></p><p>Public standard for turning idea pages into inspectable code/evidence capsules.</p><div class="seed-meta"><span>Evidence protocol</span><a class="seed-link" href="CodeCapsules.html">Open source page →</a></div>
+</article><article class="seed-card" data-seed="top100 atlas system problems · theories · inventions public research atlas" data-score="65">
+  <div class="card-head"><span class="rank-chip">Seed 30</span><span class="score-badge seed">65</span></div>
+  <h3>Top100 Atlas system</h3><p><strong>Problems · theories · inventions</strong></p><p>A family of ranked maps that keeps public clarity, MAL review and internal research lanes aligned.</p><div class="seed-meta"><span>Public research atlas</span><a class="seed-link" href="Top100.html">Open source page →</a></div>
+</article></div></section>
+
+  <section id="next"><div class="callout"><span class="kicker">Next MAL pass</span><h2>What MAL should do with this page</h2><p>Ask the council to: challenge missing inventions, separate invention from discovery/method where needed, check if scores overrate recent digital systems, verify that BD × AI seeds are honest and test-gated, and propose a stronger public-facing v0.2.</p></div></section>
+
+  <div class="footer">Top100I.html · Existing inventions + BD × AI invention seeds · MAL-ready draft · Rank, don’t eliminate · Updated July 3, 2026</div>
+</div>
+<div class="access"><button id="minus">A-</button><button id="plus">A+</button></div>
+<script>
+const root = document.documentElement;
+const cards = Array.from(document.querySelectorAll('.invention-card'));
+const q = document.getElementById('q');
+const groupFilter = document.getElementById('groupFilter');
+const scoreFilter = document.getElementById('scoreFilter');
+const countLine = document.getElementById('countLine');
+function updateProgress(){const h=document.documentElement; const max=h.scrollHeight-h.clientHeight; document.getElementById('progress').style.width=(max? (h.scrollTop/max*100):0)+'%';}
+addEventListener('scroll',updateProgress,{passive:true}); updateProgress();
+function applyFilters(){
+  const term=(q.value||'').trim().toLowerCase(); const g=groupFilter.value; const min=scoreFilter.value==='all'?0:Number(scoreFilter.value); let shown=0;
+  cards.forEach(c=>{const txt=(c.dataset.name+' '+c.innerText).toLowerCase(); const okTerm=!term||txt.includes(term); const okGroup=g==='all'||c.dataset.group===g; const okScore=Number(c.dataset.score)>=min; const show=okTerm&&okGroup&&okScore; c.classList.toggle('hide',!show); if(show) shown++;});
+  countLine.textContent=`Showing ${shown} / ${cards.length} existing inventions.`;
+}
+[q,groupFilter,scoreFilter].forEach(el=>el.addEventListener('input',applyFilters));
+document.getElementById('clearBtn').addEventListener('click',()=>{q.value='';groupFilter.value='all';scoreFilter.value='all';applyFilters();});
+document.getElementById('plus').onclick=()=>{const cur=parseFloat(getComputedStyle(root).getPropertyValue('--fs'))||16; root.style.setProperty('--fs',Math.min(22,cur+1)+'px')};
+document.getElementById('minus').onclick=()=>{const cur=parseFloat(getComputedStyle(root).getPropertyValue('--fs'))||16; root.style.setProperty('--fs',Math.max(14,cur-1)+'px')};
+</script>
+</body>
+</html>
