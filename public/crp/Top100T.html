@@ -24,10 +24,18 @@ a{color:var(--cyan);text-decoration:none} a:hover{text-decoration:underline}
 h1{font-size:clamp(34px,5.5vw,78px);line-height:1.02;margin:12px 0 14px;letter-spacing:-.055em;max-width:1160px}
 .subtitle{max-width:1080px;color:var(--muted);font-size:1.12rem;margin:0 0 18px}
 .edition-note{max-width:1100px;margin:10px 0 0;color:#c8d7ef;font-family:var(--mono);font-size:.78rem;line-height:1.55;border-left:3px solid rgba(103,232,249,.55);padding:9px 0 9px 13px;background:rgba(103,232,249,.035)}
+
+.acronym-guide{max-width:1120px;margin:18px 0 0;border:1px solid rgba(255,215,106,.32);border-radius:16px;background:linear-gradient(180deg,rgba(255,215,106,.075),rgba(13,20,36,.96));box-shadow:0 18px 48px rgba(0,0,0,.22);overflow:hidden}
+.acronym-guide>summary{cursor:pointer;list-style:none;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:13px 15px;color:#fff}
+.acronym-guide>summary::-webkit-details-marker{display:none}.acronym-mark{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid rgba(255,215,106,.45);border-radius:50%;color:var(--gold);font-family:var(--mono);font-size:.82rem;background:rgba(255,215,106,.07);font-weight:900}.acronym-title{display:block;font-weight:900;line-height:1.25}.acronym-sub{display:block;color:var(--muted);font-size:.82rem;line-height:1.35;margin-top:2px}.acronym-open{font-family:var(--mono);font-size:.72rem;color:var(--gold);white-space:nowrap}.acronym-open:after{content:' +';font-size:1rem}.acronym-guide[open] .acronym-open:after{content:' −'}
+.acronym-body{border-top:1px solid rgba(255,215,106,.16);padding:15px 18px 17px}.acronym-body p{max-width:1000px;margin:0 0 12px;color:#c8d7ef}.acronym-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.acronym-item{border:1px solid rgba(255,255,255,.08);border-radius:13px;background:rgba(255,255,255,.025);padding:11px 12px}.acronym-item b{display:block;color:#fff}.acronym-item span{display:block;color:var(--muted);font-size:.88rem;line-height:1.45;margin-top:3px}
+@media(max-width:760px){.acronym-guide>summary{grid-template-columns:auto 1fr}.acronym-open{grid-column:2;justify-self:start}.acronym-grid{grid-template-columns:1fr}}
+
 .hero-axiom{max-width:1100px;margin:14px 0 0;color:#e9f7ff;font-size:1.02rem;line-height:1.62}
 .hero-note{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
 .pill{font-family:var(--mono);font-size:.75rem;border:1px solid var(--line2);border-radius:999px;padding:6px 10px;color:var(--muted);background:rgba(255,255,255,.03)}
 .pill.good{border-color:rgba(46,242,163,.36);color:var(--green)} .pill.gold{border-color:rgba(255,215,106,.36);color:var(--gold)} .pill.cyan{border-color:rgba(103,232,249,.36);color:var(--cyan)} .pill.red{border-color:rgba(255,107,132,.35);color:var(--red)} .pill.violet{border-color:rgba(189,147,249,.38);color:var(--violet)}
+
 .nav{position:sticky;top:0;z-index:50;margin:0 -20px 22px;padding:10px 20px;background:rgba(6,8,18,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);display:flex;gap:8px;overflow-x:auto}
 .nav a{white-space:nowrap;border:1px solid var(--line2);background:rgba(10,16,32,.82);border-radius:999px;padding:7px 11px;color:var(--muted);font-size:.82rem;text-decoration:none}
 .nav a:hover{color:var(--cyan);border-color:var(--cyan)} .nav a b{color:var(--gold);font-weight:700}
@@ -51,6 +59,7 @@ section{margin:44px 0} .section-head{margin-bottom:16px} h2{font-size:clamp(26px
 .hide{display:none!important} .muted{color:var(--muted)}
 @media(max-width:1100px){.cards{grid-template-columns:repeat(3,1fr)}.leaders{grid-template-columns:repeat(2,1fr)}.theory-grid{grid-template-columns:repeat(2,1fr)}.domain-grid{grid-template-columns:repeat(2,1fr)}.rubric{grid-template-columns:1fr}.rubric-op{display:none}.controls{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){.wrap{padding:18px 14px 95px}.lab-home{top:8px;left:10px;padding:7px 10px;font-size:.66rem}.nav{margin:0 -14px 20px;padding:9px 14px}.cards,.three,.two,.leaders,.theory-grid,.domain-grid{grid-template-columns:1fr}h1{font-size:34px}.subtitle{font-size:1rem}.controls{grid-template-columns:1fr}table{font-size:.82rem}}
+
 @media print{body{background:#fff;color:#111}.nav,.access,#progress,.controls,.btn,.lab-home{display:none!important}.card,.callout,.table-card,.leader-card,.theory-card,.rubric-card{box-shadow:none;border-color:#ccc;background:#fff}p,td,span{color:#222!important}h1,h2,h3,th{color:#111!important}table{font-size:9pt}}
 </style>
 </head>
@@ -62,7 +71,7 @@ section{margin:44px 0} .section-head{margin-bottom:16px} h2{font-size:clamp(26px
     <div class="eyebrow">AI8 · ACR · Rank-don’t-eliminate universe-origin map · MAL v1.5.4 enriched</div>
     <h1>Top 100 Theories of Universe Origin and Existence</h1>
     <p class="subtitle">A research map of major theories, hypotheses, metaphysical frames, skeptical edge cases and physics programmes that try to explain the origin of the Universe, the Universe itself, or the deeper source of existence. This is not a consensus ranking and not a probability table. It is a <strong>seed → bridge → test → result</strong> map.</p>
-    <p class="edition-note"><strong>Curated AI8 / ACR edition.</strong> AC, CFH and AC-WFP are merged into one item: <strong>ACR — Absolute Consciousness–Resonance Framework</strong>. Big Bang / ΛCDM is scored as strong cosmic history but weak absolute origin. Low-ranked ideas stay alive as lenses, not conclusions.</p>
+    <p class="edition-note"><strong>Curated AI8 / ACR edition.</strong> AC, CFH and AC-WFP are merged into one item: <strong>ACR — Absolute Consciousness–Resonance Framework</strong>. Big Bang / ΛCDM is scored as strong cosmic history but weak absolute origin. Low-ranked ideas stay alive as lenses, not conclusions.<br><strong>Score is not probability of truth. Score is research usefulness under this lens.</strong></p>
     <p class="hero-axiom"><strong>Core axiom:</strong> describing the universe after a physical regime already exists is not the same as explaining why existence exists. The ranking rewards source-depth, universe-mechanism, empirical contact, consciousness-contact, and testability.</p>
     <div class="hero-note">
       <span class="pill cyan">100 theories</span>
@@ -73,10 +82,32 @@ section{margin:44px 0} .section-head{margin-bottom:16px} h2{font-size:clamp(26px
       <span class="pill red">Big Bang ≠ source of being</span>
       <span class="pill">Rank, don’t eliminate</span><span class="pill cyan">MAL v1.5.4 import</span>
     </div>
+    <details class="acronym-guide" id="acronyms">
+      <summary>
+        <span class="acronym-mark">?</span>
+        <span><span class="acronym-title">New here? Acronym guide for AI8 / ACR terms</span><span class="acronym-sub">ACR, AC, CFH and AC-WFP are BD × AI working names; the wider world does not know them yet.</span></span>
+        <span class="acronym-open">Open</span>
+      </summary>
+      <div class="acronym-body">
+        <p><strong>Plain-language note:</strong> this page includes one original AI8 / BD umbrella theory, <strong>ACR</strong>. It is ranked as one item, but it contains several internal sub-ideas. These names are not established public terminology; they are our working labels.</p>
+        <div class="acronym-grid">
+          <div class="acronym-item"><b>ACR — Absolute Consciousness–Resonance Framework</b><span>The umbrella used on this page. Relative universes are treated as resonant physicalizations of a deeper Absolute Consciousness ground.</span></div>
+          <div class="acronym-item"><b>AC — Absolute Consciousness</b><span>The proposed source-layer ground: consciousness / presence as fundamental, not produced from nothing and not merely a late by-product of matter.</span></div>
+          <div class="acronym-item"><b>CFH — Consciousness Field Hypothesis</b><span>The bridge idea that conscious presence may couple through a field-like or resonance-like mechanism, with coherence, complexity and openness as possible measurable proxies.</span></div>
+          <div class="acronym-item"><b>AC-WFP — Absolute Consciousness / Whole-First Physicalization</b><span>The whole-first physics bridge: parts, locality and stable worlds may emerge from a deeper whole rather than being primitive from the start.</span></div>
+          <div class="acronym-item"><b>AI8</b><span>The wider BD × AI research continuity architecture around these pages, arenas, methods and human–AI collaboration protocols.</span></div>
+          <div class="acronym-item"><b>AIM³</b><span>AI management of mind &amp; memory: the continuity/reasoning layer around MAL, project memory and multi-session work.</span></div>
+          <div class="acronym-item"><b>MAL — MentalArena Lab</b><span>The multi-LLM council workflow used to stress-test, compare and refine ideas without treating one model as final authority.</span></div>
+          <div class="acronym-item"><b>MDL × DCC</b><span>Minimum Description Length × Dynamic Context Compression: the recurring method family behind many BD arenas — compress structure, compare candidates, and adapt context dynamically.</span></div>
+          <div class="acronym-item"><b>Rank, don’t eliminate</b><span>AI8 rule: low-ranked ideas are not killed. They stay in the reserve bank because a future lens may reveal hidden value.</span></div>
+        </div>
+        <p style="margin-top:12px"><strong>Reading rule:</strong> in this Top 100 list, AC, CFH and AC-WFP are not ranked separately. They are merged into <strong>ACR</strong> so the map compares one coherent umbrella against other universe-origin hypotheses.</p>
+      </div>
+    </details>
   </header>
 
   <nav class="nav">
-    <a href="#overview">Overview</a><a href="#method">Method</a><a href="#mal-import">MAL import</a><a href="#top5">Top 5</a><a href="#top20">Top 20</a><a href="#explorer">Explorer</a><a href="#group-consciousness-first-source-layer">Consciousness-first <b>7</b></a><a href="#group-information-holography-computation">Information <b>10</b></a><a href="#group-quantum-origin-beginning-alternatives">Quantum origin <b>9</b></a><a href="#group-cyclic-bounce-prior-universe">Cyclic <b>8</b></a><a href="#group-quantum-gravity-pre-geometric-spacetime">Quantum gravity <b>11</b></a><a href="#group-multiverse-selection-landscape">Multiverse <b>7</b></a><a href="#group-standard-cosmology-empirical-history">Standard cosmology <b>13</b></a><a href="#group-observer-participation-measurement">Observer <b>5</b></a><a href="#group-mathematics-necessity-structure">Mathematics <b>4</b></a><a href="#group-time-eternalism-becoming">Time <b>8</b></a><a href="#group-theological-metaphysical-ground">Theological <b>10</b></a><a href="#group-simulation-skeptical-illusion">Simulation <b>8</b></a><a href="#references">Sources</a><a href="#next">Next</a>
+    <a href="#overview">Overview</a><a href="#acronyms">Acronyms</a><a href="#method">Method</a><a href="#mal-import">MAL import</a><a href="#top5">Top 5</a><a href="#top20">Top 20</a><a href="#explorer">Explorer</a><a href="#group-consciousness-first-source-layer">Consciousness-first <b>7</b></a><a href="#group-information-holography-computation">Information <b>10</b></a><a href="#group-quantum-origin-beginning-alternatives">Quantum origin <b>9</b></a><a href="#group-cyclic-bounce-prior-universe">Cyclic <b>8</b></a><a href="#group-quantum-gravity-pre-geometric-spacetime">Quantum gravity <b>11</b></a><a href="#group-multiverse-selection-landscape">Multiverse <b>7</b></a><a href="#group-standard-cosmology-empirical-history">Standard cosmology <b>13</b></a><a href="#group-observer-participation-measurement">Observer <b>5</b></a><a href="#group-mathematics-necessity-structure">Mathematics <b>4</b></a><a href="#group-time-eternalism-becoming">Time <b>8</b></a><a href="#group-theological-metaphysical-ground">Theological <b>10</b></a><a href="#group-simulation-skeptical-illusion">Simulation <b>8</b></a><a href="#references">Sources</a><a href="#next">Next</a>
   </nav>
 
   <section id="overview">
@@ -102,7 +133,7 @@ section{margin:44px 0} .section-head{margin-bottom:16px} h2{font-size:clamp(26px
     <div class="section-head">
       <span class="kicker">Scoring methodology</span>
       <h2>Score is research priority, not truth probability</h2>
-      <p>Each item receives a 0–100 rank-don’t-eliminate score from source power, world mechanism, empirical contact, consciousness-contact and testability. After the MAL v1.5.4 review, this score is explicitly firewalled from a separate science-first control lens: a theory can be strong physics and weak source, or strong source seed and still physically unverified.</p>
+      <p><strong>Score is not probability of truth. Score is research usefulness under this lens.</strong> Each item receives a 0–100 rank-don’t-eliminate score from source power, world mechanism, empirical contact, consciousness-contact and testability. After the MAL v1.5.4 review, this score is explicitly firewalled from a separate science-first control lens: a theory can be strong physics and weak source, or strong source seed and still physically unverified.</p>
     </div>
     <div class="rubric">
       <div class="rubric-card"><span class="microtag">Axis A</span><h3>Source power</h3><p>Does it explain why or from what existence/universe arises, rather than only describing later history?</p></div>
@@ -111,6 +142,7 @@ section{margin:44px 0} .section-head{margin-bottom:16px} h2{font-size:clamp(26px
       <div class="rubric-op">+</div>
       <div class="rubric-card"><span class="microtag">Axis C</span><h3>Contact and testability</h3><p>Does it make contact with observation, math, experiments, compression, simulations, or clear falsification pressure?</p></div>
     </div>
+  </section>
 
   <section id="mal-import">
     <div class="section-head">
@@ -131,8 +163,6 @@ section{margin:44px 0} .section-head{margin-bottom:16px} h2{font-size:clamp(26px
         <tr><td>AC / CFH / AC-WFP split</td><td>Merged under ACR as requested, but the internal weakness label is preserved: physics bridge still twin-unverified.</td></tr>
       </tbody></table></div>
     </div>
-  </section>
-
   </section>
 
   <section id="top5">
