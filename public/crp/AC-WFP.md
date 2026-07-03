@@ -1,20 +1,20 @@
-# AC–WFP V4-DRAFT.4 — Whole-First Co-Emergent Physicalization
+# AC–WFP V4-DRAFT.5 — Whole-First Co-Emergent Physicalization
 
-## A3 live-development update: operation-gated closure signals, LOW_RANK adversarial accounting, and certificate readiness under independent MDL scoring
+## Final A3 development-evidence update, A4/MAL handoff, and Rank-Don’t-Eliminate upgrade path
 
-**Status:** executable draft research contract plus live A3 development-evidence update; not an established physical theory and not confirmation evidence  
-**Version:** V4-DRAFT.4  
-**Date:** 28 June 2026  
+**Status:** executable draft research contract plus completed A3 development-evidence update; not an established physical theory and not confirmation evidence  
+**Version:** V4-DRAFT.5  
+**Date:** 3 July 2026  
 **Authors:** BD × AI  
 **Neutral scientific baseline:** Ω  
 **AC status:** AC0  
 **Method:** evidence first; mechanism labels must alter behaviour; effective parts require a vector of mandatory certificates rather than one scalar win  
-**Canonical source:** `AC-WFP_v4_DRAFT_4.md`  
-**HTML companion:** `AC-WFP_v4_DRAFT_4.html`  
-**Executable companion:** `AC_WFP_Arena_v0_2_0a2` and `AC_WFP_Arena_v0_2_0a3` / Python package `acwfp-arena==0.2.0a3` for live A3 development evidence  
+**Canonical source:** `AC-WFP_v4_DRAFT_5.md`  
+**HTML companion:** `AC-WFP_v4_DRAFT_5.html`  
+**Executable companion:** AC-WFP Arena `v0.2.0a3` / Python package `acwfp-arena==0.2.0a3` for completed A3 development evidence; A4 is not yet built  
 **Historical baseline:** `AC-WFP_v3.md` and AC-WFP Arena v0.1.2 remain frozen and are not rewritten  
-**Version relation:** this draft forks from V3 but does not supersede it until the repaired instrument passes kill-tests, receives a fresh preregistration and is frozen as final V4  
-**New source synthesis:** V3; the v0.1.2 implementation audit; the Hinton energy-based-learning bridge; the Modern Knowledge Transfer Map; the A1 deep live extract and defect classification; the complete Arena v0.2.0a2 repair/validation evidence; the completed A2 multiday live extract and post-hoc certificate analysis; the A3 v0.2.0a3 build/validation evidence; and the A3 multiday live extract `LIVE_EXTRACT_ACWFP_MULTIDAY_20260628_145233.zip`
+**Version relation:** this draft updates V4-DRAFT.4 after the completed A3 run; it still does not supersede V3 and it does not become final V4 until a fresh preregistered A4/V4-confirmation split is frozen and evaluated  
+**New source synthesis:** V3; v0.1.2 implementation audit; Hinton energy-based-learning bridge; Modern Knowledge Transfer Map; A1 defect classification; completed A2 evidence; A3 v0.2.0a3 build/validation evidence; completed A3 multiday extract `LIVE_EXTRACT_ACWFP_MULTIDAY_20260702_105031.zip`; A4 dossier/prompt; and the Rank-Don’t-Eliminate operating principle
 
 ---
 
@@ -26,7 +26,7 @@ The executable programme is stated first for **Ω**, the neutral scientific plac
 
 The current practical target is modest and testable: find whether a preregistered mechanism can discover nontrivial **effective parts** under blind held-out scoring after paying for its own codebook, search, recovery, calibration and residuals. The first allowed win is only `CLOSURE_MECHANISM`; it is not emergent spacetime, not GR/QM derivation, not a Theory of Everything and not consciousness evidence.
 
-The current A3 run is valuable because it is beginning to separate closure-like structure from false positives: temporal compression, low-rank shortcuts and latent proposal leakage. The strongest live development hint is operation-gated `MPRC2_NON_TEMPORAL_OP + LOW_RANK`, but it remains a **post-hoc live-development hint**, not confirmation.
+The completed A3 run is valuable because it does **not** promote a mechanism too early. It shows a sharper diagnostic split: raw compression is not enough, temporal segmentation is a trap, latent regimes can leak into nulls, and the most interesting finite-arena hint is an operation-gated structural signature.
 
 Key abbreviations used below:
 
@@ -35,224 +35,288 @@ Key abbreviations used below:
 - **MSR2** — Modular–Spectral Recovery 2, currently under ablation pressure.
 - **LOW_RANK** — mandatory adversarial baseline for simple global latent structure.
 - **CAUSAL_STATE_MACRO** — reserved future true predictive-equivalence implementation; current `PREDICTIVE_STATE_HEURISTIC` is not that.
+- **RDE** — Rank-Don’t-Eliminate: demoted mechanisms are archived, ranked and re-tested when new lenses or representations arrive.
 
 ---
 
-## V4-DRAFT.4 live evidence update — A3 partial multiday run
+## V4-DRAFT.5 evidence update — completed A3 multiday run and A4 handoff
 
-**Source evidence:** `LIVE_EXTRACT_ACWFP_MULTIDAY_20260628_145233.zip`  
+**Source evidence:** `LIVE_EXTRACT_ACWFP_MULTIDAY_20260702_105031.zip`  
 **Executable:** AC-WFP Arena `v0.2.0a3` / `acwfp-arena==0.2.0a3`  
 **Profile:** `multiday`  
-**Snapshot created:** `2026-06-28T12:54:00Z`  
-**Run status at snapshot:** `RUNNING`, stage `evaluate`  
-**Completion at snapshot:** 153 / 576 systems; 99 positive, 54 null  
+**Extract created:** `2026-07-02T08:56:45Z`  
+**Run completion timestamp:** `2026-06-29T14:21:12Z`  
+**Run status:** `COMPLETED`, stage `complete`  
+**Completion:** 576 / 576 systems  
+**Task kinds:** 384 positive systems, 192 matched null systems  
+**Ledger rows:** 25,344 total rows; 24,192 mechanism rows plus controls  
 **Workers:** 5 effective CPU workers  
+**Runtime:** 115,478.219 seconds, about 32.08 hours  
 **Failures / timeouts:** 0 / 0  
-**Leakage firewall:** passed = `true`, scanned files = 477, findings = 0  
-**Scientific status:** `DEVELOPMENT_EVIDENCE_ONLY`, `NOT_CONFIRMATION`, `NOT_ARENA_0A`, `AC0`
+**Leakage firewall:** passed = `true`, scanned files = 1769, findings = 0  
+**Implementation gates:** 30 / 31 passed  
+**Known gate failure:** `06_TEMPORAL_ORDER_SENSOR`, detail `time_reversal_delta=0`  
+**Scientific status:** `DEVELOPMENT_ONLY_NOT_CONFIRMATION`, `NOT_ELIGIBLE`, `NOT_ARENA_0A`, `AC0`
 
-### D4.1 Why this live update is allowed
+### D5.1 Why this update changes the document
 
-V4 is a living draft. It may be updated whenever the executable evidence changes, provided that the status firewall remains explicit. This section records a **live A3 development snapshot**, not a final result. It does not supersede the completed A2 evidence section and it does not unlock Arena 0A.
+V4-DRAFT.4 recorded an A3 partial live snapshot. V4-DRAFT.5 replaces that partial snapshot with the completed A3 evidence capsule.
 
-The correct reading is:
+The status boundary is unchanged:
+
+```text
+A3 completed operationally;
+A3 did not confirm AC-WFP;
+A3 did not open Arena 0A;
+A3 did not promote any physics claim;
+A3 produced better A4 hypotheses.
+```
+
+The correct reading remains:
 
 ```text
 progress is allowed before confirmation;
 promotion is not.
 ```
 
-A3 is already substantively useful because it separates candidate closure structure from temporal compression traps, tests LEC specificity against hard controls, tests MSR2 against ablations, and reports public family structure without leaking hidden generator parameters.
+### D5.2 Plain-language interpretation
 
-### D4.2 Plain-language interpretation
+The project is trying to make the Whole-first idea testable. Instead of assuming that local parts are primitive, the arena asks whether stable effective parts can be discovered as predictive and reconstructible restrictions of a larger relational process.
 
-The project is trying to make the Whole-first idea testable. Instead of assuming that local parts are primitive, the arena asks whether stable effective parts can be discovered as predictive and reconstructible restrictions of a larger relational process. The important current result is not “AC is proved” and not “spacetime is derived.” The important result is sharper:
-
-> A3 is beginning to distinguish *real-looking closure candidates* from *things that merely compress time, spectrum, rank or latent regimes*.
-
-This is exactly the correct intermediate milestone. A whole-first programme fails if every compressible pattern is treated as a part. A3 is now giving us a cleaner taxonomy of false positives and a more specific hint about what a genuine effective-part signature might require.
-
-### D4.3 Mechanism snapshot
-
-The table counts systems where the mechanism gains against the best trivial control in both codebooks. Positive systems are structured systems; null systems are matched adversarial systems.
-
-| Mechanism | Positive systems | Null systems | Net | Precision so far | Current reading |
-|---|---:|---:|---:|---:|---|
-| `MPRC2` | 21 | 14 | 7 | 0.600 | raw closure-like signal; useful but contaminated |
-| `LOW_RANK` | 11 | 4 | 7 | 0.733 | mandatory adversarial global-envelope baseline |
-| `SPECTRAL_CLUSTERING` | 9 | 6 | 3 | 0.600 | moderate signal; not enough on its own |
-| `PREDICTIVE_STATE_HEURISTIC` | 4 | 3 | 1 | 0.571 | weak auxiliary; true CAUSAL_STATE_MACRO still reserved |
-| `LEC_PROPOSAL_ONLY` | 7 | 18 | -11 | 0.280 | proposal machinery; not closure-specific so far |
-| `LEC_NO_HIDDEN` | 4 | 2 | 2 | 0.667 | sanity/control baseline for LEC specificity |
-| `MSR2` | 7 | 15 | -8 | 0.318 | not ready; ablations show weak load-bearing recovery/rho content |
-| `CHANGE_POINT` | 13 | 30 | -17 | 0.302 | temporal-compression trap |
-| `DYNAMIC_SBM` | 15 | 28 | -13 | 0.349 | dynamic/temporal-structure trap |
-| `HMM_LATENT_REGIME` | 8 | 29 | -21 | 0.216 | dominant hidden-regime/null trap |
-
-The headline is that no raw mechanism is promotion-ready. The productive content is in the diagnostics, especially the split between temporal and non-temporal MPRC2 operations.
-
-### D4.4 MPRC2 operation diagnostics: the first really useful A3 split
-
-A3 separates MPRC2 by operation type. This is the most important live update.
-
-| MPRC2 diagnostic class | Positive systems | Null systems | Net | Precision so far | Interpretation |
-|---|---:|---:|---:|---:|---|
-| `MPRC2 raw both-codebook gain` | 21 | 14 | 7 | 0.600 | useful but mixed signal |
-| `MPRC2_NON_TEMPORAL_OP` | 19 | 3 | 16 | 0.864 | cleaner closure-candidate signature |
-| `MPRC2_CHANGEPOINT_ONLY` | 2 | 11 | -9 | 0.154 | temporal-compression risk |
-| `MPRC2_MOVE_OVERLAP` | 16 | 3 | 13 | 0.842 | local structural operation family |
-| `MPRC2_MOVE_ONLY` | 7 | 1 | 6 | 0.875 | narrower local move operation |
-| `MPRC2_OVERLAP_ONLY` | 3 | 1 | 2 | 0.750 | narrower overlap operation |
-
-This supports the new working distinction:
+The completed A3 result is useful because it learned to say “no” more precisely. It distinguishes several false friends:
 
 ```text
-MPRC2 as a raw arm
-= closure signal + temporal contamination
+big compression gain
+≠ closure mechanism
 
-MPRC2 non-temporal operation
-= better candidate for effective-part closure
+time segmentation
+≠ effective part
 
-MPRC2 change-point-only
-= likely temporal compression, not an effective part
+latent proposal
+≠ discovery
+
+low-rank/spectral regularity
+≠ whole-first evidence by itself
 ```
 
-For AC-WFP, this is conceptually important. An effective part should not be just a temporal segmentation. It should look like a stable local-to-global structural operation with prediction and reconstruction attached.
-
-### D4.5 Certificate hints discovered inside A3 live data
-
-These combinations are **post-hoc A3 live hypotheses only**. They are not confirmation evidence and must not be used to unlock Arena 0A. They are useful for deciding what to monitor when the run finishes.
-
-| Candidate certificate / diagnostic conjunction | Positive systems | Null systems | Net | Precision so far | Positive family split | Status |
-|---|---:|---:|---:|---:|---|---|
-| `MPRC2_NON_TEMPORAL_OP + LOW_RANK` | 9 | 0 | 9 | 1.000 | structured_relational:6, structured_transfer:3 | strongest current live A3 hint |
-| `MPRC2_MOVE_OVERLAP + LOW_RANK` | 9 | 0 | 9 | 1.000 | structured_relational:6, structured_transfer:3 | same clean signal through concrete operations |
-| `MPRC2_MOVE_ONLY + LOW_RANK` | 4 | 0 | 4 | 1.000 | structured_relational:3, structured_transfer:1 | narrow but clean |
-| `MPRC2_OVERLAP_ONLY + LOW_RANK` | 1 | 0 | 1 | 1.000 | structured_relational:1 | very narrow but clean |
-| `MPRC2_CHANGEPOINT_ONLY + LOW_RANK` | 1 | 3 | -2 | 0.250 | structured_relational:1 | confirms change-point risk |
-| `LOW_RANK + MPRC2` | 10 | 3 | 7 | 0.769 | structured_relational:7, structured_transfer:3 | better than raw MPRC2 but still null-contaminated |
-| `LOW_RANK + MPRC2 + PREDICTIVE_STATE_HEURISTIC` | 1 | 0 | 1 | 1.000 | structured_transfer:1 | old A2-derived triple; clean but very low recall so far |
-
-The live hypothesis is therefore shifting from the older A2 triple
+The strongest current content-level hint is not raw MPRC2. It is the combination of a global accounting envelope and a local non-temporal structural operation:
 
 ```text
-LOW_RANK + MPRC2 + PREDICTIVE_STATE_HEURISTIC
-```
-
-toward the more operation-aware A3 rule
-
-```text
-LOW_RANK + MPRC2_NON_TEMPORAL_OP
-```
-
-or, more concretely,
-
-```text
-LOW_RANK + MPRC2_MOVE_OVERLAP.
-```
-
-The interpretation is:
-
-```text
-global low-rank/accounting envelope
+global low-rank or spectral/accounting structure
 +
-local non-temporal structural closure operation
+local non-temporal MPRC2 move/overlap operation
 =
-more plausible effective-part candidate
+A4-worthy effective-part candidate signature
 ```
 
-This remains a development clue only.
+This is still a **post-hoc development clue**. It becomes evidence only if frozen in advance and tested on a fresh A4 split.
 
-### D4.6 Family-stratified content
+### D5.3 Mechanism summary under both-codebook gain
 
-The public family reporting is useful because it does not reveal hidden generator parameters but does separate the scientific meaning of the signal.
+The table counts systems where the mechanism gains against the best trivial control in both codebooks. Positive systems are structured systems; null systems are matched adversarial systems. The precision column is descriptive development telemetry, not a promotion criterion.
 
-| Public family | Systems in snapshot | Ledger rows | Positive gain rows | Null false-positive rows | Meaning in this update |
-|---|---:|---:|---:|---:|---|
-| `structured_relational` | 65 | 2340 | 139 | 0 | many structures are already partly captured by LOW_RANK |
-| `structured_transfer` | 34 | 1224 | 165 | 0 | most interesting for closure/transfer |
-| `matched_null` | 54 | 1944 | 0 | 590 | adversarial false-positive field |
-
-Mean `LOW_RANK total bits − MPRC2 total bits` is currently:
-
-| Family | Comparisons | Mean MPRC2 advantage vs LOW_RANK, bits | Rows where MPRC2 beats LOW_RANK | Interpretation |
+| Mechanism | Positive systems | Null systems | Precision | Current reading |
 |---|---:|---:|---:|---|
-| `structured_relational` | 130 rows | -213.4 | 53 | LOW_RANK often explains enough here |
-| `structured_transfer` | 68 rows | 1280.6 | 44 | MPRC2 captures transfer-like structure LOW_RANK misses |
-| `matched_null` | 108 rows | 1642.7 | 47 | raw MPRC2 can still false-positive here; not evidence |
+| `MPRC2` | 92 | 55 | 0.626 | strongest raw closure-like signal, but still contaminated |
+| `LOW_RANK` | 44 | 8 | 0.846 | mandatory adversarial global-envelope baseline |
+| `SPECTRAL_CLUSTERING` | 34 | 16 | 0.680 | useful structural baseline; alone not clean enough |
+| `PREDICTIVE_STATE_HEURISTIC` | 15 | 9 | 0.625 | weak auxiliary; not true causal-state discovery |
+| `CHANGE_POINT` | 53 | 91 | 0.368 | temporal-compression trap |
+| `DYNAMIC_SBM` | 49 | 86 | 0.363 | dynamic/temporal structure detector with high null leakage |
+| `HMM_LATENT_REGIME` | 26 | 79 | 0.248 | hidden-regime null false-positive engine |
+| `LEC_PROPOSAL_ONLY` | 24 | 49 | 0.329 | proposal machinery, not closure-specific evidence |
+| `LEC_NO_HIDDEN` | 11 | 2 | 0.846 | surprisingly cleaner control; weakens hidden-energy interpretation |
+| `MSR2` | 22 | 45 | 0.328 | not yet ready; too much null leakage |
 
-The content lesson is that `structured_transfer` may be closer to the kind of phenomenon AC-WFP actually cares about: not just compressible structure, but reusable/recoverable organization that transfers across a relational history. The matched-null row is a warning, not a positive result.
+### D5.4 MPRC2 operation diagnostics: the main A3 lesson
 
-### D4.7 LEC and MSR2 status in this live run
+Raw MPRC2 mixes several behaviours. A3’s main improvement is to split MPRC2 by operation type.
 
-**LEC = Latent Energy Closure** in name, but the current scientific role is narrower: it is a latent-energy proposal mechanism. It proposes candidate hidden closures; it does not score them scientifically. The independent held-out MDL scorer must decide whether the proposal is real.
+| MPRC2 diagnostic | Positive systems | Null systems | Precision | Interpretation |
+|---|---:|---:|---:|---|
+| `MPRC2_RAW` | 92 | 55 | 0.626 | useful but contaminated |
+| `MPRC2_NON_TEMPORAL_OP` | 86 | 13 | 0.869 | best broad closure-like operation signal |
+| `MPRC2_CHANGEPOINT_ONLY` | 6 | 42 | 0.125 | mostly temporal-compression risk |
+| `MPRC2_MOVE_OVERLAP` | 76 | 13 | 0.854 | strongest concrete local-structural operation family |
+| `MPRC2_MOVE_ONLY` | 23 | 4 | 0.852 | clean but narrower |
+| `MPRC2_OVERLAP_ONLY` | 14 | 4 | 0.778 | clean but narrower |
 
-A3 tests LEC against:
+This is the most important A3 scientific-method result:
 
-```text
-LEC_NO_HIDDEN
-LEC_RANDOM_ENERGY
-LEC_SHUFFLED_TIME
-LEC_SHUFFLED_RELATIONS
-```
+> A candidate effective part should not be accepted merely because the time series can be segmented. It must survive operation diagnostics that separate non-temporal structural changes from change-point compression.
 
-Current live result:
+### D5.5 Official frozen certificate rows from A3
 
-```text
-LEC_PROPOSAL_ONLY: positive 7, null 18
-LEC_RANDOM_ENERGY: positive 7, null 19
-LEC_SHUFFLED_TIME: positive 9, null 9
-LEC_SHUFFLED_RELATIONS: positive 3, null 20
-```
+A3 tested A2-derived frozen post-hoc certificate hypotheses as development hypotheses. None reached scientific promotion. The best official row was useful but failed the null ceiling.
 
-Interpretation: LEC remains useful as proposal machinery, but it is not a closure detector. The energy-like latent score is not yet specific enough to distinguish effective parts from null structure.
+| Frozen certificate | Positive systems | Null systems | Precision | Gate status | Reading |
+|---|---:|---:|---:|---|---|
+| `LOW_RANK + MPRC2` | 40 | 6 | 0.870 | FAIL | good development signal, not clean enough |
+| `MPRC2 + SPECTRAL_CLUSTERING` | 32 | 14 | 0.696 | FAIL | spectral null leakage too high |
+| `LOW_RANK + CHANGE_POINT` | 29 | 6 | 0.829 | FAIL | temporal-only risk remains |
+| `LOW_RANK + PREDICTIVE_STATE_HEURISTIC` | 6 | 1 | 0.857 | FAIL | too sparse and lacks recovery |
+| `LOW_RANK + MPRC2 + PREDICTIVE_STATE_HEURISTIC` | 5 | 1 | 0.833 | FAIL | old triple is too narrow |
 
-**MSR2 = Modular–Spectral Recovery 2.** It is the executable proxy for the Ω-MSP modular/spectral idea: operator `D`, state weighting `ρ`, flow and recovery channel should help find stable effective parts.
-
-Current live result:
-
-```text
-MSR2:             positive 7, null 15
-MSR2_NO_D:        positive 3, null 20
-MSR2_D_SHUFFLE:   positive 1, null 17
-MSR2_RHO_SHUFFLE: positive 7, null 15
-MSR2_NO_FLOW:     positive 1, null 19
-MSR2_NO_RECOVERY: positive 7, null 15
-```
-
-Interpretation: the theory-side Ω-MSP programme remains central, but this finite MSR2 implementation is not yet persuasive. `NO_RECOVERY` and `RHO_SHUFFLE` being too similar to full MSR2 means recovery and `ρ` are not yet scientifically load-bearing enough.
-
-### D4.8 Current content-level conclusion
-
-A3 is producing the right kind of knowledge:
+A3 therefore correctly refuses promotion:
 
 ```text
-not:     AC-WFP is confirmed
-not:     MPRC2 raw wins, therefore closure exists
-but:     temporal-only compression is being isolated
-and:     operation-gated non-temporal MPRC2 + LOW_RANK is the cleanest current development hint
+scientific_promotion_allowed = false
+arena_0a_unlocked = false
+fresh_final_v4_preregistration_required = true
 ```
 
-The conceptual update is therefore:
+### D5.6 New A3-discovered post-hoc clues for A4
 
-> Effective parts are not merely compressed pieces of a history. The strongest current finite-arena candidate is closer to a non-temporal structural operation that remains useful after a global low-rank envelope has been accounted for, while temporal-only, latent-only and modular-spectral-ablation failures are explicitly demoted.
+The following are **not** scientific results. They are A3-discovered development clues that should be given to MAL and then either frozen for A4 or demoted.
 
-This is real research progress, but it remains below `CLOSURE_MECHANISM` promotion and far below spacetime, gravity, matter or AC-specific claims.
+| A3-discovered rule | Positive systems | Null systems | Precision | Suggested A4 role |
+|---|---:|---:|---:|---|
+| `LOW_RANK + MPRC2_NON_TEMPORAL_OP` | 38 | 2 | 0.950 | primary A4 candidate |
+| `LOW_RANK + MPRC2_MOVE_OVERLAP` | 37 | 2 | 0.949 | secondary / more concrete candidate |
+| `LOW_RANK + MPRC2_MOVE_ONLY` | 8 | 0 | 1.000 | clean low-recall check |
+| `LOW_RANK + MPRC2_OVERLAP_ONLY` | 8 | 0 | 1.000 | clean low-recall check |
+| `SPECTRAL_CLUSTERING + MPRC2_NON_TEMPORAL_OP` | 31 | 0 | 1.000 | very interesting exploratory challenger |
+| `SPECTRAL_CLUSTERING + MPRC2_MOVE_OVERLAP` | 23 | 0 | 1.000 | very interesting exploratory challenger |
+| `LOW_RANK + MPRC2_CHANGEPOINT_ONLY` | 2 | 4 | 0.333 | negative / temporal control |
 
-### D4.9 Update rule for living documents
+The strongest A4 design question is whether LOW_RANK accounting or SPECTRAL accounting gives the better non-temporal closure certificate under a fresh split.
 
-The documents should remain living drafts during active arena work. Each live update must preserve three firewalls:
+### D5.7 LEC status after completed A3
+
+LEC failed specificity:
 
 ```text
-live development signal ≠ completed A3 evidence
-completed A3 evidence ≠ confirmation
-neutral Ω success ≠ AC-specific proof
+LEC specificity gate: FAIL
+positive-specific wins: 20 / 768
+null-specific wins:     89 / 384
+null specificity rate:  0.2318
+ceiling:                0.05
 ```
 
-V3 remains frozen. V4-DRAFT.4 is the current live draft. Final V4 should be written only after the A3 run completes and its final extract is analysed.
+Interpretation:
+
+- `LEC_PROPOSAL_ONLY` should remain a proposal lane, not a judge.
+- `LEC_NO_HIDDEN` being cleaner than several hidden-energy variants weakens the current hidden-energy story.
+- Future LEC must beat `LEC_NO_HIDDEN`, `LEC_RANDOM_ENERGY`, `LEC_SHUFFLED_TIME` and `LEC_SHUFFLED_RELATIONS` before it earns any mechanism status.
+- This is a demotion, not deletion: RDE keeps LEC in the archive for redesign.
+
+### D5.8 MSR2 status after completed A3
+
+MSR2 remains theoretically important but implementation-weak:
+
+| MSR2 arm | Positive systems | Null systems | Reading |
+|---|---:|---:|---|
+| `MSR2` | 22 | 45 | raw signal not clean |
+| `MSR2_NO_RECOVERY` | 20 | 45 | recovery is not load-bearing enough |
+| `MSR2_RHO_SHUFFLE` | 18 | 43 | `rho` is not load-bearing enough |
+| `MSR2_NO_D` | 8 | 54 | removing `D` hurts positives but null leakage remains |
+| `MSR2_D_SHUFFLE` | 1 | 48 | `D` matters, but not enough to rescue full MSR2 |
+| `MSR2_NO_FLOW` | 5 | 50 | flow matters, but current implementation is not sufficient |
+
+Interpretation:
+
+- `D` and flow appear behaviourally relevant because shuffles/ablations change results.
+- `rho` and recovery are still too close to the full arm.
+- MSR2 must be redesigned before it can carry any Ω-MSP claim in the finite arena.
+- RDE keeps MSR2 alive as a redesign lane rather than deleting it.
+
+### D5.9 Temporal-order sensor failure
+
+A3 passed 30 / 31 implementation gates. The failed gate is important:
+
+```text
+06_TEMPORAL_ORDER_SENSOR: FAIL
+time_reversal_delta = 0 bits
+```
+
+This does not invalidate A3 as a development run, because A3 explicitly remains `NOT_ELIGIBLE`. But it must be fixed or explained before A4. Since the whole purpose is to avoid confusing temporal compression with effective parts, A4 must include a stronger temporal-order sensor and an explicit time-reversal/null diagnostic.
+
+### D5.10 Rank-Don’t-Eliminate upgrade
+
+A3 demotes several mechanisms, but demotion must not become permanent deletion. The next arena should implement:
+
+```text
+rank_dont_eliminate_archive.jsonl
+```
+
+Each candidate should be stored with:
+
+- mechanism name and version;
+- representation and scale;
+- codebook context;
+- public family tags;
+- positive coverage and null leakage;
+- reason codes;
+- demotion reason;
+- resurrection eligibility;
+- next-lens triggers.
+
+A new lens, representation, codebook, intervention family, causal-state sidecar, sheaf sidecar, QEC recovery sidecar, or multiscale sidecar should automatically trigger a **resurrection sweep** over demoted candidates.
+
+### D5.11 A4 / MAL handoff
+
+The next honest move is not Arena 0A. The next honest move is a MAL-assisted A4 design council.
+
+MAL should not be asked:
+
+```text
+Is AC-WFP true?
+```
+
+MAL should be asked:
+
+```text
+Given final A3, what is the smallest strict A4 confirmation design
+that freezes candidate rules in advance, improves temporal controls,
+keeps AC0, prevents low-rank/spectral/latent self-deception,
+and implements Rank-Don’t-Eliminate?
+```
+
+Recommended A4 candidate set for the MAL council:
+
+```text
+PRIMARY:
+LOW_RANK + MPRC2_NON_TEMPORAL_OP
+
+SECONDARY:
+LOW_RANK + MPRC2_MOVE_OVERLAP
+
+EXPLORATORY CHALLENGERS:
+SPECTRAL_CLUSTERING + MPRC2_NON_TEMPORAL_OP
+SPECTRAL_CLUSTERING + MPRC2_MOVE_OVERLAP
+
+LOW-RECALL CLEAN CHECKS:
+LOW_RANK + MPRC2_MOVE_ONLY
+LOW_RANK + MPRC2_OVERLAP_ONLY
+
+NEGATIVE / ADVERSARIAL CONTROLS:
+MPRC2_CHANGEPOINT_ONLY
+LOW_RANK + MPRC2_CHANGEPOINT_ONLY
+CHANGE_POINT
+DYNAMIC_SBM
+HMM_LATENT_REGIME
+spectral_without_recovery nulls
+low_rank_without_parts nulls
+```
+
+### D5.12 Current content-level conclusion
+
+The completed A3 run is the best AC-WFP arena result so far, but for the right reason: it did not promote a theory. It sharpened the instrument.
+
+The updated content verdict is:
+
+```text
+A3 completed cleanly as an engineering/development run.
+A3 remains DEVELOPMENT_ONLY and NOT_CONFIRMATION.
+A3 shows raw MPRC2 is contaminated.
+A3 shows change-point-only wins are a temporal trap.
+A3 shows non-temporal MPRC2 operations are the best current closure-like signal.
+A3 shows LOW_RANK and SPECTRAL accounting are not optional controls.
+A3 demotes LEC and MSR2 to redesign lanes.
+A3 produces A4-worthy hypotheses, not evidence.
+```
 
 ---
-
 ## V4-DRAFT.3 evidence update — completed A2 multiday run
 
 **Source evidence:** `LIVE_EXTRACT_ACWFP_MULTIDAY_20260626_172148.zip`  
@@ -530,7 +594,7 @@ V4-DRAFT.2 remains an **Arena 0X-H development contract**. Its job is to repair 
 14. Alpha evidence can improve the instrument but cannot count as a physics result.
 15. The first possible scientific claim remains only `CLOSURE_MECHANISM`; AC remains AC0.
 
-## Implementation status — 25 June 2026
+## Implementation status — updated after completed A3
 
 ### A1 deep snapshot: useful development evidence, invalid LEC contrast
 
@@ -2337,58 +2401,81 @@ Only after a robust closure mechanism and the certificate axes required by the n
 
 ## 41. Current verdict
 
-# V4-DRAFT.2 VERDICT — THE A2 INSTRUMENT IS ENGINEERING-VALID; SCIENTIFIC CONFIRMATION REMAINS CLOSED
+# V4-DRAFT.5 VERDICT — A3 COMPLETED CLEANLY; A4 CONFIRMATION DESIGN IS NOW THE NEXT WORK
 
-V4-DRAFT.2 now has a stronger basis than the first draft:
+V4-DRAFT.5 has a stronger basis than V4-DRAFT.4 because the A3 multiday run is no longer a partial live snapshot. It is a completed development evidence capsule:
 
-- the A1 LEC defect is identified, classified and prevented by KAT;
-- A1 and A2 evidence cannot be mixed or resumed across versions;
-- the repaired A2 package passed its reduced engineering validation;
-- time order, latent regimes, full cost and independent scoring remain central;
-- positive discoveries and null false positives are separated;
-- “effective part” is now a vector of mandatory certificates rather than a single compression win;
-- true predictive causal states are distinguished from a heuristic baseline and from intervention-level causal emergence;
-- sheaf gluing, QEC recovery and multiscale persistence are specified as isolated tests, not prestige imports;
-- Quality-Diversity and DCC/VOC remain search/governance tools, not evidence;
-- the alpha branch is permanently barred from scientific promotion.
+- 576 / 576 systems completed;
+- 0 failures and 0 timeouts;
+- leakage firewall passed with 1769 scanned files and 0 findings;
+- 30 / 31 implementation gates passed;
+- Arena 0A remained fail-closed;
+- scientific promotion remained disallowed.
 
-The next honest move is not to declare V4 complete. It is to run the repaired A2 ladder, analyze fresh live extracts, build the smallest KAT-first sidecars, and then freeze only the mechanisms and certificate axes that survive.
+The main positive achievement is diagnostic, not promotional:
+
+- raw MPRC2 is closure-like but contaminated;
+- MPRC2 change-point-only wins are mostly temporal compression;
+- MPRC2 non-temporal operations are a cleaner finite effective-part candidate;
+- LOW_RANK and SPECTRAL controls are mandatory accounting envelopes;
+- LEC failed specificity and remains proposal-only;
+- MSR2 remains theoretically important but implementation-weak;
+- A4 should freeze a small candidate set before a fresh split.
+
+The current best A4 hypotheses are:
+
+```text
+PRIMARY:    LOW_RANK + MPRC2_NON_TEMPORAL_OP
+SECONDARY:  LOW_RANK + MPRC2_MOVE_OVERLAP
+CHALLENGER: SPECTRAL_CLUSTERING + MPRC2_NON_TEMPORAL_OP
+CONTROL:    LOW_RANK + MPRC2_CHANGEPOINT_ONLY
+```
+
+The temporal-order sensor failure is the main implementation repair requirement before A4:
+
+```text
+06_TEMPORAL_ORDER_SENSOR: FAIL
+time_reversal_delta = 0 bits
+```
+
+The next honest move is not to declare final V4. It is:
+
+```text
+final A3 evidence capsule
+→ MAL top-5 A4 design council
+→ A4 builder specification
+→ fresh preregistered A4 run
+→ only then final V4 decision
+```
 
 ```text
 Theory status:          FORMAL-SEED / RESEARCH PROGRAMME
-Paper status:           V4-DRAFT.2
-Arena status:           0X-H DEVELOPMENT v0.2.0a2
-Implementation status:  ENGINEERING-VALID ON REDUCED VALIDATION
+Paper status:           V4-DRAFT.5
+Arena status:           0X-H DEVELOPMENT v0.2.0a3 completed
+Implementation status:  DEVELOPMENT-CLEAN WITH 1 GATE FAILURE TO FIX
 Scientific eligibility: NOT_ELIGIBLE
 Earned result class:    DEVELOPMENT_EVIDENCE_ONLY
 AC status:              AC0
 Arena 0A:               CLOSED / FAIL-CLOSED
+Next arena:             A4 / V4-confirmation design, not yet built
 ```
 
-## 42. V4-DRAFT.2 provenance and changelog
+## 42. V4-DRAFT.5 provenance and changelog
 
-Relative to V3 and V4-DRAFT.1, this draft:
+Relative to V4-DRAFT.4, this draft:
 
-1. preserves V3 as an immutable baseline rather than silently editing it;
-2. preserves the temporal candidate `C=(M,z,r,H)` and full independent objective;
-3. records the A1 deep snapshot as incomplete development evidence;
-4. classifies A1 LEC rows as invalid implementation evidence;
-5. synchronizes executable status with Arena v0.2.0a2;
-6. records 57/57 tests, 16/16 KATs and 23/23 A2 gates without promoting science;
-7. records the repaired latent proposal/top-K path;
-8. records active-worker telemetry, timeout/recovery and live-extract improvements;
-9. records the fixture-specific 25.30× scorer speedup with parity caveat;
-10. corrects `PREDICTIVE_STATE` to `PREDICTIVE_STATE_HEURISTIC` in the scientific contract;
-11. specifies a true `CAUSAL_STATE_MACRO` challenger;
-12. introduces the eight-axis Effective-Part Certificate;
-13. formalizes sheaf gluing as a local-to-global evaluator;
-14. formalizes QEC-style redundant recovery as a control family;
-15. separates predictive causal states from intervention-level causal emergence;
-16. specifies predictive rate-distortion and multiscale persistence;
-17. adds proposer-level naturality and noncompensatory certificate gates;
-18. adds a development-only Quality-Diversity archive and Disagreement Forge;
-19. keeps wake–sleep and DCC/VOC outside the current scientific score;
-20. keeps all sidecar axes `UNEARNED` until their own KATs and preregistered endpoints pass.
+1. replaces the partial A3 live snapshot with the completed A3 multiday evidence capsule;
+2. records 576 / 576 completion, 0 failures, 0 timeouts and firewall PASS;
+3. records 30 / 31 implementation gates and names the failed temporal-order sensor;
+4. upgrades the mechanism summary from partial counts to completed A3 counts;
+5. records the central MPRC2 operation split: raw, non-temporal, change-point-only, move/overlap;
+6. records official frozen A2 certificate rows and their null-gate failures;
+7. records A3-discovered post-hoc A4 candidate rules without promoting them;
+8. demotes LEC to proposal/redesign status after specificity failure;
+9. demotes MSR2 to redesign status while preserving D/flow as potentially load-bearing hints;
+10. adds Rank-Don’t-Eliminate as an explicit next-arena requirement;
+11. adds a MAL top-5 A4 design council handoff;
+12. keeps AC0, NOT_CONFIRMATION, NOT_ARENA_0A and all science/AC firewalls intact.
 
 # References and primary anchors
 
@@ -2439,3 +2526,8 @@ Relative to V3 and V4-DRAFT.1, this draft:
 44. M. Koch-Janusz and Z. Ringel, *Mutual Information, Neural Networks and the Renormalization Group*, Nature Physics 14, 578–582 (2018), arXiv:1704.06279.
 45. S. Russell and E. Wefald, *Do the Right Thing: Studies in Limited Rationality*, MIT Press (1991).
 46. J.-B. Mouret and J. Clune, *Illuminating Search Spaces by Mapping Elites*, arXiv:1504.04909 (2015).
+
+47. BD × AI, *AC-WFP Arena v0.2.0a3 — Completed A3 multiday live extract*, `LIVE_EXTRACT_ACWFP_MULTIDAY_20260702_105031.zip` (extract created 2 July 2026; source run completed 29 June 2026).
+48. BD × AI, *AC-WFP A4 / Next-Arena Context Dossier for MAL Top-5 LLM Council* (29 June 2026).
+49. BD × AI, *MAL Top-5 LLM Prompt — AC-WFP A4 / Next-Arena Design Council* (29 June 2026).
+50. BD × AI, *Rank-Don’t-Eliminate Operating Principle* (2026 project note).
