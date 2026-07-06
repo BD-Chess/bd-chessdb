@@ -503,6 +503,62 @@
 </section>
 <div class="divider"></div>
 
+
+<!-- DEV2 POLYHEDRAL DOOR UPDATE -->
+<section>
+  <div class="wrap">
+    <span class="sec-tag cyan">DEV2 Arena Discovery · July 2026</span>
+    <h2>Polyhedral/LZ Door: Below 3% Gap</h2>
+    <p>This is <strong>not</strong> the all-time 8Z-RP nu3496 record shown above. The older v2.5 fleet remains better at <strong>97,325 / 1.241%</strong>. This update documents something different: a new DEV2 arena discovery where a broad ssMDL-DCC search found a polyhedral/folded representation and a targeted continuation opened that door.</p>
+
+    <div class="stat-banner">
+      <div class="sb-cell"><div class="sb-num green">98,940</div><div class="sb-label">DEV2 best tour</div><div class="sb-sub">PS3_BB_ext</div></div>
+      <div class="sb-cell"><div class="sb-num cyan">2.921%</div><div class="sb-label">Gap to optimum</div><div class="sb-sub">96,132 optimum</div></div>
+      <div class="sb-cell"><div class="sb-num gold">3/3</div><div class="sb-label">Sub-5% variants</div><div class="sb-sub">BB_ext · ratchet_base · ratchet_ext</div></div>
+      <div class="sb-cell"><div class="sb-num violet">2h</div><div class="sb-label">Winning variant</div><div class="sb-sub">7,200 s budget</div></div>
+      <div class="sb-cell"><div class="sb-num rose">+1,615</div><div class="sb-label">Behind all-time v2.5</div><div class="sb-sub">97,325 still leads</div></div>
+      <div class="sb-cell"><div class="sb-num">−1,226</div><div class="sb-label">Beats old balanced ref</div><div class="sb-sub">100,166 reference</div></div>
+    </div>
+
+    <div class="grid-2" style="margin-top:1.5rem">
+      <div class="highlight green">
+        <h3 style="color:var(--green)">What actually worked</h3>
+        <p>The winning path was not brute force and not a classical exact solver. The arena first found a promising <strong>polyhedral/folded search basin</strong>. A hotfix then resumed the unfinished P3 ablation and completed the strongest missing variant:</p>
+        <div class="code-block" style="margin-top:.8rem"><span class="cc">category</span> = <span class="cg">polyhedral_space_s42</span>
+<span class="cc">variant</span>  = <span class="cg">PS3_BB_ext</span>
+<span class="cc">sensor</span>   = <span class="cg">LZ_binary</span>
+<span class="cc">law</span>      = <span class="cg">BB</span>
+<span class="cc">ops</span>      = <span class="cg">2opt, oropt1/2/3, double_bridge, 3opt_type4, seg_flip</span>
+<span class="cc">length</span>   = <span class="cg">98,940</span>
+<span class="cc">gap</span>      = <span class="cg">2.920984%</span></div>
+      </div>
+      <div class="highlight violet">
+        <h3 style="color:var(--violet)">Why it matters</h3>
+        <p>The broad arena did not merely grind; it discovered a door. The targeted run then opened it. This validates the research workflow: <strong>rank, do not eliminate</strong>; preserve promising representation × sensor × operator cells; return with deeper budget when a door appears.</p>
+        <p style="margin-top:.7rem">The best tour was found near the end of its two-hour budget, so the direction is not obviously exhausted.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:1.5rem">
+      <table class="worker-table">
+        <thead><tr><th>DEV2 variant</th><th>Length</th><th>Gap</th><th>L_total</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><strong>PS3_BB_ext</strong></td><td>98,940</td><td>2.921%</td><td>50.3882</td><td>raw-distance winner; extended operators opened the door</td></tr>
+          <tr><td><strong>PS3_ratch_base</strong></td><td>99,211</td><td>3.203%</td><td>48.6722</td><td>best MDL/L_total; structurally very strong</td></tr>
+          <tr><td><strong>PS3_ratch_ext</strong></td><td>99,440</td><td>3.441%</td><td>58.2921</td><td>completed final P3 variant; good but not winner</td></tr>
+          <tr><td>PS3_BB_base</td><td>101,004</td><td>5.068%</td><td>77.0155</td><td>door opener from the original deep run</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="highlight gold" style="margin-top:1.2rem">
+      <h3 style="color:var(--gold)">Interpretation</h3>
+      <p>The new DEV2 result does not beat the v2.5 fleet record. It is evidence for a different claim: the ssMDL-DCC arena can discover a useful representation, preserve it despite earlier failures, and convert it into a much better route with a targeted continuation. Classical moves do the local work; the arena decides where to aim them.</p>
+    </div>
+  </div>
+</section>
+<div class="divider"></div>
+
 <!-- CONFIG -->
 <section>
   <div class="wrap">
